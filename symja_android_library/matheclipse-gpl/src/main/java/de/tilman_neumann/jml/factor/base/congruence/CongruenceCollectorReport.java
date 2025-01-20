@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -18,7 +18,8 @@ import static de.tilman_neumann.jml.factor.base.GlobalFactoringOptions.*;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.matheclipse.core.numbertheory.Multiset;
+import de.tilman_neumann.util.Multiset;
+import de.tilman_neumann.util.SortedMultiset_BottomUp;
 
 public class CongruenceCollectorReport {
 	private int partialCount;
@@ -26,24 +27,55 @@ public class CongruenceCollectorReport {
 	private int[] smoothFromPartialCounts;
 	private int[] partialCounts;
 	private int perfectSmoothCount;
-	private Multiset<Integer> oddExpBigFactorSizes;
-	private Multiset<Integer> oddExpBigFactorSizes4Smooth;
+	private Multiset<Integer>[] partialQRestSizes;
+	private Multiset<Integer>[] partialBigFactorSizes;
+	private Multiset<Integer>[] smoothQRestSizes;
+	private Multiset<Integer>[] smoothBigFactorSizes;
+	private Multiset<Integer> aggregatedPartialBigFactorSizes;
+	private Multiset<Integer> aggregatedSmoothBigFactorSizes;
 	private int partialWithPositiveQCount;
 	private int smoothWithPositiveQCount;
+	private int maxRelatedPartialsCount;
+	private int maxMatrixSize;
 	
 	public CongruenceCollectorReport(int partialCount, int smoothCount, int[] smoothFromPartialCounts, int[] partialCounts, int perfectSmoothCount,
-			                         Multiset<Integer> oddExpBigFactorSizes, Multiset<Integer> oddExpBigFactorSizes4Smooth,
-			                         int partialWithPositiveQCount, int smoothWithPositiveQCount) {
+			                         Multiset<Integer>[] partialQRestSizes, Multiset<Integer>[] partialBigFactorSizes,
+			                         Multiset<Integer>[] smoothQRestSizes, Multiset<Integer>[] smoothBigFactorSizes,
+			                         int partialWithPositiveQCount, int smoothWithPositiveQCount,
+			                         int maxRelatedPartialsCount, int maxMatrixSize) {
 		
 		this.partialCount = partialCount;
 		this.smoothCount = smoothCount;
 		this.smoothFromPartialCounts = smoothFromPartialCounts;
 		this.partialCounts = partialCounts;
 		this.perfectSmoothCount = perfectSmoothCount;
-		this.oddExpBigFactorSizes = oddExpBigFactorSizes;
-		this.oddExpBigFactorSizes4Smooth = oddExpBigFactorSizes4Smooth;
+		
+		this.partialQRestSizes = partialQRestSizes;
+		this.partialBigFactorSizes = partialBigFactorSizes;
+		this.aggregatedPartialBigFactorSizes = aggregateCounts(partialBigFactorSizes);
+		
+		this.smoothQRestSizes = smoothQRestSizes;
+		this.smoothBigFactorSizes = smoothBigFactorSizes;
+		this.aggregatedSmoothBigFactorSizes = aggregateCounts(smoothBigFactorSizes);
+		
 		this.partialWithPositiveQCount = partialWithPositiveQCount;
 		this.smoothWithPositiveQCount = smoothWithPositiveQCount;
+		
+		this.maxRelatedPartialsCount = maxRelatedPartialsCount;
+		this.maxMatrixSize = maxMatrixSize;
+	}
+	
+	private Multiset<Integer> aggregateCounts(Multiset<Integer>[] multisetArray) {
+		Multiset<Integer> aggregated = new SortedMultiset_BottomUp<Integer>();
+		if (multisetArray != null) {
+			for (int i=0; i<multisetArray.length; i++) {
+				Multiset<Integer> multiset = multisetArray[i];
+				if (multiset != null) {
+					aggregated.addAll(multiset);
+				}
+			}
+		}
+		return aggregated;
 	}
 	
 	public String getOperationDetails() {
@@ -60,25 +92,41 @@ public class CongruenceCollectorReport {
 		// simple report
 		return "found " + smoothCount + " smooth congruences and " + partialCount + " partials";
 	}
-	
-	public String getPartialBigFactorSizes() {
-		return "Big factor sizes of collected partials: " + oddExpBigFactorSizes;
+
+	/**
+	 * @param lpCount number of large primes in the partial that lead to a smooth congruence
+	 * @return a string pointing out the required QRest bit sizes to find certain percentiles of all smooth congruences.
+	 */
+	public String getSmoothQRestPercentiles(int lpCount) {
+		return "QRest bit size percentiles of smooths from " + lpCount + " large primes = " + computePercentiles(smoothQRestSizes[lpCount]);
+	}
+
+	/**
+	 * @param lpCount number of large primes in the partial that lead to a smooth congruence
+	 * @return a string pointing out the required big factor bit sizes to find certain percentiles of all smooth congruences.
+	 */
+	public String getSmoothBigFactorPercentiles(int lpCount) {
+		return "Big factor bit size percentiles of smooths from " + lpCount + " large primes = " + computePercentiles(smoothBigFactorSizes[lpCount]);
 	}
 	
-	public String getSmoothBigFactorSizes() {
-		return "Big factor sizes of discovered smooths: " + oddExpBigFactorSizes4Smooth;
+	public String getPartialQRestPercentiles(int lpCount) {
+		return "QRest bit size percentiles of collected " + lpCount + "-partials: " + computePercentiles(partialQRestSizes[lpCount]);
 	}
-	
-	public String getSmoothBigFactorPercentiles() {
+
+	public String getPartialBigFactorPercentiles(int lpCount) {
+		return "Big factor bit size percentiles of collected " + lpCount + "-partials: " + computePercentiles(partialBigFactorSizes[lpCount]);
+	}
+
+	private static TreeMap<Integer, Integer> computePercentiles(Multiset<Integer> bitsizeCounts) {
 		int[] percentiles = new int[] {80, 90, 95, 98, 99};
-		int totalFactor4SmoothCount = oddExpBigFactorSizes4Smooth.totalCount();
+		int totalCount = bitsizeCounts.totalCount();
 		TreeMap<Integer, Integer> resultMap = new TreeMap<>();
 		for (int i=0; i<percentiles.length; i++) {
-			int requiredCount = (int) Math.ceil((totalFactor4SmoothCount * percentiles[i]) / 100.0);
-			int count = 0;
+			long requiredCount = (long) Math.ceil((totalCount * (long)percentiles[i]) / 100.0);
+			long count = 0;
 			// factor sizes are sorted bottom-up
-			for (int factorSize : oddExpBigFactorSizes4Smooth.keySet()) {
-				int sizeCount = oddExpBigFactorSizes4Smooth.get(factorSize);
+			for (int factorSize : bitsizeCounts.keySet()) {
+				int sizeCount = bitsizeCounts.get(factorSize);
 				count += sizeCount;
 				if (count > requiredCount) {
 					resultMap.put(percentiles[i], factorSize);
@@ -86,13 +134,16 @@ public class CongruenceCollectorReport {
 				}
 			}
 		}
-		return "Required large factor sizes for smooth percentiles = " + resultMap;
+		return resultMap;
 	}
 	
+	/**
+	 * @return a string pointing out how many factors>31bit contributed to collected partial and smooth relations.
+	 */
 	public String getNonIntFactorPercentages() {
 		int totalPartialBigFactorCount = 0;
 		int nonIntPartialBigFactorCount = 0;
-		for (Map.Entry<Integer, Integer> entry : oddExpBigFactorSizes.entrySet()) {
+		for (Map.Entry<Integer, Integer> entry : aggregatedPartialBigFactorSizes.entrySet()) {
 			int size = entry.getKey();
 			int count = entry.getValue();
 			totalPartialBigFactorCount += count;
@@ -104,7 +155,7 @@ public class CongruenceCollectorReport {
 		
 		int totalSmoothBigFactorCount = 0;
 		int nonIntSmoothBigFactorCount = 0;
-		for (Map.Entry<Integer, Integer> entry : oddExpBigFactorSizes4Smooth.entrySet()) {
+		for (Map.Entry<Integer, Integer> entry : aggregatedSmoothBigFactorSizes.entrySet()) {
 			int size = entry.getKey();
 			int count = entry.getValue();
 			totalSmoothBigFactorCount += count;
@@ -124,5 +175,13 @@ public class CongruenceCollectorReport {
 	public String getSmoothQSignCounts() {
 		float smoothWithPositiveQPercentage = smoothWithPositiveQCount*100.0F / smoothCount;
 		return smoothWithPositiveQCount + " smooths (" + String.format("%.2f", smoothWithPositiveQPercentage) + "%) had positive Q, " + (smoothCount-smoothWithPositiveQCount) + " smooths (" + String.format("%.2f", 100-smoothWithPositiveQPercentage) + "%) had negative Q";
+	}
+	
+	public int getMaxRelatedPartialsCount() {
+		return maxRelatedPartialsCount;
+	}
+	
+	public int getMaxMatrixSize() {
+		return maxMatrixSize;
 	}
 }

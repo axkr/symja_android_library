@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -18,13 +18,14 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
 import java.math.BigInteger;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.jml.factor.base.FactorArguments;
 import de.tilman_neumann.jml.factor.base.FactorResult;
 import de.tilman_neumann.jml.factor.base.PrimeBaseGenerator;
-import de.tilman_neumann.jml.factor.base.congruence.CongruenceCollectorParallel;
+import de.tilman_neumann.jml.factor.base.congruence.CongruenceCollector;
 import de.tilman_neumann.jml.factor.base.congruence.CongruenceCollectorReport;
 import de.tilman_neumann.jml.factor.base.matrixSolver.FactorTest;
 import de.tilman_neumann.jml.factor.base.matrixSolver.FactorTest01;
@@ -36,6 +37,7 @@ import de.tilman_neumann.jml.factor.siqs.poly.AParamGenerator;
 import de.tilman_neumann.jml.factor.siqs.poly.PolyReport;
 import de.tilman_neumann.jml.factor.siqs.powers.PowerFinder;
 import de.tilman_neumann.jml.factor.siqs.sieve.SieveParams;
+import de.tilman_neumann.jml.factor.siqs.sieve.SieveParamsFactory02;
 import de.tilman_neumann.jml.factor.siqs.sieve.SieveReport;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDivReport;
 import de.tilman_neumann.jml.powers.PurePowerTest;
@@ -48,7 +50,7 @@ import de.tilman_neumann.util.Timer;
  * @author Tilman Neumann
  */
 abstract public class PSIQSBase extends FactorAlgorithm {
-	private static final Logger LOG = Logger.getLogger(PSIQSBase.class);
+	private static final Logger LOG = LogManager.getLogger(PSIQSBase.class);
 	private static final boolean DEBUG = false;
 
 	protected int numberOfThreads;
@@ -73,11 +75,9 @@ abstract public class PSIQSBase extends FactorAlgorithm {
 
 	// sieve configuration
 	protected float Mmult;
-	private Float maxQRestExponent0;
-	protected float maxQRestExponent;
 	
 	// collects the congruences we find
-	private CongruenceCollectorParallel congruenceCollector;
+	private CongruenceCollector congruenceCollector;
 	/** The solver used for smooth congruence equation systems. */
 	protected MatrixSolver matrixSolver;
 	
@@ -91,27 +91,22 @@ abstract public class PSIQSBase extends FactorAlgorithm {
 	 * Standard constructor.
 	 * @param Cmult multiplier for prime base size
 	 * @param Mmult multiplier for sieve array size
-	 * @param maxQRestExponent A Q with unfactored rest QRest is considered smooth if QRest <= N^maxQRestExponent.
-	 *                         Good values are 0.16..0.19; null means that it is determined automatically.
 	 * @param numberOfThreads
 	 * @param d the d-parameter of quadratic polynomials Q(x) = (d*a*x + b)^2 - kN; may be null for automatic derivation
 	 * @param powerFinder algorithm to add powers to the primes used for sieving
 	 * @param matrixSolver solver for smooth congruences matrix
 	 * @param apg a-parameter generator
 	 */
-	public PSIQSBase(
-			float Cmult, float Mmult, Float maxQRestExponent, int numberOfThreads, Integer d,
-			PowerFinder powerFinder, MatrixSolver matrixSolver, AParamGenerator apg) {
+	public PSIQSBase(float Cmult, float Mmult, int numberOfThreads, Integer d, PowerFinder powerFinder, MatrixSolver matrixSolver, AParamGenerator apg, CongruenceCollector cc) {
 		
 		super(null);
 		
 		this.Cmult = Cmult;
 		this.Mmult = Mmult;
-		this.maxQRestExponent0 = maxQRestExponent;
 		this.numberOfThreads = numberOfThreads;
 		this.d0 = d;
 		this.powerFinder = powerFinder;
-		this.congruenceCollector = new CongruenceCollectorParallel(10);
+		this.congruenceCollector = cc;
 		this.matrixSolver = matrixSolver;
 		this.apg = apg;
 		this.multiplierFinder = new KnuthSchroeppel();
@@ -229,14 +224,6 @@ abstract public class PSIQSBase extends FactorAlgorithm {
 		}
 		int adjustedSieveArraySize = (int) (proposedSieveArraySize & 0x7FFFFF00);
 		if (DEBUG) LOG.debug("N=" + N + ", k=" + k + ": pMax=" + pMax + ", sieve array size was adjusted from " + proposedSieveArraySize + " to " + adjustedSieveArraySize);
-		
-		// compute biggest QRest admitted for a smooth relation
-		if (maxQRestExponent0 != null) {
-			maxQRestExponent = maxQRestExponent0;
-		} else {
-			maxQRestExponent = (NBits<=150) ? 0.16F : 0.16F + (NBits-150.0F)/5250;
-		}
-		double maxQRest = Math.pow(N_dbl, maxQRestExponent);
 
 		// initialize sub-algorithms for new N
 		apg.initialize(k, N, kN, d, primeBaseSize, primesArray, tArray, adjustedSieveArraySize); // must be done before polyGenerator initialization where qCount is required
@@ -245,19 +232,18 @@ abstract public class PSIQSBase extends FactorAlgorithm {
 		congruenceCollector.initialize(N, primeBaseSize, matrixSolver, factorTest);
 
 		// compute some basic parameters for N
-		SieveParams sieveParams = new SieveParams(kN, primesArray, primeBaseSize, adjustedSieveArraySize, maxQRest, 127);
+		SieveParams sieveParams = SieveParamsFactory02.create(N_dbl, NBits, kN, d, primesArray, primeBaseSize, adjustedSieveArraySize, apg.getQCount(), apg.getBestQ());
+		
 		// compute logP array
 		byte[] logPArray = computeLogPArray(primesArray, primeBaseSize, sieveParams.lnPMultiplier);
 		// compute reciprocals of primes
-		double[] pinvArrayD = new double[primeBaseSize];
 		long[] pinvArrayL = new long[primeBaseSize];
-		for (int i=0; i<primeBaseSize; i++) {
-			pinvArrayD[i] = 1.0 / primesArray[i];
+		for (int i=primeBaseSize-1; i>=0; i--) {
 			pinvArrayL[i] = (1L<<32) / primesArray[i];
 		}
 
 		// Find and add powers to the prime base
-		BaseArrays baseArrays = powerFinder.addPowers(kN, primesArray, tArray, logPArray, pinvArrayD, pinvArrayL, primeBaseSize, sieveParams);
+		BaseArrays baseArrays = powerFinder.addPowers(kN, primesArray, tArray, logPArray, pinvArrayL, primeBaseSize, sieveParams);
 		if (ANALYZE) initNDuration += timer.capture();
 
 		// Create and run threads: This is among the most expensive parts for N<=180 bit,
@@ -271,7 +257,7 @@ abstract public class PSIQSBase extends FactorAlgorithm {
 
 		// Wait until a factor has been found. For small N, a factor may be found before the control thread waits!
 		synchronized (congruenceCollector) {
-			while (congruenceCollector.factor == null) {
+			while (congruenceCollector.getFactor() == null) {
 				try {
 					congruenceCollector.wait(); // is woken up by notify() when a factor was found
 					//LOG.debug("Control thread got notified...");
@@ -281,11 +267,9 @@ abstract public class PSIQSBase extends FactorAlgorithm {
 			}
 		}
 
-		BigInteger factor = congruenceCollector.factor;
+		BigInteger factor = congruenceCollector.getFactor();
 		
-		if (ANALYZE) {
-			logResults(N, k, kN, factor, primeBaseSize, pMax, adjustedSieveArraySize, threadArray, numberOfThreads);
-		}
+		if (ANALYZE) logResults(N, k, kN, factor, primeBaseSize, sieveParams, threadArray, numberOfThreads);
 		
 		// kill all threads & release memory
 		long killStart = System.currentTimeMillis();
@@ -312,7 +296,7 @@ abstract public class PSIQSBase extends FactorAlgorithm {
 
 	abstract protected PSIQSThreadBase createThread(
 			int k, BigInteger N, BigInteger kN, int d, SieveParams sieveParams, BaseArrays baseArrays,
-			AParamGenerator apg, CongruenceCollectorParallel cc, int threadIndex);
+			AParamGenerator apg, CongruenceCollector cc, int threadIndex);
 	
 	private void killThread(PSIQSThreadBase t) {
     	while (t.isAlive()) {
@@ -339,7 +323,7 @@ abstract public class PSIQSBase extends FactorAlgorithm {
    		if (DEBUG) LOG.debug("thread " + t.getName() + " has been killed.");
 	}
 	
-	private void logResults(BigInteger N, int k, BigInteger kN, BigInteger factor, int primeBaseSize, int pMax, int adjustedSieveArraySize, PSIQSThreadBase[] threadArray, int numberOfThreads) {
+	private void logResults(BigInteger N, int k, BigInteger kN, BigInteger factor, int primeBaseSize, SieveParams sieveParams, PSIQSThreadBase[] threadArray, int numberOfThreads) {
 		// assemble reports from all threads
 		PolyReport polyReport = threadArray[0].getPolyReport();
 		SieveReport sieveReport = threadArray[0].getSieveReport();
@@ -359,23 +343,26 @@ abstract public class PSIQSBase extends FactorAlgorithm {
 		// report results
 		LOG.info(getName() + ":");
 		LOG.info("Found factor " + factor + " (" + factor.bitLength() + " bits) of N=" + N + " (" + N.bitLength() + " bits) in " + TimeUtil.timeStr(timer.totalRuntime()));
-		int pMaxBits = 32 - Integer.numberOfLeadingZeros(pMax);
-		LOG.info("    multiplier k = " + k + ", kN%8 = " + kN.mod(I_8) + ", primeBaseSize = " + primeBaseSize + ", pMax = " + pMax + " (" + pMaxBits + " bits), sieveArraySize = " + adjustedSieveArraySize);
+		int pMinBits = 32 - Integer.numberOfLeadingZeros(sieveParams.pMin);
+		int pMaxBits = 32 - Integer.numberOfLeadingZeros(sieveParams.pMax);
+		LOG.info("    multiplier k = " + k + ", kN%8 = " + kN.mod(I_8) + ", primeBaseSize = " + primeBaseSize + ", pMin = " + sieveParams.pMin + " (" + pMinBits + " bits), pMax = " + sieveParams.pMax + " (" + pMaxBits + " bits), sieveArraySize = " + sieveParams.sieveArraySize);
 		LOG.info("    polyGenerator: " + polyReport.getOperationDetails());
+		LOG.info("    sieve: Found " + sieveReport.getOperationDetails());
 		LOG.info("    tDiv: " + tdivReport.getOperationDetails());
-		if (ANALYZE_LARGE_FACTOR_SIZES) LOG.info("        " +  tdivReport.getQRestSizes());
 		LOG.info("    cc: " + ccReport.getOperationDetails());
+		if (ccReport.getMaxRelatedPartialsCount() > 0) LOG.info("    cc: maxRelatedPartialsCount = " + ccReport.getMaxRelatedPartialsCount() + ", maxPartialMatrixSize = " + ccReport.getMaxMatrixSize() + " rows");
 		if (ANALYZE_LARGE_FACTOR_SIZES) {
-			LOG.info("        " + ccReport.getPartialBigFactorSizes());
-			LOG.info("        " + ccReport.getSmoothBigFactorSizes());
-			LOG.info("        " + ccReport.getSmoothBigFactorPercentiles());
+			for (int i=1; i<=2; i++) LOG.info("        " + ccReport.getSmoothBigFactorPercentiles(i));
+			for (int i=1; i<=2; i++) LOG.info("        " + ccReport.getSmoothQRestPercentiles(i));
+			for (int i=1; i<=2; i++) LOG.info("        " + ccReport.getPartialBigFactorPercentiles(i));
+			for (int i=1; i<=2; i++) LOG.info("        " + ccReport.getPartialQRestPercentiles(i));
 			LOG.info("        " + ccReport.getNonIntFactorPercentages());
 		}
 		if (ANALYZE_Q_SIGNS) {
 			LOG.info("        " + ccReport.getPartialQSignCounts());
 			LOG.info("        " + ccReport.getSmoothQSignCounts());
 		}
-		LOG.info("    #solverRuns = " + congruenceCollector.getSolverRunCount() + ", #tested null vectors = " + matrixSolver.getTestedNullVectorCount());
+		LOG.info("    #solverRuns = " + congruenceCollector.getSolverRunCount() + ", #tested null vectors = " + congruenceCollector.getTestedNullVectorCount());
 		LOG.info("    Approximate phase timings: powerTest=" + powerTestDuration + "ms, initN=" + initNDuration + "ms, createThreads=" + createThreadDuration + "ms, initPoly=" + initPolyDuration + "ms, sieve=" + sieveDuration + "ms, tdiv=" + tdivDuration + "ms, cc=" + congruenceCollector.getCollectDuration() + "ms, solver=" + congruenceCollector.getSolverDuration() + "ms");
 		LOG.info("    -> initPoly sub-timings: " + polyReport.getPhaseTimings(numberOfThreads));
 		LOG.info("    -> sieve sub-timings: " + sieveReport.getPhaseTimings(numberOfThreads));

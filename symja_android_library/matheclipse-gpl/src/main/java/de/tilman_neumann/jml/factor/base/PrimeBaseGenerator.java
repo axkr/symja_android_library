@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -15,10 +15,12 @@ package de.tilman_neumann.jml.factor.base;
 
 import java.math.BigInteger;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.modular.JacobiSymbol;
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
+import de.tilman_neumann.util.Ensure;
 
 /**
  * Prime base generator.
@@ -28,7 +30,7 @@ import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
  * @author Tilman Neumann
  */
 public class PrimeBaseGenerator {
-	private static final Logger LOG = Logger.getLogger(PrimeBaseGenerator.class);
+	private static final Logger LOG = LogManager.getLogger(PrimeBaseGenerator.class);
 	private static final boolean DEBUG = false;
 	
 	private AutoExpandingPrimesArray rawPrimesArray = AutoExpandingPrimesArray.get();
@@ -50,12 +52,12 @@ public class PrimeBaseGenerator {
 		for (int i=1; ; i++) {
 			int p = rawPrimesArray.getPrime(i);
 			int jacobi = jacobiEngine.jacobiSymbol(kN, p);
-//			if (DEBUG) {
-//				// ensure correctness of prime generator
-//				assertTrue(BigInteger.valueOf(p).isProbablePrime(20));
-//				// ensure that Jacobi symbol values are in the expected range -1 ... +1
-//				if (jacobi<-1 || jacobi>1) LOG.warn("kN=" + kN + ", p=" + p + " -> jacobi=" + jacobi);
-//			}
+			if (DEBUG) {
+				// ensure correctness of prime generator
+				Ensure.ensureTrue(BigInteger.valueOf(p).isProbablePrime(20));
+				// ensure that Jacobi symbol values are in the expected range -1 ... +1
+				if (jacobi<-1 || jacobi>1) LOG.warn("kN=" + kN + ", p=" + p + " -> jacobi=" + jacobi);
+			}
 			// Q(x) = A(x)^2 - kN can only be divisible by p with Legendre(kN|p) >= 0.
 			// It is important to add p with Legendre(kN|p) == 0, too! Otherwise we would not find such p during trial division.
 			// On the other hand, doing a factor test here in that case makes no sense,

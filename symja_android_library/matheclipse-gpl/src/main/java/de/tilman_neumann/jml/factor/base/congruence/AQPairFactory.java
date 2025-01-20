@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -32,16 +32,16 @@ public class AQPairFactory {
 	public AQPair create(BigInteger A, SortedIntegerArray smallFactors, SortedLongArray bigFactors) {
 		int distinctBigFactorsCount = bigFactors.size();
 		if (distinctBigFactorsCount == 0) {
-			return new Smooth_Perfect(A, smallFactors);
+			return new SmoothPerfect(A, smallFactors);
 		}
 		if (distinctBigFactorsCount == 1) {
 			int exp = bigFactors.getExponent(0);
-			if (exp==1) return new Partial_1Large(A, smallFactors, bigFactors.get(0));
-			if (exp==2) return new Smooth_1LargeSquare(A, smallFactors, bigFactors.get(0));
+			if (exp==1) return new Partial1Large(A, smallFactors, bigFactors.get(0));
+			if (exp==2) return new Smooth1LargeSquare(A, smallFactors, bigFactors.get(0));
 			// higher exponents are treated below
 		} else if (distinctBigFactorsCount == 2) {
 			if (bigFactors.getExponent(0)==1 && bigFactors.getExponent(1)==1) {
-				return new Partial_2Large(A, smallFactors, bigFactors.get(0), bigFactors.get(1));
+				return new Partial2Large(A, smallFactors, bigFactors.get(0), bigFactors.get(1));
 			}
 			// total factor counts > 2 are treated below
 		}
@@ -50,10 +50,10 @@ public class AQPairFactory {
 		for (int i=0; i<distinctBigFactorsCount; i++) {
 			if ((bigFactors.getExponent(i)&1)==1) {
 				// big factors are not square -> it is a partial congruence
-				return new Partial_nLarge(A, smallFactors, bigFactors);
+				return new PartialNLarge(A, smallFactors, bigFactors);
 			}
 		}
 		// big factors are square -> it is a smooth congruence
-		return new Smooth_nLargeSquares(A, smallFactors, bigFactors);
+		return new SmoothNLargeSquares(A, smallFactors, bigFactors);
 	}
 }

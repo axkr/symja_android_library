@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -28,4 +28,5 @@ public class BigDecimalConstants {
 	public static final BigDecimal F_8 = BigDecimal.valueOf(8);
 	public static final BigDecimal F_10 = BigDecimal.TEN;
 	public static final BigDecimal F_12 = BigDecimal.valueOf(12);
+	public static final BigDecimal F_16 = BigDecimal.valueOf(16);
 }

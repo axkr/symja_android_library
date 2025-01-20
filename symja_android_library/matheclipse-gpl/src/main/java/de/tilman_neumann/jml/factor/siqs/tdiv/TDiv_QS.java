@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -18,6 +18,8 @@ import java.util.List;
 
 import de.tilman_neumann.jml.factor.base.congruence.AQPair;
 import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
+import de.tilman_neumann.jml.factor.siqs.sieve.SieveParams;
+import de.tilman_neumann.jml.factor.siqs.sieve.SmoothCandidate;
 
 /**
  * Interface for trial division engines to find the factorization of smooth Q(x) with given x.
@@ -34,10 +36,9 @@ public interface TDiv_QS {
 	/**
 	 * Initialize this trial division engine for a new N.
 	 * @param N_dbl
-	 * @param kN multiplier k (typically Knuth-Schroeppel) * factor argument N
-	 * @param maxQRest the biggest QRest admitted for a smooth relation
+	 * @param sieveParams the biggest QRest admitted for a smooth relation
 	 */
-	public void initializeForN(double N_dbl, BigInteger kN, double maxQRest);
+	public void initializeForN(double N_dbl, SieveParams sieveParams);
 
 	/**
 	 * Set prime/power base, polynomial parameters and smallest x-solutions for a new a-parameter.
@@ -51,18 +52,12 @@ public interface TDiv_QS {
 	void initializeForAParameter(BigInteger da, int d, BigInteger b, SolutionArrays primeSolutions, int filteredBaseSize, int[] unsievedBaseElements);
 	
 	/**
-	 * Set a new b-parameter.
-	 * @param b
-	 */
-	void setBParameter(BigInteger b);
-	
-	/**
 	 * Test if Q(x) is smooth (factors completely over the prime base) or "sufficiently smooth" (factors almost over the prime base)
 	 * for all x in the given list.
-	 * @param xList
+	 * @param smoothCandidates (something like a) list of the smooth candidates to test
 	 * @return the AQ-pairs where Q is at least "sufficiently smooth"
 	 */
-	List<AQPair> testList(List<Integer> xList);
+	List<AQPair> testList(Iterable<SmoothCandidate> smoothCandidates);
 	
 	/**
 	 * @return a description of the performed tests.

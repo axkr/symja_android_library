@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -13,7 +13,8 @@
  */
 package de.tilman_neumann.jml.primes.probable;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
 
@@ -24,24 +25,32 @@ import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
  */
 public class TDivPrimeTest {
 	@SuppressWarnings("unused")
-	private static final Logger LOG = Logger.getLogger(TDivPrimeTest.class);
+	private static final Logger LOG = LogManager.getLogger(TDivPrimeTest.class);
 
 	private static final int NUM_PRIMES_FOR_31_BIT_TDIV = 4793;
-
-	// TODO "static" leads to NPE in constructor ???
-	private AutoExpandingPrimesArray SMALL_PRIMES = AutoExpandingPrimesArray.get();
 
 	private int[] primes;
 	private long[] pinv;
 	
-	private static TDivPrimeTest instance = new TDivPrimeTest();
-	public static TDivPrimeTest getInstance() { return instance; } //Singleton
+	// lazy-initialized singleton
+	private static TDivPrimeTest the_instance = null;
+	
+	/**
+	 * @return the only TDivPrimeTest instance (singleton)
+	 */
+	public static synchronized final TDivPrimeTest getInstance() {
+		if (the_instance == null) {
+			the_instance = new TDivPrimeTest();
+		}
+		return the_instance;
+	}
 
 	private TDivPrimeTest() {
+		AutoExpandingPrimesArray smallPrimesProvider = AutoExpandingPrimesArray.get();
 		primes = new int[NUM_PRIMES_FOR_31_BIT_TDIV];
 		pinv = new long[NUM_PRIMES_FOR_31_BIT_TDIV];
 		for (int i=0; i<NUM_PRIMES_FOR_31_BIT_TDIV; i++) {
-			int p = SMALL_PRIMES.getPrime(i);
+			int p = smallPrimesProvider.getPrime(i);
 			primes[i] = p;
 			pinv[i] = (1L<<32)/p;
 		}

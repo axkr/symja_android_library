@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -15,11 +15,13 @@ package de.tilman_neumann.jml.factor.siqs;
 
 import java.math.BigInteger;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.base.UnsignedBigInt;
 import de.tilman_neumann.jml.modular.ModularSqrt;
 import de.tilman_neumann.jml.modular.ModularSqrt31;
+import de.tilman_neumann.util.Ensure;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
@@ -28,7 +30,7 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
  * @author Tilman Neumann
  */
 public class ModularSqrtsEngine {
-	private static final Logger LOG = Logger.getLogger(ModularSqrtsEngine.class);
+	private static final Logger LOG = LogManager.getLogger(ModularSqrtsEngine.class);
 	private static final boolean DEBUG = false;
 	
 	private ModularSqrt31 modularSqrtEngine = new ModularSqrt31();
@@ -63,22 +65,22 @@ public class ModularSqrtsEngine {
 			// * We do not need to set tArray[i] = 0, because the array has already been initialized with zeros.
 			// * Testing for p|N does not help TDiv's internal QS, because the Q's have been stripped of prime base elements before it is called.
 		}
-//		if (DEBUG) {
-//			assertEquals(kN.mod(I_2), BigInteger.valueOf(tArray[0]).pow(2).mod(I_2));
-//			ModularSqrt modularSqrtEngine_big = new ModularSqrt();
-//			for (int i = primeBaseSize-1; i>0; i--) {
-//				int p = primesArray[i];
-//				BigInteger pBig = BigInteger.valueOf(p);
-//				BigInteger kN_mod_p = kN.mod(pBig);
-//				if (kN_mod_p.compareTo(I_0) > 0) {
-//					assertEquals(modularSqrtEngine_big.modularSqrt(kN, p), tArray[i]);
-//					assertEquals(modularSqrtEngine_big.modularSqrt(kN_mod_p, p), tArray[i]);
-//				} else {
-//					assertEquals(0, tArray[i]);
-//				}
-//				LOG.debug("kN=" + kN + ", p=" + p + ", kN%p = " + kN_mod_p + " -> t=" + tArray[i]);
-//			}
-//		}
+		if (DEBUG) {
+			Ensure.ensureEquals(kN.mod(I_2), BigInteger.valueOf(tArray[0]).pow(2).mod(I_2));
+			ModularSqrt modularSqrtEngine_big = new ModularSqrt();
+			for (int i = primeBaseSize-1; i>0; i--) {
+				int p = primesArray[i];
+				BigInteger pBig = BigInteger.valueOf(p);
+				BigInteger kN_mod_p = kN.mod(pBig);
+				if (kN_mod_p.compareTo(I_0) > 0) {
+					Ensure.ensureEquals(modularSqrtEngine_big.modularSqrt(kN, p), tArray[i]);
+					Ensure.ensureEquals(modularSqrtEngine_big.modularSqrt(kN_mod_p, p), tArray[i]);
+				} else {
+					Ensure.ensureEquals(0, tArray[i]);
+				}
+				LOG.debug("kN=" + kN + ", p=" + p + ", kN%p = " + kN_mod_p + " -> t=" + tArray[i]);
+			}
+		}
 		return tArray;
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -13,7 +13,8 @@
  */
 package de.tilman_neumann.jml.factor.base;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * A reused buffer to store small factors temporarily during trial division.
@@ -22,7 +23,7 @@ import org.apache.log4j.Logger;
 // XXX: add() methods might profit from binary search and arraycopy()
 public class SortedIntegerArray {
 	@SuppressWarnings("unused")
-	private static final Logger LOG = Logger.getLogger(SortedIntegerArray.class);
+	private static final Logger LOG = LogManager.getLogger(SortedIntegerArray.class);
 	
 	private int[] factors;
 	private short[] exponents;
@@ -33,6 +34,18 @@ public class SortedIntegerArray {
 		this.exponents = new short[50];
 	}
 	
+	/**
+	 * Copy constructor.
+	 * @param original
+	 */
+	public SortedIntegerArray(SortedIntegerArray original) {
+		this.factors = new int[50];
+		this.exponents = new short[50];
+		this.size = original.size;
+		System.arraycopy(original.factors, 0, this.factors, 0, size);
+		System.arraycopy(original.exponents, 0, this.exponents, 0, size);
+	}
+
 	/**
 	 * reset() must be called before using for a new Q.
 	 */

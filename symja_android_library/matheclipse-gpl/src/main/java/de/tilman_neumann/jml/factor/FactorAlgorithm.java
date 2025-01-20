@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -13,17 +13,18 @@
  */
 package de.tilman_neumann.jml.factor;
 
-import static de.tilman_neumann.jml.base.BigIntConstants.*;
-
+import static de.tilman_neumann.jml.base.BigIntConstants.I_0;
+import static de.tilman_neumann.jml.base.BigIntConstants.I_1;
+import static de.tilman_neumann.jml.base.BigIntConstants.I_2;
+import static de.tilman_neumann.jml.base.BigIntConstants.I_MINUS_1;
 import java.math.BigInteger;
-
-import org.apache.log4j.Logger;
-import org.matheclipse.core.numbertheory.SortedMultiset;
-import org.matheclipse.core.numbertheory.SortedMultiset_BottomUp;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import de.tilman_neumann.jml.factor.base.FactorArguments;
 import de.tilman_neumann.jml.factor.base.FactorResult;
 import de.tilman_neumann.jml.primes.probable.BPSWTest;
+import de.tilman_neumann.util.SortedMultiset;
+import de.tilman_neumann.util.SortedMultiset_BottomUp;
 
 /**
  * Abstraction of integer factorization algorithms.
@@ -33,12 +34,9 @@ import de.tilman_neumann.jml.primes.probable.BPSWTest;
  * @author Tilman Neumann
  */
 abstract public class FactorAlgorithm {
-	private static final Logger LOG = Logger.getLogger(FactorAlgorithm.class);
+	private static final Logger LOG = LogManager.getLogger(FactorAlgorithm.class);
 	
 	private static final boolean DEBUG = false;
-	
-	/** The best available single-threaded factor algorithm. (multi-threading may not always be wanted) */
-	public static final FactorAlgorithm DEFAULT = new CombinedFactorAlgorithm(1);
 	
 	/** the number of primes needed to factor any int <= 2^31 - 1 using trial division */
 	protected static final int NUM_PRIMES_FOR_31_BIT_TDIV = 4793;
@@ -47,6 +45,18 @@ abstract public class FactorAlgorithm {
 	
 	protected Integer tdivLimit;
 	
+	private static FactorAlgorithm DEFAULT = null;
+
+	/**
+	 * @return The best available single-threaded factor algorithm. (multi-threading may not always be wanted)
+	 */
+	public static FactorAlgorithm getDefault() {
+		if (DEFAULT == null) {
+			DEFAULT = new CombinedFactorAlgorithm(1);
+		}
+		return DEFAULT;
+	}
+
 	public FactorAlgorithm() {
 		tdivLimit = null; // automatic determination based on experimental results
 	}
@@ -77,7 +87,7 @@ abstract public class FactorAlgorithm {
 	 * @param N Number to factor.
 	 * @param primeFactors a map to which found factors are added
 	 */
-	public void factor(BigInteger N, SortedMultiset<BigInteger> primeFactors) {
+    public void factor(BigInteger N, SortedMultiset<BigInteger> primeFactors) {
 		// Make N positive
 		if (N.signum()<0) {
 			primeFactors.add(I_MINUS_1);
@@ -170,7 +180,7 @@ abstract public class FactorAlgorithm {
 	
 	/**
 	 * Find a single factor of the given N, which is composite and odd.
-	 * @param N
+	 * @param N number to be factored.
 	 * @return factor
 	 */
 	abstract public BigInteger findSingleFactor(BigInteger N);

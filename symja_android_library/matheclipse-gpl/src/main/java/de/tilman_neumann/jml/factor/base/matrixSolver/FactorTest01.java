@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -16,12 +16,14 @@ package de.tilman_neumann.jml.factor.base.matrixSolver;
 import java.math.BigInteger;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-import org.matheclipse.core.numbertheory.SortedMultiset;
-import org.matheclipse.core.numbertheory.SortedMultiset_BottomUp;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.factor.FactorException;
 import de.tilman_neumann.jml.factor.base.congruence.AQPair;
+import de.tilman_neumann.util.Ensure;
+import de.tilman_neumann.util.SortedMultiset;
+import de.tilman_neumann.util.SortedMultiset_BottomUp;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
@@ -31,7 +33,7 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
  * @author Tilman Neumann
  */
 public class FactorTest01 implements FactorTest {
-	private static final Logger LOG = Logger.getLogger(FactorTest01.class);
+	private static final Logger LOG = LogManager.getLogger(FactorTest01.class);
 	private static final boolean DEBUG = false;
 
 	private BigInteger N;
@@ -91,7 +93,7 @@ public class FactorTest01 implements FactorTest {
 			// verify congruence A^2 == Q (mod N)
 			BigInteger totalQ = totalQSqrt.multiply(totalQSqrt);
 			BigInteger div[] = AProd.pow(2).subtract(totalQ).divideAndRemainder(N);
-//			assertEquals(I_0, div[1]);
+			Ensure.ensureEquals(I_0, div[1]);
 			LOG.debug("A^2-Q = " + div[0] + " * N");
 			LOG.debug("A^2 % N = " + AProd.pow(2).mod(N) + ", Q = " + totalQ);
 		}

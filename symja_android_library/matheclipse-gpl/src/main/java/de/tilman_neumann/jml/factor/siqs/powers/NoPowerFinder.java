@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -29,13 +29,24 @@ public class NoPowerFinder implements PowerFinder {
 		return "noPowers";
 	}
 	
-	public BaseArrays addPowers(BigInteger kN, int[] primes, int[] tArray, byte[] logPArray, double[] pinvArrayD, long[] pinvArrayL, int primeBaseSize, SieveParams sieveParams) {
+	/**
+	 * Find powers and add them to the prime base.
+	 * @param kN
+	 * @param primes
+	 * @param tArray
+	 * @param logPArray
+	 * @param pinvArrayL 2^32/p_i, required by Barrett reduction
+	 * @param primeBaseSize
+	 * @param sieveParams basic sieve parameters
+	 * @return BaseArrays containing powers
+	 */
+	public BaseArrays addPowers(BigInteger kN, int[] primes, int[] tArray, byte[] logPArray, long[] pinvArrayL, int primeBaseSize, SieveParams sieveParams) {
 		//all exponents are 1
 		int [] exponents = new int[primeBaseSize];
 		for (int i=primeBaseSize-1; i >= 0; i--) {
 			exponents[i] = 1;
 		}
 		
-		return new BaseArrays(primes, exponents, primes, tArray, logPArray, pinvArrayD, pinvArrayL);
+		return new BaseArrays(primes, exponents, primes, tArray, logPArray, pinvArrayL);
 	}
 }

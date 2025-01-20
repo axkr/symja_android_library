@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -17,23 +17,25 @@ import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.factor.siqs.data.BaseArrays;
 import de.tilman_neumann.jml.factor.siqs.sieve.SieveParams;
+import de.tilman_neumann.util.Ensure;
 
 /**
  * Base class for PowerFinders that do indeed find some powers.
  * @author Tilman Neumann
  */
 abstract public class SomePowerFinder implements PowerFinder {
-	private static final Logger LOG = Logger.getLogger(SomePowerFinder.class);
+	private static final Logger LOG = LogManager.getLogger(SomePowerFinder.class);
 	private static final boolean DEBUG = false;
 
 	@Override
-	public BaseArrays addPowers(BigInteger kN, int[] primes, int[] tArray, byte[] logPArray, double[] reciprocals, long[] pinvs, int primeBaseSize, SieveParams sieveParams) {
+	public BaseArrays addPowers(BigInteger kN, int[] primes, int[] tArray, byte[] logPArray, long[] pinvs, int primeBaseSize, SieveParams sieveParams) {
 		TreeSet<PowerEntry> powers = findPowers(kN, primes, tArray, primeBaseSize, sieveParams);
-		return mergePrimesAndPowers(primes, tArray, logPArray, reciprocals, pinvs, primeBaseSize, powers);
+		return mergePrimesAndPowers(primes, tArray, logPArray, pinvs, primeBaseSize, powers);
 	}
 
 	/**
@@ -53,11 +55,12 @@ abstract public class SomePowerFinder implements PowerFinder {
 	 * @param primesArray
 	 * @param tArray
 	 * @param logPArray
+	 * @param pinvArrayL 2^32/p_i, required by Barrett reduction
 	 * @param primeBaseSize
 	 * @param powerEntries
 	 * @return
 	 */
-	private BaseArrays mergePrimesAndPowers(int[] primesArray, int[] tArray, byte[] logPArray, double[] pinvArrayD, long[] pinvArrayL, int primeBaseSize, TreeSet<PowerEntry> powerEntries) {
+	private BaseArrays mergePrimesAndPowers(int[] primesArray, int[] tArray, byte[] logPArray, long[] pinvArrayL, int primeBaseSize, TreeSet<PowerEntry> powerEntries) {
 		int powerCount = powerEntries.size();
 		BaseArrays baseArrays = new BaseArrays(primeBaseSize + powerCount);
 		int[] mergedPrimes = baseArrays.primes;
@@ -65,7 +68,6 @@ abstract public class SomePowerFinder implements PowerFinder {
 		int[] mergedPowers = baseArrays.pArray;
 		int[] mergedTArray = baseArrays.tArray;
 		byte[] mergedlogPArray = baseArrays.logPArray;
-		double[] mergedPinvArrayD = baseArrays.pinvArrayD;
 		long[] mergedPinvArrayL = baseArrays.pinvArrayL;
 
 		int mergedIndex = 0;
@@ -82,7 +84,6 @@ abstract public class SomePowerFinder implements PowerFinder {
 					mergedPowers[mergedIndex] = primesArray[pIndex];
 					mergedTArray[mergedIndex] = tArray[pIndex];
 					mergedlogPArray[mergedIndex] = logPArray[pIndex];
-					mergedPinvArrayD[mergedIndex] = pinvArrayD[pIndex];
 					mergedPinvArrayL[mergedIndex] = pinvArrayL[pIndex];
 					mergedIndex++;
 					// get next p
@@ -100,7 +101,6 @@ abstract public class SomePowerFinder implements PowerFinder {
 					mergedPowers[mergedIndex] = powerEntry.power;
 					mergedTArray[mergedIndex] = powerEntry.t;
 					mergedlogPArray[mergedIndex] = powerEntry.logPower;
-					mergedPinvArrayD[mergedIndex] = powerEntry.pinvD;
 					mergedPinvArrayL[mergedIndex] = powerEntry.pinvL;
 					mergedIndex++;
 					// get next power
@@ -120,13 +120,12 @@ abstract public class SomePowerFinder implements PowerFinder {
 			mergedPowers[mergedIndex] = primesArray[pIndex];
 			mergedTArray[mergedIndex] = tArray[pIndex];
 			mergedlogPArray[mergedIndex] = logPArray[pIndex];
-			mergedPinvArrayD[mergedIndex] = pinvArrayD[pIndex];
 			mergedPinvArrayL[mergedIndex] = pinvArrayL[pIndex];
 		}
-//		if (DEBUG) {
-//			LOG.debug("#primes = " + primeBaseSize + ", #powers = " + powerCount);
-//			assertEquals(primeBaseSize + powerCount, mergedIndex);
-//		}
+		if (DEBUG) {
+			LOG.debug("#primes = " + primeBaseSize + ", #powers = " + powerCount);
+			Ensure.ensureEquals(primeBaseSize + powerCount, mergedIndex);
+		}
 		return baseArrays;
 	}
 }

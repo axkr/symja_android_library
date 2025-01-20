@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -15,14 +15,17 @@ package de.tilman_neumann.jml.modular;
 
 import java.math.BigInteger;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
+import de.tilman_neumann.util.Ensure;
 
 /**
  * Compute modular sqrts t with t^2 == n (mod p) and u with u^2 == n (mod p^e) using Tonelli-Shanks' algorithm.
  * @author Tilman Neumann
  */
 public class ModularSqrt31 {
-	private static final Logger LOG = Logger.getLogger(ModularSqrt31.class);
+	private static final Logger LOG = LogManager.getLogger(ModularSqrt31.class);
 	private static final boolean DEBUG = false;
 
 	private ModularPower mpe = new ModularPower();
@@ -37,15 +40,16 @@ public class ModularSqrt31 {
 	 * @return (the smaller) sqrt of n (mod p)
 	 */
 	public int modularSqrt(int n, int p) {
-//		if (DEBUG) {
-//			BigInteger p_big = BigInteger.valueOf(p);
-//			assertTrue(p%2==1 && p_big.isProbablePrime(20)); // p odd prime
-//			// Tonelli_Shanks requires Legendre(n|p)==1, 0 is not ok. But this is easy to "heal":
-//			// Since p is prime, Legendre(n|p)==0 means that n is a multiple of p.
-//			// Thus n mod p == 0 and the square of this is 0, too.
-//			// So if the following assert fails, just test n mod p == 0 before calling this method.
-//			assertTrue(jacobiEngine.jacobiSymbol(n, p)==1);
-//		}
+		if (DEBUG) {
+			// p odd prime
+			Ensure.ensureEquals(p%2, 1);
+			Ensure.ensureTrue(BigInteger.valueOf(p).isProbablePrime(20));
+			// Tonelli_Shanks requires Legendre(n|p)==1, 0 is not ok. But this is easy to "heal":
+			// Since p is prime, Legendre(n|p)==0 means that n is a multiple of p.
+			// Thus n mod p == 0 and the square of this is 0, too.
+			// So if the following assert fails, just test n mod p == 0 before calling this method.
+			Ensure.ensureEquals(jacobiEngine.jacobiSymbol(n, p), 1);
+		}
 		int pMod8 = p&7;
 		switch (pMod8) {
 		case 1: 		
@@ -75,11 +79,11 @@ public class ModularSqrt31 {
 		// factor out powers of 2 from p-1, defining Q and S as p-1 = Q*2^S with Q odd.
 		int pm1 = p-1;
 		int S = Integer.numberOfTrailingZeros(pm1); // lowest set bit (0 if pm1 were odd which is impossible because p is odd)
-//		if (DEBUG) {
-//			LOG.debug("n=" + n + ", p=" + p);
-//			assertEquals(1, jacobiEngine.jacobiSymbol(n, p));
-//			assertTrue(S > 1); // S=1 is the Lagrange case p == 3 (mod 4), but we check it nonetheless.
-//		}
+		if (DEBUG) {
+			LOG.debug("n=" + n + ", p=" + p);
+			Ensure.ensureEquals(1, jacobiEngine.jacobiSymbol(n, p));
+			Ensure.ensureGreater(S, 1); // S=1 is the Lagrange case p == 3 (mod 4), but we check it nonetheless.
+		}
 		int Q = pm1>>S;
 		// find some z with Legendre(z|p)==-1, i.e. z being a quadratic non-residue (mod p)
 		int z;
@@ -93,13 +97,13 @@ public class ModularSqrt31 {
 		int M = S;
 		while (t!=1) { // if t=1 then R is the result
 			// find the smallest i, 0<i<M, such that t^(2^i) == 1 (mod p)
-//			if (DEBUG) {
-//				LOG.debug("Find i < M=" + M + " with t=" + t);
-//				// test invariants from <link>https://en.wikipedia.org/wiki/Tonelli%E2%80%93Shanks_algorithm#Proof</link>:
-//				assertEquals(p-1, mpe.modPow(c, 1<<(M-1), p));  //  -1 == c^(2^(M-1)) (mod p)
-//				assertEquals(1, mpe.modPow(t, 1<<(M-1), p));    //   1 == t^(2^(M-1)) (mod p)
-//				assertEquals((R*(long)R) % p, (t*(long)n) % p); // R^2 == t*n (mod p)
-//			}
+			if (DEBUG) {
+				LOG.debug("Find i < M=" + M + " with t=" + t);
+				// test invariants from <link>https://en.wikipedia.org/wiki/Tonelli%E2%80%93Shanks_algorithm#Proof</link>:
+				Ensure.ensureEquals(p-1, mpe.modPow(c, 1<<(M-1), p));  //  -1 == c^(2^(M-1)) (mod p)
+				Ensure.ensureEquals(1, mpe.modPow(t, 1<<(M-1), p));    //   1 == t^(2^(M-1)) (mod p)
+				Ensure.ensureEquals((R*(long)R) % p, (t*(long)n) % p); // R^2 == t*n (mod p)
+			}
 			boolean foundI = false;
 			int i;
 			for (i=1; i<M; i++) {
@@ -116,7 +120,7 @@ public class ModularSqrt31 {
 			t = (int) ((t*(long)c) % p);
 			M = i;
 		}
-//		if (DEBUG) assertEquals(BigInteger.valueOf(R).pow(2).mod(BigInteger.valueOf(p)), BigInteger.valueOf(n%p));
+		if (DEBUG) Ensure.ensureEquals(BigInteger.valueOf(R).pow(2).mod(BigInteger.valueOf(p)), BigInteger.valueOf(n%p));
 		// return the smaller sqrt
 		return R <= (p>>1) ? R : p-R;
 	}
@@ -129,7 +133,7 @@ public class ModularSqrt31 {
 	 */
 	int Lagrange(int n, int p) { // not private because used in tests
 		int t = mpe.modPow(n, (p+1)>>2, p);
-//		if (DEBUG) assertEquals(BigInteger.valueOf(t).pow(2).mod(BigInteger.valueOf(p)), BigInteger.valueOf(n%p));
+		if (DEBUG) Ensure.ensureEquals(BigInteger.valueOf(t).pow(2).mod(BigInteger.valueOf(p)), BigInteger.valueOf(n%p));
 		// return the smaller sqrt
 		return t <= (p>>1) ? t : p-t;
 	}
@@ -153,11 +157,11 @@ public class ModularSqrt31 {
 		if (DEBUG) {
 			// We have i = (2a)^(p-1)/4 (mod p). This looks closely related to Euler's criterion a^(p-1)/2 (mod p) == +-1 and the Legendre symbol definition.
 			long i2 = mpe.modPow(n2, (p-1)/4, p);
-//			assertEquals(i, i2);
+			Ensure.ensureEquals(i, i2);
 			LOG.debug("n=" + n + ", p=" + p + ", i=" + i + ", i2=" + i2);
 			LOG.debug("k=" + k + ", n2=" + n2 + ", g=" + g + ", gSquare=" + gSquare + ", i=" + i + ", ng=" + ng + ", t=" + t);
 			BigInteger p_big = BigInteger.valueOf(p);
-//			assertEquals(BigInteger.valueOf(t).pow(2).mod(p_big), BigInteger.valueOf(n%p));
+			Ensure.ensureEquals(BigInteger.valueOf(t).pow(2).mod(p_big), BigInteger.valueOf(n%p));
 		}
 		// return the smaller sqrt
 		return t <= (p>>1) ? t : p-t;
@@ -186,10 +190,10 @@ public class ModularSqrt31 {
 			}
 		}
 		//if (!foundT) LOG.error("ERROR: Failed to find t with t^2==" + n + " (mod " + p + ") !");
-//		if (DEBUG) {
-//			BigInteger p_big = BigInteger.valueOf(p);
-//			assertEquals(BigInteger.valueOf(t).pow(2).mod(p_big), BigInteger.valueOf(n%p));
-//		}
+		if (DEBUG) {
+			BigInteger p_big = BigInteger.valueOf(p);
+			Ensure.ensureEquals(BigInteger.valueOf(t).pow(2).mod(p_big), BigInteger.valueOf(n%p));
+		}
 		// return the smaller sqrt
 		return t <= (p>>1) ? t : p-t;
 	}

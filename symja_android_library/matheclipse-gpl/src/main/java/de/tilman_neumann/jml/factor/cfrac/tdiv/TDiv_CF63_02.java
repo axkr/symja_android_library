@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -15,18 +15,19 @@ package de.tilman_neumann.jml.factor.cfrac.tdiv;
 
 import java.math.BigInteger;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.factor.base.SortedIntegerArray;
 import de.tilman_neumann.jml.factor.base.SortedLongArray;
 import de.tilman_neumann.jml.factor.base.congruence.AQPair;
 import de.tilman_neumann.jml.factor.base.congruence.AQPairFactory;
-import de.tilman_neumann.jml.factor.base.congruence.Smooth_Perfect;
-import de.tilman_neumann.jml.factor.hart.Hart_TDiv_Race;
-import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomery64;
-import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomeryR64Mul63;
+import de.tilman_neumann.jml.factor.base.congruence.SmoothPerfect;
+import de.tilman_neumann.jml.factor.hart.HartTDivRace;
+import de.tilman_neumann.jml.factor.pollardRho.PollardRhoBrentMontgomery64MHInlined;
 import de.tilman_neumann.jml.factor.tdiv.TDiv31Inverse;
 import de.tilman_neumann.jml.primes.probable.PrPTest;
+import de.tilman_neumann.util.Ensure;
 
 /**
  * Auxiliary factor algorithm to find smooth decompositions of Q's.
@@ -37,7 +38,7 @@ import de.tilman_neumann.jml.primes.probable.PrPTest;
  * @author Tilman Neumann
  */
 public class TDiv_CF63_02 implements TDiv_CF63 {
-	private static final Logger LOG = Logger.getLogger(TDiv_CF63_02.class);
+	private static final Logger LOG = LogManager.getLogger(TDiv_CF63_02.class);
 	private static final boolean DEBUG = false;
 
 	private int primeBaseSize;
@@ -46,12 +47,11 @@ public class TDiv_CF63_02 implements TDiv_CF63 {
 	private long pMaxSquare;
 
 	/** Q is sufficiently smooth if the unfactored Q_rest is smaller than this bound depending on N */
-	private double maxQRest;
+	private double smoothBound;
 
 	private TDiv31Inverse tDiv31 = new TDiv31Inverse();
-	private Hart_TDiv_Race hart = new Hart_TDiv_Race();
-	private PollardRhoBrentMontgomeryR64Mul63 pollardRhoR64Mul63 = new PollardRhoBrentMontgomeryR64Mul63();
-	private PollardRhoBrentMontgomery64 pollardRho64 = new PollardRhoBrentMontgomery64();
+	private HartTDivRace hart = new HartTDivRace();
+	private PollardRhoBrentMontgomery64MHInlined pollardRho64 = new PollardRhoBrentMontgomery64MHInlined();
 	
 	private PrPTest prpTest = new PrPTest();
 
@@ -65,8 +65,8 @@ public class TDiv_CF63_02 implements TDiv_CF63 {
 		return "TDiv63-02";
 	}
 
-	public void initialize(BigInteger N, double maxQRest) {
-		this.maxQRest = maxQRest;
+	public void initialize(BigInteger N, double smoothBound) {
+		this.smoothBound = smoothBound;
 	}
 
 	public void initialize(BigInteger kN, int primeBaseSize, int[] primesArray) {
@@ -116,7 +116,7 @@ public class TDiv_CF63_02 implements TDiv_CF63 {
 				}
 			} // end while (trialDivIndex < primeBaseSize)
 		}
-//		if (DEBUG) assertTrue(Q_rest>1);
+		if (DEBUG) Ensure.ensureGreater(Q_rest, 1);
 		if (Q_rest_bits<32) {
 			int Q_rest_int = (int) Q_rest;
 			while (trialDivIndex < primeBaseSize) {
@@ -129,13 +129,13 @@ public class TDiv_CF63_02 implements TDiv_CF63 {
 				}
 				trialDivIndex++;
 			} // end while (trialDivIndex < primeBaseSize)
-			if (Q_rest_int==1) return new Smooth_Perfect(A, smallFactors);
+			if (Q_rest_int==1) return new SmoothPerfect(A, smallFactors);
 			Q_rest = (long) Q_rest_int; // keep Q_rest up-to-date
 		}
 
 		// trial division was not sufficient to factor Q completely.
 		// the remaining Q is either a prime > pMax, or a composite > pMax^2.
-		if (Q_rest > maxQRest) return null; // Q is not sufficiently smooth
+		if (Q_rest > smoothBound) return null; // Q is not sufficiently smooth
 		 
 		// now we consider Q as sufficiently smooth. then we want to know all prime factors, as long as we do not find one that is too big to be useful.
 		//LOG.debug("before factor_recurrent()");
@@ -147,7 +147,7 @@ public class TDiv_CF63_02 implements TDiv_CF63 {
 	private boolean factor_recurrent(long Q_rest) {
 		if (Q_rest < pMaxSquare) {
 			// we divided Q_rest by all primes <= pMax and the rest is < pMax^2 -> it must be prime
-//			if (DEBUG) assertTrue(prpTest.isProbablePrime(Q_rest));
+			if (DEBUG) Ensure.ensureTrue(prpTest.isProbablePrime(Q_rest));
 			if (bitLength(Q_rest) > 31) return false;
 			bigFactors.add((int)Q_rest);
 			return true;
@@ -160,16 +160,14 @@ public class TDiv_CF63_02 implements TDiv_CF63 {
 			return true;
 		} // else: Q_rest is surely not prime
 
-		// Find a factor of Q_rest, where Q_rest is pMax < Q_rest <= maxQRest, composite and odd.
+		// Find a factor of Q_rest, where Q_rest is pMax < Q_rest <= smoothBound, composite and odd.
 		long factor1;
 		int Q_rest_bits = bitLength(Q_rest);
 		if (Q_rest_bits < 25) {
 			factor1 = tDiv31.findSingleFactor((int) Q_rest);
 		} else if (Q_rest_bits < 50) {
 			factor1 = hart.findSingleFactor(Q_rest);
-		} else if (Q_rest_bits < 57) {
-			factor1 = pollardRhoR64Mul63.findSingleFactor(Q_rest);
-		} else { // max Q_rest_bits is 63, pollardRho64 works only until 62 bit, but that should be ok
+		} else { // max Q_rest_bits is 63, pollardRho64 works only until 63 bit, but that should be ok
 			factor1 = pollardRho64.findSingleFactor(Q_rest);
 		}
 		// Recurrence: Is it possible to further decompose the parts?

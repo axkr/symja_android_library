@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -14,14 +14,13 @@
 package de.tilman_neumann.jml;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-import org.matheclipse.core.numbertheory.SortedMultiset;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithm;
-import de.tilman_neumann.util.ConfigUtil;
+import de.tilman_neumann.util.SortedMultiset;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
@@ -31,8 +30,9 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
  * @author Tilman Neumann
  */
 public class MoebiusFunction {
-	private static final Logger LOG = Logger.getLogger(MoebiusFunction.class);
-	
+	private static final Logger LOG = LogManager.getLogger(MoebiusFunction.class);
+	private static final boolean DEBUG = false;
+
 	private MoebiusFunction() {
 		// static class, not instantiable
 	}
@@ -56,16 +56,16 @@ public class MoebiusFunction {
 			return 1;
 		}
 		
-		// factorize n:
-		SortedMultiset<BigInteger> factors = FactorAlgorithm.DEFAULT.factor(n);
-		//LOG.debug("factors of " + n + " = " + factors);
+		// factorize n
+		SortedMultiset<BigInteger> factors = FactorAlgorithm.getDefault().factor(n);
+		if (DEBUG) LOG.debug("factors of " + n + " = " + factors);
 		
 		if (factors==null || factors.size()==0) {
 			// n is prime
 			return -1;
 		}
 		
-		// accumulate number of different primes in k:
+		// accumulate number of different primes in k
 		int k = 1;
 		for (Map.Entry<BigInteger, Integer> factorAndMultiplicity : factors.entrySet()) {
 			final int e = factorAndMultiplicity.getValue().intValue();
@@ -76,24 +76,6 @@ public class MoebiusFunction {
 				k = -k;
 			}
 		}
-		// return (-1)^k:
 		return k;
-	}
-
-	/**
-	 * Tests.
-	 * 
-	 * @param args Ignored
-	 */
-	public static void main(String[] args) {
-    	ConfigUtil.initProject();
-    	int nMax = 100;
-		ArrayList<Integer> results = new ArrayList<>();
-		for (int n=1; n<nMax; n++) {
-			BigInteger bigN = BigInteger.valueOf(n);
-			results.add(moebius(bigN));
-		}
-		LOG.info("Moebius function = " + results);
-		// Result: 1, -1, -1, 0, -1, 1, -1, 0, 0, 1, -1, 0, -1, 1, 1, 0, -1, 0, -1, 0, 1, 1, -1, 0, 0, ...
 	}
 }

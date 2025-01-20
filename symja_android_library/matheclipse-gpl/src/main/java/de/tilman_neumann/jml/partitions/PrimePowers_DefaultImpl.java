@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -15,20 +15,18 @@ package de.tilman_neumann.jml.partitions;
 
 import java.math.BigInteger;
 import java.util.Map;
-import java.util.SortedSet;
 
-import org.apache.log4j.Logger;
-import org.matheclipse.core.numbertheory.SortedMultiset;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
-import de.tilman_neumann.jml.Divisors;
 import de.tilman_neumann.jml.factor.FactorAlgorithm;
-import de.tilman_neumann.util.ConfigUtil;
+import de.tilman_neumann.util.SortedMultiset;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
 public class PrimePowers_DefaultImpl extends Mpi_IntegerArrayImpl implements PrimePowers {
 	
-	private static final Logger LOG = Logger.getLogger(PrimePowers_DefaultImpl.class);
+	private static final Logger LOG = LogManager.getLogger(PrimePowers_DefaultImpl.class);
 	private static final boolean DEBUG = false;
 	
 	private BigInteger[] primes;
@@ -81,39 +79,11 @@ public class PrimePowers_DefaultImpl extends Mpi_IntegerArrayImpl implements Pri
 	 * @return PrimePowers
 	 */
 	public static PrimePowers valueOf(BigInteger n) {
-		SortedMultiset<BigInteger> factors = FactorAlgorithm.DEFAULT.factor(n);
+		SortedMultiset<BigInteger> factors = FactorAlgorithm.getDefault().factor(n);
 		return PrimePowers_DefaultImpl.createFrom(factors);
 	}
 
 	public BigInteger getPrime(int index) {
 		return primes[index];
-	}
-	
-	/**
-	 * Check relationship between set of divisors and powermap.
-	 * Hypothesis confirmed from 0..203846.
-	 * 
-	 * @param args ignored
-	 */
-	public static void main(String[] args) {
-		ConfigUtil.initProject();
-		for (int n=0; n<1000; n++) {
-			BigInteger bigN = BigInteger.valueOf(n);
-			SortedSet<BigInteger> divisors = Divisors.getDivisors(bigN);
-			int numberOfDivisors = divisors.size();
-			PrimePowers primePowers = PrimePowers_DefaultImpl.valueOf(bigN);
-			MpiPowerMap powerMap = MpiPowerMap.create(primePowers);
-			int powerMapSize = powerMap.size();
-			LOG.info("n=" + n + " has " + numberOfDivisors + " divisors, and power map has " + powerMapSize + " entries");
-			int correctedPowerMapSize = n>0 ? powerMapSize + primePowers.getDim() + 1 : 0;
-			LOG.info("correctedPowerMapSize = " + correctedPowerMapSize);
-			// the power map is missing the unit entries (only one prime) and the empty entry!
-			if (numberOfDivisors!=correctedPowerMapSize) {
-				LOG.info("n = " + n);
-				LOG.info("divisors = " + divisors);
-				LOG.info("powerMap = " + powerMap);
-				throw new IllegalStateException("my hypothesis is wrong for n=" + n);
-			}
-		}
 	}
 }

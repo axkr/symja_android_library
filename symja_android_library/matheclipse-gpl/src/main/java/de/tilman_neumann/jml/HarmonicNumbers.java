@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -20,14 +20,11 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 
-import org.apache.log4j.Logger;
-
 import de.tilman_neumann.jml.base.BigRational;
 import de.tilman_neumann.jml.combinatorics.Binomial;
 import de.tilman_neumann.jml.precision.Scale;
 import de.tilman_neumann.jml.transcendental.EulerConstant;
 import de.tilman_neumann.jml.transcendental.Ln;
-import de.tilman_neumann.util.ConfigUtil;
 
 /**
  * Computation of harmonic and "hyper-harmonic" numbers.
@@ -35,7 +32,6 @@ import de.tilman_neumann.util.ConfigUtil;
  * @author Tilman Neumann
  */
 public class HarmonicNumbers {
-	private static final Logger LOG = Logger.getLogger(HarmonicNumbers.class);
 
 	private HarmonicNumbers() {
 		// static class
@@ -184,81 +180,5 @@ public class HarmonicNumbers {
 		if (r<1) throw new IllegalArgumentException("argument r must be positive, but is " + r);
 		// r==1
 		return harmonic(n);
-	}
-	
-	private static void print(BigRational[] arr) {
-		StringBuffer bu = new StringBuffer();
-		for (int i=0;i<arr.length; i++) {
-			if (i>0) bu.append(" ");
-			bu.append(arr[i]);
-		}
-		LOG.info(bu.toString());
-	}
-
-	private static void print(BigRational[][] arr) {
-		for (int i=0;i<arr.length; i++) {
-			print(arr[i]);
-		}
-	}
-	
-	@SuppressWarnings("unused")
-	private static void computeAndPrintHyperharmonic_recurrent(int nMax, int rMax) {
-    	BigRational[][] results = new BigRational[nMax][rMax];
-    	for (int n=1; n<=nMax; n++) {
-    		results[n-1] = new BigRational[rMax];
-        	for (int r=1; r<=rMax; r++) {
-        		results[n-1][r-1] = hyperharmonic_recurrent(n,r);
-        	}
-    	}
-    	print(results);
-	}
-	
-	private static void computeAndPrintHyperharmonic_closedForm(int nMax, int rMax) {
-    	BigRational[][] results = new BigRational[nMax][rMax];
-    	for (int n=1; n<=nMax; n++) {
-    		results[n-1] = new BigRational[rMax];
-        	for (int r=1; r<=rMax; r++) {
-        		results[n-1][r-1] = hyperharmonic_closedForm(n,r);
-        	}
-    	}
-    	print(results);
-	}
-
-	private static void computeAndPrintHarmonicPowers(int nMax, int rMax) {
-    	BigRational[][] results = new BigRational[nMax][rMax];
-    	for (int n=1; n<=nMax; n++) {
-    		results[n-1] = new BigRational[rMax];
-        	for (int r=1; r<=rMax; r++) {
-        		results[n-1][r-1] = harmonicPower(n,r);
-        	}
-    	}
-    	print(results);
-	}
-
-	private static void printHarmonic() {
-		int n = 2;
-		for (int i=0; i<15; i++) {
-			BigDecimal h = harmonic(n).toBigDecimal(Scale.valueOf(20));
-			LOG.info("H(" + n + ") = " + h);
-			n *= 2;
-		}
-	}
-	
-	public static void main(String[] args) {
-    	ConfigUtil.initProject();
-    	
-    	printHarmonic();
-
-    	int nMax = 10;
-    	int rMax = 10;
-    	LOG.info("nMax = " + nMax + ", rMax = " + rMax);
-    	computeAndPrintHyperharmonic_recurrent(nMax, rMax);
-    	LOG.info("");
-    	computeAndPrintHyperharmonic_closedForm(nMax, rMax);
-    	LOG.info("");
-    	// result: both forms are equal
-    	
-    	computeAndPrintHarmonicPowers(nMax, rMax);
-    	// different, but very interesting !
 	}
 }

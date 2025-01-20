@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -16,20 +16,22 @@ package de.tilman_neumann.jml.factor.siqs.powers;
 import java.math.BigInteger;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.BinarySearch;
 import de.tilman_neumann.jml.base.UnsignedBigInt;
 import de.tilman_neumann.jml.factor.siqs.sieve.SieveParams;
 import de.tilman_neumann.jml.modular.JacobiSymbol;
 import de.tilman_neumann.jml.modular.ModularSqrt31;
+import de.tilman_neumann.util.Ensure;
 
 /**
  * Algorithm that finds all powers in [pMin, pMax].
  * @author Tilman Neumann
  */
 public class AllPowerFinder extends SomePowerFinder {
-	private static final Logger LOG = Logger.getLogger(AllPowerFinder.class);
+	private static final Logger LOG = LogManager.getLogger(AllPowerFinder.class);
 	private static final boolean DEBUG = false;
 
 	private BinarySearch binarySearch = new BinarySearch();
@@ -66,11 +68,11 @@ public class AllPowerFinder extends SomePowerFinder {
 			// exist only if Q(x) == 0 (mod p) has two distinct solutions. p must not divide disc(Q).
 			if (tArray[pIndex] != 0) {
 				int p = primes[pIndex];
-//				if (DEBUG) {
-//					// since we only use odd p with x1!=x2, t!=0, p not dividing k, we strictly have Legendre(kN|p) > 0
-//					int jacobi = new JacobiSymbol().jacobiSymbol(kN, p);
-//					assertTrue(jacobi>0);
-//				}
+				if (DEBUG) {
+					// since we only use odd p with x1!=x2, t!=0, p not dividing k, we strictly have Legendre(kN|p) > 0
+					int jacobi = new JacobiSymbol().jacobiSymbol(kN, p);
+					Ensure.ensureGreater(jacobi, 0);
+				}
 				long power_long = p; // long required to avoid int overflow before size check
 				for (int exponent=2; ; exponent++) {
 					int last_power = (int) power_long;
@@ -80,11 +82,11 @@ public class AllPowerFinder extends SomePowerFinder {
 						break;
 					}
 					int power = (int) power_long;
-//					if (DEBUG) {
-//						// The powers strictly have Jacobi(kN|p) > 0, too
-//						int jacobi = new JacobiSymbol().jacobiSymbol(kN, (int)power);
-//						assertTrue(jacobi>0);
-//					}
+					if (DEBUG) {
+						// The powers strictly have Jacobi(kN|p) > 0, too
+						int jacobi = new JacobiSymbol().jacobiSymbol(kN, (int)power);
+						Ensure.ensureGreater(jacobi, 0);
+					}
 					if (power>pMin) {
 						if (DEBUG) LOG.debug("Add power = " + p + "^" + exponent + " = " + power);
 						byte logPower;

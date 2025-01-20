@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -15,10 +15,7 @@ package de.tilman_neumann.jml.combinatorics;
 
 import java.math.BigInteger;
 
-import org.apache.log4j.Logger;
-
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
-import de.tilman_neumann.util.ConfigUtil;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
@@ -27,8 +24,6 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
  * @author Tilman Neumann
  */
 public class Factorial {
-
-	private static final Logger LOG = Logger.getLogger(Factorial.class);
 
 	private static final AutoExpandingPrimesArray PRIMES_ARRAY = new AutoExpandingPrimesArray().ensureLimit(1000);
 
@@ -40,7 +35,7 @@ public class Factorial {
 	 * @return n! if n is a non-negative integer
 	 * @throws IllegalArgumentException if n is a negative integer
 	 */
-	private static BigInteger simpleProduct(int n) throws IllegalArgumentException {
+	public static BigInteger simpleProduct(int n) throws IllegalArgumentException {
 		if (n >= 0) {
 			BigInteger ret = I_1;
 			for (int i=2; i<=n; i++) {
@@ -111,36 +106,5 @@ public class Factorial {
 			if (p>1) product = product.multiply(BigInteger.valueOf(p));
 		}
 		return product;
-	}
-	
-	/**
-	 * Test.
-	 * @param args Ignored.
-	 */
-	public static void main(String[] args) {
-    	ConfigUtil.initProject();
-    	
-    	// compute 1000! ten thousand times
-    	int n=1000;
-    	int numberOfTests = 10000;
-    	
-    	long start = System.currentTimeMillis();
-    	BigInteger result = null;
-    	for (int i=0; i<numberOfTests; i++) {
-    		result = simpleProduct(n);
-    	}
-    	long end = System.currentTimeMillis();
-    	LOG.info("simpleProduct(" + n + ") took " + (end-start) + "ms");
-    	
-    	start = System.currentTimeMillis();
-    	BigInteger resultLuschny = null;
-    	for (int i=0; i<numberOfTests; i++) {
-    		resultLuschny = factorial/*Luschny*/(n);
-    	}
-    	end = System.currentTimeMillis();
-    	LOG.info("factorialLuschny(" + n + ") took " + (end-start) + "ms");
-    	if (!resultLuschny.equals(result)) {
-    		LOG.error("factorialLuschny() computed wrong result!");
-    	}
 	}
 }

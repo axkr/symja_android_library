@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -16,7 +16,8 @@ package de.tilman_neumann.jml.base;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * A triangle of integers.
@@ -29,7 +30,7 @@ import org.apache.log4j.Logger;
 public class BigIntTriangle {
 	
 	@SuppressWarnings("unused")
-	private static final Logger LOG = Logger.getLogger(BigIntTriangle.class);
+	private static final Logger LOG = LogManager.getLogger(BigIntTriangle.class);
 
 	private static long count = 0;
 	private static Object syncObject = new Object();

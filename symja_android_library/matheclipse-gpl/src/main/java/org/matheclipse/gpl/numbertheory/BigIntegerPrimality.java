@@ -12,9 +12,9 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.numbertheory.Primality;
-import org.matheclipse.core.numbertheory.SortedMultiset;
-import org.matheclipse.core.numbertheory.SortedMultiset_BottomUp;
 import de.tilman_neumann.jml.factor.CombinedFactorAlgorithm;
+import de.tilman_neumann.util.SortedMultiset;
+import de.tilman_neumann.util.SortedMultiset_BottomUp;
 import edu.jas.arith.PrimeInteger;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
@@ -44,8 +44,8 @@ public class BigIntegerPrimality extends Primality {
    * @param sortedMap of all BigInteger primes and their associated exponents
    */
   @Override
-  public void factorInteger(BigInteger n, SortedMultiset<BigInteger> sortedMap) {
-
+  public void factorInteger(BigInteger n, SortedMap<BigInteger, Integer> sortedMap) {
+    SortedMultiset<BigInteger> map = new SortedMultiset_BottomUp<>();
     // Do trial division by all primes < 131072.
     // TDiv tdiv = new TDiv();
     // n = tdiv.findSmallFactors(n, 131072, map);
@@ -54,7 +54,15 @@ public class BigIntegerPrimality extends Primality {
     // }
 
     // if (n.compareTo(BigInteger.ONE) > 0) {
-    getFactorizer().factor(n, sortedMap);
+    getFactorizer().factor(n, map);
+    for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
+      Integer value = sortedMap.get(entry.getKey());
+      if (value != null) {
+        entry.setValue(entry.getValue() + value);
+      } else {
+        sortedMap.put(entry.getKey(), entry.getValue());
+      }
+    }
   }
 
   /**

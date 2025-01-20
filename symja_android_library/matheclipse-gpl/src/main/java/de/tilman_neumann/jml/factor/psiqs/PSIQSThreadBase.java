@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -16,15 +16,17 @@ package de.tilman_neumann.jml.factor.psiqs;
 import java.math.BigInteger;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.factor.base.congruence.AQPair;
-import de.tilman_neumann.jml.factor.base.congruence.CongruenceCollectorParallel;
+import de.tilman_neumann.jml.factor.base.congruence.CongruenceCollector;
 import de.tilman_neumann.jml.factor.siqs.data.BaseArrays;
 import de.tilman_neumann.jml.factor.siqs.poly.AParamGenerator;
 import de.tilman_neumann.jml.factor.siqs.poly.SIQSPolyGenerator;
 import de.tilman_neumann.jml.factor.siqs.poly.PolyReport;
 import de.tilman_neumann.jml.factor.siqs.sieve.Sieve;
+import de.tilman_neumann.jml.factor.siqs.sieve.SmoothCandidate;
 import de.tilman_neumann.jml.factor.siqs.sieve.SieveParams;
 import de.tilman_neumann.jml.factor.siqs.sieve.SieveReport;
 import de.tilman_neumann.jml.factor.siqs.tdiv.TDivReport;
@@ -35,13 +37,13 @@ import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS;
  * @author Tilman Neumann
  */
 abstract public class PSIQSThreadBase extends Thread {
-	private static final Logger LOG = Logger.getLogger(PSIQSThreadBase.class);
+	private static final Logger LOG = LogManager.getLogger(PSIQSThreadBase.class);
 	private static final boolean DEBUG = false;
 
 	protected SIQSPolyGenerator polyGenerator;
 	protected Sieve sieve;
 	protected TDiv_QS auxFactorizer;
-	private CongruenceCollectorParallel cc;
+	private CongruenceCollector congruenceCollector;
 	private boolean finishNow = false;
 
 	/**
@@ -62,7 +64,7 @@ abstract public class PSIQSThreadBase extends Thread {
 	public PSIQSThreadBase(
 			int k, BigInteger N, BigInteger kN, int d, SieveParams sieveParams, 
 			BaseArrays baseArrays, AParamGenerator apg, SIQSPolyGenerator polyGenerator,
-			Sieve sieve, TDiv_QS tdiv, CongruenceCollectorParallel cc, int threadIndex) {
+			Sieve sieve, TDiv_QS tdiv, CongruenceCollector cc, int threadIndex) {
 		
 		// set thread name
 		super("T-" + threadIndex);
@@ -71,7 +73,7 @@ abstract public class PSIQSThreadBase extends Thread {
 		this.polyGenerator = polyGenerator;
 		this.sieve = sieve;
 		this.auxFactorizer = tdiv;
-		this.cc = cc;
+		this.congruenceCollector = cc;
 		
 		// initialize polynomial generator and sub-engines
 		// apg is already initialized and the same object for all threads -> a-parameter generation is synchronized on it
@@ -84,23 +86,23 @@ abstract public class PSIQSThreadBase extends Thread {
 			polyGenerator.nextPolynomial();
 			
 			// run sieve and get the sieve locations x where Q(x) is sufficiently smooth
-			List<Integer> smoothXList = sieve.sieve();
+			Iterable<SmoothCandidate> smoothCandidates = sieve.sieve();
 			//LOG.debug("Sieve found " + smoothXList.size() + " Q(x) smooth enough to be passed to trial division.");
 
 			// trial division stage: produce AQ-pairs
-			List<AQPair> aqPairs = auxFactorizer.testList(smoothXList);
+			List<AQPair> aqPairs = auxFactorizer.testList(smoothCandidates);
 			//LOG.debug("Trial division found " + aqPairs.size() + " Q(x) smooth enough for a congruence.");
 
 			if (aqPairs.size()>0) {
 				// add all congruences synchronized and notify control thread
-				synchronized (cc) {
-					if (cc.factor == null) {
-						cc.collectAndProcessAQPairs(aqPairs);
+				synchronized (congruenceCollector) {
+					if (congruenceCollector.getFactor() == null) {
+						congruenceCollector.collectAndProcessAQPairs(aqPairs);
 					}
-					if (cc.factor != null) {
+					if (congruenceCollector.getFactor() != null) {
 						finishNow = true;
-						if (DEBUG) LOG.debug("Thread " + getName() + " found factor " + cc.factor + " and is done.");
-						cc.notify();
+						if (DEBUG) LOG.debug("Thread " + getName() + " found factor " + congruenceCollector.getFactor() + " and is done.");
+						congruenceCollector.notify();
 					}
 				}
 			}

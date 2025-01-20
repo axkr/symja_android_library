@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -16,15 +16,14 @@ package de.tilman_neumann.jml.transcendental;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.base.BigDecimalMath;
 import de.tilman_neumann.jml.base.BigRational;
 import de.tilman_neumann.jml.powers.Pow2;
 import de.tilman_neumann.jml.precision.Magnitude;
 import de.tilman_neumann.jml.precision.Scale;
-import de.tilman_neumann.util.ConfigUtil;
-import de.tilman_neumann.util.TimeUtil;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
 import static de.tilman_neumann.jml.base.BigDecimalConstants.F_0;
@@ -34,7 +33,8 @@ import static de.tilman_neumann.jml.base.BigDecimalConstants.F_0;
  * @author Tilman Neumann
  */
 public class Pi {
-	private static final Logger LOG = Logger.getLogger(Pi.class);
+	private static final Logger LOG = LogManager.getLogger(Pi.class);
+	private static final boolean DEBUG = false;
 
 	/** PI computed to PI_SCALE decimal after-floating point digits. */
     private static BigDecimal PI;
@@ -76,7 +76,7 @@ public class Pi {
 
 	            // Add new series element to the total:
 	            PI = PI.add(sElement);
-	            //LOG.debug("i=" + i + ", sElement=" + sElement + ", PI=" + PI);
+	            if (DEBUG) LOG.debug("i=" + i + ", sElement=" + sElement + ", PI=" + PI);
 	            i++;
 	        // Stop if the last series element is smaller than the series computed
 	        // so far multiplied with the desired relative error.
@@ -88,24 +88,5 @@ public class Pi {
 
 	    // assign output with wished accuracy:
 	    return scale.applyTo(PI);
-	}
-
-	private static void testPi(Scale maxScale) {
-        long t0 = System.currentTimeMillis();
-        for (Scale decPrec=Scale.valueOf(2); decPrec.compareTo(maxScale)<=0; decPrec = decPrec.add(1)) {
-            LOG.debug("pi(" + decPrec + ")=" + Pi.pi(decPrec));
-        }
-        long t1 = System.currentTimeMillis();
-        LOG.debug("Time of pi compuatation: " + TimeUtil.timeDiffStr(t0,t1));
-	}
-
-	/**
-	 * Test.
-	 * 
-	 * @param argv command line arguments, ignored
-	 */
-	public static void main(String[] argv) {
-    	ConfigUtil.initProject();
-        testPi(Scale.valueOf(200));
 	}
 }

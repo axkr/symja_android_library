@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -15,7 +15,6 @@ package de.tilman_neumann.jml.factor.cfrac.tdiv;
 
 import java.math.BigInteger;
 
-import de.tilman_neumann.jml.factor.FactorException;
 import de.tilman_neumann.jml.factor.base.congruence.AQPair;
 
 /**
@@ -32,18 +31,17 @@ public interface TDiv_CF {
 	/**
 	 * Initialize for a new N.
 	 * @param N
-	 * @param maxQRest
+	 * @param smoothBound
 	 */
-	public void initialize(BigInteger N, double maxQRest);
+	public void initialize(BigInteger N, double smoothBound);
 
 	/**
 	 * Initialize this factorizer for a new k; in particular set the prime base to be used for trial division.
 	 * @param kN
 	 * @param primeBaseSize the true prime base size (the arrays are preallocated with a bigger length)
 	 * @param primesArray prime base in ints
-	 * @throws FactorException 
 	 */
-	public void initialize(BigInteger kN, int primeBaseSize, int[] primesArray) throws FactorException;
+	public void initialize(BigInteger kN, int primeBaseSize, int[] primesArray);
 	
 	/**
 	 * Check if Q is smooth (factors completely over the prime base) or "sufficiently smooth" (factors almost over the prime base).

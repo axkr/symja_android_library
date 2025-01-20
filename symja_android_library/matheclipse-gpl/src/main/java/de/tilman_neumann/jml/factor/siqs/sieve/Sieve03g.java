@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -13,15 +13,18 @@
  */
 package de.tilman_neumann.jml.factor.siqs.sieve;
 
+import static de.tilman_neumann.jml.base.BigIntConstants.I_0;
 import static de.tilman_neumann.jml.factor.base.GlobalFactoringOptions.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigInteger;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.BinarySearch;
+import de.tilman_neumann.jml.factor.siqs.data.BaseArrays;
 import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
+import de.tilman_neumann.util.Ensure;
 import de.tilman_neumann.util.Timer;
 
 /**
@@ -61,8 +64,10 @@ import de.tilman_neumann.util.Timer;
  * @author Tilman Neumann
  */
 public class Sieve03g implements Sieve {
-	private static final Logger LOG = Logger.getLogger(Sieve03g.class);
+	private static final Logger LOG = LogManager.getLogger(Sieve03g.class);
 	private static final boolean DEBUG = false;
+
+	private BigInteger daParam, bParam, cParam, kN;
 
 	// prime base
 	private int primeBaseSize;
@@ -83,9 +88,12 @@ public class Sieve03g implements Sieve {
 	/** the array holding logP sums for all x */
 	private byte[] sieveArray;
 
+	private SieveResult sieveResult = new SieveResult(10);
+
 	private BinarySearch binarySearch = new BinarySearch();
 
-	// timings
+	// statistics
+	private long sieveHitCount;
 	private Timer timer = new Timer();
 	private long initDuration, sieveDuration, collectDuration;
 	
@@ -95,11 +103,12 @@ public class Sieve03g implements Sieve {
 	}
 	
 	@Override
-	public void initializeForN(SieveParams sieveParams, int mergedBaseSize) {
+	public void initializeForN(SieveParams sieveParams, BaseArrays baseArrays, int mergedBaseSize) {
+		this.kN = sieveParams.kN;
 		this.pMinIndex = sieveParams.pMinIndex;
 		int pMax = sieveParams.pMax;
 		initializer = sieveParams.getInitializerBlock();
-
+		
 		// Allocate sieve array: Typically SIQS adjusts such that pMax/sieveArraySize = 2.5 to 5.0.
 		// For large primes with 0 or 1 sieve locations we need to allocate pMax+1 entries;
 		// For primes p[i], i<p1Index, we need p[i]+sieveArraySize = 2*sieveArraySize entries.
@@ -108,15 +117,19 @@ public class Sieve03g implements Sieve {
 		sieveArray = new byte[sieveAllocationSize];
 		if (DEBUG) LOG.debug("pMax = " + pMax + ", sieveArraySize = " + sieveArraySize + " --> sieveAllocationSize = " + sieveAllocationSize);
 
-		if (ANALYZE) initDuration = sieveDuration = collectDuration = 0;
+		if (ANALYZE) {
+			sieveHitCount = 0;
+			initDuration = sieveDuration = collectDuration = 0;
+		}
 	}
 
 	@Override
-	public void initializeForAParameter(SolutionArrays solutionArrays, int filteredBaseSize) {
+	public void initializeForAParameter(int d, BigInteger daParam, SolutionArrays solutionArrays, int filteredBaseSize, int[] qArray) {
+		this.daParam = daParam;
 		this.solutionArrays = solutionArrays;
-		int[] pArray = solutionArrays.pArray;
 		this.primeBaseSize = filteredBaseSize;
 		
+		int[] pArray = solutionArrays.pArray;
 		this.p1Index = binarySearch.getInsertPosition(pArray, primeBaseSize, sieveArraySize);
 		this.p2Index = binarySearch.getInsertPosition(pArray, p1Index, (sieveArraySize+1)/2);
 		this.p3Index = binarySearch.getInsertPosition(pArray, p2Index, (sieveArraySize+2)/3);
@@ -133,10 +146,17 @@ public class Sieve03g implements Sieve {
 	}
 
 	@Override
-	@SuppressWarnings("IdentityBinaryExpression")
-	public List<Integer> sieve() {
+	public void setBParameter(BigInteger b) {
+		this.bParam = b;
+		if (DEBUG) Ensure.ensureEquals(b.multiply(b).subtract(kN).mod(daParam), I_0);
+		this.cParam = b.multiply(b).subtract(kN).divide(daParam);
+	}
+
+	@Override
+	public Iterable<SmoothCandidate> sieve() {
 		if (ANALYZE) timer.capture();
 		this.initializeSieveArray(sieveArraySize);
+		sieveResult.reset();
 		if (ANALYZE) initDuration += timer.capture();
 		
 		// Sieve with positive x, large primes:
@@ -199,17 +219,16 @@ public class Sieve03g implements Sieve {
 		if (ANALYZE) sieveDuration += timer.capture();
 
 		// collect results
-		List<Integer> smoothXList = new ArrayList<Integer>();
 		// let the sieve entry counter x run down to 0 is much faster because of the simpler exit condition
 		for (int x=sieveArraySize-1; x>=0; ) {
 			// Unfortunately, in Java we can not cast byte[] to int[] or long[].
 			// So we have to use 'or'. More than 4 'or's do not pay out.
 			if (((sieveArray[x--] | sieveArray[x--] | sieveArray[x--] | sieveArray[x--]) & 0x80) != 0) {
 				// at least one of the tested Q(x) is sufficiently smooth to be passed to trial division!
-				if (sieveArray[x+1] < 0) smoothXList.add(x+1);
-				if (sieveArray[x+2] < 0) smoothXList.add(x+2);
-				if (sieveArray[x+3] < 0) smoothXList.add(x+3);
-				if (sieveArray[x+4] < 0) smoothXList.add(x+4);
+				if (sieveArray[x+1] < 0) addSmoothCandidate(x+1, sieveArray[x+1] & 0xFF);
+				if (sieveArray[x+2] < 0) addSmoothCandidate(x+2, sieveArray[x+2] & 0xFF);
+				if (sieveArray[x+3] < 0) addSmoothCandidate(x+3, sieveArray[x+3] & 0xFF);
+				if (sieveArray[x+4] < 0) addSmoothCandidate(x+4, sieveArray[x+4] & 0xFF);
 			}
 		}
 		if (ANALYZE) collectDuration += timer.capture();
@@ -275,14 +294,31 @@ public class Sieve03g implements Sieve {
 			// So we have to use 'or'. More than 4 'or's do not pay out.
 			if (((sieveArray[x--] | sieveArray[x--] | sieveArray[x--] | sieveArray[x--]) & 0x80) != 0) {
 				// at least one of the tested Q(-x) is sufficiently smooth to be passed to trial division!
-				if (sieveArray[x+1] < 0) smoothXList.add(-(x+1));
-				if (sieveArray[x+2] < 0) smoothXList.add(-(x+2));
-				if (sieveArray[x+3] < 0) smoothXList.add(-(x+3));
-				if (sieveArray[x+4] < 0) smoothXList.add(-(x+4));
+				if (sieveArray[x+1] < 0) addSmoothCandidate(-(x+1), sieveArray[x+1] & 0xFF);
+				if (sieveArray[x+2] < 0) addSmoothCandidate(-(x+2), sieveArray[x+2] & 0xFF);
+				if (sieveArray[x+3] < 0) addSmoothCandidate(-(x+3), sieveArray[x+3] & 0xFF);
+				if (sieveArray[x+4] < 0) addSmoothCandidate(-(x+4), sieveArray[x+4] & 0xFF);
 			}
 		}
 		if (ANALYZE) collectDuration += timer.capture();
-		return smoothXList;
+		return sieveResult;
+	}
+
+	private void addSmoothCandidate(int x, int score) {
+		if (ANALYZE) sieveHitCount++;
+		
+		// Compute Q(x)/a:
+		BigInteger xBig = BigInteger.valueOf(x);
+		BigInteger dax = daParam.multiply(xBig);
+		BigInteger A = dax.add(bParam);
+		BigInteger QDivDa = dax.multiply(xBig).add(bParam.multiply(BigInteger.valueOf(x<<1))).add(cParam);
+		
+		SmoothCandidate smoothCandidate = sieveResult.peekNextSmoothCandidate();
+		smoothCandidate.x = x;
+		smoothCandidate.QRest = QDivDa;
+		smoothCandidate.A = A;
+		smoothCandidate.smallFactors.reset(); // this sieve does not find small factors
+		sieveResult.commitNextSmoothCandidate();
 	}
 
 	/**
@@ -304,7 +340,7 @@ public class Sieve03g implements Sieve {
 	
 	@Override
 	public SieveReport getReport() {
-		return new SieveReport(initDuration, sieveDuration, collectDuration);
+		return new SieveReport(sieveHitCount, initDuration, sieveDuration, collectDuration);
 	}
 	
 	@Override

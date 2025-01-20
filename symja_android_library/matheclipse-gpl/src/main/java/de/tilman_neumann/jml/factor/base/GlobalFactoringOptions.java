@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -30,19 +30,20 @@ public interface GlobalFactoringOptions {
 	static final boolean ANALYZE = false;
 
 	/**
+	 * Monitor the congruence collecting progress on-the-fly.
+	 * This option needs ANALYZE as well.
+	 */
+	static final boolean ANALYZE_PROGRESS = false;
+
+	/**
 	 * A switch to additionally turn on analysis of the size of large factors that yield smooth relations.
+	 * This option needs ANALYZE as well.
 	 */
 	static final boolean ANALYZE_LARGE_FACTOR_SIZES = false;
 	
 	/**
 	 * A switch to additionally turn on analysis of the number of Q-values with positive and negative sign.
+	 * This option needs ANALYZE as well.
 	 */
 	static final boolean ANALYZE_Q_SIGNS = false;
-	
-	/**
-	 * A switch to turn on using the "fused multiply-add" operation defined in IEEE 754-2008.
-	 * Support requires Java 9 and a Intel Haswell or AMD Piledriver CPU or later.
-	 * If supported this means a speed improvement; otherwise the emulation is very very slow.
-	 */
-	static final boolean USE_FMA = false;
 }

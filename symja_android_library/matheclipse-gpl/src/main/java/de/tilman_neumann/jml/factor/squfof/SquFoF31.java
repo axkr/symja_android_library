@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -14,15 +14,10 @@
 package de.tilman_neumann.jml.factor.squfof;
 
 import java.math.BigInteger;
-import java.security.SecureRandom;
-
-import org.apache.log4j.Logger;
-import org.matheclipse.core.numbertheory.SortedMultiset;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.jml.gcd.Gcd63;
 import de.tilman_neumann.jml.sequence.SquarefreeSequence63;
-import de.tilman_neumann.util.ConfigUtil;
 
 /**
  * Shanks' SQUFOF algorithm, 31-bit version.
@@ -31,8 +26,6 @@ import de.tilman_neumann.util.ConfigUtil;
  * @author Tilman Neumann
  */
 public class SquFoF31 extends FactorAlgorithm {
-
-	private static final Logger LOG = Logger.getLogger(SquFoF31.class);
 
 	private static final int[] BASE_MULTIPLIERS = new int[] {1680, 48, 8, 1};
 
@@ -167,54 +160,5 @@ public class SquFoF31 extends FactorAlgorithm {
 		// result
 		long gcd = gcdEngine.gcd(N, P_i);
 		return (gcd>1 && gcd<N) ? gcd : null;
-	}
-	
-	/**
-	 * Test.
-	 * @param args ignored
-	 */
-	public static void main(String[] args) {
-		ConfigUtil.initProject();
-		SquFoF31 squfof31 = new SquFoF31();
-		FactorAlgorithm testFactorizer = FactorAlgorithm.DEFAULT;
-		
-		// test numbers that caused problems with former versions
-		BigInteger N0 = BigInteger.valueOf(1099511627970L); // 2*3*5*7*23*227642159
-		LOG.info("Factoring N=" + N0 + ":");
-		SortedMultiset<BigInteger> correctFactors = testFactorizer.factor(N0);
-		LOG.info("testFactorizer found " + correctFactors);
-		SortedMultiset<BigInteger> squfofFactors = squfof31.factor(N0);
-		LOG.info("SquFoF31 found " + squfofFactors);
-		
-		// test random N
-		SecureRandom RNG = new SecureRandom();
-		int count = 100000;
-		for (int bits=52; bits<63; bits++) {
-			LOG.info("Testing " + count + " random numbers with " + bits + " bits...");
-			int failCount = 0;
-			for (int i=0; i<count; i++) {
-				long N = 0;
-				while (true) { 
-					BigInteger N_big = new BigInteger(bits, RNG);
-					N = N_big.longValue();
-					if (N>2 && !N_big.isProbablePrime(20)) break;
-				}
-				long tdivFactor = squfof31.findSingleFactor(N);
-				if (tdivFactor<2) {
-					long squfofFactor = testFactorizer.findSingleFactor(BigInteger.valueOf(N)).longValue();
-					if (squfofFactor > 1 && squfofFactor<N) {
-						//LOG.debug("N=" + N + ": TDiv failed to find factor " + squfofFactor);
-						failCount++;
-					} else {
-						LOG.error("Squfof63 failed to factor N=" + N + " !");
-					}
-				} else {
-					if (N%tdivFactor!=0) {
-						failCount++;
-					}
-				}
-			}
-			LOG.info("    #fails = " + failCount);
-		}
 	}
 }

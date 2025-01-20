@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -15,14 +15,15 @@ package de.tilman_neumann.jml.factor.base.matrixSolver;
 
 import java.util.ArrayList;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * A congruence used by the matrix solver where the elements have been mapped to integer indices.
  * @author Tilman Neumann
  */
 public class MatrixRow {
-	private static final Logger LOG = Logger.getLogger(MatrixRow.class);
+	private static final Logger LOG = LogManager.getLogger(MatrixRow.class);
 
 	/** The indices of the factors with odd exponent in this row. */
 	private IndexSet columnIndices;
@@ -39,14 +40,32 @@ public class MatrixRow {
 		this.rowIndexHistory = rowIndexHistory;
 	}
 	
+	public IndexSet getColumnIndices() {
+		return columnIndices;
+	}
+	
+	public IndexSet getRowIndexHistory() {
+		return rowIndexHistory;
+	}
+	
 	public ArrayList<Integer> getRowIndexHistoryAsList() {
 		return rowIndexHistory.toList();
 	}
 	
+	/**
+	 * @return the highest index in this row of a column set to 1.
+	 */
 	public int getBiggestColumnIndex() {
 		return columnIndices.last();		
 	}
 
+	/**
+	 * @return the number of columns set to 1 in this row.
+	 */
+	public int getColumnCount() {
+		return columnIndices.getNumberOfSetBits();
+	}
+	
 	/**
 	 * Combine this and other in Z_2, modifying this.
 	 * The operation in Z_2 is equivalent to "xor".

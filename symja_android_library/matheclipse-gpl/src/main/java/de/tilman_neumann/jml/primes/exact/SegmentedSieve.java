@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -13,10 +13,7 @@
  */
 package de.tilman_neumann.jml.primes.exact;
 
-import org.apache.log4j.Logger;
-
 import de.tilman_neumann.jml.primes.bounds.PrimeCountUpperBounds;
-import de.tilman_neumann.util.ConfigUtil;
 
 /**
  * Segmented sieve of Eratosthenes based on Kim Walisch's implementation at http://primesieve.org/segmented_sieve.html
@@ -24,8 +21,6 @@ import de.tilman_neumann.util.ConfigUtil;
  * @author Tilman Neumann
  */
 public class SegmentedSieve {
-	private static final Logger LOG = Logger.getLogger(SegmentedSieve.class);
-	
 	private SieveCallback clientCallback;
 
 	public SegmentedSieve(SieveCallback clientCallback) {
@@ -104,23 +99,6 @@ public class SegmentedSieve {
 				}
 			}
 			n = nn+low;
-		}
-	}
-	
-	/**
-	 * Test performance without load caused by processPrime().
-	 * @param args ignored
-	 */
-	public static void main(String[] args) {
-    	ConfigUtil.initProject();
-		long limit = 1000000;
-		while (true) {
-			long start = System.nanoTime();
-			CountingCallback callback = new CountingCallback(); // initialize count=0 for each limit
-			SegmentedSieve sieve = new SegmentedSieve(callback);
-			sieve.sieve(limit);
-			LOG.info("Sieving x <= " + limit + " found " + callback.getCount() + " primes in " + ((System.nanoTime()-start) / 1000000) + " ms");
-			limit *=10;
 		}
 	}
 }

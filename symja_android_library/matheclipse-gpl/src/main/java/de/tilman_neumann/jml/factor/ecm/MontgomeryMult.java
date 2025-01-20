@@ -20,7 +20,8 @@
  */
 package de.tilman_neumann.jml.factor.ecm;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Montgomery multiplication, extracted from Dario Alpern's Ecm program.
@@ -29,7 +30,7 @@ import org.apache.log4j.Logger;
  */
 public class MontgomeryMult {
 	
-	private static final Logger LOG = Logger.getLogger(MontgomeryMult.class);
+	private static final Logger LOG = LogManager.getLogger(MontgomeryMult.class);
 	
 	/** the modulus N */
 	private final int[] TestNbr;

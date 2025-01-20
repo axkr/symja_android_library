@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -17,14 +17,27 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import de.tilman_neumann.jml.base.IntCollectionUtil;
 
 /**
- * int[] implementation of a multipartite number like [1,3,4,2,0,1].
+ * int[] implementation of a multipartite number [n_1, n_2, ..., n_k] like [1,3,4,2,0,1].
+ * Each n_i signifies a count of things of some type i.
+ * Thus in theory the order of the n_i should not make any difference.
+ * However, this class implements an ordering between MPIs where the first element that differs decides, i.e. [2,0,0] is bigger than [1,2,3],
+ * which is required by the MpiPartitionGenerator to be able to enumerate partitions in an efficient way.
+ * 
+ * For other purposes it might be convenient to overwrite <code>compareTo()</code> in a subclass.
+ * 
  * @author Tilman Neumann
  */
 public class Mpi_IntegerArrayImpl implements Mpi {
 
+	@SuppressWarnings("unused")
+	private static final Logger LOG = LogManager.getLogger(Mpi_IntegerArrayImpl.class);
+	
 	int[] values;
 	
 	/**
@@ -226,26 +239,33 @@ public class Mpi_IntegerArrayImpl implements Mpi {
 //		return (lastPart.compareTo(restMinusFirstPart)<0) ? lastPart : restMinusFirstPart;
 //	}
 
+	/**
+	 * {@inheritDoc}
+	 * In this implementation, the first element that differs decides, i.e. [2,0,0] is bigger than [1,2,3].
+	 * This ordering is required by the MpiPartitionGenerator in order to enumerate partitions in an efficient way.
+	 * For other purposes it might be convenient to overwrite this implementation in a subclass.
+
+	 * @param other
+	 * @return
+	 */
 	@Override
 	public int compareTo(Mpi other) {
-		int mySize = values.length;
-		if (other==null) {
-			if (mySize==0) return 0; // equals
-			throw new NullPointerException("other MultipartiteInteger");
+		int myDim = values.length;
+		if (other == null) {
+			return myDim; // >0 if this has some elements, =0 (equals) if not
 		}
-		if (mySize!=other.getDim()) {
-			throw new IllegalStateException("MultipartiteIntegers must have the same dimensions, but this.dim=" + mySize + " != other.dim=" + other.getDim());
-		}
-		Iterator<Integer> otherIter = other.iterator();
-		for (int i=0; i<mySize; i++) {
-			int otherValue = otherIter.next().intValue();
-			if (otherValue!=values[i]) {
-				return values[i]-otherValue;
+		int otherDim = other.getDim();
+		int minDim = Math.min(myDim, otherDim);
+		for (int i=0; i<minDim; i++) {
+			int myElem = values[i];
+			int otherElem = other.getElem(i);
+			if (myElem != otherElem) {
+				return myElem - otherElem;
 			}
 		}
-		return 0;
+		return myDim - otherDim;
 	}
-
+	
 	@Override
 	public int hashCode() {
 		return Arrays.hashCode(values);

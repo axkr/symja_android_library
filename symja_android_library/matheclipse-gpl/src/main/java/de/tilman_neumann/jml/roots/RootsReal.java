@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -15,14 +15,13 @@ package de.tilman_neumann.jml.roots;
 
 import java.math.BigDecimal;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.base.BigDecimalMath;
 import de.tilman_neumann.jml.powers.Pow;
 import de.tilman_neumann.jml.precision.Magnitude;
 import de.tilman_neumann.jml.precision.Scale;
-import de.tilman_neumann.util.ConfigUtil;
-import de.tilman_neumann.util.TimeUtil;
 
 import static de.tilman_neumann.jml.base.BigDecimalConstants.F_0;
 
@@ -36,7 +35,7 @@ import static de.tilman_neumann.jml.base.BigDecimalConstants.F_0;
  * @author Tilman Neumann
  */
 public class RootsReal {
-	private static final Logger LOG = Logger.getLogger(RootsReal.class);
+	private static final Logger LOG = LogManager.getLogger(RootsReal.class);
 
 	private static final boolean DEBUG = false;
 	
@@ -140,34 +139,4 @@ public class RootsReal {
 		
 		throw new IllegalArgumentException("x = " + x + ", but i.th root(x) is defined for x>=0 only!");
   	}
-  
-	/**
-	 * Test.
-	 * @param argv command line arguments
-	 */
-	public static void main(String[] argv) {
-    	ConfigUtil.initProject();
-
-    	if (argv.length != 2) {
-	        // wrong number of arguments !
-	        LOG.error("Usage: RootsReal <argument> <scale in decimal digits> !!");
-	        return;
-	    }
-        
-        // get argument for the root function (decimal input required):
-	    BigDecimal x = new BigDecimal(argv[0]);
-	    
-        // get desired maximal precision
-	    Scale maxScale = Scale.valueOf(Integer.parseInt(argv[1]));
-        long t0, t1;
-        
-        t0 = System.currentTimeMillis();
-    	for (int i=2; i<10; i++) {
-    		for (Scale scale=Scale.valueOf(2); scale.compareTo(maxScale)<=0; scale = scale.add(1)) {
-        		LOG.debug(i + ".th root(" + x  + ", " + scale + ")=" + ithRoot(x, i, scale));
-        	}
-        }
-        t1 = System.currentTimeMillis();
-        LOG.debug("Time of root computations: " + TimeUtil.timeDiffStr(t0,t1));
-	}
 }

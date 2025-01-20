@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -16,7 +16,8 @@ package de.tilman_neumann.jml.factor.siqs.poly.baseFilter;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.factor.siqs.data.BaseArrays;
 import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
@@ -26,7 +27,7 @@ import de.tilman_neumann.jml.factor.siqs.data.SolutionArrays;
  * @author Tilman Neumann
  */
 public class BaseFilter_q1 implements BaseFilter {
-	private static final Logger LOG = Logger.getLogger(BaseFilter_q1.class);
+	private static final Logger LOG = LogManager.getLogger(BaseFilter_q1.class);
 	private static final boolean DEBUG = false;
 
 	@Override
@@ -36,7 +37,6 @@ public class BaseFilter_q1 implements BaseFilter {
 		int[] mergedPowers = baseArrays.pArray;
 		int[] mergedTArray = baseArrays.tArray;
 		byte[] mergedlogPArray = baseArrays.logPArray;
-		double[] mergedPinvArrayD = baseArrays.pinvArrayD;
 		long[] mergedPinvArrayL = baseArrays.pinvArrayL;
 		
 		int[] filteredPrimes = solutionArrays.primes;
@@ -44,7 +44,6 @@ public class BaseFilter_q1 implements BaseFilter {
 		int[] filteredPowers = solutionArrays.pArray;
 		int[] filteredTArray = solutionArrays.tArray;
 		byte[] filteredLogPArray = solutionArrays.logPArray;
-		double[] filteredPinvArrayD = solutionArrays.pinvArrayD;
 		long[] filteredPinvArrayL = solutionArrays.pinvArrayL;
 
 		int filteredOutCount = 0;
@@ -68,7 +67,6 @@ public class BaseFilter_q1 implements BaseFilter {
 				System.arraycopy(mergedPowers, srcPos, filteredPowers, destPos, length);
 				System.arraycopy(mergedTArray, srcPos, filteredTArray, destPos, length);
 				System.arraycopy(mergedlogPArray, srcPos, filteredLogPArray, destPos, length);
-				System.arraycopy(mergedPinvArrayD, srcPos, filteredPinvArrayD, destPos, length);
 				System.arraycopy(mergedPinvArrayL, srcPos, filteredPinvArrayL, destPos, length);
 				lastqIndex = i;
 				filteredOutCount++;
@@ -84,7 +82,6 @@ public class BaseFilter_q1 implements BaseFilter {
 			System.arraycopy(mergedPowers, srcPos, filteredPowers, destPos, length);
 			System.arraycopy(mergedTArray, srcPos, filteredTArray, destPos, length);
 			System.arraycopy(mergedlogPArray, srcPos, filteredLogPArray, destPos, length);
-			System.arraycopy(mergedPinvArrayD, srcPos, filteredPinvArrayD, destPos, length);
 			System.arraycopy(mergedPinvArrayL, srcPos, filteredPinvArrayL, destPos, length);
 		}
 		int filteredBaseSize = mergedBaseSize - filteredOutCount;

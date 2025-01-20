@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -15,7 +15,10 @@ package de.tilman_neumann.jml.base;
 
 import java.math.BigInteger;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
+import de.tilman_neumann.util.Ensure;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
@@ -28,7 +31,7 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
  * @author Tilman Neumann
  */
 public class UnsignedBigInt {
-	private static final Logger LOG = Logger.getLogger(UnsignedBigInt.class);
+	private static final Logger LOG = LogManager.getLogger(UnsignedBigInt.class);
 	private static final boolean DEBUG = false;
 	
 	private static final BigInteger UNSIGNED_INT_MASK_BIG = BigInteger.valueOf(0xFFFFFFFFL);
@@ -101,19 +104,19 @@ public class UnsignedBigInt {
 			}
 		}
 		
-//		if (DEBUG) {
-//			try {
-//				// compare with slower but safer implementation
-//				int[] intArrayFromNShifts = safeConversion(N);
-//				for (int i=0; i<intLength; i++) {
-//					assertEquals(intArrayFromNShifts[i], intArray[i]);
-//				}
-//			} catch (AssertionError ae) {
-//				LOG.debug("N              = " + N.toString(2));
-//				LOG.debug("UnsignedBigInt = " + this.toBinaryString());
-//				throw ae;
-//			}
-//		}
+		if (DEBUG) {
+			try {
+				// compare with slower but safer implementation
+				int[] intArrayFromNShifts = safeConversion(N);
+				for (int i=0; i<intLength; i++) {
+					Ensure.ensureEquals(intArrayFromNShifts[i], intArray[i]);
+				}
+			} catch (AssertionError ae) {
+				LOG.debug("N              = " + N.toString(2));
+				LOG.debug("UnsignedBigInt = " + this.toBinaryString());
+				throw ae;
+			}
+		}
 	}
 
 	private int[] safeConversion(BigInteger N) {
@@ -182,10 +185,10 @@ public class UnsignedBigInt {
             quot = currentDividend / divisor_long;
     		// rem = currentDividend % divisor_long is faster than currentDividend - quot*divisor_long
             rem = currentDividend % divisor_long;
-//            if (DEBUG) {
-//            	assertTrue(currentDividend >= 0);
-//            	assertTrue(quot <= 0xFFFFFFFFL);
-//            }
+            if (DEBUG) {
+            	Ensure.ensureGreaterEquals(currentDividend, 0);
+            	Ensure.ensureSmallerEquals(quot, 0xFFFFFFFFL);
+            }
             quotient.intArray[i] = (int) (quot & 0xFFFFFFFFL);
             if (quot>0) {
             	quotient.intLength = i+1;
@@ -200,10 +203,10 @@ public class UnsignedBigInt {
             quot = currentDividend / divisor_long;
     		// rem = currentDividend % divisor_long is faster than currentDividend - quot*divisor_long
             rem = currentDividend % divisor_long;
-//            if (DEBUG) {
-//            	assertTrue(currentDividend >= 0);
-//            	assertTrue(quot <= 0xFFFFFFFFL);
-//            }
+            if (DEBUG) {
+            	Ensure.ensureGreaterEquals(currentDividend, 0);
+            	Ensure.ensureSmallerEquals(quot, 0xFFFFFFFFL);
+            }
             quotient.intArray[i] = (int) (quot & 0xFFFFFFFFL);
         }
         
@@ -238,10 +241,10 @@ public class UnsignedBigInt {
             quot = currentDividend / divisor_long;
     		// rem = currentDividend % divisor_long is faster than currentDividend - quot*divisor_long
             rem = currentDividend % divisor_long;
-//            if (DEBUG) {
-//            	assertTrue(currentDividend >= 0);
-//            	assertTrue(quot <= 0xFFFFFFFFL);
-//            }
+            if (DEBUG) {
+            	Ensure.ensureGreaterEquals(currentDividend, 0);
+            	Ensure.ensureSmallerEquals(quot, 0xFFFFFFFFL);
+            }
             quotient.intArray[i] = (int) (quot & 0xFFFFFFFFL);
         }
         
@@ -321,14 +324,14 @@ public class UnsignedBigInt {
 		}
 		BigInteger N = new BigInteger(bytes);
 		
-//		if (DEBUG) {
-//			// compare with slower but safer implementation
-//			BigInteger NfromShifts = BigInteger.valueOf(intArray[intLength-1] & 0xFFFFFFFFL);
-//			for (int i=intLength-2; i>=0; i--) {
-//				NfromShifts = NfromShifts.shiftLeft(32).add(BigInteger.valueOf(intArray[i] & 0xFFFFFFFFL));
-//			}
-//			assertEquals(NfromShifts, N);
-//		}
+		if (DEBUG) {
+			// compare with slower but safer implementation
+			BigInteger NfromShifts = BigInteger.valueOf(intArray[intLength-1] & 0xFFFFFFFFL);
+			for (int i=intLength-2; i>=0; i--) {
+				NfromShifts = NfromShifts.shiftLeft(32).add(BigInteger.valueOf(intArray[i] & 0xFFFFFFFFL));
+			}
+			Ensure.ensureEquals(NfromShifts, N);
+		}
 		return N;
 	}
 

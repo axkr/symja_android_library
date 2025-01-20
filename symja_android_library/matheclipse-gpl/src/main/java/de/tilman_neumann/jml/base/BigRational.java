@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -17,11 +17,12 @@ import java.lang.Number;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.precision.Precision;
 import de.tilman_neumann.jml.precision.Scale;
-import de.tilman_neumann.jml.base.BigDecimalMath;
+import de.tilman_neumann.util.Ensure;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
@@ -33,8 +34,9 @@ public class BigRational extends Number implements Comparable<BigRational> {
 	
 	private static final long serialVersionUID = -578518708160143029L;
 	
-	@SuppressWarnings("unused")
-	private static final Logger LOG = Logger.getLogger(BigRational.class);
+	private static final Logger LOG = LogManager.getLogger(BigRational.class);
+	
+	private static final boolean DEBUG = false;
 	
 	// Constants -----------------------------------------------------------------------------
 	
@@ -66,6 +68,7 @@ public class BigRational extends Number implements Comparable<BigRational> {
 	 */
 	public BigRational(BigInteger num, BigInteger den) {
 		this.num = num;
+		if (den.signum() == 0) throw new ArithmeticException("Rational numbers must have non-zero denominator");
 		this.den = den;
 	}
 	
@@ -157,19 +160,17 @@ public class BigRational extends Number implements Comparable<BigRational> {
 	}
 	
 	/**
-	 * @return this with gcd of numerator and denominator reduced to 1.
+	 * @return this with gcd of numerator and denominator reduced to 1, and the denominator being positive.
 	 */
 	public BigRational normalize() {
-		if (den.signum()<0) {
-			// make denominator positive always
-			num = num.negate();
-			den = den.negate();
-		}
-		BigInteger gcd = this.num.gcd(this.den);
+		if (num.signum() == 0) return new BigRational(I_0);
+
+		BigInteger gcd = num.gcd(den);
 		if (gcd!=null && gcd.compareTo(I_1)>0) {
-			return new BigRational(this.num.divide(gcd), this.den.divide(gcd));
+			return (den.signum() < 0) ? new BigRational(num.divide(gcd).negate(), den.divide(gcd).negate()) : new BigRational(num.divide(gcd), den.divide(gcd));
+		} else {
+			return (den.signum() < 0) ? new BigRational(num.negate(), den.negate()) : this;
 		}
-		return this;
 	}
 	
 	public BigRational expandTo(BigInteger newDenominator) {
@@ -199,27 +200,65 @@ public class BigRational extends Number implements Comparable<BigRational> {
 	public int signum() {
 		return this.num.signum()*this.den.signum();
 	}
+	
+	/**
+	 * @return true if this is zero, false otherwise
+	 */
+	public boolean isZero() {
+		return this.num.signum() == 0;
+	}
 
+	/**
+	 * @return true if this is integral.
+	 */
+	public boolean isInteger() {
+		return this.normalize().den.equals(I_1);
+	}
+	
 	/**
 	 * @return the nearest smaller-or-equal integer value.
 	 */
-	public BigInteger floorInt() {
-		// when the division is exact then we return the quotient.
-		// when the division is not exact we drop the rest -> we also return the quotient!
-		return num.divideAndRemainder(den)[0];
+	public BigInteger floor() {
+		if (this.isZero()) return I_0; // exact; no need for division
+		
+		BigInteger[] divRem = num.divideAndRemainder(den);
+		if (divRem[1].equals(I_0)) return divRem[0]; // exact
+		// The result for non-exact divisions is the quotient if this is positive, and the quotient-1 if this is negative.
+		return this.signum() > 0 ? divRem[0] : divRem[0].subtract(I_1);
 	}
 
 	/**
 	 * @return the nearest bigger-or-equal integer value.
 	 */
-	public BigInteger ceilInt() {
-		BigInteger[] div = num.divideAndRemainder(den);
-		if (div[1].equals(I_0)) {
-			// no rest, the division was exact and the quotient is the ceil() value.
-			return div[0];
+	public BigInteger ceil() {
+		if (this.isZero()) return I_0; // exact; no need for division
+		
+		BigInteger[] divRem = num.divideAndRemainder(den);
+		if (divRem[1].equals(I_0)) return divRem[0]; // exact
+		// The result for non-exact divisions is the quotient+1 if this is positive, and the quotient if this is negative.
+		return this.signum() > 0 ? divRem[0].add(I_1) : divRem[0];
+	}
+	
+	/**
+	 * @return the nearest integer value. In case of a tie, the smaller integer value is returned (rounding mode HALF_DOWN).
+	 */
+	public BigInteger round() {
+		if (this.isZero()) return I_0; // exact; no need for division
+		
+		BigInteger[] divRem = num.divideAndRemainder(den);
+		if (divRem[1].equals(I_0)) return divRem[0]; // exact
+		BigInteger floor, rem;
+		if (this.signum() < 0) {
+			if (DEBUG) LOG.debug("num=" + num  + ", den = " + den + ", quot = " + divRem[0] + ", rem = " + divRem[1]);
+			floor = divRem[0].subtract(I_1);
+			if (DEBUG) Ensure.ensureEquals(den.signum(), -divRem[1].signum());
+			rem = den.add(divRem[1]);
+			if (DEBUG) Ensure.ensureEquals(num, den.multiply(floor).add(rem));
+		} else {
+			floor = divRem[0];
+			rem = divRem[1];
 		}
-		// division was not exact, return quotient+1
-		return div[0].add(I_1);
+		return rem.shiftLeft(1).compareTo(den)<=0 ? floor : floor.add(I_1); // we use RoundingMode HALF_DOWN
 	}
 	
 	// Comparison --------------------------------------------------------------------
@@ -304,11 +343,9 @@ public class BigRational extends Number implements Comparable<BigRational> {
 	
 	/**
 	 * Converts this to a BigDecimal with decPrec digits precision. 
-	 * Because we can access numerator and denominator directly, implementation in this class
-	 * is more efficient than as BigFloat.valueOf(BigRational).
 	 * 
 	 * @param decPrec Precision in decimal digits.
-	 * @return this as a big float with the wanted precision.
+	 * @return this as a BigDecimal with the wanted precision.
 	 */
 	public BigDecimal toBigDecimal(Scale decPrec) {
 		return BigDecimalMath.divide(new BigDecimal(this.num), this.den, decPrec);

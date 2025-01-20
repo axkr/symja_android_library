@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2019 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2019-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -13,12 +13,6 @@
  */
 package de.tilman_neumann.jml.primes.exact;
 
-import org.apache.log4j.Logger;
-
-import de.tilman_neumann.jml.primes.exact.CountingCallback;
-import de.tilman_neumann.jml.primes.exact.SieveCallback;
-import de.tilman_neumann.util.ConfigUtil;
-
 /**
  * Monolithic sieve of Eratosthenes, working only for limits < Integer.MAX_VALUE = 2^31 - 1.
  * Used for quality tests only.
@@ -26,8 +20,6 @@ import de.tilman_neumann.util.ConfigUtil;
  * @author Tilman Neumann
  */
 public class SimpleSieve {
-	private static final Logger LOG = Logger.getLogger(SimpleSieve.class);
-
 	private SieveCallback clientCallback;
 
 	public SimpleSieve(SieveCallback clientCallback) {
@@ -61,23 +53,6 @@ public class SimpleSieve {
 			if (!isComposite[n]) {
 				clientCallback.processPrime(n);
 			}
-		}
-	}
-	
-	/**
-	 * Test performance without load caused by processPrime().
-	 * @param args ignored
-	 */
-	public static void main(String[] args) {
-    	ConfigUtil.initProject();
-		CountingCallback callback = new CountingCallback();
-		long limit = 1000000;
-		while (limit < Integer.MAX_VALUE) {
-			long start = System.nanoTime();
-			SimpleSieve sieve = new SimpleSieve(callback);
-			sieve.sieve(limit);
-			LOG.info("Sieving x <= " + limit + " found " + callback.getCount() + " primes in " + ((System.nanoTime()-start) / 1000000) + " ms");
-			limit *=10;
 		}
 	}
 }

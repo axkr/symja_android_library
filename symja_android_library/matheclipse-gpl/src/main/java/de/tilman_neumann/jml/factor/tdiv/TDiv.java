@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -18,15 +18,17 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
 import java.math.BigInteger;
 import java.util.SortedMap;
 
-import org.apache.log4j.Logger;
-import org.matheclipse.core.numbertheory.SortedMultiset;
-import org.matheclipse.core.numbertheory.SortedMultiset_BottomUp;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.base.UnsignedBigInt;
 import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.jml.factor.base.FactorArguments;
 import de.tilman_neumann.jml.factor.base.FactorResult;
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
+import de.tilman_neumann.util.Ensure;
+import de.tilman_neumann.util.SortedMultiset;
+import de.tilman_neumann.util.SortedMultiset_BottomUp;
 
 /**
  * Trial division for large arguments.
@@ -34,7 +36,7 @@ import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
  */
 public class TDiv extends FactorAlgorithm {
 	@SuppressWarnings("unused")
-	private static final Logger LOG = Logger.getLogger(TDiv.class);
+	private static final Logger LOG = LogManager.getLogger(TDiv.class);
 	private static final boolean DEBUG = false;
 	
 	private static final AutoExpandingPrimesArray SMALL_PRIMES = AutoExpandingPrimesArray.get();
@@ -48,7 +50,7 @@ public class TDiv extends FactorAlgorithm {
 
 	/**
 	 * Set the upper limit of primes to be tested.
-	 * @param pLimit
+	 * @param pLimit upper limit of primes to be tested
 	 * @return this
 	 */
 	public TDiv setTestLimit(int pLimit) {
@@ -63,10 +65,10 @@ public class TDiv extends FactorAlgorithm {
 		FactorResult result = new FactorResult(primeFactors, untestedFactors, null, 2); // tdiv does not add to compositeFactors
 		searchFactors(args, result);
 		if (!untestedFactors.isEmpty()) {
-//			if (DEBUG) {
-//				// untestedFactors can only have 1 element, the unfactored rest of N
-//				assertEquals(1, untestedFactors.size());
-//			}
+			if (DEBUG) {
+				// untestedFactors can only have 1 element, the unfactored rest of N
+				Ensure.ensureEquals(1, untestedFactors.size());
+			}
 			// add the unfactored rest to primeFactors. This means the factorization failed if the rest is composite,
 			// but this algorithm can't do anything better.
 			primeFactors.addAll(untestedFactors);
@@ -75,10 +77,10 @@ public class TDiv extends FactorAlgorithm {
 	
 	/**
 	 * Tries to find small factors of a positive, possibly large argument N by doing trial division
-	 * by all primes p <= pLimit.
+	 * by all primes p &lt;= pLimit.
 	 * 
 	 * @param args
-	 * @param result a pre-initalized data structure to add results to
+	 * @param result a pre-initialized data structure to add results to
 	 */
 	// TODO take into account the amount of trial division done before
 	@Override
@@ -127,7 +129,6 @@ public class TDiv extends FactorAlgorithm {
 		
 		result.smallestPossibleFactor = p_i; // may be helpful in following factor algorithms
 		result.untestedFactors.add(N, Nexp); // we do not know if the remaining N is prime or composite
-		return;
 	}
 
 	/**

@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -15,10 +15,9 @@ package de.tilman_neumann.jml.factor.tdiv;
 
 import java.math.BigInteger;
 
-import org.matheclipse.core.numbertheory.SortedMultiset;
-
 import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
+import de.tilman_neumann.util.SortedMultiset;
 
 /**
  * Trial division factor algorithm using double-valued Barrett reduction, thus replacing division by multiplications.
@@ -30,7 +29,7 @@ import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
  * This variant abstains from testing N%primes[i] when the discriminator test indicates a neat division,
  * and unrolls the loop in findSingleFactor().
  * 
- * @authors Thilo Harich + Tilman Neumann
+ * @author Thilo Harich + Tilman Neumann
  */
 public class TDiv31Inverse extends FactorAlgorithm {
 	

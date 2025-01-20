@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -14,11 +14,11 @@
 package de.tilman_neumann.jml.base;
 
 import java.math.BigInteger;
-import java.security.SecureRandom;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
-import de.tilman_neumann.util.ConfigUtil;
+import de.tilman_neumann.util.Ensure;
 
 /**
  * An incomplete 128 bit unsigned int implementation.
@@ -28,11 +28,12 @@ import de.tilman_neumann.util.ConfigUtil;
  * 
  * @author Tilman Neumann
  */
+// TODO Now that there are signed methods, this class needs a refactoring
 public class Uint128 {
-	private static final Logger LOG = Logger.getLogger(Uint128.class);
+	private static final Logger LOG = LogManager.getLogger(Uint128.class);
 	
 	private static final boolean DEBUG = false;
-	
+
 	private long high, low;
 	
 	public Uint128(long high, long low) {
@@ -93,11 +94,11 @@ public class Uint128 {
 
 	/**
 	 * Subtract two unsigned 128 bit integers.
-	 * XXX experimental, probably wrong...
 	 * 
 	 * @param other
 	 * @return this - other
 	 */
+	// XXX experimental, probably wrong...
 	public Uint128 subtract(Uint128 other) {
 		long r_lo = low - other.getLow();
 		long r_hi = high - other.getHigh();
@@ -165,8 +166,7 @@ public class Uint128 {
 	/**
 	 * Multiplication of unsigned 64 bit integers with simplified carry recognition.
 	 * 
-	 * This is the fastest version so far, with the strange exception that it falls behind version 1
-	 * for N>=52 bit in PollardRhoBrentMontgomery64.
+	 * Faster than v1 except for N>=52 bit in PollardRhoBrentMontgomery64 (strange)
 	 * 
 	 * @param a unsigned long
 	 * @param b unsigned long
@@ -188,12 +188,141 @@ public class Uint128 {
 		final long carry = (med_term+Long.MIN_VALUE < med_prod1+Long.MIN_VALUE) ? 1L<<32 : 0;
 		final long r_hi = (((lo_prod >>> 32) + med_term) >>> 32) + hi_prod + carry;
 		final long r_lo = ((med_term & 0xFFFFFFFFL) << 32) + lo_prod;
+
+		return new Uint128(r_hi, r_lo);
+	}
+
+	/**
+	 * Multiplication of unsigned 64 bit integers.
+	 * 
+	 * <strong>Experimental version</strong>, pretty slow when used in TinyEcm.
+	 * 
+	 * @param a unsigned long
+	 * @param b unsigned long
+	 * @return a*b
+	 */
+	public static Uint128 mul64_v3(long a, long b) { // derived from mul64Signed()
+		final long a_hi = a >> 32;
+		final long a_lo = a & 0xFFFFFFFFL;
+		final long b_hi = b >> 32;
+		final long b_lo = b & 0xFFFFFFFFL;
 		
-		// With newer hardware and Java 10+, the following might be faster, using intrinsics
-//		final long r_lo2 = a*b;
-//		final long r_hi2 = Math.multiplyHigh(a, b);
-//		assertEquals(r_hi, r_hi2); // TODO false if a<0
-//		assertEquals(r_lo, r_lo2);
+		// use b_lo twice as first argument hoping that this optimizes register usage
+		final long w0 = b_lo * a_lo;
+		final long t = b_lo * a_hi + (w0 >>> 32);
+		// same with t
+		final long w2 = t >> 32;
+		final long w1 = (t & 0xFFFFFFFFL) + a_lo * b_hi;
+	    
+		long r_hi = a_hi * b_hi + w2 + (w1 >> 32);
+		// so far we computed the signed solution; now make it unsigned
+		if (a<0) r_hi += b;
+		if (b<0) r_hi += a;
+
+		final long r_lo = a * b;
+		
+		return new Uint128(r_hi, r_lo);
+	}
+	
+	/**
+	 * Multiplication of two unsigned 64-bit integers using Math.multiplyHigh().
+	 * Pretty fast if supported by intrinsics, which needs newer hardware and Java 10+.
+	 * 
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public static Uint128 mul64_MH(long a, long b) {
+		final long r_lo = a*b;
+		long r_hi = Math.multiplyHigh(a, b);
+		if (a<0) r_hi += b;
+		if (b<0) r_hi += a;
+		
+		if (DEBUG) {
+			// compare to pure Java implementation
+			Uint128 testResult = mul64(a, b);
+			Ensure.ensureEquals(testResult.high, r_hi);
+			Ensure.ensureEquals(testResult.low, r_lo);
+		}
+
+		return new Uint128(r_hi, r_lo);
+	}
+	
+	/**
+	 * Special implementation for the multiplication of two unsigned 64-bit integers using Math.multiplyHigh().
+	 * Pretty fast if supported by intrinsics, which needs newer hardware and Java 10+.<br><br>
+	 * 
+	 * <strong>WARNING: This implementation is not generally correct.</strong><br><br>
+	 * 
+	 * However, it seems to be sufficient for the purposes of TinyEcm and PollardRhoBrentMontgomery
+	 * implementations in this library, and should be a bit faster <em>there</em>.
+	 * 
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public static Uint128 spMul64_MH(long a, long b) {
+		final long r_lo = a*b;
+		long r_hi = Math.multiplyHigh(a, b);
+		if (a<0) r_hi += b;
+		// For general correctness we would need as well
+		//if (b<0) r_hi += a;
+		// See implementation of java.lang.Math.unsignedMultiplyHigh() starting from Java 18.
+		
+		if (DEBUG) {
+			// compare to pure Java implementation
+			Uint128 testResult = mul64(a, b);
+			Ensure.ensureEquals(testResult.high, r_hi);
+			Ensure.ensureEquals(testResult.low, r_lo);
+		}
+
+		return new Uint128(r_hi, r_lo);
+	}
+
+	/**
+	 * Multiplication of two signed 64 bit integers, adapted from Henry S. Warren, Hacker's Delight, Addison-Wesley, 2nd edition, chapter 8-2.
+	 * This is more or less what Java9 does in Math.multiplyHigh(), but I think I made it a bit faster optimizing register usage.
+	 * 
+	 * @param a signed long
+	 * @param b signed long
+	 * @return a*b as a signed 127 bit number
+	 */
+	public static Uint128 mul64Signed(long a, long b) {
+		final long a_hi = a >> 32;
+		final long a_lo = a & 0xFFFFFFFFL;
+		final long b_hi = b >> 32;
+		final long b_lo = b & 0xFFFFFFFFL;
+		
+		// use b_lo twice as first argument hoping that this optimizes register usage
+		final long w0 = b_lo * a_lo;
+		final long t = b_lo * a_hi + (w0 >>> 32);
+		// same with t
+		final long w2 = t >> 32;
+		final long w1 = (t & 0xFFFFFFFFL) + a_lo * b_hi;
+	    
+		final long r_hi = a_hi * b_hi + w2 + (w1 >> 32);
+		final long r_lo = a * b;
+		return new Uint128(r_hi, r_lo);
+	}
+
+	/**
+	 * Multiplication of two signed 64-bit integers using Math.multiplyHigh().
+	 * Pretty fast if supported by intrinsics, which needs newer hardware and Java 10+.<br><br>
+	 * 
+	 * @param a signed long
+	 * @param b signed long
+	 * @return a*b as a signed 127 bit number
+	 */
+	public static Uint128 mul64SignedMH(long a, long b) {
+		final long r_lo = a*b;
+		final long r_hi = Math.multiplyHigh(a, b);
+		
+		if (DEBUG) {
+			// compare to pure Java implementation
+			Uint128 testResult = mul64Signed(a, b);
+			Ensure.ensureEquals(testResult.high, r_hi);
+			Ensure.ensureEquals(testResult.low, r_lo);
+		}
 
 		return new Uint128(r_hi, r_lo);
 	}
@@ -204,6 +333,7 @@ public class Uint128 {
 	 * @param a unsigned long
 	 * @return a^2
 	 */
+	// XXX speed up using intrinsics like in mul64_MH() ?
 	public static Uint128 square64(long a) {
 		final long a_hi = a >>> 32;
 		final long a_lo = a & 0xFFFFFFFFL;
@@ -230,6 +360,7 @@ public class Uint128 {
 	 * @param b
 	 * @return (a*b) & 0xFFFFFFFFL
 	 */
+	// XXX a*b should give the same result !?
 	public static long mul64_getLow(long a, long b) {
 		final long a_hi = a >>> 32;
 		final long b_hi = b >>> 32;
@@ -238,6 +369,95 @@ public class Uint128 {
 		final long lo_prod = a_lo * b_lo;
 		final long med_term = a_hi * b_lo + a_lo * b_hi;
 		final long r_lo = ((med_term & 0xFFFFFFFFL) << 32) + lo_prod;
+		return r_lo;
+	}
+
+	/**
+	 * Multiplication of two unsigned 128 bit integers.
+	 * 
+	 * @param a Uint128
+	 * @param b Uint128
+	 * @return a*b as an array of [low, high] Uint128 objects;
+	 */
+	public static Uint128[] mul128/*_v2*/(Uint128 a, Uint128 b) {
+		final long a_hi = a.getHigh(); // a >>> 32;
+		final long b_hi = b.getHigh(); // b >>> 32;
+		final long a_lo = a.getLow(); // a & 0xFFFFFFFFL;
+		final long b_lo = b.getLow(); // b & 0xFFFFFFFFL;
+		
+		final Uint128 lo_prod = mul64(a_lo, b_lo); // a_lo * b_lo;
+		final Uint128 med_prod1 = mul64(a_hi, b_lo); // a_hi * b_lo;
+		final Uint128 med_prod2 = mul64(a_lo, b_hi); // a_lo * b_hi;
+		final Uint128 med_term = med_prod1.add(med_prod2); // med_prod1 + med_prod2;
+		final Uint128 hi_prod = mul64(a_hi, b_hi); // a_hi * b_hi;
+		
+		// the medium term could overflow
+		//final long carry = (med_term+Long.MIN_VALUE < med_prod1+Long.MIN_VALUE) ? 1L<<32 : 0;
+		final Uint128 carry = (med_term.getHigh()+Long.MIN_VALUE < med_prod1.getHigh()+Long.MIN_VALUE) ? new Uint128(1, 0) : new Uint128(0, 0);
+		
+		//final long r_hi = (((lo_prod >>> 32) + med_term) >>> 32) + hi_prod + carry;
+		final long lo_prod_hi = lo_prod.getHigh(); // (lo_prod >>> 32)
+		final Uint128 intermediate = new Uint128(0, lo_prod_hi).add(med_term); // ((lo_prod >>> 32) + med_term)
+		final long intermediate_hi = intermediate.getHigh(); // (((lo_prod >>> 32) + med_term) >>> 32)
+		final Uint128 r_hi = new Uint128(0, intermediate_hi).add(hi_prod).add(carry);
+		
+		//final long r_lo = ((med_term & 0xFFFFFFFFL) << 32) + lo_prod;
+		final long med_term_lo = med_term.getLow(); // (med_term & 0xFFFFFFFFL)
+		final Uint128 r_lo = new Uint128(med_term_lo, 0).add(lo_prod);
+		
+		//return new Uint128(r_hi, r_lo);
+		return new Uint128[] {r_lo, r_hi};
+	}
+
+	/**
+	 * Get the lower 128 bit integer of a multiplication of two unsigned 128 bit integers.
+	 * 
+	 * @param a Uint128
+	 * @param b Uint128
+	 * @return the low Uint128 of a*b
+	 */
+	public static Uint128 mul128_getLow(Uint128 a, Uint128 b) { // derived from mul128_v2
+		final long a_hi = a.getHigh(); // a >>> 32;
+		final long b_hi = b.getHigh(); // b >>> 32;
+		final long a_lo = a.getLow(); // a & 0xFFFFFFFFL;
+		final long b_lo = b.getLow(); // b & 0xFFFFFFFFL;
+		
+		final Uint128 lo_prod = mul64(a_lo, b_lo); // a_lo * b_lo;
+		final Uint128 med_prod1 = mul64(a_hi, b_lo); // a_hi * b_lo;
+		final Uint128 med_prod2 = mul64(a_lo, b_hi); // a_lo * b_hi;
+		final Uint128 med_term = med_prod1.add(med_prod2); // med_prod1 + med_prod2;
+		
+		//final long r_lo = ((med_term & 0xFFFFFFFFL) << 32) + lo_prod;
+		final long med_term_lo = med_term.getLow(); // (med_term & 0xFFFFFFFFL)
+		final Uint128 r_lo = new Uint128(med_term_lo, 0).add(lo_prod);
+		
+		//return new Uint128(r_hi, r_lo);
+		return r_lo;
+	}
+
+	/**
+	 * Get the lower 128 bit integer of a multiplication of two unsigned 128 bit integers, using Math.multiplyHigh().
+	 * 
+	 * @param a Uint128
+	 * @param b Uint128
+	 * @return the low Uint128 of a*b
+	 */
+	public static Uint128 mul128MH_getLow(Uint128 a, Uint128 b) { // derived from mul128_v2
+		final long a_hi = a.getHigh(); // a >>> 32;
+		final long b_hi = b.getHigh(); // b >>> 32;
+		final long a_lo = a.getLow(); // a & 0xFFFFFFFFL;
+		final long b_lo = b.getLow(); // b & 0xFFFFFFFFL;
+		
+		final Uint128 lo_prod = mul64_MH(a_lo, b_lo); // a_lo * b_lo;
+		final Uint128 med_prod1 = mul64_MH(a_hi, b_lo); // a_hi * b_lo;
+		final Uint128 med_prod2 = mul64_MH(a_lo, b_hi); // a_lo * b_hi;
+		final Uint128 med_term = med_prod1.add(med_prod2); // med_prod1 + med_prod2;
+		
+		//final long r_lo = ((med_term & 0xFFFFFFFFL) << 32) + lo_prod;
+		final long med_term_lo = med_term.getLow(); // (med_term & 0xFFFFFFFFL)
+		final Uint128 r_lo = new Uint128(med_term_lo, 0).add(lo_prod);
+		
+		//return new Uint128(r_hi, r_lo);
 		return r_lo;
 	}
 
@@ -372,6 +592,141 @@ public class Uint128 {
 	}
 
 	/**
+	 * Compute quotient and remainder of this / v.
+	 * The quotient will be correct only if it is <= 64 bit.
+	 * Ported from https://codereview.stackexchange.com/questions/67962/mostly-portable-128-by-64-bit-division.
+	 * 
+	 * In this variant we use Math.multiplyHigh() to multiply two unsigned 64 bit integers. This makes hardly a difference in terms of performance, though.
+	 * Otherwise the implementation does not differ from spDivide().
+	 * 
+	 * @param v 64 bit unsigned integer
+	 * @return [quotient, remainder] of this / v
+	 */
+	// XXX The name sp_divide stems from YaFu's tinyEcm.c. I guess that "sp" stands for "special". But here we have a full division; so some improvement potential may be given for certain applications.
+	public long[] spDivide_MH(long v)
+	{
+		long p_lo;
+		long p_hi;
+		long q = 0;
+		long r;
+		
+		long r_hi = getHigh();
+		long r_lo = getLow();
+		if (DEBUG) LOG.debug("r_hi=" + Long.toUnsignedString(r_hi) + ", r_lo=" + Long.toUnsignedString(r_lo));
+		
+		int s = 0;
+		if(0 == (v >>> 63)){
+		    // Normalize so quotient estimates are no more than 2 in error.
+		    // Note: If any bits get shifted out of r_hi at this point, the result would overflow.
+		    s = Long.numberOfLeadingZeros(v);
+		    int t = 64 - s;
+		
+		    v <<= s;
+		    r_hi = (r_hi << s)|(r_lo >>> t);
+		    r_lo <<= s;
+		}
+		if (DEBUG) LOG.debug("s=" + s + ", b=" + Long.toUnsignedString(v) + ", r_lo=" + r_lo + ", r_hi=" + r_hi);
+		
+		long b_hi = v >>> 32;
+		
+		/*
+		The first full-by-half division places b
+		across r_hi and r_lo, making the reduction
+		step a little complicated.
+		
+		To make this easier, u_hi and u_lo will hold
+		a shifted image of the remainder.
+		
+		[u_hi||    ][u_lo||    ]
+		      [r_hi||    ][r_lo||    ]
+		            [ b  ||    ]
+		[p_hi||    ][p_lo||    ]
+		              |
+		              V
+		            [q_hi||    ]
+		*/
+		
+		long q_hat = divideUnsignedLong(r_hi, b_hi);
+		if (DEBUG) LOG.debug("q_hat=" + Long.toUnsignedString(q_hat));
+		
+		// In TinyEcm64MH* variants, spMul64_MH() is slightly faster than mul64_MH(), and with mul64Signed() it doesn't work at all.
+		Uint128 mulResult = spMul64_MH(v, q_hat);
+		p_lo = mulResult.getLow();
+		p_hi = mulResult.getHigh();
+		if (DEBUG) LOG.debug("p_lo=" + Long.toUnsignedString(p_lo) + ", p_hi=" + Long.toUnsignedString(p_hi));
+		
+		long u_hi = r_hi >>> 32;
+		long u_lo = (r_hi << 32)|(r_lo >>> 32);
+		
+		// r -= b*q_hat
+		//
+		// At most 2 iterations of this...
+		while( (p_hi+Long.MIN_VALUE > u_hi+Long.MIN_VALUE) || ((p_hi == u_hi) && (p_lo+Long.MIN_VALUE > u_lo+Long.MIN_VALUE)) )
+		{
+		    if (p_lo+Long.MIN_VALUE < v+Long.MIN_VALUE) {
+		        --p_hi;
+		    }
+		    p_lo -= v;
+		    --q_hat;
+		}
+		
+		long w_lo = (p_lo << 32);
+		long w_hi = (p_hi << 32)|(p_lo >>> 32);
+		if (DEBUG) LOG.debug("w_lo=" + Long.toUnsignedString(w_lo) + ", w_hi=" + Long.toUnsignedString(w_hi));
+		
+		if (w_lo+Long.MIN_VALUE > r_lo+Long.MIN_VALUE) {
+			if (DEBUG) LOG.debug("increment w_hi!");
+		    ++w_hi;
+		}
+		
+		r_lo -= w_lo;
+		r_hi -= w_hi;
+		if (DEBUG) LOG.debug("r_lo=" + Long.toUnsignedString(r_lo) + ", r_hi=" + Long.toUnsignedString(r_hi));
+		
+		q = q_hat << 32;
+		
+		/*
+		The lower half of the quotient is easier,
+		as b is now aligned with r_lo.
+		
+		      |r_hi][r_lo||    ]
+		            [ b  ||    ]
+		[p_hi||    ][p_lo||    ]
+		                    |
+		                    V
+		            [q_hi||q_lo]
+		*/
+		
+		q_hat = divideUnsignedLong((r_hi << 32)|(r_lo >>> 32), b_hi);
+		if (DEBUG) LOG.debug("b=" + Long.toUnsignedString(v) + ", q_hat=" + Long.toUnsignedString(q_hat));
+		
+		mulResult = spMul64_MH(v, q_hat);
+		p_lo = mulResult.getLow();
+		p_hi = mulResult.getHigh();
+		if (DEBUG) LOG.debug("2: p_lo=" + Long.toUnsignedString(p_lo) + ", p_hi=" + Long.toUnsignedString(p_hi));
+		
+		// r -= b*q_hat
+		//
+		// ...and at most 2 iterations of this.
+		while( (p_hi+Long.MIN_VALUE > r_hi+Long.MIN_VALUE) || ((p_hi == r_hi) && (p_lo+Long.MIN_VALUE > r_lo+Long.MIN_VALUE)) )
+		{
+		    if(p_lo+Long.MIN_VALUE < v+Long.MIN_VALUE){
+		        --p_hi;
+		    }
+		    p_lo -= v;
+		    --q_hat;
+		}
+		
+		r_lo -= p_lo;
+		
+		q |= q_hat;
+		
+		r = r_lo >>> s;
+		
+		return new long[] {q, r};
+	}
+
+	/**
 	 * A good replacement for the slow Long.divideUnsigned(). Taken from the Huldra project,
 	 * see BigInt.div(..) at https://github.com/bwakell/Huldra.
 	 * @param a
@@ -382,7 +737,7 @@ public class Uint128 {
 		long qhat = (a >>> 1)/b << 1;
 		long t = a - qhat*b;
 		if (t+Long.MIN_VALUE >= b+Long.MIN_VALUE) qhat++;
-//		if (DEBUG) assertEquals(Long.divideUnsigned(a, b), qhat);
+		if (DEBUG) Ensure.ensureEquals(Long.divideUnsigned(a, b), qhat);
 		return qhat;
 	}
 
@@ -438,116 +793,5 @@ public class Uint128 {
 	@Override
 	public String toString() {
 		return toBigInteger().toString();
-	}
-	
-	private static void testCorrectness() {
-		SecureRandom RNG = new SecureRandom();
-		
-		for (int i=0; i<100000; i++) {
-			BigInteger a_hi_big = new BigInteger(63, RNG);
-			BigInteger a_lo_big = new BigInteger(64, RNG);
-			BigInteger b_hi_big = new BigInteger(63, RNG);
-			BigInteger b_lo_big = new BigInteger(64, RNG);
-			
-			long a_hi = a_hi_big.longValue();
-			long a_lo = a_lo_big.longValue();
-			long b_hi = b_hi_big.longValue();
-			long b_lo = b_lo_big.longValue();
-			
-			// test addition
-			Uint128 a128 = new Uint128(a_hi, a_lo);
-			Uint128 b128 = new Uint128(b_hi, b_lo);
-			Uint128 sum128 = a128.add_v1(b128);
-			BigInteger sum128Big = sum128.toBigInteger();
-			BigInteger sumBig = a128.toBigInteger().add(b128.toBigInteger());
-//			assertEquals(sumBig, sum128Big);
-
-			Uint128 sum128_v2 = a128.add/*_v2*/(b128);
-			BigInteger sum128Big_v2 = sum128_v2.toBigInteger();
-//			assertEquals(sumBig, sum128Big_v2);
-
-			// test multiplication with 63 bit numbers
-			Uint128 prod128 = mul63(a_hi, b_hi);
-			BigInteger prod128Big = prod128.toBigInteger();
-			BigInteger correctProd = a_hi_big.multiply(b_hi_big);
-//			assertEquals(correctProd, prod128Big);
-
-			// test multiplication with 64 bit numbers
-			correctProd = a_lo_big.multiply(b_lo_big);
-			
-			prod128 = mul64_v1(a_lo, b_lo);
-			prod128Big = prod128.toBigInteger();
-			if (!correctProd.equals(prod128Big)) {
-				LOG.error("mul64_v1: " + a_lo_big + "*" + b_lo_big + ": correct = " + correctProd + " but result = " + prod128Big);
-			}
-//			assertEquals(correctProd, prod128Big);
-			
-			prod128 = mul64/*_v2*/(a_lo, b_lo);
-			prod128Big = prod128.toBigInteger();
-			if (!correctProd.equals(prod128Big)) {
-				LOG.error("mul64_v2: " + a_lo_big + "*" + b_lo_big + ": correct = " + correctProd + " but result = " + prod128Big);
-			}
-//			assertEquals(correctProd, prod128Big);
-		}
-	}
-	
-	private static void testPerformance() {
-		SecureRandom RNG = new SecureRandom();
-		int NCOUNT = 10000000;
-		
-		// set up test numbers
-		long[] a_arr = new long[NCOUNT];
-		long[] b_arr = new long[NCOUNT];
-		Uint128[] a128_arr =  new Uint128[NCOUNT];
-		Uint128[] b128_arr =  new Uint128[NCOUNT];
-		
-		for (int i=0; i<NCOUNT; i++) {
-			a_arr[i] = RNG.nextLong();
-			b_arr[i] = RNG.nextLong();
-			a128_arr[i] = new Uint128(a_arr[i], RNG.nextLong());
-			b128_arr[i] = new Uint128(b_arr[i], RNG.nextLong());
-		}
-		
-		// test performance of add implementations
-		long t0 = System.currentTimeMillis();
-		for (int i=0; i<NCOUNT; i++) {
-			a128_arr[i].add_v1(b128_arr[i]);
-		}
-		long t1 = System.currentTimeMillis();
-		LOG.info("add_v1 took " + (t1-t0) + "ms");
-
-		t0 = System.currentTimeMillis();
-		for (int i=0; i<NCOUNT; i++) {
-			a128_arr[i].add/*_v2*/(b128_arr[i]);
-		}
-		t1 = System.currentTimeMillis();
-		LOG.info("add_v2 took " + (t1-t0) + "ms");
-		// The results of this comparison seem to be misleading. If we compare the two implementations
-		// in different PollardRhoBrentMontgomery63 variants than v2 is much faster...
-		
-		// test performance of mul64 implementations
-		t0 = System.currentTimeMillis();
-		for (int i=0; i<NCOUNT; i++) {
-			mul64_v1(a_arr[i], b_arr[i]);
-		}
-		t1 = System.currentTimeMillis();
-		LOG.info("mul64_v1 took " + (t1-t0) + "ms");
-		
-		t0 = System.currentTimeMillis();
-		for (int i=0; i<NCOUNT; i++) {
-			mul64/*_v2*/(a_arr[i], b_arr[i]);
-		}
-		t1 = System.currentTimeMillis();
-		LOG.info("mul64_v2 took " + (t1-t0) + "ms");
-	}
-
-	/**
-	 * Test.
-	 * @param args ignored
-	 */
-	public static void main(String[] args) {
-		ConfigUtil.initProject();
-		testCorrectness();
-		testPerformance();
 	}
 }

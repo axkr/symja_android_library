@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -14,7 +14,8 @@
 package de.tilman_neumann.jml.partitions;
 
 /**
- * A multipartite number like [1,3,4,2,0,1].
+ * A multipartite number [n_1, n_2, ..., n_k] like [1,3,4,2,0,1]. Each n_i signifies a count of things of some type i.
+ * 
  * @author Tilman Neumann
  */
 public interface Mpi extends Comparable<Mpi>, Iterable<Integer> {
@@ -81,7 +82,6 @@ public interface Mpi extends Comparable<Mpi>, Iterable<Integer> {
 	
 	/**
 	 * Compare this with another multipartite integer.
-	 * The first element that differs decides, i.e. [2,0,0] is bigger than [1,2,3].
 	 */
 	@Override
 	int compareTo(Mpi other);

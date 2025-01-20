@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -15,16 +15,16 @@ package de.tilman_neumann.jml.factor.psiqs;
 
 import java.math.BigInteger;
 
-import de.tilman_neumann.jml.factor.base.congruence.CongruenceCollectorParallel;
+import de.tilman_neumann.jml.factor.base.congruence.CongruenceCollector;
 import de.tilman_neumann.jml.factor.siqs.data.BaseArrays;
 import de.tilman_neumann.jml.factor.siqs.poly.AParamGenerator;
 import de.tilman_neumann.jml.factor.siqs.poly.SIQSPolyGenerator;
-import de.tilman_neumann.jml.factor.siqs.sieve.Sieve03g;
+import de.tilman_neumann.jml.factor.siqs.sieve.Sieve03h;
 import de.tilman_neumann.jml.factor.siqs.sieve.SieveParams;
-import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS_2Large_UBI;
+import de.tilman_neumann.jml.factor.siqs.tdiv.TDiv_QS_2LP;
 
 /**
- * A polynomial generation/sieve/trial division thread using Sieve03g.
+ * A polynomial generation/sieve/trial division thread using the fastest sieve not depending on sun.misc.Unsafe.
  * @author Tilman Neumann
  */
 public class PSIQSThread extends PSIQSThreadBase {
@@ -43,9 +43,9 @@ public class PSIQSThread extends PSIQSThreadBase {
 	 */
 	public PSIQSThread(
 			int k, BigInteger N, BigInteger kN, int d, SieveParams sieveParams, BaseArrays baseArrays,
-			AParamGenerator apg, CongruenceCollectorParallel cc, int threadIndex) {
+			AParamGenerator apg, CongruenceCollector cc, int threadIndex) {
 		
-		super(k, N, kN, d, sieveParams, baseArrays, apg, new SIQSPolyGenerator(), new Sieve03g(),
-			  new TDiv_QS_2Large_UBI(false), cc, threadIndex);
+		super(k, N, kN, d, sieveParams, baseArrays, apg, new SIQSPolyGenerator(), new Sieve03h(),
+			  new TDiv_QS_2LP(false), cc, threadIndex);
 	}
 }

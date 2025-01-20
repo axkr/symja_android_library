@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -18,18 +18,17 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.primes.probable.BPSWTest;
-import de.tilman_neumann.jml.precision.Magnitude;
-import de.tilman_neumann.util.ConfigUtil;
 
 /**
  * A colossally abundant number (CAN), together with some information that was necessary to compute it.
  * @author Tilman Neumann
  */
 public class CANEntry {
-	private static final Logger LOG = Logger.getLogger(CANEntry.class);
+	private static final Logger LOG = LogManager.getLogger(CANEntry.class);
 	private static final boolean DEBUG = false;
 
 	private double epsilon;
@@ -110,20 +109,5 @@ public class CANEntry {
 	
 	public ArrayList<Integer> getExponents() {
 		return exponents;
-	}
-
-	/**
-	 * Test.
-	 * @param args ignored
-	 */
-	public static void main(String[] args) {
-    	ConfigUtil.initProject();
-		for (double epsilon=1.0; epsilon>0; epsilon-=0.05) {
-			CANEntry entry = computeCAN(epsilon);
-			BigInteger can = entry.getCAN();
-			int digits = Magnitude.of(can);
-			LOG.info("n=" + entry.getExponentSum() + ": epsilon=" + epsilon + ", " + digits + " digits CAN = " + entry.getCAN());
-		}
-		// Result: epsilon=0.5 gives first CAN = 2
 	}
 }

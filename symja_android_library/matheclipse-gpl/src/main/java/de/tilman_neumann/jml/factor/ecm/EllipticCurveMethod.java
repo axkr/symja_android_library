@@ -23,9 +23,8 @@ package de.tilman_neumann.jml.factor.ecm;
 import java.math.BigInteger;
 import java.util.SortedMap;
 
-import org.apache.log4j.Logger;
-import org.matheclipse.core.numbertheory.SortedMultiset;
-import org.matheclipse.core.numbertheory.SortedMultiset_BottomUp;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.jml.factor.base.FactorArguments;
@@ -34,7 +33,9 @@ import de.tilman_neumann.jml.factor.tdiv.TDiv;
 import de.tilman_neumann.jml.powers.PurePowerTest;
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
 import de.tilman_neumann.jml.primes.probable.PrPTest;
-import de.tilman_neumann.util.ConfigUtil;
+import de.tilman_neumann.util.Ensure;
+import de.tilman_neumann.util.SortedMultiset;
+import de.tilman_neumann.util.SortedMultiset_BottomUp;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
@@ -45,7 +46,7 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
  * @see [CP] Richard Crandall, Carl Pomerance: "Prime Numbers: A Computational Perspective", Second Edition, chapter 7.4
  */
 public class EllipticCurveMethod extends FactorAlgorithm {
-	private static final Logger LOG = Logger.getLogger(EllipticCurveMethod.class);
+	private static final Logger LOG = LogManager.getLogger(EllipticCurveMethod.class);
 
 	private static final boolean DEBUG = false;
 	
@@ -185,15 +186,15 @@ public class EllipticCurveMethod extends FactorAlgorithm {
 		tdiv.searchFactors(args, result);
 		if (result.untestedFactors.isEmpty()) return;
 		// Otherwise untestedFactors should contain exactly one prime > 131072, or one composite > 131072^2, the unfactored rest
-//		if (DEBUG) {
-//			assertEquals(1, result.untestedFactors.size());
-//			assertTrue(result.untestedFactors.firstKey().compareTo(BigInteger.valueOf(131072)) > 0);
-//		}
+		if (DEBUG) {
+			Ensure.ensureEquals(1, result.untestedFactors.size());
+			Ensure.ensureGreater(result.untestedFactors.firstKey(), BigInteger.valueOf(131072));
+		}
 		
 		// Retrieve the unfactored rest to continue. The exponent of N can not have changed.
 		BigInteger N = result.untestedFactors.firstKey();
 		int Nexp = result.untestedFactors.removeAll(N);
-//		if (DEBUG) assertEquals(args.exp, Nexp);
+		if (DEBUG) Ensure.ensureEquals(args.exp, Nexp);
 		
 		if (isProbablePrime(N)) {
 			addToMap(N, args.exp, result.primeFactors);
@@ -1770,41 +1771,5 @@ public class EllipticCurveMethod extends FactorAlgorithm {
 	 */
 	String BigNbrToString(long Nbr[]) {
 		return this.BigIntToBigNbr(Nbr).toString();
-	}
-
-	public static void main(String[] args) {
-		ConfigUtil.initProject();
-		BigInteger[] testNums = new BigInteger[] {
-				// easy for ECM
-				new BigInteger("8225267468394993133669189614204532935183709603155231863020477010700542265332938919716662623"),
-				
-				// incomplete result, some unfactored rest is returned
-				new BigInteger("101546450935661953908994991437690198927080333663460351836152986526126114727314353555755712261904130976988029406423152881932996637460315302992884162068350429"),
-				
-				// incomplete result, the factor map contains a composite
-				new BigInteger("1593332576170570774181606244493046197050984933692181475920784855223341"),
-				// = 17 * 1210508704285703 * 2568160569265616473 * 30148619026320753545829271787156467
-				// but ECM fails to factor 3108780723099354807613175415185519 = 1210508704285703 * 2568160569265616473
-				// with the maximum number of curves
-				
-				// very hard for ECM, better suited for SIQS
-				//new BigInteger("1794577685365897117833870712928656282041295031283603412289229185967719140138841093599")
-				// = 42181796536350966453737572957846241893933 * 42543889372264778301966140913837516662044603
-				
-				new BigInteger("856483652537814883803418179972154563054077"), // = {42665052615296697659=1, 20074595014814065252903=1} in 7s, 572ms.
-		};
-		
-		EllipticCurveMethod ecm = new EllipticCurveMethod(-1);
-		
-		long t0, t1;
-		t0 = System.currentTimeMillis();
-		for (BigInteger N : testNums) {
-			FactorArguments factorArgs = new FactorArguments(N, 1);
-			FactorResult factorResult = new FactorResult(new SortedMultiset_BottomUp<BigInteger>(), new SortedMultiset_BottomUp<BigInteger>(), new SortedMultiset_BottomUp<BigInteger>(), 3);
-			ecm.searchFactors(factorArgs, factorResult);
-			LOG.debug("N = " + N + ": " + factorResult.primeFactors + " * " + factorResult.compositeFactors);
-		}
-		t1 = System.currentTimeMillis();
-		LOG.info("Test suite took " + (t1-t0) + "ms");
 	}
 }

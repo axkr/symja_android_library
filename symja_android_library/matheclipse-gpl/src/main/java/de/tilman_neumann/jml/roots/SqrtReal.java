@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -15,14 +15,13 @@ package de.tilman_neumann.jml.roots;
 
 import java.math.BigDecimal;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.base.BigDecimalMath;
 import de.tilman_neumann.jml.precision.Magnitude;
 import de.tilman_neumann.jml.precision.Scale;
 import de.tilman_neumann.jml.powers.Pow2;
-import de.tilman_neumann.util.ConfigUtil;
-import de.tilman_neumann.util.TimeUtil;
 
 import static de.tilman_neumann.jml.base.BigDecimalConstants.F_0;
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
@@ -34,8 +33,9 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
  * @author Tilman Neumann
  */
 public class SqrtReal {
-	private static final Logger LOG = Logger.getLogger(SqrtReal.class);
-
+	private static final Logger LOG = LogManager.getLogger(SqrtReal.class);
+	private static final boolean DEBUG = false;
+	
 	/**
 	 * Compute square root.
 	 * 
@@ -46,7 +46,7 @@ public class SqrtReal {
 	public static BigDecimal sqrt(BigDecimal x, Scale resultScale) {
 		// get initial guess correct to double precision (52 bit)
 		BigDecimal guess = getInitialApproximation(x);
-		//LOG.debug("initial guess: sqrt(" + x + ") ~ " + guess);
+		if (DEBUG) LOG.debug("initial guess: sqrt(" + x + ") ~ " + guess);
 		// iteration
 		return sqrt(x, guess, resultScale);
   	}
@@ -106,9 +106,9 @@ public class SqrtReal {
 				lastGuess = guess;
 				guess = BigDecimalMath.divide(x, guess, internalScale);
 				guess = Pow2.divPow2(guess.add(lastGuess), 1);
-				//LOG.debug("next guess: sqrt(" + x + ") ~ " + guess);
+				if (DEBUG) LOG.debug("next guess: sqrt(" + x + ") ~ " + guess);
 				error = guess.subtract(lastGuess).abs();
-				//LOG.debug("error = " + error);
+				if (DEBUG) LOG.debug("error = " + error);
 			} while (error.compareTo(maxAllowedError)>=0);
 	    
 			return resultScale.applyTo(guess);
@@ -119,32 +119,4 @@ public class SqrtReal {
 		
 		throw new IllegalArgumentException("x = " + x + ", but sqrt(x) is defined for x>=0 only!");
   	}
-  
-	/**
-	 * Test.
-	 * @param argv command line arguments
-	 */
-	public static void main(String[] argv) {
-    	ConfigUtil.initProject();
-
-    	if (argv.length != 2) {
-	        // wrong number of arguments !
-	        LOG.error("Usage: Sqrt <argument> <scale in decimal digits> !!");
-	        return;
-	    }
-        
-        // get argument for the sqrt function (decimal input required):
-	    BigDecimal x = new BigDecimal(argv[0]);
-	    
-        // get desired maximal precision
-	    Scale maxScale = Scale.valueOf(Integer.parseInt(argv[1]));
-        long t0, t1;
-        
-        t0 = System.currentTimeMillis();
-        for (Scale scale=Scale.valueOf(2); scale.compareTo(maxScale)<=0; scale = scale.add(1)) {
-            LOG.debug("sqrt(" + x  + ", " + scale + ")=" + sqrt(x, scale));
-        }
-        t1 = System.currentTimeMillis();
-        LOG.debug("Time of sqrt computation: " + TimeUtil.timeDiffStr(t0,t1));
-	}
 }

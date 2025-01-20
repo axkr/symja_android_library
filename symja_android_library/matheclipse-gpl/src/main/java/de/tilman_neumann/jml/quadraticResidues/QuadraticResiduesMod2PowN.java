@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -21,7 +21,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Methods to generate quadratic residues or test for quadratic residuosity modulus 2^n.
@@ -30,7 +31,7 @@ import org.apache.log4j.Logger;
  */
 public class QuadraticResiduesMod2PowN {
 
-	private static final Logger LOG = Logger.getLogger(QuadraticResiduesMod2PowN.class);
+	private static final Logger LOG = LogManager.getLogger(QuadraticResiduesMod2PowN.class);
 
 	private static final boolean DEBUG = false;
 
@@ -116,7 +117,7 @@ public class QuadraticResiduesMod2PowN {
 		int lsb = Long.numberOfTrailingZeros(a);
 		int i = lsb>>1;
 		long rest = a >> (i<<1); // a / 4^i
-		// if rest is of the form 8*j+1 then a is of the form 4^i*(*j+1)
+		// if rest is of the form 8*j+1 then a is of the form 4^i*(8*j+1)
 		return (rest & 7) == 1;
 	}
 
@@ -141,6 +142,8 @@ public class QuadraticResiduesMod2PowN {
 	/**
 	 * Compute all quadratic residues modulus 2^n.
 	 * 
+	 * OutOfMemoryError at n=29.
+	 * 
 	 * @param n
 	 * @return list of quadratic residue modulus 2^n
 	 */
@@ -158,6 +161,8 @@ public class QuadraticResiduesMod2PowN {
 	/**
 	 * Compute all quadratic residues modulus 2^n.
 	 * 
+	 * OutOfMemoryError at n=31.
+	 * 
 	 * @param n
 	 * @return list of quadratic residue modulus 2^n
 	 */
@@ -174,6 +179,9 @@ public class QuadraticResiduesMod2PowN {
 
 	/**
 	 * Compute all quadratic residues modulus 2^n.
+	 * 
+	 * OutOfMemoryError at n=30.
+	 * 
 	 * @param n
 	 * @return list of quadratic residues
 	 */
@@ -207,6 +215,8 @@ public class QuadraticResiduesMod2PowN {
 	/**
 	 * Compute all quadratic residues modulus 2^n.
 	 * Fast implementation using a single array, not needing reallocations.
+	 * 
+	 * OutOfMemoryError at n=33.
 	 * 
 	 * @param n
 	 * @param array the array to fill with quadratic residues

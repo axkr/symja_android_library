@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -16,14 +16,15 @@ package de.tilman_neumann.jml.factor.siqs.poly;
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
 import java.math.BigInteger;
-import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.BinarySearch;
 
@@ -60,7 +61,7 @@ import de.tilman_neumann.jml.BinarySearch;
  * @author Tilman Neumann
  */
 public class AParamGenerator01 implements AParamGenerator {
-	private static final Logger LOG = Logger.getLogger(AParamGenerator01.class);
+	private static final Logger LOG = LogManager.getLogger(AParamGenerator01.class);
 	private static final boolean DEBUG = false;
 
 	/** multiplier k: we must avoid q_l that divide k */
@@ -73,16 +74,18 @@ public class AParamGenerator01 implements AParamGenerator {
 	
 	/** approximate size of the a-parameter for some kN */
 	private double best_a;
+	/** approximate optimal size of q-parameters */
+	private double best_q;
 	/** the actual number of factors of the a-parameter for given kN */
 	private int qCount;
 	/** centre and variance for q-index generation */
 	private int indexVariance, indexCentre;
-	/** indices of the prime base elements that are the factors of a */
+	/** the tArray entries of the prime base elements that are the factors of a */
 	private int[] qtArray;
 	/** and the factors themselves */
 	private int[] qArray;
 	/** random generator */
-	private SecureRandom rng = new SecureRandom();
+	private static final Random rng = new Random();
 	/** map of a-values already used to their q-values */
 	private HashMap<BigInteger, int[]> aParamHistory;
 
@@ -111,12 +114,14 @@ public class AParamGenerator01 implements AParamGenerator {
 		this.primesArray = primesArray;
 		this.tArray = tArray;
 		
-		// compute expected best a-parameter. The constant 2 has been confirmed experimentally.
-		this.best_a = Math.sqrt(2*kN.doubleValue()) / (d*(double)sieveArraySize);
+		// Compute expected best a-parameter:
+		// In case of d=2 we choose the a-parameter factor 2 smaller such that the (theoretically) maximal size of Q(x)/(da) is the same as for d=1.
+		// The leading constant 2 has been confirmed by experiments, too.
+		best_a = Math.sqrt(2*kN.doubleValue()) / (d*(double)sieveArraySize);
 		// estimate best qCount if it was not given
 		qCount = (wanted_qCount != null) ? wanted_qCount : estimateQCount(kN.bitLength());
 		// compute average "best" q, such that best_q^qCount = best_a
-		double best_q = Math.pow(best_a, 1.0/qCount);
+		best_q = Math.pow(best_a, 1.0/qCount);
 		// compute index of average "best" q, in the sense of realizing the a-parameter with qCount prime base values
 		int best_q_index = getBestIndex(best_q);
 		
@@ -287,8 +292,18 @@ public class AParamGenerator01 implements AParamGenerator {
 	}
 
 	@Override
+	public double getBestQ() {
+		return best_q;
+	}
+	
+	@Override
 	public int getQCount() {
 		return qCount;
+	}
+
+	@Override
+	public int[] getQArray() {
+		return qArray;
 	}
 
 	@Override
@@ -296,11 +311,6 @@ public class AParamGenerator01 implements AParamGenerator {
 		return qtArray;
 	}
 
-	@Override
-	public int[] getQArray() {
-		return qArray;
-	}
-	
 	@Override
 	public void cleanUp() {
 		primesArray = null;

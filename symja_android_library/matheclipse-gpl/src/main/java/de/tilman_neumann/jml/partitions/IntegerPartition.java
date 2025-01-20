@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -16,15 +16,17 @@ package de.tilman_neumann.jml.partitions;
 import java.math.BigInteger;
 import java.util.Map;
 
-import org.matheclipse.core.numbertheory.SortedMultiset_BottomUp;
-
 import de.tilman_neumann.jml.combinatorics.Factorial;
+import de.tilman_neumann.util.SortedMultiset_TopDown;
 
 /**
- * Integer partition, with nice String output.
+ * An integer partition like 5 = 3+1+1.
+ * Using this class is far slower than working with the raw array of parts but provides nicer string output.
+ * Sorting largest part first is a consequence of extending SortedMultiset_TopDown.
+ * 
  * @author Tilman Neumann
  */
-public class IntegerPartition extends SortedMultiset_BottomUp<Integer> {
+public class IntegerPartition extends SortedMultiset_TopDown<Integer> {
 
 	private static final long serialVersionUID = -5763523706198835658L;
 	

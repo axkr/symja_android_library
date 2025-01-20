@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -14,13 +14,11 @@
 package de.tilman_neumann.jml.transcendental;
 
 import java.math.BigInteger;
-import java.util.StringTokenizer;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.math.BigDecimal;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.base.BigDecimalMath;
 import de.tilman_neumann.jml.powers.Pow;
@@ -28,8 +26,6 @@ import de.tilman_neumann.jml.powers.Pow2;
 import de.tilman_neumann.jml.precision.Magnitude;
 import de.tilman_neumann.jml.precision.Precision;
 import de.tilman_neumann.jml.precision.Scale;
-import de.tilman_neumann.util.ConfigUtil;
-import de.tilman_neumann.util.TimeUtil;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
 import static de.tilman_neumann.jml.base.BigDecimalConstants.*;
@@ -39,7 +35,7 @@ import static de.tilman_neumann.jml.base.BigDecimalConstants.*;
  * @author Tilman Neumann
  */
 public class Exp {
-	private static final Logger LOG = Logger.getLogger(Exp.class);
+	private static final Logger LOG = LogManager.getLogger(Exp.class);
 
 	private static final boolean DEBUG = false;
 	
@@ -47,7 +43,7 @@ public class Exp {
 	 * Simple series expansion for exp(x).
 	 * The convergence criterion works only for |x|<=1, so it should not be called directly, only via one of the reduction formulas.
 	 */
-	private static BigDecimal expSeriesExpansion(BigDecimal x, Scale outScale) {
+	static BigDecimal expSeriesExpansion(BigDecimal x, Scale outScale) {
 	    // get demanded precision and compute the series limit for it:
 		// for large arguments, the series doesn't converge so quickly,
 		// we have to add extra precision...
@@ -85,7 +81,7 @@ public class Exp {
 	 * the transformation exp(x)=exp(y)*2^(-d), with y=x*2^d. d is choosen such
 	 * that -ln(2)/2<y<ln(2)/2.
 	 */
-	private static BigDecimal expSimpleReduction(BigDecimal x, Scale outScale) {
+	static BigDecimal expSimpleReduction(BigDecimal x, Scale outScale) {
 	    // exp(x) converges best around x=0. The multiplication of a number with a
 	    // natural power of 2 has constant complexity, i.e. costs almost nothing.
 	    // Thus, it is a cheap improvement of the convergence of the exponential
@@ -174,7 +170,7 @@ public class Exp {
 	 * Brent's formula could only better when the pow() method has an exponent limit,
 	 * because then the first reduction step allows to use bigger power reductions.
 	 */
-	private static BigDecimal expBrent(BigDecimal x, Scale outScale) {
+	static BigDecimal expBrent(BigDecimal x, Scale outScale) {
 	    // exp(x) converges best around x=0. The multiplication of a number with a
 	    // natural power of 2 has constant complexity, i.e. costs almost nothing.
 	    // Thus, it is a cheap improvement of the convergence of the exponential
@@ -208,78 +204,5 @@ public class Exp {
 	    // Since d is negative, this augments the error by d bits. (thats why we need expYScale as above)
 	    BigDecimal r = Pow2.mulPow2(expY, -d);
 	    return outScale.applyTo(r);
-	}
-
-	private static void test(BigDecimal x, Scale maxOutScale) {
-    	BigDecimal y = null; // the result
-	    Scale outScale;
-	    long t0, t1;
-        
-//        // Performance measure 1: Series expansion:
-//        t0 = System.currentTimeMillis();
-//        for (outScale=Scale.valueOf(2); outScale.compareTo(maxOutScale)<=0; outScale = outScale.add(1)) {
-//            y = expSeriesExpansion(x, outScale);
-//            LOG.debug("expSeriesExpansion(" + x + ", " + outScale + ") = " + y);
-//        }
-//        t1 = System.currentTimeMillis();
-//        LOG.debug("Time of series expansion: " + TimeUtil.timeDiffStr(t0,t1));
-
-        // Performance measure 2: Simple reduction:
-        t0 = System.currentTimeMillis();
-        for (outScale=Scale.valueOf(2); outScale.compareTo(maxOutScale)<=0; outScale = outScale.add(1)) {
-            y = expSimpleReduction(x, outScale);
-            LOG.debug("expSimpleReduction(" + x + ", " + outScale + ") = " + y);
-        }
-        t1 = System.currentTimeMillis();
-        LOG.debug("Time of simple argument reduction: " + TimeUtil.timeDiffStr(t0,t1));
-
-        // Performance measure 3: Power reduction
-        t0 = System.currentTimeMillis();
-        for (outScale=Scale.valueOf(2); outScale.compareTo(maxOutScale)<=0; outScale = outScale.add(1)) {
-        	y = exp/*PowerReduction*/(x, outScale);
-            LOG.debug("expPowerReduction(" + x + ", " + outScale + ") = " + y);
-        }
-        t1 = System.currentTimeMillis();
-        LOG.debug("Time of power reduction: " + TimeUtil.timeDiffStr(t0,t1));
-
-        // Performance measure 4: Brents formula
-        t0 = System.currentTimeMillis();
-        for (outScale=Scale.valueOf(2); outScale.compareTo(maxOutScale)<=0; outScale = outScale.add(1)) {
-            y = expBrent(x, outScale);
-            LOG.debug("expBrent(" + x + ", " + outScale + ") = " + y);
-        }
-        t1 = System.currentTimeMillis();
-        LOG.debug("Time of Brents formula: " + TimeUtil.timeDiffStr(t0,t1));
-	}
-
-	/**
-	 * Test.
-	 * 
-	 * @param argv ignored
-	 */
-	public static void main(String[] argv) {
-    	ConfigUtil.initProject();
-	    
-		while(true) {
-			String input;
-			BigDecimal x;
-			Scale scale;
-			try {
-				LOG.info("Insert <x> <scale>:");
-				BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-				String line = in.readLine();
-				input = line.trim();
-				//LOG.debug("input = >" + input + "<");
-				StringTokenizer tok = new StringTokenizer(input);
-				x = new BigDecimal(tok.nextToken());
-				scale = Scale.valueOf(Integer.parseInt(tok.nextToken()));
-			} catch (Exception e) {
-				LOG.error("Error occuring on input: " + e.getMessage());
-				continue;
-			}
-
-			// test various ln implementations
-			test(x, scale);
-		}
 	}
 }

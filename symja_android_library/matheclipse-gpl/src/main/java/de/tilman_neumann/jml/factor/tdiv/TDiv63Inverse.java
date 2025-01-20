@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -14,16 +14,14 @@
 package de.tilman_neumann.jml.factor.tdiv;
 
 import java.math.BigInteger;
-import java.security.SecureRandom;
 
-import org.apache.log4j.Logger;
-import org.matheclipse.core.numbertheory.SortedMultiset;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithm;
-import de.tilman_neumann.jml.factor.squfof.SquFoF63;
 import de.tilman_neumann.jml.primes.bounds.PrimeCountUpperBounds;
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
-import de.tilman_neumann.util.ConfigUtil;
+import de.tilman_neumann.util.SortedMultiset;
 
 /**
  * Trial division factor algorithm replacing division by multiplications.
@@ -41,7 +39,7 @@ import de.tilman_neumann.util.ConfigUtil;
  * @authors Thilo Harich + Tilman Neumann
  */
 public class TDiv63Inverse extends FactorAlgorithm {
-	private static final Logger LOG = Logger.getLogger(TDiv63Inverse.class);
+	private static final Logger LOG = LogManager.getLogger(TDiv63Inverse.class);
 	
 	private static AutoExpandingPrimesArray SMALL_PRIMES = AutoExpandingPrimesArray.get();
 
@@ -78,7 +76,7 @@ public class TDiv63Inverse extends FactorAlgorithm {
 	 * Set the upper limit of primes to be tested.
 	 * @param pLimit the limit; must be smaller than the factorLimit parameter passed to the constructor
 	 * @return this
-	 * @throws IllegalStateException if pLimit > factorLimit
+	 * @throws IllegalStateException if pLimit &gt; factorLimit
 	 */
 	public TDiv63Inverse setTestLimit(int pLimit) {
 		if (pLimit > factorLimit) {
@@ -188,76 +186,5 @@ public class TDiv63Inverse extends FactorAlgorithm {
 		
 		// nothing found up to pLimit
 		return 1;
-	}
-
-	/**
-	 * Test.
-	 * @param args ignored
-	 */
-	public static void main(String[] args) {
-		ConfigUtil.initProject();
-		
-		// test special cases
-		TDiv63Inverse tdivInv = new TDiv63Inverse(1<<21);
-		SquFoF63 testFactorizer = new SquFoF63();
-		long[] specialN = new long[] {
-				// first charge
-				621887327L,
-				676762483L,
-				2947524803L,
-				5616540799L,
-				35936505149L,
-				145682871839L,
-				317756737253L,
-				3294635112749L,
-				// second charge
-				13293477682249L,
-				24596491225651L, // = 3311299 * 7428049; can not be found with factorLimit=2^21
-				44579405690563L,
-				72795445155721L,
-				155209074377713L,
-				293851765137859L, // = 11736397 * 25037647; can not be found with factorLimit=2^21
-				67915439339311L // = 2061599 * 32943089, ok
-		};
-		
-		for (long N : specialN) {
-			long tdivFactor = tdivInv.findSingleFactor(N);
-			long testFactor = testFactorizer.findSingleFactor(N);
-			if (tdivFactor<=1 || tdivFactor==N) {
-				LOG.debug("TDiv63Inverse failed to factor N=" + N + " = " + testFactor + " * " + (N/testFactor));
-			}
-		}
-		
-		// test random N
-		SecureRandom RNG = new SecureRandom();
-		int count = 100000;
-		for (int bits=10; bits<64; bits++) {
-			LOG.info("Testing " + count + " random numbers with " + bits + " bits...");
-			tdivInv.setTestLimit(1<<Math.min(21, (bits+1)/2));
-			int failCount = 0;
-			for (int i=0; i<count; i++) {
-				long N = 0;
-				while (true) { 
-					BigInteger N_big = new BigInteger(bits, RNG);
-					N = N_big.longValue();
-					if (N>2 && !N_big.isProbablePrime(20)) break;
-				}
-				long tdivFactor = tdivInv.findSingleFactor(N);
-				if (tdivFactor<2) {
-					long testFactor = testFactorizer.findSingleFactor(N);
-					if (testFactor > 1 && testFactor<N) {
-						//LOG.debug("N=" + N + ": TDiv failed to find factor " + testFactor);
-						failCount++;
-					} else {
-						LOG.error("The test factorizer failed to factor N=" + N + " !");
-					}
-				} else {
-					if (N%tdivFactor!=0) {
-						failCount++;
-					}
-				}
-			}
-			LOG.info("    #fails = " + failCount);
-		}
 	}
 }

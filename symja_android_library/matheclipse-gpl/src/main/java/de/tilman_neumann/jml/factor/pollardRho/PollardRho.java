@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2025 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -16,9 +16,10 @@ package de.tilman_neumann.jml.factor.pollardRho;
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
 import java.math.BigInteger;
-import java.security.SecureRandom;
+import java.util.Random;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithm;
 
@@ -39,12 +40,15 @@ import de.tilman_neumann.jml.factor.FactorAlgorithm;
  * get unlucky, it could be equal to N. By randomly choosing a and b each time, we
  * ensure that we never get too unlucky.
  * 
+ * Improvement by Dave McGuigan:
+ * Use squareAddModN() instead of nested addModN(squareModN())
+ * 
  * @author Tilman Neumann
  */
 public class PollardRho extends FactorAlgorithm {
-	@SuppressWarnings("unused")
-	private static final Logger LOG = Logger.getLogger(PollardRho.class);
-	private static final SecureRandom RNG = new SecureRandom();
+	private static final Logger LOG = LogManager.getLogger(PollardRho.class);
+	private static final boolean DEBUG = false;
+	private static final Random RNG = new Random();
 	
 	private BigInteger N;
 
@@ -69,26 +73,25 @@ public class PollardRho extends FactorAlgorithm {
             if (c.compareTo(N)>=0) c=c.subtract(N);
 	        
 	        do {
-	            x  = addModN( x.multiply(x) .mod(N), c);
-	            xx = addModN(xx.multiply(xx).mod(N), c);
-	            xx = addModN(xx.multiply(xx).mod(N), c);
+	            x  = squareAddModN( x, c);
+	            xx = squareAddModN(xx, c);
+	            xx = squareAddModN(xx, c);
 	            gcd = x.subtract(xx).gcd(N);
 	        } while(gcd.equals(I_1));
 	        
 	    // leave loop if factor found; otherwise continue with a new random c
         } while (gcd.equals(N));
-		//LOG.debug("Found factor of " + N + " = " + factor);
+        if (DEBUG) LOG.debug("Found factor of " + N + " = " + gcd);
         return gcd;
 	}
-
+	
 	/**
-	 * Addition modulo N, with <code>a, b < N</code>.
-	 * @param a
-	 * @param b
-	 * @return (a+b) mod N
+	 * Square and add modulo N, with <code>a, b < N</code>.
+	 * @param y
+	 * @param c
+	 * @return () mod N
 	 */
-	private BigInteger addModN(BigInteger a, BigInteger b) {
-		BigInteger sum = a.add(b);
-		return sum.compareTo(N)<0 ? sum : sum.subtract(N);
+	private BigInteger squareAddModN(BigInteger y, BigInteger c) {
+		return y.multiply(y).add(c).mod(N);
 	}
 }

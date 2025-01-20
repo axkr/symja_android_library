@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -15,11 +15,12 @@ package de.tilman_neumann.jml.factor.tdiv;
 
 import java.math.BigInteger;
 
-import org.apache.log4j.Logger;
-import org.matheclipse.core.numbertheory.SortedMultiset;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithm;
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
+import de.tilman_neumann.util.SortedMultiset;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.I_2;
 
@@ -29,14 +30,15 @@ import static de.tilman_neumann.jml.base.BigIntConstants.I_2;
  * 
  * Significantly faster than TDiv31Inverse.
  * 
- * @authors Tilman Neumann + Thilo Harich
+ * @author Tilman Neumann + Thilo Harich
  */
 public class TDiv31Barrett extends FactorAlgorithm {
 	@SuppressWarnings("unused")
-	private static final Logger LOG = Logger.getLogger(TDiv31Barrett.class);
+	private static final Logger LOG = LogManager.getLogger(TDiv31Barrett.class);
 
-	private AutoExpandingPrimesArray SMALL_PRIMES = AutoExpandingPrimesArray.get();	// "static" would be slightly slower
-
+	// "static" would be slightly slower ?
+	private AutoExpandingPrimesArray SMALL_PRIMES = AutoExpandingPrimesArray.get().ensurePrimeCount(NUM_PRIMES_FOR_31_BIT_TDIV);
+	
 	private int[] primes;
 	private long[] pinv;
 	

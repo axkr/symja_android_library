@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -14,11 +14,14 @@
 package de.tilman_neumann.jml.factor.siqs.sieve;
 
 public class SieveReport {
+	private long sieveHitCount;
+	
 	private long initDuration;
 	private long sieveDuration;
 	private long collectDuration;
 
-	public SieveReport(long initDuration, long sieveDuration, long collectDuration) {
+	public SieveReport(long sieveHitCount, long initDuration, long sieveDuration, long collectDuration) {
+		this.sieveHitCount = sieveHitCount;
 		this.initDuration = initDuration;
 		this.sieveDuration = sieveDuration;
 		this.collectDuration = collectDuration;
@@ -29,6 +32,7 @@ public class SieveReport {
 	 * @param other another report added to this
 	 */
 	public void add(SieveReport other) {
+		this.sieveHitCount += other.sieveHitCount;
 		this.initDuration += other.initDuration;
 		this.sieveDuration += other.sieveDuration;
 		this.collectDuration += other.collectDuration;
@@ -38,6 +42,10 @@ public class SieveReport {
 		return (initDuration + sieveDuration + collectDuration)/numberOfThreads;
 	}
 
+	public String getOperationDetails() {
+		return "found " + sieveHitCount + " sieve hits";
+	}
+	
 	public String getPhaseTimings(int numberOfThreads) {
 		return "init=" + initDuration/numberOfThreads + "ms, sieve=" + sieveDuration/numberOfThreads + "ms, collect=" + collectDuration/numberOfThreads + "ms";
 	}

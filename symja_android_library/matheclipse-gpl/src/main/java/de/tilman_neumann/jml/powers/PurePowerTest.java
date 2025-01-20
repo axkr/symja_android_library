@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -13,20 +13,16 @@
  */
 package de.tilman_neumann.jml.powers;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.math.BigInteger;
-import java.security.SecureRandom;
-import java.util.ArrayList;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.base.UnsignedBigInt;
 import de.tilman_neumann.jml.gcd.Gcd31;
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
 import de.tilman_neumann.jml.roots.Roots;
 import de.tilman_neumann.jml.roots.SqrtExact;
-import de.tilman_neumann.util.ConfigUtil;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
@@ -39,8 +35,10 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
  */
 // TODO: A p-adic implementation like in gmp would be much faster for large numbers (with thousands of digits)
 public class PurePowerTest {
-	private static final Logger LOG = Logger.getLogger(PurePowerTest.class);
+	private static final Logger LOG = LogManager.getLogger(PurePowerTest.class);
 
+	private static final boolean DEBUG = false;
+	
 	private static final double LN_2 = Math.log(2);
 	private static final double LN_3 = Math.log(3);
 	
@@ -95,7 +93,7 @@ public class PurePowerTest {
 			// N is even -> we can test bit patterns before the full i.th root
 			BigInteger N_reduced = N.shiftRight(lsb);
 			for (int b = 3; b<log3N; b=primesArray.getPrime(++bIndex)) {
-				//LOG.debug("test b = " + b);
+				if (DEBUG) LOG.debug("test b = " + b);
 				// if the number of trailing zeros in N is not equal to 0 (mod b), then N is not a b.th power
 				if (lsb % b != 0) continue;
 				// full b.th root required
@@ -108,7 +106,7 @@ public class PurePowerTest {
 		} else {
 			// N is odd
 			for (int b = 3; b<log3N; b=primesArray.getPrime(++bIndex)) {
-				//LOG.debug("test b = " + b);
+				if (DEBUG) LOG.debug("test b = " + b);
 				BigInteger floor_bthRoot = Roots.ithRoot(N, b)[0];
 				if (floor_bthRoot.pow(b).equals(N)) {
 					// found exact power!
@@ -189,11 +187,11 @@ public class PurePowerTest {
 				// Sieve out some powers: If (2b+1) is prime, then N = x^b is only possible if N^2 == 1 (mod (2b+1)) or if (2b+1) | N
 				final int b2p = (b<<1) + 1;
 				while (b2 < b2p) b2 = primesArray.getPrime(b2Index++);
-				//LOG.debug("test b = " + b + ", b2 = " + b2);
+				if (DEBUG) LOG.debug("test b = " + b + ", b2 = " + b2);
 				if (b2 == b2p) {
 					// 2*b+1 is prime
 					final int mod = N_square.mod(b2p);
-					//LOG.debug("N = " + N + ", N^2 % b2 = " + mod);
+					if (DEBUG) LOG.debug("N = " + N + ", N^2 % b2 = " + mod);
 					if (mod > 1) continue;
 				}
 				// Full root required.
@@ -218,17 +216,17 @@ public class PurePowerTest {
 		int b2 = 3, b2Index = 1; // skip 2
 		int bIndex = 1; // skip 2
 		for (int b = 3; b<=lsb; b=primesArray.getPrime(++bIndex)) {
-			//LOG.debug("test b = " + b);
+			if (DEBUG) LOG.debug("test b = " + b);
 			// N can only be a b.th power if b | lsb
 			if (lsb % b != 0) continue;
 			// Sieve out some powers: If (2b+1) is prime, then N = x^b is only possible if N^2 == 1 (mod (2b+1)) or if (2b+1) | N
 			final int b2p = (b<<1) + 1;
 			while (b2 < b2p) b2 = primesArray.getPrime(b2Index++);
-			//LOG.debug("test b = " + b + ", b2 = " + b2);
+			if (DEBUG) LOG.debug("test b = " + b + ", b2 = " + b2);
 			if (b2 == b2p) {
 				// 2*b+1 is prime
 				final int mod = N_reduced_square.mod(b2p);
-				//LOG.debug("N = " + N + ", N^2 % b2 = " + mod);
+				if (DEBUG) LOG.debug("N = " + N + ", N^2 % b2 = " + mod);
 				if (mod > 1) continue;
 			}
 			// full b.th root required
@@ -239,94 +237,5 @@ public class PurePowerTest {
 			}
 		}
 		return null; // no pure power
-	}
-
-	private static void testCorrectness(int nCount) {
-	   	PurePowerTest powTest = new PurePowerTest();
-
-	   	// create test set for performance test
-	   	SecureRandom rng = new SecureRandom();
-	   	for (int bits=10; bits<=50; bits+=5) {
-	   		LOG.info("Test correctness with " + nCount + " " + bits + "-bit numbers");
-		   	ArrayList<BigInteger> testSet = new ArrayList<BigInteger>();
-		   	for (int i=0; i<nCount; i++) {
-		   		testSet.add(new BigInteger(bits, rng));
-		   	}
-		   	
-		   	// test correctness:
-		   	// pure powers are not unique, e.g. 3^9 == 27^3, thus we can only check if the final result is correct
-		   	for (BigInteger testNum : testSet) {
-		   		Result r1 = powTest.test_v01(testNum);
-//	   			if (r1!=null) assertEquals(testNum, r1.base.pow(r1.exponent));
-	   			
-		   		Result r2 = powTest.test/*_v02*/(testNum);
-//		   		assertEquals(r1==null, r2==null);
-//	   			if (r2!=null) assertEquals(testNum, r2.base.pow(r2.exponent));
-		   	}
-	   	}
-	   	LOG.info("");
-	}
-	
-	private static void testPerformance(int nCount) {
-	   	PurePowerTest powTest = new PurePowerTest();
-
-	   	// create test set for performance test
-	   	SecureRandom rng = new SecureRandom();
-	   	for (int bits=50; ; bits+=50) {
-		   	ArrayList<BigInteger> testSet = new ArrayList<BigInteger>();
-		   	for (int i=0; i<nCount; i++) {
-		   		testSet.add(new BigInteger(bits, rng));
-		   	}
-	
-		   	// test performance
-		   	long t0, t1;
-		   	t0 = System.currentTimeMillis();
-		   	for (BigInteger testNum : testSet) {
-		   		powTest.test_v01(testNum);
-		   	}
-		   	t1 = System.currentTimeMillis();
-			LOG.info("v01: Testing " + nCount + " " + bits + "-bit numbers took " + (t1-t0) + " ms");
-
-		   	t0 = System.currentTimeMillis();
-		   	for (BigInteger testNum : testSet) {
-		   		powTest.test/*_v02*/(testNum);
-		   	}
-		   	t1 = System.currentTimeMillis();
-			LOG.info("v02: Testing " + nCount + " " + bits + "-bit numbers took " + (t1-t0) + " ms");
-			LOG.info("");
-	   	}
-	}
-	
-	private static void testInputs() {
-	   	PurePowerTest powTest = new PurePowerTest();
-	   	while(true) {
-			try {
-				LOG.info("Insert test argument N:");
-				BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-				String line = in.readLine();
-				String input = line !=null ? line.trim() : "";
-				//LOG.debug("input = >" + input + "<");
-				BigInteger N = new BigInteger(input);
-				Result purePower = powTest.test(N);
-				if (purePower == null) {
-					LOG.info("N = " + N + " is not a pure power.");
-				} else {
-					LOG.info("N = " + N + " = " + purePower.base + "^" + purePower.exponent + " is a pure power!");
-				}
-			} catch (Exception ex) {
-				LOG.error("Error " + ex, ex);
-			}
-		}
-	}
-
-	/**
-	 * Test.
-	 * @param args ignored
-	 */
-	public static void main(String[] args) {
-	   	ConfigUtil.initProject();
-	   	testCorrectness(100000);
-	   	testPerformance(1000000);
-	   	testInputs();
 	}
 }

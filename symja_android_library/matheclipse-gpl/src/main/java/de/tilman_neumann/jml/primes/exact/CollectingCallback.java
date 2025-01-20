@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2019 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2019 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -12,8 +12,6 @@
  * if not, see <http://www.gnu.org/licenses/>.
  */
 package de.tilman_neumann.jml.primes.exact;
-
-import de.tilman_neumann.jml.primes.exact.SieveCallback;
 
 public class CollectingCallback implements SieveCallback {
 	private int capacity;

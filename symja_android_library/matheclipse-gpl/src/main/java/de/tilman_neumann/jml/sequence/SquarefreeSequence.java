@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -17,18 +17,13 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
 import java.math.BigInteger;
 
-import org.apache.log4j.Logger;
-
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
-import de.tilman_neumann.util.ConfigUtil;
 
 /**
  * Sequence of multiplier * {squarefree numbers 1,2,3,5,6,7,10,11,13,...}, BigInteger implementation.
  * @author Tilman Neumann
  */
 public class SquarefreeSequence implements NumberSequence<BigInteger> {
-	private static final Logger LOG = Logger.getLogger(SquarefreeSequence.class);
-
 	private AutoExpandingPrimesArray primesArray = AutoExpandingPrimesArray.get();
 	
 	private BigInteger multiplier;
@@ -79,19 +74,5 @@ public class SquarefreeSequence implements NumberSequence<BigInteger> {
 			if (isSquareFree) break; // found next square-free number
 		}
 		return ret.multiply(multiplier);
-	}
-	
-	// standalone test
-	public static void main(String[] args) {
-	   	ConfigUtil.initProject();
-	   	SquarefreeSequence seqGen = new SquarefreeSequence(I_1);
-	   	long start = System.currentTimeMillis();
-		seqGen.reset();
-		for (int i=1; i<=1000000; i++) {
-			@SuppressWarnings("unused")
-			BigInteger squarefree = seqGen.next();
-			//LOG.info("squarefree(" + i + ") = " + squarefree);
-		}
-		LOG.info("computation took " + (System.currentTimeMillis()-start) + " ms");
 	}
 }

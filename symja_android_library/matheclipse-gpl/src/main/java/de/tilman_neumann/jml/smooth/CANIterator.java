@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann (www.tilman-neumann.de)
+ * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -13,14 +13,12 @@
  */
 package de.tilman_neumann.jml.smooth;
 
-import java.math.BigInteger;
 import java.util.TreeMap;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
-import de.tilman_neumann.jml.precision.Magnitude;
-import de.tilman_neumann.util.ConfigUtil;
-import de.tilman_neumann.util.TimeUtil;
+import de.tilman_neumann.util.Ensure;
 
 import static de.tilman_neumann.jml.base.BigIntConstants.*;
 
@@ -29,7 +27,7 @@ import static de.tilman_neumann.jml.base.BigIntConstants.*;
  * @author Tilman Neumann
  */
 public class CANIterator {
-	private static final Logger LOG = Logger.getLogger(CANIterator.class);
+	private static final Logger LOG = LogManager.getLogger(CANIterator.class);
 	private static final boolean DEBUG = false;
 	
 	private CANEntry last = null;
@@ -42,7 +40,7 @@ public class CANIterator {
 		if (last == null) {
 			// CAN(0.5) = 2 // see test in class CANEntry
 			last = CANEntry.computeCAN(0.5);
-//			assertEquals(I_2, last.getCAN());
+			Ensure.ensureEquals(I_2, last.getCAN());
 			return last;
 		}
 		
@@ -97,30 +95,7 @@ public class CANIterator {
 		return current;
 	}
 
-	/**
-	 * Test.
-	 * @param args ignored
-	 */
-//	public static void main(String[] args) {
-//    	ConfigUtil.initProject();
-//		long startTimeMillis = System.currentTimeMillis();
-//		
-//		CANIterator canIter = new CANIterator();
-//		Double lastEpsilon = null;
-//		for (int n=1; n<=1000; n++) {
-//			CANEntry entry = canIter.next();
-//			assertEquals(n, entry.getExponentSum());
-//			double epsilon = entry.getEpsilon();
-//			Double epsilonQuot = lastEpsilon!=null ? lastEpsilon/epsilon : null;
-//			BigInteger can = entry.getCAN();
-//			int digits = Magnitude.of(can);
-//			LOG.info("n=" + n + ": epsilon=" + epsilon + ", epsilonQuot=" + epsilonQuot + ", " + digits + " digits CAN = " + entry.getCAN());
-//			lastEpsilon = epsilon;
-//		}
-//		LOG.info(canIter.exponentSum_2_canEntries.size() + " remaining precomputed CANs with exponentSums " + canIter.exponentSum_2_canEntries.keySet());
-//
-//		long endTimeMillis = System.currentTimeMillis();
-//		String durationStr = TimeUtil.timeDiffStr(startTimeMillis, endTimeMillis);
-//		LOG.info("Computation took " + durationStr);
-//	}
+	TreeMap<Integer, CANEntry> getExponentSum2CanEntries() {
+		return exponentSum_2_canEntries;
+	}
 }
