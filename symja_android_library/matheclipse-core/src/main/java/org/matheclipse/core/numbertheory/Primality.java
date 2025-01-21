@@ -771,7 +771,7 @@ public class Primality implements IPrimality {
    * @see org.matheclipse.gpl.numbertheory.BigIntegerPrimality
    */
   @Override
-  public void factorInteger(BigInteger b, SortedMultiset<BigInteger> map3) {
+  public void factorInteger(BigInteger b, SortedMap<BigInteger, Integer> map3) {
     // factor only small primes
     Int2IntMap map = new Int2IntRBTreeMap();
 
