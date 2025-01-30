@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
+ * Copyright (C) 2018-2025 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -257,7 +257,7 @@ public class SIQSPolyGenerator {
 			if (ANALYZE) nextXArrayDuration += timer.capture();
 		}
 	}
-
+	
 	/**
 	 * Compute the B-array and the first b-parameter.
 	 */
@@ -491,6 +491,14 @@ public class SIQSPolyGenerator {
 				if (x1<0 || x2<0) LOG.debug("p=" + p + ", Bainv2=" + Bainv2 + ": x1 = " + x1 + ", x2 = " + x2);
 			}
 		}
+	}
+
+	public BigInteger getDaParam() {
+		return da;
+	}
+
+	public BigInteger getBParam() {
+		return b;
 	}
 
 	/**

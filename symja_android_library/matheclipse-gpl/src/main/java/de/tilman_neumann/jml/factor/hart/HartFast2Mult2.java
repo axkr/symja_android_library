@@ -96,7 +96,8 @@ public class HartFast2Mult2 extends FactorAlgorithm {
 
 	@Override
 	public String getName() {
-		return "HartFast2Mult2(" + doTDivFirst + ")";
+		String tdivStr = doTDivFirst ? "with tdiv" : "without tdiv";
+		return "HartFast2Mult2(" + tdivStr + ")";
 	}
 
 	@Override

@@ -72,7 +72,8 @@ public class HartSquarefree extends FactorAlgorithm {
 	
 	@Override
 	public String getName() {
-		return "HartSquarefree(" + doTDivFirst + ")";
+		String tdivStr = doTDivFirst ? "with tdiv" : "without tdiv";
+		return "HartSquarefree(" + tdivStr + ")";
 	}
 
 	@Override

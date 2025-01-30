@@ -586,7 +586,6 @@ public class BlockLanczos implements Serializable {
 	    for (row = V.length - 1; row >= 0; row--) {             
 	    	// If both bits are different toggle them.
 	    	if (((matr1[row] & mask1) == 0) != ((matr2[row] & mask2) == 0)) {
-	    		// If both bits are different toggle them.
 	    		matr1[row] ^= mask1;
 	    		matr2[row] ^= mask2;
 	    	}

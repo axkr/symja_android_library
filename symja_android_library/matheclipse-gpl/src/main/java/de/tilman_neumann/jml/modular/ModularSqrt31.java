@@ -102,7 +102,7 @@ public class ModularSqrt31 {
 				// test invariants from <link>https://en.wikipedia.org/wiki/Tonelli%E2%80%93Shanks_algorithm#Proof</link>:
 				Ensure.ensureEquals(p-1, mpe.modPow(c, 1<<(M-1), p));  //  -1 == c^(2^(M-1)) (mod p)
 				Ensure.ensureEquals(1, mpe.modPow(t, 1<<(M-1), p));    //   1 == t^(2^(M-1)) (mod p)
-				Ensure.ensureEquals((R*(long)R) % p, (t*(long)n) % p); // R^2 == t*n (mod p)
+				Ensure.ensureEquals((((long)R) * R) % p, (((long)t) * n) % p); // R^2 == t*n (mod p)
 			}
 			boolean foundI = false;
 			int i;
@@ -115,9 +115,9 @@ public class ModularSqrt31 {
 			if (foundI==false) throw new IllegalStateException("Tonelli-Shanks did not find an 'i' < M=" + M);
 			
 			int b = mpe.modPow(c, 1<<(M-i-1), p); // c^(2^(M-i-1))
-			R = (int) ((R*(long)b) % p);
-			c = (int) ((b*(long)b) % p);
-			t = (int) ((t*(long)c) % p);
+			R = (int) ((((long)R) * b) % p);
+			c = (int) ((((long)b) * b) % p);
+			t = (int) ((((long)t) * c) % p);
 			M = i;
 		}
 		if (DEBUG) Ensure.ensureEquals(BigInteger.valueOf(R).pow(2).mod(BigInteger.valueOf(p)), BigInteger.valueOf(n%p));

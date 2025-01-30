@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann - tilman.neumann@web.de
+ * Copyright (C) 2018-2025 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -19,12 +19,16 @@ import java.math.BigInteger;
 import java.util.HashSet;
 
 /**
- * Fast recognition of exact integer squares, using the algorithm explained in class SqrtExactTest.
+ * Fast recognition of exact integer squares.<br/><br/>
  * 
- * Actually this is a copy of class SqrtExact03_12_v02, based on dataset 3
- * and using the square bit pattern test proposed by Graeme Willoughby, instead of a fastMod test.
+ * The following possible square detection algorithm is used:<br/>
+ * 1. Return false if n has an odd power of 2<br/>
+ * 2. Return false if the square bit pattern test proposed by Graeme Willoughby is failed<br/>
+ *    (this has replaced the "fastMod-test", i.e. return false if n&fastMod is not in the set of square rests of fastMod)<br/>
+ * 3. Compute rest=n%m for several m and check if the rest is in the square rests of each m. return false if not.<br/><br/>
  * 
- * This is the fastest version so far.
+ * If steps 1-3 are passed, then an actual sqrt() computation is required to find out
+ * if it is really a square of an integer or a false positive.<br/><br/>
  * 
  * @author Tilman Neumann
  */
@@ -107,7 +111,7 @@ public class SqrtExact {
 					if (!squareRests[i].contains(rest)) return null; // rest = n % nextMod is no square rest
 				}
 			}
-		}
+		} // else: it seems to be impossible to beat the performance of Math.sqrt(long)
 		
 		// Newton sqrt() required
 		BigInteger[] isqrt = SqrtInt.iSqrt(n);

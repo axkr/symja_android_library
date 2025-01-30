@@ -52,7 +52,8 @@ public class LehmanSmith extends FactorAlgorithm {
 
 	@Override
 	public String getName() {
-		return "LehmanSmith(" + doTDivFirst + ")";
+		String tdivStr = doTDivFirst ? "with tdiv" : "without tdiv";
+		return "LehmanSmith(" + tdivStr + ")";
 	}
 
 	@Override

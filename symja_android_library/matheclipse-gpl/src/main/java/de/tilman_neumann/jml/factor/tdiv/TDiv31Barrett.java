@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
+ * Copyright (C) 2018-2025 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -19,6 +19,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithm;
+import de.tilman_neumann.jml.factor.base.FactorArguments;
+import de.tilman_neumann.jml.factor.base.FactorResult;
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
 import de.tilman_neumann.util.SortedMultiset;
 
@@ -83,11 +85,17 @@ public class TDiv31Barrett extends FactorAlgorithm {
 		int q;
 		for (int i=1; ; i++) {
 			final int p = primes[i];
+			int exp = 0;
 			while ((q = (1 + (int) ((N*pinv[i])>>32))) * p == N) {
-				primeFactors.add(BigInteger.valueOf(p), Nexp);
-				N = q;
+				exp++;
+				N = q; // avoiding a division here by storing q benefits the int version but not the long version
 			}
-			if (p*(long)p > N) {
+			if (exp > 0) {
+				primeFactors.add(BigInteger.valueOf(p), exp*Nexp);
+			}
+			// for random composite N, it is much much faster to check the termination condition after each p;
+			// for semiprime N, it would be ~40% faster to do it only after successful divisions
+			if (((long)p) * p > N) { // move p as long into registers makes a performance difference
 				break;
 			}
 		}
@@ -96,6 +104,18 @@ public class TDiv31Barrett extends FactorAlgorithm {
 			// either N is prime, or we could not find all factors -> add the rest to the result
 			primeFactors.add(BigInteger.valueOf(N), Nexp);
 		}
+	}
+	
+	/**
+	 * Try to find small factors of a positive argument N by doing trial division by all primes p <= pLimit.
+	 * 
+	 * @param args
+	 * @param result a pre-initialized data structure to add results to
+	 */
+	@Override
+	public void searchFactors(FactorArguments args, FactorResult result) {
+		if (args.NBits > 31) throw new IllegalArgumentException(getName() + ".searchFactors() does not work for N>31 bit, but N=" + args.N + " has " + args.NBits + " bit");
+		throw new UnsupportedOperationException(); // not required because this class overwrites factor()
 	}
 
 	@Override

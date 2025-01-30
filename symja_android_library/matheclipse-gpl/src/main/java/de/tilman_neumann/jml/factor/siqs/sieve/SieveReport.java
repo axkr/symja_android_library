@@ -43,7 +43,7 @@ public class SieveReport {
 	}
 
 	public String getOperationDetails() {
-		return "found " + sieveHitCount + " sieve hits";
+		return "Found " + sieveHitCount + " sieve hits";
 	}
 	
 	public String getPhaseTimings(int numberOfThreads) {

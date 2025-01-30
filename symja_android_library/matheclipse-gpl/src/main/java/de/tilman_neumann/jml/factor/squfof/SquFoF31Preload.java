@@ -109,7 +109,7 @@ public class SquFoF31Preload extends FactorAlgorithm {
 				// The cast may be wrong for some bigger kN, but fixing the cast would mean a small performance
 				// penalty, so we ignore it. Return immediately if kN is square.
 				floor_sqrt_kN = (int) Math.sqrt(kN);
-				int diff = (int) (kN - floor_sqrt_kN*(long)floor_sqrt_kN);
+				int diff = (int) (kN - ((long)floor_sqrt_kN) * floor_sqrt_kN);
 				if (diff==0) return gcdEngine.gcd(N, floor_sqrt_kN);
 				
 				// search square Q_i
@@ -163,7 +163,7 @@ public class SquFoF31Preload extends FactorAlgorithm {
 		int b_i = (floor_sqrt_kN-found_P)/found_Q_sqrt; // floor(rational result)
 		int P_i = b_i*found_Q_sqrt + found_P;
 		int Q_i = found_Q_sqrt;
-		int Q_ip1 = (int) ((kN - P_i*(long)P_i)/found_Q_sqrt);
+		int Q_ip1 = (int) ((kN - ((long)P_i) * P_i) / found_Q_sqrt);
 		
 		// second iteration step
 		int P_im1, Q_im1;

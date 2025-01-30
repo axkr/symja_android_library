@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
+ * Copyright (C) 2018-2025 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -272,7 +272,7 @@ public class SIQS extends FactorAlgorithm {
 			// trial division stage: produce AQ-pairs
 			List<AQPair> aqPairs = this.auxFactorizer.testList(smoothXList);
 			//LOG.debug("Trial division found " + aqPairs.size() + " Q(x) smooth enough for a congruence.");
-			if (TEST_SIEVE) testSieve(aqPairs, adjustedSieveArraySize);
+			if (TEST_SIEVE) testSieve(aqPairs, adjustedSieveArraySize, kN);
 
 			// add all congruences
 			congruenceCollector.collectAndProcessAQPairs(aqPairs);
@@ -282,8 +282,15 @@ public class SIQS extends FactorAlgorithm {
 
 				if (TEST_SIEVE) {
 					float perfectSmoothPercentage = foundPerfectSmoothCount*100 / (float) allPerfectSmoothCount;
-					float partialPercentage = (foundAQPairsCount-foundPerfectSmoothCount)*100 / (float) (allAQPairsCount-allPerfectSmoothCount);
-					LOG.debug("    Sieve found " + perfectSmoothPercentage + " % of perfectly smooth and " + partialPercentage + " % of partial congruences");
+					LOG.debug("foundAQPairsCount = " + foundAQPairsCount + ", foundPerfectSmoothCount = " + foundPerfectSmoothCount);
+					LOG.debug("allAQPairsCount = " + allAQPairsCount + ", allPerfectSmoothCount = " + allPerfectSmoothCount);
+					int allPartialsCount = allAQPairsCount-allPerfectSmoothCount;
+					if (allPartialsCount > 0) {
+						float partialPercentage = (foundAQPairsCount-foundPerfectSmoothCount)*100 / (float) (allAQPairsCount-allPerfectSmoothCount);
+						LOG.debug("Sieve found " + perfectSmoothPercentage + " % of perfectly smooth and " + partialPercentage + " % of partial congruences");
+					} else {
+						LOG.debug("Sieve found " + perfectSmoothPercentage + " % of perfectly smooth; there were no partial congruences because N is too small");
+					}
 				}
 				
 				// release memory after a factorization; this improves the accuracy of timings when several algorithms are tested in parallel
@@ -302,22 +309,35 @@ public class SIQS extends FactorAlgorithm {
 		return logPArray;
 	}
 	
-	private void testSieve(List<AQPair> foundAQPairs, int sieveArraySize) {
+	private void testSieve(List<AQPair> foundAQPairs, int sieveArraySize, BigInteger kN) {
 		for (AQPair aqPair : foundAQPairs) {
 			if (aqPair instanceof Smooth) foundPerfectSmoothCount++;
 		}
 		foundAQPairsCount += foundAQPairs.size();
+
 		ArrayList<SmoothCandidate> allXList = new ArrayList<>();
-		allXList.add(new SmoothCandidate(0));
+		allXList.add(computeSmoothCandidate(0, kN));
 		for (int x=1; x<sieveArraySize; x++) {
-			allXList.add(new SmoothCandidate(x));
-			allXList.add(new SmoothCandidate(-x));
+			allXList.add(computeSmoothCandidate(x, kN));
+			allXList.add(computeSmoothCandidate(-x, kN));
 		}
 		List<AQPair> allAQPairs = this.auxFactorizer.testList(allXList);
 		for (AQPair aqPair : allAQPairs) {
 			if (aqPair instanceof Smooth) allPerfectSmoothCount++;
 		}
 		allAQPairsCount += allAQPairs.size();
+	}
+
+	private SmoothCandidate computeSmoothCandidate(int x, BigInteger kN) {
+		BigInteger da = polyGenerator.getDaParam();
+		BigInteger b = polyGenerator.getBParam();
+		BigInteger c =  b.multiply(b).subtract(kN).divide(da);
+		// Compute Q(x)/a:
+		BigInteger xBig = BigInteger.valueOf(x);
+		BigInteger dax = da.multiply(xBig);
+		BigInteger A = dax.add(b);
+		BigInteger Qdiva = dax.multiply(xBig).add(b.multiply(BigInteger.valueOf(x<<1))).add(c);
+		return new SmoothCandidate(x, Qdiva, A);
 	}
 
 	private void logResults(BigInteger N, int k, BigInteger kN, BigInteger factor, int primeBaseSize, SieveParams sieveParams) {
@@ -339,7 +359,7 @@ public class SIQS extends FactorAlgorithm {
 		int pMaxBits = 32 - Integer.numberOfLeadingZeros(sieveParams.pMax);
 		LOG.info("    multiplier k = " + k + ", kN%8 = " + kN.mod(I_8) + ", primeBaseSize = " + primeBaseSize + ", pMin = " + sieveParams.pMin + " (" + pMinBits + " bits), pMax = " + sieveParams.pMax + " (" + pMaxBits + " bits), sieveArraySize = " + sieveParams.sieveArraySize);
 		LOG.info("    polyGenerator: " + polyReport.getOperationDetails());
-		LOG.info("    sieve: Found " + sieveReport.getOperationDetails());
+		LOG.info("    sieve: " + sieveReport.getOperationDetails());
 		LOG.info("    tDiv: " + tdivReport.getOperationDetails());
 		LOG.info("    cc: " + ccReport.getOperationDetails());
 		if (ccReport.getMaxRelatedPartialsCount() > 0) LOG.info("    cc: maxRelatedPartialsCount = " + ccReport.getMaxRelatedPartialsCount() + ", maxPartialMatrixSize = " + ccReport.getMaxMatrixSize() + " rows");

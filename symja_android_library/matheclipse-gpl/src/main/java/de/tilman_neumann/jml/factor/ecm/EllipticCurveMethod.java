@@ -980,8 +980,15 @@ public class EllipticCurveMethod extends FactorAlgorithm {
 	void BigNbrToBigInt(BigInteger N, int[] TestNbr, int NumberLength) {
 		// Temp needs 1 extra int because of TestNbr[j] = p; in BigNbrToBigInt(long[])
 	    long[] Temp = new long[NumberLength+1]; // zero-initialized
+	    
+	    // Convert32To31Bits does not work for negative N, so we switch the sign before and after
+	    boolean chSign = N.signum()<0;
+	    if (chSign) N = N.negate();
+	    
 		BigNbrToBigInt(N, Temp, NumberLength);
 	    Convert32To31Bits(Temp, TestNbr, NumberLength);
+	    
+		if (chSign) ChSignBigNbr(TestNbr);
 	}
 	
 	/**
@@ -1233,7 +1240,6 @@ public class EllipticCurveMethod extends FactorAlgorithm {
 		}
 	}
 
-	// TODO This may be the problem in in-out-conversion31 of negative inputs
 	void Convert31To32Bits(int[] nbr31, long[] nbr32) {
 		int i, j, k;
 		i = 0;
@@ -1257,6 +1263,15 @@ public class EllipticCurveMethod extends FactorAlgorithm {
 		}
 	}
 
+	/**
+	 * convert nbr32 into nbr31.<br/><br/>
+	 * 
+	 * <strong>Warning: This implementation does not work for negative arguments!</strong>
+	 * 
+	 * @param nbr32
+	 * @param nbr31
+	 * @param NumberLength
+	 */
 	private void Convert32To31Bits(long[] nbr32, int[] nbr31, int NumberLength) {
 		int i, j, k;
 		j = 0;
@@ -1683,7 +1698,14 @@ public class EllipticCurveMethod extends FactorAlgorithm {
 	    if (i < 0 || B[i] < CalcAuxModInvMu[i]) { // If B < Mu
 	    	SubtractBigNbr32(CalcAuxModInvMu, B, CalcAuxModInvMu); // Mu <- Mu - B
 	    }
+	    // It doesn't matter here that Convert32To31Bits() does not work for negative inputs, because CalcAuxModInvMu is always positive
 	    Convert32To31Bits(CalcAuxModInvMu, inv, NumberLength);
+	    if (DEBUG) {
+		    BigInteger inv32 = BigIntToBigNbr(CalcAuxModInvMu);
+		    Ensure.ensureGreater(inv32.signum(), 0);
+		    BigInteger inv31 = BigIntToBigNbr(inv);
+		    Ensure.ensureEquals(inv32, inv31);
+	    }
 	}
 
 	BigInteger BigIntToBigNbr(int[] nbr) {

@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
+ * Copyright (C) 2018-2025 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -61,7 +61,7 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
 
 	private TDiv31Barrett tDiv31 = new TDiv31Barrett();
 	private HartFast2Mult hart = new HartFast2Mult(true); // for general factor arguments, trial division is needed
-	private TinyEcm64MHInlined tinyEcm = new TinyEcm64MHInlined();
+	private TinyEcm64MHInlined tinyEcm = new TinyEcm64MHInlined(true); // for general factor arguments, trial division is needed
 	private PollardRhoBrentMontgomery64MH pollardRhoBrentMontgomery64MH = new PollardRhoBrentMontgomery64MH();
 	private TDiv tdiv = new TDiv();
 	private EllipticCurveMethod ecm = new EllipticCurveMethod(0);
@@ -140,6 +140,7 @@ public class CombinedFactorAlgorithm extends FactorAlgorithm {
 		}
 		else if (NBits<46) hart.searchFactors(args, result);
 		else if (NBits<63) tinyEcm.searchFactors(args, result);
+		else if (NBits<64) pollardRhoBrentMontgomery64MH.searchFactors(args, result);
 		else {
 			if (SEARCH_SMALL_FACTORS) {
 				int actualTdivLimit;

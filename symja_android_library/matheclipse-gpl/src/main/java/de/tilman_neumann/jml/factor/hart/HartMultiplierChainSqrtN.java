@@ -98,7 +98,8 @@ public class HartMultiplierChainSqrtN extends FactorAlgorithm {
 	
 	@Override
 	public String getName() {
-		return "HartMultiplierChainSqrtN(" + doTDivFirst + ")";
+		String tdivStr = doTDivFirst ? "with tdiv" : "without tdiv";
+		return "HartMultiplierChainSqrtN(" + tdivStr + ")";
 	}
 
 	@Override

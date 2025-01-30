@@ -92,7 +92,7 @@ public class TDiv_QS_nLP implements TDiv_QS {
 	private PrPTest prpTest = new PrPTest();
 	
 	private HartFast2Mult hart = new HartFast2Mult(false);
-	private TinyEcm64MHInlined tinyEcm = new TinyEcm64MHInlined();
+	private TinyEcm64MHInlined tinyEcm = new TinyEcm64MHInlined(false);
 	private PollardRhoBrentMontgomery64MH pollardRhoBrentMontgomery64MH = new PollardRhoBrentMontgomery64MH();
 	// Nested SIQS is required for quite large N only, > 350 bit ?
 	private SIQSSmall qsInternal;

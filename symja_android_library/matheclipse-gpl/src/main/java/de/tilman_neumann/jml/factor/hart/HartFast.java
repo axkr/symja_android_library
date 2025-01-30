@@ -72,7 +72,8 @@ public class HartFast extends FactorAlgorithm {
 	
 	@Override
 	public String getName() {
-		return "HartFast(" + doTDivFirst + ")";
+		String tdivStr = doTDivFirst ? "with tdiv" : "without tdiv";
+		return "HartFast(" + tdivStr + ")";
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018 Tilman Neumann - tilman.neumann@web.de
+ * Copyright (C) 2018-2025 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -16,6 +16,8 @@ package de.tilman_neumann.jml.factor.tdiv;
 import java.math.BigInteger;
 
 import de.tilman_neumann.jml.factor.FactorAlgorithm;
+import de.tilman_neumann.jml.factor.base.FactorArguments;
+import de.tilman_neumann.jml.factor.base.FactorResult;
 import de.tilman_neumann.jml.primes.exact.AutoExpandingPrimesArray;
 import de.tilman_neumann.util.SortedMultiset;
 
@@ -47,11 +49,25 @@ public class TDiv31 extends FactorAlgorithm {
 				} while (N%p == 0);
 				primeFactors.add(BigInteger.valueOf(p), exp);
 			}
-			if (p*(long)p > N) {
+			// for random composite N, it is much much faster to check the termination condition after each p;
+			// for semiprime N, it would be ~40% faster to do it only after successful divisions
+			if (((long)p) * p > N) { // move p as long into registers makes a performance difference
 				if (N>1) primeFactors.add(BigInteger.valueOf(N));
 				break;
 			}
 		}
+	}
+	
+	/**
+	 * Try to find small factors of a positive argument N by doing trial division by all primes p <= pLimit.
+	 * 
+	 * @param args
+	 * @param result a pre-initialized data structure to add results to
+	 */
+	@Override
+	public void searchFactors(FactorArguments args, FactorResult result) {
+		if (args.NBits > 31) throw new IllegalArgumentException(getName() + ".searchFactors() does not work for N>31 bit, but N=" + args.N + " has " + args.NBits + " bit");
+		throw new UnsupportedOperationException(); // not required because this class overwrites factor()
 	}
 
 	@Override

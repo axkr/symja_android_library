@@ -126,7 +126,8 @@ public class LehmanCustomKOrder extends FactorAlgorithm {
 
 	@Override
 	public String getName() {
-		return "LehmanCustomKOrder(" + doTDivFirst + ")";
+		String tdivStr = doTDivFirst ? "with tdiv" : "without tdiv";
+		return "LehmanCustomKOrder(" + tdivStr + ")";
 	}
 
 	@Override

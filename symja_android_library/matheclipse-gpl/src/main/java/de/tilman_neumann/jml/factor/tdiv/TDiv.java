@@ -1,6 +1,6 @@
 /*
  * java-math-library is a Java library focused on number theory, but not necessarily limited to it. It is based on the PSIQS 4.0 factoring project.
- * Copyright (C) 2018-2024 Tilman Neumann - tilman.neumann@web.de
+ * Copyright (C) 2018-2025 Tilman Neumann - tilman.neumann@web.de
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
@@ -35,7 +35,7 @@ import de.tilman_neumann.util.SortedMultiset_BottomUp;
  * @author Tilman Neumann
  */
 public class TDiv extends FactorAlgorithm {
-	@SuppressWarnings("unused")
+
 	private static final Logger LOG = LogManager.getLogger(TDiv.class);
 	private static final boolean DEBUG = false;
 	
@@ -76,8 +76,7 @@ public class TDiv extends FactorAlgorithm {
 	}
 	
 	/**
-	 * Tries to find small factors of a positive, possibly large argument N by doing trial division
-	 * by all primes p &lt;= pLimit.
+	 * Try to find small factors of a positive, possibly large argument N by doing trial division by all primes p <= pLimit.
 	 * 
 	 * @param args
 	 * @param result a pre-initialized data structure to add results to
@@ -103,26 +102,28 @@ public class TDiv extends FactorAlgorithm {
 		int p_i;
 		for (int i=1; (p_i=SMALL_PRIMES.getPrime(i))<=pLimit; i++) {
 			BigInteger p_i_big = BigInteger.valueOf(p_i);
-			BigInteger[] div = N.divideAndRemainder(p_i_big);
-			if (div[1].equals(I_0)) {
-				// p_i divides N at least once
-				do {
-					addToMap(p_i_big, Nexp, primeFactors);
-					N = div[0];
-					div = N.divideAndRemainder(p_i_big);
-				} while (div[1].equals(I_0));
-
-				// At least one division has occurred; check if we are done.
-				// Probably the check could be improved but it wont make much difference because the divisions are much more expensive.
-				if (N.bitLength() < 63) {
-					long p_i_square = p_i *(long)p_i;
-					if (p_i_square > N.longValue()) {
-						//LOG.debug("N=" + N + " < p^2=" + p_i_square);
-						// the remaining N is 1 or prime
-						if (N.compareTo(I_1)>0) addToMap(N, Nexp, primeFactors);
-						result.smallestPossibleFactor = p_i; // may be helpful in following factor algorithms
-						return;
-					}
+			BigInteger[] div;
+			int exp = 0;
+			while ((div = N.divideAndRemainder(p_i_big))[1].equals(I_0)) {
+				N = div[0];
+				exp++;
+			}
+			if (exp > 0) {
+				// At least one exact division has occurred; add to results
+				addToMap(p_i_big, exp*Nexp, primeFactors);
+			}
+			
+			// for random composite N, it is much much faster to check the termination condition after each p;
+			// for semiprime N, it would be ~40% faster to do it only after successful divisions
+			int pbits = 32-Integer.numberOfLeadingZeros(p_i);
+			if (pbits<<1 >= N.bitLength()) {
+				long p_i_square = ((long)p_i) * p_i;
+				if (p_i_square > N.longValue()) {
+					if (DEBUG) LOG.debug("N=" + N + " < p^2 = " + p_i_square);
+					// the remaining N is 1 or prime
+					if (N.compareTo(I_1)>0) addToMap(N, Nexp, primeFactors);
+					result.smallestPossibleFactor = p_i; // may be helpful in following factor algorithms
+					return;
 				}
 			}
 		}

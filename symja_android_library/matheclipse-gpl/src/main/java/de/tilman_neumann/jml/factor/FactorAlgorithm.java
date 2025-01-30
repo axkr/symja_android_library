@@ -13,13 +13,13 @@
  */
 package de.tilman_neumann.jml.factor;
 
-import static de.tilman_neumann.jml.base.BigIntConstants.I_0;
-import static de.tilman_neumann.jml.base.BigIntConstants.I_1;
-import static de.tilman_neumann.jml.base.BigIntConstants.I_2;
-import static de.tilman_neumann.jml.base.BigIntConstants.I_MINUS_1;
+import static de.tilman_neumann.jml.base.BigIntConstants.*;
+
 import java.math.BigInteger;
-import org.apache.logging.log4j.LogManager;
+
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import de.tilman_neumann.jml.factor.base.FactorArguments;
 import de.tilman_neumann.jml.factor.base.FactorResult;
 import de.tilman_neumann.jml.primes.probable.BPSWTest;
@@ -87,7 +87,7 @@ abstract public class FactorAlgorithm {
 	 * @param N Number to factor.
 	 * @param primeFactors a map to which found factors are added
 	 */
-    public void factor(BigInteger N, SortedMultiset<BigInteger> primeFactors) {
+	public void factor(BigInteger N, SortedMultiset<BigInteger> primeFactors) {
 		// Make N positive
 		if (N.signum()<0) {
 			primeFactors.add(I_MINUS_1);
@@ -114,7 +114,6 @@ abstract public class FactorAlgorithm {
 		}
 		
 		// N contains larger factors...
-		FactorArguments args = new FactorArguments(N, 1);
 		FactorResult factorResult = new FactorResult(primeFactors, new SortedMultiset_BottomUp<BigInteger>(), new SortedMultiset_BottomUp<BigInteger>(), 3);
 		SortedMultiset<BigInteger> untestedFactors = factorResult.untestedFactors; // ArrayList would be faster
 		untestedFactors.add(N);
@@ -149,9 +148,7 @@ abstract public class FactorAlgorithm {
 				
 				BigInteger compositeFactor = factorResult.compositeFactors.firstKey();
 				int exp = factorResult.compositeFactors.removeAll(compositeFactor);
-				args.N = compositeFactor;
-				args.NBits = compositeFactor.bitLength();
-				args.exp = exp;
+				FactorArguments args = new FactorArguments(compositeFactor, exp);
 				searchFactors(args, factorResult);
 				if (DEBUG) LOG.debug("3: factorResult: " + factorResult);
 			}

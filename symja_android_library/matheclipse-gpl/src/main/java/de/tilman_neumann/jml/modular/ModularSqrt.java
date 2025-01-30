@@ -102,7 +102,7 @@ public class ModularSqrt {
 				Ensure.ensureEquals(p-1, mpe.modPow(c, 1<<(M-1), p)); //  -1 == c^(2^(M-1)) (mod p)
 				Ensure.ensureEquals(1, mpe.modPow(t, 1<<(M-1), p));   //   1 == t^(2^(M-1)) (mod p)
 				long nModP = n.mod(BigInteger.valueOf(p)).longValue();
-				Ensure.ensureEquals((R*(long)R) % p, (t*nModP) % p);  // R^2 == t*n (mod p)
+				Ensure.ensureEquals((((long)R) * R) % p, (t*nModP) % p);  // R^2 == t*n (mod p)
 			}
 			boolean foundI = false;
 			int i;
@@ -115,9 +115,9 @@ public class ModularSqrt {
 			if (foundI==false) throw new IllegalStateException("Tonelli-Shanks did not find an 'i' < M=" + M);
 			
 			int b = mpe.modPow(c, 1<<(M-i-1), p); // c^(2^(M-i-1))
-			R = (int) ((R*(long)b) % p);
-			c = (int) ((b*(long)b) % p);
-			t = (int) ((t*(long)c) % p);
+			R = (int) ((((long)R) * b) % p);
+			c = (int) ((((long)b) * b) % p);
+			t = (int) ((((long)t) * c) % p);
 			M = i;
 		}
 		if (DEBUG) Ensure.ensureEquals(BigInteger.valueOf(R).pow(2).mod(BigInteger.valueOf(p)), n.mod(BigInteger.valueOf(p)));
@@ -148,10 +148,10 @@ public class ModularSqrt {
 		int k = p>>3; // for p == 5 (mod 8) we need k = (p-5)/8 = p>>3
 		BigInteger n2 = n.shiftLeft(1);
 		int g = mpe.modPow(n2, k, p);
-		BigInteger gSquare = BigInteger.valueOf(g*(long)g);
+		BigInteger gSquare = BigInteger.valueOf(((long)g) * g);
 		BigInteger p_big = BigInteger.valueOf(p);
 		int i = n2.multiply(gSquare).mod(p_big).intValue();
-		int t = n.multiply(BigInteger.valueOf(g*(long)(i-1))).mod(p_big).intValue();
+		int t = n.multiply(BigInteger.valueOf(((long)g) * (i-1))).mod(p_big).intValue();
 		if (DEBUG) Ensure.ensureEquals(BigInteger.valueOf(t).pow(2).mod(p_big), n.mod(p_big));
 		// return the smaller sqrt
 		return t <= (p>>1) ? t : p-t;

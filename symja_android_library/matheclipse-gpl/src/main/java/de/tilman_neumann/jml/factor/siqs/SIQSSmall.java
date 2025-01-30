@@ -317,7 +317,7 @@ public class SIQSSmall extends FactorAlgorithm {
 		int pMaxBits = 32 - Integer.numberOfLeadingZeros(sieveParams.pMax);
 		LOG.info("    multiplier k = " + k + ", kN%8 = " + kN.mod(I_8) + ", primeBaseSize = " + primeBaseSize + ", pMin = " + sieveParams.pMin + " (" + pMinBits + " bits), pMax = " + sieveParams.pMax + " (" + pMaxBits + " bits), sieveArraySize = " + sieveParams.sieveArraySize);
 		LOG.info("    polyGenerator: " + polyReport.getOperationDetails());
-		LOG.info("    sieve: Found " + sieveReport.getOperationDetails());
+		LOG.info("    sieve: " + sieveReport.getOperationDetails());
 		LOG.info("    tDiv: " + tdivReport.getOperationDetails());
 		LOG.info("    cc: " + ccReport.getOperationDetails());
 		if (ccReport.getMaxRelatedPartialsCount() > 0) LOG.info("    cc: maxRelatedPartialsCount = " + ccReport.getMaxRelatedPartialsCount() + ", maxPartialMatrixSize = " + ccReport.getMaxMatrixSize() + " rows");

@@ -77,7 +77,8 @@ public class HartFast2MultFMA extends FactorAlgorithm {
 
 	@Override
 	public String getName() {
-		return "HartFast2MultFMA(" + doTDivFirst + ")";
+		String tdivStr = doTDivFirst ? "with tdiv" : "without tdiv";
+		return "HartFast2MultFMA(" + tdivStr + ")";
 	}
 
 	@Override

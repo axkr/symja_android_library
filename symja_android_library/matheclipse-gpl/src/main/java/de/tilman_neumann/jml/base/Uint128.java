@@ -351,28 +351,6 @@ public class Uint128 {
 	}
 
 	/**
-	 * Computes the low part of the product of two unsigned 64 bit integers.
-	 * 
-	 * Overflows of the "middle term" are not interesting here because they'ld only
-	 * affect the high part of the multiplication result.
-	 * 
-	 * @param a
-	 * @param b
-	 * @return (a*b) & 0xFFFFFFFFL
-	 */
-	// XXX a*b should give the same result !?
-	public static long mul64_getLow(long a, long b) {
-		final long a_hi = a >>> 32;
-		final long b_hi = b >>> 32;
-		final long a_lo = a & 0xFFFFFFFFL;
-		final long b_lo = b & 0xFFFFFFFFL;
-		final long lo_prod = a_lo * b_lo;
-		final long med_term = a_hi * b_lo + a_lo * b_hi;
-		final long r_lo = ((med_term & 0xFFFFFFFFL) << 32) + lo_prod;
-		return r_lo;
-	}
-
-	/**
 	 * Multiplication of two unsigned 128 bit integers.
 	 * 
 	 * @param a Uint128
