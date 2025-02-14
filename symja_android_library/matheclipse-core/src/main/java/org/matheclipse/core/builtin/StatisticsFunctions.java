@@ -37,6 +37,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IAST.PROPERTY;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IContinuousDistribution;
 import org.matheclipse.core.interfaces.IDiscreteDistribution;
@@ -118,6 +119,7 @@ public class StatisticsFunctions {
       S.Quartiles.setEvaluator(new Quartiles());
       S.RandomVariate.setEvaluator(new RandomVariate());
       S.Rescale.setEvaluator(new Rescale());
+      S.RootMeanSquare.setEvaluator(new RootMeanSquare());
       S.Skewness.setEvaluator(new Skewness());
       S.StandardDeviation.setEvaluator(new StandardDeviation());
       S.Standardize.setEvaluator(new Standardize());
@@ -3446,9 +3448,8 @@ public class StatisticsFunctions {
       }
       IAST num1 = arg1.apply(S.Plus);
       IExpr factor = F.ZZ(-1 * (arg1.size() - 2));
-      IASTAppendable v1 = F.PlusAlloc(arg1.size());
-      v1.appendArgs(arg1.size(), i -> F.Times(F.CN1,
-          num1.setAtCopy(i, F.Times(factor, arg1.get(i))), F.Conjugate(arg2.get(i))));
+      IExpr v1 = F.sum(i -> F.Times(F.CN1, num1.setAtCopy(i.toInt(), F.Times(factor, arg1.get(i))),
+          F.Conjugate(arg2.get(i))), 1, arg1.argSize());
       return F.Divide(v1, F.ZZ((arg1.argSize()) * ((arg1.size()) - 2L)));
     }
 
@@ -3473,7 +3474,7 @@ public class StatisticsFunctions {
     @Override
     public IExpr realMatrixEval(RealMatrix matrix, EvalEngine engine, IAST ast) {
       if (matrix.getRowDimension() <= 1) {
-        // The argument `1` should have at least `2` arguments.
+        // The argument `1` should have at least `2` elements.
         return Errors.printMessage(S.Covariance, "shlen",
             F.List(new ASTRealMatrix(matrix, false), F.stringx("two")), EvalEngine.get());
       }
@@ -4646,7 +4647,7 @@ public class StatisticsFunctions {
         if (ast.arg1().isList()) {
           IAST list = (IAST) ast.arg1();
           if (list.argSize() < 2) {
-            // The argument `1` should have at least `2` arguments.
+            // The argument `1` should have at least `2` elements.
             return Errors.printMessage(ast.topHead(), "shlen", F.List(list, F.C2), engine);
           }
           IExpr centralMoment = engine.evaluate(F.CentralMoment(list, F.C2));
@@ -7158,7 +7159,53 @@ public class StatisticsFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  private static final class RootMeanSquare extends AbstractEvaluator {
 
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isList()) {
+        IAST list = (IAST) arg1;
+        int[] matrix = list.isMatrix();
+        if (matrix != null) {
+          IASTAppendable[] columnElements = new IASTAppendable[matrix[1]];
+          for (int i = 0; i < matrix[1]; i++) {
+            columnElements[i] = F.ast(S.List, matrix[1]);
+          }
+          for (int j = 1; j <= matrix[1]; j++) {
+            IASTAppendable rootMeanList = columnElements[j - 1];
+            for (int i = 1; i <= matrix[0]; i++) {
+              IAST row = (IAST) list.get(i);
+              rootMeanList.append(row.get(j));
+            }
+          }
+          IASTAppendable result = F.ListAlloc(matrix[1]);
+          for (int i = 0; i < matrix[1]; i++) {
+            result.append(rootMeanSquareVector(columnElements[i]));
+          }
+          return result;
+        } else {
+          return rootMeanSquareVector(list);
+        }
+      }
+      return F.NIL;
+    }
+
+    private static IExpr rootMeanSquareVector(IAST list) {
+      IExpr sum = F.sum(i -> list.get(i).times(list.get(i)), 1, list.argSize());
+      return F.Times(F.Power(sum, F.C1D2), F.Power(F.ZZ(list.argSize()), F.CN1D2));
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
   /**
    *
    *
@@ -7284,14 +7331,18 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList()) {
-        IAST arg1 = (IAST) ast.arg1();
-        int[] dim = arg1.isMatrix();
+      IExpr arg1 = ast.arg1();
+      if (arg1.isSparseArray()) {
+        arg1 = arg1.normal(false);
+      }
+      if (arg1.isList()) {
+        IAST list = (IAST) arg1;
+        int[] dim = list.isMatrix();
         if (dim == null) {
-          int length = arg1.isVector();
-          if (length > 0) {
+          int length = list.isVector();
+          if (length > 1) {
             if (arg1.isRealVector()) {
-              double[] values = arg1.toDoubleVector();
+              double[] values = list.toDoubleVector();
               if (values == null) {
                 return F.NIL;
               }
@@ -7299,15 +7350,40 @@ public class StatisticsFunctions {
                   new org.hipparchus.stat.descriptive.moment.StandardDeviation();
               return F.num(sd.evaluate(values));
             }
-          } else {
-            return F.NIL;
+            return standardDeviation(arg1);
           }
+          // The argument `1` should have at least `2` elements.
+          return Errors.printMessage(S.StandardDeviation, "shlen", F.List(list, F.C2));
         }
-        if (dim != null) {
-          return arg1.mapMatrixColumns(dim, x -> F.StandardDeviation(x));
+        return arg1.mapMatrixColumns(dim, x -> F.StandardDeviation(x));
+      } else if (arg1.isAssociation()) {
+        IAssociation assoc = (IAssociation) arg1;
+        int[] dim = assoc.isAssociationMatrix();
+        if (dim == null) {
+          int vectorLength = assoc.isAssociationVector();
+          if (vectorLength > 0) {
+            if (vectorLength > 1) {
+              IAST list = Convert.assoc2List(assoc);
+              return F.Sqrt(F.Variance(list));
+            }
+            // The argument `1` should have at least `2` elements.
+            return Errors.printMessage(S.StandardDeviation, "shlen", F.List(assoc, F.C2));
+          }
+          // Rectangular array expected at position `1` in `2`.
+          return Errors.printMessage(S.StandardDeviation, "rectt", F.List(F.C1, ast));
         }
+        return arg1.mapMatrixColumns(dim, x -> F.StandardDeviation(x));
+      } else if (arg1.isDistribution()) {
+        return standardDeviation(arg1);
+      } else if (arg1.isNumber()) {
+        // Rectangular array expected at position `1` in `2`.
+        return Errors.printMessage(S.StandardDeviation, "rectt", F.List(F.C1, ast));
       }
-      return F.Sqrt(F.Variance(ast.arg1()));
+      return F.NIL;
+    }
+
+    private static IAST standardDeviation(IExpr expr) {
+      return F.Sqrt(F.Variance(expr));
     }
 
     @Override
@@ -7627,6 +7703,11 @@ public class StatisticsFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {}
   }
 
@@ -7912,13 +7993,22 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isAST()) {
-        try {
-          IAST arg1 = (IAST) ast.arg1();
-          int[] matrixDimensions = arg1.isMatrix();
+      IExpr arg1 = ast.arg1();
+      if (arg1.isSparseArray()) {
+        // FieldVector<IExpr> vector = ((ISparseArray) arg1).toFieldVector(false);
+        // if (vector != null) {
+        // return ;
+        // }
+        // FieldMatrix<IExpr> matrix = ((ISparseArray) arg1).toFieldMatrix(false);
+        arg1 = arg1.normal(false);
+      }
+      try {
+        if (arg1.isList()) {
+          IAST list1 = (IAST) arg1;
+          int[] matrixDimensions = list1.isMatrix();
           if (matrixDimensions != null) {
-            if (arg1.isRealMatrix()) {
-              double[][] matrix = arg1.toDoubleMatrix(true);
+            if (list1.isRealMatrix()) {
+              double[][] matrix = list1.toDoubleMatrix(true);
               if (matrix == null) {
                 return F.NIL;
               }
@@ -7932,41 +8022,71 @@ public class StatisticsFunctions {
             return F.mapRange(1, matrixDimensions[1] + 1, i -> {
               final int ii = i;
               IASTAppendable list = F.ListAlloc(matrixDimensions[1])
-                  .appendArgs(matrixDimensions[0] + 1, j -> arg1.getPart(j, ii));
+                  .appendArgs(matrixDimensions[0] + 1, j -> list1.getPart(j, ii));
               return F.Variance(list);
             });
           }
 
-          int dim = arg1.isVector();
-          if (dim >= 0) {
-            if (arg1.isRealVector()) {
-              double[] values = arg1.toDoubleVector();
-              if (values == null) {
-                return F.NIL;
-              }
-              return F.num(StatUtils.variance(values));
-            }
-            return Covariance.vectorCovarianceSymbolic(arg1, arg1, dim);
-          }
-
-          if (arg1.isAST()) {
-            IAST dist = arg1;
-            if (dist.head().isSymbol()) {
-              ISymbol head = (ISymbol) dist.head();
-              if (head instanceof IBuiltInSymbol) {
-                IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
-                if (evaluator instanceof IStatistics) {
-                  IStatistics distribution = (IStatistics) evaluator;
-                  return distribution.variance(dist);
+          int vectorLength = list1.isVector();
+          if (vectorLength >= 0) {
+            if (vectorLength > 1) {
+              if (list1.isRealVector()) {
+                double[] values = list1.toDoubleVector();
+                if (values == null) {
+                  return F.NIL;
                 }
+                return F.num(StatUtils.variance(values));
+              }
+              return Covariance.vectorCovarianceSymbolic(list1, list1, vectorLength);
+            }
+            // The argument `1` should have at least `2` elements.
+            return Errors.printMessage(S.Variance, "shlen", F.List(list1, F.C2));
+
+          }
+        } else if (arg1.isAssociation()) {
+          IAssociation assoc = (IAssociation) arg1;
+          int[] dim = assoc.isAssociationMatrix();
+          if (dim == null) {
+            int vectorLength = assoc.isAssociationVector();
+            if (vectorLength > 0) {
+              if (vectorLength > 1) {
+                IAST list = Convert.assoc2List(assoc);
+                return Covariance.vectorCovarianceSymbolic(list, list, vectorLength);
+              }
+              // The argument `1` should have at least `2` elements.
+              return Errors.printMessage(S.Variance, "shlen", F.List(assoc, F.C2));
+            }
+            // Rectangular array expected at position `1` in `2`.
+            return Errors.printMessage(S.Variance, "rectt", F.List(F.C1, ast));
+          }
+          return F.mapRange(1, dim[1] + 1, i -> {
+            final int ii = i;
+            IASTAppendable list =
+                F.ListAlloc(dim[1]).appendArgs(dim[0] + 1, j -> assoc.getPart(j, ii));
+            return F.Variance(list);
+          });
+
+        } else if (arg1.isAST()) {
+          IAST dist = (IAST) arg1;
+          if (dist.head().isSymbol()) {
+            ISymbol head = (ISymbol) dist.head();
+            if (head instanceof IBuiltInSymbol) {
+              IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+              if (evaluator instanceof IStatistics) {
+                IStatistics distribution = (IStatistics) evaluator;
+                return distribution.variance(dist);
               }
             }
           }
-        } catch (RuntimeException rex) {
-          Errors.rethrowsInterruptException(rex);
-          return Errors.printMessage(S.Variance, rex, engine);
+        } else if (arg1.isNumber()) {
+          // Rectangular array expected at position `1` in `2`.
+          return Errors.printMessage(S.Variance, "rectt", F.List(F.C1, ast));
         }
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        return Errors.printMessage(S.Variance, rex, engine);
       }
+
       return F.NIL;
     }
 
