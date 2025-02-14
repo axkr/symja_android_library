@@ -78,6 +78,7 @@ public class SpecialFunctions {
       S.BetaRegularized.setEvaluator(new BetaRegularized());
       S.DirichletBeta.setEvaluator(new DirichletBeta());
       S.DirichletEta.setEvaluator(new DirichletEta());
+      S.DirichletLambda.setEvaluator(new DirichletLambda());
       S.Erf.setEvaluator(new Erf());
       S.Erfc.setEvaluator(new Erfc());
       S.Erfi.setEvaluator(new Erfi());
@@ -662,6 +663,34 @@ public class SpecialFunctions {
     }
   }
 
+  private static final class DirichletLambda extends AbstractFunctionEvaluator {
+
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr s = ast.arg1();
+      if (s.isZero()) {
+        return F.C0;
+      }
+      if (s.isOne()) {
+        return F.CComplexInfinity;
+      }
+      // ((-1+2^s)*Zeta(s))/2^s
+      IExpr v1 = F.Power(F.C2, s);
+      return F.Times(F.Power(v1, F.CN1), F.Plus(F.CN1, v1), F.Zeta(s));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+  }
   /**
    * Returns the error function.
    *
