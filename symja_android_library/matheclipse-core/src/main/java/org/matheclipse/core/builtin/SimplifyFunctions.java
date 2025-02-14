@@ -22,6 +22,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBigNumber;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -612,7 +613,13 @@ public class SimplifyFunctions {
       }
 
       private IExpr visitPower(IASTMutable powerAST, SimplifiedResult sResult) {
-
+        if (fFullSimplify && powerAST.exponent().isComplex() && (powerAST.base().isExactNumber())) {
+          IExpr powerSimplified = Arithmetic.powerComplexComplex((IBigNumber) powerAST.base(),
+              (IComplex) powerAST.exponent(), fEngine);
+          if (powerSimplified.isPresent() && sResult.checkLessPlusTimesPower(powerSimplified)) {
+            return powerSimplified;
+          }
+        }
         if (powerAST.isPowerReciprocal() && powerAST.base().isPlus()
             && powerAST.base().size() == 3) {
           // example 1/(5+Sqrt(17)) => 1/8*(5-Sqrt(17))

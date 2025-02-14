@@ -50,10 +50,12 @@ import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.DefaultDict;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
@@ -1371,7 +1373,7 @@ public class Algebra {
    * 18/(5+3*x+x^2)^3+(24*x)/(5+3*x+x^2)^3+(8*x^2)/(5+3*x+x^2)^3
    * </pre>
    */
-  private static class Expand extends AbstractFunctionEvaluator {
+  private static class Expand extends AbstractFunctionOptionEvaluator {
 
     private static class Expander {
       /**
@@ -1754,17 +1756,7 @@ public class Algebra {
           plusAST0.forEach(x -> evalAndExpandAST(x, true, t, false, plusOp, engine));
           return plusOp.getSum();
         }
-        if (plusAST0.isPlus2() && plusAST1.isPlus2()
-            && plusAST0.second().equals(plusAST1.second())) {
-          IExpr p00 = plusAST0.arg1();
-          IExpr p01 = plusAST0.arg2();
-          IExpr p10 = plusAST1.arg1();
-          if (p00.equals(p10.negate())) {
-            // Multiplication can be transformed into difference of squares
-            // (a+b)*(a-b) == a^2 - b^2
-            return F.Plus(p01.times(p01), p10.times(p10).negate());
-          }
-        }
+        expandSimpleTimesPlus(plusAST0, plusAST1);
         long numberOfTerms = (long) (plusAST0.argSize()) * (long) (plusAST1.argSize());
         if (numberOfTerms > Config.MAX_AST_SIZE) {
           throw new ASTElementLimitExceeded(numberOfTerms);
@@ -1968,7 +1960,8 @@ public class Algebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
       IExpr arg1 = ast.arg1();
       IAST tempAST = StructureFunctions.threadListLogicEquationOperators(arg1, ast, 1);
       if (tempAST.isPresent()) {
@@ -1989,6 +1982,18 @@ public class Algebra {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Trig, S.Modulus};
+      IExpr[] optionValues = new IExpr[] {S.False, F.C0};
+      setOptions(newSymbol, optionKeys, optionValues);
     }
   }
 
@@ -2035,10 +2040,10 @@ public class Algebra {
    * </code>
    * </pre>
    */
-  private static class ExpandAll extends AbstractFunctionEvaluator {
-
+  private static class ExpandAll extends AbstractFunctionOptionEvaluator {
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
       IExpr arg1 = ast.arg1();
       IAST tempAST = StructureFunctions.threadListLogicEquationOperators(arg1, ast, 1);
       if (tempAST.isPresent()) {
@@ -2054,17 +2059,30 @@ public class Algebra {
       return arg1;
     }
 
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
-    }
-
     private static IExpr setAllExpanded(IExpr expr, boolean expandNegativePowers,
         boolean distributePlus) {
       if (expr != null && expandNegativePowers && !distributePlus && expr.isAST()) {
         ((IAST) expr).addEvalFlags(IAST.IS_ALL_EXPANDED);
       }
       return expr;
+    }
+
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Trig, S.Modulus};
+      IExpr[] optionValues = new IExpr[] {S.False, F.C0};
+      setOptions(newSymbol, optionKeys, optionValues);
     }
   }
 
@@ -4897,7 +4915,6 @@ public class Algebra {
         return Optional.of(result);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-
       }
       List<IExpr> varList = eVar.getVarList().copyTo();
       ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(BigRational.ZERO);
@@ -5215,6 +5232,40 @@ public class Algebra {
     Expand.Expander expander =
         new Expand.Expander(patt, expandNegativePowers, distributePlus, evalParts, factorTerms);
     return expander.expandAST(ast);
+  }
+
+  public static IExpr expandSimpleTimesPlus(final IExpr expr0, final IExpr plusAST1) {
+    if (plusAST1.isPlus2()) {
+      IExpr p10 = plusAST1.first();
+      IExpr p11 = plusAST1.second();
+      if (expr0.isPlus2()) {
+        IExpr p00 = expr0.first();
+        IExpr p01 = expr0.second();
+
+        if (expr0.second().equals(plusAST1.second())) {
+          if (p00.equals(p10.negate())) {
+            // Multiplication can be transformed into difference of squares
+            // (a+b)*(a-b) == a^2 - b^2
+            return F.Plus(p01.times(p01), p10.times(p10).negate());
+          }
+        } else if (p00.equals(p10)) {
+          if (p01.equals(p11.negate())) {
+            // Multiplication can be transformed into difference of squares
+            // (a+b)*(a-b) == a^2 - b^2
+            return F.Plus(p00.times(p10), p01.times(p01).negate());
+          }
+        }
+      } else {
+        // if (!p10.isAST() && !p11.isAST()) {
+
+        // if (!expr0.isSymbol() && !expr0.isPower()) {
+        // return F.Plus(expr0.times(p10), expr0.times(p11));
+        // }
+
+        // }
+      }
+    }
+    return F.NIL;
   }
 
   /**

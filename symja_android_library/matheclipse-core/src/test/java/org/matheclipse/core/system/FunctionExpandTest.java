@@ -231,7 +231,7 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
     check("FunctionExpand(ChebyshevT(n, x))", //
         "Cos(n*ArcCos(x))");
     check("FunctionExpand(ChebyshevU(n, x))", //
-        "Sin((1+n)*ArcCos(x))/(Sqrt(1-x)*Sqrt(1+x))");
+        "Sin((1+n)*ArcCos(x))/Sqrt(1-x^2)");
     check("FunctionExpand(Factorial(x))", //
         "Gamma(1+x)");
     check("FunctionExpand(Factorial(x+3))", //
@@ -329,17 +329,17 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
   @Test
   public void testFunctionC1D2TimesArcFunction() {
     check("FunctionExpand(Cos(ArcSin(x)/2))", //
-        "Sqrt(1+Sqrt(1-x)*Sqrt(1+x))/Sqrt(2)");
+        "Sqrt(1+Sqrt(1-x^2))/Sqrt(2)");
     check("FunctionExpand(Cot(ArcCsc(x)/2))", //
         "x*Sqrt(1+Sqrt((-1+x)*(1+x))/Sqrt(x^2))*Sqrt((x^2+Sqrt(-1+x^2)*Sqrt(x^2))/x^2)");
     check("FunctionExpand(Csc(ArcTan(x)/2))", //
         "(Sqrt(2)*Sqrt(1+x^2)*Sqrt(1+1/Sqrt(1+x^2)))/x");
     check("FunctionExpand(Sec(ArcCot(x)/2))", //
-        "Sqrt(2)/Sqrt(1+(Sqrt(-x)*Sqrt(x))/Sqrt(-1-x^2))");
+        "Sqrt(2)/Sqrt(1+Sqrt(-x^2)/Sqrt(-1-x^2))");
     check("FunctionExpand(Sin(ArcCos(x)/2))", //
         "Sqrt(1-x)/Sqrt(2)");
     check("FunctionExpand(Tan(ArcSin(x)/2))", //
-        "x/(1+Sqrt(1-x)*Sqrt(1+x))");
+        "x/(1+Sqrt(1-x^2))");
   }
 
   @Test

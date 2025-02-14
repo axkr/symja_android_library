@@ -543,8 +543,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->-1}}");
     // TODO simplify result
     check("Solve(-5*Sqrt(14)*x-14*x^2*Sqrt(83)-10==0,x)", //
-        "{{x->(-5*Sqrt(14)-Sqrt(350-560*Sqrt(83)))/(28*Sqrt(83))},{x->(-5*Sqrt(14)+Sqrt(\n"
-            + "350-560*Sqrt(83)))/(28*Sqrt(83))}}");
+        "{{x->(-5*Sqrt(14)-I*Sqrt(-350+560*Sqrt(83)))/(28*Sqrt(83))},{x->(-5*Sqrt(14)+I*Sqrt(-\n" //
+            + "350+560*Sqrt(83)))/(28*Sqrt(83))}}");
 
     check("Solve(8*x^3-26x^2+3x+9==0,x)", //
         "{{x->-1/2},{x->3/4},{x->3}}");

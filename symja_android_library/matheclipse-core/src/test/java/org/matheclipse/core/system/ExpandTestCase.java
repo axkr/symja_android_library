@@ -28,6 +28,14 @@ import org.matheclipse.core.interfaces.IExpr;
 public class ExpandTestCase extends ExprEvaluatorTestCase {
 
   @Test
+  public void testExpandTrig001() {
+    // TODO
+    check("Expand(Sin(x+y),Trig->True)", //
+        "Sin(x+y)");
+
+  }
+
+  @Test
   public void testExpand001() {
     IAST ast = Times(x, x);
     IExpr temp = Algebra.expandAll(ast, null, false, false, false, EvalEngine.get());
