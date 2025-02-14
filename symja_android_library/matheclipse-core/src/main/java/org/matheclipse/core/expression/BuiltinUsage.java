@@ -19,6 +19,7 @@ public class BuiltinUsage {
     USAGE[ID.$RecursionLimit] =
         "specifies the maximum allowable recursion depth after which a calculation is terminated";
 
+    USAGE[ID.AASTriangle] = "triangle from angle, angle, side";
     USAGE[ID.Abort] = "generate an abort";
     USAGE[ID.Abs] = "absolute value of a number";
     USAGE[ID.AbsoluteTime] = "get absolute time in seconds";
@@ -50,7 +51,9 @@ public class BuiltinUsage {
     USAGE[ID.Arg] = "phase of a complex number";
     USAGE[ID.ArrayDepth] = "the rank of a tensor";
     USAGE[ID.ArrayQ] = "test whether an object is a tensor of a given rank";
+    USAGE[ID.ASATriangle] = "triangle from angle, side, angle";
     USAGE[ID.Attributes] = "find the attributes of a symbol";
+
     USAGE[ID.Append] = "add an element at the end of an expression";
     USAGE[ID.AppendTo] = "add an element at the end of an stored list or expression";
     USAGE[ID.Association] = "an association between keys and values";
@@ -72,6 +75,15 @@ public class BuiltinUsage {
     USAGE[ID.Booleans] = "domain of boolean values";
     USAGE[ID.BooleanQ] = "test whether the expression evaluates to a boolean constant";
     USAGE[ID.Binomial] = "binomial coefficients";
+    USAGE[ID.BitAnd] = "bitwise AND of integer numbers";
+    USAGE[ID.BitClear] = "clear the designated bit of an integer number";
+    USAGE[ID.BitFlip] = "toggle the designated bit of an integer number on/off";
+    USAGE[ID.BitGet] = "returns 1 if the designated bit is set; otherwise returns 0";
+    USAGE[ID.BitLength] = "number of bits in the minimal two's-complement representation";
+    USAGE[ID.BitNot] = "bitwise NOT of an integer number";
+    USAGE[ID.BitOr] = "bitwise OR of integer numbers";
+    USAGE[ID.BitSet] = "set the designated bit of an integer number";
+    USAGE[ID.BitXor] = "bitwise XOR of integer numbers";
     USAGE[ID.Break] = "exit a 'For', 'While', or 'Do' loop";
     USAGE[ID.ByteArray] = "array of bytes";
 
@@ -530,6 +542,7 @@ public class BuiltinUsage {
     USAGE[ID.Rest] = "remove the first element";
     USAGE[ID.Return] = "return from a function";
     USAGE[ID.Reverse] = "reverse a list at any level";
+    USAGE[ID.ReverseSort] = "sort in reverse order";
     USAGE[ID.Riffle] = "intersperse additional elements";
     USAGE[ID.RogersTanimotoDissimilarity] = "Rogers-Tanimoto dissimilarity";
     USAGE[ID.RomanNumeral] = "convert integers to roman numeral strings";
@@ -541,6 +554,7 @@ public class BuiltinUsage {
     USAGE[ID.RowReduce] = "matrix reduced row-echelon form";
     USAGE[ID.RussellRaoDissimilarity] = "Russell-Rao dissimilarity";
 
+    USAGE[ID.SASTriangle] = "triangle from side, angle, side";
     USAGE[ID.SameQ] = "literal symbolic identity";
     USAGE[ID.ScalingTransform] = "symbolic representation of a scale transformation";
     USAGE[ID.Scan] = "scan over every element of a list, applying a function";
@@ -573,10 +587,11 @@ public class BuiltinUsage {
     USAGE[ID.Span] = "general specification for spans or blocks of elements";
     USAGE[ID.SparseArray] = "an array by the values of the non-zero elements";
     USAGE[ID.SparseArrayQ] = "test whether an expression is a SparseArray";
-    // USAGE[ID.SphericalHarmonicY] = "3D Spherical Harmonic";
+    USAGE[ID.SphericalHarmonicY] = "3D Spherical Harmonic";
     USAGE[ID.Split] = "split into runs of identical elements";
     USAGE[ID.SplitBy] = "split based on values of a function applied to elements";
     USAGE[ID.Sqrt] = "square root";
+    USAGE[ID.SSSTriangle] = "triangle from 3 sides";
     USAGE[ID.StandardDeviation] = "standard deviation of a dataset";
     USAGE[ID.StandardForm] = "default output format";
     USAGE[ID.StieltjesGamma] = "Stieltjes' function";
@@ -680,6 +695,10 @@ public class BuiltinUsage {
     USAGE[ID.Variables] = "list of variables in a polynomial";
     USAGE[ID.Variance] = "variance of a dataset";
     USAGE[ID.VectorQ] = "test whether an object is a vector";
+    USAGE[ID.VectorGreater] = "test whether vector 1 is greater than vector2";
+    USAGE[ID.VectorGreaterEqual] = "test whether vector 1 is greater equal than vector2";
+    USAGE[ID.VectorLess] = "test whether vector 1 is less than vector2";
+    USAGE[ID.VectorLessEqual] = "test whether vector 1 is less equal than vector2";
 
     USAGE[ID.Which] = "test which of a sequence of conditions are true";
     USAGE[ID.While] = "evaluate an expression while a criterion is true";

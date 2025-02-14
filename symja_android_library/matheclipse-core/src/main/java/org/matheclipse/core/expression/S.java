@@ -1190,6 +1190,14 @@ public class S {
   public final static IBuiltInSymbol BipartiteGraphQ =
       S.initFinalSymbol("BipartiteGraphQ", ID.BipartiteGraphQ);
 
+  public final static IBuiltInSymbol BitAnd = S.initFinalSymbol("BitAnd", ID.BitAnd);
+
+  public final static IBuiltInSymbol BitClear = S.initFinalSymbol("BitClear", ID.BitClear);
+
+  public final static IBuiltInSymbol BitGet = S.initFinalSymbol("BitGet", ID.BitGet);
+
+  public final static IBuiltInSymbol BitFlip = S.initFinalSymbol("BitFlip", ID.BitFlip);
+
   /**
    * BitLength(x) - gives the number of bits needed to represent the integer `x`. The sign of `x` is
    * ignored.
@@ -1199,6 +1207,14 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol BitLength = S.initFinalSymbol("BitLength", ID.BitLength);
+
+  public final static IBuiltInSymbol BitNot = S.initFinalSymbol("BitNot", ID.BitNot);
+
+  public final static IBuiltInSymbol BitOr = S.initFinalSymbol("BitOr", ID.BitOr);
+
+  public final static IBuiltInSymbol BitSet = S.initFinalSymbol("BitSet", ID.BitSet);
+
+  public final static IBuiltInSymbol BitXor = S.initFinalSymbol("BitXor", ID.BitXor);
 
   public final static IBuiltInSymbol Black = S.initFinalSymbol("Black", ID.Black);
 
@@ -2787,6 +2803,9 @@ public class S {
 
   public final static IBuiltInSymbol DirichletEta =
       S.initFinalSymbol("DirichletEta", ID.DirichletEta);
+
+  public final static IBuiltInSymbol DirichletLambda =
+      S.initFinalSymbol("DirichletLambda", ID.DirichletLambda);
 
   public final static IBuiltInSymbol DirichletWindow =
       S.initFinalSymbol("DirichletWindow", ID.DirichletWindow);
@@ -9131,6 +9150,9 @@ public class S {
   public final static IBuiltInSymbol RootIntervals =
       S.initFinalSymbol("RootIntervals", ID.RootIntervals);
 
+  public final static IBuiltInSymbol RootMeanSquare =
+      S.initFinalSymbol("RootMeanSquare", ID.RootMeanSquare);
+
   public final static IBuiltInSymbol RootOf = S.initFinalSymbol("RootOf", ID.RootOf);
 
   public final static IBuiltInSymbol RootReduce = S.initFinalSymbol("RootReduce", ID.RootReduce);
@@ -11603,6 +11625,9 @@ public class S {
    */
   public final static IBuiltInSymbol YuleDissimilarity =
       S.initFinalSymbol("YuleDissimilarity", ID.YuleDissimilarity);
+
+
+  public final static IBuiltInSymbol ZernikeR = S.initFinalSymbol("ZernikeR", ID.ZernikeR);
 
   public final static IBuiltInSymbol ZeroSymmetric =
       S.initFinalSymbol("ZeroSymmetric", ID.ZeroSymmetric);

@@ -1,7 +1,6 @@
 package org.matheclipse.core.builtin;
 
 import java.math.BigInteger;
-import java.util.BitSet;
 import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,7 +51,15 @@ public class IntegerFunctions {
   private static class Initializer {
 
     private static void init() {
+      S.BitAnd.setEvaluator(new BitAnd());
+      S.BitClear.setEvaluator(new BitClear());
+      S.BitFlip.setEvaluator(new BitFlip());
+      S.BitGet.setEvaluator(new BitGet());
       S.BitLength.setEvaluator(new BitLength());
+      S.BitNot.setEvaluator(new BitNot());
+      S.BitOr.setEvaluator(new BitOr());
+      S.BitSet.setEvaluator(new BitSet());
+      S.BitXor.setEvaluator(new BitXor());
       S.Ceiling.setEvaluator(new Ceiling());
       S.DigitCount.setEvaluator(new DigitCount());
       S.Floor.setEvaluator(new Floor());
@@ -115,15 +122,15 @@ public class IntegerFunctions {
   // }
   // }
 
-  public static BitSet integerToBitSet(int n) {
+  public static java.util.BitSet integerToBitSet(int n) {
     BigInteger bn = BigInteger.valueOf(n);
-    BitSet bs = fromByteArray(bn.toByteArray());
+    java.util.BitSet bs = fromByteArray(bn.toByteArray());
     return bs;
   }
 
-  public static BitSet integerToBitSet(IInteger n) {
+  public static java.util.BitSet integerToBitSet(IInteger n) {
     BigInteger bn = n.toBigNumerator();
-    BitSet bs = fromByteArray(bn.toByteArray());
+    java.util.BitSet bs = fromByteArray(bn.toByteArray());
     return bs;
   }
 
@@ -133,8 +140,8 @@ public class IntegerFunctions {
    * @param bytes a {@link BigInteger#toByteArray()} byte array
    * @return
    */
-  private static BitSet fromByteArray(byte[] bytes) {
-    BitSet bits = new BitSet();
+  private static java.util.BitSet fromByteArray(byte[] bytes) {
+    java.util.BitSet bits = new java.util.BitSet();
     for (int i = 0; i < bytes.length * 8; i++) {
       if ((bytes[bytes.length - i / 8 - 1] & (1 << (i % 8))) > 0) {
         bits.set(i);
@@ -189,6 +196,274 @@ public class IntegerFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
+
+  private static class BitNot extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isInteger()) {
+        IInteger iArg1 = (IInteger) arg1;
+        BigInteger big = iArg1.toBigNumerator();
+        return F.ZZ(big.not());
+      }
+      if (arg1.isAST(S.BitNot, 2)) {
+        return arg1.first();
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
+
+
+  private static class BitAnd extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() == 0) {
+        return F.CN1;
+      }
+      IExpr arg1 = ast.arg1();
+      if (arg1.isInteger()) {
+        BigInteger result = ((IInteger) arg1).toBigNumerator();
+        for (int i = 2; i < ast.size(); i++) {
+          IExpr arg = ast.get(i);
+          if (arg.isInteger()) {
+            BigInteger big = ((IInteger) arg).toBigNumerator();
+            result = apply(result, big);
+          } else {
+            return F.NIL;
+          }
+        }
+        return F.ZZ(result);
+      }
+      return F.NIL;
+    }
+
+    protected BigInteger apply(BigInteger lhs, BigInteger rhs) {
+      return lhs.and(rhs);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_INFINITY;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
+
+  private static class BitOr extends AbstractFunctionEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() == 0) {
+        return F.C0;
+      }
+      IExpr arg1 = ast.arg1();
+      if (arg1.isInteger()) {
+        BigInteger result = ((IInteger) arg1).toBigNumerator();
+        if (result.equals(IInteger.BI_MINUS_ONE)) {
+          return F.ZZ(IInteger.BI_MINUS_ONE);
+        }
+        for (int i = 2; i < ast.size(); i++) {
+          IExpr arg = ast.get(i);
+          if (arg.isInteger()) {
+            BigInteger big = ((IInteger) arg).toBigNumerator();
+            result = apply(result, big);
+            if (result.equals(IInteger.BI_MINUS_ONE)) {
+              return F.ZZ(IInteger.BI_MINUS_ONE);
+            }
+          } else {
+            return F.NIL;
+          }
+        }
+        return F.ZZ(result);
+      }
+      return F.NIL;
+    }
+
+    protected BigInteger apply(BigInteger lhs, BigInteger rhs) {
+      return lhs.or(rhs);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_INFINITY;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
+
+  private static class BitXor extends AbstractFunctionEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() == 0) {
+        return F.C0;
+      }
+      IExpr arg1 = ast.arg1();
+      if (arg1.isInteger()) {
+        BigInteger result = ((IInteger) arg1).toBigNumerator();
+        for (int i = 2; i < ast.size(); i++) {
+          IExpr arg = ast.get(i);
+          if (arg.isInteger()) {
+            BigInteger big = ((IInteger) arg).toBigNumerator();
+            result = apply(result, big);
+          } else {
+            return F.NIL;
+          }
+        }
+        return F.ZZ(result);
+      }
+      return F.NIL;
+    }
+
+    protected BigInteger apply(BigInteger lhs, BigInteger rhs) {
+      return lhs.xor(rhs);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_INFINITY;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
+
+  private static class BitSet extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1().isInteger()) {
+        int power2_K = ast.arg2().toIntDefault();
+        if (power2_K >= 0) {
+          IInteger iArg1 = (IInteger) ast.arg1();
+          BigInteger big = iArg1.toBigNumerator();
+          return F.ZZ(big.setBit(power2_K));
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
+
+  private static class BitClear extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1().isInteger()) {
+        int power2_K = ast.arg2().toIntDefault();
+        if (power2_K == Integer.MIN_VALUE) {
+          return F.NIL;
+        }
+        IInteger value = (IInteger) ast.arg1();
+        BigInteger big = value.toBigNumerator();
+        if (power2_K >= 0) {
+          return F.ZZ(big.clearBit(power2_K));
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
+
+  private static class BitFlip extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1().isInteger()) {
+        int power2_K = ast.arg2().toIntDefault();
+        if (power2_K == Integer.MIN_VALUE) {
+          return F.NIL;
+        }
+        IInteger value = (IInteger) ast.arg1();
+        BigInteger big = value.toBigNumerator();
+        if (power2_K >= 0) {
+          return F.ZZ(big.flipBit(power2_K));
+        } else if (power2_K < 0 && power2_K > Integer.MIN_VALUE) {
+          int bit = big.bitLength() + power2_K;
+          if (bit < 0) {
+            return value;
+          }
+          return F.ZZ(big.flipBit(bit));
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
+
+  private static class BitGet extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1().isInteger()) {
+        int power2_K = ast.arg2().toIntDefault();
+        if (power2_K == Integer.MIN_VALUE) {
+          return F.NIL;
+        }
+        IInteger value = (IInteger) ast.arg1();
+        BigInteger big = value.toBigNumerator();
+        if (power2_K >= 0) {
+          return big.testBit(power2_K) ? F.C1 : F.C0;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
     }
 
     @Override
