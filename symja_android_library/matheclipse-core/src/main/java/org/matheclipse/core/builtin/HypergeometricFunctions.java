@@ -955,7 +955,20 @@ public class HypergeometricFunctions {
                 F.Times(F.Power(S.E, z), F.Power(z, F.Plus(F.C2, F.Negate(b))),
                     F.Plus(F.Gamma(F.Plus(F.CN1, b)), F.Negate(F.Gamma(F.Plus(F.CN1, b), z))))));
       }
-
+      IExpr n = b.subtract(a);
+      if (n.isInteger()) {
+        int ni = n.toIntDefault();
+        if (ni > 0) {
+          // https://functions.wolfram.com/HypergeometricFunctions/Hypergeometric1F1/03/01/02/0006/
+          // Sum((Binomial(-1+n,k)*(Gamma(a+k)-Gamma(a+k,-z)))/z^k,{k,0,n})/((-z)^a*Beta(a,n))
+          IExpr sum =
+              F.sum(
+                  k -> F.Times(F.Power(F.Power(z, k), F.CN1), F.Binomial(F.Plus(F.CN1, n), k),
+                      F.Subtract(F.Gamma(F.Plus(a, k)), F.Gamma(F.Plus(a, k), F.Negate(z)))),
+                  0, ni);
+          return F.Times(F.Power(F.Times(F.Power(F.Negate(z), a), F.Beta(a, n)), F.CN1), sum);
+        }
+      }
       return F.NIL;
     }
 

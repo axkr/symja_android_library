@@ -182,6 +182,9 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testJacobiP() {
+    check("JacobiP(-1, 42, b, z)", //
+        "0");
+
     // TODO https://github.com/mtommila/apfloat/issues/31
     // check("JacobiP(-3, -0.5,-9223372036854775808/11,0.0)", //
     // "(-1)^n*JacobiP(n,b,a,z)");
@@ -386,6 +389,10 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     // TODO
     // check("SphericalHarmonicY(1317624576693539401,{x,-3,-1/2},10007,0.5)", //
     // "");
+    check("SphericalHarmonicY(3/4, 0.5, Pi/5, Pi/3)", //
+        "0.254247+I*0.14679");
+    checkNumeric("SphericalHarmonicY(3/4, 0.5, Pi/5, Pi/3)", //
+        "0.2542473403526675+I*0.14678977039335897");
     check("SphericalHarmonicY(3,1,t,p)", //
         "1/8*E^(I*p)*Sqrt(21/Pi)*(1-5*Cos(t)^2)*Sin(t)");
 
@@ -402,6 +409,39 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
         "0.00759663110648051733+I*0.09626928971703694314");
     check("N(SphericalHarmonicY(23, 5 - I, Pi/3, I + Pi) )", //
         "0.00760864+I*0.149675");
+  }
+
+  @Test
+  public void testZernikeR() {
+    // https://en.wikipedia.org/wiki/Zernike_polynomials#Radial_polynomials
+    check("ZernikeR(0,0,p)", //
+        "1");
+    check("ZernikeR(1,1,p)", //
+        "p");
+    check("ZernikeR(2,0,p)", //
+        "-1+2*p^2");
+    check("ZernikeR(2,2,p)", //
+        "p^2");
+    check("ZernikeR(3,1,p)", //
+        "-2*p+3*p^3");
+    check("ZernikeR(3,3,p)", //
+        "p^3");
+    check("ZernikeR(6,4,p)", //
+        "-5*p^4+6*p^6");
+
+    checkNumeric("ZernikeR(3, 1, 0.5)", //
+        "-0.625");
+    check("ZernikeR(5,3,r)", //
+        "-4*r^3+5*r^5");
+    check("ZernikeR(10,7,r)", //
+        "0");
+    check("ZernikeR(7,10,r)", //
+        "0");
+    check("N(ZernikeR(1/5, 2/3, 1/7), 50)", //
+        "0.16624107895274857519231711412376921850667019765573");
+
+    checkNumeric("N(ZernikeR(2/5, 2-I, 2))", //
+        "0.008507312038070331+I*0.8156212465816385");
   }
 
 }

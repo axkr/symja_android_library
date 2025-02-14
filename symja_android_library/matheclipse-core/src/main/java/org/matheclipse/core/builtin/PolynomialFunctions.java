@@ -98,6 +98,7 @@ public class PolynomialFunctions {
       S.MonomialList.setEvaluator(new MonomialList());
       S.Resultant.setEvaluator(new Resultant());
       S.SphericalHarmonicY.setEvaluator(new SphericalHarmonicY());
+      S.ZernikeR.setEvaluator(new ZernikeR());
     }
   }
 
@@ -1322,10 +1323,13 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
-      IExpr n = ast.arg1();
-      IExpr z = ast.arg2();
-      // Cos(n*ArcCos(z))
-      return F.Cos(F.Times(n, F.ArcCos(z)));
+      if (ast.argSize() == 2) {
+        IExpr n = ast.arg1();
+        IExpr z = ast.arg2();
+        // Cos(n*ArcCos(z))
+        return F.Cos(F.Times(n, F.ArcCos(z)));
+      }
+      return F.NIL;
     }
 
     @Override
@@ -1420,11 +1424,15 @@ public class PolynomialFunctions {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
-      IExpr n = ast.arg1();
-      IExpr z = ast.arg2();
-      // Sin((1+n)*ArcCos(z))/(Sqrt(1-z)*Sqrt(1+z))
-      return F.Times(F.Power(F.Times(F.Sqrt(F.Subtract(F.C1, z)), F.Sqrt(F.Plus(F.C1, z))), F.CN1),
-          F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(z))));
+      if (ast.argSize() == 2) {
+        IExpr n = ast.arg1();
+        IExpr z = ast.arg2();
+        // Sin((1+n)*ArcCos(z))/(Sqrt(1-z)*Sqrt(1+z))
+        return F.Times(
+            F.Power(F.Times(F.Sqrt(F.Subtract(F.C1, z)), F.Sqrt(F.Plus(F.C1, z))), F.CN1),
+            F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(z))));
+      }
+      return F.NIL;
     }
 
     @Override
@@ -1540,23 +1548,23 @@ public class PolynomialFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST1()) {
-        int[] dim = arg1.isMatrix();
-        if (dim != null && arg1.isAST()) {
-          if (dim[0] == 0 && dim[1] == 0) {
-            return F.C0;
-          }
-          IAST matrixArg1 = (IAST) arg1;
-
-          if (dim[0] == 1) {
-            if (dim[1] == 1) {
-              IAST row = (IAST) matrixArg1.arg1();
-              return row.arg1();
-            } else if (dim[1] >= 2) {
-              IAST row = (IAST) matrixArg1.arg1();
-              return row.apply(S.Times);
-            }
-          }
-        }
+        // int[] dim = arg1.isMatrix();
+        // if (dim != null && arg1.isAST()) {
+        // if (dim[0] == 0 && dim[1] == 0) {
+        // return F.C0;
+        // }
+        // IAST matrixArg1 = (IAST) arg1;
+        //
+        // if (dim[0] == 1) {
+        // if (dim[1] == 1) {
+        // IAST row = (IAST) matrixArg1.arg1();
+        // return row.arg1();
+        // } else if (dim[1] >= 2) {
+        // IAST row = (IAST) matrixArg1.arg1();
+        // return row.apply(S.Times);
+        // }
+        // }
+        // }
         return F.NIL;
       }
       if (ast.isAST2()) {
@@ -1831,12 +1839,7 @@ public class PolynomialFunctions {
     }
   }
 
-  private static final class JacobiP extends AbstractFunctionEvaluator implements IMatch {
-    @Override
-    public IExpr match5(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return JacobiPRules.match5(ast, engine);
-    }
+  private static final class JacobiP extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1845,12 +1848,18 @@ public class PolynomialFunctions {
       IExpr a = ast.arg2();
       IExpr b = ast.arg3();
       IExpr z = ast.arg4();
+      if (n.isZero()) {
+        return F.C1;
+      }
+      if (a.isZero() && b.isZero()) {
+        return F.LegendreP(n, z);
+      }
       IExpr negZ = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
       if (negZ.isPresent()) {
         // (-1)^n*JacobiP(n,b,a,z)
         return F.Times(F.Power(F.CN1, n), F.JacobiP(n, b, a, negZ));
       }
-      if (n.isMathematicalIntegerNonNegative()) {
+      if (n.isInteger()) {
         return jacobiPSum((INumber) n, a, b, z, engine);
       }
       return F.NIL;
@@ -1910,17 +1919,26 @@ public class PolynomialFunctions {
           return F.Times(F.Power(F.Factorial(n), F.CN1), F.Gamma(v1),
               F.Power(F.Gamma(F.Plus(F.Negate(n), v1)), F.CN1));
         }
-        // https://functions.wolfram.com/Polynomials/JacobiP/03/01/04/0008/
-        // Sum((Binomial(a+n,k)*Binomial(b+n,-k+n)*(z+1)^k)/(-1+z)^(k-n),{k,0,n})/2^n
-        IExpr sum = F.sum(
-            k -> F.Times(F.Binomial(F.Plus(a, n), k),
-                F.Binomial(F.Plus(b, n), F.Plus(k.negate(), n)), F.Power(F.Plus(z, F.C1), k),
-                F.Power(F.Plus(F.CN1, z), F.Subtract(n, k))), //
-            0, ni);
-        IAST jacobiP = F.Times(F.Power(F.Power(F.C2, n), F.CN1), sum);
-        return engine.evaluate(jacobiP);
+        return jacobiP(ni, a, b, z, engine);
+      }
+      if (ni != Integer.MIN_VALUE && a.isInteger() && a.isPositive()) {
+        if (ni == -1) {
+          return jacobiP(ni, a, b, z, engine);
+        }
       }
       return F.NIL;
+    }
+
+    private IExpr jacobiP(int ni, IExpr a, IExpr b, IExpr z, final EvalEngine engine) {
+      // https://functions.wolfram.com/Polynomials/JacobiP/03/01/04/0008/
+      // Sum((Binomial(a+n,k)*Binomial(b+n,-k+n)*(z+1)^k)/(-1+z)^(k-n),{k,0,n})/2^n
+      IInteger n = F.ZZ(ni);
+      IExpr sum = F.sum(
+          k -> F.Times(F.Binomial(F.Plus(a, n), k), F.Binomial(F.Plus(b, n), F.Plus(k.negate(), n)),
+              F.Power(F.Plus(z, F.C1), k), F.Power(F.Plus(F.CN1, z), F.Subtract(n, k))), //
+          0, ni);
+      IAST jacobiP = F.Times(F.Power(F.Power(F.C2, n), F.CN1), sum);
+      return engine.evaluate(jacobiP);
     }
 
     @Override
@@ -2405,6 +2423,66 @@ public class PolynomialFunctions {
         LOGGER.debug("MonomialList.monomialListModulus() failed", ae);
       }
       return F.NIL;
+    }
+  }
+
+  private static final class ZernikeR extends AbstractFunctionEvaluator implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() == 3) {
+        IExpr n = ast.arg1();
+        IExpr m = ast.arg2();
+        IExpr r = ast.arg3();
+        return functionExpand(n, m, r);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr functionExpand(IExpr n, IExpr m, IExpr r) {
+      // r^m*Cos(1/2*(-m+n)*Pi)*JacobiP(1/2*(-m+n),m,0,1-2*r^2)
+      return F.Times(F.Power(r, m), F.Cos(F.Times(F.C1D2, F.Plus(F.Negate(m), n), F.Pi)),
+          F.JacobiP(F.Times(F.C1D2, F.Plus(F.Negate(m), n)), m, F.C0,
+              F.Plus(F.C1, F.Times(F.CN2, F.Sqr(r)))));
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      IExpr m = ast.arg2();
+      IExpr r = ast.arg3();
+
+      if (n.isInteger() && m.isInteger()) {
+        return F.evalExpand(functionExpand(n, m, r));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 3) {
+        IInexactNumber n = (IInexactNumber) ast.arg1();
+        IInexactNumber m = (IInexactNumber) ast.arg2();
+        IInexactNumber r = (IInexactNumber) ast.arg3();
+        return functionExpand(n, m, r);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
     }
   }
 
