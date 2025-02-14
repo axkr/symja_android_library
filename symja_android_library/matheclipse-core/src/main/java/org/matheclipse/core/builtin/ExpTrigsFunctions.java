@@ -64,6 +64,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -1407,6 +1408,7 @@ public class ExpTrigsFunctions {
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
+        // https://functions.wolfram.com/ElementaryFunctions/Cos/04/02/01/
         return Cos(negExpr);
       }
 
@@ -1432,35 +1434,57 @@ public class ExpTrigsFunctions {
         }
 
         IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
-        if (t.isPresent() && t.im().isZero()) {
-          // 1/2 * t
-          IExpr temp = F.distributePlusOnTimes(F.C1D2, t);
-          if (temp.isIntegerResult()) {
-            return F.C1;
-          }
-          // 1/2 * t - 1/2
-          temp = engine.evaluate(F.Subtract(temp, F.C1D2));
-          if (temp.isIntegerResult()) {
-            return F.CN1;
-          }
-
-          if (t.isIntegerResult()) {
-            return F.Power(F.CN1, t);
-          }
-
-          // t - 1/2
-          temp = engine.evaluate(F.Subtract(t, F.C1D2));
-          if (temp.isIntegerResult()) {
-            return F.C0;
-          }
+        if (t.isPresent()) {
+          return peelOfTimesPi(t, engine);
         }
       }
 
-      // IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+      // imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
       // if (imPart.isPresent()) {
       // return F.Cosh(imPart);
       // }
 
+      return F.NIL;
+    }
+
+    private static IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
+      if (t.isComplex()) {
+        IComplex c = (IComplex) t;
+        IRational realPart = c.re();
+        if (realPart.isInteger()) {
+          IAST cosResult = F.Cos(F.Times(F.CC(F.C0, c.im()), S.Pi));
+          if (realPart.isEven()) {
+            // https://functions.wolfram.com/ElementaryFunctions/Cos/04/02/03/0002/
+            // Cos(I*imaginaryPart*Pi)
+            return cosResult;
+          } else if (realPart.isOdd()) {
+            // https://functions.wolfram.com/ElementaryFunctions/Cos/04/02/03/0003/
+            // (-1)^m*Cos(I*imaginaryPart*Pi)
+            return F.Times(F.CN1, cosResult);
+          }
+        }
+      } else if (t.im().isZero()) {
+        // 1/2 * t
+        IExpr temp = F.distributePlusOnTimes(F.C1D2, t);
+        if (temp.isIntegerResult()) {
+          return F.C1;
+        }
+        // 1/2 * t - 1/2
+        temp = engine.evaluate(F.Subtract(temp, F.C1D2));
+        if (temp.isIntegerResult()) {
+          return F.CN1;
+        }
+
+        if (t.isIntegerResult()) {
+          return F.Power(F.CN1, t);
+        }
+
+        // t - 1/2
+        temp = engine.evaluate(F.Subtract(t, F.C1D2));
+        if (temp.isIntegerResult()) {
+          return F.C0;
+        }
+      }
       return F.NIL;
     }
 
@@ -1576,9 +1600,27 @@ public class ExpTrigsFunctions {
             return F.Coth(F.Subtract(arg1, list.arg2()));
           }
         }
+      } else if (arg1.isTimes()) {
+        IExpr t = AbstractFunctionEvaluator.peelOfTimes((IAST) arg1, Pi);
+        if (t.isPresent()) {
+          return peelOfTimesPi(t, engine);
+        }
       }
       if (arg1.isInterval()) {
         return IntervalSym.coth((IAST) arg1);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
+      if (t.isComplex()) {
+        IComplex c = (IComplex) t;
+        IRational imaginaryPart = c.im();
+        if (imaginaryPart.isInteger()) {
+          // https://functions.wolfram.com/ElementaryFunctions/Coth/04/02/03/0002/
+          // Coth(realPart*Pi)
+          return F.Coth(F.Times(c.re(), S.Pi));
+        }
       }
       return F.NIL;
     }
@@ -1705,29 +1747,8 @@ public class ExpTrigsFunctions {
         }
 
         IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
-        if (t.isPresent() && t.im().isZero()) {
-          if (t.isIntegerResult()) {
-            return F.CComplexInfinity;
-          }
-
-          // 1/2 * t
-          IExpr temp1 = F.distributePlusOnTimes(F.C1D2, t);
-          // 1/2 * t - 1/4
-          IExpr temp2 = engine.evaluate(F.Plus(temp1, F.CN1D4));
-          if (temp2.isIntegerResult()) {
-            return F.C1;
-          }
-          // 1/2 * t + 1/4
-          temp2 = engine.evaluate(F.Plus(temp1, F.C1D4));
-          if (temp2.isIntegerResult()) {
-            return F.CN1;
-          }
-          // t - 1/2
-          temp2 = engine.evaluate(F.Plus(t, F.CN1D2));
-          if (temp2.isIntegerResult()) {
-            // I^(-1+2*t)
-            return F.Power(F.CI, F.Plus(F.CN1, F.Times(F.C2, t)));
-          }
+        if (t.isPresent()) {
+          return peelOfTimesPi(engine, t);
         }
       }
       if (arg1.isInterval()) {
@@ -1738,6 +1759,49 @@ public class ExpTrigsFunctions {
       // return F.Times(F.CNI, F.Csch(imPart));
       // }
 
+      return F.NIL;
+    }
+
+    private static IExpr peelOfTimesPi(EvalEngine engine, IExpr t) {
+      if (t.isComplex()) {
+        IComplex c = (IComplex) t;
+        IRational realPart = c.re();
+        if (realPart.isInteger()) {
+          IAST cscResult = F.Csc(F.Times(F.CC(F.C0, c.im()), S.Pi));
+          if (realPart.isEven()) {
+            // https://functions.wolfram.com/ElementaryFunctions/Csc/04/02/03/0002/
+            // Csc(I*imaginaryPart*Pi)
+            return cscResult;
+          } else if (realPart.isOdd()) {
+            // https://functions.wolfram.com/ElementaryFunctions/Csc/04/02/03/0003/
+            // (-1)^m*Csc(I*imaginaryPart*Pi)
+            return F.Times(F.CN1, cscResult);
+          }
+        }
+      } else if (t.im().isZero()) {
+        if (t.isIntegerResult()) {
+          return F.CComplexInfinity;
+        }
+
+        // 1/2 * t
+        IExpr temp1 = F.distributePlusOnTimes(F.C1D2, t);
+        // 1/2 * t - 1/4
+        IExpr temp2 = engine.evaluate(F.Plus(temp1, F.CN1D4));
+        if (temp2.isIntegerResult()) {
+          return F.C1;
+        }
+        // 1/2 * t + 1/4
+        temp2 = engine.evaluate(F.Plus(temp1, F.C1D4));
+        if (temp2.isIntegerResult()) {
+          return F.CN1;
+        }
+        // t - 1/2
+        temp2 = engine.evaluate(F.Plus(t, F.CN1D2));
+        if (temp2.isIntegerResult()) {
+          // I^(-1+2*t)
+          return F.Power(F.CI, F.Plus(F.CN1, F.Times(F.C2, t)));
+        }
+      }
       return F.NIL;
     }
 
@@ -1849,6 +1913,14 @@ public class ExpTrigsFunctions {
             return F.Times(F.Power(F.CN1, k), F.Cosh(F.Subtract(arg1, list.arg2())));
           }
         }
+      } else if (arg1.isTimes()) {
+        IExpr t = AbstractFunctionEvaluator.peelOfTimes((IAST) arg1, Pi);
+        if (t.isPresent()) {
+          IExpr temp = peelOfTimesPi(t);
+          if (temp.isPresent()) {
+            return temp;
+          }
+        }
       }
 
       IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
@@ -1857,6 +1929,24 @@ public class ExpTrigsFunctions {
       }
       if (arg1.isInterval()) {
         return IntervalSym.cosh((IAST) arg1);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr peelOfTimesPi(IExpr t) {
+      if (t.isComplex()) {
+        IComplex c = (IComplex) t;
+        IRational imaginaryPart = c.im();
+        if (imaginaryPart.isInteger()) {
+          IAST coshResult = F.Cosh(F.Times(c.re(), S.Pi));
+          if (imaginaryPart.isEven()) {
+            // https://functions.wolfram.com/ElementaryFunctions/Cosh/04/02/03/0002/
+            return coshResult;
+          } else if (imaginaryPart.isOdd()) {
+            // https://functions.wolfram.com/ElementaryFunctions/Cosh/04/02/03/0003/
+            return F.Times(F.CN1, coshResult);
+          }
+        }
       }
       return F.NIL;
     }
@@ -2001,15 +2091,8 @@ public class ExpTrigsFunctions {
           return F.Cot(F.Times(S.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
         }
         IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
-        if (t.isPresent() && t.im().isZero()) {
-          if (t.isIntegerResult()) {
-            return F.CComplexInfinity;
-          }
-          // t - 1/2
-          IExpr temp = engine.evaluate(F.Plus(t, F.CN1D2));
-          if (temp.isIntegerResult()) {
-            return F.C0;
-          }
+        if (t.isPresent()) {
+          return peelOfTimesPi(t, engine);
         }
       }
 
@@ -2022,6 +2105,28 @@ public class ExpTrigsFunctions {
         return IntervalSym.cot((IAST) arg1);
       }
 
+      return F.NIL;
+    }
+
+    private static IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
+      if (t.isComplex()) {
+        IComplex c = (IComplex) t;
+        IRational realPart = c.re();
+        if (realPart.isInteger()) {
+          // https://functions.wolfram.com/ElementaryFunctions/Cot/04/02/03/0002/
+          // Cot(I*imaginaryPart*Pi)
+          return F.Cot(F.Times(F.CC(F.C0, c.im()), S.Pi));
+        }
+      } else if (t.im().isZero()) {
+        if (t.isIntegerResult()) {
+          return F.CComplexInfinity;
+        }
+        // t - 1/2
+        IExpr temp = engine.evaluate(F.Plus(t, F.CN1D2));
+        if (temp.isIntegerResult()) {
+          return F.C0;
+        }
+      }
       return F.NIL;
     }
 
@@ -2124,9 +2229,32 @@ public class ExpTrigsFunctions {
             return F.Times(F.Power(F.CN1, k), F.Csch(F.Subtract(arg1, list.arg2())));
           }
         }
+      } else if (arg1.isTimes()) {
+        IExpr t = AbstractFunctionEvaluator.peelOfTimes((IAST) arg1, Pi);
+        if (t.isPresent()) {
+          return peelOfTimesPi(t);
+        }
       }
       if (arg1.isInterval()) {
         return IntervalSym.csch((IAST) arg1);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr peelOfTimesPi(IExpr t) {
+      if (t.isComplex()) {
+        IComplex c = (IComplex) t;
+        IRational imaginaryPart = c.im();
+        if (imaginaryPart.isInteger()) {
+          IAST cschResult = F.Csch(F.Times(c.re(), S.Pi));
+          if (imaginaryPart.isEven()) {
+            // https://functions.wolfram.com/ElementaryFunctions/Csch/04/02/03/0002/
+            return cschResult;
+          } else if (imaginaryPart.isOdd()) {
+            // https://functions.wolfram.com/ElementaryFunctions/Csch/04/02/03/0003/
+            return F.Times(F.CN1, cschResult);
+          }
+        }
       }
       return F.NIL;
     }
@@ -2819,25 +2947,7 @@ public class ExpTrigsFunctions {
 
         IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
         if (t.isPresent() && t.im().isZero()) {
-          // 1/2 * t
-          IExpr temp1 = F.distributePlusOnTimes(F.C1D2, t);
-          if (temp1.isIntegerResult()) {
-            return F.C1;
-          }
-          // 1/2 * t - 1/2
-          IExpr temp2 = engine.evaluate(F.Plus(temp1, F.CN1D2));
-          if (temp2.isIntegerResult()) {
-            return F.CN1;
-          }
-          if (t.isIntegerResult()) {
-            return F.Power(F.CN1, t);
-          }
-
-          // t - 1/2
-          temp2 = engine.evaluate(F.Plus(t, F.CN1D2));
-          if (temp2.isIntegerResult()) {
-            return F.CComplexInfinity;
-          }
+          return peelOfTimesPi(t, engine);
         }
       }
       if (arg1.isInterval()) {
@@ -2848,6 +2958,46 @@ public class ExpTrigsFunctions {
       // return F.Sech(imPart);
       // }
 
+      return F.NIL;
+    }
+
+    private static IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
+      if (t.isComplex()) {
+        IComplex c = (IComplex) t;
+        IRational realPart = c.re();
+        if (realPart.isInteger()) {
+          IAST secResult = F.Sec(F.Times(F.CC(F.C0, c.im()), S.Pi));
+          if (realPart.isEven()) {
+            // https://functions.wolfram.com/ElementaryFunctions/Sec/04/02/03/0002/
+            // Sec(I*imaginaryPart*Pi)
+            return secResult;
+          } else if (realPart.isOdd()) {
+            // https://functions.wolfram.com/ElementaryFunctions/Sec/04/02/03/0003/
+            // (-1)^m*Sec(I*imaginaryPart*Pi)
+            return F.Times(F.CN1, secResult);
+          }
+        }
+      } else if (t.im().isZero()) {
+        // 1/2 * t
+        IExpr temp1 = F.distributePlusOnTimes(F.C1D2, t);
+        if (temp1.isIntegerResult()) {
+          return F.C1;
+        }
+        // 1/2 * t - 1/2
+        IExpr temp2 = engine.evaluate(F.Plus(temp1, F.CN1D2));
+        if (temp2.isIntegerResult()) {
+          return F.CN1;
+        }
+        if (t.isIntegerResult()) {
+          return F.Power(F.CN1, t);
+        }
+
+        // t - 1/2
+        temp2 = engine.evaluate(F.Plus(t, F.CN1D2));
+        if (temp2.isIntegerResult()) {
+          return F.CComplexInfinity;
+        }
+      }
       return F.NIL;
     }
 
@@ -2962,9 +3112,32 @@ public class ExpTrigsFunctions {
             return F.Times(F.Power(F.CN1, k), F.Sech(F.Subtract(arg1, list.arg2())));
           }
         }
+      } else if (arg1.isTimes()) {
+        IExpr t = AbstractFunctionEvaluator.peelOfTimes((IAST) arg1, Pi);
+        if (t.isPresent()) {
+          return peelOfTimesPi(t);
+        }
       }
       if (arg1.isInterval()) {
         return IntervalSym.sech((IAST) arg1);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr peelOfTimesPi(IExpr t) {
+      if (t.isComplex()) {
+        IComplex c = (IComplex) t;
+        IRational imaginaryPart = c.im();
+        if (imaginaryPart.isInteger()) {
+          IAST sechResult = F.Sech(F.Times(c.re(), S.Pi));
+          if (imaginaryPart.isEven()) {
+            // https://functions.wolfram.com/ElementaryFunctions/Sech/04/02/03/0002/
+            return sechResult;
+          } else if (imaginaryPart.isOdd()) {
+            // https://functions.wolfram.com/ElementaryFunctions/Sech/04/02/03/0003/
+            return F.Times(F.CN1, sechResult);
+          }
+        }
       }
       return F.NIL;
     }
@@ -3101,29 +3274,8 @@ public class ExpTrigsFunctions {
         }
 
         IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
-        if (t.isPresent() && t.im().isZero()) {
-          if (t.isIntegerResult()) {
-            return F.C0;
-          }
-
-          // 1/2 * t
-          IExpr temp1 = F.distributePlusOnTimes(F.C1D2, t);
-          // 1/2 * t - 1/4
-          IExpr temp2 = engine.evaluate(F.Plus(temp1, F.CN1D4));
-          if (temp2.isIntegerResult()) {
-            return F.C1;
-          }
-          // 1/2 * t + 1/4
-          temp2 = engine.evaluate(F.Plus(temp1, F.C1D4));
-          if (temp2.isIntegerResult()) {
-            return F.CN1;
-          }
-          // t - 1/2
-          temp2 = engine.evaluate(F.Plus(t, F.CN1D2));
-          if (temp2.isIntegerResult()) {
-            // I^(-1+2*t)
-            return F.Power(F.CI, F.Plus(F.CN1, F.Times(F.C2, t)));
-          }
+        if (t.isPresent()) {
+          return peelOfTimesPi(t, engine);
         }
       }
 
@@ -3132,6 +3284,49 @@ public class ExpTrigsFunctions {
       // return F.Times(F.CI, F.Sinh(imPart));
       // }
 
+      return F.NIL;
+    }
+
+    private static IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
+      if (t.isComplex()) {
+        IComplex c = (IComplex) t;
+        IRational realPart = c.re();
+        if (realPart.isInteger()) {
+          IAST sinResult = F.Sin(F.Times(F.CC(F.C0, c.im()), S.Pi));
+          if (realPart.isEven()) {
+            // https://functions.wolfram.com/ElementaryFunctions/Sin/04/02/03/0002/
+            // Sin(I*imaginaryPart*Pi)
+            return sinResult;
+          } else if (realPart.isOdd()) {
+            // https://functions.wolfram.com/ElementaryFunctions/Sin/04/02/03/0003/
+            // (-1)^m*Sin(I*imaginaryPart*Pi)
+            return F.Times(F.CN1, sinResult);
+          }
+        }
+      } else if (t.im().isZero()) {
+        if (t.isIntegerResult()) {
+          return F.C0;
+        }
+
+        // 1/2 * t
+        IExpr temp1 = F.distributePlusOnTimes(F.C1D2, t);
+        // 1/2 * t - 1/4
+        IExpr temp2 = engine.evaluate(F.Plus(temp1, F.CN1D4));
+        if (temp2.isIntegerResult()) {
+          return F.C1;
+        }
+        // 1/2 * t + 1/4
+        temp2 = engine.evaluate(F.Plus(temp1, F.C1D4));
+        if (temp2.isIntegerResult()) {
+          return F.CN1;
+        }
+        // t - 1/2
+        temp2 = engine.evaluate(F.Plus(t, F.CN1D2));
+        if (temp2.isIntegerResult()) {
+          // I^(-1+2*t)
+          return F.Power(F.CI, F.Plus(F.CN1, F.Times(F.C2, t)));
+        }
+      }
       return F.NIL;
     }
 
@@ -3356,9 +3551,33 @@ public class ExpTrigsFunctions {
             return F.Times(F.Power(F.CN1, k), F.Sinh(F.Subtract(arg1, list.arg2())));
           }
         }
+      } else if (arg1.isTimes()) {
+        IExpr t = AbstractFunctionEvaluator.peelOfTimes((IAST) arg1, Pi);
+        if (t.isPresent()) {
+          return peelOfTimesPi(t);
+        }
       }
+
       if (arg1.isInterval()) {
         return IntervalSym.sinh((IAST) arg1);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr peelOfTimesPi(IExpr t) {
+      if (t.isComplex()) {
+        IComplex c = (IComplex) t;
+        IRational imaginaryPart = c.im();
+        if (imaginaryPart.isInteger()) {
+          IAST sinhResult = F.Sinh(F.Times(c.re(), S.Pi));
+          if (imaginaryPart.isEven()) {
+            // https://functions.wolfram.com/ElementaryFunctions/Sinh/04/02/03/0002/
+            return sinhResult;
+          } else if (imaginaryPart.isOdd()) {
+            // https://functions.wolfram.com/ElementaryFunctions/Sinh/04/02/03/0003/
+            return F.Times(F.CN1, sinhResult);
+          }
+        }
       }
       return F.NIL;
     }
@@ -3505,15 +3724,8 @@ public class ExpTrigsFunctions {
           return F.Tan(F.Times(S.Pi, F.Plus(t, ExpTrigsFunctions.integerPartFolded2(t))));
         }
         IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
-        if (t.isPresent() && t.im().isZero()) {
-          if (t.isIntegerResult()) {
-            return F.C0;
-          }
-          // t - 1/2
-          IExpr temp = engine.evaluate(F.Plus(t, F.CN1D2));
-          if (temp.isIntegerResult()) {
-            return F.CComplexInfinity;
-          }
+        if (t.isPresent()) {
+          return peelOfTimesPi(t, engine);
         }
       }
 
@@ -3526,6 +3738,28 @@ public class ExpTrigsFunctions {
       // return F.Times(F.CI, F.Tanh(imPart));
       // }
 
+      return F.NIL;
+    }
+
+    private static IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
+      if (t.isComplex()) {
+        IComplex c = (IComplex) t;
+        IRational realPart = c.re();
+        if (realPart.isInteger()) {
+          // https://functions.wolfram.com/ElementaryFunctions/Tan/04/02/03/0002/
+          // Tan(I*imaginaryPart*Pi)
+          return F.Tan(F.Times(F.CC(F.C0, c.im()), S.Pi));
+        }
+      } else if (t.im().isZero()) {
+        if (t.isIntegerResult()) {
+          return F.C0;
+        }
+        // t - 1/2
+        IExpr temp = engine.evaluate(F.Plus(t, F.CN1D2));
+        if (temp.isIntegerResult()) {
+          return F.CComplexInfinity;
+        }
+      }
       return F.NIL;
     }
 
@@ -3636,9 +3870,26 @@ public class ExpTrigsFunctions {
             return F.Tanh(F.Subtract(arg1, list.arg2()));
           }
         }
+      } else if (arg1.isTimes()) {
+        IExpr t = AbstractFunctionEvaluator.peelOfTimes((IAST) arg1, Pi);
+        if (t.isPresent()) {
+          return peelOfTimesPi(t, engine);
+        }
       }
       if (arg1.isInterval()) {
         return IntervalSym.tanh((IAST) arg1);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr peelOfTimesPi(IExpr t, EvalEngine engine) {
+      if (t.isComplex()) {
+        IComplex c = (IComplex) t;
+        IRational imaginaryPart = c.im();
+        if (imaginaryPart.isInteger()) {
+          // https://functions.wolfram.com/ElementaryFunctions/Tanh/04/02/03/0002/
+          return F.Tanh(F.Times(c.re(), S.Pi));
+        }
       }
       return F.NIL;
     }
