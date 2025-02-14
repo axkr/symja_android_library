@@ -1245,9 +1245,9 @@ public class Primality implements IPrimality {
       }
       int ni = (int) n;
       // 172
-      System.out.println(PRIMES_2_1021.length);
+      // System.out.println(PRIMES_2_1021.length);
       // 3340
-      System.out.println(PRIMES_1031_32749.length);
+      // System.out.println(PRIMES_1031_32749.length);
       if (ni <= PRIMES_2_1021.length) {
         return PRIMES_2_1021[ni - 1];
       }
@@ -1255,15 +1255,15 @@ public class Primality implements IPrimality {
         return PRIMES_1031_32749[ni - PRIMES_2_1021.length - 1];
       }
     }
-    if (n == 1L) {
-      return 2L;
-    }
-    if (n == 2L) {
-      return 3L;
-    }
-    if (n == 3L) {
-      return 5L;
-    }
+    // if (n == 1L) {
+    // return 2L;
+    // }
+    // if (n == 2L) {
+    // return 3L;
+    // }
+    // if (n == 3L) {
+    // return 5L;
+    // }
     long limit, root, count = 2;
     limit = (long) (n * (Math.log(n) + Math.log(Math.log(n)))) + 3;
     root = (long) Math.sqrt(limit);

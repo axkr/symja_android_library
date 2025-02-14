@@ -216,7 +216,7 @@ public interface IExpr
    * less than, equal to, or greater than the {@link #hierarchy()} number of {@code b}.
    * 
    */
-  static int compareHierarchy(IExpr a, IExpr b) {
+  /* private */ static int compareHierarchy(IExpr a, IExpr b) {
     return Integer.compare(a.hierarchy(), b.hierarchy());
   }
 
@@ -951,21 +951,23 @@ public interface IExpr
   }
 
   /**
-   * Compares this expression with the specified expression for canonical order. Returns a negative
-   * integer, zero, or a positive integer as this expression is canonical less than, equal to, or
-   * greater than the specified expression.
+   * Compares this "left-hand-side" expression with the specified "right-hand-side" expression for
+   * canonical order. Returns a negative integer, zero, or a positive integer as this expression is
+   * canonical less than, equal to, or greater than the specified expression.
+   * <p>
+   * See: "Computer Algebra and Symbolic Computation: Mathematical Methods" by Joel S. Cohen page 84
+   * "The &#9665; order relation"
    * 
+   * @param rhsExpr the right-hand-side expression to be compared
    * @see S#Order
    * @see S#NumericalOrder
    */
   @Override
-  default int compareTo(IExpr expr) {
-    if (expr.isAST()) {
-      // if (!expr.isDirectedInfinity()) {
-      return -1 * expr.compareTo(this);
-      // }
+  default int compareTo(IExpr rhsExpr) {
+    if (rhsExpr.isAST()) {
+      return -1 * rhsExpr.compareTo(this);
     }
-    return compareHierarchy(this, expr);
+    return compareHierarchy(this, rhsExpr);
   }
 
   /**

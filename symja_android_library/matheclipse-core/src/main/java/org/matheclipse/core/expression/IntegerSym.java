@@ -35,14 +35,90 @@ public class IntegerSym extends AbstractIntegerSym {
 
   static final int LOW = -128;
   static final int HIGH = 128;
-  static final IntegerSym[] CACHE;
+  static final IntegerSym[] CACHE = new IntegerSym[] {new IntegerSym(-128), new IntegerSym(-127),
+      new IntegerSym(-126), new IntegerSym(-125), new IntegerSym(-124), new IntegerSym(-123),
+      new IntegerSym(-122), new IntegerSym(-121), new IntegerSym(-120), new IntegerSym(-119),
+      new IntegerSym(-118), new IntegerSym(-117), new IntegerSym(-116), new IntegerSym(-115),
+      new IntegerSym(-114), new IntegerSym(-113), new IntegerSym(-112), new IntegerSym(-111),
+      new IntegerSym(-110), new IntegerSym(-109), new IntegerSym(-108), new IntegerSym(-107),
+      new IntegerSym(-106), new IntegerSym(-105), new IntegerSym(-104), new IntegerSym(-103),
+      new IntegerSym(-102), new IntegerSym(-101), new IntegerSym(-100), new IntegerSym(-99),
+      new IntegerSym(-98), new IntegerSym(-97), new IntegerSym(-96), new IntegerSym(-95),
+      new IntegerSym(-94), new IntegerSym(-93), new IntegerSym(-92), new IntegerSym(-91),
+      new IntegerSym(-90), new IntegerSym(-89), new IntegerSym(-88), new IntegerSym(-87),
+      new IntegerSym(-86), new IntegerSym(-85), new IntegerSym(-84), new IntegerSym(-83),
+      new IntegerSym(-82), new IntegerSym(-81), new IntegerSym(-80), new IntegerSym(-79),
+      new IntegerSym(-78), new IntegerSym(-77), new IntegerSym(-76), new IntegerSym(-75),
+      new IntegerSym(-74), new IntegerSym(-73), new IntegerSym(-72), new IntegerSym(-71),
+      new IntegerSym(-70), new IntegerSym(-69), new IntegerSym(-68), new IntegerSym(-67),
+      new IntegerSym(-66), new IntegerSym(-65), new IntegerSym(-64), new IntegerSym(-63),
+      new IntegerSym(-62), new IntegerSym(-61), new IntegerSym(-60), new IntegerSym(-59),
+      new IntegerSym(-58), new IntegerSym(-57), new IntegerSym(-56), new IntegerSym(-55),
+      new IntegerSym(-54), new IntegerSym(-53), new IntegerSym(-52), new IntegerSym(-51),
+      new IntegerSym(-50), new IntegerSym(-49), new IntegerSym(-48), new IntegerSym(-47),
+      new IntegerSym(-46), new IntegerSym(-45), new IntegerSym(-44), new IntegerSym(-43),
+      new IntegerSym(-42), new IntegerSym(-41), new IntegerSym(-40), new IntegerSym(-39),
+      new IntegerSym(-38), new IntegerSym(-37), new IntegerSym(-36), new IntegerSym(-35),
+      new IntegerSym(-34), new IntegerSym(-33), new IntegerSym(-32), new IntegerSym(-31),
+      new IntegerSym(-30), new IntegerSym(-29), new IntegerSym(-28), new IntegerSym(-27),
+      new IntegerSym(-26), new IntegerSym(-25), new IntegerSym(-24), new IntegerSym(-23),
+      new IntegerSym(-22), new IntegerSym(-21), new IntegerSym(-20), new IntegerSym(-19),
+      new IntegerSym(-18), new IntegerSym(-17), new IntegerSym(-16), new IntegerSym(-15),
+      new IntegerSym(-14), new IntegerSym(-13), new IntegerSym(-12), new IntegerSym(-11),
+      new IntegerSym(-10), new IntegerSym(-9), new IntegerSym(-8), new IntegerSym(-7),
+      new IntegerSym(-6), new IntegerSym(-5), new IntegerSym(-4), new IntegerSym(-3),
+      new IntegerSym(-2), new IntegerSym(-1), new IntegerSym(0), new IntegerSym(1),
+      new IntegerSym(2), new IntegerSym(3), new IntegerSym(4), new IntegerSym(5), new IntegerSym(6),
+      new IntegerSym(7), new IntegerSym(8), new IntegerSym(9), new IntegerSym(10),
+      new IntegerSym(11), new IntegerSym(12), new IntegerSym(13), new IntegerSym(14),
+      new IntegerSym(15), new IntegerSym(16), new IntegerSym(17), new IntegerSym(18),
+      new IntegerSym(19), new IntegerSym(20), new IntegerSym(21), new IntegerSym(22),
+      new IntegerSym(23), new IntegerSym(24), new IntegerSym(25), new IntegerSym(26),
+      new IntegerSym(27), new IntegerSym(28), new IntegerSym(29), new IntegerSym(30),
+      new IntegerSym(31), new IntegerSym(32), new IntegerSym(33), new IntegerSym(34),
+      new IntegerSym(35), new IntegerSym(36), new IntegerSym(37), new IntegerSym(38),
+      new IntegerSym(39), new IntegerSym(40), new IntegerSym(41), new IntegerSym(42),
+      new IntegerSym(43), new IntegerSym(44), new IntegerSym(45), new IntegerSym(46),
+      new IntegerSym(47), new IntegerSym(48), new IntegerSym(49), new IntegerSym(50),
+      new IntegerSym(51), new IntegerSym(52), new IntegerSym(53), new IntegerSym(54),
+      new IntegerSym(55), new IntegerSym(56), new IntegerSym(57), new IntegerSym(58),
+      new IntegerSym(59), new IntegerSym(60), new IntegerSym(61), new IntegerSym(62),
+      new IntegerSym(63), new IntegerSym(64), new IntegerSym(65), new IntegerSym(66),
+      new IntegerSym(67), new IntegerSym(68), new IntegerSym(69), new IntegerSym(70),
+      new IntegerSym(71), new IntegerSym(72), new IntegerSym(73), new IntegerSym(74),
+      new IntegerSym(75), new IntegerSym(76), new IntegerSym(77), new IntegerSym(78),
+      new IntegerSym(79), new IntegerSym(80), new IntegerSym(81), new IntegerSym(82),
+      new IntegerSym(83), new IntegerSym(84), new IntegerSym(85), new IntegerSym(86),
+      new IntegerSym(87), new IntegerSym(88), new IntegerSym(89), new IntegerSym(90),
+      new IntegerSym(91), new IntegerSym(92), new IntegerSym(93), new IntegerSym(94),
+      new IntegerSym(95), new IntegerSym(96), new IntegerSym(97), new IntegerSym(98),
+      new IntegerSym(99), new IntegerSym(100), new IntegerSym(101), new IntegerSym(102),
+      new IntegerSym(103), new IntegerSym(104), new IntegerSym(105), new IntegerSym(106),
+      new IntegerSym(107), new IntegerSym(108), new IntegerSym(109), new IntegerSym(110),
+      new IntegerSym(111), new IntegerSym(112), new IntegerSym(113), new IntegerSym(114),
+      new IntegerSym(115), new IntegerSym(116), new IntegerSym(117), new IntegerSym(118),
+      new IntegerSym(119), new IntegerSym(120), new IntegerSym(121), new IntegerSym(122),
+      new IntegerSym(123), new IntegerSym(124), new IntegerSym(125), new IntegerSym(126),
+      new IntegerSym(127), new IntegerSym(128) //
+  };
 
-  static {
-    CACHE = new IntegerSym[(HIGH - LOW) + 1];
+  // static {
+  // printCacheSource();
+  // }
+
+  private static void printCacheSource() {
+    System.out.println("static final IntegerSym[] CACHE = new IntegerSym[] {");
+    IntegerSym[] CACHE = new IntegerSym[(HIGH - LOW) + 1];
     int j = LOW;
     for (int k = 0; k < CACHE.length; k++) {
-      CACHE[k] = new IntegerSym(j++);
+      CACHE[k] = new IntegerSym(j);
+      System.out.print("new IntegerSym(" + j + ")");
+      j++;
+      if (k < CACHE.length - 1) {
+        System.out.print(",");
+      }
     }
+    System.out.print(" // \n};");
   }
 
   /* package private */ int fIntValue;

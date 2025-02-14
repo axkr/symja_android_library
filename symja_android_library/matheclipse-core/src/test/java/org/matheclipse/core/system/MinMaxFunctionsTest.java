@@ -44,6 +44,15 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testIssue80() {
+    // issue #80: LinearProgramming with expressions
+    check("NMinimize({-2*x+y-5, 2*y+x<=6&&2*y+3*x<=12&&y>=0},{x,y})", //
+        "{-13.0,{x->4.0,y->0.0}}");
+    check("NMaximize({-2*x+y-5, 2*y+x<=6&&2*y+3*x<=12&&y>=0},{x,y})", //
+        "{-2.0,{x->0.0,y->3.0}}");
+  }
+
+  @Test
   public void testNMaximize() {
     checkNumeric("NMaximize(-x^4 - 3* x^2 + x, x)", //
         "{0.08258881886826407,{x->0.16373996720676331}}");

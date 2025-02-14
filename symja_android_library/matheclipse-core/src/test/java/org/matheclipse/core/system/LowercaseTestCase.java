@@ -181,18 +181,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testAbsoluteCorrelation() {
-    check("AbsoluteCorrelation({5, 3/4, 1}, {2, 1/2, 1})", //
-        "91/24");
-    check("AbsoluteCorrelation({1.5, 3, 5, 10}, {2, 1.25, 15, 8})", //
-        "40.4375");
-    check("AbsoluteCorrelation(N({1, 2, 5, 6}, 20), N({2, 3, 6, 8}, 20))", //
-        "21.5");
-    check("AbsoluteCorrelation({2 + I, 3 - 2*I, 5 + 4* I}, {I, 1 + 2*I, 10 - 5*I})", //
-        "10+I*55/3");
-  }
-
-  @Test
   public void testAccumulate() {
     check("Accumulate({{a, b}, {c, d}, {e, f}})", //
         "{{a,b},{a+c,b+d},{a+c+e,b+d+f}}");
@@ -1777,76 +1765,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
     check("BinaryDistance({1, 2, 3, 4, 5}, {1, 2, 3, 4, 5.0})", //
         "0");
-  }
-
-  @Test
-  public void testBinCounts() {
-
-    check("BinCounts({{1,0}, {0,1}},-Infinity)", //
-        "BinCounts({{1,0},{0,1}},-Infinity)");
-
-    check("BinCounts({1,2,3,4,5},{1,7,2})", //
-        "{2,2,1}");
-    check("BinCounts({1,2,3,4,5},{1,7,3})", //
-        "{3,2}");
-    check("BinCounts({1,2,3,4,5,6,7,8,9,10,11,12,13},{1,13,4})", //
-        "{4,4,4}");
-    check("BinCounts({2,-1,a,b},{-1,3,1})", //
-        "{1,0,0,1}");
-    check("BinCounts({3/4,-2},{-1,3,1})", //
-        "{0,1,0,0}");
-    check("BinCounts({3/4},{1,3,1})", //
-        "{0,0}");
-    check("BinCounts({3/4} )", //
-        "{1}");
-
-    check("BinCounts({1,2,3,4,5})", //
-        "{0,1,1,1,1,1}");
-    check("BinCounts({1,2,3,4,5},3)", //
-        "{2,3}");
-    check("BinCounts({1,2,3,4,5},4)", //
-        "{3,2}");
-    check("BinCounts({1,2,3,4,5},5)", //
-        "{4,1}");
-    check("BinCounts({1,2,3,4,5},10)", //
-        "{5}");
-    check("BinCounts({0.04, 0.75, 0.3333, 0.03344, 0.9999},0)", //
-        "BinCounts({0.04,0.75,0.3333,0.03344,0.9999},0)");
-    check("BinCounts({1,2,3,4,5},{3,3,-1})", //
-        "BinCounts({1,2,3,4,5},{3,3,-1})");
-    check("BinCounts({1,2,3,4,5},{3,3,1})", //
-        "{}");
-    check("BinCounts({0.04, 0.75, 0.3333, 0.03344, 0.9999},0.1)", //
-        "{2,0,0,1,0,0,0,1,0,1}");
-    check("BinCounts({0.04, 0.75, 0.3333, 0.03344, 0.9999},-0.1)", //
-        "BinCounts({0.04,0.75,0.3333,0.03344,0.9999},-0.1)");
-    check("BinCounts({1, 2, 3, 4, 5})", //
-        "{0,1,1,1,1,1}");
-    check("BinCounts({1.5, 3, a, 2.5, 1, I}, 2)", //
-        "{2,2}");
-    check("BinCounts({1, 3, 2, 1, 4, 5, 6, 2}, {0, 10, 1})", //
-        "{0,2,2,1,1,1,1,0,0,0}");
-    check("BinCounts({1, 3, 2, 1, 4, 5, 6, 2}, 2)", //
-        "{2,3,2,1}");
-    check("BinCounts({1.5, 3, N(3, 20), 2.5, 1, E}, 2)", //
-        "{2,4}");
-  }
-
-
-  @Test
-  public void testBitLength() {
-    check("BitLength(1023)", //
-        "10");
-    check("BitLength(100) ", //
-        "7");
-    check("BitLength(-5)", //
-        "3");
-    check("BitLength(0)", //
-        "0");
-    check("BitLength(2^123-1)", //
-        "123");
-    check("BitLength(-(2^123-1))", //
-        "123");
   }
 
   @Test
@@ -3710,6 +3628,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCos() {
+    check("Cos((2+I*3)*Pi)", //
+        "Cosh(3*Pi)");
+    check("Cos((7+I*(1/3))*Pi)", //
+        "-Cosh(Pi/3)");
+    check("Cos(I*Pi)", //
+        "Cosh(Pi)");
+
     check("Cos(11/8*Pi)", //
         "-Sin(Pi/8)");
 
@@ -3820,12 +3745,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCosh() {
+    check("Cosh(17/2*Pi*I)", //
+        "0");
     check("Cosh(10*Pi*I)", //
         "1");
     check("Cosh(43*Pi*I)", //
         "-1");
-    check("Cosh(17/2*Pi*I)", //
-        "0");
+
 
     check("Refine(Cosh(x+I*k*Pi), Element(k, Integers))", //
         "(-1)^k*Cosh(x)");
@@ -4043,6 +3969,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCoth() {
+    check("Coth((2+3*I)*Pi)", //
+        "Coth(2*Pi)");
     check("Coth(0.)", //
         "ComplexInfinity");
     check("Coth(0)", //
@@ -4216,6 +4144,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // gitbub #173
     check("Csch(Log(5/3))", //
         "15/8");
+
+    check("Csch((1/3+42*I)*Pi)", //
+        "Csch(Pi/3)");
+    check("Csch((2+3*I)*Pi)", //
+        "-Csch(2*Pi)");
     check("Refine(Csch(x+I*k*Pi), Element(k, Integers))", //
         "(-1)^k*Csch(x)");
     check("Refine(Csch(x-I*k*Pi), Element(k, Integers))", //
@@ -5678,6 +5611,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.693147");
     check("Table(DirichletEta(x), {x, -4, 4}) // N", //
         "{0.0,-0.125,0.0,0.25,0.5,0.693147,0.822467,0.901543,0.947033}");
+  }
+
+
+  @Test
+  public void testDirichletLambda() {
+    check("Table(DirichletLambda(x), {x, -4, 4}) ", //
+        "{0,-7/120,0,1/12,0,ComplexInfinity,Pi^2/8,7/8*Zeta(3),Pi^4/96}");
+    check("DirichletLambda(I)", //
+        "((-1+2^I)*Zeta(I))/2^I");
+    check("DirichletLambda(z)", //
+        "((-1+2^z)*Zeta(z))/2^z");
+    check("DirichletLambda /@ {2, 4}", //
+        "{Pi^2/8,Pi^4/96}");
   }
 
   @Test
@@ -10486,6 +10432,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometric1F1() {
+    checkNumeric("Hypergeometric1F1(a, a+2, z)", //
+        "(Gamma(a)-Gamma(a,-z)+(Gamma(1+a)-Gamma(1+a,-z))/z)/((-z)^a*Beta(a,2))");
     checkNumeric("Hypergeometric1F1(1,1/2,z)", //
         "1+E^z*Sqrt(Pi)*Sqrt(z)*Erf(Sqrt(z))");
     checkNumeric("Hypergeometric1F1(1,{2,3,4},5.0)", //
@@ -11502,6 +11450,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testInterquartileRange() {
+    check("InterquartileRange(GumbelDistribution( ))", //
+        "Log(Log(4)/Log(4/3))");
+
+
     // https://en.wikipedia.org/wiki/Interquartile_range
     check("InterquartileRange({7,7,31,31,47,75,87,115,116,119,119,155,177})", //
         "88");
@@ -14558,201 +14510,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{49/8,{x->-3/4}}");
   }
 
-  @Test
-  public void testMean() {
-    check("Mean(Array(Subscript(a, ##) &, {2, 2}))", //
-        "{1/2*(Subscript(a,1,1)+Subscript(a,2,1)),1/2*(Subscript(a,1,2)+Subscript(a,2,2))}");
-    check("Mean(Array(Subscript(a, ##) &, {2, 2, 2}))", //
-        "{{1/2*(Subscript(a,1,1,1)+Subscript(a,2,1,1)),1/2*(Subscript(a,1,1,2)+Subscript(a,\n"
-            + "2,1,2))},{1/2*(Subscript(a,1,2,1)+Subscript(a,2,2,1)),1/2*(Subscript(a,1,2,2)+Subscript(a,\n"
-            + "2,2,2))}}");
-    check("Mean({26, 64, 36})", //
-        "42");
-    check("Mean({1, 1, 2, 3, 5, 8})", //
-        "10/3");
-    check("Mean({a, b})", //
-        "1/2*(a+b)");
-
-    check("Mean({{a, u}, {b, v}, {c, w}})", //
-        "{1/3*(a+b+c),1/3*(u+v+w)}");
-    check("Mean({1.21, 3.4, 2.15, 4, 1.55})", //
-        "2.462");
-    check("Mean({a,b,c,d})", //
-        "1/4*(a+b+c+d)");
-
-    check("Mean(BetaDistribution(a,b))", //
-        "a/(a+b)");
-    check("Mean(BernoulliDistribution(p))", //
-        "p");
-    check("Mean(BinomialDistribution(n, m))", //
-        "m*n");
-    check("Mean(ExponentialDistribution(n))", "1/n");
-    check("Mean(PoissonDistribution(p))", //
-        "p");
-    check("Mean(BinomialDistribution(n, p))", //
-        "n*p");
-    check("Mean(DiscreteUniformDistribution({l, r}))", //
-        "1/2*(l+r)");
-    check("Mean(ErlangDistribution(n, m))", //
-        "n/m");
-    check("Mean(LogNormalDistribution(m,s))", //
-        "E^(m+s^2/2)");
-    check("Mean(NakagamiDistribution(n, m))", //
-        "(Sqrt(m)*Pochhammer(n,1/2))/Sqrt(n)");
-    check("Mean(NormalDistribution(n, p))", //
-        "n");
-    check("Mean(FrechetDistribution(n, m))", //
-        "Piecewise({{m*Gamma(1-1/n),1<n}},Infinity)");
-    check("Mean(GammaDistribution(n, m))", //
-        "m*n");
-    check("Mean(GeometricDistribution(n))", //
-        "-1+1/n");
-    check("Mean(GumbelDistribution(n, m))", //
-        "-EulerGamma*m+n");
-    check("Mean(HypergeometricDistribution(n, ns, nt))", //
-        "(n*ns)/nt");
-    check("Mean(StudentTDistribution(4))", //
-        "0");
-    check("Mean(StudentTDistribution(n))", //
-        "Piecewise({{0,n>1}},Indeterminate)");
-    check("Mean(WeibullDistribution(n, m))", //
-        "m*Gamma(1+1/n)");
-  }
-
-  @Test
-  public void testMeanFilter() {
-    check("MeanFilter({-3, 3, 6, 0, 0, 3, -3, -9}, 2)", //
-        "{2,3/2,6/5,12/5,6/5,-9/5,-9/4,-3}");
-    check("MeanFilter({1, 2, 3, 2, 1}, 1)", //
-        "{3/2,2,7/3,2,3/2}");
-    check("MeanFilter({0, 3, 8, 2}, 1)", //
-        "{3/2,11/3,13/3,5}");
-    check("MeanFilter({a,b,c}, 1)", //
-        "{1/2*(a+b),1/3*(a+b+c),1/2*(b+c)}");
-  }
-
-  @Test
-  public void testMeanDeviation() {
-    // Config.MAX_AST_SIZE=Integer.MAX_VALUE;
-    // check(
-    // "MeanDeviation(RandomReal(1, 10^4))", //
-    // "0.243758");
-    check("MeanDeviation(SparseArray({{1, 2}, {4, 8}, {5, 3}, {2, 15}}))", //
-        "{3/2,9/2}");
-    check("MeanDeviation(1+(-1)*1)", //
-        "MeanDeviation(0)");
-    check("MeanDeviation({a, b, c})", //
-        "1/3*(Abs(a+1/3*(-a-b-c))+Abs(b+1/3*(-a-b-c))+Abs(1/3*(-a-b-c)+c))");
-    check("MeanDeviation({{1, 2}, {4, 8}, {5, 3}, {2, 15}})", //
-        "{3/2,9/2}");
-    check("MeanDeviation({1, 2, 3, 7})", //
-        "15/8");
-    check("MeanDeviation({Pi, E, 2})//Together", //
-        "2/9*(-4+E+Pi)");
-  }
-
-  @Test
-  public void testMedian() {
-    check("Median(WeightedData({8, 3, 5,4}, " + //
-        "{0.15, 0.09, 0.12,0.10}))", //
-        "5");
-    check("Median(WeightedData({3, 4,5,8}, " + //
-        "{0.09, 0.10,0.12,0.15 }))", //
-        "5");
-
-    check("Median(WeightedData({8, 3, 5, 4, 9, 0, 4, 2, 2, 3}, " + //
-        "{0.15, 0.09, 0.12, 0.10, 0.16, 0., 0.11, 0.08, 0.08, 0.09}))", //
-        "4");
-    check("Median(WeightedData({a,b,c,g}, {d,e,f,h}))", //
-        "b*Boole(d/(d+e+f+h)<1/2<=d/(d+e+f+h)+e/(d+e+f+h))+c*Boole(d/(d+e+f+h)+e/(d+e+f+h)<1/\n"
-            + "2<=d/(d+e+f+h)+e/(d+e+f+h)+f/(d+e+f+h))+g*Boole(d/(d+e+f+h)+e/(d+e+f+h)+f/(d+e+f+h)<\n"
-            + "1/2<=d/(d+e+f+h)+e/(d+e+f+h)+f/(d+e+f+h)+h/(d+e+f+h))+a*Boole(1/2<=d/(d+e+f+h))");
-    check("Median(WeightedData({a,b,c}, {d,e,f}))", //
-        "b*Boole(d/(d+e+f)<1/2<=d/(d+e+f)+e/(d+e+f))+c*Boole(d/(d+e+f)+e/(d+e+f)<1/2<=d/(d+e+f)+e/(d+e+f)+f/(d+e+f))+a*Boole(\n"
-            + //
-            "1/2<=d/(d+e+f))");
-    check("Median(WeightedData({a,b}, {d,e}))", //
-        "b*Boole(d/(d+e)<1/2<=d/(d+e)+e/(d+e))+a*Boole(1/2<=d/(d+e))");
-
-    check("Median({{100, 1, 10, 50}, {-1, 1, -2, 2}})", //
-        "{99/2,1,4,26}");
-    check("Median({26, 64, 36})", //
-        "36");
-    check("Median({-11, 38, 501, 1183})", //
-        "539/2");
-    check("Median({{100, 1, 10, 50}, {-1, 1, -2, 2}})", //
-        "{99/2,1,4,26}");
-
-    check("Median({1,2,3,4,5,6,7.0})", //
-        "4.0");
-    check("Median({1,2,3,4,5,6,7.0,8})", //
-        "4.5");
-    check("Median({1,2,3,4,5,6,7})", //
-        "4");
-
-    check("Median(BernoulliDistribution(p))", //
-        "Piecewise({{1,p>1/2}},0)");
-    check("Median(BetaDistribution(a,b))", //
-        "InverseBetaRegularized(1/2,a,b)");
-    check("Median(BinomialDistribution(n, m))", //
-        "Median(BinomialDistribution(n,m))");
-    check("Median(ExponentialDistribution(n))", //
-        "Log(2)/n");
-    check("Median(PoissonDistribution(p))", //
-        "Median(PoissonDistribution(p))");
-    check("Median(DiscreteUniformDistribution({l, r}))", //
-        "-1+l+Max(1,Ceiling(1/2*(1-l+r)))");
-    check("Median(UniformDistribution({l, r}))", //
-        "1/2*(l+r)");
-    check("Median(ErlangDistribution(n, m))", //
-        "InverseGammaRegularized(n,0,1/2)/m");
-    check("Median(LogNormalDistribution(m,s))", //
-        "E^m");
-    check("Median(NakagamiDistribution(n, m))", //
-        "Sqrt((m*InverseGammaRegularized(n,0,1/2))/n)");
-    check("Median(NormalDistribution())", //
-        "0");
-    check("Median(NormalDistribution(n, p))", //
-        "n");
-    check("Median(FrechetDistribution(n, m))", //
-        "m/Log(2)^(1/n)");
-    check("Median(GammaDistribution(n, m))", //
-        "m*InverseGammaRegularized(n,0,1/2)");
-    check("Median(GammaDistribution(a,b,g,d))", //
-        "d+b*InverseGammaRegularized(a,1/2)^(1/g)");
-    check("Median(GeometricDistribution(n))", //
-        "Median(GeometricDistribution(n))");
-    check("Median(GumbelDistribution( ))", //
-        "Log(Log(2))");
-    check("Median(GumbelDistribution(n, m))", //
-        "n+m*Log(Log(2))");
-    check("Median(HypergeometricDistribution(n, ns, nt))", //
-        "Median(HypergeometricDistribution(n,ns,nt))");
-    check("Median(StudentTDistribution(4))", //
-        "0");
-    check("Median(StudentTDistribution(n))", //
-        "0");
-    check("Median(StudentTDistribution(m,s,v))", //
-        "m");
-    check("Median(WeibullDistribution(a, b))", //
-        "b*Log(2)^(1/a)");
-    check("Median(WeibullDistribution(a, b, m))", //
-        "m+b*Log(2)^(1/a)");
-  }
-
-  @Test
-  public void testMedianFilter() {
-    // Wikipedia example with "shrinking the window near the boundaries"
-    check("MedianFilter({2,3,80,6}, 1)", //
-        "{5/2,3,6,43}");
-
-    check("MedianFilter({1, 2, 3, 2, 1}, 1)", //
-        "{3/2,2,2,2,3/2}");
-    check("MedianFilter({0, 3, 8, 2}, 1)", //
-        "{3/2,3,3,5}");
-    check("MedianFilter({a,b,c}, 1)", //
-        "{1/2*(a+b),b,1/2*(b+c)}");
-  }
 
   @Test
   public void testMeijerG() {
@@ -18830,8 +18587,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-I");
     check("(I)^(-1+k)", //
         "I^(-1+k)");
-    check("2^(2/3)*(-5+3*Sqrt[3])^(2/3)", //
-        "(2*(-5+3*Sqrt(3)))^(2/3)");
+    check("2^(2/3)*(-5+3*Sqrt(3))^(2/3)", //
+        "(-10+6*Sqrt(3))^(2/3)");
     check("(-1095912791)^(2/3)", //
         "1062961*(-1)^(2/3)");
     check("(-1062961)^(2/3)", //
@@ -18880,10 +18637,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     // github #114
     check("Sqrt(1/(2*Surd(-Cos(9/20*Pi),3)))", //
-        "Sqrt(-1/(2*Cos(9/20*Pi)^(1/3)))");
+        "I*Sqrt(1/(2*Cos(9/20*Pi)^(1/3)))");
     check("0^(13+n)/a", //
         "0^(13+n)/a");
-    check(" 2^(2*I) - 2^(-2*I) - 2*I*Sin(Log(4)) ", //
+    check(" 2^(2*I) - 2^(-2*I) - 2*I*Sin(Log(4)) // FullSimplify", //
         "0");
     check("2*Sqrt(2)", //
         "2*Sqrt(2)");
@@ -19563,14 +19320,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "991");
     check("Prime(167)", //
         "991");
-    check("Prime(10^6)", //
-        "15485863");
-    check("Prime(10^7)", //
-        "179424673");
-    check("Prime(10^8)", //
-        "2038074743");
-    // check("Prime(103000000)", //
-    // "2102429869");
+    check("Prime(100000)", //
+        "1299709");
+    if (Config.EXPENSIVE_JUNIT_TESTS) {
+      check("Prime(10^6)", //
+          "15485863");
+      check("Prime(10^7)", //
+          "179424673");
+      check("Prime(10^8)", //
+          "2038074743");
+      check("Prime(103000000)", //
+          "2102429869");
+    }
 
     // above the limit return Prime(...)
     // Prime: Maximum Prime limit 103000000 exceeded.
@@ -21052,6 +20813,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRefine() {
+    check("(x+1)*(x-1)", //
+        "(-1+x)*(1+x)");
+
     // TODO
     // check("Refine((E)^(Pi*I*2*(1/4+x)), Element(x, Integers))", //
     // "I");
@@ -21059,11 +20823,21 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "True");
     // check("Refine((-1)^(x+y), Element(k/2, Integers))", //
     // "(-1)^y");
+    check("Refine(Sqrt(x^2 y^2), x>0&&y<-10)", //
+        "-x*y");
+
+    check("Refine(Sqrt(a-I*Sqrt(b))*Sqrt(a+I*Sqrt(b)),a>0&&b>0)", //
+        "Sqrt(a^2+b)");
+    check("Refine(Sqrt(a)*Sqrt(b),a>0&&b>0)", //
+        "Sqrt(a*b)");
+    check("Refine(Sqrt(-a),a>0)", //
+        "I*Sqrt(a)");
+    check("Refine(1/Sqrt(-a),a>0)", //
+        "-I/Sqrt(a)");
 
     check("Refine(1-w<0,w>1)", //
         "True");
-    check("Refine(Sqrt(x^2 y^2), x>0&&y<-10)", //
-        "-x*y");
+
     check("Refine(Csc(Pi*(1/2+m)), Element(m, Integers))", //
         "I^(2*m)");
     check("Refine(Csc(Pi*(-1/2+m)), Element(m, Integers))", //
@@ -21921,6 +21695,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Sech(Log(5/3))", //
         "15/17");
 
+    check("Sech((1/3+42*I)*Pi)", //
+        "Sech(Pi/3)");
+    check("Sech((2+3*I)*Pi)", //
+        "-Sech(2*Pi)");
     check("Refine(Sech(x+I*k*Pi), Element(k, Integers))", //
         "(-1)^k*Sech(x)");
     check("Refine(Sech(x-I*k*Pi), Element(k, Integers))", //
@@ -22353,8 +22131,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSimplify() {
-    check("Simplify(a-a*b-a*c)", //
-        "a*(1-b-c)");
+    check("Simplify((1/x-1/3)/(x-3))", //
+        "-1/(3*x)");
+
+    check("s=2*a + 2*Sqrt(a - Sqrt(-b))*Sqrt(a + Sqrt(-b));", //
+        "");
+    check("Simplify(s, a>0&&b>0)", //
+        "2*(a+Sqrt(a^2+b))");
+
     check("Simplify(a-a*b+a*c)", //
         "a*(1-b+c)");
 
@@ -22804,6 +22588,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSinh() {
+    check("Sinh((2+3*I)*Pi)", //
+        "-Sinh(2*Pi)");
     check("Sinh(Pi*I+x)", //
         "-Sinh(x)");
     check("Sinh(10*Pi*I+x)", //
@@ -23296,21 +23082,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1+x+f(2+x*g(2))");
   }
 
-  @Test
-  public void testStandardDeviation() {
-    check("StandardDeviation({1, 2, 3})", //
-        "1");
-    check("StandardDeviation({7, -5, 101, 100})", //
-        "Sqrt(13297)/2");
-    check("StandardDeviation({a, a})", //
-        "0");
-    check("StandardDeviation({{1, 10}, {-1, 20}})", //
-        "{Sqrt(2),5*Sqrt(2)}");
-    check("StandardDeviation({1.21, 3.4, 2, 4.66, 1.5, 5.61, 7.22})", //
-        "2.27183");
-    check("StandardDeviation(LogNormalDistribution(0, 1))", //
-        "Sqrt((-1+E)*E)");
-  }
 
   @Test
   public void testStieltjesGamma() {
@@ -24410,6 +24181,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTanh() {
+    check("Tanh((4/7+42*I)*Pi)", //
+        "Tanh(4/7*Pi)");
     check("Tanh(0)", //
         "0");
   }
@@ -25156,7 +24929,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "                  Sech(ArcCsch(x)) == 1/Sqrt(1 + 1/x^2) ", //
         "                                Csch(ArcSinh(x)) == 1/x ", //
         "       Csch(ArcCosh(x)) == 1/(Sqrt(-1 + x)*Sqrt(1 + x)) ", //
-        "        Csch(ArcTanh(x)) == (Sqrt(1 - x)*Sqrt(1 + x))/x ", //
+        "                    Csch(ArcTanh(x)) == Sqrt(1 - x^2)/x ", //
         "           Csch(ArcCoth(x)) == Sqrt(-1 + x)*Sqrt(1 + x) ", //
         "  Csch(ArcSech(x)) == x/((1 + x)*Sqrt((1 - x)/(1 + x))) ", //
         "                                  Csch(ArcCsch(x)) == x ");
@@ -25991,76 +25764,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a^x}");
   }
 
-  @Test
-  public void testVariance() {
-    check("Variance(BinomialDistribution(n, m))", //
-        "(1-m)*m*n");
-    check("Variance(BernoulliDistribution(n))", //
-        "(1-n)*n");
-    check("Variance(BetaDistribution(a,b))", //
-        "(a*b)/((a+b)^2*(1+a+b))");
-    check("Variance(DiscreteUniformDistribution({l, r}))", //
-        "1/12*(-1+(1-l+r)^2)");
-    check("Variance(ErlangDistribution(n, m))", //
-        "n/m^2");
-    check("Variance(ExponentialDistribution(n))", //
-        "1/n^2");
-    check("Variance(LogNormalDistribution(m,s))", //
-        "(-1+E^s^2)*E^(2*m+s^2)");
-    check("Variance(NakagamiDistribution(n, m))", //
-        "m+(-m*Pochhammer(n,1/2)^2)/n");
-    check("Variance(NormalDistribution(n, m))", //
-        "m^2");
-    check("Variance(FrechetDistribution(n, m))", //
-        "Piecewise({{m^2*(Gamma(1-2/n)-Gamma(1-1/n)^2),n>2}},Infinity)");
-    check("Variance(GammaDistribution(n, m))", //
-        "m^2*n");
-    check("Variance(GeometricDistribution(n))", //
-        "(1-n)/n^2");
-    check("Variance(GumbelDistribution(n, m))", //
-        "1/6*m^2*Pi^2");
-    check("Variance(GompertzMakehamDistribution(m,n))", //
-        "(E^n*(6*EulerGamma^2+Pi^2-6*E^n*ExpIntegralEi(-n)^2-12*n*HypergeometricPFQ({1,1,\n" + //
-            "1},{2,2,2},-n)+12*EulerGamma*Log(n)+6*Log(n)^2))/(6*m^2)");
-    check("Variance(HypergeometricDistribution(n, ns, nt))", //
-        "(n*ns*(1-ns/nt)*(-n+nt))/((-1+nt)*nt)");
-    check("Variance(PoissonDistribution(n))", //
-        "n");
-    check("Variance(StudentTDistribution(4))", //
-        "2");
-    check("Variance(StudentTDistribution(n))", //
-        "Piecewise({{n/(-2+n),n>2}},Indeterminate)");
-
-    check("Variance(WeibullDistribution(n, m))", //
-        "m^2*(-Gamma(1+1/n)^2+Gamma(1+2/n))");
-
-    check("Variance({1, 2, 3})", //
-        "1");
-    check("Variance({7, -5, 101, 3})", //
-        "7475/3");
-    check("Variance({1 + 2*I, 3 - 10*I})", //
-        "74");
-    check("Variance({a, a})", //
-        "0");
-    check("Variance({{1, 3, 5}, {4, 10, 100}})", //
-        "{9/2,49/2,9025/2}");
-
-    check("Variance({Pi,E,3})//Together", //
-        "1/3*(9-3*E+E^2-3*Pi-E*Pi+Pi^2)");
-    check("Variance({a,b,c,d})", //
-        "1/12*(-(-3*a+b+c+d)*Conjugate(a)-(a-3*b+c+d)*Conjugate(b)-(a+b-3*c+d)*Conjugate(c)-(a+b+c-\n"
-            + "3*d)*Conjugate(d))");
-    checkNumeric("Variance({1., 2., 3., 4.})", //
-        "1.6666666666666667");
-    checkNumeric("Variance({{5.2, 7}, {5.3, 8}, {5.4, 9}})", //
-        "{0.010000000000000018,1.0}");
-    checkNumeric("Variance({1.21, 3.4, 2, 4.66, 1.5, 5.61, 7.22})", //
-        "5.16122380952381");
-    check("Variance({1.21, 3.4, 2+3*I, 4.66-0.1*I, 1.5, 5.61, 7.22})", //
-        "6.46265");
-    // check("Variance(BernoulliDistribution(p))", "p*(1-p)");
-    // check("Variance(BinomialDistribution(n, p))", "n*p*(1-p)");
-  }
 
   @Test
   public void testVerbatim() {

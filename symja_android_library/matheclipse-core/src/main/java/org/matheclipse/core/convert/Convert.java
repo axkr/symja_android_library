@@ -33,6 +33,7 @@ import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBigNumber;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -1004,8 +1005,21 @@ public class Convert {
     }
     final int rowSize = vector.getDimension();
     final IASTAppendable out = F.mapRange(0, rowSize, i -> F.num(vector.getEntry(i)));
-    out.addEvalFlags(IAST.IS_VECTOR);
+    if (vectorFormat) {
+      out.addEvalFlags(IAST.IS_VECTOR);
+    }
     return out;
+  }
+
+  public static IASTAppendable assoc2List(final IAssociation vector) {
+    if (vector == null) {
+      return F.NIL;
+    }
+    final int rowSize = vector.isAssociationVector();
+    if (rowSize < 0) {
+      return F.NIL;
+    }
+    return F.mapRange(1, rowSize + 1, i -> vector.get(i));
   }
 
   /**

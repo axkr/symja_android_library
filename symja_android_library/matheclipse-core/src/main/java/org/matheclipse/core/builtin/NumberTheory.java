@@ -683,10 +683,13 @@ public final class NumberTheory {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
-      IExpr n = ast.arg1();
-      // (2^(2*n)*Gamma(1/2+n))/(Sqrt(Pi)*Gamma(2+n))
-      return F.Times(F.Power(F.C2, F.Times(F.C2, n)), F.Gamma(F.Plus(n, F.C1D2)),
-          F.Power(F.Times(F.Sqrt(S.Pi), F.Gamma(F.Plus(n, F.C2))), F.CN1));
+      if (ast.isAST1()) {
+        IExpr n = ast.arg1();
+        // (2^(2*n)*Gamma(1/2+n))/(Sqrt(Pi)*Gamma(2+n))
+        return F.Times(F.Power(F.C2, F.Times(F.C2, n)), F.Gamma(F.Plus(n, F.C1D2)),
+            F.Power(F.Times(F.Sqrt(S.Pi), F.Gamma(F.Plus(n, F.C2))), F.CN1));
+      }
+      return F.NIL;
     }
 
     @Override
@@ -1710,15 +1713,26 @@ public final class NumberTheory {
               condition = ast.arg3();
             }
             // Sum( head(divisor), list-of-divisors )
-            IASTAppendable sum = F.PlusAlloc(list.size());
+            IASTAppendable sum = F.PlusAlloc(list.size() + 1);
+            INumber sumNumber = F.C0;
+            sum.append(sumNumber);
             for (int i = 1; i < list.size(); i++) {
               IExpr divisor = list.get(i);
               // apply condition on divisor
               if (condition.isPresent() && !engine.evalTrue(condition, divisor)) {
                 continue;
               }
-              sum.append(F.unaryAST1(head, divisor));
+              IExpr term = engine.evaluate(F.unaryAST1(head, divisor));
+              if (term.isNumber()) {
+                sumNumber = sumNumber.plus((INumber) term);
+              } else {
+                sum.append(term);
+              }
             }
+            if (sum.argSize() == 0) {
+              return sumNumber;
+            }
+            sum.set(1, sumNumber);
             return sum;
           }
         }
@@ -2671,12 +2685,15 @@ public final class NumberTheory {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
-      IExpr n = ast.arg1();
-      // 2^(n/2+1/4*(1-Cos(n*Pi)))*Pi^(1/4*(-1+Cos(n*Pi)))*Gamma(1+n/2)
-      IExpr cosNPi = F.Cos(F.Times(n, F.Pi));
-      IExpr halfN = F.Times(F.C1D2, n);
-      return F.Times(F.Power(F.C2, F.Plus(halfN, F.Times(F.C1D4, F.Subtract(F.C1, cosNPi)))),
-          F.Power(F.Pi, F.Times(F.C1D4, F.Plus(F.CN1, cosNPi))), F.Gamma(F.Plus(F.C1, halfN)));
+      if (ast.isAST1()) {
+        IExpr n = ast.arg1();
+        // 2^(n/2+1/4*(1-Cos(n*Pi)))*Pi^(1/4*(-1+Cos(n*Pi)))*Gamma(1+n/2)
+        IExpr cosNPi = F.Cos(F.Times(n, F.Pi));
+        IExpr halfN = F.Times(F.C1D2, n);
+        return F.Times(F.Power(F.C2, F.Plus(halfN, F.Times(F.C1D4, F.Subtract(F.C1, cosNPi)))),
+            F.Power(F.Pi, F.Times(F.C1D4, F.Plus(F.CN1, cosNPi))), F.Gamma(F.Plus(F.C1, halfN)));
+      }
+      return F.NIL;
     }
 
     public static IInteger factorial2(final IInteger n) {
@@ -2884,24 +2901,28 @@ public final class NumberTheory {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
-      IExpr n = ast.arg1();
-      if (n.isPlus() && n.first().isInteger()) {
-        IASTAppendable[] filter = ((IAST) n).filter(x -> x.isInteger());
-        if (filter[0].argSize() > 0) {
-          IExpr m = filter[0].oneIdentity0();
-          n = filter[1].oneIdentity0();
-          if (n.isIntegerResult()) {
-            // Fibonacci(m_Integer+n_) := ((1/2)*Fibonacci(m)*LucasL(n) +
-            // (1/2)*Fibonacci(n)*LucasL(m)) /; Element(n, Integers)
-            return F.Plus(F.Times(F.C1D2, F.Fibonacci(m), F.LucasL(n)),
-                F.Times(F.C1D2, F.Fibonacci(n), F.LucasL(m)));
+      if (ast.isAST1()) {
+        IExpr n = ast.arg1();
+        if (n.isPlus() && n.first().isInteger()) {
+          IASTAppendable[] filter = ((IAST) n).filter(x -> x.isInteger());
+          if (filter[0].argSize() > 0) {
+            IExpr m = filter[0].oneIdentity0();
+            n = filter[1].oneIdentity0();
+            if (n.isIntegerResult()) {
+              // Fibonacci(m_Integer+n_) := ((1/2)*Fibonacci(m)*LucasL(n) +
+              // (1/2)*Fibonacci(n)*LucasL(m)) /; Element(n, Integers)
+              return F.Plus(F.Times(F.C1D2, F.Fibonacci(m), F.LucasL(n)),
+                  F.Times(F.C1D2, F.Fibonacci(n), F.LucasL(m)));
+            }
           }
         }
+        // ((1/2*(1+Sqrt(5)))^n-(2/(1+Sqrt(5)))^n*Cos(n*Pi))/Sqrt(5)
+        IExpr v1 = F.Plus(F.C1, F.CSqrt5);
+        return F.Times(F.C1DSqrt5,
+            F.Plus(F.Times(F.Power(F.C1D2, n), F.Power(v1, n)), F.Times(F.CN1, F.Power(F.C2, n),
+                F.Power(F.Power(v1, F.CN1), n), F.Cos(F.Times(n, F.Pi)))));
       }
-      // ((1/2*(1+Sqrt(5)))^n-(2/(1+Sqrt(5)))^n*Cos(n*Pi))/Sqrt(5)
-      IExpr v1 = F.Plus(F.C1, F.CSqrt5);
-      return F.Times(F.C1DSqrt5, F.Plus(F.Times(F.Power(F.C1D2, n), F.Power(v1, n)), F.Times(F.CN1,
-          F.Power(F.C2, n), F.Power(F.Power(v1, F.CN1), n), F.Cos(F.Times(n, F.Pi)))));
+      return F.NIL;
     }
 
     /**
@@ -3724,18 +3745,23 @@ public final class NumberTheory {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
-      IExpr n = ast.arg1();
       if (ast.isAST1()) {
+        IExpr n = ast.arg1();
+
         // (1/2*(1+Sqrt(5)))^n+(2/(1+Sqrt(5)))^n*Cos(n*Pi)
         IExpr v1 = F.Plus(F.C1, F.CSqrt5);
         return F.Plus(F.Times(F.Power(F.C1D2, n), F.Power(v1, n)),
             F.Times(F.Power(F.C2, n), F.Power(F.Power(v1, F.CN1), n), F.Cos(F.Times(n, F.Pi))));
       }
-      IExpr z = ast.arg2();
-      // (z/2+Sqrt(1+z^2/4))^n+Cos(n*Pi)/(z/2+Sqrt(1+z^2/4))^n
-      IExpr v1 =
-          F.Power(F.Plus(F.Times(F.C1D2, z), F.Sqrt(F.Plus(F.C1, F.Times(F.C1D4, F.Sqr(z))))), n);
-      return F.Plus(v1, F.Times(F.Power(v1, F.CN1), F.Cos(F.Times(n, F.Pi))));
+      if (ast.isAST2()) {
+        IExpr n = ast.arg1();
+        IExpr z = ast.arg2();
+        // (z/2+Sqrt(1+z^2/4))^n+Cos(n*Pi)/(z/2+Sqrt(1+z^2/4))^n
+        IExpr v1 =
+            F.Power(F.Plus(F.Times(F.C1D2, z), F.Sqrt(F.Plus(F.C1, F.Times(F.C1D4, F.Sqr(z))))), n);
+        return F.Plus(v1, F.Times(F.Power(v1, F.CN1), F.Cos(F.Times(n, F.Pi))));
+      }
+      return F.NIL;
     }
 
     @Override

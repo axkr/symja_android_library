@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -77,6 +78,11 @@ public class ComputationalGeometryFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
     }
@@ -102,6 +108,11 @@ public class ComputationalGeometryFunctions {
           F.list(b, F.C0), //
           F.list(F.Times(b, F.Cos(a), F.Csc(angleSum), F.Sin(c)), //
               F.Times(b, F.Csc(angleSum), F.Sin(a), F.Sin(c)))));
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -133,6 +144,11 @@ public class ComputationalGeometryFunctions {
           F.list(sqrtNumerator, F.C0), //
           F.list(F.Times(F.Plus(F.Sqr(c), F.Times(F.CN1, a, c, F.Cos(b))), sqrtDenominator), //
               F.Times(a, c, sqrtDenominator, F.Sin(b)))));
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -170,6 +186,11 @@ public class ComputationalGeometryFunctions {
               F.Times(F.Power(F.Times(F.C2, c), F.CN1), F.Sqrt(F.Times(F.Plus(a, b, F.Negate(c)),
                   F.Plus(a, F.Negate(b), c), F.Plus(F.Negate(a), b, c), F.Plus(a, b, c))))) //
       ));
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -273,6 +294,11 @@ public class ComputationalGeometryFunctions {
         }
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -381,6 +407,11 @@ public class ComputationalGeometryFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -486,6 +517,11 @@ public class ComputationalGeometryFunctions {
         return F.Times(F.C2, F.Plus(F.Abs(F.Plus(F.Negate(a), c)), F.Abs(F.Plus(F.Negate(b), d))));
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -626,6 +662,11 @@ public class ComputationalGeometryFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -697,6 +738,11 @@ public class ComputationalGeometryFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
@@ -733,6 +779,11 @@ public class ComputationalGeometryFunctions {
         }
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -868,6 +919,11 @@ public class ComputationalGeometryFunctions {
         calc = engine.evaluate(F.Equal(F.Factor(calc), F.C0));
       }
       return calc;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1046,6 +1102,11 @@ public class ComputationalGeometryFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -1057,16 +1118,54 @@ public class ComputationalGeometryFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      int[] dims = arg1.isMatrix(false);
-      if (arg1.isList2() && dims != null) {
+      if (arg1.isList2()) {
         IAST listOfVectors = (IAST) arg1;
-        ITensorAccess v1 = (ITensorAccess) listOfVectors.arg1();
-        ITensorAccess v2 = (ITensorAccess) listOfVectors.arg2();
-        if (v1.size() >= 1) {
-          int[] index = new int[] {0};
-          for (int i = 1; i < v1.size(); i++) {
-            index[0] = i;
-            final IExpr compareResult = compare(v1, v2, index, engine);
+        IExpr arg11 = listOfVectors.arg1();
+        IExpr arg12 = listOfVectors.arg2();
+        return compareRecursive(arg11, arg12, engine);
+      }
+      return F.NIL;
+    }
+
+
+    private IExpr compareRecursive(IExpr arg11, IExpr arg12, EvalEngine engine) {
+      int n1 = -1;
+      int n2 = -1;
+      ITensorAccess v1 = F.NIL;
+      ITensorAccess v2 = F.NIL;
+      if (arg11 instanceof ITensorAccess) {
+        n1 = arg11.argSize();
+        v1 = (ITensorAccess) arg11;
+      }
+      if (arg12 instanceof ITensorAccess) {
+        n2 = arg12.argSize();
+        if (n1 > 0 && n1 != n2) {
+          return F.NIL;
+        }
+        v2 = (ITensorAccess) arg12;
+      }
+      if (arg11.isReal()) {
+        if (arg12.isReal()) {
+          v1 = F.List(arg11);
+          v2 = F.List(arg12);
+        } else {
+          if (n2 > 0) {
+            v1 = F.constantArray(arg11, n2);
+          }
+        }
+      } else {
+        if (arg12.isReal()) {
+          if (n1 > 0) {
+            v2 = F.constantArray(arg12, n1);
+          }
+        }
+      }
+      if (v1.isPresent() && v2.isPresent()) {
+        for (int i = 1; i < v1.size(); i++) {
+          IExpr subV1 = v1.get(i);
+          IExpr subV2 = v2.get(i);
+          if (subV1 instanceof ITensorAccess || subV2 instanceof ITensorAccess) {
+            final IExpr compareResult = compareRecursive(subV1, subV2, engine);
             if (compareResult.isPresent()) {
               if (compareResult.isTrue()) {
                 continue;
@@ -1077,17 +1176,34 @@ public class ComputationalGeometryFunctions {
             // undecidable
             return F.NIL;
           }
-          return S.True;
+          IExpr a1 = v1.get(i);
+          IExpr a2 = v2.get(i);
+
+          final IExpr compareResult = compare(a1, a2, engine);
+          if (compareResult.isPresent()) {
+            if (compareResult.isTrue()) {
+              continue;
+            } else if (compareResult.isFalse()) {
+              return S.False;
+            }
+          }
+          // undecidable
+          return F.NIL;
         }
+        return S.True;
       }
       return F.NIL;
     }
 
 
-    protected IExpr compare(ITensorAccess v1, ITensorAccess v2, int[] index, EvalEngine engine) {
-      return S.Greater.ofNIL(engine, v1.getIndex(index), v2.getIndex(index));
+    protected IExpr compare(IExpr v1, IExpr v2, EvalEngine engine) {
+      return S.Greater.ofNIL(engine, v1, v2);
     }
 
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -1098,8 +1214,8 @@ public class ComputationalGeometryFunctions {
   private static class VectorGreaterEqual extends VectorGreater {
 
     @Override
-    protected IExpr compare(ITensorAccess v1, ITensorAccess v2, int[] index, EvalEngine engine) {
-      return S.GreaterEqual.ofNIL(engine, v1.getIndex(index), v2.getIndex(index));
+    protected IExpr compare(IExpr v1, IExpr v2, EvalEngine engine) {
+      return S.GreaterEqual.ofNIL(engine, v1, v2);
     }
 
   }
@@ -1107,8 +1223,8 @@ public class ComputationalGeometryFunctions {
   private static class VectorLess extends VectorGreater {
 
     @Override
-    protected IExpr compare(ITensorAccess v1, ITensorAccess v2, int[] index, EvalEngine engine) {
-      return S.Less.ofNIL(engine, v1.getIndex(index), v2.getIndex(index));
+    protected IExpr compare(IExpr v1, IExpr v2, EvalEngine engine) {
+      return S.Less.ofNIL(engine, v1, v2);
     }
 
   }
@@ -1116,8 +1232,8 @@ public class ComputationalGeometryFunctions {
   private static class VectorLessEqual extends VectorGreater {
 
     @Override
-    protected IExpr compare(ITensorAccess v1, ITensorAccess v2, int[] index, EvalEngine engine) {
-      return S.LessEqual.ofNIL(engine, v1.getIndex(index), v2.getIndex(index));
+    protected IExpr compare(IExpr v1, IExpr v2, EvalEngine engine) {
+      return S.LessEqual.ofNIL(engine, v1, v2);
     }
 
   }

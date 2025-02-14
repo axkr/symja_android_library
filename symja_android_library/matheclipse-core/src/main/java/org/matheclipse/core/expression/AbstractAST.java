@@ -1645,9 +1645,14 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   }
 
   /**
-   * Compares this expression with the specified expression for canonical order. Returns a negative
-   * integer, zero, or a positive integer as this expression is canonical less than, equal to, or
-   * greater than the specified expression.
+   * Compares this "left-hand-side" expression with the specified "right-hand-side" expression for
+   * canonical order. Returns a negative integer, zero, or a positive integer as this expression is
+   * canonical less than, equal to, or greater than the specified expression.
+   * <p>
+   * See: "Computer Algebra and Symbolic Computation: Mathematical Methods" by Joel S. Cohen page 84
+   * "The &#9665; order relation"
+   * 
+   * @param rhsExpr the right-hand-side expression to be compared
    */
   @Override
   public int compareTo(final IExpr rhsExpr) {
@@ -1663,9 +1668,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         if (rhsExpr.isAST()) {
           return compareToASTIncreasing(this, (IAST) rhsExpr);
         }
-        final int x = hierarchy();
-        final int y = rhsExpr.hierarchy();
-        return (x < y) ? -1 : ((x == y) ? 0 : 1);
+        return IExpr.compareHierarchy(this, rhsExpr);
       }
     } else {
       if (lhsOrdinal == ID.DirectedInfinity && isDirectedInfinity()) {
@@ -2669,7 +2672,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     IExpr expr = this;
     int size = positions.length;
     for (int i = 0; i < size; i++) {
-      if (!expr.isAST()) {
+      if (!expr.isASTOrAssociation()) {
         break;
       }
 
@@ -3965,6 +3968,14 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public final boolean isLog() {
     return isSameHead(S.Log, 2);
+  }
+
+  public int[] isAssociationMatrix() {
+    return null;
+  }
+
+  public int isAssociationVector() {
+    return -1;
   }
 
   /** {@inheritDoc} */

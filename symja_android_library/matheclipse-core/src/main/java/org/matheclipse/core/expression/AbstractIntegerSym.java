@@ -53,85 +53,81 @@ import it.unimi.dsi.fastutil.ints.IntList;
  */
 public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
-  /** The BigInteger constant minus one. */
-  public static final BigInteger BI_MINUS_ONE = BigInteger.valueOf(-1L);
-
-  public static final BigInteger BI_TWO = BigInteger.valueOf(2L);
-  public static final BigInteger BI_THREE = BigInteger.valueOf(3L);
-  public static final BigInteger BI_FOUR = BigInteger.valueOf(4L);
-  public static final BigInteger BI_SEVEN = BigInteger.valueOf(7L);
-  public static final BigInteger BI_EIGHT = BigInteger.valueOf(8L);
-
-  @Override
-  public IAST divisors() {
-    if (isOne() || isMinusOne()) {
-      return F.CListC1;
+  protected static IAST factorBigInteger(BigInteger number, boolean isNegative, int numerator,
+      int denominator, Int2IntMap map) {
+    if (number.compareTo(BigInteger.valueOf(7)) <= 0) {
+      return F.NIL;
     }
-    Set<IInteger> set = divisorsSet();
-    return F.mapSet(set, divisor -> divisor);
+    if (number.bitLength() > Config.MAX_BIT_LENGTH / 100) {
+      BigIntegerLimitExceeded.throwIt(number.bitLength());
+    }
+    BigInteger rest = Primality.countPrimes32749(number, map);
+    if (map.size() == 0) {
+      return F.NIL;
+    }
+    IASTAppendable result = F.TimesAlloc(map.size() + 4);
+    boolean evaled = false;
+    for (Int2IntMap.Entry entry : map.int2IntEntrySet()) {
+      int key = entry.getIntKey();
+      int value = entry.getIntValue();
+      int mod = value % denominator;
+      int div = value / denominator;
+      if (div != 0) {
+        result.append(F.Power(valueOf(key), F.ZZ(div)));
+        if (mod != 0) {
+          result.append(F.Power(valueOf(key), F.QQ(mod, denominator)));
+        }
+        evaled = true;
+      } else {
+        result.append(F.Power(F.Power(valueOf(key), valueOf(value)), F.QQ(1, denominator)));
+      }
+    }
+    if (denominator == 2 && numerator == 1
+        && rest.compareTo(BigInteger.valueOf(Short.MAX_VALUE - 20)) > 0) {
+      // exponent 1/2 ==> special case - try to get exact square root of rest
+      IInteger[] sr = F.ZZ(rest).sqrtAndRemainder();
+      if (sr != null && sr[1].isZero()) {
+        result.append(sr[0]);
+        rest = BigInteger.ONE;
+        evaled = true;
+      }
+    }
+
+    if (evaled) {
+      if (!rest.equals(BigInteger.ONE)) {
+        result.append(F.Power(valueOf(rest), F.QQ(1, denominator)));
+      }
+      if (isNegative) {
+        result.append(F.Power(F.CN1, F.QQ(numerator, denominator)));
+      }
+      return result;
+    }
+    return F.NIL;
   }
 
-  /**
-   * Bottom-up divisors construction algorithm. Slightly faster than top-down.
-   *
-   * @return the set of divisors of the number thats prime factorization is calculated
-   */
-  private SortedSet<IInteger> divisorsSet() throws ASTElementLimitExceeded {
-    IAST factors = factorInteger();
-    if (factors.size() == 1) {
-      TreeSet<IInteger> treeSet = new TreeSet<IInteger>();
-      treeSet.add(F.C1);
-      return treeSet;
+  public static IAST factorizeLong(long value) {
+    int allocSize = 0;
+    long longValue = value;
+    if (longValue < 0) {
+      allocSize = 1;
+      longValue = -longValue;
     }
-
-    ArrayList<IInteger> primes = new ArrayList<>();
-    IntList maxPowers = new IntArrayList();
-    for (int i = 1; i < factors.size(); i++) {
-      IExpr arg = factors.get(i);
-      primes.add((IInteger) arg.first());
-      maxPowers.add(arg.second().toIntDefault());
+    Map<Long, Integer> map = PrimeInteger.factors(longValue);
+    for (Map.Entry<Long, Integer> entry : map.entrySet()) {
+      allocSize += entry.getValue();
     }
-
-    TreeSet<IInteger> divisors = new TreeSet<IInteger>();
-    if (primes.size() == 0 || (primes.size() == 1 && primes.get(0).equals(F.C0))) {
-      return divisors;
+    IASTAppendable result = F.ListAlloc(allocSize);
+    if (value < 0) {
+      result.append(F.CN1);
     }
-
-    Stack<IntArrayList> stack = new Stack<IntArrayList>();
-    IntArrayList emptyPowers = new IntArrayList();
-    for (int i = 0; i < maxPowers.size(); i++) {
-      emptyPowers.add(0);
-    }
-    stack.push(emptyPowers);
-
-    while (!stack.isEmpty()) {
-      IntArrayList powers = stack.pop();
-      // compute divisor from stack element
-      IInteger divisor = F.C1;
-      for (int i = 0; i < powers.size(); i++) {
-        int power = powers.getInt(i);
-        if (power > 0) {
-          // multiply entry to divisor
-          divisor = divisor.multiply(primes.get(i).powerRational(power));
-        }
-      }
-      if (divisors.add(divisor)) {
-        if (Config.MAX_AST_SIZE < divisors.size()) {
-          ASTElementLimitExceeded.throwIt(divisors.size());
-        }
-        for (int i = 0; i < maxPowers.size(); i++) {
-          int maxPower = maxPowers.getInt(i);
-          int power = powers.getInt(i);
-          if (power < maxPower) {
-            // create new entry
-            IntArrayList enhancedPowers = new IntArrayList(powers); // copy
-            enhancedPowers.set(i, power + 1);
-            stack.push(enhancedPowers);
-          }
-        }
+    for (Map.Entry<Long, Integer> entry : map.entrySet()) {
+      long key = entry.getKey();
+      IInteger is = valueOf(key);
+      for (int i = 0; i < entry.getValue(); i++) {
+        result.append(is);
       }
     }
-    return divisors;
+    return result;
   }
 
   public static BigInteger jacobiSymbol(BigInteger a, BigInteger b) {
@@ -141,12 +137,12 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     if (a.signum() == 0) {
       return BigInteger.ZERO;
     }
-    if (a.equals(BI_TWO)) {
+    if (a.equals(IInteger.BI_TWO)) {
       return BigIntegerSym.jacobiSymbolF(b);
     }
     if (!NumberUtil.isOdd(a)) {
       BigInteger aDIV2 = a.shiftRight(1);
-      return jacobiSymbol(aDIV2, b).multiply(jacobiSymbol(BI_TWO, b));
+      return jacobiSymbol(aDIV2, b).multiply(jacobiSymbol(IInteger.BI_TWO, b));
     }
     return jacobiSymbol(b.mod(a), a).multiply(BigIntegerSym.jacobiSymbolG(a, b));
   }
@@ -215,15 +211,16 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   }
 
   public static IInteger valueOf(final int newnum) {
+    if (newnum >= IntegerSym.LOW && newnum <= IntegerSym.HIGH) {
+      return IntegerSym.CACHE[newnum + (-IntegerSym.LOW)];
+    }
     if (newnum == Integer.MIN_VALUE) {
       return new BigIntegerSym(newnum);
     }
     if (newnum == 1000) {
       return F.C1000;
     }
-    return (newnum >= IntegerSym.LOW && newnum <= IntegerSym.HIGH)
-        ? IntegerSym.CACHE[newnum + (-IntegerSym.LOW)]
-        : new IntegerSym(newnum);
+    return new IntegerSym(newnum);
   }
 
   public static IInteger valueOf(final long newnum) {
@@ -374,6 +371,14 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   }
 
   @Override
+  public void checkBitLength() {
+    final long bitLength = bitLength();
+    if (bitLength > Config.MAX_BIT_LENGTH) {
+      BigIntegerLimitExceeded.throwIt(bitLength);
+    }
+  }
+
+  @Override
   public int compareTo(final IExpr expr) {
     if (expr.isNumber() && !expr.isReal()) {
       int c = this.compareTo(expr.re());
@@ -391,16 +396,88 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return this;
   }
 
-  @Override
-  public IRational divideBy(IRational that) {
-    return AbstractFractionSym.valueOf(this).divideBy(that);
-  }
-
   // /** {@inheritDoc} */
   // @Override
   // public IInteger gcd(final IInteger that) {
   // return gcd( that);
   // }
+
+  @Override
+  public IRational divideBy(IRational that) {
+    return AbstractFractionSym.valueOf(this).divideBy(that);
+  }
+
+  @Override
+  public IAST divisors() {
+    if (isOne() || isMinusOne()) {
+      return F.CListC1;
+    }
+    Set<IInteger> set = divisorsSet();
+    return F.mapSet(set, divisor -> divisor);
+  }
+
+  /**
+   * Bottom-up divisors construction algorithm. Slightly faster than top-down.
+   *
+   * @return the set of divisors of the number thats prime factorization is calculated
+   */
+  private SortedSet<IInteger> divisorsSet() throws ASTElementLimitExceeded {
+    IAST factors = factorInteger();
+    if (factors.size() == 1) {
+      TreeSet<IInteger> treeSet = new TreeSet<IInteger>();
+      treeSet.add(F.C1);
+      return treeSet;
+    }
+
+    ArrayList<IInteger> primes = new ArrayList<>();
+    IntList maxPowers = new IntArrayList();
+    for (int i = 1; i < factors.size(); i++) {
+      IExpr arg = factors.get(i);
+      primes.add((IInteger) arg.first());
+      maxPowers.add(arg.second().toIntDefault());
+    }
+
+    TreeSet<IInteger> divisors = new TreeSet<IInteger>();
+    if (primes.size() == 0 || (primes.size() == 1 && primes.get(0).equals(F.C0))) {
+      return divisors;
+    }
+
+    Stack<IntArrayList> stack = new Stack<IntArrayList>();
+    IntArrayList emptyPowers = new IntArrayList();
+    for (int i = 0; i < maxPowers.size(); i++) {
+      emptyPowers.add(0);
+    }
+    stack.push(emptyPowers);
+
+    while (!stack.isEmpty()) {
+      IntArrayList powers = stack.pop();
+      // compute divisor from stack element
+      IInteger divisor = F.C1;
+      for (int i = 0; i < powers.size(); i++) {
+        int power = powers.getInt(i);
+        if (power > 0) {
+          // multiply entry to divisor
+          divisor = divisor.multiply(primes.get(i).powerRational(power));
+        }
+      }
+      if (divisors.add(divisor)) {
+        if (Config.MAX_AST_SIZE < divisors.size()) {
+          ASTElementLimitExceeded.throwIt(divisors.size());
+        }
+        for (int i = 0; i < maxPowers.size(); i++) {
+          int maxPower = maxPowers.getInt(i);
+          int power = powers.getInt(i);
+          if (power < maxPower) {
+            // create new entry
+            IntArrayList enhancedPowers = new IntArrayList(powers); // copy
+            enhancedPowers.set(i, power + 1);
+            stack.push(enhancedPowers);
+          }
+        }
+      }
+    }
+    return divisors;
+  }
 
   /**
    * IntegerSym extended greatest common divisor.
@@ -459,6 +536,11 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return IInteger.super.egcd(that);
   }
 
+  @Override
+  public IInteger eulerPhi() throws ArithmeticException {
+    return AbstractIntegerSym.valueOf(Primality.eulerPhi(toBigNumerator()));
+  }
+
   /** {@inheritDoc} */
   @Override
   public IExpr evaluate(EvalEngine engine) {
@@ -469,9 +551,44 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   }
 
   @Override
-  public IInteger eulerPhi() throws ArithmeticException {
-    return AbstractIntegerSym.valueOf(Primality.eulerPhi(toBigNumerator()));
+  public IInteger factorial() {
+    int ni = toIntDefault();
+    if (ni > Integer.MIN_VALUE) {
+      return NumberTheory.factorial(ni);
+    }
+    // Machine-sized integer expected at position `2` in `1`.
+    throw new ArgumentTypeException("intm", F.list(F.Factorial(this), F.C1));
   }
+
+  // private IAST factorizeInt(int intValue) {
+  // IASTAppendable result = F.ListAlloc();// tdivFactors.size() + extraSize);
+  // if (intValue < 0) {
+  // intValue *= -1;
+  // result.append(F.CN1);
+  // }
+  // TDiv31Barrett TDIV31 = new TDiv31Barrett();
+  // int prime = TDIV31.findSingleFactor(intValue);
+  // while (true) {
+  // prime = TDIV31.findSingleFactor(intValue);
+  // intValue /= prime;
+  // if (prime != 1) {
+  // result.append(prime);
+  // } else {
+  // break;
+  // }
+  // }
+  // if (intValue != 1) {
+  // SortedMultiset<BigInteger> tdivFactors = TDIV31.factor(BigInteger.valueOf(intValue));
+  // for (Map.Entry<BigInteger, Integer> entry : tdivFactors.entrySet()) {
+  // final IInteger is = valueOf(entry.getKey());
+  // final int value = entry.getValue();
+  // for (int i = 0; i < value; i++) {
+  // result.append(is);
+  // }
+  // }
+  // }
+  // return result;
+  // }
 
   /** {@inheritDoc} */
   @Override
@@ -535,117 +652,38 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return factorBigInteger(number, isNegative, numerator, root, map);
   }
 
-  protected static IAST factorBigInteger(BigInteger number, boolean isNegative, int numerator,
-      int denominator, Int2IntMap map) {
-    if (number.compareTo(BigInteger.valueOf(7)) <= 0) {
-      return F.NIL;
-    }
-    if (number.bitLength() > Config.MAX_BIT_LENGTH / 100) {
-      BigIntegerLimitExceeded.throwIt(number.bitLength());
-    }
-    BigInteger rest = Primality.countPrimes32749(number, map);
-    if (map.size() == 0) {
-      return F.NIL;
-    }
-    IASTAppendable result = F.TimesAlloc(map.size() + 4);
-    boolean evaled = false;
-    for (Int2IntMap.Entry entry : map.int2IntEntrySet()) {
-      int key = entry.getIntKey();
-      int value = entry.getIntValue();
-      int mod = value % denominator;
-      int div = value / denominator;
-      if (div != 0) {
-        result.append(F.Power(valueOf(key), F.ZZ(div)));
-        if (mod != 0) {
-          result.append(F.Power(valueOf(key), F.QQ(mod, denominator)));
-        }
-        evaled = true;
-      } else {
-        result.append(F.Power(F.Power(valueOf(key), valueOf(value)), F.QQ(1, denominator)));
-      }
-    }
-    if (denominator == 2 && numerator == 1
-        && rest.compareTo(BigInteger.valueOf(Short.MAX_VALUE - 20)) > 0) {
-      // exponent 1/2 ==> special case - try to get exact square root of rest
-      IInteger[] sr = F.ZZ(rest).sqrtAndRemainder();
-      if (sr != null && sr[1].isZero()) {
-        result.append(sr[0]);
-        rest = BigInteger.ONE;
-        evaled = true;
-      }
-    }
-
-    if (evaled) {
-      if (!rest.equals(BigInteger.ONE)) {
-        result.append(F.Power(valueOf(rest), F.QQ(1, denominator)));
-      }
-      if (isNegative) {
-        result.append(F.Power(F.CN1, F.QQ(numerator, denominator)));
-      }
-      return result;
-    }
-    return F.NIL;
+  @Override
+  public IInteger floor() {
+    return this;
   }
 
-  // private IAST factorizeInt(int intValue) {
-  // IASTAppendable result = F.ListAlloc();// tdivFactors.size() + extraSize);
-  // if (intValue < 0) {
-  // intValue *= -1;
-  // result.append(F.CN1);
-  // }
-  // TDiv31Barrett TDIV31 = new TDiv31Barrett();
-  // int prime = TDIV31.findSingleFactor(intValue);
-  // while (true) {
-  // prime = TDIV31.findSingleFactor(intValue);
-  // intValue /= prime;
-  // if (prime != 1) {
-  // result.append(prime);
-  // } else {
-  // break;
-  // }
-  // }
-  // if (intValue != 1) {
-  // SortedMultiset<BigInteger> tdivFactors = TDIV31.factor(BigInteger.valueOf(intValue));
-  // for (Map.Entry<BigInteger, Integer> entry : tdivFactors.entrySet()) {
-  // final IInteger is = valueOf(entry.getKey());
-  // final int value = entry.getValue();
-  // for (int i = 0; i < value; i++) {
-  // result.append(is);
-  // }
-  // }
-  // }
-  // return result;
-  // }
-
-  public static IAST factorizeLong(long value) {
-    int allocSize = 0;
-    long longValue = value;
-    if (longValue < 0) {
-      allocSize = 1;
-      longValue = -longValue;
-    }
-    Map<Long, Integer> map = PrimeInteger.factors(longValue);
-    for (Map.Entry<Long, Integer> entry : map.entrySet()) {
-      allocSize += entry.getValue();
-    }
-    IASTAppendable result = F.ListAlloc(allocSize);
-    if (value < 0) {
-      result.append(F.CN1);
-    }
-    for (Map.Entry<Long, Integer> entry : map.entrySet()) {
-      long key = entry.getKey();
-      IInteger is = valueOf(key);
-      for (int i = 0; i < entry.getValue(); i++) {
-        result.append(is);
-      }
-    }
-    return result;
+  @Override
+  public IInteger floorFraction() {
+    return this;
   }
 
   /** {@inheritDoc} */
   @Override
   public IRational fractionalPart() {
     return F.C0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<IInteger[]> gaussianIntegers() {
+    return Optional.of(new IInteger[] {this, F.C0});
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr gcd(IExpr that) {
+    if (that instanceof IInteger) {
+      return gcd((IInteger) that);
+    }
+    if (that instanceof IFraction) {
+      ((IFraction) that).gcd(F.fraction(toBigNumerator(), BigInteger.ONE));
+    }
+    return F.C1;
   }
 
   /** {@inheritDoc} */
@@ -668,81 +706,14 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return AbstractFractionSym.valueOf(num, denom);
   }
 
-  /** {@inheritDoc} */
   @Override
-  public IInteger integerPart() {
+  public IRational getImaginaryPart() {
+    return F.C0;
+  }
+
+  @Override
+  public IRational getRealPart() {
     return this;
-  }
-
-  @Override
-  public IInteger floor() {
-    return this;
-  }
-
-  @Override
-  public IInteger floorFraction() {
-    return this;
-  }
-
-  @Override
-  public IInteger factorial() {
-    int ni = toIntDefault();
-    if (ni > Integer.MIN_VALUE) {
-      return NumberTheory.factorial(ni);
-    }
-    // Machine-sized integer expected at position `2` in `1`.
-    throw new ArgumentTypeException("intm", F.list(F.Factorial(this), F.C1));
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Optional<IInteger[]> gaussianIntegers() {
-    return Optional.of(new IInteger[] {this, F.C0});
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IExpr gcd(IExpr that) {
-    if (that instanceof IInteger) {
-      return gcd((IInteger) that);
-    }
-    if (that instanceof IFraction) {
-      ((IFraction) that).gcd(F.fraction(toBigNumerator(), BigInteger.ONE));
-    }
-    return F.C1;
-  }
-
-  @Override
-  public double imDoubleValue() {
-    return 0.0;
-  }
-
-  @Override
-  public double reDoubleValue() {
-    return doubleValue();
-  }
-
-  @Override
-  public IRational roundClosest(IReal multiple) {
-    if (!multiple.isRational()) {
-      multiple = F.fraction(multiple.doubleValue(), Config.DOUBLE_EPSILON);
-    }
-    IInteger ii = this.divideBy((IRational) multiple).roundExpr();
-    return ii.multiply((IRational) multiple);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IInteger[] sqrtAndRemainder() {
-    if (complexSign() > 0) {
-      // TODO BigInteger#sqrtAndRemainder() introduced in Android API level 33
-      // https://developer.android.com/reference/java/math/BigInteger#sqrtAndRemainder()
-      BigInteger bignum = toBigNumerator();
-      BigInteger s = BigIntegerMath.sqrt(bignum, RoundingMode.FLOOR);
-      BigInteger r = bignum.subtract(s.multiply(s));
-      return new IInteger[] {valueOf(s), valueOf(r)};
-    }
-    return null;
   }
 
   @Override
@@ -756,6 +727,17 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   }
 
   @Override
+  public double imDoubleValue() {
+    return 0.0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IInteger integerPart() {
+    return this;
+  }
+
+  @Override
   public CharSequence internalFormString(boolean symbolsAsFactoryMethod, int depth) {
     SourceCodeProperties p = SourceCodeProperties.stringFormProperties(symbolsAsFactoryMethod);
     return internalJavaString(p, depth, x -> null);
@@ -763,10 +745,6 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
   @Override
   public abstract IRational inverse();
-
-  // public static BigInteger jacobiSymbol(long a, long b) {
-  // return jacobiSymbol(BigInteger.valueOf(a), BigInteger.valueOf(b));
-  // }
 
   /** {@inheritDoc} */
   @Override
@@ -779,6 +757,10 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   public boolean isNumEqualRational(IRational value) throws ArithmeticException {
     return equals(value);
   }
+
+  // public static BigInteger jacobiSymbol(long a, long b) {
+  // return jacobiSymbol(BigInteger.valueOf(a), BigInteger.valueOf(b));
+  // }
 
   /** {@inheritDoc} */
   @Override
@@ -856,14 +838,6 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return F.CN1;
   }
 
-  @Override
-  public long leafCountSimplify() {
-    if (isZero()) {
-      return 1;
-    }
-    return integerLength(F.C10) + (isPositive() ? 0 : 1);
-  }
-
   /** Returns the least common multiple of this large integer and the one specified. */
   @Override
   public IInteger lcm(final IInteger that) {
@@ -884,6 +858,14 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     IInteger gcd = a.gcd(b);
     IInteger lcm = a.multiply(b).div(gcd);
     return lcm;
+  }
+
+  @Override
+  public long leafCountSimplify() {
+    if (isZero()) {
+      return 1;
+    }
+    return integerLength(F.C10) + (isPositive() ? 0 : 1);
   }
 
   @Override
@@ -940,6 +922,14 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   }
 
   @Override
+  public IExpr plus(final IExpr that) {
+    if (that instanceof INumber) {
+      return this.plus((INumber) that);
+    }
+    return IInteger.super.plus(that);
+  }
+
+  @Override
   public INumber plus(final INumber that) {
     if (isZero()) {
       return that;
@@ -972,14 +962,6 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       return F.complexNum(evalfc().add(that.evalfc()));
     }
     throw new java.lang.ArithmeticException();
-  }
-
-  @Override
-  public IExpr plus(final IExpr that) {
-    if (that instanceof INumber) {
-      return this.plus((INumber) that);
-    }
-    return IInteger.super.plus(that);
   }
 
   @Override
@@ -1062,14 +1044,6 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return r;
   }
 
-  @Override
-  public void checkBitLength() {
-    final long bitLength = bitLength();
-    if (bitLength > Config.MAX_BIT_LENGTH) {
-      BigIntegerLimitExceeded.throwIt(bitLength);
-    }
-  }
-
   /**
    * The primitive roots of this integer number
    *
@@ -1135,6 +1109,34 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   }
 
   @Override
+  public double reDoubleValue() {
+    return doubleValue();
+  }
+
+  @Override
+  public IRational roundClosest(IReal multiple) {
+    if (!multiple.isRational()) {
+      multiple = F.fraction(multiple.doubleValue(), Config.DOUBLE_EPSILON);
+    }
+    IInteger ii = this.divideBy((IRational) multiple).roundExpr();
+    return ii.multiply((IRational) multiple);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IInteger[] sqrtAndRemainder() {
+    if (complexSign() > 0) {
+      // TODO BigInteger#sqrtAndRemainder() introduced in Android API level 33
+      // https://developer.android.com/reference/java/math/BigInteger#sqrtAndRemainder()
+      BigInteger bignum = toBigNumerator();
+      BigInteger s = BigIntegerMath.sqrt(bignum, RoundingMode.FLOOR);
+      BigInteger r = bignum.subtract(s.multiply(s));
+      return new IInteger[] {valueOf(s), valueOf(r)};
+    }
+    return null;
+  }
+
+  @Override
   public IRational subtract(final IRational that) {
     if (isZero()) {
       return that.negate();
@@ -1148,6 +1150,14 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       return this.add((IRational) that.negate());
     }
     return Num.valueOf(doubleValue() - that.doubleValue());
+  }
+
+  @Override
+  public IExpr times(final IExpr that) {
+    if (that instanceof INumber) {
+      return this.times((INumber) that);
+    }
+    return IInteger.super.times(that);
   }
 
   @Override
@@ -1198,14 +1208,6 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       return F.complexNum(evalfc().multiply(that.evalfc()));
     }
     throw new java.lang.ArithmeticException();
-  }
-
-  @Override
-  public IExpr times(final IExpr that) {
-    if (that instanceof INumber) {
-      return this.times((INumber) that);
-    }
-    return IInteger.super.times(that);
   }
 
   @Override

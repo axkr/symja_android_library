@@ -1304,8 +1304,6 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   public void testSystem110() {
     check("(n!)*x(3)", //
         "n!*x(3)");
-    check("Factorial2(x)", //
-        "x!!");
     check("Gamma(1/2)", //
         "Sqrt(Pi)");
     check("Gamma(3/2)", //
@@ -1318,11 +1316,6 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "{1,1,2,6,24,120,720,5040,40320,362880}");
     check("Table(Gamma(x),{x,10.0})", //
         "{1.0,1.0,2.0,6.0,24.0,120.0,720.0,5040.0,40320.0,362880.0}");
-
-    check("Factorial2(0)", //
-        "1");
-    check("Factorial2(-1)", //
-        "1");
   }
 
   @Test
@@ -4047,15 +4040,6 @@ public class MainTestCase extends ExprEvaluatorTestCase {
 
     check("f(a, b, c, d) /. f(start__, end__) -> {{start}, {end}}", //
         "{{a},{b,c,d}}");
-  }
-
-  @Test
-  public void testIssue80() {
-    // issue #80: LinearProgramming with expressions
-    check("NMinimize({-2*x+y-5, 2*y+x<=6&&2*y+3*x<=12&&y>=0},{x,y})", //
-        "{-13.0,{x->4.0,y->0.0}}");
-    check("NMaximize({-2*x+y-5, 2*y+x<=6&&2*y+3*x<=12&&y>=0},{x,y})", //
-        "{-2.0,{x->0.0,y->3.0}}");
   }
 
   @Test

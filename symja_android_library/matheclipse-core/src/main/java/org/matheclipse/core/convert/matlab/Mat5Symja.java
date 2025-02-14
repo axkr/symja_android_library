@@ -162,7 +162,7 @@ public class Mat5Symja {
       Mat5File mat = Mat5.newReader(source)//
           .setReducedHeader(false)//
           .readMat();
-      System.out.println(mat.toString());
+      // System.out.println(mat.toString());
       for (MatFile.Entry entry : mat.getEntries()) {
         // String name = entry.getName();
         Array value = entry.getValue();

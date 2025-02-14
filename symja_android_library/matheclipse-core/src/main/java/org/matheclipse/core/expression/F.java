@@ -9944,13 +9944,12 @@ public class F extends S {
    * Evaluate the sum from <code>iMin</code> to <code>iMax</code> and step <code>1</code>.
    *
    * @param function
-   * @param iMin
-   * @param iMax
+   * @param from from this position (included)
+   * @param to to this position (included)
    * @return
    */
-  public static IExpr sum(final Function<IInteger, IExpr> function, final int iMin,
-      final int iMax) {
-    return intSum(function, iMin, iMax, 1);
+  public static IExpr sum(final Function<IInteger, IExpr> function, final int from, final int to) {
+    return intSum(function, from, to, 1);
   }
 
 

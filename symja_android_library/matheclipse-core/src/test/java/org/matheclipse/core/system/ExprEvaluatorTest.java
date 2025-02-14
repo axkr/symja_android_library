@@ -2,6 +2,7 @@ package org.matheclipse.core.system;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.D;
 import static org.matheclipse.core.expression.F.Sin;
@@ -30,10 +31,9 @@ import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.polynomials.longexponent.ExprTermOrderByName;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
-import junit.framework.TestCase;
 
 @RunWith(JUnit4.class)
-public class ExprEvaluatorTest  {
+public class ExprEvaluatorTest {
 
   @Before
   public void setUp() throws Exception {
@@ -280,8 +280,19 @@ public class ExprEvaluatorTest  {
   public void testX2() {
     ExprEvaluator evaluator = new ExprEvaluator();
     evaluator.defineVariable("X", evaluator.parse("2"));
-    IExpr evaluate = evaluator.evaluate("2+X");
+    IExpr evaluate = evaluator.eval("2+X");
     assertEquals(evaluate.toString(), "4");
+  }
+
+  @Test
+  public void testFibonacci() {
+    try {
+      ExprEvaluator evaluator = new ExprEvaluator();
+      System.out.println(evaluator.eval(F.Fibonacci(F.ZZ(50)).toWolframString()));
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail();
+    }
   }
 
   @Test

@@ -69,8 +69,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   @Test
   public void testIntegrateIssue330() {
     check("Integrate(x*ArcSin(x) ,x)", //
-        "1/6*x^2*(3*ArcSin(x)+3/2*(x*(Sqrt(1-x^2)*Sqrt(x^2)-ArcSin(Sqrt(x^2))))/(x^2)^(3/\n" //
-            + "2))");
+        "1/6*x^2*(3*ArcSin(x)+3/2*(x*(Sqrt(x^2-x^4)-ArcSin(Sqrt(x^2))))/(x^2)^(3/2))");
     check("Limit(x/Sqrt(1-x^2),x->1)", //
         "Indeterminate");
     check("Integrate(x*(1/2*Pi-ArcSin(x)),x)", //
@@ -149,8 +148,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Integrate(x*ArcSin(x),{x,0,1})", //
         "Pi/8");
     check("Integrate(x*ArcSin(x),x)", //
-        "1/6*x^2*(3*ArcSin(x)+3/2*(x*(Sqrt(1-x^2)*Sqrt(x^2)-ArcSin(Sqrt(x^2))))/(x^2)^(3/\n" //
-            + "2))");
+        "1/6*x^2*(3*ArcSin(x)+3/2*(x*(Sqrt(x^2-x^4)-ArcSin(Sqrt(x^2))))/(x^2)^(3/2))");
     check("Integrate(x^n*ArcSin(m*x),x)", //
         "(x^(1+n)*ArcSin(m*x))/(1+n)+(-m*x^(2+n)*Hypergeometric2F1(1/2,1/2*(2+n),1/2*(4+n),m^\n" //
             + "2*x^2))/(2+3*n+n^2)");

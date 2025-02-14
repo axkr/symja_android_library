@@ -2099,9 +2099,9 @@ public final class Arithmetic {
       return F.NIL;
     }
 
-    private IAST harmonicNumberPolyGamma(IInexactNumber n) {
-      return F.Plus(S.EulerGamma, F.PolyGamma(F.C0, F.Plus(F.C1, n)));
-    }
+    // private static IAST harmonicNumberPolyGamma(IInexactNumber n) {
+    // return F.Plus(S.EulerGamma, F.PolyGamma(F.C0, F.Plus(F.C1, n)));
+    // }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -3285,7 +3285,7 @@ public final class Arithmetic {
    * a^b
    * </pre>
    */
-  public /*public for steps module*/ static class Power extends AbstractFunctionEvaluator
+  public /* public for steps module */ static class Power extends AbstractFunctionEvaluator
       implements INumeric, IFunctionExpand {
 
     @Override
@@ -3538,9 +3538,9 @@ public final class Arithmetic {
           if (exponent instanceof IFraction) {
             return fractionFraction(F.fraction((IInteger) base, F.C1), (IFraction) exponent);
           }
-          if (exponent instanceof IComplex) {
-            return complexComplex(F.CC((IInteger) base), (IComplex) exponent);
-          }
+          // if (exponent instanceof IComplex) {
+          // return powerComplexComplex(F.CC((IInteger) base), (IComplex) exponent, engine);
+          // }
           return F.NIL;
         }
 
@@ -3548,9 +3548,9 @@ public final class Arithmetic {
           if (exponent instanceof IFraction) {
             return fractionFraction((IFraction) base, (IFraction) exponent);
           }
-          if (exponent instanceof IComplex) {
-            return complexComplex(F.complex((IFraction) base), (IComplex) exponent);
-          }
+          // if (exponent instanceof IComplex) {
+          // return powerComplexComplex(F.CC((IFraction) base), (IComplex) exponent, engine);
+          // }
           return F.NIL;
         }
 
@@ -3558,9 +3558,9 @@ public final class Arithmetic {
           if (exponent instanceof IFraction) {
             return complexFraction((IComplex) base, (IFraction) exponent);
           }
-          if (exponent instanceof IComplex) {
-            return complexComplex((IComplex) base, (IComplex) exponent);
-          }
+          // if (exponent instanceof IComplex) {
+          // return powerComplexComplex((IComplex) base, (IComplex) exponent, engine);
+          // }
         }
       } catch (BackingStorageException | LossOfPrecisionException lpe) {
         // Complete loss of accurate digits (apfloat).
@@ -3704,20 +3704,6 @@ public final class Arithmetic {
       }
 
       return base.pow(exponent);
-    }
-
-    private static IExpr complexComplex(final IComplex base, final IComplex exponent) {
-      if (base.getImaginaryPart().isZero()) {
-        IRational a = base.getRealPart();
-        IRational b = exponent.getRealPart();
-        IRational c = exponent.getImaginaryPart();
-        IExpr temp = // [$ b*Arg(a)+1/2*c*Log(a^2) $]
-            F.Plus(F.Times(b, F.Arg(a)), F.Times(F.C1D2, c, F.Log(F.Sqr(a)))); // $$;
-        return // [$ (a^2)^(b/2)*E^(-c*Arg(a)) * (Cos(temp)+I* Sin(temp)) $]
-        F.Times(F.Power(F.Sqr(a), F.Times(F.C1D2, b)), F.Exp(F.Times(F.CN1, c, F.Arg(a))),
-            F.Plus(F.Cos(temp), F.Times(F.CI, F.Sin(temp)))); // $$;
-      }
-      return F.NIL;
     }
 
     private static IExpr e2DblArg(final INum base, final INum exponent) {
@@ -4036,9 +4022,12 @@ public final class Arithmetic {
         }
       }
 
-      if (base.isReal() && base.isNegative() && exponent.isNumEqualRational(F.C1D2)) {
+      if (exponent.isNumEqualRational(F.C1D2) && base.isNegativeResult()) {
         // extract I for sqrt
         return F.Times(F.CI, F.Power(F.Negate(base), exponent));
+      } else if (exponent.isNumEqualRational(F.CN1D2) && base.isNegativeResult()) {
+        // extract I for sqrt
+        return F.Times(F.CNI, F.Power(F.Negate(base), exponent));
       }
       return F.NIL;
     }
@@ -5834,7 +5823,7 @@ public final class Arithmetic {
    * 30
    * </pre>
    */
-  public /*for steps module*/ static class Times extends AbstractArgMultiple implements INumeric {
+  public /* for steps module */ static class Times extends AbstractArgMultiple implements INumeric {
     /** Constructor for the singleton */
     public static final Times CONST = new Times();
 
@@ -6259,6 +6248,15 @@ public final class Arithmetic {
         IQuantity q = (IQuantity) arg2;
         return q.times(arg1, true);
       }
+      // long leafCountTimes = arg1.leafCountSimplify() + arg2.leafCountSimplify() + 3;
+      // if (leafCountTimes < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
+      // // hack for RubiIntegrationTest#testRubiRule006()
+      // IExpr expanded = Algebra.expandSimpleTimesPlus(arg1, arg2);
+      //
+      // if (expanded.isPresent() && expanded.leafCountSimplify() <= leafCountTimes) {
+      // return expanded;
+      // }
+      // }
 
       return F.NIL;
     }
@@ -6897,48 +6895,71 @@ public final class Arithmetic {
     return F.NIL;
   }
 
+  public static IExpr powerComplexComplex(final IBigNumber base, final IComplex exponent,
+      EvalEngine engine) {
+    if (base.getImaginaryPart().isZero()) {
+      IRational a = base.getRealPart();
+      IRational b = exponent.getRealPart();
+      IRational c = exponent.getImaginaryPart();
+      IExpr temp = // [$ b*Arg(a)+1/2*c*Log(a^2) $]
+          F.Plus(F.Times(b, F.Arg(a)), F.Times(F.C1D2, c, F.Log(F.Sqr(a)))); // $$;
+      temp = temp.eval(engine);
+      temp = // [$ (a^2)^(b/2)*E^(-c*Arg(a)) * (Cos(temp)+I* Sin(temp)) $]
+          F.Times(F.Power(F.Sqr(a), F.Times(F.C1D2, b)), F.Exp(F.Times(F.CN1, c, F.Arg(a))),
+              F.Plus(F.Cos(temp), F.Times(F.CI, F.Sin(temp)))); // $$;
+      return temp.eval(engine);
+    }
+    return F.NIL;
+  }
   /**
-   * Try simplifying <code>(power0Arg1 ^ power0Arg2) * (power1Arg1 ^ power1Arg2)</code>
+   * Try simplifying <code>(base1 ^ exponent1) * (base2 ^ exponent2)</code>
    *
-   * @param power0Arg1
-   * @param power0Arg2
-   * @param power1Arg1
-   * @param power1Arg2
+   * @param base1
+   * @param exponent1
+   * @param base2
+   * @param exponent2
    * @return
    */
-  private static IExpr timesPowerPower(IExpr power0Arg1, IExpr power0Arg2, IExpr power1Arg1,
-      IExpr power1Arg2) {
-    if (power0Arg2.isNumber()) {
-      if (power1Arg2.isNumber()) {
-        if (power0Arg1.equals(power1Arg1)) {
+  private static IExpr timesPowerPower(IExpr base1, IExpr exponent1, IExpr base2, IExpr exponent2) {
+    if (exponent1.isNumber()) {
+      if (exponent2.isNumber()) {
+        if (base1.equals(base2)) {
           // x^(a)*x^(b) => x ^(a+b)
-          return F.Power(power0Arg1, power0Arg2.plus(power1Arg2));
+          return F.Power(base1, exponent1.plus(exponent2));
         }
-        if (power0Arg2.equals(power1Arg2)) {
-          if ((power0Arg1.isRealResult() && power1Arg1.isRealResult())) {
-            IExpr timesBase = EvalEngine.get().evaluate(F.Times(power0Arg1, power1Arg1));
-            if (!timesBase.isTimes() || !power0Arg2.isInteger()) {
+        if (exponent1.equals(exponent2)) {
+          if (!exponent1.isIntegerResult()) {
+            IExpr temp = base1.plus(base2);
+            if (temp.isNonNegativeResult()) {
+              // https://functions.wolfram.com/ElementaryFunctions/Power/16/08/01/0004/
               // a^(c)*b^(c) => (a*b) ^c
-              return F.Power(timesBase, power0Arg2);
+              long leafCountTimes = base1.leafCountSimplify() + base2.leafCountSimplify() + 4;
+              if (leafCountTimes < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
+                // hack for RubiIntegrationTest#testRubiRule006()
+                IExpr expanded = F.evalExpand(F.Times(base1, base2));
+                if (expanded.leafCountSimplify() <= leafCountTimes) {
+                  return F.Power(expanded, exponent1);
+                }
+              }
+              return F.Power(F.Times(base1, base2), exponent1);
             }
           }
-        }
-        if (power0Arg2.negate().equals(power1Arg2) && power0Arg1.isPositive()
-            && power1Arg1.isPositive() && power0Arg1.isReal() && power1Arg1.isReal()) {
-          // a^(c)*b^(-c) => (a/b)^c
-          if (power0Arg2.isNegative()) {
-            return F.Power(power1Arg1.divide(power0Arg1), power1Arg2);
-          } else {
-            return F.Power(power0Arg1.divide(power1Arg1), power0Arg2);
+        } else if (exponent1.negate().equals(exponent2)) {
+          if (base1.isPositive() && base2.isPositive() && base1.isReal() && base2.isReal()) {
+            // a^(c)*b^(-c) => (a/b)^c
+            if (exponent1.isNegative()) {
+              return F.Power(base2.divide(base1), exponent2);
+            } else {
+              return F.Power(base1.divide(base2), exponent1);
+            }
           }
         }
       }
     }
-    if (power0Arg1.isRational() && power1Arg1.isRational()) {
-      IExpr temp = timesPowerPower(((IRational) power0Arg1).numerator(),
-          ((IRational) power0Arg1).denominator(), power0Arg2, //
-          ((IRational) power1Arg1).numerator(), ((IRational) power1Arg1).denominator(), power1Arg2,
-          false);
+    if (base1.isRational() && base2.isRational()) {
+      IExpr temp = timesPowerPower(((IRational) base1).numerator(),
+          ((IRational) base1).denominator(), exponent1, //
+          ((IRational) base2).numerator(), ((IRational) base2).denominator(), exponent2, false);
       if (temp.isPresent()) {
         return temp;
       }
@@ -6949,17 +6970,17 @@ public final class Arithmetic {
     // power0Arg1.power(power0Arg2.plus(power1Arg2)).times(CN1.power(power1Arg2));
     // }
 
-    if (power0Arg1.equals(power1Arg1)) {
+    if (base1.equals(base2)) {
       // x^(a)*x^(b) => x ^(a+b)
-      return F.Power(power0Arg1, power0Arg2.plus(power1Arg2));
+      return F.Power(base1, exponent1.plus(exponent2));
     }
-    if (power0Arg2.equals(power1Arg2) //
-        && (!power0Arg2.isInteger()) && (!power0Arg2.isMinusOne())
+    if (exponent1.equals(exponent2) //
+        && (!exponent1.isInteger()) && (!exponent1.isMinusOne())
         // && (!power0Arg2.isNegativeResult())
-        && (power0Arg1.isNumber() || power0Arg1.isRealConstant())//
-        && (power1Arg1.isNumber() || power1Arg1.isRealConstant())) {
+        && (base1.isNumber() || base1.isRealConstant())//
+        && (base2.isNumber() || base2.isRealConstant())) {
       // 2^(a+b)*E^(a+b) => (2*E)^(a+b)
-      return F.Power(power0Arg1.times(power1Arg1), power0Arg2);
+      return F.Power(base1.times(base2), exponent1);
     }
     return F.NIL;
   }

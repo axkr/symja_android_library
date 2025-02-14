@@ -62,13 +62,18 @@ public class BesselFunctions {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
-      IExpr a = ast.arg1();
-      IExpr b = ast.arg2();
-      if (ast.isAST3()) {
-        IExpr c = ast.arg2();
-        return functionExpand3(a, b, c);
+      if (ast.argSize() >= 2) {
+        IExpr a = ast.arg1();
+        IExpr b = ast.arg2();
+        if (ast.isAST3()) {
+          IExpr c = ast.arg2();
+          return functionExpand3(a, b, c);
+        }
+        if (ast.isAST2()) {
+          return functionExpand2(a, b);
+        }
       }
-      return functionExpand2(a, b);
+      return F.NIL;
     }
 
     private static IExpr functionExpand2(IExpr a, IExpr b) {

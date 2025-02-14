@@ -43,6 +43,6 @@ public abstract class AbstractFunctionOptionEvaluator extends AbstractFunctionEv
     return optionSymbols;
   }
 
-  public abstract IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+  public abstract IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
       final EvalEngine engine, IAST originalAST);
 }

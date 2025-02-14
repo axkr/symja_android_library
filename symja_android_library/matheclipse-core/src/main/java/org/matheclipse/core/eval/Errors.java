@@ -367,7 +367,7 @@ public class Errors {
       "setps", "`1` in the part assignment is not a symbol.", //
       "sfr", "Item `1` requested in `2` out of range. `3` itms available.", //
       "shapespec", "Shape specification `1` is invalid.", //
-      "shlen", "The argument `1` should have at least `2` arguments.", //
+      "shlen", "The argument `1` should have at least `2` elements.", //
       "sing", "Matrix `1` is singular.", //
       "sing1", "The matrix `1` is singular; a factorization will not be saved.", //
       "span", "`1` is not a valid Span specification.", //

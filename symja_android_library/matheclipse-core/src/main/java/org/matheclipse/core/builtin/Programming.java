@@ -538,7 +538,8 @@ public final class Programming {
     @Override
     public final IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (engine.isEvalRHSMode()) {
-        if (engine.evalTrue(ast.arg2())) {
+        IExpr arg2 = ast.arg2();
+        if (engine.evalTrue(arg2)) {
           return ast.arg1();
         }
         throw ConditionException.CONDITION_NIL;

@@ -39,10 +39,11 @@ public abstract class AbstractCoreFunctionOptionEvaluator extends AbstractCoreFu
     super.setOptions(symbol, list);
   }
 
+  @Override
   public IBuiltInSymbol[] getOptionSymbols() {
     return optionSymbols;
   }
 
-  protected abstract IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+  protected abstract IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
       final EvalEngine engine);
 }

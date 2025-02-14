@@ -73,9 +73,7 @@ public abstract class DataExpr<T> implements IDataExpr<T> {
               return ((Comparable<T>) fData).compareTo(de.fData);
             }
           }
-          final int x = hierarchy();
-          final int y = expr.hierarchy();
-          return (x < y) ? -1 : ((x == y) ? 0 : 1);
+          return IExpr.compareHierarchy(this, expr);
         }
         return 1;
       }
@@ -86,9 +84,7 @@ public abstract class DataExpr<T> implements IDataExpr<T> {
       return -1 * expr.compareTo(this);
       // }
     }
-    final int x = hierarchy();
-    final int y = expr.hierarchy();
-    return (x < y) ? -1 : ((x == y) ? 0 : 1);
+    return IExpr.compareHierarchy(this, expr);
   }
 
   /** {@inheritDoc} */

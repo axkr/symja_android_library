@@ -80,7 +80,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     check("BetaRegularized(0.211111111111111111, 5, 1)", //
         "0.000419329539873664243");
     checkNumeric("N(BetaRegularized(23/47, 5 - I, 2))", //
-        "0.0847097829416838+I*0.05452582633879841");
+        "0.08470978294168378+I*0.05452582633879841");
 
     checkNumeric("BetaRegularized({2, 3, 5, 7}, 2.5, 0.5)", //
         "{1.0+I*(-2.6618379233724276),1.0+I*(-5.407884471224192),1.0+I*(-13.25626430682117),1.0+I*(-24.415962537061432)}");
@@ -558,12 +558,19 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testFactorial2() {
-
+    check("Factorial2(x)", //
+        "x!!");
+    check("Factorial2(0)", //
+        "1");
+    check("Factorial2(-1)", //
+        "1");
     check("N(Factorial2(3/13), 10)", //
         "0.9953739588");
     check("Factorial2(5.211111111111111111)", //
         "18.6046636633029321");
 
+    check("Factorial2(2 + 3*I) // FunctionExpand", //
+        "2^(1+I*3/2+1/4*(1-Cosh(3*Pi)))*Pi^(1/4*(-1+Cosh(3*Pi)))*Gamma(2+I*3/2)");
     check("Factorial2(2.0 + I)", //
         "5.15473+I*3.27618");
 

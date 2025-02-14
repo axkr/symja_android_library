@@ -114,6 +114,10 @@ public class PatternsTest extends ExprEvaluatorTestCase {
     // TODO define options for Plot and other built-ins
     // check("Options(Plot)", //
     // "");
+    check("Options(Options)", //
+        "{}");
+    check("Options(Union)", //
+        "{SameTest->Automatic}");
     check("Options(f) = {a -> 1, b -> 2};", //
         "");
     check("Options(f)", //

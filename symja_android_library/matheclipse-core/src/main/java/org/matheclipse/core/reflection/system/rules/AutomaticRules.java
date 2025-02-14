@@ -49,7 +49,6 @@ public class AutomaticRules {
     rules = InterquartileRangeRules.RULES;
     rules = InverseLaplaceTransformRules.RULES;
     rules = InverseZTransformRules.RULES;
-    rules = JacobiPRules.RULES;
     rules = JacobiSCRules.RULES;
     rules = KleinInvariantJRules.RULES;
     rules = LaplaceTransformRules.RULES;

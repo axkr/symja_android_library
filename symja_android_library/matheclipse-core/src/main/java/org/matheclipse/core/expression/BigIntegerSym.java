@@ -59,26 +59,26 @@ public class BigIntegerSym extends AbstractIntegerSym {
   }
 
   public static BigInteger jacobiSymbolF(BigInteger val) {
-    BigInteger a = val.mod(AbstractIntegerSym.BI_EIGHT);
+    BigInteger a = val.mod(IInteger.BI_EIGHT);
     if (a.equals(BigInteger.ONE)) {
       return BigInteger.ONE;
     }
-    if (a.equals(AbstractIntegerSym.BI_SEVEN)) {
+    if (a.equals(IInteger.BI_SEVEN)) {
       return BigInteger.ONE;
     }
-    return AbstractIntegerSym.BI_MINUS_ONE;
+    return IInteger.BI_MINUS_ONE;
   }
 
   public static BigInteger jacobiSymbolG(BigInteger a, BigInteger b) {
-    BigInteger i1 = a.mod(AbstractIntegerSym.BI_FOUR);
+    BigInteger i1 = a.mod(IInteger.BI_FOUR);
     if (i1.equals(BigInteger.ONE)) {
       return BigInteger.ONE;
     }
-    BigInteger i2 = b.mod(AbstractIntegerSym.BI_FOUR);
+    BigInteger i2 = b.mod(IInteger.BI_FOUR);
     if (i2.equals(BigInteger.ONE)) {
       return BigInteger.ONE;
     }
-    return AbstractIntegerSym.BI_MINUS_ONE;
+    return IInteger.BI_MINUS_ONE;
   }
 
   /* package private */ BigInteger fBigIntValue;
@@ -519,7 +519,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
   @Override
   public boolean isMinusOne() {
-    return fBigIntValue.equals(BI_MINUS_ONE);
+    return fBigIntValue.equals(IInteger.BI_MINUS_ONE);
   }
 
   /** {@inheritDoc} */

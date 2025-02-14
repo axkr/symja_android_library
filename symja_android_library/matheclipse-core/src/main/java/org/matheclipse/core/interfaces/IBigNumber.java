@@ -7,6 +7,19 @@ import edu.jas.arith.BigComplex;
  * IComplex)
  */
 public interface IBigNumber extends INumber {
+  /**
+   * Returns the real part of a complex number
+   *
+   * @return real part
+   */
+  public IRational getRealPart();
+
+  /**
+   * Returns the imaginary part of a complex number
+   *
+   * @return imaginary part
+   */
+  public IRational getImaginaryPart();
 
   /**
    * Create a numeric number from this exact &quot;symbolic&quot; number.

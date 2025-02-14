@@ -93,6 +93,10 @@ public interface IAssociation extends IASTAppendable {
    */
   public IExpr getValue(IExpr key, Supplier<IExpr> defaultValue);
 
+  public int[] isAssociationMatrix();
+
+  public int isAssociationVector();
+
   /**
    * Test if the <code>expr</code> is a key in this association.
    *

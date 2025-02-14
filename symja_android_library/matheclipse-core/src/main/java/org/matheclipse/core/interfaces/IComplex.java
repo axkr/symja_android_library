@@ -9,20 +9,6 @@ public interface IComplex extends IBigNumber {
   /**
    * Returns the imaginary part of a complex number
    *
-   * @return imaginary part
-   */
-  public IRational getImaginaryPart();
-
-  /**
-   * Returns the real part of a complex number
-   *
-   * @return real part
-   */
-  public IRational getRealPart();
-
-  /**
-   * Returns the imaginary part of a complex number
-   *
    * @return real part
    */
   @Override

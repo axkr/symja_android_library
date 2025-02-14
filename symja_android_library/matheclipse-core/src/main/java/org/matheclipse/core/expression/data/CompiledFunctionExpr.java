@@ -72,9 +72,7 @@ public class CompiledFunctionExpr implements IDataExpr<Class<?>> {
     if (expr.isAST()) {
       return -1 * expr.compareTo(this);
     }
-    final int x = hierarchy();
-    final int y = expr.hierarchy();
-    return (x < y) ? -1 : ((x == y) ? 0 : 1);
+    return IExpr.compareHierarchy(this, expr);
   }
 
   public IExpr evaluate(IAST ast, EvalEngine engine) {

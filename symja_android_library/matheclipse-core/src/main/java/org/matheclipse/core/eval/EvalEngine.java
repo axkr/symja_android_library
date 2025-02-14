@@ -2712,17 +2712,16 @@ public class EvalEngine implements Serializable {
    *         <code>false</code> in all other cases
    */
   public final boolean evalTrue(final IExpr expr) {
-    if (expr.isBuiltInSymbol()) {
-      if (expr.isTrue()) {
-        return true;
-      }
-      if (expr.isFalse()) {
-        return false;
-      }
+    if (expr == S.True) {
+      return true;
+    }
+    if (expr == S.False) {
+      return false;
     }
     try {
       return evaluate(expr).isTrue();
-    } catch (MathException fce) {
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
       return false;
     }
   }

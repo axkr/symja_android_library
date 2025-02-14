@@ -45,6 +45,742 @@ import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
 public abstract class AbstractFractionSym implements IFraction {
   private static final long serialVersionUID = -8743141041586314213L;
 
+  static final int LOW_NUMER = -32;
+  static final int HIGH_NUMER = 32;
+  static final int LOW_DENOM = 2;
+  static final int HIGH_DENOM = 32;
+
+  static final FractionSym[][] CACHE = new FractionSym[][] {
+      {new FractionSym(-16, 1), new FractionSym(-32, 3), new FractionSym(-8, 1),
+          new FractionSym(-32, 5), new FractionSym(-16, 3), new FractionSym(-32, 7),
+          new FractionSym(-4, 1), new FractionSym(-32, 9), new FractionSym(-16, 5),
+          new FractionSym(-32, 11), new FractionSym(-8, 3), new FractionSym(-32, 13),
+          new FractionSym(-16, 7), new FractionSym(-32, 15), new FractionSym(-2, 1),
+          new FractionSym(-32, 17), new FractionSym(-16, 9), new FractionSym(-32, 19),
+          new FractionSym(-8, 5), new FractionSym(-32, 21), new FractionSym(-16, 11),
+          new FractionSym(-32, 23), new FractionSym(-4, 3), new FractionSym(-32, 25),
+          new FractionSym(-16, 13), new FractionSym(-32, 27), new FractionSym(-8, 7),
+          new FractionSym(-32, 29), new FractionSym(-16, 15), new FractionSym(-32, 31),
+          new FractionSym(-1, 1)}, //
+      {new FractionSym(-31, 2), new FractionSym(-31, 3), new FractionSym(-31, 4),
+          new FractionSym(-31, 5), new FractionSym(-31, 6), new FractionSym(-31, 7),
+          new FractionSym(-31, 8), new FractionSym(-31, 9), new FractionSym(-31, 10),
+          new FractionSym(-31, 11), new FractionSym(-31, 12), new FractionSym(-31, 13),
+          new FractionSym(-31, 14), new FractionSym(-31, 15), new FractionSym(-31, 16),
+          new FractionSym(-31, 17), new FractionSym(-31, 18), new FractionSym(-31, 19),
+          new FractionSym(-31, 20), new FractionSym(-31, 21), new FractionSym(-31, 22),
+          new FractionSym(-31, 23), new FractionSym(-31, 24), new FractionSym(-31, 25),
+          new FractionSym(-31, 26), new FractionSym(-31, 27), new FractionSym(-31, 28),
+          new FractionSym(-31, 29), new FractionSym(-31, 30), new FractionSym(-1, 1),
+          new FractionSym(-31, 32)}, //
+      {new FractionSym(-15, 1), new FractionSym(-10, 1), new FractionSym(-15, 2),
+          new FractionSym(-6, 1), new FractionSym(-5, 1), new FractionSym(-30, 7),
+          new FractionSym(-15, 4), new FractionSym(-10, 3), new FractionSym(-3, 1),
+          new FractionSym(-30, 11), new FractionSym(-5, 2), new FractionSym(-30, 13),
+          new FractionSym(-15, 7), new FractionSym(-2, 1), new FractionSym(-15, 8),
+          new FractionSym(-30, 17), new FractionSym(-5, 3), new FractionSym(-30, 19),
+          new FractionSym(-3, 2), new FractionSym(-10, 7), new FractionSym(-15, 11),
+          new FractionSym(-30, 23), new FractionSym(-5, 4), new FractionSym(-6, 5),
+          new FractionSym(-15, 13), new FractionSym(-10, 9), new FractionSym(-15, 14),
+          new FractionSym(-30, 29), new FractionSym(-1, 1), new FractionSym(-30, 31),
+          new FractionSym(-15, 16)}, //
+      {new FractionSym(-29, 2), new FractionSym(-29, 3), new FractionSym(-29, 4),
+          new FractionSym(-29, 5), new FractionSym(-29, 6), new FractionSym(-29, 7),
+          new FractionSym(-29, 8), new FractionSym(-29, 9), new FractionSym(-29, 10),
+          new FractionSym(-29, 11), new FractionSym(-29, 12), new FractionSym(-29, 13),
+          new FractionSym(-29, 14), new FractionSym(-29, 15), new FractionSym(-29, 16),
+          new FractionSym(-29, 17), new FractionSym(-29, 18), new FractionSym(-29, 19),
+          new FractionSym(-29, 20), new FractionSym(-29, 21), new FractionSym(-29, 22),
+          new FractionSym(-29, 23), new FractionSym(-29, 24), new FractionSym(-29, 25),
+          new FractionSym(-29, 26), new FractionSym(-29, 27), new FractionSym(-29, 28),
+          new FractionSym(-1, 1), new FractionSym(-29, 30), new FractionSym(-29, 31),
+          new FractionSym(-29, 32)}, //
+      {new FractionSym(-14, 1), new FractionSym(-28, 3), new FractionSym(-7, 1),
+          new FractionSym(-28, 5), new FractionSym(-14, 3), new FractionSym(-4, 1),
+          new FractionSym(-7, 2), new FractionSym(-28, 9), new FractionSym(-14, 5),
+          new FractionSym(-28, 11), new FractionSym(-7, 3), new FractionSym(-28, 13),
+          new FractionSym(-2, 1), new FractionSym(-28, 15), new FractionSym(-7, 4),
+          new FractionSym(-28, 17), new FractionSym(-14, 9), new FractionSym(-28, 19),
+          new FractionSym(-7, 5), new FractionSym(-4, 3), new FractionSym(-14, 11),
+          new FractionSym(-28, 23), new FractionSym(-7, 6), new FractionSym(-28, 25),
+          new FractionSym(-14, 13), new FractionSym(-28, 27), new FractionSym(-1, 1),
+          new FractionSym(-28, 29), new FractionSym(-14, 15), new FractionSym(-28, 31),
+          new FractionSym(-7, 8)}, //
+      {new FractionSym(-27, 2), new FractionSym(-9, 1), new FractionSym(-27, 4),
+          new FractionSym(-27, 5), new FractionSym(-9, 2), new FractionSym(-27, 7),
+          new FractionSym(-27, 8), new FractionSym(-3, 1), new FractionSym(-27, 10),
+          new FractionSym(-27, 11), new FractionSym(-9, 4), new FractionSym(-27, 13),
+          new FractionSym(-27, 14), new FractionSym(-9, 5), new FractionSym(-27, 16),
+          new FractionSym(-27, 17), new FractionSym(-3, 2), new FractionSym(-27, 19),
+          new FractionSym(-27, 20), new FractionSym(-9, 7), new FractionSym(-27, 22),
+          new FractionSym(-27, 23), new FractionSym(-9, 8), new FractionSym(-27, 25),
+          new FractionSym(-27, 26), new FractionSym(-1, 1), new FractionSym(-27, 28),
+          new FractionSym(-27, 29), new FractionSym(-9, 10), new FractionSym(-27, 31),
+          new FractionSym(-27, 32)}, //
+      {new FractionSym(-13, 1), new FractionSym(-26, 3), new FractionSym(-13, 2),
+          new FractionSym(-26, 5), new FractionSym(-13, 3), new FractionSym(-26, 7),
+          new FractionSym(-13, 4), new FractionSym(-26, 9), new FractionSym(-13, 5),
+          new FractionSym(-26, 11), new FractionSym(-13, 6), new FractionSym(-2, 1),
+          new FractionSym(-13, 7), new FractionSym(-26, 15), new FractionSym(-13, 8),
+          new FractionSym(-26, 17), new FractionSym(-13, 9), new FractionSym(-26, 19),
+          new FractionSym(-13, 10), new FractionSym(-26, 21), new FractionSym(-13, 11),
+          new FractionSym(-26, 23), new FractionSym(-13, 12), new FractionSym(-26, 25),
+          new FractionSym(-1, 1), new FractionSym(-26, 27), new FractionSym(-13, 14),
+          new FractionSym(-26, 29), new FractionSym(-13, 15), new FractionSym(-26, 31),
+          new FractionSym(-13, 16)}, //
+      {new FractionSym(-25, 2), new FractionSym(-25, 3), new FractionSym(-25, 4),
+          new FractionSym(-5, 1), new FractionSym(-25, 6), new FractionSym(-25, 7),
+          new FractionSym(-25, 8), new FractionSym(-25, 9), new FractionSym(-5, 2),
+          new FractionSym(-25, 11), new FractionSym(-25, 12), new FractionSym(-25, 13),
+          new FractionSym(-25, 14), new FractionSym(-5, 3), new FractionSym(-25, 16),
+          new FractionSym(-25, 17), new FractionSym(-25, 18), new FractionSym(-25, 19),
+          new FractionSym(-5, 4), new FractionSym(-25, 21), new FractionSym(-25, 22),
+          new FractionSym(-25, 23), new FractionSym(-25, 24), new FractionSym(-1, 1),
+          new FractionSym(-25, 26), new FractionSym(-25, 27), new FractionSym(-25, 28),
+          new FractionSym(-25, 29), new FractionSym(-5, 6), new FractionSym(-25, 31),
+          new FractionSym(-25, 32)}, //
+      {new FractionSym(-12, 1), new FractionSym(-8, 1), new FractionSym(-6, 1),
+          new FractionSym(-24, 5), new FractionSym(-4, 1), new FractionSym(-24, 7),
+          new FractionSym(-3, 1), new FractionSym(-8, 3), new FractionSym(-12, 5),
+          new FractionSym(-24, 11), new FractionSym(-2, 1), new FractionSym(-24, 13),
+          new FractionSym(-12, 7), new FractionSym(-8, 5), new FractionSym(-3, 2),
+          new FractionSym(-24, 17), new FractionSym(-4, 3), new FractionSym(-24, 19),
+          new FractionSym(-6, 5), new FractionSym(-8, 7), new FractionSym(-12, 11),
+          new FractionSym(-24, 23), new FractionSym(-1, 1), new FractionSym(-24, 25),
+          new FractionSym(-12, 13), new FractionSym(-8, 9), new FractionSym(-6, 7),
+          new FractionSym(-24, 29), new FractionSym(-4, 5), new FractionSym(-24, 31),
+          new FractionSym(-3, 4)}, //
+      {new FractionSym(-23, 2), new FractionSym(-23, 3), new FractionSym(-23, 4),
+          new FractionSym(-23, 5), new FractionSym(-23, 6), new FractionSym(-23, 7),
+          new FractionSym(-23, 8), new FractionSym(-23, 9), new FractionSym(-23, 10),
+          new FractionSym(-23, 11), new FractionSym(-23, 12), new FractionSym(-23, 13),
+          new FractionSym(-23, 14), new FractionSym(-23, 15), new FractionSym(-23, 16),
+          new FractionSym(-23, 17), new FractionSym(-23, 18), new FractionSym(-23, 19),
+          new FractionSym(-23, 20), new FractionSym(-23, 21), new FractionSym(-23, 22),
+          new FractionSym(-1, 1), new FractionSym(-23, 24), new FractionSym(-23, 25),
+          new FractionSym(-23, 26), new FractionSym(-23, 27), new FractionSym(-23, 28),
+          new FractionSym(-23, 29), new FractionSym(-23, 30), new FractionSym(-23, 31),
+          new FractionSym(-23, 32)}, //
+      {new FractionSym(-11, 1), new FractionSym(-22, 3), new FractionSym(-11, 2),
+          new FractionSym(-22, 5), new FractionSym(-11, 3), new FractionSym(-22, 7),
+          new FractionSym(-11, 4), new FractionSym(-22, 9), new FractionSym(-11, 5),
+          new FractionSym(-2, 1), new FractionSym(-11, 6), new FractionSym(-22, 13),
+          new FractionSym(-11, 7), new FractionSym(-22, 15), new FractionSym(-11, 8),
+          new FractionSym(-22, 17), new FractionSym(-11, 9), new FractionSym(-22, 19),
+          new FractionSym(-11, 10), new FractionSym(-22, 21), new FractionSym(-1, 1),
+          new FractionSym(-22, 23), new FractionSym(-11, 12), new FractionSym(-22, 25),
+          new FractionSym(-11, 13), new FractionSym(-22, 27), new FractionSym(-11, 14),
+          new FractionSym(-22, 29), new FractionSym(-11, 15), new FractionSym(-22, 31),
+          new FractionSym(-11, 16)}, //
+      {new FractionSym(-21, 2), new FractionSym(-7, 1), new FractionSym(-21, 4),
+          new FractionSym(-21, 5), new FractionSym(-7, 2), new FractionSym(-3, 1),
+          new FractionSym(-21, 8), new FractionSym(-7, 3), new FractionSym(-21, 10),
+          new FractionSym(-21, 11), new FractionSym(-7, 4), new FractionSym(-21, 13),
+          new FractionSym(-3, 2), new FractionSym(-7, 5), new FractionSym(-21, 16),
+          new FractionSym(-21, 17), new FractionSym(-7, 6), new FractionSym(-21, 19),
+          new FractionSym(-21, 20), new FractionSym(-1, 1), new FractionSym(-21, 22),
+          new FractionSym(-21, 23), new FractionSym(-7, 8), new FractionSym(-21, 25),
+          new FractionSym(-21, 26), new FractionSym(-7, 9), new FractionSym(-3, 4),
+          new FractionSym(-21, 29), new FractionSym(-7, 10), new FractionSym(-21, 31),
+          new FractionSym(-21, 32)}, //
+      {new FractionSym(-10, 1), new FractionSym(-20, 3), new FractionSym(-5, 1),
+          new FractionSym(-4, 1), new FractionSym(-10, 3), new FractionSym(-20, 7),
+          new FractionSym(-5, 2), new FractionSym(-20, 9), new FractionSym(-2, 1),
+          new FractionSym(-20, 11), new FractionSym(-5, 3), new FractionSym(-20, 13),
+          new FractionSym(-10, 7), new FractionSym(-4, 3), new FractionSym(-5, 4),
+          new FractionSym(-20, 17), new FractionSym(-10, 9), new FractionSym(-20, 19),
+          new FractionSym(-1, 1), new FractionSym(-20, 21), new FractionSym(-10, 11),
+          new FractionSym(-20, 23), new FractionSym(-5, 6), new FractionSym(-4, 5),
+          new FractionSym(-10, 13), new FractionSym(-20, 27), new FractionSym(-5, 7),
+          new FractionSym(-20, 29), new FractionSym(-2, 3), new FractionSym(-20, 31),
+          new FractionSym(-5, 8)}, //
+      {new FractionSym(-19, 2), new FractionSym(-19, 3), new FractionSym(-19, 4),
+          new FractionSym(-19, 5), new FractionSym(-19, 6), new FractionSym(-19, 7),
+          new FractionSym(-19, 8), new FractionSym(-19, 9), new FractionSym(-19, 10),
+          new FractionSym(-19, 11), new FractionSym(-19, 12), new FractionSym(-19, 13),
+          new FractionSym(-19, 14), new FractionSym(-19, 15), new FractionSym(-19, 16),
+          new FractionSym(-19, 17), new FractionSym(-19, 18), new FractionSym(-1, 1),
+          new FractionSym(-19, 20), new FractionSym(-19, 21), new FractionSym(-19, 22),
+          new FractionSym(-19, 23), new FractionSym(-19, 24), new FractionSym(-19, 25),
+          new FractionSym(-19, 26), new FractionSym(-19, 27), new FractionSym(-19, 28),
+          new FractionSym(-19, 29), new FractionSym(-19, 30), new FractionSym(-19, 31),
+          new FractionSym(-19, 32)}, //
+      {new FractionSym(-9, 1), new FractionSym(-6, 1), new FractionSym(-9, 2),
+          new FractionSym(-18, 5), new FractionSym(-3, 1), new FractionSym(-18, 7),
+          new FractionSym(-9, 4), new FractionSym(-2, 1), new FractionSym(-9, 5),
+          new FractionSym(-18, 11), new FractionSym(-3, 2), new FractionSym(-18, 13),
+          new FractionSym(-9, 7), new FractionSym(-6, 5), new FractionSym(-9, 8),
+          new FractionSym(-18, 17), new FractionSym(-1, 1), new FractionSym(-18, 19),
+          new FractionSym(-9, 10), new FractionSym(-6, 7), new FractionSym(-9, 11),
+          new FractionSym(-18, 23), new FractionSym(-3, 4), new FractionSym(-18, 25),
+          new FractionSym(-9, 13), new FractionSym(-2, 3), new FractionSym(-9, 14),
+          new FractionSym(-18, 29), new FractionSym(-3, 5), new FractionSym(-18, 31),
+          new FractionSym(-9, 16)}, //
+      {new FractionSym(-17, 2), new FractionSym(-17, 3), new FractionSym(-17, 4),
+          new FractionSym(-17, 5), new FractionSym(-17, 6), new FractionSym(-17, 7),
+          new FractionSym(-17, 8), new FractionSym(-17, 9), new FractionSym(-17, 10),
+          new FractionSym(-17, 11), new FractionSym(-17, 12), new FractionSym(-17, 13),
+          new FractionSym(-17, 14), new FractionSym(-17, 15), new FractionSym(-17, 16),
+          new FractionSym(-1, 1), new FractionSym(-17, 18), new FractionSym(-17, 19),
+          new FractionSym(-17, 20), new FractionSym(-17, 21), new FractionSym(-17, 22),
+          new FractionSym(-17, 23), new FractionSym(-17, 24), new FractionSym(-17, 25),
+          new FractionSym(-17, 26), new FractionSym(-17, 27), new FractionSym(-17, 28),
+          new FractionSym(-17, 29), new FractionSym(-17, 30), new FractionSym(-17, 31),
+          new FractionSym(-17, 32)}, //
+      {new FractionSym(-8, 1), new FractionSym(-16, 3), new FractionSym(-4, 1),
+          new FractionSym(-16, 5), new FractionSym(-8, 3), new FractionSym(-16, 7),
+          new FractionSym(-2, 1), new FractionSym(-16, 9), new FractionSym(-8, 5),
+          new FractionSym(-16, 11), new FractionSym(-4, 3), new FractionSym(-16, 13),
+          new FractionSym(-8, 7), new FractionSym(-16, 15), new FractionSym(-1, 1),
+          new FractionSym(-16, 17), new FractionSym(-8, 9), new FractionSym(-16, 19),
+          new FractionSym(-4, 5), new FractionSym(-16, 21), new FractionSym(-8, 11),
+          new FractionSym(-16, 23), new FractionSym(-2, 3), new FractionSym(-16, 25),
+          new FractionSym(-8, 13), new FractionSym(-16, 27), new FractionSym(-4, 7),
+          new FractionSym(-16, 29), new FractionSym(-8, 15), new FractionSym(-16, 31),
+          new FractionSym(-1, 2)}, //
+      {new FractionSym(-15, 2), new FractionSym(-5, 1), new FractionSym(-15, 4),
+          new FractionSym(-3, 1), new FractionSym(-5, 2), new FractionSym(-15, 7),
+          new FractionSym(-15, 8), new FractionSym(-5, 3), new FractionSym(-3, 2),
+          new FractionSym(-15, 11), new FractionSym(-5, 4), new FractionSym(-15, 13),
+          new FractionSym(-15, 14), new FractionSym(-1, 1), new FractionSym(-15, 16),
+          new FractionSym(-15, 17), new FractionSym(-5, 6), new FractionSym(-15, 19),
+          new FractionSym(-3, 4), new FractionSym(-5, 7), new FractionSym(-15, 22),
+          new FractionSym(-15, 23), new FractionSym(-5, 8), new FractionSym(-3, 5),
+          new FractionSym(-15, 26), new FractionSym(-5, 9), new FractionSym(-15, 28),
+          new FractionSym(-15, 29), new FractionSym(-1, 2), new FractionSym(-15, 31),
+          new FractionSym(-15, 32)}, //
+      {new FractionSym(-7, 1), new FractionSym(-14, 3), new FractionSym(-7, 2),
+          new FractionSym(-14, 5), new FractionSym(-7, 3), new FractionSym(-2, 1),
+          new FractionSym(-7, 4), new FractionSym(-14, 9), new FractionSym(-7, 5),
+          new FractionSym(-14, 11), new FractionSym(-7, 6), new FractionSym(-14, 13),
+          new FractionSym(-1, 1), new FractionSym(-14, 15), new FractionSym(-7, 8),
+          new FractionSym(-14, 17), new FractionSym(-7, 9), new FractionSym(-14, 19),
+          new FractionSym(-7, 10), new FractionSym(-2, 3), new FractionSym(-7, 11),
+          new FractionSym(-14, 23), new FractionSym(-7, 12), new FractionSym(-14, 25),
+          new FractionSym(-7, 13), new FractionSym(-14, 27), new FractionSym(-1, 2),
+          new FractionSym(-14, 29), new FractionSym(-7, 15), new FractionSym(-14, 31),
+          new FractionSym(-7, 16)}, //
+      {new FractionSym(-13, 2), new FractionSym(-13, 3), new FractionSym(-13, 4),
+          new FractionSym(-13, 5), new FractionSym(-13, 6), new FractionSym(-13, 7),
+          new FractionSym(-13, 8), new FractionSym(-13, 9), new FractionSym(-13, 10),
+          new FractionSym(-13, 11), new FractionSym(-13, 12), new FractionSym(-1, 1),
+          new FractionSym(-13, 14), new FractionSym(-13, 15), new FractionSym(-13, 16),
+          new FractionSym(-13, 17), new FractionSym(-13, 18), new FractionSym(-13, 19),
+          new FractionSym(-13, 20), new FractionSym(-13, 21), new FractionSym(-13, 22),
+          new FractionSym(-13, 23), new FractionSym(-13, 24), new FractionSym(-13, 25),
+          new FractionSym(-1, 2), new FractionSym(-13, 27), new FractionSym(-13, 28),
+          new FractionSym(-13, 29), new FractionSym(-13, 30), new FractionSym(-13, 31),
+          new FractionSym(-13, 32)}, //
+      {new FractionSym(-6, 1), new FractionSym(-4, 1), new FractionSym(-3, 1),
+          new FractionSym(-12, 5), new FractionSym(-2, 1), new FractionSym(-12, 7),
+          new FractionSym(-3, 2), new FractionSym(-4, 3), new FractionSym(-6, 5),
+          new FractionSym(-12, 11), new FractionSym(-1, 1), new FractionSym(-12, 13),
+          new FractionSym(-6, 7), new FractionSym(-4, 5), new FractionSym(-3, 4),
+          new FractionSym(-12, 17), new FractionSym(-2, 3), new FractionSym(-12, 19),
+          new FractionSym(-3, 5), new FractionSym(-4, 7), new FractionSym(-6, 11),
+          new FractionSym(-12, 23), new FractionSym(-1, 2), new FractionSym(-12, 25),
+          new FractionSym(-6, 13), new FractionSym(-4, 9), new FractionSym(-3, 7),
+          new FractionSym(-12, 29), new FractionSym(-2, 5), new FractionSym(-12, 31),
+          new FractionSym(-3, 8)}, //
+      {new FractionSym(-11, 2), new FractionSym(-11, 3), new FractionSym(-11, 4),
+          new FractionSym(-11, 5), new FractionSym(-11, 6), new FractionSym(-11, 7),
+          new FractionSym(-11, 8), new FractionSym(-11, 9), new FractionSym(-11, 10),
+          new FractionSym(-1, 1), new FractionSym(-11, 12), new FractionSym(-11, 13),
+          new FractionSym(-11, 14), new FractionSym(-11, 15), new FractionSym(-11, 16),
+          new FractionSym(-11, 17), new FractionSym(-11, 18), new FractionSym(-11, 19),
+          new FractionSym(-11, 20), new FractionSym(-11, 21), new FractionSym(-1, 2),
+          new FractionSym(-11, 23), new FractionSym(-11, 24), new FractionSym(-11, 25),
+          new FractionSym(-11, 26), new FractionSym(-11, 27), new FractionSym(-11, 28),
+          new FractionSym(-11, 29), new FractionSym(-11, 30), new FractionSym(-11, 31),
+          new FractionSym(-11, 32)}, //
+      {new FractionSym(-5, 1), new FractionSym(-10, 3), new FractionSym(-5, 2),
+          new FractionSym(-2, 1), new FractionSym(-5, 3), new FractionSym(-10, 7),
+          new FractionSym(-5, 4), new FractionSym(-10, 9), new FractionSym(-1, 1),
+          new FractionSym(-10, 11), new FractionSym(-5, 6), new FractionSym(-10, 13),
+          new FractionSym(-5, 7), new FractionSym(-2, 3), new FractionSym(-5, 8),
+          new FractionSym(-10, 17), new FractionSym(-5, 9), new FractionSym(-10, 19),
+          new FractionSym(-1, 2), new FractionSym(-10, 21), new FractionSym(-5, 11),
+          new FractionSym(-10, 23), new FractionSym(-5, 12), new FractionSym(-2, 5),
+          new FractionSym(-5, 13), new FractionSym(-10, 27), new FractionSym(-5, 14),
+          new FractionSym(-10, 29), new FractionSym(-1, 3), new FractionSym(-10, 31),
+          new FractionSym(-5, 16)}, //
+      {new FractionSym(-9, 2), new FractionSym(-3, 1), new FractionSym(-9, 4),
+          new FractionSym(-9, 5), new FractionSym(-3, 2), new FractionSym(-9, 7),
+          new FractionSym(-9, 8), new FractionSym(-1, 1), new FractionSym(-9, 10),
+          new FractionSym(-9, 11), new FractionSym(-3, 4), new FractionSym(-9, 13),
+          new FractionSym(-9, 14), new FractionSym(-3, 5), new FractionSym(-9, 16),
+          new FractionSym(-9, 17), new FractionSym(-1, 2), new FractionSym(-9, 19),
+          new FractionSym(-9, 20), new FractionSym(-3, 7), new FractionSym(-9, 22),
+          new FractionSym(-9, 23), new FractionSym(-3, 8), new FractionSym(-9, 25),
+          new FractionSym(-9, 26), new FractionSym(-1, 3), new FractionSym(-9, 28),
+          new FractionSym(-9, 29), new FractionSym(-3, 10), new FractionSym(-9, 31),
+          new FractionSym(-9, 32)}, //
+      {new FractionSym(-4, 1), new FractionSym(-8, 3), new FractionSym(-2, 1),
+          new FractionSym(-8, 5), new FractionSym(-4, 3), new FractionSym(-8, 7),
+          new FractionSym(-1, 1), new FractionSym(-8, 9), new FractionSym(-4, 5),
+          new FractionSym(-8, 11), new FractionSym(-2, 3), new FractionSym(-8, 13),
+          new FractionSym(-4, 7), new FractionSym(-8, 15), new FractionSym(-1, 2),
+          new FractionSym(-8, 17), new FractionSym(-4, 9), new FractionSym(-8, 19),
+          new FractionSym(-2, 5), new FractionSym(-8, 21), new FractionSym(-4, 11),
+          new FractionSym(-8, 23), new FractionSym(-1, 3), new FractionSym(-8, 25),
+          new FractionSym(-4, 13), new FractionSym(-8, 27), new FractionSym(-2, 7),
+          new FractionSym(-8, 29), new FractionSym(-4, 15), new FractionSym(-8, 31),
+          new FractionSym(-1, 4)}, //
+      {new FractionSym(-7, 2), new FractionSym(-7, 3), new FractionSym(-7, 4),
+          new FractionSym(-7, 5), new FractionSym(-7, 6), new FractionSym(-1, 1),
+          new FractionSym(-7, 8), new FractionSym(-7, 9), new FractionSym(-7, 10),
+          new FractionSym(-7, 11), new FractionSym(-7, 12), new FractionSym(-7, 13),
+          new FractionSym(-1, 2), new FractionSym(-7, 15), new FractionSym(-7, 16),
+          new FractionSym(-7, 17), new FractionSym(-7, 18), new FractionSym(-7, 19),
+          new FractionSym(-7, 20), new FractionSym(-1, 3), new FractionSym(-7, 22),
+          new FractionSym(-7, 23), new FractionSym(-7, 24), new FractionSym(-7, 25),
+          new FractionSym(-7, 26), new FractionSym(-7, 27), new FractionSym(-1, 4),
+          new FractionSym(-7, 29), new FractionSym(-7, 30), new FractionSym(-7, 31),
+          new FractionSym(-7, 32)}, //
+      {new FractionSym(-3, 1), new FractionSym(-2, 1), new FractionSym(-3, 2),
+          new FractionSym(-6, 5), new FractionSym(-1, 1), new FractionSym(-6, 7),
+          new FractionSym(-3, 4), new FractionSym(-2, 3), new FractionSym(-3, 5),
+          new FractionSym(-6, 11), new FractionSym(-1, 2), new FractionSym(-6, 13),
+          new FractionSym(-3, 7), new FractionSym(-2, 5), new FractionSym(-3, 8),
+          new FractionSym(-6, 17), new FractionSym(-1, 3), new FractionSym(-6, 19),
+          new FractionSym(-3, 10), new FractionSym(-2, 7), new FractionSym(-3, 11),
+          new FractionSym(-6, 23), new FractionSym(-1, 4), new FractionSym(-6, 25),
+          new FractionSym(-3, 13), new FractionSym(-2, 9), new FractionSym(-3, 14),
+          new FractionSym(-6, 29), new FractionSym(-1, 5), new FractionSym(-6, 31),
+          new FractionSym(-3, 16)}, //
+      {new FractionSym(-5, 2), new FractionSym(-5, 3), new FractionSym(-5, 4),
+          new FractionSym(-1, 1), new FractionSym(-5, 6), new FractionSym(-5, 7),
+          new FractionSym(-5, 8), new FractionSym(-5, 9), new FractionSym(-1, 2),
+          new FractionSym(-5, 11), new FractionSym(-5, 12), new FractionSym(-5, 13),
+          new FractionSym(-5, 14), new FractionSym(-1, 3), new FractionSym(-5, 16),
+          new FractionSym(-5, 17), new FractionSym(-5, 18), new FractionSym(-5, 19),
+          new FractionSym(-1, 4), new FractionSym(-5, 21), new FractionSym(-5, 22),
+          new FractionSym(-5, 23), new FractionSym(-5, 24), new FractionSym(-1, 5),
+          new FractionSym(-5, 26), new FractionSym(-5, 27), new FractionSym(-5, 28),
+          new FractionSym(-5, 29), new FractionSym(-1, 6), new FractionSym(-5, 31),
+          new FractionSym(-5, 32)}, //
+      {new FractionSym(-2, 1), new FractionSym(-4, 3), new FractionSym(-1, 1),
+          new FractionSym(-4, 5), new FractionSym(-2, 3), new FractionSym(-4, 7),
+          new FractionSym(-1, 2), new FractionSym(-4, 9), new FractionSym(-2, 5),
+          new FractionSym(-4, 11), new FractionSym(-1, 3), new FractionSym(-4, 13),
+          new FractionSym(-2, 7), new FractionSym(-4, 15), new FractionSym(-1, 4),
+          new FractionSym(-4, 17), new FractionSym(-2, 9), new FractionSym(-4, 19),
+          new FractionSym(-1, 5), new FractionSym(-4, 21), new FractionSym(-2, 11),
+          new FractionSym(-4, 23), new FractionSym(-1, 6), new FractionSym(-4, 25),
+          new FractionSym(-2, 13), new FractionSym(-4, 27), new FractionSym(-1, 7),
+          new FractionSym(-4, 29), new FractionSym(-2, 15), new FractionSym(-4, 31),
+          new FractionSym(-1, 8)}, //
+      {new FractionSym(-3, 2), new FractionSym(-1, 1), new FractionSym(-3, 4),
+          new FractionSym(-3, 5), new FractionSym(-1, 2), new FractionSym(-3, 7),
+          new FractionSym(-3, 8), new FractionSym(-1, 3), new FractionSym(-3, 10),
+          new FractionSym(-3, 11), new FractionSym(-1, 4), new FractionSym(-3, 13),
+          new FractionSym(-3, 14), new FractionSym(-1, 5), new FractionSym(-3, 16),
+          new FractionSym(-3, 17), new FractionSym(-1, 6), new FractionSym(-3, 19),
+          new FractionSym(-3, 20), new FractionSym(-1, 7), new FractionSym(-3, 22),
+          new FractionSym(-3, 23), new FractionSym(-1, 8), new FractionSym(-3, 25),
+          new FractionSym(-3, 26), new FractionSym(-1, 9), new FractionSym(-3, 28),
+          new FractionSym(-3, 29), new FractionSym(-1, 10), new FractionSym(-3, 31),
+          new FractionSym(-3, 32)}, //
+      {new FractionSym(-1, 1), new FractionSym(-2, 3), new FractionSym(-1, 2),
+          new FractionSym(-2, 5), new FractionSym(-1, 3), new FractionSym(-2, 7),
+          new FractionSym(-1, 4), new FractionSym(-2, 9), new FractionSym(-1, 5),
+          new FractionSym(-2, 11), new FractionSym(-1, 6), new FractionSym(-2, 13),
+          new FractionSym(-1, 7), new FractionSym(-2, 15), new FractionSym(-1, 8),
+          new FractionSym(-2, 17), new FractionSym(-1, 9), new FractionSym(-2, 19),
+          new FractionSym(-1, 10), new FractionSym(-2, 21), new FractionSym(-1, 11),
+          new FractionSym(-2, 23), new FractionSym(-1, 12), new FractionSym(-2, 25),
+          new FractionSym(-1, 13), new FractionSym(-2, 27), new FractionSym(-1, 14),
+          new FractionSym(-2, 29), new FractionSym(-1, 15), new FractionSym(-2, 31),
+          new FractionSym(-1, 16)}, //
+      {new FractionSym(-1, 2), new FractionSym(-1, 3), new FractionSym(-1, 4),
+          new FractionSym(-1, 5), new FractionSym(-1, 6), new FractionSym(-1, 7),
+          new FractionSym(-1, 8), new FractionSym(-1, 9), new FractionSym(-1, 10),
+          new FractionSym(-1, 11), new FractionSym(-1, 12), new FractionSym(-1, 13),
+          new FractionSym(-1, 14), new FractionSym(-1, 15), new FractionSym(-1, 16),
+          new FractionSym(-1, 17), new FractionSym(-1, 18), new FractionSym(-1, 19),
+          new FractionSym(-1, 20), new FractionSym(-1, 21), new FractionSym(-1, 22),
+          new FractionSym(-1, 23), new FractionSym(-1, 24), new FractionSym(-1, 25),
+          new FractionSym(-1, 26), new FractionSym(-1, 27), new FractionSym(-1, 28),
+          new FractionSym(-1, 29), new FractionSym(-1, 30), new FractionSym(-1, 31),
+          new FractionSym(-1, 32)}, //
+      {new FractionSym(0, 1), new FractionSym(0, 1), new FractionSym(0, 1), new FractionSym(0, 1),
+          new FractionSym(0, 1), new FractionSym(0, 1), new FractionSym(0, 1),
+          new FractionSym(0, 1), new FractionSym(0, 1), new FractionSym(0, 1),
+          new FractionSym(0, 1), new FractionSym(0, 1), new FractionSym(0, 1),
+          new FractionSym(0, 1), new FractionSym(0, 1), new FractionSym(0, 1),
+          new FractionSym(0, 1), new FractionSym(0, 1), new FractionSym(0, 1),
+          new FractionSym(0, 1), new FractionSym(0, 1), new FractionSym(0, 1),
+          new FractionSym(0, 1), new FractionSym(0, 1), new FractionSym(0, 1),
+          new FractionSym(0, 1), new FractionSym(0, 1), new FractionSym(0, 1),
+          new FractionSym(0, 1), new FractionSym(0, 1), new FractionSym(0, 1)}, //
+      {new FractionSym(1, 2), new FractionSym(1, 3), new FractionSym(1, 4), new FractionSym(1, 5),
+          new FractionSym(1, 6), new FractionSym(1, 7), new FractionSym(1, 8),
+          new FractionSym(1, 9), new FractionSym(1, 10), new FractionSym(1, 11),
+          new FractionSym(1, 12), new FractionSym(1, 13), new FractionSym(1, 14),
+          new FractionSym(1, 15), new FractionSym(1, 16), new FractionSym(1, 17),
+          new FractionSym(1, 18), new FractionSym(1, 19), new FractionSym(1, 20),
+          new FractionSym(1, 21), new FractionSym(1, 22), new FractionSym(1, 23),
+          new FractionSym(1, 24), new FractionSym(1, 25), new FractionSym(1, 26),
+          new FractionSym(1, 27), new FractionSym(1, 28), new FractionSym(1, 29),
+          new FractionSym(1, 30), new FractionSym(1, 31), new FractionSym(1, 32)}, //
+      {new FractionSym(1, 1), new FractionSym(2, 3), new FractionSym(1, 2), new FractionSym(2, 5),
+          new FractionSym(1, 3), new FractionSym(2, 7), new FractionSym(1, 4),
+          new FractionSym(2, 9), new FractionSym(1, 5), new FractionSym(2, 11),
+          new FractionSym(1, 6), new FractionSym(2, 13), new FractionSym(1, 7),
+          new FractionSym(2, 15), new FractionSym(1, 8), new FractionSym(2, 17),
+          new FractionSym(1, 9), new FractionSym(2, 19), new FractionSym(1, 10),
+          new FractionSym(2, 21), new FractionSym(1, 11), new FractionSym(2, 23),
+          new FractionSym(1, 12), new FractionSym(2, 25), new FractionSym(1, 13),
+          new FractionSym(2, 27), new FractionSym(1, 14), new FractionSym(2, 29),
+          new FractionSym(1, 15), new FractionSym(2, 31), new FractionSym(1, 16)}, //
+      {new FractionSym(3, 2), new FractionSym(1, 1), new FractionSym(3, 4), new FractionSym(3, 5),
+          new FractionSym(1, 2), new FractionSym(3, 7), new FractionSym(3, 8),
+          new FractionSym(1, 3), new FractionSym(3, 10), new FractionSym(3, 11),
+          new FractionSym(1, 4), new FractionSym(3, 13), new FractionSym(3, 14),
+          new FractionSym(1, 5), new FractionSym(3, 16), new FractionSym(3, 17),
+          new FractionSym(1, 6), new FractionSym(3, 19), new FractionSym(3, 20),
+          new FractionSym(1, 7), new FractionSym(3, 22), new FractionSym(3, 23),
+          new FractionSym(1, 8), new FractionSym(3, 25), new FractionSym(3, 26),
+          new FractionSym(1, 9), new FractionSym(3, 28), new FractionSym(3, 29),
+          new FractionSym(1, 10), new FractionSym(3, 31), new FractionSym(3, 32)}, //
+      {new FractionSym(2, 1), new FractionSym(4, 3), new FractionSym(1, 1), new FractionSym(4, 5),
+          new FractionSym(2, 3), new FractionSym(4, 7), new FractionSym(1, 2),
+          new FractionSym(4, 9), new FractionSym(2, 5), new FractionSym(4, 11),
+          new FractionSym(1, 3), new FractionSym(4, 13), new FractionSym(2, 7),
+          new FractionSym(4, 15), new FractionSym(1, 4), new FractionSym(4, 17),
+          new FractionSym(2, 9), new FractionSym(4, 19), new FractionSym(1, 5),
+          new FractionSym(4, 21), new FractionSym(2, 11), new FractionSym(4, 23),
+          new FractionSym(1, 6), new FractionSym(4, 25), new FractionSym(2, 13),
+          new FractionSym(4, 27), new FractionSym(1, 7), new FractionSym(4, 29),
+          new FractionSym(2, 15), new FractionSym(4, 31), new FractionSym(1, 8)}, //
+      {new FractionSym(5, 2), new FractionSym(5, 3), new FractionSym(5, 4), new FractionSym(1, 1),
+          new FractionSym(5, 6), new FractionSym(5, 7), new FractionSym(5, 8),
+          new FractionSym(5, 9), new FractionSym(1, 2), new FractionSym(5, 11),
+          new FractionSym(5, 12), new FractionSym(5, 13), new FractionSym(5, 14),
+          new FractionSym(1, 3), new FractionSym(5, 16), new FractionSym(5, 17),
+          new FractionSym(5, 18), new FractionSym(5, 19), new FractionSym(1, 4),
+          new FractionSym(5, 21), new FractionSym(5, 22), new FractionSym(5, 23),
+          new FractionSym(5, 24), new FractionSym(1, 5), new FractionSym(5, 26),
+          new FractionSym(5, 27), new FractionSym(5, 28), new FractionSym(5, 29),
+          new FractionSym(1, 6), new FractionSym(5, 31), new FractionSym(5, 32)}, //
+      {new FractionSym(3, 1), new FractionSym(2, 1), new FractionSym(3, 2), new FractionSym(6, 5),
+          new FractionSym(1, 1), new FractionSym(6, 7), new FractionSym(3, 4),
+          new FractionSym(2, 3), new FractionSym(3, 5), new FractionSym(6, 11),
+          new FractionSym(1, 2), new FractionSym(6, 13), new FractionSym(3, 7),
+          new FractionSym(2, 5), new FractionSym(3, 8), new FractionSym(6, 17),
+          new FractionSym(1, 3), new FractionSym(6, 19), new FractionSym(3, 10),
+          new FractionSym(2, 7), new FractionSym(3, 11), new FractionSym(6, 23),
+          new FractionSym(1, 4), new FractionSym(6, 25), new FractionSym(3, 13),
+          new FractionSym(2, 9), new FractionSym(3, 14), new FractionSym(6, 29),
+          new FractionSym(1, 5), new FractionSym(6, 31), new FractionSym(3, 16)}, //
+      {new FractionSym(7, 2), new FractionSym(7, 3), new FractionSym(7, 4), new FractionSym(7, 5),
+          new FractionSym(7, 6), new FractionSym(1, 1), new FractionSym(7, 8),
+          new FractionSym(7, 9), new FractionSym(7, 10), new FractionSym(7, 11),
+          new FractionSym(7, 12), new FractionSym(7, 13), new FractionSym(1, 2),
+          new FractionSym(7, 15), new FractionSym(7, 16), new FractionSym(7, 17),
+          new FractionSym(7, 18), new FractionSym(7, 19), new FractionSym(7, 20),
+          new FractionSym(1, 3), new FractionSym(7, 22), new FractionSym(7, 23),
+          new FractionSym(7, 24), new FractionSym(7, 25), new FractionSym(7, 26),
+          new FractionSym(7, 27), new FractionSym(1, 4), new FractionSym(7, 29),
+          new FractionSym(7, 30), new FractionSym(7, 31), new FractionSym(7, 32)}, //
+      {new FractionSym(4, 1), new FractionSym(8, 3), new FractionSym(2, 1), new FractionSym(8, 5),
+          new FractionSym(4, 3), new FractionSym(8, 7), new FractionSym(1, 1),
+          new FractionSym(8, 9), new FractionSym(4, 5), new FractionSym(8, 11),
+          new FractionSym(2, 3), new FractionSym(8, 13), new FractionSym(4, 7),
+          new FractionSym(8, 15), new FractionSym(1, 2), new FractionSym(8, 17),
+          new FractionSym(4, 9), new FractionSym(8, 19), new FractionSym(2, 5),
+          new FractionSym(8, 21), new FractionSym(4, 11), new FractionSym(8, 23),
+          new FractionSym(1, 3), new FractionSym(8, 25), new FractionSym(4, 13),
+          new FractionSym(8, 27), new FractionSym(2, 7), new FractionSym(8, 29),
+          new FractionSym(4, 15), new FractionSym(8, 31), new FractionSym(1, 4)}, //
+      {new FractionSym(9, 2), new FractionSym(3, 1), new FractionSym(9, 4), new FractionSym(9, 5),
+          new FractionSym(3, 2), new FractionSym(9, 7), new FractionSym(9, 8),
+          new FractionSym(1, 1), new FractionSym(9, 10), new FractionSym(9, 11),
+          new FractionSym(3, 4), new FractionSym(9, 13), new FractionSym(9, 14),
+          new FractionSym(3, 5), new FractionSym(9, 16), new FractionSym(9, 17),
+          new FractionSym(1, 2), new FractionSym(9, 19), new FractionSym(9, 20),
+          new FractionSym(3, 7), new FractionSym(9, 22), new FractionSym(9, 23),
+          new FractionSym(3, 8), new FractionSym(9, 25), new FractionSym(9, 26),
+          new FractionSym(1, 3), new FractionSym(9, 28), new FractionSym(9, 29),
+          new FractionSym(3, 10), new FractionSym(9, 31), new FractionSym(9, 32)}, //
+      {new FractionSym(5, 1), new FractionSym(10, 3), new FractionSym(5, 2), new FractionSym(2, 1),
+          new FractionSym(5, 3), new FractionSym(10, 7), new FractionSym(5, 4),
+          new FractionSym(10, 9), new FractionSym(1, 1), new FractionSym(10, 11),
+          new FractionSym(5, 6), new FractionSym(10, 13), new FractionSym(5, 7),
+          new FractionSym(2, 3), new FractionSym(5, 8), new FractionSym(10, 17),
+          new FractionSym(5, 9), new FractionSym(10, 19), new FractionSym(1, 2),
+          new FractionSym(10, 21), new FractionSym(5, 11), new FractionSym(10, 23),
+          new FractionSym(5, 12), new FractionSym(2, 5), new FractionSym(5, 13),
+          new FractionSym(10, 27), new FractionSym(5, 14), new FractionSym(10, 29),
+          new FractionSym(1, 3), new FractionSym(10, 31), new FractionSym(5, 16)}, //
+      {new FractionSym(11, 2), new FractionSym(11, 3), new FractionSym(11, 4),
+          new FractionSym(11, 5), new FractionSym(11, 6), new FractionSym(11, 7),
+          new FractionSym(11, 8), new FractionSym(11, 9), new FractionSym(11, 10),
+          new FractionSym(1, 1), new FractionSym(11, 12), new FractionSym(11, 13),
+          new FractionSym(11, 14), new FractionSym(11, 15), new FractionSym(11, 16),
+          new FractionSym(11, 17), new FractionSym(11, 18), new FractionSym(11, 19),
+          new FractionSym(11, 20), new FractionSym(11, 21), new FractionSym(1, 2),
+          new FractionSym(11, 23), new FractionSym(11, 24), new FractionSym(11, 25),
+          new FractionSym(11, 26), new FractionSym(11, 27), new FractionSym(11, 28),
+          new FractionSym(11, 29), new FractionSym(11, 30), new FractionSym(11, 31),
+          new FractionSym(11, 32)}, //
+      {new FractionSym(6, 1), new FractionSym(4, 1), new FractionSym(3, 1), new FractionSym(12, 5),
+          new FractionSym(2, 1), new FractionSym(12, 7), new FractionSym(3, 2),
+          new FractionSym(4, 3), new FractionSym(6, 5), new FractionSym(12, 11),
+          new FractionSym(1, 1), new FractionSym(12, 13), new FractionSym(6, 7),
+          new FractionSym(4, 5), new FractionSym(3, 4), new FractionSym(12, 17),
+          new FractionSym(2, 3), new FractionSym(12, 19), new FractionSym(3, 5),
+          new FractionSym(4, 7), new FractionSym(6, 11), new FractionSym(12, 23),
+          new FractionSym(1, 2), new FractionSym(12, 25), new FractionSym(6, 13),
+          new FractionSym(4, 9), new FractionSym(3, 7), new FractionSym(12, 29),
+          new FractionSym(2, 5), new FractionSym(12, 31), new FractionSym(3, 8)}, //
+      {new FractionSym(13, 2), new FractionSym(13, 3), new FractionSym(13, 4),
+          new FractionSym(13, 5), new FractionSym(13, 6), new FractionSym(13, 7),
+          new FractionSym(13, 8), new FractionSym(13, 9), new FractionSym(13, 10),
+          new FractionSym(13, 11), new FractionSym(13, 12), new FractionSym(1, 1),
+          new FractionSym(13, 14), new FractionSym(13, 15), new FractionSym(13, 16),
+          new FractionSym(13, 17), new FractionSym(13, 18), new FractionSym(13, 19),
+          new FractionSym(13, 20), new FractionSym(13, 21), new FractionSym(13, 22),
+          new FractionSym(13, 23), new FractionSym(13, 24), new FractionSym(13, 25),
+          new FractionSym(1, 2), new FractionSym(13, 27), new FractionSym(13, 28),
+          new FractionSym(13, 29), new FractionSym(13, 30), new FractionSym(13, 31),
+          new FractionSym(13, 32)}, //
+      {new FractionSym(7, 1), new FractionSym(14, 3), new FractionSym(7, 2), new FractionSym(14, 5),
+          new FractionSym(7, 3), new FractionSym(2, 1), new FractionSym(7, 4),
+          new FractionSym(14, 9), new FractionSym(7, 5), new FractionSym(14, 11),
+          new FractionSym(7, 6), new FractionSym(14, 13), new FractionSym(1, 1),
+          new FractionSym(14, 15), new FractionSym(7, 8), new FractionSym(14, 17),
+          new FractionSym(7, 9), new FractionSym(14, 19), new FractionSym(7, 10),
+          new FractionSym(2, 3), new FractionSym(7, 11), new FractionSym(14, 23),
+          new FractionSym(7, 12), new FractionSym(14, 25), new FractionSym(7, 13),
+          new FractionSym(14, 27), new FractionSym(1, 2), new FractionSym(14, 29),
+          new FractionSym(7, 15), new FractionSym(14, 31), new FractionSym(7, 16)}, //
+      {new FractionSym(15, 2), new FractionSym(5, 1), new FractionSym(15, 4), new FractionSym(3, 1),
+          new FractionSym(5, 2), new FractionSym(15, 7), new FractionSym(15, 8),
+          new FractionSym(5, 3), new FractionSym(3, 2), new FractionSym(15, 11),
+          new FractionSym(5, 4), new FractionSym(15, 13), new FractionSym(15, 14),
+          new FractionSym(1, 1), new FractionSym(15, 16), new FractionSym(15, 17),
+          new FractionSym(5, 6), new FractionSym(15, 19), new FractionSym(3, 4),
+          new FractionSym(5, 7), new FractionSym(15, 22), new FractionSym(15, 23),
+          new FractionSym(5, 8), new FractionSym(3, 5), new FractionSym(15, 26),
+          new FractionSym(5, 9), new FractionSym(15, 28), new FractionSym(15, 29),
+          new FractionSym(1, 2), new FractionSym(15, 31), new FractionSym(15, 32)}, //
+      {new FractionSym(8, 1), new FractionSym(16, 3), new FractionSym(4, 1), new FractionSym(16, 5),
+          new FractionSym(8, 3), new FractionSym(16, 7), new FractionSym(2, 1),
+          new FractionSym(16, 9), new FractionSym(8, 5), new FractionSym(16, 11),
+          new FractionSym(4, 3), new FractionSym(16, 13), new FractionSym(8, 7),
+          new FractionSym(16, 15), new FractionSym(1, 1), new FractionSym(16, 17),
+          new FractionSym(8, 9), new FractionSym(16, 19), new FractionSym(4, 5),
+          new FractionSym(16, 21), new FractionSym(8, 11), new FractionSym(16, 23),
+          new FractionSym(2, 3), new FractionSym(16, 25), new FractionSym(8, 13),
+          new FractionSym(16, 27), new FractionSym(4, 7), new FractionSym(16, 29),
+          new FractionSym(8, 15), new FractionSym(16, 31), new FractionSym(1, 2)}, //
+      {new FractionSym(17, 2), new FractionSym(17, 3), new FractionSym(17, 4),
+          new FractionSym(17, 5), new FractionSym(17, 6), new FractionSym(17, 7),
+          new FractionSym(17, 8), new FractionSym(17, 9), new FractionSym(17, 10),
+          new FractionSym(17, 11), new FractionSym(17, 12), new FractionSym(17, 13),
+          new FractionSym(17, 14), new FractionSym(17, 15), new FractionSym(17, 16),
+          new FractionSym(1, 1), new FractionSym(17, 18), new FractionSym(17, 19),
+          new FractionSym(17, 20), new FractionSym(17, 21), new FractionSym(17, 22),
+          new FractionSym(17, 23), new FractionSym(17, 24), new FractionSym(17, 25),
+          new FractionSym(17, 26), new FractionSym(17, 27), new FractionSym(17, 28),
+          new FractionSym(17, 29), new FractionSym(17, 30), new FractionSym(17, 31),
+          new FractionSym(17, 32)}, //
+      {new FractionSym(9, 1), new FractionSym(6, 1), new FractionSym(9, 2), new FractionSym(18, 5),
+          new FractionSym(3, 1), new FractionSym(18, 7), new FractionSym(9, 4),
+          new FractionSym(2, 1), new FractionSym(9, 5), new FractionSym(18, 11),
+          new FractionSym(3, 2), new FractionSym(18, 13), new FractionSym(9, 7),
+          new FractionSym(6, 5), new FractionSym(9, 8), new FractionSym(18, 17),
+          new FractionSym(1, 1), new FractionSym(18, 19), new FractionSym(9, 10),
+          new FractionSym(6, 7), new FractionSym(9, 11), new FractionSym(18, 23),
+          new FractionSym(3, 4), new FractionSym(18, 25), new FractionSym(9, 13),
+          new FractionSym(2, 3), new FractionSym(9, 14), new FractionSym(18, 29),
+          new FractionSym(3, 5), new FractionSym(18, 31), new FractionSym(9, 16)}, //
+      {new FractionSym(19, 2), new FractionSym(19, 3), new FractionSym(19, 4),
+          new FractionSym(19, 5), new FractionSym(19, 6), new FractionSym(19, 7),
+          new FractionSym(19, 8), new FractionSym(19, 9), new FractionSym(19, 10),
+          new FractionSym(19, 11), new FractionSym(19, 12), new FractionSym(19, 13),
+          new FractionSym(19, 14), new FractionSym(19, 15), new FractionSym(19, 16),
+          new FractionSym(19, 17), new FractionSym(19, 18), new FractionSym(1, 1),
+          new FractionSym(19, 20), new FractionSym(19, 21), new FractionSym(19, 22),
+          new FractionSym(19, 23), new FractionSym(19, 24), new FractionSym(19, 25),
+          new FractionSym(19, 26), new FractionSym(19, 27), new FractionSym(19, 28),
+          new FractionSym(19, 29), new FractionSym(19, 30), new FractionSym(19, 31),
+          new FractionSym(19, 32)}, //
+      {new FractionSym(10, 1), new FractionSym(20, 3), new FractionSym(5, 1), new FractionSym(4, 1),
+          new FractionSym(10, 3), new FractionSym(20, 7), new FractionSym(5, 2),
+          new FractionSym(20, 9), new FractionSym(2, 1), new FractionSym(20, 11),
+          new FractionSym(5, 3), new FractionSym(20, 13), new FractionSym(10, 7),
+          new FractionSym(4, 3), new FractionSym(5, 4), new FractionSym(20, 17),
+          new FractionSym(10, 9), new FractionSym(20, 19), new FractionSym(1, 1),
+          new FractionSym(20, 21), new FractionSym(10, 11), new FractionSym(20, 23),
+          new FractionSym(5, 6), new FractionSym(4, 5), new FractionSym(10, 13),
+          new FractionSym(20, 27), new FractionSym(5, 7), new FractionSym(20, 29),
+          new FractionSym(2, 3), new FractionSym(20, 31), new FractionSym(5, 8)}, //
+      {new FractionSym(21, 2), new FractionSym(7, 1), new FractionSym(21, 4),
+          new FractionSym(21, 5), new FractionSym(7, 2), new FractionSym(3, 1),
+          new FractionSym(21, 8), new FractionSym(7, 3), new FractionSym(21, 10),
+          new FractionSym(21, 11), new FractionSym(7, 4), new FractionSym(21, 13),
+          new FractionSym(3, 2), new FractionSym(7, 5), new FractionSym(21, 16),
+          new FractionSym(21, 17), new FractionSym(7, 6), new FractionSym(21, 19),
+          new FractionSym(21, 20), new FractionSym(1, 1), new FractionSym(21, 22),
+          new FractionSym(21, 23), new FractionSym(7, 8), new FractionSym(21, 25),
+          new FractionSym(21, 26), new FractionSym(7, 9), new FractionSym(3, 4),
+          new FractionSym(21, 29), new FractionSym(7, 10), new FractionSym(21, 31),
+          new FractionSym(21, 32)}, //
+      {new FractionSym(11, 1), new FractionSym(22, 3), new FractionSym(11, 2),
+          new FractionSym(22, 5), new FractionSym(11, 3), new FractionSym(22, 7),
+          new FractionSym(11, 4), new FractionSym(22, 9), new FractionSym(11, 5),
+          new FractionSym(2, 1), new FractionSym(11, 6), new FractionSym(22, 13),
+          new FractionSym(11, 7), new FractionSym(22, 15), new FractionSym(11, 8),
+          new FractionSym(22, 17), new FractionSym(11, 9), new FractionSym(22, 19),
+          new FractionSym(11, 10), new FractionSym(22, 21), new FractionSym(1, 1),
+          new FractionSym(22, 23), new FractionSym(11, 12), new FractionSym(22, 25),
+          new FractionSym(11, 13), new FractionSym(22, 27), new FractionSym(11, 14),
+          new FractionSym(22, 29), new FractionSym(11, 15), new FractionSym(22, 31),
+          new FractionSym(11, 16)}, //
+      {new FractionSym(23, 2), new FractionSym(23, 3), new FractionSym(23, 4),
+          new FractionSym(23, 5), new FractionSym(23, 6), new FractionSym(23, 7),
+          new FractionSym(23, 8), new FractionSym(23, 9), new FractionSym(23, 10),
+          new FractionSym(23, 11), new FractionSym(23, 12), new FractionSym(23, 13),
+          new FractionSym(23, 14), new FractionSym(23, 15), new FractionSym(23, 16),
+          new FractionSym(23, 17), new FractionSym(23, 18), new FractionSym(23, 19),
+          new FractionSym(23, 20), new FractionSym(23, 21), new FractionSym(23, 22),
+          new FractionSym(1, 1), new FractionSym(23, 24), new FractionSym(23, 25),
+          new FractionSym(23, 26), new FractionSym(23, 27), new FractionSym(23, 28),
+          new FractionSym(23, 29), new FractionSym(23, 30), new FractionSym(23, 31),
+          new FractionSym(23, 32)}, //
+      {new FractionSym(12, 1), new FractionSym(8, 1), new FractionSym(6, 1), new FractionSym(24, 5),
+          new FractionSym(4, 1), new FractionSym(24, 7), new FractionSym(3, 1),
+          new FractionSym(8, 3), new FractionSym(12, 5), new FractionSym(24, 11),
+          new FractionSym(2, 1), new FractionSym(24, 13), new FractionSym(12, 7),
+          new FractionSym(8, 5), new FractionSym(3, 2), new FractionSym(24, 17),
+          new FractionSym(4, 3), new FractionSym(24, 19), new FractionSym(6, 5),
+          new FractionSym(8, 7), new FractionSym(12, 11), new FractionSym(24, 23),
+          new FractionSym(1, 1), new FractionSym(24, 25), new FractionSym(12, 13),
+          new FractionSym(8, 9), new FractionSym(6, 7), new FractionSym(24, 29),
+          new FractionSym(4, 5), new FractionSym(24, 31), new FractionSym(3, 4)}, //
+      {new FractionSym(25, 2), new FractionSym(25, 3), new FractionSym(25, 4),
+          new FractionSym(5, 1), new FractionSym(25, 6), new FractionSym(25, 7),
+          new FractionSym(25, 8), new FractionSym(25, 9), new FractionSym(5, 2),
+          new FractionSym(25, 11), new FractionSym(25, 12), new FractionSym(25, 13),
+          new FractionSym(25, 14), new FractionSym(5, 3), new FractionSym(25, 16),
+          new FractionSym(25, 17), new FractionSym(25, 18), new FractionSym(25, 19),
+          new FractionSym(5, 4), new FractionSym(25, 21), new FractionSym(25, 22),
+          new FractionSym(25, 23), new FractionSym(25, 24), new FractionSym(1, 1),
+          new FractionSym(25, 26), new FractionSym(25, 27), new FractionSym(25, 28),
+          new FractionSym(25, 29), new FractionSym(5, 6), new FractionSym(25, 31),
+          new FractionSym(25, 32)}, //
+      {new FractionSym(13, 1), new FractionSym(26, 3), new FractionSym(13, 2),
+          new FractionSym(26, 5), new FractionSym(13, 3), new FractionSym(26, 7),
+          new FractionSym(13, 4), new FractionSym(26, 9), new FractionSym(13, 5),
+          new FractionSym(26, 11), new FractionSym(13, 6), new FractionSym(2, 1),
+          new FractionSym(13, 7), new FractionSym(26, 15), new FractionSym(13, 8),
+          new FractionSym(26, 17), new FractionSym(13, 9), new FractionSym(26, 19),
+          new FractionSym(13, 10), new FractionSym(26, 21), new FractionSym(13, 11),
+          new FractionSym(26, 23), new FractionSym(13, 12), new FractionSym(26, 25),
+          new FractionSym(1, 1), new FractionSym(26, 27), new FractionSym(13, 14),
+          new FractionSym(26, 29), new FractionSym(13, 15), new FractionSym(26, 31),
+          new FractionSym(13, 16)}, //
+      {new FractionSym(27, 2), new FractionSym(9, 1), new FractionSym(27, 4),
+          new FractionSym(27, 5), new FractionSym(9, 2), new FractionSym(27, 7),
+          new FractionSym(27, 8), new FractionSym(3, 1), new FractionSym(27, 10),
+          new FractionSym(27, 11), new FractionSym(9, 4), new FractionSym(27, 13),
+          new FractionSym(27, 14), new FractionSym(9, 5), new FractionSym(27, 16),
+          new FractionSym(27, 17), new FractionSym(3, 2), new FractionSym(27, 19),
+          new FractionSym(27, 20), new FractionSym(9, 7), new FractionSym(27, 22),
+          new FractionSym(27, 23), new FractionSym(9, 8), new FractionSym(27, 25),
+          new FractionSym(27, 26), new FractionSym(1, 1), new FractionSym(27, 28),
+          new FractionSym(27, 29), new FractionSym(9, 10), new FractionSym(27, 31),
+          new FractionSym(27, 32)}, //
+      {new FractionSym(14, 1), new FractionSym(28, 3), new FractionSym(7, 1),
+          new FractionSym(28, 5), new FractionSym(14, 3), new FractionSym(4, 1),
+          new FractionSym(7, 2), new FractionSym(28, 9), new FractionSym(14, 5),
+          new FractionSym(28, 11), new FractionSym(7, 3), new FractionSym(28, 13),
+          new FractionSym(2, 1), new FractionSym(28, 15), new FractionSym(7, 4),
+          new FractionSym(28, 17), new FractionSym(14, 9), new FractionSym(28, 19),
+          new FractionSym(7, 5), new FractionSym(4, 3), new FractionSym(14, 11),
+          new FractionSym(28, 23), new FractionSym(7, 6), new FractionSym(28, 25),
+          new FractionSym(14, 13), new FractionSym(28, 27), new FractionSym(1, 1),
+          new FractionSym(28, 29), new FractionSym(14, 15), new FractionSym(28, 31),
+          new FractionSym(7, 8)}, //
+      {new FractionSym(29, 2), new FractionSym(29, 3), new FractionSym(29, 4),
+          new FractionSym(29, 5), new FractionSym(29, 6), new FractionSym(29, 7),
+          new FractionSym(29, 8), new FractionSym(29, 9), new FractionSym(29, 10),
+          new FractionSym(29, 11), new FractionSym(29, 12), new FractionSym(29, 13),
+          new FractionSym(29, 14), new FractionSym(29, 15), new FractionSym(29, 16),
+          new FractionSym(29, 17), new FractionSym(29, 18), new FractionSym(29, 19),
+          new FractionSym(29, 20), new FractionSym(29, 21), new FractionSym(29, 22),
+          new FractionSym(29, 23), new FractionSym(29, 24), new FractionSym(29, 25),
+          new FractionSym(29, 26), new FractionSym(29, 27), new FractionSym(29, 28),
+          new FractionSym(1, 1), new FractionSym(29, 30), new FractionSym(29, 31),
+          new FractionSym(29, 32)}, //
+      {new FractionSym(15, 1), new FractionSym(10, 1), new FractionSym(15, 2),
+          new FractionSym(6, 1), new FractionSym(5, 1), new FractionSym(30, 7),
+          new FractionSym(15, 4), new FractionSym(10, 3), new FractionSym(3, 1),
+          new FractionSym(30, 11), new FractionSym(5, 2), new FractionSym(30, 13),
+          new FractionSym(15, 7), new FractionSym(2, 1), new FractionSym(15, 8),
+          new FractionSym(30, 17), new FractionSym(5, 3), new FractionSym(30, 19),
+          new FractionSym(3, 2), new FractionSym(10, 7), new FractionSym(15, 11),
+          new FractionSym(30, 23), new FractionSym(5, 4), new FractionSym(6, 5),
+          new FractionSym(15, 13), new FractionSym(10, 9), new FractionSym(15, 14),
+          new FractionSym(30, 29), new FractionSym(1, 1), new FractionSym(30, 31),
+          new FractionSym(15, 16)}, //
+      {new FractionSym(31, 2), new FractionSym(31, 3), new FractionSym(31, 4),
+          new FractionSym(31, 5), new FractionSym(31, 6), new FractionSym(31, 7),
+          new FractionSym(31, 8), new FractionSym(31, 9), new FractionSym(31, 10),
+          new FractionSym(31, 11), new FractionSym(31, 12), new FractionSym(31, 13),
+          new FractionSym(31, 14), new FractionSym(31, 15), new FractionSym(31, 16),
+          new FractionSym(31, 17), new FractionSym(31, 18), new FractionSym(31, 19),
+          new FractionSym(31, 20), new FractionSym(31, 21), new FractionSym(31, 22),
+          new FractionSym(31, 23), new FractionSym(31, 24), new FractionSym(31, 25),
+          new FractionSym(31, 26), new FractionSym(31, 27), new FractionSym(31, 28),
+          new FractionSym(31, 29), new FractionSym(31, 30), new FractionSym(1, 1),
+          new FractionSym(31, 32)}, //
+      {new FractionSym(16, 1), new FractionSym(32, 3), new FractionSym(8, 1),
+          new FractionSym(32, 5), new FractionSym(16, 3), new FractionSym(32, 7),
+          new FractionSym(4, 1), new FractionSym(32, 9), new FractionSym(16, 5),
+          new FractionSym(32, 11), new FractionSym(8, 3), new FractionSym(32, 13),
+          new FractionSym(16, 7), new FractionSym(32, 15), new FractionSym(2, 1),
+          new FractionSym(32, 17), new FractionSym(16, 9), new FractionSym(32, 19),
+          new FractionSym(8, 5), new FractionSym(32, 21), new FractionSym(16, 11),
+          new FractionSym(32, 23), new FractionSym(4, 3), new FractionSym(32, 25),
+          new FractionSym(16, 13), new FractionSym(32, 27), new FractionSym(8, 7),
+          new FractionSym(32, 29), new FractionSym(16, 15), new FractionSym(32, 31),
+          new FractionSym(1, 1)} //
+  };
+
+  // static {
+  // printCacheSource();
+  // }
+
+  /**
+   * Returns the last element of the series of convergent-steps to approximate the given value.
+   * 
+   * @param value value to approximate
+   * @param maxConvergents maximum number of convergents to examine
+   * @param limit
+   * @return the fraction of last element of the series of convergents and a boolean if that element
+   *         satisfies the specified convergent test
+   */
+  private static IFraction convergeFraction(double value, int maxConvergents, double limit) {
+    return rationalize(value, v -> {
+      org.hipparchus.util.Pair<BigFraction, Boolean> convergent = BigFraction.convergent(v,
+          maxConvergents, (p, q) -> FastMath.abs(p * q - v * q * q) <= limit);
+      return convergent.getSecond().booleanValue() ? convergent.getFirst() : null;
+    });
+  }
+
+  private static IFraction fractionOf(BigInteger numerator, BigInteger denominator) {
+    if (denominator.signum() == 0) {
+      throw getDivisionTroughZeroException(F.ZZ(numerator)); // Infinite expression `1` encountered.
+    }
+    if (hasIntValue(denominator) && hasIntValue(numerator)) {
+      return valueOf(numerator.intValue(), denominator.intValue());
+    }
+    return null;
+  }
+
   public static BigInteger gcd(BigInteger i1, BigInteger i2) {
     if (i1.equals(BigInteger.ONE) || i2.equals(BigInteger.ONE)) {
       return BigInteger.ONE;
@@ -55,9 +791,78 @@ public abstract class AbstractFractionSym implements IFraction {
     }
   }
 
+  private static ArgumentTypeException getDivisionTroughZeroException(IInteger num) {
+    String str = Errors.getMessage("infy", F.list(F.Rational(num, F.C0)), EvalEngine.get());
+    return new ArgumentTypeException(str);
+  }
+
+  private static IExpr getInfiniteOrInteger(double value) {
+    if (Double.isNaN(value)) {
+      return F.NIL;
+    } else if (value == Double.POSITIVE_INFINITY) {
+      return F.CInfinity;
+    } else if (value == Double.NEGATIVE_INFINITY) {
+      return F.CNInfinity;
+    }
+    long integerValue = (long) value;
+    if (value == integerValue) { // also catches value == 0
+      return F.ZZ(integerValue); // take shortcut
+    }
+    return null;
+  }
+
+  private static void printCacheSource() {
+    System.out.println("static final FractionSym[][] CACHE = new FractionSym[][] {");
+    FractionSym[][] CACHE =
+        new FractionSym[(HIGH_NUMER - LOW_NUMER) + 1][(HIGH_DENOM - LOW_DENOM) + 1];
+    int i = LOW_NUMER;
+    for (int k = 0; k < CACHE.length; k++) {
+      int j = LOW_DENOM;
+      System.out.print("{");
+      for (int l = 0; l < CACHE[0].length; l++) {
+        int gcd = ArithmeticUtils.gcd(i, j);
+        if (gcd == 1) {
+          CACHE[k][l] = new FractionSym(i, j);
+          System.out.print("new FractionSym(" + i + "," + j + ")");
+        } else {
+          CACHE[k][l] = new FractionSym(i / gcd, j / gcd);
+          System.out.print("new FractionSym(" + (i / gcd) + "," + (j / gcd) + ")");
+        }
+        j++;
+        if (l < CACHE[0].length - 1) {
+          System.out.print(",");
+        }
+
+      }
+
+      if (k < CACHE.length - 1) {
+        System.out.print("}, // \n");
+      } else {
+        System.out.print("} // \n");
+      }
+      i++;
+    }
+    System.out.println("};");
+  }
+
+  private static IFraction rationalize(double value, DoubleFunction<BigFraction> f) {
+    try {
+      BigFraction fraction = f.apply(value < 0 ? -value : value);
+      if (fraction != null) {// && fraction.getNumerator().signum()!=0) {
+        return valueOf(value < 0 ? fraction.negate() : fraction);
+      }
+    } catch (MathRuntimeException e) { // assume no solution
+    }
+    return null;
+  }
+
   public static IFraction valueOf(BigFraction fraction) {
     IFraction f = fractionOf(fraction.getNumerator(), fraction.getDenominator());
     return f != null ? f : new BigFractionSym(fraction);
+  }
+
+  public static IFraction valueOf(BigInteger numerator) {
+    return valueOf(numerator, BigInteger.ONE);
   }
 
   /**
@@ -74,14 +879,11 @@ public abstract class AbstractFractionSym implements IFraction {
     return f != null ? f : new BigFractionSym(numerator, denominator);
   }
 
-  private static IFraction fractionOf(BigInteger numerator, BigInteger denominator) {
-    if (denominator.signum() == 0) {
-      throw getDivisionTroughZeroException(F.ZZ(numerator)); // Infinite expression `1` encountered.
+  public static IFraction valueOf(IInteger numerator) {
+    if (numerator instanceof IntegerSym) {
+      return valueOf(((IntegerSym) numerator).fIntValue);
     }
-    if (hasIntValue(denominator) && hasIntValue(numerator)) {
-      return valueOf(numerator.intValue(), denominator.intValue());
-    }
-    return null;
+    return valueOf(numerator.toBigNumerator());
   }
 
   public static IFraction valueOf(IInteger numerator, IInteger denominator) {
@@ -97,21 +899,52 @@ public abstract class AbstractFractionSym implements IFraction {
    * work if called with value Long.MIN_VALUE.
    *
    * @param numerator Numerator.
+   * @return
+   */
+  public static IFraction valueOf(long numerator) {
+    if (numerator == 0) {
+      return FractionSym.ZERO;
+    }
+    if (numerator == 1) {
+      return FractionSym.ONE;
+    }
+    if (numerator == -1) {
+      return FractionSym.MONE;
+    }
+
+    if (Integer.MIN_VALUE < numerator && numerator <= Integer.MAX_VALUE) {
+      return new FractionSym((int) numerator, 1);
+    }
+    return new BigFractionSym(BigInteger.valueOf(numerator), BigInteger.ONE);
+  }
+
+  /**
+   * Construct a rational from two longs. Use this method to create a rational number. This method
+   * normalizes the rational number and may return a previously created one. This method does not
+   * work if called with value Long.MIN_VALUE.
+   *
+   * @param numerator Numerator.
    * @param denominator Denominator.
    * @return
    */
   public static IFraction valueOf(long numerator, long denominator) {
-    if (denominator == 0) {
-      throw getDivisionTroughZeroException(F.ZZ(numerator)); // Infinite expression `1` encountered.
-    } else if (numerator == 0) {
-      return FractionSym.ZERO;
-    } else if (numerator == denominator) {
-      return FractionSym.ONE;
-    }
     if (numerator > Long.MIN_VALUE && denominator > Long.MIN_VALUE) {
+      if (denominator == 0) {
+        throw getDivisionTroughZeroException(F.ZZ(numerator)); // Infinite expression `1`
+                                                               // encountered.
+      } else if (numerator == 0) {
+        return FractionSym.ZERO;
+      } else if (numerator == denominator) {
+        return FractionSym.ONE;
+      }
       if (denominator < 0) {
         numerator = -numerator;
         denominator = -denominator;
+      }
+      if (numerator >= FractionSym.LOW_NUMER && numerator <= FractionSym.HIGH_NUMER //
+          && denominator >= FractionSym.LOW_DENOM && denominator <= FractionSym.HIGH_DENOM) {
+        return FractionSym.CACHE[((int) numerator) + (-FractionSym.LOW_NUMER)][((int) denominator)
+            + (-FractionSym.LOW_DENOM)];
       }
       if (numerator != 1 && denominator != 1) {
         long gcd = Math.abs(ArithmeticUtils.gcd(numerator, denominator));
@@ -144,62 +977,17 @@ public abstract class AbstractFractionSym implements IFraction {
           && denominator <= Integer.MAX_VALUE) {
         return new FractionSym((int) numerator, (int) denominator);
       }
+    } else {
+      if (denominator == 0) {
+        throw getDivisionTroughZeroException(F.ZZ(numerator)); // Infinite expression `1`
+                                                               // encountered.
+      } else if (numerator == 0) {
+        return FractionSym.ZERO;
+      } else if (numerator == denominator) {
+        return FractionSym.ONE;
+      }
     }
     return new BigFractionSym(BigInteger.valueOf(numerator), BigInteger.valueOf(denominator));
-  }
-
-  private static ArgumentTypeException getDivisionTroughZeroException(IInteger num) {
-    String str = Errors.getMessage("infy", F.list(F.Rational(num, F.C0)), EvalEngine.get());
-    return new ArgumentTypeException(str);
-  }
-
-  public static IFraction valueOf(IInteger numerator) {
-    if (numerator instanceof IntegerSym) {
-      return valueOf(((IntegerSym) numerator).fIntValue);
-    }
-    return valueOf(numerator.toBigNumerator());
-  }
-
-  public static IFraction valueOf(BigInteger numerator) {
-    return valueOf(numerator, BigInteger.ONE);
-  }
-
-  /**
-   * Construct a rational from two longs. Use this method to create a rational number. This method
-   * normalizes the rational number and may return a previously created one. This method does not
-   * work if called with value Long.MIN_VALUE.
-   *
-   * @param numerator Numerator.
-   * @return
-   */
-  public static IFraction valueOf(long numerator) {
-    if (numerator == 0) {
-      return FractionSym.ZERO;
-    }
-    if (numerator == 1) {
-      return FractionSym.ONE;
-    }
-    if (numerator == -1) {
-      return FractionSym.MONE;
-    }
-
-    if (Integer.MIN_VALUE < numerator && numerator <= Integer.MAX_VALUE) {
-      return new FractionSym((int) numerator, 1);
-    }
-    return new BigFractionSym(BigInteger.valueOf(numerator), BigInteger.ONE);
-  }
-
-  /**
-   * Rationalize the given double value with <code>epsilon</code> maximum error allowed.
-   *
-   * @param value the double value to convert to a fraction.
-   * @param epsilon maximum error allowed. The resulting fraction is within epsilon of value, in
-   *        absolute terms.
-   * @return
-   */
-  public static IFraction valueOfEpsilon(double value, double epsilon) {
-    IFraction fraction = rationalize(value, v -> new BigFraction(v, epsilon, 200));
-    return fraction != null ? fraction : valueOf(new BigFraction(value));
   }
 
   /**
@@ -216,31 +1004,16 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   /**
-   * Returns the last element of the series of convergent-steps to approximate the given value.
-   * 
-   * @param value value to approximate
-   * @param maxConvergents maximum number of convergents to examine
-   * @param limit
-   * @return the fraction of last element of the series of convergents and a boolean if that element
-   *         satisfies the specified convergent test
+   * Rationalize the given double value with <code>epsilon</code> maximum error allowed.
+   *
+   * @param value the double value to convert to a fraction.
+   * @param epsilon maximum error allowed. The resulting fraction is within epsilon of value, in
+   *        absolute terms.
+   * @return
    */
-  private static IFraction convergeFraction(double value, int maxConvergents, double limit) {
-    return rationalize(value, v -> {
-      org.hipparchus.util.Pair<BigFraction, Boolean> convergent = BigFraction.convergent(v,
-          maxConvergents, (p, q) -> FastMath.abs(p * q - v * q * q) <= limit);
-      return convergent.getSecond().booleanValue() ? convergent.getFirst() : null;
-    });
-  }
-
-  private static IFraction rationalize(double value, DoubleFunction<BigFraction> f) {
-    try {
-      BigFraction fraction = f.apply(value < 0 ? -value : value);
-      if (fraction != null) {// && fraction.getNumerator().signum()!=0) {
-        return valueOf(value < 0 ? fraction.negate() : fraction);
-      }
-    } catch (MathRuntimeException e) { // assume no solution
-    }
-    return null;
+  public static IFraction valueOfEpsilon(double value, double epsilon) {
+    IFraction fraction = rationalize(value, v -> new BigFraction(v, epsilon, 200));
+    return fraction != null ? fraction : valueOf(new BigFraction(value));
   }
 
   /**
@@ -287,21 +1060,6 @@ public abstract class AbstractFractionSym implements IFraction {
       mantissaFraction = valueOf(new BigFraction(mantissa2));
     }
     return F.Times(mantissaFraction, F.Power(F.C2, F.ZZ(exp2)));
-  }
-
-  private static IExpr getInfiniteOrInteger(double value) {
-    if (Double.isNaN(value)) {
-      return F.NIL;
-    } else if (value == Double.POSITIVE_INFINITY) {
-      return F.CInfinity;
-    } else if (value == Double.NEGATIVE_INFINITY) {
-      return F.CNInfinity;
-    }
-    long integerValue = (long) value;
-    if (value == integerValue) { // also catches value == 0
-      return F.ZZ(integerValue); // take shortcut
-    }
-    return null;
   }
 
   /**
@@ -426,6 +1184,16 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   @Override
+  public void checkBitLength() {
+    if (Integer.MAX_VALUE > Config.MAX_BIT_LENGTH) {
+      long bitLength = (long) toBigNumerator().bitLength() + toBigDenominator().bitLength();
+      if (bitLength > Config.MAX_BIT_LENGTH) {
+        BigIntegerLimitExceeded.throwIt(bitLength);
+      }
+    }
+  }
+
+  @Override
   public int compareTo(IExpr expr) {
     if (expr.isNumber() && !expr.isReal()) {
       int c = this.compareTo(expr.re());
@@ -438,9 +1206,25 @@ public abstract class AbstractFractionSym implements IFraction {
     return IExpr.compareHierarchy(this, expr);
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public int complexSign() {
+    return toBigNumerator().signum();
+  }
+
   @Override
   public IExpr copy() {
     return this;
+  }
+
+  /**
+   * Returns the denominator of this fraction.
+   *
+   * @return denominator
+   */
+  @Override
+  public IInteger denominator() {
+    return AbstractIntegerSym.valueOf(toBigDenominator());
   }
 
   /** {@inheritDoc} */
@@ -546,20 +1330,24 @@ public abstract class AbstractFractionSym implements IFraction {
     return AbstractFractionSym.valueOf(num, denom);
   }
 
-  /** {@inheritDoc} */
   @Override
-  public IInteger integerPart() {
-    return isNegative() ? ceilFraction() : floorFraction();
+  public IRational getImaginaryPart() {
+    return F.C0;
   }
 
-  /**
-   * Returns the denominator of this fraction.
-   *
-   * @return denominator
-   */
   @Override
-  public IInteger denominator() {
-    return AbstractIntegerSym.valueOf(toBigDenominator());
+  public IRational getRealPart() {
+    return this;
+  }
+
+  @Override
+  public ISymbol head() {
+    return S.Rational;
+  }
+
+  @Override
+  public int hierarchy() {
+    return FRACTIONID;
   }
 
   @Override
@@ -572,43 +1360,10 @@ public abstract class AbstractFractionSym implements IFraction {
     return 0.0;
   }
 
-  /**
-   * Returns the numerator of this fraction.
-   *
-   * @return denominator
-   */
+  /** {@inheritDoc} */
   @Override
-  public IInteger numerator() {
-    return AbstractIntegerSym.valueOf(toBigNumerator());
-  }
-
-  @Override
-  public IReal re() {
-    return this;
-  }
-
-  @Override
-  public double reDoubleValue() {
-    return doubleValue();
-  }
-
-  @Override
-  public IRational roundClosest(IReal multiple) {
-    if (!multiple.isRational()) {
-      multiple = F.fraction(multiple.doubleValue(), Config.DOUBLE_EPSILON);
-    }
-    IInteger ii = this.divideBy((IRational) multiple).roundExpr();
-    return ii.multiply((IRational) multiple);
-  }
-
-  @Override
-  public ISymbol head() {
-    return S.Rational;
-  }
-
-  @Override
-  public int hierarchy() {
-    return FRACTIONID;
+  public IInteger integerPart() {
+    return isNegative() ? ceilFraction() : floorFraction();
   }
 
   @Override
@@ -655,13 +1410,13 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   @Override
-  public long leafCountSimplify() {
-    return 1 + numerator().leafCountSimplify() + denominator().leafCountSimplify();
+  public long leafCount() {
+    return 3;
   }
 
   @Override
-  public long leafCount() {
-    return 3;
+  public long leafCountSimplify() {
+    return 1 + numerator().leafCountSimplify() + denominator().leafCountSimplify();
   }
 
   /**
@@ -708,6 +1463,16 @@ public abstract class AbstractFractionSym implements IFraction {
     return Num.valueOf(doubleValue() * that.doubleValue());
   }
 
+  /**
+   * Returns the numerator of this fraction.
+   *
+   * @return denominator
+   */
+  @Override
+  public IInteger numerator() {
+    return AbstractIntegerSym.valueOf(toBigNumerator());
+  }
+
   @Override
   public INumber numericNumber() {
     return F.num(this);
@@ -721,6 +1486,15 @@ public abstract class AbstractFractionSym implements IFraction {
   @Override
   public IReal opposite() {
     return this.negate();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr plus(IExpr that) {
+    if (that instanceof INumber) {
+      return this.plus((INumber) that);
+    }
+    return IFraction.super.plus(that);
   }
 
   /** {@inheritDoc} */
@@ -754,15 +1528,6 @@ public abstract class AbstractFractionSym implements IFraction {
       return F.complexNum(evalfc().add(that.evalfc()));
     }
     throw new java.lang.ArithmeticException();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IExpr plus(IExpr that) {
-    if (that instanceof INumber) {
-      return this.plus((INumber) that);
-    }
-    return IFraction.super.plus(that);
   }
 
   @Override
@@ -835,19 +1600,22 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   @Override
-  public void checkBitLength() {
-    if (Integer.MAX_VALUE > Config.MAX_BIT_LENGTH) {
-      long bitLength = (long) toBigNumerator().bitLength() + toBigDenominator().bitLength();
-      if (bitLength > Config.MAX_BIT_LENGTH) {
-        BigIntegerLimitExceeded.throwIt(bitLength);
-      }
-    }
+  public IReal re() {
+    return this;
   }
 
-  /** {@inheritDoc} */
   @Override
-  public int complexSign() {
-    return toBigNumerator().signum();
+  public double reDoubleValue() {
+    return doubleValue();
+  }
+
+  @Override
+  public IRational roundClosest(IReal multiple) {
+    if (!multiple.isRational()) {
+      multiple = F.fraction(multiple.doubleValue(), Config.DOUBLE_EPSILON);
+    }
+    IInteger ii = this.divideBy((IRational) multiple).roundExpr();
+    return ii.multiply((IRational) multiple);
   }
 
   /**
@@ -892,6 +1660,15 @@ public abstract class AbstractFractionSym implements IFraction {
 
   /** {@inheritDoc} */
   @Override
+  public IExpr times(IExpr that) {
+    if (that instanceof INumber) {
+      return this.times((INumber) that);
+    }
+    return IFraction.super.times(that);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public INumber times(INumber that) {
     if (that.isOne()) {
       return this;
@@ -927,15 +1704,6 @@ public abstract class AbstractFractionSym implements IFraction {
       return F.complexNum(evalfc().multiply(that.evalfc()));
     }
     throw new java.lang.ArithmeticException();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IExpr times(IExpr that) {
-    if (that instanceof INumber) {
-      return this.times((INumber) that);
-    }
-    return IFraction.super.times(that);
   }
 
   @Override

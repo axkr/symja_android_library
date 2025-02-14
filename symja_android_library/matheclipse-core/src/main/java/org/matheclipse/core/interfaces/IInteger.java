@@ -9,6 +9,24 @@ import com.google.common.math.LongMath;
 /** An expression representing a big integer number */
 public interface IInteger extends IRational {
 
+  /** The BigInteger constant minus one. */
+  BigInteger BI_MINUS_ONE = BigInteger.valueOf(-1L);
+
+  /** The BigInteger constant 2. */
+  BigInteger BI_TWO = BigInteger.valueOf(2L);
+
+  /** The BigInteger constant 3. */
+  BigInteger BI_THREE = BigInteger.valueOf(3L);
+
+  /** The BigInteger constant 4. */
+  BigInteger BI_FOUR = BigInteger.valueOf(4L);
+
+  /** The BigInteger constant 7. */
+  BigInteger BI_SEVEN = BigInteger.valueOf(7L);
+
+  /** The BigInteger constant 8. */
+  BigInteger BI_EIGHT = BigInteger.valueOf(8L);
+
   @Override
   public void checkBitLength();
 
@@ -33,6 +51,7 @@ public interface IInteger extends IRational {
    * @param val
    * @return
    */
+  @Override
   public IInteger add(int val);
 
   /**

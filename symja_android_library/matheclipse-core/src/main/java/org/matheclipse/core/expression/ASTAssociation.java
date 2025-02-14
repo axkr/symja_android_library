@@ -114,6 +114,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
    * @param key
    * @return <code>0</code> if no value-index was found for the key
    */
+  @Override
   public int getRulePosition(IExpr key) {
     Integer value = keyToIndexMap.get(key);
     return (value == null) ? 0 : value;
@@ -546,6 +547,56 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   @Override
   public boolean isListOrAssociation() {
     return true;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int[] isAssociationMatrix() {
+    final int[] dim = new int[2];
+    dim[0] = argSize();
+    if (dim[0] > 0) {
+      dim[1] = 0;
+      if (arg1().isList()) {
+        dim[1] = ((IAST) arg1()).argSize();
+        for (int i = 1; i < size(); i++) {
+          if (!get(i).isList()) {
+            // this row is not a list
+            return null;
+          }
+          IAST rowList = (IAST) get(i);
+          if (dim[1] != rowList.argSize()) {
+            // this row has another dimension
+            return null;
+          }
+          for (int j = 1; j < rowList.size(); j++) {
+            if (rowList.get(j).isList()) {
+              // this row is not a list
+              return null;
+            }
+          }
+        }
+        return dim;
+      }
+    }
+    return null;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int isAssociationVector() {
+    final int length = argSize();
+    if (length > 0) {
+      if (arg1().isList()) {
+        return -1;
+      }
+      for (int i = 2; i < size(); i++) {
+        if (get(i).isList()) {
+          // row is a list
+          return -1;
+        }
+      }
+    }
+    return length;
   }
 
   @Override
