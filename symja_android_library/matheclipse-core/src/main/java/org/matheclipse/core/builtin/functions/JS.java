@@ -12,7 +12,7 @@ import org.matheclipse.core.builtin.Arithmetic;
  *
  */
 public abstract class JS {
-  protected static double trunc(double value) {
+  public static double trunc(double value) {
     return value < 0 ? Math.ceil(value) : Math.floor(value);
   }
 
@@ -65,7 +65,7 @@ public abstract class JS {
     return x.exp();
   }
 
-  protected static Complex gamma(Complex x) {
+  public static Complex gamma(Complex x) {
     return Arithmetic.lanczosApproxGamma(x);
   }
 

@@ -730,15 +730,13 @@ public class HypergeometricFunctions {
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.isAST2() || ast.isAST3()) {
         final IInexactNumber n = (IInexactNumber) ast.arg1();
-        final IInexactNumber l;
         final IInexactNumber z;
         IExpr temp = F.NIL;
         if (ast.isAST2()) {
-          l = F.CD0;
           z = (IInexactNumber) ast.arg2();
           temp = n.gegenbauerC(z);
         } else {
-          l = (IInexactNumber) ast.arg2();
+          final IInexactNumber l = (IInexactNumber) ast.arg2();
           z = (IInexactNumber) ast.arg3();
           temp = n.gegenbauerC(l, z);
         }

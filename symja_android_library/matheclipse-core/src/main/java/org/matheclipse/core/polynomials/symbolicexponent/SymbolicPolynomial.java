@@ -213,26 +213,6 @@ public class SymbolicPolynomial
   }
 
   /**
-   * Remove an ExpVectorLong to coefficient entry from the internal map of this GenPolynomial.
-   * <b>Note:</b> Do not use this method unless you are constructing a new polynomial. this is
-   * modified and breaks the immutability promise of this class.
-   *
-   * @param e exponent.
-   * @param c expected coefficient, null for ignore.
-   */
-  public void doRemoveFromMap(ExpVectorSymbolic e, IExpr c) {
-    IExpr b = val.remove(e);
-    if (DEBUG) {
-      if (c == null) { // ignore b
-        return;
-      }
-      if (!c.equals(b)) {
-        // logger.error("map entry wrong " + e + " to " + c + " old " + b);
-      }
-    }
-  }
-
-  /**
    * Put an a sorted map of exponents to coefficients into the internal map of this GenPolynomial.
    * <b>Note:</b> Do not use this method unless you are constructing a new polynomial. this is
    * modified and breaks the immutability promise of this class.

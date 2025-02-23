@@ -79,12 +79,12 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
    */
   @Override
   public final void appendRule(IExpr rule) {
-    int index = size();
     if (rule.isRuleAST()) {
-      int value = getRulePosition(rule.first());
+      final int index = size();
+      final int value = getRulePosition(rule.first());
       if (value == 0) {
         append(rule);
-        keyToIndexMap.assoc(rule.first(), index++);
+        keyToIndexMap.assoc(rule.first(), index);
       } else {
         set(value, rule);
       }
@@ -789,12 +789,12 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   @Override
   public final void mergeRule(IAST rule, IExpr head, EvalEngine engine) {
-    int index = size();
     if (rule.isRuleAST()) {
       int valueIndex = getRulePosition(rule.first());
       if (valueIndex == 0) {
+        final int index = size();
         append(rule.setAtClone(2, F.List(rule.second())));
-        keyToIndexMap.assoc(rule.first(), index++);
+        keyToIndexMap.assoc(rule.first(), index);
       } else {
         IExpr value = getValue(valueIndex);
         IASTMutable newRule = rule.copy();

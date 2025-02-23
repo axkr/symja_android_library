@@ -17,8 +17,8 @@ public class PatternNested extends Pattern {
 
   private IExpr fPatternExpr;
 
-  public static IPattern valueOf(final ISymbol symbol, final IExpr patternExpr) {
-    return new PatternNested(symbol, patternExpr);
+  public static IPattern valueOf(final ISymbol symbol, final IExpr check, final IExpr patternExpr) {
+    return new PatternNested(symbol, check, patternExpr);
   }
 
   /** package private */
@@ -29,6 +29,11 @@ public class PatternNested extends Pattern {
   /** package private */
   PatternNested(final ISymbol symbol, IExpr patternExpr) {
     super(symbol, null, false);
+    fPatternExpr = patternExpr;
+  }
+
+  PatternNested(final ISymbol symbol, IExpr check, IExpr patternExpr) {
+    super(symbol, check, false);
     fPatternExpr = patternExpr;
   }
 

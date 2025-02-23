@@ -57,9 +57,7 @@ public class PowerTimesFunction {
             && (factor2.exponent().isInteger() || factor2.exponent().isVariable())) {
           if (!factor2.exponent().equals(x)) {
             n = factor2.exponent();
-            IExpr temp = factor2;
             factor2 = factor1;
-            factor1 = temp;
           }
         }
       }

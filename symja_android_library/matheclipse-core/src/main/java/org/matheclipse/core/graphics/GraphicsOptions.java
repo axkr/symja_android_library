@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -339,6 +340,8 @@ public class GraphicsOptions {
 
   IExpr plotLegends = S.None;
 
+  IExpr filling = S.None;
+
   double[] boundingbox =
       new double[] {Double.MAX_VALUE, Double.MIN_VALUE, Double.MAX_VALUE, Double.MIN_VALUE};
 
@@ -453,6 +456,17 @@ public class GraphicsOptions {
     return true;
   }
 
+
+  public IAST getListOfRules() {
+    IAST optionArgsRules = options.getListOfRules();
+    IASTAppendable rules = F.ListAlloc(32);
+    rules.append(F.Rule(S.Filling, filling));
+    for (int i = 1; i < optionArgsRules.size(); i++) {
+      rules.append(optionArgsRules.get(i));
+    }
+    return rules;
+  }
+
   private static void hasAxesJSON(ObjectNode g, IExpr a1, IExpr a2) {
     ArrayNode an = GraphicsFunctions.JSON_OBJECT_MAPPER.createArrayNode();
     if (a1.isTrue()) {
@@ -468,15 +482,41 @@ public class GraphicsOptions {
     g.set("hasaxes", an);
   }
 
-  public void graphics2DFilling(ArrayNode arrayNode) {
-    OptionArgs options = options();
+  // public void graphics2DFilling(ArrayNode arrayNode) {
+  // if (filling == S.None) {
+  // return;
+  // }
+  // // OptionArgs options = options();
+  // // IExpr filling = options.getOption(S.Filling);
+  // // if (filling.isPresent()) {
+  // ObjectNode g = GraphicsFunctions.JSON_OBJECT_MAPPER.createObjectNode();
+  // g.put("option", "filling");
+  // // if (filling == S.None) {
+  // // g.put("value", "none");
+  // // } else
+  // if (filling == S.Axis) {
+  // g.put("value", "axis");
+  // } else if (filling == S.Top) {
+  // g.put("value", "top");
+  // } else if (filling == S.Bottom) {
+  // g.put("value", "bottom");
+  // } else {
+  // return;
+  // }
+  // arrayNode.add(g);
+  // // }
+  // }
+
+
+  public void graphics2DFilling(ArrayNode arrayNode, OptionArgs options) {
     IExpr filling = options.getOption(S.Filling);
     if (filling.isPresent()) {
       ObjectNode g = GraphicsFunctions.JSON_OBJECT_MAPPER.createObjectNode();
       g.put("option", "filling");
-      if (filling == S.None) {
-        g.put("value", "none");
-      } else if (filling == S.Axis) {
+      // if (filling == S.None) {
+      // g.put("value", "none");
+      // } else
+      if (filling == S.Axis) {
         g.put("value", "axis");
       } else if (filling == S.Top) {
         g.put("value", "top");
@@ -836,6 +876,13 @@ public class GraphicsOptions {
         setYFunction(getScaling(scalingFunctions));
         return;
       }
+    }
+  }
+
+  public void setFilling(IExpr[] options) {
+    IExpr filling = options[ECharts.X_FILLING];
+    if (filling.isPresent()) {
+      this.filling = filling;
     }
   }
 

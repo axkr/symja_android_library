@@ -672,7 +672,7 @@ public class EvalEngine implements Serializable {
     engine.fApfloatHelperDouble = new FixedPrecisionApfloatHelper(ParserConfig.MACHINE_PRECISION);
     engine.fSignificantFigures = fSignificantFigures;
     engine.fEvalHistory = fEvalHistory;
-    engine.fOptionsStack = fOptionsStack;
+    engine.fOptionsStack = fOptionsStack != null ? (OptionsStack) fOptionsStack.clone() : null;
     engine.fOutListDisabled = fOutListDisabled;
     engine.fOutPrintStream = fOutPrintStream;
     engine.fOnOffMap = fOnOffMap;
@@ -1466,7 +1466,6 @@ public class EvalEngine implements Serializable {
     if (result.isPresent()) {
       return result;
     }
-    final int astSize = mutableAST.size();
     final boolean localNumericMode = fNumericMode;
     final boolean argNumericMode = isNumericArg(mutableAST);
     IASTMutable[] rlist = new IASTMutable[] {F.NIL};

@@ -44,7 +44,6 @@ public class ZTransform extends AbstractFunctionEvaluator {
         }
         if (fx.isAST()) {
           final IAST function = (IAST) fx;
-          final IExpr header = function.head();
           if (function.isPlus()) {
             // ZTransform(a_+b_+c_,n_,z_) -> ZTransform(a,n,z)+ZTransform(b,n,z)+ZTransform(c,n,z)
             return function.mapThread(F.ZTransform(F.Slot1, n, z), 1).eval(engine);

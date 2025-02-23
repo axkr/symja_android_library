@@ -215,6 +215,8 @@ public class QuantumPhysicsFunctions {
               beta = ast.arg3();
               gamma = ast.arg4();
               break;
+            default:
+              return F.NIL;
           }
 
           // if (alpha.isNumericArgument() || beta.isNumericArgument() || gamma.isNumericArgument())

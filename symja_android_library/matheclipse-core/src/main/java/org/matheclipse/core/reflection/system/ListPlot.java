@@ -214,10 +214,10 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
 
   protected IExpr createGraphicsFunction(IAST graphicsPrimitives, IAST listOfOptions,
       GraphicsOptions graphicsOptions) {
-    OptionArgs options = graphicsOptions.options();
-    options.appendOptionRules(listOfOptions);
+    // OptionArgs options = graphicsOptions.options();
+    // options.appendOptionRules(listOfOptions);
     IASTAppendable result = F.Graphics(graphicsPrimitives);// , //
-    result.appendArgs(options.getListOfRules());
+    result.appendArgs(graphicsOptions.getListOfRules());
     return result;
   }
 
@@ -290,6 +290,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     }
     graphicsOptions.setOptions(optionArgs);
     graphicsOptions.setScalingFunctions(options);
+    graphicsOptions.setFilling(options);
 
     IExpr arg1 = plot.arg1();
     if (!arg1.isList()) {

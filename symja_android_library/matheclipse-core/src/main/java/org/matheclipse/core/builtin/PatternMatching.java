@@ -1480,7 +1480,7 @@ public final class PatternMatching {
 
               arg2 = engine.evalHoldPattern((IAST) arg2);
             }
-            return PatternNested.valueOf(symbol, arg2);
+            return PatternNested.valueOf(symbol, null, arg2);
           } else {
             // First element in `1` is not a valid pattern name.
             return Errors.printMessage(ast.topHead(), "patvar", F.list(ast), engine);

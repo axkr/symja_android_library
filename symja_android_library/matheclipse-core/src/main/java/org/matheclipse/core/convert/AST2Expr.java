@@ -664,7 +664,7 @@ public class AST2Expr {
         case ID.N:
           if (ast.isAST2() && ast.arg2().isInteger()) {
             try {
-              int precision = ast.arg2().toIntDefault();
+              long precision = ast.arg2().toLongDefault();
               if (EvalEngine.isApfloat(precision)) {
                 fPrecision = precision;
                 ast.set(1, convertNode(functionNode.get(1)));

@@ -38,13 +38,6 @@ public class ZetaJS extends JS {
     return arg1.add(arg2).divide(2.0);
   }
 
-  public static Complex complexAverage(java.util.function.Function<Complex, Complex> f, Complex x) {
-    double offset = 1e-5;
-    Complex arg1 = f.apply(x.add(offset));
-    Complex arg2 = f.apply(x.subtract(offset));
-    return arg1.add(arg2).divide(2.0);
-  }
-
   public static Complex complexSummation(java.util.function.DoubleFunction<Complex> f, int a, int b,
       int iterationLimit) {
     Complex s = Complex.ZERO;

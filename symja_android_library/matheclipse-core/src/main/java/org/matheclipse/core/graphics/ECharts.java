@@ -231,6 +231,7 @@ public class ECharts {
     }
     graphicsOptions.setOptions(optionArgs);
     graphicsOptions.setScalingFunctions(options);
+    graphicsOptions.setFilling(options);
   }
 
   public static void xAxisCategory(StringBuilder xAxisString, IAST pointList) {

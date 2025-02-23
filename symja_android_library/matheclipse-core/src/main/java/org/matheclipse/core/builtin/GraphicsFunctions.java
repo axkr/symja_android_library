@@ -1422,7 +1422,7 @@ public class GraphicsFunctions {
       // graphicsOptions.graphics2DScalingFunctions(arrayNode);
       graphicsOptions.graphics2DAxes(objectNode);
       graphics2DAspectRatio(arrayNode, graphicsOptions.options());
-      graphicsOptions.graphics2DFilling(arrayNode);
+      graphicsOptions.graphics2DFilling(arrayNode, graphicsOptions.options());
 
       IAST list = data2D;
       return export2DRecursive(arrayNode, list, 1, data2D.size(), graphicsOptions);

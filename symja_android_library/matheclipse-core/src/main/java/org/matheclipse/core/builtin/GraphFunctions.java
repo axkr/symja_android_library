@@ -1934,13 +1934,15 @@ public class GraphFunctions {
   }
 
   private static class FindMinimumCostFlow extends AbstractEvaluator {
-    public class MinimumCostFlowProblemImpl implements MinimumCostFlowProblem<IExpr, ExprEdge> {
+    private static class MinimumCostFlowProblemImpl
+        implements MinimumCostFlowProblem<IExpr, ExprEdge> {
       private final Graph<IExpr, ExprEdge> graph;
       private final Map<IExpr, Integer> supplyMap;
       private final Map<ExprEdge, Integer> capacityMap;
       private final Map<ExprEdge, Integer> costMap;
 
-      public MinimumCostFlowProblemImpl(Graph<IExpr, ExprEdge> graph, Map<IExpr, Integer> supplyMap,
+      private MinimumCostFlowProblemImpl(Graph<IExpr, ExprEdge> graph,
+          Map<IExpr, Integer> supplyMap,
           Map<ExprEdge, Integer> capacityMap, Map<ExprEdge, Integer> costMap) {
         this.graph = graph;
         this.supplyMap = supplyMap;

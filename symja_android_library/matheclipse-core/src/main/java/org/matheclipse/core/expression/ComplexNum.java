@@ -582,6 +582,7 @@ public class ComplexNum implements IComplexNum {
     return (signum == 0) ? (int) Math.signum(fComplex.getImaginary()) : signum;
   }
 
+  @Override
   public Complex complexValue() {
     return fComplex;
   }
@@ -963,7 +964,7 @@ public class ComplexNum implements IComplexNum {
     if (x0 instanceof INumber && x1 instanceof INumber) {
       try {
         Apcomplex gamma = EvalEngine.getApfloatDouble().gamma(apcomplexValue(),
-            ((INumber) x0).apcomplexValue(), ((INumber) x0).apcomplexValue());
+            ((INumber) x0).apcomplexValue(), ((INumber) x1).apcomplexValue());
         return F.complexNum(gamma.real().doubleValue(), gamma.imag().doubleValue());
       } catch (ArithmeticException | NumericComputationException are) {
         // try as computation with complex numbers

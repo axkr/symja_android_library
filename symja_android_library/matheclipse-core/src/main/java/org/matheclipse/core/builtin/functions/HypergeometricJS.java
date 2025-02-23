@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin.functions;
 
 import static java.lang.Math.abs;
 import java.util.ArrayList;
-import java.util.function.Function;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.NumericComputationException;
@@ -25,14 +24,6 @@ public class HypergeometricJS extends JS {
 
 
   private HypergeometricJS() {}
-
-  public static Complex complexAverage(Function<Complex, Complex> f, Complex x) {
-    return complexAverage(f, x, 1e-5);
-  }
-
-  public static Complex complexAverage(Function<Complex, Complex> f, Complex x, double offset) {
-    return f.apply(x.add(offset)).add(f.apply(x.subtract(offset))).divide(2.0);
-  }
 
   public static Complex hypergeometricSeries(Complex[] A, Complex[] B, Complex x) { // , double
                                                                                     // tolerance

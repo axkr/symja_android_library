@@ -237,12 +237,13 @@ public class Gruntz {
 
   public static Object[] mrvMax3(SubsSet f, IExpr expsf, SubsSet g, IExpr expsg, SubsSet union,
       IExpr expsboth, ISymbol x) {
-    if (!(f instanceof SubsSet)) {
-      throw new IllegalArgumentException("f should be an instance of SubsSet");
-    }
-    if (!(g instanceof SubsSet)) {
-      throw new IllegalArgumentException("g should be an instance of SubsSet");
-    }
+    // instanceof will always return true here
+    // if (!(f instanceof SubsSet)) {
+    // throw new IllegalArgumentException("f should be an instance of SubsSet");
+    // }
+    // if (!(g instanceof SubsSet)) {
+    // throw new IllegalArgumentException("g should be an instance of SubsSet");
+    // }
     if (f.isEmpty()) {
       return new Object[] {g, expsg};
     } else if (g.isEmpty()) {

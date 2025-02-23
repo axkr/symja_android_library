@@ -25,10 +25,6 @@ import org.matheclipse.core.expression.S;
 public class EllipticFunctionsJS extends JS {
   private EllipticFunctionsJS() {}
 
-  public static double trunc(double value) {
-    return value < 0 ? Math.ceil(value) : Math.floor(value);
-  }
-
   public static Complex jacobiTheta(int n, double x, double q) {
     return jacobiTheta(n, x, q, Config.SPECIAL_FUNCTIONS_TOLERANCE);
   }

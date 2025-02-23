@@ -1247,7 +1247,8 @@ public class SimplifyFunctions {
             Errors.rethrowsInterruptException(rex);
             //
           }
-        } else if (fFullSimplify) {
+        }
+        if (fFullSimplify) {
           try {
             IExpr temp = eval(F.FunctionExpand(expr));
             if (sResult.checkLessPlusTimesPower(temp)) {

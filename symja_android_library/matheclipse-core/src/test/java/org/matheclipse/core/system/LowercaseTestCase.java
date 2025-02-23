@@ -9153,6 +9153,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFrobeniusNumber() {
+    check("FrobeniusNumber({4,6,8})", //
+        "Infinity");
+    check("FrobeniusNumber({43})", //
+        "Infinity");
+    check("FrobeniusNumber({1,2})", //
+        "-1");
+    check("FrobeniusNumber({6,9,20})", //
+        "43");
+    check("FrobeniusNumber({3,5})", //
+        "7");
+
+
     // message FrobeniusNumber: The first argument {0,0,0,0} of FrobeniusNumber should be a
     // non-empty list of positive integers.
     check("FrobeniusNumber({0,0,0,0})", //
