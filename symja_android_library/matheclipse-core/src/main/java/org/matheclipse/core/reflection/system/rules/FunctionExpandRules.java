@@ -93,18 +93,6 @@ public class FunctionExpandRules {
     // (Gamma(a_.Integer+z_)*x_.)/Gamma(b_.Integer+z_):=If(b<a,x*Product(z+i,{i,b,-1+a}),x/Product(z+i,{i,a,-1+b}))
     SetDelayed(Times(Gamma(Plus($p(a, Integer,true),z_)),Power(Gamma(Plus($p(b, Integer,true),z_)),CN1),x_DEFAULT),
       If(Less(b,a),Times(x,Product(Plus(z,i),list(i,b,Plus(CN1,a)))),Times(x,Power(Product(Plus(z,i),list(i,a,Plus(CN1,b))),CN1)))),
-    // Gamma(-1,z_):=1/(E^z*z)+ExpIntegralEi(-z)+1/2*(Log(-1/z)-Log(-z))+Log(z)
-    SetDelayed(Gamma(CN1,z_),
-      Plus(Power(Times(Exp(z),z),CN1),ExpIntegralEi(Negate(z)),Times(C1D2,Subtract(Log(Negate(Power(z,CN1))),Log(Negate(z)))),Log(z))),
-    // Gamma(-1/2,z_):=2/(E^z*Sqrt(z))-2*Sqrt(Pi)*(1-Erf(Sqrt(z)))
-    SetDelayed(Gamma(CN1D2,z_),
-      Plus(Times(C2,Power(Times(Exp(z),Sqrt(z)),CN1)),Times(CN2,CSqrtPi,Subtract(C1,Erf(Sqrt(z)))))),
-    // Gamma(0,z_):=-ExpIntegralEi(-z)+1/2*(-Log(-1/z)+Log(-z))-Log(z)
-    SetDelayed(Gamma(C0,z_),
-      Plus(Negate(ExpIntegralEi(Negate(z))),Times(C1D2,Plus(Negate(Log(Negate(Power(z,CN1)))),Log(Negate(z)))),Negate(Log(z)))),
-    // Gamma(1/2,z_):=Sqrt(Pi)*(1-Erf(Sqrt(z)))
-    SetDelayed(Gamma(C1D2,z_),
-      Times(CSqrtPi,Subtract(C1,Erf(Sqrt(z))))),
     // GammaRegularized(a_,z_):=Gamma(a,z)/Gamma(a)
     SetDelayed(GammaRegularized(a_,z_),
       Times(Power(Gamma(a),CN1),Gamma(a,z))),

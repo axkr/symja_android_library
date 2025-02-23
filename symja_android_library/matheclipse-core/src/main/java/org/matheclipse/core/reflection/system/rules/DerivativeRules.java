@@ -13,7 +13,7 @@ public class DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 137, 0 };
+  final public static int[] SIZES = { 140, 0 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -326,6 +326,15 @@ public class DerivativeRules {
     // Derivative(1,0)[Gamma]=Gamma(#1,#2)*Log(#2)+MeijerG({{},{1,1}},{{0,0,#1},{}},#2)&
     ISet($(Derivative(C1,C0),Gamma),
       Function(Plus(Times(Gamma(Slot1,Slot2),Log(Slot2)),MeijerG(list(List(),list(C1,C1)),list(list(C0,C0,Slot1),List()),Slot2))), true),
+    // Derivative(0,0,1)[Gamma]=1/(E^#3*#3^(1-#1))&
+    ISet($(Derivative(C0,C0,C1),Gamma),
+      Function(Times(Power(Exp(Slot(C3)),CN1),Power(Slot(C3),Plus(CN1,Slot1)))), true),
+    // Derivative(0,1,0)[Gamma]=-E^(-#2)/#2^(1-#1)&
+    ISet($(Derivative(C0,C1,C0),Gamma),
+      Function(Times(CN1,Exp(Negate(Slot2)),Power(Slot2,Plus(CN1,Slot1)))), true),
+    // Derivative(1,0,0)[Gamma]=Gamma(#1,#2)*Log(#2)-Gamma(#1,#3)*Log(#3)+MeijerG({{},{1,1}},{{0,0,#1},{}},#2)-MeijerG({{},{1,1}},{{0,0,#1},{}},#3)&
+    ISet($(Derivative(C1,C0,C0),Gamma),
+      Function(Plus(Times(Gamma(Slot1,Slot2),Log(Slot2)),Times(CN1,Gamma(Slot1,Slot(C3)),Log(Slot(C3))),MeijerG(list(List(),list(C1,C1)),list(list(C0,C0,Slot1),List()),Slot2),Negate(MeijerG(list(List(),list(C1,C1)),list(list(C0,C0,Slot1),List()),Slot(C3))))), true),
     // Derivative(1,0)[HarmonicNumber]=#2*(-HarmonicNumber(#1,#2+1)+Zeta(#2+1))&
     ISet($(Derivative(C1,C0),HarmonicNumber),
       Function(Times(Slot2,Plus(Negate(HarmonicNumber(Slot1,Plus(Slot2,C1))),Zeta(Plus(Slot2,C1))))), true),

@@ -40,10 +40,6 @@
    /; UnsameQ(h,0),
   
  Gamma(a_.Integer+z_)*Gamma(b_.Integer+z_)^(-1)*x_. := If(b<a, x*Product((z+i), {i,b,a-1}), x*Product((z+i), {i,a,b-1})^(-1)),
- Gamma(-1, z_) := 1/(E^z*z) + ExpIntegralEi(-z) + (1/2)*(Log(-(1/z)) - Log(-z)) + Log(z),
- Gamma(-1/2, z_) := 2/(E^z*Sqrt(z)) - 2*Sqrt(Pi)*(1 - Erf(Sqrt(z))),
- Gamma(0, z_) := -ExpIntegralEi(-z) + (1/2)*(-Log(-(1/z)) + Log(-z)) - Log(z),
- Gamma(1/2, z_) := Sqrt(Pi)*(1 - Erf(Sqrt(z))),
 
  GammaRegularized(a_, z_) := Gamma(a,z) / Gamma(a),
  GammaRegularized(a_, y_, z_) :=  Gamma(a,y)/Gamma(a)-Gamma(a,z)/Gamma(a),

@@ -85,9 +85,6 @@ public class GammaRules {
       Condition(Gamma(a),Greater(Re(a),C0))),
     // Gamma(a_,0,z_):=Gamma(a)-Gamma(a,z)/;Re(a)>0
     ISetDelayed(Gamma(a_,C0,z_),
-      Condition(Subtract(Gamma(a),Gamma(a,z)),Greater(Re(a),C0))),
-    // Gamma(a_,x_,y_):=Gamma(a,x)-Gamma(a,y)
-    ISetDelayed(Gamma(a_,x_,y_),
-      Subtract(Gamma(a,x),Gamma(a,y)))
+      Condition(Subtract(Gamma(a),Gamma(a,z)),Greater(Re(a),C0)))
   );
 }

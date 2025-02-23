@@ -1550,7 +1550,9 @@ public final class Arithmetic {
    * 1.1018024908797128
    * </pre>
    */
-  private static final class Gamma extends AbstractFunctionEvaluator implements IMatch {
+  private static final class Gamma extends AbstractFunctionEvaluator
+      implements IFunctionExpand, IMatch {
+
     @Override
     public IExpr match3(IAST ast, EvalEngine engine) {
       return F.NIL;
@@ -1561,6 +1563,47 @@ public final class Arithmetic {
     public IExpr match4(IAST ast, EvalEngine engine) {
       return F.NIL;
       // return GammaRules.match4(ast, engine);
+    }
+
+    @Override
+    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        IExpr a = ast.arg1();
+        IExpr z = ast.arg2();
+        if (a.isFraction()) {
+          if (a.isRationalValue(F.CN1D2)) {
+            // Gamma(-1/2, z_) := 2/(E^z*Sqrt(z)) - 2*Sqrt(Pi)*(1 - Erf(Sqrt(z)))
+            return F.Plus(F.Times(F.C2, F.Power(F.Times(F.Exp(z), F.Sqrt(z)), F.CN1)),
+                F.Times(F.CN2, F.CSqrtPi, F.Subtract(F.C1, F.Erf(F.Sqrt(z)))));
+
+          }
+          if (a.isRationalValue(F.C1D2)) {
+            // Gamma(1/2, z_) := Sqrt(Pi)*(1 - Erf(Sqrt(z)))
+            return F.Times(F.CSqrtPi, F.Subtract(F.C1, F.Erf(F.Sqrt(z))));
+          }
+        } else {
+          if (a.isMinusOne()) {
+            // Gamma(-1, z_) := 1/(E^z*z)+ExpIntegralEi(-z)+(1/2)*(Log(-(1/z))-Log(-z)) +
+            // Log(z)
+            return F.Plus(F.Power(F.Times(F.Exp(z), z), F.CN1), F.ExpIntegralEi(F.Negate(z)),
+                F.Times(F.C1D2, F.Subtract(F.Log(F.Negate(F.Power(z, F.CN1))), F.Log(F.Negate(z)))),
+                F.Log(z));
+          }
+          if (a.isZero()) {
+            // Gamma(0, z_) := -ExpIntegralEi(-z)+(1/2)*(-Log(-(1/z))+Log(-z))-Log(z)
+            return F.Plus(F.Negate(F.ExpIntegralEi(F.Negate(z))),
+                F.Times(F.C1D2,
+                    F.Plus(F.Negate(F.Log(F.Negate(F.Power(z, F.CN1)))), F.Log(F.Negate(z)))),
+                F.Negate(F.Log(z)));
+          }
+        }
+      } else if (ast.isAST3()) {
+        IExpr a = ast.arg1();
+        IExpr z0 = ast.arg2();
+        IExpr z1 = ast.arg3();
+        return F.Subtract(F.Gamma(a, z0), F.Gamma(a, z1));
+      }
+      return F.NIL;
     }
 
     // @Override
@@ -1820,6 +1863,7 @@ public final class Arithmetic {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
+
   }
 
   /**
@@ -6911,6 +6955,7 @@ public final class Arithmetic {
     }
     return F.NIL;
   }
+
   /**
    * Try simplifying <code>(base1 ^ exponent1) * (base2 ^ exponent2)</code>
    *

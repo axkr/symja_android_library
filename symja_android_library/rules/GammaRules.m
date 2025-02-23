@@ -25,6 +25,5 @@
   Gamma(a_, Infinity, z_) := -Gamma(a, z),
   Gamma(a_, 0, Infinity) := Gamma(a) /; Re(a) > 0,
   Gamma(a_, 0, z_) := Gamma(a) - Gamma(a, z) 
-    /; Re(a) > 0,
-  Gamma(a_, x_, y_) := Gamma(a, x) - Gamma(a, y)
+    /; Re(a) > 0
 }

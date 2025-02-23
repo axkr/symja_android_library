@@ -230,10 +230,6 @@ public class GammaJS extends JS {
     return new Complex(fresnelC.real().doubleValue(), fresnelC.imag().doubleValue());
   }
 
-  public static Complex gamma(Complex x) {
-    return Arithmetic.lanczosApproxGamma(x);
-  }
-
   public static double gamma(double x) {
     return org.hipparchus.special.Gamma.gamma(x);
   }
