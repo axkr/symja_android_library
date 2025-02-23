@@ -61,6 +61,7 @@ import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.BigIntegerSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.FractionSym;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -3101,6 +3102,13 @@ public final class NumberTheory {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       BigInteger[] array = Validate.checkListOfBigIntegers(ast, ast.arg1(), true, engine);
       if (array != null && array.length > 0) {
+        if (array.length == 1) {
+          return F.CInfinity;
+        }
+        BigInteger gcd = BigIntegerSym.gcd(array);
+        if (!gcd.equals(BigInteger.ONE)) {
+          return F.CInfinity;
+        }
         BigInteger result = org.matheclipse.core.frobenius.FrobeniusNumber.frobeniusNumber(array);
         return F.ZZ(result);
       }

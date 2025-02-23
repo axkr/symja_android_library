@@ -334,6 +334,22 @@ public class BigIntegerSym extends AbstractIntegerSym {
     return valueOf(fBigIntValue.gcd(that.toBigNumerator()));
   }
 
+  public static BigInteger gcd(BigInteger... array) {
+    if (array.length >= 2) {
+      BigInteger gcd = array[0].gcd(array[1]);
+      for (int i = 2; i < array.length; i++) {
+        gcd = gcd.gcd(array[i]);
+      }
+      return gcd;
+    } else if (array.length == 1) {
+      if (array[0].signum() < 0) {
+        return array[0].negate();
+      }
+      return array[0];
+    }
+    return BigInteger.ZERO;
+  }
+
   /** {@inheritDoc} */
   @Override
   public IInteger denominator() {
@@ -911,4 +927,5 @@ public class BigIntegerSym extends AbstractIntegerSym {
   private Object writeReplace() {
     return optional();
   }
+
 }

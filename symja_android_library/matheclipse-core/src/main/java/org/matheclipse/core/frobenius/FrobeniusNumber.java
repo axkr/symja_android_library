@@ -50,7 +50,7 @@ public class FrobeniusNumber {
    * http://dansesacrale.wordpress.com/2010/09/20/frobenius-numbers-round-robin-algorithm/ </br>
    * </br>
    *
-   * @param array "coins denominations"
+   * @param array "coins denominations"- array of relatively prime integers
    * @return Frobenius number
    */
   public static BigInteger frobeniusNumber(int[] array) {
@@ -69,7 +69,7 @@ public class FrobeniusNumber {
    * http://dansesacrale.wordpress.com/2010/09/20/frobenius-numbers-round-robin-algorithm/ </br>
    * </br>
    *
-   * @param array "coins denominations"
+   * @param array "coins denominations" - array of relatively prime integers
    * @return Frobenius number
    */
   public static BigInteger frobeniusNumber(long[] array) {
@@ -91,21 +91,19 @@ public class FrobeniusNumber {
    * http://dansesacrale.wordpress.com/2010/09/20/frobenius-numbers-round-robin-algorithm/ </br>
    * </br>
    *
-   * @param array "coins denominations"
+   * @param array "coins denominations" - an array of relatively prime integers
    * @return Frobenius number
    */
   public static BigInteger frobeniusNumber(BigInteger[] array) {
-    // if (array[0].compareTo(ARRAY_SIZE_THRESHOLD) > 0)
-    // return frobeniusNumberIntegerArray(array);
-    // else
     return frobeniusNumberIntegerArray(array);
   }
 
-  public static BigInteger frobeniusNumberBigIntArray(BigInteger[] array) {
+  @Deprecated
+  private static BigInteger frobeniusNumberBigIntArray(BigInteger[] array) {
     HashMap<BigInteger, BigInteger> ns = new HashMap<>(ARRAY_SIZE_THRESHOLD_INT);
     ns.put(ZERO, ZERO);
     for (int i = 1; i < array.length; i++) {
-      BigInteger d = gcd(array[0], array[i]);
+      BigInteger d = array[0].gcd(array[i]);
       for (BigInteger r = ZERO; r.compareTo(d) < 0; r = r.add(ONE)) {
         BigInteger n = MINUS_ONE;
         if (r.signum() == 0)
@@ -135,50 +133,66 @@ public class FrobeniusNumber {
     return max.subtract(array[0]);
   }
 
+  /**
+   * Returns Frobenius number.
+   * 
+   * @param array of relatively prime integers
+   * @return
+   */
   private static BigInteger frobeniusNumberIntegerArray(BigInteger[] array) {
-    int array0 = intValue(array[0]);
+    final BigInteger arrayBig0 = array[0];
+    int array0 = intValue(arrayBig0);
     if (array0 > Config.MAX_AST_SIZE) {
       ASTElementLimitExceeded.throwIt(array0);
+    }
+
+    // if one of the array[i] is the integer 1, then the result is -1.
+    for (int i = 0; i < array.length; i++) {
+      if (array[i].equals(ONE)) {
+        return MINUS_ONE;
+      }
     }
 
     BigInteger[] ns = new BigInteger[array0];
     Arrays.fill(ns, MINUS_ONE);
     ns[0] = ZERO;
     for (int i = 1; i < array.length; i++) {
-      int d = intValue(gcd(array[0], array[i]));
+      int d = intValue(arrayBig0.gcd(array[i]));
       for (int r = 0; r < d; r++) {
         BigInteger n = MINUS_ONE;
-        if (r == 0)
+        if (r == 0) {
           n = ZERO;
-        else {
+        } else {
           int q = r;
           while (q < array0) {
-            if (!ns[q].equals(MINUS_ONE) && (ns[q].compareTo(n) < 0 || n.equals(MINUS_ONE)))
+            if (!ns[q].equals(MINUS_ONE) && (ns[q].compareTo(n) < 0 || n.equals(MINUS_ONE))) {
               n = ns[q];
+            }
             q += d;
           }
         }
-        if (!n.equals(MINUS_ONE))
+        if (!n.equals(MINUS_ONE)) {
           for (int j = 0, size = array0 / d; j < size; j++) {
             n = n.add(array[i]);
-            int p = intValue(n.remainder(array[0]));
-            if (!ns[p].equals(MINUS_ONE) && (ns[p].compareTo(n) < 0 || n.equals(MINUS_ONE)))
+            int p = intValue(n.remainder(arrayBig0));
+            if (!ns[p].equals(MINUS_ONE) && (ns[p].compareTo(n) < 0 || n.equals(MINUS_ONE))) {
               n = ns[p];
+            }
             ns[p] = n;
           }
+        }
       }
     }
     BigInteger max = ZERO;
-    for (int i = 0; i < array0; i++)
-      if (ns[i].equals(MINUS_ONE) || ns[i].compareTo(max) > 0)
+    for (int i = 0; i < array0; i++) {
+      if (ns[i].equals(MINUS_ONE) || ns[i].compareTo(max) > 0) {
         max = ns[i];
-    if (max.equals(MINUS_ONE))
+      }
+    }
+    if (max.equals(MINUS_ONE)) {
       return MINUS_ONE;
-    return max.subtract(array[0]);
-  }
-
-  private static BigInteger gcd(BigInteger a, BigInteger b) {
-    return a.gcd(b);
+    }
+    return max.subtract(arrayBig0);
   }
 
   private static final BigInteger MAX_VALUE = BigInteger.valueOf(Integer.MAX_VALUE);
