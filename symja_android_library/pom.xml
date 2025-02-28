@@ -318,12 +318,12 @@
 			<dependency>
 				<groupId>org.biojava</groupId>
 				<artifactId>biojava-core</artifactId>
-				<version>7.1.4</version>
+				<version>7.2.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.biojava</groupId>
 				<artifactId>biojava-alignment</artifactId>
-				<version>7.1.4</version>
+				<version>7.2.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
