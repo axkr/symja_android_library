@@ -35,6 +35,7 @@ public class TensorFunctions {
   private static class Initializer {
 
     private static void init() {
+      S.ArrayReduce.setEvaluator(new ArrayReduce());
       S.ArrayReshape.setEvaluator(new ArrayReshape());
       S.Ordering.setEvaluator(new Ordering());
       S.HodgeDual.setEvaluator(new HodgeDual());
@@ -52,6 +53,47 @@ public class TensorFunctions {
       S.ShearingTransform.setEvaluator(new ShearingTransform());
       S.TransformationFunction.setEvaluator(new TransformationFunction());
       S.TranslationTransform.setEvaluator(new TranslationTransform());
+    }
+  }
+
+  private static final class ArrayReduce extends AbstractEvaluator {
+
+    private IExpr arrayReduce(IExpr f, IAST array, int n, EvalEngine engine) {
+      int iDepth = LinearAlgebra.arrayDepth(array);
+      IAST range = ListFunctions.range(iDepth + 1);
+      IAST rotateRight = range.rotateRight(F.NIL, n);
+      IAST transposed = (IAST) F.Transpose(array, rotateRight).eval(engine);
+      IExpr reduced = F.Map(f, transposed, F.List(F.ZZ(iDepth - 1))).eval(engine);
+      IAST rotateLeft = ListFunctions.range(iDepth).rotateLeft(F.NIL, n - 1);
+      return F.Transpose(reduced, rotateLeft).eval(engine);
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg2 = ast.arg2();
+      if (arg2.isList() || arg2.isSparseArray()) {
+        final IExpr f = ast.arg1();
+        IAST tensor = (IAST) ast.arg2();
+        final IntList dims = LinearAlgebra.dimensions(tensor, S.List);
+        int n = ast.arg3().toIntDefault();
+        if (n > 0) {
+          if (n == 1 && dims.size() == 1) {
+            return tensor;
+          }
+          return arrayReduce(f, tensor, n, engine);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
     }
   }
 

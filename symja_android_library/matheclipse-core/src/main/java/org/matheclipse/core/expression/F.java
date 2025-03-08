@@ -94,6 +94,7 @@ import org.matheclipse.core.builtin.SimplifyFunctions;
 import org.matheclipse.core.builtin.SourceCodeFunctions;
 import org.matheclipse.core.builtin.SparseArrayFunctions;
 import org.matheclipse.core.builtin.SpecialFunctions;
+import org.matheclipse.core.builtin.StatisticalMomentFunctions;
 import org.matheclipse.core.builtin.StatisticsFunctions;
 import org.matheclipse.core.builtin.StringFunctions;
 import org.matheclipse.core.builtin.StructureFunctions;
@@ -1025,6 +1026,7 @@ public class F extends S {
       OutputFunctions.initialize();
       RandomFunctions.initialize();
       StatisticsFunctions.initialize();
+      StatisticalMomentFunctions.initialize();
       HypergeometricFunctions.initialize();
       EllipticIntegrals.initialize();
       PolynomialFunctions.initialize();
@@ -1868,6 +1870,10 @@ public class F extends S {
     return new AST2(Array, a0, a1);
   }
 
+  public static IAST ArrayDepth(final IExpr a0) {
+    return new AST1(ArrayDepth, a0);
+  }
+
   public static IAST Arrays(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(Arrays, a0, a1, a2);
   }
@@ -1988,6 +1994,14 @@ public class F extends S {
    */
   public static IAST ArrayQ(final IExpr a0) {
     return new AST1(ArrayQ, a0);
+  }
+
+  public static IAST ArrayReduce(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(ArrayReduce, a0, a1, a2);
+  }
+
+  public static IAST ArrayReshape(final IExpr list, final IExpr permutation) {
+    return new AST2(ArrayReshape, list, permutation);
   }
 
   /**
@@ -2914,8 +2928,8 @@ public class F extends S {
     return new AST1(Circle, originList);
   }
 
-  public static IAST CentralMoment(final IExpr a0, final IExpr a1) {
-    return new AST2(CentralMoment, a0, a1);
+  public static IAST CentralMoment(final IExpr a0, final int r) {
+    return new AST2(CentralMoment, a0, F.ZZ(r));
   }
 
   public static IAST Clear(final IExpr... a) {
@@ -3515,6 +3529,10 @@ public class F extends S {
    */
   public static IAST Cuboid(final IExpr pMin, final IExpr pMax) {
     return new AST2(Cuboid, pMin, pMax);
+  }
+
+  public static IAST Cumulant(final IExpr a0, final int r) {
+    return new AST2(Cumulant, a0, F.ZZ(r));
   }
 
   public static IAST Cycles(final IExpr a0) {
@@ -5257,9 +5275,9 @@ public class F extends S {
           Config.SHOW_PATTERN_SYMBOL_STEPS.add(Integrate);
         }
         try {
-          String autoload = ".\\Autoload";
+          String autoload = ".\\autoload";
           if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-            autoload = ".\\AutoloadSymja";
+            autoload = ".\\autoloadsymja";
           }
           File sourceLocation = new File(autoload);
           final String[] files = sourceLocation.list();
@@ -7415,6 +7433,10 @@ public class F extends S {
     return new AST1(MoebiusMu, a0);
   }
 
+  public static IAST Moment(final IExpr a0, final int r) {
+    return new AST2(Moment, a0, F.ZZ(r));
+  }
+
   public static IExpr mod(IExpr a, Integer i) {
     return Mod(a, ZZ(i.longValue()));
   }
@@ -8034,6 +8056,10 @@ public class F extends S {
    */
   public static IAST PDF(final IExpr distribution, final IExpr x) {
     return new AST2(PDF, distribution, x);
+  }
+
+  public static IAST Permute(final IAST list, final IAST permutation) {
+    return new AST2(Permute, list, permutation);
   }
 
   /**
@@ -9091,6 +9117,14 @@ public class F extends S {
 
   public static IAST Round(final IExpr x) {
     return new AST1(Round, x);
+  }
+
+  public static IAST RotateLeft(final IAST list, final IExpr n) {
+    return new AST2(RotateLeft, list, n);
+  }
+
+  public static IAST RotateRight(final IAST list, final IExpr n) {
+    return new AST2(RotateRight, list, n);
   }
 
   public static IAST RotationTransform(final IExpr x) {
@@ -10670,6 +10704,10 @@ public class F extends S {
    */
   public static IAST Transpose(final IExpr list) {
     return new AST1(Transpose, list);
+  }
+
+  public static IAST Transpose(final IExpr list, final IExpr permutationList) {
+    return new AST2(Transpose, list, permutationList);
   }
 
   public static IAST Triangle(final IAST list) {

@@ -349,6 +349,8 @@ public class Errors {
       "(`1`) is neither a list of replacement rules nor a valid dispatch table and cannot be used for replacing.", //
       "root", "Unable to determine the appropriate root for the periodic continued fraction.", //
       "rrlim", "Exiting after `1` scanned `2` times.", //
+      "rspec",
+      "Rotation specification `1` should be a machine-sized integer or list of machine-sized integers.", //
       "rvalue", "`1` is not a variable with a value, so its value cannot be changed.", //
       "rvec", "Input `1` is not a vector of reals or integers.", //
       "rvec2", "Input `1` is not a real-valued vector.", //

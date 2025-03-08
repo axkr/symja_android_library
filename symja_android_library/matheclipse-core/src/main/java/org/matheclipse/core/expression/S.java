@@ -757,6 +757,8 @@ public class S {
    */
   public final static IBuiltInSymbol ArrayQ = S.initFinalSymbol("ArrayQ", ID.ArrayQ);
 
+  public final static IBuiltInSymbol ArrayReduce = S.initFinalSymbol("ArrayReduce", ID.ArrayReduce);
+
   /**
    * ArrayReshape(list-of-values, list-of-dimension) - returns the `list-of-values` elements
    * reshaped as nested list with dimensions according to the `list-of-dimension`.
@@ -2402,6 +2404,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Cuboid = S.initFinalSymbol("Cuboid", ID.Cuboid);
+
+  public final static IBuiltInSymbol Cumulant = S.initFinalSymbol("Cumulant", ID.Cumulant);
 
   /**
    * Curl({f1, f2}, {x1, x2}) - returns the curl `D(f2, x1) - D(f1, x2)`
@@ -6946,6 +6950,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol MoebiusMu = S.initFinalSymbol("MoebiusMu", ID.MoebiusMu);
+
+  public final static IBuiltInSymbol Moment = S.initFinalSymbol("Moment", ID.Moment);
 
   /**
    * MonomialList(polynomial, list-of-variables) - get the list of monomials of a `polynomial`

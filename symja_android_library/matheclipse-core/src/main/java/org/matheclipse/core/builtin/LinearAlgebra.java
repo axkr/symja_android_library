@@ -789,21 +789,7 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (arg1.isAST()) {
-        IAST list = (IAST) arg1;
-        IExpr header = list.head();
-        IntList dims = LinearAlgebra.dimensions(list, header);
-        return F.ZZ(dims.size());
-      }
-      if (arg1.isSparseArray()) {
-        int[] dims = ((ISparseArray) arg1).getDimension();
-        return F.ZZ(dims.length);
-      }
-      if (arg1.isNumericArray()) {
-        int[] dims = ((INumericArray) arg1).getDimension();
-        return F.ZZ(dims.length);
-      }
-      return F.C0;
+      return F.ZZ(arrayDepth(arg1));
     }
 
     @Override
@@ -5913,20 +5899,22 @@ public final class LinearAlgebra {
       final IAST tensor;
       /** The dimensions of the current tensor. */
       final int[] dimensions;
+      final int[] dimensionsPermutated;
+      final int[] originalIndices;
       /** The permutation of the result tensor */
       final int[] permutation;
       /** The position from which to extract the current element */
       int[] positions;
       private final Function<? super IExpr, ? extends IExpr> function;
 
-      private TransposePermute(IAST tensor, IntList tensorDimensions, int[] permutation,
+      private TransposePermute(IAST tensor, int[] tensorDimensions, int[] dimensionsPermutated,
+          int[] permutation, int[] originalIndices,
           Function<? super IExpr, ? extends IExpr> function) {
         this.tensor = tensor;
-        this.dimensions = new int[tensorDimensions.size()];
+        this.dimensions = tensorDimensions;
+        this.dimensionsPermutated = dimensionsPermutated;
+        this.originalIndices = originalIndices;
         this.function = function;
-        for (int i = 0; i < tensorDimensions.size(); i++) {
-          dimensions[i] = tensorDimensions.getInt(i);
-        }
         this.permutation = permutation;
         this.positions = new int[dimensions.length];
       }
@@ -5952,13 +5940,14 @@ public final class LinearAlgebra {
             resultList.append(function.apply(part));
           }
         } else {
-          int size = dimensions[permutation[permutationIndex] - 1];
+          int originalIndex = originalIndices[permutationIndex] - 1;
+          int size = dimensionsPermutated[permutationIndex];
           IASTAppendable list = F.ListAlloc(size);
           if (resultList != null) {
             resultList.append(list);
           }
           for (int i = 0; i < size; i++) {
-            positions[permutation[permutationIndex] - 1] = i + 1;
+            positions[originalIndex] = i + 1;
             transposeRecursive(permutationIndex + 1, list);
           }
           return list;
@@ -5978,16 +5967,15 @@ public final class LinearAlgebra {
       }
       if (arg1.isList()) {
         IAST tensor = (IAST) arg1;
-        IntArrayList dimension = dimensions(tensor, tensor.head(), Integer.MAX_VALUE);
-
-        final int[] permutation;
-        int length = dimension.size();
-        if (length < 2) {
-          // Error messages inherits to ConjugateTranspose
+        // IntArrayList dimension = dimensions(tensor, tensor.head(), Integer.MAX_VALUE);
+        IAST dimensions = (IAST) F.Dimensions(tensor).eval(engine);
+        int length = dimensions.argSize();
+        if (length < 1) {
+          // Error messages inherits to S.ConjugateTranspose
           // The first two levels of `1` cannot be transposed.
           return Errors.printMessage(ast.topHead(), "nmtx", F.List(ast), engine);
         }
-        permutation = getPermutation(arg2, length, ast, engine);
+        final int[] permutation = getPermutation(arg2, length, ast, engine);
         if (permutation == null) {
           return F.NIL;
         }
@@ -5999,8 +5987,38 @@ public final class LinearAlgebra {
           }
         }
 
-        return new TransposePermute(tensor, dimension, permutation, x -> transform(x))
-            .transposeRecursive();
+
+        if (dimensions.argSize() == 1) {
+          if (arg2.isPresent()) {
+            if (arg2.isList1() && arg2.first().isOne()) {
+              return tensor;
+            }
+            // Entry `1` in `2` is out of bounds for a permutation of length `3`.
+            return Errors.printMessage(ast.topHead(), "perm2", F.List(F.C2, arg2, F.C1), engine);
+          } else {
+            return tensor;
+          }
+        }
+        IASTMutable indices;
+        IAST range = ListFunctions.range(dimensions.size());
+        int[] dimensionsPermutated;
+        int[] originalIndices;
+        if (arg2.isPresent()) {
+          originalIndices = Combinatoric.permute(range, (IAST) arg2);
+          dimensionsPermutated = Combinatoric.permute(dimensions, (IAST) arg2);
+        } else {
+          // start with {2,1,3,...} as default permutation
+          indices = range.setAtCopy(1, range.arg2());
+          indices.set(2, range.arg1());
+          originalIndices = indices.toIntVector();
+          dimensionsPermutated = Combinatoric.permute(dimensions, indices);
+        }
+        if (dimensionsPermutated == null || originalIndices == null) {
+          return F.NIL;
+        }
+        return new TransposePermute(tensor, dimensions.toIntVector(), dimensionsPermutated,
+            permutation, originalIndices, x -> transform(x)).transposeRecursive();
+
       }
 
       if (arg1.isSparseArray()) {
@@ -6046,18 +6064,20 @@ public final class LinearAlgebra {
      */
     private static int[] getPermutation(final IExpr permutationList, int length, final IAST ast,
         EvalEngine engine) {
-      final int[] permutation;
       if (permutationList.isList()) {
-        permutation = Validate.checkListOfInts(ast, permutationList, 1, length, engine);
+        return Validate.checkListOfInts(ast, permutationList, 1, length, engine);
       } else {
-        permutation = new int[length];
-        for (int i = 0; i < length; i++) {
-          permutation[i] = i + 1;
+        if (length > 1) {
+          final int[] permutation = new int[length];
+          for (int i = 0; i < length; i++) {
+            permutation[i] = i + 1;
+          }
+          permutation[0] = 2;
+          permutation[1] = 1;
+          return permutation;
         }
-        permutation[0] = 2;
-        permutation[1] = 1;
       }
-      return permutation;
+      return null;
     }
 
     @Override
@@ -6326,6 +6346,31 @@ public final class LinearAlgebra {
       return ARGS_2_2;
     }
 
+  }
+
+  /**
+   * Returns the depth of an array. The depth of a vector is <code>1</code>. The depth of a matrix
+   * is <code>2</code>. The depth of a tensor is the {@link S#Length} of the {@link S#Dimensions}
+   * list. The depth of any other expression is <code>0</code>.
+   * 
+   * @param arg1
+   */
+  public static int arrayDepth(IExpr arg1) {
+    if (arg1.isAST()) {
+      IAST list = (IAST) arg1;
+      IExpr header = list.head();
+      IntList dims = LinearAlgebra.dimensions(list, header);
+      return dims.size();
+    }
+    if (arg1.isSparseArray()) {
+      int[] dims = ((ISparseArray) arg1).getDimension();
+      return dims.length;
+    }
+    if (arg1.isNumericArray()) {
+      int[] dims = ((INumericArray) arg1).getDimension();
+      return dims.length;
+    }
+    return 0;
   }
 
   public static IExpr characteristicPolynomial(int n, IAST matrix, IExpr variable) {

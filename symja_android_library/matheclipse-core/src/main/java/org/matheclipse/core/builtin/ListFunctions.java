@@ -5583,36 +5583,6 @@ public final class ListFunctions {
       return evaluateTable(ast, F.List(), engine);
     }
 
-    /**
-     * <code>Range.of(maximumExclusive)</code> gives
-     * <code>{1, 2, 3, ... ,maximumInclusive-2, maximumInclusive-1}</code>
-     * 
-     * @param maximumExclusive
-     * @return {@link F#NIL} if <code>size > Integer.MAX_VALUE-3</code>
-     */
-    public static IAST range(int maximumExclusive) {
-      if (maximumExclusive > Integer.MAX_VALUE - 3) {
-        // `1`.
-        return Errors.printMessage(S.Range, "error",
-            F.List("argument " + maximumExclusive + " is greater than Javas Integer.MAX_VALUE-3."));
-      }
-      return range(1, maximumExclusive);
-    }
-
-    /**
-     * Range.of(2, 7) gives {2, 3, 4, 5, 6}
-     *
-     * @param minimumInclusive
-     * @param maximumExclusive
-     * @return a list of integer numbers
-     */
-    public static IAST range(int minimumInclusive, int maximumExclusive) {
-      if (maximumExclusive > minimumInclusive) {
-        return F.mapRange(minimumInclusive, maximumExclusive, i -> F.ZZ(i));
-      }
-      return F.CEmptyList;
-    }
-
     public IExpr evaluateTable(final IAST ast, final IAST resultList, EvalEngine engine) {
       List<IIterator<IExpr>> iterList = null;
       try {
@@ -6544,11 +6514,11 @@ public final class ListFunctions {
    * x(c,a,b)
    * </pre>
    */
-  private static final class RotateLeft extends AbstractCoreFunctionEvaluator {
+  private static final class RotateLeft extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = engine.evaluate(ast.arg1());
+      IExpr arg1 = ast.arg1();
       if (arg1.isASTOrAssociation()) {
         final int argSize = arg1.argSize();
         if (argSize == 0) {
@@ -6561,19 +6531,24 @@ public final class ListFunctions {
           list.rotateLeft(result, 1);
           return result;
         } else {
-          IExpr arg2 = engine.evaluate(ast.arg2());
-          if (arg2.isInteger()) {
-            int n = Validate.checkIntType(S.RotateLeft, arg2, 0, engine);
-            if (n == Integer.MIN_VALUE) {
-              return F.NIL;
-            }
+          int n = ast.arg2().toIntDefault();
+          if (n == Integer.MIN_VALUE) {
+            // Rotation specification `1` should be a machine-sized integer or list of machine-sized
+            // integers.
+            return Errors.printMessage(S.RotateRight, "rspec", F.List(ast.arg2()), engine);
+          }
+          if (n < 0) {
+            n = -n;
             n = n % argSize;
             final IASTAppendable result = F.ast(list.head(), list.size() + n);
-            list.rotateLeft(result, n);
+            list.rotateRight(result, n);
             return result;
           }
+          n = n % argSize;
+          final IASTAppendable result = F.ast(list.head(), list.size() + n);
+          list.rotateLeft(result, n);
+          return result;
         }
-        return F.NIL;
       }
       // Nonatomic expression expected at position `1` in `2`.
       return Errors.printMessage(S.RotateLeft, "normal", F.list(F.C1, ast), engine);
@@ -6623,11 +6598,11 @@ public final class ListFunctions {
    * x(b,c,a)
    * </pre>
    */
-  private static final class RotateRight extends AbstractCoreFunctionEvaluator {
+  private static final class RotateRight extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = engine.evaluate(ast.arg1());
+      IExpr arg1 = ast.arg1();
       if (arg1.isASTOrAssociation()) {
         final int argSize = arg1.argSize();
         if (argSize == 0) {
@@ -6640,19 +6615,24 @@ public final class ListFunctions {
           list.rotateRight(result, 1);
           return result;
         } else {
-          IExpr arg2 = engine.evaluate(ast.arg2());
-          if (arg2.isInteger()) {
-            int n = Validate.checkIntType(S.RotateRight, arg2, 0, engine);
-            if (n == Integer.MIN_VALUE) {
-              return F.NIL;
-            }
+          int n = ast.arg2().toIntDefault();
+          if (n == Integer.MIN_VALUE) {
+            // Rotation specification `1` should be a machine-sized integer or list of machine-sized
+            // integers.
+            return Errors.printMessage(S.RotateRight, "rspec", F.List(ast.arg2()), engine);
+          }
+          if (n < 0) {
+            n = -n;
             n = n % argSize;
             final IASTAppendable result = F.ast(list.head(), list.size() + n);
-            list.rotateRight(result, n);
+            list.rotateLeft(result, n);
             return result;
           }
+          n = n % argSize;
+          final IASTAppendable result = F.ast(list.head(), list.size() + n);
+          list.rotateRight(result, n);
+          return result;
         }
-        return F.NIL;
       }
       // Nonatomic expression expected at position `1` in `2`.
       return Errors.printMessage(S.RotateRight, "normal", F.list(F.C1, ast), engine);
@@ -7014,7 +6994,7 @@ public final class ListFunctions {
     }
 
     public static IAST subdivide(IExpr arg1, int n) {
-      return Range.range(0, n + 1).map(x -> x.divide(arg1), 1);
+      return range(0, n + 1).map(x -> x.divide(arg1), 1);
     }
 
     @Override
@@ -8309,6 +8289,36 @@ public final class ListFunctions {
     }
     IASTMutable orderedList = listOrAssociation.copyAST();
     return EvalAttributes.copySortLess(orderedList).get(n);
+  }
+
+  /**
+   * <code>range(maximumExclusive)</code> gives
+   * <code>{1, 2, 3, ... ,maximumInclusive-2, maximumInclusive-1}</code>
+   * 
+   * @param maximumExclusive
+   * @return {@link F#NIL} if <code>size > Integer.MAX_VALUE-3</code>
+   */
+  public static IAST range(int maximumExclusive) {
+    if (maximumExclusive > Integer.MAX_VALUE - 3) {
+      // `1`.
+      return Errors.printMessage(S.Range, "error",
+          F.List("argument " + maximumExclusive + " is greater than Javas Integer.MAX_VALUE-3."));
+    }
+    return range(1, maximumExclusive);
+  }
+
+  /**
+   * <code>range(2, 7)</code> gives <code>{2, 3, 4, 5, 6}</code>
+   *
+   * @param minimumInclusive
+   * @param maximumExclusive
+   * @return a list of integer numbers
+   */
+  public static IAST range(int minimumInclusive, int maximumExclusive) {
+    if (maximumExclusive > minimumInclusive) {
+      return F.mapRange(minimumInclusive, maximumExclusive, i -> F.ZZ(i));
+    }
+    return F.CEmptyList;
   }
 
   /**

@@ -557,7 +557,7 @@ public final class Combinatoric {
         }
         IExpr ordering = S.Ordering.of(engine, ast1);
         if (ordering.isList()) {
-          return permutationCycles((IAST) ordering, engine);
+          return permutationCycles((IAST) ordering);
         }
         return F.NIL;
       }
@@ -576,7 +576,7 @@ public final class Combinatoric {
       }
 
       IAST permList = permutationList(ast1, ast2);
-      return permutationCycles(permList, engine);
+      return permutationCycles(permList);
     }
 
     /**
@@ -1443,11 +1443,7 @@ public final class Combinatoric {
       IExpr arg2 = ast.arg2();
       if (arg1.isAST()) {
         if (arg2.isList()) {
-          IExpr temp = permutationCycles((IAST) arg2, engine);
-          if (temp.isAST(S.Cycles, 2)) {
-            IAST mainList = (IAST) temp.first();
-            return permute((IAST) arg1, mainList, ast, engine);
-          }
+          return permuteCycles((IAST) arg1, (IAST) arg2, ast);
         } else if (arg2.isAST(S.Cycles, 2)) {
           IAST cycles;
           if (arg2.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
@@ -1457,7 +1453,7 @@ public final class Combinatoric {
           }
           if (cycles.isPresent()) {
             IAST mainList = (IAST) cycles.arg1();
-            return permute((IAST) arg1, mainList, ast, engine);
+            return permute((IAST) arg1, mainList, ast);
           }
         }
       }
@@ -1465,8 +1461,16 @@ public final class Combinatoric {
       return Errors.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
     }
 
-    private static IExpr permute(IAST list1, IAST cyclesMainList, final IAST ast,
-        EvalEngine engine) {
+    private static IExpr permuteCycles(IAST list, IAST permutationList, final IAST ast) {
+      IExpr temp = permutationCycles(permutationList);
+      if (temp.isAST(S.Cycles, 2)) {
+        IAST permutationMainList = (IAST) temp.first();
+        return permute(list, permutationMainList, ast);
+      }
+      return F.NIL;
+    }
+
+    private static IExpr permute(IAST list1, IAST cyclesMainList, final IAST ast) {
       IASTMutable result = list1.copy();
       boolean changed = false;
 
@@ -1480,7 +1484,7 @@ public final class Combinatoric {
           if (fromPosition > list1.argSize()) {
             // Required length `1` is smaller than maximum `2` of support of `3`
             return Errors.printMessage(S.Permute, "lowlen",
-                F.list(F.ZZ(list1.argSize()), list.get(i), ast), engine);
+                F.list(F.ZZ(list1.argSize()), list.get(i), ast));
           }
 
           int toPosition;
@@ -1495,7 +1499,7 @@ public final class Combinatoric {
           if (toPosition > list1.argSize()) {
             // Required length `1` is smaller than maximum `2` of support of `3`
             return Errors.printMessage(S.Permute, "lowlen",
-                F.list(F.ZZ(list1.argSize()), F.ZZ(toPosition), ast), engine);
+                F.list(F.ZZ(list1.argSize()), F.ZZ(toPosition), ast));
           }
           changed = true;
           IExpr from = list1.get(fromPosition);
@@ -1567,7 +1571,7 @@ public final class Combinatoric {
         head = ast.arg2();
       }
       if (arg1.isList()) {
-        return permutationCycles((IAST) arg1, engine, head);
+        return permutationCycles((IAST) arg1, head);
       }
       return F.NIL;
     }
@@ -1782,8 +1786,7 @@ public final class Combinatoric {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr permList = ast.arg1();
       if (permList.isList()) {
-        return permList.isEmptyList() || isPermutationList((IAST) permList, true, engine) != null
-            ? S.True
+        return permList.isEmptyList() || isPermutationList((IAST) permList, true) != null ? S.True
             : S.False;
       }
       return S.False;
@@ -3120,15 +3123,14 @@ public final class Combinatoric {
     return F.NIL;
   }
 
-  /**
-   * Create a <code>Cycles({...})</code> expression from the permutation list.
-   *
-   * @param permList the permutation list
-   * @param engine
-   * @return
-   */
-  public static IExpr permutationCycles(IAST permList, EvalEngine engine) {
-    return permutationCycles(permList, engine, S.Cycles);
+  public static int[] permute(IAST list, IAST permutationList) {
+    IExpr temp = permutationCycles(permutationList);
+    if (temp.isAST(S.Cycles, 2)) {
+      IAST permutationMainList = (IAST) temp.first();
+      IExpr permute = Permute.permute(list, permutationMainList, F.Permute(list, permutationList));
+      return permute.toIntVector();
+    }
+    return null;
   }
 
   /**
@@ -3136,15 +3138,25 @@ public final class Combinatoric {
    *
    * @param permList the permutation list
    * @param engine
+   */
+  public static IExpr permutationCycles(IAST permList) {
+    return permutationCycles(permList, S.Cycles);
+  }
+
+  /**
+   * Create a <code>Cycles({...})</code> expression from the permutation list.
+   *
+   * @param permList the permutation list
    * @param head define the head of the resulting expression (can be different from {@link S#Cycles}
+   * @param engine
    * @return
    */
-  public static IExpr permutationCycles(IAST permList, EvalEngine engine, IExpr head) {
+  public static IExpr permutationCycles(IAST permList, IExpr head) {
     if (permList.isEmptyList()) {
       return F.Cycles(F.CEmptyList);
     }
 
-    int[] positions = isPermutationList(permList, false, engine);
+    int[] positions = isPermutationList(permList, false);
     if (positions == null) {
       // not a valid permutation list
       return F.NIL;
@@ -3208,7 +3220,7 @@ public final class Combinatoric {
    * @param engine
    * @return <code>null</code> if <code>permList</code> is not a valid permutation list.
    */
-  private static int[] isPermutationList(IAST permList, boolean quiet, EvalEngine engine) {
+  private static int[] isPermutationList(IAST permList, boolean quiet) {
     Set<IExpr> set = new HashSet<IExpr>();
     int[] positions = new int[permList.argSize()];
     for (int i = 1; i < permList.size(); i++) {
@@ -3218,7 +3230,7 @@ public final class Combinatoric {
         if (position < 1 || position > permList.argSize()) {
           if (!quiet) {
             // Invalid permutation list `1`.
-            Errors.printMessage(S.Cycles, "permlist", F.list(permList), engine);
+            Errors.printMessage(S.Cycles, "permlist", F.list(permList));
           }
           return null;
         }
@@ -3226,7 +3238,7 @@ public final class Combinatoric {
           // contains repeated integers.
           if (!quiet) {
             // Invalid permutation list `1`.
-            Errors.printMessage(S.Cycles, "permlist", F.list(permList), engine);
+            Errors.printMessage(S.Cycles, "permlist", F.list(permList));
           }
           return null;
         }
@@ -3235,7 +3247,7 @@ public final class Combinatoric {
       } else {
         if (!quiet) {
           // `1` is not a valid permutation.
-          Errors.printMessage(S.Cycles, "perm", F.list(permList), engine);
+          Errors.printMessage(S.Cycles, "perm", F.list(permList));
         }
         return null;
       }

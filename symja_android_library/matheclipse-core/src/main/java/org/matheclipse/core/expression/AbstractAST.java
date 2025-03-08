@@ -5868,7 +5868,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
    */
   @Override
   public IAST rotateLeft(IASTAppendable resultList, final int n) {
-    int size = size();
+    final int size = size();
+    if (resultList.isNIL()) {
+      resultList = F.ListAlloc(argSize());
+    }
     int n1 = n + 1;
     for (int i = n1; i < size; i++) {
       resultList.append(get(i));
@@ -5891,11 +5894,15 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
    */
   @Override
   public IAST rotateRight(IASTAppendable resultList, final int n) {
+    final int size = size();
+    if (resultList.isNIL()) {
+      resultList = F.ListAlloc(size - 1);
+    }
     if (n <= size()) {
-      for (int i = size() - n; i < size(); i++) {
+      for (int i = size - n; i < size; i++) {
         resultList.append(get(i));
       }
-      for (int i = 1; i < size() - n; i++) {
+      for (int i = 1; i < size - n; i++) {
         resultList.append(get(i));
       }
     }
