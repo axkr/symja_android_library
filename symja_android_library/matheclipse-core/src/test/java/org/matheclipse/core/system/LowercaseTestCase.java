@@ -1115,6 +1115,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ArrayDepth(Array(a, {4, 5, 2}))", //
         "3");
 
+    check("ArrayDepth({{4,5},{1,2},{1,7},{9,6},{1,9}})", //
+        "2");
     check("ArrayDepth({{a,b},{c,d}})", //
         "2");
     check("ArrayDepth(x)", //
@@ -1244,6 +1246,63 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
     check("ArrayQ({{a, b}, {c, d}},2,SymbolQ)", //
         "True");
+  }
+
+  @Test
+  public void testArrayReduce() {
+    check("ArrayReduce(f, tst, 1)", //
+        "ArrayReduce(f,tst,1)");
+    check("ArrayReduce(f, {a,b}, 1)", //
+        "{a,b}");
+    check("ArrayReduce(f, {{a,b}}, 1)", //
+        "{f({a}),f({b})}");
+    check("ArrayReduce(f, {{a,b},{c,d}}, 1)", //
+        "{f({a,c}),f({b,d})}");
+
+    check("arr=ArrayReshape(Range(24),{2,3,4})", //
+        "{{{1,2,3,4},{5,6,7,8},{9,10,11,12}},{{13,14,15,16},{17,18,19,20},{21,22,23,24}}}");
+    check("ArrayReduce(f, arr, 1)", //
+        "{{f({1,13}),f({2,14}),f({3,15}),f({4,16})},{f({5,17}),f({6,18}),f({7,19}),f({8,\n" //
+            + "20})},{f({9,21}),f({10,22}),f({11,23}),f({12,24})}}");
+    check("ArrayReduce(f, arr, 2)", //
+        "{{f({1,5,9}),f({2,6,10}),f({3,7,11}),f({4,8,12})},{f({13,17,21}),f({14,18,22}),f({\n"
+            + "15,19,23}),f({16,20,24})}}");
+    check("ArrayReduce(f, arr, 3)", //
+        "{{f({1,2,3,4}),f({5,6,7,8}),f({9,10,11,12})},{f({13,14,15,16}),f({17,18,19,20}),f({\n" //
+            + "21,22,23,24})}}");
+
+    check("mat={{4,5},{1,2},{1,7},{9,6},{1,9}};", //
+        "");
+
+    check("mat1 = ArrayReduce(Mean, mat, 1)", //
+        "{16/5,29/5}");
+    check("Dimensions(mat1)", //
+        "{2}");
+
+
+    check("mat2 = ArrayReduce(Mean, mat, 2)", //
+        "{9/2,3/2,4,15/2,5}");
+    check("Dimensions(mat2)", //
+        "{5}");
+
+
+    check(
+        "arr={{{4,5},{1,2},{1,7},{9,6},{1,9}}, {{1,0},{5,6},{2,0},{8,5},{0,8}},{{0,6},{9,2},{1,7},{8,5},{9,6}}};", //
+        "");
+    check("arr2 = ArrayReduce(StandardDeviation, arr, 2)", //
+        "{{Sqrt(61/5),Sqrt(67/10)},{Sqrt(107/10),Sqrt(66/5)},{Sqrt(203/10),Sqrt(37/10)}}");
+    check("Dimensions(arr2)", //
+        "{3,2}");
+
+    //
+    // check("ArrayReduce((#[[1]]-#[[2]] &),{{1, 2}, {3, 4}}, 1)", //
+    // "{-2,-2}");
+
+    // check("arr = RandomReal(9, {3, 5, 2, 6, 4});", //
+    // "");
+    // check("arr2 = ArrayReduce(Total, arr, {2, 4}) // Dimensions", //
+    // "");
+
   }
 
   @Test
@@ -12579,6 +12638,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLerchPhi() {
+    // TODO numeric function
+    // check("LerchPhi(2, 3, -1.5)", //
+    // "");
+
     check("LerchPhi(-1,1,0)", //
         "-Log(2)");
     check("LerchPhi(-1,2,1/2)", //
@@ -21339,6 +21402,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRotateLeft() {
+    check("RotateLeft({1,2,3,4,5},-2)", //
+        "{4,5,1,2,3}");
+    check("RotateLeft(Range(Length({5,2})),-2+1)", //
+        "{2,1}");
+
     // RotateLeft: Nonatomic expression expected at position 1 in RotateLeft(f).
     check("RotateLeft(f)", //
         "RotateLeft(f)");
@@ -21364,6 +21432,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRotateRight() {
+    check("RotateRight({1,2,3,4},-2)", //
+        "{3,4,1,2}");
+
     // RotateRight: Nonatomic expression expected at position 1 in RotateRight(f).
     check("RotateRight(f)", //
         "RotateRight(f)");
@@ -22625,6 +22696,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSkewness() {
+    check("Skewness({1.1, 1.2, 1.4, 2.1, 2.4})", //
+        "0.407041");
     check("Skewness(WeibullDistribution(n,m))", //
         "(2*Gamma(1+1/n)^3-3*Gamma(1+1/n)*Gamma(1+2/n)+Gamma(1+3/n))/(-Gamma(1+1/n)^2+Gamma(\n" + //
             "1+2/n))^(3/2)");
@@ -22664,8 +22737,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Skewness(ChiSquareDistribution(a))", //
         "2*Sqrt(2)*Sqrt(1/a)");
 
-    check("Skewness({1.1, 1.2, 1.4, 2.1, 2.4})", //
-        "0.407041");
   }
 
   @Test

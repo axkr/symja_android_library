@@ -187,9 +187,9 @@ public class AJAXQueryServlet extends HttpServlet {
   private String[] calculateString(EvalEngine engine, final String inputString,
       final String numericMode, final String function, StringWriter outWriter,
       StringWriter errorWriter) {
-    ExecutorService executors = Executors.newSingleThreadExecutor();
+    ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    Future<String[]> task = executors.submit(() -> {
+    Future<String[]> task = executor.submit(() -> {
       String[] temp;
       try {
         temp = evaluateString(engine, inputString, numericMode, function, outWriter, errorWriter);
@@ -211,7 +211,7 @@ public class AJAXQueryServlet extends HttpServlet {
       if (!task.isDone() && !task.cancel(true)) {
         LOGGER.warn("task.cancel() failed!");
       }
-      if (!MoreExecutors.shutdownAndAwaitTermination(executors, 1, TimeUnit.SECONDS)) {
+      if (!MoreExecutors.shutdownAndAwaitTermination(executor, 1, TimeUnit.SECONDS)) {
         LOGGER.warn("MoreExecutors.shutdownAndAwaitTermination() failed!");
       }
     }

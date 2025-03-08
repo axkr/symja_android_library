@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -864,6 +865,8 @@ public class WL {
             writeDouble(doubleArr[i++]);
           }
         }
+        default:
+          throw new UnsupportedEncodingException();
       }
     }
 

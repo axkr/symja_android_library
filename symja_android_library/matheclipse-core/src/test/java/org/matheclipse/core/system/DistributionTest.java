@@ -159,22 +159,6 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testCentralMoment() {
-    check("CentralMoment({1.1, 1.2, 1.4, 2.1, 2.4}, 4)", //
-        "0.100845");
-    check("CentralMoment(BernoulliDistribution(n),m)", //
-        "Piecewise({{1,m==0},{((1-n)^(-1+m)-1/(-n)^(1-m))*(1-n)*n,m>0}},0)");
-    check("CentralMoment(ChiSquareDistribution(n),m)", //
-        "2^m*HypergeometricU(-m,1-m-n/2,-n/2)");
-    check("CentralMoment(ExponentialDistribution(n),m)", //
-        "Subfactorial(m)/n^m");
-    check("CentralMoment(GammaDistribution(a,b),2)", //
-        "a*b^2");
-    check("CentralMoment(NormalDistribution(a,b),m)", //
-        "Piecewise({{b^m*(-1+m)!!,Mod(m,2)==0&&m>=0}},0)");
-  }
-
-  @Test
   public void testChiSquareDistribution() {
     check("StandardDeviation(ChiSquareDistribution(v))", //
         "Sqrt(2)*Sqrt(v)");

@@ -2995,7 +2995,7 @@ public final class PatternMatching {
         }
         if (!quiet) {
           // Option name `2` not found in defaults for `1`
-          Errors.printMessage(ast.topHead(), "optnf", F.list(optionsPattern, optionValue), engine);
+          Errors.printMessage(ast.topHead(), "optnf", F.list(arg1, optionValue), engine);
         }
         return optionValue;
       }
@@ -3039,7 +3039,7 @@ public final class PatternMatching {
         }
         if (!quiet) {
           // Option name `2` not found in defaults for `1`
-          Errors.printMessage(ast.topHead(), "optnf", F.list(optionsPattern, optionValue), engine);
+          Errors.printMessage(ast.topHead(), "optnf", F.list(arg1, optionValue), engine);
         }
         return optionValue;
       }
@@ -3071,7 +3071,7 @@ public final class PatternMatching {
     if (optionsPattern != null) {
       if (!quiet) {
         // Option name `2` not found in defaults for `1`
-        Errors.printMessage(ast.topHead(), "optnf", F.list(optionsPattern, optionValue), engine);
+        Errors.printMessage(ast.topHead(), "optnf", F.list(arg1, optionValue), engine);
       }
       return optionValue;
     }

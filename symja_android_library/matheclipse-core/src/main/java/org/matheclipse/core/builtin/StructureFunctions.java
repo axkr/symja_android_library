@@ -197,10 +197,10 @@ public class StructureFunctions {
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
-      return apply(ast, argSize, option, engine);
+      return applyInternal(ast, argSize, option, engine);
     }
 
-    public static IExpr apply(IAST ast, int argSize, IExpr[] option, EvalEngine engine) {
+    public static IExpr applyInternal(IAST ast, int argSize, IExpr[] option, EvalEngine engine) {
       if (argSize < 2 || argSize > 4) {
         return Errors.printArgMessage(ast, ARGS_2_4, engine);
       }
@@ -228,7 +228,11 @@ public class StructureFunctions {
       if (arg1.isQuantity() || arg2.isQuantity()) {
         return F.NIL;
       }
-      return evalApply(arg1, arg2, evaledAST, lastIndex, heads, engine);
+      IExpr level = F.C0;
+      if (lastIndex == 3) {
+        level = evaledAST.get(3);
+      }
+      return evalApply(arg1, arg2, level, lastIndex, heads, engine);
     }
 
     @Override
@@ -236,36 +240,27 @@ public class StructureFunctions {
       return ARGS_1_4_2;
     }
 
-    public static IExpr evalApply(IExpr f, IExpr expr, IAST evaledAST, int lastIndex, boolean heads,
-        EvalEngine engine) {
+    public static IExpr evalApply(IExpr f, IExpr expr, IExpr levelExpr, int lastIndex,
+        boolean heads, EvalEngine engine) {
 
       java.util.function.Function<IExpr, IExpr> af =
           x -> x.isAST() ? ((IAST) x).setAtCopy(0, f) : F.NIL;
       try {
         VisitorLevelSpecification level = null;
         if (lastIndex == 3) {
-          level = new VisitorLevelSpecification(af, evaledAST.get(lastIndex), heads, engine);
+          level = new VisitorLevelSpecification(af, levelExpr, heads, engine);
         } else {
           level = new VisitorLevelSpecification(af, 0);
         }
 
-        if (expr.isAST()) {
-          return ((IAST) expr).acceptChecked(level).orElse(expr);
-        } else {
-          // arg2 is an Atom to which the head f couldn't be applied
-          if (evaledAST.size() >= 3) {
-            if (f.isFunction()) {
-              return F.unaryAST1(f, expr);
-            }
-            return expr;
-          }
-        }
+        return apply(f, expr, level);
       } catch (final ValidateException ve) {
         // see level specification
         return Errors.printMessage(S.Apply, ve, engine);
       }
-      return F.NIL;
+      // return F.NIL;
     }
+
 
     @Override
     public void setUp(final ISymbol newSymbol) {
@@ -2426,6 +2421,20 @@ public class StructureFunctions {
       }
     }
     return F.NIL;
+  }
+
+  public static IExpr apply(IExpr f, IExpr expr, VisitorLevelSpecification level) {
+    if (expr.isAST()) {
+      return ((IAST) expr).acceptChecked(level).orElse(expr);
+    } // else {
+      // arg2 is an Atom to which the head f couldn't be applied
+      // if (evaledAST.size() >= 3) {
+    if (f.isFunction()) {
+      return F.unaryAST1(f, expr);
+    }
+    return expr;
+    // }
+    // }
   }
 
   public static AbstractVisitorLong leafCountVisitor() {

@@ -22,6 +22,7 @@ import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -1314,6 +1315,11 @@ public class SeriesFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.NHOLDALL);
       setOptions(newSymbol, //
@@ -1373,6 +1379,11 @@ public class SeriesFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 
@@ -1501,6 +1512,11 @@ public class SeriesFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
   }
 
 
@@ -1556,6 +1572,11 @@ public class SeriesFunctions {
       }
       return F.NIL;
     }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
   }
 
 
@@ -1592,6 +1613,11 @@ public class SeriesFunctions {
         }
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
     }
   }
 
@@ -1648,6 +1674,15 @@ public class SeriesFunctions {
       return F.NIL;
     }
 
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
   }
 
 
@@ -1933,6 +1968,16 @@ public class SeriesFunctions {
     }
 
     @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       MATCHER1 = Suppliers.memoize(SeriesCoefficientRules::init1);
     }
@@ -2000,6 +2045,10 @@ public class SeriesFunctions {
       return F.NIL;
     }
 
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
   }
 
 

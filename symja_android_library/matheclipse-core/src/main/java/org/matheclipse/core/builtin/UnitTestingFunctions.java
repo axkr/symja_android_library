@@ -20,6 +20,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.TestReportObjectExpr;
 import org.matheclipse.core.expression.data.TestResultObjectExpr;
@@ -167,6 +168,11 @@ public class UnitTestingFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
@@ -263,6 +269,11 @@ public class UnitTestingFunctions {
     private static void success(IAssociation assoc) {
       assoc.appendRule(F.Rule("Outcome", "Success"));
       LOGGER.debug(" - Success");
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
