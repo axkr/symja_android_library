@@ -22,8 +22,9 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
+import org.matheclipse.core.builtin.Combinatoric;
 import org.matheclipse.core.builtin.LinearAlgebra;
+import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -2250,7 +2251,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   }
 
   @Override
-  public ISparseArray transpose(int[] permutation,
+  public ISparseArray transpose(final int[] permutation,
       Function<? super IExpr, ? extends IExpr> function) {
     int length = fDimension.length;
     for (int i = 0; i < permutation.length; i++) {
@@ -2258,21 +2259,27 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         return null;
       }
     }
-    int[] resultDimensions = new int[length];
-    for (int i = 0; i < permutation.length; i++) {
-      resultDimensions[i] = fDimension[permutation[i] - 1];
+
+    IAST permutationList = F.List(permutation);
+    int[] dimensionsPermutated = Combinatoric.permute(F.List(fDimension), permutationList);
+    IAST range = ListFunctions.range(fDimension.length + 1);
+    int[] originalIndices = Combinatoric.permute(range, permutationList);
+    if (dimensionsPermutated == null || originalIndices == null) {
+      return null;
     }
+
     final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
     ISparseArray resultTensor =
-        new SparseArrayExpr(trie, resultDimensions, function.apply(getDefaultValue()), false);
+        new SparseArrayExpr(trie, dimensionsPermutated, function.apply(getDefaultValue()), false);
     Trie<int[], IExpr> data = toData();
+
     for (TrieNode<int[], IExpr> entry : data.nodeSet()) {
       int[] sequence = entry.getKey();
       IExpr value = data.get(sequence);
       if (value != null) {
         int[] positions = new int[length];
         for (int i = 0; i < positions.length; i++) {
-          positions[i] = sequence[permutation[i] - 1];
+          positions[i] = sequence[originalIndices[i] - 1];
         }
         trie.put(positions, function.apply(value));
       }

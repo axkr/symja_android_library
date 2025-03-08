@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
@@ -83,13 +84,13 @@ public class SparseArrayFunctions {
         ISparseArray sparseArray = (ISparseArray) arg1;
         if (ast.isAST1()) {
           defaultValue = sparseArray.getDefaultValue();
-//        } else if (ast.isAST2()) {
-//          if (!d.equals(defaultValue)) {
-// LOGGER.log(engine.getLogLevel(),
-//                "{}: Sparse array default value: {} unequals default value {}", ast.topHead(), d,
-//                defaultValue);
-//            return F.NIL;
-// }
+          // } else if (ast.isAST2()) {
+          // if (!d.equals(defaultValue)) {
+          // LOGGER.log(engine.getLogLevel(),
+          // "{}: Sparse array default value: {} unequals default value {}", ast.topHead(), d,
+          // defaultValue);
+          // return F.NIL;
+          // }
         }
         return sparseArray.arrayRules(defaultValue);
       }
@@ -97,6 +98,11 @@ public class SparseArrayFunctions {
         return SparseArrayExpr.arrayRules((IAST) arg1, defaultValue);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -273,6 +279,11 @@ public class SparseArrayFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
