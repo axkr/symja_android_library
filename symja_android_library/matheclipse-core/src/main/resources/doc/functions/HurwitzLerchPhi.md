@@ -4,7 +4,7 @@
 HurwitzLerchPhi(z, s, a)
 ```
 
-> returns the Lerch transcendent function.
+> returns the Hurwitz-Lerch transcendent function.
 
 See: 
 * [Wikipedia - Lerch zeta function](https://en.wikipedia.org/wiki/Lerch_zeta_function) 
@@ -17,20 +17,5 @@ See:
 ```
 
 ### Related terms 
-[HurwitzZeta](HurwitzZeta.md), [PolyLog](PolyLog.md), [Zeta](Zeta.md)
+[HurwitzZeta](HurwitzZeta.md), [LerchPhi](LerchPhi.md), [PolyLog](PolyLog.md), [Zeta](Zeta.md)
  
-
-
-
-
-
-
-### Implementation status
-
-* &#x1F9EA; - experimental
-
-### Github
-
-* [Implementation of HurwitzLerchPhi](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SpecialFunctions.java#L1013) 
-
-* [Rule definitions of HurwitzLerchPhi](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/HurwitzLerchPhiRules.m) 
