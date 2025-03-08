@@ -864,6 +864,7 @@ public class WL {
           while (i < doubledSize) {
             writeDouble(doubleArr[i++]);
           }
+          return;
         }
         default:
           throw new UnsupportedEncodingException();
