@@ -17,6 +17,7 @@ import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.stat.projection.PCA;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.StatisticalMomentFunctions.ICentralMoment;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -77,7 +78,6 @@ public class StatisticsFunctions {
       S.BinomialDistribution.setEvaluator(new BinomialDistribution());
       S.BinomialProcess.setEvaluator(new BinomialProcess());
       S.BrownianBridgeProcess.setEvaluator(new BrownianBridgeProcess());
-      S.CentralMoment.setEvaluator(new CentralMoment());
       S.ChiSquareDistribution.setEvaluator(new ChiSquareDistribution());
       S.Correlation.setEvaluator(new Correlation());
       S.Covariance.setEvaluator(new Covariance());
@@ -1362,87 +1362,6 @@ public class StatisticsFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {}
 
-  }
-
-  /**
-   *
-   *
-   * <pre>
-   * CentralMoment(list, r)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * gives the the <code>r</code>th central moment (i.e. the <code>r</code>th moment about the mean)
-   * of <code>list</code>.
-   *
-   * </blockquote>
-   *
-   * <p>
-   * See:<br>
-   *
-   * <ul>
-   * <li><a href="https://en.wikipedia.org/wiki/Central_moment">Wikipedia - Central moment</a>
-   * </ul>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt;&gt; CentralMoment({1.1, 1.2, 1.4, 2.1, 2.4}, 4)
-   * 0.10085
-   * </pre>
-   */
-  private static final class CentralMoment extends AbstractEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList()) {
-        IAST list = (IAST) ast.arg1();
-        IExpr r = ast.arg2();
-        return F.Divide(F.Total(F.Power(F.Subtract(list, F.Mean(list)), r)), F.Length(list));
-      }
-      try {
-        if (ast.arg1().isAST()) {
-          IAST dist = (IAST) ast.arg1();
-          IExpr order = ast.arg2();
-          if (dist.head().isSymbol()) {
-            ISymbol head = (ISymbol) dist.head();
-            if (dist.head().isSymbol()) {
-              if (head instanceof IBuiltInSymbol) {
-                IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
-                if (evaluator instanceof ICentralMoment) {
-                  ICentralMoment centralMoment = (ICentralMoment) evaluator;
-                  dist = centralMoment.checkParameters(dist);
-                  if (dist.isPresent()) {
-                    return centralMoment.centralMoment(dist, order, engine);
-                  }
-                }
-              }
-            }
-          }
-        }
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
-        return Errors.printMessage(S.CentralMoment, rex, engine);
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {}
-  }
-
-  /** central moment function */
-  private interface ICentralMoment extends IDistribution {
-    IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine);
-
-    IExpr kurtosis(IAST dist, EvalEngine engine);
   }
 
   private static final class ChiSquareDistribution extends AbstractEvaluator
@@ -4650,11 +4569,11 @@ public class StatisticsFunctions {
             // The argument `1` should have at least `2` elements.
             return Errors.printMessage(ast.topHead(), "shlen", F.List(list, F.C2), engine);
           }
-          IExpr centralMoment = engine.evaluate(F.CentralMoment(list, F.C2));
+          IExpr centralMoment = engine.evaluate(F.CentralMoment(list, 2));
           if (centralMoment.isPossibleZero(true)) {
             return S.Indeterminate;
           }
-          return F.Divide(F.CentralMoment(list, F.C4), F.Power(centralMoment, F.C2));
+          return F.Divide(F.CentralMoment(list, 4), F.Power(centralMoment, F.C2));
         }
 
         IAST dist = (IAST) ast.arg1();
@@ -7235,7 +7154,7 @@ public class StatisticsFunctions {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
         IAST list = (IAST) ast.arg1();
-        return F.Divide(F.CentralMoment(list, F.C3), F.Power(F.CentralMoment(list, F.C2), F.C3D2));
+        return F.Divide(F.CentralMoment(list, 3), F.Power(F.CentralMoment(list, 2), F.C3D2));
       }
       if (arg1.isAST()) {
         IAST dist = (IAST) arg1;

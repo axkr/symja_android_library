@@ -143,6 +143,7 @@ public class BuiltinUsage {
     USAGE[ID.Decrement] =
         "decreases the value by one and assigns that returning the original value";
     USAGE[ID.DedekindNumber] = "known Dedekind numbers [0..9]";
+    USAGE[ID.Default] = "predefined default arguments for a function";
     USAGE[ID.Definition] = "give values of a symbol in a form that can be stored in a package";
     USAGE[ID.Degree] = "1 Degree are Pi/180 radians";
     USAGE[ID.Delete] = "delete elements from a list at given positions";
@@ -221,6 +222,7 @@ public class BuiltinUsage {
     USAGE[ID.False] = "boolean constant for False";
     USAGE[ID.Fibonacci] = "Fibonacci's numbers";
     USAGE[ID.FileFormat] = "determine the file format of a file";
+    USAGE[ID.FilterRules] = "select rules such that the pattern matches some other given patterns";
     USAGE[ID.FindMaximum] = "local maximum optimization";
     USAGE[ID.FindMinimum] = "local minimum optimization";
     USAGE[ID.FindRoot] = "looks for a root of an equation or a zero of a numerical expression";
@@ -438,7 +440,9 @@ public class BuiltinUsage {
     USAGE[ID.OneIdentity] =
         "attribute specifying that a function behaves like the Identity in pattern matching";
     USAGE[ID.Operate] = "apply a function to the head of an expression";
+    USAGE[ID.Options] = "the list of optional arguments and their default values";
     USAGE[ID.OptionsPattern] = "a sequence of optional named arguments";
+    USAGE[ID.OptionValue] = "retrieve values of options while executing a function";
     USAGE[ID.Or] = "logic (inclusive) disjunction";
     USAGE[ID.Order] = "order expressions";
     USAGE[ID.OrderedQ] = "test whether elements are canonically sorted";
