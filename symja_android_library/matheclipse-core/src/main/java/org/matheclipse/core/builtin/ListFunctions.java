@@ -3249,7 +3249,7 @@ public final class ListFunctions {
             // an empty IAST cannot be folded
             return F.NIL;
           }
-          return F.Fold(ast.arg1(), F.First(arg2), F.Rest(arg2));
+          return F.Fold(ast.arg1(), arg2.first(), arg2.rest());
         }
         IExpr temp = engine.evaluate(ast.arg3());
         if (temp.isAST()) {

@@ -97,6 +97,7 @@ public class TensorFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -217,6 +218,7 @@ public class TensorFunctions {
     }
   }
 
+
   private static class HodgeDual extends AbstractEvaluator {
 
     @Override
@@ -251,6 +253,7 @@ public class TensorFunctions {
       return ARGS_1_1;
     }
   }
+
 
   private static class KroneckerProduct extends TensorProduct {
 
@@ -323,6 +326,7 @@ public class TensorFunctions {
 
   }
 
+
   private static class LeviCivitaTensor extends AbstractEvaluator {
 
     @Override
@@ -369,6 +373,7 @@ public class TensorFunctions {
       return ARGS_1_2;
     }
   }
+
 
   /**
    *
@@ -454,6 +459,7 @@ public class TensorFunctions {
       return ARGS_2_2;
     }
   }
+
 
   /**
    *
@@ -564,6 +570,7 @@ public class TensorFunctions {
     }
 
   }
+
 
   /**
    *
@@ -709,6 +716,7 @@ public class TensorFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+
   private static class TensorDimensions extends AbstractEvaluator {
 
     @Override
@@ -800,6 +808,7 @@ public class TensorFunctions {
       setOptions(newSymbol, F.list(F.Rule(S.Assumptions, S.$Assumptions)));
     }
   }
+
 
   private static class TensorSymmetry extends AbstractEvaluator {
 
@@ -974,6 +983,7 @@ public class TensorFunctions {
     }
   }
 
+
   private static class TensorProduct extends AbstractEvaluator {
 
     @Override
@@ -1055,6 +1065,7 @@ public class TensorFunctions {
     }
   }
 
+
   private static class TensorRank extends AbstractEvaluator {
 
     @Override
@@ -1122,6 +1133,7 @@ public class TensorFunctions {
     }
   }
 
+
   private static class RotationTransform extends AbstractFunctionEvaluator {
 
     @Override
@@ -1144,6 +1156,7 @@ public class TensorFunctions {
       return ARGS_1_2;
     }
   }
+
 
   private static class ScalingTransform extends AbstractFunctionEvaluator {
 
@@ -1195,6 +1208,8 @@ public class TensorFunctions {
       return ARGS_1_2;
     }
   }
+
+
   private static class ShearingTransform extends AbstractFunctionEvaluator {
 
     @Override
@@ -1228,6 +1243,7 @@ public class TensorFunctions {
     }
   }
 
+
   private static class TransformationFunction extends AbstractFunctionEvaluator {
 
     @Override
@@ -1254,6 +1270,7 @@ public class TensorFunctions {
 
 
   }
+
 
   private static class TranslationTransform extends AbstractFunctionEvaluator {
 
@@ -1284,6 +1301,7 @@ public class TensorFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
+
   }
 
   private static Map<IExpr, IAST> tensorProperties(IAssumptions oldAssumptions,

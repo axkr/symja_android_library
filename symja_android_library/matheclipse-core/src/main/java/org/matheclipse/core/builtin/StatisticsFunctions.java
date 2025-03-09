@@ -54,6 +54,8 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.NSum;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 
 public class StatisticsFunctions {
 
@@ -4935,42 +4937,40 @@ public class StatisticsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      int[] dim = arg1.isMatrix();
-      if (dim == null && arg1.isListOfLists()) {
-        return F.NIL;
-      }
-      if (dim != null) {
-        return arg1.mapMatrixColumns(dim, x -> F.MeanDeviation(x));
-      }
 
-      int length = arg1.isVector();
-      if (length > 0) {
-
-        if (arg1.isRealVector()) {
-          double[] values = arg1.toDoubleVector();
-          if (values == null) {
+      final IntList dimensions = LinearAlgebra.dimensions(arg1, S.List, Integer.MAX_VALUE, true);
+      if (dimensions.size() != 0) {
+        switch (dimensions.size()) {
+          case 1:
+            int length = dimensions.getInt(0);
+            if (arg1.isRealVector()) {
+              double[] values = arg1.toDoubleVector();
+              if (values == null) {
+                return F.NIL;
+              }
+              double mean = StatUtils.mean(values);
+              double[] newValues = new double[length];
+              for (int i = 0; i < length; i++) {
+                newValues[i] = Math.abs(values[i] - mean);
+              }
+              return F.num(StatUtils.mean(newValues));
+            }
+            arg1 = arg1.normal(false);
+            if (arg1.isList()) {
+              IAST vector = (IAST) arg1;
+              int size = vector.size();
+              IASTAppendable sum = F.PlusAlloc(size);
+              final IExpr mean = S.Mean.of(engine, F.Negate(vector));
+              vector.forEach(x -> sum.append(F.Abs(F.Plus(x, mean))));
+              return F.Times(F.Power(F.ZZ(size - 1), -1), sum);
+            }
             return F.NIL;
-          }
-          double mean = StatUtils.mean(values);
-          double[] newValues = new double[length];
-          for (int i = 0; i < length; i++) {
-            newValues[i] = Math.abs(values[i] - mean);
-          }
-          return F.num(StatUtils.mean(newValues));
+          case 2:
+            return arg1.mapMatrixColumns(dimensions.toIntArray(), x -> F.MeanDeviation(x));
+          default:
+            return F.ArrayReduce(S.MeanDeviation, arg1, F.C1);
         }
-
-        arg1 = arg1.normal(false);
-        if (arg1.isList()) {
-          IAST vector = (IAST) arg1;
-          int size = vector.size();
-          IASTAppendable sum = F.PlusAlloc(size);
-          final IExpr mean = S.Mean.of(engine, F.Negate(vector));
-          vector.forEach(x -> sum.append(F.Abs(F.Plus(x, mean))));
-          return F.Times(F.Power(F.ZZ(size - 1), -1), sum);
-        }
-        return F.NIL;
       }
-
       if (arg1.isNumber()) {
         // Rectangular array expected at position `1` in `2`.
         return Errors.printMessage(ast.topHead(), "rectt", F.list(F.C1, ast), engine);
@@ -7270,6 +7270,10 @@ public class StatisticsFunctions {
               return F.num(sd.evaluate(values));
             }
             return standardDeviation(arg1);
+          }
+          IntArrayList dimensions = LinearAlgebra.dimensions(list);
+          if (dimensions.size() > 2) {
+            return F.ArrayReduce(S.StandardDeviation, list, F.C1);
           }
           // The argument `1` should have at least `2` elements.
           return Errors.printMessage(S.StandardDeviation, "shlen", F.List(list, F.C2));
