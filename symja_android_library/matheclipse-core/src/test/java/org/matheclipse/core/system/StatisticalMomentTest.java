@@ -41,6 +41,27 @@ public class StatisticalMomentTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFactorialMoment() {
+
+    check("FactorialMoment(Array(Subscript(a, ##) &, {2, 2, 2}), 2) //  Simplify // MatrixForm", //
+        "{{1/2*((-1+Subscript(a,1,1,1))*Subscript(a,1,1,1)+(-1+Subscript(a,2,1,1))*Subscript(a,\n"
+            + "2,1,1)),1/2*((-1+Subscript(a,1,1,2))*Subscript(a,1,1,2)+(-1+Subscript(a,2,1,2))*Subscript(a,\n"
+            + "2,1,2))},\n"
+            + " {1/2*((-1+Subscript(a,1,2,1))*Subscript(a,1,2,1)+(-1+Subscript(a,2,2,1))*Subscript(a,\n"
+            + "2,2,1)),1/2*((-1+Subscript(a,1,2,2))*Subscript(a,1,2,2)+(-1+Subscript(a,2,2,2))*Subscript(a,\n"
+            + "2,2,2))}}");
+    check("FactorialMoment({a,b,c},z)", //
+        "1/3*(FactorialPower(a,z)+FactorialPower(b,z)+FactorialPower(c,z))");
+
+    check("FactorialMoment({a,b,c}, 1)", //
+        "1/3*(a+b+c)");
+    check("FactorialMoment({a,b,c}, 2)", //
+        "1/3*((-1+a)*a+(-1+b)*b+(-1+c)*c)");
+    check("FactorialMoment({a,b,c}, 3)", //
+        "1/3*((-2+a)*(-1+a)*a+(-2+b)*(-1+b)*b+(-2+c)*(-1+c)*c)");
+  }
+
+  @Test
   public void testMoment() {
     check("Moment({a,b,c}, z)", //
         "1/3*(a^z+b^z+c^z)");

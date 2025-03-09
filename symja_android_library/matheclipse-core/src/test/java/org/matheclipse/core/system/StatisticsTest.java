@@ -284,6 +284,11 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testStandardDeviation() {
+    // 2,2,2 tensor
+    check("StandardDeviation({{{a,b},{c,d}},{{e,f},{g,h}}})", //
+        "{{Sqrt((a-e)*(Conjugate(a)-Conjugate(e)))/Sqrt(2),Sqrt((b-f)*(Conjugate(b)-Conjugate(f)))/Sqrt(\n" //
+            + "2)},{Sqrt((c-g)*(Conjugate(c)-Conjugate(g)))/Sqrt(2),Sqrt((d-h)*(Conjugate(d)-Conjugate(h)))/Sqrt(\n" //
+            + "2)}}");
     checkNumeric(
         "StandardDeviation(<|1->0.41983028266218847,2->0.40423614350552506,3->0.8670734533759055|>)", //
         "0.26283328249866773");

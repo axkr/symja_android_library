@@ -4465,6 +4465,10 @@ public class F extends S {
     return new AST1(Factorial2, a0);
   }
 
+  public static IAST FactorialMoment(final IExpr a0, final int r) {
+    return new AST2(FactorialMoment, a0, F.ZZ(r));
+  }
+
   public static IAST FactorialPower(final IExpr x, final IExpr n) {
     return new AST2(FactorialPower, x, n);
   }
@@ -4564,6 +4568,10 @@ public class F extends S {
 
   public static IAST Floor(final IExpr z) {
     return new AST1(Floor, z);
+  }
+
+  public static IAST Fold(final IExpr a0, final IExpr a1) {
+    return new AST2(Fold, a0, a1);
   }
 
   public static IAST Fold(final IExpr a0, final IExpr a1, final IExpr a2) {

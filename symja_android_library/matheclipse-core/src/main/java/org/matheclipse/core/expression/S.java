@@ -3564,6 +3564,9 @@ public class S {
    */
   public final static IBuiltInSymbol Factorial2 = S.initFinalSymbol("Factorial2", ID.Factorial2);
 
+  public final static IBuiltInSymbol FactorialMoment =
+      S.initFinalSymbol("FactorialMoment", ID.FactorialMoment);
+
   public final static IBuiltInSymbol FactorialPower =
       S.initFinalSymbol("FactorialPower", ID.FactorialPower);
 

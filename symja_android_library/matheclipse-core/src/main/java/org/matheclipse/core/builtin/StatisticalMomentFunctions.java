@@ -22,6 +22,7 @@ public class StatisticalMomentFunctions {
     private static void init() {
       S.Cumulant.setEvaluator(new Cumulant());
       S.CentralMoment.setEvaluator(new CentralMoment());
+      S.FactorialMoment.setEvaluator(new FactorialMoment());
       S.Moment.setEvaluator(new Moment());
     }
   }
@@ -222,6 +223,74 @@ public class StatisticalMomentFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
+  }
+
+  private static final class FactorialMoment extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1().isList()) {
+        IAST list = (IAST) ast.arg1();
+        final int argSize = list.argSize();
+        IExpr arg2 = ast.arg2();
+        IntArrayList dimensions = LinearAlgebra.dimensions(list);
+        final int r = arg2.toIntDefault();
+        if (r >= 0) {
+          if (dimensions.size() == 1) {
+            if (r == 0) {
+              return F.C1;
+            }
+            if (r >= 5) {
+              return factorialPowerRewrite(list, argSize, arg2);
+            }
+            IASTAppendable result = F.PlusAlloc(argSize);
+            IFraction fraction = F.QQ(1, argSize);
+            for (int i = 1; i <= argSize; i++) {
+              IASTAppendable times = F.TimesAlloc(r);
+              IExpr arg = list.get(i);
+              times.append(arg);
+              for (int j = 1; j < r; j++) {
+                times.append(F.Plus(F.ZZ(-j), arg));
+              }
+              result.append(times);
+            }
+            return F.Times(fraction, result);
+          } else if (dimensions.size() > 1) {
+            return F.ArrayReduce(F.Function(F.FactorialMoment(F.Slot1, r)), list, F.C1);
+          }
+        } else if (r == Integer.MIN_VALUE) {
+          if (!arg2.isList()) {
+            if (dimensions.size() == 1) {
+              return factorialPowerRewrite(list, argSize, arg2);
+            }
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    private static IExpr factorialPowerRewrite(IAST list, final int argSize, IExpr arg2) {
+      IASTAppendable result = F.PlusAlloc(argSize);
+      IFraction fraction = F.QQ(1, argSize);
+      for (int i = 1; i <= argSize; i++) {
+        IExpr arg = list.get(i);
+        result.append(F.FactorialPower(arg, arg2));
+      }
+      return F.Times(fraction, result);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
   }
 
   public static void initialize() {
