@@ -19804,6 +19804,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testQuantile() {
+    check("Quantile({3,5},{1/4,1/2,3/4},{{1/2,0},{0,1}})", //
+        "{3,4,5}");
+    check("Quantile({{1,2*Pi}, {2,Pi},{3,3*Pi}}, {1/3, 4/5})", //
+        "{{1,3},{Pi,3*Pi}}");
+    check("Quantile(RandomReal(1, {10, 4, 3}), .2)//Dimensions", //
+        "{4,3}");
+    check("Quantile({{{1,2*Pi},{2,Pi}},{{3,3*Pi},{4,4*Pi}}},2/3)", //
+        "{{3,3*Pi},{4,4*Pi}}");
     check("Quantile({},1/2)", //
         "Quantile({},1/2)");
     check("Quantile({1,2,3,4,5,6,7},-1/2)", //
@@ -19837,7 +19845,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{2,6}");
     check("Quantile({1.0, 2.0, 3.0, 4.0, 5, 6, 7}, {1/4, 3/4})", //
         "{2.0,6}");
-
+ 
     check("Quantile({{1,2,3,4},{ E, Pi, Sqrt(2),Sqrt(3)}}, 0.75)", //
         "{E,Pi,3,4}");
     check("Quantile({{1,2},{ E, Pi, Sqrt(2),Sqrt(3)}}, 0.75)", //
@@ -19849,6 +19857,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testQuartiles() {
+    check("Quartiles({{{3, 7}, {2, 1}}, {{5, 19}, {12, 4}}})", //
+        "{{{3,4,5},{7,13,19}},{{2,7,12},{1,5/2,4}}}");
+
     check("Quartiles({{-1,-2,3}},{{0,0},{0,0}}+1)", //
         "{{-1,-1,-1},{-2,-2,-2},{3,3,3}}");
 

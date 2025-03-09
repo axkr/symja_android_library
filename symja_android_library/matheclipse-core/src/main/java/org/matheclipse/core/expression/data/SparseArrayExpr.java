@@ -1590,6 +1590,12 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     return true;
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public boolean forAllLeaves(Predicate<? super IExpr> predicate) {
+    return forAll(predicate);
+  }
+
   public IASTAppendable fullForm() {
     IAST dimensionList = F.ast(S.List, fDimension);
     IASTAppendable result = F.ast(S.SparseArray, 6);

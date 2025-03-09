@@ -74,6 +74,10 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testMean() {
+    // 2,2,2 tensor
+    check("Mean({{{a,b},{c,d}},{{e,f},{g,h}}})", //
+        "{{1/2*(a+e),1/2*(b+f)},{1/2*(c+g),1/2*(d+h)}}");
+
     check("Mean(Array(Subscript(a, ##) &, {2, 2}))", //
         "{1/2*(Subscript(a,1,1)+Subscript(a,2,1)),1/2*(Subscript(a,1,2)+Subscript(a,2,2))}");
     check("Mean(Array(Subscript(a, ##) &, {2, 2, 2}))", //
@@ -167,6 +171,16 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testMedian() {
+    // check("Median({a,b})", //
+    // "");
+    // 2,2,2 tensor
+    check("Median({{{3, 7}, {2, 1}}, {{5, 19}, {12, 4}}})", //
+        "{{4,13},{7,5/2}}");
+    // message Median: Rectangular array of real numbers is expected at position 1 in
+    // Median({{{a,b},{c,d}},{{e,f},{g,h}}}).
+    check("Median({{{a,b},{c,d}},{{e,f},{g,h}}})", //
+        "Median({{{a,b},{c,d}},{{e,f},{g,h}}})");
+
     check("Median(WeightedData({8, 3, 5,4}, " + //
         "{0.15, 0.09, 0.12,0.10}))", //
         "5");
@@ -265,7 +279,7 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
     check("MedianFilter({0, 3, 8, 2}, 1)", //
         "{3/2,3,3,5}");
     check("MedianFilter({a,b,c}, 1)", //
-        "{1/2*(a+b),b,1/2*(b+c)}");
+        "MedianFilter({a,b,c},1)");
   }
 
   @Test
@@ -335,6 +349,12 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testVariance() {
+    check("Variance({a,b})", //
+        "1/2*(a-b)*(Conjugate(a)-Conjugate(b))");
+    // 2,2,2 tensor
+    check("Variance({{{a,b},{c,d}},{{e,f},{g,h}}})", //
+        "{{1/2*(a-e)*(Conjugate(a)-Conjugate(e)),1/2*(b-f)*(Conjugate(b)-Conjugate(f))},{\n" //
+            + "1/2*(c-g)*(Conjugate(c)-Conjugate(g)),1/2*(d-h)*(Conjugate(d)-Conjugate(h))}}");
     checkNumeric(
         "Variance(<|1->0.41983028266218847 ,2->0.40423614350552506 , 3->0.8670734533759055 |>)", //
         "0.069081334389024475");

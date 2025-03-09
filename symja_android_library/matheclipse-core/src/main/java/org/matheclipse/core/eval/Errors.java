@@ -343,6 +343,7 @@ public class Errors {
       "realx", "The value `1` is not a real number.", //
       "reclim2", "Recursion depth of `1` exceeded during evaluation of `2`.", //
       "rect", "Nonrectangular tensor encountered", //
+      "rectn", "Rectangular array of real numbers is expected at position `1` in `2`.", //
       "rectt", "Rectangular array expected at position `1` in `2`.", //
       "reppoint", "`1` contains repeated integers.", //
       "reps",

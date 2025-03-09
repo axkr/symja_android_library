@@ -1645,6 +1645,10 @@ public interface IExpr
     return false;
   }
 
+  default boolean forAllLeaves(Predicate<? super IExpr> predicate) {
+    return predicate.test(this);
+  }
+
   /**
    * Numeric fresnel integral C.
    *

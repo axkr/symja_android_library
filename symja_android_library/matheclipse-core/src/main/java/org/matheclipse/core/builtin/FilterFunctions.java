@@ -33,6 +33,10 @@ public class FilterFunctions {
       return S.Min;
     }
 
+    protected boolean isValid(IExpr arg1) {
+      return true;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
@@ -44,9 +48,11 @@ public class FilterFunctions {
             return Errors.printMessage(ast.topHead(), "zznotimpl",
                 F.List(F.stringx("\"with dimension other than 1\"")), engine);
           }
-          final int radius = ast.arg2().toIntDefault();
-          if (radius >= 0) {
-            return filterHead(list, radius, filterHead(), engine);
+          if (isValid(list)) {
+            final int radius = ast.arg2().toIntDefault();
+            if (radius >= 0) {
+              return filterHead(list, radius, filterHead(), engine);
+            }
           }
         }
       } catch (RuntimeException rex) {
@@ -94,6 +100,12 @@ public class FilterFunctions {
   }
 
   private static class MedianFilter extends MinFilter {
+
+    @Override
+    protected boolean isValid(IExpr arg1) {
+      return arg1.forAllLeaves(x -> x.isRealResult());
+    }
+
     @Override
     protected IExpr filterHead() {
       return S.Median;

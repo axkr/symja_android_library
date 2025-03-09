@@ -2903,10 +2903,13 @@ public class MainTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSystem372() {
-    check("Median({1,5,2,8,7})", "5");
-    check("Median({1,5,2,10,8,7})", "6");
-    check("Median({a,b,c,d,e})", "c");
-    check("Median({f,g,h,x,y,z})", "1/2*(h+x)");
+    check("Median({1,5,2,8,7})", //
+        "5");
+    check("Median({1,5,2,10,8,7})", //
+        "6");
+    // Median: Rectangular array of real numbers is expected at position 1 in Median({a,b,c,d,e}).
+    check("Median({a,b,c,d,e})", //
+        "Median({a,b,c,d,e})");
   }
 
   @Test

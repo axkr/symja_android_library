@@ -4918,6 +4918,10 @@ public class StatisticsFunctions {
         if (arg1.isDistribution()) {
           return getDistribution(arg1).mean((IAST) arg1);
         }
+        final IntList dimensions = LinearAlgebra.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+        if (dimensions.size() >= 2) {
+          return F.ArrayReduce(S.Variance, arg1, F.C1);
+        }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.Mean, rex, engine);
@@ -4938,7 +4942,7 @@ public class StatisticsFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
 
-      final IntList dimensions = LinearAlgebra.dimensions(arg1, S.List, Integer.MAX_VALUE, true);
+      final IntList dimensions = LinearAlgebra.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
       if (dimensions.size() != 0) {
         switch (dimensions.size()) {
           case 1:
@@ -5113,27 +5117,32 @@ public class StatisticsFunctions {
       if (arg1.isAST(S.WeightedData, 3) && arg1.first().isList() && arg1.second().isList()) {
         return median((IAST) arg1, engine);
       }
-      int[] dim = arg1.isMatrix();
-      if (dim == null && arg1.isListOfLists()) {
-        return F.NIL;
-      }
-      if (dim != null) {
-        return arg1.mapMatrixColumns(dim, x -> F.Median(x));
-      }
-      int dimension = arg1.isVector();
-      if (dimension >= 0 || arg1.isList()) {
-        IExpr normal = arg1.normal(false);
-        if (normal.isList()) {
-          IAST list = (IAST) normal;
-          if (list.size() > 1) {
-            final IAST sortedList = EvalAttributes.copySortLess(list);
-            int size = sortedList.size();
-            if ((size & 0x00000001) == 0x00000001) {
-              // odd number of elements
-              size = size / 2;
-              return F.Times(F.Plus(sortedList.get(size), sortedList.get(size + 1)), F.C1D2);
-            } else {
-              return sortedList.get(size / 2);
+      final IntList dimensions = LinearAlgebra.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+      if (dimensions.size() > 0) {
+        // Rectangular array of real numbers is expected at position `1` in `2`.
+        if (!arg1.forAllLeaves(x -> x.isRealResult())) {
+          return Errors.printMessage(S.Median, "rectn", F.List(F.C1, F.Median(arg1)), engine);
+        }
+        if (dimensions.size() >= 2) {
+          return F.ArrayReduce(S.Median, arg1, F.C1);
+        }
+        if (dimensions.size() == 2) {
+          return arg1.mapMatrixColumns(dimensions.toIntArray(), x -> F.Median(x));
+        }
+        if (dimensions.size() == 1) {
+          IExpr normal = arg1.normal(false);
+          if (normal.isList()) {
+            IAST list = (IAST) normal;
+            if (list.size() > 1) {
+              final IAST sortedList = EvalAttributes.copySortLess(list);
+              int size = sortedList.size();
+              if ((size & 0x00000001) == 0x00000001) {
+                // odd number of elements
+                size = size / 2;
+                return F.Times(F.Plus(sortedList.get(size), sortedList.get(size + 1)), F.C1D2);
+              } else {
+                return sortedList.get(size / 2);
+              }
             }
           }
         }
@@ -6691,6 +6700,18 @@ public class StatisticsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+
+      final IntList dimensions = LinearAlgebra.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+      if (dimensions.size() > 0) {
+        // Rectangular array of real numbers is expected at position `1` in `2`.
+        if (!arg1.forAllLeaves(x -> x.isRealResult())) {
+          return Errors.printMessage(S.Quantile, "rectn", F.List(F.C1, ast), engine);
+        }
+        if (dimensions.size() > 2) {
+          return F.ArrayReduce(F.Function(ast.setAtCopy(1, F.Slot1)), arg1, F.C1);
+        }
+      }
+
       int[] dim = arg1.isMatrix();
       if (dim == null && arg1.isListOfLists()) {
         return F.NIL;
@@ -6810,23 +6831,8 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_3;
+      return ARGS_2_3;
     }
-
-    // private IExpr of(IAST sorted, IInteger length, IReal scalar) {
-    // if (scalar.isReal()) {
-    // int index = 0;
-    // if (scalar instanceof INum) {
-    // index = ((INum) scalar).multiply(length).ceilFraction().subtract(F.C1).toIntDefault(-1);
-    // } else {
-    // index = ((IRational) scalar).multiply(length).ceil().subtract(F.C1).toIntDefault(-1);
-    // }
-    // if (index >= 0) {
-    // return sorted.get(index + 1);
-    // }
-    // }
-    // throw new ArithmeticException();
-    // }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
@@ -6844,6 +6850,17 @@ public class StatisticsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      final IntList dimensions = LinearAlgebra.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+      if (dimensions.size() > 0) {
+        // Rectangular array of real numbers is expected at position `1` in `2`.
+        if (!arg1.forAllLeaves(x -> x.isRealResult())) {
+          return Errors.printMessage(S.Quartiles, "rectn", F.List(F.C1, ast), engine);
+        }
+        if (dimensions.size() > 2) {
+          return F.ArrayReduce(F.Function(ast.setAtCopy(1, F.Slot1)), arg1, F.C1);
+        }
+      }
+
       if ((arg1.isNonEmptyList()) || arg1.isDistribution()) {
         IAST list = (IAST) arg1;
         if (ast.size() == 3) {
@@ -6852,9 +6869,10 @@ public class StatisticsFunctions {
           if (dimParameters == null || dimParameters[0] != 2 || dimParameters[1] != 2) {
             return F.NIL;
           }
-          return F.Quantile(list, Q, arg2);
+          return engine.evaluate(F.Quantile(list, Q, arg2));
         }
-        return F.Quantile(list, Q, PARAMETER);
+        return engine.evaluate(F.Quantile(list, Q, PARAMETER));
+        // System.out.println("Quartiles: " + temp);
       }
       return F.NIL;
     }
@@ -7964,7 +7982,6 @@ public class StatisticsFunctions {
             }
             // The argument `1` should have at least `2` elements.
             return Errors.printMessage(S.Variance, "shlen", F.List(list1, F.C2));
-
           }
         } else if (arg1.isAssociation()) {
           IAssociation assoc = (IAssociation) arg1;
@@ -8004,6 +8021,10 @@ public class StatisticsFunctions {
         } else if (arg1.isNumber()) {
           // Rectangular array expected at position `1` in `2`.
           return Errors.printMessage(S.Variance, "rectt", F.List(F.C1, ast));
+        }
+        final IntList dimensions = LinearAlgebra.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+        if (dimensions.size() >= 2) {
+          return F.ArrayReduce(S.Variance, arg1, F.C1);
         }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);

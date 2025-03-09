@@ -858,6 +858,11 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    */
   public boolean forAll(Predicate<? super IExpr> predicate, int startOffset);
 
+  @Override
+  default boolean forAllLeaves(Predicate<? super IExpr> predicate) {
+    return forAllLeaves(predicate, 1);
+  }
+
   /**
    * Check all {@link IAST} recursively, which don't have <code>head</code> as head element and
    * apply the <code>predicate</code> to each leaf argument in this {@link IAST} and

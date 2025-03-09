@@ -62,10 +62,16 @@ public class TensorFunctions {
       int iDepth = LinearAlgebra.arrayDepth(array);
       IAST range = ListFunctions.range(iDepth + 1);
       IAST rotateRight = range.rotateRight(F.NIL, n);
-      IAST transposed = (IAST) F.Transpose(array, rotateRight).eval(engine);
+      IntList dimensions = LinearAlgebra.dimensions(array, S.List, Integer.MAX_VALUE, false);
+      IAST transposed = (IAST) LinearAlgebra.transpose(array, rotateRight, dimensions, x -> x,
+          F.Transpose(array, rotateRight), engine);
       IExpr reduced = F.Map(f, transposed, F.List(F.ZZ(iDepth - 1))).eval(engine);
       IAST rotateLeft = ListFunctions.range(iDepth).rotateLeft(F.NIL, n - 1);
-      return F.Transpose(reduced, rotateLeft).eval(engine);
+      dimensions =
+          LinearAlgebra.dimensions(reduced, S.List, Integer.MAX_VALUE, false);
+      dimensions = dimensions.subList(0, iDepth - 1);
+      return LinearAlgebra.transpose(reduced, rotateLeft, dimensions, x -> x,
+          F.Transpose(reduced, rotateLeft), engine);
     }
 
     @Override
