@@ -3254,6 +3254,11 @@ public interface IExpr
     return false;
   }
 
+  @Override
+  default boolean isInfinite() {
+    return false;
+  }
+
   /**
    * Test if this expression is an inexact number. I.e. an instance of type <code>INum</code> or
    * <code>IComplexNum</code>.

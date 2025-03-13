@@ -25,6 +25,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.visit.VisitorLevelSpecification;
 import it.unimi.dsi.fastutil.ints.IntList;
 
 public class TensorFunctions {
@@ -57,20 +58,59 @@ public class TensorFunctions {
   }
 
   private static final class ArrayReduce extends AbstractEvaluator {
-
-    private IExpr arrayReduce(IExpr f, IAST array, int n, EvalEngine engine) {
-      int iDepth = LinearAlgebra.arrayDepth(array);
-      IAST range = ListFunctions.range(iDepth + 1);
-      IAST rotateRight = range.rotateRight(F.NIL, n);
+    private IExpr arrayReduce(IExpr f, IAST array, int[] levels, EvalEngine engine) {
+      IAST currentArray = array;
+      Arrays.sort(levels);
       IntList dimensions = LinearAlgebra.dimensions(array, S.List, Integer.MAX_VALUE, false);
+      int iDepth = dimensions.size();
+      for (int i = levels.length - 1; i >= 0; i--) {
+        int level = levels[i];
+        currentArray =
+            arrayReduce(f, currentArray, dimensions, level, engine, i == 0 ? true : false);
+
+        dimensions = LinearAlgebra.dimensions(currentArray, S.List, --iDepth, false);
+        dimensions = dimensions.subList(0, iDepth);
+      }
+      return currentArray;
+    }
+
+    /**
+     * 
+     * @param f
+     * @param array
+     * @param dimensions the dimensions of the array or <code>null</code> if the dimension should be
+     *        calculated new
+     * @param level
+     * @param engine
+     * @return an array of 2 objects `[IAST, IntList]` with the reduced array and the new dimensions
+     */
+    private IAST arrayReduce(IExpr f, IAST array, IntList dimensions, int level, EvalEngine engine,
+        boolean doMap) {
+      int iDepth = dimensions == null ? LinearAlgebra.arrayDepth(array) : dimensions.size();
+      IAST range = ListFunctions.range(iDepth + 1);
+      IAST rotateRight = range.rotateRight(F.NIL, level);
+      if (dimensions == null) {
+        dimensions = LinearAlgebra.dimensions(array, S.List, iDepth, false);
+      }
       IAST transposed = (IAST) LinearAlgebra.transpose(array, rotateRight, dimensions, x -> x,
           F.Transpose(array, rotateRight), engine);
-      IExpr reduced = F.Map(f, transposed, F.List(F.ZZ(iDepth - 1))).eval(engine);
-      IAST rotateLeft = ListFunctions.range(iDepth).rotateLeft(F.NIL, n - 1);
-      dimensions =
-          LinearAlgebra.dimensions(reduced, S.List, Integer.MAX_VALUE, false);
+      IAST reduced;
+      if (doMap) {
+        reduced = (IAST) F.Map(f, transposed, F.List(F.ZZ(iDepth - 1))).eval(engine);
+      } else {
+        // flatten lists
+        VisitorLevelSpecification levelSpec = new VisitorLevelSpecification(
+            x -> F.binaryAST2(S.Apply, S.Sequence, x), iDepth - 1, false);
+        reduced = (IAST) transposed.accept(levelSpec);
+      }
+      if (level == 1) {
+        return reduced;
+      }
+      IAST rotateLeft = ListFunctions.range(iDepth).rotateLeft(F.NIL, level - 1);
+      dimensions = LinearAlgebra.dimensions(reduced, S.List, Integer.MAX_VALUE, false);
       dimensions = dimensions.subList(0, iDepth - 1);
-      return LinearAlgebra.transpose(reduced, rotateLeft, dimensions, x -> x,
+
+      return (IAST) LinearAlgebra.transpose(reduced, rotateLeft, dimensions, x -> x,
           F.Transpose(reduced, rotateLeft), engine);
     }
 
@@ -81,12 +121,20 @@ public class TensorFunctions {
         final IExpr f = ast.arg1();
         IAST tensor = (IAST) ast.arg2();
         final IntList dims = LinearAlgebra.dimensions(tensor, S.List);
-        int n = ast.arg3().toIntDefault();
+        IExpr arg3 = ast.arg3();
+        if (arg3.isList()) {
+          int[] ni = Validate.checkListOfInts(ast, arg3, 1, dims.size(), engine);
+          if (ni == null) {
+            return F.NIL;
+          }
+          return arrayReduce(f, tensor, ni, engine);
+        }
+        int n = arg3.toIntDefault();
         if (n > 0) {
           if (n == 1 && dims.size() == 1) {
             return tensor;
           }
-          return arrayReduce(f, tensor, n, engine);
+          return arrayReduce(f, tensor, null, n, engine, true);
         }
       }
       return F.NIL;
