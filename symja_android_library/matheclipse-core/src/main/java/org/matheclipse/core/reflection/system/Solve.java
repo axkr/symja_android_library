@@ -708,6 +708,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
      *
      * @param termsEqualZeroList a list of expressions which equals zero.
      * @param variable the variable which should be eliminated in the term
+     * @param multipleValues if <code>true</code> multiple results are returned as list of values
      * @param numeric evaluate in numericMode
      * @param engine
      * @return
@@ -984,7 +985,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           IExpr termEQZero = termsEqualZero.get(i);
           if (termEQZero.isTimes()) {
             solveTimesAST((IAST) termEQZero, termsEqualZero, inequationsList, numericFlag,
-                variables, multipleValues, engine, subSolutionSet, i);
+                variables, multipleValues, subSolutionSet, i, engine);
           } else {
             if (termEQZero.isAST()) {
               // try factoring
@@ -1006,7 +1007,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                 termEQZero = S.Factor.of(engine, termEQZero);
                 if (termEQZero.isTimes()) {
                   solveTimesAST((IAST) termEQZero, termsEqualZero, inequationsList, numericFlag,
-                      variables, multipleValues, engine, subSolutionSet, i);
+                      variables, multipleValues, subSolutionSet, i, engine);
                 }
               }
             }
@@ -1106,9 +1107,24 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       return result;
     }
 
+    /**
+     * Analyze the <code>Time(..., ...)</code> expression in the given list of equations. If the
+     * expression is of the form <code>Times(..., ...) == 0</code>, set each factor equal to
+     * <code>0</code> and solve the resulting equations recursively.
+     * 
+     * @param times the <code>Times(..., ...)</code> expression
+     * @param termsEqualZeroList the list of expressions, which should equal <code>0</code>
+     * @param inequationsList a list of inequality constraints
+     * @param numericFlag if <code>true</code>, try to find a numeric solution
+     * @param variables the variables for which the equations should be solved
+     * @param multipleValues if <code>true</code> multiple results are returned as list of values
+     * @param subSolutionSet a set of rules which should solve the terms
+     * @param i the index of the current equation in the list
+     * @param engine the evaluation engine
+     */
     private void solveTimesAST(IAST times, IAST termsEqualZeroList, IAST inequationsList,
-        boolean numericFlag, IAST variables, boolean multipleValues, EvalEngine engine,
-        Set<IExpr> subSolutionSet, int i) {
+        boolean numericFlag, IAST variables, boolean multipleValues, Set<IExpr> subSolutionSet,
+        int i, EvalEngine engine) {
       IAST temp;
       for (int j = 1; j < times.size(); j++) {
         if (!times.get(j).isFree(Predicates.in(variables), true)) {
@@ -1126,6 +1142,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               } else {
                 if (replaceAll.isPlusTimesPower() && //
                     S.PossibleZeroQ.ofQ(engine, replaceAll)) {
+                  subSolutionSet.add(solution);
+                } else if (!solution.isFree(S.ConditionalExpression)) {
+                  // TODO create some cross-check for C(1),... variables?
                   subSolutionSet.add(solution);
                 }
               }

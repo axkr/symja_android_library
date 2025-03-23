@@ -1511,7 +1511,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // TODO check result
     check(
         "Solve(Cos(x)+ Cos(x)^3 + Cos(x)^5 - 3*Cos(x)*Sin(x)^2 - 10*Cos(x)^3*Sin(x)^2 + 5*Cos(x)*Sin(x)^4 ==0,x)", //
-        "{{x->ConditionalExpression(Pi/8+2*Pi*C(1),C(1)∈Integers)}}");
+        "{{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"
+            + "8+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/2+2*Pi*C(1),C(1)∈Integers)}}");
   }
 
   @Test
@@ -1924,11 +1925,13 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // \end{aligned}
     checkSolveLatex("9 \\sin x+6 \\cos x-3 \\sin 2 x+\\cos 2 x=8",
         "Cos(2*x)+6*Cos(x)+9*Sin(x)-3*Sin(2*x)==8",
-        "{{x->ConditionalExpression(-ArcTan(3)+2*Pi*C(1),C(1)∈Integers)}}");
+        "{{x->ConditionalExpression(Pi*(1/2+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(-ArcTan(\n" //
+            + "3)+2*Pi*C(1),C(1)∈Integers)}}");
 
     checkSolveLatex("\\sin 2 x-\\cos 2 x=3 \\sin x+\\cos x-2",
         "-Cos(2*x)+Sin(2*x)==-2+Cos(x)+3*Sin(x)",
-        "{{x->ConditionalExpression(Pi*(-1/4+2*C(1)),C(1)∈Integers)}}");
+        "{{x->ConditionalExpression(Pi*(-1/4+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Pi*(\n"
+            + "1/6+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Pi*(5/6+2*C(1)),C(1)∈Integers)}}");
 
     // TODO: wrong parsed input
     // checkSolveLatex("1+\\cot 2 x=\\frac{1-\\cos 2 x}{\\sin ^2 2 x}",
@@ -2273,6 +2276,16 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "1)∈Integers)},{x->ConditionalExpression(Sqrt(Pi+2*Pi*C(1)),C(1)∈Integers)}}");
     check("Solve(Sin(x^2)==0,x,GenerateConditions->False)", //
         "{{x->0}}");
+  }
+
+  @Test
+  public void testSolveGithub1147() {
+    // issue 1147
+    check("Solve(-2*x*Sin(x^2)==0, x)", //
+        "{{x->0},{x->ConditionalExpression(Sqrt(2*Pi)*Sqrt(C(1)),C(1)∈Integers)},{x->ConditionalExpression(-Sqrt(\n" //
+            + "2*Pi)*Sqrt(C(1)),C(1)∈Integers)},{x->ConditionalExpression(-Sqrt(Pi+2*Pi*C(1)),C(\n" //
+            + "1)∈Integers)},{x->ConditionalExpression(Sqrt(Pi+2*Pi*C(1)),C(1)∈Integers)}}");
+
   }
 
 
