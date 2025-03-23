@@ -814,7 +814,7 @@ public class RingFactoryTokenizer {
         logger.info("coeff = {}", coeff);
 
         vars = nextVariableList();
-        final var vv = vars;
+        final String[] vv = vars;
         logger.info("vars = {}", () -> Arrays.toString(vv));
         if (vars != null) {
             nvars = vars.length;

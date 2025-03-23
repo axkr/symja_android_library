@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.concurrent.NotThreadSafe;
 import org.apfloat.ApfloatInterruptedException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.exception.AbortException;
@@ -133,7 +132,7 @@ import edu.jas.kern.PreemptingException;
  * assertEquals(-0.5063656411097588, result, 0E-10);
  * </pre>
  */
-@NotThreadSafe
+// @NotThreadSafe
 public class ExprEvaluator {
 
   static {

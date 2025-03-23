@@ -292,6 +292,8 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
         "42");
     check("RootMeanSquare({42,43})", //
         "Sqrt(3613/2)");
+    check("{RootMeanSquare({42.0,43}),N(Sqrt(3613/2))}", //
+        "{42.50294,42.50294}");
     check("RootMeanSquare({{1, 2}, {5, 10}, {5, 2}, {4, 8}})", //
         "{Sqrt(67)/2,Sqrt(43)}");
   }

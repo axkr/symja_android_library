@@ -90,8 +90,9 @@ public class MathUtils {
     IExpr function = parse(fun, null);
     IExpr var = parse(v, null);
     IAST list = F.list(var, F.num(a), F.num(b));
-    return NIntegrate.integrate("LegendreGauss", list, a, b, function,
-        NIntegrate.DEFAULT_MAX_POINTS, NIntegrate.DEFAULT_MAX_ITERATIONS);
+    return NIntegrate.integrateDouble(function, var, a, b, "LegendreGauss",
+        NIntegrate.DEFAULT_MAX_POINTS, NIntegrate.DEFAULT_MAX_ITERATIONS, list.rest(),
+        parser.getEvalEngine());
   }
 
   /**

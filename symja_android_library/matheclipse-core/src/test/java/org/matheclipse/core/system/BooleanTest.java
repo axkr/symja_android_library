@@ -5,6 +5,9 @@ import org.junit.Test;
 public class BooleanTest extends ExprEvaluatorTestCase {
 
   @Test
+  public void testInitialLoad() {}
+
+  @Test
   public void testAllTrue() {
     check("AllTrue({}, EvenQ)", //
         "True");

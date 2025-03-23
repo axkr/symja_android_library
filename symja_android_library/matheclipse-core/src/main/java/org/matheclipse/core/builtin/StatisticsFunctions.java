@@ -13,6 +13,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.stat.StatUtils;
 import org.hipparchus.stat.correlation.PearsonsCorrelation;
+import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.stat.projection.PCA;
 import org.hipparchus.util.MathUtils;
@@ -4564,9 +4565,10 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isAST()) {
-        if (ast.arg1().isList()) {
-          IAST list = (IAST) ast.arg1();
+      IExpr arg1 = ast.arg1();
+      if (arg1.isAST()) {
+        if (arg1.isList()) {
+          IAST list = (IAST) arg1;
           if (list.argSize() < 2) {
             // The argument `1` should have at least `2` elements.
             return Errors.printMessage(ast.topHead(), "shlen", F.List(list, F.C2), engine);
@@ -4578,7 +4580,7 @@ public class StatisticsFunctions {
           return F.Divide(F.CentralMoment(list, 4), F.Power(centralMoment, F.C2));
         }
 
-        IAST dist = (IAST) ast.arg1();
+        IAST dist = (IAST) arg1;
         if (dist.head().isSymbol()) {
           ISymbol head = (ISymbol) dist.head();
           if (dist.head().isSymbol()) {
@@ -7129,6 +7131,12 @@ public class StatisticsFunctions {
     }
 
     private static IExpr rootMeanSquareVector(IAST list) {
+      if (list.isRealVector()) {
+        double[] doubleVector = list.toDoubleVector();
+        DescriptiveStatistics descriptiveStatistics = new DescriptiveStatistics(doubleVector);
+        double quadraticMean = descriptiveStatistics.getQuadraticMean();
+        return F.num(quadraticMean);
+      }
       IExpr sum = F.sum(i -> list.get(i).times(list.get(i)), 1, list.argSize());
       return F.Times(F.Power(sum, F.C1D2), F.Power(F.ZZ(list.argSize()), F.CN1D2));
     }

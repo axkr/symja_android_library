@@ -18,7 +18,8 @@ public class S {
 
   protected S() {} // static use only
 
-  private static final IBuiltInSymbol[] BUILT_IN_SYMBOLS = new IBuiltInSymbol[ID.Zeta + 10];
+  /** package private */
+  static final IBuiltInSymbol[] BUILT_IN_SYMBOLS = new IBuiltInSymbol[ID.Zeta + 10];
 
   /** package private */
   static final short EXPRID_MAX_BUILTIN_LENGTH = (short) (BUILT_IN_SYMBOLS.length + 1);
@@ -11736,7 +11737,7 @@ public class S {
   public static final ISymbol LHS_HEAD = initFinalHiddenSymbol("LHSHead");
 
   /**
-   * Convert the symbolName to lowercase (if <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> is
+   * Convert the symbolName to lower case (if <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> is
    * set) and insert a new Symbol in the <code>PREDEFINED_SYMBOLS_MAP</code>. The symbol is created
    * using the given upper case string to use it as associated class name in package
    * org.matheclipse.core.reflection.system.
@@ -11747,7 +11748,7 @@ public class S {
    */
   /* package private */ static IBuiltInSymbol initFinalSymbol(final String symbolName,
       int ordinal) {
-    String str;
+    final String str;
     if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       str = (symbolName.length() == 1) ? symbolName : symbolName.toLowerCase(Locale.US);
     } else {
@@ -11756,7 +11757,6 @@ public class S {
     final IBuiltInSymbol temp = new BuiltInSymbol(str, ordinal);
     BUILT_IN_SYMBOLS[ordinal] = temp;
     org.matheclipse.core.expression.Context.SYSTEM.put(str, temp);
-    GLOBAL_IDS_MAP.put(temp, (short) ordinal);
     return temp;
   }
 
@@ -11812,7 +11812,4 @@ public class S {
         || domain == Primes || domain == Rationals || domain == Reals;
   }
 
-  static {
-    C.setAttributes(ISymbol.NHOLDALL);
-  }
 }

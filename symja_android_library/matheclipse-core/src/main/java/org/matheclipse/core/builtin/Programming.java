@@ -533,16 +533,15 @@ public final class Programming {
    * f(-3)
    * </pre>
    */
-  private static final class Condition extends AbstractCoreFunctionEvaluator {
+  private static final class Condition extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public final IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (engine.isEvalRHSMode()) {
+        IExpr arg1 = ast.arg1();
         IExpr arg2 = ast.arg2();
-        if (engine.evalTrue(arg2)) {
-          return ast.arg1();
-        }
-        throw ConditionException.CONDITION_NIL;
+        return condition(arg1, arg2, engine);
       }
       return F.NIL;
     }
@@ -763,7 +762,8 @@ public final class Programming {
    *  | hi
    * </pre>
    */
-  private static final class Do extends AbstractCoreFunctionEvaluator {
+  private static final class Do extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1141,7 +1141,8 @@ public final class Programming {
    * 120
    * </pre>
    */
-  private static final class For extends AbstractCoreFunctionEvaluator {
+  private static final class For extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1262,7 +1263,8 @@ public final class Programming {
    * &gt;&gt; If(a, (*then*) b, (*else*) c);
    * </pre>
    */
-  private static final class If extends AbstractCoreFunctionEvaluator {
+  private static final class If extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1270,18 +1272,18 @@ public final class Programming {
 
       if (temp.isFalse()) {
         if (ast.size() >= 4) {
-          return ast.arg3();
+          return engine.evaluate(ast.arg3());
         }
 
         return S.Null;
       }
 
-      if (temp.equals(S.True)) {
-        return ast.arg2();
+      if (temp.isTrue()) {
+        return engine.evaluate(ast.arg2());
       }
 
       if (ast.size() == 5) {
-        return ast.arg4();
+        return engine.evaluate(ast.arg4());
       }
 
       return F.NIL;
@@ -1525,7 +1527,8 @@ public final class Programming {
    *
    * </blockquote>
    */
-  private static final class Module extends AbstractCoreFunctionEvaluator {
+  private static final class Module extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
     /** */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3064,7 +3067,8 @@ public final class Programming {
    * Switch(b, b)
    * </pre>
    */
-  private static final class Switch extends AbstractCoreFunctionEvaluator {
+  private static final class Switch extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3543,7 +3547,8 @@ public final class Programming {
    * Which(a, b, c)
    * </pre>
    */
-  private static final class Which extends AbstractCoreFunctionEvaluator {
+  private static final class Which extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3617,7 +3622,8 @@ public final class Programming {
    * 12
    * </pre>
    */
-  private static final class While extends AbstractCoreFunctionEvaluator {
+  private static final class While extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3668,7 +3674,8 @@ public final class Programming {
    *
    * </blockquote>
    */
-  private static final class With extends AbstractCoreFunctionEvaluator {
+  private static final class With extends AbstractCoreFunctionEvaluator
+      implements IFastFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IAST moduleVariablesList = Validate.checkLocalVariableList(ast, 1, engine);
@@ -3804,8 +3811,7 @@ public final class Programming {
         } else {
           // Local variable specification `1` contains `2` which is not a symbol or an assignment to
           // a symbol.
-          Errors.printMessage(S.Module, "lvsym", F.List(variablesList, varExpr),
-              engine);
+          Errors.printMessage(S.Module, "lvsym", F.List(variablesList, varExpr), engine);
           return false;
         }
       }
@@ -4463,6 +4469,23 @@ public final class Programming {
           "Part: index " + partPosition + " of " + lhs.toString() + " is out of bounds.");
     }
     return lhs.setAtCopy(partPosition, value);
+  }
+
+  /**
+   * If the second argument is true, evaluate the first argument and return the result. Otherwise
+   * throw a condition {@link ConditionException#CONDITION_NIL}.
+   * 
+   * @param arg1
+   * @param arg2
+   * @param engine
+   * @throws ConditionException
+   */
+  public static IExpr condition(IExpr arg1, IExpr arg2, EvalEngine engine)
+      throws ConditionException {
+    if (engine.evalTrue(arg2)) {
+      return engine.evaluate(arg1);
+    }
+    throw ConditionException.CONDITION_NIL;
   }
 
   /**

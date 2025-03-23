@@ -16,19 +16,19 @@ public class FourierSinTransform extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IExpr f = ast.arg1();
+    IExpr expr = ast.arg1();
     IExpr t = ast.arg2();
     IExpr omega = ast.arg3();
     IExpr assumptions = F.Rule(S.Assumptions, F.Greater(omega, F.C0));
 
     IAST integral = //
         F.Times(F.Sqrt(F.Divide(F.C2, S.Pi)), //
-        F.Integrate(F.Times(f, F.Sin(F.Times(omega, t))), //
-                F.List(t, F.C0, F.CInfinity),//
+            F.Integrate(F.Times(expr, F.Sin(F.Times(omega, t))), //
+                F.List(t, F.C0, F.CInfinity), //
                 assumptions));
-    IExpr FF = engine.evaluate(integral);
-    if (FF.isFree(x -> x == S.Integrate, true)) {
-      return FF;
+    IExpr fst = engine.evaluate(integral);
+    if (fst.isFree(x -> x == S.Integrate, true)) {
+      return fst;
     }
     return F.NIL;
   }

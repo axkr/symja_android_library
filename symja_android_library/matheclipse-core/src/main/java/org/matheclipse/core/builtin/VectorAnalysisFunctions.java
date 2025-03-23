@@ -107,24 +107,6 @@ public class VectorAnalysisFunctions {
                     F.Times(F.CN1, F.Power(x, F.CN1), F.Plus(F.Negate(g), F.D(f, y))), F.D(g, x)));
 
               }
-              if (dimensions.size() == 2) {
-                if (numberOfVars != 2 || dimensions.getInt(0) != 2 || dimensions.getInt(1) != 2) {
-                  // `1` does not define a metric in `2` dimensions.
-                  return Errors.printMessage(S.Curl, "bdmtrc",
-                      F.List(F.stringx("Polar"), F.ZZ(numberOfVars)), engine);
-                }
-                // 2x2 matrix
-                IExpr f = list.getPart(1, 1);
-                IExpr g = list.getPart(1, 2);
-                IExpr h = list.getPart(2, 1);
-                IExpr i = list.getPart(2, 2);
-
-                IExpr x = variables.arg1();
-                IExpr y = variables.arg2();
-
-              }
-
-
               return F.NIL;
             }
 

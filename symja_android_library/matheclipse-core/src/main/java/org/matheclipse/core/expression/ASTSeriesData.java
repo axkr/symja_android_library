@@ -353,9 +353,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   public IAST toSeriesData() {
     // list of coefficients
     IASTAppendable coefficientList = F.mapRange(nMin, nMax, i -> coefficient(i));
-    IAST seriesData =
-        F.SeriesData(x, x0, coefficientList, F.ZZ(nMin), F.ZZ(truncate), F.ZZ(denominator));
-    return seriesData;
+    return F.SeriesData(x, x0, coefficientList, F.ZZ(nMin), F.ZZ(truncate), F.ZZ(denominator));
   }
 
   @Override

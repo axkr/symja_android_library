@@ -38,6 +38,8 @@ public class FourierTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testFourierSinTransform() {
+    // check("FourierSinTransform(Cos(t)/t, t, 1.2)", //
+    // "");
     check("FourierSinTransform(Exp(-t),t,w)", //
         "(Sqrt(2/Pi)*w)/(1+w^2)");
 

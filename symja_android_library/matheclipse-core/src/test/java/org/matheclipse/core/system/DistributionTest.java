@@ -426,6 +426,9 @@ public class DistributionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testKurtosis() {
+    check("Kurtosis({1.1, 1.2, 1.4, 2.1, 2.4})", //
+        "1.42098");
+
     // message Kurtosis: The argument {x} should have at least 2 arguments.
     check("Kurtosis({x})", //
         "Kurtosis({x})");

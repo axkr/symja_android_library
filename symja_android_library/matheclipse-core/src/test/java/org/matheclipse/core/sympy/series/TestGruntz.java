@@ -26,11 +26,11 @@ public class TestGruntz extends ExprEvaluatorTestCase {
       assertEquals(Set.of(x), mmrv(F.Power(x, 2), x));
       assertEquals(Set.of(x), mmrv(F.Log(x), x));
       // assertEquals(Set.of(F.Exp(x)), mmrv(F.Exp(x), x));
-      // assertEquals(Set.of(F.Exp(F.Negate(x))), mmrv(F.Exp(F.Negate(x)), x));
-      // assertEquals(Set.of(F.Exp(F.Power(x, 2))), mmrv(F.Exp(F.Power(x, 2)), x));
-      // assertEquals(Set.of(x), mmrv(F.Negate(F.Exp(F.Power(x, -1))), x));
-      // assertEquals(Set.of(F.Exp(F.Plus(x, F.Power(x, -1)))),
-      // mmrv(F.Exp(F.Plus(x, F.Power(x, -1))), x));
+       // assertEquals(Set.of(F.Exp(F.Negate(x))), mmrv(F.Exp(F.Negate(x)), x));
+       // assertEquals(Set.of(F.Exp(F.Power(x, 2))), mmrv(F.Exp(F.Power(x, 2)), x));
+       // assertEquals(Set.of(x), mmrv(F.Negate(F.Exp(F.Power(x, -1))), x));
+       // assertEquals(Set.of(F.Exp(F.Plus(x, F.Power(x, -1)))),
+       // mmrv(F.Exp(F.Plus(x, F.Power(x, -1))), x));
     } catch (Exception e) {
       e.printStackTrace();
       fail("Unexpected exception: " + e);

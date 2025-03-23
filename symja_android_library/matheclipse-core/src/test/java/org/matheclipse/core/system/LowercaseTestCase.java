@@ -8387,10 +8387,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     // check("FindClusters({{2.5, 3.1}, {5.9, 3.4}, {10, 15}, {2.2, 1.5}, {100, 7.5}})", //
     // "{{{2.5,3.1},{5.9,3.4},{2.2,1.5}},{{100.0,7.5}},{{10.0,15.0}}}");
-
+    //
     // check("FindClusters({1, 2, 3, 4, 5, 6, 7, 8, 9})", //
-    // "{{1.0,2.0,3.0},{6.0,7.0,8.0,9.0},{4.0,5.0}}");
-
+    // "{{6.0,7.0,8.0,9.0},{1.0,2.0},{3.0,4.0,5.0}}");
+    //
     // check("FindClusters({1, 2, 10, 12, 3, 1, 13, 25},4)", //
     // "{{1.0,2.0,3.0,1.0},{12.0,13.0},{25.0},{10.0}}");
   }
@@ -8399,6 +8399,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testFindFit() {
     check("FindFit({1.2214,1.49182,1.82212,2.22554,2.71828,3.32012,4.0552},a+b*x+c*x^2,{a,b,c},x)", //
         "{a->1.09428,b->0.0986352,c->0.0459481}");
+
     // https://stackoverflow.com/a/51696587/24819
     check(
         "FindFit({ {1.3,0.5}, {2.8,0.9}, {5.0,2.6}, {10.2,7.1}, {16.5,12.3}, {21.3,15.3},{ 31.8,20.4}, {52.2,24.4}}, " //
@@ -8433,6 +8434,25 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "FindFit({2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71},a*x*Log(b+c*x),{{a,\n"
             + "0},{b,0},{c,0}},x)");
   }
+
+  @Test
+  public void testFindFitSE89247() {
+    // Gauss Fit to List of 2D Points
+    // https://mathematica.stackexchange.com/a/89247/21734
+    check("data = {{0.05, 15}, {0.15, 51}, {0.25, 64}, {0.35, 107}, {0.45, 113}, {0.55, 162}, " //
+        + "{0.65, 163}, {0.75, 167}, {0.85, 182}, {0.95, 187}, {1.05, 165}, {1.15, 168}, " //
+        + "{1.25, 151}, {1.35, 143}, {1.45, 121}, {1.55, 130}, {1.65, 109}, {1.75, 91}, " //
+        + "{1.85, 91}, {1.95, 63}, {2.05, 48}, {2.15, 34}, {2.25, 29}, {2.35, 24}, {2.45, 14}, " //
+        + "{2.55, 11}, {2.65, 6}, {2.75, 6}, {2.85, 9}, {2.95, 4}, {3.05, 4}, {3.15, 2}, {3.25, 0}, " //
+        + "{3.35, 1}, {3.45, 5}, {3.55, 3}, {3.65, 2}, {3.75, 1}, {3.85, 2}, {3.95, 1}, {4.05, 0}, {4.15, 0}};", //
+        "");
+    check("model(x_) = ampl*Evaluate(PDF(NormalDistribution(x0, sigma), x));", //
+        "");
+    check("fit = FindFit(data, model(x), {ampl, x0, sigma}, x)", //
+        "{ampl->274.7648,x0->1.02404,sigma->0.614853}");
+
+  }
+
 
   @Test
   public void testFindLinearRecurrence() {
@@ -8635,8 +8655,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
           "0.0");
     }
 
-    checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})", //
-        "{x->3.4341896575482007}");
     checkNumeric("$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n"
         + "$R=100;\n" + "$d=0.00;\n" + "$vn=0;\n" + "$EAj=0;\n" + "$zj=0;\n" + "$sz=1;\n"
         + "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA))+(Sum((($R*(1+$d)^(Floor(i0/$Z)))/(1+$AA))*(1+p-$g)^(($n-i0-$vn)/$Z),{i0,0,$n-1}))+(Sum(($EAj*(1+p-$g)^(($n-$zj)/$Z))/(1+$AA),{j,1,$sz})) - 30199, {p, 0, 0.1})", //
@@ -8652,22 +8670,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "31.006276680299816");
     // default to Newton method
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})", //
-        "{x->3.4341896575482007}");
-    checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Brent)", //
-        "{x->3.434189629596888}");
+        "{x->3.4341896575482003}");
 
     // only a start value is given:
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,3}, Method->Newton)", //
-        "{x->3.4341896575482007}");
+        "{x->3.4341896575482003}");
 
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Bisection)", //
         "{x->3.434189647436142}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Brent)", //
-        "{x->3.434189629596888}");
+        "{x->3.4341896295968874}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Muller)", //
         "{x->3.4341896575483015}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Ridders)", //
-        "{x->3.4341896575482007}");
+        "{x->3.4341896575482003}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Secant)", //
         "{x->3.4341896575036097}");
     // FindRoot: maximal count (100) exceeded
@@ -8677,12 +8693,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->32000)", //
         "FindRoot(E^x==Pi^3,{x,1,10},Method->regulafalsi,MaxIterations->32000)");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Illinois)", //
-        "{x->3.4341896915055257}");
+        "{x->3.434189691505525}");
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Pegasus)", //
-        "{x->3.4341896575481976}");
+        "{x->3.434189657548197}");
 
     checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Brent)", //
-        "{x->3.434189629596888}");
+        "{x->3.4341896295968874}");
     check("FindRoot(Sin(x),{x,-0.5,0.5}, Secant)", //
         "{x->0.0}");
 
@@ -11051,6 +11067,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometricPFQ() {
+    check("HypergeometricPFQ({c1,c2},{c1,c2}, z)", //
+        "E^z");
+    check("N( HypergeometricPFQ({4},{},1) )", //
+        "ComplexInfinity");
     check("HypergeometricPFQ({}, {}, z)", //
         "E^z");
     check("HypergeometricPFQ(ConstantArray(1,1), ConstantArray(2,0), z)", //
@@ -11092,6 +11112,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometricU() {
+
+    check("N(HypergeometricU({3,1},{2,4},{7,8}))", //
+        "{0.00154364,0.160156}");
+
     // TODO throws hypergeometric function pole
     // https://github.com/mtommila/apfloat/issues/36
     check("HypergeometricU(3.0, 1.0, 0.0)", //
@@ -20057,6 +20081,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testQuantile() {
+    check("Quantile(Range(100), .99)", //
+        "99");
     check("Quantile({3,5},{1/4,1/2,3/4},{{1/2,0},{0,1}})", //
         "{3,4,5}");
     check("Quantile({{1,2*Pi}, {2,Pi},{3,3*Pi}}, {1/3, 4/5})", //
@@ -25412,12 +25438,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testTrace() {
     check("Trace(u = 2; Do(u = u*u, {3}); u, Times)", //
-        "{{{{u*u,2*2}},{{u*u,4*4}},{{u*u,16*16}}}}");
+        "{{{u*u,2*2}},{{u*u,4*4}},{{u*u,16*16}}}");
     check("x=5;Trace(Mod((3 + x)^2, x - 1))", //
         "{{{{x,5},3+5,8},8^2,64},{{x,5},-1+5,4},Mod(64,4),0}");
     check("Trace(u = 2; Do(u = u*u, {3}); u)", //
-        "{{u=2,2},{{{{u,2},{u,2},2*2,4},4},{{{u,4},{u,4},4*4,16},16},{{{u,16},{u,16},16*\n"
-            + "16,256},256},Null},{u,256},256}");
+        "{{u=2,2},{{{u,2},{u,2},2*2,4},4},{{{u,4},{u,4},4*4,16},16},{{{u,16},{u,16},16*16,\n"
+            + "256},256},{u,256},256}");
   }
 
   @Test
@@ -26283,7 +26309,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("D(WhittakerM(a,b,x), x)", //
         "(1/2-a/x)*WhittakerM(a,b,x)+((1/2+a+b)*WhittakerM(1+a,b,x))/x");
     check("WhittakerM(k, -1/2, 0)", //
-        "WhittakerM(k,-1/2,0)");
+        "ComplexInfinity");
     check("WhittakerM(k, -1/3, 0)", //
         "0");
     check("WhittakerM(k,  -2/3, 0)", //

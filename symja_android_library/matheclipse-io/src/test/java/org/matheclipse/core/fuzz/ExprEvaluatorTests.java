@@ -361,6 +361,10 @@ public class ExprEvaluatorTests {
         F.List(F.CN3D2), //
         F.List(F.C3D2), //
         F.List(F.C3D4), //
+        F.List(F.List(F.List(F.C1, F.C0), F.List(F.C2, F.C3)),
+            F.List(F.List(F.C4, F.a), F.List(F.C0, F.C1))),
+        F.List(F.List(F.List(F.C1, F.C0), F.List(F.C2, F.C3)),
+            F.List(F.List(F.C4, F.a), F.List(F.C1))),
         F.Part(F.x, F.C1), //
         F.Part(F.x, F.C2), //
         F.Part(F.x, F.ZZ(Integer.MAX_VALUE)), //

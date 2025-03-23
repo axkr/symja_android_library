@@ -4610,7 +4610,8 @@ public interface IExpr
 
   /**
    * Test if this expression is a real vector (i.e. an instance of {@link ASTRealVector} or a
-   * <code>List[...]</code> with elements of type <code>org.matheclipse.core.expression.Num</code>.
+   * <code>List(...)</code> with real number elements and at least one of type
+   * <code>org.matheclipse.core.expression.Num</code>.
    *
    * @return
    */

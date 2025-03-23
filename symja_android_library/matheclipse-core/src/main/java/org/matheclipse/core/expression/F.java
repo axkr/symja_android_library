@@ -967,13 +967,13 @@ public class F extends S {
           n_DEFAULT, o_DEFAULT, p_DEFAULT, q_DEFAULT, r_DEFAULT, s_DEFAULT, t_DEFAULT, u_DEFAULT,
           v_DEFAULT, w_DEFAULT, x_DEFAULT, y_DEFAULT, z_DEFAULT, A_DEFAULT, B_DEFAULT, C_DEFAULT,
           F_DEFAULT, G_DEFAULT};
-      short exprID = EXPRID_MAX_BUILTIN_LENGTH;
       for (short i = 0; i < S.BUILT_IN_SYMBOLS.length; i++) {
         IBuiltInSymbol symbol = S.BUILT_IN_SYMBOLS[i];
         if (symbol != null) {
           GLOBAL_IDS_MAP.put(symbol, (short) symbol.ordinal());
         }
       }
+      short exprID = EXPRID_MAX_BUILTIN_LENGTH;
       for (short i = 0; i < COMMON_IDS.length; i++) {
         GLOBAL_IDS_MAP.put(COMMON_IDS[i], exprID++);
       }

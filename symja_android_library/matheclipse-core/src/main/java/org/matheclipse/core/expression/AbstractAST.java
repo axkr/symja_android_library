@@ -4613,20 +4613,28 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public boolean isRealVector() {
     if (isList()) {
-      boolean containsNum = false;
-      for (int i = 1; i < size(); i++) {
+      final int size = size();
+      int i = 1;
+      while (i < size) {
         if (get(i).isReal()) {
           if (get(i) instanceof INum) {
             if (!(get(i) instanceof Num)) {
               return false;
             }
-            containsNum = true;
+            i++;
+            while (i < size) {
+              if (!get(i).isReal()) {
+                return false;
+              }
+              i++;
+            }
+            return true;
           }
+          i++;
         } else {
           return false;
         }
       }
-      return containsNum;
     }
     return false;
   }
