@@ -1180,11 +1180,9 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
             return matchRational(lhsPatternAST, lhsEvalExpr, stackMatcher, engine);
           default:
         }
-      }
-      if (lhsPatternAST.isAlternatives()) {
+      } else if (functionID == ID.Alternatives) {
         return matchAlternatives(lhsPatternAST, lhsEvalExpr, engine);
-      }
-      if (functionID == ID.Association) {
+      } else if (functionID == ID.Association) {
         return matchAssociation(lhsPatternAST, lhsEvalExpr, stackMatcher, engine);
       }
     }

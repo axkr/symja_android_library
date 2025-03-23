@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import java.util.List;
 import java.util.function.Function;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
+import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.GenericPair;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -152,40 +153,39 @@ public class PatternSequence extends AbstractPatternSequence {
     return toCharSequence().toString();
   }
 
+  @Override
+  public String toWolframString() {
+    final StringBuilder buffer = new StringBuilder();
+    if (fSymbol != null) {
+      buffer.append(WolframFormFactory.get().toString(fSymbol));
+    }
+    buffer.append("__");
+    if (fZeroArgsAllowed) {
+      buffer.append('_');
+    }
+    if (fDefault) {
+      buffer.append('.');
+    }
+    if (fHeadTest != null) {
+      buffer.append(WolframFormFactory.get().toString(fHeadTest));
+    }
+    return buffer.toString();
+  }
+
   private CharSequence toCharSequence() {
     final StringBuilder buffer = new StringBuilder();
-    if (fSymbol == null) {
-      buffer.append("__");
-      if (fZeroArgsAllowed) {
-        buffer.append('_');
-      }
-      if (fDefault) {
-        buffer.append('.');
-      }
-      if (fHeadTest != null) {
-        buffer.append(fHeadTest.toString());
-      }
-    } else {
-      if (fHeadTest == null) {
-        buffer.append(fSymbol.toString());
-        buffer.append("__");
-        if (fZeroArgsAllowed) {
-          buffer.append('_');
-        }
-        if (fDefault) {
-          buffer.append('.');
-        }
-      } else {
-        buffer.append(fSymbol.toString());
-        buffer.append("__");
-        if (fZeroArgsAllowed) {
-          buffer.append('_');
-        }
-        if (fDefault) {
-          buffer.append('.');
-        }
-        buffer.append(fHeadTest.toString());
-      }
+    if (fSymbol != null) {
+      buffer.append(fSymbol.toString());
+    }
+    buffer.append("__");
+    if (fZeroArgsAllowed) {
+      buffer.append('_');
+    }
+    if (fDefault) {
+      buffer.append('.');
+    }
+    if (fHeadTest != null) {
+      buffer.append(fHeadTest.toString());
     }
     return buffer;
   }

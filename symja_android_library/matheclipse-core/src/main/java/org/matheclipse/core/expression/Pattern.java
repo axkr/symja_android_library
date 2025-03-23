@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
+import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.GenericPair;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -311,19 +312,28 @@ public class Pattern extends Blank {
   @Override
   public String toString() {
     final StringBuilder buffer = new StringBuilder();
-    if (fHeadTest == null) {
-      buffer.append(fSymbol.toString());
-      buffer.append('_');
-      if (fDefault) {
-        buffer.append('.');
-      }
-    } else {
-      buffer.append(fSymbol.toString());
-      buffer.append('_');
-      if (fDefault) {
-        buffer.append('.');
-      }
+    buffer.append(fSymbol.toString());
+    buffer.append('_');
+    if (fDefault) {
+      buffer.append('.');
+    }
+    if (fHeadTest != null) {
       buffer.append(fHeadTest.toString());
+    }
+    return buffer.toString();
+  }
+
+
+  @Override
+  public String toWolframString() {
+    final StringBuilder buffer = new StringBuilder();
+    buffer.append(WolframFormFactory.get().toString(fSymbol));
+    buffer.append('_');
+    if (fDefault) {
+      buffer.append('.');
+    }
+    if (fHeadTest != null) {
+      buffer.append(WolframFormFactory.get().toString(fHeadTest));
     }
     return buffer.toString();
   }
@@ -331,4 +341,5 @@ public class Pattern extends Blank {
   private Object writeReplace() {
     return optional();
   }
+
 }

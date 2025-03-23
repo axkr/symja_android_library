@@ -178,7 +178,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
         IEvalStepListener stepListener = engine.getStepListener();
         final boolean isTraceMode =
             Config.TRACE_REWRITE_RULE && engine.isTraceMode() && stepListener != null;
-        boolean isStepListenerSetUp = false;
         try {
           engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
           if (isTraceMode) {
