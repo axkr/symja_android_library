@@ -55,4 +55,4 @@ The [A023391 a(n+1) = a(n) converted to base 9 from base 8 (written in base 10)]
 
 ### Github
 
-* [Implementation of FromDigits](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntegerFunctions.java#L817) 
+* [Implementation of FromDigits](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntegerFunctions.java#L1120) 

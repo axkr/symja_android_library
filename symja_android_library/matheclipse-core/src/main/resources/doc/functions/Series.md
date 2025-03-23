@@ -35,8 +35,8 @@ The [A053614 Numbers that are not the sum of distinct triangular numbers. ](http
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x2611; - partially implemented
 
 ### Github
 
-* [Implementation of Series](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SeriesFunctions.java#L1603) 
+* [Implementation of Series](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SeriesFunctions.java#L1647) 

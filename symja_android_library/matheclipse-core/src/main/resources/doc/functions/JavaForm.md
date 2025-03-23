@@ -64,8 +64,8 @@ Math.pow(Math.E,3)-Math.cos(Math.pow(Math.PI,2)/x)
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x2611; - partially implemented
 
 ### Github
 
-* [Implementation of JavaForm](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/OutputFunctions.java#L454) 
+* [Implementation of JavaForm](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/OutputFunctions.java#L486) 

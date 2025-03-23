@@ -30,4 +30,4 @@ x1x100x0
 
 ### Github
 
-* [Implementation of StringReplace](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L2126) 
+* [Implementation of StringReplace](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L2220) 

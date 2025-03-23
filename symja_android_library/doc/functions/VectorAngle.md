@@ -29,8 +29,8 @@ Pi/3
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x2611; - partially implemented
 
 ### Github
 
-* [Implementation of VectorAngle](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L6287) 
+* [Implementation of VectorAngle](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L6260) 

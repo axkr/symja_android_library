@@ -33,8 +33,8 @@ Generate HTML/JavaScript output to visualize the structure of the input expressi
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x2611; - partially implemented
 
 ### Github
 
-* [Implementation of TreeForm](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/OutputFunctions.java#L881) 
+* [Implementation of TreeForm](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/OutputFunctions.java#L951) 

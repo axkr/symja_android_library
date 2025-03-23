@@ -30,8 +30,8 @@ Graph({1,2,3,4,5,6,7,8,9,10},{1<->3,1<->2,2<->6,3<->5,3<->4,4<->8,5<->7,5<->6,6<
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x2611; - partially implemented
 
 ### Github
 
-* [Implementation of PetersenGraph](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphDataFunctions.java#L344) 
+* [Implementation of PetersenGraph](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphDataFunctions.java#L374) 

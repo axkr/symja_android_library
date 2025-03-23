@@ -18,4 +18,4 @@ LowerCaseQ(str)
 
 ### Github
 
-* [Implementation of LowerCaseQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L946) 
+* [Implementation of LowerCaseQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L1039) 

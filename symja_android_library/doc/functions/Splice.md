@@ -25,4 +25,4 @@ h(a,b,c,{1,1},{2,2},d,e)
 
 ### Github
 
-* [Implementation of Splice](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L2131) 
+* [Implementation of Splice](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L2152) 

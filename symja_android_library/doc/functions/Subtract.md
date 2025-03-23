@@ -36,4 +36,4 @@ a-b+c
 
 ### Github
 
-* [Implementation of Subtract](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L5871) 
+* [Implementation of Subtract](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L5750) 

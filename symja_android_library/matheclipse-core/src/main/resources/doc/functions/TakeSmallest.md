@@ -24,4 +24,4 @@ TakeSmallest({e_1, e_2, ..., e_i}, n)
 
 ### Github
 
-* [Implementation of TakeSmallest](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L7759) 
+* [Implementation of TakeSmallest](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L7728) 

@@ -22,7 +22,7 @@ https://github.com/axkr/symja_android_library/blob/master/symja_android_library/
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x1F9EA; - experimental
 
 ### Github
 

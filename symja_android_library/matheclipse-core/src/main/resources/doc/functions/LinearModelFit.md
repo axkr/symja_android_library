@@ -36,4 +36,4 @@ See:
 
 ### Github
 
-* [Implementation of LinearModelFit](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/CurveFitterFunctions.java#L321) 
+* [Implementation of LinearModelFit](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/CurveFitterFunctions.java#L353) 

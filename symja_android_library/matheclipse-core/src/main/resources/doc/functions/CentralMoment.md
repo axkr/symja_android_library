@@ -31,8 +31,8 @@ See:
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x1F9EA; - experimental
 
 ### Github
 
-* [Implementation of CentralMoment](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L1389) 
+* [Implementation of CentralMoment](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticalMomentFunctions.java#L111) 

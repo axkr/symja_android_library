@@ -19,4 +19,4 @@ Merge(list-of-rules-or-associations, function)
 
 ### Github
 
-* [Implementation of Merge](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/AssociationFunctions.java#L1022) 
+* [Implementation of Merge](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/AssociationFunctions.java#L1021) 

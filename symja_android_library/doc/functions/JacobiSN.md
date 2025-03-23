@@ -29,4 +29,4 @@ See
 
 ### Github
 
-* [Implementation of JacobiSN](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/EllipticIntegrals.java#L1945) 
+* [Implementation of JacobiSN](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/EllipticIntegrals.java#L2063) 

@@ -28,4 +28,4 @@ See
 
 ### Github
 
-* [Implementation of CosIntegral](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L138) 
+* [Implementation of CosIntegral](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L144) 

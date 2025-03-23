@@ -29,6 +29,6 @@ See
 
 ### Github
 
-* [Implementation of JacobiSC](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/EllipticIntegrals.java#L1789) 
+* [Implementation of JacobiSC](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/EllipticIntegrals.java#L1897) 
 
 * [Rule definitions of JacobiSC](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/JacobiSCRules.m) 

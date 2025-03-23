@@ -38,6 +38,6 @@ Some special values:
 
 ### Github
 
-* [Implementation of ProductLog](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SpecialFunctions.java#L1984) 
+* [Implementation of ProductLog](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SpecialFunctions.java#L2110) 
 
 * [Rule definitions of ProductLog](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/ProductLogRules.m) 

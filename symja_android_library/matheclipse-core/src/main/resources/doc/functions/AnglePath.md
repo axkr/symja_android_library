@@ -44,4 +44,4 @@ AnglePath({{x, y}, phi0}, {phi1, phi2, ...})
 
 ### Github
 
-* [Implementation of AngleVector](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L130) 
+* [Implementation of AnglePath](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L132) 

@@ -34,6 +34,6 @@ See:
 
 ### Github
 
-* [Implementation of Cos](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L1220) 
+* [Implementation of Cos](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L1325) 
 
 * [Rule definitions of Cos](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/CosRules.m) 

@@ -44,4 +44,4 @@ ComplexInfinity
 
 ### Github
 
-* [Implementation of Quotient](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntegerFunctions.java#L1299) 
+* [Implementation of Quotient](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntegerFunctions.java#L1682) 

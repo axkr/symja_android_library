@@ -38,4 +38,4 @@ See
 
 ### Github
 
-* [Implementation of TimeValue](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/FinancialFunctions.java#L112) 
+* [Implementation of TimeValue](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/FinancialFunctions.java#L113) 

@@ -28,10 +28,10 @@ Piecewise({{Sin(f+g+1/2*n*Pi)/n!,n>=0}},0)
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x2611; - partially implemented
 
 ### Github
 
-* [Implementation of SeriesCoefficient](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SeriesFunctions.java#L1657)
+* [Implementation of SeriesCoefficient](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SeriesFunctions.java#L1710) 
 
-* [Rule definitions of SeriesCoefficient](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rule_sets/SeriesCoefficientRules.m)
+* [Rule definitions of SeriesCoefficient](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rule_sets/SeriesCoefficientRules.m) 

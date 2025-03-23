@@ -35,6 +35,6 @@ Sec(1)
 
 ### Github
 
-* [Implementation of Sec](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2617) 
+* [Implementation of Sec](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L2850) 
 
 * [Rule definitions of Sec](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/SecRules.m) 

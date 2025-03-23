@@ -16,3 +16,11 @@ VectorLessEqual({{{0,2}, {2,-1}}, {{1, {2,7}},{3,4}}})
 True
 ```
  
+
+### Implementation status
+
+* &#x2611; - partially implemented
+
+### Github
+
+* [Implementation of VectorLessEqual](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ComputationalGeometryFunctions.java#L1232) 

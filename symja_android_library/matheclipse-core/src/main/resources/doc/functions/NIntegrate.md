@@ -72,4 +72,4 @@ Integrate along a complex line:
 
 ### Github
 
-* [Implementation of NIntegrate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/NIntegrate.java#L86) 
+* [Implementation of NIntegrate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/NIntegrate.java#L121) 

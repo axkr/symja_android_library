@@ -27,3 +27,11 @@ ReadList(input-stream, object-type)
 >> ReadList(StringToStream("(**)\n\n\n{0, x, 1, 0}\n{1, x, 1, x}"), String) // InputForm 
 {"(**)","{0, x, 1, 0}","{1, x, 1, x}"}
 ```
+
+### Implementation status
+
+* &#x2611; - partially implemented
+
+### Github
+
+* [Implementation of ReadList](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/FileFunctions.java#L1212) 

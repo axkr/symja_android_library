@@ -44,4 +44,4 @@ Return the `n`-dimensional Levi-Civita tensor as a list by appending the symbol 
 
 ### Github
 
-* [Implementation of LeviCivitaTensor](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/TensorFunctions.java#L284) 
+* [Implementation of LeviCivitaTensor](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/TensorFunctions.java#L384) 

@@ -14,8 +14,8 @@ MinFilter(list, r)
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x1F9EA; - experimental
 
 ### Github
 
-* [Implementation of MinFilter](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/FilterFunctions.java#L29) 
+* [Implementation of MinFilter](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/FilterFunctions.java#L30) 

@@ -28,6 +28,6 @@ See
 
 ### Github
 
-* [Implementation of Sinc](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L3065) 
+* [Implementation of Sinc](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L3365) 
 
 * [Rule definitions of Sinc](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/SincRules.m) 

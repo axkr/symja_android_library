@@ -15,3 +15,11 @@ See:
 >> SixJSymbol({1, 2, 3}, {1, 2, 3})
 1/105
 ```
+
+### Implementation status
+
+* &#x2611; - partially implemented
+
+### Github
+
+* [Implementation of SixJSymbol](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/QuantumPhysicsFunctions.java#L103) 

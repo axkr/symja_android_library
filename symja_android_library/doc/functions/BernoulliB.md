@@ -36,4 +36,4 @@ See:
 
 ### Github
 
-* [Implementation of BernoulliB](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L271) 
+* [Implementation of BernoulliB](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L275) 

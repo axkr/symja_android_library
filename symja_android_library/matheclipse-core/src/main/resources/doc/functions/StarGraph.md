@@ -21,3 +21,11 @@ See
 >> StarGraph(6)
 Graph({1,2,3,4,5,6},{2<->1,3<->1,4<->1,5<->1,6<->1})
 ```
+
+### Implementation status
+
+* &#x2611; - partially implemented
+
+### Github
+
+* [Implementation of StarGraph](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphDataFunctions.java#L505) 

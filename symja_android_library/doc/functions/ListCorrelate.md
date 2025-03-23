@@ -24,4 +24,4 @@ ListCorrelate(kernel-list, tensor-list)
 
 ### Github
 
-* [Implementation of ListCorrelate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/TensorFunctions.java#L437) 
+* [Implementation of ListCorrelate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/TensorFunctions.java#L539) 

@@ -33,4 +33,4 @@ See
 
 ### Github
 
-* [Implementation of PolynomialLCM](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L3439) 
+* [Implementation of PolynomialLCM](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L3506) 

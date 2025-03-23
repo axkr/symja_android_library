@@ -41,4 +41,4 @@ AngleVector({x, y}, {r, phi})
 
 ### Github
 
-* [Implementation of AngleVector](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L130) 
+* [Implementation of AngleVector](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L236) 

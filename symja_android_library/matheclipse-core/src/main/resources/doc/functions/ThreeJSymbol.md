@@ -15,3 +15,11 @@ See:
 >> ThreeJSymbol({3/2, -3/2}, {3/2, 3/2}, {1, 0}) 
 Sqrt(3/5)/2
 ```
+
+### Implementation status
+
+* &#x2611; - partially implemented
+
+### Github
+
+* [Implementation of ThreeJSymbol](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/QuantumPhysicsFunctions.java#L70) 

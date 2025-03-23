@@ -27,6 +27,6 @@ See
 
 ### Github
 
-* [Implementation of Sinh](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L3176) 
+* [Implementation of Sinh](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L3476) 
 
 * [Rule definitions of Sinh](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/SinhRules.m) 

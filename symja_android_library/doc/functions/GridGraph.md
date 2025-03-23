@@ -26,3 +26,11 @@ See
  {0,0,0,0,0,0,0,1,0,1,0,1},
  {0,0,0,0,0,0,0,0,1,0,1,0}}
 ```
+
+### Implementation status
+
+* &#x2611; - partially implemented
+
+### Github
+
+* [Implementation of GridGraph](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphDataFunctions.java#L251) 

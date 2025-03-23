@@ -33,6 +33,6 @@ I*1.5707963267948966
 
 ### Github
 
-* [Implementation of ArcCoth](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L441) 
+* [Implementation of ArcCoth](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L547) 
 
 * [Rule definitions of ArcCoth](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/ArcCothRules.m) 

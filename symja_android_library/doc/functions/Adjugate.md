@@ -31,4 +31,4 @@ The 3 × 3 matrix example from Wikipedia:
 
 ### Github
 
-* [Implementation of Adjugate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L705) 
+* [Implementation of Adjugate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L704) 

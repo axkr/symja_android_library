@@ -48,4 +48,4 @@ Example from Wikipedia where the Jacobian matrix doesn't need to be squared:
 
 ### Github
 
-* [Implementation of Grad](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/VectorAnalysisFunctions.java#L539) 
+* [Implementation of Grad](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/VectorAnalysisFunctions.java#L521) 

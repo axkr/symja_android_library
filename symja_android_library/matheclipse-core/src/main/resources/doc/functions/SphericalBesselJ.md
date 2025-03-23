@@ -27,6 +27,6 @@ I*0.204488
 
 ### Github
 
-* [Implementation of SphericalBesselJ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BesselFunctions.java#L1150) 
+* [Implementation of SphericalBesselJ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BesselFunctions.java#L1213) 
 
 * [Rule definitions of SphericalBesselJ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/SphericalBesselJRules.m) 

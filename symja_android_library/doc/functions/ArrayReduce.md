@@ -22,3 +22,11 @@ ArrayReduce(function, list-of-values, n)
 >> ArrayReduce(f, arr, 3) 
 {{f({1,2,3,4}),f({5,6,7,8}),f({9,10,11,12})},{f({13,14,15,16}),f({17,18,19,20}),f({21,22,23,24})}}
 ```
+
+### Implementation status
+
+* &#x1F9EA; - experimental
+
+### Github
+
+* [Implementation of ArrayReduce](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/TensorFunctions.java#L60) 

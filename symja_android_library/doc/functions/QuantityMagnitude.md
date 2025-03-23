@@ -32,8 +32,8 @@ Convert from degrees to radians
 
 ### Implementation status
 
-* &#x2705; - full supported
+* &#x2611; - partially implemented
 
 ### Github
 
-* [Implementation of QuantityMagnitude](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/QuantityFunctions.java#L345) 
+* [Implementation of QuantityMagnitude](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/QuantityFunctions.java#L392) 

@@ -22,4 +22,4 @@ ExpandDenominator(expr)
 
 ### Github
 
-* [Implementation of ExpandDenominator](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L2070) 
+* [Implementation of ExpandDenominator](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Algebra.java#L2089) 

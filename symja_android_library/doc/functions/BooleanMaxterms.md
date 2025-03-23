@@ -27,4 +27,4 @@ a||b||c||d
 
 ### Github
 
-* [Implementation of BooleanMaxterms](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BooleanFunctions.java#L1206) 
+* [Implementation of BooleanMaxterms](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BooleanFunctions.java#L1268) 

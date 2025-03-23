@@ -56,4 +56,4 @@ RandomPrime({14, 16}, 1)
 
 ### Github
 
-* [Implementation of RandomPrime](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/RandomFunctions.java#L475) 
+* [Implementation of RandomPrime](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/RandomFunctions.java#L527) 

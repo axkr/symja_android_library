@@ -42,4 +42,4 @@ Non integer or negative exponents returns only one rule:
 
 ### Github
 
-* [Implementation of CoefficientRules](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L320) 
+* [Implementation of CoefficientRules](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L328) 

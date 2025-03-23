@@ -47,6 +47,6 @@ Sqrt(Pi)
 
 ### Github
 
-* [Implementation of Gamma](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L1560) 
+* [Implementation of Gamma](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L1553) 
 
 * [Rule definitions of Gamma](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/GammaRules.m) 

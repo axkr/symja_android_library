@@ -26,4 +26,4 @@ See
 
 ### Github
 
-* [Implementation of PowersRepresentations](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L5619) 
+* [Implementation of PowersRepresentations](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L5811) 
