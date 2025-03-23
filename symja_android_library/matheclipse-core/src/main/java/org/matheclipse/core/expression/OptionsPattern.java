@@ -3,9 +3,8 @@ package org.matheclipse.core.expression;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.GenericPair;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -16,6 +15,8 @@ import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcherEquals;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.ParserConfig;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class OptionsPattern extends AbstractPatternSequence {
 
@@ -337,7 +338,7 @@ public class OptionsPattern extends AbstractPatternSequence {
     if (fSymbol == null) {
       buffer.append("OptionsPattern[]");
     } else {
-      buffer.append(fSymbol.toString());
+      buffer.append(WolframFormFactory.get().toString(fSymbol));
       buffer.append(":OptionsPattern[]");
     }
     return buffer.toString();

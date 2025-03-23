@@ -14,16 +14,16 @@
 
 package tech.tablesaw.table;
 
-import com.google.common.base.Preconditions;
-import it.unimi.dsi.fastutil.ints.IntArrays;
-import it.unimi.dsi.fastutil.ints.IntComparator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.PrimitiveIterator;
 import java.util.stream.IntStream;
-import javax.annotation.Nullable;
+import com.google.common.base.Preconditions;
+import it.unimi.dsi.fastutil.ints.IntArrays;
+import it.unimi.dsi.fastutil.ints.IntComparator;
+import jakarta.annotation.Nullable;
 import tech.tablesaw.aggregate.NumericAggregateFunction;
 import tech.tablesaw.api.NumericColumn;
 import tech.tablesaw.api.Row;

@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.JASConvert;
@@ -51,6 +50,7 @@ import edu.jas.ufd.PolyUfdUtil;
 import edu.jas.ufd.Quotient;
 import edu.jas.ufd.QuotientRing;
 import edu.jas.ufd.QuotientTaylorFunction;
+import jakarta.annotation.Nullable;
 
 public class SeriesFunctions {
 
@@ -2124,7 +2124,7 @@ public class SeriesFunctions {
    * @param engine the evaluation engine
    * @return the series or <code>null</code> if no series is found
    */
-  private static ASTSeriesData simpleSeries(final IExpr function, IExpr x, IExpr x0, final int n,
+  public static ASTSeriesData simpleSeries(final IExpr function, IExpr x, IExpr x0, final int n,
       final int denominator, EvalEngine engine) {
     VariablesSet varSet = new VariablesSet(function);
     varSet.add(x);

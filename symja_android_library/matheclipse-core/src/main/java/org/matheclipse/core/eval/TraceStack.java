@@ -7,8 +7,7 @@ import org.matheclipse.core.interfaces.AbstractEvalStepListener;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 public final class TraceStack extends AbstractEvalStepListener {
 

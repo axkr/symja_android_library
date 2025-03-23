@@ -2,7 +2,7 @@ package org.matheclipse.core.eval.steps.output;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * This class represents list of steps to solve a problem

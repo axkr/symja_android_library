@@ -21,8 +21,6 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.NotThreadSafe;
 import org.apache.logging.log4j.Level;
 import org.apfloat.ApfloatInterruptedException;
 import org.apfloat.FixedPrecisionApfloatHelper;
@@ -94,13 +92,14 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
 import edu.jas.kern.PreemptingException;
+import jakarta.annotation.Nonnull;
 
 /**
  * The main evaluation algorithms for the Symja computer algebra system. A single <code>EvalEngine
  * </code> is associated with the current thread through a
  * <a href="https://en.wikipedia.org/wiki/Thread-local_storage">ThreadLocal</a> mechanism.
  */
-@NotThreadSafe
+// @NotThreadSafe
 public class EvalEngine implements Serializable {
 
   private static final IStringX EVALUATION_LOOP = StringX.valueOf("EvalLoop");

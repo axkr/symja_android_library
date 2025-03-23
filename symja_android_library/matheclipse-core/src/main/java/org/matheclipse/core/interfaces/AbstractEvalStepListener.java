@@ -1,6 +1,6 @@
 package org.matheclipse.core.interfaces;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 /**
  * An abstract listener which could listen to the <code>EvalEngine#evalLoop()</code> steps, to

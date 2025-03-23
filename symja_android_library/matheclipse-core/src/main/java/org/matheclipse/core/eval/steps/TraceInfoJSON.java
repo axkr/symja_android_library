@@ -1,7 +1,6 @@
 package org.matheclipse.core.eval.steps;
 
 import java.util.function.Predicate;
-import javax.annotation.Nonnull;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.steps.output.JSONStep;
@@ -13,6 +12,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import jakarta.annotation.Nonnull;
 
 public class TraceInfoJSON {
   private final RuleDescription descriptionTemplates;

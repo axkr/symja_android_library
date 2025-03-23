@@ -24,7 +24,6 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -158,6 +157,7 @@ import com.google.common.math.DoubleMath;
 import edu.jas.kern.ComputerThreads;
 import edu.jas.kern.JASConfig;
 import edu.jas.kern.PreemptStatus;
+import jakarta.annotation.Nonnull;
 
 /** Factory for creating Symja predefined function expression objects (interface {@link IAST}). */
 public class F extends S {
@@ -868,7 +868,7 @@ public class F extends S {
       ComputerThreads.NO_THREADS = Config.JAS_NO_THREADS;
 
       initApfloat();
-
+      S.C.setAttributes(ISymbol.NHOLDALL);
       Slot.setAttributes(ISymbol.NHOLDALL);
       Slot.setEvaluator(ICoreFunctionEvaluator.ARGS_EVALUATOR);
       SlotSequence.setAttributes(ISymbol.NHOLDALL);
@@ -968,6 +968,12 @@ public class F extends S {
           v_DEFAULT, w_DEFAULT, x_DEFAULT, y_DEFAULT, z_DEFAULT, A_DEFAULT, B_DEFAULT, C_DEFAULT,
           F_DEFAULT, G_DEFAULT};
       short exprID = EXPRID_MAX_BUILTIN_LENGTH;
+      for (short i = 0; i < S.BUILT_IN_SYMBOLS.length; i++) {
+        IBuiltInSymbol symbol = S.BUILT_IN_SYMBOLS[i];
+        if (symbol != null) {
+          GLOBAL_IDS_MAP.put(symbol, (short) symbol.ordinal());
+        }
+      }
       for (short i = 0; i < COMMON_IDS.length; i++) {
         GLOBAL_IDS_MAP.put(COMMON_IDS[i], exprID++);
       }

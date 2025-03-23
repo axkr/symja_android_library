@@ -3,7 +3,6 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.evalExpandAll;
 import java.util.List;
-import javax.annotation.Nonnull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.analysis.solvers.LaguerreSolver;
@@ -45,6 +44,7 @@ import edu.jas.root.InvalidBoundaryException;
 import edu.jas.root.Rectangle;
 import edu.jas.ufd.Squarefree;
 import edu.jas.ufd.SquarefreeFactory;
+import jakarta.annotation.Nonnull;
 
 public class RootsFunctions {
   private static final Logger LOGGER = LogManager.getLogger();

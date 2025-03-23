@@ -1,10 +1,9 @@
 package org.matheclipse.core.interfaces;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 /**
  * A listener which could listen to the <code>EvalEngine#evalLoop()</code> steps, to implement an
