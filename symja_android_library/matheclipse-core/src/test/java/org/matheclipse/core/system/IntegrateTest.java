@@ -325,6 +325,14 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     }
   }
 
+  @Test
+  public void testNIntegrateComplex() {
+    checkNumeric("NIntegrate(Sqrt(x), {x, I, 3-I})", //
+        "3.792139934711127+I*(-2.2113136245269325)");
+    checkNumeric(
+        "NIntegrate(1.25+I*2.0+(-3.25+I*0.125)*x+(I*3.0)*x^2,{x, -1.75+I*4.0, 1.5+I*(-12.0)})", //
+        "-1427.4921875+I*(-709.06640625)");
+  }
 
   @Test
   public void testNIntegrate() {
@@ -348,7 +356,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     checkNumeric("NIntegrate(Exp(-x),{x,0,Infinity})", //
         "1.0");
     checkNumeric("NIntegrate(Exp(-x^2),{x,0,Infinity})", //
-        "0.886226925452758");
+        "0.8862269254527579");
     checkNumeric("NIntegrate(Exp(-x^2),{x,-Infinity,Infinity})", //
         "1.772453850905516");
 

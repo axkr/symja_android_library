@@ -3,6 +3,7 @@ package org.matheclipse.core.generic;
 import java.util.function.DoubleFunction;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.UnaryOperator;
+import org.hipparchus.analysis.CalculusFieldUnivariateFunction;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
@@ -21,7 +22,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /** Unary numerical function for functions like Plot */
 public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDifferentiableFunction,
-    DoubleFunction<IExpr>, DoubleUnaryOperator {
+    DoubleFunction<IExpr>, DoubleUnaryOperator, CalculusFieldUnivariateFunction<Complex> {
   final IExpr fUnaryFunction;
   final ISymbol fVariable;
   final ISymbol fDummyVariable;
@@ -129,6 +130,7 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
    * 
    * @param value
    */
+  @Deprecated
   public IExpr applyLimit(IExpr value) {
     try {
       return fEngine.evalNumericFunction(F.Limit(fUnaryFunction, F.Rule(fDummyVariable, value)));
@@ -224,6 +226,7 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
     throw new ArithmeticException("Expected numerical complex value object!");
   }
 
+  @Override
   public Complex value(final Complex z) {
     final Object temp = apply(F.complexNum(z));
     if (temp instanceof ComplexNum) {
