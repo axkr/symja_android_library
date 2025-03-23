@@ -49,6 +49,13 @@ Other options include `MaxIterations` and `MaxPoints`
 -0.0208333271245165
 ```
 
+Integrate along a complex line:
+
+```
+>> NIntegrate(1.25+I*2.0+(-3.25+I*0.125)*x+(I*3.0)*x^2,{x, -1.75+I*4.0, 1.5+I*(-12.0)})
+-1427.4921875+I*(-709.06640625)
+```
+
 ### Related terms 
 [D](D.md), [DSolve](DSolve.md), [Integrate](Integrate.md), [Limit](Limit.md), [ND](ND.md)
 
