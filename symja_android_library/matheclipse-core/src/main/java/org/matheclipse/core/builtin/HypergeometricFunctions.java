@@ -98,24 +98,29 @@ public class HypergeometricFunctions {
         return F.Hypergeometric2F1(a, b2, c, z2);
       }
       if (z2.isZero()) {
+        // https://functions.wolfram.com/HypergeometricFunctions/AppellF1/03/03/0001/
         return F.Hypergeometric2F1(a, b1, c, z1);
       }
       if (z2.isOne()) {
+        // https://functions.wolfram.com/HypergeometricFunctions/AppellF1/03/04/
         return F.Times(F.Hypergeometric2F1(a, b1, F.Subtract(c, b2), z1),
             F.Hypergeometric2F1(a, b2, c, F.C1));
       }
 
       // avoid isPossibleZero for Rubi evaluation
       if (z1.subtract(z2).isZero()) {
+        // https://functions.wolfram.com/HypergeometricFunctions/AppellF1/03/05/0001/
         // Hypergeometric2F1(a, b1 + b2, c, z1)
         return F.Hypergeometric2F1(a, F.Plus(b1, b2), c, z1);
       }
       if (b1.subtract(b2).isZero() && z1.plus(z2).isZero()) {
+        // https://functions.wolfram.com/HypergeometricFunctions/AppellF1/03/05/0002/
         // HypergeometricPFQ({1/2+a/2,a/2,b1},{1/2+c/2,c/2},z1^2)
         return F.HypergeometricPFQ(F.list(F.Plus(F.C1D2, F.Divide(a, F.C2)), F.Divide(a, F.C2), b1), //
             F.list(F.Plus(F.C1D2, F.Divide(c, F.C2)), F.Divide(c, F.C2)), F.Sqr(z1));
       }
       if (b1.plus(b2).subtract(c).isZero()) {
+        // https://functions.wolfram.com/HypergeometricFunctions/AppellF1/03/06/01/0001/
         // Hypergeometric2F1(a, b1, b1 + b2, (z1 - z2)/(1 - z2)) / (1 - z2)^a
         return F.Times( //
             F.Hypergeometric2F1(a, //
@@ -1392,9 +1397,16 @@ public class HypergeometricFunctions {
     }
 
     private static IExpr hypergeometricPFQ(EvalEngine engine, IExpr a, IExpr b, IExpr z) {
-      if (z.isZero() && a.isList() && b.isList()) {
-        return F.C1;
+      if (a.isList() && b.isList()) {
+        if (z.isZero()) {
+          return F.C1;
+        }
+        if (a.equals(b)) {
+          // HypergeometricPFQ({b___},{b___},z_) := E^(z),
+          return F.Exp(z);
+        }
       }
+
       IAST aVector = F.NIL;
       if (a.isVector() > 0) {
         aVector = (IAST) a.normal(false);
@@ -1863,6 +1875,10 @@ public class HypergeometricFunctions {
         IInexactNumber k = (IInexactNumber) ast.arg1();
         IInexactNumber m = (IInexactNumber) ast.arg2();
         IInexactNumber z = (IInexactNumber) ast.arg3();
+        if (m.isNumEqualRational(F.CN1D2)) {
+          // https://functions.wolfram.com/HypergeometricFunctions/WhittakerM/03/01/02/0001/
+          return F.CComplexInfinity;
+        }
         // (z^(1/2+m)*Hypergeometric1F1(1/2-k+m,1+2*m,z))/E^(z/2)
         IExpr hypergeometric1f1 = engine.evaluateNIL(
             F.Hypergeometric1F1(F.Plus(F.C1D2, F.Negate(k), m), F.Plus(F.C1, F.Times(F.C2, m)), z));
@@ -1876,9 +1892,14 @@ public class HypergeometricFunctions {
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      // IExpr k = ast.arg1();
-      // IExpr m = ast.arg2();
-      // IExpr z = ast.arg3();
+      IExpr k = ast.arg1();
+      IExpr m = ast.arg2();
+      IExpr z = ast.arg3();
+      if (m.equals(F.CN1D2)) {
+        // https://functions.wolfram.com/HypergeometricFunctions/WhittakerM/03/01/02/0001/
+        return F.CComplexInfinity;
+      }
+
       //
       // if (engine.isNumericMode()) {
       // if (k.isNumber() && m.isNumber() && z.isNumber()) {

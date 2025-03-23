@@ -147,8 +147,10 @@
  SphericalHarmonicY(l_,1,t_,p_) := (-E^(I*p)*l*(1+l)*Sqrt(1+2*l)*Sqrt(Gamma(l))*Hypergeometric2F1(1-l,2+l,2,Sin(t/2)^2)*Sin(t))/(4*Sqrt(Pi)*Sqrt(Gamma(2+l))),
  SphericalHarmonicY(l_,m_,t_,p_) := (E^(I*m*p)*Sqrt(1+2*l)*Sqrt(Gamma(1+l-m))*Hypergeometric2F1(-l,1+l,1-m,Sin(t/2)^2)*Sin(t)^m)/((1-Cos(t))^m*2*Sqrt(Pi)*Gamma(1-m)*Sqrt(Gamma(1+l+m))),
 
+ WhittakerM(k_, 0, z_) := (Sqrt(z)*LaguerreL(-(1/2)+k,z))/E^(z/2),
  WhittakerM(k_, m_, z_) := (z^(1/2+m) * Hypergeometric1F1(1/2-k+m, 1+ 2*m, z))/E^(z/2),
 
+ WhittakerW(k_, 0, z_) :=  (Sqrt(z)*HypergeometricU(1/2-k,1,z))/E^(z/2),
  WhittakerW(k_, m_, z_) := (z^(1/2+m) * HypergeometricU(1/2-k+m, 1+2*m, z))/E^(z/2),
 
  Zeta(n_Integer, x_) := 1/((-1)^n*(n-1)!) * PolyGamma(n-1,x)

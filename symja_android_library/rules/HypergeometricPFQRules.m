@@ -1,5 +1,4 @@
-{ 
-  HypergeometricPFQ({},{},z_) := E^(z),  
+{  
   HypergeometricPFQ({a_},{},z_) := (1-z)^(-a),
   HypergeometricPFQ({},{b_},z_) := z^(1/2-b/2)*BesselI(-1+b,2*Sqrt(z))*Gamma(b),
   HypergeometricPFQ({a_,b_},{c_,b_},z_) := HypergeometricPFQ({a},{c},z),
