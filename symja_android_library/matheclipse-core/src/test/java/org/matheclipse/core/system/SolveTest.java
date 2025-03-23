@@ -24,7 +24,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
   @Test
   public void testSinX() {
     check("Solve(Sin(x)==b,x)", //
-        "{{x->ArcSin(b)}}");
+        "{{x->ConditionalExpression(Pi-ArcSin(b)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(ArcSin(b)+\n" //
+            + "2*Pi*C(1),C(1)∈Integers)}}");
   }
 
   @Test
@@ -613,7 +614,10 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->10}}");
 
     check("Solve(Sin((x+1)*(x-1))==2,x)", //
-        "{{x->-Sqrt(1+ArcSin(2))},{x->Sqrt(1+ArcSin(2))}}"); //
+        "{{x->ConditionalExpression(-Sqrt(1-Pi-ArcSin(2)-2*Pi*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Sqrt(\n"
+        + "1-Pi-ArcSin(2)-2*Pi*C(1)),C(1)∈Integers)},{x->ConditionalExpression(-Sqrt(1+ArcSin(\n" //
+        + "2)-2*Pi*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Sqrt(1+ArcSin(2)-2*Pi*C(\n" //
+        + "1)),C(1)∈Integers)}}"); //
     check("Solve(Log((x+1)*(x-1))==2,x)", //
         "{{x->-Sqrt(1+E^2)},{x->Sqrt(1+E^2)}}");
     check("Solve(Log(x^2-1)==3,x)", //
@@ -732,9 +736,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "4*E+k^2*q^2*Q^2))},{r->Sqrt(1/(2*E))*Sqrt(k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))},{r->-Sqrt(\n"
             + "1/(2*E))*Sqrt(k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))}}");
     // issue #120
-    check("Solve(Sin(x)*x==0, x)", //
+    check("Solve(Sin(x)*x==0, x, GenerateConditions->False)", //
         "{{x->0}}");
-    check("Solve(Cos(x)*x==0, x)", //
+    check("Solve(Cos(x)*x==0, x, GenerateConditions->False)", //
         "{{x->0},{x->Pi/2}}");
     // issue #121
     check("Solve(Sqrt(x)==-1, x)", //
@@ -768,17 +772,23 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // "1/2)-1/2)*(1/2)^(1/3)*(I*9*331^(1/2)+25)^(1/3)+(-I*1/2*3^(1/2)-1/2)*(1/2)^(1/3)*(-I*\n"
     // + "9*331^(1/2)+25)^(1/3)+2)}}");
     check("Solve(2*Sin(x)==1/2,x)", //
-        "{{x->ArcSin(1/4)}}");
+        "{{x->ConditionalExpression(Pi-ArcSin(1/4)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(ArcSin(\n" //
+            + "1/4)+2*Pi*C(1),C(1)∈Integers)}}");
     check("Solve(3+2*Cos(x)==1/2,x)", //
-        "{{x->ArcCos(-5/4)}}");
+        "{{x->ConditionalExpression(-ArcCos(-5/4)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(ArcCos(-\n" //
+            + "5/4)+2*Pi*C(1),C(1)∈Integers)}}");
     check("Solve(Sin(x)==0,x)", //
-        "{{x->0}}");
+        "{{x->ConditionalExpression(2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi+\n"
+            + "2*Pi*C(1),C(1)∈Integers)}}");
     check("Solve(Sin(x)==0.0,x)", //
-        "{{x->0.0}}");
+        "{{x->ConditionalExpression(6.28319*C(1),C(1)∈Integers)},{x->ConditionalExpression(3.14159+6.28319*C(\n" //
+            + "1),C(1)∈Integers)}}");
     check("Solve(Sin(x)==1/2,x)", //
-        "{{x->Pi/6}}");
+        "{{x->ConditionalExpression(Pi/6+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(\n" //
+            + "5/6*Pi+2*Pi*C(1),C(1)∈Integers)}}");
     checkNumeric("Solve(sin(x)==0.5,x)", //
-        "{{x->0.5235987755982989}}");
+        "{{x->ConditionalExpression(0.5235987755982989+6.283185307179586*C(1),C(1)∈Integers)},{x->ConditionalExpression(2.617993877991494+6.283185307179586*C(\n"
+            + "1),C(1)∈Integers)}}");
     check("Solve(x^2-2500.00==0,x)", //
         "{{x->-50.0},{x->50.0}}");
     check("Solve(x^2+a*x+1 == 0, x)", //
@@ -1443,7 +1453,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "Solve({x0^2.0*Sin(x1)==5.0,x1^3.0*Cos(x0)==5.0},{x0,x1})");
 
     // // ifun message will be printed:
-    check("Solve({Sin(x0)==5.0},{x0})", //
+    check("Solve({Sin(x0)==5.0},{x0}, GenerateConditions->False)", //
         "{{x0->1.5708+I*(-2.29243)}}");
 
   }
@@ -1501,7 +1511,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // TODO check result
     check(
         "Solve(Cos(x)+ Cos(x)^3 + Cos(x)^5 - 3*Cos(x)*Sin(x)^2 - 10*Cos(x)^3*Sin(x)^2 + 5*Cos(x)*Sin(x)^4 ==0,x)", //
-        "{{x->Pi/2},{x->ConditionalExpression(Pi/8+2*Pi*C(1),C(1)∈Integers)}}");
+        "{{x->ConditionalExpression(Pi/8+2*Pi*C(1),C(1)∈Integers)}}");
   }
 
   @Test
@@ -1530,7 +1540,12 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(2/3*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(\n"
             + "5/6*Pi+2*Pi*C(1),C(1)∈Integers)}}");
     check("Solve(Cos(x) + Cos(3*x) + Cos(5*x) == 0,x)", //
-        "{{x->Pi/6},{x->Pi/3},{x->Pi/2},{x->2/3*Pi},{x->5/6*Pi}}");
+        "{{x->ConditionalExpression(-5/6*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-\n" //
+            + "2/3*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-Pi/\n" //
+            + "3+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-Pi/6+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n" //
+            + "6+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/3+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n" //
+            + "2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(2/3*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(\n"
+            + "5/6*Pi+2*Pi*C(1),C(1)∈Integers)}}");
   }
 
   @Test
@@ -2243,6 +2258,23 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(x*Log(x)==a, x)", //
         "{{x->a/ProductLog(a)}}");
   }
+
+  @Test
+  public void testSolveXPlusPi() {
+    check("Solve(E^(x+Pi)==Pi^(x+E), x)", //
+        "{{x->(-Pi+E*Log(Pi))/(1-Log(Pi))}}");
+  }
+
+  @Test
+  public void testSolveInverseMultivaluedArcSin() {
+    check("Solve(Sin(x^2)==0,x)", //
+        "{{x->ConditionalExpression(Sqrt(2*Pi)*Sqrt(C(1)),C(1)∈Integers)},{x->ConditionalExpression(-Sqrt(\n" //
+            + "2*Pi)*Sqrt(C(1)),C(1)∈Integers)},{x->ConditionalExpression(-Sqrt(Pi+2*Pi*C(1)),C(\n" //
+            + "1)∈Integers)},{x->ConditionalExpression(Sqrt(Pi+2*Pi*C(1)),C(1)∈Integers)}}");
+    check("Solve(Sin(x^2)==0,x,GenerateConditions->False)", //
+        "{{x->0}}");
+  }
+
 
   /** The JUnit setup method */
   @Override

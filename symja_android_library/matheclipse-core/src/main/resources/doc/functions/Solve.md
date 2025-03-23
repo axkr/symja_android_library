@@ -14,6 +14,7 @@ Solve(equations, vars, domain)
 
 ### Options
 
+- `GenerateConditions` - if `True` (default value) the solutions for multi-valued inverse functions are generated with the `ConditionalExpression` function; if `False` some solutions for multi-valued inverse functions get lost. 
 - `MaxRoots` the maximum number of roots, which should be returned 
 
 ### Examples
@@ -35,7 +36,16 @@ It's important to use the `==` operator to define the equations. If you have uni
 
 >> Solve(a+b+c==100,{a,b,c},Primes, MaxRoots->100)
 {{a->2,b->19,c->79},{a->2,b->31,c->67},{a->2,b->37,c->61},{a->2,b->61,c->37},{a->2,b->67,c->31},{a->2,b->79,c->19},{a->19,b->2,c->79},{a->19,b->79,c->2},{a->31,b->2,c->67},{a->31,b->67,c->2},{a->37,b->2,c->61},{a->37,b->61,c->2},{a->61,b->2,c->37},{a->61,b->37,c->2},{a->67,b->2,c->31},{a->67,b->31,c->2},{a->79,b->2,c->19},{a->79,b->19,c->2}}
-            
+```
+
+The solutions for multi-valued inverse functions are generated with the `ConditionalExpression` function.
+
+```
+>> Solve(Sin(x^2)==0,x)
+{{x->ConditionalExpression(Sqrt(2*Pi)*Sqrt(C(1)),C(1)∈Integers)},{x>ConditionalExpression(-Sqrt(2*Pi)*Sqrt(C(1)),C(1)∈Integers)},{x->ConditionalExpression(-Sqrt(Pi+2*Pi*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Sqrt(Pi+2*Pi*C(1)),C(1)∈Integers)}}
+
+>> Solve(Sin(x^2)==0,x,GenerateConditions->False) 
+{{x->0}}    
 ```
 
 ### Related terms 

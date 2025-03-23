@@ -836,7 +836,6 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       }
 
       int start = 1;
-      ExprAnalyzer exprAnalyzer;
       ArrayList<ExprAnalyzer> analyzerList = new ArrayList<ExprAnalyzer>();
 
       return solveEquationsMultiple(termsEqualZeroList, start, inequationsList, variables,
@@ -1455,7 +1454,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
   }
 
   private static IExpr[] defaultOptionValues() {
-    return new IExpr[] {S.False, F.C1000};
+    return new IExpr[] {S.True, F.C1000};
   }
 
   @Override

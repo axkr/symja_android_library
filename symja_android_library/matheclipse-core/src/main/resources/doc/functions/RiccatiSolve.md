@@ -6,6 +6,8 @@ RiccatiSolve({A,B},{Q,R})
 
 > An algebraic Riccati equation is a type of nonlinear equation that arises in the context of infinite-horizon optimal control problems in continuous time or discrete time. The continuous time algebraic Riccati equation (CARE): `A^{T}·X+X·A-X·B·R^{-1}·B^{T}·X+Q==0`. And the respective linear controller is: `K = R^{-1}·B^{T}·P`. The solver receives `A`, `B`, `Q` and `R` and computes `P`.
 
+**Note**: the `Eigensystem` method is used to extract the complex eigen vectors.
+
 See:
 * [Wikipedia - Algebraic Riccati equation](https://en.wikipedia.org/wiki/Algebraic_Riccati_equation)
 
