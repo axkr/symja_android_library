@@ -14,9 +14,9 @@
 
 package tech.tablesaw.io.csv;
 
-import com.univocity.parsers.csv.CsvWriterSettings;
 import java.time.format.DateTimeFormatter;
-import javax.annotation.concurrent.Immutable;
+import com.google.errorprone.annotations.Immutable;
+import com.univocity.parsers.csv.CsvWriterSettings;
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.DateColumn;
 import tech.tablesaw.api.DateTimeColumn;
@@ -41,6 +41,7 @@ public final class CsvWriter implements DataWriter<CsvWriteOptions> {
     registry.registerOptions(CsvWriteOptions.class, INSTANCE);
   }
 
+  @Override
   public void write(Table table, CsvWriteOptions options) {
     CsvWriterSettings settings = createSettings(options);
 

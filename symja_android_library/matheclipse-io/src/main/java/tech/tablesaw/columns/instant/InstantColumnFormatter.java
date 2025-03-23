@@ -5,7 +5,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import javax.annotation.concurrent.Immutable;
+import com.google.errorprone.annotations.Immutable;
 import tech.tablesaw.columns.TemporalColumnFormatter;
 
 @Immutable

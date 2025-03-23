@@ -14,9 +14,9 @@
 
 package tech.tablesaw.sorting.comparators;
 
+import com.google.errorprone.annotations.Immutable;
 import it.unimi.dsi.fastutil.longs.LongComparator;
 import it.unimi.dsi.fastutil.longs.LongComparators;
-import javax.annotation.concurrent.Immutable;
 
 /** A comparator for long primitives for sorting in descending order */
 @Immutable

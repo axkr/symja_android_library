@@ -14,10 +14,10 @@
 
 package tech.tablesaw.io.fixed;
 
+import java.io.Writer;
+import com.google.errorprone.annotations.Immutable;
 import com.univocity.parsers.fixed.FixedWidthFormat;
 import com.univocity.parsers.fixed.FixedWidthWriterSettings;
-import java.io.Writer;
-import javax.annotation.concurrent.Immutable;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.io.DataWriter;
 import tech.tablesaw.io.Destination;
@@ -37,6 +37,7 @@ public final class FixedWidthWriter implements DataWriter<FixedWidthWriteOptions
     registry.registerOptions(FixedWidthWriteOptions.class, INSTANCE);
   }
 
+  @Override
   public void write(Table table, FixedWidthWriteOptions options) {
     FixedWidthWriterSettings settings = fixedWidthWriterSettings(options);
     settings.setFormat(fixedWidthFormat(options));

@@ -15,7 +15,7 @@
 package tech.tablesaw.io;
 
 import com.google.common.collect.ImmutableList;
-import javax.annotation.concurrent.Immutable;
+import com.google.errorprone.annotations.Immutable;
 import tech.tablesaw.api.ColumnType;
 
 /** Utilities for working with {@link ColumnType}s */

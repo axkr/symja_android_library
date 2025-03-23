@@ -14,21 +14,26 @@
 
 package tech.tablesaw.io.fixed;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.util.Arrays;
+import java.util.Optional;
+import org.apache.commons.math3.util.Pair;
 import com.google.common.io.CharStreams;
+import com.google.errorprone.annotations.Immutable;
 import com.univocity.parsers.common.AbstractParser;
 import com.univocity.parsers.common.NormalizedString;
 import com.univocity.parsers.fixed.FixedWidthFormat;
 import com.univocity.parsers.fixed.FixedWidthParser;
 import com.univocity.parsers.fixed.FixedWidthParserSettings;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.Arrays;
-import java.util.Optional;
-import javax.annotation.concurrent.Immutable;
-import org.apache.commons.math3.util.Pair;
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Table;
-import tech.tablesaw.io.*;
+import tech.tablesaw.io.DataReader;
+import tech.tablesaw.io.FileReader;
+import tech.tablesaw.io.ReadOptions;
+import tech.tablesaw.io.ReaderRegistry;
+import tech.tablesaw.io.RuntimeIOException;
+import tech.tablesaw.io.Source;
 
 @Immutable
 public class FixedWidthReader extends FileReader implements DataReader<FixedWidthReadOptions> {
@@ -87,6 +92,7 @@ public class FixedWidthReader extends FileReader implements DataReader<FixedWidt
     }
   }
 
+  @Override
   public Table read(FixedWidthReadOptions options) {
     return read(options, false);
   }

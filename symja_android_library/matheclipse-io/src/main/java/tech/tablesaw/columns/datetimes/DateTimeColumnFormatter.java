@@ -1,10 +1,9 @@
 package tech.tablesaw.columns.datetimes;
 
 import static tech.tablesaw.columns.datetimes.PackedLocalDateTime.asLocalDateTime;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import javax.annotation.concurrent.Immutable;
+import com.google.errorprone.annotations.Immutable;
 
 @Immutable
 public class DateTimeColumnFormatter {

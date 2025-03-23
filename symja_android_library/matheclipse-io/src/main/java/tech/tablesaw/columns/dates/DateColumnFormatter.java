@@ -2,10 +2,9 @@ package tech.tablesaw.columns.dates;
 
 import static tech.tablesaw.columns.dates.PackedLocalDate.asLocalDate;
 import static tech.tablesaw.columns.dates.PackedLocalDate.toDateString;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import javax.annotation.concurrent.Immutable;
+import com.google.errorprone.annotations.Immutable;
 import tech.tablesaw.columns.TemporalColumnFormatter;
 
 @Immutable
