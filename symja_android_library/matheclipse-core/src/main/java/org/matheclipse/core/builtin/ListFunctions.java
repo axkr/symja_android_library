@@ -29,6 +29,7 @@ import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
+import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.ResultException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -147,20 +148,15 @@ public final class ListFunctions {
 
   private interface IVariablesFunction {
     public IExpr evaluate(final ISymbol[] variables, final IExpr[] index);
-
-    public void replacePartNumeric();
   }
 
   private static class TableFunction implements IVariablesFunction {
     final EvalEngine fEngine;
 
-    final IExpr fOriginalValue;
-
-    IExpr fValue;
+    final IExpr fValue;
 
     public TableFunction(final EvalEngine engine, final IExpr value) {
       fEngine = engine;
-      fOriginalValue = value;
       fValue = value;
     }
 
@@ -187,12 +183,6 @@ public final class ListFunctions {
       return fEngine.evaluate(temp);
     }
 
-    @Override
-    public void replacePartNumeric() {
-      if (fValue.isNumericFunctionAST()) {
-        fValue = F.subst(fValue, x -> x.isNumericFunction() ? fEngine.evalN(x) : F.NIL);
-      }
-    }
   }
 
   /**
@@ -321,8 +311,6 @@ public final class ListFunctions {
       return fConstantExpr;
     }
 
-    @Override
-    public void replacePartNumeric() {}
   }
 
   private static class ArrayIterator implements IIterator<IExpr> {
@@ -410,12 +398,6 @@ public final class ListFunctions {
 
       if (fIndex < fIterList.size()) {
         final IIterator<IExpr> iter = fIterList.get(fIndex);
-        if (fFunction instanceof TableFunction) {
-          if (iter instanceof Iterator.DoubleIterator
-              || ((TableFunction) fFunction).fEngine.isNumericMode()) {
-            fFunction.replacePartNumeric();
-          }
-        }
         if (iter.setUp()) {
           try {
             final int index = fIndex++;
@@ -453,15 +435,22 @@ public final class ListFunctions {
       return fFunction.evaluate(fCurrentVariable, fCurrentIndex);
     }
 
-    public IExpr tableThrowRecursive() {
+    /**
+     * Throws a {@link NoEvalException#CONST} flow control exception if the iterator's setup fails.
+     * 
+     * @return {@link F#NIL} if the iterator is empty
+     * @throws FlowControlException
+     */
+    public IExpr tableThrowRecursive() throws FlowControlException {
       if (fIndex < fIterList.size()) {
         final IIterator<IExpr> iter = fIterList.get(fIndex);
 
         try {
           if (iter.setUpThrow()) {
             final int index = fIndex++;
-            if (fPrototypeList.head().equals(S.Plus) || fPrototypeList.head().equals(S.Times)) {
-              if (iter.hasNext()) {
+            if (iter.hasNext()) {
+              if (fPrototypeList.head().equals(S.Plus) || fPrototypeList.head().equals(S.Times)) {
+
                 fCurrentIndex[index] = iter.next();
                 fCurrentVariable[index] = iter.getVariable();
                 IExpr temp = tableRecursive();
@@ -488,6 +477,8 @@ public final class ListFunctions {
                   return createGenericTable(iter, index, iter.allocHint(), temp, null);
                 }
               }
+            } else {
+              return F.NIL;
             }
             return createGenericTable(iter, index, iter.allocHint(), null, null);
           }
@@ -1013,8 +1004,6 @@ public final class ListFunctions {
         return fEngine.evaluate(ast.appendArgs(0, index.length, i -> index[i]));
       }
 
-      @Override
-      public void replacePartNumeric() {}
     }
 
     @Override
@@ -5550,8 +5539,6 @@ public final class ListFunctions {
         return index[0];
       }
 
-      @Override
-      public void replacePartNumeric() {}
     }
 
     @Override

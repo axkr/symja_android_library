@@ -690,12 +690,10 @@ public class Symbol implements ISymbol, Serializable {
     if (isConstantAttribute()) {
       return true;
     }
-    // if (hasAssignedSymbolValue()) {
-    // IExpr temp = assignedValue();
-    // if (temp != null) {
-    // return temp != this && temp.isNumericFunction(true);
-    // }
-    // }
+    if (hasAssignedSymbolValue()) {
+      IExpr temp = assignedValue();
+      return temp != null && temp != this && temp.isNumericFunction(true);
+    }
     return false;
   }
 
