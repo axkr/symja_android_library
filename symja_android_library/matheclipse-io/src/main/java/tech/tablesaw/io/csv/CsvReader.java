@@ -16,7 +16,7 @@ package tech.tablesaw.io.csv;
 
 import java.io.IOException;
 import java.io.Reader;
-import org.apache.commons.math3.util.Pair;
+import org.hipparchus.util.Pair;
 import com.google.common.io.CharStreams;
 import com.google.errorprone.annotations.Immutable;
 import com.univocity.parsers.common.AbstractParser;
