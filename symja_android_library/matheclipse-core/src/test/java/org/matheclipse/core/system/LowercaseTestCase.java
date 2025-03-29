@@ -8476,6 +8476,27 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindMaximum() {
+    check("FindMaximum({x Cos(x), 1 < x < 15}, {x, 7} )", //
+        "{6.361,{x->6.4373}}");
+    check("FindMaximum({x Cos(x), 1 <= x <= 15}, {x, 7} )", //
+        "{6.361,{x->6.4373}}");
+
+    // example: Rosenbrock function https://en.wikipedia.org/wiki/Rosenbrock_function
+    // Math.pow(1 - x, 2) + 100 * Math.pow(y - x * x, 2);
+    checkNumeric(
+        "FindMaximum({(1-x)^2+100*(y-x^2)^2, x >= -2.0 && 2.0 >= x && y >= -0.5 && 1.5 >= y}, {{x, -1.2}, {y,1.0}}, Method->\"BOBYQA\")", //
+        "{2034.0,{x->-2.0,y->-0.5}}");
+    // BOBYQA falls back to CMAES if dimension of variables is less than 2
+    checkNumeric("FindMaximum({Sin(x^2), x >= 0 && 0.5 >= x }, {x, 0.25}, Method->\"BOBYQA\")", //
+        "{0.24740395925452294,{x->0.5}}");
+
+    checkNumeric("FindMaximum({Sin(x^2), x > 0 && 0.5 > x }, {x, 0.25})", //
+        "{0.24740395925452272,{x->0.4999999999999998}}");
+    checkNumeric("FindMaximum({Sin(x^2), x >= 0 && 0.5 >= x }, {x, 0.25})", //
+        "{0.24740395925452294,{x->0.5}}");
+    checkNumeric("FindMaximum({Sin(x^2), 0 <= x && x <= 0.5}, {x, 0.25})", //
+        "{0.24740395925452294,{x->0.5}}");
+
     check("FindMaximum(x^3-12*x^2+45*x+8, {x,4} )", //
         "{62.0,{x->3.0}}");
 
@@ -8500,6 +8521,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindMinimum() {
+    // example: Rosenbrock function https://en.wikipedia.org/wiki/Rosenbrock_function
+    // Math.pow(1 - x, 2) + 100 * Math.pow(y - x * x, 2);
+    check(
+        "FindMinimum({(1-x)^2+100*(y-x^2)^2, x >= -2.0 && 2.0 >= x && y >= -0.5 && 1.5 >= y}, {{x, -1.2}, {y,1.0}}, Method->\"BOBYQA\") // Chop", //
+        "{0,{x->1.0,y->1.0}}");
     check("FindMinimum(x^3-12*x^2+45*x+8, {x,4} )", //
         "{58.0,{x->5.0}}");
     check("FindMinimum(x^3-12*x^2+45*x+8, {x,1} )", //

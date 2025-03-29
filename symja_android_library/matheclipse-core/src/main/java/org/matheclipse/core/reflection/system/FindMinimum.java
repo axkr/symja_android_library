@@ -753,7 +753,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
           return F.NIL;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          rex.printStackTrace();
+          // rex.printStackTrace();
           method = POWELL_METHOD;
         }
       }
