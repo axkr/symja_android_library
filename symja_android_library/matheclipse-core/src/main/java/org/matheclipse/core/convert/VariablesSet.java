@@ -448,6 +448,19 @@ public class VariablesSet {
   }
 
   /**
+   * Return the first variable from the set
+   * 
+   * @return the first variable from the set; if the sets size equals 0, return <code>null</code>.
+   */
+  public IExpr firstVariable() {
+    if (fVariablesSet.size() > 0) {
+      final Iterator<IExpr> iter = fVariablesSet.iterator();
+      return iter.next();
+    }
+    return null;
+  }
+
+  /**
    * Return the set of variables.
    * 
    * @return

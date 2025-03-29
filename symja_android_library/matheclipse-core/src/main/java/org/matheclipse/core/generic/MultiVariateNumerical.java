@@ -2,7 +2,6 @@ package org.matheclipse.core.generic;
 
 import java.util.ArrayList;
 import org.hipparchus.analysis.MultivariateFunction;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;

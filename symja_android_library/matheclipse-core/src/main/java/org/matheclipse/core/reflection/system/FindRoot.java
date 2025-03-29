@@ -438,7 +438,8 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
         try {
           UnivariateSolverSupplier optimizeSupplier = new UnivariateSolverSupplier(listOfEquations,
               list, min, max, maxIterations, method, accuracyGoal, engine);
-          IExpr result = engine.evalBlock(optimizeSupplier, list);
+          IExpr result = optimizeSupplier.get();
+          // engine.evalBlock(optimizeSupplier, list);
           return F.list(F.Rule(list.arg1(), result));
         } catch (MathIllegalStateException miae) {
           if (miae.getSpecifier() == LocalizedCoreFormats.CONVERGENCE_FAILED) {

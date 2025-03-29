@@ -1371,12 +1371,23 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   public boolean isTimes();
 
   /**
-   * Returns an iterator over the elements in this list starting with offset <b>1</b>.
-   *
-   * @return an iterator over this list values.
+   * Returns an iterator over the elements in this list starting with offset <b>1</b>. Use
+   * {@link #args()} if you use the iterator in a Sympy context.
+   * 
+   * @return an iterator over this list values
    */
   @Override
   public Iterator<IExpr> iterator();
+
+  /**
+   * Returns an iterator over all arguments in this list starting with offset <b>1</b>. Calls
+   * {@link #iterator()}.
+   *
+   * @return an iterator over this list values
+   */
+  default Iterable<IExpr> args() {
+    return this::iterator;
+  }
 
   /**
    * Append a String composed of copies of the arguments of this AST joined together with the

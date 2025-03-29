@@ -20,22 +20,34 @@ FindMinimum(f, {{x, xstart},{y, ystart},...})
 
 See
 * [Wikipedia - Mathematical optimization](https://en.wikipedia.org/wiki/Mathematical_optimization)
+* [Wikipedia - Rosenbrock function](https://en.wikipedia.org/wiki/Rosenbrock_function)
 
-#### Powell
+#### "Powell"
 
-Implements the Powell optimizer. 
+Implements the [Powell](https://github.com/Hipparchus-Math/hipparchus/blob/master/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/scalar/noderiv/PowellOptimizer.java) optimizer. 
 
-This is the default method, if no `methodName` is given.
+This is the default method, if no `Method` is set.
 
-#### ConjugateGradient
+#### "ConjugateGradient"
 
-Implements the ConjugateGradient optimizer.  
+Implements the [Non-linear conjugate gradient](https://github.com/Hipparchus-Math/hipparchus/blob/main/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/scalar/gradient/NonLinearConjugateGradientOptimizer.java) optimizer.  
 This is a derivative based method and the functions must be symbolically differentiable.
 
-#### SequentialQuadratic
+#### "SequentialQuadratic"
 
-Implements the sequentiel quadratic optimizer.  
+Implements the [Sequential Quadratic Programming](https://github.com/Hipparchus-Math/hipparchus/blob/main/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/vector/constrained/SQPOptimizerS.java) optimizer.  
+
 This is a derivative, multivariate based method and the functions must be symbolically differentiable.
+
+#### "BOBYQA"
+
+Implements [Powell's BOBYQA](https://github.com/Hipparchus-Math/hipparchus/blob/master/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/scalar/noderiv/BOBYQAOptimizer.java) optimizer (Bound Optimization BY Quadratic Approximation). 
+
+The "BOBYQA" method falls back to "CMAES" if the objective function has dimension 1.
+
+#### "CMAES"
+
+Implements the [Covariance Matrix Adaptation Evolution Strategy (CMA-ES)](https://github.com/Hipparchus-Math/hipparchus/blob/master/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/scalar/noderiv/BOBYQAOptimizer.java) optimizer. 
 
 ### Examples
 

@@ -21,57 +21,92 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <code>FindMaximum(f, {x, xstart})
  * </code>
  * </pre>
- *
+ * 
  * <p>
  * searches for a local numerical maximum of <code>f</code> for the variable <code>x</code> and the
  * start value <code>xstart</code>.
  * </p>
- *
+ * 
  * <pre>
- * <code>FindMaximum(f, {x, xstart}, Method-&gt;method_name)
+ * <code>FindMaximum(f, {x, xstart}, Method-&gt;methodName)
  * </code>
  * </pre>
- *
+ * 
  * <p>
  * searches for a local numerical maximum of <code>f</code> for the variable <code>x</code> and the
  * start value <code>xstart</code>, with one of the following method names:
  * </p>
- *
+ * 
  * <pre>
  * <code>FindMaximum(f, {{x, xstart},{y, ystart},...})
  * </code>
  * </pre>
- *
+ * 
  * <p>
  * searches for a local numerical maximum of the multivariate function <code>f</code> for the
  * variables <code>x, y,...</code> and the corresponding start values
  * <code>xstart, ystart,...</code>.
  * </p>
- *
+ * 
  * <p>
  * See
  * </p>
  * <ul>
  * <li><a href="https://en.wikipedia.org/wiki/Mathematical_optimization">Wikipedia - Mathematical
  * optimization</a></li>
+ * <li><a href="https://en.wikipedia.org/wiki/Rosenbrock_function">Wikipedia - Rosenbrock
+ * function</a></li>
  * </ul>
- * <h4>Powell</h4>
+ * <h4>&quot;Powell&quot;</h4>
  * <p>
- * Implements the Powell optimizer.
+ * Implements the <a href=
+ * "https://github.com/Hipparchus-Math/hipparchus/blob/master/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/scalar/noderiv/PowellOptimizer.java">Powell</a>
+ * optimizer.
  * </p>
  * <p>
- * This is the default method, if no <code>method_name</code> is given.
+ * This is the default method, if no <code>Method</code> is set.
  * </p>
- * <h4>ConjugateGradient</h4>
+ * <h4>&quot;ConjugateGradient&quot;</h4>
  * <p>
- * Implements the ConjugateGradient optimizer.<br />
- * This is a derivative based method and the functions must be symbolically differentiatable.
+ * Implements the <a href=
+ * "https://github.com/Hipparchus-Math/hipparchus/blob/main/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/scalar/gradient/NonLinearConjugateGradientOptimizer.java">Non-linear
+ * conjugate gradient</a> optimizer.<br />
+ * This is a derivative based method and the functions must be symbolically differentiable.
+ * </p>
+ * <h4>&quot;SequentialQuadratic&quot;</h4>
+ * <p>
+ * Implements the <a href=
+ * "https://github.com/Hipparchus-Math/hipparchus/blob/main/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/vector/constrained/SQPOptimizerS.java">Sequential
+ * Quadratic Programming</a> optimizer.
+ * </p>
+ * <p>
+ * This is a derivative, multivariate based method and the functions must be symbolically
+ * differentiable.
+ * </p>
+ * <h4>&quot;BOBYQA&quot;</h4>
+ * <p>
+ * Implements <a href=
+ * "https://github.com/Hipparchus-Math/hipparchus/blob/master/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/scalar/noderiv/BOBYQAOptimizer.java">Powell's
+ * BOBYQA</a> optimizer (Bound Optimization BY Quadratic Approximation).
+ * </p>
+ * <p>
+ * The &quot;BOBYQA&quot; method falls back to &quot;CMAES&quot; if the objective function has
+ * dimension 1.
+ * </p>
+ * <h4>&quot;CMAES&quot;</h4>
+ * <p>
+ * Implements the <a href=
+ * "https://github.com/Hipparchus-Math/hipparchus/blob/master/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/scalar/noderiv/BOBYQAOptimizer.java">Covariance
+ * Matrix Adaptation Evolution Strategy (CMA-ES)</a> optimizer.
  * </p>
  * <h3>Examples</h3>
- *
+ * 
  * <pre>
- * <code>&gt;&gt; FindMaximum(Sin(x), {x, 0.5})
+ * <code>&gt;&gt; FindMaximum(Sin(x), {x, 0.5}) 
  * {1.0,{x-&gt;1.5708}}
+ * 
+ * &gt;&gt; FindMaximum({(1-x)^2+100*(y-x^2)^2, x &gt;= -2.0 &amp;&amp; 2.0 &gt;= x &amp;&amp; y &gt;= -0.5 &amp;&amp; 1.5 &gt;= y}, {{x, -1.2}, {y,1.0}}, Method-&gt;&quot;BOBYQA&quot;) 
+ * {2034.0,{x-&gt;-2.0,y-&gt;-0.5}}
  * </code>
  * </pre>
  */
