@@ -8476,10 +8476,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindMaximum() {
-    check("FindMaximum({x Cos(x), 1 < x < 15}, {x, 7} )", //
+    check(
+        "FindMaximum({2/3*x^2*Cos(x^2/3)+Sin(x^2/3), x>=-19.1 && x<=-19.05}, {x, -19.1}, Method -> \"ConjugateGradient\")", //
+        "{226.2146,{x->-18.42096}}");
+    check("FindMaximum({x Cos(x), 1 < x < 11}, {x, 7} )", //
         "{6.361,{x->6.4373}}");
-    check("FindMaximum({x Cos(x), 1 <= x <= 15}, {x, 7} )", //
+    check("FindMaximum({x Cos(x), 1 <= x <= 11}, {x, 7} )", //
         "{6.361,{x->6.4373}}");
+    check("FindMaximum({x Cos(x), 1 < x < 11}, {x, 7} ,Method->\"BOBYQA\")", //
+        "{6.361,{x->6.4373}}");
+
 
     // example: Rosenbrock function https://en.wikipedia.org/wiki/Rosenbrock_function
     // Math.pow(1 - x, 2) + 100 * Math.pow(y - x * x, 2);
@@ -8516,7 +8522,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1.0,{x->1.5708}}");
     check(
         "FindMaximum(Sin(x)*Sin(2*y), {{x, 2}, {y, 2}}, MaxIterations->1000, Method -> \"ConjugateGradient\")", //
-        "{1.0,{x->-1.5708,y->-0.785398}}");
+        "{1.0,{x->-1.5708,y->2.35619}}");
   }
 
   @Test
@@ -8568,9 +8574,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FindMinimum(Sin(x), {x,1}, Method -> \"ConjugateGradient\")", //
         "{-1.0,{x->-7.85398}}");
     check("FindMinimum(x*Cos(x), {x,5.0}, Method -> \"ConjugateGradient\")", //
-        "{-3.28837,{x->3.42562}}");
+        "{-6.361,{x->-6.4373}}");
     check("FindMinimum(x*Cos(x), {x,10.0}, Method -> \"ConjugateGradient\")", //
-        "{-9.47729,{x->9.52934}}");
+        "{-12.60593,{x->-12.64529}}");
 
     check("FindMinimum(Sin(x)*Sin(2*y), {{x, 2}, {y, 2}}, Method -> \"ConjugateGradient\")", //
         "{-1.0,{x->1.5708,y->2.35619}}");

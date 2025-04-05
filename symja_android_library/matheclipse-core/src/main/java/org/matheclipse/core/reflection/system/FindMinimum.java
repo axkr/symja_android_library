@@ -21,6 +21,7 @@ import org.hipparchus.optim.nonlinear.scalar.MultiStartMultivariateOptimizer;
 import org.hipparchus.optim.nonlinear.scalar.ObjectiveFunction;
 import org.hipparchus.optim.nonlinear.scalar.ObjectiveFunctionGradient;
 import org.hipparchus.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizer;
+import org.hipparchus.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizer.Formula;
 import org.hipparchus.optim.nonlinear.scalar.noderiv.BOBYQAOptimizer;
 import org.hipparchus.optim.nonlinear.scalar.noderiv.CMAESOptimizer;
 import org.hipparchus.optim.nonlinear.scalar.noderiv.CMAESOptimizer.PopulationSize;
@@ -234,19 +235,21 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     IASTAppendable varsList = vars.getVarList();
     if (relationList.argSize() > 1) {
       IASTAppendable reduceRelations = ((IAST) relationList.arg2()).copyAppendable();
-      if (reduceRelations.argSize() > 0 && !method.equalsIgnoreCase("sequentialquadratic")) {
-        simpleBounds = createSimpleBounds(reduceRelations, varsList, engine);
-        if (simpleBounds != null) {
-          method = CMAES_METHOD;
-        }
-      }
-      if (reduceRelations.argSize() > 0) {
-        if (reduceRelations.isSameHeadSizeGE(S.And, 2)) {
+      if (reduceRelations.argSize() > 0 && reduceRelations.isSameHeadSizeGE(S.And, 2)) {
+        if (method.equalsIgnoreCase(SEQUENTIAL_QUADRATIC_METHOD)) {
           optimizationData = new OptimizationData[2];
           if (!createLinearConstraints(reduceRelations, varsList, engine, optimizationData)) {
             // Constraints in `1` are not all 'equality' or 'less equal' or 'greater equal'
             // constraints. Constraints with Unequal(!=) are not supported.
             return Errors.printMessage(ast.topHead(), "eqgele", F.List(reduceRelations), engine);
+          }
+        } else {
+          simpleBounds = createSimpleBounds(reduceRelations, varsList, engine);
+          if (simpleBounds != null //
+              && !method.equalsIgnoreCase(BOBYQA_METHOD) //
+              && !method.equalsIgnoreCase(CMAES_METHOD) //
+              && !method.equalsIgnoreCase(CONJUGATEGRADIENT_METHOD)) {
+            method = CMAES_METHOD;
           }
         }
       }
@@ -757,7 +760,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
           method = POWELL_METHOD;
         }
       }
-      MultiVariateNumerical multivariateVariateNumerical =
+      MultiVariateNumerical multiVariateNumerical =
           new MultiVariateNumerical(function, variableList);
       if (method.equalsIgnoreCase(BOBYQA_METHOD) && initialValues.length < 2) {
         method = CMAES_METHOD;
@@ -772,15 +775,11 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
             true, // Use Boundaries?
             null);
         PopulationSize populationSize = new PopulationSize(5);
-        double[] sigmaValues = new double[initialValues.length];
-        for (int i = 0; i < initialValues.length; i++) {
-          sigmaValues[i] = 1.e-1;
-        }
-        Sigma sigma = new Sigma(sigmaValues); // Sigma: initial step size
+        Sigma sigma = calculateCMAESSigma(initialValues.length, simpleBounds, initialValues);
 
         optimum = optim.optimize(//
             new MaxEval(10000), //
-            new ObjectiveFunction(multivariateVariateNumerical), //
+            new ObjectiveFunction(multiVariateNumerical), //
             populationSize, //
             sigma, //
             goalType, //
@@ -792,7 +791,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
         optimum = optim.optimize(//
             new MaxEval(10000), //
             new MaxIter(maxIterations), //
-            new ObjectiveFunction(multivariateVariateNumerical), //
+            new ObjectiveFunction(multiVariateNumerical), //
             goalType, //
             initialGuess, //
             simpleBounds, //
@@ -801,38 +800,23 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
         final PowellOptimizer optim = new PowellOptimizer(1e-10, Math.ulp(1d), 1e-10, Math.ulp(1d));
         optimum = optim.optimize( //
             new MaxEval(maxIterations), //
-            new ObjectiveFunction(multivariateVariateNumerical), //
-            goalType, //
-            initialGuess, //
-            optimizationData[0], //
-            optimizationData[1]);
-      } else if (method.equalsIgnoreCase(CONJUGATEGRADIENT_METHOD)) {
-        GradientMultivariateOptimizer underlying = new NonLinearConjugateGradientOptimizer(
-            NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE,
-            new SimpleValueChecker(1e-10, 1e-10));
-        JDKRandomGenerator g = new JDKRandomGenerator();
-        g.setSeed(753289573253l);
-        double[] mean = new double[initialValues.length];
-        for (int i = 0; i < mean.length; i++) {
-          mean[i] = 0.0;
-        }
-        double[] standardDeviation = new double[initialValues.length];
-        for (int i = 0; i < mean.length; i++) {
-          standardDeviation[i] = 1.0;
-        }
-        RandomVectorGenerator generator = new UncorrelatedRandomVectorGenerator(mean,
-            standardDeviation, new GaussianRandomGenerator(g));
-        int nbStarts = 10;
-        MultiStartMultivariateOptimizer optimizer =
-            new MultiStartMultivariateOptimizer(underlying, nbStarts, generator);
-
-        optimum = optimizer.optimize(//
-            new MaxEval(maxIterations), //
-            new ObjectiveFunction(multivariateVariateNumerical), //
-            new ObjectiveFunctionGradient(
-                new MultiVariateVectorGradient(function, variableList, true)), //
+            new ObjectiveFunction(multiVariateNumerical), //
             goalType, //
             initialGuess);
+      } else if (method.equalsIgnoreCase(CONJUGATEGRADIENT_METHOD)) {
+
+        MultiVariateVectorGradient multiVariateVectorGradient =
+            new MultiVariateVectorGradient(function, variableList, true);
+        try {
+          Formula formula = NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE;
+          optimum = conjugateGradient(multiVariateVectorGradient, multiVariateNumerical, formula,
+              initialGuess);
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          Formula formula = NonLinearConjugateGradientOptimizer.Formula.FLETCHER_REEVES;
+          optimum = conjugateGradient(multiVariateVectorGradient, multiVariateNumerical, formula,
+              initialGuess);
+        }
       }
 
 
@@ -846,6 +830,224 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
+    private PointValuePair conjugateGradient(MultiVariateVectorGradient multiVariateVectorGradient,
+        MultiVariateNumerical multiVariateNumerical, Formula formula, InitialGuess initialGuess) {
+      PointValuePair optimum;
+      GradientMultivariateOptimizer underlying =
+          new NonLinearConjugateGradientOptimizer(formula, new SimpleValueChecker(1e-10, 1e-10));
+      JDKRandomGenerator g = new JDKRandomGenerator();
+      g.setSeed(753289573253l);
+      double[] mean = new double[initialValues.length];
+      for (int i = 0; i < mean.length; i++) {
+        mean[i] = 0.0;
+      }
+      double[] standardDeviation =
+          calculateMultiStartStandardDeviations(initialValues.length, simpleBounds, initialValues);
+      RandomVectorGenerator generator = new UncorrelatedRandomVectorGenerator(mean,
+          standardDeviation, new GaussianRandomGenerator(g));
+      int nbStarts = 10;
+      MultiStartMultivariateOptimizer optimizer =
+          new MultiStartMultivariateOptimizer(underlying, nbStarts, generator);
+
+      optimum = optimizer.optimize(//
+          new MaxEval(maxIterations), //
+          new ObjectiveFunction(multiVariateNumerical), //
+          new ObjectiveFunctionGradient(multiVariateVectorGradient), //
+          goalType, //
+          initialGuess);
+      return optimum;
+    }
+  }
+
+  /**
+   * Calculates initial sigma values for the CMAES method based on bounds and start point.
+   *
+   * @param dimension The problem dimension.
+   * @param bounds SimpleBounds object (can be null or have null/infinite entries).
+   * @param startPoint The initial guess array.
+   * @param defaultSigmaForInfinite Bounds A default sigma if both bounds are infinite and start
+   *        point is 0.
+   * @param rangeFraction The fraction of the finite range to use (e.g., 0.25 for 1/4).
+   * @param startPointFraction The fraction of the start point magnitude to use when bounds are
+   *        infinite.
+   * @param distanceToBoundFraction The fraction of the distance to a finite bound when one bound is
+   *        infinite.
+   * @param minSigma A small minimum value for sigma to prevent zero sigma.
+   * @return A double array containing the calculated initial sigma for each dimension.
+   * @throws MathIllegalArgumentException if startPoint length doesn't match dimension.
+   */
+  private static double[] calculateCMAESSigma(int dimension, SimpleBounds bounds,
+      double[] startPoint, double defaultSigmaForInfiniteBounds, double rangeFraction,
+      double startPointFraction, double distanceToBoundFraction, double minSigma) {
+    if (startPoint.length != dimension) {
+      throw new MathIllegalArgumentException(
+          org.hipparchus.exception.LocalizedCoreFormats.DIMENSIONS_MISMATCH, startPoint.length,
+          dimension);
+    }
+
+    double[] sigma = new double[dimension];
+    double[] lower = (bounds == null) ? null : bounds.getLower();
+    double[] upper = (bounds == null) ? null : bounds.getUpper();
+
+    for (int i = 0; i < dimension; i++) {
+      double lowerValue =
+          (lower == null || lower.length <= i) ? Double.NEGATIVE_INFINITY : lower[i];
+      double upperValue =
+          (upper == null || upper.length <= i) ? Double.POSITIVE_INFINITY : upper[i];
+      double start = startPoint[i];
+
+      boolean isLowerFinite = Double.isFinite(lowerValue);
+      boolean isUpperFinite = Double.isFinite(upperValue);
+
+      if (isLowerFinite && isUpperFinite) {
+        // Case 1: Both bounds are finite
+        double range = upperValue - lowerValue;
+        sigma[i] = Math.max(minSigma, range * rangeFraction);
+        // Handle potential zero range if L == U (though unlikely for optimization)
+        if (sigma[i] <= minSigma && range == 0.0) {
+          // If bounds are equal, maybe this variable is fixed?
+          // Set a very small sigma or handle as per problem definition.
+          // Using minSigma is usually safe enough.
+          sigma[i] = minSigma;
+        }
+
+      } else if (isLowerFinite && !isUpperFinite) {
+        // Case 2: Lower finite, Upper infinite
+        double distToBounds = Math.abs(start - lowerValue);
+        sigma[i] = Math.max(minSigma, distToBounds * distanceToBoundFraction);
+        // If start is exactly at the bound, dist is 0. Rely on minSigma.
+
+      } else if (!isLowerFinite && isUpperFinite) {
+        // Case 3: Lower infinite, Upper finite
+        double distToBounds = Math.abs(upperValue - start);
+        sigma[i] = Math.max(minSigma, distToBounds * distanceToBoundFraction);
+        // If start is exactly at the bound, dist is 0. Rely on minSigma.
+
+      } else {
+        // Case 4: Both bounds infinite
+        if (start == 0.0) {
+          sigma[i] = Math.max(minSigma, defaultSigmaForInfiniteBounds);
+        } else {
+          sigma[i] = Math.max(minSigma, Math.abs(start) * startPointFraction);
+        }
+      }
+      // Final check to ensure sigma is positive
+      if (sigma[i] <= 0) {
+        sigma[i] = minSigma;
+      }
+    }
+    return sigma;
+  }
+
+  /**
+   * Simplified version with default heuristic parameters. Calculates initial sigma values CMAES
+   * method based on bounds and start point. Uses range/4, dist/2, abs(start)/4, default 1.0, min
+   * 1e-6.
+   *
+   * @param dimension The problem dimension.
+   * @param bounds SimpleBounds object (can be null or have null/infinite entries).
+   * @param startPoint The initial guess array.
+   * @return a double array containing the calculated initial sigma for each dimension.
+   */
+  private static Sigma calculateCMAESSigma(int dimension, SimpleBounds bounds,
+      double[] startPoint) {
+    double[] calculatedSigma = calculateCMAESSigma(dimension, bounds, startPoint, 1.0, // defaultSigmaForInfiniteBounds
+        0.25, // rangeFraction (1/4)
+        0.25, // startPointFraction (1/4)
+        0.50, // distanceToBoundFraction (1/2)
+        1e-6); // minSigma
+    return new Sigma(calculatedSigma);
+  }
+
+  /**
+   * Calculates standard deviations for MultiStart RandomVectorGenerator based on bounds and an
+   * initial guess point.
+   *
+   * @param dimension Problem dimension.
+   * @param bounds SimpleBounds (can be null or have infinite values).
+   * @param initialGuessPoint The central initial guess for the MultiStartOptimizer.
+   * @param rangeFraction Fraction of finite bound range to use (e.g., 0.25 for 1/4).
+   * @param guessFraction Fraction of initial guess magnitude to use (e.g., 1.0).
+   * @param defaultStdDev Default value if bounds are infinite and guess is zero.
+   * @param minStdDev Minimum allowed standard deviation.
+   * @return Array of standard deviations.
+   */
+  private static double[] calculateMultiStartStandardDeviations(int dimension, SimpleBounds bounds,
+      double[] initialGuessPoint, double rangeFraction, double guessFraction, double defaultStdDev,
+      double minStdDev) {
+    if (initialGuessPoint.length != dimension) {
+      throw new MathIllegalArgumentException(
+          org.hipparchus.exception.LocalizedCoreFormats.DIMENSIONS_MISMATCH,
+          initialGuessPoint.length, dimension);
+    }
+
+    double[] stdDevs = new double[dimension];
+    double[] lower = (bounds == null) ? null : bounds.getLower();
+    double[] upper = (bounds == null) ? null : bounds.getUpper();
+
+    for (int i = 0; i < dimension; i++) {
+      double L = (lower == null || lower.length <= i) ? Double.NEGATIVE_INFINITY : lower[i];
+      double U = (upper == null || upper.length <= i) ? Double.POSITIVE_INFINITY : upper[i];
+      double guess = initialGuessPoint[i];
+
+      boolean isLowerFinite = Double.isFinite(L);
+      boolean isUpperFinite = Double.isFinite(U);
+
+      if (isLowerFinite && isUpperFinite) {
+        // Strategy 1: Use finite bounds range
+        double range = U - L;
+        if (range > minStdDev) { // Avoid issues if U == L
+          stdDevs[i] = range * rangeFraction;
+        } else {
+          // If range is tiny or zero, maybe use guess or default?
+          // Using guessFraction * abs(guess) or default might be better
+          // Here, we just use minStdDev for simplicity if range is too small.
+          stdDevs[i] = (guess == 0.0) ? Math.max(minStdDev, defaultStdDev)
+              : Math.max(minStdDev, Math.abs(guess) * guessFraction);
+
+          // If the variable is essentially fixed (L == U), a very small std dev is appropriate
+          if (range == 0.0) {
+            stdDevs[i] = minStdDev;
+          }
+        }
+
+      } else {
+        // Strategy 2/3: Bounds are infinite, use initial guess or default
+        if (guess == 0.0) {
+          // Strategy 3: Guess is zero, use default
+          stdDevs[i] = defaultStdDev;
+        } else {
+          // Strategy 2: Use guess magnitude
+          stdDevs[i] = Math.abs(guess) * guessFraction;
+        }
+      }
+
+      // Ensure minimum standard deviation
+      stdDevs[i] = Math.max(minStdDev, stdDevs[i]);
+      // Ensure positivity just in case
+      if (stdDevs[i] <= 0) {
+        stdDevs[i] = minStdDev; // Should be covered by max, but belt-and-suspenders
+      }
+    }
+    return stdDevs;
+  }
+
+  /**
+   * Simplified version with default heuristic parameters. Uses range/4, abs(guess)*1.0, default
+   * 1.0, min 1e-6.
+   *
+   * @param dimension Problem dimension.
+   * @param bounds SimpleBounds (can be null or have infinite values).
+   * @param initialGuessPoint The central initial guess for the MultiStartOptimizer.
+   * @return Array of standard deviations.
+   */
+  private static double[] calculateMultiStartStandardDeviations(int dimension, SimpleBounds bounds,
+      double[] initialGuessPoint) {
+    return calculateMultiStartStandardDeviations(dimension, bounds, initialGuessPoint, 0.25, // rangeFraction
+        // (1/4)
+        1.0, // guessFraction (1.0)
+        1.0, // defaultStdDev
+        1e-6); // minStdDev
   }
 
   @Override
