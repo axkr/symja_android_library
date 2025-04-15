@@ -443,7 +443,14 @@ public class RootsFunctions {
         if (coefficients.length <= 4) {
           IASTAppendable p = F.PlusAlloc(coefficients.length);
           for (int i = 0; i < coefficients.length; i++) {
-            p.append(F.Times(F.num(coefficients[i]), F.Power(variable, i)));
+            if (F.isZero(coefficients[i])) {
+              continue;
+            }
+            if (i == 0) {
+              p.append(F.num(coefficients[i]));
+            } else {
+              p.append(F.Times(F.num(coefficients[i]), F.Power(variable, i)));
+            }
           }
           expr = engine.evaluate(p);
           list = QuarticSolver.solve(p, variables.arg1());
@@ -452,6 +459,9 @@ public class RootsFunctions {
             if (expr.isInexactNumber()) {
               list.set(i, F.chopNumber((INumber) expr, Config.DEFAULT_ROOTS_CHOP_DELTA));
             }
+          }
+          if (list.isEmptyList()) {
+            return F.NIL;
           }
         } else {
           org.hipparchus.complex.Complex[] roots = allComplexRootsLaguerre(coefficients);
