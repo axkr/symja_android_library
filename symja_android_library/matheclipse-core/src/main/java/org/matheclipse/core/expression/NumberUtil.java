@@ -271,8 +271,6 @@ public class NumberUtil {
    * Possible loss of precision.
    */
   public static BigFraction fractionalPart(BigFraction f) {
-    // this==ip+fp; sign(fp)==sign(this)
-    // [possible loss of precision step]
     return f.subtract(new BigFraction(integerPart(f), BigInteger.ONE));
   }
 

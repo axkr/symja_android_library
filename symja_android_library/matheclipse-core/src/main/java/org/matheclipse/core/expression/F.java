@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
@@ -5284,8 +5285,7 @@ public class F extends S {
         isSystemStarted = true;
 
         if (Config.SHOW_PATTERN_EVAL_STEPS) {
-          // watch the rules which are used in pattern matching in
-          // system.out
+          // watch the rules which are used in pattern matching
           Config.SHOW_PATTERN_SYMBOL_STEPS.add(Integrate);
         }
         try {
@@ -11395,6 +11395,22 @@ public class F extends S {
     File temp = java.io.File.createTempFile("tempfile", ".html");
     try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp));) {
       bw.write(html);
+    }
+    if (Config.JAVA_AWT_DESKTOP_AVAILABLE) {
+      if (Desktop.isDesktopSupported()) {
+        Desktop.getDesktop().open(temp);
+      }
+    }
+    return temp.toString();
+  }
+
+  public static String openJSONOnDesktop(String html) throws IOException {
+    java.lang.String escapedStr = html.replaceAll("(\\r|\\n|\\r\\n)+", " ");
+    escapedStr = StringEscapeUtils.escapeEcmaScript(escapedStr);
+    String jsonScriptStr = StringUtils.replace(JSBuilder.JSON_HTML_VIEWER, "`1`", escapedStr);
+    File temp = java.io.File.createTempFile("tempfile", ".html");
+    try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp));) {
+      bw.write(jsonScriptStr);
     }
     if (Config.JAVA_AWT_DESKTOP_AVAILABLE) {
       if (Desktop.isDesktopSupported()) {

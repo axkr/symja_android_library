@@ -163,20 +163,17 @@ public final class N extends AbstractCoreFunctionEvaluator {
   public static IExpr evalN2(IExpr expr, long nDigitPrecision, EvalEngine engine) {
     // first try symbolic evaluation
     expr = engine.evaluate(expr);
-    if (expr.isInexactNumber()) {
-      return expr;
-    }
     if (expr.isListOrAssociation() || expr.isRuleAST()) {
       return ((IAST) expr).mapThread(F.N(F.Slot1, F.ZZ(nDigitPrecision)), 1);
     }
+
+    // after symbolic evaluation do numeric evaluation with n-digit precision
     final int maxSize =
         (Config.MAX_OUTPUT_SIZE > Short.MAX_VALUE) ? Short.MAX_VALUE : Config.MAX_OUTPUT_SIZE;
     int significantFigures = (nDigitPrecision > maxSize) ? maxSize : (int) nDigitPrecision;
     if (nDigitPrecision < ParserConfig.MACHINE_PRECISION) {
       nDigitPrecision = ParserConfig.MACHINE_PRECISION;
     }
-
-    // after symbolic evaluation do numeric evaluation with n-digit precision
     engine.setNumericMode(true, nDigitPrecision, significantFigures);
     return engine.evalWithoutNumericReset(expr);
   }

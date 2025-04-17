@@ -763,10 +763,11 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr evaluate(EvalEngine engine) {
-    // if (engine.isNumericMode() && engine.getNumericPrecision() <=
-    // ApfloatNum.DOUBLE_PRECISION) {
-    // return Num.valueOf(fApfloat.doubleValue());
-    // }
+    final long precision = fApfloat.precision();
+    if (precision != Apfloat.INFINITE && engine.getNumericPrecision() < precision
+        && engine.isNumericMode()) {
+      return valueOf(EvalEngine.getApfloat().valueOf(fApfloat));
+    }
     return F.NIL;
   }
 

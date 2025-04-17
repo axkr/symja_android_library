@@ -727,9 +727,11 @@ public class ApcomplexNum implements IComplexNum {
   /** {@inheritDoc} */
   @Override
   public IExpr evaluate(EvalEngine engine) {
-    // if (fApcomplex.imag().equals(Apcomplex.ZERO)) {
-    // return ApfloatNum.valueOf(fApcomplex.real());
-    // }
+    final long precision = fApcomplex.precision();
+    if (precision != Apcomplex.INFINITE && engine.getNumericPrecision() < precision
+        && engine.isNumericMode()) {
+      return valueOf(EvalEngine.getApfloat().valueOf(fApcomplex));
+    }
     return F.NIL;
   }
 

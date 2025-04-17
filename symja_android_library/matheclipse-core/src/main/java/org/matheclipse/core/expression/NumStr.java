@@ -131,13 +131,10 @@ public final class NumStr extends Num {
   @Override
   public IExpr evaluate(EvalEngine engine) {
     if (engine.isNumericMode() && engine.isArbitraryMode()) {
-      long precision =
-          fPrecision < engine.getNumericPrecision() ? engine.getNumericPrecision() : fPrecision;
-      // engine.setNumericPrecision(precision);
       if (fExponent == 0) {
-        return ApfloatNum.valueOf(fFloatStr, precision);
+        return ApfloatNum.valueOf(fFloatStr, engine.getNumericPrecision());
       }
-      return ApfloatNum.valueOf(fFloatStr + "E" + fExponent, precision);
+      return ApfloatNum.valueOf(fFloatStr + "E" + fExponent, engine.getNumericPrecision());
     }
     return super.evaluate(engine);
   }
