@@ -416,6 +416,33 @@ public class JSBuilder {
   public static final String MERMAID_STR = "mermaid";
   public static final String ECHARTS_STR = "echarts";
 
+  /**
+   * Javascript library for displaying json data into a DOM.
+   * <p>
+   * See: <a href="https://github.com/pgrabovets/json-view">Github json-view</a>
+   */
+  public static String JSON_HTML_VIEWER = "<!DOCTYPE html>\n" //
+      + "<html>\n" //
+      + "  <head>\n" //
+      + "    <title>jsonview demo</title>\n" //
+      // + " <link\n" //
+      // + " href=\"https://fonts.googleapis.com/css?family=Open+Sans\"\n" //
+      // + " rel=\"stylesheet\"\n" //
+      // + " />\n" //
+      + "  </head>\n" //
+      + "  <body>\n" //
+      + "    <div class=\"root\">  </div>\n" //
+      + "\n" //
+      + "    <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/@pgrabovets/json-view@2.7.6/dist/jsonview.min.js\"></script>\n" //
+      + "    <script type=\"text/javascript\">\n" //
+      + "    const data = \"`1`\";\n" //
+      + "      const tree = jsonview.create(data);\n" //
+      + "      jsonview.render(tree, document.querySelector(\".root\"));\n" //
+      + "      jsonview.expand(tree);\n" //
+      + "    </script>\n" //
+      + "  </body>\n" //
+      + "</html>";
+
   private JSBuilder() {}
 
   public static String buildMermaid(String pageTemplate, String manipulateStr) {
