@@ -593,6 +593,57 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Add a single step to the currently defined trace stack and evaluate the <code>rewrittenExpr
+   * </code> expression.
+   *
+   * @param inputExpr the input expression
+   * @param evaluatedExpr the already evaluated expression
+   * @param list
+   * @return
+   */
+  public IExpr addTraceStep(IExpr inputExpr, IExpr evaluatedExpr, IExpr... list) {
+    if (fTraceMode && evaluatedExpr.isPresent()) {
+      if (fTraceStack != null) {
+        IASTAppendable listOfHints = F.ast(S.List, list.length + 1);
+        listOfHints.appendAll(list, 0, list.length);
+        fTraceStack.add(inputExpr, evaluatedExpr, getRecursionCounter(), -1, listOfHints);
+        IExpr evaluatedResult = evaluate(evaluatedExpr);
+        listOfHints.append(evaluatedResult);
+        return evaluatedResult;
+      }
+      return evaluate(evaluatedExpr);
+    }
+    return evaluatedExpr;
+  }
+
+  public IExpr addEvaluatedTraceStep(IExpr inputExpr, IExpr rewrittenExpr, String ruleName) {
+    if (fTraceMode && rewrittenExpr.isPresent()) {
+      if (fTraceStack != null) {
+        IASTMutable listOfHints = F.ListAlloc(inputExpr.topHead(), F.$str(ruleName), F.Slot1);
+
+        fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
+        IExpr evaluatedResult = evaluate(rewrittenExpr);
+        listOfHints.set(3, evaluatedResult);
+        return evaluatedResult;
+      }
+      return evaluate(rewrittenExpr);
+    }
+    return evaluate(rewrittenExpr);
+  }
+
+  public IExpr addTraceStep(IExpr inputExpr, IExpr rewrittenExpr, String ruleName) {
+    if (fTraceMode && rewrittenExpr.isPresent()) {
+      if (fTraceStack != null) {
+        IASTMutable listOfHints = F.ListAlloc(inputExpr.topHead(), F.$str(ruleName), F.Slot1);
+
+        fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
+        listOfHints.set(3, rewrittenExpr);
+      }
+    }
+    return rewrittenExpr;
+  }
+
+  /**
    * Add a single information step to the currently defined trace stack. The <code>inputExpr</code>
    * hasn't changed but an additional information was inserted.
    *
@@ -2056,7 +2107,7 @@ public class EvalEngine implements Serializable {
             throw TimeoutException.TIMED_OUT;
           }
 
-          fTraceStack.add(expr, temp, fRecursionCounter, 0L, EVALUATION_LOOP);
+          fTraceStack.add(expr, temp, fRecursionCounter, 0L, F.NIL);
           result = temp;
           long iterationCounter = 1;
           while (true) {
@@ -2076,7 +2127,7 @@ public class EvalEngine implements Serializable {
                   IterationLimitExceeded.throwIt(fIterationLimit, result);
                 }
               }
-              fTraceStack.add(result, temp, fRecursionCounter, iterationCounter, EVALUATION_LOOP);
+              fTraceStack.add(result, temp, fRecursionCounter, iterationCounter, F.NIL);
 
               result = temp;
               if (++iterationCounter >= fIterationLimit && fIterationLimit >= 0) {

@@ -70,7 +70,7 @@ public interface IEvalStepListener {
    * @see IEvalStepListener#setHint(String)
    */
   public abstract void add(IExpr inputExpr, IExpr resultExpr, int recursionDepth,
-      long iterationCounter, IExpr listOfHints);
+      long iterationCounter, IAST listOfHints);
 
   /**
    * Solve a polynomial with degree &lt;= 2.

@@ -13,7 +13,7 @@ public abstract class AbstractEvalStepListener implements IEvalStepListener {
   /** {@inheritDoc} */
   @Override
   public abstract void add(
-      IExpr inputExpr, IExpr resultExpr, int recursionDepth, long iterationCounter, IExpr hint);
+      IExpr inputExpr, IExpr resultExpr, int recursionDepth, long iterationCounter, IAST hint);
 
   /** {@inheritDoc} */
   @Override

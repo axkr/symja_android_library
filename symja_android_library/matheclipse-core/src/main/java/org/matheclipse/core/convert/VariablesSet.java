@@ -469,6 +469,16 @@ public class VariablesSet {
     return fVariablesSet;
   }
 
+  public Set<ISymbol> toSymbolSet() {
+    Set<ISymbol> fSymbolSet = new HashSet<ISymbol>();
+    for (IExpr expr : fVariablesSet) {
+      if (expr.isSymbol()) {
+        fSymbolSet.add((ISymbol) expr);
+      }
+    }
+    return fSymbolSet;
+  }
+
   /**
    * 
    * @return

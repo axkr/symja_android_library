@@ -15,6 +15,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -173,30 +174,31 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </pre>
  */
 public class D extends AbstractFunctionEvaluator {
+  private static final IStringX FUNCTION_RULE_STR = F.$str("FunctionRule");
 
   public D() {}
 
   /**
    * Search for one of the <code>Derivative[a1][head]</code> rules.
-   *
+   * 
+   * @param functionArg1
    * @param x
-   * @param a1
-   * @param head
    * @param engine
+   *
    * @return
    */
-  private static IExpr getDerivativeArg1(IExpr x, final IExpr a1, final IExpr head,
-      EvalEngine engine) {
-    if (head.isSymbol()) {
-      ISymbol header = (ISymbol) head;
-      IAST fDerivParam = Derivative.createDerivative(1, header, a1);
-      if (x.equals(a1)) {
-        // return F.NIL;
-        return fDerivParam;
-      }
-      return F.Times(F.D(a1, x), fDerivParam);
+  private static IExpr chainRuleArg1(final IAST functionArg1, IExpr x, EvalEngine engine) {
+    final ISymbol header = (ISymbol) functionArg1.head();
+    IExpr arg1 = functionArg1.arg1();
+    IAST fDerivParam = Derivative.createDerivative(1, header, arg1);
+    IAST dDxArgFunction = F.D(functionArg1, x);
+    if (x.equals(arg1)) {
+      IExpr evaluated = engine.evaluate(fDerivParam);
+      return engine.addTraceStep(dDxArgFunction, evaluated, S.D, FUNCTION_RULE_STR, header,
+          fDerivParam.head().first());
     }
-    return F.NIL;
+    IExpr formula = F.Times(F.D(arg1, x), fDerivParam);
+    return engine.addEvaluatedTraceStep(dDxArgFunction, formula, "ChainRule");
   }
 
   /**
@@ -207,7 +209,8 @@ public class D extends AbstractFunctionEvaluator {
    * @param head
    * @return
    */
-  private static IExpr getDerivativeArgN(IExpr x, final IAST ast, final IExpr head) {
+  private static IExpr getDerivativeArgN(IExpr x, final IAST ast, final IExpr head,
+      EvalEngine engine) {
     IAST[] deriv = ast.isDerivative();
     int size = ast.size();
     if (deriv != null) {
@@ -215,14 +218,14 @@ public class D extends AbstractFunctionEvaluator {
       ast.forEach(size, (expr, i) -> {
         plus.append(F.Times(F.D(expr, x), addDerivative(i, deriv[0], deriv[1].arg1(), ast)));
       });
-      return plus;
+      return engine.addTraceStep(ast, plus, "ChainRule");
     }
     if (head.isSymbol()) {
       IASTAppendable plus = F.PlusAlloc(size);
       ast.forEach(size, (expr, i) -> {
         plus.append(F.Times(F.D(expr, x), createDerivative(i, head, ast)));
       });
-      return plus;
+      return engine.addTraceStep(ast, plus, "ChainRule");
     }
     return F.NIL;
   }
@@ -464,10 +467,14 @@ public class D extends AbstractFunctionEvaluator {
 
     if (functionOfX.isNumber()) {
       // D[x_?NumberQ,y_] -> 0
+      engine.addTraceStep(() -> F.D(functionOfX, x), F.C0,
+          F.List(S.D, F.$str("ConstantRule"), F.C0));
       return F.C0;
     }
     if (functionOfX.equals(x)) {
       // D[x_,x_] -> 1
+      engine.addTraceStep(() -> F.D(functionOfX, x), F.C1,
+          F.List(S.D, F.$str("IdentityRule"), F.C1));
       return F.C1;
     }
 
@@ -475,20 +482,27 @@ public class D extends AbstractFunctionEvaluator {
       final IAST function = (IAST) functionOfX;
       if (function.isPlus()) {
         // D(a_+b_+c_,x_) -> D(a,x)+D(b,x)+D(c,x)
-        return function.mapThread(F.D(F.Slot1, x), 1)//
-            .eval(engine);
+        IExpr plusResult = function.mapThread(F.D(F.Slot1, x), 1);
+        if (plusResult.isPolynomial(x)) {
+          return engine.addEvaluatedTraceStep(ast, plusResult, "PolynomialPowerRule");
+        }
+        // Apply the sum/difference rule $(f \pm g)' = f' \pm g'$.
+        return engine.addEvaluatedTraceStep(ast, plusResult, "PlusRule");
       } else if (function.isTimes()) {
-        return function.map(F.PlusAlloc(16), new BinaryBindIth1st(function, F.D(S.Null, x)));
+        IExpr result =
+            function.map(F.PlusAlloc(16), new BinaryBindIth1st(function, F.D(S.Null, x)));
+        return engine.addEvaluatedTraceStep(F.D(function, x), result, S.D, F.$str("MulRule"));
       } else if (function.isPower()) {
-        return power(function, x);
+        return power(function, x, engine);
       } else if (function.isAST(S.Surd, 3)) {
         // Surd(f,g)
-        return surd(function, x);
+        return surd(function, x, engine);
       } else if (function.isLog2()) {
         if (function.isFreeAt(1, x)) {
           // D(Log(i_FreeQ(x), x_), z_):= (x*Log(a))^(-1)*D(x,z);
-          return F.Times(F.Power(F.Times(function.arg2(), F.Log(function.arg1())), F.CN1),
+          IExpr result = F.Times(F.Power(F.Times(function.arg2(), F.Log(function.arg1())), F.CN1),
               F.D(function.arg2(), x));
+          return engine.addEvaluatedTraceStep(F.D(function, x), result, "LogRule");
         }
       } else if (function.isAST(S.HypergeometricPFQ, 4)//
           && function.first().isList()//
@@ -550,29 +564,40 @@ public class D extends AbstractFunctionEvaluator {
           }
           return F.NIL;
         }
-        return getDerivativeArg1(x, function.arg1(), function.head(), engine);
+        if (function.head().isSymbol()) {
+          return chainRuleArg1(function, x, engine);
+        }
+        return F.NIL;
       }
       if (ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
-        return getDerivativeArgN(x, function, function.head());
+        return getDerivativeArgN(x, function, function.head(), engine);
       }
     }
     return F.NIL;
   }
 
-  private static IExpr power(final IAST function, IExpr x) {
+  private static IExpr power(final IAST function, IExpr x, EvalEngine engine) {
     // f ^ g
     final IExpr f = function.base();
     final IExpr g = function.exponent();
     if (g.isFree(x)) {
+      if (g.isMinusOne()) {
+        // -D(f,x) / (f^2)
+        IExpr result = F.Times(F.CN1, F.D(f, x), F.Power(f, F.CN2));
+        return engine.addEvaluatedTraceStep(F.D(function, x), result, "ReciprocalRule");
+      }
       // g*D(f,y)*f^(g-1)
-      return F.Times(g, F.D(f, x), F.Power(f, g.dec()));
+      IExpr result = F.Times(g, F.D(f, x), F.Power(f, g.dec()));
+      return engine.addEvaluatedTraceStep(F.D(function, x), result, "PowerRule");
     }
     if (f.isFree(x)) {
       if (f.isE()) {
-        return F.Times(F.D(g, x), F.Exp(g));
+        IExpr result = F.Times(F.D(g, x), F.Exp(g));
+        return engine.addEvaluatedTraceStep(F.D(function, x), result, "ExpRule");
       }
       // D(g,y)*Log(f)*f^g
-      return F.Times(F.D(g, x), F.Log(f), F.Power(f, g));
+      IExpr result = F.Times(F.D(g, x), F.Log(f), F.Power(f, g));
+      return engine.addEvaluatedTraceStep(F.D(function, x), result, "LogRule");
     }
 
     // D[f_^g_,y_]:= f^g*(((g*D[f,y])/f)+Log[f]*D[g,y])
@@ -580,23 +605,29 @@ public class D extends AbstractFunctionEvaluator {
     resultList.append(F.Power(f, g));
     resultList
         .append(F.Plus(F.Times(g, F.D(f, x), F.Power(f, F.CN1)), F.Times(F.Log(f), F.D(g, x))));
-    return resultList;
+    return engine.addEvaluatedTraceStep(F.D(function, x), resultList, "PowerRule");
   }
 
-  private static IExpr surd(final IAST function, IExpr x) {
+  private static IExpr surd(final IAST function, IExpr x, EvalEngine engine) {
     final IExpr f = function.base();
     if (function.exponent().isInteger()) {
       final IInteger g = (IInteger) function.exponent();
       if (g.isMinusOne()) {
-        return F.Times(F.CN1, F.D(f, x), F.Power(f, F.CN2));
+        IExpr result = F.Times(F.CN1, F.D(f, x), F.Power(f, F.CN2));
+        return engine.addEvaluatedTraceStep(F.D(function, x), result, "PowerRule");
+
       }
       final IRational gInverse = g.inverse();
       if (g.isNegative()) {
         if (g.isEven()) {
-          return F.Times(gInverse, F.D(f, x), F.Power(F.Surd(f, g.negate()), g.dec()));
+          IExpr result = F.Times(gInverse, F.D(f, x), F.Power(F.Surd(f, g.negate()), g.dec()));
+          return engine.addEvaluatedTraceStep(F.D(function, x), result, "PowerRule");
+
         }
-        return F.Times(gInverse, F.D(f, x), F.Power(f, F.CN1),
+        IExpr result = F.Times(gInverse, F.D(f, x), F.Power(f, F.CN1),
             F.Power(F.Surd(f, g.negate()), F.CN1));
+        return engine.addEvaluatedTraceStep(F.D(function, x), result, "PowerRule");
+
       }
       return F.Times(gInverse, F.D(f, x), F.Power(F.Surd(f, g), g.dec().negate()));
     }

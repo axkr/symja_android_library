@@ -791,7 +791,15 @@ public abstract class AbstractFractionSym implements IFraction {
     }
   }
 
+  /**
+   * Returns a new instance of {@link ArgumentTypeException} with message shortcut <code>infy</code>
+   * - <code>Infinite expression `1` encountered</code>
+   * 
+   * @param num
+   * @return
+   */
   private static ArgumentTypeException getDivisionTroughZeroException(IInteger num) {
+    // Infinite expression `1` encountered.
     String str = Errors.getMessage("infy", F.list(F.Rational(num, F.C0)), EvalEngine.get());
     return new ArgumentTypeException(str);
   }
@@ -930,8 +938,7 @@ public abstract class AbstractFractionSym implements IFraction {
   public static IFraction valueOf(long numerator, long denominator) {
     if (numerator > Long.MIN_VALUE && denominator > Long.MIN_VALUE) {
       if (denominator == 0) {
-        throw getDivisionTroughZeroException(F.ZZ(numerator)); // Infinite expression `1`
-                                                               // encountered.
+        throw getDivisionTroughZeroException(F.ZZ(numerator));
       } else if (numerator == 0) {
         return FractionSym.ZERO;
       } else if (numerator == denominator) {
@@ -979,8 +986,7 @@ public abstract class AbstractFractionSym implements IFraction {
       }
     } else {
       if (denominator == 0) {
-        throw getDivisionTroughZeroException(F.ZZ(numerator)); // Infinite expression `1`
-                                                               // encountered.
+        throw getDivisionTroughZeroException(F.ZZ(numerator));
       } else if (numerator == 0) {
         return FractionSym.ZERO;
       } else if (numerator == denominator) {

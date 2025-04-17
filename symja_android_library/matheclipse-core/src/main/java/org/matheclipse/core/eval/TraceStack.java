@@ -86,7 +86,7 @@ public final class TraceStack extends AbstractEvalStepListener {
 
   @Override
   public void add(IExpr inputExpr, IExpr resultExpr, int recursionDepth, long iterationCounter,
-      IExpr hint) {
+      IAST hint) {
     if (iterationCounter <= 0L) {
       addIfEmpty(inputExpr);
       add(resultExpr);
