@@ -124,6 +124,7 @@ import org.matheclipse.core.patternmatching.hash.HashedPatternRulesTimes;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRulesTimesPower;
 import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.sympy.core.Expr;
+import org.matheclipse.core.sympy.exception.PoleError;
 import org.matheclipse.core.sympy.series.Order;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.parser.client.ParserConfig;
@@ -148,6 +149,15 @@ public final class Arithmetic {
           new org.hipparchus.complex.Complex(9.9843695780195716e-6), //
           new org.hipparchus.complex.Complex(1.5056327351493116e-7) //
       };
+
+
+  static final long[] HARMONIC_NUMERATOR = new long[] {1, 3, 11, 25, 137, 49, 363, 761, 7129, 7381,
+      83711, 86021, 1145993, 1171733, 1195757, 2436559, 42142223, 14274301, 275295799, 55835135,
+      18858053, 19093197, 444316699, 1347822955};
+  static final long[] HARMONIC_DENOMINATOR =
+      new long[] {1, 2, 6, 12, 60, 20, 140, 280, 2520, 2520, 27720, 27720, 360360, 360360, 360360,
+          720720, 12252240, 4084080, 77597520, 15519504, 5173168, 5173168, 118982864, 356948592};
+
 
   public static final IFunctionEvaluator CONST_PLUS = new Plus();
   public static final IFunctionEvaluator CONST_TIMES = new Times();
@@ -2027,23 +2037,25 @@ public final class Arithmetic {
         if (engine.isNumericMode()) {
           return F.Plus(S.EulerGamma, F.PolyGamma(F.C0, F.Plus(F.C1, arg1)));
         }
-      }
-      if (arg1.isInteger()) {
-        if (arg1.isNegative()) {
-          return F.CComplexInfinity;
+        if (arg1.isInteger()) {
+          if (arg1.isNegativeResult()) {
+            return F.CComplexInfinity;
+          }
+          int n = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);
+          if (n < 0) {
+            return F.NIL;
+          }
+          if (n <= HARMONIC_NUMERATOR.length) {
+            if (n == 0) {
+              return C0;
+            }
+            if (n == 1) {
+              return C1;
+            }
+            return F.QQ(HARMONIC_NUMERATOR[n - 1], HARMONIC_DENOMINATOR[n - 1]);
+          }
+          return QQ(harmonicNumber(n));
         }
-        int n = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);
-        if (n < 0) {
-          return F.NIL;
-        }
-        if (n == 0) {
-          return C0;
-        }
-        if (n == 1) {
-          return C1;
-        }
-
-        return QQ(harmonicNumber(n));
       }
       if (arg1.isInfinity()) {
         return arg1;
@@ -2167,18 +2179,12 @@ public final class Arithmetic {
         if (iterationLimit >= 0 && iterationLimit <= n) {
           IterationLimitExceeded.throwIt(n, F.HarmonicNumber(F.ZZ(n)));
         }
-        /*
-         * start with 1 as the result
-         */
-        BigFraction a = new BigFraction(1, 1);
-
-        /*
-         * add 1/i for i=2..n
-         */
+        BigFraction result = BigFraction.ONE;
         for (int i = 2; i <= n; i++) {
-          a = a.add(new BigFraction(1, i));
+          // add 1/i for i=2..n
+          result = result.add(new BigFraction(1, i));
         }
-        return a;
+        return result;
       }
     }
 
@@ -2885,7 +2891,7 @@ public final class Arithmetic {
       try {
         for (int i = 1; i < leadingTerms.size(); i++) {
           IExpr term = leadingTerms.get(i);
-          IExpr order = Order.order(term, x);
+          IExpr order = Order.create(term, x);
           if (min.isPresent() && !((IAST) min).contains(order)) {
             min = order;
             newExpr = term;
@@ -3330,7 +3336,7 @@ public final class Arithmetic {
    * </pre>
    */
   public /* public for steps module */ static class Power extends AbstractFunctionEvaluator
-      implements INumeric, IFunctionExpand {
+      implements IRewrite, INumeric, IFunctionExpand {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
@@ -4433,6 +4439,51 @@ public final class Arithmetic {
         }
       }
       return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evalAsLeadingTerm(IAST self, ISymbol x, IExpr logx, int cdir) {
+      IExpr b = self.base();
+      IExpr e = self.exponent();
+      if (e.isE()) {
+        IExpr arg = e.asLeadingTerm(x, logx, 0);
+        IExpr arg0 = arg.subs(x, F.C0);
+        if (arg0.isIndeterminate()) {
+          arg.limit(x, F.C0);
+        }
+        if (!arg0.isDirectedInfinity()) {
+          return F.Power(S.E, arg0);
+        }
+        throw new PoleError("Cannot expand " + self + " around 0");
+      } else if (e.has(x)) {
+        IExpr lt = F.Power(S.E, F.Times(e, F.Log(b)));
+        return lt.asLeadingTerm(x, logx, cdir);
+      }
+      IExpr f = F.NIL;
+      try {
+        f = b.asLeadingTerm(x, logx, cdir);
+      } catch (PoleError ex) {
+        return self;
+      }
+
+      if (!e.isInteger() && f.isNegative() && !f.has(x)) {
+        IExpr ndir = (b.subtract(f)).dir(x, cdir);
+        IExpr imNDir = ndir.im();
+        if (imNDir.isNegative()) {
+          // Normally, f**e would evaluate to exp(e*log(f)) but on branch cuts
+          // an other value is expected through the following computation
+          // exp(e*(log(f) - 2*pi*I)) == f**e*exp(-2*e*pi*I) == f**e*(-1)**(-2*e).
+          return F.Times(F.Power(f, e), F.Power(F.CN1, F.Times(F.CN2, e)));
+        }
+        if (imNDir.isZero()) {
+          IExpr log_leadterm = F.Log(b).evalAsLeadingTerm(x, logx, cdir);
+          if (!log_leadterm.isDirectedInfinity()) {
+            return F.Power(S.E, F.Times(e, log_leadterm));
+          }
+        }
+      }
+      return F.Power(f, e);
     }
 
     /**
@@ -5867,7 +5918,8 @@ public final class Arithmetic {
    * 30
    * </pre>
    */
-  public /* for steps module */ static class Times extends AbstractArgMultiple implements INumeric {
+  public /* for steps module */ static class Times extends AbstractArgMultiple
+      implements IRewrite, INumeric {
     /** Constructor for the singleton */
     public static final Times CONST = new Times();
 
@@ -6337,6 +6389,17 @@ public final class Arithmetic {
     @Override
     public IExpr eComIntArg(final IComplex c0, final IInteger i1) {
       return c0.multiply(F.CC(i1));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evalAsLeadingTerm(IAST self, ISymbol x, IExpr logx, int cdir) {
+      IASTAppendable result = F.TimesAlloc(self.argSize());
+      for (int i = 1; i < self.size(); i++) {
+        IExpr t = self.get(i);
+        result.append(t.asLeadingTerm(x, logx, cdir));
+      }
+      return result;
     }
 
     @Override

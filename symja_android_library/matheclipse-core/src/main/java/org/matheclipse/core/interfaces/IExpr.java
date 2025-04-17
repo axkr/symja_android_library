@@ -3915,6 +3915,12 @@ public interface IExpr
     return false;
   }
 
+
+  @Override
+  default boolean isNaN() {
+    return false;
+  }
+
   /**
    * Test if this expression is a number. I.e. an instance of type <code>INumber</code>.
    *
@@ -5388,6 +5394,72 @@ public interface IExpr
     return null;
   }
 
+  default IExpr dir(ISymbol x, int cdir) {
+    if (isZero()) {
+      return F.C0;
+    }
+
+    IInteger minexp = F.C0;
+    IExpr arg = this;
+    IExpr coeff = F.C0;
+    while (arg.isPresent()) {
+      minexp = minexp.add(F.C1);
+      arg = arg.diff(x);
+      coeff = arg.subs(x, F.C0);
+      if (coeff.isIndeterminate()) {
+        coeff = arg.limit(x, F.C0);
+        if (coeff.isComplexInfinity()) {
+          try {
+            coeff = arg.leadTerm(x).first();
+            if (coeff.has(log(x))) {
+              throw new ValueError("");
+            }
+          } catch (ValueError ve) {
+            coeff = arg.limit(x, F.C0);
+          }
+          if (!coeff.isZero()) {
+            break;
+          }
+        }
+      }
+    }
+    return F.Times(coeff, F.Power(F.ZZ(cdir), minexp));
+  }
+
+  default IExpr diff(IExpr x) {
+    return F.D.of(this, x);
+  }
+
+  /**
+   * Compute limit x->xlim.
+   * 
+   * @param x
+   * @param xlim
+   * @param dir
+   * @return
+   */
+  default IExpr limit(IExpr x, IExpr xlim) {
+    return limit(x, xlim, "+");
+  }
+
+  /**
+   * Compute limit x->xlim.
+   * 
+   * @param x
+   * @param xlim
+   * @param dir
+   * @return
+   */
+  default IExpr limit(IExpr x, IExpr xlim, String dir) {
+    IAST direction = F.Rule(xlim, S.Reals);
+    if (dir.equals("+")) {
+      direction = F.Rule(xlim, F.CN1);
+    } else if (dir.equals("-")) {
+      direction = F.Rule(xlim, F.C1);
+    }
+    return F.Limit.of(this, F.Rule(x, xlim), direction);
+  }
+
   @Override
   default IExpr log() {
     return S.Log.of(this);
@@ -6403,8 +6475,8 @@ public interface IExpr
   }
 
   /**
-   * The xreplace method replaces all instances of <code>x</code> in an expression with an
-   * <code>y</code> expression.
+   * Replaces all instances of <code>x</code> in an expression with an <code>y</code> expression or
+   * returns <code>this</code>.
    * 
    * @param x
    * @param y
@@ -6414,6 +6486,13 @@ public interface IExpr
     return replaceAll(F.Rule(x, y)).orElse(this);
   }
 
+  /**
+   * Replaces all instances of the <code>left-hand-side</code> of the rules in list with the
+   * <code>right-hand-side</code> of the correponding rule or returns <code>this</code>.
+   * 
+   * @param listOfRules
+   * @return
+   */
   default IExpr xreplace(IAST listOfRules) {
     return replaceAll(listOfRules).orElse(this);
   }
@@ -6867,6 +6946,12 @@ public interface IExpr
 
   default IExpr zero() {
     return F.C0;
+  }
+
+
+  default Set<ISymbol> variables() {
+    VariablesSet varSet = new VariablesSet();
+    return varSet.toSymbolSet();
   }
 
 }

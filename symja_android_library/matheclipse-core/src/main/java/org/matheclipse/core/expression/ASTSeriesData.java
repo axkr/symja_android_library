@@ -6,6 +6,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.builtin.NumberTheory;
+import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -152,6 +153,13 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       return F.C0;
     }
     return coefficient;
+  }
+
+
+  public IAST coefficientList() {
+    IAST listOfVariables = F.List(x);
+    IExpr polynomialExpr = normal(false);
+    return PolynomialFunctions.coefficientList(polynomialExpr, listOfVariables);
   }
 
   @Override
