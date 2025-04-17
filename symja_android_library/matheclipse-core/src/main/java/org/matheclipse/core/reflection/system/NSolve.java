@@ -34,7 +34,7 @@ public class NSolve extends AbstractFunctionOptionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_2_3;
+    return IFunctionEvaluator.ARGS_1_3;
   }
 
   private static IExpr[] defaultOptionValues() {

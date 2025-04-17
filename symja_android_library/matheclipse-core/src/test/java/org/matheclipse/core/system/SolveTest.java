@@ -615,9 +615,9 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
     check("Solve(Sin((x+1)*(x-1))==2,x)", //
         "{{x->ConditionalExpression(-Sqrt(1-Pi-ArcSin(2)-2*Pi*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Sqrt(\n"
-        + "1-Pi-ArcSin(2)-2*Pi*C(1)),C(1)∈Integers)},{x->ConditionalExpression(-Sqrt(1+ArcSin(\n" //
-        + "2)-2*Pi*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Sqrt(1+ArcSin(2)-2*Pi*C(\n" //
-        + "1)),C(1)∈Integers)}}"); //
+            + "1-Pi-ArcSin(2)-2*Pi*C(1)),C(1)∈Integers)},{x->ConditionalExpression(-Sqrt(1+ArcSin(\n" //
+            + "2)-2*Pi*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Sqrt(1+ArcSin(2)-2*Pi*C(\n" //
+            + "1)),C(1)∈Integers)}}"); //
     check("Solve(Log((x+1)*(x-1))==2,x)", //
         "{{x->-Sqrt(1+E^2)},{x->Sqrt(1+E^2)}}");
     check("Solve(Log(x^2-1)==3,x)", //
@@ -2269,6 +2269,15 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSolveMessage() {
+    check("Solve(-4+3*x+x^2==0)", //
+        "{{x->-4},{x->1}}");
+    // print Solve: binary equation or inequation expression expected instead of...
+    check("Solve(-4+3*x+x^2)", //
+        "Solve(-4+3*x+x^2)");
+  }
+
+  @Test
   public void testSolveInverseMultivaluedArcSin() {
     check("Solve(Sin(x^2)==0,x)", //
         "{{x->ConditionalExpression(Sqrt(2*Pi)*Sqrt(C(1)),C(1)∈Integers)},{x->ConditionalExpression(-Sqrt(\n" //
@@ -2288,6 +2297,15 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
+  public void testSolveEquationWithConstraints() {
+    check("NSolve({13+x^3==-7.853981633974483, x>=-10, x<=10}, x)", //
+        "{{x->-2.7525147964038587}}");
+    check("NSolve({13+x^3==-785/100, x>=-10, x<=10}, x)", //
+        "{{x->-2.75234}}");
+    check("Solve({13+x^3==-785/100, x>=-10, x<=10}, x)", //
+        "{{x->-(417/5)^(1/3)/2^(2/3)}}");
+  }
 
   /** The JUnit setup method */
   @Override

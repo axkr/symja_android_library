@@ -1199,69 +1199,75 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         if (ast.arg1().isEmptyList()) {
           return F.list(F.CEmptyList);
         }
-        IAST variables = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
-        if (variables.isPresent()) {
-          IAST equationVariables = VariablesSet.getVariables(ast.arg1());
-          if (variables.isEmpty()) {
-            variables = equationVariables;
-          }
+        IAST equationVariables = VariablesSet.getVariables(ast.arg1());
+        IAST variables = F.NIL;
+        if (ast.argSize() > 1) {
+          variables = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
+          // if (variables.isPresent()) {
+          // if (variables.isEmpty()) {
+          // variables = equationVariables;
+          // }
+          // }
+        } else {
+          variables = equationVariables;
+        }
+        ISymbol domain = S.Complexes;
+        if (ast.isAST3()) {
+          if (!ast.arg3().isSymbol()) {
+            // Warning: `1` is not a valid domain specification.
+            Errors.printMessage(ast.topHead(), "bdomv", F.List(ast.arg3()), engine);
+          } else {
+            domain = (ISymbol) ast.arg3();
+            if (domain == S.Booleans) {
+              return BooleanFunctions.solveInstances(ast.arg1(), variables, maxRoots);
+            }
+            if (domain == S.Integers || domain == S.Primes) {
+              IExpr integersResult =
+                  solveIntegers(ast, equationVariables, variables, maxRoots, domain, engine);
+              if (domain == S.Primes) {
+                return checkDomain(integersResult, domain, maxRoots);
+              }
+              return integersResult;
+            }
 
-          ISymbol domain = S.Complexes;
-          if (ast.isAST3()) {
-            if (!ast.arg3().isSymbol()) {
+            if (domain != S.Reals && domain != S.Complexes) {
               // Warning: `1` is not a valid domain specification.
               Errors.printMessage(ast.topHead(), "bdomv", F.List(ast.arg3()), engine);
-            } else {
-              domain = (ISymbol) ast.arg3();
-              if (domain == S.Booleans) {
-                return BooleanFunctions.solveInstances(ast.arg1(), variables, maxRoots);
-              }
-              if (domain == S.Integers || domain == S.Primes) {
-                IExpr integersResult =
-                    solveIntegers(ast, equationVariables, variables, maxRoots, domain, engine);
-                if (domain == S.Primes) {
-                  return checkDomain(integersResult, domain, maxRoots);
-                }
-                return integersResult;
-              }
-
-              if (domain != S.Reals && domain != S.Complexes) {
-                // Warning: `1` is not a valid domain specification.
-                Errors.printMessage(ast.topHead(), "bdomv", F.List(ast.arg3()), engine);
-              }
             }
-
           }
 
-          IAssumptions oldAssumptions = engine.getAssumptions();
-          try {
-            IAssumptions assum = setVariablesReals(variables, domain);
-            if (assum != null) {
-              engine.setAssumptions(assum);
-            }
-            IAST termsList = Validate.checkEquationsAndInequations(ast, 1);
-            IASTMutable[] lists = SolveUtils.filterSolveLists(termsList, F.NIL, isNumeric);
-            boolean numericFlag = isNumeric[0] || numeric;
-            if (lists[2].isPresent()) {
-              IExpr result = solveNumeric(lists[2], numericFlag, engine);
-              if (result.isNIL()) {
-                // The system cannot be solved with the methods available to Solve.
-                return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
-              }
-              return checkDomain(result, domain, maxRoots);
-            }
-            IASTMutable termsEqualZeroList = lists[0];
-            IExpr result =
-                solveRecursive(termsEqualZeroList, lists[1], numericFlag, variables, engine);
+        }
+
+        IAssumptions oldAssumptions = engine.getAssumptions();
+        try {
+          IAssumptions assum = setVariablesReals(variables, domain);
+          if (assum != null) {
+            engine.setAssumptions(assum);
+          }
+          IAST termsList = Validate.checkEquationsAndInequations(ast, 1);
+          IASTMutable[] lists = SolveUtils.filterSolveLists(termsList, F.NIL, isNumeric);
+          boolean numericFlag = isNumeric[0] || numeric;
+          if (lists[2].isPresent()) {
+            IExpr result = solveNumeric(lists[2], numericFlag, engine);
             if (result.isNIL()) {
               // The system cannot be solved with the methods available to Solve.
               return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
             }
             return checkDomain(result, domain, maxRoots);
-          } finally {
-            engine.setAssumptions(oldAssumptions);
           }
+          IASTMutable termsEqualZeroList = lists[0];
+          IExpr result =
+              solveRecursive(termsEqualZeroList, lists[1], numericFlag, variables, engine);
+          if (result.isNIL()) {
+            // The system cannot be solved with the methods available to Solve.
+            return Errors.printMessage(ast.topHead(), "nsmet", F.list(ast.topHead()), engine);
+          }
+          return checkDomain(result, domain, maxRoots);
+        } finally {
+          engine.setAssumptions(oldAssumptions);
         }
+
+
       } catch (ValidateException ve) {
         return Errors.printMessage(S.Solve, ve, engine);
       } catch (LimitException e) {
@@ -1454,7 +1460,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_2_3;
+    return IFunctionEvaluator.ARGS_1_3;
   }
 
   /**
