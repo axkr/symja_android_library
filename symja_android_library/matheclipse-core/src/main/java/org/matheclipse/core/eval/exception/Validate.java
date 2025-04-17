@@ -627,6 +627,7 @@ public final class Validate {
 
   /**
    * Check if the argument at the given position is a single variable or a list of variables.
+   * Otherwise print message <code>ivar</code>.
    *
    * @param ast
    * @param position the position which has to be a variable or list of variables.
@@ -686,7 +687,7 @@ public final class Validate {
 
   /**
    * Check if the argument at the given position is a variable, i.e. a symbol which doesnt't have
-   * the <code>Constant</code> attribute set.
+   * the <code>Constant</code> attribute set. Otherwise print message <code>ivar</code>.
    *
    * @param ast
    * @param position

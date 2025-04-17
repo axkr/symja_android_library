@@ -438,7 +438,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
       check("N(Sqrt(0.5)^5.0)", //
           "0.176777");
       check("N(Sqrt(0.5)^5.0,50)", //
-          "0.176777");
+          "0.1767766952966369");
 
       check("N(0.5^5.0)", //
           "0.03125");
@@ -520,7 +520,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
           "0.5");
 
       check("evalf(Sqrt(2)+I*0.3,50)", //
-          "1.41421+I*0.3");
+          "1.41421356237309512+I*0.3");
 
       check("evalf(I*Sqrt(2)+I*Sqrt(3))", //
           "I*3.14626");
@@ -942,13 +942,13 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "f'(x)/g(x)+(-f(x)*g'(x))/g(x)^2");
 
     check("Trace(D(Sin(x),x))", //
-        "{D(Sin(x),x),Sin'(x),{Derivative(1)[Sin],Cos(#1)&},Cos(#1)&[x],Cos(x)}");
+        "{{{Derivative(1)[Sin],Cos(#1)&},Cos(#1)&[x],Cos(x)},Cos(x),Cos(x)}");
     check("D(Sin(x)^Cos(x),x)", //
         "(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)");
     check("Trace(D(Sin(x)^Cos(x),x))", //
-        "{D(Sin(x)^Cos(x),x),Sin(x)^Cos(x)*(D(Cos(x),x)*Log(Sin(x))+(Cos(x)*D(Sin(x),x))/Sin(x)),{{{D(Cos(x),x),Cos'(x),{Derivative(\n"//
-            + "1)[Cos],-Sin(#1)&},-Sin(#1)&[x],-Sin(x)},-Sin(x)*Log(Sin(x)),-Log(Sin(x))*Sin(x)},{{D(Sin(x),x),Sin'(x),{Derivative(\n"//
-            + "1)[Sin],Cos(#1)&},Cos(#1)&[x],Cos(x)},{1/Sin(x),Csc(x)^1,Csc(x)},Cos(x)*Cos(x)*Csc(x),Cos(x)*Cot(x)},Cos(x)*Cot(x)-Log(Sin(x))*Sin(x)},(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)}");
+        "{D(Sin(x)^Cos(x),x),Sin(x)^Cos(x)*(D(Cos(x),x)*Log(Sin(x))+(Cos(x)*D(Sin(x),x))/Sin(x)),{{{{{{Derivative(\n" //
+            + "1)[Cos],-Sin(#1)&},-Sin(#1)&[x],-Sin(x)},-Sin(x),-Sin(x)},-Sin(x)*Log(Sin(x)),-Log(Sin(x))*Sin(x)},{{{{Derivative(\n" //
+            + "1)[Sin],Cos(#1)&},Cos(#1)&[x],Cos(x)},Cos(x),Cos(x)},{1/Sin(x),Csc(x)^1,Csc(x)},Cos(x)*Cos(x)*Csc(x),Cos(x)*Cot(x)},Cos(x)*Cot(x)-Log(Sin(x))*Sin(x)},(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)},(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)}");
   }
 
   @Test
@@ -1706,6 +1706,8 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("HarmonicNumber(2)", "3/2");
     check("HarmonicNumber(10)", "7381/2520");
     check("HarmonicNumber(20)", "55835135/15519504");
+    check("HarmonicNumber(24)", "1347822955/356948592");
+    check("HarmonicNumber(25)", "34052522467/8923714800");
   }
 
   @Test

@@ -1283,8 +1283,9 @@ public final class NumberTheory {
       if (isNegative) {
         doubleValue = Math.abs(doubleValue);
       }
-      BigFraction bigFraction = new BigFraction(doubleValue);
-      return rationalToContinuedFraction(bigFraction.getNumerator(), bigFraction.getDenominator(),
+      final BigFraction numeratorDenominator = new BigFraction(doubleValue);
+      return rationalToContinuedFraction(numeratorDenominator.getNumerator(),
+          numeratorDenominator.getDenominator(),
           isNegative, precision, true);
     }
 
@@ -1317,42 +1318,6 @@ public final class NumberTheory {
       }
       return continuedFractionList;
     }
-
-    // private static IAST realToContinuedFraction(INum value, int iterationLimit,
-    // EvalEngine engine) {
-    // final double doubleValue = value.getRealPart();
-    // if (value.isNumIntValue()) {
-    // return F.list(F.ZZ((int) Math.rint(doubleValue)));
-    // }
-    // BigFraction bigFraction = new BigFraction(doubleValue);
-    // System.out.println(bigFraction.toString());
-    // // int ip = (int) doubleValue;
-    // IASTAppendable continuedFractionList =
-    // F.ListAlloc(iterationLimit > 0 && iterationLimit < 1000 ? iterationLimit + 10 : 100);
-    // int aNow = (int) doubleValue;
-    // double tNow = doubleValue - aNow;
-    // double tNext;
-    // int aNext;
-    // continuedFractionList.append(aNow);
-    // for (int i = 0; i < iterationLimit - 1; i++) {
-    // if (i >= 99) {
-    // LOGGER.log(engine.getLogLevel(),
-    // "ContinuedFraction: calculations of double number values require a iteration limit less equal
-    // 100.");
-    // return F.NIL;
-    // }
-    // double rec = 1.0 / tNow;
-    // aNext = (int) rec;
-    // if (aNext == Integer.MAX_VALUE) {
-    // break;
-    // }
-    // tNext = rec - aNext;
-    //
-    // continuedFractionList.append(aNext);
-    // tNow = tNext;
-    // }
-    // return continuedFractionList;
-    // }
 
     @Override
     public int[] expectedArgSize(IAST ast) {

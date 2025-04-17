@@ -306,9 +306,9 @@ public class PolynomialFunctions {
       IAST list = ast.arg2().makeList();
       IExpr expr = arg1.normal(false);
       if (expr.isAST() && !expr.isFree(x -> list.indexOf(x) > 0, true)) {
-        expr = F.evalExpandAll(arg1, engine);
+        expr = F.evalExpandAll(expr, engine);
+        // expr = engine.evaluate(expr.normal(false));
       }
-      expr = engine.evaluate(expr.normal(false));
 
       return coefficientList(expr, list);
     }
@@ -2540,10 +2540,10 @@ public class PolynomialFunctions {
     }
   }
 
-  public static IAST coefficientList(IExpr expr, IAST listOfVariables) {
+  public static IAST coefficientList(IExpr polynomialExpr, IAST listOfVariables) {
     try {
       ExprPolynomialRing ring = new ExprPolynomialRing(listOfVariables);
-      ExprPolynomial poly = ring.create(expr, true, false, true);
+      ExprPolynomial poly = ring.create(polynomialExpr, true, false, true);
       if (poly.isZero()) {
         return F.CEmptyList;
       }
@@ -2556,7 +2556,7 @@ public class PolynomialFunctions {
       LOGGER.debug("PolynomialFunctions.coefficientList() failed", ex);
     }
     if (listOfVariables.argSize() > 0) {
-      return F.Nest(S.List, expr, listOfVariables.argSize());
+      return F.Nest(S.List, polynomialExpr, listOfVariables.argSize());
     }
     return F.NIL;
   }

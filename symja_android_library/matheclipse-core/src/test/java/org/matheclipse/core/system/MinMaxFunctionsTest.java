@@ -54,6 +54,9 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testNMaximize() {
+    // checkNumeric("NMaximize({Sin(x^2), 0 <= x && x <= 0.5}, {x})", //
+    // "{0.24740395925452294,{x->0.5}}");
+
     checkNumeric("NMaximize(-x^4 - 3* x^2 + x, x)", //
         "{0.08258881886826407,{x->0.16373996720676331}}");
 

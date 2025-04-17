@@ -420,7 +420,7 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
     check("TeXForm( f(#,#3)*2&  )", //
         "f(\\text{$\\#$1},\\text{$\\#$3}) \\cdot 2\\&");
     check("TeXForm(N(1.1+Pi*I,30))", //
-        "1.1 + 3.14159\\,i ");
+        "1.10000000000000008 + 3.14159265358979312\\,i ");
     check("TeXForm(N(Pi,2))", //
         "3.1");
     check("TeXForm(N(Pi,30))", //

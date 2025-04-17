@@ -161,7 +161,10 @@ public abstract class ExprEvaluatorTestCase {
         try {
           String output = ow.writeValueAsString(templateSteps);
           System.out.println(output);
+          // F.openJSONOnDesktop(output);
         } catch (JsonProcessingException e) {
+          e.printStackTrace();
+        } catch (IOException e) {
           e.printStackTrace();
         }
 

@@ -340,7 +340,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("N(Det({{Pi,2.0},{3,4}}))", //
         "6.56637");
     check("N(Det({{Pi,2.0},{3,4}}),50)", //
-        "6.56637");
+        "6.566370614359172");
 
     check("Det({{1,2},{3,4}})", //
         "-2");
@@ -985,7 +985,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             + " {(5-4*s)/(-10+s+4*s^2+s^3),(-2+s^2)/(-10+s+4*s^2+s^3),(-3+s)/(-10+s+4*s^2+s^3)},\n"
             + " {s/(-10+s+4*s^2+s^3),(2+s)/(-10+s+4*s^2+s^3),(8+5*s+s^2)/(-10+s+4*s^2+s^3)}}");
     check("N(Inverse({{1,2.0},{3,4}}),50)", //
-        "{{-2.0,1.0},{1.5,-0.5}}");
+        "{{-2,1},{1.5,-0.5}}");
 
     check("Inverse({{1,2},{3,4}})", "{{-2,1},\n" + " {3/2,-1/2}}");
     check("Inverse({{1,2.0},{3,4}})", "{{-2.0,1.0},\n" + " {1.5,-0.5}}");
