@@ -283,9 +283,6 @@ public class EvalEngine implements Serializable {
     engine.reset();
   }
 
-  /** If set to <code>true</code> the current thread should stop evaluation; */
-  // transient volatile boolean fStopRequested;
-
   transient int fRecursionCounter;
 
   /**
@@ -333,7 +330,7 @@ public class EvalEngine implements Serializable {
 
   private transient String fMessageShortcut;
 
-  private transient IdentityHashMap<IBuiltInSymbol, Integer> experimatalSymbols =
+  private transient IdentityHashMap<IBuiltInSymbol, Integer> experimentalSymbols =
       new IdentityHashMap<IBuiltInSymbol, Integer>();
 
   /**
@@ -1389,7 +1386,7 @@ public class EvalEngine implements Serializable {
    * @return
    */
   public boolean containsExperimental(IBuiltInSymbol symbol) {
-    return experimatalSymbols.containsKey(symbol);
+    return experimentalSymbols.containsKey(symbol);
   }
 
   private OptionsResult getOptions(IFunctionEvaluator optionEvaluator, OptionsResult opres,
@@ -1531,15 +1528,22 @@ public class EvalEngine implements Serializable {
     return mutableAST.extractConditionalExpression(false);
   }
 
+  /**
+   * Evaluate an expression in a block. The local {@link S#Block} variables are saved before and
+   * restored after the evaluation.
+   * 
+   * @param supplier the expression which should be evaluated for the variables
+   * @param localVariablesList the list of local variables
+   * @return the result from the {@link Supplier#get()} method
+   */
   public IExpr evalBlock(final Supplier<IExpr> supplier, final IAST localVariablesList) {
     ISymbol[] symbolList = new ISymbol[localVariablesList.size()];
     IExpr[] blockVariables = new IExpr[localVariablesList.size()];
     RulesData[] blockVariablesRulesData = new RulesData[localVariablesList.size()];
-    IExpr result = F.NIL;
     try {
       Programming.rememberBlockVariables(localVariablesList, symbolList, blockVariables,
           blockVariablesRulesData, this);
-      result = supplier.get();
+      return supplier.get();
     } finally {
       if (localVariablesList.size() > 0) {
         // reset local variables to global ones
@@ -1564,9 +1568,16 @@ public class EvalEngine implements Serializable {
         }
       }
     }
-    return result;
   }
 
+  /**
+   * Evaluate an expression in a block. The local {@link S#Block} variables are saved before and
+   * restored after the evaluation.
+   * 
+   * @param expr the expression which should be evaluated for the variables
+   * @param localVariablesList the list of local variables
+   * @return the result from the {@link Supplier#get()} method
+   */
   public IExpr evalBlock(final IExpr expr, final IAST localVariablesList) {
     return evalBlock(() -> evaluate(expr), localVariablesList);
   }
@@ -1612,8 +1623,8 @@ public class EvalEngine implements Serializable {
    * value.
    * 
    * @param expr
-   * @return
-   * @throws ArgumentTypeException
+   * @throws ArgumentTypeException if the conversion into a machine-size boolean value is not
+   *         possible
    */
   public final boolean evalBoolean(final IExpr expr) throws ArgumentTypeException {
     if (expr.equals(S.True)) {
@@ -1646,10 +1657,22 @@ public class EvalEngine implements Serializable {
         "conversion into a machine-size boolean value is not possible!");
   }
 
+  /**
+   * Evaluates <code>expr</code> numerically and return the result as a Java <code>boolean</code>
+   * vector.
+   *
+   * @param expr
+   */
   public final boolean[] evalBooleanVector(final IExpr expr) {
     return expr.toBooleanVector();
   }
 
+  /**
+   * Evaluates <code>expr</code> numerically and return the result as a Java <code>boolean</code>
+   * matrix.
+   *
+   * @param expr
+   */
   public final boolean[][] evalBooleanMatrix(final IExpr expr) {
     return expr.toBooleanMatrix();
   }
@@ -1659,8 +1682,6 @@ public class EvalEngine implements Serializable {
    * value.
    *
    * @param expr
-   * @return
-   * @see #evaluate(IExpr)
    */
   public final double evalDouble(final IExpr expr) throws ArgumentTypeException {
     return evalDouble(expr, null, Double.NaN);
@@ -1671,7 +1692,6 @@ public class EvalEngine implements Serializable {
    * 
    * @param expr
    * @param function maybe <code>null</code>; returns a substitution value for some expressions
-   * @return
    * @throws ArgumentTypeException
    */
   public final double evalDouble(final IExpr expr, Function<IExpr, IExpr> function)
@@ -1679,10 +1699,22 @@ public class EvalEngine implements Serializable {
     return evalDouble(expr, function, Double.NaN);
   }
 
+  /**
+   * Evaluates <code>expr</code> numerically and return the result as a Java <code>double</code>
+   * vector
+   * 
+   * @param expr
+   */
   public final double[] evalDoubleVector(final IExpr expr) {
     return expr.toDoubleVector();
   }
 
+  /**
+   * Evaluates <code>expr</code> numerically and return the result as a Java <code>double</code>
+   * matrix.
+   * 
+   * @param expr
+   */
   public final double[][] evalDoubleMatrix(final IExpr expr) {
     return expr.toDoubleMatrix();
   }
@@ -1693,7 +1725,6 @@ public class EvalEngine implements Serializable {
    * @param expr
    * @param function maybe <code>null</code>; returns a substitution value for some expressions
    * @param defaultValue
-   * @return
    */
   public final double evalDouble(IExpr expr, Function<IExpr, IExpr> function, double defaultValue) {
     if (expr.isReal()) {
@@ -1799,7 +1830,6 @@ public class EvalEngine implements Serializable {
    * org.hipparchus.complex.Complex</code> value.
    *
    * @param expr
-   * @return
    * @throws ArgumentTypeException
    */
   public final Complex evalComplex(final IExpr expr) throws ArgumentTypeException {
@@ -1812,7 +1842,6 @@ public class EvalEngine implements Serializable {
    *
    * @param expr
    * @param function maybe <code>null</code>; returns a substitution value for some expressions
-   * @return
    * @throws ArgumentTypeException
    */
   public final Complex evalComplex(IExpr expr, final Function<IExpr, IExpr> function)
@@ -2426,6 +2455,15 @@ public class EvalEngine implements Serializable {
     return F.NIL;
   }
 
+  /**
+   * Evaluates the given argument if its head is a {@link S#Function}. This method checks if the
+   * head of the provided argument is a {@link S#Function}. If it is, the argument is evaluated
+   * using the {@link F#eval(IExpr)} method. Otherwise, the argument is returned
+   * &quot;unevaluated&quot; without any evaluation.
+   * 
+   * @param arg1 the expression to be checked and potentially evaluated
+   * @return the evaluated expression if the head is a function, otherwise the original argument
+   */
   private static IExpr unevaluatedArg1(IExpr arg1) {
     if (arg1.head().isFunction()) {
       return F.eval(arg1);
@@ -2433,6 +2471,16 @@ public class EvalEngine implements Serializable {
     return arg1;
   }
 
+  /**
+   * Evaluates the given argument if its head is a {@link S#Function}. This method checks if the
+   * head of the provided argument is a {@link S#Function}. If it is, the argument is evaluated
+   * using the {@link F#eval(IExpr)} method. Otherwise, the argument is returned
+   * &quot;unevaluated&quot; without any evaluation.
+   * 
+   * @param unevaluatedFunction
+   * @param arg1
+   * @return
+   */
   private static IExpr unevaluatedArg1(boolean[] unevaluatedFunction, IExpr arg1) {
     if (arg1.head().isFunction()) {
       unevaluatedFunction[0] = true;
@@ -2441,6 +2489,19 @@ public class EvalEngine implements Serializable {
     return arg1;
   }
 
+  /**
+   * Evaluates the "up rules" (i.e. rules defined with {@link S#UpSet} or {@link S#UpSetDelayed})
+   * for the given abstract syntax tree (AST).
+   * <p>
+   * This method iterates through the elements of the provided AST and checks if any of them have
+   * associated "up rules" that can be applied. If an element is a symbol, its "up rules" are
+   * evaluated. If the element is not a pattern object and is present, the "up rules" of its
+   * top-level head are evaluated. The first successful evaluation is returned.
+   *
+   * @param ast the abstract syntax tree (AST) to evaluate
+   * @return the result of the first successfully applied "up rule" as an {@link IExpr}, or
+   *         {@link F#NIL} if no rules were applied
+   */
   public IExpr evalUpRules(IAST ast) {
     IExpr[] result = new IExpr[1];
     result[0] = F.NIL;
@@ -2463,6 +2524,21 @@ public class EvalEngine implements Serializable {
     return F.NIL;
   }
 
+  /**
+   * Evaluates and potentially transforms an argument of an abstract syntax tree (AST) based on
+   * specific attributes. This method processes a given argument of an AST, recursively evaluating
+   * its attributes and applying transformations if certain conditions are met. If the argument is a
+   * square root or an exponential expression, it is replaced with the corresponding power
+   * expression. The method ensures that the result list is updated with the transformed argument.
+   * 
+   * @param ast the original abstract syntax tree (AST) containing the argument
+   * @param i the index of the argument in the AST
+   * @param argI the argument of the AST to be evaluated and transformed
+   * @param resultList the mutable result list to store the transformed AST
+   * @param noEvaluation a flag indicating whether evaluation should be skipped
+   * @param level the current recursion level for attribute evaluation
+   * @return the updated result list with the transformed argument
+   */
   private IASTMutable evalSetAttributeArg(IAST ast, int i, IAST argI, IASTMutable resultList,
       boolean noEvaluation, int level) {
     IExpr expr = evalSetAttributesRecursive(argI, noEvaluation, true, level + 1);
@@ -3308,7 +3384,7 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Increment the {@link S#Module} variables counter by 1 and return the result.
+   * Increment the {@link S#Module} variables counter by <code>1</code> and return the result.
    *
    * @return the module counter
    */
@@ -3317,7 +3393,8 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Increment the {@link S#Module} variables counter by 1 and append it to the given prefix.
+   * Increment the {@link S#Module} variables counter by <code>1</code> and append it to the given
+   * prefix.
    *
    * @param prefix
    * @return
@@ -3352,16 +3429,16 @@ public class EvalEngine implements Serializable {
    * @param symbol
    */
   public void incExperimentalCounter(IBuiltInSymbol symbol) {
-    Integer counter = experimatalSymbols.get(symbol);
+    Integer counter = experimentalSymbols.get(symbol);
     if (counter == null) {
-      experimatalSymbols.put(symbol, 1);
+      experimentalSymbols.put(symbol, 1);
       return;
     }
-    experimatalSymbols.put(symbol, ++counter);
+    experimentalSymbols.put(symbol, ++counter);
   }
 
   /**
-   * Increment the recursion counter by 1 and return the result.
+   * Increment the recursion counter by <code>1</code> and return the result.
    *
    * @return
    */
@@ -3494,6 +3571,13 @@ public class EvalEngine implements Serializable {
     return fOutListDisabled;
   }
 
+  /**
+   * Checks if the evaluation engine is running in package mode. Package mode determines whether the
+   * engine operates with specific configurations suitable for package-level operations. Before a
+   * package was loaded with {@link S#Get} the package mode was set to <code>true</code>.
+   * 
+   * @return {@code true} if the engine is in package mode, {@code false} otherwise
+   */
   public final boolean isPackageMode() {
     return fPackageMode;
   }
@@ -3792,6 +3876,15 @@ public class EvalEngine implements Serializable {
     fOutPrintStream = outPrintStream;
   }
 
+  /**
+   * Sets the package mode for the evaluation engine.
+   *
+   * Package mode determines whether the engine operates with specific configurations suitable for
+   * package-level operations. This method allows enabling or disabling the package mode.Before a
+   * package was loaded with {@link S#Get} the package mode was set to <code>true</code>.
+   *
+   * @param packageMode {@code true} to enable package mode, {@code false} to disable it
+   */
   public void setPackageMode(boolean packageMode) {
     fPackageMode = packageMode;
   }
@@ -4118,13 +4211,25 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Get the {@link FixedPrecisionApfloatHelper} for fixed precision calculations.
+   * Retrieves the {@link FixedPrecisionApfloatHelper} instance for fixed precision calculations
+   * associated with the current {@link EvalEngine}.
    *
+   * @return the {@link FixedPrecisionApfloatHelper} instance for the current evaluation engine
    */
   public static FixedPrecisionApfloatHelper getApfloat() {
     return getApfloat(get());
   }
 
+  /**
+   * Retrieves the {@link FixedPrecisionApfloatHelper} instance for fixed precision calculations
+   * associated with the specified {@link EvalEngine}. If the fApfloatHelper field in the provided
+   * engine is <code>null</code>, a new instance of {@link FixedPrecisionApfloatHelper} is created
+   * with a precision of <code>{@link Config#MAXPRECISIONAPFLOAT} - </code>1.
+   * 
+   * @param engine the {@link EvalEngine} instance for which the {@link FixedPrecisionApfloatHelper}
+   *        is retrieved
+   * @return the {@link FixedPrecisionApfloatHelper} instance for the given evaluation engine
+   */
   public static FixedPrecisionApfloatHelper getApfloat(EvalEngine engine) {
     FixedPrecisionApfloatHelper h = engine.fApfloatHelper;
     if (h == null) {
@@ -4144,6 +4249,17 @@ public class EvalEngine implements Serializable {
     return getApfloatDouble(get());
   }
 
+  /**
+   * Retrieves the {@link FixedPrecisionApfloatHelper} instance for calculations with
+   * {@link ParserConfig#MACHINE_PRECISION}. If the internal <code>fApfloatHelperDouble</code> field
+   * in the provided {@link EvalEngine} is <code>null</code>, a new instance of
+   * {@link FixedPrecisionApfloatHelper} is created with a precision of
+   * <code>{@link ParserConfig#MACHINE_PRECISION} + 1</code>.
+   *
+   * @param engine the {@link EvalEngine} instance for which the {@link FixedPrecisionApfloatHelper}
+   *        is retrieved
+   * @return the {@link FixedPrecisionApfloatHelper} instance for the given evaluation engine
+   */
   public static FixedPrecisionApfloatHelper getApfloatDouble(EvalEngine engine) {
     FixedPrecisionApfloatHelper h = engine.fApfloatHelperDouble;
     if (h == null) {
@@ -4173,7 +4289,7 @@ public class EvalEngine implements Serializable {
    * @return
    */
   public int getExperimentalCounter(IBuiltInSymbol symbol) {
-    Integer counter = experimatalSymbols.get(symbol);
+    Integer counter = experimentalSymbols.get(symbol);
     if (counter == null) {
       return 0;
     }

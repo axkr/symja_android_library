@@ -40,6 +40,7 @@ import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.AbstractAST.NILPointer;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.BuiltInDummy;
 import org.matheclipse.core.expression.BuiltInSymbol;
 import org.matheclipse.core.expression.ComplexNum;
@@ -1505,10 +1506,12 @@ public interface IExpr
   }
 
   /**
-   * Evaluate an expression
-   *
+   * Evaluate <code>this</code> expression. If the engine is in numerical mode, exact numeric
+   * numbers are converted into numerical expressions. If the engine is in arbitrary precision mode,
+   * the numbers are converted to {@link ApfloatNum} or {@link ApfloatComplex} objects.
+   * 
    * @param engine the evaluation engine
-   * @return the evaluated Object or <code>F.NIL</code> if the evaluation is not possible (i.e. the
+   * @return the evaluated object or <code>F.NIL</code> if the evaluation is not possible (i.e. the
    *         evaluation doesn't change the object).
    */
   default IExpr evaluate(EvalEngine engine) {

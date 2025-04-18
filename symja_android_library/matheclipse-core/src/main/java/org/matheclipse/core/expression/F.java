@@ -3264,6 +3264,17 @@ public class F extends S {
     return ComplexNum.valueOf(r, i);
   }
 
+  /**
+   * Creates a complex numeric value from an {@link IComplex} object.
+   *
+   * If the evaluation engine is in arbitrary precision mode, it creates an {@link ApcomplexNum}
+   * using the numerator and denominator of the real and imaginary parts. Otherwise, it creates a
+   * double-precision complex number.
+   *
+   * @param value the complex number to convert
+   * @return a complex numeric value, either as an {@link ApcomplexNum} or a double-precision
+   *         {@link ComplexNum}
+   */
   public static IComplexNum complexNum(final IComplex value) {
     final IRational realFraction = value.getRealPart();
     final IRational imagFraction = value.getImaginaryPart();
