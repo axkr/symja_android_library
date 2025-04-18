@@ -160,21 +160,34 @@ public final class N extends AbstractCoreFunctionEvaluator {
     }
   }
 
-  public static IExpr evalN2(IExpr expr, long nDigitPrecision, EvalEngine engine) {
+  /**
+   * Evaluates an expression numerically with a specified precision.
+   * <p>
+   * This method first attempts to evaluate the given expression symbolically. If the expression is
+   * a list, association, or rule, it applies the numeric evaluation to each element using the
+   * specified precision. After symbolic evaluation, it performs numeric evaluation with the given
+   * precision, ensuring that the precision is within valid bounds.
+   *
+   * @param expr the expression to be evaluated
+   * @param nDigitPrecision the number of digits of precision for numeric evaluation
+   * @param engine the evaluation engine used for processing the expression
+   */
+  public static IExpr evalN2(IExpr expr, final long nDigitPrecision, EvalEngine engine) {
     // first try symbolic evaluation
     expr = engine.evaluate(expr);
     if (expr.isListOrAssociation() || expr.isRuleAST()) {
-      return ((IAST) expr).mapThread(F.N(F.Slot1, F.ZZ(nDigitPrecision)), 1);
+      return ((IAST) expr).mapThread(x -> evalN2(x, nDigitPrecision, engine));
     }
 
     // after symbolic evaluation do numeric evaluation with n-digit precision
+    long nPrecision = nDigitPrecision;
     final int maxSize =
         (Config.MAX_OUTPUT_SIZE > Short.MAX_VALUE) ? Short.MAX_VALUE : Config.MAX_OUTPUT_SIZE;
     int significantFigures = (nDigitPrecision > maxSize) ? maxSize : (int) nDigitPrecision;
     if (nDigitPrecision < ParserConfig.MACHINE_PRECISION) {
-      nDigitPrecision = ParserConfig.MACHINE_PRECISION;
+      nPrecision = ParserConfig.MACHINE_PRECISION;
     }
-    engine.setNumericMode(true, nDigitPrecision, significantFigures);
+    engine.setNumericMode(true, nPrecision, significantFigures);
     if (expr.isNumber()) {
       return expr.evaluate(engine).orElse(expr);
     }
