@@ -16,10 +16,28 @@ public final class NumStr extends Num {
   private long fPrecision;
   private int fExponent;
 
+  /**
+   * 
+   * Constructs a {@link NumStr} from a string representation of a floating-point number and an
+   * optional exponent. The constructor parses the input string to extract the base and exponent,
+   * calculates the numeric value, and determines the precision.
+   * 
+   * @param floatStr the string representation of the floating-point number
+   */
   public NumStr(String floatStr) {
     this(floatStr, 0);
   }
 
+  /**
+   * 
+   * Constructs a {@link NumStr} from a string representation of a floating-point number and an
+   * optional exponent. The constructor parses the input string to extract the base and exponent,
+   * calculates the numeric value, and determines the precision.
+   * 
+   * @param floatStr the string representation of the floating-point number
+   * @param exponent the optional exponent to adjust the numeric value (overridden if the string
+   *        contains an explicit exponent)
+   */
   public NumStr(String floatStr, int exponent) {
     int index = floatStr.indexOf("*^");
     fExponent = exponent;
@@ -31,19 +49,11 @@ public final class NumStr extends Num {
 
     if (fExponent != 0) {
       this.value = Double.parseDouble(fFloatStr + "E" + fExponent);
-      // // value * 10 ^ exponent
-      // fDouble = fDouble * Math.pow(10, fExponent);
     } else {
       this.value = Double.parseDouble(fFloatStr);
     }
 
     fPrecision = fFloatStr.length();
-    // for (int i = fFloatStr.length() - 1; i > 1; i--) {
-    // if (fFloatStr.charAt(i) != '0') {
-    // break;
-    // }
-    // fPrecision--;
-    // }
     if (fFloatStr.startsWith("0.")) {
       fPrecision -= 2;
     } else if (fFloatStr.indexOf(".") > 0) {

@@ -175,6 +175,9 @@ public final class N extends AbstractCoreFunctionEvaluator {
       nDigitPrecision = ParserConfig.MACHINE_PRECISION;
     }
     engine.setNumericMode(true, nDigitPrecision, significantFigures);
+    if (expr.isNumber()) {
+      return expr.evaluate(engine).orElse(expr);
+    }
     return engine.evalWithoutNumericReset(expr);
   }
 

@@ -145,10 +145,6 @@ public class Num implements INum {
     return new Num(d);
   }
 
-  public static double valueOf(final String chars) {
-    return Double.parseDouble(chars);
-  }
-
   protected double value;
 
   protected Num() {
