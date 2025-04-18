@@ -712,7 +712,7 @@ public class BesselFunctions {
           return F.C0;
         }
         if (re.isNegativeResult() && n.isNumber() && !n.isInteger()) {
-          return S.ComplexInfinity;
+          return F.CComplexInfinity;
         }
         if (re.isZero() && n.isNumber() && !n.isZero()) {
           return S.Indeterminate;
@@ -830,7 +830,7 @@ public class BesselFunctions {
           return S.Indeterminate;
         }
         if (re.isNumber() && !re.isZero()) {
-          return S.ComplexInfinity;
+          return F.CComplexInfinity;
         }
       }
       if (n.isNumber() && //
@@ -946,7 +946,7 @@ public class BesselFunctions {
           return S.Indeterminate;
         }
         if (re.isNumber() && !re.isZero()) {
-          return S.ComplexInfinity;
+          return F.CComplexInfinity;
         }
       }
       if (n.isNumber() && //

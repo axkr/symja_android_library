@@ -131,28 +131,6 @@ public class ComplexNum implements IComplexNum {
     Complex remainder = c1.remainder(c2);
     Complex quotient = c1.subtract(remainder).divide(c2).rint();
     return new Complex[] {quotient, remainder};
-
-    // double numeratorReal = c1.getReal() * c2.getReal() + //
-    // c1.getImaginary() * c2.getImaginary();
-    // double numeratorImaginary = c1.getReal() * (-c2.getImaginary()) + //
-    // c2.getReal() * c1.getImaginary();
-    // double denominator = c2.getReal() * c2.getReal() + //
-    // c2.getImaginary() * c2.getImaginary();
-    // if (denominator == 0.0) {
-    // throw new IllegalArgumentException("Denominator cannot be zero.");
-    // }
-    //
-    // double divisionReal = Math.rint(numeratorReal / denominator);
-    // double divisionImaginary = Math.rint(numeratorImaginary / denominator);
-    //
-    // double remainderReal = c1.getReal() - //
-    // (c2.getReal() * divisionReal) + //
-    // (c2.getImaginary() * divisionImaginary);
-    // double remainderImaginary = c1.getImaginary() - //
-    // (c2.getReal() * divisionImaginary) - //
-    // (c2.getImaginary() * divisionReal);
-    // return new Complex[] { new Complex(divisionReal, divisionImaginary),
-    // new Complex(remainderReal, remainderImaginary) };
   }
 
   /**
@@ -182,7 +160,7 @@ public class ComplexNum implements IComplexNum {
 
   /**
    * Create complex number on unit circle with given argument <code>arg</code>.
-   * 
+   *
    * @param arg angle
    * @return E^(I * angle), i.e. complex number on unit circle with given argument
    */
@@ -190,21 +168,37 @@ public class ComplexNum implements IComplexNum {
     return newInstance(new Complex(Math.cos(arg), Math.sin(arg)));
   }
 
+
+  /**
+   * Creates a new instance of a {@link ComplexNum} from the given {@link Complex}. If both the real
+   * and imaginary parts of the input are <code>+0.0d</code>, it returns the constant
+   * {@link ComplexNum#ZERO}. Otherwise, it creates a new {@link ComplexNum} with the specified real
+   * and imaginary parts.
+   *
+   * @param c the {@link Complex} instance from which to create the {@link ComplexNum}
+   * @return a {@link ComplexNum} instance representing the input complex number
+   */
   public static ComplexNum valueOf(final Complex c) {
     double real = c.getReal();
     double imaginary = c.getImaginary();
-    if (real == 0.0d || real == -0.0d) {
-      if (imaginary == 0.0d || imaginary == -0.0d) {
+    if (real == 0.0d) {
+      if (imaginary == 0.0d) {
         return ZERO;
       }
       return newInstance(new Complex(0.0d, imaginary));
     }
-    if (imaginary == 0.0d || imaginary == -0.0d) {
-      return newInstance(new Complex(real, 0.0d));
-    }
     return newInstance(c);
   }
 
+  /**
+   * Creates a new instance of a {@link ComplexNum} with the specified real part and an imaginary
+   * part of zero. If the real part is <code>+0.0d</code>, it returns the constant
+   * {@link ComplexNum#ZERO}.
+   *
+   * @param real the real part of the complex number
+   * @return a {@link ComplexNum} instance representing the complex number with the given real part
+   *         and an imaginary part of zero
+   */
   public static ComplexNum valueOf(final double real) {
     if (real == 0.0d) {
       return ZERO;
@@ -212,26 +206,35 @@ public class ComplexNum implements IComplexNum {
     return newInstance(new Complex(real, 0.0));
   }
 
+  /**
+   * Creates a new instance of a {@link ComplexNum} with the specified real and imaginary parts. If
+   * both the real and imaginary parts are <code>+0.0d</code>, it returns the constant
+   * {@link ComplexNum#ZERO}.
+   *
+   * @param real the real part of the complex number
+   * @param imaginary the imaginary part of the complex number
+   * @return a {@link ComplexNum} instance representing the complex number with the given real and
+   *         imaginary parts
+   */
   public static ComplexNum valueOf(final double real, final double imaginary) {
     if (real == 0.0d && imaginary == 0.0d) {
       return ZERO;
     }
-    // if (real == 0.0d || real == -0.0d) {
-    // if (imaginary == 0.0d || imaginary == -0.0d) {
-    // // Complex.ZERO constructor
-    // return newInstance(new Complex(0.0d, 0.0d));
-    // }
-    // return newInstance(new Complex(0.0d, imaginary));
-    // }
-    // if (imaginary == 0.0d || imaginary == -0.0d) {
-    // return newInstance(new Complex(real, 0.0d));
-    // }
     return newInstance(new Complex(real, imaginary));
   }
 
+  /**
+   * Creates a new instance of a {@link ComplexNum} from the given {@link INum}. If the real part of
+   * the input is <code>+0.0d</code>, it returns the constant {@link ComplexNum#ZERO}. Otherwise, it
+   * creates a new {@link ComplexNum} with the real part set to the input's real part and the
+   * imaginary part set to zero.
+   *
+   * @param d the {@link INum} instance from which to create the {@link ComplexNum}
+   * @return a {@link ComplexNum} instance representing the input number
+   */
   public static ComplexNum valueOf(final INum d) {
     double real = d.getRealPart();
-    if (real == 0.0d || real == -0.0d) {
+    if (real == 0.0d) {
       return ZERO;
     }
     return newInstance(new Complex(real, 0.0));
@@ -247,6 +250,7 @@ public class ComplexNum implements IComplexNum {
     fComplex = new Complex(r, i);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Num abs() {
     return Num.valueOf(dabs());
@@ -425,11 +429,11 @@ public class ComplexNum implements IComplexNum {
         return F.complexNum(beta.real().doubleValue(), beta.imag().doubleValue());
       } catch (ApfloatArithmeticException aaex) {
         if ("divide.byZero".equals(aaex.getLocalizationKey())) {
-          return F.ComplexInfinity;
+          return F.CComplexInfinity;
         }
       } catch (ArithmeticException | NumericComputationException aex) {
         if ("Division by zero".equals(aex.getMessage())) {
-          return F.ComplexInfinity;
+          return F.CComplexInfinity;
         }
       }
     }
@@ -448,11 +452,11 @@ public class ComplexNum implements IComplexNum {
         //
       } catch (ApfloatArithmeticException aaex) {
         if ("divide.byZero".equals(aaex.getLocalizationKey())) {
-          return F.ComplexInfinity;
+          return F.CComplexInfinity;
         }
       } catch (ArithmeticException aex) {
         if ("Division by zero".equals(aex.getMessage())) {
-          return F.ComplexInfinity;
+          return F.CComplexInfinity;
         }
       }
     }
@@ -1484,10 +1488,7 @@ public class ComplexNum implements IComplexNum {
       return F.complexNum(logGamma.real().doubleValue(), logGamma.imag().doubleValue());
     } catch (ApfloatArithmeticException aaex) {
       String localizationKey = aaex.getLocalizationKey();
-      if ("logGamma.ofZero".equals(localizationKey)) {
-        return F.CInfinity;
-      }
-      if ("logGamma.ofNegativeInteger".equals(localizationKey)) {
+      if ("logGamma.ofZero".equals(localizationKey) || "logGamma.ofNegativeInteger".equals(localizationKey)) {
         return F.CInfinity;
       }
       aaex.printStackTrace();
@@ -1630,7 +1631,7 @@ public class ComplexNum implements IComplexNum {
       return F.complexNum(polygamma.real().doubleValue(), polygamma.imag().doubleValue());
     } catch (ApfloatArithmeticException aaex) {
       if ("polygamma.ofNonpositiveInteger".equals(aaex.getLocalizationKey())) {
-        return F.ComplexInfinity;
+        return F.CComplexInfinity;
       }
     } catch (ArithmeticException | NumericComputationException aex) {
       // java.lang.ArithmeticException: Polygamma of nonpositive integer
