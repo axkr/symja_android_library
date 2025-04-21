@@ -1517,6 +1517,7 @@ public class HypergeometricFunctions {
         return F.C0;
       }
       if (z.isZero()) {
+        // https://functions.wolfram.com/HypergeometricFunctions/HypergeometricU/03/01/01/
         IExpr bRe = b.re();
         if (bRe.greaterThan(F.C1).isTrue()) {
           return F.CComplexInfinity;
@@ -1593,24 +1594,16 @@ public class HypergeometricFunctions {
           // return F.complexNum(HypergeometricJS.hypergeometricU(ac, bc, zc));
         }
 
-        if (a.isInteger() && a.isPositive() && (!b.isNumber() || !z.isNumber())) {
+        if (a.isInteger() && (!b.isNumber() || !z.isNumber())) {
           IInteger ni = (IInteger) a;
           int n = ni.toIntDefault();
           if (n != Integer.MIN_VALUE) {
-            // ISymbol k = F.Dummy("k");
-            // (Gamma(-1+b,z)*z^(1-b)*E^z*LaguerreL(-1+n,1-b,-z)-Sum(LaguerreL(-1-k+n,-b+k+1,-z)/k*LaguerreL(-
-            // 1+k,-1+b-k,z),{k,1,-1+n}))/Pochhammer(2-b,-1+n)
-            IExpr sum =
-                engine.evaluate(F.sum(
-                    k -> F.Times(F.Power(k, F.CN1),
-                        F.LaguerreL(F.Plus(F.CN1, F.Negate(k), ni), F.Plus(F.Negate(b), k, F.C1),
-                            F.Negate(z)),
-                        F.LaguerreL(F.Plus(F.CN1, k), F.Plus(F.CN1, b, F.Negate(k)), z)),
-                    1, n - 1));
-            return F.Times(F.Power(F.Pochhammer(F.Subtract(F.C2, b), F.Plus(F.CN1, ni)), F.CN1),
-                F.Subtract(F.Times(F.Gamma(F.Plus(F.CN1, b), z), F.Power(z, F.Subtract(F.C1, b)),
-                    F.Exp(z), F.LaguerreL(F.Plus(F.CN1, ni), F.Subtract(F.C1, b), F.Negate(z))),
-                    sum));
+            if (n > 0) {
+              return hypergeometzricUPositiveAFixedBZ(ni, b, z, n, engine);
+            } else {
+              // n is negative here
+              return hypergeometzricUNegativeAFixedBZ(ni, b, z, engine);
+            }
           }
         }
       } catch (ThrowException te) {
@@ -1623,6 +1616,56 @@ public class HypergeometricFunctions {
         Errors.printMessage(S.HypergeometricU, rex, engine);
       }
       return F.NIL;
+    }
+
+    /**
+     * <code>HypergeometricU(n, b, z)</code> for positive integer n.
+     * <p>
+     * See: <a href=
+     * "https://functions.wolfram.com/HypergeometricFunctions/HypergeometricU/03/01/03/0011/">functions.wolfram.com/HypergeometricFunctions/HypergeometricU/03/01/03/0011/</a>
+     * 
+     * @param ni
+     * @param b
+     * @param z
+     * @param n
+     * @param engine
+     * @return
+     */
+    private static IExpr hypergeometzricUPositiveAFixedBZ(IInteger ni, IExpr b, IExpr z, int n,
+        EvalEngine engine) {
+      // (Gamma(-1+b,z)*z^(1-b)*E^z*LaguerreL(-1+n,1-b,-z)-Sum(LaguerreL(-1-k+n,-b+k+1,-z)/k*LaguerreL(-
+      // 1+k,-1+b-k,z),{k,1,-1+n}))/Pochhammer(2-b,-1+n)
+      IExpr sum = engine.evaluate(F.sum(
+          k -> F.Times(F.Power(k, F.CN1),
+              F.LaguerreL(F.Plus(F.CN1, F.Negate(k), ni), F.Plus(F.Negate(b), k, F.C1),
+                  F.Negate(z)),
+              F.LaguerreL(F.Plus(F.CN1, k), F.Plus(F.CN1, b, F.Negate(k)), z)),
+          1, n - 1));
+      return F
+          .Times(F.Power(F.Pochhammer(F.Subtract(F.C2, b), F.Plus(F.CN1, ni)), F.CN1),
+              F.Subtract(F.Times(F.Gamma(F.Plus(F.CN1, b), z), F.Power(z, F.Subtract(F.C1, b)),
+                  F.Exp(z), F.LaguerreL(F.Plus(F.CN1, ni), F.Subtract(F.C1, b), F.Negate(z))),
+                  sum));
+    }
+
+    /**
+     * <code>HypergeometricU(n, b, z)</code> for negative integer n.
+     * <p>
+     * See: <a href=
+     * "https://functions.wolfram.com/HypergeometricFunctions/HypergeometricU/03/01/03/0006/">functions.wolfram.com/HypergeometricFunctions/HypergeometricU/03/01/03/0006/</a>
+     * 
+     * @param nNeg negative integer
+     * @param b
+     * @param z
+     * @param engine
+     * @return
+     */
+    private static IExpr hypergeometzricUNegativeAFixedBZ(IInteger nNeg, IExpr b, IExpr z,
+        EvalEngine engine) {
+      IInteger n = nNeg.negate();
+      // (-1)^n*n!*LaguerreL(n,-1+b,z)
+      return F.evalExpandAll(
+          F.Times(F.Power(F.CN1, n), F.Factorial(n), F.LaguerreL(n, F.Plus(F.CN1, b), z)));
     }
 
     @Override
