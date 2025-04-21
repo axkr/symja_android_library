@@ -2022,10 +2022,11 @@ public class PolynomialFunctions {
         return F.Plus(F.C1, l, F.Negate(z));
       }
       if (degree == 2) {
-        return
-        // [$ (1/2)*(2 + 3*l + l^2 - 4*z - 2*l*z + z^2) $]
-        F.Times(F.C1D2, F.Plus(F.C2, F.Times(F.C3, l), F.Sqr(l), F.Times(F.CN4, z),
-            F.Times(F.CN2, l, z), F.Sqr(z))); // $$;
+        IExpr result =
+            // [$ (2 + 3*l + l^2 - 4*z - 2*l*z + z^2) $]
+            F.Times(F.Plus(F.C2, F.Times(F.C3, l), F.Sqr(l), F.Times(F.CN4, z),
+                F.Times(F.CN2, l, z), F.Sqr(z))); // $$;
+        return F.Times(F.C1D2, F.evalExpandAll(result, engine));
       }
       if (degree < 0) {
         return F.NIL;

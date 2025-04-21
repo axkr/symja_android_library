@@ -215,6 +215,9 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLaguerreL() {
+    check("LaguerreL(2,-1+b,z)", //
+        "1/2*(b+b^2-2*z-2*b*z+z^2)");
+
     // TODO
     // check("LaguerreL(-9223372036854775808/11,-3.141592653589793)", //
     // " ");
