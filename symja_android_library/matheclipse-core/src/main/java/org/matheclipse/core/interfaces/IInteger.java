@@ -202,6 +202,25 @@ public interface IInteger extends IRational {
   public boolean isEven();
 
   /**
+   * Check if this integer is an integer multiple of the {@code other} integer.
+   * <p>
+   * Returns {@code true} if there exists an integer {@code k} such that {@code this == k * other}.
+   * <p>
+   * Special cases:
+   * <ul>
+   * <li>{@code 0.isMultipleOf(x)} is always {@code true} (since {@code 0 = 0 * x}).</li>
+   * <li>{@code x.isMultipleOf(0)} is {@code true} if and only if {@code x} is also {@code 0} (since
+   * {@code x = k * 0} implies {@code x = 0}).</li>
+   * <li>{@code x.isMultipleOf(1)} and {@code x.isMultipleOf(-1)} are always {@code true}.</li>
+   * </ul>
+   *
+   * @param other the integer to check divisibility by. Cannot be null.
+   * @return {@code true} if this integer is a multiple of {@code other}, {@code false} otherwise.
+   * @throws NullPointerException if {@code other} is null.
+   */
+  boolean isMultipleOf(IInteger other);
+
+  /**
    * Check if this IInteger is an odd number.
    *
    * @return <code>true</code> if this IInteger is an odd number.

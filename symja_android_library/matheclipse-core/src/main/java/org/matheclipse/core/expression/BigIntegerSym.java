@@ -538,6 +538,35 @@ public class BigIntegerSym extends AbstractIntegerSym {
     return fBigIntValue.equals(IInteger.BI_MINUS_ONE);
   }
 
+  @Override
+  public boolean isMultipleOf(IInteger other) {
+    if (other.isZero()) {
+      // x.isMultipleOf(0) is true iff x is 0
+      return this.isZero();
+    }
+
+    if (this.isZero()) {
+      // 0.isMultipleOf(x) is true for non-zero x (zero case handled above)
+      return true;
+    }
+
+    if (other.isOne() || other.isMinusOne()) {
+      return true;
+    }
+
+    BigInteger otherBigIntValue;
+    if (other instanceof BigIntegerSym) {
+      otherBigIntValue = ((BigIntegerSym) other).toBigNumerator();
+    } else if (other instanceof IntegerSym) {
+      otherBigIntValue = BigInteger.valueOf(((IntegerSym) other).longValue());
+    } else {
+      return false;
+    }
+
+    BigInteger remainder = fBigIntValue.remainder(otherBigIntValue);
+    return remainder.signum() == 0;
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean isNegative() {

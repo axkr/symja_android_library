@@ -560,6 +560,30 @@ public class IntegerSym extends AbstractIntegerSym {
     return fIntValue == -1;
   }
 
+  @Override
+  public boolean isMultipleOf(IInteger other) {
+    if (other.isZero()) {
+      // x.isMultipleOf(0) is true iff x is 0
+      return this.isZero();
+    }
+
+    if (this.isZero()) {
+      // 0.isMultipleOf(x) is true for non-zero x (zero case handled above)
+      return true;
+    }
+
+    if (other.isOne() || other.isMinusOne()) {
+      return true;
+    }
+
+    if (other instanceof IntegerSym) {
+      long otherVal = ((IntegerSym) other).fIntValue;
+      return (this.fIntValue % otherVal == 0L);
+    } else {
+      return new BigIntegerSym(this.fIntValue).isMultipleOf(other);
+    }
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean isNegative() {
