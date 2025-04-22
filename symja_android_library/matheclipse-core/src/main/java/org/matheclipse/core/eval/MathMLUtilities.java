@@ -77,6 +77,9 @@ public class MathMLUtilities {
     return fEvalEngine;
   }
 
+  public synchronized boolean toMathML(final String inputExpression, final Writer out) {
+    return toMathML(inputExpression, out, false);
+  }
   /**
    * Converts the inputExpression string into a MathML expression and writes the result to the given
    * <code>Writer</code>
@@ -84,7 +87,8 @@ public class MathMLUtilities {
    * @param inputExpression
    * @param out
    */
-  public synchronized boolean toMathML(final String inputExpression, final Writer out) {
+  public synchronized boolean toMathML(final String inputExpression, final Writer out,
+      boolean plusReversed) {
     IExpr parsedExpression = null;
     // ASTNode node;
     if (inputExpression != null) {
@@ -97,7 +101,7 @@ public class MathMLUtilities {
         Errors.printMessage(S.MathMLForm, rex, fEvalEngine);
       }
     }
-    return toMathML(parsedExpression, out);
+    return toMathML(parsedExpression, out, plusReversed, false);
   }
 
   /**
@@ -108,18 +112,23 @@ public class MathMLUtilities {
    * @param out
    */
   public synchronized boolean toMathML(final IExpr objectExpression, final Writer out) {
-    return toMathML(objectExpression, out, false);
+    return toMathML(objectExpression, out, false, false);
   }
 
   public synchronized boolean toMathML(final IExpr objectExpression, final Writer out,
       boolean useXmlns) {
+    return toMathML(objectExpression, out, false, useXmlns);
+  }
+
+  public synchronized boolean toMathML(final IExpr objectExpression, final Writer out,
+      boolean plusReversed, boolean useXmlns) {
     final StringBuilder buf = new StringBuilder();
 
     if (objectExpression != null) {
       try {
-        MathMLFormFactory mathMLFactory =
-            new MathMLFormFactory(fMSIE ? "m:" : "", fEvalEngine.isRelaxedSyntax(), null,
-                fEvalEngine.getSignificantFigures() - 1, fEvalEngine.getSignificantFigures() + 1);
+        MathMLFormFactory mathMLFactory = new MathMLFormFactory(fMSIE ? "m:" : "",
+            fEvalEngine.isRelaxedSyntax(), plusReversed, null,
+            fEvalEngine.getSignificantFigures() - 1, fEvalEngine.getSignificantFigures() + 1);
 
         if (mathMLFactory.convert(buf, objectExpression, Integer.MIN_VALUE, false)) {
           if (fMSIE) {
@@ -164,10 +173,9 @@ public class MathMLUtilities {
         parsedExpression = parser.parse(inputExpression);
         // node = fEvalEngine.parseNode(inputExpression);
         // parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
-        out.write(
-            parsedExpression
-                .internalJavaString(SourceCodeProperties.JAVA_FORM_PROPERTIES, -1, x -> null)
-                .toString());
+        out.write(parsedExpression
+            .internalJavaString(SourceCodeProperties.JAVA_FORM_PROPERTIES, -1, x -> null)
+            .toString());
       } catch (final IOException ioe) {
         //
       } catch (final RuntimeException rex) {

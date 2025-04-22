@@ -464,9 +464,9 @@ public class AJAXQueryServlet extends HttpServlet {
     if (textEval) {
       String res = buffer.toString();
       if (function.length() > 0 && function.equals("$mathml")) {
-        MathMLUtilities mathUtil = new MathMLUtilities(engine, false, true);
+        MathMLUtilities mathMLUtil = new MathMLUtilities(engine, false, true);
         StringWriter stw = new StringWriter();
-        if (!mathUtil.toMathML(res, stw)) {
+        if (!mathMLUtil.toMathML(res, stw, true)) {
           return new String[] {"error", "Max. output size exceeded " + Config.MAX_OUTPUT_SIZE};
         }
         return new String[] {"mathml", stw.toString()};

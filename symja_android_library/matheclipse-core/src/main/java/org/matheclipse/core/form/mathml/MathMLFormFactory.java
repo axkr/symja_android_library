@@ -595,7 +595,10 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     }
 
     @Override
-    public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+    public boolean convert(final StringBuilder buf, IAST f, final int precedence) {
+      if (fFactory.fPlusReversed) {
+        f = f.reverse(F.NIL);
+      }
       IExpr expr;
       fFactory.tagStart(buf, fFirstTag);
       precedenceOpen(buf, precedence);
@@ -1131,7 +1134,17 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   /** Table for constant expressions */
   public static final Map<IExpr, String> CONSTANT_EXPRS = new HashMap<IExpr, String>();
 
-  private boolean fRelaxedSyntax;
+  /**
+   * If <code>true</code> use &quot;(&quot; and &quot;)&quot; as parenthesis for function arguments;
+   * otherwise use &quot;[&quot; and &quot;]&quot;
+   */
+  private final boolean fRelaxedSyntax;
+
+  /**
+   * Write the arguments of a {@link S#Plus} expression in reversed order.
+   */
+  private final boolean fPlusReversed;
+
   private boolean fUseSignificantFigures = false;
   private int fExponentFigures;
   private int fSignificantFigures;
@@ -1149,6 +1162,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       int significantFigures) {
     super(tagPrefix, numberFormat);
     fRelaxedSyntax = true;
+    fPlusReversed = false;
     fExponentFigures = exponentFigures;
     fSignificantFigures = significantFigures;
     init();
@@ -1156,8 +1170,14 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
   public MathMLFormFactory(final String tagPrefix, boolean relaxedSyntax, NumberFormat numberFormat,
       int exponentFigures, int significantFigures) {
+    this(tagPrefix, relaxedSyntax, false, numberFormat, exponentFigures, significantFigures);
+  }
+
+  public MathMLFormFactory(final String tagPrefix, boolean relaxedSyntax, boolean plusReversed,
+      NumberFormat numberFormat, int exponentFigures, int significantFigures) {
     super(tagPrefix, numberFormat);
     fRelaxedSyntax = relaxedSyntax;
+    fPlusReversed = plusReversed;
     fExponentFigures = exponentFigures;
     fSignificantFigures = significantFigures;
     init();
@@ -1201,7 +1221,6 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       IExpr h = ast.head();
       if (h.isSymbol()) {
         IConverter converter = CONVERTERS.get(h);
-        // IConverter converter = reflection(((ISymbol) h).getSymbolName());
         if (converter != null) {
           converter.setFactory(this);
           StringBuilder sb = new StringBuilder();
@@ -1878,9 +1897,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     convertInternal(buf, obj, Integer.MIN_VALUE, false);
   }
 
-  public void convertInfixOperator(final StringBuilder buf, final IAST list,
-      final InfixOperator oper, final int precedence) {
-
+  public void convertInfixOperator(final StringBuilder buf, IAST list, final InfixOperator oper,
+      final int precedence) {
     if (list.isAST2()) {
       IExpr arg1 = list.arg1();
       IExpr arg2 = list.arg2();
@@ -2114,7 +2132,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
   }
 
   private boolean convertOperator(final org.matheclipse.parser.client.operator.Operator operator,
-      final IAST list, final StringBuilder buf, final int precedence, ISymbol head) {
+      IAST list, final StringBuilder buf, final int precedence, ISymbol head) {
     if ((operator instanceof PrefixOperator) && (list.isAST1())) {
       convertPrefixOperator(buf, list, (PrefixOperator) operator, precedence);
       return true;
