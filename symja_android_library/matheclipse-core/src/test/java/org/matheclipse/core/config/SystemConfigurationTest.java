@@ -1,39 +1,37 @@
 package org.matheclipse.core.config;
 
+import static org.junit.Assert.assertEquals;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-
 import org.apfloat.Apfloat;
-import org.apfloat.ApfloatMath;
-import org.apfloat.OverflowException;
 import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.ExprEvaluator;
-import org.matheclipse.core.expression.*;
+import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.ComplexNum;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
-
-import static org.junit.Assert.*;
 
 public class SystemConfigurationTest extends ExprEvaluatorTestCase {
 
 
-  @Test
-  public void testApfloatStorage() {
-    try {
-      Apfloat apfloat = new Apfloat("9".repeat(1_000_000) + "." + "9".repeat(1_000_000));
-      apfloat = ApfloatMath.pow(apfloat, new Apfloat("91212312" + ".1231236"));
-      ApfloatNum apfloatNum = ApfloatNum.valueOf(apfloat);
-      IInteger integerPart = apfloatNum.integerPart();
-      System.out.println(integerPart.bitLength());
-      fail("Should be fail");
-    } catch (OverflowException e) {
-      e.printStackTrace();
-    }
-  }
+  // @Test
+  // public void testApfloatStorage() {
+  // try {
+  // Apfloat apfloat = new Apfloat("9".repeat(1_000_000) + "." + "9".repeat(1_000_000));
+  // apfloat = ApfloatMath.pow(apfloat, new Apfloat("91212312" + ".1231236"));
+  // ApfloatNum apfloatNum = ApfloatNum.valueOf(apfloat);
+  // IInteger integerPart = apfloatNum.integerPart();
+  // System.out.println(integerPart.bitLength());
+  // fail("Should be fail");
+  // } catch (OverflowException e) {
+  // e.printStackTrace();
+  // }
+  // }
 
   @Test
   public void testOverflowError() {

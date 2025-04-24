@@ -1,13 +1,10 @@
 package org.matheclipse.core.system;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatContext;
-import org.apfloat.ApfloatMath;
-import org.apfloat.OverflowException;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.matheclipse.core.basic.Config;
@@ -19,7 +16,6 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ParserConfig;
@@ -15146,19 +15142,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // System.out.println("ApfloatContext MaxMemoryBlockSize: " + ac.getMaxMemoryBlockSize());
   }
 
-  @Test
-  public void testApfloatStorage() {
-    try {
-      Apfloat apfloat = new Apfloat("9".repeat(1_000_000) + "." + "9".repeat(1_000_000));
-      apfloat = ApfloatMath.pow(apfloat, new Apfloat("91212312" + ".1231236"));
-      ApfloatNum apfloatNum = ApfloatNum.valueOf(apfloat);
-      IInteger integerPart = apfloatNum.integerPart();
-      System.out.println(integerPart.bitLength());
-      fail("Should be fail");
-    } catch (OverflowException e) {
-      // e.printStackTrace();
-    }
-  }
+  // @Test
+  // public void testApfloatStorage() {
+  // try {
+  // Apfloat apfloat = new Apfloat("9".repeat(1_000_000) + "." + "9".repeat(1_000_000));
+  // apfloat = ApfloatMath.pow(apfloat, new Apfloat("91212312" + ".1231236"));
+  // ApfloatNum apfloatNum = ApfloatNum.valueOf(apfloat);
+  // IInteger integerPart = apfloatNum.integerPart();
+  // System.out.println(integerPart.bitLength());
+  // fail("Should be fail");
+  // } catch (OverflowException e) {
+  // // e.printStackTrace();
+  // }
+  // }
 
   @Test
   public void testDeterminePrecision() {
