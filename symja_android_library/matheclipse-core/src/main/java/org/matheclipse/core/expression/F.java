@@ -158,7 +158,6 @@ import com.google.common.math.DoubleMath;
 import edu.jas.kern.ComputerThreads;
 import edu.jas.kern.JASConfig;
 import edu.jas.kern.PreemptStatus;
-import jakarta.annotation.Nonnull;
 
 /** Factory for creating Symja predefined function expression objects (interface {@link IAST}). */
 public class F extends S {
@@ -859,7 +858,7 @@ public class F extends S {
     try {
       AndroidLoggerFix.fix();
       // initialize LOGGER after AndroidLoggerFix !!!
-      LOGGER = LogManager.getLogger();
+      LOGGER = LogManager.getLogger(F.class);
       AST2Expr.initialize();
       ExprParserFactory.initialize();
 
@@ -1075,7 +1074,7 @@ public class F extends S {
 
       COUNT_DOWN_LATCH.countDown();
       Errors.initGeneralMessages();
-    } catch (Throwable th) {
+    } catch (RuntimeException th) {
       LOGGER.error("F-class initialization failed", th);
       throw th;
     }
@@ -5317,7 +5316,7 @@ public class F extends S {
         } catch (java.security.AccessControlException acex) {
           // no read access for current user
           LOGGER.warn("Cannot read packages in autoload folder:", acex);
-        } catch (RuntimeException ex) {
+        } catch (Exception ex) {
           Errors.rethrowsInterruptException(ex);
           LOGGER.error(ex);
         }
@@ -5342,8 +5341,8 @@ public class F extends S {
         // }
 
         systemInitialized = true;
-      } catch (Throwable th) {
-        LOGGER.error("F.initSymbols() failed", th);
+      } catch (RuntimeException th) {
+        // LOGGER.error("F.initSymbols() failed", th);
       }
     }
   }
@@ -10201,7 +10200,7 @@ public class F extends S {
         }
       }
     }
-    // replace placeholder with evaluated number
+    // replace placeholder position 1 with evaluated number
     result.set(1, number);
     return result.oneIdentity0();
   }
@@ -10476,7 +10475,7 @@ public class F extends S {
    * @param y maybe a {@link S#Plus} function expression
    * @return
    */
-  public static IExpr distributePlusOnTimes(@Nonnull IExpr x, @Nonnull final IExpr y) {
+  public static IExpr distributePlusOnTimes(IExpr x, final IExpr y) {
     if (x.isPlus() || y.isPlus()) {
       return Algebra.distribute(F.Distribute(new B2.Times(x, y)), S.Plus);
     }
@@ -11253,7 +11252,7 @@ public class F extends S {
             return openHTMLOnDesktop(html);
           } catch (Exception ex) {
             Errors.rethrowsInterruptException(ex);
-            LOGGER.debug("JSBuilder.buildGraphics2D() failed", ex);
+            // LOGGER.debug("JSBuilder.buildGraphics2D() failed", ex);
           }
         }
         // return openSVGOnDesktop((IAST) expr);
@@ -11292,7 +11291,7 @@ public class F extends S {
       }
     } catch (Exception ex) {
       Errors.rethrowsInterruptException(ex);
-      LOGGER.debug("F.showGraphic() failed", ex);
+      // LOGGER.debug("F.showGraphic() failed", ex);
     }
     return null;
   }
@@ -11306,7 +11305,7 @@ public class F extends S {
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
         Errors.rethrowsInterruptException(ex);
-        LOGGER.debug("F.printJSFormData() failed", ex);
+        // LOGGER.debug("F.printJSFormData() failed", ex);
       }
       // } else if (jsFormData.arg2().toString().equals("graphics3d")) {
       // try {
@@ -11324,7 +11323,7 @@ public class F extends S {
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
         Errors.rethrowsInterruptException(ex);
-        LOGGER.debug("F.printJSFormData() failed", ex);
+        // LOGGER.debug("F.printJSFormData() failed", ex);
       }
     } else if (jsFormData.arg2().toString().equals(JSBuilder.JSXGRAPH_STR)) {
       try {
@@ -11333,7 +11332,7 @@ public class F extends S {
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
         Errors.rethrowsInterruptException(ex);
-        LOGGER.debug("F.printJSFormData() failed", ex);
+        // LOGGER.debug("F.printJSFormData() failed", ex);
       }
     } else if (jsFormData.arg2().toString().equals(JSBuilder.MERMAID_STR)) {
       try {
@@ -11342,7 +11341,7 @@ public class F extends S {
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
         Errors.rethrowsInterruptException(ex);
-        LOGGER.debug("F.printJSFormData() failed", ex);
+        // LOGGER.debug("F.printJSFormData() failed", ex);
       }
     } else if (jsFormData.arg2().toString().equals(JSBuilder.PLOTLY_STR)) {
       try {
@@ -11351,7 +11350,7 @@ public class F extends S {
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
         Errors.rethrowsInterruptException(ex);
-        LOGGER.debug("F.printJSFormData() failed", ex);
+        // LOGGER.debug("F.printJSFormData() failed", ex);
       }
     } else if (jsFormData.arg2().toString().equals(JSBuilder.TREEFORM_STR)) {
       try {
@@ -11371,7 +11370,7 @@ public class F extends S {
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
         Errors.rethrowsInterruptException(ex);
-        LOGGER.debug("F.printJSFormData() failed", ex);
+        // LOGGER.debug("F.printJSFormData() failed", ex);
       }
     } else if (jsFormData.arg2().toString().equals(JSBuilder.TRACEFORM_STR)) {
       try {
@@ -11381,7 +11380,7 @@ public class F extends S {
         return openHTMLOnDesktop(html);
       } catch (Exception ex) {
         Errors.rethrowsInterruptException(ex);
-        LOGGER.debug("F.printJSFormData() failed", ex);
+        // LOGGER.debug("F.printJSFormData() failed", ex);
       }
     }
     return null;

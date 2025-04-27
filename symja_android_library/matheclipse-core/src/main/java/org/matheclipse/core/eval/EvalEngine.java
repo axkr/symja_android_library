@@ -2431,12 +2431,7 @@ public class EvalEngine implements Serializable {
     IAST ast;
     boolean[] unevaluatedFunction = new boolean[] {false};
     if (argsAST.exists(x -> x.isAST(S.Unevaluated, 2))) {
-      ast = argsAST.map(x -> {
-        if (x.isUnevaluated()) {
-          return unevaluatedArg1(unevaluatedFunction, x.first());
-        }
-        return x;
-      }, 1);
+      ast = mapUnevaluated(argsAST, unevaluatedFunction);
     } else {
       ast = argsAST;
     }
@@ -2453,6 +2448,23 @@ public class EvalEngine implements Serializable {
       return ast;
     }
     return F.NIL;
+  }
+
+  /**
+   * Maps all the {@link S#Unevaluated} functions <b>first argument</b> in the given {@link IAST}
+   * arguments. Evaluates the given argument, if its head is a {@link S#Function}. This method
+   * checks if the head of the provided first argument is a {@link S#Function}. If it is, the
+   * argument is evaluated using the {@link F#eval(IExpr)} method. Otherwise, the argument is
+   * returned "unevaluated" without any evaluation.
+   * 
+   * @param argsAST
+   * @param unevaluatedFunction
+   * @return
+   */
+  private static IAST mapUnevaluated(final IAST argsAST, final boolean[] unevaluatedFunction) {
+    return argsAST.map(x -> x.isUnevaluated() ? //
+        unevaluatedArg1(unevaluatedFunction, x.first()) : //
+        x);
   }
 
   /**

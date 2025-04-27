@@ -1493,7 +1493,7 @@ public class SpecialFunctions {
         IExpr z = ast.arg2();
         if (a.isPositiveResult()) {
           if (z.isZero()) {
-            return S.Infinity;
+            return F.CInfinity;
           } else if (z.isOne()) {
             return F.C0;
           }

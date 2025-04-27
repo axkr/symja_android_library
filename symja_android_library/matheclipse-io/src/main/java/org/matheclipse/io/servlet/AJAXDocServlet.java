@@ -13,7 +13,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.management.RuntimeErrorException;
 import org.apache.commons.text.StringEscapeUtils;
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
@@ -42,7 +41,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.ParserConfig;
-import org.matheclipse.parser.client.SyntaxError;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.cache.Cache;
@@ -186,7 +184,8 @@ public class AJAXDocServlet extends HttpServlet {
                   if (expr != null) {
                     exampleCommand = wolframForm.toString(expr); // expr.toMMA().trim();
                   }
-                } catch (SyntaxError | RuntimeErrorException e) {
+                } catch (RuntimeException e) {
+                  // especially SyntaxError problems
                 }
               }
               final String jsCode = StringEscapeUtils.escapeEcmaScript(exampleCommand);
