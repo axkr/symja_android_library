@@ -6,6 +6,8 @@ Timing(x)
 
 > returns a list with the first entry containing the evaluation CPU time of `x` and the second entry is the evaluation result of `x`.
 
+**Note**: if the Java Management Extensions (JMX) library is not available, this function switch's to `AbsoluteTiming` function.
+
 ### Examples
 
 ```
@@ -21,17 +23,6 @@ Suppress the output of the result:
 ```
 
 ### Related terms 
-[Pause](Pause.md), [TimeConstrained](TimeConstrained.md)<
+[AbsoluteTiming](AbsoluteTiming.md), [Pause](Pause.md), [TimeConstrained](TimeConstrained.md)
 
 
-
-
-
-
-### Implementation status
-
-* &#x2705; - full supported
-
-### Github
-
-* [Implementation of Timing](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L3272) 
