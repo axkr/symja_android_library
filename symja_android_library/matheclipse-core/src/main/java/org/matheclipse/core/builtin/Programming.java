@@ -3274,13 +3274,15 @@ public final class Programming {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
-        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-        if (bean.isCurrentThreadCpuTimeSupported()) {
-          final long begin = bean.getCurrentThreadCpuTime();
-          final IExpr result = engine.evaluate(ast.arg1());
-          final long end = bean.getCurrentThreadCpuTime();
-          double value = (end - begin) / 1000000000.0;
-          return F.list(F.num(value), F.HoldForm(result));
+        if (!Config.DISABLE_JMX) {
+          ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+          if (bean.isCurrentThreadCpuTimeSupported()) {
+            final long begin = bean.getCurrentThreadCpuTime();
+            final IExpr result = engine.evaluate(ast.arg1());
+            final long end = bean.getCurrentThreadCpuTime();
+            double value = (end - begin) / 1000000000.0;
+            return F.list(F.num(value), F.HoldForm(result));
+          }
         }
         // fall back to AbsoluteTiming
         return super.evaluate(ast, engine);

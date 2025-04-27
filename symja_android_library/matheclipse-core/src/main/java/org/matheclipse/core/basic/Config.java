@@ -41,6 +41,9 @@ public class Config {
   /** Show the stack trace, if an exception is thrown in evaluation */
   public static boolean SHOW_STACKTRACE = false;
 
+  /** Disable JMX calls (package java.lang.management) */
+  public static boolean DISABLE_JMX = false;
+
   /** Enable JSFiddle in JavaScript IFRAME output */
   public static boolean DISPLAY_JSFIDDLE_BUTTON = true;
 
