@@ -171,6 +171,11 @@ public class Plot extends ListPlot {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
+    if (argSize < 2 || !ast.arg2().isList3() || !ast.arg2().first().isSymbol()) {
+      // Range specification `1` is not of the form {x, xmin, xmax}.
+      IExpr arg2 = argSize >= 2 ? ast.arg2() : F.CEmptyString;
+      return Errors.printMessage(S.Plot, "pllim", F.list(arg2), engine);
+    }
     GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
     ECharts.setGraphicOptions(graphicsOptions, ast, 2, options, engine);
     // if (options[0].isTrue()) { // JSForm option

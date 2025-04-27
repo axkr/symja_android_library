@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -19,8 +20,13 @@ public class PolarPlot extends AbstractFunctionOptionEvaluator {
   public PolarPlot() {}
 
   @Override
-  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
-      final EvalEngine engine, IAST originalAST) {
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
+      IAST originalAST) {
+    if (argSize < 2 || !ast.arg2().isList3() || !ast.arg2().first().isSymbol()) {
+      // Range specification `1` is not of the form {x, xmin, xmax}.
+      IExpr arg2 = argSize >= 2 ? ast.arg2() : F.CEmptyString;
+      return Errors.printMessage(S.PolarPlot, "pllim", F.list(arg2), engine);
+    }
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
