@@ -56,7 +56,7 @@ import it.unimi.dsi.fastutil.ints.IntList;
 
 /** Converts an internal <code>IExpr</code> into a user readable string. */
 public class OutputFormFactory {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(OutputFormFactory.class);
 
   /** The conversion wasn't called with an operator preceding the <code>IExpr</code> object. */
   public static final boolean NO_PLUS_CALL = false;

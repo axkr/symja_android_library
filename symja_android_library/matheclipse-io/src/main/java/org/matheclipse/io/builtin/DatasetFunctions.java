@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.io.expression.ASTDataset;
 
 public class DatasetFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(DatasetFunctions.class);
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -71,7 +71,7 @@ public class DatasetFunctions {
                 || arg1.isAST(S.TakeLargestBy, 3)) {
               IExpr expr = dataSet.select(S.All, arg2);
               if (expr.isDataset()) {
-                return F.unaryAST1(arg1, ((IASTDataset) expr).normal(false));
+                return F.unaryAST1(arg1, expr.normal(false));
               }
             } else {
               IExpr expr = engine.evaluate(F.unaryAST1(arg1, dataSet));

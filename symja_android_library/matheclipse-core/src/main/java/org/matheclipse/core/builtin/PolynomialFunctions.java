@@ -69,7 +69,7 @@ import edu.jas.ufd.GreatestCommonDivisorAbstract;
 
 public class PolynomialFunctions {
 
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(PolynomialFunctions.class);
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation

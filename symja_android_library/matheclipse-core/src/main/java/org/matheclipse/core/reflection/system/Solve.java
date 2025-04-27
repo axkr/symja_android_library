@@ -98,7 +98,7 @@ import org.matheclipse.core.polynomials.QuarticSolver;
  * <a href="NRoots.md">NRoots</a>
  */
 public class Solve extends AbstractFunctionOptionEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(Solve.class);
 
   /** Check an expression, if it's an allowed object. */
   protected static final class IsWrongSolveExpression implements Predicate<IExpr> {

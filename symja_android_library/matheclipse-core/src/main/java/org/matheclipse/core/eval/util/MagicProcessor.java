@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class MagicProcessor {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(MagicProcessor.class);
 
   String outPut = null;
   String err = null;
@@ -53,7 +53,7 @@ public class MagicProcessor {
       String processEq = inputQuestionIsPossiblyASystemOfEquation(outPut);
       if (processEq != null) {
         // Args will be handled in wrtArgumentMising
-        outPut = ((ISymbol) S.Solve).toString() + "(" + processEq + ")";
+        outPut = S.Solve.toString() + "(" + processEq + ")";
       }
 
       /*

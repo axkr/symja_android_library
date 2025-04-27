@@ -17,7 +17,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.Scanner;
 
 public class Documentation {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(Documentation.class);
 
   /**
    * Get the pure <code>markdown</code> formatted information about the <code>builinFunctionName

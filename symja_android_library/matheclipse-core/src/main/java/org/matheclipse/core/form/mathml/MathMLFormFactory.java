@@ -59,7 +59,7 @@ import org.matheclipse.parser.trie.TrieMatch;
 
 /** Generates MathML presentation output */
 public class MathMLFormFactory extends AbstractMathMLFormFactory {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(MathMLFormFactory.class);
 
   private final class Abs extends AbstractConverter {
 

@@ -12,7 +12,7 @@ import org.matheclipse.parser.client.ParserConfig;
  * Convert a Java <code>double</code> value into a string similar to the Mathematica output format.
  */
 public class DoubleToMMA {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(DoubleToMMA.class);
 
   private static final String HASH_STR = "##############################";
 

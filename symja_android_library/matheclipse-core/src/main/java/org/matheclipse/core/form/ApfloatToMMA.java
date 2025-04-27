@@ -10,7 +10,7 @@ import org.apfloat.Apfloat;
 
 /** Convert a <code>Apfloat</code> value into a string similar to the Mathematica output format. */
 public class ApfloatToMMA {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(ApfloatToMMA.class);
 
   private static final class FormattingWriter extends FilterWriter {
     private long count;

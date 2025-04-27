@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(AbstractMatrix1Matrix.class);
 
   public AbstractMatrix1Matrix() {}
 

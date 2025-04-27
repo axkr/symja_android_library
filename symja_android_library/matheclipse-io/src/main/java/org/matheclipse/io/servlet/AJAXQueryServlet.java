@@ -79,7 +79,7 @@ public class AJAXQueryServlet extends HttpServlet {
           + "<head>\n" + "<meta charset=\"utf-8\">\n" + "<title>HTML</title>\n" + "</head>\n"
           + "<body>\n" + "`1`\n" + "</body>\n" + "</html>";
 
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(AJAXQueryServlet.class);
 
   public static volatile boolean INITIALIZED = false;
 

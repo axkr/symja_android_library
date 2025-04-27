@@ -29,7 +29,7 @@ import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
  * to the <code>evaluate()</code>
  */
 public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(AbstractFunctionEvaluator.class);
 
   /**
    * Determine the options only from the last arguments of <code>ast</code>. Possibly additional

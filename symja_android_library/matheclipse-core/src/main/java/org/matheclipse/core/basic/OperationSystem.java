@@ -6,7 +6,7 @@ import org.matheclipse.core.eval.exception.MemoryLimitExceeded;
 
 @SuppressWarnings("unused")
 public class OperationSystem {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(OperationSystem.class);
 
   public static int toomCook3Threshold = Integer.MAX_VALUE;
 

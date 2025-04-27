@@ -19,7 +19,7 @@ import tech.tablesaw.io.csv.CsvReadOptions;
 
 /** Import semantic data into a DataSet */
 public class SemanticImportString extends AbstractFunctionOptionEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(SemanticImportString.class);
 
   public SemanticImportString() {}
 

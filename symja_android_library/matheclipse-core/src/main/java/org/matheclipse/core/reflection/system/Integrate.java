@@ -89,7 +89,7 @@ import edu.jas.kern.PreemptingException;
  */
 public class Integrate extends AbstractFunctionOptionEvaluator {
 
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(Integrate.class);
 
   private static Thread INIT_THREAD = null;
 

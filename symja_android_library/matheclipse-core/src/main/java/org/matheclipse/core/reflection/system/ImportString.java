@@ -26,7 +26,7 @@ import org.matheclipse.parser.client.ast.ASTNode;
 
 /** Import some data from a given string. */
 public class ImportString extends AbstractEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(ImportString.class);
 
   public ImportString() {}
 
@@ -36,14 +36,14 @@ public class ImportString extends AbstractEvaluator {
       return F.NIL;
     }
 
-    String str1 = ((IStringX) ast.arg1()).toString();
+    String str1 = ast.arg1().toString();
     Extension format = Extension.TXT;
 
     if (ast.size() > 2) {
       if (!(ast.arg2() instanceof IStringX)) {
         return F.NIL;
       }
-      format = Extension.importExtension(((IStringX) ast.arg2()).toString());
+      format = Extension.importExtension(ast.arg2().toString());
     }
 
     try {

@@ -31,7 +31,7 @@ import org.matheclipse.core.tensor.qty.IUnit;
 import org.matheclipse.core.tensor.qty.UnitSystem;
 
 public class QuantityFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(QuantityFunctions.class);
 
   static final HashMap<String, Function<LocalDateTime, IExpr>> DATEVALUE_MAP =
       new HashMap<String, Function<LocalDateTime, IExpr>>();

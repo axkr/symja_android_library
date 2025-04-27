@@ -12,7 +12,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.image.expression.data.ImageExpr;
 
 public class ImageFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(ImageFunctions.class);
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation

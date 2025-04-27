@@ -9,7 +9,6 @@ import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -37,7 +36,7 @@ import uk.ac.ed.ph.snuggletex.SnuggleSession;
 
 /* package private */
 class TeXSegmentParser {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(TeXSegmentParser.class);
 
   /**
    * Because the {@link TeXParser} uses the default slots, use this "dummy slot" inside this class.

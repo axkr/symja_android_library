@@ -46,7 +46,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /** Import some data from file system. */
 public class Import extends AbstractEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(Import.class);
 
   public Import() {}
 
@@ -64,7 +64,7 @@ public class Import extends AbstractEvaluator {
         if (!(ast.arg2() instanceof IStringX)) {
           return F.NIL;
         }
-        format = Extension.importExtension(((IStringX) ast.arg2()).toString());
+        format = Extension.importExtension(ast.arg2().toString());
       }
 
       return importFromPath(arg1, format, null, engine);

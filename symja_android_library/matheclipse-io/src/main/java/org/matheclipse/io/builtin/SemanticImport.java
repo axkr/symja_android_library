@@ -23,7 +23,7 @@ import tech.tablesaw.api.Table;
 
 /** Import semantic data into a DataSet */
 public class SemanticImport extends AbstractFunctionOptionEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(SemanticImport.class);
 
   public SemanticImport() {}
 

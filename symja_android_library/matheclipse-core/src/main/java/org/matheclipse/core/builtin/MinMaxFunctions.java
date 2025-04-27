@@ -63,7 +63,7 @@ import com.google.common.base.Suppliers;
  * various mathematical functions.
  */
 public class MinMaxFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(MinMaxFunctions.class);
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation

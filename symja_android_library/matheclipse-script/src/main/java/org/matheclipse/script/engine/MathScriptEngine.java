@@ -33,7 +33,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
     return super.get(key);
   }
 
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(MathScriptEngine.class);
   public static final String RETURN_OBJECT = "RETURN_OBJECT";
   private static volatile boolean initialized = false;
 

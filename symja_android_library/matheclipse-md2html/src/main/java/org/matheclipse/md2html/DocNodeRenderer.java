@@ -31,7 +31,7 @@ import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.image.expression.data.ImageExpr;
 
 public class DocNodeRenderer extends CoreHtmlNodeRenderer {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(DocNodeRenderer.class);
 
   private final HtmlWriter html;
 

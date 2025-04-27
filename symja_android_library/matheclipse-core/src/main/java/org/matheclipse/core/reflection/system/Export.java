@@ -26,7 +26,6 @@ import org.jgrapht.nio.csv.CSVExporter;
 import org.jgrapht.nio.dot.DOTExporter;
 import org.jgrapht.nio.graphml.GraphMLExporter;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -44,7 +43,7 @@ import org.matheclipse.core.tensor.img.ImageFormat;
 
 /** Export some data from file system. */
 public class Export extends AbstractEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(Export.class);
 
   public Export() {}
 
@@ -62,7 +61,7 @@ public class Export extends AbstractEvaluator {
           return F.NIL;
         }
         // format = ((IStringX) ast.arg3()).toString();
-        format = Extension.exportExtension(((IStringX) ast.arg3()).toString());
+        format = Extension.exportExtension(ast.arg3().toString());
       }
 
       IExpr arg2 = ast.arg2();

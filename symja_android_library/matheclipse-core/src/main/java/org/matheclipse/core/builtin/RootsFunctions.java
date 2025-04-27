@@ -47,7 +47,7 @@ import edu.jas.ufd.SquarefreeFactory;
 import jakarta.annotation.Nonnull;
 
 public class RootsFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(RootsFunctions.class);
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation

@@ -32,7 +32,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ast.ASTNode;
 
 public class UnitTestingFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(UnitTestingFunctions.class);
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation

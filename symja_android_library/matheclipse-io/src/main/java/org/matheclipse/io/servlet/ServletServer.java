@@ -26,7 +26,7 @@ import io.undertow.servlet.api.DeploymentManager;
 import jakarta.servlet.Servlet;
 
 public class ServletServer {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(ServletServer.class);
 
   /** If <code>true</code>, use localhost string */
   public static boolean LOCALHOST_STRING = false;

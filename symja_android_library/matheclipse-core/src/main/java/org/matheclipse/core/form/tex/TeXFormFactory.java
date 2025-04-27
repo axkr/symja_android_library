@@ -52,7 +52,7 @@ import org.matheclipse.parser.trie.TrieMatch;
  * usage.
  */
 public class TeXFormFactory {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(TeXFormFactory.class);
 
   /** The conversion wasn't called with an operator preceding the <code>IExpr</code> object. */
   public static final boolean NO_PLUS_CALL = false;

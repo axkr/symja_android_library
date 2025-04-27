@@ -37,7 +37,7 @@ import io.pebbletemplates.pebble.template.PebbleTemplate;
 import io.pebbletemplates.pebble.template.PebbleTemplateImpl;
 
 public class Errors {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(Errors.class);
 
   private static PebbleEngine PEBBLE_ENGINE = new PebbleEngine.Builder().build();
 

@@ -131,7 +131,7 @@ import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.math.MathException;
 
 public final class Arithmetic {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(Arithmetic.class);
 
   private static int g = 7;
   // private static double[] p = { 0.99999999999980993, 676.5203681218851, -1259.1392167224028,

@@ -505,7 +505,7 @@ public final class NumberTheory {
           }
           int ki = k.toIntDefault();
           if (ki >= 1 && ki <= 5) {
-            return S.Infinity;
+            return F.CInfinity;
           }
         } else if (n.isNegativeInfinity()) {
           if (k.isNegative()) {

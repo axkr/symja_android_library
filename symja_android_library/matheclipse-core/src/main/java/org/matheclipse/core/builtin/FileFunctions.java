@@ -62,7 +62,7 @@ import org.matheclipse.parser.client.ast.FunctionNode;
 import com.google.common.io.CharStreams;
 
 public class FileFunctions {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(FileFunctions.class);
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation

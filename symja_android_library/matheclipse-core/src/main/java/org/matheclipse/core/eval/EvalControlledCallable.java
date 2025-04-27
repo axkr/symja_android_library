@@ -17,7 +17,7 @@ import org.matheclipse.parser.client.math.MathException;
 import edu.jas.kern.PreemptingException;
 
 public class EvalControlledCallable implements Callable<IExpr> {
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(EvalControlledCallable.class);
  
   protected final EvalEngine fEngine;
   private IExpr fExpr;
