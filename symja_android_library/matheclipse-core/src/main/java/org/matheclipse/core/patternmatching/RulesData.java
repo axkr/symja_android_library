@@ -1,7 +1,6 @@
 package org.matheclipse.core.patternmatching;
 
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -899,7 +898,7 @@ public final class RulesData implements Serializable {
 
   @Override
   public String toString() {
-    StringWriter buf = new StringWriter();
+    StringBuilder buf = new StringBuilder();
     List<IAST> list = definition();
     final int size = list.size();
     for (int i = 0; i < size; i++) {

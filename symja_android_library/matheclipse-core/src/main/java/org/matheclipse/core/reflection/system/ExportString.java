@@ -1,12 +1,12 @@
 package org.matheclipse.core.reflection.system;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.nio.Attribute;
@@ -16,7 +16,6 @@ import org.jgrapht.nio.GraphExporter;
 import org.jgrapht.nio.csv.CSVExporter;
 import org.jgrapht.nio.dot.DOTExporter;
 import org.jgrapht.nio.graphml.GraphMLExporter;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.ExpressionJSONConvert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -43,8 +42,8 @@ public class ExportString extends AbstractEvaluator {
     if (!(ast.arg2() instanceof IStringX)) {
       return F.NIL;
     }
-    Extension format = Extension.exportExtension(((IStringX) ast.arg2()).toString());
-    try (StringWriter writer = new StringWriter()) {
+    Extension format = Extension.exportExtension(ast.arg2().toString());
+    try (StringBuilderWriter writer = new StringBuilderWriter()) {
       if (format.equals(Extension.EXPRESSIONJSON)) {
         if (arg1.isNumber() || arg1.isSymbol()) {
           if (arg1.isTrue()) {

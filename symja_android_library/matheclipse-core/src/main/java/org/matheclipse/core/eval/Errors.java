@@ -1,12 +1,12 @@
 package org.matheclipse.core.eval;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -608,7 +608,7 @@ public class Errors {
           engine.setMessageShortcut(messageShortcut);
           return F.NIL;
         }
-        Writer writer = new StringWriter();
+        Writer writer = new StringBuilderWriter();
         Map<String, Object> context = new HashMap<String, Object>();
         if (listOfParameters != null) {
           for (int i = 1; i < listOfParameters.size(); i++) {
@@ -640,7 +640,7 @@ public class Errors {
       EvalEngine engine) {
     try {
       String message = exception.getMessage();
-      Writer writer = new StringWriter();
+      Writer writer = new StringBuilderWriter();
       writer.append(message);
       logMessage(symbol, writer.toString(), engine);
     } catch (IOException e) {
@@ -846,7 +846,7 @@ public class Errors {
           }
         }
       }
-      Writer writer = new StringWriter();
+      Writer writer = new StringBuilderWriter();
       templateApply(templateStr, writer, context);
       return writer.toString();
     } catch (IOException e) {
@@ -869,7 +869,7 @@ public class Errors {
       for (String str : args) {
         context.put(Integer.toString(i++), str);
       }
-      Writer writer = new StringWriter();
+      Writer writer = new StringBuilderWriter();
       templateApply(templateStr, writer, context);
       return writer.toString();
     } catch (IOException e) {

@@ -7,7 +7,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.jsoup.nodes.Element;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
@@ -755,7 +755,7 @@ public class ASTDataset extends AbstractAST
 
   @Override
   public void writeExternal(ObjectOutput objectOutput) throws IOException {
-    StringWriter sw = new StringWriter();
+    StringBuilderWriter sw = new StringBuilderWriter();
     this.fTable.write().csv(sw);
     String str = sw.toString();
     if (str.length() >= Config.MAX_OUTPUT_SIZE) {

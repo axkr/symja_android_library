@@ -1,7 +1,6 @@
 package org.matheclipse.core.interfaces;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -204,7 +203,7 @@ public interface ISymbol extends IExpr {
     OutputFormFactory off = OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax());
     off.setInputForm(true);
     off.setIgnoreNewLine(true);
-    StringWriter buf = new StringWriter();
+    StringBuilder buf = new StringBuilder();
     for (int i = 1; i < fullDefinition.size(); i++) {
       if (!off.convert(buf, fullDefinition.getRule(i))) {
         return "ERROR-IN-OUTPUTFORM";

@@ -534,7 +534,7 @@ public class OutputFormFactory {
   // String str = num.toString();
   // int index = str.indexOf('e');
   // if (index > 0) {
-  // StringWriter stw = new StringWriter();
+  // StringBuilderWriter stw = new StringBuilderWriter();
   // try {
   // FormattingWriter.toMMA(num, stw, 15, false);
   // return stw.toString();

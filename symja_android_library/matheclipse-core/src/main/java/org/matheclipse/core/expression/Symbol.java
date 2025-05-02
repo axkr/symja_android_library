@@ -2,7 +2,6 @@ package org.matheclipse.core.expression;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
@@ -287,7 +286,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public String definitionToString() {
-    StringWriter buf = new StringWriter();
+    StringBuilder buf = new StringBuilder();
     IAST attributesList = AttributeFunctions.attributesList(this);
     if (attributesList.size() > 1) {
       buf.append("Attributes(");

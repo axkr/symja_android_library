@@ -1,8 +1,8 @@
 package org.matheclipse.core.builtin;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.Arrays;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.RealMatrix;
@@ -723,7 +723,7 @@ public class ManipulateFunction {
         StringBuilder graphicControl = new StringBuilder();
         graphicControl.append("var expressions = [ ");
         for (int i = 1; i < listOfFormulas.size(); i++) {
-          StringWriter stw = new StringWriter();
+          StringBuilderWriter stw = new StringBuilderWriter();
           texUtil.toTeX(listOfFormulas.get(i), stw);
           graphicControl.append("'");
           String texForm = stw.toString();

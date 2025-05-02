@@ -3,13 +3,13 @@ package org.matheclipse.script.engine;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringWriter;
 import java.lang.reflect.Method;
 import javax.script.AbstractScriptEngine;
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -187,7 +187,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
     if (result.equals(S.Null)) {
       return "";
     }
-    final StringWriter buf = new StringWriter();
+    final StringBuilderWriter buf = new StringBuilderWriter();
     EvalEngine engine = EvalEngine.get();
     OutputFormFactory off;
 

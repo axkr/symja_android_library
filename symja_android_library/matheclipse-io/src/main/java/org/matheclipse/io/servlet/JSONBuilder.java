@@ -1,6 +1,6 @@
 package org.matheclipse.io.servlet;
 
-import java.io.StringWriter;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.text.StringEscapeUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
@@ -140,12 +140,13 @@ public class JSONBuilder {
     return new String[] {"mathml", json.toString()};
   }
 
-  public static String[] createJSONResult(EvalEngine engine, IExpr outExpr, StringWriter outWriter,
-      StringWriter errorWriter) {
+  public static String[] createJSONResult(EvalEngine engine, IExpr outExpr,
+      StringBuilderWriter outWriter,
+      StringBuilderWriter errorWriter) {
     // DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
     // DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
     MathMLUtilities mathMLUtil = new MathMLUtilities(engine, false, false);
-    StringWriter stw = new StringWriter();
+    StringBuilderWriter stw = new StringBuilderWriter();
     if (!outExpr.equals(S.Null) && !mathMLUtil.toMathML(outExpr, stw, true, true)) {
       return createJSONError("Max. output size exceeded " + Config.MAX_OUTPUT_SIZE);
     }
@@ -188,12 +189,13 @@ public class JSONBuilder {
     return new String[] {"mathml", json.toString()};
   }
 
-  public static String[] createJSONHTML(EvalEngine engine, String html, StringWriter outWriter,
-      StringWriter errorWriter) {
+  public static String[] createJSONHTML(EvalEngine engine, String html,
+      StringBuilderWriter outWriter,
+      StringBuilderWriter errorWriter) {
     // DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
     // DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
     // MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
-    // StringWriter stw = new StringWriter();
+    // StringBuilderWriter stw = new StringBuilderWriter();
     // stw.append(html);
 
     ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();

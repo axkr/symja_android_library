@@ -1,6 +1,5 @@
 package org.matheclipse.core.eval;
 
-import java.io.StringWriter;
 import java.util.concurrent.Callable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,7 +33,7 @@ public class EvalControlledCallable implements Callable<IExpr> {
   public IExpr call() {
     EvalEngine.remove();
     EvalEngine.setReset(fEngine);
-    final StringWriter buf = new StringWriter();
+    final StringBuilder buf = new StringBuilder();
     try {
       // fEngine.reset();<>
       IExpr preRead = S.$PreRead.assignedValue();

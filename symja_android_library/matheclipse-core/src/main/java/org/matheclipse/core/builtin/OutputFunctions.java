@@ -1,7 +1,6 @@
 package org.matheclipse.core.builtin;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.math.BigInteger;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayDeque;
@@ -11,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
@@ -204,7 +204,7 @@ public final class OutputFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // CFormUtilities texUtil = new CFormUtilities(engine, engine.isRelaxedSyntax());
       // IExpr arg1 = engine.evaluate(ast.arg1());
-      // StringWriter stw = new StringWriter();
+      // StringBuilderWriter stw = new StringBuilderWriter();
       // texUtil.toCForm(arg1, stw);
       // return F.$str(stw.toString());
       return F.NIL;
@@ -678,7 +678,7 @@ public final class OutputFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       MathMLUtilities mathMLUtil = new MathMLUtilities(engine, false, engine.isRelaxedSyntax());
       IExpr arg1 = ast.arg1();
-      StringWriter stw = new StringWriter();
+      StringBuilderWriter stw = new StringBuilderWriter();
       mathMLUtil.toMathML(arg1, stw);
       return F.stringx(stw.toString(), IStringX.TEXT_MATHML);
     }
@@ -889,7 +889,7 @@ public final class OutputFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       TeXUtilities texUtil = new TeXUtilities(engine, engine.isRelaxedSyntax());
       IExpr arg1 = engine.evaluate(ast.arg1());
-      StringWriter stw = new StringWriter();
+      StringBuilderWriter stw = new StringBuilderWriter();
       texUtil.toTeX(arg1, stw);
       return F.$str(stw.toString(), IStringX.TEXT_LATEX);
     }

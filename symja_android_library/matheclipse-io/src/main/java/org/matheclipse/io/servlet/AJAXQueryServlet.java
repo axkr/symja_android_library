@@ -3,7 +3,6 @@ package org.matheclipse.io.servlet;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -12,6 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
@@ -154,9 +154,9 @@ public class AJAXQueryServlet extends HttpServlet {
     String[] result = null;
     HttpSession session = request.getSession();
     LOGGER.warn("({}) In::{}", session.getId(), expression);
-    final StringWriter outWriter = new StringWriter();
+    final StringBuilderWriter outWriter = new StringBuilderWriter();
     WriterOutputStream wouts = new WriterOutputStream(outWriter);
-    final StringWriter errorWriter = new StringWriter();
+    final StringBuilderWriter errorWriter = new StringBuilderWriter();
     WriterOutputStream werrors = new WriterOutputStream(errorWriter);
     try (PrintStream outs = new PrintStream(wouts);
         PrintStream errors = new PrintStream(werrors);
@@ -185,8 +185,8 @@ public class AJAXQueryServlet extends HttpServlet {
   }
 
   private String[] calculateString(EvalEngine engine, final String inputString,
-      final String numericMode, final String function, StringWriter outWriter,
-      StringWriter errorWriter) {
+      final String numericMode, final String function, StringBuilderWriter outWriter,
+      StringBuilderWriter errorWriter) {
     ExecutorService executor = Executors.newSingleThreadExecutor();
 
     Future<String[]> task = executor.submit(() -> {
@@ -218,8 +218,8 @@ public class AJAXQueryServlet extends HttpServlet {
   }
 
   private String[] evaluateString(EvalEngine engine, final String inputString,
-      final String numericMode, final String function, StringWriter outWriter,
-      StringWriter errorWriter) {
+      final String numericMode, final String function, StringBuilderWriter outWriter,
+      StringBuilderWriter errorWriter) {
     String input = inputString.trim();
     try {
       EvalEngine.setReset(engine);
@@ -234,7 +234,7 @@ public class AJAXQueryServlet extends HttpServlet {
         if (numericMode.equals("N")) {
           inExpr = F.N(inExpr);
         }
-        StringWriter outBuffer = new StringWriter();
+        StringBuilderWriter outBuffer = new StringBuilderWriter();
         IExpr outExpr = evalTopLevel(engine, outBuffer, inExpr);
         if (outExpr != null) {
           if (outExpr.isAST(S.Graphics)) {
@@ -410,7 +410,7 @@ public class AJAXQueryServlet extends HttpServlet {
     }
   }
 
-  private static IExpr evalTopLevel(EvalEngine engine, final StringWriter buf,
+  private static IExpr evalTopLevel(EvalEngine engine, final StringBuilderWriter buf,
       final IExpr parsedExpression) {
     IExpr result;
     EvalEngine[] engineRef = new EvalEngine[] {engine};
@@ -439,7 +439,7 @@ public class AJAXQueryServlet extends HttpServlet {
     return new String[] {"expr", bldr.toString()};
   }
 
-  private static String[] createOutput(StringWriter buffer, IExpr rhsExpr, EvalEngine engine,
+  private static String[] createOutput(StringBuilderWriter buffer, IExpr rhsExpr, EvalEngine engine,
       String function) {
 
     boolean textEval = true;
@@ -465,14 +465,14 @@ public class AJAXQueryServlet extends HttpServlet {
       String res = buffer.toString();
       if (function.length() > 0 && function.equals("$mathml")) {
         MathMLUtilities mathMLUtil = new MathMLUtilities(engine, false, true);
-        StringWriter stw = new StringWriter();
+        StringBuilderWriter stw = new StringBuilderWriter();
         if (!mathMLUtil.toMathML(res, stw, true)) {
           return new String[] {"error", "Max. output size exceeded " + Config.MAX_OUTPUT_SIZE};
         }
         return new String[] {"mathml", stw.toString()};
       } else if (function.length() > 0 && function.equals("$tex")) {
         TeXUtilities texUtil = new TeXUtilities(engine, true);
-        StringWriter stw = new StringWriter();
+        StringBuilderWriter stw = new StringBuilderWriter();
         if (!texUtil.toTeX(res, stw, false)) {
           return new String[] {"error", "Max. output size exceeded " + Config.MAX_OUTPUT_SIZE};
         }

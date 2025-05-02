@@ -2,7 +2,6 @@ package org.matheclipse.core.expression;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.text.Collator;
 import java.util.Collection;
 import java.util.Locale;
@@ -273,7 +272,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public String definitionToString() {
-    StringWriter buf = new StringWriter();
+    StringBuilder buf = new StringBuilder();
     IAST attributesList = AttributeFunctions.attributesList(this);
     if (attributesList.size() > 1) {
       buf.append("Attributes(");

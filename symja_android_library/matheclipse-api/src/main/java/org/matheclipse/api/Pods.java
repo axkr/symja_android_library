@@ -3,7 +3,6 @@ package org.matheclipse.api;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -18,6 +17,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.apache.commons.codec.language.Soundex;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
@@ -451,7 +451,7 @@ public class Pods {
     }
     if ((formats & MATHML) != 0x00) {
       if (outExpr.isPresent()) {
-        StringWriter stw = new StringWriter();
+        StringBuilderWriter stw = new StringBuilderWriter();
         MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
         if (!mathUtil.toMathML(F.HoldForm(outExpr), stw, true)) {
           // return createJSONErrorString("Max. output size exceeded " +
@@ -463,7 +463,7 @@ public class Pods {
     }
     if ((formats & LATEX) != 0x00) {
       if (outExpr.isPresent()) {
-        StringWriter stw = new StringWriter();
+        StringBuilderWriter stw = new StringBuilderWriter();
         TeXUtilities texUtil = new TeXUtilities(engine, engine.isRelaxedSyntax());
         if (!texUtil.toTeX(F.HoldForm(outExpr), stw)) {
           //
@@ -667,7 +667,7 @@ public class Pods {
       if (numberOfLeaves < Config.MAX_INPUT_LEAVES) {
         outExpr = inExpr;
 
-        final StringWriter errorWriter = new StringWriter();
+        final StringBuilderWriter errorWriter = new StringBuilderWriter();
         WriterOutputStream werrors = new WriterOutputStream(errorWriter);
         PrintStream errors = new PrintStream(werrors);
         IExpr firstEval = F.NIL;
@@ -1264,7 +1264,7 @@ public class Pods {
         if (numberOfLeaves < Config.MAX_INPUT_LEAVES) {
           outExpr = inExpr;
 
-          final StringWriter errorWriter = new StringWriter();
+          final StringBuilderWriter errorWriter = new StringBuilderWriter();
           WriterOutputStream werrors = new WriterOutputStream(errorWriter);
           PrintStream errors = new PrintStream(werrors);
           IExpr firstEval = F.NIL;

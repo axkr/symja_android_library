@@ -2,8 +2,8 @@ package org.matheclipse.core.form;
 
 import java.io.FilterWriter;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apfloat;
@@ -19,11 +19,11 @@ public class ApfloatToMMA {
 
     private boolean eWritten;
 
-    private StringWriter exponent;
+    private StringBuilderWriter exponent;
 
     public FormattingWriter(Writer out) {
       super(out);
-      exponent = new StringWriter();
+      exponent = new StringBuilderWriter();
     }
 
     @Override
@@ -67,7 +67,7 @@ public class ApfloatToMMA {
     }
 
     public long getExponent() {
-      return exponent.getBuffer().length() > 0 ? Long.parseLong(exponent.toString()) : 0;
+      return exponent.getBuilder().length() > 0 ? Long.parseLong(exponent.toString()) : 0;
     }
   }
 
@@ -149,7 +149,7 @@ public class ApfloatToMMA {
     String str = value.toString();
     int index = str.indexOf('e');
     if (index > 0) {
-      StringWriter stw = new StringWriter();
+      StringBuilderWriter stw = new StringBuilderWriter();
       try {
         toMMA(value, stw, significantFigures, style);
         str = stw.toString();

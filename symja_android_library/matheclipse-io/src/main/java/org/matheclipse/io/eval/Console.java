@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.ConstantDefinitions;
@@ -442,7 +442,7 @@ public class Console {
    */
   /* package private */ String interpreter(final String trimmedInput) {
     IExpr result;
-    final StringWriter buf = new StringWriter();
+    final StringBuilderWriter buf = new StringBuilderWriter();
     try {
       if (fSeconds <= 0) {
         result = fEvaluator.eval(trimmedInput);
@@ -552,7 +552,7 @@ public class Console {
   // private String[] prettyPrinter3Lines(final String inputExpression) {
   // IExpr result;
   //
-  // final StringWriter buf = new StringWriter();
+  // final StringBuilderWriter buf = new StringBuilderWriter();
   // try {
   // if (fSeconds <= 0) {
   // result = fEvaluator.eval(inputExpression);
