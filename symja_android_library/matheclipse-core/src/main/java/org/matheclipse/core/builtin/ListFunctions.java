@@ -4205,7 +4205,7 @@ public final class ListFunctions {
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
 
-      boolean heads = option[0].isTrue();
+      boolean includeHeads = option[0].isTrue();
 
       if (ast.arg1().isASTOrAssociation()) {
         final IAST arg1 = (IAST) ast.arg1();
@@ -4215,7 +4215,7 @@ public final class ListFunctions {
         final VisitorLevelSpecification level = new VisitorLevelSpecification(x -> {
           resultList.append(x);
           return F.NIL;
-        }, ast.arg2(), heads, engine);
+        }, ast.arg2(), includeHeads, engine);
         arg1.accept(level);
 
         return resultList;

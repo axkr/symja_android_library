@@ -23,7 +23,6 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
-import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.eval.util.positions.FlattenPositions;
 import org.matheclipse.core.eval.util.positions.MapPositions;
 import org.matheclipse.core.expression.F;
@@ -204,24 +203,9 @@ public class StructureFunctions {
       if (argSize < 2 || argSize > 4) {
         return Errors.printArgMessage(ast, ARGS_2_4, engine);
       }
-      // IASTMutable evaledAST = ast.copy();
-      // evaledAST.setArgs(evaledAST.size(), (int i) -> engine.evaluate(evaledAST.get(i)));
       IAST evaledAST = ast;
       int lastIndex = argSize;
-      boolean heads = option[0].isTrue();
-      // final OptionArgs options = new OptionArgs(evaledAST.topHead(), evaledAST, lastIndex,
-      // engine);
-      // IExpr option = options.getOption(S.Heads);
-      // if (option.isPresent()) {
-      // lastIndex--;
-      // if (option.isTrue()) {
-      // heads = true;
-      // }
-      // } else {
-      // if (ast.argSize() == 4) {
-      // return Errors.printArgMessage(ast, ARGS_2_3, engine);
-      // }
-      // }
+      boolean includeHeads = option[0].isTrue();
 
       IExpr arg1 = evaledAST.arg1();
       IExpr arg2 = evaledAST.arg2();
@@ -232,7 +216,7 @@ public class StructureFunctions {
       if (lastIndex == 3) {
         level = evaledAST.get(3);
       }
-      return evalApply(arg1, arg2, level, lastIndex, heads, engine);
+      return evalApply(arg1, arg2, level, lastIndex, includeHeads, engine);
     }
 
     @Override
@@ -241,14 +225,14 @@ public class StructureFunctions {
     }
 
     public static IExpr evalApply(IExpr f, IExpr expr, IExpr levelExpr, int lastIndex,
-        boolean heads, EvalEngine engine) {
+        boolean includeHeads, EvalEngine engine) {
 
       java.util.function.Function<IExpr, IExpr> af =
           x -> x.isAST() ? ((IAST) x).setAtCopy(0, f) : F.NIL;
       try {
         VisitorLevelSpecification level = null;
         if (lastIndex == 3) {
-          level = new VisitorLevelSpecification(af, levelExpr, heads, engine);
+          level = new VisitorLevelSpecification(af, levelExpr, includeHeads, engine);
         } else {
           level = new VisitorLevelSpecification(af, 0);
         }
@@ -357,8 +341,8 @@ public class StructureFunctions {
     protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
       final IExpr arg1 = engine.evaluate(ast.arg1());
-      boolean heads = option[0].isTrue();
-      return F.ZZ(arg1.depth(heads));
+      boolean includeHeads = option[0].isTrue();
+      return F.ZZ(arg1.depth(includeHeads));
     }
 
     @Override
@@ -936,21 +920,11 @@ public class StructureFunctions {
    * Map(f, expr, a + b, Heads -&gt; True)
    * </pre>
    */
-  private static class Map extends AbstractFunctionEvaluator {
+  private static class Map extends AbstractFunctionOptionEvaluator {
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      int lastIndex = ast.argSize();
-      boolean heads = false;
-      final OptionArgs options = new OptionArgs(ast.topHead(), ast, lastIndex, engine);
-      if (options.isInvalidPosition(3)) {
-        return options.printNonopt(ast, 3, engine);
-      }
-      IExpr option = options.getOption(S.Heads);
-      if (option.isPresent()) {
-        lastIndex--;
-        heads = option.isTrue();
-      }
-
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine, IAST originalAST) {
+      boolean includeHeads = option[0].isTrue();
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (ast.isAST2()) {
@@ -959,18 +933,23 @@ public class StructureFunctions {
         }
       }
       VisitorLevelSpecification level;
-      if (lastIndex == 3) {
-        level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), ast.get(lastIndex), heads,
-            engine);
+      if (argSize == 3) {
+        level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), ast.get(argSize),
+            includeHeads, engine);
       } else {
-        level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), 1, heads);
+        level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), 1, includeHeads);
       }
       return arg2.accept(level).orElse(arg2);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_4_2;
+      return ARGS_2_3_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.Heads, S.False);
     }
   }
 
@@ -1145,42 +1124,33 @@ public class StructureFunctions {
    * {f({f({{a,b},{c,d}},{1,1})},{1}),f({f({{u,v},{s,t}},{2,1})},{2})}
    * </pre>
    */
-  private static final class MapIndexed extends AbstractFunctionEvaluator {
+  private static final class MapIndexed extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine, IAST originalAST) {
 
-      int lastIndex = ast.argSize();
-      boolean heads = false;
-      final OptionArgs options = new OptionArgs(ast.topHead(), ast, lastIndex, engine);
-      IExpr option = options.getOption(S.Heads);
-      if (option.isPresent()) {
-        lastIndex--;
-        if (option.isTrue()) {
-          heads = true;
-        }
-      }
-
+      boolean includeHeads = option[0].isTrue();
       IExpr arg1 = ast.arg1();
       IndexedLevel level;
-      if (lastIndex == 3) {
-        level =
-            new IndexedLevel((x, y) -> F.binaryAST2(arg1, x, y), ast.get(lastIndex), heads, engine);
+      if (argSize == 3) {
+        level = new IndexedLevel((x, y) -> F.binaryAST2(arg1, x, y), ast.get(argSize), includeHeads,
+            engine);
       } else {
-        level = new IndexedLevel((x, y) -> F.binaryAST2(arg1, x, y), 1, heads);
+        level = new IndexedLevel((x, y) -> F.binaryAST2(arg1, x, y), 1, includeHeads);
       }
 
       IExpr arg2 = ast.arg2();
       if (arg2.isSparseArray()) {
         arg2 = arg2.normal(false);
       }
-      if (arg2.isAssociation()) {
-        // `1` currently not supported in `2`.
-        return Errors.printMessage(ast.topHead(), "unsupported",
-            F.List(S.Association, S.MapIndexed), engine);
-      }
-      if (arg2.isAST()) {
-        return level.visitAST(((IAST) arg2), new int[0]).orElse(arg2);
+      // if (arg2.isAssociation()) {
+      // // `1` currently not supported in `2`.
+      // return Errors.printMessage(ast.topHead(), "unsupported",
+      // F.List(S.Association, S.MapIndexed), engine);
+      // }
+      if (arg2.isASTOrAssociation()) {
+        return level.visitAST(((IAST) arg2), new IExpr[0]).orElse(arg2);
       }
       return arg2;
     }
@@ -1188,6 +1158,11 @@ public class StructureFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.Heads, S.False);
     }
   }
 
@@ -1662,21 +1637,12 @@ public class StructureFunctions {
   }
 
 
-  private static class ParallelMap extends AbstractFunctionEvaluator {
-    @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      int lastIndex = ast.argSize();
-      boolean heads = false;
-      final OptionArgs options = new OptionArgs(ast.topHead(), ast, lastIndex, engine);
-      if (options.isInvalidPosition(3)) {
-        return options.printNonopt(ast, 3, engine);
-      }
-      IExpr option = options.getOption(S.Heads);
-      if (option.isPresent()) {
-        lastIndex--;
-        heads = option.isTrue();
-      }
+  private static class ParallelMap extends AbstractFunctionOptionEvaluator {
 
+    @Override
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine, IAST originalAST) {
+      boolean includeHeads = option[0].isTrue();
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
       if (ast.isAST2()) {
@@ -1685,18 +1651,23 @@ public class StructureFunctions {
         }
       }
       VisitorLevelSpecification level;
-      if (lastIndex == 3) {
-        level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), ast.get(lastIndex), heads,
-            engine);
+      if (argSize == 3) {
+        level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), ast.get(argSize),
+            includeHeads, engine);
       } else {
-        level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), 1, heads);
+        level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), 1, includeHeads);
       }
       return arg2.accept(level).orElse(arg2);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_4_2;
+      return ARGS_2_3_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.Heads, S.False);
     }
   }
 
@@ -1852,21 +1823,21 @@ public class StructureFunctions {
   private static final class Scan extends Map {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      final int argSize = ast.argSize();
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine, IAST originalAST) {
       if (argSize >= 2) {
         int lastIndex = argSize;
-        boolean heads = false;
-        if (argSize > 2) {
-          final OptionArgs options = new OptionArgs(ast.topHead(), ast, lastIndex, engine);
-          IExpr option = options.getOption(S.Heads);
-          if (option.isPresent()) {
-            lastIndex--;
-            if (option.isTrue()) {
-              heads = true;
-            }
-          }
-        }
+        boolean includeHeads = option[0].isTrue();
+        // if (argSize > 2) {
+        // final OptionArgs options = new OptionArgs(ast.topHead(), ast, lastIndex, engine);
+        // IExpr option = options.getOption(S.Heads);
+        // if (option.isPresent()) {
+        // lastIndex--;
+        // if (option.isTrue()) {
+        // includeHeads = true;
+        // }
+        // }
+        // }
 
         try {
           IExpr arg1 = ast.arg1();
@@ -1879,12 +1850,13 @@ public class StructureFunctions {
               return F.NIL;
             };
             VisitorLevelSpecification level =
-                new VisitorLevelSpecification(sf, ast.get(lastIndex), heads, engine);
+                new VisitorLevelSpecification(sf, ast.get(lastIndex), includeHeads, engine);
             arg2.accept(level);
             result.forEach(result.size(), x -> engine.evaluate(x));
           } else {
-            if (arg2.isAST()) {
-              ((IAST) arg2).forEach(x -> engine.evaluate(F.unaryAST1(arg1, x)), heads ? 0 : 1);
+            if (arg2.isASTOrAssociation()) {
+              ((IAST) arg2).forEach(x -> engine.evaluate(F.unaryAST1(arg1, x)),
+                  includeHeads ? 0 : 1);
             }
           }
           return S.Null;
@@ -1898,7 +1870,12 @@ public class StructureFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_4_2;
+      return ARGS_1_3_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.Heads, S.False);
     }
   }
 

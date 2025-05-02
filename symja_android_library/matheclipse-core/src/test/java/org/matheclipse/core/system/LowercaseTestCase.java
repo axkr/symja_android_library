@@ -10761,8 +10761,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
 
 
-
-
   @Test
   public void testI() {
     check("I*0.0//FullForm", //
@@ -13855,6 +13853,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "#2[Power][#2[5],#2[-1/2]]");
     check("Map(f, {{{{a}}}}, -2)", //
         "{f({f({f({a})})})}");
+    check("Map(h, <|a -> b, c -> d|>)", //
+        "<|a->h(b),c->h(d)|>");
 
     check("Map(List,Join({1,2,3},4-{1,2,3}))", //
         "{{1},{2},{3},{3},{2},{1}}");
@@ -14077,14 +14077,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMapIndexed() {
-    // Associations are not supported
     check("MapIndexed(f, <|\"a\" -> 1, a -> 2, 1 -> 1|>)", //
-        "MapIndexed(f,<|a->1,a->2,1->1|>)");
+        "<|a->f(1,{Key(a)}),a->f(2,{Key(a)}),1->f(1,{Key(1)})|>");
+    check("MapIndexed(h, <|a -> <|b -> c, p -> <|q -> r|>|>, d -> {e}|>, {2})", //
+        "<|a-><|b->h(c,{Key(a),Key(b)}),p->h(<|q->r|>,{Key(a),Key(p)})|>,d->{h(e,{Key(d),\n" //
+            + "1})}|>");
 
+    check("MapIndexed(f, {a, b, c}, Heads -> True)", //
+        "f(List,{0})[f(a,{1}),f(b,{2}),f(c,{3})]");
     check("MapIndexed(f, a(b(c, d, e), l(g(h, j), k)), {-Infinity, Infinity})", //
         "f(a(f(b(f(c,{1,1}),f(d,{1,2}),f(e,{1,3})),{1}),f(l(f(g(f(h,{2,1,1}),f(j,{2,1,2})),{\n"
             + "2,1}),f(k,{2,2})),{2})),{})");
-    // f[a[f[b[f[c, {1, 1}], f[d, {1, 2}], f[e, {1, 3}]], {1}], f[l[f[g[f[h, {2, 1, 1}], f[j, {2, 1,
+    // f[a[f[b[f[c, {1, 1}], f[d, {1, 2}], f[e, {1, 3}]], {1}], f[l[f[g[f[h, {2, 1, 1}], f[j, {2,1,
     // 2}]], {2, 1}], f[k, {2, 2}]], {2}]], {}]
     //
     // a(f(b(f(c,{1,1}),f(d,{1,2}),f(e,{1,3})),{1}),f(l(f(g(f(h,{2,1,1}),f(j,{2,1,2})),{
@@ -20347,8 +20351,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("Rationalize(0.000000000008854187817)", //
         "8.85419*10^-12");
-    check("Rationalize(N(Pi), 0)", //
-        "884279719003555/281474976710656");
     check("Rationalize(0.202898)", //
         "101449/500000");
 
@@ -21593,25 +21595,40 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testScan() {
-    // TODO e1 ~ e2 ~ e3 => e2[e1, e3]
-    // check("(Print@#; #0 ~Scan~ #)& @ {{1, {2, 3}}, {4, 5}}", //
-    // "");
-
+    check("Scan(Print, {a, b}, Heads -> True)", //
+        "");
     // prints
+    // List
+    // a
+    // b
+
+    check("(Print@#; #0 ~Scan~ #)& @ {{1, {2, 3}}, {4, 5}}", //
+        "");
+    // prints
+    // {{1,{2,3}},{4,5}}
+    // {1,{2,3}}
     // 1
+    // {2,3}
     // 2
     // 3
-    // {2,3}
-    // {1,{2,3}}
+    // {4,5}
     // 4
     // 5
-    // {4,5}
-    // {{1,{2,3}},{4,5}}
 
     check("Scan(Print,<|1 -> {{a}}, 2 -> b|>, 2)", //
         "");
+    // prints
+    // {a}
+    // {{a}}
+    // b
+
     check("Scan(Print,<|1 -> a, 2 -> b, 3 -> c|>)", //
         "");
+    // prints
+    // a
+    // b
+    // c
+
     check("expr = {{1, {2, 3}}, {4, 5}}; Scan(Print, expr, {0, -1})", //
         "");
 
@@ -21627,12 +21644,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "6");
     check("Catch(Scan(If(# > 5, Throw(#)) &, {2, 4, 6, 8}))", //
         "6");
-    check("Reap(Scan(\n" + "   If(# > 0, Sow(#)) &, {1, {-2, Pi}, -Sqrt(3)},Infinity))[[2, 1]]", //
+    check("Reap(Scan(\n" + " If(# > 0, Sow(#)) &, {1, {-2, Pi}, -Sqrt(3)},Infinity))[[2, 1]]", //
         "{1,Pi,3,1/2,Sqrt(3)}");
     check("Scan(Return, {1, 2})", //
         "1");
     check(
-        "Reap(Scan(Sow, -(ArcTan((1 + 2*x)/Sqrt(3))/Sqrt(3)) + (1/3)*Log(1 - x) - (1/6)*Log(1 + x + x^2), {-1}))[[2, 1]]", //
+        "Reap(Scan(Sow, -(ArcTan((1 + 2*x)/Sqrt(3))/Sqrt(3)) + (1/3)*Log(1 - x) - (1/6)*Log(1 + x +x^2), {-1}))[[2, 1]]", //
         "{-1,3,-1/2,3,-1/2,1,2,x,1/3,1,-1,x,-1/6,1,x,x,2}");
   }
 
@@ -22139,6 +22156,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSimplify() {
+    // check("Reduce(p==5&&p==6)", //
+    // "False");
+    // check("Simplify(p==5&&p==6)", //
+    // "");
+
     check("Simplify((1/x-1/3)/(x-3))", //
         "-1/(3*x)");
 

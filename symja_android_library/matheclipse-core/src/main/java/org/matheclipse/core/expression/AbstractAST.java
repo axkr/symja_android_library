@@ -1883,13 +1883,13 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public int depth(boolean heads) {
+  public int depth(boolean includeHeads) {
     int maxDepth = 1;
     int d;
-    final int start = heads ? 0 : 1;
+    final int start = includeHeads ? 0 : 1;
     for (int i = start; i < size(); i++) {
       if (get(i).isAST()) {
-        d = get(i).depth(heads);
+        d = get(i).depth(includeHeads);
         if (d > maxDepth) {
           maxDepth = d;
         }

@@ -62,7 +62,7 @@ public class IndexedLevel extends AbstractLevelVisitor {
   public IndexedLevel(final BiFunction<IExpr, IExpr, IExpr> function, final int fromLevel,
       final int toLevel, final int fromDepth, final int toDepth, final boolean includeHeads) {
     super(fromLevel, toLevel, fromDepth, toDepth, includeHeads);
-    fFunction = function; 
+    fFunction = function;
   }
 
   /**
@@ -73,31 +73,29 @@ public class IndexedLevel extends AbstractLevelVisitor {
    * @deprecated use {@link #visitAtom(IExpr, int[])}
    */
   @Deprecated
-  public IExpr visitExpr(IExpr element, int[] indx) {
+  public IExpr visitExpr(IExpr element, IExpr[] indx) {
     return visitAtom(element, indx);
   }
 
-  protected final IExpr visitAtom(IExpr element, int[] indx) {
+  protected final IExpr visitAtom(IExpr element, IExpr[] indx) {
     if (element.isASTOrAssociation()) {
       return F.NIL;
     }
     fCurrentDepth = -1;
-    IASTAppendable indxList = F.mapRange(0, indx.length, i -> F.ZZ(indx[i]));
+    IASTAppendable indxList = F.mapRange(0, indx.length, i -> indx[i]);
     return isInRange(fCurrentLevel, -1) ? fFunction.apply(element, indxList) : F.NIL;
   }
 
-  public IExpr visitAST(IAST ast, int[] indx) {
+  public IExpr visitAST(IAST ast, IExpr[] indx) {
     IASTMutable[] result = new IASTMutable[] {F.NIL};
     int[] minDepth = new int[] {0};
     try {
       int size = indx.length;
-      final int[] newIndx = new int[size + 1];
-      for (int j = 0; j < size; j++) {
-        newIndx[j] = indx[j];
-      }
+      final IExpr[] newIndx = new IExpr[size + 1];
+      System.arraycopy(indx, 0, newIndx, 0, size);
       fCurrentLevel++;
       if (fIncludeHeads) {
-        newIndx[size] = 0;
+        newIndx[size] = F.C0;
         IExpr element = ast.get(0);
         if (element.isAST()) {
           IExpr temp = visitAST((IAST) element, newIndx);
@@ -116,10 +114,17 @@ public class IndexedLevel extends AbstractLevelVisitor {
           minDepth[0] = fCurrentDepth;
         }
       }
-      ast.forEach((x, i) -> {
-        newIndx[size] = i;
+      ast.forEachRule((x, i) -> {
+        newIndx[size] = F.ZZ(i);
         IExpr element = x;
         boolean evaled = false;
+        if (ast.isAssociation() && element.isRuleAST()) {
+          // IAssociation assoc = (IAssociation) ast;
+          IAST rule = (IAST) element;
+          IExpr key = rule.arg1();
+          newIndx[size] = F.Key(key);
+          element = rule.arg2();
+        }
         if (element.isASTOrAssociation()) {
           IExpr temp = visitAST((IAST) element, newIndx);
           if (temp.isPresent()) {
@@ -127,17 +132,18 @@ public class IndexedLevel extends AbstractLevelVisitor {
             element = temp;
           }
         }
+        IExpr value = F.NIL;
         final IExpr temp = visitAtom(element, newIndx);
         if (temp.isPresent()) {
-          if (result[0].isNIL()) {
-            result[0] = createResult(ast, temp);
-          }
-          result[0].set(i, temp);
+          value = temp;
         } else if (evaled) {
+          value = element;
+        }
+        if (value.isPresent()) {
           if (result[0].isNIL()) {
-            result[0] = createResult(ast, temp);
+            result[0] = ast.copyAppendable();
           }
-          result[0].set(i, element);
+          result[0].setValue(i, value);
         }
         if (fCurrentDepth < minDepth[0]) {
           minDepth[0] = fCurrentDepth;
@@ -149,7 +155,7 @@ public class IndexedLevel extends AbstractLevelVisitor {
     }
     fCurrentDepth = --minDepth[0];
     if (isInRange(fCurrentLevel, minDepth[0])) {
-      IASTAppendable indxList = F.mapRange(0, indx.length, i -> F.ZZ(indx[i]));
+      IASTAppendable indxList = F.mapRange(0, indx.length, i -> indx[i]);
       if (result[0].isNIL()) {
         return fFunction.apply(ast, indxList);
       } else {
