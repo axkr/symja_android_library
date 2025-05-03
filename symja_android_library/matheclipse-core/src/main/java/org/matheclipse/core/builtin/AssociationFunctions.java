@@ -396,7 +396,7 @@ public class AssociationFunctions {
         IAssociation result = F.assoc(); // list2.size());
         for (int i = 1; i < list2.size(); i++) {
           final IExpr function = engine.evaluate(F.unaryAST1(arg1, list2.get(i)));
-          result.append(F.binaryAST2(symbol, list2.get(i), function));
+          result.appendRule(F.binaryAST2(symbol, list2.get(i), function));
         }
         return result;
       }

@@ -223,6 +223,8 @@ public class AssociationTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testAssociationMap() {
+    check("i = 0;AssociationMap({#, i++} &, {a, b, b})", //
+        "<|a->{a,0},b->{b,2}|>");
     check("AssociationMap(Reverse,<|U->1,V->2|>)", //
         "<|1->U,2->V|>");
     check("AssociationMap(f,{U,V})", //
