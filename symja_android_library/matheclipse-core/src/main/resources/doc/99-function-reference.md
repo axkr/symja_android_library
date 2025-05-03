@@ -575,6 +575,7 @@ Functions in alphabetical order:
 * [KeysExistsQ](functions/KeysExistsQ.md)
 * &#x2705; [KeySort](functions/KeySort.md)
 * &#x2705; [KeyTake](functions/KeyTake.md)
+* [KeyValuePattern](functions/KeyValuePattern.md)
 * &#x2705; [Khinchin](functions/Khinchin.md)
 * &#x2705; [KolmogorovSmirnovTest](functions/KolmogorovSmirnovTest.md)
 * &#x2705; [KroneckerDelta](functions/KroneckerDelta.md)

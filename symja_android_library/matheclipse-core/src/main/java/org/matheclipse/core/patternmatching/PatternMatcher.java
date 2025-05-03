@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayDeque;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.matheclipse.core.combinatoric.MultisetPartitionsIterator;
 import org.matheclipse.core.combinatoric.NumberPartitionsIterator;
 import org.matheclipse.core.eval.EvalEngine;
@@ -1157,6 +1159,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
           case ID.HoldPattern:
           case ID.Literal:
             return matchHoldPattern(lhsPatternAST, lhsEvalExpr, stackMatcher, engine);
+          case ID.KeyValuePattern:
+            return matchKeyValuePattern(lhsPatternAST, lhsEvalExpr, stackMatcher, engine);
           case ID.Optional:
             return matchOptional(lhsPatternAST, lhsEvalExpr, stackMatcher, engine);
           case ID.Verbatim:
@@ -1205,6 +1209,64 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
     final IExpr[] patternValues = fPatternMap.copyPattern();
     try {
       matched = matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, engine, stackMatcher);
+    } finally {
+      if (!matched) {
+        fPatternMap.resetPattern(patternValues);
+      }
+    }
+    return matched;
+  }
+
+  private boolean matchKeyValuePattern(IAST lhsPatternAST, final IExpr lhsEvalExpr,
+      StackMatcher stackMatcher, EvalEngine engine) {
+    boolean matched = false;
+    IExpr arg1 = lhsPatternAST.arg1();
+    final IExpr[] patternValues = fPatternMap.copyPattern();
+    try {
+      arg1 = arg1.makeList();
+      if (arg1.isList()) {
+        IAST listOfPatterns = (IAST) arg1;
+        IAST lhsEvalList = F.NIL;
+        if (lhsEvalExpr.isAssociation()) {
+          lhsEvalList = ((IAssociation) lhsEvalExpr).normal(false);
+        } else if (lhsEvalExpr.isListOfRules()) {
+          lhsEvalList = (IAST) lhsEvalExpr;
+        }
+        if (lhsEvalList.isList()) {
+          if (listOfPatterns.isEmpty()) {
+            // empty list matches any association or list of rules
+            return true;
+          }
+          Set<Integer> matchedIndices = new HashSet<Integer>();
+          for (int j = 1; j < listOfPatterns.size(); j++) {
+            boolean partMatched = false;
+            final IExpr patternArg = listOfPatterns.get(j);
+            for (int i = 1; i < lhsEvalList.size(); i++) {
+              partMatched = false;
+              if (matchedIndices.contains(i)) {
+                continue;
+              }
+              final IExpr[] patternValues2 = fPatternMap.copyPattern();
+              try {
+                partMatched = matchExpr(patternArg, lhsEvalList.getRule(i), engine, stackMatcher);
+                if (partMatched) {
+                  matchedIndices.add(i);
+                  break;
+                }
+              } finally {
+                if (!partMatched) {
+                  fPatternMap.resetPattern(patternValues2);
+                }
+              }
+            }
+            if (!partMatched) {
+              matched = false;
+              return matched;
+            }
+            matched = true;
+          }
+        }
+      }
     } finally {
       if (!matched) {
         fPatternMap.resetPattern(patternValues);

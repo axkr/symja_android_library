@@ -373,6 +373,58 @@ public class PatternMatchingTestCase {
   }
 
   @Test
+  public void testKeyValuePattern() {
+
+    check("MatchQ[<|a -> 1, b -> 2|>, KeyValuePattern[{_, _, _}]]", //
+        "False");
+
+    check("MatchQ[<|a -> 1, b -> 2|>, KeyValuePattern[{_, _}]]", //
+        "True");
+    check("MatchQ[<|a -> 1|>, KeyValuePattern[{a :> 1}]]", //
+        "False");
+
+    check("MatchQ[<|a -> 1|>, KeyValuePattern[{}]]", //
+        "True");
+    check("MatchQ[<|a -> 1|>, KeyValuePattern[{x_ -> y_}]]", //
+            "True");
+    
+    check("MatchQ[<|a -> 1, b -> 2, c -> 3|>, KeyValuePattern[b->2]]", //
+        "True");
+    check("MatchQ[{a -> 1, b -> 2, c -> 3}, KeyValuePattern[b -> 2]]", //
+        "True");
+    check("MatchQ[<|a -> 1, b -> 2|>, KeyValuePattern[{a -> _}]]", //
+        "True");
+
+
+    check("MatchQ[<|a -> 1, b -> 2|>, KeyValuePattern[{_ -> 2, _ -> 1}]]", //
+        "True");
+    check("MatchQ[<|a -> 1, b -> 2|>, <|_ -> 2, _ -> 1|>]", //
+        "False");
+
+    check("<|a -> 1, b -> 2, c -> 3|> /. KeyValuePattern[{x_ -> 1}] :> x", //
+        "a");
+    check("<|a -> 1, b -> 2|> /. KeyValuePattern[{x_ -> y_?EvenQ}] :> (x -> y)", //
+        "b->2");
+    check("<|a -> 1, b -> 2, c -> 3|> /. KeyValuePattern[{_ -> x_, _ -> y_}] :> {x, y}", //
+        "{1,2}");
+    check("<|a -> 1, b -> 2, c -> 3|> /.  KeyValuePattern[{a -> x_, c -> y_}] -> {x, y}", //
+        "{1,3}");
+
+    check(
+        "peopleData = {\n"
+            + "  <|\"Name\" -> \"Alice\", \"Age\" -> 30, \"City\" -> \"New York\"|>,\n"//
+            + "  <|\"Name\" -> \"Bob\", \"Age\" -> 25, \"City\" -> \"Los Angeles\"|>,\n"//
+            + "  <|\"Name\" -> \"Charlie\", \"Age\" -> 35, \"City\" -> \"Chicago\"|>,\n"//
+            + "  <|\"Name\" -> \"David\", \"Age\" -> 25, \"City\" -> \"New York\"|>,\n"//
+            + "  <|\"Name\" -> \"Eve\", \"Age\" -> 40, \"City\" -> \"Los Angeles\"|>\n"//
+            + "};", //
+        "");
+    check("Cases[peopleData, KeyValuePattern[{\"Age\" -> 25}]]", //
+        "{<|Name->Bob,Age->25,City->Los Angeles|>,<|Name->David,Age->25,City->New York|>}");
+
+  }
+
+  @Test
   public void testMathicsPMWithCondition() {
     // TODO make rule ordering more compatible with WMA
     // see mathics-core #1233

@@ -5830,6 +5830,9 @@ public class S {
    */
   public final static IBuiltInSymbol KeyTake = S.initFinalSymbol("KeyTake", ID.KeyTake);
 
+  public final static IBuiltInSymbol KeyValuePattern =
+      S.initFinalSymbol("KeyValuePattern", ID.KeyValuePattern);
+
   /**
    * Khinchin - Khinchin's constant
    * 

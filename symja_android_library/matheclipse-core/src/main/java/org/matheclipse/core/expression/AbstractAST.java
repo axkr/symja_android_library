@@ -4867,8 +4867,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public final boolean isPatternMatchingFunction() {
     if (size() >= 2) {
       return isFunctionID(ID.Alternatives, ID.Association, ID.Complex, ID.Condition, ID.Except,
-          ID.HoldPattern, ID.Literal, ID.Optional, ID.PatternTest, ID.Rational, ID.Repeated,
-          ID.RepeatedNull, ID.Verbatim);
+          ID.HoldPattern, ID.KeyValuePattern, ID.Literal, ID.Optional, ID.PatternTest, ID.Rational,
+          ID.Repeated, ID.RepeatedNull, ID.Verbatim);
     }
     return false;
   }

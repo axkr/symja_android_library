@@ -3356,7 +3356,7 @@ public interface IPatternMap {
       int[] priority, boolean[] ruleWithoutPattern, int treeLevel) {
 
     int[] listEvalFlags = new int[] {IAST.NO_FLAG};
-    if (lhsPatternExpr.isAlternatives() || lhsPatternExpr.isExcept()) {
+    if (lhsPatternExpr.isPatternMatchingFunction()) {
       ruleWithoutPattern[0] = false;
     }
     if (lhsPatternExpr.isCondition()) {
