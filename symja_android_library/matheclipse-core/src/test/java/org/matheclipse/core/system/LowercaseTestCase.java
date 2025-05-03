@@ -2306,7 +2306,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // " t : {__Integer} :> t^2", //
     // "(t:{__Integer}):>t^2");
     check("Cases({(c*x+d)^(1/3)}, " //
-        + "y:(a_. x + b_.)^n_ /;  FreeQ({a,b}, x) && Head(n) == Rational :> {y, a*x + b, Numerator(n), Denominator(n), a, b}, {0, Infinity})", //
+        + "y:(a_. x + b_.)^n_ /; FreeQ({a,b}, x) && Head(n) == Rational :> {y, a*x + b, Numerator(n),Denominator(n), a, b}, {0, Infinity})", //
         "{{(d+c*x)^(1/3),d+c*x,1,3,c,d}}");
 
     check("Cases({b, 6, \\[Pi]}, _Symbol, Heads->True)", //
@@ -14542,6 +14542,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMemberQ() {
+    check("MemberQ(b)[{a, b, c}]", //
+        "True");
+
     check("MemberQ({Sin, Cos, Tan, Cot, Sec, Csc}, If(AtomQ(Cos),Cos,Head(Cos)))", //
         "True");
     check("MemberQ(x,x)", //
@@ -14577,6 +14580,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
     check("MemberQ(a + b + c, a + c)", //
         "False");
+    check("MemberQ(Table(Mod(2^i, 7), {i, 10}), 1)", //
+        "True");
   }
 
   @Test

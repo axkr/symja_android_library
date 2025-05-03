@@ -15,6 +15,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
@@ -833,47 +834,34 @@ public class PredicateQ {
    * True
    * </pre>
    */
-  private static final class MemberQ extends AbstractCoreFunctionEvaluator implements IPredicate {
+  private static final class MemberQ extends AbstractFunctionOptionEvaluator implements IPredicate {
 
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      boolean heads = false;
-      int size = ast.size();
-      if (ast.size() > 3) {
-        final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, size, engine);
-        if (options.isTrue(S.Heads)) {
-          heads = true;
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine, IAST originalAST) {
+      boolean includeHeads = option[0].isTrue();
+      final IExpr arg1 = ast.arg1();
+      if (arg1.isAST()) {
+        final IExpr arg2 = ast.arg2();
+        if (argSize == 2) {
+          return F.booleSymbol(arg1.isMember(arg2, includeHeads, null));
         }
-        int pos = options.getLastPosition();
-        if (pos != -1) {
-          size = pos;
-        }
+        Predicate<IExpr> predicate = Predicates.toMemberQ(arg2);
+        IVisitorBoolean level =
+            new VisitorBooleanLevelSpecification(predicate, ast.arg3(), includeHeads, engine);
+        return F.booleSymbol(arg1.accept(level));
       }
-
-      if (size >= 3) {
-        final IExpr arg1 = engine.evaluate(ast.arg1());
-        if (arg1.isAST()) {
-          final IExpr arg2 = engine.evaluate(ast.arg2());
-          if (size == 3) {
-            return F.booleSymbol(arg1.isMember(arg2, heads, null));
-          }
-
-          Predicate<IExpr> predicate = Predicates.toMemberQ(arg2);
-          IVisitorBoolean level =
-              new VisitorBooleanLevelSpecification(predicate, ast.arg3(), heads, engine);
-
-          return F.booleSymbol(arg1.accept(level));
-        }
-
-        return S.False;
-      }
-
-      return F.NIL;
+      return S.False;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_INFINITY_1;
+      return ARGS_2_3_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.Heads, S.False);
     }
   }
 

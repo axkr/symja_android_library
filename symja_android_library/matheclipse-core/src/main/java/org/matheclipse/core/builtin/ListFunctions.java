@@ -35,6 +35,7 @@ import org.matheclipse.core.eval.exception.ResultException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -1280,7 +1281,7 @@ public final class ListFunctions {
    * {2, 3, 3, 3, 5, 5}
    * </pre>
    */
-  private static final class Cases extends AbstractCoreFunctionEvaluator {
+  private static final class Cases extends AbstractCoreFunctionOptionEvaluator {
 
     private static class CasesPatternMatcherFunctor implements Function<IExpr, IExpr> {
       protected final IPatternMatcher matcher;
@@ -1350,27 +1351,28 @@ public final class ListFunctions {
       }
     }
 
+
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
+    protected IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine) {
 
       try {
-        boolean heads = false;
-        if (ast.size() >= 3 && ast.size() <= 5) {
-          final OptionArgs options = OptionArgs.createOptionArgs(ast, engine);
-          if (options != null) {
-            IExpr option = options.getOption(S.Heads);
-            if (option.isTrue()) {
-              heads = true;
-            }
-            ast = ast.most();
-          }
+        boolean includeHeads = options[0].isTrue();
+        if (argSize >= 2 && argSize <= 4) {
+          // final OptionArgs options = OptionArgs.createOptionArgs(ast, engine);
+          // if (options != null) {
+          // IExpr option = options.getOption(S.Heads);
+          // if (option.isTrue()) {
+          // includeHeads = true;
+          // }
+          // ast = ast.most();
+          // }
           final IExpr arg1 = engine.evaluate(ast.arg1());
           if (arg1.isASTOrAssociation()) {
             final IExpr arg2 = engine.evalPattern(ast.arg2());
-            if (ast.isAST3() || ast.size() == 5) {
+            if (argSize >= 3) {
               final IExpr arg3 = engine.evaluate(ast.arg3());
               int maximumResults = -1;
-              if (ast.size() == 5) {
+              if (argSize == 4) {
                 maximumResults = Validate.checkIntType(ast, 4);
               }
               IASTAppendable result = F.ListAlloc(8);
@@ -1379,7 +1381,7 @@ public final class ListFunctions {
                   Function<IExpr, IExpr> function = Functors.rules(arg2, engine);
                   CasesRulesFunctor crf = new CasesRulesFunctor(function, result, maximumResults);
                   VisitorLevelSpecification level =
-                      new VisitorLevelSpecification(crf, arg3, heads, engine);
+                      new VisitorLevelSpecification(crf, arg3, includeHeads, engine);
                   arg1.accept(level);
                 } catch (AbortException aex) {
                   // reached maximum number of results
@@ -1392,14 +1394,14 @@ public final class ListFunctions {
                 CasesPatternMatcherFunctor cpmf =
                     new CasesPatternMatcherFunctor(matcher, result, maximumResults);
                 VisitorLevelSpecification level =
-                    new VisitorLevelSpecification(cpmf, arg3, heads, engine);
+                    new VisitorLevelSpecification(cpmf, arg3, includeHeads, engine);
                 arg1.accept(level);
               } catch (AbortException aex) {
                 // reached maximum number of results
               }
               return result;
             } else {
-              return cases((IAST) arg1, arg2, heads, engine);
+              return cases((IAST) arg1, arg2, includeHeads, engine);
             }
           }
           return F.CEmptyList;
@@ -1452,9 +1454,9 @@ public final class ListFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
-      setOptions(newSymbol, //
-          F.list(F.Rule(S.Heads, S.False)));
+      setOptions(newSymbol, S.Heads, S.False);
     }
+
   }
 
   /**
@@ -2011,7 +2013,7 @@ public final class ListFunctions {
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
 
-      boolean heads = option[0].isTrue();
+      boolean includeHeads = option[0].isTrue();
 
       if (ast.headID() != ID.Count) {
         // operator form
@@ -2031,9 +2033,9 @@ public final class ListFunctions {
         CountFunctor mf = new CountFunctor(engine.evalPatternMatcher(ast.arg2()));
         if (ast.size() >= 4) {
           final IExpr arg3 = engine.evaluate(ast.arg3());
-          level = new VisitorLevelSpecification(mf, arg3, heads, engine);
+          level = new VisitorLevelSpecification(mf, arg3, includeHeads, engine);
         } else {
-          level = new VisitorLevelSpecification(mf, 1, heads);
+          level = new VisitorLevelSpecification(mf, 1, includeHeads);
         }
         arg1.accept(level);
         return F.ZZ(mf.getCounter());
@@ -2994,7 +2996,7 @@ public final class ListFunctions {
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
 
-      boolean heads = option[0].isTrue();
+      boolean includeHeads = option[0].isTrue();
 
       try {
         IExpr defaultValue = F.CMissingNotFound;
@@ -3013,19 +3015,19 @@ public final class ListFunctions {
                 Function<IExpr, IExpr> function = Functors.rules(arg2, engine);
                 FirstCaseRulesFunctor fcrf = new FirstCaseRulesFunctor(function);
                 VisitorLevelSpecification level =
-                    new VisitorLevelSpecification(fcrf, levelValue, heads, engine);
+                    new VisitorLevelSpecification(fcrf, levelValue, includeHeads, engine);
                 arg1.accept(level);
               } else {
                 final IPatternMatcher matcher = engine.evalPatternMatcher(arg2);
                 matcher.throwExceptionArgIfMatched(true);
                 FirstCasePatternMatcherFunctor cpmf = new FirstCasePatternMatcherFunctor(matcher);
                 VisitorLevelSpecification level =
-                    new VisitorLevelSpecification(cpmf, levelValue, heads, engine);
+                    new VisitorLevelSpecification(cpmf, levelValue, includeHeads, engine);
                 arg1.accept(level);
               }
               return defaultValue;
             } else {
-              return firstCase((IAST) arg1, arg2, defaultValue, heads, engine);
+              return firstCase((IAST) arg1, arg2, defaultValue, includeHeads, engine);
             }
           }
           return defaultValue;
@@ -3160,7 +3162,7 @@ public final class ListFunctions {
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine, IAST originalAST) {
 
-      boolean heads = option[0].isTrue();
+      boolean includeHeads = option[0].isTrue();
       if (argSize < 2) {
         return F.NIL;
       }
@@ -3171,19 +3173,19 @@ public final class ListFunctions {
         if (arg1.isASTOrAssociation()) {
           final IExpr arg2 = engine.evalPattern(ast.arg2());
           if (argSize == 2) {
-            final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, heads);
+            final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, includeHeads);
             position((IAST) arg1, arg2, level, engine);
             return defaultValue;
           }
 
           defaultValue = ast.arg3();
           if (argSize == 3) {
-            final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, heads);
+            final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, includeHeads);
             position((IAST) arg1, arg2, level, engine);
             return defaultValue;
           }
           IExpr arg4 = engine.evaluate(ast.arg4());
-          final LevelSpec level = new LevelSpecification(arg4, heads);
+          final LevelSpec level = new LevelSpecification(arg4, includeHeads);
           position((IAST) arg1, arg2, level, engine);
           return defaultValue;
         }
