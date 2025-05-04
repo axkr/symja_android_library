@@ -570,6 +570,7 @@ Functions in alphabetical order:
 * &#x2705; [Join](functions/Join.md)
 * &#x2611; [JSForm](functions/JSForm.md)
 * &#x2705; [Key](functions/Key.md)
+* [KeyDrop](functions/KeyDrop.md)
 * &#x2705; [Keys](functions/Keys.md)
 * &#x2705; [KeySelect](functions/KeySelect.md)
 * [KeysExistsQ](functions/KeysExistsQ.md)

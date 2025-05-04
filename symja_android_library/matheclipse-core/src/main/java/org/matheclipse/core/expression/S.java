@@ -5790,6 +5790,8 @@ public class S {
 
   public final static IBuiltInSymbol KeyAbsent = S.initFinalSymbol("KeyAbsent", ID.KeyAbsent);
 
+  public final static IBuiltInSymbol KeyDrop = S.initFinalSymbol("KeyDrop", ID.KeyDrop);
+
   public final static IBuiltInSymbol KeyExistsQ = S.initFinalSymbol("KeyExistsQ", ID.KeyExistsQ);
 
   /**

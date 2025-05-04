@@ -357,7 +357,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     @Override
-    public IASTAppendable copyAppendable() {
+    public IAssociation copyAppendable() {
       ArgumentTypeException.throwNIL();
       return null;
     }
@@ -1307,6 +1307,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       ArgumentTypeException.throwNIL();
     }
 
+    @Override
+    public IExpr removeRule(IExpr key) {
+      ArgumentTypeException.throwNIL();
+      return null;
+    }
   }
 
   /** The enumeration map which possibly maps the properties (keys) to a user defined object. */

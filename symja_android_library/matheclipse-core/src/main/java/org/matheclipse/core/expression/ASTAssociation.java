@@ -188,7 +188,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   }
 
   @Override
-  public IASTAppendable copyAppendable() {
+  public IAssociation copyAppendable() {
     return copy();
   }
 
@@ -868,6 +868,15 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
     }
     keyToIndexMap = mutable;
     return result;
+  }
+
+  @Override
+  public IExpr removeRule(IExpr key) {
+    int index = getRulePosition(key);
+    if (index > 0) {
+      return remove(index);
+    }
+    return F.NIL;
   }
 
   /** {@inheritDoc} */

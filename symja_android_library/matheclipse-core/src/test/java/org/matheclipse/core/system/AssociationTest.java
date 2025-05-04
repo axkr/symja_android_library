@@ -425,6 +425,35 @@ public class AssociationTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testKeyDrop() {
+    check("KeyDrop(<|a -> 1, b -> 2|>, a)", //
+        "<|b->2|>");
+
+    check("KeyDrop(<|a -> 1, b -> 2, c -> 3, d -> 4|>, {a, d})", //
+        "<|b->2,c->3|>");
+    check("KeyDrop({<|a -> 1, b -> 2|>, <|c -> 3, d -> 4|>}, {a, d})", //
+        "{<|b->2|>,<|c->3|>}");
+    check("KeyDrop({{a -> 1, b -> 2}, {b -> 3}}, {b})", //
+        "{<|a->1|>,<||>}");
+
+    check(" KeyDrop({<|a -> 1, b -> 2|>, {b -> 3, c -> 3}}, b)", //
+        "{<|a->1|>,<|c->3|>}");
+    check("KeyDrop({a, d})[<|a -> 1, b -> 2, c -> 3, d -> 4|>]", //
+        "<|b->2,c->3|>");
+    
+    check("productInfo = <|\n" //
+        + "  \"Name\" -> \"Widget X\",\n" //
+        + "  \"Price\" -> 19.99,\n" //
+        + "  \"InStock\" -> True,\n" //
+        + "  \"SupplierID\" -> \"SUP123\"\n" //
+        + "|>;", //
+        "");
+    
+    check("KeyDrop(productInfo, {\"SupplierID\", \"InStock\"})", //
+        "<|Name->Widget X,Price->19.99|>");
+  }
+
+  @Test
   public void testKeyExistsQ() {
     check("KeyExistsQ(<|1->U,2->V|>, 1)", //
         "True");

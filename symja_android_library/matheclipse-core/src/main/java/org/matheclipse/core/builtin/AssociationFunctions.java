@@ -40,6 +40,7 @@ public class AssociationFunctions {
       S.AssociationMap.setEvaluator(new AssociationMap());
       S.AssociationThread.setEvaluator(new AssociationThread());
       S.Counts.setEvaluator(new Counts());
+      S.KeyDrop.setEvaluator(new KeyDrop());
       S.KeyExistsQ.setEvaluator(new KeyExistsQ());
       S.Key.setEvaluator(new Key());
       S.Keys.setEvaluator(new Keys());
@@ -553,6 +554,63 @@ public class AssociationFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
+  }
+
+  private static final class KeyDrop extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      try {
+        if (ast.arg1().isListOrAssociation()) {
+          final IAST arg1 = (IAST) ast.arg1();
+          if (arg1.forAll(x -> x.isListOfRulesOrAssociation(true))) {
+            return arg1.mapThread(ast, 1);
+          }
+          if (arg1.isListOfRulesOrAssociation(true)) {
+            IAST arg2 = ast.arg2().makeList();
+            IAssociation assoc = F.NIL;
+            if (arg1.isAssociation()) {
+              assoc = (IAssociation) arg1;
+            } else {
+              assoc = F.assoc(arg1);
+            }
+
+            if (assoc.isPresent()) {
+              return keyDrop(assoc, arg2);
+            }
+          }
+        }
+        // The argument `1` is not a valid Association or a list of rules.
+        return Errors.printMessage(ast.topHead(), "invrl", F.List(ast.arg1()), engine);
+      } catch (final ValidateException ve) {
+        Errors.printMessage(ast.topHead(), ve, engine);
+      } catch (final RuntimeException rex) {
+        Errors.printMessage(ast.topHead(), rex, engine);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2_1;
+    }
+
+    private static IAST keyDrop(final IAssociation list1, final IAST list2) {
+      IAssociation assoc = list1;
+      final IAssociation result = assoc.copyAppendable();
+      final int size = list2.size();
+      boolean evaled = false;
+      for (int i = 1; i < size; i++) {
+        final IExpr rule = result.removeRule(list2.get(i));
+        if (rule.isPresent()) {
+          evaled = true;
+        }
+      }
+      return evaled ? result : assoc;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
   }
 
   private static class KeyExistsQ extends AbstractEvaluator {

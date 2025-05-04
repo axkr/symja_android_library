@@ -28,6 +28,9 @@ public interface IAssociation extends IASTAppendable {
   public IAssociation copy();
 
   @Override
+  public IAssociation copyAppendable();
+
+  @Override
   public IASTAppendable copyAST();
 
   /** Copy this association as empty association */
@@ -158,6 +161,20 @@ public interface IAssociation extends IASTAppendable {
    */
   public void prependRules(IAST listOfRules, int startPosition, int endPosition);
 
+  /**
+   * Remove the rule with the given key from this association.
+   * 
+   * @param key the key to remove
+   * @return
+   */
+  public IExpr removeRule(IExpr key);
+
+  /**
+   * Reverse the association. As a result the rules are listed in reverse order.
+   * 
+   * @param newAssoc
+   * @return
+   */
   public IAssociation reverse(IAssociation newAssoc);
 
   /**
