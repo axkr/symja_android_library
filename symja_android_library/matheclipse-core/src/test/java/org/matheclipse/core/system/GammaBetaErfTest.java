@@ -1084,6 +1084,14 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLogIntegral() {
+    // https://github.com/mtommila/apfloat/issues/62
+    check("N(LogIntegral(1/2),50)", //
+        "-0.37867104306108797672720718463656098055123404097821");
+    check("N(LogIntegral(2),50)", //
+        "1.0451637801174927848445888891946131365226155781512");
+    // perf test
+    // check("N(Table(LogIntegral(x), {x,-4, 4, 1/4}),50)", //
+    // "");
     check("LogIntegral(-4.0)", //
         "-0.158346+I*4.30335");
 
