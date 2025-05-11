@@ -300,6 +300,12 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testHyperGeometricU() {
+    check("FunctionExpand(HypergeometricU(3/2, 1/2, x))", //
+        "2*E^x*Sqrt(Pi)*(1/2+x)-2*Sqrt(x)*(1+(E^x*Sqrt(Pi)*(1/2+x)*Erf(Sqrt(x)))/Sqrt(x))");
+  }
+
+  @Test
   public void testFunctionExpandJacobiP() {
     check("FunctionExpand(JacobiP(n,a,b,1))", //
         "Gamma(1+a+n)/(Gamma(1+a)*Gamma(1+n))");

@@ -31,6 +31,7 @@ import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class HypergeometricFunctions {
@@ -1497,7 +1498,60 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class HypergeometricU extends AbstractFunctionEvaluator implements IMatch {
+  private static class HypergeometricU extends AbstractFunctionEvaluator
+      implements IMatch, IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.isAST3()) {
+        IExpr a = ast.arg1();
+        IExpr b = ast.arg2();
+        IExpr z = ast.arg3();
+        if (a.isFraction() && b.isFraction()) {
+          IFraction af = (IFraction) a;
+          IFraction bf = (IFraction) b;
+          if (af.denominator().equals(F.C2) && bf.denominator().equals(F.C2)) {
+            IRational nr = af.subtract(F.C1D2);
+            IRational mr = bf.subtract(F.C1D2);
+
+            final int ni = nr.toIntDefault();
+            final int mi = mr.toIntDefault();
+            if (ni != Integer.MIN_VALUE && mi != Integer.MIN_VALUE) {
+              IInteger n = F.ZZ(ni);
+              IInteger m = F.ZZ(mi);
+              // https://functions.wolfram.com/HypergeometricFunctions/HypergeometricU/03/01/04/07/0005/
+              // (-1)^(m+n)*Gamma(1/2-n)*E^z*LaguerreL(-m+n,-1/2+m,-z)+(z^(1/2-m)*2^(2*n)/(-1)^(1-m)*m!)/(2*n)!*(Sqrt(Pi)/Sqrt(z)*E^z*Erf(Sqrt(z))*Sum((k+n)!/k!*LaguerreL(-k+m,1/2+k-m,z)*LaguerreL(k+n,-1/2-k,-z),{k,0,m})+Sum((k+n)!/k!*LaguerreL(-k+m,1/2+k-m,z)*Sum(LaguerreL(k+n-p,-1/2-k+p,-z)/p*LaguerreL(-1+p,1/2-p,z),{p,1,k+n}),{k,0,m}))
+              IExpr sum1 =
+                  F.sum(k -> F.Times(F.Power(F.Factorial(k), F.CN1), F.Factorial(F.Plus(k, n)),
+                      F.LaguerreL(F.Plus(F.Negate(k), m), F.Plus(F.C1D2, k, F.Negate(m)), z),
+                      F.LaguerreL(F.Plus(k, n), F.Subtract(F.CN1D2, k), F.Negate(z))), 0, mi);
+              IExpr sum2 = F.sum(k -> {
+                IExpr nestdSumP = F.sum(
+                    p -> F.Times(F.Power(p, F.CN1),
+                        F.LaguerreL(F.Plus(k, n, F.Negate(p)), F.Plus(F.CN1D2, F.Negate(k), p),
+                            F.Negate(z)),
+                        F.LaguerreL(F.Plus(F.CN1, p), F.Subtract(F.C1D2, p), z)),
+                    1, k.toIntDefault() + ni);
+                return F.Times(F.Power(F.Factorial(k), F.CN1), F.Factorial(F.Plus(k, n)),
+                    F.LaguerreL(F.Plus(F.Negate(k), m), F.Plus(F.C1D2, k, F.Negate(m)), z),
+                    nestdSumP);
+              }, 0, mi);
+              return F.Plus(
+                  F.Times(F.Power(F.CN1, F.Plus(m, n)), F.Gamma(F.Subtract(F.C1D2, n)), F.Exp(z),
+                      F.LaguerreL(F.Plus(F.Negate(m), n), F.Plus(F.CN1D2, m), F.Negate(z))),
+                  F.Times(F.Power(z, F.Subtract(F.C1D2, m)), F.Power(F.CN1, F.Plus(F.CN1, m)),
+                      F.Power(F.C2, F.Times(F.C2, n)), F.Factorial(m),
+                      F.Power(F.Factorial(F.Times(F.C2, n)), F.CN1),
+                      F.Plus(
+                          F.Times(F.CSqrtPi, F.Power(z, F.CN1D2), F.Exp(z), F.Erf(F.Sqrt(z)), sum1),
+                          sum2)));
+            }
+          }
+        }
+      }
+      return F.NIL;
+    }
+
     @Override
     public IExpr match4(IAST ast, EvalEngine engine) {
       return F.NIL;
