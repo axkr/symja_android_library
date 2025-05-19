@@ -49,6 +49,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * AJAX servlet to load Markdown documentation files.
+ */
 public class AJAXDocServlet extends HttpServlet {
   private static final Cache<String, String> JSON_DOCS_CACHE =
       CacheBuilder.newBuilder().maximumSize(100).build();
@@ -334,7 +337,7 @@ public class AJAXDocServlet extends HttpServlet {
         out.println(jsonStr);
       } else {
         StringBuilder markdownBuf = new StringBuilder(1024);
-        printMarkdown(markdownBuf, value);
+        createMarkdownFunctionPage(markdownBuf, value);
         String markdownStr = markdownBuf.toString().trim();
         if (markdownStr.length() > 0) {
           String html = generateHTMLString(markdownBuf.toString());
@@ -379,9 +382,15 @@ public class AJAXDocServlet extends HttpServlet {
     return renderer.render(document);
   }
 
-  public static void printMarkdown(Appendable out, String docName) {
+  /**
+   * Create a documentation page for a function in Markdown format
+   * 
+   * @param out the output stream for the Markdown documentation
+   * @param functionPath the name of the function including path prefixes
+   */
+  public static void createMarkdownFunctionPage(Appendable out, String functionPath) {
     // read markdown file
-    String fileName = Documentation.buildDocFilename(docName);
+    String fileName = Documentation.buildDocFilename(functionPath);
 
     // Get file from resources folder
     ClassLoader classloader = Thread.currentThread().getContextClassLoader();
@@ -391,35 +400,27 @@ public class AJAXDocServlet extends HttpServlet {
       // jump back to Main documentation page
       try (BufferedReader f =
           new BufferedReader(new InputStreamReader(file.openStream(), StandardCharsets.UTF_8))) {
+        // insert link on top of page for jumping back to Main documentation page
         out.append("\n\n [&larr; Main](index.md)\n");
         String line;
         while ((line = f.readLine()) != null) {
           out.append(line);
           out.append("\n");
         }
-        String functionName = docName;
-        if (docName.startsWith(FUNCTIONS_PREFIX1)) {
-          functionName = docName.substring(FUNCTIONS_PREFIX1.length());
-        } else if (docName.startsWith(FUNCTIONS_PREFIX2)) {
-          functionName = docName.substring(FUNCTIONS_PREFIX2.length());
+        String functionName = functionPath;
+        if (functionPath.startsWith(FUNCTIONS_PREFIX1)) {
+          functionName = functionPath.substring(FUNCTIONS_PREFIX1.length());
+        } else if (functionPath.startsWith(FUNCTIONS_PREFIX2)) {
+          functionName = functionPath.substring(FUNCTIONS_PREFIX2.length());
         }
         String identifier = F.symbolNameNormalized(functionName);
         ISymbol symbol = Context.SYSTEM.get(identifier);
         if (symbol != null) {
-          // String functionURL = SourceCodeFunctions.functionURL(symbol);
-          // if (functionURL != null) {
-          //
-          // out.append("\n\n### Github");
-          // out.append("\n\n* [Implementation of ");
-          // out.append(functionName);
-          // out.append("](");
-          // out.append(functionURL);
-          // out.append(") ");
-          // }
+          // insert link at the bottom for jumping back to Function reference page
           out.append("\n\n [&larr; Function reference](99-function-reference.md) ");
         } else {
-          if (!docName.equals("index")) {
-            // jump back to Main documentation page
+          if (!functionPath.equals("index")) {
+            // insert link at the bottom for jumping back to Main documentation page
             out.append("\n\n [&larr; Main](index.md) ");
           }
         }

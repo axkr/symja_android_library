@@ -17,6 +17,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * This servlet is used to search for a function name and return the documentation in HTML format.
+ * 
+ */
 public class AJAXSearchServlet extends HttpServlet {
   public static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();
 
