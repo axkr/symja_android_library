@@ -1990,7 +1990,23 @@ public final class Arithmetic {
    * </code>
    * </pre>
    */
-  private static final class HarmonicNumber extends AbstractEvaluator {
+  private static final class HarmonicNumber extends AbstractEvaluator implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        IExpr n = ast.arg1();
+        // EulerGamma+PolyGamma(0,1+n)
+        return F.Plus(F.EulerGamma, F.PolyGamma(F.C0, F.Plus(F.C1, n)));
+      }
+      if (ast.isAST2()) {
+        IExpr n = ast.arg1();
+        IExpr z = ast.arg2();
+        // -HurwitzZeta(z,1+n)+Zeta(z)
+        return F.Plus(F.Negate(F.HurwitzZeta(z, F.Plus(F.C1, n))), F.Zeta(z));
+      }
+      return F.NIL;
+    }
 
     // public IExpr e1ApfloatArg(Apfloat arg1) {
     // FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
@@ -2066,63 +2082,71 @@ public final class Arithmetic {
       return F.NIL;
     }
 
-    private static IExpr harmonic(IExpr arg1, IExpr arg2, final IAST ast, EvalEngine engine) {
-      if (arg2.isOne()) {
-        return F.HarmonicNumber(arg1);
+    /**
+     * 
+     * @param n
+     * @param r
+     * @param ast
+     * @param engine
+     * @return
+     */
+    private static IExpr harmonic(IExpr n, IExpr r, final IAST ast, EvalEngine engine) {
+      if (r.isOne()) {
+        return F.HarmonicNumber(n);
       } else {
         // generalized harmonic number
-        if (arg1.isInfinity()) {
-          if (arg2.isOne()) {
+        if (n.isInfinity()) {
+          if (r.isOne()) {
             return F.CInfinity;
           }
-          if (arg2.isInteger()) {
-            if (arg2.isPositive()) {
-              if (((IInteger) arg2).isEven()) {
+          if (r.isInteger()) {
+            if (r.isPositive()) {
+              if (((IInteger) r).isEven()) {
                 // Module({v=s/2},((2*Pi)^(2*v)*(-1)^(v+1)*BernoulliB(2*v))/(2*(2*v)!))
-                IExpr v = Times(C1D2, arg2);
+                IExpr v = Times(C1D2, r);
                 return Times(Power(F.C2Pi, Times(C2, v)), Power(CN1, Plus(v, C1)),
                     BernoulliB(Times(C2, v)), Power(Times(C2, Factorial(Times(C2, v))), CN1));
               }
-              return F.Zeta(arg2);
+              return F.Zeta(r);
             }
             return F.NIL;
           }
         }
-        if (arg2.isInteger() && !arg2.isPositive()) {
-          IExpr z = arg1;
-          IInteger n = ((IInteger) arg2).negate();
-          IInteger m = n.inc();
+        if (r.isInteger() && !r.isPositive()) {
+          IExpr z = n;
+          IInteger ri = ((IInteger) r).negate();
+          IInteger m = ri.inc();
           return
           // [$ Expand( (1/m)*(BernoulliB(m, z + 1) + ((-1)^n)* BernoulliB(m)) ) $]
           F.Expand(F.Times(F.Power(m, F.CN1), F.Plus(F.BernoulliB(m, F.Plus(z, F.C1)),
-              F.Times(F.Power(F.CN1, n), F.BernoulliB(m))))); // $$;
+              F.Times(F.Power(F.CN1, ri), F.BernoulliB(m))))); // $$;
         }
 
-        if (arg1.isInteger()) {
-          if (arg1.isNegative() && arg2.isNumber() && arg2.isPositive()) {
+        if (n.isInteger()) {
+          if (n.isNegative() && r.isNumber() && r.isPositive()) {
             return F.CComplexInfinity;
           }
 
-          int n = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);
-          if (n < 0) {
+          int nInt = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);
+          if (nInt < 0) {
             return F.NIL;
           }
-          if (n == 0) {
+          if (nInt == 0) {
             return C0;
           }
 
           int iterationLimit = EvalEngine.get().getIterationLimit();
-          if (iterationLimit >= 0 && iterationLimit <= n) {
-            IterationLimitExceeded.throwIt(n, ast);
+          if (iterationLimit >= 0 && iterationLimit <= nInt) {
+            IterationLimitExceeded.throwIt(nInt, ast);
           }
-          int intArg2 = arg2.toIntDefault();
+          int intArg2 = r.toIntDefault();
           if (intArg2 != Integer.MIN_VALUE) {
             int exponent = intArg2;
             if (intArg2 < 0) {
               exponent *= -1;
             }
             IRational result = F.C0;
-            for (int i = 1; i <= n; i++) {
+            for (int i = 1; i <= nInt; i++) {
               final IInteger pow = F.ZZ(i).powerRational(exponent);
               result = result.add(intArg2 < 0 ? pow : pow.inverse());
               result.checkBitLength();
@@ -2130,7 +2154,7 @@ public final class Arithmetic {
             return result;
           }
 
-          return F.sum(i -> Power(i, arg2.negate()), 1, n);
+          return F.sum(i -> Power(i, r.negate()), 1, nInt);
         }
         return F.NIL;
       }
@@ -2154,10 +2178,6 @@ public final class Arithmetic {
       }
       return F.NIL;
     }
-
-    // private static IAST harmonicNumberPolyGamma(IInexactNumber n) {
-    // return F.Plus(S.EulerGamma, F.PolyGamma(F.C0, F.Plus(F.C1, n)));
-    // }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -6841,6 +6861,9 @@ public final class Arithmetic {
       }
 
       if (arg1.equals(base2)) {
+        if (arg1.isMinusOne() && !exponent2.isNumber()) {
+          return F.NIL;
+        }
         if (exponent2.isNumber() && !arg1.isRational() || //
             !exponent2.isNumber()) {
           // avoid reevaluation of a root of a rational number (example: 2*Sqrt(2) )

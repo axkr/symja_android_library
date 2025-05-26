@@ -45,9 +45,7 @@
  GammaRegularized(a_, y_, z_) :=  Gamma(a,y)/Gamma(a)-Gamma(a,z)/Gamma(a),
  
  Gudermannian(z_) := Piecewise({{(1/2)*(Pi - 4*ArcCot(E^z)), Re(z)>0||(Re(z)==0&&Im(z)>=0 )}}, (1/2)*(-Pi + 4*ArcTan(E^z))), 
- 
- HarmonicNumber(n_) := EulerGamma + PolyGamma(0, 1 + n),
- HarmonicNumber(z_, n_) := -HurwitzZeta(n, 1 + z) + Zeta(n),
+
  Haversine(z_) := (1/2)*(1-Cos(z)),
  HurwitzZeta(n_Integer, a_) := ((-1)^n/(n - 1)!)*PolyGamma(n - 1, a)
   /; n>1,
@@ -155,7 +153,9 @@
 
  Zeta(n_Integer, x_) := 1/((-1)^n*(n-1)!) * PolyGamma(n-1,x)
    /; EvenQ(n) && n>1,
+ (* https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/Zeta/20/01/03/0006/ *)
  Derivative(1)[Zeta][m_Integer] := With({n=m/(-2)},  1/2 * (-1)^n * (2*n)!/(2*Pi)^(2*n)*Zeta(2*n+1)
    /; EvenQ(m) && m<(-1)),
+ (* https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/Zeta/20/01/03/0009/ *)
  Derivative(1)[Zeta][2] := 1/6*Pi^2*(EulerGamma+Log(2)-12*Log(Glaisher)+Log(Pi))
 }

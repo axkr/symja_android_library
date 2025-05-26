@@ -29,6 +29,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
@@ -602,7 +603,21 @@ public class FunctionExpand extends AbstractEvaluator {
     if (ast.head() instanceof IBuiltInSymbol) {
       IEvaluator evaluator = ((IBuiltInSymbol) ast.head()).getEvaluator();
       if (evaluator instanceof IFunctionExpand) {
-        return ((IFunctionExpand) evaluator).functionExpand(ast, engine);
+        IExpr temp = ((IFunctionExpand) evaluator).functionExpand(ast, engine);
+        if (temp.isPresent()) {
+          IExpr result = engine.evaluate(temp);
+          if (result.isAST()) {
+            IASTMutable newAST = ((IAST) result).copy();
+            for (int i = 1; i < newAST.size(); i++) {
+              IExpr arg = newAST.get(i);
+              if (arg.isAST()) {
+                newAST.set(i, callFunctionExpand((IAST) arg, engine).orElse(arg));
+              }
+            }
+            return newAST;
+          }
+          return result;
+        }
       }
     }
     return F.NIL;

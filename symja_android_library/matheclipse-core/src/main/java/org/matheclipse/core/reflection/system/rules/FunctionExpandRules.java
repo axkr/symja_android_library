@@ -102,12 +102,6 @@ public class FunctionExpandRules {
     // Gudermannian(z_):=Piecewise({{1/2*(Pi-4*ArcCot(E^z)),Re(z)>0||(Re(z)==0&&Im(z)>=0)}},1/2*(-Pi+4*ArcTan(E^z)))
     SetDelayed(Gudermannian(z_),
       Piecewise(list(list(Times(C1D2,Plus(Pi,Times(CN4,ArcCot(Exp(z))))),Or(Greater(Re(z),C0),And(Equal(Re(z),C0),GreaterEqual(Im(z),C0))))),Times(C1D2,Plus(CNPi,Times(C4,ArcTan(Exp(z))))))),
-    // HarmonicNumber(n_):=EulerGamma+PolyGamma(0,1+n)
-    SetDelayed(HarmonicNumber(n_),
-      Plus(EulerGamma,PolyGamma(C0,Plus(C1,n)))),
-    // HarmonicNumber(z_,n_):=-HurwitzZeta(n,1+z)+Zeta(n)
-    SetDelayed(HarmonicNumber(z_,n_),
-      Plus(Negate(HurwitzZeta(n,Plus(C1,z))),Zeta(n))),
     // Haversine(z_):=1/2*(1-Cos(z))
     SetDelayed(Haversine(z_),
       Times(C1D2,Subtract(C1,Cos(z)))),
