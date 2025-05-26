@@ -123,6 +123,11 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
 		</dependency>
+        <dependency>
+    			<groupId>com.github.spotbugs</groupId>
+    			<artifactId>spotbugs-annotations</artifactId>
+    			<scope>provided</scope>  
+     	</dependency>
 		<!-- test dependencies -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
