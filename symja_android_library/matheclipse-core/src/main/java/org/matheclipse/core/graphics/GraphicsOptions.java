@@ -23,6 +23,26 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  *
  */
 public class GraphicsOptions {
+  public final static int X_JSFORM = 0;
+
+  public final static int X_FILLING = 1;
+
+  public final static int X_AXES = 2;
+
+  public final static int X_PLOTRANGE = 3;
+
+  public final static int X_$SCALING = 4;
+
+  public final static int X_JOINED = 5;
+
+  public final static int X_PLOTLEGENDS = 6;
+
+  public final static int X_PLOTLABEL = 7;
+
+  public final static int X_AXESLABEL = 8;
+
+  public final static int X_PLOTSTYLE = 9;
+
   public static IAST BLACK = F.RGBColor(F.C0, F.C0, F.C0);
 
   public static double TINY_POINTSIZE = 0.00032;
@@ -460,6 +480,10 @@ public class GraphicsOptions {
   public IAST getListOfRules() {
     IAST optionArgsRules = options.getListOfRules();
     IASTAppendable rules = F.ListAlloc(32);
+    rules.append(F.Rule(S.Axes, axes));
+    rules.append(F.Rule(S.AxesLabel, axesLabel));
+    rules.append(F.Rule(S.PlotLabel, plotLabel));
+    rules.append(F.Rule(S.PlotLegends, plotLegends));
     rules.append(F.Rule(S.Filling, filling));
     for (int i = 1; i < optionArgsRules.size(); i++) {
       rules.append(optionArgsRules.get(i));
@@ -861,29 +885,37 @@ public class GraphicsOptions {
   public void setScalingFunctions(IExpr[] options) {
     // OptionArgs options = options();
     // IExpr scalingFunctions = options.getOption(S.$Scaling);
-    IExpr scalingFunctions = options[ECharts.X_$SCALING];
+    IExpr scalingFunctions = options[GraphicsOptions.X_$SCALING];
     if (scalingFunctions.isPresent()) {
-      if (scalingFunctions.isList1()) {
-        setXFunction(getScaling(scalingFunctions.first()));
-        setYFunction(y -> y);
-        return;
-      } else if (scalingFunctions.isList2()) {
-        setXFunction(getScaling(scalingFunctions.first()));
-        setYFunction(getScaling(scalingFunctions.second()));
-        return;
-      } else if (!scalingFunctions.isList()) {
-        setXFunction(x -> x);
-        setYFunction(getScaling(scalingFunctions));
-        return;
-      }
+      setScalingFunctions(scalingFunctions);
+    }
+  }
+
+  public void setScalingFunctions(IExpr scalingFunctions) {
+    if (scalingFunctions.isList1()) {
+      setXFunction(getScaling(scalingFunctions.first()));
+      setYFunction(y -> y);
+      return;
+    } else if (scalingFunctions.isList2()) {
+      setXFunction(getScaling(scalingFunctions.first()));
+      setYFunction(getScaling(scalingFunctions.second()));
+      return;
+    } else if (!scalingFunctions.isList()) {
+      setXFunction(x -> x);
+      setYFunction(getScaling(scalingFunctions));
+      return;
     }
   }
 
   public void setFilling(IExpr[] options) {
-    IExpr filling = options[ECharts.X_FILLING];
+    IExpr filling = options[GraphicsOptions.X_FILLING];
     if (filling.isPresent()) {
       this.filling = filling;
     }
+  }
+
+  public void setFilling(IExpr filling) {
+    this.filling = filling;
   }
 
   public void setThickness(double thickness) {
@@ -926,17 +958,67 @@ public class GraphicsOptions {
     return yScale;
   }
 
+  // public static void setGraphicOptions(GraphicsOptions graphicsOptions, IAST plot, int
+  // startIndex,
+  // IExpr[] options, EvalEngine engine) {
+  // final OptionArgs optionArgs = new OptionArgs(plot.topHead(), plot, startIndex, engine, true);
+  // if (!options[X_AXES].isFalse()) {
+  // graphicsOptions.setAxes(options[X_AXES]);
+  // }
+  // if (options[X_AXESLABEL] != S.None) {
+  // graphicsOptions.setAxesLabel(options[X_AXESLABEL]);
+  // }
+  //
+  // if (options[X_JOINED].isTrue()) {
+  // graphicsOptions.setJoined(true);
+  // }
+  // if (options[X_PLOTLEGENDS] != S.None) {
+  // graphicsOptions.setPlotLegends(options[X_PLOTLEGENDS]);
+  // }
+  // if (options[X_PLOTLABEL] != S.None) {
+  // graphicsOptions.setPlotLabel(options[X_PLOTLABEL]);
+  // }
+  // graphicsOptions.setOptions(optionArgs);
+  // graphicsOptions.setScalingFunctions(options);
+  // graphicsOptions.setFilling(options);
+  // }
+
+  public void setGraphicOptions(IExpr[] options, EvalEngine engine) {
+    // final OptionArgs optionArgs = new OptionArgs(plot.topHead(), plot, startIndex, engine, true);
+    if (!options[X_AXES].isFalse()) {
+      setAxes(options[X_AXES]);
+    }
+    if (options[X_AXESLABEL] != S.None) {
+      setAxesLabel(options[X_AXESLABEL]);
+    }
+
+    if (options[X_JOINED].isTrue()) {
+      setJoined(true);
+    }
+    if (options[X_PLOTLEGENDS] != S.None) {
+      setPlotLegends(options[X_PLOTLEGENDS]);
+    }
+    if (options[X_PLOTLABEL] != S.None) {
+      setPlotLabel(options[X_PLOTLABEL]);
+    }
+    // setOptions(optionArgs);
+    setScalingFunctions(options);
+    setFilling(options);
+  }
+
   public static IBuiltInSymbol[] listPlotDefaultOptionKeys() {
     return new IBuiltInSymbol[] {//
         S.JSForm, S.Filling, S.Axes, S.PlotRange, S.$Scaling, //
         S.Joined, //
-        S.PlotLegends, S.PlotLabel, S.AxesLabel};
+        S.PlotLegends, S.PlotLabel, S.AxesLabel, S.PlotStyle};
   }
 
-  public static IExpr[] listPlotDefaultOptionValues(boolean joined) {
+  public static IExpr[] listPlotDefaultOptionValues(boolean jsForm, boolean joined) {
     return new IExpr[] {//
-        S.False, S.None, S.True, S.Automatic, S.Automatic, //
+        jsForm ? S.True : S.False, //
+        S.None, S.True, S.Automatic, S.Automatic, //
         joined ? S.True : S.False, //
-        S.None, S.None, S.None};
+        S.None, S.None, S.None, S.None};
   }
+
 }
