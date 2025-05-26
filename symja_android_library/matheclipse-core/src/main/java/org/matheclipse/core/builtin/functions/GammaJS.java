@@ -330,12 +330,17 @@ public class GammaJS extends JS {
 
       double s = 1;
       double p = 1;
+      double pLast = p;
       int i = 1;
 
       while (Math.abs(p) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
         p *= i / x;
+        if (Math.abs(p) > Math.abs(pLast)) {
+          break;
+        }
         s += p;
         i++;
+        pLast = p;
       }
 
       return s * Math.exp(x) / x;
@@ -355,27 +360,39 @@ public class GammaJS extends JS {
   }
 
   public static Complex expIntegralEi(Complex x) {
+    return expIntegralEi(x, false);
+  }
+
+  public static Complex expIntegralEi(final Complex x, boolean adjustImForGamma) {
     if (isUnity(neg(x))) {
-      return complexAverage(arg -> expIntegralEi(arg), x);
+      return complexAverage(arg -> expIntegralEi(arg, adjustImForGamma), x);
     }
     var ix = mul(x, Complex.I);
     if (isUnity(ix) || isUnity(neg(ix))) {
-      return complexAverage(arg -> expIntegralEi(arg), x);
+      return complexAverage(arg -> expIntegralEi(arg, adjustImForGamma), x);
     }
     double useAsymptotic = 26.0;
     if (cabs(x) > useAsymptotic) {
       Complex s = Complex.ONE;
       Complex p = Complex.ONE;
+      Complex pLast = p;
       int i = 1;
 
       Complex xInverse = x.reciprocal();
       while (Math.abs(p.getReal()) > Config.SPECIAL_FUNCTIONS_TOLERANCE
           || Math.abs(p.getImaginary()) > Config.SPECIAL_FUNCTIONS_TOLERANCE) {
         p = p.multiply(i).multiply(xInverse);
+        if (cabs(p) > cabs(pLast)) {
+          break;
+        }
         s = s.add(p);
         i++;
+        pLast = p;
       }
 
+      if (adjustImForGamma) {
+        return mul(s, exp(x), inv(x));
+      }
       // combination of logarithms adds/subtracts Complex(0,Pi)
       int sign = x.getImaginary() > 0 ? 1 : x.getImaginary() < 0 ? -1 : 0;
 
@@ -393,6 +410,11 @@ public class GammaJS extends JS {
     }
 
     s = s.add(ConstantDefinitions.EULER_GAMMA).add(x.log());
+
+    if (adjustImForGamma) {
+      int sign = x.getImaginary() > 0 ? -1 : x.getImaginary() < 0 ? 1 : 0;
+      s = add(s, new Complex(0.0, sign * Math.PI));
+    }
 
     // real on negative real axis, set phase explicitly rather than log combo
     if (x.getReal() < 0.0 && F.isZero(x.getImaginary())) {

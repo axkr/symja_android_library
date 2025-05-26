@@ -1258,19 +1258,20 @@ public class PolynomialFunctions {
             // 1)^k*Gamma(-k+l+1/2))/(Cos(t)^(2*k-l)*2^(2*k)*k!*Gamma(-2*k+l-m+1)),{k,0,Floor(l/
             // 2)}))/(Pi*Cos(t)^m)
             IExpr plusSubexpr = l.plus(m.negate()).plus(F.C1);
+            IExpr cosT = F.Cos(t);
             IExpr sum = F.sum(
-                k -> F.Times(F.Power(F.Cos(t), F.Plus(F.Times(F.CN2, k), l)), F.Power(F.CN1, k),
+                k -> F.Times(F.Power(cosT, F.Plus(F.Times(F.CN2, k), l)), F.Power(F.CN1, k),
                     F.Gamma(F.Plus(k.negate(), l, F.C1D2)),
                     F.Power(F.Times(F.Power(F.C2, F.Times(F.C2, k)), F.Factorial(k),
                         F.Gamma(F.Plus(F.Times(F.CN2, k), plusSubexpr))), F.CN1)), //
                 0, n);
-            IAST spericalHarmonicY = F.Times(F.Power(F.CN1, m), F.Power(F.C2, F.Plus(F.CN1, l)),
-                F.Exp(F.Times(F.CI, p, m)), F.Power(F.Times(F.Pi, F.Power(F.Cos(t), m)), F.CN1),
+            IAST sphericalHarmonicY = F.Times(F.Power(F.CN1, m), F.Power(F.C2, F.Plus(F.CN1, l)),
+                F.Exp(F.Times(F.CI, p, m)), F.Power(F.Times(F.Pi, F.Power(cosT, m)), F.CN1),
                 F.Sqrt(F.Times(F.Plus(F.Times(F.C2, l), F.C1), F.Factorial(F.Subtract(l, m)),
                     F.Power(F.Factorial(F.Plus(l, m)), F.CN1))),
                 F.Power(F.Sqr(F.Sin(t)), F.Times(F.C1D2, m)), //
                 sum);
-            return engine.evaluate(spericalHarmonicY);
+            return engine.evaluate(sphericalHarmonicY);
           }
         }
       }
@@ -1460,12 +1461,12 @@ public class PolynomialFunctions {
         if (degree > Config.MAX_POLYNOMIAL_DEGREE) {
           PolynomialDegreeLimitExceeded.throwIt(degree);
         }
+        IExpr zDoubled = F.C2.times(z);
         // (n, z) => Sum(((-1)^k*(n - k)!*(2*z)^(n - 2*k))/(k!*(n - 2*k)!), {k, 0, Floor(n/2)})
-        return F.sum(
-            k -> F.Times(F.Power(F.CN1, k), F.Power(F.Times(F.C2, z), F.Plus(F.Times(F.CN2, k), n)),
+        return F
+            .sum(k -> F.Times(F.Power(F.CN1, k), F.Power(zDoubled, F.Plus(F.Times(F.CN2, k), n)),
                 F.Power(F.Times(F.Factorial(k), F.Factorial(F.Plus(F.Times(F.CN2, k), n))), -1),
-                F.Factorial(F.Plus(F.Negate(k), n))),
-            0, degree / 2);
+                F.Factorial(F.Plus(F.Negate(k), n))), 0, degree / 2);
       }
 
       if (n.isNumEqualRational(F.CN1D2)) {
@@ -1576,8 +1577,8 @@ public class PolynomialFunctions {
         if (n < 0 || k < 0) {
           return F.NIL;
         }
-        IExpr list = ast.arg3().normal(false);
-        if (!list.isList()) {
+        IExpr listOfVariables = ast.arg3().normal(false);
+        if (!listOfVariables.isList()) {
           return F.NIL;
         }
 
@@ -1595,7 +1596,7 @@ public class PolynomialFunctions {
         }
         int max = n - k + 2;
         if (max >= 0) {
-          return bellY(n, k, (IAST) list, ast, engine);
+          return bellY(n, k, (IAST) listOfVariables, ast, engine);
         }
       }
 

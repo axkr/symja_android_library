@@ -1660,9 +1660,12 @@ public class BesselFunctions {
         if (ni > 0) {
           // -StruveH(n,z)+Sum(Gamma(k+1/2)/((z/2)^(1+2*k-n)*Gamma(-k+n+1/2)),{k,0,Floor(1/2*(-1+n))})/Pi
           int maxK = (ni - 1) / 2;
-          IExpr sum = F.sum(k -> F.Times(F.Gamma(F.Plus(k, F.C1D2)),
-              F.Power(F.Times(F.C1D2, z), F.Plus(F.CN1, F.Times(F.CN2, k), n)),
-              F.Power(F.Gamma(F.Plus(F.Negate(k), n, F.C1D2)), F.CN1)), 0, maxK);
+          IExpr halfZ = F.C1D2.times(z);
+          IExpr sum = F.sum(k -> {
+            return F.Times(F.Gamma(F.Plus(k, F.C1D2)),
+                F.Power(halfZ, F.Plus(F.CN1, F.Times(F.CN2, k), n)),
+                F.Power(F.Gamma(F.Plus(F.Negate(k), n, F.C1D2)), F.CN1));
+          }, 0, maxK);
           return F.Plus(F.Negate(F.StruveH(n, z)), F.Times(F.Power(F.Pi, F.CN1), sum));
         }
         if (ni < 0) {

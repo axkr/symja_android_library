@@ -120,7 +120,6 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
 
     mathcellBuilder.put(S.HankelH1, "hankel1");
     mathcellBuilder.put(S.HankelH2, "hankel2");
-    // TODO https://github.com/paulmasson/math/issues/36
     mathcellBuilder.put(S.HarmonicNumber, "harmonic");
     mathcellBuilder.put(S.Haversine, "haversine");
     mathcellBuilder.put(S.HermiteH, "hermite");

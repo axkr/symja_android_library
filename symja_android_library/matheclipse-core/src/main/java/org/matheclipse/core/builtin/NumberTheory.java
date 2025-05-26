@@ -155,7 +155,7 @@ public final class NumberTheory {
       }
 
       // Sum[StirlingS2[n, k], {k, 0, n}]
-      return F.sum(k -> stirlingS2(index, k, k.toIntDefault()), 0, index, 1);
+      return F.sum(k -> stirlingS2(index, k, k.toIntDefault()), 0, index);
     }
 
     /**
@@ -178,7 +178,7 @@ public final class NumberTheory {
         return z;
       }
 
-      return F.sum(k -> F.Times(F.StirlingS2(F.ZZ(n), k), F.Power(z, k)), 0, n + 1, 1);
+      return F.sum(k -> F.Times(stirlingS2(n, k, k.toIntDefault()), F.Power(z, k)), 0, n + 1);
     }
 
     @Override
@@ -229,6 +229,7 @@ public final class NumberTheory {
           }
         }
       } catch (RuntimeException rex) {
+        rex.printStackTrace();
         Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.BellB, rex, engine);
       }
@@ -1285,8 +1286,7 @@ public final class NumberTheory {
       }
       final BigFraction numeratorDenominator = new BigFraction(doubleValue);
       return rationalToContinuedFraction(numeratorDenominator.getNumerator(),
-          numeratorDenominator.getDenominator(),
-          isNegative, precision, true);
+          numeratorDenominator.getDenominator(), isNegative, precision, true);
     }
 
     private static IAST rationalToContinuedFraction(BigInteger numerator, BigInteger denominator,
@@ -2390,22 +2390,49 @@ public final class NumberTheory {
 
   }
 
+  /**
+   * <pre>
+   * <code>FactorialPower(v, n)
+   * </code>
+   * </pre>
+   * 
+   * <p>
+   * The <code>FactorialPower</code> implements the falling factorial. The falling factorial
+   * (sometimes called the descending factorial, falling sequential product, or lower factorial) is
+   * defined as the polynomial <code>v*(v-1)*(v-2)*...*(v-n+1)</code>.
+   * </p>
+   * 
+   * <p>
+   * See
+   * </p>
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Falling_and_rising_factorials">Wikipedia - Falling
+   * and rising factorials</a></li>
+   * </ul>
+   * <h3>Examples</h3>
+   * 
+   * <pre>
+   * <code>&gt;&gt; FactorialPower(v,4) // FunctionExpand 
+   * (-3+v)*(-2+v)*(-1+v)*v
+   * </code>
+   * </pre>
+   */
   private static class FactorialPower extends AbstractEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr x = ast.arg1();
+      IExpr v = ast.arg1();
       IExpr n = ast.arg2();
       if (ast.isAST2()) {
-        if (x.isInteger() && n.isInteger() && x.isNonNegativeResult() && n.isNonNegativeResult()) {
-          if (((IInteger) x).isLT((IInteger) n)) {
+        if (v.isInteger() && n.isInteger() && v.isNonNegativeResult() && n.isNonNegativeResult()) {
+          if (((IInteger) v).isLT((IInteger) n)) {
             return F.C0;
           }
-          if (x.equals(n)) {
-            if (x.isZero()) {
+          if (v.equals(n)) {
+            if (v.isZero()) {
               return F.C1;
             }
-            return x;
+            return v;
           }
         }
       }
@@ -2433,11 +2460,11 @@ public final class NumberTheory {
         } else if (n.isZero()) {
           return F.C1;
         } else if (n.isOne()) {
-          return x;
+          return v;
         } else {
           if (engine.isDoubleMode()) {
-            if (!x.isMathematicalIntegerNegative()) {
-              Complex cx = x.evalfc();
+            if (!v.isMathematicalIntegerNegative()) {
+              Complex cx = v.evalfc();
               Complex cn = n.evalfc();
               cx = cx.add(1.0);
               cn = cx.subtract(cn);
@@ -2448,9 +2475,9 @@ public final class NumberTheory {
             }
             double real = Double.NaN;
             try {
-              real = x.evalf();
+              real = v.evalf();
             } catch (ArgumentTypeException ate) {
-              Complex temp = x.evalfc();
+              Complex temp = v.evalfc();
               if (temp == null) {
                 return F.NIL;
               }
@@ -2464,21 +2491,21 @@ public final class NumberTheory {
             double dN = n.evalf();
             double i = real - dN + 1;
             while (real >= i) {
-              result = result.multiply(x);
-              x = x.dec();
+              result = result.multiply(v);
+              v = v.dec();
               real--;
               if (k++ > iterationLimit && iterationLimit > 0) {
                 IterationLimitExceeded.throwIt(k, S.FactorialPower);
               }
             }
             return result;
-          } else if (x.isExactNumber() && n.isRational()) {
-            IRational real = (IRational) ((INumber) x).re();
+          } else if (v.isExactNumber() && n.isRational()) {
+            IRational real = (IRational) ((INumber) v).re();
             IRational dN = (IRational) n;
             IRational i = real.subtract(dN).inc();
             while (real.isGE(i)) {
-              result = result.multiply(x);
-              x = x.dec();
+              result = result.multiply(v);
+              v = v.dec();
               real = real.dec();
             }
             return result;
@@ -2491,7 +2518,7 @@ public final class NumberTheory {
         IExpr result = F.C1;
         IExpr h = ast.arg3();
         if (h.isZero()) {
-          return F.Power(x, n);
+          return F.Power(v, n);
         }
         // x*(x-h)* (x-(n-1)*h)
         if (engine.evalTrue(F.Less(n, F.C0))) {
@@ -2499,11 +2526,11 @@ public final class NumberTheory {
         } else if (n.isZero()) {
           return F.C1;
         } else if (n.isOne()) {
-          return x;
+          return v;
         } else {
           if (engine.isDoubleMode()) {
-            if (!x.isMathematicalIntegerNegative()) {
-              Complex cx = x.evalfc();
+            if (!v.isMathematicalIntegerNegative()) {
+              Complex cx = v.evalfc();
               Complex cn = n.evalfc();
               Complex ch = h.evalfc();
 
@@ -2519,9 +2546,9 @@ public final class NumberTheory {
             }
             double real = Double.NaN;
             try {
-              real = x.evalf();
+              real = v.evalf();
             } catch (ArgumentTypeException ate) {
-              Complex temp = x.evalfc();
+              Complex temp = v.evalfc();
               if (temp == null) {
                 return F.NIL;
               }
@@ -2534,7 +2561,7 @@ public final class NumberTheory {
             double doubleH = h.evalf();
             if (h.isZero()) {
               while (n.isPositive()) {// engine.evalTrue(F.Greater(n, F.C0))) {
-                result = result.multiply(x);
+                result = result.multiply(v);
                 n = n.dec();
               }
               return result;
@@ -2543,8 +2570,8 @@ public final class NumberTheory {
               long k = 0L;
               double i = real - (dN - 1) * doubleH;
               while (real >= i) {
-                result = result.multiply(x);
-                x = x.minus(h);
+                result = result.multiply(v);
+                v = v.minus(h);
                 real -= doubleH;
                 if (k++ > iterationLimit && iterationLimit > 0) {
                   IterationLimitExceeded.throwIt(k, S.FactorialPower);
@@ -2556,8 +2583,8 @@ public final class NumberTheory {
               long k = 0L;
               double i = real - (dN - 1) * doubleH;
               while (real <= i) {
-                result = result.multiply(x);
-                x = x.minus(h);
+                result = result.multiply(v);
+                v = v.minus(h);
                 real -= doubleH;
                 if (k++ > iterationLimit && iterationLimit > 0) {
                   IterationLimitExceeded.throwIt(k, S.FactorialPower);
@@ -2566,13 +2593,13 @@ public final class NumberTheory {
               return result;
             }
 
-          } else if (x.isExactNumber() && n.isRational() && h.isRational()) {
-            IRational real = (IRational) ((INumber) x).re();
+          } else if (v.isExactNumber() && n.isRational() && h.isRational()) {
+            IRational real = (IRational) ((INumber) v).re();
             IRational dN = (IRational) n;
             IRational H = (IRational) h;
             if (H.isZero()) {
               while (dN.isGT(F.C0)) {
-                result = result.multiply(x);
+                result = result.multiply(v);
                 dN = dN.dec();
               }
               return result;
@@ -2580,16 +2607,16 @@ public final class NumberTheory {
             if (H.isGT(F.C0)) {
               IRational i = real.subtract(dN.dec().multiply(H));
               while (real.isGE(i)) {
-                result = result.multiply(x);
-                x = x.minus(H);
+                result = result.multiply(v);
+                v = v.minus(H);
                 real = real.subtract(H);
               }
               return result;
             }
             IRational i = real.subtract(dN.dec().multiply(H));
             while (real.isLE(i)) {
-              result = result.multiply(x);
-              x = x.minus(H);
+              result = result.multiply(v);
+              v = v.minus(H);
               real = real.subtract(H);
             }
             return result;
@@ -2607,7 +2634,7 @@ public final class NumberTheory {
 
     @Override
     public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
+      return ImplementationStatus.EXPERIMENTAL;
     }
 
     @Override
@@ -3720,19 +3747,21 @@ public final class NumberTheory {
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         IExpr n = ast.arg1();
-
-        // (1/2*(1+Sqrt(5)))^n+(2/(1+Sqrt(5)))^n*Cos(n*Pi)
-        IExpr v1 = F.Plus(F.C1, F.CSqrt5);
-        return F.Plus(F.Times(F.Power(F.C1D2, n), F.Power(v1, n)),
-            F.Times(F.Power(F.C2, n), F.Power(F.Power(v1, F.CN1), n), F.Cos(F.Times(n, F.Pi))));
-      }
-      if (ast.isAST2()) {
+        if (!n.isIntegerResult()) {
+          // (1/2*(1+Sqrt(5)))^n+(2/(1+Sqrt(5)))^n*Cos(n*Pi)
+          IExpr v1 = F.Plus(F.C1, F.CSqrt5);
+          return F.Plus(F.Times(F.Power(F.C1D2, n), F.Power(v1, n)),
+              F.Times(F.Power(F.C2, n), F.Power(F.Power(v1, F.CN1), n), F.Cos(F.Times(n, F.Pi))));
+        }
+      } else if (ast.isAST2()) {
         IExpr n = ast.arg1();
-        IExpr z = ast.arg2();
-        // (z/2+Sqrt(1+z^2/4))^n+Cos(n*Pi)/(z/2+Sqrt(1+z^2/4))^n
-        IExpr v1 =
-            F.Power(F.Plus(F.Times(F.C1D2, z), F.Sqrt(F.Plus(F.C1, F.Times(F.C1D4, F.Sqr(z))))), n);
-        return F.Plus(v1, F.Times(F.Power(v1, F.CN1), F.Cos(F.Times(n, F.Pi))));
+        if (!n.isIntegerResult()) {
+          IExpr z = ast.arg2();
+          // (z/2+Sqrt(1+z^2/4))^n+Cos(n*Pi)/(z/2+Sqrt(1+z^2/4))^n
+          IExpr v1 = F.Power(
+              F.Plus(F.Times(F.C1D2, z), F.Sqrt(F.Plus(F.C1, F.Times(F.C1D4, F.Sqr(z))))), n);
+          return F.Plus(v1, F.Times(F.Power(v1, F.CN1), F.Cos(F.Times(n, F.Pi))));
+        }
       }
       return F.NIL;
     }
@@ -4038,6 +4067,31 @@ public final class NumberTheory {
     }
   }
 
+  /**
+   * <pre>
+   * <code>ModularInverse(k, n)
+   * </code>
+   * </pre>
+   * 
+   * <p>
+   * returns the modular inverse <code>k^(-1) mod n</code>.
+   * </p>
+   * 
+   * <p>
+   * See
+   * </p>
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Modular_multiplicative_inverse">Wikipedia - Modular
+   * multiplicative inverse</a></li>
+   * </ul>
+   * <h3>Examples</h3>
+   * 
+   * <pre>
+   * <code>&gt;&gt; ModularInverse(3, 11)
+   * 4
+   * </code>
+   * </pre>
+   */
   private static class ModularInverse extends AbstractFunctionEvaluator {
 
     @Override
@@ -4758,6 +4812,34 @@ public final class NumberTheory {
     }
   }
 
+  /**
+   * <pre>
+   * <code>PerfectNumber(n)
+   * </code>
+   * </pre>
+   * 
+   * <p>
+   * returns the <code>n</code>th perfect number. In number theory, a perfect number is a positive
+   * integer that is equal to the sum of its proper positive divisors, that is, the sum of its
+   * positive divisors excluding the number itself.
+   * </p>
+   * 
+   * <p>
+   * See
+   * </p>
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Perfect_number">Wikipedia - Perfect number</a></li>
+   * <li><a href="https://en.wikipedia.org/wiki/List_of_perfect_numbers">Wikipedia - List of perfect
+   * numbers</a></li>
+   * </ul>
+   * <h3>Examples</h3>
+   * 
+   * <pre>
+   * <code>&gt;&gt; Table(PerfectNumber(i), {i,5})
+   * {6,28,496,8128,33550336}
+   * </code>
+   * </pre>
+   */
   private static class PerfectNumber extends AbstractTrigArg1 {
 
     @Override
@@ -4797,6 +4879,34 @@ public final class NumberTheory {
     }
   }
 
+  /**
+   * <pre>
+   * <code>PerfectNumberQ(n)
+   * </code>
+   * </pre>
+   * 
+   * <p>
+   * returns <code>True</code> if <code>n</code> is a perfect number. In number theory, a perfect
+   * number is a positive integer that is equal to the sum of its proper positive divisors, that is,
+   * the sum of its positive divisors excluding the number itself.
+   * </p>
+   * 
+   * <p>
+   * See
+   * </p>
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Perfect_number">Wikipedia - Perfect number</a></li>
+   * <li><a href="https://en.wikipedia.org/wiki/List_of_perfect_numbers">Wikipedia - List of perfect
+   * numbers</a></li>
+   * </ul>
+   * <h3>Examples</h3>
+   * 
+   * <pre>
+   * <code>&gt;&gt; Select(Range(1000), PerfectNumberQ)
+   * {6,28,496}
+   * </code>
+   * </pre>
+   */
   private static class PerfectNumberQ extends AbstractFunctionEvaluator {
 
     @Override
@@ -4909,6 +5019,44 @@ public final class NumberTheory {
     }
   }
 
+  /**
+   * <pre>
+   * <code>PrimePi(x)
+   * </code>
+   * </pre>
+   * 
+   * <p>
+   * gives the number of primes less than or equal to <code>x</code>.
+   * </p>
+   * 
+   * <p>
+   * See
+   * </p>
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Prime-counting_function">Wikipedia - Prime-counting
+   * function</a></li>
+   * <li><a href=
+   * "https://en.wikipedia.org/wiki/On_the_Number_of_Primes_Less_Than_a_Given_Magnitude">Wikipedia -
+   * On the Number of Primes Less Than a Given Magnitude</a></li>
+   * <li><a href="http://fungrim.org/topic/Prime_numbers/">Fungrim - Prime numbers</a></li>
+   * </ul>
+   * <h3>Examples</h3>
+   * 
+   * <pre>
+   * <code>&gt;&gt; PrimePi(100)
+   * 25
+   * 
+   * &gt;&gt; PrimePi(-1)
+   * 0
+   * 
+   * &gt;&gt; PrimePi(3.5)
+   * 2
+   * 
+   * &gt;&gt; PrimePi(E)
+   * 1
+   * </code>
+   * </pre>
+   */
   private static class PrimePi extends AbstractFunctionEvaluator {
 
     @Override
@@ -5211,6 +5359,45 @@ public final class NumberTheory {
     }
   }
 
+  /**
+   * <pre>
+   * <code>QuadraticIrrationalQ(expr)
+   * </code>
+   * </pre>
+   * 
+   * <p>
+   * returns <code>True</code>, if the <code>expr</code> is of the form
+   * <code>(p + s * Sqrt(d)) / q</code> for integers <code>p,q,d,s</code>.
+   * </p>
+   * 
+   * <p>
+   * See
+   * </p>
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Quadratic_irrational_number">Wikipedia - Quadratic
+   * irrational number</a></li>
+   * <li><a href="https://en.wikipedia.org/wiki/Periodic_continued_fraction">Wikipedia - Periodic
+   * continued fraction</a></li>
+   * </ul>
+   * <h3>Examples</h3>
+   * 
+   * <pre>
+   * <code>&gt;&gt; QuadraticIrrationalQ(5*Sqrt(11))
+   * True
+   * 
+   * &gt;&gt; QuadraticIrrationalQ((7*Sqrt(2) + 1)/11)
+   * True
+   * 
+   * &gt;&gt; QuadraticIrrationalQ(42)
+   * False
+   * </code>
+   * </pre>
+   * 
+   * <h3>Related terms</h3>
+   * <p>
+   * <a href="ContinuedFraction.md">ContinuedFraction</a>
+   * </p>
+   */
   private static class QuadraticIrrationalQ extends AbstractFunctionEvaluator {
 
     @Override
@@ -5236,6 +5423,39 @@ public final class NumberTheory {
     }
   }
 
+  /**
+   * <pre>
+   * <code>RamseyNumber(r, s)
+   * </code>
+   * </pre>
+   * 
+   * <p>
+   * returns the Ramsey number <code>R(r,s)</code>. Currently not all values are known for
+   * <code>1 &lt;= r &lt;= 4</code>. The function returns unevaluated if the value is unknown.
+   * </p>
+   * 
+   * <p>
+   * See
+   * </p>
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Ramsey's_theorem">Wikipedia - Ramsey's
+   * theorem</a></li>
+   * <li><a href="https://oeis.org/A212954">OEIS - A212954</a></li>
+   * </ul>
+   * <h3>Examples</h3>
+   * 
+   * <pre>
+   * <code>&gt;&gt; Table(RamseyNumber(1,j), {j,1,20})
+   * {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
+   * 
+   * &gt;&gt; Table(RamseyNumber(2,j), {j,1,20})
+   * {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20}
+   *         
+   * &gt;&gt; Table(RamseyNumber(i,j), {i,1,5},{j,i,10})
+   * {{1,1,1,1,1,1,1,1,1,1},{2,3,4,5,6,7,8,9,10},{6,9,14,18,23,28,36,RamseyNumber(3,10)},{18,25,RamseyNumber(4,6),RamseyNumber(4,7),RamseyNumber(4,8),RamseyNumber(4,9),RamseyNumber(4,10)}}
+   * </code>
+   * </pre>
+   */
   private static class RamseyNumber extends AbstractFunctionEvaluator {
 
     @Override
@@ -5616,6 +5836,35 @@ public final class NumberTheory {
     }
   }
 
+  /**
+   * <pre>
+   * <code>SquaresR(k, intNumber)
+   * </code>
+   * </pre>
+   * 
+   * <p>
+   * counts the numbers of the representation of <code>intNumber</code> as sum of <code>x^2</code>
+   * terms which occur <code>k</code> times.
+   * </p>
+   * 
+   * <p>
+   * See
+   * </p>
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Sum_of_squares_function">Wikipedia - Sum of squares
+   * function</a></li>
+   * <li><a href="https://en.wikipedia.org/wiki/Sum_of_two_squares_theorem">Wikipedia - Sum of two
+   * quares function</a></li>
+   * </ul>
+   * <h3>Examples</h3>
+   * 
+   * <pre>
+   * <code>&gt;&gt; SquaresR(8, 30)
+   * 395136
+   * </code>
+   * </pre>
+   */
+
   private static class SquaresR extends AbstractFunctionEvaluator {
 
     /**
@@ -5773,6 +6022,35 @@ public final class NumberTheory {
     }
   }
 
+  /**
+   * <pre>
+   * <code>PowersRepresentations(intNumber, k, exponent)
+   * </code>
+   * </pre>
+   * 
+   * <p>
+   * computes the representations of the <code>intNumber</code> as sum of <code>x^exponent</code>
+   * terms which occur <code>k</code> times.
+   * </p>
+   * 
+   * <p>
+   * See
+   * </p>
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Sum_of_squares_function">Wikipedia - Sum of squares
+   * function</a></li>
+   * </ul>
+   * <h3>Examples</h3>
+   * 
+   * <pre>
+   * <code>&gt;&gt; PowersRepresentations(8174, 6, 3)
+   * {{0,0,4,10,13,17},{0,3,6,7,9,19},{0,7,10,12,12,15},{1,1,1,11,14,16},{1,3,5,12,13,16},{1,4,5,5,10,19},{1,5,6,10,10,18},{2,3,4,6,10,19},{3,3,3,4,13,18},{3,5,9,10,13,16},{4,5,6,13,13,15},{4,9,12,12,12,13},{5,9,9,13,13,13},{7,7,10,10,14,14}}
+   * 
+   * &gt;&gt; 2^3+3^3+4^3+6^3+10^3+19^3
+   * 8174
+   * </code>
+   * </pre>
+   */
   private static class PowersRepresentations extends AbstractFunctionEvaluator {
 
     /**
@@ -6658,6 +6936,17 @@ public final class NumberTheory {
    *         cannot be converted into a positive int number
    */
   public static IInteger stirlingS2(int n, IInteger k, int ki) throws MathRuntimeException {
+    if (ki > n || ki == 0) {
+      return C0;
+    }
+    if (ki == 1) {
+      // {n,1}==1
+      return C1;
+    }
+    if (ki == 2) {
+      // {n,2}==2^(n-1)-1
+      return C2.powerRational(n - 1).subtract(C1);
+    }
     if (n != 0 && n <= 25) { // S(26,9) = 11201516780955125625 is larger than Long.MAX_VALUE
       return F.ZZ(CombinatoricsUtils.stirlingS2(n, ki));
     }
