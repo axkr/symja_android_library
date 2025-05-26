@@ -69,5 +69,5 @@ public class ToggleFeature {
    */
   public static boolean JS_ECHARTS = true;
 
-  public static boolean SHOW_STEPS = true;
+  public static boolean SHOW_STEPS = false;
 }

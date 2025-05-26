@@ -1,7 +1,6 @@
 package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.reflection.system.steps.QuarticSolve;
 
@@ -14,9 +13,8 @@ public final class FunctionDefinitions {
   private static class Initializer {
 
     private static void init() {
-      if (ToggleFeature.SHOW_STEPS) {
-        S.QuarticSolve.setEvaluator(new QuarticSolve());
-      }
+      S.QuarticSolve.setEvaluator(new QuarticSolve());
+
       S.Beep.setEvaluator(new org.matheclipse.core.reflection.system.Beep());
       S.BezierFunction.setEvaluator(new org.matheclipse.core.reflection.system.BezierFunction());
       S.ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
