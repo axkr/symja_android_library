@@ -1246,6 +1246,13 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           }
           IAST termsList = Validate.checkEquationsAndInequations(ast, 1);
           IASTMutable[] lists = SolveUtils.filterSolveLists(termsList, F.NIL, isNumeric);
+          if (lists[1].argSize() > 0 && lists[1].isList()) {
+            IASTMutable inequationsList = lists[1];
+            IExpr evaluate = engine.evaluate(F.Reduce(inequationsList, equationVariables));
+            if (evaluate.isFalse()) {
+              return F.CEmptyList;
+            }
+          }
           boolean numericFlag = isNumeric[0] || numeric;
           if (lists[2].isPresent()) {
             IExpr result = solveNumeric(lists[2], numericFlag, engine);

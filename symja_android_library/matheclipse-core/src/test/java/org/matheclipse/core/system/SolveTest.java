@@ -2307,6 +2307,13 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->-(417/5)^(1/3)/2^(2/3)}}");
   }
 
+
+  @Test
+  public void testSolveIssue1165() {
+    check("Solve(t>4/3&&t>=0&&t<=1,{x,t})", //
+        "{}");
+  }
+
   /** The JUnit setup method */
   @Override
   public void setUp() {
