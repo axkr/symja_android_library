@@ -43,7 +43,7 @@ public class ListStepPlot extends ListPlot {
     if (plot.size() < 2) {
       return null;
     }
-    ECharts.setGraphicOptions(graphicsOptions, plot, 2, options, engine);
+    graphicsOptions.setGraphicOptions(options, engine);
     // final OptionArgs optionArgs = new OptionArgs(plot.topHead(), plot, 2, engine, true);
     // if (options[ECharts.X_JOINED].isTrue()) {
     // graphicsOptions.setJoined(true);
@@ -138,6 +138,6 @@ public class ListStepPlot extends ListPlot {
   @Override
   public void setUp(final ISymbol newSymbol) {
     setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(),
-        GraphicsOptions.listPlotDefaultOptionValues(true));
+        GraphicsOptions.listPlotDefaultOptionValues(false, true));
   }
 }

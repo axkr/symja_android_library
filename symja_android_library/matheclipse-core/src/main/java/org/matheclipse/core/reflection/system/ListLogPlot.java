@@ -41,14 +41,7 @@ public class ListLogPlot extends ListPlot {
     if (plot.size() < 2) {
       return null;
     }
-    ECharts.setGraphicOptions(graphicsOptions, plot, 2, options, engine);
-    // final OptionArgs optionArgs = new OptionArgs(plot.topHead(), plot, 2, engine, true);
-    // if (options[ECharts.X_JOINED].isTrue()) {
-    // graphicsOptions.setJoined(true);
-    // }
-    // graphicsOptions.setOptions(optionArgs);
-    // graphicsOptions.setScalingFunctions(options);
-
+    graphicsOptions.setGraphicOptions(options, engine);
     IExpr arg1 = plot.arg1();
     if (!arg1.isList()) {
       arg1 = engine.evaluate(arg1);
@@ -140,7 +133,6 @@ public class ListLogPlot extends ListPlot {
     return echarts.getJSONStr();
   }
 
-
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
@@ -150,18 +142,14 @@ public class ListLogPlot extends ListPlot {
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
-    GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
-    graphicsOptions.setYFunction(y -> F.Log10(y));
-    graphicsOptions.setYScale("Log10");
+    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
+
     IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);
     if (graphicsPrimitives.isPresent()) {
       graphicsOptions.addPadding();
-      IAST listOfOptions = F.List(//
-          F.Rule(S.$Scaling, //
-              F.List(S.None, F.stringx("Log10"))), //
-          F.Rule(S.Axes, S.True), //
-          graphicsOptions.plotRange());
-      return createGraphicsFunction(graphicsPrimitives, listOfOptions, graphicsOptions);
+      graphicsOptions.setScalingFunctions(F.Rule(S.$Scaling, //
+          F.List(S.None, F.stringx("Log10"))));
+      return createGraphicsFunction(graphicsPrimitives, graphicsOptions);
     }
 
     return F.NIL;
@@ -180,6 +168,6 @@ public class ListLogPlot extends ListPlot {
   @Override
   public void setUp(final ISymbol newSymbol) {
     setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(),
-        GraphicsOptions.listPlotDefaultOptionValues(false));
+        GraphicsOptions.listPlotDefaultOptionValues(true, false));
   }
 }

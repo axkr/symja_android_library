@@ -9,13 +9,11 @@ import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
-import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
-import org.matheclipse.core.graphics.ECharts;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -26,12 +24,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /** Plots x/y functions */
 public class Plot extends ListPlot {
-  // public static void main(String[] args) {
-  // double[] linspace = Numpy.logspace(2.0, 3.0, 4, true, 10.0);
-  // for (int i = 0; i < linspace.length; i++) {
-  // System.out.println(linspace[i]);
-  // }
-  // }
 
   final static double NUMBER_OF_PIXELS = 1200.0;
 
@@ -176,24 +168,17 @@ public class Plot extends ListPlot {
       IExpr arg2 = argSize >= 2 ? ast.arg2() : F.CEmptyString;
       return Errors.printMessage(S.Plot, "pllim", F.list(arg2), engine);
     }
-    GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
-    ECharts.setGraphicOptions(graphicsOptions, ast, 2, options, engine);
-    // if (options[0].isTrue()) { // JSForm option
-    // IExpr temp = S.Manipulate.of(engine, ast);
-    // if (temp.headID() == ID.JSFormData) {
-    // return temp;
-    // }
-    // return F.NIL;
-    // }
-    //
-    final OptionArgs optionArgs = new OptionArgs(ast.topHead(), ast, 3, engine, true);
-    if (optionArgs.isTrue(S.JSForm)) {
+
+    // final OptionArgs optionArgs = new OptionArgs(ast.topHead(), ast, 3, engine, true);
+    if (options[0].isTrue()) {
       IExpr temp = S.Manipulate.of(engine, ast);
       if (temp.headID() == ID.JSFormData) {
         return temp;
       }
       return F.NIL;
     }
+    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
+
     if (argSize > 0 && argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);
     }
@@ -205,8 +190,8 @@ public class Plot extends ListPlot {
         try {
           if (rangeList.isList3()) {
 
-            setGraphicOptions(graphicsOptions);
-            graphicsOptions.setOptions(optionArgs);
+            // setGraphicOptions(graphicsOptions, options);
+            // graphicsOptions.setOptions(optionArgs);
             final IAST listOfLines =
                 plotToListPoints(function, rangeList, ast, graphicsOptions, engine);
             if (listOfLines.isNIL()) {
@@ -232,9 +217,7 @@ public class Plot extends ListPlot {
               if (graphicsPrimitives.isPresent()) {
                 graphicsOptions.addPadding();
                 listPlotOptions.setBoundingBox(graphicsOptions.boundingBox());
-                // listPlotOptions.mergeOptions(listPlotOptions.options().getListOfRules());
-                IAST listOfOptions = listOfOptionRules(listPlotOptions);
-                return createGraphicsFunction(graphicsPrimitives, listOfOptions, listPlotOptions);
+                return createGraphicsFunction(graphicsPrimitives, listPlotOptions);
               }
             }
 
@@ -370,18 +353,32 @@ public class Plot extends ListPlot {
     return listOfLines;
   }
 
-  protected void setGraphicOptions(GraphicsOptions graphicsOptions) {
-    graphicsOptions.setXFunction(x -> x);
-    graphicsOptions.setYFunction(y -> y);
-    graphicsOptions.setJoined(true);
-  }
-
-  protected IAST listOfOptionRules(GraphicsOptions listPlotOptions) {
-    IAST listOfOptions = F.List(//
-        F.Rule(S.Axes, S.True), //
-        listPlotOptions.plotRange());
-    return listOfOptions;
-  }
+  // protected void setGraphicOptions(GraphicsOptions graphicsOptions, IExpr[] options) {
+  // // final OptionArgs optionArgs = new OptionArgs(plot.topHead(), plot, startIndex, engine,
+  // true);
+  // if (!options[GraphicsOptions.X_AXES].isFalse()) {
+  // graphicsOptions.setAxes(options[GraphicsOptions.X_AXES]);
+  // }
+  // if (options[GraphicsOptions.X_AXESLABEL] != S.None) {
+  // graphicsOptions.setAxesLabel(options[GraphicsOptions.X_AXESLABEL]);
+  // }
+  //
+  // if (options[GraphicsOptions.X_JOINED].isTrue()) {
+  // graphicsOptions.setJoined(true);
+  // }
+  // if (options[GraphicsOptions.X_PLOTLEGENDS] != S.None) {
+  // graphicsOptions.setPlotLegends(options[GraphicsOptions.X_PLOTLEGENDS]);
+  // }
+  // if (options[GraphicsOptions.X_PLOTLABEL] != S.None) {
+  // graphicsOptions.setPlotLabel(options[GraphicsOptions.X_PLOTLABEL]);
+  // }
+  //
+  // graphicsOptions.setScalingFunctions(options);
+  // graphicsOptions.setFilling(options);
+  // graphicsOptions.setXFunction(x -> x);
+  // graphicsOptions.setYFunction(y -> y);
+  // graphicsOptions.setJoined(true);
+  // }
 
   private static double[] automaticPlotRange(final double[] values, double[] yMinMax) {
     if (values.length == 0) {
@@ -659,6 +656,6 @@ public class Plot extends ListPlot {
     // setOptions(newSymbol, new IBuiltInSymbol[] {S.JSForm, S.Axes, S.PlotRange},
     // new IExpr[] {S.False, S.True, S.Automatic});
     setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(),
-        GraphicsOptions.listPlotDefaultOptionValues(true));
+        GraphicsOptions.listPlotDefaultOptionValues(true, true));
   }
 }

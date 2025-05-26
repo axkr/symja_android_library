@@ -4,7 +4,6 @@ import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.ECharts;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
@@ -38,14 +37,7 @@ public class ListLogLinearPlot extends ListPlot {
     if (plot.size() < 2) {
       return null;
     }
-    ECharts.setGraphicOptions(graphicsOptions, plot, 2, options, engine);
-    // final OptionArgs optionArgs = new OptionArgs(plot.topHead(), plot, 2, engine, true);
-    // if (options[ECharts.X_JOINED].isTrue()) {
-    // graphicsOptions.setJoined(true);
-    // }
-    // graphicsOptions.setOptions(optionArgs);
-    // graphicsOptions.setScalingFunctions(options);
-
+    graphicsOptions.setGraphicOptions(options, engine);
     IExpr arg1 = plot.arg1();
     if (!arg1.isList()) {
       arg1 = engine.evaluate(arg1);
@@ -70,7 +62,7 @@ public class ListLogLinearPlot extends ListPlot {
           StringBuilder xAxisCategoryBuffer = new StringBuilder();
           ECharts.xAxisCategory(xAxisCategoryBuffer, (IAST) listOfLists.arg1());
           ECharts echarts = ECharts.build(graphicsOptions, xAxisCategoryBuffer, yAxisSeriesBuffer);
-          echarts.setXAxis("log");
+          echarts.setXAxisMin("log", 0.1);
           echarts.setYAxis("value");
           return echarts.getJSONStr();
         }
@@ -96,8 +88,8 @@ public class ListLogLinearPlot extends ListPlot {
     // + " name: 'ListLogLinearPlot',\n" //
     // + " type: 'line',\n");
     String type = graphicsOptions.isJoined() ? ECharts.TYPE_LINE : ECharts.TYPE_SCATTER;
-    ECharts.xyAxesPoint2D(pointList2D, xAxisString, yAxisString, graphicsOptions, type, "");
-
+    // ECharts.xyAxesPoint2D(pointList2D, xAxisString, yAxisString, graphicsOptions, type, "");
+    ECharts.seriesData2D(pointList2D, yAxisString, graphicsOptions, type, "");
     // ECharts echarts = new ECharts("ListLogPlot");
     // // legend
     // echarts.setLegend("");
@@ -109,7 +101,7 @@ public class ListLogLinearPlot extends ListPlot {
     // echarts.setSeriesValues(yAxisString.toString());
 
     ECharts echarts = ECharts.build(graphicsOptions, xAxisString, yAxisString);
-    echarts.setXAxis("log");
+    echarts.setXAxisMin("log", 0.1);
     echarts.setYAxis("value");
     return echarts.getJSONStr();
   }
@@ -131,9 +123,17 @@ public class ListLogLinearPlot extends ListPlot {
     ECharts.xAxisCategory(xAxisString, pointList);
 
     ECharts echarts = ECharts.build(graphicsOptions, xAxisString, yAxisString);
-    echarts.setXAxis("log");
+    echarts.setXAxisMin("log", 0.1);
     echarts.setYAxis("value");
     return echarts.getJSONStr();
+  }
+  @Override
+  protected GraphicsOptions setGraphicsOptions(final IExpr[] options, final EvalEngine engine) {
+    GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
+    graphicsOptions.setGraphicOptions(options, engine);
+    graphicsOptions.setXFunction(x -> F.Log10(x));
+    graphicsOptions.setXScale("Log10");
+    return graphicsOptions;
   }
 
   @Override
@@ -145,17 +145,12 @@ public class ListLogLinearPlot extends ListPlot {
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
-    GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
-    graphicsOptions.setXFunction(x -> F.Log10(x));
-    graphicsOptions.setXScale("Log10");
+    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
+
     IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);
     if (graphicsPrimitives.isPresent()) {
       graphicsOptions.addPadding();
-      IAST listOfOptions = F.List(//
-          F.Rule(S.$Scaling, F.List(F.stringx("Log10"), S.None)), //
-          F.Rule(S.Axes, S.True), //
-          graphicsOptions.plotRange());
-      return createGraphicsFunction(graphicsPrimitives, listOfOptions, graphicsOptions);
+      return createGraphicsFunction(graphicsPrimitives, graphicsOptions);
     }
     return F.NIL;
   }
@@ -168,6 +163,6 @@ public class ListLogLinearPlot extends ListPlot {
   @Override
   public void setUp(final ISymbol newSymbol) {
     setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(),
-        GraphicsOptions.listPlotDefaultOptionValues(false));
+        GraphicsOptions.listPlotDefaultOptionValues(false, false));
   }
 }

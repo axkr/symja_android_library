@@ -8,7 +8,6 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
-import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -35,7 +34,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       ast = ast.copyUntil(argSize + 1);
     }
 
-    GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
+    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
     String graphicsPrimitivesStr = listPlotECharts(ast, options, graphicsOptions, engine);
     if (graphicsPrimitivesStr != null) {
       StringBuilder jsControl = new StringBuilder();
@@ -53,7 +52,6 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     if (plot.size() < 2) {
       return null;
     }
-    ECharts.setGraphicOptions(graphicsOptions, plot, 2, options, engine);
 
     IExpr arg1 = plot.arg1();
     if (!arg1.isList()) {
@@ -175,23 +173,20 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     if (ToggleFeature.JS_ECHARTS) {
       return evaluateECharts(ast, argSize, options, engine, originalAST);
     }
-    if (options[ECharts.X_JSFORM].isTrue()) {
+    if (options[GraphicsOptions.X_JSFORM].isTrue()) {
       IExpr temp = S.Manipulate.of(engine, ast);
       if (temp.headID() == ID.JSFormData) {
         return temp;
       }
       return F.NIL;
     }
-
-    GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
+    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
     // boundingbox an array of double values (length 4) which describes the bounding box
     // <code>[xMin, xMax, yMin, yMax]</code>
     IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);
     if (graphicsPrimitives.isPresent()) {
       graphicsOptions.addPadding();
-      IAST listOfOptions = F.List(F.Rule(S.Axes, S.True), //
-          graphicsOptions.plotRange());
-      return createGraphicsFunction(graphicsPrimitives, listOfOptions, graphicsOptions);
+      return createGraphicsFunction(graphicsPrimitives, graphicsOptions);
     }
 
     return F.NIL;
@@ -212,10 +207,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     return true;
   }
 
-  protected IExpr createGraphicsFunction(IAST graphicsPrimitives, IAST listOfOptions,
-      GraphicsOptions graphicsOptions) {
-    // OptionArgs options = graphicsOptions.options();
-    // options.appendOptionRules(listOfOptions);
+  protected IExpr createGraphicsFunction(IAST graphicsPrimitives, GraphicsOptions graphicsOptions) {
     IASTAppendable result = F.Graphics(graphicsPrimitives);// , //
     result.appendArgs(graphicsOptions.getListOfRules());
     return result;
@@ -234,7 +226,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     if (plot.size() < 2) {
       return F.NIL;
     }
-    ECharts.setGraphicOptions(graphicsOptions, plot, 3, options, engine);
+    graphicsOptions.setGraphicOptions(options, engine);
     // final OptionArgs optionArgs = new OptionArgs(plot.topHead(), plot, 3, engine, true);
     // if (options[ECharts.X_JOINED].isTrue()) {
     // graphicsOptions.setJoined(true);
@@ -284,11 +276,11 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     if (plot.size() < 2) {
       return F.NIL;
     }
-    final OptionArgs optionArgs = new OptionArgs(plot.topHead(), plot, 2, engine, true);
-    if (options[ECharts.X_JOINED].isTrue()) {
+    // final OptionArgs optionArgs = new OptionArgs(plot.topHead(), plot, 2, engine, true);
+    if (options[GraphicsOptions.X_JOINED].isTrue()) {
       graphicsOptions.setJoined(true);
     }
-    graphicsOptions.setOptions(optionArgs);
+    // graphicsOptions.setOptions(optionArgs);
     graphicsOptions.setScalingFunctions(options);
     graphicsOptions.setFilling(options);
 
@@ -794,9 +786,15 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     return points;
   }
 
+  protected GraphicsOptions setGraphicsOptions(final IExpr[] options, final EvalEngine engine) {
+    GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
+    graphicsOptions.setGraphicOptions(options, engine);
+    return graphicsOptions;
+  }
+
   @Override
   public void setUp(final ISymbol newSymbol) {
     setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(),
-        GraphicsOptions.listPlotDefaultOptionValues(false));
+        GraphicsOptions.listPlotDefaultOptionValues(true, false));
   }
 }

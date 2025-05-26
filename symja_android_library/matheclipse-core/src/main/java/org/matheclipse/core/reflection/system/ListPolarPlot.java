@@ -4,14 +4,24 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 public class ListPolarPlot extends ListPlot {
+
+  @Override
+  protected GraphicsOptions setGraphicsOptions(final IExpr[] options, final EvalEngine engine) {
+    GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
+    graphicsOptions.setGraphicOptions(options, engine);
+    graphicsOptions.setYFunction(y -> F.Log10(y));
+    graphicsOptions.setYScale("Log10");
+    return graphicsOptions;
+  }
+
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
       final EvalEngine engine, IAST originalAST) {
@@ -23,14 +33,11 @@ public class ListPolarPlot extends ListPlot {
       IASTAppendable table = createTable(engine, list, 0);
       if (table.isPresent()) {
         IASTMutable listPlot = ast.setAtCopy(1, table);
-        GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
+        GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
         IAST graphicsPrimitives = listPlot(listPlot, options, graphicsOptions, engine);
         if (graphicsPrimitives.isPresent()) {
           graphicsOptions.addPadding();
-          IAST listOfOptions = F.List(//
-              F.Rule(S.Axes, S.True), //
-              graphicsOptions.plotRange());
-          return createGraphicsFunction(graphicsPrimitives, listOfOptions, graphicsOptions);
+          return createGraphicsFunction(graphicsPrimitives, graphicsOptions);
         }
       }
     }
@@ -88,5 +95,11 @@ public class ListPolarPlot extends ListPlot {
   @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_1_INFINITY;
+  }
+
+  @Override
+  public void setUp(final ISymbol newSymbol) {
+    setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(),
+        GraphicsOptions.listPlotDefaultOptionValues(true, false));
   }
 }

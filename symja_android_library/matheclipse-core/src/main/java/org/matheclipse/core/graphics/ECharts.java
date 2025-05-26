@@ -1,8 +1,8 @@
 package org.matheclipse.core.graphics;
 
-import org.matheclipse.core.eval.EvalEngine;
+import java.util.Arrays;
+import org.apache.commons.lang3.StringUtils;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.JavaScriptFormFactory;
@@ -10,23 +10,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class ECharts {
-  public final static int X_JSFORM = 0;
-
-  public final static int X_FILLING = 1;
-
-  public final static int X_AXES = 2;
-
-  public final static int X_PLOTRANGE = 3;
-
-  public final static int X_$SCALING = 4;
-
-  public final static int X_JOINED = 5;
-
-  public final static int X_PLOTLEGENDS = 6;
-
-  public final static int X_PLOTLABEL = 7;
-
-  public final static int X_AXESLABEL = 8;
 
   // public static final String DEFAULT_SERIES_NAME = "Series";
 
@@ -40,6 +23,7 @@ public class ECharts {
 
   private static final String JSON_TEMPLATE = //
       "option={\n" //
+          + "  animation: false, \n" //
           + "  title: {\n" //
           + "    text: \"`title`\"\n" //
           + "  },\n" //
@@ -167,26 +151,31 @@ public class ECharts {
   }
 
   private static String[] createLegends(GraphicsOptions graphicsOptions, final int argSize) {
-    String[] legends = new String[argSize];
-    for (int i = 0; i < argSize; i++) {
-      legends[i] = "";
-    }
     IExpr plotLegends = graphicsOptions.plotLegends();
     if (plotLegends != S.None) {
       if (plotLegends == S.Automatic) {
+        String[] legends = new String[argSize];
+        Arrays.fill(legends, StringUtils.EMPTY);
         for (int i = 0; i < argSize; i++) {
           legends[i] = "" + (i + 1);
         }
+        return legends;
       } else if (plotLegends.isList()) {
         IAST list = (IAST) plotLegends;
+        String[] legends = new String[list.argSize()];
+        Arrays.fill(legends, StringUtils.EMPTY);
         for (int i = 1; i < list.size(); i++) {
           legends[i - 1] = list.get(i).toString();
         }
+        return legends;
       } else if (argSize == 1) {
+        String[] legends = new String[1];
+        Arrays.fill(legends, StringUtils.EMPTY);
         legends[0] = plotLegends.toString();
+        return legends;
       }
     }
-    return legends;
+    return new String[] {""};
   }
 
   private static String createLegends(GraphicsOptions graphicsOptions) {
@@ -208,30 +197,6 @@ public class ECharts {
       }
     }
     return "";
-  }
-
-  public static void setGraphicOptions(GraphicsOptions graphicsOptions, IAST plot, int startIndex,
-      IExpr[] options, EvalEngine engine) {
-    final OptionArgs optionArgs = new OptionArgs(plot.topHead(), plot, startIndex, engine, true);
-    if (!options[X_AXES].isFalse()) {
-      graphicsOptions.setAxes(options[X_AXES]);
-    }
-    if (options[X_AXESLABEL] != S.None) {
-      graphicsOptions.setAxesLabel(options[X_AXESLABEL]);
-    }
-
-    if (options[X_JOINED].isTrue()) {
-      graphicsOptions.setJoined(true);
-    }
-    if (options[X_PLOTLEGENDS] != S.None) {
-      graphicsOptions.setPlotLegends(options[X_PLOTLEGENDS]);
-    }
-    if (options[X_PLOTLABEL] != S.None) {
-      graphicsOptions.setPlotLabel(options[X_PLOTLABEL]);
-    }
-    graphicsOptions.setOptions(optionArgs);
-    graphicsOptions.setScalingFunctions(options);
-    graphicsOptions.setFilling(options);
   }
 
   public static void xAxisCategory(StringBuilder xAxisString, IAST pointList) {
@@ -287,7 +252,9 @@ public class ECharts {
         if (isNonReal(yValue)) {
           values.append("''");
         } else {
+          values.append("'");
           toJS.convertExpr(values, yValue);
+          values.append("'");
         }
       }
       if (i < pointList2D.argSize()) {
@@ -295,6 +262,54 @@ public class ECharts {
         xAxisBuffer.append(", ");
       }
 
+    }
+    values.append("]\n");
+    yAxisBuffer.append(values);
+    yAxisBuffer.append("}\n");
+  }
+
+  public static void seriesData2D(IAST pointList2D,
+      StringBuilder yAxisBuffer, GraphicsOptions graphicsOptions, String type, String step) {
+    String[] legends = createLegends(graphicsOptions, 1);
+    yAxisBuffer.append( //
+        "{\n" //
+            + " name: '" + legends[0] + "',\n" //
+            + " showSymbol: false,\n" //
+            + " type: '" + type + "',\n");
+    if (step != null && step.length() > 0) {
+      // step must contain a string with length greater than 0
+      yAxisBuffer.append(" step: '" + step + "',\n");
+    }
+    JavaScriptFormFactory toJS =
+        new JavaScriptFormFactory(true, false, -1, -1, JavaScriptFormFactory.USE_MATHCELL);
+    StringBuilder values = new StringBuilder();
+    values.append(" data: [\n");
+    for (int i = 1; i < pointList2D.size(); i++) {
+      IAST list2 = (IAST) pointList2D.get(i);
+      IAST currentPointY = getPoint2D(list2);
+      values.append("[");
+      IExpr xValue = currentPointY.first();
+      if (isNonReal(xValue)) {
+        values.append("'', ''");
+      } else {
+        // values.append("'");
+        toJS.convertExpr(values, xValue);
+        // values.append("', ");
+        values.append(", ");
+        IExpr yValue = currentPointY.second();
+        if (isNonReal(yValue)) {
+          values.append("''");
+        } else {
+          // values.append("'");
+          toJS.convertExpr(values, yValue);
+          // values.append("'");
+        }
+      }
+      values.append("]");
+      if (i < pointList2D.argSize()) {
+        values.append(", ");
+      }
+      values.append("\n");
     }
     values.append("]\n");
     yAxisBuffer.append(values);
@@ -454,7 +469,6 @@ public class ECharts {
    * Set x-axis to the specified type.
    * 
    * @param type
-   * @return
    */
   public String setXAxis(String type) {
     jsonStr = jsonStr.replace("`xaxis`", //
@@ -463,6 +477,16 @@ public class ECharts {
             + "    name: '" + xAxisLabel() + "',");
     return jsonStr;
   }
+
+  public String setXAxisMin(String type, double minimum) {
+    jsonStr = jsonStr.replace("`xaxis`", //
+        "type: '" + type + "',\n" //
+            + "    min: " + minimum + ",\n" //
+            + "    show: " + isXAxis() + ",\n" // show x-axis
+            + "    name: '" + xAxisLabel() + "',");
+    return jsonStr;
+  }
+
 
   public String setXAxisPlot() {
     jsonStr = jsonStr.replace("`xaxis`", //

@@ -17,8 +17,17 @@ public class NumberLinePlot extends ListPlot {
   public NumberLinePlot() {}
 
   @Override
-  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
-      final EvalEngine engine, IAST originalAST) {
+  protected GraphicsOptions setGraphicsOptions(final IExpr[] options, final EvalEngine engine) {
+    GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
+    graphicsOptions.setGraphicOptions(options, engine);
+    graphicsOptions.setJoined(false);
+    graphicsOptions.setAxes(F.List(S.True, S.False));
+    return graphicsOptions;
+  }
+
+  @Override
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
+      IAST originalAST) {
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
@@ -57,17 +66,14 @@ public class NumberLinePlot extends ListPlot {
         }
         result.append(numberLine);
       }
-      GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
-      graphicsOptions.setJoined(false);
+
+      GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
       ast = ast.setAtCopy(1, result);
       IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);
       if (graphicsPrimitives.isPresent()) {
         graphicsOptions.addPadding();
-        IAST listOfOptions = F.List(//
-            F.Rule(S.Axes, F.List(S.True, S.False)), //
-            F.Rule(S.PlotRange, F.List(F.List(minValue, maxValue), F.List(0.0, list.size() + 1))) //
-        );
-        return createGraphicsFunction(graphicsPrimitives, listOfOptions, graphicsOptions);
+        graphicsOptions.setBoundingBox(new double[] {minValue, maxValue, 0.0, list.size() + 1});
+        return createGraphicsFunction(graphicsPrimitives, graphicsOptions);
       }
     }
 

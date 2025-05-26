@@ -3,8 +3,7 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.Show;
 import static org.matheclipse.core.expression.F.SurfaceGraphics;
-
-import org.matheclipse.core.basic.OperationSystem;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -42,7 +41,7 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
-    if (options[0].isTrue()) {
+    if (options[0].isTrue() || Config.USE_MANIPULATE_JS) {
       IExpr temp = S.Manipulate.of(engine, originalAST);
       if (temp.headID() == ID.JSFormData) {
         return temp;

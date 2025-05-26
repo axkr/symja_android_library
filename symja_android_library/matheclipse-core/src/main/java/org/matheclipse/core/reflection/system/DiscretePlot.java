@@ -11,6 +11,14 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class DiscretePlot extends ListPlot {
+
+  @Override
+  protected GraphicsOptions setGraphicsOptions(final IExpr[] options, final EvalEngine engine) {
+    GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
+    graphicsOptions.setGraphicOptions(options, engine);
+    return graphicsOptions;
+  }
+
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
       final EvalEngine engine, IAST originalAST) {
@@ -38,16 +46,14 @@ public class DiscretePlot extends ListPlot {
           tableValues = S.Table.ofNIL(engine, F.List(variable, function), iteratorList);
         }
         if (tableValues.isList()) {
-          GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
+          GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
           IASTMutable listPlot = ast.removeAtCopy(2);
           listPlot.set(1, tableValues);
           IAST graphicsPrimitives = listPlot(listPlot, options, graphicsOptions, engine);
           if (graphicsPrimitives.isPresent()) {
             graphicsOptions.addPadding();
-            IAST listOfOptions = F.List(F.Rule(S.Filling, S.Axis), //
-                F.Rule(S.Axes, S.True), //
-                graphicsOptions.plotRange());
-            return createGraphicsFunction(graphicsPrimitives, listOfOptions, graphicsOptions);
+            graphicsOptions.setFilling(S.Axis);
+            return createGraphicsFunction(graphicsPrimitives, graphicsOptions);
           }
         }
       }

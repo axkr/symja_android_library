@@ -44,7 +44,7 @@ public class ListLinePlot extends ListPlot {
     if (plot.size() < 2) {
       return null;
     }
-    ECharts.setGraphicOptions(graphicsOptions, plot, 2, options, engine);
+    graphicsOptions.setGraphicOptions(options, engine);
 
     IExpr arg1 = plot.arg1();
     if (!arg1.isList()) {
@@ -145,9 +145,7 @@ public class ListLinePlot extends ListPlot {
     IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);
     if (graphicsPrimitives.isPresent()) {
       graphicsOptions.addPadding();
-      IAST listOfOptions = F.List(F.Rule(S.Axes, S.True), //
-          graphicsOptions.plotRange());
-      return createGraphicsFunction(graphicsPrimitives, listOfOptions, graphicsOptions);
+      return createGraphicsFunction(graphicsPrimitives, graphicsOptions);
     }
 
     return F.NIL;
@@ -161,6 +159,6 @@ public class ListLinePlot extends ListPlot {
   @Override
   public void setUp(final ISymbol newSymbol) {
     setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(),
-        GraphicsOptions.listPlotDefaultOptionValues(true));
+        GraphicsOptions.listPlotDefaultOptionValues(false, true));
   }
 }
