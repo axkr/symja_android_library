@@ -7,6 +7,9 @@ public class ComplexExpandTest extends ExprEvaluatorTestCase {
   @Test
   public void testComplexExpand() {
 
+    check("-(-1)^(x/3)", //
+        "-(-1)^(x/3)");
+
     check("ComplexExpand(ArcCot(x+I*y))", //
         "-Arg(1-I/(x+I*y))/2+Arg(1+I/(x+I*y))/2-I*1/4*Log(x^2/(x^2+y^2)^2+(1+y/(x^2+y^2))^\n"
             + "2)+I*1/4*Log(x^2/(x^2+y^2)^2+(1-y/(x^2+y^2))^2)");

@@ -941,13 +941,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     setOptions(newSymbol, S.Assumptions, S.$Assumptions);
     super.setUp(newSymbol);
 
-    if (Config.THREAD_FACTORY != null) {
-      INIT_THREAD = Config.THREAD_FACTORY.newThread(new IntegrateInitializer());
-    } else {
-      INIT_THREAD = new Thread(new IntegrateInitializer(), "IntegrateInitializer");
-    }
-
     if (!Config.JAS_NO_THREADS) {
+      if (Config.THREAD_FACTORY != null) {
+        INIT_THREAD = Config.THREAD_FACTORY.newThread(new IntegrateInitializer());
+      } else {
+        INIT_THREAD = new Thread(new IntegrateInitializer(), "IntegrateInitializer");
+      }
       INIT_THREAD.start();
     } else {
       // see #evaluate() method

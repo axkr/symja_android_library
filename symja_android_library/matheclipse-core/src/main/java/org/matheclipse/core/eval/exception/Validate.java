@@ -808,7 +808,7 @@ public final class Validate {
               || arg.isAST(S.LessEqual) //
               || arg.isAST(S.Greater) //
               || arg.isAST(S.GreaterEqual)) {
-            // split n-ary funtion in binary functions
+            // split n-ary function in binary functions
             IAST function = (IAST) arg;
             IBuiltInSymbol head = (IBuiltInSymbol) function.head();
             IExpr lastArg = function.arg1();

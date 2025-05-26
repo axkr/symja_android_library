@@ -295,7 +295,13 @@ public class ExprEvaluatorTests {
         F.Power(F.x, F.C2), //
         F.Indeterminate, //
         F.ComplexInfinity, //
+        F.CEmptyInterval, //
+        F.CEmptyIntervalData, //
         F.Interval(F.a), //
+        F.IntervalData(F.List(F.CNInfinity, S.Less, F.Less, F.CNInfinity)), //
+        F.IntervalData(//
+            F.List(F.ZZ(0), F.LessEqual, F.LessEqual, F.ZZ(2)), //
+            F.List(F.ZZ(3), F.LessEqual, F.LessEqual, F.ZZ(3))), //
         F.x_, //
         F.y_, //
         F.x__, // any sequence of one or more expressions

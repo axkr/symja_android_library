@@ -95,10 +95,11 @@ public final class AST3 extends AST2 {
    * as this {@code HMArrayList}.
    *
    * @return a shallow copy of this {@code ArrayList}
+   * @throws CloneNotSupportedException
    * @see java.lang.Cloneable
    */
   @Override
-  public IAST clone() {
+  public IAST clone() throws CloneNotSupportedException {
     AST3 result = (AST3) super.clone();
     result.arg0 = arg0;
     result.arg1 = arg1;

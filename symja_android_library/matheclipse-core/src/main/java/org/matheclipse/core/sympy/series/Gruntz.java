@@ -236,9 +236,9 @@ public class Gruntz {
   }
 
   public static int sign(IExpr e, ISymbol x) {
-    if (!(e instanceof IExpr)) {
-      throw new IllegalArgumentException("e should be an instance of IExpr");
-    }
+    // if (!(e instanceof IExpr)) {
+    // throw new IllegalArgumentException("e should be an instance of IExpr");
+    // }
 
     if (e.isPositive()) {
       return 1;

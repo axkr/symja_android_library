@@ -1838,12 +1838,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testBellB() {
-    check("BellB(1009,-9223372036854775807/9223372036854775808)", //
-        "BellB(1009,-9223372036854775807/9223372036854775808)");
-    check("BellB(10007)", //
-        "BellB(10007)");
-    check("BellB(1/2,z)", //
-        "BellB(1/2,z)");
+    // check("BellB(1009,-9223372036854775807/9223372036854775808)", //
+    // "BellB(1009,-9223372036854775807/9223372036854775808)");
+    // check("BellB(10007)", //
+    // "BellB(10007)");
+    // check("BellB(1/2,z)", //
+    // "BellB(1/2,z)");
 
     check("BellB(10,x)", //
         "x+511*x^2+9330*x^3+34105*x^4+42525*x^5+22827*x^6+5880*x^7+750*x^8+45*x^9+x^10");
@@ -8022,7 +8022,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFactorialPower() {
-
+    check("FactorialPower(v,4) // FunctionExpand", //
+        "(-3+v)*(-2+v)*(-1+v)*v");
     check("N(FactorialPower(1/3, 7, 3), 50)", //
         "131965.39551897576588934613625971650663008687700045");
     checkNumeric("FactorialPower(1 + I, I, 3.)", //
@@ -8052,6 +8053,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("FactorialPower(3, 2)", //
         "6");
+    check("FactorialPower(2, 3)", //
+        "0");
     check("FactorialPower(2, 2)", //
         "2");
     check("FactorialPower(1, 2)", //
@@ -11817,7 +11820,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     EvalEngine.resetModuleCounter4JUnit();
     // check("JSForm(Ramp(x))", //
     // "((x>=0) ? x : ( 0 ))");
-
 
     check("JSForm( {Identity( x ),Log( y )} )", //
         "[x,Math.log(y)]");

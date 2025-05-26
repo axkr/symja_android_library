@@ -13,6 +13,11 @@ public class Powsimp {
     return powsimp(expr, deep, combine, false, null);
   }
 
+  public static IExpr powsimpRecursive(IExpr expr, boolean deep, String combine, boolean force,
+      Function<IExpr, IExpr> measure) {
+    return powsimp(expr, deep, combine, force, measure);
+  }
+
   public static IExpr powsimp(IExpr expr, boolean deep, String combine, boolean force,
       Function<IExpr, IExpr> measure) {
     // reduces expression by combining powers with similar bases and exponents.
@@ -99,6 +104,9 @@ public class Powsimp {
     if (expr.isAST()) {
       if (deep == false && !expr.isPlusTimesPower()) {
         return expr;
+      }
+      if (expr.isPower()) {
+        // return recurse(expr*_y, false,combine,force,measure)/_y
       }
       // IASTAppendable result = F.mapFunction(ast.head(), ast, a -> powsimp(a));
       return F.eval(expr);

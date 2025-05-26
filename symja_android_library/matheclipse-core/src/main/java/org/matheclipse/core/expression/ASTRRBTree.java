@@ -228,7 +228,7 @@ public class ASTRRBTree extends AbstractAST
    * @see java.lang.Cloneable
    */
   @Override
-  public IAST clone() {
+  final public IAST clone() {
     return copy();
   }
 

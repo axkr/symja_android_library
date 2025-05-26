@@ -505,8 +505,9 @@ public class SpecialFunctions {
           }
           // https://functions.wolfram.com/GammaBetaErf/BetaRegularized/03/01/01/0001/
 
+          IExpr oneMinusZ = F.C1.subtract(z);
           // ((1-z)^k*Pochhammer(a,k))/k!
-          IExpr sum = F.sum(k -> F.Times(F.Power(F.Subtract(F.C1, z), k),
+          IExpr sum = F.sum(k -> F.Times(F.Power(oneMinusZ, k),
               F.Power(F.Factorial(k), F.CN1), F.Pochhammer(a, k)), 0, bi - 1);
           // z^a * sum
           return F.Times(F.Power(z, a), sum);
@@ -1955,7 +1956,7 @@ public class SpecialFunctions {
                       F.sum(
                           k -> F.Times(F.Exp(F.Times(c1, F.Pi, k)),
                               F.PolyGamma(F.C1, F.Times(k, qR1))), //
-                          1, --qInt, 1)));
+                          1, --qInt)));
                 }
               }
             }

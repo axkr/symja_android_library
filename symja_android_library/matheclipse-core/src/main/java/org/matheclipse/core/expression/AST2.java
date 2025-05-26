@@ -93,10 +93,11 @@ public class AST2 extends AST1 {
    * {@code AST2}.
    *
    * @return a shallow copy of this {@code ArrayList}
+   * @throws CloneNotSupportedException
    * @see java.lang.Cloneable
    */
   @Override
-  public IAST clone() {
+  public IAST clone() throws CloneNotSupportedException {
     AST2 result = (AST2) super.clone();
     result.arg0 = arg0;
     result.arg1 = arg1;

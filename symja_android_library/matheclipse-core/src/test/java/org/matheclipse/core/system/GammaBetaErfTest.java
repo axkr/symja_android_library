@@ -448,6 +448,8 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testExpIntegralE() {
+    // check("N(Table(ExpIntegralE(x, 2/3), {x,-4, 4, 1/4}),50)", //
+    // "");
     checkNumeric("N(ExpIntegralE(3, 22/10), 50)", //
         "0.023520656648276500007831719911764625915312610516518");
     checkNumeric("ExpIntegralE(1.0+I,2.0+3.0*I)", //
@@ -832,6 +834,8 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testHarmonicNumber() {
+    // check("Table(Print(r1,i1);HarmonicNumber(r1+I*i1), {r1,-1.0,1.0},{i1,-1.0,1.0} )", //
+    // "");
     checkNumeric("HarmonicNumber(-1.0)", //
         "ComplexInfinity");
     checkNumeric("N(HarmonicNumber(-1),30)", //

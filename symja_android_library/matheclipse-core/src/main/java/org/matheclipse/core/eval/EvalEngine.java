@@ -56,7 +56,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.OptionsPattern;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -72,7 +71,6 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISparseArray;
-import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
@@ -101,8 +99,6 @@ import jakarta.annotation.Nonnull;
  */
 // @NotThreadSafe
 public class EvalEngine implements Serializable {
-
-  private static final IStringX EVALUATION_LOOP = StringX.valueOf("EvalLoop");
 
   public static class OptionsResult {
     public IAST result;

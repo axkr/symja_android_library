@@ -165,11 +165,14 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
    * {@code AST0}.
    *
    * @return a shallow copy of this {@code ArrayList}
+   * @throws CloneNotSupportedException
    * @see java.lang.Cloneable
    */
   @Override
-  public IAST clone() {
-    return new AST0(arg0);
+  public IAST clone() throws CloneNotSupportedException {
+    AST0 result = (AST0) super.clone();
+    result.arg0 = arg0;
+    return result;
   }
 
   /** {@inheritDoc} */

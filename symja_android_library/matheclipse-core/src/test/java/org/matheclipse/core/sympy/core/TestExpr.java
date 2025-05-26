@@ -350,7 +350,7 @@ public class TestExpr extends ExprEvaluatorTestCase {
     // assert (3 + 2*x**(log(3)/log(2) - 1)).leadterm(x) == (3, 0)
     // assertEquals(
     // F.Plus(F.C3,
-    // F.Times(F.C2, F.x, F.Power(F.x, F.Subtract(F.Divide(F.Log(3), F.Log(2)), F.C1))))
+    // F.Times(F.C2, F.Power(F.x, F.Subtract(F.Divide(F.Log(3), F.Log(2)), F.C1))))
     // .leadTerm(x).toString(), //
     // "{2,Log(3)/Log(2)}");
 
