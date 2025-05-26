@@ -45,7 +45,7 @@ de
 >> StringTake("abcde", {2})
 b
    
->> StringTake("abcd", {2,3}]
+>> StringTake("abcd", {2,3})
 bc
   
 >> StringTake("abcdefgh", {1, 5, 2})
