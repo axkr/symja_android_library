@@ -6,9 +6,18 @@ public class SumTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSum001() {
+    check("Sum(r^k,{k,0,n-1})", //
+        "(-1+r^n)/(-1+r)");
+
+    check("Sum(r^(i+m),{i,0,n})", //
+        "(r^m*(-1+r^(1+n)))/(-1+r)");
+    check("Sum(r^(i-1/2),{i,0,n})", //
+        "(-1+r^(1+n))/((-1+r)*Sqrt(r))");
 
     check("Sum(k^2,k)", //
         "1/3*(k/2-3/2*k^2+k^3)");
+    check("Sum(k^3,{k,1,n})//Together", //
+        "1/4*(n^2+2*n^3+n^4)");
     check("Sum(k,k)", //
         "1/2*(-k+k^2)");
     check("Sum(k*(-1+k),k)", //
@@ -174,6 +183,11 @@ public class SumTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSum006() {
+    check("Sum(i0, {i0, 1, n0})", //
+        "1/2*n0*(1+n0)");
+    check("Sum(c, {i, 1, j}, {j, 1, 2})", //
+        "2*c*j");
+
     check("Table(f(k,j), {k,0,-1+3},{j,0,-1+k})", "{{},{f(1,0)},{f(2,0),f(2,1)}}");
     check("Sum(f(k,j),{k,0,-1+2}, {j,0,-1+k})", //
         "f(1,0)");
@@ -217,8 +231,8 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(Cos(Pi*i), {i, 1, Infinity})", //
         "Sum(Cos(i*Pi),{i,1,Infinity})");
     check("Sum(x^k*Sum(y^l,{l,0,4}),{k,0,4})", //
-        "1+y+y^2+y^3+y^4+x*(1+y+y^2+y^3+y^4)+x^2*(1+y+y^2+y^3+y^4)+x^3*(1+y+y^2+y^3+y^4)+x^\n"
-            + "4*(1+y+y^2+y^3+y^4)");
+        "(-1+y^5)/(-1+y)+(x*(-1+y^5))/(-1+y)+(x^2*(-1+y^5))/(-1+y)+(x^3*(-1+y^5))/(-1+y)+(x^\n"
+            + "4*(-1+y^5))/(-1+y)");
   }
 
   @Test
@@ -233,9 +247,9 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(i^2 - i + 10 ,{i,1,10})", //
         "430");
     check("Sum(i!,{i,3,n})", //
-        "-4-Subfactorial(-1)+(-1)^(1+n)*Gamma(2+n)*Subfactorial(-2-n)");
+        "6*Subfactorial(-4)-(-1)^n*Gamma(2+n)*Subfactorial(-2-n)");
     check("Sum(i!,{i,1,n})", //
-        "-1-Subfactorial(-1)+(-1)^(1+n)*Gamma(2+n)*Subfactorial(-2-n)");
+        "Subfactorial(-2)-(-1)^n*Gamma(2+n)*Subfactorial(-2-n)");
 
     check("Sum(g(i),{i,10,2})", //
         "0");
@@ -252,7 +266,7 @@ public class SumTest extends ExprEvaluatorTestCase {
         "1/4");
 
     check("Sum(a^i,{i,0,1})", //
-        "1+a");
+        "(-1+a^2)/(-1+a)");
     check("Sum(a^i,{i,0,Infinity})", //
         "1/(1-a)");
     check("Sum(a^i,{i,1,Infinity})", //
@@ -438,6 +452,45 @@ public class SumTest extends ExprEvaluatorTestCase {
         "a*n+1/2*n*(1+n)");
   }
 
+  @Test
+  public void testSumLog() {
+    check("Sum(Log(k)/k^4, {k, Infinity})", //
+        "-Zeta'(4)");
+    check("Sum(Log(k)/k^4, {k, 1,Infinity})", //
+        "-Zeta'(4)");
+    check("Sum(Log(k)/k^2, {k, Infinity})", //
+        "1/6*Pi^2*(-EulerGamma-Log(2)+12*Log(Glaisher)-Log(Pi))");
+  }
+
+  @Test
+  public void testSumCos() {
+    check("Sum(Cos(k*c),{k,0,n})", //
+        "Cos(1/2*c*n)*Csc(c/2)*Sin(1/2*c*(1+n))");
+    check("Sum(Cos(k*c),{k,1,n})", //
+        "-1+Cos(1/2*c*n)*Csc(c/2)*Sin(1/2*c*(1+n))");
+    check("Sum(Cos(k),{k,1,n})", //
+        "-1+Cos(n/2)*Csc(1/2)*Sin(1/2*(1+n))");
+  }
+
+  @Test
+  public void testSumSin() {
+    check("Sum(Sin(k*c),{k,0,n})", //
+        "Csc(c/2)*Sin(1/2*c*n)*Sin(1/2*c*(1+n))");
+    check("Sum(Sin(k*c),{k,1,n})", //
+        "Csc(c/2)*Sin(1/2*c*n)*Sin(1/2*c*(1+n))");
+    check("Sum(Sin(k),{k,1,n})", //
+        "Csc(1/2)*Sin(n/2)*Sin(1/2*(1+n))");
+  }
+
+  @Test
+  public void testSumEuler() {
+    check("Sum(a^(k*x),{k,0,n})", //
+        "(-1+a^(x+n*x))/(-1+a^x)");
+    check("Sum(E^(I*k*x),{k,0,n})", //
+        "(-1+E^(I*x+I*n*x))/(-1+E^(I*x))");
+    check("Sum(E^(I*k*x),{k,1,n})", //
+        "-1+(-1+E^(I*x+I*n*x))/(-1+E^(I*x))");
+  }
 
   @Test
   public void testSumPolyLogInifinity() {

@@ -3114,6 +3114,15 @@ public interface IExpr
   }
 
   /**
+   * Returns <code>true</code> if <code>this</code> is free of any special symbols
+   * {@link S#Indeterminate} or {@link S#DirectedInfinity}.
+   */
+  default boolean isSpecialsFree() {
+    Predicate<IExpr> predicate = x -> x.equals(S.DirectedInfinity) || x.equals(S.Indeterminate);
+    return isFree(predicate, true);
+  }
+
+  /**
    * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the
    * expression itself, aren't ASTs with a head which match the given pattern.
    *

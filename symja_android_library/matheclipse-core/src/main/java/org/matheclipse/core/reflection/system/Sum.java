@@ -161,7 +161,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
   protected static IExpr evaluateSum(final IAST preevaledSum, EvalEngine engine) {
     if (preevaledSum.size() > 2) {
       try {
-        IAST list = preevaledSum.last().makeList();
+        IExpr lastArg = preevaledSum.last();
+        final IAST list = lastArg.makeList();
         if (list.isAST1()) {
           // indefinite sum case
           IExpr variable = list.arg1();
@@ -170,14 +171,30 @@ public class Sum extends ListFunctions.Table implements SumRules {
           }
         }
 
-        if (preevaledSum.size() == 3) {
-          IExpr result = matcher1().apply(preevaledSum);
-          if (result.isPresent()) {
-            return result;
+        if (preevaledSum.argSize() >= 2) {
+          IAST sumForm = preevaledSum;
+          IAST lastList = list;
+          if (list.isAST2()) {
+            // Sum(f(x),..., {x, a}) ==> Sum(f(x),..., {x, 1, a})
+            lastList = F.List(list.arg1(), F.C1, list.arg2());
+            sumForm = sumForm.setAtCopy(sumForm.argSize(), lastList);
+          }
+          if (preevaledSum.argSize() > 2) {
+            IAST reducedSumForm = F.Sum(preevaledSum.arg1(), lastList);
+            IExpr reducedResult = matcher1().apply(reducedSumForm);
+            if (reducedResult.isPresent()) {
+              IASTMutable result = sumForm.removeAtCopy(sumForm.argSize());
+              result.set(1, reducedResult);
+              return result;
+            }
+          } else {
+            IExpr result = matcher1().apply(sumForm);
+            if (result.isPresent()) {
+              return result;
+            }
           }
         }
 
-        IExpr argN = preevaledSum.last();
         // try {
         IExpr temp = evaluateTableThrow(preevaledSum, Plus(), Plus(), engine);
         if (temp.isPresent()) {
@@ -186,17 +203,17 @@ public class Sum extends ListFunctions.Table implements SumRules {
         VariablesSet variablesSet = determineIteratorExprVariables(preevaledSum);
         IAST varList = variablesSet.getVarList();
         IIterator<IExpr> iterator = null;
-        if (argN.isList()) {
-          argN = evalBlockWithoutReap(argN, varList);
-          if (argN.isList()) {
-            iterator = Iterator.create((IAST) argN, preevaledSum.argSize(), engine);
+        if (lastArg.isList()) {
+          lastArg = evalBlockWithoutReap(lastArg, varList);
+          if (lastArg.isList()) {
+            iterator = Iterator.create((IAST) lastArg, preevaledSum.argSize(), engine);
           } else {
-            if (argN.isReal()) {
-              iterator = Iterator.create(F.list(argN), preevaledSum.argSize(), engine);
+            if (lastArg.isReal()) {
+              iterator = Iterator.create(F.list(lastArg), preevaledSum.argSize(), engine);
             } else {
               // Non-list iterator `1` at position `2` does not evaluate to a real numeric value.
               return Errors.printMessage(preevaledSum.topHead(), "nliter",
-                  F.list(argN, F.ZZ(preevaledSum.argSize())), engine);
+                  F.list(lastArg, F.ZZ(preevaledSum.argSize())), engine);
             }
           }
         }
@@ -244,9 +261,9 @@ public class Sum extends ListFunctions.Table implements SumRules {
           if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
             if (iterator.getStep().isOne()) {
               if (iterator.getUpperLimit().isDirectedInfinity()) {
-                temp = definiteSumInfinity(arg1, iterator, (IAST) argN, engine);
+                temp = definiteSumInfinity(arg1, iterator, (IAST) lastArg, engine);
               } else {
-                temp = definiteSum(arg1, iterator, (IAST) argN, engine);
+                temp = definiteSum(arg1, iterator, (IAST) lastArg, engine);
               }
               if (temp.isPresent()) {
                 if (preevaledSum.isAST2()) {
@@ -259,8 +276,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
             }
           }
 
-        } else if (argN.isSymbol()) {
-          temp = indefiniteSum(arg1, (ISymbol) argN);
+        } else if (lastArg.isSymbol()) {
+          temp = indefiniteSum(arg1, (ISymbol) lastArg);
           if (temp.isPresent()) {
             if (preevaledSum.isAST2()) {
               return temp;

@@ -4,8 +4,8 @@
 (* Sum has attribute HoldAll *)
 Sum(i_, {i_Symbol,a_Integer,n_Integer}) := If(a<=n, -1/2*(-1+a-n)*(a+n), 0),
   
-Sum(c_^i_, {i_Symbol,1,Infinity}) := -c*(c-1)^(-1)
-  /; FreeQ(c,i) && (!NumberQ(c) || (c>(-1) && c<1)),
+Sum(c_^(i_+a_.), {i_Symbol,1,Infinity}) := -(c^(1 + a)/(-1 + c)) 
+  /; FreeQ({a,c},i) && (!NumberQ(c) || (c>(-1) && c<1)),
 Sum(i_^k_, {i_Symbol,1,Infinity}) := Zeta(-k)
   /; FreeQ(k,i),
 Sum(1/(i_^k_), {i_Symbol,1,Infinity}) := Zeta(k)
@@ -67,22 +67,33 @@ Sum((-1)^(i_-1)/i_, {i_Symbol,1,Infinity}) := Log(2),
 Sum(z_^i_ * i_^(-n_), {i_Symbol,1,Infinity}) := PolyLog(n,z)
   /; FreeQ({z,n},i),
   
-Sum(c_^i_, {i_Symbol,0,n_Symbol}) := (-1 + c^(1 + n))/(-1 + c)  
-  /; FreeQ({c,n},i),
-
-    
-Sum(i_*c_^i_, {i_Symbol,0,n_Symbol}) := (c + c^(1 + n)*(-1 - n + c*n))/(1 - c)^2
-  /;  FreeQ({c,n},i),
+Sum(Log(i_)*(i_^(-2)), {i_, 1, Infinity}) := (-(1/6))*Pi^2*(EulerGamma+Log(2)-12*Log(Glaisher)+Log(Pi)),
+Sum(Log(i_)*(i_^n_Integer), {i_, 1, Infinity}) := -Derivative[1][Zeta][-n] 
+  /; n<-2,
   
-Sum(Binomial(n_, i_), {i_Symbol,0,n_Symbol}) := 2^n
+Sum(c_^(a_.*i_), {i_Symbol,0,n_}) := (-1+c^(a+a*n))/(-1+c^a) 
+  /; FreeQ({a,c},i) && SpecialsFreeQ(n),
+Sum(c_^(i_+m_.), {i_Symbol,0,n_}) := (c^m*(-1 + c^(1 + n)))/(-1 + c)  
+  /; FreeQ({c,n,m},i) && SpecialsFreeQ(n),
+
+Sum(i_*c_^i_, {i_Symbol,0,Infinity}) := c/(-1+c)^2
+  /;  FreeQ({c,n},i) && SpecialsFreeQ(n),  
+Sum(i_*c_^i_, {i_Symbol,0,n_}) := (c + c^(1 + n)*(-1 - n + c*n))/(1 - c)^2
+  /;  FreeQ({c,n},i) && !IntegerQ(n) && SpecialsFreeQ(n),
+  
+Sum(Binomial(n_, i_), {i_Symbol,0,n_}) := 2^n
   /; FreeQ(n,i),
   
-Sum(i_*Binomial(n_, i_), {i_Symbol,0,n_Symbol}) := n*2^(n-1)
+Sum(i_*Binomial(n_, i_), {i_Symbol,0,n_}) := n*2^(n-1)
   /; FreeQ(n,i),
 
-Sum(i_!, {i_Symbol,0,n_Symbol}):=
-  Gamma(n+2)*(-1)^(n+1)*Subfactorial(-n-2)-Subfactorial(-1) 
-  /; FreeQ(n,i) 
+Sum(i_!, {i_Symbol,0,n_}):= -Subfactorial(-1)-(-1)^n*Gamma(2+n)*Subfactorial(-2-n)
+  /; FreeQ(n,i) && SpecialsFreeQ(n),
   
+Sum(Cos(i_*c_.), {i_Symbol,0,n_}) := Csc(c/2)*Cos((c*n)/2)*Sin((1/2)*c*(1 + n))
+  /; FreeQ({c,n},i) && SpecialsFreeQ(n),
+Sum(Sin(i_*c_.), {i_Symbol,0,n_}) := Csc(c/2)*Sin((c*n)/2)*Sin((1/2)*c*(1 + n))   
+  /; FreeQ({c,n},i) && SpecialsFreeQ(n)
+
 } 
 }

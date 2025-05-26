@@ -6,6 +6,7 @@ public class ProductTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testProduct001() {
+
     // Config.MAX_BIT_LENGTH = Integer.MAX_VALUE;
     // check("AbsoluteTiming(Product(i,{i,1,10^6});)", //
     // "");
@@ -109,6 +110,7 @@ public class ProductTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testProduct006() {
+
     check("Product(i^2 - i + 10 ,{i,1,10})", //
         "1426481971200000");
     check("Product(a^i, {i, n})", //
@@ -230,5 +232,17 @@ public class ProductTest extends ExprEvaluatorTestCase {
         "1/4*Csc(x)*Sin(4*x)");
     check("Product(Cos(x*2^i), {i, 0, k})", //
         "2^(1-k)*Csc(x)*Sin(x/2^(1-k))");
+  }
+
+  @Test
+  public void testProduct013() {
+    // TODO
+    // check("Product(1-4*x^2/(2*n-1)^2,{n,1,Infinity})", //
+    // "Cos(Pi*x)");
+    check("Product(1-4*x^2/(1-4*n+4*n^2),{n,1,Infinity})", //
+        "Cos(Pi*x)");
+    check("Product(1-x^2/n^2,{n,1,Infinity})", //
+        "Sin(Pi*x)/(Pi*x)");
+
   }
 }

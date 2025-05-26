@@ -139,7 +139,8 @@ public class Product extends ListFunctions.Table implements ProductRules {
   protected static IExpr evaluateProduct(final IAST preevaledProduct, IExpr arg1,
       boolean approximationMode, EvalEngine engine) {
     if (preevaledProduct.size() > 2) {
-      final IAST list = preevaledProduct.last().makeList();
+      final IExpr lastArg = preevaledProduct.last();
+      final IAST list = lastArg.makeList();
       if (list.isAST1()) {
         // indefinite product case
 
@@ -154,144 +155,163 @@ public class Product extends ListFunctions.Table implements ProductRules {
           }
         }
       }
-    }
-    IExpr temp = F.NIL;
-    if (preevaledProduct.size() == 3) {
-      IExpr result = matcher1().apply(preevaledProduct);
-      if (result.isPresent()) {
-        return result;
-      }
-    }
-    try {
-      temp = evaluateTableThrow(preevaledProduct, Times(), Times(), engine);
-      if (temp.isPresent()) {
-        return temp;
-      }
-    } catch (final ValidateException ve) {
-      return Errors.printMessage(S.Product, ve, engine);
-    }
-    if (arg1.isPower()) {
-      IExpr exponent = arg1.exponent();
-      boolean flag = true;
-      // Prod( i^a, {i,from,to},... )
-      for (int i = 2; i < preevaledProduct.size(); i++) {
-        IIterator<IExpr> iterator;
-        if (preevaledProduct.get(i).isList()) {
-          iterator = Iterator.create((IAST) preevaledProduct.get(i), i, engine);
+
+      if (preevaledProduct.argSize() >= 2) {
+        IAST productForm = preevaledProduct;
+        IAST lastList = list;
+        if (list.isAST2()) {
+          // Product(f(x),..., {x, a}) ==> Product(f(x),..., {x, 1, a})
+          lastList = F.List(list.arg1(), F.C1, list.arg2());
+          productForm = productForm.setAtCopy(productForm.argSize(), lastList);
+        }
+        if (preevaledProduct.argSize() > 2) {
+          IAST reducedProductForm = F.Product(preevaledProduct.arg1(), lastList);
+          IExpr reducedResult = matcher1().apply(reducedProductForm);
+          if (reducedResult.isPresent()) {
+            IASTMutable result = productForm.removeAtCopy(productForm.argSize());
+            result.set(1, reducedResult);
+            return result;
+          }
         } else {
-          iterator = Iterator.create(F.list(preevaledProduct.get(i)), i, engine);
+          IExpr result = matcher1().apply(productForm);
+          if (result.isPresent()) {
+            return result;
+          }
         }
-        if (iterator.isValidVariable() && exponent.isFree(iterator.getVariable())) {
-          continue;
-        }
-        flag = false;
-        break;
       }
-      if (flag) {
-        IASTMutable prod = preevaledProduct.copy();
-        prod.set(1, arg1.base());
-        return F.Power(prod, exponent);
-      }
-    }
-    IExpr argN = preevaledProduct.last();
-    if (preevaledProduct.size() >= 3 && argN.isList()) {
+
       try {
-        if (arg1.isZero()) {
-          // Product(0, {k, n, m})
-          return F.C0;
+        IExpr temp = evaluateTableThrow(preevaledProduct, Times(), Times(), engine);
+        if (temp.isPresent()) {
+          return temp;
         }
-        IIterator<IExpr> iterator =
-            Iterator.create((IAST) argN, preevaledProduct.argSize(), engine);
-        if (iterator.isValidVariable() && iterator.getUpperLimit().isInfinity()) {
-          if (arg1.isOne()) {
-            // Product(1, {k, a, Infinity})
-            return F.C1;
+      } catch (final ValidateException ve) {
+        return Errors.printMessage(S.Product, ve, engine);
+      }
+      if (arg1.isPower()) {
+        IExpr exponent = arg1.exponent();
+        boolean flag = true;
+        // Prod( i^a, {i,from,to},... )
+        for (int i = 2; i < preevaledProduct.size(); i++) {
+          IIterator<IExpr> iterator;
+          if (preevaledProduct.get(i).isList()) {
+            iterator = Iterator.create((IAST) preevaledProduct.get(i), i, engine);
+          } else {
+            iterator = Iterator.create(F.list(preevaledProduct.get(i)), i, engine);
           }
-          if (arg1.isPositiveResult() && arg1.isIntegerResult()) {
-            // Product(n, {k, a, Infinity}) ;n is positive integer
-            return F.CInfinity;
+          if (iterator.isValidVariable() && exponent.isFree(iterator.getVariable())) {
+            continue;
           }
+          flag = false;
+          break;
         }
-        if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
-          if (iterator.getUpperLimit().isSymbol() && iterator.getStep().isOne()) {
-            final ISymbol var = iterator.getVariable();
-            final IExpr from = iterator.getLowerLimit();
-            final ISymbol to = (ISymbol) iterator.getUpperLimit();
-            if (arg1.isPower()) {
-              IExpr base = arg1.base();
-              if (base.isFree(var)) {
-                if (iterator.getLowerLimit().isOne()) {
-                  IExpr exponent = arg1.exponent();
-                  if (exponent.equals(var)) {
-                    // Prod( a^i, ..., {i,from,to} )
-                    if (preevaledProduct.isAST2()) {
-                      return F.Power(base, Times(C1D2, to, Plus(C1, to)));
+        if (flag) {
+          IASTMutable prod = preevaledProduct.copy();
+          prod.set(1, arg1.base());
+          return F.Power(prod, exponent);
+        }
+      }
+      IExpr argN = lastArg;
+      if (preevaledProduct.size() >= 3 && argN.isList()) {
+        try {
+          if (arg1.isZero()) {
+            // Product(0, {k, n, m})
+            return F.C0;
+          }
+          IIterator<IExpr> iterator =
+              Iterator.create((IAST) argN, preevaledProduct.argSize(), engine);
+          if (iterator.isValidVariable() && iterator.getUpperLimit().isInfinity()) {
+            if (arg1.isOne()) {
+              // Product(1, {k, a, Infinity})
+              return F.C1;
+            }
+            if (arg1.isPositiveResult() && arg1.isIntegerResult()) {
+              // Product(n, {k, a, Infinity}) ;n is positive integer
+              return F.CInfinity;
+            }
+          }
+          if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
+            if (iterator.getUpperLimit().isSymbol() && iterator.getStep().isOne()) {
+              final ISymbol var = iterator.getVariable();
+              final IExpr from = iterator.getLowerLimit();
+              final ISymbol to = (ISymbol) iterator.getUpperLimit();
+              if (arg1.isPower()) {
+                IExpr base = arg1.base();
+                if (base.isFree(var)) {
+                  if (iterator.getLowerLimit().isOne()) {
+                    IExpr exponent = arg1.exponent();
+                    if (exponent.equals(var)) {
+                      // Prod( a^i, ..., {i,from,to} )
+                      if (preevaledProduct.isAST2()) {
+                        return F.Power(base, Times(C1D2, to, Plus(C1, to)));
+                      }
+                      IASTAppendable result =
+                          preevaledProduct.removeAtClone(preevaledProduct.argSize());
+                      // result.remove(ast.argSize());
+                      result.set(1, F.Power(base, Times(C1D2, to, Plus(C1, to))));
+                      return result;
                     }
-                    IASTAppendable result =
-                        preevaledProduct.removeAtClone(preevaledProduct.argSize());
-                    // result.remove(ast.argSize());
-                    result.set(1, F.Power(base, Times(C1D2, to, Plus(C1, to))));
+                  }
+                }
+              }
+
+              if (arg1.isFree(var)) {
+
+                if (preevaledProduct.isAST2()) {
+                  if (from.isOne()) {
+                    return F.Power(preevaledProduct.arg1(), to);
+                  }
+                  if (from.isZero()) {
+                    return F.Power(preevaledProduct.arg1(), Plus(to, C1));
+                  }
+                  if (from.isSymbol()) {
+                    // 2^(1-from+to)
+                    return F.Power(arg1, F.Plus(F.C1, from.negate(), to));
+                  }
+                } else {
+                  IASTAppendable result =
+                      preevaledProduct.removeAtClone(preevaledProduct.argSize());
+                  // result.remove(ast.argSize());
+                  if (from.isOne()) {
+                    result.set(1, F.Power(preevaledProduct.arg1(), to));
+                    return result;
+                  }
+                  if (from.isZero()) {
+                    result.set(1, F.Power(preevaledProduct.arg1(), Plus(to, C1)));
+                    return result;
+                  }
+                  if (from.isSymbol()) {
+                    // 2^(1-from+to)
+                    result.set(1, F.Power(arg1, F.Plus(F.C1, from.negate(), to)));
                     return result;
                   }
                 }
               }
             }
-
-            if (arg1.isFree(var)) {
-
-              if (preevaledProduct.isAST2()) {
-                if (from.isOne()) {
-                  return F.Power(preevaledProduct.arg1(), to);
-                }
-                if (from.isZero()) {
-                  return F.Power(preevaledProduct.arg1(), Plus(to, C1));
-                }
-                if (from.isSymbol()) {
-                  // 2^(1-from+to)
-                  return F.Power(arg1, F.Plus(F.C1, from.negate(), to));
-                }
-              } else {
-                IASTAppendable result = preevaledProduct.removeAtClone(preevaledProduct.argSize());
-                // result.remove(ast.argSize());
-                if (from.isOne()) {
-                  result.set(1, F.Power(preevaledProduct.arg1(), to));
-                  return result;
-                }
-                if (from.isZero()) {
-                  result.set(1, F.Power(preevaledProduct.arg1(), Plus(to, C1)));
-                  return result;
-                }
-                if (from.isSymbol()) {
-                  // 2^(1-from+to)
-                  result.set(1, F.Power(arg1, F.Plus(F.C1, from.negate(), to)));
-                  return result;
-                }
-              }
-            }
           }
-        }
-        temp = F.NIL;
-        IAST resultList = Times();
-        temp = evaluateLast(preevaledProduct.arg1(), iterator, resultList, F.C1);
-        if (temp.isNIL() || temp.equals(resultList)) {
+          IAST resultList = Times();
+          IExpr temp = evaluateLast(preevaledProduct.arg1(), iterator, resultList, F.C1);
+          if (temp.isNIL() || temp.equals(resultList)) {
+            return F.NIL;
+          }
+          return temp;
+        } catch (final ValidateException ve) {
+          return Errors.printMessage(S.Product, ve, engine);
+        } catch (RecursionLimitExceeded rle) {
+          // Recursion depth of `1` exceeded during evaluation of `2`.
+          int recursionLimit = engine.getRecursionLimit();
+          Errors.printMessage(S.Product, "reclim2",
+              F.list(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), preevaledProduct),
+              engine);
           return F.NIL;
         }
-      } catch (final ValidateException ve) {
-        return Errors.printMessage(S.Product, ve, engine);
-      } catch (RecursionLimitExceeded rle) {
-        // Recursion depth of `1` exceeded during evaluation of `2`.
-        int recursionLimit = engine.getRecursionLimit();
-        Errors.printMessage(S.Product, "reclim2",
-            F.list(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), preevaledProduct),
-            engine);
-        return F.NIL;
-      }
-      if (preevaledProduct.isAST2()) {
-        return temp;
-      } else {
-        IASTAppendable result = preevaledProduct.removeAtClone(preevaledProduct.argSize());
-        result.set(1, temp);
-        return result;
+        // if (preevaledProduct.isAST2()) {
+        // return F.NIL;
+        // } else {
+        // IASTAppendable result = preevaledProduct.removeAtClone(preevaledProduct.argSize());
+        // result.set(1, temp);
+        // return result;
+        // }
       }
     }
     return F.NIL;

@@ -14,9 +14,9 @@ public static Matcher init1() {
   Matcher matcher = new Matcher();    // Sum(i_,{i_Symbol,a_Integer,n_Integer}):=If(a<=n,-1/2*(-1+a-n)*(a+n),0)
 matcher.caseOf(Sum(i_,list(i_Symbol,$p(a, Integer),$p(n, Integer))),
       If(LessEqual(a,n),Times(CN1D2,Plus(CN1,a,Negate(n)),Plus(a,n)),C0));
-    // Sum(c_^i_,{i_Symbol,1,Infinity}):=-c/(-1+c)/;FreeQ(c,i)&&(!NumberQ(c)||(c>-1&&c<1))
-matcher.caseOf(Sum(Power(c_,i_),list(i_Symbol,C1,oo)),
-      Condition(Times(CN1,c,Power(Plus(CN1,c),CN1)),And(FreeQ(c,i),Or(Not(NumberQ(c)),And(Greater(c,CN1),Less(c,C1))))));
+    // Sum(c_^(i_+a_.),{i_Symbol,1,Infinity}):=-c^(1+a)/(-1+c)/;FreeQ({a,c},i)&&(!NumberQ(c)||(c>-1&&c<1))
+matcher.caseOf(Sum(Power(c_,Plus(i_,a_DEFAULT)),list(i_Symbol,C1,oo)),
+      Condition(Times(CN1,Power(Plus(CN1,c),CN1),Power(c,Plus(C1,a))),And(FreeQ(list(a,c),i),Or(Not(NumberQ(c)),And(Greater(c,CN1),Less(c,C1))))));
     // Sum(i_^k_,{i_Symbol,1,Infinity}):=Zeta(-k)/;FreeQ(k,i)
 matcher.caseOf(Sum(Power(i_,k_),list(i_Symbol,C1,oo)),
       Condition(Zeta(Negate(k)),FreeQ(k,i)));
@@ -92,21 +92,39 @@ matcher.caseOf(Sum(Times(Power(CN1,Plus(CN1,i_)),Power(i_,CN1)),list(i_Symbol,C1
     // Sum(z_^i_/i_^n_,{i_Symbol,1,Infinity}):=PolyLog(n,z)/;FreeQ({z,n},i)
 matcher.caseOf(Sum(Times(Power(z_,i_),Power(i_,Negate(n_))),list(i_Symbol,C1,oo)),
       Condition(PolyLog(n,z),FreeQ(list(z,n),i)));
-    // Sum(c_^i_,{i_Symbol,0,n_Symbol}):=(-1+c^(1+n))/(-1+c)/;FreeQ({c,n},i)
-matcher.caseOf(Sum(Power(c_,i_),list(i_Symbol,C0,n_Symbol)),
-      Condition(Times(Power(Plus(CN1,c),CN1),Plus(CN1,Power(c,Plus(C1,n)))),FreeQ(list(c,n),i)));
-    // Sum(i_*c_^i_,{i_Symbol,0,n_Symbol}):=(c+c^(1+n)*(-1-n+c*n))/(1-c)^2/;FreeQ({c,n},i)
-matcher.caseOf(Sum(Times(i_,Power(c_,i_)),list(i_Symbol,C0,n_Symbol)),
-      Condition(Times(Power(Subtract(C1,c),CN2),Plus(c,Times(Power(c,Plus(C1,n)),Plus(CN1,Negate(n),Times(c,n))))),FreeQ(list(c,n),i)));
-    // Sum(Binomial(n_,i_),{i_Symbol,0,n_Symbol}):=2^n/;FreeQ(n,i)
-matcher.caseOf(Sum(Binomial(n_,i_),list(i_Symbol,C0,n_Symbol)),
+    // Sum(Log(i_)/i_^2,{i_,1,Infinity}):=-1/6*Pi^2*(EulerGamma+Log(2)-12*Log(Glaisher)+Log(Pi))
+matcher.caseOf(Sum(Times(Log(i_),Power(i_,CN2)),list(i_,C1,oo)),
+      Times(QQ(-1L,6L),Sqr(Pi),Plus(EulerGamma,Log(C2),Times(ZZ(-12L),Log(Glaisher)),Log(Pi))));
+    // Sum(Log(i_)*i_^n_Integer,{i_,1,Infinity}):=-Zeta'(-n)/;n<-2
+matcher.caseOf(Sum(Times(Log(i_),Power(i_,$p(n, Integer))),list(i_,C1,oo)),
+      Condition(Negate($($(Derivative(C1),Zeta),Negate(n))),Less(n,CN2)));
+    // Sum(c_^(a_.*i_),{i_Symbol,0,n_}):=(-1+c^(a+a*n))/(-1+c^a)/;FreeQ({a,c},i)&&SpecialsFreeQ(n)
+matcher.caseOf(Sum(Power(c_,Times(a_DEFAULT,i_)),list(i_Symbol,C0,n_)),
+      Condition(Times(Plus(CN1,Power(c,Plus(a,Times(a,n)))),Power(Plus(CN1,Power(c,a)),CN1)),And(FreeQ(list(a,c),i),SpecialsFreeQ(n))));
+    // Sum(c_^(i_+m_.),{i_Symbol,0,n_}):=(c^m*(-1+c^(1+n)))/(-1+c)/;FreeQ({c,n,m},i)&&SpecialsFreeQ(n)
+matcher.caseOf(Sum(Power(c_,Plus(i_,m_DEFAULT)),list(i_Symbol,C0,n_)),
+      Condition(Times(Power(Plus(CN1,c),CN1),Power(c,m),Plus(CN1,Power(c,Plus(C1,n)))),And(FreeQ(list(c,n,m),i),SpecialsFreeQ(n))));
+    // Sum(i_*c_^i_,{i_Symbol,0,Infinity}):=c/(-1+c)^2/;FreeQ({c,n},i)&&SpecialsFreeQ(n)
+matcher.caseOf(Sum(Times(i_,Power(c_,i_)),list(i_Symbol,C0,oo)),
+      Condition(Times(Power(Plus(CN1,c),CN2),c),And(FreeQ(list(c,n),i),SpecialsFreeQ(n))));
+    // Sum(i_*c_^i_,{i_Symbol,0,n_}):=(c+c^(1+n)*(-1-n+c*n))/(1-c)^2/;FreeQ({c,n},i)&&!IntegerQ(n)&&SpecialsFreeQ(n)
+matcher.caseOf(Sum(Times(i_,Power(c_,i_)),list(i_Symbol,C0,n_)),
+      Condition(Times(Power(Subtract(C1,c),CN2),Plus(c,Times(Power(c,Plus(C1,n)),Plus(CN1,Negate(n),Times(c,n))))),And(FreeQ(list(c,n),i),Not(IntegerQ(n)),SpecialsFreeQ(n))));
+    // Sum(Binomial(n_,i_),{i_Symbol,0,n_}):=2^n/;FreeQ(n,i)
+matcher.caseOf(Sum(Binomial(n_,i_),list(i_Symbol,C0,n_)),
       Condition(Power(C2,n),FreeQ(n,i)));
-    // Sum(i_*Binomial(n_,i_),{i_Symbol,0,n_Symbol}):=n/2^(1-n)/;FreeQ(n,i)
-matcher.caseOf(Sum(Times(i_,Binomial(n_,i_)),list(i_Symbol,C0,n_Symbol)),
+    // Sum(i_*Binomial(n_,i_),{i_Symbol,0,n_}):=n/2^(1-n)/;FreeQ(n,i)
+matcher.caseOf(Sum(Times(i_,Binomial(n_,i_)),list(i_Symbol,C0,n_)),
       Condition(Times(n,Power(C2,Plus(CN1,n))),FreeQ(n,i)));
-    // Sum(i_!,{i_Symbol,0,n_Symbol}):=-Subfactorial(-1)+Gamma(n+2)*(-1)^(n+1)*Subfactorial(-2-n)/;FreeQ(n,i)
-matcher.caseOf(Sum(Factorial(i_),list(i_Symbol,C0,n_Symbol)),
-      Condition(Plus(Negate(Subfactorial(CN1)),Times(Gamma(Plus(n,C2)),Power(CN1,Plus(n,C1)),Subfactorial(Subtract(CN2,n)))),FreeQ(n,i)));
+    // Sum(i_!,{i_Symbol,0,n_}):=-Subfactorial(-1)-(-1)^n*Gamma(2+n)*Subfactorial(-2-n)/;FreeQ(n,i)&&SpecialsFreeQ(n)
+matcher.caseOf(Sum(Factorial(i_),list(i_Symbol,C0,n_)),
+      Condition(Plus(Negate(Subfactorial(CN1)),Times(CN1,Power(CN1,n),Gamma(Plus(C2,n)),Subfactorial(Subtract(CN2,n)))),And(FreeQ(n,i),SpecialsFreeQ(n))));
+    // Sum(Cos(i_*c_.),{i_Symbol,0,n_}):=Csc(c/2)*Cos(1/2*c*n)*Sin(1/2*c*(1+n))/;FreeQ({c,n},i)&&SpecialsFreeQ(n)
+matcher.caseOf(Sum(Cos(Times(i_,c_DEFAULT)),list(i_Symbol,C0,n_)),
+      Condition(Times(Csc(Times(C1D2,c)),Cos(Times(C1D2,c,n)),Sin(Times(C1D2,c,Plus(C1,n)))),And(FreeQ(list(c,n),i),SpecialsFreeQ(n))));
+    // Sum(Sin(i_*c_.),{i_Symbol,0,n_}):=Csc(c/2)*Sin(1/2*c*n)*Sin(1/2*c*(1+n))/;FreeQ({c,n},i)&&SpecialsFreeQ(n)
+matcher.caseOf(Sum(Sin(Times(i_,c_DEFAULT)),list(i_Symbol,C0,n_)),
+      Condition(Times(Csc(Times(C1D2,c)),Sin(Times(C1D2,c,n)),Sin(Times(C1D2,c,Plus(C1,n)))),And(FreeQ(list(c,n),i),SpecialsFreeQ(n))));
 return matcher;
 }
 }

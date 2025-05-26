@@ -9512,6 +9512,16 @@ public class F extends S {
     return new AST2(Sphere, vector, radius);
   }
 
+  /**
+   * Returns <code>True</code> if <code>expr</code> is free of any special symbols
+   * {@link S#Indeterminate} or {@link S#DirectedInfinity}.
+   * 
+   * @param expr the expr which should be free of special symbols
+   */
+  public static IAST SpecialsFreeQ(final IExpr expr) {
+    return new AST1(S.SpecialsFreeQ, expr);
+  }
+
   public static IAST SphericalBesselJ(final IExpr n, final IExpr z) {
     return new AST2(SphericalBesselJ, n, z);
   }
@@ -9998,18 +10008,6 @@ public class F extends S {
     return sumRational(function, iMin, iMax, 1);
   }
 
-  /**
-   * Evaluate the sum from <code>iMin</code> to <code>iMax</code> and step <code>1</code>.
-   *
-   * @param function
-   * @param from from this position (included)
-   * @param to to this position (included)
-   * @return
-   */
-  public static IExpr sum(final Function<IInteger, IExpr> function, final int from, final int to) {
-    return intSum(function, from, to, 1);
-  }
-
 
   /**
    * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code> and
@@ -10203,6 +10201,18 @@ public class F extends S {
     // replace placeholder position 1 with evaluated number
     result.set(1, number);
     return result.oneIdentity0();
+  }
+
+  /**
+   * Evaluate the sum from <code>iMin</code> to <code>iMax</code> and step <code>1</code>.
+   *
+   * @param function
+   * @param from from this position (included)
+   * @param to to this position (included)
+   * @return
+   */
+  public static IExpr sum(final Function<IInteger, IExpr> function, final int from, final int to) {
+    return intSum(function, from, to, 1);
   }
 
   /**

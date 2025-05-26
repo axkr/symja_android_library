@@ -85,6 +85,7 @@ public class PredicateQ {
       S.RealValuedNumberQ.setEvaluator(new RealValuedNumberQ());
       S.RealValuedNumericQ.setEvaluator(new RealValuedNumericQ());
       S.SparseArrayQ.setEvaluator(new SparseArrayQ());
+      S.SpecialsFreeQ.setEvaluator(new SpecialsFreeQ());
       S.SquareMatrixQ.setEvaluator(new SquareMatrixQ());
       S.StringQ.setPredicateQ(x -> x.isString());
       S.SymbolQ.setPredicateQ(x -> x.isSymbol());
@@ -1341,6 +1342,24 @@ public class PredicateQ {
     }
   }
 
+  private static final class SpecialsFreeQ extends AbstractCoreFunctionEvaluator
+      implements IPredicate {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        IExpr a1 = ast.arg1();
+        return specialsFreeQ(a1, engine);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
   /**
    *
    *
@@ -1937,14 +1956,26 @@ public class PredicateQ {
     return dims != null && dims[0] == dims[1];
   }
 
-  public static IExpr freeQ(IExpr a1, IExpr a2, EvalEngine engine) {
-    final IExpr arg1 = a1.isAtomicConstant() ? a1 : engine.evaluate(a1);
-    final IExpr arg2 = a2.isAtomicConstant() ? a2 : engine.evalPattern(a2);
+  public static IExpr freeQ(IExpr expr, IExpr form, EvalEngine engine) {
+    final IExpr arg1 = expr.isAtomicConstant() ? expr : engine.evaluate(expr);
+    final IExpr arg2 = form.isAtomicConstant() ? form : engine.evalPattern(form);
     if ((arg1.isSymbol() || arg1.isAtomicConstant())
         && (arg2.isSymbol() || arg2.isAtomicConstant())) {
       return F.booleSymbol(!arg1.equals(arg2));
     }
     return F.booleSymbol(arg1.isFree(arg2, true));
+  }
+
+  /**
+   * Returns{@link S#True}, if <code>expr</code> is free of any special symbols
+   * {@link S#Indeterminate} or {@link S#DirectedInfinity}.
+   * 
+   * @param expr
+   * @param engine
+   */
+  public static IExpr specialsFreeQ(IExpr expr, EvalEngine engine) {
+    final IExpr arg1 = expr.isAtomicConstant() ? expr : engine.evaluate(expr);
+    return F.booleSymbol(arg1.isSpecialsFree());
   }
 
   /**
