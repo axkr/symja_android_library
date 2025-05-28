@@ -22,6 +22,12 @@ public class SubsetTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSubsetReplace() {
+    check("SubsetReplace({3.14159},ComplexInfinity->True)", //
+        "{3.14159}");
+    check("SubsetReplace({a},{1}->True)", //
+        "{a}");
+    check("SubsetReplace({a},1->True)", //
+        "SubsetReplace({a},1->True)");
     check("SubsetReplace(ComplexInfinity, {3, 3} :> Splice({x, x, x}))", //
         "ComplexInfinity");
     // TODO add specialized matcher for pattern sequences

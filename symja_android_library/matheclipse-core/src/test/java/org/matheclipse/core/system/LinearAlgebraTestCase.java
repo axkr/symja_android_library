@@ -2333,6 +2333,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTranspose() {
+    check("Transpose({{0,0}, {0,0}},-0.8+I*1.2)", //
+        "Transpose({{0,0},{0,0}},-0.8+I*1.2)");
+
     check(
         "tens={{{4,5},{1,2},{1,7},{9,6},{1,9}},{{1,0},{5,6},{2,0},{8,5},{0,8}},{{0,6},{9,2},{1,7},{8,5},{9,6}}}", //
         "{{{4,5},{1,2},{1,7},{9,6},{1,9}},{{1,0},{5,6},{2,0},{8,5},{0,8}},{{0,6},{9,2},{1,\n" //

@@ -2138,6 +2138,9 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
   public boolean matchASTSubset(IAST lhsPatternAST, IAST lhsEvalAST, int[] allReplacePositions,
       IExpr[] allReplaceExprs, int[] allReplaceIndex, int[] allRemovePositions,
       int[] allRemoveIndex, EvalEngine engine) {
+    if (!lhsPatternAST.isList()) {
+      return false;
+    }
     IPatternMap patternMap = null;
     patternMap = createPatternMap();
     patternMap.initPattern();

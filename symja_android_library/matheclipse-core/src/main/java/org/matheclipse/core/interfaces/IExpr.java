@@ -1594,7 +1594,7 @@ public interface IExpr
    */
   default IExpr exponent() {
     if (Config.FUZZ_TESTING) {
-      if (!isPower() && !isAST(S.Surd)) {
+      if (!isAST(S.Power) && !isAST(S.Surd)) {
         throw new NullPointerException();
       }
     }

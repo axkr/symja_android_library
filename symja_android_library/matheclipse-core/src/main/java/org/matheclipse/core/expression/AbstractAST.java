@@ -1734,6 +1734,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
                 // }
                 int baseCompare = base().compareTo(rhs.base());
                 if (baseCompare == 0) {
+                  if (size() < 3) {
+                    return -1; // lhs has no exponent, rhs has exponent
+                  }
                   return exponent().compareTo(rhs.exponent());
                 }
                 return baseCompare;

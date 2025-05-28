@@ -26,7 +26,7 @@ public class FindSequenceFunction extends AbstractEvaluator {
       IAST list = (IAST) ast.arg1();
 
       IInteger[] sequence = Convert.toIntegerArray(list);
-      if (sequence.length > 2) {
+      if (sequence != null && sequence.length > 2) {
         IExpr variable = F.NIL;
         if (ast.isAST2()) {
           variable = ast.arg2();
@@ -303,8 +303,9 @@ public class FindSequenceFunction extends AbstractEvaluator {
           21, 21, 21, 21, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24,
           25, 25, 25, 25};
 
-  private static IExpr compareSequence(IExpr intFunction, int[] startSequence, IInteger[] inputSequence,
-      IInteger factor, IInteger addend, IExpr variable, EvalEngine engine) {
+  private static IExpr compareSequence(IExpr intFunction, int[] startSequence,
+      IInteger[] inputSequence, IInteger factor, IInteger addend, IExpr variable,
+      EvalEngine engine) {
     if (inputSequence.length <= startSequence.length) {
       for (int i = 0; i < inputSequence.length; i++) {
         if (!inputSequence[i].equalsInt(startSequence[i])) {

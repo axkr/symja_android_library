@@ -92,6 +92,7 @@ import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.ITensorAccess;
 import com.google.common.math.LongMath;
 import edu.jas.arith.BigComplex;
 import edu.jas.poly.GenPolynomial;
@@ -5992,14 +5993,16 @@ public final class LinearAlgebra {
       if (permutationList.isList()) {
         return Validate.checkListOfInts(ast, permutationList, 1, length, engine);
       } else {
-        if (length > 1) {
-          final int[] permutation = new int[length];
-          for (int i = 0; i < length; i++) {
-            permutation[i] = i + 1;
+        if (permutationList.isNIL()) {
+          if (length > 1) {
+            final int[] permutation = new int[length];
+            for (int i = 0; i < length; i++) {
+              permutation[i] = i + 1;
+            }
+            permutation[0] = 2;
+            permutation[1] = 1;
+            return permutation;
           }
-          permutation[0] = 2;
-          permutation[1] = 1;
-          return permutation;
         }
       }
       return null;
@@ -6510,7 +6513,7 @@ public final class LinearAlgebra {
    * @param header the header, which all sub-expressions of the detected dimension must contain
    * @return a list of size <code>0</code> if no dimensions are found
    */
-  public static IntArrayList dimensions(IAST ast, IExpr header) {
+  public static IntArrayList dimensions(ITensorAccess ast, IExpr header) {
     return dimensions(ast, header, Integer.MAX_VALUE);
   }
 
@@ -6522,11 +6525,20 @@ public final class LinearAlgebra {
    * 
    * @param ast
    * @param header the header, which all sub-expressions of the detected dimension must contain
-   * @param maxLevel
+   * @param maxLevel maxLevel the maximum level (depth) of analyzing for the dimension
    * @return a list of size <code>0</code> if no dimensions are found
    */
-  public static IntArrayList dimensions(IAST ast, IExpr header, int maxLevel) {
-    DimensionsData dimensionsData = new DimensionsData(ast, header, maxLevel, false);
+  public static IntArrayList dimensions(ITensorAccess ast, IExpr header, int maxLevel) {
+    if (ast.isSparseArray()) {
+      int[] dims = ((ISparseArray) ast).getDimension();
+      if (dims.length <= maxLevel) {
+        maxLevel = dims.length;
+      }
+      final IntArrayList list = new IntArrayList(maxLevel);
+      list.addElements(0, dims, 0, maxLevel);
+      return list;
+    }
+    DimensionsData dimensionsData = new DimensionsData((IAST) ast, header, maxLevel, false);
     return dimensionsData.getDimensions();
   }
 
@@ -7045,12 +7057,13 @@ public final class LinearAlgebra {
   }
 
   public static IExpr transpose(final IExpr tensor, final IExpr permutation,
-      final IntList dimensions, Function<? super IExpr, ? extends IExpr> function,
-      final IAST ast, EvalEngine engine) {
+      final IntList dimensions, Function<? super IExpr, ? extends IExpr> function, final IAST ast,
+      EvalEngine engine) {
     final int length = dimensions.size();
     final int[] permutationArray = Transpose.getPermutation(permutation, length, ast, engine);
     if (permutationArray == null) {
-      return F.NIL;
+      // Invalid permutation specification found at position `1` in `2`.
+      return Errors.printMessage(ast.topHead(), "permspec", F.List(F.C2, ast), engine);
     }
     if (tensor.isList()) {
       IAST dimensionsList = F.List(dimensions.toIntArray());
@@ -7093,8 +7106,7 @@ public final class LinearAlgebra {
         return F.NIL;
       }
       return new Transpose.TransposePermute(tensorList, dimensions.toIntArray(),
-          dimensionsPermutated,
-          permutationArray, originalIndices, function).transposeRecursive();
+          dimensionsPermutated, permutationArray, originalIndices, function).transposeRecursive();
 
     }
 

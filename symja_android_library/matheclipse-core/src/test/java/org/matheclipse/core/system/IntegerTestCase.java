@@ -198,6 +198,9 @@ public class IntegerTestCase extends ExprEvaluatorTestCase {
     check("IntegerDigits(34,2)", //
         "{1,0,0,0,1,0}");
 
+    // message BitSet: BigInteger would overflow supported range
+    check("BitSet(0,2147483647)", //
+        "BitSet(0,2147483647)");
     check("BitSet(42,0)", //
         "43");
     check("BitSet(42,1)", //

@@ -553,6 +553,9 @@ public class BesselFunctions {
             if (res.isNumber()) {
               return res;
             }
+          } catch (org.apfloat.OverflowException ofe) {
+            // Overflow occurred in computation.
+            return Errors.printMessage(S.BesselJ, "ovfl", F.List());
           } catch (ValidateException ve) {
             return Errors.printMessage(S.BesselJ, ve);
           } catch (RuntimeException rex) {
@@ -1089,11 +1092,16 @@ public class BesselFunctions {
         // } else if (engine.isArbitraryMode()) {
 
         // if (n.isNumber() && z.isNumber()) {
-        IExpr besselJ = n.besselJ(z);
-        IExpr besselY = n.besselY(z);
-        if (besselJ.isNumber() && besselY.isNumber()) {
-          // BesselJ(n,z)+I*BesselY(n,z)
-          return besselJ.plus(F.CI.multiply(besselY));
+        try {
+          IExpr besselJ = n.besselJ(z);
+          IExpr besselY = n.besselY(z);
+          if (besselJ.isNumber() && besselY.isNumber()) {
+            // BesselJ(n,z)+I*BesselY(n,z)
+            return besselJ.plus(F.CI.multiply(besselY));
+          }
+        } catch (org.apfloat.OverflowException ofe) {
+          // Overflow occurred in computation.
+          return Errors.printMessage(S.HankelH1, "ovfl", F.List());
         }
         // }
         // }
@@ -1157,11 +1165,16 @@ public class BesselFunctions {
         // } else if (engine.isArbitraryMode()) {
         // return F.Plus(F.BesselJ(n, z), F.Times(F.CNI, F.BesselY(n, z)));
         // }
-        IExpr besselJ = n.besselJ(z);
-        IExpr besselY = n.besselY(z);
-        if (besselJ.isNumber() && besselY.isNumber()) {
-          // BesselJ(n,z)-I*BesselY(n,z)
-          return besselJ.plus(F.CNI.multiply(besselY));
+        try {
+          IExpr besselJ = n.besselJ(z);
+          IExpr besselY = n.besselY(z);
+          if (besselJ.isNumber() && besselY.isNumber()) {
+            // BesselJ(n,z)-I*BesselY(n,z)
+            return besselJ.plus(F.CNI.multiply(besselY));
+          }
+        } catch (org.apfloat.OverflowException ofe) {
+          // Overflow occurred in computation.
+          return Errors.printMessage(S.HankelH2, "ovfl", F.List());
         }
       }
       return F.NIL;

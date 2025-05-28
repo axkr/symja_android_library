@@ -101,6 +101,7 @@ public final class AST3 extends AST2 {
   @Override
   public IAST clone() throws CloneNotSupportedException {
     AST3 result = (AST3) super.clone();
+    result.setEvalFlags(IAST.NO_FLAG);
     result.arg0 = arg0;
     result.arg1 = arg1;
     result.arg2 = arg2;

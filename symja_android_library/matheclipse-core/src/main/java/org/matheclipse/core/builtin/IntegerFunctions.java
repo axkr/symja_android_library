@@ -360,9 +360,14 @@ public class IntegerFunctions {
       if (ast.arg1().isInteger()) {
         int power2_K = ast.arg2().toIntDefault();
         if (power2_K >= 0) {
-          IInteger iArg1 = (IInteger) ast.arg1();
-          BigInteger big = iArg1.toBigNumerator();
-          return F.ZZ(big.setBit(power2_K));
+          try {
+            IInteger iArg1 = (IInteger) ast.arg1();
+            BigInteger big = iArg1.toBigNumerator();
+            return F.ZZ(big.setBit(power2_K));
+          } catch (ArithmeticException ae) {
+            // BigInteger#setBit() may throw ArithmeticException
+            return Errors.printMessage(S.BitSet, ae, engine);
+          }
         }
       }
       return F.NIL;
@@ -391,7 +396,12 @@ public class IntegerFunctions {
         IInteger value = (IInteger) ast.arg1();
         BigInteger big = value.toBigNumerator();
         if (power2_K >= 0) {
-          return F.ZZ(big.clearBit(power2_K));
+          try {
+            return F.ZZ(big.clearBit(power2_K));
+          } catch (ArithmeticException ae) {
+            // BigInteger#clearBit() may throw ArithmeticException
+            return Errors.printMessage(S.BitClear, ae, engine);
+          }
         }
       }
       return F.NIL;
@@ -426,7 +436,12 @@ public class IntegerFunctions {
           if (bit < 0) {
             return value;
           }
-          return F.ZZ(big.flipBit(bit));
+          try {
+            return F.ZZ(big.flipBit(bit));
+          } catch (ArithmeticException ae) {
+            // BigInteger#flipBit() may throw ArithmeticException
+            return Errors.printMessage(S.BitFlip, ae, engine);
+          }
         }
       }
       return F.NIL;

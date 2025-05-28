@@ -193,7 +193,9 @@ public class RealDigitsResult {
             s.append(j, dList.get(j));
           }
         } else {
-          s = s.subList(start, s.size());
+          if (start > 0) {
+            s = s.subList(start, s.size());
+          }
         }
         digitsList = s;
         numberOfLeftDigits = a.scale();

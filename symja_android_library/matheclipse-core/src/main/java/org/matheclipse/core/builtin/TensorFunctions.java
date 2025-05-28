@@ -25,6 +25,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.ITensorAccess;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 import it.unimi.dsi.fastutil.ints.IntList;
 
@@ -58,8 +59,8 @@ public class TensorFunctions {
   }
 
   private static final class ArrayReduce extends AbstractEvaluator {
-    private IExpr arrayReduce(IExpr f, IAST array, int[] levels, EvalEngine engine) {
-      IAST currentArray = array;
+    private IExpr arrayReduce(IExpr f, ITensorAccess array, int[] levels, EvalEngine engine) {
+      ITensorAccess currentArray = array;
       Arrays.sort(levels);
       IntList dimensions = LinearAlgebra.dimensions(array, S.List, Integer.MAX_VALUE, false);
       int iDepth = dimensions.size();
@@ -84,7 +85,8 @@ public class TensorFunctions {
      * @param engine
      * @return an array of 2 objects `[IAST, IntList]` with the reduced array and the new dimensions
      */
-    private IAST arrayReduce(IExpr f, IAST array, IntList dimensions, int level, EvalEngine engine,
+    private ITensorAccess arrayReduce(IExpr f, ITensorAccess array, IntList dimensions, int level,
+        EvalEngine engine,
         boolean doMap) {
       int iDepth = dimensions == null ? LinearAlgebra.arrayDepth(array) : dimensions.size();
       IAST range = ListFunctions.range(iDepth + 1);
@@ -92,11 +94,12 @@ public class TensorFunctions {
       if (dimensions == null) {
         dimensions = LinearAlgebra.dimensions(array, S.List, iDepth, false);
       }
-      IAST transposed = (IAST) LinearAlgebra.transpose(array, rotateRight, dimensions, x -> x,
+      ITensorAccess transposed = (ITensorAccess) LinearAlgebra.transpose(array, rotateRight,
+          dimensions, x -> x,
           F.Transpose(array, rotateRight), engine);
-      IAST reduced;
+      ITensorAccess reduced;
       if (doMap) {
-        reduced = (IAST) F.Map(f, transposed, F.List(F.ZZ(iDepth - 1))).eval(engine);
+        reduced = (ITensorAccess) F.Map(f, transposed, F.List(F.ZZ(iDepth - 1))).eval(engine);
       } else {
         // flatten lists
         VisitorLevelSpecification levelSpec = new VisitorLevelSpecification(
@@ -119,7 +122,7 @@ public class TensorFunctions {
       IExpr arg2 = ast.arg2();
       if (arg2.isList() || arg2.isSparseArray()) {
         final IExpr f = ast.arg1();
-        IAST tensor = (IAST) ast.arg2();
+        ITensorAccess tensor = (ITensorAccess) ast.arg2();
         final IntList dims = LinearAlgebra.dimensions(tensor, S.List);
         IExpr arg3 = ast.arg3();
         if (arg3.isList()) {

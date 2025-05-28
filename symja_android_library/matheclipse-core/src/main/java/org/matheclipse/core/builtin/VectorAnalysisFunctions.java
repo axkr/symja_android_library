@@ -73,14 +73,14 @@ public class VectorAnalysisFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       Metric metric = Metric.CARTESIAN;
       if (ast.arg2().isList()) {
-        IExpr normal = ast.arg1().normal(false);
+        final IAST variables = (IAST) ast.arg2();
+        final IExpr normal = ast.arg1().normal(false);
         if (normal.isList()) {
-          IAST list = (IAST) normal;
+          final IAST list = (IAST) normal;
           IntArrayList dimensions = LinearAlgebra.dimensions(list);
           if (dimensions.size() > 2 || dimensions.size() == 0) {
             return F.NIL;
           }
-          IAST variables = (IAST) ast.arg2();
           if (dimensions.getInt(0) != variables.argSize()) {
             // There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.
             return Errors.printMessage(S.Curl, "ndimv",
@@ -135,67 +135,67 @@ public class VectorAnalysisFunctions {
             }
           }
         }
-      }
-      IAST variables = (IAST) ast.arg2();
-      if (ast.isAST3()) {
-        final String metricStr = ast.arg3().toString();
-        final int numberOfVars = variables.argSize();
-        if (metricStr.equalsIgnoreCase("polar")) {
-          metric = Metric.POLAR;
-          if (numberOfVars != 2) {
-            // `1` does not define a metric in `2` dimensions.
-            return Errors.printMessage(S.Curl, "bdmtrc",
-                F.List(F.stringx("Polar"), F.ZZ(numberOfVars)), engine);
+
+        if (ast.isAST3()) {
+          final String metricStr = ast.arg3().toString();
+          final int numberOfVars = variables.argSize();
+          if (metricStr.equalsIgnoreCase("polar")) {
+            metric = Metric.POLAR;
+            if (numberOfVars != 2) {
+              // `1` does not define a metric in `2` dimensions.
+              return Errors.printMessage(S.Curl, "bdmtrc",
+                  F.List(F.stringx("Polar"), F.ZZ(numberOfVars)), engine);
+            }
+            IExpr f = ast.arg1();
+            IExpr x = variables.arg1();
+            IExpr y = variables.arg2();
+
+            // {-D(f,y)/x,D(f,x)}
+            return engine.evaluate(F.list(F.Times(F.CN1, F.Power(x, F.CN1), F.D(f, y)), F.D(f, x)));
           }
-          IExpr f = ast.arg1();
-          IExpr x = variables.arg1();
-          IExpr y = variables.arg2();
+          if (metricStr.equalsIgnoreCase("cylindrical")) {
+            metric = Metric.CYLINDRICAL;
+            if (numberOfVars != 3) {
+              // `1` does not define a metric in `2` dimensions.
+              return Errors.printMessage(S.Curl, "bdmtrc",
+                  F.List(F.stringx("Cylindrical"), F.ZZ(numberOfVars)), engine);
+            }
+            IExpr f = ast.arg1();
+            IExpr x = variables.arg1();
+            IExpr y = variables.arg2();
+            IExpr z = variables.arg3();
 
-          // {-D(f,y)/x,D(f,x)}
-          return engine.evaluate(F.list(F.Times(F.CN1, F.Power(x, F.CN1), F.D(f, y)), F.D(f, x)));
-        }
-        if (metricStr.equalsIgnoreCase("cylindrical")) {
-          metric = Metric.CYLINDRICAL;
-          if (numberOfVars != 3) {
-            // `1` does not define a metric in `2` dimensions.
-            return Errors.printMessage(S.Curl, "bdmtrc",
-                F.List(F.stringx("Cylindrical"), F.ZZ(numberOfVars)), engine);
+            // {{0,D(f,z),-D(f,y)/x},{-D(f,z),0,D(f,x)},{D(f,y)/x,-D(f,x),0}}
+            return engine.evaluate(
+                F.list(F.list(F.C0, F.D(f, z), F.Times(F.CN1, F.Power(x, F.CN1), F.D(f, y))),
+                    F.list(F.Negate(F.D(f, z)), F.C0, F.D(f, x)),
+                    F.list(F.Times(F.Power(x, F.CN1), F.D(f, y)), F.Negate(F.D(f, x)), F.C0)));
+
           }
-          IExpr f = ast.arg1();
-          IExpr x = variables.arg1();
-          IExpr y = variables.arg2();
-          IExpr z = variables.arg3();
+          if (metricStr.equalsIgnoreCase("spherical")) {
+            metric = Metric.CYLINDRICAL;
+            if (numberOfVars != 3) {
+              // `1` does not define a metric in `2` dimensions.
+              return Errors.printMessage(S.Curl, "bdmtrc",
+                  F.List(F.stringx("Spherical"), F.ZZ(numberOfVars)), engine);
+            }
+            IExpr f = ast.arg1();
+            IExpr x = variables.arg1();
+            IExpr y = variables.arg2();
+            IExpr z = variables.arg3();
 
-          // {{0,D(f,z),-D(f,y)/x},{-D(f,z),0,D(f,x)},{D(f,y)/x,-D(f,x),0}}
-          return engine.evaluate(
-              F.list(F.list(F.C0, F.D(f, z), F.Times(F.CN1, F.Power(x, F.CN1), F.D(f, y))),
-                  F.list(F.Negate(F.D(f, z)), F.C0, F.D(f, x)),
-                  F.list(F.Times(F.Power(x, F.CN1), F.D(f, y)), F.Negate(F.D(f, x)), F.C0)));
+            // {{0,(Csc(y)*D(f,z))/x,-D(f,y)/x},{(-Csc(y)*D(f,z))/x,0,D(f,x)},{D(f,y)/x,-D(f,x), 0}}
+            return engine.evaluate(F.list(
+                F.list(F.C0, F.Times(F.Power(x, F.CN1), F.Csc(y), F.D(f, z)),
+                    F.Times(F.CN1, F.Power(x, F.CN1), F.D(f, y))),
+                F.list(F.Times(F.CN1, F.Power(x, F.CN1), F.Csc(y), F.D(f, z)), F.C0, F.D(f, x)),
+                F.list(F.Times(F.Power(x, F.CN1), F.D(f, y)), F.Negate(F.D(f, x)), F.C0)));
 
-        }
-        if (metricStr.equalsIgnoreCase("spherical")) {
-          metric = Metric.CYLINDRICAL;
-          if (numberOfVars != 3) {
-            // `1` does not define a metric in `2` dimensions.
-            return Errors.printMessage(S.Curl, "bdmtrc",
-                F.List(F.stringx("Spherical"), F.ZZ(numberOfVars)), engine);
+
           }
-          IExpr f = ast.arg1();
-          IExpr x = variables.arg1();
-          IExpr y = variables.arg2();
-          IExpr z = variables.arg3();
 
-          // {{0,(Csc(y)*D(f,z))/x,-D(f,y)/x},{(-Csc(y)*D(f,z))/x,0,D(f,x)},{D(f,y)/x,-D(f,x), 0}}
-          return engine.evaluate(F.list(
-              F.list(F.C0, F.Times(F.Power(x, F.CN1), F.Csc(y), F.D(f, z)),
-                  F.Times(F.CN1, F.Power(x, F.CN1), F.D(f, y))),
-              F.list(F.Times(F.CN1, F.Power(x, F.CN1), F.Csc(y), F.D(f, z)), F.C0, F.D(f, x)),
-              F.list(F.Times(F.Power(x, F.CN1), F.D(f, y)), F.Negate(F.D(f, x)), F.C0)));
-
-
+          return F.NIL;
         }
-
-        return F.NIL;
       }
       return F.NIL;
     }

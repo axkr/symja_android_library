@@ -195,6 +195,9 @@ public class SubsetFunctions {
     }
 
     private IExpr applyRule(IAST rule, IAST result, final EvalEngine engine) {
+      if (!rule.arg1().isAST()) {
+        return F.NIL;
+      }
       Functors.SubsetPatternFunctor function = Functors.subsetRules(rule, engine);
       IExpr temp = function.apply(result);
       if (temp.isPresent()) {

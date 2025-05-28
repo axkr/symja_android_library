@@ -726,8 +726,8 @@ public abstract class HMArrayList extends AbstractAST
       if ((index = firstIndex + location) < lastIndex) {
         return array[index];
       }
-      throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: "
-          + Integer.valueOf(lastIndex - firstIndex));
+      throw new IndexOutOfBoundsException(
+          "Index: " + location + ", Size: " + (lastIndex - firstIndex));
     }
     return array[firstIndex + location];
   }
@@ -939,6 +939,9 @@ public abstract class HMArrayList extends AbstractAST
    */
   @Override
   public IExpr remove(int location) {
+    if (Config.FUZZ_TESTING && isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+      throw new NullPointerException("Index: " + location);
+    }
     hashValue = 0;
     IExpr result;
     int size = lastIndex - firstIndex;
@@ -1040,6 +1043,10 @@ public abstract class HMArrayList extends AbstractAST
    */
   @Override
   public IExpr set(int location, IExpr object) {
+    if (Config.FUZZ_TESTING && isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+      throw new NullPointerException(
+          "Index: " + location + ", Size: " + (lastIndex - firstIndex));
+    }
     hashValue = 0;
     // if (0 <= location && location < (lastIndex - firstIndex)) {
     IExpr result = array[firstIndex + location];

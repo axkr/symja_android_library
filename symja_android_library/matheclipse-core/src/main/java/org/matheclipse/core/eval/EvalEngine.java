@@ -159,8 +159,13 @@ public class EvalEngine implements Serializable {
         return S.$Aborted;
       } catch (final RecursionLimitExceeded | ASTElementLimitExceeded re) {
         throw re;
-      } catch (Exception | OutOfMemoryError | StackOverflowError e) {
-        Errors.printMessage(S.TimeConstrained, e, EvalEngine.get());
+      } catch (final ValidateException ve) {
+        //
+      } catch (Exception | OutOfMemoryError | StackOverflowError ex) {
+        Errors.printMessage(S.TimeConstrained, ex, EvalEngine.get());
+        if (Config.FUZZ_TESTING) {
+          throw ex;
+        }
       } finally {
         fEngine.setTimeConstrainedMillis(-1);
         EvalEngine.remove();

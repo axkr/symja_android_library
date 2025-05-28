@@ -1,15 +1,22 @@
 package org.matheclipse.core.system;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 public class IntervalDataTest extends ExprEvaluatorTestCase {
+
+  @Test
+  public void testIntervalDataArcSin() {
+    check("IntervalData({0,LessEqual,LessEqual,2},Sqrt(2))", //
+        "IntervalData({0,LessEqual,LessEqual,2})");
+  }
+
+
 
   @Test
   public void testEqual() {

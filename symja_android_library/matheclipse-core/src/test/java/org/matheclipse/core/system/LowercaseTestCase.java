@@ -18387,6 +18387,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPower() {
+    check("E^Sequence()", //
+        "E");
     check("1^Infinity", //
         "Indeterminate");
     check("(-1)^Infinity", //
@@ -20481,6 +20483,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRealDigits() {
+    check("RealDigits(17/19)", //
+        "{{{8,9,4,7,3,6,8,4,2,1,0,5,2,6,3,1,5,7}},0}");
+    check("RealDigits(-1/2)", //
+        "{{5},0}");
     // message RealDigits: Non-negative machine-sized integer expected at position -1 in 3.
     check("RealDigits(Pi,2,-1,2)", //
         "RealDigits(Pi,2,-1,2)");

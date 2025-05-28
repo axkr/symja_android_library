@@ -171,6 +171,7 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
   @Override
   public IAST clone() throws CloneNotSupportedException {
     AST0 result = (AST0) super.clone();
+    result.setEvalFlags(IAST.NO_FLAG);
     result.arg0 = arg0;
     return result;
   }
