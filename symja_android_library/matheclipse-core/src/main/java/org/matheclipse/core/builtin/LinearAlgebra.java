@@ -5897,7 +5897,7 @@ public final class LinearAlgebra {
   public static class Transpose extends AbstractEvaluator {
     private static class TransposePermute {
       /** The current tensor. */
-      final IAST tensor;
+      final ITensorAccess tensor;
       /** The dimensions of the current tensor. */
       final int[] dimensions;
       final int[] dimensionsPermutated;
@@ -5908,8 +5908,8 @@ public final class LinearAlgebra {
       int[] positions;
       private final Function<? super IExpr, ? extends IExpr> function;
 
-      private TransposePermute(IAST tensor, int[] tensorDimensions, int[] dimensionsPermutated,
-          int[] permutation, int[] originalIndices,
+      private TransposePermute(ITensorAccess tensor, int[] tensorDimensions,
+          int[] dimensionsPermutated, int[] permutation, int[] originalIndices,
           Function<? super IExpr, ? extends IExpr> function) {
         this.tensor = tensor;
         this.dimensions = tensorDimensions;
@@ -5920,8 +5920,13 @@ public final class LinearAlgebra {
         this.positions = new int[dimensions.length];
       }
 
-      private IAST transposeRecursive() {
-        return transposeRecursive(0, null);
+      private ITensorAccess transposeRecursive() {
+        IAST transposed = transposeRecursive(0, null);
+        if (tensor.isSparseArray()) {
+          return ((ISparseArray) tensor).transpose(permutation, function);
+        } else {
+          return transposed;
+        }
       }
 
       /**
@@ -5933,7 +5938,7 @@ public final class LinearAlgebra {
       private IAST transposeRecursive(int permutationIndex, IASTAppendable resultList) {
         if (permutationIndex >= permutation.length) {
           if (resultList != null) {
-            IExpr part = tensor.getPart(positions);
+            IExpr part = tensor.getIndex(positions);
             if (part.isNIL()) {
               // Entry `1` in `2` is out of bounds for a permutation of length `3`.
               throw new ArgumentTypeStopException("perm2", F.List());
@@ -5974,7 +5979,10 @@ public final class LinearAlgebra {
         // The first two levels of `1` cannot be transposed.
         return Errors.printMessage(ast.topHead(), "nmtx", F.List(ast), engine);
       }
-      return transpose(arg1, arg2, dimensions, x -> transform(x), ast, engine);
+      if (arg1 instanceof ITensorAccess) {
+        return transpose((ITensorAccess) arg1, arg2, dimensions, x -> transform(x), ast, engine);
+      }
+      return F.NIL;
     }
 
 
@@ -7056,7 +7064,7 @@ public final class LinearAlgebra {
         F.ArcTan(x, y));
   }
 
-  public static IExpr transpose(final IExpr tensor, final IExpr permutation,
+  public static IExpr transpose(final ITensorAccess tensor, final IExpr permutation,
       final IntList dimensions, Function<? super IExpr, ? extends IExpr> function, final IAST ast,
       EvalEngine engine) {
     final int length = dimensions.size();
@@ -7065,69 +7073,47 @@ public final class LinearAlgebra {
       // Invalid permutation specification found at position `1` in `2`.
       return Errors.printMessage(ast.topHead(), "permspec", F.List(F.C2, ast), engine);
     }
-    if (tensor.isList()) {
-      IAST dimensionsList = F.List(dimensions.toIntArray());
-      IAST tensorList = (IAST) tensor;
-      for (int i = 0; i < permutationArray.length; i++) {
-        if (permutationArray[i] > permutationArray.length) {
-          // Entry `1` in `2` is out of bounds for a permutation of length `3`.
-          return Errors.printMessage(ast.topHead(), "perm2",
-              F.List(F.ZZ(i + 1), permutation, F.ZZ(permutationArray.length)), engine);
-        }
-      }
 
-      if (dimensions.size() == 1) {
-        if (permutation.isPresent()) {
-          if (permutation.isList1() && permutation.first().isOne()) {
-            return tensorList;
-          }
-          // Entry `1` in `2` is out of bounds for a permutation of length `3`.
-          return Errors.printMessage(ast.topHead(), "perm2", F.List(F.C2, permutation, F.C1),
-              engine);
-        } else {
+    IAST dimensionsList = F.List(dimensions.toIntArray());
+    ITensorAccess tensorList = tensor;
+    for (int i = 0; i < permutationArray.length; i++) {
+      if (permutationArray[i] > permutationArray.length) {
+        // Entry `1` in `2` is out of bounds for a permutation of length `3`.
+        return Errors.printMessage(ast.topHead(), "perm2",
+            F.List(F.ZZ(i + 1), permutation, F.ZZ(permutationArray.length)), engine);
+      }
+    }
+
+    if (dimensions.size() == 1) {
+      if (permutation.isPresent()) {
+        if (permutation.isList1() && permutation.first().isOne()) {
           return tensorList;
         }
-      }
-      IASTMutable indices;
-      IAST range = ListFunctions.range(dimensions.size() + 1);
-      int[] dimensionsPermutated;
-      int[] originalIndices;
-      if (permutation.isPresent()) {
-        originalIndices = Combinatoric.permute(range, (IAST) permutation);
-        dimensionsPermutated = Combinatoric.permute(dimensionsList, (IAST) permutation);
+        // Entry `1` in `2` is out of bounds for a permutation of length `3`.
+        return Errors.printMessage(ast.topHead(), "perm2", F.List(F.C2, permutation, F.C1), engine);
       } else {
-        // start with {2,1,3,...} as default permutation
-        indices = range.setAtCopy(1, range.arg2());
-        indices.set(2, range.arg1());
-        originalIndices = indices.toIntVector();
-        dimensionsPermutated = Combinatoric.permute(dimensionsList, indices);
+        return tensorList;
       }
-      if (dimensionsPermutated == null || originalIndices == null) {
-        return F.NIL;
-      }
-      return new Transpose.TransposePermute(tensorList, dimensions.toIntArray(),
-          dimensionsPermutated, permutationArray, originalIndices, function).transposeRecursive();
-
     }
-
-    if (tensor.isSparseArray()) {
-      ISparseArray sparseArray = (ISparseArray) tensor;
-      ISparseArray transposed = sparseArray.transpose(permutationArray, function);
-      if (transposed != null) {
-        return transposed;
-      }
-      // get error details:
-      for (int i = 0; i < permutationArray.length; i++) {
-        if (permutationArray[i] > permutationArray.length) {
-          // Entry `1` in `2` is out of bounds for a permutation of length `3`.
-          return Errors.printMessage(ast.topHead(), "perm2",
-              F.List(F.ZZ(i + 1), permutation, F.ZZ(permutationArray.length)), engine);
-        }
-      }
-
+    IASTMutable indices;
+    IAST range = ListFunctions.range(dimensions.size() + 1);
+    int[] dimensionsPermutated;
+    int[] originalIndices;
+    if (permutation.isPresent()) {
+      originalIndices = Combinatoric.permute(range, (IAST) permutation);
+      dimensionsPermutated = Combinatoric.permute(dimensionsList, (IAST) permutation);
+    } else {
+      // start with {2,1,3,...} as default permutation
+      indices = range.setAtCopy(1, range.arg2());
+      indices.set(2, range.arg1());
+      originalIndices = indices.toIntVector();
+      dimensionsPermutated = Combinatoric.permute(dimensionsList, indices);
     }
-
-    return F.NIL;
+    if (dimensionsPermutated == null || originalIndices == null) {
+      return F.NIL;
+    }
+    return new Transpose.TransposePermute(tensorList, dimensions.toIntArray(), dimensionsPermutated,
+        permutationArray, originalIndices, function).transposeRecursive();
   }
 
   private LinearAlgebra() {}
