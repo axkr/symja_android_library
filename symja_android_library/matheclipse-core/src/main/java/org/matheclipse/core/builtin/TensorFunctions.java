@@ -97,14 +97,14 @@ public class TensorFunctions {
       ITensorAccess transposed = (ITensorAccess) LinearAlgebra.transpose(array, rotateRight,
           dimensions, x -> x,
           F.Transpose(array, rotateRight), engine);
-      ITensorAccess reduced;
+      IAST reduced = (IAST) transposed.normal(false);
       if (doMap) {
-        reduced = (ITensorAccess) F.Map(f, transposed, F.List(F.ZZ(iDepth - 1))).eval(engine);
+        reduced = (IAST) F.Map(f, reduced, F.List(F.ZZ(iDepth - 1))).eval(engine);
       } else {
         // flatten lists
         VisitorLevelSpecification levelSpec = new VisitorLevelSpecification(
             x -> F.binaryAST2(S.Apply, S.Sequence, x), iDepth - 1, false);
-        reduced = (IAST) transposed.accept(levelSpec);
+        reduced = (IAST) reduced.accept(levelSpec);
       }
       if (level == 1) {
         return reduced;

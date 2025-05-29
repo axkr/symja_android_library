@@ -5126,7 +5126,8 @@ public class StatisticsFunctions {
           return Errors.printMessage(S.Median, "rectn", F.List(F.C1, F.Median(arg1)), engine);
         }
         if (dimensions.size() >= 2) {
-          return F.ArrayReduce(S.Median, arg1, F.C1);
+          IExpr result = engine.evaluate(F.ArrayReduce(S.Median, arg1, F.C1));
+          return result.normal(false);
         }
         if (dimensions.size() == 2) {
           return arg1.mapMatrixColumns(dimensions.toIntArray(), x -> F.Median(x));
