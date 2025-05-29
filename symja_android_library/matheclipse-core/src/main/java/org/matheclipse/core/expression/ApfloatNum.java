@@ -6,6 +6,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatArithmeticException;
+// import org.apfloat.ApfloatArithmeticException;
 import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;
 import org.apfloat.FixedPrecisionApfloatHelper;
@@ -303,6 +304,10 @@ public class ApfloatNum implements INum {
           Apfloat besselJ =
               EvalEngine.getApfloat().besselJ(apfloatValue(), ((IReal) arg2).apfloatValue());
           return F.num(besselJ);
+        } catch (LossOfPrecisionException lopex) {
+          if (lopex.getLocalizationKey().equals("lossOfPrecision")) {
+            return F.NIL;
+          }
         } catch (ArithmeticException aex) {
           // result would be complex exception
         }
@@ -811,7 +816,17 @@ public class ApfloatNum implements INum {
     } catch (ArithmeticException | NumericComputationException e) {
       // try as computation with complex numbers
     }
-    return F.complexNum(EvalEngine.getApfloat().gamma(apcomplexValue().add(Apfloat.ONE)));
+    try {
+      return F.complexNum(EvalEngine.getApfloat().gamma(apcomplexValue().add(Apfloat.ONE)));
+    } catch (ApfloatArithmeticException aaex) {
+      if ("gamma.ofZero".equals(aaex.getLocalizationKey())) {
+        return F.ComplexInfinity;
+      }
+      if ("gamma.ofNegativeInteger".equals(aaex.getLocalizationKey())) {
+        return F.ComplexInfinity;
+      }
+    }
+    return INum.super.factorial();
   }
 
   @Override
@@ -1536,15 +1551,25 @@ public class ApfloatNum implements INum {
   @Override
   public IExpr log(final IExpr base) {
     if (base instanceof INumber) {
-      if (base instanceof IReal) {
-        if (isNegative()) {
-          return ApcomplexNum.valueOf(
-              EvalEngine.getApfloat().log(apcomplexValue(), ((INumber) base).apcomplexValue()));
-        }
-        return valueOf(EvalEngine.getApfloat().log(fApfloat, ((IReal) base).apfloatValue()));
+      if (base.isZero()) {
+        return S.Indeterminate;
       }
-      return ApcomplexNum.valueOf(
-          EvalEngine.getApfloat().log(apcomplexValue(), ((INumber) base).apcomplexValue()));
+      try {
+        if (base instanceof IReal) {
+          if (isNegative()) {
+            return ApcomplexNum.valueOf(
+                EvalEngine.getApfloat().log(apcomplexValue(), ((INumber) base).apcomplexValue()));
+          }
+          return valueOf(EvalEngine.getApfloat().log(fApfloat, ((IReal) base).apfloatValue()));
+        }
+        return ApcomplexNum.valueOf(
+            EvalEngine.getApfloat().log(apcomplexValue(), ((INumber) base).apcomplexValue()));
+      } catch (ApfloatArithmeticException aex) {
+        if (aex.getLocalizationKey().equals("divide.byZero")) {
+          // log(x,0) is undefined
+          return F.CComplexInfinity;
+        }
+      }
     }
     return INum.super.log(base);
   }

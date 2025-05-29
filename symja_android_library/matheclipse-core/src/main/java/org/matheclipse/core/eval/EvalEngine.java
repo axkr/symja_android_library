@@ -24,6 +24,7 @@ import java.util.function.Supplier;
 import org.apache.logging.log4j.Level;
 import org.apfloat.ApfloatInterruptedException;
 import org.apfloat.FixedPrecisionApfloatHelper;
+import org.apfloat.internal.BackingStorageException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
@@ -1160,7 +1161,11 @@ public class EvalEngine implements Serializable {
         return Errors.printMessage(ast.topHead(), ve, this);
       } catch (FlowControlException e) {
         throw e;
-      } catch (SymjaMathException ve) {
+      } catch (NumberFormatException nfe) {
+        // this happens if org.apfloat.internal.LongApfloatImpl throws
+        // java.lang.NumberFormatException "Infinity is not a valid number"
+        return Errors.printMessage(ast.topHead(), nfe, this);
+      } catch (BackingStorageException | SymjaMathException ve) {
         return Errors.printMessage(ast.topHead(), ve, this);
       }
     }

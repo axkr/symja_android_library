@@ -766,6 +766,13 @@ public class ApcomplexNum implements IComplexNum {
     try {
       FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
       return valueOf(h.gamma(h.add(fApcomplex, Apfloat.ONE)));
+    } catch (ApfloatArithmeticException aaex) {
+      if ("gamma.ofZero".equals(aaex.getLocalizationKey())) {
+        return F.ComplexInfinity;
+      }
+      if ("gamma.ofNegativeInteger".equals(aaex.getLocalizationKey())) {
+        return F.ComplexInfinity;
+      }
     } catch (ArithmeticException | NumericComputationException e) {
       // try as computation with complex numbers
     }
@@ -1294,8 +1301,19 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr log(final IExpr base) {
     if (base instanceof INumber) {
-      return ApcomplexNum.valueOf(
-          EvalEngine.getApfloat().log(apcomplexValue(), ((INumber) base).apcomplexValue()));
+      if (base.isZero()) {
+        return S.Indeterminate;
+      }
+      try {
+        return valueOf(EvalEngine.getApfloat().log(fApcomplex, ((INumber) base).apcomplexValue()));
+      } catch (ApfloatArithmeticException aex) {
+        if (aex.getLocalizationKey().equals("divide.byZero")) {
+          // log(x,0) is undefined
+          return F.CComplexInfinity;
+        }
+      }
+      // return ApcomplexNum.valueOf(
+      // EvalEngine.getApfloat().log(apcomplexValue(), ((INumber) base).apcomplexValue()));
     }
     return IComplexNum.super.log(base);
   }

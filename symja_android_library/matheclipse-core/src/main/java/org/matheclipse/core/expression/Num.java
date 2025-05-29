@@ -318,6 +318,10 @@ public class Num implements INum {
           Apfloat besselJ =
               EvalEngine.getApfloatDouble().besselJ(apfloatValue(), ((IReal) arg2).apfloatValue());
           return F.num(besselJ.doubleValue());
+        } catch (LossOfPrecisionException lopex) {
+          if (lopex.getLocalizationKey().equals("lossOfPrecision")) {
+            return F.NIL;
+          }
         } catch (ArithmeticException aex) {
           // result would be complex exception
         }
@@ -865,6 +869,9 @@ public class Num implements INum {
 
   @Override
   public IExpr factorial() {
+    if (isMathematicalIntegerNegative()) {
+      return F.CComplexInfinity;
+    }
     return valueOf(factorial(value));
   }
 

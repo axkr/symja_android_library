@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.Test;
+import org.matheclipse.core.basic.Config;
 
 public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
@@ -364,6 +365,13 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testHankelH1() {
+    check("BesselJ(-1.0,-1009.0)", //
+        "0.00587966");
+    // TODO https://github.com/mtommila/apfloat/issues/64
+    // check("HankelH1(-1.0 ,-1009)", //
+    // "");
+
+
     check("HankelH1(1317624576693539401,I*1/2)", //
         "HankelH1(1317624576693539401,I*1/2)");
     check("HankelH1(#2,#2)", //
@@ -470,6 +478,10 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testWeberE() {
+    if (Config.EXPENSIVE_JUNIT_TESTS) {
+      check("WeberE(1009,-0.8+I*1.2)", //
+          "Indeterminate");
+    }
     check("WeberE(a, 0)", //
         "1/2*a*Pi*Sinc(1/2*a*Pi)^2");
     check("WeberE(1, 0)", //

@@ -817,6 +817,9 @@ public class ComplexNum implements IComplexNum {
 
   @Override
   public IExpr factorial() {
+    if (isMathematicalIntegerNegative()) {
+      return F.CComplexInfinity;
+    }
     try {
       return F.complexNum(Arithmetic.lanczosApproxGamma(fComplex.add(Complex.ONE)));
     } catch (ArithmeticException | NumericComputationException e) {

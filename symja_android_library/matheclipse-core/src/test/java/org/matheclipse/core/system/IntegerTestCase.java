@@ -95,6 +95,9 @@ public class IntegerTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testBitFlip() {
+    check("BitFlip(42,0)", //
+        "43");
+
     check("IntegerDigits(36,2)", //
         "{1,0,0,1,0,0}");
     check("BitFlip(36,2)", //

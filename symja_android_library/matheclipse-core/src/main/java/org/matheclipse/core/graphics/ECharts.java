@@ -134,7 +134,11 @@ public class ECharts {
         // yAxisString.append(" step: '" + step + i + "',\n");
         stepI = step + i;
       }
-      ECharts.yAxisSingleSeries(yAxisString, singlePointList, legends[i - 1], type, stepI, minMax);
+      String legend = "";
+      if (legends.length > i - 1) {
+        legend = legends[i - 1];
+      }
+      ECharts.yAxisSingleSeries(yAxisString, singlePointList, legend, type, stepI, minMax);
       yAxisSeriesBuffer.append(yAxisString);
       if (i < listOfLists.argSize()) {
         yAxisSeriesBuffer.append(",\n");

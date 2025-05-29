@@ -2,13 +2,11 @@ package org.matheclipse.image.builtin;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import org.hipparchus.linear.RealMatrix;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
-import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -28,21 +26,18 @@ public class ArrayPlot extends AbstractEvaluator {
     IExpr arg1 = ast.arg1();
     int[] dims = arg1.isMatrix();
     if ((ast.size() == 2) && dims != null) {
-      if (arg1.isSparseArray()) {
-        arg1 = arg1.normal(false);
-      }
-      RealMatrix realMatrix = ((IAST) arg1).toRealMatrix();
-      if (realMatrix != null) {
-        BufferedImage buffer = arrayPlot(new ASTRealMatrix(realMatrix, false));
-        if (buffer != null) {
-          return new ImageExpr(buffer, null);
-        }
+
+      arg1 = arg1.normal(false); // convert to normal form especially for ASTRealMatrix,
+      // ASTRealVector, SparseArray etc.
+      BufferedImage buffer = arrayPlot((IAST) arg1);
+      if (buffer != null) {
+        return new ImageExpr(buffer, null);
       }
     }
     return F.NIL;
   }
 
-  public static BufferedImage arrayPlot(final IAST matrix) {
+  public static BufferedImage arrayPlot(IAST matrix) {
     BufferedImage bufferedImage =
         ImageFormat.toIntARGB(matrix.mapLeaf(S.List, ColorDataGradients.GRAYSCALE));
     VisualImage visualImage = new VisualImage(bufferedImage);

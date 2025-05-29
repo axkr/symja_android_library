@@ -429,19 +429,25 @@ public class IntegerFunctions {
         }
         IInteger value = (IInteger) ast.arg1();
         BigInteger big = value.toBigNumerator();
+
+        final int bit;
         if (power2_K >= 0) {
-          return F.ZZ(big.flipBit(power2_K));
+          bit = power2_K;
         } else if (power2_K < 0 && power2_K > Integer.MIN_VALUE) {
-          int bit = big.bitLength() + power2_K;
+          bit = big.bitLength() + power2_K;
           if (bit < 0) {
             return value;
           }
-          try {
+        } else {
+          bit = Integer.MIN_VALUE;
+        }
+        try {
+          if (bit != Integer.MIN_VALUE) {
             return F.ZZ(big.flipBit(bit));
-          } catch (ArithmeticException ae) {
-            // BigInteger#flipBit() may throw ArithmeticException
-            return Errors.printMessage(S.BitFlip, ae, engine);
           }
+        } catch (ArithmeticException ae) {
+          // BigInteger#flipBit() may throw ArithmeticException
+          return Errors.printMessage(S.BitFlip, ae, engine);
         }
       }
       return F.NIL;

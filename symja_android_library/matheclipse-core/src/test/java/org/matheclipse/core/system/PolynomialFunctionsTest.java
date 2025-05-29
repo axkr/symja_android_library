@@ -309,6 +309,9 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLegendreP() {
+    // message LegendreP: Not allowed to use file storage
+    check("LegendreP(1317624576693539401,0.0)", //
+        "LegendreP(1.31762*10^18,0.0)");
     // TODO support negative values
     // check(
     // "LegendreP(-3,x)", //

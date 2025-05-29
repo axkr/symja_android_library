@@ -5560,9 +5560,8 @@ public final class ListFunctions {
       }
       if (ast.isAST3()) {
         if (ast.arg3().isZero()) {
-          // Infinite expression `1` encountered.
-          return Errors.printMessage(ast.topHead(), "infy", F.list(F.Divide(ast.arg2(), F.C0)),
-              engine);
+            Arithmetic.printInfy(ast.topHead(), ast.arg2(), ast.arg3());
+            return F.NIL;
         }
         if (ast.arg3().isDirectedInfinity()) {
           return ast.arg1();

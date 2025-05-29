@@ -25,6 +25,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.math.IntMath;
 
@@ -1562,6 +1563,26 @@ public class BesselFunctions {
 
   private static final class WeberE extends AbstractFunctionEvaluator implements IFunctionExpand {
     @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        IInexactNumber n = (IInexactNumber) ast.arg1();
+        IInexactNumber z = (IInexactNumber) ast.arg2();
+        IExpr result = weber2(n, z, true);
+        if (result.isPresent()) {
+          return engine.evaluate(result);
+        }
+        return weber2Numeric(n, z, engine.isNumericMode()).eval(engine);
+      }
+      if (ast.argSize() == 3) {
+        IInexactNumber n = (IInexactNumber) ast.arg1();
+        IInexactNumber m = (IInexactNumber) ast.arg2();
+        IInexactNumber z = (IInexactNumber) ast.arg3();
+        return weber3Numeric(n, m, z, engine.isNumericMode()).eval(engine);
+      }
+      return F.NIL;
+    }
+
+    @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
@@ -1636,10 +1657,26 @@ public class BesselFunctions {
       }
       IExpr m = ast.arg2();
       IExpr z = ast.arg3();
-      return weber3(n, m, z, engine.isNumericMode()).eval(engine);
+      return weber3Numeric(n, m, z, engine.isNumericMode()).eval(engine);
     }
 
-    private static IExpr weber3(final IExpr n, IExpr m, IExpr z, boolean numericMode) {
+    private static IExpr weber2Numeric(final IExpr n, final IExpr z, boolean numericMode) {
+      if (numericMode) {
+        if (n.isNumber() && z.isNumber()) {
+          try {
+            return functionExpand2(n, z);
+            // return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
+
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+            return Errors.printMessage(S.WeberE, rex);
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    private static IExpr weber3Numeric(final IExpr n, IExpr m, IExpr z, boolean numericMode) {
       if (numericMode) {
         if (n.isNumber() && m.isNumber() && z.isNumber()) {
           try {
@@ -1695,18 +1732,18 @@ public class BesselFunctions {
         }
       }
 
-      if (numericMode) {
-        if (n.isNumber() && z.isNumber()) {
-          try {
-            return functionExpand2(n, z);
-            // return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
-
-          } catch (RuntimeException rex) {
-            Errors.rethrowsInterruptException(rex);
-            return Errors.printMessage(S.WeberE, rex);
-          }
-        }
-      }
+      // if (numericMode) {
+      // if (n.isNumber() && z.isNumber()) {
+      // try {
+      // return functionExpand2(n, z);
+      // // return FunctionExpand.callMatcher(F.FunctionExpand(ast), ast, engine);
+      //
+      // } catch (RuntimeException rex) {
+      // Errors.rethrowsInterruptException(rex);
+      // return Errors.printMessage(S.WeberE, rex);
+      // }
+      // }
+      // }
       return F.NIL;
     }
 

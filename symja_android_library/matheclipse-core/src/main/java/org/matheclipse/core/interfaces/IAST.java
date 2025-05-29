@@ -1167,6 +1167,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @param positions index of the element to return
    * @return the element at the specified positions in this nested AST or {@link F#NIL}
    * @throws IndexOutOfBoundsException if one of the positions are out of range
+   * @see ITensorAccess#getIndex(int...) which gets the value at the full index of a tensor
    */
   public IExpr getPart(final int... positions) throws IndexOutOfBoundsException;
 

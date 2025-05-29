@@ -129,9 +129,10 @@ public class ListLinePlot3D extends AbstractEvaluator {
         IASTAppendable lineList = F.ListAlloc(rowListSize);
 
         for (int j = 1; j < rowListSize; j++) {
+          double value = rowList.get(j).evalf();
           // ListLinePlot3D size is 2.5 × 2.5 × 1 independently from its coordinates
           lineList.append(F.List(F.num(i * 2.5 / valuesSize), F.num(j * 2.5 / rowListSize),
-              rowList.get(j).divide(deltaHeight)));
+              F.num(value / deltaHeight)));
         }
 
         final IAST color = GraphicsOptions.plotStyleColorExpr(lineColorNumber++, plotStyle);

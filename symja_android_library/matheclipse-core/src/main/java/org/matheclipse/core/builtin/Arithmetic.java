@@ -7342,4 +7342,19 @@ public final class Arithmetic {
 
   private Arithmetic() {}
 
+  /**
+   * Print message <code>Infinite expression `nonZeroNumerator/zeroDenominator` encountered</code>
+   * an return {@link F#CComplexInfinity} as result.
+   * 
+   * @param head the head symbol which should be printed in the message
+   * @param nonZeroNumerator the non-zero numerator expression
+   * @param zeroDenominator the expression which represents <code>0</code>
+   * @return
+   */
+  static IExpr printInfy(ISymbol head, final IExpr nonZeroNumerator, final IExpr zeroDenominator) {
+    // Infinite expression `1` encountered.
+    Errors.printMessage(head, "infy", F.list(F.Divide(nonZeroNumerator, zeroDenominator)));
+    return F.CComplexInfinity;
+  }
+
 }

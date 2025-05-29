@@ -3895,6 +3895,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check(
     // "Convergents({1,Quantity(1.2,\"m\"),3,a})", //
     // "");
+    check("Convergents(N(I+{Pi,-1,0,1},50))", //
+        "{3.1415926535897932384626433832795028841971693993751+I*1,2.6415926535897932384626433832795028841971693993751+I*0.5,2.1415926535897932384626433832795028841971693993751+I*1,ComplexInfinity}");
+
     check("Convergents({1,2,3,a})", //
         "{1,3/2,10/7,(3+10*a)/(2+7*a)}");
     check("Convergents({{1,0},{0,1},0})", //
@@ -13446,6 +13449,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLog() {
+    checkNumeric("N(Log(-4/5),30)", //
+        "-0.2231435513142097557662950903+I*3.14159265358979323846264338327");
     checkNumeric("Log(-1.5)", //
         "0.4054651081081644+I*3.141592653589793");
     checkNumeric("N(Log(-3/2),30)", //

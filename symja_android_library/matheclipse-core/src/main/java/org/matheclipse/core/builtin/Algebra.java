@@ -4563,13 +4563,17 @@ public class Algebra {
 
       IExpr exprNumerator = F.evalExpand(numerator.oneIdentity0());
       IExpr denom = F.eval(denominatorList.oneIdentity1());
-      IExpr exprDenominator = F.evalExpand(denom);
-      if (exprNumerator.isZero()) {
-        if (exprDenominator.isZero()) {
-          // let the standard evaluation handle the division by zero 0^0
-          return F.Times(exprNumerator, F.Power(exprDenominator, F.CN1));
+      final IExpr exprDenominator = F.evalExpand(denom);
+      if (exprNumerator.isNumber()) {
+        if (exprNumerator.isZero()) {
+          if (exprDenominator.isZero()) {
+            // let the standard evaluation handle the division by zero 0^0
+            return F.Times(exprNumerator, F.Power(exprDenominator, F.CN1));
+          }
+          return F.C0;
+        } else if (exprDenominator.isZero()) {
+          return Arithmetic.printInfy(S.Divide, exprNumerator, exprDenominator);
         }
-        return F.C0;
       }
       if (!exprDenominator.isOne()) {
         try {

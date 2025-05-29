@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.apfloat.ApfloatInterruptedException;
+import org.apfloat.internal.BackingStorageException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.BreakException;
@@ -356,7 +357,7 @@ public class ExprEvaluator {
     } catch (final SyntaxError e) { // catches parser errors
       // LOGGER.debug("syntax error", e);
       return F.stringx(e.getMessage());
-    } catch (SymjaMathException sma) {
+    } catch (BackingStorageException | SymjaMathException sma) {
       // sma.printStackTrace();
       // LOGGER.debug("ExprEvaluator.evalTopLevel() failed", sma);
       Errors.printMessage(expr.topHead(), sma, engineRef[0]);
