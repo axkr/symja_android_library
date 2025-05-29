@@ -160,27 +160,50 @@ public class SpecialFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.argSize() == 4) {
-        // generalized incomplete Beta(z1, z2, a, b)
-        IExpr z1 = ast.arg1();
-        IExpr z2 = ast.arg2();
-        IExpr a = ast.arg3();
-        IExpr b = ast.arg4();
+      try {
+        IExpr betaSymbolic = F.NIL;
+        int argSize = ast.argSize();
+        switch (argSize) {
+          case 2:
+          // Beta(a,b)
+          {
+            IExpr a = ast.arg1();
+            IExpr b = ast.arg2();
+            betaSymbolic = beta(a, b);
+          }
+            break;
+          case 3:
+          // incomplete Beta(z, a, b)
+          {
+            IExpr z = ast.arg1();
+            IExpr a = ast.arg2();
+            IExpr b = ast.arg3();
+            betaSymbolic = incompleteBeta(z, a, b);
+          }
+            break;
+          case 4:
+          // generalized incomplete Beta(z1, z2, a, b)
+          {
+            IExpr z1 = ast.arg1();
+            IExpr z2 = ast.arg2();
+            IExpr a = ast.arg3();
+            IExpr b = ast.arg4();
 
-        return generalizedIncompleteBeta(z1, z2, a, b);
-      }
-      if (ast.isAST3()) {
-        // incomplete Beta(z, a, b)
-        IExpr z = ast.arg1();
-        IExpr a = ast.arg2();
-        IExpr b = ast.arg3();
-        return incompleteBeta(z, a, b);
-      }
-      if (ast.isAST2()) {
-        // Beta(a,b)
-        IExpr a = ast.arg1();
-        IExpr b = ast.arg2();
-        return beta(a, b);
+            betaSymbolic = generalizedIncompleteBeta(z1, z2, a, b);
+          }
+            break;
+        }
+        if (betaSymbolic.isPresent()) {
+          return engine.evaluate(betaSymbolic);
+        }
+      } catch (ThrowException te) {
+        Errors.printMessage(S.Beta, te, engine);
+        return te.getValue();
+      } catch (ValidateException ve) {
+        return Errors.printMessage(S.Beta, ve, engine);
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        Errors.printMessage(S.Beta, rex, engine);
       }
       return F.NIL;
     }
@@ -200,53 +223,43 @@ public class SpecialFunctions {
         return F.CComplexInfinity;
       }
       EvalEngine engine = EvalEngine.get();
-      try {
-        // if (engine.isDoubleMode()) {
-        //
-        // double aDouble = Double.NaN;
-        // double bDouble = Double.NaN;
-        // try {
-        // aDouble = a.evalf();
-        // bDouble = b.evalf();
-        // } catch (ValidateException ve) {
-        // }
-        // if (Double.isNaN(aDouble) || Double.isNaN(bDouble)) {
-        // Complex ac = a.evalfc();
-        // Complex bc = b.evalfc();
-        //
-        // return F.complexNum(GammaJS.beta(ac, bc));
-        //
-        // } else {
-        // return F.num(GammaJS.beta(aDouble, bDouble));
-        // }
-        // }
-        if (a.isNumber() && b.isNumber()) {
-          if (a.isInteger() && a.isPositive() && b.isInteger() && b.isPositive()) {
-            // http://fungrim.org/entry/082a69/
-            return Times(Factorial(Plus(CN1, a)), Factorial(Plus(CN1, b)),
-                Power(Factorial(Plus(CN1, a, b)), -1));
-          }
-          // http://fungrim.org/entry/888581/
-          return F.Times(F.Gamma(a), F.Gamma(b), F.Power(F.Gamma(F.Plus(a, b)), -1));
-        }
-        IExpr s = a.inc().subtract(b);
-        if (s.isZero()) {
-          return F.Power(F.Times(a, b, F.CatalanNumber(a)), -1);
-        }
 
-        IExpr sum = a.plus(b);
-        if (sum.isInteger() && sum.isNegative()) {
-          return F.C0;
+      // if (engine.isDoubleMode()) {
+      //
+      // double aDouble = Double.NaN;
+      // double bDouble = Double.NaN;
+      // try {
+      // aDouble = a.evalf();
+      // bDouble = b.evalf();
+      // } catch (ValidateException ve) {
+      // }
+      // if (Double.isNaN(aDouble) || Double.isNaN(bDouble)) {
+      // Complex ac = a.evalfc();
+      // Complex bc = b.evalfc();
+      //
+      // return F.complexNum(GammaJS.beta(ac, bc));
+      //
+      // } else {
+      // return F.num(GammaJS.beta(aDouble, bDouble));
+      // }
+      // }
+      if (a.isNumber() && b.isNumber()) {
+        if (a.isInteger() && a.isPositive() && b.isInteger() && b.isPositive()) {
+          // http://fungrim.org/entry/082a69/
+          return Times(Factorial(Plus(CN1, a)), Factorial(Plus(CN1, b)),
+              Power(Factorial(Plus(CN1, a, b)), -1));
         }
+        // http://fungrim.org/entry/888581/
+        return F.Times(F.Gamma(a), F.Gamma(b), F.Power(F.Gamma(F.Plus(a, b)), -1));
+      }
+      IExpr s = a.inc().subtract(b);
+      if (s.isZero()) {
+        return F.Power(F.Times(a, b, F.CatalanNumber(a)), -1);
+      }
 
-      } catch (ThrowException te) {
-        Errors.printMessage(S.Beta, te, engine);
-        return te.getValue();
-      } catch (ValidateException ve) {
-        return Errors.printMessage(S.Beta, ve, engine);
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
-        Errors.printMessage(S.Beta, rex, engine);
+      IExpr sum = a.plus(b);
+      if (sum.isInteger() && sum.isNegative()) {
+        return F.C0;
       }
       return F.NIL;
     }
@@ -507,8 +520,8 @@ public class SpecialFunctions {
 
           IExpr oneMinusZ = F.C1.subtract(z);
           // ((1-z)^k*Pochhammer(a,k))/k!
-          IExpr sum = F.sum(k -> F.Times(F.Power(oneMinusZ, k),
-              F.Power(F.Factorial(k), F.CN1), F.Pochhammer(a, k)), 0, bi - 1);
+          IExpr sum = F.sum(k -> F.Times(F.Power(oneMinusZ, k), F.Power(F.Factorial(k), F.CN1),
+              F.Pochhammer(a, k)), 0, bi - 1);
           // z^a * sum
           return F.Times(F.Power(z, a), sum);
         }
