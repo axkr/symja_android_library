@@ -2017,6 +2017,14 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public IExpr timesExpr(final INumber that) {
+    if (this.isInfinite() || that.isInfinite()) {
+      return F.Times(this, that).eval();
+    }
+    return times(that);
+  }
+
+  @Override
   public ApfloatNum toDegrees() {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     // radians * (180 / Pi)

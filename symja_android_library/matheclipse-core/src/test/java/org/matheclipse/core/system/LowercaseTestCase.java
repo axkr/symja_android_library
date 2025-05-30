@@ -1916,6 +1916,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testBernoulliB() {
+
+    // message from apfloat: BernoulliB: Not allowed to use file storage
+    check("N(BernoulliB(10007,Pi),30)", //
+        "BernoulliB(10007,3.14159265358979323846264338327)");
+
     check("N(BernoulliB(0) )", //
         "1.0");
 

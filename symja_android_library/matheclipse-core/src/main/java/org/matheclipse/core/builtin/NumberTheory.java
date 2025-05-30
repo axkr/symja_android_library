@@ -24,11 +24,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatArithmeticException;
 import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;
 import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.NumericComputationException;
+import org.apfloat.internal.BackingStorageException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.fraction.BigFraction;
@@ -343,11 +345,9 @@ public final class NumberTheory {
                 } else {
                   return F.num(h.bernoulliB(ln, r.apfloatValue()).doubleValue());
                 }
-              } catch (ArithmeticException | IllegalArgumentException
-                  | NumericComputationException ex) {
-                //
-                System.out.println(n.toString() + ", " + z.toString());
-                ex.printStackTrace();
+              } catch (ApfloatArithmeticException | BackingStorageException
+                  | IllegalArgumentException | NumericComputationException ex) {
+                return Errors.printMessage(S.BernoulliB, ex, engine);
               }
             }
             try {
@@ -358,11 +358,9 @@ public final class NumberTheory {
                 return F.complexNum(bernoulliB.real().doubleValue(),
                     bernoulliB.imag().doubleValue());
               }
-            } catch (ArithmeticException | IllegalArgumentException
+            } catch (ApfloatArithmeticException | BackingStorageException | IllegalArgumentException
                 | NumericComputationException ex) {
-              //
-              System.out.println(n.toString() + ", " + z.toString());
-              ex.printStackTrace();
+              return Errors.printMessage(S.BernoulliB, ex, engine);
             }
           }
         }

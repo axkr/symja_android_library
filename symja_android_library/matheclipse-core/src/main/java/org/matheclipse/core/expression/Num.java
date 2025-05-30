@@ -326,9 +326,17 @@ public class Num implements INum {
           // result would be complex exception
         }
       }
-      Apcomplex besselJ =
-          EvalEngine.getApfloatDouble().besselJ(apfloatValue(), ((INumber) arg2).apcomplexValue());
-      return F.complexNum(besselJ.real().doubleValue(), besselJ.imag().doubleValue());
+      try {
+        Apcomplex besselJ = EvalEngine.getApfloatDouble().besselJ(apfloatValue(),
+            ((INumber) arg2).apcomplexValue());
+        return F.complexNum(besselJ.real().doubleValue(), besselJ.imag().doubleValue());
+      } catch (LossOfPrecisionException lopex) {
+        if (lopex.getLocalizationKey().equals("lossOfPrecision")) {
+          return F.NIL;
+        }
+      } catch (ArithmeticException aex) {
+        // result would be complex exception
+      }
     }
     return INum.super.besselJ(arg2);
   }

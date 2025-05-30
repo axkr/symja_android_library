@@ -137,18 +137,22 @@ public final class TimesOp {
    *
    * @param expr the expression to multiply with
    */
-  public void appendRecursive(final IExpr expr) {
+  public void appendRecursive(IExpr expr) {
     if (expr.isNumber()) {
       if (numberValue == null) {
         numberValue = (INumber) expr;
         return;
       }
       evaled = true;
-      numberValue = numberValue.times((INumber) expr);
-      return;
+      IExpr temp = numberValue.timesExpr((INumber) expr);
+      if (temp.isNumber()) {
+        numberValue = (INumber) temp;
+        return;
+      }
+      expr = temp; // use the new value
     }
     if (expr.isAST()) {
-      final IExpr head = ((IAST) expr).head();
+      final IExpr head = expr.head();
       if (head == S.Power) {
         final IAST ast = (IAST) expr;
         if (ast.size() == 3 && ast.exponent().isNumber()) {

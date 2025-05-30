@@ -2,8 +2,6 @@ package org.matheclipse.core.builtin;
 
 import java.math.BigInteger;
 import java.util.function.Function;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.Apfloat;
 import org.apfloat.Apint;
 import org.apfloat.Aprational;
@@ -42,7 +40,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 public class IntegerFunctions {
-  private static final Logger LOGGER = LogManager.getLogger(IntegerFunctions.class);
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -1122,7 +1119,6 @@ public class IntegerFunctions {
         }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        LOGGER.debug("FractionalPart.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -1288,8 +1284,8 @@ public class IntegerFunctions {
           }
         }
         if (radix.isLT(F.C2)) {
-          LOGGER.log(engine.getLogLevel(), "IntegerLength: The base must be greater than 1");
-          return F.NIL;
+          // Base `1` is not an integer greater than `2`.
+          return Errors.printMessage(S.IntegerLength, "ibase", F.List(radix, F.C1));
         }
         IInteger iArg1 = (IInteger) ast.arg1();
         if (iArg1.isZero()) {
@@ -1386,7 +1382,7 @@ public class IntegerFunctions {
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         // IReal#floor() or #ceil() may throw ArithmeticException
-        LOGGER.debug("IntegerPart.evaluate() failed", rex);
+        Errors.printMessage(S.IntegerPart, rex, engine);
       }
       return F.NIL;
     }
@@ -1645,8 +1641,7 @@ public class IntegerFunctions {
         }
         return arg1.modPow(arg2, arg3);
       } catch (ArithmeticException ae) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ae);
-        return F.NIL;
+        return Errors.printMessage(S.PowerMod, ae, engine);
       }
     }
 
@@ -1881,8 +1876,8 @@ public class IntegerFunctions {
           final IInteger i0 = (IInteger) arg1;
           final IInteger i1 = (IInteger) arg2;
           if (i1.isZero()) {
-            LOGGER.log(engine.getLogLevel(), "QuotientRemainder: division by zero");
-            return F.NIL;
+            // Division by zero `1`.
+            return Errors.printMessage(S.QuotientRemainder, "zzdivzero", F.List(i1), engine);
           }
           IASTMutable list = F.ListAlloc(S.Null, S.Null);
 
@@ -1942,12 +1937,13 @@ public class IntegerFunctions {
             return Errors.printMessage(ast.topHead(), ve, engine);
           } catch (RuntimeException rex) {
             Errors.rethrowsInterruptException(rex);
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+            return Errors.printMessage(S.QuotientRemainder, rex, engine);
+
           }
         }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        LOGGER.log(engine.getLogLevel(), "QuotientRemainder", rex);
+        return Errors.printMessage(S.QuotientRemainder, rex, engine);
       }
       return F.NIL;
     }
@@ -2012,13 +2008,12 @@ public class IntegerFunctions {
           return realDigits;
         }
       } catch (NumberFormatException | ArgumentTypeException atex) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), atex);
-        return F.NIL;
+        return Errors.printMessage(S.RealDigits, atex, engine);
       }
 
       if (arg1.isNumber()) {
         // The value `1` is not a real number.
-        return Errors.printMessage(ast.topHead(), "realx", F.list(arg1), engine);
+        return Errors.printMessage(S.RealDigits, "realx", F.list(arg1), engine);
       }
       return F.NIL;
     }

@@ -359,10 +359,19 @@ public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
   /**
    * Returns an <code>INumber</code> whose value is <code>(this * that)</code>.
    * 
-   * @param arg
-   * @return
+   * @param that the number to multiply with
    */
   public INumber times(INumber that);
+
+  /**
+   * Returns an <code>IExpr</code> whose value is <code>(this * that)</code>.
+   * 
+   * @param that
+   * @return
+   */
+  default IExpr timesExpr(INumber that) {
+    return times(that);
+  }
 
   /**
    * Return the list <code>{r, theta}</code> of the polar coordinates of this number

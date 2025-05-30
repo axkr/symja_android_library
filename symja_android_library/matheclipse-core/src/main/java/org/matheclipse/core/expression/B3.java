@@ -412,8 +412,11 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public IExpr evaluate(EvalEngine engine) {
       if (arg3.isNumber() && arg2.isNumber() && arg1.isNumber()) {
-        INumber result = ((INumber) arg1).times((INumber) arg2).times((INumber) arg3);
-        return result;
+        IExpr timesExpr = ((INumber) arg1).timesExpr((INumber) arg2);
+        if (timesExpr.isNumber()) {
+          return ((INumber) timesExpr).timesExpr((INumber) arg3);
+        }
+        return timesExpr.times(arg3);
       }
       return super.evaluate(engine);
     }

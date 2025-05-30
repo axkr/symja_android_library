@@ -14,7 +14,6 @@ import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
 import org.matheclipse.core.builtin.PredicateQ;
-import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.interfaces.IAST;
@@ -863,9 +862,8 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public IExpr evaluate(EvalEngine engine) {
       if (arg1.isNumber() && arg2.isNumber()) {
-        INumber result = ((INumber) arg1).times((INumber) arg2);
-        // System.out.println("Times: " + arg1 + "*" + arg2 + "=>" + result);
-        return result;
+        return ((INumber) arg1).timesExpr((INumber) arg2);
+          // System.out.println("Times: " + arg1 + "*" + arg2 + "=>" + result);
       }
       // if (arg1.isNumber() && arg2.isNumber()) {
       // IExpr result = super.evaluate(engine);
