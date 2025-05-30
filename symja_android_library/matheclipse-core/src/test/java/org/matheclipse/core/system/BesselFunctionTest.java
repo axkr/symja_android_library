@@ -365,12 +365,11 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testHankelH1() {
-    check("BesselJ(-1.0,-1009.0)", //
+    // https://github.com/mtommila/apfloat/issues/64
+    check("BesselJ(-1.0,-1009.0)", // HankelH1 calls BesselJ
         "0.00587966");
-    // TODO https://github.com/mtommila/apfloat/issues/64
-    // check("HankelH1(-1.0 ,-1009)", //
-    // "");
-
+    check("HankelH1(-1.0 ,-1009)", //
+        "-0.00587966+I*0.0244207");
 
     check("HankelH1(1317624576693539401,I*1/2)", //
         "HankelH1(1317624576693539401,I*1/2)");
