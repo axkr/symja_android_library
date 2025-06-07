@@ -472,8 +472,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testArcCos() {
 
     // see https://github.com/mtommila/apfloat/issues/18
+    // https://github.com/mtommila/apfloat/issues/65
     checkNumeric("N(ArcCos(-2),30)", //
-        "3.1415926535897932384626433832+I*(-1.3169578969248167086250463473)");
+        "3.14159265358979323846264338327+I*(-1.3169578969248167086250463473)");
     checkNumeric("N(ArcCos(2),30)", //
         "I*1.3169578969248167086250463473");
 
@@ -11712,14 +11713,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     checkNumeric("N(ArcSin(-2),30)", //
         "-1.57079632679489661923132169163+I*1.3169578969248167086250463473");
     checkNumeric("N(ArcSin(2),30)", //
-        "1.5707963267948966192313216916+I*(-1.3169578969248167086250463473)");
+        "1.57079632679489661923132169163+I*(-1.3169578969248167086250463473)");
 
     checkNumeric("ArcSin(-2.0)", //
         "-1.5707963267948966+I*1.3169578969248164");
     checkNumeric("ArcSin(2.0)", //
         "1.5707963267948966+I*(-1.3169578969248166)");
     checkNumeric("ArcSin(1.3038404810405297)", //
-        "1.570796326794896+I*(-0.7610396837318266)");
+        "1.5707963267948966+I*(-0.76103968373182661)");
     checkNumeric("InverseHaversine(1.7)", //
         "3.141592653589793+I*(-1.5220793674636532)");
   }

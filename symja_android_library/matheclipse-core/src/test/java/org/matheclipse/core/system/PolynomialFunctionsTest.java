@@ -11,6 +11,9 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testChebyshevT() {
+    // https://github.com/mtommila/apfloat/issues/65
+    check("N(ChebyshevT(Pi/2,-9223372036854775808/11),30)", //
+        "4672660418534308965963828022.7+I*(-20661346583240968698114847518.9)");
     check("ChebyshevT(-1/2, z)", //
         "Cos(ArcCos(z)/2)");
     check("ChebyshevT(1/2, z)", //
