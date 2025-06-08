@@ -328,7 +328,7 @@ public class Sequences {
         r = temp;
       } else {
         r = d.toIntDefault();
-        if (r == Integer.MIN_VALUE) {
+        if (F.isNotPresent(r)) {
           throw new ArgumentTypeException("d must be a machine-size integer");
         }
         if (temp < r) {

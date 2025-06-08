@@ -638,7 +638,7 @@ public class BigFractionSym extends AbstractFractionSym {
     if (toBigDenominator().equals(BigInteger.ONE)) {
       return NumberUtil.intValueExact(toBigNumerator());
       // int val = NumberUtil.toIntDefault(toBigNumerator());
-      // if (val != Integer.MIN_VALUE) {
+      // if (F.isPresent(val)) {
       // return val;
       // }
     } else if (toBigNumerator().signum() == 0) {

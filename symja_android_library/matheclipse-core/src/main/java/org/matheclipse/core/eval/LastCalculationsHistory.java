@@ -62,7 +62,7 @@ public class LastCalculationsHistory implements Serializable {
     }
 
     if (index <= 0) {
-      if (index == Integer.MIN_VALUE) {
+      if (F.isNotPresent(index)) {
         return F.NIL;
       }
       index *= -1;

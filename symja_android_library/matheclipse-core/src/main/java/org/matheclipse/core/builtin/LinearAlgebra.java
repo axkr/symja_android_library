@@ -1494,7 +1494,7 @@ public final class LinearAlgebra {
         final int diff;
         if (ast.size() > 2) {
           diff = ast.arg2().toIntDefault();
-          if (diff == Integer.MIN_VALUE) {
+          if (F.isNotPresent(diff)) {
             return F.NIL;
           }
         } else {
@@ -1587,7 +1587,7 @@ public final class LinearAlgebra {
           // for sparse array vector input return a sparse array diagonal matrix
           ISparseArray sparseArray = (ISparseArray) arg1;
           int m = sparseArray.getDimension()[0] + 1;
-          final int offset = ast.isAST2() ? Validate.checkIntType(ast, 2, Integer.MIN_VALUE) : 0;
+          final int offset = ast.isAST2() ? Validate.checkIntType(ast, 2, Config.INVALID_INT) : 0;
           return F.sparseMatrix((i, j) -> (i + offset) == j ? sparseArray.get(i + 1) : F.C0, m - 1,
               m - 1);
         }
@@ -1604,7 +1604,7 @@ public final class LinearAlgebra {
       }
       if (vector.isPresent()) {
         int m = vector.size();
-        final int offset = ast.isAST2() ? Validate.checkIntType(ast, 2, Integer.MIN_VALUE) : 0;
+        final int offset = ast.isAST2() ? Validate.checkIntType(ast, 2, Config.INVALID_INT) : 0;
         return F.matrix((i, j) -> (i + offset) == j ? vector.get(i + 1) : F.C0, m - 1, m - 1);
       }
       return F.NIL;
@@ -1998,7 +1998,7 @@ public final class LinearAlgebra {
       int maxValues = -1;
       if (numberOfEigenvalues.isPresent()) {
         int n = numberOfEigenvalues.toIntDefault();
-        if (n == Integer.MIN_VALUE) {
+        if (F.isNotPresent(n)) {
           // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
           // `1`.
           return Errors.printMessage(S.Eigenvalues, "seqs", F.List(ast, F.C2), engine);
@@ -2094,7 +2094,7 @@ public final class LinearAlgebra {
       int maxValues = -1;
       if (numberOfEigenvalues.isPresent()) {
         int n = numberOfEigenvalues.toIntDefault();
-        if (n == Integer.MIN_VALUE) {
+        if (F.isNotPresent(n)) {
           // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
           // `1`.
           return Errors.printMessage(S.Eigenvalues, "seqs", F.List(ast, F.C2), engine);
@@ -2206,7 +2206,7 @@ public final class LinearAlgebra {
         if (numberOfEigenvalues != null && numberOfEigenvalues.isPresent()) {
           int n = numberOfEigenvalues.toIntDefault();
           if (n < 0) {
-            if (n == Integer.MIN_VALUE) {
+            if (F.isNotPresent(n)) {
               return F.NIL;
             }
             if (eigenValuesList.argSize() < -n) {
@@ -2239,7 +2239,7 @@ public final class LinearAlgebra {
       int maxValues = -1;
       if (numberOfEigenvalues.isPresent()) {
         int n = numberOfEigenvalues.toIntDefault();
-        if (n == Integer.MIN_VALUE) {
+        if (F.isNotPresent(n)) {
           // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
           // `1`.
           return Errors.printMessage(S.Eigenvalues, "seqs", F.List(ast, F.C2), engine);
@@ -2528,7 +2528,7 @@ public final class LinearAlgebra {
                   int maxValues = -1;
                   if (numberOfEigenvalues.isPresent()) {
                     int n = numberOfEigenvalues.toIntDefault();
-                    if (n == Integer.MIN_VALUE) {
+                    if (F.isNotPresent(n)) {
                       // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at
                       // position `2` in
                       // `1`.
@@ -2569,7 +2569,7 @@ public final class LinearAlgebra {
         int maxValues = -1;
         if (numberOfEigenvalues.isPresent()) {
           int n = numberOfEigenvalues.toIntDefault();
-          if (n == Integer.MIN_VALUE) {
+          if (F.isNotPresent(n)) {
             // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
             // `1`.
             return Errors.printMessage(S.Eigenvalues, "seqs", F.List(ast, F.C2), engine);
@@ -3785,7 +3785,7 @@ public final class LinearAlgebra {
 
       final int k;
       if (ast.size() == 3) {
-        k = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
+        k = Validate.checkIntType(ast, 2, Config.INVALID_INT);
       } else {
         k = 0;
       }
@@ -4153,7 +4153,7 @@ public final class LinearAlgebra {
           }
 
           int p = arg2.toIntDefault();
-          if (p == Integer.MIN_VALUE) {
+          if (F.isNotPresent(p)) {
             return F.NIL;
           }
           if (p == 1) {
@@ -5803,7 +5803,7 @@ public final class LinearAlgebra {
 
         if (ast.isAST3()) {
           level = ast.arg3().toIntDefault();
-          if (level == Integer.MIN_VALUE) {
+          if (F.isNotPresent(level)) {
             return F.NIL;
           }
 
@@ -6087,7 +6087,7 @@ public final class LinearAlgebra {
       if (ast.isAST2()) {
         int n = arg1.toIntDefault();
         if (n <= 0) {
-          if (n == Integer.MIN_VALUE && !arg1.isNumber()) {
+          if (F.isNotPresent(n) && !arg1.isNumber()) {
             return F.NIL;
           }
           // Positive machine-sized integer expected at position `2` in `1`.
@@ -6095,7 +6095,7 @@ public final class LinearAlgebra {
         }
         int k = ast.arg2().toIntDefault();
         if (k <= 0) {
-          if (k == Integer.MIN_VALUE) {
+          if (F.isNotPresent(k)) {
             return F.NIL;
           }
           // Positive machine-sized integer expected at position `2` in `1`.
@@ -6146,7 +6146,7 @@ public final class LinearAlgebra {
       }
       final int k;
       if (ast.size() == 3) {
-        k = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
+        k = Validate.checkIntType(ast, 2, Config.INVALID_INT);
       } else {
         k = 0;
       }
@@ -7025,7 +7025,7 @@ public final class LinearAlgebra {
       if (numberOfEigenvalues != null && numberOfEigenvalues.isPresent()) {
         int n = numberOfEigenvalues.toIntDefault();
         if (n < 0) {
-          if (n == Integer.MIN_VALUE) {
+          if (F.isNotPresent(n)) {
             return F.NIL;
           }
           n = -n;

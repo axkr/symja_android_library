@@ -6,6 +6,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.parser.client.ParserConfig;
 
 /**
@@ -163,7 +164,7 @@ public class DoubleToMMA {
     int start;
     String s = String.format(Locale.US, "%1." + (significantFigures - 1) + "E", value);
     start = s.indexOf('E');
-    if (exponent == Integer.MIN_VALUE) {
+    if (F.isNotPresent(exponent)) {
       exponent = Integer.parseInt(s.substring(start + 1));
     }
     s = s.substring(0, start);

@@ -677,6 +677,24 @@ public class Config {
    */
   public static RoundingMode ROUNDING_MODE = RoundingMode.HALF_EVEN;
 
+  /**
+   * The default invalid integer value, defined as {@link Integer#MIN_VALUE}.
+   * 
+   * @see IExpr#toIntDefault()
+   * @see F#isPresent(int)
+   * @see F#isNotPresent(int)
+   */
+  public static final int INVALID_INT = Integer.MIN_VALUE;
+
+  /**
+   * The default invalid long value, defined as {@link Long#MIN_VALUE}.
+   * 
+   * @see IExpr#toLongDefault()
+   * @see F#isPresent(long)
+   * @see F#isNotPresent(long)
+   */
+  public static final long INVALID_LONG = Long.MIN_VALUE;
+
   /** Global dynamic classloader */
   public static ClassLoader URL_CLASS_LOADER = null;
 

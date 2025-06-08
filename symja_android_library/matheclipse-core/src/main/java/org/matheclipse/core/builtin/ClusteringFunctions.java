@@ -507,7 +507,7 @@ public class ClusteringFunctions {
 
             if ("KMeans".equals(method) || "".equals(method)) {
               k = ast.arg2().toIntDefault();
-              if (k == Integer.MIN_VALUE) {
+              if (F.isNotPresent(k)) {
                 k = 3;
               }
             }

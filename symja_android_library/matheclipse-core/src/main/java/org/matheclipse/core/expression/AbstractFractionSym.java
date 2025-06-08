@@ -1550,7 +1550,7 @@ public abstract class AbstractFractionSym implements IFraction {
         return inverse();
       }
       long n = that.toLongDefault();
-      if (n != Long.MIN_VALUE) {
+      if (F.isPresent(n)) {
         return power(n);
       }
     }
@@ -1572,7 +1572,7 @@ public abstract class AbstractFractionSym implements IFraction {
     }
     long exp = n;
     if (n < 0) {
-      if (n == Long.MIN_VALUE) {
+      if (F.isNotPresent(n)) {
         throw new java.lang.ArithmeticException();
       }
       exp *= -1;
@@ -1714,7 +1714,7 @@ public abstract class AbstractFractionSym implements IFraction {
 
   @Override
   public int toIntRoot() {
-    return Integer.MIN_VALUE;
+    return Config.INVALID_INT;
   }
 
   @Override

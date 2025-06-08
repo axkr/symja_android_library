@@ -101,7 +101,7 @@ public class VisitorReplacePart extends AbstractVisitor {
             int[] positions = new int[subList.argSize()];
             for (int k = 1; k < subList.size(); k++) {
               positions[k - 1] = subList.get(k).toIntDefault();
-              if (positions[k - 1] == Integer.MIN_VALUE) {
+              if (F.isNotPresent(positions[k - 1])) {
                 throw ReturnException.RETURN_FALSE;
               }
               if (positions[k - 1] == 0) {
@@ -118,7 +118,7 @@ public class VisitorReplacePart extends AbstractVisitor {
 
             for (int j = 1; j < list.size(); j++) {
               positions[j - 1] = list.get(j).toIntDefault();
-              if (positions[j - 1] == Integer.MIN_VALUE) {
+              if (F.isNotPresent(positions[j - 1])) {
                 throw ReturnException.RETURN_FALSE;
               }
               if (positions[j - 1] == 0) {
@@ -132,7 +132,7 @@ public class VisitorReplacePart extends AbstractVisitor {
         }
       } else {
         int[] positions = new int[] {lhs.toIntDefault()};
-        if (positions[0] == Integer.MIN_VALUE) {
+        if (F.isNotPresent(positions[0])) {
           throw ReturnException.RETURN_FALSE;
         }
         if (positions[0] == 0) {

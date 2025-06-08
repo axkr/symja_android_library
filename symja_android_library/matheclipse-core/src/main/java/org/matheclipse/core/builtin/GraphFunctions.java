@@ -622,7 +622,7 @@ public class GraphFunctions {
           return diameter;
         }
         int intDiameter = diameter.toIntDefault();
-        if (intDiameter != Integer.MIN_VALUE) {
+        if (F.isPresent(intDiameter)) {
           return F.ZZ(intDiameter);
         }
         return diameter;
@@ -870,7 +870,7 @@ public class GraphFunctions {
           return radius;
         }
         int intRadius = radius.toIntDefault();
-        if (intRadius != Integer.MIN_VALUE) {
+        if (F.isPresent(intRadius)) {
           return F.ZZ(intRadius);
         }
         return radius;
@@ -2326,7 +2326,7 @@ public class GraphFunctions {
           return vertexEccentricity;
         }
         int intVertexEccentricity = vertexEccentricity.toIntDefault();
-        if (intVertexEccentricity != Integer.MIN_VALUE) {
+        if (F.isPresent(intVertexEccentricity)) {
           return F.ZZ(intVertexEccentricity);
         }
         return vertexEccentricity;

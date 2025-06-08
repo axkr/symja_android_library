@@ -266,6 +266,10 @@ public class SubsetFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.argSize() >= 2 && ast.argSize() <= 3 && ast.arg1().isAST()) {
+        if (!ast.arg1().isList()) {
+          // List expected at position `1` in `2`.
+          return Errors.printMessage(S.SubsetReplace, "list", F.List(F.C1, ast));
+        }
         try {
           int maxNumberOfResults = Integer.MAX_VALUE;
           IAST arg1 = (IAST) ast.arg1();

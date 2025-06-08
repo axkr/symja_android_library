@@ -230,7 +230,7 @@ public class ChocoConvert {
           IntVar lhsVar = (IntVar) lhs;
           try {
             int lowerBound = temp.arg2().toIntDefault();
-            if (isIntRange(lowerBound)) {
+            if (F.isPresent(lowerBound)) {
               lhsVar.updateLowerBound(lowerBound + 1, lhsVar);
             }
           } catch (ContradictionException e) {
@@ -239,7 +239,7 @@ public class ChocoConvert {
           IntVar rhsVar = (IntVar) rhs;
           try {
             int upperBound = temp.arg1().toIntDefault();
-            if (isIntRange(upperBound)) {
+            if (F.isPresent(upperBound)) {
               rhsVar.updateUpperBound(upperBound - 1, rhsVar);
             }
           } catch (ContradictionException e) {
@@ -251,7 +251,7 @@ public class ChocoConvert {
           IntVar lhsVar = (IntVar) lhs;
           try {
             int lowerBound = temp.arg2().toIntDefault();
-            if (isIntRange(lowerBound)) {
+            if (F.isPresent(lowerBound)) {
               lhsVar.updateLowerBound(lowerBound, lhsVar);
             }
           } catch (ContradictionException e) {
@@ -260,7 +260,7 @@ public class ChocoConvert {
           IntVar rhsVar = (IntVar) rhs;
           try {
             int upperBound = temp.arg1().toIntDefault();
-            if (isIntRange(upperBound)) {
+            if (F.isPresent(upperBound)) {
               rhsVar.updateUpperBound(upperBound, rhsVar);
             }
           } catch (ContradictionException e) {
@@ -272,7 +272,7 @@ public class ChocoConvert {
           IntVar lhsVar = (IntVar) lhs;
           try {
             int upperBound = temp.arg2().toIntDefault();
-            if (isIntRange(upperBound)) {
+            if (F.isPresent(upperBound)) {
               lhsVar.updateUpperBound(upperBound, lhsVar);
             }
           } catch (ContradictionException e) {
@@ -281,7 +281,7 @@ public class ChocoConvert {
           IntVar rhsVar = (IntVar) rhs;
           try {
             int lowerBound = temp.arg1().toIntDefault();
-            if (isIntRange(lowerBound)) {
+            if (F.isPresent(lowerBound)) {
               rhsVar.updateLowerBound(lowerBound, rhsVar);
             }
           } catch (ContradictionException e) {
@@ -293,7 +293,7 @@ public class ChocoConvert {
           IntVar lhsVar = (IntVar) lhs;
           try {
             int upperBound = temp.arg2().toIntDefault();
-            if (isIntRange(upperBound)) {
+            if (F.isPresent(upperBound)) {
               lhsVar.updateUpperBound(upperBound - 1, lhsVar);
             }
           } catch (ContradictionException e) {
@@ -302,7 +302,7 @@ public class ChocoConvert {
           IntVar rhsVar = (IntVar) rhs;
           try {
             int lowerBound = temp.arg1().toIntDefault();
-            if (isIntRange(lowerBound)) {
+            if (F.isPresent(lowerBound)) {
               rhsVar.updateLowerBound(lowerBound + 1, rhsVar);
             }
           } catch (ContradictionException e) {
@@ -313,16 +313,6 @@ public class ChocoConvert {
     }
     throw new ArgumentTypeException(
         temp.toString() + " is no relational expression found for Solve(..., Integers)");
-  }
-
-  /**
-   * Return <code>true</code>, if the int <code>value</code> unequals {@link Integer#MIN_VALUE}.
-   * 
-   * @param value
-   * @return
-   */
-  private static boolean isIntRange(int value) {
-    return value != Integer.MIN_VALUE;
   }
 
   private static ArExpression integerExpression(Model net, IExpr expr, Map<ISymbol, IntVar> map)
@@ -690,7 +680,7 @@ public class ChocoConvert {
           IExpr lhs = rule.first();
           IExpr rhs = rule.second();
           int value = rhs.toIntDefault();
-          if (value != Integer.MIN_VALUE) {
+          if (F.isPresent(value)) {
             hybridVars[j - 1] = lhs;
             supp[j - 1] = HybridTuples.eq(value);
           } else {

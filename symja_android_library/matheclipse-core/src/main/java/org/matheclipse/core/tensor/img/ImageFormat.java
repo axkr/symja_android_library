@@ -53,7 +53,7 @@ public class ImageFormat {
    * @return image of type BufferedImage.TYPE_BYTE_GRAY or BufferedImage.TYPE_INT_ARGB or
    *         <code>null</code> if conversion wasn't possible
    */
-  public static BufferedImage toIntARGB(IAST matrix) {
+  public static BufferedImage toIntARGB(IAST matrix) throws IllegalArgumentException {
     return toIntFormat(matrix, BufferedImage.TYPE_INT_ARGB);
   }
 
@@ -64,7 +64,7 @@ public class ImageFormat {
    * @return image of type BufferedImage.TYPE_BYTE_GRAY or BufferedImage.TYPE_INT_BGR or
    *         <code>null</code> if conversion wasn't possible
    */
-  public static BufferedImage toIntBGRImage(IAST matrix) {
+  public static BufferedImage toIntBGRImage(IAST matrix) throws IllegalArgumentException {
     return toIntFormat(matrix, BufferedImage.TYPE_INT_BGR);
   }
 
@@ -75,7 +75,8 @@ public class ImageFormat {
    * @return <code>null</code> if conversion wasn't possible
    * @throws UnsupportedOperationException
    */
-  public static BufferedImage toIntFormat(IAST matrix, int imageType) {
+  public static BufferedImage toIntFormat(IAST matrix, int imageType)
+      throws IllegalArgumentException {
     IntArrayList dimensions = LinearAlgebra.dimensions(matrix);
     int width = dimensions.getInt(1);
     int height = dimensions.getInt(0);
@@ -95,7 +96,8 @@ public class ImageFormat {
    * @param height
    * @return <code>null</code> if conversion wasn't possible
    */
-  private static BufferedImage toTYPE_BYTE_GRAY(IAST matrix, int width, int height) {
+  private static BufferedImage toTYPE_BYTE_GRAY(IAST matrix, int width, int height)
+      throws IllegalArgumentException {
     // https://stackoverflow.com/questions/37362753/creating-grayscale-bitmap-from-array-of-0-255-gray-values-in-java
     BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
     WritableRaster writableRaster = bufferedImage.getRaster();
@@ -123,7 +125,8 @@ public class ImageFormat {
    * @param imageType
    * @return <code>null</code> if conversion wasn't possible
    */
-  private static BufferedImage toTYPE_INT(IAST tensor, int width, int height, int imageType) {
+  private static BufferedImage toTYPE_INT(IAST tensor, int width, int height, int imageType)
+      throws IllegalArgumentException {
     // fast extraction of color information to buffered image
     BufferedImage bufferedImage = new BufferedImage(width, height, imageType);
 

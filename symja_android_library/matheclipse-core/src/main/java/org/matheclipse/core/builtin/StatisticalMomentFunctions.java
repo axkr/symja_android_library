@@ -54,7 +54,7 @@ public class StatisticalMomentFunctions {
           } else if (dimensions.size() > 1) {
             return F.ArrayReduce(F.Function(F.Moment(F.Slot1, r)), list, F.C1);
           }
-        } else if (r == Integer.MIN_VALUE) {
+        } else if (F.isNotPresent(r)) {
           if (!arg2.isList()) {
             if (dimensions.size() == 1) {
               return F.Divide(F.Total(F.Power(list, arg2)), F.Length(list));
@@ -124,7 +124,7 @@ public class StatisticalMomentFunctions {
           } else if (dimensions.size() > 1) {
             return F.ArrayReduce(F.Function(F.CentralMoment(F.Slot1, r)), list, F.C1);
           }
-        } else if (r == Integer.MIN_VALUE) {
+        } else if (F.isNotPresent(r)) {
           if (!arg2.isList()) {
             if (dimensions.size() == 1) {
               return F.Divide(F.Total(F.Power(F.Subtract(list, F.Mean(list)), arg2)),
@@ -258,7 +258,7 @@ public class StatisticalMomentFunctions {
           } else if (dimensions.size() > 1) {
             return F.ArrayReduce(F.Function(F.FactorialMoment(F.Slot1, r)), list, F.C1);
           }
-        } else if (r == Integer.MIN_VALUE) {
+        } else if (F.isNotPresent(r)) {
           if (!arg2.isList()) {
             if (dimensions.size() == 1) {
               return factorialPowerRewrite(list, argSize, arg2);

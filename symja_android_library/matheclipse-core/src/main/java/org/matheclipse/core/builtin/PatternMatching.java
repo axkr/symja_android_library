@@ -1617,7 +1617,7 @@ public final class PatternMatching {
         } else {
           max = second.toIntDefault();
         }
-        if (min == Integer.MIN_VALUE || max == Integer.MIN_VALUE) {
+        if (F.isNotPresent(min) || F.isNotPresent(max)) {
           return F.NIL;
         }
         return F.$Repeated(arg1, min, max, engine);
@@ -1630,7 +1630,7 @@ public final class PatternMatching {
         } else {
           max = arg2.toIntDefault();
         }
-        if (max == Integer.MIN_VALUE) {
+        if (F.isNotPresent(max)) {
           return F.NIL;
         }
         return F.$Repeated(arg1, defaultMin, max, engine);

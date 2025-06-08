@@ -1590,7 +1590,7 @@ public class StructureFunctions {
         }
 
         headDepth = depth.toIntDefault();
-        if (headDepth == Integer.MIN_VALUE) {
+        if (F.isNotPresent(headDepth)) {
           return F.NIL;
         }
       }

@@ -56,7 +56,7 @@ public final class Sequence extends ListSizeSequence {
         IInteger integerValue = (IInteger) element;
         int num = integerValue.toIntDefault();
         if (num < 0) {
-          if (num == Integer.MIN_VALUE) {
+          if (F.isNotPresent(num)) {
             // default value for overflow from toIntDefault()
             // Cannot <messageShortcut> positions `1` through `2` in `3`.
             Errors.printMessage(ast.topHead(), messageShortcut, F.list(F.C1, ast.arg2(), ast),
@@ -91,7 +91,7 @@ public final class Sequence extends ListSizeSequence {
   private static int getASTFrom(final IAST lst) {
     if (lst.size() > 1 && (lst.arg1().isReal())) {
       int sequ1 = lst.arg1().toIntDefault();
-      if (sequ1 == Integer.MIN_VALUE) {
+      if (F.isNotPresent(sequ1)) {
         // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
         // `1`.
         throw new ArgumentTypeException("seqs", F.list(lst, F.C1));
@@ -104,7 +104,7 @@ public final class Sequence extends ListSizeSequence {
   private static int getASTTo(final IAST lst) {
     if ((lst.isAST1()) && (lst.arg1().isReal())) {
       int sequ1 = lst.arg1().toIntDefault();
-      if (sequ1 == Integer.MIN_VALUE) {
+      if (F.isNotPresent(sequ1)) {
         // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
         // `1`.
         throw new ArgumentTypeException("seqs", F.list(lst, F.C1));
@@ -113,7 +113,7 @@ public final class Sequence extends ListSizeSequence {
     }
     if ((lst.size() > 2) && lst.arg2().isReal()) {
       int sequ2 = lst.arg2().toIntDefault();
-      if (sequ2 == Integer.MIN_VALUE) {
+      if (F.isNotPresent(sequ2)) {
         // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
         // `1`.
         throw new ArgumentTypeException("seqs", F.list(lst, F.C2));
@@ -128,7 +128,7 @@ public final class Sequence extends ListSizeSequence {
   private static int getASTStep(final IAST lst) {
     if ((lst.size() > 3) && lst.arg3().isReal()) {
       int sequ3 = lst.arg3().toIntDefault();
-      if (sequ3 == Integer.MIN_VALUE) {
+      if (F.isNotPresent(sequ3)) {
         // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at position `2` in
         // `1`.
         throw new ArgumentTypeException("seqs", F.list(lst, F.C3));

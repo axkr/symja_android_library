@@ -226,7 +226,8 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
    * biggest element is bigger than the largest element of the other multiset, or the 2.nd-biggest
    * if the biggest elements are equal, or the 3.rd biggest, and so on.
    *
-   * @return <0/0/>0 if this is smaller than/equal to /bigger than <code>other</code>.
+   * @return an integer value <code>less than/greater than/0</code> if this is
+   *         <code>smaller than/equal to/bigger than other</code>.
    */
   @Override
   public int compareTo(SortedMultiset<T> other) {
@@ -242,16 +243,18 @@ public class SortedMultiset_BottomUp<T extends Comparable<T>> extends TreeMap<T,
       T otherKey = (otherEntry != null) ? otherEntry.getKey() : null;
       if (myKey != null && otherKey != null) {
         int keyCmp = myKey.compareTo(otherKey);
-        if (keyCmp != 0)
+        if (keyCmp != 0) {
           return keyCmp;
+        }
         // else keys are equal...
         Integer myMultiplicity = myEntry.getValue();
         Integer otherMultiplicity = otherEntry.getValue();
         int myMult = (myMultiplicity != null) ? myMultiplicity : 0;
         int otherMult = (otherMultiplicity != null) ? otherMultiplicity : 0;
         int multCmp = myMult - otherMult;
-        if (multCmp != 0)
+        if (multCmp != 0) {
           return multCmp;
+        }
       } else if (myKey != null && otherKey == null) {
         return Integer.MAX_VALUE;
       } else if (myKey == null && otherKey != null) {

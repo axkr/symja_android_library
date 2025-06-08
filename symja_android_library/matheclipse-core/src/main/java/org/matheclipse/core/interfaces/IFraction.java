@@ -2,6 +2,7 @@ package org.matheclipse.core.interfaces;
 
 import java.math.BigInteger;
 import org.hipparchus.fraction.BigFraction;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Pair;
 
@@ -101,7 +102,7 @@ public interface IFraction extends IRational {
    * <code>-1 / denominator</code> for a &quot;negative root&quot;
    * 
    * <p>
-   * This method returns the <code>Integer.MAX_VALUE</code> if this fractions numerator unequals
+   * This method returns the {@link Config#INVALID_INT} if this fractions numerator unequals
    * <code>-1</code> or <code>1</code>, or the denominator equals <code>Integer.MAX_VALUE</code>.
    * 
    * @return

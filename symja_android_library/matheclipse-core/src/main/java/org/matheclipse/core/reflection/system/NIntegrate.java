@@ -282,7 +282,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
         }
       }
       maxIterations = options.getOptionMaxIterations(S.MaxIterations);
-      if (maxIterations == Integer.MIN_VALUE) {
+      if (F.isNotPresent(maxIterations)) {
         return F.NIL;
       }
       if (maxIterations < 0) {

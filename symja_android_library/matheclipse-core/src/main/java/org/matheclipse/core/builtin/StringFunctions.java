@@ -425,7 +425,7 @@ public final class StringFunctions {
       }
       // TODO add implementation for sequence specs at arg2
       int n = arg2.toIntDefault();
-      if (n != Integer.MIN_VALUE) {
+      if (F.isPresent(n)) {
         String fileName = null;
         if (arg1.isString()) {
           fileName = arg1.toString();
@@ -714,7 +714,7 @@ public final class StringFunctions {
         return ((IAST) ast.arg1()).mapThread(ast, 1);
       }
       int number = ast.arg1().toIntDefault();
-      if (number != Integer.MIN_VALUE) {
+      if (F.isPresent(number)) {
         String alphabet = LATIN_ALPHABET;
         if (ast.isAST2()) {
           IExpr arg2 = ast.arg2();
@@ -2613,7 +2613,7 @@ public final class StringFunctions {
           IExpr arg2 = ast.arg2();
           if (arg2.isAST(S.UpTo, 2)) {
             int upTo = Validate.checkUpTo((IAST) arg2, engine);
-            if (upTo == Integer.MIN_VALUE) {
+            if (F.isNotPresent(upTo)) {
               return F.NIL;
             }
             upTo = s.length() > upTo ? upTo : s.length();

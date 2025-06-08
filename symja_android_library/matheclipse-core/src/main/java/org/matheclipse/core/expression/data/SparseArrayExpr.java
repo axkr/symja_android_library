@@ -947,7 +947,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         for (int i = 1; i < list.size(); i++) {
           expr = list.get(i);
           int intValue = expr.toIntDefault();
-          if (intValue == Integer.MIN_VALUE) {
+          if (F.isNotPresent(intValue)) {
             return null;
           }
           if (intValue <= 0) {

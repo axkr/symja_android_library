@@ -925,7 +925,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     // }
     long exp = n;
     if (n < 0) {
-      if (n == Long.MIN_VALUE) {
+      if (F.isNotPresent(n)) {
         throw new java.lang.ArithmeticException();
       }
       exp *= -1;
@@ -1000,7 +1000,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       case 4:
         result = F.ZZ(nMin);
         nMin = object.toIntDefault();
-        if (nMin == Integer.MIN_VALUE) {
+        if (F.isNotPresent(nMin)) {
           throw new IndexOutOfBoundsException(
               "SeriesData: Index[" + Integer.valueOf(location) + "] expects machine size integer.");
         }
@@ -1008,7 +1008,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       case 5:
         result = F.ZZ(truncate);
         truncate = object.toIntDefault();
-        if (truncate == Integer.MIN_VALUE) {
+        if (F.isNotPresent(truncate)) {
           throw new IndexOutOfBoundsException(
               "SeriesData: Index[" + Integer.valueOf(location) + "] expects machine size integer.");
         }
@@ -1016,7 +1016,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       case 6:
         result = F.ZZ(denominator);
         denominator = object.toIntDefault();
-        if (denominator == Integer.MIN_VALUE) {
+        if (F.isNotPresent(denominator)) {
           throw new IndexOutOfBoundsException(
               "SeriesData: Index[" + Integer.valueOf(location) + "] expects machine size integer.");
         }

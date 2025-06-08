@@ -366,7 +366,7 @@ public final class NumberTheory {
         }
 
         int xInt = x.toIntDefault();
-        if (xInt != Integer.MIN_VALUE) {
+        if (F.isPresent(xInt)) {
           if (xInt == 0) {
             // http://fungrim.org/entry/a1d2d7/
             return F.BernoulliB(n);
@@ -482,9 +482,9 @@ public final class NumberTheory {
 
     private static IExpr binomialExpr(IExpr n, IExpr k) {
       int ni = n.toIntDefault();
-      if (ni != Integer.MIN_VALUE) {
+      if (F.isPresent(ni)) {
         int ki = k.toIntDefault();
-        if (ki != Integer.MIN_VALUE) {
+        if (F.isPresent(ki)) {
           return binomial(F.ZZ(ni), F.ZZ(ki));
         }
       }
@@ -1857,7 +1857,7 @@ public final class NumberTheory {
         }
         if (arg1.isMathematicalIntegerNonNegative()) {
           int nMax = arg1.toIntDefault();
-          if (nMax != Integer.MIN_VALUE) {
+          if (F.isPresent(nMax)) {
             try {
               IExpr n = arg1;
               ArrayList<IInteger> eulerE = eulerEList(nMax);
@@ -3560,7 +3560,7 @@ public final class NumberTheory {
         }
         if (arg3.isList1() && arg3.first().isReal()) {
           int n = arg3.first().toIntDefault();
-          if (n != Integer.MIN_VALUE) {
+          if (F.isPresent(n)) {
             if (n < 0) {
               // Positive integer expected at position `2` in `1`.
               return Errors.printMessage(S.LinearRecurrence, "intp", F.List(arg3, F.C1), engine);
@@ -3574,13 +3574,13 @@ public final class NumberTheory {
         }
         if (arg3.isList2() && arg3.first().isReal() && arg3.second().isReal()) {
           int nmin = arg3.first().toIntDefault();
-          if (nmin != Integer.MIN_VALUE) {
+          if (F.isPresent(nmin)) {
             if (nmin < 0) {
               // Positive integer expected at position `2` in `1`.
               return Errors.printMessage(S.LinearRecurrence, "intp", F.List(arg3, F.C1), engine);
             }
             int nmax = arg3.second().toIntDefault();
-            if (nmax != Integer.MIN_VALUE) {
+            if (F.isPresent(nmax)) {
               if (nmax < 0) {
                 // Positive integer expected at position `2` in `1`.
                 return Errors.printMessage(S.LinearRecurrence, "intp", F.List(arg3, F.C2), engine);
@@ -4264,7 +4264,7 @@ public final class NumberTheory {
       for (int i = 1; i < ast.size(); i++) {
         IExpr temp = ast.get(i);
         int value = temp.toIntDefault();
-        if (value != Integer.MIN_VALUE) {
+        if (F.isPresent(value)) {
           k[i - 1] = F.ZZ(value);
         } else {
           if (temp.isInteger()) {
@@ -5978,7 +5978,7 @@ public final class NumberTheory {
 
       }
       int n = ast.arg2().toIntDefault();
-      if (n == Integer.MIN_VALUE) {
+      if (F.isNotPresent(n)) {
         // Machine-sized integer expected at position `2` in `1`.
         return Errors.printMessage(S.SquaresR, "pint", F.List(ast.arg2(), F.C2), engine);
       }
@@ -6093,7 +6093,7 @@ public final class NumberTheory {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       long n = ast.arg1().toLongDefault();
-      if (n == Long.MIN_VALUE) {
+      if (F.isNotPresent(n)) {
         // Machine-sized integer expected at position `2` in `1`.
         return Errors.printMessage(S.PowersRepresentations, "pint", F.List(ast.arg1(), F.C1),
             engine);
@@ -6896,31 +6896,29 @@ public final class NumberTheory {
   /**
    * Gives the multinomial coefficient <code>(k0+k1+...)!/(k0! * k1! ...)</code>.
    *
-   * @param kArray the non-negative coefficients
+   * @param kArray non-negative coefficients
    * @return
    */
   public static IInteger multinomial(IInteger[] kArray) {
+    if (kArray == null || kArray.length == 0) {
+      return F.C1;
+    }
     IInteger n = F.C0;
     for (int i = 0; i < kArray.length; i++) {
       n = n.add(kArray[i]);
     }
     int ni = n.toIntDefault();
-    if (ni == Integer.MIN_VALUE) {
+    if (F.isNotPresent(ni)) {
       return null;
     }
     int[] kIntArray = new int[kArray.length];
-    boolean evaled = true;
     for (int i = 0; i < kArray.length; i++) {
       kIntArray[i] = kArray[i].toIntDefault();
-      if (kIntArray[i] == Integer.MIN_VALUE) {
-        evaled = false;
-        break;
+      if (F.isNotPresent(kIntArray[i])) {
+        return null;
       }
     }
-    if (evaled) {
-      return multinomial(kIntArray, ni);
-    }
-    return null;
+    return multinomial(kIntArray, ni);
   }
 
   /**

@@ -978,7 +978,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
         return inverse();
       }
       long n = that.toLongDefault();
-      if (n != Long.MIN_VALUE) {
+      if (F.isPresent(n)) {
         return power(n);
       }
     }

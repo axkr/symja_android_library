@@ -644,7 +644,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     // public IExpr evaluate(EvalEngine engine) {
     // if (arg1.isNumber() && arg2.isInteger()) {
     // long exp = arg2.toLongDefault();
-    // if (exp != Long.MIN_VALUE) {
+    // if (F.isPresent(exp)) {
     // // System.out.println("Power: " + arg1 + "^" + exp);
     // if (exp > 0) {
     // if (exp == 1 || arg1.isZero() || arg1.isOne()) {

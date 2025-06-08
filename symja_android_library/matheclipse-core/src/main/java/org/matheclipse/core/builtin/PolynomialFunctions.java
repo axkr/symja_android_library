@@ -1339,7 +1339,7 @@ public class PolynomialFunctions {
       IExpr z = ast.arg2();
 
       int degree = n.toIntDefault();
-      if (degree != Integer.MIN_VALUE) {
+      if (F.isPresent(degree)) {
         if (degree < 0) {
           degree *= -1;
         }
@@ -1442,7 +1442,7 @@ public class PolynomialFunctions {
       IExpr z = ast.arg2();
 
       int degree = n.toIntDefault();
-      if (degree != Integer.MIN_VALUE) {
+      if (F.isPresent(degree)) {
         if (degree < 0) {
           if (degree == (-1)) {
             return F.C0;
@@ -1922,7 +1922,7 @@ public class PolynomialFunctions {
         }
         return jacobiP(ni, a, b, z, engine);
       }
-      if (ni != Integer.MIN_VALUE && a.isInteger() && a.isPositive()) {
+      if (F.isPresent(ni) && a.isInteger() && a.isPositive()) {
         if (ni == -1) {
           return jacobiP(ni, a, b, z, engine);
         }

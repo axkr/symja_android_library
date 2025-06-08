@@ -1001,7 +1001,7 @@ public class StatisticsFunctions {
         IAST list = (IAST) arg2;
         if (list.size() == 4) {
           dx = list.arg3().toIntDefault();
-          if (dx == Integer.MIN_VALUE) {
+          if (F.isNotPresent(dx)) {
             return F.NIL;
           }
           if (dx < 0) {
@@ -1009,11 +1009,11 @@ public class StatisticsFunctions {
             return Errors.printMessage(ast.topHead(), "step", F.list(list.arg3()), engine);
           }
           xMin = list.arg1().toIntDefault();
-          if (xMin == Integer.MIN_VALUE) {
+          if (F.isNotPresent(xMin)) {
             return F.NIL;
           }
           xMax = list.arg2().toIntDefault();
-          if (xMax == Integer.MIN_VALUE) {
+          if (F.isNotPresent(xMax)) {
             return F.NIL;
           }
           if (xMax <= xMin) {
@@ -1040,7 +1040,7 @@ public class StatisticsFunctions {
         for (int i = 1; i < vector.size(); i++) {
           IExpr temp = vector.get(i);
           int index = -1;
-          if (dx != Integer.MIN_VALUE) {
+          if (F.isPresent(dx)) {
             index = (((IReal) temp).floorFraction()).div(dx).toIntDefault();
             if ((dx > 1) && temp.isInteger() && ((IInteger) temp).mod(dx).isZero()) {
               index--;
@@ -1048,7 +1048,7 @@ public class StatisticsFunctions {
           } else {
             index = S.Floor.of(engine, (((IReal) temp).divide(dxNum))).toIntDefault();
           }
-          if (index == Integer.MIN_VALUE) {
+          if (F.isNotPresent(index)) {
             return F.NIL;
           }
           int binIndex = index - xMin;
@@ -3572,7 +3572,7 @@ public class StatisticsFunctions {
       if (minMax != null) {
         int min = minMax[0].toIntDefault();
         int max = minMax[1].toIntDefault();
-        if (min < max && min != Integer.MIN_VALUE) {
+        if (min < max && F.isPresent(min)) {
           RandomDataGenerator rdg = new RandomDataGenerator();
           int[] vector = rdg.nextDeviates(
               new org.hipparchus.distribution.discrete.UniformIntegerDistribution(min, max), size);
@@ -6778,7 +6778,7 @@ public class StatisticsFunctions {
                   IExpr x = q.isZero() ? a : S.Plus.of(engine, a, F.Times(F.Plus(length, b), q));
                   if (x.isNumIntValue()) {
                     int index = x.toIntDefault();
-                    if (index != Integer.MIN_VALUE) {
+                    if (F.isPresent(index)) {
                       if (index < 1) {
                         index = 1;
                       } else if (index > s.argSize()) {
@@ -6791,7 +6791,7 @@ public class StatisticsFunctions {
                     IReal xi = (IReal) x;
                     int xFloor = xi.floorFraction().toIntDefault();
                     int xCeiling = xi.ceilFraction().toIntDefault();
-                    if (xFloor != Integer.MIN_VALUE && xCeiling != Integer.MIN_VALUE) {
+                    if (F.isPresent(xFloor) && F.isPresent(xCeiling)) {
                       if (xFloor < 1) {
                         xFloor = 1;
                       }

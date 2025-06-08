@@ -335,7 +335,7 @@ public class Expr {
       return F.C0;
     }
     // int n = nExpr.toIntDefault();
-    // if (n == Integer.MIN_VALUE) {
+    // if (F.isNotPresent(n )) {
     // // Machine-sized integer expected at position `2` in `1`.
     // IOFunctions.printMessage(S.Coefficient, "intm", F.List(nExpr, F.C3), EvalEngine.get());
     // return F.NIL;

@@ -28,6 +28,7 @@ import org.logicng.transformations.cnf.BDDCNFTransformation;
 import org.logicng.transformations.cnf.CNFFactorization;
 import org.logicng.transformations.dnf.DNFFactorization;
 import org.logicng.transformations.simplification.AdvancedSimplifier;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -2233,10 +2234,10 @@ public final class BooleanFunctions {
         return compareGreaterIntervalTernary(a0.lower(), a0.upper(), a1.lower(), a1.upper());
       } else if (a0.isQuantity() && a1.isQuantity()) {
         int comp = quantityCompareTo((IQuantity) a0, (IQuantity) a1);
-        if (comp != Integer.MIN_VALUE) {
-          return comp > 0 ? IExpr.COMPARE_TERNARY.TRUE : IExpr.COMPARE_TERNARY.FALSE;
+        if (F.isNotPresent(comp)) {
+          return IExpr.COMPARE_TERNARY.UNDECIDABLE;
         }
-        return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+        return comp > 0 ? IExpr.COMPARE_TERNARY.TRUE : IExpr.COMPARE_TERNARY.FALSE;
       }
 
       if (a0.equals(a1) && a0.isRealResult() && a1.isRealResult() && !a0.isList()) {
@@ -2585,10 +2586,10 @@ public final class BooleanFunctions {
         return IExpr.COMPARE_TERNARY.TRUE;
       } else if (a0.isQuantity() && a1.isQuantity()) {
         int comp = quantityCompareTo((IQuantity) a0, (IQuantity) a1);
-        if (comp != Integer.MIN_VALUE) {
-          return comp >= 0 ? IExpr.COMPARE_TERNARY.TRUE : IExpr.COMPARE_TERNARY.FALSE;
+        if (F.isNotPresent(comp)) {
+          return IExpr.COMPARE_TERNARY.UNDECIDABLE;
         }
-        return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+        return comp >= 0 ? IExpr.COMPARE_TERNARY.TRUE : IExpr.COMPARE_TERNARY.FALSE;
       }
       return super.compareTernary(a0, a1);
     }
@@ -2977,10 +2978,10 @@ public final class BooleanFunctions {
         return IExpr.COMPARE_TERNARY.TRUE;
       } else if (a0.isQuantity() && a1.isQuantity()) {
         int comp = quantityCompareTo((IQuantity) a0, (IQuantity) a1);
-        if (comp != Integer.MIN_VALUE) {
-          return comp <= 0 ? IExpr.COMPARE_TERNARY.TRUE : IExpr.COMPARE_TERNARY.FALSE;
+        if (F.isNotPresent(comp)) {
+          return IExpr.COMPARE_TERNARY.UNDECIDABLE;
         }
-        return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+        return comp <= 0 ? IExpr.COMPARE_TERNARY.TRUE : IExpr.COMPARE_TERNARY.FALSE;
       }
       // swap arguments
       return super.compareTernary(a1, a0);
@@ -5020,12 +5021,12 @@ public final class BooleanFunctions {
 
   /**
    * If the <code>IQuantity#compareTo()</code> method could be executed because the same unit types
-   * could be used for comparison, return the result <code>-1, 0 or 1</code> otherwise return <code>
-   * Integer.MIN_VALUE</code>
+   * could be used for comparison, return the result <code>-1, 0 or 1</code> otherwise return
+   * {@link Config#INVALID_INT}.
    *
    * @param q1
    * @param q2
-   * @return <code>Integer.MIN_VALUE</code> if the <code>compareTo()</code> method could not be
+   * @return {@link Config#INVALID_INT} if the <code>compareTo()</code> method could not be
    *         executed, because of different unit types
    */
   private static int quantityCompareTo(IQuantity q1, IQuantity q2) {
@@ -5041,7 +5042,7 @@ public final class BooleanFunctions {
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
     }
-    return Integer.MIN_VALUE;
+    return Config.INVALID_INT;
   }
 
   /**

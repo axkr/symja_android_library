@@ -71,7 +71,7 @@ public class PolynomialHomogenization {
       if (expr.isAST()) {
         if (expr.isPower()) {
           int exponent = expr.exponent().toIntDefault();
-          if (exponent != Integer.MIN_VALUE) {
+          if (F.isPresent(exponent)) {
             IExpr base = expr.base();
             if (base.isAST1()) {
               addStatistics((IAST) base, exponent);
@@ -123,7 +123,7 @@ public class PolynomialHomogenization {
           if (rewriteToSin && x.base().isCos()) {
             // rewrite to Sin expression
             int exponent = x.exponent().toIntDefault();
-            if (exponent != Integer.MIN_VALUE && (exponent % 2) == 0) {
+            if (F.isPresent(exponent) && (exponent % 2) == 0) {
               IAST cosAST = (IAST) x.base();
               IExpr cosArg = cosAST.arg1();
               if (exponent > 2) {
@@ -136,7 +136,7 @@ public class PolynomialHomogenization {
           if (!rewriteToSin && x.base().isSin()) {
             // rewrite to Cos expression
             int exponent = x.exponent().toIntDefault();
-            if (exponent != Integer.MIN_VALUE && (exponent % 2) == 0) {
+            if (F.isPresent(exponent) && (exponent % 2) == 0) {
               IAST sinAST = (IAST) x.base();
               IExpr sinArg = sinAST.arg1();
               if (exponent > 2) {
@@ -444,7 +444,7 @@ public class PolynomialHomogenization {
     if (first.isComplex() && ((IComplex) first).reRational().isZero()) {
       IRational pureImPart = ((IComplex) first).imRational();
       int exponent = pureImPart.toIntDefault();
-      if (exponent == Integer.MIN_VALUE) {
+      if (F.isNotPresent(exponent)) {
         replaceExpressionLCM(ast, F.C1);
         return;
       } else if (exponent > 0) {
@@ -456,7 +456,7 @@ public class PolynomialHomogenization {
       return;
     }
     int exponent = first.toIntDefault();
-    if (exponent == Integer.MIN_VALUE) {
+    if (F.isNotPresent(exponent)) {
       replaceExpressionLCM(ast, F.C1);
       return;
     } else if (exponent > 0 || base.isNumericFunction()) {
@@ -532,7 +532,7 @@ public class PolynomialHomogenization {
     if (first.isComplex() && ((IComplex) first).reRational().isZero()) {
       IRational imPart = ((IComplex) first).imRational();
       int exponent = imPart.toIntDefault();
-      if (exponent == Integer.MIN_VALUE) {
+      if (F.isNotPresent(exponent)) {
         return replaceExpression(ast).orElse(ast);
       } else if (exponent > 0) {
         IASTMutable restExponent = ((IAST) exp).setAtCopy(1, F.CI);
@@ -541,7 +541,7 @@ public class PolynomialHomogenization {
       return replaceExpression(ast);
     }
     int exponent = first.toIntDefault();
-    if (exponent == Integer.MIN_VALUE) {
+    if (F.isNotPresent(exponent)) {
       return replaceExpression(ast);
     }
     if (exponent > 0 || base.isNumericFunction()) {
@@ -609,7 +609,7 @@ public class PolynomialHomogenization {
       if (rat != null) {
         IInteger intExp = rat.multiply(lcm).numerator();
         int exponent = intExp.toIntDefault();
-        if (exponent != Integer.MIN_VALUE) {
+        if (F.isPresent(exponent)) {
           if (exponent == 1) {
             return symbol;
           }

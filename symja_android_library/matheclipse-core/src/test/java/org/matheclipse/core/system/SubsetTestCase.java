@@ -22,14 +22,21 @@ public class SubsetTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSubsetReplace() {
+    // message SubsetReplace: List expected at position 1 in
+    // SubsetReplace(1/2^(2-I*2),{}->10,1/Sqrt(-1+I)).
+    check("SubsetReplace(1/2^(2-I*2),{}->10,1/Sqrt(-1+I))", //
+        "SubsetReplace(1/2^(2-I*2),{}->10,1/Sqrt(-1+I))");
+    check("SubsetReplace(ComplexInfinity, {3, 3} :> Splice({x, x, x}))", //
+        "SubsetReplace(ComplexInfinity,{3,3}:>Splice({x,x,x}))");
+
+
     check("SubsetReplace({3.14159},ComplexInfinity->True)", //
         "{3.14159}");
     check("SubsetReplace({a},{1}->True)", //
         "{a}");
     check("SubsetReplace({a},1->True)", //
         "SubsetReplace({a},1->True)");
-    check("SubsetReplace(ComplexInfinity, {3, 3} :> Splice({x, x, x}))", //
-        "ComplexInfinity");
+
     // TODO add specialized matcher for pattern sequences
     check("SubsetReplace({1, a, 2, b, 3}, {__Integer} :> X)", //
         "{X,a,X,b,X}");

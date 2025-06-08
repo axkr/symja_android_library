@@ -60,7 +60,7 @@ public class RealDigitsResult {
 
   private void digits(Apfloat a, int radix, long length, long startDigit) {
     a = a.toRadix(radix);
-    if (length == Long.MIN_VALUE) {
+    if (F.isNotPresent(length)) {
       if (a.isZero()) {
         length = 1;
       } else if (a.precision() == Apfloat.INFINITE) {
@@ -75,7 +75,7 @@ public class RealDigitsResult {
         throw new ASTElementLimitExceeded(length);
       }
       digitsList = F.constantArray(F.C0, (int) length);
-      numberOfLeftDigits = startDigit == Long.MIN_VALUE ? 1 : startDigit + 1;
+      numberOfLeftDigits = F.isNotPresent(startDigit) ? 1 : startDigit + 1;
       return;
     }
     long scale = a.scale();
@@ -86,7 +86,7 @@ public class RealDigitsResult {
       throw new ASTElementLimitExceeded(lengthFinal);
     }
     digitsList = F.ListAlloc((int) lengthFinal);
-    if (startDigit != Long.MIN_VALUE) {
+    if (F.isPresent(startDigit)) {
       long adjust = scale - 1;
       if (adjust < startDigit) {
         // Pad beginning of list with zeros

@@ -5823,6 +5823,53 @@ public class F extends S {
     return NIL;
   }
 
+  /**
+   * Check if the given integer value is equal to {@link Config#INVALID_INT}. Use this predicate in
+   * a conditional expression after method {@link IExpr#toIntDefault()} to check if the Java
+   * <code>int</code> value is not in the range <code>Integer.MIN_VALUE+1, Integer.MAX_VALUE</code>
+   *
+   * @param value the integer value to be checked
+   * @return <code>true</code> if the given integer value is equal to {@link Config#INVALID_INT},
+   *         otherwise <code>false</code>
+   * @see IExpr#toIntDefault()
+   */
+  public static boolean isNotPresent(int value) {
+    return value == Config.INVALID_INT;
+  }
+
+  /**
+   * Check if the given long value is equal to {@link Config#INVALID_LONG}. Use this predicate in a
+   * conditional expression after method {@link IExpr#toLongDefault()} to check if the Java
+   * <code>long</code> value is not in the range <code>Long.MIN_VALUE+1, Long.MAX_VALUE</code>
+   *
+   * @param value the long value to be checked
+   * @return <code>true</code> if the given long value is equal to {@link Config#INVALID_LONG},
+   *         otherwise <code>false</code>
+   * @see IExpr#toLongDefault()
+   */
+  public static boolean isNotPresent(long value) {
+    return value == Config.INVALID_LONG;
+  }
+
+  /**
+   * Check if the given integer value is valid, i.e., not equal to {@link Config#INVALID_INT}. Use
+   * this predicate in a conditional expression after method {@link IExpr#toIntDefault()} to check
+   * if the Java <code>int</code> value is in the range
+   * <code>Integer.MIN_VALUE+1, Integer.MAX_VALUE</code>
+   * 
+   * @param value the integer value to be checked
+   * @return <code>true</code> if the given integer value is not equal to
+   *         {@link Config#INVALID_INT}, otherwise <code>false</code>
+   * @see IExpr#toIntDefault()
+   */
+  public static boolean isPresent(int value) {
+    return value != Config.INVALID_INT;
+  }
+
+  public static boolean isPresent(long value) {
+    return value != Config.INVALID_LONG;
+  }
+
   public static boolean isNumEqualInteger(double value, IInteger ii) throws ArithmeticException {
     return isZero(value - ii.doubleValue(), Config.DOUBLE_TOLERANCE);
   }
@@ -10647,7 +10694,7 @@ public class F extends S {
 
   /**
    * Converts this number to an <code>int</code> value; this method returns
-   * <code>Integer.MIN_VALUE</code>, if the value of this integer isn't in the range
+   * <code>Config.INVALID_INT</code>, if the value of this integer isn't in the range
    * {@link java.lang.Integer.MIN_VALUE}+1 to {@link java.lang.Integer.MAX_VALUE}-1 or the
    * expression is not convertible to the <code>int</code> range.
    *
@@ -10655,7 +10702,7 @@ public class F extends S {
    *     </code> or <code>Integer.MIN_VALUE</code> if this expression cannot be converted.
    */
   public static int toIntDefault(double value) {
-    return toIntDefault(value, java.lang.Integer.MIN_VALUE);
+    return toIntDefault(value, Config.INVALID_INT);
   }
 
   /**
@@ -11475,6 +11522,5 @@ public class F extends S {
     list.addEvalFlags(IAST.SEQUENCE_FLATTENED);
     return NIL;
   }
-
 
 }

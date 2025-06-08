@@ -756,7 +756,7 @@ public class TensorFunctions {
             n = sn.toIntDefault();
           }
         }
-        if (n == Integer.MIN_VALUE) {
+        if (F.isNotPresent(n)) {
           return F.NIL;
         }
         return F.tensorList(n, indexes);

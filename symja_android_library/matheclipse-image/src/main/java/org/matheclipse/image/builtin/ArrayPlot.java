@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -26,18 +27,22 @@ public class ArrayPlot extends AbstractEvaluator {
     IExpr arg1 = ast.arg1();
     int[] dims = arg1.isMatrix();
     if ((ast.size() == 2) && dims != null) {
+      try {
+        arg1 = arg1.normal(false); // convert to normal form especially for ASTRealMatrix,
+        // ASTRealVector, SparseArray etc.
+        BufferedImage buffer = arrayPlot((IAST) arg1);
+        if (buffer != null) {
+          return new ImageExpr(buffer, null);
+        }
 
-      arg1 = arg1.normal(false); // convert to normal form especially for ASTRealMatrix,
-      // ASTRealVector, SparseArray etc.
-      BufferedImage buffer = arrayPlot((IAST) arg1);
-      if (buffer != null) {
-        return new ImageExpr(buffer, null);
+      } catch (RuntimeException rex) {
+        return Errors.printMessage(S.ArrayPlot, rex);
       }
     }
     return F.NIL;
   }
 
-  public static BufferedImage arrayPlot(IAST matrix) {
+  public static BufferedImage arrayPlot(IAST matrix) throws IllegalArgumentException {
     BufferedImage bufferedImage =
         ImageFormat.toIntARGB(matrix.mapLeaf(S.List, ColorDataGradients.GRAYSCALE));
     VisualImage visualImage = new VisualImage(bufferedImage);

@@ -2148,7 +2148,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
     int lhsPatternSize = lhsPatternAST.size();
     int lhsEvalSize = lhsEvalAST.size();
-    if (lhsPatternSize > lhsEvalSize) {
+    if (lhsPatternSize > lhsEvalSize || lhsPatternSize < 2) {
       return false;
     }
 

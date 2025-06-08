@@ -2179,7 +2179,7 @@ public class EllipticIntegrals {
           return F.C1;
         }
         int r = re.toIntDefault();
-        if (r != Integer.MIN_VALUE) {
+        if (F.isPresent(r)) {
           // KleinInvariantJ(re+I) = 1 and re is Integer
           return F.C1;
         }

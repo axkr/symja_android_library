@@ -1553,7 +1553,7 @@ public class Algebra {
 
       /**
        * Expand <code>(a+b)^i</code> with <code>i</code> an integer number in the range
-       * Integer.MIN_VALUE to Integer.MAX_VALUE.
+       * Integer.MIN_VALUE+1 to Integer.MAX_VALUE.
        *
        * @param powerAST
        * @return
@@ -1581,7 +1581,7 @@ public class Algebra {
           }
 
           int exp = exponent.toIntDefault();
-          if (exp == Integer.MIN_VALUE) {
+          if (exp == Config.INVALID_INT) {
             addExpanded(powerAST);
             return F.NIL;
           }

@@ -387,7 +387,7 @@ public class IntegerFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isInteger()) {
         int power2_K = ast.arg2().toIntDefault();
-        if (power2_K == Integer.MIN_VALUE) {
+        if (F.isNotPresent(power2_K)) {
           return F.NIL;
         }
         IInteger value = (IInteger) ast.arg1();
@@ -421,7 +421,7 @@ public class IntegerFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isInteger()) {
         int power2_K = ast.arg2().toIntDefault();
-        if (power2_K == Integer.MIN_VALUE) {
+        if (F.isNotPresent(power2_K)) {
           return F.NIL;
         }
         IInteger value = (IInteger) ast.arg1();
@@ -430,16 +430,16 @@ public class IntegerFunctions {
         final int bit;
         if (power2_K >= 0) {
           bit = power2_K;
-        } else if (power2_K < 0 && power2_K > Integer.MIN_VALUE) {
+        } else if (power2_K < 0 && power2_K > Config.INVALID_INT) {
           bit = big.bitLength() + power2_K;
           if (bit < 0) {
             return value;
           }
         } else {
-          bit = Integer.MIN_VALUE;
+          bit = Config.INVALID_INT;
         }
         try {
-          if (bit != Integer.MIN_VALUE) {
+          if (bit != Config.INVALID_INT) {
             return F.ZZ(big.flipBit(bit));
           }
         } catch (ArithmeticException ae) {
@@ -467,7 +467,7 @@ public class IntegerFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isInteger()) {
         int power2_K = ast.arg2().toIntDefault();
-        if (power2_K == Integer.MIN_VALUE) {
+        if (F.isNotPresent(power2_K)) {
           return F.NIL;
         }
         IInteger value = (IInteger) ast.arg1();
@@ -1160,7 +1160,7 @@ public class IntegerFunctions {
         }
         IASTAppendable digitsList = F.ListAlloc(str.length());
         for (int i = 0; i < str.length(); i++) {
-          int digit = Integer.MIN_VALUE;
+          int digit = Config.INVALID_INT;
           char ch = str.charAt(i);
           if (ch >= '0' && ch <= '9') {
             digit = Character.digit(ch, radix);
@@ -1169,7 +1169,7 @@ public class IntegerFunctions {
           } else {
             return F.NIL;
           }
-          if (digit == Integer.MIN_VALUE) {
+          if (digit == Config.INVALID_INT) {
             return F.NIL;
           }
           digitsList.append(digit);
@@ -1542,7 +1542,7 @@ public class IntegerFunctions {
         return list.mapThread(ast.setAtCopy(2, F.Slot1), 2);
       }
       long n = ast.arg2().toLongDefault();
-      if (n != Long.MIN_VALUE) {
+      if (F.isPresent(n)) {
         IExpr x = ast.arg1();
         int base = 10;
         if (ast.isAST3()) {
@@ -1987,19 +1987,19 @@ public class IntegerFunctions {
           }
           if (ast.argSize() >= 3) {
             length = ast.arg3().toLongDefault();
-            if (length == Long.MIN_VALUE) {
+            if (F.isNotPresent(length)) {
               return F.NIL;
             }
             if (ast.argSize() == 4) {
               startDigit = ast.arg4().toLongDefault();
-              if (startDigit == Long.MIN_VALUE) {
+              if (F.isNotPresent(startDigit)) {
                 return F.NIL;
               }
             }
           }
         }
 
-        if (length != Long.MIN_VALUE && length < 0) {
+        if (length < 0 && F.isPresent(length)) {
           // Non-negative machine-sized integer expected at position `2` in `1`
           return Errors.printMessage(ast.topHead(), "intnm", F.list(F.C3, ast.arg3()), engine);
         }
@@ -2191,7 +2191,7 @@ public class IntegerFunctions {
     if (arg1.isReal()) {
       number = (IReal) arg1;
     } else {
-      if (length != Long.MIN_VALUE) {
+      if (F.isPresent(length)) {
         long precision = length + Math.abs(startDigit);
         if (precision <= 0) {
           precision = 1;
@@ -2213,8 +2213,7 @@ public class IntegerFunctions {
       Apfloat apfloat;
       if (realNumber.isInteger()) {
         apfloat = new Apint(((IInteger) realNumber).toBigNumerator());
-      } else if (realNumber.isFraction() && length == Long.MIN_VALUE
-          && startDigit == Long.MIN_VALUE) {
+      } else if (realNumber.isFraction() && F.isNotPresent(length) && F.isNotPresent(startDigit)) {
         Apint numer = new Apint(((IFraction) realNumber).toBigNumerator());
         Apint denom = new Apint(((IFraction) realNumber).toBigDenominator());
         Aprational aprational = new Aprational(numer, denom);

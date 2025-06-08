@@ -12,6 +12,8 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
 import java.math.RoundingMode;
+import org.apfloat.LossOfPrecisionException;
+import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.eval.Errors;
@@ -143,7 +145,7 @@ public class BesselFunctions {
         return F.Sinc(F.Times(n, F.Pi));
       }
       int ni = n.toIntDefault();
-      if (ni != Integer.MIN_VALUE) {
+      if (F.isPresent(ni)) {
         if (ni >= 0) {
           return F.BesselJ(n, z);
         } else {
@@ -489,14 +491,16 @@ public class BesselFunctions {
     }
 
     private static IExpr besselJ(IExpr n, IExpr z, boolean numericMode) {
-      final int order = n.toIntDefault();
       if (z.isZero()) {
         if (n.isZero()) {
           // (0, 0)
           return F.C1;
         }
-        if (n.isIntegerResult() || order != Integer.MIN_VALUE) {
+        if (n.isMathematicalIntegerNegative() || n.isMathematicalIntegerNonNegative()) {
           return F.C0;
+        }
+        if (F.isNotPresent(n.toIntDefault())) {
+          return F.NIL;
         }
 
         IExpr a = n.re();
@@ -520,7 +524,7 @@ public class BesselFunctions {
       // }
       // }
 
-      if (n.isInteger() || order != Integer.MIN_VALUE) {
+      if (n.isInteger()) {
         if (n.isNegative()) {
           // (-n,z) => (-1)^n*BesselJ(n,z)
           return F.Times(F.Power(F.CN1, n), F.BesselJ(n.negate(), z));
@@ -554,6 +558,9 @@ public class BesselFunctions {
             if (res.isNumber()) {
               return res;
             }
+          } catch (LossOfPrecisionException lpe) {
+            // Complete loss of accurate digits (apfloat).
+            return Errors.printMessage(S.HankelH1, "zzapfloatcld", F.List());
           } catch (org.apfloat.OverflowException ofe) {
             // Overflow occurred in computation.
             return Errors.printMessage(S.BesselJ, "ovfl", F.List());
@@ -1100,8 +1107,11 @@ public class BesselFunctions {
             // BesselJ(n,z)+I*BesselY(n,z)
             return besselJ.plus(F.CI.multiply(besselY));
           }
-        } catch (org.apfloat.OverflowException ofe) {
-          // Overflow occurred in computation.
+        } catch (LossOfPrecisionException lpe) {
+          // Complete loss of accurate digits (apfloat).
+          return Errors.printMessage(S.HankelH1, "zzapfloatcld", F.List());
+        } catch (OverflowException ofe) {
+          // Overflow occurred in apfloat computation.
           return Errors.printMessage(S.HankelH1, "ovfl", F.List());
         }
         // }
@@ -1173,6 +1183,9 @@ public class BesselFunctions {
             // BesselJ(n,z)-I*BesselY(n,z)
             return besselJ.plus(F.CNI.multiply(besselY));
           }
+        } catch (LossOfPrecisionException lpe) {
+          // Complete loss of accurate digits (apfloat).
+          return Errors.printMessage(S.HankelH1, "zzapfloatcld", F.List());
         } catch (org.apfloat.OverflowException ofe) {
           // Overflow occurred in computation.
           return Errors.printMessage(S.HankelH2, "ovfl", F.List());
@@ -1705,7 +1718,7 @@ public class BesselFunctions {
       }
 
       int ni = n.toIntDefault();
-      if (ni != Integer.MIN_VALUE) {
+      if (F.isPresent(ni)) {
         // https://dlmf.nist.gov/11.10#vi
         if (ni > 0) {
           // -StruveH(n,z)+Sum(Gamma(k+1/2)/((z/2)^(1+2*k-n)*Gamma(-k+n+1/2)),{k,0,Floor(1/2*(-1+n))})/Pi

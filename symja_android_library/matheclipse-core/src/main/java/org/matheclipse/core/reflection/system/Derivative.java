@@ -268,7 +268,7 @@ public class Derivative extends AbstractFunctionEvaluator {
       } else {
         int ni = n.toIntDefault();
         if (ni < 0) {
-          if (ni == Integer.MIN_VALUE) {
+          if (F.isNotPresent(ni)) {
             list.append(F.list(symbol, n));
           } else {
             return F.NIL;

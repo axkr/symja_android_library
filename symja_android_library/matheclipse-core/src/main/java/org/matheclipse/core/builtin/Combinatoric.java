@@ -918,7 +918,7 @@ public final class Combinatoric {
     private static IExpr frobeniusPartition(final IAST ast, EvalEngine engine) {
       if (ast.arg3().isNonEmptyList() && ast.arg1().isInteger()) {
         try {
-          int[] listInt = Validate.checkListOfInts(ast, ast.arg3(), Integer.MIN_VALUE,
+          int[] listInt = Validate.checkListOfInts(ast, ast.arg3(), Config.INVALID_INT,
               Integer.MAX_VALUE, engine);
           if (listInt != null) {
             IInteger lowerLimitOfCoins = F.C0;
@@ -993,7 +993,7 @@ public final class Combinatoric {
         IASTAppendable list = F.ListAlloc();
         for (int i = frobeniusSolution.length - 1; i >= 0; i--) {
           int counter = frobeniusSolution[i].toIntDefault();
-          if (counter == Integer.MIN_VALUE) {
+          if (F.isNotPresent(counter)) {
             return false;
           }
           if (counter > 0) {
@@ -1478,7 +1478,7 @@ public final class Combinatoric {
         IAST list = (IAST) cyclesMainList.get(j);
         for (int i = 1; i < list.size(); i++) {
           int fromPosition = list.get(i).toIntDefault();
-          if (fromPosition == Integer.MIN_VALUE) {
+          if (F.isNotPresent(fromPosition)) {
             return F.NIL;
           }
           if (fromPosition > list1.argSize()) {
@@ -1493,7 +1493,7 @@ public final class Combinatoric {
           } else {
             toPosition = list.arg1().toIntDefault();
           }
-          if (toPosition == Integer.MIN_VALUE) {
+          if (F.isNotPresent(toPosition)) {
             return F.NIL;
           }
           if (toPosition > list1.argSize()) {
@@ -2589,11 +2589,10 @@ public final class Combinatoric {
           if (arg2 != S.All && !arg2.isInfinity()) {
             if (arg2.isInteger()) {
               n = arg2.toIntDefault();
-              if (n > Integer.MIN_VALUE) {
-                level = new SetSpecification(0, n > f.argSize() ? f.argSize() : n);
-              } else {
+              if (F.isNotPresent(n)) {
                 return F.NIL;
               }
+              level = new SetSpecification(0, n > f.argSize() ? f.argSize() : n);
             } else {
               level = new SetSpecification(arg2);
             }
@@ -2622,7 +2621,7 @@ public final class Combinatoric {
           IExpr arg3 = ast.arg3();
           if (arg3.isList1()) {
             int s = arg3.first().toIntDefault();
-            if (s != Integer.MIN_VALUE) {
+            if (F.isPresent(s)) {
               if (s < 0) {
                 if (result.argSize() >= -s) {
                   return F.List(result.get(result.argSize() + s + 1));
@@ -2639,7 +2638,7 @@ public final class Combinatoric {
           } else if (arg3.isList2()) {
             int s1 = arg3.first().toIntDefault();
             int s2 = arg3.second().toIntDefault();
-            if (s1 != Integer.MIN_VALUE && s2 != Integer.MIN_VALUE) {
+            if (F.isPresent(s1) && F.isPresent(s2)) {
               if (s1 > s2) {
                 return F.CEmptyList;
               }
@@ -2659,7 +2658,7 @@ public final class Combinatoric {
             int s1 = list.arg1().toIntDefault();
             int s2 = list.arg2().toIntDefault();
             int step = list.arg3().toIntDefault();
-            if (s1 != Integer.MIN_VALUE && s2 != Integer.MIN_VALUE && step != Integer.MIN_VALUE) {
+            if (F.isPresent(s1) && F.isPresent(s2) && F.isPresent(step)) {
               if (s1 > s2) {
                 if (step < 0) {
                   if (s2 < 0) {
@@ -2685,7 +2684,7 @@ public final class Combinatoric {
             }
           } else {
             int s = arg3.toIntDefault();
-            if (s != Integer.MIN_VALUE) {
+            if (F.isPresent(s)) {
               if (s < 0) {
                 if (result.argSize() >= -s) {
                   return result.subList(result.argSize() + s + 1);

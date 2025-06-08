@@ -1401,11 +1401,11 @@ public class SeriesFunctions {
           try {
             IAST order = (IAST) list.arg3();
             final int m = order.arg1().toIntDefault();
-            if (m == Integer.MIN_VALUE) {
+            if (F.isNotPresent(m)) {
               return F.NIL;
             }
             final int n = order.arg2().toIntDefault();
-            if (n == Integer.MIN_VALUE) {
+            if (F.isNotPresent(n)) {
               return F.NIL;
             }
             if (function.isTimes()) {
@@ -1660,7 +1660,7 @@ public class SeriesFunctions {
           return Errors.printMessage(S.General, "ivar", F.List(x), engine);
         }
         final int n = list.arg3().toIntDefault();
-        if (n == Integer.MIN_VALUE) {
+        if (F.isNotPresent(n)) {
           return F.NIL;
         }
         if (function.isFree(x)) {
@@ -1896,7 +1896,7 @@ public class SeriesFunctions {
             comparator = F.Greater(n, F.C0);
             IAST bin;
             int k = exp.toIntDefault();
-            if (k != Integer.MIN_VALUE) {
+            if (F.isPresent(k)) {
               if (k < 0) {
                 // powerPart = F.Power(x0.negate(), exp);
                 x0 = x0.negate();
@@ -2025,11 +2025,11 @@ public class SeriesFunctions {
         }
         IAST coefficients = (IAST) ast.arg3();
         final int nMin = ast.arg4().toIntDefault();
-        if (nMin == Integer.MIN_VALUE) {
+        if (F.isNotPresent(nMin)) {
           return F.NIL;
         }
         final int truncate = ast.arg5().toIntDefault();
-        if (truncate == Integer.MIN_VALUE) {
+        if (F.isNotPresent(truncate)) {
           return F.NIL;
         }
         if (ast.size() == 7) {
@@ -2283,7 +2283,7 @@ public class SeriesFunctions {
         IExpr timesArg = timesAST.get(i);
         if (timesArg.isPower()) {
           int exp = timesArg.exponent().toIntDefault();
-          if (exp != Integer.MIN_VALUE) {
+          if (F.isPresent(exp)) {
             if (exp == -1) {
               // arg1.divide(arg2.base())
               arg = seriesDataRecursive(timesArg.base(), x, x0, ni, engine);
@@ -2354,7 +2354,7 @@ public class SeriesFunctions {
         if (rat.isPositive()) {
           int numerator = rat.numerator().toIntDefault();
           int denominator = rat.denominator().toIntDefault();
-          if (denominator != Integer.MIN_VALUE) {
+          if (F.isPresent(denominator)) {
             ASTSeriesData temp =
                 seriesDataRecursive(F.Power(base, x), x, x0, n * denominator, engine);
             if (temp != null) {
@@ -2377,11 +2377,12 @@ public class SeriesFunctions {
       }
     }
     int exp = exponent.toIntDefault();
-    if (exp != Integer.MIN_VALUE) {
-      ASTSeriesData series = seriesDataRecursive(base, x, x0, n, engine);
-      if (series != null) {
-        return series.powerSeries(exp);
-      }
+    if (F.isNotPresent(exp)) {
+      return null;
+    }
+    ASTSeriesData series = seriesDataRecursive(base, x, x0, n, engine);
+    if (series != null) {
+      return series.powerSeries(exp);
     }
     return null;
   }
@@ -2406,7 +2407,7 @@ public class SeriesFunctions {
       }
       IExpr exp = entry.getKey();
       int exponent = exp.toIntDefault();
-      if (exponent == Integer.MIN_VALUE) {
+      if (F.isNotPresent(exponent)) {
         rest.append(F.Times(coefficient, F.Power(x, exp)));
       } else {
         series.setCoeff(exponent, coefficient);

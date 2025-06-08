@@ -1862,7 +1862,7 @@ public final class Programming {
       int n = 0;
       if (ast.argSize() == 6) {
         int tmpInt = ast.get(6).toIntDefault();
-        if (tmpInt == Integer.MIN_VALUE) {
+        if (F.isNotPresent(tmpInt)) {
           return F.NIL;
         }
         n = tmpInt;
@@ -4021,7 +4021,7 @@ public final class Programming {
       return spanPart(ast, pos, arg1, arg2, 1, arg1.argSize(), 1, p1, engine);
     } else if (arg2.isReal()) {
       final int indx = ast.get(pos).toIntDefault();
-      if (indx == Integer.MIN_VALUE) {
+      if (F.isNotPresent(indx)) {
         // Part `1` of `2` does not exist.
         return Errors.printMessage(S.Part, "partw", F.list(ast.get(pos), arg1), engine);
       }
@@ -4049,7 +4049,7 @@ public final class Programming {
           final IExpr listArg = list.get(i);
           if (listArg.isReal()) {
             final int indx = listArg.toIntDefault();
-            if (indx == Integer.MIN_VALUE) {
+            if (F.isNotPresent(indx)) {
               // Part `1` of `2` does not exist.
               return Errors.printMessage(S.Part, "partw", F.list(listArg, arg1), engine);
             }
@@ -4123,7 +4123,7 @@ public final class Programming {
         final IExpr listArg = list.get(i);
         if (listArg.isReal()) {
           final int indx = listArg.toIntDefault();
-          if (indx == Integer.MIN_VALUE) {
+          if (F.isNotPresent(indx)) {
             // Part `1` of `2` does not exist.
             return Errors.printMessage(S.Part, "partw", F.list(listArg, arg1), engine);
           }

@@ -2,7 +2,6 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.function.Function;
 import org.hipparchus.complex.Complex;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -81,9 +80,9 @@ public class NSum extends Sum {
       long start = lowerLimit.toLongDefault();
       long end = upperLimit.toLongDefault() + 1;
       boolean preevaluateSymbolic = true;
-      if (start != Long.MIN_VALUE || end != Long.MIN_VALUE) {
+      if (F.isPresent(start) && F.isPresent(end)) {
         long range = end - start;
-        if (range > 10000 || range < 10000) {
+        if (range > 10000 || range < -10000) {
           preevaluateSymbolic = false;
         }
       }
@@ -164,7 +163,7 @@ public class NSum extends Sum {
       IExpr upperLimit, IAST ast) {
     if (upperLimit.isInfinity()) {
       long start = lowerLimit.toLongDefault();
-      if (start != Long.MIN_VALUE) {
+      if (F.isPresent(start)) {
         // if (Summations.isConvergent(ast)) {
 
         LongComplexFunction longComplexFunction = new LongComplexFunction(function, variable);
@@ -183,7 +182,7 @@ public class NSum extends Sum {
     } else {
       long start = lowerLimit.toLongDefault();
       long end = upperLimit.toLongDefault() + 1;
-      if (start != Long.MIN_VALUE && end != Long.MIN_VALUE && start < end) {
+      if (F.isPresent(start) && F.isPresent(end) && start < end) {
 
 
         long range = end + 1 - start;

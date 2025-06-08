@@ -211,7 +211,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     if (options[0].isInteger()) {
       // determine option S.MaxIterations
       maxIterations = options[0].toIntDefault();
-      if (maxIterations == Integer.MIN_VALUE) {
+      if (F.isNotPresent(maxIterations)) {
         return F.NIL;
       }
       if (maxIterations < 0) {

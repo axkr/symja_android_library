@@ -1797,8 +1797,14 @@ public class EvalEngine implements Serializable {
     return defaultValue;
   }
 
+  /**
+   * 
+   * @param expr
+   * @return
+   * @throws ArgumentTypeException
+   */
   public final int evalInt(final IExpr expr) throws ArgumentTypeException {
-    int result = Integer.MIN_VALUE;
+    int result = Config.INVALID_INT;
     if (expr.isReal()) {
       result = expr.toIntDefault();
     }
@@ -1816,7 +1822,7 @@ public class EvalEngine implements Serializable {
         }
       }
     }
-    if (result != Integer.MIN_VALUE) {
+    if (F.isPresent(result)) {
       return result;
     }
     throw new ArgumentTypeException(

@@ -4769,9 +4769,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (isSameHead(S.Span, 3, 4)) {
       int step = 1;
       if (isAST3()) {
-        step = Validate.checkIntType(this, 3, Integer.MIN_VALUE);
+        step = Validate.checkIntType(this, 3, Config.INVALID_INT);
       }
-      int index1 = Validate.checkIntType(this, 1, Integer.MIN_VALUE);
+      int index1 = Validate.checkIntType(this, 1, Config.INVALID_INT);
       int index2;
       if (arg2().equals(S.All)) {
         index2 = size - 1;
@@ -4781,7 +4781,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           index2 = tempIndx;
         }
       } else {
-        index2 = Validate.checkIntType(this, 2, Integer.MIN_VALUE);
+        index2 = Validate.checkIntType(this, 2, Config.INVALID_INT);
       }
 
       int start = index1;
@@ -6138,11 +6138,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       IAST row = (IAST) get(i);
       for (int j = 1; j <= dim[1]; j++) {
         n = row.get(j).toIntDefault();
-        if (n != Integer.MIN_VALUE) {
-          result[i - 1][j - 1] = n;
-        } else {
+        if (F.isNotPresent(n)) {
           return null;
         }
+        result[i - 1][j - 1] = n;
       }
     }
     return result;
@@ -6259,7 +6258,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     int[] result = new int[argSize()];
     for (int i = 1; i < size(); i++) {
       int value = get(i).toIntDefault();
-      if (value == Integer.MIN_VALUE) {
+      if (F.isNotPresent(value)) {
         return null;
       }
       result[i - 1] = value;

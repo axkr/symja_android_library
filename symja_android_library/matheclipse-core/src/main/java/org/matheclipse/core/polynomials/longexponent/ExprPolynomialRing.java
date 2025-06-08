@@ -424,7 +424,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
           if (exponent < 0 && coefficientListMode) {
             return new ExprPolynomial(this, ast);
           }
-          if (exponent == Integer.MIN_VALUE) {
+          if (F.isNotPresent(exponent)) {
             return new ExprPolynomial(this, ast);
           }
           ExpVectorLong e = new ExpVectorLong(vars.argSize(), ix, exponent);

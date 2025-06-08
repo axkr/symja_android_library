@@ -1,6 +1,7 @@
 package org.matheclipse.io.others;
 
 import java.util.SortedMap;
+import org.junit.Test;
 import edu.jas.arith.BigRational;
 import edu.jas.poly.Complex;
 import edu.jas.poly.ComplexRing;
@@ -10,8 +11,6 @@ import edu.jas.poly.TermOrderByName;
 import edu.jas.ufd.FactorComplex;
 import edu.jas.ufd.GCDFactory;
 import edu.jas.ufd.GreatestCommonDivisor;
-import junit.framework.TestCase;
-import org.junit.Test;
 
 public class JASJUnit {
 

@@ -297,7 +297,7 @@ public class HypergeometricFunctions {
         if (v.isFraction() && ((IFraction) v).times(F.C2).isInteger()) {
           IExpr ni = ((IFraction) v).subtract(F.C1D2);
           int n = ni.toIntDefault();
-          if (n != Integer.MIN_VALUE) {
+          if (F.isPresent(n)) {
             IRational halfSubN = F.C1D2.subtract(n);
             if (n >= 0) {
               // https://functions.wolfram.com/GammaBetaErf/ExpIntegralE/03/01/02/0004/
@@ -678,7 +678,7 @@ public class HypergeometricFunctions {
       // GegenbauerC(n, z)
       IExpr z = ast.arg2();
       int nInt = n.toIntDefault();
-      if (nInt > Integer.MIN_VALUE) {
+      if (F.isPresent(nInt)) {
         if (nInt == 0) {
           Errors.printMessage(S.GegenbauerC, "infy", F.List(F.Divide(F.C1, F.C0)), engine);
           return F.CComplexInfinity;
@@ -703,7 +703,7 @@ public class HypergeometricFunctions {
       }
 
       int zInt = z.toIntDefault();
-      if (zInt > Integer.MIN_VALUE) {
+      if (F.isPresent(zInt)) {
         if (zInt == 0) {
           // 2 * (1/v) * Cos(1/2*Pi*v)
           return F.Times(F.C2, F.Power(n, F.CN1), F.Cos(F.Times(C1D2, S.Pi, n)));
@@ -1519,7 +1519,7 @@ public class HypergeometricFunctions {
 
             final int ni = nr.toIntDefault();
             final int mi = mr.toIntDefault();
-            if (ni != Integer.MIN_VALUE && mi != Integer.MIN_VALUE) {
+            if (F.isPresent(ni) && F.isPresent(mi)) {
               return functionExpandHalfHalfZ(ni, mi, z);
             }
           }
@@ -1666,7 +1666,7 @@ public class HypergeometricFunctions {
         if (a.isInteger() && (!b.isNumber() || !z.isNumber())) {
           IInteger ni = (IInteger) a;
           int n = ni.toIntDefault();
-          if (n != Integer.MIN_VALUE) {
+          if (F.isPresent(n)) {
             if (n > 0) {
               return hypergeometzricUPositiveAFixedBZ(ni, b, z, n, engine);
             } else {

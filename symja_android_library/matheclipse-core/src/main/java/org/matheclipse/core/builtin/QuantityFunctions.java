@@ -99,9 +99,9 @@ public class QuantityFunctions {
               int year = list.arg1().toIntDefault();
               int month = list.arg2().toIntDefault();
               int day = list.arg3().toIntDefault();
-              if (year != Integer.MIN_VALUE && //
-                  month != Integer.MIN_VALUE && //
-                  day != Integer.MIN_VALUE) {
+              if (F.isPresent(year) && //
+                  F.isPresent(month) && //
+                  F.isPresent(day)) {
                 return DateObjectExpr.newInstance(LocalDateTime.of(year, month, day, 0, 0));
               }
             }
@@ -163,9 +163,9 @@ public class QuantityFunctions {
               int year = list.arg1().toIntDefault();
               int month = list.arg2().toIntDefault();
               int day = list.arg3().toIntDefault();
-              if (year != Integer.MIN_VALUE && //
-                  month != Integer.MIN_VALUE && //
-                  day != Integer.MIN_VALUE) {
+              if (F.isPresent(year) && //
+                  F.isPresent(month) && //
+                  F.isPresent(day)) {
                 LocalDateTime date = LocalDateTime.of(year, month, day, 0, 0);
                 String dateString =
                     date.format(DateTimeFormatter.ofPattern("EEE dd MMM yyyy HH:mm:ss"));

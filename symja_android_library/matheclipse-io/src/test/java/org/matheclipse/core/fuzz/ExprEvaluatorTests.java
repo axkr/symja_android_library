@@ -445,6 +445,7 @@ public class ExprEvaluatorTests {
     // define after initialization
     Config.FUZZ_TESTING = true;
     Config.MAX_LOOP_COUNT = Short.MAX_VALUE;
+    Config.SHOW_STACKTRACE = true;
   }
 
   public static void main(String[] args) {

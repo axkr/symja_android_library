@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.function.Function;
 import org.hipparchus.fraction.BigFraction;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -698,10 +699,12 @@ public class FractionSym extends AbstractFractionSym {
     return defaultValue;
   }
 
+  @Override
   public int toIntRoot() {
-    return toIntRoot(Integer.MIN_VALUE);
+    return toIntRoot(Config.INVALID_INT);
   }
 
+  @Override
   public int toIntRoot(int defaultValue) {
     if (fDenominator == Integer.MIN_VALUE) {
       return defaultValue;

@@ -374,7 +374,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
         }
       } else if (arg.isPowerInteger() && arg.base().isPlus()) {
         long exponent = arg.exponent().toLongDefault();
-        if (exponent != Long.MIN_VALUE) {
+        if (F.isPresent(exponent)) {
           IExpr negativeExpr = getNormalizedNegativePlus((IAST) arg.base(), true);
           if (negativeExpr.isPresent()) {
             if (timesAppendable.isNIL()) {

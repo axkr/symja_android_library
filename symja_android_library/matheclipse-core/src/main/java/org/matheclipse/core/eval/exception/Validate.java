@@ -2,6 +2,7 @@ package org.matheclipse.core.eval.exception;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.Context;
@@ -148,7 +149,7 @@ public final class Validate {
           for (int i = 1; i < list.size(); i++) {
             expr = list.get(i);
             int intValue = expr.toIntDefault();
-            if (intValue == Integer.MIN_VALUE) {
+            if (F.isNotPresent(intValue)) {
               if (!quiet) {
                 // The first argument `1` of `2` should be a non-empty list of positive integers.
                 Errors.printMessage(ast.topHead(), "coef", F.list(arg, ast.topHead()), engine);
@@ -202,7 +203,7 @@ public final class Validate {
           IExpr expr;
           for (int i = 1; i < list.size(); i++) {
             intValue = list.get(i).toIntDefault();
-            if (intValue == Integer.MIN_VALUE) {
+            if (intValue == Config.INVALID_INT) {
               // List of Java int numbers expected in `1`.
               Errors.printMessage(ast.topHead(), "listofints", F.list(arg), engine);
               return null;
@@ -248,7 +249,7 @@ public final class Validate {
             expr = list.get(i);
             if (expr.isList2()) {
               intValue = expr.first().toIntDefault();
-              if (intValue == Integer.MIN_VALUE) {
+              if (F.isNotPresent(intValue)) {
                 // Sequence specification or a list of sequence specifications expected at position
                 // `1` in `2`.
                 Errors.printMessage(ast.topHead(), "mseqs", F.list(F.ZZ(position), ast), engine);
@@ -257,7 +258,7 @@ public final class Validate {
               result[i - 1][0] = intValue;
 
               intValue = expr.second().toIntDefault();
-              if (intValue == Integer.MIN_VALUE) {
+              if (F.isNotPresent(intValue)) {
                 // Sequence specification or a list of sequence specifications expected at position
                 // `1` in `2`.
                 Errors.printMessage(ast.topHead(), "mseqs", F.list(F.ZZ(position), ast), engine);
@@ -266,7 +267,7 @@ public final class Validate {
               result[i - 1][0] = intValue;
             } else {
               intValue = expr.toIntDefault();
-              if (intValue == Integer.MIN_VALUE) {
+              if (F.isNotPresent(intValue)) {
                 // List of Java int numbers expected in `1`.
                 Errors.printMessage(ast.topHead(), "listofints", F.list(arg), engine);
                 return null;
@@ -365,7 +366,7 @@ public final class Validate {
     }
     if (arg.isReal() || arg.isRational()) {
       int result = arg.toIntDefault();
-      if (result == Integer.MIN_VALUE || startValue > result) {
+      if (F.isNotPresent(result) || startValue > result) {
         // Machine-sized integer expected at position `2` in `1`.
         String str = Errors.getMessage("intm", F.list(ast, F.ZZ(position)), EvalEngine.get());
         throw new ArgumentTypeException(str);
@@ -381,7 +382,7 @@ public final class Validate {
     if (ast.get(pos) instanceof IntegerSym) {
       // IntegerSym always fits into an int number
       int result = ast.get(pos).toIntDefault();
-      if (result == Integer.MIN_VALUE || 0 > result) {
+      if (F.isNotPresent(result) || 0 > result) {
         // Non-negative machine-sized integer expected at position `2` in `1`.
         String str = Errors.getMessage("intnm", F.list(ast, F.ZZ(pos)), EvalEngine.get());
         throw new ArgumentTypeException(str);
@@ -390,7 +391,7 @@ public final class Validate {
     }
     if (ast.get(pos).isReal()) {
       int result = ast.get(pos).toIntDefault();
-      if (result == Integer.MIN_VALUE || 0 > result) {
+      if (F.isNotPresent(result) || 0 > result) {
         // Non-negative machine-sized integer expected at position `2` in `1`.
         String str = Errors.getMessage("intnm", F.list(ast, F.ZZ(pos)), EvalEngine.get());
         throw new ArgumentTypeException(str);
@@ -406,7 +407,7 @@ public final class Validate {
     if (ast.get(pos) instanceof IntegerSym) {
       // IntegerSym always fits into an int number
       int result = ast.get(pos).toIntDefault();
-      if (result == Integer.MIN_VALUE || 0 >= result) {
+      if (F.isNotPresent(result) || 0 >= result) {
         // Positive machine-sized integer expected at position `2` in `1`.
         String str = Errors.getMessage("intpm", F.list(ast.topHead(), F.ZZ(pos)), EvalEngine.get());
         throw new ArgumentTypeException(str);
@@ -415,7 +416,7 @@ public final class Validate {
     }
     if (ast.get(pos).isReal()) {
       int result = ast.get(pos).toIntDefault();
-      if (result == Integer.MIN_VALUE || 0 >= result) {
+      if (F.isNotPresent(result) || 0 >= result) {
         // Positive machine-sized integer expected at position `2` in `1`.
         String str = Errors.getMessage("intpm", F.list(ast.topHead(), F.ZZ(pos)), EvalEngine.get());
         throw new ArgumentTypeException(str);
@@ -448,7 +449,7 @@ public final class Validate {
     }
     if (expr.isReal()) {
       int result = expr.toIntDefault();
-      if (result == Integer.MIN_VALUE || startValue > result) {
+      if (F.isNotPresent(result) || startValue > result) {
         // Level specification value greater equal `1` expected instead of `2`.
         String str =
             Errors.getMessage("intlevel", F.list(F.ZZ(startValue), expr), EvalEngine.get());
@@ -458,7 +459,7 @@ public final class Validate {
     }
     if (expr.isNegativeInfinity()) {
       // minimum possible level in Symja
-      int result = Integer.MIN_VALUE;
+      int result = Config.INVALID_INT;
       if (startValue > result) {
         // Level specification value greater equal `1` expected instead of `2`.
         String str =
@@ -477,15 +478,15 @@ public final class Validate {
    * Integer.MAX_VALUE]
    *
    * @param expr a signed number which will be converted to a Java <code>int</code> if possible,
-   *        otherwise return <code>Integer.MIN_VALUE</code>
-   * @return <code>Integer.MIN_VALUE</code> if a <code>Java int</code> value couldn't be determined.
+   *        otherwise return {@link Config#INVALID_INT}
+   * @return {@link Config#INVALID_INT} if a <code>Java int</code> value couldn't be determined.
    */
   public static int checkIntType(ISymbol head, IExpr expr, int startValue, EvalEngine engine) {
     int result = expr.toIntDefault();
-    if (result == Integer.MIN_VALUE || startValue > result) {
+    if (F.isNotPresent(result) || startValue > result) {
       // Java int value greater equal `1` expected instead of `2`.
       Errors.printMessage(head, "intjava", F.list(F.ZZ(startValue), expr), engine);
-      return Integer.MIN_VALUE;
+      return Config.INVALID_INT;
     }
     return result;
   }
@@ -502,7 +503,7 @@ public final class Validate {
    */
   public static int throwIntType(IExpr expr, int startValue, EvalEngine engine) {
     int result = expr.toIntDefault();
-    if (result == Integer.MIN_VALUE || startValue > result) {
+    if (F.isNotPresent(result) || startValue > result) {
       // Java int value greater equal `1` expected instead of `2`.
       String str = Errors.getMessage("intjava", F.list(F.ZZ(startValue), expr), engine);
       throw new ArgumentTypeException(str);
@@ -925,7 +926,7 @@ public final class Validate {
    * @return
    */
   public static int checkUpTo(IAST upToAST, EvalEngine engine) {
-    int upTo = Integer.MIN_VALUE;
+    int upTo = Config.INVALID_INT;
     if (upToAST.arg1().isInfinity()) {
       upTo = Integer.MAX_VALUE;
     } else {
@@ -934,7 +935,7 @@ public final class Validate {
     if (upTo < 0) {
       // Non-negative integer or Infinity expected at position `1` in `2`.
       Errors.printMessage(S.UpTo, "innf", F.list(F.C1, upToAST), engine);
-      return Integer.MIN_VALUE;
+      return Config.INVALID_INT;
     }
     return upTo;
   }

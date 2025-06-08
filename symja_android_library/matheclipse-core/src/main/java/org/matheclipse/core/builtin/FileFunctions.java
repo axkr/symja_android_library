@@ -556,7 +556,7 @@ public class FileFunctions {
             int numberOfLines = Integer.MAX_VALUE;
             if (ast.isAST2()) {
               numberOfLines = ast.arg2().toIntDefault();
-              if (numberOfLines == Integer.MIN_VALUE) {
+              if (F.isNotPresent(numberOfLines)) {
                 return F.NIL;
               }
             }

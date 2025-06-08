@@ -149,7 +149,8 @@ public class JavaFunctions {
         }
       }
       if (arg1 instanceof JavaObjectExpr && arg2 instanceof JavaClassExpr) {
-        return F.booleSymbol(((JavaClassExpr) arg2).toData().isInstance(((JavaObjectExpr) arg1).toData()));
+        return F.booleSymbol(
+            ((JavaClassExpr) arg2).toData().isInstance(((JavaObjectExpr) arg1).toData()));
       }
       return F.False;
     }
@@ -616,13 +617,13 @@ public class JavaFunctions {
           params[j] = Float.valueOf((float) arg.evalf());
         } else if (clazz.equals(int.class)) {
           int n = arg.toIntDefault();
-          if (n == Integer.MIN_VALUE) {
+          if (F.isNotPresent(n)) {
             return null;
           }
           params[j] = Integer.valueOf(n);
         } else if (clazz.equals(long.class)) {
           long l = arg.toLongDefault();
-          if (l == Long.MIN_VALUE) {
+          if (F.isNotPresent(l)) {
             return null;
           }
           params[j] = Long.valueOf(l);

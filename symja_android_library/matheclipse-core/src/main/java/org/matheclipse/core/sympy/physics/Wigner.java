@@ -115,12 +115,12 @@ public class Wigner {
       }
     }
     int intValue = value.toIntDefault();
-    if (intValue != Integer.MIN_VALUE) {
+    if (F.isPresent(intValue)) {
       return F.ZZ(intValue);
     }
     value = value.multiply(F.C2);
     intValue = value.toIntDefault();
-    if (intValue != Integer.MIN_VALUE) {
+    if (F.isPresent(intValue)) {
       return F.QQ(intValue, 2);
     }
     throw new Wigner.TriangularException(F.C0);
@@ -145,7 +145,7 @@ public class Wigner {
     int imax = aa.add(bb).add(cc).add(dd)
         .min(aa.add(dd).add(ee).add(ff).min(bb.add(cc).add(ee).add(ff))).toIntDefault();
 
-    if (imin == Integer.MIN_VALUE || imax == Integer.MIN_VALUE) {
+    if (F.isNotPresent(imin) || F.isNotPresent(imax)) {
       throw new ArgumentTypeException("error",
           F.List("Expecting non-negative machine integer, got " + imin + " or " + imax));
     }
@@ -277,7 +277,7 @@ public class Wigner {
 
     int imin = j1.add(m2).subtract(j3).max(j2.subtract(m1).subtract(j3).max(F.C0)).toIntDefault();
     int imax = j2.add(m2).min(j1.subtract(m1).min(j1.add(j2).subtract(j3))).toIntDefault();
-    if (imin == Integer.MIN_VALUE || imax == Integer.MIN_VALUE) {
+    if (F.isNotPresent(imin) || F.isNotPresent(imax)) {
       throw new ArgumentTypeException("error",
           F.List("Expecting non-negative machine integer, got " + imin + " or " + imax));
     }

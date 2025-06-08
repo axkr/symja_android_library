@@ -6731,22 +6731,22 @@ public interface IExpr
 
   /**
    * Converts this number to an <code>int</code> value; unlike {@link #intValue} this method returns
-   * <code>Integer.MIN_VALUE</code> if the value of this integer isn't in the range <code>
-   * Integer.MIN_VALUE</code> to <code>Integer.MAX_VALUE</code> or the expression is not convertible
-   * to the <code>int</code> range.
+   * <code>{@link Config#INVALID_INT} if the value of this integer isn't in the range <code>
+   * Integer.MIN_VALUE+1</code> to <code>Integer.MAX_VALUE</code> or the expression is not
+   * convertible to the <code>int</code> range.
    *
    * @return the numeric value represented by this expression after conversion to type <code>int
-   *     </code> or <code>Integer.MIN_VALUE</code> if this expression cannot be converted.
+   *     </code> or <code>Config.INVALID_INT</code> if this expression cannot be converted.
    */
   default int toIntDefault() {
-    return toIntDefault(Integer.MIN_VALUE);
+    return toIntDefault(Config.INVALID_INT);
   }
 
   /**
    * Converts this number to an <code>int</code> value; unlike {@link #intValue} this method returns
    * <code>defaultValue</code> if the value of this integer isn't in the range <code>
-   * Integer.MIN_VALUE</code> to <code>Integer.MAX_VALUE</code> or the expression is not convertible
-   * to the int range.
+   * Integer.MIN_VALUE+1</code> to <code>Integer.MAX_VALUE</code> or the expression is not
+   * convertible to the int range.
    *
    * @param defaultValue the default value, if this integer is not in the <code>int</code> range
    * @return the numeric value represented by this integer after conversion to type <code>int</code>
@@ -6776,21 +6776,21 @@ public interface IExpr
 
   /**
    * Converts this number to a <code>long</code> value; unlike {@link #longValue} this method
-   * returns <code>Long.MIN_VALUE</code> if the value of this integer isn't in the range <code>
-   * Long.MIN_VALUE</code> to <code>Long.MAX_VALUE</code> or the expression is not convertible to
+   * returns {@link Config#INVALID_LONG} if the value of this integer isn't in the range <code>
+   * Long.MIN_VALUE+1</code> to <code>Long.MAX_VALUE</code> or the expression is not convertible to
    * the <code>long</code> range.
    *
    * @return the numeric value represented by this expression after conversion to type <code>long
    *     </code> or <code>Long.MIN_VALUE</code> if this expression cannot be converted.
    */
   default long toLongDefault() {
-    return toLongDefault(Long.MIN_VALUE);
+    return toLongDefault(Config.INVALID_LONG);
   }
 
   /**
    * Converts this number to a <code>long</code> value; unlike {@link #longValue} this method
    * returns <code>defaultValue</code> if the value of this integer isn't in the range <code>
-   * Long.MIN_VALUE</code> to <code>Long.MAX_VALUE</code> or the expression is not convertible to
+   * Long.MIN_VALUE+1</code> to <code>Long.MAX_VALUE</code> or the expression is not convertible to
    * the <code>long</code> range.
    *
    * @param defaultValue the default value, if this integer is not in the <code>long</code> range

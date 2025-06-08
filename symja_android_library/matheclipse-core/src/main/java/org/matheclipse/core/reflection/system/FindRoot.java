@@ -339,7 +339,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
     if (options[0].isInteger()) {
       // S.MaxIterations
       maxIterations = options[0].toIntDefault();
-      if (maxIterations == Integer.MIN_VALUE) {
+      if (F.isNotPresent(maxIterations)) {
         return F.NIL;
       }
       if (maxIterations < 0) {

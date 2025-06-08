@@ -368,7 +368,7 @@ public class PredicateQ {
       int diagonal = 0;
       if (ast.isAST2()) {
         int k = ast.arg2().toIntDefault();
-        if (k == Integer.MIN_VALUE) {
+        if (F.isNotPresent(k)) {
           return F.NIL;
         }
         diagonal = k;
@@ -619,7 +619,7 @@ public class PredicateQ {
       int diagonal = 0;
       if (ast.isAST2()) {
         int k = ast.arg2().toIntDefault();
-        if (k == Integer.MIN_VALUE) {
+        if (F.isNotPresent(k)) {
           return F.NIL;
         }
         diagonal = k;

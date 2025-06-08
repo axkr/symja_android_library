@@ -1,6 +1,7 @@
 package org.matheclipse.core.eval;
 
 import java.io.Serializable;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -63,10 +64,10 @@ public class EvalHistory implements Serializable {
       deletePosition = fHistoryLength + 1 + deletePosition;
     }
     int deleteLine = historyIndices[deletePosition];
-    if (deleteLine != Integer.MIN_VALUE) {
+    if (F.isPresent(deleteLine)) {
       fInHistory.remove(deleteLine);
       fOutHistory.remove(deleteLine);
-      historyIndices[deletePosition] = Integer.MIN_VALUE;
+      historyIndices[deletePosition] = Config.INVALID_INT;
     }
 
     fLine++;

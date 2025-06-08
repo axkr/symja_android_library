@@ -403,7 +403,7 @@ public final class RandomFunctions {
       if (ast.arg1().isList2()) {
         int min = ast.arg1().first().toIntDefault();
         int max = ast.arg1().second().toIntDefault();
-        if (min != Integer.MIN_VALUE && max != Integer.MIN_VALUE) {
+        if (F.isPresent(min) && F.isPresent(max)) {
           if (min >= max) {
             int temp = min;
             min = max;

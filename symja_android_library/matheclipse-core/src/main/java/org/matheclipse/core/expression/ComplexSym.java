@@ -706,7 +706,7 @@ public class ComplexSym implements IComplex {
     if ((n == 0) && fReal.isZero() && fImaginary.isZero()) {
       throw new ArithmeticException("Indeterminate: 0^0");
     }
-    if (n == Integer.MIN_VALUE) {
+    if (F.isNotPresent(n)) {
       throw new java.lang.ArithmeticException();
     }
     if (n == 1) {
@@ -734,7 +734,7 @@ public class ComplexSym implements IComplex {
         return inverse();
       }
       long n = that.toLongDefault();
-      if (n != Long.MIN_VALUE) {
+      if (F.isPresent(n)) {
         return power(n);
       }
     }

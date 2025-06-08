@@ -130,7 +130,7 @@ public class InsertPositions {
     }
 
     int p = position.toIntDefault();
-    if (p == Integer.MIN_VALUE) {
+    if (F.isNotPresent(p)) {
       // Part `1` of `2` does not exist.
       throw new ArgumentTypeException("partw", F.list(positions, originalAST));
     }

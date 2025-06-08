@@ -1253,7 +1253,7 @@ public final class Arithmetic {
       int c = 1;
       if (ast.isAST2()) {
         int n = ast.arg2().toIntDefault();
-        if (n == Integer.MIN_VALUE) {
+        if (n == Config.INVALID_INT) {
           return F.NIL;
         }
         if (n < 0) {
@@ -2140,7 +2140,7 @@ public final class Arithmetic {
             IterationLimitExceeded.throwIt(nInt, ast);
           }
           int intArg2 = r.toIntDefault();
-          if (intArg2 != Integer.MIN_VALUE) {
+          if (F.isPresent(intArg2)) {
             int exponent = intArg2;
             if (intArg2 < 0) {
               exponent *= -1;
@@ -3488,7 +3488,7 @@ public final class Arithmetic {
             // }
           } else if (base instanceof ASTSeriesData) {
             int exp = exponent.toIntDefault();
-            if (exp != Integer.MIN_VALUE) {
+            if (F.isPresent(exp)) {
               return ((ASTSeriesData) base).powerSeries(exp);
             }
             return F.NIL;
@@ -3818,7 +3818,7 @@ public final class Arithmetic {
       // exponent is integer
       IInteger exp = exponent.numerator();
       final int expInt = exp.toIntDefault();
-      if (expInt != Integer.MIN_VALUE) {
+      if (F.isPresent(expInt)) {
         return base.powerRational(expInt);
       }
       if (exp.isNegative()) {
@@ -4038,7 +4038,7 @@ public final class Arithmetic {
             return F.DirectedInfinity(F.Power(F.CN1, realExponent));
           } else {
             int exp = realExponent.toIntDefault();
-            if (exp != Integer.MIN_VALUE) {
+            if (F.isPresent(exp)) {
               if ((exp & 0x1) == 0x1) {
                 return F.CNInfinity;
               } else {
@@ -6990,7 +6990,7 @@ public final class Arithmetic {
     final IExpr exponent = powerAST2.exponent();
     if ((base instanceof IBigNumber) && exponent.isFraction()) {
       final int nthRoot = ((IFraction) exponent).toIntRoot();
-      if (nthRoot != Integer.MIN_VALUE) {
+      if (F.isPresent(nthRoot)) {
         long oldPrecision = engine.getNumericPrecision();
         try {
           engine.setNumericPrecision(ParserConfig.MACHINE_PRECISION * 2);

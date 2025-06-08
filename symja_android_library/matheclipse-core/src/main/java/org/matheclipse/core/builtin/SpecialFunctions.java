@@ -480,7 +480,7 @@ public class SpecialFunctions {
           }
         }
         int bi = b.toIntDefault();
-        if (bi != Integer.MIN_VALUE) {
+        if (F.isPresent(bi)) {
           if (bi < 0) {
             // https://functions.wolfram.com/GammaBetaErf/BetaRegularized/03/01/01/0002/
             return F.C0;
@@ -512,7 +512,7 @@ public class SpecialFunctions {
             return functionExpand(ast, engine);
           }
         }
-        if (bi != Integer.MIN_VALUE) {
+        if (F.isPresent(bi)) {
           if (bi > Config.MAX_POLYNOMIAL_DEGREE) {
             PolynomialDegreeLimitExceeded.throwIt(bi);
           }
@@ -546,7 +546,7 @@ public class SpecialFunctions {
         IExpr a = ast.arg3();
         IExpr b = ast.arg4();
         int bi = b.toIntDefault();
-        if (bi != Integer.MIN_VALUE) {
+        if (F.isPresent(bi)) {
           if (bi < 0) {
             // https://functions.wolfram.com/GammaBetaErf/BetaRegularized4/03/01/01/0001/
             return F.C0;
@@ -1617,7 +1617,7 @@ public class SpecialFunctions {
       }
 
       int n = a.toIntDefault();
-      if (n != Integer.MIN_VALUE) {
+      if (F.isPresent(n)) {
         IExpr polyLog = engine.evaluate(F.PolyLog(s, z));
         if (n <= 0) {
           n = -n;
@@ -1782,7 +1782,7 @@ public class SpecialFunctions {
         IExpr z = ast.arg2();
         if (arg1.isMathematicalIntegerNonNegative()) {
           int n = arg1.toIntDefault();
-          if (n != Integer.MIN_VALUE) {
+          if (F.isPresent(n)) {
             // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/functions/special/gamma_functions.py#L790
 
             // if (z.isPlus()) {
@@ -1878,7 +1878,7 @@ public class SpecialFunctions {
             return arg2.digamma();
           }
           long n = arg1.toLongDefault();
-          if (n != Long.MIN_VALUE && arg2.isNumber()) {
+          if (F.isPresent(n) && arg2.isNumber()) {
             return arg2.polyGamma(n);
           }
         }
@@ -2249,11 +2249,9 @@ public class SpecialFunctions {
       }
       if (k.isNumber()) {
         ki = k.toIntDefault();
-        EvalEngine engine = EvalEngine.get();
-        if (ki == Integer.MIN_VALUE) {
+        if (F.isNotPresent(ki)) {
           // Machine-sized integer expected at position `2` in `1`.
-          return Errors.printMessage(S.ProductLog, "intm", F.list(F.ProductLog(k, z), F.C1),
-              engine);
+          return Errors.printMessage(S.ProductLog, "intm", F.list(F.ProductLog(k, z), F.C1));
         }
         // ProductLog(0,z_) := ProductLog(z)
         if (ki == 0) {
@@ -2273,6 +2271,7 @@ public class SpecialFunctions {
           }
         }
         if (z.isNumber()) {
+          EvalEngine engine = EvalEngine.get();
           if (engine.isArbitraryMode()) {
             if (z instanceof ApcomplexNum) {
               FixedPrecisionApfloatHelper h = EvalEngine.getApfloat(engine);
@@ -2634,7 +2633,7 @@ public class SpecialFunctions {
         return Plus(C1, Zeta(s));
       }
       int sInt = s.toIntDefault();
-      if (sInt != Integer.MIN_VALUE) {
+      if (F.isPresent(sInt)) {
         if (sInt <= 0 || (sInt % 2) == 0) {
           int aInt = a.toIntDefault(0);
           if (aInt < 0) {

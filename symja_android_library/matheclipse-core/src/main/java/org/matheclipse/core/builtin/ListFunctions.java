@@ -1033,7 +1033,7 @@ public final class ListFunctions {
             IExpr indexOrigin = arg3;
 
             int origin = indexOrigin.toIntDefault();
-            if (origin != Integer.MIN_VALUE) {
+            if (F.isPresent(origin)) {
               iterList.add(new ArrayIterator(origin, length));
             } else {
               iterList.add(new ExprArrayIterator(indexOrigin, length));
@@ -1590,7 +1590,7 @@ public final class ListFunctions {
         int n = -1;
         if (ast.isAST2()) {
           n = Validate.checkIntType(S.Commonest, ast.arg2(), 0, engine);
-          if (n == Integer.MIN_VALUE) {
+          if (F.isNotPresent(n)) {
             return F.NIL;
           }
         }
@@ -2759,7 +2759,7 @@ public final class ListFunctions {
         }
         if (ast.arg2().isInteger()) {
           int indx = ast.arg2().toIntDefault();
-          if (indx == Integer.MIN_VALUE) {
+          if (F.isNotPresent(indx)) {
             return F.NIL;
           }
           if (indx < 0) {
@@ -2818,7 +2818,7 @@ public final class ListFunctions {
           continue;
         }
         int intValue = arg.toIntDefault();
-        if (intValue == Integer.MIN_VALUE) {
+        if (F.isNotPresent(intValue)) {
           // Position specification `1` in `2` is not applicable.
           Errors.printMessage(ast.topHead(), "psl1", F.list(ast.arg2(), ast), engine);
           return false;
@@ -5551,7 +5551,7 @@ public final class ListFunctions {
 
       if (ast.isAST1() && ast.arg1().isReal()) {
         int size = ast.arg1().toIntDefault();
-        if (size != Integer.MIN_VALUE) {
+        if (F.isPresent(size)) {
           return range(size + 1);
         }
         // `1`.
@@ -5612,7 +5612,7 @@ public final class ListFunctions {
         IAST list = (IAST) arg1;
         int argSize = list.argSize();
         int n = arg2.toIntDefault();
-        if (n != Integer.MIN_VALUE) {
+        if (F.isPresent(n)) {
           if (n == 1) {
             return list.setAtCopy(0, S.Max);
           } else if (n == -1 || n == argSize) {
@@ -5657,7 +5657,7 @@ public final class ListFunctions {
         IAST list = (IAST) arg1;
         int argSize = list.argSize();
         int n = arg2.toIntDefault();
-        if (n != Integer.MIN_VALUE) {
+        if (F.isPresent(n)) {
           if (n == 1) {
             return list.setAtCopy(0, S.Min);
           } else if (n == -1 || n == argSize) {
@@ -6100,7 +6100,7 @@ public final class ListFunctions {
           }
         } else {
           int position = lhs.toIntDefault();
-          if (position == Integer.MIN_VALUE) {
+          if (F.isNotPresent(position)) {
             // Position specification `1` in `2` is not a machine sized integer or a list of
             // machine-sized integers.
             return Errors.printMessage(S.ReplacePart, "psl", F.List(F.C3, ast), engine);
@@ -6221,7 +6221,7 @@ public final class ListFunctions {
       if (ast.isAST3()) {
         final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
         maxIterations = options.getOptionMaxIterations(S.MaxIterations);
-        if (maxIterations == Integer.MIN_VALUE) {
+        if (F.isNotPresent(maxIterations)) {
           return F.NIL;
         }
       }
@@ -6520,7 +6520,7 @@ public final class ListFunctions {
           return result;
         } else {
           int n = ast.arg2().toIntDefault();
-          if (n == Integer.MIN_VALUE) {
+          if (F.isNotPresent(n)) {
             // Rotation specification `1` should be a machine-sized integer or list of machine-sized
             // integers.
             return Errors.printMessage(S.RotateRight, "rspec", F.List(ast.arg2()), engine);
@@ -6604,7 +6604,7 @@ public final class ListFunctions {
           return result;
         } else {
           int n = ast.arg2().toIntDefault();
-          if (n == Integer.MIN_VALUE) {
+          if (F.isNotPresent(n)) {
             // Rotation specification `1` should be a machine-sized integer or list of machine-sized
             // integers.
             return Errors.printMessage(S.RotateRight, "rspec", F.List(ast.arg2()), engine);
