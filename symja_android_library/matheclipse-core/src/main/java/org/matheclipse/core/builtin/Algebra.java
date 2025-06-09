@@ -3777,72 +3777,77 @@ public class Algebra {
   private static class PolynomialQuotient extends PolynomialQuotientRemainder {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
 
-      if (ast.size() == 4 || ast.size() == 5) {
-        IExpr variable;
-        if (ast.arg3().isAST()) {
-          variable = ast.arg3();
-        } else {
-          variable = Validate.checkIsVariable(ast, 3, engine);
-          if (variable.isNIL()) {
-            return F.NIL;
-          }
+      IExpr variable;
+      if (ast.arg3().isAST()) {
+        variable = ast.arg3();
+      } else {
+        variable = Validate.checkIsVariable(ast, 3, engine);
+        if (variable.isNIL()) {
+          return F.NIL;
         }
-        IExpr arg1 = ast.arg1();
-        IExpr arg2 = ast.arg2();
+      }
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
 
-        try {
-          // IExpr denom1 = S.Denominator.of(engine, arg1);
-          // IExpr denom2 = S.Denominator.of(engine, arg2);
-          // if (!denom1.isOne() || !denom2.isOne()) {
-          // IExpr numer1 = S.Numerator.of(engine, arg1);
-          // IExpr numer2 = S.Numerator.of(engine, arg2);
-          // arg1 = F.ExpandAll.of(engine, F.Times(numer1, denom2));
-          // arg2 = F.ExpandAll.of(engine, F.Times(denom1, numer2));
-          // } else {
-          arg1 = F.ExpandAll.of(engine, arg1);
-          arg2 = F.ExpandAll.of(engine, arg2);
-          // }
+      try {
+        // IExpr denom1 = S.Denominator.of(engine, arg1);
+        // IExpr denom2 = S.Denominator.of(engine, arg2);
+        // if (!denom1.isOne() || !denom2.isOne()) {
+        // IExpr numer1 = S.Numerator.of(engine, arg1);
+        // IExpr numer2 = S.Numerator.of(engine, arg2);
+        // arg1 = F.ExpandAll.of(engine, F.Times(numer1, denom2));
+        // arg2 = F.ExpandAll.of(engine, F.Times(denom1, numer2));
+        // } else {
+        arg1 = F.ExpandAll.of(engine, arg1);
+        arg2 = F.ExpandAll.of(engine, arg2);
+        // }
 
-          if (arg1.isZero() || arg2.isZero()) {
-            return F.NIL;
-          }
-          if (!arg1.isPolynomialStruct()) {
-            // `1` is not a polynomial.
-            return Errors.printMessage(ast.topHead(), "poly", F.list(arg1), engine);
-          }
-          if (!arg2.isPolynomialStruct()) {
-            // `1` is not a polynomial.
-            return Errors.printMessage(ast.topHead(), "poly", F.list(arg2), engine);
-          }
-          if (ast.size() == 5) {
-            final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
-            IExpr option = options.getOption(S.Modulus);
-            if (option.isInteger() && !option.isZero()) {
-              Optional<IExpr[]> result = quotientRemainderModInteger(arg1, arg2, variable, option);
-              if (result.isPresent()) {
-                return result.get()[0];
-              }
-            }
-            return F.NIL;
-          }
-          Optional<IExpr[]> result = quotientRemainder(arg1, arg2, variable);
+        if (arg1.isZero() || arg2.isZero()) {
+          return F.NIL;
+        }
+        if (!arg1.isPolynomialStruct()) {
+          // `1` is not a polynomial.
+          return Errors.printMessage(ast.topHead(), "poly", F.list(arg1), engine);
+        }
+        if (!arg2.isPolynomialStruct()) {
+          // `1` is not a polynomial.
+          return Errors.printMessage(ast.topHead(), "poly", F.list(arg2), engine);
+        }
+        IExpr option = options[0];
+        if (isModpMessage(S.PolynomialQuotient, option)) {
+          return F.NIL;
+        }
+        if (!option.isZero()) {
+          Optional<IExpr[]> result = quotientRemainderModInteger(arg1, arg2, variable, option);
           if (result.isPresent()) {
             return result.get()[0];
           }
-        } catch (ArithmeticException aex) {
-          // division by zero
-          LOGGER.log(engine.getLogLevel(), S.PolynomialQuotient, aex);
+          return F.NIL;
         }
+        Optional<IExpr[]> result = quotientRemainder(arg1, arg2, variable);
+        if (result.isPresent()) {
+          return result.get()[0];
+        }
+      } catch (ArithmeticException aex) {
+        // division by zero
+        LOGGER.log(engine.getLogLevel(), S.PolynomialQuotient, aex);
       }
       return F.NIL;
     }
 
     @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, //
-          F.list(F.Rule(S.Modulus, F.C0)));
+      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Modulus};
+      IExpr[] optionValues = new IExpr[] {F.C0};
+      setOptions(newSymbol, optionKeys, optionValues);
     }
   }
 
@@ -3877,7 +3882,7 @@ public class Algebra {
    *
    * </blockquote>
    */
-  private static class PolynomialQuotientRemainder extends AbstractFunctionEvaluator {
+  private static class PolynomialQuotientRemainder extends AbstractFunctionOptionEvaluator {
 
     public static Optional<IExpr[]> quotientRemainder(final IExpr arg1, IExpr arg2,
         IExpr variable) {
@@ -3932,7 +3937,8 @@ public class Algebra {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
       IExpr temp = engine.getCache(ast);
       if (temp != null) {
         return temp;
@@ -3975,19 +3981,20 @@ public class Algebra {
           return F.NIL;
         }
         IExpr result = F.NIL;
-        if (ast.size() == 5) {
-          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
-          IExpr option = options.getOption(S.Modulus);
-          if (option.isInteger() && !option.isZero()) {
-            Optional<IExpr[]> quotientRemainderModInteger =
-                quotientRemainderModInteger(arg1, arg2, variable, option);
-            if (quotientRemainderModInteger.isPresent()) {
-              IExpr[] elements = quotientRemainderModInteger.get();
-              result = F.list(elements[0], elements[1]);
-            }
+        IExpr option = options[0];
+        if (isModpMessage(S.PolynomialQuotientRemainder, option)) {
+          return F.NIL;
+        }
+        if (!option.isZero()) {
+          Optional<IExpr[]> quotientRemainderModInteger =
+              quotientRemainderModInteger(arg1, arg2, variable, option);
+          if (quotientRemainderModInteger.isPresent()) {
+            IExpr[] elements = quotientRemainderModInteger.get();
+            result = F.list(elements[0], elements[1]);
+            engine.putCache(ast, result);
+            return result;
           }
-          engine.putCache(ast, result);
-          return result;
+          return F.NIL;
         }
         Optional<IExpr[]> quotientRemainder = quotientRemainder(arg1, arg2, variable);
         if (quotientRemainder.isPresent()) {
@@ -4007,7 +4014,7 @@ public class Algebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_4;
+      return ARGS_3_3;
     }
 
     public Optional<IExpr[]> quotientRemainderModInteger(IExpr arg1, IExpr arg2, IExpr variable,
@@ -4034,8 +4041,10 @@ public class Algebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, //
-          F.list(F.Rule(S.Modulus, F.C0)));
+      super.setUp(newSymbol);
+      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Modulus};
+      IExpr[] optionValues = new IExpr[] {F.C0};
+      setOptions(newSymbol, optionKeys, optionValues);
     }
   }
 
@@ -4073,7 +4082,8 @@ public class Algebra {
   private static class PolynomialRemainder extends PolynomialQuotientRemainder {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
       IExpr variable;
       if (ast.arg3().isAST()) {
         variable = ast.arg3();
@@ -4097,23 +4107,25 @@ public class Algebra {
         return Errors.printMessage(ast.topHead(), "poly", F.list(arg2), engine);
       }
       try {
-        if (ast.argSize() == 4) {
-          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
-          IExpr option = options.getOption(S.Modulus);
-          if (!option.isInteger() || option.isZero()) {
-            return F.NIL;
-          }
+        IExpr option = options[0];
+        if (isModpMessage(S.PolynomialRemainder, option)) {
+          return F.NIL;
+        }
+        if (!option.isZero()) {
           Optional<IExpr[]> result = quotientRemainderModInteger(arg1, arg2, variable, option);
           if (result.isPresent()) {
             return result.get()[1];
           }
-        } else {
-          Optional<IExpr[]> result = quotientRemainder(arg1, arg2, variable);
-          if (result.isPresent()) {
-            return result.get()[1];
-          }
+          return F.NIL;
         }
-      } catch (ArithmeticException aex) {
+        Optional<IExpr[]> result = quotientRemainder(arg1, arg2, variable);
+        if (result.isPresent()) {
+          return result.get()[1];
+        }
+
+      } catch (
+
+      ArithmeticException aex) {
         // division by zero
         LOGGER.log(engine.getLogLevel(), S.PolynomialRemainder, aex);
       } catch (RuntimeException rex) {
@@ -4125,15 +4137,17 @@ public class Algebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_4;
+      return ARGS_3_3;
     }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, //
-          F.list(F.Rule(S.Modulus, F.C0)));
+      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Modulus};
+      IExpr[] optionValues = new IExpr[] {F.C0};
+      setOptions(newSymbol, optionKeys, optionValues);
     }
   }
+
 
   /**
    *
@@ -4330,6 +4344,7 @@ public class Algebra {
     }
   }
 
+
   private static class ToRadicals extends AbstractFunctionEvaluator {
 
 
@@ -4379,6 +4394,7 @@ public class Algebra {
 
   }
 
+
   private static class Root extends AbstractFunctionEvaluator {
 
     @Override
@@ -4386,6 +4402,7 @@ public class Algebra {
       return rootToRadicals(ast, engine);
     }
   }
+
 
   /**
    *
@@ -4769,6 +4786,7 @@ public class Algebra {
     }
   }
 
+
   /**
    *
    *
@@ -4814,6 +4832,7 @@ public class Algebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
+
   }
 
   private static boolean appendPlus(IASTAppendable ast, IExpr expr) {
@@ -4959,6 +4978,29 @@ public class Algebra {
       LOGGER.debug("Algebra.cancelGCD() failed", e);
     }
     return Optional.empty();
+  }
+
+  /**
+   * Print message <code>Value of option `1` should be a prime number or zero.</code>, if option is
+   * not zero or prime.
+   * 
+   * @param option
+   * @return <code>true</code> if the &quot;modp&quot; message was printed
+   */
+  private static boolean isModpMessage(IBuiltInSymbol symbol, IExpr option) {
+    if (!option.isInteger()) {
+      // Value of option `1` should be a prime number or zero.
+      Errors.printMessage(S.PolynomialQuotientRemainder, "modp", F.List(F.Rule(S.Modulus, option)));
+      return true;
+    } else {
+      IInteger optionInteger = (IInteger) option;
+      if (!optionInteger.isZero() && !optionInteger.isProbablePrime()) {
+        // Value of option `1` should be a prime number or zero.
+        Errors.printMessage(symbol, "modp", F.List(F.Rule(S.Modulus, option)));
+        return true;
+      }
+    }
+    return false;
   }
 
   private static boolean isPolynomial(IExpr expr) {
