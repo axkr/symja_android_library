@@ -1894,14 +1894,14 @@ public class IntegerFunctions {
             if (arg1.isComplex()) {
               c1 = (IComplex) arg1;
             } else if (arg1.isRational()) {
-              c1 = F.complex((IRational) arg1);
+              c1 = F.CC((IRational) arg1);
             }
             if (c1 != null) {
               IComplex c2 = null;
               if (arg2.isComplex()) {
                 c2 = (ComplexSym) arg2;
               } else if (arg2.isRational()) {
-                c2 = F.complex((IRational) arg2);
+                c2 = F.CC((IRational) arg2);
               }
               if (c2 != null) {
                 IComplex[] result = c1.quotientRemainder(c2);
@@ -1950,7 +1950,7 @@ public class IntegerFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_2_2;
     }
 
     @Override

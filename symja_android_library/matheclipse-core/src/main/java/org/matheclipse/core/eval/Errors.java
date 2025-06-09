@@ -228,6 +228,7 @@ public class Errors {
       "meprec", "Internal precision limit `1` reached while evaluating `2`.", //
       "mindet", "Input matrix contains an indeterminate entry.", //
       "minv", "The `1` arguments to `2` must be ordinary integers.", // or gaussian
+      "modp", "Value of option `1` should be a prime number or zero.", //
       "mptd", "Object `1` at position {2,`2`} in `3` has only `4` of required `5` dimensions.", //
       "mseqs",
       "Sequence specification or a list of sequence specifications expected at position `1` in `2`.", //
