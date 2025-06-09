@@ -3,7 +3,6 @@ package org.matheclipse.core.expression;
 import java.util.Comparator;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -98,7 +97,6 @@ public class IntervalSym {
       if (EvalAttributes.sort(result, INTERVAL_COMPARATOR)) {
         evaled = true;
       }
-      result.builtinEvaled();
       if (result.size() > 2) {
         int j = 1;
         IAST list1 = (IAST) result.arg1();
@@ -130,6 +128,7 @@ public class IntervalSym {
         result.set(j, list1);
       }
       if (evaled) {
+        result.builtinEvaled();
         return result;
       }
       if (intervalList instanceof IASTMutable) {
