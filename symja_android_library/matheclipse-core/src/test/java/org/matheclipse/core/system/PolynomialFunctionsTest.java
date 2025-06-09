@@ -11,6 +11,9 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testChebyshevT() {
+    check("ChebyshevT(1317624576693539401,3.14159)", //
+        "ChebyshevT(1.31762*10^18,3.14159)");
+
     // https://github.com/mtommila/apfloat/issues/65
     check("N(ChebyshevT(Pi/2,-9223372036854775808/11),30)", //
         "4672660418534308965963828022.7+I*(-20661346583240968698114847518.9)");

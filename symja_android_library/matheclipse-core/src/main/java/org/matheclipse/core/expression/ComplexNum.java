@@ -4,6 +4,7 @@ import java.util.function.Function;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatArithmeticException;
+import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.InfiniteExpansionException;
 import org.apfloat.LossOfPrecisionException;
@@ -369,9 +370,13 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr besselI(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      Apcomplex besselI = EvalEngine.getApfloatDouble().besselI(apcomplexValue(),
-          ((INumber) arg2).apcomplexValue());
-      return F.complexNum(besselI.real().doubleValue(), besselI.imag().doubleValue());
+      try {
+        Apcomplex besselI = EvalEngine.getApfloatDouble().besselI(apcomplexValue(),
+            ((INumber) arg2).apcomplexValue());
+        return F.complexNum(besselI.real().doubleValue(), besselI.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.BesselI, are);
+      }
     }
     return IComplexNum.super.besselI(arg2);
   }
@@ -379,9 +384,13 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr besselJ(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      Apcomplex besselJ = EvalEngine.getApfloatDouble().besselJ(apcomplexValue(),
-          ((INumber) arg2).apcomplexValue());
-      return F.complexNum(besselJ.real().doubleValue(), besselJ.imag().doubleValue());
+      try {
+        Apcomplex besselJ = EvalEngine.getApfloatDouble().besselJ(apcomplexValue(),
+            ((INumber) arg2).apcomplexValue());
+        return F.complexNum(besselJ.real().doubleValue(), besselJ.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.BesselJ, are);
+      }
     }
     return IComplexNum.super.besselJ(arg2);
   }
@@ -389,9 +398,13 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr besselK(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      Apcomplex besselK = EvalEngine.getApfloatDouble().besselK(apcomplexValue(),
-          ((INumber) arg2).apcomplexValue());
-      return F.complexNum(besselK.real().doubleValue(), besselK.imag().doubleValue());
+      try {
+        Apcomplex besselK = EvalEngine.getApfloatDouble().besselK(apcomplexValue(),
+            ((INumber) arg2).apcomplexValue());
+        return F.complexNum(besselK.real().doubleValue(), besselK.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.BesselK, are);
+      }
     }
     return IComplexNum.super.besselK(arg2);
   }
@@ -399,9 +412,13 @@ public class ComplexNum implements IComplexNum {
   @Override
   public IExpr besselY(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      Apcomplex besselY = EvalEngine.getApfloatDouble().besselY(apcomplexValue(),
-          ((INumber) arg2).apcomplexValue());
-      return F.complexNum(besselY.real().doubleValue(), besselY.imag().doubleValue());
+      try {
+        Apcomplex besselY = EvalEngine.getApfloatDouble().besselY(apcomplexValue(),
+            ((INumber) arg2).apcomplexValue());
+        return F.complexNum(besselY.real().doubleValue(), besselY.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.BesselY, are);
+      }
     }
     return IComplexNum.super.besselY(arg2);
   }
@@ -490,8 +507,8 @@ public class ComplexNum implements IComplexNum {
         Apcomplex chebyshevT = EvalEngine.getApfloatDouble().chebyshevT(apcomplexValue(),
             ((INumber) arg2).apcomplexValue());
         return F.complexNum(chebyshevT.real().doubleValue(), chebyshevT.imag().doubleValue());
-      } catch (NumericComputationException are) {
-
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.ChebyshevT, are);
       }
     }
     return IComplexNum.super.chebyshevT(arg2);
@@ -513,8 +530,8 @@ public class ComplexNum implements IComplexNum {
         Apcomplex chebyshevU = EvalEngine.getApfloatDouble().chebyshevU(apcomplexValue(),
             ((INumber) arg2).apcomplexValue());
         return F.complexNum(chebyshevU.real().doubleValue(), chebyshevU.imag().doubleValue());
-      } catch (ArithmeticException | NumericComputationException are) {
-
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.ChebyshevU, are);
       }
     }
     return IComplexNum.super.chebyshevU(arg2);
@@ -1491,7 +1508,8 @@ public class ComplexNum implements IComplexNum {
       return F.complexNum(logGamma.real().doubleValue(), logGamma.imag().doubleValue());
     } catch (ApfloatArithmeticException aaex) {
       String localizationKey = aaex.getLocalizationKey();
-      if ("logGamma.ofZero".equals(localizationKey) || "logGamma.ofNegativeInteger".equals(localizationKey)) {
+      if ("logGamma.ofZero".equals(localizationKey)
+          || "logGamma.ofNegativeInteger".equals(localizationKey)) {
         return F.CInfinity;
       }
       aaex.printStackTrace();

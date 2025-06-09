@@ -8,6 +8,7 @@ import org.apfloat.Apfloat;
 import org.apfloat.ApfloatArithmeticException;
 // import org.apfloat.ApfloatArithmeticException;
 import org.apfloat.ApfloatMath;
+import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.Apint;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.InfiniteExpansionException;
@@ -285,13 +286,17 @@ public class ApfloatNum implements INum {
           Apfloat besselI =
               EvalEngine.getApfloat().besselI(apfloatValue(), ((IReal) arg2).apfloatValue());
           return F.num(besselI);
-        } catch (ArithmeticException aex) {
+        } catch (ArithmeticException | ApfloatRuntimeException are) {
           // result would be complex exception
         }
       }
-      Apcomplex besselI =
-          EvalEngine.getApfloat().besselI(apfloatValue(), ((INumber) arg2).apcomplexValue());
-      return F.complexNum(besselI);
+      try {
+        Apcomplex besselI =
+            EvalEngine.getApfloat().besselI(apfloatValue(), ((INumber) arg2).apcomplexValue());
+        return F.complexNum(besselI);
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.BesselI, are);
+      }
     }
     return INum.super.besselI(arg2);
   }
@@ -308,13 +313,17 @@ public class ApfloatNum implements INum {
           if (lopex.getLocalizationKey().equals("lossOfPrecision")) {
             return F.NIL;
           }
-        } catch (ArithmeticException aex) {
+        } catch (ArithmeticException | ApfloatRuntimeException are) {
           // result would be complex exception
         }
       }
-      Apcomplex besselJ =
-          EvalEngine.getApfloat().besselJ(apfloatValue(), ((INumber) arg2).apcomplexValue());
-      return F.complexNum(besselJ);
+      try {
+        Apcomplex besselJ =
+            EvalEngine.getApfloat().besselJ(apfloatValue(), ((INumber) arg2).apcomplexValue());
+        return F.complexNum(besselJ);
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.BesselJ, are);
+      }
     }
     return INum.super.besselJ(arg2);
   }
@@ -327,13 +336,17 @@ public class ApfloatNum implements INum {
           Apfloat besselK =
               EvalEngine.getApfloat().besselK(apfloatValue(), ((IReal) arg2).apfloatValue());
           return F.num(besselK);
-        } catch (ArithmeticException aex) {
+        } catch (ArithmeticException | ApfloatRuntimeException are) {
           // result would be complex exception
         }
       }
-      Apcomplex besselK =
-          EvalEngine.getApfloat().besselK(apfloatValue(), ((INumber) arg2).apcomplexValue());
-      return F.complexNum(besselK);
+      try {
+        Apcomplex besselK =
+            EvalEngine.getApfloat().besselK(apfloatValue(), ((INumber) arg2).apcomplexValue());
+        return F.complexNum(besselK);
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.BesselK, are);
+      }
     }
     return INum.super.besselK(arg2);
   }
@@ -346,13 +359,17 @@ public class ApfloatNum implements INum {
           Apfloat besselY =
               EvalEngine.getApfloat().besselY(apfloatValue(), ((IReal) arg2).apfloatValue());
           return F.num(besselY);
-        } catch (ArithmeticException aex) {
+        } catch (ArithmeticException | ApfloatRuntimeException are) {
           // result would be complex exception
         }
       }
-      Apcomplex besselY =
-          EvalEngine.getApfloat().besselY(apfloatValue(), ((INumber) arg2).apcomplexValue());
-      return F.complexNum(besselY);
+      try {
+        Apcomplex besselY =
+            EvalEngine.getApfloat().besselY(apfloatValue(), ((INumber) arg2).apcomplexValue());
+        return F.complexNum(besselY);
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.BesselY, are);
+      }
     }
     return INum.super.besselY(arg2);
   }
@@ -470,7 +487,7 @@ public class ApfloatNum implements INum {
           Apfloat chebyshevT =
               EvalEngine.getApfloat().chebyshevT(apfloatValue(), ((IReal) arg2).apfloatValue());
           return F.complexNum(chebyshevT);
-        } catch (ArithmeticException | NumericComputationException are) {
+        } catch (ArithmeticException | ApfloatRuntimeException are) {
           // java.lang.ArithmeticException: Result would be complex
         }
       }
@@ -478,8 +495,8 @@ public class ApfloatNum implements INum {
         Apcomplex chebyshevT =
             EvalEngine.getApfloat().chebyshevT(apfloatValue(), ((INumber) arg2).apcomplexValue());
         return F.complexNum(chebyshevT);
-      } catch (NumericComputationException are) {
-
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.ChebyshevT, are);
       }
     }
     return INum.super.chebyshevT(arg2);
@@ -493,7 +510,7 @@ public class ApfloatNum implements INum {
           Apfloat chebyshevU =
               EvalEngine.getApfloat().chebyshevU(apfloatValue(), ((IReal) arg2).apfloatValue());
           return F.complexNum(chebyshevU);
-        } catch (ArithmeticException | NumericComputationException are) {
+        } catch (ArithmeticException | ApfloatRuntimeException are) {
 
         }
       }
@@ -501,8 +518,8 @@ public class ApfloatNum implements INum {
         Apcomplex chebyshevU =
             EvalEngine.getApfloat().chebyshevU(apfloatValue(), ((INumber) arg2).apcomplexValue());
         return F.complexNum(chebyshevU);
-      } catch (ArithmeticException | NumericComputationException are) {
-
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.ChebyshevU, are);
       }
     }
     return INum.super.chebyshevU(arg2);
@@ -2014,14 +2031,6 @@ public class ApfloatNum implements INum {
       return F.complexNum(fApfloat.multiply(that.apcomplexValue()));
     }
     throw new java.lang.ArithmeticException();
-  }
-
-  @Override
-  public IExpr timesExpr(final INumber that) {
-    if (this.isInfinite() || that.isInfinite()) {
-      return F.Times(this, that).eval();
-    }
-    return times(that);
   }
 
   @Override

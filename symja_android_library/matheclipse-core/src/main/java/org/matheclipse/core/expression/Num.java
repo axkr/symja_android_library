@@ -4,6 +4,7 @@ import java.util.function.Function;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatArithmeticException;
+import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.InfiniteExpansionException;
 import org.apfloat.LossOfPrecisionException;
 import org.apfloat.NumericComputationException;
@@ -299,13 +300,17 @@ public class Num implements INum {
           Apfloat besselI =
               EvalEngine.getApfloatDouble().besselI(apfloatValue(), ((IReal) arg2).apfloatValue());
           return F.num(besselI.doubleValue());
-        } catch (ArithmeticException aex) {
+        } catch (ArithmeticException | ApfloatRuntimeException are) {
           // result would be complex exception
         }
       }
-      Apcomplex besselI =
-          EvalEngine.getApfloatDouble().besselI(apfloatValue(), ((INumber) arg2).apcomplexValue());
-      return F.complexNum(besselI.real().doubleValue(), besselI.imag().doubleValue());
+      try {
+        Apcomplex besselI = EvalEngine.getApfloatDouble().besselI(apfloatValue(),
+            ((INumber) arg2).apcomplexValue());
+        return F.complexNum(besselI.real().doubleValue(), besselI.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.BesselI, are);
+      }
     }
     return INum.super.besselI(arg2);
   }
@@ -322,7 +327,7 @@ public class Num implements INum {
           if (lopex.getLocalizationKey().equals("lossOfPrecision")) {
             return F.NIL;
           }
-        } catch (ArithmeticException aex) {
+        } catch (ArithmeticException | ApfloatRuntimeException are) {
           // result would be complex exception
         }
       }
@@ -334,8 +339,8 @@ public class Num implements INum {
         if (lopex.getLocalizationKey().equals("lossOfPrecision")) {
           return F.NIL;
         }
-      } catch (ArithmeticException aex) {
-        // result would be complex exception
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.BesselJ, are);
       }
     }
     return INum.super.besselJ(arg2);
@@ -349,13 +354,17 @@ public class Num implements INum {
           Apfloat besselK =
               EvalEngine.getApfloatDouble().besselK(apfloatValue(), ((IReal) arg2).apfloatValue());
           return F.num(besselK.doubleValue());
-        } catch (ArithmeticException aex) {
+        } catch (ArithmeticException | ApfloatRuntimeException are) {
           // result would be complex exception
         }
       }
-      Apcomplex besselK =
-          EvalEngine.getApfloatDouble().besselK(apfloatValue(), ((INumber) arg2).apcomplexValue());
-      return F.complexNum(besselK.real().doubleValue(), besselK.imag().doubleValue());
+      try {
+        Apcomplex besselK = EvalEngine.getApfloatDouble().besselK(apfloatValue(),
+            ((INumber) arg2).apcomplexValue());
+        return F.complexNum(besselK.real().doubleValue(), besselK.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.BesselK, are);
+      }
     }
     return INum.super.besselK(arg2);
   }
@@ -368,13 +377,17 @@ public class Num implements INum {
           Apfloat besselY =
               EvalEngine.getApfloatDouble().besselY(apfloatValue(), ((IReal) arg2).apfloatValue());
           return F.num(besselY.doubleValue());
-        } catch (ArithmeticException aex) {
+        } catch (ArithmeticException | ApfloatRuntimeException are) {
           // result would be complex exception
         }
       }
-      Apcomplex besselY =
-          EvalEngine.getApfloatDouble().besselY(apfloatValue(), ((INumber) arg2).apcomplexValue());
-      return F.complexNum(besselY.real().doubleValue(), besselY.imag().doubleValue());
+      try {
+        Apcomplex besselY = EvalEngine.getApfloatDouble().besselY(apfloatValue(),
+            ((INumber) arg2).apcomplexValue());
+        return F.complexNum(besselY.real().doubleValue(), besselY.imag().doubleValue());
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.BesselY, are);
+      }
     }
     return INum.super.besselI(arg2);
   }
@@ -506,7 +519,7 @@ public class Num implements INum {
           Apfloat chebyshevT = EvalEngine.getApfloatDouble().chebyshevT(apfloatValue(),
               ((IReal) arg2).apfloatValue());
           return F.num(chebyshevT.doubleValue());
-        } catch (ArithmeticException | NumericComputationException are) {
+        } catch (ArithmeticException | ApfloatRuntimeException are) {
 
         }
       }
@@ -514,8 +527,8 @@ public class Num implements INum {
         Apcomplex chebyshevT = EvalEngine.getApfloatDouble().chebyshevT(apfloatValue(),
             ((INumber) arg2).apcomplexValue());
         return F.complexNum(chebyshevT.real().doubleValue(), chebyshevT.imag().doubleValue());
-      } catch (NumericComputationException are) {
-
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.ChebyshevT, are);
       }
     }
     return INum.super.chebyshevT(arg2);
@@ -529,7 +542,7 @@ public class Num implements INum {
           Apfloat chebyshevU = EvalEngine.getApfloatDouble().chebyshevU(apfloatValue(),
               ((IReal) arg2).apfloatValue());
           return F.num(chebyshevU.doubleValue());
-        } catch (ArithmeticException | NumericComputationException are) {
+        } catch (ArithmeticException | ApfloatRuntimeException are) {
 
         }
       }
@@ -537,8 +550,8 @@ public class Num implements INum {
         Apcomplex chebyshevU = EvalEngine.getApfloatDouble().chebyshevU(apfloatValue(),
             ((INumber) arg2).apcomplexValue());
         return F.complexNum(chebyshevU.real().doubleValue(), chebyshevU.imag().doubleValue());
-      } catch (ArithmeticException | NumericComputationException are) {
-
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.ChebyshevU, are);
       }
     }
     return INum.super.chebyshevU(arg2);

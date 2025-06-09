@@ -6,6 +6,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatArithmeticException;
 import org.apfloat.ApfloatMath;
+import org.apfloat.ApfloatRuntimeException;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.InfiniteExpansionException;
 import org.apfloat.LossOfPrecisionException;
@@ -292,9 +293,13 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr besselI(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      Apcomplex besselI =
-          EvalEngine.getApfloat().besselI(apcomplexValue(), ((INumber) arg2).apcomplexValue());
-      return F.complexNum(besselI);
+      try {
+        Apcomplex besselI =
+            EvalEngine.getApfloat().besselI(apcomplexValue(), ((INumber) arg2).apcomplexValue());
+        return F.complexNum(besselI);
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.BesselI, are);
+      }
     }
     return IComplexNum.super.besselI(arg2);
   }
@@ -302,9 +307,13 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr besselJ(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      Apcomplex besselJ =
-          EvalEngine.getApfloat().besselI(apcomplexValue(), ((INumber) arg2).apcomplexValue());
-      return F.complexNum(besselJ);
+      try {
+        Apcomplex besselJ =
+            EvalEngine.getApfloat().besselI(apcomplexValue(), ((INumber) arg2).apcomplexValue());
+        return F.complexNum(besselJ);
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.BesselJ, are);
+      }
     }
     return IComplexNum.super.besselJ(arg2);
   }
@@ -312,9 +321,13 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr besselK(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      Apcomplex besselK =
-          EvalEngine.getApfloat().besselK(apcomplexValue(), ((INumber) arg2).apcomplexValue());
-      return F.complexNum(besselK);
+      try {
+        Apcomplex besselK =
+            EvalEngine.getApfloat().besselK(apcomplexValue(), ((INumber) arg2).apcomplexValue());
+        return F.complexNum(besselK);
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.BesselK, are);
+      }
     }
     return IComplexNum.super.besselK(arg2);
   }
@@ -322,9 +335,13 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr besselY(IExpr arg2) {
     if (arg2 instanceof INumber) {
-      Apcomplex besselY =
-          EvalEngine.getApfloat().besselY(apcomplexValue(), ((INumber) arg2).apcomplexValue());
-      return F.complexNum(besselY);
+      try {
+        Apcomplex besselY =
+            EvalEngine.getApfloat().besselY(apcomplexValue(), ((INumber) arg2).apcomplexValue());
+        return F.complexNum(besselY);
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.BesselY, are);
+      }
     }
     return IComplexNum.super.besselY(arg2);
   }
@@ -442,8 +459,8 @@ public class ApcomplexNum implements IComplexNum {
         Apcomplex chebyshevT =
             EvalEngine.getApfloat().chebyshevT(apcomplexValue(), ((INumber) arg2).apcomplexValue());
         return F.complexNum(chebyshevT);
-      } catch (NumericComputationException are) {
-
+      } catch (ArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.ChebyshevT, are);
       }
     }
     return IComplexNum.super.chebyshevT(arg2);
@@ -461,8 +478,8 @@ public class ApcomplexNum implements IComplexNum {
         Apcomplex chebyshevU =
             EvalEngine.getApfloat().chebyshevU(apcomplexValue(), ((INumber) arg2).apcomplexValue());
         return F.complexNum(chebyshevU);
-      } catch (ArithmeticException | NumericComputationException are) {
-
+      } catch (ApfloatArithmeticException | ApfloatRuntimeException are) {
+        return Errors.printMessage(S.ChebyshevU, are);
       }
     }
     return IComplexNum.super.chebyshevU(arg2);
@@ -1669,14 +1686,6 @@ public class ApcomplexNum implements IComplexNum {
   public IInexactNumber times(final INumber that) {
     return ApcomplexNum
         .valueOf(EvalEngine.getApfloat().multiply(fApcomplex, that.apcomplexValue()));
-  }
-
-  @Override
-  public IExpr timesExpr(final INumber that) {
-    if (this.isInfinite() || that.isInfinite()) {
-      return F.Times(this, that).eval();
-    }
-    return times(that);
   }
 
   @Override

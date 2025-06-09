@@ -367,16 +367,26 @@ public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
    * Returns an <code>IExpr</code> whose value is <code>(this * that)</code>.
    * 
    * @param that
-   * @return
    */
   default IExpr timesExpr(INumber that) {
+    if (this.isInfinite()) {
+      IExpr arg1 = this.isPositive() ? F.CInfinity : F.CNInfinity;
+      if (that.isInfinite()) {
+        IExpr arg2 = that.isPositive() ? F.CInfinity : F.CNInfinity;
+        return F.Times(arg1, arg2);
+      }
+      return F.Times(arg1, that);
+    }
+    if (that.isInfinite()) {
+      IExpr arg2 = that.isPositive() ? F.CInfinity : F.CNInfinity;
+      return F.Times(this, arg2);
+    }
     return times(that);
   }
 
   /**
    * Return the list <code>{r, theta}</code> of the polar coordinates of this number
    *
-   * @return
    */
   public IAST toPolarCoordinates();
 
