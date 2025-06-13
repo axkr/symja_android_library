@@ -288,6 +288,8 @@ public class DistributionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testNProbability() {
+    check("NProbability(90<=x <=110, Distributed(x,NormalDistribution(100,15)))", //
+        "0.495015");
     check("NProbability(E^x<3, Distributed(x,PoissonDistribution(1)))", //
         "0.735759");
     check("NProbability(x < 3, Distributed(x,NormalDistribution()))", //
@@ -699,6 +701,11 @@ public class DistributionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testProbability() {
+    check("Probability(90<=x<=110, Distributed(x,NormalDistribution(100,15)))", //
+        "Erf(Sqrt(2)/3)");
+
+    check("Probability(x<Log(3), Distributed(x, NormalDistribution()))", //
+        "1/2+Erf(Log(3)/Sqrt(2))/2");
     // check("Probability(E^x<3, Distributed(x, NormalDistribution()))", //
     // "");
 

@@ -34,6 +34,7 @@ import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IAST.PROPERTY;
@@ -4161,6 +4162,13 @@ public class StatisticsFunctions {
             } else if (distribution.isContinuousDistribution()) {
               IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
               if (pdf.isPresent()) {
+                if (predicate.isRelational()) {
+                  IAST newIntervalData = IntervalDataSym.relationToInterval((IAST) predicate, x);
+                  if (newIntervalData.isIntervalData() && newIntervalData.argSize() == 1) {
+                    IAST list = (IAST) newIntervalData.arg1();
+                    return engine.evaluate(F.NIntegrate(pdf, F.List(x, list.arg1(), list.arg4())));
+                  }
+                }
                 return engine.evaluate(F.NIntegrate(F.Times(F.Boole(predicate), pdf),
                     F.List(x, F.CNInfinity, F.CInfinity)));
               }
@@ -5850,9 +5858,15 @@ public class StatisticsFunctions {
                 }
               }
             } else if (distribution.isContinuousDistribution()) {
-              IDistribution dist = getDistribution(distribution);
               IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
               if (pdf.isPresent()) {
+                if (predicate.isRelational()) {
+                  IAST newIntervalData = IntervalDataSym.relationToInterval((IAST) predicate, x);
+                  if (newIntervalData.isIntervalData() && newIntervalData.argSize() == 1) {
+                    IAST list = (IAST) newIntervalData.arg1();
+                    return engine.evaluate(F.Integrate(pdf, F.List(x, list.arg1(), list.arg4())));
+                  }
+                }
                 return engine.evaluate(F.Integrate(F.Times(F.Boole(predicate), pdf),
                     F.List(x, F.CNInfinity, F.CInfinity)));
               }

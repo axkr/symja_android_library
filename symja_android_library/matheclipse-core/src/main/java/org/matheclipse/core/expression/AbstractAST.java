@@ -4648,6 +4648,17 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   }
 
   @Override
+  public boolean isRelational() {
+    if (size() == 4) {
+      return isFunctionID(ID.Greater, ID.GreaterEqual, ID.Less, ID.LessEqual);
+    }
+    if (size() == 3) {
+      return isFunctionID(ID.Equal, ID.Unequal, ID.Greater, ID.GreaterEqual, ID.Less, ID.LessEqual);
+    }
+    return false;
+  }
+
+  @Override
   public boolean isRelationalBinary() {
     if (size() == 3) {
       return isFunctionID(ID.Equal, ID.Unequal, ID.Greater, ID.GreaterEqual, ID.Less, ID.LessEqual);

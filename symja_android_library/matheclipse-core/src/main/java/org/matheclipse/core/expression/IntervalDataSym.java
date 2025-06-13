@@ -646,6 +646,85 @@ public class IntervalDataSym {
     throw new ArgumentTypeStopException("Not implemented");
   }
 
+  public static IAST relationToInterval(IAST relation, IExpr symbol) {
+    int headID = relation.headID();
+    if (relation.isAST2()) {
+      IExpr lhs = relation.arg1();
+      IExpr rhs = relation.arg2();
+      if (symbol.equals(lhs) && !symbol.equals(rhs)) {
+        IExpr value = rhs;
+        // symbol <relation> value
+        switch (headID) {
+          case ID.Greater:
+            return open(value, F.CInfinity);
+          case ID.GreaterEqual:
+            return rOpen(value, F.CInfinity);
+          case ID.Less:
+            return open(F.CNInfinity, value);
+          case ID.LessEqual:
+            return lOpen(F.CNInfinity, value);
+          case ID.Equal:
+            return close(value, value);
+          case ID.Unequal:
+            return F.IntervalData(//
+                F.List(F.CNInfinity, S.Less, S.Less, value), //
+                F.List(value, S.Less, S.Less, F.CInfinity));
+        }
+      } else if (symbol.equals(rhs) && !symbol.equals(lhs)) {
+        IExpr value = lhs;
+        // value <relation> symbol
+        switch (headID) {
+          case ID.Greater:
+            return open(F.CNInfinity, value);
+          case ID.GreaterEqual:
+            return lOpen(F.CNInfinity, value);
+          case ID.Less:
+            return open(value, F.CInfinity);
+          case ID.LessEqual:
+            return rOpen(value, F.CInfinity);
+          case ID.Equal:
+            return close(value, value);
+          case ID.Unequal:
+            return F.IntervalData(//
+                F.List(F.CNInfinity, S.Less, S.Less, value), //
+                F.List(value, S.Less, S.Less, F.CInfinity));
+        }
+      }
+    } else if (relation.isAST3()) {
+      IExpr lhs = relation.arg1();
+      IExpr rhs = relation.arg3();
+      if (symbol.equals(relation.arg2()) && !symbol.equals(lhs) && !symbol.equals(rhs)) {
+        switch (headID) {
+          case ID.Greater:
+            return F.IntervalData(//
+                F.List(rhs, //
+                    S.Less, //
+                    S.Less, //
+                   lhs));
+          case ID.GreaterEqual: 
+            return F.IntervalData(//
+                F.List(rhs, //
+                    S.LessEqual, //
+                    S.LessEqual, //
+                    lhs));
+          case ID.Less:
+            return F.IntervalData(//
+                F.List(lhs, //
+                    S.Less, //
+                    S.Less, //
+                    rhs));
+          case ID.LessEqual:
+            return F.IntervalData(//
+                F.List(lhs, //
+                    S.LessEqual, //
+                    S.LessEqual, //
+                    rhs));
+        }
+      }
+    }
+    return F.NIL;
+  }
+
   public static IExpr times(final IAST ast1, final IAST ast2) {
     IAST interval1 = normalize(ast1);
     IAST interval2 = normalize(ast2);

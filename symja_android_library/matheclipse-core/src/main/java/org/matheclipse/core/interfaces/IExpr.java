@@ -4638,6 +4638,18 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is a relational binary operation for
+   * {@link S#Equal},{@link S#Unequal},@link S#GreaterEqual},{@link S#LessEqual},@link S#Greater} or
+   * {@link S#Less} or ternary operation for @link S#GreaterEqual},{@link S#LessEqual},@link
+   * S#Greater} or {@link S#Less}
+   * 
+   * @return
+   */
+  default boolean isRelational() {
+    return false;
+  }
+
+  /**
    * Test if this expression is a relational binary operation
    * {@link S#Equal},{@link S#Unequal},@link S#GreaterEqual},{@link S#LessEqual},@link S#Greater} or
    * {@link S#Less}
