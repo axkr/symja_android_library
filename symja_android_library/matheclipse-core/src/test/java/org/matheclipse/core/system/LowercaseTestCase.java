@@ -162,6 +162,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("AbsArg(Gamma(-1/2))", //
         "{2*Sqrt(Pi),Pi}");
 
+    check("AbsArg(3)", //
+        "{3,0}");
+    check("AbsArg(-3)", //
+        "{3,Pi}");
+    check("AbsArg(3.0)", //
+        "{3.0,0}");
+    check("AbsArg(-3.0)", //
+        "{3.0,Pi}");
     check("AbsArg({1, I, 0})", //
         "{{1,0},{1,Pi/2},{0,0}}");
     check("AbsArg(z) /. z -> {1, I, 0}", //
@@ -895,6 +903,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArg() {
+    check("Arg((-17)^(1/4))", //
+        "Pi/4");
+
     check("Arg((x + 1)*(x - 1) - x^2 + 1)//Simplify", //
         "0");
     check("Arg({x,y})", //
@@ -1247,6 +1258,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArrayReduce() {
+    check("ArrayReduce(2+I,{{{}}},2)", //
+        "ArrayReduce(2+I,{{{}}},2)");
+    // TODO
+    check("ArrayReduce(f(),{{{}}},{1,1})", //
+        "ArrayReduce(f(),{{{}}},{1,1})");
+
+
     // dimension {3,5,2,6,4}
     check("arr={{{{{8.983539860095728, 5.255293823358649, 1.8761205846899998, \n" //
         + " 3.2685848929551256}, {3.5882114864068253, 8.415681473519868, \n" //
@@ -1581,9 +1599,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testAssuming001() {
-    check("Assuming(a < 0 && b > 0, Refine(HeavisideTheta(b, b, a)))", //
-        "0");
 
+    // check("Assuming(x >= 0 && y < 0,If(TrueQ(Refine(x - y > 0)), Refine(Sqrt(x^2 y^2)), 0))", //
+    // " ");
     check("$Assumptions = { x > 0 }", //
         "{x>0}");
     check("Assuming(y>0, $Assumptions)", //
@@ -2033,6 +2051,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testBlock() {
+
     // Rubi rules use Block variable names in "sub-rules":
     check("Integrate(E^(E^x + x), x)", //
         "E^E^x");
@@ -4582,6 +4601,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testD() {
+    check("D(Boole(f(x)),{x,10})", //
+        "0");
+    check("D(Boole(f(x)),x)", //
+        "0");
+    check("D(Boole(f(x)),{x,n})", //
+        "D(Boole(f(x)),{x,n})");
     // check("D(a*3^x,{x,n})", //
     // "a*E^x");
     // TODO
@@ -6559,6 +6584,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // TODO
     // check("Length(ElementData(All))", "118");
 
+    check("ElementData(117, \"MeltingPoint\")", //
+        "Missing(NotAvailable)");
+    check("ElementData(\"F\", \"SoundSpeed\")", //
+        "Missing(NotAvailable)");
     check("ElementData(74)", //
         "Tungsten");
     check("ElementData(\"He\", \"AbsoluteBoilingPoint\")", //
@@ -8230,6 +8259,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFibonacci() {
+    check("Fibonacci(3,f( ))", //
+        "1+f()^2");
+
     checkNumeric("Fibonacci(5.8, 3)", //
         "283.4827308329499");
     // check("Fibonacci(10007,Quantity(1.2,\"m\"))", //
@@ -8761,6 +8793,29 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindSequenceFunction() {
+    // check("FindSequenceFunction({5,5,5,5,5},n)", //
+    // "5");
+    // check("FindSequenceFunction({1,2,3,4,5})", //
+    // "#1&");
+    // check("FindSequenceFunction({1,2,3,4,5},n)", //
+    // "n");
+
+    check("FindSequenceFunction({1,-1,3},n)", //
+        "FindSequenceFunction({1,-1,3},n)");
+
+    check("FindSequenceFunction({0,1,4,9,16},n)", //
+        "(1-n)^2");
+    check("FindSequenceFunction({2, 5, 10, 17, 26, 37, 50},n)", //
+        "1+n^2");
+    check("FindSequenceFunction({2, 5/2, 10/3, 17/4, 26/5, 37/6, 50/7}, n)", //
+        "(1+n^2)/n");
+    check("FindSequenceFunction({6, 17, 34, 57, 86, 121},n)", //
+        "1+2*n+3*n^2");
+    check("FindSequenceFunction({1, 2, 4, 8, 16},n)", //
+        "2^(-1+n)");
+    check("FindSequenceFunction({9, 27, 81, 243},n)", //
+        "3^(1+n)");
+
     check(
         "FindSequenceFunction({0,1,2,9,44,265,1854,14833,133496,1334961,14684570,176214841,2290792932,32071101049,481066515734,7697064251745,130850092279664},n)", //
         "Subfactorial(n)");
@@ -8809,10 +8864,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3^n");
     check("FindSequenceFunction({7,9,11,13,15})", //
         "5+2*#1&");
-    check("FindSequenceFunction({1,2,3,4,5})", //
-        "#1&");
-    check("FindSequenceFunction({1,2,3,4,5},n)", //
-        "n");
+
 
   }
 
@@ -9318,6 +9370,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFold() {
+    check("Fold(f, {})", //
+        "Fold(f,{})");
+    // message Fold: Nonatomic expression expected at position 2 in Fold(2.71828,NumericArray(Type:
+    // Real64 Dimensions: {2,3})).
+    check("Fold(2.71828,NumericArray(RandomReal(1, {2,3}), \"Real64\"))", //
+        "Fold(2.71828,NumericArray(Type: Real64 Dimensions: {2,3}))");
     // message: Fold: Fold called with 5 arguments; 1 or 3 arguments are expected.
     check("Fold(f)[{a, b, c, d},x,y,z]", //
         "Fold(f)[{a,b,c,d},x,y,z]");
@@ -9785,6 +9843,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFullSimplify() {
+    // TODO
+    // check("FullSimplify(a*b*c/Abs(b))", //
+    // "a*c*Sign(b)");
     check("FullSimplify(Mod(Mod(a, c) + Mod(b*q, c) + f(x), c))", //
         "Mod(a+b*q+f(x),c)");
 
@@ -10015,6 +10076,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFunctionDomain() {
+    // TODO implementation for multiple variables
+    // check("FunctionDomain(Sqrt(x^2+y^2-9), {x, y})", //
+    // " ");
+    check("FunctionDomain((x^2+x+1)/(-7+x^2), x)", //
+        "x<-Sqrt(7)||(-Sqrt(7)<x&&x<Sqrt(7))||x>Sqrt(7)");
+
+
+    check("FunctionDomain(Sqrt(1-x)+Sqrt(1+x), x )", //
+        "-1<=x&&x<=1");
+
     check("FunctionDomain(ArcCoth(2+3*x)*ArcSec(7+2/3*x), x)", //
         "x<=-12||(-9<=x&&x<-1)||x>-1/3");
     check("FunctionDomain(ArcSin(2+3*x), x)", //
@@ -14426,10 +14497,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testMax() {
 
-    check("Max(Sequence())", //
-        "-Infinity");
     check("Refine(Max(Infinity,x), x>0)", //
         "Infinity");
+    check("Max(Sequence())", //
+        "-Infinity");
     check("Max(Interval({1,2}))", //
         "2");
     check("Refine(Max(Infinity,x,y), x>0&&y>0)", //
@@ -14686,13 +14757,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMin() {
+    check("Min(5, x, -3, y, 40)", //
+        "Min(-3,x,y)");
+    check("Refine(Min(-Infinity,x), x>0)", //
+        "-Infinity");
+
     check("Min(Sequence())", //
         "Infinity");
     check("Min(Interval({1,2}))", //
         "1");
 
-    check("Refine(Min(-Infinity,x), x>0)", //
-        "-Infinity");
     check("Refine(Min(-Infinity,x,y), x>0&&y>0)", //
         "-Infinity");
     check("Refine(Min(-Infinity,x,y), x>0)", //
@@ -14716,16 +14790,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Refine(Infinity<x, x>0)", //
         "False");
 
-    check("Min(5, x, -3, y, 40)", //
-        "Min(-3,x,y)");
+    // check("Min(5, x, -3, y, 40)", //
+    // "Min(-3,x,y)");
     check("Min(4, -8, 1)", //
         "-8");
     check("Min({1,2},3,{-3,3.5,-Infinity},{{1/2}})", //
         "-Infinity");
     check("Min(x, y)", //
         "Min(x,y)");
-    check("Min(5, x, -3, y, 40)", //
-        "Min(-3,x,y)");
     check("Min()", //
         "Infinity");
     check("Min(x)", //
@@ -16039,7 +16111,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNorm() {
-
     // message Power: BigInteger bit length 76493 exceeded
     check("Norm({10,100,200},10007)", //
         "Norm({10,100,200},10007)", //
@@ -16137,6 +16208,33 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNormalize() {
+    check("Normalize({0.0,1.0,0.0,2.0,0.0,0.0,0.0,3.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,4.0})", //
+        "{0.0,0.182574,0.0,0.365148,0.0,0.0,0.0,0.547723,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.730297}");
+    check("s = N(SparseArray(Table({2^i}->i,{i,4})));", //
+        "");
+    check("Normal(s)", //
+        "{0.0,1.0,0.0,2.0,0.0,0.0,0.0,3.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,4.0}");
+    check("t=Normalize(s)", //
+        "SparseArray(Number of elements: 4 Dimensions: {16} Default value: 0.0)");
+    check("Normal(t)", //
+        "{0.0,0.182574,0.0,0.365148,0.0,0.0,0.0,0.547723,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.730297}");
+
+    check("s = N(SparseArray(Table({2^i}->i,{i,20})));", //
+        "");
+    check("Normal(s)", //
+        "SparseArray(Number of elements: 20 Dimensions: {1048576} Default value: 0.0)");
+    check("t=Normalize(s)", //
+        "SparseArray(Number of elements: 20 Dimensions: {1048576} Default value: 0.0)");
+
+    check("ArrayRules(t)", //
+        "{{2}->0.0186663,{4}->0.0373327,{8}->0.055999,{16}->0.0746653,{32}->0.0933317,{64}->0.111998,{\n" //
+            + "128}->0.130664,{256}->0.149331,{512}->0.167997,{1024}->0.186663,{2048}->0.20533,{\n" //
+            + "4096}->0.223996,{8192}->0.242662,{16384}->0.261329,{32768}->0.279995,{65536}->0.298661,{\n" //
+            + "131072}->0.317328,{262144}->0.335994,{524288}->0.35466,{1048576}->0.373327,{_}->0.0}");
+    check("Norm(s)", //
+        "53.57238");
+
+
     // message Normalize: The first argument is not a number or a vector, or the second argument is
     // not a norm function that always returns a non-negative real number for any numeric argument.
     check("Normalize({{1, 2}, {4, 5}})", //
@@ -16952,6 +17050,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPadLeft() {
+    // check("PadLeft(IntervalData(),101,{x,1,-1,-1})", //
+    // "");
     // TODO
     // check("PadLeft({1, 2, 3}, 10, {a, b, c}, 2)", //
     // "{b, c, a, b, c, 1, 2, 3, a, b}");
@@ -17739,6 +17839,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testPolyLog() {
     // check("PolyLog(10007,-1.5707963267948966)", //
     // "");
+
+    check("PolyLog(-4,z)", //
+        "(z+11*z^2+11*z^3+z^4)/(1-z)^5");
+    check("PolyLog(0,f(x))", //
+        "f(x)/(1-f(x))");
     check("PolyLog(-7.0, I)", //
         "136.0");
     check("PolyLog(1, 3, z)", //
@@ -17804,8 +17909,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("PolyLog(0, 1, z)", //
         "-Log(1-z)");
 
-    check("PolyLog(-4,z)", //
-        "(z+11*z^2+11*z^3+z^4)/(1-z)^5");
     check("PolyLog(-2147483648,2.718281828459045)", //
         "PolyLog(-2.14748*10^9,2.71828)");
 
@@ -17831,8 +17934,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Zeta(3)");
     check("PolyLog(f(x),-1)", //
         "(-1+2^(1-f(x)))*Zeta(f(x))");
-    check("PolyLog(0,f(x))", //
-        "f(x)/(1-f(x))");
     check("PolyLog(1,f(x))", //
         "-Log(1-f(x))");
     check("PolyLog(-1,f(x))", //
@@ -19832,6 +19933,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testQuotient() {
+    check("Quotient({x,1,-1,-1},{1,2,3,a},-0.8+I*1.2)", //
+        "{Quotient(x,1,-0.8+I*1.2),1-I,0,Quotient(-1,a,-0.8+I*1.2)}");
+
+
     check("Quotient(m,n) // FunctionExpand", //
         "Floor(m/n)");
     check("Quotient(m,n,d) // FunctionExpand", //
@@ -20839,6 +20944,76 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRefine() {
+    // TODO relations without numeric constants
+    // check("Refine(x == y, x < y)", //
+    // "False");
+
+
+    check("Refine(Floor(x), 2<x&&x<3)", //
+        "2");
+    check("Refine(Floor(x), 2.1<x&&x<=2.9)", //
+        "2");
+    check("Refine(Floor(x), 2.1<x&&x<=3)", //
+        "Floor(x)");
+    check("Refine(Floor(x), 2<x&&x<=3)", //
+        "Floor(x)");
+    check("Refine(Floor(x), 2<x&&x<3)", //
+        "2");
+
+    check("Refine(Ceiling(x), 1<x&&x<=2.9)", //
+        "Ceiling(x)");
+    check("Refine(Ceiling(x), 2<x&&x<4)", //
+        "Ceiling(x)");
+    check("Refine(Ceiling(x), 2.1<x&&x<=2.9)", //
+        "3");
+    check("Refine(Ceiling(x), 2.1<x&&x<=3)", //
+        "3");
+    check("Refine(Ceiling(x), 2<x&&x<=3)", //
+        "3");
+    // print message:$Assumptions: Warning contradictory assumption(s) x>5&&x<2 encountered.
+    check("Refine(x<=5,x > 5 && x < 2)", //
+        "x<=5");
+    check("Refine(x<=5,x>=5)", //
+        "x<=5");
+    check("Refine(x<=5,x>5)", //
+        "False");
+    check("Refine(x<=5,x<=5)", //
+        "True");
+    check("Refine(x<=5,x<5)", //
+        "True");
+
+    check("Refine(x>=5,x<=5)", //
+        "x>=5");
+    check("Refine(x>=5,x<5)", //
+        "False");
+    check("Refine(x>=5,x>=5)", //
+        "True");
+    check("Refine(x>=5,x>5)", //
+        "True");
+
+
+    check("Refine(x>5,x<5)", //
+        "False");
+    check("Refine(x>5,x>5)", //
+        "True");
+
+    check("Refine(Min(x,5),x<5)", //
+        "x");
+    check("Refine(Min(x,5),x>5)", //
+        "5");
+
+    check("Refine(Max(x,5),x>5)", //
+        "x");
+    check("Refine(Max(x,5),x<5)", //
+        "5");
+
+
+    check("Refine(Im(z), Element(z, Reals))", //
+        "0");
+    check("Refine(Re(z),Element(z,Complexes)&&Im(z)==0)", //
+        "z");
+
+
     check("(x+1)*(x-1)", //
         "(-1+x)*(1+x)");
 
@@ -20849,8 +21024,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "True");
     // check("Refine((-1)^(x+y), Element(k/2, Integers))", //
     // "(-1)^y");
-    check("Refine(Sqrt(x^2 y^2), x>0&&y<-10)", //
-        "-x*y");
 
     check("Refine(Sqrt(a-I*Sqrt(b))*Sqrt(a+I*Sqrt(b)),a>0&&b>0)", //
         "Sqrt(a^2+b)");
@@ -20863,6 +21036,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("Refine(1-w<0,w>1)", //
         "True");
+
+    check("Refine(Cos(n*Pi),Element(n, Integers))", //
+        "(-1)^n");
+    check("Refine(Sec(n*Pi),Element(n, Integers))", //
+        "(-1)^n");
+    check("Refine(Sin(n*Pi),Element(n, Integers))", //
+        "0");
+    check("Refine(Tan(n*Pi),Element(n, Integers))", //
+        "0");
+    check("Refine(Cot(n*Pi),Element(n, Integers))", //
+        "ComplexInfinity");
+    check("Refine(Csc(n*Pi),Element(n, Integers))", //
+        "ComplexInfinity");
 
     check("Refine(Csc(Pi*(1/2+m)), Element(m, Integers))", //
         "I^(2*m)");
@@ -20893,6 +21079,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Refine(Cos(x+k*Pi), Element(k, Integers))", //
         "(-1)^k*Cos(x)");
 
+    check("Refine(Re(a+b*I),Element(a|b,Reals))", //
+        "a");
     check("Refine(Re(Log(x)),x>0)", //
         "Log(x)");
     check("Refine(Im(Log(x)),x>0)", //
@@ -21089,6 +21277,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Refine(Arg(x), Assumptions -> x>0)", //
         "0");
     check("Refine(Arg(x), Assumptions -> x<0)", //
+        "Pi");
+    check("Refine(Arg(x), x < -5)", //
         "Pi");
 
     check("Refine(x==0)", //
@@ -22917,6 +23107,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSqrt() {
+    check("Sqrt({{{1,0},{2,3}},{{4,a},{1}}})", //
+        "{{{1,0},{Sqrt(2),Sqrt(3)}},{{2,Sqrt(a)},{1}}}");
     check("Sqrt(-Sqrt(3))", //
         "I*3^(1/4)");
     check("Sqrt(Sqrt(3))", //

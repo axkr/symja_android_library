@@ -121,6 +121,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     check("CoefficientList(Series(Log(1-x), {x, 0, 9}), x)", //
         "{0,-1,-1/2,-1/3,-1/4,-1/5,-1/6,-1/7,-1/8,-1/9}");
   }
+
   @Test
   public void testSeries() {
     // TODO check max power
@@ -438,6 +439,13 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSeriesCoefficient() {
+    check("SeriesCoefficient(f(x),{x,a,2})", //
+        "f''(a)/2");
+    check("SeriesCoefficient(f(x),{x,2,4})", //
+        "Derivative(4)[f][2]/24");
+    check("SeriesCoefficient(x^x,{x,2,4})", //
+        "1/6*(4+9*Log(2)+9*Log(2)^2+4*Log(2)^3+Log(2)^4)");
+
     check("SeriesCoefficient(ArcTan(x),{x,n,12})", //
         "(3*n-55*n^3+198*n^5-198*n^7+55*n^9-3*n^11)/(3*(1+12*n^2+66*n^4+220*n^6+495*n^8+\n" //
             + "792*n^10+924*n^12+792*n^14+495*n^16+220*n^18+66*n^20+12*n^22+n^24))");
@@ -446,8 +454,6 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "Piecewise({{(-(-I*Pi-ArcCsch(2))^n-(I*Pi-ArcCsch(2))^n+2*ArcCsch(2)^n)/(2*Sqrt(5)*n!),n>=\n" //
             + "1}},0)");
 
-    // check("SeriesCoefficient(x^x,{x,2,4})", //
-    // " ");
     check("SeriesCoefficient(1/x,{x,0,n})", //
         "0");
     check("SeriesCoefficient(f(x),{x,a,7/3})", //
@@ -467,7 +473,8 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "-2951/3628800");
     check("SeriesCoefficient(Series(Exp(Sin(x)), {x, 0, 10}), 11)", //
         "Indeterminate");
-    check("SeriesCoefficient(a^x, {x, 0, n})", "Piecewise({{Log(a)^n/n!,n>=0}},0)");
+    check("SeriesCoefficient(a^x, {x, 0, n})", //
+        "Piecewise({{Log(a)^n/n!,n>=0}},0)");
 
     check("SeriesCoefficient(x^x,{x,0,4})", //
         "Log(x)^4/24");

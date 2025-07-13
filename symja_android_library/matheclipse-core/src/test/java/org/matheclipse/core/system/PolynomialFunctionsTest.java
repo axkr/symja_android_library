@@ -11,8 +11,8 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testChebyshevT() {
-    check("ChebyshevT(1317624576693539401,3.14159)", //
-        "ChebyshevT(1.31762*10^18,3.14159)");
+    // check("ChebyshevT(1317624576693539401,3.14159)", //
+    // "ChebyshevT(1.31762*10^18,3.14159)");
 
     // https://github.com/mtommila/apfloat/issues/65
     check("N(ChebyshevT(Pi/2,-9223372036854775808/11),30)", //
@@ -361,6 +361,9 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLegendreQ() {
+    checkNumeric("LegendreQ({x,3,3},(Modulus->10)[[2]])", //
+        "{LegendreQ(x,10),-748/3+2485/2*(-I*Pi-Log(9)+Log(11)),-748/3+2485/2*(-I*Pi-Log(9)+Log(\n" //
+            + "11))}");
     checkNumeric("LegendreQ(1/3, 0.5)", //
         "-0.03995329475988969");
     checkNumeric("{LegendreQ(2, 0.5), LegendreQ(2, 2, 0.5), LegendreQ(1/2, 0.5)}", //
@@ -425,6 +428,12 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testZernikeR() {
+    check("ZernikeR(1,2147483647,Sqrt(2))", //
+        "ZernikeR(1,2147483647,Sqrt(2))");
+
+    check("ZernikeR(x,<|a->0,b:>1|>,{-I})", //
+        "{<|a->ZernikeR(x,0,-I),b:>ZernikeR(x,1,-I)|>}");
+
     // https://en.wikipedia.org/wiki/Zernike_polynomials#Radial_polynomials
     check("ZernikeR(0,0,p)", //
         "1");

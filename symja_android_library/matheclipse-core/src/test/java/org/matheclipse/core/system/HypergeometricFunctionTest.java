@@ -138,6 +138,10 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometric2F1() {
+    check("Hypergeometric2F1(1,1/2,3/2,m*z^k)", //
+        "ArcTanh(Sqrt(m)*z^(k/2))/(Sqrt(m)*z^(k/2))");
+
+
     // https://dlmf.nist.gov/15.4
     check("Hypergeometric2F1(a,b,1/2*a+1/2*b+1/2, 1/2)", //
         "(Sqrt(Pi)*Gamma(1/2+a/2+b/2))/(Gamma(1/2+a/2)*Gamma(1/2+b/2))");

@@ -63,6 +63,11 @@ public class StatisticalMomentTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testMoment() {
+    // message: Moment: The first argument {} is expected to be a vector, matrix or a distribution.
+    check("Moment({}, 3)", //
+        "Moment({},3)");
+    check("Moment({a,b}, 0)", //
+        "1");
     check("Moment({a,b,c}, z)", //
         "1/3*(a^z+b^z+c^z)");
     check("Moment({{a,b},{c,d}}, 4) // Simplify", //

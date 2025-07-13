@@ -21,6 +21,16 @@ public class ReduceTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testReduceXReals() {
+    check("Reduce(x > 1 && x < 5 || x >= 5 && x < 8,x,Reals)", //
+        "1<x&&x<8");
+    check("Reduce(x > 1 && x < 5 || x >= 9/2 && x < 8,x,Reals)", //
+        "1<x&&x<8");
+    check("Reduce(x > 1 && x < 4 || x >= 9/2 && x < 8,x,Reals)", //
+        "(1<x&&x<4)||(9/2<=x&&x<8)");
+  }
+
+  @Test
   public void testReduce003() {
     check("Reduce({x > 1, x > 2, x >= 5})", //
         "x>=5");

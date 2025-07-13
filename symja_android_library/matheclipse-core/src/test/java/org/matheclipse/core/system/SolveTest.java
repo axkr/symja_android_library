@@ -2314,6 +2314,20 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{}");
   }
 
+  @Test
+  public void testSolveInverseErfc() {
+    check("Solve(1/49*InverseErfc(x)^2 +1/21*InverseErfc(x) == 1/7, x)", //
+        "{{x->Erfc(-7/6-Sqrt(301)/6)},{x->Erfc(-7/6+Sqrt(301)/6)}}");
+    check("Solve(InverseErfc(x)^2 + InverseErfc(x) == 1, x)", //
+        "{{x->Erfc(-1/2-Sqrt(5)/2)},{x->Erfc(-1/2+Sqrt(5)/2)}}");
+
+  }
+
+  // @Test
+  // public void testDigammaStackoverflow() {
+  // Gamma.digamma(-10000);
+  // }
+
   /** The JUnit setup method */
   @Override
   public void setUp() {

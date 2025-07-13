@@ -3,6 +3,7 @@ package org.matheclipse.core.system;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IInteger;
 
 /**
@@ -10,6 +11,14 @@ import org.matheclipse.core.interfaces.IInteger;
  * integrator</a>.
  */
 public class IntegerTestCase extends ExprEvaluatorTestCase {
+
+  @Test
+  public void testSmallPrtimes() {
+    IAST smallPrimes = F.ZZ(144).factorSmallPrimes(1, 2);
+    assertEquals("2^2*3^1", smallPrimes.toString());
+    smallPrimes = F.ZZ(432).factorSmallPrimes(1, 2);
+    assertEquals("2^2*3^1*Sqrt(3)", smallPrimes.toString());
+  }
 
   @Test
   public void testIQuo() {
@@ -180,6 +189,9 @@ public class IntegerTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testBitOr() {
+    check(
+        "BitOr(a,<|a->0,b:>1|>,{x,1,-1,-1},{{{}}})", //
+        "BitOr(a,<|a->0,b:>1|>,{x,1,-1,-1},{{{}}})");
     check("Table(BitOr(n,3), {n,-10,10})", //
         "{-9,-9,-5,-5,-5,-5,-1,-1,-1,-1,3,3,3,3,7,7,7,7,11,11,11}");
     check("BitOr(61,15)", //

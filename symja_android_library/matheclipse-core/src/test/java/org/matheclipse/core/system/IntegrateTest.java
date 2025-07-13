@@ -336,6 +336,10 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testNIntegrate() {
+    checkNumeric(
+        "NIntegrate(ln(x^2), {x, -5, 99}, Method->Romberg, MaxPoints->400, MaxIterations->10000000)", //
+        "717.9282476448197");
+
     // avoid Indeterminate at 0
     checkNumeric("NIntegrate(1/Sqrt(x), {x, 0.001, 1}, Method -> \"GaussLobattoRule\")", //
         "1.9367544467966324");
@@ -645,6 +649,66 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     checkNumeric("Integrate(Abs(x^2-2*x), {x, -10, 10}) // N", //
         "669.3282335875249");
 
+  }
+
+  @Test
+  public void testIntegrateBoole() {
+    check("Integrate(Boole(!(-x<Log(3)))/(E^(x^2/2)*Sqrt(2*Pi)),{x,-Infinity,Infinity})", //
+        "1/2-Erf(Log(3)/Sqrt(2))/2");
+    check("Integrate(Boole(True)*x,{x,100,200})", //
+        "15000");
+    check("Integrate(Boole(True)*x,{x,-Infinity,Infinity})", //
+        "Integrate(Boole(True)*x,{x,-Infinity,Infinity})");
+    check("Integrate(Boole(False)*x,{x,-Infinity,Infinity})", //
+        "0");
+    check("Integrate(Boole(65<=x<=80||100<=x<=200)*x,{x,-Infinity,Infinity})", //
+        "32175/2");
+
+    check("Integrate(Boole(-x<Log(3))/(E^(x^2/2)*Sqrt(2*Pi)),{x,-Infinity,Infinity})", //
+        "1/2+Erf(Log(3)/Sqrt(2))/2");
+    check("Integrate(Boole(E^x<3)/(E^(x^2/2)*Sqrt(2*Pi)),{x,-Infinity,Infinity})", //
+        "1/2+Erf(Log(3)/Sqrt(2))/2");
+    check("Integrate(Boole(x<Log(3))/(E^(x^2/2)*Sqrt(2*Pi)),{x,-Infinity,Infinity})", //
+        "1/2+Erf(Log(3)/Sqrt(2))/2");
+    check("Integrate(Boole(65<=x<=80)*x,{x,-Infinity,Infinity})", //
+        "2175/2");
+    check("Integrate(Boole(100<=x<=200)*x,{x,-Infinity,Infinity})", //
+        "15000");
+    check("Integrate(Boole(65<=x<=80),{x,-Infinity,Infinity})", //
+        "15");
+  }
+
+  @Test
+  public void testNIntegrateBoole() {
+    check("NIntegrate(Boole(!(-x<Log(3)))/(E^(x^2/2)*Sqrt(2*Pi)),{x,-Infinity,Infinity})", //
+        "0.135969");
+    check("NIntegrate(Boole(-x<Log(3))/(E^(x^2/2)*Sqrt(2*Pi)),{x,-Infinity,Infinity})", //
+        "0.864031");
+    check("NIntegrate(Boole(65<=x<=80)*x,{x,65,80})", //
+        "1087.5");
+    check("NIntegrate(Boole(65<=x<=80)*x,{x,-Infinity,Infinity})", //
+        "1087.5");
+    check("NIntegrate(Boole(True)*x,{x,100,200})", //
+        "15000.0");
+    check("NIntegrate(Boole(True)*x,{x,-Infinity,Infinity})", //
+        "NIntegrate(Boole(True)*x,{x,-Infinity,Infinity})");
+    check("NIntegrate(Boole(False)*x,{x,-Infinity,Infinity})", //
+        "0.0");
+
+    check("NIntegrate(Boole(65<=x<=80||100<=x<=200)*x,{x,-Infinity,Infinity})", //
+        "16087.5");
+    check("NIntegrate(Boole(x>-Log(3))/(E^(x^2/2)*Sqrt(2*Pi)),{x,-Infinity,Infinity})", //
+        "0.864031");
+    check("NIntegrate(Boole(-x<Log(3))/(E^(x^2/2)*Sqrt(2*Pi)),{x,-Infinity,Infinity})", //
+        "0.864031");
+    check("NIntegrate(Boole(E^x<3)/(E^(x^2/2)*Sqrt(2*Pi)),{x,-Infinity,Infinity})", //
+        "0.864031");
+    check("NIntegrate(Boole(x<Log(3))/(E^(x^2/2)*Sqrt(2*Pi)),{x,-Infinity,Infinity})", //
+        "0.864031");
+    check("NIntegrate(Boole(100<=x<=200)*x,{x,-Infinity,Infinity})", //
+        "15000.0");
+    check("NIntegrate(Boole(65<=x<=80),{x,-Infinity,Infinity})", //
+        "15.0");
   }
 
 }

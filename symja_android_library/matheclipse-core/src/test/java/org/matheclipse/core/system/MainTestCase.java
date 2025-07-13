@@ -948,7 +948,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Trace(D(Sin(x)^Cos(x),x))", //
         "{D(Sin(x)^Cos(x),x),Sin(x)^Cos(x)*(D(Cos(x),x)*Log(Sin(x))+(Cos(x)*D(Sin(x),x))/Sin(x)),{{{{{{Derivative(\n" //
             + "1)[Cos],-Sin(#1)&},-Sin(#1)&[x],-Sin(x)},-Sin(x),-Sin(x)},-Sin(x)*Log(Sin(x)),-Log(Sin(x))*Sin(x)},{{{{Derivative(\n" //
-            + "1)[Sin],Cos(#1)&},Cos(#1)&[x],Cos(x)},Cos(x),Cos(x)},{1/Sin(x),Csc(x)^1,Csc(x)},Cos(x)*Cos(x)*Csc(x),Cos(x)*Cot(x)},Cos(x)*Cot(x)-Log(Sin(x))*Sin(x)},(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)},(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)}");
+            + "1)[Sin],Cos(#1)&},Cos(#1)&[x],Cos(x)},Cos(x),Cos(x)},{{Csc(x)^1,Csc(x)},Csc(x)},Cos(x)*Cos(x)*Csc(x),Cos(x)*Cot(x)},Cos(x)*Cot(x)-Log(Sin(x))*Sin(x)},(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)},(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)}");
   }
 
   @Test

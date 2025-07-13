@@ -5,7 +5,6 @@ import static org.matheclipse.core.expression.F.Abs;
 import static org.matheclipse.core.expression.F.Floor;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
-
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +18,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ParserConfig;
-import junit.framework.TestCase;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 @RunWith(JUnit4.class)
 public class AssumptionTestCase {
@@ -68,8 +67,8 @@ public class AssumptionTestCase {
     }
 
     @Override
-    public int[] reduceRange(IExpr x, int[] range) {
-      return range;
+    public IntArrayList reduceRange(IExpr x, int[] range) {
+      return IntArrayList.of(range[0], range[1]);
     }
 
     // @Override

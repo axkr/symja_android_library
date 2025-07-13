@@ -675,7 +675,7 @@ public class ExprEvaluatorTests {
         }
         if (running.get()) {
           System.err.println("SLOW: " + str);
-          engine.setStopRequested(true);
+          // engine.setStopRequested(true);
           parent.interrupt();
         }
       }
@@ -698,7 +698,7 @@ public class ExprEvaluatorTests {
       eval = new ExprEvaluator(engine, true, (short) 20);
       engine.init();
       engine.setQuietMode(quietMode);
-      IASTAppendable ast;
+      final IASTAppendable ast;
       if (headerExpr) {
         int seedIndex = random.nextInt(1, seedList.size());
         IExpr seed = seedList.get(seedIndex);

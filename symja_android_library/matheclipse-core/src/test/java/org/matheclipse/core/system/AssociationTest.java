@@ -7,6 +7,15 @@ import org.matheclipse.core.eval.EvalEngine;
 public class AssociationTest extends ExprEvaluatorTestCase {
 
   @Test
+  public void testThreadAssociation() {
+    check("{0,1,2,3}+<|s1->0,s2:>1|>", //
+        "{<|s1->0,s2:>0+1|>,<|s1->1,s2:>1+1|>,<|s1->2,s2:>2+1|>,<|s1->3,s2:>3+1|>}");
+    check("Factor({0,1,2,3}+<|s1->0,s2:>1|>)", //
+        "{<|s1->0,s2:>Factor(0+1)|>,<|s1->1,s2:>Factor(1+1)|>,<|s1->2,s2:>Factor(2+1)|>,<|s1->\n" //
+            + "3,s2:>Factor(3+1)|>}");
+  }
+
+  @Test
   public void testAssociation001() {
     check("Head(<|a -> x, b -> y, c -> z|>)", //
         "Association");

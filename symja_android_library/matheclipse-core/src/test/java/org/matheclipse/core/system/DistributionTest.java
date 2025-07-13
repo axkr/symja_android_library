@@ -298,7 +298,9 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "0.00134961");
     check("NProbability(E^x < 3, Distributed(x,NormalDistribution()))", //
         "0.864031");
-    check("NProbability(x^2 > 3 || Abs[x] < 1, Distributed(x,ExponentialDistribution(2)))", //
+    check("NProbability(x^2 > 3, Distributed(x,ExponentialDistribution(2)))", //
+        "0.0313011");
+    check("NProbability(x^2 > 3 || Abs(x)<1, Distributed(x,ExponentialDistribution(2)))", //
         "0.895966");
     check("Sum(1/(E*x!), {x,0,Infinity})", //
         "1");
@@ -701,14 +703,40 @@ public class DistributionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testProbability() {
+    check("Probability(x<=3, Distributed(x, GeometricDistribution(1/5)))", //
+        "369/625");
+
+    // TODO from ExponentialDistribution(y) we can make assumption that y>0
+    // check("Probability(Abs(x) > 1, Distributed(x,ExponentialDistribution(y)))", //
+    // "Integrate(Boole(Abs(x)>1)*Piecewise({{y/E^(x*y),x>=0}},0),{x,-Infinity,Infinity})");
+    check("Probability(Abs(x)==1, Distributed(x,ExponentialDistribution(2/3)))", //
+        "0");
+    check("Probability(Abs(x) < -1, Distributed(x,ExponentialDistribution(2/3)))", //
+        "0");
+    check("Probability(Abs(x) > 1, Distributed(x,ExponentialDistribution(2/3)))", //
+        "1/E^(2/3)");
+    check("Probability(Abs(x) < 1, Distributed(x,ExponentialDistribution(y)))", //
+        "-1/E^y");
+
+    check("Probability(Abs(x-1) < 1, Distributed(x,ExponentialDistribution(y)))", //
+        "1-1/E^(2*y)");
+
+
+    check("Probability(0<x<2, Distributed(x,ExponentialDistribution(y)))", //
+        "1-1/E^(2*y)");
+
+    check("Probability((x-1)^2<=3*x, Distributed(x,NormalDistribution()))", //
+        "1/2*(-Erf((5-Sqrt(21))/(2*Sqrt(2)))+Erf((5+Sqrt(21))/(2*Sqrt(2))))");
+
     check("Probability(90<=x<=110, Distributed(x,NormalDistribution(100,15)))", //
         "Erf(Sqrt(2)/3)");
 
     check("Probability(x<Log(3), Distributed(x, NormalDistribution()))", //
         "1/2+Erf(Log(3)/Sqrt(2))/2");
-    // check("Probability(E^x<3, Distributed(x, NormalDistribution()))", //
-    // "");
-
+    check("Probability(E^x<3, Distributed(x, NormalDistribution()))", //
+        "1/2+Erf(Log(3)/Sqrt(2))/2");
+    check("Probability(10^x<3, Distributed(x, NormalDistribution()))", //
+        "1/2+Erf(Log(3)/(Sqrt(2)*Log(10)))/2");
     // check("RandomVariate(NormalDistribution(), 10)", //
     // "{-0.21848,1.67503,0.78687,0.9887,2.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223}");
     check(

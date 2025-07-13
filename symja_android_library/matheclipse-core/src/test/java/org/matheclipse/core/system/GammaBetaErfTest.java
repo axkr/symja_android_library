@@ -790,7 +790,8 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "5040");
     check("Gamma(1/2)", //
         "Sqrt(Pi)");
-    // check("Gamma(1.0+I)", "");
+    checkNumeric("Gamma(1.0+I)", //
+        "0.49801566811835635+I*(-0.15494982830181053)");
     checkNumeric("Gamma(2.2)", //
         "1.1018024908797128");
   }
@@ -1269,6 +1270,15 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolyGamma() {
+    // TODO https://github.com/Hipparchus-Math/hipparchus/issues/394
+    // checkNumeric("PolyGamma(-10000.5)", //
+    // "9.21029037114285");
+    checkNumeric("PolyGamma(0, -10000.0)", //
+        "ComplexInfinity");
+    checkNumeric("PolyGamma(-10000.0)", //
+        "ComplexInfinity");
+    checkNumeric("PolyGamma(-1.0+I*0.5,-10000)", //
+        "Indeterminate");
     // TODO
     check("N(PolyGamma(-2,3/2),30)", //
         "PolyGamma(-2,1.5)");
