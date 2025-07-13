@@ -179,7 +179,7 @@ public class Plot extends ListPlot {
     }
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
 
-    if (argSize > 0 && argSize < ast.argSize()) {
+    if (argSize < ast.argSize()) {
       ast = ast.copyUntil(argSize + 1);
     }
     IExpr function = ast.arg1();

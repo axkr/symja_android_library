@@ -57,7 +57,7 @@ public class ListDensityPlot extends ArrayPlot {
       // degree = 1;
       // }
       // }
-      RealMatrix realMatrix = ((IAST) arg1).toRealMatrix();
+      RealMatrix realMatrix = arg1.toRealMatrix();
       if (realMatrix != null) {
         BufferedImage buffer =
             listDensityPlot(new ASTRealMatrix(realMatrix, false), degree, engine);

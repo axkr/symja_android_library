@@ -29,7 +29,7 @@ public class PolarPlot extends AbstractFunctionOptionEvaluator {
       IExpr arg2 = argSize >= 2 ? ast.arg2() : F.CEmptyString;
       return Errors.printMessage(S.PolarPlot, "pllim", F.list(arg2), engine);
     }
-    if (argSize > 0 && argSize < ast.size()) {
+    if (argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
     if (options[0].isTrue() || Config.USE_MANIPULATE_JS) {

@@ -22,14 +22,14 @@ public class ParametricPlot extends AbstractFunctionOptionEvaluator {
   public ParametricPlot() {}
 
   @Override
-  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
-      final EvalEngine engine, IAST originalAST) {
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
+      IAST originalAST) {
     if (argSize < 2 || !ast.arg2().isList3() || !ast.arg2().first().isSymbol()) {
       // Range specification `1` is not of the form {x, xmin, xmax}.
       IExpr arg2 = argSize >= 2 ? ast.arg2() : F.CEmptyString;
       return Errors.printMessage(S.ParametricPlot, "pllim", F.list(arg2), engine);
     }
-    if (argSize > 0 && argSize < ast.size()) {
+    if (argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
     if (options[0].isTrue() || Config.USE_MANIPULATE_JS) {

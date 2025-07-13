@@ -2,7 +2,6 @@ package org.matheclipse.core.graphics;
 
 import java.util.Locale;
 import java.util.function.Function;
-import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.eval.Errors;
@@ -15,6 +14,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -23,6 +23,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  *
  */
 public class GraphicsOptions {
+  /**
+   * From the docs: "Mapper instances are fully thread-safe provided that ALL configuration of the
+   * instance occurs before ANY read or write calls."
+   */
+  public static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();
+
   public final static int X_JSFORM = 0;
 
   public final static int X_FILLING = 1;
@@ -132,7 +138,7 @@ public class GraphicsOptions {
   }
 
   public static void optionBoolean(ArrayNode arrayNode, String optionName, boolean value) {
-    ObjectNode jsonDefaults = GraphicsFunctions.JSON_OBJECT_MAPPER.createObjectNode();
+    ObjectNode jsonDefaults = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
     jsonDefaults.put("option", optionName);
     jsonDefaults.put("value", value);
     arrayNode.add(jsonDefaults);
@@ -150,7 +156,7 @@ public class GraphicsOptions {
   }
 
   public static void optionInt(ArrayNode arrayNode, String optionName, int value) {
-    ObjectNode jsonDefaults = GraphicsFunctions.JSON_OBJECT_MAPPER.createObjectNode();
+    ObjectNode jsonDefaults = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
     jsonDefaults.put("option", optionName);
     jsonDefaults.put("value", value);
     arrayNode.add(jsonDefaults);
@@ -434,16 +440,16 @@ public class GraphicsOptions {
     IExpr scalingFunctions = options.getOption(S.$Scaling);
     if (scalingFunctions.isPresent()) {
       if (scalingFunctions.isList1()) {
-        scalingArray = GraphicsFunctions.JSON_OBJECT_MAPPER.createArrayNode();
+        scalingArray = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
         setXFunction(GraphicsOptions.getScaling(scalingArray, scalingFunctions.first()));
         scalingArray.add("none");
         setYFunction(y -> y);
       } else if (scalingFunctions.isList2()) {
-        scalingArray = GraphicsFunctions.JSON_OBJECT_MAPPER.createArrayNode();
+        scalingArray = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
         setXFunction(GraphicsOptions.getScaling(scalingArray, scalingFunctions.first()));
         setYFunction(GraphicsOptions.getScaling(scalingArray, scalingFunctions.second()));
       } else if (!scalingFunctions.isList()) {
-        scalingArray = GraphicsFunctions.JSON_OBJECT_MAPPER.createArrayNode();
+        scalingArray = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
         scalingArray.add("none");
         setXFunction(x -> x);
         setYFunction(GraphicsOptions.getScaling(scalingArray, scalingFunctions));
@@ -452,7 +458,7 @@ public class GraphicsOptions {
       }
     }
 
-    ObjectNode g = GraphicsFunctions.JSON_OBJECT_MAPPER.createObjectNode();
+    ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
     IExpr axesOptions = options.getOption(S.Axes);
     if (!axesOptions.isPresent()) {
       axesOptions = S.False;
@@ -492,7 +498,7 @@ public class GraphicsOptions {
   }
 
   private static void hasAxesJSON(ObjectNode g, IExpr a1, IExpr a2) {
-    ArrayNode an = GraphicsFunctions.JSON_OBJECT_MAPPER.createArrayNode();
+    ArrayNode an = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
     if (a1.isTrue()) {
       an.add(true);
     } else {
@@ -535,7 +541,7 @@ public class GraphicsOptions {
   public void graphics2DFilling(ArrayNode arrayNode, OptionArgs options) {
     IExpr filling = options.getOption(S.Filling);
     if (filling.isPresent()) {
-      ObjectNode g = GraphicsFunctions.JSON_OBJECT_MAPPER.createObjectNode();
+      ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
       g.put("option", "filling");
       // if (filling == S.None) {
       // g.put("value", "none");
@@ -557,8 +563,8 @@ public class GraphicsOptions {
     OptionArgs options = options();
     IExpr scalingFunctions = options.getOption(S.$Scaling);
     if (scalingFunctions.isPresent()) {
-      ObjectNode g = GraphicsFunctions.JSON_OBJECT_MAPPER.createObjectNode();
-      ArrayNode array = GraphicsFunctions.JSON_OBJECT_MAPPER.createArrayNode();
+      ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+      ArrayNode array = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
       if (scalingFunctions.isList1()) {
         setXFunction(GraphicsOptions.getScaling(array, scalingFunctions.first()));
         array.add("none");
