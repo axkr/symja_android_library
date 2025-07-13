@@ -1,7 +1,7 @@
 package org.matheclipse.core.eval.util;
 
-import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.EvalAttributes;
+import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -47,7 +47,7 @@ public class SolveUtils {
           termsEqualZero.append(arg1);
         } else {
           // Solve
-          IExpr temp = NumberTheory.rationalize(arg1, false);
+          IExpr temp = AbstractFractionSym.rationalize(arg1, false);
           if (temp.isPresent()) {
             isNumeric[0] = true;
             termsEqualZero.append(temp);

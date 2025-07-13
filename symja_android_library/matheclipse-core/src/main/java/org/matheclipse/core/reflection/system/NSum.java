@@ -109,7 +109,7 @@ public class NSum extends Sum {
       IASTMutable copy = ast.copy();
       copy.set(1, function);
       copy.set(2, limits);
-      IExpr temp = nsum(function, variable, lowerLimit, upperLimit, copy);
+      IExpr temp = nsum(function, variable, lowerLimit, upperLimit);
       if (temp.isPresent()) {
         return temp;
       }
@@ -118,32 +118,50 @@ public class NSum extends Sum {
     return F.NIL;
   }
 
-  public static IExpr nsum(IExpr function, IExpr variable, IExpr lowerLimit, IExpr upperLimit,
-      IAST ast) {
-    IExpr temp = sumMinusInfinityToInfinity(ast, function, variable, lowerLimit, upperLimit);
+  /**
+   * Evaluate the sum of a function numerically with respect to a variable from a lower limit to an
+   * upper limit.
+   * 
+   * @param function the function to sum
+   * @param variable the variable with respect to which the sum is taken
+   * @param lowerLimit the lower limit of the sum
+   * @param upperLimit the upper limit of the sum
+   * @return
+   */
+  public static IExpr nsum(IExpr function, IExpr variable, IExpr lowerLimit, IExpr upperLimit) {
+    IExpr temp = sumMinusInfinityToInfinity(function, variable, lowerLimit, upperLimit);
     if (temp.isPresent()) {
       return temp;
     }
-    return sumStartToInfinity(function, variable, lowerLimit, upperLimit, ast);
+    return sumStartToInfinity(function, variable, lowerLimit, upperLimit);
   }
 
-  private static IExpr sumMinusInfinityToInfinity(IAST ast, IExpr function, IExpr variable,
-      IExpr lowerLimit, IExpr upperLimit) {
+  /**
+   * Evaluate the sum of a function numerically with respect to a variable from minus infinity to
+   * plus infinity.
+   * 
+   * @param function the function to sum
+   * @param variable the variable with respect to which the sum is taken
+   * @param lowerLimit the lower limit of the sum, which must be minus infinity
+   * @param upperLimit the upper limit of the sum, which must be plus infinity
+   * @return {@link F#NIL} if the sum cannot be evaluated or the limits are not infinities,
+   *         otherwise the result of the sum.
+   */
+  private static IExpr sumMinusInfinityToInfinity(IExpr function, IExpr variable, IExpr lowerLimit,
+      IExpr upperLimit) {
     // transform sym -> -sym and swap the upper_limit = F.CInfinity
     // and lower_limit = - upper_limit
     if (lowerLimit.isNegativeInfinity()) {
       if (upperLimit.isInfinity()) {
         lowerLimit = F.C0;
         IAST limit1 = F.List(variable, lowerLimit, upperLimit);
-        IExpr sum1 = sumStartToInfinity(function, variable, lowerLimit, upperLimit,
-            F.NSum(ast.arg1(), limit1));
+        IExpr sum1 = sumStartToInfinity(function, variable, lowerLimit, upperLimit);
         final IExpr variableNegate = EvalEngine.get().evaluate(F.Negate(variable));
         function = F.subst(function, x -> (x.equals(variable) ? variableNegate : F.NIL));
         lowerLimit = F.C1;
         upperLimit = F.CInfinity;
         IAST limit2 = F.List(variable, lowerLimit, upperLimit);
-        IExpr sum2 = sumStartToInfinity(function, variable, lowerLimit, upperLimit,
-            F.NSum(function, limit2));
+        IExpr sum2 = sumStartToInfinity(function, variable, lowerLimit, upperLimit);
 
         return F.Plus(sum1, sum2);
       }
@@ -152,15 +170,14 @@ public class NSum extends Sum {
       lowerLimit = upperLimit.negate();
       upperLimit = F.CInfinity;
       IAST limit3 = F.List(variable, lowerLimit, upperLimit);
-      IExpr sum3 =
-          sumStartToInfinity(function, variable, lowerLimit, upperLimit, F.NSum(function, limit3));
+      IExpr sum3 = sumStartToInfinity(function, variable, lowerLimit, upperLimit);
       return sum3;
     }
     return F.NIL;
   }
 
   private static IExpr sumStartToInfinity(IExpr function, IExpr variable, IExpr lowerLimit,
-      IExpr upperLimit, IAST ast) {
+      IExpr upperLimit) {
     if (upperLimit.isInfinity()) {
       long start = lowerLimit.toLongDefault();
       if (F.isPresent(start)) {

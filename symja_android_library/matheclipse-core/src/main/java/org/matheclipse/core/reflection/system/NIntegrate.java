@@ -21,15 +21,15 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
-import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.integral.ClenshawCurtis;
@@ -118,7 +118,7 @@ import de.labathome.AdaptiveQuadrature;
  * </code>
  * </pre>
  */
-public class NIntegrate extends AbstractFunctionEvaluator {
+public class NIntegrate extends AbstractFunctionOptionEvaluator {
 
   public static final int DEFAULT_MAX_POINTS = 100;
   public static final int DEFAULT_MAX_ITERATIONS = 10000;
@@ -261,56 +261,41 @@ public class NIntegrate extends AbstractFunctionEvaluator {
    * implementations.
    */
   @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    String method = "";
-    int maxPoints = DEFAULT_MAX_POINTS;
-    int maxIterations = DEFAULT_MAX_ITERATIONS;
-    int precisionGoal = 16; // automatic scale value
-    if (ast.size() >= 4) {
-      final OptionArgs options = new OptionArgs(ast.topHead(), ast, 3, engine);
-      IExpr option = options.getOption(S.Method);
-      if (option.isSymbol() || option.isString()) {
-        method = option.toString();
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] option, final EvalEngine engine,
+      IAST originalAST) {
+
+    if (ast.arg2().isList()) {
+      IAST list = (IAST) ast.arg2();
+      IExpr function = ast.arg1();
+      int maxPoints = DEFAULT_MAX_POINTS;
+      if (option[1] != S.Automatic) {
+        maxPoints = option[1].toIntDefault(DEFAULT_MAX_POINTS);
       }
-      option = options.getOption(S.MaxPoints);
-      if (option.isReal()) {
-        maxPoints = option.toIntDefault(-1);
-        if (maxPoints <= 0) {
-          // Inappropriate parameter: `1`.
-          return Errors.printMessage(ast.topHead(), "par", F.List(S.MaxPoints), engine);
-          // maxPoints = DEFAULT_MAX_POINTS;
-        }
+      int maxIterations = DEFAULT_MAX_ITERATIONS;
+      if (option[2] != S.Automatic) {
+        maxIterations = option[2].toIntDefault(DEFAULT_MAX_ITERATIONS);
       }
-      maxIterations = options.getOptionMaxIterations(S.MaxIterations);
-      if (F.isNotPresent(maxIterations)) {
-        return F.NIL;
-      }
-      if (maxIterations < 0) {
-        maxIterations = DEFAULT_MAX_ITERATIONS;
-      }
-      option = options.getOption(S.PrecisionGoal);
-      if (option.isReal()) {
-        precisionGoal = option.toIntDefault(-1);
+      int precisionGoal = 16; // automatic scale value
+      if (option[3] != S.Automatic) {
+        precisionGoal = option[3].toIntDefault(-1);
         if (precisionGoal <= 0) {
           // Inappropriate parameter: `1`.
           return Errors.printMessage(ast.topHead(), "par", F.List(S.PrecisionGoal), engine);
           // precisionGoal = 16;
         }
       }
-    }
 
-    if (ast.arg2().isList()) {
-      IAST list = (IAST) ast.arg2();
-      IExpr function = ast.arg1();
       if (list.isAST3() && list.arg1().isSymbol()) {
         IExpr x = list.arg1();
         if (function.isEqual()) {
           IAST equalAST = (IAST) function;
           function = F.Plus(equalAST.arg1(), F.Negate(equalAST.arg2()));
         }
-        if (method.isEmpty()) {
-          method = "Romberg";
-          if (list.arg2().isDirectedInfinity() || list.arg3().isDirectedInfinity()) {
+        String method = "Romberg";
+        if (option[0] != S.Automatic) {
+          method = option[0].toString();
+        } else {
+          if (list.arg2().isInfinite() || list.arg3().isInfinite()) {
             method = "LegendreGauss";
           } else if (!function.isFree(a -> a == S.Abs || a == S.RealAbs, true)) {
             method = "LegendreGauss";
@@ -322,6 +307,12 @@ public class NIntegrate extends AbstractFunctionEvaluator {
           double min = list.arg2().evalf();
           double max = list.arg3().evalf();
           try {
+            if (!function.isFreeAST(h -> h == S.Boole)) {
+              IExpr temp = Integrate.integrateBooleTimesFxRegion(function, list, true, engine);
+              if (temp.isPresent()) {
+                return temp;
+              }
+            }
             double result = integrateDouble(function, x, min, max, method, maxPoints, maxIterations,
                 list.rest(), engine);
             result = Precision.round(result, precisionGoal);
@@ -398,8 +389,19 @@ public class NIntegrate extends AbstractFunctionEvaluator {
     return IFunctionEvaluator.ARGS_2_INFINITY;
   }
 
+  private static IBuiltInSymbol[] defaultOptionKeys() {
+    return new IBuiltInSymbol[] {//
+        S.Method, S.MaxPoints, S.MaxIterations, S.PrecisionGoal};
+  }
+
+  private static IExpr[] defaultOptionValues(boolean jsForm, boolean joined) {
+    return new IExpr[] {//
+        S.Automatic, S.Automatic, S.Automatic, S.Automatic};
+  }
+
   @Override
   public void setUp(final ISymbol newSymbol) {
     newSymbol.setAttributes(ISymbol.HOLDFIRST);
+    setOptions(newSymbol, defaultOptionKeys(), defaultOptionValues(true, false));
   }
 }

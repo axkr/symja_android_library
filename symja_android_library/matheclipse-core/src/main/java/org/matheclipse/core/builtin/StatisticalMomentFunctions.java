@@ -42,28 +42,31 @@ public class StatisticalMomentFunctions {
       if (ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
         IntArrayList dimensions = LinearAlgebra.dimensions(list);
-        IExpr arg2 = ast.arg2();
-        final int r = arg2.toIntDefault();
-        if (r > 0) {
+        if (isVectorMatrixOrDistribution(ast.topHead(), list, dimensions, engine)) {
+
+          IExpr arg2 = ast.arg2();
+          final int r = arg2.toIntDefault();
           if (r == 0) {
             return F.C1;
           }
-
-          if (dimensions.size() == 1) {
-            return F.Divide(F.Total(F.Power(list, r)), F.Length(list));
-          } else if (dimensions.size() > 1) {
-            return F.ArrayReduce(F.Function(F.Moment(F.Slot1, r)), list, F.C1);
-          }
-        } else if (F.isNotPresent(r)) {
-          if (!arg2.isList()) {
+          if (r > 0) {
             if (dimensions.size() == 1) {
-              return F.Divide(F.Total(F.Power(list, arg2)), F.Length(list));
+              return F.Divide(F.Total(F.Power(list, r)), F.Length(list));
+            } else if (dimensions.size() > 1) {
+              return F.ArrayReduce(F.Function(F.Moment(F.Slot1, r)), list, F.C1);
+            }
+          } else if (F.isNotPresent(r)) {
+            if (!arg2.isList()) {
+              if (dimensions.size() == 1) {
+                return F.Divide(F.Total(F.Power(list, arg2)), F.Length(list));
+              }
             }
           }
         }
       }
       return F.NIL;
     }
+
 
     @Override
     public int status() {
@@ -116,22 +119,25 @@ public class StatisticalMomentFunctions {
         IAST list = (IAST) ast.arg1();
         IExpr arg2 = ast.arg2();
         IntArrayList dimensions = LinearAlgebra.dimensions(list);
-        final int r = arg2.toIntDefault();
-        if (r > 0) {
-          if (dimensions.size() == 1) {
-            // TODO only vectors are implemented yet
-            return F.Divide(F.Total(F.Power(F.Subtract(list, F.Mean(list)), r)), F.Length(list));
-          } else if (dimensions.size() > 1) {
-            return F.ArrayReduce(F.Function(F.CentralMoment(F.Slot1, r)), list, F.C1);
-          }
-        } else if (F.isNotPresent(r)) {
-          if (!arg2.isList()) {
+        if (isVectorMatrixOrDistribution(ast.topHead(), list, dimensions, engine)) {
+          final int r = arg2.toIntDefault();
+          if (r > 0) {
             if (dimensions.size() == 1) {
-              return F.Divide(F.Total(F.Power(F.Subtract(list, F.Mean(list)), arg2)),
-                  F.Length(list));
+              // TODO only vectors are implemented yet
+              return F.Divide(F.Total(F.Power(F.Subtract(list, F.Mean(list)), r)), F.Length(list));
+            } else if (dimensions.size() > 1) {
+              return F.ArrayReduce(F.Function(F.CentralMoment(F.Slot1, r)), list, F.C1);
+            }
+          } else if (F.isNotPresent(r)) {
+            if (!arg2.isList()) {
+              if (dimensions.size() == 1) {
+                return F.Divide(F.Total(F.Power(F.Subtract(list, F.Mean(list)), arg2)),
+                    F.Length(list));
+              }
             }
           }
         }
+        return F.NIL;
       }
       try {
         if (ast.arg1().isAST()) {
@@ -157,6 +163,7 @@ public class StatisticalMomentFunctions {
         Errors.rethrowsInterruptException(rex);
         return Errors.printMessage(S.CentralMoment, rex, engine);
       }
+
       return F.NIL;
     }
 
@@ -234,34 +241,37 @@ public class StatisticalMomentFunctions {
         final int argSize = list.argSize();
         IExpr arg2 = ast.arg2();
         IntArrayList dimensions = LinearAlgebra.dimensions(list);
-        final int r = arg2.toIntDefault();
-        if (r >= 0) {
-          if (dimensions.size() == 1) {
-            if (r == 0) {
-              return F.C1;
-            }
-            if (r >= 5) {
-              return factorialPowerRewrite(list, argSize, arg2);
-            }
-            IASTAppendable result = F.PlusAlloc(argSize);
-            IFraction fraction = F.QQ(1, argSize);
-            for (int i = 1; i <= argSize; i++) {
-              IASTAppendable times = F.TimesAlloc(r);
-              IExpr arg = list.get(i);
-              times.append(arg);
-              for (int j = 1; j < r; j++) {
-                times.append(F.Plus(F.ZZ(-j), arg));
-              }
-              result.append(times);
-            }
-            return F.Times(fraction, result);
-          } else if (dimensions.size() > 1) {
-            return F.ArrayReduce(F.Function(F.FactorialMoment(F.Slot1, r)), list, F.C1);
-          }
-        } else if (F.isNotPresent(r)) {
-          if (!arg2.isList()) {
+        if (isVectorMatrixOrDistribution(ast.topHead(), list, dimensions, engine)) {
+
+          final int r = arg2.toIntDefault();
+          if (r >= 0) {
             if (dimensions.size() == 1) {
-              return factorialPowerRewrite(list, argSize, arg2);
+              if (r == 0) {
+                return F.C1;
+              }
+              if (r >= 5) {
+                return factorialPowerRewrite(list, argSize, arg2);
+              }
+              IASTAppendable result = F.PlusAlloc(argSize);
+              IFraction fraction = F.QQ(1, argSize);
+              for (int i = 1; i <= argSize; i++) {
+                IASTAppendable times = F.TimesAlloc(r);
+                IExpr arg = list.get(i);
+                times.append(arg);
+                for (int j = 1; j < r; j++) {
+                  times.append(F.Plus(F.ZZ(-j), arg));
+                }
+                result.append(times);
+              }
+              return F.Times(fraction, result);
+            } else if (dimensions.size() > 1) {
+              return F.ArrayReduce(F.Function(F.FactorialMoment(F.Slot1, r)), list, F.C1);
+            }
+          } else if (F.isNotPresent(r)) {
+            if (!arg2.isList()) {
+              if (dimensions.size() == 1) {
+                return factorialPowerRewrite(list, argSize, arg2);
+              }
             }
           }
         }
@@ -291,6 +301,17 @@ public class StatisticalMomentFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
+  }
+
+
+  private static boolean isVectorMatrixOrDistribution(ISymbol head, IAST list,
+      IntArrayList dimensions, EvalEngine engine) {
+    if (dimensions.size() == 0 || dimensions.contains(0)) {
+      // The first argument `1` is expected to be a vector, matrix or a distribution.
+      Errors.printMessage(S.Moment, "arg1", F.list(list), engine);
+      return false;
+    }
+    return true;
   }
 
   public static void initialize() {

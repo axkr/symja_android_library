@@ -58,6 +58,12 @@ public class Iterator {
 
     final ISymbol variable;
 
+    /**
+     * The value of the variable before the iteration started. Used in {@link #setUp()} to save the
+     * old value, and used in {@link #tearDown()} to reset the variable to the old value.
+     */
+    IExpr variableValueBeforeIteration;
+
     public ExprIterator(final ISymbol symbol, final IExpr originalStart,
         final IExpr originalMaxCount, final IExpr originalStep, boolean numericMode,
         final EvalEngine engine) {
@@ -198,6 +204,9 @@ public class Iterator {
 
     @Override
     public boolean setUp() {
+      if (variable != null) {
+        variableValueBeforeIteration = variable.assignedValue();
+      }
       lowerLimit = originalLowerLimit;
       if (!(originalLowerLimit.isReal())) {
         lowerLimit = evalEngine.evalWithoutNumericReset(originalLowerLimit);
@@ -243,7 +252,7 @@ public class Iterator {
     @Override
     public void tearDown() {
       if (variable != null) {
-        variable.assignValue(null, false);
+        variable.clearValue(variableValueBeforeIteration);
       }
       EvalEngine.get().setNumericMode(fNumericMode);
     }
@@ -267,6 +276,12 @@ public class Iterator {
     final IAST originalList;
 
     final ISymbol variable;
+
+    /**
+     * The value of the variable before the iteration started. Used in {@link #setUp()} to save the
+     * old value, and used in {@link #tearDown()} to reset the variable to the old value.
+     */
+    IExpr variableValueBeforeIteration;
 
     /**
      * Iterate over a list of values.
@@ -354,6 +369,9 @@ public class Iterator {
 
     @Override
     public boolean setUp() {
+      if (variable != null) {
+        variableValueBeforeIteration = variable.assignedValue();
+      }
       maxCounterOrList = originalList;
       maxCounterOrList = originalList.map(x -> evalEngine.evalWithoutNumericReset(x));
       // points to first element in maxCounterOrList if it's a list
@@ -375,7 +393,7 @@ public class Iterator {
     @Override
     public void tearDown() {
       if (variable != null) {
-        variable.assignValue(null, false);
+        variable.clearValue(variableValueBeforeIteration);
       }
     }
   }
@@ -391,7 +409,11 @@ public class Iterator {
 
     final ISymbol variable;
 
-    IExpr variableValue;
+    /**
+     * The value of the variable before the iteration started. Used in {@link #setUp()} to save the
+     * old value, and used in {@link #tearDown()} to reset the variable to the old value.
+     */
+    IExpr variableValueBeforeIteration;
 
     final INum lowerLimitNum;
 
@@ -493,7 +515,7 @@ public class Iterator {
     @Override
     public boolean setUp() {
       if (variable != null) {
-        variableValue = variable.assignedValue();
+        variableValueBeforeIteration = variable.assignedValue();
       }
       count = lowerLimit;
       if (step < 0) {
@@ -516,7 +538,7 @@ public class Iterator {
     @Override
     public void tearDown() {
       if (variable != null) {
-        variable.assignValue(variableValue, false);
+        variable.clearValue(variableValueBeforeIteration);
       }
     }
   }
@@ -532,7 +554,11 @@ public class Iterator {
 
     final ISymbol variable;
 
-    IExpr variableValue = null;
+    /**
+     * The value of the variable before the iteration started. Used in {@link #setUp()} to save the
+     * old value, and used in {@link #tearDown()} to reset the variable to the old value.
+     */
+    IExpr variableValueBeforeIteration;
 
     final IRational lowerLimitQQ;
 
@@ -634,6 +660,9 @@ public class Iterator {
 
     @Override
     public boolean setUp() {
+      if (variable != null) {
+        variableValueBeforeIteration = variable.assignedValue();
+      }
       count = lowerLimit;
       if (step.isNegative()) {
         if (lowerLimit.lessThan(upperLimit).isTrue()) {
@@ -645,7 +674,6 @@ public class Iterator {
         }
       }
       if (variable != null) {
-        variableValue = variable.assignedValue();
         variable.assignValue(lowerLimitQQ, false);
       }
       return true;
@@ -655,7 +683,7 @@ public class Iterator {
     @Override
     public void tearDown() {
       if (variable != null) {
-        variable.assignValue(variableValue, false);
+        variable.clearValue(variableValueBeforeIteration);
       }
     }
   }
@@ -671,7 +699,11 @@ public class Iterator {
 
     final ISymbol variable;
 
-    IExpr variableValue = null;
+    /**
+     * The value of the variable before the iteration started. Used in {@link #setUp()} to save the
+     * old value, and used in {@link #tearDown()} to reset the variable to the old value.
+     */
+    IExpr variableValueBeforeIteration;
 
     final IUnit unit;
 
@@ -816,6 +848,9 @@ public class Iterator {
 
     @Override
     public boolean setUp() {
+      if (variable != null) {
+        variableValueBeforeIteration = variable.assignedValue();
+      }
       count = lowerLimit;
       if (step.isNegative()) {
         if (lowerLimit.lessThan(upperLimit).isTrue()) {
@@ -827,7 +862,6 @@ public class Iterator {
         }
       }
       if (variable != null) {
-        variableValue = variable.assignedValue();
         variable.assignValue(originalLowerLimit, false);
       }
       return true;
@@ -837,7 +871,7 @@ public class Iterator {
     @Override
     public void tearDown() {
       if (variable != null) {
-        variable.assignValue(variableValue, false);
+        variable.clearValue(variableValueBeforeIteration);
       }
     }
   }
@@ -853,7 +887,11 @@ public class Iterator {
 
     final ISymbol variable;
 
-    IExpr variableValue;
+    /**
+     * The value of the variable before the iteration started. Used in {@link #setUp()} to save the
+     * old value, and used in {@link #tearDown()} to reset the variable to the old value.
+     */
+    IExpr variableValueBeforeIteration;
 
     final IReal lowerLimitReal;
 
@@ -950,7 +988,7 @@ public class Iterator {
     @Override
     public boolean setUp() {
       if (variable != null) {
-        variableValue = variable.assignedValue();
+        variableValueBeforeIteration = variable.assignedValue();
       }
       count = lowerLimit;
       if (step.isNegative()) {
@@ -973,7 +1011,7 @@ public class Iterator {
     @Override
     public void tearDown() {
       if (variable != null) {
-        variable.assignValue(variableValue, false);
+        variable.clearValue(variableValueBeforeIteration);
       }
     }
   }
@@ -993,7 +1031,11 @@ public class Iterator {
 
     final ISymbol variable;
 
-    IExpr variableValue = null;
+    /**
+     * The value of the variable before the iteration started. Used in {@link #setUp()} to save the
+     * old value, and used in {@link #tearDown()} to reset the variable to the old value.
+     */
+    IExpr variableValueBeforeIteration;
 
     final IInteger lowerLimitZZ;
 
@@ -1105,7 +1147,7 @@ public class Iterator {
     @Override
     public boolean setUp() {
       if (variable != null) {
-        variableValue = variable.assignedValue();
+        variableValueBeforeIteration = variable.assignedValue();
       }
       nextElement = lowerLimit;
       if (step < 0) {
@@ -1128,7 +1170,7 @@ public class Iterator {
     @Override
     public void tearDown() {
       if (variable != null) {
-        variable.assignValue(variableValue, false);
+        variable.clearValue(variableValueBeforeIteration);
       }
     }
   }

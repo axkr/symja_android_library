@@ -1318,7 +1318,7 @@ public class HypergeometricFunctions {
 
     private static IExpr basicRewrite(IExpr a, IExpr b, IExpr c, IExpr z) {
       if (a.isZero() || b.isZero() || z.isZero()) {
-        if (!c.isPossibleZero(true)) {
+        if (!c.isPossibleZero(true,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
           // 1/Gamma(c)
           return F.Power(F.Gamma(c), F.CN1);
         }

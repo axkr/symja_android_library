@@ -629,7 +629,7 @@ public class Pods {
     } catch (InterruptedException e) {
       return Pods.errorJSONString("0", "Timeout exceeded. Calculation interrupted!");
     } catch (ExecutionException | TimeoutException e) {
-      engine.setStopRequested(true);
+      // engine.setStopRequested(true);
       return Pods.errorJSONString("0", "Timeout exceeded. Calculation aborted!");
     }
   }

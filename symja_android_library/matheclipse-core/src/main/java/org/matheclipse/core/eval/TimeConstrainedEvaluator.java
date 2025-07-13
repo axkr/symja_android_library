@@ -67,7 +67,7 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
     fException = null;
     fParsedExpression = null;
     EvalEngine.setReset(fEvalEngine);
-    fEvalEngine.setStopRequested(false);
+    // fEvalEngine.setStopRequested(false);
     fTraceEvaluation = traceEvaluation;
 
     try {
@@ -85,7 +85,7 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
     fEvaluationResult = F.NIL;
     fException = null;
     fParsedExpression = inputExpression;
-    fEvalEngine.setStopRequested(false);
+    // fEvalEngine.setStopRequested(false);
 
     try {
       final Thread thread = new Thread(this, "TimeConstrainedEvaluator"); // EvaluationRunnable();
@@ -93,7 +93,7 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
       thread.join(fMilliSeconds);
       if (thread.isAlive()) {
         thread.interrupt();
-        fEvalEngine.stopRequest();
+        // fEvalEngine.stopRequest();
         // wait a bit, so the thread can stop by itself
         Thread.sleep(Config.TIME_CONSTRAINED_SLEEP_MILLISECONDS);
         if (thread.isAlive()) {

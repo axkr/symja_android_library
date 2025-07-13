@@ -12,7 +12,6 @@ import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
-import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -63,23 +62,13 @@ public class AttributeFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
-        IExpr arg1 = ast.arg1();
-        // if (arg1.isList()) {
-        // IAST list = (IAST) arg1;
-        // if (list.exists(x -> !x.isSymbol())) {
-        // return F.NIL;
-        // }
-        // final IASTAppendable result = F.ListAlloc(list.size());
-        // for (int i = 1; i < list.size(); i++) {
-        // IExpr temp = attributesList(list.get(i), ast, engine);
-        // if (temp.isNIL()) {
-        // return F.NIL;
-        // }
-        // result.append(temp);
-        // }
-        // return result;
-        // }
-        return attributesList(arg1, ast, engine);
+        IExpr expr = ast.arg1();
+        IExpr x = Validate.checkIdentifierHoldPattern(expr, ast, engine);
+        if (x.isNIL()) {
+          return F.NIL;
+        }
+        ISymbol symbol = (ISymbol) x;
+        return ISymbol.attributesList(symbol);
       }
 
       return F.NIL;
@@ -628,87 +617,7 @@ public class AttributeFunctions {
       return F.NIL;
     }
     ISymbol symbol = (ISymbol) x;
-    return attributesList(symbol);
-  }
-
-  /**
-   * Get the attrbutes of this <code>symbol</code> as symbolic constants in a list.
-   *
-   * @param symbol
-   * @return
-   */
-  public static IAST attributesList(ISymbol symbol) {
-
-    int attributes = symbol.getAttributes();
-    IASTAppendable result = F.ListAlloc(Integer.bitCount(attributes));
-
-    if ((attributes & ISymbol.CONSTANT) != ISymbol.NOATTRIBUTE) {
-      result.append(S.Constant);
-    }
-
-    if ((attributes & ISymbol.FLAT) != ISymbol.NOATTRIBUTE) {
-      result.append(S.Flat);
-    }
-
-    if ((attributes & ISymbol.HOLDALLCOMPLETE) == ISymbol.HOLDALLCOMPLETE) {
-      result.append(S.HoldAllComplete);
-    } else if ((attributes & ISymbol.HOLDCOMPLETE) == ISymbol.HOLDCOMPLETE) {
-      result.append(S.HoldComplete);
-    } else if ((attributes & ISymbol.HOLDALL) == ISymbol.HOLDALL) {
-      result.append(S.HoldAll);
-    } else {
-      if ((attributes & ISymbol.HOLDFIRST) != ISymbol.NOATTRIBUTE) {
-        result.append(S.HoldFirst);
-      }
-
-      if ((attributes & ISymbol.HOLDREST) != ISymbol.NOATTRIBUTE) {
-        result.append(S.HoldRest);
-      }
-    }
-
-    if ((attributes & ISymbol.LISTABLE) != ISymbol.NOATTRIBUTE) {
-      result.append(S.Listable);
-    }
-
-    if ((attributes & ISymbol.NHOLDALL) == ISymbol.NHOLDALL) {
-      result.append(S.NHoldAll);
-    } else {
-      if ((attributes & ISymbol.NHOLDFIRST) != ISymbol.NOATTRIBUTE) {
-        result.append(S.NHoldFirst);
-      }
-
-      if ((attributes & ISymbol.NHOLDREST) != ISymbol.NOATTRIBUTE) {
-        result.append(S.NHoldRest);
-      }
-    }
-
-    if ((attributes & ISymbol.NUMERICFUNCTION) != ISymbol.NOATTRIBUTE) {
-      result.append(S.NumericFunction);
-    }
-
-    if ((attributes & ISymbol.ONEIDENTITY) != ISymbol.NOATTRIBUTE) {
-      result.append(S.OneIdentity);
-    }
-
-    if ((attributes & ISymbol.ORDERLESS) != ISymbol.NOATTRIBUTE) {
-      result.append(S.Orderless);
-    }
-
-    if ((attributes & ISymbol.LOCKED) == ISymbol.LOCKED) {
-      result.append(S.Locked);
-      result.append(S.Protected);
-    } else {
-      if ((attributes & ISymbol.PROTECTED) != ISymbol.NOATTRIBUTE) {
-        result.append(S.Protected);
-      }
-    }
-
-    if ((attributes & ISymbol.SEQUENCEHOLD) == ISymbol.SEQUENCEHOLD
-        && ((attributes & ISymbol.HOLDALLCOMPLETE) != ISymbol.HOLDALLCOMPLETE)) {
-      result.append(S.SequenceHold);
-    }
-    result.sortInplace(Comparators.CANONICAL_COMPARATOR);
-    return result;
+    return ISymbol.attributesList(symbol);
   }
 
   public static void initialize() {

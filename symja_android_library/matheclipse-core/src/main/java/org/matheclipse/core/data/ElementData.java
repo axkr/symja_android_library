@@ -17,7 +17,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  *
  * <pre>
- * ElementData("name“, ”property")
+ * ElementData("name", "property")
  * </pre>
  *
  * <blockquote>
@@ -266,7 +266,7 @@ public class ElementData extends AbstractFunctionEvaluator {
       }
       return F.Missing(S.NotAvailable);
     }
-    return NIL;
+    return F.Missing(S.NotAvailable);
   }
 
   @Override

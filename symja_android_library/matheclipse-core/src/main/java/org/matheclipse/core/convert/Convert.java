@@ -36,6 +36,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBigNumber;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.IStringX;
@@ -1123,6 +1124,33 @@ public class Convert {
         result.add(expr.toString());
         return result;
       }
+    }
+    return null;
+  }
+
+  public static IInteger[][] toRationalArray(IExpr expr) {
+    if (expr.isList()) {
+      IAST listOfRationals = (IAST) expr;
+      IInteger[] numerator = new IInteger[listOfRationals.argSize()];
+      IInteger[] denominator = new IInteger[listOfRationals.argSize()];
+
+      boolean isFraction = false;
+      for (int i = 1; i < listOfRationals.size(); i++) {
+        if (listOfRationals.get(i) instanceof IInteger) {
+          numerator[i - 1] = (IInteger) listOfRationals.get(i);
+          denominator[i - 1] = F.C1;
+        } else if (listOfRationals.get(i) instanceof IFraction) {
+          IFraction fraction = (IFraction) listOfRationals.get(i);
+          numerator[i - 1] = fraction.numerator();
+          denominator[i - 1] = fraction.denominator();
+          isFraction = true;
+        } else {
+          return null;
+        }
+      }
+      return isFraction ? //
+          new IInteger[][] {numerator, denominator} : //
+          new IInteger[][] {numerator, null};
     }
     return null;
   }

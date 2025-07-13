@@ -20,6 +20,7 @@ import static org.matheclipse.core.expression.F.ZZ;
 import static org.matheclipse.core.expression.S.Times;
 import java.util.Set;
 import java.util.TreeSet;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -28,6 +29,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -43,6 +45,12 @@ import org.matheclipse.core.interfaces.ISymbol;
  * TODO not completly tested. Especially if a division through zero occurs.
  */
 public class QuarticSolver {
+  private final static int QUADRATIC_A = 2;
+  private final static int QUADRATIC_B = 1;
+  private final static int QUADRATIC_C = 0;
+  private final static int QUADRATIC_DISCRIMINANT = 3;
+  private final static int QUADRATIC_ROOTS = 4;
+  private final static int QUADRATIC_INTERVAL_DATA = 5;
 
   public static IASTMutable solve(IExpr exprPoly, IExpr x) throws ArithmeticException {
     IExpr[] coefficients = new IExpr[] {F.C0, F.C0, F.C0, F.C0, F.C0};
@@ -51,6 +59,116 @@ public class QuarticSolver {
           coefficients[0], true, true);
     }
     return F.NIL;
+  }
+
+  public static IAST quadraticIntervalData(IBuiltInSymbol symbol, IExpr exprPoly, IExpr x) {
+    IExpr[] parameters = quadraticParameters(symbol, exprPoly, x);
+    return (parameters != null) ? (IAST) parameters[QUADRATIC_INTERVAL_DATA] : F.NIL;
+  }
+
+  private static IExpr[] quadraticParameters(IBuiltInSymbol symbol, IExpr exprPoly, IExpr x) {
+    IExpr[] parameters = new IExpr[] {F.C0, F.C0, F.C0, F.C0, F.C0, F.CEmptyIntervalData};
+    if (convert2Coefficients(exprPoly, x, parameters) //
+        && !parameters[2].isPossibleZero(true)) {
+      // a^2+b*x+c
+      IExpr c = parameters[QUADRATIC_C];
+      IExpr b = parameters[QUADRATIC_B];
+      IExpr a = parameters[QUADRATIC_A];
+      IExpr discriminant = quadraticDiscriminant(a, b, c);
+      parameters[QUADRATIC_DISCRIMINANT] = discriminant;
+      IAST roots = quadraticSolve(a, b, c);
+      parameters[QUADRATIC_ROOTS] = roots;
+
+      if (a.greater(F.C0).isTrue()) {
+        // a > 0 - parabola opens upwards - function has minimum value
+
+        if (discriminant.greater(F.C0).isTrue()) {
+          // discriminant > 0 - two distinct real roots - the parabola intersects the x-axis at two
+          // points
+          if (symbol == S.Less) {
+            parameters[QUADRATIC_INTERVAL_DATA] =
+                F.IntervalData(F.List(roots.first(), S.Less, S.Less, roots.second()));
+          } else if (symbol == S.LessEqual) {
+            parameters[QUADRATIC_INTERVAL_DATA] =
+                F.IntervalData(F.List(roots.first(), S.LessEqual, S.LessEqual, roots.second()));
+          } else if (symbol == S.Greater) {
+            parameters[QUADRATIC_INTERVAL_DATA] = F.IntervalData(//
+                F.List(F.CNIInfinity, S.Less, S.Less, roots.first()), //
+                F.List(roots.second(), S.Less, S.Less, F.CInfinity));
+          } else if (symbol == S.GreaterEqual) {
+            parameters[QUADRATIC_INTERVAL_DATA] = F.IntervalData(//
+                F.List(F.CNIInfinity, S.Less, S.LessEqual, roots.first()), //
+                F.List(roots.second(), S.LessEqual, S.Less, F.CInfinity));
+          }
+        } else if (discriminant.less(F.C0).isTrue()) {
+          // discriminant < 0 - there are no real roots. The parabola does not intersect the x-axis
+          // The entire parabola is above the x-axis.
+          if (symbol == S.Less || symbol == S.LessEqual) {
+            parameters[QUADRATIC_INTERVAL_DATA] = F.CEmptyIntervalData;
+          } else if (symbol == S.Greater || symbol == S.GreaterEqual) {
+            parameters[QUADRATIC_INTERVAL_DATA] = F.CRealsIntervalData;
+          }
+
+        } else if (discriminant.isPossibleZero(true)) {
+          // discriminant == 0 - exactly one real root. The parabola touches the x-axis at one point
+          // (the vertex is on the x-axis)
+          if (symbol == S.Less || symbol == S.Greater) {
+            parameters[QUADRATIC_INTERVAL_DATA] = F.CEmptyIntervalData;
+          } else if (symbol == S.LessEqual || symbol == S.GreaterEqual) {
+            parameters[QUADRATIC_INTERVAL_DATA] =
+                F.IntervalData(F.List(roots.first(), S.LessEqual, S.LessEqual, roots.first()));
+          }
+        } else {
+          return null;
+        }
+      } else if (a.less(F.C0).isTrue()) {
+        // a < 0 - parabola opens downwards - function has maximum value
+
+        if (discriminant.greater(F.C0).isTrue()) {
+          // discriminant > 0 - two distinct real roots - the parabola intersects the x-axis at two
+          // points
+          if (symbol == S.Less) {
+            parameters[QUADRATIC_INTERVAL_DATA] = F.IntervalData(//
+                F.List(F.CNIInfinity, S.Less, S.Less, roots.first()), //
+                F.List(roots.second(), S.Less, S.Less, F.CInfinity));
+          } else if (symbol == S.LessEqual) {
+            parameters[QUADRATIC_INTERVAL_DATA] = F.IntervalData(//
+                F.List(F.CNIInfinity, S.Less, S.LessEqual, roots.first()), //
+                F.List(roots.second(), S.LessEqual, S.Less, F.CInfinity));
+          } else if (symbol == S.Greater) {
+            parameters[QUADRATIC_INTERVAL_DATA] =
+                F.IntervalData(F.List(roots.first(), S.Less, S.Less, roots.second()));
+          } else if (symbol == S.GreaterEqual) {
+            parameters[QUADRATIC_INTERVAL_DATA] =
+                F.IntervalData(F.List(roots.first(), S.LessEqual, S.LessEqual, roots.second()));
+          }
+        } else if (discriminant.less(F.C0).isTrue()) {
+          // discriminant < 0 - there are no real roots. The parabola does not intersect the x-axis
+          // The entire parabola is below the x-axis.
+          if (symbol == S.Less || symbol == S.LessEqual) {
+            parameters[QUADRATIC_INTERVAL_DATA] = F.CRealsIntervalData;
+          } else if (symbol == S.Greater || symbol == S.GreaterEqual) {
+            parameters[QUADRATIC_INTERVAL_DATA] = F.CEmptyIntervalData;
+          }
+
+        } else if (discriminant.isPossibleZero(true)) {
+          // discriminant == 0 - exactly one real root. The parabola touches the x-axis at one point
+          // (the vertex is on the x-axis)
+          if (symbol == S.Less || symbol == S.Greater) {
+            parameters[QUADRATIC_INTERVAL_DATA] = F.CEmptyIntervalData;
+          } else if (symbol == S.LessEqual || symbol == S.GreaterEqual) {
+            parameters[QUADRATIC_INTERVAL_DATA] =
+                F.IntervalData(F.List(roots.first(), S.LessEqual, S.LessEqual, roots.first()));
+          }
+        } else {
+          return null;
+        }
+      } else {
+        return null;
+      }
+      return parameters;
+    }
+    return null;
   }
 
   public static IASTMutable solve(IExpr exprPoly, IExpr x, boolean createSet, boolean sort)
@@ -163,19 +281,20 @@ public class QuarticSolver {
    */
   public static IASTAppendable quarticSolve(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e,
       boolean createSet, boolean sort) {
-    if (a.isPossibleZero(false)) {
+    if (a.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
       return cubicSolve(b, c, d, e, null, createSet, sort);
     } else {
-      if (e.isPossibleZero(false)) {
+      if (e.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         return cubicSolve(a, b, c, d, C0, createSet, sort);
       }
-      if (b.isPossibleZero(false) && d.isPossibleZero(false)) {
+      if (b.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)
+          && d.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         return biQuadraticSolve(a, c, e, null, createSet, sort);
       }
       IExpr temp = a.subtract(e);
-      if (temp.isPossibleZero(false)) {
+      if (temp.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         temp = b.subtract(d);
-        if (temp.isPossibleZero(false)) {
+        if (temp.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
           return quasiSymmetricQuarticSolve(a, b, c, createSet, sort);
         }
       }
@@ -189,7 +308,7 @@ public class QuarticSolver {
       IExpr gamma = F.eval(Plus(Times(CN3, Power(b, C4), Power(Times(ZZ(256L), Power(a, C4)), CN1)),
           Times(Power(b, C2), c, Power(Times(ZZ(16L), Power(a, C3)), CN1)),
           Times(CN1, b, d, Power(Times(C4, Power(a, C2)), CN1)), Times(e, Power(a, CN1))));
-      if (beta.isPossibleZero(false)) {
+      if (beta.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         // -1/4 * b/a
         return biQuadraticSolve(C1, alpha, gamma, Times(CN1D4, b, Power(a, CN1)), createSet, sort);
       }
@@ -410,10 +529,10 @@ public class QuarticSolver {
    */
   public static IASTAppendable cubicSolve(IExpr a, IExpr b, IExpr c, IExpr d,
       IExpr additionalSolution, boolean createSet, boolean sort) {
-    if (a.isPossibleZero(false)) {
+    if (a.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
       return quadraticSolve(b, c, d, additionalSolution, null, createSet, sort);
     } else {
-      if (d.isPossibleZero(false)) {
+      if (d.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         return quadraticSolve(a, b, c, additionalSolution, C0, createSet, sort);
       }
       IASTAppendable result = F.ListAlloc(4);
@@ -435,8 +554,8 @@ public class QuarticSolver {
       IExpr delta3 = F.eval(Power(argDelta3, C1D3));
 
       IAST value = Times(CN1, b, Power(Times(C3, a), CN1));
-      if (discriminant.isPossibleZero(false)) {
-        if (delta0.isPossibleZero(false)) {
+      if (discriminant.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+        if (delta0.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
           // the three roots are equal
           // (-b)/(3*a)
           result.append(value);
@@ -610,16 +729,16 @@ public class QuarticSolver {
     if (solution2 != null) {
       result.append(solution2);
     }
-    if (!a.isPossibleZero(false)) {
-      if (c.isPossibleZero(false)) {
+    if (!a.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+      if (c.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         result.append(F.C0);
-        if (b.isPossibleZero(false)) {
+        if (b.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
           result.append(F.C0);
         } else {
           result.append(F.Times(F.CN1, b, Power(a, -1L)));
         }
       } else {
-        if (b.isPossibleZero(false)) {
+        if (b.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
           // a*x^2 + c == 0
           IExpr rhs = S.Divide.of(F.Negate(c), a);
           IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(rhs);
@@ -635,7 +754,7 @@ public class QuarticSolver {
             result.append(S.Divide.of(numerator, denominator));
           }
         } else {
-          IExpr discriminant = F.evalExpand(Plus(F.Sqr(b), a.times(c).times(F.C4).negate()));
+          IExpr discriminant = quadraticDiscriminant(a, b, c);
           discriminant = discriminant.sqrt();
           result.append(Times(Plus(b.negate(), discriminant), Power(a.times(F.C2), -1L)));
           result.append(Times(Plus(b.negate(), discriminant.negate()), Power(a.times(F.C2), -1L)));
@@ -646,7 +765,7 @@ public class QuarticSolver {
         return evalAndSort(result, sort);
       }
     } else {
-      if (!b.isPossibleZero(false)) {
+      if (!b.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         result.append(Times(CN1, c, Power(b, -1L)));
       }
     }
@@ -654,6 +773,10 @@ public class QuarticSolver {
       return createSet(result);
     }
     return evalAndSort(result, sort);
+  }
+
+  private static IExpr quadraticDiscriminant(IExpr a, IExpr b, IExpr c) {
+    return F.evalExpand(Plus(F.Sqr(b), a.times(c).times(F.C4).negate()));
   }
 
   private static IExpr surdSqrt(IExpr arg) {

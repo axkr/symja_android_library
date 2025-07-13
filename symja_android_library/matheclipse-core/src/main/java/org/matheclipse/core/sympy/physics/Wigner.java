@@ -3,10 +3,11 @@ package org.matheclipse.core.sympy.physics;
 
 import org.hipparchus.linear.Array2DRowFieldMatrix;
 import org.hipparchus.linear.FieldMatrix;
-import org.matheclipse.core.builtin.NumberTheory;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -71,11 +72,11 @@ public class Wigner {
     // .multiply(factList.get((int) (aa + cc - bb))).multiply(factList.get((int) (bb + cc - aa)))
     // .divide(factList.get((int) (aa + bb + cc + 1)));
 
-    IInteger multiplyValue = NumberTheory.factorial(v1.numerator())//
-        .multiply(NumberTheory.factorial(v2.numerator())) //
-        .multiply(NumberTheory.factorial(v3.numerator()));
+    IInteger multiplyValue = Wigner.factorial(v1.numerator())//
+        .multiply(Wigner.factorial(v2.numerator())) //
+        .multiply(Wigner.factorial(v3.numerator()));
     IRational v4 = intOrHalfInt(aa.add(bb).add(cc).add(F.C1));
-    IInteger divideValue = NumberTheory.factorial(v4.numerator());
+    IInteger divideValue = Wigner.factorial(v4.numerator());
     // .divide(NumberTheory.factorial((int) (aa + bb + cc + 1)));
     IExpr ressqrt = F.Sqrt(multiplyValue.divide(divideValue));
     // Math.sqrt(multiplyValue.doubleValue() / divideValue.doubleValue());
@@ -136,7 +137,7 @@ public class Wigner {
         bigDeltaCoeff(aa, cc, ff), bigDeltaCoeff(bb, dd, ff));
     EvalEngine engine = EvalEngine.get();
     prefac = engine.evaluate(prefac);
-    if (prefac.isPossibleZero(true)) {
+    if (prefac.isPossibleZero(true, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
       return F.C0;
     }
 
@@ -160,15 +161,15 @@ public class Wigner {
       IInteger k5 = aa.add(bb).add(cc).add(dd).subtract(F.ZZ(kk)).numerator();
       IInteger k6 = aa.add(dd).add(ee).add(ff).subtract(F.ZZ(kk)).numerator();
       IInteger k7 = bb.add(cc).add(ee).add(ff).subtract(F.ZZ(kk)).numerator();
-      IInteger den = NumberTheory.factorial(k1)//
-          .multiply(NumberTheory.factorial(k2)) //
-          .multiply(NumberTheory.factorial(k3))//
-          .multiply(NumberTheory.factorial(k4)) //
-          .multiply(NumberTheory.factorial(k5))//
-          .multiply(NumberTheory.factorial(k6))//
-          .multiply(NumberTheory.factorial(k7));
+      IInteger den = Wigner.factorial(k1)//
+          .multiply(Wigner.factorial(k2)) //
+          .multiply(Wigner.factorial(k3))//
+          .multiply(Wigner.factorial(k4)) //
+          .multiply(Wigner.factorial(k5))//
+          .multiply(Wigner.factorial(k6))//
+          .multiply(Wigner.factorial(k7));
 
-      IInteger kk1 = NumberTheory.factorial(kk + 1);
+      IInteger kk1 = AbstractIntegerSym.factorial(kk + 1);
       if (kk == 0) {
         sumres = sumres.add(F.QQ(kk1, den));
       } else {
@@ -262,17 +263,17 @@ public class Wigner {
       return F.C0;
     }
 
-    IInteger multiplyValue = NumberTheory.factorial(j1.add(j2).subtract(j3).numerator()) //
-        .multiply(NumberTheory.factorial(j1.subtract(j2).add(j3).numerator())) //
-        .multiply(NumberTheory.factorial(j2.add(j3).subtract(j1).numerator())) //
-        .multiply(NumberTheory.factorial(j1.subtract(m1).numerator())) //
-        .multiply(NumberTheory.factorial(j1.add(m1).numerator())) //
-        .multiply(NumberTheory.factorial(j2.subtract(m2).numerator())) //
-        .multiply(NumberTheory.factorial(j2.add(m2).numerator())) //
-        .multiply(NumberTheory.factorial(j3.subtract(m3).numerator())) //
-        .multiply(NumberTheory.factorial(j3.add(m3).numerator()));//
+    IInteger multiplyValue = Wigner.factorial(j1.add(j2).subtract(j3).numerator()) //
+        .multiply(Wigner.factorial(j1.subtract(j2).add(j3).numerator())) //
+        .multiply(Wigner.factorial(j2.add(j3).subtract(j1).numerator())) //
+        .multiply(Wigner.factorial(j1.subtract(m1).numerator())) //
+        .multiply(Wigner.factorial(j1.add(m1).numerator())) //
+        .multiply(Wigner.factorial(j2.subtract(m2).numerator())) //
+        .multiply(Wigner.factorial(j2.add(m2).numerator())) //
+        .multiply(Wigner.factorial(j3.subtract(m3).numerator())) //
+        .multiply(Wigner.factorial(j3.add(m3).numerator()));//
 
-    IRational divideValue = NumberTheory.factorial(j1.add(j2).add(j3).add(1).numerator());
+    IRational divideValue = Wigner.factorial(j1.add(j2).add(j3).add(1).numerator());
     IExpr ressqrt = F.Sqrt(multiplyValue.divide(divideValue));
 
     int imin = j1.add(m2).subtract(j3).max(j2.subtract(m1).subtract(j3).max(F.C0)).toIntDefault();
@@ -283,12 +284,12 @@ public class Wigner {
     }
     IExpr sumres = F.C0;
     for (int ii = imin; ii <= imax; ii++) {
-      IInteger den = NumberTheory.factorial(ii)//
-          .multiply(NumberTheory.factorial(F.ZZ(ii).add(j3.subtract(j1).subtract(m2).numerator()))) //
-          .multiply(NumberTheory.factorial(j2.add(m2).subtract(F.ZZ(ii)).numerator())) //
-          .multiply(NumberTheory.factorial(j1.subtract(m1).subtract(F.ZZ(ii)).numerator())) //
-          .multiply(NumberTheory.factorial(F.ZZ(ii).add(j3).subtract(j2).add(m1).numerator())) //
-          .multiply(NumberTheory.factorial(j1.add(j2).subtract(j3).subtract(F.ZZ(ii)).numerator()));
+      IInteger den = AbstractIntegerSym.factorial(ii)//
+          .multiply(Wigner.factorial(F.ZZ(ii).add(j3.subtract(j1).subtract(m2).numerator()))) //
+          .multiply(Wigner.factorial(j2.add(m2).subtract(F.ZZ(ii)).numerator())) //
+          .multiply(Wigner.factorial(j1.subtract(m1).subtract(F.ZZ(ii)).numerator())) //
+          .multiply(Wigner.factorial(F.ZZ(ii).add(j3).subtract(j2).add(m1).numerator())) //
+          .multiply(Wigner.factorial(j1.add(j2).subtract(j3).subtract(F.ZZ(ii)).numerator()));
       if (ii == 0) {
         sumres = sumres.add(F.Power(den, F.CN1));
       } else {
@@ -423,6 +424,10 @@ public class Wigner {
       s = s.inc();
     }
     return engine.evaluate(F.Times(dij, terms));
+  }
+
+  private static IInteger factorial(final IInteger x) {
+    return x.factorial();
   }
 
   // public static IExpr wignerDSmallEntry(IRational j, IRational mi, IRational mj, INumber beta,

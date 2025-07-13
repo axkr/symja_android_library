@@ -89,7 +89,7 @@ public class TeXUtilities {
     return true;
   }
 
-  public void stopRequest() {
-    fEvalEngine.stopRequest();
-  }
+  // public void stopRequest() {
+  // fEvalEngine.stopRequest();
+  // }
 }

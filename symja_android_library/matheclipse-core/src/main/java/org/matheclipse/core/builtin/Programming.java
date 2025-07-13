@@ -3826,13 +3826,13 @@ public final class Programming {
    * assignedRules</code>.
    *
    * @param variablesList initializer variables list from the <code>Block</code> function
-   * @param assignedValues the variables mapped to their values (IExpr) before evaluating the block
-   * @param assignedRules the variables mapped to their rules (RulesData) before evaluating the
+   * @param oldAssignedValues the variables mapped to their values (IExpr) before evaluating the block
+   * @param oldAssignedRules the variables mapped to their rules (RulesData) before evaluating the
    *        block
    * @param engine the evaluation engine
    */
   public static void rememberBlockVariables(IAST variablesList, final ISymbol[] symbolList,
-      final IExpr[] assignedValues, final RulesData[] assignedRules, final EvalEngine engine) {
+      final IExpr[] oldAssignedValues, final RulesData[] oldAssignedRules, final EvalEngine engine) {
     ISymbol variableSymbol;
     for (int i = 1; i < variablesList.size(); i++) {
       if (variablesList.get(i).isSymbol()) {
@@ -3844,8 +3844,8 @@ public final class Programming {
           }
         }
         symbolList[i] = variableSymbol;
-        assignedValues[i] = variableSymbol.assignedValue();
-        assignedRules[i] = variableSymbol.getRulesData();
+        oldAssignedValues[i] = variableSymbol.assignedValue();
+        oldAssignedRules[i] = variableSymbol.getRulesData();
       } else if (variablesList.get(i).isAST(S.Set, 3)) {
         final IAST setFun = (IAST) variablesList.get(i);
         if (setFun.arg1().isSymbol()) {
@@ -3857,8 +3857,8 @@ public final class Programming {
             }
           }
           symbolList[i] = variableSymbol;
-          assignedValues[i] = variableSymbol.assignedValue();
-          assignedRules[i] = variableSymbol.getRulesData();
+          oldAssignedValues[i] = variableSymbol.assignedValue();
+          oldAssignedRules[i] = variableSymbol.getRulesData();
         }
       }
     }

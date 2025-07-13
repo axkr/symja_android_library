@@ -359,11 +359,6 @@ public class D extends AbstractFunctionEvaluator {
                 // a symbolic expression or a non-negative integer.
                 return Errors.printMessage(S.D, "dvar", F.List(xList), engine);
               }
-              // IAST derivativeN = createDerivativeN(fx.head(), (IAST) fx, x, xListN);
-              // IExpr derivativeNEvaled = engine.evaluateNIL(derivativeN);
-              // if (derivativeNEvaled.isPresent()) {
-              // return derivativeNEvaled;
-              // }
             }
           }
           IExpr arg2 = xListN;
@@ -372,8 +367,8 @@ public class D extends AbstractFunctionEvaluator {
             IExpr temp = fx;
             for (int i = 0; i < n; i++) {
               temp = S.D.ofNIL(engine, temp, x);
-              if (temp.isNIL()) {
-                return F.NIL;
+              if (temp.isNIL() || temp.isZero()) {
+                return temp;
               }
             }
             return temp;
@@ -542,6 +537,8 @@ public class D extends AbstractFunctionEvaluator {
           }
         }
         return F.NIL;
+      } else if (function.isAST(S.Boole, 2)) {
+        return F.C0;
       } else if (function.isAST1() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
         IAST[] derivStruct = function.isDerivativeAST1();
         if (derivStruct != null && derivStruct[2] != null) {
@@ -624,8 +621,8 @@ public class D extends AbstractFunctionEvaluator {
           return engine.addEvaluatedTraceStep(F.D(function, x), result, "PowerRule");
 
         }
-        IExpr result = F.Times(gInverse, F.D(f, x), F.Power(f, F.CN1),
-            F.Power(F.Surd(f, g.negate()), F.CN1));
+        IExpr result =
+            F.Times(gInverse, F.D(f, x), F.Power(f, F.CN1), F.Power(F.Surd(f, g.negate()), F.CN1));
         return engine.addEvaluatedTraceStep(F.D(function, x), result, "PowerRule");
 
       }

@@ -205,7 +205,7 @@ public class AJAXQueryServlet extends HttpServlet {
     } catch (InterruptedException e) {
       return JSONBuilder.createJSONError("Timeout exceeded. Calculation interrupted!");
     } catch (ExecutionException | TimeoutException e) {
-      engine.setStopRequested(true);
+      // engine.setStopRequested(true);
       return JSONBuilder.createJSONError("Timeout exceeded. Calculation aborted!");
     } finally {
       if (!task.isDone() && !task.cancel(true)) {

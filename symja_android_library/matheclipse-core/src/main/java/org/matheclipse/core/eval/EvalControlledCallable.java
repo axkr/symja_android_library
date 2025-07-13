@@ -84,7 +84,7 @@ public class EvalControlledCallable implements Callable<IExpr> {
   }
 
   public void cancel() {
-    fEngine.stopRequest();
+    // fEngine.stopRequest();
     try {
       Thread.sleep(Config.TIME_CONSTRAINED_SLEEP_MILLISECONDS);
     } catch (InterruptedException e) {

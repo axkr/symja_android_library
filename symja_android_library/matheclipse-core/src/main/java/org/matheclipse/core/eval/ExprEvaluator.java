@@ -205,7 +205,7 @@ public class ExprEvaluator {
     fVariableMap.clear();
     // pop all local variables from local variable stack
     for (int i = 0; i < fVariables.size(); i++) {
-      fVariables.get(i).assignValue(null, false);
+      fVariables.get(i).clearValue();
     }
   }
 

@@ -13,17 +13,14 @@
  */
 package de.tilman_neumann.jml.factor;
 
-import static de.tilman_neumann.jml.factor.base.GlobalFactoringOptions.*;
-
+import static de.tilman_neumann.jml.factor.base.GlobalFactoringOptions.ANALYZE;
 import java.math.BigInteger;
-
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import de.tilman_neumann.jml.factor.base.FactorArguments;
 import de.tilman_neumann.jml.factor.base.FactorResult;
-import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolverGauss02;
 import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolverBlockLanczos;
+import de.tilman_neumann.jml.factor.base.matrixSolver.MatrixSolverGauss02;
 import de.tilman_neumann.jml.factor.ecm.EllipticCurveMethod;
 import de.tilman_neumann.jml.factor.ecm.TinyEcm64MHInlined;
 import de.tilman_neumann.jml.factor.hart.HartFast2Mult;

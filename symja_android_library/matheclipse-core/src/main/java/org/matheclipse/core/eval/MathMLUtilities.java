@@ -185,7 +185,7 @@ public class MathMLUtilities {
   }
 
   /** Stop the current evaluation thread. */
-  public void stopRequest() {
-    fEvalEngine.stopRequest();
-  }
+  // public void stopRequest() {
+  // fEvalEngine.stopRequest();
+  // }
 }
