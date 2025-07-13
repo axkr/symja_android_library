@@ -2,7 +2,7 @@ package org.matheclipse.core.form.output;
 
 import java.io.PrintWriter;
 import java.util.Optional;
-import org.matheclipse.core.builtin.Algebra;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -209,7 +209,7 @@ public class ASCIIPrettyPrinter3 {
    */
   private void convertTimesPowerFraction(IAST ast, final int precedence) {
     Optional<IExpr[]> parts =
-        Algebra.fractionalPartsTimesPower(ast, true, false, false, false, false, false);
+        AlgebraUtil.fractionalPartsTimesPower(ast, true, false, false, false, false, false);
     // IExpr[] parts = Algebra.getFractionalParts(ast, false);
     if (parts.isEmpty()) {
       print(ast.toString());

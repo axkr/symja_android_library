@@ -19,7 +19,7 @@ import static org.matheclipse.core.expression.S.y;
 import static org.matheclipse.core.expression.S.z;
 import org.junit.Test;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Algebra;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -38,28 +38,28 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testExpand001() {
     IAST ast = Times(x, x);
-    IExpr temp = Algebra.expandAll(ast, null, false, false, false, EvalEngine.get());
+    IExpr temp = AlgebraUtil.expandAll(ast, null, false, false, false, EvalEngine.get());
     assertEquals(temp.toString(), "x^2");
   }
 
   @Test
   public void testExpand002() {
     IAST ast = Times(C1D2, x, x);
-    IExpr temp = Algebra.expand(ast, null, false, false, true);
+    IExpr temp = AlgebraUtil.expand(ast, null, false, false, true);
     assertEquals(temp.toString(), "x^2/2");
   }
 
   @Test
   public void testExpand003() {
     IAST ast = Power(Plus(x, y), C3);
-    IExpr temp = Algebra.expandAll(ast, null, false, false, false, EvalEngine.get());
+    IExpr temp = AlgebraUtil.expandAll(ast, null, false, false, false, EvalEngine.get());
     assertEquals(temp.toString(), "x^3+y^3+3*x^2*y+3*x*y^2");
   }
 
   @Test
   public void testExpand004() {
     IAST ast = Plus(Sow(Power(a, 2)), C1);
-    IExpr temp = Algebra.expandAll(ast, null, false, false, false, EvalEngine.get());
+    IExpr temp = AlgebraUtil.expandAll(ast, null, false, false, false, EvalEngine.get());
     if (temp.isNIL()) {
       temp = ast;
     }
@@ -70,7 +70,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
   public void testExpand005() {
     // x / y
     IAST ast = Times(x, Power(y, -1));
-    IExpr temp = Algebra.expandAll(ast, null, true, false, false, EvalEngine.get());
+    IExpr temp = AlgebraUtil.expandAll(ast, null, true, false, false, EvalEngine.get());
     // because of sorting and flattening flags:
     assertEquals(temp, F.NIL);
 
@@ -82,7 +82,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
   public void testExpand006() {
     // (3*x^2+2)^2
     IAST ast = Power(Plus(C2, Times(C3, Power(x, 2))), C2);
-    IExpr temp = Algebra.expand(ast, null, true, false, true);
+    IExpr temp = AlgebraUtil.expand(ast, null, true, false, true);
     if (temp == null) {
       temp = ast;
     }
@@ -93,7 +93,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
   public void testExpand007() {
     // Sec(x)^2*Sin(x)^2
     IAST ast = Times(Power(Sec(x), C2), Power(Sin(x), 2));
-    IExpr temp = Algebra.expand(ast, null, true, false, true);
+    IExpr temp = AlgebraUtil.expand(ast, null, true, false, true);
     if (temp.isNIL()) {
       assertEquals(ast.toString(), "Sec(x)^2*Sin(x)^2");
       return;
@@ -105,7 +105,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
   public void testExpandPerformance001() {
     // ExpandAll((a+b+2*c+x+y+3*z)^6)
     IAST ast = Power(Plus(a, b, F.Times(C2, c), x, y, F.Times(F.C3, z)), F.ZZ(6));
-    IAST temp = (IAST) Algebra.expand(ast, null, false, false, false);
+    IAST temp = (IAST) AlgebraUtil.expand(ast, null, false, false, false);
     EvalEngine engine = EvalEngine.get();
     temp = (IAST) engine.evaluate(temp);
     // number of terms
@@ -117,7 +117,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
   public void testExpandPerformance002() {
     // Expand((a+b+2*c+x+y+3*z)^12)
     IAST ast = Power(Plus(a, b, F.Times(C2, c), x, y, F.Times(F.C3, z)), F.ZZ(12));
-    IAST temp = (IAST) Algebra.expand(ast, null, false, false, false);
+    IAST temp = (IAST) AlgebraUtil.expand(ast, null, false, false, false);
     EvalEngine engine = EvalEngine.get();
     temp = (IAST) engine.evaluate(temp);
     // number of terms
@@ -132,7 +132,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
       // best time 8.8 s
       // ExpandAll((a+b+2*c+x+y+3*z)^24)
       IAST ast = Power(Plus(a, b, F.Times(C2, c), x, y, F.Times(F.C3, z)), F.ZZ(24));
-      IAST temp = (IAST) Algebra.expandAll(ast, null, false, false, false, EvalEngine.get());
+      IAST temp = (IAST) AlgebraUtil.expandAll(ast, null, false, false, false, EvalEngine.get());
       EvalEngine engine = EvalEngine.get();
       temp = (IAST) engine.evaluate(temp);
       // number of terms

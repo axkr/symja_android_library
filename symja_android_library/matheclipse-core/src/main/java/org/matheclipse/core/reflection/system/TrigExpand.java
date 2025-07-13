@@ -10,8 +10,8 @@ import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.evalExpandAll;
 import java.util.function.Function;
-import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.StructureFunctions;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -72,7 +72,7 @@ public class TrigExpand extends AbstractEvaluator {
     }
 
     private static IExpr distributeTimes(IExpr expr) {
-      return Algebra.distributeTimes(expr);
+      return AlgebraUtil.distributeTimes(expr);
     }
 
     /**

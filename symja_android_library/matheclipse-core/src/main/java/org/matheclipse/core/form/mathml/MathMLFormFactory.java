@@ -12,8 +12,8 @@ import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -967,7 +967,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     public boolean convertTimesFraction(final StringBuilder buf, final IAST f, final int precedence,
         final boolean caller) {
       Optional<IExpr[]> parts =
-          Algebra.fractionalPartsTimesPower(f, false, true, false, false, false, false);
+          AlgebraUtil.fractionalPartsTimesPower(f, false, true, false, false, false, false);
       if (parts.isEmpty()) {
         convertTimesOperator(buf, f, precedence, false, caller);
         return true;

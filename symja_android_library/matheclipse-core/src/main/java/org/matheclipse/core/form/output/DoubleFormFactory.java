@@ -8,8 +8,8 @@ import org.apfloat.Apfloat;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -581,7 +581,7 @@ public abstract class DoubleFormFactory {
   private void convertTimesFraction(final StringBuilder buf, final IAST timesAST,
       final InfixOperator oper, final int precedence, boolean caller) {
     Optional<IExpr[]> parts =
-        Algebra.fractionalPartsTimesPower(timesAST, true, false, false, false, false, false);
+        AlgebraUtil.fractionalPartsTimesPower(timesAST, true, false, false, false, false, false);
     if (parts.isEmpty()) {
       convertTimesOperator(buf, timesAST, oper, precedence, caller);
       return;

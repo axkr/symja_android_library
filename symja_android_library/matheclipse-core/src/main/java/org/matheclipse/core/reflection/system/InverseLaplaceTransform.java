@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.util.Optional;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -165,7 +166,7 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator implement
           }
         }
         if (arg1.isTimes() || arg1.isPower()) {
-          Optional<IExpr[]> parts = Algebra.fractionalParts(arg1, false);
+          Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, false);
           if (parts.isPresent()) {
             IExpr temp = Algebra.partsApart(parts.get(), s, engine);
             // IExpr temp = Algebra.partialFractionDecompositionRational(new

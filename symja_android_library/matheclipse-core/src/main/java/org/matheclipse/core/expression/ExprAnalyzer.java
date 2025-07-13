@@ -2,7 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.matheclipse.core.builtin.Algebra;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.generic.Predicates;
@@ -782,7 +782,7 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
   }
 
   public void splitNumeratorDenominator(IAST ast) {
-    IExpr[] result = Algebra.numeratorDenominator(ast, true, fEngine);
+    IExpr[] result = AlgebraUtil.numeratorDenominator(ast, true, fEngine);
     this.fNumerator = result[0];
     this.fDenominator = result[1];
     this.fTogetherExpr = result[2];

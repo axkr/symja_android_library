@@ -8,6 +8,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.RootsFunctions;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -357,7 +358,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
     if (exprWithVariable.equals(variable)) {
       return exprWithoutVariable;
     }
-    if (exprWithoutVariable.isComplexInfinity() || exprWithoutVariable.isIndeterminate()) {
+    if (!exprWithoutVariable.isSpecialsFree()) {
       return F.NIL;
     }
     if (exprWithVariable.isAST()) {
@@ -457,7 +458,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
           IAST timesWithoutVariable = timesFilter[0];
           IAST timesWithVariable = timesFilter[1];
           if (timesWithoutVariable.isAST0()) {
-            IExpr[] numerDenom = Algebra.numeratorDenominator(ast, true, EvalEngine.get());
+            IExpr[] numerDenom = AlgebraUtil.numeratorDenominator(ast, true, EvalEngine.get());
             if (!numerDenom[1].isOne()) {
               IExpr[] numerLinear = numerDenom[0].linear(variable);
               if (numerLinear != null) {
@@ -829,6 +830,8 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
   }
 
   /**
+   * Eliminates one variable from the given list of equations.
+   * 
    * @param ast
    * @param variable
    * @param multipleValues if <code>true</code> multiple results are returned as list of values
