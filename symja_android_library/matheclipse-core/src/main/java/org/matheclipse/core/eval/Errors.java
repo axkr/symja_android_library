@@ -72,6 +72,7 @@ public class Errors {
       "argtu", "`1` called with 1 argument; `2` or `3` arguments are expected.", //
       "argtype",
       "Arguments `1` and `2` of `3` should be either non-negative integers or one-character strings.", //
+      "arg1", "The first argument `1` is expected to be a vector, matrix or a distribution.", //
       "arg2", "Cannot divide sides of an equation or inequality by 0.", //
       "asm", "The sum of angles `1` and `2` should be less than `3`.", //
       "attnf", "`1` is not a known attribute.", //
@@ -86,6 +87,7 @@ public class Errors {
       "bldim", "The arguments `1` and `2` do not have compatible dimensions.", //
       "boxfmt", "`1` is not a box formatting type.", //
       "bdomv", "Warning: `1` is not a valid domain specification.", //
+      "cas", "Warning contradictory assumption(s) `1` encountered.", //
       "cfn", "Numerical error encountered, proceeding with uncompiled evaluation.", //
       "coef", "The first argument `1` of `2` should be a non-empty list of positive integers.", //
       "color", "`1` is not a valid color or gray-level specification.", //
@@ -459,17 +461,22 @@ public class Errors {
     int argSize = ast.argSize();
     if (expected[0] == expected[1]) {
       if (expected[0] == 1) {
+        // `1` called with `2` arguments; 1 argument is expected.
         return printMessage(topHead, "argx", F.list(head, F.ZZ(argSize), F.ZZ(expected[0])),
             engine);
       }
       if (argSize == 1) {
+        // `1` called with 1 argument; `2` arguments are expected.
         return printMessage(topHead, "argr", F.list(head, F.ZZ(expected[0])), engine);
       }
+      // `1` called with `2` arguments; `3` arguments are expected.
       return printMessage(topHead, "argrx", F.list(head, F.ZZ(argSize), F.ZZ(expected[0])), engine);
     }
     if (expected[1] == Integer.MAX_VALUE) {
+      // `1` called with `2` arguments; `3` or more arguments are expected.
       return printMessage(topHead, "argm", F.list(head, F.ZZ(argSize), F.ZZ(expected[0])), engine);
     }
+    // `1` called with `2` arguments; `3` or `4` arguments are expected.
     return printMessage(topHead, "argt",
         F.List(head, F.ZZ(argSize), F.ZZ(expected[0]), F.ZZ(expected[1])), engine);
   }
@@ -530,6 +537,7 @@ public class Errors {
   public static IAST printExperimental(IBuiltInSymbol symbol) {
     EvalEngine engine = EvalEngine.get();
     if (!engine.containsExperimental(symbol)) {
+      // Experimental implementation (search in Github issues for identifier `1`).
       printMessage(symbol, "experimental", F.list(symbol), EvalEngine.get());
       engine.incExperimentalCounter(symbol);
     }
@@ -537,7 +545,7 @@ public class Errors {
   }
 
   /**
-   * Print: 'Inverse functions are being used. Values may be lost for multivalued inverses.'
+   * Print: 'Inverse functions are being used. Values may be lost for multi-valued inverses.'
    */
   public static void printIfunMessage(ISymbol symbol) {
     // Inverse functions are being used. Values may be lost for multivalued inverses.
@@ -545,7 +553,7 @@ public class Errors {
   }
 
   /**
-   * Format a message according to the shortcut from the {@link MESSAGES} array and print it to the
+   * Format a message according to the shortcut from the {@link #MESSAGES} array and print it to the
    * error stream with the <code>engine.printMessage()</code>method.
    *
    * <p>
@@ -557,7 +565,7 @@ public class Errors {
    * </pre>
    *
    * @param symbol
-   * @param messageShortcut the message shortcut defined in the {@link MESSAGES} array
+   * @param messageShortcut the message shortcut defined in the {@link #MESSAGES} array
    * @param listOfParameters a list of arguments which should be inserted into the message shortcuts
    *        placeholder
    * @return always <code>F.NIL</code>
@@ -568,7 +576,7 @@ public class Errors {
   }
 
   /**
-   * Format a message according to the shortcut from the {@link MESSAGES} array and print it to the
+   * Format a message according to the shortcut from the {@link #MESSAGES} array and print it to the
    * error stream with the help of the {@link EvalEngine#getErrorPrintStream()} method.
    *
    * <p>
@@ -580,7 +588,7 @@ public class Errors {
    * </pre>
    *
    * @param symbol
-   * @param messageShortcut the message shortcut defined in the {@link MESSAGES} array
+   * @param messageShortcut the message shortcut defined in the {@link #MESSAGES} array
    * @param listOfParameters a list of arguments which should be inserted into the message shortcuts
    *        placeholder
    * @param engine
@@ -601,7 +609,7 @@ public class Errors {
     if (message == null) {
       message = "Undefined message shortcut: " + messageShortcut;
       engine.setMessageShortcut(messageShortcut);
-      logMessage(symbol, message, engine);
+      logMessage(symbol.toString(), message, engine);
     } else {
       try {
         final IAST cacheKey = F.List(symbol, F.stringx(messageShortcut), listOfParameters);
@@ -620,7 +628,7 @@ public class Errors {
 
         templateApply(message, writer, context);
         engine.setMessageShortcut(messageShortcut);
-        logMessage(symbol, writer.toString(), engine);
+        logMessage(symbol.toString(), writer.toString(), engine);
 
         engine.putObjectCache(cacheKey, ERRORS_INSTANCE);
       } catch (IOException e) {
@@ -631,10 +639,14 @@ public class Errors {
   }
 
   public static void logMessage(ISymbol symbol, String str, EvalEngine engine) {
+    logMessage(symbol.toString(), str, engine);
+  }
+
+  public static void logMessage(String symbol, String str, EvalEngine engine) {
     if (engine.isQuietMode()) {
       LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, str);
     } else {
-      engine.getErrorPrintStream().append(symbol.toString() + ": " + str + "\n");
+      engine.getErrorPrintStream().append(symbol + ": " + str + "\n");
     }
   }
 

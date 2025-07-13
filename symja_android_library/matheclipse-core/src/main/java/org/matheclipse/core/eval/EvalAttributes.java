@@ -546,10 +546,12 @@ public class EvalAttributes {
 
   /**
    * Thread through all (sub-)lists in the arguments of the IAST (i.e. typically the ASTs head has
-   * the attribute ISymbol.LISTABLE) example: <code>Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}</code>
+   * the attribute {@link ISymbol#LISTABLE}) example:
+   * <code>Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}</code>
    *
    * @param ast
-   * @param listHead the lists head (typically <code>F.List</code>)
+   * @param listHead the lists head (@link S#List} or {@link S#SparseArray} or
+   *        {@link S#Association})
    * @param argHead the arguments head (typically <code>ast.head()</code>)
    * @param listLength the length of the list
    * @return the resulting ast with the <code>argHead</code> threaded into each ast argument.
@@ -561,10 +563,12 @@ public class EvalAttributes {
 
   /**
    * Thread through all (sub-)lists in the arguments of the IAST (i.e. typically the ASTs head has
-   * the attribute ISymbol.LISTABLE) example: <code>Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}</code>
+   * the attribute {@link ISymbol#LISTABLE}) example:
+   * <code>Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}</code>
    *
    * @param ast
-   * @param listHead the lists head (typically <code>F.List</code>)
+   * @param listHead the lists head ({@link S#List} or {@link S#SparseArray} or
+   *        {@link S#Association})
    * @param headType the arguments head (typically <code>ast.head()</code>)
    * @param argSize the length of the list
    * @param association the first association which was found in a functions argument sequence;
@@ -578,66 +582,50 @@ public class EvalAttributes {
     }
 
     if (listHead == S.Association && association != null) {
-      return threadAssociation(ast, headType, argSize, association);
+      return threadAssociation(ast, headType, argSize, association, listHead);
     }
     final int listSize = ast.size();
-    IASTMutable result = F.NIL;
+    // IASTMutable result = F.NIL;
     IExpr head = (listHead == S.SparseArray) ? S.List : listHead;
-    switch (argSize) {
-      case 1:
-        result = F.unaryAST1(head, F.Slot1);
-        break;
-      case 2:
-        result = F.binaryAST2(head, F.Slot1, F.Slot2);
-        break;
-      case 3:
-        result = F.ternaryAST3(head, F.Slot1, F.Slot2, F.Slot3);
-        break;
-      default:
-        result = F.astMutable(head, argSize);
-    }
-
+    IASTMutable result = F.astMutable(head, argSize);
     for (int j = 1; j < argSize + 1; j++) {
       final IASTMutable subResult = F.astMutable(headType, listSize - 1);
       for (int i = 1; i < listSize; i++) {
         if (listHead == S.List && //
             (ast.get(i).isList() || ast.get(i).isSparseArray())) {
           if (ast.get(i).isList()) {
-            final IAST arg = (IAST) ast.get(i);
-            subResult.set(i, arg.get(j));
+            final IAST astArg = (IAST) ast.get(i);
+            subResult.set(i, astArg.get(j));
           } else if (ast.get(i).isSparseArray()) {
             final ISparseArray arg = (ISparseArray) ast.get(i);
             subResult.set(i, arg.get(j));
           }
         } else if (listHead == S.SparseArray) {
           if (ast.get(i).isList()) {
-            final IAST arg = (IAST) ast.get(i);
-            if (j >= arg.size()) {
+            final IAST astArg = (IAST) ast.get(i);
+            if (j >= astArg.size()) {
               return F.NIL;
             }
-            subResult.set(i, arg.get(j));
+            subResult.set(i, astArg.get(j));
           } else if (ast.get(i).isSparseArray()) {
-            final ISparseArray arg = (ISparseArray) ast.get(i);
-            if (j >= arg.size()) {
+            final ISparseArray sparseArrayArg = (ISparseArray) ast.get(i);
+            if (j >= sparseArrayArg.size()) {
               return F.NIL;
             }
-            subResult.set(i, arg.get(j));
+            subResult.set(i, sparseArrayArg.get(j));
           } else {
             subResult.set(i, ast.get(i));
           }
         } else if (ast.get(i).isAST(listHead)) {
-          final IAST arg = (IAST) ast.get(i);
-          subResult.set(i, arg.get(j));
+          final IAST astArg = (IAST) ast.get(i);
+          subResult.set(i, astArg.get(j));
         } else {
           subResult.set(i, ast.get(i));
         }
         result.set(j, subResult);
       }
     }
-    if (listHead == S.SparseArray) {
-      return F.unaryAST1(S.SparseArray, result);
-    }
-    return result;
+    return (listHead == S.SparseArray) ? F.unaryAST1(S.SparseArray, result) : result;
   }
 
   /**
@@ -649,10 +637,12 @@ public class EvalAttributes {
    * @param listLength the length of the list
    * @param assoc the first association which was found in a functions argument sequence;
    *        <code>null</code> otherwise
+   * @param listHead the lists head ({@link S#List} or {@link S#SparseArray} or
+   *        {@link S#Association})
    * @return the resulting ast with the <code>argHead</code> threaded into each ast argument.
    */
   private static IASTMutable threadAssociation(final IAST ast, final IExpr argHead,
-      final int listLength, IAssociation assoc) {
+      final int listLength, IAssociation assoc, final IExpr listHead) {
     final int listSize = ast.size();
     Map<IExpr, IASTMutable> assocResult = new HashMap<IExpr, IASTMutable>(listLength);
     for (int i = 1; i < assoc.size(); i++) {
@@ -662,14 +652,14 @@ public class EvalAttributes {
     for (int j = 1; j < listLength + 1; j++) {
       for (int i = 1; i < listSize; i++) {
         IASTMutable ruleRHS = assocResult.get(assoc.getRule(j).arg1());
-        if (ast.get(i).isAssociation()) {
+        if (ast.get(i).isAssociation() && listHead == S.Association) {
           final IAssociation arg = (IAssociation) ast.get(i);
           IAST rule = arg.getRule(j);
           ruleRHS.set(i, rule.arg2());
-        } else if (ast.get(i).isList()) {
+        } else if (ast.get(i).isList() && listHead == S.List) {
           final IAST arg = (IAST) ast.get(i);
           ruleRHS.set(i, arg.get(j));
-        } else if (ast.get(i).isSparseArray()) {
+        } else if (ast.get(i).isSparseArray() && listHead == S.SparseArray) {
           final ISparseArray arg = (ISparseArray) ast.get(i);
           ruleRHS.set(i, arg.get(j));
         } else {

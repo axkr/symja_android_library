@@ -3232,11 +3232,11 @@ public final class ListFunctions {
         IExpr arg1 = ast.arg1();
         IExpr arg2 = ast.arg2();
         if (ast.isAST2()) {
+          if (!arg2.isAST()) {
+            // Nonatomic expression expected at position `1` in `2`.
+            return Errors.printMessage(S.Fold, "normal", F.list(F.C2, ast), engine);
+          }
           if (arg2.size() <= 1) {
-            if (!arg2.isAST()) {
-              // Nonatomic expression expected at position `1` in `2`.
-              return Errors.printMessage(ast.topHead(), "normal", F.list(F.C2, ast), engine);
-            }
             // an empty IAST cannot be folded
             return F.NIL;
           }
@@ -3286,11 +3286,9 @@ public final class ListFunctions {
       try {
         IExpr arg2 = ast.arg2();
         if (ast.size() == 3) {
-          if (arg2.size() <= 1) {
-            if (!arg2.isAST()) {
-              // Nonatomic expression expected at position `1` in `2`.
-              return Errors.printMessage(ast.topHead(), "normal", F.list(F.C2, ast), engine);
-            }
+          if (!arg2.isAST()) {
+            // Nonatomic expression expected at position `1` in `2`.
+            return Errors.printMessage(S.FoldList, "normal", F.list(F.C2, ast), engine);
           }
           return evaluateNestList3(ast, engine);
         } else if (ast.size() == 4) {
@@ -5560,8 +5558,8 @@ public final class ListFunctions {
       }
       if (ast.isAST3()) {
         if (ast.arg3().isZero()) {
-            Arithmetic.printInfy(ast.topHead(), ast.arg2(), ast.arg3());
-            return F.NIL;
+          Arithmetic.printInfy(ast.topHead(), ast.arg2(), ast.arg3());
+          return F.NIL;
         }
         if (ast.arg3().isDirectedInfinity()) {
           return ast.arg1();
@@ -7952,11 +7950,18 @@ public final class ListFunctions {
       IExpr arg1 = ast.arg1();
       if (arg1.isSparseArray()) {
         ISparseArray sparseArray = (ISparseArray) arg1;
-        if (ast.isAST2()) {
-          int[] dims = sparseArray.getDimension();
-          IExpr arg2 = ast.arg2();
-          if (arg2.isInfinity() || arg2.toIntDefault() >= dims.length) {
-            return sparseArray.total(S.Plus);
+        int[] dims = sparseArray.getDimension();
+        IExpr defaultValue = sparseArray.getDefaultValue();
+        if (defaultValue.isZero()) {
+          if (ast.isAST2()) {
+            IExpr arg2 = ast.arg2();
+            if (arg2.isInfinity() || arg2.toIntDefault() >= dims.length) {
+              return sparseArray.total(S.Plus);
+            }
+          } else if (ast.isAST1()) {
+            if (dims.length == 1) {
+              return sparseArray.total(S.Plus);
+            }
           }
         }
         arg1 = sparseArray.normal(false);

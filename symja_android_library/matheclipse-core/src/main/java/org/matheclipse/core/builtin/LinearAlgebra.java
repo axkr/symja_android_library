@@ -4183,7 +4183,8 @@ public final class LinearAlgebra {
             return Errors.printMessage(ast.topHead(), "matsq", F.list(arg1, F.C1), engine);
           }
           if (p < 0) {
-            resultMatrix = Inverse.inverseMatrix(matrix, x -> x.isPossibleZero(false));
+            resultMatrix = Inverse.inverseMatrix(matrix,
+                x -> x.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE));
             matrix = resultMatrix;
             p *= (-1);
           } else {
@@ -4489,7 +4490,38 @@ public final class LinearAlgebra {
           // The first Norm argument should be a scalar, vector or matrix.
           return Errors.printMessage(ast.topHead(), "nvm", F.CEmptyList, engine);
         }
-        arg1 = arg1.normal(false);
+        if (arg1.isSparseArray()) {
+          ISparseArray sparseArray = (ISparseArray) arg1;
+          int[] dimension = sparseArray.getDimension();
+          int size = dimension.length;
+          if (size == 1) {
+            ISparseArray vector = sparseArray;
+            if (ast.isAST2()) {
+              IExpr p = ast.arg2();
+              if (p.isString("Frobenius")) {
+                return evaluate(F.Norm(vector), engine);
+              } else if (p.isInfinity()) {
+                ISparseArray result = vector.map(x -> F.Abs(x));
+                return F.Max(result);
+              } else if (p.isSymbol() || p.isReal()) {
+                if (p.isZero() //
+                    || (p.isReal() && p.lessThan(F.C1).isTrue())) {
+                  return Errors.printMessage(S.Norm, "ptype", F.List(p), engine);
+                }
+                ISparseArray sparseMap = vector.map(x -> F.Power(F.Abs(x), p));
+                IExpr total = sparseMap.total(S.Plus);
+                return F.Power(total, p.inverse());
+              }
+              // The second argument of Norm, `1`, should be a symbol, Infinity, or a number greater
+              // equal 1 for p-norms, or \"Frobenius\" for matrix norms.
+              return Errors.printMessage(S.Norm, "ptype", F.List(p), engine);
+            }
+            ISparseArray sparseMap = vector.map(x -> x.abs().sqr());
+            IExpr total = sparseMap.total(S.Plus);
+            return F.Sqrt(total);
+          }
+        }
+        // arg1 = arg1.normal(false);
         if (arg1.isList()) {
           IAST vector = (IAST) arg1;
           if (ast.isAST2()) {
@@ -4618,24 +4650,32 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr normFunction = S.Norm;
-      if (ast.isAST2()) {
-        normFunction = ast.arg2();
-      }
       IExpr arg1 = ast.arg1();
       if (arg1.isEmptyList()) {
         return arg1;
       }
+
+      final IExpr normFunction = ast.isAST2() ? ast.arg2() : S.Norm;
       if (ast.isAST1() && arg1.isMatrix(false) != null) {
         // The first argument is not a number or a vector, or the second argument is not a norm
         // function that always returns a non-negative real number for any numeric argument.
         return Errors.printMessage(S.Normalize, "nlnmt2", ast, engine);
       }
+
       if (ast.isAST2() || arg1.isNumber() || arg1.isVector() > 0) {
         IExpr norm = engine.evaluate(F.unaryAST1(normFunction, arg1));
         if (norm.isZero()) {
           return arg1;
         }
+        if (arg1.isSparseArray()) {
+          ISparseArray sparseArray = (ISparseArray) arg1;
+          IExpr defaultValue = sparseArray.getDefaultValue();
+          if (defaultValue.isZero()) {
+            ISparseArray sparseMap = sparseArray.map(x -> x.isZero() ? F.NIL : x.divide(norm));
+            return sparseMap;
+          }
+        }
+
         return F.Divide(arg1, norm);
       }
       return F.NIL;
@@ -5820,6 +5860,7 @@ public final class LinearAlgebra {
         }
         if (arg1.isSparseArray()) {
           final ISparseArray tensor = (ISparseArray) arg1;
+          // IExpr defaultValue = tensor.getDefaultValue();
           int[] part = new int[dimsSize];
           IASTMutable tr = F.astMutable(header, minLength++);
           for (int d = 1; d < minLength; d++) {
@@ -6987,14 +7028,14 @@ public final class LinearAlgebra {
     for (int j = 1; j < rows + 1; j++) {
       if (j < size + 1) {
         IExpr diagonal = rowReduced.getEntry(j - 1, j - 1);
-        if (diagonal.isPossibleZero(true)) {
+        if (diagonal.isPossibleZero(true, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
           continue;
         }
         IASTAppendable plus = F.PlusAlloc(cols);
         plus.append(rowReduced.getEntry(j - 1, cols - 1));
         for (int i = j; i < cols - 1; i++) {
           IExpr rowEntry = rowReduced.getEntry(j - 1, i);
-          if (rowEntry.isPossibleZero(true)) {
+          if (rowEntry.isPossibleZero(true, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
             continue;
           }
           plus.append(F.Times(rowEntry.negate(), listOfVariables.get(i + 1)));
