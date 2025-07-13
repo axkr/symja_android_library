@@ -75,6 +75,8 @@ Hypergeometric2F1(1/2,2,11/2,z_) :=  (21*(Sqrt(z)*(105 + z*(-265 + (191 - 15*z)*
 
 Hypergeometric2F1(1/2,3/2,5/2,z_) := -((3*(Sqrt(1-z)*Sqrt(z) - ArcSin(Sqrt(z))))/(2*z^(3/2))), 
 
+Hypergeometric2F1(1,1/2,3/2,n_*z_^k_) := ArcTanh(Sqrt(n)*z^(k/2))/(z^(k/2)*Sqrt(n)),
+
 Hypergeometric2F1(1,3/2,-5/2,z_) := (-5 + 7*z*(4 + 5*z (-2 + z*(4 + z))))/ (5*(-1 + z)^5), 
 Hypergeometric2F1(1,3/2,-3/2,z_) := (1 + 5*z (-1 + z*(3 + z)))/(-1 + z)^4, 
 Hypergeometric2F1(1,3/2,-1/2,z_) := (-1 + 6*z + 3*z^2)/(-1 + z)^3, 

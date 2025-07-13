@@ -40,6 +40,7 @@ import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -53,6 +54,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
+import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.DefaultDict;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -75,6 +77,7 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.polynomials.IPartialFractionGenerator;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
+import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
@@ -430,7 +433,7 @@ public class Algebra {
       }
 
       if (variableList.size() == 2 && (arg1.isTimes() || arg1.isPower())) {
-        Optional<IExpr[]> parts = fractionalParts(arg1, false);
+        Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, false);
         if (parts.isPresent()) {
           IExpr variable = variableList.arg1();
           IExpr temp = partsApart(parts.get(), variable, engine);
@@ -610,7 +613,7 @@ public class Algebra {
 
     private static IExpr cancelPowerTimes(IExpr powerTimesAST, EvalEngine engine)
         throws JASConversionException {
-      Optional<IExpr[]> parts = fractionalParts(powerTimesAST, false);
+      Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(powerTimesAST, false);
       if (parts.isPresent()) {
         IExpr p00 = parts.get()[0];
         IExpr p01 = F.C1;
@@ -727,7 +730,7 @@ public class Algebra {
 
     private IExpr cancelFractionPowers(EvalEngine engine, IExpr arg1) {
       IExpr temp;
-      Optional<IExpr[]> parts = fractionalParts(arg1, false);
+      Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, false);
       if (parts.isPresent()) {
         IExpr numerator = parts.get()[0];
         IExpr denominator = parts.get()[1];
@@ -1177,7 +1180,7 @@ public class Algebra {
       if (expr.isRational()) {
         return ((IRational) expr).denominator();
       }
-      Optional<IExpr[]> parts = fractionalParts(expr, trig);
+      Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(expr, trig);
       if (parts.isPresent()) {
         return parts.get()[1];
       }
@@ -1228,58 +1231,9 @@ public class Algebra {
    * a*x+a*y+a*z+b*x+b*y+B*z
    * </pre>
    */
-  private static final class Distribute extends AbstractFunctionEvaluator {
+  public static final class Distribute extends AbstractFunctionEvaluator {
 
-    private static class DistributeAlgorithm {
-      final IASTAppendable resultCollector;
-      final IExpr head;
-      final IAST arg1;
-      boolean evaled;
 
-      DistributeAlgorithm(IASTAppendable resultCollector, IExpr head, IAST arg1) {
-        this.resultCollector = resultCollector;
-        this.head = head;
-        this.arg1 = arg1;
-        this.evaled = false;
-      }
-
-      public boolean distribute(final IAST ast) {
-        IASTAppendable stepResult;
-        final int stepSize = arg1.size();
-        if (ast.size() >= 6) {
-          stepResult = F.ast(ast.arg5(), stepSize);
-        } else {
-          stepResult = F.ast(arg1.head(), stepSize);
-        }
-        distributePositionRecursive(stepResult, 1);
-        return evaled;
-      }
-
-      public void distributePositionRecursive(IASTAppendable stepResult, int position) {
-        if (arg1.size() == position) {
-          resultCollector.append(stepResult);
-          return;
-        }
-        if (arg1.size() < position) {
-          return;
-        }
-        if (arg1.get(position).isAST(head)) {
-          IAST temp = (IAST) arg1.get(position);
-          temp.forEach((IExpr x) -> distributeStep(x, stepResult, position));
-          evaled = true;
-        } else {
-          IASTAppendable res2 = stepResult;
-          res2.append(arg1.get(position));
-          distributePositionRecursive(res2, position + 1);
-        }
-      }
-
-      private void distributeStep(IExpr x, IAST stepResult, int position) {
-        IASTAppendable res2 = stepResult.appendClone(x);
-        // res2.append(x);
-        distributePositionRecursive(res2, position + 1);
-      }
-    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1292,7 +1246,7 @@ public class Algebra {
       }
 
       if (arg1.isAST() && ast.argSize() > 0) {
-        return distribute(ast, head);
+        return AlgebraUtil.distribute(ast, head);
       }
       return arg1;
     }
@@ -1373,9 +1327,9 @@ public class Algebra {
    * 18/(5+3*x+x^2)^3+(24*x)/(5+3*x+x^2)^3+(8*x^2)/(5+3*x+x^2)^3
    * </pre>
    */
-  private static class Expand extends AbstractFunctionOptionEvaluator {
+  public static class Expand extends AbstractFunctionOptionEvaluator {
 
-    private static class Expander {
+    public static class Expander {
       /**
        * ASTs which are expanded in this <code>Expander</code> are cached in a set. The expansion is
        * only cached in the set, if the AST doesn t get the {@link IAST#IS_EXPANDED} flag.
@@ -1414,7 +1368,7 @@ public class Algebra {
        * @param ast
        * @return
        */
-      private IExpr expandAST(final IAST ast) {
+      public IExpr expandAST(final IAST ast) {
         if (isPatternFree(ast)) {
           return F.NIL;
         }
@@ -1431,7 +1385,7 @@ public class Algebra {
           EvalEngine engine = EvalEngine.get();
 
           Optional<IExpr[]> temp =
-              fractionalPartsTimesPower(ast, false, false, false, evalParts, true, true);
+              AlgebraUtil.fractionalPartsTimesPower(ast, false, false, false, evalParts, true, true);
           IExpr tempExpr;
           if (temp.isEmpty()) {
             return expandTimes(ast, engine);
@@ -1635,6 +1589,9 @@ public class Algebra {
         }
 
         int k = plusAST.argSize();
+        if (Integer.MAX_VALUE - n - k < 0) {
+          throw new ASTElementLimitExceeded(n + k);
+        }
         long numberOfTerms = LongMath.binomial(n + k - 1, k - 1);
         if (numberOfTerms >= Integer.MAX_VALUE || numberOfTerms > Config.MAX_AST_SIZE) {
           throw new ASTElementLimitExceeded(numberOfTerms);
@@ -1727,6 +1684,40 @@ public class Algebra {
         }
         // return binaryFlatTimesExpr(arg1, arg2, engine);
         return binaryFlatTimes(arg1, arg2);
+      }
+
+      private static IExpr expandSimpleTimesPlus(final IExpr expr0, final IExpr plusAST1) {
+        if (plusAST1.isPlus2()) {
+          IExpr p10 = plusAST1.first();
+          IExpr p11 = plusAST1.second();
+          if (expr0.isPlus2()) {
+            IExpr p00 = expr0.first();
+            IExpr p01 = expr0.second();
+
+            if (expr0.second().equals(plusAST1.second())) {
+              if (p00.equals(p10.negate())) {
+                // Multiplication can be transformed into difference of squares
+                // (a+b)*(a-b) == a^2 - b^2
+                return F.Plus(p01.times(p01), p10.times(p10).negate());
+              }
+            } else if (p00.equals(p10)) {
+              if (p01.equals(p11.negate())) {
+                // Multiplication can be transformed into difference of squares
+                // (a+b)*(a-b) == a^2 - b^2
+                return F.Plus(p00.times(p10), p01.times(p01).negate());
+              }
+            }
+          } else {
+            // if (!p10.isAST() && !p11.isAST()) {
+
+            // if (!expr0.isSymbol() && !expr0.isPower()) {
+            // return F.Plus(expr0.times(p10), expr0.times(p11));
+            // }
+
+            // }
+          }
+        }
+        return F.NIL;
       }
 
       /**
@@ -1973,7 +1964,7 @@ public class Algebra {
         if (ast.size() > 2) {
           matcher = Predicates.toFreeQ(ast.arg2());
         }
-        return expand(ast1, matcher, false, true, true).orElse(ast1);
+        return AlgebraUtil.expand(ast1, matcher, false, true, true).orElse(ast1);
       }
 
       return ast.arg1();
@@ -2040,7 +2031,7 @@ public class Algebra {
    * </code>
    * </pre>
    */
-  private static class ExpandAll extends AbstractFunctionOptionEvaluator {
+  public static class ExpandAll extends AbstractFunctionOptionEvaluator {
     @Override
     public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
@@ -2054,19 +2045,10 @@ public class Algebra {
         matcher = Predicates.toFreeQ(ast.arg2());
       }
       if (arg1.isAST()) {
-        return expandAll((IAST) arg1, matcher, true, true, false, engine).orElse(arg1);
+        return AlgebraUtil.expandAll((IAST) arg1, matcher, true, true, false, engine).orElse(arg1);
       }
       return arg1;
     }
-
-    private static IExpr setAllExpanded(IExpr expr, boolean expandNegativePowers,
-        boolean distributePlus) {
-      if (expr != null && expandNegativePowers && !distributePlus && expr.isAST()) {
-        ((IAST) expr).addEvalFlags(IAST.IS_ALL_EXPANDED);
-      }
-      return expr;
-    }
-
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -2099,7 +2081,7 @@ public class Algebra {
         if (arg1.isPlus()) {
           return ((IAST) arg1).mapThread(x -> F.ExpandDenominator(x));
         }
-        Optional<IExpr[]> parts = fractionalParts(arg1, false);
+        Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, false);
         if (parts.isPresent() && parts.get()[1].isAST()) {
           IExpr denominator = engine.evaluate(F.Expand(parts.get()[1]));
           return F.Divide(parts.get()[0], denominator);
@@ -2128,7 +2110,7 @@ public class Algebra {
         if (arg1.isPlus()) {
           return ((IAST) arg1).mapThread(x -> F.ExpandNumerator(x));
         }
-        Optional<IExpr[]> parts = fractionalParts(arg1, false);
+        Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, false);
         if (parts.isPresent() && parts.get()[0].isAST()) {
           IExpr numerator = engine.evaluate(F.Expand(parts.get()[0]));
           return F.Divide(numerator, parts.get()[1]);
@@ -2236,7 +2218,7 @@ public class Algebra {
       if (!arg1.isTimes() && !arg1.isPower()) {
         expr = S.Together.of(engine, arg1);
         if (expr.isAST()) {
-          IExpr[] parts = Algebra.numeratorDenominator((IAST) expr, true, engine);
+          IExpr[] parts = AlgebraUtil.numeratorDenominator((IAST) expr, true, engine);
           if (!parts[1].isOne()) {
             try {
               IExpr numerator = factorExpr(F.Factor(parts[0]), parts[0], eVar, squareFree,
@@ -2400,7 +2382,7 @@ public class Algebra {
         IExpr variable = eVar.getArrayList().get(0);
         expr = S.Together.of(engine, expr);
         if (expr.isAST()) {
-          IExpr[] parts = Algebra.numeratorDenominator((IAST) expr, true, engine);
+          IExpr[] parts = AlgebraUtil.numeratorDenominator((IAST) expr, true, engine);
           try {
             IExpr numerator =
                 factorExprSolve(F.Factor(parts[0]), parts[0], variable, solveData, engine);
@@ -2410,8 +2392,8 @@ public class Algebra {
               // cross check for zero-values in denominator
               IExpr denominator = parts[1];
               IAST list = (IAST) numerator;
-              return list.removePositionsAtCopy(x -> engine
-                  .evalTrue(F.PossibleZeroQ(F.ReplaceAll(denominator, F.Rule(variable, x)))));
+              return list.removePositionsAtCopy(
+                  x -> crossCheckDivByZero(x, variable, denominator, engine));
             }
             return numerator;
           } catch (JASConversionException e) {
@@ -2422,6 +2404,14 @@ public class Algebra {
       }
 
       return F.NIL;
+    }
+
+    private static boolean crossCheckDivByZero(IExpr x, IExpr variable, IExpr denominator,
+        EvalEngine engine) {
+      IAST expr = F.PossibleZeroQ(F.ReplaceAll(denominator, F.Rule(variable, x)));
+      boolean isPossibleZeroQ = engine.evalTrue(expr);
+
+      return isPossibleZeroQ;
     }
 
     protected static IExpr factorExprSolve(final IAST ast, IExpr expr, IExpr variable,
@@ -2469,7 +2459,11 @@ public class Algebra {
       if (factorization.isNIL() || factorization.size() == 2) {
         VariablesSet newVariables = new VariablesSet(subsPolynomial);
         if (newVariables.size() == 1) {
-          IAST resultList = RootsFunctions.findRoots(subsPolynomial, newVariables.getVarList());
+          IAST resultList = QuarticSolver.solve(subsPolynomial, newVariables.firstVariable());
+          if (resultList.size() > 0) {
+            return solveEquationList(resultList, originalVarList, substitutions, varSet, engine);
+          }
+          resultList = RootsFunctions.findRoots(subsPolynomial, newVariables.getVarList());
           if (resultList.size() > 0) {
             return solveEquationList(resultList, originalVarList, substitutions, varSet, engine);
           }
@@ -3074,7 +3068,7 @@ public class Algebra {
       if (arg.isRational()) {
         return ((IRational) arg).numerator();
       }
-      Optional<IExpr[]> parts = fractionalParts(arg, trig);
+      Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg, trig);
       if (parts.isPresent()) {
         return parts.get()[0];
       }
@@ -4452,7 +4446,7 @@ public class Algebra {
    * </code>
    * </pre>
    */
-  private static class Together extends AbstractFunctionEvaluator {
+  public static class Together extends AbstractFunctionEvaluator {
 
     private static final IBuiltInSymbol reduceConstantTerm =
         F.localFunction("reduceConstantTerm", (c) -> {
@@ -4481,7 +4475,7 @@ public class Algebra {
           }
           IExpr gcd;
           if (!c.isFree(IExpr::isInexactNumber, false)) {
-            gcd = NumberTheory.rationalize(c, false);
+            gcd = AbstractFractionSym.rationalize(c, false);
             // gcd = engine.evaluate(F.Rationalize(c));
             gcd = engine.evalN(gcd);
           } else {
@@ -4529,7 +4523,7 @@ public class Algebra {
      */
     private static IExpr togetherNull(IAST ast, EvalEngine engine) {
       boolean evaled = false;
-      IExpr temp = expandAll(ast, null, true, false, true, engine);
+      IExpr temp = AlgebraUtil.expandAll(ast, null, true, false, true, engine);
       if (temp.isNIL()) {
         temp = ast;
       } else {
@@ -4647,7 +4641,7 @@ public class Algebra {
           denominator.append(i, F.C1);
         }
       } else {
-        Optional<IExpr[]> fractionalParts = fractionalParts(x, false);
+        Optional<IExpr[]> fractionalParts = AlgebraUtil.fractionalParts(x, false);
         if (fractionalParts.isPresent()) {
           IExpr numer = fractionalParts.get()[0];
           IExpr denom = fractionalParts.get()[1];
@@ -4703,7 +4697,7 @@ public class Algebra {
             result = ast.copy();
           }
           if (ast.arg2().isNegative() && temp.isTimes()) {
-            Optional<IExpr[]> fractionalParts = fractionalPartsRational(temp, false, true);
+            Optional<IExpr[]> fractionalParts = AlgebraUtil.fractionalPartsRational(temp, false, true);
             if (fractionalParts.isPresent()) {
               IExpr[] parts = fractionalParts.get();
               result.set(1, F.Divide(parts[1], parts[0]));
@@ -4737,48 +4731,7 @@ public class Algebra {
       return ARGS_1_1;
     }
 
-    private static IExpr togetherExpr(IExpr arg1, EvalEngine engine) {
-      if (arg1.isPlusTimesPower()) {
-        if (arg1.isPower()) {
-          if (arg1.base().isAtom() && arg1.exponent().isAtom()) {
-            return arg1;
-          }
-          if (!arg1.exponent().isMinusOne()) {
-            if (arg1.base().isPlusTimesPower()) {
-              if (arg1.exponent().isNegative()) {
-                return F.Power(togetherExpr(arg1.base().inverse(), engine),
-                    arg1.exponent().negate());
-              }
-              return F.Power(togetherExpr(arg1.base(), engine), arg1.exponent());
-            }
-          }
-        } else if (arg1.isTimes()) {
-          if (arg1.first().isAtom()) {
-            IExpr times = ((IAST) arg1).splice(1).oneIdentity0();
-            if (times.isPower()) {
-              return F.Times(arg1.first(), togetherExpr(times, engine));
-            }
-          }
-          // } else if (arg1.isPlus()) {
-          // IExpr[] result = InternalFindCommonFactorPlus.findCommonFactors((IAST) arg1, true);
-          // if (result != null && !result[0].isOne()) {
-          // IExpr temp = togetherNull((IAST) result[1], engine).orElse(result[1]);
-          // if (temp.isPresent()) {
-          // temp = engine.evaluate(F.Times(result[0], reduceFactorConstant(temp, engine)));
-          // }
-          // if (temp.isTimes() || temp.isPower()) {
-          // return F.Cancel(temp);
-          // }
-          // return temp;
-          // }
-        }
-        IExpr temp = togetherNull((IAST) arg1, engine).orElse(arg1);
-        if (temp.isPresent()) {
-          return reduceFactorConstant(temp, engine);
-        }
-      }
-      return reduceFactorConstant(arg1, engine);
-    }
+
 
     @Override
     public void setUp(final ISymbol newSymbol) {
@@ -4833,13 +4786,6 @@ public class Algebra {
     @Override
     public void setUp(final ISymbol newSymbol) {}
 
-  }
-
-  private static boolean appendPlus(IASTAppendable ast, IExpr expr) {
-    if (ast.head().equals(S.Plus) && expr.head().equals(S.Plus)) {
-      return ast.appendArgs((IAST) expr);
-    }
-    return ast.append(expr);
   }
 
   private static boolean checkPolyStruct(final IAST ast, EvalEngine engine) {
@@ -5178,7 +5124,7 @@ public class Algebra {
    * @throws JASConversionException
    */
   public static IExpr cancelFractionalParts(IExpr powerTimesAST) throws JASConversionException {
-    Optional<IExpr[]> parts = fractionalParts(powerTimesAST, false);
+    Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(powerTimesAST, false);
     IExpr cancelResult = F.NIL;
     if (parts.isPresent()) {
       IExpr numerator = parts.get()[0];
@@ -5207,190 +5153,6 @@ public class Algebra {
       }
     }
     return cancelResult;
-  }
-
-  /**
-   * Call the distribute algorithm for a <code>Times(...)</code> {@link IAST}, which contains
-   * <code>Plus(...)</code> terms. If <code>expr.isTimes() == false</code> return <code>expr</code>
-   * 
-   * @param expr should have the structure <code>Times(a,b,...)</code> with at least 2 arguments;
-   *        otherwise the <code>expr</code> will be returned
-   * @return
-   */
-  public static IExpr distributeTimes(final IExpr expr) {
-    if (expr.isTimes()) {
-      return distribute(F.Distribute(expr), S.Plus);
-    }
-    return expr;
-  }
-
-  /**
-   * Call the distribute algorithm <code>F.Distribute(expr, head)</code>
-   * 
-   * @param ast
-   * @param head
-   * @return
-   */
-  public static IExpr distribute(final IAST ast, IExpr head) {
-    IAST list = (IAST) ast.arg1();
-    IASTAppendable resultCollector;
-    final int resultSize = list.argSize() > 127 ? list.argSize() : 127;
-    if (ast.size() >= 5) {
-      resultCollector = F.ast(ast.arg4(), resultSize);
-    } else {
-      resultCollector = F.ast(head, resultSize);
-    }
-    Distribute.DistributeAlgorithm algorithm =
-        new Distribute.DistributeAlgorithm(resultCollector, head, list);
-    if (algorithm.distribute(ast)) {
-      return resultCollector;
-    }
-    return list;
-  }
-
-  /**
-   * Expand the given <code>ast</code> expression.
-   *
-   * @param ast
-   * @param patt
-   * @param distributePlus TODO
-   * @param evalParts evaluate the determined numerator and denominator parts
-   * @return {@link F#NIL} if the expression couldn't be expanded.
-   */
-  public static IExpr expand(final IAST ast, Predicate<IExpr> patt, boolean expandNegativePowers,
-      boolean distributePlus, boolean evalParts) {
-
-    return expand(ast, patt, expandNegativePowers, distributePlus, evalParts, false);
-  }
-
-  /**
-   * Expand the given <code>ast</code> expression.
-   *
-   * @param ast
-   * @param patt
-   * @param evalParts evaluate the determined numerator and denominator parts
-   * @param distributePlus
-   * @param factorTerms
-   * @return {@link F#NIL} if the expression couldn't be expanded.
-   */
-  public static IExpr expand(final IAST ast, Predicate<IExpr> patt, boolean expandNegativePowers,
-      boolean distributePlus, boolean evalParts, boolean factorTerms) {
-    Expand.Expander expander =
-        new Expand.Expander(patt, expandNegativePowers, distributePlus, evalParts, factorTerms);
-    return expander.expandAST(ast);
-  }
-
-  public static IExpr expandSimpleTimesPlus(final IExpr expr0, final IExpr plusAST1) {
-    if (plusAST1.isPlus2()) {
-      IExpr p10 = plusAST1.first();
-      IExpr p11 = plusAST1.second();
-      if (expr0.isPlus2()) {
-        IExpr p00 = expr0.first();
-        IExpr p01 = expr0.second();
-
-        if (expr0.second().equals(plusAST1.second())) {
-          if (p00.equals(p10.negate())) {
-            // Multiplication can be transformed into difference of squares
-            // (a+b)*(a-b) == a^2 - b^2
-            return F.Plus(p01.times(p01), p10.times(p10).negate());
-          }
-        } else if (p00.equals(p10)) {
-          if (p01.equals(p11.negate())) {
-            // Multiplication can be transformed into difference of squares
-            // (a+b)*(a-b) == a^2 - b^2
-            return F.Plus(p00.times(p10), p01.times(p01).negate());
-          }
-        }
-      } else {
-        // if (!p10.isAST() && !p11.isAST()) {
-
-        // if (!expr0.isSymbol() && !expr0.isPower()) {
-        // return F.Plus(expr0.times(p10), expr0.times(p11));
-        // }
-
-        // }
-      }
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Expand the given <code>ast</code> expression.
-   *
-   * @param ast
-   * @param distributePlus
-   * @return {@link F#NIL} if the expression couldn't be expanded.
-   */
-  public static IExpr expandAll(final IAST ast, Predicate<IExpr> patt, boolean expandNegativePowers,
-      boolean distributePlus, boolean factorTerms, EvalEngine engine) {
-    if (patt != null && ast.isFree(patt, true)) {
-      return F.NIL;
-    }
-    IAST localAST = ast;
-    IAST tempAST = F.NIL;
-    if (localAST.isEvalFlagOff(IAST.IS_SORTED)) {
-      tempAST = engine.evalFlatOrderlessAttrsRecursive(localAST);
-      if (tempAST.isPresent()) {
-        localAST = tempAST;
-      }
-    }
-    if (localAST.isAllExpanded() && expandNegativePowers && !distributePlus) {
-      if (localAST != ast) {
-        return localAST;
-      }
-      return F.NIL;
-    }
-    IASTAppendable[] result = new IASTAppendable[1];
-    result[0] = F.NIL;
-    IExpr temp = F.NIL;
-
-    int localASTSize = localAST.size();
-    IExpr head = localAST.head();
-    if (head.isAST()) {
-      temp =
-          expandAll((IAST) head, patt, expandNegativePowers, distributePlus, factorTerms, engine);
-      temp.ifPresent(x -> result[0] = F.ast(x, localASTSize));
-    }
-    final IAST localASTFinal = localAST;
-    localAST.forEach((x, i) -> {
-      if (x.isAST()) {
-        IExpr t =
-            expandAll((IAST) x, patt, expandNegativePowers, distributePlus, factorTerms, engine);
-        if (t.isPresent()) {
-          if (result[0].isNIL()) {
-            int size = localASTFinal.size() + 4; // 4 -> empirically determined value in JUnit tests
-            if (t.isAST()) {
-              size += ((IAST) t).size();
-            }
-            result[0] = F.ast(head, size);
-            result[0].appendArgs(localASTFinal, i);
-          }
-          appendPlus(result[0], t);
-          return;
-        }
-      }
-      result[0].ifAppendable(r -> r.append(x));
-    });
-
-    if (result[0].isNIL()) {
-      temp = expand(localAST, patt, expandNegativePowers, distributePlus, true, factorTerms);
-      if (temp.isPresent()) {
-        ExpandAll.setAllExpanded(temp, expandNegativePowers, distributePlus);
-        return temp;
-      } else {
-        if (localAST != ast) {
-          ExpandAll.setAllExpanded(localAST, expandNegativePowers, distributePlus);
-          return localAST;
-        }
-      }
-      ExpandAll.setAllExpanded(ast, expandNegativePowers, distributePlus);
-      return F.NIL;
-    }
-    temp = expand(result[0], patt, expandNegativePowers, distributePlus, true, factorTerms);
-    if (temp.isPresent()) {
-      return ExpandAll.setAllExpanded(temp, expandNegativePowers, distributePlus);
-    }
-    return ExpandAll.setAllExpanded(result[0], expandNegativePowers, distributePlus);
   }
 
   /**
@@ -5628,341 +5390,6 @@ public class Algebra {
       return Optional.empty();
     }
     return Optional.of(gcd1);
-  }
-
-  /**
-   * Split the {@link IAST} expression into numerator and denominator parts, by calling the
-   * <code>Numerator(ast)</code> and <code>Denominator(ast)</code> functions and return the result
-   * at index <code>0</code> (numerator) and index <code>1</code> (denominator).
-   *
-   * @param ast
-   * @param together if <code>true</code> the evaluated <code>Together(ast)</code> result, will be
-   *        appended at index <code>2</code> in the result array
-   * @return an array with the numerator, denominator and the evaluated <code>Together(ast)</code>
-   *         if requested.
-   */
-  public static IExpr[] numeratorDenominator(IAST ast, boolean together, EvalEngine engine) {
-    if (together) {
-      boolean noSimplifyMode = engine.isNoSimplifyMode();
-      try {
-        engine.setNoSimplifyMode(true);
-        IExpr[] result = new IExpr[3];
-        result[2] = together(ast, engine);
-        return splitNumeratorDenominator(ast, result[2], result, engine);
-      } finally {
-        engine.setNoSimplifyMode(noSimplifyMode);
-      }
-    }
-
-    IExpr[] result = new IExpr[2];
-    return splitNumeratorDenominator(ast, ast, result, engine);
-  }
-
-  /**
-   * Split <code>rewrittenAST</code> into numerator and denominator.
-   * 
-   * @param originalAST the original {@link IAST} expression
-   * @param rewrittenAST the rewritten AST (for example by {@link S#Together}
-   * @param result the allocated result array
-   * @param engine the evaluation engine
-   * 
-   * @return the <code>result</code> array of expressions <code>[numerator, denominator]</code>.
-   */
-  private static IExpr[] splitNumeratorDenominator(final IAST originalAST, final IExpr rewrittenAST,
-      IExpr[] result, EvalEngine engine) {
-    result[1] = engine.evaluate(F.Denominator(rewrittenAST));
-    if (!result[1].isOne()) {
-      result[0] = engine.evaluate(F.Numerator(rewrittenAST));
-    } else {
-      result[0] = originalAST;
-    }
-    return result;
-  }
-
-  /**
-   * Return the denominator for the given <code>Power[...]</code> {@link IAST} by separating
-   * positive and negative powers.
-   *
-   * @param powerAST a power expression (a^b)
-   * @param trig if <code>true</code> get the "trigonometric form" of the given function. Example:
-   *        Csc[x] gives Sin[x].
-   * @param splitPowerPlusExponents split <code>Power()</code> expressions with <code>Plus()
-   *     </code> exponents like <code>a^(-x+y)</code> into numerator <code>a^y</code> and
-   *        denominator <code>a^x</code>
-   * @return the numerator and denominator expression or {@link Optional#empty()}
-   */
-  public static Optional<IExpr[]> fractionalPartsPower(final IAST powerAST, boolean trig,
-      boolean splitPowerPlusExponents) {
-    IExpr[] parts = new IExpr[2];
-    parts[0] = F.C1;
-
-    IExpr base = powerAST.base();
-    IExpr exponent = powerAST.exponent();
-    if (exponent.isReal()) {
-      IReal sn = (IReal) exponent;
-      if (sn.isMinusOne()) {
-        parts[1] = base;
-        return Optional.of(parts);
-      } else if (sn.isNegative()) {
-        parts[1] = F.Power(base, sn.negate());
-        return Optional.of(parts);
-      } else {
-        if (sn.isInteger() && base.isAST()) {
-          // positive integer
-          IAST function = (IAST) base;
-          // if (function.isTimes()) {
-          // IExpr[] partsArg1 = fractionalPartsTimesPower(function, true, true, trig,
-          // true);
-          // if (partsArg1 != null) {
-          // parts[0] = F.Power(partsArg1[0], sn);
-          // parts[1] = F.Power(partsArg1[1], sn);
-          // return parts;
-          // }
-          // }
-          IExpr numerForm = numeratorTrigForm(function, trig);
-          if (numerForm.isPresent()) {
-            IExpr denomForm = denominatorTrigForm(function, trig);
-            if (denomForm.isPresent()) {
-              parts[0] = F.Power(numerForm, sn);
-              parts[1] = F.Power(denomForm, sn);
-              return Optional.of(parts);
-            }
-          }
-        }
-      }
-    } else if (splitPowerPlusExponents && exponent.isPlus()) {
-      // base ^ (a+b+c...)
-      IAST plusAST = (IAST) exponent;
-      IAST[] result = plusAST.filterNIL(AbstractFunctionEvaluator::getNormalizedNegativeExpression);
-      IAST plus = result[0];
-      if (plus.argSize() > 0) {
-        parts[1] = base.power(plus.oneIdentity0());
-        parts[0] = base.power(result[1].oneIdentity0());
-        return Optional.of(parts);
-      }
-      return Optional.empty();
-    }
-    IExpr positiveExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(exponent);
-    if (positiveExpr.isPresent()) {
-      parts[1] = F.Power(base, positiveExpr);
-      return Optional.of(parts);
-    }
-    return Optional.empty();
-  }
-
-  /**
-   * Return the numerator and denominator for the given <code>Times[...]</code> or <code>Power[a, b]
-   * </code> AST, by separating positive and negative powers.
-   *
-   * @param timesPower a Times[] or Power[] expression (a*b*c....) or a^b
-   * @param splitNumeratorOne split a fractional number into numerator and denominator, only if the
-   *        numerator is 1, if <code>true</code>, ignore <code>splitFractionalNumbers</code>
-   *        parameter.
-   * @param splitFractionalNumbers split a fractional number into numerator and denominator
-   * @param trig try to find a trigonometric numerator/denominator form (Example: <code>Csc[x]
-   *     </code> gives <code>1 / Sin[x]</code>)
-   * @param evalParts evaluate the determined numerator and denominator parts
-   * @param negateNumerDenom negate numerator and denominator, if they are both negative
-   * @param splitPowerPlusExponents split <code>Power()</code> expressions with <code>Plus()</code>
-   *        exponents like <code>a^(-x+y)</code> into numerator <code>a^y</code> and denominator
-   *        <code>
-   *     a^x</code>
-   * @return the numerator and denominator expression and an optional fractional number (maybe
-   *         <code>null</code>), if splitNumeratorOne is <code>true</code>
-   */
-  public static Optional<IExpr[]> fractionalPartsTimesPower(final IAST timesPower,
-      boolean splitNumeratorOne, boolean splitFractionalNumbers, boolean trig, boolean evalParts,
-      boolean negateNumerDenom, boolean splitPowerPlusExponents) {
-    if (timesPower.isPower()) {
-      return fractionalPartsPower(timesPower, trig, splitPowerPlusExponents);
-    }
-
-    IAST timesAST = timesPower;
-    IExpr[] result = new IExpr[3];
-    result[2] = null;
-    IASTAppendable numerator = F.TimesAlloc(timesAST.size());
-    IASTAppendable denominator = F.TimesAlloc(timesAST.size());
-
-    IAST argAST;
-    boolean evaled = false;
-    boolean splitFractionEvaled = false;
-    for (int i = 1; i < timesAST.size(); i++) {
-      final IExpr arg = timesAST.get(i);
-      if (arg.isAST()) {
-        argAST = (IAST) arg;
-        if (trig && argAST.isAST1()) {
-          IExpr numerForm = numeratorTrigForm(argAST, trig);
-          if (numerForm.isPresent()) {
-            IExpr denomForm = denominatorTrigForm(argAST, trig);
-            if (denomForm.isPresent()) {
-              if (!numerForm.isOne()) {
-                numerator.append(numerForm);
-              }
-              if (!denomForm.isOne()) {
-                denominator.append(denomForm);
-              }
-              evaled = true;
-              continue;
-            }
-          }
-        } else if (arg.isPower()) {
-          Optional<IExpr[]> parts = fractionalPartsPower((IAST) arg, trig, splitPowerPlusExponents);
-          if (parts.isPresent()) {
-            IExpr[] elements = parts.get();
-            if (!elements[0].isOne()) {
-              numerator.append(elements[0]);
-            }
-            if (!elements[1].isOne()) {
-              denominator.append(elements[1]);
-            }
-            evaled = true;
-            continue;
-          }
-        }
-      } else if (i == 1) {
-        if (arg.isFraction()) {
-          if (splitNumeratorOne) {
-            IFraction fr = (IFraction) arg;
-            if (fr.numerator().isOne()) {
-              denominator.append(fr.denominator());
-              splitFractionEvaled = true;
-              continue;
-            }
-            if (fr.numerator().isMinusOne()) {
-              numerator.append(fr.numerator());
-              denominator.append(fr.denominator());
-              splitFractionEvaled = true;
-              continue;
-            }
-            result[2] = fr;
-            continue;
-          } else if (splitFractionalNumbers) {
-            IFraction fr = (IFraction) arg;
-            if (!fr.numerator().isOne()) {
-              numerator.append(fr.numerator());
-            }
-            denominator.append(fr.denominator());
-            evaled = true;
-            continue;
-          }
-        } else if (arg.isComplex()) {
-          IComplex cmp = (IComplex) arg;
-          if (splitFractionalNumbers) {
-            IRational re = cmp.getRealPart();
-            IRational im = cmp.getImaginaryPart();
-            if (re.isFraction() || im.isFraction()) {
-              numerator.append(re.numerator().times(im.denominator())
-                  .add(im.numerator().times(re.denominator()).times(F.CI)));
-              denominator.append(re.denominator().times(im.denominator()));
-              evaled = true;
-              continue;
-            }
-          }
-
-          // if (cmp.re().isZero() && cmp.im().isFraction()) {
-          // IFraction fr = (IFraction) cmp.im();
-          // if (splitNumeratorOne) {
-          // if (fr.numerator().isOne()) {
-          // numerator.append(F.CI);
-          // denominator.append(fr.denominator());
-          // splitFractionEvaled = true;
-          // continue;
-          // }
-          // if (fr.numerator().isMinusOne()) {
-          // numerator.append(F.CNI);
-          // denominator.append(fr.denominator());
-          // splitFractionEvaled = true;
-          // continue;
-          // }
-          // } else
-          // if (splitFractionalNumbers) {
-          // numerator.append(F.CC(F.C0, fr.numerator()));
-          // denominator.append(fr.denominator());
-          // evaled = true;
-          // continue;
-          // }
-          // }
-        }
-      }
-      numerator.append(arg);
-    }
-    if (evaled) {
-      if (evalParts) {
-        result[0] = F.eval(numerator);
-        result[1] = F.eval(denominator);
-      } else {
-        result[0] = numerator.oneIdentity1();
-        result[1] = denominator.oneIdentity1();
-      }
-      if (negateNumerDenom && result[0].isNumber() && result[0].isNegative() && result[1].isPlus()
-          && result[1].isAST2()) {
-        // negate numerator and denominator:
-        result[0] = result[0].negate();
-        result[1] = result[1].negate();
-      }
-      return Optional.of(result);
-    }
-    if (splitFractionEvaled) {
-      result[0] = numerator.oneIdentity1();
-      if (!result[0].isTimes() && !result[0].isPlus()) {
-        result[1] = denominator.oneIdentity1();
-        return Optional.of(result);
-      }
-      if (result[0].isTimes() && result[0].isAST2() && ((IAST) result[0]).arg1().isMinusOne()) {
-        result[1] = denominator.oneIdentity1();
-        return Optional.of(result);
-      }
-    }
-    return Optional.empty();
-  }
-
-  /**
-   * Split the expression into numerator and denominator parts, by separating positive and negative
-   * powers and afterwards evaluate the numerator and denominator separately.
-   *
-   * @param arg
-   * @param trig determine the denominator by splitting up functions like <code>
-   *     Tan[],Cot[], Csc[],...</code>
-   * @return the numerator and denominator expression or {@link Optional#empty()} if no denominator
-   *         was found.
-   */
-  public static Optional<IExpr[]> fractionalParts(final IExpr arg, boolean trig) {
-    return fractionalParts(arg, trig, true);
-  }
-
-  /**
-   * Split the expression into numerator and denominator parts, by separating positive and negative
-   * powers.
-   *
-   * @param arg
-   * @param trig determine the denominator by splitting up functions like <code>
-   *     Tan[],Cot[], Csc[],...</code>
-   * @param evalParts evaluate the numerator and denominator separately
-   * @return the numerator and denominator expression or {@link Optional#empty()} if no denominator
-   *         was found.
-   */
-  public static Optional<IExpr[]> fractionalParts(final IExpr arg, boolean trig,
-      boolean evalParts) {
-    if (arg.isAST()) {
-      IAST ast = (IAST) arg;
-      if (arg.isTimes()) {
-        return fractionalPartsTimesPower(ast, false, true, trig, evalParts, true, true);
-      } else if (arg.isPower()) {
-        return fractionalPartsPower(ast, trig, true);
-      } else {
-        IExpr numerForm = numeratorTrigForm(ast, trig);
-        if (numerForm.isPresent()) {
-          IExpr denomForm = denominatorTrigForm(ast, trig);
-          if (denomForm.isPresent()) {
-            IExpr[] parts = new IExpr[2];
-            parts[0] = numerForm;
-            parts[1] = denomForm;
-            return Optional.of(parts);
-          }
-        }
-      }
-    }
-    return Optional.empty();
   }
 
   /**
@@ -6205,115 +5632,6 @@ public class Algebra {
   }
 
   /**
-   * Split the expression into numerator and denominator parts, by separating positive and negative
-   * powers. Or split a number by numerator and denominator part.
-   *
-   * @param arg
-   * @param trig determine the denominator by splitting up functions like <code>
-   *     Tan[],Cot[], Csc[],...</code>
-   * @param evalParts evaluate the numerator and denominator separately
-   * @return the numerator and denominator expression or {@link Optional#empty()}
-   */
-  public static Optional<IExpr[]> fractionalPartsRational(final IExpr arg, boolean trig,
-      boolean evalParts) {
-    if (arg.isFraction()) {
-      IFraction fr = (IFraction) arg;
-      IExpr[] parts = new IExpr[2];
-      parts[0] = fr.numerator();
-      parts[1] = fr.denominator();
-      return Optional.of(parts);
-    } else if (arg.isComplex()) {
-      IRational re = ((IComplex) arg).getRealPart();
-      IRational im = ((IComplex) arg).getImaginaryPart();
-      if (re.isFraction() || im.isFraction()) {
-        IExpr[] parts = new IExpr[2];
-        parts[0] = re.numerator().times(im.denominator())
-            .add(im.numerator().times(re.denominator()).times(F.CI));
-        parts[1] = re.denominator().times(im.denominator());
-        return Optional.of(parts);
-      }
-      return Optional.empty();
-    }
-    return fractionalParts(arg, trig, evalParts);
-  }
-
-  public static IExpr together(IAST ast, EvalEngine engine) {
-    IExpr result = Together.togetherExpr(ast, engine);
-    if (result.isPresent()) {
-      return engine.evaluate(result);
-    }
-    return ast;
-    // IExpr temp = expandAll(ast, null, true, false, engine);
-    // if (temp.isNIL()) {
-    // temp = ast;
-    // }
-    // if (temp.isAST()) {
-    // IExpr result = Together.togetherPlusTimesPower((IAST) temp, engine);
-    // if (result.isPresent()) {
-    // return engine.evaluate(result);
-    // }
-    // }
-    // return temp;
-  }
-
-  /**
-   * Get the &quot;numerator form&quot; of the given function. Example: <code>Csc[x]</code> gives
-   * <code>1</code>.
-   *
-   * @param function the function which should be transformed to &quot;denominator form&quot;
-   *        determine the denominator by splitting up functions like <code>Tan[9,Cot[], Csc[],...
-   *     </code>
-   * @param trig
-   * @return
-   */
-  public static IExpr numeratorTrigForm(IAST function, boolean trig) {
-    if (trig) {
-      if (function.isAST1()) {
-        for (int i = 0; i < F.DENOMINATOR_NUMERATOR_SYMBOLS.size(); i++) {
-          final ISymbol symbol = F.DENOMINATOR_NUMERATOR_SYMBOLS.get(i);
-          if (function.head().equals(symbol)) {
-            final IExpr result = F.NUMERATOR_TRIG_TRUE_EXPRS.get(i);
-            if (result.isSymbol()) {
-              return F.unaryAST1(result, function.arg1());
-            }
-            return result;
-          }
-        }
-      }
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Get the &quot;denominator form&quot; of the given function. Example: <code>Csc[x]</code> gives
-   * <code>Sin[x]</code>.
-   *
-   * @param function the function which should be transformed to &quot;denominator form&quot;
-   *        determine the denominator by splitting up functions like <code>Tan[],Cot[], Csc[],...
-   *     </code>
-   * @param trig
-   * @return {@link F#NIL} if <code>trig</code> is false or no form is found; may return
-   *         <code>1</code> if no denominator form is available (Example Cos[]).
-   */
-  public static IExpr denominatorTrigForm(IAST function, boolean trig) {
-    if (trig) {
-      if (function.isAST1()) {
-        for (int i = 0; i < F.DENOMINATOR_NUMERATOR_SYMBOLS.size(); i++) {
-          final ISymbol symbol = F.DENOMINATOR_NUMERATOR_SYMBOLS.get(i);
-          if (function.head().equals(symbol)) {
-            IExpr result = F.DENOMINATOR_TRIG_TRUE_EXPRS.get(i);
-            if (result.isSymbol()) {
-              return F.unaryAST1(result, function.arg1());
-            }
-            return result;
-          }
-        }
-      }
-    }
-    return F.NIL;
-  }
-
-  /**
    * If {@link IAST} structures are available in the {@code variableList} create dummy variables and
    * replace these expressions in polyExpr.
    *
@@ -6549,6 +5867,48 @@ public class Algebra {
       }
     }
     return F.NIL;
+  }
+
+  public static IExpr togetherExpr(IExpr arg1, EvalEngine engine) {
+    if (arg1.isPlusTimesPower()) {
+      if (arg1.isPower()) {
+        if (arg1.base().isAtom() && arg1.exponent().isAtom()) {
+          return arg1;
+        }
+        if (!arg1.exponent().isMinusOne()) {
+          if (arg1.base().isPlusTimesPower()) {
+            if (arg1.exponent().isNegative()) {
+              return F.Power(togetherExpr(arg1.base().inverse(), engine), arg1.exponent().negate());
+            }
+            return F.Power(togetherExpr(arg1.base(), engine), arg1.exponent());
+          }
+        }
+      } else if (arg1.isTimes()) {
+        if (arg1.first().isAtom()) {
+          IExpr times = ((IAST) arg1).splice(1).oneIdentity0();
+          if (times.isPower()) {
+            return F.Times(arg1.first(), togetherExpr(times, engine));
+          }
+        }
+        // } else if (arg1.isPlus()) {
+        // IExpr[] result = InternalFindCommonFactorPlus.findCommonFactors((IAST) arg1, true);
+        // if (result != null && !result[0].isOne()) {
+        // IExpr temp = togetherNull((IAST) result[1], engine).orElse(result[1]);
+        // if (temp.isPresent()) {
+        // temp = engine.evaluate(F.Times(result[0], reduceFactorConstant(temp, engine)));
+        // }
+        // if (temp.isTimes() || temp.isPower()) {
+        // return F.Cancel(temp);
+        // }
+        // return temp;
+        // }
+      }
+      IExpr temp = Together.togetherNull((IAST) arg1, engine).orElse(arg1);
+      if (temp.isPresent()) {
+        return Together.reduceFactorConstant(temp, engine);
+      }
+    }
+    return Together.reduceFactorConstant(arg1, engine);
   }
 
   public static void initialize() {

@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import static org.matheclipse.core.expression.S.x;
 import java.util.function.DoubleFunction;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
@@ -878,7 +879,7 @@ public class PiecewiseFunctions {
               return engine.evaluate(
                   F.Plus(min, F.Times(maxNumber.subtract(minNumber), F.Subtract(x, F.Floor(x)))));
             }
-            if (x.isPossibleZero(true)) {
+            if (x.isPossibleZero(true,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
               return min;
             }
           }
@@ -892,7 +893,7 @@ public class PiecewiseFunctions {
         if (x.isNumericFunction() && x.isRealResult()) {
           return engine.evaluate(F.Subtract(x, F.Floor(x)));
         }
-        if (x.isPossibleZero(true)) {
+        if (x.isPossibleZero(true,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
           return F.C0;
         }
       }
@@ -1179,7 +1180,7 @@ public class PiecewiseFunctions {
               F.list(F.C1, F.Greater(x, F.C0))), F.C0);
         }
       }
-      if (function.isAST(S.Boole)) {
+      if (function.isAST(S.Boole, 2)) {
         return F.Piecewise(F.list(F.list(F.C1, x)), F.C0);
       }
       if (function.isAST(S.Unitize)) {

@@ -1843,7 +1843,7 @@ public class SpecialFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST1()) {
-        if (arg1.isMinusOne()) {
+        if (arg1.isMathematicalIntegerNegative()) {
           return F.CComplexInfinity;
         }
         return F.PolyGamma(F.C0, arg1);
@@ -1859,10 +1859,15 @@ public class SpecialFunctions {
             return F.Times(Factorial(F.ZZ(n)), F.Zeta(F.ZZ(n + 1)));
           }
         }
-        if (arg2.isIntegerResult() && arg2.isNegativeResult()) {
+        if (arg2.isMathematicalIntegerNegative()) {
           IExpr nu = arg1.re();
           if (nu.isReal() && ((IReal) nu).isGT(F.CN1)) {
+            // https://functions.wolfram.com/GammaBetaErf/PolyGamma2/03/01/01/0018/
             return F.CComplexInfinity;
+          }
+          if (nu.isReal() && nu.isMinusOne()) {
+            // https://functions.wolfram.com/GammaBetaErf/PolyGamma2/03/01/01/0019/
+            return S.Indeterminate;
           }
         }
         if (arg2.isZero() && arg1.isNumber()) {

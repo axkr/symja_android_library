@@ -16,11 +16,11 @@ import org.apfloat.Apint;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -39,6 +39,8 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 import com.google.common.math.BigIntegerMath;
+import com.google.common.math.DoubleMath;
+import com.google.common.math.LongMath;
 import edu.jas.arith.PrimeInteger;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
@@ -53,8 +55,8 @@ import it.unimi.dsi.fastutil.ints.IntList;
  */
 public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
-  protected static IAST factorBigInteger(BigInteger number, boolean isNegative, int numerator,
-      int denominator, Int2IntMap map) {
+  protected static IAST factorBigInteger(BigInteger number, boolean isNegative, int rootNumerator,
+      int rootDenominator, Int2IntMap map) {
     if (number.compareTo(BigInteger.valueOf(7)) <= 0) {
       return F.NIL;
     }
@@ -65,24 +67,24 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     if (map.size() == 0) {
       return F.NIL;
     }
-    IASTAppendable result = F.TimesAlloc(map.size() + 4);
+    final IASTAppendable result = F.TimesAlloc(map.size() + 4);
     boolean evaled = false;
     for (Int2IntMap.Entry entry : map.int2IntEntrySet()) {
       int key = entry.getIntKey();
       int value = entry.getIntValue();
-      int mod = value % denominator;
-      int div = value / denominator;
+      int mod = value % rootDenominator;
+      int div = value / rootDenominator;
       if (div != 0) {
         result.append(F.Power(valueOf(key), F.ZZ(div)));
         if (mod != 0) {
-          result.append(F.Power(valueOf(key), F.QQ(mod, denominator)));
+          result.append(F.Power(valueOf(key), F.QQ(mod, rootDenominator)));
         }
         evaled = true;
       } else {
-        result.append(F.Power(F.Power(valueOf(key), valueOf(value)), F.QQ(1, denominator)));
+        result.append(F.Power(F.Power(valueOf(key), valueOf(value)), F.QQ(1, rootDenominator)));
       }
     }
-    if (denominator == 2 && numerator == 1
+    if (rootDenominator == 2 && rootNumerator == 1
         && rest.compareTo(BigInteger.valueOf(Short.MAX_VALUE - 20)) > 0) {
       // exponent 1/2 ==> special case - try to get exact square root of rest
       IInteger[] sr = F.ZZ(rest).sqrtAndRemainder();
@@ -95,14 +97,35 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
     if (evaled) {
       if (!rest.equals(BigInteger.ONE)) {
-        result.append(F.Power(valueOf(rest), F.QQ(1, denominator)));
+        result.append(F.Power(valueOf(rest), F.QQ(1, rootDenominator)));
       }
       if (isNegative) {
-        result.append(F.Power(F.CN1, F.QQ(numerator, denominator)));
+        result.append(F.Power(F.CN1, F.QQ(rootNumerator, rootDenominator)));
       }
       return result;
     }
     return F.NIL;
+  }
+
+  public static IInteger factorial(int n) {
+    final int absN = Math.abs(n);
+    final int iterationLimit = EvalEngine.get().getIterationLimit();
+    if (iterationLimit >= 0 && iterationLimit < absN) {
+      IterationLimitExceeded.throwIt(absN, F.Factorial(F.ZZ(n)));
+    }
+  
+    BigInteger result;
+    if (absN <= 20) {
+      result = BigInteger.valueOf(LongMath.factorial(absN));
+    } else {
+      result = BigIntegerMath.factorial(absN);
+    }
+  
+    if (n < 0 && n % 2 != 0) {
+      result = result.negate();
+    }
+  
+    return valueOf(result);
   }
 
   public static IAST factorizeLong(long value) {
@@ -391,16 +414,16 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return IExpr.compareHierarchy(this, expr);
   }
 
-  @Override
-  public IExpr copy() {
-    return this;
-  }
-
   // /** {@inheritDoc} */
   // @Override
   // public IInteger gcd(final IInteger that) {
   // return gcd( that);
   // }
+
+  @Override
+  public IExpr copy() {
+    return this;
+  }
 
   @Override
   public IRational divideBy(IRational that) {
@@ -550,16 +573,6 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return F.NIL;
   }
 
-  @Override
-  public IInteger factorial() {
-    int ni = toIntDefault();
-    if (ni > Integer.MIN_VALUE) {
-      return NumberTheory.factorial(ni);
-    }
-    // Machine-sized integer expected at position `2` in `1`.
-    throw new ArgumentTypeException("intm", F.list(F.Factorial(this), F.C1));
-  }
-
   // private IAST factorizeInt(int intValue) {
   // IASTAppendable result = F.ListAlloc();// tdivFactors.size() + extraSize);
   // if (intValue < 0) {
@@ -589,6 +602,16 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   // }
   // return result;
   // }
+
+  @Override
+  public IInteger factorial() {
+    int ni = toIntDefault();
+    if (ni > Integer.MIN_VALUE) {
+      return AbstractIntegerSym.factorial(ni);
+    }
+    // Machine-sized integer expected at position `2` in `1`.
+    throw new ArgumentTypeException("intm", F.list(F.Factorial(this), F.C1));
+  }
 
   /** {@inheritDoc} */
   @Override
@@ -633,23 +656,23 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
   /** {@inheritDoc} */
   @Override
-  public IAST factorSmallPrimes(int numerator, int root) {
-    Int2IntMap map = new Int2IntRBTreeMap();
+  public IAST factorSmallPrimes(int rootNumerator, int rootDenominator) {
     IInteger b = this;
     boolean isNegative = false;
     if (complexSign() < 0) {
       b = b.negate();
       isNegative = true;
     }
-    if (numerator != 1) {
-      b = b.powerRational(numerator);
+    if (rootNumerator != 1) {
+      b = b.powerRational(rootNumerator);
     }
     if (b.isLT(F.C8)) {
       return F.NIL;
     }
 
     BigInteger number = b.toBigNumerator();
-    return factorBigInteger(number, isNegative, numerator, root, map);
+    Int2IntMap map = new Int2IntRBTreeMap();
+    return factorBigInteger(number, isNegative, rootNumerator, rootDenominator, map);
   }
 
   @Override
@@ -752,15 +775,15 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return equals(value);
   }
 
+  // public static BigInteger jacobiSymbol(long a, long b) {
+  // return jacobiSymbol(BigInteger.valueOf(a), BigInteger.valueOf(b));
+  // }
+
   /** {@inheritDoc} */
   @Override
   public boolean isNumEqualRational(IRational value) throws ArithmeticException {
     return equals(value);
   }
-
-  // public static BigInteger jacobiSymbol(long a, long b) {
-  // return jacobiSymbol(BigInteger.valueOf(a), BigInteger.valueOf(b));
-  // }
 
   /** {@inheritDoc} */
   @Override
@@ -1213,5 +1236,47 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   @Override
   public byte[] toByteArray() {
     return toBigNumerator().toByteArray();
+  }
+
+  /**
+   * Integer logarithm of <code>arg</code> for base <code>b</code>. Gives Log <sub>b</sub>(arg) or
+   * <code>Log(arg)/Log(b)</code> as a {@link IRational} number if the result is rational
+   *
+   * @param b the base of the logarithm
+   * @param arg
+   * @return {@link F#NIL} if the result is not rational.
+   */
+  public static IExpr baseBLog(final IInteger b, final IInteger arg) {
+    try {
+      long l1 = b.toLong();
+      long l2 = arg.toLong();
+      if (l1 > 0L && l2 > 0L) {
+        boolean inverse = false;
+        if (l1 > l2) {
+          long t = l2;
+          l2 = l1;
+          l1 = t;
+          inverse = true;
+        }
+        double numericResult = Math.log(l2) / Math.log(l1);
+        if (F.isNumIntValue(numericResult)) {
+          long symbolicResult = DoubleMath.roundToLong(numericResult, Config.ROUNDING_MODE);
+          if (inverse) {
+            if (b.equals(arg.powerRational(symbolicResult))) {
+              // cross checked result
+              return F.QQ(1L, symbolicResult);
+            }
+          } else {
+            if (arg.equals(b.powerRational(symbolicResult))) {
+              // cross checked result
+              return F.ZZ(symbolicResult);
+            }
+          }
+        }
+      }
+    } catch (ArithmeticException ae) {
+      // toLong() method failed
+    }
+    return F.NIL;
   }
 }

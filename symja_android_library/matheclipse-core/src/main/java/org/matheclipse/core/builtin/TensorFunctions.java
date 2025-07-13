@@ -20,6 +20,7 @@ import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IReal;
@@ -64,11 +65,15 @@ public class TensorFunctions {
       Arrays.sort(levels);
       IntList dimensions = LinearAlgebra.dimensions(array, S.List, Integer.MAX_VALUE, false);
       int iDepth = dimensions.size();
-      for (int i = levels.length - 1; i >= 0; i--) {
+      int length = levels.length;
+
+      for (int i = length - 1; i >= 0; i--) {
         int level = levels[i];
         currentArray =
             arrayReduce(f, currentArray, dimensions, level, engine, i == 0 ? true : false);
-
+        if (currentArray.isNIL()) {
+          return F.NIL;
+        }
         dimensions = LinearAlgebra.dimensions(currentArray, S.List, --iDepth, false);
         dimensions = dimensions.subList(0, iDepth);
       }
@@ -86,8 +91,7 @@ public class TensorFunctions {
      * @return an array of 2 objects `[IAST, IntList]` with the reduced array and the new dimensions
      */
     private ITensorAccess arrayReduce(IExpr f, ITensorAccess array, IntList dimensions, int level,
-        EvalEngine engine,
-        boolean doMap) {
+        EvalEngine engine, boolean doMap) {
       int iDepth = dimensions == null ? LinearAlgebra.arrayDepth(array) : dimensions.size();
       IAST range = ListFunctions.range(iDepth + 1);
       IAST rotateRight = range.rotateRight(F.NIL, level);
@@ -95,8 +99,7 @@ public class TensorFunctions {
         dimensions = LinearAlgebra.dimensions(array, S.List, iDepth, false);
       }
       ITensorAccess transposed = (ITensorAccess) LinearAlgebra.transpose(array, rotateRight,
-          dimensions, x -> x,
-          F.Transpose(array, rotateRight), engine);
+          dimensions, x -> x, F.Transpose(array, rotateRight), engine);
       IAST reduced = (IAST) transposed.normal(false);
       if (doMap) {
         reduced = (IAST) F.Map(f, reduced, F.List(F.ZZ(iDepth - 1))).eval(engine);
@@ -111,6 +114,10 @@ public class TensorFunctions {
       }
       IAST rotateLeft = ListFunctions.range(iDepth).rotateLeft(F.NIL, level - 1);
       dimensions = LinearAlgebra.dimensions(reduced, S.List, Integer.MAX_VALUE, false);
+      if (dimensions.size() < iDepth - 1) {
+        // if the dimensions are less than the depth, we can not rotate
+        return F.NIL;
+      }
       dimensions = dimensions.subList(0, iDepth - 1);
 
       return (IAST) LinearAlgebra.transpose(reduced, rotateLeft, dimensions, x -> x,
@@ -316,6 +323,7 @@ public class TensorFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IBuiltInSymbol headSymbol = S.KroneckerProduct;
       int argSize = ast.argSize();
       // expectedArgSize() is >= 2
       if (ast.arg1().isList() && ast.arg2().isList()) {
@@ -346,7 +354,7 @@ public class TensorFunctions {
                       }
                     }
                   }
-                  IASTAppendable result = F.ast(S.KroneckerProduct, ast.size() - i);
+                  IASTAppendable result = F.ast(headSymbol, ast.size() - i);
                   result.append(temp);
                   result.appendAll(ast, i + 1, ast.size());
                   return result;
@@ -356,7 +364,7 @@ public class TensorFunctions {
                 return F.NIL;
               }
 
-              IASTAppendable result = F.ast(S.KroneckerProduct, ast.size() - i);
+              IASTAppendable result = F.ast(headSymbol, ast.size() - i);
               result.append(tensor1);
               result.appendAll(ast, i, ast.size());
               return result;
@@ -1045,6 +1053,7 @@ public class TensorFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IBuiltInSymbol headSymbol = S.TensorProduct;
       int argSize = ast.argSize();
       if (argSize == 0) {
         return F.C0;
@@ -1074,7 +1083,7 @@ public class TensorFunctions {
                     }
                   }
                 }
-                IASTAppendable result = F.ast(S.TensorProduct);
+                IASTAppendable result = F.ast(headSymbol);
                 result.append(temp);
                 result.appendAll(ast, i + 1, ast.size());
                 return result;
@@ -1084,7 +1093,7 @@ public class TensorFunctions {
               return F.NIL;
             }
 
-            IASTAppendable result = F.ast(S.TensorProduct);
+            IASTAppendable result = F.ast(headSymbol);
             result.append(tensor1);
             result.appendAll(ast, i, ast.size());
             return result;

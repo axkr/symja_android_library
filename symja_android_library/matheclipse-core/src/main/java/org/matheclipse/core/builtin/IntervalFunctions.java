@@ -138,7 +138,7 @@ public class IntervalFunctions {
       if (interval2.isNIL()) {
         interval2 = (IAST) ast.arg2();
       }
-      IAST result = complementIntervalData(interval1, interval2, engine);
+      IAST result = IntervalDataSym.intervalDataComplement(interval1, interval2, engine);
       if (result.size() == 1) {
         return result;
       }
@@ -148,108 +148,6 @@ public class IntervalFunctions {
         return F.NIL;
       }
       return normalized.orElse(result);
-    }
-
-    /**
-     * <p>
-     * See: <a href=
-     * "https://en.wikipedia.org/wiki/Complement_(set_theory)#Relative_complement">Complement (set
-     * theory) - Relative complement</a>
-     * 
-     * @param interval1
-     * @param interval2
-     * @param engine
-     * @return
-     */
-    private static IAST complementIntervalData(final IAST interval1, final IAST interval2,
-        EvalEngine engine) {
-      if (interval1.isEmptyIntervalData()) {
-        return F.CEmptyIntervalData;
-      }
-      if (interval2.isEmptyIntervalData()) {
-        return interval1;
-      }
-
-      IASTAppendable intervalUnion = F.ast(S.IntervalUnion, 3);
-      for (int i = 1; i < interval1.size(); i++) {
-        final IAST list1 = (IAST) interval1.get(i);
-        final IExpr min1 = list1.arg1();
-        final IBuiltInSymbol minEnd1 = (IBuiltInSymbol) list1.arg2();
-        final IBuiltInSymbol maxEnd1 = (IBuiltInSymbol) list1.arg3();
-        final IExpr max1 = list1.arg4();
-        // use rule: list1 \setminus (list2A \cup list2B)=(list1 \setminus list2A) \cap (list1
-        // \setminus list2B)
-        IASTAppendable intervalIntersection = F.ast(S.IntervalIntersection, interval2.size());
-        for (int j = 1; j < interval2.size(); j++) {
-          IASTAppendable segmentResult = F.ast(S.IntervalData, interval2.size());
-          intervalIntersection.append(segmentResult);
-          final IAST list2 = (IAST) interval2.get(j);
-          final IExpr min2 = list2.arg1();
-          final IBuiltInSymbol minEnd2 = (IBuiltInSymbol) list2.arg2();
-          final IBuiltInSymbol maxEnd2 = (IBuiltInSymbol) list2.arg3();
-          final IExpr max2 = list2.arg4();
-          if (S.Less.ofQ(engine, max2, min1) || S.Less.ofQ(engine, max1, min2)) {
-            segmentResult.append(F.List(min1, minEnd1, maxEnd1, max1));
-            continue;
-          }
-          if (S.Less.ofQ(engine, min1, min2)) {
-            // left side
-            segmentResult.append(F.List(min1, minEnd1, toggle(min2, minEnd2), min2));
-          } else if (S.Equal.ofQ(engine, min1, min2)) {
-            // left side
-            if (minEnd2 == S.Less && minEnd1 == S.LessEqual && !min1.isNegativeInfinity()) {
-              segmentResult.append(F.List(min1, S.LessEqual, S.LessEqual, min1));
-            }
-          }
-
-          if (S.Less.ofQ(engine, max2, max1)) {
-            // right side
-            segmentResult.append(F.List(max2, toggle(max2, maxEnd2), maxEnd1, max1));
-          } else if (S.Equal.ofQ(engine, max2, max1)) {
-            // right side
-            if (maxEnd2 == S.Less && maxEnd1 == S.LessEqual && !max1.isInfinity()) {
-              segmentResult.append(F.List(max1, S.LessEqual, S.LessEqual, max1));
-            }
-          }
-
-        }
-        if (intervalIntersection.argSize() > 1) {
-          IExpr temp = engine.evaluate(intervalIntersection);
-          if (temp.isIntervalData()) {
-            intervalUnion.append(temp);
-          } else {
-            // TODO print error ?
-            return F.NIL;
-          }
-        } else if (intervalIntersection.argSize() == 1) {
-          intervalUnion.append(intervalIntersection.arg1());
-        } else if (intervalIntersection.argSize() == 0) {
-          intervalUnion.append(F.CEmptyIntervalData);
-        }
-
-      }
-      if (intervalUnion.argSize() == 1) {
-        return (IAST) intervalUnion.arg1();
-      }
-      IExpr eval = engine.evaluate(intervalUnion);
-      if (eval.isIntervalData()) {
-        return (IAST) eval;
-      }
-      // TODO print error ?
-      return F.NIL;
-    }
-
-    private static IBuiltInSymbol toggle(IExpr value, IBuiltInSymbol symbol) {
-      if (symbol == S.Less) {
-        if (value.isInfinity() || value.isNegativeInfinity()) {
-          return S.Less;
-        }
-        return S.LessEqual;
-      }
-      if (symbol == S.LessEqual) {
-        return S.Less;
-      }
-      return symbol;
     }
 
     @Override
@@ -274,19 +172,19 @@ public class IntervalFunctions {
 
   private static final class ToIntervalData extends AbstractFunctionEvaluator {
 
-
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isOr()) {
-        IAST orAST = (IAST) ast.arg1();
-        return orAST.mapThread(x -> F.ToIntervalData(x, ast.arg2())).eval(engine);
+      final IExpr arg1 = ast.arg1();
+      if (ast.isAST1()) {
+        return IntervalDataSym.toIntervalData(arg1, engine);
       }
-      return F.NIL;
+      final IExpr arg2 = ast.arg2();
+      return IntervalDataSym.toIntervalData(arg1, arg2, engine);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_1_2;
     }
 
     @Override
@@ -511,7 +409,7 @@ public class IntervalFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int indexOf = ast.indexOf(x -> x.isIntervalData());
       if (indexOf > 0) {
-        return evaluateIntervalData(ast, engine);
+        return IntervalDataSym.intervalDataIntersection(ast, engine);
       }
       for (int i = 1; i < ast.size(); i++) {
         if (!ast.get(i).isInterval()) {
@@ -530,55 +428,25 @@ public class IntervalFunctions {
           }
         }
       }
-      return intervalDataIntersection(ast, engine);
+      return intervalIntersection(ast, engine);
     }
 
-    private static IExpr evaluateIntervalData(final IAST ast, EvalEngine engine) {
-      for (int i = 1; i < ast.size(); i++) {
-        if (!ast.get(i).isIntervalData()) {
-          return F.NIL;
-        }
-        IAST interval = (IAST) ast.get(i);
-        for (int j = 1; j < interval.size(); j++) {
-          if (!interval.get(j).isList4()) {
-            return F.NIL;
-          }
-          IAST list1 = (IAST) interval.get(j);
-          IExpr min1 = list1.arg1();
-          IExpr max1 = list1.arg4();
-          if (!min1.isRealResult() || !max1.isRealResult()) {
-            return F.NIL;
-          }
-        }
-      }
+    private static IExpr intervalIntersection(final IAST ast, EvalEngine engine) {
       IAST result = (IAST) ast.arg1();
-      result = IntervalDataSym.normalize(result, engine);
-      if (result.isInvalid()) {
-        return F.NIL;
-      }
-      if (result.isNIL()) {
-        result = (IAST) ast.arg1();
-      }
+      result = IntervalSym.normalize(result, engine).orElse(result);
       for (int i = 2; i < ast.size(); i++) {
         IAST interval = (IAST) ast.get(i);
-        IAST normalizedArg = IntervalDataSym.normalize(interval, engine);
-        if (normalizedArg.isInvalid()) {
-          return F.NIL;
-        }
-        if (normalizedArg.isNIL()) {
-          normalizedArg = interval;
-        }
-        result = IntervalDataSym.intersectionIntervalData(result, normalizedArg, engine);
+        IAST normalizedArg = IntervalSym.normalize(interval, engine).orElse(interval);
+        result = IntervalIntersection.intersectionInterval(result, normalizedArg, engine);
         if (result.size() == 1) {
           return result;
         }
       }
-      IAST normalized = IntervalDataSym.normalize(result, engine);
-      if (normalized.isInvalid()) {
-        return F.NIL;
-      }
+      IAST normalized = IntervalSym.normalize(result, engine);
       return normalized.orElse(result);
     }
+
+
 
     private static IAST intersectionInterval(final IAST interval1, final IAST interval2,
         EvalEngine engine) {
@@ -661,7 +529,7 @@ public class IntervalFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       int indexOf = ast.indexOf(x -> x.isIntervalData());
       if (indexOf > 0) {
-        return evaluateIntervalData(ast, engine);
+        return IntervalDataSym.intervalDataUnion(ast, engine);
       }
       int calculatedResultSize = 2;
       for (int i = 1; i < ast.size(); i++) {
@@ -693,62 +561,12 @@ public class IntervalFunctions {
       return normalized.orElse(result);
     }
 
-    private static IExpr evaluateIntervalData(final IAST ast, EvalEngine engine) {
-      int calculatedResultSize = 2;
-      for (int i = 1; i < ast.size(); i++) {
-        IAST interval;
-        if (!ast.get(i).isIntervalData()) {
-          return F.NIL;
-        } else {
-          interval = (IAST) ast.get(i);
-        }
-        calculatedResultSize += interval.argSize();
-        for (int j = 1; j < interval.size(); j++) {
-          if (!interval.get(j).isList4()) {
-            return F.NIL;
-          }
-          IAST list1 = (IAST) interval.get(j);
-          IExpr min1 = list1.arg1();
-          IExpr max1 = list1.arg4();
-          if (!min1.isRealResult() || !max1.isRealResult()) {
-            return F.NIL;
-          }
-        }
-      }
-      IASTAppendable result = F.ast(S.IntervalData, calculatedResultSize);
-      for (int i = 1; i < ast.size(); i++) {
-        IAST interval = (IAST) ast.get(i);
-        for (int j = 1; j < interval.size(); j++) {
-          result.append(interval.get(j));
-        }
-      }
-      IAST normalized = IntervalDataSym.normalize(result, engine);
-      if (normalized.isInvalid()) {
-        return F.NIL;
-      }
-      return normalized.orElse(result);
-    }
-
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_INFINITY;
     }
   }
 
-  private static IExpr intervalDataIntersection(final IAST ast, EvalEngine engine) {
-    IAST result = (IAST) ast.arg1();
-    result = IntervalSym.normalize(result, engine).orElse(result);
-    for (int i = 2; i < ast.size(); i++) {
-      IAST interval = (IAST) ast.get(i);
-      IAST normalizedArg = IntervalSym.normalize(interval, engine).orElse(interval);
-      result = IntervalIntersection.intersectionInterval(result, normalizedArg, engine);
-      if (result.size() == 1) {
-        return result;
-      }
-    }
-    IAST normalized = IntervalSym.normalize(result, engine);
-    return normalized.orElse(result);
-  }
 
   public static void initialize() {
     Initializer.init();

@@ -5,13 +5,14 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.IReal;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 public interface IAssumptions {
 
-  public static void assign(IExpr arg1, final IAST assumptionExpr,
-      IAssumptions oldAssumptions, final EvalEngine engine) {
+  public static void assign(IExpr arg1, final IAST assumptionExpr, IAssumptions oldAssumptions,
+      final EvalEngine engine) {
     IAssumptions assumptions;
     if (oldAssumptions == null) {
       assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
@@ -38,6 +39,12 @@ public interface IAssumptions {
    */
   public IAssumptions copy();
 
+  public IInteger determineInteger(IExpr x);
+
+  public IAST intervalData(IExpr x);
+
+  // public IExpr get$Assumptions();
+
   /**
    * Get the distribution which is associated with the expression
    *
@@ -45,8 +52,6 @@ public interface IAssumptions {
    * @return <code>F.NIL</code> if no distribution is associated
    */
   public IAST distribution(IExpr expr);
-
-  // public IExpr get$Assumptions();
 
   public Map<IExpr, IAST> getTensorsMap();
 
@@ -78,6 +83,14 @@ public interface IAssumptions {
   public boolean isComplex(IExpr expr);
 
   /**
+   * Gives <code>true</code>, if the assumption seems to be contradictory value, <code>false</code>
+   * in all other cases.
+   *
+   * @return
+   */
+  public boolean isContradictory();
+
+  /**
    * Gives <code>true</code>, if the expression is assumed to equal the number, <code>false
    * </code> in all other cases.
    * 
@@ -85,7 +98,7 @@ public interface IAssumptions {
    * @param number
    * @return
    */
-  public boolean isEqual(IExpr expr, IReal number);
+  public boolean isEqual(IExpr expr, IExpr number);
 
   /**
    * Gives <code>true</code>, if the expression is assumed to be greater equal number, <code>false
@@ -95,7 +108,7 @@ public interface IAssumptions {
    * @param number
    * @return
    */
-  public boolean isGreaterEqual(IExpr expr, IReal number);
+  public boolean isGreaterEqual(IExpr expr, IExpr number);
 
   /**
    * Gives <code>true</code>, if the expression is assumed to be greater than number, <code>false
@@ -105,7 +118,7 @@ public interface IAssumptions {
    * @param number
    * @return
    */
-  public boolean isGreaterThan(IExpr expr, IReal number);
+  public boolean isGreaterThan(IExpr expr, IExpr number);
 
   /**
    * Gives <code>true</code>, if the expression is assumed to be an integer value (i.e. an element
@@ -124,7 +137,7 @@ public interface IAssumptions {
    * @param number
    * @return
    */
-  public boolean isLessEqual(IExpr expr, IReal number);
+  public boolean isLessEqual(IExpr expr, IExpr number);
 
   /**
    * Gives <code>true</code>, if the expression is assumed to be less than number, <code>false
@@ -134,7 +147,7 @@ public interface IAssumptions {
    * @param number
    * @return
    */
-  public boolean isLessThan(IExpr expr, IReal number);
+  public boolean isLessThan(IExpr expr, IExpr number);
 
   /**
    * Gives <code>true</code>, if the expression is assumed to be a negative value, <code>false
@@ -254,15 +267,15 @@ public interface IAssumptions {
    */
   public boolean isUnequal(IExpr expr, INumber number);
 
+  // public void set$Assumptions(IExpr expr);
+
   /**
    * Reduce the integer range according to the assumptions.
    *
    * @param range
    * @return <code>null</code> if no interval can be determined
    */
-  public int[] reduceRange(IExpr x, final int[] range);
-
-  // public void set$Assumptions(IExpr expr);
+  public IntArrayList reduceRange(IExpr x, final int[] range);
 
   /**
    * Get some assumptions about tensor symbols

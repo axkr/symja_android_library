@@ -101,31 +101,6 @@ import jakarta.annotation.Nonnull;
 // @NotThreadSafe
 public class EvalEngine implements Serializable {
 
-  public static class OptionsResult {
-    public IAST result;
-    public int argSize;
-    public IExpr[] options;
-
-    public OptionsResult(IAST ast, int argSize, IExpr[] options) {
-      this.result = ast;
-      this.argSize = argSize;
-      this.options = options;
-    }
-  }
-  /** Stack to manage the <code>OptionsPattern()</code> mappings for a pattern-matching rule. */
-  private static class OptionsStack extends ArrayDeque<IdentityHashMap<ISymbol, IASTAppendable>> {
-
-    private static final long serialVersionUID = 2720088062330091827L;
-
-    public OptionsStack() {
-      super();
-    }
-
-    public void push() {
-      push(new IdentityHashMap<ISymbol, IASTAppendable>());
-    }
-  }
-
   private static class EvalControlledCallable implements Callable<IExpr> {
     private final EvalEngine fEngine;
     private IExpr fExpr;
@@ -174,15 +149,263 @@ public class EvalEngine implements Serializable {
       return S.$Aborted;
     }
 
-    public void cancel() {
-      fEngine.stopRequest();
-      // thread.stop();
-    }
+    // public void cancel() {
+    // fEngine.stopRequest();
+    // // thread.stop();
+    // }
 
     public void setExpr(IExpr fExpr, long seconds) {
       this.fExpr = fExpr;
       this.fSeconds = seconds;
     }
+  }
+  public static class OptionsResult {
+    public IAST result;
+    public int argSize;
+    public IExpr[] options;
+
+    public OptionsResult(IAST ast, int argSize, IExpr[] options) {
+      this.result = ast;
+      this.argSize = argSize;
+      this.options = options;
+    }
+  }
+
+  /** Stack to manage the <code>OptionsPattern()</code> mappings for a pattern-matching rule. */
+  private static class OptionsStack extends ArrayDeque<IdentityHashMap<ISymbol, IASTAppendable>> {
+
+    private static final long serialVersionUID = 2720088062330091827L;
+
+    public OptionsStack() {
+      super();
+    }
+
+    public void push() {
+      push(new IdentityHashMap<ISymbol, IASTAppendable>());
+    }
+  }
+
+  /** */
+  private static final long serialVersionUID = 8402201556123198590L;
+
+  public static final boolean DEBUG = false;
+
+  private static AtomicLong MODULE_COUNTER = new AtomicLong();
+
+  private static final transient ThreadLocal<EvalEngine> INSTANCE = ThreadLocal.withInitial(
+      () -> new EvalEngine("ThreadLocal", Config.DEFAULT_RECURSION_LIMIT, System.out, true));
+
+  /**
+   * Get the thread local evaluation engine instance
+   *
+   * @return the current {@link EvalEngine} for this thread.
+   */
+  public static EvalEngine get() {
+    return INSTANCE.get();
+  }
+
+  /**
+   * Retrieves the {@link FixedPrecisionApfloatHelper} instance for fixed precision calculations
+   * associated with the current {@link EvalEngine}.
+   *
+   * @return the {@link FixedPrecisionApfloatHelper} instance for the current evaluation engine
+   */
+  public static FixedPrecisionApfloatHelper getApfloat() {
+    return getApfloat(get());
+  }
+
+  /**
+   * Retrieves the {@link FixedPrecisionApfloatHelper} instance for fixed precision calculations
+   * associated with the specified {@link EvalEngine}. If the fApfloatHelper field in the provided
+   * engine is <code>null</code>, a new instance of {@link FixedPrecisionApfloatHelper} is created
+   * with a precision of <code>{@link Config#MAXPRECISIONAPFLOAT} - </code>1.
+   * 
+   * @param engine the {@link EvalEngine} instance for which the {@link FixedPrecisionApfloatHelper}
+   *        is retrieved
+   * @return the {@link FixedPrecisionApfloatHelper} instance for the given evaluation engine
+   */
+  public static FixedPrecisionApfloatHelper getApfloat(EvalEngine engine) {
+    FixedPrecisionApfloatHelper h = engine.fApfloatHelper;
+    if (h == null) {
+      h = new FixedPrecisionApfloatHelper(Config.MAX_PRECISION_APFLOAT - 1);
+    }
+    return h;
+  }
+
+  /**
+   * Get the {@link FixedPrecisionApfloatHelper} for calculations with
+   * {@link ParserConfig#MACHINE_PRECISION}.
+   * 
+   * @return
+   */
+  public static FixedPrecisionApfloatHelper getApfloatDouble() {
+    return getApfloatDouble(get());
+  }
+
+
+  /**
+   * Retrieves the {@link FixedPrecisionApfloatHelper} instance for calculations with
+   * {@link ParserConfig#MACHINE_PRECISION}. If the internal <code>fApfloatHelperDouble</code> field
+   * in the provided {@link EvalEngine} is <code>null</code>, a new instance of
+   * {@link FixedPrecisionApfloatHelper} is created with a precision of
+   * <code>{@link ParserConfig#MACHINE_PRECISION} + 1</code>.
+   *
+   * @param engine the {@link EvalEngine} instance for which the {@link FixedPrecisionApfloatHelper}
+   *        is retrieved
+   * @return the {@link FixedPrecisionApfloatHelper} instance for the given evaluation engine
+   */
+  public static FixedPrecisionApfloatHelper getApfloatDouble(EvalEngine engine) {
+    FixedPrecisionApfloatHelper h = engine.fApfloatHelperDouble;
+    if (h == null) {
+      h = new FixedPrecisionApfloatHelper(ParserConfig.MACHINE_PRECISION + 1);
+    }
+    return h;
+  }
+
+  /**
+   * Increment the {@link S#Module} variables counter by <code>1</code> and return the result.
+   *
+   * @return the module counter
+   */
+  public static long incModuleCounter() {
+    return MODULE_COUNTER.incrementAndGet();
+  }
+
+  /**
+   * Check if the <code>ApfloatNum</code> number type should be used instead of the <code>Num</code>
+   * type and the <code>ApcomplexNum</code> number type should be used instead of the <code>
+   * ComplexNum</code> type for numeric evaluations.
+   *
+   * @param precision the given precision
+   * @return <code>true</code> if the given precision is greater than <code>
+   *     EvalEngine.DOUBLE_PRECISION</code>
+   * @see ApfloatNum
+   * @see ApcomplexNum
+   */
+  public static boolean isApfloat(long precision) {
+    return precision > ParserConfig.MACHINE_PRECISION;
+  }
+
+  /**
+   * Same as {@link EvalEngine#isArbitraryMode()}, but as static method.
+   * 
+   * @return
+   */
+  public static boolean isApfloatMode() {
+    return INSTANCE.get().isArbitraryMode();
+  }
+
+  /**
+   * Maps all the {@link S#Unevaluated} functions <b>first argument</b> in the given {@link IAST}
+   * arguments. Evaluates the given argument, if its head is a {@link S#Function}. This method
+   * checks if the head of the provided first argument is a {@link S#Function}. If it is, the
+   * argument is evaluated using the {@link F#eval(IExpr)} method. Otherwise, the argument is
+   * returned "unevaluated" without any evaluation.
+   * 
+   * @param argsAST
+   * @param unevaluatedFunction
+   * @return
+   */
+  private static IAST mapUnevaluated(final IAST argsAST, final boolean[] unevaluatedFunction) {
+    return argsAST.map(x -> x.isUnevaluated() ? //
+        unevaluatedArg1(unevaluatedFunction, x.first()) : //
+        x);
+  }
+
+  /**
+   * Removes the current thread's value for the EvalEngine's thread-local variable.
+   *
+   * @see java.lang.ThreadLocal#remove()
+   */
+  public static void remove() {
+    INSTANCE.remove();
+  }
+
+  /**
+   * Reset the {@link S#Module} or {@link S#With} variables counter to <code>0</code>. Used only in
+   * unit tests.
+   * <p>
+   * <b>Don't reset for reusable EvalEngine's!</b>
+   */
+  public static void resetModuleCounter4JUnit() {
+    MODULE_COUNTER = new AtomicLong();
+  }
+
+  /**
+   * Set the thread local evaluation engine instance
+   *
+   * @param engine the evaluation engine
+   */
+  public static void set(final EvalEngine engine) {
+    INSTANCE.set(engine);
+  }
+
+  /**
+   * Set the{@link FixedPrecisionApfloatHelper} instance.
+   *
+   * @param helper
+   */
+  public static void setApfloat(final FixedPrecisionApfloatHelper helper) {
+    get().fApfloatHelper = helper;
+  }
+
+  /**
+   * Set the thread local evaluation engine instance and reset the engines states (numeric mode
+   * flags, recursion counter,...).
+   *
+   * <p>
+   * Note: This method should be called before the parsing of a string expression.
+   *
+   * @param engine
+   */
+  public static void setReset(final EvalEngine engine) {
+    INSTANCE.set(engine);
+    engine.reset();
+  }
+
+  /**
+   * Evaluates the given argument if its head is a {@link S#Function}. This method checks if the
+   * head of the provided argument is a {@link S#Function}. If it is, the argument is evaluated
+   * using the {@link F#eval(IExpr)} method. Otherwise, the argument is returned
+   * &quot;unevaluated&quot; without any evaluation.
+   * 
+   * @param unevaluatedFunction
+   * @param arg1
+   * @return
+   */
+  private static IExpr unevaluatedArg1(boolean[] unevaluatedFunction, IExpr arg1) {
+    if (arg1.head().isFunction()) {
+      unevaluatedFunction[0] = true;
+      return F.eval(arg1);
+    }
+    return arg1;
+  }
+
+  /**
+   * Evaluates the given argument if its head is a {@link S#Function}. This method checks if the
+   * head of the provided argument is a {@link S#Function}. If it is, the argument is evaluated
+   * using the {@link F#eval(IExpr)} method. Otherwise, the argument is returned
+   * &quot;unevaluated&quot; without any evaluation.
+   * 
+   * @param arg1 the expression to be checked and potentially evaluated
+   * @return the evaluated expression if the head is a function, otherwise the original argument
+   */
+  private static IExpr unevaluatedArg1(IExpr arg1) {
+    if (arg1.head().isFunction()) {
+      return F.eval(arg1);
+    }
+    return arg1;
+  }
+
+  /**
+   * Increment the {@link S#Module} variables counter by <code>1</code> and append it to the given
+   * prefix.
+   *
+   * @param prefix
+   * @return
+   */
+  public static String uniqueName(String prefix) {
+    return prefix + MODULE_COUNTER.incrementAndGet();
   }
 
   /**
@@ -202,88 +425,13 @@ public class EvalEngine implements Serializable {
   private transient final Cache<IExpr, Object> globalObjectCache =
       CacheBuilder.newBuilder().maximumSize(500).build();
 
-  /** */
-  private static final long serialVersionUID = 8402201556123198590L;
-
   /**
    * Cache for the Rubi integration rules evaluation
    */
   public transient Cache<IAST, IExpr> rubiASTCache = null;
 
+
   private transient Map<Object, IExpr> rememberMap = null;
-
-  public static final boolean DEBUG = false;
-
-  private static AtomicLong MODULE_COUNTER = new AtomicLong();
-
-  private static final transient ThreadLocal<EvalEngine> INSTANCE = ThreadLocal.withInitial(
-      () -> new EvalEngine("ThreadLocal", Config.DEFAULT_RECURSION_LIMIT, System.out, true));
-
-
-  /**
-   * Get the thread local evaluation engine instance
-   *
-   * @return the current {@link EvalEngine} for this thread.
-   */
-  public static EvalEngine get() {
-    return INSTANCE.get();
-  }
-
-  /**
-   * Same as {@link EvalEngine#isArbitraryMode()}, but as static method.
-   * 
-   * @return
-   */
-  public static boolean isApfloatMode() {
-    return INSTANCE.get().isArbitraryMode();
-  }
-
-  /**
-   * Check if the <code>ApfloatNum</code> number type should be used instead of the <code>Num</code>
-   * type and the <code>ApcomplexNum</code> number type should be used instead of the <code>
-   * ComplexNum</code> type for numeric evaluations.
-   *
-   * @param precision the given precision
-   * @return <code>true</code> if the given precision is greater than <code>
-   *     EvalEngine.DOUBLE_PRECISION</code>
-   * @see ApfloatNum
-   * @see ApcomplexNum
-   */
-  public static boolean isApfloat(long precision) {
-    return precision > ParserConfig.MACHINE_PRECISION;
-  }
-
-  /**
-   * Removes the current thread's value for the EvalEngine's thread-local variable.
-   *
-   * @see java.lang.ThreadLocal#remove()
-   */
-  public static void remove() {
-    INSTANCE.remove();
-  }
-
-  /**
-   * Set the thread local evaluation engine instance
-   *
-   * @param engine the evaluation engine
-   */
-  public static void set(final EvalEngine engine) {
-    INSTANCE.set(engine);
-  }
-
-  /**
-   * Set the thread local evaluation engine instance and reset the engines states (numeric mode
-   * flags, recursion counter,...).
-   *
-   * <p>
-   * Note: This method should be called before the parsing of a string expression.
-   *
-   * @param engine
-   */
-  public static void setReset(final EvalEngine engine) {
-    INSTANCE.set(engine);
-    engine.reset();
-  }
 
   transient int fRecursionCounter;
 
@@ -326,7 +474,6 @@ public class EvalEngine implements Serializable {
 
   /** @see Config#isFileSystemEnabled() */
   transient boolean fFileSystemEnabled;
-
 
   transient String fSessionID;
 
@@ -532,16 +679,42 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * For every evaluation, store the list of modified variables in an internal list.
+   * Add a single step to the currently defined trace stack and evaluate the <code>rewrittenExpr
+   * </code> expression.
    *
-   * @param arg0
+   * @param inputExpr the input expression
+   * @param rewrittenExpr the rewritten expression
+   * @param list
    * @return
    */
-  public boolean addModifiedVariable(ISymbol arg0) {
-    if (fModifiedVariablesList != null) {
-      return fModifiedVariablesList.add(arg0);
+  public IExpr addEvaluatedTraceStep(IExpr inputExpr, IExpr rewrittenExpr, IExpr... list) {
+    if (fTraceMode && rewrittenExpr.isPresent()) {
+      if (fTraceStack != null) {
+        IASTAppendable listOfHints = F.ast(S.List, list.length + 1);
+        listOfHints.appendAll(list, 0, list.length);
+        fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
+        IExpr evaluatedResult = evaluate(rewrittenExpr);
+        listOfHints.append(evaluatedResult);
+        return evaluatedResult;
+      }
+      return evaluate(rewrittenExpr);
     }
-    return false;
+    return rewrittenExpr;
+  }
+
+  public IExpr addEvaluatedTraceStep(IExpr inputExpr, IExpr rewrittenExpr, String ruleName) {
+    if (fTraceMode && rewrittenExpr.isPresent()) {
+      if (fTraceStack != null) {
+        IASTMutable listOfHints = F.ListAlloc(inputExpr.topHead(), F.$str(ruleName), F.Slot1);
+
+        fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
+        IExpr evaluatedResult = evaluate(rewrittenExpr);
+        listOfHints.set(3, evaluatedResult);
+        return evaluatedResult;
+      }
+      return evaluate(rewrittenExpr);
+    }
+    return evaluate(rewrittenExpr);
   }
 
   /**
@@ -568,27 +741,64 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Add a single step to the currently defined trace stack and evaluate the <code>rewrittenExpr
-   * </code> expression.
+   * For every evaluation, store the list of modified variables in an internal list.
    *
-   * @param inputExpr the input expression
-   * @param rewrittenExpr the rewritten expression
-   * @param list
+   * @param arg0
    * @return
    */
-  public IExpr addEvaluatedTraceStep(IExpr inputExpr, IExpr rewrittenExpr, IExpr... list) {
-    if (fTraceMode && rewrittenExpr.isPresent()) {
-      if (fTraceStack != null) {
-        IASTAppendable listOfHints = F.ast(S.List, list.length + 1);
-        listOfHints.appendAll(list, 0, list.length);
-        fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
-        IExpr evaluatedResult = evaluate(rewrittenExpr);
-        listOfHints.append(evaluatedResult);
-        return evaluatedResult;
-      }
-      return evaluate(rewrittenExpr);
+  public boolean addModifiedVariable(ISymbol arg0) {
+    if (fModifiedVariablesList != null) {
+      return fModifiedVariablesList.add(arg0);
     }
-    return rewrittenExpr;
+    return false;
+  }
+
+  /**
+   * Add a single information step to the currently defined trace stack. The <code>inputExpr</code>
+   * hasn't changed but an additional information was inserted.
+   *
+   * @param inputExpr the input expression
+   * @param listOfHints this hints will be used in the eval trace listener
+   * @see #setStepListener(IEvalStepListener)
+   */
+  public void addTraceInfoStep(IExpr inputExpr, IAST listOfHints) {
+    if (fTraceMode && fTraceStack != null && inputExpr.isPresent()) {
+      fTraceStack.add(inputExpr, inputExpr, getRecursionCounter(), -1, listOfHints);
+    }
+  }
+
+  // public void cancel() {
+  // fContextPath = null;
+  // fErrorPrintStream = null;
+  // fFileSystemEnabled = false;
+  // fIterationLimit = 1;
+  // fModifiedVariablesList = null;
+  // fOutList = null;
+  // fOutPrintStream = null;
+  // fPackageMode = false;
+  // fQuietMode = true;
+  // fReapList = null;
+  // fRecursionCounter = 1;
+  // fRecursionLimit = 1;
+  // fSeconds = 1;
+  // fSessionID = null;
+  // fStopRequested = true;
+  // fTraceMode = false;
+  // fTraceStack = null;
+  // }
+
+  /**
+   * Add a single step to the currently defined trace stack.
+   *
+   * @param inputExpr the input expression
+   * @param rewrittenExpr the rewritten input expression
+   * @param listOfHints this hints will be used in the eval trace listener
+   * @see #setStepListener(IEvalStepListener)
+   */
+  public void addTraceStep(IExpr inputExpr, IExpr rewrittenExpr, IAST listOfHints) {
+    if (fTraceMode && fTraceStack != null && rewrittenExpr.isPresent()) {
+      fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
+    }
   }
 
   /**
@@ -615,21 +825,6 @@ public class EvalEngine implements Serializable {
     return evaluatedExpr;
   }
 
-  public IExpr addEvaluatedTraceStep(IExpr inputExpr, IExpr rewrittenExpr, String ruleName) {
-    if (fTraceMode && rewrittenExpr.isPresent()) {
-      if (fTraceStack != null) {
-        IASTMutable listOfHints = F.ListAlloc(inputExpr.topHead(), F.$str(ruleName), F.Slot1);
-
-        fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
-        IExpr evaluatedResult = evaluate(rewrittenExpr);
-        listOfHints.set(3, evaluatedResult);
-        return evaluatedResult;
-      }
-      return evaluate(rewrittenExpr);
-    }
-    return evaluate(rewrittenExpr);
-  }
-
   public IExpr addTraceStep(IExpr inputExpr, IExpr rewrittenExpr, String ruleName) {
     if (fTraceMode && rewrittenExpr.isPresent()) {
       if (fTraceStack != null) {
@@ -642,31 +837,9 @@ public class EvalEngine implements Serializable {
     return rewrittenExpr;
   }
 
-  /**
-   * Add a single information step to the currently defined trace stack. The <code>inputExpr</code>
-   * hasn't changed but an additional information was inserted.
-   *
-   * @param inputExpr the input expression
-   * @param listOfHints this hints will be used in the eval trace listener
-   * @see #setStepListener(IEvalStepListener)
-   */
-  public void addTraceInfoStep(IExpr inputExpr, IAST listOfHints) {
-    if (fTraceMode && fTraceStack != null && inputExpr.isPresent()) {
-      fTraceStack.add(inputExpr, inputExpr, getRecursionCounter(), -1, listOfHints);
-    }
-  }
-
-  /**
-   * Add a single step to the currently defined trace stack.
-   *
-   * @param inputExpr the input expression
-   * @param rewrittenExpr the rewritten input expression
-   * @param listOfHints this hints will be used in the eval trace listener
-   * @see #setStepListener(IEvalStepListener)
-   */
-  public void addTraceStep(IExpr inputExpr, IExpr rewrittenExpr, IAST listOfHints) {
-    if (fTraceMode && fTraceStack != null && rewrittenExpr.isPresent()) {
-      fTraceStack.add(inputExpr, rewrittenExpr, getRecursionCounter(), -1, listOfHints);
+  public void addTraceStep(Supplier<IExpr> inputExpr, IExpr rewrittenExpr, IAST listOfHints) {
+    if (fTraceMode && fTraceStack != null) {
+      fTraceStack.add(inputExpr.get(), rewrittenExpr, getRecursionCounter(), -1, listOfHints);
     }
   }
 
@@ -684,15 +857,143 @@ public class EvalEngine implements Serializable {
     }
   }
 
-  public void addTraceStep(Supplier<IExpr> inputExpr, IExpr rewrittenExpr, IAST listOfHints) {
-    if (fTraceMode && fTraceStack != null) {
-      fTraceStack.add(inputExpr.get(), rewrittenExpr, getRecursionCounter(), -1, listOfHints);
-    }
+  /**
+   * Get the {@link FixedPrecisionApfloatHelper} for fixed precision calculations.
+   *
+   * @return <code>null</code> if the apfloat helper isn't set in {@link #setNumericPrecision(long)}
+   *         or {@link #setNumericMode(boolean, long, int)}
+   */
+  public FixedPrecisionApfloatHelper apfloatHelper() {
+    return fApfloatHelper;
+  }
+
+  public Context begin(String contextName, Context parentContext) {
+    fContextPathStack.push(fContextPath);
+    fContextPath = fContextPath.copy();
+    Context packageContext = fContextPath.getContext(contextName, parentContext);
+    setContext(packageContext);
+    return packageContext;
+  }
+
+  public Context beginPackage(String contextName) {
+    fContextPathStack.push(fContextPath);
+    Context packageContext = fContextPath.getContext(contextName);
+    setContextPath(new ContextPath(packageContext));
+    ContextPath.PACKAGES.add(contextName);
+    return packageContext;
   }
 
   private void beginTrace(Predicate<IExpr> matcher) {
     setTraceMode(true);
     fTraceStack = new TraceStack(matcher);
+  }
+
+  /**
+   * Check the number of arguments and print a message to error stream if necessary.
+   * 
+   * @param ast
+   * @param functionEvaluator
+   * @return
+   */
+  public IAST checkBuiltinArgsSize(final IAST ast, final IFastFunctionEvaluator functionEvaluator) {
+    int[] expected;
+    final int argSize = ast.argSize();
+    if ((expected = functionEvaluator.expectedArgSize(ast)) != null) {
+      if (expected.length == 2) {
+        if (argSize < expected[0] || argSize > expected[1]) {
+          if (argSize < expected[0]) {
+            Errors.printArgMessage(ast, expected, this);
+          } else if (argSize > expected[1]) {
+            Errors.printArgMessage(ast, expected, this);
+          }
+        }
+      } else if (expected.length > 2) {
+        // `1` called with `2` arguments; `3` arguments are expected.
+        Errors.printMessage(ast.topHead(), "argrx",
+            F.list(ast.topHead(), F.ZZ(expected.length), F.ZZ(2)), this);
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Check the number of arguments if requested and transform the <code>ast</code> from an
+   * <i>operator form</i> to <i>normal form</i> if it is allowed.
+   *
+   * @param ast
+   * @param functionEvaluator
+   * @return
+   */
+  public OptionsResult checkBuiltinArguments(IAST ast, final IFunctionEvaluator functionEvaluator) {
+    int[] expected;
+    int argSize = ast.argSize();
+    OptionsResult opres = new OptionsResult(ast, argSize, null);
+    if ((expected = functionEvaluator.expectedArgSize(ast)) != null) {
+      if (expected.length == 2 && !ast.isBuiltInFunction()) {
+        return null;
+      } else if (expected.length == 3 && expected[2] > 0) {
+        switch (expected[2]) {
+          case 1:
+            if (ast.isAST1()) {
+              opres.result = F.operatorForm1Append(ast);
+              if (opres.result.isNIL()) {
+                return null;
+              }
+            }
+            break;
+          case 2:
+            if (ast.head().isAST1()) {
+              opres.result = F.operatorForm2Prepend(ast, expected, this);
+              if (opres.result.isNIL()) {
+                return null;
+              }
+            }
+            break;
+          default:
+        }
+      }
+
+      ast = opres.result;
+      argSize = ast.argSize();
+      if (argSize < expected[0] || argSize > expected[1]
+          || (expected[1] == Integer.MAX_VALUE && expected.length == 2)) {
+        if (ast.isAST1() && expected.length > 2) {
+          // because an operator form is allowed do not print a message
+          return null;
+        }
+        if (argSize < expected[0]) {
+          Errors.printArgMessage(ast, expected, this);
+          return null;
+        }
+        if (argSize > expected[0]) {
+          OptionsResult temp = getOptions(functionEvaluator, opres, ast, expected);
+          if (temp != null) {
+            return temp;
+          }
+        }
+        if (argSize > expected[1]) {
+          Errors.printArgMessage(ast, expected, this);
+          return null;
+        }
+
+      }
+    }
+    if (functionEvaluator instanceof AbstractFunctionOptionEvaluator
+        || functionEvaluator instanceof AbstractCoreFunctionOptionEvaluator) {
+      opres = getOptions(functionEvaluator, opres, ast, expected);
+    }
+
+    return opres;
+  }
+
+  /**
+   * Test if the experimental message was printed at least once for a symbol.
+   *
+   * @param symbol
+   * @return
+   */
+  public boolean containsExperimental(IBuiltInSymbol symbol) {
+    return experimentalSymbols.containsKey(symbol);
   }
 
   /**
@@ -750,20 +1051,23 @@ public class EvalEngine implements Serializable {
     return engine;
   }
 
-  public Context begin(String contextName, Context parentContext) {
-    fContextPathStack.push(fContextPath);
-    fContextPath = fContextPath.copy();
-    Context packageContext = fContextPath.getContext(contextName, parentContext);
-    setContext(packageContext);
-    return packageContext;
+  /**
+   * Decrement the counter for the constant {@link S#C} expressions. {@link F#C(int)} - represents
+   * the `n`-th constant in a solution for an equation.
+   * 
+   * @return
+   */
+  public int decConstantCounter() {
+    return --fConstantCounter;
   }
 
-  public Context beginPackage(String contextName) {
-    fContextPathStack.push(fContextPath);
-    Context packageContext = fContextPath.getContext(contextName);
-    setContextPath(new ContextPath(packageContext));
-    ContextPath.PACKAGES.add(contextName);
-    return packageContext;
+  /**
+   * Decrement the recursion counter by 1 and return the result.
+   *
+   * @return the decremented recursion counter
+   */
+  public int decRecursionCounter() {
+    return --fRecursionCounter;
   }
 
   public Context end() {
@@ -786,68 +1090,6 @@ public class EvalEngine implements Serializable {
       fContextPath.add(0, c);
     }
   }
-
-  // public void cancel() {
-  // fContextPath = null;
-  // fErrorPrintStream = null;
-  // fFileSystemEnabled = false;
-  // fIterationLimit = 1;
-  // fModifiedVariablesList = null;
-  // fOutList = null;
-  // fOutPrintStream = null;
-  // fPackageMode = false;
-  // fQuietMode = true;
-  // fReapList = null;
-  // fRecursionCounter = 1;
-  // fRecursionLimit = 1;
-  // fSeconds = 1;
-  // fSessionID = null;
-  // fStopRequested = true;
-  // fTraceMode = false;
-  // fTraceStack = null;
-  // }
-
-  /**
-   * Decrement the counter for the constant {@link S#C} expressions. {@link F#C(int)} - represents
-   * the `n`-th constant in a solution for an equation.
-   * 
-   * @return
-   */
-  public int decConstantCounter() {
-    return --fConstantCounter;
-  }
-
-  /**
-   * Decrement the recursion counter by 1 and return the result.
-   *
-   * @return the decremented recursion counter
-   */
-  public int decRecursionCounter() {
-    return --fRecursionCounter;
-  }
-
-  public void setDeterminePrecision(IExpr expr, boolean postParserProcessing) {
-    try {
-      // determine the precision of the input before evaluation
-      long precision = expr.determinePrecision(postParserProcessing);
-      if (precision > getNumericPrecision()) {
-        setNumericPrecision(precision);
-      }
-    } catch (RecursionLimitExceeded rle) {
-      //
-    }
-  }
-  // public void setDeterminePrecision(IExpr expr, boolean postParserProcessing) {
-  // try {
-  // // determine the precision of the input before evaluation
-  // long precision = expr.determinePrecision(postParserProcessing);
-  // if (precision > getNumericPrecision()) {
-  // setNumericPrecision(precision);
-  // }
-  // } catch (RecursionLimitExceeded rle) {
-  // //
-  // }
-  // }
 
   private IAST endTrace() {
     setTraceMode(false);
@@ -1031,18 +1273,41 @@ public class EvalEngine implements Serializable {
     return F.NIL;
   }
 
-  /**
-   * Test if the arguments of this <code>ast</code> should be evaluated numerically in numeric mode.
-   * 
-   * @param ast
-   * @return
-   */
-  private boolean isNumericArg(final IAST ast) {
-    int id = ast.headID();
-    if (id >= 0) {
-      return Arrays.binarySearch(F.SORTED_NUMERIC_ARGS_IDS, id) >= 0;
+  public final IAST evalArgsOrderlessN(IAST ast1) {
+    int numericFlag =
+        isArbitraryMode() ? IAST.NUMERIC_ARBITRARY_EVALED : IAST.NUMERIC_DOUBLE_EVALED;
+    if (ast1.isEvalFlagOn(numericFlag)) {
+      return F.NIL;
     }
-    return false;
+
+    boolean oldNumericMode = fNumericMode;
+    try {
+      fNumericMode = true;
+      IASTMutable copy = F.NIL;
+      for (int i = 1; i < ast1.size(); i++) {
+        IExpr temp = ast1.get(i);
+        if (!temp.isInexactNumber() && temp.isNumericFunction(true)) {
+          temp = evaluateNIL(temp);
+          if (temp.isPresent()) {
+            if (copy.isNIL()) {
+              copy = ast1.copy();
+            }
+            copy.set(i, temp);
+          }
+        }
+      }
+      if (copy.isPresent()) {
+        EvalAttributes.sort(copy);
+        copy.addEvalFlags(
+            isArbitraryMode() ? IAST.NUMERIC_ARBITRARY_EVALED : IAST.NUMERIC_DOUBLE_EVALED);
+      } else {
+        ast1.addEvalFlags(
+            isArbitraryMode() ? IAST.NUMERIC_ARBITRARY_EVALED : IAST.NUMERIC_DOUBLE_EVALED);
+      }
+      return copy;
+    } finally {
+      fNumericMode = oldNumericMode;
+    }
   }
 
   /**
@@ -1138,36 +1403,6 @@ public class EvalEngine implements Serializable {
     if (!(arg1 instanceof IPatternObject) && arg1.isPresent()) {
       ISymbol lhsSymbol = arg1.isSymbol() ? (ISymbol) arg1 : arg1.topHead();
       return lhsSymbol.evalUpRules(ast, this);
-    }
-    return F.NIL;
-  }
-
-  /**
-   * All arguments in <code>ast</code> must be finite inexact numbers.
-   * 
-   * @param symbol
-   * @param ast
-   * @return
-   */
-  private IExpr numericFunction(final ISymbol symbol, final IAST ast) {
-    final IEvaluator evaluator = ((IBuiltInSymbol) symbol).getEvaluator();
-    if (evaluator instanceof IFunctionEvaluator) {
-      // evaluate a built-in function.
-      final IFunctionEvaluator functionEvaluator = (IFunctionEvaluator) evaluator;
-      try {
-        return functionEvaluator.numericFunction(ast, this);
-      } catch (ValidateException ve) {
-        ve.printStackTrace();
-        return Errors.printMessage(ast.topHead(), ve, this);
-      } catch (FlowControlException e) {
-        throw e;
-      } catch (NumberFormatException nfe) {
-        // this happens if org.apfloat.internal.LongApfloatImpl throws
-        // java.lang.NumberFormatException "Infinity is not a valid number"
-        return Errors.printMessage(ast.topHead(), nfe, this);
-      } catch (BackingStorageException | SymjaMathException ve) {
-        return Errors.printMessage(ast.topHead(), ve, this);
-      }
     }
     return F.NIL;
   }
@@ -1280,137 +1515,6 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * The engine is in &quot;symbolic evaluation mode&quot;, no assumptions are set and the head
-   * contains no &quot;HOLD....&quot; attribute.
-   *
-   * @param headAttributes the attributes of the built-in header function which should be evaluated
-   * @return <code>true</code> if the engine is in symbolic mode evaluation
-   */
-  public final boolean isSymbolicMode(final int headAttributes) {
-    return !fNumericMode && fAssumptions == null
-        && ((ISymbol.HOLDALLCOMPLETE & headAttributes) == ISymbol.NOATTRIBUTE);
-  }
-
-  /**
-   * Check the number of arguments if requested and transform the <code>ast</code> from an
-   * <i>operator form</i> to <i>normal form</i> if it is allowed.
-   *
-   * @param ast
-   * @param functionEvaluator
-   * @return
-   */
-  public OptionsResult checkBuiltinArguments(IAST ast, final IFunctionEvaluator functionEvaluator) {
-    int[] expected;
-    int argSize = ast.argSize();
-    OptionsResult opres = new OptionsResult(ast, argSize, null);
-    if ((expected = functionEvaluator.expectedArgSize(ast)) != null) {
-      if (expected.length == 2 && !ast.isBuiltInFunction()) {
-        return null;
-      } else if (expected.length == 3 && expected[2] > 0) {
-        switch (expected[2]) {
-          case 1:
-            if (ast.isAST1()) {
-              opres.result = F.operatorForm1Append(ast);
-              if (opres.result.isNIL()) {
-                return null;
-              }
-            }
-            break;
-          case 2:
-            if (ast.head().isAST1()) {
-              opres.result = F.operatorForm2Prepend(ast, expected, this);
-              if (opres.result.isNIL()) {
-                return null;
-              }
-            }
-            break;
-          default:
-        }
-      }
-
-      ast = opres.result;
-      argSize = ast.argSize();
-      if (argSize < expected[0] || argSize > expected[1]
-          || (expected[1] == Integer.MAX_VALUE && expected.length == 2)) {
-        if (ast.isAST1() && expected.length > 2) {
-          // because an operator form is allowed do not print a message
-          return null;
-        }
-        if (argSize < expected[0]) {
-          Errors.printArgMessage(ast, expected, this);
-          return null;
-        }
-        if (argSize > expected[0]) {
-          OptionsResult temp = getOptions(functionEvaluator, opres, ast, expected);
-          if (temp != null) {
-            return temp;
-          }
-        }
-        if (argSize > expected[1]) {
-          Errors.printArgMessage(ast, expected, this);
-          return null;
-        }
-
-      }
-    }
-    if (functionEvaluator instanceof AbstractFunctionOptionEvaluator
-        || functionEvaluator instanceof AbstractCoreFunctionOptionEvaluator) {
-      opres = getOptions(functionEvaluator, opres, ast, expected);
-    }
-
-    return opres;
-  }
-
-  /**
-   * Check the number of arguments and print a message to error stream if necessary.
-   * 
-   * @param ast
-   * @param functionEvaluator
-   * @return
-   */
-  public IAST checkBuiltinArgsSize(final IAST ast, final IFastFunctionEvaluator functionEvaluator) {
-    int[] expected;
-    final int argSize = ast.argSize();
-    if ((expected = functionEvaluator.expectedArgSize(ast)) != null) {
-      if (expected.length == 2) {
-        if (argSize < expected[0] || argSize > expected[1]) {
-          if (argSize < expected[0]) {
-            Errors.printArgMessage(ast, expected, this);
-          } else if (argSize > expected[1]) {
-            Errors.printArgMessage(ast, expected, this);
-          }
-        }
-      }
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Test if the experimental message was printed at least once for a symbol.
-   *
-   * @param symbol
-   * @return
-   */
-  public boolean containsExperimental(IBuiltInSymbol symbol) {
-    return experimentalSymbols.containsKey(symbol);
-  }
-
-  private OptionsResult getOptions(IFunctionEvaluator optionEvaluator, OptionsResult opres,
-      IAST ast, @Nonnull int[] expected) {
-    IBuiltInSymbol[] optionSymbols = optionEvaluator.getOptionSymbols();
-    if (optionSymbols != null) {
-      opres.options = new IExpr[optionSymbols.length];
-      int argSize = AbstractFunctionEvaluator.determineOptions(opres.options, ast, ast.argSize(),
-          expected, optionSymbols, this);
-      if (expected != null && argSize <= expected[1] && argSize >= expected[0]) {
-        opres.argSize = argSize;
-        return opres;
-      }
-    }
-    return null;
-  }
-
-  /**
    * Evaluate an AST according to the attributes set in the header symbol. The evaluation steps are
    * controlled by the header attributes.
    *
@@ -1507,76 +1611,6 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Evaluate an AST, which may have only the {@link ISymbol#PROTECTED} attribute set in the header
-   * symbol. Only the evaluation steps are processed, where no attributes are set.
-   * 
-   * @param mutableAST the AST which should be evaluated.
-   * @param attributes
-   * @return <code>F.NIL</code> if no evaluation was possible
-   */
-  private IExpr evalNoAttributes(IASTMutable mutableAST) {
-    IExpr result = F.flattenSequence(mutableAST);
-    if (result.isPresent()) {
-      return result;
-    }
-    final boolean localNumericMode = fNumericMode;
-    final boolean argNumericMode = isNumericArg(mutableAST);
-    IASTMutable[] rlist = new IASTMutable[] {F.NIL};
-    mutableAST.forEach((arg, i) -> {
-      if (!arg.isUnevaluated()) {
-        fNumericMode = localNumericMode;
-        evalArg(rlist, mutableAST, arg, i, argNumericMode);
-      }
-    });
-    if (rlist[0].isPresent()) {
-      return rlist[0];
-    }
-    return mutableAST.extractConditionalExpression(false);
-  }
-
-  /**
-   * Evaluate an expression in a block. The local {@link S#Block} variables are saved before and
-   * restored after the evaluation.
-   * 
-   * @param supplier the expression which should be evaluated for the variables
-   * @param localVariablesList the list of local variables
-   * @return the result from the {@link Supplier#get()} method
-   */
-  public IExpr evalBlock(final Supplier<IExpr> supplier, final IAST localVariablesList) {
-    ISymbol[] symbolList = new ISymbol[localVariablesList.size()];
-    IExpr[] blockVariables = new IExpr[localVariablesList.size()];
-    RulesData[] blockVariablesRulesData = new RulesData[localVariablesList.size()];
-    try {
-      Programming.rememberBlockVariables(localVariablesList, symbolList, blockVariables,
-          blockVariablesRulesData, this);
-      return supplier.get();
-    } finally {
-      if (localVariablesList.size() > 0) {
-        // reset local variables to global ones
-        ISymbol variableSymbol;
-        for (int i = 1; i < localVariablesList.size(); i++) {
-          if (localVariablesList.get(i).isVariable()) {
-            variableSymbol = symbolList[i];
-            if (variableSymbol != null) {
-              variableSymbol.assignValue(blockVariables[i], false);
-              variableSymbol.setRulesData(blockVariablesRulesData[i]);
-            }
-          } else if (localVariablesList.get(i).isAST(S.Set, 3)) {
-            final IAST setFun = (IAST) localVariablesList.get(i);
-            if (setFun.arg1().isVariable()) {
-              variableSymbol = symbolList[i];
-              if (variableSymbol != null) {
-                variableSymbol.assignValue(blockVariables[i], false);
-                variableSymbol.setRulesData(blockVariablesRulesData[i]);
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  /**
    * Evaluate an expression in a block. The local {@link S#Block} variables are saved before and
    * restored after the evaluation.
    * 
@@ -1589,37 +1623,43 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Evaluate an expression for a local &quot;dummy&quot; variable.
-   *
-   * @param expr the expression which should be evaluated for the given symbol
-   * @param symbol the symbol which should be evaluated as a local variable
-   * @param localValue the value
-   * @param quiet if <code>true</code> evaluate in quiet mode and suppress evaluation messages
+   * Evaluate an expression in a block. The local {@link S#Block} variables are saved before and
+   * restored after the evaluation.
+   * 
+   * @param supplier the expression which should be evaluated for the variables
+   * @param localVariablesList the list of local variables
+   * @return the result from the {@link Supplier#get()} method
    */
-  public IExpr evalModuleDummySymbol(IExpr expr, ISymbol symbol, IExpr localValue, boolean quiet) {
-    boolean quietMode = isQuietMode();
-    setQuietMode(quiet);
-    java.util.IdentityHashMap<ISymbol, ISymbol> blockVariables =
-        new IdentityHashMap<ISymbol, ISymbol>();
-    IExpr result = F.NIL;
+  public IExpr evalBlock(final Supplier<IExpr> supplier, final IAST localVariablesList) {
+    ISymbol[] symbolList = new ISymbol[localVariablesList.size()];
+    IExpr[] oldAssignedValues = new IExpr[localVariablesList.size()];
+    RulesData[] oldAssignedRulesData = new RulesData[localVariablesList.size()];
     try {
-      ISymbol oldSymbol = symbol;
-      ISymbol newSymbol = F.Dummy(oldSymbol.toString());
-      blockVariables.put(oldSymbol, newSymbol);
-      IExpr temp = F.subst(evaluate(localValue), blockVariables);
-      evaluate(F.Set(newSymbol, temp));
-      result = expr.accept(new ModuleReplaceAll(blockVariables, this, ""));
-      return evaluate(result.orElse(expr));
+      Programming.rememberBlockVariables(localVariablesList, symbolList, oldAssignedValues,
+          oldAssignedRulesData, this);
+      return supplier.get();
     } finally {
-      setQuietMode(quietMode);
-      if (blockVariables.size() > 0) {
+      if (localVariablesList.size() > 0) {
         // reset local variables to global ones
-        java.util.IdentityHashMap<ISymbol, IExpr> globalVariables =
-            new IdentityHashMap<ISymbol, IExpr>();
-        for (Map.Entry<ISymbol, ISymbol> entry : blockVariables.entrySet()) {
-          globalVariables.put(entry.getValue(), entry.getKey());
+        ISymbol variableSymbol;
+        for (int i = 1; i < localVariablesList.size(); i++) {
+          if (localVariablesList.get(i).isVariable()) {
+            variableSymbol = symbolList[i];
+            if (variableSymbol != null) {
+              variableSymbol.clearValue(oldAssignedValues[i]);
+              variableSymbol.setRulesData(oldAssignedRulesData[i]);
+            }
+          } else if (localVariablesList.get(i).isAST(S.Set, 3)) {
+            final IAST setFun = (IAST) localVariablesList.get(i);
+            if (setFun.arg1().isVariable()) {
+              variableSymbol = symbolList[i];
+              if (variableSymbol != null) {
+                variableSymbol.clearValue(oldAssignedValues[i]);
+                variableSymbol.setRulesData(oldAssignedRulesData[i]);
+              }
+            }
+          }
         }
-        result = F.subst(result, globalVariables);
       }
     }
   }
@@ -1665,6 +1705,16 @@ public class EvalEngine implements Serializable {
 
   /**
    * Evaluates <code>expr</code> numerically and return the result as a Java <code>boolean</code>
+   * matrix.
+   *
+   * @param expr
+   */
+  public final boolean[][] evalBooleanMatrix(final IExpr expr) {
+    return expr.toBooleanMatrix();
+  }
+
+  /**
+   * Evaluates <code>expr</code> numerically and return the result as a Java <code>boolean</code>
    * vector.
    *
    * @param expr
@@ -1674,13 +1724,64 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Evaluates <code>expr</code> numerically and return the result as a Java <code>boolean</code>
-   * matrix.
+   * Evaluates <code>expr</code> numerically and return the result as a Java <code>
+   * org.hipparchus.complex.Complex</code> value.
    *
    * @param expr
+   * @throws ArgumentTypeException
    */
-  public final boolean[][] evalBooleanMatrix(final IExpr expr) {
-    return expr.toBooleanMatrix();
+  public final Complex evalComplex(final IExpr expr) throws ArgumentTypeException {
+    return evalComplex(expr, null);
+  }
+
+  /**
+   * Evaluates <code>expr</code> numerically and return the result as a Java <code>
+   * org.hipparchus.complex.Complex</code> value.
+   *
+   * @param expr
+   * @param function maybe <code>null</code>; returns a substitution value for some expressions
+   * @throws ArgumentTypeException
+   */
+  public final Complex evalComplex(IExpr expr, final Function<IExpr, IExpr> function)
+      throws ArgumentTypeException {
+    if (expr.isReal()) {
+      return new Complex(((IReal) expr).doubleValue());
+    }
+    if (expr.isNumber()) {
+      return new Complex(((INumber) expr).reDoubleValue(), ((INumber) expr).imDoubleValue());
+    }
+    boolean quietMode = fQuietMode;
+    try {
+      fQuietMode = true;
+      if (function != null) {
+        expr = expr.accept(new VisitorReplaceEvalf(function)).orElse(expr);
+      }
+      IExpr result = evalN(expr);
+      if (result.isReal()) {
+        return new Complex(((IReal) result).doubleValue());
+      }
+      if (result.isQuantity()) {
+        return new Complex(result.evalReal().doubleValue());
+      }
+      if (result.isNumber()) {
+        return new Complex(((INumber) result).reDoubleValue(), ((INumber) result).imDoubleValue());
+      }
+      if (result.isAST(S.Labeled, 3, 4)) {
+        return evalComplex(result.first(), function);
+      }
+    } finally {
+      fQuietMode = quietMode;
+    }
+    throw new ArgumentTypeException(
+        "conversion into a machine-size Complex numeric value is not possible!");
+  }
+
+  public final Complex[][] evalComplexMatrix(final IExpr expr) {
+    return expr.toComplexMatrix();
+  }
+
+  public final Complex[] evalComplexVector(final IExpr expr) {
+    return expr.toComplexVector();
   }
 
   /**
@@ -1703,26 +1804,6 @@ public class EvalEngine implements Serializable {
   public final double evalDouble(final IExpr expr, Function<IExpr, IExpr> function)
       throws ArgumentTypeException {
     return evalDouble(expr, function, Double.NaN);
-  }
-
-  /**
-   * Evaluates <code>expr</code> numerically and return the result as a Java <code>double</code>
-   * vector
-   * 
-   * @param expr
-   */
-  public final double[] evalDoubleVector(final IExpr expr) {
-    return expr.toDoubleVector();
-  }
-
-  /**
-   * Evaluates <code>expr</code> numerically and return the result as a Java <code>double</code>
-   * matrix.
-   * 
-   * @param expr
-   */
-  public final double[][] evalDoubleMatrix(final IExpr expr) {
-    return expr.toDoubleMatrix();
   }
 
   /**
@@ -1798,104 +1879,40 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Evaluates <code>expr</code> numerically and return the result as a Java <code>double</code>
+   * matrix.
    * 
    * @param expr
+   */
+  public final double[][] evalDoubleMatrix(final IExpr expr) {
+    return expr.toDoubleMatrix();
+  }
+
+  /**
+   * Evaluates <code>expr</code> numerically and return the result as a Java <code>double</code>
+   * vector
+   * 
+   * @param expr
+   */
+  public final double[] evalDoubleVector(final IExpr expr) {
+    return expr.toDoubleVector();
+  }
+
+  /**
+   * Test if <code>Equal[arg1, arg2]</code> can be evaluated to <code>True</code>. If a <code>
+   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
+   * False</code>.
+   *
+   * @param lhs
+   * @param rhs
    * @return
-   * @throws ArgumentTypeException
    */
-  public final int evalInt(final IExpr expr) throws ArgumentTypeException {
-    int result = Config.INVALID_INT;
-    if (expr.isReal()) {
-      result = expr.toIntDefault();
-    }
-    if (expr.isNumericFunction(true)) {
-      IExpr numericResult = evalNumericFunction(expr, false);
-      if (numericResult.isReal()) {
-        result = numericResult.toIntDefault();
-      }
-    } else {
-      IExpr temp = evaluateNIL(expr);
-      if (temp.isNumericFunction(true)) {
-        IExpr numericResult = evalNumericFunction(temp, false);
-        if (numericResult.isReal()) {
-          result = numericResult.toIntDefault();
-        }
-      }
-    }
-    if (F.isPresent(result)) {
-      return result;
-    }
-    throw new ArgumentTypeException(
-        "conversion into a machine-size integer value is not possible!");
-  }
-
-  public final int[] evalIntVector(final IExpr expr) {
-    return expr.toIntVector();
-  }
-
-  public final int[][] evalIntMatrix(final IExpr expr) {
-    return expr.toIntMatrix();
-  }
-
-  /**
-   * Evaluates <code>expr</code> numerically and return the result as a Java <code>
-   * org.hipparchus.complex.Complex</code> value.
-   *
-   * @param expr
-   * @throws ArgumentTypeException
-   */
-  public final Complex evalComplex(final IExpr expr) throws ArgumentTypeException {
-    return evalComplex(expr, null);
-  }
-
-  /**
-   * Evaluates <code>expr</code> numerically and return the result as a Java <code>
-   * org.hipparchus.complex.Complex</code> value.
-   *
-   * @param expr
-   * @param function maybe <code>null</code>; returns a substitution value for some expressions
-   * @throws ArgumentTypeException
-   */
-  public final Complex evalComplex(IExpr expr, final Function<IExpr, IExpr> function)
-      throws ArgumentTypeException {
-    if (expr.isReal()) {
-      return new Complex(((IReal) expr).doubleValue());
-    }
-    if (expr.isNumber()) {
-      return new Complex(((INumber) expr).reDoubleValue(), ((INumber) expr).imDoubleValue());
-    }
-    boolean quietMode = fQuietMode;
+  public final boolean evalEqual(final IExpr lhs, final IExpr rhs) {
     try {
-      fQuietMode = true;
-      if (function != null) {
-        expr = expr.accept(new VisitorReplaceEvalf(function)).orElse(expr);
-      }
-      IExpr result = evalN(expr);
-      if (result.isReal()) {
-        return new Complex(((IReal) result).doubleValue());
-      }
-      if (result.isQuantity()) {
-        return new Complex(result.evalReal().doubleValue());
-      }
-      if (result.isNumber()) {
-        return new Complex(((INumber) result).reDoubleValue(), ((INumber) result).imDoubleValue());
-      }
-      if (result.isAST(S.Labeled, 3, 4)) {
-        return evalComplex(result.first(), function);
-      }
-    } finally {
-      fQuietMode = quietMode;
+      return evaluate(F.Equal(lhs, rhs)).isTrue();
+    } catch (MathException fce) {
+      return false;
     }
-    throw new ArgumentTypeException(
-        "conversion into a machine-size Complex numeric value is not possible!");
-  }
-
-  public final Complex[] evalComplexVector(final IExpr expr) {
-    return expr.toComplexVector();
-  }
-
-  public final Complex[][] evalComplexMatrix(final IExpr expr) {
-    return expr.toComplexMatrix();
   }
 
   /**
@@ -1994,6 +2011,62 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Test if <code>Greater[arg1, arg2]</code> can be evaluated to <code>True</code>. If a <code>
+   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
+   * False</code>.
+   *
+   * @param lhs
+   * @param rhs
+   * @return
+   */
+  public final boolean evalGreater(final IExpr lhs, final IExpr rhs) {
+    // try {
+    // return evaluate(F.Greater(lhs, rhs)).isTrue();
+    // } catch (MathException fce) {
+    // return false;
+    // }
+    return evalTrue(F.Greater(lhs, rhs));
+  }
+
+  /**
+   * Test if <code>Greater[arg1, arg2,arg3]</code> can be evaluated to <code>True</code>. If a
+   * <code>org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return
+   * <code>False</code>.
+   *
+   * @param arg1
+   * @param arg2
+   * @param arg3
+   * @return
+   */
+  public final boolean evalGreater(final IExpr arg1, final IExpr arg2, final IExpr arg3) {
+    // try {
+    // return evaluate(F.ternaryAST3(S.Greater, arg1, arg2, arg3)).isTrue();
+    // } catch (MathException fce) {
+    // return false;
+    // }
+    return evalTrue(F.ternaryAST3(S.Greater, arg1, arg2, arg3));
+  }
+
+  /**
+   * Test if <code>GreaterEqual[arg1, arg2]</code> can be evaluated to <code>True</code>. If a
+   * <code>
+   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
+   * False</code>.
+   *
+   * @param lhs
+   * @param rhs
+   * @return
+   */
+  public final boolean evalGreaterEqual(final IExpr lhs, final IExpr rhs) {
+    // try {
+    // return evaluate(F.GreaterEqual(lhs, rhs)).isTrue();
+    // } catch (MathException fce) {
+    // return false;
+    // }
+    return evalTrue(F.GreaterEqual(lhs, rhs));
+  }
+
+  /**
    * Evaluate the ast recursively, according to the attributes Flat, HoldAll, HoldFirst, HoldRest,
    * Orderless to create pattern-matching expressions directly or for the left-hand-side of a <code>
    * Set[]</code>, <code>SetDelayed[]</code>, <code>UpSet[]</code> or <code>UpSetDelayed[]</code>
@@ -2025,6 +2098,101 @@ public class EvalEngine implements Serializable {
     } finally {
       fEvalLHSMode = evalLHSMode;
     }
+  }
+
+  /**
+   * 
+   * @param expr
+   * @return
+   * @throws ArgumentTypeException
+   */
+  public final int evalInt(final IExpr expr) throws ArgumentTypeException {
+    int result = Config.INVALID_INT;
+    if (expr.isReal()) {
+      result = expr.toIntDefault();
+    }
+    if (expr.isNumericFunction(true)) {
+      IExpr numericResult = evalNumericFunction(expr, false);
+      if (numericResult.isReal()) {
+        result = numericResult.toIntDefault();
+      }
+    } else {
+      IExpr temp = evaluateNIL(expr);
+      if (temp.isNumericFunction(true)) {
+        IExpr numericResult = evalNumericFunction(temp, false);
+        if (numericResult.isReal()) {
+          result = numericResult.toIntDefault();
+        }
+      }
+    }
+    if (F.isPresent(result)) {
+      return result;
+    }
+    throw new ArgumentTypeException(
+        "conversion into a machine-size integer value is not possible!");
+  }
+
+  public final int[][] evalIntMatrix(final IExpr expr) {
+    return expr.toIntMatrix();
+  }
+
+  public final int[] evalIntVector(final IExpr expr) {
+    return expr.toIntVector();
+  }
+
+  /**
+   * Test if <code>Less[arg1, arg2]</code> can be evaluated to <code>True</code>. If a <code>
+   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
+   * False</code>.
+   *
+   * @param lhs
+   * @param rhs
+   * @return
+   */
+  public final boolean evalLess(final IExpr lhs, final IExpr rhs) {
+    // try {
+    // return evaluate(F.Less(lhs, rhs)).isTrue();
+    // } catch (MathException fce) {
+    // return false;
+    // }
+    return evalTrue(F.Less(lhs, rhs));
+  }
+
+  /**
+   * Test if <code>Less[arg1, arg2, arg3]</code> can be evaluated to <code>True</code>. If a <code>
+   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
+   * False</code>.
+   *
+   * @param arg1
+   * @param arg2
+   * @param arg3
+   * @return
+   */
+  public final boolean evalLess(final IExpr arg1, final IExpr arg2, final IExpr arg3) {
+    // try {
+    // return evaluate(F.ternaryAST3(S.Less, arg1, arg2, arg3)).isTrue();
+    // } catch (MathException fce) {
+    // return false;
+    // }
+    return evalTrue(F.ternaryAST3(S.Less, arg1, arg2, arg3));
+  }
+
+  /**
+   * Test if <code>LessEqual[arg1, arg2]</code> can be evaluated to <code>True</code>. If a <code>
+   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
+   * False</code>.
+   *
+   * @param lhs
+   * @param rhs
+   * @return
+   */
+  public final boolean evalLessEqual(final IExpr lhs, final IExpr rhs) {
+    // try {
+    // return evaluate(F.LessEqual(lhs, rhs)).isTrue();
+    // } catch (MathException fce) {
+    // return false;
+    // }
+    return evalTrue(F.LessEqual(lhs, rhs));
   }
 
   /**
@@ -2205,27 +2373,82 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Print the trace enabled by the <code>On({head1, head2,...})</code> function.
+   * Evaluate an expression for a local &quot;dummy&quot; variable.
    *
-   * @param unevaledExpr the unevaluated expression
-   * @param evaledExpr the evaluated expression
+   * @param expr the expression which should be evaluated for the given symbol
+   * @param symbol the symbol which should be evaluated as a local variable
+   * @param localValue the value
+   * @param quiet if <code>true</code> evaluate in quiet mode and suppress evaluation messages
    */
-  private void printOnOffTrace(IExpr unevaledExpr, IExpr evaledExpr) {
-    boolean showExpr = true;
-    if (fOnOffMap != null) {
-      showExpr = fOnOffMap.containsKey(unevaledExpr.topHead());
-    }
-    if (showExpr) {
-      if (fOnOffUniqueMap != null) {
-        if (fOnOffUniqueMap.containsKey(unevaledExpr)) {
-          return;
-        } else {
-          fOnOffUniqueMap.put(unevaledExpr, evaledExpr);
+  public IExpr evalModuleDummySymbol(IExpr expr, ISymbol symbol, IExpr localValue, boolean quiet) {
+    boolean quietMode = isQuietMode();
+    setQuietMode(quiet);
+    java.util.IdentityHashMap<ISymbol, ISymbol> blockVariables =
+        new IdentityHashMap<ISymbol, ISymbol>();
+    IExpr result = F.NIL;
+    try {
+      ISymbol oldSymbol = symbol;
+      ISymbol newSymbol = F.Dummy(oldSymbol.toString());
+      blockVariables.put(oldSymbol, newSymbol);
+      IExpr temp = F.subst(evaluate(localValue), blockVariables);
+      evaluate(F.Set(newSymbol, temp));
+      result = expr.accept(new ModuleReplaceAll(blockVariables, this, ""));
+      return evaluate(result.orElse(expr));
+    } finally {
+      setQuietMode(quietMode);
+      if (blockVariables.size() > 0) {
+        // reset local variables to global ones
+        java.util.IdentityHashMap<ISymbol, IExpr> globalVariables =
+            new IdentityHashMap<ISymbol, IExpr>();
+        for (Map.Entry<ISymbol, ISymbol> entry : blockVariables.entrySet()) {
+          globalVariables.put(entry.getValue(), entry.getKey());
         }
+        result = F.subst(result, globalVariables);
       }
-      PrintStream stream = getOutPrintStream();
-      stream.println("  " + unevaledExpr.toString() + " --> " + evaledExpr.toString() + "\n");
     }
+  }
+
+  /**
+   * Evaluates <code>expr</code> numerically.
+   *
+   * @param expr
+   * @return
+   * @see #evaluate(IExpr)
+   */
+  public final IExpr evalN(final IExpr expr) {
+    return evaluate(F.N(expr));
+  }
+
+  public final IExpr evalN(final IExpr expr, long precision) {
+    return evaluate(F.N(expr, F.ZZ(precision)));
+  }
+
+  /**
+   * Evaluate an AST, which may have only the {@link ISymbol#PROTECTED} attribute set in the header
+   * symbol. Only the evaluation steps are processed, where no attributes are set.
+   * 
+   * @param mutableAST the AST which should be evaluated.
+   * @param attributes
+   * @return <code>F.NIL</code> if no evaluation was possible
+   */
+  private IExpr evalNoAttributes(IASTMutable mutableAST) {
+    IExpr result = F.flattenSequence(mutableAST);
+    if (result.isPresent()) {
+      return result;
+    }
+    final boolean localNumericMode = fNumericMode;
+    final boolean argNumericMode = isNumericArg(mutableAST);
+    IASTMutable[] rlist = new IASTMutable[] {F.NIL};
+    mutableAST.forEach((arg, i) -> {
+      if (!arg.isUnevaluated()) {
+        fNumericMode = localNumericMode;
+        evalArg(rlist, mutableAST, arg, i, argNumericMode);
+      }
+    });
+    if (rlist[0].isPresent()) {
+      return rlist[0];
+    }
+    return mutableAST.extractConditionalExpression(false);
   }
 
   public final IExpr evalNumericFunction(final IExpr expr) {
@@ -2250,58 +2473,6 @@ public class EvalEngine implements Serializable {
       }
     }
     return expr;
-  }
-
-  /**
-   * Evaluates <code>expr</code> numerically.
-   *
-   * @param expr
-   * @return
-   * @see #evaluate(IExpr)
-   */
-  public final IExpr evalN(final IExpr expr) {
-    return evaluate(F.N(expr));
-  }
-
-  public final IExpr evalN(final IExpr expr, long precision) {
-    return evaluate(F.N(expr, F.ZZ(precision)));
-  }
-
-  public final IAST evalArgsOrderlessN(IAST ast1) {
-    int numericFlag =
-        isArbitraryMode() ? IAST.NUMERIC_ARBITRARY_EVALED : IAST.NUMERIC_DOUBLE_EVALED;
-    if (ast1.isEvalFlagOn(numericFlag)) {
-      return F.NIL;
-    }
-
-    boolean oldNumericMode = fNumericMode;
-    try {
-      fNumericMode = true;
-      IASTMutable copy = F.NIL;
-      for (int i = 1; i < ast1.size(); i++) {
-        IExpr temp = ast1.get(i);
-        if (!temp.isInexactNumber() && temp.isNumericFunction(true)) {
-          temp = evaluateNIL(temp);
-          if (temp.isPresent()) {
-            if (copy.isNIL()) {
-              copy = ast1.copy();
-            }
-            copy.set(i, temp);
-          }
-        }
-      }
-      if (copy.isPresent()) {
-        EvalAttributes.sort(copy);
-        copy.addEvalFlags(
-            isArbitraryMode() ? IAST.NUMERIC_ARBITRARY_EVALED : IAST.NUMERIC_DOUBLE_EVALED);
-      } else {
-        ast1.addEvalFlags(
-            isArbitraryMode() ? IAST.NUMERIC_ARBITRARY_EVALED : IAST.NUMERIC_DOUBLE_EVALED);
-      }
-      return copy;
-    } finally {
-      fNumericMode = oldNumericMode;
-    }
   }
 
   /**
@@ -2380,41 +2551,6 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Evaluate an expression in &quot;traceless mode&quot;. If evaluation is not possible return the
-   * input object. In &quot;traceless mode&quot; all trace outputs will be suppressed.
-   *
-   * @param expr the expression which should be evaluated in traceless mode
-   * @return the evaluated object
-   */
-  public final IExpr evalTraceless(final IExpr expr) {
-    boolean quiet = fQuietMode;
-    boolean numericMode = fNumericMode;
-    boolean traceMode = fTraceMode;
-    try {
-      setTraceMode(false);
-      setQuietMode(true);
-      return evalWithoutNumericReset(expr);
-    } finally {
-      fNumericMode = numericMode;
-      fTraceMode = traceMode;
-      fQuietMode = quiet;
-    }
-  }
-
-  /**
-   * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not possible return <code>
-   * F.NIL</code>. In &quot;quiet mode&quot; all warnings would be suppressed.
-   *
-   * @param expr the expression which should be evaluated
-   * @return the evaluated object or {@link F#NIL} if no evaluation was possible
-   * @deprecated use {@link #evalQuietNIL(IExpr)}
-   */
-  @Deprecated
-  public final IExpr evalQuietNull(final IExpr expr) {
-    return evalQuietNIL(expr);
-  }
-
-  /**
    * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not possible return <code>
    * F.NIL</code>. In &quot;quiet mode&quot; all warnings would be suppressed.
    *
@@ -2430,6 +2566,19 @@ public class EvalEngine implements Serializable {
     } finally {
       setQuietMode(quiet);
     }
+  }
+
+  /**
+   * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not possible return <code>
+   * F.NIL</code>. In &quot;quiet mode&quot; all warnings would be suppressed.
+   *
+   * @param expr the expression which should be evaluated
+   * @return the evaluated object or {@link F#NIL} if no evaluation was possible
+   * @deprecated use {@link #evalQuietNIL(IExpr)}
+   */
+  @Deprecated
+  public final IExpr evalQuietNull(final IExpr expr) {
+    return evalQuietNIL(expr);
   }
 
   /**
@@ -2458,92 +2607,6 @@ public class EvalEngine implements Serializable {
     }
     if (unevaluatedFunction[0]) {
       return ast;
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Maps all the {@link S#Unevaluated} functions <b>first argument</b> in the given {@link IAST}
-   * arguments. Evaluates the given argument, if its head is a {@link S#Function}. This method
-   * checks if the head of the provided first argument is a {@link S#Function}. If it is, the
-   * argument is evaluated using the {@link F#eval(IExpr)} method. Otherwise, the argument is
-   * returned "unevaluated" without any evaluation.
-   * 
-   * @param argsAST
-   * @param unevaluatedFunction
-   * @return
-   */
-  private static IAST mapUnevaluated(final IAST argsAST, final boolean[] unevaluatedFunction) {
-    return argsAST.map(x -> x.isUnevaluated() ? //
-        unevaluatedArg1(unevaluatedFunction, x.first()) : //
-        x);
-  }
-
-  /**
-   * Evaluates the given argument if its head is a {@link S#Function}. This method checks if the
-   * head of the provided argument is a {@link S#Function}. If it is, the argument is evaluated
-   * using the {@link F#eval(IExpr)} method. Otherwise, the argument is returned
-   * &quot;unevaluated&quot; without any evaluation.
-   * 
-   * @param arg1 the expression to be checked and potentially evaluated
-   * @return the evaluated expression if the head is a function, otherwise the original argument
-   */
-  private static IExpr unevaluatedArg1(IExpr arg1) {
-    if (arg1.head().isFunction()) {
-      return F.eval(arg1);
-    }
-    return arg1;
-  }
-
-  /**
-   * Evaluates the given argument if its head is a {@link S#Function}. This method checks if the
-   * head of the provided argument is a {@link S#Function}. If it is, the argument is evaluated
-   * using the {@link F#eval(IExpr)} method. Otherwise, the argument is returned
-   * &quot;unevaluated&quot; without any evaluation.
-   * 
-   * @param unevaluatedFunction
-   * @param arg1
-   * @return
-   */
-  private static IExpr unevaluatedArg1(boolean[] unevaluatedFunction, IExpr arg1) {
-    if (arg1.head().isFunction()) {
-      unevaluatedFunction[0] = true;
-      return F.eval(arg1);
-    }
-    return arg1;
-  }
-
-  /**
-   * Evaluates the "up rules" (i.e. rules defined with {@link S#UpSet} or {@link S#UpSetDelayed})
-   * for the given abstract syntax tree (AST).
-   * <p>
-   * This method iterates through the elements of the provided AST and checks if any of them have
-   * associated "up rules" that can be applied. If an element is a symbol, its "up rules" are
-   * evaluated. If the element is not a pattern object and is present, the "up rules" of its
-   * top-level head are evaluated. The first successful evaluation is returned.
-   *
-   * @param ast the abstract syntax tree (AST) to evaluate
-   * @return the result of the first successfully applied "up rule" as an {@link IExpr}, or
-   *         {@link F#NIL} if no rules were applied
-   */
-  public IExpr evalUpRules(IAST ast) {
-    IExpr[] result = new IExpr[1];
-    result[0] = F.NIL;
-    if (ast.exists(x -> {
-      if (x.isSymbol()) {
-        result[0] = ((ISymbol) x).evalUpRules(ast, this);
-        if (result[0].isPresent()) {
-          return true;
-        }
-      } else if (!(x instanceof IPatternObject) && x.isPresent()) {
-        result[0] = x.topHead().evalUpRules(ast, this);
-        if (result[0].isPresent()) {
-          return true;
-        }
-      }
-      return false;
-    })) {
-      return result[0];
     }
     return F.NIL;
   }
@@ -2750,6 +2813,19 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Test if <code>expr</code> could be evaluated to {@link S#True}. If a <code>
+   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return
+   * {@link S#False}.
+   *
+   * @param expr
+   * @return {@link S#True} if the expression could be evaluated to symbol <code>True</code> and
+   *         {@link S#False} in all other cases
+   */
+  public final IBuiltInSymbol evalSymbolTrue(final IExpr expr) {
+    return evalTrue(expr) ? S.True : S.False;
+  }
+
+  /**
    * Currently only the Rubi TagSet rules for <code>Dist()</code> are implemented
    *
    * @param ast
@@ -2762,10 +2838,6 @@ public class EvalEngine implements Serializable {
       return UtilityFunctionCtors.evalRubiDistTimes(ast, this);
     }
     return F.NIL;
-  }
-
-  public IExpr evalTimeConstrained(final IExpr expr, long seconds) {
-    return evalTimeConstrained(expr, F.NIL, seconds);
   }
 
   /**
@@ -2808,6 +2880,11 @@ public class EvalEngine implements Serializable {
         return defaultValue;
       }
       return S.$Aborted;
+    } catch (InterruptedException e) {
+      // This can happen if the task itself was interrupted before the timeout,
+      // or if the main thread was interrupted while waiting for the result.
+      Errors.rethrowsInterruptException(e);
+      return S.$Aborted;
     } catch (Exception e) {
       if (Config.FUZZ_TESTING) {
         System.err.println("TIMECONSTRAINED exception: " + expr);
@@ -2826,9 +2903,13 @@ public class EvalEngine implements Serializable {
       return S.Null;
     } finally {
       if (!MoreExecutors.shutdownAndAwaitTermination(executorService, 1, TimeUnit.SECONDS)) {
-        work.cancel();
+        // work.cancel();
       }
     }
+  }
+
+  public IExpr evalTimeConstrained(final IExpr expr, long seconds) {
+    return evalTimeConstrained(expr, F.NIL, seconds);
   }
 
   /**
@@ -2849,6 +2930,28 @@ public class EvalEngine implements Serializable {
       traceList = endTrace();
     }
     return traceList;
+  }
+
+  /**
+   * Evaluate an expression in &quot;traceless mode&quot;. If evaluation is not possible return the
+   * input object. In &quot;traceless mode&quot; all trace outputs will be suppressed.
+   *
+   * @param expr the expression which should be evaluated in traceless mode
+   * @return the evaluated object
+   */
+  public final IExpr evalTraceless(final IExpr expr) {
+    boolean quiet = fQuietMode;
+    boolean numericMode = fNumericMode;
+    boolean traceMode = fTraceMode;
+    try {
+      setTraceMode(false);
+      setQuietMode(true);
+      return evalWithoutNumericReset(expr);
+    } finally {
+      fNumericMode = numericMode;
+      fTraceMode = traceMode;
+      fQuietMode = quiet;
+    }
   }
 
   /**
@@ -2911,141 +3014,6 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Test if <code>Equal[arg1, arg2]</code> can be evaluated to <code>True</code>. If a <code>
-   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
-   * False</code>.
-   *
-   * @param lhs
-   * @param rhs
-   * @return
-   */
-  public final boolean evalEqual(final IExpr lhs, final IExpr rhs) {
-    try {
-      return evaluate(F.Equal(lhs, rhs)).isTrue();
-    } catch (MathException fce) {
-      return false;
-    }
-  }
-
-  /**
-   * Test if <code>Less[arg1, arg2]</code> can be evaluated to <code>True</code>. If a <code>
-   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
-   * False</code>.
-   *
-   * @param lhs
-   * @param rhs
-   * @return
-   */
-  public final boolean evalLess(final IExpr lhs, final IExpr rhs) {
-    try {
-      return evaluate(F.Less(lhs, rhs)).isTrue();
-    } catch (MathException fce) {
-      return false;
-    }
-  }
-
-  /**
-   * Test if <code>Less[arg1, arg2, arg3]</code> can be evaluated to <code>True</code>. If a <code>
-   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
-   * False</code>.
-   *
-   * @param arg1
-   * @param arg2
-   * @param arg3
-   * @return
-   */
-  public final boolean evalLess(final IExpr arg1, final IExpr arg2, final IExpr arg3) {
-    try {
-      return evaluate(F.ternaryAST3(S.Less, arg1, arg2, arg3)).isTrue();
-    } catch (MathException fce) {
-      return false;
-    }
-  }
-
-  /**
-   * Test if <code>LessEqual[arg1, arg2]</code> can be evaluated to <code>True</code>. If a <code>
-   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
-   * False</code>.
-   *
-   * @param lhs
-   * @param rhs
-   * @return
-   */
-  public final boolean evalLessEqual(final IExpr lhs, final IExpr rhs) {
-    try {
-      return evaluate(F.LessEqual(lhs, rhs)).isTrue();
-    } catch (MathException fce) {
-      return false;
-    }
-  }
-
-  /**
-   * Test if <code>Greater[arg1, arg2]</code> can be evaluated to <code>True</code>. If a <code>
-   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
-   * False</code>.
-   *
-   * @param lhs
-   * @param rhs
-   * @return
-   */
-  public final boolean evalGreater(final IExpr lhs, final IExpr rhs) {
-    try {
-      return evaluate(F.Greater(lhs, rhs)).isTrue();
-    } catch (MathException fce) {
-      return false;
-    }
-  }
-
-  /**
-   * Test if <code>Greater[arg1, arg2,arg3]</code> can be evaluated to <code>True</code>. If a
-   * <code>org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return
-   * <code>False</code>.
-   *
-   * @param arg1
-   * @param arg2
-   * @param arg3
-   * @return
-   */
-  public final boolean evalGreater(final IExpr arg1, final IExpr arg2, final IExpr arg3) {
-    try {
-      return evaluate(F.ternaryAST3(S.Greater, arg1, arg2, arg3)).isTrue();
-    } catch (MathException fce) {
-      return false;
-    }
-  }
-
-  /**
-   * Test if <code>GreaterEqual[arg1, arg2]</code> can be evaluated to <code>True</code>. If a
-   * <code>
-   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
-   * False</code>.
-   *
-   * @param lhs
-   * @param rhs
-   * @return
-   */
-  public final boolean evalGreaterEqual(final IExpr lhs, final IExpr rhs) {
-    try {
-      return evaluate(F.GreaterEqual(lhs, rhs)).isTrue();
-    } catch (MathException fce) {
-      return false;
-    }
-  }
-
-  /**
-   * Test if <code>expr</code> could be evaluated to {@link S#True}. If a <code>
-   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return
-   * {@link S#False}.
-   *
-   * @param expr
-   * @return {@link S#True} if the expression could be evaluated to symbol <code>True</code> and
-   *         {@link S#False} in all other cases
-   */
-  public final IBuiltInSymbol evalSymbolTrue(final IExpr expr) {
-    return evalTrue(expr) ? S.True : S.False;
-  }
-
-  /**
    * Store the current numeric mode and evaluate the expression <code>expr</code>. After evaluation
    * reset the numeric mode to the value stored before the evaluation starts. If evaluation is not
    * possible return the input object. If <code>expr</code> equals {@link F#NIL} the method returns
@@ -3087,25 +3055,6 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Store the current numeric mode and evaluate the expression <code>expr</code>. After evaluation
-   * reset the numeric mode to the value stored before the evaluation starts. If evaluation is not
-   * possible return the input object.
-   *
-   * @param expr the object which should be evaluated
-   * @return the evaluated object
-   */
-  public final IExpr evaluateNonNumeric(final IExpr expr) {
-    boolean numericMode = fNumericMode;
-    try {
-      fNumericMode = false;
-      return evalWithoutNumericReset(expr);
-
-    } finally {
-      fNumericMode = numericMode;
-    }
-  }
-
-  /**
    * Evaluate an object and reset the numeric mode to the value before the evaluation step. If
    * evaluation is not possible or <code>expr</code> equals {@link F#NIL} return {@link F#NIL}.
    *
@@ -3125,6 +3074,25 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Store the current numeric mode and evaluate the expression <code>expr</code>. After evaluation
+   * reset the numeric mode to the value stored before the evaluation starts. If evaluation is not
+   * possible return the input object.
+   *
+   * @param expr the object which should be evaluated
+   * @return the evaluated object
+   */
+  public final IExpr evaluateNonNumeric(final IExpr expr) {
+    boolean numericMode = fNumericMode;
+    try {
+      fNumericMode = false;
+      return evalWithoutNumericReset(expr);
+
+    } finally {
+      fNumericMode = numericMode;
+    }
+  }
+
+  /**
    * @param expr
    * @return
    * @deprecated use {@link #evaluateNIL(IExpr)}
@@ -3132,6 +3100,41 @@ public class EvalEngine implements Serializable {
   @Deprecated
   public final IExpr evaluateNull(final IExpr expr) {
     return evaluateNIL(expr);
+  }
+
+  /**
+   * Evaluates the "up rules" (i.e. rules defined with {@link S#UpSet} or {@link S#UpSetDelayed})
+   * for the given abstract syntax tree (AST).
+   * <p>
+   * This method iterates through the elements of the provided AST and checks if any of them have
+   * associated "up rules" that can be applied. If an element is a symbol, its "up rules" are
+   * evaluated. If the element is not a pattern object and is present, the "up rules" of its
+   * top-level head are evaluated. The first successful evaluation is returned.
+   *
+   * @param ast the abstract syntax tree (AST) to evaluate
+   * @return the result of the first successfully applied "up rule" as an {@link IExpr}, or
+   *         {@link F#NIL} if no rules were applied
+   */
+  public IExpr evalUpRules(IAST ast) {
+    IExpr[] result = new IExpr[1];
+    result[0] = F.NIL;
+    if (ast.exists(x -> {
+      if (x.isSymbol()) {
+        result[0] = ((ISymbol) x).evalUpRules(ast, this);
+        if (result[0].isPresent()) {
+          return true;
+        }
+      } else if (!(x instanceof IPatternObject) && x.isPresent()) {
+        result[0] = x.topHead().evalUpRules(ast, this);
+        if (result[0].isPresent()) {
+          return true;
+        }
+      }
+      return false;
+    })) {
+      return result[0];
+    }
+    return F.NIL;
   }
 
   /**
@@ -3145,14 +3148,18 @@ public class EvalEngine implements Serializable {
     return evalLoop(expr).orElse(expr);
   }
 
-  /**
-   * Get the {@link FixedPrecisionApfloatHelper} for fixed precision calculations.
-   *
-   * @return <code>null</code> if the apfloat helper isn't set in {@link #setNumericPrecision(long)}
-   *         or {@link #setNumericMode(boolean, long, int)}
-   */
-  public FixedPrecisionApfloatHelper apfloatHelper() {
-    return fApfloatHelper;
+  public String get$Input() {
+    if (f$Input == null) {
+      f$Input = "";
+    }
+    return f$Input;
+  }
+
+  public String get$InputFileName() {
+    if (f$InputFileName == null) {
+      f$InputFileName = "";
+    }
+    return f$InputFileName;
   }
 
   /**
@@ -3183,52 +3190,26 @@ public class EvalEngine implements Serializable {
     return globalASTCache.getIfPresent(key);
   }
 
-  /**
-   * Returns the object associated with key in the {@link EvalEngine#globalObjectCache}, or null if
-   * there is no cached value for key.
-   * 
-   * @param key
-   */
-  public Object getObjectCache(IExpr key) {
-    return globalObjectCache.getIfPresent(key);
-  }
-
   public final Context getContext() {
     return fContextPath.currentContext();
   }
 
-  public String get$Input() {
-    if (f$Input == null) {
-      f$Input = "";
-    }
-    return f$Input;
-  }
-
-  public String get$InputFileName() {
-    if (f$InputFileName == null) {
-      f$InputFileName = "";
-    }
-    return f$InputFileName;
-  }
-
-  public void set$Input(String input) {
-    if (input == null) {
-      f$Input = "";
-    } else {
-      f$Input = input;
-    }
-  }
-
-  public void set$InputFileName(String inputFileName) {
-    if (inputFileName == null) {
-      f$InputFileName = "";
-    } else {
-      f$InputFileName = inputFileName;
-    }
-  }
-
   public ContextPath getContextPath() {
     return fContextPath;
+  }
+
+  /**
+   * Return the assigned value for a '$...' {@link IBuiltInSymbol}.
+   * 
+   * @param dollarSymbol
+   * @return {@link F#NIL} if no value is assigned.
+   */
+  public IExpr getDollarValue(IBuiltInSymbol dollarSymbol) {
+    if (fDollarSymbolMap != null) {
+      IExpr expr = fDollarSymbolMap.get(dollarSymbol);
+      return expr == null ? F.NIL : expr;
+    }
+    return F.NIL;
   }
 
   /**
@@ -3240,11 +3221,43 @@ public class EvalEngine implements Serializable {
     return fErrorPrintStream != null ? fErrorPrintStream : System.err;
   }
 
+  public EvalHistory getEvalHistory() {
+    return fEvalHistory;
+  }
+
+  /**
+   * Return the counter, how often the experimental message was printed.
+   *
+   * @param symbol
+   * @return
+   */
+  public int getExperimentalCounter(IBuiltInSymbol symbol) {
+    Integer counter = experimentalSymbols.get(symbol);
+    if (counter == null) {
+      return 0;
+    }
+    return counter;
+  }
+
   public int getIterationLimit() {
     if (Thread.interrupted()) {
       throw TimeoutException.TIMED_OUT;
     }
     return fIterationLimit;
+  }
+
+  /**
+   * Returns the level with which messages associated to this engine should be logged.
+   *
+   * <p>
+   * Returns {@link Level#ERROR} unless this engine is in {@link #isQuietMode() quiet-mode}, then
+   * {@link Level#DEBUG} is returned.
+   *
+   * @return the logger-level of this engine. ERROR by default and DEBUG if this engine is in
+   *         quite-mode.
+   */
+  public Level getLogLevel() {
+    return isQuietMode() ? Level.DEBUG : Level.ERROR;
   }
 
   public String getMessageShortcut() {
@@ -3268,55 +3281,28 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Get significant figures for output floating point numbers
-   *
-   * @return
-   */
-  public int getSignificantFigures() {
-    return fSignificantFigures;
-  }
-
-  public EvalHistory getEvalHistory() {
-    return fEvalHistory;
-  }
-
-  public OptionsStack pushOptionsStack() {
-    fOptionsStack.push();
-    return fOptionsStack;
-  }
-
-  /**
-   * Associates value with key in the {@link EvalEngine#globalASTCache}. If the cache previously
-   * contained a value associated with key, the old value is replaced by value.
+   * Returns the object associated with key in the {@link EvalEngine#globalObjectCache}, or null if
+   * there is no cached value for key.
    * 
    * @param key
-   * @param value
    */
-  public void putCache(IAST key, IExpr value) {
-    globalASTCache.put(key, value);
+  public Object getObjectCache(IExpr key) {
+    return globalObjectCache.getIfPresent(key);
   }
 
-  /**
-   * Associates value with key in the {@link EvalEngine#globalObjectCache}. If the cache previously
-   * contained a value associated with key, the old value is replaced by value.
-   * 
-   * @param key
-   * @param value
-   */
-  public void putObjectCache(IExpr key, Object value) {
-    globalObjectCache.put(key, value);
-  }
-
-  public void popOptionsStack() {
-    fOptionsStack.pop();
-  }
-
-  public IdentityHashMap<ISymbol, IASTAppendable> peekOptionsStack() {
-    return fOptionsStack.peek();
-  }
-
-  public Iterator<IdentityHashMap<ISymbol, IASTAppendable>> optionsStackIterator() {
-    return fOptionsStack.iterator();
+  private OptionsResult getOptions(IFunctionEvaluator optionEvaluator, OptionsResult opres,
+      IAST ast, @Nonnull int[] expected) {
+    IBuiltInSymbol[] optionSymbols = optionEvaluator.getOptionSymbols();
+    if (optionSymbols != null) {
+      opres.options = new IExpr[optionSymbols.length];
+      int argSize = AbstractFunctionEvaluator.determineOptions(opres.options, ast, ast.argSize(),
+          expected, optionSymbols, this);
+      if (expected != null && argSize <= expected[1] && argSize >= expected[0]) {
+        opres.argSize = argSize;
+        return opres;
+      }
+    }
+    return null;
   }
 
   /**
@@ -3330,6 +3316,10 @@ public class EvalEngine implements Serializable {
 
   public int getOutputSizeLimit() {
     return fOutputSizeLimit;
+  }
+
+  public Random getRandom() {
+    return fRandom;
   }
 
   /**
@@ -3376,17 +3366,30 @@ public class EvalEngine implements Serializable {
     return (timeRemaining) / 1000.0;
   }
 
-  public long getTimeConstrainedMillis() {
-    return fTimeConstrainedMillis;
+  public IExpr getRemember(Object key) {
+    return rememberMap.get(key);
   }
 
   public long getSeconds() {
     return fSeconds;
   }
 
+  public long getSeed() {
+    return fRandomSeed;
+  }
+
   /** @return */
   public String getSessionID() {
     return fSessionID;
+  }
+
+  /**
+   * Get significant figures for output floating point numbers
+   *
+   * @return
+   */
+  public int getSignificantFigures() {
+    return fSignificantFigures;
   }
 
   /**
@@ -3399,6 +3402,24 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Return the expression at number <code>frame</code> on the caller stack.
+   * 
+   * @param frame the frame number on the stack
+   * @return
+   */
+  public IExpr getStackFrame(int frame) {
+    Deque<IExpr> stack = getStack();
+    Iterator<IExpr> iterator = stack.iterator();
+    while (iterator.hasNext()) {
+      IExpr temp = iterator.next();
+      if (frame-- == 0) {
+        return temp;
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
    * Get the defined step listener or <code>null</code> if no listener is assigned.
    *
    * @return <code>null</code> if no step listener is assigned.
@@ -3407,34 +3428,8 @@ public class EvalEngine implements Serializable {
     return fTraceStack;
   }
 
-  /**
-   * Increment the {@link S#Module} variables counter by <code>1</code> and return the result.
-   *
-   * @return the module counter
-   */
-  public static long incModuleCounter() {
-    return MODULE_COUNTER.incrementAndGet();
-  }
-
-  /**
-   * Increment the {@link S#Module} variables counter by <code>1</code> and append it to the given
-   * prefix.
-   *
-   * @param prefix
-   * @return
-   */
-  public static String uniqueName(String prefix) {
-    return prefix + MODULE_COUNTER.incrementAndGet();
-  }
-
-  /**
-   * Reset the {@link S#Module} or {@link S#With} variables counter to <code>0</code>. Used only in
-   * unit tests.
-   * <p>
-   * <b>Don't reset for reusable EvalEngine's!</b>
-   */
-  public static void resetModuleCounter4JUnit() {
-    MODULE_COUNTER = new AtomicLong();
+  public long getTimeConstrainedMillis() {
+    return fTimeConstrainedMillis;
   }
 
   /**
@@ -3472,20 +3467,11 @@ public class EvalEngine implements Serializable {
 
   /** Initialize this <code>EvalEngine</code> */
   public final void init() {
-    stackBegin();
+    initInstance();
     fAnswer = null;
     fAssumptions = null;
-    S.$Assumptions.clearValue();
-    // fNumericPrecision = 15;
-    fApfloatHelper = null;
-    fApfloatHelperDouble = null;
-    fConstantCounter = 1;
-    fSignificantFigures = 6;
-    fRecursionCounter = 0;
+    S.$Assumptions.clearValue(null);
     fOutputSizeLimit = Config.SHORTEN_STRING_LENGTH;
-    fNumericMode = false;
-    fTogetherMode = false;
-    fNoSimplifyMode = false;
     fEvalLHSMode = false;
     fEvalRHSMode = false;
     fDisabledTrigRules = false;
@@ -3494,35 +3480,35 @@ public class EvalEngine implements Serializable {
     fOnOffUniqueMap = null;
     fOnOffMap = null;
     fDollarSymbolMap = null;
+    fContextPathStack = new ArrayDeque<ContextPath>();
+    fContextPath = ContextPath.initialContext();
+    f$Input = "";
+    f$InputFileName = "";
+    rememberMap = new IdentityHashMap<Object, IExpr>();
+  }
+
+  private void initInstance() {
+    stackBegin();
+    // fNumericPrecision = 15;
+    fApfloatHelper = null;
+    fApfloatHelperDouble = null;
+    fConstantCounter = 1;
+    fSignificantFigures = 6;
+    fNumericMode = false;
+    fEvalLHSMode = false;
+    fEvalRHSMode = false;
+    fDisabledTrigRules = false;
+    fRecursionCounter = 0;
+    fTogetherMode = false;
+    fNoSimplifyMode = false;
     fTraceMode = false;
     fTraceStack = null;
     fCopiedEngine = null;
     fSeconds = 0;
     fModifiedVariablesList = null;
     fMessageShortcut = null;
-    fContextPathStack = new ArrayDeque<ContextPath>();
-    fContextPath = ContextPath.initialContext();
-    f$Input = "";
-    f$InputFileName = "";
-    fOptionsStack = new OptionsStack();
     rubiASTCache = null;
-    rememberMap = new IdentityHashMap<Object, IExpr>();
-  }
-
-  public Deque<IExpr> stackBegin() {
-    fStack = new ArrayDeque<IExpr>(256);
-    return fStack;
-  }
-
-  public void stackPush(IExpr expr) {
-    fStack.push(expr);
-  }
-
-  public IExpr stackPop() {
-    if (fStack.isEmpty()) {
-      return F.NIL;
-    }
-    return fStack.pop();
+    fOptionsStack = new OptionsStack();
   }
 
   /**
@@ -3540,6 +3526,19 @@ public class EvalEngine implements Serializable {
     return getNumericPrecision() > ParserConfig.MACHINE_PRECISION;
   }
 
+  public boolean isDisabledTrigRules() {
+    return fDisabledTrigRules;
+  }
+
+  /**
+   * @return <code>true</code> if the EvalEngine runs in numeric mode and Java <code>double</code>
+   *         numbers should be used for evaluating numeric functions.
+   * @see #isArbitraryMode()
+   */
+  public final boolean isDoubleMode() {
+    return fNumericMode && !isArbitraryMode();
+  }
+
   /**
    * The engine evaluates the left-hand-side of a <code>Set, SetDelayed,...</code> expression.
    *
@@ -3553,26 +3552,117 @@ public class EvalEngine implements Serializable {
     return fEvalRHSMode;
   }
 
-  public final void setEvalRHSMode(boolean evalRHSMode) {
-    fEvalRHSMode = evalRHSMode;
-  }
-
   public final boolean isFileSystemEnabled() {
     return fFileSystemEnabled;
+  }
+
+  /**
+   * Check if the expression <code>expr</code> violates the {@link ISymbo#Listable} constraints.
+   * 
+   * @param argument the argument which should be checked
+   * @param refHeadType the reference head type, which is expected for {@link ISymbol#LISTABLE}
+   * @param refArgSize the reference argument size, which will be set by this method
+   * @param refAssociation the reference association, which will be set by this method
+   * @param errorHead the command head for the error message
+   * @param errorShortcut the message shortcut for the error message
+   * @param errorAST the ast which is evaluated for the error message
+   * @return <code>true</code> if the expression violates the {@link ISymbo#Listable} constraints
+   */
+  private boolean isInvalidListable(IExpr argument, ISymbol refHeadType, int[] refArgSize,
+      IAssociation[] refAssociation, ISymbol errorHead, String errorShortcut, final IAST errorAST) {
+    if (argument.isList() && (refHeadType == S.List)) {
+      if (refArgSize[0] < 0) {
+        refArgSize[0] = ((IAST) argument).argSize();
+      } else {
+        if (refArgSize[0] != ((IAST) argument).argSize()) {
+          // tdlen: Objects of unequal length in `1` cannot be combined.
+          Errors.printMessage(errorHead, errorShortcut, F.list(errorAST), EvalEngine.get());
+          // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
+          return true;
+        }
+      }
+    } else if (argument.isSparseArray() && refHeadType == S.SparseArray) {
+
+      ISparseArray sp = (ISparseArray) argument;
+      int[] dimensions = sp.getDimension();
+      if (dimensions.length > 0) {
+        if (refArgSize[0] < 0) {
+          refArgSize[0] = dimensions[0];
+        } else {
+          if (refArgSize[0] != dimensions[0]) {
+            // Objects of unequal length in `1` cannot be combined.
+            Errors.printMessage(S.Thread, "tdlen", F.list(errorAST), EvalEngine.get());
+            // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
+            return true;
+          }
+        }
+      } else {
+        // Objects of unequal length in `1` cannot be combined.
+        Errors.printMessage(S.Thread, "tdlen", F.list(errorAST), EvalEngine.get());
+        // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
+        return true;
+      }
+    } else {
+      if (argument.isAssociation() && refHeadType == S.Association) {
+        IAssociation association = (IAssociation) argument;
+
+        if (refArgSize[0] < 0) {
+          refArgSize[0] = association.argSize();
+        }
+        if (refArgSize[0] != association.argSize()) {
+          // tdlen: Objects of unequal length in `1` cannot be combined.
+          Errors.printMessage(errorHead, errorShortcut, F.list(errorAST), EvalEngine.get());
+          // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
+          return true;
+        }
+        if (refAssociation[0] != null) {
+          if (refAssociation[0].size() != association.size()) {
+            // The arguments `1` and `2` in `3` are incompatible.
+            Errors.printMessage(S.Association, "incmp",
+                F.List(refAssociation[0], association, errorAST), this);
+            return true;
+          }
+          for (int i = 1; i < association.size(); i++) {
+            if (!refAssociation[0].isKey(association.getRule(i).first())) {
+              // The arguments `1` and `2` in `3` are incompatible.
+              Errors.printMessage(S.Association, "incmp",
+                  F.List(refAssociation[0], association, errorAST), this);
+              return true;
+            }
+          }
+        }
+        refAssociation[0] = association;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * If <code>true</code> the engine does no simplification of &quot;negative {@link S#Plus}
+   * expressions&quot; inside {@link S#Times} expressions in common subexpression determining.
+   * 
+   */
+  public final boolean isNoSimplifyMode() {
+    return fNoSimplifyMode;
+  }
+
+  /**
+   * Test if the arguments of this <code>ast</code> should be evaluated numerically in numeric mode.
+   * 
+   * @param ast
+   * @return
+   */
+  private boolean isNumericArg(final IAST ast) {
+    int id = ast.headID();
+    if (id >= 0) {
+      return Arrays.binarySearch(F.SORTED_NUMERIC_ARGS_IDS, id) >= 0;
+    }
+    return false;
   }
 
   /** @return <code>true</code> if the EvalEngine runs in numeric mode. */
   public final boolean isNumericMode() {
     return fNumericMode;
-  }
-
-  /**
-   * @return <code>true</code> if the EvalEngine runs in numeric mode and Java <code>double</code>
-   *         numbers should be used for evaluating numeric functions.
-   * @see #isArbitraryMode()
-   */
-  public final boolean isDoubleMode() {
-    return fNumericMode && !isArbitraryMode();
   }
 
   /**
@@ -3626,8 +3716,16 @@ public class EvalEngine implements Serializable {
     return fRelaxedSyntax;
   }
 
-  public boolean isDisabledTrigRules() {
-    return fDisabledTrigRules;
+  /**
+   * The engine is in &quot;symbolic evaluation mode&quot;, no assumptions are set and the head
+   * contains no &quot;HOLD....&quot; attribute.
+   *
+   * @param headAttributes the attributes of the built-in header function which should be evaluated
+   * @return <code>true</code> if the engine is in symbolic mode evaluation
+   */
+  public final boolean isSymbolicMode(final int headAttributes) {
+    return !fNumericMode && fAssumptions == null
+        && ((ISymbol.HOLDALLCOMPLETE & headAttributes) == ISymbol.NOATTRIBUTE);
   }
 
   /**
@@ -3643,15 +3741,6 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * If <code>true</code> the engine does no simplification of &quot;negative {@link S#Plus}
-   * expressions&quot; inside {@link S#Times} expressions in common subexpression determining.
-   * 
-   */
-  public final boolean isNoSimplifyMode() {
-    return fNoSimplifyMode;
-  }
-
-  /**
    * If the trace mode is set the system writes an evaluation trace list or if additionally the
    * <i>stop after evaluation mode</i> is set returns the first evaluated result.
    *
@@ -3659,6 +3748,40 @@ public class EvalEngine implements Serializable {
    */
   public final boolean isTraceMode() {
     return fTraceMode;
+  }
+
+  /**
+   * All arguments in <code>ast</code> must be finite inexact numbers.
+   * 
+   * @param symbol
+   * @param ast
+   * @return
+   */
+  private IExpr numericFunction(final ISymbol symbol, final IAST ast) {
+    final IEvaluator evaluator = ((IBuiltInSymbol) symbol).getEvaluator();
+    if (evaluator instanceof IFunctionEvaluator) {
+      // evaluate a built-in function.
+      final IFunctionEvaluator functionEvaluator = (IFunctionEvaluator) evaluator;
+      try {
+        return functionEvaluator.numericFunction(ast, this);
+      } catch (ValidateException ve) {
+        ve.printStackTrace();
+        return Errors.printMessage(ast.topHead(), ve, this);
+      } catch (FlowControlException e) {
+        throw e;
+      } catch (NumberFormatException nfe) {
+        // this happens if org.apfloat.internal.LongApfloatImpl throws
+        // java.lang.NumberFormatException "Infinity is not a valid number"
+        return Errors.printMessage(ast.topHead(), nfe, this);
+      } catch (BackingStorageException | SymjaMathException ve) {
+        return Errors.printMessage(ast.topHead(), ve, this);
+      }
+    }
+    return F.NIL;
+  }
+
+  public Iterator<IdentityHashMap<ISymbol, IASTAppendable>> optionsStackIterator() {
+    return fOptionsStack.iterator();
   }
 
   /**
@@ -3686,18 +3809,127 @@ public class EvalEngine implements Serializable {
     return parser.parse(expression);
   }
 
+  public IdentityHashMap<ISymbol, IASTAppendable> peekOptionsStack() {
+    return fOptionsStack.peek();
+  }
+
+  public void popOptionsStack() {
+    fOptionsStack.pop();
+  }
+
+  private IExpr preevalForwardBackward(final IAST arg1) {
+    VariablesSet variablesSet = new VariablesSet(0, arg1);
+    IAST moduleVariablesList = variablesSet.getVarList();
+
+    java.util.List<IExpr> reapList = getReapList();
+    boolean quietMode = isQuietMode();
+    try {
+      setQuietMode(true);
+      setReapList(null);
+      final java.util.IdentityHashMap<IExpr, ISymbol> variablesMap =
+          new IdentityHashMap<IExpr, ISymbol>();
+      final java.util.IdentityHashMap<ISymbol, IExpr> dummyVariablesMap =
+          new IdentityHashMap<ISymbol, IExpr>();
+      final String varAppend = uniqueName("$");
+      for (int i = 1; i < moduleVariablesList.size(); i++) {
+        IExpr oldSymbol = moduleVariablesList.get(i);
+        ISymbol newSymbol = F.Dummy(oldSymbol.toString() + varAppend);
+        variablesMap.put(oldSymbol, newSymbol);
+        dummyVariablesMap.put(newSymbol, oldSymbol);
+      }
+      // forward substitution
+      IExpr expr = arg1.replaceAll(variablesMap);
+      if (expr.isPresent()) {
+        IExpr temp = evaluate(expr);
+        // backward substitution
+        return temp.replaceAll(dummyVariablesMap).orElse(temp);
+      }
+    } finally {
+      setQuietMode(quietMode);
+      setReapList(reapList);
+    }
+    return F.NIL;
+  }
+
   /**
-   * Returns the level with which messages associated to this engine should be logged.
+   * Pre-evaluate each argument of the <code>ast</code> by first (forward-) substituting all
+   * variables with dummy variables, evaluating the new expression and (backward-) substituting all
+   * dummy variables with the original variables.
    *
-   * <p>
-   * Returns {@link Level#ERROR} unless this engine is in {@link #isQuietMode() quiet-mode}, then
-   * {@link Level#DEBUG} is returned.
-   *
-   * @return the logger-level of this engine. ERROR by default and DEBUG if this engine is in
-   *         quite-mode.
+   * @param ast
+   * @param offset number of the argument, there the pre-evaluation should start
+   * @return
    */
-  public Level getLogLevel() {
-    return isQuietMode() ? Level.DEBUG : Level.ERROR;
+  public IAST preevalForwardBackwardAST(final IAST ast, int offset) {
+    IASTMutable preevaled = F.NIL;
+    for (int i = offset; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (arg.isAST()) {
+        arg = preevalForwardBackward((IAST) arg);
+        if (arg.isPresent()) {
+          if (preevaled.isNIL()) {
+            preevaled = ast.copy();
+          }
+          preevaled.set(i, arg);
+        }
+      }
+    }
+    return preevaled.orElse(ast);
+  }
+
+  /**
+   * Print the trace enabled by the <code>On({head1, head2,...})</code> function.
+   *
+   * @param unevaledExpr the unevaluated expression
+   * @param evaledExpr the evaluated expression
+   */
+  private void printOnOffTrace(IExpr unevaledExpr, IExpr evaledExpr) {
+    boolean showExpr = true;
+    if (fOnOffMap != null) {
+      showExpr = fOnOffMap.containsKey(unevaledExpr.topHead());
+    }
+    if (showExpr) {
+      if (fOnOffUniqueMap != null) {
+        if (fOnOffUniqueMap.containsKey(unevaledExpr)) {
+          return;
+        } else {
+          fOnOffUniqueMap.put(unevaledExpr, evaledExpr);
+        }
+      }
+      PrintStream stream = getOutPrintStream();
+      stream.println("  " + unevaledExpr.toString() + " --> " + evaledExpr.toString() + "\n");
+    }
+  }
+
+  public OptionsStack pushOptionsStack() {
+    fOptionsStack.push();
+    return fOptionsStack;
+  }
+
+  /**
+   * Associates value with key in the {@link EvalEngine#globalASTCache}. If the cache previously
+   * contained a value associated with key, the old value is replaced by value.
+   * 
+   * @param key
+   * @param value
+   */
+  public void putCache(IAST key, IExpr value) {
+    globalASTCache.put(key, value);
+  }
+
+  /**
+   * Associates value with key in the {@link EvalEngine#globalObjectCache}. If the cache previously
+   * contained a value associated with key, the old value is replaced by value.
+   * 
+   * @param key
+   * @param value
+   */
+  public void putObjectCache(IExpr key, Object value) {
+    globalObjectCache.put(key, value);
+  }
+
+  public void putRememberMap(Object key, IExpr value) {
+    rememberMap.put(key, value);
   }
 
   /**
@@ -3707,27 +3939,7 @@ public class EvalEngine implements Serializable {
    * <b>Note:</b> This method should be called before the parsing of a string expression.
    */
   private void reset() {
-    stackBegin();
-    // fNumericPrecision = 15;
-    fApfloatHelper = null;
-    fApfloatHelperDouble = null;
-    fConstantCounter = 1;
-    fSignificantFigures = 6;
-    fNumericMode = false;
-    fEvalLHSMode = false;
-    fEvalRHSMode = false;
-    fDisabledTrigRules = false;
-    fRecursionCounter = 0;
-    fTogetherMode = false;
-    fNoSimplifyMode = false;
-    fTraceMode = false;
-    fTraceStack = null;
-    fCopiedEngine = null;
-    fSeconds = 0;
-    fModifiedVariablesList = null;
-    fMessageShortcut = null;
-    rubiASTCache = null;
-    fOptionsStack = new OptionsStack();
+    initInstance();
 
     if (fOnOffMode && fOnOffUnique) {
       fOnOffUniqueMap = new HashMap<IExpr, IExpr>();
@@ -3751,6 +3963,22 @@ public class EvalEngine implements Serializable {
     }
   }
 
+  public void set$Input(String input) {
+    if (input == null) {
+      f$Input = "";
+    } else {
+      f$Input = input;
+    }
+  }
+
+  public void set$InputFileName(String inputFileName) {
+    if (inputFileName == null) {
+      f$InputFileName = "";
+    } else {
+      f$InputFileName = inputFileName;
+    }
+  }
+
   /**
    * Set the assumptions for this evaluation engine
    *
@@ -3758,6 +3986,46 @@ public class EvalEngine implements Serializable {
    */
   public void setAssumptions(IAssumptions assumptions) {
     this.fAssumptions = assumptions;
+  }
+
+  public void setContext(Context context) {
+    this.fContextPath.setCurrentContext(context);
+  }
+
+  public void setContextPath(ContextPath contextPath) {
+    this.fContextPath = contextPath;
+  }
+
+  public void setDeterminePrecision(IExpr expr, boolean postParserProcessing) {
+    try {
+      // determine the precision of the input before evaluation
+      long precision = expr.determinePrecision(postParserProcessing);
+      if (precision > getNumericPrecision()) {
+        setNumericPrecision(precision);
+      }
+    } catch (RecursionLimitExceeded rle) {
+      //
+    }
+  }
+  // public void setDeterminePrecision(IExpr expr, boolean postParserProcessing) {
+  // try {
+  // // determine the precision of the input before evaluation
+  // long precision = expr.determinePrecision(postParserProcessing);
+  // if (precision > getNumericPrecision()) {
+  // setNumericPrecision(precision);
+  // }
+  // } catch (RecursionLimitExceeded rle) {
+  // //
+  // }
+  // }
+
+  /**
+   * If <code>true</code> disable automatic trigonometric function simplification rules.
+   * 
+   * @param value
+   */
+  public void setDisabledTrigRules(boolean value) {
+    fDisabledTrigRules = value;
   }
 
   /**
@@ -3773,16 +4041,12 @@ public class EvalEngine implements Serializable {
     fDollarSymbolMap.put(dollarSymbol, value);
   }
 
-  public void setContextPath(ContextPath contextPath) {
-    this.fContextPath = contextPath;
-  }
-
-  public void setContext(Context context) {
-    this.fContextPath.setCurrentContext(context);
-  }
-
   public void setErrorPrintStream(final PrintStream errorPrintStream) {
     fErrorPrintStream = errorPrintStream;
+  }
+
+  public final void setEvalRHSMode(boolean evalRHSMode) {
+    fEvalRHSMode = evalRHSMode;
   }
 
   public void setFileSystemEnabled(boolean fFileSystemEnabled) {
@@ -3795,6 +4059,16 @@ public class EvalEngine implements Serializable {
 
   public void setMessageShortcut(final String messageShortcut) {
     fMessageShortcut = messageShortcut;
+  }
+
+  /**
+   * If set to <code>true</code> the engine does no simplification of &quot;negative {@link S#Plus}
+   * expressions&quot; inside {@link S#Times} expressions in common subexpression determining.
+   * 
+   * @param noSimplifyMode
+   */
+  public void setNoSimplifyMode(boolean noSimplifyMode) {
+    this.fNoSimplifyMode = noSimplifyMode;
   }
 
   /**
@@ -3826,28 +4100,6 @@ public class EvalEngine implements Serializable {
       fApfloatHelper = new FixedPrecisionApfloatHelper(precision);
     }
     return fApfloatHelper;
-  }
-
-  public void setSignificantFigures(int figures) {
-    fSignificantFigures = figures;
-  }
-
-  /**
-   * @param outListDisabled if <code>false</code> create a <code>
-   *     LastCalculationsHistory(historyCapacity)</code>, otherwise no history of the last
-   *        calculations will be saved and the <code>Out()</code> function (or % operator) will be
-   *        unevaluated.
-   * @param historyCapacity the number of last entries of the calculations which should be stored.
-   */
-  public void setOutListDisabled(boolean outListDisabled, short historyCapacity) {
-    if (outListDisabled == false) {
-      if (fEvalHistory == null) {
-        fEvalHistory = new EvalHistory(historyCapacity);
-      }
-    } else {
-      fEvalHistory = null;
-    }
-    this.fOutListDisabled = outListDisabled;
   }
 
   /**
@@ -3891,6 +4143,24 @@ public class EvalEngine implements Serializable {
     }
   }
 
+  /**
+   * @param outListDisabled if <code>false</code> create a <code>
+   *     LastCalculationsHistory(historyCapacity)</code>, otherwise no history of the last
+   *        calculations will be saved and the <code>Out()</code> function (or % operator) will be
+   *        unevaluated.
+   * @param historyCapacity the number of last entries of the calculations which should be stored.
+   */
+  public void setOutListDisabled(boolean outListDisabled, short historyCapacity) {
+    if (outListDisabled == false) {
+      if (fEvalHistory == null) {
+        fEvalHistory = new EvalHistory(historyCapacity);
+      }
+    } else {
+      fEvalHistory = null;
+    }
+    this.fOutListDisabled = outListDisabled;
+  }
+
   public void setOutListDisabled(EvalHistory history) {
     this.fEvalHistory = history;
     this.fOutListDisabled = false;
@@ -3898,6 +4168,10 @@ public class EvalEngine implements Serializable {
 
   public void setOutPrintStream(final PrintStream outPrintStream) {
     fOutPrintStream = outPrintStream;
+  }
+
+  public void setOutputSizeLimit(final int i) {
+    fOutputSizeLimit = i;
   }
 
   /**
@@ -3913,13 +4187,17 @@ public class EvalEngine implements Serializable {
     fPackageMode = packageMode;
   }
 
+  /** @param stopRequested The stopRequested to set. */
+  // public void setStopRequested(final boolean stopRequested) {
+  // if (stopRequested && fCopiedEngine != null) {
+  // fCopiedEngine.setStopRequested(true);
+  // }
+  // fCopiedEngine = null;
+  // }
+
   public void setPrintStreamsOf(EvalEngine engine) {
     this.fOutPrintStream = engine.fOutPrintStream;
     this.fErrorPrintStream = engine.fErrorPrintStream;
-  }
-
-  public void setOutputSizeLimit(final int i) {
-    fOutputSizeLimit = i;
   }
 
   /**
@@ -3947,19 +4225,9 @@ public class EvalEngine implements Serializable {
     this.fRelaxedSyntax = fRelaxedSyntax;
   }
 
-  /**
-   * Set the time in milliseconds then the current TimeConstrained operation should stop. <code>-1
-   * </code> is set for Infinity. For nested {@link S#TimeConstrained} calls the earliest time
-   * constraint is used in {@link S#TimeRemaining}
-   *
-   * @param timeConstrainedMillis
-   */
-  public void setTimeConstrainedMillis(final long timeConstrainedMillis) {
-    if (fTimeConstrainedMillis > 0 && timeConstrainedMillis > fTimeConstrainedMillis) {
-      return;
-    }
-    fTimeConstrainedMillis = timeConstrainedMillis;
-  }
+  // public void stopRequest() {
+  // setStopRequested(true);
+  // }
 
   /**
    * Set the time in seconds then the current {@link S#TimeConstrained} operation should stop. For
@@ -3977,14 +4245,6 @@ public class EvalEngine implements Serializable {
     return this.fSeconds;
   }
 
-  public Random getRandom() {
-    return fRandom;
-  }
-
-  public long getSeed() {
-    return fRandomSeed;
-  }
-
   public void setSeed(long seed) {
     fRandomSeed = seed;
     fRandom.setSeed(seed);
@@ -3993,6 +4253,10 @@ public class EvalEngine implements Serializable {
   /** @param string */
   public void setSessionID(final String string) {
     fSessionID = string;
+  }
+
+  public void setSignificantFigures(int figures) {
+    fSignificantFigures = figures;
   }
 
   /**
@@ -4016,12 +4280,19 @@ public class EvalEngine implements Serializable {
     fTraceStack = stepListener;
   }
 
-  /** @param stopRequested The stopRequested to set. */
-  public void setStopRequested(final boolean stopRequested) {
-    if (stopRequested && fCopiedEngine != null) {
-      fCopiedEngine.setStopRequested(true);
+
+  /**
+   * Set the time in milliseconds then the current TimeConstrained operation should stop. <code>-1
+   * </code> is set for Infinity. For nested {@link S#TimeConstrained} calls the earliest time
+   * constraint is used in {@link S#TimeRemaining}
+   *
+   * @param timeConstrainedMillis
+   */
+  public void setTimeConstrainedMillis(final long timeConstrainedMillis) {
+    if (fTimeConstrainedMillis > 0 && timeConstrainedMillis > fTimeConstrainedMillis) {
+      return;
     }
-    fCopiedEngine = null;
+    fTimeConstrainedMillis = timeConstrainedMillis;
   }
 
   /**
@@ -4038,28 +4309,9 @@ public class EvalEngine implements Serializable {
     this.fTogetherMode = togetherMode;
   }
 
-  /**
-   * If set to <code>true</code> the engine does no simplification of &quot;negative {@link S#Plus}
-   * expressions&quot; inside {@link S#Times} expressions in common subexpression determining.
-   * 
-   * @param noSimplifyMode
-   */
-  public void setNoSimplifyMode(boolean noSimplifyMode) {
-    this.fNoSimplifyMode = noSimplifyMode;
-  }
-
   /** @param b */
   public void setTraceMode(final boolean b) {
     this.fTraceMode = b;
-  }
-
-  /**
-   * If <code>true</code> disable automatic trigonometric function simplification rules.
-   * 
-   * @param value
-   */
-  public void setDisabledTrigRules(boolean value) {
-    fDisabledTrigRules = value;
   }
 
   /**
@@ -4071,287 +4323,70 @@ public class EvalEngine implements Serializable {
     return fEvalHistory.size();
   }
 
-  public void stopRequest() {
-    setStopRequested(true);
+  public Deque<IExpr> stackBegin() {
+    fStack = new ArrayDeque<IExpr>(256);
+    return fStack;
+  }
+
+  public IExpr stackPop() {
+    if (fStack.isEmpty()) {
+      return F.NIL;
+    }
+    return fStack.pop();
+  }
+
+  public void stackPush(IExpr expr) {
+    fStack.push(expr);
   }
 
   /**
    * Thread through all lists in the arguments of the IAST (i.e. the ast's head has the attribute
-   * <code>ISymbol.LISTABLE</code>) example: <code>Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}</code>
+   * {@link ISymbol#LISTABLE} example: <code>Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}</code>
    *
-   * @param ast
-   * @param commandHead TODO
-   * @param messageShortcut TODO
+   * @param ast the ast which should be threaded through
+   * @param commandHead for the {@link Errors#printMessage(ISymbol, String, IAST, EvalEngine)}
+   *        method if necessary
+   * @param messageShortcut for the {@link Errors#printMessage(ISymbol, String, IAST, EvalEngine)}
+   *        method if necessary
    * @return the resulting ast with the <code>argHead</code> threaded into each ast argument or
-   *         <code>F.NIL</code>
+   *         {@link F#NIL} if no {@link ISymbol#LISTABLE} arguments were found.
    */
   public IASTMutable threadASTListArgs(final IAST ast, ISymbol commandHead,
       String messageShortcut) {
-    ISymbol[] refHeadType = new ISymbol[] {null};
+    ISymbol determineHead = null;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr expr = ast.get(i);
+      if (expr.isList()) {
+        determineHead = S.List;
+        break;
+      }
+      if (expr.isAssociation()) {
+        determineHead = S.Association;
+      }
+      if (expr.isSparseArray() && determineHead != S.Association) {
+        determineHead = S.SparseArray;
+      }
+    }
+    if (determineHead == null) {
+      // no Listable argument type found!
+      return F.NIL;
+    }
+    final ISymbol listableHead = determineHead;
     int[] refArgSize = new int[] {-1};
     IAssociation[] refAssociation = new IAssociation[] {null};
-    if (ast.exists(x -> isValidListable(x, ast, commandHead, messageShortcut, refHeadType,
-        refArgSize, refAssociation))) {
+    if (ast.exists(x -> isInvalidListable(x, listableHead, refArgSize, refAssociation, commandHead,
+        messageShortcut, ast))) {
+      // Errors.printMessage called in isValidListable()
       return F.NIL;
     }
     if (refArgSize[0] != -1) {
-      IASTMutable result = EvalAttributes.threadList(ast, refHeadType[0], ast.head(), refArgSize[0],
+      IASTMutable result = EvalAttributes.threadList(ast, listableHead, ast.head(), refArgSize[0],
           refAssociation[0]);
       result.addEvalFlags(IAST.IS_LISTABLE_THREADED);
       return result;
     }
     ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
+
     return F.NIL;
-  }
-
-  private boolean isValidListable(IExpr expr, final IAST ast, ISymbol commandHead,
-      String messageShortcut, ISymbol[] refHeadType, int[] refArgSize,
-      IAssociation[] refAssociation) {
-    if (expr.isList()) {
-      if (refHeadType[0] == null) {
-        refHeadType[0] = S.List;
-      }
-      if (refArgSize[0] < 0) {
-        refArgSize[0] = ((IAST) expr).argSize();
-      } else {
-        if (refArgSize[0] != ((IAST) expr).argSize()) {
-          // tdlen: Objects of unequal length in `1` cannot be combined.
-          Errors.printMessage(commandHead, messageShortcut, F.list(ast), EvalEngine.get());
-          // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
-          return true;
-        }
-      }
-    } else if (expr.isSparseArray()) {
-      if (refHeadType[0] == null) {
-        refHeadType[0] = S.SparseArray;
-      }
-      ISparseArray sp = (ISparseArray) expr;
-      int[] dimensions = sp.getDimension();
-      if (dimensions.length > 0) {
-        if (refArgSize[0] < 0) {
-          refArgSize[0] = dimensions[0];
-        } else {
-          if (refArgSize[0] != dimensions[0]) {
-            // Objects of unequal length in `1` cannot be combined.
-            Errors.printMessage(S.Thread, "tdlen", F.list(ast), EvalEngine.get());
-            // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
-            return true;
-          }
-        }
-      }
-    } else {
-      if (expr.isAssociation()) {
-        IAssociation association = (IAssociation) expr;
-        refHeadType[0] = S.Association;
-        if (refArgSize[0] < 0) {
-          refArgSize[0] = association.argSize();
-        }
-        if (refArgSize[0] != association.argSize()) {
-          // tdlen: Objects of unequal length in `1` cannot be combined.
-          Errors.printMessage(commandHead, messageShortcut, F.list(ast), EvalEngine.get());
-          // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
-          return true;
-        }
-        if (refAssociation[0] != null) {
-          if (refAssociation[0].size() != association.size()) {
-            // The arguments `1` and `2` in `3` are incompatible.
-            Errors.printMessage(S.Association, "incmp", F.List(refAssociation[0], association, ast),
-                this);
-            return true;
-          }
-          for (int i = 1; i < association.size(); i++) {
-            if (!refAssociation[0].isKey(association.getRule(i).first())) {
-              // The arguments `1` and `2` in `3` are incompatible.
-              Errors.printMessage(S.Association, "incmp",
-                  F.List(refAssociation[0], association, ast), this);
-              return true;
-            }
-          }
-        }
-        refAssociation[0] = association;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Pre-evaluate each argument of the <code>ast</code> by first (forward-) substituting all
-   * variables with dummy variables, evaluating the new expression and (backward-) substituting all
-   * dummy variables with the original variables.
-   *
-   * @param ast
-   * @param offset number of the argument, there the pre-evaluation should start
-   * @return
-   */
-  public IAST preevalForwardBackwardAST(final IAST ast, int offset) {
-    IASTMutable preevaled = F.NIL;
-    for (int i = offset; i < ast.size(); i++) {
-      IExpr arg = ast.get(i);
-      if (arg.isAST()) {
-        arg = preevalForwardBackward((IAST) arg);
-        if (arg.isPresent()) {
-          if (preevaled.isNIL()) {
-            preevaled = ast.copy();
-          }
-          preevaled.set(i, arg);
-        }
-      }
-    }
-    return preevaled.orElse(ast);
-  }
-
-  private IExpr preevalForwardBackward(final IAST arg1) {
-    VariablesSet variablesSet = new VariablesSet(0, arg1);
-    IAST moduleVariablesList = variablesSet.getVarList();
-
-    java.util.List<IExpr> reapList = getReapList();
-    boolean quietMode = isQuietMode();
-    try {
-      setQuietMode(true);
-      setReapList(null);
-      final java.util.IdentityHashMap<IExpr, ISymbol> variablesMap =
-          new IdentityHashMap<IExpr, ISymbol>();
-      final java.util.IdentityHashMap<ISymbol, IExpr> dummyVariablesMap =
-          new IdentityHashMap<ISymbol, IExpr>();
-      final String varAppend = uniqueName("$");
-      for (int i = 1; i < moduleVariablesList.size(); i++) {
-        IExpr oldSymbol = moduleVariablesList.get(i);
-        ISymbol newSymbol = F.Dummy(oldSymbol.toString() + varAppend);
-        variablesMap.put(oldSymbol, newSymbol);
-        dummyVariablesMap.put(newSymbol, oldSymbol);
-      }
-      // forward substitution
-      IExpr expr = arg1.replaceAll(variablesMap);
-      if (expr.isPresent()) {
-        IExpr temp = evaluate(expr);
-        // backward substitution
-        return temp.replaceAll(dummyVariablesMap).orElse(temp);
-      }
-    } finally {
-      setQuietMode(quietMode);
-      setReapList(reapList);
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Retrieves the {@link FixedPrecisionApfloatHelper} instance for fixed precision calculations
-   * associated with the current {@link EvalEngine}.
-   *
-   * @return the {@link FixedPrecisionApfloatHelper} instance for the current evaluation engine
-   */
-  public static FixedPrecisionApfloatHelper getApfloat() {
-    return getApfloat(get());
-  }
-
-  /**
-   * Retrieves the {@link FixedPrecisionApfloatHelper} instance for fixed precision calculations
-   * associated with the specified {@link EvalEngine}. If the fApfloatHelper field in the provided
-   * engine is <code>null</code>, a new instance of {@link FixedPrecisionApfloatHelper} is created
-   * with a precision of <code>{@link Config#MAXPRECISIONAPFLOAT} - </code>1.
-   * 
-   * @param engine the {@link EvalEngine} instance for which the {@link FixedPrecisionApfloatHelper}
-   *        is retrieved
-   * @return the {@link FixedPrecisionApfloatHelper} instance for the given evaluation engine
-   */
-  public static FixedPrecisionApfloatHelper getApfloat(EvalEngine engine) {
-    FixedPrecisionApfloatHelper h = engine.fApfloatHelper;
-    if (h == null) {
-      h = new FixedPrecisionApfloatHelper(Config.MAX_PRECISION_APFLOAT - 1);
-    }
-    return h;
-  }
-
-
-  /**
-   * Get the {@link FixedPrecisionApfloatHelper} for calculations with
-   * {@link ParserConfig#MACHINE_PRECISION}.
-   * 
-   * @return
-   */
-  public static FixedPrecisionApfloatHelper getApfloatDouble() {
-    return getApfloatDouble(get());
-  }
-
-  /**
-   * Retrieves the {@link FixedPrecisionApfloatHelper} instance for calculations with
-   * {@link ParserConfig#MACHINE_PRECISION}. If the internal <code>fApfloatHelperDouble</code> field
-   * in the provided {@link EvalEngine} is <code>null</code>, a new instance of
-   * {@link FixedPrecisionApfloatHelper} is created with a precision of
-   * <code>{@link ParserConfig#MACHINE_PRECISION} + 1</code>.
-   *
-   * @param engine the {@link EvalEngine} instance for which the {@link FixedPrecisionApfloatHelper}
-   *        is retrieved
-   * @return the {@link FixedPrecisionApfloatHelper} instance for the given evaluation engine
-   */
-  public static FixedPrecisionApfloatHelper getApfloatDouble(EvalEngine engine) {
-    FixedPrecisionApfloatHelper h = engine.fApfloatHelperDouble;
-    if (h == null) {
-      h = new FixedPrecisionApfloatHelper(ParserConfig.MACHINE_PRECISION + 1);
-    }
-    return h;
-  }
-
-  /**
-   * Return the assigned value for a '$...' {@link IBuiltInSymbol}.
-   * 
-   * @param dollarSymbol
-   * @return {@link F#NIL} if no value is assigned.
-   */
-  public IExpr getDollarValue(IBuiltInSymbol dollarSymbol) {
-    if (fDollarSymbolMap != null) {
-      IExpr expr = fDollarSymbolMap.get(dollarSymbol);
-      return expr == null ? F.NIL : expr;
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Return the counter, how often the experimental message was printed.
-   *
-   * @param symbol
-   * @return
-   */
-  public int getExperimentalCounter(IBuiltInSymbol symbol) {
-    Integer counter = experimentalSymbols.get(symbol);
-    if (counter == null) {
-      return 0;
-    }
-    return counter;
-  }
-
-  /**
-   * Return the expression at number <code>frame</code> on the caller stack.
-   * 
-   * @param frame the frame number on the stack
-   * @return
-   */
-  public IExpr getStackFrame(int frame) {
-    Deque<IExpr> stack = getStack();
-    Iterator<IExpr> iterator = stack.iterator();
-    while (iterator.hasNext()) {
-      IExpr temp = iterator.next();
-      if (frame-- == 0) {
-        return temp;
-      }
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Set the{@link FixedPrecisionApfloatHelper} instance.
-   *
-   * @param helper
-   */
-  public static void setApfloat(final FixedPrecisionApfloatHelper helper) {
-    get().fApfloatHelper = helper;
-  }
-
-  public IExpr getRemember(Object key) {
-    return rememberMap.get(key);
-  }
-
-  public void putRememberMap(Object key, IExpr value) {
-    rememberMap.put(key, value);
   }
 }

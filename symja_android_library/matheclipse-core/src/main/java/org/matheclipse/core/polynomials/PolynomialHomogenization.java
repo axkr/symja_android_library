@@ -8,6 +8,7 @@ import java.util.TreeMap;
 import java.util.function.Function;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.ReduceVariableEqual;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -483,15 +484,21 @@ public class PolynomialHomogenization {
       final IAST ast = (IAST) expression;
       if (ast.isPlus() || ast.isTimes()) {
         IASTAppendable newAST = F.ast(ast.head(), ast.size());
-        IExpr temp = ast.arg1();
-        newAST.append(replaceForwardRecursive(temp));
+        IExpr temp = replaceForwardRecursive(ast.arg1());
+        if (temp.isNIL()) {
+          return F.NIL;
+        }
+        newAST.append(temp);
         for (int i = 2; i < ast.size(); i++) {
-          temp = ast.get(i);
-          newAST.append(replaceForwardRecursive(temp));
+          temp = replaceForwardRecursive(ast.get(i));
+          if (temp.isNIL()) {
+            return F.NIL;
+          }
+          newAST.append(temp);
         }
         return newAST;
       } else if (ast.isPower()) {
-        IExpr power = replaceExpression(ast);
+        final IExpr power = replaceExpression(ast);
         if (power.isPresent()) {
           return power;
         }
@@ -512,8 +519,15 @@ public class PolynomialHomogenization {
           IAST plusAST = (IAST) exp;
           if (plusAST.first().isInteger()) {
             IExpr coefficient = S.Power.of(base, plusAST.first());
-            return F.Times(replaceForwardRecursive(coefficient),
-                replaceForwardRecursive(F.Power(base, plusAST.rest().oneIdentity0())));
+            IExpr a1 = replaceForwardRecursive(coefficient);
+            if (a1.isNIL()) {
+              return F.NIL;
+            }
+            IExpr a2 = replaceForwardRecursive(F.Power(base, plusAST.rest().oneIdentity0()));
+            if (a2.isNIL()) {
+              return F.NIL;
+            }
+            return F.Times(a1, a2);
           }
         }
 
@@ -655,15 +669,33 @@ public class PolynomialHomogenization {
    * @return
    */
   public IExpr replaceDenominatorBackwardLCM(final ISymbol symbol, IExpr resultValue) {
-    IExpr t = substitutedVariables.get(symbol);
-    if (t != null && t.isSymbol()) {
-      IInteger denominatorLCM = getLCM(symbol);
-      if (denominatorLCM.isOne()) {
-        return resultValue;
+    final IExpr t = substitutedVariables.get(symbol);
+    if (t != null) {
+      final IInteger denominatorLCM = getLCM(symbol);
+      if (t.isSymbol()) {
+        if (denominatorLCM.isOne()) {
+          return resultValue;
+        }
+        return F.Power(resultValue, denominatorLCM);
+      } else {
+        final VariablesSet varSet = new VariablesSet(t);
+        if (varSet.size() == 1) {
+          IExpr solveVar = varSet.firstVariable();
+          if (t.isAST1() && t.head().isSymbol() && t.first().equals(solveVar)) {
+            final IExpr reduced =
+                ReduceVariableEqual.reduce(F.Equal(t, resultValue), solveVar, false);
+            if (reduced.isPresent()) {
+              if (denominatorLCM.isOne()) {
+                return reduced;
+              }
+              return F.Power(reduced, denominatorLCM);
+            }
+          }
+        }
       }
-      return F.Power(resultValue, denominatorLCM);
     }
     return F.NIL;
+
   }
 
   /**

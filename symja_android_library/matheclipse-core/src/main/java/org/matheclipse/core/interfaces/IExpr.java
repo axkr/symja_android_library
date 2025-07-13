@@ -1128,8 +1128,44 @@ public interface IExpr
     return -1;
   }
 
+  default IExpr diff(IExpr x) {
+    return F.D.of(this, x);
+  }
+
   default IExpr digamma() {
     return F.NIL;
+  }
+
+  default IExpr dir(ISymbol x, int cdir) {
+    if (isZero()) {
+      return F.C0;
+    }
+
+    IInteger minexp = F.C0;
+    IExpr arg = this;
+    IExpr coeff = F.C0;
+    while (arg.isPresent()) {
+      minexp = minexp.add(F.C1);
+      arg = arg.diff(x);
+      coeff = arg.subs(x, F.C0);
+      if (coeff.isIndeterminate()) {
+        coeff = arg.limit(x, F.C0);
+        if (coeff.isComplexInfinity()) {
+          try {
+            coeff = arg.leadTerm(x).first();
+            if (coeff.has(log(x))) {
+              throw new ValueError("");
+            }
+          } catch (ValueError ve) {
+            coeff = arg.limit(x, F.C0);
+          }
+          if (!coeff.isZero()) {
+            break;
+          }
+        }
+      }
+    }
+    return F.Times(coeff, F.Power(F.ZZ(cdir), minexp));
   }
 
   @Override
@@ -1527,6 +1563,7 @@ public interface IExpr
     return F.NIL;
   }
 
+
   /**
    * Evaluate an expression if unequal {@link F#NIL} or otherwise return <code>other</code>
    * 
@@ -1551,7 +1588,6 @@ public interface IExpr
   default boolean exists(Predicate<? super IExpr> predicate) {
     return false;
   }
-
 
   @Override
   default IExpr exp() {
@@ -1601,13 +1637,13 @@ public interface IExpr
     return second();
   }
 
+  default IExpr factorial() {
+    return F.NIL;
+  }
+
   @Override
   default ElemFactory<IExpr> factory() {
     return ExprRingFactory.CONST;
-  }
-
-  default IExpr factorial() {
-    return F.NIL;
   }
 
   default IExpr fibonacci(IExpr arg2) {
@@ -1615,11 +1651,13 @@ public interface IExpr
   }
 
   /**
-   * Get the first element of this <code>AST</code> list (i.e. get(1)). Return <code>F.NIL</code> if
-   * this object isn't an <code>AST</code>.
+   * Get the first element of this <code>AST</code> list (i.e. get(1)). Return {@link F#NIL} if this
+   * object isn't an <code>AST</code>.
    *
-   * @return the second argument of the function represented by this <code>AST</code> or <code>F.NIL
-   *     </code>.
+   * @return the second argument of the function represented by this <code>AST</code> or
+   *         {@link F#NIL}.
+   * @see #last()
+   * @see #rest()
    */
   default IExpr first() {
     return F.NIL;
@@ -1756,6 +1794,11 @@ public interface IExpr
     return F.NIL;
   }
 
+  @Override
+  default IExpr getAddendum() {
+    return isFinite() ? subtract(re()) : zero();
+  }
+
   /**
    * Return <code>this.get(position)</code> if <code>argSize() >= position</code>, otherwise return
    * <code>defaultValue</code>
@@ -1766,6 +1809,7 @@ public interface IExpr
   default IExpr getArg(int position, IExpr defaultValue) {
     return defaultValue;
   }
+
 
   /**
    * Get the element at the specified <code>index</code> if this object is of type
@@ -1779,15 +1823,9 @@ public interface IExpr
   }
 
   @Override
-  default IExpr getAddendum() {
-    return isFinite() ? subtract(re()) : zero();
-  }
-
-  @Override
   public default Field<IExpr> getField() {
     return F.EXPR_FIELD;
   }
-
 
   default IExpr getOptionalValue() {
     return null;
@@ -2413,6 +2451,34 @@ public interface IExpr
    *
    * @param header the header element at position 0, which should be tested
    * 
+   * @see #isAST(IExpr)
+   */
+  default boolean isAST(final IBuiltInSymbol header) {
+    return false;
+  }
+
+  /**
+   * Test if this expression is an {@link IAST} function, which contains the given <b>header
+   * element</b> at index position <code>0</code> and optional <b>argument elements</b> at the index
+   * positions <code>1..(length-1)</code>. If this test gives <code>true</code> this expression is
+   * not an <b>atomic expression</b>.
+   *
+   * @param header the header element at position 0, which should be tested
+   * @param length the size the AST expression must have (<b>inclusive head element</b>)
+   * 
+   * @see #isAtom()
+   */
+  default boolean isAST(final IBuiltInSymbol header, int length) {
+    return false;
+  }
+
+  /**
+   * Test if this expression is an AST function, which contains the given <b>header element</b> at
+   * index position <code>0</code> and some optional <b>argument elements</b> at the index positions
+   * <code>1..(size()-1)</code>. Therefore this expression is not an <b>atomic expression</b>.
+   *
+   * @param header the header element at position 0, which should be tested
+   * 
    * @see #isAtom()
    */
   default boolean isAST(IExpr header) {
@@ -2431,10 +2497,6 @@ public interface IExpr
    * @see #isAtom()
    */
   default boolean isAST(IExpr header, int length) {
-    return false;
-  }
-
-  default boolean isAST(IExpr header, int length, Predicate<IExpr> pred) {
     return false;
   }
 
@@ -2468,6 +2530,10 @@ public interface IExpr
    * @see #isAtom()
    */
   default boolean isAST(IExpr header, int minLength, int maxLength) {
+    return false;
+  }
+
+  default boolean isAST(IExpr header, int length, Predicate<IExpr> pred) {
     return false;
   }
 
@@ -2652,6 +2718,14 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is a built-in function (i.e. <code>this instanceof IAST</code> and
+   * <code>head() instanceof IBuiltInSymbol</code>)
+   */
+  default boolean isBuiltInFunction() {
+    return false;
+  }
+
+  /**
    * Test if this expression is a symbol (instanceof {@link BuiltInSymbol}, {@link BuiltInDummy},
    * {@link IBuiltInSymbol})
    */
@@ -2665,14 +2739,6 @@ public interface IExpr
    */
   default boolean isBuiltInSymbolID() {
     return this instanceof BuiltInSymbol;
-  }
-
-  /**
-   * Test if this expression is a built-in function (i.e. <code>this instanceof IAST</code> and
-   * <code>head() instanceof IBuiltInSymbol</code>)
-   */
-  default boolean isBuiltInFunction() {
-    return false;
   }
 
   /**
@@ -3037,6 +3103,18 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is representing symbolic or numeric infinities.
+   * 
+   * @see #isInfinite()
+   * @see #isInfinity()
+   * @see #isNegativeInfinity()
+   */
+  @Override
+  default boolean isFinite() {
+    return !isDirectedInfinity();
+  }
+
+  /**
    * Test if this expression is an {@link IAST} list, which contains a <b>header element</b> (i.e. a
    * function symbol like for example <code>Dot, Plus or Times</code>) with attribute
    * {@link ISymbol#FLAT} at index position <code>0</code> and some optional <b>argument
@@ -3111,15 +3189,6 @@ public interface IExpr
    */
   default boolean isFree(Predicate<IExpr> predicate, boolean heads) {
     return !predicate.test(this);
-  }
-
-  /**
-   * Returns <code>true</code> if <code>this</code> is free of any special symbols
-   * {@link S#Indeterminate} or {@link S#DirectedInfinity}.
-   */
-  default boolean isSpecialsFree() {
-    Predicate<IExpr> predicate = x -> x.equals(S.DirectedInfinity) || x.equals(S.Indeterminate);
-    return isFree(predicate, true);
   }
 
   /**
@@ -3266,11 +3335,6 @@ public interface IExpr
     return false;
   }
 
-  @Override
-  default boolean isInfinite() {
-    return false;
-  }
-
   /**
    * Test if this expression is an inexact number. I.e. an instance of type <code>INum</code> or
    * <code>IComplexNum</code>.
@@ -3286,10 +3350,21 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is representing <code>Infinity</code> (i.e. <code>
-   * Infinity->DirectedInfinity[1]</code>)
-   *
-   * @return
+   * Test if this expression is representing symbolic or numeric infinities.
+   * 
+   * @see #isFinite()
+   * @see #isInfinity()
+   * @see #isNegativeInfinity()
+   */
+  @Override
+  default boolean isInfinite() {
+    return isDirectedInfinity();
+  }
+
+  /**
+   * Test if this expression is representing symbolic <code>Infinity</code>(represented in Java as
+   * {@link F#CInfinity}. It does not test for &quot;numeric infinity&quot; (e.g. like in
+   * {@link Double#POSITIVE_INFINITY}
    */
   default boolean isInfinity() {
     return false;
@@ -3743,6 +3818,11 @@ public interface IExpr
     return false;
   }
 
+  @Override
+  default boolean isNaN() {
+    return false;
+  }
+
   /**
    * Test if this object is a negative signed number. For an <code>IAST</code> object the method
    * checks, if it is a numeric constant. If the <code>IAST</code> object evaluates to a negative
@@ -3764,10 +3844,9 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is representing <code>-Infinity</code> (i.e. <code>
-   * -Infinity->DirectedInfinity[-1]</code>)
-   *
-   * @return
+   * Test if this expression is representing symbolic <code>-Infinity</code> (represented in Java as
+   * {@link F#CNInfinity}. It does not test for &quot;numeric infinity&quot; (e.g. like in
+   * {@link Double#NEGATIVE_INFINITY}).
    */
   default boolean isNegativeInfinity() {
     return false;
@@ -3914,6 +3993,7 @@ public interface IExpr
     return false;
   }
 
+
   default boolean isNotDefined() {
     return isIndeterminate() || isDirectedInfinity();
   }
@@ -3924,12 +4004,6 @@ public interface IExpr
    * @return
    */
   default public boolean isNotEmpty() {
-    return false;
-  }
-
-
-  @Override
-  default boolean isNaN() {
     return false;
   }
 
@@ -4154,6 +4228,7 @@ public interface IExpr
     return isOne();
   }
 
+
   /**
    * Test if this expression is an AST list, which contains a <b>header element</b> (i.e. a function
    * symbol like for example <code>Plus or Times</code>) with attribute <code>OneIdentity</code> at
@@ -4167,7 +4242,6 @@ public interface IExpr
   default boolean isOneIdentityAST1() {
     return false;
   }
-
 
   /**
    * Test if this expression is the <code>Optional</code> function <code>Optional[&lt;pattern&gt;]
@@ -4394,7 +4468,7 @@ public interface IExpr
    * @param maxDegree the maximum degree of the polynomial; maxDegree must be greater 0
    * @return
    */
-  default boolean isPolynomialOfMaxDegree(ISymbol variable, long maxDegree) {
+  default boolean isPolynomialOfMaxDegree(IExpr variable, long maxDegree) {
     return isPolynomial(F.List(variable));
   }
 
@@ -4433,11 +4507,25 @@ public interface IExpr
   /**
    * Test if this expression equals <code>0</code> in symbolic or numeric mode. For the numeric test
    * multiple random numbers with a <code>Chop()</code> function test are used.
-   *
+   * 
    * @param fastTest checks only numerical; no symbolic tests are tried.
    * @return
    */
   default boolean isPossibleZero(boolean fastTest) {
+    return isPossibleZero(fastTest, Config.SPECIAL_FUNCTIONS_TOLERANCE);
+  }
+
+  /**
+   * Test if this expression equals <code>0</code> in symbolic or numeric mode. For the numeric test
+   * multiple random numbers with a <code>Chop()</code> function test are used.
+   * Config.SPECIAL_FUNCTIONS_TOLERANCE
+   * 
+   * @param fastTest checks only numerical; no symbolic tests are tried.
+   * @param tolerance the tolerance for the numerical test, typically
+   *        {@link Config#SPECIAL_FUNCTIONS_TOLERANCE}
+   * @return
+   */
+  default boolean isPossibleZero(boolean fastTest, double tolerance) {
     return isZero();
   }
 
@@ -4650,9 +4738,8 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a relational binary operation
-   * {@link S#Equal},{@link S#Unequal},@link S#GreaterEqual},{@link S#LessEqual},@link S#Greater} or
-   * {@link S#Less}
+   * Test if this expression is a relational binary operation {@link S#Equal}, {@link S#Unequal},
+   * {@link S#GreaterEqual}, {@link S#LessEqual}, {@link S#Greater} or {@link S#Less}
    * 
    * @return
    */
@@ -4821,6 +4908,15 @@ public interface IExpr
    */
   default boolean isSparseArray() {
     return false;
+  }
+
+  /**
+   * Returns <code>true</code> if <code>this</code> is free of any special symbols
+   * {@link S#Indeterminate} or {@link S#DirectedInfinity}.
+   */
+  default boolean isSpecialsFree() {
+    Predicate<IExpr> predicate = x -> x.equals(S.DirectedInfinity) || x.equals(S.Indeterminate);
+    return isFree(predicate, true);
   }
 
   /**
@@ -5102,7 +5198,8 @@ public interface IExpr
     if (isNumber()) {
       return isZero();
     }
-    return isAST() && PredicateQ.isPossibleZeroQ((IAST) this, false, EvalEngine.get());
+    return isAST() && PredicateQ.isPossibleZeroQ((IAST) this, false,
+        Config.SPECIAL_FUNCTIONS_TOLERANCE, EvalEngine.get());
     // PredicateQ.isZeroTogether(this, EvalEngine.get());
   }
 
@@ -5138,12 +5235,13 @@ public interface IExpr
   }
 
   /**
-   * Get the last element of the <code>AST</code> list (i.e. get(size()-1). Return <code>F.NIL
-   * </code> if this object isn't an <code>AST</code> or has <code>0</code> arguments (i.e. only a
-   * header element)
+   * Get the last element of the <code>AST</code> list (i.e. get(size()-1). Return {@link F#NIL} if
+   * this object isn't an <code>AST</code> or has <code>0</code> arguments (i.e. only a header
+   * element)
    *
    * @return the last argument of the function represented by this <code>AST</code> or {@link F#NIL}
-   * @see IExpr#head()
+   * @see #first()
+   * @see #rest()
    */
   default IExpr last() {
     return F.NIL;
@@ -5250,6 +5348,8 @@ public interface IExpr
     return F.NIL;
   }
 
+
+
   /**
    * Evaluate {@link S#Less} directly if both arguments are real numbers, otherwise evaluate the
    * built-in <code>Less</code> function.
@@ -5279,8 +5379,6 @@ public interface IExpr
     return F.LessEqual(this, a1)//
         .eval();
   }
-
-
 
   /**
    * Compare if <code>this <= that</code:
@@ -5343,6 +5441,36 @@ public interface IExpr
    */
   public default IExpr lessThan(int other) {
     return lessThan(F.ZZ(other));
+  }
+
+  /**
+   * Compute limit x->xlim.
+   * 
+   * @param x
+   * @param xlim
+   * @param dir
+   * @return
+   */
+  default IExpr limit(IExpr x, IExpr xlim) {
+    return limit(x, xlim, "+");
+  }
+
+  /**
+   * Compute limit x->xlim.
+   * 
+   * @param x
+   * @param xlim
+   * @param dir
+   * @return
+   */
+  default IExpr limit(IExpr x, IExpr xlim, String dir) {
+    IAST direction = F.Rule(xlim, S.Reals);
+    if (dir.equals("+")) {
+      direction = F.Rule(xlim, F.CN1);
+    } else if (dir.equals("-")) {
+      direction = F.Rule(xlim, F.C1);
+    }
+    return F.Limit.of(this, F.Rule(x, xlim), direction);
   }
 
   /**
@@ -5416,72 +5544,6 @@ public interface IExpr
    */
   default IExpr[] linearPower(IExpr variable) {
     return null;
-  }
-
-  default IExpr dir(ISymbol x, int cdir) {
-    if (isZero()) {
-      return F.C0;
-    }
-
-    IInteger minexp = F.C0;
-    IExpr arg = this;
-    IExpr coeff = F.C0;
-    while (arg.isPresent()) {
-      minexp = minexp.add(F.C1);
-      arg = arg.diff(x);
-      coeff = arg.subs(x, F.C0);
-      if (coeff.isIndeterminate()) {
-        coeff = arg.limit(x, F.C0);
-        if (coeff.isComplexInfinity()) {
-          try {
-            coeff = arg.leadTerm(x).first();
-            if (coeff.has(log(x))) {
-              throw new ValueError("");
-            }
-          } catch (ValueError ve) {
-            coeff = arg.limit(x, F.C0);
-          }
-          if (!coeff.isZero()) {
-            break;
-          }
-        }
-      }
-    }
-    return F.Times(coeff, F.Power(F.ZZ(cdir), minexp));
-  }
-
-  default IExpr diff(IExpr x) {
-    return F.D.of(this, x);
-  }
-
-  /**
-   * Compute limit x->xlim.
-   * 
-   * @param x
-   * @param xlim
-   * @param dir
-   * @return
-   */
-  default IExpr limit(IExpr x, IExpr xlim) {
-    return limit(x, xlim, "+");
-  }
-
-  /**
-   * Compute limit x->xlim.
-   * 
-   * @param x
-   * @param xlim
-   * @param dir
-   * @return
-   */
-  default IExpr limit(IExpr x, IExpr xlim, String dir) {
-    IAST direction = F.Rule(xlim, S.Reals);
-    if (dir.equals("+")) {
-      direction = F.Rule(xlim, F.CN1);
-    } else if (dir.equals("-")) {
-      direction = F.Rule(xlim, F.C1);
-    }
-    return F.Limit.of(this, F.Rule(x, xlim), direction);
   }
 
   @Override
@@ -6284,11 +6346,12 @@ public interface IExpr
 
   /**
    * Get the rest of the elements of this <code>AST</code> or <code>ASTAssociation</code> list.
-   * Return <code>F.NIL</code> if this object isn't an <code>AST</code>.
+   * Return {@link F#NIL} if this object isn't an <code>AST</code>.
    *
    * @return the rest arguments of the function represented by this <code>AST</code> with the first
-   *         argument removed.
-   * @see IExpr#head()
+   *         argument removed or {@link F#NIL}
+   * @see #first()
+   * @see #last()
    */
   default IAST rest() {
     return F.NIL;
@@ -6471,18 +6534,6 @@ public interface IExpr
 
   /**
    * The subs method replaces all instances of <code>x</code> in an expression with an
-   * <code>y</code> expression.
-   * 
-   * @param x
-   * @param y
-   * @return
-   */
-  default IExpr subs(IExpr x, IExpr y) {
-    return subs(F.List(F.Rule(x, y)));
-  }
-
-  /**
-   * The subs method replaces all instances of <code>x</code> in an expression with an
    * <code>y</code> expression. Substitutes similar to the Sympy <code>subs()</code> method.
    * 
    * @param listOfRules
@@ -6499,26 +6550,15 @@ public interface IExpr
   }
 
   /**
-   * Replaces all instances of <code>x</code> in an expression with an <code>y</code> expression or
-   * returns <code>this</code>.
+   * The subs method replaces all instances of <code>x</code> in an expression with an
+   * <code>y</code> expression.
    * 
    * @param x
    * @param y
    * @return
    */
-  default IExpr xreplace(IExpr x, IExpr y) {
-    return replaceAll(F.Rule(x, y)).orElse(this);
-  }
-
-  /**
-   * Replaces all instances of the <code>left-hand-side</code> of the rules in list with the
-   * <code>right-hand-side</code> of the correponding rule or returns <code>this</code>.
-   * 
-   * @param listOfRules
-   * @return
-   */
-  default IExpr xreplace(IAST listOfRules) {
-    return replaceAll(listOfRules).orElse(this);
+  default IExpr subs(IExpr x, IExpr y) {
+    return subs(F.List(F.Rule(x, y)));
   }
 
   @Override
@@ -6955,6 +6995,11 @@ public interface IExpr
     return F.NIL;
   }
 
+  default Set<ISymbol> variables() {
+    VariablesSet varSet = new VariablesSet();
+    return varSet.toSymbolSet();
+  }
+
   /**
    * Convert the variables (i.e. expressions of type <code>ISymbol</code> which aren't constants) in
    * this expression into Slot[] s.
@@ -6968,14 +7013,32 @@ public interface IExpr
     return this;
   }
 
-  default IExpr zero() {
-    return F.C0;
+  /**
+   * Replaces all instances of the <code>left-hand-side</code> of the rules in list with the
+   * <code>right-hand-side</code> of the correponding rule or returns <code>this</code>.
+   * 
+   * @param listOfRules
+   * @return
+   */
+  default IExpr xreplace(IAST listOfRules) {
+    return replaceAll(listOfRules).orElse(this);
+  }
+
+  /**
+   * Replaces all instances of <code>x</code> in an expression with an <code>y</code> expression or
+   * returns <code>this</code>.
+   * 
+   * @param x
+   * @param y
+   * @return
+   */
+  default IExpr xreplace(IExpr x, IExpr y) {
+    return replaceAll(F.Rule(x, y)).orElse(this);
   }
 
 
-  default Set<ISymbol> variables() {
-    VariablesSet varSet = new VariablesSet();
-    return varSet.toSymbolSet();
+  default IExpr zero() {
+    return F.C0;
   }
 
 }

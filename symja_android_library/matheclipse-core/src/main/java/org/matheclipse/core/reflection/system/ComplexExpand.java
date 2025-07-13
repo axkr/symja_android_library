@@ -10,6 +10,7 @@ import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Sinh;
 import static org.matheclipse.core.expression.F.Times;
 import java.util.List;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.SimplifyFunctions;
 import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.convert.VariablesSet;
@@ -427,9 +428,9 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
           case ID.Log:
             // I*Arg(x + I*y) + (1/2)*Log(x^2 + y^2)
             final IExpr logPart;
-            if (x.isPossibleZero(false) && y.isPositiveResult()) {
+            if (x.isPossibleZero(false,  Config.SPECIAL_FUNCTIONS_TOLERANCE) && y.isPositiveResult()) {
               logPart = F.Log(y);
-            } else if (y.isPossibleZero(false) && x.isPositiveResult()) {
+            } else if (y.isPossibleZero(false,  Config.SPECIAL_FUNCTIONS_TOLERANCE) && x.isPositiveResult()) {
               logPart = F.Log(x);
             } else {
               IExpr logPlusReImSquared =

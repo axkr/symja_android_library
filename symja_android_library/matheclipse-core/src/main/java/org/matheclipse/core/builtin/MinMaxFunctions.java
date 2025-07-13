@@ -26,6 +26,7 @@ import org.hipparchus.optim.nonlinear.scalar.noderiv.PowellOptimizer;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Expr2LP;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
@@ -36,6 +37,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ExprAnalyzer;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.MultiVariateNumerical;
@@ -140,6 +142,11 @@ public class MinMaxFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -162,6 +169,11 @@ public class MinMaxFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -179,6 +191,11 @@ public class MinMaxFunctions {
         return maximize.first();
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -235,6 +252,11 @@ public class MinMaxFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -257,6 +279,11 @@ public class MinMaxFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -274,6 +301,11 @@ public class MinMaxFunctions {
         return minimize.first();
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -480,6 +512,11 @@ public class MinMaxFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
     }
@@ -505,6 +542,7 @@ public class MinMaxFunctions {
 
   private static final class FunctionDomain extends AbstractFunctionEvaluator {
 
+
     static final class FunctionDomainRealsVisitor extends VisitorExpr {
       final EvalEngine engine;
       IAST resultInterval;
@@ -526,13 +564,14 @@ public class MinMaxFunctions {
           return F.NIL;
         }
         if (ast.isTimes()) {
-          Optional<IExpr[]> parts = Algebra.fractionalParts(ast, false);
+          Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(ast, false);
           if (parts.isPresent()) {
             IExpr numerator = parts.get()[0];
             IExpr denominator = parts.get()[1];
             if (!denominator.isFree(variable)) {
               numerator.accept(this);
-              return roots(denominator);
+              roots(denominator);
+              return F.NIL;
             }
           }
           determineIntervalSequence(ast);
@@ -589,32 +628,37 @@ public class MinMaxFunctions {
           case ID.ArcCos:
           case ID.ArcSin:
             // -1 <= x <= 1
-            intervalIntersection(
-                relationToInterval(arg1, S.GreaterEqual, F.CN1, S.LessEqual, F.C1));
+            intervalIntersection(IntervalDataSym.simplifyRelationToInterval(arg1, S.GreaterEqual,
+                F.CN1, S.LessEqual, F.C1, variable, engine));
             return;
           case ID.ArcCsc:
           case ID.ArcSec:
             intervalIntersection(intervalUnion(//
-                relationToInterval(arg1, S.GreaterEqual, F.C1), //
-                relationToInterval(arg1, S.LessEqual, F.CN1)));
+                IntervalDataSym.simplifyRelationToInterval(arg1, S.GreaterEqual, F.C1, variable,
+                    engine), //
+                IntervalDataSym.simplifyRelationToInterval(arg1, S.LessEqual, F.CN1, variable,
+                    engine)));
             return;
           case ID.ArcCosh:
-            intervalIntersection(relationToInterval(arg1, S.GreaterEqual, F.C1));
+            intervalIntersection(IntervalDataSym.simplifyRelationToInterval(arg1, S.GreaterEqual,
+                F.C1, variable, engine));
             return;
           case ID.ArcCoth:
             intervalIntersection(intervalUnion(//
-                relationToInterval(arg1, S.Greater, F.C1), //
-                relationToInterval(arg1, S.Less, F.CN1)));
+                IntervalDataSym.simplifyRelationToInterval(arg1, S.Greater, F.C1, variable, engine), //
+                IntervalDataSym.simplifyRelationToInterval(arg1, S.Less, F.CN1, variable, engine)));
             return;
           case ID.ArcTanh:
-            intervalIntersection(relationToInterval(arg1, S.Greater, F.CN1, S.Less, F.C1));
+            intervalIntersection(IntervalDataSym.simplifyRelationToInterval(arg1, S.Greater, F.CN1,
+                S.Less, F.C1, variable, engine));
             return;
           case ID.Cot:
           case ID.Csc:
             notElementList.append(F.NotElement(F.Times(arg1, F.Power(S.Pi, F.CN1)), S.Integers));
             return;
           case ID.Gamma:
-            intervalIntersection(relationToInterval(arg1, S.Greater, F.C0));
+            intervalIntersection(IntervalDataSym.simplifyRelationToInterval(arg1, S.Greater, F.C0,
+                variable, engine));
             notElementList.append(F.NotElement(arg1, S.Integers));
             return;
           case ID.Sec:
@@ -623,7 +667,8 @@ public class MinMaxFunctions {
                 F.NotElement(F.Plus(F.C1D2, F.Times(arg1, F.Power(S.Pi, F.CN1))), S.Integers));
             return;
           case ID.Log:
-            intervalIntersection(relationToInterval(arg1, S.Greater, F.C0));
+            intervalIntersection(IntervalDataSym.simplifyRelationToInterval(arg1, S.Greater, F.C0,
+                variable, engine));
             return;
           default:
         }
@@ -649,12 +694,14 @@ public class MinMaxFunctions {
               if (exponent.isInteger()) {
                 if (exponent.isNegative()) {
                   // exponent < 0 && x != 0
-                  intervalIntersection(relationToInterval(base, S.Unequal, F.C0));
+                  intervalIntersection(IntervalDataSym.simplifyRelationToInterval(base, S.Unequal,
+                      F.C0, variable, engine));
                   return;
                 }
                 return;
               } else if (exponent.isPositive()) {
-                intervalIntersection(relationToInterval(base, S.GreaterEqual, F.C0));
+                intervalIntersection(IntervalDataSym.simplifyRelationToInterval(base,
+                    S.GreaterEqual, F.C0, variable, engine));
                 return;
               }
               if (exponent.isNegativeResult()) {
@@ -669,71 +716,23 @@ public class MinMaxFunctions {
         }
       }
 
-      /**
-       * Create an {@link F#IntervalData(IAST...)} from the relation
-       * <code>F.binaryAST2(relationalSymbol, expr, value)</code>.
-       * 
-       * @param expr
-       * @param relationalSymbol one of the symbols
-       *        {@link S#Greater},{@link S#GreaterEqual}{@link S#Less}{@link S#LessEqual}{@link S#Unequal}
-       * @param value
-       * @return
-       */
-      private IAST relationToInterval(IExpr expr, IBuiltInSymbol relationalSymbol, IExpr value) {
-        IExpr temp = engine.evaluate(F.Simplify(F.binaryAST2(relationalSymbol, expr, value)));
-        if (temp.isAST2() && temp.first().equals(variable)) {
-          IExpr rhs = temp.second();
-          int headID = temp.headID();
-          switch (headID) {
-            case ID.Greater:
-              return IntervalDataSym.open(rhs, F.CInfinity);
-            case ID.GreaterEqual:
-              return IntervalDataSym.rOpen(rhs, F.CInfinity);
-            case ID.Less:
-              return IntervalDataSym.open(F.CNInfinity, rhs);
-            case ID.LessEqual:
-              return IntervalDataSym.lOpen(F.CNInfinity, rhs);
-            case ID.Equal:
-              return IntervalDataSym.close(rhs, rhs);
-            case ID.Unequal:
-              return F.IntervalData(//
-                  F.List(F.CNInfinity, S.Less, S.Less, rhs), //
-                  F.List(rhs, S.Less, S.Less, F.CInfinity));
-          }
-        }
-        throw new ArgumentTypeStopException("Not implemented");
-      }
-
-      private IAST relationToInterval(IExpr expr, IBuiltInSymbol symbol1, IExpr value1,
-          IBuiltInSymbol symbol2, IExpr value2) {
-        IAST f1 = relationToInterval(expr, symbol1, value1);
-        IAST f2 = relationToInterval(expr, symbol2, value2);
-        if (f1.isPresent() && f2.isPresent()) {
-          IExpr temp = F.IntervalIntersection.of(engine, f1, f2);
-          if (temp.isIntervalData()) {
-            return (IAST) temp;
-          }
-        }
-        throw new ArgumentTypeStopException("IntervalIntersection failed");
-      }
-
       private void intervalIntersection(IAST interval) {
-        IExpr temp = F.IntervalIntersection.of(engine, resultInterval, interval);
+        IAST temp = IntervalDataSym.intersection(resultInterval, interval, engine);
         if (!temp.isIntervalData()) {
           throw new ArgumentTypeStopException("IntervalIntersection failed");
         }
-        resultInterval = (IAST) temp;
+        resultInterval = temp;
       }
 
       private IAST intervalUnion(IAST interval1, IAST interval2) {
-        IExpr temp = F.IntervalUnion.of(engine, interval1, interval2);
+        IAST temp = IntervalDataSym.union(interval1, interval2, engine);
         if (!temp.isIntervalData()) {
-          throw new ArgumentTypeStopException("IntervalIntersection failed");
+          throw new ArgumentTypeStopException("Interval union failed");
         }
-        return (IAST) temp;
+        return temp;
       }
 
-      private IExpr roots(IExpr denominator) {
+      private void roots(IExpr denominator) throws ArgumentTypeStopException {
         IExpr roots = RootsFunctions.roots(denominator, false, variable.makeList(), engine);
         if (roots.isNonEmptyList()) {
           IAST list = (IAST) roots;
@@ -741,14 +740,14 @@ public class MinMaxFunctions {
             IExpr arg = list.get(i);
             if (arg.isRealResult()) {
               IAST notInRange = IntervalDataSym.notInRange(arg);
-              IExpr temp = F.IntervalIntersection.of(engine, resultInterval, notInRange);
+              IAST temp = IntervalDataSym.intersection(resultInterval, notInRange, engine);
               if (!temp.isIntervalData()) {
-                throw new ArgumentTypeStopException("IntervalIntersection failed");
+                throw new ArgumentTypeStopException("Interval intersection failed");
               }
-              resultInterval = (IAST) temp;
+              resultInterval = temp;
             }
           }
-          return F.NIL;
+          return;
         }
         throw new ArgumentTypeStopException("Roots failed");
       }
@@ -828,6 +827,10 @@ public class MinMaxFunctions {
       return orAST;
     }
 
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -855,6 +858,11 @@ public class MinMaxFunctions {
         return F.NIL;
       }
       return Util.periodicity(function, (ISymbol) variables.arg1());
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
     }
 
     @Override
@@ -996,6 +1004,11 @@ public class MinMaxFunctions {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -1063,6 +1076,10 @@ public class MinMaxFunctions {
       return GoalType.MAXIMIZE;
     }
 
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
   }
 
 
@@ -1165,6 +1182,11 @@ public class MinMaxFunctions {
         return Errors.printMessage(ast.topHead(), e, engine);
       }
       return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -1370,11 +1392,11 @@ public class MinMaxFunctions {
           throw new ArithmeticException("Maximize::Unexpected exponent value: " + lExp);
         }
       }
-      if (a.isPossibleZero(false)) {
-        if (b.isPossibleZero(false)) {
+      if (a.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+        if (b.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
           // quadratic
-          if (c.isPossibleZero(false)) {
-            if (d.isPossibleZero(false)) {
+          if (c.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+            if (d.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
               // The `1` is not attained at any point satisfying the constraints.
               return Errors.printMessage(S.Maximize, "natt", F.List("maximum"));
             } else {
@@ -1526,11 +1548,11 @@ public class MinMaxFunctions {
           throw new ArithmeticException("Minimize::Unexpected exponent value: " + lExp);
         }
       }
-      if (a.isPossibleZero(false)) {
-        if (b.isPossibleZero(false)) {
+      if (a.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+        if (b.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
           // quadratic
-          if (c.isPossibleZero(false)) {
-            if (d.isPossibleZero(false)) {
+          if (c.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+            if (d.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
               // The `1` is not attained at any point satisfying the constraints.
               return Errors.printMessage(S.Minimize, "natt", F.List("minimum"));
             } else {

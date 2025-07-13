@@ -13,12 +13,13 @@ import org.matheclipse.core.expression.Pair;
 public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
 
   /**
-   * Get the absolute value for a given number
+   * Get the absolute value of this number.
    *
    * @return
    */
   @Override
   public IExpr abs();
+
 
   /**
    * Get a {@link Apcomplex} number wrapped into an <code>ApcomplexNum</code> object.
@@ -299,6 +300,22 @@ public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
    * @return
    */
   public INumber plus(INumber that);
+
+  default IExpr plusExpr(INumber that) {
+    if (this.isInfinite()) {
+      IExpr arg1 = this.isPositive() ? F.CInfinity : F.CNInfinity;
+      if (that.isInfinite()) {
+        IExpr arg2 = that.isPositive() ? F.CInfinity : F.CNInfinity;
+        return F.Plus(arg1, arg2);
+      }
+      return F.Plus(arg1, that);
+    }
+    if (that.isInfinite()) {
+      IExpr arg2 = that.isPositive() ? F.CInfinity : F.CNInfinity;
+      return F.Plus(this, arg2);
+    }
+    return plus(that);
+  }
 
   /**
    * Return the rational Factor of this number. For IComplex numbers check if real and imaginary

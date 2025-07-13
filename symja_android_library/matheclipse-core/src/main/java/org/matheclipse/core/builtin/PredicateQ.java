@@ -1123,7 +1123,7 @@ public class PredicateQ {
         return expr.isZero();
       }
       if (expr.isAST()) {
-        return isPossibleZeroQ((IAST) expr, false, engine);
+        return isPossibleZeroQ((IAST) expr, false, Config.SPECIAL_FUNCTIONS_TOLERANCE, engine);
       }
       return false;
     }
@@ -1552,11 +1552,11 @@ public class PredicateQ {
           IExpr expr = row.get(j);
           if (i == j) {
             IExpr temp = expr.minus(F.C1);
-            if (temp.isPossibleZero(true)) {
+            if (temp.isPossibleZero(true,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
               continue;
             }
           } else {
-            if (expr.isPossibleZero(true)) {
+            if (expr.isPossibleZero(true,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
               continue;
             }
           }
@@ -1748,7 +1748,8 @@ public class PredicateQ {
             && !denominator.isOne()) {
           IExpr numerator = engine.evaluate(F.Numerator(expr));
           if (numerator.isAST()) {
-            return isPossibleZeroQ((IAST) numerator, false, engine);
+            return isPossibleZeroQ((IAST) numerator, false, Config.SPECIAL_FUNCTIONS_TOLERANCE,
+                engine);
           }
         }
       }
@@ -1756,13 +1757,24 @@ public class PredicateQ {
     return false;
   }
 
-  public static boolean isPossibleZeroQ(IAST function, boolean fastTest, EvalEngine engine) {
+  /**
+   * Checks if the given function is a possible zero function, i.e. it returns <code>true</code>
+   * 
+   * @param function
+   * @param fastTest
+   * @param tolerance typically {@link Config#SPECIAL_FUNCTIONS_TOLERANCE} for the numeric
+   *        {@link F#isZero(double, double)} check
+   * @param engine
+   * @return
+   */
+  public static boolean isPossibleZeroQ(IAST function, boolean fastTest, double tolerance,
+      EvalEngine engine) {
     if (function.isConditionalExpression()) {
       IExpr arg1 = function.arg1();
       if (arg1.isZero()) {
         return true;
       }
-      if (arg1.isPossibleZero(fastTest)) {
+      if (arg1.isPossibleZero(fastTest,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
         return true;
       }
       return false;
@@ -1797,8 +1809,13 @@ public class PredicateQ {
 
       if (variables.isEmpty()) {
         INumber num = function.isNumericFunction(true) ? function.evalNumber() : null;
-        if (num == null || !(F.isZero(num.reDoubleValue(), Config.SPECIAL_FUNCTIONS_TOLERANCE)
-            && F.isZero(num.imDoubleValue(), Config.SPECIAL_FUNCTIONS_TOLERANCE))) {
+
+        // if (num == null
+        // || !(F.isZero(num.reDoubleValue(), 1.0e-9) && F.isZero(num.imDoubleValue(), 1.0e-9))) {
+        // return false;
+        // }
+        if (num == null || !(F.isZero(num.reDoubleValue(), tolerance)
+            && F.isZero(num.imDoubleValue(), tolerance))) {
           return false;
         }
         return true;

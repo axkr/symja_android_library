@@ -2,6 +2,7 @@ package org.matheclipse.core.interfaces;
 
 import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 public interface IDiscreteDistribution extends IDistribution {
 
@@ -13,13 +14,13 @@ public interface IDiscreteDistribution extends IDistribution {
    * @param x
    * @return <code>null</code> if no interval could be determined
    */
-  default int[] range(IExpr discreteDistribution, IExpr predicate, IExpr x) {
+  default IntArrayList range(IExpr discreteDistribution, IExpr predicate, IExpr x) {
     IAssumptions assumptions = Assumptions.getInstance(predicate);
     if (assumptions != null) {
       int[] result = new int[] {getSupportLowerBound(discreteDistribution),
           getSupportUpperBound(discreteDistribution)};
-      int[] reducedRange = assumptions.reduceRange(x, result);
-      return reducedRange != null ? reducedRange : result;
+      IntArrayList reducedRange = assumptions.reduceRange(x, result);
+      return reducedRange != null ? reducedRange : IntArrayList.of(result[0], result[1]);
     }
     return null;
   }

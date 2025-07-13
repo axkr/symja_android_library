@@ -26,6 +26,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.eval.interfaces.IMatch;
 import org.matheclipse.core.eval.util.OptionArgs;
+import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -69,7 +70,7 @@ import edu.jas.ufd.GreatestCommonDivisorAbstract;
 
 public class PolynomialFunctions {
 
-  private static final Logger LOGGER = LogManager.getLogger(PolynomialFunctions.class);
+  public static final Logger LOGGER = LogManager.getLogger(PolynomialFunctions.class);
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -295,7 +296,114 @@ public class PolynomialFunctions {
     }
   }
 
-  /** */
+  /**
+   * <pre>
+   * <code>CoefficientList(polynomial, variable)
+   * </code>
+   * </pre>
+   * 
+   * <p>
+   * get the coefficient list of a <code>polynomial</code>.
+   * </p>
+   * 
+   * <p>
+   * See:
+   * </p>
+   * <ul>
+   * <li><a href="http://en.wikipedia.org/wiki/Coefficient">Wikipedia - Coefficient</a></li>
+   * </ul>
+   * <h3>Examples</h3>
+   * 
+   * <pre>
+   * <code>&gt;&gt; CoefficientList(a+b*x, x)
+   * {a,b}
+   * 
+   * &gt;&gt; CoefficientList(a+b*x+c*x^2, x)
+   * {a,b,c}
+   * 
+   * &gt;&gt; CoefficientList(a+c*x^2, x)
+   * {a,0,c}
+   * 
+   * &gt;&gt; CoefficientList((x + y)^3, z)
+   * {(x+y)^3}
+   *         
+   * &gt;&gt; CoefficientList(Series(2*x, {x, 0, 9}), x)
+   * {0,2}
+   * </code>
+   * </pre>
+   * <p>
+   * In the next line <code>Coefficient</code> returns the coefficient of a particular term of a
+   * polynomial. In this case <code>(-210*c^2 * x^2*y*z^2)</code> is a term of
+   * <code>(c*x-2*y+z)^7</code> after it's expanded.
+   * </p>
+   * 
+   * <pre>
+   * <code>&gt;&gt; poly=(c*x-2*y+z)^7
+   * (c*x-2*y+z)^7
+   * 
+   * &gt;&gt; Coefficient(poly, x^2*y*z^4)
+   * -210*c^2
+   * </code>
+   * </pre>
+   * <p>
+   * <code>CoefficientList</code> gets the same information as a list of coefficients. In the line
+   * below <code>Part(coeff, 3,2,5)</code> returns the coefficient of
+   * <code>x^(3-1)*y^(2-1)*z^(5-1)</code>. In general if we say
+   * <code>lst=CoefficientList(poly,{x1,x2,x3,...})</code> then
+   * <code>Part(lst,  n1, n2, ,n3, ...)</code> will be the coefficient of
+   * <code>x1^(n1-1)*x2^(n2-1)*x3^(n3-1)...</code>.
+   * </p>
+   * 
+   * <pre>
+   * <code>&gt;&gt; coeff=CoefficientList(poly,{x,y,z}); Part(coeff, 3,2,5)
+   * -210*c^2
+   * </code>
+   * </pre>
+   * <p>
+   * The next line gives the coefficient of <code>x^5</code>. As expected there is more than one
+   * term of poly with <code>x^5</code> as a factor.
+   * </p>
+   * 
+   * <pre>
+   * <code>&gt;&gt; Coefficient(poly, x^5)
+   * 84*c^5*y^2-84*c^5*y*z+21*c^5*z^2
+   * </code>
+   * </pre>
+   * <p>
+   * We can get the same result as the previous example if we use the next line.
+   * </p>
+   * 
+   * <pre>
+   * <code>&gt;&gt; Coefficient(poly, x, 5)
+   * 84*c^5*y^2-84*c^5*y*z+21*c^5*z^2
+   * </code>
+   * </pre>
+   * <p>
+   * One can't get the result above directly from CoefficientList. Instead pieces of the above
+   * result are included in the result of <code>CoefficientList(poly,{x,y,z})</code>. The line below
+   * can be used to get pieces of the result above. Specifically <code>coeff[[6]]</code> contains
+   * all coefficients of x^5 (including those that are zero).
+   * </p>
+   * 
+   * <pre>
+   * <code>&gt;&gt; coeff[[6]]
+   * {{0,0,21*c^5,0,0,0,0,0},{0,-84*c^5,0,0,0,0,0,0},{84*c^5,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0}}
+   * </code>
+   * </pre>
+   * <ul>
+   * <li><code>Part(coeff,6,1,3)</code> is <code>21*c^5</code> the coefficient of
+   * <code>(x^(6 - 1) * y^(1 - 1) * z^(3 - 1)) = (x^5 * z^2)</code> in poly.</li>
+   * <li><code>Part(coeff,6,2,2)</code> is <code>(-84*c^5)</code> the coefficient of
+   * <code>(x^(6 - 1) * y^(2 - 1) * z^(2 - 1)) = (x^5 * y * z)</code> in poly.</li>
+   * <li><code>Part(coeff,6,3,1)</code> is <code>(84*c^5)</code> the coeficient of
+   * <code>(x^(6 - 1) * y^(3 - 1) * z^(1 - 1)) = (x^5 * y^2)</code> in poly.</li>
+   * </ul>
+   * <p>
+   * All other coefficients under <code>coeff[[6]]</code> are zero which agrees with the result of
+   * <code>Coefficient(poly, x^5)</code>.
+   * </p>
+   * 
+   */
   private static class CoefficientList extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -310,7 +418,7 @@ public class PolynomialFunctions {
         // expr = engine.evaluate(expr.normal(false));
       }
 
-      return coefficientList(expr, list);
+      return ASTSeriesData.coefficientList(expr, list);
     }
 
     @Override
@@ -2540,27 +2648,6 @@ public class PolynomialFunctions {
         engine.decRecursionCounter();
       }
     }
-  }
-
-  public static IAST coefficientList(IExpr polynomialExpr, IAST listOfVariables) {
-    try {
-      ExprPolynomialRing ring = new ExprPolynomialRing(listOfVariables);
-      ExprPolynomial poly = ring.create(polynomialExpr, true, false, true);
-      if (poly.isZero()) {
-        return F.CEmptyList;
-      }
-      return poly.coefficientList();
-    } catch (LimitException le) {
-      throw le;
-    } catch (RuntimeException ex) {
-      Errors.rethrowsInterruptException(ex);
-      // org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing.create()
-      LOGGER.debug("PolynomialFunctions.coefficientList() failed", ex);
-    }
-    if (listOfVariables.argSize() > 0) {
-      return F.Nest(S.List, polynomialExpr, listOfVariables.argSize());
-    }
-    return F.NIL;
   }
 
   /**

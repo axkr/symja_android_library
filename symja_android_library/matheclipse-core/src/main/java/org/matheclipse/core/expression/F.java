@@ -106,6 +106,7 @@ import org.matheclipse.core.builtin.WXFFunctions;
 import org.matheclipse.core.builtin.WindowFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Object2Expr;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -644,6 +645,12 @@ public class F extends S {
   /** Represents <code>Interval()</code> (i.e. the constant empty interval with closed/open ends) */
   public static final IAST CEmptyIntervalData;
 
+  /** Represents <code>IntervalData({-Infinity,S.Less.S.Less,Infinity})</code> */
+  public static final IAST CRealsIntervalData;
+
+  /** Represents <code>{-Infinity,S.Less.S.Less,Infinity}</code> */
+  public static final IAST CRealsRange;
+
   /** Represents <code>Missing("NotFound")</code> */
   public static final IAST CMissingNotFound;
 
@@ -856,7 +863,9 @@ public class F extends S {
 
   static {
     try {
-      AndroidLoggerFix.fix();
+      if (!Config.CHEEPRJ) {
+        AndroidLoggerFix.fix();
+      }
       // initialize LOGGER after AndroidLoggerFix !!!
       LOGGER = LogManager.getLogger(F.class);
       AST2Expr.initialize();
@@ -876,11 +885,6 @@ public class F extends S {
       PatternTest.setAttributes(ISymbol.HOLDREST);
       List.setEvaluator(ICoreFunctionEvaluator.ARGS_EVALUATOR);
 
-      CEmptySequence = headAST0(Sequence);
-      CEmptyList = headAST0(List).functionEvaled();
-      CEmptyInterval = headAST0(Interval).functionEvaled();
-      CEmptyIntervalData = headAST0(IntervalData).functionEvaled();
-      CEmptyString = $str("");
       CMissingNotFound = Missing("NotFound").functionEvaled();
       CListC0 = new B1.List(C0).functionEvaled();
       CListC1 = new B1.List(C1).functionEvaled();
@@ -949,7 +953,13 @@ public class F extends S {
       for (int i = 7; i < 100; i++) {
         SLOT_CACHE[i] = new B1.Slot(i);
       }
-
+      CEmptySequence = headAST0(Sequence);
+      CEmptyList = headAST0(List).functionEvaled();
+      CEmptyInterval = headAST0(Interval).functionEvaled();
+      CEmptyIntervalData = headAST0(IntervalData).functionEvaled();
+      CRealsRange = F.List(F.CNInfinity, S.Less, S.Less, CInfinity);
+      CRealsIntervalData = unary(IntervalData, CRealsRange);
+      CEmptyString = $str("");
       COMMON_IDS = new IExpr[] {CN1, CN2, CN3, CN4, CN5, CN6, CN7, CN8, CN9, CN10, C0, C1, C2, C3,
           C4, C5, C6, C7, C8, C9, C10, CI, CNI, C1D2, CN1D2, C1D3, CN1D3, C1D4, CN1D4, CD0, CD1,
           CInfinity, CNInfinity, CComplexInfinity, CSqrt2, CSqrt3, CSqrt5, CSqrt6, CSqrt7, CSqrt10,
@@ -1209,7 +1219,7 @@ public class F extends S {
    * @return IPattern
    */
   public static IPattern $b() {
-    return org.matheclipse.core.expression.Blank.valueOf();
+    return org.matheclipse.core.expression.Blank.BLANK_PATTERN;
   }
 
   /**
@@ -1219,7 +1229,7 @@ public class F extends S {
    * @return IPattern
    */
   public static IPattern $b(final IExpr condition) {
-    return org.matheclipse.core.expression.Blank.valueOf(condition);
+    return new org.matheclipse.core.expression.Blank(condition);
   }
 
   /**
@@ -2072,15 +2082,19 @@ public class F extends S {
    */
   public static IAssociation assoc(final IAssociation templateAssociation,
       final Map<IExpr, IASTMutable> mapOfRules) {
+    EvalEngine engine = EvalEngine.get();
     ASTAssociation association = new ASTAssociation();
     for (int i = 1; i < templateAssociation.size(); i++) {
-      IAST rule1 = templateAssociation.getRule(i);
-      IExpr rule1Key = rule1.arg1();
-      IExpr newRuleRHS = mapOfRules.get(rule1Key);
+      IAST rule = templateAssociation.getRule(i);
+      IExpr ruleHead = rule.head();
+      IExpr ruleKey = rule.arg1();
+      IExpr newRuleRHS = mapOfRules.get(ruleKey);
       if (newRuleRHS == null) {
         newRuleRHS = S.Nonexistent;
+      } else if (ruleHead == S.Rule) {
+        newRuleRHS = engine.evaluate(newRuleRHS);
       }
-      association.appendRule(F.binaryAST2(rule1.head(), rule1Key, newRuleRHS));
+      association.appendRule(F.binaryAST2(ruleHead, ruleKey, newRuleRHS));
     }
 
     return association;
@@ -2280,6 +2294,14 @@ public class F extends S {
    * @return
    */
   public static IASTMutable astMutable(final IExpr head, final int initialCapacity) {
+    switch (initialCapacity) {
+      case 1:
+        return F.unaryAST1(head, F.Slot1);
+      case 2:
+        return F.binaryAST2(head, F.Slot1, F.Slot2);
+      case 3:
+        return F.ternaryAST3(head, F.Slot1, F.Slot2, F.Slot3);
+    }
     return AST.newInstance(initialCapacity, head, true);
   }
 
@@ -4345,7 +4367,7 @@ public class F extends S {
     if (a.isAST()) {
       EvalEngine engine = EvalEngine.get();
       IAST ast = engine.evalFlatOrderlessAttrsRecursive((IAST) a).orElse((IAST) a);
-      return Algebra.expand(ast, null, expandNegativePowers, distributePlus, evalParts).orElse(a);
+      return AlgebraUtil.expand(ast, null, expandNegativePowers, distributePlus, evalParts).orElse(a);
     }
     return a;
   }
@@ -4394,7 +4416,7 @@ public class F extends S {
     if (a.isAST()) {
       EvalEngine engine = EvalEngine.get();
       IAST ast = engine.evalFlatOrderlessAttrsRecursive((IAST) a).orElse((IAST) a);
-      return Algebra.expandAll(ast, null, expandNegativePowers, distributePlus, false, engine)
+      return AlgebraUtil.expandAll(ast, null, expandNegativePowers, distributePlus, false, engine)
           .orElse(ast);
     }
     return a;
@@ -6060,7 +6082,6 @@ public class F extends S {
    */
   public static boolean isZero(double x, double epsilon) {
     return isFuzzyEquals(x, 0.0, epsilon);
-    // return -epsilon < x && x < epsilon;
   }
 
   /**
@@ -7665,6 +7686,10 @@ public class F extends S {
 
   public static IAST NIntegrate(final IExpr f, final IExpr x) {
     return new AST2(NIntegrate, f, x);
+  }
+
+  public static IAST NIntegrate(final IExpr f, final IExpr x, final IExpr optionRule) {
+    return new AST3(NIntegrate, f, x, optionRule);
   }
 
   public static IAST NewLimit(final IExpr f, final IExpr rule) {
@@ -9517,7 +9542,7 @@ public class F extends S {
    * @param variable
    * @return
    */
-  public static IExpr[] solve(final IAST equations, final ISymbol variable) {
+  public static IExpr[] solve(final IAST equations, final IExpr variable) {
     IExpr solve = Solve.of(equations, variable);
     if (!solve.isListOfLists()) {
       return new IExpr[0];
@@ -10534,7 +10559,7 @@ public class F extends S {
    */
   public static IExpr distributePlusOnTimes(IExpr x, final IExpr y) {
     if (x.isPlus() || y.isPlus()) {
-      return Algebra.distribute(F.Distribute(new B2.Times(x, y)), S.Plus);
+      return AlgebraUtil.distribute(F.Distribute(new B2.Times(x, y)), S.Plus);
     }
     return timesOrderless(IExpr::isTimes, x, y);
   }

@@ -16,10 +16,12 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.ComplexSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.StringX;
@@ -581,9 +583,9 @@ public class IntegerFunctions {
         }
         IExpr arg1 = engine.evaluateNIL(ast.arg1());
         if (arg1.isPresent()) {
-          return evalCeiling(arg1).orElseGet(() -> F.Ceiling(arg1));
+          return evalCeiling(arg1, engine).orElseGet(() -> F.Ceiling(arg1));
         }
-        return evalCeiling(ast.arg1());
+        return evalCeiling(ast.arg1(), engine);
       } catch (ArithmeticException ae) {
         // IReal#floor() or #ceil() may throw ArithmeticException
       }
@@ -595,7 +597,7 @@ public class IntegerFunctions {
       return ARGS_1_2;
     }
 
-    public IExpr evalCeiling(IExpr arg1) {
+    public IExpr evalCeiling(IExpr arg1, EvalEngine engine) {
       if (arg1.isNumber()) {
         return ((INumber) arg1).ceilFraction();
       }
@@ -632,6 +634,15 @@ public class IntegerFunctions {
       }
       if (arg1.isQuantity()) {
         return arg1.ceil();
+      }
+
+      IAssumptions assumptions = engine.getAssumptions();
+      if (assumptions != null) {
+        IAST interval = assumptions.intervalData(arg1);
+        if (interval.isPresent()) {
+          IInteger ceiling = IntervalDataSym.mapIntegerFunction(S.Ceiling, interval, engine);
+          return ceiling != null ? ceiling : F.NIL;
+        }
       }
       return F.NIL;
     }
@@ -979,7 +990,7 @@ public class IntegerFunctions {
         // if (arg1.isPresent()) {
         // return evalFloor(arg1).orElseGet(() -> F.Floor(arg1));
         // }
-        return evalFloor(ast.arg1());
+        return evalFloor(ast.arg1(), engine);
       } catch (ArithmeticException ae) {
         // IReal#floor() may throw ArithmeticException
       }
@@ -991,7 +1002,7 @@ public class IntegerFunctions {
       return ARGS_1_2;
     }
 
-    public IExpr evalFloor(IExpr arg1) {
+    public static IExpr evalFloor(IExpr arg1, EvalEngine engine) {
       if (arg1.isNumber()) {
         return ((INumber) arg1).floorFraction();
       }
@@ -1026,6 +1037,14 @@ public class IntegerFunctions {
       }
       if (arg1.isQuantity()) {
         return arg1.floor();
+      }
+      IAssumptions assumptions = engine.getAssumptions();
+      if (assumptions != null) {
+        IAST interval = assumptions.intervalData(arg1);
+        if (interval.isPresent()) {
+          IInteger floor = IntervalDataSym.mapIntegerFunction(S.Floor, interval, engine);
+          return floor != null ? floor : F.NIL;
+        }
       }
       return F.NIL;
     }
@@ -1796,15 +1815,15 @@ public class IntegerFunctions {
     }
 
     private static IExpr quotient(IExpr m, IExpr n, IExpr d, EvalEngine engine) {
-      if (m.isComplex() || n.isComplex() || d.isComplex() || m.isComplexNumeric()
-          || n.isComplexNumeric() || d.isComplexNumeric()) {
-        // https://mathematica.stackexchange.com/a/114373/21734
-        IExpr subExpr = engine.evaluate(F.Divide(F.Subtract(m, d), n));
-        IExpr re = S.Round.of(engine, subExpr.re());
-        IExpr im = S.Round.of(engine, subExpr.im());
-        return F.Plus(re, F.Times(F.CI, im));
-      }
       if (m.isNumber() && n.isNumber() && d.isNumber()) {
+        if (m.isComplex() || n.isComplex() || d.isComplex() || m.isComplexNumeric()
+            || n.isComplexNumeric() || d.isComplexNumeric()) {
+          // https://mathematica.stackexchange.com/a/114373/21734
+          IExpr subExpr = engine.evaluate(F.Divide(F.Subtract(m, d), n));
+          IExpr re = S.Round.of(engine, subExpr.re());
+          IExpr im = S.Round.of(engine, subExpr.im());
+          return F.Plus(re, F.Times(F.CI, im));
+        }
         // Floor((-d+m)/n)
         return F.Floor(F.Times(F.Plus(F.Negate(d), m), F.Power(n, F.CN1)));
       }

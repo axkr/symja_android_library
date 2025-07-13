@@ -487,6 +487,18 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   /** {@inheritDoc} */
   @Override
+  public boolean isAST(final IBuiltInSymbol header) {
+    return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isAST(final IBuiltInSymbol header, final int length) {
+    return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public boolean isAST(IExpr header, int length, IExpr... args) {
     return false;
   }

@@ -1,7 +1,7 @@
 package org.matheclipse.core.patternmatching.hash;
 
-import org.matheclipse.core.builtin.ExpTrigsFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
@@ -24,7 +24,7 @@ public class HashedPatternRulesLog extends HashedPatternRules {
         IExpr i1 = arg1.first();
         IExpr i2 = arg2.first();
         if (i1.isInteger() && i2.isInteger()) {
-          return ExpTrigsFunctions.baseBLog((IInteger) i2, (IInteger) i1);
+          return AbstractIntegerSym.baseBLog((IInteger) i2, (IInteger) i1);
         }
       }
     }

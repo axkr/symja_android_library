@@ -4077,13 +4077,11 @@ public class StatisticsFunctions {
                     && supportLowerBound < supportUpperBound) {
                   IAST function = F.Times(ast.arg1(), pdf);
                   int lowerBound = dist.getSupportLowerBound(distribution);
-                  return NSum.nsum(function, x, F.ZZ(lowerBound), F.ZZ(supportUpperBound),
-                      F.NSum(function, F.list(x, F.ZZ(lowerBound), F.ZZ(supportUpperBound))));
+                  return NSum.nsum(function, x, F.ZZ(lowerBound), F.ZZ(supportUpperBound));
                 }
               }
               IAST function = F.Times(ast.arg1(), pdf);
-              return NSum.nsum(function, x, F.CNInfinity, F.CInfinity,
-                  F.NSum(function, F.list(x, F.CNInfinity, F.CInfinity)));
+              return NSum.nsum(function, x, F.CNInfinity, F.CInfinity);
             }
           }
         }
@@ -4143,13 +4141,15 @@ public class StatisticsFunctions {
               IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
               if (pdf.isPresent()) {
                 IDiscreteDistribution dist = getDiscreteDistribution(distribution);
-                int[] interval = dist.range(distribution, predicate, x);
+                IntArrayList interval = dist.range(distribution, predicate, x);
                 if (interval != null) {
                   // for discrete distributions take the sum:
                   IASTAppendable sum = F.PlusAlloc(10);
-                  for (int i = interval[0]; i <= interval[1]; i++) {
-                    if (engine.evalTrue(F.subst(predicate, F.Rule(x, F.ZZ(i))))) {
-                      sum.append(F.subst(pdf, F.Rule(x, F.ZZ(i))).evalf());
+                  for (int i = 0; i < interval.size(); i += 2) {
+                    for (int j = interval.getInt(i); j <= interval.getInt(i + 1); j++) {
+                      if (engine.evalTrue(F.subst(predicate, F.Rule(x, F.num(j))))) {
+                        sum.append(F.subst(pdf, F.Rule(x, F.num(j))));
+                      }
                     }
                   }
                   return sum;
@@ -4163,10 +4163,11 @@ public class StatisticsFunctions {
               IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
               if (pdf.isPresent()) {
                 if (predicate.isRelational()) {
-                  IAST newIntervalData = IntervalDataSym.relationToInterval((IAST) predicate, x);
-                  if (newIntervalData.isIntervalData() && newIntervalData.argSize() == 1) {
-                    IAST list = (IAST) newIntervalData.arg1();
-                    return engine.evaluate(F.NIntegrate(pdf, F.List(x, list.arg1(), list.arg4())));
+                  IAST interval = IntervalDataSym.relationToInterval((IAST) predicate, x);
+                  if (interval.isIntervalData() && interval.argSize() == 1) {
+                    IAST intervalList = (IAST) interval.arg1();
+                    return engine.evaluate(
+                        F.NIntegrate(pdf, F.List(x, intervalList.arg1(), intervalList.arg4())));
                   }
                 }
                 return engine.evaluate(F.NIntegrate(F.Times(F.Boole(predicate), pdf),
@@ -4582,7 +4583,7 @@ public class StatisticsFunctions {
             return Errors.printMessage(ast.topHead(), "shlen", F.List(list, F.C2), engine);
           }
           IExpr centralMoment = engine.evaluate(F.CentralMoment(list, 2));
-          if (centralMoment.isPossibleZero(true)) {
+          if (centralMoment.isPossibleZero(true,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
             return S.Indeterminate;
           }
           return F.Divide(F.CentralMoment(list, 4), F.Power(centralMoment, F.C2));
@@ -5842,13 +5843,15 @@ public class StatisticsFunctions {
               IDiscreteDistribution dist = getDiscreteDistribution(distribution);
               IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
               if (pdf.isPresent()) {
-                int[] interval = dist.range(distribution, predicate, x);
+                IntArrayList interval = dist.range(distribution, predicate, x);
                 if (interval != null) {
                   // for discrete distributions take the sum:
                   IASTAppendable sum = F.PlusAlloc(10);
-                  for (int i = interval[0]; i <= interval[1]; i++) {
-                    if (engine.evalTrue(F.subst(predicate, F.Rule(x, F.ZZ(i))))) {
-                      sum.append(F.subst(pdf, F.Rule(x, F.ZZ(i))));
+                  for (int i = 0; i < interval.size(); i += 2) {
+                    for (int j = interval.getInt(i); j <= interval.getInt(i + 1); j++) {
+                      if (engine.evalTrue(F.subst(predicate, F.Rule(x, F.ZZ(j))))) {
+                        sum.append(F.subst(pdf, F.Rule(x, F.ZZ(j))));
+                      }
                     }
                   }
                   return sum;
@@ -5860,13 +5863,14 @@ public class StatisticsFunctions {
             } else if (distribution.isContinuousDistribution()) {
               IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
               if (pdf.isPresent()) {
-                if (predicate.isRelational()) {
-                  IAST newIntervalData = IntervalDataSym.relationToInterval((IAST) predicate, x);
-                  if (newIntervalData.isIntervalData() && newIntervalData.argSize() == 1) {
-                    IAST list = (IAST) newIntervalData.arg1();
-                    return engine.evaluate(F.Integrate(pdf, F.List(x, list.arg1(), list.arg4())));
-                  }
-                }
+                // if (predicate.isRelational()) {
+                // IAST interval = IntervalDataSym.relationToInterval((IAST) predicate, x);
+                // if (interval.isIntervalData() && interval.argSize() == 1) {
+                // IAST intervalList = (IAST) interval.arg1();
+                // return engine.evaluate(
+                // F.Integrate(pdf, F.List(x, intervalList.arg1(), intervalList.arg4())));
+                // }
+                // }
                 return engine.evaluate(F.Integrate(F.Times(F.Boole(predicate), pdf),
                     F.List(x, F.CNInfinity, F.CInfinity)));
               }

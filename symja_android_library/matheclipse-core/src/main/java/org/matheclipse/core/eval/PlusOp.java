@@ -17,6 +17,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.tensor.qty.IQuantity;
 
 /**
@@ -232,10 +233,13 @@ public final class PlusOp {
           numberValue = arg;
           return F.NIL;
         }
-        if (numberValue.isNumber()) {
-          numberValue = numberValue.plus(arg);
-          evaled = true;
-          return F.NIL;
+        if (numberValue.isNumber() ) {
+          IExpr temp = ((INumber) numberValue).plusExpr((INumber) arg);
+          if (temp.isNumber()) {
+            numberValue = temp;
+            evaled = true;
+            return F.NIL;
+          }
         }
         if (numberValue.isInfinity()) {
           if (arg.isNegativeInfinity()) {
@@ -334,6 +338,9 @@ public final class PlusOp {
               break;
             case ID.Times:
               if (ast.size() > 1) {
+                if (ast.isNumericFunction() && plusInterval(ast)) {
+                  return F.NIL;
+                }
                 if (ast.arg1().isNumber()) {
                   if (addMerge(ast.rest().oneIdentity1(), ast.arg1())) {
                     evaled = true;
@@ -461,6 +468,9 @@ public final class PlusOp {
         // numberValue = arg;
         // return F.NIL;
       }
+      if (arg.isNumericFunction() && plusInterval(arg)) {
+        return F.NIL;
+      }
       if (addMerge(arg, F.C1)) {
         evaled = true;
       }
@@ -471,6 +481,19 @@ public final class PlusOp {
       Errors.printMessage(S.Plus, sme, EvalEngine.get());
     }
     return F.NIL;
+  }
+
+  private boolean plusInterval(final IExpr arg) {
+    if (numberValue.isInterval()) {
+      numberValue = IntervalSym.plus((IAST) numberValue, (IAST) arg);
+      evaled = true;
+      return true;
+    } else if (numberValue.isIntervalData()) {
+      numberValue = IntervalDataSym.plus((IAST) numberValue, (IAST) arg);
+      evaled = true;
+      return true;
+    }
+    return false;
   }
 
   // private static IExpr plusInterval(final IExpr o0, final IExpr o1) {

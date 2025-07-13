@@ -77,7 +77,6 @@ public class AutomaticRules {
     rules = StruveLRules.RULES;
     rules = TanhRules.RULES;
     rules = TanRules.RULES;
-    rules = ToIntervalDataRules.RULES;
     rules = WhittakerMRules.RULES;
     rules = WhittakerWRules.RULES;
     rules = ZTransformRules.RULES;

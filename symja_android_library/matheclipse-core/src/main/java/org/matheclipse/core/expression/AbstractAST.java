@@ -35,7 +35,6 @@ import org.jgrapht.GraphType;
 import org.jgrapht.graph.DefaultGraphType;
 import org.jgrapht.graph.DefaultGraphType.Builder;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.JavaFunctions;
 import org.matheclipse.core.builtin.PredicateQ;
@@ -43,10 +42,12 @@ import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.FlowControlException;
+import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.SymjaMathException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -447,6 +448,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
     @Override
     public final IExpr head() {
+      if (Config.FUZZ_TESTING) {
+        throw new NullPointerException();
+      }
       ArgumentTypeException.throwNIL();
       return F.NIL;
     }
@@ -499,13 +503,27 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return false;
     }
 
+    /** {@inheritDoc} */
     @Override
     public final boolean isAST() {
       return false;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public final boolean isAST(final IBuiltInSymbol header) {
+      return false;
+    }
+
+    /** {@inheritDoc} */
     @Override
     public final boolean isAST(final IExpr header) {
+      return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public final boolean isAST(final IBuiltInSymbol header, final int length) {
       return false;
     }
 
@@ -779,7 +797,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
     /** {@inheritDoc} */
     @Override
-    public boolean isPossibleZero(boolean fastTest) {
+    public boolean isPossibleZero(boolean fastTest, double tolerance) {
       return false;
     }
 
@@ -866,6 +884,16 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
     @Override
     public boolean isSameHeadSizeGE(ISymbol head, int length) {
+      return false;
+    }
+
+    @Override
+    public final boolean isSequence() {
+      return false;
+    }
+
+    @Override
+    public boolean isSpecialsFree() {
       return false;
     }
 
@@ -1551,7 +1579,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public Pair asNumerDenom() {
     if (this.isPlusTimesPower()) {
-      Optional<IExpr[]> parts = Algebra.fractionalPartsRational(this, true, true);
+      Optional<IExpr[]> parts = AlgebraUtil.fractionalPartsRational(this, true, true);
       if (parts.isPresent()) {
         final IExpr numerator = parts.get()[0];
         final IExpr denominator = parts.get()[1];
@@ -3163,6 +3191,18 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
+  public boolean isAST(final IBuiltInSymbol header) {
+    return head() == header;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isAST(final IBuiltInSymbol header, final int length) {
+    return head() == header && length == size();
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public boolean isAST(final IExpr header) {
     return Objects.equals(head(), header);
   }
@@ -4125,6 +4165,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       }
       return false;
     }
+    if (isIntervalData() && size() > 1) {
+      return IntervalDataSym.isNegativeResult(this);
+    }
     return AbstractAssumptions.isNegativeResult(this);
   }
 
@@ -4136,6 +4179,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         return true;
       }
       return false;
+    }
+    if (isIntervalData() && size() > 1) {
+      return IntervalDataSym.isNonNegativeResult(this);
     }
     return AbstractAssumptions.isNonNegativeResult(this);
   }
@@ -4423,7 +4469,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         ExprPolynomial poly = ring.create(expr);
         return poly.degree() <= maxDegree;
       }
-    } catch (ArithmeticException | ClassCastException ex) {
+    } catch (ArithmeticException | ClassCastException | JASConversionException ex) {
       //
     }
     return false;
@@ -4431,7 +4477,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public final boolean isPolynomialOfMaxDegree(ISymbol variable, long maxDegree) {
+  public final boolean isPolynomialOfMaxDegree(IExpr variable, long maxDegree) {
     return isPolynomialOfMaxDegree(F.list(variable), maxDegree);
   }
 
@@ -4455,6 +4501,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         return true;
       }
       return false;
+    }
+    if (isIntervalData() && size() > 1) {
+      return IntervalDataSym.isPositiveResult(this);
     }
     return AbstractAssumptions.isPositiveResult(this);
   }
@@ -4649,13 +4698,18 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   @Override
   public boolean isRelational() {
-    if (size() == 4) {
-      return isFunctionID(ID.Greater, ID.GreaterEqual, ID.Less, ID.LessEqual);
+    final int size = size();
+    switch (size) {
+      case 3:
+        return isFunctionID(ID.Equal, ID.Unequal, ID.Greater, ID.GreaterEqual, ID.Less,
+            ID.LessEqual, ID.Inequality);
+      case 4:
+        return isFunctionID(ID.Greater, ID.GreaterEqual, ID.Less, ID.LessEqual);
+      case 6:
+        return isFunctionID(ID.Inequality);
+      default:
+        return false;
     }
-    if (size() == 3) {
-      return isFunctionID(ID.Equal, ID.Unequal, ID.Greater, ID.GreaterEqual, ID.Less, ID.LessEqual);
-    }
-    return false;
   }
 
   @Override
@@ -4736,7 +4790,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public final boolean isSequence() {
+  public boolean isSequence() {
     return head() == S.Sequence;
   }
 
@@ -5020,8 +5074,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public boolean isPossibleZero(boolean fastTest) {
-    return PredicateQ.isPossibleZeroQ(this, fastTest, EvalEngine.get());
+  public boolean isPossibleZero(boolean fastTest, double tolerance) {
+    return PredicateQ.isPossibleZeroQ(this, fastTest, tolerance, EvalEngine.get());
   }
 
   /**
@@ -5485,9 +5539,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public final IASTMutable mapThread(Function<IExpr, IExpr> function) {
+  public final IAST mapThread(Function<IExpr, IExpr> function) {
     // final Function<IExpr, IExpr> function = x -> replacement.setAtCopy(position, x );
-    return (IASTMutable) map(function, 1);
+    return map(function, 1);
   }
 
   /** {@inheritDoc} */

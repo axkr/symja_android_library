@@ -73,7 +73,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
-import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInexactNumber;
@@ -88,7 +87,6 @@ import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.sympy.series.Sequences;
-import org.matheclipse.core.visit.VisitorExpr;
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
 import com.google.common.util.concurrent.UncheckedExecutionException;
@@ -321,8 +319,7 @@ public final class NumberTheory {
           return F.C0;
         }
         return F.NIL;
-      }
-      if (ast.isAST2()) {
+      } else if (ast.isAST2()) {
         IExpr x = ast.arg2();
         if (n.isZero()) {
           return F.C1;
@@ -529,16 +526,7 @@ public final class NumberTheory {
         }
         IInteger ki = (IInteger) k;
         if (ki.compareInt(6) < 0 && ki.compareInt(1) > 0 && !n.isNumber()) {
-          int kInt = ki.intValue();
-          IASTAppendable result = F.TimesAlloc(kInt);
-          IExpr temp;
-          IExpr nTemp = n;
-          for (int i = 1; i <= kInt; i++) {
-            temp = F.Divide(nTemp, F.ZZ(i));
-            result.append(temp);
-            nTemp = F.eval(F.Subtract(nTemp, F.C1));
-          }
-          return result;
+          return binomialPolynomial(n, ki.intValue());
         }
       }
       if (n.equals(k)) {
@@ -563,7 +551,7 @@ public final class NumberTheory {
         int diff = F.eval(F.Subtract(n, k)).toIntDefault(-1);
         if (diff > 0 && diff <= 5) {
           IASTAppendable result = F.TimesAlloc(diff + 1);
-          result.append(F.Power(NumberTheory.factorial(diff), -1));
+          result.append(F.Power(AbstractIntegerSym.factorial(diff), -1));
           for (int i = 1; i <= diff; i++) {
             IAST temp = F.Plus(F.ZZ(i), k);
             result.append(temp);
@@ -580,7 +568,6 @@ public final class NumberTheory {
 
       return F.NIL;
     }
-
 
     @Override
     public int status() {
@@ -1927,6 +1914,9 @@ public final class NumberTheory {
     }
 
     private static ArrayList<IInteger> eulerEList(int n) {
+      if (n > Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt(n);
+      }
       ArrayList<IInteger> a = new ArrayList<IInteger>();
       a.add(F.C1);
       a.add(F.C1);
@@ -2338,7 +2328,7 @@ public final class NumberTheory {
         if (z.isNegative()) {
           return F.CComplexInfinity;
         }
-        return factorial((IInteger) z);
+        return ((IInteger) z).factorial();
       }
       if (z.isFraction()) {
         IFraction frac = (IFraction) z;
@@ -5538,49 +5528,49 @@ public final class NumberTheory {
    * 1/4+I*33333/100000
    * </pre>
    */
-  private static final class Rationalize extends AbstractCoreFunctionEvaluator {
+  public static final class Rationalize extends AbstractCoreFunctionEvaluator {
 
-    static class RationalizeNumericsVisitor extends VisitorExpr {
-      double epsilon;
-      boolean useConvergenceMethod;
-
-      public RationalizeNumericsVisitor(double epsilon, boolean useConvergenceMethod) {
-        super();
-        this.epsilon = epsilon;
-        this.useConvergenceMethod = useConvergenceMethod;
-      }
-
-      @Override
-      public IExpr visit(IASTMutable ast) {
-        return super.visitAST(ast);
-      }
-
-      @Override
-      public IExpr visit(IComplexNum element) {
-        if (useConvergenceMethod) {
-          IComplex complexConvergent =
-              F.complexConvergent(element.getRealPart(), element.getImaginaryPart());
-          if ((complexConvergent.getRealPart().isZero() && !element.re().isZero()) //
-              || (complexConvergent.getImaginaryPart().isZero() && !element.im().isZero())) {
-            return element;
-          }
-          return complexConvergent;
-        }
-        return F.complex(element.getRealPart(), element.getImaginaryPart(), epsilon);
-      }
-
-      @Override
-      public IExpr visit(INum element) {
-        if (useConvergenceMethod) {
-          IFraction fractionConvergent = F.fractionConvergent(element.getRealPart());
-          if (fractionConvergent.isZero() && !element.isZero()) {
-            return element;
-          }
-          return fractionConvergent;
-        }
-        return F.fraction(element.getRealPart(), epsilon);
-      }
-    }
+    // public static class RationalizeNumericsVisitor extends VisitorExpr {
+    // double epsilon;
+    // boolean useConvergenceMethod;
+    //
+    // public RationalizeNumericsVisitor(double epsilon, boolean useConvergenceMethod) {
+    // super();
+    // this.epsilon = epsilon;
+    // this.useConvergenceMethod = useConvergenceMethod;
+    // }
+    //
+    // @Override
+    // public IExpr visit(IASTMutable ast) {
+    // return super.visitAST(ast);
+    // }
+    //
+    // @Override
+    // public IExpr visit(IComplexNum element) {
+    // if (useConvergenceMethod) {
+    // IComplex complexConvergent =
+    // F.complexConvergent(element.getRealPart(), element.getImaginaryPart());
+    // if ((complexConvergent.getRealPart().isZero() && !element.re().isZero()) //
+    // || (complexConvergent.getImaginaryPart().isZero() && !element.im().isZero())) {
+    // return element;
+    // }
+    // return complexConvergent;
+    // }
+    // return F.complex(element.getRealPart(), element.getImaginaryPart(), epsilon);
+    // }
+    //
+    // @Override
+    // public IExpr visit(INum element) {
+    // if (useConvergenceMethod) {
+    // IFraction fractionConvergent = F.fractionConvergent(element.getRealPart());
+    // if (fractionConvergent.isZero() && !element.isZero()) {
+    // return element;
+    // }
+    // return fractionConvergent;
+    // }
+    // return F.fraction(element.getRealPart(), epsilon);
+    // }
+    // }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -5601,7 +5591,7 @@ public final class NumberTheory {
           }
         }
         // try to convert into a fractional number
-        return rationalize(arg1, epsilon, useConvergenceMethod).orElse(arg1);
+        return AbstractFractionSym.rationalize(arg1, epsilon, useConvergenceMethod).orElse(arg1);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         // ex.printStackTrace();
@@ -6550,33 +6540,8 @@ public final class NumberTheory {
     }
   }
 
-  public static IInteger factorial(final IInteger x) {
-    return x.factorial();
-  }
-
   public static boolean check(IExpr n, IExpr k, IExpr delta, EvalEngine engine) {
     return engine.evalEqual(n, k.plus(delta));
-  }
-
-  public static IInteger factorial(int n) {
-    final int absN = Math.abs(n);
-    final int iterationLimit = EvalEngine.get().getIterationLimit();
-    if (iterationLimit >= 0 && iterationLimit < absN) {
-      IterationLimitExceeded.throwIt(absN, F.Factorial(F.ZZ(n)));
-    }
-
-    BigInteger result;
-    if (absN <= 20) {
-      result = BigInteger.valueOf(LongMath.factorial(absN));
-    } else {
-      result = BigIntegerMath.factorial(absN);
-    }
-
-    if (n < 0 && n % 2 != 0) {
-      result = result.negate();
-    }
-
-    return AbstractIntegerSym.valueOf(result);
   }
 
   /**
@@ -6659,16 +6624,14 @@ public final class NumberTheory {
    */
   public static IInteger binomial(final IInteger n, final IInteger k)
       throws BigIntegerLimitExceeded {
-    if (n.isZero() && k.isZero()) {
+    if (k.isZero() || k.equals(n)) {
       return F.C1;
     }
+
     if (!n.isNegative() && !k.isNegative()) {
       // k>n : by definition --> 0
-      if (k.isNegative() || k.compareTo(n) > 0) {
+      if (k.compareTo(n) > 0) {
         return F.C0;
-      }
-      if (k.isZero() || k.equals(n)) {
-        return F.C1;
       }
 
       int ni = n.toIntDefault(-1);
@@ -6678,6 +6641,7 @@ public final class NumberTheory {
           if (ki > ni) {
             return F.C0;
           }
+
           long bits = LongMath.log2(ni, CEILING) * ki;
           if (bits < Config.MAX_BIT_LENGTH) {
             return AbstractIntegerSym.valueOf(BigIntegerMath.binomial(ni, ki));
@@ -6689,7 +6653,6 @@ public final class NumberTheory {
 
       IInteger bin = F.C1;
       IInteger i = F.C1;
-
       while (!(i.compareTo(k) > 0)) {
         bin = bin.multiply(n.subtract(i).add(F.C1)).div(i);
         i = i.add(F.C1);
@@ -6719,6 +6682,26 @@ public final class NumberTheory {
     // (n,k) ==> Gamma(n+1)/(Gamma(k+1)*Gamma(n-k+1))
     return F.Times(F.Gamma(nPlus1), F.Power(F.Gamma(kPlus1), -1),
         F.Power(F.Gamma(nMinuskPlus1), -1));
+  }
+
+  /**
+   * Compute the binomial coefficient <code>n choose k</code> as a polynomial in n. Assumption:
+   * <code>n &gt; k</code>.
+   * 
+   * @param n the expression <code>n</code> in the binomial coefficient <code>n choose k</code>
+   * @param k the integer <code>k</code> in the binomial coefficient <code>n choose k</code>
+   * @return the binomial polynomial <code>n*(n-1)*...*(n-k+1)/(k!)</code>
+   */
+  public static IAST binomialPolynomial(IExpr n, int k) {
+    IASTAppendable result = F.TimesAlloc(k);
+    IExpr temp;
+    IExpr nTemp = n;
+    for (int i = 1; i <= k; i++) {
+      temp = F.Divide(nTemp, F.ZZ(i));
+      result.append(temp);
+      nTemp = nTemp.dec();
+    }
+    return result;
   }
 
   /**
@@ -6865,12 +6848,12 @@ public final class NumberTheory {
         if (k < 0) {
           nNeg++;
           int temp = -1 - k;
-          pNeg = pNeg.divideBy(factorial(temp));
+          pNeg = pNeg.divideBy(AbstractIntegerSym.factorial(temp));
           if ((temp & 1) == 1) {
             pNeg = pNeg.negate();
           }
         } else {
-          pPlus = pPlus.multiply(factorial(k));
+          pPlus = pPlus.multiply(AbstractIntegerSym.factorial(k));
         }
       }
     }
@@ -6880,7 +6863,7 @@ public final class NumberTheory {
         return F.C0;
       }
       int kFactor = -1 - n;
-      IRational p = pPlus.multiply(pNeg).multiply(factorial(kFactor));
+      IRational p = pPlus.multiply(pNeg).multiply(AbstractIntegerSym.factorial(kFactor));
       if ((kFactor & 1) == 1) {
         p = p.negate();
       }
@@ -6889,7 +6872,7 @@ public final class NumberTheory {
     if (nNeg > 0) {
       return F.C0;
     }
-    IInteger result = factorial(n).div(pPlus);
+    IInteger result = AbstractIntegerSym.factorial(n).div(pPlus);
     return result;
   }
 
@@ -6956,7 +6939,7 @@ public final class NumberTheory {
         sum = sum.add(bin.multiply(pow));
       }
     }
-    return sum.div(factorial(k));
+    return sum.div(k.factorial());
   }
 
   /**
@@ -7001,34 +6984,6 @@ public final class NumberTheory {
       F.ZZ("286386577668298411128469151667598498812366", 10)};
 
   private NumberTheory() {}
-
-  public static IExpr rationalize(IExpr arg1) {
-    return NumberTheory.rationalize(arg1, Config.DOUBLE_EPSILON, true);
-  }
-
-  /**
-   * Rationalize only pure numeric numbers in expression <code>arg</code>.
-   *
-   * @param arg1
-   * @return <code>F.NIL</code> if no expression was transformed
-   */
-  public static IExpr rationalize(IExpr arg1, boolean useConvergenceMethod) {
-    return NumberTheory.rationalize(arg1, Config.DOUBLE_EPSILON, useConvergenceMethod);
-  }
-
-  /**
-   * Rationalize only pure numeric numbers in expression <code>arg</code>.
-   *
-   * @param arg1
-   * @param epsilon
-   * @param useConvergenceMethod
-   * @return <code>F.NIL</code> if no expression was transformed
-   */
-  public static IExpr rationalize(IExpr arg1, double epsilon, boolean useConvergenceMethod) {
-    Rationalize.RationalizeNumericsVisitor rationalizeVisitor =
-        new Rationalize.RationalizeNumericsVisitor(epsilon, useConvergenceMethod);
-    return arg1.accept(rationalizeVisitor);
-  }
 
   /**
    * Return a list <code>{p,q,d,s}</code>, with <code>p,q,d,s</code> integers, if the expression is

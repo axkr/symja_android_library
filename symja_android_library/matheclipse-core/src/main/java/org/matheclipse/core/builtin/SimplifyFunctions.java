@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
@@ -417,7 +418,7 @@ public class SimplifyFunctions {
             if (fFullSimplify) {
               if (together.isTimes()) {
                 IExpr[] parts =
-                    Algebra.numeratorDenominator((IAST) together, true, EvalEngine.get());
+                    AlgebraUtil.numeratorDenominator((IAST) together, true, EvalEngine.get());
                 IExpr numerator = parts[0];
                 IExpr denominator = parts[1];
                 // common factors in numerator, denominator may be canceled here, so check if we
@@ -1581,11 +1582,6 @@ public class SimplifyFunctions {
    * <a href="Simplify.md">Simplify</a>
    */
   private static class FullSimplify extends Simplify {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return super.evaluate(ast, engine);
-    }
 
     @Override
     public int[] expectedArgSize(IAST ast) {

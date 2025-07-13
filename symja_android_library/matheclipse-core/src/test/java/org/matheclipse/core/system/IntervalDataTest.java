@@ -11,12 +11,44 @@ import org.matheclipse.core.interfaces.IExpr;
 public class IntervalDataTest extends ExprEvaluatorTestCase {
 
   @Test
-  public void testIntervalDataArcSin() {
+  public void testInterval001() {
+    check("Interval({-Infinity,0})-Log(3)", //
+        "Interval({-Infinity,-Log(3)})");
+    check("Interval({-1,1})+Log(3)", //
+        "Interval({-1+Log(3),1+Log(3)})");
+  }
+
+  @Test
+  public void testIntervalData001() {
+    check("IntervalData({-Infinity,Less,LessEqual,0})-Log(3)", //
+        "IntervalData({-Infinity,Less,LessEqual,-Log(3)})");
+    check("IntervalData({-Infinity,Less,Less,0})-Log(3)", //
+        "IntervalData({-Infinity,Less,Less,-Log(3)})");
+    check("1+IntervalData({-1,Less,Less,1})", //
+        "IntervalData({0,Less,Less,2})");
+    check("IntervalData({-1,Less,Less,1})+Log(3)", //
+        "IntervalData({-1+Log(3),Less,Less,1+Log(3)})");
     check("IntervalData({0,LessEqual,LessEqual,2},Sqrt(2))", //
         "IntervalData({0,LessEqual,LessEqual,2})");
   }
 
+  @Test
+  public void testIntervalPower() {
+    check("Interval[{-3,2}]^4", //
+        "Interval({0,81})");
+  }
 
+  @Test
+  public void testIntervalDataArccos() {
+    check("ArcCos(IntervalData({-1,LessEqual,LessEqual,1/2}))", //
+        "IntervalData({Pi/3,LessEqual,LessEqual,Pi})");
+  }
+
+  @Test
+  public void testIntervalDataPower() {
+    check("IntervalData({-3,LessEqual,LessEqual,2})^4", //
+        "IntervalData({0,LessEqual,LessEqual,81})");
+  }
 
   @Test
   public void testEqual() {
@@ -38,7 +70,9 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
         "IntervalData({-Infinity,Less,Less,42})");
 
     check("ToIntervalData(a>17||a<42,a)", //
-        "IntervalData({17,Less,Less,Infinity})||IntervalData({-Infinity,Less,Less,42})");
+        "IntervalData({-Infinity,Less,Less,Infinity})");
+    check("ToIntervalData(a>17&&a<42,a)", //
+        "IntervalData({17,Less,Less,42})");
   }
 
   @Test

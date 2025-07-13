@@ -17,7 +17,7 @@ import org.apache.logging.log4j.Logger;
 import org.apfloat.ApfloatInterruptedException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
-import org.matheclipse.core.builtin.NumberTheory;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
@@ -27,11 +27,13 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
+import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.PowerTimesFunction;
 import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
@@ -281,7 +283,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       engine.setNumericMode(false);
 
       final IExpr arg1Holdall = holdallAST.arg1();
-      final IExpr a1 = NumberTheory.rationalize(arg1Holdall, false).orElse(arg1Holdall);
+      final IExpr a1 = AbstractFractionSym.rationalize(arg1Holdall, false).orElse(arg1Holdall);
       IExpr arg1 = engine.evaluateNIL(a1);
       if (arg1.isPresent()) {
         evaled = true;
@@ -306,14 +308,15 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       }
       if (arg2.isList()) {
         IAST xList = (IAST) arg2;
-        if (xList.isVector() == 3) {
-          // Integrate[f[x], {x,a,b}]
+        if (xList.isList3()) {
+          // Integrate(f(x), {x,a,b})
           IAST copy = holdallAST.setAtCopy(2, xList.arg1());
           IExpr temp = engine.evaluate(copy);
-          if (temp.isFreeAST(S.Integrate)) {
+          if (temp.isFreeAST(h -> h == S.Integrate || h == S.Boole) //
+              && temp.isSpecialsFree()) {
             return definiteIntegral(temp, xList, holdallAST, engine);
           }
-          return F.NIL;
+          return integrateBooleTimesFxRegion(arg1, xList, false, engine);
         }
         // Invalid integration variable or limit(s) in `1`.
         return Errors.printMessage(S.Integrate, "ilim", F.List(arg2), engine);
@@ -414,6 +417,67 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     }
   }
 
+  /**
+   * Integrates the given <code>function</code>, by analyzing, if its a multiplication with a
+   * {@link S#Boole}. Example: <code>Integrate(Boole(condition)*f(x), {x,-Infinity,Infinity})</code>
+   * 
+   * @param function the function to integrate which will be analyzed for {@link S#Boole} function
+   * @param xList the integration variable and the limits of integration, e.g. <code>{x,
+   *        -Infinity,Infinity}</code>
+   * @param numericMode TODO
+   * @param engine the evaluation engine
+   * @return the integrated function or {@link F#NIL} if no {@link S#Boole} function was found
+   */
+  public static IExpr integrateBooleTimesFxRegion(IExpr function, IAST xList, boolean numericMode,
+      final EvalEngine engine) {
+    if (function.isAST(S.Boole, 2)) {
+      // 1 * Boole(condition)
+      function = F.Times(F.C1, function);
+    }
+    if (function.isTimes() //
+        && xList.arg2().isNegativeInfinity() && xList.arg3().isInfinity()) {
+      int index = function.indexOf(b -> b.isAST(S.Boole, 2));
+      if (index > 0) {
+        // Integrate(Boole(condition)*f(x), {x,-Infinity,Infinity})
+        IExpr condition = ((IAST) function).get(index).first();
+        IExpr x = xList.arg1();
+        IExpr interval = IntervalDataSym.toIntervalData(condition, x, engine);
+
+        if (interval.isIntervalData()) {
+          if (interval.argSize() == 0) {
+            return F.C0;
+          }
+          IExpr fx = ((IAST) function).removeAtCopy(index).oneIdentity1();
+          IAST intervalData = (IAST) interval;
+          IASTAppendable result = F.PlusAlloc(intervalData.argSize());
+          for (int i = 1; i < intervalData.size(); i++) {
+            IExpr arg = intervalData.get(i);
+            if (!arg.isList4()) {
+              return F.NIL;
+            }
+            IAST intervalList = (IAST) arg;
+            final IExpr integratedInterval;
+            if (numericMode) {
+              integratedInterval = engine
+                  .evaluate(F.NIntegrate(fx, F.List(x, intervalList.arg1(), intervalList.arg4()),
+                      F.Rule(S.Method, "LegendreGauss")));
+            } else {
+              integratedInterval = engine
+                  .evaluate(F.Integrate(fx, F.List(x, intervalList.arg1(), intervalList.arg4())));
+            }
+            if (integratedInterval.isSpecialsFree()) {
+              result.append(integratedInterval);
+            } else {
+              return F.NIL;
+            }
+          }
+          return result;
+        }
+      }
+    }
+    return F.NIL;
+  }
+
   private static IExpr integrateTimesPower(final IAST function, final IExpr x) {
     if (function.isTimes()) {
       IAST[] temp = function.filter(arg -> arg.isFree(x));
@@ -510,10 +574,10 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * @param x assumes to be an element of the Reals
    * @return
    */
-  private static IExpr integrateAbs(IExpr function, final IExpr x) {
+  private static IExpr integrateAbs(IAST function, final IExpr x) {
     IExpr constant = F.C0;
     if (function.isAST1() && function.first().equals(x)) {
-      IAST f1 = (IAST) function;
+      IAST f1 = function;
       IExpr head = f1.head();
       if (head.equals(S.RealAbs)) {
         return F.Times(F.C1D2, x, F.RealAbs(x));
@@ -525,7 +589,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     if (x.isRealResult()) {
       if (function.isAbs()) {
         // Abs(x)
-        IAST abs = (IAST) function;
+        IAST abs = function;
         IExpr[] lin = abs.arg1().linearPower(x);
         if (lin != null && !lin[1].isZero() && lin[0].isRealResult() && lin[1].isRealResult()
             && lin[2].isInteger()) {
@@ -577,7 +641,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           }
         }
       } else if (function.isPower() && function.base().isAbs() && function.exponent().isInteger()) {
-        IAST power = (IAST) function;
+        IAST power = function;
         IAST abs = (IAST) power.base();
 
         IExpr[] lin = abs.arg1().linear(x);
@@ -715,7 +779,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
 
       if (arg1AST.size() >= 3 && arg1AST.isFree(S.Integrate) && arg1AST.isPlusTimesPower()) {
         if (!arg1AST.isEvalFlagOn(IAST.IS_DECOMPOSED_PARTIAL_FRACTION) && x.isSymbol()) {
-          Optional<IExpr[]> parts = Algebra.fractionalParts(arg1, true);
+          Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, true);
           if (parts.isPresent()) {
             IExpr temp = Algebra.partsApart(parts.get(), x, engine);
             if (temp.isPresent() && !temp.equals(arg1)) {
@@ -834,7 +898,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
             // Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT
             // + " exceeded: " + ast.toString());
             engine.setRecursionLimit(limit);
-            LOGGER.log(engine.getLogLevel(), "Integrate(Rubi recursion)", rle);
+            // LOGGER.log(engine.getLogLevel(), "Integrate(Rubi recursion)", rle);
             return F.NIL;
           } catch (ApfloatInterruptedException | PreemptingException ex) {
             throw ex;

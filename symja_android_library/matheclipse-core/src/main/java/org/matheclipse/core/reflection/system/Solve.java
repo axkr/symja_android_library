@@ -1092,7 +1092,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                 removedPositions[untilPosition++] = j;
                 break;
               }
-              if (!engine.evalTrue(F.PossibleZeroQ(replaceAll))) {
+
+              if (!replaceAll.isPossibleZero(true, Config.DEFAULT_ROOTS_CHOP_DELTA)) {
+                // if (!engine.evalTrue(F.PossibleZeroQ(replaceAll))) {
                 removedPositions[untilPosition++] = j;
                 break;
               }

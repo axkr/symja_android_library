@@ -1602,7 +1602,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @param function a unary function which maps each argument
    * @return the resulting IAST with the mapped elements
    */
-  public IASTMutable mapThread(Function<IExpr, IExpr> function);
+  public IAST mapThread(Function<IExpr, IExpr> function);
 
   /**
    * Maps the elements of <code>this</code> IAST and of <code>that</code> IAST on the first level of

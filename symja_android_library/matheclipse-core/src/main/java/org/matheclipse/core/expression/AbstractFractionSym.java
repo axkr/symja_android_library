@@ -33,6 +33,7 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
+import org.matheclipse.core.visit.RationalizeNumericsVisitor;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
 
@@ -1288,33 +1289,33 @@ public abstract class AbstractFractionSym implements IFraction {
   }
 
   @Override
-  public IAST factorSmallPrimes(int numerator, int root) {
+  public IAST factorSmallPrimes(int rootNumerator, int rootDenominator) {
     IInteger b = numerator();
     boolean isNegative = false;
     if (complexSign() < 0) {
       b = b.negate();
       isNegative = true;
     }
-    if (numerator != 1) {
-      b = b.powerRational(numerator);
+    if (rootNumerator != 1) {
+      b = b.powerRational(rootNumerator);
     }
     IInteger d = denominator();
-    if (numerator != 1) {
-      d = d.powerRational(numerator);
+    if (rootNumerator != 1) {
+      d = d.powerRational(rootNumerator);
     }
     Int2IntMap bMap = new Int2IntRBTreeMap();
     BigInteger number = b.toBigNumerator();
-    IAST bAST = AbstractIntegerSym.factorBigInteger(number, isNegative, numerator, root, bMap);
+    IAST bAST = AbstractIntegerSym.factorBigInteger(number, isNegative, rootNumerator, rootDenominator, bMap);
     Int2IntMap dMap = new Int2IntRBTreeMap();
     number = d.toBigNumerator();
-    IAST dAST = AbstractIntegerSym.factorBigInteger(number, false, numerator, root, dMap);
+    IAST dAST = AbstractIntegerSym.factorBigInteger(number, false, rootNumerator, rootDenominator, dMap);
     if (bAST.isPresent()) {
       if (dAST.isPresent()) {
         return F.Times(bAST, F.Power(dAST, F.CN1));
       }
-      return F.Times(bAST, F.Power(denominator(), F.QQ(-numerator, root)));
+      return F.Times(bAST, F.Power(denominator(), F.QQ(-rootNumerator, rootDenominator)));
     } else if (dAST.isPresent()) {
-      return F.Times(F.Power(numerator(), F.QQ(numerator, root)), F.Power(dAST, F.CN1));
+      return F.Times(F.Power(numerator(), F.QQ(rootNumerator, rootDenominator)), F.Power(dAST, F.CN1));
     }
     return F.NIL;
   }
@@ -1720,5 +1721,33 @@ public abstract class AbstractFractionSym implements IFraction {
   @Override
   public int toIntRoot(int defaultValue) {
     return defaultValue;
+  }
+
+  public static IExpr rationalize(IExpr arg1) {
+    return rationalize(arg1, Config.DOUBLE_EPSILON, true);
+  }
+
+  /**
+   * Rationalize only pure numeric numbers in expression <code>expr</code>.
+   *
+   * @param expr
+   * @param epsilon
+   * @param useConvergenceMethod
+   * @return {@link F#NIL} if no expression was transformed
+   */
+  public static IExpr rationalize(IExpr expr, double epsilon, boolean useConvergenceMethod) {
+    RationalizeNumericsVisitor rationalizeVisitor =
+        new RationalizeNumericsVisitor(epsilon, useConvergenceMethod);
+    return expr.accept(rationalizeVisitor);
+  }
+
+  /**
+   * Rationalize only pure numeric numbers in <code>expr</code>.
+   *
+   * @param expr
+   * @return {@link F#NIL} if no expression was transformed
+   */
+  public static IExpr rationalize(IExpr expr, boolean useConvergenceMethod) {
+    return AbstractFractionSym.rationalize(expr, Config.DOUBLE_EPSILON, useConvergenceMethod);
   }
 }

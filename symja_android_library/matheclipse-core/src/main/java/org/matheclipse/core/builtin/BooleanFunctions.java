@@ -1476,18 +1476,18 @@ public final class BooleanFunctions {
         }
         if (sym.isSymbol()) {
           ISymbol symbol = (ISymbol) sym;
-          IExpr value = symbol.assignedValue();
+          IExpr oldSymbolValue = symbol.assignedValue();
           try {
             symbol.assignValue(S.True, false);
             booleanTableRecursive(expr, position + 1);
           } finally {
-            symbol.assignValue(value, false);
+            symbol.clearValue(oldSymbolValue);
           }
           try {
             symbol.assignValue(S.False, false);
             booleanTableRecursive(expr, position + 1);
           } finally {
-            symbol.assignValue(value, false);
+            symbol.clearValue(oldSymbolValue);
           }
 
           return resultList;
@@ -2138,8 +2138,13 @@ public final class BooleanFunctions {
     protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
       if (arg2.isNegative()) {
         // arg1 > "negative number"
-        if (arg1.isNonNegativeResult() || arg1.isPositiveResult()) {
+        if (arg1.isNonNegativeResult()) {
           return S.True;
+        }
+      } else if (arg2.isPositive()) {
+        // arg1 < "positive number"
+        if (arg1.isNegativeResult() || arg1.isZero()) {
+          return S.False;
         }
       } else if (arg2.isZero()) {
         // arg1 > 0
@@ -2149,15 +2154,24 @@ public final class BooleanFunctions {
         if (arg1.isNegativeResult()) {
           return S.False;
         }
-      } else {
-        // arg1 < "positive number"
-        if (arg1.isNegativeResult() || arg1.isZero()) {
+      }
+      IReal a2 = arg2.evalReal();
+      if (a2 != null && !arg1.hasComplexNumber()) {
+        if (AbstractAssumptions.assumeGreaterThan(arg1, arg2)) {
+          return S.True;
+        }
+        if (AbstractAssumptions.assumeLessThan(arg1, arg2)) {
           return S.False;
         }
       }
-      IReal a2 = arg2.evalReal();
-      if (a2 != null && AbstractAssumptions.assumeGreaterThan(arg1, a2)) {
-        return S.True;
+      IReal a1 = arg1.evalReal();
+      if (a1 != null && !arg2.hasComplexNumber()) {
+        if (AbstractAssumptions.assumeLessThan(arg2, arg1)) {
+          return S.True;
+        }
+        if (AbstractAssumptions.assumeGreaterThan(arg2, arg1)) {
+          return S.False;
+        }
       }
       return F.NIL;
     }
@@ -2193,6 +2207,9 @@ public final class BooleanFunctions {
     @Override
     public IExpr.COMPARE_TERNARY compareTernary(final IExpr a0, final IExpr a1) {
       // don't compare strings
+      if (a0.equals(a1) && a0.isRealResult() && a1.isRealResult()) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
       if (a0.isReal()) {
         if (a1.isReal()) {
           return ((IReal) a0).isGT((IReal) a1) ? IExpr.COMPARE_TERNARY.TRUE
@@ -2288,21 +2305,32 @@ public final class BooleanFunctions {
       if (astEvaled.isAST2()) {
         IExpr arg1 = astEvaled.arg1();
         IExpr arg2 = astEvaled.arg2();
+        if (arg1.equals(S.Undefined) || arg2.equals(S.Undefined)) {
+          return S.Undefined;
+        }
         IExpr result = simplifyCompare(arg1, arg2);
         if (result.isPresent()) {
           // the result may return an AST with an "opposite header"
           // (i.e. Less instead of Greater)
           return result;
         }
-        if (arg2.isNumericFunction(true)) {
+        IExpr.COMPARE_TERNARY ternaryCompare = prepareCompare(arg1, arg2, engine);
+        if (ternaryCompare == IExpr.COMPARE_TERNARY.FALSE) {
+          return S.False;
+        }
+        if (ternaryCompare == IExpr.COMPARE_TERNARY.TRUE) {
+          return S.True;
+        }
+        if (engine.getAssumptions() != null//
+            && (arg1.isNumericFunction(true) || arg2.isNumericFunction(true))) {
           // this part is used in other comparator operations like
-          // Less,
-          // GreaterEqual,...
+          // Less, LessEqual, GreaterEqual,...
           IExpr temp2 = checkAssumptions(arg1, arg2);
           if (temp2.isPresent()) {
             return temp2;
           }
         }
+        return F.NIL;
       }
       boolean evaled = false;
 
@@ -2408,7 +2436,7 @@ public final class BooleanFunctions {
     }
 
     /**
-     * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code> wll be simplified
+     * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code> will be simplified
      * to <code>x &gt; 2</code>.
      *
      * @param a1 left-hand-side of the comparator expression
@@ -2543,26 +2571,42 @@ public final class BooleanFunctions {
     protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
       if (arg2.isNegative()) {
         // arg1 >= "negative number"
-        if (arg1.isNonNegativeResult() || arg1.isPositiveResult()) {
+        if (arg1.isNonNegativeResult()) {
           return S.True;
+        }
+      } else if (arg2.isPositive()) {
+        // arg1 >= "positive number"
+        if (arg1.isNegativeResult() || arg1.isZero()) {
+          return S.False;
         }
       } else if (arg2.isZero()) {
         // arg1 >= 0
-        if (arg1.isNonNegativeResult() || arg1.isPositiveResult()) {
+        if (arg1.isNonNegativeResult()) {
           return S.True;
         }
         if (arg1.isNegativeResult()) {
           return S.False;
         }
-      } else {
-        // arg1 >= "positive number" > 0
-        if (arg1.isNegativeResult() || arg1.isZero()) {
+      }
+
+      IReal a2 = arg2.evalReal();
+      // if (a2 != null && !arg1.hasComplexNumber()) {
+      if (a2 != null && !arg1.hasComplexNumber()) {
+        if (AbstractAssumptions.assumeGreaterEqual(arg1, arg2)) {
+          return S.True;
+        }
+        if (AbstractAssumptions.assumeLessThan(arg1, arg2)) {
           return S.False;
         }
       }
-      IReal a2 = arg2.evalReal();
-      if (a2 != null && AbstractAssumptions.assumeGreaterEqual(arg1, a2)) {
-        return S.True;
+      IReal a1 = arg1.evalReal();
+      if (a1 != null && !arg2.hasComplexNumber()) {
+        if (AbstractAssumptions.assumeLessThan(arg2, arg1)) {
+          return S.True;
+        }
+        if (AbstractAssumptions.assumeGreaterEqual(arg2, arg1)) {
+          return S.False;
+        }
       }
       return F.NIL;
     }
@@ -2848,7 +2892,11 @@ public final class BooleanFunctions {
         if (arg1.isPositiveResult()) {
           return S.False;
         }
-
+      } else if (arg2.isPositive()) {
+        // arg1 < "positive number"
+        if (arg1.isNegativeResult() || arg1.isZero()) {
+          return S.True;
+        }
       } else if (arg2.isZero()) {
         // arg1 < 0
         if (arg1.isNegativeResult()) {
@@ -2857,15 +2905,26 @@ public final class BooleanFunctions {
         if (arg1.isPositiveResult()) {
           return S.False;
         }
-      } else {
-        // arg1 < "positive number"
-        if (arg1.isNegativeResult() || arg1.isZero()) {
+      }
+
+      IReal a2 = arg2.evalReal();
+      // if (a2 != null && !arg1.hasComplexNumber()) {
+      if (a2 != null && !arg1.hasComplexNumber()) {
+        if (AbstractAssumptions.assumeLessThan(arg1, arg2)) {
           return S.True;
         }
+        if (AbstractAssumptions.assumeGreaterThan(arg1, arg2)) {
+          return S.False;
+        }
       }
-      IReal a2 = arg2.evalReal();
-      if (a2 != null && AbstractAssumptions.assumeLessThan(arg1, a2)) {
-        return S.True;
+      IReal a1 = arg1.evalReal();
+      if (a1 != null && !arg2.hasComplexNumber()) {
+        if (AbstractAssumptions.assumeGreaterThan(arg2, arg1)) {
+          return S.True;
+        }
+        if (AbstractAssumptions.assumeLessThan(arg2, arg1)) {
+          return S.False;
+        }
       }
       return F.NIL;
     }
@@ -2934,8 +2993,13 @@ public final class BooleanFunctions {
     protected IExpr checkAssumptions(IExpr arg1, IExpr arg2) {
       if (arg2.isNegative()) {
         // arg1 <= "negative number"
-        if (arg1.isNonNegativeResult() || arg1.isPositiveResult()) {
+        if (arg1.isNonNegativeResult()) {
           return S.False;
+        }
+      } else if (arg2.isPositive()) {
+        // arg1 <= "positive number"
+        if (arg1.isNegativeResult() || arg1.isZero()) {
+          return S.True;
         }
       } else if (arg2.isZero()) {
         // arg1 <= 0
@@ -2945,15 +3009,27 @@ public final class BooleanFunctions {
         if (arg1.isPositiveResult()) {
           return S.False;
         }
-      } else {
-        // arg1 <= "positive number"
-        if (arg1.isNegativeResult() || arg1.isZero()) {
+      }
+
+
+      IReal a2 = arg2.evalReal();
+      // if (a2 != null && !arg1.hasComplexNumber()) {
+      if (a2 != null && !arg1.hasComplexNumber()) {
+        if (AbstractAssumptions.assumeLessEqual(arg1, arg2)) {
           return S.True;
         }
+        if (AbstractAssumptions.assumeGreaterThan(arg1, arg2)) {
+          return S.False;
+        }
       }
-      IReal a2 = arg2.evalReal();
-      if (a2 != null && AbstractAssumptions.assumeLessEqual(arg1, a2)) {
-        return S.True;
+      IReal a1 = arg1.evalReal();
+      if (a1 != null && !arg2.hasComplexNumber()) {
+        if (AbstractAssumptions.assumeGreaterThan(arg2, arg1)) {
+          return S.True;
+        }
+        if (AbstractAssumptions.assumeLessEqual(arg2, arg1)) {
+          return S.False;
+        }
       }
       return F.NIL;
     }
@@ -3178,29 +3254,28 @@ public final class BooleanFunctions {
       IExpr max2;
       max1 = list.arg1();
 
-      IExpr.COMPARE_TERNARY comp;
+      IExpr comp;
       f = list.copyHead();
       for (int i = 2; i < list.size(); i++) {
         max2 = list.get(i);
         if (max1.equals(max2)) {
           continue;
         }
-        comp = BooleanFunctions.CONST_LESS.prepareCompare(max1, max2, engine);
+        comp = engine.evaluate(F.Greater(max1, max2));
+        // BooleanFunctions.CONST_LESS.prepareCompare(max1, max2, engine);
 
-        if (comp == IExpr.COMPARE_TERNARY.TRUE) {
+        if (comp.isFalse()) {
           max1 = max2;
           evaled = true;
-        } else if (comp == IExpr.COMPARE_TERNARY.FALSE) {
+        } else if (comp.isTrue()) {
           evaled = true;
         } else {
-          if (comp == IExpr.COMPARE_TERNARY.UNDECIDABLE) {
-            // undetermined
-            if (max1.isRealResult()) {
-              f.append(max2);
-            } else {
-              f.append(max1);
-              max1 = max2;
-            }
+
+          if (max1.isRealResult()) {
+            f.append(max2);
+          } else {
+            f.append(max1);
+            max1 = max2;
           }
         }
       }
@@ -3223,6 +3298,7 @@ public final class BooleanFunctions {
       MAX_DUMMY_SYMBOL.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT);
     }
   }
+
 
   /**
    *
@@ -3361,7 +3437,8 @@ public final class BooleanFunctions {
       IExpr min2;
       min1 = list.arg1();
       f = list.copyHead();
-      IExpr.COMPARE_TERNARY comp;
+
+      IExpr comp;
       for (int i = 2; i < list.size(); i++) {
         min2 = list.get(i);
         if (min2.isInfinity()) {
@@ -3372,22 +3449,19 @@ public final class BooleanFunctions {
         if (min1.equals(min2)) {
           continue;
         }
-        comp = BooleanFunctions.CONST_GREATER.prepareCompare(min1, min2, engine);
-
-        if (comp == IExpr.COMPARE_TERNARY.TRUE) {
+        comp = engine.evaluate(F.Less(min1, min2));
+        if (comp.isFalse()) {
           min1 = min2;
           evaled = true;
-        } else if (comp == IExpr.COMPARE_TERNARY.FALSE) {
+        } else if (comp.isTrue()) {
           evaled = true;
         } else {
-          if (comp == IExpr.COMPARE_TERNARY.UNDECIDABLE) {
-            // undetermined
-            if (min1.isRealResult()) {
-              f.append(min2);
-            } else {
-              f.append(min1);
-              min1 = min2;
-            }
+          // undetermined
+          if (min1.isRealResult()) {
+            f.append(min2);
+          } else {
+            f.append(min1);
+            min1 = min2;
           }
         }
       }
@@ -3411,6 +3485,7 @@ public final class BooleanFunctions {
 
     }
   }
+
 
   private static class MinMax extends AbstractFunctionEvaluator {
     @Override
@@ -3452,6 +3527,7 @@ public final class BooleanFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
+
 
   /**
    *
@@ -3519,6 +3595,7 @@ public final class BooleanFunctions {
       newSymbol.setAttributes(ISymbol.HOLDALL);
     }
   }
+
 
   /**
    *
@@ -3594,6 +3671,7 @@ public final class BooleanFunctions {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
+
 
   /**
    *
@@ -3694,6 +3772,7 @@ public final class BooleanFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+
   /**
    *
    *
@@ -3751,6 +3830,7 @@ public final class BooleanFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -3801,6 +3881,7 @@ public final class BooleanFunctions {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
+
 
   /**
    *
@@ -3868,6 +3949,7 @@ public final class BooleanFunctions {
       newSymbol.setAttributes(ISymbol.HOLDALL);
     }
   }
+
 
   /**
    *
@@ -3946,6 +4028,7 @@ public final class BooleanFunctions {
       return F.NIL;
     }
   }
+
 
   /**
    *
@@ -4067,6 +4150,7 @@ public final class BooleanFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -4144,6 +4228,7 @@ public final class BooleanFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -4196,6 +4281,7 @@ public final class BooleanFunctions {
       return S.True;
     }
   }
+
 
   /**
    *
@@ -4281,6 +4367,7 @@ public final class BooleanFunctions {
       return F.ZZ(assignments.size());
     }
   }
+
 
   /**
    *
@@ -4373,6 +4460,7 @@ public final class BooleanFunctions {
       return ARGS_1_3;
     }
   }
+
 
   /**
    *
@@ -4483,14 +4571,14 @@ public final class BooleanFunctions {
               Errors.getMessage("setraw", F.list(sym), EvalEngine.get()));
         }
         ISymbol symbol = (ISymbol) sym;
-        IExpr value = symbol.assignedValue();
+        IExpr oldValue = symbol.assignedValue();
         try {
           symbol.assignValue(S.True, false);
           if (bruteForceSatisfiableQ(expr, variables, position + 1)) {
             return true;
           }
         } finally {
-          symbol.assignValue(value, false);
+          symbol.clearValue(oldValue);
         }
         try {
           symbol.assignValue(S.False, false);
@@ -4498,12 +4586,13 @@ public final class BooleanFunctions {
             return true;
           }
         } finally {
-          symbol.assignValue(value, false);
+          symbol.clearValue(oldValue);
         }
       }
       return false;
     }
   }
+
 
   /**
    *
@@ -4601,14 +4690,14 @@ public final class BooleanFunctions {
               Errors.getMessage("setraw", F.list(sym), EvalEngine.get()));
         }
         ISymbol symbol = (ISymbol) sym;
-        IExpr value = symbol.assignedValue();
+        IExpr oldValue = symbol.assignedValue();
         try {
           symbol.assignValue(S.True, false);
           if (!bruteForceTautologyQ(expr, variables, position + 1)) {
             return false;
           }
         } finally {
-          symbol.assignValue(value, false);
+          symbol.clearValue(oldValue);
         }
         try {
           symbol.assignValue(S.False, false);
@@ -4616,12 +4705,13 @@ public final class BooleanFunctions {
             return false;
           }
         } finally {
-          symbol.assignValue(value, false);
+          symbol.clearValue(oldValue);
         }
       }
       return true;
     }
   }
+
 
   /**
    *
@@ -4663,6 +4753,7 @@ public final class BooleanFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
+
 
   /**
    *
@@ -4775,6 +4866,7 @@ public final class BooleanFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -4833,6 +4925,7 @@ public final class BooleanFunctions {
     }
   }
 
+
   private static class Xnor extends Xor implements IBooleanFormula {
 
     @Override
@@ -4859,6 +4952,8 @@ public final class BooleanFunctions {
       newSymbol.setAttributes(ISymbol.ORDERLESS);
     }
   }
+
+
   /**
    *
    *
@@ -4967,6 +5062,7 @@ public final class BooleanFunctions {
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.ONEIDENTITY | ISymbol.FLAT);
     }
+
   }
 
   /**

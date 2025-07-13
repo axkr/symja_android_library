@@ -3,7 +3,6 @@ package org.matheclipse.core.reflection.system;
 import java.util.Map;
 import java.util.Set;
 import org.hipparchus.complex.Complex;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -185,7 +184,7 @@ public class Reduce extends AbstractEvaluator {
         }
 
         IAST newIntervalData = IntervalDataSym.relationToInterval(headID, rhs);
-        IAST intersection = IntervalDataSym.intersectionIntervalData(intervalData, newIntervalData,
+        IAST intersection = IntervalDataSym.intersection(intervalData, newIntervalData,
             EvalEngine.get());
         if (intersection.isPresent()) {
           if (intersection.isAST0()) {
@@ -555,7 +554,7 @@ public class Reduce extends AbstractEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IAST vars;
+    final IAST vars;
     ISymbol domain = S.Complexes;
     if (ast.isAST2() || ast.isAST3()) {
       vars = ast.arg2().makeList();
@@ -568,6 +567,7 @@ public class Reduce extends AbstractEvaluator {
       return Errors.printMessage(S.Reduce, "error",
           F.list(F.stringx("Reduce is only implemented to reduce one variable")), engine);
     }
+    IExpr variable = vars.arg1();
 
     if (ast.isAST3()) {
       if (ast.arg3().isSymbol()) {
@@ -582,6 +582,7 @@ public class Reduce extends AbstractEvaluator {
     try {
       IExpr expr = ast.arg1();
 
+
       if (ast.arg1().isList()) {
         expr = ((IAST) expr).setAtCopy(0, S.And);
       } else if (!expr.isBooleanFunction()) {
@@ -592,7 +593,6 @@ public class Reduce extends AbstractEvaluator {
       Map<IExpr, IExpr> domainMap = new VariablesSet(expr).toMap(domain);
       setInequalityDomainsRecursive(expr, domainMap);
 
-      IExpr variable = vars.last();
       IExpr logicalExpand = S.LogicalExpand.of(engine, expr);
       if (logicalExpand.isTrue() || logicalExpand.isFalse()) {
         return logicalExpand;
@@ -600,6 +600,14 @@ public class Reduce extends AbstractEvaluator {
       if (!logicalExpand.isBooleanFunction()) {
         logicalExpand = F.And(logicalExpand);
       }
+
+      // if (domain == S.Reals) {
+      // IExpr interval = IntervalDataSym.toIntervalData(logicalExpand, variable, engine);
+      // if (interval.isIntervalData()) {
+      // return IntervalDataSym.toLogic((IAST) interval, variable);
+      // }
+      // return F.NIL;
+      // }
 
       if (logicalExpand.isAST(S.And)) {
         IAST andAST = (IAST) logicalExpand;

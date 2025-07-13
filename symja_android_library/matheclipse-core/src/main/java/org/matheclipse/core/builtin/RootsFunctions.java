@@ -12,6 +12,7 @@ import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -479,7 +480,7 @@ public class RootsFunctions {
     }
     IExpr denom = F.C1;
     if (expr.isAST()) {
-      expr = Algebra.together((IAST) expr, engine);
+      expr = AlgebraUtil.together((IAST) expr, engine);
 
       // split expr into numerator and denominator
       denom = engine.evaluate(F.Denominator(expr));
@@ -517,7 +518,7 @@ public class RootsFunctions {
 
     IExpr denom = F.C1;
     if (expr.isAST()) {
-      expr = Algebra.together((IAST) expr, engine);
+      expr = AlgebraUtil.together((IAST) expr, engine);
 
       // split expr into numerator and denominator
       denom = S.Denominator.of(engine, expr);

@@ -808,15 +808,23 @@ public class ApfloatNum implements INum {
       }
     }
     if (z instanceof INumber) {
-      return F.complexNum(
-          EvalEngine.getApfloat().expIntegralE(fApfloat, ((INumber) z).apcomplexValue()));
+      try {
+        return F.complexNum(
+            EvalEngine.getApfloat().expIntegralE(fApfloat, ((INumber) z).apcomplexValue()));
+      } catch (ArithmeticException | NumericComputationException e) {
+        return Errors.printMessage(S.ExpIntegralE, e);
+      }
     }
     return INum.super.expIntegralE(z);
   }
 
   @Override
   public IExpr expIntegralEi() {
-    return valueOf(EvalEngine.getApfloat().expIntegralEi(fApfloat));
+    try {
+      return valueOf(EvalEngine.getApfloat().expIntegralEi(fApfloat));
+    } catch (ArithmeticException | NumericComputationException e) {
+      return Errors.printMessage(S.ExpIntegralEi, e);
+    }
   }
 
   @Override
@@ -1151,8 +1159,12 @@ public class ApfloatNum implements INum {
       }
     }
     if (arg2 instanceof INumber && arg3 instanceof INumber) {
-      return F.complexNum(EvalEngine.getApfloat().hypergeometric1F1(fApfloat,
-          ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue()));
+      try {
+        return F.complexNum(EvalEngine.getApfloat().hypergeometric1F1(fApfloat,
+            ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue()));
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        return Errors.printMessage(S.Hypergeometric1F1, e);
+      }
     }
     return INum.super.hypergeometric1F1(arg2, arg3);
   }
@@ -1404,7 +1416,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public boolean isZero(double tolerance) {
-    return F.isZero(fApfloat.doubleValue(), tolerance);
+    return F.isZero(fApfloat, tolerance);
   }
 
   @Override

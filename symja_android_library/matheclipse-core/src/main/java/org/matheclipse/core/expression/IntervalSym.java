@@ -38,7 +38,7 @@ public class IntervalSym {
    * int index), return true or false;
    */
   @FunctionalInterface
-  public interface IExprProcessor {
+  private interface IExprProcessor {
     /**
      * Append the transformed interval part <code>[min, max]</code> to the result.
      *
@@ -85,6 +85,9 @@ public class IntervalSym {
    */
   public static IAST normalize(final IAST intervalList, EvalEngine engine) {
     try {
+      if (!intervalList.isAST(S.Interval)) {
+        return F.Interval(F.List(intervalList, intervalList));
+      }
       IASTAppendable result = intervalList.copyAppendable();
       boolean evaled = false;
       for (int i = 1; i < intervalList.size(); i++) {
@@ -216,6 +219,7 @@ public class IntervalSym {
     return F.Max(inf.negate(), sup);
   }
 
+  
   public static IExpr max(final IAST ast) {
     return normalize(ast).ifPresent(//
         interval -> F.mapFunction(S.Max, (IAST) interval, list -> list.second()));
@@ -669,6 +673,9 @@ public class IntervalSym {
   }
 
   public static IAST log(final IAST ast) {
+    if (ast.size() == 1 && ast.isInterval()) {
+      return F.CEmptyIntervalData;
+    }
     EvalEngine engine = EvalEngine.get();
     return mutableProcessorConditions(ast, (min, max, result, index) -> {
       if (min.isNonNegativeResult() && max.isNonNegativeResult()) {

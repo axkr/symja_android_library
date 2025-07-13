@@ -760,15 +760,23 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr expIntegralE(IExpr z) {
     if (z instanceof INumber) {
-      return valueOf(
-          EvalEngine.getApfloat().expIntegralE(fApcomplex, ((INumber) z).apcomplexValue()));
+      try {
+        return valueOf(
+            EvalEngine.getApfloat().expIntegralE(fApcomplex, ((INumber) z).apcomplexValue()));
+      } catch (ArithmeticException | NumericComputationException e) {
+        return Errors.printMessage(S.ExpIntegralE, e);
+      }
     }
     return IComplexNum.super.expIntegralE(z);
   }
 
   @Override
   public IExpr expIntegralEi() {
-    return valueOf(EvalEngine.getApfloat().expIntegralEi(fApcomplex));
+    try {
+      return valueOf(EvalEngine.getApfloat().expIntegralEi(fApcomplex));
+    } catch (ArithmeticException | NumericComputationException e) {
+      return Errors.printMessage(S.ExpIntegralEi, e);
+    }
   }
 
   /** {@inheritDoc} */
@@ -1082,8 +1090,13 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr hypergeometric1F1(IExpr arg2, IExpr arg3) {
     if (arg2 instanceof INumber && arg3 instanceof INumber) {
-      return valueOf(EvalEngine.getApfloat().hypergeometric1F1(fApcomplex,
-          ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue()));
+      try {
+        return valueOf(EvalEngine.getApfloat().hypergeometric1F1(fApcomplex,
+            ((INumber) arg2).apcomplexValue(), ((INumber) arg3).apcomplexValue()));
+      } catch (ArithmeticException | ApfloatRuntimeException e) {
+        return Errors.printMessage(S.Hypergeometric1F1, e);
+      }
+
     }
     return IComplexNum.super.hypergeometric1F1(arg2, arg3);
   }
@@ -1185,6 +1198,18 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
+  public boolean isMathematicalIntegerNegative() {
+    return fApcomplex.real().isInteger() && fApcomplex.real().compareTo(Apfloat.ZERO) < 0
+        && fApcomplex.imag().isZero();
+  }
+
+  @Override
+  public boolean isMathematicalIntegerNonNegative() {
+    return fApcomplex.real().isInteger() && fApcomplex.real().compareTo(Apfloat.ZERO) >= 0
+        && fApcomplex.imag().isZero();
+  }
+
+  @Override
   public boolean isMinusOne() {
     return fApcomplex.imag().isZero() && fApcomplex.real().compareTo(ApfloatNum.MINUS_ONE) == 0;
   }
@@ -1209,8 +1234,8 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public boolean isZero(double tolerance) {
-    return F.isZero(fApcomplex.real().doubleValue(), tolerance) && //
-        F.isZero(fApcomplex.imag().doubleValue(), tolerance);
+    return F.isZero(fApcomplex.real(), tolerance) && //
+        F.isZero(fApcomplex.imag(), tolerance);
   }
 
   @Override

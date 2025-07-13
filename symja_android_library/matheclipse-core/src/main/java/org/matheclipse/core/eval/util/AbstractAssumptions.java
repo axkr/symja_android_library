@@ -178,13 +178,13 @@ public abstract class AbstractAssumptions implements IAssumptions {
     return null;
   }
 
-  public static boolean assumeEqual(final IExpr expr, final IReal number) {
+  public static boolean assumeEqual(final IExpr expr, final IExpr number) {
     if (expr.isNumber()) {
-      return ((INumber) expr).equals(number);
+      return expr.equals(number);
     }
     if (expr.isRealConstant()) {
       return F.isFuzzyEquals(((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal(),
-          number.doubleValue(), Config.MACHINE_EPSILON);
+          number.evalf(), Config.MACHINE_EPSILON);
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -195,16 +195,19 @@ public abstract class AbstractAssumptions implements IAssumptions {
     return false;
   }
 
-  public static boolean assumeGreaterEqual(final IExpr expr, final IReal number) {
-    if (expr.isReal()) {
-      return ((IReal) expr).isGT(number);
+  public static boolean assumeGreaterEqual(final IExpr expr, final IExpr number) {
+    EvalEngine engine = EvalEngine.get();
+    if (expr.isNumericFunction(false)) {
+      boolean evaled = engine.evalGreaterEqual(expr, number);
+      if (evaled) {
+        return true;
+      }
     }
     if (expr.isNumber()) {
       return false;
     }
     if (expr.isRealConstant()) {
-      return ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() >= number
-          .doubleValue();
+      return ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() >= number.evalf();
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -215,16 +218,19 @@ public abstract class AbstractAssumptions implements IAssumptions {
     return false;
   }
 
-  public static boolean assumeGreaterThan(final IExpr expr, IReal number) {
-    if (expr.isReal()) {
-      return ((IReal) expr).isGT(number);
+  public static boolean assumeGreaterThan(final IExpr expr, final IExpr number) {
+    EvalEngine engine = EvalEngine.get();
+    if (expr.isNumericFunction(false)) {
+      boolean evaled = engine.evalGreater(expr, number);
+      if (evaled) {
+        return true;
+      }
     }
     if (expr.isNumber()) {
       return false;
     }
     if (expr.isRealConstant()) {
-      return ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() > number
-          .doubleValue();
+      return ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() > number.evalf();
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -289,16 +295,19 @@ public abstract class AbstractAssumptions implements IAssumptions {
     return null;
   }
 
-  public static boolean assumeLessEqual(final IExpr expr, final IReal number) {
-    if (expr.isReal()) {
-      return ((IReal) expr).isLE(number);
+  public static boolean assumeLessEqual(final IExpr expr, final IExpr number) {
+    EvalEngine engine = EvalEngine.get();
+    if (expr.isNumericFunction(false)) {
+      boolean evaled = engine.evalLessEqual(expr, number);
+      if (evaled) {
+        return true;
+      }
     }
     if (expr.isNumber()) {
       return false;
     }
     if (expr.isRealConstant()) {
-      return ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() <= number
-          .doubleValue();
+      return ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() <= number.evalf();
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -309,16 +318,19 @@ public abstract class AbstractAssumptions implements IAssumptions {
     return false;
   }
 
-  public static boolean assumeLessThan(final IExpr expr, IReal number) {
-    if (expr.isReal()) {
-      return ((IReal) expr).isLT(number);
+  public static boolean assumeLessThan(final IExpr expr, IExpr number) {
+    EvalEngine engine = EvalEngine.get();
+    if (expr.isNumericFunction(false)) {
+      boolean evaled = engine.evalLess(expr, number);
+      if (evaled) {
+        return true;
+      }
     }
     if (expr.isNumber()) {
       return false;
     }
     if (expr.isRealConstant()) {
-      return ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() < number
-          .doubleValue();
+      return ((IRealConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() < number.evalf();
     }
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
@@ -639,6 +651,16 @@ public abstract class AbstractAssumptions implements IAssumptions {
     return null;
   }
 
+  @Override
+  public IInteger determineInteger(IExpr x) {
+    return null;
+  }
+
+  @Override
+  public IAST intervalData(IExpr expr) {
+    return F.NIL;
+  }
+
   public static boolean isNegativeResult(IAST ast) {
     // evalReal "chops" imaginary parts to 0
     INumber e = ast.evalNumber();
@@ -880,18 +902,23 @@ public abstract class AbstractAssumptions implements IAssumptions {
   }
 
   @Override
-  public boolean isEqual(IExpr expr, IReal number) {
+  public boolean isContradictory() {
+    return false;
+  }
+
+  @Override
+  public boolean isEqual(IExpr expr, IExpr number) {
     return false;
   }
 
 
   @Override
-  public boolean isGreaterEqual(IExpr expr, IReal number) {
+  public boolean isGreaterEqual(IExpr expr, IExpr number) {
     return false;
   }
 
   @Override
-  public boolean isGreaterThan(IExpr expr, IReal number) {
+  public boolean isGreaterThan(IExpr expr, IExpr number) {
     return false;
   }
 
@@ -901,12 +928,12 @@ public abstract class AbstractAssumptions implements IAssumptions {
   }
 
   @Override
-  public boolean isLessEqual(IExpr expr, IReal number) {
+  public boolean isLessEqual(IExpr expr, IExpr number) {
     return false;
   }
 
   @Override
-  public boolean isLessThan(IExpr expr, IReal number) {
+  public boolean isLessThan(IExpr expr, IExpr number) {
     return false;
   }
 

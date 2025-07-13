@@ -115,21 +115,26 @@ public final class TimesOp {
       map.put(base, exponent);
       return;
     }
-    evaled = true;
+    final IExpr newBase;
     if (base.isInterval() && exponent.equals(oldExponent)) {
-      IExpr newBase = IntervalSym.times((IAST) base, (IAST) base);
-      map.put(newBase, oldExponent);
+      newBase = IntervalSym.times((IAST) base, (IAST) base);
     } else if (base.isIntervalData() && exponent.equals(oldExponent)) {
-      IExpr newBase = IntervalDataSym.times((IAST) base, (IAST) base);
-      map.put(newBase, oldExponent);
+      newBase = IntervalDataSym.times((IAST) base, (IAST) base);
     } else {
-      oldExponent = oldExponent.plus(exponent);
-      if (oldExponent.isZero()) {
-        map.remove(base);
-        return;
-      }
-      map.put(base, oldExponent);
+      newBase = F.NIL;
     }
+    evaled = true;
+    if (newBase.isPresent()) {
+      map.put(newBase, oldExponent);
+      return;
+    }
+    oldExponent = oldExponent.plus(exponent);
+    if (oldExponent.isZero()) {
+      map.remove(base);
+      return;
+    }
+    map.put(base, oldExponent);
+
   }
 
   /**
@@ -149,22 +154,23 @@ public final class TimesOp {
         numberValue = (INumber) temp;
         return;
       }
-      expr = temp; // use the new value
-    }
-    if (expr.isAST()) {
-      final IExpr head = expr.head();
-      if (head == S.Power) {
-        final IAST ast = (IAST) expr;
-        if (ast.size() == 3 && ast.exponent().isNumber()) {
-          mergePower(ast.base(), (INumber) ast.exponent());
+      expr = temp;
+    } else {
+      if (expr.isAST()) {
+        final IExpr head = expr.head();
+        if (head == S.Power) {
+          final IAST ast = (IAST) expr;
+          if (ast.size() == 3 && ast.exponent().isNumber()) {
+            mergePower(ast.base(), (INumber) ast.exponent());
+            return;
+          }
+        } else if (head == S.Times && expr.size() > 1) {
+          final IAST ast = (IAST) expr;
+          for (int i = 1; i < ast.size(); i++) {
+            appendRecursive(ast.get(i));
+          }
           return;
         }
-      } else if (head == S.Times && expr.size() > 1) {
-        final IAST ast = (IAST) expr;
-        for (int i = 1; i < ast.size(); i++) {
-          appendRecursive(ast.get(i));
-        }
-        return;
       }
     }
     mergePower(expr, F.C1);

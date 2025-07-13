@@ -314,7 +314,8 @@ public class AssumptionFunctions {
       final IAssumptions assumptions;
       IExpr assumptionExpr = OptionArgs.determineAssumptions(ast, 2, options);
       if (assumptionExpr.isPresent() && assumptionExpr.isAST()) {
-        assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
+        assumptions =
+            org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr, engine);
       } else {
         assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance();
       }
@@ -331,6 +332,7 @@ public class AssumptionFunctions {
       newSymbol.setAttributes(ISymbol.HOLDALL);
       setOptions(newSymbol, F.list(F.Rule(S.Assumptions, S.$Assumptions)));
     }
+
   }
 
   public static IExpr refineAssumptions(final IExpr expr, IAssumptions assumptions,

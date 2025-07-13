@@ -59,6 +59,7 @@ import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
@@ -398,12 +399,16 @@ public final class Arithmetic {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int size = ast.size();
-      if (size == 2) {
-        IExpr z = ast.arg1();
-        return F.list(F.Abs(z), F.Arg(z));
+      IExpr z = ast.arg1();
+      if (z.isNumber()) {
+        return F.list(((INumber) z).abs(), ((INumber) z).complexArg());
       }
-      return F.NIL;
+      return F.list(F.Abs(z), F.Arg(z));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
 
     @Override
@@ -585,9 +590,6 @@ public final class Arithmetic {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      // if (arg1.isList()) {
-      // return arg1.mapThread(F.Arg(F.Slot1), 1);
-      // }
       if (arg1.isNumber()) {
         return arg1.complexArg();
       } else if (arg1.isIndeterminate()) {
@@ -1454,7 +1456,7 @@ public final class Arithmetic {
           }
 
           if (arg1.isTimes() || arg1.isPower()) {
-            Optional<IExpr[]> parts = Algebra.fractionalPartsTimesPower((IAST) arg1, true, false,
+            Optional<IExpr[]> parts = AlgebraUtil.fractionalPartsTimesPower((IAST) arg1, true, false,
                 false, false, false, false);
             if (parts.isPresent()) {
               final IExpr numerator = parts.get()[0];
@@ -1787,14 +1789,10 @@ public final class Arithmetic {
         return temp;
       }
       if (arg1.isIntegerResult()) {
-        // if (arg1.isNegative()) {
-        // return F.CComplexInfinity;
-        // }
+        // negative case handled by basicRewrite1()
         if (arg1.isNonNegativeResult()) {
-          if (arg1.isInteger()) {
-            return NumberTheory.factorial(((IInteger) arg1).subtract(F.C1));
-          }
-          return F.Factorial(arg1.subtract(F.C1));
+          temp = arg1.subtract(F.C1);
+          return temp.isInteger() ? ((IInteger) temp).factorial() : F.Factorial(temp);
         }
         return F.NIL;
       }
@@ -2998,6 +2996,8 @@ public final class Arithmetic {
           C1, true);
       plusMatcher.definePatternHashRule(Power(F.Csc(x_), C2), Power(F.Cot(x_), C2), //
           C1, true);
+      plusMatcher.definePatternHashRule(F.Erf(x_), F.Erfc(x_), //
+          C1);
 
       plusMatcher.defineHashRule(ArcSin(x_), ArcCos(x_), //
           F.CPiHalf);
@@ -3459,6 +3459,8 @@ public final class Arithmetic {
         if (base.isZero()) {
           if (exponent.isInterval()) {
             return org.matheclipse.core.expression.IntervalSym.power(base, (IAST) exponent);
+          } else if (exponent.isIntervalData()) {
+            return org.matheclipse.core.expression.IntervalDataSym.power(base, (IAST) exponent);
           }
           return powerZeroArg1(exponent);
         }
@@ -3473,11 +3475,9 @@ public final class Arithmetic {
           if (base.isInterval()) {
             if (exponent.isInteger()) {
               return IntervalSym.power((IAST) base, (IInteger) exponent);
-              // return powerInterval(base, ii);
             }
             if (exponent.isReal()) {
               return IntervalSym.power((IAST) base, (IReal) exponent);
-              // return powerInterval(base, ii);
             }
             // } else if (base.isQuantity()) {
             // try {
@@ -3486,6 +3486,13 @@ public final class Arithmetic {
             // } catch (MathException mex) {
             // return F.NIL;
             // }
+          } else if (base.isIntervalData()) {
+            if (exponent.isInteger()) {
+              return IntervalDataSym.power((IAST) base, (IInteger) exponent);
+            }
+            if (exponent.isReal()) {
+              return IntervalDataSym.power((IAST) base, (IReal) exponent);
+            }
           } else if (base instanceof ASTSeriesData) {
             int exp = exponent.toIntDefault();
             if (F.isPresent(exp)) {
@@ -4143,9 +4150,9 @@ public final class Arithmetic {
             numerator = expNumerator.toIntDefault();
           }
           if (numerator > 0) {
-            IExpr temp = num.factorSmallPrimes(numerator, denominator);
+            IAST temp = num.factorSmallPrimes(numerator, denominator);
             if (temp.isPresent()) {
-              return temp;
+              return temp.oneIdentity1();
             }
           }
         }
@@ -4842,7 +4849,11 @@ public final class Arithmetic {
           case 2:
             return ast.arg1();
           case 3:
-            return binaryOperator(ast, ast.arg1(), ast.arg2(), engine);
+            IExpr temp = binaryOperator(ast, ast.arg1(), ast.arg2(), engine);
+            if (temp.isPresent()) {
+              return engine.evaluate(temp);
+            }
+            return F.NIL;
           default:
             return powerFoldRight(ast, engine);
         }
@@ -6665,6 +6676,12 @@ public final class Arithmetic {
           F.Gamma(F.Plus(F.C1, F.Times(F.CN1, x_))), //
           // Pi*Csc(x*Pi)
           F.Times(S.Pi, F.Csc(F.Times(x, S.Pi)))));
+      timesMatcher.defineHashRule(new HashedPatternRulesTimes( //
+          F.Gamma(F.C1D4), //
+          F.Gamma(F.C3D4), //
+          // Sqrt(2)*Pi
+          F.Times(S.Pi, F.CSqrt2)));
+
 
       // Sin(x_)^2/(1-Cos(x_)^2) = 1
       timesMatcher.defineHashRule(new HashedPatternRulesTimesPower( //

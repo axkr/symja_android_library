@@ -6,28 +6,57 @@ import org.apfloat.FixedPrecisionApfloatHelper;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.ReduceVariableIntervalSet;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IReal;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * <p>
- * Intervals will be represented by objects with head {@link S#IntervalData} wrapped around a
+ * Interval sets will be represented by objects with head {@link S#IntervalData} wrapped around a
  * sequence of quadruples of the form, e.g., <code>{a,Less,LessEqual,b}</code> representing the half
  * open interval <code>(a,b]</code>. The empty interval set is represented by
  * <code>IntervalData()</code>.
  * 
  * <p>
- * See: <a href=
+ * See:
+ * <ul>
+ * <li><a href=
  * "https://mathematica.stackexchange.com/questions/162486/operating-with-real-intervals/162505#162505">162486/operating-with-real-intervals/162505#162505</a>
+ * <li><a href= "https://en.wikipedia.org/wiki/Interval_%28mathematics%29">Wikipedia: Interval
+ * mathematics</a>
  *
  */
 public class IntervalDataSym {
+
+  /**
+   * IExprProcessor interface method boolean process (IExpr min, IExpr max, IASTAppendable result,
+   * int index), return true or false;
+   */
+  @FunctionalInterface
+  private static interface IExprProcessor {
+    /**
+     * Append the transformed interval part <code>[min, max]</code> to the result.
+     *
+     * @param min minimum limit of a single interval part
+     * @param lessMin the left inequality symbol of the minimum limit
+     * @param lessMax the right inequality symbol of the maximum limit
+     * @param max maximum limit of a single interval part
+     * @param result the resulting list of interval parts
+     * @param index
+     * @return <code>true</code> if a new interval could be appended to result; <code>false</code>
+     *         otherwise.
+     */
+    boolean apply(IExpr min, IBuiltInSymbol lessMin, IBuiltInSymbol lessMax, IExpr max,
+        IASTAppendable result, int index);
+  }
 
   private static final Comparator<IExpr> INTERVAL_COMPARATOR = new Comparator<IExpr>() {
     @Override
@@ -36,16 +65,340 @@ public class IntervalDataSym {
       IAST list2 = (IAST) o2;
       if (list1.arg1().equals(list2.arg1())) {
         if (list1.arg4().equals(list2.arg4())) {
-          return 0;
+          int cp2 = list1.arg2().compareTo(list2.arg2());
+          if (cp2 == 0) {
+            return list1.arg3().compareTo(list2.arg3());
+          }
         }
-
-        return (list1.arg4().greater(list2.arg4()).isTrue()) ? 1 : -1;
-        // return (S.Greater.ofQ(list1.arg4(), list2.arg4())) ? 1 : -1;
+        IExpr gt1 = list1.arg4().greater(list2.arg4());
+        return gt1.isTrue() ? 1 : gt1.isFalse() ? -1 : list1.arg4().compareTo(list2.arg4());
       }
-      return (list1.arg1().greater(list2.arg1()).isTrue()) ? 1 : -1;
-      // return (S.Greater.ofQ(list1.arg1(), list2.arg1())) ? 1 : -1;
+      IExpr gt2 = list1.arg1().greater(list2.arg1());
+      return gt2.isTrue() ? 1 : gt2.isFalse() ? -1 : list1.arg1().compareTo(list2.arg1());
     }
   };
+
+  public static IExpr arccos(final IAST ast) {
+    EvalEngine engine = EvalEngine.get();
+    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
+      if (engine.evalGreaterEqual(min, F.CN1) && engine.evalLessEqual(max, F.C1)) {
+        result.append(index, F.List(F.ArcCos(min), lessMin, lessMax, F.ArcCos(max)));
+        return true;
+      }
+      return false;
+    });
+  }
+
+  public static IExpr arccosh(final IAST ast) {
+    EvalEngine engine = EvalEngine.get();
+    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
+      if (engine.evalGreaterEqual(min, F.C1) && engine.evalLessEqual(max, F.CInfinity)) {
+        result.append(index, F.List(F.ArcCosh(min), lessMin, lessMax, F.ArcCosh(max)));
+        return true;
+      }
+      return false;
+    });
+  }
+
+  public static IExpr arccot(final IAST ast) {
+    EvalEngine engine = EvalEngine.get();
+    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
+      if (engine.evalGreaterEqual(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
+        result.append(F.List(F.ArcCot(min), lessMin, lessMax, F.ArcCot(max)));
+        return true;
+      }
+      return false;
+    }, (min, lessMin, lessMax, max, result, index) -> {
+      if (engine.evalLess(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
+        result.append(F.List(F.CNPiHalf, lessMin, lessMax, F.ArcCot(min)));
+        result.append(F.List(F.ArcCot(max), lessMin, lessMax, F.CPiHalf));
+        return true;
+      }
+      return false;
+    }, (min, lessMin, lessMax, max, result, index) -> {
+      if (engine.evalLess(min, F.C0) && engine.evalLess(max, F.C0)) {
+        result.append(F.List(F.ArcCot(min), lessMin, lessMax, F.ArcCot(max)));
+        return true;
+      }
+      return false;
+    });
+  }
+
+  public static IExpr arcsin(final IAST ast) {
+    EvalEngine engine = EvalEngine.get();
+    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
+      if (engine.evalGreaterEqual(min, F.CN1) && engine.evalLessEqual(max, F.C1)) {
+        result.append(index, F.List(F.ArcSin(min), lessMin, lessMax, F.ArcSin(max)));
+        return true;
+      }
+      return false;
+    });
+  }
+
+  public static IExpr arcsinh(final IAST ast) {
+    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
+      if (min.isRealResult() && max.isRealResult()) {
+        result.append(index, F.List(F.ArcSinh(min), lessMin, lessMax, F.ArcSinh(max)));
+        return true;
+      }
+      return false;
+    });
+  }
+
+  public static IExpr arctan(final IAST ast) {
+    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
+      if (min.isRealResult() && max.isRealResult()) {
+        result.append(index, F.List(F.ArcTan(min), lessMin, lessMax, F.ArcTan(max)));
+        return true;
+      }
+      return false;
+    });
+  }
+
+  public static IExpr arctanh(final IAST ast) {
+    EvalEngine engine = EvalEngine.get();
+    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
+      if (engine.evalGreaterEqual(min, F.CN1) && engine.evalLessEqual(max, F.C1)) {
+        result.append(index, F.List(F.ArcTanh(min), lessMin, lessMax, F.ArcTanh(max)));
+        return true;
+      }
+      return false;
+    });
+  }
+
+  public static IExpr asRelational(IAST expr, IExpr x) {
+    if (expr.isIntervalData()) {
+      IAST interval = expr;
+      if (interval.size() == 1) {
+        return S.False;
+      }
+      IASTAppendable result = F.ast(S.Or, interval.argSize());
+      for (int i = 1; i < interval.size(); i++) {
+        IAST list1 = (IAST) interval.get(i);
+        if (!list1.isList4()) {
+          return F.NIL;
+        }
+        IExpr min = list1.arg1();
+        IBuiltInSymbol minLess = (IBuiltInSymbol) list1.arg2();
+        IBuiltInSymbol maxLess = (IBuiltInSymbol) list1.arg3();
+        IExpr max = list1.arg4();
+        if (min.isNegativeInfinity()) {
+          if (max.isInfinity()) {
+            return S.True;
+          }
+          result.append(F.binaryAST2(maxLess, x, max));
+          continue;
+        }
+        if (max.isInfinity()) {
+          result.append(F.binaryAST2(minLess, min, x));
+          continue;
+        }
+        result.append(//
+            F.And(F.binaryAST2(minLess, min, x), //
+                F.binaryAST2(maxLess, x, max)));
+      }
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Return an interval including each boundary.
+   * 
+   * @param lhs left boundary
+   * @param rhs right boundary
+   * @return <code>IntervalData({lhs, LessEqual, LessEqual, rhs}))</code>
+   */
+  public static IAST close(final IExpr lhs, final IExpr rhs) {
+    return F.IntervalData(//
+        F.List(lhs, //
+            S.LessEqual, //
+            S.LessEqual, //
+            rhs));
+  }
+
+  public static IAST cos(final IAST ast) {
+    EvalEngine engine = EvalEngine.get();
+    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
+      IAST difference = F.Subtract(max, min);
+      if (engine.evalGreaterEqual(difference, F.C2Pi)) {
+        // difference >= 2 * Pi
+        result.append(index, F.List(F.CN1, lessMin, lessMax, F.C1));
+      } else {
+        // slope from 1st derivative
+        double dMin = engine.evalDouble(F.Sin(min).negate());
+        double dMax = engine.evalDouble(F.Sin(max).negate());
+        if (engine.evalLessEqual(difference, S.Pi)) {
+          if (dMin >= 0) {
+            if (dMax >= 0) {
+              result.append(index, F.List(F.Cos(min), lessMin, lessMax, F.Cos(max)));
+            } else {
+              result.append(index, F.List(F.Min(F.Cos(min), lessMin, lessMax, F.Cos(max)), F.C1));
+            }
+          } else {
+            if (dMax < 0) {
+              result.append(index, F.List(F.Cos(max), lessMin, lessMax, F.Cos(min)));
+            } else {
+              result.append(index, F.List(F.CN1, lessMin, lessMax, F.Max(F.Cos(min), F.Cos(max))));
+            }
+          }
+        } else { // difference between {Pi, 2*Pi}
+          if (dMin >= 0) {
+            if (dMax > 0) {
+              result.append(index, F.List(F.CN1, F.C1));
+            } else {
+              result.append(index, F.List(F.Min(F.Cos(min), F.Cos(max)), lessMin, lessMax, F.C1));
+            }
+          } else {
+            if (dMax < 0) {
+              result.append(index, F.List(F.CN1, lessMin, lessMax, F.C1));
+            } else {
+              result.append(index, F.List(F.CN1, lessMin, lessMax, F.Max(F.Cos(min), F.Cos(max))));
+            }
+          }
+        }
+      }
+      return true;
+    });
+  }
+
+  public static IAST cosh(final IAST ast) {
+    EvalEngine engine = EvalEngine.get();
+    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
+      if (min.isRealResult() && max.isRealResult()) {
+        if (engine.evalGreaterEqual(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
+          result.append(F.List(F.Cosh(min), lessMin, lessMax, F.Cosh(max)));
+        } else if (engine.evalLess(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
+          result.append(F.List(F.C1, lessMin, lessMax, F.Max(F.Cosh(min), F.Cosh(max))));
+        } else if (engine.evalLess(min, F.C0) && engine.evalLess(max, F.C0)) {
+          result.append(F.List(F.Cosh(min), lessMin, lessMax, F.Cosh(max)));
+        }
+        return true;
+      }
+      return false;
+    });
+  }
+
+  public static IAST cot(final IAST ast) {
+    EvalEngine engine = EvalEngine.get();
+    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
+      IAST difference = F.Subtract(max, min);
+      if (engine.evalGreaterEqual(difference, S.Pi)) {
+        result.append(F.List(F.CNInfinity, S.Less, S.Less, F.CInfinity));
+      } else {
+        double dMin = engine.evalDouble(F.Cot(min));
+        double dMax = engine.evalDouble(F.Cot(max));
+        if (engine.evalLessEqual(difference, F.CPiHalf)) {
+          // difference <= 1/2*Pi
+          if (dMin < 0) {
+            if (dMax >= 0) {
+              result.append(F.List(F.CNInfinity, S.Less, lessMin, F.Cot(min)));
+              result.append(F.List(F.Cot(max), lessMax, S.Less, F.CInfinity));
+            } else {
+              result.append(F.List(F.Cot(max), lessMax, lessMin, F.Cot(min)));
+            }
+          } else {
+            result.append(F.List(F.Cot(min), lessMin, lessMax, F.Cot(max)));
+          }
+        } else { // difference between {Pi/2, Pi}
+          if (dMin >= 0) {
+            if (dMax < 0) {
+              result.append(F.List(F.CNInfinity, S.Less, lessMax, F.Cot(max)));
+              result.append(F.List(F.Cot(min), lessMin, S.Less, F.CInfinity));
+            } else {
+              if (dMin < dMax) {
+                result.append(F.List(F.CNInfinity, S.Less, lessMin, F.Cot(min)));
+                result.append(F.List(F.Cot(max), lessMax, S.Less, F.CInfinity));
+              } else {
+                result.append(F.CRealsRange);
+              }
+            }
+          } else {
+            if (dMax < 0) {
+              if (dMin < dMax) {
+                result.append(F.List(F.Cot(max), lessMax, S.Less, F.CInfinity));
+                result.append(F.List(F.CNInfinity, S.Less, lessMin, F.Cot(min)));
+              } else {
+                result.append(F.List(F.CNInfinity, S.Less, S.Less, F.CInfinity));
+              }
+            } else {
+              result.append(F.CRealsRange);
+            }
+          }
+        }
+      }
+      return true;
+    });
+  }
+
+  public static IAST coth(final IAST ast) {
+    EvalEngine engine = EvalEngine.get();
+    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
+      if (engine.evalGreaterEqual(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
+        result.append(F.List(F.Coth(max), lessMin, lessMax, F.Coth(min)));
+        return true;
+      }
+      return false;
+    }, (min, lessMin, lessMax, max, result, index) -> {
+      if (engine.evalLess(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
+        result.append(F.List(F.CNInfinity, S.Less, lessMin, F.Coth(min)));
+        result.append(F.List(F.Coth(max), lessMax, S.Less, F.CInfinity));
+        return true;
+      }
+      return false;
+    }, (min, lessMin, lessMax, max, result, index) -> {
+      if (engine.evalLess(min, F.C0) && engine.evalLess(max, F.C0)) {
+        result.append(F.List(F.Coth(min), lessMin, lessMax, F.Coth(max)));
+        return true;
+      }
+      return false;
+    });
+  }
+
+  public static IAST csc(final IAST ast) {
+    IAST interval = sin(ast);
+    if (interval.isPresent()) {
+      return inverse(interval);
+    }
+    return F.NIL;
+  }
+
+  public static IAST csch(final IAST ast) {
+    EvalEngine engine = EvalEngine.get();
+    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
+      if (engine.evalGreaterEqual(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
+        result.append(F.List(F.Csch(max), lessMin, lessMax, F.Csch(min)));
+        return true;
+      }
+      return false;
+    }, (min, lessMin, lessMax, max, result, index) -> {
+      if (engine.evalLess(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
+        result.append(F.List(F.CNInfinity, S.Less, lessMax, F.Csch(min)));
+        result.append(F.List(F.Csch(max), lessMin, S.Less, F.CInfinity));
+        return true;
+      }
+      return false;
+    }, (min, lessMin, lessMax, max, result, index) -> {
+      if (engine.evalLess(min, F.C0) && engine.evalLess(max, F.C0)) {
+        result.append(F.List(F.Csch(min), lessMin, lessMax, F.Csch(max)));
+        return true;
+      }
+      return false;
+    });
+  }
+
+  /**
+   * The empty interval set is represented by <code>IntervalData()</code>.
+   * 
+   * @return
+   */
+  public static IAST emptySet() {
+    return F.IntervalData();
+  }
+
+  public static IAST intersection(final IAST interval1, final IAST interval2) {
+    return intersection(interval1, interval2, EvalEngine.get());
+  }
 
   /**
    * Returns the intersection of two intervals.
@@ -55,10 +408,8 @@ public class IntervalDataSym {
    * @param engine the evaluation engine
    * @return the intersection of the two intervals
    */
-  public static IAST intersectionIntervalData(final IAST interval1, final IAST interval2,
-      EvalEngine engine) {
+  public static IAST intersection(final IAST interval1, final IAST interval2, EvalEngine engine) {
     IASTAppendable result = F.ast(S.IntervalData, 3);
-
     for (int i = 1; i < interval1.size(); i++) {
       IAST list1 = (IAST) interval1.get(i);
       for (int j = 1; j < interval2.size(); j++) {
@@ -66,7 +417,6 @@ public class IntervalDataSym {
         IBuiltInSymbol left1 = (IBuiltInSymbol) list1.arg2();
         IBuiltInSymbol right1 = (IBuiltInSymbol) list1.arg3();
         IExpr max1 = list1.arg4();
-
 
         IAST list2 = (IAST) interval2.get(j);
         IExpr min2 = list2.arg1();
@@ -114,9 +464,186 @@ public class IntervalDataSym {
     return result;
   }
 
-  private static Apfloat[] interval(Apfloat x) {
+  /**
+   * <p>
+   * See:
+   * <a href= "https://en.wikipedia.org/wiki/Complement_(set_theory)#Relative_complement">Complement
+   * (set theory) - Relative complement</a>
+   * 
+   * @param interval1
+   * @param interval2
+   * @param engine
+   * @return
+   */
+  public static IAST intervalDataComplement(final IAST interval1, final IAST interval2,
+      EvalEngine engine) {
+    if (interval1.isEmptyIntervalData()) {
+      return F.CEmptyIntervalData;
+    }
+    if (interval2.isEmptyIntervalData()) {
+      return interval1;
+    }
+
+    IASTAppendable intervalUnion = F.ast(S.IntervalUnion, 3);
+    for (int i = 1; i < interval1.size(); i++) {
+      final IAST list1 = (IAST) interval1.get(i);
+      final IExpr min1 = list1.arg1();
+      final IBuiltInSymbol minEnd1 = (IBuiltInSymbol) list1.arg2();
+      final IBuiltInSymbol maxEnd1 = (IBuiltInSymbol) list1.arg3();
+      final IExpr max1 = list1.arg4();
+      // use rule: list1 \setminus (list2A \cup list2B)=(list1 \setminus list2A) \cap (list1
+      // \setminus list2B)
+      IASTAppendable intervalIntersection = F.ast(S.IntervalIntersection, interval2.size());
+      for (int j = 1; j < interval2.size(); j++) {
+        IASTAppendable segmentResult = F.ast(S.IntervalData, interval2.size());
+        intervalIntersection.append(segmentResult);
+        final IAST list2 = (IAST) interval2.get(j);
+        final IExpr min2 = list2.arg1();
+        final IBuiltInSymbol minEnd2 = (IBuiltInSymbol) list2.arg2();
+        final IBuiltInSymbol maxEnd2 = (IBuiltInSymbol) list2.arg3();
+        final IExpr max2 = list2.arg4();
+        if (S.Less.ofQ(engine, max2, min1) || S.Less.ofQ(engine, max1, min2)) {
+          segmentResult.append(F.List(min1, minEnd1, maxEnd1, max1));
+          continue;
+        }
+        if (S.Less.ofQ(engine, min1, min2)) {
+          // left side
+          segmentResult.append(F.List(min1, minEnd1, toggle(min2, minEnd2), min2));
+        } else if (S.Equal.ofQ(engine, min1, min2)) {
+          // left side
+          if (minEnd2 == S.Less && minEnd1 == S.LessEqual && !min1.isNegativeInfinity()) {
+            segmentResult.append(F.List(min1, S.LessEqual, S.LessEqual, min1));
+          }
+        }
+
+        if (S.Less.ofQ(engine, max2, max1)) {
+          // right side
+          segmentResult.append(F.List(max2, toggle(max2, maxEnd2), maxEnd1, max1));
+        } else if (S.Equal.ofQ(engine, max2, max1)) {
+          // right side
+          if (maxEnd2 == S.Less && maxEnd1 == S.LessEqual && !max1.isInfinity()) {
+            segmentResult.append(F.List(max1, S.LessEqual, S.LessEqual, max1));
+          }
+        }
+
+      }
+      if (intervalIntersection.argSize() > 1) {
+        IExpr temp = engine.evaluate(intervalIntersection);
+        if (temp.isIntervalData()) {
+          intervalUnion.append(temp);
+        } else {
+          // TODO print error ?
+          return F.NIL;
+        }
+      } else if (intervalIntersection.argSize() == 1) {
+        intervalUnion.append(intervalIntersection.arg1());
+      } else if (intervalIntersection.argSize() == 0) {
+        intervalUnion.append(F.CEmptyIntervalData);
+      }
+
+    }
+    if (intervalUnion.argSize() == 1) {
+      return (IAST) intervalUnion.arg1();
+    }
+    IExpr eval = engine.evaluate(intervalUnion);
+    if (eval.isIntervalData()) {
+      return (IAST) eval;
+    }
+    // TODO print error ?
+    return F.NIL;
+  }
+
+
+  public static IExpr intervalDataIntersection(final IAST ast, EvalEngine engine) {
+    for (int i = 1; i < ast.size(); i++) {
+      if (!ast.get(i).isIntervalData()) {
+        return F.NIL;
+      }
+      IAST interval = (IAST) ast.get(i);
+      for (int j = 1; j < interval.size(); j++) {
+        if (!interval.get(j).isList4()) {
+          return F.NIL;
+        }
+        IAST list1 = (IAST) interval.get(j);
+        IExpr min1 = list1.arg1();
+        IExpr max1 = list1.arg4();
+        if (!min1.isRealResult() || !max1.isRealResult()) {
+          return F.NIL;
+        }
+      }
+    }
+    IAST result = (IAST) ast.arg1();
+    result = normalize(result, engine);
+    if (result.isInvalid()) {
+      return F.NIL;
+    }
+    if (result.isNIL()) {
+      result = (IAST) ast.arg1();
+    }
+    for (int i = 2; i < ast.size(); i++) {
+      IAST interval = (IAST) ast.get(i);
+      IAST normalizedArg = normalize(interval, engine);
+      if (normalizedArg.isInvalid()) {
+        return F.NIL;
+      }
+      if (normalizedArg.isNIL()) {
+        normalizedArg = interval;
+      }
+      result = intersection(result, normalizedArg, engine);
+      if (result.size() == 1) {
+        return result;
+      }
+    }
+    IAST normalized = normalize(result, engine);
+    if (normalized.isInvalid()) {
+      return F.NIL;
+    }
+    return normalized.orElse(result);
+  }
+
+  public static IExpr intervalDataUnion(final IAST ast, EvalEngine engine) {
+    int calculatedResultSize = 2;
+    for (int i = 1; i < ast.size(); i++) {
+      IAST interval;
+      if (!ast.get(i).isIntervalData()) {
+        return F.NIL;
+      } else {
+        interval = (IAST) ast.get(i);
+      }
+      calculatedResultSize += interval.argSize();
+      for (int j = 1; j < interval.size(); j++) {
+        if (!interval.get(j).isList4()) {
+          return F.NIL;
+        }
+        IAST list1 = (IAST) interval.get(j);
+        IExpr min1 = list1.arg1();
+        IExpr max1 = list1.arg4();
+        if (!min1.isRealResult() || !max1.isRealResult()) {
+          return F.NIL;
+        }
+      }
+    }
+    IASTAppendable result = F.ast(S.IntervalData, calculatedResultSize);
+    for (int i = 1; i < ast.size(); i++) {
+      IAST interval = (IAST) ast.get(i);
+      for (int j = 1; j < interval.size(); j++) {
+        result.append(interval.get(j));
+      }
+    }
+    IAST normalized = normalize(result, engine);
+    if (normalized.isInvalid()) {
+      return F.NIL;
+    }
+    return normalized.orElse(result);
+  }
+
+  private static IAST intervalList(ApfloatNum arg) {
+    Apfloat apfloat = arg.fApfloat;
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-    return new Apfloat[] {h.nextDown(x), h.nextUp(x)};
+    return F.List(F.num(h.nextDown(apfloat)), //
+        S.LessEqual, //
+        S.LessEqual, //
+        F.num(h.nextUp(apfloat)));
   }
 
   /**
@@ -168,12 +695,319 @@ public class IntervalDataSym {
     return intervalToOr(F.ast(S.And, 2), interval, variable);
   }
 
+
+  /**
+   * Compute <code>1 / interval(min,max)</code>.
+   *
+   * @param interval
+   * @return
+   */
+  public static IAST inverse(final IAST interval) {
+    IAST normalizedInterval = normalize(interval);
+    if (normalizedInterval.isPresent()) {
+      IASTAppendable result = F.IntervalDataAlloc(normalizedInterval.size());
+      for (int i = 1; i < normalizedInterval.size(); i++) {
+        IAST list = (IAST) normalizedInterval.get(i);
+        final IExpr min = list.arg1();
+        final IExpr lessMin = list.arg2();
+        final IExpr lessMax = list.arg3();
+        final IExpr max = list.arg4();
+        if (min.isRealResult() && max.isRealResult()) {
+          if (min.isNegativeResult()) {
+            if (max.isNegativeResult()) {
+              result.append(F.List(min.inverse(), lessMin, lessMax, max.inverse()));
+            } else {
+              result.append(F.List(F.CNInfinity, S.Less, lessMin, min.inverse()));
+              if (!max.isZero()) {
+                result.append(F.List(max.inverse(), lessMax, S.Less, F.CInfinity));
+              }
+            }
+          } else {
+            if (min.isZero()) {
+              if (max.isZero()) {
+                result.append(F.CRealsIntervalData);
+              } else {
+                result.append(F.List(max.inverse(), lessMax, S.Less, F.CInfinity));
+              }
+            } else {
+              result.append(F.List(min.inverse(), lessMin, lessMax, max.inverse()));
+            }
+          }
+        } else {
+          return F.NIL;
+        }
+      }
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * 
+   *
+   * @param expr
+   * @return
+   */
+  public static IAST inverseAbs(IAST expr) {
+    if (expr.isIntervalData()) {
+      IAST interval = expr;
+      if (interval.size() == 1) {
+        return interval;
+      }
+      IASTAppendable result = F.ast(S.IntervalData, interval.argSize());
+      EvalEngine engine = EvalEngine.get();
+      for (int i = 1; i < interval.size(); i++) {
+        IAST list1 = (IAST) interval.get(i);
+        if (!list1.isList4()) {
+          return F.NIL;
+        }
+        IExpr min = list1.arg1();
+        IBuiltInSymbol minLess = (IBuiltInSymbol) list1.arg2();
+        IBuiltInSymbol maxLess = (IBuiltInSymbol) list1.arg3();
+        IExpr max = list1.arg4();
+        if (max.isNonNegativeResult()) {
+          if (min.isNonNegativeResult()) {
+            IASTMutable copy = list1.copy();
+            result.append(list1);
+            copy.set(1, max.negate());
+            copy.set(2, maxLess == S.Less ? S.Less : S.LessEqual);
+            copy.set(3, minLess == S.Less ? S.Less : S.LessEqual);
+            copy.set(4, min.negate());
+            result.append(copy);
+            continue;
+          } else if (min.isNegativeResult()) {
+            IExpr minNegate = min.negate();
+            if (engine.evalLess(minNegate, max)) {
+              result.append(list1);
+              continue;
+            }
+            if (engine.evalLess(max, minNegate)) {
+              IASTMutable copy = list1.copy();
+              copy.set(1, max.negate());
+              copy.set(2, maxLess == S.Less ? S.Less : S.LessEqual);
+              result.append(copy);
+              continue;
+            }
+          }
+          return F.NIL;
+        } else if (max.isNegativeResult() && min.isNegativeResult()) {
+          return F.CEmptyIntervalData;
+        } else {
+          return F.NIL;
+        }
+      }
+      return normalize(result, engine).orElse(result);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Returns <code>true</code> if the given interval is an empty set, i.e., it contains no
+   * intervals. The empty interval set is represented by <code>IntervalData()</code>.
+   *
+   * @param interval the interval to test
+   * @return <code>true</code> if the given interval is an empty set, i.e., it contains no
+   *         intervals.
+   */
+  public static boolean isEmptySet(final IExpr interval) {
+    return interval.isAST(S.IntervalData, 1);
+  }
+
+  public static boolean isMember(final IAST intervalData, IReal num) {
+    for (int i = 1; i < intervalData.size(); i++) {
+      IAST intervalList = (IAST) intervalData.get(i);
+      if (intervalList.isList4()) {
+        IExpr min = intervalList.arg1();
+        IBuiltInSymbol lessMin = (IBuiltInSymbol) intervalList.arg2();
+        IBuiltInSymbol lessMax = (IBuiltInSymbol) intervalList.arg3();
+        IExpr max = intervalList.arg4();
+        if (lessMin == S.LessEqual && min.lessEqual(num).isTrue()) {
+          if (lessMax == S.LessEqual && max.greaterEqual(num).isTrue()) {
+            return true;
+          } else if (lessMax == S.Less && max.greater(num).isTrue()) {
+            return true;
+          }
+        } else if (lessMin == S.Less && min.less(num).isTrue()) {
+          if (lessMax == S.LessEqual && max.greaterEqual(num).isTrue()) {
+            return true;
+          } else if (lessMax == S.Less && max.greater(num).isTrue()) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+
+  /**
+   * The method test all intervals if they are in the range
+   * <code>{-Infinity, LessEqual, Less,0}</code>.
+   *
+   * @param intervalData the interval to test
+   */
+  public static boolean isNegativeResult(IAST intervalData) {
+    for (int i = 1; i < intervalData.size(); i++) {
+      IAST intervalList = (IAST) intervalData.get(i);
+      if (intervalList.isList4()) {
+        boolean isNegativePart = //
+            intervalList.arg1().isNegativeResult() //
+                && (intervalList.arg4().isNegativeResult()
+                    || (intervalList.arg3() == S.Less && intervalList.arg4().isZero()));
+        if (!isNegativePart) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
+   * The method test all intervals if they are in the range
+   * <code>{0, LessEqual, LessEqual,Infinity}</code>.
+   *
+   * @param intervalData the interval to test
+   */
+  public static boolean isNonNegativeResult(IAST intervalData) {
+    for (int i = 1; i < intervalData.size(); i++) {
+      IAST intervalList = (IAST) intervalData.get(i);
+      if (intervalList.isList4()) {
+        boolean isNonNegativePart =
+            intervalList.arg1().isNonNegativeResult() && intervalList.arg4().isNonNegativeResult();
+        if (!isNonNegativePart) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
   private static boolean isNormalized(final IAST interval) {
     return interval.isEvalFlagOn(IAST.BUILT_IN_EVALED);
   }
 
-  public static boolean isEmptySet(final IExpr interval) {
-    return interval.isAST(S.IntervalData, 1);
+  public static boolean isPositiveResult(IAST intervalData) {
+    for (int i = 1; i < intervalData.size(); i++) {
+      IAST intervalList = (IAST) intervalData.get(i);
+      if (intervalList.isList4()) {
+        boolean isPositivePart = //
+            intervalList.arg1().isPositiveResult() //
+                && intervalList.arg4().isPositiveResult();
+        if (!isPositivePart) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Returns <code>true</code> if the given interval is a union of intervals, i.e., it contains at
+   * least two intervals. The method doesn't test if the intervals are normalized (Normalized
+   * intervals are sorted and overlapping intervals are merged)
+   *
+   * @param interval the interval to test
+   * @return <code>true</code> if the given interval is a union of intervals, i.e., it contains at
+   *         least two intervals.
+   * @see #normalize(IAST)
+   */
+  public static boolean isUnionSet(final IExpr interval) {
+    return interval.isASTSizeGE(S.IntervalData, 2);
+  }
+
+  public static IAST log(final IAST ast) {
+    if (ast.size() == 1 && ast.isIntervalData()) {
+      return F.CEmptyIntervalData;
+    }
+    EvalEngine engine = EvalEngine.get();
+    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
+      if (min.isNonNegativeResult() && max.isNonNegativeResult()) {
+        min = S.Log.of(engine, min);
+        max = S.Log.of(engine, max);
+        result.append(index, F.List(min, lessMin, lessMax, max));
+        return true;
+      }
+      return false;
+    });
+  }
+
+  /**
+   * Return an interval not including the left boundary.
+   * 
+   * @param lhs left boundary
+   * @param rhs right boundary
+   * @return <code>IntervalData({lhs, Less, LessEqual, rhs}))</code>
+   */
+  public static IAST lOpen(final IExpr lhs, final IExpr rhs) {
+    return F.IntervalData(//
+        F.List(lhs, //
+            S.Less, //
+            S.LessEqual, //
+            rhs));
+  }
+
+  /**
+   * Return an interval with all interval ranges intersected with
+   * <code>F.IntervalData(F.List(F.C0, S.LessEqual, S.Less, F.CInfinity))</code>.
+   * 
+   * @param expr
+   * @return an interval data with positive or equal 0 minimum and positive or equal 0 maximum
+   *         value. Otherwise {@link F#NIL} if the expression is not an interval data,
+   */
+  public static IAST makeNonnegative(IExpr expr) {
+    if (expr.isIntervalData()) {
+      IAST interval = (IAST) expr;
+      if (interval.size() == 1) {
+        return interval;
+      }
+      return intersection(interval, F.IntervalData(F.List(F.C0, S.LessEqual, S.Less, F.CInfinity)),
+          EvalEngine.get());
+      // IASTAppendable logArg = F.IntervalDataAlloc(interval.size());
+      // boolean evaled = false;
+      // for (int i = 1; i < interval.size(); i++) {
+      // IAST list = (IAST) interval.get(i);
+      // IExpr min = list.arg1();
+      // // IBuiltInSymbol lessMin = (IBuiltInSymbol) list.arg2();
+      // // IBuiltInSymbol lessMax = (IBuiltInSymbol) list.arg3();
+      // IExpr max = list.arg4();
+      // if (max.isNegativeResult()) {
+      // // log of negative value is not defined; skip append
+      // evaled = true;
+      // continue;
+      // }
+      // if (min.isNegativeResult() && max.isNonNegativeResult()) {
+      // IASTMutable copy = list.copy();
+      // copy.set(1, F.C0);
+      // copy.set(2, S.LessEqual);
+      // logArg.append(copy);
+      // evaled = true;
+      // continue;
+      // }
+      // logArg.append(list);
+      // }
+      // return evaled ? logArg : expr;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Return an interval with all interval ranges intersected with
+   * <code>F.IntervalData(F.List(F.CNInfinity, S.Less, S.LessEqual, F.C0))</code>.
+   * 
+   * @param expr
+   * @return an interval data with negative or equal 0 minimum and negative or equal 0 maximum
+   *         value. Otherwise {@link F#NIL} if the expression is not an interval data,
+   */
+  public static IAST makeNonpositive(IExpr expr) {
+    if (expr.isIntervalData()) {
+      IAST interval = (IAST) expr;
+      if (interval.size() == 1) {
+        return interval;
+      }
+      return intersection(interval, F.IntervalData(F.List(F.CNInfinity, S.Less, S.LessEqual, F.C0)),
+          EvalEngine.get());
+    }
+    return F.NIL;
   }
 
   private static IAST minMax(IExpr min1Min2, IExpr min1Max2, IExpr max1Min2, IExpr max1Max2,
@@ -239,6 +1073,50 @@ public class IntervalDataSym {
   }
 
   /**
+   * Replaces the most common code. Determines the result depending on the fulfillment of
+   * conditions.
+   *
+   * @param ast
+   * @param processors conditions to be met
+   * @return IAST result, append value or F.NIL;
+   */
+  private static IAST mutableProcessorConditions(final IAST ast, IExprProcessor... processors) {
+    if (processors != null && processors.length > 0) {
+      IAST interval = normalize(ast);
+      if (interval.isPresent()) {
+        try {
+          IASTAppendable result = F.IntervalDataAlloc(interval.size());
+          for (int i = 1; i < interval.size(); i++) {
+            IAST list = (IAST) interval.get(i);
+            IExpr min = list.arg1();
+            IBuiltInSymbol lessMin = (IBuiltInSymbol) list.arg2();
+            IBuiltInSymbol lessMax = (IBuiltInSymbol) list.arg3();
+            IExpr max = list.arg4();
+
+            boolean processed = false;
+            for (IExprProcessor processor : processors) {
+              processed = processor.apply(min, lessMin, lessMax, max, result, i);
+              if (processed) {
+                break;
+              }
+            }
+
+            if (!processed) {
+              return F.NIL;
+            }
+          }
+          return result;
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          //
+        }
+      }
+    }
+
+    return F.NIL;
+  }
+
+  /**
    * The list of intervals are sorted and overlapping intervals are merged.
    *
    * @param intervalList
@@ -267,6 +1145,9 @@ public class IntervalDataSym {
    *         interval could not be normalized.
    */
   public static IAST normalize(final IAST intervalList, EvalEngine engine) {
+    if (!intervalList.isAST(S.IntervalData)) {
+      return F.IntervalData(F.List(intervalList, S.LessEqual, S.LessEqual, intervalList));
+    }
     IASTAppendable result = intervalList.copyAppendable();
     boolean evaled = false;
     int i = 1;
@@ -375,6 +1256,7 @@ public class IntervalDataSym {
     return F.NIL;
   }
 
+
   /**
    * If the argument is a list of 2 elements, try sorting the elements. If the argument is not a
    * list return a new <code>{argOfIntervalList, argOfIntervalList]</code>
@@ -457,12 +1339,7 @@ public class IntervalDataSym {
     }
     if (arg instanceof INum) {
       if (arg instanceof ApfloatNum) {
-        Apfloat apfloat = ((ApfloatNum) arg).fApfloat;
-        Apfloat[] values = interval(apfloat);
-        return F.List(F.num(values[0]), //
-            S.LessEqual, //
-            S.LessEqual, //
-            F.num(values[1]));
+        return intervalList((ApfloatNum) arg);
       }
       double value = ((IReal) arg).doubleValue();
       return F.List(F.num(Math.nextDown(value)), //
@@ -476,26 +1353,16 @@ public class IntervalDataSym {
         arg);
   }
 
-  /**
-   * The {@link S#Reals} domain is represented by <code>IntervalData({-oo, Less, Less, oo})</code>.
-   * 
-   * @return
-   */
-  public static IAST reals() {
+  public static IAST notInRange(final IExpr arg) {
     return F.IntervalData(//
         F.List(F.CNInfinity, //
             S.Less, //
             S.Less, //
+            arg), //
+        F.List(arg, //
+            S.Less, //
+            S.Less, //
             F.CInfinity));
-  }
-
-  /**
-   * The empty interval set is represented by <code>IntervalData()</code>.
-   * 
-   * @return
-   */
-  public static IAST emptySet() {
-    return F.IntervalData();
   }
 
   /**
@@ -511,63 +1378,6 @@ public class IntervalDataSym {
             S.Less, //
             S.Less, //
             rhs));
-  }
-
-  /**
-   * Return an interval not including the left boundary.
-   * 
-   * @param lhs left boundary
-   * @param rhs right boundary
-   * @return <code>IntervalData({lhs, Less, LessEqual, rhs}))</code>
-   */
-  public static IAST lOpen(final IExpr lhs, final IExpr rhs) {
-    return F.IntervalData(//
-        F.List(lhs, //
-            S.Less, //
-            S.LessEqual, //
-            rhs));
-  }
-
-  /**
-   * Return an interval not including the right boundary.
-   * 
-   * @param lhs left boundary
-   * @param rhs right boundary
-   * @return <code>IntervalData({lhs, LessEqual, Less, rhs}))</code>
-   */
-  public static IAST rOpen(final IExpr lhs, final IExpr rhs) {
-    return F.IntervalData(//
-        F.List(lhs, //
-            S.LessEqual, //
-            S.Less, //
-            rhs));
-  }
-
-  /**
-   * Return an interval including each boundary.
-   * 
-   * @param lhs left boundary
-   * @param rhs right boundary
-   * @return <code>IntervalData({lhs, LessEqual, LessEqual, rhs}))</code>
-   */
-  public static IAST close(final IExpr lhs, final IExpr rhs) {
-    return F.IntervalData(//
-        F.List(lhs, //
-            S.LessEqual, //
-            S.LessEqual, //
-            rhs));
-  }
-
-  public static IAST notInRange(final IExpr arg) {
-    return F.IntervalData(//
-        F.List(F.CNInfinity, //
-            S.Less, //
-            S.Less, //
-            arg), //
-        F.List(arg, //
-            S.Less, //
-            S.Less, //
-            F.CInfinity));
   }
 
   public static IExpr plus(final IAST ast1, final IAST ast2) {
@@ -618,6 +1428,155 @@ public class IntervalDataSym {
     return F.NIL;
   }
 
+  /**
+   * Calculate <code>Interval({lower, upper},...,...) ^ exponent</code>.
+   *
+   * <p>
+   * See: <a href= "https://en.wikipedia.org/wiki/Interval_arithmetic#Elementary_functions">Interval
+   * arithmetic - Elementary functions</a>
+   *
+   * @param baseInterval
+   * @param exponent
+   * @return
+   */
+  public static IExpr power(final IAST baseInterval, IInteger exponent) {
+    IAST interval = normalize(baseInterval);
+    if (interval.isPresent()) {
+      boolean negative = false;
+
+      if (exponent.isNegative()) {
+        negative = true;
+        exponent = exponent.negate();
+      }
+      if (exponent.isOne()) {
+        if (negative) {
+          return inverse(interval);
+        }
+        return baseInterval;
+      }
+      IASTAppendable result = F.IntervalDataAlloc(baseInterval.size());
+      for (int i = 1; i < interval.size(); i++) {
+        IAST list = (IAST) interval.get(i);
+        final IExpr min = list.arg1();
+        final IBuiltInSymbol lessMin = (IBuiltInSymbol) list.arg2();
+        final IBuiltInSymbol lessMax = (IBuiltInSymbol) list.arg3();
+        final IExpr max = list.arg4();
+        if (min.isRealResult() && max.isRealResult()) {
+          final IExpr minPower = min.power(exponent);
+          final IExpr maxPower = max.power(exponent);
+          if (exponent.isEven()) {
+            if (min.isNonNegativeResult()) {
+              result.append(F.List(minPower, lessMin, lessMax, maxPower));
+            } else {
+              if (max.isNegativeResult()) {
+                result.append(F.List(maxPower, lessMax, lessMin, minPower));
+              } else {
+                final IExpr isGreater = minPower.greater(maxPower);
+                final IBuiltInSymbol newRelation =
+                    isGreater.isTrue() ? lessMin : isGreater.isFalse() ? lessMax : null;
+                if (newRelation == null) {
+                  return F.NIL;
+                }
+                result.append(F.List(F.C0, S.LessEqual, newRelation, F.Max(minPower, maxPower)));
+              }
+            }
+          } else {
+            result.append(F.List(minPower, lessMin, lessMax, maxPower));
+          }
+        } else {
+          return F.NIL;
+        }
+      }
+      if (negative) {
+        return F.Power(result, F.CN1);
+      }
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Calculate <code>Interval({lower, upper},...,...) ^ exponent</code>.
+   *
+   * <p>
+   * See: <a href= "https://en.wikipedia.org/wiki/Interval_arithmetic#Elementary_functions">Interval
+   * arithmetic - Elementary functions</a>
+   *
+   * @param baseInterval
+   * @param exponent
+   * @return
+   */
+  public static IExpr power(final IAST baseInterval, IReal exponent) {
+    IAST interval = normalize(baseInterval);
+    if (interval.isPresent()) {
+      boolean negative = false;
+
+      if (exponent.isNegative()) {
+        negative = true;
+        exponent = exponent.negate();
+      }
+      if (exponent.isOne()) {
+        if (negative) {
+          return inverse(interval);
+        }
+        return baseInterval;
+      }
+      IASTAppendable result = F.IntervalDataAlloc(baseInterval.size());
+      for (int i = 1; i < interval.size(); i++) {
+        IAST list = (IAST) interval.get(i);
+        final IExpr min = list.arg1();
+        final IExpr lessMin = list.arg2();
+        final IExpr lessMax = list.arg3();
+        final IExpr max = list.arg4();
+        if (min.isNonNegativeResult() && max.isNonNegativeResult()) {
+          result.append(F.List(min.power(exponent), lessMin, lessMax, max.power(exponent)));
+        } else {
+          return F.NIL;
+        }
+      }
+      if (negative) {
+        return F.Power(result, F.CN1);
+      }
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Calculate <code>base ^ intervalExponent</code>.
+   *
+   * @param base
+   * @param intervalExponent
+   * @return <code>F.NIL</code> if no evauation is possible.
+   */
+  public static IExpr power(IExpr base, final IAST intervalExponent) {
+    IAST interval = normalize(intervalExponent);
+    if (interval.isPresent()) {
+      if (base.isNegative()) {
+        if (base.isMinusOne()) {
+          return F.NIL;
+        }
+        return F.Times(F.Power(F.CN1, intervalExponent), F.Power(base.negate(), intervalExponent));
+      }
+      IASTAppendable result = F.IntervalDataAlloc(intervalExponent.size());
+      for (int i = 1; i < interval.size(); i++) {
+        IAST list = (IAST) interval.get(i);
+        IExpr min = list.arg1();
+        final IExpr lessMin = list.arg2();
+        final IExpr lessMax = list.arg3();
+        IExpr max = list.arg4();
+        if (base.isZero()) {
+          if (min.isNegativeResult() || max.isNegativeResult()) {
+            return S.Indeterminate;
+          }
+        }
+        result.append(F.List(base.power(min), lessMin, lessMax, base.power(max)));
+      }
+      return result;
+    }
+    return F.NIL;
+  }
+
   private static IBuiltInSymbol precedence(IBuiltInSymbol s1, IBuiltInSymbol s2) {
     return (s1 == S.Less || s2 == S.Less) ? S.Less : S.LessEqual;
   }
@@ -626,51 +1585,27 @@ public class IntervalDataSym {
     return (s1 == S.LessEqual || s2 == S.LessEqual) ? S.LessEqual : S.Less;
   }
 
-  public static IAST relationToInterval(int headID, IExpr value) {
-    switch (headID) {
-      case ID.Greater:
-        return open(value, F.CInfinity);
-      case ID.GreaterEqual:
-        return rOpen(value, F.CInfinity);
-      case ID.Less:
-        return open(F.CNInfinity, value);
-      case ID.LessEqual:
-        return lOpen(F.CNInfinity, value);
-      case ID.Equal:
-        return close(value, value);
-      case ID.Unequal:
-        return F.IntervalData(//
-            F.List(F.CNInfinity, S.Less, S.Less, value), //
-            F.List(value, S.Less, S.Less, F.CInfinity));
-    }
-    throw new ArgumentTypeStopException("Not implemented");
+  /**
+   * The {@link S#Reals} domain is represented by <code>IntervalData({-oo, Less, Less, oo})</code>.
+   * 
+   * @return
+   */
+  public static IAST reals() {
+    return F.IntervalData(//
+        F.List(F.CNInfinity, //
+            S.Less, //
+            S.Less, //
+            F.CInfinity));
   }
 
-  public static IAST relationToInterval(IAST relation, IExpr symbol) {
+  public static IAST relationToInterval(IAST relation, IExpr variable) {
     int headID = relation.headID();
     if (relation.isAST2()) {
       IExpr lhs = relation.arg1();
       IExpr rhs = relation.arg2();
-      if (symbol.equals(lhs) && !symbol.equals(rhs)) {
-        IExpr value = rhs;
-        // symbol <relation> value
-        switch (headID) {
-          case ID.Greater:
-            return open(value, F.CInfinity);
-          case ID.GreaterEqual:
-            return rOpen(value, F.CInfinity);
-          case ID.Less:
-            return open(F.CNInfinity, value);
-          case ID.LessEqual:
-            return lOpen(F.CNInfinity, value);
-          case ID.Equal:
-            return close(value, value);
-          case ID.Unequal:
-            return F.IntervalData(//
-                F.List(F.CNInfinity, S.Less, S.Less, value), //
-                F.List(value, S.Less, S.Less, F.CInfinity));
-        }
-      } else if (symbol.equals(rhs) && !symbol.equals(lhs)) {
+      if (variable.equals(lhs) && !variable.equals(rhs)) {
+        return relationToInterval(headID, rhs);
+      } else if (variable.equals(rhs) && !variable.equals(lhs)) {
         IExpr value = lhs;
         // value <relation> symbol
         switch (headID) {
@@ -693,15 +1628,15 @@ public class IntervalDataSym {
     } else if (relation.isAST3()) {
       IExpr lhs = relation.arg1();
       IExpr rhs = relation.arg3();
-      if (symbol.equals(relation.arg2()) && !symbol.equals(lhs) && !symbol.equals(rhs)) {
+      if (variable.equals(relation.arg2()) && !variable.equals(lhs) && !variable.equals(rhs)) {
         switch (headID) {
           case ID.Greater:
             return F.IntervalData(//
                 F.List(rhs, //
                     S.Less, //
                     S.Less, //
-                   lhs));
-          case ID.GreaterEqual: 
+                    lhs));
+          case ID.GreaterEqual:
             return F.IntervalData(//
                 F.List(rhs, //
                     S.LessEqual, //
@@ -721,8 +1656,264 @@ public class IntervalDataSym {
                     rhs));
         }
       }
+    } else if (relation.argSize() == 5) {
+      if (headID == ID.Inequality) {
+        IExpr lhs = relation.arg1();
+        IExpr op1 = relation.arg2();
+        IExpr v = relation.arg3();
+        IExpr op2 = relation.arg4();
+        IExpr rhs = relation.arg5();
+        if (variable.equals(v) && !variable.equals(lhs) && !variable.equals(rhs)) {
+          if ((op1 == S.Less || op1 == S.LessEqual) && (op2 == S.Less || op2 == S.LessEqual)) {
+            return F.IntervalData(//
+                F.List(lhs, //
+                    op1, //
+                    op2, //
+                    rhs));
+          }
+        }
+      }
     }
     return F.NIL;
+  }
+
+  public static IAST relationToInterval(int headID, IExpr value) {
+    switch (headID) {
+      case ID.Greater:
+        return open(value, F.CInfinity);
+      case ID.GreaterEqual:
+        return rOpen(value, F.CInfinity);
+      case ID.Less:
+        return open(F.CNInfinity, value);
+      case ID.LessEqual:
+        return lOpen(F.CNInfinity, value);
+      case ID.Equal:
+        return close(value, value);
+      case ID.Unequal:
+        return F.IntervalData(//
+            F.List(F.CNInfinity, S.Less, S.Less, value), //
+            F.List(value, S.Less, S.Less, F.CInfinity));
+    }
+    throw new ArgumentTypeStopException("Not implemented");
+  }
+
+  /**
+   * Return an interval not including the right boundary.
+   * 
+   * @param lhs left boundary
+   * @param rhs right boundary
+   * @return <code>IntervalData({lhs, LessEqual, Less, rhs}))</code>
+   */
+  public static IAST rOpen(final IExpr lhs, final IExpr rhs) {
+    return F.IntervalData(//
+        F.List(lhs, //
+            S.LessEqual, //
+            S.Less, //
+            rhs));
+  }
+
+  public static IAST sec(final IAST ast) {
+    IAST interval = cos(ast);
+    if (interval.isPresent()) {
+      return inverse(interval);
+    }
+    return F.NIL;
+  }
+
+  public static IAST sech(final IAST ast) {
+    EvalEngine engine = EvalEngine.get();
+    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
+      if (min.isRealResult() && max.isRealResult()) {
+        if (engine.evalGreaterEqual(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
+          result.append(F.List(F.Sech(max), lessMin, lessMax, F.Sech(min)));
+        } else if (engine.evalLess(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
+          result.append(F.List(F.Min(F.Sech(min), F.Sech(max)), lessMin, lessMax, F.C1));
+        } else if (engine.evalLess(min, F.C0) && engine.evalLess(max, F.C0)) {
+          result.append(F.List(F.Sech(min), lessMin, lessMax, F.Sech(max)));
+        }
+        return true;
+      }
+      return false;
+    });
+  }
+
+  /**
+   * Create two intervals {@link F#IntervalData(IAST...)} from the relations
+   * <code>F.binaryAST2(relationalSymbol1, expr, value1)</code> and from
+   * <code>F.binaryAST2(relationalSymbol2, expr, value2)</code> and intersect the two intervals if
+   * possible
+   * 
+   * @param lhs
+   * @param relationalSymbol1
+   * @param rhsValue1
+   * @param relationalSymbol2
+   * @param rhsValue2
+   * @param variable
+   * @param engine
+   * @return
+   */
+  public static IAST simplifyRelationToInterval(IExpr lhs, IBuiltInSymbol relationalSymbol1,
+      IExpr rhsValue1, IBuiltInSymbol relationalSymbol2, IExpr rhsValue2, IExpr variable,
+      EvalEngine engine) throws ArgumentTypeStopException {
+    IAST f1 = simplifyRelationToInterval(lhs, relationalSymbol1, rhsValue1, variable, engine);
+    IAST f2 = simplifyRelationToInterval(lhs, relationalSymbol2, rhsValue2, variable, engine);
+    if (f1.isPresent() && f2.isPresent()) {
+      IExpr temp = F.IntervalIntersection.of(engine, f1, f2);
+      if (temp.isIntervalData()) {
+        return (IAST) temp;
+      }
+    }
+    throw new ArgumentTypeStopException("IntervalIntersection failed");
+  }
+
+  /**
+   * Create an {@link F#IntervalData(IAST...)} from the relation
+   * <code>F.binaryAST2(relationalSymbol, expr, value)</code>.
+   * 
+   * @param lhs
+   * @param relationalSymbol one of the symbols
+   *        {@link S#Greater},{@link S#GreaterEqual}{@link S#Less}{@link S#LessEqual}{@link S#Unequal}
+   * @param rhsValue
+   * @param variable
+   * @param engine
+   * @return
+   */
+  public static IAST simplifyRelationToInterval(IExpr lhs, IBuiltInSymbol relationalSymbol,
+      IExpr rhsValue, IExpr variable, EvalEngine engine) throws ArgumentTypeStopException {
+    IExpr temp = engine.evaluate(F.Simplify(F.binaryAST2(relationalSymbol, lhs, rhsValue)));
+    if (temp.isAST2() && temp.first().equals(variable)) {
+      IExpr rhs = temp.second();
+      int headID = temp.headID();
+      switch (headID) {
+        case ID.Greater:
+          return open(rhs, F.CInfinity);
+        case ID.GreaterEqual:
+          return rOpen(rhs, F.CInfinity);
+        case ID.Less:
+          return open(F.CNInfinity, rhs);
+        case ID.LessEqual:
+          return lOpen(F.CNInfinity, rhs);
+        case ID.Equal:
+          return close(rhs, rhs);
+        case ID.Unequal:
+          return F.IntervalData(//
+              F.List(F.CNInfinity, S.Less, S.Less, rhs), //
+              F.List(rhs, S.Less, S.Less, F.CInfinity));
+      }
+    }
+    throw new ArgumentTypeStopException("Not implemented");
+  }
+
+  public static IAST sin(final IAST ast) {
+    EvalEngine engine = EvalEngine.get();
+    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
+      IAST difference = F.Subtract(max, min);
+      if (engine.evalGreaterEqual(difference, F.C2Pi)) {
+        // difference >= 2 * Pi
+        result.append(index, F.List(F.CN1, lessMin, lessMax, F.C1));
+      } else {
+        // slope from 1st derivative
+        double dMin = engine.evalDouble(F.Cos(min));
+        double dMax = engine.evalDouble(F.Cos(max));
+        if (engine.evalLessEqual(difference, S.Pi)) {
+          if (dMin >= 0) {
+            if (dMax >= 0) {
+              result.append(index, F.List(F.Sin(min), lessMin, lessMax, F.Sin(max)));
+            } else {
+              result.append(index, F.List(F.Min(F.Sin(min), F.Sin(max)), lessMin, lessMax, F.C1));
+            }
+          } else {
+            if (dMax < 0) {
+              result.append(index, F.List(F.Sin(max), lessMin, lessMax, F.Sin(min)));
+            } else {
+              result.append(index, F.List(F.CN1, lessMin, lessMax, F.Max(F.Sin(min), F.Sin(max))));
+            }
+          }
+        } else { // difference between {Pi, 2*Pi}
+          if (dMin >= 0) {
+            if (dMax > 0) {
+              result.append(index, F.List(F.CN1, lessMin, lessMax, F.C1));
+            } else {
+              result.append(index, F.List(F.Min(F.Sin(min), F.Sin(max)), lessMin, lessMax, F.C1));
+            }
+          } else {
+            if (dMax < 0) {
+              result.append(index, F.List(F.CN1, lessMin, lessMax, F.C1));
+            } else {
+              result.append(index, F.List(F.CN1, lessMin, lessMax, F.Max(F.Sin(min), F.Sin(max))));
+            }
+          }
+        }
+      }
+      return true;
+    });
+  }
+
+  public static IAST sinh(final IAST ast) {
+    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
+      if (min.isRealResult() && max.isRealResult()) {
+        result.append(index, F.List(F.Sinh(min), lessMin, lessMax, F.Sinh(max)));
+        return true;
+      }
+      return false;
+    });
+  }
+
+  public static IAST tan(final IAST ast) {
+    EvalEngine engine = EvalEngine.get();
+    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
+      IAST difference = F.Subtract(max, min);
+      if (engine.evalGreaterEqual(difference, S.Pi)) {
+        result.append(F.CRealsRange);
+      } else {
+        double dMin = engine.evalDouble(F.Tan(min));
+        double dMax = engine.evalDouble(F.Tan(max));
+        if (engine.evalLessEqual(difference, F.CPiHalf)) {
+          // difference <= 1/2*Pi
+          if (dMin >= 0) {
+            if (dMax < 0) {
+              result.append(F.List(F.CNInfinity, S.Less, lessMax, F.Tan(max)));
+              result.append(F.List(F.Tan(min), lessMin, S.Less, F.CInfinity));
+            } else {
+              result.append(F.List(F.Tan(min), lessMin, lessMax, F.Tan(max)));
+            }
+          } else {
+            result.append(F.List(F.Tan(min), lessMin, lessMax, F.Tan(max)));
+          }
+        } else { // difference between {Pi/2, Pi}
+          if (dMin >= 0) {
+            if ((dMax < 0) || (dMin > dMax)) {
+              result.append(F.List(F.CNInfinity, S.Less, lessMax, F.Tan(max)));
+              result.append(F.List(F.Tan(min), lessMin, S.Less, F.CInfinity));
+            } else {
+              result.append(F.CRealsRange);
+            }
+          } else {
+            if (dMax < 0) {
+              if (dMin <= dMax) {
+                result.append(F.CRealsRange);
+              } else {
+                result.append(F.List(F.CNInfinity, S.Less, lessMax, F.Tan(max)));
+                result.append(F.List(F.Tan(min), lessMin, S.Less, F.CInfinity));
+              }
+            } else {
+              result.append(F.List(F.Tan(min), lessMin, lessMax, F.Tan(max)));
+            }
+          }
+        }
+      }
+      return true;
+    });
+  }
+
+  public static IAST tanh(final IAST ast) {
+    return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
+      if (min.isRealResult() && max.isRealResult()) {
+        result.append(index, F.List(F.Tanh(min), lessMin, lessMax, F.Tanh(max)));
+        return true;
+      }
+      return false;
+    });
   }
 
   public static IExpr times(final IAST ast1, final IAST ast2) {
@@ -789,6 +1980,81 @@ public class IntervalDataSym {
     return F.NIL;
   }
 
+  private static IBuiltInSymbol toggle(IExpr value, IBuiltInSymbol symbol) {
+    if (symbol == S.Less) {
+      if (value.isInfinity() || value.isNegativeInfinity()) {
+        return S.Less;
+      }
+      return S.LessEqual;
+    }
+    if (symbol == S.LessEqual) {
+      return S.Less;
+    }
+    return symbol;
+  }
+
+  /**
+   * Convert the <code>logicOrDomainExpr</code> to a {@link F#IntervalData(IAST...)} expression.
+   * 
+   * @param logicOrDomainExpr the logical expression or domain expression to convert
+   * @param engine the evaluation engine
+   * @return an {@link F#IntervalData(IAST...)} expression representing the interval data, or
+   *         {@link F#NIL} if the conversion is not applicable or fails.
+   */
+  public static IExpr toIntervalData(IExpr logicOrDomainExpr, EvalEngine engine) {
+    return toIntervalData(logicOrDomainExpr, S.Nonexistent, engine);
+  }
+
+  /**
+   * Convert the <code>logicOrDomainExpr</code> to a {@link F#IntervalData(IAST...)} expression.
+   * 
+   * 
+   * @param logicOrDomainExpr the logical expression or domain expression to convert
+   * @param variable the variable to use in the conversion, if applicable
+   * @param engine the evaluation engine
+   * @return an {@link F#IntervalData(IAST...)} expression representing the interval data, or
+   *         {@link F#NIL} if the conversion is not applicable or fails.
+   */
+  public static IExpr toIntervalData(final IExpr logicOrDomainExpr, final IExpr variable,
+      final EvalEngine engine) {
+    if (logicOrDomainExpr.isOr()) {
+      IAST orAST = (IAST) logicOrDomainExpr;
+      IExpr orInterval = orAST.mapThread(x -> toIntervalData(x, variable, engine));
+      if (orInterval.isOr()) {
+        return IntervalDataSym.intervalDataUnion((IAST) orInterval, engine);
+      }
+    } else if (logicOrDomainExpr.isAnd()) {
+      IAST andAST = (IAST) logicOrDomainExpr;
+      IExpr andInterval = andAST.mapThread(x -> toIntervalData(x, variable, engine));
+      if (andInterval.isAnd()) {
+        return IntervalDataSym.intervalDataIntersection((IAST) andInterval, engine);
+      }
+    } else if (logicOrDomainExpr.isNot()) {
+      IAST notAST = (IAST) logicOrDomainExpr;
+      IExpr interval = toIntervalData(notAST.arg1(), variable, engine);
+      if (interval.isIntervalData()) {
+        return IntervalDataSym.intervalDataComplement(reals(), (IAST) interval, engine);
+      }
+    } else if (logicOrDomainExpr.isRelationalBinary()) {
+      final IAST reducedIntervalData =
+          ReduceVariableIntervalSet.reduce((IAST) logicOrDomainExpr, variable, false, engine);
+      if (reducedIntervalData.isPresent()) {
+        return reducedIntervalData;
+      } else {
+        return relationToInterval((IAST) logicOrDomainExpr, variable);
+      }
+    } else if (logicOrDomainExpr.isRelational()) {
+      return relationToInterval((IAST) logicOrDomainExpr, variable);
+    } else if (logicOrDomainExpr == S.Reals) {
+      return F.CRealsIntervalData;
+    }
+    return F.NIL;
+  }
+
+  public static IAST union(final IAST interval1, final IAST interval2) {
+    return union(interval1, interval2, EvalEngine.get());
+  }
+
   public static IAST union(final IAST interval1, final IAST interval2, EvalEngine engine) {
     IASTAppendable result = F.ast(S.IntervalData, interval1.size() + interval2.size());
     result.appendArgs(interval1);
@@ -801,4 +2067,43 @@ public class IntervalDataSym {
     return normalized.orElse(result);
   }
 
+  public static IInteger mapIntegerFunction(ISymbol integerFunctionSymbol, final IAST interval,
+      EvalEngine engine) {
+    if (interval.isPresent()) {
+      IInteger result = null;
+      for (int i = 1; i < interval.size(); i++) {
+        IAST list = (IAST) interval.get(i);
+        IExpr minArg = list.arg1();
+        IExpr maxArg = list.arg4();
+        if (!minArg.isRealResult() || !maxArg.isRealResult()) {
+          return null;
+        }
+        IExpr min = minArg;
+        IExpr max = maxArg;
+
+        IExpr lessMin = list.arg2();
+        if (lessMin == S.Less && min.isInteger()) {
+          min = min.add(F.QQ(1, 10));
+        }
+        IExpr lessMax = list.arg3();
+        if (lessMax == S.Less && max.isInteger()) {
+          max = max.subtract(F.QQ(1, 10));
+        }
+        IExpr mappedMin = engine.evaluate(F.unaryAST1(integerFunctionSymbol, min));
+        IExpr mappedMax = engine.evaluate(F.unaryAST1(integerFunctionSymbol, max));
+        if (!mappedMin.equals(mappedMax) || !mappedMin.isInteger()) {
+          return null;
+        }
+        if (result != null && !result.equals(mappedMin)) {
+          return null;
+        } else {
+          result = (IInteger) mappedMin;
+        }
+      }
+      if (result != null) {
+        return result;
+      }
+    }
+    return null;
+  }
 }

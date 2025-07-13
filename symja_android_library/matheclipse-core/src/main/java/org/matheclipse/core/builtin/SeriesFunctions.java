@@ -11,6 +11,7 @@ import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
@@ -20,6 +21,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
+import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -1082,7 +1084,7 @@ public class SeriesFunctions {
       IExpr temp = F.evalQuiet(F.subst(arg1, x, y));
       if (temp.isTimes()) {
         Optional<IExpr[]> parts =
-            Algebra.fractionalPartsTimesPower((IAST) temp, false, false, true, true, true, true);
+            AlgebraUtil.fractionalPartsTimesPower((IAST) temp, false, false, true, true, true, true);
         if (parts.isPresent()) {
           if (!parts.get()[1].isOne()) { // denominator != 1
             LimitData ndData = new LimitData(x, F.C0, F.Rule(x, F.C0), data.direction());
@@ -1114,7 +1116,7 @@ public class SeriesFunctions {
         return F.Times(freeOfVariable, limit);
       }
       Optional<IExpr[]> parts =
-          Algebra.fractionalPartsTimesPower(timesAST, false, false, true, true, true, true);
+          AlgebraUtil.fractionalPartsTimesPower(timesAST, false, false, true, true, true, true);
       if (parts.isEmpty()) {
         IAST[] timesPolyFiltered = timesAST.filter(x -> x.isPolynomial(data.variable));
         if (timesPolyFiltered[0].size() > 1 && timesPolyFiltered[1].size() > 1) {
@@ -1410,7 +1412,7 @@ public class SeriesFunctions {
             }
             if (function.isTimes()) {
               Optional<IExpr[]> numeratorDenominatorParts =
-                  Algebra.fractionalParts(function, false);
+                  AlgebraUtil.fractionalParts(function, false);
               if (numeratorDenominatorParts.isPresent()) {
                 return quotientTaylorFunction(numeratorDenominatorParts.get(), x, x0, m, n);
               }
@@ -1833,14 +1835,18 @@ public class SeriesFunctions {
       }
 
       if (x0.isReal()) {
-        final int lowerLimit = x0.toIntDefault();
-        if (lowerLimit != 0) {
-          // TODO support other cases than 0
-          return F.NIL;
+        final int x0Value = x0.toIntDefault();
+        if (x0Value != 0) {
+          return taylorCoefficient(function, x, x0, n, engine);
         }
-        x0 = F.ZZ(lowerLimit);
+        x0 = F.ZZ(x0Value);
       }
 
+      return taylorCoefficient(function, x, x0, n, engine);
+    }
+
+    private static IExpr taylorCoefficient(IExpr function, IExpr x, IExpr x0, IExpr n,
+        EvalEngine engine) {
       final int degree = n.toIntDefault();
       if (degree < 0) {
         return F.NIL;
@@ -2078,7 +2084,7 @@ public class SeriesFunctions {
         return temp;
       }
     } else if (function.isTimes()) {
-      Optional<IExpr[]> numeratorDenominatorParts = Algebra.fractionalParts(function, false);
+      Optional<IExpr[]> numeratorDenominatorParts = AlgebraUtil.fractionalParts(function, false);
       if (numeratorDenominatorParts.isPresent()) {
         ASTSeriesData sd =
             Algebra.polynomialTaylorSeries(numeratorDenominatorParts.get(), x, x0, n, denominator);
@@ -2216,7 +2222,7 @@ public class SeriesFunctions {
         }
       }
       IExpr coefficient =
-          engine.evalQuiet(F.Times(F.Power(NumberTheory.factorial(i), F.CN1), functionPart));
+          engine.evalQuiet(F.Times(F.Power(AbstractIntegerSym.factorial(i), F.CN1), functionPart));
       if (coefficient.isIndeterminate() || coefficient.isComplexInfinity()) {
         return null;
       }

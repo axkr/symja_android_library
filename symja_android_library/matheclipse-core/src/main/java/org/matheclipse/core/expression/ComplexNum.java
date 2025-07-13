@@ -1290,6 +1290,11 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
+  public boolean isFinite() {
+    return fComplex.isFinite();
+  }
+
+  @Override
   public boolean isImaginaryUnit() {
     return equals(I);
   }

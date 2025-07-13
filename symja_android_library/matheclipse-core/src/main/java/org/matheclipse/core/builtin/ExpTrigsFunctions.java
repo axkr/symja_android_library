@@ -39,7 +39,6 @@ import org.apfloat.Apint;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -54,10 +53,12 @@ import org.matheclipse.core.eval.interfaces.IReciprocalTrigonometricFunction;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.interfaces.ITrigonometricFunction;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
+import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
@@ -78,7 +79,6 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.sympy.exception.PoleError;
 import org.matheclipse.core.sympy.exception.ValueError;
-import com.google.common.math.DoubleMath;
 
 public class ExpTrigsFunctions {
 
@@ -347,6 +347,9 @@ public class ExpTrigsFunctions {
       if (arg1.isInterval()) {
         return IntervalSym.arccos((IAST) arg1);
       }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.arccos((IAST) arg1);
+      }
       return F.NIL;
     }
 
@@ -424,6 +427,9 @@ public class ExpTrigsFunctions {
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInterval()) {
         return IntervalSym.arccosh((IAST) arg1);
+      }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.arccosh((IAST) arg1);
       }
       return F.NIL;
     }
@@ -518,6 +524,9 @@ public class ExpTrigsFunctions {
 
       if (arg1.isInterval()) {
         return IntervalSym.arccot((IAST) arg1);
+      }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.arccot((IAST) arg1);
       }
       return F.NIL;
     }
@@ -882,6 +891,9 @@ public class ExpTrigsFunctions {
       if (arg1.isInterval()) {
         return IntervalSym.arcsin((IAST) arg1);
       }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.arcsin((IAST) arg1);
+      }
       return F.NIL;
     }
 
@@ -947,6 +959,9 @@ public class ExpTrigsFunctions {
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInterval()) {
         return IntervalSym.arcsinh((IAST) arg1);
+      }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.arcsinh((IAST) arg1);
       }
       IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
       if (imPart.isPresent()) {
@@ -1039,6 +1054,9 @@ public class ExpTrigsFunctions {
 
       if (arg1.isInterval()) {
         return IntervalSym.arctan((IAST) arg1);
+      }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.arctan((IAST) arg1);
       }
       return F.NIL;
     }
@@ -1250,6 +1268,9 @@ public class ExpTrigsFunctions {
       if (arg1.isInterval()) {
         return IntervalSym.arctanh((IAST) arg1);
       }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.arctanh((IAST) arg1);
+      }
       IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
       if (imPart.isPresent()) {
         return F.Times(F.CI, F.ArcTan(imPart));
@@ -1401,6 +1422,9 @@ public class ExpTrigsFunctions {
       }
       if (arg1.isInterval()) {
         return IntervalSym.cos((IAST) arg1);
+      }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.cos((IAST) arg1);
       }
       IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
       if (imPart.isPresent()) {
@@ -1609,6 +1633,9 @@ public class ExpTrigsFunctions {
       if (arg1.isInterval()) {
         return IntervalSym.coth((IAST) arg1);
       }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.coth((IAST) arg1);
+      }
       return F.NIL;
     }
 
@@ -1753,6 +1780,9 @@ public class ExpTrigsFunctions {
       }
       if (arg1.isInterval()) {
         return IntervalSym.csc((IAST) arg1);
+      }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.csc((IAST) arg1);
       }
       // IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
       // if (imPart.isPresent()) {
@@ -1930,6 +1960,9 @@ public class ExpTrigsFunctions {
       if (arg1.isInterval()) {
         return IntervalSym.cosh((IAST) arg1);
       }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.cosh((IAST) arg1);
+      }
       return F.NIL;
     }
 
@@ -2104,7 +2137,9 @@ public class ExpTrigsFunctions {
       if (arg1.isInterval()) {
         return IntervalSym.cot((IAST) arg1);
       }
-
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.cot((IAST) arg1);
+      }
       return F.NIL;
     }
 
@@ -2237,6 +2272,9 @@ public class ExpTrigsFunctions {
       }
       if (arg1.isInterval()) {
         return IntervalSym.csch((IAST) arg1);
+      }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.csch((IAST) arg1);
       }
       return F.NIL;
     }
@@ -2550,7 +2588,7 @@ public class ExpTrigsFunctions {
 
     @Override
     public IExpr e2IntArg(final IInteger arg1, final IInteger arg2) {
-      return baseBLog(arg1, arg2);
+      return AbstractIntegerSym.baseBLog(arg1, arg2);
     }
 
     @Override
@@ -2638,6 +2676,9 @@ public class ExpTrigsFunctions {
       }
       if (arg1.isInterval()) {
         return IntervalSym.log((IAST) arg1);
+      }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.log((IAST) arg1);
       }
       if (arg1.isOverflow()) {
         return F.Overflow();
@@ -2732,12 +2773,12 @@ public class ExpTrigsFunctions {
           // break
           i++;
         }
-        if (i < 5) {
-          // coeff, _ = term.as_coeff_exponent(t)
-          // res += -2*I*S.Pi*Heaviside(-im(coeff), 0)
-          IExpr coeff = term.asCoeffExponent(t).first();
-          res.append(F.Times(F.CN2, F.CI, S.Pi, F.heaviside(coeff.im().negate(), F.C0, engine)));
-        }
+        // if (i < 5) {
+        // // coeff, _ = term.as_coeff_exponent(t)
+        // // res += -2*I*S.Pi*Heaviside(-im(coeff), 0)
+        // IExpr coeff = term.asCoeffExponent(t).first();
+        // res.append(F.Times(F.CN2, F.CI, S.Pi, F.heaviside(coeff.im().negate(), F.C0, engine)));
+        // }
       }
       return res;
     }
@@ -2953,6 +2994,9 @@ public class ExpTrigsFunctions {
       if (arg1.isInterval()) {
         return IntervalSym.sec((IAST) arg1);
       }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.sec((IAST) arg1);
+      }
       // IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
       // if (imPart.isPresent()) {
       // return F.Sech(imPart);
@@ -3121,6 +3165,9 @@ public class ExpTrigsFunctions {
       if (arg1.isInterval()) {
         return IntervalSym.sech((IAST) arg1);
       }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.sech((IAST) arg1);
+      }
       return F.NIL;
     }
 
@@ -3242,6 +3289,9 @@ public class ExpTrigsFunctions {
       }
       if (arg1.isInterval()) {
         return IntervalSym.sin((IAST) arg1);
+      }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.sin((IAST) arg1);
       }
       IExpr imPart = AbstractFunctionEvaluator.getComplexExpr(arg1, F.CNI);
       if (imPart.isPresent()) {
@@ -3561,6 +3611,9 @@ public class ExpTrigsFunctions {
       if (arg1.isInterval()) {
         return IntervalSym.sinh((IAST) arg1);
       }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.sinh((IAST) arg1);
+      }
       return F.NIL;
     }
 
@@ -3732,6 +3785,9 @@ public class ExpTrigsFunctions {
       if (arg1.isInterval()) {
         return IntervalSym.tan((IAST) arg1);
       }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.tan((IAST) arg1);
+      }
 
       // IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
       // if (imPart.isPresent()) {
@@ -3878,6 +3934,9 @@ public class ExpTrigsFunctions {
       }
       if (arg1.isInterval()) {
         return IntervalSym.tanh((IAST) arg1);
+      }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.tanh((IAST) arg1);
       }
       return F.NIL;
     }
@@ -4050,48 +4109,6 @@ public class ExpTrigsFunctions {
       if ((zIm.isNegativeResult() || zIm.isZero()) && S.Equal.ofQ(zRe, max)) {
         return result;
       }
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Integer logarithm of <code>arg</code> for base <code>b</code>. Gives Log <sub>b</sub>(arg) or
-   * <code>Log(arg)/Log(b)</code>.
-   *
-   * @param b the base of the logarithm
-   * @param arg
-   * @return
-   */
-  public static IExpr baseBLog(final IInteger b, final IInteger arg) {
-    try {
-      long l1 = b.toLong();
-      long l2 = arg.toLong();
-      if (l1 > 0L && l2 > 0L) {
-        boolean inverse = false;
-        if (l1 > l2) {
-          long t = l2;
-          l2 = l1;
-          l1 = t;
-          inverse = true;
-        }
-        double numericResult = Math.log(l2) / Math.log(l1);
-        if (F.isNumIntValue(numericResult)) {
-          long symbolicResult = DoubleMath.roundToLong(numericResult, Config.ROUNDING_MODE);
-          if (inverse) {
-            if (b.equals(arg.powerRational(symbolicResult))) {
-              // cross checked result
-              return F.QQ(1L, symbolicResult);
-            }
-          } else {
-            if (arg.equals(b.powerRational(symbolicResult))) {
-              // cross checked result
-              return F.ZZ(symbolicResult);
-            }
-          }
-        }
-      }
-    } catch (ArithmeticException ae) {
-      // toLong() method failed
     }
     return F.NIL;
   }
