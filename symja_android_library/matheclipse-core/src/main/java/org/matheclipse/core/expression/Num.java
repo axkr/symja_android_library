@@ -1480,6 +1480,11 @@ public class Num implements INum {
   }
 
   @Override
+  public boolean isFinite() {
+    return Double.isFinite(value);
+  }
+
+  @Override
   public boolean isGT(IReal that) {
     return value > that.doubleValue();
   }

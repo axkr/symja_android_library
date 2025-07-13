@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.Errors;
@@ -163,9 +162,6 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     } else {
       clearEvalFlags(SETDELAYED_FLAG_ASSIGNED_VALUE);
     }
-    // final Deque<IExpr> localVariableStack = EvalEngine.get().localStack(this);
-    // localVariableStack.remove();
-    // localVariableStack.push(value);
   }
 
   /** {@inheritDoc} */
@@ -176,7 +172,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
         throw new RuleCreationError(this);
       }
     }
-    clearValue();
+    clearValue(null);
     if (fRulesData != null) {
       fRulesData = null;
     }
@@ -207,7 +203,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public void clearValue() {
+  public void clearValue(IExpr resetValue) {
     fValue = null;
     clearEvalFlags(DIRTY_FLAG_ASSIGNED_VALUE);
   }
@@ -273,7 +269,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   @Override
   public String definitionToString() {
     StringBuilder buf = new StringBuilder();
-    IAST attributesList = AttributeFunctions.attributesList(this);
+    IAST attributesList = ISymbol.attributesList(this);
     if (attributesList.size() > 1) {
       buf.append("Attributes(");
       buf.append(this.toString());
@@ -730,7 +726,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public boolean isPolynomialOfMaxDegree(ISymbol variable, long maxDegree) {
+  public boolean isPolynomialOfMaxDegree(IExpr variable, long maxDegree) {
     if (maxDegree == 0L) {
       if (this.equals(variable)) {
         return false;
@@ -1018,7 +1014,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
       EvalEngine.get().addModifiedVariable(this);
     }
     if (leftHandSide.isSymbol()) {
-      clearValue();
+      clearValue(null);
       return true;
     } else if (fRulesData != null) {
       return fRulesData.removeRule(setSymbol, equalRule, leftHandSide);

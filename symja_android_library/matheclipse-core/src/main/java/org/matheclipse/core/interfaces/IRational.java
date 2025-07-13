@@ -72,13 +72,16 @@ public interface IRational extends IReal, IBigNumber {
   public IASTAppendable factorInteger();
 
   /**
-   * Factor into small factors below 1021 if possible and determine the root.
+   * Return the prime factors paired with their exponents for integer and fractional numbers. For
+   * factors of the denominator part of fractional numbers the exponents are negative.
    *
-   * @param numerator
-   * @param root the <code>root > 1</code> which should be determined
-   * @return the rest of the factorization
+   * <code>F.ZZ(-4).factorSmallPrimes(1,2) => Times((-1)^1,2^2)</code>
+   * 
+   * @param rootNumerator the numerator of the root
+   * @param rootDenominator the denominator of the root
+   * @return
    */
-  public IAST factorSmallPrimes(int numerator, int root);
+  public IAST factorSmallPrimes(int rootNumerator, int rootDenominator);
 
   @Override
   public IInteger floor();

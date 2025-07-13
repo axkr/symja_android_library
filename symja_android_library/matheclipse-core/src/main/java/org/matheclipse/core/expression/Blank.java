@@ -31,13 +31,13 @@ public class Blank implements IPattern {
   /** */
   private static final long serialVersionUID = 1306007999071682207L;
 
-  private static final Blank BLANK_PATTERN = new Blank();
+  protected static final Blank BLANK_PATTERN = new Blank();
 
-  public static IPattern valueOf() {
+  private static IPattern valueOf() {
     return BLANK_PATTERN;
   }
 
-  public static IPattern valueOf(final IExpr condition) {
+  private static IPattern valueOf(final IExpr condition) {
     return new Blank(condition);
   }
 
@@ -51,11 +51,11 @@ public class Blank implements IPattern {
     this(null);
   }
 
-  public Blank(final IExpr condition) {
+  protected Blank(final IExpr condition) {
     this(condition, false);
   }
 
-  public Blank(final IExpr condition, boolean def) {
+  protected Blank(final IExpr condition, boolean def) {
     super();
     this.fHeadTest = condition;
     this.fDefault = def;

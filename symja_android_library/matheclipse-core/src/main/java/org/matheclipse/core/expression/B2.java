@@ -547,9 +547,8 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public IExpr evaluate(EvalEngine engine) {
       if (arg1.isNumber() && arg2.isNumber()) {
-        INumber result = ((INumber) arg1).plus((INumber) arg2);
+        return ((INumber) arg1).plusExpr((INumber) arg2);
         // System.out.println("Plus: " + arg1 + "+" + arg2 + "=>" + result);
-        return result;
       }
       return super.evaluate(engine);
     }

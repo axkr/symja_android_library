@@ -9,7 +9,6 @@ import java.util.function.DoubleFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import org.hipparchus.special.elliptic.jacobi.Theta;
-import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -19,6 +18,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMap.PatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -128,6 +128,86 @@ public interface ISymbol extends IExpr {
   /** ISymbol flag to indicate that the symbols value is defined by SetDelayed */
   public static final int SETDELAYED_FLAG_ASSIGNED_VALUE = 0x10000002;
 
+  /**
+   * Get the attrbutes of this <code>symbol</code> as symbolic constants in a list.
+   *
+   * @param symbol
+   * @return
+   */
+  static IAST attributesList(ISymbol symbol) {
+
+    int attributes = symbol.getAttributes();
+    IASTAppendable result = F.ListAlloc(Integer.bitCount(attributes));
+
+    if ((attributes & CONSTANT) != NOATTRIBUTE) {
+      result.append(S.Constant);
+    }
+
+    if ((attributes & FLAT) != NOATTRIBUTE) {
+      result.append(S.Flat);
+    }
+
+    if ((attributes & HOLDALLCOMPLETE) == HOLDALLCOMPLETE) {
+      result.append(S.HoldAllComplete);
+    } else if ((attributes & HOLDCOMPLETE) == HOLDCOMPLETE) {
+      result.append(S.HoldComplete);
+    } else if ((attributes & HOLDALL) == HOLDALL) {
+      result.append(S.HoldAll);
+    } else {
+      if ((attributes & HOLDFIRST) != NOATTRIBUTE) {
+        result.append(S.HoldFirst);
+      }
+
+      if ((attributes & HOLDREST) != NOATTRIBUTE) {
+        result.append(S.HoldRest);
+      }
+    }
+
+    if ((attributes & LISTABLE) != NOATTRIBUTE) {
+      result.append(S.Listable);
+    }
+
+    if ((attributes & NHOLDALL) == NHOLDALL) {
+      result.append(S.NHoldAll);
+    } else {
+      if ((attributes & NHOLDFIRST) != NOATTRIBUTE) {
+        result.append(S.NHoldFirst);
+      }
+
+      if ((attributes & NHOLDREST) != NOATTRIBUTE) {
+        result.append(S.NHoldRest);
+      }
+    }
+
+    if ((attributes & NUMERICFUNCTION) != NOATTRIBUTE) {
+      result.append(S.NumericFunction);
+    }
+
+    if ((attributes & ONEIDENTITY) != NOATTRIBUTE) {
+      result.append(S.OneIdentity);
+    }
+
+    if ((attributes & ORDERLESS) != NOATTRIBUTE) {
+      result.append(S.Orderless);
+    }
+
+    if ((attributes & LOCKED) == LOCKED) {
+      result.append(S.Locked);
+      result.append(S.Protected);
+    } else {
+      if ((attributes & PROTECTED) != NOATTRIBUTE) {
+        result.append(S.Protected);
+      }
+    }
+
+    if ((attributes & SEQUENCEHOLD) == SEQUENCEHOLD
+        && ((attributes & HOLDALLCOMPLETE) != HOLDALLCOMPLETE)) {
+      result.append(S.SequenceHold);
+    }
+    result.sortInplace(Comparators.CANONICAL_COMPARATOR);
+    return result;
+  }
+
   private static void collectSymbolsRecursive(IAST symbolsList, Set<ISymbol> symbolSet,
       Predicate<ISymbol> predicate) {
     for (int i = 1; i < symbolsList.size(); i++) {
@@ -186,7 +266,7 @@ public interface ISymbol extends IExpr {
       while (iterator.hasNext()) {
         ISymbol symbol = iterator.next();
 
-        IAST attributesList = AttributeFunctions.attributesList(symbol);
+        IAST attributesList = ISymbol.attributesList(symbol);
         if (attributesList.size() > 1) {
           fullDefinition.append(F.Set(F.Attributes(symbol), attributesList));
         }
@@ -266,15 +346,6 @@ public interface ISymbol extends IExpr {
     return (attributes & FLATORDERLESS) == FLATORDERLESS;
   }
 
-  /**
-   * Does this symbol have the {@link ISymbol#PROTECTED} attribute set?
-   * 
-   * 
-   */
-  default boolean hasProtectedAttribute() {
-    return ((getAttributes() & PROTECTED) == PROTECTED);
-  }
-
   static IAST symbolDefinition(ISymbol symbol) {
 
     if (symbol.equals(S.In)) {
@@ -309,6 +380,23 @@ public interface ISymbol extends IExpr {
       result.appendAll(rules);
     }
     return result;
+  }
+
+  public static String toString(final Context context, final String symbolName, EvalEngine engine) {
+    if (context == Context.SYSTEM) {
+      String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(symbolName);
+      if (str != null) {
+        return str;
+      }
+    } else if (context == Context.DUMMY) {
+      return symbolName;
+    } else if (context == Context.RUBI) {
+      return context.completeContextName() + symbolName;
+    }
+    if (engine != null && engine.getContextPath().contains(context)) {
+      return symbolName;
+    }
+    return context.completeContextName() + symbolName;
   }
 
   /**
@@ -375,8 +463,20 @@ public interface ISymbol extends IExpr {
    */
   public void clearEvalFlags(final int flags);
 
-  /** Clear the <code>OwnValues</code> value which is assigned to this symbol. */
-  public void clearValue();
+  /**
+   * Clear the <code>OwnValues</code> value which is assigned to this symbol.
+   * 
+   */
+  default void clearValue() {
+    clearValue(null);
+  }
+
+  /**
+   * Clear the <code>OwnValues</code> value which is assigned to this symbol.
+   * 
+   * @param resetValue resetTo this value especially in a Java <code>finally</code> block.
+   */
+  public void clearValue(IExpr resetValue);
 
   /**
    * Check if ths symbol contains a "DownRule" or "UpRule"
@@ -588,6 +688,15 @@ public interface ISymbol extends IExpr {
    *         <code>Orderless</code> attribute.
    */
   boolean hasOrderlessFlatAttribute();
+
+  /**
+   * Does this symbol have the {@link ISymbol#PROTECTED} attribute set?
+   * 
+   * 
+   */
+  default boolean hasProtectedAttribute() {
+    return ((getAttributes() & PROTECTED) == PROTECTED);
+  }
 
   /** {@inheritDoc} */
   @Override
@@ -1100,21 +1209,4 @@ public interface ISymbol extends IExpr {
    * @return <code>false</code> if the symbol contains no rule definition.
    */
   public boolean writeRules(java.io.ObjectOutputStream stream) throws java.io.IOException;
-
-  public static String toString(final Context context, final String symbolName, EvalEngine engine) {
-    if (context == Context.SYSTEM) {
-      String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(symbolName);
-      if (str != null) {
-        return str;
-      }
-    } else if (context == Context.DUMMY) {
-      return symbolName;
-    } else if (context == Context.RUBI) {
-      return context.completeContextName() + symbolName;
-    }
-    if (engine != null && engine.getContextPath().contains(context)) {
-      return symbolName;
-    }
-    return context.completeContextName() + symbolName;
-  }
 }

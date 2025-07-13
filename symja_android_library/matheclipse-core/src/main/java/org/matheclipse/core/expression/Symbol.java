@@ -7,7 +7,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.Errors;
@@ -131,6 +130,11 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public void assignValue(IExpr value, boolean setDelayed) {
+    if (Config.FUZZ_TESTING) {
+      if (!value.isFree(this)) {
+        throw new NullPointerException("Symbol " + fSymbolName + " is not free in value: " + value);
+      }
+    }
     fValue = value;
     clearEvalFlags(DIRTY_FLAG_ASSIGNED_VALUE);
     if (setDelayed) {
@@ -146,7 +150,7 @@ public class Symbol implements ISymbol, Serializable {
     if (!engine.isPackageMode() && isLocked()) {
       throw new RuleCreationError(this);
     }
-    clearValue();
+    clearValue(null);
     if (fRulesData != null) {
       fRulesData.clear();
     }
@@ -159,7 +163,7 @@ public class Symbol implements ISymbol, Serializable {
       throw new RuleCreationError(this);
     }
     fAttributes = NOATTRIBUTE;
-    clearValue();
+    clearValue(null);
     fRulesData = null;
   }
 
@@ -181,8 +185,8 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public void clearValue() {
-    fValue = null;
+  public void clearValue(IExpr resetValue) {
+    fValue = resetValue;
     clearEvalFlags(DIRTY_FLAG_ASSIGNED_VALUE);
   }
 
@@ -287,7 +291,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public String definitionToString() {
     StringBuilder buf = new StringBuilder();
-    IAST attributesList = AttributeFunctions.attributesList(this);
+    IAST attributesList = ISymbol.attributesList(this);
     if (attributesList.size() > 1) {
       buf.append("Attributes(");
       buf.append(this.toString());
@@ -722,7 +726,7 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public boolean isPolynomialOfMaxDegree(ISymbol variable, long maxDegree) {
+  public boolean isPolynomialOfMaxDegree(IExpr variable, long maxDegree) {
     return maxDegree != 0L || !this.equals(variable);
   }
 
@@ -1040,7 +1044,7 @@ public class Symbol implements ISymbol, Serializable {
       EvalEngine.get().addModifiedVariable(this);
     }
     if (leftHandSide.isSymbol()) {
-      clearValue();
+      clearValue(null);
       return true;
     } else if (fRulesData != null) {
       return fRulesData.removeRule(setSymbol, equalRule, leftHandSide);
