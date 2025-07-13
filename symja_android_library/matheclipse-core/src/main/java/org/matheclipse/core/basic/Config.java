@@ -38,6 +38,9 @@ import com.google.common.cache.CacheBuilder;
 /** General configuration settings. */
 public class Config {
 
+  /** CheerpJ (cheerpj.com) environment? */
+  public static boolean CHEEPRJ = false;
+
   /** Show the stack trace, if an exception is thrown in evaluation */
   public static boolean SHOW_STACKTRACE = false;
 
@@ -62,7 +65,7 @@ public class Config {
 
   /** Copyright message */
   public static final String COPYRIGHT = //
-      "\nCopyright (C) 2009 - 2024 - the Symja team.\n" //
+      "\nCopyright (C) 2009 - 2025 - the Symja team.\n" //
           + "This program comes with ABSOLUTELY NO WARRANTY.\n" //
           + "Distributed under the GNU Public License.\n" //
           + "See the file license.txt\n\n";
@@ -289,8 +292,8 @@ public class Config {
   /**
    * The default value of {@link OutputFormFactory}#fIgnoreNewLine,
    * <p>
-   * This option allow to control the default value of OutputFormFactory#fIgnoreNewLine,
-   * which obtains from OutputFormFactory#get* methods
+   * This option allow to control the default value of OutputFormFactory#fIgnoreNewLine, which
+   * obtains from OutputFormFactory#get* methods
    */
   public static boolean DEFAULT_OUTPUT_FORM_IGNORE_NEW_LINE = false;
 
