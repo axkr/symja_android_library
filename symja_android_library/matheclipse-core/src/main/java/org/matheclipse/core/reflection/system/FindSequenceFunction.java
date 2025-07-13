@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -7,6 +8,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
@@ -24,69 +26,199 @@ public class FindSequenceFunction extends AbstractEvaluator {
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     if (ast.arg1().isList()) {
       IAST list = (IAST) ast.arg1();
-
-      IInteger[] sequence = Convert.toIntegerArray(list);
-      if (sequence != null && sequence.length > 2) {
-        IExpr variable = F.NIL;
-        if (ast.isAST2()) {
-          variable = ast.arg2();
-        }
-        // Check for arithmetic sequence
-        IInteger diff = sequence[1].subtract(sequence[0]);
-        boolean isArithmetic = true;
-        for (int i = 2; i < sequence.length; i++) {
-          if (!sequence[i - 1].add(diff).equals(sequence[i])) {
-            isArithmetic = false;
-            break;
+      IExpr variable = F.NIL;
+      if (ast.isAST2()) {
+        variable = ast.arg2();
+      }
+      IInteger[][] sequences = Convert.toRationalArray(list);
+      if (sequences != null) {
+        if (sequences[1] == null) {
+          if (sequences[0].length > 2) {
+            return findSequenceFunction(sequences[0], variable, engine);
           }
-        }
-        if (isArithmetic) {
-          IInteger constant = sequence[0].subtract(diff);
-          IExpr times = diff.isOne() ? F.Slot1 : F.Times(diff, F.Slot1);
-          IExpr plus = constant.isZero() ? times : F.Plus(constant, times);
-          IAST function = F.Function(plus);
-          return createFunction(function, variable, engine);
-        }
-
-        if (!sequence[0].isZero()) {
-          // Check for geometric sequence
-          IRational ratio = sequence[1].divideBy(sequence[0]);
-          if (!ratio.isOne()) {
-            boolean isGeometric = true;
-            for (int i = 2; i < sequence.length; i++) {
-              if (sequence[i - 1].isZero()
-                  || !sequence[i].divideBy(sequence[i - 1]).equals(ratio)) {
-                isGeometric = false;
-                break;
+        } else {
+          if (sequences[0].length > 2 && sequences[1].length > 2) {
+            IExpr numeratorFunction = findSequenceFunction(sequences[0], variable, engine);
+            if (numeratorFunction.isPresent()) {
+              IExpr denominatorFunction = findSequenceFunction(sequences[1], variable, engine);
+              if (denominatorFunction.isPresent()) {
+                return F.Divide(numeratorFunction, denominatorFunction);
               }
             }
-            if (isGeometric) {
-              IRational constant = sequence[0].divideBy(ratio);
-              IExpr power = F.Power(ratio, F.Slot1);
-              IExpr times = constant.isOne() ? power : F.Times(constant, power);
-              IAST function = F.Function(times);
-              return createFunction(function, variable, engine);
-            }
           }
-        }
-
-        IExpr result = findIntegerFunction(sequence, F.C0, variable, engine);
-        if (result.isPresent()) {
-          return result;
-        }
-
-        result = findIntegerFunction(sequence, F.C1, variable, engine);
-        if (result.isPresent()) {
-          return result;
-        }
-
-        result = findIntegerFunction(sequence, F.C2, variable, engine);
-        if (result.isPresent()) {
-          return result;
         }
       }
     }
     return F.NIL;
+  }
+
+  private IExpr findSequenceFunction(IInteger[] sequence, IExpr variable, EvalEngine engine) {
+    // Check for arithmetic sequence
+    IInteger diff = sequence[1].subtract(sequence[0]);
+    boolean isArithmetic = true;
+    for (int i = 2; i < sequence.length; i++) {
+      if (!sequence[i - 1].add(diff).equals(sequence[i])) {
+        isArithmetic = false;
+        break;
+      }
+    }
+    if (isArithmetic) {
+      IInteger constant = sequence[0].subtract(diff);
+      IExpr times = diff.isOne() ? F.Slot1 : F.Times(diff, F.Slot1);
+      IExpr plus = constant.isZero() ? times : F.Plus(constant, times);
+      IAST function = F.Function(plus);
+      return createFunction(function, variable, engine);
+    }
+
+    if (!sequence[0].isZero()) {
+      // Check for geometric sequence
+      IRational ratio = sequence[1].divideBy(sequence[0]);
+      if (!ratio.isOne()) {
+        boolean isGeometric = true;
+        for (int i = 2; i < sequence.length; i++) {
+          if (sequence[i - 1].isZero() || !sequence[i].divideBy(sequence[i - 1]).equals(ratio)) {
+            isGeometric = false;
+            break;
+          }
+        }
+        if (isGeometric) {
+          IRational constant = sequence[0].divideBy(ratio);
+          IExpr power = F.Power(ratio, F.Slot1);
+          IExpr times = constant.isOne() ? power : F.Times(constant, power);
+          IAST function = F.Function(times);
+          return createFunction(function, variable, engine);
+        }
+      }
+    }
+
+    IExpr result = findIntegerFunction(sequence, F.C0, variable, engine);
+    if (result.isPresent()) {
+      return result;
+    }
+
+    result = findIntegerFunction(sequence, F.C1, variable, engine);
+    if (result.isPresent()) {
+      return result;
+    }
+
+    result = findIntegerFunction(sequence, F.C2, variable, engine);
+    if (result.isPresent()) {
+      return result;
+    }
+
+    if (!isLEOrdered(sequence)) {
+      return F.NIL;
+    }
+    if (variable.isNIL()) {
+      variable = F.Slot1;
+    }
+    result = findPolynomialFunction(sequence, variable, engine);
+    if (result.isPresent()) {
+      return result;
+    }
+    return F.NIL;
+  }
+
+  private static boolean isLEOrdered(IInteger[] sequence) {
+    for (int i = 1; i < sequence.length; i++) {
+      if (!sequence[i - 1].isLE(sequence[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Computes the first-order differences of a sequence. e.g., [1, 3, 7, 13] -> [2, 4, 6]
+   */
+  public static IAST getDifferences(IAST sequence) {
+    if (sequence.size() < 2) {
+      return F.CEmptyList;
+    }
+    IASTAppendable differences = F.ListAlloc(sequence.size() - 1);
+    for (int i = 1; i < sequence.size() - 1; i++) {
+      differences.append(sequence.get(i + 1).subtract(sequence.get(i)));
+    }
+    return differences;
+  }
+
+  /**
+   * Checks if the sequence is constant.
+   */
+  public static boolean isConstant(IAST sequence) {
+    if (sequence.isEmpty())
+      return false;
+    if (sequence.size() == 1)
+      return true;
+    IInteger first = (IInteger) sequence.get(1);
+    for (int i = 2; i < sequence.size(); i++) {
+      if (!sequence.get(i).equals(first)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Tries to find a polynomial function for the given sequence. Works by taking successive
+   * differences. If the d-th difference is constant, then the sequence is a polynomial of degree d.
+   *
+   * Returns a polynomial representation of the function, or {@link F#NIL} if not a simple
+   * polynomial.
+   *
+   * Limitations: Assumes the sequence starts at n=0 or n=1 and provides enough terms. For example,
+   * if a_n is evaluated at n, you need a_0, a_1, a_2, ..., a_d to uniquely determine a polynomial
+   * of degree d.
+   */
+  private static IExpr findPolynomialFunction(IInteger[] sequence, IExpr variable,
+      EvalEngine engine) {
+    int n = sequence.length;
+    if (n == 0) {
+      return F.NIL;
+    }
+    if (n == 1) {
+      return sequence[0];
+    }
+
+    IASTAppendable diffs = F.ListAlloc(n);
+    diffs.append(F.List(sequence));
+
+    int degree = 0;
+    while (diffs.get(degree + 1).size() > 1 && degree < n - 1) {
+      IAST currentDiffs = getDifferences((IAST) diffs.get(degree + 1));
+      diffs.append(currentDiffs);
+      if (isConstant(currentDiffs)) {
+        degree = diffs.size() - 1; // Degree is found
+        break;
+      }
+      degree++;
+    }
+
+    if (!isConstant((IAST) diffs.get(degree)) || diffs.get(degree).isEmpty()) {
+      // Not a simple polynomial or not enough data to determine
+      return F.NIL;
+    }
+
+    // Simple approach for integer sequences by using finite differences
+    // A_n = sum_{k=1}^d (Binomial(n-1,k-1) * diffs[k][1]) where diffs[k][1] is the k-th difference
+    // at the first term.
+
+    IASTAppendable result = F.PlusAlloc(degree + 1);
+    for (int k = 1; k < degree + 1; k++) {
+      IInteger firstTermOfDiff = (IInteger) ((IAST) diffs.get(k)).get(1);
+      if (firstTermOfDiff.isZero()) {
+        continue;
+      }
+
+      if (k == 1) {
+        result.append(firstTermOfDiff);
+      } else {
+        IAST binomialPolynomial = NumberTheory.binomialPolynomial(F.Plus(F.CN1, variable), k - 1);
+        result.append(F.Times(firstTermOfDiff, binomialPolynomial));
+      }
+    }
+
+    return engine.evaluate(F.Factor(result.oneIdentity0()));
   }
 
   private static IExpr findIntegerFunction(IInteger[] sequence, IInteger startValue, IExpr variable,
