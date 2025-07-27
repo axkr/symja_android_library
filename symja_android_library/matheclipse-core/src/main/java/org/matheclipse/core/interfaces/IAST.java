@@ -1849,6 +1849,16 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   public IAST removePositionsAtCopy(Predicate<IExpr> predicate);
 
   /**
+   * Remove the order expressions <code>O(...)</code> from the first level of the expression.
+   */
+  public IAST removeO();
+
+  /**
+   * Get the order expressions <code>O(...)</code> from the first level of the expression.
+   */
+  public IAST getO();
+
+  /**
    * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not
    * copied) and replace the <code>replacePosition</code> with <code>newEntries</code> and remove
    * the elements defined in the given <code>removePositions</code>

@@ -24,9 +24,14 @@ import org.matheclipse.core.generic.ObjIntFunction;
  * Appendable (I)nterface for the (A)bstract (S)yntax (T)ree of a given function.
  *
  * <p>
- * An AST object where {@link IExpr} element values can be appended or removed.These operations
- * typically change the size of the {@link IAST}. If a {@link IAST} is needed, which only allows
- * replacing elements in a fixed size {@link IAST} interface {@link IASTMutable}.
+ * <code>IASTAppendable</code> is an AST object where {@link IExpr} element values can be appended
+ * or removed. These operations typically change the size of the {@link IAST}. If an {@link IAST} is
+ * needed, which only allows replacing elements in a fixed size {@link IAST} use interface
+ * {@link IASTMutable}.
+ * 
+ * <p>
+ * <code>IASTAppendable</code> objects are typically created by copying an existing IAST with method
+ * {@link IAST#copyAppendable()} or new created with method {@link F#ast(IExpr, int)}.
  * 
  * <p>
  * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic
@@ -35,8 +40,9 @@ import org.matheclipse.core.generic.ObjIntFunction;
  * appears in the real syntax. For instance, grouping parentheses are implicit in the tree
  * structure, and a syntactic construct such as a <code>Sin(x)</code> expression will be denoted by
  * an AST with 2 nodes. One node for the header <code>Sin</code> and one node for the argument
- * <code>x</code>. Internally an AST is represented as a list which contains
- *
+ * <code>x</code>.
+ * <p>
+ * Internally an AST is represented as a list which contains:
  * <ul>
  * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus,
  * Times,...) at index <code>0</code> and

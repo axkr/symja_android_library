@@ -13,7 +13,6 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IDistribution;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -46,16 +45,12 @@ public class Assumptions extends AbstractAssumptions {
     EvalEngine engine;
     IAST interval = F.NIL;
 
-    public IAST getInterval() {
-      return interval;
-    }
-
     public RealRelations() {
       this.engine = EvalEngine.get();
       this.interval = F.CRealsIntervalData;
     }
 
-    public final void addEquals(IExpr expr, boolean intersection) {
+    public final void addEqual(IExpr expr, boolean intersection) {
       if (intersection) {
         interval = IntervalDataSym.intersection(interval, //
             IntervalDataSym.close(expr, expr), engine);
@@ -124,6 +119,45 @@ public class Assumptions extends AbstractAssumptions {
             IntervalDataSym.close(lhs, rhs), engine);
       }
     }
+
+    public IAST getInterval() {
+      return interval;
+    }
+  }
+
+  private enum RelationalOperator {
+    GREATER(S.Greater, RealRelations::addGreater, RealRelations::addLess), //
+    GREATER_EQUAL(S.GreaterEqual, RealRelations::addGreaterEqual, RealRelations::addLessEqual), //
+    LESS(S.Less, RealRelations::addLess, RealRelations::addGreater), //
+    LESS_EQUAL(S.LessEqual, RealRelations::addLessEqual, RealRelations::addGreaterEqual);
+
+    private final ISymbol operator;
+    private final TriConsumer<RealRelations, IExpr, Boolean> direct;
+    private final TriConsumer<RealRelations, IExpr, Boolean> swapped;
+
+    RelationalOperator(ISymbol operator, TriConsumer<RealRelations, IExpr, Boolean> direct,
+        TriConsumer<RealRelations, IExpr, Boolean> swapped) {
+      this.operator = operator;
+      this.direct = direct;
+      this.swapped = swapped;
+    }
+
+    public void applyDirect(RealRelations relations, IExpr expr, boolean intersection) {
+      direct.accept(relations, expr, intersection);
+    }
+
+    public void applySwapped(RealRelations relations, IExpr expr, boolean intersection) {
+      swapped.accept(relations, expr, intersection);
+    }
+
+    public ISymbol getOperator() {
+      return operator;
+    }
+  }
+
+  @FunctionalInterface
+  private interface TriConsumer<T, U, V> {
+    void accept(T t, U u, V v);
   }
 
   /**
@@ -248,336 +282,126 @@ public class Assumptions extends AbstractAssumptions {
     return false;
   }
 
+  /**
+   * Add an equal relation.
+   *
+   * @param equalsAST a <code>Equal(x, y)</code> or <code>Equal(x, y, z)</code> expression
+   * @param intersection if <code>true</code> the assumptions are added as intersection
+   *        (corresponding to the {@link S#List} {@link S#And} head) to the existing interval set;
+   *        if <code>false</code> the assumptions are added as union (corresponding to the
+   *        {@link S#Or} head) to the existing interval set
+   * @param assumptions
+   * @return <code>true</code> if the assumption was added successfully, otherwise
+   *         <code>false</code>
+   */
   private static boolean addEqual(IAST equalsAST, boolean intersection, Assumptions assumptions) {
     // arg1 == arg2
     if (equalsAST.arg2().isNumericFunction(false)) {
       IExpr num = equalsAST.arg2();
       IExpr key = equalsAST.arg1();
-      RealRelations gla = assumptions.realRelationsMap.get(key);
-      if (gla == null) {
-        gla = new RealRelations();
+      RealRelations relations = assumptions.realRelationsMap.get(key);
+      if (relations == null) {
+        relations = new RealRelations();
       }
-      gla.addEquals(num, intersection);
-      assumptions.realRelationsMap.put(key, gla);
+      relations.addEqual(num, intersection);
+      assumptions.realRelationsMap.put(key, relations);
       return true;
     }
     if (equalsAST.arg1().isNumericFunction(false)) {
       IExpr num = equalsAST.arg1();
       IExpr key = equalsAST.arg2();
-      RealRelations gla = assumptions.realRelationsMap.get(key);
-      if (gla == null) {
-        gla = new RealRelations();
+      RealRelations relations = assumptions.realRelationsMap.get(key);
+      if (relations == null) {
+        relations = new RealRelations();
       }
-      gla.addEquals(num, intersection);
-      assumptions.realRelationsMap.put(key, gla);
-      return true;
-    }
-    return false;
-  }
-
-  private static boolean addUnequal(IAST equalsAST, Assumptions assumptions) {
-    // arg1 != arg2
-    if (equalsAST.arg2().isNumber()) {
-      INumber num = (INumber) equalsAST.arg2();
-      IExpr key = equalsAST.arg1();
-
-      ComplexRelations gla = assumptions.complexRelationsMap.get(key);
-      if (gla == null) {
-        gla = new ComplexRelations();
-      }
-      gla.addUnequals(num);
-      assumptions.complexRelationsMap.put(key, gla);
-      return true;
-    }
-    if (equalsAST.arg1().isNumber()) {
-      INumber num = (INumber) equalsAST.arg1();
-      IExpr key = equalsAST.arg2();
-      ComplexRelations gla = assumptions.complexRelationsMap.get(key);
-      if (gla == null) {
-        gla = new ComplexRelations();
-      }
-      gla.addUnequals(num);
-      assumptions.complexRelationsMap.put(key, gla);
-      return true;
-    }
-    return false;
-  }
-
-  private static boolean addGreater(IAST greaterAST, boolean intersection,
-      Assumptions assumptions) {
-    EvalEngine engine = EvalEngine.get();
-    if (greaterAST.isAST3()) {
-      // arg1 > arg2 > arg3
-      IExpr arg1 = greaterAST.arg1();
-      IExpr arg2 = greaterAST.arg2();
-      IExpr arg3 = greaterAST.arg3();
-      if (arg1.isNumericFunction(false) && arg3.isNumericFunction(false) && !arg2.isNumber()) {
-        if (engine.evalGreater(arg1, arg3)) {
-          IExpr num1 = arg1;
-          IExpr num3 = arg3;
-          IExpr key = arg2;
-          RealRelations gla = assumptions.realRelationsMap.get(key);
-          if (gla == null) {
-            gla = new RealRelations();
-          } else {
-            // TODO Warning contradictory assumption(s) `1` encountered.
-            // Errors.printMessage(S.$Assumptions, "cas", F.list(arg1, arg2, arg3) );
-          }
-          gla.addLess(num3, num1, intersection);
-          assumptions.realRelationsMap.put(key, gla);
-          return true;
-        }
-      }
-      return false;
-    }
-
-    // arg1 > arg2
-    IExpr num = null;
-    if (greaterAST.arg2().isNumericFunction(false)) {
-      num = greaterAST.arg2();
-      // } else {
-      // num = greaterAST.arg2().evalReal();
-    }
-    if (num != null) {
-      IExpr key = greaterAST.arg1();
-      RealRelations gla = assumptions.realRelationsMap.get(key);
-      if (gla == null) {
-        gla = new RealRelations();
-      } else {
-        // check for contradictory assumptions
-      }
-      gla.addGreater(num, intersection);
-      assumptions.realRelationsMap.put(key, gla);
-      return true;
-    }
-
-    num = null;
-    if (greaterAST.arg1().isNumericFunction(false)) {
-      num = greaterAST.arg1();
-      // } else {
-      // num = greaterAST.arg1().evalReal();
-    }
-    if (num != null) {
-      IExpr key = greaterAST.arg2();
-      RealRelations gla = assumptions.realRelationsMap.get(key);
-      if (gla == null) {
-        gla = new RealRelations();
-      } else {
-        // check for contradictory assumptions
-      }
-      gla.addLess(num, intersection);
-      assumptions.realRelationsMap.put(key, gla);
-      return true;
-    }
-    return false;
-  }
-
-  private static boolean addGreaterEqual(IAST greaterEqualAST, boolean intersection,
-      Assumptions assumptions) {
-    EvalEngine engine = EvalEngine.get();
-    if (greaterEqualAST.isAST3()) {
-      // arg1 >= arg2 >= arg3
-      IExpr arg1 = greaterEqualAST.arg1();
-      IExpr arg2 = greaterEqualAST.arg2();
-      IExpr arg3 = greaterEqualAST.arg3();
-      if (arg1.isNumericFunction(false) && arg3.isNumericFunction(false) && !arg2.isNumber()) {
-        // if (!((IReal) arg1).isLT(((IReal) arg3))) {
-        if (engine.evalGreaterEqual(arg1, arg3)) {
-          IExpr num1 = arg1;
-          IExpr num3 = arg3;
-          IExpr key = arg2;
-          RealRelations gla = assumptions.realRelationsMap.get(key);
-          if (gla == null) {
-            gla = new RealRelations();
-          } else {
-            // check for contradictory assumptions
-          }
-          gla.addLess(num3, num1, intersection);
-          assumptions.realRelationsMap.put(key, gla);
-          return true;
-        }
-      }
-      return false;
-    }
-
-    // arg1 >= arg2
-    IExpr num = null;
-    if (greaterEqualAST.arg2().isNumericFunction(false)) {
-      num = greaterEqualAST.arg2();
-      // } else {
-      // num = greaterEqualAST.arg2().evalReal();
-    }
-    if (num != null) {
-      IExpr key = greaterEqualAST.arg1();
-      RealRelations gla = assumptions.realRelationsMap.get(key);
-      if (gla == null) {
-        gla = new RealRelations();
-      } else {
-        // check for contradictory assumptions
-      }
-      gla.addGreaterEqual(num, intersection);
-      assumptions.realRelationsMap.put(key, gla);
-      return true;
-    }
-
-    num = null;
-    if (greaterEqualAST.arg1().isNumericFunction(false)) {
-      num = greaterEqualAST.arg1();
-    } else {
-      num = greaterEqualAST.arg1().evalReal();
-    }
-    if (num != null) {
-      IExpr key = greaterEqualAST.arg2();
-      RealRelations gla = assumptions.realRelationsMap.get(key);
-      if (gla == null) {
-        gla = new RealRelations();
-      } else {
-        // check for contradictory assumptions
-      }
-      gla.addLessEqual(num, intersection);
-      assumptions.realRelationsMap.put(key, gla);
-      return true;
-    }
-    return false;
-  }
-
-  private static boolean addLess(IAST lessAST, boolean intersection, Assumptions assumptions) {
-    EvalEngine engine = EvalEngine.get();
-    if (lessAST.isAST3()) {
-      // arg1 < arg2 < arg3;
-      IExpr arg1 = lessAST.arg1();
-      IExpr arg2 = lessAST.arg2();
-      IExpr arg3 = lessAST.arg3();
-      if (arg1.isNumericFunction(false) && arg3.isNumericFunction(false) && !arg2.isNumber()) {
-        // if (((IReal) arg1).isLT(((IReal) arg3))) {
-        if (engine.evalLess(arg1, arg3)) {
-          IExpr num1 = arg1;
-          IExpr num3 = arg3;
-          IExpr key = arg2;
-          RealRelations gla = assumptions.realRelationsMap.get(key);
-          if (gla == null) {
-            gla = new RealRelations();
-          } else {
-            // check for contradictory assumptions
-          }
-          gla.addLess(num1, num3, intersection);
-          assumptions.realRelationsMap.put(key, gla);
-          return true;
-        }
-      }
-      return false;
-    }
-
-    // arg1 < arg2
-    IExpr num = null;
-    if (lessAST.arg2().isNumericFunction(false)) {
-      num = lessAST.arg2();
-      // } else {
-      // num = lessAST.arg2().evalReal();
-    }
-    if (num != null) {
-      IExpr key = lessAST.arg1();
-      RealRelations gla = assumptions.realRelationsMap.get(key);
-      if (gla == null) {
-        gla = new RealRelations();
-      } else {
-        // check for contradictory assumptions
-      }
-      gla.addLess(num, intersection);
-      assumptions.realRelationsMap.put(key, gla);
-      return true;
-    }
-    num = null;
-    if (lessAST.arg1().isNumericFunction(false)) {
-      num = lessAST.arg1();
-      // } else {
-      // num = lessAST.arg1().evalReal();
-    }
-    if (num != null) {
-      IExpr key = lessAST.arg2();
-      RealRelations gla = assumptions.realRelationsMap.get(key);
-      if (gla == null) {
-        gla = new RealRelations();
-      }
-      gla.addGreater(num, intersection);
-      assumptions.realRelationsMap.put(key, gla);
-      return true;
-    }
-    return false;
-  }
-
-  private static boolean addLessEqual(IAST lessEqualAST, boolean intersection,
-      Assumptions assumptions) {
-    EvalEngine engine = EvalEngine.get();
-    if (lessEqualAST.isAST3()) {
-      // arg1 <= arg2 <= arg3
-      IExpr arg1 = lessEqualAST.arg1();
-      IExpr arg2 = lessEqualAST.arg2();
-      IExpr arg3 = lessEqualAST.arg3();
-      if (arg1.isNumericFunction(false) && arg3.isNumericFunction(false) && !arg2.isNumber()) {
-        // if (((IReal) arg1).isLE(((IReal) arg3))) {
-        if (engine.evalLessEqual(arg1, arg3)) {
-          IExpr num1 = arg1;
-          IExpr num3 = arg3;
-          IExpr key = arg2;
-          RealRelations gla = assumptions.realRelationsMap.get(key);
-          if (gla == null) {
-            gla = new RealRelations();
-          } else {
-            // check for contradictory assumptions
-          }
-          gla.addLessEqual(num1, num3, intersection);
-          assumptions.realRelationsMap.put(key, gla);
-          return true;
-        }
-      }
-      return false;
-    }
-
-    // arg1 <= arg2;
-    IExpr num = null;
-    if (lessEqualAST.arg2().isNumericFunction(false)) {
-      num = lessEqualAST.arg2();
-      // } else {
-      // num = lessEqualAST.arg2().evalReal();
-    }
-    if (num != null) {
-      IExpr key = lessEqualAST.arg1();
-      RealRelations gla = assumptions.realRelationsMap.get(key);
-      if (gla == null) {
-        gla = new RealRelations();
-      } else {
-        // check for contradictory assumptions
-      }
-      gla.addLessEqual(num, intersection);
-      assumptions.realRelationsMap.put(key, gla);
-      return true;
-    }
-    num = null;
-    if (lessEqualAST.arg1().isNumericFunction(false)) {
-      num = lessEqualAST.arg1();
-      // } else {
-      // num = lessEqualAST.arg1().evalReal();
-    }
-    if (num != null) {
-      IExpr key = lessEqualAST.arg2();
-      RealRelations gla = assumptions.realRelationsMap.get(key);
-      if (gla == null) {
-        gla = new RealRelations();
-      } else {
-        // check for contradictory assumptions
-      }
-      gla.addGreaterEqual(num, intersection);
-      assumptions.realRelationsMap.put(key, gla);
+      relations.addEqual(num, intersection);
+      assumptions.realRelationsMap.put(key, relations);
       return true;
     }
     return false;
   }
 
   /**
+   * Add a greater than relation.
+   *
+   * @param greaterAST a <code>Greater(x, y)</code> or <code>Greater(x, y, z)</code> expression
+   * @param intersection if <code>true</code> the assumptions are added as intersection
+   *        (corresponding to the {@link S#List} {@link S#And} head) to the existing interval set;
+   *        if <code>false</code> the assumptions are added as union (corresponding to the
+   *        {@link S#Or} head) to the existing interval set
+   * @param assumptions
+   * @return <code>true</code> if the assumption was added successfully, otherwise <code>false
+   *     </code>
+   */
+  private static boolean addGreater(IAST greaterAST, boolean intersection,
+      Assumptions assumptions) {
+    return addRelationalAssumption(greaterAST, intersection, assumptions,
+        RelationalOperator.GREATER);
+  }
+
+  /**
+   * Add a greater equal relation.
+   *
+   * @param greaterEqualAST a <code>GreaterEqual(x, y)</code> or <code>GreaterEqual(x, y, z)</code>
+   *        expression
+   * @param intersection if <code>true</code> the assumptions are added as intersection
+   *        (corresponding to the {@link S#List} {@link S#And} head) to the existing interval set;
+   *        if <code>false</code> the assumptions are added as union (corresponding to the
+   *        {@link S#Or} head) to the existing interval set
+   * @param assumptions
+   * @return <code>true</code> if the assumption was added successfully, otherwise <code>false
+   *     </code>
+   */
+  private static boolean addGreaterEqual(IAST greaterEqualAST, boolean intersection,
+      Assumptions assumptions) {
+    return addRelationalAssumption(greaterEqualAST, intersection, assumptions,
+        RelationalOperator.GREATER_EQUAL);
+  }
+
+  /**
+   * Add a less than relation.
+   *
+   * @param lessAST a <code>Less(x, y)</code> or <code>Less(x, y, z)</code> expression
+   * @param intersection if <code>true</code> the assumptions are added as intersection
+   *        (corresponding to the {@link S#List} {@link S#And} head) to the existing interval set;
+   *        if <code>false</code> the assumptions are added as union (corresponding to the
+   *        {@link S#Or} head) to the existing interval set
+   * @param assumptions
+   * @return <code>true</code> if the assumption was added successfully, otherwise <code>false
+   *     </code>
+   */
+  private static boolean addLess(IAST lessAST, boolean intersection, Assumptions assumptions) {
+    return addRelationalAssumption(lessAST, intersection, assumptions, RelationalOperator.LESS);
+  }
+
+  /**
+   * Add a less equal relation.
+   *
+   * @param lessEqualAST a <code>LessEqual(x, y)</code> or <code>LessEqual(x, y, z)</code>
+   *        expression
+   * @param intersection if <code>true</code> the assumptions are added as intersection
+   *        (corresponding to the {@link S#List} {@link S#And} head) to the existing interval set;
+   *        if <code>false</code> the assumptions are added as union (corresponding to the
+   *        {@link S#Or} head) to the existing interval set
+   * @param assumptions
+   * @return <code>true</code> if the assumption was added successfully, otherwise <code>false
+   *     </code>
+   */
+  private static boolean addLessEqual(IAST lessEqualAST, boolean intersection,
+      Assumptions assumptions) {
+    return addRelationalAssumption(lessEqualAST, intersection, assumptions,
+        RelationalOperator.LESS_EQUAL);
+  }
+
+  /**
+   * Add assumptions from the given <code>ast</code> expression to the existing interval set.
    * 
-   * @param ast
-   * @param intersection TODO
+   * @param ast the {@link IAST} expression containing the assumptions to be added as an expression
+   *        with head {@link S#List},{@link S#And},{@link S#Or}
+   * @param intersection if <code>true</code> the assumptions are added as intersection
+   *        (corresponding to the {@link S#List} {@link S#And} head) to the existing interval set;
+   *        if <code>false</code> the assumptions are added as union (corresponding to the
+   *        {@link S#Or} head) to the existing interval set
    * @param assumptions
    * @return <code>null</code> if assumptions couldn't be assigned
    */
@@ -624,28 +448,101 @@ public class Assumptions extends AbstractAssumptions {
     return assumptions;
   }
 
-
-  @Override
-  public IInteger determineInteger(IExpr expr) {
-    RealRelations gla = realRelationsMap.get(expr);
-    if (gla != null) {
-      IInteger intNumber = null;
-      IAST intervalData = gla.getInterval();
-
-      for (int i = 1; i < intervalData.size(); i++) {
-        IAST intervalList = (IAST) intervalData.get(i);
-        if (intervalList.isList4()) {
-          IExpr min = intervalList.arg1();
-          IBuiltInSymbol lessMin = (IBuiltInSymbol) intervalList.arg2();
-          IBuiltInSymbol lessMax = (IBuiltInSymbol) intervalList.arg3();
-          IExpr max = intervalList.arg4();
-
+  private static boolean addRelationalAssumption(IAST relationalAST, boolean intersection,
+      Assumptions assumptions, RelationalOperator operator) {
+    EvalEngine engine = EvalEngine.get();
+    if (relationalAST.isAST3()) {
+      // arg1 > arg2 > arg3
+      IExpr arg1 = relationalAST.arg1();
+      IExpr arg2 = relationalAST.arg2();
+      IExpr arg3 = relationalAST.arg3();
+      if (arg1.isNumericFunction(false) && arg3.isNumericFunction(false) && !arg2.isNumber()) {
+        if (engine.evalTrue(F.binary(operator.getOperator(), arg1, arg3))) {
+          IExpr num1 = arg1;
+          IExpr num3 = arg3;
+          IExpr key = arg2;
+          RealRelations relations = assumptions.realRelationsMap.get(key);
+          if (relations == null) {
+            relations = new RealRelations();
+          }
+          if (operator == RelationalOperator.GREATER //
+              || operator == RelationalOperator.GREATER_EQUAL) {
+            relations.addLessEqual(num3, num1, intersection);
+          } else {
+            relations.addLess(num1, num3, intersection);
+          }
+          assumptions.realRelationsMap.put(key, relations);
+          return true;
         }
       }
-
+      return false;
     }
-    return null;
+
+    // arg1 > arg2
+    IExpr num = null;
+    if (relationalAST.arg2().isNumericFunction(false)) {
+      num = relationalAST.arg2();
+    }
+    if (num != null) {
+      IExpr key = relationalAST.arg1();
+      RealRelations relations = assumptions.realRelationsMap.get(key);
+      if (relations == null) {
+        relations = new RealRelations();
+      } else {
+        // check for contradictory assumptions
+      }
+      operator.applyDirect(relations, num, intersection);
+      assumptions.realRelationsMap.put(key, relations);
+      return true;
+    }
+
+    num = null;
+    if (relationalAST.arg1().isNumericFunction(false)) {
+      num = relationalAST.arg1();
+    }
+    if (num != null) {
+      IExpr key = relationalAST.arg2();
+      RealRelations relations = assumptions.realRelationsMap.get(key);
+      if (relations == null) {
+        relations = new RealRelations();
+      } else {
+        // check for contradictory assumptions
+      }
+      operator.applySwapped(relations, num, intersection);
+      assumptions.realRelationsMap.put(key, relations);
+      return true;
+    }
+    return false;
   }
+
+  private static boolean addUnequal(IAST equalsAST, Assumptions assumptions) {
+    // arg1 != arg2
+    if (equalsAST.arg2().isNumber()) {
+      INumber num = (INumber) equalsAST.arg2();
+      IExpr key = equalsAST.arg1();
+
+      ComplexRelations relations = assumptions.complexRelationsMap.get(key);
+      if (relations == null) {
+        relations = new ComplexRelations();
+      }
+      relations.addUnequals(num);
+      assumptions.complexRelationsMap.put(key, relations);
+      return true;
+    }
+    if (equalsAST.arg1().isNumber()) {
+      INumber num = (INumber) equalsAST.arg1();
+      IExpr key = equalsAST.arg2();
+      ComplexRelations relations = assumptions.complexRelationsMap.get(key);
+      if (relations == null) {
+        relations = new ComplexRelations();
+      }
+      relations.addUnequals(num);
+      assumptions.complexRelationsMap.put(key, relations);
+      return true;
+    }
+    return false;
+  }
+
 
   /**
    * Create a new empty <code>IAssumptions</code>.
@@ -746,6 +643,20 @@ public class Assumptions extends AbstractAssumptions {
     return this;
   }
 
+  private boolean checkDomainProperty(IExpr expr, IExpr number,
+      java.util.function.BiFunction<IAST, IExpr, IAST> intervalFunction) {
+    RealRelations relations = realRelationsMap.get(expr);
+    if (relations != null) {
+      IAST interval = relations.getInterval();
+      IAST newInterval =
+          IntervalDataSym.intersection(interval, intervalFunction.apply(interval, number));
+      if (interval.equals(newInterval)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   public IAssumptions copy() {
     Assumptions assumptions = new Assumptions();
@@ -769,9 +680,9 @@ public class Assumptions extends AbstractAssumptions {
 
   @Override
   public IAST intervalData(IExpr expr) {
-    RealRelations gla = realRelationsMap.get(expr);
-    if (gla != null) {
-      return gla.getInterval();
+    RealRelations relations = realRelationsMap.get(expr);
+    if (relations != null) {
+      return relations.getInterval();
     }
     return F.NIL;
   }
@@ -784,6 +695,11 @@ public class Assumptions extends AbstractAssumptions {
   @Override
   public boolean isBoolean(IExpr expr) {
     return isDomain(expr, S.Booleans);
+  }
+
+  @Override
+  public boolean isComplex(IExpr expr) {
+    return isDomain(expr, S.Complexes);
   }
 
   @Override
@@ -800,11 +716,6 @@ public class Assumptions extends AbstractAssumptions {
     return false;
   }
 
-  @Override
-  public boolean isComplex(IExpr expr) {
-    return isDomain(expr, S.Complexes);
-  }
-
   private final boolean isDomain(IExpr expr, ISymbol domain) {
     ISymbol mappedDomain = elementsMap.get(expr);
     return mappedDomain != null && mappedDomain.equals(domain);
@@ -812,45 +723,17 @@ public class Assumptions extends AbstractAssumptions {
 
   @Override
   public boolean isEqual(IExpr expr, IExpr number) {
-    RealRelations gla = realRelationsMap.get(expr);
-    if (gla != null) {
-      IAST interval = gla.getInterval();
-      IAST newInterval = IntervalDataSym.intersection(interval, //
-          IntervalDataSym.close(number, number));
-      if (interval.equals(newInterval)) {
-        return true;
-      }
-    }
-    return false;
+    return checkDomainProperty(expr, number, (i, n) -> IntervalDataSym.close(n, n));
   }
 
   @Override
   public boolean isGreaterEqual(IExpr expr, IExpr number) {
-    RealRelations gla = realRelationsMap.get(expr);
-    if (gla != null) {
-      IAST interval = gla.getInterval();
-      IAST newInterval = IntervalDataSym.intersection(interval, //
-          IntervalDataSym.rOpen(number, F.CInfinity));
-      if (interval.equals(newInterval)) {
-        return true;
-      }
-    }
-    return false;
+    return checkDomainProperty(expr, number, (i, n) -> IntervalDataSym.rOpen(n, F.CInfinity));
   }
 
   @Override
   public boolean isGreaterThan(IExpr expr, IExpr number) {
-    // IReal num;
-    RealRelations gla = realRelationsMap.get(expr);
-    if (gla != null) {
-      IAST interval = gla.getInterval();
-      IAST newInterval = IntervalDataSym.intersection(interval, //
-          IntervalDataSym.open(number, F.CInfinity));
-      if (interval.equals(newInterval)) {
-        return true;
-      }
-    }
-    return false;
+    return checkDomainProperty(expr, number, (i, n) -> IntervalDataSym.open(n, F.CInfinity));
   }
 
   @Override
@@ -860,32 +743,12 @@ public class Assumptions extends AbstractAssumptions {
 
   @Override
   public boolean isLessEqual(IExpr expr, IExpr number) {
-    // IReal num;
-    RealRelations gla = realRelationsMap.get(expr);
-    if (gla != null) {
-      IAST interval = gla.getInterval();
-      IAST newInterval = IntervalDataSym.intersection(interval, //
-          IntervalDataSym.lOpen(F.CNInfinity, number));
-      if (interval.equals(newInterval)) {
-        return true;
-      }
-    }
-    return false;
+    return checkDomainProperty(expr, number, (i, n) -> IntervalDataSym.lOpen(F.CNInfinity, n));
   }
 
   @Override
   public boolean isLessThan(IExpr expr, IExpr number) {
-    // IReal num;
-    RealRelations gla = realRelationsMap.get(expr);
-    if (gla != null) {
-      IAST interval = gla.getInterval();
-      IAST newInterval = IntervalDataSym.intersection(interval, //
-          IntervalDataSym.open(F.CNInfinity, number));
-      if (interval.equals(newInterval)) {
-        return true;
-      }
-    }
-    return false;
+    return checkDomainProperty(expr, number, (i, n) -> IntervalDataSym.open(F.CNInfinity, n));
   }
 
   @Override
@@ -945,8 +808,8 @@ public class Assumptions extends AbstractAssumptions {
 
   @Override
   public boolean isReal(IExpr expr) {
-    RealRelations relation = realRelationsMap.get(expr);
-    if (relation != null) {// && relation.isLessOrGreaterRelation()) {
+    RealRelations relations = realRelationsMap.get(expr);
+    if (relations != null) {// && relation.isLessOrGreaterRelation()) {
       return true;
     }
     if (isDomain(expr, S.Reals)) {
@@ -957,9 +820,9 @@ public class Assumptions extends AbstractAssumptions {
 
   @Override
   public boolean isUnequal(IExpr expr, INumber number) {
-    ComplexRelations gla = complexRelationsMap.get(expr);
-    if (gla != null) {
-      ArrayList<INumber> unequals = gla.getUnequals();
+    ComplexRelations relations = complexRelationsMap.get(expr);
+    if (relations != null) {
+      ArrayList<INumber> unequals = relations.getUnequals();
       if (unequals.contains(number)) {
         return true;
       }
@@ -1004,89 +867,9 @@ public class Assumptions extends AbstractAssumptions {
         return null;
       }
       return iList;
-      // int[] newXRange = new int[] {xRange[0], xRange[1]};
-      // boolean evaled = false;
-      // IReal num = rr.getLess();
-      // if (num != null) {
-      // int i = num.toIntDefault();
-      // if (F.isNotPresent(i)) {
-      // i = num.ceilFraction().toIntDefault();
-      // }
-      // if (F.isPresent(i)) {
-      // if (newXRange[1] >= i) {
-      // evaled = true;
-      // newXRange[1] = i - 1;
-      // }
-      // }
-      // }
-      // num = rr.getLessEqual();
-      // if (num != null) {
-      // int i = num.toIntDefault();
-      // if (F.isNotPresent(i)) {
-      // i = num.floorFraction().toIntDefault();
-      // }
-      // if (F.isPresent(i)) {
-      // if (newXRange[1] > i) {
-      // evaled = true;
-      // newXRange[1] = i;
-      // }
-      // }
-      // }
-      // num = rr.getGreater();
-      // if (num != null) {
-      // int i = num.toIntDefault();
-      // if (F.isNotPresent(i)) {
-      // i = num.floorFraction().toIntDefault();
-      // }
-      // if (F.isPresent(i)) {
-      // if (newXRange[0] <= i) {
-      // evaled = true;
-      // newXRange[0] = i + 1;
-      // }
-      // }
-      // }
-      // num = rr.getGreaterEqual();
-      // if (num != null) {
-      // int i = num.toIntDefault();
-      // if (F.isNotPresent(i)) {
-      // i = num.ceilFraction().toIntDefault();
-      // }
-      // if (F.isPresent(i)) {
-      // if (newXRange[0] < i) {
-      // evaled = true;
-      // newXRange[0] = i;
-      // }
-      // }
-      // }
-      // num = rr.getEquals();
-      // if (num != null) {
-      // int i = num.toIntDefault();
-      // if (F.isNotPresent(i)) {
-      // i = num.ceilFraction().toIntDefault();
-      // }
-      // if (F.isPresent(i)) {
-      // if (newXRange[0] < i) {
-      // evaled = true;
-      // newXRange[0] = i;
-      // }
-      // if (newXRange[1] > i) {
-      // evaled = true;
-      // newXRange[1] = i;
-      // }
-      // }
-      // }
-      // if (evaled) {
-      // return newXRange;
-      // }
     }
     return null;
   }
-
-
-  // @Override
-  // public void set$Assumptions(IExpr $assumptions) {
-  // this.$assumptions = $assumptions;
-  // }
 
   @Override
   public final IAST tensors(IExpr expr) {

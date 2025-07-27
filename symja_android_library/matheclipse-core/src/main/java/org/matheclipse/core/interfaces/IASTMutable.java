@@ -9,9 +9,13 @@ import org.matheclipse.core.generic.Comparators;
  * (I)nterface for the (A)bstract (S)yntax (T)ree of a given function.
  *
  * <p>
- * An AST object where {@link IExpr} element values could be replaced by new values. This operation
- * does not change the size of the {@link IAST}. If a {@link IAST} is needed, which allows appending
- * elements use interface {@link IASTAppendable}.
+ * <code>IASTMutable</code> is an AST object where {@link IExpr} element values could be replaced by
+ * new values. This operation does not change the size of the {@link IAST}. If an {@link IAST} is
+ * needed, which allows appending elements use interface {@link IASTAppendable}.
+ * 
+ * <p>
+ * <code>IASTMutable</code> objects are typically created by copying an existing IAST with method
+ * {@link IAST##copy()} or new created with method {@link F#astMutable(IExpr, int)}.
  *
  * <p>
  * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic

@@ -2955,12 +2955,12 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Test if <code>expr</code> can be evaluated to <code>True</code>. If a <code>
-   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
-   * False</code>.
+   * If <code>expr</code> can be evaluated to {@link S#True} or {@link S#False} return the java
+   * <code>true</code> or <code>false</code> values respectively. If a {@link MathException} occurs
+   * during evaluation, return <code>false</code>.
    *
-   * @param expr
-   * @return <code>true</code> if the expression could be evaluated to symbol <code>True</code> and
+   * @param expr the expression which should be evaluated
+   * @return <code>true</code> if the expression could be evaluated to symbol {@link S#True} and
    *         <code>false</code> in all other cases
    */
   public final boolean evalTrue(final IExpr expr) {
@@ -2972,45 +2972,36 @@ public class EvalEngine implements Serializable {
     }
     try {
       return evaluate(expr).isTrue();
-    } catch (RuntimeException rex) {
-      Errors.rethrowsInterruptException(rex);
+    } catch (MathException rex) {
       return false;
     }
   }
 
   /**
-   * Test if <code>head[arg1]</code> can be evaluated to <code>True</code>. If a <code>
-   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
-   * False</code>.
+   * Test if the predicate <code>head(arg1)</code> can be evaluated to {@link S#True}. If a
+   * {@link MathException} occurs during evaluation, return <code>false</code>.
    *
-   * @param head
-   * @param arg1
-   * @return
+   * @param head the head of the unary predicate which should be evaluated
+   * @param arg the first argument of the unary predicate which should be evaluated
+   * @return <code>true</code> if the predicate could be evaluated to symbol {@link S#True} and
+   *         <code>false</code> in all other cases
    */
-  public final boolean evalTrue(final IExpr head, final IExpr arg1) {
-    try {
-      return evaluate(F.unaryAST1(head, arg1)).isTrue();
-    } catch (MathException fce) {
-      return false;
-    }
+  public final boolean evalTrue(final IExpr head, final IExpr arg) {
+    return evalTrue(F.unaryAST1(head, arg));
   }
 
   /**
-   * Test if <code>head[arg1, arg2]</code> can be evaluated to <code>True</code>. If a <code>
-   * org.matheclipse.parser.client.math.MathException</code> occurs during evaluation, return <code>
-   * False</code>.
+   * Test if the predicate <code>head(arg1, arg2)</code> can be evaluated to {@link S#True}. If a
+   * {@link MathException} occurs during evaluation, return <code>false</code>.
    *
-   * @param head
-   * @param arg1
-   * @param arg2
-   * @return
+   * @param head the head of the binary predicate which should be evaluated
+   * @param arg1 the first argument of the unary predicate which should be evaluated
+   * @param arg2 the second argument of the unary predicate which should be evaluated
+   * @return <code>true</code> if the predicate could be evaluated to symbol {@link S#True} and
+   *         <code>false</code> in all other cases
    */
   public final boolean evalTrue(final IExpr head, final IExpr arg1, final IExpr arg2) {
-    try {
-      return evaluate(F.binaryAST2(head, arg1, arg2)).isTrue();
-    } catch (MathException fce) {
-      return false;
-    }
+    return evalTrue(F.binaryAST2(head, arg1, arg2));
   }
 
   /**
@@ -3059,7 +3050,7 @@ public class EvalEngine implements Serializable {
    * evaluation is not possible or <code>expr</code> equals {@link F#NIL} return {@link F#NIL}.
    *
    * @param expr the object which should be evaluated
-   * @return the evaluated object or <code>F.NIL</code> if no evaluation was possible
+   * @return the evaluated object or {@link F#NIL} if no evaluation was possible
    */
   public final IExpr evaluateNIL(final IExpr expr) {
     if (expr.isPresent()) {
@@ -3086,7 +3077,6 @@ public class EvalEngine implements Serializable {
     try {
       fNumericMode = false;
       return evalWithoutNumericReset(expr);
-
     } finally {
       fNumericMode = numericMode;
     }

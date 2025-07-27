@@ -5,7 +5,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
@@ -38,8 +37,6 @@ public interface IAssumptions {
    * @return
    */
   public IAssumptions copy();
-
-  public IInteger determineInteger(IExpr x);
 
   public IAST intervalData(IExpr x);
 
