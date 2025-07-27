@@ -82,6 +82,21 @@ public class AttributeFunctions {
           Errors.printMessage(builtinSymbol, "setps", F.list(leftHandSide.first()), engine);
           return rightHandSide;
         }
+        if (rightHandSide.isEmptyList() && leftHandSide.first().isSymbol()) {
+          ISymbol sym = (ISymbol) leftHandSide.first();
+          if (!engine.isPackageMode()) {
+            if (Config.SERVER_MODE && (sym.toString().charAt(0) != '$')) {
+              throw new RuleCreationError(sym);
+            }
+          }
+          if (sym.hasProtectedAttribute()) {
+            // Tag `1` in `2` is Protected.
+            Errors.printMessage(S.ClearAttributes, "write", F.list(sym, leftHandSide),
+                EvalEngine.get());
+            throw new FailedException();
+          }
+          sym.clearAttributes(ISymbol.ALL_ATTRIBUTES);
+        }
         IExpr temp = engine.evaluate(F.SetAttributes(leftHandSide.first(), rightHandSide));
         if (temp.equals(S.Null)) {
           return rightHandSide;

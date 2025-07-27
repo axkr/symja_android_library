@@ -118,6 +118,11 @@ public interface ISymbol extends IExpr {
    * A mask which tests if any evaluation engine attribute is sets
    */
   public static final int NO_EVAL_ENGINE_ATTRIBUTE = 0xFFF877FF;
+
+  public static final int ALL_ATTRIBUTES = FLATORDERLESS | NHOLDALL | HOLDALLCOMPLETE | LISTABLE
+      | NUMERICFUNCTION | CONSTANT | ONEIDENTITY | PROTECTED | READPROTECTED | LOCKED;
+
+  public static final int CLEAR_MASK = 0xFFFFFFFF;
   //
   // Flags definition starts here
   //
