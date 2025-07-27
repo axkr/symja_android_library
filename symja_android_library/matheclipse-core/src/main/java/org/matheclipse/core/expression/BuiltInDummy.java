@@ -188,7 +188,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final void clearAttributes(final int attributes) {
-    fAttributes &= (0xffffffff ^ attributes);
+    fAttributes &= (CLEAR_MASK ^ attributes);
     if (isLocked()) {
       throw new RuleCreationError(this);
     }

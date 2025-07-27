@@ -130,11 +130,11 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public void assignValue(IExpr value, boolean setDelayed) {
-    if (Config.FUZZ_TESTING) {
-      if (!value.isFree(this)) {
-        throw new NullPointerException("Symbol " + fSymbolName + " is not free in value: " + value);
-      }
-    }
+    // if (Config.FUZZ_TESTING) {
+    // if (!value.isFree(this)) {
+    // throw new NullPointerException("Symbol " + fSymbolName + " is not free in value: " + value);
+    // }
+    // }
     fValue = value;
     clearEvalFlags(DIRTY_FLAG_ASSIGNED_VALUE);
     if (setDelayed) {
@@ -170,7 +170,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public void clearAttributes(int attributes) {
-    fAttributes &= (0xffffffff ^ attributes);
+    fAttributes &= (CLEAR_MASK ^ attributes);
     if (isLocked()) {
       throw new RuleCreationError(this);
     }
