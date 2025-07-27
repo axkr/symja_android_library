@@ -2284,14 +2284,16 @@ public class F extends S {
 
   /**
    * Create a new abstract syntax tree (AST) with pre- allocated elements set to <code>null</code>.
-   * Elements can be set in the created AST instance with the {@link IASTMutable#set(int, IExpr)}
-   * method.
+   * Elements can be set in the created <code>IASTMutable</code> instance with the
+   * {@link IASTMutable#set(int, IExpr)} method.
    *
    * @param head the header expression of the function. If the ast represents a function like <code>
-   *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+   *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type
+   *        {@link ISymbol}
    * @param initialCapacity the initial capacity (i.e. number of arguments without the header
    *        element) of the list.
-   * @return
+   * @return a new {@link IASTMutable} instance with the given <code>head</code> and initial
+   *         capacity
    */
   public static IASTMutable astMutable(final IExpr head, final int initialCapacity) {
     switch (initialCapacity) {
@@ -4367,7 +4369,8 @@ public class F extends S {
     if (a.isAST()) {
       EvalEngine engine = EvalEngine.get();
       IAST ast = engine.evalFlatOrderlessAttrsRecursive((IAST) a).orElse((IAST) a);
-      return AlgebraUtil.expand(ast, null, expandNegativePowers, distributePlus, evalParts).orElse(a);
+      return AlgebraUtil.expand(ast, null, expandNegativePowers, distributePlus, evalParts)
+          .orElse(a);
     }
     return a;
   }
@@ -4547,6 +4550,10 @@ public class F extends S {
   public static IAST FindFit(final IExpr data, final IExpr expr, final IExpr variablesList,
       final IExpr xVariable) {
     return quaternary(FindFit, data, expr, variablesList, xVariable);
+  }
+
+  public static IAST FindGeneratingFunction(final IExpr data, final IExpr x) {
+    return new AST2(FindGeneratingFunction, data, x);
   }
 
   public static IAST FindFormula(final IExpr data, final IExpr x) {
@@ -6545,21 +6552,28 @@ public class F extends S {
   }
 
   /**
-   * Create an appendable list <code>{ }</code>.
+   * Create an appendable list <code>{...}</code> as an {@link IASTAppendable} expression with the
+   * {@link S#List} head and an initial capacity of <code>7</code> for the number of expected list
+   * elements.
    *
-   * @return
+   * @return an {@link IASTAppendable} expression which can be used to append elements to the list
+   *         with head {@link S#List}
    * @see {@link #List()} to create an empty unmodifiable AST
    */
   public static IASTAppendable ListAlloc() {
-    return ast(List, 3);
+    return ast(List, 7);
   }
 
   /**
-   * Create a new <code>List</code> with the given <code>initial capacity</code>.
+   * Create an appendable list <code>{...}</code> as an {@link IASTAppendable} expression with the
+   * {@link S#List} head and an initial capacity for the number of expected list elements.
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/List.md">List</a>
    *
-   * @param initialCapacity the assumed number of arguments (+ 1 for the header expression is added
-   *        internally).
-   * @return
+   * @param initialCapacity the number of expected list elements
+   * @return an {@link IASTAppendable} expression which can be used to append elements to the list
+   *         with head {@link S#List}
    */
   public static IASTAppendable ListAlloc(int initialCapacity) {
     return ast(List, initialCapacity);
@@ -8051,6 +8065,10 @@ public class F extends S {
     return new AST0(Overflow);
   }
 
+  public static IAST PadeApproximant(final IExpr a0, final IExpr a1) {
+    return new AST2(PadeApproximant, a0, a1);
+  }
+
   public static IAST Parenthesis(final IExpr a0) {
     return new AST1(Parenthesis, a0);
   }
@@ -8219,11 +8237,15 @@ public class F extends S {
   }
 
   /**
+   * Create an appendable addition <code>Plus(...)</code> expression as an {@link IASTAppendable}
+   * with the {@link S#Plus} head and an initial capacity for the number of expected arguments.
+   * <p>
    * See: <a href=
    * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    *
-   * @param initialCapacity the initialCapacity of this AST
-   * @return
+   * @param initialCapacity the number of expected arguments
+   * @return an {@link IASTAppendable} object which can be used to append arguments to the
+   *         {@link S#Plus} expression
    */
   public static IASTAppendable PlusAlloc(int initialCapacity) {
     return ast(Plus, initialCapacity);
@@ -10497,11 +10519,16 @@ public class F extends S {
   }
 
   /**
-   * Create a Times() function with allocated space for size elements. See: <a href=
+   * Create an appendable multiplication <code>Times(...)</code> expression as an
+   * {@link IASTAppendable} with the {@link S#Times} head and an initial capacity for the number of
+   * expected arguments.
+   * <p>
+   * See: <a href=
    * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    *
-   * @param initialCapacity the initialCapacity of this AST
-   * @return
+   * @param initialCapacity the number of expected arguments
+   * @return an {@link IASTAppendable} object which can be used to append arguments to the
+   *         {@link S#Times} expression
    */
   public static IASTAppendable TimesAlloc(int initialCapacity) {
     return ast(Times, initialCapacity);

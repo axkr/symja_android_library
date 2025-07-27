@@ -3727,6 +3727,9 @@ public class S {
 
   public final static IBuiltInSymbol FindFormula = S.initFinalSymbol("FindFormula", ID.FindFormula);
 
+  public final static IBuiltInSymbol FindGeneratingFunction =
+      S.initFinalSymbol("FindGeneratingFunction", ID.FindGeneratingFunction);
+
   public final static IBuiltInSymbol FindGraphCommunities =
       S.initFinalSymbol("FindGraphCommunities", ID.FindGraphCommunities);
 

@@ -29,6 +29,8 @@ public final class FunctionDefinitions {
       S.ExportString.setEvaluator(new org.matheclipse.core.reflection.system.ExportString());
       S.ExpToTrig.setEvaluator(new org.matheclipse.core.reflection.system.ExpToTrig());
       S.FindFormula.setEvaluator(new org.matheclipse.core.reflection.system.FindFormula());
+      S.FindGeneratingFunction
+          .setEvaluator(new org.matheclipse.core.reflection.system.FindGeneratingFunction());
       S.FindInstance.setEvaluator(new org.matheclipse.core.reflection.system.FindInstance());
       S.FindMaximum.setEvaluator(new org.matheclipse.core.reflection.system.FindMaximum());
       S.FindMinimum.setEvaluator(new org.matheclipse.core.reflection.system.FindMinimum());
