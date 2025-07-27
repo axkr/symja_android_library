@@ -72,48 +72,52 @@ public class NSum extends Sum {
       return arg1.mapThread(ast, 1);
     }
 
-    if (ast.isAST2() && ast.arg2().isList3()) {
-      IAST limits = (IAST) engine.evaluate(ast.arg2());
-      IExpr variable = limits.arg1();
-      IExpr lowerLimit = limits.arg2();
-      IExpr upperLimit = limits.arg3();
-      long start = lowerLimit.toLongDefault();
-      long end = upperLimit.toLongDefault() + 1;
-      boolean preevaluateSymbolic = true;
-      if (F.isPresent(start) && F.isPresent(end)) {
-        long range = end - start;
-        if (range > 10000 || range < -10000) {
-          preevaluateSymbolic = false;
+    if (ast.isAST2()) {
+      IExpr limitList = engine.evaluate(ast.arg2());
+      if (limitList.isList3()) {
+        IAST limits = (IAST) limitList;
+        IExpr variable = limits.arg1();
+        if (!variable.isVariable()) {
+          // Raw object `1` cannot be used as an iterator.
+          return Errors.printMessage(S.NSum, "itraw", F.List(variable));
         }
-      }
-      if (preevaluateSymbolic) {
-        // if (Summations.isConvergent(ast)) {
-        ast = ast.apply(S.Sum);
-        IAST preevaledSum = engine.preevalForwardBackwardAST(ast, 1);
+        IExpr lowerLimit = limits.arg2();
+        IExpr upperLimit = limits.arg3();
+        long start = lowerLimit.toLongDefault();
+        long end = upperLimit.toLongDefault() + 1;
+        boolean preevaluateSymbolic = true;
+        if (F.isPresent(start) && F.isPresent(end)) {
+          long range = end - start;
+          if (range > 10000 || range < -10000) {
+            preevaluateSymbolic = false;
+          }
+        }
+        if (preevaluateSymbolic) {
+          ast = ast.apply(S.Sum);
+          IAST preevaledSum = engine.preevalForwardBackwardAST(ast, 1);
 
-        IExpr temp = evaluateSum(preevaledSum, engine);
+          IExpr temp = evaluateSum(preevaledSum, engine);
+          if (temp.isPresent()) {
+            if (temp.isNumericFunction(true)) {
+              return engine.evalN(temp);
+            }
+            if (!temp.isFree(S.Sum, true)) {
+              temp = F.subst(temp, x -> x == S.Sum ? S.NSum : F.NIL);
+            }
+            return temp;
+          }
+        }
+
+        IExpr function = arg1;
+
+        IASTMutable copy = ast.copy();
+        copy.set(1, function);
+        copy.set(2, limits);
+        IExpr temp = nsum(function, variable, lowerLimit, upperLimit);
         if (temp.isPresent()) {
-          if (temp.isNumericFunction(true)) {
-            return engine.evalN(temp);
-          }
-          if (!temp.isFree(S.Sum, true)) {
-            temp = F.subst(temp, x -> x == S.Sum ? S.NSum : F.NIL);
-          }
           return temp;
         }
-        // }
       }
-
-      IExpr function = arg1;
-
-      IASTMutable copy = ast.copy();
-      copy.set(1, function);
-      copy.set(2, limits);
-      IExpr temp = nsum(function, variable, lowerLimit, upperLimit);
-      if (temp.isPresent()) {
-        return temp;
-      }
-
     }
     return F.NIL;
   }
