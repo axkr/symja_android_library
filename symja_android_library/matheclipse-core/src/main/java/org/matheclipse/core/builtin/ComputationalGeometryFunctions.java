@@ -1134,15 +1134,23 @@ public class ComputationalGeometryFunctions {
       ITensorAccess v1 = F.NIL;
       ITensorAccess v2 = F.NIL;
       if (arg11 instanceof ITensorAccess) {
-        n1 = arg11.argSize();
         v1 = (ITensorAccess) arg11;
-      }
-      if (arg12 instanceof ITensorAccess) {
-        n2 = arg12.argSize();
-        if (n1 > 0 && n1 != n2) {
+        IntArrayList dim1 = LinearAlgebra.dimensions(v1, S.List);
+        if (dim1.size() < 1) {
           return F.NIL;
         }
+        n1 = dim1.getInt(0);
+      }
+      if (arg12 instanceof ITensorAccess) {
         v2 = (ITensorAccess) arg12;
+        IntArrayList dim2 = LinearAlgebra.dimensions(v2, S.List);
+        if (dim2.size() < 1) {
+          return F.NIL;
+        }
+        n2 = dim2.getInt(0);
+        if (n1 > 0 && n1 != n2) {
+          return S.False;
+        }
       }
       if (arg11.isReal()) {
         if (arg12.isReal()) {
