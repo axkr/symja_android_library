@@ -15,6 +15,7 @@ import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
 import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -98,7 +99,10 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     /** {@inheritDoc} */
     @Override
     public IExpr evaluate(EvalEngine engine) {
-      return S.Condition.evaluate(this, engine);
+      if (engine.isEvalRHSMode()) {
+        return B2.conditionEval(arg1, arg2, engine);
+      }
+      return F.NIL;
     }
 
     @Override
@@ -429,11 +433,6 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
       return ID.List;
     }
 
-    @Override
-    public final IBuiltInSymbol topHead() {
-      return S.List;
-    }
-
     /** {@inheritDoc} */
     @Override
     public final boolean isList() {
@@ -443,6 +442,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public boolean isList2() {
       return true;
+    }
+
+    @Override
+    public final IBuiltInSymbol topHead() {
+      return S.List;
     }
 
   }
@@ -558,6 +562,11 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
       return S.Plus;
     }
 
+    @Override
+    public final int headID() {
+      return ID.Plus;
+    }
+
     /** {@inheritDoc} */
     @Override
     public final boolean isFlatAST() {
@@ -587,11 +596,6 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final IBuiltInSymbol topHead() {
       return S.Plus;
-    }
-
-    @Override
-    public final int headID() {
-      return ID.Plus;
     }
   }
 
@@ -862,7 +866,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     public IExpr evaluate(EvalEngine engine) {
       if (arg1.isNumber() && arg2.isNumber()) {
         return ((INumber) arg1).timesExpr((INumber) arg2);
-          // System.out.println("Times: " + arg1 + "*" + arg2 + "=>" + result);
+        // System.out.println("Times: " + arg1 + "*" + arg2 + "=>" + result);
       }
       // if (arg1.isNumber() && arg2.isNumber()) {
       // IExpr result = super.evaluate(engine);
@@ -971,6 +975,23 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   }
 
   private static final int SIZE = 3;
+
+  /**
+   * If the second argument is true, evaluate the first argument and return the result. Otherwise
+   * throw a condition {@link ConditionException#CONDITION_NIL}.
+   * 
+   * @param arg1
+   * @param arg2
+   * @param engine
+   * @throws ConditionException
+   */
+  public static IExpr conditionEval(IExpr arg1, IExpr arg2, EvalEngine engine)
+      throws ConditionException {
+    if (engine.evalTrue(arg2)) {
+      return engine.evaluate(arg1);
+    }
+    throw ConditionException.CONDITION_NIL;
+  }
 
   /** The second argument of this function. */
   protected IExpr arg1;
@@ -1378,6 +1399,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     return result;
   }
 
+
   @Override
   public int hashCode() {
     if (hashValue == 0 && arg2 != null) {
@@ -1397,7 +1419,6 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     final IExpr head = head();
     return head instanceof IBuiltInSymbol ? ((IBuiltInSymbol) head).ordinal() : ID.UNKNOWN;
   }
-
 
   /** {@inheritDoc} */
   @Override
@@ -1557,16 +1578,6 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   }
 
   @Override
-  public IASTAppendable reverse(IASTAppendable resultList) {
-    if (resultList.isNIL()) {
-      resultList = F.ListAlloc(argSize());
-    }
-    resultList.append(arg2);
-    resultList.append(arg1);
-    return resultList;
-  }
-
-  @Override
   public IAST removeFromEnd(int fromPosition) {
     if (fromPosition == 1) {
       return new AST0(head());
@@ -1579,6 +1590,16 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
     throw new IndexOutOfBoundsException(
         "Index: " + Integer.valueOf(fromPosition) + ", Size: " + size());
+  }
+
+  @Override
+  public IASTAppendable reverse(IASTAppendable resultList) {
+    if (resultList.isNIL()) {
+      resultList = F.ListAlloc(argSize());
+    }
+    resultList.append(arg2);
+    resultList.append(arg1);
+    return resultList;
   }
 
   /**

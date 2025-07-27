@@ -14,6 +14,8 @@ import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ReturnException;
+import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -23,8 +25,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public abstract class B1 extends AbstractAST implements Externalizable, RandomAccess {
-  private static final int SIZE = 2;
-
   static class Cos extends B1 {
     public Cos() {
       super();
@@ -35,6 +35,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public IASTMutable copy() {
+      return new Cos(arg1);
+    }
+
+    @Override
     public final IBuiltInSymbol head() {
       return S.Cos;
     }
@@ -42,11 +47,6 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final int headID() {
       return ID.Cos;
-    }
-
-    @Override
-    public IASTMutable copy() {
-      return new Cos(arg1);
     }
   }
 
@@ -60,6 +60,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public IASTMutable copy() {
+      return new Csc(arg1);
+    }
+
+    @Override
     public final IBuiltInSymbol head() {
       return S.Csc;
     }
@@ -68,10 +73,35 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     public final int headID() {
       return ID.Csc;
     }
+  }
+
+  static class Im extends B1 {
+    public Im() {
+      super();
+    }
+
+    Im(IExpr arg1) {
+      super(arg1);
+    }
 
     @Override
     public IASTMutable copy() {
-      return new Csc(arg1);
+      return new Im(arg1);
+    }
+
+    @Override
+    public final IBuiltInSymbol head() {
+      return S.Im;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.Im;
+    }
+
+    @Override
+    public final boolean isIm() {
+      return true;
     }
   }
 
@@ -82,16 +112,6 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
 
     IntegerQ(IExpr arg1) {
       super(arg1);
-    }
-
-    @Override
-    public final IBuiltInSymbol head() {
-      return S.IntegerQ;
-    }
-
-    @Override
-    public final int headID() {
-      return ID.IntegerQ;
     }
 
     @Override
@@ -107,35 +127,15 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
       }
       return engine.evaluate(arg1).isInteger() ? S.True : S.False;
     }
-  }
-
-  static class Im extends B1 {
-    public Im() {
-      super();
-    }
-
-    Im(IExpr arg1) {
-      super(arg1);
-    }
 
     @Override
     public final IBuiltInSymbol head() {
-      return S.Im;
+      return S.IntegerQ;
     }
 
     @Override
     public final int headID() {
-      return ID.Im;
-    }
-
-    @Override
-    public IASTMutable copy() {
-      return new Im(arg1);
-    }
-
-    @Override
-    public final boolean isIm() {
-      return true;
+      return ID.IntegerQ;
     }
   }
 
@@ -149,6 +149,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public IASTMutable copy() {
+      return new Line(arg1);
+    }
+
+    @Override
     public final IBuiltInSymbol head() {
       return S.Line;
     }
@@ -156,11 +161,6 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final int headID() {
       return ID.Line;
-    }
-
-    @Override
-    public IASTMutable copy() {
-      return new Line(arg1);
     }
   }
 
@@ -174,6 +174,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public IASTMutable copy() {
+      return new List(arg1);
+    }
+
+    @Override
     public final IBuiltInSymbol head() {
       return S.List;
     }
@@ -181,11 +186,6 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final int headID() {
       return ID.List;
-    }
-
-    @Override
-    public IASTMutable copy() {
-      return new List(arg1);
     }
 
     /** {@inheritDoc} */
@@ -210,6 +210,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public IASTMutable copy() {
+      return new Log(arg1);
+    }
+
+    @Override
     public final IBuiltInSymbol head() {
       return S.Log;
     }
@@ -217,11 +222,6 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final int headID() {
       return ID.Log;
-    }
-
-    @Override
-    public IASTMutable copy() {
-      return new Log(arg1);
     }
   }
 
@@ -235,6 +235,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public IASTMutable copy() {
+      return new Missing(arg1);
+    }
+
+    @Override
     public final IBuiltInSymbol head() {
       return S.Missing;
     }
@@ -242,11 +247,6 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final int headID() {
       return ID.Missing;
-    }
-
-    @Override
-    public IASTMutable copy() {
-      return new Missing(arg1);
     }
   }
 
@@ -260,6 +260,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public IASTMutable copy() {
+      return new Not(arg1);
+    }
+
+    @Override
     public final IBuiltInSymbol head() {
       return S.Not;
     }
@@ -267,11 +272,6 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final int headID() {
       return ID.Not;
-    }
-
-    @Override
-    public IASTMutable copy() {
-      return new Not(arg1);
     }
   }
 
@@ -285,6 +285,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public IASTMutable copy() {
+      return new Point(arg1);
+    }
+
+    @Override
     public final IBuiltInSymbol head() {
       return S.Point;
     }
@@ -292,11 +297,6 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final int headID() {
       return ID.Point;
-    }
-
-    @Override
-    public IASTMutable copy() {
-      return new Point(arg1);
     }
   }
 
@@ -310,6 +310,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public IASTMutable copy() {
+      return new Re(arg1);
+    }
+
+    @Override
     public final IBuiltInSymbol head() {
       return S.Re;
     }
@@ -317,11 +322,6 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final int headID() {
       return ID.Re;
-    }
-
-    @Override
-    public IASTMutable copy() {
-      return new Re(arg1);
     }
 
     @Override
@@ -340,16 +340,6 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
-    public final IBuiltInSymbol head() {
-      return S.Return;
-    }
-
-    @Override
-    public final int headID() {
-      return ID.Return;
-    }
-
-    @Override
     public IASTMutable copy() {
       return new Return(arg1);
     }
@@ -357,7 +347,17 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     /** {@inheritDoc} */
     @Override
     public IExpr evaluate(EvalEngine engine) {
-      return S.Return.evaluate(this, engine);
+      return B1.returnEval(this, engine);
+    }
+
+    @Override
+    public final IBuiltInSymbol head() {
+      return S.Return;
+    }
+
+    @Override
+    public final int headID() {
+      return ID.Return;
     }
 
   }
@@ -372,6 +372,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public IASTMutable copy() {
+      return new Sin(arg1);
+    }
+
+    @Override
     public final IBuiltInSymbol head() {
       return S.Sin;
     }
@@ -379,11 +384,6 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final int headID() {
       return ID.Sin;
-    }
-
-    @Override
-    public IASTMutable copy() {
-      return new Sin(arg1);
     }
   }
 
@@ -403,6 +403,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public IASTMutable copy() {
+      return new Slot(arg1);
+    }
+
+    @Override
     public final IBuiltInSymbol head() {
       return S.Slot;
     }
@@ -410,11 +415,6 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final int headID() {
       return ID.Slot;
-    }
-
-    @Override
-    public IASTMutable copy() {
-      return new Slot(arg1);
     }
   }
 
@@ -428,6 +428,11 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public IASTMutable copy() {
+      return new Tan(arg1);
+    }
+
+    @Override
     public final IBuiltInSymbol head() {
       return S.Tan;
     }
@@ -435,11 +440,6 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final int headID() {
       return ID.Tan;
-    }
-
-    @Override
-    public IASTMutable copy() {
-      return new Tan(arg1);
     }
   }
 
@@ -453,6 +453,17 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public IASTMutable copy() {
+      return new Throw(arg1);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evaluate(EvalEngine engine) {
+      return B1.throwEval(this, engine);
+    }
+
+    @Override
     public final IBuiltInSymbol head() {
       return S.Throw;
     }
@@ -461,17 +472,54 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     public final int headID() {
       return ID.Throw;
     }
+  }
 
-    @Override
-    public IASTMutable copy() {
-      return new Throw(arg1);
-    }
+  private static final int SIZE = 2;
 
-    /** {@inheritDoc} */
-    @Override
-    public IExpr evaluate(EvalEngine engine) {
-      return S.Throw.evaluate(this, engine);
+  public static IExpr returnEval(final IAST ast, EvalEngine engine) throws ReturnException {
+    if (ast == F.CReturnFalse) {
+      throw ReturnException.RETURN_FALSE;
     }
+    if (ast == F.CReturnTrue) {
+      throw ReturnException.RETURN_TRUE;
+    }
+    if (ast.isAST1()) {
+      IExpr arg1 = engine.evaluate(ast.arg1());
+      if (arg1.isFalse()) {
+        throw ReturnException.RETURN_FALSE;
+      }
+      if (arg1.isTrue()) {
+        throw ReturnException.RETURN_TRUE;
+      }
+      throw new ReturnException(arg1);
+    }
+    if (ast.isAST0()) {
+      throw new ReturnException();
+    }
+    return F.NIL;
+  }
+
+  public static IExpr throwEval(final IAST ast, EvalEngine engine) {
+    if (ast == F.CThrowFalse) {
+      throw ThrowException.THROW_FALSE;
+    }
+    if (ast == F.CThrowTrue) {
+      throw ThrowException.THROW_TRUE;
+    }
+    if (ast.isAST1()) {
+      IExpr arg1 = engine.evaluate(ast.arg1());
+      if (arg1.isFalse()) {
+        throw ThrowException.THROW_FALSE;
+      }
+      if (arg1.isTrue()) {
+        throw ThrowException.THROW_TRUE;
+      }
+      throw new ThrowException(arg1);
+    } else if (ast.isAST2()) {
+      IExpr arg1 = engine.evaluate(ast.arg1());
+      throw new ThrowException(arg1, ast.arg2());
+    }
+    return F.NIL;
   }
 
   /** The second argument of this function. */
@@ -694,6 +742,12 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
 
   /** {@inheritDoc} */
   @Override
+  public IExpr findFirst(Function<IExpr, IExpr> function) {
+    return function.apply(arg1);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
     switch (startOffset) {
       case 0:
@@ -788,27 +842,6 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     // do nothing
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public int indexOf(final IExpr expr) {
-    return arg1.equals(expr) ? 1 : -1;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {
-    if (fromIndex == 1 && predicate.test(arg1)) {
-      return 1;
-    }
-    return -1;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IExpr findFirst(Function<IExpr, IExpr> function) {
-    return function.apply(arg1);
-  }
-
   @Override
   public IExpr get(int location) {
     switch (location) {
@@ -835,6 +868,16 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
   }
 
   @Override
+  public int hashCode() {
+    if (hashValue == 0 && arg1 != null) {
+      hashValue = (0x811c9dc5 * 16777619) ^ (SIZE & 0xff); // decimal 2166136261;
+      hashValue = (hashValue * 16777619) ^ (head().hashCode() & 0xff);
+      hashValue = (hashValue * 16777619) ^ (arg1.hashCode() & 0xff);
+    }
+    return hashValue;
+  }
+
+  @Override
   public abstract ISymbol head();
 
   @Override
@@ -843,14 +886,19 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     return head instanceof IBuiltInSymbol ? ((IBuiltInSymbol) head).ordinal() : ID.UNKNOWN;
   }
 
+  /** {@inheritDoc} */
   @Override
-  public int hashCode() {
-    if (hashValue == 0 && arg1 != null) {
-      hashValue = (0x811c9dc5 * 16777619) ^ (SIZE & 0xff); // decimal 2166136261;
-      hashValue = (hashValue * 16777619) ^ (head().hashCode() & 0xff);
-      hashValue = (hashValue * 16777619) ^ (arg1.hashCode() & 0xff);
+  public int indexOf(final IExpr expr) {
+    return arg1.equals(expr) ? 1 : -1;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {
+    if (fromIndex == 1 && predicate.test(arg1)) {
+      return 1;
     }
-    return hashValue;
+    return -1;
   }
 
   /** {@inheritDoc} */
@@ -975,15 +1023,6 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
   }
 
   @Override
-  public IASTAppendable reverse(IASTAppendable resultList) {
-    if (resultList.isNIL()) {
-      resultList = F.ListAlloc(argSize());
-    }
-    resultList.append(arg1);
-    return resultList;
-  }
-
-  @Override
   public IAST removeFromEnd(int fromPosition) {
     if (fromPosition == 1) {
       return new AST0(head());
@@ -996,13 +1035,12 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
   }
 
   @Override
-  public IASTMutable setAtCopy(int i, IExpr expr) {
-    if (i == 0) {
-      return new AST1(expr, arg1());
+  public IASTAppendable reverse(IASTAppendable resultList) {
+    if (resultList.isNIL()) {
+      resultList = F.ListAlloc(argSize());
     }
-    IASTMutable ast = copy();
-    ast.set(i, expr);
-    return ast;
+    resultList.append(arg1);
+    return resultList;
   }
 
   /**
@@ -1028,6 +1066,16 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
       default:
         throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 2");
     }
+  }
+
+  @Override
+  public IASTMutable setAtCopy(int i, IExpr expr) {
+    if (i == 0) {
+      return new AST1(expr, arg1());
+    }
+    IASTMutable ast = copy();
+    ast.set(i, expr);
+    return ast;
   }
 
   /**

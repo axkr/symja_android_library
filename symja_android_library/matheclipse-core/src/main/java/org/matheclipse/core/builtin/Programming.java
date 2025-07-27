@@ -17,7 +17,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.BreakException;
-import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ContinueException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.NoEvalException;
@@ -31,6 +30,8 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFastFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
+import org.matheclipse.core.expression.B1;
+import org.matheclipse.core.expression.B2;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -541,7 +542,7 @@ public final class Programming {
       if (engine.isEvalRHSMode()) {
         IExpr arg1 = ast.arg1();
         IExpr arg2 = ast.arg2();
-        return condition(arg1, arg2, engine);
+        return B2.conditionEval(arg1, arg2, engine);
       }
       return F.NIL;
     }
@@ -2810,25 +2811,7 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast == F.CReturnFalse) {
-        throw ReturnException.RETURN_FALSE;
-      }
-      if (ast == F.CReturnTrue) {
-        throw ReturnException.RETURN_TRUE;
-      }
-      if (ast.isAST1()) {
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        if (arg1.isFalse()) {
-          throw ReturnException.RETURN_FALSE;
-        }
-        if (arg1.isTrue()) {
-          throw ReturnException.RETURN_TRUE;
-        }
-        throw new ReturnException(arg1);
-      }
-      if (ast.isAST0()) {
-        throw new ReturnException();
-      }
+      B1.returnEval(ast, engine);
       return engine.checkBuiltinArgsSize(ast, this);
     }
 
@@ -2882,6 +2865,10 @@ public final class Programming {
             appendReapList(arg1, tags, reapList);
             return arg1;
           }
+        }
+      } else {
+        if (ast.isAST(S.Sow, 2, 3)) {
+          return engine.evaluate(ast.arg1());
         }
       }
       return engine.checkBuiltinArgsSize(ast, this);
@@ -3301,26 +3288,7 @@ public final class Programming {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast == F.CThrowFalse) {
-        throw ThrowException.THROW_FALSE;
-      }
-      if (ast == F.CThrowTrue) {
-        throw ThrowException.THROW_TRUE;
-      }
-      if (ast.isAST1()) {
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        if (arg1.isFalse()) {
-          throw ThrowException.THROW_FALSE;
-        }
-        if (arg1.isTrue()) {
-          throw ThrowException.THROW_TRUE;
-        }
-        throw new ThrowException(arg1);
-      } else if (ast.isAST2()) {
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        throw new ThrowException(arg1, ast.arg2());
-      }
-
+      B1.throwEval(ast, engine);
       return engine.checkBuiltinArgsSize(ast, this);
     }
 
@@ -3826,13 +3794,15 @@ public final class Programming {
    * assignedRules</code>.
    *
    * @param variablesList initializer variables list from the <code>Block</code> function
-   * @param oldAssignedValues the variables mapped to their values (IExpr) before evaluating the block
+   * @param oldAssignedValues the variables mapped to their values (IExpr) before evaluating the
+   *        block
    * @param oldAssignedRules the variables mapped to their rules (RulesData) before evaluating the
    *        block
    * @param engine the evaluation engine
    */
   public static void rememberBlockVariables(IAST variablesList, final ISymbol[] symbolList,
-      final IExpr[] oldAssignedValues, final RulesData[] oldAssignedRules, final EvalEngine engine) {
+      final IExpr[] oldAssignedValues, final RulesData[] oldAssignedRules,
+      final EvalEngine engine) {
     ISymbol variableSymbol;
     for (int i = 1; i < variablesList.size(); i++) {
       if (variablesList.get(i).isSymbol()) {
@@ -3866,7 +3836,7 @@ public final class Programming {
     for (int i = 1; i < variablesList.size(); i++) {
       if (variablesList.get(i).isSymbol()) {
         variableSymbol = symbolList[i];
-        variableSymbol.assignValue(null, false);
+        variableSymbol.clearValue();
         variableSymbol.setRulesData(null);
       } else {
         if (variablesList.get(i).isAST(S.Set, 3)) {
@@ -3874,7 +3844,7 @@ public final class Programming {
           if (setFun.arg1().isSymbol()) {
             variableSymbol = symbolList[i];
             IExpr temp = engine.evaluate(setFun.arg2());
-            variableSymbol.assignValue(temp, false);
+            variableSymbol.assignValue(temp);
             variableSymbol.setRulesData(null);
           }
         }
@@ -4471,23 +4441,6 @@ public final class Programming {
           "Part: index " + partPosition + " of " + lhs.toString() + " is out of bounds.");
     }
     return lhs.setAtCopy(partPosition, value);
-  }
-
-  /**
-   * If the second argument is true, evaluate the first argument and return the result. Otherwise
-   * throw a condition {@link ConditionException#CONDITION_NIL}.
-   * 
-   * @param arg1
-   * @param arg2
-   * @param engine
-   * @throws ConditionException
-   */
-  public static IExpr condition(IExpr arg1, IExpr arg2, EvalEngine engine)
-      throws ConditionException {
-    if (engine.evalTrue(arg2)) {
-      return engine.evaluate(arg1);
-    }
-    throw ConditionException.CONDITION_NIL;
   }
 
   /**
