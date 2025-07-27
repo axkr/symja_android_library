@@ -392,6 +392,8 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometricU() {
+    check("HypergeometricU(0,b,z)", //
+        "1");
     check("HypergeometricU(-5,b,z)", //
         "-24*b-50*b^2-35*b^3-10*b^4-b^5+120*z+250*b*z+175*b^2*z+50*b^3*z+5*b^4*z-240*z^2-\n" //
             + "260*b*z^2-90*b^2*z^2-10*b^3*z^2+120*z^3+70*b*z^3+10*b^2*z^3-20*z^4-5*b*z^4+z^5");

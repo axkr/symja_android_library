@@ -1583,7 +1583,7 @@ public class HypergeometricFunctions {
 
     private static IExpr hypergeometricU(IExpr a, IExpr b, IExpr z, EvalEngine engine) {
       if (a.isZero()) {
-        return F.C0;
+        return F.C1;
       }
       if (z.isZero()) {
         // https://functions.wolfram.com/HypergeometricFunctions/HypergeometricU/03/01/01/
