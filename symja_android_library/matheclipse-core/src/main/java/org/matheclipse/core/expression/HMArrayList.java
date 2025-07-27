@@ -1009,20 +1009,17 @@ public abstract class HMArrayList extends AbstractAST
 
   @Override
   public IASTAppendable reverse(IASTAppendable resultList) {
-    if (resultList.isNIL()) {
-      resultList = F.ListAlloc(argSize());
-    }
     if (resultList instanceof HMArrayList) {
       HMArrayList list = ((HMArrayList) resultList);
-      if (list.array.length < size()) {
-        list.growAtEnd(size());
-      }
+      list.growAtEnd(size());
       IExpr[] resultArray = list.array;
       int i = firstIndex + argSize();
       while (i > firstIndex) {
         resultArray[list.lastIndex++] = array[i--];
       }
       return list;
+    } else if (resultList.isNIL()) {
+      resultList = F.ListAlloc(argSize());
     }
 
     int i = firstIndex + argSize();
@@ -1044,8 +1041,7 @@ public abstract class HMArrayList extends AbstractAST
   @Override
   public IExpr set(int location, IExpr object) {
     if (Config.FUZZ_TESTING && isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
-      throw new NullPointerException(
-          "Index: " + location + ", Size: " + (lastIndex - firstIndex));
+      throw new NullPointerException("Index: " + location + ", Size: " + (lastIndex - firstIndex));
     }
     hashValue = 0;
     // if (0 <= location && location < (lastIndex - firstIndex)) {
