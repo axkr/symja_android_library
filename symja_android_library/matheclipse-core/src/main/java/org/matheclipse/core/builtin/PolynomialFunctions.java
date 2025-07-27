@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
@@ -70,7 +68,7 @@ import edu.jas.ufd.GreatestCommonDivisorAbstract;
 
 public class PolynomialFunctions {
 
-  public static final Logger LOGGER = LogManager.getLogger(PolynomialFunctions.class);
+  // public static final Logger LOGGER = LogManager.getLogger(PolynomialFunctions.class);
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -220,7 +218,7 @@ public class PolynomialFunctions {
         throw le;
       } catch (RuntimeException ae) {
         Errors.rethrowsInterruptException(ae);
-        LOGGER.debug("Coefficient.evaluate() failed", ae);
+        // LOGGER.debug("Coefficient.evaluate() failed", ae);
         return F.C0;
       }
     }
@@ -284,7 +282,8 @@ public class PolynomialFunctions {
         return poly.coefficientArrays((int) poly.degree());
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        LOGGER.debug("CoefficientArrays.evaluate() failed", rex);
+        Errors.printMessage(S.CoefficientArrays, rex, engine);
+        // LOGGER.debug("CoefficientArrays.evaluate() failed", rex);
       }
 
       return F.list(F.Rule(F.mapRange(1, symbolList.size(), i -> F.C0), expr));
@@ -412,6 +411,13 @@ public class PolynomialFunctions {
         return arg1.mapThread(ast, 1);
       }
       IAST list = ast.arg2().makeList();
+      if (arg1 instanceof ASTSeriesData && list.argSize() == 1) {
+        ASTSeriesData series = (ASTSeriesData) arg1;
+        if (series.getX().equals(list.arg1())) {
+          return series.coefficientList();
+        }
+      }
+
       IExpr expr = arg1.normal(false);
       if (expr.isAST() && !expr.isFree(x -> list.indexOf(x) > 0, true)) {
         expr = F.evalExpandAll(expr, engine);
@@ -471,8 +477,9 @@ public class PolynomialFunctions {
               return coefficientRulesModulus(expr, varList, termOrder, option);
             } catch (RuntimeException rex) {
               Errors.rethrowsInterruptException(rex);
+              Errors.printMessage(S.CoefficientRules, rex, engine);
               // toInt() conversion failed
-              LOGGER.debug("CoefficientRules.evaluate() failed", rex);
+              // LOGGER.debug("CoefficientRules.evaluate() failed", rex);
             }
           }
           return F.NIL;
@@ -486,7 +493,8 @@ public class PolynomialFunctions {
         return poly.coefficientRules();
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        LOGGER.debug("CoefficientRules.evaluate() failed", rex);
+        Errors.printMessage(S.CoefficientRules, rex, engine);
+        // LOGGER.debug("CoefficientRules.evaluate() failed", rex);
       }
       // default mapping
       IASTAppendable ruleList = F.mapRange(1, symbolList.size(), i -> F.C0);
@@ -554,7 +562,8 @@ public class PolynomialFunctions {
         }
         return resultList;
       } catch (ArithmeticException ae) {
-        LOGGER.debug("CoefficientRules.coefficientRulesModulus() failed", ae);
+        Errors.printMessage(S.CoefficientRules, ae);
+        // LOGGER.debug("CoefficientRules.coefficientRulesModulus() failed", ae);
       }
       return F.NIL;
     }
@@ -850,10 +859,11 @@ public class PolynomialFunctions {
         // http://en.wikipedia.org/wiki/Discriminant#Discriminant_of_a_polynomial
         return F.Divide(F.Times(F.Power(F.CN1, (n * (n - 1) / 2)),
             F.Resultant(poly.getExpr(), polyDiff.getExpr(), arg2)), fN);
-      } catch (RuntimeException ex) {
-        Errors.rethrowsInterruptException(ex);
-        LOGGER.log(engine.getLogLevel(), "{}: polynomial expected at position 1 instead of {}",
-            ast.topHead(), ast.arg1());
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        Errors.printMessage(S.Discriminant, rex, engine);
+        // LOGGER.log(engine.getLogLevel(), "{}: polynomial expected at position 1 instead of {}",
+        // ast.topHead(), ast.arg1());
         return F.NIL;
       }
     }
@@ -1196,7 +1206,8 @@ public class PolynomialFunctions {
         return jas.exprPoly2Expr(p1);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        LOGGER.debug("Resultant.jasResultant() failed", rex);
+        Errors.printMessage(S.Resultant, rex);
+        // LOGGER.debug("Resultant.jasResultant() failed", rex);
       }
       return F.NIL;
     }
@@ -2478,7 +2489,8 @@ public class PolynomialFunctions {
               return monomialListModulus(expr, varList, termOrder, option);
             } catch (RuntimeException rex) {
               Errors.rethrowsInterruptException(rex);
-              LOGGER.debug("MonomialList.evaluate() failed", rex);
+              Errors.printMessage(S.MonomialList, rex, engine);
+              // LOGGER.debug("MonomialList.evaluate() failed", rex);
             }
           }
           return F.NIL;
@@ -2492,7 +2504,8 @@ public class PolynomialFunctions {
         return poly.monomialList();
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        LOGGER.debug("MonomialList.evaluate() failed", rex);
+        Errors.printMessage(S.MonomialList, rex, engine);
+        // LOGGER.debug("MonomialList.evaluate() failed", rex);
       }
       // default mapping
       return F.list(expr);
@@ -2530,7 +2543,8 @@ public class PolynomialFunctions {
         return list;
       } catch (ArithmeticException ae) {
         // toInt() conversion failed
-        LOGGER.debug("MonomialList.monomialListModulus() failed", ae);
+        Errors.printMessage(S.MonomialList, ae);
+        // LOGGER.debug("MonomialList.monomialListModulus() failed", ae);
       }
       return F.NIL;
     }
