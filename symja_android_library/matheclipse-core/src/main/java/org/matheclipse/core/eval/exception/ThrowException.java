@@ -8,7 +8,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Throw.md">Throw</a>
  * function.
  */
-public class ThrowException extends FlowControlException {
+public final class ThrowException extends FlowControlException {
 
   private static final long serialVersionUID = -8468658696375569705L;
 

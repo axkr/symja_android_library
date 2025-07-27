@@ -5,7 +5,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
 /** This exception throws the result value {@link F#NIL} of a Symja {@link S#Condition} function. */
-public class ConditionException extends FlowControlException {
+public final class ConditionException extends FlowControlException {
 
   public static final ConditionException CONDITION_NIL = new ConditionException();
 

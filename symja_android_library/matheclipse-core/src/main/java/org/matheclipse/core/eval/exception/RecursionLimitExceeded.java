@@ -6,7 +6,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 
 /** Exception which will be thrown, if the recursion limit of the evaluation stack was exceeded. */
-public class RecursionLimitExceeded extends LimitException {
+public final class RecursionLimitExceeded extends LimitException {
 
   private static final long serialVersionUID = 3610700158103716674L;
 

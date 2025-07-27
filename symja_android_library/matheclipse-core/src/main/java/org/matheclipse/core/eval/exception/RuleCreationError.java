@@ -4,7 +4,7 @@ import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class RuleCreationError extends ValidateException {
+public final class RuleCreationError extends ValidateException {
 
   private static final long serialVersionUID = 4289111239388531874L;
 

@@ -4,7 +4,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
 /** Exception for the <code>First...</code> functions. */
-public class ResultException extends FlowControlException {
+public final class ResultException extends FlowControlException {
 
   private static final long serialVersionUID = 6451923502427489113L;
 

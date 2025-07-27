@@ -1,6 +1,6 @@
 package org.matheclipse.core.eval.exception;
 
-public class TimeoutException extends FlowControlException {
+public final class TimeoutException extends FlowControlException {
 
   private static final long serialVersionUID = -1664843691177511531L;
 

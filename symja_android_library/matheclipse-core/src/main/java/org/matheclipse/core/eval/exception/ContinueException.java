@@ -5,7 +5,7 @@ package org.matheclipse.core.eval.exception;
  * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Continue.md">Continue</a>
  * function.
  */
-public class ContinueException extends FlowControlException {
+public final class ContinueException extends FlowControlException {
 
   public static final ContinueException CONST = new ContinueException();
 

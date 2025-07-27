@@ -3,7 +3,7 @@ package org.matheclipse.core.eval.exception;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
-public class DialogReturnException extends ReturnException {
+public final class DialogReturnException extends ReturnException {
 
   private static final long serialVersionUID = -3723154693002116846L;
 

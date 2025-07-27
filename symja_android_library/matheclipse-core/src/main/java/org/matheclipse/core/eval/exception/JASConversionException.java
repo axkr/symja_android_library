@@ -1,6 +1,6 @@
 package org.matheclipse.core.eval.exception;
 
-public class JASConversionException extends SymjaMathException {
+public final class JASConversionException extends SymjaMathException {
   /**
    * Gets a static JASConversionException.
    */

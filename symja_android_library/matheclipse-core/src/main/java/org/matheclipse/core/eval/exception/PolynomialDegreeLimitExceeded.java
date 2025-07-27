@@ -1,7 +1,7 @@
 package org.matheclipse.core.eval.exception;
 
 /** Exception which will be thrown, if the Config.MAX_AST_SIZE limit was exceeded. */
-public class PolynomialDegreeLimitExceeded extends LimitException {
+public final class PolynomialDegreeLimitExceeded extends LimitException {
 
   private static final long serialVersionUID = 8925451277545397036L;
 
