@@ -40,6 +40,7 @@ import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.AbstractAST.NILPointer;
+import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.BuiltInDummy;
 import org.matheclipse.core.expression.BuiltInSymbol;
@@ -1544,7 +1545,7 @@ public interface IExpr
   /**
    * Evaluate <code>this</code> expression. If the engine is in numerical mode, exact numeric
    * numbers are converted into numerical expressions. If the engine is in arbitrary precision mode,
-   * the numbers are converted to {@link ApfloatNum} or {@link ApfloatComplex} objects.
+   * the numbers are converted to {@link ApfloatNum} or {@link ApcomplexNum} objects.
    * 
    * @param engine the evaluation engine
    * @return the evaluated object or <code>F.NIL</code> if the evaluation is not possible (i.e. the
@@ -1963,7 +1964,7 @@ public interface IExpr
   /**
    * Returns <code>true</code>, if <b>one of the elements</b> in the subexpressions or the
    * expression itself, match the collection of pattern-matching expressions. Calls
-   * {@link #has(expr, true)} for each element in the collection.
+   * {@link #has(Predicate, boolean)} for each element in the collection.
    * 
    * @param collection a collection of pattern-matching expressions
    * @return <code>true</code> if one of the elements did match the pattern
@@ -1979,7 +1980,7 @@ public interface IExpr
 
   /**
    * Returns <code>true</code>, if <b>one of the elements</b> in the subexpressions or the
-   * expression itself, did match the given pattern. Calls {@link #has(pattern, true)}.
+   * expression itself, did match the given pattern. Calls {@link #has(IExpr, boolean)}.
    *
    * @param pattern a pattern-matching expression
    * @return <code>true</code> if one of the elements did match the pattern
@@ -2280,7 +2281,6 @@ public interface IExpr
   /**
    * If this is a slot return the slot number, otherwise return {@link F#CN1} (value -1)
    * 
-   * @return
    */
   default IInteger intSlot() {
     return F.CN1;
@@ -2605,7 +2605,6 @@ public interface IExpr
    * the index positions <code>1, 2</code>.<br>
    * Therefore this expression is no <b>atomic expression</b>.
    *
-   * @return
    * @see #isAtom()
    */
   default boolean isAST2() {
@@ -3074,7 +3073,7 @@ public interface IExpr
    * Sqrt[&lt;arg1&gt;]</code>) or <code>-Power[&lt;arg1&gt;, 1/2]</code> (i.e. <code>
    * -Sqrt[&lt;arg1&gt;]</code>)
    *
-   * @return
+   * @return <code>true</code> if this expression is a square root function
    */
   default boolean isFactorSqrtExpr() {
     if (isSqrt()) {
@@ -3094,16 +3093,17 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression equals the symbol "False"
+   * Test if this expression equals the symbol {@link S#False}.
    *
-   * @return
+   * @return <code>true</code> if the expression equals symbol {@link S#False} and <code>false
+   *     </code> in all other cases.
    */
   default boolean isFalse() {
     return false;
   }
 
   /**
-   * Test if this expression is representing symbolic or numeric infinities.
+   * Test if <code>this</code> is representing a symbolic or numeric finite expression.
    * 
    * @see #isInfinite()
    * @see #isInfinity()
@@ -3123,7 +3123,6 @@ public interface IExpr
    * Examples for <code>Flat</code> functions are <code>
    * Dot[], Plus[] or Times[]</code>. Therefore this expression is no <b>atomic expression</b>.
    *
-   * @return
    * @see #isAtom()
    */
   default boolean isFlatAST() {
@@ -3133,7 +3132,6 @@ public interface IExpr
   /**
    * Test if this expression is a fractional number, but no integer number.
    *
-   * @return
    */
   default boolean isFraction() {
     return this instanceof IFraction;
@@ -3230,7 +3228,6 @@ public interface IExpr
    * Test if this expression is a <code>Function( arg1 )</code> or <code>Function( arg1, arg2 )
    * </code> expression with at least 1 argument.
    *
-   * @return
    * @see #isPureFunction()
    */
   default boolean isFunction() {
@@ -3240,7 +3237,6 @@ public interface IExpr
   /**
    * Test if this expression is an {@link IAST} function with one of the built-in head IDs.
    *
-   * @return
    * @see #isPureFunction()
    */
   default boolean isFunctionID(int... builtinIDs) {
@@ -3273,16 +3269,14 @@ public interface IExpr
    * Test if this expression is an AST list, which contains a <b>header element</b> with attribute
    * {@link ISymbol#HOLDALLCOMPLETE} at index position <code>0</code>.
    *
-   * @return
    */
   default boolean isHoldAllCompleteAST() {
     return false;
   }
 
   /**
-   * Test if this expression is th symbol <code>Hold</code> or <code>HoldForm</code>
+   * Test if this expression is the symbol <code>Hold</code> or <code>HoldForm</code>
    *
-   * @return
    */
   default boolean isHoldOrHoldFormOrDefer() {
     return false;
@@ -3293,7 +3287,6 @@ public interface IExpr
    * HoldPattern[&lt;expression&gt;]</code> or the deprecated <code>Literal[&lt;expression&gt;]
    * </code> form.
    *
-   * @return
    */
   default boolean isHoldPatternOrLiteral() {
     return false;
@@ -3402,7 +3395,6 @@ public interface IExpr
    * <code>List[min, max]</code> arguments <code>Interval[{min1, max1}, {min2, max2}, ...]</code>
    * which represent the union of the interval ranges.
    *
-   * @return
    */
   default boolean isInterval() {
     return false;
@@ -3412,19 +3404,17 @@ public interface IExpr
    * Test if this expression is a closed/open ended interval expression with one
    * <code>List[min, max]</code> argument <code>Interval[{min, max}]</code>
    *
-   * @return
    */
   default boolean isInterval1() {
     return false;
   }
 
   /**
-   * Test if this expression is a mixed opened/closed interval expression with one or more
+   * Test if this expression is a mixed opened/closed interval set expression with zero or more
    * <code>{min, Less/LessEqual, Less/LessEqual, max}</code> list arguments which represent the
-   * union of the interval ranges. The empty <code>IntervalData()</code> interval returns also
-   * <code>true</code>.
+   * union set of the interval ranges. The empty interval set {@link F#CEmptyIntervalData} returns
+   * also <code>true</code>.
    * 
-   * @return
    */
   default boolean isIntervalData() {
     return false;
@@ -3451,8 +3441,7 @@ public interface IExpr
   /**
    * Test if this expression is the function <code>Key(&lt;key&gt;)</code> by checking the head is
    * equal to {@link S#Key} and the function contains only one argument.
-   *
-   * @return
+   * 
    */
   default boolean isKey() {
     return false;
@@ -3470,9 +3459,8 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a list (i.e. an AST with head List)
-   *
-   * @return
+   * Test if this expression is a list (i.e. an AST with head {@link S#List})
+   * 
    */
   default boolean isList() {
     return false;
@@ -3481,37 +3469,37 @@ public interface IExpr
   /**
    * Test if this expression is a nested list with the dimensions.
    *
-   ** @param dimensions the dimensions of the tensor
-   * @return
+   * @param dimensions the dimensions of the tensor
    */
   default boolean isList(int[] dimensions) {
     return false;
   }
 
   /**
-   * Test if this expression is a list (i.e. an AST with head List) with all arguments fulfill the
-   * predicate.
+   * Test if this expression is a list (i.e. an AST with head {@link S#List}) with all arguments
+   * fulfill the predicate.
    *
    * @param predicate
-   * @return
    */
   default boolean isList(Predicate<IExpr> predicate) {
     return false;
   }
 
   /**
-   * Test if this expression is a list (i.e. an AST with head List) with exactly 1 arguments.
+   * Test if this expression is a list (i.e. an AST with head {@link S#List} with exactly 1
+   * argument.
    * <p>
    * Example list with one argument a: <code>{a}</code>
-   *
-   * @return
+   * 
+   * @return <code>true</code>, if the given expression is a list with exactly 1 argument.
    */
   default boolean isList1() {
     return isList() && size() == 2;
   }
 
   /**
-   * Test if this expression is a list (i.e. an AST with head List) with exactly 2 arguments
+   * Test if this expression is a list (i.e. an AST with head {@link S#List}) with exactly 2
+   * arguments
    * <p>
    * Example list with two arguments a,b: <code>{a, b}</code>
    * 
@@ -3522,7 +3510,8 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a list (i.e. an AST with head List) with exactly 3 arguments
+   * Test if this expression is a list (i.e. an AST with head {@link S#List}) with exactly 3
+   * arguments
    * <p>
    * Example list with three arguments a,b,c: <code>{a, b, c}</code>
    * 
@@ -3533,7 +3522,8 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a list (i.e. an AST with head List) with exactly 4 arguments
+   * Test if this expression is a list (i.e. an AST with head {@link S#List}) with exactly 4
+   * arguments
    * <p>
    * Example list with four arguments a,b,c,d: <code>{a, b, c, d}</code>
    * 
@@ -3602,7 +3592,7 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a list of rules (head Rule or RuleDelayed)
+   * Test if this expression is a list of rules (head {@link S#Rule} or {@link S#RuleDelayed})
    *
    * @return <code>true</code>, if the given expression is a list of rules
    * @see #isList()
@@ -3614,7 +3604,7 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a list of rules (head Rule or RuleDelayed)
+   * Test if this expression is a list of rules (head {@link S#Rule} or {@link S#RuleDelayed})
    *
    * @param ignoreEmptySublists if <code>true</code>, ignore elements which equals an empty list
    *        <code>{ }</code>
@@ -3628,7 +3618,7 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a list of rules (head Rule or RuleDelayed) or an
+   * Test if this expression is a list of rules (head {@link S#Rule} or {@link S#RuleDelayed}) or an
    * {@link S#Association}
    *
    * @param ignoreEmptySublists if <code>true</code>, ignore elements which equals an empty list
@@ -3652,7 +3642,8 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a list (i.e. an AST with head List) or an Association
+   * Test if this expression is a list (i.e. an AST with head (head {@link S#List}) or an
+   * Association
    *
    * @return <code>true</code>, if the given expression is a list or an Association
    */
@@ -3691,8 +3682,8 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a machine-precision (Java double type) real or complex number. I.e.
-   * an instance of type <code>Num</code> or <code>ComplexNum</code>.
+   * Test if this expression is a machine-precision (Java <code>double</code> type) real or complex
+   * number. I.e. an instance of type <code>Num</code> or <code>ComplexNum</code>.
    *
    * @return <code>true</code>, if the given expression is a machine-precision number.
    */
@@ -3764,7 +3755,6 @@ public interface IExpr
    * the given pattern. By default <code>isMember()</code> only operates at level 1.
    *
    * @param pattern a pattern-matching expression
-   * @return
    */
   default boolean isMember(IExpr pattern) {
     return isMember(pattern, false, null);
@@ -3780,7 +3770,6 @@ public interface IExpr
    *        not the <code>Head[]</code> element.
    * @param visitor if <code>null</code> use <code>
    *     VisitorBooleanLevelSpecification(predicate, 1, heads)</code>
-   * @return
    */
   default boolean isMember(IExpr pattern, boolean heads, IVisitorBoolean visitor) {
     Predicate<IExpr> predicate;
@@ -3798,8 +3787,7 @@ public interface IExpr
 
   /**
    * Test if this expression equals <code>-1</code> in symbolic or numeric mode.
-   *
-   * @return
+   * 
    */
   default boolean isMinusOne() {
     return false;
@@ -3807,8 +3795,7 @@ public interface IExpr
 
   /**
    * Test if this expression is the Module function <code>Module[&lt;arg1&gt;, &lt;arg2&gt;]</code>
-   *
-   * @return
+   * 
    */
   default boolean isModule() {
     return false;
@@ -3836,8 +3823,7 @@ public interface IExpr
 
   /**
    * Test if this expression is representing <code>-I</code>.
-   *
-   * @return
+   * 
    */
   default boolean isNegativeImaginaryUnit() {
     return false;
@@ -3919,8 +3905,7 @@ public interface IExpr
   /**
    * Test if this expression is a list with at least one element (i.e. a list <code>{element, ...}
    * </code>)
-   *
-   * @return
+   * 
    */
   default boolean isNonEmptyList() {
     return false;
@@ -3940,8 +3925,7 @@ public interface IExpr
   /**
    * Test if this expression unequals <code>0</code> and is a numeric complex value or is assumed to
    * be a negative or positive value.
-   *
-   * @return
+   * 
    */
   default boolean isNonZeroComplexResult() {
     if (isZero()) {
@@ -3962,8 +3946,7 @@ public interface IExpr
   /**
    * Test if this expression unequals <code>0</code> and is a numeric real value or is assumed to be
    * a negative or positive value.
-   *
-   * @return
+   * 
    */
   default boolean isNonZeroRealResult() {
     if (isZero()) {
@@ -3986,8 +3969,7 @@ public interface IExpr
 
   /**
    * Test if this expression is the function <code>Not[&lt;arg&gt;]</code>.
-   *
-   * @return
+   * 
    */
   default boolean isNot() {
     return false;
@@ -4000,8 +3982,7 @@ public interface IExpr
 
   /**
    * Test if this expression is an {@link IAST} and contains at least 1 argument
-   *
-   * @return
+   * 
    */
   default public boolean isNotEmpty() {
     return false;
@@ -4009,8 +3990,7 @@ public interface IExpr
 
   /**
    * Test if this expression is a number. I.e. an instance of type <code>INumber</code>.
-   *
-   * @return
+   * 
    */
   default boolean isNumber() {
     return false;
@@ -4018,8 +3998,7 @@ public interface IExpr
 
   /**
    * Test if this expression is a number or +/- Infinity.
-   *
-   * @return
+   * 
    */
   default boolean isNumberOrInfinity() {
     return isNumber();
@@ -4030,7 +4009,6 @@ public interface IExpr
    * </code> or the value of an <code>IInteger</code> object can be equal to <code>value</code>.
    *
    * @param value
-   * @return
    * @throws ArithmeticException
    */
   default boolean isNumEqualInteger(IInteger value) throws ArithmeticException {
@@ -4043,7 +4021,6 @@ public interface IExpr
    * <code>value</code>.
    *
    * @param value
-   * @return
    * @throws ArithmeticException
    * @see #isRational()
    */
@@ -4054,8 +4031,7 @@ public interface IExpr
   /**
    * Test if this expression is a numeric number (i.e. an instance of type <code>INum</code> or type
    * <code>IComplexNum</code>.
-   *
-   * @return
+   * 
    * @deprecated use {@link #isInexactNumber()}
    */
   @Deprecated
@@ -4066,8 +4042,7 @@ public interface IExpr
   /**
    * Test if this expression is a numeric number (i.e. an instance of type <code>INum</code> or type
    * <code>IComplexNum</code>), an <code>ASTRealVector</code> or an <code>ASTRealMatrix</code>.
-   *
-   * @return
+   * 
    */
   default boolean isNumericArgument() {
     return isNumericArgument(true);
@@ -4087,8 +4062,7 @@ public interface IExpr
 
   /**
    * Test if this expression is an instance of NumericArrayExpr
-   *
-   * @return
+   * 
    */
   default boolean isNumericArray() {
     return false;
@@ -4096,8 +4070,7 @@ public interface IExpr
 
   /**
    * Test if this expression is an IAST and contains at least one numeric argument.
-   *
-   * @return
+   * 
    */
   default boolean isNumericAST() {
     return false;
@@ -4134,7 +4107,6 @@ public interface IExpr
    * under the assumption, that all variables contained in <code>list</code> are also numeric.
    *
    * @param list a list of variable symbols
-   * @return
    */
   default boolean isNumericFunction(Function<IExpr, String> list) {
     return isNumericFunction(true) || list.apply(this) != null;
@@ -4146,7 +4118,6 @@ public interface IExpr
    * under the assumption, that the <code>variable</code> is also numeric.
    *
    * @param variable
-   * @return
    */
   default boolean isNumericFunction(IExpr variable) {
     return isNumericFunction(true) || variable.equals(this);
@@ -4192,8 +4163,7 @@ public interface IExpr
   /**
    * Check if this expression represents an <code>int</code> value. The value of an <code>INum
    * </code> object can be an <code>int</code> value.
-   *
-   * @return
+   * 
    */
   default boolean isNumIntValue() {
     return false;
@@ -4210,8 +4180,7 @@ public interface IExpr
 
   /**
    * Test if this expression equals <code>1</code> in symbolic or numeric mode.
-   *
-   * @return
+   * 
    */
   default boolean isOne() {
     return false;
@@ -4235,8 +4204,7 @@ public interface IExpr
    * index position <code>0</code> and exactly <b>one argument</b> at the index position <code>1
    * </code>. Examples for <code>OneIdentity</code> functions are <code>Plus[] or Times[]</code>.
    * Therefore this expression is no <b>atomic expression</b>.
-   *
-   * @return
+   * 
    * @see #isAtom()
    */
   default boolean isOneIdentityAST1() {
@@ -4246,8 +4214,7 @@ public interface IExpr
   /**
    * Test if this expression is the <code>Optional</code> function <code>Optional[&lt;pattern&gt;]
    * </code> or <code>Optional[&lt;pattern&gt;, &lt;value&gt;]</code>
-   *
-   * @return
+   * 
    */
   default boolean isOptional() {
     return false;
@@ -4256,8 +4223,7 @@ public interface IExpr
   /**
    * Test if this expression is the <code>OptionsPattern</code> function <code>OptionsPattern()
    * </code> or <code>OptionsPattern(&lt;symbol&gt;)</code>
-   *
-   * @return
+   * 
    */
   default boolean isOptionsPattern() {
     return false;
@@ -4266,11 +4232,17 @@ public interface IExpr
   /**
    * Test if this expression is the function <code>Or[&lt;arg&gt;,...]</code> and has at least 2
    * arguments.
-   *
-   * @return
+   * 
    */
   default boolean isOr() {
     return false;
+  }
+
+  /**
+   * Test if this is an order expression <code>O(...)</code>
+   */
+  default boolean isOrder() {
+    return isAST(S.Order);
   }
 
   /**
@@ -4291,8 +4263,7 @@ public interface IExpr
   /**
    * Test if this expression is the function <code>Overflow( )</code> by checking the head is equal
    * to {@link S#Overflow} and the function contains no arguments.
-   *
-   * @return
+   * 
    */
   default boolean isOverflow() {
     return false;
@@ -4300,8 +4271,7 @@ public interface IExpr
 
   /**
    * Test if this expression is a <code>Pattern[symbol]</code> object
-   *
-   * @return
+   * 
    */
   default boolean isPattern() {
     return false;
@@ -4311,8 +4281,7 @@ public interface IExpr
    * Return <code>true</code>, if the expression is a pattern object with an associated default
    * value (for example <code>0</code> is the default value for the addition expression <code>x_+y_.
    * </code>) or if the expression is a {@link S#Optional} expression.
-   *
-   * @return
+   * 
    */
   default boolean isPatternDefault() {
     return false;
@@ -4321,8 +4290,7 @@ public interface IExpr
   /**
    * Test if this expression or a subexpression is a pattern object. Used in pattern-matching;
    * checks flags in <code>IAST</code> with flag <code>IAST.CONTAINS_PATTERN_EXPR</code>.
-   *
-   * @return
+   * 
    */
   default boolean isPatternExpr() {
     return false;
@@ -4330,8 +4298,7 @@ public interface IExpr
 
   /**
    * Test if this expression is a special pattern-matching function (i.e. Alternatives, Except,...)
-   *
-   * @return
+   * 
    */
   default boolean isPatternMatchingFunction() {
     return false;
@@ -4341,8 +4308,7 @@ public interface IExpr
    * Return <code>true</code>, if the expression is a pattern object with an associated optional
    * value (for example <code>value</code> is the default value for the expression <code>
    * f[x_, y_:value]</code>)
-   *
-   * @return
+   * 
    * @deprecated use {@link #isPatternDefault()}
    */
   @Deprecated
@@ -4355,7 +4321,6 @@ public interface IExpr
    * object <code>___</code>
    *
    * @param testNullSequence test if a sequence with no element is allowed
-   * @return
    */
   default boolean isPatternSequence(boolean testNullSequence) {
     return false;
@@ -4364,8 +4329,7 @@ public interface IExpr
   /**
    * Test if this expression is the <code>PatternTest</code> function <code>
    * PatternTest[&lt;pattern&gt;, &lt;test&gt;]</code>
-   *
-   * @return
+   * 
    */
   default boolean isPatternTest() {
     return false;
@@ -4375,8 +4339,7 @@ public interface IExpr
    * Test if this expression equals <code>Pi</code> (the ratio of a circle's circumference to its
    * diameter, approx. 3.141592...) in symbolic or numeric mode. <br>
    * See <a href="http://en.wikipedia.org/wiki/Pi">Pi</a>
-   *
-   * @return
+   * 
    */
   default boolean isPi() {
     return false;
@@ -4399,8 +4362,7 @@ public interface IExpr
   /**
    * Test if this expression is the addition function <code>Plus[&lt;arg1&gt;, &lt;arg2&gt;, ...]
    * </code> with at least 2 arguments.
-   *
-   * @return
+   * 
    */
   default boolean isPlus() {
     return false;
@@ -4409,8 +4371,7 @@ public interface IExpr
   /**
    * Test if this expression is the {@link S#Plus} function <code>
    * Plus[&lt;arg1&gt;, &lt;arg2&gt;]</code> with exactly 2 arguments.
-   *
-   * @return
+   * 
    */
   default boolean isPlus2() {
     return false;
@@ -4523,7 +4484,6 @@ public interface IExpr
    * @param fastTest checks only numerical; no symbolic tests are tried.
    * @param tolerance the tolerance for the numerical test, typically
    *        {@link Config#SPECIAL_FUNCTIONS_TOLERANCE}
-   * @return
    */
   default boolean isPossibleZero(boolean fastTest, double tolerance) {
     return isZero();
@@ -4532,7 +4492,6 @@ public interface IExpr
   /**
    * Test if this expression is the function <code>Power(&lt;base&gt;, &lt;exponent&gt;)</code>
    *
-   * @return
    */
   default boolean isPower() {
     return false;
@@ -4542,7 +4501,6 @@ public interface IExpr
    * Test if this expression is the function <code>Power(&lt;base&gt;, &lt;exponent&gt;)</code> with
    * exponent of type {@link IFraction}.
    *
-   * @return
    */
   default boolean isPowerFraction() {
     return isPower() && exponent().isFraction();
@@ -4552,7 +4510,6 @@ public interface IExpr
    * Test if this expression is the function <code>Power(&lt;base&gt;, &lt;exponent&gt;)</code> with
    * exponent of type {@link IInteger}.
    *
-   * @return
    */
   default boolean isPowerInteger() {
     return isPower() && exponent().isInteger();
@@ -4564,7 +4521,6 @@ public interface IExpr
    * <a href="https://en.wikipedia.org/wiki/Multiplicative_inverse">Wikipedia - Multiplicative
    * inverse</a>
    *
-   * @return
    */
   default boolean isPowerReciprocal() {
     return isPower() && second().isMinusOne();
@@ -5069,9 +5025,9 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression equals the symbol <code>True</code>.
+   * Test if this expression equals the symbol {@link S#True}.
    *
-   * @return <code>true</code> if the expression equals symbol <code>True</code> and <code>false
+   * @return <code>true</code> if the expression equals symbol {@link S#True} and <code>false
    *     </code> in all other cases
    */
   default boolean isTrue() {
@@ -6645,8 +6601,8 @@ public interface IExpr
   }
 
   /**
-   * Convert this {@link IAST} to a boolean vector. The elements of this {@link IAST} can be True
-   * and False.
+   * Convert this {@link IAST} to a boolean vector. The elements of this {@link IAST} can be
+   * {@link S#True} or {@link S#False} values.
    * 
    * @return
    */
@@ -6655,8 +6611,8 @@ public interface IExpr
   }
 
   /**
-   * Convert this {@link IAST} to a boolean vector. The elements of this {@link IAST} can be 1 (for
-   * <code>true</code>) and 0 (for <code>false</code>).
+   * Convert this {@link IAST} to a boolean vector. The elements of this {@link IAST} can be
+   * <code>1</code> (for <code>true</code>) and <code>0</code> (for <code>false</code>).
    * 
    * @return
    */

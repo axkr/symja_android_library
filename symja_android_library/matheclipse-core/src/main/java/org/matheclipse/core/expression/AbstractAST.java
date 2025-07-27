@@ -4437,10 +4437,37 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public final boolean isPolynomial(IAST variables) {
-    if (isPlus() || isTimes() || isPower()) {
-      IExpr expr = F.evalExpandAll(this);
+    if (variables.isAST0()) {
+      return true;
+    }
+
+    if (isPower() || isTimes() || isPlus()) {
+      if (isPower()) {
+        if (variables.indexOf(this) > 0) {
+          return true;
+        }
+        IExpr exponent = exponent();
+        if (exponent.isRational() && exponent.isPositive()) {
+          return base().isPolynomial(variables);
+        }
+        if (exponent.isNegative()) {
+          return base().isFree(x -> variables.indexOf(x) > 0, false);
+        }
+      } else if (isTimes() || isPlus()) {
+        IAST ast = this;
+        for (int i = 1; i < ast.size(); i++) {
+          IExpr arg = ast.get(i);
+          if (!arg.isPolynomial(variables)) {
+            return false;
+          }
+        }
+        return true;
+      }
+      IExpr expr = F.evalExpand(this);
       ExprPolynomialRing ring = new ExprPolynomialRing(variables);
       return ring.isPolynomial(expr);
+    } else if (isFree(x -> variables.indexOf(x) > 0, false)) {
+      return true;
     }
     return false;
   }
@@ -6491,5 +6518,29 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     return F.NIL;
+  }
+
+  @Override
+  public IAST removeO() {
+    IASTAppendable result = F.ast(head(), argSize() - 1);
+    for (int i = 1; i < size(); i++) {
+      IExpr expr = get(i);
+      if (!expr.isAST(S.O)) {
+        result.append(expr);
+      }
+    }
+    return result;
+  }
+
+  @Override
+  public IAST getO() {
+    IASTAppendable result = F.ast(head(), 4);
+    for (int i = 1; i < size(); i++) {
+      IExpr expr = get(i);
+      if (expr.isAST(S.O)) {
+        result.append(expr);
+      }
+    }
+    return result;
   }
 }
