@@ -6,6 +6,9 @@ Expand(expr)
  
 > expands out positive rational powers and products of sums in `expr`.
 
+See: 
+* [Wikipedia - Multinomial_theorem](http://en.wikipedia.org/wiki/Multinomial_theorem)
+
 ### Examples
 
 ```

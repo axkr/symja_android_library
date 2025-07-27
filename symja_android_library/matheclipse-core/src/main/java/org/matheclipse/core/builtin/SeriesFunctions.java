@@ -21,7 +21,6 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
-import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -1738,6 +1737,10 @@ public class SeriesFunctions {
           return F.NIL;
         }
         if (ast.arg2().isList3() && !(ast.arg1() instanceof ASTSeriesData)) {
+          IExpr matched = matcher1().apply(ast);
+          if (matched.isPresent()) {
+            return matched;
+          }
           IExpr function = ast.arg1();
 
           IAST list = (IAST) ast.arg2();
@@ -1750,7 +1753,7 @@ public class SeriesFunctions {
               && functionCoefficient.isFree(f -> f.isIndeterminate(), true)) {
             return functionCoefficient;
           }
-          return matcher1().apply(ast);
+          // return matcher1().apply(ast);
         }
       }
 
@@ -1853,11 +1856,13 @@ public class SeriesFunctions {
       }
 
       if (degree == 0) {
-        return F.ReplaceAll(function, F.Rule(x, x0));
+        return function.subs(x, x0);
+        // F.ReplaceAll(function, F.Rule(x, x0));
       }
       IExpr derivedFunction = S.D.of(engine, function, F.list(x, n));
+      IExpr substituted = derivedFunction.subs(x, x0);
       return engine.evaluate(F.Together(
-          F.Times(F.Power(F.Factorial(n), F.CN1), F.ReplaceAll(derivedFunction, F.Rule(x, x0)))));
+          F.Times(F.Power(F.Factorial(n), F.CN1), substituted)));
     }
 
     /**
@@ -2097,7 +2102,7 @@ public class SeriesFunctions {
         return temp;
       }
     }
-    ASTSeriesData sd = simpleSeries(function, x, x0, n, denominator, engine);
+    ASTSeriesData sd = ASTSeriesData.simpleSeries(function, x, x0, n, denominator, engine);
     if (sd != null) {
       return sd;
     }
@@ -2114,35 +2119,6 @@ public class SeriesFunctions {
   }
 
   /**
-   * Try to find a series with the steps:
-   *
-   * <ol>
-   * <li><a href=
-   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/SeriesCoefficient.md">SeriesCoefficient()</a>.
-   * <li><a href="https://en.wikipedia.org/wiki/Taylor_series">Wikipedia - Taylor's formula</a>
-   * </ol>
-   *
-   * @param function the function which should be generated as a power series
-   * @param x the variable
-   * @param x0 the point to do the power expansion for
-   * @param n the order of the expansion
-   * @param denominator
-   * @param engine the evaluation engine
-   * @return the series or <code>null</code> if no series is found
-   */
-  public static ASTSeriesData simpleSeries(final IExpr function, IExpr x, IExpr x0, final int n,
-      final int denominator, EvalEngine engine) {
-    VariablesSet varSet = new VariablesSet(function);
-    varSet.add(x);
-    varSet.addVarList(x0);
-    ASTSeriesData sd = seriesCoefficient(function, x, x0, n, denominator, varSet, engine);
-    if (sd != null) {
-      return sd;
-    }
-    return taylorSeries(function, x, x0, n, denominator, varSet, engine);
-  }
-
-  /**
    * Try to find a series with function {@link SeriesCoefficient}
    *
    * @param function the function which should be generated as a power series
@@ -2155,7 +2131,7 @@ public class SeriesFunctions {
    * @return the <code>SeriesCoefficient()</code> series or <code>null</code> if the function is not
    *         numeric w.r.t the varSet
    */
-  private static ASTSeriesData seriesCoefficient(final IExpr function, IExpr x, IExpr x0,
+  public static ASTSeriesData seriesCoefficient(final IExpr function, IExpr x, IExpr x0,
       final int n, final int denominator, VariablesSet varSet, EvalEngine engine) {
     ISymbol power = F.Dummy("$$$n");
     IExpr temp = engine.evalQuiet(F.SeriesCoefficient(function, F.list(x, x0, power)));
@@ -2194,42 +2170,6 @@ public class SeriesFunctions {
       }
     }
     return null;
-  }
-
-  /**
-   * Create a series with <a href="https://en.wikipedia.org/wiki/Taylor_series">Wikipedia - Taylor's
-   * formula</a>.
-   *
-   * @param function the function which should be generated as a power series
-   * @param x the variable
-   * @param x0 the point to do the power expansion for
-   * @param n the order of the expansion
-   * @param denominator
-   * @param varSet the variables of the function (including x)
-   * @param engine the evaluation engine
-   * @return the Taylor series or <code>null</code> if the function is not numeric w.r.t the varSet
-   */
-  private static ASTSeriesData taylorSeries(final IExpr function, IExpr x, IExpr x0, final int n,
-      int denominator, VariablesSet varSet, EvalEngine engine) {
-    ASTSeriesData ps = new ASTSeriesData(x, x0, 0, n + denominator, denominator);
-    IExpr derivedFunction = function;
-    for (int i = 0; i <= n; i++) {
-      IExpr functionPart = engine.evalQuiet(F.ReplaceAll(derivedFunction, F.Rule(x, x0)));
-      if (functionPart.isIndeterminate()) {
-        functionPart = engine.evalQuiet(F.Limit(derivedFunction, F.Rule(x, x0)));
-        if (!functionPart.isNumericFunction(varSet)) {
-          return null;
-        }
-      }
-      IExpr coefficient =
-          engine.evalQuiet(F.Times(F.Power(AbstractIntegerSym.factorial(i), F.CN1), functionPart));
-      if (coefficient.isIndeterminate() || coefficient.isComplexInfinity()) {
-        return null;
-      }
-      ps.setCoeff(i, coefficient);
-      derivedFunction = engine.evalQuiet(F.D(derivedFunction, x));
-    }
-    return ps;
   }
 
   private static ASTSeriesData timesSeriesData(IAST timesAST, IExpr x, IExpr x0, final int n,

@@ -1,7 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
+import java.math.BigInteger;
+import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.DLeibnitzRule;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTSeriesData;
@@ -17,6 +21,8 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import com.google.common.math.BigIntegerMath;
+import com.google.common.math.LongMath;
 
 /**
  *
@@ -30,6 +36,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <p>
  * gives the partial derivative of <code>f</code> with respect to <code>x</code>.
  *
+ * </p>
+ *
  * </blockquote>
  *
  * <pre>
@@ -40,6 +48,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  * <p>
  * differentiates successively with respect to <code>x</code>, <code>y</code>, etc.
+ *
+ * </p>
  *
  * </blockquote>
  *
@@ -52,6 +62,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <p>
  * gives the multiple derivative of order <code>n</code>.<br>
  *
+ * </p>
+ *
  * </blockquote>
  *
  * <pre>
@@ -63,6 +75,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <p>
  * gives the vector derivative of <code>f</code> with respect to <code>x1</code>, <code>x2</code> ,
  * etc.
+ *
+ * </p>
  *
  * </blockquote>
  *
@@ -364,6 +378,25 @@ public class D extends AbstractFunctionEvaluator {
           IExpr arg2 = xListN;
           int n = arg2.toIntDefault();
           if (n >= 0) {
+            if (fx.isTimes() && fx.argSize() >= 2 && x.isVariable()) {
+              IAST timesAST = (IAST) fx;
+              int k = timesAST.argSize();
+              final IExpr v = x;
+              IASTAppendable[] filter = timesAST.filter(m -> m.isFree(v));
+              if (filter[0].size() > 1) {
+                return F.Times(filter[0], F.D(filter[1], xList));
+              }
+              long numberOfTerms = LongMath.binomial(n + k - 1, k - 1);
+              if (numberOfTerms >= Integer.MAX_VALUE || numberOfTerms > Config.MAX_AST_SIZE) {
+                throw new ASTElementLimitExceeded(numberOfTerms);
+              }
+              IExpr result =
+                  DLeibnitzRule.nThDerivative(timesAST, x, n, (int) numberOfTerms, engine);
+              // IExpr result = generalizedProductRule((IAST) fx, x, n, engine);
+              // if (!result.isNIL()) {
+              return result;
+              // }
+            }
             IExpr temp = fx;
             for (int i = 0; i < n; i++) {
               temp = S.D.ofNIL(engine, temp, x);
@@ -681,6 +714,80 @@ public class D extends AbstractFunctionEvaluator {
       return piecewise;
     }
     return F.NIL;
+  }
+
+  /**
+   * Use the <a href="https://en.wikipedia.org/wiki/General_Leibniz_rule">General Leibniz rule</a>
+   * to differentiate products multiple times.
+   *
+   * <p>
+   * D(f*g, {x, n}) = Sum(Binomial(n, k) * D(f, {x, k}) * D(g, {x, n-k}), {k, 0, n})
+   *
+   * @param timesAST the AST of the product `f*g`
+   * @param x the variable to differentiate with respect to.
+   * @param n the order of the derivative.
+   * @param engine the evaluation engine.
+   * @return the n-th derivative of the product.
+   */
+  private static IExpr generalizedProductRule(final IAST timesAST, IExpr x, final int n,
+      EvalEngine engine) {
+    if (timesAST.argSize() != 2) {
+      // Rule only implemented for 2 arguments for now
+      return F.NIL;
+    }
+    final IExpr f = timesAST.arg1();
+    final IExpr g = timesAST.arg2();
+    try {
+      IExpr[] df = new IExpr[n + 1];
+      IExpr[] dg = new IExpr[n + 1];
+      df[0] = engine.evaluate(F.D(f, x));
+      dg[0] = engine.evaluate(F.D(g, x));
+      for (int k = 1; k <= n; k++) {
+        df[k] = F.C0;
+        dg[k] = F.C0;
+      }
+      for (int k = 1; k <= n; k++) {
+        df[k] = engine.evaluate(F.D(df[k - 1], x));
+        if (df[k].isZero()) {
+          break;
+        }
+      }
+      for (int k = 1; k <= n; k++) {
+        dg[k] = engine.evaluate(F.D(dg[k - 1], x));
+        if (dg[k].isZero()) {
+          break;
+        }
+      }
+
+      final IASTAppendable plus = F.PlusAlloc(n);
+      for (int k = 0; k <= n; k++) {
+        BigInteger binom = BigIntegerMath.binomial(n, k);
+        final IExpr binomial = F.ZZ(binom);
+        final IExpr dF = df[k];
+        if (dF.isZero()) {
+          break;
+        }
+        final IExpr dG = dg[n - k];
+        if (dG.isZero()) {
+          continue;
+        }
+        // final IExpr df = engine.evaluate(F.D(f, F.list(x, F.ZZ(k))));
+        // if (df.isZero()) {
+        // continue;
+        // }
+        // final IExpr dg = engine.evaluate(F.D(g, F.list(x, F.ZZ(n - k))));
+        // if (dg.isZero()) {
+        // continue;
+        // }
+        plus.append(F.Times(binomial, dF, dG));
+      }
+      return plus;
+    } catch (IllegalArgumentException iex) {
+      // binomial(n, k) is not defined for the arguments
+      return F.NIL;
+    } catch (ArithmeticException ex) {
+      return F.NIL;
+    }
   }
 
   @Override

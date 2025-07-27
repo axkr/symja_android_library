@@ -35,7 +35,6 @@ import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Combinatoric.KPermutationsIterable;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
@@ -44,6 +43,7 @@ import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.ExpandMultinomialTheorem;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.TimesOp;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
@@ -619,6 +619,8 @@ public class Algebra {
         IExpr p01 = F.C1;
         IExpr p10 = parts.get()[1];
         IExpr p11 = F.C1;
+        // VariablesSet eVar = new VariablesSet(powerTimesAST);
+        // IASTAppendable variables = eVar.getVarList();
         if (p00.isPlus()) {
           IAST numParts = p00.partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
           if (numParts.isPresent() && !numParts.arg1().isOne()) {
@@ -1384,8 +1386,8 @@ public class Algebra {
           // (a+b)*(c+d)...
           EvalEngine engine = EvalEngine.get();
 
-          Optional<IExpr[]> temp =
-              AlgebraUtil.fractionalPartsTimesPower(ast, false, false, false, evalParts, true, true);
+          Optional<IExpr[]> temp = AlgebraUtil.fractionalPartsTimesPower(ast, false, false, false,
+              evalParts, true, true);
           IExpr tempExpr;
           if (temp.isEmpty()) {
             return expandTimes(ast, engine);
@@ -1596,9 +1598,8 @@ public class Algebra {
         if (numberOfTerms >= Integer.MAX_VALUE || numberOfTerms > Config.MAX_AST_SIZE) {
           throw new ASTElementLimitExceeded(numberOfTerms);
         }
-        final IASTAppendable expandedResult = F.ast(S.Plus, (int) numberOfTerms);
-        Expand.NumberPartititon part = new Expand.NumberPartititon(plusAST, n, expandedResult);
-        part.partition();
+        final IASTAppendable expandedResult =
+            ExpandMultinomialTheorem.expand(plusAST, n, (int) numberOfTerms);
         return addExpanded(flattenOneIdentity(expandedResult, F.C0));
       }
 
@@ -1881,74 +1882,84 @@ public class Algebra {
 
     }
 
-    private static class NumberPartititon {
-      IASTAppendable expandedResult;
-      int m;
-      int n;
-      int[] parts;
-      IAST precalculatedPowerASTs;
-
-      public NumberPartititon(IAST plusAST, int n, IASTAppendable expandedResult) {
-        this.expandedResult = expandedResult;
-        this.n = n;
-        this.m = plusAST.argSize();
-        this.parts = new int[m];
-        // precalculate all Power[] ASTs:
-        this.precalculatedPowerASTs = F.mapList(plusAST, x -> x);
-      }
-
-      private void addFactor(int[] j) {
-        final KPermutationsIterable perm = new KPermutationsIterable(j, m, m);
-        IInteger multinomial = NumberTheory.multinomial(j, n);
-        IExpr temp;
-        for (int[] indices : perm) {
-          TimesOp timesOp = new TimesOp(32);
-          if (!multinomial.isOne()) {
-            timesOp.appendRecursive(multinomial);
-          }
-          for (int k = 0; k < m; k++) {
-            if (indices[k] != 0) {
-              temp = precalculatedPowerASTs.get(k + 1);
-              if (indices[k] == 1) {
-                timesOp.appendRecursive(temp);
-              } else {
-                if (temp.isTimes()) {
-                  IAST ast = (IAST) temp;
-                  final int ki = k;
-                  timesOp.appendValues(1, ast.size(), i -> F.Power(ast.get(i), F.ZZ(indices[ki])));
-                } else {
-                  timesOp.appendRecursive(F.Power(temp, F.ZZ(indices[k])));
-                }
-              }
-            }
-          }
-          expandedResult.append(timesOp.getProduct());
-        }
-      }
-
-      public void partition() {
-        partition(n, n, 0);
-      }
-
-      private void partition(int n, int max, int currentIndex) {
-        if (n == 0) {
-          addFactor(parts);
-          return;
-        }
-        if (currentIndex >= m) {
-          return;
-        }
-        int old;
-        old = parts[currentIndex];
-        int min = Math.min(max, n);
-
-        for (int i = min; i >= 1; i--) {
-          parts[currentIndex] = i;
-          partition(n - i, i, currentIndex + 1);
-        }
-        parts[currentIndex] = old;
-      }
-    }
+    // private static class NumberPartition {
+    // IASTAppendable expandedResult;
+    // int m;
+    // int n;
+    // int[] parts;
+    //
+    // /**
+    // * Cached {@link S#Power} calculations for each part of the {@link S#Plus} AST.
+    // * <p>
+    // * If <code>x</code> is an argument of the {@link S#Plus} AST at position <code>i</code>, then
+    // * the <code>cachedPowers[i - 1] = {x^1, x^2, x^3,....,x^n}</code> will be calculated and
+    // * stored in the cache.
+    // */
+    // final IASTAppendable[] cachedPowers;
+    //
+    // public NumberPartition(IAST plusAST, int n, IASTAppendable expandedResult) {
+    // this.expandedResult = expandedResult;
+    // this.n = n;
+    // this.m = plusAST.argSize();
+    // this.parts = new int[m];
+    // // cache all {@link S#Power} calculations for each part of the {@link S#Plus} AST:
+    // this.cachedPowers = new IASTAppendable[m];
+    // for (int i = 1; i < plusAST.size(); i++) {
+    // IExpr arg = plusAST.get(i);
+    // cachedPowers[i - 1] = F.ListAlloc(n + 1);
+    // for (int j = 0; j < n; j++) {
+    // // x^1, x^2, x^3,....,x^n
+    // this.cachedPowers[i - 1].append(arg.pow(j + 1));
+    // }
+    // }
+    // }
+    //
+    // private void addFactor(int[] j) {
+    // final KPermutationsIterable perm = new KPermutationsIterable(j, m, m);
+    // IInteger multinomial = NumberTheory.multinomial(j, n);
+    // IExpr temp;
+    // TimesOp timesOp = new TimesOp(32);
+    // for (int[] indices : perm) {
+    // if (!multinomial.isOne()) {
+    // timesOp.append(multinomial);
+    // }
+    // for (int k = 0; k < m; k++) {
+    // if (indices[k] != 0) {
+    // temp = cachedPowers[k].get(indices[k]);
+    // if (temp.equals(F.C1)) {// keep numeric 1.0 values here
+    // continue;
+    // }
+    // timesOp.append(temp);
+    // }
+    // }
+    // expandedResult.append(timesOp.getProduct());
+    // timesOp.clear();
+    // }
+    // }
+    //
+    // public void partition() {
+    // partition(n, n, 0);
+    // }
+    //
+    // private void partition(int n, int max, int currentIndex) {
+    // if (n == 0) {
+    // addFactor(parts);
+    // return;
+    // }
+    // if (currentIndex >= m) {
+    // return;
+    // }
+    // int old;
+    // old = parts[currentIndex];
+    // int min = Math.min(max, n);
+    //
+    // for (int i = min; i >= 1; i--) {
+    // parts[currentIndex] = i;
+    // partition(n - i, i, currentIndex + 1);
+    // }
+    // parts[currentIndex] = old;
+    // }
+    // }
 
     @Override
     public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
@@ -4697,7 +4708,8 @@ public class Algebra {
             result = ast.copy();
           }
           if (ast.arg2().isNegative() && temp.isTimes()) {
-            Optional<IExpr[]> fractionalParts = AlgebraUtil.fractionalPartsRational(temp, false, true);
+            Optional<IExpr[]> fractionalParts =
+                AlgebraUtil.fractionalPartsRational(temp, false, true);
             if (fractionalParts.isPresent()) {
               IExpr[] parts = fractionalParts.get();
               result.set(1, F.Divide(parts[1], parts[0]));
@@ -4950,6 +4962,11 @@ public class Algebra {
   }
 
   private static boolean isPolynomial(IExpr expr) {
+    if (expr.isPlus() || expr.isTimes() || expr.isPower()) {
+      IExpr expanded = F.evalExpand(expr);
+      ExprPolynomialRing ring = new ExprPolynomialRing(F.CEmptyList);
+      return ring.isPolynomial(expanded);
+    }
     return expr.isPolynomial(F.CEmptyList);
   }
 
@@ -5140,6 +5157,8 @@ public class Algebra {
       }
 
       if (numerator.isPlus() && denominator.isPlus()) {
+        // VariablesSet eVar = new VariablesSet(powerTimesAST);
+        // IASTAppendable variables = eVar.getVarList();
         IAST numParts = numerator.partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
         IAST denParts = denominator.partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
         if (denParts.isPresent() && !denParts.arg1().isOne()) {

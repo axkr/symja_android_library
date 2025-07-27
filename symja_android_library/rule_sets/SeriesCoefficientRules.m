@@ -47,7 +47,7 @@
     /; FreeQ(n,x),
   SeriesCoefficient(ArcSin(x_),{x_Symbol, 0, n_?NotListQ}):=Piecewise({{Pochhammer(1/2, (1/2)*(-1 + n))/(n*((1/2)*(-1 + n))!), Mod(n, 2) == 1 && n >= 0}}, 0)
     /; FreeQ(n,x),
-  SeriesCoefficient(ArcTan(x_),{x_Symbol, 0, n_?NotListQ}):=Piecewise({{I^(-1 + n)/n, Mod(n, 2) == 1 && n >= 0}}, 0)
+  SeriesCoefficient(ArcTan(x_),{x_Symbol, 0, n_?NotListQ}):=Piecewise({{(I*((-I)^n-I^n))/(2*n), n > 0}}, 0)  
     /; FreeQ(n,x),
     
   SeriesCoefficient(ArcCosh(x_),{x_Symbol, 0, n_?NotListQ}):=Piecewise({{(I*Pi)/2, n == 0}, {-((I*Pochhammer(1/2, (1/2)*(-1 + n)))/(n*((1/2)*(-1 + n))!)), n >= 1 && Mod(n, 2) == 1}}, 0)
@@ -79,8 +79,8 @@
     
   SeriesCoefficient(ArcCot(x_),{x_Symbol, a_, n_?NotListQ}) := Piecewise({{(I*((-I - a)^(-n) - (I - a)^(-n)))/(2*n), n > 0}, {(1/2)*I*(Log((-I + a)/a) - Log((I + a)/a)), n == 0}}, 0)
     /; FreeQ(a,x)&&FreeQ(n,x),
-  SeriesCoefficient(ArcTan(x_),{x_Symbol, a_, n_?NotListQ}) := Piecewise({{-((I*((-I - a)^(-n) - (I - a)^(-n)))/(2*n)), n > 0}, {(1/2)*I*(Log(1 - I*a) - Log(1 + I*a)), n == 0}}, 0)
-    /; FreeQ(a,x)&&FreeQ(n,x), 
+  SeriesCoefficient(ArcTan(x_),{x_Symbol, a_, n_?NotListQ}) := Piecewise({{-((I*((-I - a)^(-n) - (I - a)^(-n)))/(2*n)), n>0}, {ArcTan(a), n==0}}, 0) 
+   /; FreeQ(a,x)&&FreeQ(n,x), 
     
   SeriesCoefficient(ArcCoth(x_),{x_Symbol, a_, n_?NotListQ}) := Piecewise({{(-(-1 - a)^(-n) + (1 - a)^(-n))/(2*n), n > 0}, {(1/2)*(Log(1 + 1/a) - Log((-1 + a)/a)), n == 0}}, 0)
     /; FreeQ(a,x)&&FreeQ(n,x),

@@ -6,6 +6,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.SeriesFunctions;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -48,6 +50,72 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       return F.Nest(S.List, polynomialExpr, listOfVariables.argSize());
     }
     return F.NIL;
+  }
+
+  /**
+   * Try to find a series with the steps:
+   *
+   * <ol>
+   * <li><a href=
+   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/SeriesCoefficient.md">SeriesCoefficient()</a>.
+   * <li><a href="https://en.wikipedia.org/wiki/Taylor_series">Wikipedia - Taylor's formula</a>
+   * </ol>
+   *
+   * @param function the function which should be generated as a power series
+   * @param x the variable
+   * @param x0 the point to do the power expansion for
+   * @param n the order of the expansion
+   * @param denominator
+   * @param engine the evaluation engine
+   * @return the series or <code>null</code> if no series is found
+   */
+  public static ASTSeriesData simpleSeries(final IExpr function, IExpr x, IExpr x0, final int n,
+      final int denominator, EvalEngine engine) {
+    VariablesSet varSet = new VariablesSet(function);
+    varSet.add(x);
+    varSet.addVarList(x0);
+    ASTSeriesData sd =
+        SeriesFunctions.seriesCoefficient(function, x, x0, n, denominator, varSet, engine);
+    if (sd != null) {
+      return sd;
+    }
+    return taylorSeries(function, x, x0, n, denominator, varSet, engine);
+  }
+
+  /**
+   * Create a series with <a href="https://en.wikipedia.org/wiki/Taylor_series">Wikipedia - Taylor's
+   * formula</a>.
+   *
+   * @param function the function which should be generated as a power series
+   * @param x the variable
+   * @param x0 the point to do the power expansion for
+   * @param n the order of the expansion
+   * @param denominator
+   * @param varSet the variables of the function (including x)
+   * @param engine the evaluation engine
+   * @return the Taylor series or <code>null</code> if the function is not numeric w.r.t the varSet
+   */
+  private static ASTSeriesData taylorSeries(final IExpr function, IExpr x, IExpr x0, final int n,
+      int denominator, VariablesSet varSet, EvalEngine engine) {
+    ASTSeriesData ps = new ASTSeriesData(x, x0, 0, n + denominator, denominator);
+    IExpr derivedFunction = function;
+    for (int i = 0; i <= n; i++) {
+      IExpr functionPart = engine.evalQuiet(F.ReplaceAll(derivedFunction, F.Rule(x, x0)));
+      if (functionPart.isIndeterminate()) {
+        functionPart = engine.evalQuiet(F.Limit(derivedFunction, F.Rule(x, x0)));
+        if (!functionPart.isNumericFunction(varSet)) {
+          return null;
+        }
+      }
+      IExpr coefficient =
+          engine.evalQuiet(F.Times(F.Power(AbstractIntegerSym.factorial(i), F.CN1), functionPart));
+      if (coefficient.isIndeterminate() || coefficient.isComplexInfinity()) {
+        return null;
+      }
+      ps.setCoeff(i, coefficient);
+      derivedFunction = engine.evalQuiet(F.D(derivedFunction, x));
+    }
+    return ps;
   }
 
   /** A map of the truncated power series coefficients <code>value != 0</code> */
@@ -151,6 +219,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return 6;
   }
 
+
   /**
    * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity
    * as this {@code HMArrayList}.
@@ -171,7 +240,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     }
     return inner_coeffs;
   }
-
 
   private IAST coeffBellSeq(int n) {
     IASTAppendable coeffs = F.ListAlloc(n + 1);
@@ -201,9 +269,28 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   }
 
   public IAST coefficientList() {
+    if (x0.isZero()) {
+      // If x0 is zero, we can return the coefficients directly
+      // as a list of the coefficients of the polynomial.
+      IASTAppendable coefficientList = F.ListAlloc(truncate);
+      for (int i = 0; i < truncate; i++) {
+        coefficientList.append(coefficient(i));
+      }
+      for (int i = coefficientList.argSize(); i > 2; i--) {
+        if (coefficientList.get(i).isZero()) {
+          coefficientList.remove(i);
+        } else {
+          break;
+        }
+      }
+      return coefficientList;
+    }
     IAST listOfVariables = F.List(x);
     IExpr polynomialExpr = normal(false);
-    return ASTSeriesData.coefficientList(polynomialExpr, listOfVariables);
+    if (polynomialExpr.isAST() && !polynomialExpr.isFree(x, true)) {
+      polynomialExpr = F.evalExpandAll(polynomialExpr);
+    }
+    return coefficientList(polynomialExpr, listOfVariables);
   }
 
   @Override
@@ -507,17 +594,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return hashValue;
   }
 
-  @Override
-  public IExpr head() {
-    return S.SeriesData;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public int hierarchy() {
-    return SERIESID;
-  }
-
   // private IExpr inverseRecursion(int n) {
   // if (n == 0) {
   // // a1^(-1)
@@ -529,6 +605,17 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   // }
   // return dn.negate();
   // }
+
+  @Override
+  public IExpr head() {
+    return S.SeriesData;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int hierarchy() {
+    return SERIESID;
+  }
 
   /**
    * Integration of a power series.
@@ -613,7 +700,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   public ASTSeriesData inverse() {
     ASTSeriesData result = new ASTSeriesData(x, x0, 0, truncate, denominator);
     final IExpr coefficient0 = coefficient(0);
-    if (coefficient0.isPossibleZero(true,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+    if (coefficient0.isPossibleZero(true, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
       ASTSeriesData reversion = reversion();
       if (reversion != null) {
         return reversion;
@@ -700,6 +787,17 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
   public boolean isInvertible() {
     return !coefficient(0).isZero();
+  }
+
+  @Override
+  public boolean isOrder() {
+    for (int i = nMin; i < nMax; i++) {
+      IExpr expr = coefficient(i);
+      if (!expr.isZero()) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public boolean isProbableOne() {
@@ -914,6 +1012,11 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     for (int i = 1; i < listSize; i++) {
       setCoeff(i + nMin - 1, list.get(i));
     }
+  }
+
+  @Override
+  public IAST removeO() {
+    return normal(false);
   }
 
   public ASTSeriesData reversion() {

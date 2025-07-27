@@ -26,6 +26,7 @@ D(f, {{x1, x2, ...}})
 See:
 * [Wikipedia - Differentiation rules](https://en.wikipedia.org/wiki/Differentiation_rules)
 * [Wikipedia - Derivative](https://en.wikipedia.org/wiki/Derivative)
+* [Wikipedia - General Leibniz rule](https://en.wikipedia.org/wiki/General_Leibniz_rule)
 
 ### Examples
 First-order derivative of a polynomial:

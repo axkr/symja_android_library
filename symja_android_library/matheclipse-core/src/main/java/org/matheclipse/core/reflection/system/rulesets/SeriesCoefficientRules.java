@@ -68,9 +68,9 @@ matcher.caseOf(SeriesCoefficient(ArcCot(x_),list(x_Symbol,C0,PatternTest(n_,NotL
     // SeriesCoefficient(ArcSin(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{Pochhammer(1/2,1/2*(-1+n))/(n*(1/2*(-1+n))!),Mod(n,2)==1&&n>=0}},0)/;FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(ArcSin(x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
       Condition(Piecewise(list(list(Times(Power(Times(n,Factorial(Times(C1D2,Plus(CN1,n)))),CN1),Pochhammer(C1D2,Times(C1D2,Plus(CN1,n)))),And(Equal(Mod(n,C2),C1),GreaterEqual(n,C0)))),C0),FreeQ(n,x)));
-    // SeriesCoefficient(ArcTan(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{1/(I^(1-n)*n),Mod(n,2)==1&&n>=0}},0)/;FreeQ(n,x)
+    // SeriesCoefficient(ArcTan(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{(I*(-I^n-I^n))/(2*n),n>0}},0)/;FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(ArcTan(x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(list(list(Times(Power(CI,Plus(CN1,n)),Power(n,CN1)),And(Equal(Mod(n,C2),C1),GreaterEqual(n,C0)))),C0),FreeQ(n,x)));
+      Condition(Piecewise(list(list(Times(CI,Subtract(Power(CNI,n),Power(CI,n)),Power(Times(C2,n),CN1)),Greater(n,C0))),C0),FreeQ(n,x)));
     // SeriesCoefficient(ArcCosh(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{I*1/2*Pi,n==0},{((-1)*I*Pochhammer(1/2,1/2*(-1+n)))/(n*(1/2*(-1+n))!),n>=1&&Mod(n,2)==1}},0)/;FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(ArcCosh(x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
       Condition(Piecewise(list(list(Times(CI,C1D2,Pi),Equal(n,C0)),list(Times(CN1,CI,Power(Times(n,Factorial(Times(C1D2,Plus(CN1,n)))),CN1),Pochhammer(C1D2,Times(C1D2,Plus(CN1,n)))),And(GreaterEqual(n,C1),Equal(Mod(n,C2),C1)))),C0),FreeQ(n,x)));
@@ -107,9 +107,9 @@ matcher.caseOf(SeriesCoefficient(Sinh(x_),list(x_Symbol,a_,PatternTest(n_,NotLis
     // SeriesCoefficient(ArcCot(x_),{x_Symbol,a_,n_?NotListQ}):=Piecewise({{(I*((-I-a)^(-n)-1/(I-a)^n))/(2*n),n>0},{1/2*I*(Log((-I+a)/a)-Log((I+a)/a)),n==0}},0)/;FreeQ(a,x)&&FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(ArcCot(x_),list(x_Symbol,a_,PatternTest(n_,NotListQ))),
       Condition(Piecewise(list(list(Times(CI,Subtract(Power(Subtract(CNI,a),Negate(n)),Power(Subtract(CI,a),Negate(n))),Power(Times(C2,n),CN1)),Greater(n,C0)),list(Times(C1D2,CI,Subtract(Log(Times(Power(a,CN1),Plus(CNI,a))),Log(Times(Power(a,CN1),Plus(CI,a))))),Equal(n,C0))),C0),And(FreeQ(a,x),FreeQ(n,x))));
-    // SeriesCoefficient(ArcTan(x_),{x_Symbol,a_,n_?NotListQ}):=Piecewise({{((-1)*I*((-I-a)^(-n)-1/(I-a)^n))/(2*n),n>0},{1/2*I*(Log(1-I*a)-Log(1+I*a)),n==0}},0)/;FreeQ(a,x)&&FreeQ(n,x)
+    // SeriesCoefficient(ArcTan(x_),{x_Symbol,a_,n_?NotListQ}):=Piecewise({{((-1)*I*((-I-a)^(-n)-1/(I-a)^n))/(2*n),n>0},{ArcTan(a),n==0}},0)/;FreeQ(a,x)&&FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(ArcTan(x_),list(x_Symbol,a_,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(list(list(Times(CN1,CI,Subtract(Power(Subtract(CNI,a),Negate(n)),Power(Subtract(CI,a),Negate(n))),Power(Times(C2,n),CN1)),Greater(n,C0)),list(Times(C1D2,CI,Subtract(Log(Plus(C1,Times(CNI,a))),Log(Plus(C1,Times(CI,a))))),Equal(n,C0))),C0),And(FreeQ(a,x),FreeQ(n,x))));
+      Condition(Piecewise(list(list(Times(CN1,CI,Subtract(Power(Subtract(CNI,a),Negate(n)),Power(Subtract(CI,a),Negate(n))),Power(Times(C2,n),CN1)),Greater(n,C0)),list(ArcTan(a),Equal(n,C0))),C0),And(FreeQ(a,x),FreeQ(n,x))));
     // SeriesCoefficient(ArcCoth(x_),{x_Symbol,a_,n_?NotListQ}):=Piecewise({{(-1/(-1-a)^n+(1-a)^(-n))/(2*n),n>0},{1/2*(Log(1+1/a)-Log((-1+a)/a)),n==0}},0)/;FreeQ(a,x)&&FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(ArcCoth(x_),list(x_Symbol,a_,PatternTest(n_,NotListQ))),
       Condition(Piecewise(list(list(Times(Plus(Negate(Power(Subtract(CN1,a),Negate(n))),Power(Subtract(C1,a),Negate(n))),Power(Times(C2,n),CN1)),Greater(n,C0)),list(Times(C1D2,Subtract(Log(Plus(C1,Power(a,CN1))),Log(Times(Power(a,CN1),Plus(CN1,a))))),Equal(n,C0))),C0),And(FreeQ(a,x),FreeQ(n,x))));
