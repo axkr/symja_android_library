@@ -7543,23 +7543,23 @@ public class F extends S {
     return new AST2(Moment, a0, F.ZZ(r));
   }
 
-  public static IExpr mod(IExpr a, Integer i) {
+  public static IAST mod(IExpr a, Integer i) {
     return Mod(a, ZZ(i.longValue()));
   }
 
-  public static IExpr mod(IExpr a, java.math.BigInteger i) {
+  public static IAST mod(IExpr a, java.math.BigInteger i) {
     return Mod(a, ZZ(i));
   }
 
-  public static IExpr mod(Integer i, IExpr b) {
+  public static IAST mod(Integer i, IExpr b) {
     return Mod(ZZ(i.longValue()), b);
   }
 
-  public static IExpr mod(java.math.BigInteger i, IExpr b) {
+  public static IAST mod(java.math.BigInteger i, IExpr b) {
     return Mod(ZZ(i), b);
   }
 
-  public static IExpr Mod(final IExpr a0, final IExpr a1) {
+  public static IAST Mod(final IExpr a0, final IExpr a1) {
     return new AST2(Mod, a0, a1);
   }
 

@@ -3033,6 +3033,11 @@ public interface IExpr
         }
       }
     }
+      IExpr value = AbstractAssumptions.assumeFunctionValue(F.Mod(this, F.C2));
+      if (value.isZero()) {
+        return true;
+      }
+
     return false;
   }
 
@@ -4175,6 +4180,22 @@ public interface IExpr
    * @return <code>true</code> if this is an odd {@link IInteger}.
    */
   default boolean isOdd() {
+    return false;
+  }
+
+  /**
+   * Check if this expression is an odd integer result otherwise return <code>false</code>.
+   *
+   * @return <code>true</code> if this is an odd integer result.
+   */
+  default boolean isOddResult() {
+    if (isInteger()) {
+      return ((IInteger) this).isOdd();
+    }
+    IExpr value = AbstractAssumptions.assumeFunctionValue(F.Mod(this, F.C2));
+    if (value.isOne()) {
+      return true;
+    }
     return false;
   }
 

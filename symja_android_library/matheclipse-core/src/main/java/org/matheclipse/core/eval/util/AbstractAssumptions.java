@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.interfaces.IRealConstant;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -193,6 +194,45 @@ public abstract class AbstractAssumptions implements IAssumptions {
       }
     }
     return false;
+  }
+
+  /**
+   * Test if <code>function</code> is assumed to have a value.
+   *
+   * @param function
+   * @return the value of the function or <code>F.NIL</code> if no value is assumed.
+   */
+  public static IExpr assumeFunctionValue(IAST function) {
+    return assumeFunctionValue(function, true);
+  }
+
+  /**
+   * Test if <code>function</code> is assumed to have a value.
+   *
+   * @param function
+   * @param toSinglePoint if <code>true</code> return a single point value, if <code>false</code>
+   *        return an interval data object.
+   * @return the value of the function or <code>F.NIL</code> if no value is assumed.
+   */
+  public static IExpr assumeFunctionValue(IAST function, boolean toSinglePoint) {
+    IAssumptions assumptions = EvalEngine.get().getAssumptions();
+    if (assumptions != null) {
+      IExpr hasFunctionValue = assumptions.substituteValues(function);
+      if (hasFunctionValue.isPresent()) {
+        if (toSinglePoint) {
+          if (hasFunctionValue.isIntervalData()) {
+            return IntervalDataSym.toSinglePoint((IAST) hasFunctionValue);
+          } else if (hasFunctionValue.isNumber()) {
+            return hasFunctionValue;
+          }
+        } else {
+          if (hasFunctionValue.isNumber() || hasFunctionValue.isIntervalData()) {
+            return hasFunctionValue;
+          }
+        }
+      }
+    }
+    return F.NIL;
   }
 
   public static boolean assumeGreaterEqual(final IExpr expr, final IExpr number) {
@@ -379,27 +419,6 @@ public abstract class AbstractAssumptions implements IAssumptions {
   }
 
   /**
-   * Test if <code>expr</code> is assumed to have a negative real part.
-   *
-   * @param expr
-   * @return <code>true</code> if <code>expr</code> is assumed to be a negative real part. Return
-   *         <code>false</code> in all other cases.
-   */
-  public static boolean assumeReNegative(final IExpr expr) {
-    if (assumeNegative(expr)) {
-      return true;
-    }
-    IAssumptions assumptions = EvalEngine.get().getAssumptions();
-    if (assumptions != null) {
-      IExpr temp = expr.re();
-      if (assumptions.isNegative(temp)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
    * Test if <code>expr</code> is assumed to be an non negative number.
    *
    * @param expr
@@ -419,27 +438,6 @@ public abstract class AbstractAssumptions implements IAssumptions {
     IAssumptions assumptions = EvalEngine.get().getAssumptions();
     if (assumptions != null) {
       if (assumptions.isNonNegative(expr)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Test if <code>expr</code> is assumed to have a positive real part.
-   *
-   * @param expr
-   * @return <code>true</code> if <code>expr</code> is assumed to be a positive real part. Return
-   *         <code>false</code> in all other cases.
-   */
-  public static boolean assumeRePositive(final IExpr expr) {
-    if (assumePositive(expr)) {
-      return true;
-    }
-    IAssumptions assumptions = EvalEngine.get().getAssumptions();
-    if (assumptions != null) {
-      IExpr temp = expr.re();
-      if (assumptions.isPositive(temp)) {
         return true;
       }
     }
@@ -623,6 +621,48 @@ public abstract class AbstractAssumptions implements IAssumptions {
     return null;
   }
 
+  /**
+   * Test if <code>expr</code> is assumed to have a negative real part.
+   *
+   * @param expr
+   * @return <code>true</code> if <code>expr</code> is assumed to be a negative real part. Return
+   *         <code>false</code> in all other cases.
+   */
+  public static boolean assumeReNegative(final IExpr expr) {
+    if (assumeNegative(expr)) {
+      return true;
+    }
+    IAssumptions assumptions = EvalEngine.get().getAssumptions();
+    if (assumptions != null) {
+      IExpr temp = expr.re();
+      if (assumptions.isNegative(temp)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Test if <code>expr</code> is assumed to have a positive real part.
+   *
+   * @param expr
+   * @return <code>true</code> if <code>expr</code> is assumed to be a positive real part. Return
+   *         <code>false</code> in all other cases.
+   */
+  public static boolean assumeRePositive(final IExpr expr) {
+    if (assumePositive(expr)) {
+      return true;
+    }
+    IAssumptions assumptions = EvalEngine.get().getAssumptions();
+    if (assumptions != null) {
+      IExpr temp = expr.re();
+      if (assumptions.isPositive(temp)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public static boolean assumeUnequal(final IExpr expr, final INumber number) {
     if (expr.isNumber()) {
       return !expr.equals(number);
@@ -649,11 +689,6 @@ public abstract class AbstractAssumptions implements IAssumptions {
       }
     }
     return null;
-  }
-
-  @Override
-  public IAST intervalData(IExpr expr) {
-    return F.NIL;
   }
 
   public static boolean isNegativeResult(IAST ast) {
@@ -715,6 +750,12 @@ public abstract class AbstractAssumptions implements IAssumptions {
           }
           return false;
         }
+      }
+    }
+    IExpr value = assumeFunctionValue(ast, false);
+    if (value.isIntervalData()) {
+      if (IntervalDataSym.isNegativeResult((IAST) value)) {
+        return true;
       }
     }
     return false;
@@ -784,6 +825,12 @@ public abstract class AbstractAssumptions implements IAssumptions {
           }
         }
         return false;
+      }
+    }
+    IExpr value = assumeFunctionValue(ast, false);
+    if (value.isIntervalData()) {
+      if (IntervalDataSym.isNonNegativeResult((IAST) value)) {
+        return true;
       }
     }
     return false;
@@ -863,6 +910,12 @@ public abstract class AbstractAssumptions implements IAssumptions {
         return false;
       }
     }
+    IExpr value = assumeFunctionValue(ast, false);
+    if (value.isIntervalData()) {
+      if (IntervalDataSym.isPositiveResult((IAST) value)) {
+        return true;
+      }
+    }
     return false;
   }
 
@@ -879,6 +932,16 @@ public abstract class AbstractAssumptions implements IAssumptions {
   @Override
   public Map<IExpr, IAST> getTensorsMap() {
     return new HashMap<IExpr, IAST>();
+  }
+
+  @Override
+  public IExpr substituteValues(IAST function) {
+    return F.NIL;
+  }
+
+  @Override
+  public IAST intervalData(IExpr expr) {
+    return F.NIL;
   }
 
   @Override

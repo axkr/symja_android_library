@@ -3404,6 +3404,9 @@ public final class Arithmetic {
           if (exponent.isEvenResult()) {
             return F.C1;
           }
+          if (exponent.isOddResult()) {
+            return F.CN1;
+          }
           if (exponent.isIntegerResult()) {
             if (exponent.isPlus() && exponent.first().isInteger()) {
               IInteger arg1Plus = (IInteger) exponent.first();

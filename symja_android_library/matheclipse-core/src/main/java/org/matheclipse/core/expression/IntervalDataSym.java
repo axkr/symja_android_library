@@ -2184,6 +2184,23 @@ public class IntervalDataSym {
     return F.NIL;
   }
 
+  /**
+   * Convert an interval set with only one sub-interval to a single point if the first value of the
+   * sub-interval list equals the fourth value of the sub-interval list.
+   * 
+   * @param interval the interval to convert
+   * @return the single point if the interval is a single point, otherwise {@link F#NIL}
+   */
+  public static IExpr toSinglePoint(IAST interval) {
+    if (interval.isIntervalData() && interval.argSize() == 1) {
+      IAST list4 = (IAST) interval.first();
+      if (list4.arg1().equals(list4.arg4())) {
+        return list4.arg1();
+      }
+    }
+    return F.NIL;
+  }
+
   public static IAST union(final IAST interval1, final IAST interval2) {
     return union(interval1, interval2, EvalEngine.get());
   }

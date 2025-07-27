@@ -767,6 +767,21 @@ public class Assumptions extends AbstractAssumptions {
   }
 
   @Override
+  public IExpr substituteValues(IAST function) {
+    IExpr substituted = function.replaceAll(x -> {
+      RealRelations relations = realRelationsMap.get(x);
+      if (relations != null) {
+        return relations.getInterval();
+      }
+      return F.NIL;
+    });
+    if (substituted.isNumericFunction(true)) {
+      return EvalEngine.get().evaluate(substituted);
+    }
+    return F.NIL;
+  }
+
+  @Override
   public boolean isNonNegative(IExpr expr) {
     return isGreaterEqual(expr, F.C0);
   }

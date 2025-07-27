@@ -52,6 +52,8 @@ public interface IAssumptions {
 
   public Map<IExpr, IAST> getTensorsMap();
 
+  public IExpr substituteValues(IAST function);
+
   /**
    * Gives <code>true</code>, if the expression is assumed to be an algebraic value (i.e. an element
    * of the <code>Algebraics</code> domain), <code>false</code> in all other cases.

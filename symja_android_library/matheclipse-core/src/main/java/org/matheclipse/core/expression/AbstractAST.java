@@ -4230,7 +4230,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     if (allowList) {
-      if (isNumericFunctionAST() || isList()) {
+      if (isIntervalData()) {
+        return true;
+      }
+      if (isNumericFunctionAST() || isList() || isIntervalData()) {
         // check if all arguments are &quot;numeric&quot;
         boolean forAll = forAll(x -> x.isNumericFunction(allowList), 1);
         if (forAll && !isList()) {

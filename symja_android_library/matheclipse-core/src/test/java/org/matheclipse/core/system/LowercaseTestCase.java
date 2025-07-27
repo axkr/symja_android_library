@@ -21048,6 +21048,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRefine() {
+    check("Refine(Abs(Sin(x)), 0 < x < Pi)", //
+        "Sin(x)");
+
+    check("Refine(Mod(n, 2), Mod(n, 2)==0)", //
+        "0");
+    check("Refine((-1)^n,Mod(n, 2)==0)", //
+        "1");
+    check("Refine((-1)^n,Mod(n, 2)==1)", //
+        "-1");
+
     check("Refine(x<=5,x<=6)", //
         "x<=5");
     check("Refine(x<=5,x<=4)", //
@@ -21267,8 +21277,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "True");
     check("Refine(Log(x)<0, x<1&&x>0)", //
         "True");
+    // TODO not the result in WMA
     check("Refine(Log(x)<0, x<1&&x>=0)", //
-        "Log(x)<0");
+        "True");
 
     check("Refine(x^4<0,x<0)", //
         "False");

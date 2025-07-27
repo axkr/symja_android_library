@@ -16,6 +16,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.ComplexSym;
@@ -1513,6 +1514,10 @@ public class IntegerFunctions {
         return F.Subtract(m, F.Times(n, F.Floor(div)));
       }
 
+      IExpr value = AbstractAssumptions.assumeFunctionValue(F.Mod(m, n));
+      if (value.isPresent()) {
+        return value;
+      }
       return F.NIL;
     }
 
