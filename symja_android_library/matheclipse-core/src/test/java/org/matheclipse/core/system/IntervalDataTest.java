@@ -33,6 +33,72 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testIntervalDataCos() {
+    check("Cos(IntervalData({-Infinity,Less,Less,0}))", //
+        "IntervalData({-1,LessEqual,LessEqual,1})");
+
+    check("Cos(IntervalData({0,Less,Less,Pi/2}))", //
+        "IntervalData({0,Less,Less,1})");
+    check("Cos(IntervalData({0,LessEqual,Less,Pi/2}))", //
+        "IntervalData({0,Less,LessEqual,1})");
+    check("Cos(IntervalData({0,Less,LessEqual,Pi/2}))", //
+        "IntervalData({0,LessEqual,Less,1})");
+    check("Cos(IntervalData({0,LessEqual,LessEqual,Pi/2}))", //
+        "IntervalData({0,LessEqual,LessEqual,1})");
+
+    check("Cos(IntervalData({Pi/2,Less,Less,Pi}))", //
+        "IntervalData({-1,Less,Less,0})");
+    check("Cos(IntervalData({Pi/2,LessEqual,Less,Pi}))", //
+        "IntervalData({-1,Less,LessEqual,0})");
+    check("Cos(IntervalData({Pi/2,Less,LessEqual,Pi}))", //
+        "IntervalData({-1,LessEqual,Less,0})");
+    check("Cos(IntervalData({Pi/2,LessEqual,LessEqual,Pi}))", //
+        "IntervalData({-1,LessEqual,LessEqual,0})");
+
+    check("Cos(IntervalData({Pi,Less,Less,3/2*Pi}))", //
+        "IntervalData({-1,Less,Less,0})");
+    check("Cos(IntervalData({Pi,LessEqual,Less,3/2*Pi}))", //
+        "IntervalData({-1,LessEqual,Less,0})");
+    check("Cos(IntervalData({Pi,Less,LessEqual,3/2*Pi}))", //
+        "IntervalData({-1,Less,LessEqual,0})");
+    check("Cos(IntervalData({Pi,LessEqual,LessEqual,3/2*Pi}))", //
+        "IntervalData({-1,LessEqual,LessEqual,0})");
+  }
+
+  @Test
+  public void testIntervalDataSin() {
+    check("Sin(IntervalData({-Infinity,Less,Less,0}))", //
+        "IntervalData({-1,LessEqual,LessEqual,1})");
+
+    check("Sin(IntervalData({0,Less,Less,Pi/2}))", //
+        "IntervalData({0,Less,Less,1})");
+    check("Sin(IntervalData({0,LessEqual,Less,Pi/2}))", //
+        "IntervalData({0,LessEqual,Less,1})");
+    check("Sin(IntervalData({0,Less,LessEqual,Pi/2}))", //
+        "IntervalData({0,Less,LessEqual,1})");
+    check("Sin(IntervalData({0,LessEqual,LessEqual,Pi/2}))", //
+        "IntervalData({0,LessEqual,LessEqual,1})");
+
+    check("Sin(IntervalData({Pi/2,Less,Less,Pi}))", //
+        "IntervalData({0,Less,Less,1})");
+    check("Sin(IntervalData({Pi/2,LessEqual,Less,Pi}))", //
+        "IntervalData({0,Less,LessEqual,1})");
+    check("Sin(IntervalData({Pi/2,Less,LessEqual,Pi}))", //
+        "IntervalData({0,LessEqual,Less,1})");
+    check("Sin(IntervalData({Pi/2,LessEqual,LessEqual,Pi}))", //
+        "IntervalData({0,LessEqual,LessEqual,1})");
+
+    check("Sin(IntervalData({Pi,Less,Less,3/2*Pi}))", //
+        "IntervalData({-1,Less,Less,0})");
+    check("Sin(IntervalData({Pi,LessEqual,Less,3/2*Pi}))", //
+        "IntervalData({-1,Less,LessEqual,0})");
+    check("Sin(IntervalData({Pi,Less,LessEqual,3/2*Pi}))", //
+        "IntervalData({-1,LessEqual,Less,0})");
+    check("Sin(IntervalData({Pi,LessEqual,LessEqual,3/2*Pi}))", //
+        "IntervalData({-1,LessEqual,LessEqual,0})");
+  }
+
+  @Test
   public void testIntervalPower() {
     check("Interval[{-3,2}]^4", //
         "Interval({0,81})");

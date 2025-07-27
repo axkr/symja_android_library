@@ -514,6 +514,30 @@ public class IntervalTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testIntervalCos() {
+    check("Cos(Interval({-Infinity,0}))", //
+        "Interval({-1,1})");
+    check("Cos(Interval({0,Pi/2}))", //
+        "Interval({0,1})");
+    check("Cos(Interval({Pi/2,Pi}))", //
+        "Interval({-1,0})");
+    check("Cos(Interval({Pi,3/2*Pi}))", //
+        "Interval({-1,0})");
+  }
+
+  @Test
+  public void testIntervalSin() {
+    check("Sin(Interval({-Infinity,0}))", //
+        "Interval({-1,1})");
+    check("Sin(Interval({0,Pi/2}))", //
+        "Interval({0,1})");
+    check("Sin(Interval({Pi/2,Pi}))", //
+        "Interval({0,1})");
+    check("Sin(Interval({Pi, 3/2*Pi}))", //
+        "Interval({-1,0})");
+  }
+
+  @Test
   public void testIntervalMemberQ() {
     check("IntervalMemberQ(Interval({4,6}), 2*E)", //
         "True");

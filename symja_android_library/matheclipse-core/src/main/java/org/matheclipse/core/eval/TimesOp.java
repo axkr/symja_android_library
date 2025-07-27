@@ -56,8 +56,16 @@ public final class TimesOp {
    */
   public TimesOp(final int capacity) {
     this.capacity = capacity;
+    clear();
+  }
+
+  public void clear() {
     this.evaled = false;
-    this.powerMap = null;
+    // if (powerMap != null) {
+    // powerMap.clear();
+    // } else {
+      this.powerMap = null;
+    // }
     this.numberValue = null;
   }
 

@@ -652,11 +652,6 @@ public abstract class AbstractAssumptions implements IAssumptions {
   }
 
   @Override
-  public IInteger determineInteger(IExpr x) {
-    return null;
-  }
-
-  @Override
   public IAST intervalData(IExpr expr) {
     return F.NIL;
   }

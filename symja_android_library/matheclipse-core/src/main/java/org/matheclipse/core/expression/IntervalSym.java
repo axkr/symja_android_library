@@ -219,7 +219,7 @@ public class IntervalSym {
     return F.Max(inf.negate(), sup);
   }
 
-  
+
   public static IExpr max(final IAST ast) {
     return normalize(ast).ifPresent(//
         interval -> F.mapFunction(S.Max, (IAST) interval, list -> list.second()));
@@ -247,6 +247,30 @@ public class IntervalSym {
   public static IExpr min(final IAST ast) {
     return normalize(ast).ifPresent(//
         interval -> F.mapFunction(S.Min, (IAST) interval, list -> list.first()));
+  }
+
+  private static IExpr minimum(IExpr value1, IExpr value2, EvalEngine engine) {
+    IExpr v1 = engine.evaluate(value1);
+    IExpr v2 = engine.evaluate(value2);
+    if (v1.lessEqual(v2).isTrue()) {
+      return v1;
+    }
+    if (v2.less(v1).isTrue()) {
+      return v2;
+    }
+    return F.NIL;
+  }
+
+  private static IExpr maximum(IExpr value1, IExpr value2, EvalEngine engine) {
+    final IExpr v1 = engine.evaluate(value1);
+    final IExpr v2 = engine.evaluate(value2);
+    if (v1.greaterEqual(v2).isTrue()) {
+      return v1;
+    }
+    if (v2.greater(v1).isTrue()) {
+      return v2;
+    }
+    return F.NIL;
   }
 
   public static IExpr abs(final IAST ast) {
@@ -567,13 +591,21 @@ public class IntervalSym {
             if (dMax >= 0) {
               result.append(index, F.list(F.Cos(min), F.Cos(max)));
             } else {
-              result.append(index, F.list(F.Min(F.Cos(min), F.Cos(max)), F.C1));
+              IExpr minimum = minimum(F.Cos(min), F.Cos(max), engine);
+              if (minimum.isNIL()) {
+                return false;
+              }
+              result.append(index, F.list(minimum, F.C1));
             }
           } else {
             if (dMax < 0) {
               result.append(index, F.list(F.Cos(max), F.Cos(min)));
             } else {
-              result.append(index, F.list(F.CN1, F.Max(F.Cos(min), F.Cos(max))));
+              IExpr maximum = maximum(F.Cos(min), F.Cos(max), engine);
+              if (maximum.isNIL()) {
+                return false;
+              }
+              result.append(index, F.list(F.CN1, maximum));
             }
           }
         } else { // difference between {Pi, 2*Pi}
@@ -581,13 +613,21 @@ public class IntervalSym {
             if (dMax > 0) {
               result.append(index, F.list(F.CN1, F.C1));
             } else {
-              result.append(index, F.list(F.Min(F.Cos(min), F.Cos(max)), F.C1));
+              IExpr minimum = minimum(F.Cos(min), F.Cos(max), engine);
+              if (minimum.isNIL()) {
+                return false;
+              }
+              result.append(index, F.list(minimum, F.C1));
             }
           } else {
             if (dMax < 0) {
               result.append(index, F.list(F.CN1, F.C1));
             } else {
-              result.append(index, F.list(F.CN1, F.Max(F.Cos(min), F.Cos(max))));
+              IExpr maximum = maximum(F.Cos(min), F.Cos(max), engine);
+              if (maximum.isNIL()) {
+                return false;
+              }
+              result.append(index, F.list(F.CN1, maximum));
             }
           }
         }
@@ -712,13 +752,21 @@ public class IntervalSym {
             if (dMax >= 0) {
               result.append(index, F.list(F.Sin(min), F.Sin(max)));
             } else {
-              result.append(index, F.list(F.Min(F.Sin(min), F.Sin(max)), F.C1));
+              IExpr minimum = minimum(F.Sin(min), F.Sin(max), engine);
+              if (minimum.isNIL()) {
+                return false;
+              }
+              result.append(index, F.list(minimum, F.C1));
             }
           } else {
             if (dMax < 0) {
               result.append(index, F.list(F.Sin(max), F.Sin(min)));
             } else {
-              result.append(index, F.list(F.CN1, F.Max(F.Sin(min), F.Sin(max))));
+              IExpr maximum = maximum(F.Sin(min), F.Sin(max), engine);
+              if (maximum.isNIL()) {
+                return false;
+              }
+              result.append(index, F.list(F.CN1, maximum));
             }
           }
         } else { // difference between {Pi, 2*Pi}
@@ -726,13 +774,21 @@ public class IntervalSym {
             if (dMax > 0) {
               result.append(index, F.list(F.CN1, F.C1));
             } else {
-              result.append(index, F.list(F.Min(F.Sin(min), F.Sin(max)), F.C1));
+              IExpr minimum = minimum(F.Sin(min), F.Sin(max), engine);
+              if (minimum.isNIL()) {
+                return false;
+              }
+              result.append(index, F.list(minimum, F.C1));
             }
           } else {
             if (dMax < 0) {
               result.append(index, F.list(F.CN1, F.C1));
             } else {
-              result.append(index, F.list(F.CN1, F.Max(F.Sin(min), F.Sin(max))));
+              IExpr maximum = maximum(F.Sin(min), F.Sin(max), engine);
+              if (maximum.isNIL()) {
+                return false;
+              }
+              result.append(index, F.list(F.CN1, maximum));
             }
           }
         }
