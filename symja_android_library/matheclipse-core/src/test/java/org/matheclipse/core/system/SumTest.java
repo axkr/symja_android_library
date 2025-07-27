@@ -505,6 +505,12 @@ public class SumTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testNSum001() {
+    // NSum: Raw object -1 cannot be used as an iterator.
+    check("NSum(0.0,{-1,-2,3})", //
+        "NSum(0.0,{-1,-2,3})");
+    check("NSum(0.0,{-1,-2,Sequence()})", //
+        "NSum(0.0,{-1,-2,Sequence()})");
+
     // TODO multi dimensional case
     // check("approxSum = NSum((-1)^n*(2/n)^k/k^2, {n,2,Infinity}, {k,1,Infinity})", //
     // "");

@@ -101,6 +101,10 @@ public class PatternsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testMatchQ() {
+    check("MatchQ(3 + x, HoldPattern(_ + _))", //
+        "True");
+    check("MatchQ(3 + x,  _ + _ )", //
+        "False");
     check("MatchQ(a* I*3, (f1_.)* Complex(0, 3))", //
         "True");
     check("MatchQ(a* I*3, (f1_.)* Complex(0, j_))", //

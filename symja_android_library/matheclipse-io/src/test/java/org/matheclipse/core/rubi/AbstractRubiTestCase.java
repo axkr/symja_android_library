@@ -13,6 +13,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
+import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
@@ -217,6 +218,8 @@ public abstract class AbstractRubiTestCase extends TestCase {
   protected void setUp() {
     try {
       super.setUp();
+      Config.SHORTEN_STRING_LENGTH = 80;
+      Config.PRIME_FACTORS = new BigIntegerPrimality();
       F.await();
       // start test with fresh instance
       EvalEngine engine = new EvalEngine(isRelaxedSyntax);

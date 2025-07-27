@@ -1690,6 +1690,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testAttributes() {
+    // clear attributes
+    check("SetAttributes(q, {HoldRest,NumericFunction,Orderless});Attributes(q)={};Attributes(q)", //
+        "{}");
     check("Attributes(fun) = {ReadProtected, Protected}", //
         "{ReadProtected,Protected}");
     check("Attributes(Plus)", //
@@ -2961,7 +2964,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCoefficientList() {
-
+    check("CoefficientList(Series(0, {x, 0, 9}), x)", //
+        "{}");
     check("CoefficientList(Series(2*x, {x, 0, 9}), x)", //
         "{0,2}");
     check("Series(2*x, {x, 0, 9})", //
@@ -3440,6 +3444,27 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
     check("nested(4,3)", //
         "3/4");
+  }
+
+  @Test
+  public void testConditionReplaceAll() {
+    check("F(1,2)/.{Condition(F(x_,y_), x>y):>1}", //
+        "F(1,2)");
+    check("F(2,1)/.{Condition(F(x_,y_), x>y):>1}", //
+        "1");
+
+    check("F(1,2)/.{F(x_,y_):>Condition(1, x>y)}", //
+        "F(1,2)");
+    check("F(2,1)/.{F(x_,y_):>Condition(1, x>y)}", //
+        "1");
+
+    check("F(2,1)/.{Condition(F(x_,y_),y>0):> Condition(1, x>y)}", //
+        "1");
+    check("F(2,1)/.{Condition(F(x_,y_),y>0):> Condition(1, x>y)+ p}", //
+        "p+(1/;2>1)");
+
+    check("x=2;y=-2;F(2,1)/.{Condition(F(x_,y_),y>0):> Condition(1, x>y)}", //
+        "1");
   }
 
   @Test
@@ -4601,6 +4626,38 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testD() {
+
+    check("D(f(x)^(-5),x)", //
+        "(-5*f'(x))/f(x)^6");
+    check("D(f(x)^(-2),{x,3})", //
+        "(-24*f'(x)^3)/f(x)^5+(18*f'(x)*f''(x))/f(x)^4+(-2*Derivative(3)[f][x])/f(x)^3");
+
+    check("D(x/(-1+x^3),{x,4})", //
+        "x*((-1944*x^8)/(1-x^3)^5+(-1944*x^5)/(1-x^3)^4+(-360*x^2)/(1-x^3)^3)+4*((-162*x^\n" //
+            + "6)/(1-x^3)^4+(-108*x^3)/(1-x^3)^3-6/(1-x^3)^2)");
+    check("D(1/(-1+x^3),{x,4})", //
+        "(-1944*x^8)/(1-x^3)^5+(-1944*x^5)/(1-x^3)^4+(-360*x^2)/(1-x^3)^3");
+
+    check("D((-x-2*x^2)/(-1+x^3),{x,4})", //
+        "(-x-2*x^2)*((-1944*x^8)/(1-x^3)^5+(-1944*x^5)/(1-x^3)^4+(-360*x^2)/(1-x^3)^3)+4*(-\n" //
+            + "1-4*x)*((-162*x^6)/(1-x^3)^4+(-108*x^3)/(1-x^3)^3-6/(1-x^3)^2)-24*((-18*x^4)/(1-x^\n" //
+            + "3)^3+(-6*x)/(1-x^3)^2)");
+    check("D(f(x) / g(x), {x, 2})", //
+        "(-2*f'(x)*g'(x))/g(x)^2+f''(x)/g(x)+f(x)*((2*g'(x)^2)/g(x)^3-g''(x)/g(x)^2)");
+    check("D(f(x) / g(x), {x, 3})", //
+        "(-3*g'(x)*f''(x))/g(x)^2+3*f'(x)*((2*g'(x)^2)/g(x)^3-g''(x)/g(x)^2)+Derivative(3)[f][x]/g(x)+f(x)*((-\n" //
+            + "6*g'(x)^3)/g(x)^4+(6*g'(x)*g''(x))/g(x)^3-Derivative(3)[g][x]/g(x)^2)");
+
+    check("D(Sin(x) * Cos(x), {x, 2})", //
+        "-4*Cos(x)*Sin(x)");
+    check("D(Sin(x) * Cos(x), {x, 3})", //
+        "-4*Cos(x)^2+4*Sin(x)^2");
+    check("D(Sin(x) * Cos(x), {x, 6})", //
+        "-64*Cos(x)*Sin(x)");
+    check("D((-1/2-x+x^2)/(-1/2-x/2+5/2*x^2-5/2*x^3),{x,2})", //
+        "2/(-1/2-x/2+5/2*x^2-5/2*x^3)+(2*(-1+2*x)*(1/2-5*x+15/2*x^2))/(1/2+x/2-5/2*x^2+5/\n" //
+            + "2*x^3)^2+(-1/2-x+x^2)*((-2*(1/2-5*x+15/2*x^2)^2)/(1/2+x/2-5/2*x^2+5/2*x^3)^3+(-5+\n" //
+            + "15*x)/(1/2+x/2-5/2*x^2+5/2*x^3)^2)");
     check("D(Boole(f(x)),{x,10})", //
         "0");
     check("D(Boole(f(x)),x)", //
@@ -6060,6 +6117,27 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "");
     check("{a, b, c, d, e} /. dis", //
         "{b,b,d,d,e}");
+  }
+
+  @Test
+  public void testDispatchRules() {
+    // see
+    // https://github.com/Mathics3/mathics-core/blob/61a595e925dbf2cd2f3b82b09ec78b03fdee1378/test/core/test_rules.py#L54
+
+    // different results in comparison to WMA
+    check(
+        "r = Q(a, _Symbol, _Integer)->True;ruled = Dispatch({r});{Q(a,1,b), Q(a,1,b)/.r, Q(a,1,b)/.ruled}", //
+        "{Q(a,1,b),Q(a,1,b),Q(a,1,b)}");
+    check("SetAttributes(Q, {Orderless});{Q(a,1,b), Q(a,1,b)/.r, Q(a,1,b)/.ruled}", //
+        // in WMA: {Q(1,a,b),True,Q(1,a,b)}
+        "{Q(1,a,b),True,True}");
+    check(
+        "r = Q(a, _Symbol, _Integer)->True;ruled = Dispatch({r});{Q(a,1,b), Q(a,1,b)/.r, Q(a,1,b)/.ruled}", //
+        "{Q(1,a,b),True,True}");
+    check("Attributes(Q)= {};Attributes(Q)", //
+        "{}");
+    check("Attributes(Q)= {};{Q(a,1,b), Q(a,1,b)/.r, Q(a,1,b)/.ruled}", //
+        "{Q(a,1,b),True,True}");
   }
 
   @Test
@@ -8792,14 +8870,38 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testFindSequenceFunction() {
-    // check("FindSequenceFunction({5,5,5,5,5},n)", //
-    // "5");
-    // check("FindSequenceFunction({1,2,3,4,5})", //
-    // "#1&");
-    // check("FindSequenceFunction({1,2,3,4,5},n)", //
-    // "n");
+  public void testFindGeneratingFunction() {
+    // TODO unequals WMA
+    check("FindGeneratingFunction({1, 3/2, 9/5, 2, 15/7, 9/4, 7/3, 12/5}, x)", //
+        "(154/13-777/65*x+168/65*x^2-14/975*x^3)/(154/13-1932/65*x+336/13*x^2-350/39*x^3+x^\n" //
+            + "4)");
+    // TODO unequals WMA
+    check("FindGeneratingFunction({1, 1, 2, 2, 3, 4, 5, 6, 7, 8, 11, 12}, x)", //
+        "(-1/2-x+x^2-2*x^3-5/2*x^5)/(-1/2-x/2+5/2*x^2-5/2*x^3+x^5+x^6)");
 
+    check("FindGeneratingFunction({0, 1, 2, 0, 1, 2, 0}, x)", //
+        "(-x-2*x^2)/(-1+x^3)");
+    check("FindGeneratingFunction({1, 1, 2, 3, 5, 8, 13}, x)", //
+        "-1/(-1+x+x^2)");
+
+    check("FindGeneratingFunction({3, 7, 13, 21, 31, 43, 57}, x) // Factor", //
+        "(-3+2*x-x^2)/(-1+x)^3");
+    check("FindGeneratingFunction({1, 2, 3, 4}, x)", //
+        "1/(1-2*x+x^2)");
+
+  }
+
+  @Test
+  public void testFindSequenceFunction() {
+    check("FindSequenceFunction({5,5,5,5,5},n)", //
+        "5");
+    check("FindSequenceFunction({1,2,3,4,5})", //
+        "#1&");
+    check("FindSequenceFunction({1,2,3,4,5},n)", //
+        "n");
+
+    check("FindSequenceFunction({1,1,2,3,5,8,13},n)", //
+        "Fibonacci(n)");
     check("FindSequenceFunction({1,-1,3},n)", //
         "FindSequenceFunction({1,-1,3},n)");
 
@@ -10672,7 +10774,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testHoldPattern() {
-
     check("a + b /. HoldPattern(_ + _) -> 0", //
         "0");
 
@@ -18123,6 +18224,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolynomialQ() {
+    check("PolynomialQ(1/x(1)^2, x(1))", //
+        "False");
+
     check("PolynomialQ(x^(1/2) + 6*Sin(x))", //
         "True");
     check("Variables(x^(1/2) + 6*Sin(x))", //
@@ -18142,7 +18246,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("PolynomialQ(x, x+y)", //
         "PolynomialQ(x,x+y)");
 
-    check("PolynomialQ(7*y^w, y )", //
+    check("PolynomialQ(7*y^w, y)", //
         "False");
     check("PolynomialQ(7*y^(3*w), y )", //
         "False");
@@ -20944,6 +21048,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRefine() {
+    check("Refine(x<=5,x<=6)", //
+        "x<=5");
+    check("Refine(x<=5,x<=4)", //
+        "True");
     // TODO relations without numeric constants
     // check("Refine(x == y, x < y)", //
     // "False");
@@ -22093,6 +22201,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSet() {
+    check("a=a+1", //
+        "Hold(a=1+a)");
     check("aVar=10", //
         "10");
     // integer not allowed as header is (Protected)
@@ -23034,6 +23144,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSow() {
+    // message Sow: Sow called with 3 arguments; 1 or 2 arguments are expected.
+    check("Sow(1,2,3)", //
+        "Sow(1,2,3)");
+    check("Sow(1 + 1)", //
+        "2");
+    check("Reap(Sow(1 + 1); Sow(2 + 2, \"test\")) ", //
+        "{4,{{2},{4}}}");
     check("Reap(Do(If(GCD(num, den) == 1, Sow(num)), {den, 1, 20}, {num, 1, den-1}) )[[2, 1]] ", //
         "{1,1,2,1,3,1,2,3,4,1,5,1,2,3,4,5,6,1,3,5,7,1,2,4,5,7,8,1,3,7,9,1,2,3,4,5,6,7,8,9,\n" + //
             "10,1,5,7,11,1,2,3,4,5,6,7,8,9,10,11,12,1,3,5,9,11,13,1,2,4,7,8,11,13,14,1,3,5,7,\n" + //

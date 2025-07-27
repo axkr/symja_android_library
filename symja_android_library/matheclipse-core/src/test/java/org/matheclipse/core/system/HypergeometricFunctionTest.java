@@ -52,8 +52,11 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
     checkNumeric("Hypergeometric1F1(1,{2,3,4},5.0)", //
         "{29.482631820515323,11.393052728206127,6.235831636923677}");
     check("Hypergeometric1F1(3,b,z)", //
-        "1/2*(-1+b)*(4-b+z+(2-b)*(3-b)*E^z*z^(1-b)*(Gamma(-1+b)-Gamma(-1+b,z))+2*(3-b)*E^z*z^(\n"
-            + "2-b)*(Gamma(-1+b)-Gamma(-1+b,z))+E^z*z^(3-b)*(Gamma(-1+b)-Gamma(-1+b,z)))");
+        "1/2*(-1+b)*(2*(3-b)+2*z+E^z*z^(3-b)*((-2+b)/(E^z*z^(3-b))-1/(E^z*z^(2-b)))+(2-b)*(\n" //
+            + "3-b)*E^z*z^(1-b)*(Gamma(-1+b)-Gamma(-1+b,z))+2*(3-b)*E^z*z^(2-b)*(Gamma(-1+b)-Gamma(-\n" //
+            + "1+b,z))+E^z*z^(3-b)*(Gamma(-1+b)-Gamma(-1+b,z)))");
+//        "1/2*(-1+b)*(4-b+z+(2-b)*(3-b)*E^z*z^(1-b)*(Gamma(-1+b)-Gamma(-1+b,z))+2*(3-b)*E^z*z^(\n"
+//            + "2-b)*(Gamma(-1+b)-Gamma(-1+b,z))+E^z*z^(3-b)*(Gamma(-1+b)-Gamma(-1+b,z)))");
     check("Hypergeometric1F1(a,a+1,z)", //
         "(a*(Gamma(a,0)-Gamma(a,-z)))/(-z)^a");
     check("Hypergeometric1F1(1,a+1,z)", //

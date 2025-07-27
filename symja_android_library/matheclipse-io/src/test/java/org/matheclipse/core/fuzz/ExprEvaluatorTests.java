@@ -356,6 +356,11 @@ public class ExprEvaluatorTests {
         F.List(F.x, F.CN1, F.C1, F.C1), //
         F.List(F.x, F.C0, F.C0, F.C0), //
         F.List(F.x, F.C1, F.CN1, F.CN1), //
+        F.List(F.Sequence(), F.C1, F.C2), //
+        F.List(F.C0, F.Sequence(), F.C1, F.C2), //
+        F.List(F.C0, F.C1, F.Sequence(), F.C1, F.C2), //
+        F.List(F.C0, F.Sequence(), F.C2), //
+        F.List(F.C0, F.C1, F.Sequence()), //
         F.List(F.CN1), //
         F.List(F.C0), //
         F.List(F.C1), //
@@ -427,7 +432,8 @@ public class ExprEvaluatorTests {
         F.OptionValue(F.a), //
         F.OptionValue(F.b), //
         F.OptionValue(F.x), //
-        F.OptionValue(F.y));
+        F.OptionValue(F.y),//
+        F.Sequence());
     return seedList;
   }
 

@@ -1559,14 +1559,15 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     // TODO improve Zero tests
     // see https://docs.sympy.org/latest/tutorials/intro-tutorial/matrices.html#zero-testing
     check("NullSpace({{-2*Cosh(q/3),Exp(-q),1},{Exp(q),-2*Cosh(q/3),1},{1,1,-2*Cosh(q/3)}})", //
-        "{{-(-40*E^q-8*E^(3*q)-32*E^(2*q)*Cosh(q/3)+32*E^q*Cosh(q/3)^2+64*E^(2*q)*Cosh(q/\n" //
-            + "3)^3-4*Sech(q/3)-8*E^(2*q)*Sech(q/3)+8*E^q*Sech(q/3)^2+2*E^(3*q)*Sech(q/3)^2+Sech(q/\n" //
-            + "3)^3+3*E^(2*q)*Sech(q/3)^3)/(E^(2*q)*(-4*Cosh(q/3)+Sech(q/3))*(-8+16*Cosh(q/3)^2+Sech(q/\n" //
-            + "3)^2)),(2*(4+8*E^q+20*E^(2*q)+32*E^q*Cosh(q/3)-8*E^(2*q)*Cosh(q/3)-16*E^q*Cosh(q/\n" //
-            + "3)^2-16*E^(2*q)*Cosh(q/3)^2-32*E^q*Cosh(q/3)^3-4*E^q*Sech(q/3)+4*E^(2*q)*Sech(q/\n" //
-            + "3)+2*E^(3*q)*Sech(q/3)-Sech(q/3)^2-E^q*Sech(q/3)^2-4*E^(2*q)*Sech(q/3)^2-1/2*E^q*Sech(q/\n" //
-            + "3)^3-1/2*E^(2*q)*Sech(q/3)^3-1/2*E^(3*q)*Sech(q/3)^3))/(E^q*(-4*Cosh(q/3)+Sech(q/\n" //
-            + "3))*(-8+16*Cosh(q/3)^2+Sech(q/3)^2)),1}}");
+        "{{-(-40*E^q-16*E^(2*q)-8*E^(3*q)+16*E^q*Cosh(q/3)-64*E^(2*q)*Cosh(q/3)+32*E^q*Cosh(q/\n" //
+            + "3)^2+32*E^(2*q)*Cosh(q/3)^2+64*E^(2*q)*Cosh(q/3)^3-4*Sech(q/3)-8*E^q*Sech(q/3)+8*E^(\n" //
+            + "2*q)*Sech(q/3)+8*E^q*Sech(q/3)^2+2*E^(2*q)*Sech(q/3)^2+2*E^(3*q)*Sech(q/3)^2+Sech(q/\n" //
+            + "3)^3+E^q*Sech(q/3)^3+E^(2*q)*Sech(q/3)^3)/(E^(2*q)*(48*Cosh(q/3)-64*Cosh(q/3)^3-\n" //
+            + "12*Sech(q/3)+Sech(q/3)^3)),(2*(4+8*E^q+20*E^(2*q)+32*E^q*Cosh(q/3)-8*E^(2*q)*Cosh(q/\n" //
+            + "3)-16*E^q*Cosh(q/3)^2-16*E^(2*q)*Cosh(q/3)^2-32*E^q*Cosh(q/3)^3-4*E^q*Sech(q/3)+\n" //
+            + "4*E^(2*q)*Sech(q/3)+2*E^(3*q)*Sech(q/3)-Sech(q/3)^2-E^q*Sech(q/3)^2-4*E^(2*q)*Sech(q/\n" //
+            + "3)^2-1/2*E^q*Sech(q/3)^3-1/2*E^(2*q)*Sech(q/3)^3-1/2*E^(3*q)*Sech(q/3)^3))/(E^q*(-\n" //
+            + "4*Cosh(q/3)+Sech(q/3))*(-8+16*Cosh(q/3)^2+Sech(q/3)^2)),1}}");
 
     check("NullSpace({{10, 4, -6, -4}, {4, 10, -15, -4}, {0, 0, 0, 0}, {4, 4, -6, 2}} )", //
         "{{0,3,2,0}}");
@@ -2579,6 +2580,11 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testVectorGreater() {
+    check("VectorGreaterEqual({SparseArray({1,2,3}),{0,1}})", //
+        "False");
+
+    check("VectorGreater({{ },{ }})", //
+        "True");
     check("VectorGreater({{ },{ }})", //
         "True");
     check("VectorGreater({{11,12,13},{1/2,-4,-2/3}})", //

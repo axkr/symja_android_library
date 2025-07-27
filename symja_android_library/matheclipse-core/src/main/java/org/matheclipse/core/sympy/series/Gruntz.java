@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.matheclipse.core.builtin.SeriesFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
@@ -14,6 +13,9 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IPair;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.sympy.core.Expr;
 import org.matheclipse.core.sympy.exception.ValueError;
@@ -276,73 +278,79 @@ public class Gruntz {
     }
 
     // if all else fails, do it the hard way
-    IExpr[] leadTerm = mrvLeadTerm(e, x);
-    return sign(leadTerm[0], x);
+    IPair leadTerm = mrvLeadTerm(e, x);
+    return sign(leadTerm.first(), x);
   }
 
-  public static IExpr[] mrvLeadTerm(IExpr e, ISymbol x) {
-    return null;
+  public static IPair mrvLeadTerm(IExpr e, ISymbol x) {
+    SubsSet Omega = new SubsSet();
+
+    if (!e.has(x)) {
+      return F.pair(e, F.C0);
+    }
+
+    if (Omega.isEmpty()) {
+      Object[] mrvResult = mrv(e, x);
+      Omega = (SubsSet) mrvResult[0];
+      e = (IExpr) mrvResult[1];
+    }
+
+    if (Omega.isEmpty()) {
+      return F.pair(e, F.C0);
+    }
+
+    if (Omega.containsKey(x)) {
+      SubsSet OmegaUp = moveup2(Omega, x);
+      IExpr expsUp = e.xreplace(x, F.Exp(x));
+      Omega = OmegaUp;
+      e = expsUp;
+    }
+    ISymbol w = F.Dummy("w", F.Greater(F.Slot1, F.C0));
+    IExpr[] rewriteResult = rewrite(e, Omega, x, w);
+    IExpr f = rewriteResult[0];
+    IExpr logw = rewriteResult[1];
+
+    // TODO
+    // Ensure expressions of the form exp(log(...)) don't get simplified automatically in the
+    // previous steps. See: https://github.com/sympy/sympy/issues/15323#issuecomment-478639399
+    // f = f.replace(lambda f: f.is_Pow and f.has(x), lambda f: exp(log(f.base)*f.exp))
+    // f = f.replaceAll(f1 -> f1.isPower() && f1.has(x),
+    // f1 -> F.Exp(F.Times(F.Log(f1.base()), f1.exponent())));
+
+    try {
+      return f.leadTerm(w, logw, 0);
+    } catch (Exception ex) {
+      // int n0 = 1;
+      IExpr _series = F.O(F.C1);
+      IInteger incr = F.C1;
+
+      while (_series.isOrder()) {
+        // _series = f._eval_nseries(w, n=n0+incr, logx=logw)
+        IInteger n = incr.add(1);
+        int ni = n.toIntDefault();
+        if (!F.isPresent(ni)) {
+          return F.NIL;
+        }
+        _series = ASTSeriesData.simpleSeries(_series, w, F.C0, ni, 1, EvalEngine.get());
+        incr = incr.multiply(2);
+      }
+
+      IExpr series = F.Expand(_series).removeO();
+
+      try {
+        return series.leadTerm(w, logw, 0);
+      } catch (Exception ex2) {
+        IPair coeffExp = e.asCoeffExponent(w);
+        if (coeffExp.first().has(w)) {
+          IPair baseExp = e.asBaseExp();
+          IExpr base = baseExp.first().asCoeffExponent(w).first();
+          IExpr exp = baseExp.second();
+          return F.pair(F.Power(base, exp), F.Times(baseExp.second(), exp));
+        }
+        return F.pair(coeffExp.first(), coeffExp.second());
+      }
+    }
   }
-  // public static IExpr[] mrvLeadTerm(IExpr e, ISymbol x) {
-  // SubsSet Omega = new SubsSet();
-  //
-  // if (!e.has(x)) {
-  // return new IExpr[] {e, F.C0};
-  // }
-  //
-  // if (Omega.isEmpty()) {
-  // Object[] mrvResult = mrv(e, x);
-  // Omega = (SubsSet) mrvResult[0];
-  // e = (IExpr) mrvResult[1];
-  // }
-  //
-  // if (Omega.isEmpty()) {
-  // return new IExpr[] {e, F.C0};
-  // }
-  //
-  // if (Omega.contains(x)) {
-  // SubsSet OmegaUp = moveup2(Omega, x);
-  // IExpr expsUp = moveup(e, x);
-  // Omega = OmegaUp;
-  // e = expsUp;
-  // }
-  //
-  // ISymbol w = F.Dummy("w", true);
-  // IExpr[] rewriteResult = rewrite(e, Omega, x, w);
-  // IExpr f = rewriteResult[0];
-  // IExpr logw = rewriteResult[1];
-  //
-  // f = f.replaceAll(f1 -> f1.isPower() && f1.has(x),
-  // f1 -> Exp.of(Log.of(f1.getAt(0)).multiply(f1.getAt(1))));
-  //
-  // try {
-  // return f.leadTerm(w, logw);
-  // } catch (Exception ex) {
-  // int n0 = 1;
-  // IExpr _series = Order.of(1);
-  // IExpr incr = S.One;
-  //
-  // while (_series.isOrder()) {
-  // _series = f.evalNSeries(w, n0 + incr, logw);
-  // incr = incr.multiply(2);
-  // }
-  //
-  // IExpr series = _series.expand().removeO();
-  //
-  // try {
-  // return series.leadTerm(w, logw);
-  // } catch (Exception ex2) {
-  // IExpr[] coeffExp = f.asCoeffExponent(w);
-  // if (coeffExp[0].has(w)) {
-  // IExpr[] baseExp = f.asBaseExp();
-  // IExpr base = baseExp[0].asCoeffExponent(w)[0];
-  // IExpr exp = baseExp[1];
-  // return new IExpr[] {base.pow(exp), baseExp[1].multiply(exp)};
-  // }
-  // return coeffExp;
-  // }
-  // }
-  // }
 
   public static Object[] mrvMax3(SubsSet f, IExpr expsf, SubsSet g, IExpr expsg, SubsSet union,
       IExpr expsboth, ISymbol x) {
@@ -489,7 +497,7 @@ public class Gruntz {
     // c0, e0 = mrv_leadterm(e, x);
     // Implementing mrv_leadterm using Series expansion in Symja as approximation.
     try {
-      ASTSeriesData series = SeriesFunctions.simpleSeries(e, x, F.oo, 1, 1, EvalEngine.get()); // Series
+      ASTSeriesData series = ASTSeriesData.simpleSeries(e, x, F.oo, 1, 1, EvalEngine.get()); // Series
       // Series around Infinity, order 1 to get leading term.
 
       IExpr seriesData = series.toSeriesData().normal(false);
@@ -536,7 +544,7 @@ public class Gruntz {
     if (sig == 1) {
       return F.C0; // e0>0: lim f = 0
     } else if (sig == -1) { // elif sig == -1: // e0<0: lim f = +-oo (the sign depends on the
-                                   // sign of c0)
+                            // sign of c0)
       // if c0.match(I*Wild("a", exclude=[I])): // c0.match(I*Wild("a", exclude=[I])) - Complex
       // number check.
       if (c0.isComplex()) { // Basic complex check - might need more precise "exclude=[I]" logic if
@@ -548,7 +556,7 @@ public class Gruntz {
       // the leading term shouldn't be 0:
       if (s == 0) { // if s == 0:
         throw new ValueError("Leading term should not be 0"); // raise ValueError("Leading term
-                                                                 // should not be 0")
+                                                              // should not be 0")
       }
       return F.Times(s, F.oo); // return s*oo
     } else if (sig == 0) { // elif sig == 0:
@@ -644,93 +652,156 @@ public class Gruntz {
   // }
 
   public static IExpr[] rewrite(IExpr e, SubsSet Omega, ISymbol x, ISymbol wsym) {
-    // if (!(Omega instanceof SubsSet)) {
-    // throw new IllegalArgumentException("Omega should be an instance of SubsSet");
-    // }
-    // if (Omega.isEmpty()) {
-    // throw new IllegalArgumentException("Length cannot be 0");
-    // }
-    //
-    // // all items in Omega must be exponentials
-    // for (IExpr t : Omega.keySet()) {
-    // if (!(t instanceof Exp)) {
-    // throw new IllegalArgumentException("Value should be exp");
-    // }
-    // }
-    //
-    // Map<ISymbol, IExpr> rewrites = Omega.rewrites;
-    // List<IExpr[]> OmegaList = new ArrayList<>(Omega.items());
-    //
-    // // Build expression tree and sort Omega
-    // List<Node> nodes = buildExpressionTree(OmegaList, rewrites);
-    // Collections.sort(OmegaList, Comparator.comparingInt(o -> nodes.get(o[1].hashCode()).ht()));
-    //
-    // // Determine the sign of each exp() term
-    // int sig = 0;
-    // IExpr g = null;
-    // for (IExpr[] pair : OmegaList) {
-    // g = pair[0];
-    // sig = sign(g.getAt(1), x);
-    // if (sig != 1 && sig != -1 && !(sig instanceof AccumBounds)) {
-    // throw new UnsupportedOperationException("Result depends on the sign of " + sig);
-    // }
-    // }
-    // if (sig == 1) {
-    // wsym = F.Power(wsym, -1); // if g goes to oo, substitute 1/w
-    // }
-    //
-    // // Rewrite each item in Omega using "w"
-    // List<IExpr[]> O2 = new ArrayList<>();
-    // List<Integer> denominators = new ArrayList<>();
-    // for (IExpr[] pair : OmegaList) {
-    // IExpr f = pair[0];
-    // ISymbol var = (ISymbol) pair[1];
-    // IExpr c = limitinf(F.Divide(f.getAt(1), g.getAt(1)), x);
-    // if (c.isRational()) {
-    // denominators.add(c.toRational().denominator().intValue());
-    // }
-    // IExpr arg = f.getAt(1);
-    // if (rewrites.contains(var)) {
-    // if (!(rewrites.get(var) instanceof Exp)) {
-    // throw new IllegalArgumentException("Value should be exp");
-    // }
-    // arg = rewrites.get(var).getAt(0);
-    // }
-    // O2.add(
-    // new IExpr[] {var, F.Times(F.Exp(F.Plus(arg, F.Times(c, g.getAt(1)))), F.Power(wsym, c))});
-    // }
-    //
-    // // Substitute subexpressions in "e" with rewritten expressions
-    // IExpr f = Powsimp.powsimp(e, true, "exp");
-    // for (IExpr[] pair : O2) {
-    // f = f.subs(pair[0], pair[1]);
-    // }
-    //
-    // for (IExpr[] pair : OmegaList) {
-    // ISymbol var = (ISymbol) pair[1];
-    // if (f.has(var)) {
-    // throw new AssertionError();
-    // }
-    // }
-    //
-    // // Compute the logarithm of w (logw)
-    // IExpr logw = g.getAt(1);
-    // if (sig == 1) {
-    // logw = F.Negate(logw); // log(w)->log(1/w)=-log(w)
-    // }
-    //
-    // // Improve series expansions with non-integral exponents
+    if (Omega.isEmpty()) {
+      throw new ValueError("Omega cannot be empty");
+    }
+
+    for (IExpr t : Omega.keySet()) {
+      if (!t.isExp()) {
+        throw new ValueError("All items in Omega must be exponentials");
+      }
+    }
+
+    Map<ISymbol, IExpr> rewrites = Omega.rewrites;
+    List<Map.Entry<IExpr, ISymbol>> omegaList = new ArrayList<>(Omega.entrySet());
+
+    Map<ISymbol, Node> nodes = buildExpressionTree(omegaList, rewrites);
+    omegaList.sort(
+        (o1, o2) -> Integer.compare(nodes.get(o2.getValue()).ht(), nodes.get(o1.getValue()).ht()));
+
+    int sig = 0;
+    IExpr g = null;
+    for (Map.Entry<IExpr, ISymbol> pair : omegaList) {
+      g = pair.getKey();
+      sig = sign(g.exponent(), x);
+      if (sig != 1 && sig != -1) { // AccumBounds not handled
+        throw new UnsupportedOperationException("Result depends on the sign of " + sig);
+      }
+    }
+
+    if (sig == 1) {
+      wsym = (ISymbol) F.Power(wsym, F.CN1); // if g goes to oo, substitute 1/w
+    }
+
+    List<Pair> O2 = new ArrayList<>();
+    List<IExpr> denominators = new ArrayList<>();
+    for (Map.Entry<IExpr, ISymbol> pair : omegaList) {
+      IExpr f = pair.getKey();
+      ISymbol var = pair.getValue();
+      IExpr c = limitinf(F.Divide(f.exponent(), g.exponent()), x);
+      if (c.isRational()) {
+        denominators.add(((IRational) c).denominator());
+      }
+      IExpr arg = f.exponent();
+      if (rewrites.containsKey(var)) {
+        IExpr rewriteExpr = rewrites.get(var);
+        if (!rewriteExpr.isExp()) {
+          throw new ValueError("Rewrite expression must be an exponential");
+        }
+        arg = rewriteExpr.exponent();
+      }
+      O2.add(F.pair(var,
+          F.Times(F.Exp(F.Plus(arg, F.Times(F.CN1, c, g.exponent()))), F.Power(wsym, c))));
+    }
+
+    IExpr f = Powsimp.powsimp(e, true, "exp");
+    for (Pair pair : O2) {
+      f = f.xreplace(pair.first(), pair.second());
+    }
+
+    for (Map.Entry<IExpr, ISymbol> pair : omegaList) {
+      if (f.has(pair.getValue())) {
+        throw new AssertionError(
+            "Rewrite failed: variable " + pair.getValue() + " still present in expression");
+      }
+    }
+
+    IExpr logw = g.exponent();
+    if (sig == 1) {
+      logw = F.Negate(logw);
+    }
+
+    // TODO: ilcm for non-integer exponents
     // int exponent = ilcm(denominators);
     // f = f.subs(wsym, F.Power(wsym, exponent));
     // logw = F.Divide(logw, exponent);
-    //
-    // // Simplify the expression
+
     // f = bottomUp(f, w -> w.normal());
-    //
-    // return new IExpr[] {f, logw};
-    return new IExpr[] {F.NIL, F.NIL};
+    return new IExpr[] {f, logw};
   }
 
+  /**
+   * Compute the limit of e(z) at the point z0 using the Gruntz algorithm.
+   *
+   * <p>
+   * z0 can be any expression, including oo and -oo.
+   *
+   * <p>
+   * For dir="+" (default) it calculates the limit from the right (z->z0+) and for dir="-" the limit
+   * from the left (z->z0-). For infinite z0 (oo or -oo), the dir argument does not matter.
+   *
+   * <p>
+   * This algorithm is fully described in the module docstring in the gruntz.py file. It relies
+   * heavily on the series expansion. Most frequently, gruntz() is only used if the faster limit()
+   * function (which uses heuristics) fails.
+   */
+  public static IExpr gruntz(IExpr e, ISymbol z, IExpr z0, String dir) {
+    if (!z.isSymbol()) {
+      throw new UnsupportedOperationException("Second argument must be a Symbol");
+    }
+
+    // convert all limits to the limit z->oo; sign of z is handled in limitinf
+    IExpr e0;
+    if (z0.equals(F.oo) || z0.equals(F.CIInfinity)) {
+      e0 = e;
+    } else if (z0.equals(F.CNInfinity) || z0.equals(F.CNIInfinity)) {
+      e0 = e.subs(z, F.Negate(z));
+    } else {
+      if ("-".equals(dir)) {
+        e0 = e.subs(z, F.Subtract(z0, F.Power(z, F.CN1)));
+      } else if ("+".equals(dir)) {
+        e0 = e.subs(z, F.Plus(z0, F.Power(z, F.CN1)));
+      } else {
+        throw new UnsupportedOperationException("dir must be '+' or '-'");
+      }
+    }
+
+    IExpr r = limitinf(e0, z);
+
+    // This is a bit of a heuristic for nice results... we always rewrite
+    // tractable functions in terms of familiar intractable ones.
+    // It might be nicer to rewrite the exactly to what they were initially,
+    // but that would take some work to implement.
+    // return r.rewrite('intractable', deep=True)
+    // Symja does not have a direct equivalent of rewrite('intractable').
+    // This step is for presentation. The main result is in 'r'.
+    return r;
+  }
+
+  private static Map<ISymbol, Node> buildExpressionTree(List<Map.Entry<IExpr, ISymbol>> omega,
+      Map<ISymbol, IExpr> rewrites) {
+    Map<ISymbol, Node> nodes = new HashMap<>();
+    for (Map.Entry<IExpr, ISymbol> entry : omega) {
+      Node n = new Node();
+      n.var = entry.getValue();
+      n.expr = entry.getKey();
+      nodes.put(n.var, n);
+    }
+    for (Map.Entry<IExpr, ISymbol> entry : omega) {
+      ISymbol v = entry.getValue();
+      if (rewrites.containsKey(v)) {
+        Node n = nodes.get(v);
+        IExpr r = rewrites.get(v);
+        for (Map.Entry<IExpr, ISymbol> entry2 : omega) {
+          ISymbol v2 = entry2.getValue();
+          if (r.has(v2)) {
+            n.before.add(nodes.get(v2));
+          }
+        }
+      }
+    }
+    return nodes;
+  }
 
   private static class Node {
     List<Node> before = new ArrayList<>();

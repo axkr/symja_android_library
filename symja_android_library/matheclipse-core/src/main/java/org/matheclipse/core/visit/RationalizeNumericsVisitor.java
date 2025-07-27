@@ -8,10 +8,20 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.INum;
 
+/**
+ * Rationalize numeric numbers {@link INum} and {@link IComplexNum} in expression <code>expr</code>.
+ */
 public class RationalizeNumericsVisitor extends VisitorExpr {
   double epsilon;
   boolean useConvergenceMethod;
 
+  /**
+   * Create a new visitor to rationalize numeric numbers {@link INum} and {@link IComplexNum} in an
+   * expression.
+   *
+   * @param epsilon the epsilon value used for the rationalization
+   * @param useConvergenceMethod if true, use the convergence method for rationalization
+   */
   public RationalizeNumericsVisitor(double epsilon, boolean useConvergenceMethod) {
     super();
     this.epsilon = epsilon;

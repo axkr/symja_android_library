@@ -346,6 +346,9 @@ public class MainTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSystem000b() {
+    check("Simplify(1+(1-x)^2/(-1+x))", //
+        "x");
+
     check("-0.1*(-10. + 1.*i)", //
         "-0.1*(-10.0+i)");
     check("Factor(1.0-0.1*i)", //
@@ -364,7 +367,8 @@ public class MainTestCase extends ExprEvaluatorTestCase {
 
     check("(1 - ((1 - (i/10)) / (1 - (i/10))))", "0");
     check("((1 - (i/10)) / (1 - (i/10)))", "1");
-    check("Simplify(1+(1-x)^2/(-1+x))", "x");
+    check("Simplify(1+(1-x)^2/(-1+x))", //
+        "x");
     check("(1-x)^2/(-1+x)^3", "(1-x)^2/(-1+x)^3");
     check("(1-x)^4/(-1+x)^8", "1/(1-x)^4");
     check("1+(-1+x)/(1-x)", "1+(-1+x)/(1-x)");

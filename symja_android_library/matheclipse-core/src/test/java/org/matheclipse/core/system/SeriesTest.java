@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.Test;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 
 public class SeriesTest extends ExprEvaluatorTestCase {
@@ -120,6 +121,17 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   public void testCoefficientList() {
     check("CoefficientList(Series(Log(1-x), {x, 0, 9}), x)", //
         "{0,-1,-1/2,-1/3,-1/4,-1/5,-1/6,-1/7,-1/8,-1/9}");
+    check("CoefficientList(Series(Log(1-x), {x, 0, 9}), x)", //
+        "{0,-1,-1/2,-1/3,-1/4,-1/5,-1/6,-1/7,-1/8,-1/9}");
+    check("CoefficientList(Series(Sin(x), {x, 0, 5}),x)", //
+        "{0,1,0,-1/6,0,1/120}");
+
+    check("Series(Sin(x), {x, 1, 5})", //
+        "Sin(1)+Cos(1)*(-1+x)-1/2*Sin(1)*(1-x)^2-1/6*Cos(1)*(-1+x)^3+1/24*Sin(1)*(1-x)^4+\n" //
+            + "1/120*Cos(1)*(-1+x)^5+O(-1+x)^6");
+    check("CoefficientList(Series(Sin(x), {x, 1, 5}), x)", //
+        "{-101/120*Cos(1)+13/24*Sin(1),13/24*Cos(1)+5/6*Sin(1),5/12*Cos(1)-Sin(1)/4,-Cos(\n"//
+            + "1)/12-Sin(1)/6,-Cos(1)/24+Sin(1)/24,Cos(1)/120}");
   }
 
   @Test
@@ -439,6 +451,17 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSeriesCoefficient() {
+    if (Config.EXPENSIVE_JUNIT_TESTS) {
+      check(
+          "SeriesCoefficient((-1/2-x+x^2-2*x^3-5/2*x^5)/(-1/2-x/2+5/2*x^2-5/2*x^3+x^5+x^6),{x,0,11})", //
+          "12");
+    }
+
+    check("SeriesCoefficient(Cot(x),{x,0,3})", //
+        "-1/45");
+
+    check("SeriesCoefficient((-x-2*x^2)/(-1+x^3),{x,0,4})", //
+        "1");
     check("SeriesCoefficient(f(x),{x,a,2})", //
         "f''(a)/2");
     check("SeriesCoefficient(f(x),{x,2,4})", //
@@ -447,8 +470,9 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "1/6*(4+9*Log(2)+9*Log(2)^2+4*Log(2)^3+Log(2)^4)");
 
     check("SeriesCoefficient(ArcTan(x),{x,n,12})", //
-        "(3*n-55*n^3+198*n^5-198*n^7+55*n^9-3*n^11)/(3*(1+12*n^2+66*n^4+220*n^6+495*n^8+\n" //
-            + "792*n^10+924*n^12+792*n^14+495*n^16+220*n^18+66*n^20+12*n^22+n^24))");
+        "-I*1/24*(-1/(I-n)^12+1/(I+n)^12)");
+    // "(3*n-55*n^3+198*n^5-198*n^7+55*n^9-3*n^11)/(3*(1+12*n^2+66*n^4+220*n^6+495*n^8+\n" //
+    // + "792*n^10+924*n^12+792*n^14+495*n^16+220*n^18+66*n^20+12*n^22+n^24))");
 
     check("SeriesCoefficient(Fibonacci(z), {z, 0, n})", //
         "Piecewise({{(-(-I*Pi-ArcCsch(2))^n-(I*Pi-ArcCsch(2))^n+2*ArcCsch(2)^n)/(2*Sqrt(5)*n!),n>=\n" //
@@ -480,7 +504,8 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "Log(x)^4/24");
 
     check("SeriesCoefficient(ChebyshevT(k, x), {x, 0, 2})", //
-        "1/2*k^2*Cos(1/2*(-2+k)*Pi)");
+        "((-1+k)*(1+k)*k^2*Pi)/(8*Gamma(1/2*(3-k))*Gamma(1/2*(3+k)))");
+    // "1/2*k^2*Cos(1/2*(-2+k)*Pi)");
     check("SeriesCoefficient(d+4*x^e+7*x^f,{x, a, n})", //
         "Piecewise({{(4*a^e*Binomial(e,n)+7*a^f*Binomial(f,n))/a^n,n>0},{4*a^e+7*a^f+d,n==\n"
             + "0}},0)");
@@ -544,8 +569,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
     check("SeriesCoefficient(Cot(x),{x,0,n})", //
         "Piecewise({{1,n==-1},{(-I*(-1+(-1)^n)*(I*2)^n*BernoulliB(1+n))/(1+n)!,n>=0}},0)");
-    check("SeriesCoefficient(Cot(x),{x,0,3})", //
-        "-1/45");
+
     check("SeriesCoefficient(Cot(x),{x,Pi/2,n})", //
         "Piecewise({{(-I*(-1+(-1)^n)*(I*2)^n*(-1+2^(1+n))*BernoulliB(1+n))/(1+n)!,n>=1}},\n" + //
             "0)");
