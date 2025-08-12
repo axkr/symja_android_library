@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 30
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Set up Java for deployment
       uses: ./.github/actions/setup-java-for-deployment
