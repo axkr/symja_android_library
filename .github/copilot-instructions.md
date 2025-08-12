@@ -114,10 +114,8 @@ void should_evaluateTrigFunctions_when_usingSpecialAngles(
 ### Integration Guidelines
 - When adding new mathematical functions, ensure they integrate properly with the symbolic engine
 - Consider both symbolic and numerical evaluation modes
-- if possible use similar camel-cased method names derived from Sympy https://github.com/sympy/sympy function names
-- Implement proper toString() methods for mathematical expressions
-- Support serialization for mathematical objects when needed
-- Ensure thread safety for mathematical operations that might be used concurrently
+- if possible use similar camel-cased method names derived from Sympy (https://github.com/sympy/sympy) function names
+- Implement proper toString() methods for mathematical expressions  
 
 ### Debugging Mathematical Code
 - Include detailed logging for complex mathematical computations
@@ -126,7 +124,7 @@ void should_evaluateTrigFunctions_when_usingSpecialAngles(
 - Include step-by-step computation traces for debugging
 
 ### External Dependencies
-- Prefer well-maintained mathematical libraries (Apache Commons Math, EJML, etc.)
+- Prefer well-maintained mathematical libraries (hipparchus, apfloat, JAS Java Algebra system, JGraphT, LogicNG etc.)
 - Document mathematical library choices and their trade-offs
 - Isolate external dependencies in matheclipse-external module
 - Provide fallback implementations when possible
