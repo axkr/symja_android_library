@@ -9,42 +9,50 @@ Unevaluated(expr)
 	
 ### Examples
 
-Unevaluated is automatically removed when function arguments are evaluated:
+`Unevaluated` is automatically removed when function arguments are evaluated:
 
 ```
 >> Sqrt(Unevaluated(x))
 Sqrt(x)
+```
 
+The `Length` value is `4` because we do not evaluate the `'`Plus` operator:
+
+```
 >> Length(Unevaluated(1+2+3+4))
 4
 ```
 
-Unevaluated has attribute `HoldAllComplete`:
+`Unevaluated` has attribute `HoldAllComplete`:
 
 ```
 >> Attributes(Unevaluated)
 {HoldAllComplete,Protected}
 ```
 
-Unevaluated is maintained for arguments to non-executed functions:
+The `Unevaluated` function call is kept in arguments of non-executed functions:
 
 ```
 >> f(Unevaluated(x))
 f(Unevaluated(x))
 ```
 
-Likewise, its kept in flattened arguments and sequences:
+Functions that have the `Flat` property, `Unevaluated` propagates into function's arguments:
 
 ```
 >> Attributes(f) = {Flat};
 
 >> f(a, Unevaluated(f(b, c)))
 f(a,Unevaluated(b),Unevaluated(c))
+```
 
+In `Sequence`s containing `Unevaluated` functions:
+
+```
 >> g(a, Sequence(Unevaluated(b),Unevaluated(c)))
 ```
 
-However, unevaluated sequences are kept:
+However, when surrounding a `Sequence` by `Unevaluated`, no proliferation of `Unevaluated` function calls occurs:
 
 ```
 >> g[Unevaluated[Sequence[a, b, c]]]
