@@ -10,7 +10,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
-import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -23,6 +22,7 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -194,7 +194,7 @@ public class SeriesFunctions {
        * @param ast
        * @return
        */
-      public IAST mapLimit(final IAST ast) {
+      public IExpr mapLimit(final IAST ast) {
         // return ast.mapThread(limit(null), 1);
         IASTMutable result = ast.copy();
         boolean isIndeterminate = false;
@@ -214,7 +214,8 @@ public class SeriesFunctions {
         if (isIndeterminate && limitValue.isZero() && ast.isTimes()) {
           return squeezeTheorem(ast).orElse(result);
         }
-        return result;
+        IExpr evaledResult = EvalEngine.get().evaluate(result);
+        return IntervalSym.toSinglePoint(evaledResult).orElse(evaledResult);
       }
 
       /**
@@ -283,7 +284,8 @@ public class SeriesFunctions {
       try {
         IExpr direction =
             data.direction() == Direction.TWO_SIDED ? S.Reals : F.ZZ(data.direction().toInt());
-        return F.Limit(expr, data.rule(), F.Rule(S.Direction, direction)).eval(engine);
+        IExpr result = F.Limit(expr, data.rule(), F.Rule(S.Direction, direction)).eval(engine);
+        return IntervalSym.toSinglePoint(result).orElse(result);
       } finally {
         engine.setQuietMode(quiet);
       }
@@ -899,7 +901,7 @@ public class SeriesFunctions {
           Errors.rethrowsInterruptException(rex);
         }
       }
-      IAST mapLimit = data.mapLimit(plusAST);
+      IExpr mapLimit = data.mapLimit(plusAST);
       if (mapLimit.isPresent()) {
         if (mapLimit.isFree(x -> x.equals(S.Limit), true)) {
           IExpr temp = F.eval(mapLimit);
@@ -1082,8 +1084,8 @@ public class SeriesFunctions {
       IExpr y = F.Power(x, F.CN1); // substituting by 1/x
       IExpr temp = F.evalQuiet(F.subst(arg1, x, y));
       if (temp.isTimes()) {
-        Optional<IExpr[]> parts =
-            AlgebraUtil.fractionalPartsTimesPower((IAST) temp, false, false, true, true, true, true);
+        Optional<IExpr[]> parts = AlgebraUtil.fractionalPartsTimesPower((IAST) temp, false, false,
+            true, true, true, true);
         if (parts.isPresent()) {
           if (!parts.get()[1].isOne()) { // denominator != 1
             LimitData ndData = new LimitData(x, F.C0, F.Rule(x, F.C0), data.direction());
@@ -1605,15 +1607,23 @@ public class SeriesFunctions {
   private static final class InverseSeries extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isAST1() && (ast.arg1() instanceof ASTSeriesData)) {
-
+      if (ast.arg1() instanceof ASTSeriesData) {
         ASTSeriesData ps = (ASTSeriesData) ast.arg1();
-        ps = ps.reversion();
+        IExpr variable = ps.getX();
+        if (ast.isAST2()) {
+          variable = ast.arg2();
+        }
+        ps = ps.reversion(variable);
         if (ps != null) {
           return ps;
         }
       }
       return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
 
     @Override
@@ -1708,7 +1718,7 @@ public class SeriesFunctions {
    * Piecewise({{Sin(f+g+1/2*n*Pi)/n!,n&gt;=0}},0)
    * </pre>
    */
-  private static final class SeriesCoefficient extends AbstractFunctionEvaluator {
+  public static final class SeriesCoefficient extends AbstractFunctionEvaluator {
     private static Supplier<Matcher> MATCHER1;
 
     private static Matcher matcher1() {
@@ -1861,8 +1871,7 @@ public class SeriesFunctions {
       }
       IExpr derivedFunction = S.D.of(engine, function, F.list(x, n));
       IExpr substituted = derivedFunction.subs(x, x0);
-      return engine.evaluate(F.Together(
-          F.Times(F.Power(F.Factorial(n), F.CN1), substituted)));
+      return engine.evaluate(F.Together(F.Times(F.Power(F.Factorial(n), F.CN1), substituted)));
     }
 
     /**
@@ -2114,60 +2123,6 @@ public class SeriesFunctions {
       }
     } else if (function.isLog() && function.first().equals(x) && x0.isZero() && n >= 0) {
       return new ASTSeriesData(x, x0, F.list(function), 0, n + 1, 1);
-    }
-    return null;
-  }
-
-  /**
-   * Try to find a series with function {@link SeriesCoefficient}
-   *
-   * @param function the function which should be generated as a power series
-   * @param x the variable
-   * @param x0 the point to do the power expansion for
-   * @param n the order of the expansion
-   * @param denominator
-   * @param varSet the variables of the function (including x)
-   * @param engine the evaluation engine
-   * @return the <code>SeriesCoefficient()</code> series or <code>null</code> if the function is not
-   *         numeric w.r.t the varSet
-   */
-  public static ASTSeriesData seriesCoefficient(final IExpr function, IExpr x, IExpr x0,
-      final int n, final int denominator, VariablesSet varSet, EvalEngine engine) {
-    ISymbol power = F.Dummy("$$$n");
-    IExpr temp = engine.evalQuiet(F.SeriesCoefficient(function, F.list(x, x0, power)));
-    if (temp.isNumericFunction(varSet)) {
-      int end = n;
-      if (n < 0) {
-        end = 0;
-      }
-      ASTSeriesData ps = new ASTSeriesData(x, x0, end + 1, end + denominator, denominator);
-      for (int i = 0; i <= end; i++) {
-        ps.setCoeff(i, engine.evalQuiet(F.subst(temp, F.Rule(power, F.ZZ(i)))));
-      }
-      return ps;
-    } else {
-      int end = n;
-      if (n < 0) {
-        end = 0;
-      }
-      temp = engine.evalQuiet(F.SeriesCoefficient(function, F.list(x, x0, F.C0)));
-      if (temp.isNumericFunction(varSet)) {
-        boolean evaled = true;
-        ASTSeriesData ps = new ASTSeriesData(x, x0, end + 1, end + denominator, denominator);
-        ps.setCoeff(0, temp);
-        for (int i = 1; i <= end; i++) {
-          temp = engine.evalQuiet(F.SeriesCoefficient(function, F.list(x, x0, F.ZZ(i))));
-          if (temp.isNumericFunction(varSet)) {
-            ps.setCoeff(i, temp);
-          } else {
-            evaled = false;
-            break;
-          }
-        }
-        if (evaled) {
-          return ps;
-        }
-      }
     }
     return null;
   }

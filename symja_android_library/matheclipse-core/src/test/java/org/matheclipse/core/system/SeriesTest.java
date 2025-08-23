@@ -63,8 +63,13 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testInverseSeries() {
-    // check("InverseSeries(Series(Exp(x), {x, 0, 6}))", //
-    // "x+x^3/6+3/40*x^5+5/112*x^7+35/1152*x^9+O(x)^10");
+    // TODO needs Puiseux/Laurent series to handle this
+    check("InverseSeries(Series(x*Sin(x), {x, 0, 10}))", //
+        "InverseSeries(x^2-x^4/6+x^6/120-x^8/5040+x^10/362880+O(x)^11)");
+
+    // 2nd arg is new result variable
+    check("InverseSeries(SeriesData(x,0,{1,2,3},0,5,1),y)", //
+        "1/2*(-1+y)-3/8*(1-y)^2+9/16*(-1+y)^3-135/128*(1-y)^4+O(-1+y)^5");
 
     check("Series(E^x,{x,0,4})^(-1)", //
         "1-x+x^2/2-x^3/6+x^4/24+O(x)^5");
@@ -73,6 +78,11 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "(-1+x)-(1-x)^2+O(-1+x)^3");
     check("InverseSeries(SeriesData(x,x0,{1,1,1},0,3,1))", //
         "x0+(-1+x)-(1-x)^2+O(-1+x)^3");
+    check("InverseSeries(Series(Sin(x), {x, 0, 9}))", //
+        "x+x^3/6+3/40*x^5+5/112*x^7+35/1152*x^9+O(x)^10");
+
+    check("InverseSeries(Series(Exp(x), {x, 0, 6}))", //
+        "(-1+x)-(1-x)^2/2+(-1+x)^3/3-(1-x)^4/4+(-1+x)^5/5-(1-x)^6/6+O(-1+x)^7");
     check("InverseSeries(SeriesData(x,x0,{1,2,3},0,5,1))", //
         "x0+1/2*(-1+x)-3/8*(1-x)^2+9/16*(-1+x)^3-135/128*(1-x)^4+O(-1+x)^5");
     check("InverseSeries(SeriesData(x,0,{1,2,3},0,5,1))", //
@@ -86,8 +96,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "1+x+O(x)^10");
     check("InverseSeries(Series((x+1),{x, 0, 9}))", //
         "(-1+x)+O(-1+x)^10");
-    check("InverseSeries(Series(Sin(x), {x, 0, 9}))", //
-        "x+x^3/6+3/40*x^5+5/112*x^7+35/1152*x^9+O(x)^10");
+
     check("InverseSeries(Series(ArcSin(x), {x, 0, 9}))", //
         "x-x^3/6+x^5/120-x^7/5040+x^9/362880+O(x)^10");
     check("InverseSeries(Series(Log(x+1), {x, 0, 9}))", //

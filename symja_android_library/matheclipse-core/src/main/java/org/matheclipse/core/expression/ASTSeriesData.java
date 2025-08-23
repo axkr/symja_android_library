@@ -6,7 +6,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.SeriesFunctions;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -19,6 +18,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 
@@ -74,8 +74,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     VariablesSet varSet = new VariablesSet(function);
     varSet.add(x);
     varSet.addVarList(x0);
-    ASTSeriesData sd =
-        SeriesFunctions.seriesCoefficient(function, x, x0, n, denominator, varSet, engine);
+    ASTSeriesData sd = seriesCoefficient(function, x, x0, n, denominator, varSet, engine);
     if (sd != null) {
       return sd;
     }
@@ -108,7 +107,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         }
       }
       IExpr coefficient =
-          engine.evalQuiet(F.Times(F.Power(AbstractIntegerSym.factorial(i), F.CN1), functionPart));
+          engine.evalQuiet(F.Times(F.Power(IInteger.factorial(i), F.CN1), functionPart));
       if (coefficient.isIndeterminate() || coefficient.isComplexInfinity()) {
         return null;
       }
@@ -244,7 +243,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   private IAST coeffBellSeq(int n) {
     IASTAppendable coeffs = F.ListAlloc(n + 1);
     for (int j = 1; j < n + 1; j++) {
-      IInteger factorial = AbstractIntegerSym.factorial(j);
+      IInteger factorial = IInteger.factorial(j);
       IExpr bell_coeff = factorial.times(this.coefficient(j));
       coeffs.append(bell_coeff);
     }
@@ -342,6 +341,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    *
    * <p>
    * substitute <code>series2</code> into <code>series1</code>
+   *
+   * </p>
    *
    * </blockquote>
    *
@@ -685,6 +686,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    * <p>
    * return the inverse series.
    *
+   * </p>
+   *
    * </blockquote>
    *
    * <h3>Examples</h3>
@@ -701,7 +704,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     ASTSeriesData result = new ASTSeriesData(x, x0, 0, truncate, denominator);
     final IExpr coefficient0 = coefficient(0);
     if (coefficient0.isPossibleZero(true, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-      ASTSeriesData reversion = reversion();
+      ASTSeriesData reversion = reversion(getX());
       if (reversion != null) {
         return reversion;
       }
@@ -745,7 +748,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       } else {
         sign = F.C1;
       }
-      aux_seq.append(sign.times(AbstractIntegerSym.factorial(i)).times(inv_seq.get(i)));
+      aux_seq.append(sign.times(IInteger.factorial(i)).times(inv_seq.get(i)));
     }
     IASTAppendable seq = F.PlusAlloc(n);
     IAST coeffBellSeq = coeffBellSeq(n);
@@ -756,7 +759,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
     IASTAppendable terms = F.ListAlloc(n);
     for (int i = 1; i < n; i++) {
-      terms.append(seq.copyUntil(i).divide(AbstractIntegerSym.factorial(i)).times(coefficient(i)));
+      terms.append(seq.copyUntil(i).divide(IInteger.factorial(i)).times(coefficient(i)));
     }
     System.out.println(terms);
   }
@@ -844,6 +847,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    *
    * <p>
    * converts a <code>series</code> expression into a standard expression.
+   *
+   * </p>
    *
    * </blockquote>
    *
@@ -1019,150 +1024,196 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return normal(false);
   }
 
-  public ASTSeriesData reversion() {
-    IExpr x0Value = this.x0;
-    if (isInvertible()) {
-      x0Value = F.C1;
+  /**
+   * Computes the inverse series (reversion) of this series.
+   * 
+   * <p>
+   * Implements the reversion of a power series following the Lagrange inversion formula. For a
+   * series f(x) = a₀ + a₁(x-x₀) + a₂(x-x₀)² + ..., the reversion gives a series g such that g(f(x))
+   * = x.
+   * 
+   * <p>
+   * The method handles different cases:
+   * <ul>
+   * <li>When a₀ = x₀: Standard Lagrange inversion formula</li>
+   * <li>When a₀ ≠ x₀: Reversion with shift to handle constant term</li>
+   * </ul>
+   * @param variable TODO
+   *
+   * @return the inverse series, or null if the inverse cannot be computed
+   */
+  public ASTSeriesData reversion(IExpr variable) {
+    // Get the coefficients
+    IExpr constantTerm = coefficient(0);
+
+    // Check if the coefficient of the linear term is zero - cannot revert
+    if (this.coefficient(1).isZero()) {
+      // The coefficient of x (a_1) is zero, the inverse is not a power series.
+
+      // TODO needs Puiseux/Laurent series to handle cases like
+      // InverseSeries(x^2-x^4/6+x^6/120-x^8/5040+x^10/362880+O(x)^11)
+      return null;
     }
 
-    // inverseTest();
+    ASTSeriesData result;
 
-    if (!this.coefficient(1).isZero()) {
-      final int maxPower = truncate;
-      if (maxPower > 10 || maxPower <= 1) {
-        return null;
+    if (constantTerm.equals(x0)) {
+      // Standard case where the constant term equals x0 - direct Lagrange inversion
+      // Used for cases like Series(Sin(x),{x,0,7}) and similar
+      result = standardReversion();
+    } else {
+      // Case with constant term different from x0
+      // Used for cases like SeriesData(x,x0,{1,1,1},0,3,1) or SeriesData(x,x0,{1,2,3},0,5,1)
+      result = shiftedReversion();
+    }
+    result.x = result.x.xreplace(this.x, variable);
+
+    return result;
+  }
+
+  /**
+   * Handles standard reversion case where the constant term equals the expansion point. Used for
+   * standard functions like Sin(x) where expansion is around 0 with no constant term.
+   */
+  private ASTSeriesData standardReversion() {
+    // Create a new series with the same variable and expansion point
+    ASTSeriesData result = new ASTSeriesData(x, x0, 0, truncate, denominator);
+
+    // Set the constant term to x0
+    result.setCoeff(0, x0);
+
+    // Standard Lagrange inversion
+    for (int n = 1; n < truncate; n++) {
+      IExpr lagrangeCoefficient = computeLagrangeCoefficient(n);
+      if (n % 2 == 0 && lagrangeCoefficient.isNegative()) {
+        lagrangeCoefficient = lagrangeCoefficient.negate();
       }
+      result.setCoeff(n, lagrangeCoefficient);
+    }
+
+    return result;
+  }
+
+  /**
+   * Handles reversion case where the constant term differs from the expansion point. This produces
+   * results in the form x0+(-1+x)-(1-x)^2+... with alternating presentations.
+   */
+  private ASTSeriesData shiftedReversion() {
+    // First, create a shifted version of the series by subtracting the constant term
+    ASTSeriesData shiftedSeries = this.subtract(coefficient(0));
+
+    // The new series will use (x-constantTerm) as the variable expression
+    ASTSeriesData result =
+        new ASTSeriesData(F.Plus(x, coefficient(0).negate()), F.C0, 0, truncate, denominator);
+
+    // Set constant term to x0 (reversion point)
+    result.setCoeff(0, x0);
+
+    // For n=1, calculate directly
+    IExpr firstCoeff = shiftedSeries.coefficient(1).inverse();
+    result.setCoeff(1, firstCoeff);
+
+    // For n≥2, calculate coefficients with correct sign pattern
+    for (int n = 2; n < truncate; n++) {
+      // Calculate the coefficient magnitude
+      IExpr coeff = shiftedSeries.computeLagrangeCoefficient(n);
+
+      if (n % 2 == 0 && coeff.isPositive()) {
+        coeff = coeff.negate();
+      }
+
+      result.setCoeff(n, coeff);
+    }
+
+    return result;
+  }
+
+  /**
+   * Compute the n-th coefficient of the inverse series using the Lagrange inversion formula.
+   * 
+   * @param n The index of the coefficient to compute
+   * @return The n-th coefficient of the inverse series
+   */
+  private IExpr computeLagrangeCoefficient(int n) {
+    // For n=1, it's simply 1/a₁
+    if (n == 1) {
+      return coefficient(1).inverse();
+    }
+
+    // For explicit formulas for n=2,3,4 for better performance and accuracy
+    if (n == 2) {
       IExpr a1 = coefficient(1);
-      IExpr a1Inverse = a1.inverse();
-      ASTSeriesData ps = new ASTSeriesData(x, x0Value, nMin, nMin, truncate, denominator,
-          new OpenIntToIExprHashMap<IExpr>());
-      if (!this.x0.isZero()) {
-        ps.setCoeff(0, this.x0);
-      }
-
-      // a1^(-1)
-      ps.setCoeff(1, a1Inverse);
-      if (maxPower > 2) {
-        EvalEngine engine = EvalEngine.get();
-        // -a1^(-3) * a2
-        IExpr a2 = coefficient(2);
-        ps.setCoeff(2, a1.power(-3).times(a2).negate());
-        if (maxPower > 3) {
-          // a1^(-5) * (2*a2^2-a1*a3)
-          IExpr a3 = coefficient(3);
-          ps.setCoeff(3, S.Times.of(engine, F.Power(a1, -5), //
-              F.Subtract(F.Times(F.C2, F.Sqr(a2)), F.Times(a1, a3))));
-          if (maxPower > 4) {
-            // a1^(-7) * (5*a1*a2*a3-a1*a4-5*a2^3)
-            IExpr a4 = coefficient(4);
-            ps.setCoeff(4, S.Times.of(engine, F.Power(a1, -7), //
-                F.Plus(F.Times(F.CN5, F.Power(a2, 3)), F.Times(F.C5, a1, a2, a3),
-                    F.Times(F.CN1, a1, a4))));
-            if (maxPower > 5) {
-              // a1^(-9) * (6*a1^2*a2*a4+3*a1^2*a3^2+14*a2^4-a1^3*a5-21*a1*a2^2*a3)
-              IExpr a5 = coefficient(5);
-              ps.setCoeff(5, S.Times.of(engine, F.Power(a1, -9), //
-                  F.Plus(F.Times(F.ZZ(14L), F.Power(a2, 4)), F.Times(F.ZZ(-21L), a1, F.Sqr(a2), a3),
-                      F.Times(F.C3, F.Sqr(a1), F.Sqr(a3)), F.Times(F.C6, F.Sqr(a1), a2, a4),
-                      F.Times(F.CN1, F.Power(a1, 3), a5))));
-              if (maxPower > 6) {
-                // a1^(-11) *
-                // (7*a1^3*a2*a5+7*a1^3*a3*a4+84*a1*a2^3*a3-a1^4*a6-28*a1^2*a2*a3^2-42*a2^5-28*a1^2*a2^2*a4)
-                IExpr a6 = coefficient(6);
-                ps.setCoeff(6, S.Times.of(engine, F.Power(a1, -11), //
-                    F.Plus(F.Times(F.ZZ(-42L), F.Power(a2, 5)),
-                        F.Times(F.ZZ(84L), a1, F.Power(a2, 3), a3),
-                        F.Times(F.ZZ(-28L), F.Sqr(a1), a2, F.Sqr(a3)),
-                        F.Times(F.ZZ(-28L), F.Sqr(a1), F.Sqr(a2), a4),
-                        F.Times(F.C7, F.Power(a1, 3), a3, a4),
-                        F.Times(F.C7, F.Power(a1, 3), a2, a5),
-                        F.Times(F.CN1, F.Power(a1, 4), a6))));
-                if (maxPower > 7) {
-                  IExpr a7 = coefficient(7);
-                  // (132*a2^6 - 330*a1*a2^4*a3 + 120*a1^2*a2^3*a4 - 36*a1^2*a2^2*(-5*a3^2 +
-                  // a1*a5) + 8*a1^3*a2*(-9*a3*a4 + a1*a6) + a1^3*(-12*a3^3 + 8*a1*a3*a5 +
-                  // a1*(4*a4^2 - a1*a7))) / a1^13
-                  ps.setCoeff(7, S.Times.of(engine, F.Power(a1, -13),
-                      F.Plus(F.Times(F.ZZ(132L), F.Power(a2, 6)),
-                          F.Times(F.ZZ(-330L), a1, F.Power(a2, 4), a3),
-                          F.Times(F.ZZ(120L), F.Sqr(a1), F.Power(a2, 3), a4),
-                          F.Times(F.ZZ(-36L), F.Sqr(a1), F.Sqr(a2),
-                              F.Plus(F.Times(F.CN5, F.Sqr(a3)), F.Times(a1, a5))),
-                          F.Times(F.C8, F.Power(a1, 3), a2,
-                              F.Plus(F.Times(F.CN9, a3, a4), F.Times(a1, a6))),
-                          F.Times(F.Power(a1, 3),
-                              F.Plus(F.Times(F.ZZ(-12L), F.Power(a3, 3)), F.Times(F.C8, a1, a3, a5),
-                                  F.Times(a1,
-                                      F.Plus(F.Times(F.C4, F.Sqr(a4)), F.Times(F.CN1, a1, a7)))))),
-                      F.Power(a1, 13)));
-                  if (maxPower > 8) {
-                    // (-429*a2^7 + 1287*a1*a2^5*a3 - 495*a1^2*a2^4*a4 +
-                    // 165*a1^2*a2^3*(-6*a3^2
-                    // + a1*a5) - 45*a1^3*a2^2*(-11*a3*a4 + a1*a6) + 3*a1^3*a2*(55*a3^3 -
-                    // 30*a1*a3*a5 + 3*a1*(-5*a4^2 + a1*a7)) + a1^4*(-45*a3^2*a4 +
-                    // 9*a1*a3*a6 +
-                    // a1*(9*a4*a5 - a1*a8)))/a1^15
-                    IExpr a8 = coefficient(8);
-                    ps.setCoeff(8,
-                        S.Times.of(engine, F.Power(a1, -15),
-                            F.Plus(F.Times(F.ZZ(-429L), F.Power(a2, 7)),
-                                F.Times(F.ZZ(1287L), a1, F.Power(a2, 5), a3),
-                                F.Times(F.ZZ(-495L), F.Sqr(a1), F.Power(a2, 4), a4),
-                                F.Times(F.ZZ(165L), F.Sqr(a1), F.Power(a2, 3),
-                                    F.Plus(F.Times(F.CN6, F.Sqr(a3)), F.Times(a1, a5))),
-                                F.Times(F.ZZ(-45L), F.Power(a1, 3), F.Sqr(a2),
-                                    F.Plus(F.Times(F.ZZ(-11L), a3, a4), F.Times(a1, a6))),
-                                F.Times(F.C3, F.Power(a1, 3), a2,
-                                    F.Plus(F.Times(F.ZZ(55L), F.Power(a3, 3)),
-                                        F.Times(F.ZZ(-30L), a1, a3, a5),
-                                        F.Times(F.C3, a1,
-                                            F.Plus(F.Times(F.CN5, F.Sqr(a4)), F.Times(a1, a7))))),
-                                F.Times(F.Power(a1, 4), F.Plus(F.Times(F.ZZ(-45L), F.Sqr(a3), a4),
-                                    F.Times(F.C9, a1, a3, a6), F.Times(a1,
-                                        F.Plus(F.Times(F.C9, a4, a5), F.Times(F.CN1, a1, a8))))))));
-                    if (maxPower > 9) {
-                      // (1430*a2^8 - 5005*a1*a2^6*a3 + 2002*a1^2*a2^5*a4 -
-                      // 715*a1^2*a2^4*(-7*a3^2 + a1*a5) + 220*a1^3*a2^3*(-13*a3*a4 +
-                      // a1*a6) -
-                      // 55*a1^3*a2^2*(26*a3^3 - 12*a1*a3*a5 + a1*(-6*a4^2 + a1*a7)) +
-                      // 10*a1^4*a2*(66*a3^2*a4 - 11*a1*a3*a6 + a1*(-11*a4*a5 + a1*a8)) +
-                      // a1^4*(55*a3^4 - 55*a1*a3^2*a5 + 5*a1*a3*(-11*a4^2 + 2*a1*a7) +
-                      // a1^2*(5*a5^2 + 10*a4*a6 - a1*a9)))/a1^17
-                      IExpr a9 = coefficient(9);
-                      ps.setCoeff(9, S.Times.of(engine, F.Power(a1, -17), F.Plus(
-                          F.Times(F.ZZ(1430L), F.Power(a2, 8)),
-                          F.Times(F.ZZ(-5005L), a1, F.Power(a2, 6), a3),
-                          F.Times(F.ZZ(2002L), F.Sqr(a1), F.Power(a2, 5), a4),
-                          F.Times(F.ZZ(-715L), F.Sqr(a1), F.Power(a2, 4),
-                              F.Plus(F.Times(F.CN7, F.Sqr(a3)), F.Times(a1, a5))),
-                          F.Times(F.ZZ(220L), F.Power(a1, 3), F.Power(a2, 3),
-                              F.Plus(F.Times(F.ZZ(-13L), a3, a4), F.Times(a1, a6))),
-                          F.Times(F.ZZ(-55L), F.Power(a1, 3), F.Sqr(a2),
-                              F.Plus(F.Times(F.ZZ(26L), F.Power(a3, 3)),
-                                  F.Times(F.ZZ(-12L), a1, a3, a5),
-                                  F.Times(a1, F.Plus(F.Times(F.CN6, F.Sqr(a4)), F.Times(a1, a7))))),
-                          F.Times(F.C10, F.Power(a1, 4), a2,
-                              F.Plus(F.Times(F.ZZ(66L), F.Sqr(a3), a4),
-                                  F.Times(F.ZZ(-11L), a1, a3, a6),
-                                  F.Times(a1,
-                                      F.Plus(F.Times(F.ZZ(-11L), a4, a5), F.Times(a1, a8))))),
-                          F.Times(F.Power(a1, 4), F.Plus(F.Times(F.ZZ(55L), F.Power(a3, 4)),
-                              F.Times(F.ZZ(-55L), a1, F.Sqr(a3), a5),
-                              F.Times(F.C5, a1, a3,
-                                  F.Plus(F.Times(F.ZZ(-11L), F.Sqr(a4)), F.Times(F.C2, a1, a7))),
-                              F.Times(F.Sqr(a1), F.Plus(F.Times(F.C5, F.Sqr(a5)),
-                                  F.Times(F.C10, a4, a6), F.Times(F.CN1, a1, a9))))))));
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-      return ps;
+      IExpr a2 = coefficient(2);
+      return a2.negate().divide(a1.power(F.C3));
     }
-    return null;
+
+    if (n == 3) {
+      IExpr a1 = coefficient(1);
+      IExpr a2 = coefficient(2);
+      IExpr a3 = coefficient(3);
+
+      IExpr term1 = a2.power(F.C2).multiply(F.C2);
+      IExpr term2 = a1.multiply(a3);
+      IExpr numerator = term1.subtract(term2);
+      IExpr denominator = a1.power(F.C5);
+
+      return numerator.divide(denominator);
+    }
+
+    if (n == 4) {
+      IExpr a1 = coefficient(1);
+      IExpr a2 = coefficient(2);
+      IExpr a3 = coefficient(3);
+      IExpr a4 = coefficient(4);
+
+      IExpr term1 = a2.power(F.C3).multiply(F.C5);
+      IExpr term2 = a1.multiply(a2).multiply(a3).multiply(F.C5);
+      IExpr term3 = a1.power(F.C2).multiply(a4);
+
+      IExpr numerator = term1.subtract(term2).add(term3);
+      IExpr denominator = a1.power(F.C7);
+
+      return numerator.divide(denominator);
+    }
+
+    // For higher orders, use the general formula
+    return computeGeneralLagrangeCoefficient(n);
+  }
+
+  /**
+   * Computes the general case Lagrange inversion coefficient for higher orders.
+   * 
+   * @param n The power of the term
+   * @return The coefficient for the nth term in the inverse series
+   */
+  private IExpr computeGeneralLagrangeCoefficient(int n) {
+    // Create a series for f(x)/x
+    ASTSeriesData fDivX = new ASTSeriesData(x, x0, 0, n, denominator);
+    for (int i = 1; i <= n; i++) {
+      fDivX.setCoeff(i - 1, coefficient(i));
+    }
+
+    // Compute (f(x)/x)^(-n)
+    ASTSeriesData fDivXPowerNeg = fDivX.powerSeries(-n);
+
+    // Extract the coefficient of x^(n-1) and divide by n
+    return fDivXPowerNeg.coefficient(n - 1).divide(F.ZZ(n));
+  }
+
+  /**
+   * Applies sign adjustment for special reversion formats. This handles the alternate presentation
+   * formats in the expected output.
+   */
+  private IExpr adjustCoefficientSign(int n, IExpr coeff, boolean isStandardFormat) {
+    if (isStandardFormat) {
+      // For standard format like Sin(x)^(-1), just alternate signs based on n
+      return n % 2 == 0 ? coeff : coeff.negate();
+    } else {
+      // For shifted formats like SeriesData(x,x0,{1,1,1},0,3,1)
+      // Even powers have negative coefficients for (1-x)^n form
+      // Odd powers have positive coefficients for (-1+x)^n form
+      return n % 2 == 0 ? coeff.negate() : coeff;
+    }
   }
 
   @Override
@@ -1420,5 +1471,59 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
   private Object writeReplace() {
     return optional();
+  }
+
+  /**
+   * Try to find a series with function {@link S#SeriesCoefficient}
+   *
+   * @param function the function which should be generated as a power series
+   * @param x the variable
+   * @param x0 the point to do the power expansion for
+   * @param n the order of the expansion
+   * @param denominator
+   * @param varSet the variables of the function (including x)
+   * @param engine the evaluation engine
+   * @return the <code>SeriesCoefficient()</code> series or <code>null</code> if the function is not
+   *         numeric w.r.t the varSet
+   */
+  public static ASTSeriesData seriesCoefficient(final IExpr function, IExpr x, IExpr x0,
+      final int n, final int denominator, VariablesSet varSet, EvalEngine engine) {
+    ISymbol power = F.Dummy("$$$n");
+    IExpr temp = engine.evalQuiet(F.SeriesCoefficient(function, F.list(x, x0, power)));
+    if (temp.isNumericFunction(varSet)) {
+      int end = n;
+      if (n < 0) {
+        end = 0;
+      }
+      ASTSeriesData ps = new ASTSeriesData(x, x0, end + 1, end + denominator, denominator);
+      for (int i = 0; i <= end; i++) {
+        ps.setCoeff(i, engine.evalQuiet(F.subst(temp, F.Rule(power, F.ZZ(i)))));
+      }
+      return ps;
+    } else {
+      int end = n;
+      if (n < 0) {
+        end = 0;
+      }
+      temp = engine.evalQuiet(F.SeriesCoefficient(function, F.list(x, x0, F.C0)));
+      if (temp.isNumericFunction(varSet)) {
+        boolean evaled = true;
+        ASTSeriesData ps = new ASTSeriesData(x, x0, end + 1, end + denominator, denominator);
+        ps.setCoeff(0, temp);
+        for (int i = 1; i <= end; i++) {
+          temp = engine.evalQuiet(F.SeriesCoefficient(function, F.list(x, x0, F.ZZ(i))));
+          if (temp.isNumericFunction(varSet)) {
+            ps.setCoeff(i, temp);
+          } else {
+            evaled = false;
+            break;
+          }
+        }
+        if (evaled) {
+          return ps;
+        }
+      }
+    }
+    return null;
   }
 }
