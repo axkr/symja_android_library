@@ -63,6 +63,10 @@ public abstract class ASTNode {
     return !this.equals(node);
   }
 
+  public String toWMAString() {
+    return toString();
+  }
+
   @Override
   public String toString() {
     return fStringValue;

@@ -1,0 +1,7140 @@
+# Information about Wolfram Language named operators.
+
+# This information comes largely from Robert L. Jacobson's Table of
+# Wolfram Language Operators found at:
+# https://github.com/WLTools/LanguageSpec/blob/master/docs/Specification/Syntax/Operator%20Table.csv
+#
+# Some operator information attached to individual character names can
+# be found in file "named-characters.yml".
+#
+# For a description of many of the fields below, see
+#  https://www.robertjacobson.dev/posts/2018-09-03-generalizing-pemdas-what-is-an-operator/
+# and:
+# https://www.robertjacobson.dev/posts/2018-09-04-defining-the-wolfram-language-part-2-operator-properties/
+#
+# Operator Precedence
+# ----------------------
+#
+# We have two kinds of operator precedence values listed: "precedence," which is used
+# in Mathics3 (core), and an optional "Precedence-Function" which can be used
+# to match WMA builtin-function Precedence[] values.
+
+# In the Mathics3 parser of Mathics core, the integer "precedence"
+# listed here is an integer used in specifying the order
+# operations occur when one operator is juxtaposed against another
+# operator.  A higher value means that the operator binds before an
+# operator with a lower value.
+
+# For example, the Times precedence 400 is higher than the Plus
+# precedence 310 because a + b * c is a + (b * c), not (a + b) * c.
+# Precedence is also used to force multi-character ASCII symbols like
+# |-> to get treated as one unit and not split into two operators like
+# | and ->. So the precedence of |-> has to be higher than |.
+#
+# Note: When there was a mismatch between Jacobson's table and the old
+# Mathics code, we've used the old Mathics code.
+#
+# Boxing Operator Precedence
+# ---------------------------
+#
+# WMA uses operators, like \/ (FractionBox) or \_ (SubscriptBox), in
+# Boxing Expressions. Like any other operator, there is a precedence
+# value for each operator indicated by the "precedence" field.
+#
+# But please note that boxing operators and their precedece should be
+# thought of as distinct from expression operators and their
+# precedence. The two generally do not mix in an expression. Boxing is
+# a separate phase which is run after expression evaluation.
+#
+#
+# arity (https://en.wikipedia.org/wiki/Arity)
+# -------------------------------------------
+#
+# A fancy word for how many operands (arguments) the operator takes;
+# it is some sort of positive integer. Acceptable values found in our table
+# are:
+#  - NullAry (0 arguments),
+#  - Unary (1 argument),
+#  - Binary (2 arguments)
+#  - Infix (2 or more arguments; Binary is a special case of Infix having exactly 2 arguments)
+#  - Ternary (3 arguments)
+#  - n-ary (n arguments)
+#
+#
+# precedence
+# ----------
+#
+# An integer value of an operator that is used by the Mathics3 parser
+# as described above.
+#
+# Precedence Function
+# -------------------
+#
+#  This integer field is optional and only used when there is a
+#  discrepancy between what WMA reports when using the function
+#  Precedence[] and what Mathics3 requires, we note that here.
+#
+#   WolframLanguageData: a "PrecedenceRanks" value returned using:
+#       WolframLanguageData[*operator_name*, "PrecedenceRanks"]
+#     Example:
+#       In[1] := WolframLanguageData["AddTo", "PrecedenceRanks"]
+#       Out[1]= {{expr1 +=expr2 , AddTo[expr1 ,expr2]} -> 73
+#
+#     Note that 73 is a number that belongs to a different precedence
+#     scheme than the one given by Precedence and used in Mathics3.
+#
+#     Also Note that WolframLanguageData can also be used to give the
+#     ASCII and unicode character representations:
+
+#       In[2] := WolframLanguageData["AddTo", "ShortNotations"]
+#       Out[2]= {+=}
+#       In[2] := WolframLanguageData["GreaterEqual", "ShortNotations"]
+#       Out[7]= {>=, ≥}
+#
+# usage
+# -----
+#
+#  This field is optional. When it appears, it is either string
+#  containing an example of the use of this operator. When it is
+#  helpful to give several examples because the operator can be used
+#  in several forms, the field type is a list of strings.
+#
+# FullForm
+# --------
+#
+#  This field is optional. A parsed FullForm translation of some usage strings.
+#
+# associativity
+# --------------
+#
+#  When two or more of the same operator are used, which group should be
+#  evaluated first? The associativity value determines this and is used by the Mathics3 parser. An
+#  associativity value should be one of:
+#
+#       - None
+#       - left
+#       - non-associative
+#       - right
+#       - unknown
+#
+#  An operator tagged as "left" will appear in JSON tables under the key
+#  "left-binary-operators", "right" will appear in the JSON table under the key
+#  "right-binary-operators", "non-associative" under the key
+#  "non-associative-operators", "unknown" under the key "miscellaneous-operators",
+#   and None as "flat_binary_operators".
+#
+# box-operator
+# ------------
+#
+# This field exists and is set to true if the operator is used in boxing. Boxing
+# operators are enclosed in \(  \) pairs.
+#
+# operator
+# --------
+#
+# This field exists for box-operators. In the future, we may expand to other operators.
+# (Non-box operators are listed in fields of named-characters.)
+# It is the string value for the operator.
+
+# meaningful
+# ---------
+#  This field "true" if WMA defines a meaning for the operator and "false" if not.
+#
+#  See "Operators without Built-in Meanings"
+#  https://reference.wolfram.com/language/tutorial/TextualInputAndOutput.html#41
+
+AddTo:
+  precedence: 100
+  WolframLanguageData: 69
+  WolframLanguageData-corrected: 69
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 230
+  # N-tokens: {}
+  # L-tokens: {"+="}
+  # O-tokens: {}
+  usage: "expr1 += expr2"
+  FullForm: AddTo[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments:
+
+# Alternatives precedence needs to be greater than Function "|->" which is
+# 90 so that we don't treat |-> as | ->.
+Alternatives:
+  precedence: 160
+  WolframLanguageData: 63
+  WolframLanguageData-corrected: 64
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 276
+  # N-tokens: {}
+  # L-tokens: {"|"}
+  # O-tokens: {}
+  usage: "p1 | p2"
+  FullForm: {"Alternatives", "[", "expr1", ",", "expr2", "]"}
+  arity: Alternatives[expr1, expr2]
+  affix: Binary
+  associativity: null
+  meaningful: none
+  # comments: True
+
+And:
+  # Note from Mathics3 code:
+  # HACK: although the should be 215 for all boolean_ops we adjust slightly
+  # to get the subprecedences correct
+  Precedence-Function: 225
+  precedence: 225
+  WolframLanguageData: 55
+  WolframLanguageData-corrected: 55
+  UnicodeCharacters.tr: 330
+  UnicodeCharacters-corrected.tr: 330
+  # N-tokens: {}
+  # L-tokens: {"&&", "∧"}
+  # O-tokens: {}
+  usage: ["expr1 && expr2", "expr1 ∧ expr2"]
+  FullForm: And[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+AngleBracket:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr: -10
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {"〈"}
+  # L-tokens: {}
+  # O-tokens: {"〉"}
+  usage: "〈expr〉"
+  FullForm: AngleBracket[expr, \[Ellipsis]]
+  arity: n-ary
+  affix: Matchfix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Apply:
+  Precedence-Function: 620
+  precedence: 620
+  WolframLanguageData: 16
+  WolframLanguageData-corrected: 16
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 710
+  # N-tokens: {}
+  # L-tokens: {"@@"}
+  # O-tokens: {}
+  usage: "expr1 @@ expr2"
+  FullForm: Apply[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments:
+
+ApplyTo:
+  precedence: 75
+  WolframLanguageData: 76
+  WolframLanguageData-corrected: 75
+  UnicodeCharacters.tr: None
+  UnicodeCharacters-corrected.tr: 75
+  # N-tokens: None
+  # L-tokens: None
+  # O-tokens: None
+  # usage: "None"
+  FullForm: None
+  arity: Binary
+  affix: Infix
+  associativity: left
+  meaningful: true
+  # comments: None
+
+Association:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr: -10
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {"<|", ""}
+  # L-tokens: e
+  # O-tokens: {"|>", ""}
+  usage: ["<|expr|>", "expr "]
+  FullForm: Association[expr, \[Ellipsis]]
+  arity: n-ary
+  affix: Matchfix
+  associativity: null
+  meaningful: true
+  # comments:
+
+AutoMatch:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr: -10
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {""}
+  # L-tokens: {}
+  # O-tokens: {""}
+  usage: " expr "
+  FullForm: AutoMatch[expr]
+  arity: Unary
+  affix: Matchfix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Backslash:
+  precedence: 460
+  WolframLanguageData: 32
+  WolframLanguageData-corrected: 32
+  UnicodeCharacters.tr: 580
+  UnicodeCharacters-corrected.tr: 580
+  # N-tokens: {}
+  # L-tokens: {"∖"}
+  # O-tokens: {}
+  usage: "expr1 \ expr2"
+  FullForm: Backslash[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Because:
+  precedence: 50
+  WolframLanguageData: 74
+  WolframLanguageData-corrected: 74
+  UnicodeCharacters.tr: 201
+  UnicodeCharacters-corrected.tr: 201
+  # N-tokens: {}
+  # L-tokens: {"∵"}
+  # O-tokens: {}
+  usage: "expr1 ∵ expr2"
+  FullForm: Because[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: left
+  meaningful: false
+  # comments: Precedence of Therefore and Because are swapped in the Wolfram notebook compared to the way they appear in ToExpression.
+
+BlackLenticularBracket:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr: -10
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {"【"}
+  # L-tokens: {}
+  # O-tokens: {"】"}
+  usage: "【expr】"
+  FullForm:
+  arity: Unary
+  affix: Matchfix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Blank:
+  precedence: 730
+  WolframLanguageData: 5
+  WolframLanguageData-corrected: 5
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 820
+  # N-tokens: {"_"}
+  # L-tokens: {}
+  # O-tokens: {}
+  usage: "_"
+  FullForm: Blank[]
+  arity: Nullary
+  affix: None
+  associativity: null
+  meaningful: true
+  # comments: A Blank (_) with no accompanying decoration.
+
+BlankHead:
+  precedence: 730
+  WolframLanguageData: 5
+  WolframLanguageData-corrected: 5
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 820
+  # N-tokens: {"_"}
+  # L-tokens: {}
+  # O-tokens: {}
+  usage: "_expr"
+  FullForm: Blank[expr]
+  arity: Unary
+  affix: Prefix
+  associativity: null
+  meaningful: true
+  # comments:
+
+BlankNullSequence:
+  precedence: 730
+  WolframLanguageData: 5
+  WolframLanguageData-corrected: 5
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 820
+  # N-tokens: {"___"}
+  # L-tokens: {}
+  # O-tokens: {}
+  usage: "___"
+  FullForm: BlankNullSequence[]
+  arity: Nullary
+  affix: None
+  associativity: null
+  meaningful: true
+  # comments: A BlankNullSequence (___) with no accompanying decoration.
+
+BlankNullSequenceHead:
+  precedence: 730
+  WolframLanguageData: 5
+  WolframLanguageData-corrected: 5
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 820
+  # N-tokens: {"___"}
+  # L-tokens: {}
+  # O-tokens: {}
+  usage: "___expr"
+  FullForm: BlankNullSequence[expr]
+  arity: Unary
+  affix: Prefix
+  associativity: null
+  meaningful: true
+  # comments:
+
+BlankOptional:
+  precedence: 730
+  WolframLanguageData: 5
+  WolframLanguageData-corrected: 5
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 820
+  # N-tokens: {"_."}
+  # L-tokens: {}
+  # O-tokens: {}
+  usage: "_."
+  FullForm: Optional[Blank[]]
+  arity: Nullary
+  affix: None
+  associativity: null
+  meaningful: true
+  # comments: No name or head.
+
+BlankSequence:
+  precedence: 730
+  WolframLanguageData: 5
+  WolframLanguageData-corrected: 5
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 820
+  # N-tokens: {"__"}
+  # L-tokens: {}
+  # O-tokens: {}
+  usage: "__"
+  FullForm: BlankSequence[]
+  arity: Nullary
+  affix: None
+  associativity: null
+  meaningful: true
+  # comments: A BlankNullSequence (__) with no accompanying decoration.
+
+BlankSequenceHead:
+  precedence: 730
+  WolframLanguageData: 5
+  WolframLanguageData-corrected: 5
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 820
+  # N-tokens: {"__"}
+  # L-tokens: {}
+  # O-tokens: {}
+  usage: "__expr"
+  FullForm: BlankSequence[expr]
+  arity: Unary
+  affix: Prefix
+  associativity: null
+  meaningful: true
+  # comments:
+
+BoxGroup:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {"\("}
+  # L-tokens: {}
+  # O-tokens: {"\)"}
+  usage: "\\(expr\\)"
+  FullForm: "\\(expr\\)"
+  arity: Unary
+  affix: Matchfix
+  associativity: null
+  meaningful: true
+  # comments: The interpretation of this operator depends on context. It must contain box sublanguage.
+
+BracketingBar:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr: -10
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {""}
+  # L-tokens: {}
+  # O-tokens: {""}
+  usage: "expr"
+  FullForm: BracketingBar[expr, \[Ellipsis]]
+  arity: n-ary
+  affix: Matchfix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Cap:
+  precedence: 350
+  WolframLanguageData: 43
+  WolframLanguageData-corrected: 42.5
+  UnicodeCharacters.tr: 470
+  UnicodeCharacters-corrected.tr: 470
+  # N-tokens: {}
+  # L-tokens: {"⌢"}
+  # O-tokens: {}
+  usage: "expr1 ⌢ expr2"
+  FullForm: Cap[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+CapitalDifferentialD:
+  Precedence-Function: 550
+  precedence: 550
+  WolframLanguageData:
+  WolframLanguageData-corrected: 23
+  UnicodeCharacters.tr: 630
+  UnicodeCharacters-corrected.tr: 630
+  # N-tokens: {""}
+  # L-tokens: {}
+  # O-tokens: {}
+  usage: "x"
+  FullForm: CapitalDifferentialD[x]
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: false
+  # comments:
+
+Ceiling:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr: -10
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {"⌈"}
+  # L-tokens: {}
+  # O-tokens: {"⌉"}
+  usage: "⌈expr⌉"
+  FullForm: Ceiling[expr]
+  arity: Unary
+  affix: Matchfix
+  associativity: null
+  meaningful: true
+  # comments:
+
+CenterDot:
+  precedence: 410
+  WolframLanguageData:
+  WolframLanguageData-corrected: 37
+  UnicodeCharacters.tr: 530
+  UnicodeCharacters-corrected.tr: 530
+  # N-tokens: {}
+  # L-tokens: {"·"}
+  # O-tokens: {}
+  usage: "x · y"
+  FullForm: CenterDot[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+CircleDot:
+  precedence: 520
+  WolframLanguageData: 26, 35, 37
+  WolframLanguageData-corrected: 26
+  UnicodeCharacters.tr: 605
+  UnicodeCharacters-corrected.tr: 608
+  # N-tokens: {}
+  # L-tokens: {"⊙"}
+  # O-tokens: {}
+  usage: "expr1 ⊙ expr2"
+  FullForm: CircleDot[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+CircleMinus:
+  precedence: 330
+  WolframLanguageData: 44
+  WolframLanguageData-corrected: 44
+  UnicodeCharacters.tr: 450
+  UnicodeCharacters-corrected.tr: 450
+  # N-tokens: {}
+  # L-tokens: {"⊖"}
+  # O-tokens: {}
+  usage: "expr1 ⊖ expr2"
+  FullForm: CircleMinus[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+CirclePlus:
+  precedence: 330
+  WolframLanguageData: 44
+  WolframLanguageData-corrected: 44
+  UnicodeCharacters.tr: 450
+  UnicodeCharacters-corrected.tr: 450
+  # N-tokens: {}
+  # L-tokens: {"⊕"}
+  # O-tokens: {}
+  usage: "expr1 ⊕ expr1"
+  FullForm: CirclePlus[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+CircleTimes:
+  precedence: 420
+  WolframLanguageData:
+  WolframLanguageData-corrected: 36
+  UnicodeCharacters.tr: 540
+  UnicodeCharacters-corrected.tr: 540
+  # N-tokens: {}
+  # L-tokens: {"⊗"}
+  # O-tokens: {}
+  usage: "expr1 ⊗ expr2"
+  FullForm: CircleTimes[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+ClockwiseContourIntegral:
+  Precedence-Function: 670
+  precedence: 325
+  WolframLanguageData:
+  WolframLanguageData-corrected: 45
+  UnicodeCharacters.tr: 455
+  UnicodeCharacters-corrected.tr: 445
+  # N-tokens: {"∲"}
+  # L-tokens: {}
+  # O-tokens: {""}
+  usage: "∲ f(x) x"
+  # FullForm: ClockwiseContourIntegrate[expr1, expr2]
+  arity: Binary
+  affix: Compound
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+Colon:
+  precedence: 80
+  WolframLanguageData: 71
+  WolframLanguageData-corrected: 71
+  UnicodeCharacters.tr: 205
+  UnicodeCharacters-corrected.tr: 205
+  # N-tokens: {}
+  # L-tokens: {"∶"}
+  # O-tokens: {}
+  usage: "expr1 ∶ expr2"
+  FullForm: Colon[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Composition:
+  Precedence-Function: 625
+  precedence: 625
+  WolframLanguageData: 13
+  WolframLanguageData-corrected: 13
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 740
+  # N-tokens: {}
+  # L-tokens: {"@*"}
+  # O-tokens: {}
+  usage: "expr1 @* expr2"
+  FullForm: Composition[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+CompoundExpression:
+  precedence: 10
+  WolframLanguageData: 77
+  WolframLanguageData-corrected: 77
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 170
+  # N-tokens: {}
+  # L-tokens: {","}
+  # O-tokens: {}
+  usage: "expr1, expr2"
+  FullForm: CompoundExpression[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+# rocky: What's this for?
+CompoundExpressionNull:
+  precedence: 10
+  WolframLanguageData: 77
+  WolframLanguageData-corrected: 77
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 170
+  # N-tokens: {}
+  # L-tokens: {";"}
+  # O-tokens: {}
+  # usage: "expr1; expr2"
+  FullForm: CompoundExpression[expr1, expr2, Null]
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: true
+  # comments:
+
+Condition:
+  precedence: 130
+  WolframLanguageData: 66
+  WolframLanguageData-corrected: 66
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 260
+  # N-tokens: {}
+  # L-tokens: {"/;"}
+  # O-tokens: {}
+  usage: "expr1 /; expr2"
+  FullForm: Condition[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: left
+  meaningful: true
+  # comments:
+
+Conditioned:
+  precedence: 195
+  WolframLanguageData:
+  WolframLanguageData-corrected: 59.5
+  UnicodeCharacters.tr: 305
+  UnicodeCharacters-corrected.tr: 305
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  usage: "expr  cond"
+  FullForm: Conditioned[expr, cond]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Congruent:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≡"}
+  # O-tokens: {}
+  usage: "x ≡ y"
+  FullForm: Congruent[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Conjugate:
+  Precedence-Function: 670
+  precedence: 670
+  WolframLanguageData: 18
+  WolframLanguageData-corrected: 18
+  UnicodeCharacters.tr: 695
+  UnicodeCharacters-corrected.tr: 695
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  usage: "z"
+  FullForm: Conjugate[z]
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: true
+  # comments:
+
+ConjugateTranspose:
+  Precedence-Function: 670
+  precedence: 670
+  WolframLanguageData: 18
+  WolframLanguageData-corrected: 18
+  UnicodeCharacters.tr: 695
+  UnicodeCharacters-corrected.tr: 695
+  # N-tokens: {}
+  # L-tokens: {"", ""}
+  # O-tokens: {}
+  usage: "m; m"
+  FullForm: ConjugateTranspose[m]
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: true
+  # comments:
+
+ContextPathSeparator:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {}
+  # L-tokens: {"`"}
+  # O-tokens: {}
+  usage: "symb1`symb2"
+  FullForm: symb1`symb2
+  arity:
+  affix:
+  associativity: null
+  meaningful: true
+  # comments: Functions similar to decimal point for numbers: either contextpath1 or contextpath2 may be empty, but not both at the same time.
+
+ContourIntegral:
+  Precedence-Function: 670
+  precedence: 325
+  WolframLanguageData:
+  WolframLanguageData-corrected: 45
+  UnicodeCharacters.tr: 455
+  UnicodeCharacters-corrected.tr: 445
+  # N-tokens: {"∮"}
+  # L-tokens: {}
+  # O-tokens: {""}
+  usage: "∮ f(x) x"
+  FullForm: Integrate[expr1, expr2]
+  arity: Binary
+  affix: Compound
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+Coproduct:
+  precedence: 360
+  WolframLanguageData: 42
+  WolframLanguageData-corrected: 42
+  UnicodeCharacters.tr: 500
+  UnicodeCharacters-corrected.tr: 500
+  # N-tokens: {}
+  # L-tokens: {"∐"}
+  # O-tokens: {}
+  usage: "expr1 ∐ expr2"
+  FullForm: Coproduct[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+CornerBracket:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr: -10
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {"「"}
+  # L-tokens: {}
+  # O-tokens: {"」"}
+  usage: "「expr」"
+  FullForm:
+  arity: Unary
+  affix: Matchfix
+  associativity: null
+  meaningful: true
+  # comments:
+
+CounterClockwiseContourIntegral:
+  Precedence-Function: 670
+  precedence: 325
+  WolframLanguageData:
+  WolframLanguageData-corrected: 45
+  UnicodeCharacters.tr: 455
+  UnicodeCharacters-corrected.tr: 445
+  # N-tokens: {"∳"}
+  # L-tokens: {}
+  # O-tokens: {""}
+  usage: "∳ f(x)  x"
+  FullForm: Integrate[expr1, expr2]
+  arity: Binary
+  affix: Compound
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+Cross:
+  precedence: 500
+  WolframLanguageData: 28
+  WolframLanguageData-corrected: 28
+  UnicodeCharacters.tr: 603
+  UnicodeCharacters-corrected.tr: 606
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  usage: "expr1  expr2"
+  FullForm: Cross[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Cup:
+  precedence: 340
+  WolframLanguageData: 43
+  WolframLanguageData-corrected: 43
+  UnicodeCharacters.tr: 460
+  UnicodeCharacters-corrected.tr: 460
+  # N-tokens: {}
+  # L-tokens: {"⌣"}
+  # O-tokens: {}
+  usage: "expr1 ⌣ expr2"
+  FullForm: Cup[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+CupCap:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≍"}
+  # O-tokens: {}
+  usage: "x ≍ y"
+  FullForm: CupCap[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Curl:
+  Precedence-Function: 670
+  precedence: 485
+  WolframLanguageData:
+  WolframLanguageData-corrected: 29.8
+  UnicodeCharacters.tr: 601
+  UnicodeCharacters-corrected.tr: 601
+  # N-tokens: {""}
+  # L-tokens: {}
+  # O-tokens: {}
+  usage: "expr"
+  FullForm:
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+CurlyDoubleQuote:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr: -10
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {"“"}
+  # L-tokens: {}
+  # O-tokens: {"”"}
+  usage: "“expr”"
+  FullForm: CurlyDoubleQuote[expr]
+  arity: Unary
+  affix: Matchfix
+  associativity: null
+  meaningful: false
+  # comments:
+
+CurlyQuote:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr: -10
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {"‘"}
+  # L-tokens: {}
+  # O-tokens: {"’"}
+  # usage: "‘expr’"
+  FullForm: CurlyQuote[expr]
+  arity: Unary
+  affix: Matchfix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Decrement:
+  Precedence-Function: 660
+  precedence: 660
+  WolframLanguageData: 11
+  WolframLanguageData-corrected: 11
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 760
+  # N-tokens: {}
+  # L-tokens: {"--"}
+  # O-tokens: {}
+  usage: "expr--"
+  FullForm: Decrement[expr]
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: true
+  # comments:
+
+# Definition precedence needs to be greater than Information "??" which is
+# 5001 so that we don't treat ?? as ? ?.
+Definition:
+  precedence: 5000  # Seems a bit extreme. This is the old Mathics data.
+  WolframLanguageData: None
+  WolframLanguageData-corrected: None
+  UnicodeCharacters.tr: None
+  UnicodeCharacters-corrected.tr: None
+  # N-tokens: None
+  # L-tokens: None
+  # O-tokens: None
+  usage: "?Times"
+  FullForm: None
+  arity: Unary
+  affix: Prefix
+  associativity: null
+  meaningful: true
+  # comments: None
+
+Del:
+  precedence: 550
+  WolframLanguageData: 24
+  WolframLanguageData-corrected: 24
+  UnicodeCharacters.tr: 620
+  UnicodeCharacters-corrected.tr: 620
+  # N-tokens: {"∇"}
+  # L-tokens: {}
+  # O-tokens: {}
+  usage: "∇x"
+  FullForm: Del[expr]
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: false
+  # comments:
+
+Derivative:
+  precedence: 670
+  WolframLanguageData: 19
+  WolframLanguageData-corrected: 19
+  UnicodeCharacters.tr: None
+  UnicodeCharacters-corrected.tr: 680
+  # N-tokens: None
+  # L-tokens: None
+  # O-tokens: None
+  # usage: "None"
+  FullForm: None
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: true
+  # comments: None
+
+Diamond:
+  precedence: 450
+  WolframLanguageData: 33
+  WolframLanguageData-corrected: 33
+  UnicodeCharacters.tr: 570
+  UnicodeCharacters-corrected.tr: 570
+  # N-tokens: {}
+  # L-tokens: {"⋄"}
+  # O-tokens: {}
+  usage: "expr1 ⋄ expr2"
+  FullForm: Diamond[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DifferenceDelta:
+  precedence: 550
+  WolframLanguageData: 24
+  WolframLanguageData-corrected: 24
+  UnicodeCharacters.tr: 620
+  UnicodeCharacters-corrected.tr: 620
+  # N-tokens: {""}
+  # L-tokens: {}
+  # O-tokens: {}
+  usage: "expr"
+  FullForm:
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+DifferentialD:
+  Precedence-Function: 550
+  precedence: 550
+  WolframLanguageData:
+  WolframLanguageData-corrected: 23
+  UnicodeCharacters.tr: 630
+  UnicodeCharacters-corrected.tr: 630
+  # N-tokens: {""}
+  # L-tokens: {}
+  # O-tokens: {}
+  usage: "x"
+  FullForm: DifferentialD[x]
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: false
+  # comments:
+
+DirectedEdge:
+  precedence: 295
+  WolframLanguageData:
+  WolframLanguageData-corrected: 49
+  UnicodeCharacters.tr: 395
+  UnicodeCharacters-corrected.tr: 395
+  # N-tokens: {}
+  # L-tokens: {"→"}
+  # O-tokens: {}
+  usage: "u → v"
+  FullForm: DirectedEdge[u, v]
+  arity: Binary
+  affix: Infix
+  associativity: "non-associative"
+  meaningful: true
+  # comments:
+
+DiscreteRatio:
+  precedence: 550
+  WolframLanguageData: 24
+  WolframLanguageData-corrected: 24
+  UnicodeCharacters.tr: 620
+  UnicodeCharacters-corrected.tr: 620
+  # N-tokens: {""}
+  # L-tokens: {}
+  # O-tokens: {}
+  usage: "f  i"
+  FullForm:
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+DiscreteShift:
+  precedence: 550
+  WolframLanguageData: 24
+  WolframLanguageData-corrected: 24
+  UnicodeCharacters.tr: 620
+  UnicodeCharacters-corrected.tr: 620
+  # N-tokens: {""}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "expr"
+  FullForm:
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+Distributed:
+  precedence: 250
+  WolframLanguageData:
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "expr1  expr2"
+  FullForm: Distributed[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Divergence:
+  Precedence-Function: 550
+  precedence: 485
+  WolframLanguageData:
+  WolframLanguageData-corrected: 29.8
+  UnicodeCharacters.tr: 601
+  UnicodeCharacters-corrected.tr: 601
+  # N-tokens: {""}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "expr"
+  FullForm:
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+Divide:
+  precedence: 470
+  WolframLanguageData: 31
+  WolframLanguageData-corrected: 31
+  UnicodeCharacters.tr: 590
+  UnicodeCharacters-corrected.tr: 590
+  # N-tokens: {}
+  # L-tokens: {"/", "÷", "∕"}
+  # O-tokens: {}
+  # usage: "expr1 / expr2; expr1 ÷ expr2"
+  FullForm: Times[expr1, Power[expr2, -1]]
+  arity: Binary
+  affix: Infix
+  associativity: left
+  meaningful: true
+  # comments:
+
+DivideBy:
+  precedence: 100
+  WolframLanguageData: 69
+  WolframLanguageData-corrected: 69
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 230
+  # N-tokens: {}
+  # L-tokens: {"/="}
+  # O-tokens: {}
+  # usage: "expr1 /= expr2"
+  FullForm: DivideBy[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments:
+
+Divides:
+  Precedence-Function: 670
+  precedence: 470
+  WolframLanguageData:
+  WolframLanguageData-corrected: 31
+  UnicodeCharacters.tr: 590
+  UnicodeCharacters-corrected.tr: 590
+  # N-tokens: {}
+  # L-tokens: {"∣"}
+  # O-tokens: {}
+  # usage: "expr1 ∣ expr2"
+  FullForm: Divisible[expr2, expr1]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Dot:
+  precedence: 490
+  WolframLanguageData: 29
+  WolframLanguageData-corrected: 29
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 605
+  # N-tokens: {}
+  # L-tokens: {"."}
+  # O-tokens: {}
+  # usage: "expr1 . expr2"
+  FullForm: Dot[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+DotEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≐"}
+  # O-tokens: {}
+  usage: "x ≐ y"
+  FullForm: DotEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DoubleAngleBracket:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr: -10
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {"《"}
+  # L-tokens: {}
+  # O-tokens: {"》"}
+  usage: "《expr》"
+  FullForm:
+  arity: Unary
+  affix: Matchfix
+  associativity: null
+  meaningful: true
+  # comments:
+
+DoubleBracketingBar:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr: -10
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {""}
+  # L-tokens: {}
+  # O-tokens: {""}
+  usage: "x, y, z"
+  FullForm: "DoubleBracketingBar[x, y, z]"
+  arity: n-ary
+  affix: Matchfix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DoubleContourIntegral:
+  Precedence-Function: 670
+  precedence: 325
+  WolframLanguageData:
+  WolframLanguageData-corrected: 45
+  UnicodeCharacters.tr: 455
+  UnicodeCharacters-corrected.tr: 445
+  # N-tokens: {"∯"}
+  # L-tokens: {}
+  # O-tokens: {""}
+  usage: "∯ f(x) x"
+  FullForm: Integrate[x, x]
+  arity: Binary
+  affix: Compound
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+DoubleDownArrow:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⇓"}
+  # O-tokens: {}
+  usage: "x ⇓ y"
+  FullForm: DoubleDownArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DoubleLeftArrow:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"⇐"}
+  # O-tokens: {}
+  usage: "x ⇐ y"
+  FullForm: DoubleLeftArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DoubleLeftRightArrow:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"⇔"}
+  # O-tokens: {}
+  usage: "x ⇔ y"
+  FullForm: DoubleLeftRightArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DoubleLeftTee:
+  precedence: 190
+  WolframLanguageData: 60
+  WolframLanguageData-corrected: 60
+  UnicodeCharacters.tr: 300
+  UnicodeCharacters-corrected.tr: 300
+  # N-tokens: {}
+  # L-tokens: {"⫤"}
+  # O-tokens: {}
+  usage: "expr1 ⫤ expr2"
+  FullForm: DoubleLeftTee[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: left
+  meaningful: false
+  # comments:
+
+DoubleLongLeftArrow:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⟸"}
+  # O-tokens: {}
+  usage: "x ⟸ y"
+  FullForm: DoubleLongLeftArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DoubleLongLeftRightArrow:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⟺"}
+  # O-tokens: {}
+  usage: "x ⟺ y"
+  FullForm: DoubleLongLeftRightArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DoubleLongRightArrow:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⟹"}
+  # O-tokens: {}
+  usage: "x ⟹ y"
+  FullForm: DoubleLongRightArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DoubleRightArrow:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"⇒"}
+  # O-tokens: {}
+  usage: "x ⇒ y"
+  FullForm: DoubleRightArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DoubleRightTee:
+  precedence: 190
+  WolframLanguageData:
+  WolframLanguageData-corrected: 59.6
+  UnicodeCharacters.tr: 300
+  UnicodeCharacters-corrected.tr: 300
+  # N-tokens: {}
+  # L-tokens: {"⊨"}
+  # O-tokens: {}
+  usage: "expr1 ⊨ expr2"
+  FullForm: DoubleRightTee[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: false
+  # comments:
+
+DoubleUpArrow:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⇑"}
+  # O-tokens: {}
+  usage: "x ⇑ y"
+  FullForm: DoubleUpArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DoubleUpDownArrow:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⇕"}
+  # O-tokens: {}
+  usage: "x ⇕ y"
+  FullForm: DoubleUpDownArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DoubleVerticalBar:
+  precedence: 280
+  WolframLanguageData: 50
+  WolframLanguageData-corrected: 50.5
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 385
+  # N-tokens: {}
+  # L-tokens: {"∥"}
+  # O-tokens: {}
+  usage: "expr1 ∥ expr2"
+  FullForm: DoubleVerticalBar[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DownArrow:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"↓"}
+  # O-tokens: {}
+  usage: "x ↓ y"
+  FullForm: DownArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DownArrowBar:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⤓"}
+  # O-tokens: {}
+  usage: "x ⤓ y"
+  FullForm: DownArrowBar[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DownArrowUpArrow:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⇵"}
+  # O-tokens: {}
+  usage: "x ⇵ y"
+  FullForm: DownArrowUpArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DownLeftRightVector:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"⥐"}
+  # O-tokens: {}
+  usage: "x ⥐ y"
+  FullForm: DownLeftRightVector[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DownLeftTeeVector:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"⥞"}
+  # O-tokens: {}
+  usage: "x ⥞ y"
+  FullForm: DownLeftTeeVector[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DownLeftVector:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"↽"}
+  # O-tokens: {}
+  usage: "x ↽ y"
+  FullForm: DownLeftVector[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DownLeftVectorBar:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"⥖"}
+  # O-tokens: {}
+  usage: "x ⥖ y"
+  FullForm: DownLeftVectorBar[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DownRightTeeVector:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"⥟"}
+  # O-tokens: {}
+  usage: "x ⥟ y"
+  FullForm: DownRightTeeVector[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DownRightVector:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"⇁"}
+  # O-tokens: {}
+  usage: "x ⇁ y"
+  FullForm: DownRightVector[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DownRightVectorBar:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"⥗"}
+  # O-tokens: {}
+  usage: "x ⥗ y"
+  FullForm: DownRightVectorBar[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+DownTee:
+  precedence: 190
+  WolframLanguageData: 60
+  WolframLanguageData-corrected: 60
+  UnicodeCharacters.tr: 300
+  UnicodeCharacters-corrected.tr: 300
+  # N-tokens: {}
+  # L-tokens: {"⊤"}
+  # O-tokens: {}
+  usage: "expr1 ⊤ expr2"
+  FullForm: DownTee[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: left
+  meaningful: false
+  # comments:
+
+DownTeeArrow:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"↧"}
+  # O-tokens: {}
+  usage: "x ↧ y"
+  FullForm: DownTeeArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Element:
+  precedence: 250
+  WolframLanguageData: 52
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {"∈"}
+  # O-tokens: {}
+  usage: "expr1 ∈ expr2"
+  FullForm: Element[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Equal:
+  precedence: 290
+  WolframLanguageData: 50
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"==", "", ""}
+  # O-tokens: {}
+  usage: ["expr1 == expr2", "expr1  expr2", "expr1  expr2"]
+  FullForm: Equal[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+EqualTilde:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≂"}
+  # O-tokens: {}
+  usage: "expr1 ≂ expr2"
+  FullForm: EqualTilde[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Equilibrium:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⇌"}
+  # O-tokens: {}
+  usage: "x ⇌ y"
+  FullForm: Equilibrium[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Equivalent:
+  precedence: 205
+  WolframLanguageData: 58
+  WolframLanguageData-corrected: 58
+  UnicodeCharacters.tr: 315
+  UnicodeCharacters-corrected.tr: 315
+  # N-tokens: {}
+  # L-tokens: {"⧦"}
+  # O-tokens: {}
+  usage: "expr1 ⧦ expr2"
+  FullForm: Equivalent[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Exists:
+  precedence: 240
+  WolframLanguageData: 53
+  WolframLanguageData-corrected: 53
+  UnicodeCharacters.tr: 350
+  UnicodeCharacters-corrected.tr: 350
+  # N-tokens: {"∃"}
+  # L-tokens: {}
+  # O-tokens: {}
+  usage: "∃ expr"
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+
+Factorial:
+  precedence: 610
+  WolframLanguageData: 17
+  WolframLanguageData-corrected: 17
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 700
+  # N-tokens: {}
+  # L-tokens: {"!"}
+  # O-tokens: {}
+  usage: "n!"
+  FullForm: Factorial[expr]
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: true
+  # comments:
+
+Factorial2:
+  precedence: 610
+  WolframLanguageData: 17
+  WolframLanguageData-corrected: 17
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 700
+  # N-tokens: {}
+  # L-tokens: {"!!"}
+  # O-tokens: {}
+  usage: "n!!"
+  FullForm: Factorial2[expr]
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: true
+  # comments:
+
+Floor:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr: -10
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {"⌊"}
+  # L-tokens: {}
+  # O-tokens: {"⌋"}
+  usage: "⌊ x ⌋"
+  FullForm: Floor[x]
+  arity: Unary
+  affix: Matchfix
+  associativity: null
+  meaningful: true
+  # comments:
+
+ForAll:
+  precedence: 240
+  WolframLanguageData: 53
+  WolframLanguageData-corrected: 53
+  UnicodeCharacters.tr: 350
+  UnicodeCharacters-corrected.tr: 350
+  # N-tokens: {"∀"}
+  # L-tokens: {}
+  # O-tokens: {}
+  usage: "∀ expr"
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+FormBox:
+  Precedence-Function: 670
+  precedence: 5
+  WolframLanguageData: 78
+  WolframLanguageData-corrected: 78
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 160
+  operator: "\\`"
+  usage: ["\\(`input\\)", "\\(form\\`input\\)"]
+  arity: Binary
+  affix: Infix
+  associativity: "unknown"
+  box-operator: true
+  meaningful: true
+  # comments:
+
+FractionBox:
+  Precedence-Function: 670
+  precedence: 470
+  WolframLanguageData:
+  WolframLanguageData-corrected: 31
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 590
+  operator: "\\/"
+  usage: "\\(x\\/y\\)"
+  arity: Binary
+  affix: Infix
+  associativity: "unknown"
+  box-operator: true
+  meaningful: true
+  # comments:
+
+FullwidthAngleBracket:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr: -10
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {"〈"}
+  # L-tokens: {}
+  # O-tokens: {"〉"}
+  usage: "〈 expr 〉"
+  arity: Unary
+  affix: Matchfix
+  associativity: null
+  meaningful: true
+  # comments:
+
+FullwidthCurlyBracket:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr: -10
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {"｛"}
+  # L-tokens: {}
+  # O-tokens: {"｝"}
+  usage: "｛ expr ｝"
+  arity: Unary
+  affix: Matchfix
+  associativity: null
+  meaningful: true
+  # comments:
+
+FullwidthParenthesis:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr: -10
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {"（"}
+  # L-tokens: {}
+  # O-tokens: {"）"}
+  usage: "（ expr ）"
+  arity: Unary
+  affix: Matchfix
+  associativity: null
+  meaningful: true
+  # comments:
+
+FullwidthSquareBracket:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr: -10
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {"［"}
+  # L-tokens: {}
+  # O-tokens: {"］"}
+  usage: "［ expr ］"
+  arity: Unary
+  affix: Matchfix
+  associativity: null
+  meaningful: true
+  # comments:
+
+# Function needs to be greater than Alternative "|" which is
+# 160 so that we don't treat |-> as | ->.
+Function:
+  precedence: 90
+  WolframLanguageData: 70
+  WolframLanguageData-corrected: 70
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 220
+  # N-tokens: {}
+  # L-tokens: {"&"}
+  # O-tokens: {}
+  usage: "body&"
+  FullForm: Function[body]
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: true
+  # comments:
+
+FunctionApply:
+  precedence: 670
+  WolframLanguageData:
+  WolframLanguageData-corrected: 10
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 761
+  # N-tokens: {}
+  # L-tokens: {"["}
+  # O-tokens: {"]"}
+  usage: "f [ body ]"
+  FullForm: "f[body]"
+  arity: n-ary
+  affix: Postfix
+  associativity: left
+  meaningful: true
+  # comments:
+
+FunctionApplyInfix:
+  precedence: 630
+  WolframLanguageData:
+  WolframLanguageData-corrected: 15
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 720
+  # N-tokens: {}
+  # L-tokens: {"~"}
+  # O-tokens: {}
+  usage: "expr1 ~ expr2 ~ expr3"
+  FullForm: expr2[expr1, expr3]
+  arity: Ternary
+  affix: Infix
+  associativity: left
+  meaningful: true
+  # comments: Infix[f[x,y]] will display as x~f~y. Precedence identifies Infix with this operator, and Precedence[Infix]==30 which is almost correct.
+
+FunctionApplyPostfix:
+  precedence: 70
+  WolframLanguageData:
+  WolframLanguageData-corrected: 72
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 204
+  # N-tokens: {}
+  # L-tokens: {"//"}
+  # O-tokens: {}
+  # usage: "expr1 // expr2"
+  # FullForm: "expr2[expr1]"
+  arity: Binary
+  affix: Infix
+  associativity: left
+  meaningful: true
+  # comments: Postfix[f[x]] will display as x//f. Precedence identifies Postfix with this operator.
+
+FunctionApplyPrefix:
+  precedence: 640
+  WolframLanguageData:
+  WolframLanguageData-corrected: 14
+  UnicodeCharacters.tr: 730
+  UnicodeCharacters-corrected.tr: 730
+  # N-tokens: {}
+  # L-tokens: {"@", ""}
+  # O-tokens: {}
+  usage: ["expr1 @ expr2", "expr1  expr2"]
+  FullForm: expr1[expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments: Operator Notations includes usages with invisible unicode characters.
+
+Get:
+  precedence: 720
+  WolframLanguageData: 6
+  WolframLanguageData-corrected: 6
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 810
+  # N-tokens: {"<<"}
+  # L-tokens: {}
+  # O-tokens: {}
+  usage: "<< filename"
+  FullForm: Get["filename"]
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments:
+
+Gradient:
+  Precedence-Function: 550
+  precedence: 545
+  WolframLanguageData:
+  WolframLanguageData-corrected: 24
+  UnicodeCharacters.tr: 615
+  UnicodeCharacters-corrected.tr: 615
+  # N-tokens: {""}
+  # L-tokens: {}
+  # O-tokens: {}
+  usage: " expr"
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+Greater:
+  precedence: 290
+  WolframLanguageData: 50
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {">"}
+  # O-tokens: {}
+  usage: "expr1 > expr2"
+  FullForm: Greater[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+GreaterEqual:
+  precedence: 290
+  WolframLanguageData: 50
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {">=", "≥"}
+  # O-tokens: {}
+  usage: ["expr1 >= expr2", "expr1 ≥ expr2"]
+  FullForm: GreaterEqual[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+GreaterEqualLess:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⋛"}
+  # O-tokens: {}
+  usage: "x ⋛ y"
+  FullForm: GreaterEqualLess[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+GreaterFullEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≧"}
+  # O-tokens: {}
+  usage: "x ≧ y"
+  FullForm: GreaterFullEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+GreaterGreater:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≫"}
+  # O-tokens: {}
+  usage: "x ≫ y"
+  FullForm: GreaterGreater[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+GreaterLess:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≷"}
+  # O-tokens: {}
+  usage: "x ≷ y"
+  FullForm: GreaterLess[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+GreaterSlantEqual:
+  Precedence-Function: 670
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⩾"}
+  # O-tokens: {}
+  usage: "x ⩾ y"
+  FullForm: GreaterEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+GreaterTilde:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≳"}
+  # O-tokens: {}
+  usage: "x ≳ y"
+  FullForm: GreaterTilde[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+HumpDownHump:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≎"}
+  # O-tokens: {}
+  usage: "x ≎ y"
+  FullForm: HumpDownHump[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+HumpEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≏"}
+  # O-tokens: {}
+  usage: "x ≏ y"
+  FullForm: HumpEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+ImplicitSequence:
+  Precedence-Function: 670
+  precedence: 755
+  WolframLanguageData:
+  WolframLanguageData-corrected: 79
+  UnicodeCharacters.tr: 1
+  UnicodeCharacters-corrected.tr: 1
+  # N-tokens: {}
+  # L-tokens: {"", ","}
+  # O-tokens: {}
+  usage: ["expr1  expr2", "expr1, expr2"]
+  FullForm: expr1, expr2
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments: Operator Notations includes usages with invisible unicode characters.
+
+Implies:
+  precedence: 200
+  WolframLanguageData: 59
+  WolframLanguageData-corrected: 59
+  UnicodeCharacters.tr: 310
+  UnicodeCharacters-corrected.tr: 310
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  usage: "expr1  expr2"
+  FullForm: Implies[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments:
+
+Increment:
+  Precedence-Function: 660
+  precedence: 660
+  WolframLanguageData: 11
+  WolframLanguageData-corrected: 11
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 760
+  # N-tokens: {}
+  # L-tokens: {"++"}
+  # O-tokens: {}
+  usage: "expr++"
+  FullForm: Increment[expr]
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: true
+  # comments:
+
+Infix:
+  precedence: 630
+  WolframLanguageData: None
+  WolframLanguageData-corrected: None
+  UnicodeCharacters.tr: None
+  UnicodeCharacters-corrected.tr: None
+  # N-tokens: None
+  # L-tokens: None
+  # O-tokens: None
+  usage: "x ~ f ~ y"
+  FullForm: None
+  arity: Ternary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments: None
+
+# Information precedence needs to be less than Definition "?" which is
+# 5000 so that we don't treat ?? as ? ?.
+Information:
+  precedence: 5001  # Seems a bit extreme. This is the old Mathics data
+  WolframLanguageData: None
+  WolframLanguageData-corrected: None
+  UnicodeCharacters.tr: None
+  UnicodeCharacters-corrected.tr: None
+  # N-tokens: None
+  # L-tokens: None
+  # O-tokens: None
+  usage: "??Times"
+  FullForm: None
+  arity: Unary
+  affix: Prefix
+  associativity: null
+  meaningful: true
+  # comments: None
+
+InlinePart:
+  Precedence-Function: 670
+  precedence: 675
+  WolframLanguageData:
+  WolframLanguageData-corrected: 9.5
+  UnicodeCharacters.tr: 763
+  UnicodeCharacters-corrected.tr: 763
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  usage: "expr1  expr2"
+  FullForm: RowBox[List[expr1, InlinePart, expr2]]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: false
+  # comments: "InlinePart or @> was an operator that was introduced in one of the pre-release/betas for version 10 and subsequently removed before public release. It was briefly available publicly in the Raspberry Pi version of Wolfram Language that co-existed with the pre-releases at the time. The operator allowed you to access elements of a list with an infix operator." https://mathematica.stackexchange.com/questions/134506/inlinepart-what-is-it-and-what-happened-to-it
+
+Integrate:
+  precedence: 325
+  WolframLanguageData: 23
+  WolframLanguageData-corrected: 45
+  UnicodeCharacters.tr: 455
+  UnicodeCharacters-corrected.tr: 445
+  # N-tokens: {"∫"}
+  # L-tokens: {}
+  # O-tokens: {""}
+  usage: "∫ f  x"
+  FullForm: Integrate[f, x]
+  arity: Binary
+  affix: Compound
+  associativity: right
+  meaningful: true
+  # comments:
+
+# InterpretationBox is a Builtin Function, but it has no operator symbol
+# as far as I can tell. It is *not* \*
+# InterpretationBox:
+#   Precedence-Function: 670
+#   precedence: 695
+#   WolframLanguageData:
+#   WolframLanguageData-corrected: 7.6
+#   UnicodeCharacters.tr:
+#   UnicodeCharacters-corrected.tr: 780
+#   # N-tokens: {"\*"}
+#   # L-tokens: {}
+#   # O-tokens: {}
+#   # usage: "\( \*  expr \)"
+#   arity: Unary
+#   affix: Prefix
+#   associativity: right
+#   meaningful: true
+#   # comments:
+
+# The name "InterpretedBox" is not an official name,
+InterpretedBox:
+  precedence: 670
+  WolframLanguageData: None
+  WolframLanguageData-corrected: None
+  UnicodeCharacters.tr: None
+  UnicodeCharacters-corrected.tr: None
+  operator: "\\!"
+  # usage: "\\!\(...\)"
+  FullForm: None
+  arity: Unary
+  affix: Prefix
+  associativity: null
+  box-operator: true
+  meaningful: true
+  # comments: None
+
+Intersection:
+  precedence: 305
+  WolframLanguageData: 47
+  WolframLanguageData-corrected: 47
+  UnicodeCharacters.tr: 420
+  UnicodeCharacters-corrected.tr: 420
+  # N-tokens: {}
+  # L-tokens: {"⋂"}
+  # O-tokens: {}
+  # usage: "expr1 ⋂ expr2"
+  FullForm: Intersection[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+InvisiblePostfixScriptBase:
+  Precedence-Function: 670
+  precedence: 715
+  WolframLanguageData:
+  WolframLanguageData-corrected: 6.5
+  UnicodeCharacters.tr: 800
+  UnicodeCharacters-corrected.tr: 800
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "{{"expr", ""}}"
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: false
+  # comments: This operator is an invisible Unicode character and is used in the layout of displayed expressions.
+
+InvisiblePrefixScriptBase:
+  Precedence-Function: 670
+  precedence: 715
+  WolframLanguageData:
+  WolframLanguageData-corrected: 6.5
+  UnicodeCharacters.tr: 800
+  UnicodeCharacters-corrected.tr: 800
+  # N-tokens: {""}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"", "expr"}}"
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: false
+  # comments:
+
+Laplacian:
+  Precedence-Function: 670
+  precedence: 550
+  WolframLanguageData:
+  WolframLanguageData-corrected: 24
+  UnicodeCharacters.tr: 620
+  UnicodeCharacters-corrected.tr: 620
+  # N-tokens: {"∇"}
+  # L-tokens: {}
+  # O-tokens: {}
+  usage: "∇^2_x"
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments:
+
+LeftArrow:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"←"}
+  # O-tokens: {}
+  # usage: "x ← y"
+  FullForm: LeftArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LeftArrowBar:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"⇤"}
+  # O-tokens: {}
+  usage: "x ⇤ y"
+  FullForm: LeftArrowBar[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LeftArrowRightArrow:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"⇆"}
+  # O-tokens: {}
+  usage: "x ⇆ y"
+  FullForm: LeftArrowRightArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LeftDownTeeVector:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⥡"}
+  # O-tokens: {}
+  usage: "x ⥡ y"
+  FullForm: LeftDownTeeVector[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LeftDownVector:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⇃"}
+  # O-tokens: {}
+  # usage: "x ⇃ y"
+  FullForm: LeftDownVector[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LeftDownVectorBar:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⥙"}
+  # O-tokens: {}
+  # usage: "x ⥙ y"
+  FullForm: LeftDownVectorBar[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LeftRightArrow:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"↔"}
+  # O-tokens: {}
+  # usage: "x ↔ y"
+  FullForm: LeftRightArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LeftRightVector:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"⥎"}
+  # O-tokens: {}
+  usage: "x ⥎ y"
+  FullForm: LeftRightVector[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LeftTee:
+  precedence: 190
+  WolframLanguageData: 60
+  WolframLanguageData-corrected: 60
+  UnicodeCharacters.tr: 300
+  UnicodeCharacters-corrected.tr: 300
+  # N-tokens: {}
+  # L-tokens: {"⊣"}
+  # O-tokens: {}
+  usage: "expr1 ⊣ expr2"
+  FullForm: LeftTee[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: left
+  meaningful: false
+  # comments:
+
+LeftTeeArrow:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"↤"}
+  # O-tokens: {}
+  usage: "x ↤ y"
+  FullForm: LeftTeeArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LeftTeeVector:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"⥚"}
+  # O-tokens: {}
+  # usage: "x ⥚ y"
+  FullForm: LeftTeeVector[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LeftTriangle:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⊲"}
+  # O-tokens: {}
+  # usage: "x ⊲ y"
+  FullForm: LeftTriangle[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LeftTriangleBar:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⧏"}
+  # O-tokens: {}
+  # usage: "x ⧏ y"
+  FullForm: LeftTriangleBar[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LeftTriangleEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⊴"}
+  # O-tokens: {}
+  usage: "x ⊴ y"
+  FullForm: LeftTriangleEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LeftUpDownVector:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⥑"}
+  # O-tokens: {}
+  # usage: "x ⥑ y"
+  FullForm: LeftUpDownVector[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LeftUpTeeVector:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⥠"}
+  # O-tokens: {}
+  # usage: "x ⥠ y"
+  FullForm: LeftUpTeeVector[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LeftUpVector:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"↿"}
+  # O-tokens: {}
+  # usage: "x ↿ y"
+  FullForm: LeftUpVector[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LeftUpVectorBar:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⥘"}
+  # O-tokens: {}
+  # usage: "x ⥘ y"
+  FullForm: LeftUpVectorBar[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LeftVector:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"↼"}
+  # O-tokens: {}
+  # usage: "x ↼ y"
+  FullForm: LeftVector[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LeftVectorBar:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"⥒"}
+  # O-tokens: {}
+  # usage: "x ⥒ y"
+  FullForm: LeftVectorBar[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Less:
+  precedence: 290
+  WolframLanguageData: 50
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"<"}
+  # O-tokens: {}
+  # usage: "expr1 < expr2"
+  FullForm: Less[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+LessEqual:
+  precedence: 290
+  WolframLanguageData: 50
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"<=", "≤"}
+  # O-tokens: {}
+  # usage: "expr1", "<=", "expr2"}, {"expr1 ≤ expr2"
+  FullForm: LessEqual[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+LessEqualGreater:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⋚"}
+  # O-tokens: {}
+  # usage: "x ⋚ y"
+  FullForm: LessEqualGreater[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LessFullEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≦"}
+  # O-tokens: {}
+  # usage: "x ≦ y"
+  FullForm: LessFullEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LessGreater:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≶"}
+  # O-tokens: {}
+  # usage: "x ≶ y"
+  FullForm: LessGreater[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LessLess:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≪"}
+  # O-tokens: {}
+  # usage: "x ≪ y"
+  FullForm: LessLess[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LessSlantEqual:
+  Precedence-Function: 670
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⩽"}
+  # O-tokens: {}
+  # usage: "x ⩽ y"
+  FullForm: LessEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LessTilde:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≲"}
+  # O-tokens: {}
+  # usage: "x ≲ y"
+  FullForm: LessTilde[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Limit:
+  precedence: 320
+  WolframLanguageData:
+  WolframLanguageData-corrected: 45.5
+  UnicodeCharacters.tr: 440
+  UnicodeCharacters-corrected.tr: 440
+  # N-tokens: {""}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"", "expr"}}"
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+List:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData: 1
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {"{"}
+  # L-tokens: {}
+  # O-tokens: {"}"}
+  usage: "{ a, b, c }"
+  FullForm: List[a, b, c]
+  arity: n-ary
+  affix: Matchfix
+  associativity: null
+  meaningful: true
+  # comments:
+
+LongLeftArrow:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⟵"}
+  # O-tokens: {}
+  # usage: "x ⟵ y"
+  FullForm: LongLeftArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LongLeftRightArrow:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⟷"}
+  # O-tokens: {}
+  # usage: "x ⟷ y"
+  FullForm: LongLeftRightArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LongRightArrow:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⟶"}
+  # O-tokens: {}
+  # usage: "x ⟶ y"
+  FullForm: LongRightArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LowerLeftArrow:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"↙"}
+  # O-tokens: {}
+  # usage: "x ↙ y"
+  FullForm: LowerLeftArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+LowerRightArrow:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"↘"}
+  # O-tokens: {}
+  # usage: "x ↘ y"
+  FullForm: LowerRightArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Map:
+  precedence: 620
+  WolframLanguageData: 16
+  WolframLanguageData-corrected: 16
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 710
+  # N-tokens: {}
+  # L-tokens: {"/@"}
+  # O-tokens: {}
+  # usage: "expr1 /@ expr2"
+  FullForm: Map[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments:
+
+MapAll:
+  precedence: 620
+  WolframLanguageData: 16
+  WolframLanguageData-corrected: 16
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 710
+  # N-tokens: {}
+  # L-tokens: {"//@"}
+  # O-tokens: {}
+  # usage: "expr1 //@ expr2"
+  FullForm: MapAll[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments:
+
+MapApply:
+  Precedence-Function: 620
+  precedence: 625
+  WolframLanguageData: 16
+  WolframLanguageData-corrected: 16
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 710
+  # N-tokens: {}
+  # L-tokens: {"@@@"}
+  # O-tokens: {}
+  # usage: "expr1 @@@ expr2"
+  FullForm: MapApply[expr1, expr2, List[1]]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments:
+
+MaxLimit:
+  precedence: 320
+  WolframLanguageData:
+  WolframLanguageData-corrected: 45.5
+  UnicodeCharacters.tr: 440
+  UnicodeCharacters-corrected.tr: 440
+  # N-tokens: {""}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"", "expr"}}"
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+MessageName:
+  precedence: 750
+  WolframLanguageData: 2
+  WolframLanguageData-corrected: 2
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 850
+  # N-tokens: {}
+  # L-tokens: {"::"}
+  # O-tokens: {}
+  # usage: "expr :: string"
+  FullForm: MessageName[expr, "string"]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+MinLimit:
+  precedence: 320
+  WolframLanguageData:
+  WolframLanguageData-corrected: 45.5
+  UnicodeCharacters.tr: 440
+  UnicodeCharacters-corrected.tr: 440
+  # N-tokens: {""}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"", "expr"}}"
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+Minus:
+  precedence: 480
+  WolframLanguageData: 30
+  WolframLanguageData-corrected: 30
+  UnicodeCharacters.tr: 430
+  UnicodeCharacters-corrected.tr: 600
+  # N-tokens: {"-", "−"}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "- expr"}, {"− expr"
+  FullForm: Times[-1, expr]
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments: Operator Notations includes usages with invisible Unicode characters.
+
+MinusPlus:
+  precedence: 310
+  WolframLanguageData: 46
+  WolframLanguageData-corrected: 46
+  UnicodeCharacters.tr: 430
+  UnicodeCharacters-corrected.tr: 430
+  # N-tokens: {}
+  # L-tokens: {"∓"}
+  # O-tokens: {}
+  # usage: "expr1 ∓ expr2"
+  FullForm: MinusPlus[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: left
+  meaningful: false
+  # comments:
+
+NamedBlank:
+  precedence: 730
+  WolframLanguageData: 5
+  WolframLanguageData-corrected: 5
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 820
+  # N-tokens: {}
+  # L-tokens: {"_"}
+  # O-tokens: {}
+  # usage: "{{"symb", "_"}}"
+  FullForm: Pattern[symb, Blank[]]
+  arity: Unary
+  affix: Postfix
+  associativity: null
+  meaningful: true
+  # comments:
+
+NamedBlankHead:
+  precedence: 730
+  WolframLanguageData: 5
+  WolframLanguageData-corrected: 5
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 820
+  # N-tokens: {}
+  # L-tokens: {"_"}
+  # O-tokens: {}
+  # usage: "symb _ expr"
+  FullForm: Pattern[symb, Blank[expr]]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+NamedBlankNullSequence:
+  precedence: 730
+  WolframLanguageData: 5
+  WolframLanguageData-corrected: 5
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 820
+  # N-tokens: {}
+  # L-tokens: {"___"}
+  # O-tokens: {}
+  # usage: "{{"symb", "___"}}"
+  FullForm: Pattern[symb, BlankNullSequence[]]
+  arity: Unary
+  affix: Postfix
+  associativity: null
+  meaningful: true
+  # comments:
+
+NamedBlankNullSequenceHead:
+  precedence: 730
+  WolframLanguageData: 5
+  WolframLanguageData-corrected: 5
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 820
+  # N-tokens: {}
+  # L-tokens: {"___"}
+  # O-tokens: {}
+  # usage: "symb ___ expr"
+  FullForm: Pattern[symb, BlankNullSequence[expr]]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+NamedBlankOptional:
+  precedence: 730
+  WolframLanguageData: 5
+  WolframLanguageData-corrected: 5
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 820
+  # N-tokens: {}
+  # L-tokens: {"_."}
+  # O-tokens: {}
+  # usage: "{{"symb", "_."}}"
+  FullForm: Optional[Pattern[symb, Blank[]]]
+  arity: Unary
+  affix: Postfix
+  associativity: null
+  meaningful: true
+  # comments:
+
+NamedBlankSequence:
+  precedence: 730
+  WolframLanguageData: 5
+  WolframLanguageData-corrected: 5
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 820
+  # N-tokens: {}
+  # L-tokens: {"__"}
+  # O-tokens: {}
+  # usage: "{{"symb", "__"}}"
+  FullForm: Pattern[symb, BlankSequence[]]
+  arity: Unary
+  affix: Postfix
+  associativity: null
+  meaningful: true
+  # comments:
+
+NamedBlankSequenceHead:
+  precedence: 730
+  WolframLanguageData: 5
+  WolframLanguageData-corrected: 5
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 820
+  # N-tokens: {}
+  # L-tokens: {"__"}
+  # O-tokens: {}
+  # usage: "symb __ expr"
+  FullForm: Pattern[symb, BlankSequence[expr]]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Nand:
+  Precedence-Function: 215
+  precedence: 225
+  WolframLanguageData: 55
+  WolframLanguageData-corrected: 55
+  UnicodeCharacters.tr: 330
+  UnicodeCharacters-corrected.tr: 330
+  # N-tokens: {}
+  # L-tokens: {"⊼"}
+  # O-tokens: {}
+  # usage: "expr1 ⊼ expr2"
+  FullForm: Nand[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+NestedGreaterGreater:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⪢"}
+  # O-tokens: {}
+  # usage: "x ⪢ y"
+  FullForm: NestedGreaterGreater[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NestedLessLess:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⪡"}
+  # O-tokens: {}
+  # usage: "x ⪡ y"
+  FullForm: NestedLessLess[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NonCommutativeMultiply:
+  precedence: 510
+  WolframLanguageData: 27
+  WolframLanguageData-corrected: 27
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 607
+  # N-tokens: {}
+  # L-tokens: {"**"}
+  # O-tokens: {}
+  # usage: "expr1 ** expr2"
+  FullForm: NonCommutativeMultiply[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Nor:
+  Precedence-Function: 215
+  precedence: 215
+  WolframLanguageData: 57
+  WolframLanguageData-corrected: 57
+  UnicodeCharacters.tr: 320
+  UnicodeCharacters-corrected.tr: 320
+  # N-tokens: {}
+  # L-tokens: {"⊽"}
+  # O-tokens: {}
+  # usage: "expr1 ⊽ expr2"
+  FullForm: Nor[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Not:
+  precedence: 230
+  WolframLanguageData: 54
+  WolframLanguageData-corrected: 54
+  UnicodeCharacters.tr: 340
+  UnicodeCharacters-corrected.tr: 340
+  # N-tokens: {"!", "¬"}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "! expr"}, {"¬ expr"
+  FullForm: Not[expr]
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments:
+
+NotCongruent:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≢"}
+  # O-tokens: {}
+  # usage: "x ≢ y"
+  FullForm: NotCongruent[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotCupCap:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≭"}
+  # O-tokens: {}
+  # usage: "x ≭ y"
+  FullForm: NotCupCap[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotDoubleVerticalBar:
+  precedence: 280
+  WolframLanguageData: 50
+  WolframLanguageData-corrected: 50.5
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 385
+  # N-tokens: {}
+  # L-tokens: {"∦"}
+  # O-tokens: {}
+  # usage: "expr1 ∦ expr2"
+  FullForm: NotDoubleVerticalBar[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotElement:
+  precedence: 250
+  WolframLanguageData: 52
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {"∉"}
+  # O-tokens: {}
+  # usage: "expr1 ∉ expr2"
+  FullForm: NotElement[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+NotEqualTilde:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "x  y"
+  FullForm: NotEqualTilde[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotExists:
+  precedence: 240
+  WolframLanguageData: 53
+  WolframLanguageData-corrected: 53
+  UnicodeCharacters.tr: 350
+  UnicodeCharacters-corrected.tr: 350
+  # N-tokens: {"∄"}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"∄", "expr"}}"
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+NotGreater:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≯"}
+  # O-tokens: {}
+  # usage: "x ≯ y"
+  FullForm: NotGreater[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotGreaterEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≱"}
+  # O-tokens: {}
+  # usage: "x ≱ y"
+  FullForm: NotGreaterEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotGreaterFullEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≩"}
+  # O-tokens: {}
+  # usage: "x ≩ y"
+  FullForm: NotGreaterFullEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotGreaterGreater:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "x  y"
+  FullForm: NotGreaterGreater[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotGreaterLess:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≹"}
+  # O-tokens: {}
+  # usage: "x ≹ y"
+  FullForm: NotGreaterLess[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotGreaterSlantEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "x  y"
+  FullForm: NotGreaterSlantEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotGreaterTilde:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≵"}
+  # O-tokens: {}
+  # usage: "x ≵ y"
+  FullForm: NotGreaterTilde[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotHumpDownHump:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "x  y"
+  FullForm: NotHumpDownHump[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotHumpEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "x  y"
+  FullForm: NotHumpEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotLeftTriangle:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⋪"}
+  # O-tokens: {}
+  # usage: "x ⋪ y"
+  FullForm: NotLeftTriangle[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotLeftTriangleBar:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "x  y"
+  FullForm: NotLeftTriangleBar[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotLeftTriangleEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⋬"}
+  # O-tokens: {}
+  # usage: "x ⋬ y"
+  FullForm: NotLeftTriangleEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotLess:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≮"}
+  # O-tokens: {}
+  # usage: "x ≮ y"
+  FullForm: NotLess[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotLessEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≰"}
+  # O-tokens: {}
+  # usage: "x ≰ y"
+  FullForm: NotLessEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotLessFullEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≨"}
+  # O-tokens: {}
+  # usage: "x ≨ y"
+  FullForm: NotLessFullEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotLessGreater:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≸"}
+  # O-tokens: {}
+  # usage: "x ≸ y"
+  FullForm: NotLessGreater[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotLessLess:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "x  y"
+  FullForm: NotLessLess[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotLessSlantEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "x  y"
+  FullForm: NotLessSlantEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotLessTilde:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≴"}
+  # O-tokens: {}
+  # usage: "x ≴ y"
+  FullForm: NotLessTilde[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotNestedGreaterGreater:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "x  y"
+  FullForm: NotNestedGreaterGreater[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotNestedLessLess:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "x  y"
+  FullForm: NotNestedLessLess[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotPrecedes:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⊀"}
+  # O-tokens: {}
+  # usage: "x ⊀ y"
+  FullForm: NotPrecedes[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotPrecedesEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "x  y"
+  FullForm: NotPrecedesEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotPrecedesSlantEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⋠"}
+  # O-tokens: {}
+  # usage: "x ⋠ y"
+  FullForm: NotPrecedesSlantEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotPrecedesTilde:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⋨"}
+  # O-tokens: {}
+  # usage: "x ⋨ y"
+  FullForm: NotPrecedesTilde[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotReverseElement:
+  precedence: 250
+  WolframLanguageData:
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {"∌"}
+  # O-tokens: {}
+  # usage: "x ∌ y"
+  FullForm: NotReverseElement[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotRightTriangle:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⋫"}
+  # O-tokens: {}
+  # usage: "x ⋫ y"
+  FullForm: NotRightTriangle[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotRightTriangleBar:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "x  y"
+  FullForm: NotRightTriangleBar[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotRightTriangleEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⋭"}
+  # O-tokens: {}
+  # usage: "x ⋭ y"
+  FullForm: NotRightTriangleEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotSquareSubset:
+  precedence: 250
+  WolframLanguageData:
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "x  y"
+  FullForm: NotSquareSubset[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotSquareSubsetEqual:
+  precedence: 250
+  WolframLanguageData:
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {"⋢"}
+  # O-tokens: {}
+  # usage: "x ⋢ y"
+  FullForm: NotSquareSubsetEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotSquareSuperset:
+  precedence: 250
+  WolframLanguageData:
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "x  y"
+  FullForm: NotSquareSuperset[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotSquareSupersetEqual:
+  precedence: 250
+  WolframLanguageData:
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {"⋣"}
+  # O-tokens: {}
+  # usage: "x ⋣ y"
+  FullForm: NotSquareSupersetEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotSubset:
+  precedence: 250
+  WolframLanguageData:
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {"⊄"}
+  # O-tokens: {}
+  # usage: "x ⊄ y"
+  FullForm: NotSubset[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotSubsetEqual:
+  precedence: 250
+  WolframLanguageData:
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {"⊈"}
+  # O-tokens: {}
+  # usage: "x ⊈ y"
+  FullForm: NotSubsetEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotSucceeds:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⊁"}
+  # O-tokens: {}
+  # usage: "x ⊁ y"
+  FullForm: NotSucceeds[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotSucceedsEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "x  y"
+  FullForm: NotSucceedsEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotSucceedsSlantEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⋡"}
+  # O-tokens: {}
+  # usage: "x ⋡ y"
+  FullForm: NotSucceedsSlantEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotSucceedsTilde:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⋩"}
+  # O-tokens: {}
+  # usage: "x ⋩ y"
+  FullForm: NotSucceedsTilde[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotSuperset:
+  precedence: 250
+  WolframLanguageData:
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {"⊅"}
+  # O-tokens: {}
+  # usage: "x ⊅ y"
+  FullForm: NotSuperset[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotSupersetEqual:
+  precedence: 250
+  WolframLanguageData:
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {"⊉"}
+  # O-tokens: {}
+  # usage: "x ⊉ y"
+  FullForm: NotSupersetEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotTilde:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≁"}
+  # O-tokens: {}
+  # usage: "x ≁ y"
+  FullForm: NotTilde[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotTildeEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≄"}
+  # O-tokens: {}
+  # usage: "x ≄ y"
+  FullForm: NotTildeEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotTildeFullEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≇"}
+  # O-tokens: {}
+  # usage: "x ≇ y"
+  FullForm: NotTildeFullEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotTildeTilde:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≉"}
+  # O-tokens: {}
+  # usage: "x ≉ y"
+  FullForm: NotTildeTilde[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NotVerticalBar:
+  precedence: 280
+  WolframLanguageData: 50
+  WolframLanguageData-corrected: 50.5
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 385
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "expr1  expr2"
+  FullForm: NotVerticalBar[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+NumberBase:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {}
+  # L-tokens: {"^^"}
+  # O-tokens: {}
+  # usage: "n ^^ digits"
+  FullForm: n^^digits
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments: Interprets digits as a number literal in base n. The base n must be a positive integer no greater than 36.
+
+NumberMagnitude:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {}
+  # L-tokens: {"*^"}
+  # O-tokens: {}
+  # usage: "number *^ magnitude"
+  FullForm: number*^magnitude
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments: Gives mantissa*base^magnitude, where base^^mantissa=number and magnitude is a decimal number expressed without ^^, `, or ``. Only allowed in a number literal, and only after any ` or ``.
+
+NumberPrecision:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {}
+  # L-tokens: {"`"}
+  # O-tokens: {}
+  # usage: "number ` s"
+  FullForm: number`s
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments: Specifies the precision of "number", where "s" is a positive decimal expressed without using ^^ or `. Any magnitude must come after "`."
+
+NumberPrecisionPostfix:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {}
+  # L-tokens: {"`"}
+  # O-tokens: {}
+  # usage: "{{"number", "`"}}"
+  FullForm: number`
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: true
+  # comments: Specifies the precision of "number" to be $MachinePrecision. Any magnitude must come after `."
+
+Optional:
+  precedence: 140
+  WolframLanguageData: 64
+  WolframLanguageData-corrected: 64
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 270
+  # N-tokens: {}
+  # L-tokens: {":"}
+  # O-tokens: {}
+  # usage: "patt : expr"
+  FullForm: Optional[patt, expr]
+  arity: Binary
+  affix: Infix
+  associativity: "unknown"
+  meaningful: true
+  # comments:
+
+Or:
+  Precedence-Function: 215
+  precedence: 215
+  WolframLanguageData: 57
+  WolframLanguageData-corrected: 57
+  UnicodeCharacters.tr: 320
+  UnicodeCharacters-corrected.tr: 320
+  # N-tokens: {}
+  # L-tokens: {"||", "∨"}
+  # O-tokens: {}
+  usage: ["x || y", "x ∨ y"]
+  FullForm: Or[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Out:
+  Precedence-Function: 670
+  precedence: 735
+  WolframLanguageData: 4
+  WolframLanguageData-corrected: 4
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 830
+  # N-tokens: {"%%"}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "%% … %"
+  FullForm: Out[-n]
+  arity: Nullary
+  affix: None
+  associativity: null
+  meaningful: true
+  # comments:
+
+OutNumber:
+  Precedence-Function: 670
+  precedence: 735
+  WolframLanguageData: 4
+  WolframLanguageData-corrected: 4
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 830
+  # N-tokens: {"%"}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"%", "n"}}"
+  FullForm: Out[n]
+  arity: Unary
+  affix: Prefix
+  associativity: null
+  meaningful: true
+  # comments:
+
+OverscriptBox:
+  Precedence-Function: 670
+  precedence: 710
+  WolframLanguageData: 7
+  WolframLanguageData-corrected: 7
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 790
+  operator: "\\&"
+  usage: "\\(x\\&y\\)"
+  arity: Binary
+  affix: Infix
+  associativity: "unknown"
+  box-operator: true
+  meaningful: true
+  # comments:
+
+OverunderscriptBox:
+  Precedence-Function: 670
+  precedence: 700
+  WolframLanguageData: 7
+  WolframLanguageData-corrected: 7.5
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 785
+  operator: ["\\+", "\\%"]
+  usage: "\\(x\\+y\\%z\\)"
+  arity: Ternary
+  affix: Infix
+  box-operator: true
+  associativity: "unknown"
+  meaningful: true
+  # comments:
+
+ParameterizedFunction:
+  Precedence-Function: 90
+  precedence: 40
+  WolframLanguageData: 75
+  WolframLanguageData-corrected: 75
+  UnicodeCharacters.tr: 190
+  UnicodeCharacters-corrected.tr: 190
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "expr1  expr2"
+  FullForm: Function[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments: The arrow form of Function.
+
+Parentheses:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {"("}
+  # L-tokens: {}
+  # O-tokens: {")"}
+  # usage: "( expr )"
+  arity: Unary
+  affix: Matchfix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Part:
+  precedence: 670
+  WolframLanguageData: 10
+  WolframLanguageData-corrected: 10
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 762
+  # N-tokens: {}
+  # L-tokens: {"[[", "〚"}
+  # O-tokens: {"]]", "〛"}
+  # usage: "expr1", "[[", "expr2", "]]"}, {"expr1", "〚 expr2 〛"
+  FullForm: Part[expr1, expr2, \[Ellipsis]]
+  arity: n-ary
+  affix: Postfix
+  associativity: left
+  meaningful: true
+  # comments:
+
+PartialD:
+  Precedence-Function: 670
+  precedence: 550
+  WolframLanguageData: 24
+  WolframLanguageData-corrected: 24
+  UnicodeCharacters.tr: 620
+  UnicodeCharacters-corrected.tr: 620
+  # N-tokens: {"∂"}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"∂", "expr"}}"
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+PartialFractionBox:
+  Precedence-Function: 670
+  precedence: 470
+  WolframLanguageData:
+  WolframLanguageData-corrected: 31
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 590
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "expr"
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: false
+  # comments: This operator is an invisible Unicode character and is used in the layout of displayed expressions.
+
+PartialOverscriptBox:
+  Precedence-Function: 670
+  precedence: 710
+  WolframLanguageData:
+  WolframLanguageData-corrected: 7
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 790
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "expr"
+  FullForm:
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: false
+  # comments: This operator is an invisible Unicode character and is used in the layout of displayed expressions.
+
+PartialSubscriptBox:
+  Precedence-Function: 670
+  precedence: 690
+  WolframLanguageData:
+  WolframLanguageData-corrected: 8
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 775
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "expr"
+  FullForm:
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: false
+  # comments: This operator is an invisible Unicode character and is used in the layout of displayed expressions.
+
+PartialSuperscriptBox:
+  Precedence-Function: 670
+  precedence: 590
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 660
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "{{"expr", ""}}"
+  FullForm:
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: false
+  # comments: This operator is an invisible Unicode character and is used in the layout of displayed expressions.
+
+PartialUnderscriptBox:
+  Precedence-Function: 670
+  precedence: 710
+  WolframLanguageData:
+  WolframLanguageData-corrected: 7
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 790
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "{{"expr", ""}}"
+  FullForm:
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: false
+  # comments: This operator is an invisible Unicode character and is used in the layout of displayed expressions.
+
+Pattern:
+  precedence: 150
+  WolframLanguageData: 64
+  WolframLanguageData-corrected: 64
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 275
+  # N-tokens: {}
+  # L-tokens: {":"}
+  # O-tokens: {}
+  # usage: "symb : expr"
+  FullForm: Pattern[symb, expr]
+  arity: Binary
+  affix: Infix
+  associativity: "unknown"
+  meaningful: true
+  # comments:
+
+PatternTest:
+  precedence: 680
+  WolframLanguageData: 9
+  WolframLanguageData-corrected: 9
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 770
+  # N-tokens: {}
+  # L-tokens: {"?"}
+  # O-tokens: {}
+  usage: "expr1 ? expr2"
+  FullForm: PatternTest[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: "non-associative"
+  meaningful: true
+  # comments:
+
+PermutationProduct:
+  Precedence-Function: 520
+  precedence: 486
+  WolframLanguageData:
+  WolframLanguageData-corrected: 29.7
+  UnicodeCharacters.tr: 605
+  UnicodeCharacters-corrected.tr: 602
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "expr1  expr2"
+  FullForm: PermutationProduct[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Perpendicular:
+  precedence: 190
+  WolframLanguageData:
+  WolframLanguageData-corrected: 60
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⟂"}
+  # O-tokens: {}
+  # usage: "expr1 ⟂ expr2"
+  FullForm: Perpendicular[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Piecewise:
+  Precedence-Function: 480
+  precedence: 535
+  WolframLanguageData: 1
+  WolframLanguageData-corrected: 25.5
+  UnicodeCharacters.tr: 600
+  UnicodeCharacters-corrected.tr: 610
+  # N-tokens: {""}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"", "expr"}}"
+  FullForm:
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+Plus:
+  precedence: 310
+  WolframLanguageData: 46
+  WolframLanguageData-corrected: 46
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 430
+  # N-tokens: {}
+  # L-tokens: {"+", ""}
+  # O-tokens: {}
+  # usage: "expr1", "+", "expr2"}, {"expr1  expr2"
+  FullForm: Plus[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments: Operator Notations includes usages with invisible Unicode characters.
+
+PlusMinus:
+  precedence: 310
+  WolframLanguageData: 46
+  WolframLanguageData-corrected: 46
+  UnicodeCharacters.tr: 430
+  UnicodeCharacters-corrected.tr: 430
+  # N-tokens: {}
+  # L-tokens: {"±"}
+  # O-tokens: {}
+  # usage: "expr1 ± expr2"
+  FullForm: PlusMinus[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: left
+  meaningful: false
+  # comments:
+
+Postfix:
+  precedence: 70
+  WolframLanguageData: None
+  WolframLanguageData-corrected: None
+  UnicodeCharacters.tr: None
+  UnicodeCharacters-corrected.tr: None
+  # N-tokens: None
+  # L-tokens: None
+  # O-tokens: None
+  # usage: "expr // FormName"
+  FullForm: None
+  arity: Binary
+  affix: Infix
+  associativity: left
+  meaningful: true
+  # comments: None
+
+Power:
+  precedence: 590
+  WolframLanguageData: 21
+  WolframLanguageData-corrected: 21
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 660
+  # N-tokens: {}
+  # L-tokens: {"^"}
+  # O-tokens: {}
+  # usage: "expr1 ^ expr2"
+  FullForm: Power[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments:
+
+PreDecrement:
+  precedence: 660
+  WolframLanguageData: 12
+  WolframLanguageData-corrected: 12
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 750
+  # N-tokens: {"--"}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"--", "expr"}}"
+  FullForm: PreDecrement[expr]
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments:
+
+PreIncrement:
+  precedence: 660
+  WolframLanguageData: 12
+  WolframLanguageData-corrected: 12
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 750
+  # N-tokens: {"++"}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"++", "expr"}}"
+  FullForm: PreIncrement[expr]
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments:
+
+Precedes:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≺"}
+  # O-tokens: {}
+  # usage: "x ≺ y"
+  FullForm: Precedes[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+PrecedesEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⪯"}
+  # O-tokens: {}
+  # usage: "x ⪯ y"
+  FullForm: PrecedesEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+PrecedesSlantEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≼"}
+  # O-tokens: {}
+  # usage: "x ≼ y"
+  FullForm: PrecedesSlantEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+PrecedesTilde:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≾"}
+  # O-tokens: {}
+  # usage: "x ≾ y"
+  FullForm: PrecedesTilde[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Prefix:
+  precedence: 640
+  WolframLanguageData: None
+  WolframLanguageData-corrected: None
+  UnicodeCharacters.tr: None
+  UnicodeCharacters-corrected.tr: None
+  # N-tokens: None
+  # L-tokens: None
+  # O-tokens: None
+  # usage: "expr1 @ expr2"
+  FullForm: None
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments: None
+
+ProbabilityPr:
+  precedence: 325
+  WolframLanguageData:
+  WolframLanguageData-corrected: 45
+  UnicodeCharacters.tr: 455
+  UnicodeCharacters-corrected.tr: 445
+  # N-tokens: {""}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"", "expr"}}"
+  FullForm:
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+Product:
+  precedence: 380
+  WolframLanguageData: 40
+  WolframLanguageData-corrected: 40
+  UnicodeCharacters.tr: 500
+  UnicodeCharacters-corrected.tr: 500
+  # N-tokens: {"∏"}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"∏", "expr"}}"
+  FullForm:
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+Proportion:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"∷"}
+  # O-tokens: {}
+  # usage: "x ∷ y"
+  FullForm: Proportion[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Proportional:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"∝"}
+  # O-tokens: {}
+  # usage: "x ∝ y"
+  FullForm: Proportional[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Put:
+  precedence: 30
+  WolframLanguageData: 76
+  WolframLanguageData-corrected: 76
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 180
+  # N-tokens: {}
+  # L-tokens: {">>"}
+  # O-tokens: {}
+  # usage: "expr >> filename"
+  FullForm: Put[expr, "filename"]
+  arity: Binary
+  affix: Infix
+  associativity: left
+  meaningful: true
+  # comments:
+
+PutAppend:
+  precedence: 30
+  WolframLanguageData: 76
+  WolframLanguageData-corrected: 76
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 180
+  # N-tokens: {}
+  # L-tokens: {">>>"}
+  # O-tokens: {}
+  # usage: "expr >>> filename"
+  FullForm: PutAppend[expr, "filename"]
+  arity: Binary
+  affix: Infix
+  associativity: left
+  meaningful: true
+  # comments:
+
+RadicalBox:
+  Precedence-Function: 670
+  precedence: 570
+  WolframLanguageData: 22
+  WolframLanguageData-corrected: 22
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 640
+  operator: ["\\@", "\\%"]
+  usage: "\\(\\@x\\%n\\)"
+  FullForm:
+  arity: Ternary
+  affix: Prefix
+  box-operator: true
+  associativity: right
+  meaningful: true
+  # comments:
+
+RawBackquote:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {}
+  # L-tokens: {"``"}
+  # O-tokens: {}
+  # usage: "number `` s"
+  FullForm: number``s
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments: Specifies the accuracy (in number of digits to the right of decimal) of "number", where s is a positive decimal expressed without using ^^ or `. A magnitude must come after ``.
+
+Repeated:
+  precedence: 170
+  WolframLanguageData: 62
+  WolframLanguageData-corrected: 62
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 280
+  # N-tokens: {}
+  # L-tokens: {".."}
+  # O-tokens: {}
+  # usage: "{{"expr", ".."}}"
+  FullForm: Repeated[expr]
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: true
+  # comments:
+
+RepeatedNull:
+  precedence: 170
+  WolframLanguageData: 62
+  WolframLanguageData-corrected: 62
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 280
+  # N-tokens: {}
+  # L-tokens: {"..."}
+  # O-tokens: {}
+  # usage: "{{"expr", "..."}}"
+  FullForm: RepeatedNull[expr]
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: true
+  # comments:
+
+ReplaceAll:
+  precedence: 110
+  WolframLanguageData: 68
+  WolframLanguageData-corrected: 68
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 240
+  # N-tokens: {}
+  # L-tokens: {"/."}
+  # O-tokens: {}
+  # usage: "expr1 /. expr2"
+  FullForm: ReplaceAll[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: left
+  meaningful: true
+  # comments:
+
+ReplaceRepeated:
+  precedence: 110
+  WolframLanguageData: 68
+  WolframLanguageData-corrected: 68
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 240
+  # N-tokens: {}
+  # L-tokens: {"//."}
+  # O-tokens: {}
+  # usage: "expr1 //. expr2"
+  FullForm: ReplaceRepeated[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: left
+  meaningful: true
+  # comments:
+
+ReverseElement:
+  precedence: 250
+  WolframLanguageData:
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {"∋"}
+  # O-tokens: {}
+  # usage: "x ∋ y"
+  FullForm: ReverseElement[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+ReverseEquilibrium:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⇋"}
+  # O-tokens: {}
+  # usage: "x ⇋ y"
+  FullForm: ReverseEquilibrium[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+ReverseUpEquilibrium:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⥯"}
+  # O-tokens: {}
+  # usage: "x ⥯ y"
+  FullForm: ReverseUpEquilibrium[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+RightArrow:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"→"}
+  # O-tokens: {}
+  # usage: "x → y"
+  FullForm: RightArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+RightArrowBar:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"⇥"}
+  # O-tokens: {}
+  # usage: "x ⇥ y"
+  FullForm: RightArrowBar[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+RightArrowLeftArrow:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"⇄"}
+  # O-tokens: {}
+  # usage: "x ⇄ y"
+  FullForm: RightArrowLeftArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+RightComposition:
+  Precedence-Function: 624
+  precedence: 650
+  WolframLanguageData: 13
+  WolframLanguageData-corrected: 13
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 740
+  # N-tokens: {}
+  # L-tokens: {"/*"}
+  # O-tokens: {}
+  # usage: "expr1 /* expr2"
+  FullForm: RightComposition[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+RightDownTeeVector:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⥝"}
+  # O-tokens: {}
+  # usage: "x ⥝ y"
+  FullForm: RightDownTeeVector[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+RightDownVector:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⇂"}
+  # O-tokens: {}
+  # usage: "x ⇂ y"
+  FullForm: RightDownVector[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+RightDownVectorBar:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⥕"}
+  # O-tokens: {}
+  # usage: "x ⥕ y"
+  FullForm: RightDownVectorBar[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+RightTee:
+  precedence: 190
+  WolframLanguageData:
+  WolframLanguageData-corrected: 59.6
+  UnicodeCharacters.tr: 300
+  UnicodeCharacters-corrected.tr: 300
+  # N-tokens: {}
+  # L-tokens: {"⊢"}
+  # O-tokens: {}
+  # usage: "expr1 ⊢ expr2"
+  FullForm: RightTee[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: false
+  # comments:
+
+RightTeeArrow:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"↦"}
+  # O-tokens: {}
+  usage: "x ↦ y"
+  FullForm: RightTeeArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+RightTeeVector:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"⥛"}
+  # O-tokens: {}
+  # usage: "x ⥛ y"
+  FullForm: RightTeeVector[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+RightTriangle:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⊳"}
+  # O-tokens: {}
+  # usage: "x ⊳ y"
+  FullForm: RightTriangle[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+RightTriangleBar:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⧐"}
+  # O-tokens: {}
+  # usage: "x ⧐ y"
+  FullForm: RightTriangleBar[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+RightTriangleEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⊵"}
+  # O-tokens: {}
+  # usage: "x ⊵ y"
+  FullForm: RightTriangleEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+RightUpDownVector:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⥏"}
+  # O-tokens: {}
+  # usage: "x ⥏ y"
+  FullForm: RightUpDownVector[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+RightUpTeeVector:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⥜"}
+  # O-tokens: {}
+  # usage: "x ⥜ y"
+  FullForm: RightUpTeeVector[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+RightUpVector:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"↾"}
+  # O-tokens: {}
+  # usage: "x ↾ y"
+  FullForm: RightUpVector[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+RightUpVectorBar:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⥔"}
+  # O-tokens: {}
+  # usage: "x ⥔ y"
+  FullForm: RightUpVectorBar[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+RightVector:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"⇀"}
+  # O-tokens: {}
+  # usage: "x ⇀ y"
+  FullForm: RightVector[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+RightVectorBar:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"⥓"}
+  # O-tokens: {}
+  # usage: "x ⥓ y"
+  FullForm: RightVectorBar[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+RoundImplies:
+  Precedence-Function: 240
+  precedence: 193
+  WolframLanguageData:
+  WolframLanguageData-corrected: 59
+  UnicodeCharacters.tr: 310
+  UnicodeCharacters-corrected.tr: 310
+  # N-tokens: {}
+  # L-tokens: {"⥰"}
+  # O-tokens: {}
+  # usage: "expr1 ⥰ expr2"
+  FullForm: RoundImplies[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: false
+  # comments:
+
+Rule:
+  precedence: 120
+  WolframLanguageData: 67
+  WolframLanguageData-corrected: 67.5
+  UnicodeCharacters.tr: 250
+  UnicodeCharacters-corrected.tr: 250
+  # N-tokens: {}
+  # L-tokens: {"->", ""}
+  # O-tokens: {}
+  # usage: "expr1", "->", "expr2"}, {"expr1  expr2"
+  FullForm: Rule[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments:
+
+RuleDelayed:
+  precedence: 120
+  WolframLanguageData: 67
+  WolframLanguageData-corrected: 67
+  UnicodeCharacters.tr: 250
+  UnicodeCharacters-corrected.tr: 250
+  # N-tokens: {}
+  # L-tokens: {":>", ""}
+  # O-tokens: {}
+  # usage: "expr1", ":>", "expr2"}, {"expr1  expr2"
+  FullForm: RuleDelayed[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments:
+
+SameQ:
+  Precedence-Function: 290
+  precedence: 290
+  WolframLanguageData: 51
+  WolframLanguageData-corrected: 51
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 370
+  # N-tokens: {}
+  # L-tokens: {"==="}
+  # O-tokens: {}
+  # usage: "expr1 === expr2"
+  FullForm: SameQ[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Set:
+  precedence: 40
+  WolframLanguageData: 75
+  WolframLanguageData-corrected: 75
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 190
+  # N-tokens: {}
+  # L-tokens: {"="}
+  # O-tokens: {}
+  # usage: "expr1 = expr2"
+  FullForm: Set[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments:
+
+SetDelayed:
+  precedence: 40
+  WolframLanguageData: 75
+  WolframLanguageData-corrected: 75
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 190
+  # N-tokens: {}
+  # L-tokens: {":="}
+  # O-tokens: {}
+  # usage: "expr1 := expr2"
+  FullForm: SetDelayed[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments:
+
+ShortDownArrow:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "x  y"
+  FullForm: ShortDownArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+ShortLeftArrow:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "x  y"
+  FullForm: ShortLeftArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+ShortRightArrow:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "x  y"
+  FullForm: ShortRightArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+ShortUpArrow:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "x  y"
+  FullForm: ShortUpArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Skeleton:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr: -10
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {""}
+  # L-tokens: {}
+  # O-tokens: {""}
+  # usage: " n "
+  FullForm: Skeleton[n]
+  arity: Unary
+  affix: Matchfix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Slot:
+  precedence: 740
+  WolframLanguageData: 3
+  WolframLanguageData-corrected: 3
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 840
+  # N-tokens: {"#"}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"#"}}"
+  FullForm: Slot[1]
+  arity: Nullary
+  affix: None
+  associativity: null
+  meaningful: true
+  # comments:
+
+SlotNumber:
+  precedence: 740
+  WolframLanguageData: 3
+  WolframLanguageData-corrected: 3
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 840
+  # N-tokens: {"#"}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"#", "n"}}"
+  FullForm: Slot[n]
+  arity: Unary
+  affix: Prefix
+  associativity: null
+  meaningful: true
+  # comments:
+
+SlotSequence:
+  precedence: 740
+  WolframLanguageData: 3
+  WolframLanguageData-corrected: 3
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 840
+  # N-tokens: {"##"}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"##"}}"
+  FullForm: SlotSequence[1]
+  arity: Nullary
+  affix: None
+  associativity: null
+  meaningful: true
+  # comments:
+
+SlotSequenceNumber:
+  precedence: 740
+  WolframLanguageData: 3
+  WolframLanguageData-corrected: 3
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 840
+  # N-tokens: {"##"}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"##", "n"}}"
+  FullForm: SlotSequence[n]
+  arity: Unary
+  affix: Prefix
+  associativity: null
+  meaningful: true
+  # comments:
+
+SmallCircle:
+  precedence: 530
+  WolframLanguageData: 25
+  WolframLanguageData-corrected: 25.6
+  UnicodeCharacters.tr: 607
+  UnicodeCharacters-corrected.tr: 609
+  # N-tokens: {}
+  # L-tokens: {"∘"}
+  # O-tokens: {}
+  # usage: "expr1 ∘ expr2"
+  FullForm: SmallCircle[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Span:
+  precedence: 305
+  WolframLanguageData: 49
+  WolframLanguageData-corrected: 47
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 420
+  # N-tokens: {";;"}
+  # L-tokens: {";;"}
+  # O-tokens: {";;"}
+  usage: [";;",  "i;;", ";;j", ";;;;k", "i;;j", "i;;;;k", ;";j;;k", "i;;j;;k"]
+  FullForm: Span[i, j, k]
+  arity: Ternary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Sqrt:
+  Precedence-Function: 670
+  precedence: 570
+  WolframLanguageData: 22
+  WolframLanguageData-corrected: 22
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 640
+  # N-tokens: {"√"}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"√", "expr"}}"
+  FullForm: Sqrt[expr]
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments:
+
+SqrtBox:
+  Precedence-Function: 670
+  precedence: 570
+  WolframLanguageData: 22
+  WolframLanguageData-corrected: 22
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 640
+  operator: "\\@"
+  usage: "\\(\\@x\\)"
+  FullForm:
+  arity: Unary
+  affix: Prefix
+  associativity: "unknown"
+  box-operator: true
+  meaningful: true
+  # comments:
+
+Square:
+  precedence: 540
+  WolframLanguageData: 25
+  WolframLanguageData-corrected: 25
+  UnicodeCharacters.tr: 610
+  UnicodeCharacters-corrected.tr: 611
+  # N-tokens: {""}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"", "expr"}}"
+  FullForm: Square[expr]
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: false
+  # comments:
+
+SquareIntersection:
+  precedence: 305
+  WolframLanguageData:
+  WolframLanguageData-corrected: 47
+  UnicodeCharacters.tr: 420
+  UnicodeCharacters-corrected.tr: 420
+  # N-tokens: {}
+  # L-tokens: {"⊓"}
+  # O-tokens: {}
+  # usage: "x ⊓ y"
+  FullForm: SquareIntersection[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+SquareSubset:
+  precedence: 250
+  WolframLanguageData:
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {"⊏"}
+  # O-tokens: {}
+  # usage: "x ⊏ y"
+  FullForm: SquareSubset[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+SquareSubsetEqual:
+  precedence: 250
+  WolframLanguageData:
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {"⊑"}
+  # O-tokens: {}
+  # usage: "x ⊑ y"
+  FullForm: SquareSubsetEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+SquareSuperset:
+  precedence: 250
+  WolframLanguageData:
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {"⊐"}
+  # O-tokens: {}
+  # usage: "x ⊐ y"
+  FullForm: SquareSuperset[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+SquareSupersetEqual:
+  precedence: 250
+  WolframLanguageData:
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {"⊒"}
+  # O-tokens: {}
+  # usage: "x ⊒ y"
+  FullForm: SquareSupersetEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+SquareUnion:
+  precedence: 300
+  WolframLanguageData:
+  WolframLanguageData-corrected: 48
+  UnicodeCharacters.tr: 410
+  UnicodeCharacters-corrected.tr: 410
+  # N-tokens: {}
+  # L-tokens: {"⊔"}
+  # O-tokens: {}
+  # usage: "x ⊔ y"
+  FullForm: SquareUnion[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Star:
+  precedence: 390
+  WolframLanguageData: 39
+  WolframLanguageData-corrected: 39
+  UnicodeCharacters.tr: 510
+  UnicodeCharacters-corrected.tr: 510
+  # N-tokens: {}
+  # L-tokens: {"⋆"}
+  # O-tokens: {}
+  # usage: "expr1 ⋆ expr2 ⋆ expr3"
+  FullForm: Star[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+StringExpression:
+  precedence: 135
+  WolframLanguageData: 65
+  WolframLanguageData-corrected: 65
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 265
+  # N-tokens: {}
+  # L-tokens: {"~~"}
+  # O-tokens: {}
+  # usage: "expr1 ~~ expr2"
+  FullForm: StringExpression[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+StringJoin:
+  precedence: 600
+  WolframLanguageData: 20
+  WolframLanguageData-corrected: 20
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 670
+  # N-tokens: {}
+  # L-tokens: {"<>"}
+  # O-tokens: {}
+  # usage: "expr1 <> expr2"
+  FullForm: StringJoin[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+SubscriptBox:
+  Precedence-Function: 670
+  precedence: 690
+  WolframLanguageData: 8
+  WolframLanguageData-corrected: 8
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 775
+  operator: "\\_"
+  usage: "\\(x\\\_y\\)"
+  FullForm:
+  arity: Binary
+  affix: Infix
+  associativity: "unknown"
+  box-operator: true
+  meaningful: true
+  # comments:
+
+Subset:
+  precedence: 250
+  WolframLanguageData: 52
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {"⊂"}
+  # O-tokens: {}
+  # usage: "expr1 ⊂ expr2"
+  FullForm: Subset[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+SubsetEqual:
+  precedence: 250
+  WolframLanguageData:
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {"⊆"}
+  # O-tokens: {}
+  # usage: "x ⊆ y"
+  FullForm: SubsetEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+SubsuperscriptBox:
+  Precedence-Function: 670
+  precedence: 690
+  WolframLanguageData: 8
+  WolframLanguageData-corrected: 8
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 775
+  # N-tokens: {}
+  # L-tokens: {"\_"}
+  # O-tokens: {"\%"}
+  # usage: "expr1", "\_", "expr2 \% expr3"
+  FullForm:
+  arity: Ternary
+  affix: Infix
+  associativity: "unknown"
+  meaningful: true
+  # comments:
+
+Subtract:
+  precedence: 310
+  WolframLanguageData: 46
+  WolframLanguageData-corrected: 46
+  UnicodeCharacters.tr: 430
+  UnicodeCharacters-corrected.tr: 430
+  # N-tokens: {}
+  # L-tokens: {"-", "−"}
+  # O-tokens: {}
+  # usage: "expr1", "-", "expr2"}, {"expr1 − expr2"
+  FullForm: Plus[expr1, Times[-1, expr2]]
+  arity: Binary
+  affix: Infix
+  associativity: left
+  meaningful: true
+  # comments: Operator Notations includes usages with invisible unicode characters.
+
+SubtractFrom:
+  precedence: 100
+  WolframLanguageData: 69
+  WolframLanguageData-corrected: 69
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 230
+  # N-tokens: {}
+  # L-tokens: {"-="}
+  # O-tokens: {}
+  # usage: "expr1 -= expr2"
+  FullForm: SubtractFrom[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments:
+
+Succeeds:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≻"}
+  # O-tokens: {}
+  # usage: "x ≻ y"
+  FullForm: Succeeds[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+SucceedsEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⪰"}
+  # O-tokens: {}
+  # usage: "x ⪰ y"
+  FullForm: SucceedsEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+SucceedsSlantEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≽"}
+  # O-tokens: {}
+  # usage: "x ≽ y"
+  FullForm: SucceedsSlantEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+SucceedsTilde:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≿"}
+  # O-tokens: {}
+  # usage: "x ≿ y"
+  FullForm: SucceedsTilde[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+SuchThat:
+  precedence: 180
+  WolframLanguageData: 61
+  WolframLanguageData-corrected: 61
+  UnicodeCharacters.tr: 290
+  UnicodeCharacters-corrected.tr: 290
+  # N-tokens: {}
+  # L-tokens: {"∍"}
+  # O-tokens: {}
+  # usage: "expr1 ∍ expr2"
+  FullForm: SuchThat[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: false
+  # comments:
+
+Sum:
+  Precedence-Function: 320
+  precedence: 325
+  WolframLanguageData: 45
+  WolframLanguageData-corrected: 45
+  UnicodeCharacters.tr: 440
+  UnicodeCharacters-corrected.tr: 445
+  # N-tokens: {"∑"}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"∑", "expr"}}"
+  FullForm: Sum[expr]
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments: Usage and Parse may not be correct.
+
+SuperDagger:
+  Precedence-Function: 0
+  precedence: 605
+  WolframLanguageData:
+  WolframLanguageData-corrected: 18
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 695
+  # N-tokens: {}
+  # L-tokens: {"^†"}
+  # O-tokens: {}
+  # usage: "{{"expr", "^†"}}"
+  FullForm: Power[expr, \[Dagger]]
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: true
+  # comments:
+
+SubSuperscriptBox:
+  precedence: 590
+  WolframLanguageData: 21
+  WolframLanguageData-corrected: 21
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 660
+  operator: ["\_", "\\%"]
+  usage: "\\(x\_y\\%z\\)"
+  FullForm:
+  arity: Ternary
+  affix: Infix
+  associativity: "unknown"
+  box-operator: true
+  meaningful: true
+  # comments:
+
+Superset:
+  precedence: 250
+  WolframLanguageData: 52
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {"⊃"}
+  # O-tokens: {}
+  # usage: "expr1 ⊃ expr2"
+  FullForm: Superset[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+SuperscriptBox:
+  precedence: 590
+  WolframLanguageData: 21
+  WolframLanguageData-corrected: 21
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 660
+  operator: "\\^"
+  usage: "\\(x\\^_y\\)"
+  FullForm:
+  arity: Binary
+  affix: Infix
+  associativity: "unknown"
+  box-operator: true
+  meaningful: true
+  # comments:
+
+SupersetEqual:
+  precedence: 250
+  WolframLanguageData:
+  WolframLanguageData-corrected: 52
+  UnicodeCharacters.tr: 360
+  UnicodeCharacters-corrected.tr: 360
+  # N-tokens: {}
+  # L-tokens: {"⊇"}
+  # O-tokens: {}
+  # usage: "x ⊇ y"
+  FullForm: SupersetEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+TagSet:
+  Precedence-Function: 670
+  precedence: 40
+  WolframLanguageData: 75
+  WolframLanguageData-corrected: 75
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 190
+  # N-tokens: {}
+  # L-tokens: {"/:"}
+  # O-tokens: {"="}
+  # usage: "symb", "/:", "expr1 = expr2"
+  FullForm: TagSet[symb, expr1, expr2]
+  arity: Ternary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments:
+
+TagSetDelayed:
+  Precedence-Function: 670
+  precedence: 40
+  WolframLanguageData: 75
+  WolframLanguageData-corrected: 75
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 190
+  # N-tokens: {}
+  # L-tokens: {"/:"}
+  # O-tokens: {":="}
+  # usage: "symb", "/:", "expr1 := expr2"
+  FullForm: TagSetDelayed[symb, expr1, expr2]
+  arity: Ternary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments:
+
+TagUnset:
+  Precedence-Function: 670
+  precedence: 40
+  WolframLanguageData: 75
+  WolframLanguageData-corrected: 75
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 190
+  # N-tokens: {}
+  # L-tokens: {"/;"}
+  # O-tokens: {"=."}
+  # usage: "symb", "/; expr =."
+  FullForm: Unset[Condition[symb, expr]]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments:
+
+TensorProduct:
+  Precedence-Function: 495
+  precedence: 487
+  WolframLanguageData:
+  WolframLanguageData-corrected: 29.6
+  UnicodeCharacters.tr: 602
+  UnicodeCharacters-corrected.tr: 603
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "expr1  expr2"
+  FullForm: TensorProduct[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+TensorWedge:
+  Precedence-Function: 500
+  precedence: 488
+  WolframLanguageData:
+  WolframLanguageData-corrected: 29.5
+  UnicodeCharacters.tr: 603
+  UnicodeCharacters-corrected.tr: 604
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "expr1  expr2"
+  FullForm: TensorWedge[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Therefore:
+  precedence: 50
+  WolframLanguageData: 74
+  WolframLanguageData-corrected: 73.5
+  UnicodeCharacters.tr: 201
+  UnicodeCharacters-corrected.tr: 202
+  # N-tokens: {}
+  # L-tokens: {"∴"}
+  # O-tokens: {}
+  # usage: "expr1 ∴ expr2"
+  FullForm: Therefore[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: false
+  # comments: Precedence of Therefore and Because are swapped in notebook versus ToExpression.
+
+Tilde:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"∼"}
+  # O-tokens: {}
+  # usage: "x ∼ y"
+  FullForm: Tilde[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+TildeEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≃"}
+  # O-tokens: {}
+  # usage: "x ≃ y"
+  FullForm: TildeEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+TildeFullEqual:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≅"}
+  # O-tokens: {}
+  # usage: "x ≅ y"
+  FullForm: TildeFullEqual[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+TildeTilde:
+  precedence: 290
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"≈"}
+  # O-tokens: {}
+  # usage: "x ≈ y"
+  FullForm: TildeTilde[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Times:
+  precedence: 400
+  WolframLanguageData: 38
+  WolframLanguageData-corrected: 38
+  UnicodeCharacters.tr: 520
+  UnicodeCharacters-corrected.tr: 520
+  # N-tokens: {}
+  # L-tokens: {"*", "×", "
+  # O-tokens: {}
+  usage: ["x * y", "x × y", "x y"]
+  FullForm: Times[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments: Operator Notations includes usages with invisible Unicode characters.
+
+TimesBy:
+  precedence: 100
+  WolframLanguageData: 69
+  WolframLanguageData-corrected: 69
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 230
+  # N-tokens: {}
+  # L-tokens: {"*="}
+  # O-tokens: {}
+  # usage: "expr1 *= expr2"
+  FullForm: TimesBy[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments:
+
+TortoiseShellBracket:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr: -10
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {"〔"}
+  # L-tokens: {}
+  # O-tokens: {"〕"}
+  # usage: "〔 expr 〕"
+  FullForm:
+  arity: Unary
+  affix: Matchfix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Transpose:
+  Precedence-Function: 670
+  precedence: 670
+  WolframLanguageData: 18
+  WolframLanguageData-corrected: 18
+  UnicodeCharacters.tr: 695
+  UnicodeCharacters-corrected.tr: 695
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  # usage: "{{"expr", ""}}"
+  FullForm: Transpose[expr]
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: true
+  # comments:
+
+TwoWayRule:
+  precedence: 125
+  WolframLanguageData:
+  WolframLanguageData-corrected: 66.5
+  UnicodeCharacters.tr: 255
+  UnicodeCharacters-corrected.tr: 255
+  # N-tokens: {}
+  # L-tokens: {"<->", ""}
+  # O-tokens: {}
+  # usage: "expr1", "<->", "expr2"}, {"expr1  expr2"
+  FullForm: TwoWayRule[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments:
+
+UnaryMinusPlus:
+  Precedence-Function: 310
+  precedence: 480
+  WolframLanguageData: 30
+  WolframLanguageData-corrected: 30
+  UnicodeCharacters.tr: 430
+  UnicodeCharacters-corrected.tr: 600
+  # N-tokens: {"∓"}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"∓", "expr"}}"
+  FullForm: MinusPlus[expr]
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: false
+  # comments:
+
+UnaryPlus:
+  Precedence-Function: 310
+  precedence: 480
+  WolframLanguageData:
+  WolframLanguageData-corrected: 30
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 600
+  # N-tokens: {"+"}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"+", "expr"}}"
+  FullForm: Plus[expr]
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: true
+  # comments: Converts to expr on input.
+
+UnaryPlusMinus:
+  Precedence-Function: 310
+  precedence: 480
+  WolframLanguageData: 30
+  WolframLanguageData-corrected: 30
+  UnicodeCharacters.tr: 430
+  UnicodeCharacters-corrected.tr: 600
+  # N-tokens: {"±"}
+  # L-tokens: {}
+  # O-tokens: {}
+  # usage: "{{"±", "expr"}}"
+  FullForm: PlusMinus[expr]
+  arity: Unary
+  affix: Prefix
+  associativity: right
+  meaningful: false
+  # comments:
+
+UnderoverscriptBox:
+  Precedence-Function: 670
+  precedence: 700
+  WolframLanguageData: 7
+  WolframLanguageData-corrected: 7.5
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 785
+  operator: ["\\+", "\\%"]
+  usage: "\\(x\\+y\\%z\\)"
+  FullForm:
+  arity: Ternary
+  affix: Infix
+  associativity: "unknown"
+  box-operator: true
+  meaningful: true
+  # comments:
+
+UnderscriptBox:
+  Precedence-Function: 670
+  precedence: 710
+  WolframLanguageData: 7
+  WolframLanguageData-corrected: 7
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 790
+  operator: "\\+"
+  usage: "\\(x\\+y\\)"
+  FullForm:
+  arity: Binary
+  affix: Infix
+  box-operator: true
+  associativity: "unknown"
+  meaningful: true
+  # comments:
+
+UndirectedEdge:
+  precedence: 295
+  WolframLanguageData:
+  WolframLanguageData-corrected: 49
+  UnicodeCharacters.tr: 395
+  UnicodeCharacters-corrected.tr: 395
+  # N-tokens: {}
+  # L-tokens: {"↔"}
+  # O-tokens: {}
+  usage: "u ↔ v"
+  FullForm: UndirectedEdge[u, v]
+  arity: Binary
+  affix: Infix
+  associativity: "non-associative"
+  meaningful: true
+  # comments:
+
+Unequal:
+  precedence: 290
+  WolframLanguageData: 50
+  WolframLanguageData-corrected: 50
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"!=", "≠"}
+  # O-tokens: {}
+  usage: ["x != y", "x ≠ y"]
+  FullForm: Unequal[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Union:
+  precedence: 300
+  WolframLanguageData: 48
+  WolframLanguageData-corrected: 48
+  UnicodeCharacters.tr: 410
+  UnicodeCharacters-corrected.tr: 410
+  # N-tokens: {}
+  # L-tokens: {"⋃"}
+  # O-tokens: {}
+  usage: "expr1 ⋃ expr2"
+  FullForm: Union[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+UnionPlus:
+  precedence: 300
+  WolframLanguageData:
+  WolframLanguageData-corrected: 48
+  UnicodeCharacters.tr: 410
+  UnicodeCharacters-corrected.tr: 410
+  # N-tokens: {}
+  # L-tokens: {"⊎"}
+  # O-tokens: {}
+  usage: "x ⊎ y"
+  FullForm: UnionPlus[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+UnsameQ:
+  Precedence-Function: 290
+  precedence: 290
+  WolframLanguageData: 51
+  WolframLanguageData-corrected: 51
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 370
+  # N-tokens: {}
+  # L-tokens: {"=!="}
+  # O-tokens: {}
+  usage: "expr1 =!= expr2"
+  FullForm: UnsameQ[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Unset:
+  Precedence-Function: 670
+  precedence: 670
+  WolframLanguageData: 75
+  WolframLanguageData-corrected: 75
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 190
+  # N-tokens: {}
+  # L-tokens: {"=."}
+  # O-tokens: {}
+  # usage: "{{"expr", "=."}}"
+  FullForm: Unset[expr]
+  arity: Unary
+  affix: Postfix
+  associativity: left
+  meaningful: true
+  # comments:
+
+UpArrow:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"↑"}
+  # O-tokens: {}
+  usage: "x ↑ y"
+  FullForm: UpArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+UpArrowBar:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⤒"}
+  # O-tokens: {}
+  usage: "x ⤒ y"
+  FullForm: UpArrowBar[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+UpArrowDownArrow:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⇅"}
+  # O-tokens: {}
+  usage: "x ⇅ y"
+  FullForm: UpArrowDownArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+UpDownArrow:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"↕"}
+  # O-tokens: {}
+  usage: "x ↕ y"
+  FullForm: UpDownArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+UpEquilibrium:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"⥮"}
+  # O-tokens: {}
+  usage: "x ⥮ y"
+  FullForm: UpEquilibrium[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+UpSet:
+  precedence: 40
+  WolframLanguageData: 75
+  WolframLanguageData-corrected: 75
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 190
+  # N-tokens: {}
+  # L-tokens: {"^="}
+  # O-tokens: {}
+  usage: "expr1 ^= expr2"
+  FullForm: UpSet[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments:
+
+UpSetDelayed:
+  precedence: 40
+  WolframLanguageData: 75
+  WolframLanguageData-corrected: 75
+  UnicodeCharacters.tr:
+  UnicodeCharacters-corrected.tr: 190
+  # N-tokens: {}
+  # L-tokens: {"^:="}
+  # O-tokens: {}
+  usage: "expr1 ^:= expr2"
+  FullForm: UpSetDelayed[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: right
+  meaningful: true
+  # comments:
+
+UpTee:
+  precedence: 197
+  Precedence-Function: 190
+  WolframLanguageData: 60
+  WolframLanguageData-corrected: 60
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 390
+  # N-tokens: {}
+  # L-tokens: {"⊥"}
+  # O-tokens: {}
+  usage: "expr1 ⊥ expr2"
+  FullForm: UpTee[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: left
+  meaningful: false
+  # comments:
+
+UpTeeArrow:
+  precedence: 580
+  WolframLanguageData:
+  WolframLanguageData-corrected: 21.5
+  UnicodeCharacters.tr: 650
+  UnicodeCharacters-corrected.tr: 650
+  # N-tokens: {}
+  # L-tokens: {"↥"}
+  # O-tokens: {}
+  usage: "x ↥ y"
+  FullForm: UpTeeArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+UpperLeftArrow:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"↖"}
+  # O-tokens: {}
+  usage: "x ↖ y"
+  FullForm: UpperLeftArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+UpperRightArrow:
+  precedence: 270
+  WolframLanguageData:
+  WolframLanguageData-corrected: 50.6
+  UnicodeCharacters.tr: 380
+  UnicodeCharacters-corrected.tr: 380
+  # N-tokens: {}
+  # L-tokens: {"↗"}
+  # O-tokens: {}
+  usage: "x ↗ y"
+  FullForm: UpperRightArrow[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Vee:
+  precedence: 430
+  WolframLanguageData:
+  WolframLanguageData-corrected: 35
+  UnicodeCharacters.tr: 550
+  UnicodeCharacters-corrected.tr: 550
+  # N-tokens: {}
+  # L-tokens: {"⋁"}
+  # O-tokens: {}
+  usage: "x ⋁ y"
+  FullForm: Vee[x, y]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+VerticalBar:
+  precedence: 280
+  WolframLanguageData: 50
+  WolframLanguageData-corrected: 50.5
+  UnicodeCharacters.tr: 390
+  UnicodeCharacters-corrected.tr: 385
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  usage: "expr1  expr2"
+  FullForm: VerticalBar[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+VerticalSeparator:
+  precedence: 60
+  WolframLanguageData: 73
+  WolframLanguageData-corrected: 73
+  UnicodeCharacters.tr: 202
+  UnicodeCharacters-corrected.tr: 203
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  usage: "expr1  expr2"
+  FullForm: VerticalSeparator[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+VerticalTilde:
+  precedence: 370
+  WolframLanguageData: 41
+  WolframLanguageData-corrected: 41
+  UnicodeCharacters.tr: 490
+  UnicodeCharacters-corrected.tr: 490
+  # N-tokens: {}
+  # L-tokens: {"≀"}
+  # O-tokens: {}
+  usage: "expr1 ≀ expr2"
+  FullForm: VerticalTilde[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+Wedge:
+  precedence: 440
+  WolframLanguageData: 34
+  WolframLanguageData-corrected: 34
+  UnicodeCharacters.tr: 560
+  UnicodeCharacters-corrected.tr: 560
+  # N-tokens: {}
+  # L-tokens: {"⋀"}
+  # O-tokens: {}
+  usage: "expr1 ⋀ expr2"
+  FullForm: Wedge[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: false
+  # comments:
+
+WhiteCornerBracket:
+  Precedence-Function: 670
+  precedence: 760
+  WolframLanguageData:
+  WolframLanguageData-corrected: 1
+  UnicodeCharacters.tr: -10
+  UnicodeCharacters-corrected.tr: -10
+  # N-tokens: {"『"}
+  # L-tokens: {}
+  # O-tokens: {"』"}
+  usage: "『 expr 』"
+  FullForm:
+  arity: Unary
+  affix: Matchfix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Xnor:
+  precedence: 220
+  WolframLanguageData: 56
+  WolframLanguageData-corrected: 56
+  UnicodeCharacters.tr: 325
+  UnicodeCharacters-corrected.tr: 325
+  # N-tokens: {}
+  # L-tokens: {""}
+  # O-tokens: {}
+  usage: "x1  y"
+  FullForm: Xnor[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:
+
+Xor:
+  precedence: 220 # FIXME: is probably 215. Check and adjust after code and mathics-core are merged
+  WolframLanguageData: 56
+  WolframLanguageData-corrected: 56
+  UnicodeCharacters.tr: 325
+  UnicodeCharacters-corrected.tr: 325
+  # N-tokens: {}
+  # L-tokens: {"⊻"}
+  # O-tokens: {}
+  usage: "x ⊻ y"
+  FullForm: Xor[expr1, expr2]
+  arity: Binary
+  affix: Infix
+  associativity: null
+  meaningful: true
+  # comments:

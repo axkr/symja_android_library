@@ -19,8 +19,6 @@ import java.util.Locale;
 import java.util.Stack;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Arithmetic;
-import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -156,19 +154,19 @@ public class FuzzyParser extends Scanner {
           break;
 
         case ID.Pattern:
-          expr = PatternMatching.Pattern.CONST.evaluate(ast, fEngine);
+          expr = S.Pattern.getEvaluator().evaluate(ast, fEngine);
           break;
 
         case ID.Blank:
-          expr = PatternMatching.Blank.CONST.evaluate(ast, fEngine);
+          expr = S.Blank.getEvaluator().evaluate(ast, fEngine);
           break;
 
         case ID.Complex:
-          expr = Arithmetic.CONST_COMPLEX.evaluate(ast, fEngine);
+          expr = S.Complex.getEvaluator().evaluate(ast, fEngine);
           break;
 
         case ID.Rational:
-          expr = Arithmetic.CONST_RATIONAL.evaluate(ast, fEngine);
+          expr = S.Rational.getEvaluator().evaluate(ast, fEngine);
           break;
         default:
       }

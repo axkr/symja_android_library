@@ -14,6 +14,13 @@
 package org.matheclipse.parser.client.operator;
 
 public abstract class Operator {
+
+  // // Constants for associativity
+  public static final int LEFT_ASSOCIATIVE = 0;
+  public static final int RIGHT_ASSOCIATIVE = 1;
+  public static final int FLAT = 2;
+  public static final int NON_ASSOCIATIVE = 3;
+
   private final String fFunctionName;
 
   protected final String fOperatorString;

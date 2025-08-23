@@ -230,6 +230,28 @@ public final class FunctionNode extends ASTNode implements List<ASTNode> {
   }
 
   @Override
+  public String toWMAString() {
+    ASTNode head = fNodesList.get(0);
+    final StringBuilder buf = new StringBuilder();
+    if (head == null) {
+      buf.append("<null-tag>");
+    } else {
+      buf.append(head.toWMAString());
+    }
+    ASTNode temp;
+    buf.append('[');
+    for (int i = 1; i < size(); i++) {
+      temp = get(i);
+      buf.append(temp == this ? "(this ListNode)" : temp.toWMAString());
+      if (i < size() - 1) {
+        buf.append(", ");
+      }
+    }
+    buf.append(']');
+    return buf.toString();
+  }
+
+  @Override
   public String toString() {
     ASTNode head = fNodesList.get(0);
     final StringBuilder buf = new StringBuilder();
