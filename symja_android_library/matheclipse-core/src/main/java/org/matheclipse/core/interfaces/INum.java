@@ -15,6 +15,7 @@ public interface INum extends IReal, IInexactNumber {
   public static final double Glaisher = 1.2824271291006226368753425688697917277676889273250;
   public static final double GoldenRatio = 1.6180339887498948482045868343656381177203091798058;
   public static final double Khinchin = 2.6854520010653064453097148354817956938203822939945;
+  double EULER_GAMMA = 0.57721566490153286060651209008240243104215933593992;
 
   public double getRealPart();
 
@@ -73,4 +74,8 @@ public interface INum extends IReal, IInexactNumber {
   public int toInt() throws ArithmeticException;
 
   public long precision();
+
+  static double bernoulliDouble(int n) {
+    return IRational.bernoulliNumber(n).doubleValue();
+  }
 }

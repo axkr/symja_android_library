@@ -16,7 +16,7 @@ import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.y_;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
-import org.matheclipse.core.builtin.StructureFunctions;
+import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -119,7 +119,7 @@ public class TrigReduce extends AbstractEvaluator {
    */
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IExpr temp = StructureFunctions.threadListLogicEquationOperators(ast.arg1(), ast, 1);
+    IExpr temp = CompareUtil.threadListLogicEquationOperators(ast.arg1(), ast, 1);
     if (temp.isPresent()) {
       return temp;
     }

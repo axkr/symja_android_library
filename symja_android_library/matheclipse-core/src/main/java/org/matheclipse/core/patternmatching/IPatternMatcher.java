@@ -225,8 +225,8 @@ public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Se
   public abstract boolean isRuleWithoutPatterns();
 
   /**
-   * Contains the lhs expression which should be matched in a clone of this pattern matcher during
-   * matching.
+   * Contains the left-hand-side expression which should be matched in a clone of this pattern
+   * matcher during matching.
    *
    * @param lhsExprToMatch
    */

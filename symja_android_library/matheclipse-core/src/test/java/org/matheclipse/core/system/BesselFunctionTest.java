@@ -477,6 +477,9 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testWeberE() {
+    // IntervalData: The expression {x,-1,1,1} is not a valid interval.
+    check("WeberE(a,IntervalData({x,-1,1,1},{3,LessEqual,LessEqual,3}))", //
+        "WeberE(a,IntervalData({x,-1,1,1},{3,LessEqual,LessEqual,3}))");
     if (Config.EXPENSIVE_JUNIT_TESTS) {
       check("WeberE(1009,-0.8+I*1.2)", //
           "Indeterminate");

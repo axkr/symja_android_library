@@ -15,6 +15,7 @@ import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import org.hipparchus.linear.AnyMatrix;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.expression.AST;
@@ -176,6 +177,36 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   /** The <code>Times(...)</code> expression was determined implicitly in the expression parser. */
   public static final int TIMES_PARSED_IMPLICIT = 0x00200000;
 
+  /**
+   * <code>range(maximumExclusive)</code> gives
+   * <code>{1, 2, 3, ... ,maximumInclusive-2, maximumInclusive-1}</code>
+   * 
+   * @param maximumExclusive
+   * @return {@link F#NIL} if <code>size > Integer.MAX_VALUE-3</code>
+   */
+  static IAST range(int maximumExclusive) {
+    if (maximumExclusive > Integer.MAX_VALUE - 3) {
+      // `1`.
+      return Errors.printMessage(S.Range, "error",
+          F.List("argument " + maximumExclusive + " is greater than Javas Integer.MAX_VALUE-3."));
+    }
+    return range(1, maximumExclusive);
+  }
+
+  /**
+   * <code>range(2, 7)</code> gives <code>{2, 3, 4, 5, 6}</code>
+   *
+   * @param minimumInclusive
+   * @param maximumExclusive
+   * @return a list of integer numbers
+   */
+  static IAST range(int minimumInclusive, int maximumExclusive) {
+    if (maximumExclusive > minimumInclusive) {
+      return F.mapRange(minimumInclusive, maximumExclusive, i -> F.ZZ(i));
+    }
+    return F.CEmptyList;
+  }
+
   default IExpr acceptChecked(IVisitor visitor) {
     try {
       return accept(visitor);
@@ -296,6 +327,16 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @see IExpr#head()
    */
   public IExpr arg5();
+
+  /**
+   * Returns an iterator over all arguments in this list starting with offset <b>1</b>. Calls
+   * {@link #iterator()}.
+   *
+   * @return an iterator over this list values
+   */
+  default Iterable<IExpr> args() {
+    return this::iterator;
+  }
 
   /** {@inheritDoc} */
   @Override
@@ -448,10 +489,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   @Deprecated
   public IASTAppendable copyFrom(int position);
 
-  default IASTAppendable subList(int startPosition) {
-    return copyFrom(startPosition);
-  }
-
   /**
    * <p>
    * Create a copy of this <code>AST</code>, which contains the same head and all elements from the
@@ -468,23 +505,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   default IASTAppendable copyFrom(int startPosition, int endPosition) {
     return subList(startPosition, endPosition);
   }
-
-  public IASTAppendable subList(int startPosition, int endPosition);
-
-  /**
-   * <p>
-   * Create a copy of this <code>AST</code>, which contains the same head and all elements from the
-   * given <code>startPosition</code> (inclusive) to the <code>endPosition</code> (exclusive).
-   * <p>
-   * 
-   * @param startPosition the position to start copying the elements (inclusive)
-   * @param endPosition the position to end copying the elements (exclusive)
-   * @param step the step size for copying the elements. If step is negative
-   *        <code>startPosition</code> must be greater than <code>endPosition</code>
-   * @return a copy of this <code>AST</code> instance from the given <code>startPosition</code>
-   *         (inclusive) to the <code>endPosition</code> (exclusive)
-   */
-  public IASTAppendable subList(int startPosition, int endPosition, int step);
 
 
 
@@ -858,11 +878,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    */
   public boolean forAll(Predicate<? super IExpr> predicate, int startOffset);
 
-  @Override
-  default boolean forAllLeaves(Predicate<? super IExpr> predicate) {
-    return forAllLeaves(predicate, 1);
-  }
-
   /**
    * Check all {@link IAST} recursively, which don't have <code>head</code> as head element and
    * apply the <code>predicate</code> to each leaf argument in this {@link IAST} and
@@ -875,6 +890,11 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @return <code>true</code> if the predicate is true for all leaves of this <code>IAST</code>
    */
   public boolean forAllLeaves(IExpr head, Predicate<? super IExpr> predicate, int startOffset);
+
+  @Override
+  default boolean forAllLeaves(Predicate<? super IExpr> predicate) {
+    return forAllLeaves(predicate, 1);
+  }
 
   /**
    * Check all atomic (non IAST objects) leaf elements by applying the <code>predicate</code> to
@@ -970,33 +990,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   }
 
   /**
-   * Iterate over all elements from index <code>start</code> to <code>size()-1</code> and call the
-   * method {@link ObjIntConsumer#accept(Object, int)} for these elements.
-   * <p>
-   * <b>Note:</b> If the element is an {@link IAssociation} the right-hand-side
-   * &quot;value&quot;-part of the rule will be selected as element.
-   * 
-   * @param start start index (inclusive)
-   * @param end end index (exclusive)
-   * @param consumer function which accepts the elements
-   */
-  default void forEachRule(int start, int end, ObjIntConsumer<? super IExpr> consumer) {
-    for (int i = start; i < end; i++) {
-      consumer.accept(getRule(i), i);
-    }
-  }
-
-  /**
-   * Consume all <code>value-elements</code> generated by the given function from index
-   * <code>2</code> inclusive to <code>size()</code> exclusive.
-   * 
-   * @param consumer function which accepts the elements
-   */
-  default void forEach2(final ObjIntConsumer<? super IExpr> consumer) {
-    forEach(2, size(), consumer);
-  }
-
-  /**
    * Consume all <code>value-elements</code> generated by the given function from index
    * <code>1</code> inclusive.
    * 
@@ -1017,8 +1010,14 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
     forEach(1, size(), consumer);
   }
 
-  default void forEachRule(ObjIntConsumer<? super IExpr> consumer) {
-    forEachRule(1, size(), consumer);
+  /**
+   * Consume all <code>value-elements</code> generated by the given function from index
+   * <code>2</code> inclusive to <code>size()</code> exclusive.
+   * 
+   * @param consumer function which accepts the elements
+   */
+  default void forEach2(final ObjIntConsumer<? super IExpr> consumer) {
+    forEach(2, size(), consumer);
   }
 
   /**
@@ -1040,6 +1039,27 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @param startOffset the start offset from which the action.accept() method should be executed
    */
   public void forEachRule(Consumer<? super IExpr> action, int startOffset);
+
+  /**
+   * Iterate over all elements from index <code>start</code> to <code>size()-1</code> and call the
+   * method {@link ObjIntConsumer#accept(Object, int)} for these elements.
+   * <p>
+   * <b>Note:</b> If the element is an {@link IAssociation} the right-hand-side
+   * &quot;value&quot;-part of the rule will be selected as element.
+   * 
+   * @param start start index (inclusive)
+   * @param end end index (exclusive)
+   * @param consumer function which accepts the elements
+   */
+  default void forEachRule(int start, int end, ObjIntConsumer<? super IExpr> consumer) {
+    for (int i = start; i < end; i++) {
+      consumer.accept(getRule(i), i);
+    }
+  }
+
+  default void forEachRule(ObjIntConsumer<? super IExpr> consumer) {
+    forEachRule(1, size(), consumer);
+  }
 
   /**
    * Set {@link IAST#BUILT_IN_EVALED} flag.
@@ -1160,6 +1180,11 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @throws IllegalArgumentException if the cast is not possible
    */
   public INumber getNumber(int index);
+
+  /**
+   * Get the order expressions <code>O(...)</code> from the first level of the expression.
+   */
+  public IAST getO();
 
   /**
    * Returns the element at the specified positions in the nested ASTs.
@@ -1401,16 +1426,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    */
   @Override
   public Iterator<IExpr> iterator();
-
-  /**
-   * Returns an iterator over all arguments in this list starting with offset <b>1</b>. Calls
-   * {@link #iterator()}.
-   *
-   * @return an iterator over this list values
-   */
-  default Iterable<IExpr> args() {
-    return this::iterator;
-  }
 
   /**
    * Append a String composed of copies of the arguments of this AST joined together with the
@@ -1836,6 +1851,11 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   public IAST removeIf(Predicate<? super IExpr> predicate);
 
   /**
+   * Remove the order expressions <code>O(...)</code> from the first level of the expression.
+   */
+  public IAST removeO();
+
+  /**
    * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not
    * copied) and remove the elements defined in the given <code>removedPositionsArray</code> up to
    * <code>untilIndex</code> (exclusive).
@@ -1847,16 +1867,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   public IASTAppendable removePositionsAtCopy(int[] removedPositions, int untilIndex);
 
   public IAST removePositionsAtCopy(Predicate<IExpr> predicate);
-
-  /**
-   * Remove the order expressions <code>O(...)</code> from the first level of the expression.
-   */
-  public IAST removeO();
-
-  /**
-   * Get the order expressions <code>O(...)</code> from the first level of the expression.
-   */
-  public IAST getO();
 
   /**
    * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not
@@ -2032,7 +2042,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    */
   public IAST splice(int index, int howMany, IExpr... items);
 
-
   /**
    * Returns a sequential {@link Stream} which starts at index <code>1</code>of the specified array
    * as its source.
@@ -2040,6 +2049,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @return a {@code Stream} for the internal array range
    */
   public Stream<IExpr> stream();
+
 
   /**
    * Returns a sequential {@link Stream} with the specified range of the specified array as its
@@ -2064,6 +2074,27 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   default Stream<IExpr> stream0() {
     return stream(0, size());
   }
+
+  default IASTAppendable subList(int startPosition) {
+    return copyFrom(startPosition);
+  }
+
+  public IASTAppendable subList(int startPosition, int endPosition);
+
+  /**
+   * <p>
+   * Create a copy of this <code>AST</code>, which contains the same head and all elements from the
+   * given <code>startPosition</code> (inclusive) to the <code>endPosition</code> (exclusive).
+   * <p>
+   * 
+   * @param startPosition the position to start copying the elements (inclusive)
+   * @param endPosition the position to end copying the elements (exclusive)
+   * @param step the step size for copying the elements. If step is negative
+   *        <code>startPosition</code> must be greater than <code>endPosition</code>
+   * @return a copy of this <code>AST</code> instance from the given <code>startPosition</code>
+   *         (inclusive) to the <code>endPosition</code> (exclusive)
+   */
+  public IASTAppendable subList(int startPosition, int endPosition, int step);
 
   /**
    * Returns an array containing all elements contained in this {@code List}.

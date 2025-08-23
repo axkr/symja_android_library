@@ -12,8 +12,6 @@ import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.functions.GammaJS;
-import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -28,6 +26,8 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.functions.GammaJS;
+import org.matheclipse.core.numerics.functions.HypergeometricJS;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
@@ -100,6 +100,16 @@ public class Num implements INum {
           3.64535870476272953053138811652743541288, 3.69081325021727498507684266198198086743,
           3.73429151108684020246814700980806782395, 3.77595817775350686913481367647473449062};
 
+  public static double factorial(final double arg) {
+    int n = (int) arg;
+    if (n == arg && n > 0) {
+      if (n <= 170) {
+        return uncheckedFactorial(n);
+      }
+    }
+    return org.hipparchus.special.Gamma.gamma(arg + 1.0);
+  }
+
   public static String fullFormString(double d) {
     String result = Double.toString(d);
     if (!ParserConfig.EXPLICIT_TIMES_OPERATOR) {
@@ -111,6 +121,20 @@ public class Num implements INum {
       }
     }
     return result;
+  }
+
+  /**
+   * Return the factorial of {@code n}.
+   *
+   * <p>
+   * Note: This is an internal method that exposes the tabulated factorials that can be represented
+   * as a double. No checks are performed on the argument.
+   *
+   * @param n Argument (must be in [0, 170])
+   * @return n!
+   */
+  static double uncheckedFactorial(int n) {
+    return DOUBLE_FACTORIALS_170[n];
   }
 
   /**
@@ -599,14 +623,14 @@ public class Num implements INum {
   }
 
   @Override
-  public Complex complexValue() {
-    // double precision complex number
-    return new Complex(value);
+  public int complexSign() {
+    return (int) Math.signum(value);
   }
 
   @Override
-  public int complexSign() {
-    return (int) Math.signum(value);
+  public Complex complexValue() {
+    // double precision complex number
+    return new Complex(value);
   }
 
   @Override
@@ -862,30 +886,6 @@ public class Num implements INum {
   public IExpr expIntegralEi() {
     return F.complexReduced(GammaJS.expIntegralEi(new Complex(value)));
     // return valueOf(EvalEngine.getApfloatDouble().expIntegralEi(apfloatValue()).doubleValue());
-  }
-
-  /**
-   * Return the factorial of {@code n}.
-   *
-   * <p>
-   * Note: This is an internal method that exposes the tabulated factorials that can be represented
-   * as a double. No checks are performed on the argument.
-   *
-   * @param n Argument (must be in [0, 170])
-   * @return n!
-   */
-  static double uncheckedFactorial(int n) {
-    return DOUBLE_FACTORIALS_170[n];
-  }
-
-  public static double factorial(final double arg) {
-    int n = (int) arg;
-    if (n == arg && n > 0) {
-      if (n <= 170) {
-        return uncheckedFactorial(n);
-      }
-    }
-    return org.hipparchus.special.Gamma.gamma(arg + 1.0);
   }
 
   @Override
@@ -1535,6 +1535,12 @@ public class Num implements INum {
   @Override
   public boolean isNegative() {
     return value < 0.0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isNonNegative() {
+    return value >= 0.0;
   }
 
   /** {@inheritDoc} */

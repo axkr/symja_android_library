@@ -2,7 +2,6 @@ package org.matheclipse.io.servlet;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
-import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -64,6 +63,6 @@ public class MMAAJAXQueryServlet extends AJAXQueryServlet {
     // F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);
     // Config.JAS_NO_THREADS = true;
     // MMAAJAXQueryServlet.log.info(servlet + " initialized");
-    System.out.println("Symja version " + ConstantDefinitions.VERSION + " initialized");
+    System.out.println("Symja version " + Config.VERSION + " initialized");
   }
 }

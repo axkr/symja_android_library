@@ -798,6 +798,8 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testGammaRegularized() {
+    checkNumeric("GammaRegularized({0,Sequence(),1,2},-Sqrt(2),Interval(a))", //
+        "{0,Interval({E^Sqrt(2)-1/E^a,E^Sqrt(2)-1/E^a}),GammaRegularized(2,-Sqrt(2),Interval({a,a}))}");
     check("N(GammaRegularized(5, 3,{2,3,5,7}), 50)", //
         "{-0.13208373813251677697126440853762923150933999928159," //
             + "0," //

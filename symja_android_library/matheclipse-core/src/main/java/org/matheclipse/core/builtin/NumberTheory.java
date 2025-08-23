@@ -4,7 +4,6 @@ import static java.lang.Math.addExact;
 import static java.lang.Math.floorMod;
 import static java.lang.Math.multiplyExact;
 import static java.lang.Math.subtractExact;
-import static java.math.RoundingMode.CEILING;
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C2;
@@ -65,7 +64,6 @@ import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.BigIntegerSym;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.FractionSym;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
@@ -103,11 +101,6 @@ import io.github.mangara.diophantine.XYPair;
 import io.github.mangara.diophantine.quadratic.PellsSolver;
 
 public final class NumberTheory {
-
-  private static final int[] FIBONACCI_45 = {0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377,
-      610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025, 121393, 196418, 317811,
-      514229, 832040, 1346269, 2178309, 3524578, 5702887, 9227465, 14930352, 24157817, 39088169,
-      63245986, 102334155, 165580141, 267914296, 433494437, 701408733, 1134903170};
 
   private static final long[] BELLB_25 = {1, 1, 2, 5, 15, 52, 203, 877, 4140, 21147, 115975, 678570,
       4213597, 27644437, 190899322L, 1382958545L, 10480142147L, 82864869804L, 682076806159L,
@@ -311,7 +304,7 @@ public final class NumberTheory {
         }
         int bn = n.toIntDefault();
         if (bn >= 0) {
-          return bernoulliNumber(bn);
+          return IRational.bernoulliNumber(bn);
         }
         IExpr temp = engine.evaluate(F.Subtract(n, F.C3));
         if (temp.isIntegerResult() && temp.isPositiveResult() && temp.isEvenResult()) {
@@ -465,7 +458,7 @@ public final class NumberTheory {
 
     @Override
     public IExpr e2IntArg(final IInteger n, final IInteger k) {
-      return binomial(n, k);
+      return AbstractIntegerSym.binomial(n, k);
     }
 
     @Override
@@ -482,7 +475,7 @@ public final class NumberTheory {
       if (F.isPresent(ni)) {
         int ki = k.toIntDefault();
         if (F.isPresent(ki)) {
-          return binomial(F.ZZ(ni), F.ZZ(ki));
+          return AbstractIntegerSym.binomial(F.ZZ(ni), F.ZZ(ki));
         }
       }
       if (n.isZero() && k.isZero()) {
@@ -534,7 +527,7 @@ public final class NumberTheory {
       }
 
       if (n.isNumber() && k.isNumber()) {
-        return binomialNumeric((INumber) n, (INumber) k);
+        return INumber.binomialNumeric((INumber) n, (INumber) k);
       }
       IExpr difference = F.eval(F.Subtract(n, F.C1));
       if (difference.equals(k)) {
@@ -551,7 +544,7 @@ public final class NumberTheory {
         int diff = F.eval(F.Subtract(n, k)).toIntDefault(-1);
         if (diff > 0 && diff <= 5) {
           IASTAppendable result = F.TimesAlloc(diff + 1);
-          result.append(F.Power(AbstractIntegerSym.factorial(diff), -1));
+          result.append(F.Power(IInteger.factorial(diff), -1));
           for (int i = 1; i <= diff; i++) {
             IAST temp = F.Plus(F.ZZ(i), k);
             result.append(temp);
@@ -608,6 +601,12 @@ public final class NumberTheory {
    * </pre>
    */
   private static class CarmichaelLambda extends AbstractTrigArg1 {
+
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return false;
+    }
 
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
@@ -683,7 +682,7 @@ public final class NumberTheory {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       if (n.isInteger()) {
-        return catalanNumber((IInteger) n);
+        return IInteger.catalanNumber((IInteger) n);
       } else if (n.isFraction()) {
         if (((IFraction) n).denominator().equals(F.C2)) {
           return functionExpand(ast, engine);
@@ -1400,6 +1399,11 @@ public final class NumberTheory {
   private static class DedekindNumber extends AbstractTrigArg1 {
 
     @Override
+    public boolean evalIsReal(IAST ast) {
+      return false;
+    }
+
+    @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInteger() && arg1.isNonNegativeResult()) {
         int n = arg1.toIntDefault();
@@ -1623,6 +1627,11 @@ public final class NumberTheory {
    * </pre>
    */
   private static class Divisors extends AbstractTrigArg1 {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return false;
+    }
 
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
@@ -2009,6 +2018,11 @@ public final class NumberTheory {
    * </pre>
    */
   private static class EulerPhi extends AbstractTrigArg1 {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return false;
+    }
 
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
@@ -2923,7 +2937,7 @@ public final class NumberTheory {
             }
             return F.NIL;
           }
-          return fibonacci(n);
+          return IInteger.fibonacci(n);
         }
       } else if (arg1.isInexactNumber()) {
         final IInexactNumber n = (IInexactNumber) arg1;
@@ -3768,7 +3782,7 @@ public final class NumberTheory {
             n *= (-1);
           }
           // LucasL(n) = Fibonacci(n-1) + Fibonacci(n+1)
-          IExpr lucalsL = fibonacci(n - 1).add(fibonacci(n + 1));
+          IExpr lucalsL = IInteger.fibonacci(n - 1).add(IInteger.fibonacci(n + 1));
           if (iArg < 0 && ((iArg & 0x00000001) == 0x00000001)) {
             return F.Negate(lucalsL);
           }
@@ -3960,6 +3974,11 @@ public final class NumberTheory {
    * </ul>
    */
   private static class MersennePrimeExponent extends AbstractTrigArg1 {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return false;
+    }
 
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
@@ -4158,6 +4177,11 @@ public final class NumberTheory {
   private static class MoebiusMu extends AbstractTrigArg1 {
 
     @Override
+    public boolean evalIsReal(IAST ast) {
+      return false;
+    }
+
+    @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInteger()) {
         try {
@@ -4263,7 +4287,7 @@ public final class NumberTheory {
           return F.NIL;
         }
       }
-      IInteger multinomial = NumberTheory.multinomial(k);
+      IInteger multinomial = IInteger.multinomial(k);
       if (multinomial == null) {
         return F.NIL;
       }
@@ -4831,6 +4855,11 @@ public final class NumberTheory {
   private static class PerfectNumber extends AbstractTrigArg1 {
 
     @Override
+    public boolean evalIsReal(IAST ast) {
+      return false;
+    }
+
+    @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       if (arg1.isInteger() && arg1.isPositive()) {
         int n = arg1.toIntDefault();
@@ -5311,6 +5340,11 @@ public final class NumberTheory {
    * </pre>
    */
   private static class PrimitiveRootList extends AbstractTrigArg1 {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return false;
+    }
 
     /**
      * See:
@@ -6562,126 +6596,8 @@ public final class NumberTheory {
     return result;
   }
 
-  /**
-   * Fibonacci sequence. Algorithm in <code>O(log(n))</code> time. See:
-   * <a href= "https://www.rosettacode.org/wiki/Fibonacci_sequence#Iterative_28"> Roseatta code:
-   * Fibonacci sequence.</a>
-   *
-   * @param iArg
-   * @return
-   */
-  public static IInteger fibonacci(int iArg) {
-    int temp = iArg;
-    if (temp < 0) {
-      temp *= (-1);
-    }
-    if (temp < FIBONACCI_45.length) {
-      int result = FIBONACCI_45[temp];
-      if (iArg < 0 && ((iArg & 0x00000001) == 0x00000000)) {
-        return F.ZZ(-result);
-      }
-      return F.ZZ(result);
-    }
-
-    BigInteger a = BigInteger.ONE;
-    BigInteger b = BigInteger.ZERO;
-    BigInteger c = BigInteger.ONE;
-    BigInteger d = BigInteger.ZERO;
-    BigInteger result = BigInteger.ZERO;
-    while (temp != 0) {
-      if ((temp & 0x00000001) == 0x00000001) { // odd?
-        d = result.multiply(c);
-        result = a.multiply(c).add(result.multiply(b).add(d));
-        if (result.bitLength() > Config.MAX_BIT_LENGTH) {
-          BigIntegerLimitExceeded.throwIt(result.bitLength());
-        }
-        a = a.multiply(b).add(d);
-      }
-
-      d = c.multiply(c);
-      c = b.multiply(c).shiftLeft(1).add(d);
-      b = b.multiply(b).add(d);
-      temp >>= 1;
-    }
-
-    if (iArg < 0 && ((iArg & 0x00000001) == 0x00000000)) { // even
-      return F.ZZ(result.negate());
-    }
-    return F.ZZ(result);
-  }
-
   public static void initialize() {
     Initializer.init();
-  }
-
-  /**
-   * Calculate integer binomial number. See definitions by
-   * <a href="https://arxiv.org/abs/1105.3689">Kronenburg 2011</a>
-   *
-   * @param n
-   * @param k
-   * @return
-   */
-  public static IInteger binomial(final IInteger n, final IInteger k)
-      throws BigIntegerLimitExceeded {
-    if (k.isZero() || k.equals(n)) {
-      return F.C1;
-    }
-
-    if (!n.isNegative() && !k.isNegative()) {
-      // k>n : by definition --> 0
-      if (k.compareTo(n) > 0) {
-        return F.C0;
-      }
-
-      int ni = n.toIntDefault(-1);
-      if (ni >= 0) {
-        int ki = k.toIntDefault(-1);
-        if (ki >= 0) {
-          if (ki > ni) {
-            return F.C0;
-          }
-
-          long bits = LongMath.log2(ni, CEILING) * ki;
-          if (bits < Config.MAX_BIT_LENGTH) {
-            return AbstractIntegerSym.valueOf(BigIntegerMath.binomial(ni, ki));
-          } else {
-            BigIntegerLimitExceeded.throwIt(bits);
-          }
-        }
-      }
-
-      IInteger bin = F.C1;
-      IInteger i = F.C1;
-      while (!(i.compareTo(k) > 0)) {
-        bin = bin.multiply(n.subtract(i).add(F.C1)).div(i);
-        i = i.add(F.C1);
-      }
-      return bin;
-    } else if (n.isNegative()) {
-      // see definitions at https://arxiv.org/abs/1105.3689
-      if (!k.isNegative()) {
-        // (-1)^k * Binomial(-n+k-1, k)
-        IInteger factor = k.isOdd() ? F.CN1 : F.C1;
-        return binomial(n.negate().add(k).add(F.CN1), k).multiply(factor);
-      }
-      if (n.compareTo(k) >= 0) {
-        // (-1)^(n-k) * Binomial(-k-1, n-k)
-        IInteger factor = n.subtract(k).isOdd() ? F.CN1 : F.C1;
-        return binomial(k.add(F.C1).negate(), n.subtract(k)).multiply(factor);
-      }
-    }
-    return F.C0;
-  }
-
-
-  private static IExpr binomialNumeric(final INumber n, final INumber k) {
-    INumber nPlus1 = n.plus(F.C1);
-    INumber nMinuskPlus1 = nPlus1.subtract(k);
-    INumber kPlus1 = k.plus(F.C1);
-    // (n,k) ==> Gamma(n+1)/(Gamma(k+1)*Gamma(n-k+1))
-    return F.Times(F.Gamma(nPlus1), F.Power(F.Gamma(kPlus1), -1),
-        F.Power(F.Gamma(nMinuskPlus1), -1));
   }
 
   /**
@@ -6702,94 +6618,6 @@ public final class NumberTheory {
       nTemp = nTemp.dec();
     }
     return result;
-  }
-
-  /**
-   * Compute the Bernoulli number of the first kind.
-   *
-   * @param n
-   * @return throws ArithmeticException if n is a negative int number
-   */
-  public static IRational bernoulliNumber(int n) {
-    if (n == 0) {
-      return F.C1;
-    } else if (n == 1) {
-      return F.CN1D2;
-    } else if (n < 0) {
-      throw new ArithmeticException("BernoulliB(n): n is not a positive int number");
-    } else if (n % 2 != 0) {
-      // http://fungrim.org/entry/a98234/
-      return F.C0;
-    }
-    if (n > Config.MAX_AST_SIZE) {
-      throw new ASTElementLimitExceeded(n);
-    }
-    IFraction[] bernoulli = new IFraction[n + 1];
-    bernoulli[0] = FractionSym.ONE;
-    bernoulli[1] = AbstractFractionSym.valueOf(-1L, 2L);
-
-    int iterationLimit = EvalEngine.get().getIterationLimit();
-    if (iterationLimit > 0 && iterationLimit < Integer.MAX_VALUE / 2) {
-      iterationLimit *= 2;
-    }
-    int iterationCounter = 0;
-    for (int k = 2; k <= n; k++) {
-      bernoulli[k] = FractionSym.ZERO;
-      for (int i = 0; i < k; i++) {
-        if (!bernoulli[i].isZero()) {
-          if (iterationLimit > 0 && iterationLimit <= iterationCounter++) {
-            IterationLimitExceeded.throwIt(iterationCounter, F.BernoulliB(F.ZZ(n)));
-          }
-          IFraction bin = AbstractFractionSym.valueOf(BigIntegerMath.binomial(k + 1, k + 1 - i));
-          bernoulli[k] = bernoulli[k].sub(bin.mul(bernoulli[i]));
-        }
-      }
-      bernoulli[k] = bernoulli[k].div(AbstractFractionSym.valueOf(k + 1));
-    }
-    return bernoulli[n].normalize();
-  }
-
-  public static double bernoulliDouble(int n) {
-    return bernoulliNumber(n).doubleValue();
-  }
-
-  /**
-   * Compute the Bernoulli number of the first kind.
-   *
-   * <p>
-   * See <a href="http://en.wikipedia.org/wiki/Bernoulli_number">Wikipedia - Bernoulli number</a>.
-   * <br>
-   * For better performing implementations see
-   * <a href= "http://oeis.org/wiki/User:Peter_Luschny/ComputationAndAsymptoticsOfBernoulliNumbers"
-   * >ComputationAndAsymptoticsOfBernoulliNumbers</a>
-   *
-   * @param n
-   * @return throws ArithmeticException if n is not an non-negative Java int number
-   */
-  public static IRational bernoulliNumber(final IInteger n) {
-    int bn = n.toIntDefault(-1);
-    if (bn >= 0) {
-      return bernoulliNumber(bn);
-    }
-    throw new ArithmeticException("BernoulliB(n): n is not a positive int number");
-  }
-
-  public static IInteger catalanNumber(IInteger n) {
-    if (n.equals(F.CN1)) {
-      return F.CN1;
-    }
-    n = n.add(F.C1);
-    if (n.isPositive()) {
-      IInteger i = F.C1;
-      IInteger c = F.C1;
-      final IInteger temp1 = n.shiftLeft(1).subtract(F.C1);
-      while (i.compareTo(n) < 0) {
-        c = c.multiply(temp1.subtract(i)).div(i);
-        i = i.add(F.C1);
-      }
-      return c.div(n);
-    }
-    return F.C0;
   }
 
   public static BigInteger divisorSigma(int exponent, int n) {
@@ -6833,78 +6661,6 @@ public final class NumberTheory {
   }
 
   /**
-   * Gives the multinomial coefficient <code>(k0+k1+...)!/(k0! * k1! ...)</code>.
-   *
-   * @param kArray the non-negative coefficients
-   * @param n the sum of the non-negative coefficients
-   * @return
-   */
-  public static IInteger multinomial(final int[] kArray, final int n) {
-    IInteger pPlus = F.C1;
-    IRational pNeg = F.C1;
-    int nNeg = 0;
-    for (int k : kArray) {
-      if (k != 0) {
-        if (k < 0) {
-          nNeg++;
-          int temp = -1 - k;
-          pNeg = pNeg.divideBy(AbstractIntegerSym.factorial(temp));
-          if ((temp & 1) == 1) {
-            pNeg = pNeg.negate();
-          }
-        } else {
-          pPlus = pPlus.multiply(AbstractIntegerSym.factorial(k));
-        }
-      }
-    }
-    if (n < 0) {
-      nNeg--;
-      if (nNeg > 0) {
-        return F.C0;
-      }
-      int kFactor = -1 - n;
-      IRational p = pPlus.multiply(pNeg).multiply(AbstractIntegerSym.factorial(kFactor));
-      if ((kFactor & 1) == 1) {
-        p = p.negate();
-      }
-      return p.isNegative() ? p.denominator().negate() : p.denominator();
-    }
-    if (nNeg > 0) {
-      return F.C0;
-    }
-    IInteger result = AbstractIntegerSym.factorial(n).div(pPlus);
-    return result;
-  }
-
-  /**
-   * Gives the multinomial coefficient <code>(k0+k1+...)!/(k0! * k1! ...)</code>.
-   *
-   * @param kArray non-negative coefficients
-   * @return
-   */
-  public static IInteger multinomial(IInteger[] kArray) {
-    if (kArray == null || kArray.length == 0) {
-      return F.C1;
-    }
-    IInteger n = F.C0;
-    for (int i = 0; i < kArray.length; i++) {
-      n = n.add(kArray[i]);
-    }
-    int ni = n.toIntDefault();
-    if (F.isNotPresent(ni)) {
-      return null;
-    }
-    int[] kIntArray = new int[kArray.length];
-    for (int i = 0; i < kArray.length; i++) {
-      kIntArray[i] = kArray[i].toIntDefault();
-      if (F.isNotPresent(kIntArray[i])) {
-        return null;
-      }
-    }
-    return multinomial(kIntArray, ni);
-  }
-
-  /**
    * Returns the Stirling number of the second kind, "{@code S(n,k)}", the number of ways of
    * partitioning an {@code n}-element set into {@code k} non-empty subsets.
    *
@@ -6931,7 +6687,7 @@ public final class NumberTheory {
     }
     IInteger sum = F.C0;
     for (int i = 0; i < ki; i++) {
-      IInteger bin = binomial(k, F.ZZ(i));
+      IInteger bin = AbstractIntegerSym.binomial(k, F.ZZ(i));
       IInteger pow = k.add(F.ZZ(-i)).powerRational(n);
       if ((i & 1) == 1) { // isOdd(i) ?
         sum = sum.add(bin.negate().multiply(pow));

@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
+import javax.annotation.concurrent.NotThreadSafe;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Object2Expr;
@@ -38,6 +39,7 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.parser.client.ParserConfig;
 
+@NotThreadSafe
 public class Symbol implements ISymbol, Serializable {
   private static final long serialVersionUID = 6048546131696113624L;
 
@@ -258,37 +260,6 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public long determinePrecision(boolean postParserProcessing) {
-    IExpr assignedValue = assignedValue();
-    if (assignedValue != null) {
-      EvalEngine engine = EvalEngine.get();
-      final int recursionLimit = engine.getRecursionLimit();
-      try {
-        if (recursionLimit > 0) {
-          int counter = engine.incRecursionCounter();
-          if (counter > recursionLimit) {
-            RecursionLimitExceeded.throwIt(counter, this);
-          }
-        }
-        return assignedValue.determinePrecision(postParserProcessing);
-      } finally {
-        if (recursionLimit > 0) {
-          engine.decRecursionCounter();
-        }
-      }
-    }
-    return -1;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IAST fullDefinition() {
-    IAST list = this.makeList();
-    return ISymbol.fullDefinitionList(list);
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public String definitionToString() {
     StringBuilder buf = new StringBuilder();
     IAST attributesList = ISymbol.attributesList(this);
@@ -318,8 +289,26 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public String fullDefinitionToString() {
-    return ISymbol.fullDefinitionListToString(this.makeList());
+  public long determinePrecision(boolean postParserProcessing) {
+    IExpr assignedValue = assignedValue();
+    if (assignedValue != null) {
+      EvalEngine engine = EvalEngine.get();
+      final int recursionLimit = engine.getRecursionLimit();
+      try {
+        if (recursionLimit > 0) {
+          int counter = engine.incRecursionCounter();
+          if (counter > recursionLimit) {
+            RecursionLimitExceeded.throwIt(counter, this);
+          }
+        }
+        return assignedValue.determinePrecision(postParserProcessing);
+      } finally {
+        if (recursionLimit > 0) {
+          engine.decRecursionCounter();
+        }
+      }
+    }
+    return -1;
   }
 
   /** {@inheritDoc} */
@@ -439,6 +428,19 @@ public class Symbol implements ISymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
+  public IAST fullDefinition() {
+    IAST list = this.makeList();
+    return ISymbol.fullDefinitionList(list);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public String fullDefinitionToString() {
+    return ISymbol.fullDefinitionListToString(this.makeList());
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public String fullFormString() {
     try {
       StringBuilder sb = new StringBuilder();
@@ -504,13 +506,15 @@ public class Symbol implements ISymbol, Serializable {
     return fValue != null;
   }
 
-  private boolean hasNoValue() {
-    return fValue == null && fRulesData == null;
-  }
-
   @Override
   public final boolean hasFlatAttribute() {
     return ISymbol.hasFlatAttribute(fAttributes);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int hashCode() {
+    return (fSymbolName == null) ? 31 : fSymbolName.hashCode();
   }
 
   @Override
@@ -523,10 +527,8 @@ public class Symbol implements ISymbol, Serializable {
     return ISymbol.hasListableAttribute(fAttributes);
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public int hashCode() {
-    return (fSymbolName == null) ? 31 : fSymbolName.hashCode();
+  private boolean hasNoValue() {
+    return fValue == null && fRulesData == null;
   }
 
   @Override
@@ -645,6 +647,14 @@ public class Symbol implements ISymbol, Serializable {
     return internalJavaString(p, depth, x -> null);
   }
 
+  @Override
+  public IExpr inverse() {
+    if (hasNoValue()) {
+      return F.Power(this, F.CN1);
+    }
+    return power(F.CN1);
+  }
+
   /** {@inheritDoc} */
   @Override
   public final boolean isAtom() {
@@ -682,6 +692,18 @@ public class Symbol implements ISymbol, Serializable {
     if (isNumericFunction(true)) {
       IExpr temp = F.evaln(this);
       if (temp.isReal() && temp.isNegative()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isNonNegative() {
+    if (isNumericFunction(true)) {
+      IExpr temp = F.evaln(this);
+      if (temp.isReal() && temp.isNonNegative()) {
         return true;
       }
     }
@@ -827,14 +849,6 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public final boolean ofQ(IExpr... args) {
     return ofQ(EvalEngine.get(), args);
-  }
-
-  @Override
-  public IExpr inverse() {
-    if (hasNoValue()) {
-      return F.Power(this, F.CN1);
-    }
-    return power(F.CN1);
   }
 
   @Override
@@ -1086,13 +1100,6 @@ public class Symbol implements ISymbol, Serializable {
   }
 
   @Override
-  public String toString() {
-    final Context context = getContext();
-    final String symbolName = getSymbolName();
-    return ISymbol.toString(context, symbolName, EvalEngine.get());
-  }
-
-  @Override
   public IExpr times(IExpr that) {
     if (hasNoValue() && this != that && !that.isPlusTimesPower()) {
       if (that.isZero()) {
@@ -1113,6 +1120,13 @@ public class Symbol implements ISymbol, Serializable {
       return str;
     }
     return fSymbolName;
+  }
+
+  @Override
+  public String toString() {
+    final Context context = getContext();
+    final String symbolName = getSymbolName();
+    return ISymbol.toString(context, symbolName, EvalEngine.get());
   }
 
   /** {@inheritDoc} */

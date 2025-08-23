@@ -3,8 +3,8 @@ package org.matheclipse.core.bridge.usr;
 import java.io.IOException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.IOFunctions;
-import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -23,7 +23,7 @@ public class ListDensityPlotDemo {
     IAST matrix =
         F.matrix((i, j) -> S.Sin.of(engine, d.get(j + 1).multiply(d.get(j + 1)).add(d.get(i + 1))), //
             6, 6);
-    System.out.println(LinearAlgebra.dimensions(matrix));
+    System.out.println(LinearAlgebraUtil.dimensions(matrix));
     for (int degree = 0; degree < 5; ++degree) {
       BSplineInterpolation interpolation = new BSplineInterpolation(degree, matrix, false);
       IAST x = F.subdivide(5, 50);

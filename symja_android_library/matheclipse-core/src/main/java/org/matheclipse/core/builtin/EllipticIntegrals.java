@@ -2,8 +2,6 @@ package org.matheclipse.core.builtin;
 
 import org.hipparchus.complex.Complex;
 import org.hipparchus.special.elliptic.carlson.CarlsonEllipticIntegral;
-import org.matheclipse.core.builtin.functions.EllipticFunctionsJS;
-import org.matheclipse.core.builtin.functions.EllipticIntegralsJS;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -19,6 +17,8 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.functions.EllipticFunctionsJS;
+import org.matheclipse.core.numerics.functions.EllipticIntegralsJS;
 
 public class EllipticIntegrals {
 

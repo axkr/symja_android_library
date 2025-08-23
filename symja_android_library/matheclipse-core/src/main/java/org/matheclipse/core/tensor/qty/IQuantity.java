@@ -57,10 +57,6 @@ public interface IQuantity extends IExpr, IAtomicConstant, IAtomicEvaluate, Comp
     return QuantityImpl.of(value, unit);
   }
 
-  static IQuantity of(INumber value, IUnit unit) {
-    return new QuantityImpl(value, unit);
-  }
-
   /**
    * Hint: function does not check parameters for null, although null as input is likely to cause
    * problems subsequently.
@@ -72,6 +68,10 @@ public interface IQuantity extends IExpr, IAtomicConstant, IAtomicEvaluate, Comp
    */
   static IExpr of(IExpr value, String unit) {
     return of(value, IUnit.ofPutIfAbsent(unit));
+  }
+
+  static IQuantity of(INumber value, IUnit unit) {
+    return new QuantityImpl(value, unit);
   }
 
   /**
@@ -102,6 +102,13 @@ public interface IQuantity extends IExpr, IAtomicConstant, IAtomicEvaluate, Comp
     return of(F.expr(number), unit);
   }
 
+  static IExpr unitConvert(IQuantity arg1, IUnit unit) {
+    org.matheclipse.core.tensor.qty.UnitConvert unitConvert =
+        org.matheclipse.core.tensor.qty.UnitConvert.SI();
+    return unitConvert.to(unit).apply(arg1);
+  }
+
+
   public IQuantity ofUnit(IExpr scalar);
 
   /**
@@ -111,6 +118,7 @@ public interface IQuantity extends IExpr, IAtomicConstant, IAtomicEvaluate, Comp
    * @param nilIfUnevaluated if <code>true</code>, return {@link F#NIL} if unevaluated
    * @return
    */
+  @Override
   public IExpr plus(final IExpr scalar, boolean nilIfUnevaluated);
 
   @Override
@@ -123,6 +131,7 @@ public interface IQuantity extends IExpr, IAtomicConstant, IAtomicEvaluate, Comp
    * @param nilIfUnevaluated if <code>true</code>, return {@link F#NIL} if unevaluated
    * @return
    */
+  @Override
   public IExpr times(IExpr scalar, boolean nilIfUnevaluated);
 
   /** @return unit of quantity without value */

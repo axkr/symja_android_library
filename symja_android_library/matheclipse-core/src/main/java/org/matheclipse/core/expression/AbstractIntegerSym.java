@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import static java.math.RoundingMode.CEILING;
 import java.io.Externalizable;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -20,7 +21,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
-import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -105,27 +105,6 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       return result;
     }
     return F.NIL;
-  }
-
-  public static IInteger factorial(int n) {
-    final int absN = Math.abs(n);
-    final int iterationLimit = EvalEngine.get().getIterationLimit();
-    if (iterationLimit >= 0 && iterationLimit < absN) {
-      IterationLimitExceeded.throwIt(absN, F.Factorial(F.ZZ(n)));
-    }
-  
-    BigInteger result;
-    if (absN <= 20) {
-      result = BigInteger.valueOf(LongMath.factorial(absN));
-    } else {
-      result = BigIntegerMath.factorial(absN);
-    }
-  
-    if (n < 0 && n % 2 != 0) {
-      result = result.negate();
-    }
-  
-    return valueOf(result);
   }
 
   public static IAST factorizeLong(long value) {
@@ -607,7 +586,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   public IInteger factorial() {
     int ni = toIntDefault();
     if (ni > Integer.MIN_VALUE) {
-      return AbstractIntegerSym.factorial(ni);
+      return IInteger.factorial(ni);
     }
     // Machine-sized integer expected at position `2` in `1`.
     throw new ArgumentTypeException("intm", F.list(F.Factorial(this), F.C1));
@@ -1236,6 +1215,70 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   @Override
   public byte[] toByteArray() {
     return toBigNumerator().toByteArray();
+  }
+
+  public static IInteger binomial(final int n, final int k) {
+    return binomial(valueOf(n), valueOf(k));
+  }
+
+  /**
+   * Calculate integer binomial number. See definitions by
+   * <a href="https://arxiv.org/abs/1105.3689">Kronenburg 2011</a>
+   *
+   * @param n
+   * @param k
+   * @return
+   */
+  public static IInteger binomial(final IInteger n, final IInteger k)
+      throws BigIntegerLimitExceeded {
+    if (k.isZero() || k.equals(n)) {
+      return F.C1;
+    }
+  
+    if (!n.isNegative() && !k.isNegative()) {
+      // k>n : by definition --> 0
+      if (k.compareTo(n) > 0) {
+        return F.C0;
+      }
+  
+      int ni = n.toIntDefault(-1);
+      if (ni >= 0) {
+        int ki = k.toIntDefault(-1);
+        if (ki >= 0) {
+          if (ki > ni) {
+            return F.C0;
+          }
+  
+          long bits = LongMath.log2(ni, CEILING) * ki;
+          if (bits < Config.MAX_BIT_LENGTH) {
+            return valueOf(BigIntegerMath.binomial(ni, ki));
+          } else {
+            BigIntegerLimitExceeded.throwIt(bits);
+          }
+        }
+      }
+  
+      IInteger bin = F.C1;
+      IInteger i = F.C1;
+      while (!(i.compareTo(k) > 0)) {
+        bin = bin.multiply(n.subtract(i).add(F.C1)).div(i);
+        i = i.add(F.C1);
+      }
+      return bin;
+    } else if (n.isNegative()) {
+      // see definitions at https://arxiv.org/abs/1105.3689
+      if (!k.isNegative()) {
+        // (-1)^k * Binomial(-n+k-1, k)
+        IInteger factor = k.isOdd() ? F.CN1 : F.C1;
+        return binomial(n.negate().add(k).add(F.CN1), k).multiply(factor);
+      }
+      if (n.compareTo(k) >= 0) {
+        // (-1)^(n-k) * Binomial(-k-1, n-k)
+        IInteger factor = n.subtract(k).isOdd() ? F.CN1 : F.C1;
+        return binomial(k.add(F.C1).negate(), n.subtract(k)).multiply(factor);
+      }
+    }
+    return F.C0;
   }
 
   /**

@@ -59,11 +59,15 @@ public abstract class ExprEvaluatorTestCase {
   }
 
   public void check(String evalString, String expectedResult) {
-    check(evaluator, evalString, expectedResult, -1);
+    check(evaluator, evalString, expectedResult, "", -1);
+  }
+
+  public void check(String evalString, String expectedResult, String strException) {
+    check(evaluator, evalString, expectedResult, strException, -1);
   }
 
   public void check(String evalString, String expectedResult, int resultLength) {
-    check(evaluator, evalString, expectedResult, resultLength);
+    check(evaluator, evalString, expectedResult, "", resultLength);
   }
 
   public void call(String evalString) {
@@ -80,7 +84,7 @@ public abstract class ExprEvaluatorTestCase {
   }
 
   public synchronized void check(ExprEvaluator scriptEngine, String evalString,
-      String expectedResult, int resultLength) {
+      String expectedResult, String strException, int resultLength) {
     try {
       if (evalString.length() == 0 && expectedResult.length() == 0) {
         return;
@@ -105,7 +109,8 @@ public abstract class ExprEvaluatorTestCase {
       assertEquals(e.getMessage(), expectedResult);
     } catch (Exception e) {
       e.printStackTrace();
-      assertEquals("", "1");
+      String message = e.getMessage();
+      assertEquals(strException, message);
     }
   }
 

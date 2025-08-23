@@ -1,12 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -14,10 +9,9 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
-import org.matheclipse.core.expression.Context;
-import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -26,8 +20,6 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.ParserConfig;
-import org.matheclipse.parser.trie.SuggestTree;
-import org.matheclipse.parser.trie.SuggestTree.Node;
 
 public class IOFunctions {
 
@@ -382,7 +374,7 @@ public class IOFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST0()) {
-        return getAllNames();
+        return Documentation.getAllNames();
       }
 
       IExpr arg1 = ast.arg1();
@@ -394,7 +386,7 @@ public class IOFunctions {
           ignoreCase = true;
         }
       }
-      return getNamesByPattern(arg1, ignoreCase, ast, engine);
+      return Documentation.getNamesByPattern(arg1, ignoreCase, ast, engine);
     }
 
     @Override
@@ -439,228 +431,6 @@ public class IOFunctions {
 
   public static void initialize() {
     Initializer.init();
-  }
-
-  /**
-   * Returns a list of {@link IStringX} of the defined symbol names.
-   * 
-   * @param pattern
-   * @param ignoreCase
-   * @param ast
-   * @param engine
-   * @return
-   */
-  public static IAST getNamesByPattern(IExpr pattern, boolean ignoreCase, final IAST ast,
-      EvalEngine engine) {
-    if (pattern.isString()) {
-      int indx = pattern.toString().indexOf("`");
-      if (indx < 0) {
-        pattern = F.$str("System`" + pattern.toString());
-      }
-    }
-    Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
-    java.util.regex.Pattern regexPattern =
-        StringFunctions.toRegexPattern(pattern, true, ignoreCase, ast, groups, engine);
-
-    if (regexPattern == null) {
-      return F.NIL;
-    }
-
-    return getNamesByPattern(regexPattern, engine);
-  }
-
-  /**
-   * Returns a list of {@link IStringX} of the defined symbol names.
-   * 
-   * @param pattern
-   * @param engine
-   * @return
-   */
-  public static IAST getNamesByPattern(java.util.regex.Pattern pattern, EvalEngine engine) {
-    ContextPath contextPath = engine.getContextPath();
-    IASTAppendable list = F.ListAlloc(31);
-    Map<String, Context> contextMap = contextPath.getContextMap();
-    for (Map.Entry<String, Context> mapEntry : contextMap.entrySet()) {
-      Context context = mapEntry.getValue();
-      for (Map.Entry<String, ISymbol> entry : context.entrySet()) {
-        String fullName = context.completeContextName() + entry.getKey();
-        java.util.regex.Matcher matcher = pattern.matcher(fullName);
-        if (matcher.matches()) {
-          if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
-            String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(entry.getValue().getSymbolName());
-            if (str != null) {
-              list.append(F.$str(str));
-              continue;
-            }
-          }
-          ISymbol value = entry.getValue();
-          if (context.isGlobal() || context.isSystem()) {
-            list.append(F.$str(value.toString()));
-          } else {
-            list.append(F.$str(fullName));
-          }
-        }
-      }
-    }
-
-    for (Context context : contextPath) {
-      String completeContextName = context.completeContextName();
-      if (!contextMap.containsKey(completeContextName)) {
-        for (Map.Entry<String, ISymbol> entry : context.entrySet()) {
-          String fullName = completeContextName + entry.getKey();
-          java.util.regex.Matcher matcher = pattern.matcher(fullName);
-          if (matcher.matches()) {
-            if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS && context.equals(Context.SYSTEM)) {
-              String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(entry.getValue().getSymbolName());
-              if (str != null) {
-                list.append(F.$str(str));
-                continue;
-              }
-            }
-            ISymbol value = entry.getValue();
-            if (context.isGlobal() || context.isSystem()) {
-              list.append(F.$str(value.toString()));
-            } else {
-              list.append(F.$str(fullName));
-            }
-          }
-        }
-      }
-    }
-    return list;
-  }
-
-  /**
-   * Returns a list of {@link ISymbol} of the defined symbol names.
-   * 
-   * @param pattern
-   * @param ignoreCase
-   * @param ast
-   * @param engine
-   * @return
-   */
-  public static IAST getSymbolsByPattern(IExpr pattern, boolean ignoreCase, final IAST ast,
-      EvalEngine engine) {
-    if (pattern.isString()) {
-      int indx = pattern.toString().indexOf("`");
-      if (indx < 0) {
-        pattern = F.$str("System`" + pattern.toString());
-      }
-    }
-    Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
-    java.util.regex.Pattern regexPattern =
-        StringFunctions.toRegexPattern(pattern, true, ignoreCase, ast, groups, engine);
-
-    if (regexPattern == null) {
-      return F.NIL;
-    }
-
-    return getSymbolsByPattern(regexPattern, engine);
-  }
-
-  /**
-   * Returns a list of {@link ISymbol} of the defined symbol names.
-   * 
-   * @param pattern
-   * @param engine
-   * @return
-   */
-  public static IAST getSymbolsByPattern(java.util.regex.Pattern pattern, EvalEngine engine) {
-    ContextPath contextPath = engine.getContextPath();
-    IASTAppendable list = F.ListAlloc(31);
-    Map<String, Context> contextMap = contextPath.getContextMap();
-    for (Map.Entry<String, Context> mapEntry : contextMap.entrySet()) {
-      Context context = mapEntry.getValue();
-      for (Map.Entry<String, ISymbol> entry : context.entrySet()) {
-        String fullName = context.completeContextName() + entry.getKey();
-        java.util.regex.Matcher matcher = pattern.matcher(fullName);
-        if (matcher.matches()) {
-          list.append(entry.getValue());
-        }
-      }
-    }
-
-    for (Context context : contextPath) {
-      String completeContextName = context.completeContextName();
-      if (!contextMap.containsKey(completeContextName)) {
-        for (Map.Entry<String, ISymbol> entry : context.entrySet()) {
-          String fullName = completeContextName + entry.getKey();
-          java.util.regex.Matcher matcher = pattern.matcher(fullName);
-          if (matcher.matches()) {
-            list.append(entry.getValue());
-          }
-        }
-      }
-    }
-    return list;
-  }
-
-  public static IAST getDocumentationByPrefix(String name, boolean useAsterisk) {
-    if (name.length() == 0) {
-      return F.CEmptyList;
-    }
-    boolean exact = false;
-    if (useAsterisk) {
-      if (name.charAt(name.length() - 1) == '*') {
-        name = name.substring(0, name.length() - 1);
-        if (name.length() == 0) {
-          return getAllNames();
-        }
-      } else {
-        exact = true;
-      }
-    } else {
-      // if (name.length() == 0) {
-      // return getAllNames();
-      // }
-    }
-    return getNamesByPrefix(name, exact);
-  }
-
-  private static IAST getNamesByPrefix(String name, final boolean exact) {
-    SuggestTree suggestTree = AST2Expr.getSuggestTree();
-    // name = ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? name.toLowerCase() : name;
-    name = name.toLowerCase(Locale.US);
-    final String autocompleteStr = name;
-    Node suggestions = suggestTree.getAutocompleteSuggestions(autocompleteStr);
-    if (suggestions != null) {
-      return F.mapRange(0, suggestions.listLength(), i -> {
-        String identifierStr = suggestions.getSuggestion(i).getTerm();
-        String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(identifierStr);
-        if (str != null) {
-          identifierStr = str;
-        }
-        if (exact) {
-          if (autocompleteStr.equals(identifierStr.toLowerCase(Locale.US))) {
-            return F.$s(identifierStr);
-          }
-          return F.NIL;
-        }
-        return F.$s(identifierStr);
-      });
-    }
-    return F.CEmptyList;
-  }
-
-  public static List<String> getAutoCompletionList(String namePrefix) {
-    List<String> list = new ArrayList<String>();
-    if (namePrefix.length() == 0) {
-      return list;
-    }
-    SuggestTree suggestTree = AST2Expr.getSuggestTree();
-    namePrefix =
-        ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? namePrefix.toLowerCase(Locale.US) : namePrefix;
-    Node n = suggestTree.getAutocompleteSuggestions(namePrefix);
-    if (n != null) {
-      for (int i = 0; i < n.listLength(); i++) {
-        list.add(n.getSuggestion(i).getTerm());
-      }
-    }
-    return list;
-  }
-
-  public static IAST getAllNames() {
-    return F.mapRange(0, AST2Expr.FUNCTION_STRINGS.length, i -> F.$s(AST2Expr.FUNCTION_STRINGS[i]));
   }
 
   private IOFunctions() {}

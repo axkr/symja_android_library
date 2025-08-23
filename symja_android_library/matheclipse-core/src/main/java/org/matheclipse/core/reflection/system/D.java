@@ -386,8 +386,12 @@ public class D extends AbstractFunctionEvaluator {
               if (filter[0].size() > 1) {
                 return F.Times(filter[0], F.D(filter[1], xList));
               }
-              long numberOfTerms = LongMath.binomial(n + k - 1, k - 1);
-              if (numberOfTerms >= Integer.MAX_VALUE || numberOfTerms > Config.MAX_AST_SIZE) {
+              int binomialArg1 = n + k - 1;
+              if (binomialArg1 < 0) {
+                throw new ASTElementLimitExceeded(binomialArg1);
+              }
+              long numberOfTerms = LongMath.binomial(binomialArg1, k - 1);
+              if (numberOfTerms > Config.MAX_AST_SIZE || numberOfTerms >= Integer.MAX_VALUE) {
                 throw new ASTElementLimitExceeded(numberOfTerms);
               }
               IExpr result =

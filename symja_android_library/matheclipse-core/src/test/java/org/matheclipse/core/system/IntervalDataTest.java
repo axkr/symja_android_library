@@ -99,8 +99,31 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testIntervalPlus() {
+    check("Interval({2,7})*x+Interval({3,5})*x", //
+        "Interval({5,12})*x");
+  }
+
+  @Test
+  public void testIntervalDataPlus() {
+    check("Interval({2,7})*x+IntervalData({3,LessEqual,Less,5})*x", //
+        "IntervalData({5,LessEqual,Less,12})*x");
+    check("IntervalData({2,Less,Less,7})*x+IntervalData({3,LessEqual,Less,5})*x", //
+        "IntervalData({5,Less,Less,12})*x");
+  }
+
+  @Test
+  public void testIntervalDataTimes() {
+    check("Interval({2,7})*y^2*IntervalData({3,LessEqual,Less,5})*x^3", //
+        "IntervalData({6,LessEqual,Less,35})*x^3*y^2");
+    check("IntervalData({2,Less,Less,7})*y^2*IntervalData({3,LessEqual,Less,5})*x^3", //
+        "IntervalData({6,Less,Less,35})*x^3*y^2");
+  }
+
+
+  @Test
   public void testIntervalPower() {
-    check("Interval[{-3,2}]^4", //
+    check("Interval({-3,2})^4", //
         "Interval({0,81})");
   }
 
@@ -423,6 +446,11 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testTimes() {
+    check("-1/2 * Interval( {2, 3 + 1/2})", //
+        "Interval({-7/4,-1})");
+    check("-1/2 * IntervalData( {2, Less, LessEqual, 3 + 1/2})", //
+        "IntervalData({-7/4,LessEqual,Less,-1})");
+
     check("IntervalData({1,Less,Less, 6}) * IntervalData({0, Less,Less,2})", //
         "IntervalData({0,Less,Less,12})");
     check(
@@ -433,8 +461,7 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
         "IntervalData({-7/4,LessEqual,Less,7/4})");
     check("IntervalData({-1/2, Less, Less, 1/2})*IntervalData( {2, Less, Less, 3 +   1/2})", //
         "IntervalData({-7/4,Less,Less,7/4})");
-    check("-1/2 * IntervalData( {2, Less, LessEqual, 3 + 1/2})", //
-        "IntervalData({-7/4,LessEqual,Less,-1})");
+
   }
 
 

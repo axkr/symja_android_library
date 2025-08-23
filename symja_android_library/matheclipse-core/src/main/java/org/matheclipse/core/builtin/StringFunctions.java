@@ -11,11 +11,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import org.apache.commons.text.similarity.LevenshteinDistance;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -26,30 +22,22 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
-import org.matheclipse.core.expression.AbstractPatternSequence;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
-import org.matheclipse.core.expression.PatternNested;
-import org.matheclipse.core.expression.RepeatedPattern;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.expression.data.FileExpr;
-import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPredicate;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
-import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import com.google.common.base.CharMatcher;
 import com.univocity.parsers.csv.CsvFormat;
@@ -57,182 +45,70 @@ import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 
 public final class StringFunctions {
-  private static final Logger LOGGER = LogManager.getLogger(StringFunctions.class);
+  // private static final Logger LOGGER = LogManager.getLogger(StringFunctions.class);
 
   /**
-   * Index <code>0</code> in {@link REGEX_LONGEST} and {@link REGEX_SHORTEST}. The plus quantifier
-   * indicates one or more occurrences of the preceding element. For example, ab+c matches "abc",
-   * "abbc", "abbbc", and so on, but not "ac".
-   */
-  static final int PLUS_Q = 0;
-
-  /**
-   * Index <code>1</code> in {@link REGEX_LONGEST} and {@link REGEX_SHORTEST}. The asterisk
-   * quantifier indicates zero or more occurrences of the preceding element. For example, ab*c
-   * matches "ac", "abc", "abbc", "abbbc", and so on.
-   */
-  static final int ASTERISK_Q = 1;
-
-  /**
-   * Longest regex quantifier for <code>BlankSequence</code>,<code>BlankNullSequence</code>, <code>
-   * Repeated</code>, <code>RepeatedNull</code>.
    *
-   * @see <a href="https://en.wikipedia.org/wiki/Regular_expression">Wikipedia - Regular
-   *      expression</a>
-   */
-  static final String[] REGEX_LONGEST = new String[] {"+", "*"};
-
-  /**
-   * Shortest regex quantifier for <code>BlankSequence</code>,<code>BlankNullSequence</code>, <code>
-   * Repeated</code>, <code>RepeatedNull</code>.
    *
-   * @see <a href="https://en.wikipedia.org/wiki/Regular_expression">Wikipedia - Regular
-   *      expression</a>
+   * <pre>
+   * <code>Alphabet()
+   * </code>
+   * </pre>
+   *
+   * <p>
+   * gives the list of lowercase letters <code>a-z</code> in the English or Latin alphabet .
+   *
+   * <pre>
+   * <code>Alphabet(language-string)
+   * </code>
+   * </pre>
+   *
+   * <p>
+   * returns the languages alphabet as a list of lowercase letters.
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; Alphabet()
+   * {a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z}
+   *
+   * &gt;&gt; Alphabet(&quot;Dutch&quot;)
+   * {a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,ij,z}
+   * </code>
+   * </pre>
+   *
+   * <h3>Related terms</h3>
+   *
+   * <p>
+   * <a href="FromLetterNumber.md">FromLetterNumber</a>, <a href="LetterNumber.md">LetterNumber</a>
    */
-  static final String[] REGEX_SHORTEST = new String[] {"+?", "*?"};
+  private static class Alphabet extends AbstractFunctionEvaluator {
 
-  /** The English alphabet */
-  private static final String LATIN_ALPHABET = "abcdefghijklmnopqrstuvwxyz";
-
-  private static final String CYRILLIC_ALPHABET =
-      "\u0430\u0431\u0432\u0433\u0491\u0434\u0452\u0453\u0435\u0451\u0454\u0436\u0437\u0437\u0301\u0455\u0438\u0456\u0457\u0439\u0458\u043a\u043b\u0459\u043c\u043d\u045a\u043e\u043f\u0440\u0441\u0441\u0301\u0442\u045b\u045c\u0443\u045e\u0444\u0445\u0446\u0447\u045f\u0448\u0449\u044a\u044b\u044c\u044d\u044e\u044f";
-
-  /** Alphabet strings which contain only single characters not separated by comma. */
-  private static final String[] ALPHABETS = {"Arabic",
-      "\u0627\u0628\u062a\u062b\u062c\u062d\u062e\u062f\u0630\u0631\u0632\u0633\u0634\u0635\u0636\u0637\u0638\u0639\u063a\u0641\u0642\u0643\u0644\u0645\u0646\u0647\u0648\u064a",
-      "Belarusian",
-      "\u0430\u0431\u0432\u0433\u0434\u0435\u0451\u0436\u0437\u0456\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u045e\u0444\u0445\u0446\u0447\u0448\u044b\u044c\u044d\u044e\u044f\u0027",
-      "Bulgarian",
-      "\u0430\u0431\u0432\u0433\u0434\u0435\u0436\u0437\u0438\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u0444\u0445\u0446\u0447\u0448\u0449\u044a\u044c\u044e\u044f",
-      "Catalan", "abcçdefghijklmnopqrstuvwxyz",
-      // "Chinese", EMPTY_ALPHABET, // not known
-      "Cyrillic", CYRILLIC_ALPHABET, "Danish", "abcdefghijklmnopqrstuvwxyzæøå", "English",
-      LATIN_ALPHABET, "Esperanto", "abcĉdefgĝhĥijĵklmnoprsŝtuŭvz", "Estonian",
-      "abdefghijklmnoprsšzžtuvõäöü", "Finnish", "abcdefghijklmnopqrstuvwxyzåäö", "French",
-      LATIN_ALPHABET, "German", LATIN_ALPHABET, "Greek",
-      "\u03b1\u03b2\u03b3\u03b4\u03b5\u03b6\u03b7\u03b8\u03b9\u03ba\u03bb\u03bc\u03bd\u03be\u03bf\u03c0\u03c1\u03c3\u03c4\u03c5\u03c6\u03c7\u03c8\u03c9",
-      "Hebrew",
-      "\u05d0\u05d1\u05d2\u05d3\u05d4\u05d5\u05d6\u05d7\u05d8\u05d9\u05db\u05dc\u05de\u05e0\u05e1\u05e2\u05e4\u05e6\u05e7\u05e8\u05e9\u05ea",
-      "Hindi",
-      "\u0905\u0906\u0907\u0908\u0909\u090a\u090b\u090f\u0910\u0913\u0914\u0915\u0916\u0917\u0918\u0919\u091a\u091b\u091c\u091d\u091e\u091f\u0920\u0921\u0922\u0923\u0924\u0925\u0926\u0927\u0928\u092a\u092b\u092c\u092d\u092e\u092f\u0930\u0932\u0935\u0936\u0937\u0938\u0939",
-      "Icelandic", "aábdðeéfghiíjklmnoóprstuúvxyýþæö", "Indonesian", LATIN_ALPHABET, "Irish",
-      "abcdefghilmnoprstu", "Italian", "abcdefghilmnopqrstuvz",
-      // "Japanese", EMPTY_ALPHABET,// not known
-      "Korean",
-      "\u3131\u3132\u3134\u3137\u3138\u3139\u3141\u3142\u3143\u3145\u3146\u3147\u3148\u3149\u314a\u314b\u314c\u314d\u314e\u314f\u3150\u3151\u3152\u3153\u3154\u3155\u3156\u3157\u3158\u3159\u315a\u315b\u315c\u315d\u315e\u315f\u3160\u3161\u3162\u3163",
-      "Latin", LATIN_ALPHABET, "Latvian", "aābcčdeēfgģhiījkķlļmnņoprsštuūvzž", "Lithuanian",
-      "aąbcčdeęėfghiįyjklmnoprsštuųūvzž", "Macedonian",
-      "\u0430\u0431\u0432\u0433\u0434\u0453\u0435\u0436\u0437\u0455\u0438\u0458\u043a\u043b\u0459\u043c\u043d\u045a\u043e\u043f\u0440\u0441\u0442\u045c\u0443\u0444\u0445\u0446\u0447\u045f\u0448",
-      "Malay", LATIN_ALPHABET, "Norwegian", "abcdefghijklmnopqrstuvwxyzæøå", "Polish",
-      "aąbcćdeęfghijklłmnńoóprsśtuwyzźż", "Portuguese", LATIN_ALPHABET, "Romanian",
-      "aăâbcdefghiîjklmnopqrsștțuvwxyz", "Russian",
-      "\u0430\u0431\u0432\u0433\u0434\u0435\u0451\u0436\u0437\u0438\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u0444\u0445\u0446\u0447\u0448\u0449\u044a\u044b\u044c\u044d\u044e\u044f",
-      // "Serbian", EMPTY_ALPHABET,// not known
-      "Slovenian", "abcčdefghijklmnoprsštuvzž", "Spanish", "abcdefghijklmnñopqrstuvwxyz", "Swedish",
-      "abcdefghijklmnopqrstuvwxyzåäö",
-      // "Thai", EMPTY_ALPHABET,// not known
-      "Turkish", "abcçdefgğhıijklmnoöprsştuüvyz", "Ukrainian",
-      "\u0430\u0431\u0432\u0433\u0491\u0434\u0435\u0454\u0436\u0437\u0438\u0456\u0457\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u0444\u0445\u0446\u0447\u0448\u0449\u044c\u044e\u044f",
-      "Vietnamese", "aăâbcdđeêfghiklmnoôơpqrstuưvxy"};
-
-  /** Alphabet strings which contain single/multiple characters separated by comma. */
-  private static final String[] ALPHABETS_CSV = {"Albanian",
-      "a,b,c,ç,d,dh,e,ë,f,g,gj,h,i,j,k,l,ll,m,n,nj,o,p,q,r,rr,s,sh,t,th,u,v,x,xh,y,z,zh",
-      "Croatian", "a,b,c,č,ć,d,dž,đ,e,f,g,h,i,j,k,l,lj,m,n,nj,o,p,r,s,š,t,u,v,z,ž", "Czech",
-      "a,á,b,c,č,d,ď,e,é,ě,f,g,h,ch,i,í,j,k,l,m,n,ň,o,ó,p,q,r,ř,s,š,t,ť,u,ú,ů,v,w,x,y,ý,z,ž",
-      "Dutch", "a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,ij,z", "Hungarian",
-      "a,á,b,c,cs,d,dz,dzs,e,é,f,g,gy,h,i,í,j,k,l,ly,m,n,ny,o,ó,ö,ő,p,q,r,s,sz,t,ty,u,ú,ü,ű,v,w,x,y,z,zs",
-      "Maltese", "a,b,ċ,d,e,f,ġ,g,għ,h,ħ,i,ie,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,ż,z", "Slovak",
-      "a,á,ä,b,c,č,d,ď,dz,dž,e,é,f,g,h,ch,i,í,j,k,l,ĺ,ľ,m,n,ň,o,ó,ô,p,q,r,ŕ,s,š,t,ť,u,ú,v,w,x,y,ý,z,ž"};
-
-  /** The languages locale shortcut. */
-  private static final String[] LANGUAGES = {"Albanian", "sq", "Arabic", "ar", "Belarusian", "be",
-      "Bulgarian", "bg", "Catalan", "ca", "Chinese", "zh", "Croatian", "hr", "Czech", "cs",
-      "Danish", "da", "Dutch", "nl", "English", "en", "Estonian", "et", "Finnish", "fi", "French",
-      "fr", "German", "de", "Greek", "el", "Hebrew", "iw", "Hindi", "hi", "Hungarian", "hu",
-      "Icelandic", "is", "Indonesian", "in", "Irish", "ga", "Italian", "it", "Japanese", "ja",
-      "Korean", "ko", "Latvian", "lv", "Lithuanian", "lt", "Macedonian", "mk", "Malay", "ms",
-      "Maltese", "mt", "Norwegian", "no", "Polish", "pl", "Portuguese", "pt", "Romanian", "ro",
-      "Russian", "ru", "Serbian", "sr", "Slovak", "sk", "Slovenian", "sl", "Spanish", "es",
-      "Swedish", "sv", "Thai", "th", "Turkish", "tr", "Ukrainian", "uk", "Vietnamese", "vi",};
-
-  /** Map language name to alphabet string with characters not separated by comma.. */
-  private static final Map<String, String> ALPHABET_MAP = new HashMap<String, String>();
-
-  /** Map language name to alphabet character strings */
-  private static final Map<String, String[]> ALPHABET_CSV_MAP = new HashMap<String, String[]>();
-
-  /**
-   * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
-   * in static initializer</a>
-   */
-  private static class Initializer {
-
-    private static void init() {
-      for (int i = 0; i < ALPHABETS.length; i += 2) {
-        ALPHABET_MAP.put(ALPHABETS[i], ALPHABETS[i + 1]);
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      String alphabet = LATIN_ALPHABET;
+      if (ast.isAST1()) {
+        String str = ast.arg1().toString();
+        alphabet = ALPHABET_MAP.get(str);
+        if (alphabet == null) {
+          String[] strs = ALPHABET_CSV_MAP.get(str);
+          if (strs == null) {
+            // The alphabet `1` is not known or not available.
+            return Errors.printMessage(ast.topHead(), "nalph", F.list(ast.arg1()), engine);
+          }
+          return F.List(strs);
+        }
       }
-      for (int i = 0; i < ALPHABETS_CSV.length; i += 2) {
-        String alphabetCSV = ALPHABETS_CSV[i + 1];
-        String[] result = alphabetCSV.split(",");
-        ALPHABET_CSV_MAP.put(ALPHABETS_CSV[i], result);
+      if (alphabet.length() > 2) {
+        final String alphabetStr = alphabet;
+        return F.mapRange(0, alphabet.length(), i -> F.stringx(alphabetStr.charAt(i)));
       }
-      S.Alphabet.setEvaluator(new Alphabet());
-      S.BaseDecode.setEvaluator(new BaseDecode());
-      S.BaseEncode.setEvaluator(new BaseEncode());
-      S.ByteArrayToString.setEvaluator(new ByteArrayToString());
-      S.Characters.setEvaluator(new Characters());
-      S.CharacterRange.setEvaluator(new CharacterRange());
-      S.EditDistance.setEvaluator(new EditDistance());
+      return F.NIL;
+    }
 
-      S.FileNameDrop.setEvaluator(new FileNameDrop());
-      S.FileNameJoin.setEvaluator(new FileNameJoin());
-      S.FileNameTake.setEvaluator(new FileNameTake());
-      S.FromCharacterCode.setEvaluator(new FromCharacterCode());
-      S.FromLetterNumber.setEvaluator(new FromLetterNumber());
-      S.HammingDistance.setEvaluator(new HammingDistance());
-      S.LetterNumber.setEvaluator(new LetterNumber());
-      S.LetterQ.setEvaluator(new LetterQ());
-      S.LowerCaseQ.setEvaluator(new LowerCaseQ());
-      S.PrintableASCIIQ.setEvaluator(new PrintableASCIIQ());
-      S.StringCases.setEvaluator(new StringCases());
-      S.StringCount.setEvaluator(new StringCount());
-      S.StringContainsQ.setEvaluator(new StringContainsQ());
-      S.StringDrop.setEvaluator(new StringDrop());
-      S.StringExpression.setEvaluator(new StringExpression());
-      S.StringFreeQ.setEvaluator(new StringFreeQ());
-      S.StringForm.setEvaluator(new StringForm());
-      S.StringFormat.setEvaluator(new StringFormat());
-      S.StringInsert.setEvaluator(new StringInsert());
-      S.StringJoin.setEvaluator(new StringJoin());
-      S.StringLength.setEvaluator(new StringLength());
-      S.StringMatchQ.setEvaluator(new StringMatchQ());
-      S.StringPart.setEvaluator(new StringPart());
-      S.StringPosition.setEvaluator(new StringPosition());
-      S.StringRepeat.setEvaluator(new StringRepeat());
-      S.StringReplace.setEvaluator(new StringReplace());
-      S.StringReverse.setEvaluator(new StringReverse());
-      S.StringRiffle.setEvaluator(new StringRiffle());
-      S.StringSplit.setEvaluator(new StringSplit());
-      S.StringTake.setEvaluator(new StringTake());
-      S.StringTemplate.setEvaluator(new StringTemplate());
-      S.StringToByteArray.setEvaluator(new StringToByteArray());
-      S.StringTrim.setEvaluator(new StringTrim());
-      S.SyntaxLength.setEvaluator(new SyntaxLength());
-      S.TemplateApply.setEvaluator(new TemplateApply());
-      S.TemplateIf.setEvaluator(new TemplateIf());
-      S.TemplateSlot.setEvaluator(new TemplateSlot());
-      S.TextString.setEvaluator(new TextString());
-      S.ToCharacterCode.setEvaluator(new ToCharacterCode());
-      S.ToLowerCase.setEvaluator(new ToLowerCase());
-      S.ToString.setEvaluator(new ToString());
-      S.ToUnicode.setEvaluator(new ToUnicode());
-      S.ToUpperCase.setEvaluator(new ToUpperCase());
-      S.UpperCaseQ.setEvaluator(new UpperCaseQ());
-
-      // if (!Config.FUZZY_PARSER) {
-      S.ToExpression.setEvaluator(new ToExpression());
-      // }
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_1;
     }
   }
 
@@ -297,28 +173,6 @@ public final class StringFunctions {
         return F.$str(str);
       }
       return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
-  }
-
-  private static class Characters extends AbstractFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!(ast.arg1() instanceof IStringX)) {
-        return F.NIL;
-      }
-      final String str = ast.arg1().toString();
-      return F.mapRange(0, str.length(), i -> F.$str(str.charAt(i)));
     }
 
     @Override
@@ -414,35 +268,110 @@ public final class StringFunctions {
     }
   }
 
-  private static class FileNameDrop extends AbstractFunctionEvaluator {
+  private static class Characters extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      final IExpr arg2 = ast.isAST1() ? F.CN1 : ast.arg2();
-      if (arg1.isList()) {
-        return arg1.mapThread(F.FileNameDrop(F.Slot1, arg2), 1);
+      if (!(ast.arg1() instanceof IStringX)) {
+        return F.NIL;
       }
-      // TODO add implementation for sequence specs at arg2
-      int n = arg2.toIntDefault();
-      if (F.isPresent(n)) {
-        String fileName = null;
-        if (arg1.isString()) {
-          fileName = arg1.toString();
-        } else if (arg1 instanceof FileExpr) {
-          File file = ((FileExpr) arg1).toData();
-          fileName = file.getAbsolutePath();
-        }
-        if (fileName != null) {
-          if (n == 0) {
-            return arg1;
-          }
-          return fileDrop(fileName, n);
-        }
-      }
-      // Sequence specification (+n,-n,{+n},{-n} or {m,n}) expected at position `2` in `1`.
-      return Errors.printMessage(S.FileNameDrop, "seqso", F.List(ast, F.C2), engine);
+      final String str = ast.arg1().toString();
+      return F.mapRange(0, str.length(), i -> F.$str(str.charAt(i)));
     }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * <code>EditDistance(a, b)
+   * </code>
+   * </pre>
+   *
+   * <p>
+   * returns the Levenshtein distance of <code>a</code> and <code>b</code>, which is defined as the
+   * minimum number of insertions, deletions and substitutions on the constituents of <code>a
+   * </code> and <code>b</code> needed to transform one into the other.
+   *
+   * <p>
+   * See:
+   *
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Levenshtein_distance">Wikipedia - Levenshtein
+   * distance</a>
+   * </ul>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; EditDistance(&quot;kitten&quot;, &quot;kitchen&quot;)
+   * 2
+   *
+   * &gt;&gt; EditDistance(&quot;abc&quot;, &quot;ac&quot;)
+   * 1
+   * &gt;&gt; EditDistance(&quot;abc&quot;, &quot;acb&quot;)
+   * 2
+   *
+   * &gt;&gt; EditDistance(&quot;azbc&quot;, &quot;abxyc&quot;)
+   * 3
+   * </code>
+   * </pre>
+   *
+   * <p>
+   * The <code>IgnoreCase</code> option makes <code>EditDistance</code> ignore the case of letters:
+   *
+   * <pre>
+   * <code>&gt;&gt; EditDistance(&quot;time&quot;, &quot;Thyme&quot;)
+   * 3
+   *
+   * &gt;&gt; EditDistance(&quot;time&quot;, &quot;Thyme&quot;, IgnoreCase -&gt; True)
+   * 2
+   * </code>
+   * </pre>
+   */
+  private static final class EditDistance extends AbstractFunctionOptionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine, IAST originalAST) {
+
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      if (arg1.isString() && arg2.isString()) {
+        boolean ignoreCase = option[0].isTrue();
+
+        LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
+        if (ignoreCase) {
+          return F.ZZ(levenshteinDistance.apply(arg1.toString().toLowerCase(Locale.US),
+              arg2.toString().toLowerCase(Locale.US)));
+        }
+        return F.ZZ(levenshteinDistance.apply(arg1.toString(), arg2.toString()));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.IgnoreCase, S.False);
+    }
+  }
+
+  private static class FileNameDrop extends AbstractFunctionEvaluator {
 
     /**
      * Drop the first <code>n</code> elements from the file name. If <code>n</code> is negative,
@@ -496,6 +425,34 @@ public final class StringFunctions {
         }
       }
       return F.NIL;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      final IExpr arg2 = ast.isAST1() ? F.CN1 : ast.arg2();
+      if (arg1.isList()) {
+        return arg1.mapThread(F.FileNameDrop(F.Slot1, arg2), 1);
+      }
+      // TODO add implementation for sequence specs at arg2
+      int n = arg2.toIntDefault();
+      if (F.isPresent(n)) {
+        String fileName = null;
+        if (arg1.isString()) {
+          fileName = arg1.toString();
+        } else if (arg1 instanceof FileExpr) {
+          File file = ((FileExpr) arg1).toData();
+          fileName = file.getAbsolutePath();
+        }
+        if (fileName != null) {
+          if (n == 0) {
+            return arg1;
+          }
+          return fileDrop(fileName, n);
+        }
+      }
+      // Sequence specification (+n,-n,{+n},{-n} or {m,n}) expected at position `2` in `1`.
+      return Errors.printMessage(S.FileNameDrop, "seqso", F.List(ast, F.C2), engine);
     }
 
     @Override
@@ -622,24 +579,6 @@ public final class StringFunctions {
    */
   private static class FromCharacterCode extends AbstractFunctionEvaluator {
 
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList()) {
-        final IAST list = (IAST) ast.arg1();
-        return fromCharacterCode(list, ast, engine);
-      }
-      if (ast.arg1().isInteger()) {
-        return fromCharacterCode(ast, ast, engine);
-      }
-
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
-
     private static IExpr fromCharacterCode(final IAST charList, final IAST fromCharacterCodeAST,
         EvalEngine engine) {
       final StringBuilder buffer = new StringBuilder(charList.size());
@@ -662,6 +601,24 @@ public final class StringFunctions {
         }
       }
       return StringX.valueOf(buffer);
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.arg1().isList()) {
+        final IAST list = (IAST) ast.arg1();
+        return fromCharacterCode(list, ast, engine);
+      }
+      if (ast.arg1().isInteger()) {
+        return fromCharacterCode(ast, ast, engine);
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
 
     @Override
@@ -803,67 +760,76 @@ public final class StringFunctions {
   }
 
   /**
-   *
-   *
-   * <pre>
-   * <code>Alphabet()
-   * </code>
-   * </pre>
-   *
-   * <p>
-   * gives the list of lowercase letters <code>a-z</code> in the English or Latin alphabet .
-   *
-   * <pre>
-   * <code>Alphabet(language-string)
-   * </code>
-   * </pre>
-   *
-   * <p>
-   * returns the languages alphabet as a list of lowercase letters.
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * <code>&gt;&gt; Alphabet()
-   * {a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z}
-   *
-   * &gt;&gt; Alphabet(&quot;Dutch&quot;)
-   * {a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,ij,z}
-   * </code>
-   * </pre>
-   *
-   * <h3>Related terms</h3>
-   *
-   * <p>
-   * <a href="FromLetterNumber.md">FromLetterNumber</a>, <a href="LetterNumber.md">LetterNumber</a>
+   * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
+   * in static initializer</a>
    */
-  private static class Alphabet extends AbstractFunctionEvaluator {
+  private static class Initializer {
 
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      String alphabet = LATIN_ALPHABET;
-      if (ast.isAST1()) {
-        String str = ast.arg1().toString();
-        alphabet = ALPHABET_MAP.get(str);
-        if (alphabet == null) {
-          String[] strs = ALPHABET_CSV_MAP.get(str);
-          if (strs == null) {
-            // The alphabet `1` is not known or not available.
-            return Errors.printMessage(ast.topHead(), "nalph", F.list(ast.arg1()), engine);
-          }
-          return F.List(strs);
-        }
+    private static void init() {
+      for (int i = 0; i < ALPHABETS.length; i += 2) {
+        ALPHABET_MAP.put(ALPHABETS[i], ALPHABETS[i + 1]);
       }
-      if (alphabet.length() > 2) {
-        final String alphabetStr = alphabet;
-        return F.mapRange(0, alphabet.length(), i -> F.stringx(alphabetStr.charAt(i)));
+      for (int i = 0; i < ALPHABETS_CSV.length; i += 2) {
+        String alphabetCSV = ALPHABETS_CSV[i + 1];
+        String[] result = alphabetCSV.split(",");
+        ALPHABET_CSV_MAP.put(ALPHABETS_CSV[i], result);
       }
-      return F.NIL;
-    }
+      S.Alphabet.setEvaluator(new Alphabet());
+      S.BaseDecode.setEvaluator(new BaseDecode());
+      S.BaseEncode.setEvaluator(new BaseEncode());
+      S.ByteArrayToString.setEvaluator(new ByteArrayToString());
+      S.Characters.setEvaluator(new Characters());
+      S.CharacterRange.setEvaluator(new CharacterRange());
+      S.EditDistance.setEvaluator(new EditDistance());
 
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_0_1;
+      S.FileNameDrop.setEvaluator(new FileNameDrop());
+      S.FileNameJoin.setEvaluator(new FileNameJoin());
+      S.FileNameTake.setEvaluator(new FileNameTake());
+      S.FromCharacterCode.setEvaluator(new FromCharacterCode());
+      S.FromLetterNumber.setEvaluator(new FromLetterNumber());
+      S.HammingDistance.setEvaluator(new HammingDistance());
+      S.LetterNumber.setEvaluator(new LetterNumber());
+      S.LetterQ.setEvaluator(new LetterQ());
+      S.LowerCaseQ.setEvaluator(new LowerCaseQ());
+      S.PrintableASCIIQ.setEvaluator(new PrintableASCIIQ());
+      S.StringCases.setEvaluator(new StringCases());
+      S.StringCount.setEvaluator(new StringCount());
+      S.StringContainsQ.setEvaluator(new StringContainsQ());
+      S.StringDrop.setEvaluator(new StringDrop());
+      S.StringExpression.setEvaluator(new StringExpression());
+      S.StringFreeQ.setEvaluator(new StringFreeQ());
+      S.StringForm.setEvaluator(new StringForm());
+      S.StringFormat.setEvaluator(new StringFormat());
+      S.StringInsert.setEvaluator(new StringInsert());
+      S.StringJoin.setEvaluator(new StringJoin());
+      S.StringLength.setEvaluator(new StringLength());
+      S.StringMatchQ.setEvaluator(new StringMatchQ());
+      S.StringPart.setEvaluator(new StringPart());
+      S.StringPosition.setEvaluator(new StringPosition());
+      S.StringRepeat.setEvaluator(new StringRepeat());
+      S.StringReplace.setEvaluator(new StringReplace());
+      S.StringReverse.setEvaluator(new StringReverse());
+      S.StringRiffle.setEvaluator(new StringRiffle());
+      S.StringSplit.setEvaluator(new StringSplit());
+      S.StringTake.setEvaluator(new StringTake());
+      S.StringTemplate.setEvaluator(new StringTemplate());
+      S.StringToByteArray.setEvaluator(new StringToByteArray());
+      S.StringTrim.setEvaluator(new StringTrim());
+      S.SyntaxLength.setEvaluator(new SyntaxLength());
+      S.TemplateApply.setEvaluator(new TemplateApply());
+      S.TemplateIf.setEvaluator(new TemplateIf());
+      S.TemplateSlot.setEvaluator(new TemplateSlot());
+      S.TextString.setEvaluator(new TextString());
+      S.ToCharacterCode.setEvaluator(new ToCharacterCode());
+      S.ToLowerCase.setEvaluator(new ToLowerCase());
+      S.ToString.setEvaluator(new ToString());
+      S.ToUnicode.setEvaluator(new ToUnicode());
+      S.ToUpperCase.setEvaluator(new ToUpperCase());
+      S.UpperCaseQ.setEvaluator(new UpperCaseQ());
+
+      // if (!Config.FUZZY_PARSER) {
+      S.ToExpression.setEvaluator(new ToExpression());
+      // }
     }
   }
 
@@ -1070,87 +1036,6 @@ public final class StringFunctions {
    *
    *
    * <pre>
-   * <code>EditDistance(a, b)
-   * </code>
-   * </pre>
-   *
-   * <p>
-   * returns the Levenshtein distance of <code>a</code> and <code>b</code>, which is defined as the
-   * minimum number of insertions, deletions and substitutions on the constituents of <code>a
-   * </code> and <code>b</code> needed to transform one into the other.
-   *
-   * <p>
-   * See:
-   *
-   * <ul>
-   * <li><a href="https://en.wikipedia.org/wiki/Levenshtein_distance">Wikipedia - Levenshtein
-   * distance</a>
-   * </ul>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * <code>&gt;&gt; EditDistance(&quot;kitten&quot;, &quot;kitchen&quot;)
-   * 2
-   *
-   * &gt;&gt; EditDistance(&quot;abc&quot;, &quot;ac&quot;)
-   * 1
-   * &gt;&gt; EditDistance(&quot;abc&quot;, &quot;acb&quot;)
-   * 2
-   *
-   * &gt;&gt; EditDistance(&quot;azbc&quot;, &quot;abxyc&quot;)
-   * 3
-   * </code>
-   * </pre>
-   *
-   * <p>
-   * The <code>IgnoreCase</code> option makes <code>EditDistance</code> ignore the case of letters:
-   *
-   * <pre>
-   * <code>&gt;&gt; EditDistance(&quot;time&quot;, &quot;Thyme&quot;)
-   * 3
-   *
-   * &gt;&gt; EditDistance(&quot;time&quot;, &quot;Thyme&quot;, IgnoreCase -&gt; True)
-   * 2
-   * </code>
-   * </pre>
-   */
-  private static final class EditDistance extends AbstractFunctionOptionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
-        final EvalEngine engine, IAST originalAST) {
-
-      IExpr arg1 = ast.arg1();
-      IExpr arg2 = ast.arg2();
-      if (arg1.isString() && arg2.isString()) {
-        boolean ignoreCase = option[0].isTrue();
-
-        LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
-        if (ignoreCase) {
-          return F.ZZ(levenshteinDistance.apply(arg1.toString().toLowerCase(Locale.US),
-              arg2.toString().toLowerCase(Locale.US)));
-        }
-        return F.ZZ(levenshteinDistance.apply(arg1.toString(), arg2.toString()));
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, S.IgnoreCase, S.False);
-    }
-  }
-
-  /**
-   *
-   *
-   * <pre>
    * <code>PrintableASCIIQ(str)
    * </code>
    * </pre>
@@ -1265,7 +1150,7 @@ public final class StringFunctions {
 
             Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
             java.util.regex.Pattern pattern =
-                toRegexPattern(arg, true, ignoreCase, ast, groups, engine);
+                IStringX.toRegexPattern(arg, true, ignoreCase, ast, groups, engine);
             if (pattern == null) {
               return F.NIL;
             }
@@ -1289,6 +1174,73 @@ public final class StringFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       // TODO S.Overlaps
+      setOptions(newSymbol, S.IgnoreCase, S.False);
+    }
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * <code>StringContainsQ(str1, str2)
+   * </code>
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * return a list of matches for <code>&quot;p1&quot;, &quot;p2&quot;,...</code> list of strings in
+   * the string <code>str</code>.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; StringContainsQ({&quot;the quick brown fox&quot;, &quot;jumps&quot;, &quot;over the lazy dog&quot;}, &quot;the&quot;)
+   * {True,False,True}
+   * </code>
+   * </pre>
+   */
+  private static class StringContainsQ extends AbstractCoreFunctionOptionEvaluator {
+
+    @Override
+    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
+      if (argSize >= 2) {
+        boolean ignoreCase = option[0].isTrue();
+        IExpr arg1 = engine.evaluate(ast.arg1());
+        if (arg1.isList()) {
+          return arg1.mapThread(ast, 1);
+        }
+        if (arg1.isString() && !ast.arg2().isRuleAST()) {
+          IExpr arg2 = ast.arg2();
+
+          Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
+          java.util.regex.Pattern pattern =
+              IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
+          if (pattern == null) {
+            return F.NIL;
+          }
+          String s1 = arg1.toString();
+          java.util.regex.Matcher matcher = pattern.matcher(s1);
+          if (matcher.find()) {
+            return S.True;
+          }
+          return S.False;
+        }
+        return F.NIL;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_4_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, S.IgnoreCase, S.False);
     }
   }
@@ -1342,7 +1294,7 @@ public final class StringFunctions {
 
             Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
             java.util.regex.Pattern pattern =
-                toRegexPattern(arg, true, ignoreCase, ast, groups, engine);
+                IStringX.toRegexPattern(arg, true, ignoreCase, ast, groups, engine);
             if (pattern == null) {
               return F.NIL;
             }
@@ -1353,73 +1305,6 @@ public final class StringFunctions {
           }
           return F.ZZ(counter);
         }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_4_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, S.IgnoreCase, S.False);
-    }
-  }
-
-  /**
-   *
-   *
-   * <pre>
-   * <code>StringContainsQ(str1, str2)
-   * </code>
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * return a list of matches for <code>&quot;p1&quot;, &quot;p2&quot;,...</code> list of strings in
-   * the string <code>str</code>.
-   *
-   * </blockquote>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * <code>&gt;&gt; StringContainsQ({&quot;the quick brown fox&quot;, &quot;jumps&quot;, &quot;over the lazy dog&quot;}, &quot;the&quot;)
-   * {True,False,True}
-   * </code>
-   * </pre>
-   */
-  private static class StringContainsQ extends AbstractCoreFunctionOptionEvaluator {
-
-    @Override
-    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
-        final EvalEngine engine) {
-      if (argSize >= 2) {
-        boolean ignoreCase = option[0].isTrue();
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        if (arg1.isList()) {
-          return arg1.mapThread(ast, 1);
-        }
-        if (arg1.isString() && !ast.arg2().isRuleAST()) {
-          IExpr arg2 = ast.arg2();
-
-          Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
-          java.util.regex.Pattern pattern =
-              toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
-          if (pattern == null) {
-            return F.NIL;
-          }
-          String s1 = arg1.toString();
-          java.util.regex.Matcher matcher = pattern.matcher(s1);
-          if (matcher.find()) {
-            return S.True;
-          }
-          return S.False;
-        }
-        return F.NIL;
       }
       return F.NIL;
     }
@@ -1486,13 +1371,13 @@ public final class StringFunctions {
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.FLAT);
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
     }
 
     @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_INFINITY;
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.FLAT);
     }
   }
 
@@ -1541,13 +1426,13 @@ public final class StringFunctions {
     }
 
     @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
     }
 
     @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_INFINITY;
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 
@@ -1593,6 +1478,21 @@ public final class StringFunctions {
 
   private static class StringFreeQ extends AbstractCoreFunctionOptionEvaluator {
 
+    private static IExpr stringFreeQ(IAST ast, IExpr arg1, IExpr arg2, boolean ignoreCase,
+        EvalEngine engine) {
+      Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
+      java.util.regex.Pattern pattern = IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
+      if (pattern == null) {
+        return F.NIL;
+      }
+      String s1 = arg1.toString();
+      java.util.regex.Matcher matcher = pattern.matcher(s1);
+      if (matcher.find()) {
+        return S.False;
+      }
+      return S.True;
+    }
+
     @Override
     protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
@@ -1624,21 +1524,6 @@ public final class StringFunctions {
         return stringFreeQ(ast, arg1, arg2, ignoreCase, engine);
       }
       return F.NIL;
-    }
-
-    private static IExpr stringFreeQ(IAST ast, IExpr arg1, IExpr arg2, boolean ignoreCase,
-        EvalEngine engine) {
-      Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
-      java.util.regex.Pattern pattern = toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
-      if (pattern == null) {
-        return F.NIL;
-      }
-      String s1 = arg1.toString();
-      java.util.regex.Matcher matcher = pattern.matcher(s1);
-      if (matcher.find()) {
-        return S.False;
-      }
-      return S.True;
     }
 
     @Override
@@ -1766,7 +1651,7 @@ public final class StringFunctions {
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         // example java.lang.StringIndexOutOfBoundsException
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        Errors.printMessage(S.InputForm, rex, EvalEngine.get());
         return F.NIL;
       }
     }
@@ -1956,7 +1841,7 @@ public final class StringFunctions {
 
         Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
         java.util.regex.Pattern pattern =
-            toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
+            IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
         if (pattern == null) {
           return F.NIL;
         }
@@ -2062,6 +1947,25 @@ public final class StringFunctions {
 
   private static class StringPosition extends AbstractCoreFunctionOptionEvaluator {
 
+    private static IExpr stringPosition(IAST ast, IExpr arg1, IExpr arg2, int maxOccurences,
+        boolean ignoreCase, IASTAppendable result, EvalEngine engine) {
+
+      Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
+      java.util.regex.Pattern pattern = IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
+      if (pattern == null) {
+        return F.NIL;
+      }
+      String s1 = arg1.toString();
+      java.util.regex.Matcher matcher = pattern.matcher(s1);
+      while (matcher.find()) {
+        if (maxOccurences < result.size()) {
+          return result;
+        }
+        result.append(F.list(F.ZZ(matcher.start() + 1), F.ZZ(matcher.end())));
+      }
+      return result;
+    }
+
     @Override
     protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
@@ -2108,25 +2012,6 @@ public final class StringFunctions {
         }
       }
       return F.NIL;
-    }
-
-    private static IExpr stringPosition(IAST ast, IExpr arg1, IExpr arg2, int maxOccurences,
-        boolean ignoreCase, IASTAppendable result, EvalEngine engine) {
-
-      Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
-      java.util.regex.Pattern pattern = toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
-      if (pattern == null) {
-        return F.NIL;
-      }
-      String s1 = arg1.toString();
-      java.util.regex.Matcher matcher = pattern.matcher(s1);
-      while (matcher.find()) {
-        if (maxOccurences < result.size()) {
-          return result;
-        }
-        result.append(F.list(F.ZZ(matcher.start() + 1), F.ZZ(matcher.end())));
-      }
-      return result;
     }
 
     @Override
@@ -2190,6 +2075,7 @@ public final class StringFunctions {
     }
 
   }
+
   /**
    *
    *
@@ -2219,59 +2105,24 @@ public final class StringFunctions {
    */
   private static class StringReplace extends AbstractCoreFunctionOptionEvaluator {
 
-    @Override
-    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
-        final EvalEngine engine) {
+    /**
+     * Replace all pattern symbols in <code>expr</code> with the value from the named regex group.
+     *
+     * @param expr
+     * @param matcher
+     * @param namedRegexGroups maps a pattern symbol to the regex name
+     * @return
+     */
+    private static IExpr replaceGroups(IExpr expr, Matcher matcher,
+        Map<ISymbol, String> namedRegexGroups) {
 
-      if (argSize >= 2) {
-        boolean ignoreCase = option[0].isTrue();
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        if (arg1.isList()) {
-          return arg1.mapThread(ast, 1);
+      for (Map.Entry<ISymbol, String> group : namedRegexGroups.entrySet()) {
+        String groupValue = matcher.group(group.getValue());
+        if (groupValue != null) {
+          expr = F.xreplace(expr, group.getKey(), F.stringx(groupValue));
         }
-        if (!arg1.isString()) {
-          return F.NIL;
-        }
-        String str = arg1.toString();
-        IExpr arg2 = ast.arg2();
-        if (!arg2.isListOfRules(false)) {
-          if (arg2.isRuleAST()) {
-            arg2 = F.list(arg2);
-          } else {
-            return F.NIL;
-          }
-        }
-        IAST list = (IAST) arg2;
-        for (int i = 1; i < list.size(); i++) {
-          final IAST rule = (IAST) list.get(i);
-          final IExpr ruleLHS = rule.arg1();
-          final IExpr ruleRHS = rule.arg2();
-
-          // see github #221 - use Java regex - named capturing groups
-          Map<ISymbol, String> namedRegexGroups = new HashMap<ISymbol, String>();
-          if (ruleLHS.isCondition()) {
-            final IAST condition = (IAST) ruleLHS;
-            final IExpr conditionPattern = condition.arg1();
-            final IExpr conditionTest = condition.arg2();
-            java.util.regex.Pattern pattern =
-                toRegexPattern(conditionPattern, true, ignoreCase, ast, namedRegexGroups, engine);
-            if (pattern == null) {
-              return F.NIL;
-            }
-            str = stringReplaceCondition(str, conditionTest, ruleRHS, pattern, namedRegexGroups,
-                engine);
-          } else {
-            java.util.regex.Pattern pattern =
-                toRegexPattern(ruleLHS, true, ignoreCase, ast, namedRegexGroups, engine);
-            if (pattern == null) {
-              return F.NIL;
-            }
-            str = stringReplace(str, ruleRHS, pattern, namedRegexGroups, engine);
-          }
-        }
-        return F.$str(str);
       }
-      return F.NIL;
+      return expr;
     }
 
     /**
@@ -2337,24 +2188,59 @@ public final class StringFunctions {
       return pattern.matcher(str).replaceAll(temp.toString());
     }
 
-    /**
-     * Replace all pattern symbols in <code>expr</code> with the value from the named regex group.
-     *
-     * @param expr
-     * @param matcher
-     * @param namedRegexGroups maps a pattern symbol to the regex name
-     * @return
-     */
-    private static IExpr replaceGroups(IExpr expr, Matcher matcher,
-        Map<ISymbol, String> namedRegexGroups) {
+    @Override
+    protected IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine) {
 
-      for (Map.Entry<ISymbol, String> group : namedRegexGroups.entrySet()) {
-        String groupValue = matcher.group(group.getValue());
-        if (groupValue != null) {
-          expr = F.xreplace(expr, group.getKey(), F.stringx(groupValue));
+      if (argSize >= 2) {
+        boolean ignoreCase = option[0].isTrue();
+        IExpr arg1 = engine.evaluate(ast.arg1());
+        if (arg1.isList()) {
+          return arg1.mapThread(ast, 1);
         }
+        if (!arg1.isString()) {
+          return F.NIL;
+        }
+        String str = arg1.toString();
+        IExpr arg2 = ast.arg2();
+        if (!arg2.isListOfRules(false)) {
+          if (arg2.isRuleAST()) {
+            arg2 = F.list(arg2);
+          } else {
+            return F.NIL;
+          }
+        }
+        IAST list = (IAST) arg2;
+        for (int i = 1; i < list.size(); i++) {
+          final IAST rule = (IAST) list.get(i);
+          final IExpr ruleLHS = rule.arg1();
+          final IExpr ruleRHS = rule.arg2();
+
+          // see github #221 - use Java regex - named capturing groups
+          Map<ISymbol, String> namedRegexGroups = new HashMap<ISymbol, String>();
+          if (ruleLHS.isCondition()) {
+            final IAST condition = (IAST) ruleLHS;
+            final IExpr conditionPattern = condition.arg1();
+            final IExpr conditionTest = condition.arg2();
+            java.util.regex.Pattern pattern =
+                IStringX.toRegexPattern(conditionPattern, true, ignoreCase, ast, namedRegexGroups, engine);
+            if (pattern == null) {
+              return F.NIL;
+            }
+            str = stringReplaceCondition(str, conditionTest, ruleRHS, pattern, namedRegexGroups,
+                engine);
+          } else {
+            java.util.regex.Pattern pattern =
+                IStringX.toRegexPattern(ruleLHS, true, ignoreCase, ast, namedRegexGroups, engine);
+            if (pattern == null) {
+              return F.NIL;
+            }
+            str = stringReplace(str, ruleRHS, pattern, namedRegexGroups, engine);
+          }
+        }
+        return F.$str(str);
       }
-      return expr;
+      return F.NIL;
     }
 
     @Override
@@ -2456,8 +2342,8 @@ public final class StringFunctions {
         buf.append(right);
         return F.stringx(buf.toString());
       }
-      LOGGER.log(engine.getLogLevel(), "StringRiffle: list expected as first argument");
-      return F.NIL;
+      // String expected at position `1` in `2`.
+      return Errors.printMessage(S.StringRiffle, "string", F.list(F.C1, ast), engine);
     }
 
     @Override
@@ -2530,6 +2416,19 @@ public final class StringFunctions {
    */
   private static class StringSplit extends AbstractCoreFunctionOptionEvaluator {
 
+    private static IExpr splitList(String str, String[] result) {
+      if (result == null || str.length() == 0) {
+        return F.CEmptyList;
+      }
+      return F.mapRange(0, result.length, i -> {
+        // TODO empty strings are not generally a problem
+        // if (result[i].length() == 0) {
+        // return F.NIL;
+        // }
+        return F.stringx(result[i]);
+      });
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
         final EvalEngine engine) {
@@ -2557,26 +2456,13 @@ public final class StringFunctions {
         }
         Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
         java.util.regex.Pattern pattern =
-            toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
+            IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
         if (pattern == null) {
           return F.NIL;
         }
         return splitList(str1, pattern.split(str1));
       }
       return F.NIL;
-    }
-
-    private static IExpr splitList(String str, String[] result) {
-      if (result == null || str.length() == 0) {
-        return F.CEmptyList;
-      }
-      return F.mapRange(0, result.length, i -> {
-        // TODO empty strings are not generally a problem
-        // if (result[i].length() == 0) {
-        // return F.NIL;
-        // }
-        return F.stringx(result[i]);
-      });
     }
 
     @Override
@@ -2747,6 +2633,26 @@ public final class StringFunctions {
     }
   }
 
+  private static class StringTemplate extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      if (ast.isAST1()) {
+        IExpr head = ast.head();
+        if (head.isAST(S.StringTemplate, 2)) {
+          return S.TemplateApply.of(engine, head, ast.arg1());
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return null;
+    }
+  }
+
   private static class StringToByteArray extends AbstractFunctionEvaluator {
 
     @Override
@@ -2793,7 +2699,7 @@ public final class StringFunctions {
           String str = ast.arg1().toString();
           try {
             Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
-            String regex = toRegexString(ast.arg2(), true, ast, REGEX_LONGEST, groups, engine);
+            String regex = IStringX.toRegexString(ast.arg2(), true, ast, IStringX.REGEX_LONGEST, groups, engine);
             if (regex != null) {
               // prepend StartOfString
               java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\A" + regex);
@@ -2805,8 +2711,7 @@ public final class StringFunctions {
             }
           } catch (IllegalArgumentException iae) {
             // for example java.util.regex.PatternSyntaxException
-            LOGGER.debug("StringTrim.evaluate() failed", iae);
-            return regexErrorHandling(ast, iae, engine);
+            return IStringX.regexErrorHandling(ast, iae, engine);
           }
         }
       }
@@ -2840,70 +2745,32 @@ public final class StringFunctions {
     }
   }
 
-  private static class StringTemplate extends AbstractFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-
-      if (ast.isAST1()) {
-        IExpr head = ast.head();
-        if (head.isAST(S.StringTemplate, 2)) {
-          return S.TemplateApply.of(engine, head, ast.arg1());
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return null;
-    }
-  }
-
   private static class TemplateApply extends AbstractFunctionEvaluator {
 
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      IExpr arg2 = F.NIL;
-      if (ast.isAST2()) {
-        arg2 = ast.arg2();
-      }
-      if (arg1.isString()) {
-        return Errors.templateApply(arg1.toString(), arg2);
-      } else if (arg1.isAST(S.StringTemplate, 2) && arg1.first().isString()) {
-        return Errors.templateApply(arg1.first().toString(), arg2);
-      }
-      return templateApplyTemplateSlot(arg1, arg2);
-    }
-
-    /**
-     * Replace all {@link S#TemplateSlot} expressions in an {@link IAST} tree.
-     *
-     * @param templateExpr
-     * @param args
-     * @return
-     */
-    protected static IExpr templateApplyTemplateSlot(IExpr templateExpr, IExpr args) {
-      final Map<IExpr, IExpr> context = new HashMap<>();
-      if (args.isListOrAssociation()) {
-        if (args.isAssociation()) {
-          IAssociation assoc = (IAssociation) args;
-          for (int i = 1; i < assoc.size(); i++) {
-            IAST rule = assoc.getRule(i);
-            IExpr lhs = rule.arg1();
-            IExpr rhs = rule.arg2();
-            context.put(lhs, rhs);
+    private static IExpr replaceSingleTemplateSlot(final Map<IExpr, IExpr> map, IAST templateSlot) {
+      IExpr defaultValue = F.Missing(S.SlotAbsent, templateSlot.first());
+      if (templateSlot.size() > 2) {
+        final OptionArgs options =
+            new OptionArgs(S.TemplateSlot, templateSlot, 2, EvalEngine.get(), true);
+        IExpr option = options.getOption(S.DefaultValue);
+        if (option.isPresent()) {
+          defaultValue = option;
+        }
+        IExpr insertionFunction = options.getOption(S.InsertionFunction);
+        if (insertionFunction.isPresent()) {
+          IExpr result = map.get(templateSlot.first());
+          if (result == null) {
+            if (defaultValue.isPresent()) {
+              return F.unaryAST1(insertionFunction, defaultValue);
+            }
+            return F.NIL;
           }
-        } else if (args.isList()) {
-          IAST list = (IAST) args;
-          for (int i = 1; i < list.size(); i++) {
-            IExpr expr = list.get(i);
-            context.put(F.ZZ(i), expr);
-          }
+          return F.unaryAST1(insertionFunction, result);
         }
       }
-      return F.subst(templateExpr, x -> replaceTemplateSlotFunction(x, context));
+
+      IExpr result = map.get(templateSlot.first());
+      return result == null ? defaultValue : result;
     }
 
     /**
@@ -2936,30 +2803,48 @@ public final class StringFunctions {
       return F.NIL;
     }
 
-    private static IExpr replaceSingleTemplateSlot(final Map<IExpr, IExpr> map, IAST templateSlot) {
-      IExpr defaultValue = F.Missing(S.SlotAbsent, templateSlot.first());
-      if (templateSlot.size() > 2) {
-        final OptionArgs options =
-            new OptionArgs(S.TemplateSlot, templateSlot, 2, EvalEngine.get(), true);
-        IExpr option = options.getOption(S.DefaultValue);
-        if (option.isPresent()) {
-          defaultValue = option;
-        }
-        IExpr insertionFunction = options.getOption(S.InsertionFunction);
-        if (insertionFunction.isPresent()) {
-          IExpr result = map.get(templateSlot.first());
-          if (result == null) {
-            if (defaultValue.isPresent()) {
-              return F.unaryAST1(insertionFunction, defaultValue);
-            }
-            return F.NIL;
+    /**
+     * Replace all {@link S#TemplateSlot} expressions in an {@link IAST} tree.
+     *
+     * @param templateExpr
+     * @param args
+     * @return
+     */
+    protected static IExpr templateApplyTemplateSlot(IExpr templateExpr, IExpr args) {
+      final Map<IExpr, IExpr> context = new HashMap<>();
+      if (args.isListOrAssociation()) {
+        if (args.isAssociation()) {
+          IAssociation assoc = (IAssociation) args;
+          for (int i = 1; i < assoc.size(); i++) {
+            IAST rule = assoc.getRule(i);
+            IExpr lhs = rule.arg1();
+            IExpr rhs = rule.arg2();
+            context.put(lhs, rhs);
           }
-          return F.unaryAST1(insertionFunction, result);
+        } else if (args.isList()) {
+          IAST list = (IAST) args;
+          for (int i = 1; i < list.size(); i++) {
+            IExpr expr = list.get(i);
+            context.put(F.ZZ(i), expr);
+          }
         }
       }
+      return F.subst(templateExpr, x -> replaceTemplateSlotFunction(x, context));
+    }
 
-      IExpr result = map.get(templateSlot.first());
-      return result == null ? defaultValue : result;
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = F.NIL;
+      if (ast.isAST2()) {
+        arg2 = ast.arg2();
+      }
+      if (arg1.isString()) {
+        return Errors.templateApply(arg1.toString(), arg2);
+      } else if (arg1.isAST(S.StringTemplate, 2) && arg1.first().isString()) {
+        return Errors.templateApply(arg1.first().toString(), arg2);
+      }
+      return templateApplyTemplateSlot(arg1, arg2);
     }
 
     @Override
@@ -2986,7 +2871,6 @@ public final class StringFunctions {
       newSymbol.setAttributes(ISymbol.HOLDALL);
     }
   }
-
   private static class TemplateSlot extends AbstractFunctionEvaluator {
 
     @Override
@@ -3007,12 +2891,6 @@ public final class StringFunctions {
 
   private static class TextString extends AbstractFunctionEvaluator {
 
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      return of(arg1);
-    }
-
     private static IExpr of(IExpr arg1) {
       if (arg1.isString()) {
         return arg1;
@@ -3026,6 +2904,12 @@ public final class StringFunctions {
         return;
       }
       buf.append(arg1.toString());
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      return of(arg1);
     }
 
     @Override
@@ -3067,6 +2951,13 @@ public final class StringFunctions {
    */
   private static class ToCharacterCode extends AbstractFunctionEvaluator {
 
+    public static IAST toCharacterCode(final String unicodeInput, final Charset inputEncoding) {
+      final String utf8String =
+          new String(unicodeInput.getBytes(inputEncoding), StandardCharsets.UTF_8);
+      final int length = utf8String.length();
+      return F.mapRange(0, length, i -> F.ZZ(utf8String.charAt(i)));
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
@@ -3083,13 +2974,6 @@ public final class StringFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
-    }
-
-    public static IAST toCharacterCode(final String unicodeInput, final Charset inputEncoding) {
-      final String utf8String =
-          new String(unicodeInput.getBytes(inputEncoding), StandardCharsets.UTF_8);
-      final int length = utf8String.length();
-      return F.mapRange(0, length, i -> F.ZZ(utf8String.charAt(i)));
     }
   }
 
@@ -3155,7 +3039,7 @@ public final class StringFunctions {
           return S.$Failed;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          LOGGER.debug("ToExpression.evaluate() failed", rex);
+          Errors.printMessage(S.ToExpression, rex, engine);
           return S.$Failed;
         }
       } else {
@@ -3168,6 +3052,28 @@ public final class StringFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
+
+  private static class ToLowerCase extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (!arg1.isString()) {
+        return F.NIL;
+      }
+      return F.stringx(((IStringX) arg1).toLowerCase());
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
 
     @Override
@@ -3206,34 +3112,12 @@ public final class StringFunctions {
       if (ast.arg1().isString()) {
         return ast.arg1();
       }
-      return F.stringx(inputForm(ast.arg1()));
+      return F.stringx(IStringX.inputForm(ast.arg1()));
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
-    }
-  }
-
-  private static class ToLowerCase extends AbstractFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (!arg1.isString()) {
-        return F.NIL;
-      }
-      return F.stringx(((IStringX) arg1).toLowerCase());
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
 
@@ -3269,24 +3153,6 @@ public final class StringFunctions {
   private static class ToUnicode extends AbstractFunctionEvaluator {
     private static final String UNICODE_PREFIX = "\\u";
 
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (arg1.isList()) {
-        return arg1.mapThread(ast, 1);
-      }
-      if (!arg1.isString()) {
-        return F.NIL;
-      }
-
-      return StringX.valueOf(toUnicodeString(ast.arg1().toString(), StandardCharsets.UTF_8));
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
-
     public static String toUnicodeString(final String unicodeInput, final Charset inputEncoding) {
       final StringBuilder unicodeStringBuilder = new StringBuilder();
       String unicodeString = null;
@@ -3312,6 +3178,24 @@ public final class StringFunctions {
       // LOGGER.error("ToUnicode.toUnicodeString() failed", e);
       // }
       return unicodeString;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (arg1.isList()) {
+        return arg1.mapThread(ast, 1);
+      }
+      if (!arg1.isString()) {
+        return F.NIL;
+      }
+
+      return StringX.valueOf(toUnicodeString(ast.arg1().toString(), StandardCharsets.UTF_8));
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
   }
 
@@ -3377,6 +3261,11 @@ public final class StringFunctions {
     }
 
     @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
     public boolean test(final IExpr obj) {
       final String str = obj.toString();
       char ch;
@@ -3388,390 +3277,78 @@ public final class StringFunctions {
       }
       return true;
     }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
   }
 
-  public static String inputForm(final IExpr expression, boolean relaxedSyntax) {
-    try {
-      StringBuilder buf = new StringBuilder();
-      OutputFormFactory off = OutputFormFactory.get(relaxedSyntax, false);
-      off.setIgnoreNewLine(true);
-      off.setInputForm(true);
-      if (off.convert(buf, expression)) {
-        return buf.toString();
-      }
-    } catch (RuntimeException rex) {
-      Errors.rethrowsInterruptException(rex);
-      LOGGER.debug("StringFunctions.inputForm() failed", rex);
-    }
-    return null;
-  }
+  /** The English alphabet */
+  private static final String LATIN_ALPHABET = "abcdefghijklmnopqrstuvwxyz";
 
-  public static String inputForm(final IExpr expression) {
-    return StringFunctions.inputForm(expression, ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS);
-  }
+  private static final String CYRILLIC_ALPHABET =
+      "\u0430\u0431\u0432\u0433\u0491\u0434\u0452\u0453\u0435\u0451\u0454\u0436\u0437\u0437\u0301\u0455\u0438\u0456\u0457\u0439\u0458\u043a\u043b\u0459\u043c\u043d\u045a\u043e\u043f\u0440\u0441\u0441\u0301\u0442\u045b\u045c\u0443\u045e\u0444\u0445\u0446\u0447\u045f\u0448\u0449\u044a\u044b\u044c\u044d\u044e\u044f";
 
-  private static IExpr regexErrorHandling(final IAST ast, IllegalArgumentException iae,
-      EvalEngine engine) {
-    if (iae instanceof PatternSyntaxException) {
-      PatternSyntaxException pse = (PatternSyntaxException) iae;
-      // Regex expression `1` error message: `2`
-      return Errors.printMessage(S.RegularExpression, "zzregex",
-          F.list(F.$str(pse.getPattern()), F.$str(pse.getMessage())), engine);
-    } else {
-      LOGGER.log(engine.getLogLevel(), ast.topHead(), iae);
-      return F.NIL;
-    }
-  }
+  /** Alphabet strings which contain only single characters not separated by comma. */
+  private static final String[] ALPHABETS = {"Arabic",
+      "\u0627\u0628\u062a\u062b\u062c\u062d\u062e\u062f\u0630\u0631\u0632\u0633\u0634\u0635\u0636\u0637\u0638\u0639\u063a\u0641\u0642\u0643\u0644\u0645\u0646\u0647\u0648\u064a",
+      "Belarusian",
+      "\u0430\u0431\u0432\u0433\u0434\u0435\u0451\u0436\u0437\u0456\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u045e\u0444\u0445\u0446\u0447\u0448\u044b\u044c\u044d\u044e\u044f\u0027",
+      "Bulgarian",
+      "\u0430\u0431\u0432\u0433\u0434\u0435\u0436\u0437\u0438\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u0444\u0445\u0446\u0447\u0448\u0449\u044a\u044c\u044e\u044f",
+      "Catalan", "abcçdefghijklmnopqrstuvwxyz",
+      // "Chinese", EMPTY_ALPHABET, // not known
+      "Cyrillic", CYRILLIC_ALPHABET, "Danish", "abcdefghijklmnopqrstuvwxyzæøå", "English",
+      LATIN_ALPHABET, "Esperanto", "abcĉdefgĝhĥijĵklmnoprsŝtuŭvz", "Estonian",
+      "abdefghijklmnoprsšzžtuvõäöü", "Finnish", "abcdefghijklmnopqrstuvwxyzåäö", "French",
+      LATIN_ALPHABET, "German", LATIN_ALPHABET, "Greek",
+      "\u03b1\u03b2\u03b3\u03b4\u03b5\u03b6\u03b7\u03b8\u03b9\u03ba\u03bb\u03bc\u03bd\u03be\u03bf\u03c0\u03c1\u03c3\u03c4\u03c5\u03c6\u03c7\u03c8\u03c9",
+      "Hebrew",
+      "\u05d0\u05d1\u05d2\u05d3\u05d4\u05d5\u05d6\u05d7\u05d8\u05d9\u05db\u05dc\u05de\u05e0\u05e1\u05e2\u05e4\u05e6\u05e7\u05e8\u05e9\u05ea",
+      "Hindi",
+      "\u0905\u0906\u0907\u0908\u0909\u090a\u090b\u090f\u0910\u0913\u0914\u0915\u0916\u0917\u0918\u0919\u091a\u091b\u091c\u091d\u091e\u091f\u0920\u0921\u0922\u0923\u0924\u0925\u0926\u0927\u0928\u092a\u092b\u092c\u092d\u092e\u092f\u0930\u0932\u0935\u0936\u0937\u0938\u0939",
+      "Icelandic", "aábdðeéfghiíjklmnoóprstuúvxyýþæö", "Indonesian", LATIN_ALPHABET, "Irish",
+      "abcdefghilmnoprstu", "Italian", "abcdefghilmnopqrstuvz",
+      // "Japanese", EMPTY_ALPHABET,// not known
+      "Korean",
+      "\u3131\u3132\u3134\u3137\u3138\u3139\u3141\u3142\u3143\u3145\u3146\u3147\u3148\u3149\u314a\u314b\u314c\u314d\u314e\u314f\u3150\u3151\u3152\u3153\u3154\u3155\u3156\u3157\u3158\u3159\u315a\u315b\u315c\u315d\u315e\u315f\u3160\u3161\u3162\u3163",
+      "Latin", LATIN_ALPHABET, "Latvian", "aābcčdeēfgģhiījkķlļmnņoprsštuūvzž", "Lithuanian",
+      "aąbcčdeęėfghiįyjklmnoprsštuųūvzž", "Macedonian",
+      "\u0430\u0431\u0432\u0433\u0434\u0453\u0435\u0436\u0437\u0455\u0438\u0458\u043a\u043b\u0459\u043c\u043d\u045a\u043e\u043f\u0440\u0441\u0442\u045c\u0443\u0444\u0445\u0446\u0447\u045f\u0448",
+      "Malay", LATIN_ALPHABET, "Norwegian", "abcdefghijklmnopqrstuvwxyzæøå", "Polish",
+      "aąbcćdeęfghijklłmnńoóprsśtuwyzźż", "Portuguese", LATIN_ALPHABET, "Romanian",
+      "aăâbcdefghiîjklmnopqrsștțuvwxyz", "Russian",
+      "\u0430\u0431\u0432\u0433\u0434\u0435\u0451\u0436\u0437\u0438\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u0444\u0445\u0446\u0447\u0448\u0449\u044a\u044b\u044c\u044d\u044e\u044f",
+      // "Serbian", EMPTY_ALPHABET,// not known
+      "Slovenian", "abcčdefghijklmnoprsštuvzž", "Spanish", "abcdefghijklmnñopqrstuvwxyz", "Swedish",
+      "abcdefghijklmnopqrstuvwxyzåäö",
+      // "Thai", EMPTY_ALPHABET,// not known
+      "Turkish", "abcçdefgğhıijklmnoöprsştuüvyz", "Ukrainian",
+      "\u0430\u0431\u0432\u0433\u0491\u0434\u0435\u0454\u0436\u0437\u0438\u0456\u0457\u0439\u043a\u043b\u043c\u043d\u043e\u043f\u0440\u0441\u0442\u0443\u0444\u0445\u0446\u0447\u0448\u0449\u044c\u044e\u044f",
+      "Vietnamese", "aăâbcdđeêfghiklmnoôơpqrstuưvxy"};
 
-  /**
-   * Unicode version of predefined character classes and POSIX character classes are enabled in the
-   * resulting regex Pattern object.
-   *
-   * <p>
-   * See:
-   *
-   * <ul>
-   * <li><a href=
-   * "https://github.com/mathics/Mathics/blob/master/mathics/builtin/strings.py#L78">to_regex()
-   * function</a>
-   * <li><a href="https://en.wikipedia.org/wiki/Perl_Compatible_Regular_Expressions">Wikipedia -
-   * Perl Compatible Regular Expression</a>
-   * </ul>
-   *
-   * @param partOfRegex the expression which represents a regex 'piece'
-   * @param abbreviatedPatterns if <code>true</code> allow 'abbreviated patterns" in strings (i.e.
-   *        '\','*' and '@' operatore)
-   * @param ignoreCase if <code>true</code> enables case-insensitive matching.
-   * @param stringFunction the original string function, used in error messages
-   * @param engine the evaluation engine
-   * @return
-   */
-  public static java.util.regex.Pattern toRegexPattern(IExpr partOfRegex,
-      boolean abbreviatedPatterns, boolean ignoreCase, IAST stringFunction,
-      Map<ISymbol, String> namedRegexGroups, EvalEngine engine) {
+  /** Alphabet strings which contain single/multiple characters separated by comma. */
+  private static final String[] ALPHABETS_CSV = {"Albanian",
+      "a,b,c,ç,d,dh,e,ë,f,g,gj,h,i,j,k,l,ll,m,n,nj,o,p,q,r,rr,s,sh,t,th,u,v,x,xh,y,z,zh",
+      "Croatian", "a,b,c,č,ć,d,dž,đ,e,f,g,h,i,j,k,l,lj,m,n,nj,o,p,r,s,š,t,u,v,z,ž", "Czech",
+      "a,á,b,c,č,d,ď,e,é,ě,f,g,h,ch,i,í,j,k,l,m,n,ň,o,ó,p,q,r,ř,s,š,t,ť,u,ú,ů,v,w,x,y,ý,z,ž",
+      "Dutch", "a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,ij,z", "Hungarian",
+      "a,á,b,c,cs,d,dz,dzs,e,é,f,g,gy,h,i,í,j,k,l,ly,m,n,ny,o,ó,ö,ő,p,q,r,s,sz,t,ty,u,ú,ü,ű,v,w,x,y,z,zs",
+      "Maltese", "a,b,ċ,d,e,f,ġ,g,għ,h,ħ,i,ie,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,ż,z", "Slovak",
+      "a,á,ä,b,c,č,d,ď,dz,dž,e,é,f,g,h,ch,i,í,j,k,l,ĺ,ľ,m,n,ň,o,ó,ô,p,q,r,ŕ,s,š,t,ť,u,ú,v,w,x,y,ý,z,ž"};
 
-    String regex = toRegexString(partOfRegex, abbreviatedPatterns, stringFunction, REGEX_LONGEST,
-        namedRegexGroups, engine);
-    if (regex != null) {
-      java.util.regex.Pattern pattern;
-      try {
-        if (ignoreCase) {
-          pattern = java.util.regex.Pattern.compile(regex,
-              Pattern.UNICODE_CHARACTER_CLASS | Pattern.CASE_INSENSITIVE);
-        } else {
-          pattern = java.util.regex.Pattern.compile(regex, Pattern.UNICODE_CHARACTER_CLASS);
-        }
-        return pattern;
-      } catch (IllegalArgumentException iae) {
-        // for example java.util.regex.PatternSyntaxException
-        LOGGER.debug("StringFunctions.toRegexPattern() failed", iae);
-        regexErrorHandling(stringFunction, iae, engine);
-      }
-    }
+  /** The languages locale shortcut. */
+  private static final String[] LANGUAGES = {"Albanian", "sq", "Arabic", "ar", "Belarusian", "be",
+      "Bulgarian", "bg", "Catalan", "ca", "Chinese", "zh", "Croatian", "hr", "Czech", "cs",
+      "Danish", "da", "Dutch", "nl", "English", "en", "Estonian", "et", "Finnish", "fi", "French",
+      "fr", "German", "de", "Greek", "el", "Hebrew", "iw", "Hindi", "hi", "Hungarian", "hu",
+      "Icelandic", "is", "Indonesian", "in", "Irish", "ga", "Italian", "it", "Japanese", "ja",
+      "Korean", "ko", "Latvian", "lv", "Lithuanian", "lt", "Macedonian", "mk", "Malay", "ms",
+      "Maltese", "mt", "Norwegian", "no", "Polish", "pl", "Portuguese", "pt", "Romanian", "ro",
+      "Russian", "ru", "Serbian", "sr", "Slovak", "sk", "Slovenian", "sl", "Spanish", "es",
+      "Swedish", "sv", "Thai", "th", "Turkish", "tr", "Ukrainian", "uk", "Vietnamese", "vi",};
 
-    return null;
-  }
+  /** Map language name to alphabet string with characters not separated by comma.. */
+  private static final Map<String, String> ALPHABET_MAP = new HashMap<String, String>();
 
-  /**
-   * Convert a Symja expression which represents a 'piece of a regular expression' to a Java regular
-   * expression string.
-   *
-   * @param partOfRegex the expression which represents a regex 'piece' which must be converted to a
-   *        Java regex string
-   * @param abbreviatedPatterns if <code>true</code> allow 'abbreviated patterns" in strings (i.e.
-   *        '\','*' and '@' operators)
-   * @param stringFunction the original string function, used in error messages
-   * @param shortestLongest either {@link #REGEX_LONGEST} or {@link #REGEX_SHORTEST}
-   * @param groups
-   * @param engine the evaluation engine
-   * @return
-   * @see <a href="https://en.wikipedia.org/wiki/Perl_Compatible_Regular_Expressions">Wikipedia -
-   *      Perl Compatible Regular Expression</a>
-   */
-  private static String toRegexString(IExpr partOfRegex, boolean abbreviatedPatterns,
-      IAST stringFunction, String[] shortestLongest, Map<ISymbol, String> groups,
-      EvalEngine engine) {
-
-    if (partOfRegex.isString()) {
-      final String str = partOfRegex.toString();
-      if (abbreviatedPatterns) {
-        StringBuilder pieces = new StringBuilder();
-        int beginIndex = 0;
-        int endIndex = 0;
-        final int len = str.length();
-        while (endIndex < len) {
-          char c = str.charAt(endIndex);
-          if (c == '\\' && endIndex + 1 < len) {
-            pieces.append(Pattern.quote(str.substring(beginIndex, endIndex)));
-            pieces.append(Pattern.quote(str.substring(endIndex + 1, endIndex + 2)));
-            endIndex += 2;
-            beginIndex = endIndex;
-          } else if (c == '*') {
-            pieces.append(Pattern.quote(str.substring(beginIndex, endIndex)));
-            pieces.append("(.*)");
-            endIndex += 1;
-            beginIndex = endIndex;
-          } else if (c == '@') {
-            pieces.append(Pattern.quote(str.substring(beginIndex, endIndex)));
-            // one or more characters, excluding upper case letters
-            pieces.append("([^A-Z]+)");
-            endIndex += 1;
-            beginIndex = endIndex;
-          } else {
-            endIndex += 1;
-          }
-        }
-        pieces.append(Pattern.quote(str.substring(beginIndex, endIndex)));
-        return pieces.toString();
-      } else {
-        return Pattern.quote(str);
-      }
-    } else if (partOfRegex.isAST(S.Characters, 2) && partOfRegex.first().isString()) {
-      String str = partOfRegex.first().toString();
-      return "[" + str + "]";
-    } else if (partOfRegex.isAST(S.RegularExpression, 2) && partOfRegex.first().isString()) {
-      return partOfRegex.first().toString();
-    } else if (partOfRegex instanceof RepeatedPattern) {
-      RepeatedPattern repeated = (RepeatedPattern) partOfRegex;
-      IExpr expr = repeated.getRepeatedExpr();
-      if (expr == null) {
-        return null;
-      }
-      if (expr.isAST(S.Pattern, 3) && expr.first().isSymbol()) {
-        final ISymbol symbol = (ISymbol) expr.first();
-        String str = toRegexString(expr.second(), abbreviatedPatterns, stringFunction,
-            shortestLongest, groups, engine);
-        if (str != null) {
-          final String groupName = symbol.toString();
-          groups.put(symbol, groupName);
-          if (repeated.isNullSequence()) {
-            return "(?<" + groupName + ">(" + str + ")" + shortestLongest[ASTERISK_Q] + ")";
-          } else {
-            return "(?<" + groupName + ">(" + str + ")" + shortestLongest[PLUS_Q] + ")";
-          }
-        }
-      } else {
-        String str = toRegexString(expr, abbreviatedPatterns, stringFunction, shortestLongest,
-            groups, engine);
-        if (str != null) {
-          if (repeated.isNullSequence()) {
-            return "(" + str + ")" + shortestLongest[ASTERISK_Q];
-          } else {
-            return "(" + str + ")" + shortestLongest[PLUS_Q];
-          }
-        }
-      }
-    } else if (partOfRegex.isAST(S.StringExpression)) {
-      IAST stringExpression = (IAST) partOfRegex;
-      return toRegexString(stringFunction, stringExpression, abbreviatedPatterns, shortestLongest,
-          groups, engine);
-    } else if (partOfRegex.isBlank()) {
-      return "(.|\\n)";
-    } else if (partOfRegex.isPattern()) {
-      final IPattern pattern = (IPattern) partOfRegex;
-      final ISymbol symbol = pattern.getSymbol();
-      if (symbol != null && pattern.getHeadTest() == null) {
-        // see github #221 - use Java regex - named capturing groups
-        final String groupName = symbol.toString();
-        groups.put(symbol, groupName);
-        if (pattern instanceof PatternNested) {
-          PatternNested pn = (PatternNested) pattern;
-          IExpr subPattern = pn.getPatternExpr();
-          String subPatternRegex = toRegexString(subPattern, abbreviatedPatterns, stringFunction,
-              shortestLongest, groups, engine);
-          return "(?<" + groupName + ">" + subPatternRegex + ")";
-        }
-        return "(?<" + groupName + ">(.|\\n))";
-      }
-    } else if (partOfRegex.isAST(S.Pattern, 3) && partOfRegex.first().isSymbol()) {
-      final ISymbol symbol = (ISymbol) partOfRegex.first();
-      String str = toRegexString(partOfRegex.second(), abbreviatedPatterns, stringFunction,
-          shortestLongest, groups, engine);
-      if (str != null) {
-        final String groupName = symbol.toString();
-        groups.put(symbol, groupName);
-        return "(?<" + groupName + ">" + str + ")";
-      }
-    } else if (partOfRegex.isPatternSequence(false)) {
-      AbstractPatternSequence ps = ((AbstractPatternSequence) partOfRegex);
-      final ISymbol symbol = ps.getSymbol();
-      final String str;
-      if (ps.isNullSequence()) {
-        // RepeatedNull
-        str = "(.|\\n)" + shortestLongest[ASTERISK_Q];
-      } else {
-        // Repeated
-        str = "(.|\\n)" + shortestLongest[PLUS_Q];
-      }
-      if (symbol == null) {
-        return str;
-      } else {
-        final String groupName = symbol.toString();
-        groups.put(symbol, groupName);
-        return "(?<" + groupName + ">" + str + ")";
-      }
-    } else if (partOfRegex.isAST(S.CharacterRange, 3)) {
-      String[] characterRange = characterRange((IAST) partOfRegex);
-      if (characterRange != null) {
-        StringBuilder buf = new StringBuilder();
-        buf.append("[");
-        buf.append(Pattern.quote(characterRange[0]));
-        buf.append("-");
-        buf.append(Pattern.quote(characterRange[1]));
-        buf.append("]");
-        return buf.toString();
-      }
-    } else if (partOfRegex.isAlternatives()) {
-      IAST alternatives = (IAST) partOfRegex;
-      StringBuilder pieces = new StringBuilder();
-      for (int i = 1; i < alternatives.size(); i++) {
-        String str = toRegexString(alternatives.get(i), abbreviatedPatterns, stringFunction,
-            shortestLongest, groups, engine);
-        if (str == null) {
-          // `1` currently not supported in `2`.
-          Errors.printMessage(stringFunction.topHead(), "unsupported",
-              F.list(alternatives.get(i), stringFunction.topHead()), engine);
-          return null;
-        }
-        pieces.append(str);
-        if (i < alternatives.argSize()) {
-          pieces.append('|');
-        }
-      }
-      return pieces.toString();
-    } else if (partOfRegex.isExcept()) {
-      IAST exceptions = (IAST) partOfRegex;
-      StringBuilder pieces = new StringBuilder();
-      for (int i = 1; i < exceptions.size(); i++) {
-        String str = toRegexString(exceptions.get(i), abbreviatedPatterns, stringFunction,
-            shortestLongest, groups, engine);
-        if (str == null) {
-          // `1` currently not supported in `2`.
-          Errors.printMessage(stringFunction.topHead(), "unsupported",
-              F.list(exceptions.get(i), stringFunction.topHead()), engine);
-          return null;
-        }
-        pieces.append(str);
-      }
-      return "[^" + pieces.toString() + "]";
-    } else if (partOfRegex.isAST(S.Shortest, 2)) {
-      String str = toRegexString(partOfRegex.first(), abbreviatedPatterns, stringFunction,
-          REGEX_SHORTEST, groups, engine);
-      return str;
-    } else if (partOfRegex.isAST(S.Longest, 2)) {
-      return toRegexString(partOfRegex.first(), abbreviatedPatterns, stringFunction, REGEX_LONGEST,
-          groups, engine);
-    } else if (partOfRegex.isBuiltInSymbol()) {
-      int ordinal = ((IBuiltInSymbol) partOfRegex).ordinal();
-      switch (ordinal) {
-        case ID.NumberString:
-          // better suitable for StringSplit?
-          return "[0-9]{1,13}(\\.[0-9]+)?";
-        // mathics:
-        // return "[-|+]?(\\d+(\\.\\d*)?|\\.\\d+)?";
-        case ID.Whitespace:
-          return "(?u)\\s+";
-        case ID.DigitCharacter:
-          return "\\d";
-        case ID.WhitespaceCharacter:
-          return "(?u)\\s";
-        case ID.WordCharacter:
-          return "(?u)[^\\W_]";
-        case ID.StartOfLine:
-          return "\\R";
-        case ID.EndOfLine:
-          return "$";
-        case ID.StartOfString:
-          return "\\A";
-        case ID.EndOfString:
-          return "\\Z";
-        case ID.WordBoundary:
-          return "\\b";
-        case ID.LetterCharacter:
-          return "(?u)[^\\W_0-9]";
-        case ID.HexidecimalCharacter:
-          return "[0-9a-fA-F]";
-        default:
-          // `1` currently not supported in `2`.
-          Errors.printMessage(stringFunction.topHead(), "unsupported",
-              F.list(partOfRegex, stringFunction.topHead()), engine);
-          return null;
-      }
-    }
-
-    // `1` currently not supported in `2`.
-    Errors.printMessage(stringFunction.topHead(), "unsupported",
-        F.list(partOfRegex, stringFunction.topHead()), engine);
-    return null;
-  }
-
-  /**
-   * Convert the <code>StringExpression( ... )</code> to a java regex string.
-   *
-   * @param ast
-   * @param stringExpression the <code>StringExpression( ... )</code> expression
-   * @param abbreviatedPatterns if <code>true</code> allow 'abbreviated patterns" in strings (i.e.
-   *        '\','*' and '@' operators)
-   * @param shortestLongest either {@link #REGEX_LONGEST} or {@link #REGEX_SHORTEST}
-   * @param groups
-   * @param engine the evaluation engine
-   * @return
-   * @see <a href="https://en.wikipedia.org/wiki/Perl_Compatible_Regular_Expressions">Wikipedia -
-   *      Perl Compatible Regular Expression</a>
-   */
-  private static String toRegexString(IAST ast, IAST stringExpression, boolean abbreviatedPatterns,
-      String[] shortestLongest, Map<ISymbol, String> groups, EvalEngine engine) {
-
-    StringBuilder regex = new StringBuilder();
-    for (int i = 1; i < stringExpression.size(); i++) {
-      IExpr arg = stringExpression.get(i);
-      String str = toRegexString(arg, abbreviatedPatterns, ast, shortestLongest, groups, engine);
-      if (str == null) {
-        return null;
-      }
-      regex.append(str);
-    }
-
-    return regex.toString();
-  }
-
-  /**
-   * Get the character range of <code>CharacterRange(from, to)</code>
-   *
-   * @param characterRangeAST the character range <code>CharacterRange(a,b)</code>
-   * @return <code>from</code> at offset 0 and <code>to</code> at offset 1. <code>null</code> if the
-   *         character range cannot be generated
-   */
-  private static String[] characterRange(final IAST characterRangeAST) {
-
-    if (!(characterRangeAST.arg1() instanceof IStringX)
-        || !(characterRangeAST.arg2() instanceof IStringX)) {
-
-      if (!(characterRangeAST.arg1().isInteger()) || !(characterRangeAST.arg2().isInteger())) {
-        return null;
-      }
-      int from = characterRangeAST.arg1().toIntDefault();
-      int to = characterRangeAST.arg2().toIntDefault();
-      if (from < 0 || to < 0) {
-        return null;
-      }
-      return new String[] {String.valueOf((char) from), String.valueOf((char) to)};
-    }
-    String str1 = characterRangeAST.arg1().toString();
-    String str2 = characterRangeAST.arg2().toString();
-    if (str1.length() != 1 || str2.length() != 1) {
-      return null;
-    }
-
-    char from = str1.charAt(0);
-    char to = str2.charAt(0);
-    return new String[] {String.valueOf(from), String.valueOf(to)};
-  }
+  /** Map language name to alphabet character strings */
+  private static final Map<String, String[]> ALPHABET_CSV_MAP = new HashMap<String, String[]>();
 
   public static void initialize() {
     Initializer.init();

@@ -1,4 +1,4 @@
-package org.matheclipse.core.builtin.functions;
+package org.matheclipse.core.numerics.functions;
 
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -7,10 +7,10 @@ import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.analysis.solvers.RiddersSolver;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
+import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.S;
@@ -87,7 +87,7 @@ public class BesselJS extends JS {
       return new Complex(-1.0).pow(n).multiply(besselJ(n.negate(), x));
     }
 
-    Complex product = x.divide(2.0).pow(n).divide(Arithmetic.lanczosApproxGamma(n.add(1.0)));
+    Complex product = x.divide(2.0).pow(n).divide(ComplexNum.lanczosApproxGamma(n.add(1.0)));
     Complex sqrX = x.multiply(x);
     return product.multiply(HypergeometricJS.hypergeometric0F1(n.add(1), sqrX.multiply(-0.25)));
   }

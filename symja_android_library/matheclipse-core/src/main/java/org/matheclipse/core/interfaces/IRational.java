@@ -3,8 +3,14 @@ package org.matheclipse.core.interfaces;
 import java.math.BigInteger;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
+import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.FractionSym;
+import com.google.common.math.BigIntegerMath;
 import edu.jas.arith.BigComplex;
 
 /** Interface for "rational" numbers (i.e. numbers implementing IInteger or IFraction) */
@@ -270,5 +276,71 @@ public interface IRational extends IReal, IBigNumber {
    */
   default IInteger trunc() {
     return isNegative() ? ceil() : floor();
+  }
+
+  /**
+   * Compute the Bernoulli number of the first kind.
+   *
+   * @param n
+   * @return throws ArithmeticException if n is a negative int number
+   */
+  static IRational bernoulliNumber(int n) {
+    if (n == 0) {
+      return F.C1;
+    } else if (n == 1) {
+      return F.CN1D2;
+    } else if (n < 0) {
+      throw new ArithmeticException("BernoulliB(n): n is not a positive int number");
+    } else if (n % 2 != 0) {
+      // http://fungrim.org/entry/a98234/
+      return F.C0;
+    }
+    if (n > Config.MAX_AST_SIZE) {
+      throw new ASTElementLimitExceeded(n);
+    }
+    IFraction[] bernoulli = new IFraction[n + 1];
+    bernoulli[0] = FractionSym.ONE;
+    bernoulli[1] = AbstractFractionSym.valueOf(-1L, 2L);
+  
+    int iterationLimit = EvalEngine.get().getIterationLimit();
+    if (iterationLimit > 0 && iterationLimit < Integer.MAX_VALUE / 2) {
+      iterationLimit *= 2;
+    }
+    int iterationCounter = 0;
+    for (int k = 2; k <= n; k++) {
+      bernoulli[k] = FractionSym.ZERO;
+      for (int i = 0; i < k; i++) {
+        if (!bernoulli[i].isZero()) {
+          if (iterationLimit > 0 && iterationLimit <= iterationCounter++) {
+            IterationLimitExceeded.throwIt(iterationCounter, F.BernoulliB(F.ZZ(n)));
+          }
+          IFraction bin = AbstractFractionSym.valueOf(BigIntegerMath.binomial(k + 1, k + 1 - i));
+          bernoulli[k] = bernoulli[k].sub(bin.mul(bernoulli[i]));
+        }
+      }
+      bernoulli[k] = bernoulli[k].div(AbstractFractionSym.valueOf(k + 1));
+    }
+    return bernoulli[n].normalize();
+  }
+
+  /**
+   * Compute the Bernoulli number of the first kind.
+   *
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Bernoulli_number">Wikipedia - Bernoulli number</a>.
+   * <br>
+   * For better performing implementations see
+   * <a href= "http://oeis.org/wiki/User:Peter_Luschny/ComputationAndAsymptoticsOfBernoulliNumbers"
+   * >ComputationAndAsymptoticsOfBernoulliNumbers</a>
+   *
+   * @param n
+   * @return throws ArithmeticException if n is not an non-negative Java int number
+   */
+  static IRational bernoulliNumber(final IInteger n) {
+    int bn = n.toIntDefault(-1);
+    if (bn >= 0) {
+      return IRational.bernoulliNumber(bn);
+    }
+    throw new ArithmeticException("BernoulliB(n): n is not a positive int number");
   }
 }

@@ -11,11 +11,11 @@ import org.apfloat.Apfloat;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ASTSeriesData;
@@ -1389,7 +1389,7 @@ public class OutputFormFactory {
                 // see also MatrixForm in MathML or TeX format for "graphical representation".
                 IExpr normal = list.arg1().normal(false);
                 if (normal.isList()) { // && normal.isMatrix() != null) {
-                  IntList dims = LinearAlgebra.dimensions((IAST) normal, S.List);
+                  IntList dims = LinearAlgebraUtil.dimensions((IAST) normal, S.List);
                   convertList(buf, (IAST) normal, dims.size() >= 2);
                   return;
                 }

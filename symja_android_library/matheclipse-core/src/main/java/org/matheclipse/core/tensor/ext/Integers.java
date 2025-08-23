@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.IntUnaryOperator;
+import org.matheclipse.core.expression.S;
 
 public class Integers {
 
@@ -102,7 +103,8 @@ public class Integers {
 
   // ---
   /**
-   * Mathematica::PermutationListQ
+   * {@link S#PermutationListQ}<code>(permutation-list)</code> - if `permutation-list` is a valid
+   * permutation list return <code>true</code>.
    * 
    * @param sigma
    * @return whether sigma encodes a permutation for instance {2, 0, 1, 3}

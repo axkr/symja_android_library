@@ -1,7 +1,6 @@
 package org.matheclipse.core.eval.interfaces;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -37,8 +36,8 @@ public interface ISymbolEvaluator extends IEvaluator {
   public IExpr apfloatEval(ISymbol symbol, final EvalEngine engine);
 
   /** {@inheritDoc} */
-  @Override
-  default int status() {
-    return ImplementationStatus.FULL_SUPPORT;
-  }
+  // @Override
+  // default int status() {
+  // return ImplementationStatus.FULL_SUPPORT;
+  // }
 }

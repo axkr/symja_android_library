@@ -29,6 +29,75 @@ import org.matheclipse.core.tensor.qty.IQuantity;
  */
 public final class PlusOp {
 
+  /**
+   * Basic addition of two expressions, which can be a number, interval, interval data or quantity.
+   *
+   * @param iExpr the first expression
+   * @param that the second expression
+   * @param returnNilIfUnevaluated TODO check if this parameter can be removed
+   * @return the result of the addition or {@link F#NIL}
+   */
+  public static org.matheclipse.core.interfaces.IExpr numberLikePlus(
+      org.matheclipse.core.interfaces.IExpr iExpr, final org.matheclipse.core.interfaces.IExpr that,
+      boolean returnNilIfUnevaluated) {
+    if (iExpr.isNumber()) {
+      if (that.isInterval()) {
+        return IntervalSym.plus(iExpr, (org.matheclipse.core.interfaces.IAST) that);
+      }
+      if (that.isIntervalData()) {
+        return IntervalDataSym.plus(iExpr, (org.matheclipse.core.interfaces.IAST) that);
+      }
+      if (that.isQuantity()) {
+        IQuantity q = (IQuantity) that;
+        return q.plus(iExpr, returnNilIfUnevaluated);
+      }
+    } else if (iExpr.isIntervalData()) {
+      if (that.isAST()) {
+        org.matheclipse.core.interfaces.IAST interval = (org.matheclipse.core.interfaces.IAST) that;
+        if (that.isInterval()) {
+          interval = IntervalDataSym.intervalToIntervalSet(interval);
+        }
+        if (interval.isIntervalData()) {
+          return IntervalDataSym.plus((org.matheclipse.core.interfaces.IAST) iExpr, interval);
+        }
+      }
+    } else if (iExpr.isInterval()) {
+      if (that.isAST()) {
+        org.matheclipse.core.interfaces.IAST interval = (org.matheclipse.core.interfaces.IAST) that;
+        if (that.isInterval()) {
+          return IntervalSym.plus((org.matheclipse.core.interfaces.IAST) iExpr, interval);
+        }
+      }
+    } else if (iExpr.isQuantity()) {
+      IQuantity q = (IQuantity) iExpr;
+      return q.plus(that, returnNilIfUnevaluated);
+    }
+
+    if (that.isNumber()) {
+      if (iExpr.isInterval()) {
+        return IntervalSym.plus(that, (org.matheclipse.core.interfaces.IAST) iExpr);
+      }
+      if (iExpr.isIntervalData()) {
+        return IntervalDataSym.plus(that, (org.matheclipse.core.interfaces.IAST) iExpr);
+      }
+    } else if (that.isIntervalData()) {
+      if (iExpr.isAST()) {
+        org.matheclipse.core.interfaces.IAST interval =
+            (org.matheclipse.core.interfaces.IAST) iExpr;
+        if (iExpr.isInterval()) {
+          interval = IntervalDataSym.intervalToIntervalSet(interval);
+        }
+        if (interval.isIntervalData()) {
+          return IntervalDataSym.plus(interval, (org.matheclipse.core.interfaces.IAST) that);
+        }
+      }
+    } else if (that.isQuantity()) {
+      IQuantity q = (IQuantity) that;
+      return q.plus(iExpr, returnNilIfUnevaluated);
+    }
+    return F.NIL;
+  }
+
   /** Merge IExpr keys by adding their values into this map. */
   private Map<IExpr, IExpr> plusMap;
 
@@ -47,16 +116,9 @@ public final class PlusOp {
    */
   public PlusOp(final int capacity) {
     this.capacity = capacity;
-    this.plusMap = null; // new HashMap<IExpr, IExpr>(size + 5 + size / 10);
+    this.plusMap = null;
     this.evaled = false;
     this.numberValue = F.NIL;
-  }
-
-  private Map<IExpr, IExpr> getMap() {
-    if (plusMap == null) {
-      plusMap = new HashMap<IExpr, IExpr>(capacity + 5 + capacity / 10);
-    }
-    return plusMap;
   }
 
   /**
@@ -73,7 +135,7 @@ public final class PlusOp {
       return false;
     }
     // merge both values
-    if (temp.isNumber() && value.isNumber()) {
+    if (temp.isNumberLike() && value.isNumberLike()) {
       temp = temp.plus(value);
       if (temp.isZero()) {
         map.remove(key);
@@ -91,11 +153,18 @@ public final class PlusOp {
     return true;
   }
 
+  private Map<IExpr, IExpr> getMap() {
+    if (plusMap == null) {
+      plusMap = new HashMap<IExpr, IExpr>(capacity + 5 + capacity / 10);
+    }
+    return plusMap;
+  }
+
   /**
    * Get the current evaluated result of the summation as a <code>Plus()</code> expression with
    * respecting the <code>OneIdentity</code> attribute.
    *
-   * @return
+   * @return the evaluated result of the summation of a {@link S#Plus} function expression
    */
   public IExpr getSum() {
     if (plusMap == null) {
@@ -171,11 +240,6 @@ public final class PlusOp {
    *         otherwise.
    */
   public IExpr plus(final IExpr arg) {
-    // if (arg.isPlus()) {
-    // // flatten the Plus() argument
-    // final IAST plusAST = (IAST) arg;
-    // return plusUntilPosition(plusAST, plusAST.size());
-    // }
     if (arg.isIndeterminate()) {
       return S.Indeterminate;
     }
@@ -233,7 +297,7 @@ public final class PlusOp {
           numberValue = arg;
           return F.NIL;
         }
-        if (numberValue.isNumber() ) {
+        if (numberValue.isNumber()) {
           IExpr temp = ((INumber) numberValue).plusExpr((INumber) arg);
           if (temp.isNumber()) {
             numberValue = temp;
@@ -341,7 +405,7 @@ public final class PlusOp {
                 if (ast.isNumericFunction() && plusInterval(ast)) {
                   return F.NIL;
                 }
-                if (ast.arg1().isNumber()) {
+                if (ast.arg1().isNumberLike()) {
                   if (addMerge(ast.rest().oneIdentity1(), ast.arg1())) {
                     evaled = true;
                   }
@@ -464,9 +528,6 @@ public final class PlusOp {
               break;
           }
         }
-        // } else if (numberValue.isNIL() && arg.isRealResult()) {
-        // numberValue = arg;
-        // return F.NIL;
       }
       if (arg.isNumericFunction() && plusInterval(arg)) {
         return F.NIL;
@@ -484,19 +545,26 @@ public final class PlusOp {
   }
 
   private boolean plusInterval(final IExpr arg) {
+    IExpr tempValue = F.NIL;
     if (numberValue.isInterval()) {
-      numberValue = IntervalSym.plus((IAST) numberValue, (IAST) arg);
-      evaled = true;
-      return true;
+      if (arg.isInterval()) {
+        tempValue = IntervalSym.plus((IAST) numberValue, (IAST) arg);
+      } else {
+        tempValue = IntervalSym.plus(arg, (IAST) numberValue);
+      }
     } else if (numberValue.isIntervalData()) {
-      numberValue = IntervalDataSym.plus((IAST) numberValue, (IAST) arg);
+      if (arg.isIntervalData()) {
+        tempValue = IntervalDataSym.plus((IAST) numberValue, (IAST) arg);
+      } else {
+        tempValue = IntervalDataSym.plus(arg, (IAST) numberValue);
+      }
+    }
+    if (tempValue.isPresent()) {
+      numberValue = tempValue;
       evaled = true;
       return true;
     }
     return false;
   }
 
-  // private static IExpr plusInterval(final IExpr o0, final IExpr o1) {
-  // return F.Interval(F.list(o0.lower().plus(o1.lower()), o0.upper().plus(o1.upper())));
-  // }
 }

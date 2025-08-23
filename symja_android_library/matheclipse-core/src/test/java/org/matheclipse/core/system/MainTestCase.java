@@ -5,7 +5,7 @@ import java.io.StringWriter;
 import java.util.Optional;
 import org.junit.Test;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Algebra;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TimeConstrainedEvaluator;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -3216,7 +3216,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     EvalEngine engine = EvalEngine.get();
     IExpr exprNumerator = engine.parse("8+12*x+20*x^2+12*x^3+8*x^4+3*x^5");
     IExpr exprDenominator = engine.parse("8*x+12*x^3+6*x^5+x^7");
-    Optional<IExpr[]> result = Algebra.cancelGCD(exprNumerator, exprDenominator);
+    Optional<IExpr[]> result = AlgebraUtil.cancelGCD(exprNumerator, exprDenominator);
     assertEquals(result.get()[0].toString(), "1");
     assertEquals(result.get()[1].toString(), "4+6*x+8*x^2+3*x^3");
   }
@@ -3438,16 +3438,21 @@ public class MainTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSystem418() {
-
-    check("Limit(Sin(x)/x, x->0)", "1");
+    check("Limit(1+Sin(x)/x,x->Infinity)", //
+        "1");
+    check("Limit(Sin(x)/x, x->0)", //
+        "1");
     // check("Limit(Sum(1/k*(k+1),{k,1,x}),x->Infinity)", "");
     // check("Apart((4-x^4)/(2*x^3-5*x^4))",
     // "-621/50*(x-2/5)^(-1)+25/2*x^(-1)+5*x^(-2)+2*x^(-3)+1/5");
 
     // check("Trace(Limit(x*Sin(1/x),x->Infinity))", "");
-    check("Limit(Log(x), x->Infinity)", "Infinity");
-    check("Limit(100/x, x->Infinity)", "0");
-    check("Limit(2*x, x->Infinity)", "Infinity");
+    check("Limit(Log(x), x->Infinity)", //
+        "Infinity");
+    check("Limit(100/x, x->Infinity)", //
+        "0");
+    check("Limit(2*x, x->Infinity)", //
+        "Infinity");
     check("Limit(x^(2/3), x->Infinity)", "Infinity");
     check("Limit((5/4)^x, x->Infinity)", "Infinity");
     check("Limit(1^x, x->Infinity)", "1");
@@ -3462,12 +3467,14 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Limit(Sum(x^(-10),{x,1,m}), m->Infinity)", //
         "Pi^10/93555");
 
-    check("Limit((4-x^4)/(2*x^3-5*x^4),x->Infinity)", "1/5");
+    check("Limit((4-x^4)/(2*x^3-5*x^4),x->Infinity)", //
+        "1/5");
     check("Limit(Sum(k,{k,0,x}),x->5)", "15"); // issue 50
     check("Limit(product(k,{k,1,x}),x->5)", "120"); // issue 50
     check("Limit(Sum(k,{k,0,x}),x->Pi+2)", "1/2*(2+Pi)*(3+Pi)");
     check("Limit(Sin(Pi*x)/(Pi*x),x->0)", "1");
-    check("Limit(1+Sin(x)/x,x->Infinity)", "1");
+    check("Limit(1+Sin(x)/x,x->Infinity)", //
+        "1");
     check("Limit(Pi^42,x->42)", "Pi^42");
     check("Limit(x,x->42)", "42");
     check("Limit(a+b+2*x,x->42)", "84+a+b");

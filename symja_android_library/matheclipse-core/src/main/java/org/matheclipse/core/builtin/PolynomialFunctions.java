@@ -112,8 +112,8 @@ public class PolynomialFunctions {
    *
    * <p>
    * get the coefficient of <code>variable^exponent</code> in <code>polynomial</code>.
-   *
-   * </blockquote>
+   * 
+   * </p>
    *
    * <p>
    * See:<br>
@@ -581,7 +581,7 @@ public class PolynomialFunctions {
    * <p>
    * returns the Cyclotomic polynomial <code>C_n(x)</code>.
    *
-   * </blockquote>
+   * </p>
    *
    * <p>
    * See:<br>
@@ -697,7 +697,7 @@ public class PolynomialFunctions {
    * computes the discriminant of the polynomial <code>poly</code> with respect to the variable
    * <code>var</code>.
    *
-   * </blockquote>
+   * </p>
    *
    * <p>
    * See:<br>
@@ -897,7 +897,7 @@ public class PolynomialFunctions {
    * gives the maximum power with which <code>x</code> appears in the expanded form of <code>
    * polynomial</code>.
    *
-   * </blockquote>
+   * </p>
    *
    * <h3>Examples</h3>
    *
@@ -1072,7 +1072,7 @@ public class PolynomialFunctions {
    * computes the resultant of the polynomials <code>polynomial1</code> and <code>polynomial2
    * </code> with respect to the variable <code>var</code>.
    *
-   * </blockquote>
+   * </p>
    *
    * <p>
    * See:<br>
@@ -1421,7 +1421,7 @@ public class PolynomialFunctions {
    * <p>
    * returns the Chebyshev polynomial of the first kind <code>T_n(x)</code>.
    *
-   * </blockquote>
+   * </p>
    *
    * <p>
    * See:<br>
@@ -1440,6 +1440,18 @@ public class PolynomialFunctions {
    */
   private static final class ChebyshevT extends AbstractFunctionEvaluator
       implements IFunctionExpand {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() == 2) {
+        IExpr n = ast.arg1();
+        if (n.isIntegerResult()) {
+          return true;
+        }
+        IExpr z = ast.arg2();
+        return z.greaterEqual(F.CN1).isTrue();
+      }
+      return false;
+    }
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
@@ -1541,6 +1553,19 @@ public class PolynomialFunctions {
    */
   private static final class ChebyshevU extends AbstractFunctionEvaluator
       implements IFunctionExpand {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() == 2) {
+        IExpr n = ast.arg1();
+        if (n.isIntegerResult()) {
+          return true;
+        }
+        IExpr z = ast.arg2();
+        return z.greater(F.CN1).isTrue();
+      }
+      return false;
+    }
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
@@ -1648,7 +1673,7 @@ public class PolynomialFunctions {
    * <p>
    * the second kind of Bell polynomials (incomplete Bell polynomials).
    *
-   * </blockquote>
+   * </p>
    *
    * <p>
    * See:<br>
@@ -1668,23 +1693,12 @@ public class PolynomialFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST1()) {
-        // int[] dim = arg1.isMatrix();
-        // if (dim != null && arg1.isAST()) {
-        // if (dim[0] == 0 && dim[1] == 0) {
-        // return F.C0;
+        // int[] dim = arg1.isMatrix(false);
+        // if (dim == null || dim.length != 2 || dim[0] != dim[1]) {
+        // return F.NIL;
         // }
-        // IAST matrixArg1 = (IAST) arg1;
-        //
-        // if (dim[0] == 1) {
-        // if (dim[1] == 1) {
-        // IAST row = (IAST) matrixArg1.arg1();
-        // return row.arg1();
-        // } else if (dim[1] >= 2) {
-        // IAST row = (IAST) matrixArg1.arg1();
-        // return row.apply(S.Times);
-        // }
-        // }
-        // }
+        // final int size = dim[0];
+        // return bellYMatrix((IAST) arg1, size, ast, engine);
         return F.NIL;
       }
       if (ast.isAST2()) {
@@ -1696,27 +1710,43 @@ public class PolynomialFunctions {
         if (n < 0 || k < 0) {
           return F.NIL;
         }
-        IExpr listOfVariables = ast.arg3().normal(false);
-        if (!listOfVariables.isList()) {
+
+        IExpr arg3 = ast.arg3();
+        int[] dim = arg3.isMatrix(false);
+        if (dim == null || dim.length != 2) {
+          IExpr listOfVariables = arg3.normal(false);
+          if (!listOfVariables.isList()) {
+            return F.NIL;
+          }
+
+          if (n == 0 && k == 0) {
+            return F.C1;
+          }
+          if (n == 0 || k == 0) {
+            return F.C0;
+          }
+          if (n < k) {
+            return F.C0;
+          }
+          if (n > Config.MAX_POLYNOMIAL_DEGREE) {
+            PolynomialDegreeLimitExceeded.throwIt(n);
+          }
+          int max = n - k + 2;
+          if (max >= 0) {
+            return bellY(n, k, (IAST) listOfVariables, ast, engine);
+          }
           return F.NIL;
         }
 
-        if (n == 0 && k == 0) {
-          return F.C1;
-        }
-        if (n == 0 || k == 0) {
-          return F.C0;
-        }
-        if (n < k) {
-          return F.C0;
-        }
+
+        final int rowSize = dim[0];
+        final int colSize = dim[1];
         if (n > Config.MAX_POLYNOMIAL_DEGREE) {
           PolynomialDegreeLimitExceeded.throwIt(n);
         }
-        int max = n - k + 2;
-        if (max >= 0) {
-          return bellY(n, k, (IAST) listOfVariables, ast, engine);
-        }
+        return bellYMatrix(n, k, (IAST) arg3, rowSize, colSize, ast, engine);
+
+
       }
 
       return F.NIL;
@@ -1750,7 +1780,7 @@ public class PolynomialFunctions {
    * <p>
    * returns a Gröbner basis for the <code>polynomial-list</code> and <code>variable-list</code>.
    *
-   * </blockquote>
+   * </p>
    *
    * <p>
    * See:
@@ -1811,8 +1841,7 @@ public class PolynomialFunctions {
      * @param listOfPolynomials a list of polynomials
      * @param listOfVariables a list of variable symbols
      * @param termOrder the term order
-     * @return <code>F.NIL</code> if <code>stopUnevaluatedOnPolynomialConversionError==true</code>
-     *         and one of the polynomials in <code>listOfPolynomials</code> are not convertible to
+     * @return <code>F.NIL</code> if <code>stopUnevaluatedOnPolynomialConversionError==true</code> and one of the polynomials in <code>listOfPolynomials</code> are not convertible to
      *         JAS polynomials
      */
     private static IAST computeGroebnerBasis(IAST listOfPolynomials, IAST listOfVariables,
@@ -1871,7 +1900,7 @@ public class PolynomialFunctions {
    * <p>
    * returns the Hermite polynomial <code>H_n(x)</code>.
    *
-   * </blockquote>
+   * </p>
    *
    * <p>
    * See:<br>
@@ -1892,6 +1921,11 @@ public class PolynomialFunctions {
    * </pre>
    */
   private static final class HermiteH extends AbstractFunctionEvaluator {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return (ast.argSize() == 2) && ast.arg1().isRealResult() && ast.arg2().isRealResult();
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2090,7 +2124,7 @@ public class PolynomialFunctions {
    * <p>
    * returns the Laguerre polynomial <code>L_n(x)</code>.
    *
-   * </blockquote>
+   * </p>
    *
    * <p>
    * See:<br>
@@ -2107,7 +2141,27 @@ public class PolynomialFunctions {
    * 1-8*x+14*x^2-28/3*x^3+35/12*x^4-7/15*x^5+7/180*x^6-x^7/630+x^8/40320
    * </pre>
    */
-  private static final class LaguerreL extends AbstractFunctionEvaluator {
+  private static final class LaguerreL extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return (ast.argSize() == 2) && ast.arg1().isRealResult() && ast.arg2().isRealResult();
+    }
+
+    @Override
+    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        IExpr n = ast.arg1();
+        IExpr z = ast.arg2();
+        if (n.isNumEqualRational(F.CN1D2)) {
+          // E^(z/2)*BesselI(0,z/2)
+          IExpr v1 = F.Times(F.C1D2, z);
+          return F.Times(F.Exp(v1), F.BesselI(F.C0, v1));
+        }
+      }
+      return F.NIL;
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2127,10 +2181,29 @@ public class PolynomialFunctions {
         }
         if (degree > 0) {
           IExpr z = ast.arg2();
-          return PolynomialsUtils.createLaguerrePolynomial(degree, z);
+          return laguerreL(degree, z);
+        }
+      } else if (F.isPresent(degree)) {
+        // degree < 0
+        if (ast.isAST2()) {
+          // E^z*LaguerreL(-degree - 1, -z);
+          IExpr z = ast.arg2();
+          return F.Times(F.Exp(z), laguerreL(-degree - 1, z.negate()));
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * Create a Laguerre polynomial of <code>degree >= 0</code> with variable <code>z
+     * </code>.
+     *
+     * @param nonNegativeDegree the <code>degree >= 0</code> of the Laguerre polynomial
+     * @param z the variable of the Laguerre polynomial
+     * @return the Laguerre polynomial <code>L_n(z)</code>
+     */
+    private static IAST laguerreL(int nonNegativeDegree, IExpr z) {
+      return PolynomialsUtils.createLaguerrePolynomial(nonNegativeDegree, z);
     }
 
     private IExpr laguerreLRecursive(IExpr n, int degree, IExpr l, IExpr z, EvalEngine engine) {
@@ -2251,6 +2324,7 @@ public class PolynomialFunctions {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
+
   }
 
   /**
@@ -2265,7 +2339,7 @@ public class PolynomialFunctions {
    * <p>
    * returns the Legendre polynomial <code>P_n(x)</code>.
    *
-   * </blockquote>
+   * </p>
    *
    * <p>
    * See:<br>
@@ -2283,6 +2357,31 @@ public class PolynomialFunctions {
    * </pre>
    */
   private static final class LegendreP extends AbstractFunctionEvaluator implements IMatch {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() == 2) {
+        IExpr n = ast.arg1();
+        IExpr z = ast.arg2();
+        if (n.isIntegerResult() && z.isRealResult()) {
+          return true;
+        }
+        if (z.greater(F.CN1).isTrue() && n.isRealResult()) {
+          return true;
+        }
+      } else if (ast.argSize() == 3) {
+        IExpr n = ast.arg1();
+        IExpr m = ast.arg2();
+        if (n.isRealResult() && m.isRealResult()) {
+          IExpr z = ast.arg3();
+          if (z.greater(F.CN1).isTrue() && z.less(F.C1).isTrue()) {
+            return true;
+          }
+          // TODO add more conditions
+        }
+      }
+      return false;
+    }
+
     @Override
     public IExpr match3(IAST ast, EvalEngine engine) {
       return F.NIL;
@@ -2353,7 +2452,7 @@ public class PolynomialFunctions {
    * <p>
    * returns the Legendre functions of the second kind <code>Q_n(x)</code>.
    *
-   * </blockquote>
+   * </p>
    *
    * <p>
    * See:<br>
@@ -2371,6 +2470,39 @@ public class PolynomialFunctions {
    * </pre>
    */
   static final class LegendreQ extends AbstractFunctionEvaluator implements IMatch {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() == 2) {
+        IExpr n = ast.arg1();
+        IExpr z = ast.arg2();
+        if (z.greater(F.CN1).isTrue() && z.less(F.C1).isTrue()) {
+          if (n.isNonNegative()) {
+            return true;
+          }
+          if (n.isReal() && !n.isInteger()) {
+            return true;
+          }
+        }
+      } else if (ast.argSize() == 3) {
+        IExpr n = ast.arg1();
+        IExpr m = ast.arg2();
+        if (n.isRealResult() && m.isRealResult()) {
+          IExpr z = ast.arg3();
+          if (z.greater(F.CN1).isTrue() && z.less(F.C1).isTrue()) {
+            IExpr temp = m.plus(n);
+            if (temp.isNonNegative()) {
+              return true;
+            }
+            if (temp.isReal() && !temp.isInteger()) {
+              return true;
+            }
+          }
+          // TODO add more conditions
+        }
+      }
+      return false;
+    }
+
     @Override
     public IExpr match3(IAST ast, EvalEngine engine) {
       return F.NIL;
@@ -2439,7 +2571,7 @@ public class PolynomialFunctions {
    * get the list of monomials of a <code>polynomial</code> expression, with respect to the
    * <code>list-of-variables</code>.
    *
-   * </blockquote>
+   * </p>
    *
    * <p>
    * See:<br>
@@ -2610,24 +2742,94 @@ public class PolynomialFunctions {
     }
   }
 
+  public static IAST computeBellY(IAST matrix, final int size, IAST originalAST,
+      EvalEngine engine) {
+
+    IASTAppendable result = F.ListAlloc(size);
+    // initializeCombinationsCache(size);
+
+    for (int n = 1; n <= size; n++) {
+      IASTAppendable newRow = F.constantArray(F.C0, size);
+      for (int k = 1; k <= n; k++) {
+        int varsSize = n - k + 1;
+        IASTAppendable vars = F.ListAlloc(varsSize);
+        for (int i = 0; i < varsSize; i++) {
+          vars.append(matrix.getPart(i + k, k));
+        }
+        newRow.set(k, bellY(n, k, vars, originalAST, engine));
+      }
+      result.append(newRow);
+    }
+    return result;
+  }
+
+
+  private static IExpr bellYMatrix(
+      int n, int k, IAST matrix, int rowSize, int colSize, IAST originalAST, EvalEngine engine) {
+    // Generalized partial Bell polynomial for a matrix argument.
+    // See:
+    // https://en.wikipedia.org/wiki/Bell_polynomials#Multivariate_Bell_polynomials
+    if (n < 0 || k < 0) {
+      return F.C0;
+    }
+    if (n == 0 && k == 0) {
+      return F.C1;
+    }
+    if (n == 0 || k == 0) {
+      return F.C0;
+    }
+    if (n < k) {
+      return F.C0;
+    }
+
+    IExpr result = F.C0;
+    IExpr partitionsExpr = engine.evaluate(F.IntegerPartitions(F.ZZ(n), F.ZZ(k)));
+    IAST partitions =  (IAST)partitionsExpr;
+    for (int i = 1; i < partitions.size(); i++) {
+      IAST partition = (IAST) partitions.get(i);
+      IASTAppendable counts = ListFunctions.tally(partition);
+      IInteger term = F.ZZ(n).factorial();
+      IInteger den = F.ZZ(k).factorial();
+
+      IASTAppendable vars = F.ListAlloc(k);
+      for (int j = 1; j < counts.size(); j++) {
+        IAST countPair = (IAST) counts.get(j);
+        IInteger part = (IInteger) countPair.arg1();
+        IInteger count = (IInteger) countPair.arg2();
+        if (part.isPositive() && part.toIntDefault() == k) {
+          vars.append(false);
+        }
+        // den = den.multiply(count.factorial());
+        // if (part.isPositive() && part.toIntDefault() < matrix.size()) {
+        // IExpr matrixElement = matrix.get(part.toIntDefault());
+        // term = term.times(F.Power(matrixElement, count));
+        // }
+        // den = den.multiply(F.Power(F.Factorial(part), count));
+      }
+      result = result.plus(F.Divide(term, den));
+    }
+
+    return engine.evaluate(result);
+  }
+
   /**
    * Calculate the partial Bell polynomial recursively.
    * 
    * @param n
    * @param k
    * @param symbols
-   * @param listOfVariables
+   * @param originalAST
    * @param engine
    * @return
    * 
    */
-  public static IExpr bellY(int n, int k, IAST symbols, IAST listOfVariables, EvalEngine engine) {
+  public static IExpr bellY(int n, int k, IAST symbols, IAST originalAST, EvalEngine engine) {
     final int recursionLimit = engine.getRecursionLimit();
     try {
       if (recursionLimit > 0) {
         int counter = engine.incRecursionCounter();
         if (counter > recursionLimit) {
-          RecursionLimitExceeded.throwIt(counter, listOfVariables);
+          RecursionLimitExceeded.throwIt(counter, originalAST);
         }
       }
       if (n == 0 && k == 0) {
@@ -2642,11 +2844,11 @@ public class PolynomialFunctions {
 
       int iterationLimit = engine.getIterationLimit();
       if (iterationLimit >= 0 && iterationLimit <= max) {
-        IterationLimitExceeded.throwIt(max, listOfVariables);
+        IterationLimitExceeded.throwIt(max, originalAST);
       }
       for (int m = 1; m < max; m++) {
         if ((m < symbols.size()) && !symbols.get(m).isZero()) {
-          IExpr bellY = bellY(n - m, k - 1, symbols, listOfVariables, engine);
+          IExpr bellY = bellY(n - m, k - 1, symbols, originalAST, engine);
           if (bellY.isPlus()) {
             bellY = bellY.mapThread(F.Times(a, F.Slot1, symbols.get(m)), 2);
           } else {

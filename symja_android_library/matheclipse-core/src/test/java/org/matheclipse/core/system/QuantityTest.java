@@ -4,6 +4,32 @@ import org.junit.Test;
 
 public class QuantityTest extends ExprEvaluatorTestCase {
 
+  // public void testKnownUnitQ() {
+  // TODO
+  // check("KnownUnitQ(\"floz\")", //
+  // "True");
+  // check("KnownUnitQ(\"Foo\")", //
+  // "False");
+  // check("KnownUnitQ(\"meter\"^2/\"second\")", //
+  // "True");
+  // }
+
+  @Test
+  public void testQuantityPlusSymbolic() {
+    check("Quantity(a,\"m\")+Quantity(b,\"m\")//FullForm", //
+        "Quantity(Plus(a, b), \"m\")");
+    check("a+Quantity(b,\"m\")//FullForm", //
+        "Plus(Quantity(b, \"m\"), a)");
+  }
+
+  @Test
+  public void testQuantityTimesSymbolic() {
+    check("Quantity(a,\"m\")*Quantity(b,\"m\")//FullForm", //
+        "Quantity(Times(a, b), \"m^2\")");
+    check("a*Quantity(b,\"m\")//FullForm", //
+        "Times(Quantity(b, \"m\"), a)");
+  }
+
   @Test
   public void testQuantityList() {
     check("Quantity(Sqrt(Range(3)), \"Meters\")", //
@@ -12,6 +38,8 @@ public class QuantityTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testQuantity() {
+    check("Quantity(50, \"min\") + Quantity(1, \"s\")", //
+        "3001[s]");
     check("Quantity(\"StandardAccelerationOfGravity\")", //
         "1[StandardAccelerationOfGravity]");
     check("1+(3+Quantity(1.2,\"m\"))", //
@@ -160,6 +188,46 @@ public class QuantityTest extends ExprEvaluatorTestCase {
         "Meters");
     check("QuantityUnit(Quantity(19.25, \"Acres\"))", //
         "Acres");
+  }
+
+  @Test
+  public void testUnitConvert() {
+    check("UnitConvert(Quantity(Pi, \"rad\"), \"deg\")", //
+        "180[deg]");
+    check("UnitConvert(Quantity(Pi, \"deg\"), \"rad\")", //
+        "Pi^2/180[rad]");
+    check("UnitConvert(Quantity(\"StandardAccelerationOfGravity\"),\"m/s^2\")", //
+        "196133/20000[m*s^-2]");
+    check("UnitConvert(Quantity(111, \"cm\"),\"m\" )", //
+        "111/100[m]");
+
+
+    check("UnitConvert(Quantity(Pi, \"grad\"), \"rad\")", //
+        "Pi^2/180[rad]");
+    check("UnitConvert(Quantity(Pi, \"rad\"), \"grad\")", //
+        "180[grad]");
+    check("UnitConvert(Quantity(200, \"g\")*Quantity(981, \"cm*s^-2\") )", //
+        "981/500[kg*m*s^-2]");
+    check("UnitConvert(Quantity(10^(-6), \"MOhm\") )", //
+        "1[A^-2*kg*m^2*s^-3]");
+    check("UnitConvert(Quantity(10^(-6), \"MOhm\"),\"Ohm\" )", //
+        "1[Ohm]");
+    check("UnitConvert(Quantity(1, \"nmi\"),\"km\" )", //
+        "463/250[km]");
+    check("UnitConvert(Quantity(360, \"mV^-1*mA*s^2\"),\"Ohm^-1*s^2\" )", //
+        "360[Ohm^-1*s^2]");
+    check("UnitConvert(Quantity(360, \"km*h^-1\"),\"m*s^-1\" )", //
+        "100[m*s^-1]");
+    check("UnitConvert(Quantity(2, \"km^2\") )", //
+        "2000000[m^2]");
+    check("UnitConvert(Quantity(2, \"km^2\"),\"cm^2\" )", //
+        "20000000000[cm^2]");
+    check("UnitConvert(Quantity(3, \"Hz^-2*N*m^-1\") )", //
+        "3[kg]");
+    check("UnitConvert(Quantity(3.8, \"lb\") )", //
+        "1.72365[kg]");
+    check("UnitConvert(Quantity(8.2, \"nmi\"), \"km\")", //
+        "15.1864[km]");
   }
 
 }

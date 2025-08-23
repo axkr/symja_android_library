@@ -8,6 +8,7 @@ import java.util.List;
 import org.matheclipse.core.builtin.SourceCodeFunctions;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.base.Charsets;
 import com.google.common.io.CharSink;
@@ -59,10 +60,10 @@ public class MarkdownGithubLinkPreprocessor {
             ISymbol symbol = Context.SYSTEM.get(identifier);
             if (symbol != null) {
               String status = SourceCodeFunctions.statusAsString(symbol);
-              String functionURL = SourceCodeFunctions.functionURL(symbol);
+              String functionURL = Documentation.functionURL(symbol);
 
               if (functionURL != null) {
-                String rulesURL = SourceCodeFunctions.rules(symbol);
+                String rulesURL = Documentation.rules(symbol);
                 try {
                   System.out.println(sourceFile.toString());
                   List<String> result = Files.readLines(sourceFile, Charsets.UTF_8);

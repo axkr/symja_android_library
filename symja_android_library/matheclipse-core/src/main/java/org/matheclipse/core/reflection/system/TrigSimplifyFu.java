@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import org.matheclipse.core.builtin.Algebra;
-import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -117,7 +117,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     IExpr arg1 = ast.arg1();
-    IAST tempAST = StructureFunctions.threadListLogicEquationOperators(arg1, ast, 1);
+    IAST tempAST = CompareUtil.threadListLogicEquationOperators(arg1, ast, 1);
     if (tempAST.isPresent()) {
       return tempAST;
     }

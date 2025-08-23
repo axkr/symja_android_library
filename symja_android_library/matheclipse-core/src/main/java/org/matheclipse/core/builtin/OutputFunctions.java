@@ -30,6 +30,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
+import org.matheclipse.core.form.output.ASCIIPrettyPrinter3;
 import org.matheclipse.core.form.output.DoubleFormFactory;
 import org.matheclipse.core.form.output.JavaComplexFormFactory;
 import org.matheclipse.core.form.output.JavaDoubleFormFactory;
@@ -69,6 +70,7 @@ public final class OutputFunctions {
       S.JavaForm.setEvaluator(new JavaForm());
       S.JSForm.setEvaluator(new JSForm());
       S.MathMLForm.setEvaluator(new MathMLForm());
+      S.OutputForm.setEvaluator(new OutputForm());
       S.Prefix.setEvaluator(new PrefixEvaluator());
       S.Postfix.setEvaluator(new PostfixEvaluator());
       S.RomanNumeral.setEvaluator(new RomanNumeral());
@@ -142,6 +144,41 @@ public final class OutputFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
+  }
+
+  private static class OutputForm extends AbstractCoreFunctionEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        IExpr arg1 = engine.evaluate(ast.arg1());
+
+        ASCIIPrettyPrinter3 strBuffer = new ASCIIPrettyPrinter3();
+        strBuffer.convert(arg1);
+        String[] result = strBuffer.toStringBuilder();
+        if (result != null && result.length == 3) {
+          StringBuilder buf = new StringBuilder();
+          if (result[0].trim().length() > 0 || result[2].trim().length() > 0) {
+            buf.append(result[0]);
+            buf.append("\n");
+            buf.append(result[1]);
+            buf.append("\n");
+            buf.append(result[2]);
+          } else {
+            buf.append(result[1]);
+          }
+          return F.stringx(buf.toString(), IStringX.APPLICATION_SYMJA);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {}
   }
 
   private static class PostfixEvaluator extends AbstractFunctionEvaluator {
@@ -426,7 +463,7 @@ public final class OutputFunctions {
         // if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
         // return F.stringx(StringFunctions.inputForm(arg1, true), IStringX.APPLICATION_SYMJA);
         // }
-        return F.stringx(StringFunctions.inputForm(arg1), IStringX.APPLICATION_SYMJA);
+        return F.stringx(IStringX.inputForm(arg1), IStringX.APPLICATION_SYMJA);
       }
       return F.NIL;
     }

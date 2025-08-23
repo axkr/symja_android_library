@@ -203,12 +203,6 @@ public class OptionsPattern extends AbstractPatternSequence {
     return (fSymbol == null) ? 213 : 37 + fSymbol.hashCode();
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public int hierarchy() {
-    return PATTERNID;
-  }
-
   @Override
   public boolean isConditionMatchedSequence(IAST sequence, IPatternMap patternMap) {
     return patternMap.setValue(this, sequence);

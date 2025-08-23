@@ -215,12 +215,16 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     check("JacobiP(2, a, b, z)", //
         "1/4*(1/2*(1+b)*(2+b)*(1-z)^2+(2+a)*(2+b)*(-1+z)*(1+z)+1/2*(1+a)*(2+a)*(1+z)^2)");
     check("Table(JacobiP(3, 1, 2, z), {z, -1, 5})", //
-        "{-10,Hypergeometric2F1(-5,-3,2,-1)/2,4,127/2,242,1205/2,1208}");
+        "{-10,1/2,4,127/2,242,1205/2,1208}");
 
   }
 
   @Test
   public void testLaguerreL() {
+    check("LaguerreL(-3,z)", //
+        "E^z*(1+2*z+z^2/2)");
+    check("LaguerreL(-10,z)", //
+        "E^z*(1+9*z+18*z^2+14*z^3+21/4*z^4+21/20*z^5+7/60*z^6+z^7/140+z^8/4480+z^9/362880)");
     check("LaguerreL(2,-1+b,z)", //
         "1/2*(b+b^2-2*z-2*b*z+z^2)");
 
@@ -309,8 +313,6 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
         "1-5*x+5*x^2-5/3*x^3+5/24*x^4-x^5/120");
     check("LaguerreL(0,z)", //
         "1");
-    check("LaguerreL(-3,z)", //
-        "LaguerreL(-3,z)");
   }
 
   @Test

@@ -1,6 +1,6 @@
-package org.matheclipse.core.builtin.functions;
+package org.matheclipse.core.numerics.functions;
 
-import static org.matheclipse.core.builtin.functions.HypergeometricJS.hypergeometric1F1;
+import static org.matheclipse.core.numerics.functions.HypergeometricJS.hypergeometric1F1;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -9,13 +9,13 @@ import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.special.Gamma;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Arithmetic;
-import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.generic.UnaryNumerical;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.math.DoubleMath;
@@ -156,8 +156,8 @@ public class GammaJS extends JS {
   }
 
   public static Complex beta(Complex x, Complex y) {
-    return Arithmetic.lanczosApproxGamma(x).multiply(Arithmetic.lanczosApproxGamma(y))
-        .divide(Arithmetic.lanczosApproxGamma(x.add(y)));
+    return ComplexNum.lanczosApproxGamma(x).multiply(ComplexNum.lanczosApproxGamma(y))
+        .divide(ComplexNum.lanczosApproxGamma(x.add(y)));
   }
 
   public static Complex beta(Complex x, Complex y, Complex z) {
@@ -303,7 +303,7 @@ public class GammaJS extends JS {
       return gamma(Complex.ZERO, y).subtract(t).multiply(plusMinusOne / factorialInt(n));
     }
 
-    return Arithmetic.lanczosApproxGamma(x).subtract(gamma(x, 0.0, y));
+    return ComplexNum.lanczosApproxGamma(x).subtract(gamma(x, 0.0, y));
   }
 
   public static Complex gamma(Complex x, double y, Complex z) {
@@ -356,7 +356,7 @@ public class GammaJS extends JS {
       i++;
     }
 
-    return s + ConstantDefinitions.EULER_GAMMA + Math.log(x);
+    return s + INum.EULER_GAMMA + Math.log(x);
   }
 
   public static Complex expIntegralEi(Complex x) {
@@ -409,7 +409,7 @@ public class GammaJS extends JS {
       i++;
     }
 
-    s = s.add(ConstantDefinitions.EULER_GAMMA).add(x.log());
+    s = s.add(INum.EULER_GAMMA).add(x.log());
 
     if (adjustImForGamma) {
       int sign = x.getImaginary() > 0 ? -1 : x.getImaginary() < 0 ? 1 : 0;

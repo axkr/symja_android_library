@@ -21,14 +21,13 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import javax.annotation.concurrent.NotThreadSafe;
 import org.apache.logging.log4j.Level;
 import org.apfloat.ApfloatInterruptedException;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.internal.BackingStorageException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Arithmetic;
-import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.AbortException;
@@ -98,7 +97,7 @@ import jakarta.annotation.Nonnull;
  * </code> is associated with the current thread through a
  * <a href="https://en.wikipedia.org/wiki/Thread-local_storage">ThreadLocal</a> mechanism.
  */
-// @NotThreadSafe
+@NotThreadSafe
 public class EvalEngine implements Serializable {
 
   private static class EvalControlledCallable implements Callable<IExpr> {
@@ -605,7 +604,7 @@ public class EvalEngine implements Serializable {
    * If <code>true</code> the engine evaluates in &quot;quiet&quot; mode (i.e. no warning messages
    * are shown during evaluation).
    *
-   * @see org.matheclipse.core.builtin.function.Quiet
+   * @see org.matheclipse.core.expressionS#Quiet
    */
   transient boolean fQuietMode = false;
 
@@ -990,7 +989,6 @@ public class EvalEngine implements Serializable {
    * Test if the experimental message was printed at least once for a symbol.
    *
    * @param symbol
-   * @return
    */
   public boolean containsExperimental(IBuiltInSymbol symbol) {
     return experimentalSymbols.containsKey(symbol);
@@ -999,8 +997,7 @@ public class EvalEngine implements Serializable {
   /**
    * Copy this EvalEngine into a new EvalEngine. The copied engine is used in function <code>
    * TimeConstrained</code> to stop a thread after T seconds.
-   *
-   * @return
+   * 
    */
   public synchronized EvalEngine copy() {
     EvalEngine engine = new EvalEngine();
@@ -1170,7 +1167,7 @@ public class EvalEngine implements Serializable {
       if ((ISymbol.NUMERICFUNCTION & attributes) == ISymbol.NUMERICFUNCTION) {
         isNumericFunction = true;
         if (isDoubleMode() && ast.isPower()) {
-          IExpr temp = Arithmetic.intPowerFractionNumeric(ast, this);
+          IExpr temp = ApfloatNum.intPowerFractionNumeric(ast, this);
           if (temp.isPresent()) {
             return F.unaryAST1(S.Power, temp);
           }
@@ -1635,7 +1632,7 @@ public class EvalEngine implements Serializable {
     IExpr[] oldAssignedValues = new IExpr[localVariablesList.size()];
     RulesData[] oldAssignedRulesData = new RulesData[localVariablesList.size()];
     try {
-      Programming.rememberBlockVariables(localVariablesList, symbolList, oldAssignedValues,
+      rememberBlockVariables(localVariablesList, symbolList, oldAssignedValues,
           oldAssignedRulesData, this);
       return supplier.get();
     } finally {
@@ -2036,14 +2033,8 @@ public class EvalEngine implements Serializable {
    * @param arg1
    * @param arg2
    * @param arg3
-   * @return
    */
   public final boolean evalGreater(final IExpr arg1, final IExpr arg2, final IExpr arg3) {
-    // try {
-    // return evaluate(F.ternaryAST3(S.Greater, arg1, arg2, arg3)).isTrue();
-    // } catch (MathException fce) {
-    // return false;
-    // }
     return evalTrue(F.ternaryAST3(S.Greater, arg1, arg2, arg3));
   }
 
@@ -2055,14 +2046,8 @@ public class EvalEngine implements Serializable {
    *
    * @param lhs
    * @param rhs
-   * @return
    */
   public final boolean evalGreaterEqual(final IExpr lhs, final IExpr rhs) {
-    // try {
-    // return evaluate(F.GreaterEqual(lhs, rhs)).isTrue();
-    // } catch (MathException fce) {
-    // return false;
-    // }
     return evalTrue(F.GreaterEqual(lhs, rhs));
   }
 
@@ -2101,9 +2086,12 @@ public class EvalEngine implements Serializable {
   }
 
   /**
+   * Used by {@link S#Compile} {@link S#CompiledFunction} to evaluate an expression to a
+   * machine-size integer value.
    * 
    * @param expr
-   * @return
+   * @return the evaluated expression as a machine-size integer value or {@link Config#INVALID_INT}
+   *         if the conversion isn't possible
    * @throws ArgumentTypeException
    */
   public final int evalInt(final IExpr expr) throws ArgumentTypeException {
@@ -2166,14 +2154,8 @@ public class EvalEngine implements Serializable {
    * @param arg1
    * @param arg2
    * @param arg3
-   * @return
    */
   public final boolean evalLess(final IExpr arg1, final IExpr arg2, final IExpr arg3) {
-    // try {
-    // return evaluate(F.ternaryAST3(S.Less, arg1, arg2, arg3)).isTrue();
-    // } catch (MathException fce) {
-    // return false;
-    // }
     return evalTrue(F.ternaryAST3(S.Less, arg1, arg2, arg3));
   }
 
@@ -2187,11 +2169,6 @@ public class EvalEngine implements Serializable {
    * @return
    */
   public final boolean evalLessEqual(final IExpr lhs, final IExpr rhs) {
-    // try {
-    // return evaluate(F.LessEqual(lhs, rhs)).isTrue();
-    // } catch (MathException fce) {
-    // return false;
-    // }
     return evalTrue(F.LessEqual(lhs, rhs));
   }
 
@@ -2704,8 +2681,7 @@ public class EvalEngine implements Serializable {
       if (headID == ID.Blank || headID == ID.BlankSequence || headID == ID.BlankNullSequence
           || headID == ID.Pattern || headID == ID.Optional || headID == ID.OptionsPattern
           || headID == ID.Repeated || headID == ID.RepeatedNull) {
-        return ((IFunctionEvaluator) ((IBuiltInSymbol) ast.head()).getEvaluator()).evaluate(ast,
-            this);
+        return ((IBuiltInSymbol) ast.head()).getEvaluator().evaluate(ast, this);
       }
     }
 
@@ -2798,10 +2774,10 @@ public class EvalEngine implements Serializable {
       // if (level > 0 && !noEvaluation && ast.isFreeOfPatterns()) {
       if (!noEvaluation) {
         if (ast.isPlus()) {
-          return Arithmetic.CONST_PLUS.evaluate(ast, this).orElse(ast);
+          return S.Plus.getEvaluator().evaluate(ast, this).orElse(ast);
         }
         if (ast.isTimes()) {
-          return Arithmetic.CONST_TIMES.evaluate(ast, this).orElse(ast);
+          return S.Times.getEvaluator().evaluate(ast, this).orElse(ast);
         }
       }
     }
@@ -4378,5 +4354,68 @@ public class EvalEngine implements Serializable {
     ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
 
     return F.NIL;
+  }
+
+  /**
+   * Remember which local variable names we use in the given <code>assignedValues</code> and <code>
+   * assignedRules</code>.
+   *
+   * @param variablesList initializer variables list from the <code>Block</code> function
+   * @param oldAssignedValues the variables mapped to their values (IExpr) before evaluating the
+   *        block
+   * @param oldAssignedRules the variables mapped to their rules (RulesData) before evaluating the
+   *        block
+   * @param engine the evaluation engine
+   */
+  private static void rememberBlockVariables(IAST variablesList, final ISymbol[] symbolList,
+      final IExpr[] oldAssignedValues, final RulesData[] oldAssignedRules,
+      final EvalEngine engine) {
+    ISymbol variableSymbol;
+    for (int i = 1; i < variablesList.size(); i++) {
+      if (variablesList.get(i).isSymbol()) {
+        variableSymbol = (ISymbol) variablesList.get(i);
+        if (variableSymbol.isBuiltInSymbol()) {
+          ISymbol substitute = ((IBuiltInSymbol) variableSymbol).mapToGlobal(engine);
+          if (substitute != null) {
+            variableSymbol = substitute;
+          }
+        }
+        symbolList[i] = variableSymbol;
+        oldAssignedValues[i] = variableSymbol.assignedValue();
+        oldAssignedRules[i] = variableSymbol.getRulesData();
+      } else if (variablesList.get(i).isAST(S.Set, 3)) {
+        final IAST setFun = (IAST) variablesList.get(i);
+        if (setFun.arg1().isSymbol()) {
+          variableSymbol = (ISymbol) setFun.arg1();
+          if (variableSymbol.isBuiltInSymbol()) {
+            ISymbol substitute = ((IBuiltInSymbol) variableSymbol).mapToGlobal(engine);
+            if (substitute != null) {
+              variableSymbol = substitute;
+            }
+          }
+          symbolList[i] = variableSymbol;
+          oldAssignedValues[i] = variableSymbol.assignedValue();
+          oldAssignedRules[i] = variableSymbol.getRulesData();
+        }
+      }
+    }
+
+    for (int i = 1; i < variablesList.size(); i++) {
+      if (variablesList.get(i).isSymbol()) {
+        variableSymbol = symbolList[i];
+        variableSymbol.clearValue();
+        variableSymbol.setRulesData(null);
+      } else {
+        if (variablesList.get(i).isAST(S.Set, 3)) {
+          final IAST setFun = (IAST) variablesList.get(i);
+          if (setFun.arg1().isSymbol()) {
+            variableSymbol = symbolList[i];
+            IExpr temp = engine.evaluate(setFun.arg2());
+            variableSymbol.assignValue(temp);
+            variableSymbol.setRulesData(null);
+          }
+        }
+      }
+    }
   }
 }

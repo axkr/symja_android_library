@@ -18,8 +18,12 @@ import org.apfloat.OverflowException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBigNumber;
+import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
@@ -56,6 +60,15 @@ public class ApfloatNum implements INum {
     return ApfloatMath.copySign(Apfloat.ONE, fApfloat);
   }
 
+  public static void checkHypergeometric2F1(Apfloat a, Apfloat b, Apfloat x)
+      throws ArithmeticException {
+    // With real a, b and c the result is real if z <= 1 except if it's a polynomial, in which case
+    // it's always real (nb. additional checks might throw an exception later)
+    if (x.compareTo(Apfloat.ONE) > 0 && maxNonPositiveInteger(a, b) == null) {
+      throw new ApfloatArithmeticException("Result would be complex", "complex");
+    }
+  }
+
   public static String fullFormString(Apfloat apfloat) {
     String str = apfloat.toString();
     long precision = apfloat.precision();
@@ -68,6 +81,57 @@ public class ApfloatNum implements INum {
       }
     }
     return str;
+  }
+
+  /**
+   * Eval in double numeric mode by "widen the input domain" to Apfloat values.
+   * 
+   * @param powerAST2 "binary {@link S#Power} function"
+   * @param engine the {@link EvalEngine} to use for evaluation
+   */
+  public static IExpr intPowerFractionNumeric(IAST powerAST2, EvalEngine engine) {
+    final IExpr base = powerAST2.base();
+    final IExpr exponent = powerAST2.exponent();
+    if ((base instanceof IBigNumber) && exponent.isFraction()) {
+      final int nthRoot = ((IFraction) exponent).toIntRoot();
+      if (F.isPresent(nthRoot)) {
+        long oldPrecision = engine.getNumericPrecision();
+        try {
+          engine.setNumericPrecision(ParserConfig.MACHINE_PRECISION * 2);
+          if (base.isRational()) {
+            IRational ratBase = (IRational) base;
+            final double fNum = base.evalf();
+            if (!Double.isFinite(fNum) || fNum <= Double.MIN_VALUE || fNum >= Double.MAX_VALUE) {
+              if (ratBase.isPositive()) {
+                ApfloatNum apfloat = ratBase.apfloatNumValue();
+                return F.num(apfloat.rootN(nthRoot).doubleValue());
+              } else if (ratBase.isNegative()) {
+                ApcomplexNum apcomplex = ratBase.apcomplexNumValue();
+                return F.complexNum(apcomplex.rootN(nthRoot).evalfc());
+              }
+            }
+          } else if (base.isComplex()) {
+            final IComplex cmpBase = (IComplex) base;
+            org.hipparchus.complex.Complex fComplex = base.evalfc();
+            if (!fComplex.isFinite()) {
+              ApcomplexNum apcomplex = cmpBase.apcomplexNumValue();
+              return F.complexNum(apcomplex.rootN(nthRoot).evalfc());
+            }
+          }
+        } finally {
+          engine.setNumericPrecision(oldPrecision);
+        }
+      }
+    }
+    if (base == S.E && exponent.isNumericFunction()) {
+      return F.unaryAST1(S.Exp, exponent);
+    }
+    return F.NIL;
+  }
+
+  private static Apfloat maxNonPositiveInteger(Apcomplex... a) {
+    return Arrays.stream(a).filter(Apcomplex::isInteger).map(Apcomplex::real)
+        .filter(x -> x.signum() <= 0).reduce(ApfloatMath::max).orElse(null);
   }
 
   /**
@@ -228,6 +292,17 @@ public class ApfloatNum implements INum {
     return ApcomplexNum.valueOf(fApfloat);
   }
 
+  // private static Apfloat erf(Apfloat x, FixedPrecisionApfloatHelper h) {
+  // Apint two = new Apint(2);
+  // // 1/2
+  // Aprational oneHalf = new Aprational(Apint.ONE, new Apint(2));
+  // // 3/2
+  // Aprational threeHalf = new Aprational(new Apint(3), new Apint(2));
+  // Apfloat erf = h.hypergeometric1F1(oneHalf, threeHalf, h.multiply(x, x).negate()).multiply(two)
+  // .multiply(x).divide(h.sqrt(h.pi()));
+  // return erf;
+  // }
+
   @Override
   public Apcomplex apcomplexValue() {
     return new Apcomplex(fApfloat);
@@ -242,17 +317,6 @@ public class ApfloatNum implements INum {
   public Apfloat apfloatValue() {
     return fApfloat;
   }
-
-  // private static Apfloat erf(Apfloat x, FixedPrecisionApfloatHelper h) {
-  // Apint two = new Apint(2);
-  // // 1/2
-  // Aprational oneHalf = new Aprational(Apint.ONE, new Apint(2));
-  // // 3/2
-  // Aprational threeHalf = new Aprational(new Apint(3), new Apint(2));
-  // Apfloat erf = h.hypergeometric1F1(oneHalf, threeHalf, h.multiply(x, x).negate()).multiply(two)
-  // .multiply(x).divide(h.sqrt(h.pi()));
-  // return erf;
-  // }
 
   @Override
   public IInexactNumber asin() {
@@ -628,6 +692,10 @@ public class ApfloatNum implements INum {
     return F.complexNum(cosIntegral);
   }
 
+  // public Apfloat apfloatValue() {
+  // return fApfloat;
+  // }
+
   /** {@inheritDoc} */
   @Override
   public IExpr dec() {
@@ -648,10 +716,6 @@ public class ApfloatNum implements INum {
     }
     return INum.super.digamma();
   }
-
-  // public Apfloat apfloatValue() {
-  // return fApfloat;
-  // }
 
   @Override
   public ApfloatNum divide(double value) {
@@ -1108,6 +1172,7 @@ public class ApfloatNum implements INum {
     return INum.super.hermiteH(arg2);
   }
 
+
   @Override
   public int hierarchy() {
     return DOUBLEID;
@@ -1146,7 +1211,6 @@ public class ApfloatNum implements INum {
     }
     return INum.super.hypergeometric0F1Regularized(arg2);
   }
-
 
   @Override
   public IExpr hypergeometric1F1(IExpr arg2, IExpr arg3) {
@@ -1353,6 +1417,12 @@ public class ApfloatNum implements INum {
   @Override
   public boolean isNegative() {
     return fApfloat.signum() == -1;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isNonNegative() {
+    return fApfloat.signum() >= 0;
   }
 
   /** {@inheritDoc} */
@@ -1829,14 +1899,6 @@ public class ApfloatNum implements INum {
   }
 
   @Override
-  public ApfloatNum power(long n) {
-    if (n == (-1L)) {
-      return inverse();
-    }
-    return valueOf(EvalEngine.getApfloat().pow(fApfloat, n));
-  }
-
-  @Override
   public INum pow(final INum value) {
     return valueOf(EvalEngine.getApfloat().pow(fApfloat, value.apfloatValue()));
   }
@@ -1854,6 +1916,14 @@ public class ApfloatNum implements INum {
       return valueOf(EvalEngine.getApfloat().pow(fApfloat, ((INum) that).apfloatValue()));
     }
     return INum.super.power(that);
+  }
+
+  @Override
+  public ApfloatNum power(long n) {
+    if (n == (-1L)) {
+      return inverse();
+    }
+    return valueOf(EvalEngine.getApfloat().pow(fApfloat, n));
   }
 
   @Override
@@ -2119,19 +2189,5 @@ public class ApfloatNum implements INum {
   @Override
   public ApfloatNum zero() {
     return valueOf(Apfloat.ZERO);
-  }
-
-  public static void checkHypergeometric2F1(Apfloat a, Apfloat b, Apfloat x)
-      throws ArithmeticException {
-    // With real a, b and c the result is real if z <= 1 except if it's a polynomial, in which case
-    // it's always real (nb. additional checks might throw an exception later)
-    if (x.compareTo(Apfloat.ONE) > 0 && maxNonPositiveInteger(a, b) == null) {
-      throw new ApfloatArithmeticException("Result would be complex", "complex");
-    }
-  }
-
-  private static Apfloat maxNonPositiveInteger(Apcomplex... a) {
-    return Arrays.stream(a).filter(Apcomplex::isInteger).map(Apcomplex::real)
-        .filter(x -> x.signum() <= 0).reduce(ApfloatMath::max).orElse(null);
   }
 }

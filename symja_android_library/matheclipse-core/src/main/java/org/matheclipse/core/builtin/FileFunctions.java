@@ -14,7 +14,6 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -27,9 +26,9 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.PackageUtil;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -46,6 +45,7 @@ import org.matheclipse.core.expression.data.NumericArrayExpr;
 import org.matheclipse.core.expression.data.NumericArrayExpr.RangeException;
 import org.matheclipse.core.expression.data.NumericArrayExpr.TypeException;
 import org.matheclipse.core.expression.data.OutputStreamExpr;
+import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -55,10 +55,8 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.io.Extension;
 import org.matheclipse.core.parser.ExprParser;
-import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
-import org.matheclipse.parser.client.ast.FunctionNode;
 import com.google.common.io.CharStreams;
 
 public class FileFunctions {
@@ -146,7 +144,7 @@ public class FileFunctions {
               Reader r = new InputStreamReader(fis, StandardCharsets.UTF_8);
               BufferedReader reader =
                   new BufferedReader(new InputStreamReader(fis, StandardCharsets.UTF_8));) {
-            Get.loadPackage(engine, reader);
+            PackageUtil.loadPackage(engine, reader);
           } catch (IOException e) {
             LOGGER.debug("BeginPackage.evaluate() failed", e);
           }
@@ -613,46 +611,15 @@ public class FileFunctions {
      */
     protected static IExpr loadPackage(final EvalEngine engine, final String is) {
       try {
-        final List<ASTNode> node = parseReader(is, engine);
-        return evaluatePackage(node, engine);
+        final List<ASTNode> node = PackageUtil.parseReader(is, engine);
+        return PackageUtil.evaluatePackage(node, engine);
       } catch (final RuntimeException rex) {
         Errors.printMessage(S.Get, rex, engine);
       }
       return S.Null;
     }
 
-    /**
-     * Load a package from the given file
-     *
-     * @param engine
-     * @param file
-     * @return the last evaluated expression result
-     * @throws FileNotFoundException
-     * @throws UnsupportedEncodingException
-     */
-    public static IExpr loadPackage(final EvalEngine engine, final File file)
-        throws FileNotFoundException {
-      BufferedReader reader = new BufferedReader(new FileReader(file));
-      return loadPackage(engine, reader);
-    }
 
-    /**
-     * Load a package from the given reader
-     *
-     * @param engine
-     * @param is
-     * @return the last evaluated expression result
-     */
-    protected static IExpr loadPackage(final EvalEngine engine, final BufferedReader is) {
-      try (final BufferedReader r = is) {
-        final List<ASTNode> node = parseReader(r, engine);
-
-        return evaluatePackage(node, engine);
-      } catch (final Exception e) {
-        Errors.printMessage(S.Get, e, engine);
-      }
-      return S.Null;
-    }
 
     private static IExpr getFile(Path file, IAST ast, String arg1Str, EvalEngine engine) {
       boolean packageMode = engine.isPackageMode();
@@ -1424,7 +1391,7 @@ public class FileFunctions {
           symbolsList = (IAST) arg2;
         } else if (arg2.isString()) {
           boolean ignoreCase = false;
-          symbolsList = IOFunctions.getSymbolsByPattern(arg2, ignoreCase, ast, engine);
+          symbolsList = Documentation.getSymbolsByPattern(arg2, ignoreCase, ast, engine);
         }
         if (symbolsList.isPresent()) {
           String str = ISymbol.fullDefinitionListToString(symbolsList);
@@ -1540,7 +1507,7 @@ public class FileFunctions {
             writer = ((OutputStreamExpr) arg1).getWriter();;
           }
           if (writer != null) {
-            String arg2String = StringFunctions.inputForm(arg2);
+            String arg2String = IStringX.inputForm(arg2);
             writer.write(arg2String);
             writer.flush();
             return S.Null;
@@ -1599,97 +1566,6 @@ public class FileFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
-  }
-
-  public static IExpr evaluatePackage(final List<ASTNode> node, final EvalEngine engine) {
-    AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
-    String compoundExpression =
-        engine.isRelaxedSyntax() ? "compoundexpression" : "CompoundExpression";
-    return evaluatePackageRecursive(node, 0, compoundExpression, ast2Expr, engine);
-  }
-
-  private static IExpr evaluatePackageRecursive(final List<ASTNode> node, int i,
-      String compoundExpression, AST2Expr ast2Expr, final EvalEngine engine) {
-    IExpr temp;
-    IExpr result = S.Null;
-    while (i < node.size()) {
-      ASTNode astNode = node.get(i);
-      if (astNode instanceof FunctionNode && //
-          ((FunctionNode) astNode).get(0).getString().equals(compoundExpression)) {
-        result = evaluatePackageRecursive(((FunctionNode) astNode), 1, compoundExpression, ast2Expr,
-            engine);
-      } else {
-        try {
-          temp = ast2Expr.convert(astNode);
-          engine.setDeterminePrecision(temp, true);
-          result = engine.evaluate(temp);
-        } catch (final RuntimeException rex) {
-          result = S.Null;
-          Errors.printMessage(S.Get, rex, engine);
-        }
-      }
-      i++;
-    }
-    return result;
-  }
-
-  /**
-   * Parse the <code>reader</code> input.
-   *
-   * <p>
-   * This method ignores the first line of the script if it starts with the <code>#!</code>
-   * characters (i.e. Unix Script Executables)
-   *
-   * <p>
-   * <b>Note</b>: uses the <code>ASTNode</code> parser and not the <code>ExprParser</code>, because
-   * otherwise the symbols couldn't be assigned to the contexts.
-   *
-   * @param reader
-   * @param engine
-   * @return
-   */
-  public static List<ASTNode> parseReader(final String reader, final EvalEngine engine) {
-    final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
-    final List<ASTNode> node = parser.parsePackage(reader);
-    return node;
-  }
-
-  /**
-   * Parse the <code>reader</code> input.
-   *
-   * <p>
-   * This method ignores the first line of the script if it starts with the <code>#!</code>
-   * characters (i.e. Unix Script Executables)
-   *
-   * <p>
-   * <b>Note</b>: uses the <code>ASTNode</code> parser and not the <code>ExprParser</code>, because
-   * otherwise the symbols couldn't be assigned to the contexts.
-   *
-   * @param reader
-   * @param engine
-   * @return
-   * @throws IOException
-   */
-  public static List<ASTNode> parseReader(final BufferedReader reader, final EvalEngine engine)
-      throws IOException {
-    String record;
-    StringBuilder builder = new StringBuilder(2048);
-    if ((record = reader.readLine()) != null) {
-      // ignore the first line of the script if it starts with the #!
-      // characters (i.e. Unix Script Executables)
-      if (!record.startsWith("!#")) {
-        builder.append(record);
-        builder.append('\n');
-      }
-    }
-    while ((record = reader.readLine()) != null) {
-      builder.append(record);
-      builder.append('\n');
-    }
-
-    final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
-    final List<ASTNode> node = parser.parsePackage(builder.toString());
-    return node;
   }
 
   private static IExpr readType(DataInput reader, String typeStr) {

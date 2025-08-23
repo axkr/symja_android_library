@@ -13,7 +13,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
-import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.generic.ObjIntPredicate;
@@ -114,6 +113,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     public final int headID() {
       return ID.Condition;
     }
+
   }
 
   static final class DirectedEdge extends B2 {
@@ -239,7 +239,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     /** {@inheritDoc} */
     @Override
     public IExpr evaluate(EvalEngine engine) {
-      return PredicateQ.freeQ(arg1, arg2, engine);
+      return IExpr.freeQ(arg1, arg2, engine);
     }
 
     @Override
@@ -550,9 +550,14 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     /** {@inheritDoc} */
     @Override
     public IExpr evaluate(EvalEngine engine) {
-      if (arg1.isNumber() && arg2.isNumber()) {
-        return ((INumber) arg1).plusExpr((INumber) arg2);
-        // System.out.println("Plus: " + arg1 + "+" + arg2 + "=>" + result);
+      if (arg1.isNumberLike() && arg2.isNumberLike()) {
+        if (arg1.isNumber() && arg2.isNumber()) {
+          return ((INumber) arg1).plusExpr((INumber) arg2);
+        }
+        IExpr temp = arg1.plus(arg2, true);
+        if (temp.isPresent()) {
+          return temp;
+        }
       }
       return super.evaluate(engine);
     }
@@ -864,9 +869,14 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     /** {@inheritDoc} */
     @Override
     public IExpr evaluate(EvalEngine engine) {
-      if (arg1.isNumber() && arg2.isNumber()) {
-        return ((INumber) arg1).timesExpr((INumber) arg2);
-        // System.out.println("Times: " + arg1 + "*" + arg2 + "=>" + result);
+      if (arg1.isNumberLike() && arg2.isNumberLike()) {
+        if (arg1.isNumber() && arg2.isNumber()) {
+          return ((INumber) arg1).timesExpr((INumber) arg2);
+        }
+        IExpr temp = arg1.times(arg2, true);
+        if (temp.isPresent()) {
+          return temp;
+        }
       }
       // if (arg1.isNumber() && arg2.isNumber()) {
       // IExpr result = super.evaluate(engine);

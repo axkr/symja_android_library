@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -59,6 +60,12 @@ public class WindowFunctions {
   public static class WindowFunction extends AbstractTrigArg1 implements Function<IExpr, IExpr> {
     private final Function<IExpr, IExpr> function;
     private final String name;
+
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return false;
+    }
 
     @Override
     public IExpr apply(IExpr t) {

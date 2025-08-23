@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.builtin.StructureFunctions;
+import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -35,7 +35,7 @@ public class ExpToTrig extends AbstractEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
-    IExpr temp = StructureFunctions.threadListLogicEquationOperators(ast.arg1(), ast, 1);
+    IExpr temp = CompareUtil.threadListLogicEquationOperators(ast.arg1(), ast, 1);
     if (temp.isPresent()) {
       return temp;
     }

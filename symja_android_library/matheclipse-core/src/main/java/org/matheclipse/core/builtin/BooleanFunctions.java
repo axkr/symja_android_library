@@ -30,6 +30,7 @@ import org.logicng.transformations.dnf.DNFFactorization;
 import org.logicng.transformations.simplification.AdvancedSimplifier;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -71,11 +72,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 
 public final class BooleanFunctions {
 
-  public static final IComparatorFunction CONST_EQUAL = new Equal();
-  public static final ITernaryComparator CONST_GREATER = new Greater();
-  public static final ITernaryComparator CONST_LESS = new Less();
-  public static final ITernaryComparator CONST_GREATER_EQUAL = new GreaterEqual();
-  public static final ITernaryComparator CONST_LESS_EQUAL = new LessEqual();
 
   private static final int[] FULL_BITSETS = new int[] { //
       0b1, //
@@ -102,6 +98,13 @@ public final class BooleanFunctions {
   private static class Initializer {
 
     private static void init() {
+
+      CompareUtil.CONST_EQUAL = new Equal();
+      CompareUtil.CONST_GREATER = new Greater();
+      CompareUtil.CONST_LESS = new Less();
+      CompareUtil.CONST_GREATER_EQUAL = new GreaterEqual();
+      CompareUtil.CONST_LESS_EQUAL = new LessEqual();
+
       S.AllTrue.setEvaluator(new AllTrue());
       S.And.setEvaluator(new And());
       S.AnyTrue.setEvaluator(new AnyTrue());
@@ -114,18 +117,18 @@ public final class BooleanFunctions {
       S.BooleanMinterms.setEvaluator(new BooleanMinterms());
       S.BooleanTable.setEvaluator(new BooleanTable());
       S.BooleanVariables.setEvaluator(new BooleanVariables());
-      S.Equal.setEvaluator(CONST_EQUAL);
+      S.Equal.setEvaluator(CompareUtil.CONST_EQUAL);
       S.EqualTo.setEvaluator(new CompareOperator(S.EqualTo, S.Equal));
       S.Equivalent.setEvaluator(new Equivalent());
       S.Exists.setEvaluator(new Exists());
       S.ForAll.setEvaluator(new ForAll());
-      S.Greater.setEvaluator(CONST_GREATER);
+      S.Greater.setEvaluator(CompareUtil.CONST_GREATER);
       S.GreaterEqual.setEvaluator(new GreaterEqual());
       S.GreaterEqualThan.setEvaluator(new CompareOperator(S.GreaterEqualThan, S.GreaterEqual));
       S.GreaterThan.setEvaluator(new CompareOperator(S.GreaterThan, S.Greater));
       S.Implies.setEvaluator(new Implies());
       S.Inequality.setEvaluator(new Inequality());
-      S.Less.setEvaluator(CONST_LESS);
+      S.Less.setEvaluator(CompareUtil.CONST_LESS);
       S.LessEqual.setEvaluator(new LessEqual());
       S.LessEqualThan.setEvaluator(new CompareOperator(S.LessEqualThan, S.LessEqual));
       S.LessThan.setEvaluator(new CompareOperator(S.LessThan, S.Less));
@@ -153,6 +156,7 @@ public final class BooleanFunctions {
       S.UnsameQ.setEvaluator(new UnsameQ());
       S.Xnor.setEvaluator(new Xnor());
       S.Xor.setEvaluator(new Xor());
+
     }
   }
 
@@ -5181,21 +5185,7 @@ public final class BooleanFunctions {
     return Equal.simplifyCompare(S.Unequal, arg1, arg2);
   }
 
-  /**
-   * Transform the {@link S#Inequality} AST to an {@link S#And} expression.
-   *
-   * @param ast an {@link S#Inequality} AST with <code>size() &gt;= 4</code>.
-   * @return
-   */
-  public static IAST inequality2And(final IAST ast) {
-    IASTAppendable result = F.And();
-    for (int i = 3; i < ast.size(); i += 2) {
-      result.append(F.binaryAST2(ast.get(i - 1), ast.get(i - 2), ast.get(i)));
-    }
-    return result;
-  }
-
-  public static IExpr equals(final IAST ast) {
+  private static IExpr equals(final IAST ast) {
     return Equal.equalNIL(ast.arg1(), ast.arg2(), EvalEngine.get()).orElse(ast);
   }
 

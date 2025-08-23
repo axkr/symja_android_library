@@ -48,6 +48,7 @@ public class QuantityFunctions {
       S.DateValue.setEvaluator(new DateValue());
 
       S.TimeObject.setEvaluator(new TimeObject());
+      S.KnownUnitQ.setEvaluator(new KnownUnitQ());
       S.Quantity.setEvaluator(new Quantity());
       S.QuantityMagnitude.setEvaluator(new QuantityMagnitude());
       S.QuantityUnit.setEvaluator(new QuantityUnit());
@@ -296,6 +297,30 @@ public class QuantityFunctions {
     }
   }
 
+  private static final class KnownUnitQ extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      // if (ast.arg1() instanceof IStringX) {
+      // String str = ast.arg1().toString();
+      // return F.booleSymbol(UnitSystem.SI().isKnownUnit(str));
+      // }
+      // Function `1` not implemented.
+      Errors.printMessage(S.KnownUnitQ, "zznotimpl", F.List(S.KnownUnitQ));
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.NO_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
   /**
    *
    *
@@ -496,7 +521,7 @@ public class QuantityFunctions {
             if (unit == null) {
               return F.NIL;
             }
-            return unitConvert((IQuantity) arg1, unit);
+            return IQuantity.unitConvert((IQuantity) arg1, unit);
           }
         }
       } catch (RuntimeException e) {
@@ -522,10 +547,4 @@ public class QuantityFunctions {
   }
 
   private QuantityFunctions() {}
-
-  public static IExpr unitConvert(IQuantity arg1, IUnit unit) {
-    org.matheclipse.core.tensor.qty.UnitConvert unitConvert =
-        org.matheclipse.core.tensor.qty.UnitConvert.SI();
-    return unitConvert.to(unit).apply(arg1);
-  }
 }

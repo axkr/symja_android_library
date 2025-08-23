@@ -207,6 +207,12 @@ public class BigFractionSym extends AbstractFractionSym {
 
   /** {@inheritDoc} */
   @Override
+  public int complexSign() {
+    return fFraction.getNumerator().signum();
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public IRational dec() {
     return add(F.CN1);
   }
@@ -231,12 +237,6 @@ public class BigFractionSym extends AbstractFractionSym {
       return max;
     }
     return -1;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IRational inc() {
-    return add(F.C1);
   }
 
   /**
@@ -399,28 +399,6 @@ public class BigFractionSym extends AbstractFractionSym {
   }
 
   @Override
-  public BigInteger toBigDenominator() {
-    return fFraction.getDenominator();
-  }
-
-  @Override
-  public BigInteger toBigNumerator() {
-    return fFraction.getNumerator();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public BigFraction toBigFraction() {
-    return fFraction;
-  }
-
-  @Override
-  public BigRational toBigRational() {
-    return new BigRational(new edu.jas.arith.BigInteger(toBigNumerator()),
-        new edu.jas.arith.BigInteger(toBigDenominator()));
-  }
-
-  @Override
   public int hashCode() {
     if (fHashValue == 0 && fFraction != null) {
       fHashValue = fFraction.hashCode();
@@ -442,6 +420,12 @@ public class BigFractionSym extends AbstractFractionSym {
       num = num.negate();
     }
     return valueOf(num, denom);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IRational inc() {
+    return add(F.C1);
   }
 
   @Override
@@ -517,6 +501,12 @@ public class BigFractionSym extends AbstractFractionSym {
 
   /** {@inheritDoc} */
   @Override
+  public boolean isNonNegative() {
+    return fFraction.getNumerator().signum() >= 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public boolean isOne() {
     return fFraction.equals(BigFraction.ONE);
   }
@@ -566,6 +556,21 @@ public class BigFractionSym extends AbstractFractionSym {
   }
 
   @Override
+  public IRational multiply(int n) {
+    if (n == 1) {
+      return this;
+    }
+    if (n == 0) {
+      return FractionSym.ZERO;
+    }
+    if (n == -1) {
+      return this.negate();
+    }
+    BigInteger newnum = toBigNumerator().multiply(BigInteger.valueOf(n));
+    return valueOf(newnum, toBigDenominator()).normalize();
+  }
+
+  @Override
   public IRational multiply(IRational parm1) {
     if (parm1.isOne()) {
       return this;
@@ -581,21 +586,6 @@ public class BigFractionSym extends AbstractFractionSym {
     }
     IInteger p1 = (IInteger) parm1;
     BigInteger newnum = toBigNumerator().multiply(p1.toBigNumerator());
-    return valueOf(newnum, toBigDenominator()).normalize();
-  }
-
-  @Override
-  public IRational multiply(int n) {
-    if (n == 1) {
-      return this;
-    }
-    if (n == 0) {
-      return FractionSym.ZERO;
-    }
-    if (n == -1) {
-      return this.negate();
-    }
-    BigInteger newnum = toBigNumerator().multiply(BigInteger.valueOf(n));
     return valueOf(newnum, toBigDenominator()).normalize();
   }
 
@@ -626,10 +616,26 @@ public class BigFractionSym extends AbstractFractionSym {
     return AbstractIntegerSym.valueOf(NumberUtil.round(fFraction, BigDecimal.ROUND_HALF_EVEN));
   }
 
+  @Override
+  public BigInteger toBigDenominator() {
+    return fFraction.getDenominator();
+  }
+
   /** {@inheritDoc} */
   @Override
-  public int complexSign() {
-    return fFraction.getNumerator().signum();
+  public BigFraction toBigFraction() {
+    return fFraction;
+  }
+
+  @Override
+  public BigInteger toBigNumerator() {
+    return fFraction.getNumerator();
+  }
+
+  @Override
+  public BigRational toBigRational() {
+    return new BigRational(new edu.jas.arith.BigInteger(toBigNumerator()),
+        new edu.jas.arith.BigInteger(toBigDenominator()));
   }
 
   /** {@inheritDoc} */
@@ -662,6 +668,20 @@ public class BigFractionSym extends AbstractFractionSym {
 
   /** {@inheritDoc} */
   @Override
+  public long toLong() throws ArithmeticException {
+    if (toBigDenominator().equals(BigInteger.ONE)) {
+      if (NumberUtil.hasLongValue(toBigNumerator())) {
+        // Android doesn't know method longValueExact
+        return toBigNumerator().longValue();
+      }
+    } else if (toBigNumerator().signum() == 0) {
+      return 0L;
+    }
+    throw new ArithmeticException("toLong: denominator != 1");
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public long toLongDefault(long defaultValue) {
     if (toBigDenominator().equals(BigInteger.ONE)) {
       try {
@@ -676,20 +696,6 @@ public class BigFractionSym extends AbstractFractionSym {
       return defaultValue;
     }
     return fFraction.equals(BigFraction.ZERO) ? 0 : defaultValue;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public long toLong() throws ArithmeticException {
-    if (toBigDenominator().equals(BigInteger.ONE)) {
-      if (NumberUtil.hasLongValue(toBigNumerator())) {
-        // Android doesn't know method longValueExact
-        return toBigNumerator().longValue();
-      }
-    } else if (toBigNumerator().signum() == 0) {
-      return 0L;
-    }
-    throw new ArithmeticException("toLong: denominator != 1");
   }
 
   @Override

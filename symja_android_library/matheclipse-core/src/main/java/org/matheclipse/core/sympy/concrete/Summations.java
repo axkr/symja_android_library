@@ -1,7 +1,6 @@
 package org.matheclipse.core.sympy.concrete;
 
 import org.matheclipse.core.convert.VariablesSet;
-import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -24,7 +23,7 @@ public class Summations {
       return true;
     }
 
-    EvalEngine engine = new EvalEngine();
+    // EvalEngine engine = new EvalEngine();
     // TODO remove if-condition if Limit is improved for complex numbers
     if (!sequence_term.hasComplexNumber()) {
       // ### -------- Divergence test ----------- ###

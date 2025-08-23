@@ -1,16 +1,13 @@
 package org.matheclipse.core.builtin;
 
-import static org.matheclipse.core.expression.F.Rule;
-import static org.matheclipse.core.expression.F.RuleDelayed;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Deque;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.exception.ReturnException;
@@ -33,7 +30,6 @@ import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
@@ -42,6 +38,7 @@ import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherEquals;
 import org.matheclipse.core.patternmatching.RulesData;
@@ -1026,6 +1023,16 @@ public final class PatternMatching {
   private static final class Identity extends AbstractFunctionEvaluator {
 
     @Override
+    public boolean evalIsReal(IAST ast) {
+      return ast.forAll(x -> {
+        if (x.isRealResult()) {
+          return true;
+        }
+        return false;
+      });
+    }
+
+    @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
         return ast.arg1();
@@ -1330,7 +1337,7 @@ public final class PatternMatching {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       if (ast.head().equals(S.OptionValue)) {
-        return optionValueReplace(ast, false, engine);
+        return IPatternMap.optionValueReplace(ast, false, engine);
       }
 
       return F.NIL;
@@ -1720,9 +1727,9 @@ public final class PatternMatching {
         if (leftHandSide.equals(ast.arg1())) {
           return F.NIL;
         }
-        return Rule(leftHandSide, ast.arg2());
+        return F.Rule(leftHandSide, ast.arg2());
       }
-      return Rule(leftHandSide, arg2);
+      return F.Rule(leftHandSide, arg2);
     }
 
     @Override
@@ -1766,7 +1773,7 @@ public final class PatternMatching {
       leftHandSide = engine.evaluate(leftHandSide);
       // }
       if (!leftHandSide.equals(ast.arg1())) {
-        return RuleDelayed(leftHandSide, ast.arg2());
+        return F.RuleDelayed(leftHandSide, ast.arg2());
       }
       return F.NIL;
     }
@@ -1907,7 +1914,7 @@ public final class PatternMatching {
    * {{1, t, u}, {4, y, z}, {7, 8, 9}}
    * </pre>
    */
-  private static final class Set extends AbstractCoreFunctionEvaluator {
+  private static final class Set extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1918,12 +1925,12 @@ public final class PatternMatching {
         head = S.Association;
       }
       IExpr rightHandSide = ast.arg2();
-      try {
-        rightHandSide = engine.evaluate(rightHandSide);
-      } catch (final ConditionException e) {
-      } catch (final ReturnException e) {
-        rightHandSide = e.getValue();
-      }
+      // try {
+      // rightHandSide = engine.evaluate(rightHandSide);
+      // } catch (final ConditionException e) {
+      // } catch (final ReturnException e) {
+      // rightHandSide = e.getValue();
+      // }
       if (!leftHandSide.isAST() && !leftHandSide.isSymbolOrPattern()) {
         // Cannot assign to raw object `1`.
         Errors.printMessage(S.Set, "setraw", F.list(leftHandSide), engine);
@@ -1962,8 +1969,8 @@ public final class PatternMatching {
     private static IExpr createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide,
         boolean packageMode, final EvalEngine engine) throws RuleCreationError {
       int[] flags = new int[] {IPatternMatcher.NOFLAG};
-      leftHandSide = evalLHS(leftHandSide, flags, engine);
-      return setDownRule(leftHandSide, flags[0], rightHandSide, packageMode);
+      IExpr temp = evalLHS(leftHandSide, flags, engine);
+      return setDownRule(temp, leftHandSide, flags[0], rightHandSide, packageMode);
     }
 
     @Override
@@ -2032,7 +2039,7 @@ public final class PatternMatching {
    * f(-3)
    * </pre>
    */
-  private static final class SetDelayed extends AbstractCoreFunctionEvaluator {
+  private static final class SetDelayed extends AbstractFunctionEvaluator {
 
     // public final static SetDelayed CONST = new SetDelayed();
 
@@ -2089,8 +2096,8 @@ public final class PatternMatching {
     private static void createPatternMatcher(IExpr leftHandSide, IExpr rightHandSide,
         boolean packageMode, final EvalEngine engine) throws RuleCreationError {
       int[] flags = new int[] {IPatternMatcher.NOFLAG};
-      leftHandSide = evalLHS(leftHandSide, flags, engine);
-      setDelayedDownRule(leftHandSide, flags[0], rightHandSide, packageMode);
+      IExpr temp = evalLHS(leftHandSide, flags, engine);
+      setDelayedDownRule(temp, leftHandSide, flags[0], rightHandSide, packageMode);
     }
 
     @Override
@@ -2226,22 +2233,48 @@ public final class PatternMatching {
 
   }
 
-  private static IExpr setDownRule(IExpr leftHandSide, int flags, IExpr rightHandSide,
-      boolean packageMode) {
-    // final Object[] result = new Object[] { null, rightHandSide };
-    if (leftHandSide.isAST()) {
-      final ISymbol lhsSymbol = determineRuleTag(leftHandSide);
-      if (lhsSymbol.hasProtectedAttribute()) {
-        // Symbol `1` is Protected.
-        Errors.printMessage(S.Set, "wrsym", F.list(lhsSymbol), EvalEngine.get());
-        return rightHandSide;
-      }
-      lhsSymbol.putDownRule(IPatternMatcher.SET, false, (IAST) leftHandSide, rightHandSide,
-          packageMode);
+  private static IExpr setDownRule(IExpr evaledLHS, IExpr originalLHS, int flags,
+      IExpr rightHandSide, boolean packageMode) {
+    ISymbol lhsSymbol = getLookupReferenceName(evaledLHS);
+    if (lhsSymbol == null) {
+      // `1` does not contain a symbol to attach a rule to.
+      Errors.printMessage(S.Set, "nosym", F.list(originalLHS), EvalEngine.get());
       return rightHandSide;
     }
-    if (leftHandSide.isSymbol()) {
-      final ISymbol lhsSymbol = (ISymbol) leftHandSide;
+    if (lhsSymbol.hasProtectedAttribute()) {
+      // Symbol `1` is Protected.
+      Errors.printMessage(S.Set, "wrsym", F.list(lhsSymbol), EvalEngine.get());
+      return rightHandSide;
+    }
+    if (originalLHS.isAST()) {
+      if (lhsSymbol.hasProtectedAttribute()) {
+        // Tag `1` in `2` is Protected.
+        Errors.printMessage(S.Set, "write", F.list(lhsSymbol, originalLHS), EvalEngine.get());
+        throw new FailedException();
+      }
+      if (evaledLHS instanceof IPatternObject) {
+        lhsSymbol.putDownRule(flags | IPatternMatcher.SET, false, (IPatternObject) evaledLHS,
+            rightHandSide, packageMode);
+      } else {
+        if (evaledLHS.isAST()) {
+          originalLHS = evaledLHS;
+        } else if (!originalLHS.isAST()) {
+          originalLHS = F.HoldPattern(originalLHS);
+        }
+        lhsSymbol.putDownRule(IPatternMatcher.SET, false, (IAST) originalLHS, rightHandSide,
+            packageMode);
+        if (evaledLHS.isSymbol()) {
+          ((ISymbol) evaledLHS).assignValue(rightHandSide, true);
+        }
+        // lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, (IAST) originalLHS,
+        // rightHandSide, packageMode);
+
+      }
+      return rightHandSide;
+    }
+
+    if (evaledLHS.isSymbol()) {
+      lhsSymbol = (ISymbol) evaledLHS;
       if (lhsSymbol.hasProtectedAttribute()) {
         // Symbol `1` is Protected.
         Errors.printMessage(S.Set, "wrsym", F.list(lhsSymbol), EvalEngine.get());
@@ -2251,106 +2284,79 @@ public final class PatternMatching {
       return rightHandSide;
     }
 
-    throw new RuleCreationError(leftHandSide);
+    throw new RuleCreationError(originalLHS);
   }
 
-  private static ISymbol determineRuleTag(IExpr leftHandSide) {
-    while (leftHandSide.isCondition()) {
-      if (leftHandSide.first().isAST()) {
-        leftHandSide = leftHandSide.first();
-        continue;
+  // private static ISymbol determineRuleTag(IExpr leftHandSide) {
+  // while (leftHandSide.isCondition()) {
+  // if (leftHandSide.first().isAST()) {
+  // leftHandSide = leftHandSide.first();
+  // continue;
+  // }
+  // break;
+  // }
+  // if (leftHandSide.isSymbol()) {
+  // return (ISymbol) leftHandSide;
+  // }
+  // return leftHandSide.topHead();
+  // }
+
+  private static void setDelayedDownRule(IExpr evaledLHS, IExpr originalLHS, int flags,
+      IExpr rightHandSide, boolean packageMode) {
+    ISymbol lhsSymbol = getLookupReferenceName(evaledLHS);
+    if (lhsSymbol == null) {
+      // `1` does not contain a symbol to attach a rule to.
+      Errors.printMessage(S.SetDelayed, "nosym", F.list(originalLHS), EvalEngine.get());
+      throw new FailedException();
+    }
+    if (lhsSymbol.hasProtectedAttribute()) {
+      // Symbol `1` is Protected.
+      Errors.printMessage(S.SetDelayed, "wrsym", F.list(lhsSymbol), EvalEngine.get());
+      throw new FailedException();
+    }
+    // if (evaledLHS.isAST()) {
+    if (lhsSymbol.hasProtectedAttribute()) {
+      // Tag `1` in `2` is Protected.
+      Errors.printMessage(S.SetDelayed, "write", F.list(lhsSymbol, originalLHS), EvalEngine.get());
+      throw new FailedException();
+    }
+    if (evaledLHS instanceof IPatternObject) {
+      lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, (IPatternObject) evaledLHS,
+          rightHandSide, packageMode);
+    } else {
+      if (evaledLHS.isAST()) {
+        originalLHS = evaledLHS;
+      } else if (!originalLHS.isAST()) {
+        originalLHS = F.HoldPattern(originalLHS);
       }
-      break;
-    }
-    if (leftHandSide.isSymbol()) {
-      return (ISymbol) leftHandSide;
-    }
-    return leftHandSide.topHead();
-  }
-
-  /**
-   * 
-   * @param leftHandSide
-   * @param rightHandSide
-   * @param equalRule <code>true</code> if the leftHandSide could be matched with equality
-   * @param packageMode
-   * @return
-   */
-  public static IExpr setDownRule(IAST leftHandSide, IExpr rightHandSide, boolean equalRule,
-      boolean packageMode) {
-    final ISymbol lhsSymbol = leftHandSide.topHead();
-    lhsSymbol.putDownRule(IPatternMatcher.SET, equalRule, leftHandSide, rightHandSide, packageMode);
-    return rightHandSide;
-  }
-
-  public static IExpr setDownRule(ISymbol leftHandSide, IExpr rightHandSide) {
-    leftHandSide.assignValue(rightHandSide, false);
-    return rightHandSide;
-  }
-
-  private static void setDelayedDownRule(IExpr leftHandSide, int flags, IExpr rightHandSide,
-      boolean packageMode) {
-    ISymbol lhsSymbol = null;
-    if (leftHandSide instanceof PatternNested) {
-      PatternNested pn = (PatternNested) leftHandSide;
-      IExpr pattern = pn.getPatternExpr();
-      lhsSymbol = determineRuleTag(pattern);
-    }
-
-    if (leftHandSide.isAST()) {
-      lhsSymbol = determineRuleTag(leftHandSide);
-    }
-    if (lhsSymbol != null) {
-      if (lhsSymbol.hasProtectedAttribute()) {
-        // Symbol `1` is Protected.
-        Errors.printMessage(S.SetDelayed, "wrsym", F.list(lhsSymbol), EvalEngine.get());
-        throw new FailedException();
+      lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, (IAST) originalLHS,
+          rightHandSide, packageMode);
+      if (evaledLHS.isSymbol()) {
+        ((ISymbol) evaledLHS).assignValue(rightHandSide, true);
       }
-      if (leftHandSide instanceof IPatternObject) {
-        lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false,
-            (IPatternObject) leftHandSide, rightHandSide, packageMode);
-      } else {
-        lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, (IAST) leftHandSide,
-            rightHandSide, packageMode);
-      }
-      return;
     }
-    if (leftHandSide.isSymbol()) {
-      lhsSymbol = (ISymbol) leftHandSide;
-      if (lhsSymbol.hasProtectedAttribute()) {
-        // Symbol `1` is Protected.
-        Errors.printMessage(S.SetDelayed, "wrsym", F.list(lhsSymbol), EvalEngine.get());
-        throw new FailedException();
-      }
-      ((ISymbol) leftHandSide).assignValue(rightHandSide, true);
-      return;
-    }
-    throw new RuleCreationError(leftHandSide);
+    return;
+    // }
+    // if (evaledLHS.isSymbol()) {
+    // lhsSymbol = (ISymbol) evaledLHS;
+    // if (lhsSymbol.hasProtectedAttribute()) {
+    // // Symbol `1` is Protected.
+    // Errors.printMessage(S.SetDelayed, "wrsym", F.list(lhsSymbol), EvalEngine.get());
+    // throw new FailedException();
+    // }
+    // ((ISymbol) evaledLHS).assignValue(rightHandSide, true);
+    // return;
+    // }
+    // throw new RuleCreationError(evaledLHS);
   }
 
-  public static void setDelayedDownRule(int priority, IExpr leftHandSide, IExpr rightHandSide,
-      boolean packageMode) {
-    if (leftHandSide.isAST()) {
-      final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
-
-      lhsSymbol.putDownRule(IPatternMatcher.SET_DELAYED, false, (IAST) leftHandSide, rightHandSide,
-          priority, packageMode);
-      return;
-    }
-    if (leftHandSide.isSymbol()) {
-      ((ISymbol) leftHandSide).assignValue(rightHandSide, true);
-      return;
-    }
-    throw new RuleCreationError(leftHandSide);
-  }
-
-  private static class TagSet extends AbstractCoreFunctionEvaluator {
+  private static class TagSet extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isSymbol()) {
-        ISymbol symbol = (ISymbol) arg1;
+        final ISymbol symbol = (ISymbol) arg1;
         final IExpr leftHandSide = ast.arg2();
         IExpr rightHandSide = ast.arg3();
         try {
@@ -2422,7 +2428,7 @@ public final class PatternMatching {
       result[0] = null; // IPatternMatcher
       result[1] = rightHandSide;
 
-      IAST lhsAST = Validate.checkASTUpRuleType(leftHandSide);
+      IAST lhsAST = Validate.checkASTTagRuleType(leftHandSide, S.TagSet);
       boolean found = false;
       boolean putDownRule = false;
       if (lhsAST.head().equals(tagSetSymbol)) {
@@ -2460,9 +2466,15 @@ public final class PatternMatching {
             tagSetSymbol.putUpRule(flags[0] | IPatternMatcher.TAGSET, false, lhsAST, rightHandSide);
         return result;
       }
+      if (!lhsAST.isFree(tagSetSymbol)) {
+        // Cannot assign to raw object `1`.
+        String str = Errors.getMessage("tagpos", F.list(tagSetSymbol, lhsAST), engine);
+        throw new ArgumentTypeException(str);
+      }
       // Tag `1` not found in `2`
       Errors.printMessage(tagSymbol, "tagnf", F.list(tagSetSymbol, lhsAST), engine);
-      return result;
+      throw new FailedException();
+
     }
 
     private static boolean isTagAvailable(ISymbol tagSetSymbol, IAST lhsAST) {
@@ -2493,7 +2505,7 @@ public final class PatternMatching {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isSymbol()) {
-        ISymbol symbol = (ISymbol) arg1;
+        final ISymbol symbol = (ISymbol) arg1;
         final IExpr leftHandSide = ast.arg2();
         final IExpr rightHandSide = ast.arg3();
         if (symbol.hasProtectedAttribute()) {
@@ -2507,7 +2519,7 @@ public final class PatternMatching {
           return S.Null;
         } catch (final ValidateException ve) {
           Errors.printMessage(ast.topHead(), ve, engine);
-          return S.Null;
+          throw new FailedException();
         }
       } else {
         // Argument `1` at position `2` is expected to be a symbol.
@@ -2670,10 +2682,15 @@ public final class PatternMatching {
         }
 
         if (leftHandSide.isAST()) {
-          final ISymbol lhsSymbol = determineRuleTag(leftHandSide);
+          final ISymbol lhsSymbol = getLookupReferenceName(leftHandSide);
+          if (lhsSymbol == null) {
+            // `1` does not contain a symbol to attach a rule to.
+            Errors.printMessage(S.Unset, "nosym", F.list(leftHandSide), EvalEngine.get());
+            throw new FailedException();
+          }
           if (lhsSymbol.hasProtectedAttribute()) {
             // Symbol `1` is Protected.
-            Errors.printMessage(ast.topHead(), "wrsym", F.list(lhsSymbol), EvalEngine.get());
+            Errors.printMessage(S.Unset, "wrsym", F.list(lhsSymbol), EvalEngine.get());
             throw new FailedException();
           }
         }
@@ -2740,7 +2757,7 @@ public final class PatternMatching {
     }
   }
 
-  private static final class UpSet extends AbstractCoreFunctionEvaluator {
+  private static final class UpSet extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2795,26 +2812,28 @@ public final class PatternMatching {
       result[0] = null; // IPatternMatcher
       result[1] = rightHandSide;
 
-      IAST lhsAST = Validate.checkASTUpRuleType(leftHandSide);
+      IAST lhsAST = Validate.checkASTUpRuleType(leftHandSide, S.UpSet);
       for (int i = 1; i < lhsAST.size(); i++) {
         IExpr temp = lhsAST.get(i);
-        if (temp instanceof IPatternObject) {
-          IExpr headTest = ((IPatternObject) temp).getHeadTest();
-          if (headTest != null && headTest.isSymbol()) {
-            ISymbol lhsSymbol = (ISymbol) headTest;
-            result[0] =
-                lhsSymbol.putUpRule(flags[0] | IPatternMatcher.UPSET, false, lhsAST, rightHandSide);
-          }
+        ISymbol lhsSymbol = getLookupReferenceName(temp);
+        if (lhsSymbol == null || lhsSymbol.hasProtectedAttribute()) {
           continue;
         }
-        ISymbol lhsSymbol = null;
-        if (temp.isSymbol()) {
-          lhsSymbol = (ISymbol) temp;
-        } else {
-          lhsSymbol = lhsAST.get(i).topHead();
+        // if (lhsSymbol.hasProtectedAttribute()) {
+        // // Tag `1` in `2` is Protected.
+        // Errors.printMessage(S.TagSet, "write", F.list(lhsSymbol, leftHandSide),
+        // EvalEngine.get());
+        // throw new FailedException();
+        // }
+        if (lhsSymbol != null) {
+          result[0] =
+              lhsSymbol.putUpRule(flags[0] | IPatternMatcher.UPSET, false, lhsAST, rightHandSide);
         }
-        result[0] =
-            lhsSymbol.putUpRule(flags[0] | IPatternMatcher.UPSET, false, lhsAST, rightHandSide);
+      }
+      if (result[0] == null) {
+        // `1` does not contain a symbol to attach a rule to.
+        Errors.printMessage(S.UpSet, "nosym", F.list(lhsAST), engine);
+        throw new FailedException();
       }
       return result;
     }
@@ -2825,7 +2844,7 @@ public final class PatternMatching {
     }
   }
 
-  private static final class UpSetDelayed extends AbstractCoreFunctionEvaluator {
+  private static final class UpSetDelayed extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2862,26 +2881,41 @@ public final class PatternMatching {
       result[0] = null;
       result[1] = rightHandSide;
 
-      IAST lhsAST = Validate.checkASTUpRuleType(leftHandSide);
+      IAST lhsAST = Validate.checkASTUpRuleType(leftHandSide, S.UpSetDelayed);
       for (int i = 1; i < lhsAST.size(); i++) {
         IExpr temp = lhsAST.get(i);
-        if (temp instanceof IPatternObject) {
-          IExpr headTest = ((IPatternObject) temp).getHeadTest();
-          if (headTest != null && headTest.isSymbol()) {
-            ISymbol lhsSymbol = (ISymbol) headTest;
-            result[0] = lhsSymbol.putUpRule(flags[0] | IPatternMatcher.UPSET_DELAYED, false, lhsAST,
-                rightHandSide);
-          }
+        ISymbol lhsSymbol = getLookupReferenceName(temp);
+        if (lhsSymbol == null || lhsSymbol.hasProtectedAttribute()) {
           continue;
-        }
-        ISymbol lhsSymbol = null;
-        if (temp.isSymbol()) {
-          lhsSymbol = (ISymbol) temp;
-        } else {
-          lhsSymbol = lhsAST.get(i).topHead();
         }
         result[0] = lhsSymbol.putUpRule(flags[0] | IPatternMatcher.UPSET_DELAYED, false, lhsAST,
             rightHandSide);
+
+        // if (temp instanceof IPatternObject) {
+        // IExpr headTest = ((IPatternObject) temp).getHeadTest();
+        // if (headTest != null && headTest.isSymbol()) {
+        // ISymbol lhsSymbol = (ISymbol) headTest;
+        // result[0] = lhsSymbol.putUpRule(flags[0] | IPatternMatcher.UPSET_DELAYED, false,
+        // lhsAST,
+        // rightHandSide);
+        // }
+        // continue;
+        // }
+        // ISymbol lhsSymbol = null;
+        // if (temp.isSymbol()) {
+        // lhsSymbol = (ISymbol) temp;
+        // } else {
+        // lhsSymbol = lhsAST.get(i).topHead();
+        // }
+        // result[0] = lhsSymbol.putUpRule(flags[0] | IPatternMatcher.UPSET_DELAYED, false,
+        // lhsAST,
+        // rightHandSide);
+
+      }
+      if (result[0] == null) {
+        // `1` does not contain a symbol to attach a rule to.
+        Errors.printMessage(S.UpSetDelayed, "nosym", F.list(lhsAST), engine);
+        throw new FailedException();
       }
       return result;
     }
@@ -2958,144 +2992,85 @@ public final class PatternMatching {
   }
 
   /**
-   * Determine the current <code>OptionValue(...)</code> currently associated with an expression.
-   *
-   * @param ast
-   * @param quiet if <code>true</code> print no message if an option value cannot be found
-   * @param engine
-   * @return {@link F#NIL} if an option value cannot be found; otherwise get the optional value
+   * Find the lookup name of the reference expression associated to <code>expr</code>, or
+   * {@link F#NIL} if there is no such a reference.
+   * <p>
+   * In general, the lookup reference name coincides with the lookup name of the expression.
+   * However, there are some exceptions:
+   * <ul>
+   * <li>Expressions with heads {@link S#Condition}, {@link S#HoldPattern} or {@link S#PatternTest}
+   * are not considered reference expressions. The reference expression is the reference expression
+   * of its first element.
+   * <li>(named) {@link IPatternObject} expressions takes its lookup reference name from the pattern
+   * they hold.
+   * <li>{@link S#Verbatim} expressions pick the lookup reference name from the lookup name of the
+   * expression they hold.
+   * </ul>
+   * 
+   * @param expr
+   * @return
    */
-  public static IExpr optionValueReplace(final IAST ast, boolean quiet, EvalEngine engine) {
-    IASTAppendable optionsPattern = null;
-    IExpr arg1 = engine.evaluate(ast.arg1());
-    IExpr rhsRuleValue = F.NIL;
-    IAST optionsList = null;
-    if (ast.size() > 2 && arg1.isSymbol()) {
-      optionsList =
-          org.matheclipse.core.expression.OptionsPattern.optionsList((ISymbol) arg1, true);
+  private static ISymbol getLookupReferenceName(IExpr expr) {
+    IExpr leftHandSide = getReferenceExpression(expr);
+    if (leftHandSide == null) {
+      leftHandSide = expr;
     }
-    IExpr optionValue;
-    if (ast.isAST3()) {
-      IExpr arg2 = ast.arg2();
-      IExpr arg3 = ast.arg3();
-      if (arg3.isList()) {
-        return arg3.mapThread(ast, 3);
+    if (leftHandSide.isSymbol()) {
+      return (ISymbol) leftHandSide;
+    } else if (leftHandSide instanceof IPatternObject) {
+      IPatternObject temp = (IPatternObject) leftHandSide;
+      if (leftHandSide instanceof PatternNested) {
+        return getLookupName(((PatternNested) leftHandSide).getPatternExpr());
       }
-      optionsPattern = F.ListAlloc(10);
-      org.matheclipse.core.expression.OptionsPattern.extractRules(arg2, optionsPattern);
-      org.matheclipse.core.expression.OptionsPattern.extractRules(optionsList, optionsPattern);
-      optionValue = arg3;
-      if (arg3.isSymbol()) {
-        optionValue = F.$str(((ISymbol) arg3).getSymbolName());
-      }
-      if (optionsPattern != null) {
-        rhsRuleValue = optionsRHSRuleValue(optionValue, optionsPattern);
-        if (rhsRuleValue.isPresent()) {
-          return rhsRuleValue;
-        }
-        if (!quiet) {
-          // Option name `2` not found in defaults for `1`
-          Errors.printMessage(ast.topHead(), "optnf", F.list(arg1, optionValue), engine);
-        }
-        return optionValue;
-      }
-      return F.NIL;
-    } else if (ast.isAST2()) {
-      IExpr arg2 = ast.arg2();
-      if (arg2.isList()) {
-        return arg2.mapThread(ast, 2);
-      }
-      optionValue = arg2;
-      if (arg2.isSymbol()) {
-        optionValue = F.$str(((ISymbol) arg2).getSymbolName());
-      }
-      if (arg1.isSymbol()) {
-        Iterator<IdentityHashMap<ISymbol, IASTAppendable>> iter = engine.optionsStackIterator();
-        while (iter.hasNext()) {
-          IdentityHashMap<ISymbol, IASTAppendable> map = iter.next();
-          if (map != null) {
-            optionsPattern = map.get(arg1);
-            if (optionsPattern != null) {
-              rhsRuleValue = optionsRHSRuleValue(optionValue, optionsPattern);
-              if (rhsRuleValue.isPresent()) {
-                return rhsRuleValue;
-              }
-            }
-          }
-        }
-      } else {
-        if (arg1.isAST()) {
-          optionsList = (IAST) arg1;
-        }
-      }
-      if (optionsPattern == null) {
-        optionsPattern = F.ListAlloc(10);
-      }
-      org.matheclipse.core.expression.OptionsPattern.extractRules(optionsList, optionsPattern);
-      if (optionsPattern != null) {
-        rhsRuleValue = optionsRHSRuleValue(optionValue, optionsPattern);
-        if (rhsRuleValue.isPresent()) {
-          return rhsRuleValue;
-        }
-        if (!quiet) {
-          // Option name `2` not found in defaults for `1`
-          Errors.printMessage(ast.topHead(), "optnf", F.list(arg1, optionValue), engine);
-        }
-        return optionValue;
-      }
-      return F.NIL;
-    } else { // ast.isAST1()
-      optionValue = arg1;
-      if (arg1.isSymbol()) {
-        optionValue = F.$str(((ISymbol) arg1).getSymbolName());
-      }
-
-      Iterator<IdentityHashMap<ISymbol, IASTAppendable>> iter = engine.optionsStackIterator();
-      while (iter.hasNext()) {
-        IdentityHashMap<ISymbol, IASTAppendable> map = iter.next();
-        if (map != null) {
-          optionsPattern = map.get(S.LHS_HEAD);
-          if (optionsPattern != null) {
-
-            ISymbol lhsHead = optionsPattern.topHead();
-            optionsPattern = map.get(lhsHead);
-            rhsRuleValue = optionsRHSRuleValue(optionValue, optionsPattern);
-            if (rhsRuleValue.isPresent()) {
-              return rhsRuleValue;
-            }
-          }
-        }
-      }
-      // return arg1;
+      return getLookupName(temp);
+    } else if (leftHandSide.isAST(S.Verbatim, 2)) {
+      return getLookupName(leftHandSide.first());
+    } else if (leftHandSide.isFunctionID(ID.Condition, ID.HoldPattern, ID.PatternTest)) {
+      return getReferenceExpression(leftHandSide.first());
     }
-    if (optionsPattern != null) {
-      if (!quiet) {
-        // Option name `2` not found in defaults for `1`
-        Errors.printMessage(ast.topHead(), "optnf", F.list(arg1, optionValue), engine);
-      }
-      return optionValue;
-    }
-    return F.NIL;
+    return leftHandSide.topHead();
   }
 
-  /**
-   * Get the right-hand-side of an options rule by comparing the <code>lhsOptionValue</code> with
-   * the left-hand-side of the rules in <code>optionsPattern</code> for equality.
-   *
-   * @param lhsOptionValue
-   * @param optionsPattern list of options rules
-   * @return the right-hand-side expression or {@link F#NIL} if no matching rule was found
-   */
-  private static IExpr optionsRHSRuleValue(IExpr lhsOptionValue, IASTAppendable optionsPattern) {
-    if (optionsPattern != null) {
-      for (int i = 1; i < optionsPattern.size(); i++) {
-        IAST rule = (IAST) optionsPattern.get(i);
-        if (rule.arg1().equals(lhsOptionValue)) {
-          return rule.arg2();
-        }
+  private static ISymbol getLookupName(IExpr expr) {
+    IExpr leftHandSide = getReferenceExpression(expr);
+    if (leftHandSide == null) {
+      leftHandSide = expr;
+    }
+    if (leftHandSide.isSymbol()) {
+      return (ISymbol) leftHandSide;
+    }
+    if (leftHandSide instanceof IPatternObject) {
+      IExpr headTest = ((IPatternObject) leftHandSide).getHeadTest();
+      if (headTest != null && headTest.isSymbol()) {
+        return (ISymbol) headTest;
       }
     }
-    return F.NIL;
+    return null;
+  }
+
+  private static ISymbol getReferenceExpression(IExpr leftHandSide) {
+    if (leftHandSide.isSymbol()) {
+      return (ISymbol) leftHandSide;
+    }
+    if (leftHandSide.isAST() && leftHandSide.argSize() > 0) {
+      IExpr lhsHead = leftHandSide.head();
+      while (leftHandSide.isFunctionID(ID.Condition, ID.HoldPattern, ID.PatternTest)) {
+        if (leftHandSide.isAST() && leftHandSide.argSize() > 0) {
+          leftHandSide = getReferenceExpression(leftHandSide.first());
+          if (leftHandSide == null) {
+            return null;
+          }
+          if (leftHandSide.isSymbol()) {
+            return (ISymbol) leftHandSide;
+          }
+          lhsHead = leftHandSide.head();
+        } else {
+          break;
+        }
+      }
+      return getLookupReferenceName(lhsHead);
+    }
+    return null;
   }
 
   public static IExpr messageName(ISymbol symbol, IExpr expr) {

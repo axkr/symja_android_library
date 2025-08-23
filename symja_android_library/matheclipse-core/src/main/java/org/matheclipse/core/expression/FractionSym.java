@@ -217,14 +217,14 @@ public class FractionSym extends AbstractFractionSym {
 
   /** {@inheritDoc} */
   @Override
-  public IRational dec() {
-    return add(F.CN1);
+  public int complexSign() {
+    return fNumerator < 0 ? -1 : fNumerator == 0 ? 0 : 1;
   }
 
   /** {@inheritDoc} */
   @Override
-  public IRational inc() {
-    return add(F.C1);
+  public IRational dec() {
+    return add(F.CN1);
   }
 
   /**
@@ -393,53 +393,14 @@ public class FractionSym extends AbstractFractionSym {
   }
 
   @Override
-  public IExpr lcm(IExpr that) {
-    if (that instanceof BigFractionSym) {
-      return ((BigFractionSym) that).lcm(this);
-    }
-    if (that instanceof FractionSym) {
-      return lcm((FractionSym) that);
-    }
-    return super.lcm(that);
-  }
-
-  public IFraction lcm(FractionSym other) {
-    /* new numerator = lcm(num, other.num) */
-    /* new denominator = gcd(denom, other.denom) */
-    FractionSym fs = other;
-    int numerator = fNumerator < 0 ? -fNumerator : fNumerator;
-    int numeratorOther = fs.fNumerator < 0 ? -fs.fNumerator : fs.fNumerator;
-    long gcddenom = IInteger.gcd(numerator, numeratorOther);
-    long newNumerator = (numerator / gcddenom) * numeratorOther;
-
-    long newDenominator = IInteger.gcd(fDenominator, fs.fDenominator);
-    return valueOf(newNumerator, newDenominator);
-  }
-
-  @Override
-  public BigInteger toBigDenominator() {
-    return BigInteger.valueOf(fDenominator);
-  }
-
-  @Override
-  public BigInteger toBigNumerator() {
-    return BigInteger.valueOf(fNumerator);
+  public int hashCode() {
+    return 37 * (37 * 17 + fNumerator) + fDenominator;
   }
 
   /** {@inheritDoc} */
   @Override
-  public BigFraction toBigFraction() {
-    return new BigFraction(fNumerator, fDenominator);
-  }
-
-  @Override
-  public BigRational toBigRational() {
-    return new BigRational(fNumerator, fDenominator);
-  }
-
-  @Override
-  public int hashCode() {
-    return 37 * (37 * 17 + fNumerator) + fDenominator;
+  public IRational inc() {
+    return add(F.C1);
   }
 
   @Override
@@ -528,6 +489,12 @@ public class FractionSym extends AbstractFractionSym {
 
   /** {@inheritDoc} */
   @Override
+  public boolean isNonNegative() {
+    return fNumerator >= 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public boolean isOne() {
     return fNumerator == fDenominator && fNumerator != 0;
   }
@@ -542,6 +509,30 @@ public class FractionSym extends AbstractFractionSym {
   @Override
   public boolean isZero() {
     return fNumerator == 0;
+  }
+
+  public IFraction lcm(FractionSym other) {
+    /* new numerator = lcm(num, other.num) */
+    /* new denominator = gcd(denom, other.denom) */
+    FractionSym fs = other;
+    int numerator = fNumerator < 0 ? -fNumerator : fNumerator;
+    int numeratorOther = fs.fNumerator < 0 ? -fs.fNumerator : fs.fNumerator;
+    long gcddenom = IInteger.gcd(numerator, numeratorOther);
+    long newNumerator = (numerator / gcddenom) * numeratorOther;
+
+    long newDenominator = IInteger.gcd(fDenominator, fs.fDenominator);
+    return valueOf(newNumerator, newDenominator);
+  }
+
+  @Override
+  public IExpr lcm(IExpr that) {
+    if (that instanceof BigFractionSym) {
+      return ((BigFractionSym) that).lcm(this);
+    }
+    if (that instanceof FractionSym) {
+      return lcm((FractionSym) that);
+    }
+    return super.lcm(that);
   }
 
   /**
@@ -602,6 +593,21 @@ public class FractionSym extends AbstractFractionSym {
   }
 
   @Override
+  public IRational multiply(int n) {
+    if (isZero() || n == 0) {
+      return F.C0;
+    }
+    if (n == 1) {
+      return this;
+    }
+    if (n == -1) {
+      return this.negate();
+    }
+    long newnum = (long) fNumerator * (long) n;
+    return valueOf(newnum, fDenominator).normalize();
+  }
+
+  @Override
   public IRational multiply(IRational parm1) {
     if (isZero() || parm1.isZero()) {
       return F.C0;
@@ -623,21 +629,6 @@ public class FractionSym extends AbstractFractionSym {
     BigIntegerSym p1 = (BigIntegerSym) parm1;
     BigInteger newnum = toBigNumerator().multiply(p1.toBigNumerator());
     return valueOf(newnum, toBigDenominator()).normalize();
-  }
-
-  @Override
-  public IRational multiply(int n) {
-    if (isZero() || n == 0) {
-      return F.C0;
-    }
-    if (n == 1) {
-      return this;
-    }
-    if (n == -1) {
-      return this.negate();
-    }
-    long newnum = (long) fNumerator * (long) n;
-    return valueOf(newnum, fDenominator).normalize();
   }
 
   /**
@@ -669,10 +660,25 @@ public class FractionSym extends AbstractFractionSym {
     return AbstractIntegerSym.valueOf(NumberUtil.round(temp, BigDecimal.ROUND_HALF_EVEN));
   }
 
+  @Override
+  public BigInteger toBigDenominator() {
+    return BigInteger.valueOf(fDenominator);
+  }
+
   /** {@inheritDoc} */
   @Override
-  public int complexSign() {
-    return fNumerator < 0 ? -1 : fNumerator == 0 ? 0 : 1;
+  public BigFraction toBigFraction() {
+    return new BigFraction(fNumerator, fDenominator);
+  }
+
+  @Override
+  public BigInteger toBigNumerator() {
+    return BigInteger.valueOf(fNumerator);
+  }
+
+  @Override
+  public BigRational toBigRational() {
+    return new BigRational(fNumerator, fDenominator);
   }
 
   /** {@inheritDoc} */
@@ -720,18 +726,6 @@ public class FractionSym extends AbstractFractionSym {
 
   /** {@inheritDoc} */
   @Override
-  public long toLongDefault(long defaultValue) {
-    if (fDenominator == 1) {
-      return fNumerator;
-    }
-    if (fNumerator == 0) {
-      return 0;
-    }
-    return defaultValue;
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public long toLong() throws ArithmeticException {
     if (fDenominator == 1) {
       return fNumerator;
@@ -740,6 +734,18 @@ public class FractionSym extends AbstractFractionSym {
       return 0L;
     }
     throw new ArithmeticException("toLong: denominator != 1");
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public long toLongDefault(long defaultValue) {
+    if (fDenominator == 1) {
+      return fNumerator;
+    }
+    if (fNumerator == 0) {
+      return 0;
+    }
+    return defaultValue;
   }
 
   /** {@inheritDoc} */

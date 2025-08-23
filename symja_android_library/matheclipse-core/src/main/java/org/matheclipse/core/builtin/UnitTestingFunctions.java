@@ -17,6 +17,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.PackageUtil;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
@@ -132,7 +133,7 @@ public class UnitTestingFunctions {
     }
 
     private static IExpr runTests(EvalEngine engine, String str) {
-      final List<ASTNode> node = FileFunctions.parseReader(str, engine);
+      final List<ASTNode> node = PackageUtil.parseReader(str, engine);
       IAssociation testResults = evaluatePackage(node, engine);
       IAssociation testResultObject = F.assoc(); // node.size());
       testResultObject.appendRule(F.Rule("TestResults", testResults));
@@ -288,7 +289,7 @@ public class UnitTestingFunctions {
   }
 
   public static IAST readFile(EvalEngine engine, String str) {
-    final List<ASTNode> node = FileFunctions.parseReader(str, engine);
+    final List<ASTNode> node = PackageUtil.parseReader(str, engine);
     AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
     return F.mapRange(0, node.size(), i -> ast2Expr.convert(node.get(i)));
   }

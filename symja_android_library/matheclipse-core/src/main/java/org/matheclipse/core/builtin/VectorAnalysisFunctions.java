@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -77,7 +78,7 @@ public class VectorAnalysisFunctions {
         final IExpr normal = ast.arg1().normal(false);
         if (normal.isList()) {
           final IAST list = (IAST) normal;
-          IntArrayList dimensions = LinearAlgebra.dimensions(list);
+          IntArrayList dimensions = LinearAlgebraUtil.dimensions(list);
           if (dimensions.size() > 2 || dimensions.size() == 0) {
             return F.NIL;
           }
@@ -251,7 +252,7 @@ public class VectorAnalysisFunctions {
         IExpr normal = ast.arg1().normal(false);
         if (normal.isList()) {
           IAST list = (IAST) normal;
-          IntArrayList dimensions = LinearAlgebra.dimensions(list);
+          IntArrayList dimensions = LinearAlgebraUtil.dimensions(list);
           if (dimensions.size() > 2 || dimensions.size() == 0) {
             return F.NIL;
           }
@@ -540,7 +541,7 @@ public class VectorAnalysisFunctions {
 
         if (function.isList()) {
           IAST list = (IAST) function;
-          IntArrayList dimensions = LinearAlgebra.dimensions(list);
+          IntArrayList dimensions = LinearAlgebraUtil.dimensions(list);
           if (dimensions.size() > 2 || dimensions.size() == 0) {
             return F.NIL;
           }

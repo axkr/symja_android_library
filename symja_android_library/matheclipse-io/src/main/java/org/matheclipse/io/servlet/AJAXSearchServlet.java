@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IAST;
@@ -74,7 +73,7 @@ public class AJAXSearchServlet extends HttpServlet {
 
   private static void findDocumentation(Appendable out, String trimmedInput) {
     String name = trimmedInput;
-    IAST list = IOFunctions.getDocumentationByPrefix(name, false);
+    IAST list = Documentation.getDocumentationByPrefix(name, false);
     try {
       if (list.size() != 2) {
         for (int i = 1; i < list.size(); i++) {

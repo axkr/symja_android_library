@@ -245,7 +245,7 @@ public class ReduceVariableIntervalSet {
       return (IAST) value;
     }
     // don't inline #extractVariable() call here, because it can modify the relation
-    return IntervalDataSym.relationToInterval(F.binaryAST2(rv.relation(), variable, value),
+    return IntervalDataSym.relationToIntervalSet(F.binaryAST2(rv.relation(), variable, value),
         variable);
   }
 

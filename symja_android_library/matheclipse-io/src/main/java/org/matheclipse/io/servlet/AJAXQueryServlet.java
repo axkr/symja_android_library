@@ -18,11 +18,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
-import org.matheclipse.core.builtin.ConstantDefinitions;
-import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.eval.exception.AbortException;
@@ -239,7 +238,7 @@ public class AJAXQueryServlet extends HttpServlet {
         if (outExpr != null) {
           if (outExpr.isAST(S.Graphics)) {
             StringBuilder buf = new StringBuilder();
-            if (GraphicsFunctions.renderGraphics2D(buf, (IAST) outExpr, engine)) {
+            if (GraphicsUtil.renderGraphics2D(buf, (IAST) outExpr, engine)) {
               try {
                 return JSONBuilder.createGraphics2DIFrame(JSBuilder.GRAPHICS2D_IFRAME_TEMPLATE,
                     buf.toString());
@@ -249,7 +248,7 @@ public class AJAXQueryServlet extends HttpServlet {
             }
           } else if (outExpr.isASTSizeGE(S.Graphics3D, 2)) {
             StringBuilder buf = new StringBuilder();
-            if (GraphicsFunctions.renderGraphics3D(buf, (IAST) outExpr, engine)) {
+            if (GraphicsUtil.renderGraphics3D(buf, (IAST) outExpr, engine)) {
               try {
                 return JSONBuilder.createGraphics3DIFrame(JSBuilder.GRAPHICS3D_IFRAME_TEMPLATE,
                     buf.toString());
@@ -644,6 +643,6 @@ public class AJAXQueryServlet extends HttpServlet {
     // F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);
     // Config.JAS_NO_THREADS = true;
     // AJAXQueryServlet.log.info(servlet + " initialized");
-    System.out.println("Symja version " + ConstantDefinitions.VERSION + " initialized");
+    System.out.println("Symja version " + Config.VERSION + " initialized");
   }
 }

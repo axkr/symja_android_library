@@ -17,9 +17,9 @@ import org.commonmark.node.Node;
 import org.commonmark.renderer.html.CoreHtmlNodeRenderer;
 import org.commonmark.renderer.html.HtmlNodeRendererContext;
 import org.commonmark.renderer.html.HtmlWriter;
-import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
@@ -104,7 +104,7 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
         IExpr result = F.eval(expr);
         if (result.isSameHeadSizeGE(S.Graphics, 2)) {
           StringBuilder buf = new StringBuilder();
-          if (GraphicsFunctions.renderGraphics2D(buf, (IAST) result, EvalEngine.get())) {
+          if (GraphicsUtil.renderGraphics2D(buf, (IAST) result, EvalEngine.get())) {
 
             String graphicsStr = buf.toString();
 
@@ -119,7 +119,7 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
           // return openSVGOnDesktop((IAST) expr);
         } else if (result.isSameHeadSizeGE(S.Graphics3D, 2)) {
           StringBuilder buf = new StringBuilder();
-          if (GraphicsFunctions.renderGraphics3D(buf, (IAST) result, EvalEngine.get())) {
+          if (GraphicsUtil.renderGraphics3D(buf, (IAST) result, EvalEngine.get())) {
 
             String graphics3DStr = buf.toString();
             String htmlStr =

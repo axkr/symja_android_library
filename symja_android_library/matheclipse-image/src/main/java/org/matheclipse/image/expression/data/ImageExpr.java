@@ -9,9 +9,9 @@ import java.lang.ref.SoftReference;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import javax.imageio.ImageIO;
-import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -120,7 +120,7 @@ final public class ImageExpr extends DataExpr<byte[]> {
    * @return <code>null</code>, if the <code>ImageExpr</code> cannot be created fom the given data.
    */
   public static ImageExpr toImageExpr(IAST imageData) {
-    IntArrayList dimensions = LinearAlgebra.dimensions(imageData);
+    IntArrayList dimensions = LinearAlgebraUtil.dimensions(imageData);
     if (dimensions != null) {
       if (dimensions.size() == 2) {
         BufferedImage buffer = ImageFormat.toIntARGB(imageData);

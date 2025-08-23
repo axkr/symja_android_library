@@ -9,8 +9,8 @@ import javax.imageio.ImageIO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -34,7 +34,7 @@ public class ImportTest {
     // IAST tensor = Import.of(file);
     IAST tensor = ImageFormat.from(ImageIO.read(file));
     System.out.println(tensor.toString());
-    assertEquals(LinearAlgebra.dimensions(tensor), Arrays.asList(33, 15, 4));
+    assertEquals(LinearAlgebraUtil.dimensions(tensor), Arrays.asList(33, 15, 4));
   }
 
   @Test
@@ -42,7 +42,7 @@ public class ImportTest {
     File file = new File(ImportTest.class.getResource("/io/rgb15x33.jpg").getFile());
     // IAST tensor = Import.of(file);
     IAST tensor = ImageFormat.from(ImageIO.read(file));
-    assertEquals(LinearAlgebra.dimensions(tensor), Arrays.asList(33, 15, 4));
+    assertEquals(LinearAlgebraUtil.dimensions(tensor), Arrays.asList(33, 15, 4));
     IExpr part = tensor.getPart(22, 4);
     // verified with gimp
     System.out.println(part.toString());
@@ -90,7 +90,7 @@ public class ImportTest {
         Import.importFromPath(F.stringx("dummy"), Extension.MAT, file, EvalEngine.get());
     if (importResult instanceof IAST && importResult.isPresent()) {
       System.out.println(importResult);
-      IntArrayList dimensions = LinearAlgebra.dimensions(((IAST) importResult));
+      IntArrayList dimensions = LinearAlgebraUtil.dimensions(((IAST) importResult));
       assertEquals(dimensions.toString(), "[8, 9]");
       return;
     }
@@ -105,7 +105,7 @@ public class ImportTest {
         Import.importFromPath(F.stringx("dummy"), Extension.MAT, file, EvalEngine.get());
     if (importResult instanceof IAST && importResult.isPresent()) {
       System.out.println(importResult);
-      IntArrayList dimensions = LinearAlgebra.dimensions(((IAST) importResult));
+      IntArrayList dimensions = LinearAlgebraUtil.dimensions(((IAST) importResult));
       assertEquals(dimensions.toString(), "[2, 3, 4, 5, 6]");
       return;
     }
@@ -120,7 +120,7 @@ public class ImportTest {
         Import.importFromPath(F.stringx("dummy"), Extension.MAT, file, EvalEngine.get());
     if (importResult instanceof IAST && importResult.isPresent()) {
       System.out.println(importResult);
-      IntArrayList dimensions = LinearAlgebra.dimensions(((IAST) importResult));
+      IntArrayList dimensions = LinearAlgebraUtil.dimensions(((IAST) importResult));
       assertEquals(dimensions.toString(), "[1, 2]");
       return;
     }

@@ -6,9 +6,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.matheclipse.core.builtin.FileFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.eval.PackageUtil;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
@@ -200,7 +200,7 @@ public class GetTestSingleRunJUnit {
 
     final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
     final List<ASTNode> node = parser.parsePackage(VECTOR_ANALYSIS);
-    FileFunctions.evaluatePackage(node, engine);
+    PackageUtil.evaluatePackage(node, engine);
 
     // print Coordinates::usage to console
     IExpr result = fEvaluator.eval("?Coordinates");

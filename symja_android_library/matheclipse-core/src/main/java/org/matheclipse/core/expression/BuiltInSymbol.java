@@ -8,6 +8,7 @@ import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractPredicateEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IRealConstant;
@@ -16,7 +17,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBooleanFormula;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComparatorFunction;
-import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPredicate;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -25,32 +25,8 @@ import org.matheclipse.parser.client.ParserConfig;
 
 /** Implements Symbols for function, constant and variable names */
 public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
-  private static final class PredicateEvaluator extends AbstractPredicateEvaluator
-      implements IPredicate {
-    Predicate<IExpr> predicate;
-
-    public PredicateEvaluator(Predicate<IExpr> predicate) {
-      this.predicate = predicate;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return predicate.test(ast.arg1()) ? S.True : S.False;
-    }
-
-    @Override
-    public boolean evalArg1Boole(IExpr arg1, EvalEngine engine) {
-      return predicate.test(arg1);
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return IFunctionEvaluator.ARGS_1_1;
-    }
-  }
-
-  private static class DummyEvaluator implements IEvaluator {
+  private static class DummyEvaluator extends AbstractSymbolEvaluator
+      implements ISymbolEvaluator {
 
     /**
      * Causes the current thread to wait until the INIT_THREAD has initialized the Integrate()
@@ -67,17 +43,40 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     }
   }
 
+  private static final class PredicateEvaluator extends AbstractPredicateEvaluator
+      implements IPredicate {
+    Predicate<IExpr> predicate;
+
+    public PredicateEvaluator(Predicate<IExpr> predicate) {
+      this.predicate = predicate;
+    }
+
+    @Override
+    public boolean evalArg1Boole(IExpr arg1, EvalEngine engine) {
+      return predicate.test(arg1);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return predicate.test(ast.arg1()) ? S.True : S.False;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return IFunctionEvaluator.ARGS_1_1;
+    }
+  }
+
   /** */
   private static final long serialVersionUID = -4991038487281911261L;
 
   public static final DummyEvaluator DUMMY_EVALUATOR = new DummyEvaluator();
 
   /**
-   * The evaluation class of this built-in-function. See packages: package <code>
-   * org.matheclipse.core.builtin.function</code> and <code>org.matheclipse.core.reflection.system
-   * </code>.
+   * The evaluation class of this built-in-function.
    */
-  private transient IEvaluator fEvaluator;
+  private transient IFunctionEvaluator fEvaluator;
 
   private transient int fOrdinal;
 
@@ -115,16 +114,6 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
   /** {@inheritDoc} */
   @Override
-  public final void clearAttributes(final int attributes) {
-    if (Config.FUZZ_TESTING) {
-      // Cannot assign to raw object `1`.
-      throw new NullPointerException();
-    }
-    super.clearAttributes(attributes);
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public final void clearAll(EvalEngine engine) {
     if (Config.FUZZ_TESTING) {
       // Cannot assign to raw object `1`.
@@ -132,6 +121,16 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     }
     // clear(engine);
     // fAttributes = NOATTRIBUTE;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final void clearAttributes(final int attributes) {
+    if (Config.FUZZ_TESTING) {
+      // Cannot assign to raw object `1`.
+      throw new NullPointerException();
+    }
+    super.clearAttributes(attributes);
   }
 
   @Override
@@ -184,12 +183,19 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   @Override
   public IExpr evaluate(EvalEngine engine) {
     if (fEvaluator instanceof ISymbolEvaluator) {
+      IExpr assignedValue = F.NIL;
       if (engine.isArbitraryMode()) {
-        return ((ISymbolEvaluator) fEvaluator).apfloatEval(this, engine);
+        assignedValue = ((ISymbolEvaluator) fEvaluator).apfloatEval(this, engine);
       } else if (engine.isNumericMode()) {
-        return ((ISymbolEvaluator) fEvaluator).numericEval(this, engine);
+        assignedValue = ((ISymbolEvaluator) fEvaluator).numericEval(this, engine);
       }
-      return ((ISymbolEvaluator) fEvaluator).evaluate(this, engine);
+      if (assignedValue.isPresent()) {
+        return assignedValue;
+      }
+      assignedValue = ((ISymbolEvaluator) fEvaluator).evaluate(this, engine);
+      if (assignedValue.isPresent()) {
+        return assignedValue;
+      }
     }
     if (hasAssignedSymbolValue()) {
       return assignedValue();
@@ -205,19 +211,13 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
   /** {@inheritDoc} */
   @Override
-  public final IEvaluator getEvaluator() {
+  public final IFunctionEvaluator getEvaluator() {
     return fEvaluator;
   }
 
   /** {@inheritDoc} */
   @Override
   public final int hashCode() {
-    return fOrdinal;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public final int ordinal() {
     return fOrdinal;
   }
 
@@ -232,10 +232,12 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     return super.internalJavaStringAsFactoryMethod();
   }
 
-  /** {@inheritDoc} */
   @Override
-  public final boolean isCoreFunctionSymbol() {
-    return fEvaluator instanceof ICoreFunctionEvaluator;
+  public final COMPARE_TERNARY isAlgebraic() {
+    if (isRealConstant()) {
+      return ((IRealConstant) fEvaluator).isAlgebraic();
+    }
+    return COMPARE_TERNARY.UNDECIDABLE;
   }
 
   /** {@inheritDoc} */
@@ -252,14 +254,8 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
   /** {@inheritDoc} */
   @Override
-  public final boolean isPredicateFunctionSymbol() {
-    return fEvaluator instanceof IPredicate;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public final boolean isHoldOrHoldFormOrDefer() {
-    return this.equals(S.Defer) || this.equals(S.Hold) || this.equals(S.HoldForm);
+  public final boolean isCoreFunctionSymbol() {
+    return fEvaluator instanceof ICoreFunctionEvaluator;
   }
 
   /** {@inheritDoc} */
@@ -282,6 +278,12 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
   /** {@inheritDoc} */
   @Override
+  public final boolean isHoldOrHoldFormOrDefer() {
+    return this.equals(S.Defer) || this.equals(S.Hold) || this.equals(S.HoldForm);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public final boolean isIndeterminate() {
     return this == S.Indeterminate;
   }
@@ -295,19 +297,16 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   }
 
   @Override
-  public final COMPARE_TERNARY isAlgebraic() {
+  public final boolean isNegative() {
     if (isRealConstant()) {
-      return ((IRealConstant) fEvaluator).isAlgebraic();
+      return ((IRealConstant) fEvaluator).isNegative();
     }
-    return COMPARE_TERNARY.UNDECIDABLE;
+    return false;
   }
 
   @Override
-  public final COMPARE_TERNARY isTranscendental() {
-    if (isRealConstant()) {
-      return ((IRealConstant) fEvaluator).isTranscendental();
-    }
-    return COMPARE_TERNARY.UNDECIDABLE;
+  public final boolean isNonNegative() {
+    return isRealConstant() ? ((IRealConstant) fEvaluator).isNonNegative() : false;
   }
 
   /** {@inheritDoc} */
@@ -317,16 +316,14 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   }
 
   @Override
-  public final boolean isNegative() {
-    if (isRealConstant()) {
-      return ((IRealConstant) fEvaluator).isNegative();
-    }
-    return false;
-  }
-
-  @Override
   public final boolean isPositive() {
     return isRealConstant() ? ((IRealConstant) fEvaluator).isPositive() : false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final boolean isPredicateFunctionSymbol() {
+    return fEvaluator instanceof IPredicate;
   }
 
   /** {@inheritDoc} */
@@ -346,6 +343,14 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     return false;
   }
 
+  @Override
+  public final COMPARE_TERNARY isTranscendental() {
+    if (isRealConstant()) {
+      return ((IRealConstant) fEvaluator).isTranscendental();
+    }
+    return COMPARE_TERNARY.UNDECIDABLE;
+  }
+
   /** {@inheritDoc} */
   @Override
   public final boolean isTrue() {
@@ -356,6 +361,18 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   @Override
   public final boolean isUndefined() {
     return this == S.Undefined;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr mapConstantDouble(DoubleFunction<IExpr> function) {
+    if (fEvaluator instanceof IRealConstant) {
+      double value = ((IRealConstant) fEvaluator).evalReal();
+      if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
+        return function.apply(value);
+      }
+    }
+    return F.NIL;
   }
 
   /** {@inheritDoc} */
@@ -401,14 +418,17 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
   /** {@inheritDoc} */
   @Override
-  public IExpr mapConstantDouble(DoubleFunction<IExpr> function) {
-    if (fEvaluator instanceof IRealConstant) {
-      double value = ((IRealConstant) fEvaluator).evalReal();
-      if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
-        return function.apply(value);
-      }
-    }
-    return F.NIL;
+  public final int ordinal() {
+    return fOrdinal;
+  }
+
+  private void readObject(java.io.ObjectInputStream stream) throws IOException {
+    fOrdinal = stream.readInt();
+  }
+
+  @Override
+  public Object readResolve() {
+    return S.symbol(fOrdinal);
   }
 
   /** {@inheritDoc} */
@@ -419,7 +439,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
   /** {@inheritDoc} */
   @Override
-  public final void setEvaluator(final IEvaluator evaluator) {
+  public final void setEvaluator(final IFunctionEvaluator evaluator) {
     evaluator.setUp(this);
     fEvaluator = evaluator;
   }
@@ -428,15 +448,6 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   @Override
   public final void setPredicateQ(final Predicate<IExpr> predicate) {
     fEvaluator = new PredicateEvaluator(predicate);
-  }
-
-  private void readObject(java.io.ObjectInputStream stream) throws IOException {
-    fOrdinal = stream.readInt();
-  }
-
-  @Override
-  public Object readResolve() {
-    return S.symbol(fOrdinal);
   }
 
   private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {

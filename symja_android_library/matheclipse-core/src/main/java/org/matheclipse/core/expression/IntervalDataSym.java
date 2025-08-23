@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ReduceVariableIntervalSet;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -593,18 +594,12 @@ public class IntervalDataSym {
     }
     IAST result = (IAST) ast.arg1();
     result = normalize(result, engine);
-    if (result.isInvalid()) {
-      return F.NIL;
-    }
     if (result.isNIL()) {
       result = (IAST) ast.arg1();
     }
     for (int i = 2; i < ast.size(); i++) {
       IAST interval = (IAST) ast.get(i);
       IAST normalizedArg = normalize(interval, engine);
-      if (normalizedArg.isInvalid()) {
-        return F.NIL;
-      }
       if (normalizedArg.isNIL()) {
         normalizedArg = interval;
       }
@@ -614,9 +609,6 @@ public class IntervalDataSym {
       }
     }
     IAST normalized = normalize(result, engine);
-    if (normalized.isInvalid()) {
-      return F.NIL;
-    }
     return normalized.orElse(result);
   }
 
@@ -650,9 +642,7 @@ public class IntervalDataSym {
       }
     }
     IAST normalized = normalize(result, engine);
-    if (normalized.isInvalid()) {
-      return F.NIL;
-    }
+
     return normalized.orElse(result);
   }
 
@@ -1232,9 +1222,9 @@ public class IntervalDataSym {
    * The list of intervals are sorted and overlapping intervals are merged.
    *
    * @param intervalList
-   * @return <code>F.NIL</code> if the interval could not be normalized
+   * @return throw ArgumentTypeException if the interval could not be normalized
    */
-  public static IAST normalize(final IAST intervalList) {
+  public static IAST normalize(final IAST intervalList) throws ArgumentTypeException {
     if (isNormalized(intervalList)) {
       return intervalList;
     }
@@ -1245,7 +1235,8 @@ public class IntervalDataSym {
     if (isNormalized(intervalList)) {
       return intervalList;
     }
-    return F.NIL;
+    String str = Errors.getMessage("nvld", F.list(intervalList));
+    throw new ArgumentTypeException(str);
   }
 
 
@@ -1254,10 +1245,11 @@ public class IntervalDataSym {
    *
    * @param intervalList
    * @param engine
-   * @return {@link F#INVALID} if the interval could not be normalized. {@link F#NIL} if the
-   *         interval could not be normalized.
+   * @return throw ArgumentTypeException if the interval could not be normalized. {@link F#NIL} if
+   *         the interval could not be normalized.
    */
-  public static IAST normalize(final IAST intervalList, EvalEngine engine) {
+  private static IAST normalize(final IAST intervalList, EvalEngine engine)
+      throws ArgumentTypeException {
     if (!intervalList.isAST(S.IntervalData)) {
       return F.IntervalData(F.List(intervalList, S.LessEqual, S.LessEqual, intervalList));
     }
@@ -1266,11 +1258,6 @@ public class IntervalDataSym {
     int i = 1;
     while (i < result.size()) {
       IAST temp = normalizeArgument(intervalList.get(i), engine);
-      if (temp.isInvalid()) {
-        // The expression `1` is not a valid interval.
-        Errors.printMessage(S.IntervalData, "nvld", F.list(intervalList.get(i)), engine);
-        return temp;
-      }
       if (temp.isPresent()) {
         evaled = true;
         if (temp.isEmptyList()) {
@@ -1351,8 +1338,7 @@ public class IntervalDataSym {
         }
 
         // The expression `1` is not a valid interval.
-        Errors.printMessage(S.IntervalData, "nvld", F.list(intervalList.get(i)), engine);
-        return F.INVALID;
+        throw new ArgumentTypeException("nvld", F.list(intervalList.get(i)));
       }
       result.set(j, list1);
     }
@@ -1375,10 +1361,12 @@ public class IntervalDataSym {
    *
    * @param arg
    * @param engine
-   * @return {@link F#INVALID} if the interval could not be normalized. {@link F#NIL} if the
-   *         interval doesn't need to be normalized. {@link F#CEmptyList} if the interval is empty.
+   * @return throw ArgumentTypeException if the interval could not be normalized. {@link F#NIL} if
+   *         the interval doesn't need to be normalized. {@link F#CEmptyList} if the interval is
+   *         empty.
    */
-  private static IAST normalizeArgument(final IExpr arg, final EvalEngine engine) {
+  private static IAST normalizeArgument(final IExpr arg, final EvalEngine engine)
+      throws ArgumentTypeException {
     if (arg.isList()) {
       if (arg.argSize() == 4) {
         try {
@@ -1386,11 +1374,13 @@ public class IntervalDataSym {
           IExpr arg1 = list.arg1();
           IBuiltInSymbol left = (IBuiltInSymbol) list.arg2();
           if (left != S.Less && left != S.LessEqual) {
-            return F.INVALID;
+            String str = Errors.getMessage("nvld", F.list(arg), engine);
+            throw new ArgumentTypeException(str);
           }
           IBuiltInSymbol right = (IBuiltInSymbol) list.arg3();
           if (right != S.Less && right != S.LessEqual) {
-            return F.INVALID;
+            String str = Errors.getMessage("nvld", F.list(arg), engine);
+            throw new ArgumentTypeException(str);
           }
           IExpr arg4 = list.arg4();
           if (arg1.isReal() && arg4.isReal()) {
@@ -1426,7 +1416,8 @@ public class IntervalDataSym {
           boolean evaled = false;
           if (min.isInfinity() || min.isNegativeInfinity()) {
             if (min.equals(max)) {
-              return F.INVALID;
+              String str = Errors.getMessage("nvld", F.list(arg), engine);
+              throw new ArgumentTypeException(str);
             }
             left = S.Less;
             evaled = true;
@@ -1443,11 +1434,13 @@ public class IntervalDataSym {
           }
           return F.NIL;
         } catch (ClassCastException cce) {
-          // wrong IntervalData
+          String str = Errors.getMessage("nvld", F.list(arg), engine);
+          throw new ArgumentTypeException(str);
         }
       }
       // The expression `1` is not a valid interval.
-      return F.INVALID;
+      String str = Errors.getMessage("nvld", F.list(arg), engine);
+      throw new ArgumentTypeException(str);
     }
     if (arg instanceof INum) {
       if (arg instanceof ApfloatNum) {
@@ -1711,13 +1704,13 @@ public class IntervalDataSym {
             F.CInfinity));
   }
 
-  public static IAST relationToInterval(IAST relation, IExpr variable) {
+  public static IAST relationToIntervalSet(IAST relation, IExpr variable) {
     int headID = relation.headID();
     if (relation.isAST2()) {
       IExpr lhs = relation.arg1();
       IExpr rhs = relation.arg2();
       if (variable.equals(lhs) && !variable.equals(rhs)) {
-        return relationToInterval(headID, rhs);
+        return relationToIntervalSet(headID, rhs);
       } else if (variable.equals(rhs) && !variable.equals(lhs)) {
         IExpr value = lhs;
         // value <relation> symbol
@@ -1790,7 +1783,7 @@ public class IntervalDataSym {
     return F.NIL;
   }
 
-  public static IAST relationToInterval(int headID, IExpr value) {
+  public static IAST relationToIntervalSet(int headID, IExpr value) {
     switch (headID) {
       case ID.Greater:
         return open(value, F.CInfinity);
@@ -1808,6 +1801,18 @@ public class IntervalDataSym {
             F.List(value, S.Less, S.Less, F.CInfinity));
     }
     throw new ArgumentTypeStopException("Not implemented");
+  }
+
+  public static IAST intervalToIntervalSet(IAST interval) {
+    if (interval.isInterval()) {
+      IASTAppendable result = F.IntervalDataAlloc(interval.size());
+      for (int i = 1; i < interval.size(); i++) {
+        IAST list = (IAST) interval.get(i);
+        result.append(F.List(list.arg1(), S.LessEqual, S.LessEqual, list.arg2()));
+      }
+      return result;
+    }
+    return F.NIL;
   }
 
   /**
@@ -2174,10 +2179,10 @@ public class IntervalDataSym {
       if (reducedIntervalData.isPresent()) {
         return reducedIntervalData;
       } else {
-        return relationToInterval((IAST) logicOrDomainExpr, variable);
+        return relationToIntervalSet((IAST) logicOrDomainExpr, variable);
       }
     } else if (logicOrDomainExpr.isRelational()) {
-      return relationToInterval((IAST) logicOrDomainExpr, variable);
+      return relationToIntervalSet((IAST) logicOrDomainExpr, variable);
     } else if (logicOrDomainExpr == S.Reals) {
       return F.CRealsIntervalData;
     }
@@ -2201,6 +2206,8 @@ public class IntervalDataSym {
     return F.NIL;
   }
 
+
+
   public static IAST union(final IAST interval1, final IAST interval2) {
     return union(interval1, interval2, EvalEngine.get());
   }
@@ -2211,9 +2218,6 @@ public class IntervalDataSym {
     result.appendArgs(interval2);
 
     IAST normalized = normalize(result, engine);
-    if (normalized.isInvalid()) {
-      return F.NIL;
-    }
     return normalized.orElse(result);
   }
 }

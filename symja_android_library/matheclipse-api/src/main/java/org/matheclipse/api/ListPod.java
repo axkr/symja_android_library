@@ -1,7 +1,6 @@
 package org.matheclipse.api;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.StringFunctions;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -10,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IStringX;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
@@ -136,7 +136,7 @@ public class ListPod implements IPod {
               if (podOut.isAST(S.JSFormData, 3)) {
                 int form = Pods.internFormat(Pods.SYMJA, podOut.second().toString());
                 Pods.addPod(podsArray, inExpr, podOut, podOut.first().toString(),
-                    StringFunctions.inputForm(plot2D), "Plot points", "Plotter", form, engine);
+                    IStringX.inputForm(plot2D), "Plot points", "Plotter", form, engine);
                 numpods++;
               }
             }
@@ -170,7 +170,7 @@ public class ListPod implements IPod {
           if (podOut.isAST(S.JSFormData, 3)) {
             int form = Pods.internFormat(Pods.SYMJA, podOut.second().toString());
             Pods.addPod(podsArray, inExpr, podOut, podOut.first().toString(),
-                StringFunctions.inputForm(plot2D), "Plot points", "Plotter", form, engine);
+                IStringX.inputForm(plot2D), "Plot points", "Plotter", form, engine);
             numpods++;
           }
         }
@@ -188,7 +188,7 @@ public class ListPod implements IPod {
         if (podOut.isAST(S.JSFormData, 3)) {
           int form = Pods.internFormat(Pods.SYMJA, podOut.second().toString());
           Pods.addPod(podsArray, inExpr, podOut, podOut.first().toString(),
-              StringFunctions.inputForm(histogram), "Histogram", "Plotter", form, engine);
+              IStringX.inputForm(histogram), "Histogram", "Plotter", form, engine);
           numpods++;
         }
       }

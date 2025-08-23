@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -42,7 +43,7 @@ public class FilterFunctions {
       try {
         if (ast.arg1().isList()) {
           IAST list = (IAST) ast.arg1();
-          IntList dims = LinearAlgebra.dimensions(list);
+          IntList dims = LinearAlgebraUtil.dimensions(list);
           if (dims.size() != 1) {
             // Function `1` not implemented
             return Errors.printMessage(ast.topHead(), "zznotimpl",

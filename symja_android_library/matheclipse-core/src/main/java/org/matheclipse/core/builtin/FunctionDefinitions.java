@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.reflection.system.rules.AutomaticRules;
 import org.matheclipse.core.reflection.system.steps.QuarticSolve;
 
 public final class FunctionDefinitions {
@@ -129,9 +130,79 @@ public final class FunctionDefinitions {
     }
   }
 
-  public static void initialize() {
-    Initializer.init();
-  }
-
   private FunctionDefinitions() {}
+
+  public static boolean builtinFunctionInitializer() {
+
+    Arithmetic.initialize();
+    PredicateQ.initialize();
+    AttributeFunctions.initialize();
+
+    ConstantDefinitions.initialize();
+    Initializer.init();
+    S.Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
+    IOFunctions.initialize();
+    Programming.initialize();
+    PatternMatching.initialize();
+    FileFunctions.initialize();
+    Algebra.initialize();
+    SimplifyFunctions.initialize();
+    StructureFunctions.initialize();
+    ExpTrigsFunctions.initialize();
+    NumberTheory.initialize();
+    BooleanFunctions.initialize();
+    LinearAlgebra.initialize();
+    TensorFunctions.initialize();
+    ListFunctions.initialize();
+    SubsetFunctions.initialize();
+    SequenceFunctions.initialize();
+    Combinatoric.initialize();
+    IntegerFunctions.initialize();
+    BesselFunctions.initialize();
+    SpecialFunctions.initialize();
+    StringFunctions.initialize();
+    OutputFunctions.initialize();
+    RandomFunctions.initialize();
+    StatisticsFunctions.initialize();
+    StatisticalMomentFunctions.initialize();
+    HypergeometricFunctions.initialize();
+    EllipticIntegrals.initialize();
+    PolynomialFunctions.initialize();
+    RootsFunctions.initialize();
+    SeriesFunctions.initialize();
+    AssumptionFunctions.initialize();
+    ContainsFunctions.initialize();
+    CurveFitterFunctions.initialize();
+    VectorAnalysisFunctions.initialize();
+    QuantityFunctions.initialize();
+    IntervalFunctions.initialize();
+    FinancialFunctions.initialize();
+    WXFFunctions.initialize();
+    WindowFunctions.initialize();
+    MinMaxFunctions.initialize();
+    GraphFunctions.initialize();
+    GraphDataFunctions.initialize();
+    AssociationFunctions.initialize();
+    GeodesyFunctions.initialize();
+    ManipulateFunction.initialize();
+    FilterFunctions.initialize();
+    EntityFunctions.initialize();
+    ClusteringFunctions.initialize();
+    SourceCodeFunctions.initialize();
+    SparseArrayFunctions.initialize();
+    UnitTestingFunctions.initialize();
+    BoxesFunctions.initialize();
+    NumericArrayFunctions.initialize();
+    GraphicsFunctions.initialize();
+    CompilerFunctions.initialize();
+    JavaFunctions.initialize();
+    SidesFunctions.initialize();
+    ComputationalGeometryFunctions.initialize();
+    PiecewiseFunctions.initialize();
+    QuantumPhysicsFunctions.initialize();
+    ConstantPhysicsDefinitions.initialize();
+  
+    AutomaticRules.initialize();
+    return true;
+  }
 }

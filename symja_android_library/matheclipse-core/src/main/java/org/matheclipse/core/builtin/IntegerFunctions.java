@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -360,6 +361,9 @@ public class IntegerFunctions {
       if (ast.arg1().isInteger()) {
         int power2_K = ast.arg2().toIntDefault();
         if (power2_K >= 0) {
+          if ((Config.MAX_BIT_LENGTH) <= power2_K) {
+            BigIntegerLimitExceeded.throwIt(power2_K);
+          }
           try {
             IInteger iArg1 = (IInteger) ast.arg1();
             BigInteger big = iArg1.toBigNumerator();

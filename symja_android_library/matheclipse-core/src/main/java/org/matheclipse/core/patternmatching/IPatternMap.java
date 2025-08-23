@@ -3,8 +3,9 @@ package org.matheclipse.core.patternmatching;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
-import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -14,6 +15,7 @@ import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.GenericPair;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
@@ -372,7 +374,7 @@ public interface IPatternMap {
           return F.NIL;
         }
         if (input.isAST(S.OptionValue, 2, 4)) {
-          return PatternMatching.optionValueReplace((IAST) input, true, engine);
+          return IPatternMap.optionValueReplace((IAST) input, true, engine);
         }
         return F.NIL;
       });
@@ -674,7 +676,7 @@ public interface IPatternMap {
             return fValue2 != null ? fValue2 : nilOrEmptySequence;
           }
         } else if (input.isAST(S.OptionValue, 2, 4)) {
-          return PatternMatching.optionValueReplace((IAST) input, true, engine);
+          return IPatternMap.optionValueReplace((IAST) input, true, engine);
         }
         return F.NIL;
       });
@@ -1047,7 +1049,7 @@ public interface IPatternMap {
             return fValue3 != null ? fValue3 : nilOrEmptySequence;
           }
         } else if (input.isAST(S.OptionValue, 2, 4)) {
-          return PatternMatching.optionValueReplace((IAST) input, true, engine);
+          return IPatternMap.optionValueReplace((IAST) input, true, engine);
         }
         return F.NIL;
       });
@@ -1482,7 +1484,7 @@ public interface IPatternMap {
             return fValue4 != null ? fValue4 : nilOrEmptySequence;
           }
         } else if (input.isAST(S.OptionValue, 2, 4)) {
-          return PatternMatching.optionValueReplace((IAST) input, true, engine);
+          return IPatternMap.optionValueReplace((IAST) input, true, engine);
         }
         return F.NIL;
       });
@@ -1983,7 +1985,7 @@ public interface IPatternMap {
             return fValue5 != null ? fValue5 : nilOrEmptySequence;
           }
         } else if (input.isAST(S.OptionValue, 2, 4)) {
-          return PatternMatching.optionValueReplace((IAST) input, true, engine);
+          return IPatternMap.optionValueReplace((IAST) input, true, engine);
         }
         return F.NIL;
       });
@@ -2551,7 +2553,7 @@ public interface IPatternMap {
             return fValue6 != null ? fValue6 : nilOrEmptySequence;
           }
         } else if (input.isAST(S.OptionValue, 2, 4)) {
-          return PatternMatching.optionValueReplace((IAST) input, true, engine);
+          return IPatternMap.optionValueReplace((IAST) input, true, engine);
         }
         return F.NIL;
       });
@@ -3039,7 +3041,7 @@ public interface IPatternMap {
           }
           if (input.isAST(S.OptionValue, 2, 4)) {
             // final int length = fSymbolsOrPattern.length;
-            return PatternMatching.optionValueReplace((IAST) input, true, engine);
+            return IPatternMap.optionValueReplace((IAST) input, true, engine);
           }
           return F.NIL;
         });
@@ -3661,6 +3663,147 @@ public interface IPatternMap {
   public IExpr substitutePatterns(final IExpr rhsExpr, final IExpr nilOrEmptySequence);
 
   public boolean setOptionsPattern(final EvalEngine engine, ISymbol lhsHead);
+
+  /**
+   * Get the right-hand-side of an options rule by comparing the <code>lhsOptionValue</code> with
+   * the left-hand-side of the rules in <code>optionsPattern</code> for equality.
+   *
+   * @param lhsOptionValue
+   * @param optionsPattern list of options rules
+   * @return the right-hand-side expression or {@link F#NIL} if no matching rule was found
+   */
+  private static IExpr optionsRHSRuleValue(IExpr lhsOptionValue, IASTAppendable optionsPattern) {
+    if (optionsPattern != null) {
+      for (int i = 1; i < optionsPattern.size(); i++) {
+        IAST rule = (IAST) optionsPattern.get(i);
+        if (rule.arg1().equals(lhsOptionValue)) {
+          return rule.arg2();
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Determine the current <code>OptionValue(...)</code> currently associated with an expression.
+   *
+   * @param ast
+   * @param quiet if <code>true</code> print no message if an option value cannot be found
+   * @param engine
+   * @return {@link F#NIL} if an option value cannot be found; otherwise get the optional value
+   */
+  static IExpr optionValueReplace(final IAST ast, boolean quiet, EvalEngine engine) {
+    IASTAppendable optionsPattern = null;
+    IExpr arg1 = engine.evaluate(ast.arg1());
+    IExpr rhsRuleValue = F.NIL;
+    IAST optionsList = null;
+    if (ast.size() > 2 && arg1.isSymbol()) {
+      optionsList =
+          org.matheclipse.core.expression.OptionsPattern.optionsList((ISymbol) arg1, true);
+    }
+    IExpr optionValue;
+    if (ast.isAST3()) {
+      IExpr arg2 = ast.arg2();
+      IExpr arg3 = ast.arg3();
+      if (arg3.isList()) {
+        return arg3.mapThread(ast, 3);
+      }
+      optionsPattern = F.ListAlloc(10);
+      org.matheclipse.core.expression.OptionsPattern.extractRules(arg2, optionsPattern);
+      org.matheclipse.core.expression.OptionsPattern.extractRules(optionsList, optionsPattern);
+      optionValue = arg3;
+      if (arg3.isSymbol()) {
+        optionValue = F.$str(((ISymbol) arg3).getSymbolName());
+      }
+      if (optionsPattern != null) {
+        rhsRuleValue = optionsRHSRuleValue(optionValue, optionsPattern);
+        if (rhsRuleValue.isPresent()) {
+          return rhsRuleValue;
+        }
+        if (!quiet) {
+          // Option name `2` not found in defaults for `1`
+          Errors.printMessage(ast.topHead(), "optnf", F.list(arg1, optionValue), engine);
+        }
+        return optionValue;
+      }
+      return F.NIL;
+    } else if (ast.isAST2()) {
+      IExpr arg2 = ast.arg2();
+      if (arg2.isList()) {
+        return arg2.mapThread(ast, 2);
+      }
+      optionValue = arg2;
+      if (arg2.isSymbol()) {
+        optionValue = F.$str(((ISymbol) arg2).getSymbolName());
+      }
+      if (arg1.isSymbol()) {
+        Iterator<IdentityHashMap<ISymbol, IASTAppendable>> iter = engine.optionsStackIterator();
+        while (iter.hasNext()) {
+          IdentityHashMap<ISymbol, IASTAppendable> map = iter.next();
+          if (map != null) {
+            optionsPattern = map.get(arg1);
+            if (optionsPattern != null) {
+              rhsRuleValue = optionsRHSRuleValue(optionValue, optionsPattern);
+              if (rhsRuleValue.isPresent()) {
+                return rhsRuleValue;
+              }
+            }
+          }
+        }
+      } else {
+        if (arg1.isAST()) {
+          optionsList = (IAST) arg1;
+        }
+      }
+      if (optionsPattern == null) {
+        optionsPattern = F.ListAlloc(10);
+      }
+      org.matheclipse.core.expression.OptionsPattern.extractRules(optionsList, optionsPattern);
+      if (optionsPattern != null) {
+        rhsRuleValue = optionsRHSRuleValue(optionValue, optionsPattern);
+        if (rhsRuleValue.isPresent()) {
+          return rhsRuleValue;
+        }
+        if (!quiet) {
+          // Option name `2` not found in defaults for `1`
+          Errors.printMessage(ast.topHead(), "optnf", F.list(arg1, optionValue), engine);
+        }
+        return optionValue;
+      }
+      return F.NIL;
+    } else { // ast.isAST1()
+      optionValue = arg1;
+      if (arg1.isSymbol()) {
+        optionValue = F.$str(((ISymbol) arg1).getSymbolName());
+      }
+
+      Iterator<IdentityHashMap<ISymbol, IASTAppendable>> iter = engine.optionsStackIterator();
+      while (iter.hasNext()) {
+        IdentityHashMap<ISymbol, IASTAppendable> map = iter.next();
+        if (map != null) {
+          optionsPattern = map.get(S.LHS_HEAD);
+          if (optionsPattern != null) {
+
+            ISymbol lhsHead = optionsPattern.topHead();
+            optionsPattern = map.get(lhsHead);
+            rhsRuleValue = optionsRHSRuleValue(optionValue, optionsPattern);
+            if (rhsRuleValue.isPresent()) {
+              return rhsRuleValue;
+            }
+          }
+        }
+      }
+      // return arg1;
+    }
+    if (optionsPattern != null) {
+      if (!quiet) {
+        // Option name `2` not found in defaults for `1`
+        Errors.printMessage(ast.topHead(), "optnf", F.list(arg1, optionValue), engine);
+      }
+      return optionValue;
+    }
+    return F.NIL;
+  }
 
   /**
    * Sets the following flags for pattern matching processing: {@link IAST#CONTAINS_PATTERN},

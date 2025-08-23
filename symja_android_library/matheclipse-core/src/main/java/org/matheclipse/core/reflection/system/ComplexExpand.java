@@ -11,10 +11,10 @@ import static org.matheclipse.core.expression.F.Sinh;
 import static org.matheclipse.core.expression.F.Times;
 import java.util.List;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.SimplifyFunctions;
-import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.SimplifyUtil;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
@@ -132,7 +132,7 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
 
         IExpr x = base.re();
         IExpr y = base.im();
-        IExpr arg = SimplifyFunctions.argReXImY(x, y, fEngine);
+        IExpr arg = SimplifyUtil.argReXImY(x, y, fEngine);
         if (exp.isRealResult()) {
           IExpr n = exp;
           // (x^2+y^2)^(n/2)*Cos(n*arg)+I*(x^2+y^2)^(n/2)*Sin(n*arg)
@@ -437,7 +437,7 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
                   F.PowerExpand(F.Log(F.FactorTerms(F.Plus(F.Sqr(x), F.Sqr(y)))));
               logPart = fEngine.evaluate(F.Times(F.C1D2, logPlusReImSquared));
             }
-            IExpr arg = SimplifyFunctions.argReXImY(x, y, fEngine);
+            IExpr arg = SimplifyUtil.argReXImY(x, y, fEngine);
             return F.Plus(F.Times(F.CI, arg), logPart);
           case ID.Sec: {
             // (2*Cos(x)*Cosh(y))/(Cos(2*x)+Cosh(2*y))+(I*2*Sin(x)*Sinh(y))/(Cos(2*x)+Cosh(2*y))
@@ -737,7 +737,7 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
       final EvalEngine engine, IAST originalAST) {
-    IExpr temp = StructureFunctions.threadListLogicEquationOperators(ast.arg1(), ast, 1);
+    IExpr temp = CompareUtil.threadListLogicEquationOperators(ast.arg1(), ast, 1);
     if (temp.isPresent()) {
       return temp;
     }

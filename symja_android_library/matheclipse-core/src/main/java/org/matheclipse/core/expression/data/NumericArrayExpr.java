@@ -10,8 +10,8 @@ import java.util.Arrays;
 import java.util.Map;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
@@ -485,7 +485,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
   public static NumericArrayExpr newList(final IAST list, byte type)
       throws RangeException, TypeException {
     int[] dimension = null;
-    final IntList dims = LinearAlgebra.dimensions(list);
+    final IntList dims = LinearAlgebraUtil.dimensions(list);
     final int dimsSize = dims.size();
     if (dimsSize > 0) {
       int size = 1;

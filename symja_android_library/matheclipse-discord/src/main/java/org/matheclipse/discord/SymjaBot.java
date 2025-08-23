@@ -83,7 +83,7 @@ public class SymjaBot {
       EvalEngine.get().setPackageMode(true);
       F.initSymbols();
       initFunctions();
-      System.out.println("Symja Version: " + ConstantDefinitions.VERSION + " initialized");
+      System.out.println("Symja Version: " + Config.VERSION + " initialized");
       String theDiscordToken = args[0];
       GatewayDiscordClient client =
           DiscordClientBuilder.create(theDiscordToken).build().login().block();

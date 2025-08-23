@@ -3,12 +3,11 @@ package org.matheclipse.core.convert;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
+import javax.annotation.concurrent.NotThreadSafe;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Arithmetic;
-import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -41,6 +40,7 @@ import org.matheclipse.parser.trie.TrieMatch;
  * Converts a parsed <code>org.matheclipse.parser.client.ast.ASTNode</code> expression into an IExpr
  * expression
  */
+@NotThreadSafe
 public class AST2Expr {
 
   public static final String[] UPPERCASE_SYMBOL_STRINGS = {"C", "D", "E", "I", "N", "O"};
@@ -702,55 +702,55 @@ public class AST2Expr {
           }
           break;
         case ID.Blank:
-          expr = PatternMatching.Blank.CONST.evaluate(ast, fEngine);
+          expr = S.Blank.getEvaluator().evaluate(ast, fEngine);
           if (expr.isPresent()) {
             return expr;
           }
           break;
         case ID.BlankSequence:
-          expr = PatternMatching.BlankSequence.CONST.evaluate(ast, fEngine);
+          expr = S.BlankSequence.getEvaluator().evaluate(ast, fEngine);
           if (expr.isPresent()) {
             return expr;
           }
           break;
         case ID.BlankNullSequence:
-          expr = PatternMatching.BlankNullSequence.CONST.evaluate(ast, fEngine);
+          expr = S.BlankNullSequence.getEvaluator().evaluate(ast, fEngine);
           if (expr.isPresent()) {
             return expr;
           }
           break;
         case ID.Pattern:
-          expr = PatternMatching.Pattern.CONST.evaluate(ast, fEngine);
+          expr = S.Pattern.getEvaluator().evaluate(ast, fEngine);
           if (expr.isPresent()) {
             return expr;
           }
           break;
         case ID.Optional:
-          expr = PatternMatching.Optional.CONST.evaluate(ast, fEngine);
+          expr = S.Optional.getEvaluator().evaluate(ast, fEngine);
           if (expr.isPresent()) {
             return expr;
           }
           break;
         // case ID.OptionsPattern:
-        // expr = PatternMatching.OptionsPattern.CONST.evaluate(ast, fEngine);
+        // expr = S.OptionsPattern.getEvaluator().evaluate(ast, fEngine);
         // if (expr.isPresent()) {
         // return expr;
         // }
         // break;
         case ID.Repeated:
-          expr = PatternMatching.Repeated.CONST.evaluate(ast, fEngine);
+          expr = S.Repeated.getEvaluator().evaluate(ast, fEngine);
           if (expr.isPresent()) {
             return expr;
           }
           break;
         case ID.Complex:
-          expr = Arithmetic.CONST_COMPLEX.evaluate(ast, fEngine);
+          expr = S.Complex.getEvaluator().evaluate(ast, fEngine);
           if (expr.isPresent()) {
             return expr;
           }
           break;
         case ID.Rational:
-          expr = Arithmetic.CONST_RATIONAL.evaluate(ast, fEngine);
+          expr = S.Rational.getEvaluator().evaluate(ast, fEngine);
           if (expr.isPresent()) {
             return expr;
           }

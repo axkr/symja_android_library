@@ -1,8 +1,14 @@
 package org.matheclipse.core.interfaces;
 
 import java.math.BigInteger;
+import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
+import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import com.google.common.math.BigIntegerMath;
 import com.google.common.math.IntMath;
 import com.google.common.math.LongMath;
 
@@ -27,11 +33,191 @@ public interface IInteger extends IRational {
   /** The BigInteger constant 8. */
   BigInteger BI_EIGHT = BigInteger.valueOf(8L);
 
-  @Override
-  public void checkBitLength();
+  int[] FIBONACCI_45 = {0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377,
+  610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025, 121393, 196418, 317811,
+  514229, 832040, 1346269, 2178309, 3524578, 5702887, 9227465, 14930352, 24157817, 39088169,
+  63245986, 102334155, 165580141, 267914296, 433494437, 701408733, 1134903170};
 
   /** Certainty for the isProbablePrime() method */
   public static final int PRIME_CERTAINTY = 100;
+
+  static IInteger catalanNumber(IInteger n) {
+    if (n.equals(F.CN1)) {
+      return F.CN1;
+    }
+    n = n.add(F.C1);
+    if (n.isPositive()) {
+      IInteger i = F.C1;
+      IInteger c = F.C1;
+      final IInteger temp1 = n.shiftLeft(1).subtract(F.C1);
+      while (i.compareTo(n) < 0) {
+        c = c.multiply(temp1.subtract(i)).div(i);
+        i = i.add(F.C1);
+      }
+      return c.div(n);
+    }
+    return F.C0;
+  }
+
+  static IInteger factorial(int n) {
+    final int absN = Math.abs(n);
+    final int iterationLimit = EvalEngine.get().getIterationLimit();
+    if (iterationLimit >= 0 && iterationLimit < absN) {
+      IterationLimitExceeded.throwIt(absN, F.Factorial(F.ZZ(n)));
+    }
+  
+    BigInteger result;
+    if (absN <= 20) {
+      result = BigInteger.valueOf(LongMath.factorial(absN));
+    } else {
+      result = BigIntegerMath.factorial(absN);
+    }
+  
+    if (n < 0 && n % 2 != 0) {
+      result = result.negate();
+    }
+  
+    return AbstractIntegerSym.valueOf(result);
+  }
+
+  /**
+   * Fibonacci sequence. Algorithm in <code>O(log(n))</code> time. See:
+   * <a href= "https://www.rosettacode.org/wiki/Fibonacci_sequence#Iterative_28"> Roseatta code:
+   * Fibonacci sequence.</a>
+   *
+   * @param iArg
+   * @return
+   */
+  static IInteger fibonacci(int iArg) {
+    int temp = iArg;
+    if (temp < 0) {
+      temp *= (-1);
+    }
+    if (temp < IInteger.FIBONACCI_45.length) {
+      int result = IInteger.FIBONACCI_45[temp];
+      if (iArg < 0 && ((iArg & 0x00000001) == 0x00000000)) {
+        return F.ZZ(-result);
+      }
+      return F.ZZ(result);
+    }
+  
+    BigInteger a = BigInteger.ONE;
+    BigInteger b = BigInteger.ZERO;
+    BigInteger c = BigInteger.ONE;
+    BigInteger d = BigInteger.ZERO;
+    BigInteger result = BigInteger.ZERO;
+    while (temp != 0) {
+      if ((temp & 0x00000001) == 0x00000001) { // odd?
+        d = result.multiply(c);
+        result = a.multiply(c).add(result.multiply(b).add(d));
+        if (result.bitLength() > Config.MAX_BIT_LENGTH) {
+          BigIntegerLimitExceeded.throwIt(result.bitLength());
+        }
+        a = a.multiply(b).add(d);
+      }
+  
+      d = c.multiply(c);
+      c = b.multiply(c).shiftLeft(1).add(d);
+      b = b.multiply(b).add(d);
+      temp >>= 1;
+    }
+  
+    if (iArg < 0 && ((iArg & 0x00000001) == 0x00000000)) { // even
+      return F.ZZ(result.negate());
+    }
+    return F.ZZ(result);
+  }
+
+  /**
+   * Returns the greatest common divisor of {@code a, b}. Returns {@code 0} if {@code a == 0 && b ==
+   * 0}.
+   * <p>
+   * See: <a href="https://medium.com/@m.langer798/stein-vs-stein-on-the-jvm-c911809bfce1">GCD:
+   * Stein vs. Stein on the JVM</a>
+   * 
+   * @param p
+   * @param q
+   * @return
+   */
+  public static long gcd(int p, int q) {
+    if (p == Integer.MIN_VALUE || q == Integer.MIN_VALUE) {
+      long pl = p;
+      long ql = q;
+      return LongMath.gcd(pl < 0L ? -pl : pl, ql < 0L ? -ql : ql);
+    }
+    return IntMath.gcd(p < 0 ? -p : p, q < 0 ? -q : q);
+  }
+
+  /**
+   * Gives the multinomial coefficient <code>(k0+k1+...)!/(k0! * k1! ...)</code>.
+   *
+   * @param kArray non-negative coefficients
+   * @return
+   */
+  static IInteger multinomial(IInteger[] kArray) {
+    if (kArray == null || kArray.length == 0) {
+      return F.C1;
+    }
+    IInteger n = F.C0;
+    for (int i = 0; i < kArray.length; i++) {
+      n = n.add(kArray[i]);
+    }
+    int ni = n.toIntDefault();
+    if (F.isNotPresent(ni)) {
+      return null;
+    }
+    int[] kIntArray = new int[kArray.length];
+    for (int i = 0; i < kArray.length; i++) {
+      kIntArray[i] = kArray[i].toIntDefault();
+      if (F.isNotPresent(kIntArray[i])) {
+        return null;
+      }
+    }
+    return IInteger.multinomial(kIntArray, ni);
+  }
+
+  /**
+   * Gives the multinomial coefficient <code>(k0+k1+...)!/(k0! * k1! ...)</code>.
+   *
+   * @param kArray the non-negative coefficients
+   * @param n the sum of the non-negative coefficients
+   */
+  static IInteger multinomial(final int[] kArray, final int n) {
+    IInteger pPlus = F.C1;
+    IRational pNeg = F.C1;
+    int nNeg = 0;
+    for (int k : kArray) {
+      if (k != 0) {
+        if (k < 0) {
+          nNeg++;
+          int temp = -1 - k;
+          pNeg = pNeg.divideBy(factorial(temp));
+          if ((temp & 1) == 1) {
+            pNeg = pNeg.negate();
+          }
+        } else {
+          pPlus = pPlus.multiply(factorial(k));
+        }
+      }
+    }
+    if (n < 0) {
+      nNeg--;
+      if (nNeg > 0) {
+        return F.C0;
+      }
+      int kFactor = -1 - n;
+      IRational p = pPlus.multiply(pNeg).multiply(factorial(kFactor));
+      if ((kFactor & 1) == 1) {
+        p = p.negate();
+      }
+      return p.isNegative() ? p.denominator().negate() : p.denominator();
+    }
+    if (nNeg > 0) {
+      return F.C0;
+    }
+    IInteger result = factorial(n).div(pPlus);
+    return result;
+  }
 
   /** {@inheritDoc} */
   @Override
@@ -65,16 +251,25 @@ public interface IInteger extends IRational {
   public long bitLength();
 
   /**
+   * Converts this integer to <code>byte</code>; this method raises no exception, if this integer
+   * cannot be represented by an <code>byte</code> type.
+   *
+   * @return the numeric value represented by this integer after conversion to type <code>byte
+   *     </code>.
+   */
+  public byte byteValue();
+
+  /**
    * @return <i>&#x03BB;</i>(<i>n</i>) where <i>n</i> is the number represented by this factors
    * @throws ArithmeticException if internal conversion to <code>long</code> is not possible.
    */
   public IInteger charmichaelLambda();
 
   @Override
-  public IInteger dec();
+  public void checkBitLength();
 
   @Override
-  public IInteger inc();
+  public IInteger dec();
 
   /**
    * Returns an IInteger whose value is <code>(this / that)</code>.
@@ -99,23 +294,6 @@ public interface IInteger extends IRational {
    * @return
    */
   public IInteger[] divideAndRemainder(final IInteger that);
-
-  /**
-   * &quot;integer quotientr&quot; of <code>this</code> divided by <code>that</code> also sometimes
-   * called &quot;floor division&quot;
-   * 
-   * @param that
-   * @return
-   */
-  public IInteger iquo(final IInteger that);
-
-  /**
-   * &quot;integer remainder&quot; of <code>this</code> divided by <code>that</code>
-   * 
-   * @param that
-   * @return
-   */
-  public IInteger irem(final IInteger that);
 
   /**
    * Return the divisors of this integer number.
@@ -167,6 +345,9 @@ public interface IInteger extends IRational {
    */
   public IInteger gcd(IInteger val);
 
+  @Override
+  public IInteger inc();
+
   /**
    * Number of digits in base <code>radix</code> implementation.
    *
@@ -176,15 +357,6 @@ public interface IInteger extends IRational {
   public long integerLength(IInteger radix);
 
   /**
-   * Converts this integer to <code>byte</code>; this method raises no exception, if this integer
-   * cannot be represented by an <code>byte</code> type.
-   *
-   * @return the numeric value represented by this integer after conversion to type <code>byte
-   *     </code>.
-   */
-  public byte byteValue();
-
-  /**
    * Converts this integer to <code>int</code>; unlike {@link #toInt} this method raises no
    * exception, if this integer cannot be represented by an <code>int</code> type.
    *
@@ -192,6 +364,23 @@ public interface IInteger extends IRational {
    *         .
    */
   public int intValue();
+
+  /**
+   * &quot;integer quotientr&quot; of <code>this</code> divided by <code>that</code> also sometimes
+   * called &quot;floor division&quot;
+   * 
+   * @param that
+   * @return
+   */
+  public IInteger iquo(final IInteger that);
+
+  /**
+   * &quot;integer remainder&quot; of <code>this</code> divided by <code>that</code>
+   * 
+   * @param that
+   * @return
+   */
+  public IInteger irem(final IInteger that);
 
   /**
    * Check if this IInteger is an even number.
@@ -440,24 +629,4 @@ public interface IInteger extends IRational {
   public BigInteger toBigNumerator();
 
   public byte[] toByteArray();
-
-  /**
-   * Returns the greatest common divisor of {@code a, b}. Returns {@code 0} if {@code a == 0 && b ==
-   * 0}.
-   * <p>
-   * See: <a href="https://medium.com/@m.langer798/stein-vs-stein-on-the-jvm-c911809bfce1">GCD:
-   * Stein vs. Stein on the JVM</a>
-   * 
-   * @param p
-   * @param q
-   * @return
-   */
-  public static long gcd(int p, int q) {
-    if (p == Integer.MIN_VALUE || q == Integer.MIN_VALUE) {
-      long pl = p;
-      long ql = q;
-      return LongMath.gcd(pl < 0L ? -pl : pl, ql < 0L ? -ql : ql);
-    }
-    return IntMath.gcd(p < 0 ? -p : p, q < 0 ? -q : q);
-  }
 }

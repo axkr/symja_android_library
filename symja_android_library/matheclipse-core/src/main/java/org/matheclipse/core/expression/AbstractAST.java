@@ -35,16 +35,14 @@ import org.jgrapht.GraphType;
 import org.jgrapht.graph.DefaultGraphType;
 import org.jgrapht.graph.DefaultGraphType.Builder;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.BooleanFunctions;
-import org.matheclipse.core.builtin.JavaFunctions;
-import org.matheclipse.core.builtin.PredicateQ;
-import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.AlgebraUtil;
+import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.SimplifyUtil;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.FlowControlException;
 import org.matheclipse.core.eval.exception.JASConversionException;
@@ -56,6 +54,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
+import org.matheclipse.core.expression.data.JavaClassExpr;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.ObjIntFunction;
 import org.matheclipse.core.generic.ObjIntPredicate;
@@ -654,12 +653,6 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
     /** {@inheritDoc} */
     @Override
-    public boolean isInvalid() {
-      return this == INVALID;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public boolean isNonEmptyList() {
       return false;
     }
@@ -738,6 +731,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
     /** {@inheritDoc} */
     @Override
+    public final boolean isNumberLike() {
+      return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public final boolean isNumericFunction(boolean allowList) {
       return false;
     }
@@ -798,6 +797,35 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     /** {@inheritDoc} */
     @Override
     public boolean isPossibleZero(boolean fastTest, double tolerance) {
+      return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isPolynomial(IAST variable) {
+      return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isPolynomial(IExpr variable) {
+      return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isPolynomialStruct() {
+      return false;
+    }
+
+    @Override
+    public boolean isPolynomialOfMaxDegree(IAST variables, long maxDegree) {
+      return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isPolynomialOfMaxDegree(IExpr variable, long maxDegree) {
       return false;
     }
 
@@ -1358,7 +1386,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** package private */
   static final NILPointer NIL = new NILPointer();
 
-  static final NILPointer INVALID = new NILPointer();
+  // static final NILPointer INVALID = new NILPointer();
 
   private static final long serialVersionUID = -8682706994448890660L;
 
@@ -2206,7 +2234,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
               if (staticMethodName.equals(method.getName())) {
                 Parameter[] parameters = method.getParameters();
                 if (parameters.length == argSize()) {
-                  Object[] params = JavaFunctions.determineParameters(this, parameters, 1);
+                  Object[] params = JavaClassExpr.determineParameters(this, parameters, 1);
                   if (params != null) {
                     Object result;
                     try {
@@ -2812,6 +2840,17 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public int hierarchy() {
+    if (isBuiltInFunction()) {
+      int ordinal = ((IBuiltInSymbol) head()).ordinal();
+      if (ordinal >= ID.Interval && ordinal <= ID.IntervalData) {
+        switch (ordinal) {
+          case ID.IntervalData:
+            return IExpr.INTERVALSETID;
+          case ID.Interval:
+            return IExpr.INTERVALID;
+        }
+      }
+    }
     return ASTID;
   }
 
@@ -2882,7 +2921,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return new StringBuilder(prefix).append("Slot2");
     }
     if (temp.equals(S.Inequality) && size() >= 4) {
-      return BooleanFunctions.inequality2And(this).internalJavaString(properties, depth, variables);
+      return CompareUtil.inequality2And(this).internalJavaString(properties, depth, variables);
     }
     if (temp.equals(S.Rational) && size() == 3) {
       if (arg1().isInteger() && arg2().isInteger()) {
@@ -3707,7 +3746,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isInterval() {
-    if (isSameHeadSizeGE(S.Interval, 2)) {
+    if (head() == S.Interval) {
       for (int i = 1; i < size(); i++) {
         if (!(get(i).isVector() == 2)) {
           return false;
@@ -3721,7 +3760,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isIntervalData() {
-    if (isAST(S.IntervalData)) {
+    if (head() == S.IntervalData) {
       for (int i = 1; i < size(); i++) {
         if (!(get(i).isAST(S.List, 5))) {
           return false;
@@ -4194,6 +4233,13 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
+  public boolean isNumberLike() {
+    return isBuiltInFunction() //
+        && (isInterval() || isIntervalData());
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public boolean isNumericArgument(boolean allowList) {
     if (isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG)) {
       return forAll(x -> x.isNumericFunction(allowList)
@@ -4439,7 +4485,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public final boolean isPolynomial(IAST variables) {
+  public boolean isPolynomial(IAST variables) {
     if (variables.isAST0()) {
       return true;
     }
@@ -4477,7 +4523,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public final boolean isPolynomial(IExpr variable) {
+  public boolean isPolynomial(IExpr variable) {
     return isPolynomial(F.list(variable));
   }
 
@@ -4491,7 +4537,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return true;
   }
 
-  public final boolean isPolynomialOfMaxDegree(IAST variables, long maxDegree) {
+  public boolean isPolynomialOfMaxDegree(IAST variables, long maxDegree) {
     try {
       if (isPlus() || isTimes() || isPower()) {
         IExpr expr = F.evalExpandAll(this);
@@ -4507,8 +4553,20 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public final boolean isPolynomialOfMaxDegree(IExpr variable, long maxDegree) {
+  public boolean isPolynomialOfMaxDegree(IExpr variable, long maxDegree) {
     return isPolynomialOfMaxDegree(F.list(variable), maxDegree);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isNonNegative() {
+    if (isNumericFunction(true)) {
+      IExpr result = EvalEngine.get().evalNumericFunction(this, false);
+      if (result.isReal()) {
+        return result.isNonNegative();
+      }
+    }
+    return false;
   }
 
   /** {@inheritDoc} */
@@ -4647,31 +4705,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (S.True.equals(AbstractAssumptions.assumeReal(this))) {
       return true;
     }
-
-    if (size() == 2 && isBuiltInFunction()) {
-      final IExpr arg1 = arg1();
-      final int id = headID();
-      if (id > 0) {
-        if (isFunctionID(ID.Cos, ID.Cosh, ID.Cot, ID.Coth, ID.Csc, ID.Csch, ID.Sec, ID.Sech, ID.Sin,
-            ID.Sinh, ID.Tan, ID.Tanh, ID.Erf, ID.Erfc, ID.Erfi, ID.ExpIntegralEi, ID.Gamma,
-            ID.Identity)) {
-          return arg1.isRealResult();
-        }
-        if (isFunctionID(ID.Re, ID.Im, ID.Abs, ID.Arg, ID.RealSign)) {
-          return true;
-        }
-        if (isFunctionID(ID.Log, ID.LogGamma) || isFunctionID(ID.ProductLog)) {
-          // TODO improve for arg1 >= (-1/E)
-          return arg1.isPositiveResult();
-        }
-      }
-    }
     INumber e = evalNumber();
     if (e != null) {
-      if (e.isReal()) {
-        return true;
-      }
-      return false;
+      return e.isReal();
     }
     if (isPlus() || isTimes()) {
       // check if all arguments are &quot;real values&quot;
@@ -4683,15 +4719,17 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       }
       return true;
     }
-    if (isPower() && (!exponent().isZero() || !base().isZero())) {
+    if (isPower() && !(exponent().isZero() || base().isZero())) {
       final IExpr base = base();
-      if (!base.isRealResult() || base.isNegativeResult() || !exponent().isRealResult()) {
-        return false;
-      }
-      return true;
+      return base.isRealResult() && !base.isNegativeResult() && exponent().isRealResult();
     }
     if (isInfinity() || isNegativeInfinity()) {
       return true;
+    }
+
+    if (isBuiltInFunction()) {
+      IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
+      return evaluator instanceof IEvaluator && evaluator.evalIsReal(this);
     }
     return false;
   }
@@ -5105,7 +5143,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isPossibleZero(boolean fastTest, double tolerance) {
-    return PredicateQ.isPossibleZeroQ(this, fastTest, tolerance, EvalEngine.get());
+    return CompareUtil.isPossibleZeroQ(this, fastTest, tolerance, EvalEngine.get());
   }
 
   /**
@@ -5158,7 +5196,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public final long leafCount() {
-    return accept(StructureFunctions.leafCountVisitor());
+    return accept(SimplifyUtil.leafCountVisitor());
   }
 
   /**

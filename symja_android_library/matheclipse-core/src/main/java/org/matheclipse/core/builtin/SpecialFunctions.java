@@ -29,9 +29,6 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.functions.BesselJS;
-import org.matheclipse.core.builtin.functions.GammaJS;
-import org.matheclipse.core.builtin.functions.ZetaJS;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
@@ -64,6 +61,9 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.functions.BesselJS;
+import org.matheclipse.core.numerics.functions.GammaJS;
+import org.matheclipse.core.numerics.functions.ZetaJS;
 
 public class SpecialFunctions {
 
@@ -156,6 +156,22 @@ public class SpecialFunctions {
       }
       return F.NIL;
 
+    }
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      int argSize = ast.argSize();
+      switch (argSize) {
+        case 2:
+          return (ast.arg1().isRealResult() && ast.arg2().isRealResult());
+        case 3:
+          return (ast.arg1().isRealResult() && ast.arg2().isRealResult()
+              && ast.arg3().isRealResult());
+        case 4:
+          return (ast.arg1().isRealResult() && ast.arg2().isRealResult()
+              && ast.arg3().isRealResult() && ast.arg3().isRealResult());
+      }
+      return false;
     }
 
     @Override
@@ -711,6 +727,14 @@ public class SpecialFunctions {
    * @see org.matheclipse.core.reflection.system.InverseErf
    */
   private static final class Erf extends AbstractFunctionEvaluator implements IFunctionExpand {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      int argSize = ast.argSize();
+      if (argSize == 1) {
+        return ast.arg1().isRealResult();
+      }
+      return false;
+    }
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
@@ -804,6 +828,14 @@ public class SpecialFunctions {
 
   private static final class Erfc extends AbstractFunctionEvaluator {
 
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      int argSize = ast.argSize();
+      if (argSize == 1) {
+        return ast.arg1().isRealResult();
+      }
+      return false;
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -871,6 +903,14 @@ public class SpecialFunctions {
    *
    */
   private static final class Erfi extends AbstractFunctionEvaluator {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      int argSize = ast.argSize();
+      if (argSize == 1) {
+        return ast.arg1().isRealResult();
+      }
+      return false;
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1347,6 +1387,11 @@ public class SpecialFunctions {
   private static final class InverseErfc extends AbstractTrigArg1 implements INumeric {
 
     @Override
+    public boolean evalIsReal(IAST ast) {
+      return false;
+    }
+
+    @Override
     public IExpr e1DblArg(final double arg1) {
       if (arg1 >= 0. && arg1 <= 2.0) {
         try {
@@ -1658,6 +1703,10 @@ public class SpecialFunctions {
 
 
   private static class LogGamma extends AbstractTrigArg1 implements INumeric {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return (ast.argSize() == 1 && ast.arg1().isNonNegativeResult());
+    }
 
     @Override
     public IExpr e1ComplexArg(final Complex c) {
@@ -2127,6 +2176,30 @@ public class SpecialFunctions {
    * Lambert W function</a>
    */
   private static final class ProductLog extends AbstractArg12 {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() == 1) {
+        // ProductLog(x_) is real if x >= 0 or x >= -1/E
+        return ast.arg1().isNonNegativeResult() //
+            || ast.arg1().greaterEqual(F.Times(F.Power(S.E, F.CN1), F.CN1)).isTrue();
+      }
+      if (ast.argSize() == 2) {
+        IExpr x = ast.arg1();
+        IExpr y = ast.arg2();
+        if (x.isMinusOne()) {
+          // ProductLog(-1, y_) is real if y <= 0 && y >= -1/E
+          return (y.isNegativeResult() || y.isZero())//
+              && y.greaterEqual(F.Times(F.Power(S.E, F.CN1), F.CN1)).isTrue();
+        }
+        if (x.isZero()) {
+          // ProductLog(x_, 0) is real if x == 0 or y >= -1/E
+          return y.isNonNegativeResult() //
+              || y.greaterEqual(F.Times(F.Power(S.E, F.CN1), F.CN1)).isTrue();
+        }
+      }
+      return false;
+    }
+
 
     @Override
     public IExpr e1DblArg(final INum d) {

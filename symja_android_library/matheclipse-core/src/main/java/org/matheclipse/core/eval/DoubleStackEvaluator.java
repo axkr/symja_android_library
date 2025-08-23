@@ -24,7 +24,10 @@ public class DoubleStackEvaluator {
     }
     if (symbol.isRealConstant()) {
       // fast evaluation path
-      return ((IRealConstant) ((IBuiltInSymbol) symbol).getEvaluator()).evalReal();
+      IEvaluator realConstant = ((IBuiltInSymbol) symbol).getEvaluator();
+      if (realConstant instanceof IRealConstant) {
+        return ((IRealConstant) realConstant).evalReal();
+      }
     }
     // slow evaluation path
     final IExpr result = F.evaln(symbol);

@@ -101,7 +101,6 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
-import org.matheclipse.core.interfaces.IBigNumber;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -128,7 +127,6 @@ import org.matheclipse.core.sympy.core.Expr;
 import org.matheclipse.core.sympy.exception.PoleError;
 import org.matheclipse.core.sympy.series.Order;
 import org.matheclipse.core.tensor.qty.IQuantity;
-import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.math.MathException;
 
 public final class Arithmetic {
@@ -476,6 +474,11 @@ public final class Arithmetic {
    */
   private static class Arg extends AbstractFunctionEvaluator
       implements INumeric, DoubleUnaryOperator {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return (ast.argSize() == 1);
+    }
 
     @Override
     public double applyAsDouble(double operand) {
@@ -1273,8 +1276,8 @@ public final class Arithmetic {
           }
 
           if (arg1.isTimes() || arg1.isPower()) {
-            Optional<IExpr[]> parts = AlgebraUtil.fractionalPartsTimesPower((IAST) arg1, true, false,
-                false, false, false, false);
+            Optional<IExpr[]> parts = AlgebraUtil.fractionalPartsTimesPower((IAST) arg1, true,
+                false, false, false, false, false);
             if (parts.isPresent()) {
               final IExpr numerator = parts.get()[0];
               final IExpr denominator = parts.get()[1];
@@ -1465,6 +1468,37 @@ public final class Arithmetic {
    */
   private static final class Gamma extends AbstractFunctionEvaluator
       implements IFunctionExpand, IMatch {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() == 1) {
+        IExpr a1 = ast.arg1();
+        if (a1.isPositiveResult()) {
+          return true;
+        }
+        if (a1.isNegativeResult()) {
+          if (a1.isIntegerResult()) {
+            return false;
+          }
+          return true;
+        }
+      } else if (ast.argSize() == 2) {
+        IExpr a1 = ast.arg1();
+        IExpr a2 = ast.arg2();
+        if (a2.isPositiveResult()) {
+          return true;
+        }
+        if (a1.isPositiveResult()) {
+          if (a2.isNonNegativeResult()) {
+            return true;
+          }
+          if (a1.isIntegerResult()) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
 
     private static IExpr basicRewrite2(final IExpr o0, final IExpr z) {
       if (z.isZero()) {
@@ -2137,6 +2171,11 @@ public final class Arithmetic {
    * </pre>
    */
   private static final class Im extends AbstractEvaluator {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return (ast.argSize() == 1);
+    }
 
     private static boolean filterImPlus(IAST plusAST, IASTAppendable result, IASTAppendable rest,
         EvalEngine engine) {
@@ -5023,6 +5062,10 @@ public final class Arithmetic {
    * </pre>
    */
   private static final class Re extends AbstractEvaluator {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return (ast.argSize() == 1);
+    }
 
     public static IExpr evalRe(IExpr expr, EvalEngine engine) {
       if (expr.isDirectedInfinity()) {
@@ -6917,24 +6960,6 @@ public final class Arithmetic {
 
   private static final Logger LOGGER = LogManager.getLogger(Arithmetic.class);
 
-  private static int g = 7;
-  // private static double[] p = { 0.99999999999980993, 676.5203681218851, -1259.1392167224028,
-  // 771.32342877765313,
-  // -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6,
-  // 1.5056327351493116e-7 };
-  private static org.hipparchus.complex.Complex[] pComplex =
-      new org.hipparchus.complex.Complex[] {new org.hipparchus.complex.Complex(0.99999999999980993), //
-          new org.hipparchus.complex.Complex(676.5203681218851), //
-          new org.hipparchus.complex.Complex(-1259.1392167224028), //
-          new org.hipparchus.complex.Complex(771.32342877765313), //
-          new org.hipparchus.complex.Complex(-176.61502916214059), //
-          new org.hipparchus.complex.Complex(12.507343278686905), //
-          new org.hipparchus.complex.Complex(-0.13857109526572012), //
-          new org.hipparchus.complex.Complex(9.9843695780195716e-6), //
-          new org.hipparchus.complex.Complex(1.5056327351493116e-7) //
-      };
-
-
   static final long[] HARMONIC_NUMERATOR = new long[] {1, 3, 11, 25, 137, 49, 363, 761, 7129, 7381,
       83711, 86021, 1145993, 1171733, 1195757, 2436559, 42142223, 14274301, 275295799, 55835135,
       18858053, 19093197, 444316699, 1347822955};
@@ -7034,82 +7059,6 @@ public final class Arithmetic {
   }
 
   /**
-   * Eval in double numeric mode by "widen the input domain" to Apfloat values.
-   * 
-   * @param powerAST2 "binary {@link S#Power} function"
-   * @param engine TODO
-   * @return
-   */
-  public static IExpr intPowerFractionNumeric(IAST powerAST2, EvalEngine engine) {
-    final IExpr base = powerAST2.base();
-    final IExpr exponent = powerAST2.exponent();
-    if ((base instanceof IBigNumber) && exponent.isFraction()) {
-      final int nthRoot = ((IFraction) exponent).toIntRoot();
-      if (F.isPresent(nthRoot)) {
-        long oldPrecision = engine.getNumericPrecision();
-        try {
-          engine.setNumericPrecision(ParserConfig.MACHINE_PRECISION * 2);
-          if (base.isRational()) {
-            IRational ratBase = (IRational) base;
-            final double fNum = base.evalf();
-            if (!Double.isFinite(fNum) || fNum <= Double.MIN_VALUE || fNum >= Double.MAX_VALUE) {
-              if (ratBase.isPositive()) {
-                ApfloatNum apfloat = ratBase.apfloatNumValue();
-                return F.num(apfloat.rootN(nthRoot).doubleValue());
-              } else if (ratBase.isNegative()) {
-                ApcomplexNum apcomplex = ratBase.apcomplexNumValue();
-                return F.complexNum(apcomplex.rootN(nthRoot).evalfc());
-              }
-            }
-          } else if (base.isComplex()) {
-            final IComplex cmpBase = (IComplex) base;
-            org.hipparchus.complex.Complex fComplex = base.evalfc();
-            if (!fComplex.isFinite()) {
-              ApcomplexNum apcomplex = cmpBase.apcomplexNumValue();
-              return F.complexNum(apcomplex.rootN(nthRoot).evalfc());
-            }
-          }
-        } finally {
-          engine.setNumericPrecision(oldPrecision);
-        }
-      }
-    }
-    if (base == S.E && exponent.isNumericFunction()) {
-      return F.unaryAST1(S.Exp, exponent);
-    }
-    return F.NIL;
-  }
-
-  /**
-   * The Lanczos approximation is a method for computing the gamma function numerically.
-   *
-   * <p>
-   * See <a href="https://en.wikipedia.org/wiki/Lanczos_approximation">Lanczos approximation</a>
-   *
-   * @param z
-   * @return the gamma function value
-   */
-  public static org.hipparchus.complex.Complex lanczosApproxGamma(
-      org.hipparchus.complex.Complex z) {
-    if (z.getReal() < 0.5) {
-      // Pi / ( Sin(Pi * z) * Gamma(1 - z) )
-      return lanczosApproxGamma(z.negate().add(1.0)).multiply(z.multiply(Math.PI).sin())
-          .reciprocal().multiply(Math.PI);
-    } else {
-      z = z.subtract(1.0);
-      org.hipparchus.complex.Complex x = pComplex[0];
-      for (int i = 1; i < g + 2; i++) {
-        // x += p[i] / (z+i)
-        x = x.add(pComplex[i].divide(z.add(i)));
-      }
-      org.hipparchus.complex.Complex t = z.add(g).add(0.5);
-      // Sqrt(2 * Pi) * Pow(t, z + 0.5) * Exp(-t) * x
-      return t.pow(z.add(0.5)).multiply(t.negate().exp()).multiply(x)
-          .multiply(Math.sqrt(2 * Math.PI));
-    }
-  }
-
-  /**
    * Compute Pochhammer's symbol (that)_n.
    *
    * @param that
@@ -7148,37 +7097,6 @@ public final class Arithmetic {
       }
       return F.fraction(res);
     }
-  }
-
-  public static IExpr powerComplexComplex(final IBigNumber base, final IComplex exponent,
-      EvalEngine engine) {
-    if (base.getImaginaryPart().isZero()) {
-      IRational a = base.getRealPart();
-      IRational b = exponent.getRealPart();
-      IRational c = exponent.getImaginaryPart();
-      IExpr temp = // [$ b*Arg(a)+1/2*c*Log(a^2) $]
-          F.Plus(F.Times(b, F.Arg(a)), F.Times(F.C1D2, c, F.Log(F.Sqr(a)))); // $$;
-      temp = temp.eval(engine);
-      temp = // [$ (a^2)^(b/2)*E^(-c*Arg(a)) * (Cos(temp)+I* Sin(temp)) $]
-          F.Times(F.Power(F.Sqr(a), F.Times(F.C1D2, b)), F.Exp(F.Times(F.CN1, c, F.Arg(a))),
-              F.Plus(F.Cos(temp), F.Times(F.CI, F.Sin(temp)))); // $$;
-      return temp.eval(engine);
-    }
-    return F.NIL;
-  }
-  /**
-   * Print message <code>Infinite expression `nonZeroNumerator/zeroDenominator` encountered</code>
-   * an return {@link F#CComplexInfinity} as result.
-   * 
-   * @param head the head symbol which should be printed in the message
-   * @param nonZeroNumerator the non-zero numerator expression
-   * @param zeroDenominator the expression which represents <code>0</code>
-   * @return
-   */
-  static IExpr printInfy(ISymbol head, final IExpr nonZeroNumerator, final IExpr zeroDenominator) {
-    // Infinite expression `1` encountered.
-    Errors.printMessage(head, "infy", F.list(F.Divide(nonZeroNumerator, zeroDenominator)));
-    return F.CComplexInfinity;
   }
 
   /**

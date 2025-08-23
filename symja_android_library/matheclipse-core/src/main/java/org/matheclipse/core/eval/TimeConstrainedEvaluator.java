@@ -98,7 +98,7 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
         Thread.sleep(Config.TIME_CONSTRAINED_SLEEP_MILLISECONDS);
         if (thread.isAlive()) {
           // call the deprecated method as last possible exit
-          thread.stop();
+          // thread.stop();
           return F.NIL;
           // throw new TimeExceeded();
         }

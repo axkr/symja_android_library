@@ -183,7 +183,7 @@ public class Reduce extends AbstractEvaluator {
           // fall through
         }
 
-        IAST newIntervalData = IntervalDataSym.relationToInterval(headID, rhs);
+        IAST newIntervalData = IntervalDataSym.relationToIntervalSet(headID, rhs);
         IAST intersection = IntervalDataSym.intersection(intervalData, newIntervalData,
             EvalEngine.get());
         if (intersection.isPresent()) {

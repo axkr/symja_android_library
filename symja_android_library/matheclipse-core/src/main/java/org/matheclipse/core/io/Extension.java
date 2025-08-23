@@ -1,9 +1,7 @@
 package org.matheclipse.core.io;
 
-import org.matheclipse.core.basic.OperationSystem;
-import org.matheclipse.core.eval.Errors;
-
 import java.util.Locale;
+import org.matheclipse.core.eval.Errors;
 
 /**
  * File extensions format.

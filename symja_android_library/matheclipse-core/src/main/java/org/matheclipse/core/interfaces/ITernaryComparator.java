@@ -1,8 +1,9 @@
 package org.matheclipse.core.interfaces;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 
-public interface ITernaryComparator extends IEvaluator {
+public interface ITernaryComparator extends IFunctionEvaluator {
 
   IExpr.COMPARE_TERNARY prepareCompare(IExpr a0, IExpr a1, EvalEngine engine);
 

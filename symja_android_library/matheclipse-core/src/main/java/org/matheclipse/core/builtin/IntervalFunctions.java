@@ -123,18 +123,12 @@ public class IntervalFunctions {
         }
       }
       IAST interval1 = (IAST) ast.arg1();
-      interval1 = IntervalDataSym.normalize(interval1, engine);
-      if (interval1.isInvalid()) {
-        return F.NIL;
-      }
+      interval1 = IntervalDataSym.normalize(interval1);
       if (interval1.isNIL()) {
         interval1 = (IAST) ast.arg1();
       }
       IAST interval2 = (IAST) ast.arg2();
-      interval2 = IntervalDataSym.normalize(interval2, engine);
-      if (interval2.isInvalid()) {
-        return F.NIL;
-      }
+      interval2 = IntervalDataSym.normalize(interval2);
       if (interval2.isNIL()) {
         interval2 = (IAST) ast.arg2();
       }
@@ -143,10 +137,7 @@ public class IntervalFunctions {
         return result;
       }
 
-      IAST normalized = IntervalDataSym.normalize(result, engine);
-      if (normalized.isInvalid()) {
-        return F.NIL;
-      }
+      IAST normalized = IntervalDataSym.normalize(result);
       return normalized.orElse(result);
     }
 
@@ -161,7 +152,7 @@ public class IntervalFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isEvalFlagOff(IAST.BUILT_IN_EVALED)) {
-        return IntervalDataSym.normalize(ast, engine);
+        return IntervalDataSym.normalize(ast);
       }
       return F.NIL;
     }

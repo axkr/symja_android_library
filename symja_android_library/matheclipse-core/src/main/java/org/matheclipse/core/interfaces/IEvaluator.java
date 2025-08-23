@@ -23,6 +23,10 @@ public interface IEvaluator {
    */
   public void setUp(ISymbol newSymbol);
 
+  default boolean evalIsReal(IAST ast) {
+    return false;
+  }
+
   /**
    * Define the default options of a symbol (i.e. <code>Options(symbol) = {SameTest -> SameQ, ...}
    * </code>.

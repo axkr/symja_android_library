@@ -22,11 +22,10 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.MathUtils;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Combinatoric;
-import org.matheclipse.core.builtin.LinearAlgebra;
-import org.matheclipse.core.builtin.ListFunctions;
+import org.matheclipse.core.eval.CombinatoricUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
@@ -1212,7 +1211,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
    * @return <code>null</code> if a new <code>SparseArrayExpr</code> cannot be created.
    */
   public static SparseArrayExpr newDenseList(IAST denseList, IExpr defaultValue) {
-    IntList dims = LinearAlgebra.dimensions(denseList);
+    IntList dims = LinearAlgebraUtil.dimensions(denseList);
     int dimsSize = dims.size();
     if (dimsSize > 0) {
       defaultValue = defaultValue.orElse(F.C0);
@@ -2267,9 +2266,9 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     }
 
     IAST permutationList = F.List(permutation);
-    int[] dimensionsPermutated = Combinatoric.permute(F.List(fDimension), permutationList);
-    IAST range = ListFunctions.range(fDimension.length + 1);
-    int[] originalIndices = Combinatoric.permute(range, permutationList);
+    int[] dimensionsPermutated = CombinatoricUtil.permute(F.List(fDimension), permutationList);
+    IAST range = IAST.range(fDimension.length + 1);
+    int[] originalIndices = CombinatoricUtil.permute(range, permutationList);
     if (dimensionsPermutated == null || originalIndices == null) {
       return null;
     }

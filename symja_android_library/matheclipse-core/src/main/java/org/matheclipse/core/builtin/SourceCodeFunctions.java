@@ -1,6 +1,5 @@
 package org.matheclipse.core.builtin;
 
-import java.io.File;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
@@ -9,6 +8,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
@@ -16,19 +16,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class SourceCodeFunctions {
-
-  static final String GITHUB = "https://github.com/";
-  static final String CORE_POM_PATH =
-      "axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/";
-  static final String IO_POM_PATH =
-      "axkr/symja_android_library/blob/master/symja_android_library/matheclipse-io/";
-  static final String SRC_PATH = "src/main/java/";
-
-  static final String RULES_PATH =
-      "axkr/symja_android_library/blob/master/symja_android_library/rules/";
-
-  static final String RULE_SETS_PATH =
-      "axkr/symja_android_library/blob/master/symja_android_library/rule_sets/";
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -73,7 +60,7 @@ public class SourceCodeFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isBuiltInSymbol()) {
         IBuiltInSymbol builtin = (IBuiltInSymbol) ast.arg1();
-        String url = functionURL(builtin);
+        String url = Documentation.functionURL(builtin);
         if (url != null) {
           return F.stringx(url);
         }
@@ -90,99 +77,6 @@ public class SourceCodeFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
-  }
-
-  private static String buildURL(final Class<?> clazz, int line) {
-    String canonicalName = clazz.getCanonicalName();
-    String packageName = clazz.getPackage().getName();
-    String parentClass = canonicalName.substring(packageName.length() + 1);
-
-    StringBuilder buf = new StringBuilder(512);
-    buf.append(GITHUB);
-    if (packageName.startsWith("org.matheclipse.io")) {
-      buf.append(IO_POM_PATH);
-    } else {
-      buf.append(CORE_POM_PATH);
-    }
-    buf.append(SRC_PATH);
-
-    int index = parentClass.indexOf('.');
-    if (index > 0) {
-      parentClass = parentClass.substring(0, index);
-    }
-    String packagePath = packageName.replace('.', '/');
-    buf.append(packagePath);
-    buf.append('/');
-    buf.append(parentClass);
-    buf.append(".java#L");
-    buf.append(line);
-    return buf.toString();
-  }
-
-  /**
-   * Returns the GitHub URL of the <code>built-in-symbol</code> implementation in the
-   * <a href="https://github.com/axkr/symja_android_library">Symja GitHub repository</a>.
-   *
-   * @param builtin the built-in function identifier
-   * @return <code>null</code> is no entry was found
-   */
-  public static String functionURL(ISymbol builtin) {
-    int ordinal = builtin.ordinal();
-    if (ordinal > 0 && ordinal < ID.LINE_NUMBER_OF_JAVA_CLASS.length) {
-      int line = ID.LINE_NUMBER_OF_JAVA_CLASS[ordinal];
-      if (line > 0) {
-        IEvaluator evaluator = ((IBuiltInSymbol) builtin).getEvaluator();
-        if (evaluator != null //
-            && evaluator != BuiltInSymbol.DUMMY_EVALUATOR //
-            && evaluator != ICoreFunctionEvaluator.ARGS_EVALUATOR) {
-          Class<? extends IEvaluator> clazz = evaluator.getClass();
-          return buildURL(clazz, line);
-        }
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Returns the GitHub URL of the <code>built-in-symbol</code> rules definition in the
-   * <a href="https://github.com/axkr/symja_android_library">Symja GitHub repository</a>.
-   * 
-   * @param builtin the built-in function identifier
-   * @return <code>null</code> is no entry was found
-   */
-  public static String rules(ISymbol builtin) {
-    int ordinal = builtin.ordinal();
-    if (ordinal > 0 && ordinal < ID.LINE_NUMBER_OF_JAVA_CLASS.length) {
-      int line = ID.LINE_NUMBER_OF_JAVA_CLASS[ordinal];
-      if (line > 0) {
-        String symbolName = builtin.toString();
-        String userHome = System.getProperty("user.home");
-        File ruleFile = new File(userHome
-            + "/git/symja_android_library/symja_android_library/rules/"
-            + symbolName + "Rules.m");
-        if (ruleFile.exists()) {
-          StringBuilder buf = new StringBuilder(512);
-          buf.append(GITHUB);
-          buf.append(RULES_PATH);
-          buf.append(symbolName);
-          buf.append("Rules.m");
-          return buf.toString();
-        }else {
-          File ruleSetsFile = new File(userHome
-              + "/git/symja_android_library/symja_android_library/rule_sets/"
-              + symbolName + "Rules.m");
-          if (ruleSetsFile.exists()) {
-            StringBuilder buf = new StringBuilder(512);
-            buf.append(GITHUB);
-            buf.append(RULE_SETS_PATH);
-            buf.append(symbolName);
-            buf.append("Rules.m");
-            return buf.toString();
-          }
-        }
-      }
-    }
-    return null;
   }
 
   /**

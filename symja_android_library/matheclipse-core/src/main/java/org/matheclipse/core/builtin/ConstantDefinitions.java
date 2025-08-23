@@ -26,13 +26,12 @@ import org.matheclipse.core.expression.data.DateObjectExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ParserConfig;
 
 public class ConstantDefinitions {
 
-  // load version string from MAVEN
-  public static String VERSION = "?";
   public static String TIMESTAMP = "";
   private static int YEAR = Calendar.getInstance().get(Calendar.YEAR);
   private static int MONTH = Calendar.getInstance().get(Calendar.MONTH);
@@ -40,7 +39,6 @@ public class ConstantDefinitions {
   private static int HOUR = Calendar.getInstance().get(Calendar.HOUR);
   private static int MINUTE = Calendar.getInstance().get(Calendar.MINUTE);
   private static int SECOND = Calendar.getInstance().get(Calendar.SECOND);
-  public static final double EULER_GAMMA = 0.57721566490153286060651209008240243104215933593992;
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -52,7 +50,7 @@ public class ConstantDefinitions {
 
       String versionString = Config.getVersion();
       if (versionString != null) {
-        VERSION = versionString;
+        Config.VERSION = versionString;
       }
       // Properties properties = ResourceData.properties("/version.txt");
       // String timestamp = properties.getProperty("timestamp");
@@ -608,7 +606,7 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      return F.stringx(VERSION);
+      return F.stringx(Config.VERSION);
     }
   }
 
@@ -953,7 +951,7 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
-      return F.num(EULER_GAMMA);
+      return F.num(INum.EULER_GAMMA);
     }
 
     @Override
@@ -963,7 +961,7 @@ public class ConstantDefinitions {
 
     @Override
     public double evalReal() {
-      return EULER_GAMMA;
+      return INum.EULER_GAMMA;
     }
   }
 

@@ -22,6 +22,7 @@ import org.hipparchus.stat.StatUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.ArithmeticUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -5550,7 +5551,7 @@ public final class ListFunctions {
       if (ast.isAST1() && ast.arg1().isReal()) {
         int size = ast.arg1().toIntDefault();
         if (F.isPresent(size)) {
-          return range(size + 1);
+          return IAST.range(size + 1);
         }
         // `1`.
         return Errors.printMessage(S.Range, "error",
@@ -5558,7 +5559,7 @@ public final class ListFunctions {
       }
       if (ast.isAST3()) {
         if (ast.arg3().isZero()) {
-          Arithmetic.printInfy(ast.topHead(), ast.arg2(), ast.arg3());
+          ArithmeticUtil.printInfy(ast.topHead(), ast.arg2(), ast.arg3());
           return F.NIL;
         }
         if (ast.arg3().isDirectedInfinity()) {
@@ -6980,7 +6981,7 @@ public final class ListFunctions {
     }
 
     public static IAST subdivide(IExpr arg1, int n) {
-      return range(0, n + 1).map(x -> x.divide(arg1), 1);
+      return IAST.range(0, n + 1).map(x -> x.divide(arg1), 1);
     }
 
     @Override
@@ -8282,36 +8283,6 @@ public final class ListFunctions {
     }
     IASTMutable orderedList = listOrAssociation.copyAST();
     return EvalAttributes.copySortLess(orderedList).get(n);
-  }
-
-  /**
-   * <code>range(maximumExclusive)</code> gives
-   * <code>{1, 2, 3, ... ,maximumInclusive-2, maximumInclusive-1}</code>
-   * 
-   * @param maximumExclusive
-   * @return {@link F#NIL} if <code>size > Integer.MAX_VALUE-3</code>
-   */
-  public static IAST range(int maximumExclusive) {
-    if (maximumExclusive > Integer.MAX_VALUE - 3) {
-      // `1`.
-      return Errors.printMessage(S.Range, "error",
-          F.List("argument " + maximumExclusive + " is greater than Javas Integer.MAX_VALUE-3."));
-    }
-    return range(1, maximumExclusive);
-  }
-
-  /**
-   * <code>range(2, 7)</code> gives <code>{2, 3, 4, 5, 6}</code>
-   *
-   * @param minimumInclusive
-   * @param maximumExclusive
-   * @return a list of integer numbers
-   */
-  public static IAST range(int minimumInclusive, int maximumExclusive) {
-    if (maximumExclusive > minimumInclusive) {
-      return F.mapRange(minimumInclusive, maximumExclusive, i -> F.ZZ(i));
-    }
-    return F.CEmptyList;
   }
 
   /**

@@ -127,12 +127,12 @@ public abstract class AbstractPatternSequence implements IPatternSequence {
   /** {@inheritDoc} */
   @Override
   public int hierarchy() {
-    return PATTERNID;
+    return PATTERNSEQUENCEID;
   }
 
   @Override
   public boolean matchPattern(final IExpr expr, IPatternMap patternMap) {
-    IAST sequence = F.Sequence(expr);
+    IAST sequence = expr.makeAST(S.Sequence);
     return matchPatternSequence(sequence, patternMap, S.Missing);
   }
 

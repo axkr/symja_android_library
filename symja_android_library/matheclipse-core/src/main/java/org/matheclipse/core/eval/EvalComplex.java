@@ -91,7 +91,8 @@ public class EvalComplex {
     if (symbol.isRealConstant()) {
       // fast evaluation path
       final double[] result = new double[2];
-      result[0] = ((IRealConstant) ((IBuiltInSymbol) symbol).getEvaluator()).evalReal();
+      final IEvaluator realConstant = ((IBuiltInSymbol) symbol).getEvaluator();
+      result[0] = ((IRealConstant) realConstant).evalReal();
       result[1] = 0.0;
       return result;
     }

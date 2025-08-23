@@ -31,11 +31,10 @@ import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.matheclipse.api.parser.FuzzyParser;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.GraphicsFunctions;
-import org.matheclipse.core.builtin.StringFunctions;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.data.ElementData1;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.eval.util.WriterOutputStream;
@@ -263,7 +262,7 @@ public class Pods {
 
     ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
     temp.add(node);
-    createJSONFormat(node, engine, StringFunctions.inputForm(inExpr), outExpr, formats);
+    createJSONFormat(node, engine, IStringX.inputForm(inExpr), outExpr, formats);
   }
 
   /** package private */
@@ -286,7 +285,7 @@ public class Pods {
 
     ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
     temp.add(node);
-    createJSONFormat(node, engine, plaintext, StringFunctions.inputForm(inExpr), outExpr, formats);
+    createJSONFormat(node, engine, plaintext, IStringX.inputForm(inExpr), outExpr, formats);
   }
 
   /**
@@ -958,7 +957,7 @@ public class Pods {
                 podOut = outExpr;
                 int form = internFormat(SYMJA, podOut.second().toString());
                 addPod(podsArray, inExpr, podOut, podOut.first().toString(),
-                    StringFunctions.inputForm(inExpr), "Function", "Plotter", form, engine);
+                    IStringX.inputForm(inExpr), "Function", "Plotter", form, engine);
                 numpods++;
               } else if (outExpr instanceof GraphExpr) {
                 String javaScriptStr = ((GraphExpr) outExpr).graphToJSForm();
@@ -1181,7 +1180,7 @@ public class Pods {
     String html = null;
     if (podOut.isSameHeadSizeGE(S.Graphics, 2)) {
       StringBuilder buf = new StringBuilder();
-      if (GraphicsFunctions.renderGraphics2D(buf, (IAST) podOut, engine)) {
+      if (GraphicsUtil.renderGraphics2D(buf, (IAST) podOut, engine)) {
         try {
           String graphicsStr = buf.toString();
           html = JSBuilder.buildGraphics2D(JSBuilder.GRAPHICS2D_TEMPLATE, graphicsStr);
@@ -1194,7 +1193,7 @@ public class Pods {
       form = internFormat(SYMJA, podOut.second().toString());
     }
     if (html != null) {
-      addPod(podsArray, inExpr, podOut, html, StringFunctions.inputForm(plot2D), title, scanner,
+      addPod(podsArray, inExpr, podOut, html, IStringX.inputForm(plot2D), title, scanner,
           form, engine);
       numpods++;
     }
@@ -1207,7 +1206,7 @@ public class Pods {
     String html = null;
     if (podOut.isSameHeadSizeGE(S.Graphics3D, 2)) {
       StringBuilder buf = new StringBuilder();
-      if (GraphicsFunctions.renderGraphics3D(buf, (IAST) podOut, engine)) {
+      if (GraphicsUtil.renderGraphics3D(buf, (IAST) podOut, engine)) {
         try {
           String graphicsStr = buf.toString();
           html = JSBuilder.buildGraphics3D(JSBuilder.GRAPHICS3D_TEMPLATE, graphicsStr);
@@ -1220,7 +1219,7 @@ public class Pods {
       form = internFormat(SYMJA, html);
     }
     if (html != null) {
-      addPod(podsArray, inExpr, podOut, html, StringFunctions.inputForm(plot3D), title, scanner,
+      addPod(podsArray, inExpr, podOut, html, IStringX.inputForm(plot3D), title, scanner,
           form, engine);
       numpods++;
     }
@@ -1629,14 +1628,14 @@ public class Pods {
         ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
         temp.add(node);
         createJSONFormat(node, engine, F.NIL, inExpr.toString() + " is an even number.",
-            StringFunctions.inputForm(F.EvenQ(inExpr)), formats);
+            IStringX.inputForm(F.EvenQ(inExpr)), formats);
 
         numsubpods++;
       } else {
         ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
         temp.add(node);
         createJSONFormat(node, engine, F.NIL, inExpr.toString() + " is an odd number.",
-            StringFunctions.inputForm(F.OddQ(inExpr)), formats);
+            IStringX.inputForm(F.OddQ(inExpr)), formats);
 
         numsubpods++;
       }
@@ -1648,13 +1647,13 @@ public class Pods {
           temp.add(node);
           createJSONFormat(node, engine, F.NIL,
               inExpr.toString() + " is the " + primePi.toString() + "th prime number.",
-              StringFunctions.inputForm(primePiExpr), formats);
+              IStringX.inputForm(primePiExpr), formats);
           numsubpods++;
         } else {
           ObjectNode node = JSON_OBJECT_MAPPER.createObjectNode();
           temp.add(node);
           createJSONFormat(node, engine, F.NIL, inExpr.toString() + " is a prime number.",
-              StringFunctions.inputForm(primePiExpr), formats);
+              IStringX.inputForm(primePiExpr), formats);
           numsubpods++;
         }
       }

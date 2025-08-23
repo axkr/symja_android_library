@@ -27,6 +27,11 @@ public class ASCIIPrettyPrinter3 {
   StringBuilder line2;
   StringBuilder line3;
 
+  /**
+   * Create a new ASCII pretty printer which tries to create a pretty printer ASCII form on 3 lines.
+   * <p>
+   * The internal buffers are initialized with empty strings.
+   */
   public ASCIIPrettyPrinter3() {
     line1 = new StringBuilder();
     line2 = new StringBuilder();

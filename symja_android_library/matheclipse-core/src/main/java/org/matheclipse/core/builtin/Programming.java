@@ -48,7 +48,6 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.ModuleReplaceAll;
 
 public final class Programming {
@@ -2910,7 +2909,7 @@ public final class Programming {
    * </pre>
    *
    * <p>
-   * return a list of the heads of the current stack wrapped by <code>HoldForm</code>.
+   * return a list of the heads of the current stack wrapped by {@link F#HoldForm(IExpr)}
    *
    * <pre>
    * <code>Stack(_)
@@ -2918,7 +2917,7 @@ public final class Programming {
    * </pre>
    *
    * <p>
-   * return a list of the expressions of the current stack wrapped by <code>HoldForm</code>.
+   * return a list of the expressions of the current stack wrapped by {@link F#HoldForm(IExpr)}.
    *
    * <h3>Examples</h3>
    *
@@ -3787,69 +3786,6 @@ public final class Programming {
       }
     }
     return true;
-  }
-
-  /**
-   * Remember which local variable names we use in the given <code>assignedValues</code> and <code>
-   * assignedRules</code>.
-   *
-   * @param variablesList initializer variables list from the <code>Block</code> function
-   * @param oldAssignedValues the variables mapped to their values (IExpr) before evaluating the
-   *        block
-   * @param oldAssignedRules the variables mapped to their rules (RulesData) before evaluating the
-   *        block
-   * @param engine the evaluation engine
-   */
-  public static void rememberBlockVariables(IAST variablesList, final ISymbol[] symbolList,
-      final IExpr[] oldAssignedValues, final RulesData[] oldAssignedRules,
-      final EvalEngine engine) {
-    ISymbol variableSymbol;
-    for (int i = 1; i < variablesList.size(); i++) {
-      if (variablesList.get(i).isSymbol()) {
-        variableSymbol = (ISymbol) variablesList.get(i);
-        if (variableSymbol.isBuiltInSymbol()) {
-          ISymbol substitute = ((IBuiltInSymbol) variableSymbol).mapToGlobal(engine);
-          if (substitute != null) {
-            variableSymbol = substitute;
-          }
-        }
-        symbolList[i] = variableSymbol;
-        oldAssignedValues[i] = variableSymbol.assignedValue();
-        oldAssignedRules[i] = variableSymbol.getRulesData();
-      } else if (variablesList.get(i).isAST(S.Set, 3)) {
-        final IAST setFun = (IAST) variablesList.get(i);
-        if (setFun.arg1().isSymbol()) {
-          variableSymbol = (ISymbol) setFun.arg1();
-          if (variableSymbol.isBuiltInSymbol()) {
-            ISymbol substitute = ((IBuiltInSymbol) variableSymbol).mapToGlobal(engine);
-            if (substitute != null) {
-              variableSymbol = substitute;
-            }
-          }
-          symbolList[i] = variableSymbol;
-          oldAssignedValues[i] = variableSymbol.assignedValue();
-          oldAssignedRules[i] = variableSymbol.getRulesData();
-        }
-      }
-    }
-
-    for (int i = 1; i < variablesList.size(); i++) {
-      if (variablesList.get(i).isSymbol()) {
-        variableSymbol = symbolList[i];
-        variableSymbol.clearValue();
-        variableSymbol.setRulesData(null);
-      } else {
-        if (variablesList.get(i).isAST(S.Set, 3)) {
-          final IAST setFun = (IAST) variablesList.get(i);
-          if (setFun.arg1().isSymbol()) {
-            variableSymbol = symbolList[i];
-            IExpr temp = engine.evaluate(setFun.arg2());
-            variableSymbol.assignValue(temp);
-            variableSymbol.setRulesData(null);
-          }
-        }
-      }
-    }
   }
 
   /**

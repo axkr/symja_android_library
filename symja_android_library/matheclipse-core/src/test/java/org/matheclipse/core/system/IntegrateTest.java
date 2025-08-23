@@ -68,12 +68,10 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testIntegrateIssue330() {
-    check("Integrate(x*ArcSin(x) ,x)", //
-        "1/6*x^2*(3*ArcSin(x)+3/2*(x*(Sqrt(x^2-x^4)-ArcSin(Sqrt(x^2))))/(x^2)^(3/2))");
     check("Limit(x/Sqrt(1-x^2),x->1)", //
         "Indeterminate");
     check("Integrate(x*(1/2*Pi-ArcSin(x)),x)", //
-        "1/4*x^2*(Pi-2*ArcSin(x))+1/4*(-1+x^2)*(x/Sqrt(1-x^2)-ArcTan(x/Sqrt(1-x^2))+(-x^2*ArcTan(x/Sqrt(\n"
+        "1/4*x^2*(Pi-2*ArcSin(x))+1/4*(-1+x^2)*(x/Sqrt(1-x^2)-ArcTan(x/Sqrt(1-x^2))+(-x^2*ArcTan(x/Sqrt(\n" //
             + "1-x^2)))/(1-x^2))");
   }
 
@@ -148,7 +146,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Integrate(x*ArcSin(x),{x,0,1})", //
         "Pi/8");
     check("Integrate(x*ArcSin(x),x)", //
-        "1/6*x^2*(3*ArcSin(x)+3/2*(x*(Sqrt(x^2-x^4)-ArcSin(Sqrt(x^2))))/(x^2)^(3/2))");
+        "1/6*x^2*(3/2*(x*Sqrt(1-x^2)-ArcSin(x))/x^2+3*ArcSin(x))");
     check("Integrate(x^n*ArcSin(m*x),x)", //
         "(x^(1+n)*ArcSin(m*x))/(1+n)+(-m*x^(2+n)*Hypergeometric2F1(1/2,1/2*(2+n),1/2*(4+n),m^\n" //
             + "2*x^2))/(2+3*n+n^2)");
@@ -306,7 +304,8 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "{-Cos(x),Sin(x)}");
     check("Integrate({Sin(x),Cos(x)},{x,a,b})", //
         "{Cos(a)-Cos(b),-Sin(a)+Sin(b)}");
-    check("Integrate(2*x,x)", "x^2");
+    check("Integrate(2*x,x)", //
+        "x^2");
     check("Integrate(Tan(x) ^ 5, x)", //
         "-Log(Cos(x))-Tan(x)^2/2+Tan(x)^4/4");
     check("Integrate(x*Sin(x),{x,1.0,2*Pi})", //

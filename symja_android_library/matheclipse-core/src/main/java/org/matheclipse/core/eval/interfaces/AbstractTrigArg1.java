@@ -24,6 +24,13 @@ import org.matheclipse.core.interfaces.INumber;
 public abstract class AbstractTrigArg1 extends AbstractArg1 {
   private static final Logger LOGGER = LogManager.getLogger(AbstractTrigArg1.class);
 
+  @Override
+  public boolean evalIsReal(IAST ast) {
+    if (ast.argSize() >= 1) {
+      return ast.arg1().isRealResult();
+    }
+    return false;
+  }
 
   @Override
   public IExpr evaluate(final IAST ast, final EvalEngine engine) {

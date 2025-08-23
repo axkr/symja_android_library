@@ -8,6 +8,59 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
 public class TestPowsimp extends ExprEvaluatorTestCase {
+  @Test
+  public void test_powdenest() {
+    // i, j = symbols('i,j', integer=True)
+    ISymbol i = F.Dummy("i", F.Element(F.Slot1, S.Integers));
+    ISymbol j = F.Dummy("j", F.Element(F.Slot1, S.Integers));
+    ISymbol x = F.x;
+    ISymbol y = F.y;
+    // p, q = symbols('p q', positive=True)
+    ISymbol p = F.Dummy("p", F.Greater(F.Slot1, F.C0));
+    ISymbol q = F.Dummy("q", F.Greater(F.Slot1, F.C0));
+
+    // assertEquals(PowerSimplifier.powdenest(x), x);
+
+    // assertEquals(PowerSimplifier.powdenest(x + 2*(x**(a*Rational(2, 3)))**(3*x)), (x +
+    // 2*(x**(a*Rational(2, 3)))**(3*x))
+    // assert powdenest((exp(a*Rational(2, 3)))**(3*x)) # -X-> (exp(a/3))**(6*x)
+    // assert powdenest((x**(a*Rational(2, 3)))**(3*x)) == ((x**(a*Rational(2, 3)))**(3*x))
+    // assert powdenest(exp(3*x*log(2))) == 2**(3*x)
+    // assertEquals(PowerSimplifier.powdenest(F.Sqrt(F.Power(p, 2))), p);
+    // eq = p**(2*i)*q**(4*i)
+    // assert powdenest(eq) == (p*q**2)**(2*i)
+    // # -X-> (x**x)**i*(x**x)**j == x**(x*(i + j))
+    // assert powdenest((x**x)**(i + j))
+    // assert powdenest(exp(3*y*log(x))) == x**(3*y)
+    // assert powdenest(exp(y*(log(a) + log(b)))) == (a*b)**y
+    // assert powdenest(exp(3*(log(a) + log(b)))) == a**3*b**3
+    // assert powdenest(((x**(2*i))**(3*y))**x) == ((x**(2*i))**(3*y))**x
+    // assert powdenest(((x**(2*i))**(3*y))**x, force=True) == x**(6*i*x*y)
+    // assert powdenest(((x**(a*Rational(2, 3)))**(3*y/i))**x) == \
+    // (((x**(a*Rational(2, 3)))**(3*y/i))**x)
+    // assert powdenest((x**(2*i)*y**(4*i))**z, force=True) == (x*y**2)**(2*i*z)
+    // assert powdenest((p**(2*i)*q**(4*i))**j) == (p*q**2)**(2*i*j)
+    // e = ((p**(2*a))**(3*y))**x
+    // assert powdenest(e) == e
+    // e = ((x**2*y**4)**a)**(x*y)
+    // assert powdenest(e) == e
+    // e = (((x**2*y**4)**a)**(x*y))**3
+    // assert powdenest(e) == ((x**2*y**4)**a)**(3*x*y)
+    // assert powdenest((((x**2*y**4)**a)**(x*y)), force=True) == \
+    // (x*y**2)**(2*a*x*y)
+    // assert powdenest((((x**2*y**4)**a)**(x*y))**3, force=True) == \
+    // (x*y**2)**(6*a*x*y)
+    // assert powdenest((x**2*y**6)**i) != (x*y**3)**(2*i)
+    // x, y = symbols('x,y', positive=True)
+    // assert powdenest((x**2*y**6)**i) == (x*y**3)**(2*i)
+    //
+    // assert powdenest((x**(i*Rational(2, 3))*y**(i/2))**(2*i)) == (x**Rational(4, 3)*y)**(i**2)
+    // assert powdenest(sqrt(x**(2*i)*y**(6*i))) == (x*y**3)**i
+    //
+    // assert powdenest(4**x) == 2**(2*x)
+    // assert powdenest((4**x)**y) == 2**(2*x*y)
+    // assert powdenest(4**x*y) == 2**(2*x)*y
+  }
 
   @Test
   public void test_powsimp() {
@@ -68,10 +121,8 @@ public class TestPowsimp extends ExprEvaluatorTestCase {
     // assert powsimp(exp(x)*exp(y)*2**x*2**y, combine='exp') == \
     // exp(x + y)*2**(x + y)
     assertEquals(
-        Powsimp
-            .powsimp(S.Times.of(F.Exp(x), F.Exp(y), F.Power(F.C2, x), F.Power(F.C2, y)), false,
-                "exp")
-            .toString(), //
+        Powsimp.powsimp(S.Times.of(F.Exp(x), F.Exp(y), F.Power(F.C2, x), F.Power(F.C2, y)), false,
+            "exp").toString(), //
         "(2*E)^(x+y)");
 
     // assert powsimp(exp(x)*exp(y)*exp(2)*sin(x) + sin(y) + 2**x*2**y) == \

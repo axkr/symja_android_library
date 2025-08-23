@@ -1,15 +1,15 @@
-package org.matheclipse.core.builtin.functions;
+package org.matheclipse.core.numerics.functions;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApcomplexHelper;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.hipparchus.complex.Complex;
-import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.interfaces.INum;
 
 public class ZetaJS extends JS {
   private static final int MAX_VALUE_HALF = Integer.MAX_VALUE / 2;
@@ -146,7 +146,7 @@ public class ZetaJS extends JS {
   // }
 
   public static double bernoulliInt(int n) {
-    return NumberTheory.bernoulliDouble(n);
+    return INum.bernoulliDouble(n);
   }
 
   // public static Complex harmonic(int n ) {

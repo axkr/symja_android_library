@@ -5,8 +5,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
 import java.nio.ByteBuffer;
-import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.convert.RGBColor;
+import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -77,7 +77,7 @@ public class ImageFormat {
    */
   public static BufferedImage toIntFormat(IAST matrix, int imageType)
       throws IllegalArgumentException {
-    IntArrayList dimensions = LinearAlgebra.dimensions(matrix);
+    IntArrayList dimensions = LinearAlgebraUtil.dimensions(matrix);
     int width = dimensions.getInt(1);
     int height = dimensions.getInt(0);
     if (dimensions.size() == 2) {

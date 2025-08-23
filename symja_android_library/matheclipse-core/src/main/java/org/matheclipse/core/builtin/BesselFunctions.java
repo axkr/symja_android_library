@@ -15,7 +15,6 @@ import java.math.RoundingMode;
 import org.apfloat.LossOfPrecisionException;
 import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
-import org.matheclipse.core.builtin.functions.BesselJS;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -29,6 +28,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.functions.BesselJS;
 import com.google.common.math.IntMath;
 
 public class BesselFunctions {

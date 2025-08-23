@@ -1,11 +1,9 @@
 package org.matheclipse.core.builtin;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
@@ -13,6 +11,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalHistory;
+import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -37,29 +36,18 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
-import org.matheclipse.core.interfaces.IComplex;
-import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator;
-import org.matheclipse.core.visit.AbstractVisitorLong;
 import org.matheclipse.core.visit.IndexedLevel;
 import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 import it.unimi.dsi.fastutil.ints.IntList;
 
 public class StructureFunctions {
-
-  private static final Set<ISymbol> LOGIC_EQUATION_HEADS =
-      Collections.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>(29));
-  private static final Set<ISymbol> PLUS_LOGIC_EQUATION_HEADS =
-      Collections.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>(29));
-  private static final Set<ISymbol> LIST_LOGIC_EQUATION_HEADS =
-      Collections.newSetFromMap(new IdentityHashMap<ISymbol, Boolean>(29));
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -100,15 +88,7 @@ public class StructureFunctions {
       S.SymbolName.setEvaluator(new SymbolName());
       S.Thread.setEvaluator(new Thread());
       S.Through.setEvaluator(new Through());
-      ISymbol[] logicEquationHeads = {S.And, S.Or, S.Xor, S.Nand, S.Nor, S.Not, S.Implies,
-          S.Equivalent, S.Equal, S.Unequal, S.Less, S.Greater, S.LessEqual, S.GreaterEqual};
-      for (int i = 0; i < logicEquationHeads.length; i++) {
-        LOGIC_EQUATION_HEADS.add(logicEquationHeads[i]);
-      }
-      PLUS_LOGIC_EQUATION_HEADS.addAll(LOGIC_EQUATION_HEADS);
-      PLUS_LOGIC_EQUATION_HEADS.add(S.Plus);
-      LIST_LOGIC_EQUATION_HEADS.addAll(LOGIC_EQUATION_HEADS);
-      LIST_LOGIC_EQUATION_HEADS.add(S.List);
+
     }
   }
 
@@ -814,43 +794,6 @@ public class StructureFunctions {
   /** Count the number of leaves of an expression. */
   public static class LeafCount extends AbstractCoreFunctionEvaluator {
 
-    /** Calculate the number of leaves in an AST */
-    private static class LeafCountVisitor extends AbstractVisitorLong {
-      int fHeadOffset;
-
-      public LeafCountVisitor() {
-        this(1);
-      }
-
-      public LeafCountVisitor(int hOffset) {
-        fHeadOffset = hOffset;
-      }
-
-      @Override
-      public long visit(IAST list) {
-        long sum = 0;
-        for (int i = fHeadOffset; i < list.size(); i++) {
-          sum += list.get(i).accept(this);
-        }
-        return sum;
-      }
-
-      @Override
-      public long visit(IComplex element) {
-        return element.leafCount();
-      }
-
-      @Override
-      public long visit(IComplexNum element) {
-        return element.leafCount();
-      }
-
-      @Override
-      public long visit(IFraction element) {
-        return element.leafCount();
-      }
-    }
-
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       return F.ZZ(engine.evaluate(ast.arg1()).leafCount());
@@ -1294,7 +1237,7 @@ public class StructureFunctions {
         }
 
         IAST tensor = (IAST) ast.arg2();
-        IntList dims = LinearAlgebra.dimensions(tensor, tensor.head());
+        IntList dims = LinearAlgebraUtil.dimensions(tensor, tensor.head());
         if (dims.size() > level) {
           if (level == 0) {
             return tensor.apply(ast.arg1());
@@ -2328,78 +2271,6 @@ public class StructureFunctions {
 
   }
 
-  /**
-   * Maps the elements of the <code>expr</code> with the cloned <code>replacement</code>. <code>
-   * replacement</code> is an IAST where the argument at the given position will be replaced by the
-   * currently mapped element. Thread over the following headers: <code>
-   * S.And, S.Or, S.Xor, S.Nand, S.Nor, S.Not, S.Implies, S.Equivalent, S.Equal,S.Unequal, S.Less, S.Greater, S.LessEqual, S.GreaterEqual
-   * </code>
-   *
-   * @param expr typically the first element of <code>replacement</code> ast.
-   * @param replacement an IAST there the argument at the given position is replaced by the
-   *        currently mapped argument of this IAST.
-   * @param position
-   * @return
-   */
-  public static IAST threadLogicEquationOperators(IExpr expr, IAST replacement, int position) {
-    if (expr.size() > 1 && expr.isAST()) {
-      IAST ast = (IAST) expr;
-      if (LOGIC_EQUATION_HEADS.contains(ast.head())) {
-        // IASTMutable copy = replacement.setAtCopy(position, null);
-        return ast.mapThread(replacement, position);
-      }
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Maps the elements of the <code>expr</code> with the cloned <code>replacement</code>. <code>
-   * replacement</code> is an IAST where the argument at the given position will be replaced by the
-   * currently mapped element. Thread over the following headers: <code>
-   * S.Plus, S.And, S.Or, S.Xor, S.Nand, S.Nor, S.Not, S.Implies, S.Equivalent, S.Equal,S.Unequal, S.Less, S.Greater, S.LessEqual, S.GreaterEqual
-   * </code>
-   *
-   * @param expr typically the first element of <code>replacement</code> ast.
-   * @param replacement an IAST there the argument at the given position is replaced by the
-   *        currently mapped argument of this IAST.
-   * @param position
-   * @return
-   */
-  public static IAST threadPlusLogicEquationOperators(IExpr expr, IAST replacement, int position) {
-    if (expr.size() > 1 && expr.isAST()) {
-      IAST ast = (IAST) expr;
-      if (PLUS_LOGIC_EQUATION_HEADS.contains(ast.head())) {
-        // IASTMutable copy = replacement.setAtCopy(position, null);
-        return ast.mapThread(replacement, position);
-      }
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Maps the elements of the <code>expr</code> with the cloned <code>replacement</code>. <code>
-   * replacement</code> is an IAST where the argument at the given position will be replaced by the
-   * currently mapped element. Thread over the following headers: <code>
-   * S.List S.And, S.Or, S.Xor, S.Nand, S.Nor, S.Not, S.Implies, S.Equivalent, S.Equal,S.Unequal, S.Less, S.Greater, S.LessEqual, S.GreaterEqual
-   * </code>
-   *
-   * @param expr typically the first element of <code>replacement</code> ast.
-   * @param replacement an IAST there the argument at the given position is replaced by the
-   *        currently mapped argument of this IAST.
-   * @param position
-   * @return
-   */
-  public static IAST threadListLogicEquationOperators(IExpr expr, IAST replacement, int position) {
-    if (expr.size() > 1 && expr.isAST()) {
-      IAST ast = (IAST) expr;
-      if (LIST_LOGIC_EQUATION_HEADS.contains(ast.head())) {
-        // IASTMutable copy = replacement.setAtCopy(position, null);
-        return ast.mapThread(replacement, position);
-      }
-    }
-    return F.NIL;
-  }
-
   public static IExpr apply(IExpr f, IExpr expr, VisitorLevelSpecification level) {
     if (expr.isAST()) {
       return ((IAST) expr).acceptChecked(level).orElse(expr);
@@ -2412,10 +2283,6 @@ public class StructureFunctions {
     return expr;
     // }
     // }
-  }
-
-  public static AbstractVisitorLong leafCountVisitor() {
-    return new LeafCount.LeafCountVisitor(0);
   }
 
   public static void initialize() {

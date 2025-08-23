@@ -16,8 +16,8 @@ import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
 import java.util.function.Supplier;
 import org.matheclipse.core.builtin.Programming;
-import org.matheclipse.core.builtin.StructureFunctions;
 import org.matheclipse.core.builtin.WindowFunctions;
+import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -631,7 +631,7 @@ public class FunctionExpand extends AbstractEvaluator {
       return result;
     }
     IExpr arg1 = ast.arg1();
-    IAST tempAST = StructureFunctions.threadListLogicEquationOperators(arg1, ast, 1);
+    IAST tempAST = CompareUtil.threadListLogicEquationOperators(arg1, ast, 1);
     if (tempAST.isPresent()) {
       return tempAST;
     }

@@ -59,9 +59,11 @@ import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.combinatoric.KSubsetsIterable;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.JASConvert;
+import org.matheclipse.core.eval.CombinatoricUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
@@ -836,7 +838,7 @@ public final class LinearAlgebra {
         if (columnSize <= 0) {
           return F.NIL;
         } else {
-          IntArrayList dimensions = LinearAlgebra.dimensions(list);
+          IntArrayList dimensions = LinearAlgebraUtil.dimensions(list);
           if (dimensions.size() < rank) {
             // The array depth of the expression at position `1` of `2` must be at least equal
             // to the specified rank `3`.
@@ -864,7 +866,7 @@ public final class LinearAlgebra {
                     IExpr element = subList.get(j);
                     boolean isScalar = true;
                     if (element.isList()) {
-                      IntArrayList elementDimension = LinearAlgebra.dimensions((IAST) element);
+                      IntArrayList elementDimension = LinearAlgebraUtil.dimensions((IAST) element);
                       if (elementDimension.size() >= rank) {
                         isScalar = false;
                       }
@@ -923,7 +925,7 @@ public final class LinearAlgebra {
         for (int j = 1; j < subList.size(); j++) {
           IExpr element = subList.get(j);
           if (element.isList()) {
-            IntArrayList dimensions = LinearAlgebra.dimensions((IAST) element);
+            IntArrayList dimensions = LinearAlgebraUtil.dimensions((IAST) element);
             if (dimensions.size() < rank) {
               // The array depth of the expression at position `1` of `2` must be at least equal
               // to the specified rank `3`.
@@ -1707,7 +1709,7 @@ public final class LinearAlgebra {
     private static IAST getDimensions(final IAST ast, int maximumLevel) {
       IAST list = (IAST) ast.arg1();
       IExpr header = list.head();
-      final IntList dims = dimensions(list, header, maximumLevel - 1);
+      final IntList dims = LinearAlgebraUtil.dimensions(list, header, maximumLevel - 1);
       return F.mapRange(0, dims.size(), i -> F.ZZ(dims.getInt(i)));
     }
 
@@ -1816,12 +1818,12 @@ public final class LinearAlgebra {
           return temp;
         }
 
-        final IntList dimensions1 = dimensions(arg1, S.List, Integer.MAX_VALUE, true);
+        final IntList dimensions1 = LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, true);
         final int dims1Size = dimensions1.size();
         if (dims1Size == 0) {
           return F.NIL;
         }
-        final IntList dimensions2 = dimensions(arg2, S.List, Integer.MAX_VALUE, true);
+        final IntList dimensions2 = LinearAlgebraUtil.dimensions(arg2, S.List, Integer.MAX_VALUE, true);
         final int dims2Size = dimensions2.size();
         if (dims2Size == 0) {
           return F.NIL;
@@ -2941,7 +2943,7 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int[] dimension = dimensionMatrix(ast.arg1(), engine);
+      int[] dimension = LinearAlgebraUtil.dimensionMatrix(ast.arg1(), engine);
       if (dimension == null) {
         // Positive integer (less equal 2147483647) expected at position `2` in `1`.
         return Errors.printMessage(S.HilbertMatrix, "intpm", F.list(ast, F.C1), engine);
@@ -2981,7 +2983,7 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int[] dimension = dimensionMatrix(ast.arg1(), engine);
+      int[] dimension = LinearAlgebraUtil.dimensionMatrix(ast.arg1(), engine);
       if (dimension == null) {
         // Positive integer (less equal 2147483647) expected at position `2` in `1`.
         return Errors.printMessage(S.IdentityMatrix, "intpm", F.list(ast, F.C1), engine);
@@ -3060,8 +3062,8 @@ public final class LinearAlgebra {
       }
 
       private IAST inner() {
-        IntArrayList list1Dimensions = dimensions(list1, list1.head(), Integer.MAX_VALUE);
-        IntArrayList list2Dimensions = dimensions(list2, list2.head(), Integer.MAX_VALUE);
+        IntArrayList list1Dimensions = LinearAlgebraUtil.dimensions(list1, list1.head(), Integer.MAX_VALUE);
+        IntArrayList list2Dimensions = LinearAlgebraUtil.dimensions(list2, list2.head(), Integer.MAX_VALUE);
         list2Dim0 = list2Dimensions.getInt(0);
         return recursionInner(new IntArrayList(), new IntArrayList(),
             list1Dimensions.subList(0, list1Dimensions.size() - 1),
@@ -3142,8 +3144,8 @@ public final class LinearAlgebra {
         if (!list1.head().equals(head2)) {
           return F.NIL;
         }
-        IntArrayList dim1 = dimensions(list1);
-        IntArrayList dim2 = dimensions(list2);
+        IntArrayList dim1 = LinearAlgebraUtil.dimensions(list1);
+        IntArrayList dim2 = LinearAlgebraUtil.dimensions(list2);
         if (dim1.size() == 0) {
           // Nonatomic expression expected at position `1` in `2`.
           return Errors.printMessage(S.Inner, "normal", F.list(F.C2, list1), EvalEngine.get());
@@ -5835,7 +5837,7 @@ public final class LinearAlgebra {
       }
 
       try {
-        final IntList dimensions = dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+        final IntList dimensions = LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
         final int dimsSize = dimensions.size();
         if (dimsSize == 0) {
           return F.NIL;
@@ -6013,7 +6015,7 @@ public final class LinearAlgebra {
         arg2 = F.NIL;
       }
       final IntArrayList dimensions =
-          LinearAlgebra.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+          LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
       int length = dimensions.size();
       if (length < 1) {
         // Error messages inherits to S.ConjugateTranspose
@@ -6351,7 +6353,7 @@ public final class LinearAlgebra {
     if (arg1.isAST()) {
       IAST list = (IAST) arg1;
       IExpr header = list.head();
-      IntList dims = LinearAlgebra.dimensions(list, header);
+      IntList dims = LinearAlgebraUtil.dimensions(list, header);
       return dims.size();
     }
     if (arg1.isSparseArray()) {
@@ -6537,240 +6539,6 @@ public final class LinearAlgebra {
     // isMatrix() must be used!
     matrix.isMatrix(true);
     return matrix;
-  }
-
-  /**
-   * Return the <a href=
-   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Dimensions.md">Dimensions</a>
-   * of an {@link IAST}.
-   * 
-   * @param ast
-   * @return a list of size <code>0</code> if no dimensions are found
-   */
-  public static IntArrayList dimensions(IAST ast) {
-    DimensionsData dimensionsData = new DimensionsData(ast, ast.head(), Integer.MAX_VALUE, false);
-    return dimensionsData.getDimensions();
-  }
-
-  /**
-   * Return the <a href=
-   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Dimensions.md">Dimensions</a>
-   * of an {@link IAST}. All (sub-)expressions in the dimension must have the same
-   * <code>header</code>.
-   * 
-   * @param ast
-   * @param header the header, which all sub-expressions of the detected dimension must contain
-   * @return a list of size <code>0</code> if no dimensions are found
-   */
-  public static IntArrayList dimensions(ITensorAccess ast, IExpr header) {
-    return dimensions(ast, header, Integer.MAX_VALUE);
-  }
-
-  /**
-   * Return the <a href=
-   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Dimensions.md">Dimensions</a>
-   * of an {@link IAST}. All (sub-)expressions in the dimension must have the same
-   * <code>header</code>.
-   * 
-   * @param ast
-   * @param header the header, which all sub-expressions of the detected dimension must contain
-   * @param maxLevel maxLevel the maximum level (depth) of analyzing for the dimension
-   * @return a list of size <code>0</code> if no dimensions are found
-   */
-  public static IntArrayList dimensions(ITensorAccess ast, IExpr header, int maxLevel) {
-    if (ast.isSparseArray()) {
-      int[] dims = ((ISparseArray) ast).getDimension();
-      if (dims.length <= maxLevel) {
-        maxLevel = dims.length;
-      }
-      final IntArrayList list = new IntArrayList(maxLevel);
-      list.addElements(0, dims, 0, maxLevel);
-      return list;
-    }
-    DimensionsData dimensionsData = new DimensionsData((IAST) ast, header, maxLevel, false);
-    return dimensionsData.getDimensions();
-  }
-
-  /**
-   * Return the <a href=
-   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Dimensions.md">Dimensions</a>
-   * of an <code>expr</code>. All (sub-)expressions in the dimension must have the same
-   * <code>header</code>.
-   * 
-   * @param expr
-   * @param header the header, which all sub-expressions of the detected dimension must contain
-   * @param maxLevel the maximum level (depth) of analyzing for the dimension
-   * @param throwIllegalArgumentException
-   * @return a list of size <code>0</code> if no dimensions are found
-   */
-  public static IntArrayList dimensions(IExpr expr, IExpr header, int maxLevel,
-      boolean throwIllegalArgumentException) {
-    if (expr.isAST()) {
-      DimensionsData dimensionsData =
-          new DimensionsData((IAST) expr, header, maxLevel, throwIllegalArgumentException);
-      return dimensionsData.getDimensions();
-    }
-    if (expr.isSparseArray()) {
-      int[] dims = ((ISparseArray) expr).getDimension();
-
-      if (dims.length > maxLevel) {
-        IntArrayList list = new IntArrayList(maxLevel);
-        if (throwIllegalArgumentException) {
-          throw new IllegalArgumentException();
-        }
-        for (int i = 0; i < maxLevel; i++) {
-          list.add(dims[i]);
-        }
-        return list;
-      }
-      IntArrayList list = new IntArrayList(dims.length);
-      for (int i = 0; i < dims.length; i++) {
-        list.add(dims[i]);
-      }
-      return list;
-    }
-
-    return new IntArrayList();
-  }
-
-  /**
-   * Validate <code>intOrListOf2Ints</code> to get the dimension parameters.
-   * 
-   * @param intOrListOf2Ints
-   * @param engine
-   * @return <code>null</code> if the dimension couldn't be determined
-   */
-  public static int[] dimensionMatrix(final IExpr intOrListOf2Ints, EvalEngine engine) {
-    int[] dimension = new int[2];
-    dimension[0] = intOrListOf2Ints.toIntDefault();
-    if (dimension[0] < 0) {
-      if (intOrListOf2Ints.isNumber()) {
-        return null;
-      }
-      if (intOrListOf2Ints.isList2() && intOrListOf2Ints.first().isNumber()
-          && intOrListOf2Ints.second().isNumber()) {
-        dimension[0] = intOrListOf2Ints.first().toIntDefault();
-        if (dimension[0] < 0) {
-          return null;
-        }
-        dimension[1] = intOrListOf2Ints.second().toIntDefault();
-        if (dimension[1] < 0) {
-          return null;
-        }
-      } else {
-        return null;
-      }
-    } else {
-      dimension[1] = dimension[0];
-    }
-    return dimension;
-  }
-
-  private final static class DimensionsData {
-    boolean isNonRectangular = false;
-    final EvalEngine engine;
-    final IntArrayList dimensions;
-
-    /**
-     * Determine the <a href=
-     * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Dimensions.md">Dimensions</a>
-     * recursively.
-     * 
-     * @param ast
-     * @param header
-     * @param maxLevel
-     * @param throwIllegalArgumentException
-     */
-    public DimensionsData(IAST ast, IExpr header, int maxLevel,
-        boolean throwIllegalArgumentException) {
-      this.engine = EvalEngine.get();
-      this.dimensions = dimensionsRecursive(ast, header, maxLevel, throwIllegalArgumentException);
-    }
-
-    /**
-     * Determine the <a href=
-     * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Dimensions.md">Dimensions</a>
-     * recursively.
-     * 
-     * @param ast
-     * @param header the header, which all sub-expressions of the detected dimension must contain
-     * @param maxLevel the maximum level (depth) of analyzing for the dimension
-     * @param throwIllegalArgumentException
-     * @return a list of the dimensions or a list of size <code>0</code> if no dimensions are found
-     * @throws IllegalArgumentException
-     */
-    private IntArrayList dimensionsRecursive(IAST ast, IExpr header, int maxLevel,
-        boolean throwIllegalArgumentException) throws IllegalArgumentException {
-      final int size = ast.size();
-      if (header.equals(ast.head())) {
-        IntArrayList subDim = null;
-        IntArrayList sub = new IntArrayList();
-        for (int i = 1; i < size; i++) {
-          IExpr element = ast.get(i);
-          if (element.isAST() && maxLevel > 0) {
-            sub = dimensionsRecursive((IAST) element, header, maxLevel - 1,
-                throwIllegalArgumentException);
-          } else {
-            if (element.isSparseArray()) {
-              sub = new IntArrayList(((ISparseArray) element).getDimension());
-            } else if (element.isNumericArray()) {
-              sub = new IntArrayList(((INumericArray) element).getDimension());
-            } else {
-              sub = new IntArrayList();
-            }
-          }
-          if (subDim == null) {
-            subDim = sub;
-          } else {
-            if (!subDim.equals(sub)) {
-              if (subDim.size() != sub.size()) {
-                isNonRectangular = true;
-                if (throwIllegalArgumentException) {
-                  throw new IllegalArgumentException();
-                } else {
-                  // print message: Nonrectangular tensor encountered
-                  Errors.printMessage(ast.topHead(), "rect", F.CEmptyList, engine);
-                }
-              }
-              int minSize = subDim.size() > sub.size() ? sub.size() : subDim.size();
-              int j = 0;
-              while (j < minSize) {
-                if (subDim.getInt(j) != sub.getInt(j)) {
-                  isNonRectangular = true;
-                  if (throwIllegalArgumentException) {
-                    throw new IllegalArgumentException();
-                  } else {
-                    // print message: Nonrectangular tensor encountered
-                    Errors.printMessage(ast.topHead(), "rect", F.list(ast), engine);
-                  }
-                  break;
-                }
-                j++;
-              }
-              sub = new IntArrayList();
-              for (int k = 0; k < j; k++) {
-                sub.add(subDim.getInt(k));
-              }
-              subDim = sub;
-            }
-          }
-        }
-        if (subDim == null) {
-          subDim = new IntArrayList();
-        }
-        subDim.add(0, size - 1);
-        return subDim;
-      }
-      return new IntArrayList();
-    }
-
-    public boolean isNonRectangular() {
-      return isNonRectangular;
-    }
-
-    public IntArrayList getDimensions() {
-      return dimensions;
-    }
   }
 
   public static IAST eigensystemSymbolic(final IAST ast, IExpr arg1, int maxValues,
@@ -7137,18 +6905,18 @@ public final class LinearAlgebra {
       }
     }
     IASTMutable indices;
-    IAST range = ListFunctions.range(dimensions.size() + 1);
+    IAST range = IAST.range(dimensions.size() + 1);
     int[] dimensionsPermutated;
     int[] originalIndices;
     if (permutation.isPresent()) {
-      originalIndices = Combinatoric.permute(range, (IAST) permutation);
-      dimensionsPermutated = Combinatoric.permute(dimensionsList, (IAST) permutation);
+      originalIndices = CombinatoricUtil.permute(range, (IAST) permutation);
+      dimensionsPermutated = CombinatoricUtil.permute(dimensionsList, (IAST) permutation);
     } else {
       // start with {2,1,3,...} as default permutation
       indices = range.setAtCopy(1, range.arg2());
       indices.set(2, range.arg1());
       originalIndices = indices.toIntVector();
-      dimensionsPermutated = Combinatoric.permute(dimensionsList, indices);
+      dimensionsPermutated = CombinatoricUtil.permute(dimensionsList, indices);
     }
     if (dimensionsPermutated == null || originalIndices == null) {
       return F.NIL;

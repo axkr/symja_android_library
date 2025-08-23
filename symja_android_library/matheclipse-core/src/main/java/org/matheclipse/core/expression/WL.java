@@ -172,7 +172,7 @@ public class WL {
             // head == F.BlankSequence ||
             // head == F.BlankNullSequence) {
             IFunctionEvaluator evaluator =
-                (IFunctionEvaluator) ((IBuiltInSymbol) head).getEvaluator();
+                ((IBuiltInSymbol) head).getEvaluator();
             IExpr temp = evaluator.evaluate(ast, EvalEngine.get());
             if (temp.isPresent()) {
               return temp;
@@ -530,6 +530,8 @@ public class WL {
       final int hier = arg1.hierarchy();
       switch (hier) {
         case IExpr.ASTID:
+        case IExpr.INTERVALID:
+        case IExpr.INTERVALSETID:
           writeAST(arg1);
           return;
         case IExpr.BLANKID:
@@ -568,6 +570,12 @@ public class WL {
           writeNumericArray((NumericArrayExpr) arg1);
           return;
         case IExpr.PATTERNID:
+          writePattern(arg1);
+          return;
+        case IExpr.PATTERNNESTEDID:
+          writePattern(arg1);
+          return;
+        case IExpr.PATTERNSEQUENCEID:
           writePattern(arg1);
           return;
         case IExpr.QUANTITYID:

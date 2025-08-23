@@ -199,6 +199,11 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolygonalNumber() {
+    check("Interval(1/2*(1+Sqrt(5)))", //
+        "Interval({1/2*(1+Sqrt(5)),1/2*(1+Sqrt(5))})");
+    check("PolygonalNumber(1-10007,Interval({1/2*(1+Sqrt(5)),1/2*(1+Sqrt(5))}))", //
+        "Interval({1/4*(1+Sqrt(5))*(10010-5004*(1+Sqrt(5))),1/4*(1+Sqrt(5))*(10010-5004*(\n"//
+            + "1+Sqrt(5)))})");
     check("Table(PolygonalNumber(r, 3), {r, 1, 5})", //
         "{0,3,6,9,12}");
     check("PolygonalNumber(4,-2)", //

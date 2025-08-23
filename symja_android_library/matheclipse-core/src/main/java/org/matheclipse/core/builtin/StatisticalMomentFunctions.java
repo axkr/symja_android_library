@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -41,7 +42,7 @@ public class StatisticalMomentFunctions {
       // TODO only vectors are implemented yet
       if (ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
-        IntArrayList dimensions = LinearAlgebra.dimensions(list);
+        IntArrayList dimensions = LinearAlgebraUtil.dimensions(list);
         if (isVectorMatrixOrDistribution(ast.topHead(), list, dimensions, engine)) {
 
           IExpr arg2 = ast.arg2();
@@ -118,7 +119,7 @@ public class StatisticalMomentFunctions {
       if (ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
         IExpr arg2 = ast.arg2();
-        IntArrayList dimensions = LinearAlgebra.dimensions(list);
+        IntArrayList dimensions = LinearAlgebraUtil.dimensions(list);
         if (isVectorMatrixOrDistribution(ast.topHead(), list, dimensions, engine)) {
           final int r = arg2.toIntDefault();
           if (r > 0) {
@@ -189,7 +190,7 @@ public class StatisticalMomentFunctions {
 
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
-        IntArrayList dimensions = LinearAlgebra.dimensions(list);
+        IntArrayList dimensions = LinearAlgebraUtil.dimensions(list);
         final int argSize = list.argSize();
         int r = ast.arg2().toIntDefault();
         if (argSize > 0) {
@@ -240,7 +241,7 @@ public class StatisticalMomentFunctions {
         IAST list = (IAST) ast.arg1();
         final int argSize = list.argSize();
         IExpr arg2 = ast.arg2();
-        IntArrayList dimensions = LinearAlgebra.dimensions(list);
+        IntArrayList dimensions = LinearAlgebraUtil.dimensions(list);
         if (isVectorMatrixOrDistribution(ast.topHead(), list, dimensions, engine)) {
 
           final int r = arg2.toIntDefault();

@@ -7,8 +7,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Objects;
 import java.util.function.Function;
-
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -229,6 +227,11 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
     return value.isNonNegativeResult();
   }
 
+  @Override
+  public boolean isNumberLike() {
+    return true;
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean isNumericFunction(boolean allowList) {
@@ -289,7 +292,7 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
       IQuantity quantity = (IQuantity) scalar;
       return of(value.times(quantity.value()), fData.add(quantity.unit()));
     }
-    if (scalar.isReal()) {
+    if (scalar.isRealResult()) {
       return ofUnit(value.times(scalar));
     }
     return nilIfUnevaluated ? F.NIL : F.Times(this, scalar);
@@ -469,4 +472,6 @@ public class QuantityImpl extends DataExpr<IUnit> implements IQuantity, External
   public IExpr one() {
     return value.one();
   }
+
+
 }

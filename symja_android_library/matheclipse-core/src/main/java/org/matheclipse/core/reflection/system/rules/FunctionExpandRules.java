@@ -120,15 +120,6 @@ public class FunctionExpandRules {
     // HypergeometricPFQ({a_,b_},{c_},z_):=Hypergeometric2F1(a,b,c,z)
     SetDelayed(HypergeometricPFQ(list(a_,b_),list(c_),z_),
       Hypergeometric2F1(a,b,c,z)),
-    // Hypergeometric0F1(a_,z_):=z^(1/2-a/2)*BesselI(-1+a,2*Sqrt(z))*Gamma(a)
-    SetDelayed(Hypergeometric0F1(a_,z_),
-      Times(Power(z,Plus(C1D2,Times(CN1D2,a))),BesselI(Plus(CN1,a),Times(C2,Sqrt(z))),Gamma(a))),
-    // Hypergeometric1F1(a_,1,z_):=LaguerreL(-a,z)
-    SetDelayed(Hypergeometric1F1(a_,C1,z_),
-      LaguerreL(Negate(a),z)),
-    // Hypergeometric1F1(a_,b_,z_):=(E^(z/2)*z^(1/2-a)*BesselI(1/2*(-1+b),z/2)*Gamma(1/2+a))/4^(1/2-a)/;a==b/2
-    SetDelayed(Hypergeometric1F1(a_,b_,z_),
-      Condition(Times(Power(Power(C4,Subtract(C1D2,a)),CN1),Exp(Times(C1D2,z)),Power(z,Subtract(C1D2,a)),BesselI(Times(C1D2,Plus(CN1,b)),Times(C1D2,z)),Gamma(Plus(C1D2,a))),Equal(a,Times(C1D2,b)))),
     // Hypergeometric2F1(2,b_,c_,-1/2):=1/3*(3-b)/;5/2-b/2==Expand(c)
     SetDelayed(Hypergeometric2F1(C2,b_,c_,CN1D2),
       Condition(Times(C1D3,Subtract(C3,b)),Equal(Plus(QQ(5L,2L),Times(CN1D2,b)),Expand(c)))),

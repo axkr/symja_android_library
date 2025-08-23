@@ -733,6 +733,8 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       IExpr function = engine.evaluate(originalFunction);
       if (method.equalsIgnoreCase(SEQUENTIAL_QUADRATIC_METHOD)) {
         try {
+          // TODO improve with new hipparchus implementation SQPOptimizerS2
+          // https://github.com/Hipparchus-Math/hipparchus/pull/404
           ConstraintOptimizer optim = new SQPOptimizerS();
           TwiceDifferentiableMultiVariateNumerical twiceDifferentiableFunction =
               new TwiceDifferentiableMultiVariateNumerical(function, variableList, true);

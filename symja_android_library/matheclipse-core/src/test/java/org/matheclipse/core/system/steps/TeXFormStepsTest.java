@@ -30,7 +30,7 @@ public class TeXFormStepsTest extends ExprEvaluatorTestCase {
 
   @Override
   public void check(String evalString, String expectedResult) {
-    check(evaluator, evalString, expectedResult, -1);
+    check(evaluator, evalString, expectedResult, "", -1);
   }
 
   @Test

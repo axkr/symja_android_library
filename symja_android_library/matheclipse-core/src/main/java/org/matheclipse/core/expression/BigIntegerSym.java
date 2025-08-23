@@ -58,6 +58,22 @@ public class BigIntegerSym extends AbstractIntegerSym {
     return phi.toBigNumerator();
   }
 
+  public static BigInteger gcd(BigInteger... array) {
+    if (array.length >= 2) {
+      BigInteger gcd = array[0].gcd(array[1]);
+      for (int i = 2; i < array.length; i++) {
+        gcd = gcd.gcd(array[i]);
+      }
+      return gcd;
+    } else if (array.length == 1) {
+      if (array[0].signum() < 0) {
+        return array[0].negate();
+      }
+      return array[0];
+    }
+    return BigInteger.ZERO;
+  }
+
   public static BigInteger jacobiSymbolF(BigInteger val) {
     BigInteger a = val.mod(IInteger.BI_EIGHT);
     if (a.equals(BigInteger.ONE)) {
@@ -90,10 +106,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
     fBigIntValue = null;
   }
 
-  public BigIntegerSym(long value) {
-    fBigIntValue = BigInteger.valueOf(value);
-  }
-
   public BigIntegerSym(BigInteger value) {
     if (Config.MAX_BIT_LENGTH < value.bitLength()) {
       BigIntegerLimitExceeded.throwIt(value.bitLength());
@@ -106,6 +118,10 @@ public class BigIntegerSym extends AbstractIntegerSym {
       BigIntegerLimitExceeded.throwIt((bytes.length) * 8L);
     }
     fBigIntValue = new BigInteger(bytes);
+  }
+
+  public BigIntegerSym(long value) {
+    fBigIntValue = BigInteger.valueOf(value);
   }
 
   /** {@inheritDoc} */
@@ -132,14 +148,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public IReal add(IReal that) {
-    if (that instanceof IRational) {
-      return add((IRational) that);
-    }
-    return Num.valueOf(doubleValue() * that.doubleValue());
-  }
-
-  @Override
   public IRational add(IRational parm1) {
     if (parm1.isZero()) {
       return this;
@@ -153,8 +161,21 @@ public class BigIntegerSym extends AbstractIntegerSym {
   }
 
   @Override
+  public IReal add(IReal that) {
+    if (that instanceof IRational) {
+      return add((IRational) that);
+    }
+    return Num.valueOf(doubleValue() * that.doubleValue());
+  }
+
+  @Override
   public long bitLength() {
     return fBigIntValue.bitLength();
+  }
+
+  @Override
+  public byte byteValue() {
+    return fBigIntValue.byteValue();
   }
 
   /** {@inheritDoc} */
@@ -206,6 +227,11 @@ public class BigIntegerSym extends AbstractIntegerSym {
     return ComplexNum.valueOf(doubleValue());
   }
 
+  @Override
+  public int complexSign() {
+    return fBigIntValue.signum();
+  }
+
   /** {@inheritDoc} */
   @Override
   public IInteger dec() {
@@ -214,8 +240,20 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
   /** {@inheritDoc} */
   @Override
-  public IInteger inc() {
-    return add(F.C1);
+  public IInteger denominator() {
+    return F.C1;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public long determinePrecision(boolean postParserProcessing) {
+    if (postParserProcessing) {
+      return -1;
+    }
+    if (this.compareTo(F.MIN_SAFE_INT) < 0 || this.compareTo(F.MAX_SAVE_INT) > 0) {
+      return NumberUtil.calculateApproximatelyDigitCount(toBigNumerator());
+    }
+    return -1;
   }
 
   /**
@@ -236,20 +274,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
     res[1] = valueOf(largeRes[1]);
 
     return res;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IInteger irem(final IInteger that) {
-    BigInteger[] largeRes = fBigIntValue.divideAndRemainder(that.toBigNumerator());
-    return valueOf(largeRes[1]);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IInteger iquo(final IInteger that) {
-    BigInteger[] largeRes = fBigIntValue.divideAndRemainder(that.toBigNumerator());
-    return valueOf(largeRes[0]);
   }
 
   @Override
@@ -334,57 +358,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
     return valueOf(fBigIntValue.gcd(that.toBigNumerator()));
   }
 
-  public static BigInteger gcd(BigInteger... array) {
-    if (array.length >= 2) {
-      BigInteger gcd = array[0].gcd(array[1]);
-      for (int i = 2; i < array.length; i++) {
-        gcd = gcd.gcd(array[i]);
-      }
-      return gcd;
-    } else if (array.length == 1) {
-      if (array[0].signum() < 0) {
-        return array[0].negate();
-      }
-      return array[0];
-    }
-    return BigInteger.ZERO;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IInteger denominator() {
-    return F.C1;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public long determinePrecision(boolean postParserProcessing) {
-    if (postParserProcessing) {
-      return -1;
-    }
-    if (this.compareTo(F.MIN_SAFE_INT) < 0 || this.compareTo(F.MAX_SAVE_INT) > 0) {
-      return NumberUtil.calculateApproximatelyDigitCount(toBigNumerator());
-    }
-    return -1;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public BigFraction toBigFraction() {
-    return new BigFraction(fBigIntValue);
-  }
-
-  @Override
-  public BigRational toBigRational() {
-    return new BigRational(new edu.jas.arith.BigInteger(fBigIntValue));
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IInteger numerator() {
-    return this;
-  }
-
   /** {@inheritDoc} */
   @Override
   public final int hashCode() {
@@ -398,6 +371,12 @@ public class BigIntegerSym extends AbstractIntegerSym {
   @Override
   public IReal im() {
     return F.C0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IInteger inc() {
+    return add(F.C1);
   }
 
   @Override
@@ -478,11 +457,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public byte byteValue() {
-    return fBigIntValue.byteValue();
-  }
-
-  @Override
   public int intValue() {
     return fBigIntValue.intValue();
   }
@@ -496,6 +470,20 @@ public class BigIntegerSym extends AbstractIntegerSym {
       return AbstractFractionSym.valueOf(BigInteger.valueOf(-1), fBigIntValue.negate());
     }
     return AbstractFractionSym.valueOf(BigInteger.ONE, fBigIntValue);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IInteger iquo(final IInteger that) {
+    BigInteger[] largeRes = fBigIntValue.divideAndRemainder(that.toBigNumerator());
+    return valueOf(largeRes[0]);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IInteger irem(final IInteger that) {
+    BigInteger[] largeRes = fBigIntValue.divideAndRemainder(that.toBigNumerator());
+    return valueOf(largeRes[1]);
   }
 
   @Override
@@ -571,6 +559,12 @@ public class BigIntegerSym extends AbstractIntegerSym {
   @Override
   public boolean isNegative() {
     return fBigIntValue.signum() < 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isNonNegative() {
+    return fBigIntValue.signum() >= 0;
   }
 
   @Override
@@ -684,14 +678,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public IReal multiply(IReal that) {
-    if (that instanceof IRational) {
-      return multiply((IRational) that);
-    }
-    return Num.valueOf(doubleValue() * that.doubleValue());
-  }
-
-  @Override
   public IRational multiply(IRational parm1) {
     if (parm1.isZero()) {
       return F.C0;
@@ -708,6 +694,14 @@ public class BigIntegerSym extends AbstractIntegerSym {
     IInteger p1 = (IInteger) parm1;
     BigInteger newnum = toBigNumerator().multiply(p1.toBigNumerator());
     return valueOf(newnum);
+  }
+
+  @Override
+  public IReal multiply(IReal that) {
+    if (that instanceof IRational) {
+      return multiply((IRational) that);
+    }
+    return Num.valueOf(doubleValue() * that.doubleValue());
   }
 
   @Override
@@ -761,6 +755,12 @@ public class BigIntegerSym extends AbstractIntegerSym {
       boolean exact = result.pow(n).equals(this);
       return F.pair(result, F.booleSymbol(exact));
     }
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IInteger numerator() {
+    return this;
   }
 
   @Override
@@ -840,8 +840,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public int complexSign() {
-    return fBigIntValue.signum();
+  public IExpr sqr() {
+    return this.multiply(this);
   }
 
   /**
@@ -863,11 +863,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public IExpr sqr() {
-    return this.multiply(this);
-  }
-
-  @Override
   public IInteger subtract(final IInteger that) {
     return valueOf(fBigIntValue.subtract(that.toBigNumerator()));
   }
@@ -880,8 +875,19 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
   /** {@inheritDoc} */
   @Override
+  public BigFraction toBigFraction() {
+    return new BigFraction(fBigIntValue);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public BigInteger toBigNumerator() {
     return fBigIntValue;
+  }
+
+  @Override
+  public BigRational toBigRational() {
+    return new BigRational(new edu.jas.arith.BigInteger(fBigIntValue));
   }
 
   /** {@inheritDoc} */
@@ -902,6 +908,16 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
   /** {@inheritDoc} */
   @Override
+  public long toLong() throws ArithmeticException {
+    if (NumberUtil.hasLongValue(fBigIntValue)) {
+      // Android doesn't know method longValueExact
+      return fBigIntValue.longValue();
+    }
+    throw new ArithmeticException("BigInteger out of long range");
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public long toLongDefault(long defaultValue) {
     try {
       if (NumberUtil.hasLongValue(fBigIntValue)) {
@@ -912,16 +928,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
       //
     }
     return defaultValue;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public long toLong() throws ArithmeticException {
-    if (NumberUtil.hasLongValue(fBigIntValue)) {
-      // Android doesn't know method longValueExact
-      return fBigIntValue.longValue();
-    }
-    throw new ArithmeticException("BigInteger out of long range");
   }
 
   @Override

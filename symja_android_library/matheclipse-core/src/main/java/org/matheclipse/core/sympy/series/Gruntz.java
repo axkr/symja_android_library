@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
@@ -20,6 +19,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.sympy.core.Expr;
 import org.matheclipse.core.sympy.exception.ValueError;
 import org.matheclipse.core.sympy.simplify.Powsimp;
+import org.matheclipse.core.sympy.simplify.Simplify;
 
 public class Gruntz {
 
@@ -51,9 +51,12 @@ public class Gruntz {
     }
 
     public boolean meets(SubsSet s2) {
-      Set<IExpr> intersection = keySet();
-      intersection.retainAll(s2.keySet());
-      return !intersection.isEmpty();
+      for (IExpr key : s2.keySet()) {
+        if (rewrites.get(key) != null) {
+          return true;
+        }
+      }
+      return false;
     }
 
     public SubsSet union(SubsSet s2) {
@@ -123,7 +126,7 @@ public class Gruntz {
 
       // IExpr[] terms = d.asTwoTerms();
       IExpr a = d.first();
-      IExpr b = d.rest();
+      IExpr b = d.rest().eval();
 
       Object[] result1 = mrv(a, x);
       SubsSet s1 = (SubsSet) result1[0];
@@ -172,8 +175,8 @@ public class Gruntz {
       SubsSet s = (SubsSet) result[0];
       IExpr expr = (IExpr) result[1];
       return new Object[] {s, F.Log(expr)};
-    } else if (e.isExp()) { // || (e.isPower() && e.getAt(0).equals(S.E))) {
-      if (e.second().isLog()) {
+    } else if (e.isExp()) { // || (e.isPower() && e.base().equals(S.E))) {
+      if (e.exponent().isLog()) {
         return mrv(e.exponent().first(), x);
       }
 
@@ -188,7 +191,7 @@ public class Gruntz {
         su.rewrites.put(e1, F.Exp(e2));
         return mrvMax3(s1, e1, s2, F.Exp(e2), su, e1, x);
       } else {
-        Object[] result = mrv(e.getAt(1), x);
+        Object[] result = mrv(e.exponent(), x);
         SubsSet s = (SubsSet) result[0];
         IExpr expr = (IExpr) result[1];
         return new Object[] {s, F.Exp(expr)};
@@ -248,9 +251,9 @@ public class Gruntz {
       return -1;
     } else if (e.isZero()) {
       return 0;
-      // } else if (!e.has(x)) {
-      // e = F.LogCombine(e);
-      // return e.sign();
+    } else if (!e.has(x)) {
+      e = Simplify.logCombine(e);
+      return F.Sign(e).eval().toIntDefault();
     } else if (e.equals(x)) {
       return 1;
     } else if (e.isTimes()) {
@@ -259,22 +262,24 @@ public class Gruntz {
       if (sa == 0) {
         return 0;
       }
-      return sa * sign(e.second(), x);
+      return sa * sign(e.rest(), x);
     } else if (e.isExp()) {
       return 1;
     } else if (e.isPower()) {
-      if (e.getAt(0).equals(S.E)) {
+      IExpr base = e.base();
+      IExpr exponent = e.exponent();
+      if (base.equals(S.E)) {
         return 1;
       }
-      int s = sign(e.getAt(0), x);
+      int s = sign(base, x);
       if (s == 1) {
         return 1;
       }
-      if (e.getAt(1).isInteger()) {
-        return (int) Math.pow(s, e.getAt(1).toIntDefault());
+      if (exponent.isInteger()) {
+        return (int) Math.pow(s, exponent.toIntDefault());
       }
-    } else if (e.isLog() && e.getAt(0).isPositive()) {
-      return sign(e.getAt(0).subtract(F.C1), x);
+    } else if (e.isLog() && e.first().isPositive()) {
+      return sign(e.first().subtract(F.C1), x);
     }
 
     // if all else fails, do it the hard way
@@ -369,7 +374,9 @@ public class Gruntz {
       return new Object[] {union, expsboth};
     }
 
-    char c = compare(f.keySet().iterator().next(), g.keySet().iterator().next(), x);
+     IExpr f0 = f.keySet().iterator().next();
+     IExpr g0 = g.keySet().iterator().next();
+    char c = compare(f0, g0, x);
     if (c == '>') {
       return new Object[] {f, expsf};
     } else if (c == '<') {
@@ -438,171 +445,98 @@ public class Gruntz {
    */
   public static IExpr limitinf(IExpr e, ISymbol x) {
     // rewrite e in terms of tractable functions only
-
-    IExpr old_e = e;
+    IExpr old = e;
     if (!e.has(x)) {
       return e; // e is a constant
     }
 
     EvalEngine engine = EvalEngine.get();
 
-    // from sympy.simplify.powsimp import powdenest
-    // from sympy.calculus.util import AccumBounds // TODO: AccumBounds not implemented
-    // from sympy.calculus.util import mrv_leadterm // Implemented using Series and
-    // LeadingCoefficient/Exponent
-    // from sympy.core.function import sign // F.Sign
-    // from sympy.core import Dummy, S, Wild, I, oo // F.Dummy, F.CZero, F.Wild, F.CI, F.oo
-
-    // if e.has(Order): e = e.expand().removeO(); // Order handling - might need more sophisticated
-    // handling in Symja if Order is significant.
-    if (e.isAST(S.O, 1)) { // Basic check for Order[...], Symja might represent
-                           // Order differently.
+    // Handle Order terms - if e.has(Order): e = e.expand().removeO()
+    if (e.isAST(S.O)) { // Check if expression contains Order terms
       e = F.Expand(e).eval(engine);
-      // removeO() - Symja might not have direct removeO. Need to find equivalent or simplify
-      // expansion approach.
-      // For now, if expand removes order term in simple cases, we proceed. More robust handling
-      // might be needed.
+      // Remove Order terms - in Symja, Order terms are typically removed during expansion
+      // Additional Order removal logic could be added here if needed
     }
+
+    // Ensure x has proper assumptions for the algorithm
     if (!x.isPositive() || x.isInteger()) {
-      // We make sure that x.isPositive is True and x.isInteger is None
+      // We make sure that x.is_positive is True and x.is_integer is None
       // so we get all the correct mathematical behavior from the expression.
       // We need a fresh variable.
-      ISymbol p = F.$s("p"); // Dummy('p', positive=True) - Symja symbols are generally dummy unless
-                             // assigned. Positive assumption needs to be handled if crucial.
+      ISymbol p = F.Dummy("p"); // Create a positive dummy variable
+      // In Symja, we cannot directly set assumptions like SymPy, but we use a fresh dummy
       e = e.subs(x, p);
       x = p;
-      // In Symja, assumptions on symbols might be handled during evaluation or in context. For now,
-      // basic symbol 'p'.
     }
 
-    // e = e.rewrite('tractable', deep=True, limitvar=x); // rewrite('tractable') - Symja might not
-    // have direct 'tractable' rewrite.
-    // Attempting to simplify using Expand and PowerExpand as approximation for tractable rewrite.
+    // Rewrite to tractable functions - this is a critical step in SymPy
+    // e = e.rewrite('tractable', deep=True, limitvar=x)
+    // Since Symja doesn't have direct 'tractable' rewrite, we approximate with expansions
     e = F.Expand(e).eval(engine);
     e = F.PowerExpand(e).eval(engine);
-    // Further simplification or rewriting to "tractable" form might be needed based on specific
-    // cases.
 
-    // from sympy.simplify.powsimp import powdenest
-    // e = powdenest(e); // powdenest - Symja PowerExpand might be close. Already applied above.
-    // Further power simplification might be needed depending on powdenest behavior.
+    // Apply power simplification similar to powdenest in SymPy
+    e = Powsimp.powsimp(e, true, "exp");
 
+    // TODO: Handle AccumBounds if implemented in Symja
+    // if isinstance(e, AccumBounds):
+    // if mrv_leadterm(e.min, x) != mrv_leadterm(e.max, x):
+    // raise NotImplementedError
+    // c0, e0 = mrv_leadterm(e.min, x)
+    // else:
+    // c0, e0 = mrv_leadterm(e, x)
 
-    // if isinstance(e, AccumBounds): // TODO: AccumBounds not implemented - skipping AccumBounds
-    // handling
-
-    IExpr c0 = S.Indeterminate; // Initialize c0 and e0 to NaN to indicate not found yet.
-    IExpr e0 = S.Indeterminate;
-
-    // c0, e0 = mrv_leadterm(e, x);
-    // Implementing mrv_leadterm using Series expansion in Symja as approximation.
+    // Get the leading term using proper mrv_leadterm function
+    IPair leadTermResult;
     try {
-      ASTSeriesData series = ASTSeriesData.simpleSeries(e, x, F.oo, 1, 1, EvalEngine.get()); // Series
-      // Series around Infinity, order 1 to get leading term.
-
-      IExpr seriesData = series.toSeriesData().normal(false);
-      if (seriesData.argSize() > 2) {
-        // Get the leading term from series expansion.
-        IExpr leadingTerm = seriesData.first();
-        if (leadingTerm.isTimes()) { // Leading term is likely in form c0 * x^e0
-          IAST timesAST = (IAST) leadingTerm;
-          if (timesAST.arg1().isPower() && timesAST.arg1().base().equals(x)) {
-            c0 = timesAST.arg2(); // Coefficient is the second factor in Times.
-            e0 = timesAST.arg1().exponent(); // Exponent from Power.
-          } else if (timesAST.arg2().isPower() && timesAST.arg2().base().equals(x)) {
-            c0 = timesAST.arg1(); // Coefficient is the first factor in Times.
-            e0 = timesAST.arg2().exponent(); // Exponent from Power.
-          } else { // if leading term is just a number or doesn't have x, treat as c0 and e0 as 0
-                   // effectively.
-            c0 = leadingTerm;
-            e0 = F.C0; // If no x term in leading series, exponent effectively 0.
-          }
-
-        } else { // Leading term might not be Times, e.g., just a constant or single term power.
-          c0 = leadingTerm;
-          e0 = F.C0; // If leading term is just a number, exponent effectively 0.
-        }
-
-      } else { // Series expansion failed or no series found - default to old_e and try limit on it.
-        c0 = old_e; // Fallback to original expression if series fails.
-        e0 = F.C0; // Default exponent to 0 for fallback case.
+      leadTermResult = mrvLeadTerm(e, x);
+    } catch (Exception ex) {
+      // If mrv_leadterm fails, try with simplified expression
+      IExpr simplified = F.Simplify(e).eval(engine);
+      try {
+        leadTermResult = mrvLeadTerm(simplified, x);
+      } catch (Exception ex2) {
+        // Last resort: return original expression if we can't analyze it
+        return old;
       }
-
-
-    } catch (Exception seriesException) {
-      // Series expansion might fail for some expressions. Fallback to using original expression and
-      // hope for limit on it.
-      c0 = old_e; // Fallback to original expression if series expansion fails.
-      e0 = F.C0; // Default exponent to 0 for fallback case.
-      // seriesException.printStackTrace(); // For debugging, uncomment to see series errors.
     }
 
-    // sign(e0, x) - In Symja, Sign on a number should work. If e0 is still symbolic, Sign might
-    // need more context.
+    IExpr c0 = leadTermResult.first();
+    IExpr e0 = leadTermResult.second();
+
+    // Determine the sign of the exponent
     int sig = sign(e0, x);
 
     if (sig == 1) {
       return F.C0; // e0>0: lim f = 0
-    } else if (sig == -1) { // elif sig == -1: // e0<0: lim f = +-oo (the sign depends on the
-                            // sign of c0)
-      // if c0.match(I*Wild("a", exclude=[I])): // c0.match(I*Wild("a", exclude=[I])) - Complex
-      // number check.
-      if (c0.isComplex()) { // Basic complex check - might need more precise "exclude=[I]" logic if
-                            // needed.
-        return F.Times(c0, F.oo); // return c0*oo
+    } else if (sig == -1) { // e0<0: lim f = +-oo (the sign depends on the sign of c0)
+      // Handle complex numbers - check if c0 matches I*Wild("a", exclude=[I])
+      // This is more sophisticated than the previous basic isComplex() check
+      if (c0.isImaginaryUnit() || (c0.isTimes() && c0.first().isImaginaryUnit())) {
+        return F.Times(c0, F.oo).eval(engine); // return c0*oo for pure imaginary coefficients
       }
-      int s = sign(c0, x); // s = sign(c0, x) - Assuming F.Sign works on c0 as coefficient
-                           // is expected to be simpler after leading term extraction.
+
+      int s = sign(c0, x);
       // the leading term shouldn't be 0:
-      if (s == 0) { // if s == 0:
-        throw new ValueError("Leading term should not be 0"); // raise ValueError("Leading term
-                                                              // should not be 0")
+      if (s == 0) {
+        throw new ValueError("Leading term should not be 0");
       }
-      return F.Times(s, F.oo); // return s*oo
-    } else if (sig == 0) { // elif sig == 0:
-      if (c0.equals(old_e)) { // if c0 == old:
-        c0 = F.Cancel(c0).eval(engine); // c0 = c0.cancel()
+      return F.Times(s, F.oo).eval(engine); // return s*oo
+    } else if (sig == 0) { // e0=0: lim f = lim c0
+      if (c0.equals(old)) {
+        // Apply cancellation like SymPy's c0.cancel()
+        c0 = F.Cancel(c0).eval(engine);
+        // Additional simplification to ensure we make progress
+        if (c0.equals(old)) {
+          c0 = F.Simplify(c0).eval(engine);
+        }
       }
-      return limitinf(c0, x); // return limitinf(c0, x) // e0=0: lim f = lim c0 // Recursive call!
+      return limitinf(c0, x); // Recursive call with coefficient
     } else {
-      throw new ValueError(sig + " could not be evaluated"); // raise ValueError("{}
+      throw new ValueError(sig + " could not be evaluated");
     }
   }
-
-  /**
-   * Limit e(x) for x-> oo.
-   * 
-   * @param e
-   * @param x
-   * @return
-   */
-  // public static IExpr limitinf(IExpr e, IExpr x) {
-  // // rewrite e in terms of tractable functions only
-  // IExpr old = e;
-  // if (!e.has(x)) {
-  // return e; // e is a constant
-  // }
-  // EvalEngine engine = EvalEngine.get();
-  // IAssumptions oldAssumptions = engine.getAssumptions();
-  // try {
-  // // if e.has(Order):
-  // // e = e.expand().removeO()
-  // if (!x.isPositive() || x.isInteger()) {
-  // // We make sure that x.is_positive is True and x.is_integer is None
-  // // so we get all the correct mathematical behavior from the expression.
-  // // We need a fresh variable.
-  // ISymbol p = F.Dummy('p');
-  // IAssumptions.assign(p, F.Greater(p, F.C0), oldAssumptions, engine);
-  // e = F.subs(e, x, p);
-  // x = p;
-  // }
-  // // e = e.rewrite('tractable', deep=True, limitvar=x)
-  // // e = powdenest(e);
-  // } finally {
-  // engine.setAssumptions(oldAssumptions);
-  // }
-  // throw new ValueError("not implemented");
-  // }
 
   // public static void main(String[] args) {
   // ExprEvaluator evaluator = new ExprEvaluator();
@@ -651,7 +585,7 @@ public class Gruntz {
   // }
   // }
 
-  public static IExpr[] rewrite(IExpr e, SubsSet Omega, ISymbol x, ISymbol wsym) {
+  public static IExpr[] rewrite(IExpr e, SubsSet Omega, ISymbol x, IExpr wsym) {
     if (Omega.isEmpty()) {
       throw new ValueError("Omega cannot be empty");
     }
@@ -680,7 +614,7 @@ public class Gruntz {
     }
 
     if (sig == 1) {
-      wsym = (ISymbol) F.Power(wsym, F.CN1); // if g goes to oo, substitute 1/w
+      wsym = wsym.power(F.CN1); // if g goes to oo, substitute 1/w
     }
 
     List<Pair> O2 = new ArrayList<>();
@@ -688,7 +622,7 @@ public class Gruntz {
     for (Map.Entry<IExpr, ISymbol> pair : omegaList) {
       IExpr f = pair.getKey();
       ISymbol var = pair.getValue();
-      IExpr c = limitinf(F.Divide(f.exponent(), g.exponent()), x);
+      IExpr c = limitinf(f.exponent().divide(g.exponent()), x);
       if (c.isRational()) {
         denominators.add(((IRational) c).denominator());
       }
@@ -701,7 +635,9 @@ public class Gruntz {
         arg = rewriteExpr.exponent();
       }
       O2.add(F.pair(var,
-          F.Times(F.Exp(F.Plus(arg, F.Times(F.CN1, c, g.exponent()))), F.Power(wsym, c))));
+          // exp((arg - c*g.exp))*wsym**c
+          F.Times(F.Exp(F.Plus(arg, F.Times(F.CN1, c, g.exponent()))), F.Power(wsym, c))
+              .eval()));
     }
 
     IExpr f = Powsimp.powsimp(e, true, "exp");
@@ -718,7 +654,7 @@ public class Gruntz {
 
     IExpr logw = g.exponent();
     if (sig == 1) {
-      logw = F.Negate(logw);
+      logw = logw.negate();
     }
 
     // TODO: ilcm for non-integer exponents
@@ -727,7 +663,7 @@ public class Gruntz {
     // logw = F.Divide(logw, exponent);
 
     // f = bottomUp(f, w -> w.normal());
-    return new IExpr[] {f, logw};
+    return new IExpr[] {f.eval(), logw};
   }
 
   /**

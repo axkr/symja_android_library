@@ -21,14 +21,16 @@ public class IntervalTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testInterval() {
+    check("Interval({1,2})*Interval({3,4})", //
+        "Interval({3,8})");
+
     check("Sqrt(Interval({1.0,2.0}))", //
         "Interval({1.0,1.41421})");
     check("Sqrt(Interval({-1,1}))", //
         "Sqrt(Interval({-1,1}))");
     check("Interval({1,2})+Interval({3,4})", //
         "Interval({4,6})");
-    check("Interval({1,2})*Interval({3,4})", //
-        "Interval({3,8})");
+
     check("Interval({1,2})/Interval({3,4})", //
         "Interval({1/4,2/3})");
     check("Interval({1.0,2.0})^2", //
@@ -430,7 +432,7 @@ public class IntervalTest extends ExprEvaluatorTestCase {
     check("Interval({3,-1})", //
         "Interval({-1,3})");
     check("Interval({-1,1})/Infinity", //
-        "0");
+        "Interval({0,0})");
     check("Interval({1,1})", //
         "Interval({1,1})");
 

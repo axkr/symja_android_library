@@ -41,7 +41,7 @@ public class SymjaMathException extends MathException {
   }
 
   @Override
-  public synchronized Throwable fillInStackTrace() {
+  public final synchronized Throwable fillInStackTrace() {
     if (Config.SHOW_STACKTRACE) {
       // doesn't fill the stack for FlowControlExceptions
       return super.fillInStackTrace();

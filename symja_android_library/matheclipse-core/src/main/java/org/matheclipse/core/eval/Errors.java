@@ -270,6 +270,7 @@ public class Errors {
       "norep", "Assignment on `2` for `1` not found.", //
       "normal", "Nonatomic expression expected at position `1` in `2`.", //
       "nostr", "`1` is not a string.", //
+      "nosym", "`1` does not contain a symbol to attach a rule to.", //
       "notdata", "The first argument is not a vector or matrix.", //
       "notent",
       "`1` is not a known entity, class or tag for GraphData. Use GraphData for a list of entities.", //
@@ -387,6 +388,7 @@ public class Errors {
       "sym", "Argument `1` at position `2` is expected to be a symbol.", //
       "tag", "Rule for `1` can only be attached to `2`.", //
       "tagnf", "Tag `1` not found in `2`.", //
+      "tagpos", "Tag `1` in `2` is to deep for an assigned rule to be found.", //
       "take", "Cannot take positions `1` through `2` in `3`.", //
       "takeeigen", "Cannot take eigenvalues `1` through `2` out of the total of `3` eigenvalues.", //
       "targ", "Argument `1` at position `2` is not List or SparseArray.", //

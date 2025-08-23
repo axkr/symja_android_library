@@ -20,6 +20,10 @@ public interface IRealConstant {
     return false;
   }
 
+  default boolean isNonNegative() {
+    return !isNegative();
+  }
+
   default boolean isPositive() {
     return true;
   }

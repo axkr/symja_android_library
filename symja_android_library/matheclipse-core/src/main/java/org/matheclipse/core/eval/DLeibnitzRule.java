@@ -1,7 +1,5 @@
 package org.matheclipse.core.eval;
 
-import org.matheclipse.core.builtin.Combinatoric.KPermutationsIterable;
-import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -105,7 +103,7 @@ public class DLeibnitzRule {
       }
       if (!isZero) {
         if (multinomial == null) {
-          multinomial = NumberTheory.multinomial(j, n);
+          multinomial = IInteger.multinomial(j, n);
         }
         if (!multinomial.isOne()) {
           timesOp.appendRecursive(multinomial);

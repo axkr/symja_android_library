@@ -345,12 +345,24 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
     /** {@inheritDoc} */
     @Override
     public IExpr evaluate(EvalEngine engine) {
-      if (arg3.isNumber() && arg2.isNumber() && arg1.isNumber()) {
-        IExpr plusExpr = ((INumber) arg1).plusExpr((INumber) arg2);
-        if (plusExpr.isNumber()) {
-          return ((INumber) plusExpr).plusExpr((INumber) arg3);
+      if (arg3.isNumberLike() && arg2.isNumberLike() && arg1.isNumberLike()) {
+        if (arg3.isNumber() && arg2.isNumber() && arg1.isNumber()) {
+          IExpr plusExpr = ((INumber) arg1).plusExpr((INumber) arg2);
+          if (plusExpr.isNumber()) {
+            return ((INumber) plusExpr).plusExpr((INumber) arg3);
+          }
+          return plusExpr.plus(arg3);
         }
-        return plusExpr.plus(arg3);
+        IExpr plusExpr = arg1.plus(arg2, true);
+        if (plusExpr.isPresent()) {
+          if (plusExpr.isNumberLike()) {
+            IExpr temp = plusExpr.plus(arg3, true);
+            if (temp.isPresent()) {
+              return temp;
+            }
+          }
+          return plusExpr.plus(arg3);
+        }
       }
       return super.evaluate(engine);
     }
@@ -414,12 +426,24 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
     /** {@inheritDoc} */
     @Override
     public IExpr evaluate(EvalEngine engine) {
-      if (arg3.isNumber() && arg2.isNumber() && arg1.isNumber()) {
-        IExpr timesExpr = ((INumber) arg1).timesExpr((INumber) arg2);
-        if (timesExpr.isNumber()) {
-          return ((INumber) timesExpr).timesExpr((INumber) arg3);
+      if (arg3.isNumberLike() && arg2.isNumberLike() && arg1.isNumberLike()) {
+        if (arg3.isNumber() && arg2.isNumber() && arg1.isNumber()) {
+          IExpr timesExpr = ((INumber) arg1).timesExpr((INumber) arg2);
+          if (timesExpr.isNumber()) {
+            return ((INumber) timesExpr).timesExpr((INumber) arg3);
+          }
+          return timesExpr.times(arg3);
         }
-        return timesExpr.times(arg3);
+        IExpr timesExpr = arg1.times(arg2, true);
+        if (timesExpr.isPresent()) {
+          if (timesExpr.isNumberLike()) {
+            IExpr temp = timesExpr.times(arg3, true);
+            if (temp.isPresent()) {
+              return temp;
+            }
+          }
+          return timesExpr.times(arg3);
+        }
       }
       return super.evaluate(engine);
     }

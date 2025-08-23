@@ -2,7 +2,10 @@ package org.matheclipse.core.eval;
 
 import java.io.Writer;
 import java.util.function.Predicate;
+import org.matheclipse.core.eval.exception.AbortException;
+import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
@@ -160,6 +163,13 @@ public class EvalUtilities extends MathMLUtilities {
         IExpr temp = fEvalEngine.evaluate(parsedExpression);
         fEvalEngine.addInOut(parsedExpression, temp);
         return temp;
+      } catch (final AbortException e) {
+        return S.$Aborted;
+      } catch (final FailedException e) {
+        return S.$Failed;
+      } catch (final SyntaxError e) { // catches parser errors
+        // LOGGER.debug("syntax error", e);
+        return F.stringx(e.getMessage());
       } finally {
         // Quit may set a new engine
         fEvalEngine = EvalEngine.get();

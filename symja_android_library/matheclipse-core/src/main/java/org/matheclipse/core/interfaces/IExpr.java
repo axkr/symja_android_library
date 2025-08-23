@@ -25,15 +25,17 @@ import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.FieldSinhCosh;
 import org.jgrapht.GraphType;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.BooleanFunctions;
-import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.PlusOp;
+import org.matheclipse.core.eval.TimesOp;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IRealConstant;
 import org.matheclipse.core.eval.interfaces.IRewrite;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
@@ -152,11 +154,21 @@ public interface IExpr
 
   public static final int METHODSYMBOLID = 8192;
 
-  public static final int PATTERNID = 2048;
+  public static final int PATTERNID = BLANKID + 1;
 
-  public static final int SERIESID = 64;
+  public static final int PATTERNSEQUENCEID = BLANKID + 2;
 
-  public static final int QUANTITYID = 128;
+  public static final int PATTERNNESTEDID = 65536;
+
+  public static final int INTERVALSETID = 64;
+
+  public static final int INTERVALID = 65;
+
+  public static final int QUANTITYID = 66;
+
+  public static final int CONDITIONID = 80;
+
+  public static final int SERIESID = 128;
 
   public static final int STRINGID = 256;
 
@@ -230,6 +242,16 @@ public interface IExpr
       return S.False;
     }
     return F.NIL;
+  }
+
+  static IExpr freeQ(IExpr expr, IExpr form, EvalEngine engine) {
+    final IExpr arg1 = expr.isAtomicConstant() ? expr : engine.evaluate(expr);
+    final IExpr arg2 = form.isAtomicConstant() ? form : engine.evalPattern(form);
+    if ((arg1.isSymbol() || arg1.isAtomicConstant())
+        && (arg2.isSymbol() || arg2.isAtomicConstant())) {
+      return F.booleSymbol(!arg1.equals(arg2));
+    }
+    return F.booleSymbol(arg1.isFree(arg2, true));
   }
 
   /**
@@ -1555,6 +1577,7 @@ public interface IExpr
     return F.NIL;
   }
 
+
   default IExpr evaluateHead(IAST ast, EvalEngine engine) {
     IExpr result = engine.evaluateNIL(this);
     if (result.isPresent()) {
@@ -1563,7 +1586,6 @@ public interface IExpr
     }
     return F.NIL;
   }
-
 
   /**
    * Evaluate an expression if unequal {@link F#NIL} or otherwise return <code>other</code>
@@ -1800,6 +1822,7 @@ public interface IExpr
     return isFinite() ? subtract(re()) : zero();
   }
 
+
   /**
    * Return <code>this.get(position)</code> if <code>argSize() >= position</code>, otherwise return
    * <code>defaultValue</code>
@@ -1810,7 +1833,6 @@ public interface IExpr
   default IExpr getArg(int position, IExpr defaultValue) {
     return defaultValue;
   }
-
 
   /**
    * Get the element at the specified <code>index</code> if this object is of type
@@ -1857,6 +1879,11 @@ public interface IExpr
    * Evaluate {@link S#Greater} directly if both arguments are real numbers, otherwise evaluate the
    * built-in <code>Greater</code> function.
    *
+   * <ul>
+   * <li>return {@link S#True} if the comparison is <code>true</code></li>
+   * <li>return {@link S#False} if the comparison is <code>false</code></li>
+   * </ul>
+   * 
    * @param that the second argument
    * @return <code>S.True, S.False</code> or <code>Greater(this, that)</code>
    */
@@ -1872,6 +1899,11 @@ public interface IExpr
    * Evaluate {@link S#GreaterEqual} directly if both arguments are real numbers, otherwise evaluate
    * the built-in <code>GreaterEqual</code> function.
    * 
+   * <ul>
+   * <li>return {@link S#True} if the comparison is <code>true</code></li>
+   * <li>return {@link S#False} if the comparison is <code>false</code></li>
+   * </ul>
+   * 
    * @param that the second argument
    * @return <code>S.True, S.False</code> or <code>GreaterEqual(this, that)</code>
    */
@@ -1886,9 +1918,9 @@ public interface IExpr
   /**
    * Compare if <code>this >= that</code:
    * <ul>
-   * <li>return S.True if the comparison is <code>true</code></li>
-   * <li>return S.False if the comparison is <code>false</code></li>
-   * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
+   * <li>return {@link S#True} if the comparison is <code>true</code></li>
+   * <li>return {@link S#False} if the comparison is <code>false</code></li>
+   * <li>return {@link F#NIL}if the comparison is undetermined (i.e. could not be evaluated)</li>
    * </ul>
    *
    * @param that the second argument
@@ -1896,16 +1928,16 @@ public interface IExpr
    */
   public default IExpr greaterEqualThan(IExpr that) {
     COMPARE_TERNARY temp =
-        BooleanFunctions.CONST_GREATER_EQUAL.prepareCompare(this, that, EvalEngine.get());
+        CompareUtil.CONST_GREATER_EQUAL.prepareCompare(this, that, EvalEngine.get());
     return convertToExpr(temp);
   }
 
   /**
    * Compare if <code>this >= that</code:
    * <ul>
-   * <li>return S.True if the comparison is <code>true</code></li>
-   * <li>return S.False if the comparison is <code>false</code></li>
-   * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
+   * <li>return {@link S#True} if the comparison is <code>true</code></li>
+   * <li>return {@link S#False} if the comparison is <code>false</code></li>
+   * <li>return {@link F#NIL}if the comparison is undetermined (i.e. could not be evaluated)</li>
    * </ul>
    * 
    * @param that the second argument
@@ -1918,26 +1950,25 @@ public interface IExpr
   /**
    * Compare if <code>this > that</code:
    * <ul>
-   * <li>return S.True if the comparison is <code>true</code></li>
-   * <li>return S.False if the comparison is <code>false</code></li>
-   * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
+   * <li>return {@link S#True} if the comparison is <code>true</code></li>
+   * <li>return {@link S#False} if the comparison is <code>false</code></li>
+   * <li>return {@link F#NIL}if the comparison is undetermined (i.e. could not be evaluated)</li>
    * </ul>
    *
    * @param that
    * @return <code>S.True, S.False or F.NIL</code>
    */
   public default IExpr greaterThan(IExpr that) {
-    COMPARE_TERNARY temp =
-        BooleanFunctions.CONST_GREATER.prepareCompare(this, that, EvalEngine.get());
+    COMPARE_TERNARY temp = CompareUtil.CONST_GREATER.prepareCompare(this, that, EvalEngine.get());
     return convertToExpr(temp);
   }
 
   /**
    * Compare if <code>this > that</code:
    * <ul>
-   * <li>return S.True if the comparison is <code>true</code></li>
-   * <li>return S.False if the comparison is <code>false</code></li>
-   * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
+   * <li>return {@link S#True} if the comparison is <code>true</code></li>
+   * <li>return {@link S#False} if the comparison is <code>false</code></li>
+   * <li>return {@link F#NIL}if the comparison is undetermined (i.e. could not be evaluated)</li>
    * </ul>
    * 
    * @param that
@@ -3033,10 +3064,10 @@ public interface IExpr
         }
       }
     }
-      IExpr value = AbstractAssumptions.assumeFunctionValue(F.Mod(this, F.C2));
-      if (value.isZero()) {
-        return true;
-      }
+    IExpr value = AbstractAssumptions.assumeFunctionValue(F.Mod(this, F.C2));
+    if (value.isZero()) {
+      return true;
+    }
 
     return false;
   }
@@ -3414,6 +3445,7 @@ public interface IExpr
     return false;
   }
 
+
   /**
    * Test if this expression is a mixed opened/closed interval set expression with zero or more
    * <code>{min, Less/LessEqual, Less/LessEqual, max}</code> list arguments which represent the
@@ -3422,20 +3454,6 @@ public interface IExpr
    * 
    */
   default boolean isIntervalData() {
-    return false;
-  }
-
-  /**
-   * Checks if the expression equals the {@link F#INVALID} <i>Not In List</i> expression. Often
-   * {@link F#INVALID} is returned for a functions expression which couldn't be evaluated and is not
-   * valid for the further processing. {@link F#INVALID} is used to define a value similar to
-   * {@link F#NIL} but indicating an error in the data. Return {@code true} if this expression
-   * equals {@link F#INVALID}, otherwise {@code false}.
-   *
-   * @return {@code true} if the expression equals {@link F#INVALID}, otherwise {@code false}.
-   * @see java.util.Optional#isPresent()
-   */
-  default boolean isInvalid() {
     return false;
   }
 
@@ -3917,6 +3935,17 @@ public interface IExpr
   }
 
   /**
+   * Test if this object is a non-negative signed number. For an <code>IAST</code> object the method
+   * checks, if it is a numeric constant. If the <code>IAST</code> object evaluates to a negative
+   * numeric expression this method returns <code>true</code>.
+   *
+   * @return <code>true</code>, if <code>this >= 0</code>; <code>false</code> in all other case.
+   */
+  default boolean isNonNegative() {
+    return false;
+  }
+
+  /**
    * Test if this expression has a non-negative result (i.e. greater equal 0) or is assumed to be
    * non-negative.
    *
@@ -3972,6 +4001,7 @@ public interface IExpr
     return false;
   }
 
+
   /**
    * Test if this expression is the function <code>Not[&lt;arg&gt;]</code>.
    * 
@@ -3979,7 +4009,6 @@ public interface IExpr
   default boolean isNot() {
     return false;
   }
-
 
   default boolean isNotDefined() {
     return isIndeterminate() || isDirectedInfinity();
@@ -3999,6 +4028,15 @@ public interface IExpr
    */
   default boolean isNumber() {
     return false;
+  }
+
+  /**
+   * Test if this expression is a number an {@link S#Interval}, {@link S#IntervalData} or
+   * {@link S#Quantity} expression.
+   * 
+   */
+  default boolean isNumberLike() {
+    return isNumber();
   }
 
   /**
@@ -4207,6 +4245,7 @@ public interface IExpr
     return false;
   }
 
+
   /**
    * {@inheritDoc}
    *
@@ -4217,7 +4256,6 @@ public interface IExpr
   default boolean isONE() {
     return isOne();
   }
-
 
   /**
    * Test if this expression is an AST list, which contains a <b>header element</b> (i.e. a function
@@ -4644,11 +4682,9 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the evaluator implements
-   * the <code>IRealConstant</code> interface (see package <code>
-   * org.matheclipse.core.builtin.constant</code>).
+   * Test if this expression is a {@link IBuiltInSymbol} symbol and the evaluator implements the
+   * {@link IRealConstant}.
    *
-   * @return
    */
   default boolean isRealConstant() {
     return false;
@@ -4889,7 +4925,7 @@ public interface IExpr
 
   /**
    * Returns <code>true</code> if <code>this</code> is free of any special symbols
-   * {@link S#Indeterminate} or {@link S#DirectedInfinity}.
+   * {@link S#Indeterminate}, {@link S#DirectedInfinity}, {@link S#ComplexInfinity}.
    */
   default boolean isSpecialsFree() {
     Predicate<IExpr> predicate = x -> x.equals(S.DirectedInfinity) || x.equals(S.Indeterminate);
@@ -5175,7 +5211,7 @@ public interface IExpr
     if (isNumber()) {
       return isZero();
     }
-    return isAST() && PredicateQ.isPossibleZeroQ((IAST) this, false,
+    return isAST() && CompareUtil.isPossibleZeroQ((IAST) this, false,
         Config.SPECIAL_FUNCTIONS_TOLERANCE, EvalEngine.get());
     // PredicateQ.isZeroTogether(this, EvalEngine.get());
   }
@@ -5321,15 +5357,19 @@ public interface IExpr
     return F.NIL;
   }
 
+
+
   default IExpr legendreQ(IExpr arg2, IExpr arg3) {
     return F.NIL;
   }
 
-
-
   /**
    * Evaluate {@link S#Less} directly if both arguments are real numbers, otherwise evaluate the
    * built-in <code>Less</code> function.
+   * <ul>
+   * <li>return {@link S#True} if the comparison is <code>true</code></li>
+   * <li>return {@link S#False} if the comparison is <code>false</code></li>
+   * </ul>
    * 
    * @param a1
    * @return
@@ -5346,7 +5386,12 @@ public interface IExpr
    * Evaluate {@link S#LessEqual} directly if both arguments are real numbers, otherwise evaluate
    * the built-in <code>LessEqual</code> function.
    *
-   * @param a1
+   * <ul>
+   * <li>return {@link S#True} if the comparison is <code>true</code></li>
+   * <li>return {@link S#False} if the comparison is <code>false</code></li>
+   * </ul>
+   * * @param a1
+   * 
    * @return
    */
   default IExpr lessEqual(final IExpr a1) {
@@ -5360,9 +5405,9 @@ public interface IExpr
   /**
    * Compare if <code>this <= that</code:
    * <ul>
-   * <li>return S.True if the comparison is <code>true</code></li>
-   * <li>return S.False if the comparison is <code>false</code></li>
-   * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
+   * <li>return {@link S#True} if the comparison is <code>true</code></li>
+   * <li>return {@link S#False} if the comparison is <code>false</code></li>
+   * <li>return {@link F#NIL}if the comparison is undetermined (i.e. could not be evaluated)</li>
    * </ul>
    *
    * @param that
@@ -5370,16 +5415,16 @@ public interface IExpr
    */
   public default IExpr lessEqualThan(IExpr that) {
     COMPARE_TERNARY temp =
-        BooleanFunctions.CONST_LESS_EQUAL.prepareCompare(this, that, EvalEngine.get());
+        CompareUtil.CONST_LESS_EQUAL.prepareCompare(this, that, EvalEngine.get());
     return convertToExpr(temp);
   }
 
   /**
    * Compare if <code>this <= other</code:
    * <ul>
-   * <li>return S.True if the comparison is <code>true</code></li>
-   * <li>return S.False if the comparison is <code>false</code></li>
-   * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
+   * <li>return {@link S#True} if the comparison is <code>true</code></li>
+   * <li>return {@link S#False} if the comparison is <code>false</code></li>
+   * <li>return {@link F#NIL}if the comparison is undetermined (i.e. could not be evaluated)</li>
    * </ul>
    * 
    * @param other
@@ -5392,16 +5437,16 @@ public interface IExpr
   /**
    * Compare if <code>this < that</code:
    * <ul>
-   * <li>return S.True if the comparison is <code>true</code></li>
-   * <li>return S.False if the comparison is <code>false</code></li>
-   * <li>return F.NIL if the comparison is undetermined (i.e. could not be evaluated)</li>
+   * <li>return {@link S#True} if the comparison is <code>true</code></li>
+   * <li>return {@link S#False} if the comparison is <code>false</code></li>
+   * <li>return {@link F#NIL}if the comparison is undetermined (i.e. could not be evaluated)</li>
    * </ul>
    *
    * @param that
    * @return <code>S.True, S.False or F.NIL</code
    */
   public default IExpr lessThan(IExpr that) {
-    COMPARE_TERNARY temp = BooleanFunctions.CONST_LESS.prepareCompare(this, that, EvalEngine.get());
+    COMPARE_TERNARY temp = CompareUtil.CONST_LESS.prepareCompare(this, that, EvalEngine.get());
     return convertToExpr(temp);
   }
 
@@ -5972,14 +6017,33 @@ public interface IExpr
    * derived number classes.
    *
    * @param that
-   * @return
    */
   default IExpr plus(final IExpr that) {
+    return plus(that, false);
+  }
+
+  /**
+   * Returns an <code>IExpr</code> whose value is <code>(this + that)</code>. Calculates <code>
+   * F.eval(F.Plus(this, that))</code> in the common case and uses a specialized implementation for
+   * derived number classes.
+   *
+   * @param that
+   * @param returnNilIfUnevaluated if <code>true</code> and the expression is not evaluated, return
+   *        {@link F#NIL}
+   */
+  default IExpr plus(final IExpr that, boolean returnNilIfUnevaluated) {
     if (that.isZero()) {
       return this;
     }
     if (this.isZero()) {
       return that;
+    }
+
+    IExpr basicPlus = PlusOp.numberLikePlus(this, that, returnNilIfUnevaluated);
+    if (basicPlus.isPresent()) {
+      return basicPlus;
+    } else if (returnNilIfUnevaluated) {
+      return F.NIL;
     }
     EvalEngine engine = EvalEngine.get();
     if (engine.isTogetherMode() && (this.isPlusTimesPower() || that.isPlusTimesPower())) {
@@ -6578,11 +6642,31 @@ public interface IExpr
    * @return <code>(this * that)</code>
    */
   default IExpr times(final IExpr that) {
+    return times(that, false);
+  }
+
+  /**
+   * Returns an <code>IExpr</code> whose value is <code>(this * that)</code>. Calculates <code>
+   * F.eval(F.Times(this, that))</code> in the common case and uses a specialized implementation for
+   * derived number classes.
+   *
+   * @param that the multiplier expression
+   * @param returnNilIfUnevaluated if <code>true</code> and the expression is not evaluated, return
+   *        {@link F#NIL}
+   * @return <code>(this * that)</code> or {@link F#NIL}
+   */
+  default IExpr times(final IExpr that, boolean returnNilIfUnevaluated) {
     if (that.isZero()) {
       return F.C0;
     }
     if (that.isOne()) {
       return this;
+    }
+    IExpr basicTimes = TimesOp.numberLikeTimes(this, that, returnNilIfUnevaluated);
+    if (basicTimes.isPresent()) {
+      return basicTimes;
+    } else if (returnNilIfUnevaluated) {
+      return F.NIL;
     }
     EvalEngine engine = EvalEngine.get();
     if (engine.isTogetherMode() && (this.isPlusTimesPower() || that.isPlusTimesPower())) {
@@ -6601,8 +6685,7 @@ public interface IExpr
       return F.Together(F.Times(this, that)) //
           .eval(engine);
     }
-    return F.Times(this, that) //
-        .eval(engine);
+    return F.Times(this, that).eval(engine);
   }
 
   /**
@@ -6831,9 +6914,8 @@ public interface IExpr
   }
 
   /**
-   * Return the <code>Mathematica()</code> form of this expression
+   * Return the <code>Mathematica</code> form of this expression
    *
-   * @return
    */
   default String toMMA() {
     return WolframFormFactory.get().toString(this);
@@ -7001,6 +7083,7 @@ public interface IExpr
     return replaceAll(listOfRules).orElse(this);
   }
 
+
   /**
    * Replaces all instances of <code>x</code> in an expression with an <code>y</code> expression or
    * returns <code>this</code>.
@@ -7012,7 +7095,6 @@ public interface IExpr
   default IExpr xreplace(IExpr x, IExpr y) {
     return replaceAll(F.Rule(x, y)).orElse(this);
   }
-
 
   default IExpr zero() {
     return F.C0;

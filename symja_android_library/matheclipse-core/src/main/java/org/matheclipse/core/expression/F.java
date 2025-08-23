@@ -39,81 +39,20 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.AndroidLoggerFix;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Algebra;
-import org.matheclipse.core.builtin.Arithmetic;
-import org.matheclipse.core.builtin.AssociationFunctions;
-import org.matheclipse.core.builtin.AssumptionFunctions;
-import org.matheclipse.core.builtin.AttributeFunctions;
-import org.matheclipse.core.builtin.BesselFunctions;
-import org.matheclipse.core.builtin.BooleanFunctions;
-import org.matheclipse.core.builtin.BoxesFunctions;
-import org.matheclipse.core.builtin.ClusteringFunctions;
-import org.matheclipse.core.builtin.Combinatoric;
-import org.matheclipse.core.builtin.CompilerFunctions;
-import org.matheclipse.core.builtin.ComputationalGeometryFunctions;
-import org.matheclipse.core.builtin.ConstantDefinitions;
-import org.matheclipse.core.builtin.ConstantPhysicsDefinitions;
-import org.matheclipse.core.builtin.ContainsFunctions;
-import org.matheclipse.core.builtin.CurveFitterFunctions;
-import org.matheclipse.core.builtin.EllipticIntegrals;
-import org.matheclipse.core.builtin.EntityFunctions;
-import org.matheclipse.core.builtin.ExpTrigsFunctions;
-import org.matheclipse.core.builtin.FileFunctions;
-import org.matheclipse.core.builtin.FilterFunctions;
-import org.matheclipse.core.builtin.FinancialFunctions;
-import org.matheclipse.core.builtin.FunctionDefinitions;
-import org.matheclipse.core.builtin.GeodesyFunctions;
-import org.matheclipse.core.builtin.GraphDataFunctions;
-import org.matheclipse.core.builtin.GraphFunctions;
-import org.matheclipse.core.builtin.GraphicsFunctions;
-import org.matheclipse.core.builtin.HypergeometricFunctions;
-import org.matheclipse.core.builtin.IOFunctions;
-import org.matheclipse.core.builtin.IntegerFunctions;
-import org.matheclipse.core.builtin.IntervalFunctions;
-import org.matheclipse.core.builtin.JavaFunctions;
-import org.matheclipse.core.builtin.LinearAlgebra;
-import org.matheclipse.core.builtin.ListFunctions;
-import org.matheclipse.core.builtin.ManipulateFunction;
-import org.matheclipse.core.builtin.MinMaxFunctions;
-import org.matheclipse.core.builtin.NumberTheory;
-import org.matheclipse.core.builtin.NumericArrayFunctions;
-import org.matheclipse.core.builtin.OutputFunctions;
-import org.matheclipse.core.builtin.PatternMatching;
-import org.matheclipse.core.builtin.PiecewiseFunctions;
-import org.matheclipse.core.builtin.PolynomialFunctions;
-import org.matheclipse.core.builtin.PredicateQ;
-import org.matheclipse.core.builtin.Programming;
-import org.matheclipse.core.builtin.QuantityFunctions;
-import org.matheclipse.core.builtin.QuantumPhysicsFunctions;
-import org.matheclipse.core.builtin.RandomFunctions;
-import org.matheclipse.core.builtin.RootsFunctions;
-import org.matheclipse.core.builtin.SequenceFunctions;
-import org.matheclipse.core.builtin.SeriesFunctions;
-import org.matheclipse.core.builtin.SidesFunctions;
-import org.matheclipse.core.builtin.SimplifyFunctions;
-import org.matheclipse.core.builtin.SourceCodeFunctions;
-import org.matheclipse.core.builtin.SparseArrayFunctions;
-import org.matheclipse.core.builtin.SpecialFunctions;
-import org.matheclipse.core.builtin.StatisticalMomentFunctions;
-import org.matheclipse.core.builtin.StatisticsFunctions;
-import org.matheclipse.core.builtin.StringFunctions;
-import org.matheclipse.core.builtin.StructureFunctions;
-import org.matheclipse.core.builtin.SubsetFunctions;
-import org.matheclipse.core.builtin.TensorFunctions;
-import org.matheclipse.core.builtin.UnitTestingFunctions;
-import org.matheclipse.core.builtin.VectorAnalysisFunctions;
-import org.matheclipse.core.builtin.WXFFunctions;
-import org.matheclipse.core.builtin.WindowFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.GraphicsUtil;
+import org.matheclipse.core.eval.PackageUtil;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
+import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.BiIntFunction;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Lambda;
@@ -129,7 +68,6 @@ import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
-import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInexactNumber;
@@ -146,7 +84,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.core.patternmatching.IPatternMap;
-import org.matheclipse.core.reflection.system.rules.AutomaticRules;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.tensor.QuantityParser;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.parser.client.ParserConfig;
@@ -186,33 +124,17 @@ public class F extends S {
   /** Set to <code>true</code> at the end of initSymbols() method */
   private static volatile boolean systemInitialized = false;
 
-  public static boolean isSystemInitialized() {
-    return systemInitialized;
-  }
-
   /**
    * The map for predefined strings for the {@link IExpr#internalFormString(boolean, int)} method.
    */
   public static final Map<String, String> PREDEFINED_INTERNAL_FORM_STRINGS =
       ParserConfig.TRIE_STRING2STRING_BUILDER.withMatch(TrieMatch.EXACT).build();
 
-  public static String getPredefinedInternalFormString(String key) {
-    return PREDEFINED_INTERNAL_FORM_STRINGS.get(key);
-  }
-
   private static final Map<String, IPattern> PREDEFINED_PATTERN_MAP =
       Config.TRIE_STRING2PATTERN_BUILDER.withMatch(TrieMatch.EXACT).build();
 
-  public static IPattern getPredefinedPattern(String key) {
-    return PREDEFINED_PATTERN_MAP.get(key);
-  }
-
   private static final Map<String, IPatternSequence> PREDEFINED_PATTERNSEQUENCE_MAP =
       Config.TRIE_STRING2PATTERNSEQUENCE_BUILDER.withMatch(TrieMatch.EXACT).build();
-
-  public static IPatternSequence getPredefinedPatternSequence(String key) {
-    return PREDEFINED_PATTERNSEQUENCE_MAP.get(key);
-  }
 
   public static final ISymbolObserver SYMBOL_OBSERVER = new ISymbolObserver() {
     @Override
@@ -232,9 +154,6 @@ public class F extends S {
    * @see java.util.Optional#isPresent
    */
   public static final AbstractAST.NILPointer NIL = AbstractAST.NIL;
-
-  public static final AbstractAST.NILPointer INVALID = AbstractAST.INVALID;
-  // public final static ISymbol usage = initFinalHiddenSymbol("usage");
 
   /**
    * Built-in function IDs those arguments should be evaluated numerically in numeric mode:
@@ -260,6 +179,9 @@ public class F extends S {
    * pattern-matching rules and can match one expression.
    */
   public static final IPattern c_ = initPredefinedPattern(c);
+
+  // public static final AbstractAST.NILPointer INVALID = AbstractAST.INVALID;
+  // public final static ISymbol usage = initFinalHiddenSymbol("usage");
 
   /**
    * Used to represent a formal pattern <code>d_</code> that will be used only for predefined
@@ -344,6 +266,7 @@ public class F extends S {
    * pattern-matching rules and can match one expression.
    */
   public static final IPattern q_ = initPredefinedPattern(q);
+
   /**
    * Used to represent a formal pattern <code>r_</code> that will be used only for predefined
    * pattern-matching rules and can match one expression.
@@ -367,7 +290,6 @@ public class F extends S {
    * pattern-matching rules and can match one expression.
    */
   public static final IPattern u_ = initPredefinedPattern(u);
-
   /**
    * Used to represent a formal pattern <code>v_</code> that will be used only for predefined
    * pattern-matching rules and can match one expression.
@@ -435,20 +357,24 @@ public class F extends S {
   public static final IPatternSequence z___ = initPredefinedPatternSequence(z, true);
 
   public static final IPattern A_ = initPredefinedPattern(ASymbol);
+
   public static final IPattern B_ = initPredefinedPattern(BSymbol);
+
   public static final IPattern C_ = initPredefinedPattern(CSymbol);
+
   public static final IPattern F_ = initPredefinedPattern(FSymbol);
+
   public static final IPattern G_ = initPredefinedPattern(GSymbol);
   public static final IPattern P_ = initPredefinedPattern(PSymbol);
   public static final IPattern Q_ = initPredefinedPattern(QSymbol);
-
   public static final IPattern m_Integer = new Pattern(m, Integer);
   public static final IPattern n_Integer = new Pattern(n, Integer);
-
   public static final IPattern a_Symbol = new Pattern(a, Symbol);
   public static final IPattern b_Symbol = new Pattern(b, Symbol);
+
   public static final IPattern c_Symbol = new Pattern(c, Symbol);
   public static final IPattern d_Symbol = new Pattern(d, Symbol);
+
   public static final IPattern e_Symbol = new Pattern(e, Symbol);
   public static final IPattern f_Symbol = new Pattern(f, Symbol);
   public static final IPattern g_Symbol = new Pattern(g, Symbol);
@@ -471,11 +397,11 @@ public class F extends S {
   public static final IPattern x_Symbol = new Pattern(x, Symbol);
   public static final IPattern y_Symbol = new Pattern(y, Symbol);
   public static final IPattern z_Symbol = new Pattern(z, Symbol);
-
   public static final IPattern a_DEFAULT = new Pattern(a, null, true);
   public static final IPattern b_DEFAULT = new Pattern(b, null, true);
   public static final IPattern c_DEFAULT = new Pattern(c, null, true);
   public static final IPattern d_DEFAULT = new Pattern(d, null, true);
+
   public static final IPattern e_DEFAULT = new Pattern(e, null, true);
   public static final IPattern f_DEFAULT = new Pattern(f, null, true);
   public static final IPattern g_DEFAULT = new Pattern(g, null, true);
@@ -498,26 +424,22 @@ public class F extends S {
   public static final IPattern x_DEFAULT = new Pattern(x, null, true);
   public static final IPattern y_DEFAULT = new Pattern(y, null, true);
   public static final IPattern z_DEFAULT = new Pattern(z, null, true);
-
   public static final IPattern A_DEFAULT = new Pattern(ASymbol, null, true);
   public static final IPattern B_DEFAULT = new Pattern(BSymbol, null, true);
   public static final IPattern C_DEFAULT = new Pattern(CSymbol, null, true);
   public static final IPattern F_DEFAULT = new Pattern(FSymbol, null, true);
+
   public static final IPattern G_DEFAULT = new Pattern(GSymbol, null, true);
   public static final IPattern P_DEFAULT = new Pattern(PSymbol, null, true);
   public static final IPattern Q_DEFAULT = new Pattern(QSymbol, null, true);
   /** Constant integer &quot;0&quot; */
   public static final IInteger C0 = AbstractIntegerSym.valueOf(0);
-
   /** Constant integer &quot;1&quot; */
   public static final IInteger C1 = AbstractIntegerSym.valueOf(1);
-
   /** Constant integer &quot;2&quot; */
   public static final IInteger C2 = AbstractIntegerSym.valueOf(2);
-
   /** Constant integer &quot;3&quot; */
   public static final IInteger C3 = AbstractIntegerSym.valueOf(3);
-
   /** Constant integer &quot;4&quot; */
   public static final IInteger C4 = AbstractIntegerSym.valueOf(4);
 
@@ -602,7 +524,6 @@ public class F extends S {
   /** Constant fraction &quot;-1/6&quot; */
   public static final IFraction CN1D6 = AbstractFractionSym.valueOf(-1, 6);
 
-
   /** Constant fraction &quot;2/3&quot; */
   public static final IFraction C2D3 = AbstractFractionSym.valueOf(2, 3);
 
@@ -614,6 +535,7 @@ public class F extends S {
 
   /** Constant double &quot;0.0&quot; */
   public static final Num CD0 = new Num(0.0);
+
 
   /** Constant double &quot;1.0&quot; */
   public static final Num CD1 = new Num(1.0);
@@ -842,10 +764,6 @@ public class F extends S {
 
   private static final Map<ISymbol, IExpr> UNARY_INVERSE_FUNCTIONS = new IdentityHashMap<>();
 
-  public static IExpr getUnaryInverseFunction(IExpr symbol) {
-    return UNARY_INVERSE_FUNCTIONS.get(symbol);
-  }
-
   public static final java.util.List<ISymbol> DENOMINATOR_NUMERATOR_SYMBOLS;
 
   public static final java.util.List<IExpr> DENOMINATOR_TRIG_TRUE_EXPRS;
@@ -855,11 +773,6 @@ public class F extends S {
   public static final java.util.List<IExpr> NUMERATOR_TRIG_TRUE_EXPRS;
 
   private static final CountDownLatch COUNT_DOWN_LATCH = new CountDownLatch(1);
-
-  /** Causes the current thread to wait until the main initialization has finished. */
-  public static final void await() throws InterruptedException {
-    COUNT_DOWN_LATCH.await();
-  }
 
   static {
     try {
@@ -1001,9 +914,6 @@ public class F extends S {
       PREDEFINED_INTERNAL_FORM_STRINGS.put("Power", "Power");
       PREDEFINED_INTERNAL_FORM_STRINGS.put("Times", "Times");
 
-      Arithmetic.initialize();
-      PredicateQ.initialize();
-      AttributeFunctions.initialize();
 
       createInverseFunctionMap();
       DENOMINATOR_NUMERATOR_SYMBOLS =
@@ -1016,71 +926,10 @@ public class F extends S {
       NUMERATOR_TRIG_TRUE_EXPRS =
           Collections.unmodifiableList(java.util.Arrays.asList(Sin, Cos, Sin, C1, C1, Cos));
 
-      ConstantDefinitions.initialize();
-      FunctionDefinitions.initialize();
-      Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
-      IOFunctions.initialize();
-      Programming.initialize();
-      PatternMatching.initialize();
-      FileFunctions.initialize();
-      Algebra.initialize();
-      SimplifyFunctions.initialize();
-      StructureFunctions.initialize();
-      ExpTrigsFunctions.initialize();
-      NumberTheory.initialize();
-      BooleanFunctions.initialize();
-      LinearAlgebra.initialize();
-      TensorFunctions.initialize();
-      ListFunctions.initialize();
-      SubsetFunctions.initialize();
-      SequenceFunctions.initialize();
-      Combinatoric.initialize();
-      IntegerFunctions.initialize();
-      BesselFunctions.initialize();
-      SpecialFunctions.initialize();
-      StringFunctions.initialize();
-      OutputFunctions.initialize();
-      RandomFunctions.initialize();
-      StatisticsFunctions.initialize();
-      StatisticalMomentFunctions.initialize();
-      HypergeometricFunctions.initialize();
-      EllipticIntegrals.initialize();
-      PolynomialFunctions.initialize();
-      RootsFunctions.initialize();
-      SeriesFunctions.initialize();
-      AssumptionFunctions.initialize();
-      ContainsFunctions.initialize();
-      CurveFitterFunctions.initialize();
-      VectorAnalysisFunctions.initialize();
-      QuantityFunctions.initialize();
-      IntervalFunctions.initialize();
-      FinancialFunctions.initialize();
-      WXFFunctions.initialize();
-      WindowFunctions.initialize();
-      MinMaxFunctions.initialize();
-      GraphFunctions.initialize();
-      GraphDataFunctions.initialize();
-      AssociationFunctions.initialize();
-      GeodesyFunctions.initialize();
-      ManipulateFunction.initialize();
-      FilterFunctions.initialize();
-      EntityFunctions.initialize();
-      ClusteringFunctions.initialize();
-      SourceCodeFunctions.initialize();
-      SparseArrayFunctions.initialize();
-      UnitTestingFunctions.initialize();
-      BoxesFunctions.initialize();
-      NumericArrayFunctions.initialize();
-      GraphicsFunctions.initialize();
-      CompilerFunctions.initialize();
-      JavaFunctions.initialize();
-      SidesFunctions.initialize();
-      ComputationalGeometryFunctions.initialize();
-      PiecewiseFunctions.initialize();
-      QuantumPhysicsFunctions.initialize();
-      ConstantPhysicsDefinitions.initialize();
-
-      AutomaticRules.initialize();
+      if (!Config.BUILTIN_FUNCTION_INIT.getAsBoolean()) {
+        throw new ExceptionInInitializerError(
+            "F-class initialization failed: Config.BUILTIN_FUNCTION_INIT is set to false");
+      }
 
       COUNT_DOWN_LATCH.countDown();
       Errors.initGeneralMessages();
@@ -1088,84 +937,6 @@ public class F extends S {
       LOGGER.error("F-class initialization failed", th);
       throw th;
     }
-  }
-
-  /**
-   * Initialize the {@link ApfloatContext}
-   */
-  private static void initApfloat() {
-    int numberOfProcessors = Config.MAX_APFLOAT_PROCESSORS;
-    long maxMemoryBlockSize = Config.MAX_APFLOAT_MEMORY_BLOCKSIZE;
-    long memoryThreshold = Math.max(maxMemoryBlockSize >> 10, 65536);
-    int blockSize = Util.round2down((int) Math.min(memoryThreshold, java.lang.Integer.MAX_VALUE));
-    ApfloatContext ctx = ApfloatContext.getContext();
-    ctx.setProperty(ApfloatContext.BUILDER_FACTORY, "org.apfloat.internal.LongBuilderFactory");
-    ctx.setProperty(ApfloatContext.CACHE_L1_SIZE, "8192");
-    ctx.setProperty(ApfloatContext.CACHE_L2_SIZE, "262144");
-    ctx.setProperty(ApfloatContext.CACHE_BURST, "32");
-    ctx.setProperty(ApfloatContext.SHARED_MEMORY_TRESHOLD,
-        java.lang.String.valueOf(maxMemoryBlockSize / numberOfProcessors / 32));
-    ctx.setProperty(ApfloatContext.BLOCK_SIZE, java.lang.String.valueOf(blockSize));
-    ctx.setFilenameGenerator(new FilenameGenerator("default", "0", "default") {
-      @Override
-      public synchronized String generateFilename() {
-        throw new OverflowException("Apfloat disk file storage is disabled");
-      }
-    });
-    ctx.setMemoryThreshold(memoryThreshold);
-    ctx.setCleanupAtExit(false);
-    ctx.setNumberOfProcessors(numberOfProcessors);
-    ctx.setMaxMemoryBlockSize(maxMemoryBlockSize);
-  }
-
-  private static void createInverseFunctionMap() {
-    UNARY_INVERSE_FUNCTIONS.put(Abs, Function(Times(CN1, Slot1)));
-    UNARY_INVERSE_FUNCTIONS.put(Conjugate, Conjugate);
-    UNARY_INVERSE_FUNCTIONS.put(ProductLog, Function(Times(Slot1, Power(E, Slot1))));
-    UNARY_INVERSE_FUNCTIONS.put(Cos, ArcCos);
-    UNARY_INVERSE_FUNCTIONS.put(Cot, ArcCot);
-    UNARY_INVERSE_FUNCTIONS.put(Csc, ArcCsc);
-    UNARY_INVERSE_FUNCTIONS.put(Sec, ArcSec);
-    UNARY_INVERSE_FUNCTIONS.put(Sin, ArcSin);
-    UNARY_INVERSE_FUNCTIONS.put(Tan, ArcTan);
-
-    UNARY_INVERSE_FUNCTIONS.put(ArcCos, Cos);
-    UNARY_INVERSE_FUNCTIONS.put(ArcCot, Cot);
-    UNARY_INVERSE_FUNCTIONS.put(ArcCsc, Csc);
-    UNARY_INVERSE_FUNCTIONS.put(ArcSec, Sec);
-    UNARY_INVERSE_FUNCTIONS.put(ArcSin, Sin);
-    UNARY_INVERSE_FUNCTIONS.put(ArcTan, Tan);
-    UNARY_INVERSE_FUNCTIONS.put(Cosh, ArcCosh);
-    UNARY_INVERSE_FUNCTIONS.put(Coth, ArcCoth);
-    UNARY_INVERSE_FUNCTIONS.put(Csch, ArcCsch);
-    UNARY_INVERSE_FUNCTIONS.put(Sech, ArcSech);
-    UNARY_INVERSE_FUNCTIONS.put(Sinh, ArcSinh);
-    UNARY_INVERSE_FUNCTIONS.put(Tanh, ArcTanh);
-    UNARY_INVERSE_FUNCTIONS.put(ArcCosh, Cosh);
-    UNARY_INVERSE_FUNCTIONS.put(ArcCoth, Coth);
-    UNARY_INVERSE_FUNCTIONS.put(ArcCsch, Csch);
-    UNARY_INVERSE_FUNCTIONS.put(ArcSech, Sech);
-    UNARY_INVERSE_FUNCTIONS.put(ArcSinh, Sinh);
-    UNARY_INVERSE_FUNCTIONS.put(ArcTanh, Tanh);
-    UNARY_INVERSE_FUNCTIONS.put(Log, Exp);
-    UNARY_INVERSE_FUNCTIONS.put(Log2, F.Function(F.Power(F.C2, F.Slot1)));
-    UNARY_INVERSE_FUNCTIONS.put(Log10, F.Function(F.Power(F.C10, F.Slot1)));
-    UNARY_INVERSE_FUNCTIONS.put(Identity, Identity);
-
-    UNARY_INVERSE_FUNCTIONS.put(Conjugate, Conjugate);
-    UNARY_INVERSE_FUNCTIONS.put(Erf, InverseErf);
-    UNARY_INVERSE_FUNCTIONS.put(Erfc, InverseErfc);
-    UNARY_INVERSE_FUNCTIONS.put(Erfi,
-        F.Function(F.Times(F.CNI, F.InverseErf(F.Times(F.CI, F.Slot1)))));
-
-    UNARY_INVERSE_FUNCTIONS.put(Haversine, InverseHaversine);
-    UNARY_INVERSE_FUNCTIONS.put(InverseHaversine, Haversine);
-
-    UNARY_INVERSE_FUNCTIONS.put(Gudermannian, InverseGudermannian);
-    UNARY_INVERSE_FUNCTIONS.put(InverseGudermannian, Gudermannian);
-
-    UNARY_INVERSE_FUNCTIONS.put(InverseErf, Erf);
-    UNARY_INVERSE_FUNCTIONS.put(InverseErfc, Erfc);
   }
 
   /**
@@ -1189,28 +960,6 @@ public class F extends S {
       default:
         return ast(a, head);
     }
-  }
-
-  /**
-   * Create a <code>BlankSequence[condition]</code> pattern object for pattern-matching and term
-   * rewriting
-   *
-   * @param condition additional condition which should be checked in pattern-matching
-   * @return IPattern
-   */
-  public static PatternSequence $bs(final IExpr condition) {
-    return org.matheclipse.core.expression.PatternSequence.valueOf(null, condition, false);
-  }
-
-  /**
-   * Create a <code>BlankNullSequence[condition]</code> pattern object for pattern-matching and term
-   * rewriting
-   *
-   * @param condition additional condition which should be checked in pattern-matching
-   * @return IPattern
-   */
-  public static PatternSequence $bns(final IExpr condition) {
-    return org.matheclipse.core.expression.PatternSequence.valueOf(null, condition, false);
   }
 
   /**
@@ -1242,6 +991,40 @@ public class F extends S {
    */
   public static IPattern $b(final IExpr condition, boolean def) {
     return new org.matheclipse.core.expression.Blank(condition, def);
+  }
+
+  /**
+   * Create a <code>BlankNullSequence[condition]</code> pattern object for pattern-matching and term
+   * rewriting
+   *
+   * @param condition additional condition which should be checked in pattern-matching
+   * @return IPattern
+   */
+  public static PatternSequence $bns(final IExpr condition) {
+    return org.matheclipse.core.expression.PatternSequence.valueOf(null, condition, false);
+  }
+
+  /**
+   * Create a <code>BlankSequence[condition]</code> pattern object for pattern-matching and term
+   * rewriting
+   *
+   * @param condition additional condition which should be checked in pattern-matching
+   * @return IPattern
+   */
+  public static PatternSequence $bs(final IExpr condition) {
+    return org.matheclipse.core.expression.PatternSequence.valueOf(null, condition, false);
+  }
+
+  public static IPatternSequence $OptionsPattern() {
+    return org.matheclipse.core.expression.OptionsPattern.valueOf(null);
+  }
+
+  public static IPatternSequence $OptionsPattern(final ISymbol symbol) {
+    return org.matheclipse.core.expression.OptionsPattern.valueOf(symbol);
+  }
+
+  public static IPatternSequence $OptionsPattern(final ISymbol symbol, final IExpr defaultOptions) {
+    return org.matheclipse.core.expression.OptionsPattern.valueOf(symbol, defaultOptions);
   }
 
   /**
@@ -1343,29 +1126,6 @@ public class F extends S {
   }
 
   /**
-   * Create a pattern for pattern-matching and term rewriting
-   *
-   * @param symbol
-   * @return IPattern
-   */
-  public static IPattern pattern(final ISymbol symbol) {
-    return org.matheclipse.core.expression.Pattern.valueOf(symbol);
-  }
-
-  /**
-   * Create a pattern for pattern-matching and term rewriting
-   *
-   * @param symbol
-   * @param check additional condition which should be checked in pattern-matching
-   * @param def if <code>true</code>, the pattern can match to a default value associated with the
-   *        AST's head the pattern is used in.
-   * @return IPattern
-   */
-  public static IPattern pattern(final ISymbol symbol, final IExpr check, final boolean def) {
-    return org.matheclipse.core.expression.Pattern.valueOf(symbol, check, def);
-  }
-
-  /**
    * Create a new PatternSequence <code>BlankSequence</code>.
    *
    * @param symbol
@@ -1413,16 +1173,14 @@ public class F extends S {
     return PatternSequence.valueOf(symbol, check, def, zeroArgsAllowed);
   }
 
-  public static IPatternSequence $OptionsPattern() {
-    return org.matheclipse.core.expression.OptionsPattern.valueOf(null);
-  }
-
-  public static IPatternSequence $OptionsPattern(final ISymbol symbol) {
-    return org.matheclipse.core.expression.OptionsPattern.valueOf(symbol);
-  }
-
-  public static IPatternSequence $OptionsPattern(final ISymbol symbol, final IExpr defaultOptions) {
-    return org.matheclipse.core.expression.OptionsPattern.valueOf(symbol, defaultOptions);
+  /**
+   * Create a pattern for pattern-matching and term rewriting
+   *
+   * @param symbolName the name of the pattrn symbol
+   * @return IPattern
+   */
+  public static IPatternSequence $ps(final String symbolName) {
+    return PatternSequence.valueOf($s(symbolName), false);
   }
 
   /**
@@ -1439,185 +1197,20 @@ public class F extends S {
         nullAllowed, engine);
   }
 
-  /**
-   * Create a pattern for pattern-matching and term rewriting
-   *
-   * @param symbolName the name of the pattrn symbol
-   * @return IPattern
-   */
-  public static IPatternSequence $ps(final String symbolName) {
-    return PatternSequence.valueOf($s(symbolName), false);
+  public static ISymbol $rubi(final String symbolName) {
+    return $rubi(symbolName, BuiltInSymbol.DUMMY_EVALUATOR);
   }
 
-  /**
-   *
-   *
-   * <pre>
-   * SymbolQ(x)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * is <code>True</code> if <code>x</code> is a symbol, or <code>False</code> otherwise.
-   *
-   * </blockquote>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; SymbolQ(a)
-   * True
-   * &gt;&gt; SymbolQ(1)
-   * False
-   * &gt;&gt; SymbolQ(a + b)
-   * False
-   * </pre>
-   */
-  public static IAST SymbolQ(final IExpr x) {
-    return new AST1(SymbolQ, x);
-  }
-
-  /**
-   * Full symmetry
-   *
-   * @param a0
-   * @return
-   */
-  public static IAST Symmetric(final IExpr a0) {
-    return new AST1(Symmetric, a0);
-  }
-
-  /**
-   * See <a href=
-   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/SymmetricMatrixQ.md">SymmetricMatrixQ</a>
-   */
-  public static IAST SymmetricMatrixQ(final IExpr a0) {
-    return new AST1(SymmetricMatrixQ, a0);
-  }
-
-  /**
-   * Converts and evaluates arbitrary expressions to a Symja type.
-   *
-   * <pre>
-   * Java Object       -&gt; Symja object
-   * -------------------------------------
-   * null object          {@link S#Null} symbol
-   * IExpr                {@link IExpr} type
-   * Boolean              {@link S#True} or {@link S#False} symbol
-   * BigInteger           {@link IInteger} value
-   * BigDecimal           {@link INum} with {@link Apfloat#Apfloat(java.math.BigDecimal)} value
-   * Double               {@link INum}  with doubleValue() value
-   * Float                {@link INum}  with doubleValue() value
-   * Integer              {@link IInteger} with intValue() value
-   * Long                 {@link IInteger} with longValue() value
-   * Number               {@link INum} with doubleValue() value
-   * java.util.Collection list of elements
-   *                      1..nth element of the list give the elements of the List()
-   * Object[]             a list of converted objects
-   * int[]                a list of {@link IInteger} integer values
-   * double[]             a vector ASTRealVector of <code>double</code> values
-   * double[][]           a matrix ASTRealMatrix of <code>double</code> values
-   * Complex[]            a list of {@link IComplexNum} values
-   * boolean[]            a list of {@link S#True} or {@link S#False} symbols
-   *
-   * </pre>
-   *
-   * @param object
-   * @return the <code>object</code> converted to a {@link IExpr}}
-   */
-  public static IExpr symjify(final Object object) {
-    return symjify(object, true);
-  }
-
-  /**
-   * Converts and evaluates arbitrary expressions to a Symja type.
-   *
-   * <pre>
-   * Java Object       -&gt; Symja object
-   * -------------------------------------
-   * null object          {@link S#Null} symbol
-   * IExpr                {@link IExpr} type
-   * Boolean              {@link S#True} or {@link S#False} symbol
-   * BigInteger           {@link IInteger} value
-   * BigDecimal           {@link INum} with {@link Apfloat#Apfloat(java.math.BigDecimal)} value
-   * Double               {@link INum}  with doubleValue() value
-   * Float                {@link INum}  with doubleValue() value
-   * Integer              {@link IInteger} with intValue() value
-   * Long                 {@link IInteger} with longValue() value
-   * Number               {@link INum} with doubleValue() value
-   * java.util.Collection list of elements
-   *                      1..nth element of the list give the elements of the List()
-   * Object[]             a list of converted objects
-   * int[]                a list of {@link IInteger} integer values
-   * double[]             a vector ASTRealVector of <code>double</code> values
-   * double[][]           a matrix ASTRealMatrix of <code>double</code> values
-   * Complex[]            a list of {@link IComplexNum} values
-   * boolean[]            a list of {@link S#True} or {@link S#False} symbols
-   *
-   * </pre>
-   *
-   * @param object
-   * @param evaluate if <code>true</code> evaluate the parsed string
-   * @return the <code>object</code> converted to an {@link IExpr}}
-   */
-  public static IExpr symjify(final Object object, boolean evaluate) {
-    IExpr temp = Object2Expr.convert(object, true, false);
-    return evaluate ? eval(temp) : temp;
-  }
-
-  /**
-   * Parses and evaluates a Java string to a Symja expression. May throw an SyntaxError exception,
-   * if the string couldn't be parsed.
-   *
-   * @param str the expression which should be parsed
-   * @return
-   * @throws SyntaxError
-   */
-  public static IExpr symjify(final String str) {
-    return symjify(str, true);
-  }
-
-  /**
-   * Parses a Java string to a Symja expression. May throw a SyntaxError exception, if the string
-   * couldn't be parsed.
-   *
-   * @param str the expression which should be parsed
-   * @param evaluate if <code>true</code> evaluate the parsed string
-   * @return
-   * @throws SyntaxError
-   */
-  public static IExpr symjify(final String str, boolean evaluate) {
-    EvalEngine engine = EvalEngine.get();
-    ExprParser parser = new ExprParser(engine);
-    IExpr temp = parser.parse(str);
-    return evaluate ? engine.evaluate(temp) : temp;
-  }
-
-  /**
-   * @param value
-   * @return {@link IInteger} integer value
-   */
-  public static IInteger symjify(final long value) {
-    return ZZ(value);
-  }
-
-  /**
-   * @param value
-   * @return {@link INum} double wrapper
-   */
-  public static INum symjify(final double value) {
-    return num(value);
-  }
-
-  /**
-   * Return {@link S#True} or {@link S#False} symbol
-   *
-   * @param value
-   * @return {@link S#True} or {@link S#False} symbol
-   */
-  public static IBuiltInSymbol symjify(final boolean value) {
-    return value ? True : False;
+  public static ISymbol $rubi(final String symbolName, IFunctionEvaluator evaluator) {
+    String name = symbolNameNormalized(symbolName);
+    ISymbol symbol = org.matheclipse.core.expression.Context.RUBI.get(name);
+    if (symbol != null) {
+      return symbol;
+    }
+    BuiltInRubi bSymbol = new BuiltInRubi(name);
+    bSymbol.setEvaluator(evaluator);
+    org.matheclipse.core.expression.Context.RUBI.put(name, bSymbol);
+    return bSymbol;
   }
 
   /**
@@ -1678,28 +1271,6 @@ public class F extends S {
     return symbol;
   }
 
-  public static ISymbol $rubi(final String symbolName) {
-    return $rubi(symbolName, BuiltInSymbol.DUMMY_EVALUATOR);
-  }
-
-  public static ISymbol $rubi(final String symbolName, IEvaluator evaluator) {
-    String name = symbolNameNormalized(symbolName);
-    ISymbol symbol = org.matheclipse.core.expression.Context.RUBI.get(name);
-    if (symbol != null) {
-      return symbol;
-    }
-    BuiltInRubi bSymbol = new BuiltInRubi(name);
-    bSymbol.setEvaluator(evaluator);
-    org.matheclipse.core.expression.Context.RUBI.put(name, bSymbol);
-    return bSymbol;
-  }
-
-  public static String symbolNameNormalized(final String symbolName) {
-    return ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS
-        ? (symbolName.length() == 1 ? symbolName : symbolName.toLowerCase(Locale.ENGLISH))
-        : symbolName;
-  }
-
   public static final IStringX $str(final char ch) {
     return StringX.valueOf(ch);
   }
@@ -1730,8 +1301,158 @@ public class F extends S {
     return new AST2(AddSides, equationOrInequality, a1);
   }
 
+  public static IAST AiryAi(final IExpr a0) {
+    return new AST1(AiryAi, a0);
+  }
+
+  public static IAST AiryAiPrime(final IExpr a0) {
+    return new AST1(AiryAiPrime, a0);
+  }
+
+  public static IAST AiryBi(final IExpr a0) {
+    return new AST1(AiryBi, a0);
+  }
+
+  public static IAST AiryBiPrime(final IExpr a0) {
+    return new AST1(AiryBiPrime, a0);
+  }
+
+  /**
+   * Calulate the allocation size for a new {@link IAST} object. If <code>predicate#test()</code>
+   * returns <code>true</code> add the arguments {@link IAST#argSize()} to the <code>ast.argSize()
+   * </code>
+   *
+   * @param ast
+   * @param predicate
+   * @return
+   */
+  public static int allocLevel1(final IAST ast, Predicate<IExpr> predicate) {
+    int allocSize = ast.argSize();
+    for (int i = 1; i < ast.size(); i++) {
+      final IExpr arg = ast.get(i);
+      if (predicate.test(arg)) {
+        allocSize += arg.argSize();
+      }
+    }
+    return allocSize;
+  }
+
+  /**
+   * Determine the maximum of the <code>ast</code> {@link IAST#argSize()} and integer number 15,
+   *
+   * @param ast
+   * @return
+   */
+  public static int allocMax16(IAST ast) {
+    return ast.argSize() > 15 ? ast.argSize() : 15;
+  }
+
+  /**
+   * Determine the maximum of the <code>ast</code> {@link IAST#argSize()} and integer number 31,
+   *
+   * @param ast
+   * @return
+   */
+  public static int allocMax32(IAST ast) {
+    return ast.argSize() > 31 ? ast.argSize() : 31;
+  }
+
+  /**
+   * Determine the maximum of the <code>ast</code> {@link IAST#argSize()} and integer number 63,
+   *
+   * @param ast
+   * @return
+   */
+  public static int allocMax64(IAST ast) {
+    return ast.argSize() > 63 ? ast.argSize() : 63;
+  }
+
+  /**
+   * Determine the maximum of the <code>ast</code> {@link IAST#argSize()} and integer number 7,
+   *
+   * @param ast
+   * @return
+   */
+  public static int allocMax8(IAST ast) {
+    return ast.argSize() > 7 ? ast.argSize() : 7;
+  }
+
+  /**
+   * Determine the minimum of the <code>ast</code> {@link IAST#argSize()} and integer number 15
+   *
+   * @param ast
+   * @return
+   */
+  public static int allocMin16(IAST ast) {
+    return ast.argSize() < 15 ? ast.argSize() : 15;
+  }
+
+  /**
+   * Determine the minimum of the <code>size</code> and integer number 15
+   *
+   * @param size
+   * @return
+   */
+  public static int allocMin16(int size) {
+    return size < 15 && size > 0 ? size : 15;
+  }
+
+  /**
+   * Determine the minimum of the <code>ast</code> {@link IAST#argSize()} and integer number 31,
+   *
+   * @param ast
+   * @return
+   */
+  public static int allocMin32(IAST ast) {
+    return ast.argSize() < 31 ? ast.argSize() : 31;
+  }
+
+  /**
+   * Determine the minimum of the <code>size</code> and integer number 31
+   *
+   * @param size
+   * @return
+   */
+  public static int allocMin32(int size) {
+    return size < 31 && size > 0 ? size : 31;
+  }
+
+  /**
+   * Determine the minimum of the <code>ast</code> {@link IAST#argSize()} and integer number 63,
+   *
+   * @param ast
+   * @return
+   */
+  public static int allocMin64(IAST ast) {
+    return ast.argSize() < 63 ? ast.argSize() : 63;
+  }
+
+  /**
+   * Determine the minimum of the <code>ast</code> {@link IAST#argSize()} and integer number 7
+   *
+   * @param ast
+   * @return
+   */
+  public static int allocMin8(IAST ast) {
+    return ast.argSize() < 7 ? ast.argSize() : 7;
+  }
+
+  /**
+   * Determine the minimum of the <code>size</code> and integer number 7
+   *
+   * @param size
+   * @return
+   */
+  public static int allocMin8(int size) {
+    return size < 7 && size > 0 ? size : 7;
+  }
+
   public static IAST Alternatives(final IExpr... a) {
     return function(Alternatives, a);
+  }
+
+  public static IASTMutable AmbientLight(final IExpr color) {
+    return new AST1(AmbientLight, color);
   }
 
   public static IExpr and(IExpr a, Integer i) {
@@ -1752,10 +1473,6 @@ public class F extends S {
 
   public static IASTAppendable And() {
     return ast(And);
-  }
-
-  public static IASTMutable AmbientLight(final IExpr color) {
-    return new AST1(AmbientLight, color);
   }
 
   /**
@@ -1866,42 +1583,6 @@ public class F extends S {
     return new AST2(ApplySides, a0, equationOrInequality);
   }
 
-  public static IAST AiryAi(final IExpr a0) {
-    return new AST1(AiryAi, a0);
-  }
-
-  public static IAST AiryAiPrime(final IExpr a0) {
-    return new AST1(AiryAiPrime, a0);
-  }
-
-  public static IAST AiryBi(final IExpr a0) {
-    return new AST1(AiryBi, a0);
-  }
-
-  public static IAST AiryBiPrime(final IExpr a0) {
-    return new AST1(AiryBiPrime, a0);
-  }
-
-  public static IAST Array(final IExpr a0, final IExpr a1) {
-    return new AST2(Array, a0, a1);
-  }
-
-  public static IAST ArrayDepth(final IExpr a0) {
-    return new AST1(ArrayDepth, a0);
-  }
-
-  public static IAST Arrays(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(Arrays, a0, a1, a2);
-  }
-
-  public static IAST Arrays(final IExpr a0, final IExpr a1) {
-    return new AST2(Arrays, a0, a1);
-  }
-
-  public static IAST Arrays(final IExpr a0) {
-    return new AST1(Arrays, a0);
-  }
-
   public static IAST ArcCos(final IExpr z) {
     return new AST1(ArcCos, z);
   }
@@ -1957,6 +1638,18 @@ public class F extends S {
 
   public static IAST Arg(final IExpr z) {
     return new AST1(Arg, z);
+  }
+
+  public static IAST ArithmeticGeometricMean(final IExpr a0, final IExpr a1) {
+    return new AST2(ArithmeticGeometricMean, a0, a1);
+  }
+
+  public static IAST Array(final IExpr a0, final IExpr a1) {
+    return new AST2(Array, a0, a1);
+  }
+
+  public static IAST ArrayDepth(final IExpr a0) {
+    return new AST1(ArrayDepth, a0);
   }
 
   /**
@@ -2053,22 +1746,20 @@ public class F extends S {
     return new AST3(Arrays, dimension, domain, symmetry);
   }
 
-  public static IAST ArithmeticGeometricMean(final IExpr a0, final IExpr a1) {
-    return new AST2(ArithmeticGeometricMean, a0, a1);
+  public static IAST Arrays(final IExpr a0) {
+    return new AST1(Arrays, a0);
   }
 
-  /**
-   * Create an association data structure <code>&lt;| x0-&gt;y0, x1-&gt;y1, ... |&gt;</code> from a
-   * list of rules <code>{x0-&gt;y0, x1-&gt;y1, ... }</code>.
-   * 
-   * @param listOfRules a list of rules <code>{x0-&gt;y0, x1-&gt;y1, ... }</code>
-   * @return
-   */
-  public static IAssociation assoc(final IAST listOfRules) {
-    if (listOfRules.isAST1() && listOfRules.arg1().isListOfRules(true)) {
-      return new ASTAssociation((IAST) listOfRules.arg1());
-    }
-    return new ASTAssociation(listOfRules);
+  public static IAST Arrays(final IExpr a0, final IExpr a1) {
+    return new AST2(Arrays, a0, a1);
+  }
+
+  public static IAST Arrays(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(Arrays, a0, a1, a2);
+  }
+
+  public static IAssociation assoc() {
+    return new ASTAssociation();
   }
 
   /**
@@ -2100,82 +1791,18 @@ public class F extends S {
     return association;
   }
 
-  public static IAssociation assoc() {
-    return new ASTAssociation();
-  }
-
   /**
-   * Create a sparse array from the list of rules.
-   *
-   * <p>
-   * See: <a href=
-   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SparseArray.md">SparseArray</a>
-   *
-   * @param arrayRulesList
-   * @return a ISparseArray instance or <code>null</code> if a new <code>SparseArrayExpr</code>
-   *         cannot be created.
-   */
-  public static ISparseArray sparseArray(final IAST arrayRulesList) {
-    return SparseArrayExpr.newArrayRules(arrayRulesList, null, -1, C0);
-  }
-
-  /**
-   * Create a sparse array in the given <code>dimension</code> from the list of rules.
-   *
-   * <p>
-   * See: <a href=
-   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SparseArray.md">SparseArray</a>
-   *
-   * @param arrayRulesList
-   * @param dimension
-   * @return a ISparseArray instance or <code>null</code> if a new <code>SparseArrayExpr</code>
-   *         cannot be created.
-   */
-  public static ISparseArray sparseArray(final IAST arrayRulesList, int[] dimension) {
-    return SparseArrayExpr.newArrayRules(arrayRulesList, dimension, 0, C0);
-  }
-
-  /**
-   * Create a sparse array from the dense list representation (for example dense vectors and
-   * matrices)
+   * Create an association data structure <code>&lt;| x0-&gt;y0, x1-&gt;y1, ... |&gt;</code> from a
+   * list of rules <code>{x0-&gt;y0, x1-&gt;y1, ... }</code>.
    * 
-   * @param denseList
-   * @param defaultValue default value for positions not specified in the dense list representation.
-   * @return <code>null</code> if a new <code>SparseArrayExpr</code> cannot be created
+   * @param listOfRules a list of rules <code>{x0-&gt;y0, x1-&gt;y1, ... }</code>
+   * @return
    */
-  public static ISparseArray sparseArray(final IAST denseList, IExpr defaultValue) {
-    return SparseArrayExpr.newDenseList(denseList, defaultValue);
-  }
-
-  /**
-   * Generate a <code>n x m</code> sparse matrix. The indices start in Java convention with
-   * <code>0</code>.
-   *
-   * @param binaryFunction if the returned value unequals <code>0</code>, the value will be stored
-   *        in the sparse matrix
-   * @param n the number of rows of the matrix.
-   * @param m the number of columns of the matrix.
-   * @return <code>null</code> if a new sparse matrix cannot be created
-   */
-  public static ISparseArray sparseMatrix(BiIntFunction<? extends IExpr> binaryFunction, int n,
-      int m) {
-    if (n > Config.MAX_MATRIX_DIMENSION_SIZE || m > Config.MAX_MATRIX_DIMENSION_SIZE) {
-      ASTElementLimitExceeded.throwIt(((long) n) * ((long) m));
+  public static IAssociation assoc(final IAST listOfRules) {
+    if (listOfRules.isAST1() && listOfRules.arg1().isListOfRules(true)) {
+      return new ASTAssociation((IAST) listOfRules.arg1());
     }
-    int[] dimension = new int[] {n, m};
-    SparseArrayExpr sparseMatrix = SparseArrayExpr.newArrayRules(F.CEmptyList, dimension, 0, C0);
-    if (sparseMatrix == null) {
-      return null;
-    }
-    for (int i = 0; i < n; i++) {
-      for (int j = 0; j < m; j++) {
-        IExpr value = binaryFunction.apply(i, j);
-        if (!value.isZero()) {
-          sparseMatrix.set(new int[] {i + 1, j + 1}, value);
-        }
-      }
-    }
-    return sparseMatrix;
+    return new ASTAssociation(listOfRules);
   }
 
   /**
@@ -2221,6 +1848,34 @@ public class F extends S {
   }
 
   /**
+   * Create a new abstract syntax tree (AST). Elements can be added at the end of the created AST
+   * instance with the {@link IASTAppendable#append(IExpr)} method.
+   *
+   * @param head the header expression of the function. If the ast represents a function like <code>
+   *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+   * @param collection the collection which holds the elements which should be appended
+   * @return
+   */
+  public static IASTAppendable ast(final IExpr head, Collection<? extends IExpr> collection) {
+    return ast(head, collection, 0);
+  }
+
+  /**
+   * @param head the header expression of the function. If the ast represents a function like <code>
+   *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+   * @param collection the collection which holds the elements which should be appended
+   * @param initialCapacity the additional capacity added to the collections size (i.e. number of
+   *        arguments without the header element) of the list.
+   * @return
+   */
+  public static IASTAppendable ast(final IExpr head, Collection<? extends IExpr> collection,
+      int initialCapacity) {
+    IASTAppendable result = ast(head, collection.size() + initialCapacity);
+    result.appendAll(collection);
+    return result;
+  }
+
+  /**
    * Create a new abstract syntax tree (AST). Elements can be added to the end of the created AST
    * instance with the {@link IASTAppendable#append(IExpr)} method.
    *
@@ -2255,88 +1910,6 @@ public class F extends S {
   }
 
   /**
-   * Create a new abstract syntax tree (AST). Elements can be added at the end of the created AST
-   * instance with the {@link IASTAppendable#append(IExpr)} method.
-   *
-   * @param head the header expression of the function. If the ast represents a function like <code>
-   *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
-   * @param collection the collection which holds the elements which should be appended
-   * @return
-   */
-  public static IASTAppendable ast(final IExpr head, Collection<? extends IExpr> collection) {
-    return ast(head, collection, 0);
-  }
-
-  /**
-   * @param head the header expression of the function. If the ast represents a function like <code>
-   *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
-   * @param collection the collection which holds the elements which should be appended
-   * @param initialCapacity the additional capacity added to the collections size (i.e. number of
-   *        arguments without the header element) of the list.
-   * @return
-   */
-  public static IASTAppendable ast(final IExpr head, Collection<? extends IExpr> collection,
-      int initialCapacity) {
-    IASTAppendable result = ast(head, collection.size() + initialCapacity);
-    result.appendAll(collection);
-    return result;
-  }
-
-  /**
-   * Create a new abstract syntax tree (AST) with pre- allocated elements set to <code>null</code>.
-   * Elements can be set in the created <code>IASTMutable</code> instance with the
-   * {@link IASTMutable#set(int, IExpr)} method.
-   *
-   * @param head the header expression of the function. If the ast represents a function like <code>
-   *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type
-   *        {@link ISymbol}
-   * @param initialCapacity the initial capacity (i.e. number of arguments without the header
-   *        element) of the list.
-   * @return a new {@link IASTMutable} instance with the given <code>head</code> and initial
-   *         capacity
-   */
-  public static IASTMutable astMutable(final IExpr head, final int initialCapacity) {
-    switch (initialCapacity) {
-      case 1:
-        return F.unaryAST1(head, F.Slot1);
-      case 2:
-        return F.binaryAST2(head, F.Slot1, F.Slot2);
-      case 3:
-        return F.ternaryAST3(head, F.Slot1, F.Slot2, F.Slot3);
-    }
-    return AST.newInstance(initialCapacity, head, true);
-  }
-
-  /**
-   * Create a new <code>List()</code> with <code>copies</code> number of arguments, which are set to
-   * <code>value</code>.
-   *
-   * @param value initialize all elements with <code>value</code>.
-   * @param copies the initial capacity (i.e. number of arguments without the header element) of the
-   *        list.
-   * @return
-   */
-  public static IASTAppendable constantArray(final IExpr value, final int copies) {
-    return value.constantArray(List, 0, copies);
-  }
-
-  /**
-   * Create a new abstract syntax tree (AST) with a <code>head</code> and <code>copies</code> number
-   * of arguments, which are set to <code>value</code>.
-   *
-   * @param head the header expression of the function. If the ast represents a function like <code>
-   *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
-   * @param value initialize all elements with <code>value</code>.
-   * @param copies the initial capacity (i.e. number of arguments without the header element) of the
-   *        list.
-   * @return
-   */
-  public static IASTAppendable constantArray(final IExpr head, final IExpr value,
-      final int copies) {
-    return value.constantArray(head, 0, copies);
-  }
-
-  /**
    * Create a new function expression (AST - abstract syntax tree).
    *
    * @param arr an array of arguments for this function expression
@@ -2346,6 +1919,21 @@ public class F extends S {
    */
   public static IASTAppendable ast(final IExpr[] arr, final IExpr head) {
     return new AST(head, arr);
+  }
+
+  /**
+   * Create a new function expression (AST - abstract syntax tree), where all arguments are Java
+   * {@link ComplexNum} values.
+   *
+   * @param head
+   * @param evalComplex if <code>true</code> test if the imaginary part of the complex number is
+   *        zero and insert a {@link Num} real value.
+   * @param arr the complex number arguments
+   * @return
+   */
+  public static IASTAppendable ast(final ISymbol head, boolean evalComplex,
+      org.hipparchus.complex.Complex[] arr) {
+    return AST.newInstance(head, evalComplex, arr);
   }
 
   /**
@@ -2375,18 +1963,28 @@ public class F extends S {
   }
 
   /**
-   * Create a new function expression (AST - abstract syntax tree), where all arguments are Java
-   * {@link ComplexNum} values.
+   * Create a new abstract syntax tree (AST) with pre- allocated elements set to <code>null</code>.
+   * Elements can be set in the created <code>IASTMutable</code> instance with the
+   * {@link IASTMutable#set(int, IExpr)} method.
    *
-   * @param head
-   * @param evalComplex if <code>true</code> test if the imaginary part of the complex number is
-   *        zero and insert a {@link Num} real value.
-   * @param arr the complex number arguments
-   * @return
+   * @param head the header expression of the function. If the ast represents a function like <code>
+   *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type
+   *        {@link ISymbol}
+   * @param initialCapacity the initial capacity (i.e. number of arguments without the header
+   *        element) of the list.
+   * @return a new {@link IASTMutable} instance with the given <code>head</code> and initial
+   *         capacity
    */
-  public static IASTAppendable ast(final ISymbol head, boolean evalComplex,
-      org.hipparchus.complex.Complex[] arr) {
-    return AST.newInstance(head, evalComplex, arr);
+  public static IASTMutable astMutable(final IExpr head, final int initialCapacity) {
+    switch (initialCapacity) {
+      case 1:
+        return F.unaryAST1(head, F.Slot1);
+      case 2:
+        return F.binaryAST2(head, F.Slot1, F.Slot2);
+      case 3:
+        return F.ternaryAST3(head, F.Slot1, F.Slot2, F.Slot3);
+    }
+    return AST.newInstance(initialCapacity, head, true);
   }
 
   /**
@@ -2431,6 +2029,11 @@ public class F extends S {
     return new AST1(Attributes, a);
   }
 
+  /** Causes the current thread to wait until the main initialization has finished. */
+  public static final void await() throws InterruptedException {
+    COUNT_DOWN_LATCH.await();
+  }
+
   public static IAST BaseForm(final IExpr a0, final IExpr a1) {
     return new AST2(BaseForm, a0, a1);
   }
@@ -2456,6 +2059,10 @@ public class F extends S {
     return new AST2(BellB, a0, a1);
   }
 
+  public static IAST BellY(final IExpr a0, final IExpr a1) {
+    return new AST2(BellY, a0, a1);
+  }
+
   public static IAST BellY(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(BellY, a0, a1, a2);
   }
@@ -2472,146 +2079,6 @@ public class F extends S {
     return new AST1(BernoulliDistribution, a0);
   }
 
-  /**
-   * Create a function <code>head(arg1, arg2)</code> with 2 arguments without evaluation.
-   *
-   * @param head
-   * @param arg1
-   * @param arg2
-   * @return
-   */
-  public static final IASTAppendable binary(final IExpr head, final IExpr arg1, final IExpr arg2) {
-    return new AST(new IExpr[] {head, arg1, arg2});
-  }
-
-  /**
-   * Create a function <code>head(arg1, arg2)</code> with 2 argument as an <code>AST2</code> mutable
-   * object without evaluation.
-   *
-   * @param head
-   * @param arg1
-   * @param arg2
-   * @return
-   */
-  public static final IASTMutable binaryAST2(final IExpr head, final IExpr arg1, final IExpr arg2) {
-    return new AST2(head, arg1, arg2);
-  }
-
-  public static final IASTMutable binaryAST2(final IExpr head, final String arg1,
-      final IExpr arg2) {
-    return new AST2(head, $str(arg1), arg2);
-  }
-
-  public static final IASTMutable binaryAST2(final IExpr head, final String arg1,
-      final String arg2) {
-    return new AST2(head, $str(arg1), $str(arg2));
-  }
-
-  public static IAST Binomial(final IExpr a0, final IExpr a1) {
-    return new AST2(Binomial, a0, a1);
-  }
-
-  public static IAST Binomial(final int a0, final int a1) {
-    return new AST2(Binomial, ZZ(a0), ZZ(a1));
-  }
-
-  public static IAST BlankSequence() {
-    return new AST0(BlankSequence);
-  }
-
-  public static IAST Block(final IExpr a0, final IExpr a1) {
-    return new AST2(Block, a0, a1);
-  }
-
-  /**
-   * Returns symbol "True" or "False" (type ISymbol) depending on the boolean value.
-   *
-   * @param value
-   * @return
-   * @deprecated use {@link #booleSymbol(boolean)} instead
-   */
-  @Deprecated
-  public static ISymbol bool(final boolean value) {
-    return booleSymbol(value);
-  }
-
-  /**
-   * Returns symbol "True" or "False" (type ISymbol) depending on the boolean value.
-   *
-   * @param value
-   * @return
-   */
-  public static ISymbol booleSymbol(final boolean value) {
-    return value ? True : False;
-  }
-
-  /**
-   * Returns integers 1 or 0 (type ISymbol) depending on the boolean value <code>true</code> or
-   * <code>false</code>.
-   *
-   * @param value
-   * @return
-   */
-  public static IInteger booleInteger(final boolean value) {
-    return value ? F.C1 : F.C0;
-  }
-
-  public static IAST Boole(final IExpr a) {
-    return new AST1(Boole, a);
-  }
-
-  public static IAST BooleanConvert(final IExpr a0, final IExpr a1) {
-    return new AST2(BooleanConvert, a0, a1);
-  }
-
-  /**
-   *
-   *
-   * <pre>
-   * BooleanQ(expr)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * returns <code>True</code> if <code>expr</code> is either <code>True</code> or <code>False
-   * </code>.
-   *
-   * </blockquote>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; BooleanQ(True)
-   * True
-   * &gt;&gt; BooleanQ(False)
-   * True
-   * &gt;&gt; BooleanQ(a)
-   * False
-   * &gt;&gt; BooleanQ(1 &lt; 2)
-   * True
-   * &gt;&gt; BooleanQ("string")
-   * False
-   * &gt;&gt; BooleanQ(Together(x/y + y/x))
-   * False
-   * </pre>
-   */
-  public static IAST BooleanQ(final IExpr a) {
-    return new AST1(BooleanQ, a);
-  }
-
-  public static IAST BooleanMinimize(final IExpr a) {
-    return new AST1(BooleanMinimize, a);
-  }
-
-  public static IAST BooleanTable(final IExpr a0, final IExpr a1) {
-    return new AST2(BooleanTable, a0, a1);
-  }
-
-  public static IAST BooleanVariables(final IExpr a0) {
-    return new AST1(BooleanVariables, a0);
-  }
-
   public static IAST BesselI(final IExpr a0, final IExpr a1) {
     return new AST2(BesselI, a0, a1);
   }
@@ -2620,12 +2087,12 @@ public class F extends S {
     return new AST2(BesselJ, a0, a1);
   }
 
-  public static IAST BesselY(final IExpr a0, final IExpr a1) {
-    return new AST2(BesselY, a0, a1);
-  }
-
   public static IAST BesselK(final IExpr a0, final IExpr a1) {
     return new AST2(BesselK, a0, a1);
+  }
+
+  public static IAST BesselY(final IExpr a0, final IExpr a1) {
+    return new AST2(BesselY, a0, a1);
   }
 
   /**
@@ -2673,8 +2140,148 @@ public class F extends S {
     return quaternary(BetaRegularized, a0, a1, a2, a3);
   }
 
+  /**
+   * Create a function <code>head(arg1, arg2)</code> with 2 arguments without evaluation.
+   *
+   * @param head
+   * @param arg1
+   * @param arg2
+   * @return
+   */
+  public static final IASTAppendable binary(final IExpr head, final IExpr arg1, final IExpr arg2) {
+    return new AST(new IExpr[] {head, arg1, arg2});
+  }
+
+  /**
+   * Create a function <code>head(arg1, arg2)</code> with 2 argument as an <code>AST2</code> mutable
+   * object without evaluation.
+   *
+   * @param head
+   * @param arg1
+   * @param arg2
+   * @return
+   */
+  public static final IASTMutable binaryAST2(final IExpr head, final IExpr arg1, final IExpr arg2) {
+    return new AST2(head, arg1, arg2);
+  }
+
+  public static final IASTMutable binaryAST2(final IExpr head, final String arg1,
+      final IExpr arg2) {
+    return new AST2(head, $str(arg1), arg2);
+  }
+
+  public static final IASTMutable binaryAST2(final IExpr head, final String arg1,
+      final String arg2) {
+    return new AST2(head, $str(arg1), $str(arg2));
+  }
+
+  public static IAST Binomial(final IExpr a0, final IExpr a1) {
+    return new AST2(Binomial, a0, a1);
+  }
+
+  public static IAST Binomial(final int a0, final int a1) {
+    return new AST2(Binomial, ZZ(a0), ZZ(a1));
+  }
+
   public static IAST BinomialDistribution(final IExpr a0, final IExpr a1) {
     return new AST2(BinomialDistribution, a0, a1);
+  }
+
+  public static IAST BlankSequence() {
+    return new AST0(BlankSequence);
+  }
+
+  public static IAST Block(final IExpr a0, final IExpr a1) {
+    return new AST2(Block, a0, a1);
+  }
+
+  /**
+   * Returns symbol "True" or "False" (type ISymbol) depending on the boolean value.
+   *
+   * @param value
+   * @return
+   * @deprecated use {@link #booleSymbol(boolean)} instead
+   */
+  @Deprecated
+  public static ISymbol bool(final boolean value) {
+    return booleSymbol(value);
+  }
+
+  public static IAST Boole(final IExpr a) {
+    return new AST1(Boole, a);
+  }
+
+  public static IAST BooleanConvert(final IExpr a0, final IExpr a1) {
+    return new AST2(BooleanConvert, a0, a1);
+  }
+
+  public static IAST BooleanMinimize(final IExpr a) {
+    return new AST1(BooleanMinimize, a);
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * BooleanQ(expr)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * returns <code>True</code> if <code>expr</code> is either <code>True</code> or <code>False
+   * </code>.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * &gt;&gt; BooleanQ(True)
+   * True
+   * &gt;&gt; BooleanQ(False)
+   * True
+   * &gt;&gt; BooleanQ(a)
+   * False
+   * &gt;&gt; BooleanQ(1 &lt; 2)
+   * True
+   * &gt;&gt; BooleanQ("string")
+   * False
+   * &gt;&gt; BooleanQ(Together(x/y + y/x))
+   * False
+   * </pre>
+   */
+  public static IAST BooleanQ(final IExpr a) {
+    return new AST1(BooleanQ, a);
+  }
+
+  public static IAST BooleanTable(final IExpr a0, final IExpr a1) {
+    return new AST2(BooleanTable, a0, a1);
+  }
+
+  public static IAST BooleanVariables(final IExpr a0) {
+    return new AST1(BooleanVariables, a0);
+  }
+
+  /**
+   * Returns integers 1 or 0 (type ISymbol) depending on the boolean value <code>true</code> or
+   * <code>false</code>.
+   *
+   * @param value
+   * @return
+   */
+  public static IInteger booleInteger(final boolean value) {
+    return value ? F.C1 : F.C0;
+  }
+
+  /**
+   * Returns symbol "True" or "False" (type ISymbol) depending on the boolean value.
+   *
+   * @param value
+   * @return
+   */
+  public static ISymbol booleSymbol(final boolean value) {
+    return value ? True : False;
   }
 
   public static IAST Break() {
@@ -2724,6 +2331,10 @@ public class F extends S {
     return new AST1(CarmichaelLambda, a0);
   }
 
+  public static IAST Cases(final IExpr a0, final IExpr a1) {
+    return new AST2(Cases, a0, a1);
+  }
+
   /**
    * Converts a given object into a MathEclipse IExpr expression
    *
@@ -2754,10 +2365,6 @@ public class F extends S {
    */
   public static IExpr cast(Object obj) {
     return Object2Expr.convert(obj, true, false);
-  }
-
-  public static IAST Cases(final IExpr a0, final IExpr a1) {
-    return new AST2(Cases, a0, a1);
   }
 
   public static IAST CatalanNumber(final IExpr a) {
@@ -2794,6 +2401,17 @@ public class F extends S {
   }
 
   /**
+   * Create a symbolic complex number <code>real + I * imag</code>.
+   * 
+   * @param real the real part of the complex number
+   * @param imag the imaginary part of the complex number
+   * @return
+   */
+  public static IComplex CC(final long real, final long imag) {
+    return ComplexSym.valueOf(real, 1, imag, 1);
+  }
+
+  /**
    * Create a symbolic complex number
    * <code>(realNumerator/realDenominator) + I * (imagNumerator/imagDenominator)</code>
    *
@@ -2808,17 +2426,6 @@ public class F extends S {
     return ComplexSym.valueOf(realNumerator, realDenominator, imagNumerator, imagDenominator);
   }
 
-  /**
-   * Create a symbolic complex number <code>real + I * imag</code>.
-   * 
-   * @param real the real part of the complex number
-   * @param imag the imaginary part of the complex number
-   * @return
-   */
-  public static IComplex CC(final long real, final long imag) {
-    return ComplexSym.valueOf(real, 1, imag, 1);
-  }
-
   public static IAST CDF(final IExpr distribution) {
     return new AST1(CDF, distribution);
   }
@@ -2831,12 +2438,8 @@ public class F extends S {
     return new AST1(Ceiling, z);
   }
 
-  public static IAST ChebyshevT(final IExpr a0, final IExpr a1) {
-    return new AST2(ChebyshevT, a0, a1);
-  }
-
-  public static IAST ChebyshevU(final IExpr a0, final IExpr a1) {
-    return new AST2(ChebyshevU, a0, a1);
+  public static IAST CentralMoment(final IExpr a0, final int r) {
+    return new AST2(CentralMoment, a0, F.ZZ(r));
   }
 
   /**
@@ -2851,8 +2454,50 @@ public class F extends S {
     return new AST2(CharacteristicPolynomial, matrix, variable);
   }
 
+  public static IAST ChebyshevT(final IExpr a0, final IExpr a1) {
+    return new AST2(ChebyshevT, a0, a1);
+  }
+
+  public static IAST ChebyshevU(final IExpr a0, final IExpr a1) {
+    return new AST2(ChebyshevU, a0, a1);
+  }
+
   public static IAST Chop(final IExpr a0) {
     return new AST1(Chop, a0);
+  }
+
+  /**
+   * Set real or imaginary parts of a numeric argument to zero, those absolute value is less than
+   * <code>Config.DEFAULT_CHOP_DELTA</code>
+   *
+   * @param arg a numeric number
+   * @return <code>arg</code> if the argument couldn't be chopped
+   */
+  public static org.hipparchus.complex.Complex chopComplex(org.hipparchus.complex.Complex arg) {
+    return chopComplex(arg, Config.DEFAULT_CHOP_DELTA);
+  }
+
+  /**
+   * Set real or imaginary parts of a numeric argument to zero, those absolute value is less than a
+   * delta.
+   *
+   * @param arg a numeric number
+   * @param delta the delta for which the number should be set to zero
+   * @return <code>arg</code> if the argument couldn't be chopped
+   */
+  public static org.hipparchus.complex.Complex chopComplex(org.hipparchus.complex.Complex arg,
+      double delta) {
+    org.hipparchus.complex.Complex c = arg;
+    if (isZero(c.getReal(), delta)) {
+      if (isZero(c.getImaginary(), delta)) {
+        return org.hipparchus.complex.Complex.ZERO;
+      }
+      return new org.hipparchus.complex.Complex(0.0, c.getImaginary());
+    }
+    if (isZero(c.getImaginary(), delta)) {
+      return new org.hipparchus.complex.Complex(c.getReal());
+    }
+    return arg;
   }
 
   public static IExpr chopExpr(IExpr arg, double delta) {
@@ -2920,46 +2565,8 @@ public class F extends S {
     return arg;
   }
 
-  /**
-   * Set real or imaginary parts of a numeric argument to zero, those absolute value is less than
-   * <code>Config.DEFAULT_CHOP_DELTA</code>
-   *
-   * @param arg a numeric number
-   * @return <code>arg</code> if the argument couldn't be chopped
-   */
-  public static org.hipparchus.complex.Complex chopComplex(org.hipparchus.complex.Complex arg) {
-    return chopComplex(arg, Config.DEFAULT_CHOP_DELTA);
-  }
-
-  /**
-   * Set real or imaginary parts of a numeric argument to zero, those absolute value is less than a
-   * delta.
-   *
-   * @param arg a numeric number
-   * @param delta the delta for which the number should be set to zero
-   * @return <code>arg</code> if the argument couldn't be chopped
-   */
-  public static org.hipparchus.complex.Complex chopComplex(org.hipparchus.complex.Complex arg,
-      double delta) {
-    org.hipparchus.complex.Complex c = arg;
-    if (isZero(c.getReal(), delta)) {
-      if (isZero(c.getImaginary(), delta)) {
-        return org.hipparchus.complex.Complex.ZERO;
-      }
-      return new org.hipparchus.complex.Complex(0.0, c.getImaginary());
-    }
-    if (isZero(c.getImaginary(), delta)) {
-      return new org.hipparchus.complex.Complex(c.getReal());
-    }
-    return arg;
-  }
-
   public static IAST Circle(final IAST originList) {
     return new AST1(Circle, originList);
-  }
-
-  public static IAST CentralMoment(final IExpr a0, final int r) {
-    return new AST2(CentralMoment, a0, F.ZZ(r));
   }
 
   public static IAST Clear(final IExpr... a) {
@@ -3104,21 +2711,6 @@ public class F extends S {
         AbstractFractionSym.valueOfEpsilon(imagPart, epsilon));
   }
 
-
-  /**
-   * Create a symbolic complex number.
-   *
-   * @param realPart the real double value which should be converted to the real part of symbolic a
-   *        complex number
-   * @param imagPart the imaginary double value which should be converted to the imaginary part of
-   *        symbolic a complex number
-   * @return
-   */
-  public static IComplex complexConvergent(final double realPart, final double imagPart) {
-    return ComplexSym.valueOf(AbstractFractionSym.valueOfConvergent(realPart),
-        AbstractFractionSym.valueOfConvergent(imagPart));
-  }
-
   /**
    * <p>
    * Create a symbolic complex number
@@ -3173,6 +2765,20 @@ public class F extends S {
   }
 
   /**
+   * Create a symbolic complex number.
+   *
+   * @param realPart the real double value which should be converted to the real part of symbolic a
+   *        complex number
+   * @param imagPart the imaginary double value which should be converted to the imaginary part of
+   *        symbolic a complex number
+   * @return
+   */
+  public static IComplex complexConvergent(final double realPart, final double imagPart) {
+    return ComplexSym.valueOf(AbstractFractionSym.valueOfConvergent(realPart),
+        AbstractFractionSym.valueOfConvergent(imagPart));
+  }
+
+  /**
    * Return a {@link ApcomplexNum} which wraps a {@link Apcomplex} arbitrary precision
    * floating-point complex number.
    * 
@@ -3197,7 +2803,6 @@ public class F extends S {
     return ApcomplexNum.valueOf(realPart, Apcomplex.ZERO);
   }
 
-
   /**
    * Return a {@link ApcomplexNum} which wraps two {@link Apfloat} arbitrary precision
    * floating-point numbers for the real and imaginary part.
@@ -3212,21 +2817,6 @@ public class F extends S {
   }
 
   /**
-   * Return a {@link ApcomplexNum} which wraps two {@link Apfloat} arbitrary precision
-   * floating-point numbers for the real and imaginary part.
-   * 
-   * @param realPart
-   * @param imaginaryPart
-   * @param precision
-   * @return a {@link ApcomplexNum} which wraps two {@link Apfloat} arbitrary precision
-   *         floating-point numbers for the real and imaginary part.
-   */
-  public static IComplexNum complexNum(String realPart, String imaginaryPart, long precision) {
-    return ApcomplexNum.valueOf(new Apfloat(realPart, precision),
-        new Apfloat(imaginaryPart, precision));
-  }
-
-  /**
    * Return a {@link ComplexNum} which wraps a {@link Complex} number with Java double values for
    * the real and imaginary part.
    * 
@@ -3238,20 +2828,6 @@ public class F extends S {
   }
 
   /**
-   * Return a {@link ComplexNum} which wraps a {@link Complex} number or a {@link Num}, if the
-   * imaginary part is zerro.
-   * 
-   * @param c
-   * @return
-   */
-  public static IInexactNumber complexReduced(final Complex c) {
-    if (F.isZero(c.getImaginary())) {
-      return Num.valueOf(c.getReal());
-    }
-    return ComplexNum.valueOf(c);
-  }
-
-  /**
    * Create a complex numeric number with imaginary part = 0.0
    *
    * @param r the real part of the number
@@ -3259,21 +2835,6 @@ public class F extends S {
    */
   public static IComplexNum complexNum(final double r) {
     return complexNum(r, 0.0);
-  }
-
-  /**
-   * Return a {@link Num} which wraps a double number, if the imaginary part is <code>0.0</code> or
-   * a {@ComplexNum} which wraps a {@link Complex} number with Java double values for the real and
-   * imaginary part.
-   * 
-   * @param c the complex number
-   * @return
-   */
-  public static IInexactNumber inexactNum(final Complex c) {
-    if (c.getImaginary() == 0.0 || c.getImaginary() == -0.0) {
-      return Num.valueOf(c.getReal());
-    }
-    return ComplexNum.valueOf(c);
   }
 
   /**
@@ -3333,53 +2894,34 @@ public class F extends S {
     return complexNum(value.doubleValue(), 0.0d);
   }
 
+
   /**
-   * Perform &quot;common subexpression elimination&quot; (CSE) on an expression.
+   * Return a {@link ApcomplexNum} which wraps two {@link Apfloat} arbitrary precision
+   * floating-point numbers for the real and imaginary part.
    * 
-   * @param expr
-   * @return the pair of <code>{shared-expressions, recursive-replacement-rules}</code>
+   * @param realPart
+   * @param imaginaryPart
+   * @param precision
+   * @return a {@link ApcomplexNum} which wraps two {@link Apfloat} arbitrary precision
+   *         floating-point numbers for the real and imaginary part.
    */
-  public static IAST cse(IExpr expr) {
-    return cse(expr, () -> "v");
+  public static IComplexNum complexNum(String realPart, String imaginaryPart, long precision) {
+    return ApcomplexNum.valueOf(new Apfloat(realPart, precision),
+        new Apfloat(imaginaryPart, precision));
   }
 
   /**
-   * Perform &quot;common subexpression elimination&quot; (CSE) on an expression.
+   * Return a {@link ComplexNum} which wraps a {@link Complex} number or a {@link Num}, if the
+   * imaginary part is zerro.
    * 
-   * @param expr
-   * @param variablePrefix the prefix string, which should be used for the variable names
-   * @return the pair of <code>{shared-expressions, recursive-replacement-rules}</code>
+   * @param c
+   * @return
    */
-  public static IAST cse(IExpr expr, Supplier<String> variablePrefix) {
-    if (expr.isAST()) {
-      IASTMutable mutable = ((IAST) expr).copy();
-      return org.matheclipse.core.reflection.system.OptimizeExpression.cse(mutable, variablePrefix);
+  public static IInexactNumber complexReduced(final Complex c) {
+    if (F.isZero(c.getImaginary())) {
+      return Num.valueOf(c.getReal());
     }
-    return F.List(expr, F.CEmptyList);
-  }
-
-  /**
-   * Perform &quot;common subexpression elimination&quot; (CSE) on an expression and create Java
-   * source code in the given {@link StringBuilder}.
-   * 
-   * @param expr
-   * @param buf
-   */
-  public static void cseAsJava(IExpr expr, StringBuilder buf) {
-    cseAsJava(expr, () -> "v", buf);
-  }
-
-  /**
-   * Perform &quot;common subexpression elimination&quot; (CSE) on an expression and create Java
-   * source code in the given {@link StringBuilder}.
-   * 
-   * @param expr
-   * @param variablePrefix the prefix string, which should be used for the variable names
-   * @param buf
-   */
-  public static void cseAsJava(IExpr expr, Supplier<String> variablePrefix, StringBuilder buf) {
-    IAST csePair = cse(expr, variablePrefix);
-    org.matheclipse.core.reflection.system.OptimizeExpression.csePairAsJava(csePair, buf);
+    return ComplexNum.valueOf(c);
   }
 
   /**
@@ -3394,30 +2936,6 @@ public class F extends S {
    */
   public static IAST CompoundExpression(final IExpr... expr) {
     return function(CompoundExpression, expr);
-  }
-
-  /**
-   * Create a new abstract syntax tree (AST).
-   *
-   * @param head the header symbol of the function. If the ast represents a function like <code>
-   *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
-   * @param a
-   * @return
-   */
-  public static IASTMutable function(IExpr head, final IExpr... a) {
-    final int size = a.length;
-    switch (size) {
-      case 0:
-        return new AST0(head);
-      case 1:
-        return new AST1(head, a[0]);
-      case 2:
-        return new AST2(head, a[0], a[1]);
-      case 3:
-        return new AST3(head, a[0], a[1], a[2]);
-      default:
-        return new AST(head, a);
-    }
   }
 
   /**
@@ -3448,16 +2966,46 @@ public class F extends S {
     return new AST2(Cone, matrix, radius);
   }
 
+
   public static IAST Conjugate(final IExpr a0) {
     return new AST1(Conjugate, a0);
   }
 
-  public static IAST ConstantArray(final IExpr a0, final IExpr a1) {
-    return new AST2(ConstantArray, a0, a1);
-  }
-
   public static IAST ConjugateTranspose(final IExpr a0) {
     return new AST1(ConjugateTranspose, a0);
+  }
+
+  /**
+   * Create a new abstract syntax tree (AST) with a <code>head</code> and <code>copies</code> number
+   * of arguments, which are set to <code>value</code>.
+   *
+   * @param head the header expression of the function. If the ast represents a function like <code>
+   *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+   * @param value initialize all elements with <code>value</code>.
+   * @param copies the initial capacity (i.e. number of arguments without the header element) of the
+   *        list.
+   * @return
+   */
+  public static IASTAppendable constantArray(final IExpr head, final IExpr value,
+      final int copies) {
+    return value.constantArray(head, 0, copies);
+  }
+
+  /**
+   * Create a new <code>List()</code> with <code>copies</code> number of arguments, which are set to
+   * <code>value</code>.
+   *
+   * @param value initialize all elements with <code>value</code>.
+   * @param copies the initial capacity (i.e. number of arguments without the header element) of the
+   *        list.
+   * @return
+   */
+  public static IASTAppendable constantArray(final IExpr value, final int copies) {
+    return value.constantArray(List, 0, copies);
+  }
+
+  public static IAST ConstantArray(final IExpr a0, final IExpr a1) {
+    return new AST2(ConstantArray, a0, a1);
   }
 
   public static IAST Continue() {
@@ -3542,6 +3090,56 @@ public class F extends S {
     return new AST2(Covariance, a0, a1);
   }
 
+  private static void createInverseFunctionMap() {
+    UNARY_INVERSE_FUNCTIONS.put(Abs, Function(Times(CN1, Slot1)));
+    UNARY_INVERSE_FUNCTIONS.put(Conjugate, Conjugate);
+    UNARY_INVERSE_FUNCTIONS.put(ProductLog, Function(Times(Slot1, Power(E, Slot1))));
+    UNARY_INVERSE_FUNCTIONS.put(Cos, ArcCos);
+    UNARY_INVERSE_FUNCTIONS.put(Cot, ArcCot);
+    UNARY_INVERSE_FUNCTIONS.put(Csc, ArcCsc);
+    UNARY_INVERSE_FUNCTIONS.put(Sec, ArcSec);
+    UNARY_INVERSE_FUNCTIONS.put(Sin, ArcSin);
+    UNARY_INVERSE_FUNCTIONS.put(Tan, ArcTan);
+
+    UNARY_INVERSE_FUNCTIONS.put(ArcCos, Cos);
+    UNARY_INVERSE_FUNCTIONS.put(ArcCot, Cot);
+    UNARY_INVERSE_FUNCTIONS.put(ArcCsc, Csc);
+    UNARY_INVERSE_FUNCTIONS.put(ArcSec, Sec);
+    UNARY_INVERSE_FUNCTIONS.put(ArcSin, Sin);
+    UNARY_INVERSE_FUNCTIONS.put(ArcTan, Tan);
+    UNARY_INVERSE_FUNCTIONS.put(Cosh, ArcCosh);
+    UNARY_INVERSE_FUNCTIONS.put(Coth, ArcCoth);
+    UNARY_INVERSE_FUNCTIONS.put(Csch, ArcCsch);
+    UNARY_INVERSE_FUNCTIONS.put(Sech, ArcSech);
+    UNARY_INVERSE_FUNCTIONS.put(Sinh, ArcSinh);
+    UNARY_INVERSE_FUNCTIONS.put(Tanh, ArcTanh);
+    UNARY_INVERSE_FUNCTIONS.put(ArcCosh, Cosh);
+    UNARY_INVERSE_FUNCTIONS.put(ArcCoth, Coth);
+    UNARY_INVERSE_FUNCTIONS.put(ArcCsch, Csch);
+    UNARY_INVERSE_FUNCTIONS.put(ArcSech, Sech);
+    UNARY_INVERSE_FUNCTIONS.put(ArcSinh, Sinh);
+    UNARY_INVERSE_FUNCTIONS.put(ArcTanh, Tanh);
+    UNARY_INVERSE_FUNCTIONS.put(Log, Exp);
+    UNARY_INVERSE_FUNCTIONS.put(Log2, F.Function(F.Power(F.C2, F.Slot1)));
+    UNARY_INVERSE_FUNCTIONS.put(Log10, F.Function(F.Power(F.C10, F.Slot1)));
+    UNARY_INVERSE_FUNCTIONS.put(Identity, Identity);
+
+    UNARY_INVERSE_FUNCTIONS.put(Conjugate, Conjugate);
+    UNARY_INVERSE_FUNCTIONS.put(Erf, InverseErf);
+    UNARY_INVERSE_FUNCTIONS.put(Erfc, InverseErfc);
+    UNARY_INVERSE_FUNCTIONS.put(Erfi,
+        F.Function(F.Times(F.CNI, F.InverseErf(F.Times(F.CI, F.Slot1)))));
+
+    UNARY_INVERSE_FUNCTIONS.put(Haversine, InverseHaversine);
+    UNARY_INVERSE_FUNCTIONS.put(InverseHaversine, Haversine);
+
+    UNARY_INVERSE_FUNCTIONS.put(Gudermannian, InverseGudermannian);
+    UNARY_INVERSE_FUNCTIONS.put(InverseGudermannian, Gudermannian);
+
+    UNARY_INVERSE_FUNCTIONS.put(InverseErf, Erf);
+    UNARY_INVERSE_FUNCTIONS.put(InverseErfc, Erfc);
+  }
+
   public static IAST Cross(final IExpr a0, final IExpr a1) {
     return new AST2(Cross, a0, a1);
   }
@@ -3554,6 +3152,55 @@ public class F extends S {
     return new AST1(Csch, z);
   }
 
+  /**
+   * Perform &quot;common subexpression elimination&quot; (CSE) on an expression.
+   * 
+   * @param expr
+   * @return the pair of <code>{shared-expressions, recursive-replacement-rules}</code>
+   */
+  public static IAST cse(IExpr expr) {
+    return cse(expr, () -> "v");
+  }
+
+  /**
+   * Perform &quot;common subexpression elimination&quot; (CSE) on an expression.
+   * 
+   * @param expr
+   * @param variablePrefix the prefix string, which should be used for the variable names
+   * @return the pair of <code>{shared-expressions, recursive-replacement-rules}</code>
+   */
+  public static IAST cse(IExpr expr, Supplier<String> variablePrefix) {
+    if (expr.isAST()) {
+      IASTMutable mutable = ((IAST) expr).copy();
+      return org.matheclipse.core.reflection.system.OptimizeExpression.cse(mutable, variablePrefix);
+    }
+    return F.List(expr, F.CEmptyList);
+  }
+
+  /**
+   * Perform &quot;common subexpression elimination&quot; (CSE) on an expression and create Java
+   * source code in the given {@link StringBuilder}.
+   * 
+   * @param expr
+   * @param buf
+   */
+  public static void cseAsJava(IExpr expr, StringBuilder buf) {
+    cseAsJava(expr, () -> "v", buf);
+  }
+
+  /**
+   * Perform &quot;common subexpression elimination&quot; (CSE) on an expression and create Java
+   * source code in the given {@link StringBuilder}.
+   * 
+   * @param expr
+   * @param variablePrefix the prefix string, which should be used for the variable names
+   * @param buf
+   */
+  public static void cseAsJava(IExpr expr, Supplier<String> variablePrefix, StringBuilder buf) {
+    IAST csePair = cse(expr, variablePrefix);
+    org.matheclipse.core.reflection.system.OptimizeExpression.csePairAsJava(csePair, buf);
+  }
+
   public static IAST Cube(final IExpr center, final IExpr length) {
     return new AST2(Cube, center, length);
   }
@@ -3561,7 +3208,6 @@ public class F extends S {
   public static IAST CubeRoot(final IExpr arg) {
     return new AST1(CubeRoot, arg);
   }
-
 
   /**
    * @param pMin lower corner
@@ -3592,12 +3238,12 @@ public class F extends S {
     return ast(D);
   }
 
-  public static IAST D(final IExpr f, final IExpr x) {
-    return new AST2(D, f, x);
-  }
-
   public static IAST D(final IExpr f, final IAST l1, IAST l2) {
     return new AST3(D, f, l1, l2);
+  }
+
+  public static IAST D(final IExpr f, final IExpr x) {
+    return new AST2(D, f, x);
   }
 
   public static IAST Dashing(final IExpr a) {
@@ -3620,6 +3266,7 @@ public class F extends S {
     return function(DeleteCases, a);
   }
 
+
   public static IAST Denominator(final IExpr expr) {
     return new AST1(Denominator, expr);
   }
@@ -3641,14 +3288,6 @@ public class F extends S {
     return new AST1(Det, a0);
   }
 
-  public static IAST DialogReturn() {
-    return new AST0(DialogReturn);
-  }
-
-  public static IAST DialogReturn(final IExpr a0) {
-    return new AST1(DialogReturn, a0);
-  }
-
   public static IAST DiagonalMatrix(final IExpr a0) {
     return new AST1(DiagonalMatrix, a0);
   }
@@ -3663,6 +3302,14 @@ public class F extends S {
 
   public static IAST DiagonalMatrixQ(final IExpr a0, final IExpr a1) {
     return new AST2(DiagonalMatrixQ, a0, a1);
+  }
+
+  public static IAST DialogReturn() {
+    return new AST0(DialogReturn);
+  }
+
+  public static IAST DialogReturn(final IExpr a0) {
+    return new AST1(DialogReturn, a0);
   }
 
   /**
@@ -3770,8 +3417,8 @@ public class F extends S {
     return new AST1(DirectedInfinity, a0);
   }
 
-  public static IAST Disk(final IAST originList) {
-    return new AST1(Disk, originList);
+  public static IASTMutable DirectionalLight(final IExpr color, final IExpr point) {
+    return new AST2(DirectionalLight, color, point);
   }
 
   public static IAST DiscreteDelta(final IExpr a) {
@@ -3784,6 +3431,10 @@ public class F extends S {
 
   public static IAST Discriminant(final IExpr a0, final IExpr a1) {
     return new AST2(Discriminant, a0, a1);
+  }
+
+  public static IAST Disk(final IAST originList) {
+    return new AST1(Disk, originList);
   }
 
   public static IAST Distribute(final IExpr a) {
@@ -3809,6 +3460,21 @@ public class F extends S {
     return new AST2(Distributed, x, distribution);
   }
 
+  /**
+   * Distribute {@link S#Plus} function expressions on <code>Times(x,y)</code> if <code>x</code> or
+   * <code>y</code> is a {@link S#Plus} expression.
+   * 
+   * @param x maybe a {@link S#Plus} function expression
+   * @param y maybe a {@link S#Plus} function expression
+   * @return
+   */
+  public static IExpr distributePlusOnTimes(IExpr x, final IExpr y) {
+    if (x.isPlus() || y.isPlus()) {
+      return AlgebraUtil.distribute(F.Distribute(new B2.Times(x, y)), S.Plus);
+    }
+    return timesOrderless(IExpr::isTimes, x, y);
+  }
+
   public static IExpr div(IExpr a, Integer i) {
     return Times(a, Power(ZZ(i.longValue()), CN1));
   }
@@ -3823,11 +3489,6 @@ public class F extends S {
 
   public static IExpr div(java.math.BigInteger i, IExpr b) {
     return Times(ZZ(i), Power(b, CN1));
-  }
-
-
-  public static IASTMutable DirectionalLight(final IExpr color, final IExpr point) {
-    return new AST2(DirectionalLight, color, point);
   }
 
   /**
@@ -3866,6 +3527,20 @@ public class F extends S {
 
   /**
    * The division <code>numerator / denominator</code> will be represented by
+   * <code>numerator * denominator^(-1)</code>. If <code>numerator.isOne()==true</code> return
+   * <code>denominator^(-1)</code>. If <code>denominator.isOne()==true</code> return
+   * <code>numerator</code>.
+   * 
+   * @param numerator
+   * @param denominator
+   * @return
+   */
+  public static IExpr Divide(final IExpr numerator, final int denominator) {
+    return Divide(numerator, F.ZZ(denominator));
+  }
+
+  /**
+   * The division <code>numerator / denominator</code> will be represented by
    * <code>numerator * denominator^(-1)</code> (full form:
    * <code>Times(numerator, Power(denominator,-1))</code>). If <code>numerator.isOne()==true</code>
    * return <code>denominator^(-1)</code> (full form: <code>Power(denominator,-1)</code>). If
@@ -3877,20 +3552,6 @@ public class F extends S {
    */
   public static IExpr Divide(final int numerator, final IExpr denominator) {
     return Divide(F.ZZ(numerator), denominator);
-  }
-
-  /**
-   * The division <code>numerator / denominator</code> will be represented by
-   * <code>numerator * denominator^(-1)</code>. If <code>numerator.isOne()==true</code> return
-   * <code>denominator^(-1)</code>. If <code>denominator.isOne()==true</code> return
-   * <code>numerator</code>.
-   * 
-   * @param numerator
-   * @param denominator
-   * @return
-   */
-  public static IExpr Divide(final IExpr numerator, final int denominator) {
-    return Divide(numerator, F.ZZ(denominator));
   }
 
   public static IASTMutable DivideSides(final IExpr equationOrInequality) {
@@ -3905,12 +3566,12 @@ public class F extends S {
     return new AST2(Divisible, a0, a1);
   }
 
-  public static IAST DivisorSigma(final IExpr a0, final IExpr a1) {
-    return new AST2(DivisorSigma, a0, a1);
-  }
-
   public static IAST Divisors(final IExpr a0) {
     return new AST1(Divisors, a0);
+  }
+
+  public static IAST DivisorSigma(final IExpr a0, final IExpr a1) {
+    return new AST2(DivisorSigma, a0, a1);
   }
 
   public static IAST Do(final IExpr a0, final IExpr a1) {
@@ -3924,6 +3585,7 @@ public class F extends S {
   public static IAST Dot(final IExpr a, final IExpr b) {
     return new AST2(Dot, a, b);
   }
+
 
   public static IAST Dot(final IExpr a, final IExpr b, final IExpr c) {
     return new AST3(Dot, a, b, c);
@@ -3939,6 +3601,90 @@ public class F extends S {
 
   public static IAST DSolve(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(DSolve, a0, a1, a2);
+  }
+
+  /**
+   * <p>
+   * Create a unique dummy symbol with prefix "$", which is retrieved from the evaluation engines
+   * DUMMY context.
+   * <p>
+   * <b>Note:</b> a &quot;Dummy&quot; symbol will not be found by the expression parser.
+   *
+   *
+   * @return the symbol object from the context path
+   */
+  public static ISymbol Dummy() {
+    return Dummy(EvalEngine.uniqueName("$"));
+  }
+
+  /**
+   * <p>
+   * Create a unique dummy symbol which is retrieved from the evaluation engines
+   * {@link Context#DUMMY} context.
+   * 
+   * <p>
+   * <b>Note:</b> a &quot;Dummy&quot; symbol will not be found by the expression parser.
+   *
+   * @param symbolName the name of the symbol
+   * @return the symbol object from the {@link Context#DUMMY} context path
+   * @see #symbol(String)
+   */
+  public static ISymbol Dummy(final char symbolName) {
+    return Dummy(new String("" + symbolName));
+  }
+
+  /**
+   * <p>
+   * Create a unique dummy symbol which is retrieved from the evaluation engines
+   * {@link Context#DUMMY} context.
+   * 
+   * <p>
+   * <b>Note:</b> a &quot;Dummy&quot; symbol will not be found by the expression parser.
+   *
+   * @param symbolName the name of the symbol
+   * @return the symbol object from the {@link Context#DUMMY} context path
+   * @see #symbol(String)
+   */
+  public static ISymbol Dummy(final String symbolName) {
+    return Dummy(symbolName, null);
+  }
+
+  /**
+   * <p>
+   * Create a unique dummy symbol which is retrieved from the evaluation engines
+   * {@link Context#DUMMY} context.
+   * 
+   * <p>
+   * <b>Note:</b> a &quot;Dummy&quot; symbol will not be found by the expression parser.
+   *
+   * @param symbolName the name of the symbol
+   * @param assumptionAST the assumptions which should be set for the symbol. Use <code>#1</code> or
+   *        {@link F#Slot1} in the <code>assumptionAST</code> expression for this symbol.
+   * @return the symbol object from the {@link Context#DUMMY} context path
+   * @see #symbol(String)
+   */
+  public static ISymbol Dummy(final String symbolName, IAST assumptionAST) {
+    String name = symbolName;
+    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
+      if (symbolName.length() != 1) {
+        name = symbolName.toLowerCase(Locale.ENGLISH);
+      }
+    }
+    ISymbol symbol = new Symbol(name, org.matheclipse.core.expression.Context.DUMMY);
+    if (assumptionAST != null) {
+      IExpr temp = Lambda.replaceSlots(assumptionAST, List(symbol)).orElse(assumptionAST);
+      if (temp.isAST()) {
+        EvalEngine engine = EvalEngine.get();
+        IAssumptions assumptions = engine.getAssumptions();
+        if (assumptions == null) {
+          assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(temp);
+          engine.setAssumptions(assumptions);
+        } else {
+          assumptions.addAssumption(temp);
+        }
+      }
+    }
+    return symbol;
   }
 
   public static IAST Eigensystem(final IExpr m) {
@@ -4064,6 +3810,22 @@ public class F extends S {
     return new AST2(ErlangDistribution, a0, a1);
   }
 
+  public static IAST EuclideanDistance(final IExpr a0, final IExpr a1) {
+    return new AST2(EuclideanDistance, a0, a1);
+  }
+
+  public static IAST EulerE(final IExpr n) {
+    return new AST1(EulerE, n);
+  }
+
+  public static IAST EulerE(final IExpr n, final IExpr x) {
+    return new AST2(EulerE, n, x);
+  }
+
+  public static IAST EulerPhi(final IExpr a0) {
+    return new AST1(EulerPhi, a0);
+  }
+
   /**
    * Evaluate an expression. If no evaluation was possible this method returns the given argument.
    *
@@ -4073,17 +3835,6 @@ public class F extends S {
    */
   public static IExpr eval(IExpr a) {
     return EvalEngine.get().evaluate(a);
-  }
-
-  /**
-   * Parse and evaluate a string expression.
-   *
-   * @param str the string expression which should be parsed and evaluated
-   * @return the evaluated expression
-   * @see EvalEngine#evaluate(IExpr)
-   */
-  public static IExpr eval(String str) {
-    return EvalEngine.get().evaluate(str);
   }
 
   /**
@@ -4099,6 +3850,26 @@ public class F extends S {
     final IASTAppendable ast = ast(head);
     ast.append(a0);
     return EvalEngine.get().evaluate(ast);
+  }
+
+  /**
+   * Parse and evaluate a string expression.
+   *
+   * @param str the string expression which should be parsed and evaluated
+   * @return the evaluated expression
+   * @see EvalEngine#evaluate(IExpr)
+   */
+  public static IExpr eval(String str) {
+    return EvalEngine.get().evaluate(str);
+  }
+
+  public static IExpr evalCollect(IExpr expr, IExpr x) {
+    if (expr.isAST()) {
+      EvalEngine engine = EvalEngine.get();
+      return Collect(expr, x)//
+          .eval(engine);
+    }
+    return expr;
   }
 
   /**
@@ -4122,24 +3893,6 @@ public class F extends S {
         return Expand(expr)//
             .eval(engine);
       }
-    }
-    return expr;
-  }
-
-  public static IExpr evalCollect(IExpr expr, IExpr x) {
-    if (expr.isAST()) {
-      EvalEngine engine = EvalEngine.get();
-      return Collect(expr, x)//
-          .eval(engine);
-    }
-    return expr;
-  }
-
-  public static IExpr evalSimplify(IExpr expr) {
-    if (expr.isAST()) {
-      EvalEngine engine = EvalEngine.get();
-      return Simplify(expr)//
-          .eval(engine);
     }
     return expr;
   }
@@ -4207,6 +3960,15 @@ public class F extends S {
   @Deprecated
   public static IExpr evalQuietNull(IExpr a) {
     return EvalEngine.get().evalQuietNIL(a);
+  }
+
+  public static IExpr evalSimplify(IExpr expr) {
+    if (expr.isAST()) {
+      EvalEngine engine = EvalEngine.get();
+      return Simplify(expr)//
+          .eval(engine);
+    }
+    return expr;
   }
 
   /**
@@ -4297,41 +4059,6 @@ public class F extends S {
   }
 
   /**
-   * depending on the derived class of the given {@link Number}, the value is encoded as
-   * {@link IInteger}, {@link INum}
-   *
-   * @param number non-null
-   * @return scalar with best possible accuracy to encode given number
-   * @throws Exception if number is null, or instance of an unsupported type
-   */
-  public static IReal expr(Number number) {
-    if (number instanceof Integer || number instanceof Long || number instanceof Short
-        || number instanceof Byte)
-      return ZZ(number.longValue());
-    if (number instanceof Double || number instanceof Float)
-      return num(number.doubleValue());
-    if (number instanceof BigInteger)
-      return ZZ((BigInteger) number);
-    throw new IllegalArgumentException(number.getClass().getName());
-  }
-
-  public static IAST EuclideanDistance(final IExpr a0, final IExpr a1) {
-    return new AST2(EuclideanDistance, a0, a1);
-  }
-
-  public static IAST EulerE(final IExpr n) {
-    return new AST1(EulerE, n);
-  }
-
-  public static IAST EulerE(final IExpr n, final IExpr x) {
-    return new AST2(EulerE, n, x);
-  }
-
-  public static IAST EulerPhi(final IExpr a0) {
-    return new AST1(EulerPhi, a0);
-  }
-
-  /**
    * The exponential function <code>E^z</code>.
    *
    * <p>
@@ -4347,10 +4074,6 @@ public class F extends S {
 
   public static IAST Exp(final int z) {
     return new B2.Power(E, F.ZZ(z));
-  }
-
-  public static IAST ExpToTrig(final IExpr a0) {
-    return new AST1(ExpToTrig, a0);
   }
 
   /**
@@ -4425,12 +4148,6 @@ public class F extends S {
     return a;
   }
 
-  //
-  // public static IAST NumberPartitions(final IExpr a0) {
-  //
-  // return unaryAST2(NumberPartitions, a0);
-  // }
-
   public static IAST ExpandAll(final IExpr a0) {
     return new AST1(ExpandAll, a0);
   }
@@ -4467,6 +4184,35 @@ public class F extends S {
     return new AST2(ExportString, a0, a1);
   }
 
+  /**
+   * depending on the derived class of the given {@link Number}, the value is encoded as
+   * {@link IInteger}, {@link INum}
+   *
+   * @param number non-null
+   * @return scalar with best possible accuracy to encode given number
+   * @throws Exception if number is null, or instance of an unsupported type
+   */
+  public static IReal expr(Number number) {
+    if (number instanceof Integer || number instanceof Long || number instanceof Short
+        || number instanceof Byte)
+      return ZZ(number.longValue());
+    if (number instanceof Double || number instanceof Float)
+      return num(number.doubleValue());
+    if (number instanceof BigInteger)
+      return ZZ((BigInteger) number);
+    throw new IllegalArgumentException(number.getClass().getName());
+  }
+
+  //
+  // public static IAST NumberPartitions(final IExpr a0) {
+  //
+  // return unaryAST2(NumberPartitions, a0);
+  // }
+
+  public static IAST ExpToTrig(final IExpr a0) {
+    return new AST1(ExpToTrig, a0);
+  }
+
   public static IAST Extract(final IExpr a0, final IExpr a1) {
     return new AST2(Extract, a0, a1);
   }
@@ -4489,10 +4235,6 @@ public class F extends S {
 
   public static IAST Factor(final IExpr poly) {
     return new AST1(Factor, poly);
-  }
-
-  public static IAST FactorTerms(final IExpr poly) {
-    return new AST1(FactorTerms, poly);
   }
 
   public static IAST Factorial(final IExpr a0) {
@@ -4531,6 +4273,10 @@ public class F extends S {
     return new AST1(FactorSquareFreeList, a);
   }
 
+  public static IAST FactorTerms(final IExpr poly) {
+    return new AST1(FactorTerms, poly);
+  }
+
   public static IAST Fibonacci(final IExpr a0) {
     return new AST1(Fibonacci, a0);
   }
@@ -4552,16 +4298,16 @@ public class F extends S {
     return quaternary(FindFit, data, expr, variablesList, xVariable);
   }
 
-  public static IAST FindGeneratingFunction(final IExpr data, final IExpr x) {
-    return new AST2(FindGeneratingFunction, data, x);
-  }
-
   public static IAST FindFormula(final IExpr data, final IExpr x) {
     return new AST2(FindFormula, data, x);
   }
 
   public static IAST FindFormula(final IExpr data, final IExpr x, IExpr n) {
     return new AST3(FindFormula, data, x, n);
+  }
+
+  public static IAST FindGeneratingFunction(final IExpr data, final IExpr x) {
+    return new AST2(FindGeneratingFunction, data, x);
   }
 
   public static IAST FindMaximum(final IExpr f, final IExpr x) {
@@ -4592,6 +4338,10 @@ public class F extends S {
     return new AST1(FindSpanningTree, a0);
   }
 
+  public static IAST First(final IExpr a0) {
+    return new AST1(First, a0);
+  }
+
   public static IAST Fit(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(Fit, a0, a1, a2);
   }
@@ -4600,16 +4350,48 @@ public class F extends S {
     return new AST1(FiveNum, a);
   }
 
-  public static IAST First(final IExpr a0) {
-    return new AST1(First, a0);
-  }
-
   public static IAST Flatten(final IExpr a0) {
     return new AST1(Flatten, a0);
   }
 
   public static IAST Flatten(final IExpr a0, final IExpr a1) {
     return new AST2(Flatten, a0, a1);
+  }
+
+  /**
+   * Iterate over the arguments of <code>list</code> and flatten the arguments of <code>
+   * Sequence(...)
+   * </code> expressions. (i.e. <code>{Sequence(a,b,...)}</code> is rewritten as <code>{a,b,...}
+   * </code>). If some of the elements is the symbol <code>Nothing</code> it's automatically removed
+   * from the arguments.
+   *
+   * @param list an AST which may contain <code>Sequence(...)</code> expressions or <code>Nothing
+   *     </code> symbols.
+   * @return <code>F.NIL</code> if no sequence is flattened
+   */
+  public static IAST flattenSequence(final IAST list) {
+    if (list.isEvalFlagOn(IAST.SEQUENCE_FLATTENED)) {
+      return NIL;
+    }
+
+    final boolean isList = list.isList();
+    final int indx = list.indexOf(x -> x.isSequence() || (isList && x == S.Nothing));
+    if (indx > 0) {
+      final int extraSize = list.get(indx).size();
+      final IASTAppendable seqResult = F.ast(list.head(), list.size() + extraSize + 1);
+      seqResult.appendArgs(list, indx);
+      list.forEach(indx, list.size(), x -> {
+        if (x.isSequence()) {
+          seqResult.appendArgs((IAST) x);
+        } else if (isList && x == S.Nothing) {
+        } else {
+          seqResult.append(x);
+        }
+      });
+      return seqResult;
+    }
+    list.addEvalFlags(IAST.SEQUENCE_FLATTENED);
+    return NIL;
   }
 
   public static IAST Floor(final IExpr z) {
@@ -4654,6 +4436,27 @@ public class F extends S {
   }
 
   /**
+   * Create a "fractional" number from a double number with <code>Config.DOUBLE_EPSILON</code>
+   * maximum error allowed.
+   *
+   * @param value the double value which should be converted to a fractional number
+   */
+  public static IFraction fraction(final double value) {
+    return AbstractFractionSym.valueOfEpsilon(value, Config.DOUBLE_EPSILON);
+  }
+
+  /**
+   * Create a "fractional" number from a double number.
+   *
+   * @param value the double value which should be converted to a fractional number
+   * @param epsilon maximum error allowed. The resulting fraction is within epsilon of value, in
+   *        absolute terms
+   */
+  public static IFraction fraction(final double value, final double epsilon) {
+    return AbstractFractionSym.valueOfEpsilon(value, epsilon);
+  }
+
+  /**
    * Create a "fractional" number
    *
    * @param numerator numerator of the fractional number
@@ -4677,25 +4480,12 @@ public class F extends S {
     return AbstractFractionSym.valueOf(numerator, denominator);
   }
 
-  /**
-   * Create a "fractional" number from a double number with <code>Config.DOUBLE_EPSILON</code>
-   * maximum error allowed.
-   *
-   * @param value the double value which should be converted to a fractional number
-   */
-  public static IFraction fraction(final double value) {
-    return AbstractFractionSym.valueOfEpsilon(value, Config.DOUBLE_EPSILON);
+  public static IAST FractionalPart(final IExpr a) {
+    return new AST1(FractionalPart, a);
   }
 
-  /**
-   * Create a "fractional" number from a double number.
-   *
-   * @param value the double value which should be converted to a fractional number
-   * @param epsilon maximum error allowed. The resulting fraction is within epsilon of value, in
-   *        absolute terms
-   */
-  public static IFraction fraction(final double value, final double epsilon) {
-    return AbstractFractionSym.valueOfEpsilon(value, epsilon);
+  public static IAST FractionBox(final IExpr a0, final IExpr a1) {
+    return new AST2(FractionBox, a0, a1);
   }
 
   /**
@@ -4742,12 +4532,8 @@ public class F extends S {
         : AbstractFractionSym.valueOfExactNice(value);
   }
 
-  public static IAST FractionBox(final IExpr a0, final IExpr a1) {
-    return new AST2(FractionBox, a0, a1);
-  }
-
-  public static IAST FractionalPart(final IExpr a) {
-    return new AST1(FractionalPart, a);
+  public static IAST FrechetDistribution(final IExpr a0, final IExpr a1) {
+    return new AST2(FrechetDistribution, a0, a1);
   }
 
   /**
@@ -4763,10 +4549,6 @@ public class F extends S {
    */
   public static IAST FreeQ(final IExpr expr, final IExpr form) {
     return new B2.FreeQ(expr, form);
-  }
-
-  public static IAST FrechetDistribution(final IExpr a0, final IExpr a1) {
-    return new AST2(FrechetDistribution, a0, a1);
   }
 
   public static IAST FresnelC(final IExpr a) {
@@ -4785,12 +4567,68 @@ public class F extends S {
     return new AST1(FromSphericalCoordinates, a);
   }
 
+  /**
+   * Parses a given string to an instance of {@link IExpr}
+   *
+   * <p>
+   * Examples:
+   *
+   * <pre>
+   * "7/9" -> RationalScalar.of(7, 9)
+   * "3.14" -> DoubleScalar.of(3.14)
+   * "(3+2)*I/(-1+4)+8-I" -> ComplexScalar.of(8, 2/3) == "8+2/3*I"
+   * "9.81[m*s^-2]" -> Quantity.of(9.81, "m*s^-2")
+   * </pre>
+   *
+   * If the parsing logic encounters an inconsistency, the return type is a {@link IStringX} that
+   * holds the input string.
+   *
+   * <p>
+   * Scalar types that are not supported include {@link GaussScalar}.
+   *
+   * @param string
+   * @return scalar
+   */
+  public static IExpr fromString(String string) {
+    try {
+      return QuantityParser.of(string);
+    } catch (Exception exception) {
+      Errors.rethrowsInterruptException(exception);
+
+    }
+    return stringx(string);
+  }
+
   public static IAST FullForm(final IExpr a0) {
     return new AST1(FullForm, a0);
   }
 
   public static IAST FullSimplify(final IExpr a) {
     return new AST1(FullSimplify, a);
+  }
+
+  /**
+   * Create a new abstract syntax tree (AST).
+   *
+   * @param head the header symbol of the function. If the ast represents a function like <code>
+   *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+   * @param a
+   * @return
+   */
+  public static IASTMutable function(IExpr head, final IExpr... a) {
+    final int size = a.length;
+    switch (size) {
+      case 0:
+        return new AST0(head);
+      case 1:
+        return new AST1(head, a[0]);
+      case 2:
+        return new AST2(head, a[0], a[1]);
+      case 3:
+        return new AST3(head, a[0], a[1], a[2]);
+      default:
+        return new AST(head, a);
+    }
   }
 
   public static IAST Function(final IExpr a0) {
@@ -4827,14 +4665,6 @@ public class F extends S {
 
   public static IAST FunctionURL(final IExpr a0) {
     return new AST1(FunctionURL, a0);
-  }
-
-  public static IAST Get(final IExpr a0) {
-    return new AST1(Get, a0);
-  }
-
-  public static IAST Get(final String str) {
-    return new AST1(Get, stringx(str));
   }
 
   public static IAST Gamma(final IExpr a0) {
@@ -4896,6 +4726,30 @@ public class F extends S {
 
   public static IAST GeometricMean(final IExpr a0) {
     return new AST1(GeometricMean, a0);
+  }
+
+  public static IAST Get(final IExpr a0) {
+    return new AST1(Get, a0);
+  }
+
+  public static IAST Get(final String str) {
+    return new AST1(Get, stringx(str));
+  }
+
+  public static String getPredefinedInternalFormString(String key) {
+    return PREDEFINED_INTERNAL_FORM_STRINGS.get(key);
+  }
+
+  public static IPattern getPredefinedPattern(String key) {
+    return PREDEFINED_PATTERN_MAP.get(key);
+  }
+
+  public static IPatternSequence getPredefinedPatternSequence(String key) {
+    return PREDEFINED_PATTERNSEQUENCE_MAP.get(key);
+  }
+
+  public static IExpr getUnaryInverseFunction(IExpr symbol) {
+    return UNARY_INVERSE_FUNCTIONS.get(symbol);
   }
 
   public static IAST Grad(final IExpr a0, final IExpr a1) {
@@ -5038,6 +4892,18 @@ public class F extends S {
     return new AST2(HarmonicNumber, a0, a1);
   }
 
+  /**
+   * Test if the <code>symbolName</code> is defined in the one of the contexts available on the
+   * context path.
+   *
+   * @param symbolName the name of a symbol
+   * @param engine
+   * @return
+   */
+  public static boolean hasSymbol(final String symbolName, EvalEngine engine) {
+    return engine.getContextPath().hasSymbol(symbolName, engine.isRelaxedSyntax());
+  }
+
   public static IAST Haversine(final IExpr a) {
     return new AST1(Haversine, a);
   }
@@ -5056,6 +4922,15 @@ public class F extends S {
     return new AST0(head);
   }
 
+  public static IExpr heaviside(final IExpr a0, final IExpr defaultValue, EvalEngine engine) {
+    IExpr arg = engine.evaluate(a0);
+    if (arg.isZero()) {
+      return defaultValue;
+    }
+    return F.HeavisideTheta(arg)//
+        .eval(engine);
+  }
+
   public static IAST HeavisideLambda(final IExpr a0) {
     return new AST1(HeavisideLambda, a0);
   }
@@ -5066,15 +4941,6 @@ public class F extends S {
 
   public static IAST HeavisideTheta(final IExpr a0) {
     return new AST1(HeavisideTheta, a0);
-  }
-
-  public static IExpr heaviside(final IExpr a0, final IExpr defaultValue, EvalEngine engine) {
-    IExpr arg = engine.evaluate(a0);
-    if (arg.isZero()) {
-      return defaultValue;
-    }
-    return F.HeavisideTheta(arg)//
-        .eval(engine);
   }
 
   public static IAST HermiteH(final IExpr a0, final IExpr a1) {
@@ -5155,12 +5021,12 @@ public class F extends S {
     return new AST3(HypergeometricU, a0, a1, a2);
   }
 
-  public static IASTAppendable IdentityAlloc(int capacity) {
-    return AST.newInstance(capacity, Identity);
-  }
-
   public static IAST Identity(final IExpr a0) {
     return new AST1(Identity, a0);
+  }
+
+  public static IASTAppendable IdentityAlloc(int capacity) {
+    return AST.newInstance(capacity, Identity);
   }
 
   public static IAST IdentityMatrix(final IExpr a0) {
@@ -5227,6 +5093,22 @@ public class F extends S {
     return null;
   }
 
+  /**
+   * Assign the unevaluated <code>rhs</code> to the <code>lhs</code>.<br>
+   * <b>Note:</b> this method returns <code>NIL</code>.
+   * 
+   * @param priority
+   * @param lhs left-hand-side of the assignment
+   * @param rhs right-hand-side of the assignment
+   * @return <code>NIL</code>
+   */
+  public static IExpr IIntegrate(int priority, final IAST lhs, final IExpr rhs) {
+    lhs.addEvalFlags(IAST.IS_FLATTENED_OR_SORTED_MASK);
+    org.matheclipse.core.reflection.system.Integrate.INTEGRATE_RULES_DATA.integrate(lhs, rhs,
+        priority);
+    return NIL;
+  }
+
   public static IExpr Im(final IExpr a0) {
     if (a0 != null && a0.isNumber()) {
       return ((INumber) a0).im();
@@ -5248,6 +5130,21 @@ public class F extends S {
 
   public static IAST Inequality(final IExpr... a) {
     return function(Inequality, a);
+  }
+
+  /**
+   * Return a {@link Num} which wraps a double number, if the imaginary part is <code>0.0</code> or
+   * a {@ComplexNum} which wraps a {@link Complex} number with Java double values for the real and
+   * imaginary part.
+   * 
+   * @param c the complex number
+   * @return
+   */
+  public static IInexactNumber inexactNum(final Complex c) {
+    if (c.getImaginary() == 0.0 || c.getImaginary() == -0.0) {
+      return Num.valueOf(c.getReal());
+    }
+    return ComplexNum.valueOf(c);
   }
 
   /**
@@ -5298,6 +5195,34 @@ public class F extends S {
     return new AST2(Information, a0, a1);
   }
 
+  /**
+   * Initialize the {@link ApfloatContext}
+   */
+  private static void initApfloat() {
+    int numberOfProcessors = Config.MAX_APFLOAT_PROCESSORS;
+    long maxMemoryBlockSize = Config.MAX_APFLOAT_MEMORY_BLOCKSIZE;
+    long memoryThreshold = Math.max(maxMemoryBlockSize >> 10, 65536);
+    int blockSize = Util.round2down((int) Math.min(memoryThreshold, java.lang.Integer.MAX_VALUE));
+    ApfloatContext ctx = ApfloatContext.getContext();
+    ctx.setProperty(ApfloatContext.BUILDER_FACTORY, "org.apfloat.internal.LongBuilderFactory");
+    ctx.setProperty(ApfloatContext.CACHE_L1_SIZE, "8192");
+    ctx.setProperty(ApfloatContext.CACHE_L2_SIZE, "262144");
+    ctx.setProperty(ApfloatContext.CACHE_BURST, "32");
+    ctx.setProperty(ApfloatContext.SHARED_MEMORY_TRESHOLD,
+        java.lang.String.valueOf(maxMemoryBlockSize / numberOfProcessors / 32));
+    ctx.setProperty(ApfloatContext.BLOCK_SIZE, java.lang.String.valueOf(blockSize));
+    ctx.setFilenameGenerator(new FilenameGenerator("default", "0", "default") {
+      @Override
+      public synchronized String generateFilename() {
+        throw new OverflowException("Apfloat disk file storage is disabled");
+      }
+    });
+    ctx.setMemoryThreshold(memoryThreshold);
+    ctx.setCleanupAtExit(false);
+    ctx.setNumberOfProcessors(numberOfProcessors);
+    ctx.setMaxMemoryBlockSize(maxMemoryBlockSize);
+  }
+
   public static IPattern initPredefinedPattern(final ISymbol symbol) {
     IPattern temp = new Pattern(symbol);
     PREDEFINED_PATTERN_MAP.put(symbol.toString(), temp);
@@ -5338,7 +5263,7 @@ public class F extends S {
             for (int i = 0; i < files.length; i++) {
               if (files[i].endsWith(".m")) {
                 File sourceFile = new File(sourceLocation, files[i]);
-                FileFunctions.Get.loadPackage(EvalEngine.get(), sourceFile);
+                PackageUtil.loadPackage(EvalEngine.get(), sourceFile);
               }
             }
           }
@@ -5349,25 +5274,6 @@ public class F extends S {
           Errors.rethrowsInterruptException(ex);
           LOGGER.error(ex);
         }
-        // if (!noPackageLoading) {
-        // Reader reader = null;
-        // if (fileName != null) {
-        // try {
-        // reader = new InputStreamReader(new FileInputStream(fileName), "UTF-8");
-        // } catch (FileNotFoundException e) {
-        // LOGGER.error("initSymbols() failed", e);
-        // }
-        // }
-        // if (reader == null) {
-        // InputStream systemPackage = class.getResourceAsStream("/System.mep");
-        // if (systemPackage != null) {
-        // reader = new InputStreamReader(systemPackage, "UTF-8");
-        // }
-        // }
-        // if (reader != null) {
-        // org.matheclipse.core.builtin.function.Package.loadPackage(EvalEngine.get(), reader);
-        // }
-        // }
 
         systemInitialized = true;
       } catch (RuntimeException th) {
@@ -5417,6 +5323,14 @@ public class F extends S {
     return AbstractIntegerSym.valueOf(integerString, radix);
   }
 
+  public static IAST IntegerName(final IExpr a0) {
+    return new AST1(IntegerName, a0);
+  }
+
+  public static IAST IntegerName(final IExpr a0, final IExpr a1) {
+    return new AST2(IntegerName, a0, a1);
+  }
+
   public static IAST IntegerPart(final IExpr a0) {
     return new AST1(IntegerPart, a0);
   }
@@ -5427,14 +5341,6 @@ public class F extends S {
 
   public static IAST IntegerPartitions(final IExpr n, final IExpr k, final IExpr p) {
     return new AST3(IntegerPartitions, n, k, p);
-  }
-
-  public static IAST IntegerName(final IExpr a0) {
-    return new AST1(IntegerName, a0);
-  }
-
-  public static IAST IntegerName(final IExpr a0, final IExpr a1) {
-    return new AST2(IntegerName, a0, a1);
   }
 
   /**
@@ -5485,31 +5391,20 @@ public class F extends S {
     return new AST3(Integrate, f, x, assumptions);
   }
 
-  public static IAST Interpolation(final IExpr list) {
-    return new AST1(Interpolation, list);
-  }
-
   public static IAST InterpolatingPolynomial(final IExpr a0, final IExpr a1) {
     return new AST2(InterpolatingPolynomial, a0, a1);
+  }
+
+  public static IAST Interpolation(final IExpr list) {
+    return new AST1(Interpolation, list);
   }
 
   public static IAST InterquartileRange(final IExpr a) {
     return new AST1(InterquartileRange, a);
   }
 
-  /**
-   * Create a new <code>List</code> with the given <code>capacity</code>.
-   *
-   * @param capacity the assumed number of arguments (+ 1 for the header expression is added
-   *        internally).
-   * @return
-   */
-  public static IASTAppendable IntervalAlloc(int capacity) {
-    return ast(Interval, capacity);
-  }
-
-  public static IASTAppendable IntervalDataAlloc(int capacity) {
-    return ast(IntervalData, capacity);
+  public static IAST Intersection(final IExpr a0, final IExpr a1) {
+    return new AST2(Intersection, a0, a1);
   }
 
   /**
@@ -5533,30 +5428,19 @@ public class F extends S {
     return new AST1(Interval, binaryAST2(List, min, max));
   }
 
+  /**
+   * Create a new <code>List</code> with the given <code>capacity</code>.
+   *
+   * @param capacity the assumed number of arguments (+ 1 for the header expression is added
+   *        internally).
+   * @return
+   */
+  public static IASTAppendable IntervalAlloc(int capacity) {
+    return ast(Interval, capacity);
+  }
+
   public static IAST IntervalComplement(final IExpr a1, IExpr a2) {
     return new AST2(IntervalComplement, a1, a2);
-  }
-
-  /**
-   * IntervalIntersection(interval_1, interval_2, ...) - compute the intersection of the intervals
-   * `interval_1, interval_2, ...`
-   * 
-   */
-  public static IAST IntervalIntersection(final IExpr... intervals) {
-    return ast(intervals, IntervalIntersection);
-  }
-
-  public static IAST IntervalMemberQ(final IExpr interval, IExpr expr) {
-    return new AST2(IntervalMemberQ, interval, expr);
-  }
-
-  /**
-   * IntervalUnion(interval_1, interval_2, ...) - compute the union of the intervals `interval_1,
-   * interval_2, ...`
-   * 
-   */
-  public static IAST IntervalUnion(final IExpr... intervals) {
-    return ast(intervals, IntervalUnion);
   }
 
   /**
@@ -5589,6 +5473,41 @@ public class F extends S {
    */
   public static IAST IntervalData(final IAST... lists) {
     return new AST(IntervalData, lists);
+  }
+
+  public static IASTAppendable IntervalDataAlloc(int capacity) {
+    return ast(IntervalData, capacity);
+  }
+
+  /**
+   * IntervalIntersection(interval_1, interval_2, ...) - compute the intersection of the intervals
+   * `interval_1, interval_2, ...`
+   * 
+   */
+  public static IAST IntervalIntersection(final IExpr... intervals) {
+    return ast(intervals, IntervalIntersection);
+  }
+
+  public static IAST IntervalMemberQ(final IExpr interval, IExpr expr) {
+    return new AST2(IntervalMemberQ, interval, expr);
+  }
+
+  /**
+   * IntervalUnion(interval_1, interval_2, ...) - compute the union of the intervals `interval_1,
+   * interval_2, ...`
+   * 
+   */
+  public static IAST IntervalUnion(final IExpr... intervals) {
+    return ast(intervals, IntervalUnion);
+  }
+
+  public static IAST intIterator(ISymbol head, final Function<IExpr, IExpr> function,
+      final IAST list) {
+    IASTAppendable result = ast(head, list.size());
+    for (int i = 1; i < list.size(); i++) {
+      result.append(function.apply(list.get(i)));
+    }
+    return result;
   }
 
   /**
@@ -5636,35 +5555,198 @@ public class F extends S {
     return result;
   }
 
-  public static IAST intIterator(ISymbol head, final Function<IExpr, IExpr> function,
-      final IAST list) {
-    IASTAppendable result = ast(head, list.size());
-    for (int i = 1; i < list.size(); i++) {
-      result.append(function.apply(list.get(i)));
-    }
-    return result;
-  }
-
-  public static IRational productRational(final IntFunction<IRational> function, final int from,
+  /**
+   * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code> and
+   * evaluate the {@link S#Product}
+   * 
+   * @param function the function which should be applied on each iterator value
+   * @param from from this position (included)
+   * @param to to this position (included)
+   * @param step
+   * @return
+   */
+  public static IExpr intProduct(final Function<IInteger, IExpr> function, final int from,
       final int to, final int step) {
-    IRational result = C1;
-    for (int i = from; i <= to; i += step) {
-      result = result.multiply(function.apply(i));
+    if (from > to && step > 0) {
+      return F.C1;
     }
-    return result;
+    IASTAppendable result = F.TimesAlloc(F.allocMin32(to - from + 2));
+    long numberOfLeaves = 0;
+    INumber number = F.C1;
+    // insert number as placeholder
+    result.append(number);
+    EvalEngine engine = EvalEngine.get();
+    for (int i = from; i <= to; i += step) {
+      IExpr temp = engine.evaluate(function.apply(ZZ(i)));
+      if (temp.isNumber()) {
+        number = number.times((INumber) temp);
+        if (number instanceof IInteger //
+            && ((IInteger) number).bitLength() > Config.MAX_BIT_LENGTH / 100) {
+          BigIntegerLimitExceeded.throwIt(Config.MAX_BIT_LENGTH / 100);
+        }
+      } else {
+        numberOfLeaves += temp.leafCount() + 1;
+        if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
+          ASTElementLimitExceeded.throwIt(numberOfLeaves);
+        }
+        result.append(temp);
+      }
+    }
+    // replace placeholder with evaluated number
+    result.set(1, number);
+    return result.oneIdentity0();
   }
 
-  public static IRational sumRational(final IntFunction<IRational> function, final int from,
-      final int to, final int step) {
-    IRational result = C0;
-    for (int i = from; i <= to; i += step) {
-      result = result.add(function.apply(i));
-    }
-    return result;
+  /**
+   * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code> and
+   * evaluate the {@link S#Sum}
+   *
+   * @param function the function which should be applied on each iterator value
+   * @param from from this position (included)
+   * @param to to this position (included)
+   * @param step
+   * @return
+   */
+  public static IExpr intSum(final Function<IInteger, IExpr> function, final int from, final int to,
+      final int step) {
+    return intSum(function, from, to, step, false);
   }
 
-  public static IAST Intersection(final IExpr a0, final IExpr a1) {
-    return new AST2(Intersection, a0, a1);
+  /**
+   * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code> and
+   * evaluate the {@link S#Sum}
+   *
+   * @param function the function which should be applied on each iterator value
+   * @param from from this position (included)
+   * @param to to this position (included)
+   * @param step
+   * @param expand expand {@link S#Plus}, {@link S#Times}, {@link S#Power} subexpressions
+   * @return
+   */
+  public static IExpr intSum(final Function<IInteger, IExpr> function, final int from, final int to,
+      final int step, boolean expand) {
+    if (from > to && step > 0) {
+      return F.C0;
+    }
+    IASTAppendable result = F.PlusAlloc(F.allocMin32(to - from + 2));
+    long numberOfLeaves = 0;
+    INumber number = F.C0;
+    // insert number as placeholder
+    result.append(number);
+    EvalEngine engine = EvalEngine.get();
+    for (int i = from; i <= to; i += step) {
+      IExpr temp = engine.evaluate(function.apply(ZZ(i)));
+      if (temp.isNumber()) {
+        number = number.plus((INumber) temp);
+        if (number instanceof IInteger //
+            && ((IInteger) number).bitLength() > Config.MAX_BIT_LENGTH / 100) {
+          BigIntegerLimitExceeded.throwIt(((IInteger) number).bitLength());
+        }
+      } else {
+        numberOfLeaves += temp.leafCount() + 1;
+        if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
+          ASTElementLimitExceeded.throwIt(numberOfLeaves);
+        }
+        if (expand && temp.isPlusTimesPower()) {
+          result.append(F.evalExpand(temp));
+        } else {
+          result.append(temp);
+        }
+      }
+    }
+    // replace placeholder position 1 with evaluated number
+    result.set(1, number);
+    return result.oneIdentity0();
+  }
+
+  /**
+   * Calculate <code>Sum(function(k), {k, iMin, iMax})</code>
+   * 
+   * @param function
+   * @param iMin from this position (included)
+   * @param iMax to this position (included)
+   * @return
+   */
+  public static IExpr intSum(final IntFunction<IExpr> function, final int iMin, final int iMax) {
+    if (iMin > iMax) {
+      return F.C0;
+    }
+    IASTAppendable result = F.PlusAlloc(F.allocMin32(iMax - iMin + 2));
+    int numberOfLeaves = 0;
+    EvalEngine engine = EvalEngine.get();
+    INumber number = F.C0;
+    // insert number as placeholder
+    result.append(number);
+    for (int i = iMin; i <= iMax; i += 1) {
+      IExpr temp = engine.evaluate(function.apply(i));
+      if (temp.isNumber()) {
+        number = number.plus((INumber) temp);
+        if (number instanceof IInteger //
+            && ((IInteger) number).bitLength() > Config.MAX_BIT_LENGTH / 100) {
+          BigIntegerLimitExceeded.throwIt(Config.MAX_BIT_LENGTH / 100);
+        }
+      } else {
+        numberOfLeaves += temp.leafCount() + 1;
+        if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
+          ASTElementLimitExceeded.throwIt(numberOfLeaves);
+        }
+        result.append(temp);
+      }
+    }
+    // replace placeholder with evaluated number
+    result.set(1, number);
+    return result.oneIdentity0();
+  }
+
+  /**
+   * Create a list of {@link S#Plus} expressions (sums), with an evaluated number in position 1 for
+   * the sum of each step of the <code>function.apply(position)</code> from <code>iMin</code>
+   * (inclusive) to <code>iMax</code> (inclusive).
+   * 
+   * @param function the function which should be applied on each iteration step
+   * @param startValue will be used as placeholder in position 1 of plusList
+   * @param iMin from this position (included)
+   * @param iMax to this position (included)
+   * @return a list of {@link S#Plus} expressions with the evaluated number in position 1
+   */
+  public static IAST intSumList(final IntFunction<IExpr> function, IExpr startValue, final int iMin,
+      final int iMax) {
+    if (iMin > iMax) {
+      return F.CEmptyList;
+    }
+    IASTAppendable result = F.ListAlloc(F.allocMin32(iMax - iMin + 1));
+    int numberOfLeaves = 0;
+    EvalEngine engine = EvalEngine.get();
+    IASTAppendable plusList = F.PlusAlloc(F.allocMin32(iMax - iMin + 3));
+    // insert 0 as a placeholder for number calculations in intSumList()
+    INumber numberPlaceholder = F.C0;
+    if (startValue.isNumber()) {
+      numberPlaceholder = (INumber) startValue;
+      plusList.append(numberPlaceholder);
+    } else {
+      plusList.append(numberPlaceholder);
+      plusList.append(startValue);
+    }
+
+    // INumber numberPlaceholder = startValue;
+    for (int i = iMin; i <= iMax; i += 1) {
+      IExpr temp = engine.evaluate(function.apply(i));
+      if (temp.isNumber()) {
+        numberPlaceholder = numberPlaceholder.plus((INumber) temp);
+        if (numberPlaceholder instanceof IInteger //
+            && ((IInteger) numberPlaceholder).bitLength() > Config.MAX_BIT_LENGTH / 100) {
+          BigIntegerLimitExceeded.throwIt(Config.MAX_BIT_LENGTH / 100);
+        }
+      } else {
+        numberOfLeaves += temp.leafCount() + 1;
+        if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
+          ASTElementLimitExceeded.throwIt(numberOfLeaves);
+        }
+        plusList.append(temp);
+      }
+      result.append(plusList.setAtCopy(1, numberPlaceholder));
+    }
+    return result;
   }
 
   public static IAST Inverse(final IExpr a0) {
@@ -5733,16 +5815,18 @@ public class F extends S {
     return new AST2(InverseJacobiDC, a0, a1);
   }
 
+
+  public static IAST InverseJacobiDN(final IExpr a0, final IExpr a1) {
+    return new AST2(InverseJacobiDN, a0, a1);
+  }
+
+
   public static IAST InverseJacobiNC(final IExpr a0, final IExpr a1) {
     return new AST2(InverseJacobiNC, a0, a1);
   }
 
   public static IAST InverseJacobiND(final IExpr a0, final IExpr a1) {
     return new AST2(InverseJacobiND, a0, a1);
-  }
-
-  public static IAST InverseJacobiDN(final IExpr a0, final IExpr a1) {
-    return new AST2(InverseJacobiDN, a0, a1);
   }
 
   public static IAST InverseJacobiSC(final IExpr a0, final IExpr a1) {
@@ -5757,14 +5841,61 @@ public class F extends S {
     return new AST2(InverseJacobiSN, a0, a1);
   }
 
-
   public static IAST InverseLaplaceTransform(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(InverseLaplaceTransform, a0, a1, a2);
   }
 
+  public static IAST InverseSeries(final IExpr a0) {
+    return new AST1(InverseSeries, a0);
+  }
 
   public static IAST InverseZTransform(final IExpr expr, final IExpr z, final IExpr n) {
     return new AST3(InverseZTransform, expr, z, n);
+  }
+
+  /**
+   * Test if <code>a</code> and <code>b</code> are almost the same values by comparing the
+   * {@link Double#doubleToLongBits(double)} values.
+   * <p>
+   * See also the implementation of {@link Double#compare(double, double)}
+   * 
+   * @param a
+   * @param b
+   */
+  public static boolean isAlmostSame(double a, double b) {
+    if (a == b) {
+      return true;
+    } else {
+      long ai = Double.doubleToLongBits(a);
+      long bi = Double.doubleToLongBits(b);
+      return -1 <= ai - bi && ai - bi <= 1;
+    }
+  }
+
+  /**
+   * Check difference is less than a constant
+   *
+   * <p>
+   * infinity == infinity returns true eg 1/0
+   *
+   * <p>
+   * -infinity == infinity returns false eg -1/0
+   *
+   * <p>
+   * -infinity == -infinity returns true
+   *
+   * <p>
+   * undefined == undefined returns false eg 0/0
+   *
+   * @return whether x is equal to y
+   */
+  public static final boolean isEqual(double x, double y) {
+    return isFuzzyEquals(x, y, Config.MACHINE_EPSILON);
+  }
+
+  public static final boolean isEqual(org.hipparchus.complex.Complex x,
+      org.hipparchus.complex.Complex y) {
+    return isFuzzyEquals(x, y, Config.MACHINE_EPSILON);
   }
 
   /**
@@ -5790,7 +5921,7 @@ public class F extends S {
    */
   public static IAST ISet(final IAST lhs, final IExpr rhs, boolean equalRule) {
     lhs.addEvalFlags(IAST.IS_FLATTENED_OR_SORTED_MASK);
-    PatternMatching.setDownRule(lhs, rhs, equalRule, true);
+    F.setDownRule(lhs, rhs, equalRule, true);
     return NIL;
   }
 
@@ -5803,7 +5934,7 @@ public class F extends S {
    * @return
    */
   public static IAST ISet(final ISymbol lhs, final IExpr rhs) {
-    PatternMatching.setDownRule(lhs, rhs);
+    F.setDownRule(lhs, rhs);
     return NIL;
   }
 
@@ -5817,7 +5948,7 @@ public class F extends S {
    */
   public static IAST ISetDelayed(final IAST lhs, final IExpr rhs) {
     lhs.addEvalFlags(IAST.IS_FLATTENED_OR_SORTED_MASK);
-    PatternMatching.setDelayedDownRule(IPatternMap.DEFAULT_RULE_PRIORITY, lhs, rhs, true);
+    F.setDelayedDownRule(IPatternMap.DEFAULT_RULE_PRIORITY, lhs, rhs, true);
     return NIL;
   }
 
@@ -5832,24 +5963,50 @@ public class F extends S {
    */
   public static IAST ISetDelayed(int priority, final IAST lhs, final IExpr rhs) {
     lhs.addEvalFlags(IAST.IS_FLATTENED_OR_SORTED_MASK);
-    PatternMatching.setDelayedDownRule(priority, lhs, rhs, true);
+    F.setDelayedDownRule(priority, lhs, rhs, true);
     return NIL;
   }
 
   /**
-   * Assign the unevaluated <code>rhs</code> to the <code>lhs</code>.<br>
-   * <b>Note:</b> this method returns <code>NIL</code>.
-   * 
-   * @param priority
-   * @param lhs left-hand-side of the assignment
-   * @param rhs right-hand-side of the assignment
-   * @return <code>NIL</code>
+   * Returns {@code true} if {@code a} and {@code b} are within {@code tolerance} (exclusive) of
+   * each other.
+   *
+   * <p>
+   * Technically speaking, this is equivalent to {@code Math.abs(a - b) <= tolerance ||
+   * Double.valueOf(a).equals(Double.valueOf(b))}.
+   *
+   * <p>
+   * Notable special cases include:
+   *
+   * <ul>
+   * <li>All NaNs are fuzzily equal.
+   * <li>If {@code a == b}, then {@code a} and {@code b} are always fuzzily equal.
+   * <li>Positive and negative zero are always fuzzily equal.
+   * <li>If {@code tolerance} is zero, and neither {@code a} nor {@code b} is NaN, then {@code a}
+   * and {@code b} are fuzzily equal if and only if {@code a == b}.
+   * <li>With {@link Double#POSITIVE_INFINITY} tolerance, all non-NaN values are fuzzily equal.
+   * <li>With finite tolerance, {@code Double.POSITIVE_INFINITY} and {@code
+   *       Double.NEGATIVE_INFINITY} are fuzzily equal only to themselves.
+   * </ul>
+   *
+   * <p>
+   * This is reflexive and symmetric, but <em>not</em> transitive, so it is <em>not</em> an
+   * equivalence relation and <em>not</em> suitable for use in {@link Object#equals}
+   * implementations.
+   *
+   * @throws IllegalArgumentException if {@code tolerance} is {@code < 0} or NaN
    */
-  public static IExpr IIntegrate(int priority, final IAST lhs, final IExpr rhs) {
-    lhs.addEvalFlags(IAST.IS_FLATTENED_OR_SORTED_MASK);
-    org.matheclipse.core.reflection.system.Integrate.INTEGRATE_RULES_DATA.integrate(lhs, rhs,
-        priority);
-    return NIL;
+  public static boolean isFuzzyEquals(double a, double b, double tolerance) {
+    return Math.copySign(a - b, 1.0) < tolerance
+        // copySign(x, 1.0) is a branch-free version of abs(x), but with different NaN semantics
+        || (a == b) // needed to ensure that infinities equal themselves
+        || (Double.isNaN(a) && Double.isNaN(b));
+  }
+
+  public static final boolean isFuzzyEquals(org.hipparchus.complex.Complex x,
+      org.hipparchus.complex.Complex y, double tolerance) {
+    return isFuzzyEquals(x.getReal(), y.getReal(), tolerance) //
+        && isFuzzyEquals(x.getImaginary(), y.getImaginary(), tolerance);
   }
 
   /**
@@ -5878,25 +6035,6 @@ public class F extends S {
    */
   public static boolean isNotPresent(long value) {
     return value == Config.INVALID_LONG;
-  }
-
-  /**
-   * Check if the given integer value is valid, i.e., not equal to {@link Config#INVALID_INT}. Use
-   * this predicate in a conditional expression after method {@link IExpr#toIntDefault()} to check
-   * if the Java <code>int</code> value is in the range
-   * <code>Integer.MIN_VALUE+1, Integer.MAX_VALUE</code>
-   * 
-   * @param value the integer value to be checked
-   * @return <code>true</code> if the given integer value is not equal to
-   *         {@link Config#INVALID_INT}, otherwise <code>false</code>
-   * @see IExpr#toIntDefault()
-   */
-  public static boolean isPresent(int value) {
-    return value != Config.INVALID_INT;
-  }
-
-  public static boolean isPresent(long value) {
-    return value != Config.INVALID_LONG;
   }
 
   public static boolean isNumEqualInteger(double value, IInteger ii) throws ArithmeticException {
@@ -5945,116 +6083,46 @@ public class F extends S {
   }
 
   /**
-   * Check difference is less than a constant
-   *
-   * <p>
-   * infinity == infinity returns true eg 1/0
-   *
-   * <p>
-   * -infinity == infinity returns false eg -1/0
-   *
-   * <p>
-   * -infinity == -infinity returns true
-   *
-   * <p>
-   * undefined == undefined returns false eg 0/0
-   *
-   * @return whether x is equal to y
-   */
-  public static final boolean isEqual(double x, double y) {
-    return isFuzzyEquals(x, y, Config.MACHINE_EPSILON);
-  }
-
-  public static final boolean isEqual(org.hipparchus.complex.Complex x,
-      org.hipparchus.complex.Complex y) {
-    return isFuzzyEquals(x, y, Config.MACHINE_EPSILON);
-  }
-
-  /**
-   * Returns {@code true} if {@code a} and {@code b} are within {@code tolerance} (exclusive) of
-   * each other.
-   *
-   * <p>
-   * Technically speaking, this is equivalent to {@code Math.abs(a - b) <= tolerance ||
-   * Double.valueOf(a).equals(Double.valueOf(b))}.
-   *
-   * <p>
-   * Notable special cases include:
-   *
-   * <ul>
-   * <li>All NaNs are fuzzily equal.
-   * <li>If {@code a == b}, then {@code a} and {@code b} are always fuzzily equal.
-   * <li>Positive and negative zero are always fuzzily equal.
-   * <li>If {@code tolerance} is zero, and neither {@code a} nor {@code b} is NaN, then {@code a}
-   * and {@code b} are fuzzily equal if and only if {@code a == b}.
-   * <li>With {@link Double#POSITIVE_INFINITY} tolerance, all non-NaN values are fuzzily equal.
-   * <li>With finite tolerance, {@code Double.POSITIVE_INFINITY} and {@code
-   *       Double.NEGATIVE_INFINITY} are fuzzily equal only to themselves.
-   * </ul>
-   *
-   * <p>
-   * This is reflexive and symmetric, but <em>not</em> transitive, so it is <em>not</em> an
-   * equivalence relation and <em>not</em> suitable for use in {@link Object#equals}
-   * implementations.
-   *
-   * @throws IllegalArgumentException if {@code tolerance} is {@code < 0} or NaN
-   */
-  public static boolean isFuzzyEquals(double a, double b, double tolerance) {
-    return Math.copySign(a - b, 1.0) < tolerance
-        // copySign(x, 1.0) is a branch-free version of abs(x), but with different NaN semantics
-        || (a == b) // needed to ensure that infinities equal themselves
-        || (Double.isNaN(a) && Double.isNaN(b));
-  }
-
-  public static final boolean isFuzzyEquals(org.hipparchus.complex.Complex x,
-      org.hipparchus.complex.Complex y, double tolerance) {
-    return isFuzzyEquals(x.getReal(), y.getReal(), tolerance) //
-        && isFuzzyEquals(x.getImaginary(), y.getImaginary(), tolerance);
-  }
-
-  /**
-   * Test if <code>a</code> and <code>b</code> are almost the same values by comparing the
-   * {@link Double#doubleToLongBits(double)} values.
-   * <p>
-   * See also the implementation of {@link Double#compare(double, double)}
+   * Check if the given integer value is valid, i.e., not equal to {@link Config#INVALID_INT}. Use
+   * this predicate in a conditional expression after method {@link IExpr#toIntDefault()} to check
+   * if the Java <code>int</code> value is in the range
+   * <code>Integer.MIN_VALUE+1, Integer.MAX_VALUE</code>
    * 
-   * @param a
-   * @param b
+   * @param value the integer value to be checked
+   * @return <code>true</code> if the given integer value is not equal to
+   *         {@link Config#INVALID_INT}, otherwise <code>false</code>
+   * @see IExpr#toIntDefault()
    */
-  public static boolean isAlmostSame(double a, double b) {
-    if (a == b) {
-      return true;
-    } else {
-      long ai = Double.doubleToLongBits(a);
-      long bi = Double.doubleToLongBits(b);
-      return -1 <= ai - bi && ai - bi <= 1;
-    }
+  public static boolean isPresent(int value) {
+    return value != Config.INVALID_INT;
   }
 
-  /**
-   * Calculate the relative difference between x and y. In case |x+y|/2 is zero the absolute
-   * difference is returned.
-   *
-   * @param x first value
-   * @param y second value
-   * @return relative error
-   */
-  public static double relativeDifference(final double x, final double y) {
-    double error;
-    if (Double.isInfinite(x) && Double.isInfinite(y)) {
-      if (Double.compare(x, y) == 0) {
-        error = 0;
-      } else {
-        error = Double.POSITIVE_INFINITY;
-      }
-    } else {
-      final double z = java.lang.Math.abs(x + y) / 2;
-      error = java.lang.Math.abs(x - y);
-      if (z > 0) {
-        error /= z;
-      }
-    }
-    return error;
+  public static boolean isPresent(long value) {
+    return value != Config.INVALID_LONG;
+  }
+
+  public static boolean isSystemInitialized() {
+    return systemInitialized;
+  }
+
+  public static boolean isZero(Apcomplex x, Apfloat epsilon) {
+    Apfloat epsNegate = epsilon.negate();
+    return x.real().compareTo(epsNegate) > 0 && x.real().compareTo(epsilon) < 0 //
+        && x.imag().compareTo(epsNegate) > 0 && x.imag().compareTo(epsilon) < 0;
+  }
+
+  public static boolean isZero(Apcomplex x, double epsilon) {
+    Apfloat eps = new Apfloat(epsilon, x.precision());
+    return isZero(x, eps);
+  }
+
+  public static boolean isZero(Apfloat x, Apfloat epsilon) {
+    return x.compareTo(epsilon.negate()) > 0 && x.compareTo(epsilon) < 0;
+  }
+
+  public static boolean isZero(Apfloat x, double epsilon) {
+    Apfloat eps = new Apfloat(epsilon, x.precision());
+    return x.compareTo(eps.negate()) > 0 && x.compareTo(eps) < 0;
   }
 
   /**
@@ -6065,19 +6133,6 @@ public class F extends S {
    */
   public static boolean isZero(double value) {
     return isZero(value, Config.MACHINE_EPSILON);
-  }
-
-  /**
-   * Test if the absolute value is less <code>Config.MACHINE_EPSILON</code>.
-   *
-   * @param value
-   * @return
-   */
-  public static boolean isZero(org.hipparchus.complex.Complex value) {
-    return org.hipparchus.complex.Complex.equals(value, org.hipparchus.complex.Complex.ZERO,
-        Config.MACHINE_EPSILON);
-    // return isZero(value.getReal(), Config.MACHINE_EPSILON) && isZero(value.getImaginary(),
-    // Config.MACHINE_EPSILON);
   }
 
   /**
@@ -6094,43 +6149,25 @@ public class F extends S {
   /**
    * Test if the absolute value is less <code>Config.MACHINE_EPSILON</code>.
    *
+   * @param value
+   * @return
+   */
+  public static boolean isZero(org.hipparchus.complex.Complex value) {
+    return org.hipparchus.complex.Complex.equals(value, org.hipparchus.complex.Complex.ZERO,
+        Config.MACHINE_EPSILON);
+    // return isZero(value.getReal(), Config.MACHINE_EPSILON) && isZero(value.getImaginary(),
+    // Config.MACHINE_EPSILON);
+  }
+
+  /**
+   * Test if the absolute value is less <code>Config.MACHINE_EPSILON</code>.
+   *
    * @param x
    * @param epsilon
    * @return
    */
   public static boolean isZero(org.hipparchus.complex.Complex x, double epsilon) {
     return org.hipparchus.complex.Complex.equals(x, org.hipparchus.complex.Complex.ZERO, epsilon);
-  }
-
-  public static boolean isZero(Apfloat x, double epsilon) {
-    Apfloat eps = new Apfloat(epsilon, x.precision());
-    return x.compareTo(eps.negate()) > 0 && x.compareTo(eps) < 0;
-  }
-
-  public static boolean isZero(Apfloat x, Apfloat epsilon) {
-    return x.compareTo(epsilon.negate()) > 0 && x.compareTo(epsilon) < 0;
-  }
-
-  public static boolean isZero(Apcomplex x, double epsilon) {
-    Apfloat eps = new Apfloat(epsilon, x.precision());
-    return isZero(x, eps);
-  }
-
-  public static boolean isZero(Apcomplex x, Apfloat epsilon) {
-    Apfloat epsNegate = epsilon.negate();
-    return x.real().compareTo(epsNegate) > 0 && x.real().compareTo(epsilon) < 0 //
-        && x.imag().compareTo(epsNegate) > 0 && x.imag().compareTo(epsilon) < 0;
-  }
-
-  /**
-   * Create JavaScript form data in the given format.
-   *
-   * @param plainJavaScript
-   * @param format
-   * @return
-   */
-  public static IAST JSFormData(final String plainJavaScript, final String format) {
-    return new AST2(JSFormData, $str(plainJavaScript), $str(format));
   }
 
   public static IAST JacobiAmplitude(final IExpr a0, final IExpr a1) {
@@ -6149,6 +6186,10 @@ public class F extends S {
     return new AST2(JacobiDC, a0, a1);
   }
 
+  public static IAST JacobiDN(final IExpr a0, final IExpr a1) {
+    return new AST2(JacobiDN, a0, a1);
+  }
+
   public static IAST JacobiEpsilon(final IExpr a0, final IExpr a1) {
     return new AST2(JacobiEpsilon, a0, a1);
   }
@@ -6163,10 +6204,6 @@ public class F extends S {
 
   public static IAST JacobiP(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
     return function(JacobiP, a0, a1, a2, a3);
-  }
-
-  public static IAST JacobiDN(final IExpr a0, final IExpr a1) {
-    return new AST2(JacobiDN, a0, a1);
   }
 
   public static IAST JacobiSC(final IExpr a0, final IExpr a1) {
@@ -6191,6 +6228,17 @@ public class F extends S {
 
   public static IAST Join(final IExpr a0, final IExpr a1) {
     return new AST2(Join, a0, a1);
+  }
+
+  /**
+   * Create JavaScript form data in the given format.
+   *
+   * @param plainJavaScript
+   * @param format
+   * @return
+   */
+  public static IAST JSFormData(final String plainJavaScript, final String format) {
+    return new AST2(JSFormData, $str(plainJavaScript), $str(format));
   }
 
   public static IAST KelvinBei(final IExpr a0, final IExpr a1) {
@@ -6241,6 +6289,10 @@ public class F extends S {
     return new AST2(LCM, a0, a1);
   }
 
+  public static IAST LeafCount(final IExpr expr) {
+    return new AST1(LeafCount, expr);
+  }
+
   public static IAST LegendreP(final IExpr a0, final IExpr a1) {
     return new AST2(LegendreP, a0, a1);
   }
@@ -6255,10 +6307,6 @@ public class F extends S {
 
   public static IAST LegendreQ(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(LegendreQ, a0, a1, a2);
-  }
-
-  public static IAST LeafCount(final IExpr expr) {
-    return new AST1(LeafCount, expr);
   }
 
   public static IAST Length(final IExpr expr) {
@@ -6282,21 +6330,6 @@ public class F extends S {
    */
   public static IAST Less(final IExpr x, final IExpr y) {
     return new B2.Less(x, y);
-  }
-
-  /**
-   * Yields {@link S#True} if <code>x</code> is known to be less than <code>y</code>.
-   *
-   * <p>
-   * See: <a href=
-   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Less.md">Less</a>
-   *
-   * @param x
-   * @param y
-   * @return
-   */
-  public static IAST Less(final IExpr x, final int y) {
-    return new B2.Less(x, ZZ(y));
   }
 
   /**
@@ -6326,18 +6359,18 @@ public class F extends S {
   }
 
   /**
-   * Yields {@link S#True} if <code>x</code> is known to be less equal than <code>y</code>.
+   * Yields {@link S#True} if <code>x</code> is known to be less than <code>y</code>.
    *
    * <p>
    * See: <a href=
-   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LessEqual.md">LessEqual</a>
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Less.md">Less</a>
    *
    * @param x
    * @param y
    * @return
    */
-  public static IAST LessEqual(final IExpr x, final IExpr y) {
-    return new B2.LessEqual(x, y);
+  public static IAST Less(final IExpr x, final int y) {
+    return new B2.Less(x, ZZ(y));
   }
 
   /**
@@ -6351,8 +6384,8 @@ public class F extends S {
    * @param y
    * @return
    */
-  public static IAST LessEqual(final IExpr x, final int y) {
-    return new B2.LessEqual(x, ZZ(y));
+  public static IAST LessEqual(final IExpr x, final IExpr y) {
+    return new B2.LessEqual(x, y);
   }
 
   /**
@@ -6374,6 +6407,21 @@ public class F extends S {
 
   public static IAST LessEqual(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
     return quaternary(LessEqual, a0, a1, a2, a3);
+  }
+
+  /**
+   * Yields {@link S#True} if <code>x</code> is known to be less equal than <code>y</code>.
+   *
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LessEqual.md">LessEqual</a>
+   *
+   * @param x
+   * @param y
+   * @return
+   */
+  public static IAST LessEqual(final IExpr x, final int y) {
+    return new B2.LessEqual(x, ZZ(y));
   }
 
   public static IAST LeviCivitaTensor(final IExpr d) {
@@ -6422,290 +6470,60 @@ public class F extends S {
   }
 
   /**
-   * Calulate the allocation size for a new {@link IAST} object. If <code>predicate#test()</code>
-   * returns <code>true</code> add the arguments {@link IAST#argSize()} to the <code>ast.argSize()
-   * </code>
+   * Return a single value as a <code>List()</code>
    *
-   * @param ast
-   * @param predicate
+   * @param expr
    * @return
    */
-  public static int allocLevel1(final IAST ast, Predicate<IExpr> predicate) {
-    int allocSize = ast.argSize();
-    for (int i = 1; i < ast.size(); i++) {
-      final IExpr arg = ast.get(i);
-      if (predicate.test(arg)) {
-        allocSize += arg.argSize();
-      }
-    }
-    return allocSize;
+  public static IAST list(final IExpr expr) {
+    return new B1.List(expr);
+  }
+
+  public static IAST list(IExpr expr1, IExpr... array) {
+    IExpr[] args = new IExpr[array.length + 1];
+    args[0] = expr1;
+    System.arraycopy(array, 0, args, 1, array.length);
+    return F.List(args);
   }
 
   /**
-   * Determine the minimum of the <code>ast</code> {@link IAST#argSize()} and integer number 7
+   * Return a pair of values as a <code>List()</code>
    *
-   * @param ast
+   * @param x1
+   * @param x2
    * @return
    */
-  public static int allocMin8(IAST ast) {
-    return ast.argSize() < 7 ? ast.argSize() : 7;
+  public static IAST list(final IExpr x1, final IExpr x2) {
+    return new B2.List(x1, x2);
+  }
+
+  public static IAST list(IExpr expr1, IExpr expr2, IExpr... array) {
+    IExpr[] args = new IExpr[array.length + 2];
+    args[0] = expr1;
+    args[1] = expr2;
+    System.arraycopy(array, 0, args, 2, array.length);
+    return F.List(args);
   }
 
   /**
-   * Determine the minimum of the <code>size</code> and integer number 7
+   * Return a triple of values as a <code>List()</code>
    *
-   * @param size
+   * @param x1
+   * @param x2
+   * @param x3
    * @return
    */
-  public static int allocMin8(int size) {
-    return size < 7 && size > 0 ? size : 7;
+  public static IAST list(final IExpr x1, final IExpr x2, final IExpr x3) {
+    return new B3.List(x1, x2, x3);
   }
 
-  /**
-   * Determine the minimum of the <code>ast</code> {@link IAST#argSize()} and integer number 15
-   *
-   * @param ast
-   * @return
-   */
-  public static int allocMin16(IAST ast) {
-    return ast.argSize() < 15 ? ast.argSize() : 15;
-  }
-
-  /**
-   * Determine the minimum of the <code>size</code> and integer number 15
-   *
-   * @param size
-   * @return
-   */
-  public static int allocMin16(int size) {
-    return size < 15 && size > 0 ? size : 15;
-  }
-
-  /**
-   * Determine the minimum of the <code>ast</code> {@link IAST#argSize()} and integer number 31,
-   *
-   * @param ast
-   * @return
-   */
-  public static int allocMin32(IAST ast) {
-    return ast.argSize() < 31 ? ast.argSize() : 31;
-  }
-
-  /**
-   * Determine the minimum of the <code>size</code> and integer number 31
-   *
-   * @param size
-   * @return
-   */
-  public static int allocMin32(int size) {
-    return size < 31 && size > 0 ? size : 31;
-  }
-
-  /**
-   * Determine the minimum of the <code>ast</code> {@link IAST#argSize()} and integer number 63,
-   *
-   * @param ast
-   * @return
-   */
-  public static int allocMin64(IAST ast) {
-    return ast.argSize() < 63 ? ast.argSize() : 63;
-  }
-
-  /**
-   * Determine the maximum of the <code>ast</code> {@link IAST#argSize()} and integer number 7,
-   *
-   * @param ast
-   * @return
-   */
-  public static int allocMax8(IAST ast) {
-    return ast.argSize() > 7 ? ast.argSize() : 7;
-  }
-
-  /**
-   * Determine the maximum of the <code>ast</code> {@link IAST#argSize()} and integer number 15,
-   *
-   * @param ast
-   * @return
-   */
-  public static int allocMax16(IAST ast) {
-    return ast.argSize() > 15 ? ast.argSize() : 15;
-  }
-
-  /**
-   * Determine the maximum of the <code>ast</code> {@link IAST#argSize()} and integer number 31,
-   *
-   * @param ast
-   * @return
-   */
-  public static int allocMax32(IAST ast) {
-    return ast.argSize() > 31 ? ast.argSize() : 31;
-  }
-
-  /**
-   * Determine the maximum of the <code>ast</code> {@link IAST#argSize()} and integer number 63,
-   *
-   * @param ast
-   * @return
-   */
-  public static int allocMax64(IAST ast) {
-    return ast.argSize() > 63 ? ast.argSize() : 63;
-  }
-
-  /**
-   * Create an appendable list <code>{...}</code> as an {@link IASTAppendable} expression with the
-   * {@link S#List} head and an initial capacity of <code>7</code> for the number of expected list
-   * elements.
-   *
-   * @return an {@link IASTAppendable} expression which can be used to append elements to the list
-   *         with head {@link S#List}
-   * @see {@link #List()} to create an empty unmodifiable AST
-   */
-  public static IASTAppendable ListAlloc() {
-    return ast(List, 7);
-  }
-
-  /**
-   * Create an appendable list <code>{...}</code> as an {@link IASTAppendable} expression with the
-   * {@link S#List} head and an initial capacity for the number of expected list elements.
-   * <p>
-   * See: <a href=
-   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/List.md">List</a>
-   *
-   * @param initialCapacity the number of expected list elements
-   * @return an {@link IASTAppendable} expression which can be used to append elements to the list
-   *         with head {@link S#List}
-   */
-  public static IASTAppendable ListAlloc(int initialCapacity) {
-    return ast(List, initialCapacity);
-  }
-
-
-
-  /**
-   * Create a new <code>List</code> with the capacity <code>collection.size()</code> and append the
-   * elements of the collection.
-   *
-   * @param collection the collection which holds the elements which should be appended
-   * @return
-   */
-  public static IASTAppendable ListAlloc(Collection<? extends IExpr> collection) {
-    return ListAlloc(collection, 0);
-  }
-
-  /**
-   * Create a new <code>List</code> with the capacity <code>collection.size() + capacity</code> and
-   * append the elements of the collection.
-   *
-   * @param collection
-   * @param capacity
-   * @return
-   */
-  public static IASTAppendable ListAlloc(Collection<? extends IExpr> collection, int capacity) {
-    IASTAppendable result = ast(List, collection.size() + capacity);
-    result.appendAll(collection);
-    return result;
-  }
-
-  /**
-   * Create an appendable list <code>{ }</code>.
-   *
-   * @param a
-   * @return
-   * @see {@link #List(final IExpr...)} to create an unmodifiable AST
-   */
-  public static IASTAppendable ListAlloc(final IExpr... a) {
-    return ast(a, List);
-  }
-
-  /**
-   * Constructs a list that holds the expressions of the input stream.
-   * 
-   * <p>
-   * for instance,
-   * <ul>
-   * <li>if the stream consists of {@link IReal}s, the return value represents a vector,
-   * <li>if the stream consists of vectors, the return value represents a matrix.
-   * <li>if the stream consists of matrices, the return value represents a tensor with rank 3.
-   * <li>etc.
-   * </ul>
-   * 
-   * @param stream of expressions to form the first level of the return value
-   * @return list that holds the expressions of the input stream
-   */
-  public static IASTAppendable ListAlloc(Stream<? extends IExpr> stream) {
-    return ListAlloc(stream.map(IExpr.class::cast).collect(Collectors.toList()));
-  }
-
-  public static IASTAppendable ListAlloc(IntStream stream) {
-    return ListAlloc(stream.mapToObj(i -> F.ZZ(i)));
-  }
-
-
-  public static IAST TemplateSlot(final IExpr a0) {
-    return new AST1(TemplateSlot, a0);
-  }
-
-  public static IAST TemplateSlot(final IExpr a0, final IExpr a1) {
-    return new AST2(TemplateSlot, a0, a1);
-  }
-
-  public static IAST TensorDimensions(final IExpr a0) {
-    return new AST1(TensorDimensions, a0);
-  }
-
-  /**
-   * For positive n, add the first n elements of <code>numbers</code> to the list.For negative n,
-   * add the last n elements of <code>numbers</code> to the list.
-   *
-   * @param n
-   * @param numbers
-   * @return
-   */
-  public static IAST tensorList(final int n, final Integer... numbers) {
-    int nPositive = n;
-    if (n < 0) {
-      nPositive = -n;
-    }
-    int size = numbers.length;
-    if (nPositive > size) {
-      nPositive = size;
-    }
-    IInteger[] a = new IInteger[nPositive];
-    if (n < 0) {
-      if (nPositive < size) {
-        size = size + n;
-      } else {
-        size = 0;
-      }
-      int j = 0;
-      for (int i = numbers.length - 1; i >= size; i--) {
-        a[j++] = ZZ(numbers[i]);
-      }
-    } else {
-      if (n < size) {
-        size = n;
-      }
-      for (int i = 0; i < size; i++) {
-        a[i] = ZZ(numbers[i]);
-      }
-    }
-    return ast(a, List);
-  }
-
-  public static IASTMutable List(final double... numbers) {
-    INum[] a = new INum[numbers.length];
-    for (int i = 0; i < numbers.length; i++) {
-      a[i] = num(numbers[i]);
-    }
-    return function(List, a);
-  }
-
-  public static IASTMutable List(final String... strs) {
-    IStringX[] a = new IStringX[strs.length];
-    for (int i = 0; i < strs.length; i++) {
-      a[i] = stringx(strs[i]);
-    }
-    return function(List, a);
+  public static IAST list(IExpr expr1, IExpr expr2, IExpr expr3, IExpr... array) {
+    IExpr[] args = new IExpr[array.length + 3];
+    args[0] = expr1;
+    args[1] = expr2;
+    args[2] = expr3;
+    System.arraycopy(array, 0, args, 3, array.length);
+    return F.List(args);
   }
 
   /**
@@ -6718,20 +6536,12 @@ public class F extends S {
     return CEmptyList;
   }
 
-  /**
-   * Create an immutable list <code>{ }</code> by converting the {@link Object}s expression types
-   * into {@link IExpr} types.
-   *
-   * @param objects the objects which should be converted, before adding them to the list
-   * @return a <code>List(...)</code> of expressions
-   * @see {@link Object2Expr#convert(Object, boolean, boolean)} for the conversion rules.
-   */
-  public static IAST listOfObjects(final Object... objects) {
-    IExpr[] a = new IExpr[objects.length];
-    for (int i = 0; i < objects.length; i++) {
-      a[i] = Object2Expr.convert(objects[i], true, false);
+  public static IASTMutable List(final double... numbers) {
+    INum[] a = new INum[numbers.length];
+    for (int i = 0; i < numbers.length; i++) {
+      a[i] = num(numbers[i]);
     }
-    return List(a);
+    return function(List, a);
   }
 
   /**
@@ -6783,72 +6593,14 @@ public class F extends S {
     return ast(a, List);
   }
 
-  public static IAST list(IExpr expr1, IExpr... array) {
-    IExpr[] args = new IExpr[array.length + 1];
-    args[0] = expr1;
-    System.arraycopy(array, 0, args, 1, array.length);
-    return F.List(args);
-  }
 
-  public static IAST list(IExpr expr1, IExpr expr2, IExpr... array) {
-    IExpr[] args = new IExpr[array.length + 2];
-    args[0] = expr1;
-    args[1] = expr2;
-    System.arraycopy(array, 0, args, 2, array.length);
-    return F.List(args);
-  }
 
-  public static IAST list(IExpr expr1, IExpr expr2, IExpr expr3, IExpr... array) {
-    IExpr[] args = new IExpr[array.length + 3];
-    args[0] = expr1;
-    args[1] = expr2;
-    args[2] = expr3;
-    System.arraycopy(array, 0, args, 3, array.length);
-    return F.List(args);
-  }
-
-  /**
-   * Return a single value as a <code>List()</code>
-   *
-   * @param expr
-   * @return
-   */
-  public static IAST list(final IExpr expr) {
-    return new B1.List(expr);
-  }
-
-  /**
-   * Return a pair of values as a <code>List()</code>
-   *
-   * @param x1
-   * @param x2
-   * @return
-   */
-  public static IAST list(final IExpr x1, final IExpr x2) {
-    return new B2.List(x1, x2);
-  }
-
-  /**
-   * Return a pair of values as a <code>List()</code>
-   *
-   * @param x1
-   * @param x2
-   * @return
-   */
-  public static Pair pair(final IExpr x1, final IExpr x2) {
-    return new Pair(x1, x2);
-  }
-
-  /**
-   * Return a triple of values as a <code>List()</code>
-   *
-   * @param x1
-   * @param x2
-   * @param x3
-   * @return
-   */
-  public static IAST list(final IExpr x1, final IExpr x2, final IExpr x3) {
-    return new B3.List(x1, x2, x3);
+  public static IASTMutable List(final int... numbers) {
+    IInteger[] a = new IInteger[numbers.length];
+    for (int i = 0; i < numbers.length; i++) {
+      a[i] = ZZ(numbers[i]);
+    }
+    return function(List, a);
   }
 
   public static IAST List(final long... numbers) {
@@ -6859,16 +6611,120 @@ public class F extends S {
     return List(a);
   }
 
-  public static IASTMutable List(final int... numbers) {
-    IInteger[] a = new IInteger[numbers.length];
-    for (int i = 0; i < numbers.length; i++) {
-      a[i] = ZZ(numbers[i]);
+  public static IASTMutable List(final String... strs) {
+    IStringX[] a = new IStringX[strs.length];
+    for (int i = 0; i < strs.length; i++) {
+      a[i] = stringx(strs[i]);
     }
     return function(List, a);
   }
 
+  /**
+   * Create an appendable list <code>{...}</code> as an {@link IASTAppendable} expression with the
+   * {@link S#List} head and an initial capacity of <code>7</code> for the number of expected list
+   * elements.
+   *
+   * @return an {@link IASTAppendable} expression which can be used to append elements to the list
+   *         with head {@link S#List}
+   * @see {@link #List()} to create an empty unmodifiable AST
+   */
+  public static IASTAppendable ListAlloc() {
+    return ast(List, 7);
+  }
+
+  /**
+   * Create a new <code>List</code> with the capacity <code>collection.size()</code> and append the
+   * elements of the collection.
+   *
+   * @param collection the collection which holds the elements which should be appended
+   * @return
+   */
+  public static IASTAppendable ListAlloc(Collection<? extends IExpr> collection) {
+    return ListAlloc(collection, 0);
+  }
+
+
+  /**
+   * Create a new <code>List</code> with the capacity <code>collection.size() + capacity</code> and
+   * append the elements of the collection.
+   *
+   * @param collection
+   * @param capacity
+   * @return
+   */
+  public static IASTAppendable ListAlloc(Collection<? extends IExpr> collection, int capacity) {
+    IASTAppendable result = ast(List, collection.size() + capacity);
+    result.appendAll(collection);
+    return result;
+  }
+
+  /**
+   * Create an appendable list <code>{ }</code>.
+   *
+   * @param a
+   * @return
+   * @see {@link #List(final IExpr...)} to create an unmodifiable AST
+   */
+  public static IASTAppendable ListAlloc(final IExpr... a) {
+    return ast(a, List);
+  }
+
+  /**
+   * Create an appendable list <code>{...}</code> as an {@link IASTAppendable} expression with the
+   * {@link S#List} head and an initial capacity for the number of expected list elements.
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/List.md">List</a>
+   *
+   * @param initialCapacity the number of expected list elements
+   * @return an {@link IASTAppendable} expression which can be used to append elements to the list
+   *         with head {@link S#List}
+   */
+  public static IASTAppendable ListAlloc(int initialCapacity) {
+    return ast(List, initialCapacity);
+  }
+
+  public static IASTAppendable ListAlloc(IntStream stream) {
+    return ListAlloc(stream.mapToObj(i -> F.ZZ(i)));
+  }
+
+  /**
+   * Constructs a list that holds the expressions of the input stream.
+   * 
+   * <p>
+   * for instance,
+   * <ul>
+   * <li>if the stream consists of {@link IReal}s, the return value represents a vector,
+   * <li>if the stream consists of vectors, the return value represents a matrix.
+   * <li>if the stream consists of matrices, the return value represents a tensor with rank 3.
+   * <li>etc.
+   * </ul>
+   * 
+   * @param stream of expressions to form the first level of the return value
+   * @return list that holds the expressions of the input stream
+   */
+  public static IASTAppendable ListAlloc(Stream<? extends IExpr> stream) {
+    return ListAlloc(stream.map(IExpr.class::cast).collect(Collectors.toList()));
+  }
+
   public static IAST ListConvolve(final IExpr a0, final IExpr a1) {
     return new AST2(ListConvolve, a0, a1);
+  }
+
+  /**
+   * Create an immutable list <code>{ }</code> by converting the {@link Object}s expression types
+   * into {@link IExpr} types.
+   *
+   * @param objects the objects which should be converted, before adding them to the list
+   * @return a <code>List(...)</code> of expressions
+   * @see {@link Object2Expr#convert(Object, boolean, boolean)} for the conversion rules.
+   */
+  public static IAST listOfObjects(final Object... objects) {
+    IExpr[] a = new IExpr[objects.length];
+    for (int i = 0; i < objects.length; i++) {
+      a[i] = Object2Expr.convert(objects[i], true, false);
+    }
+    return List(a);
   }
 
   public static IAST ListPlot(final IExpr a) {
@@ -6924,6 +6780,49 @@ public class F extends S {
     return new AST1(Literal, a0);
   }
 
+  public static IBuiltInSymbol localBiFunction(String symbolName, BinaryOperator<IExpr> function) {
+    return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
+      @Override
+      public IExpr evaluate(IAST ast, EvalEngine engine) {
+        return function.apply(ast.arg1(), ast.arg2());
+      }
+    });
+  }
+
+  public static IBuiltInSymbol localBiPredicate(String symbolName,
+      BiPredicate<IExpr, IExpr> function) {
+    return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
+      @Override
+      public IExpr evaluate(IAST ast, EvalEngine engine) {
+        return booleSymbol(function.test(ast.arg1(), ast.arg2()));
+      }
+    });
+  }
+
+  public static IBuiltInSymbol localFunction(String symbolName, IFunctionEvaluator evaluator) {
+    IBuiltInSymbol localBuiltIn = new BuiltInDummy(symbolName);
+    localBuiltIn.setEvaluator(evaluator);
+    return localBuiltIn;
+  }
+
+  public static IBuiltInSymbol localFunction(String symbolName, UnaryOperator<IExpr> function) {
+    return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
+      @Override
+      public IExpr evaluate(IAST ast, EvalEngine engine) {
+        return function.apply(ast.arg1());
+      }
+    });
+  }
+
+  public static IBuiltInSymbol localPredicate(String symbolName, Predicate<IExpr> function) {
+    return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
+      @Override
+      public IExpr evaluate(IAST ast, EvalEngine engine) {
+        return booleSymbol(function.test(ast.arg1()));
+      }
+    });
+  }
+
   /**
    * Returns the natural logarithm of <code>z</code>.
    *
@@ -6936,16 +6835,6 @@ public class F extends S {
    */
   public static IAST Log(final IExpr z) {
     return new B1.Log(z);
-  }
-
-  /**
-   * Returns the natural logarithm of <code>z</code>.
-   * 
-   * @param z
-   * @return
-   */
-  public static IAST Log(final int z) {
-    return new B1.Log(F.ZZ(z));
   }
 
   /**
@@ -6972,6 +6861,16 @@ public class F extends S {
    */
   public static IAST Log(final IExpr base, final int z) {
     return Log(base, F.ZZ(z));
+  }
+
+  /**
+   * Returns the natural logarithm of <code>z</code>.
+   * 
+   * @param z
+   * @return
+   */
+  public static IAST Log(final int z) {
+    return new B1.Log(F.ZZ(z));
   }
 
   /**
@@ -7063,6 +6962,26 @@ public class F extends S {
 
   public static IAST Manipulate(final IExpr a0, final IExpr a1) {
     return new AST2(Manipulate, a0, a1);
+  }
+
+  public static IAST Map(final IExpr f) {
+    return new AST1(Map, f);
+  }
+
+  public static IAST Map(final IExpr f, final IExpr expr) {
+    return new AST2(Map, f, expr);
+  }
+
+  public static IAST Map(final IExpr f, final IExpr expr, final IExpr levelspec) {
+    return new AST3(Map, f, expr, levelspec);
+  }
+
+  public static IAST MapAll(final IExpr a0) {
+    return new AST1(MapAll, a0);
+  }
+
+  public static IASTMutable MapApply(final IExpr f, final IExpr expr) {
+    return new AST2(MapApply, f, expr);
   }
 
   public static IASTAppendable mapFunction(final IExpr head, final IAST ast) {
@@ -7225,6 +7144,15 @@ public class F extends S {
     return F.NIL;
   }
 
+  public static IASTAppendable mapList(final List<IExpr> list, Function<IExpr, IExpr> function,
+      Predicate<IExpr> predicate) {
+    IASTAppendable result = F.ast(S.List, list.size());
+    if (result.append(list, function, predicate)) {
+      return result;
+    }
+    return F.NIL;
+  }
+
   /**
    * Iterates over the lists elements and calls the function. Append the functions result expression
    * at the end of the result list, if the function results is not equal {@link F#NIL}. If the
@@ -7243,33 +7171,6 @@ public class F extends S {
     return F.NIL;
   }
 
-  public static IASTAppendable mapList(final List<IExpr> list, Function<IExpr, IExpr> function,
-      Predicate<IExpr> predicate) {
-    IASTAppendable result = F.ast(S.List, list.size());
-    if (result.append(list, function, predicate)) {
-      return result;
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Iterates over the set elements and calls the function. Append the functions result expression
-   * at the end of the result list, if the function results is not equal {@link F#NIL}. If the
-   * function results is <code>null</code> stop iterating and return <code>false</code>.
-   * 
-   * @param exprSet
-   * @param function
-   * @return {@link F#NIL} if the function returns <code>null</code>
-   */
-  public static IASTAppendable mapSet(final Set<? extends IExpr> exprSet,
-      Function<IExpr, IExpr> function) {
-    IASTAppendable result = F.ast(S.List, exprSet.size());
-    if (result.append(exprSet, function)) {
-      return result;
-    }
-    return F.NIL;
-  }
-
   /**
    * Iterates over the maps (key, value) pairs and calls the function. Append the functions result
    * expression at the end of the result list, if the function results is not equal {@link F#NIL}.
@@ -7283,28 +7184,6 @@ public class F extends S {
       BiFunction<IExpr, IExpr, IExpr> biFunction) {
     IASTAppendable result = F.ast(S.List, map.size());
     if (result.append(map, biFunction)) {
-      return result;
-    }
-    return F.NIL;
-  }
-
-  /**
-   * Create an integer range between <code>iMin</code> (inclusive) and <code>iMax</code> (exclusive)
-   * and call the function with the elements of the created range. Append the result of the
-   * <code>function</code> to the returned result list.If it's equal {@link F#NIL} then don't
-   * appending an entry. If it's equal <code>null</code> then return {@link F#NIL} for this method.
-   * 
-   * @param iMin minimum range limit (inclusive)
-   * @param iMax maximum range limit (exclusive)
-   * @param function function those <code>apply(x)</code> method will be called with each number in
-   *        the range. If the <code>apply</code> method returns <code>null</code> then return
-   *        {@link F#NIL}.
-   * @return
-   */
-  public static <T extends IExpr> IASTAppendable mapRange(final int iMin, final int iMax,
-      IntFunction<T> function) {
-    IASTAppendable result = F.ListAlloc(iMax - iMin);
-    if (result.append(iMin, iMax, function)) {
       return result;
     }
     return F.NIL;
@@ -7334,28 +7213,48 @@ public class F extends S {
     return F.NIL;
   }
 
-  public static IAST Map(final IExpr f) {
-    return new AST1(Map, f);
+  /**
+   * Create an integer range between <code>iMin</code> (inclusive) and <code>iMax</code> (exclusive)
+   * and call the function with the elements of the created range. Append the result of the
+   * <code>function</code> to the returned result list.If it's equal {@link F#NIL} then don't
+   * appending an entry. If it's equal <code>null</code> then return {@link F#NIL} for this method.
+   * 
+   * @param iMin minimum range limit (inclusive)
+   * @param iMax maximum range limit (exclusive)
+   * @param function function those <code>apply(x)</code> method will be called with each number in
+   *        the range. If the <code>apply</code> method returns <code>null</code> then return
+   *        {@link F#NIL}.
+   * @return
+   */
+  public static <T extends IExpr> IASTAppendable mapRange(final int iMin, final int iMax,
+      IntFunction<T> function) {
+    IASTAppendable result = F.ListAlloc(iMax - iMin);
+    if (result.append(iMin, iMax, function)) {
+      return result;
+    }
+    return F.NIL;
   }
 
-  public static IAST Map(final IExpr f, final IExpr expr) {
-    return new AST2(Map, f, expr);
-  }
-
-  public static IAST Map(final IExpr f, final IExpr expr, final IExpr levelspec) {
-    return new AST3(Map, f, expr, levelspec);
-  }
-
-  public static IASTMutable MapApply(final IExpr f, final IExpr expr) {
-    return new AST2(MapApply, f, expr);
+  /**
+   * Iterates over the set elements and calls the function. Append the functions result expression
+   * at the end of the result list, if the function results is not equal {@link F#NIL}. If the
+   * function results is <code>null</code> stop iterating and return <code>false</code>.
+   * 
+   * @param exprSet
+   * @param function
+   * @return {@link F#NIL} if the function returns <code>null</code>
+   */
+  public static IASTAppendable mapSet(final Set<? extends IExpr> exprSet,
+      Function<IExpr, IExpr> function) {
+    IASTAppendable result = F.ast(S.List, exprSet.size());
+    if (result.append(exprSet, function)) {
+      return result;
+    }
+    return F.NIL;
   }
 
   public static IAST MapThread(final IExpr f, final IExpr expr) {
     return new AST2(MapThread, f, expr);
-  }
-
-  public static IAST MapAll(final IExpr a0) {
-    return new AST1(MapAll, a0);
   }
 
   public static IAST MatchQ(final IExpr expr, final IExpr form) {
@@ -7366,6 +7265,37 @@ public class F extends S {
     return new AST1(MathMLForm, expr);
   }
 
+  public static IAST Matrices(final IExpr a0) {
+    return new AST1(Matrices, a0);
+  }
+
+  public static IAST Matrices(final IExpr a0, final IExpr a1) {
+    return new AST2(Matrices, a0, a1);
+  }
+
+  public static IAST Matrices(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(Matrices, a0, a1, a2);
+  }
+
+  /**
+   * Generate a <code>n x m</code> matrix. The indices start in Java convention with <code>0</code>.
+   *
+   * @param biFunction
+   * @param n the number of rows of the matrix.
+   * @param m the number of elements in one row
+   * @return
+   */
+  public static IASTMutable matrix(BiIntFunction<? extends IExpr> biFunction, int n, int m) {
+    if (n > Config.MAX_MATRIX_DIMENSION_SIZE || m > Config.MAX_MATRIX_DIMENSION_SIZE) {
+      ASTElementLimitExceeded.throwIt(((long) n) * ((long) m));
+    }
+    IASTAppendable matrix = mapRange(0, n, i -> mapRange(0, m, j -> biFunction.apply(i, j)));
+    // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
+    // isMatrix() must be used!
+    matrix.isMatrix(true);
+    return matrix;
+  }
+
   public static IAST MatrixD(final IExpr expr, final IExpr x) {
     return new AST2(MatrixD, expr, x);
   }
@@ -7374,12 +7304,12 @@ public class F extends S {
     return new AST1(MatrixExp, a0);
   }
 
-  public static IAST MatrixLog(final IExpr a0) {
-    return new AST1(MatrixLog, a0);
-  }
-
   public static IAST MatrixForm(final IExpr a0) {
     return new AST1(MatrixForm, a0);
+  }
+
+  public static IAST MatrixLog(final IExpr a0) {
+    return new AST1(MatrixLog, a0);
   }
 
   public static IAST MatrixPower(final IExpr matrix, final IExpr n) {
@@ -7394,6 +7324,10 @@ public class F extends S {
     return new AST1(Max, a0);
   }
 
+  public static IAST Max(final IExpr... args) {
+    return new AST(Max, args);
+  }
+
   public static IAST Max(final IExpr a0, final IExpr a1) {
     return new AST2(Max, a0, a1);
   }
@@ -7404,10 +7338,6 @@ public class F extends S {
 
   public static IAST Max(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
     return quaternary(Max, a0, a1, a2, a3);
-  }
-
-  public static IAST Max(final IExpr... args) {
-    return new AST(Max, args);
   }
 
   public static IAST Maximize(final IExpr a0, final IExpr a1) {
@@ -7462,6 +7392,10 @@ public class F extends S {
     return new AST1(Min, a0);
   }
 
+  public static IAST Min(final IExpr... args) {
+    return new AST(Min, args);
+  }
+
   public static IAST Min(final IExpr a0, final IExpr a1) {
     return new AST2(Min, a0, a1);
   }
@@ -7472,10 +7406,6 @@ public class F extends S {
 
   public static IAST Min(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
     return quaternary(Min, a0, a1, a2, a3);
-  }
-
-  public static IAST Min(final IExpr... args) {
-    return new AST(Min, args);
   }
 
   public static IAST Minimize(final IExpr a0, final IExpr a1) {
@@ -7502,12 +7432,12 @@ public class F extends S {
     return new B1.Missing(reason);
   }
 
-  public static IAST Missing(final String reason) {
-    return new B1.Missing(stringx(reason));
-  }
-
   public static IAST Missing(final IExpr a0, final IExpr a1) {
     return new AST2(Missing, a0, a1);
+  }
+
+  public static IAST Missing(final String reason) {
+    return new B1.Missing(stringx(reason));
   }
 
   /**
@@ -7533,14 +7463,6 @@ public class F extends S {
    */
   public static IAST MissingQ(final IExpr a0) {
     return new AST1(MissingQ, a0);
-  }
-
-  public static IAST MoebiusMu(final IExpr a0) {
-    return new AST1(MoebiusMu, a0);
-  }
-
-  public static IAST Moment(final IExpr a0, final int r) {
-    return new AST2(Moment, a0, F.ZZ(r));
   }
 
   public static IAST mod(IExpr a, Integer i) {
@@ -7579,8 +7501,24 @@ public class F extends S {
     return new AST2(Module, listOfLocalVariables, expr);
   }
 
+  public static IAST MoebiusMu(final IExpr a0) {
+    return new AST1(MoebiusMu, a0);
+  }
+
+  public static IAST Moment(final IExpr a0, final int r) {
+    return new AST2(Moment, a0, F.ZZ(r));
+  }
+
   public static IAST Most(final IExpr a0) {
     return new AST1(Most, a0);
+  }
+
+  public static IAST Multinomial(final IExpr... a) {
+    return function(Multinomial, a);
+  }
+
+  public static IAST MultiplicativeOrder(final IExpr a0, final IExpr a1) {
+    return new AST2(MultiplicativeOrder, a0, a1);
   }
 
   public static IExpr multiply(IExpr a, Integer i) {
@@ -7597,14 +7535,6 @@ public class F extends S {
 
   public static IExpr multiply(java.math.BigInteger i, IExpr b) {
     return Times(ZZ(i), b);
-  }
-
-  public static IAST Multinomial(final IExpr... a) {
-    return function(Multinomial, a);
-  }
-
-  public static IAST MultiplicativeOrder(final IExpr a0, final IExpr a1) {
-    return new AST2(MultiplicativeOrder, a0, a1);
   }
 
   public static IASTMutable MultiplySides(final IExpr equationOrInequality, final IExpr x) {
@@ -7678,12 +7608,12 @@ public class F extends S {
     return new AST1(Negative, x);
   }
 
-  public static IAST Nest(final IExpr a0, final IExpr a1, final int n) {
-    return Nest(a0, a1, ZZ(n));
-  }
-
   public static IAST Nest(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(Nest, a0, a1, a2);
+  }
+
+  public static IAST Nest(final IExpr a0, final IExpr a1, final int n) {
+    return Nest(a0, a1, ZZ(n));
   }
 
   /**
@@ -7698,20 +7628,20 @@ public class F extends S {
     return AST.newInstance(intialArgumentsCapacity, head, false);
   }
 
-  public static IAST NIntegrate(final IExpr f, final IExpr x) {
-    return new AST2(NIntegrate, f, x);
-  }
-
-  public static IAST NIntegrate(final IExpr f, final IExpr x, final IExpr optionRule) {
-    return new AST3(NIntegrate, f, x, optionRule);
-  }
-
   public static IAST NewLimit(final IExpr f, final IExpr rule) {
     return new AST2(NewLimit, f, rule);
   }
 
   public static IAST NewLimit(final IExpr f, final IExpr rule, final IExpr direction) {
     return new AST3(NewLimit, f, rule, direction);
+  }
+
+  public static IAST NIntegrate(final IExpr f, final IExpr x) {
+    return new AST2(NIntegrate, f, x);
+  }
+
+  public static IAST NIntegrate(final IExpr f, final IExpr x, final IExpr optionRule) {
+    return new AST3(NIntegrate, f, x, optionRule);
   }
 
   public static IAST NMaximize(final IExpr a0, final IExpr a1) {
@@ -7747,23 +7677,6 @@ public class F extends S {
     return new AST2(NormalDistribution, a0, a1);
   }
 
-  public static IAST NSum(final IExpr f, final IExpr x) {
-    return new AST2(NSum, f, x);
-  }
-
-  public static IAST ParetoDistribution(final IExpr a0, final IExpr a1) {
-    return new AST2(ParetoDistribution, a0, a1);
-  }
-
-  public static IAST ParetoDistribution(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(ParetoDistribution, a0, a1, a2);
-  }
-
-  public static IAST ParetoDistribution(final IExpr a0, final IExpr a1, final IExpr a2,
-      final IExpr a3) {
-    return quaternary(ParetoDistribution, a0, a1, a2, a3);
-  }
-
   public static IAST Normalize(final IExpr a) {
     return new AST1(Normalize, a);
   }
@@ -7791,6 +7704,10 @@ public class F extends S {
     return new AST2(NRoots, a0, a1);
   }
 
+  public static IAST NSum(final IExpr f, final IExpr x) {
+    return new AST2(NSum, f, x);
+  }
+
   public static IAST NullSpace(final IExpr a0) {
     return new AST1(NullSpace, a0);
   }
@@ -7804,6 +7721,32 @@ public class F extends S {
    */
   public static INum num(final Apfloat af) {
     return ApfloatNum.valueOf(af);
+  }
+
+  /**
+   * Return a {@link Num} which wraps a Java double number.
+   *
+   * @param value
+   * @return
+   */
+  public static Num num(final double value) {
+    return Num.valueOf(value);
+  }
+
+  public static INum num(final IFraction value) {
+    EvalEngine engine = EvalEngine.get();
+    if (engine.isArbitraryMode()) {
+      return ApfloatNum.valueOf(value.toBigNumerator(), value.toBigDenominator());
+    }
+    return Num.valueOf(value.doubleValue());
+  }
+
+  public static INum num(final IInteger value) {
+    EvalEngine engine = EvalEngine.get();
+    if (engine.isArbitraryMode()) {
+      return ApfloatNum.valueOf(value.toBigNumerator());
+    }
+    return num(value.doubleValue());
   }
 
   /**
@@ -7833,32 +7776,6 @@ public class F extends S {
    */
   public static INum num(String numberStr, long precision) {
     return num(new Apfloat(numberStr, precision));
-  }
-
-  /**
-   * Return a {@link Num} which wraps a Java double number.
-   *
-   * @param value
-   * @return
-   */
-  public static Num num(final double value) {
-    return Num.valueOf(value);
-  }
-
-  public static INum num(final IFraction value) {
-    EvalEngine engine = EvalEngine.get();
-    if (engine.isArbitraryMode()) {
-      return ApfloatNum.valueOf(value.toBigNumerator(), value.toBigDenominator());
-    }
-    return Num.valueOf(value.doubleValue());
-  }
-
-  public static INum num(final IInteger value) {
-    EvalEngine engine = EvalEngine.get();
-    if (engine.isArbitraryMode()) {
-      return ApfloatNum.valueOf(value.toBigNumerator());
-    }
-    return num(value.doubleValue());
   }
 
   /**
@@ -7966,40 +7883,143 @@ public class F extends S {
     return new AST1(OddQ, x);
   }
 
+  public static IAST On(final IExpr a0) {
+    return new AST1(On, a0);
+  }
+
   public static IAST On(final IExpr a0, final IExpr a1) {
     return new AST2(On, a0, a1);
   }
 
-  public static IAST On(final IExpr a0) {
-    return new AST1(On, a0);
+  public static String openHTMLOnDesktop(String html) throws IOException {
+    File temp = java.io.File.createTempFile("tempfile", ".html");
+    try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp));) {
+      bw.write(html);
+    }
+    if (Config.JAVA_AWT_DESKTOP_AVAILABLE) {
+      if (Desktop.isDesktopSupported()) {
+        Desktop.getDesktop().open(temp);
+      }
+    }
+    return temp.toString();
+  }
+
+  public static String openJSONOnDesktop(String html) throws IOException {
+    java.lang.String escapedStr = html.replaceAll("(\\r|\\n|\\r\\n)+", " ");
+    escapedStr = StringEscapeUtils.escapeEcmaScript(escapedStr);
+    String jsonScriptStr = StringUtils.replace(JSBuilder.JSON_HTML_VIEWER, "`1`", escapedStr);
+    File temp = java.io.File.createTempFile("tempfile", ".html");
+    try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp));) {
+      bw.write(jsonScriptStr);
+    }
+    if (Config.JAVA_AWT_DESKTOP_AVAILABLE) {
+      if (Desktop.isDesktopSupported()) {
+        Desktop.getDesktop().open(temp);
+      }
+    }
+    return temp.toString();
+  }
+
+  /**
+   * The operator form <code>op(f)[expr]</code> is transformed to <code>op(expr, f)</code>. The
+   * operator form <code>op(f, g)[expr]</code> is transformed to <code>op(expr, f, g)</code>
+   *
+   * @param ast1 an IAST with condition <code>ast1Arg.head().isAST1() && ast1Arg.isAST1()</code>
+   * @return
+   */
+  public static IAST operatorForm1Append(final IAST ast1) {
+    if (ast1.isAST1() && ast1.head().isAST() && ast1.head().size() > 1) {
+      IAST head = (IAST) ast1.head();
+      switch (head.size()) {
+        case 2:
+          return new AST2(ast1.topHead(), ast1.arg1(), head.arg1());
+        case 3:
+          return new AST3(ast1.topHead(), ast1.arg1(), head.arg1(), head.arg2());
+        default:
+          IASTAppendable result = ast(ast1.topHead(), head.size() + 1);
+          result.append(ast1.arg1());
+          result.appendArgs(head);
+          return result;
+      }
+    }
+    return NIL;
+  }
+
+  /**
+   * The operator form <code>op(f)[expr]</code> is transformed to <code>op(f, expr)</code>. The
+   * operator form <code>op(f)[expr1, expr2]</code> is transformed to <code>op(f, expr1, expr2)
+   * </code>.
+   *
+   * @param ast1 an <code>IAST</code> with condition <code>
+   *     ast1Arg.head().isAST1() && ast1Arg.isAST1()</code>
+   * @return
+   */
+  public static IAST operatorForm2Prepend(final IAST ast1, int[] expected, EvalEngine engine) {
+    if (ast1.head().isAST1() && ast1.argSize() > 0) {
+      if (ast1.argSize() + 1 < expected[0] || ast1.argSize() + 1 > expected[1]) {
+        return Errors.printArgMessage(ast1, expected, engine);
+      }
+      IExpr headArg1 = ast1.head().first();
+      switch (ast1.size()) {
+        case 2:
+          return new AST2(ast1.topHead(), headArg1, ast1.arg1());
+        case 3:
+          return new AST3(ast1.topHead(), headArg1, ast1.arg1(), ast1.arg2());
+        default:
+          IASTAppendable result = ast(ast1.topHead(), ast1.size() + 1);
+          result.append(headArg1);
+          result.appendArgs(ast1);
+          return result;
+      }
+    }
+    return NIL;
+  }
+
+  /**
+   * The binary operator form <code>op(f, g)[expr]</code> is transformed to <code>op(expr, f, g)
+   * </code>
+   *
+   * @param astArg an IAST with condition <code>astArg.head().isAST2() && astArg.isAST1()</code>
+   * @return
+   */
+  public static IAST operatorFormAppend2(final IAST astArg) {
+    if (astArg.head().isAST2() && astArg.isAST1()) {
+      return new AST3(astArg.topHead(), astArg.arg1(), ((IAST) astArg.head()).arg1(),
+          ((IAST) astArg.head()).arg2());
+    }
+    return NIL;
   }
 
   public static IAST OptimizeExpression(final IExpr a0) {
     return new AST1(OptimizeExpression, a0);
   }
 
-  public static IAST Optional(final IExpr a0, final IExpr a1) {
-    return new AST2(Optional, a0, a1);
-  }
-
   public static IAST Optional(final IExpr a0) {
     return new AST1(Optional, a0);
+  }
+
+  public static IAST Optional(final IExpr a0, final IExpr a1) {
+    return new AST2(Optional, a0, a1);
   }
 
   public static IAST Options(final IExpr a0) {
     return new AST1(Options, a0);
   }
 
-  public static IAST OptionValue(final IExpr a0, final IExpr a1) {
-    return new AST2(OptionValue, a0, a1);
-  }
-
   public static IAST OptionValue(final IExpr a0) {
     return new AST1(OptionValue, a0);
   }
 
+  public static IAST OptionValue(final IExpr a0, final IExpr a1) {
+    return new AST2(OptionValue, a0, a1);
+  }
+
   public static IASTAppendable Or() {
     return ast(Or);
+  }
+
+  public static IAST Or(final IExpr... expr) {
+    return function(Or, expr);
   }
 
   /**
@@ -8037,20 +8057,16 @@ public class F extends S {
     return new B3.Or(expr1, expr2, expr3);
   }
 
-  public static IAST Or(final IExpr... expr) {
-    return function(Or, expr);
-  }
-
   public static IAST Order(final IExpr a0, final IExpr a1) {
     return new AST2(Order, a0, a1);
   }
 
-  public static IAST Ordering(final IExpr a) {
-    return new AST1(Ordering, a);
-  }
-
   public static IAST OrderedQ(final IExpr a) {
     return new AST1(OrderedQ, a);
+  }
+
+  public static IAST Ordering(final IExpr a) {
+    return new AST1(Ordering, a);
   }
 
   public static IAST Out(final IExpr a0) {
@@ -8069,8 +8085,32 @@ public class F extends S {
     return new AST2(PadeApproximant, a0, a1);
   }
 
+  /**
+   * Return a pair of values as a <code>List()</code>
+   *
+   * @param x1
+   * @param x2
+   * @return
+   */
+  public static Pair pair(final IExpr x1, final IExpr x2) {
+    return new Pair(x1, x2);
+  }
+
   public static IAST Parenthesis(final IExpr a0) {
     return new AST1(Parenthesis, a0);
+  }
+
+  public static IAST ParetoDistribution(final IExpr a0, final IExpr a1) {
+    return new AST2(ParetoDistribution, a0, a1);
+  }
+
+  public static IAST ParetoDistribution(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(ParetoDistribution, a0, a1, a2);
+  }
+
+  public static IAST ParetoDistribution(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
+    return quaternary(ParetoDistribution, a0, a1, a2, a3);
   }
 
   /**
@@ -8079,6 +8119,14 @@ public class F extends S {
    */
   public static IASTAppendable Part() {
     return ast(Part);
+  }
+
+  /**
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
+   */
+  public static IASTAppendable Part(final IExpr... a) {
+    return Part(0, a);
   }
 
   /**
@@ -8116,14 +8164,6 @@ public class F extends S {
    * See: <a href=
    * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
    */
-  public static IASTAppendable Part(final IExpr... a) {
-    return Part(0, a);
-  }
-
-  /**
-   * See: <a href=
-   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Part.md">Part</a>
-   */
   public static IASTAppendable Part(final int extraSize, final IExpr... a) {
     IASTAppendable part = ast(Part, a.length + extraSize + 1);
     for (int i = 0; i < a.length; i++) {
@@ -8138,6 +8178,29 @@ public class F extends S {
 
   public static IAST PartitionsQ(final IExpr a0) {
     return new AST1(PartitionsQ, a0);
+  }
+
+  /**
+   * Create a pattern for pattern-matching and term rewriting
+   *
+   * @param symbol
+   * @return IPattern
+   */
+  public static IPattern pattern(final ISymbol symbol) {
+    return org.matheclipse.core.expression.Pattern.valueOf(symbol);
+  }
+
+  /**
+   * Create a pattern for pattern-matching and term rewriting
+   *
+   * @param symbol
+   * @param check additional condition which should be checked in pattern-matching
+   * @param def if <code>true</code>, the pattern can match to a default value associated with the
+   *        AST's head the pattern is used in.
+   * @return IPattern
+   */
+  public static IPattern pattern(final ISymbol symbol, final IExpr check, final boolean def) {
+    return org.matheclipse.core.expression.Pattern.valueOf(symbol, check, def);
   }
 
   /**
@@ -8237,21 +8300,6 @@ public class F extends S {
   }
 
   /**
-   * Create an appendable addition <code>Plus(...)</code> expression as an {@link IASTAppendable}
-   * with the {@link S#Plus} head and an initial capacity for the number of expected arguments.
-   * <p>
-   * See: <a href=
-   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
-   *
-   * @param initialCapacity the number of expected arguments
-   * @return an {@link IASTAppendable} object which can be used to append arguments to the
-   *         {@link S#Plus} expression
-   */
-  public static IASTAppendable PlusAlloc(int initialCapacity) {
-    return ast(Plus, initialCapacity);
-  }
-
-  /**
    * See: <a href=
    * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
    */
@@ -8276,19 +8324,6 @@ public class F extends S {
         return new AST3(Plus, a[0], a[1], a[2]);
       default:
         return new AST(Plus, a);
-    }
-  }
-
-  public static IAST PlusMinus(final IExpr... a) {
-    switch (a.length) {
-      case 1:
-        return new AST1(PlusMinus, a[0]);
-      case 2:
-        return new AST2(PlusMinus, a[0], a[1]);
-      case 3:
-        return new AST3(PlusMinus, a[0], a[1], a[2]);
-      default:
-        return new AST(PlusMinus, a);
     }
   }
 
@@ -8338,12 +8373,108 @@ public class F extends S {
     return ast;
   }
 
+  /**
+   * Create an appendable addition <code>Plus(...)</code> expression as an {@link IASTAppendable}
+   * with the {@link S#Plus} head and an initial capacity for the number of expected arguments.
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Plus.md">Plus</a>
+   *
+   * @param initialCapacity the number of expected arguments
+   * @return an {@link IASTAppendable} object which can be used to append arguments to the
+   *         {@link S#Plus} expression
+   */
+  public static IASTAppendable PlusAlloc(int initialCapacity) {
+    return ast(Plus, initialCapacity);
+  }
+
+  public static IAST PlusMinus(final IExpr... a) {
+    switch (a.length) {
+      case 1:
+        return new AST1(PlusMinus, a[0]);
+      case 2:
+        return new AST2(PlusMinus, a[0], a[1]);
+      case 3:
+        return new AST3(PlusMinus, a[0], a[1], a[2]);
+      default:
+        return new AST(PlusMinus, a);
+    }
+  }
+
+  private static IASTMutable plusOrderless(Predicate<IExpr> t, final IExpr a1, final IExpr a2) {
+    final boolean test1 = t.test(a1);
+    final boolean test2 = t.test(a2);
+    if (test1 || test2) {
+      int size = test1 ? a1.size() : 1;
+      size += test2 ? a2.size() : 1;
+      IASTAppendable result = ast(Plus, size);
+      if (test1) {
+        result.appendArgs((IAST) a1);
+      } else {
+        result.append(a1);
+      }
+      if (test2) {
+        result.appendArgs((IAST) a2);
+      } else {
+        result.append(a2);
+      }
+      EvalAttributes.sort(result);
+      return result;
+    }
+    if (a1.compareTo(a2) > 0) {
+      // swap arguments
+      return new B2.Plus(a2, a1);
+    }
+    return new B2.Plus(a1, a2);
+  }
+
+  private static IASTMutable plusOrderless(Predicate<IExpr> t, final IExpr a1, final IExpr a2,
+      final IExpr a3) {
+    final boolean test1 = t.test(a1);
+    final boolean test2 = t.test(a2);
+    final boolean test3 = t.test(a3);
+    if (test1 || test2 || test3) {
+      int size = test1 ? a1.size() : 1;
+      size += test2 ? a2.size() : 1;
+      size += test3 ? a3.size() : 1;
+      IASTAppendable result = ast(Plus, size);
+      if (test1) {
+        result.appendArgs((IAST) a1);
+      } else {
+        result.append(a1);
+      }
+      if (test2) {
+        result.appendArgs((IAST) a2);
+      } else {
+        result.append(a2);
+      }
+      if (test3) {
+        result.appendArgs((IAST) a3);
+      } else {
+        result.append(a3);
+      }
+      EvalAttributes.sort(result);
+      return result;
+    }
+    IASTMutable result = new B3.Plus(a1, a2, a3);
+    EvalAttributes.sort(result);
+    return result;
+  }
+
   public static IAST Pochhammer(final IExpr a0, final IExpr a1) {
     return new AST2(Pochhammer, a0, a1);
   }
 
   public static IAST Point(final IAST list) {
     return new B1.Point(list);
+  }
+
+  public static IAST PointSize(final double value) {
+    return new AST1(PointSize, F.num(value));
+  }
+
+  public static IAST PointSize(final IExpr a0) {
+    return new AST1(PointSize, a0);
   }
 
   public static IAST PoissonDistribution(final IExpr a0) {
@@ -8409,14 +8540,6 @@ public class F extends S {
 
   public static IAST PolynomialRemainder(final IExpr poly1, final IExpr poly2, final IExpr x) {
     return new AST3(PolynomialRemainder, poly1, poly2, x);
-  }
-
-  public static IAST PointSize(final IExpr a0) {
-    return new AST1(PointSize, a0);
-  }
-
-  public static IAST PointSize(final double value) {
-    return new AST1(PointSize, F.num(value));
   }
 
   public static IAST Position(final IExpr a0, final IExpr a1) {
@@ -8547,13 +8670,94 @@ public class F extends S {
     return function(Print, a);
   }
 
-  /**
-   * @param expr expression which should be multiplied up
-   * @param iterationSpecification a standard iteration specification
-   * @return <code>Product(expr, iterationSpecification)</code> AST
-   */
-  public static IAST Product(final IExpr expr, final IExpr iterationSpecification) {
-    return new AST2(Product, expr, iterationSpecification);
+  private static String printJSFormData(IExpr expr) {
+    IAST jsFormData = (IAST) expr;
+    if (jsFormData.arg2().toString().equals(JSBuilder.MATHCELL_STR)) {
+      try {
+        String manipulateStr = jsFormData.arg1().toString();
+        String html = JSBuilder.buildMathcell(JSBuilder.MATHCELL_TEMPLATE, manipulateStr);
+        return openHTMLOnDesktop(html);
+      } catch (Exception ex) {
+        Errors.rethrowsInterruptException(ex);
+        // LOGGER.debug("F.printJSFormData() failed", ex);
+      }
+      // } else if (jsFormData.arg2().toString().equals("graphics3d")) {
+      // try {
+      // String graphics3dStr = jsFormData.arg1().toString();
+      // String html = Config.GRAPHICS3D_PAGE;
+      // html = StringUtils.replace(html, "`1`", graphics3dStr);
+      // return openHTMLOnDesktop(html);
+      // } catch (Exception ex) {
+      // LOGGER.debug("F.printJSFormData() failed", ex);
+      // }
+    } else if (jsFormData.arg2().toString().equals(JSBuilder.ECHARTS_STR)) {
+      try {
+        String manipulateStr = jsFormData.arg1().toString();
+        String html = JSBuilder.buildECharts(JSBuilder.ECHARTS_TEMPLATE, manipulateStr);
+        return openHTMLOnDesktop(html);
+      } catch (Exception ex) {
+        Errors.rethrowsInterruptException(ex);
+        // LOGGER.debug("F.printJSFormData() failed", ex);
+      }
+    } else if (jsFormData.arg2().toString().equals(JSBuilder.JSXGRAPH_STR)) {
+      try {
+        String manipulateStr = jsFormData.arg1().toString();
+        String html = JSBuilder.buildJSXGraph(JSBuilder.JSXGRAPH_TEMPLATE, manipulateStr);
+        return openHTMLOnDesktop(html);
+      } catch (Exception ex) {
+        Errors.rethrowsInterruptException(ex);
+        // LOGGER.debug("F.printJSFormData() failed", ex);
+      }
+    } else if (jsFormData.arg2().toString().equals(JSBuilder.MERMAID_STR)) {
+      try {
+        String manipulateStr = jsFormData.arg1().toString();
+        String html = JSBuilder.buildMermaid(JSBuilder.MERMAID_TEMPLATE, manipulateStr);
+        return openHTMLOnDesktop(html);
+      } catch (Exception ex) {
+        Errors.rethrowsInterruptException(ex);
+        // LOGGER.debug("F.printJSFormData() failed", ex);
+      }
+    } else if (jsFormData.arg2().toString().equals(JSBuilder.PLOTLY_STR)) {
+      try {
+        String manipulateStr = jsFormData.arg1().toString();
+        String html = JSBuilder.buildPlotly(JSBuilder.PLOTLY_TEMPLATE, manipulateStr);
+        return openHTMLOnDesktop(html);
+      } catch (Exception ex) {
+        Errors.rethrowsInterruptException(ex);
+        // LOGGER.debug("F.printJSFormData() failed", ex);
+      }
+    } else if (jsFormData.arg2().toString().equals(JSBuilder.TREEFORM_STR)) {
+      try {
+        String manipulateStr = jsFormData.arg1().toString();
+        String html = Config.VISJS_PAGE;
+        html = StringUtils.replace(html, "`1`", manipulateStr);
+        html = StringUtils.replace(html, "`2`", //
+            "  var options = {\n" + "          edges: {\n" + "              smooth: {\n"
+                + "                  type: 'cubicBezier',\n"
+                + "                  forceDirection:  'vertical',\n"
+                + "                  roundness: 0.4\n" + "              }\n" + "          },\n"
+                + "          layout: {\n" + "              hierarchical: {\n"
+                + "                  direction: \"UD\"\n" + "              }\n" + "          },\n"
+                + "          nodes: {\n" + "            shape: 'box'\n" + "          },\n"
+                + "          physics:false\n" + "      }; " //
+        );
+        return openHTMLOnDesktop(html);
+      } catch (Exception ex) {
+        Errors.rethrowsInterruptException(ex);
+        // LOGGER.debug("F.printJSFormData() failed", ex);
+      }
+    } else if (jsFormData.arg2().toString().equals(JSBuilder.TRACEFORM_STR)) {
+      try {
+        String jsStr = jsFormData.arg1().toString();
+        String html = Config.TRACEFORM_PAGE;
+        html = StringUtils.replace(html, "`1`", jsStr);
+        return openHTMLOnDesktop(html);
+      } catch (Exception ex) {
+        Errors.rethrowsInterruptException(ex);
+        // LOGGER.debug("F.printJSFormData() failed", ex);
+      }
+    }
+    return null;
   }
 
   /**
@@ -8570,12 +8774,30 @@ public class F extends S {
     return intProduct(function, from, to, 1);
   }
 
+  /**
+   * @param expr expression which should be multiplied up
+   * @param iterationSpecification a standard iteration specification
+   * @return <code>Product(expr, iterationSpecification)</code> AST
+   */
+  public static IAST Product(final IExpr expr, final IExpr iterationSpecification) {
+    return new AST2(Product, expr, iterationSpecification);
+  }
+
   public static IAST ProductLog(final IExpr a0) {
     return new AST1(ProductLog, a0);
   }
 
   public static IAST ProductLog(final IExpr a0, final IExpr a1) {
     return new AST2(ProductLog, a0, a1);
+  }
+
+  public static IRational productRational(final IntFunction<IRational> function, final int from,
+      final int to, final int step) {
+    IRational result = C1;
+    for (int i = from; i <= to; i += step) {
+      result = result.multiply(function.apply(i));
+    }
+    return result;
   }
 
   public static IAST PseudoInverse(final IExpr a0) {
@@ -8592,6 +8814,10 @@ public class F extends S {
     return AbstractFractionSym.valueOf(frac);
   }
 
+  public static IFraction QQ(final BigInteger numerator, final BigInteger denominator) {
+    return AbstractFractionSym.valueOf(numerator, denominator);
+  }
+
   /**
    * Create a "fractional" number <code>numerator / denominator</code>
    *
@@ -8600,10 +8826,6 @@ public class F extends S {
    * @return IFraction
    */
   public static IFraction QQ(final IInteger numerator, final IInteger denominator) {
-    return AbstractFractionSym.valueOf(numerator, denominator);
-  }
-
-  public static IFraction QQ(final BigInteger numerator, final BigInteger denominator) {
     return AbstractFractionSym.valueOf(numerator, denominator);
   }
 
@@ -8620,11 +8842,6 @@ public class F extends S {
 
   public static IAST QRDecomposition(final IExpr a0) {
     return new AST1(QRDecomposition, a0);
-  }
-
-  public static final IASTAppendable quaternary(final IExpr head, final IExpr a0, final IExpr a1,
-      final IExpr a2, final IExpr a3) {
-    return new AST(new IExpr[] {head, a0, a1, a2, a3});
   }
 
   /**
@@ -8722,6 +8939,11 @@ public class F extends S {
     return new AST1(Quartiles, a0);
   }
 
+  public static final IASTAppendable quaternary(final IExpr head, final IExpr a0, final IExpr a1,
+      final IExpr a2, final IExpr a3) {
+    return new AST(new IExpr[] {head, a0, a1, a2, a3});
+  }
+
   public static IAST Quiet(final IExpr a0) {
     return new AST1(Quiet, a0);
   }
@@ -8795,6 +9017,33 @@ public class F extends S {
     return new AST2(Rationalize, a0, a1);
   }
 
+  public static IExpr Re(final IExpr a0) {
+    if (a0 != null && a0.isNumber()) {
+      return ((INumber) a0).re();
+    }
+    return new B1.Re(a0);
+  }
+
+  public static IAST RealAbs(final IExpr a) {
+    return new AST1(RealAbs, a);
+  }
+
+  public static IAST RealSign(final IExpr a) {
+    return new AST1(RealSign, a);
+  }
+
+  public static IAST RealValuedNumberQ(final IExpr a) {
+    return new AST1(RealValuedNumberQ, a);
+  }
+
+  public static IAST RealValuedNumericQ(final IExpr a) {
+    return new AST1(RealValuedNumericQ, a);
+  }
+
+  public static IAST Reap(final IExpr a) {
+    return new AST1(Reap, a);
+  }
+
   public static IAST Rectangle(final IAST originList) {
     return new AST1(Rectangle, originList);
   }
@@ -8824,33 +9073,6 @@ public class F extends S {
     return ast.stream(startInclusive, endExclusive).reduce(identity, accumulator);
   }
 
-  public static IExpr Re(final IExpr a0) {
-    if (a0 != null && a0.isNumber()) {
-      return ((INumber) a0).re();
-    }
-    return new B1.Re(a0);
-  }
-
-  public static IAST RealAbs(final IExpr a) {
-    return new AST1(RealAbs, a);
-  }
-
-  public static IAST RealValuedNumberQ(final IExpr a) {
-    return new AST1(RealValuedNumberQ, a);
-  }
-
-  public static IAST RealValuedNumericQ(final IExpr a) {
-    return new AST1(RealValuedNumericQ, a);
-  }
-
-  public static IAST RealSign(final IExpr a) {
-    return new AST1(RealSign, a);
-  }
-
-  public static IAST Reap(final IExpr a) {
-    return new AST1(Reap, a);
-  }
-
   /**
    * Reduce(logic-expression, var) - returns the reduced `logic-expression` for the variable `var`.
    * Reduce works only for the `Reals` domain.
@@ -8877,6 +9099,49 @@ public class F extends S {
 
   public static IAST RegularExpression(final String str) {
     return new AST1(RegularExpression, $str(str));
+  }
+
+  /**
+   * Calculate the relative difference between x and y. In case |x+y|/2 is zero the absolute
+   * difference is returned.
+   *
+   * @param x first value
+   * @param y second value
+   * @return relative error
+   */
+  public static double relativeDifference(final double x, final double y) {
+    double error;
+    if (Double.isInfinite(x) && Double.isInfinite(y)) {
+      if (Double.compare(x, y) == 0) {
+        error = 0;
+      } else {
+        error = Double.POSITIVE_INFINITY;
+      }
+    } else {
+      final double z = java.lang.Math.abs(x + y) / 2;
+      error = java.lang.Math.abs(x - y);
+      if (z > 0) {
+        error /= z;
+      }
+    }
+    return error;
+  }
+
+
+  public static IAST ReleaseHold(final IExpr z) {
+    return new AST1(ReleaseHold, z);
+  }
+
+  /**
+   * Remove a user-defined symbol from the eval engines context path. Doesn't remove predefined
+   * names from the System Context.
+   *
+   * @param symbolName the name of the symbol
+   * @return the removed symbol or <code>null</code> if no symbol was found
+   */
+  public static ISymbol removeUserSymbol(final String symbolName) {
+    ContextPath contextPath = EvalEngine.get().getContextPath();
+    return contextPath.removeSymbol(symbolName);
   }
 
   public static IAST Replace(final IExpr a0, final IExpr a1) {
@@ -8911,290 +9176,6 @@ public class F extends S {
     return new AST3(Resultant, a0, a1, a2);
   }
 
-  public static IAST RGBColor(final IExpr red, final IExpr green, final IExpr blue) {
-    return new AST3(RGBColor, red, green, blue);
-  }
-
-  public static IAST RGBColor(final double red, final double green, final double blue) {
-    return new AST3(RGBColor, num(red), num(green), num(blue));
-  }
-
-
-  /**
-   * Get or create a user defined symbol which is retrieved from the evaluation engines context
-   * path.
-   *
-   * @param symbolName the name of the symbol
-   * @return the symbol object from the context path
-   */
-  public static ISymbol symbol(final String symbolName) {
-    return symbol(symbolName, null, EvalEngine.get());
-  }
-
-  /**
-   * Get or create a user defined symbol which is retrieved from the evaluation engines context
-   * path.
-   *
-   * @param symbolName the name of the symbol
-   * @param engine the evaluation engine
-   * @return the symbol object from the context path
-   */
-  public static ISymbol symbol(final String symbolName, EvalEngine engine) {
-    return symbol(symbolName, null, engine);
-  }
-
-  /**
-   * Get or create a user defined symbol which is retrieved from the evaluation engines context
-   * path. Additional set assumptions to the engines global assumptions. Use <code>#1</code> or
-   * {@link F#Slot1} in the <code>assumptionAST</code> expression for this symbol.
-   *
-   * @param symbolName the name of the symbol
-   * @param assumptionAST the assumptions which should be set for the symbol. Use <code>#1</code> or
-   *        {@link F#Slot1} in the <code>assumptionAST</code> expression for this symbol.
-   * @return the symbol object from the context path
-   */
-  public static ISymbol symbol(final String symbolName, IAST assumptionAST) {
-    return symbol(symbolName, assumptionAST, EvalEngine.get());
-  }
-
-  /**
-   * Get or create a user defined symbol which is retrieved from the evaluation engines context
-   * path. Additional set assumptions to the engines global assumptions. Use <code>#1</code> or
-   * {@link F#Slot1} in the <code>assumptionAST</code> expression for this symbol.
-   *
-   * @param symbolName the name of the symbol
-   * @param assumptionAST the assumptions which should be set for the symbol. Use <code>#1</code> or
-   *        {@link F#Slot1} in the <code>assumptionAST</code> expression for this symbol.
-   * @param engine the evaluation engine
-   * @return the symbol object from the context path
-   */
-  public static ISymbol symbol(final String symbolName, IAST assumptionAST, EvalEngine engine) {
-    ISymbol symbol =
-        engine.getContextPath().symbol(symbolName, engine.getContext(), engine.isRelaxedSyntax());
-    if (assumptionAST != null) {
-      IExpr temp = Lambda.replaceSlots(assumptionAST, List(symbol)).orElse(assumptionAST);
-      if (temp.isAST()) {
-        IAssumptions assumptions = engine.getAssumptions();
-        if (assumptions == null) {
-          assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(temp);
-          engine.setAssumptions(assumptions);
-        } else {
-          assumptions.addAssumption(temp);
-        }
-      }
-    }
-    return symbol;
-  }
-
-  /**
-   * Test if the <code>symbolName</code> is defined in the one of the contexts available on the
-   * context path.
-   *
-   * @param symbolName the name of a symbol
-   * @param engine
-   * @return
-   */
-  public static boolean hasSymbol(final String symbolName, EvalEngine engine) {
-    return engine.getContextPath().hasSymbol(symbolName, engine.isRelaxedSyntax());
-  }
-
-  public static ISymbol symbol(final String symbolName, final String contextStr, IAST assumptionAST,
-      EvalEngine engine) {
-    if (contextStr.length() == 0) {
-      return symbol(symbolName, assumptionAST, engine);
-    }
-    ISymbol symbol;
-    ContextPath contextPath = engine.getContextPath();
-    Context context = contextPath.getContext(contextStr);
-    // if (context == null) {
-    // contextPath.add(new Context(contextStr));
-    // }
-    symbol = ContextPath.getSymbol(symbolName, context, engine.isRelaxedSyntax());
-    if (assumptionAST != null) {
-      IExpr temp = Lambda.replaceSlots(assumptionAST, List(symbol)).orElse(assumptionAST);
-      if (temp.isAST()) {
-        IAssumptions assumptions = engine.getAssumptions();
-        if (assumptions == null) {
-          assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(temp);
-          engine.setAssumptions(assumptions);
-        } else {
-          assumptions.addAssumption(temp);
-        }
-      }
-    }
-    return symbol;
-  }
-
-  public static ISymbol symbol(final Context context, final String symbolName, EvalEngine engine) {
-    // ContextPath contextPath = engine.getContextPath();
-    return ContextPath.getSymbol(symbolName, context, engine.isRelaxedSyntax());
-  }
-
-  /**
-   * Print the documentation for the given symbol.
-   *
-   * @param head
-   * @return
-   */
-  public static final String usage(final ISymbol head) {
-    return usage(head.toString());
-  }
-
-  /**
-   * Print the documentation for the given symbol name.
-   *
-   * @param symbolName
-   * @return
-   */
-  public static final String usage(final String symbolName) {
-    StringBuilder buf = new StringBuilder();
-    Documentation.usageDocumentation(buf, symbolName);
-    return buf.toString();
-  }
-
-  /**
-   * <p>
-   * Create a unique dummy symbol which is retrieved from the evaluation engines
-   * {@link Context#DUMMY} context.
-   * 
-   * <p>
-   * <b>Note:</b> a &quot;Dummy&quot; symbol will not be found by the expression parser.
-   *
-   * @param symbolName the name of the symbol
-   * @return the symbol object from the {@link Context#DUMMY} context path
-   * @see #symbol(String)
-   */
-  public static ISymbol Dummy(final char symbolName) {
-    return Dummy(new String("" + symbolName));
-  }
-
-  /**
-   * <p>
-   * Create a unique dummy symbol which is retrieved from the evaluation engines
-   * {@link Context#DUMMY} context.
-   * 
-   * <p>
-   * <b>Note:</b> a &quot;Dummy&quot; symbol will not be found by the expression parser.
-   *
-   * @param symbolName the name of the symbol
-   * @return the symbol object from the {@link Context#DUMMY} context path
-   * @see #symbol(String)
-   */
-  public static ISymbol Dummy(final String symbolName) {
-    return Dummy(symbolName, null);
-  }
-
-  /**
-   * <p>
-   * Create a unique dummy symbol which is retrieved from the evaluation engines
-   * {@link Context#DUMMY} context.
-   * 
-   * <p>
-   * <b>Note:</b> a &quot;Dummy&quot; symbol will not be found by the expression parser.
-   *
-   * @param symbolName the name of the symbol
-   * @param assumptionAST the assumptions which should be set for the symbol. Use <code>#1</code> or
-   *        {@link F#Slot1} in the <code>assumptionAST</code> expression for this symbol.
-   * @return the symbol object from the {@link Context#DUMMY} context path
-   * @see #symbol(String)
-   */
-  public static ISymbol Dummy(final String symbolName, IAST assumptionAST) {
-    String name = symbolName;
-    if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
-      if (symbolName.length() != 1) {
-        name = symbolName.toLowerCase(Locale.ENGLISH);
-      }
-    }
-    ISymbol symbol = new Symbol(name, org.matheclipse.core.expression.Context.DUMMY);
-    if (assumptionAST != null) {
-      IExpr temp = Lambda.replaceSlots(assumptionAST, List(symbol)).orElse(assumptionAST);
-      if (temp.isAST()) {
-        EvalEngine engine = EvalEngine.get();
-        IAssumptions assumptions = engine.getAssumptions();
-        if (assumptions == null) {
-          assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(temp);
-          engine.setAssumptions(assumptions);
-        } else {
-          assumptions.addAssumption(temp);
-        }
-      }
-    }
-    return symbol;
-  }
-
-  /**
-   * <p>
-   * Create a unique dummy symbol with prefix "$", which is retrieved from the evaluation engines
-   * DUMMY context.
-   * <p>
-   * <b>Note:</b> a &quot;Dummy&quot; symbol will not be found by the expression parser.
-   *
-   *
-   * @return the symbol object from the context path
-   */
-  public static ISymbol Dummy() {
-    return Dummy(EvalEngine.uniqueName("$"));
-  }
-
-  public static IBuiltInSymbol localBiFunction(String symbolName, BinaryOperator<IExpr> function) {
-    return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
-      @Override
-      public IExpr evaluate(IAST ast, EvalEngine engine) {
-        return function.apply(ast.arg1(), ast.arg2());
-      }
-    });
-  }
-
-  public static IBuiltInSymbol localFunction(String symbolName, UnaryOperator<IExpr> function) {
-    return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
-      @Override
-      public IExpr evaluate(IAST ast, EvalEngine engine) {
-        return function.apply(ast.arg1());
-      }
-    });
-  }
-
-  public static IBuiltInSymbol localFunction(String symbolName, IEvaluator evaluator) {
-    IBuiltInSymbol localBuiltIn = new BuiltInDummy(symbolName);
-    localBuiltIn.setEvaluator(evaluator);
-    return localBuiltIn;
-  }
-
-  public static IBuiltInSymbol localBiPredicate(String symbolName,
-      BiPredicate<IExpr, IExpr> function) {
-    return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
-      @Override
-      public IExpr evaluate(IAST ast, EvalEngine engine) {
-        return booleSymbol(function.test(ast.arg1(), ast.arg2()));
-      }
-    });
-  }
-
-  public static IBuiltInSymbol localPredicate(String symbolName, Predicate<IExpr> function) {
-    return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
-      @Override
-      public IExpr evaluate(IAST ast, EvalEngine engine) {
-        return booleSymbol(function.test(ast.arg1()));
-      }
-    });
-  }
-
-  /**
-   * Remove a user-defined symbol from the eval engines context path. Doesn't remove predefined
-   * names from the System Context.
-   *
-   * @param symbolName the name of the symbol
-   * @return the removed symbol or <code>null</code> if no symbol was found
-   */
-  public static ISymbol removeUserSymbol(final String symbolName) {
-    ContextPath contextPath = EvalEngine.get().getContextPath();
-    return contextPath.removeSymbol(symbolName);
-  }
-
-  public static IAST ReleaseHold(final IExpr z) {
-    return new AST1(ReleaseHold, z);
-  }
-
   public static IAST Return(final IExpr a) {
     if (a.isFalse()) {
       return CReturnFalse;
@@ -9211,6 +9192,14 @@ public class F extends S {
 
   public static IAST ReverseSort(final IExpr a) {
     return new AST1(ReverseSort, a);
+  }
+
+  public static IAST RGBColor(final double red, final double green, final double blue) {
+    return new AST3(RGBColor, num(red), num(green), num(blue));
+  }
+
+  public static IAST RGBColor(final IExpr red, final IExpr green, final IExpr blue) {
+    return new AST3(RGBColor, red, green, blue);
   }
 
   public static IAST RomanNumeral(final IExpr a) {
@@ -9233,10 +9222,6 @@ public class F extends S {
     return new AST2(Roots, a0, a1);
   }
 
-  public static IAST Round(final IExpr x) {
-    return new AST1(Round, x);
-  }
-
   public static IAST RotateLeft(final IAST list, final IExpr n) {
     return new AST2(RotateLeft, list, n);
   }
@@ -9249,6 +9234,10 @@ public class F extends S {
     return new AST1(RotationTransform, x);
   }
 
+  public static IAST Round(final IExpr x) {
+    return new AST1(Round, x);
+  }
+
   public static IAST Row(final IAST list, String separator) {
     return new AST2(Row, list, F.stringx(separator));
   }
@@ -9259,36 +9248,6 @@ public class F extends S {
 
   public static IAST RowReduce(final IExpr m) {
     return new AST1(RowReduce, m);
-  }
-
-  /**
-   * Represents a rule replacing <code>lhsStr</code> with <code>rhs</code>.
-   *
-   * <p>
-   * See: <a href=
-   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rule.md">Rule</a>
-   *
-   * @param lhsStr
-   * @param rhs
-   * @return
-   */
-  public static IAST Rule(final String lhsStr, final IExpr rhs) {
-    return new B2.Rule($str(lhsStr), rhs);
-  }
-
-  /**
-   * Represents a rule replacing <code>lhsStr</code> with <code>rhsStr</code>.
-   *
-   * <p>
-   * See: <a href=
-   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rule.md">Rule</a>
-   *
-   * @param lhsStr
-   * @param rhsStr
-   * @return
-   */
-  public static IAST Rule(final String lhsStr, final String rhsStr) {
-    return new B2.Rule($str(lhsStr), $str(rhsStr));
   }
 
   /**
@@ -9322,6 +9281,36 @@ public class F extends S {
   }
 
   /**
+   * Represents a rule replacing <code>lhsStr</code> with <code>rhs</code>.
+   *
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rule.md">Rule</a>
+   *
+   * @param lhsStr
+   * @param rhs
+   * @return
+   */
+  public static IAST Rule(final String lhsStr, final IExpr rhs) {
+    return new B2.Rule($str(lhsStr), rhs);
+  }
+
+  /**
+   * Represents a rule replacing <code>lhsStr</code> with <code>rhsStr</code>.
+   *
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Rule.md">Rule</a>
+   *
+   * @param lhsStr
+   * @param rhsStr
+   * @return
+   */
+  public static IAST Rule(final String lhsStr, final String rhsStr) {
+    return new B2.Rule($str(lhsStr), $str(rhsStr));
+  }
+
+  /**
    * Represents a rule replacing <code>lhs</code> with <code>rhs</code>, with <code>rhs</code> held
    * unevaluated.
    *
@@ -9335,6 +9324,10 @@ public class F extends S {
    */
   public static IAST RuleDelayed(final IExpr lhs, final IExpr rhs) {
     return new B2.RuleDelayed(lhs, rhs);
+  }
+
+  public static IAST SameQ(final IExpr a0, final double d) {
+    return new AST2(SameQ, a0, num(d));
   }
 
   /**
@@ -9356,10 +9349,6 @@ public class F extends S {
     return new AST3(SatisfiabilityInstances, a0, a1, a2);
   }
 
-  public static IAST SameQ(final IExpr a0, final double d) {
-    return new AST2(SameQ, a0, num(d));
-  }
-
   public static IAST ScalingTransform(final IExpr z) {
     return new AST1(ScalingTransform, z);
   }
@@ -9376,12 +9365,12 @@ public class F extends S {
     return new AST1(Sech, z);
   }
 
-  public static IAST Select(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(Select, a0, a1, a2);
-  }
-
   public static IAST Select(final IExpr a0, final IExpr a1) {
     return new AST2(Select, a0, a1);
+  }
+
+  public static IAST Select(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(Select, a0, a1, a2);
   }
 
   public static final IAST senary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2,
@@ -9455,8 +9444,126 @@ public class F extends S {
     return new AST2(SetDelayed, lhs, rhs);
   }
 
+  private static void setDelayedDownRule(int priority, IExpr leftHandSide, IExpr rightHandSide,
+      boolean packageMode) {
+    if (leftHandSide.isAST()) {
+      final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
+
+      lhsSymbol.putDownRule(IPatternMatcher.SET_DELAYED, false, (IAST) leftHandSide, rightHandSide,
+          priority, packageMode);
+      return;
+    }
+    if (leftHandSide.isSymbol()) {
+      ((ISymbol) leftHandSide).assignValue(rightHandSide, true);
+      return;
+    }
+    throw new RuleCreationError(leftHandSide);
+  }
+
+  /**
+   * 
+   * @param leftHandSide
+   * @param rightHandSide
+   * @param equalRule <code>true</code> if the leftHandSide could be matched with equality
+   * @param packageMode
+   */
+  private static IExpr setDownRule(IAST leftHandSide, IExpr rightHandSide, boolean equalRule,
+      boolean packageMode) {
+    final ISymbol lhsSymbol = leftHandSide.topHead();
+    lhsSymbol.putDownRule(IPatternMatcher.SET, equalRule, leftHandSide, rightHandSide, packageMode);
+    return rightHandSide;
+  }
+
+  private static IExpr setDownRule(ISymbol leftHandSide, IExpr rightHandSide) {
+    leftHandSide.assignValue(rightHandSide, false);
+    return rightHandSide;
+  }
+
+  public static IAST ShearingTransform(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(ShearingTransform, a0, a1, a2);
+  }
+
+  /**
+   * Show the result in an HTML page with the help of the Java <code>Desktop.getDesktop().open()
+   * </code> method. On some platforms the Desktop API may not be supported; use the <code>
+   * isDesktopSupported()</code> method todetermine if the current desktop is supported.
+   *
+   * @param expr
+   * @return
+   * @throws IOException
+   */
+  public static String show(IExpr expr) {
+    try {
+      if (expr.isSameHeadSizeGE(Show, 2)) {
+        IAST show = (IAST) expr;
+        return showGraphic(show.arg1());
+      }
+      return showGraphic(expr);
+    } catch (Exception ex) {
+      Errors.rethrowsInterruptException(ex);
+
+      LOGGER.debug("F.show() failed", ex);
+    }
+    return null;
+  }
+
   public static IAST Show(final IExpr a0) {
     return new AST1(Show, a0);
+  }
+
+  public static String showGraphic(IExpr expr) {
+    try {
+      if (expr.isSameHeadSizeGE(Graphics, 2)) {
+        StringBuilder buf = new StringBuilder();
+        if (GraphicsUtil.renderGraphics2D(buf, (IAST) expr, EvalEngine.get())) {
+          try {
+            String graphicsStr = buf.toString();
+            String html = JSBuilder.buildGraphics2D(JSBuilder.GRAPHICS2D_TEMPLATE, graphicsStr);
+            return openHTMLOnDesktop(html);
+          } catch (Exception ex) {
+            Errors.rethrowsInterruptException(ex);
+            // LOGGER.debug("JSBuilder.buildGraphics2D() failed", ex);
+          }
+        }
+        // return openSVGOnDesktop((IAST) expr);
+      } else if (expr.isSameHeadSizeGE(Graphics3D, 2)) {
+        StringBuilder buf = new StringBuilder();
+        if (GraphicsUtil.renderGraphics3D(buf, (IAST) expr, EvalEngine.get())) {
+          try {
+            String graphics3DStr = buf.toString();
+            String html = JSBuilder.buildGraphics3D(JSBuilder.GRAPHICS3D_TEMPLATE, graphics3DStr);
+            return openHTMLOnDesktop(html);
+          } catch (Exception ex) {
+            Errors.rethrowsInterruptException(ex);
+            LOGGER.debug("JSBuilder.buildGraphics3D() failed", ex);
+          }
+        }
+      } else if (expr instanceof DataExpr) {
+        String html = ((DataExpr) expr).toHTML();
+        if (html != null) {
+          return openHTMLOnDesktop(html);
+        }
+      } else if (expr.isAST(JSFormData, 3)) {
+        return printJSFormData(expr);
+      } else if (expr.isString()) {
+        IStringX str = (IStringX) expr;
+        if (str.getMimeType() == IStringX.TEXT_HTML) {
+          String htmlSnippet = str.toString();
+          String htmlPage = Config.HTML_PAGE;
+          htmlPage = StringUtils.replace(htmlPage, "`1`", htmlSnippet);
+          EvalEngine.get().getOutPrintStream().println(htmlPage);
+          return openHTMLOnDesktop(htmlPage);
+        }
+      } else if (expr.isList(x -> x.isAST(JSFormData, 3))) {
+        StringBuilder buf = new StringBuilder();
+        ((IAST) expr).forEach(x -> buf.append(printJSFormData(x)));
+        return buf.toString();
+      }
+    } catch (Exception ex) {
+      Errors.rethrowsInterruptException(ex);
+      // LOGGER.debug("F.showGraphic() failed", ex);
+    }
+    return null;
   }
 
   public static IAST Sign(final IExpr z) {
@@ -9535,18 +9642,6 @@ public class F extends S {
   }
 
   /**
-   * See <a href=
-   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Solve.md">Solve</a>
-   */
-  public static IAST Solve(final IExpr a0, final IExpr a1) {
-    return new AST2(Solve, a0, a1);
-  }
-
-  public static IAST Solve(final IExpr a0, final IExpr a1, IAST options) {
-    return new AST3(Solve, a0, a1, options);
-  }
-
-  /**
    * Solve an equation for a single variable.
    *
    * <p>
@@ -9586,6 +9681,18 @@ public class F extends S {
     return result;
   }
 
+  /**
+   * See <a href=
+   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Solve.md">Solve</a>
+   */
+  public static IAST Solve(final IExpr a0, final IExpr a1) {
+    return new AST2(Solve, a0, a1);
+  }
+
+  public static IAST Solve(final IExpr a0, final IExpr a1, IAST options) {
+    return new AST3(Solve, a0, a1, options);
+  }
+
   public static IAST Sort(final IExpr a0) {
     return new AST1(Sort, a0);
   }
@@ -9602,8 +9709,78 @@ public class F extends S {
     return function(Span, a);
   }
 
-  public static IAST Sphere(final IExpr vector, final IExpr radius) {
-    return new AST2(Sphere, vector, radius);
+  /**
+   * Create a sparse array from the list of rules.
+   *
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SparseArray.md">SparseArray</a>
+   *
+   * @param arrayRulesList
+   * @return a ISparseArray instance or <code>null</code> if a new <code>SparseArrayExpr</code>
+   *         cannot be created.
+   */
+  public static ISparseArray sparseArray(final IAST arrayRulesList) {
+    return SparseArrayExpr.newArrayRules(arrayRulesList, null, -1, C0);
+  }
+
+  /**
+   * Create a sparse array from the dense list representation (for example dense vectors and
+   * matrices)
+   * 
+   * @param denseList
+   * @param defaultValue default value for positions not specified in the dense list representation.
+   * @return <code>null</code> if a new <code>SparseArrayExpr</code> cannot be created
+   */
+  public static ISparseArray sparseArray(final IAST denseList, IExpr defaultValue) {
+    return SparseArrayExpr.newDenseList(denseList, defaultValue);
+  }
+
+  /**
+   * Create a sparse array in the given <code>dimension</code> from the list of rules.
+   *
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SparseArray.md">SparseArray</a>
+   *
+   * @param arrayRulesList
+   * @param dimension
+   * @return a ISparseArray instance or <code>null</code> if a new <code>SparseArrayExpr</code>
+   *         cannot be created.
+   */
+  public static ISparseArray sparseArray(final IAST arrayRulesList, int[] dimension) {
+    return SparseArrayExpr.newArrayRules(arrayRulesList, dimension, 0, C0);
+  }
+
+  /**
+   * Generate a <code>n x m</code> sparse matrix. The indices start in Java convention with
+   * <code>0</code>.
+   *
+   * @param binaryFunction if the returned value unequals <code>0</code>, the value will be stored
+   *        in the sparse matrix
+   * @param n the number of rows of the matrix.
+   * @param m the number of columns of the matrix.
+   * @return <code>null</code> if a new sparse matrix cannot be created
+   */
+  public static ISparseArray sparseMatrix(BiIntFunction<? extends IExpr> binaryFunction, int n,
+      int m) {
+    if (n > Config.MAX_MATRIX_DIMENSION_SIZE || m > Config.MAX_MATRIX_DIMENSION_SIZE) {
+      ASTElementLimitExceeded.throwIt(((long) n) * ((long) m));
+    }
+    int[] dimension = new int[] {n, m};
+    SparseArrayExpr sparseMatrix = SparseArrayExpr.newArrayRules(F.CEmptyList, dimension, 0, C0);
+    if (sparseMatrix == null) {
+      return null;
+    }
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < m; j++) {
+        IExpr value = binaryFunction.apply(i, j);
+        if (!value.isZero()) {
+          sparseMatrix.set(new int[] {i + 1, j + 1}, value);
+        }
+      }
+    }
+    return sparseMatrix;
   }
 
   /**
@@ -9614,6 +9791,10 @@ public class F extends S {
    */
   public static IAST SpecialsFreeQ(final IExpr expr) {
     return new AST1(S.SpecialsFreeQ, expr);
+  }
+
+  public static IAST Sphere(final IExpr vector, final IExpr radius) {
+    return new AST2(Sphere, vector, radius);
   }
 
   public static IAST SphericalBesselJ(final IExpr n, final IExpr z) {
@@ -9711,10 +9892,6 @@ public class F extends S {
     return new AST1(StringJoin, a);
   }
 
-  public static IAST Surd(final IExpr a0, final IExpr a1) {
-    return new AST2(Surd, a0, a1);
-  }
-
   /**
    * Create a Symja string expression with mime type TEXT_PLAIN.
    *
@@ -9782,16 +9959,41 @@ public class F extends S {
     return new AST2(Style, a0, a1);
   }
 
-  public static IAST Subdivide(final IExpr a0) {
-    return new AST1(Subdivide, a0);
+  /**
+   * Create a list by dividing the range <code>xMin</code> to <code>xMax</code> into <code>n</code>
+   * parts.
+   * 
+   * @param xMin start of range (inclusive)
+   * @param xMax end of range (inclusive)
+   * @param n the number of the &quot;elements of the result list&quot; minus 1
+   * @return
+   */
+  public static ASTRealVector subdivide(double xMin, double xMax, int n) {
+    double[] vector = new double[n + 1];
+    double diff = xMax - xMin;
+    double part = diff / n;
+    for (int i = 0; i < n + 1; i++) {
+      vector[i] = part * i + xMin;
+    }
+    return new ASTRealVector(vector, false);
   }
 
-  public static IAST Subdivide(final IExpr a0, final IExpr a1) {
-    return new AST2(Subdivide, a0, a1);
-  }
+  /**
+   * Create a list by dividing the range <code>0</code> to <code>xMax</code> into <code>n</code>
+   * parts.
+   * 
+   * @param xMax end of range (inclusive)
+   * @param n the number of the &quot;elements of the result list&quot; minus 1
+   * @return
+   */
+  public static ASTRealVector subdivide(double xMax, int n) {
+    double[] vector = new double[n + 1];
 
-  public static IAST Subdivide(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(Subdivide, a0, a1, a2);
+    double part = xMax / n;
+    for (int i = 0; i < n + 1; i++) {
+      vector[i] = part * i;
+    }
+    return new ASTRealVector(vector, false);
   }
 
   /**
@@ -9847,63 +10049,20 @@ public class F extends S {
     return result;
   }
 
-  /**
-   * Create a list by dividing the range <code>0</code> to <code>xMax</code> into <code>n</code>
-   * parts.
-   * 
-   * @param xMax end of range (inclusive)
-   * @param n the number of the &quot;elements of the result list&quot; minus 1
-   * @return
-   */
-  public static ASTRealVector subdivide(double xMax, int n) {
-    double[] vector = new double[n + 1];
-
-    double part = xMax / n;
-    for (int i = 0; i < n + 1; i++) {
-      vector[i] = part * i;
-    }
-    return new ASTRealVector(vector, false);
+  public static IAST Subdivide(final IExpr a0) {
+    return new AST1(Subdivide, a0);
   }
 
-  /**
-   * Create a list by dividing the range <code>xMin</code> to <code>xMax</code> into <code>n</code>
-   * parts.
-   * 
-   * @param xMin start of range (inclusive)
-   * @param xMax end of range (inclusive)
-   * @param n the number of the &quot;elements of the result list&quot; minus 1
-   * @return
-   */
-  public static ASTRealVector subdivide(double xMin, double xMax, int n) {
-    double[] vector = new double[n + 1];
-    double diff = xMax - xMin;
-    double part = diff / n;
-    for (int i = 0; i < n + 1; i++) {
-      vector[i] = part * i + xMin;
-    }
-    return new ASTRealVector(vector, false);
+  public static IAST Subdivide(final IExpr a0, final IExpr a1) {
+    return new AST2(Subdivide, a0, a1);
+  }
+
+  public static IAST Subdivide(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(Subdivide, a0, a1, a2);
   }
 
   public static IAST Subfactorial(final IExpr a0) {
     return new AST1(Subfactorial, a0);
-  }
-
-  public static IAST Subscript(final IExpr x, final IExpr y) {
-    return new AST2(Subscript, x, y);
-  }
-
-  /**
-   * Substitute all (sub-) expressions <code>x</code> in <code>expr</code> with <code>y</code>. If
-   * no substitution matches, the method returns the given <code>expr</code>.
-   *
-   * @param expr the complete expresssion
-   * @param x the subexpression which should be replaced
-   * @param y the expression which replaces <code>x</code>
-   * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or
-   *         the substituted expression.
-   */
-  public static IExpr xreplace(final IExpr expr, final IExpr x, final IExpr y) {
-    return expr.xreplace(x, y);
   }
 
   /**
@@ -9918,6 +10077,14 @@ public class F extends S {
    */
   public static IExpr subs(final IExpr expr, final IExpr x, final IExpr y) {
     return expr.subs(x, y);
+  }
+
+  public static IAST Subscript(final IExpr x, final IExpr y) {
+    return new AST2(Subscript, x, y);
+  }
+
+  public static IAST SubsetQ(IExpr x, IExpr y) {
+    return new AST2(S.SubsetQ, x, y);
   }
 
   /**
@@ -9944,46 +10111,6 @@ public class F extends S {
    */
   public static final IExpr subst(IExpr expr, final Function<IExpr, IExpr> function) {
     return expr.replaceAll(function).orElse(expr);
-  }
-
-  /**
-   * Substitute all (sub-) expressions if the given binary predicate returns <code>true</code>. If
-   * no substitution matches, the method returns the given <code>expr</code>.
-   * 
-   * @param expr
-   * @param predicate if the unary predicate <code>test()</code> method returns <code>false</code>
-   *        the expression isn't substituted.
-   * @param value
-   * @return
-   */
-  public static final IExpr subst(IExpr expr, final Predicate<IExpr> predicate, final IExpr value) {
-    return expr.replaceAll(x -> predicate.test(x) ? value : F.NIL).orElse(expr);
-  }
-
-  /**
-   * Substitute all (sub-) expressions which contain a &quot;complex&quot; {@link S#Abs} function
-   * with the corresponding &quot;real&quot; {@link S#RealAbs} function. For {@link S#RealAbs} a
-   * derivative <code>x/RealAbs(x)</code> is defined.
-   * 
-   * @param expr
-   * @return
-   */
-  public static final IExpr substAbs(IExpr expr) {
-    return subst(expr, x -> x.isAbs() ? F.RealAbs(x.first()) : F.NIL);
-  }
-
-  /**
-   * Substitute all (sub-) expressions with the given map. If no substitution matches, the method
-   * returns the given <code>expr</code>.
-   *
-   * @param expr
-   * @param map if the maps <code>get()</code> method returns <code>null</code> the expression isn't
-   *        substituted.
-   * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or
-   *         the substituted expression.
-   */
-  public static IExpr subst(IExpr expr, final Map<? extends IExpr, ? extends IExpr> map) {
-    return expr.replaceAll(map).orElse(expr);
   }
 
   /**
@@ -10022,8 +10149,44 @@ public class F extends S {
         .orElse(expr);
   }
 
-  public static IAST SubsetQ(IExpr x, IExpr y) {
-    return new AST2(S.SubsetQ, x, y);
+  /**
+   * Substitute all (sub-) expressions with the given map. If no substitution matches, the method
+   * returns the given <code>expr</code>.
+   *
+   * @param expr
+   * @param map if the maps <code>get()</code> method returns <code>null</code> the expression isn't
+   *        substituted.
+   * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or
+   *         the substituted expression.
+   */
+  public static IExpr subst(IExpr expr, final Map<? extends IExpr, ? extends IExpr> map) {
+    return expr.replaceAll(map).orElse(expr);
+  }
+
+  /**
+   * Substitute all (sub-) expressions if the given binary predicate returns <code>true</code>. If
+   * no substitution matches, the method returns the given <code>expr</code>.
+   * 
+   * @param expr
+   * @param predicate if the unary predicate <code>test()</code> method returns <code>false</code>
+   *        the expression isn't substituted.
+   * @param value
+   * @return
+   */
+  public static final IExpr subst(IExpr expr, final Predicate<IExpr> predicate, final IExpr value) {
+    return expr.replaceAll(x -> predicate.test(x) ? value : F.NIL).orElse(expr);
+  }
+
+  /**
+   * Substitute all (sub-) expressions which contain a &quot;complex&quot; {@link S#Abs} function
+   * with the corresponding &quot;real&quot; {@link S#RealAbs} function. For {@link S#RealAbs} a
+   * derivative <code>x/RealAbs(x)</code> is defined.
+   * 
+   * @param expr
+   * @return
+   */
+  public static final IExpr substAbs(IExpr expr) {
+    return subst(expr, x -> x.isAbs() ? F.RealAbs(x.first()) : F.NIL);
   }
 
 
@@ -10060,241 +10223,6 @@ public class F extends S {
 
   public static IASTMutable SubtractSides(final IExpr equationOrInequality, final IExpr x) {
     return new AST2(SubtractSides, equationOrInequality, x);
-  }
-
-  /**
-   * @param expr expression which should be summed up
-   * @param iterationSpecification a standard iteration specification
-   * @return <code>Sum(expr, iterationSpecification)</code> AST
-   */
-  public static IAST Sum(final IExpr expr, final IExpr iterationSpecification) {
-    return new AST2(Sum, expr, iterationSpecification);
-  }
-
-  public static IAST Sum(final IExpr expr, final IExpr iterationSpecification1,
-      final IExpr iterationSpecification2) {
-    return new AST3(Sum, expr, iterationSpecification1, iterationSpecification2);
-  }
-
-  public static IAST Sum(final IExpr expr, final IExpr iterationSpecification1,
-      final IExpr iterationSpecification2, final IExpr iterationSpecification3) {
-    return quaternary(Sum, expr, iterationSpecification1, iterationSpecification2,
-        iterationSpecification3);
-  }
-
-  public static IAST Sum(final IExpr expr, final IExpr iterationSpecification1,
-      final IExpr iterationSpecification2, final IExpr iterationSpecification3,
-      final IExpr iterationSpecification4) {
-    return quinary(Sum, expr, iterationSpecification1, iterationSpecification2,
-        iterationSpecification3, iterationSpecification4);
-  }
-
-  public static IAST Sum(final IExpr expr, final IExpr iterationSpecification1,
-      final IExpr iterationSpecification2, final IExpr iterationSpecification3,
-      final IExpr iterationSpecification4, final IExpr iterationSpecification5) {
-    IExpr[] args = new IExpr[] {expr, iterationSpecification1, iterationSpecification2,
-        iterationSpecification3, iterationSpecification4, iterationSpecification5};
-    return F.ast(args, Sum);
-  }
-
-  public static IRational sumRational(final IntFunction<IRational> function, final int iMin,
-      final int iMax) {
-    return sumRational(function, iMin, iMax, 1);
-  }
-
-
-  /**
-   * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code> and
-   * evaluate the {@link S#Product}
-   * 
-   * @param function the function which should be applied on each iterator value
-   * @param from from this position (included)
-   * @param to to this position (included)
-   * @param step
-   * @return
-   */
-  public static IExpr intProduct(final Function<IInteger, IExpr> function, final int from,
-      final int to, final int step) {
-    if (from > to && step > 0) {
-      return F.C1;
-    }
-    IASTAppendable result = F.TimesAlloc(F.allocMin32(to - from + 2));
-    long numberOfLeaves = 0;
-    INumber number = F.C1;
-    // insert number as placeholder
-    result.append(number);
-    EvalEngine engine = EvalEngine.get();
-    for (int i = from; i <= to; i += step) {
-      IExpr temp = engine.evaluate(function.apply(ZZ(i)));
-      if (temp.isNumber()) {
-        number = number.times((INumber) temp);
-        if (number instanceof IInteger //
-            && ((IInteger) number).bitLength() > Config.MAX_BIT_LENGTH / 100) {
-          BigIntegerLimitExceeded.throwIt(Config.MAX_BIT_LENGTH / 100);
-        }
-      } else {
-        numberOfLeaves += temp.leafCount() + 1;
-        if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
-          ASTElementLimitExceeded.throwIt(numberOfLeaves);
-        }
-        result.append(temp);
-      }
-    }
-    // replace placeholder with evaluated number
-    result.set(1, number);
-    return result.oneIdentity0();
-  }
-
-  /**
-   * Calculate <code>Sum(function(k), {k, iMin, iMax})</code>
-   * 
-   * @param function
-   * @param iMin from this position (included)
-   * @param iMax to this position (included)
-   * @return
-   */
-  public static IExpr intSum(final IntFunction<IExpr> function, final int iMin, final int iMax) {
-    if (iMin > iMax) {
-      return F.C0;
-    }
-    IASTAppendable result = F.PlusAlloc(F.allocMin32(iMax - iMin + 2));
-    int numberOfLeaves = 0;
-    EvalEngine engine = EvalEngine.get();
-    INumber number = F.C0;
-    // insert number as placeholder
-    result.append(number);
-    for (int i = iMin; i <= iMax; i += 1) {
-      IExpr temp = engine.evaluate(function.apply(i));
-      if (temp.isNumber()) {
-        number = number.plus((INumber) temp);
-        if (number instanceof IInteger //
-            && ((IInteger) number).bitLength() > Config.MAX_BIT_LENGTH / 100) {
-          BigIntegerLimitExceeded.throwIt(Config.MAX_BIT_LENGTH / 100);
-        }
-      } else {
-        numberOfLeaves += temp.leafCount() + 1;
-        if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
-          ASTElementLimitExceeded.throwIt(numberOfLeaves);
-        }
-        result.append(temp);
-      }
-    }
-    // replace placeholder with evaluated number
-    result.set(1, number);
-    return result.oneIdentity0();
-  }
-
-  /**
-   * Create a list of {@link S#Plus} expressions (sums), with an evaluated number in position 1 for
-   * the sum of each step of the <code>function.apply(position)</code> from <code>iMin</code>
-   * (inclusive) to <code>iMax</code> (inclusive).
-   * 
-   * @param function the function which should be applied on each iteration step
-   * @param startValue will be used as placeholder in position 1 of plusList
-   * @param iMin from this position (included)
-   * @param iMax to this position (included)
-   * @return a list of {@link S#Plus} expressions with the evaluated number in position 1
-   */
-  public static IAST intSumList(final IntFunction<IExpr> function, IExpr startValue, final int iMin,
-      final int iMax) {
-    if (iMin > iMax) {
-      return F.CEmptyList;
-    }
-    IASTAppendable result = F.ListAlloc(F.allocMin32(iMax - iMin + 1));
-    int numberOfLeaves = 0;
-    EvalEngine engine = EvalEngine.get();
-    IASTAppendable plusList = F.PlusAlloc(F.allocMin32(iMax - iMin + 3));
-    // insert 0 as a placeholder for number calculations in intSumList()
-    INumber numberPlaceholder = F.C0;
-    if (startValue.isNumber()) {
-      numberPlaceholder = (INumber) startValue;
-      plusList.append(numberPlaceholder);
-    } else {
-      plusList.append(numberPlaceholder);
-      plusList.append(startValue);
-    }
-
-    // INumber numberPlaceholder = startValue;
-    for (int i = iMin; i <= iMax; i += 1) {
-      IExpr temp = engine.evaluate(function.apply(i));
-      if (temp.isNumber()) {
-        numberPlaceholder = numberPlaceholder.plus((INumber) temp);
-        if (numberPlaceholder instanceof IInteger //
-            && ((IInteger) numberPlaceholder).bitLength() > Config.MAX_BIT_LENGTH / 100) {
-          BigIntegerLimitExceeded.throwIt(Config.MAX_BIT_LENGTH / 100);
-        }
-      } else {
-        numberOfLeaves += temp.leafCount() + 1;
-        if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
-          ASTElementLimitExceeded.throwIt(numberOfLeaves);
-        }
-        plusList.append(temp);
-      }
-      result.append(plusList.setAtCopy(1, numberPlaceholder));
-    }
-    return result;
-  }
-
-  /**
-   * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code> and
-   * evaluate the {@link S#Sum}
-   *
-   * @param function the function which should be applied on each iterator value
-   * @param from from this position (included)
-   * @param to to this position (included)
-   * @param step
-   * @return
-   */
-  public static IExpr intSum(final Function<IInteger, IExpr> function, final int from, final int to,
-      final int step) {
-    return intSum(function, from, to, step, false);
-  }
-
-  /**
-   * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code> and
-   * evaluate the {@link S#Sum}
-   *
-   * @param function the function which should be applied on each iterator value
-   * @param from from this position (included)
-   * @param to to this position (included)
-   * @param step
-   * @param expand expand {@link S#Plus}, {@link S#Times}, {@link S#Power} subexpressions
-   * @return
-   */
-  public static IExpr intSum(final Function<IInteger, IExpr> function, final int from, final int to,
-      final int step, boolean expand) {
-    if (from > to && step > 0) {
-      return F.C0;
-    }
-    IASTAppendable result = F.PlusAlloc(F.allocMin32(to - from + 2));
-    long numberOfLeaves = 0;
-    INumber number = F.C0;
-    // insert number as placeholder
-    result.append(number);
-    EvalEngine engine = EvalEngine.get();
-    for (int i = from; i <= to; i += step) {
-      IExpr temp = engine.evaluate(function.apply(ZZ(i)));
-      if (temp.isNumber()) {
-        number = number.plus((INumber) temp);
-        if (number instanceof IInteger //
-            && ((IInteger) number).bitLength() > Config.MAX_BIT_LENGTH / 100) {
-          BigIntegerLimitExceeded.throwIt(((IInteger) number).bitLength());
-        }
-      } else {
-        numberOfLeaves += temp.leafCount() + 1;
-        if (numberOfLeaves >= Config.MAX_AST_SIZE / 2) {
-          ASTElementLimitExceeded.throwIt(numberOfLeaves);
-        }
-        if (expand && temp.isPlusTimesPower()) {
-          result.append(F.evalExpand(temp));
-        } else {
-          result.append(temp);
-        }
-      }
-    }
-    // replace placeholder position 1 with evaluated number
-    result.set(1, number);
-    return result.oneIdentity0();
   }
 
   /**
@@ -10338,8 +10266,62 @@ public class F extends S {
     return intSum(function, iMin, iMax, iStep, expand);
   }
 
+  /**
+   * @param expr expression which should be summed up
+   * @param iterationSpecification a standard iteration specification
+   * @return <code>Sum(expr, iterationSpecification)</code> AST
+   */
+  public static IAST Sum(final IExpr expr, final IExpr iterationSpecification) {
+    return new AST2(Sum, expr, iterationSpecification);
+  }
+
+  public static IAST Sum(final IExpr expr, final IExpr iterationSpecification1,
+      final IExpr iterationSpecification2) {
+    return new AST3(Sum, expr, iterationSpecification1, iterationSpecification2);
+  }
+
+  public static IAST Sum(final IExpr expr, final IExpr iterationSpecification1,
+      final IExpr iterationSpecification2, final IExpr iterationSpecification3) {
+    return quaternary(Sum, expr, iterationSpecification1, iterationSpecification2,
+        iterationSpecification3);
+  }
+
+
+  public static IAST Sum(final IExpr expr, final IExpr iterationSpecification1,
+      final IExpr iterationSpecification2, final IExpr iterationSpecification3,
+      final IExpr iterationSpecification4) {
+    return quinary(Sum, expr, iterationSpecification1, iterationSpecification2,
+        iterationSpecification3, iterationSpecification4);
+  }
+
+  public static IAST Sum(final IExpr expr, final IExpr iterationSpecification1,
+      final IExpr iterationSpecification2, final IExpr iterationSpecification3,
+      final IExpr iterationSpecification4, final IExpr iterationSpecification5) {
+    IExpr[] args = new IExpr[] {expr, iterationSpecification1, iterationSpecification2,
+        iterationSpecification3, iterationSpecification4, iterationSpecification5};
+    return F.ast(args, Sum);
+  }
+
+  public static IRational sumRational(final IntFunction<IRational> function, final int iMin,
+      final int iMax) {
+    return sumRational(function, iMin, iMax, 1);
+  }
+
+  public static IRational sumRational(final IntFunction<IRational> function, final int from,
+      final int to, final int step) {
+    IRational result = C0;
+    for (int i = from; i <= to; i += step) {
+      result = result.add(function.apply(i));
+    }
+    return result;
+  }
+
   public static IAST Superscript(final IExpr x, final IExpr y) {
     return new AST2(Superscript, x, y);
+  }
+
+  public static IAST Surd(final IExpr a0, final IExpr a1) {
+    return new AST2(Surd, a0, a1);
   }
 
   public static IASTAppendable SurfaceGraphics() {
@@ -10349,6 +10331,281 @@ public class F extends S {
 
   public static IAST Switch(final IExpr... a) {
     return function(Switch, a);
+  }
+
+  public static ISymbol symbol(final Context context, final String symbolName, EvalEngine engine) {
+    // ContextPath contextPath = engine.getContextPath();
+    return ContextPath.getSymbol(symbolName, context, engine.isRelaxedSyntax());
+  }
+
+  /**
+   * Get or create a user defined symbol which is retrieved from the evaluation engines context
+   * path.
+   *
+   * @param symbolName the name of the symbol
+   * @return the symbol object from the context path
+   */
+  public static ISymbol symbol(final String symbolName) {
+    return symbol(symbolName, null, EvalEngine.get());
+  }
+
+  /**
+   * Get or create a user defined symbol which is retrieved from the evaluation engines context
+   * path.
+   *
+   * @param symbolName the name of the symbol
+   * @param engine the evaluation engine
+   * @return the symbol object from the context path
+   */
+  public static ISymbol symbol(final String symbolName, EvalEngine engine) {
+    return symbol(symbolName, null, engine);
+  }
+
+  /**
+   * Get or create a user defined symbol which is retrieved from the evaluation engines context
+   * path. Additional set assumptions to the engines global assumptions. Use <code>#1</code> or
+   * {@link F#Slot1} in the <code>assumptionAST</code> expression for this symbol.
+   *
+   * @param symbolName the name of the symbol
+   * @param assumptionAST the assumptions which should be set for the symbol. Use <code>#1</code> or
+   *        {@link F#Slot1} in the <code>assumptionAST</code> expression for this symbol.
+   * @return the symbol object from the context path
+   */
+  public static ISymbol symbol(final String symbolName, IAST assumptionAST) {
+    return symbol(symbolName, assumptionAST, EvalEngine.get());
+  }
+
+  /**
+   * Get or create a user defined symbol which is retrieved from the evaluation engines context
+   * path. Additional set assumptions to the engines global assumptions. Use <code>#1</code> or
+   * {@link F#Slot1} in the <code>assumptionAST</code> expression for this symbol.
+   *
+   * @param symbolName the name of the symbol
+   * @param assumptionAST the assumptions which should be set for the symbol. Use <code>#1</code> or
+   *        {@link F#Slot1} in the <code>assumptionAST</code> expression for this symbol.
+   * @param engine the evaluation engine
+   * @return the symbol object from the context path
+   */
+  public static ISymbol symbol(final String symbolName, IAST assumptionAST, EvalEngine engine) {
+    ISymbol symbol =
+        engine.getContextPath().symbol(symbolName, engine.getContext(), engine.isRelaxedSyntax());
+    if (assumptionAST != null) {
+      IExpr temp = Lambda.replaceSlots(assumptionAST, List(symbol)).orElse(assumptionAST);
+      if (temp.isAST()) {
+        IAssumptions assumptions = engine.getAssumptions();
+        if (assumptions == null) {
+          assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(temp);
+          engine.setAssumptions(assumptions);
+        } else {
+          assumptions.addAssumption(temp);
+        }
+      }
+    }
+    return symbol;
+  }
+
+  public static ISymbol symbol(final String symbolName, final String contextStr, IAST assumptionAST,
+      EvalEngine engine) {
+    if (contextStr.length() == 0) {
+      return symbol(symbolName, assumptionAST, engine);
+    }
+    ISymbol symbol;
+    ContextPath contextPath = engine.getContextPath();
+    Context context = contextPath.getContext(contextStr);
+    // if (context == null) {
+    // contextPath.add(new Context(contextStr));
+    // }
+    symbol = ContextPath.getSymbol(symbolName, context, engine.isRelaxedSyntax());
+    if (assumptionAST != null) {
+      IExpr temp = Lambda.replaceSlots(assumptionAST, List(symbol)).orElse(assumptionAST);
+      if (temp.isAST()) {
+        IAssumptions assumptions = engine.getAssumptions();
+        if (assumptions == null) {
+          assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(temp);
+          engine.setAssumptions(assumptions);
+        } else {
+          assumptions.addAssumption(temp);
+        }
+      }
+    }
+    return symbol;
+  }
+
+  public static String symbolNameNormalized(final String symbolName) {
+    return ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS
+        ? (symbolName.length() == 1 ? symbolName : symbolName.toLowerCase(Locale.ENGLISH))
+        : symbolName;
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * SymbolQ(x)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * is <code>True</code> if <code>x</code> is a symbol, or <code>False</code> otherwise.
+   *
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * &gt;&gt; SymbolQ(a)
+   * True
+   * &gt;&gt; SymbolQ(1)
+   * False
+   * &gt;&gt; SymbolQ(a + b)
+   * False
+   * </pre>
+   */
+  public static IAST SymbolQ(final IExpr x) {
+    return new AST1(SymbolQ, x);
+  }
+
+  /**
+   * Return {@link S#True} or {@link S#False} symbol
+   *
+   * @param value
+   * @return {@link S#True} or {@link S#False} symbol
+   */
+  public static IBuiltInSymbol symjify(final boolean value) {
+    return value ? True : False;
+  }
+
+  /**
+   * @param value
+   * @return {@link INum} double wrapper
+   */
+  public static INum symjify(final double value) {
+    return num(value);
+  }
+
+  /**
+   * @param value
+   * @return {@link IInteger} integer value
+   */
+  public static IInteger symjify(final long value) {
+    return ZZ(value);
+  }
+
+  /**
+   * Converts and evaluates arbitrary expressions to a Symja type.
+   *
+   * <pre>
+   * Java Object       -&gt; Symja object
+   * -------------------------------------
+   * null object          {@link S#Null} symbol
+   * IExpr                {@link IExpr} type
+   * Boolean              {@link S#True} or {@link S#False} symbol
+   * BigInteger           {@link IInteger} value
+   * BigDecimal           {@link INum} with {@link Apfloat#Apfloat(java.math.BigDecimal)} value
+   * Double               {@link INum}  with doubleValue() value
+   * Float                {@link INum}  with doubleValue() value
+   * Integer              {@link IInteger} with intValue() value
+   * Long                 {@link IInteger} with longValue() value
+   * Number               {@link INum} with doubleValue() value
+   * java.util.Collection list of elements
+   *                      1..nth element of the list give the elements of the List()
+   * Object[]             a list of converted objects
+   * int[]                a list of {@link IInteger} integer values
+   * double[]             a vector ASTRealVector of <code>double</code> values
+   * double[][]           a matrix ASTRealMatrix of <code>double</code> values
+   * Complex[]            a list of {@link IComplexNum} values
+   * boolean[]            a list of {@link S#True} or {@link S#False} symbols
+   *
+   * </pre>
+   *
+   * @param object
+   * @return the <code>object</code> converted to a {@link IExpr}}
+   */
+  public static IExpr symjify(final Object object) {
+    return symjify(object, true);
+  }
+
+  /**
+   * Converts and evaluates arbitrary expressions to a Symja type.
+   *
+   * <pre>
+   * Java Object       -&gt; Symja object
+   * -------------------------------------
+   * null object          {@link S#Null} symbol
+   * IExpr                {@link IExpr} type
+   * Boolean              {@link S#True} or {@link S#False} symbol
+   * BigInteger           {@link IInteger} value
+   * BigDecimal           {@link INum} with {@link Apfloat#Apfloat(java.math.BigDecimal)} value
+   * Double               {@link INum}  with doubleValue() value
+   * Float                {@link INum}  with doubleValue() value
+   * Integer              {@link IInteger} with intValue() value
+   * Long                 {@link IInteger} with longValue() value
+   * Number               {@link INum} with doubleValue() value
+   * java.util.Collection list of elements
+   *                      1..nth element of the list give the elements of the List()
+   * Object[]             a list of converted objects
+   * int[]                a list of {@link IInteger} integer values
+   * double[]             a vector ASTRealVector of <code>double</code> values
+   * double[][]           a matrix ASTRealMatrix of <code>double</code> values
+   * Complex[]            a list of {@link IComplexNum} values
+   * boolean[]            a list of {@link S#True} or {@link S#False} symbols
+   *
+   * </pre>
+   *
+   * @param object
+   * @param evaluate if <code>true</code> evaluate the parsed string
+   * @return the <code>object</code> converted to an {@link IExpr}}
+   */
+  public static IExpr symjify(final Object object, boolean evaluate) {
+    IExpr temp = Object2Expr.convert(object, true, false);
+    return evaluate ? eval(temp) : temp;
+  }
+
+  /**
+   * Parses and evaluates a Java string to a Symja expression. May throw an SyntaxError exception,
+   * if the string couldn't be parsed.
+   *
+   * @param str the expression which should be parsed
+   * @return
+   * @throws SyntaxError
+   */
+  public static IExpr symjify(final String str) {
+    return symjify(str, true);
+  }
+
+  /**
+   * Parses a Java string to a Symja expression. May throw a SyntaxError exception, if the string
+   * couldn't be parsed.
+   *
+   * @param str the expression which should be parsed
+   * @param evaluate if <code>true</code> evaluate the parsed string
+   * @return
+   * @throws SyntaxError
+   */
+  public static IExpr symjify(final String str, boolean evaluate) {
+    EvalEngine engine = EvalEngine.get();
+    ExprParser parser = new ExprParser(engine);
+    IExpr temp = parser.parse(str);
+    return evaluate ? engine.evaluate(temp) : temp;
+  }
+
+  /**
+   * Full symmetry
+   *
+   * @param a0
+   * @return
+   */
+  public static IAST Symmetric(final IExpr a0) {
+    return new AST1(Symmetric, a0);
+  }
+
+  /**
+   * See <a href=
+   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/SymmetricMatrixQ.md">SymmetricMatrixQ</a>
+   */
+  public static IAST SymmetricMatrixQ(final IExpr a0) {
+    return new AST1(SymmetricMatrixQ, a0);
   }
 
   /**
@@ -10427,6 +10684,57 @@ public class F extends S {
     return new AST2(Taylor, a0, a1);
   }
 
+  public static IAST TemplateSlot(final IExpr a0) {
+    return new AST1(TemplateSlot, a0);
+  }
+
+  public static IAST TemplateSlot(final IExpr a0, final IExpr a1) {
+    return new AST2(TemplateSlot, a0, a1);
+  }
+
+  public static IAST TensorDimensions(final IExpr a0) {
+    return new AST1(TensorDimensions, a0);
+  }
+
+  /**
+   * For positive n, add the first n elements of <code>numbers</code> to the list.For negative n,
+   * add the last n elements of <code>numbers</code> to the list.
+   *
+   * @param n
+   * @param numbers
+   * @return
+   */
+  public static IAST tensorList(final int n, final Integer... numbers) {
+    int nPositive = n;
+    if (n < 0) {
+      nPositive = -n;
+    }
+    int size = numbers.length;
+    if (nPositive > size) {
+      nPositive = size;
+    }
+    IInteger[] a = new IInteger[nPositive];
+    if (n < 0) {
+      if (nPositive < size) {
+        size = size + n;
+      } else {
+        size = 0;
+      }
+      int j = 0;
+      for (int i = numbers.length - 1; i >= size; i--) {
+        a[j++] = ZZ(numbers[i]);
+      }
+    } else {
+      if (n < size) {
+        size = n;
+      }
+      for (int i = 0; i < size; i++) {
+        a[i] = ZZ(numbers[i]);
+      }
+    }
+    return ast(a, List);
+  }
+
   public static IAST TensorRank(final IExpr a0) {
     return new AST1(TensorRank, a0);
   }
@@ -10437,18 +10745,6 @@ public class F extends S {
 
   public static IAST TensorSymmetry(final IExpr a0, final IExpr a1) {
     return new AST2(TensorSymmetry, a0, a1);
-  }
-
-  /**
-   * See <a href=
-   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/TeXForm.md">TeXForm</a>
-   */
-  public static IAST TeXForm(final IExpr expr) {
-    return new AST1(TeXForm, expr);
-  }
-
-  public static IAST Text(final IExpr expr, IAST coords) {
-    return new AST2(Text, expr, coords);
   }
 
   /**
@@ -10464,6 +10760,18 @@ public class F extends S {
   public static final IASTMutable ternaryAST3(final IExpr head, final IExpr arg1, final IExpr arg2,
       final IExpr arg3) {
     return new AST3(head, arg1, arg2, arg3);
+  }
+
+  /**
+   * See <a href=
+   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/TeXForm.md">TeXForm</a>
+   */
+  public static IAST TeXForm(final IExpr expr) {
+    return new AST1(TeXForm, expr);
+  }
+
+  public static IAST Text(final IExpr expr, IAST coords) {
+    return new AST2(Text, expr, coords);
   }
 
   /**
@@ -10519,22 +10827,6 @@ public class F extends S {
   }
 
   /**
-   * Create an appendable multiplication <code>Times(...)</code> expression as an
-   * {@link IASTAppendable} with the {@link S#Times} head and an initial capacity for the number of
-   * expected arguments.
-   * <p>
-   * See: <a href=
-   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
-   *
-   * @param initialCapacity the number of expected arguments
-   * @return an {@link IASTAppendable} object which can be used to append arguments to the
-   *         {@link S#Times} expression
-   */
-  public static IASTAppendable TimesAlloc(int initialCapacity) {
-    return ast(Times, initialCapacity);
-  }
-
-  /**
    * See: <a href=
    * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
    */
@@ -10577,21 +10869,6 @@ public class F extends S {
   }
 
   /**
-   * Distribute {@link S#Plus} function expressions on <code>Times(x,y)</code> if <code>x</code> or
-   * <code>y</code> is a {@link S#Plus} expression.
-   * 
-   * @param x maybe a {@link S#Plus} function expression
-   * @param y maybe a {@link S#Plus} function expression
-   * @return
-   */
-  public static IExpr distributePlusOnTimes(IExpr x, final IExpr y) {
-    if (x.isPlus() || y.isPlus()) {
-      return AlgebraUtil.distribute(F.Distribute(new B2.Times(x, y)), S.Plus);
-    }
-    return timesOrderless(IExpr::isTimes, x, y);
-  }
-
-  /**
    * Define a <code>Times()</code> expression <code>a0 * a1 * a2</code> for multiplication.
    *
    * <p>
@@ -10605,64 +10882,31 @@ public class F extends S {
     return new B3.Times(x, y, z);
   }
 
-  private static IASTMutable plusOrderless(Predicate<IExpr> t, final IExpr a1, final IExpr a2) {
-    final boolean test1 = t.test(a1);
-    final boolean test2 = t.test(a2);
-    if (test1 || test2) {
-      int size = test1 ? a1.size() : 1;
-      size += test2 ? a2.size() : 1;
-      IASTAppendable result = ast(Plus, size);
-      if (test1) {
-        result.appendArgs((IAST) a1);
-      } else {
-        result.append(a1);
-      }
-      if (test2) {
-        result.appendArgs((IAST) a2);
-      } else {
-        result.append(a2);
-      }
-      EvalAttributes.sort(result);
-      return result;
-    }
-    if (a1.compareTo(a2) > 0) {
-      // swap arguments
-      return new B2.Plus(a2, a1);
-    }
-    return new B2.Plus(a1, a2);
+  /**
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
+   */
+  public static IAST Times(final long num, final IExpr... a) {
+    IASTAppendable ast = ast(Times, a.length + 1);
+    ast.append(ZZ(num));
+    ast.appendAll(a, 0, a.length);
+    return ast;
   }
 
-  private static IASTMutable plusOrderless(Predicate<IExpr> t, final IExpr a1, final IExpr a2,
-      final IExpr a3) {
-    final boolean test1 = t.test(a1);
-    final boolean test2 = t.test(a2);
-    final boolean test3 = t.test(a3);
-    if (test1 || test2 || test3) {
-      int size = test1 ? a1.size() : 1;
-      size += test2 ? a2.size() : 1;
-      size += test3 ? a3.size() : 1;
-      IASTAppendable result = ast(Plus, size);
-      if (test1) {
-        result.appendArgs((IAST) a1);
-      } else {
-        result.append(a1);
-      }
-      if (test2) {
-        result.appendArgs((IAST) a2);
-      } else {
-        result.append(a2);
-      }
-      if (test3) {
-        result.appendArgs((IAST) a3);
-      } else {
-        result.append(a3);
-      }
-      EvalAttributes.sort(result);
-      return result;
-    }
-    IASTMutable result = new B3.Plus(a1, a2, a3);
-    EvalAttributes.sort(result);
-    return result;
+  /**
+   * Create an appendable multiplication <code>Times(...)</code> expression as an
+   * {@link IASTAppendable} with the {@link S#Times} head and an initial capacity for the number of
+   * expected arguments.
+   * <p>
+   * See: <a href=
+   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
+   *
+   * @param initialCapacity the number of expected arguments
+   * @return an {@link IASTAppendable} object which can be used to append arguments to the
+   *         {@link S#Times} expression
+   */
+  public static IASTAppendable TimesAlloc(int initialCapacity) {
+    return ast(Times, initialCapacity);
   }
 
   private static IASTMutable timesOrderless(Predicate<IExpr> t, final IExpr a1, final IExpr a2) {
@@ -10726,22 +10970,19 @@ public class F extends S {
   }
 
   /**
-   * See: <a href=
-   * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Times.md">Times</a>
-   */
-  public static IAST Times(final long num, final IExpr... a) {
-    IASTAppendable ast = ast(Times, a.length + 1);
-    ast.append(ZZ(num));
-    ast.appendAll(a, 0, a.length);
-    return ast;
-  }
-
-  /**
    * See <a href=
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/ToExpression.md">ToExpression</a>
    */
   public static IAST ToExpression(final IExpr a0) {
     return new AST1(ToExpression, a0);
+  }
+
+  /**
+   * See <a href=
+   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Together.md">Together</a>
+   */
+  public static IAST Together(final IExpr a0) {
+    return new AST1(Together, a0);
   }
 
   /**
@@ -10785,14 +11026,6 @@ public class F extends S {
 
   public static IAST ToIntervalData(final IExpr expr, final IExpr variable) {
     return new AST2(ToIntervalData, expr, variable);
-  }
-
-  /**
-   * See <a href=
-   * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Together.md">Together</a>
-   */
-  public static IAST Together(final IExpr a0) {
-    return new AST1(Together, a0);
   }
 
   public static IAST ToPolarCoordinates(final IExpr a0) {
@@ -10950,6 +11183,10 @@ public class F extends S {
     return new AST1(Unevaluated, a0);
   }
 
+  public static IAST UniformDistribution(final IExpr a) {
+    return new AST1(UniformDistribution, a);
+  }
+
   public static IAST Union(final IExpr list1) {
     return new AST1(Union, list1);
   }
@@ -10991,10 +11228,6 @@ public class F extends S {
     return new AST2(UnitConvert, quantity, unit);
   }
 
-  public static IAST UniformDistribution(final IExpr a) {
-    return new AST1(UniformDistribution, a);
-  }
-
   public static IAST UnitStep(final IExpr a0) {
     return new AST1(UnitStep, a0);
   }
@@ -11026,12 +11259,55 @@ public class F extends S {
     return new AST2(UpSetDelayed, a0, a1);
   }
 
+  /**
+   * Print the documentation for the given symbol.
+   *
+   * @param head
+   * @return
+   */
+  public static final String usage(final ISymbol head) {
+    return usage(head.toString());
+  }
+
+  /**
+   * Print the documentation for the given symbol name.
+   *
+   * @param symbolName
+   * @return
+   */
+  public static final String usage(final String symbolName) {
+    StringBuilder buf = new StringBuilder();
+    Documentation.usageDocumentation(buf, symbolName);
+    return buf.toString();
+  }
+
   public static IAST Variables(final IExpr a0) {
     return new AST1(Variables, a0);
   }
 
   public static IAST Variance(final IExpr a0) {
     return new AST1(Variance, a0);
+  }
+
+  /**
+   * Generate a vector with <code>n</code> elements.
+   *
+   * @param iFunction
+   * @param n the number of elements of the vector.
+   * @return
+   */
+  public static IAST vector(IntFunction<? extends IExpr> iFunction, int n) {
+    IASTAppendable vector = mapRange(0, n, i -> iFunction.apply(i));
+    vector.addEvalFlags(IAST.IS_VECTOR);
+    return vector;
+  }
+
+  public static IAST Vectors(final IExpr a0) {
+    return new AST1(Vectors, a0);
+  }
+
+  public static IAST Vectors(final IExpr a0, final IExpr a1) {
+    return new AST2(Vectors, a0, a1);
   }
 
   public static IAST WeberE(final IExpr v, final IExpr z) {
@@ -11094,6 +11370,20 @@ public class F extends S {
   }
 
   /**
+   * Substitute all (sub-) expressions <code>x</code> in <code>expr</code> with <code>y</code>. If
+   * no substitution matches, the method returns the given <code>expr</code>.
+   *
+   * @param expr the complete expresssion
+   * @param x the subexpression which should be replaced
+   * @param y the expression which replaces <code>x</code>
+   * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or
+   *         the substituted expression.
+   */
+  public static IExpr xreplace(final IExpr expr, final IExpr x, final IExpr y) {
+    return expr.xreplace(x, y);
+  }
+
+  /**
    * Symmetry of a zero tensor.
    *
    * @param a0
@@ -11110,6 +11400,21 @@ public class F extends S {
   public static IAST Zeta(final IExpr s, final IExpr a) {
     return new AST2(Zeta, s, a);
   }
+
+  // public static String openSVGOnDesktop(IAST show) throws IOException {
+  // String html = Config.SVG_PAGE;
+  // StringBuilder stw = new StringBuilder();
+  // GraphicsFunctions.graphicsToSVG(show.getAST(1), stw);
+  // html = StringUtils.replace(html, "`1`", stw.toString());
+  // File temp = java.io.File.createTempFile("tempfile", ".svg");
+  // try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp))) {
+  // bw.write(html);
+  // }
+  // if (Desktop.isDesktopSupported()) {
+  // Desktop.getDesktop().open(temp);
+  // }
+  // return temp.toString();
+  // }
 
   public static IAST ZTransform(final IExpr expr, final IExpr n, final IExpr z) {
     return new AST3(ZTransform, expr, n, z);
@@ -11137,17 +11442,6 @@ public class F extends S {
   }
 
   /**
-   * Create a new integer number without using the internal small integer number cache. The returned
-   * object references will always be newly created.
-   *
-   * @param integerValue
-   * @return
-   */
-  public static IInteger ZZUniqueReference(final int integerValue) {
-    return AbstractIntegerSym.valueOfUniqueReference(integerValue);
-  }
-
-  /**
    * Create an integer number.
    *
    * @param integerValue
@@ -11169,410 +11463,14 @@ public class F extends S {
   }
 
   /**
-   * The operator form <code>op(f)[expr]</code> is transformed to <code>op(expr, f)</code>. The
-   * operator form <code>op(f, g)[expr]</code> is transformed to <code>op(expr, f, g)</code>
+   * Create a new integer number without using the internal small integer number cache. The returned
+   * object references will always be newly created.
    *
-   * @param ast1 an IAST with condition <code>ast1Arg.head().isAST1() && ast1Arg.isAST1()</code>
+   * @param integerValue
    * @return
    */
-  public static IAST operatorForm1Append(final IAST ast1) {
-    if (ast1.isAST1() && ast1.head().isAST() && ast1.head().size() > 1) {
-      IAST head = (IAST) ast1.head();
-      switch (head.size()) {
-        case 2:
-          return new AST2(ast1.topHead(), ast1.arg1(), head.arg1());
-        case 3:
-          return new AST3(ast1.topHead(), ast1.arg1(), head.arg1(), head.arg2());
-        default:
-          IASTAppendable result = ast(ast1.topHead(), head.size() + 1);
-          result.append(ast1.arg1());
-          result.appendArgs(head);
-          return result;
-      }
-    }
-    return NIL;
-  }
-
-  /**
-   * The binary operator form <code>op(f, g)[expr]</code> is transformed to <code>op(expr, f, g)
-   * </code>
-   *
-   * @param astArg an IAST with condition <code>astArg.head().isAST2() && astArg.isAST1()</code>
-   * @return
-   */
-  public static IAST operatorFormAppend2(final IAST astArg) {
-    if (astArg.head().isAST2() && astArg.isAST1()) {
-      return new AST3(astArg.topHead(), astArg.arg1(), ((IAST) astArg.head()).arg1(),
-          ((IAST) astArg.head()).arg2());
-    }
-    return NIL;
-  }
-
-  /**
-   * The operator form <code>op(f)[expr]</code> is transformed to <code>op(f, expr)</code>. The
-   * operator form <code>op(f)[expr1, expr2]</code> is transformed to <code>op(f, expr1, expr2)
-   * </code>.
-   *
-   * @param ast1 an <code>IAST</code> with condition <code>
-   *     ast1Arg.head().isAST1() && ast1Arg.isAST1()</code>
-   * @return
-   */
-  public static IAST operatorForm2Prepend(final IAST ast1, int[] expected, EvalEngine engine) {
-    if (ast1.head().isAST1() && ast1.argSize() > 0) {
-      if (ast1.argSize() + 1 < expected[0] || ast1.argSize() + 1 > expected[1]) {
-        return Errors.printArgMessage(ast1, expected, engine);
-      }
-      IExpr headArg1 = ast1.head().first();
-      switch (ast1.size()) {
-        case 2:
-          return new AST2(ast1.topHead(), headArg1, ast1.arg1());
-        case 3:
-          return new AST3(ast1.topHead(), headArg1, ast1.arg1(), ast1.arg2());
-        default:
-          IASTAppendable result = ast(ast1.topHead(), ast1.size() + 1);
-          result.append(headArg1);
-          result.appendArgs(ast1);
-          return result;
-      }
-    }
-    return NIL;
-  }
-
-  public static IAST Matrices(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(Matrices, a0, a1, a2);
-  }
-
-  public static IAST Matrices(final IExpr a0, final IExpr a1) {
-    return new AST2(Matrices, a0, a1);
-  }
-
-  public static IAST Matrices(final IExpr a0) {
-    return new AST1(Matrices, a0);
-  }
-
-  /**
-   * Generate a <code>n x m</code> matrix. The indices start in Java convention with <code>0</code>.
-   *
-   * @param biFunction
-   * @param n the number of rows of the matrix.
-   * @param m the number of elements in one row
-   * @return
-   */
-  public static IASTMutable matrix(BiIntFunction<? extends IExpr> biFunction, int n, int m) {
-    if (n > Config.MAX_MATRIX_DIMENSION_SIZE || m > Config.MAX_MATRIX_DIMENSION_SIZE) {
-      ASTElementLimitExceeded.throwIt(((long) n) * ((long) m));
-    }
-    IASTAppendable matrix = mapRange(0, n, i -> mapRange(0, m, j -> biFunction.apply(i, j)));
-    // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
-    // isMatrix() must be used!
-    matrix.isMatrix(true);
-    return matrix;
-  }
-
-  /**
-   * Generate a vector with <code>n</code> elements.
-   *
-   * @param iFunction
-   * @param n the number of elements of the vector.
-   * @return
-   */
-  public static IAST vector(IntFunction<? extends IExpr> iFunction, int n) {
-    IASTAppendable vector = mapRange(0, n, i -> iFunction.apply(i));
-    vector.addEvalFlags(IAST.IS_VECTOR);
-    return vector;
-  }
-
-  public static IAST Vectors(final IExpr a0, final IExpr a1) {
-    return new AST2(Vectors, a0, a1);
-  }
-
-  public static IAST Vectors(final IExpr a0) {
-    return new AST1(Vectors, a0);
-  }
-
-  /**
-   * Parses a given string to an instance of {@link IExpr}
-   *
-   * <p>
-   * Examples:
-   *
-   * <pre>
-   * "7/9" -> RationalScalar.of(7, 9)
-   * "3.14" -> DoubleScalar.of(3.14)
-   * "(3+2)*I/(-1+4)+8-I" -> ComplexScalar.of(8, 2/3) == "8+2/3*I"
-   * "9.81[m*s^-2]" -> Quantity.of(9.81, "m*s^-2")
-   * </pre>
-   *
-   * If the parsing logic encounters an inconsistency, the return type is a {@link IStringX} that
-   * holds the input string.
-   *
-   * <p>
-   * Scalar types that are not supported include {@link GaussScalar}.
-   *
-   * @param string
-   * @return scalar
-   */
-  public static IExpr fromString(String string) {
-    try {
-      return QuantityParser.of(string);
-    } catch (Exception exception) {
-      Errors.rethrowsInterruptException(exception);
-
-    }
-    return stringx(string);
-  }
-
-  public static IAST ShearingTransform(final IExpr a0, final IExpr a1, final IExpr a2) {
-    return new AST3(ShearingTransform, a0, a1, a2);
-  }
-
-  /**
-   * Show the result in an HTML page with the help of the Java <code>Desktop.getDesktop().open()
-   * </code> method. On some platforms the Desktop API may not be supported; use the <code>
-   * isDesktopSupported()</code> method todetermine if the current desktop is supported.
-   *
-   * @param expr
-   * @return
-   * @throws IOException
-   */
-  public static String show(IExpr expr) {
-    try {
-      if (expr.isSameHeadSizeGE(Show, 2)) {
-        IAST show = (IAST) expr;
-        return showGraphic(show.arg1());
-      }
-      return showGraphic(expr);
-    } catch (Exception ex) {
-      Errors.rethrowsInterruptException(ex);
-
-      LOGGER.debug("F.show() failed", ex);
-    }
-    return null;
-  }
-
-  public static String showGraphic(IExpr expr) {
-    try {
-      if (expr.isSameHeadSizeGE(Graphics, 2)) {
-        StringBuilder buf = new StringBuilder();
-        if (GraphicsFunctions.renderGraphics2D(buf, (IAST) expr, EvalEngine.get())) {
-          try {
-            String graphicsStr = buf.toString();
-            String html = JSBuilder.buildGraphics2D(JSBuilder.GRAPHICS2D_TEMPLATE, graphicsStr);
-            return openHTMLOnDesktop(html);
-          } catch (Exception ex) {
-            Errors.rethrowsInterruptException(ex);
-            // LOGGER.debug("JSBuilder.buildGraphics2D() failed", ex);
-          }
-        }
-        // return openSVGOnDesktop((IAST) expr);
-      } else if (expr.isSameHeadSizeGE(Graphics3D, 2)) {
-        StringBuilder buf = new StringBuilder();
-        if (GraphicsFunctions.renderGraphics3D(buf, (IAST) expr, EvalEngine.get())) {
-          try {
-            String graphics3DStr = buf.toString();
-            String html = JSBuilder.buildGraphics3D(JSBuilder.GRAPHICS3D_TEMPLATE, graphics3DStr);
-            return openHTMLOnDesktop(html);
-          } catch (Exception ex) {
-            Errors.rethrowsInterruptException(ex);
-            LOGGER.debug("JSBuilder.buildGraphics3D() failed", ex);
-          }
-        }
-      } else if (expr instanceof DataExpr) {
-        String html = ((DataExpr) expr).toHTML();
-        if (html != null) {
-          return openHTMLOnDesktop(html);
-        }
-      } else if (expr.isAST(JSFormData, 3)) {
-        return printJSFormData(expr);
-      } else if (expr.isString()) {
-        IStringX str = (IStringX) expr;
-        if (str.getMimeType() == IStringX.TEXT_HTML) {
-          String htmlSnippet = str.toString();
-          String htmlPage = Config.HTML_PAGE;
-          htmlPage = StringUtils.replace(htmlPage, "`1`", htmlSnippet);
-          EvalEngine.get().getOutPrintStream().println(htmlPage);
-          return openHTMLOnDesktop(htmlPage);
-        }
-      } else if (expr.isList(x -> x.isAST(JSFormData, 3))) {
-        StringBuilder buf = new StringBuilder();
-        ((IAST) expr).forEach(x -> buf.append(printJSFormData(x)));
-        return buf.toString();
-      }
-    } catch (Exception ex) {
-      Errors.rethrowsInterruptException(ex);
-      // LOGGER.debug("F.showGraphic() failed", ex);
-    }
-    return null;
-  }
-
-  private static String printJSFormData(IExpr expr) {
-    IAST jsFormData = (IAST) expr;
-    if (jsFormData.arg2().toString().equals(JSBuilder.MATHCELL_STR)) {
-      try {
-        String manipulateStr = jsFormData.arg1().toString();
-        String html = JSBuilder.buildMathcell(JSBuilder.MATHCELL_TEMPLATE, manipulateStr);
-        return openHTMLOnDesktop(html);
-      } catch (Exception ex) {
-        Errors.rethrowsInterruptException(ex);
-        // LOGGER.debug("F.printJSFormData() failed", ex);
-      }
-      // } else if (jsFormData.arg2().toString().equals("graphics3d")) {
-      // try {
-      // String graphics3dStr = jsFormData.arg1().toString();
-      // String html = Config.GRAPHICS3D_PAGE;
-      // html = StringUtils.replace(html, "`1`", graphics3dStr);
-      // return openHTMLOnDesktop(html);
-      // } catch (Exception ex) {
-      // LOGGER.debug("F.printJSFormData() failed", ex);
-      // }
-    } else if (jsFormData.arg2().toString().equals(JSBuilder.ECHARTS_STR)) {
-      try {
-        String manipulateStr = jsFormData.arg1().toString();
-        String html = JSBuilder.buildECharts(JSBuilder.ECHARTS_TEMPLATE, manipulateStr);
-        return openHTMLOnDesktop(html);
-      } catch (Exception ex) {
-        Errors.rethrowsInterruptException(ex);
-        // LOGGER.debug("F.printJSFormData() failed", ex);
-      }
-    } else if (jsFormData.arg2().toString().equals(JSBuilder.JSXGRAPH_STR)) {
-      try {
-        String manipulateStr = jsFormData.arg1().toString();
-        String html = JSBuilder.buildJSXGraph(JSBuilder.JSXGRAPH_TEMPLATE, manipulateStr);
-        return openHTMLOnDesktop(html);
-      } catch (Exception ex) {
-        Errors.rethrowsInterruptException(ex);
-        // LOGGER.debug("F.printJSFormData() failed", ex);
-      }
-    } else if (jsFormData.arg2().toString().equals(JSBuilder.MERMAID_STR)) {
-      try {
-        String manipulateStr = jsFormData.arg1().toString();
-        String html = JSBuilder.buildMermaid(JSBuilder.MERMAID_TEMPLATE, manipulateStr);
-        return openHTMLOnDesktop(html);
-      } catch (Exception ex) {
-        Errors.rethrowsInterruptException(ex);
-        // LOGGER.debug("F.printJSFormData() failed", ex);
-      }
-    } else if (jsFormData.arg2().toString().equals(JSBuilder.PLOTLY_STR)) {
-      try {
-        String manipulateStr = jsFormData.arg1().toString();
-        String html = JSBuilder.buildPlotly(JSBuilder.PLOTLY_TEMPLATE, manipulateStr);
-        return openHTMLOnDesktop(html);
-      } catch (Exception ex) {
-        Errors.rethrowsInterruptException(ex);
-        // LOGGER.debug("F.printJSFormData() failed", ex);
-      }
-    } else if (jsFormData.arg2().toString().equals(JSBuilder.TREEFORM_STR)) {
-      try {
-        String manipulateStr = jsFormData.arg1().toString();
-        String html = Config.VISJS_PAGE;
-        html = StringUtils.replace(html, "`1`", manipulateStr);
-        html = StringUtils.replace(html, "`2`", //
-            "  var options = {\n" + "          edges: {\n" + "              smooth: {\n"
-                + "                  type: 'cubicBezier',\n"
-                + "                  forceDirection:  'vertical',\n"
-                + "                  roundness: 0.4\n" + "              }\n" + "          },\n"
-                + "          layout: {\n" + "              hierarchical: {\n"
-                + "                  direction: \"UD\"\n" + "              }\n" + "          },\n"
-                + "          nodes: {\n" + "            shape: 'box'\n" + "          },\n"
-                + "          physics:false\n" + "      }; " //
-        );
-        return openHTMLOnDesktop(html);
-      } catch (Exception ex) {
-        Errors.rethrowsInterruptException(ex);
-        // LOGGER.debug("F.printJSFormData() failed", ex);
-      }
-    } else if (jsFormData.arg2().toString().equals(JSBuilder.TRACEFORM_STR)) {
-      try {
-        String jsStr = jsFormData.arg1().toString();
-        String html = Config.TRACEFORM_PAGE;
-        html = StringUtils.replace(html, "`1`", jsStr);
-        return openHTMLOnDesktop(html);
-      } catch (Exception ex) {
-        Errors.rethrowsInterruptException(ex);
-        // LOGGER.debug("F.printJSFormData() failed", ex);
-      }
-    }
-    return null;
-  }
-
-  // public static String openSVGOnDesktop(IAST show) throws IOException {
-  // String html = Config.SVG_PAGE;
-  // StringBuilder stw = new StringBuilder();
-  // GraphicsFunctions.graphicsToSVG(show.getAST(1), stw);
-  // html = StringUtils.replace(html, "`1`", stw.toString());
-  // File temp = java.io.File.createTempFile("tempfile", ".svg");
-  // try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp))) {
-  // bw.write(html);
-  // }
-  // if (Desktop.isDesktopSupported()) {
-  // Desktop.getDesktop().open(temp);
-  // }
-  // return temp.toString();
-  // }
-
-  public static String openHTMLOnDesktop(String html) throws IOException {
-    File temp = java.io.File.createTempFile("tempfile", ".html");
-    try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp));) {
-      bw.write(html);
-    }
-    if (Config.JAVA_AWT_DESKTOP_AVAILABLE) {
-      if (Desktop.isDesktopSupported()) {
-        Desktop.getDesktop().open(temp);
-      }
-    }
-    return temp.toString();
-  }
-
-  public static String openJSONOnDesktop(String html) throws IOException {
-    java.lang.String escapedStr = html.replaceAll("(\\r|\\n|\\r\\n)+", " ");
-    escapedStr = StringEscapeUtils.escapeEcmaScript(escapedStr);
-    String jsonScriptStr = StringUtils.replace(JSBuilder.JSON_HTML_VIEWER, "`1`", escapedStr);
-    File temp = java.io.File.createTempFile("tempfile", ".html");
-    try (BufferedWriter bw = new BufferedWriter(new FileWriter(temp));) {
-      bw.write(jsonScriptStr);
-    }
-    if (Config.JAVA_AWT_DESKTOP_AVAILABLE) {
-      if (Desktop.isDesktopSupported()) {
-        Desktop.getDesktop().open(temp);
-      }
-    }
-    return temp.toString();
-  }
-
-  /**
-   * Iterate over the arguments of <code>list</code> and flatten the arguments of <code>
-   * Sequence(...)
-   * </code> expressions. (i.e. <code>{Sequence(a,b,...)}</code> is rewritten as <code>{a,b,...}
-   * </code>). If some of the elements is the symbol <code>Nothing</code> it's automatically removed
-   * from the arguments.
-   *
-   * @param list an AST which may contain <code>Sequence(...)</code> expressions or <code>Nothing
-   *     </code> symbols.
-   * @return <code>F.NIL</code> if no sequence is flattened
-   */
-  public static IAST flattenSequence(final IAST list) {
-    if (list.isEvalFlagOn(IAST.SEQUENCE_FLATTENED)) {
-      return NIL;
-    }
-
-    final boolean isList = list.isList();
-    final int indx = list.indexOf(x -> x.isSequence() || (isList && x == S.Nothing));
-    if (indx > 0) {
-      final int extraSize = list.get(indx).size();
-      final IASTAppendable seqResult = F.ast(list.head(), list.size() + extraSize + 1);
-      seqResult.appendArgs(list, indx);
-      list.forEach(indx, list.size(), x -> {
-        if (x.isSequence()) {
-          seqResult.appendArgs((IAST) x);
-        } else if (isList && x == S.Nothing) {
-        } else {
-          seqResult.append(x);
-        }
-      });
-      return seqResult;
-    }
-    list.addEvalFlags(IAST.SEQUENCE_FLATTENED);
-    return NIL;
+  public static IInteger ZZUniqueReference(final int integerValue) {
+    return AbstractIntegerSym.valueOfUniqueReference(integerValue);
   }
 
 }

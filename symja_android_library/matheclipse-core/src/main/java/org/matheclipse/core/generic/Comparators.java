@@ -5,9 +5,9 @@ import java.util.Comparator;
 import java.util.function.BiPredicate;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -234,7 +234,7 @@ public final class Comparators {
    * <code>compareTo()
    * </code> method from <code>IExpr</code>.
    *
-   * @param test the test header. See for example function {@link ListFunctions.Gather}
+   * @param test the test header. See for example function {@link S#Gather}
    * @return
    */
   public static Comparator<IExpr> binaryPredicateComparator(IExpr test) {

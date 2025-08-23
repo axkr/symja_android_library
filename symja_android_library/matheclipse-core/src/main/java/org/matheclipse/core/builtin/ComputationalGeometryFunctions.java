@@ -7,6 +7,7 @@ import java.util.Stack;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -625,7 +626,7 @@ public class ComputationalGeometryFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isListOfLists()) {
         IAST listOfPoints = (IAST) ast.arg1();
-        IntArrayList dimensions = LinearAlgebra.dimensions(listOfPoints);
+        IntArrayList dimensions = LinearAlgebraUtil.dimensions(listOfPoints);
         try {
           if (dimensions.size() == 2 && dimensions.getInt(1) == 2) {
             if (dimensions.getInt(0) <= 2) {
@@ -1135,7 +1136,7 @@ public class ComputationalGeometryFunctions {
       ITensorAccess v2 = F.NIL;
       if (arg11 instanceof ITensorAccess) {
         v1 = (ITensorAccess) arg11;
-        IntArrayList dim1 = LinearAlgebra.dimensions(v1, S.List);
+        IntArrayList dim1 = LinearAlgebraUtil.dimensions(v1, S.List);
         if (dim1.size() < 1) {
           return F.NIL;
         }
@@ -1143,7 +1144,7 @@ public class ComputationalGeometryFunctions {
       }
       if (arg12 instanceof ITensorAccess) {
         v2 = (ITensorAccess) arg12;
-        IntArrayList dim2 = LinearAlgebra.dimensions(v2, S.List);
+        IntArrayList dim2 = LinearAlgebraUtil.dimensions(v2, S.List);
         if (dim2.size() < 1) {
           return F.NIL;
         }

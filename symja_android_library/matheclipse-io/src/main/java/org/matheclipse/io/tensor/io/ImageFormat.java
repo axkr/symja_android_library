@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.stream.IntStream;
 import javax.imageio.ImageIO;
-import org.matheclipse.core.builtin.LinearAlgebra;
+import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -80,7 +80,7 @@ public class ImageFormat {
    * @return image of type BufferedImage.TYPE_BYTE_GRAY or BufferedImage.TYPE_INT_ARGB
    */
   public static BufferedImage of(IAST ast) {
-    IntList dims = LinearAlgebra.dimensions(ast);
+    IntList dims = LinearAlgebraUtil.dimensions(ast);
     if (dims.size() == 2)
       return toTYPE_BYTE_GRAY(ast, dims.getInt(1), dims.getInt(0));
     return toTYPE_INT(ast, dims.getInt(1), dims.getInt(0), BufferedImage.TYPE_INT_ARGB);
@@ -134,7 +134,7 @@ public class ImageFormat {
    * @return image of type BufferedImage.TYPE_BYTE_GRAY or BufferedImage.TYPE_INT_BGR
    */
   public static BufferedImage jpg(IAST ast) {
-    IntList dims = LinearAlgebra.dimensions(ast);
+    IntList dims = LinearAlgebraUtil.dimensions(ast);
     if (dims.size() == 2) {
       return toTYPE_BYTE_GRAY(ast, dims.getInt(1), dims.getInt(0));
     }

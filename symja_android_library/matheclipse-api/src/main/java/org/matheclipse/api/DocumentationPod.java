@@ -9,13 +9,13 @@ import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
-import org.matheclipse.core.builtin.StringFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.PodDefaultsRules;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -95,7 +95,7 @@ public class DocumentationPod implements IPod {
       if (podOut.isAST(S.JSFormData, 3)) {
         int form = Pods.internFormat(Pods.SYMJA, podOut.second().toString());
         Pods.addPod(podsArray, plot2D, podOut, podOut.first().toString(),
-            StringFunctions.inputForm(plot2D), "Plot", "Plotter", form, engine);
+            IStringX.inputForm(plot2D), "Plot", "Plotter", form, engine);
         ++numpods;
       }
     }

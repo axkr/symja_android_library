@@ -585,6 +585,11 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEigensystem() {
+    check("Eigensystem({{0}},{-1,-2,3})", //
+        "Eigensystem(\n" //
+            + "{{0}},{-1,-2,3})");
+
+
     // example from https://github.com/Hipparchus-Math/hipparchus/issues/365
     check("Eigensystem({{1,1,0.0}, {1,1,1}, {0.0,1,1}})", //
         "{{2.41421,1.0,-0.414214},{{0.5,0.707107,0.5},{0.707107,-4.54581*10^-29,-0.707107},{-0.5,0.707107,-0.5}}}");

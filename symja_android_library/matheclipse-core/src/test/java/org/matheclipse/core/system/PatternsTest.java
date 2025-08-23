@@ -22,7 +22,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
 
   @Override
   public void check(String evalString, String expectedResult) {
-    check(evaluator, evalString, expectedResult, -1);
+    check(evaluator, evalString, expectedResult, "", -1);
   }
 
   @Test
@@ -1180,6 +1180,12 @@ public class PatternsTest extends ExprEvaluatorTestCase {
         "");
     check("foo(1/a)", //
         "{a}");
+  }
+
+  @Test
+  public void testPatternSort() {
+    check("f(___):=1;f(_,_):=2; f(1,2)", //
+        "2");
   }
 
   @Override

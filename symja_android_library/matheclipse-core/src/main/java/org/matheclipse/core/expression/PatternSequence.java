@@ -28,7 +28,7 @@ public class PatternSequence extends AbstractPatternSequence {
    * @param def if <code>true</code> replace with default value, if no matching was possible
    * @param zeroArgsAllowed if <code>true</code>, 0 arguments are allowed, otherwise the number of
    *        args has to be >= 1.
-   * @return
+   * @return a new PatternSequence
    */
   public static PatternSequence valueOf(final ISymbol symbol, final IExpr check, final boolean def,
       boolean zeroArgsAllowed) {
@@ -47,7 +47,7 @@ public class PatternSequence extends AbstractPatternSequence {
    * @param check a header check.Maybe <code>null</code>.
    * @param zeroArgsAllowed if <code>true</code>, 0 arguments are allowed, otherwise the number of
    *        args has to be >= 1.
-   * @return
+   * @return a new PatternSequence
    */
   public static PatternSequence valueOf(final ISymbol symbol, final IExpr check,
       boolean zeroArgsAllowed) {
@@ -64,7 +64,7 @@ public class PatternSequence extends AbstractPatternSequence {
    * @param symbol the associated symbol of the pattern sequence. Maybe <code>null</code>.
    * @param zeroArgsAllowed if <code>true</code>, 0 arguments are allowed, otherwise the number of
    *        args has to be >= 1.
-   * @return
+   * @return a new PatternSequence
    */
   public static PatternSequence valueOf(final ISymbol symbol, boolean zeroArgsAllowed) {
     return valueOf(symbol, null, zeroArgsAllowed);

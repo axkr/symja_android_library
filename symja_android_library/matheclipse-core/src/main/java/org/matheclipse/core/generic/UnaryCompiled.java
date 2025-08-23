@@ -8,7 +8,6 @@ import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.builtin.CompilerFunctions;
 import org.matheclipse.core.builtin.CompilerFunctions.CompiledFunctionArg;
 import org.matheclipse.core.eval.Errors;

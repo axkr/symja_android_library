@@ -23,6 +23,7 @@ import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -3370,8 +3371,8 @@ public class StatisticsFunctions {
             F.Subtract(F.Conjugate(arg2.arg1()), F.Conjugate(arg2.arg2())));
       }
       IAST num1 = arg1.apply(S.Plus);
-      IExpr factor = F.ZZ(-1 * (arg1.size() - 2));
-      IExpr v1 = F.sum(i -> F.Times(F.CN1, num1.setAtCopy(i.toInt(), F.Times(factor, arg1.get(i))),
+      IInteger factor = F.ZZ(-1 * (arg1.size() - 2));
+      IExpr v1 = F.sum(i -> F.Times(F.CN1, num1.setAtCopy(i.toInt(), factor.times(arg1.get(i))),
           F.Conjugate(arg2.get(i))), 1, arg1.argSize());
       return F.Divide(v1, F.ZZ((arg1.argSize()) * ((arg1.size()) - 2L)));
     }
@@ -4163,7 +4164,7 @@ public class StatisticsFunctions {
               IExpr pdf = S.PDF.ofNIL(engine, distribution, x);
               if (pdf.isPresent()) {
                 if (predicate.isRelational()) {
-                  IAST interval = IntervalDataSym.relationToInterval((IAST) predicate, x);
+                  IAST interval = IntervalDataSym.relationToIntervalSet((IAST) predicate, x);
                   if (interval.isIntervalData() && interval.argSize() == 1) {
                     IAST intervalList = (IAST) interval.arg1();
                     return engine.evaluate(
@@ -4912,6 +4913,11 @@ public class StatisticsFunctions {
   private static final class Mean extends AbstractTrigArg1 {
 
     @Override
+    public boolean evalIsReal(IAST ast) {
+      return false;
+    }
+
+    @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
       try {
         if (arg1.isRealVector()) {
@@ -4929,7 +4935,7 @@ public class StatisticsFunctions {
         if (arg1.isDistribution()) {
           return getDistribution(arg1).mean((IAST) arg1);
         }
-        final IntList dimensions = LinearAlgebra.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+        final IntList dimensions = LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
         if (dimensions.size() >= 2) {
           return F.ArrayReduce(S.Variance, arg1, F.C1);
         }
@@ -4953,7 +4959,7 @@ public class StatisticsFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
 
-      final IntList dimensions = LinearAlgebra.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+      final IntList dimensions = LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
       if (dimensions.size() != 0) {
         switch (dimensions.size()) {
           case 1:
@@ -5077,6 +5083,12 @@ public class StatisticsFunctions {
    * </pre>
    */
   public static class Median extends AbstractTrigArg1 {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return false;
+    }
+
     /**
      * See <a href="https://stackoverflow.com/a/4859279/24819">Get the indices of an array after
      * sorting?</a>
@@ -5128,7 +5140,7 @@ public class StatisticsFunctions {
       if (arg1.isAST(S.WeightedData, 3) && arg1.first().isList() && arg1.second().isList()) {
         return median((IAST) arg1, engine);
       }
-      final IntList dimensions = LinearAlgebra.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+      final IntList dimensions = LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
       if (dimensions.size() > 0) {
         // Rectangular array of real numbers is expected at position `1` in `2`.
         if (!arg1.forAllLeaves(x -> x.isRealResult())) {
@@ -6722,7 +6734,7 @@ public class StatisticsFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
 
-      final IntList dimensions = LinearAlgebra.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+      final IntList dimensions = LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
       if (dimensions.size() > 0) {
         // Rectangular array of real numbers is expected at position `1` in `2`.
         if (!arg1.forAllLeaves(x -> x.isRealResult())) {
@@ -6871,7 +6883,7 @@ public class StatisticsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      final IntList dimensions = LinearAlgebra.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+      final IntList dimensions = LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
       if (dimensions.size() > 0) {
         // Rectangular array of real numbers is expected at position `1` in `2`.
         if (!arg1.forAllLeaves(x -> x.isRealResult())) {
@@ -7316,7 +7328,7 @@ public class StatisticsFunctions {
             }
             return standardDeviation(arg1);
           }
-          IntArrayList dimensions = LinearAlgebra.dimensions(list);
+          IntArrayList dimensions = LinearAlgebraUtil.dimensions(list);
           if (dimensions.size() > 2) {
             return F.ArrayReduce(S.StandardDeviation, list, F.C1);
           }
@@ -8049,7 +8061,7 @@ public class StatisticsFunctions {
           // Rectangular array expected at position `1` in `2`.
           return Errors.printMessage(S.Variance, "rectt", F.List(F.C1, ast));
         }
-        final IntList dimensions = LinearAlgebra.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+        final IntList dimensions = LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
         if (dimensions.size() >= 2) {
           return F.ArrayReduce(S.Variance, arg1, F.C1);
         }

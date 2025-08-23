@@ -7,7 +7,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 
 public class FindGeneratingFunction extends AbstractFunctionEvaluator {
 
@@ -21,9 +20,9 @@ public class FindGeneratingFunction extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    if (ast.arg1().isList()) {
+    if (ast.arg1().isList() && ast.arg2().isVariable()) {
       IAST coefficientsList = (IAST) ast.arg1();
-      ISymbol x = (ISymbol) ast.arg2();
+      IExpr x = ast.arg2();
       IASTAppendable polynomial = F.PlusAlloc(coefficientsList.size() - 1);
       for (int i = 1; i < coefficientsList.size(); i++) {
         IExpr coefficient = coefficientsList.get(i);
@@ -75,7 +74,7 @@ public class FindGeneratingFunction extends AbstractFunctionEvaluator {
    * @return
    */
   private static boolean crossCheckPade2SeriesCoefficient(IExpr approximant,
-      IAST sequenceCoefficients, ISymbol x, int maxNumbers, EvalEngine engine) {
+      IAST sequenceCoefficients, IExpr x, int maxNumbers, EvalEngine engine) {
     // cross check if the approximant is a numeric function of x
     int length = Math.min(sequenceCoefficients.size(), maxNumbers);
     for (int i = 1; i < length; i++) {

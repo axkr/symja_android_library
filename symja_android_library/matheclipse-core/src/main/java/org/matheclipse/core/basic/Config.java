@@ -8,10 +8,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatContext;
 import org.hipparchus.util.Precision;
+import org.matheclipse.core.builtin.FunctionDefinitions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.BuiltinFunctionCalls;
 import org.matheclipse.core.expression.ComplexNum;
@@ -37,6 +39,9 @@ import com.google.common.cache.CacheBuilder;
 
 /** General configuration settings. */
 public class Config {
+
+  public static BooleanSupplier BUILTIN_FUNCTION_INIT =
+      () -> FunctionDefinitions.builtinFunctionInitializer();
 
   /** CheerpJ (cheerpj.com) environment? */
   public static boolean CHEEPRJ = false;
@@ -714,4 +719,7 @@ public class Config {
     }
     SCRIPT_COMMAND_LINE = commandLine;
   }
+
+  // load version string from MAVEN
+  public static String VERSION = "?";
 }

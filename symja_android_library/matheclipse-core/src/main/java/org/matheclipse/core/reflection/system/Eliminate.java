@@ -6,7 +6,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
-import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.RootsFunctions;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
@@ -24,6 +23,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
@@ -269,8 +269,8 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
   }
 
   /**
-   * Check if the argument at the given position is an equation (i.e. Equal[a,b]) or a list of
-   * equations and return a list of expressions, which should be equal to <code>0</code>.
+   * Check if the argument at the given position is an equation (i.e. <code>Equal[a,b]</code>) or a
+   * list of equations and return a list of expressions, which should be equal to <code>0</code>.
    *
    * @param ast
    * @param position
@@ -282,7 +282,14 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       IAST list = (IAST) arg;
       return F.mapList(list, t -> {
         if (t.isEqual()) {
-          return BooleanFunctions.equals((IAST) t);
+          COMPARE_TERNARY b = t.first().equalTernary(t.second(), engine);
+          if (b == IExpr.COMPARE_TERNARY.FALSE) {
+            return S.True;
+          }
+          if (b == IExpr.COMPARE_TERNARY.TRUE) {
+            return S.False;
+          }
+          return t;
         }
         // `1` is not a well-formed equation.
         Errors.printMessage(ast.topHead(), "eqf", F.list(t), engine);

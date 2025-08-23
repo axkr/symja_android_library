@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.PiecewiseFunctions;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.PiecewiseUtil;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -500,7 +500,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
         convertLogisticSigmoid(function, buf);
         return;
       }
-      IAST piecewiseExpand = PiecewiseFunctions.piecewiseExpand(function, S.Reals);
+      IAST piecewiseExpand = PiecewiseUtil.piecewiseExpand(function, S.Reals);
       int[] dim = piecewiseExpand.isPiecewise();
       if (dim != null && convertPiecewise(dim, piecewiseExpand, buf)) {
         return;
@@ -539,7 +539,7 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
         buf.append("))))");
         return;
       }
-      IAST piecewiseExpand = PiecewiseFunctions.piecewiseExpand(function, S.Reals);
+      IAST piecewiseExpand = PiecewiseUtil.piecewiseExpand(function, S.Reals);
       int[] dim = piecewiseExpand.isPiecewise();
       if (dim != null && convertPiecewise(dim, piecewiseExpand, buf)) {
         return;

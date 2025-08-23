@@ -15,6 +15,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.RuleCreationError;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
@@ -22,7 +23,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
-import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPatternObject;
@@ -66,11 +66,9 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   protected BuiltInDummy() {}
 
   /**
-   * The evaluation class of this built-in-function. See packages: package <code>
-   * org.matheclipse.core.builtin.function</code> and <code>org.matheclipse.core.reflection.system
-   * </code>.
+   * The evaluation class of this built-in-function.
    */
-  private transient IEvaluator fEvaluator;
+  private transient IFunctionEvaluator fEvaluator;
 
   public BuiltInDummy(final String symbolName) {
     super();
@@ -79,7 +77,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   }
 
 
-  public BuiltInDummy(final String symbolName, IEvaluator evaluator) {
+  public BuiltInDummy(final String symbolName, IFunctionEvaluator evaluator) {
     super();
     // fContext = context;
     fSymbolName = symbolName;
@@ -477,7 +475,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   }
 
   @Override
-  public IEvaluator getEvaluator() {
+  public IFunctionEvaluator getEvaluator() {
     return fEvaluator;
   }
 
@@ -739,6 +737,18 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   @Override
   public boolean isPolynomialStruct() {
     return isVariable();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isNonNegative() {
+    if (isNumericFunction(true)) {
+      IExpr temp = F.evaln(this);
+      if (temp.isReal() && temp.isNonNegative()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /** {@inheritDoc} */
@@ -1051,7 +1061,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   }
 
   @Override
-  public void setEvaluator(IEvaluator evaluator) {
+  public void setEvaluator(IFunctionEvaluator evaluator) {
     fEvaluator = evaluator;
   }
 

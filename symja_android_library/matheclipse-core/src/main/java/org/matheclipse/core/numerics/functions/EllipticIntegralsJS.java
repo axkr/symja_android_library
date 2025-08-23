@@ -1,4 +1,4 @@
-package org.matheclipse.core.builtin.functions;
+package org.matheclipse.core.numerics.functions;
 
 import org.hipparchus.complex.Complex;
 import org.hipparchus.special.elliptic.carlson.CarlsonEllipticIntegral;

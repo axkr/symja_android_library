@@ -177,14 +177,6 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public IReal add(IReal that) {
-    if (that instanceof IRational) {
-      return add((IRational) that);
-    }
-    return Num.valueOf((fIntValue) + that.doubleValue());
-  }
-
-  @Override
   public IRational add(IRational parm1) {
     if (parm1.isZero()) {
       return this;
@@ -203,11 +195,24 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
+  public IReal add(IReal that) {
+    if (that instanceof IRational) {
+      return add((IRational) that);
+    }
+    return Num.valueOf((fIntValue) + that.doubleValue());
+  }
+
+  @Override
   public long bitLength() {
     if (fIntValue == 0) {
       return 0L;
     }
     return 32 - Integer.numberOfLeadingZeros(fIntValue < 0 ? -fIntValue : fIntValue);
+  }
+
+  @Override
+  public byte byteValue() {
+    return (byte) fIntValue;
   }
 
   /** {@inheritDoc} */
@@ -256,6 +261,11 @@ public class IntegerSym extends AbstractIntegerSym {
     return ComplexNum.valueOf(doubleValue());
   }
 
+  @Override
+  public int complexSign() {
+    return (fIntValue > 0) ? 1 : (fIntValue == 0) ? 0 : -1;
+  }
+
   /** {@inheritDoc} */
   @Override
   public IInteger dec() {
@@ -264,8 +274,8 @@ public class IntegerSym extends AbstractIntegerSym {
 
   /** {@inheritDoc} */
   @Override
-  public IInteger inc() {
-    return add(F.C1);
+  public IInteger denominator() {
+    return F.C1;
   }
 
   @Override
@@ -285,20 +295,6 @@ public class IntegerSym extends AbstractIntegerSym {
     res[1] = valueOf(largeRes[1]);
 
     return res;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IInteger iquo(final IInteger that) {
-    BigInteger[] largeRes = toBigNumerator().divideAndRemainder(that.toBigNumerator());
-    return valueOf(largeRes[0]);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IInteger irem(final IInteger that) {
-    BigInteger[] largeRes = toBigNumerator().divideAndRemainder(that.toBigNumerator());
-    return valueOf(largeRes[1]);
   }
 
   @Override
@@ -388,29 +384,6 @@ public class IntegerSym extends AbstractIntegerSym {
 
   /** {@inheritDoc} */
   @Override
-  public IInteger denominator() {
-    return F.C1;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public BigFraction toBigFraction() {
-    return new BigFraction(fIntValue);
-  }
-
-  @Override
-  public BigRational toBigRational() {
-    return new BigRational(fIntValue);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public IInteger numerator() {
-    return this;
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public final int hashCode() {
     return fIntValue;
   }
@@ -419,6 +392,12 @@ public class IntegerSym extends AbstractIntegerSym {
   @Override
   public IReal im() {
     return F.C0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IInteger inc() {
+    return add(F.C1);
   }
 
   @Override
@@ -493,11 +472,6 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public byte byteValue() {
-    return (byte) fIntValue;
-  }
-
-  @Override
   public int intValue() {
     return fIntValue;
   }
@@ -512,6 +486,20 @@ public class IntegerSym extends AbstractIntegerSym {
       return AbstractFractionSym.valueOf(-1, -fIntValue);
     }
     return AbstractFractionSym.valueOf(1, fIntValue);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IInteger iquo(final IInteger that) {
+    BigInteger[] largeRes = toBigNumerator().divideAndRemainder(that.toBigNumerator());
+    return valueOf(largeRes[0]);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IInteger irem(final IInteger that) {
+    BigInteger[] largeRes = toBigNumerator().divideAndRemainder(that.toBigNumerator());
+    return valueOf(largeRes[1]);
   }
 
   @Override
@@ -588,6 +576,12 @@ public class IntegerSym extends AbstractIntegerSym {
   @Override
   public boolean isNegative() {
     return fIntValue < 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isNonNegative() {
+    return fIntValue >= 0;
   }
 
   @Override
@@ -757,14 +751,6 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public IReal multiply(IReal that) {
-    if (that instanceof IRational) {
-      return multiply((IRational) that);
-    }
-    return Num.valueOf((fIntValue) * that.doubleValue());
-  }
-
-  @Override
   public IRational multiply(IRational parm1) {
     if (parm1.isZero()) {
       return F.C0;
@@ -786,6 +772,14 @@ public class IntegerSym extends AbstractIntegerSym {
     BigIntegerSym p1 = (BigIntegerSym) parm1;
     BigInteger newnum = toBigNumerator().multiply(p1.toBigNumerator());
     return valueOf(newnum);
+  }
+
+  @Override
+  public IReal multiply(IReal that) {
+    if (that instanceof IRational) {
+      return multiply((IRational) that);
+    }
+    return Num.valueOf((fIntValue) * that.doubleValue());
   }
 
   @Override
@@ -868,6 +862,12 @@ public class IntegerSym extends AbstractIntegerSym {
     result[0] = AbstractIntegerSym.valueOf(nthRoot[0]);
     result[1] = AbstractIntegerSym.valueOf(nthRoot[1]);
     return result;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IInteger numerator() {
+    return this;
   }
 
   @Override
@@ -964,8 +964,8 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
-  public int complexSign() {
-    return (fIntValue > 0) ? 1 : (fIntValue == 0) ? 0 : -1;
+  public IExpr sqr() {
+    return this.multiply(this);
   }
 
   /**
@@ -983,11 +983,6 @@ public class IntegerSym extends AbstractIntegerSym {
       }
     }
     return F.Sqrt(this);
-  }
-
-  @Override
-  public IExpr sqr() {
-    return this.multiply(this);
   }
 
   @Override
@@ -1021,8 +1016,19 @@ public class IntegerSym extends AbstractIntegerSym {
 
   /** {@inheritDoc} */
   @Override
+  public BigFraction toBigFraction() {
+    return new BigFraction(fIntValue);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public BigInteger toBigNumerator() {
     return BigInteger.valueOf(fIntValue);
+  }
+
+  @Override
+  public BigRational toBigRational() {
+    return new BigRational(fIntValue);
   }
 
   /** {@inheritDoc} */
@@ -1039,13 +1045,13 @@ public class IntegerSym extends AbstractIntegerSym {
 
   /** {@inheritDoc} */
   @Override
-  public long toLongDefault(long defaultValue) {
+  public long toLong() throws ArithmeticException {
     return fIntValue;
   }
 
   /** {@inheritDoc} */
   @Override
-  public long toLong() throws ArithmeticException {
+  public long toLongDefault(long defaultValue) {
     return fIntValue;
   }
 

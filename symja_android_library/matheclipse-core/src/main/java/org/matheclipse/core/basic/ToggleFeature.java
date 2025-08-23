@@ -11,21 +11,19 @@ import org.matheclipse.core.expression.S;
 public class ToggleFeature {
 
   /**
-   * If <code>true</code>, enable <code>org.matheclipse.core.builtin.function.Compile</code>
-   * function.
+   * If <code>true</code>, enable {@link S#Compile} function. function.
    */
   public static boolean COMPILE = false;
 
   /**
-   * If <code>true</code>, enable <code>org.matheclipse.core.builtin.function.CompilePrint</code>
-   * function.
+   * If <code>true</code>, enable {@link S#CompilePrint} function. function.
    */
   public static boolean COMPILE_PRINT = false;
 
   public static boolean COMPILE_WITH_JAVAPARSER = false;
 
   /**
-   * If <code>true</code>, enable <code>org.matheclipse.core.builtin.function.Defer</code> function.
+   * If <code>true</code>, enable {@link S#Defer} function.
    */
   // public static boolean DEFER = true;
 

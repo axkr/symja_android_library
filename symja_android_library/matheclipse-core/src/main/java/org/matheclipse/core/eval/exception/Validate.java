@@ -12,6 +12,7 @@ import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -200,7 +201,6 @@ public final class Validate {
         int[] result = new int[list.argSize()];
         int intValue = 0;
         try {
-          IExpr expr;
           for (int i = 1; i < list.size(); i++) {
             intValue = list.get(i).toIntDefault();
             if (intValue == Config.INVALID_INT) {
@@ -318,7 +318,6 @@ public final class Validate {
         int[] result = new int[list.argSize()];
         int intValue = 0;
         try {
-          IExpr expr;
           for (int i = 1; i < list.size(); i++) {
             intValue = list.get(i).toIntDefault();
             if (intValue <= 0) {
@@ -349,7 +348,6 @@ public final class Validate {
    * @param ast
    * @param position the arguments position in the {@code ast}
    * @param startValue
-   * @return
    */
   public static int checkIntType(IAST ast, int position, int startValue)
       throws ArgumentTypeException {
@@ -498,7 +496,6 @@ public final class Validate {
    * @param expr
    * @param startValue
    * @param engine
-   * @return
    * @throws ArgumentTypeException if it's not a Java int value in the range.
    */
   public static int throwIntType(IExpr expr, int startValue, EvalEngine engine) {
@@ -694,7 +691,6 @@ public final class Validate {
    * @param position
    * @param head
    * @param engine
-   * @return
    */
   public static IExpr checkIsVariable(IAST ast, int position, ISymbol head, EvalEngine engine) {
     IExpr arg = ast.get(position);
@@ -708,22 +704,33 @@ public final class Validate {
   /**
    * Check if the argument is an AST, otherwise throw an <code>ArgumentTypeException</code> with
    * message &quot;Cannot assign to raw object `1`.&quot;
+   * 
+   * @param setOperator TODO
    *
    * @throws ArgumentTypeException if it's not an AST.
    */
-  public static IAST checkASTUpRuleType(IExpr expr) {
+  public static IAST checkASTUpRuleType(IExpr expr, IBuiltInSymbol setOperator) {
     if (expr.isAST()) {
       return (IAST) expr;
     }
     // Cannot assign to raw object `1`.
-    String str = Errors.getMessage("setraw", F.list(expr), EvalEngine.get());
+    Errors.printMessage(setOperator, "setraw", F.list(expr), EvalEngine.get());
+    throw new FailedException();
+  }
+
+  public static IAST checkASTTagRuleType(IExpr expr, IBuiltInSymbol setOperator) {
+    if (expr.isAST()) {
+      return (IAST) expr;
+    }
+    // Cannot assign to raw object `1`.
+    String str = Errors.getMessage("setraw", F.list(expr));
     throw new ArgumentTypeException(str);
   }
 
   /**
-   * Check if the expression is an AST.
+   * Check if the expression is an {@link IAST} object, otherwise print an error message.
    *
-   * @param ast TODO
+   * @param ast the AST which should be evaluated
    * @param position
    * @param engine
    * @return <code>F.NIL</code> if the expression is no <code>IAST</code> object.
@@ -737,9 +744,10 @@ public final class Validate {
   }
 
   /**
-   * Check if the expression is an IAST or an IAssociation
+   * Check if the expression is an {@link IAST} or {@link IAssociation} object, otherwise print an
+   * error message.
    *
-   * @param ast TODO
+   * @param ast the AST which should be evaluated
    * @param position
    * @param engine
    * @return <code>F.NIL</code> if the expression is no <code>IAST</code> object.
@@ -762,7 +770,6 @@ public final class Validate {
    *
    * @param ast
    * @param position the position of the equations argument in the <code>ast</code> expression.
-   * @return
    */
   public static IASTAppendable checkEquations(final IAST ast, int position) {
     IExpr expr = ast.get(position);
@@ -787,7 +794,6 @@ public final class Validate {
    *
    * @param ast
    * @param position the position of the equations argument in the <code>ast</code> expression.
-   * @return
    */
   public static IASTAppendable checkEquationsAndInequations(final IAST ast, int position) {
     IExpr expr = ast.get(position);
@@ -923,7 +929,6 @@ public final class Validate {
    *
    * @param upToAST
    * @param engine
-   * @return
    */
   public static int checkUpTo(IAST upToAST, EvalEngine engine) {
     int upTo = Config.INVALID_INT;

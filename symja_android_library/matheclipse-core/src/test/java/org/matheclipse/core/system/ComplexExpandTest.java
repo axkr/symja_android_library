@@ -19,8 +19,7 @@ public class ComplexExpandTest extends ExprEvaluatorTestCase {
     check("ComplexExpand(Log(2*z), z)", //
         "I*Arg(z)+Log(2)+Log(Im(z)^2+Re(z)^2)/2");
     check("ComplexExpand(Abs(2^z*Log(2*z)), z)", //
-        "2^Re(z)*Sqrt((Arg(z)+Im(Log(Im(z)^2+Re(z)^2))/2)^2+(Log(2)+Re(Log(Im(z)^2+Re(z)^\n"
-            + "2))/2)^2)");
+        "2^Re(z)*Sqrt(Arg(z)^2+(Log(2)+Log(Im(z)^2+Re(z)^2)/2)^2)");
 
     check("ComplexExpand(E*E)", //
         "E^2");
@@ -151,8 +150,8 @@ public class ComplexExpandTest extends ExprEvaluatorTestCase {
             + "2*Re(z))/(Cos(2*Im(z))+Cosh(2*Re(z)))");
 
     check("ComplexExpand(Re(Log(Sin(Exp(x + I*y)^2))))", //
-        "Re(Log(Cosh(E^(2*x)*Sin(2*y))^2*Sin(E^(2*x)*Cos(2*y))^2+Cos(E^(2*x)*Cos(2*y))^2*Sinh(E^(\n"
-            + "2*x)*Sin(2*y))^2))/2");
+        "Log(Cosh(E^(2*x)*Sin(2*y))^2*Sin(E^(2*x)*Cos(2*y))^2+Cos(E^(2*x)*Cos(2*y))^2*Sinh(E^(\n"//
+            + "2*x)*Sin(2*y))^2)/2");
     check("ComplexExpand(Re(Tan(z)),z)", //
         "Sin(2*Re(z))/(Cos(2*Re(z))+Cosh(2*Im(z)))");
     check("ComplexExpand(Tan(x+I*y),z)", //

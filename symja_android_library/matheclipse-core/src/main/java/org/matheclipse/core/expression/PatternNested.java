@@ -148,7 +148,7 @@ public class PatternNested extends Pattern {
 
   @Override
   public int hierarchy() {
-    return PATTERNID;
+    return PATTERNNESTEDID;
   }
 
   @Override
@@ -159,13 +159,13 @@ public class PatternNested extends Pattern {
   @Override
   public String toString() {
     final StringBuilder buffer = new StringBuilder();
-
+  
     buffer.append('(');
     buffer.append(fSymbol.toString());
     buffer.append(':');
     buffer.append(fPatternExpr.toString());
     buffer.append(')');
-
+  
     return buffer.toString();
   }
 

@@ -1,9 +1,9 @@
-package org.matheclipse.core.builtin.functions;
+package org.matheclipse.core.numerics.functions;
 
 import java.util.function.Function;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Arithmetic;
+import org.matheclipse.core.expression.ComplexNum;
 
 /**
  * Wrappers for {@link org.hipparchus.complex.Complex} functions in JavaScript style.
@@ -66,7 +66,7 @@ public abstract class JS {
   }
 
   public static Complex gamma(Complex x) {
-    return Arithmetic.lanczosApproxGamma(x);
+    return ComplexNum.lanczosApproxGamma(x);
   }
 
   protected static Complex inv(Complex x) {

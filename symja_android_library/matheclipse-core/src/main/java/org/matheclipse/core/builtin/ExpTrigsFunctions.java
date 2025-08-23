@@ -291,6 +291,14 @@ public class ExpTrigsFunctions {
    */
   private static final class ArcCos extends AbstractTrigArg1
       implements INumeric, IRewrite, DoubleUnaryOperator {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() >= 1) {
+        IExpr x = ast.arg1();
+        return x.greaterEqual(F.CN1).isTrue() && x.lessEqual(F.C1).isTrue();
+      }
+      return false;
+    }
 
     @Override
     public double applyAsDouble(double operand) {
@@ -382,6 +390,14 @@ public class ExpTrigsFunctions {
    */
   private static final class ArcCosh extends AbstractTrigArg1
       implements INumeric, IRewrite, DoubleUnaryOperator {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() >= 1) {
+        IExpr x = ast.arg1();
+        return x.greaterEqual(F.C1).isTrue();
+      }
+      return false;
+    }
 
     @Override
     public double applyAsDouble(double operand) {
@@ -557,6 +573,15 @@ public class ExpTrigsFunctions {
       implements IRewrite, DoubleUnaryOperator {
 
     @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() >= 1) {
+        IExpr x = ast.arg1();
+        return x.lessEqual(F.CN1).isTrue() || x.greaterEqual(F.C1).isTrue();
+      }
+      return false;
+    }
+
+    @Override
     public double applyAsDouble(double operand) {
       if (F.isZero(operand)) {
         return Double.NaN;
@@ -653,6 +678,15 @@ public class ExpTrigsFunctions {
    */
   private static final class ArcCsc extends AbstractTrigArg1 implements IRewrite {
     @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() >= 1) {
+        IExpr x = ast.arg1();
+        return x.lessEqual(F.CN1).isTrue() || x.greaterEqual(F.C1).isTrue();
+      }
+      return false;
+    }
+
+    @Override
     public IExpr e1ComplexArg(final Complex arg1) {
       if (arg1.equals(Complex.ZERO)) {
         return F.CComplexInfinity;
@@ -708,6 +742,14 @@ public class ExpTrigsFunctions {
    * functions</a>
    */
   private static final class ArcCsch extends AbstractTrigArg1 implements IRewrite {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() >= 1) {
+        IExpr x = ast.arg1();
+        return x.isNegativeResult() || x.isPositiveResult();
+      }
+      return false;
+    }
 
     @Override
     public IExpr e1DblArg(final double d) {
@@ -752,6 +794,15 @@ public class ExpTrigsFunctions {
   private static final class ArcSech extends AbstractTrigArg1 implements IRewrite {
 
     @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() >= 1) {
+        IExpr x = ast.arg1();
+        return x.isNonNegative() && x.less(F.C1).isTrue();
+      }
+      return false;
+    }
+
+    @Override
     public IExpr e1DblArg(final double d) {
       // log(1+Sqrt(1-d^2) / d)
       if (F.isZero(d)) {
@@ -781,6 +832,15 @@ public class ExpTrigsFunctions {
   }
 
   private static final class ArcSec extends AbstractTrigArg1 implements IRewrite {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() >= 1) {
+        IExpr x = ast.arg1();
+        return x.lessEqual(F.CN1).isTrue() || x.greaterEqual(F.C1).isTrue();
+      }
+      return false;
+    }
+
     @Override
     public IExpr e1ComplexArg(final Complex arg1) {
       if (arg1.equals(Complex.ZERO)) {
@@ -826,6 +886,15 @@ public class ExpTrigsFunctions {
    */
   private static final class ArcSin extends AbstractTrigArg1
       implements INumeric, IRewrite, DoubleUnaryOperator {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() >= 1) {
+        IExpr x = ast.arg1();
+        return x.greaterEqual(F.CN1).isTrue() && x.lessEqual(F.C1).isTrue();
+      }
+      return false;
+    }
 
     @Override
     public double applyAsDouble(double operand) {
@@ -1028,6 +1097,17 @@ public class ExpTrigsFunctions {
   private static final class ArcTan extends AbstractArg12 implements INumeric, IRewrite, IMatch {
 
     @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() == 1) {
+        return ast.arg1().isRealResult();
+      } else if (ast.argSize() == 2) {
+        IExpr plus = F.Plus(F.Sqr(ast.arg1()), F.Sqr(ast.arg2())).eval();
+        return plus.isPositiveResult();
+      }
+      return false;
+    }
+
+    @Override
     public IExpr match3(IAST ast, EvalEngine engine) {
       return F.NIL;
       // return ArcTanRules.match3(ast, engine);
@@ -1218,6 +1298,15 @@ public class ExpTrigsFunctions {
    */
   private static final class ArcTanh extends AbstractTrigArg1
       implements INumeric, IRewrite, DoubleUnaryOperator {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() >= 1) {
+        IExpr x = ast.arg1();
+        return x.greaterEqual(F.CN1).isTrue() && x.lessEqual(F.C1).isTrue();
+      }
+      return false;
+    }
 
     @Override
     public double applyAsDouble(double operand) {
@@ -1543,6 +1632,14 @@ public class ExpTrigsFunctions {
    */
   private static final class Coth extends AbstractTrigArg1
       implements INumeric, IRewrite, DoubleUnaryOperator {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() >= 1) {
+        IExpr x = ast.arg1();
+        return x.isNegativeResult() || x.isPositiveResult();
+      }
+      return false;
+    }
 
     @Override
     public double applyAsDouble(double operand) {
@@ -1676,6 +1773,26 @@ public class ExpTrigsFunctions {
    */
   private static final class Csc extends AbstractTrigArg1
       implements INumeric, IRewrite, DoubleUnaryOperator, IReciprocalTrigonometricFunction {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() >= 1) {
+        IExpr x = ast.arg1();
+        if (x.isRealResult()) {
+          if (x.equals(S.Pi)) {
+            return false;
+          }
+          if (x.isTimes()) {
+            IAST timesAST = (IAST) x;
+            IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
+            if (t.isInteger()) {
+              return false;
+            }
+          }
+          return true;
+        }
+      }
+      return false;
+    }
 
     @Override
     public IExpr period(IAST self, IExpr general_period, ISymbol symbol) {
@@ -1839,11 +1956,11 @@ public class ExpTrigsFunctions {
     @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 1) {
-        IExpr z = ast.arg1();
+        IExpr z = ast.arg1().sin();
         if (z.isZero()) {
           return F.CComplexInfinity;
         }
-        return z.sin().reciprocal();
+        return z.reciprocal();
       }
       return F.NIL;
     }
@@ -2014,6 +2131,27 @@ public class ExpTrigsFunctions {
    */
   private static final class Cot extends AbstractTrigArg1
       implements INumeric, IRewrite, DoubleUnaryOperator, ITrigonometricFunction {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() >= 1) {
+        IExpr x = ast.arg1();
+        if (x.isRealResult()) {
+          if (x.equals(S.Pi)) {
+            return false;
+          }
+          if (x.isTimes()) {
+            IAST timesAST = (IAST) x;
+            IExpr t = AbstractFunctionEvaluator.peelOfTimes(timesAST, Pi);
+            if (t.isInteger()) {
+              return false;
+            }
+          }
+          return true;
+        }
+      }
+      return false;
+    }
 
     @Override
     public IExpr period(IAST self, IExpr general_period, ISymbol symbol) {
@@ -2190,6 +2328,15 @@ public class ExpTrigsFunctions {
       implements INumeric, IRewrite, DoubleUnaryOperator {
 
     @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() >= 1) {
+        IExpr x = ast.arg1();
+        return x.isNegativeResult() || x.isPositiveResult();
+      }
+      return false;
+    }
+
+    @Override
     public double applyAsDouble(double operand) {
       return 1.0D / Math.sinh(operand);
     }
@@ -2358,6 +2505,14 @@ public class ExpTrigsFunctions {
   }
 
   private static final class Gudermannian extends AbstractFunctionEvaluator {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() >= 1) {
+        IExpr x = ast.arg1();
+        return x.isRealResult();
+      }
+      return false;
+    }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -2409,6 +2564,15 @@ public class ExpTrigsFunctions {
   private static final class Haversine extends AbstractFunctionEvaluator {
 
     @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() >= 1) {
+        IExpr x = ast.arg1();
+        return x.isRealResult();
+      }
+      return false;
+    }
+
+    @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr z = ast.arg1();
       if (z.isNumericFunction()) {
@@ -2439,6 +2603,12 @@ public class ExpTrigsFunctions {
   }
 
   private static final class InverseGudermannian extends AbstractFunctionEvaluator {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      // TODO
+      return false;
+    }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -2478,6 +2648,14 @@ public class ExpTrigsFunctions {
   }
 
   private static final class InverseHaversine extends AbstractFunctionEvaluator {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() >= 1) {
+        IExpr x = ast.arg1();
+        return x.isNonNegativeResult() || x.lessEqual(F.C1).isTrue();
+      }
+      return false;
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2524,6 +2702,32 @@ public class ExpTrigsFunctions {
 
   /** See <a href="http://en.wikipedia.org/wiki/Logarithm">Wikipedia - Logarithm</a> */
   private static final class Log extends AbstractArg12 implements INumeric, IRewrite, IMatch {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() == 1) {
+        IExpr a1 = ast.arg1();
+        if (a1.isNonNegativeResult()) {
+          return true;
+        }
+      } else if (ast.argSize() == 2) {
+        IExpr a1 = ast.arg1();
+        IExpr a2 = ast.arg2();
+        if (a2.isPositiveResult() || a1.equals(a2)) {
+          return true;
+        }
+        if (a1.isNonNegativeResult()) {
+          if (a1.greater(F.C1).isTrue()) {
+            return true;
+          }
+          if (a1.less(F.C1).isTrue()) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
     @Override
     public IExpr match3(IAST ast, EvalEngine engine) {
       return F.NIL;
@@ -2890,6 +3094,19 @@ public class ExpTrigsFunctions {
    */
   private static final class Sec extends AbstractTrigArg1
       implements INumeric, IRewrite, DoubleUnaryOperator, IReciprocalTrigonometricFunction {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() == 1) {
+        IExpr x = ast.arg1();
+        if (x.isRealResult()) {
+          IExpr result = F.Plus(F.C1D2, F.Times(x, F.Power(S.Pi, F.CN1))).eval();
+          if (result.isNumber() && !result.isInteger()) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
 
     @Override
     public IExpr period(IAST self, IExpr general_period, ISymbol symbol) {
@@ -3682,6 +3899,20 @@ public class ExpTrigsFunctions {
    */
   private static final class Tan extends AbstractTrigArg1
       implements INumeric, IRewrite, DoubleUnaryOperator, ITrigonometricFunction {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() == 1) {
+        IExpr x = ast.arg1();
+        if (x.isRealResult()) {
+          IExpr result = F.Plus(F.C1D2, F.Times(x, F.Power(S.Pi, F.CN1))).eval();
+          if (result.isReal() && !result.isInteger()) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
 
     @Override
     public IExpr period(IAST self, IExpr general_period, ISymbol symbol) {

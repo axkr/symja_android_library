@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.IntFunction;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
@@ -12,6 +13,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.tensor.qty.IQuantity;
 
 /**
  * {@link S#Times} operator for adding multiple arguments with the
@@ -23,6 +25,74 @@ import org.matheclipse.core.interfaces.INumber;
  * to fully evaluate a multiplication expression.
  */
 public final class TimesOp {
+  /**
+   * Multiply the two expressions <code>a1</code> and <code>a2</code> and return the result.
+   * 
+   *
+   * @param a1 the first expression
+   * @param a2 the second expression
+   * @param returnNilIfUnevaluated TODO check if this parameter can be removed
+   * @return the product of the two expressions or {@link F#NIL}
+   */
+  public static org.matheclipse.core.interfaces.IExpr numberLikeTimes(
+      org.matheclipse.core.interfaces.IExpr a1, final org.matheclipse.core.interfaces.IExpr a2,
+      boolean returnNilIfUnevaluated) {
+    if (a1.isNumber()) {
+      if (a2.isInterval()) {
+        return IntervalSym.times(a1, (org.matheclipse.core.interfaces.IAST) a2);
+      }
+      if (a2.isIntervalData()) {
+        return IntervalDataSym.times(a1, (org.matheclipse.core.interfaces.IAST) a2);
+      }
+      if (a2.isQuantity()) {
+        IQuantity q = (IQuantity) a2;
+        return q.times(a1, returnNilIfUnevaluated);
+      }
+    } else if (a1.isIntervalData()) {
+      if (a2.isAST()) {
+        org.matheclipse.core.interfaces.IAST interval = (org.matheclipse.core.interfaces.IAST) a2;
+        if (a2.isInterval()) {
+          interval = IntervalDataSym.intervalToIntervalSet(interval);
+        }
+        if (interval.isIntervalData()) {
+          return IntervalDataSym.times((org.matheclipse.core.interfaces.IAST) a1, interval);
+        }
+      }
+    } else if (a1.isInterval()) {
+      if (a2.isAST()) {
+        org.matheclipse.core.interfaces.IAST interval = (org.matheclipse.core.interfaces.IAST) a2;
+        if (a2.isInterval()) {
+          return IntervalSym.times((org.matheclipse.core.interfaces.IAST) a1, interval);
+        }
+      }
+    } else if (a1.isQuantity()) {
+      IQuantity q = (IQuantity) a1;
+      return q.times(a2, returnNilIfUnevaluated);
+    }
+
+    if (a2.isNumber()) {
+      if (a1.isInterval()) {
+        return IntervalSym.times(a2, (org.matheclipse.core.interfaces.IAST) a1);
+      }
+      if (a1.isIntervalData()) {
+        return IntervalDataSym.times(a2, (org.matheclipse.core.interfaces.IAST) a1);
+      }
+    } else if (a2.isIntervalData()) {
+      if (a1.isAST()) {
+        org.matheclipse.core.interfaces.IAST interval = (org.matheclipse.core.interfaces.IAST) a1;
+        if (a1.isInterval()) {
+          interval = IntervalDataSym.intervalToIntervalSet(interval);
+        }
+        if (interval.isIntervalData()) {
+          return IntervalDataSym.times(interval, (org.matheclipse.core.interfaces.IAST) a2);
+        }
+      }
+    } else if (a2.isQuantity()) {
+      IQuantity q = (IQuantity) a2;
+      return q.times(a1, returnNilIfUnevaluated);
+    }
+    return F.NIL;
+  }
 
   public static IExpr getProduct(IAST timesAST) {
     TimesOp timesOp = new TimesOp(timesAST.size());
@@ -44,7 +114,7 @@ public final class TimesOp {
   private boolean evaled;
 
   /** The value of the multiplication of numbers. */
-  private INumber numberValue;
+  private IExpr numberValue;
 
   /** This map contains <code>base ^ exponent</code> as <code>(key, value></code> pairs. */
   private Map<IExpr, INumber> powerMap;
@@ -59,12 +129,133 @@ public final class TimesOp {
     clear();
   }
 
+  /**
+   * Multiply this {@link S#Times} expression with the expression <code>expr</code>.
+   *
+   * @param expr the expression to multiply with
+   */
+  public void appendRecursive(IExpr expr) {
+    if (expr.isNumberLike()) {
+      if (numberValue == null) {
+        numberValue = expr;
+        return;
+      }
+      if (numberValue.isNumber() && expr.isNumber()) {
+        evaled = true;
+        IExpr temp = ((INumber) numberValue).timesExpr((INumber) expr);
+        if (temp.isNumber()) {
+          evaled = true;
+          numberValue = temp;
+          return;
+        }
+        expr = temp;
+      } else {
+        IExpr temp = numberValue.times(expr, true);
+        if (temp.isPresent()) {
+          evaled = true;
+          if (temp.isNumberLike()) {
+            numberValue = temp;
+            return;
+          }
+          expr = temp;
+        }
+      }
+    } else {
+      if (expr.isAST()) {
+        final IAST ast = (IAST) expr;
+        final IExpr head = expr.head();
+        final int headID = expr.headID();
+        switch (headID) {
+          case ID.Power:
+            if (ast.size() == 3 && ast.exponent().isNumber()) {
+              mergePower(ast.base(), (INumber) ast.exponent());
+              return;
+            }
+            break;
+          case ID.Times: {
+            if (expr.size() > 1) {
+              for (int i = 1; i < ast.size(); i++) {
+                appendRecursive(ast.get(i));
+              }
+
+              return;
+            }
+          }
+            break;
+
+          // case ID.Interval:
+          // if (expr.isInterval()) {
+          // if (numberValue == null) {
+          // numberValue = expr;
+          // return;
+          // }
+          // IExpr temp;
+          // if (numberValue.isInterval()) {
+          // temp = IntervalSym.times((IAST) numberValue, (IAST) expr);
+          // } else {
+          // temp = IntervalSym.times(numberValue, (IAST) expr);
+          // }
+          // if (temp.isPresent()) {
+          // numberValue = temp;
+          // evaled = true;
+          // } else {
+          // // if (addMerge(expr, F.C1)) {
+          // // evaled = true;
+          // // }
+          // }
+          // return;
+          // }
+          // break;
+          // case ID.IntervalData:
+          // if (expr.isIntervalData()) {
+          // if (numberValue == null) {
+          // numberValue = expr;
+          // return;
+          // }
+          // IExpr temp = F.NIL;
+          // if (numberValue.isIntervalData()) {
+          // temp = IntervalDataSym.times((IAST) numberValue, (IAST) expr);
+          // } else {
+          // if (!numberValue.isInterval()) {
+          // temp = IntervalDataSym.times(numberValue, (IAST) expr);
+          // }
+          // }
+          // if (temp.isPresent()) {
+          // numberValue = temp;
+          // evaled = true;
+          // } else {
+          // // if (addMerge(expr, F.C1)) {
+          // // evaled = true;
+          // // }
+          // }
+          // return;
+          // }
+          // break;
+        }
+      }
+    }
+    mergePower(expr, F.C1);
+  }
+
+  /**
+   * Multiply this {@link S#Times} expression with the expressions generated by the
+   * <code>function</code>.
+   *
+   * @param function the generated expression from this {@link IntFunction#apply(int)} to multiply
+   *        with
+   */
+  public void appendValues(final int start, final int end, IntFunction<IExpr> function) {
+    for (int i = start; i < end; i++) {
+      appendRecursive(function.apply(i));
+    }
+  }
+
   public void clear() {
     this.evaled = false;
     // if (powerMap != null) {
     // powerMap.clear();
     // } else {
-      this.powerMap = null;
+    this.powerMap = null;
     // }
     this.numberValue = null;
   }
@@ -143,57 +334,5 @@ public final class TimesOp {
     }
     map.put(base, oldExponent);
 
-  }
-
-  /**
-   * Multiply this {@link S#Times} expression with the expression <code>expr</code>.
-   *
-   * @param expr the expression to multiply with
-   */
-  public void appendRecursive(IExpr expr) {
-    if (expr.isNumber()) {
-      if (numberValue == null) {
-        numberValue = (INumber) expr;
-        return;
-      }
-      evaled = true;
-      IExpr temp = numberValue.timesExpr((INumber) expr);
-      if (temp.isNumber()) {
-        numberValue = (INumber) temp;
-        return;
-      }
-      expr = temp;
-    } else {
-      if (expr.isAST()) {
-        final IExpr head = expr.head();
-        if (head == S.Power) {
-          final IAST ast = (IAST) expr;
-          if (ast.size() == 3 && ast.exponent().isNumber()) {
-            mergePower(ast.base(), (INumber) ast.exponent());
-            return;
-          }
-        } else if (head == S.Times && expr.size() > 1) {
-          final IAST ast = (IAST) expr;
-          for (int i = 1; i < ast.size(); i++) {
-            appendRecursive(ast.get(i));
-          }
-          return;
-        }
-      }
-    }
-    mergePower(expr, F.C1);
-  }
-
-  /**
-   * Multiply this {@link S#Times} expression with the expressions generated by the
-   * <code>function</code>.
-   *
-   * @param function the generated expression from this {@link IntFunction#apply(int)} to multiply
-   *        with
-   */
-  public void appendValues(final int start, final int end, IntFunction<IExpr> function) {
-    for (int i = start; i < end; i++) {
-      appendRecursive(function.apply(i));
-    }
   }
 }

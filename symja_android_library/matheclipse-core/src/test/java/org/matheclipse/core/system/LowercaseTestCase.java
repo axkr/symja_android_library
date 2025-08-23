@@ -1903,6 +1903,41 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // {m, 2, 4}) ",
     // //
     // "");
+    // check("BellY(4, 2, {x1, x2, y1})", //
+    // "3*x2^2+4*x1*y1");
+    // check(
+    // "Apply(Plus, {BellY(4, 2, {x1,x2,y1}), BellY(4, 2, {x1, x2, y2}), BellY(4, 2, {x1, x2, y3}),
+    // BellY(4, 2, {x1, x3, y1}), " //
+    // + "BellY(4, 2, {x1, x3, y2}), BellY(4, 2, {x1, x3, y3}), BellY(4, 2, {x2, x3, y1}), BellY(4,
+    // 2, {x2, x3, y2}), " //
+    // + " BellY(4, 2, {x2, x3, y3})} ) ",
+    // "");
+    // check(
+    // "{BellY(4, 2, {x1,x2,y1}), BellY(4, 2, {x1, x2, y2}), BellY(4, 2, {x1, x2, y3}), BellY(4, 2,
+    // {x1, x3, y1}), " //
+    // + "BellY(4, 2, {x1, x3, y2}), BellY(4, 2, {x1, x3, y3}), BellY(4, 2, {x2, x3, y1}), BellY(4,
+    // 2, {x2, x3, y2}), " //
+    // + " BellY(4, 2, {x2, x3, y3})} ",
+    // "");
+    // check(
+    // "Apply(Plus, {BellY(4, 2, {x1,x2,y1}), BellY(4, 2, {x1, x2, y2}), BellY(4, 2, {x1, x2, y3}),
+    // BellY(4, 2, {x1, x3, y1}), " //
+    // + "BellY(4, 2, {x1, x3, y2}), BellY(4, 2, {x1, x3, y3}), BellY(4, 2, {x2, x3, y1}), BellY(4,
+    // 2, {x2, x3, y2}), " //
+    // + " BellY(4, 2, {x2, x3, y3})} ) ",
+    // "");
+    // check("BellY(4, 2, {{x1, x2, x3}, {y1, y2, y3}})", //
+    // "3*x2^4*x3^4*y1^2 + 12*x1^2*x2*x3^2*y2*y3 + 18*x1*x2^2*x3^2*y1*\n"
+    // + " (x3^2*y2 + x2*y3) + 3*x1^2*(x3^2*y2 + x2*y3)^2");
+
+    // check("BellY(Partition(Range(25), 5))", //
+    // "{{1,0,0,0,0},{6,49,0,0,0},{11,252,2197,0,0},{16,908,18252,130321,0},{21,2810,\n" //
+    // + "102050,1646160,9765625}}");
+    //
+    // check("BellY({{1,0,0},{2,3,0},{4,5,6}})", //
+    // "{{1,0,0},{2,9,0},{4,45,216}}");
+
+
 
     // display error messages: Polynomial degree 2147483647 exceeded
     check("BellY(2147483647,3,{x,-3,-1/2})", //
@@ -4258,15 +4293,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("CosineDistance({1, 0}, {x, y})", //
         "1-Conjugate(x)/Sqrt(Abs(x)^2+Abs(y)^2)");
     check("CosineDistance({a, b, c}, {x, y, z})", //
-        "1-(a*Conjugate(x)+b*Conjugate(y)+c*Conjugate(z))/Sqrt((Abs(a)^2+Abs(b)^2+Abs(c)^\n" //
-            + "2)*(Abs(x)^2+Abs(y)^2+Abs(z)^2))");
+        "1-(a*Conjugate(x)+b*Conjugate(y)+c*Conjugate(z))/(Sqrt(Abs(a)^2+Abs(b)^2+Abs(c)^\n" //
+            + "2)*Sqrt(Abs(x)^2+Abs(y)^2+Abs(z)^2))");
 
     check("CosineDistance({7.0, 9}, {71, 89})", //
         "0.0000759646");
     check("N(CosineDistance({7, 9}, {71, 89}))", //
         "0.0000759646");
     check("CosineDistance({a, b}, {c, d})", //
-        "1-(a*Conjugate(c)+b*Conjugate(d))/Sqrt((Abs(a)^2+Abs(b)^2)*(Abs(c)^2+Abs(d)^2))");//
+        "1-(a*Conjugate(c)+b*Conjugate(d))/(Sqrt(Abs(a)^2+Abs(b)^2)*Sqrt(Abs(c)^2+Abs(d)^\n" //
+            + "2))");//
 
   }
 
@@ -11060,7 +11096,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testIm() {
     check("Im(I*Arg(z) + Log(2) + (1/2)*Log(Im(z)^2 + Re(z)^2))", //
-        "Arg(z)+Im(Log(Im(z)^2+Re(z)^2))/2");
+        "Arg(z)");
     check("Im(I*Re(z)+x+y+Im(t)*I)", //
         "Im(t+x+y)+Re(z)");
     check("Im(Quantity(2,\"m\"))", //
@@ -11295,6 +11331,32 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
     check("\"a string\" // InputForm", //
         "\"a string\"");
+  }
+
+  @Test
+  public void testOutputForm() {
+    check("OutputForm(Sin(0))", //
+        "0");
+    check("\"a string\" // OutputForm", //
+        ""//
+            + "a string");
+
+    // different from WMA
+    check("OutputForm(a^b)", //
+        ""//
+            + "a^b");
+
+    check("OutputForm(2-1/3*x)", //
+        ""//
+            + "    1    \n" //
+            + "2 - - * x\n"//
+            + "    3    ");
+    //
+    check("OutputForm(-1/4 * (a + 1/b^2))", //
+        ""//
+            + "1              1    \n" //
+            + "- *  (  - a - --- ) \n" //
+            + "4             b^2   ");
   }
 
   @Test
@@ -12996,6 +13058,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLimit() {
+    check("Limit(Sin(x)/x,x->Infinity)", //
+        "0");
+
     // TODO
     // check("Limit(((1/Abs(n)))^(1/n),n->Infinity)", //
     // "1");
@@ -13005,8 +13070,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "E");
     check("Limit(Sin(x)/x,x->0)", //
         "1");
-    check("Limit(Sin(x)/x,x->Infinity)", //
-        "0");
+
 
     check("Limit(Log(x+1)/x,x->Infinity)", //
         "0");
@@ -14671,59 +14735,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
 
-  @Test
-  public void testMeijerG() {
-    checkNumeric("MeijerG({{ }, {}}, {{0}, {}}, 0)", //
-        "1");
-    checkNumeric("MeijerG({{ }, {a2}}, {{0}, {b2}}, 0)", //
-        "1/(Gamma(a2)*Gamma(1-b2))");
-    checkNumeric("MeijerG({{1}, {a2}}, {{b1}, {}}, 0)", //
-        "Gamma(b1)*Hypergeometric1F1Regularized(b1,a2,ComplexInfinity)");
-    checkNumeric("MeijerG({{1}, {a2}}, {{}, {b2}}, 0)", //
-        "Hypergeometric1F1Regularized(b2,a2,ComplexInfinity)/Gamma(1-b2)");
-    checkNumeric("MeijerG({{1}, {}}, {{}, {}}, 0)", //
-        "Infinity");
-    checkNumeric("MeijerG({{0}, {}}, {{}, {}}, 0)", //
-        "-Infinity");
-    checkNumeric("MeijerG({{a1}, {}}, {{0}, {}}, 0)", //
-        "Gamma(1-a1)");
-    checkNumeric("MeijerG({{1/2}, {}}, {{0}, {0}}, 0)", //
-        "Sqrt(Pi)");
-    checkNumeric("MeijerG({{}, {}}, {{b1}, {}},z)", //
-        "z^b1/E^z");
-    checkNumeric("MeijerG({{1/2}, {1/2}}, {{}, {}}, 0)//N", //
-        "ComplexInfinity");
-    checkNumeric("MeijerG({{1}, {2}}, {{2.3}, {4}}, 3)", //
-        "0.0");
-    check("MeijerG({{1, 1}, {}}, {{1}, {0}}, z)", //
-        "Log(1+z)");
-    // TODO
-    checkNumeric("N(MeijerG({{}, {2}}, {{1/2, 3/2}, {}}, 3), 50)", //
-        "MeijerG({{},{2}},{{1/2,3/2},{}},3)");
-
-    checkNumeric("MeijerG({{}, {0.33}}, {{Pi}, {E}}, {-0.5,0.5})", //
-        "{0.01650236063766311+I*0.00786651270222696,-0.34952526547708834}");
-
-    check("MeijerG({{}, {a2}}, {{b1}, {b2}}, z)", //
-        "(z^b1*Hypergeometric1F1Regularized(1-a2+b1,1+b1-b2,z))/Gamma(a2-b1)");
-    check("MeijerG({{a1}, {}}, {{b1}, {b2}}, z)", //
-        "z^b1*Gamma(1-a1+b1)*Hypergeometric1F1Regularized(1-a1+b1,1+b1-b2,-z)");
-    check("MeijerG({{a1}, {a2}}, {{b1}, {}}, z)", //
-        "(Gamma(1-a1+b1)*Hypergeometric1F1Regularized(1-a1+b1,1-a1+a2,-1/z))/z^(1-a1)");
-    check("MeijerG({{a1}, {a2}}, {{}, {b2}}, z)", //
-        "Hypergeometric1F1Regularized(1-a1+b2,1-a1+a2,1/z)/(z^(1-a1)*Gamma(a1-b2))");
-    check("MeijerG({{}, {}}, {{b1}, {-b1}}, z)", //
-        "BesselJ(2*b1,2*Sqrt(z))");
-    check("MeijerG({{a1}, {a2}}, {{}, {}}, z)", //
-        "BesselJ(-a1+a2,2/Sqrt(z))/z^(1-a1-(-a1+a2)/2)");
-    check("MeijerG({{a}, {}}, {{}, {b}}, 2)", //
-        "2^b/Gamma(a-b)");
-    check("MeijerG({{a}, {}}, {{}, {}}, z) ", //
-        "1/(E^(1/z)*z^(1-a))");
-    // print message
-    check("MeijerG({{}, {}}, {{}, {}}, z) ", //
-        "MeijerG({{},{}},{{},{}},z)");
-  }
 
   @Test
   public void testMemberQ() {
@@ -17428,8 +17439,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPatternAndRules() {
-    check("a + 2 + b + c + x * y /. n_Integer + s__Symbol + r_ -> {n, s, r}", //
-        "{2,a,b+c+x*y}");
 
     check(
         "f((-1)^i_*x_^(2*i_+1)/(2*i_+1)!, {i_Symbol,0,Infinity}) := Sin(x) /;  FreeQ(x,i); f((-1)^i*x^(2*i+1)/(2*i+1)!, {i,0,Infinity})", //
@@ -17444,7 +17453,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("a + b + c /. a + b -> t", //
         "c+t");
     check("a + 2 + b + c + x * y /. n_Integer + s__Symbol + r_ -> {n, s, r}", //
-        "{2,a,b+c+x*y}");
+        "{2,a,b,c,x*y}");
     check("f(a, b, c, d) /. f(first_, rest___) -> {first, {rest}}", //
         "{a,{b,c,d}}");
     check("f(4) /. f(x_?(# > 0&)) -> x ^ 2", //
@@ -17850,9 +17859,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Infinity - Infinity", //
         "Indeterminate");
     check("-I+y+Interval({c,d})", //
-        "-I+y+Interval({c,d})");
+        "-I+Interval({c,d})+y");
     check("-I+<|x->y|>+Interval({c,d})", //
-        "<|x->-I+y+Interval({c,d})|>");
+        "<|x->-I+Interval({c,d})+y|>");
     check("Sin(0.1851851851851852*Cos(7/11)*x)", //
         "Sin(0.148937*x)");
 
@@ -17913,11 +17922,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Interval({1,6})+Interval({0,2})", //
         "Interval({1,8})");
     check("Interval({a,b})+z", //
-        "z+Interval({a,b})");
+        "Interval({a,b})+z");
     check("(Interval({-1,1})+1/2)^2 - 1/4", //
         "Interval({-1/4,2})");
     check("f+Interval({a,b})+Interval({c,d})", //
-        "f+Interval({a+c,b+d})");
+        "Interval({a+c,b+d})+f");
     check("Interval({a,b})+Interval({c,d})", //
         "Interval({a+c,b+d})");
     check("1+Interval({2,3})", //
@@ -20391,6 +20400,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRange() {
+
+
     check("Range(0,10,Pi)", //
         "{0,Pi,2*Pi,3*Pi}");
 
@@ -20408,6 +20419,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     IAST range = F.Range(F.CNI, b0a, F.Quantity(F.num(1.2), F.stringx("m")));
     check(range, //
         "{}");
+
     check("Range(-Infinity,0.5)", //
         "Range(-Infinity,0.5)");
     check("Range(a,b,ComplexInfinity)", //
@@ -20624,9 +20636,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRe() {
-    //
     check("Re(I*Arg(z) + Log(2) + (1/2)*Log(Im(z)^2 + Re(z)^2))", //
-        "Log(2)+Re(Log(Im(z)^2+Re(z)^2))/2");
+        "Log(2)+Log(Im(z)^2+Re(z)^2)/2");
     check("Re(I*Im(z)+x+y+Im(t)*I+Re(u))", //
         "Re(u+x+y)");
 
@@ -22210,10 +22221,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Hold({a,Sequence(b,c),d})");
   }
 
+
   @Test
   public void testSet() {
     check("a=a+1", //
-        "Hold(a=1+a)");
+        "Hold(a=1+a)", //
+        "Recursion depth of 256 exceeded during evaluation of Plus.");
     check("aVar=10", //
         "10");
     // integer not allowed as header is (Protected)
@@ -23090,6 +23103,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSort() {
+    // TODO differs from WMA
+    check("Sort({" //
+        + "\"a\",\"b\",1,ByteArray[{1,2,4,1}],"//
+        + "2,1.2,I, 2I-3, A,"//
+        + "a+b, a*b, a+1, a*2, b^3, 2/3,"//
+        + "A(x), F(2), F(x), F(x_), F(x___), F(x,t), F(x__)," //
+        + "Condition(A,b>2), Pattern(expr, A)"//
+        + "})", //
+        "{-3+I*2,I,2/3,1,1.2,2," //
+            + "a,b,2*a,"//
+            + "1+a,A,a*b,a+b,b^3,"//
+            + "A(x),A/;b>2,"//
+            + "F(2),F(x),F(x_),F(x___),F(x__),F(x,t)," //
+            + "ByteArray[4 Bytes],(expr:A)}");
+
+
     check("Sort({f(1,2,3), f(1,4)})", //
         "{f(1,4),f(1,2,3)}");
     check("Sort(<|a -> 4, b -> 1, c -> 3, e :> 2, d -> 2|>)", //
@@ -24435,56 +24464,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   }
 
-  @Test
-  public void testTagSet() {
-    // TagSet: Argument 42 at position 1 is expected to be a symbol.
-    check("42 /: g(h(x)) = 3", //
-        "42/:g(h(x))/:3");
-    // TagSet: Cannot assign to raw object 42.
-    check("zzz /: 42 = 40+2", //
-        "42");
-    check("x /: g(h(x)) = 3", //
-        "3");
-    check("f/:format(f)=0", //
-        "0");
-    check("f/:format(f)/:0", //
-        "Syntax error in line: 1 - Operator: '/:' not created properly (no grouping defined)\n" + //
-            "f/:format(f)/:0\n" + //
-            "             ^");
-    check("f/: Format(f) = \"TagSet test\"", //
-        "TagSet test");
-    check("Format(f)", //
-        "TagSet test");
-  }
-
-  @Test
-  public void testTagSetDelayed() {
-    // TagSetDelayed: Argument 42 at position 1 is expected to be a symbol.
-    check("42 /: f(a,g,z_)/;True := {z}", //
-        "TagSetDelayed(42,f(a,g,z_)/;True,{z})");
-
-    check("g /: f(a,g,z_)/;True := {z}", //
-        "");
-    check("f(a,g,test)", //
-        "{test}");
-
-    check("g /: f(g(x_)) := fg(x)", //
-        "");
-    check("{f(g(2)) , f(h(2)) }", //
-        "{fg(2),f(h(2))}");
-  }
-
-  @Test
-  public void testTagSetDelayed02() {
-    check("TagSetDelayed(g,0,\"TagSetDelayed test\")", //
-        "");
-    check("g/: Format(a_,g(x)) := \"TagSetDelayed test\"", //
-        "");
-    // check("Definition(g)", //
-    // "TagSet test");
-    check("Format(f,g(x))", //
-        "TagSetDelayed test");
-  }
 
   @Test
   public void testTan() {
@@ -25443,8 +25422,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("x=5;Trace(Mod((3 + x)^2, x - 1))", //
         "{{{{x,5},3+5,8},8^2,64},{{x,5},-1+5,4},Mod(64,4),0}");
     check("Trace(u = 2; Do(u = u*u, {3}); u)", //
-        "{{u=2,2},{{{u,2},{u,2},2*2,4},4},{{{u,4},{u,4},4*4,16},16},{{{u,16},{u,16},16*16,\n"
-            + "256},256},{u,256},256}");
+        "{{u=2,2},{{{u,2},{u,2},2*2,4},u=4,4},{{{u,4},{u,4},4*4,16},u=16,16},{{{u,16},{u,\n"
+            + "16},16*16,256},u=256,256},{u,256},256}");
   }
 
   @Test
@@ -25772,6 +25751,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testUnevaluated() {
+    check(
+        "Attributes(h) = Flat;h(items___) := Plus(items);h(1, Unevaluated(Sequence(Unevaluated(2), 3)), Sequence(4, Unevaluated(5)))", //
+        "15");
     check("list1={{{1},{2},{1,2},{1,2,3},{},{}},{{2},{3},{}}}", //
         "{{{1},{2},{1,2},{1,2,3},{},{}},{{2},{3},{}}}");
     check("list1 //. {} :> Unevaluated(##&[])", //
@@ -25846,7 +25828,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testUnion() {
-    // check("Union({},{})", "{}");
     check("Union({1},{2})", "{1,2}");
     check("Union({1,2,2,4},{2,3,4,5})", "{1,2,3,4,5}");
 
@@ -25893,45 +25874,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x$2");
     check("Unique(\"x\")", //
         "x3");
-  }
-
-  @Test
-  public void testUnitConvert() {
-    check("UnitConvert(Quantity(Pi, \"deg\"), \"rad\")", //
-        "Pi^2/180[rad]");
-    check("UnitConvert(Quantity(\"StandardAccelerationOfGravity\"),\"m/s^2\")", //
-        "196133/20000[m*s^-2]");
-    check("UnitConvert(Quantity(111, \"cm\"),\"m\" )", //
-        "111/100[m]");
-
-    check("UnitConvert(Quantity(Pi, \"rad\"), \"deg\")", //
-        "180[deg]");
-    check("UnitConvert(Quantity(Pi, \"grad\"), \"rad\")", //
-        "Pi^2/180[rad]");
-    check("UnitConvert(Quantity(Pi, \"rad\"), \"grad\")", //
-        "180[grad]");
-    check("UnitConvert(Quantity(200, \"g\")*Quantity(981, \"cm*s^-2\") )", //
-        "981/500[kg*m*s^-2]");
-    check("UnitConvert(Quantity(10^(-6), \"MOhm\") )", //
-        "1[A^-2*kg*m^2*s^-3]");
-    check("UnitConvert(Quantity(10^(-6), \"MOhm\"),\"Ohm\" )", //
-        "1[Ohm]");
-    check("UnitConvert(Quantity(1, \"nmi\"),\"km\" )", //
-        "463/250[km]");
-    check("UnitConvert(Quantity(360, \"mV^-1*mA*s^2\"),\"Ohm^-1*s^2\" )", //
-        "360[Ohm^-1*s^2]");
-    check("UnitConvert(Quantity(360, \"km*h^-1\"),\"m*s^-1\" )", //
-        "100[m*s^-1]");
-    check("UnitConvert(Quantity(2, \"km^2\") )", //
-        "2000000[m^2]");
-    check("UnitConvert(Quantity(2, \"km^2\"),\"cm^2\" )", //
-        "20000000000[cm^2]");
-    check("UnitConvert(Quantity(3, \"Hz^-2*N*m^-1\") )", //
-        "3[kg]");
-    check("UnitConvert(Quantity(3.8, \"lb\") )", //
-        "1.72365[kg]");
-    check("UnitConvert(Quantity(8.2, \"nmi\"), \"km\")", //
-        "15.1864[km]");
   }
 
   @Test
@@ -26066,10 +26008,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testUpSet() {
-    check("Part(f(x_), s1 : (_String | {_String ..}), s2 : (_String | {_String ..})) ^:= {x,s1,s2}", //
-        "");
-    check("f(y)[[{\"a\",\"b\"},{\"X\",\"Y\"}]]", //
-        "{y,{a,b},{X,Y}}");
 
     check("ParameterRanges[Cartesian]^=Null;Null", //
         "");
@@ -26081,6 +26019,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testUpSetDelayed() {
+    // associated with f
+    check("Part(f(x_), s1 : (_String | {_String ..}), s2 : (_String | {_String ..})) ^:= {x,s1,s2}", //
+        "");
+    check("f(y)[[{\"a\",\"b\"},{\"X\",\"Y\"}]]", //
+        "{y,{a,b},{X,Y}}");
+
     check("$f($h(0)) ^= h0;$f($h(x_)) ^:= 2*$f($h(x - 1));$f($h(10))", //
         "1024*h0");
 

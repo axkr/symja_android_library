@@ -265,6 +265,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void testSolve002() {
     check("Solve((x^2 + 2)*(x^2 - 2) == 0, x, Reals)", //
         "{{x->-Sqrt(2)},{x->Sqrt(2)}}");
+    check("Solve((x^2 + 2)*(x^2 - 2) == 0, x)", //
+        "{{x->-Sqrt(2)},{x->-I*Sqrt(2)},{x->I*Sqrt(2)},{x->Sqrt(2)}}");
   }
 
   @Test
@@ -2321,6 +2323,12 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(InverseErfc(x)^2 + InverseErfc(x) == 1, x)", //
         "{{x->Erfc(-1/2-Sqrt(5)/2)},{x->Erfc(-1/2+Sqrt(5)/2)}}");
 
+  }
+
+  @Test
+  public void testQuarticSolve() {
+    check("QuarticSolve(IntervalData(),-2-I*2,11/9223372036854775807)", //
+        "{IntervalData()*(2+I*2+Sqrt(I*8+IntervalData())),IntervalData()*(2+I*2-Sqrt(I*8+IntervalData()))}");
   }
 
   // @Test

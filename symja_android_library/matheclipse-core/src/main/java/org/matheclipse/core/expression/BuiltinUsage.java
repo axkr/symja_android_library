@@ -278,6 +278,9 @@ public class BuiltinUsage {
     USAGE[ID.HoldPattern] = "took the expression as a literal pattern";
     USAGE[ID.HoldRest] =
         "attribute specifying that all but the first argument should be left unevaluated";
+    USAGE[ID.Hypergeometric1F1] = "compute Kummer confluent hypergeometric function";
+    USAGE[ID.Hypergeometric2F1] = "compute Gauss hypergeometric function function";
+    USAGE[ID.HypergeometricPFQ] = "compute the generalized hypergeometric function";
     USAGE[ID.HypergeometricU] = "Tricomi confluent hypergeometric function";
 
     USAGE[ID.I] = "represents the imaginary number 'Sqrt(-1)'";
@@ -323,7 +326,7 @@ public class BuiltinUsage {
     USAGE[ID.Key] = "indicate a key within a part specification";
     USAGE[ID.Keys] = "list association keys";
     USAGE[ID.Khinchin] = "Khinchin's constant K≃2.6854";
-    // USAGE[ID.KnownUnitQ] = "tests whether its argument is a canonical unit.";
+    USAGE[ID.KnownUnitQ] = "tests whether its argument is a canonical unit.";
     USAGE[ID.KroneckerProduct] = "Kronecker product";
     USAGE[ID.KroneckerSymbol] = "Kronecker symbol";
     USAGE[ID.Kurtosis] = "kurtosis coefficient";
@@ -379,6 +382,7 @@ public class BuiltinUsage {
     USAGE[ID.Maximize] = "compute the maximum of a function";
     USAGE[ID.Mean] = "returns the statistical mean of a list";
     USAGE[ID.Median] = "central value of a dataset";
+    USAGE[ID.MeijerG] = "compute the Meijer G-function";
     USAGE[ID.MemberQ] = "test whether an element is a member of a list";
     USAGE[ID.MersennePrimeExponent] = "known Mersenne prime exponents [1..47]";
     USAGE[ID.MersennePrimeExponentQ] = "True if 2^n - 1 is a prime number";

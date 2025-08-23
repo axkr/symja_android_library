@@ -7,7 +7,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -169,7 +168,7 @@ public class Wigner {
           .multiply(Wigner.factorial(k6))//
           .multiply(Wigner.factorial(k7));
 
-      IInteger kk1 = AbstractIntegerSym.factorial(kk + 1);
+      IInteger kk1 = IInteger.factorial(kk + 1);
       if (kk == 0) {
         sumres = sumres.add(F.QQ(kk1, den));
       } else {
@@ -284,7 +283,7 @@ public class Wigner {
     }
     IExpr sumres = F.C0;
     for (int ii = imin; ii <= imax; ii++) {
-      IInteger den = AbstractIntegerSym.factorial(ii)//
+      IInteger den = IInteger.factorial(ii)//
           .multiply(Wigner.factorial(F.ZZ(ii).add(j3.subtract(j1).subtract(m2).numerator()))) //
           .multiply(Wigner.factorial(j2.add(m2).subtract(F.ZZ(ii)).numerator())) //
           .multiply(Wigner.factorial(j1.subtract(m1).subtract(F.ZZ(ii)).numerator())) //

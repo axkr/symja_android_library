@@ -9,7 +9,6 @@ import java.util.Map;
 import org.matheclipse.api.parser.FuzzyParserFactory;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
-import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
@@ -133,7 +132,7 @@ public class SymjaServer {
     S.RemoveDiacritics.setEvaluator(new org.matheclipse.nlp.builtin.RemoveDiacritics());
     S.Transliterate.setEvaluator(new org.matheclipse.nlp.builtin.Transliterate());
     FuzzyParserFactory.initialize();
-    System.out.println("Symja version " + ConstantDefinitions.VERSION + " initialized");
+    System.out.println("Symja version " + Config.VERSION + " initialized");
   }
 
   protected static int setArgs(final String serverClass, final String args[]) {

@@ -143,9 +143,10 @@ public class IntervalSym {
       return F.NIL;
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
-      Errors.printMessage(S.Interval, rex, engine);
+      // The expression `1` is not a valid interval.
+      String str = Errors.getMessage("nvld", F.list(intervalList), engine);
+      throw new ArgumentTypeException(str);
     }
-    return F.NIL;
   }
 
   private static Apfloat[] interval(Apfloat x) {
@@ -161,7 +162,8 @@ public class IntervalSym {
    * @param engine
    * @return
    */
-  private static IAST normalizeArgument(final IExpr arg, final EvalEngine engine) {
+  private static IAST normalizeArgument(final IExpr arg, final EvalEngine engine)
+      throws ArgumentTypeException {
     if (arg.isList()) {
       if (arg.size() == 3) {
         IAST list = (IAST) arg;
@@ -930,6 +932,23 @@ public class IntervalSym {
         result.append(list);
       }
       return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Convert an interval set with only one sub-interval to a single point if the first value of the
+   * sub-interval list equals the fourth value of the sub-interval list.
+   * 
+   * @param interval the interval to convert
+   * @return the single point if the interval is a single point, otherwise {@link F#NIL}
+   */
+  public static IExpr toSinglePoint(IExpr interval) {
+    if (interval.argSize() == 1 && interval.isInterval()) {
+      IAST list2 = (IAST) interval.first();
+      if (list2.arg1().equals(list2.arg2())) {
+        return list2.arg1();
+      }
     }
     return F.NIL;
   }

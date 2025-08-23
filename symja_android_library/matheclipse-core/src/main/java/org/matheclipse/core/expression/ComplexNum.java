@@ -13,9 +13,6 @@ import org.apfloat.OverflowException;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Arithmetic;
-import org.matheclipse.core.builtin.functions.GammaJS;
-import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -31,6 +28,8 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.functions.GammaJS;
+import org.matheclipse.core.numerics.functions.HypergeometricJS;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
@@ -44,6 +43,19 @@ import com.google.common.math.DoubleMath;
  */
 public class ComplexNum implements IComplexNum {
 
+  private final static int G = 7;
+
+  private final static org.hipparchus.complex.Complex[] P_COMPLEX =
+      new org.hipparchus.complex.Complex[] {new org.hipparchus.complex.Complex(0.99999999999980993), //
+          new org.hipparchus.complex.Complex(676.5203681218851), //
+          new org.hipparchus.complex.Complex(-1259.1392167224028), //
+          new org.hipparchus.complex.Complex(771.32342877765313), //
+          new org.hipparchus.complex.Complex(-176.61502916214059), //
+          new org.hipparchus.complex.Complex(12.507343278686905), //
+          new org.hipparchus.complex.Complex(-0.13857109526572012), //
+          new org.hipparchus.complex.Complex(9.9843695780195716e-6), //
+          new org.hipparchus.complex.Complex(1.5056327351493116e-7) //
+      };
   /** */
   private static final long serialVersionUID = -6033055105824482264L;
 
@@ -95,6 +107,36 @@ public class ComplexNum implements IComplexNum {
       }
       final double q = c.getImaginary() / c.getReal();
       return Math.abs(c.getReal()) * Math.sqrt(1 + q * q);
+    }
+  }
+
+  /**
+   * The Lanczos approximation is a method for computing the {@link S#Gamma} function numerically.
+   *
+   * <p>
+   * See <a href="https://en.wikipedia.org/wiki/Lanczos_approximation">Wikipedia - Lanczos
+   * approximation</a>
+   *
+   * @param z the complex number for which to compute the gamma function
+   * @return the gamma function value
+   */
+  public static org.hipparchus.complex.Complex lanczosApproxGamma(
+      org.hipparchus.complex.Complex z) {
+    if (z.getReal() < 0.5) {
+      // Pi / ( Sin(Pi * z) * Gamma(1 - z) )
+      return lanczosApproxGamma(z.negate().add(1.0)).multiply(z.multiply(Math.PI).sin())
+          .reciprocal().multiply(Math.PI);
+    } else {
+      z = z.subtract(1.0);
+      org.hipparchus.complex.Complex x = P_COMPLEX[0];
+      for (int i = 1; i < G + 2; i++) {
+        // x += p[i] / (z+i)
+        x = x.add(P_COMPLEX[i].divide(z.add(i)));
+      }
+      org.hipparchus.complex.Complex t = z.add(G).add(0.5);
+      // Sqrt(2 * Pi) * Pow(t, z + 0.5) * Exp(-t) * x
+      return t.pow(z.add(0.5)).multiply(t.negate().exp()).multiply(x)
+          .multiply(Math.sqrt(2 * Math.PI));
     }
   }
 
@@ -159,6 +201,7 @@ public class ComplexNum implements IComplexNum {
     return new ComplexNum[] {valueOf(arr[0]), valueOf(arr[1])};
   }
 
+
   /**
    * Create complex number on unit circle with given argument <code>arg</code>.
    *
@@ -168,7 +211,6 @@ public class ComplexNum implements IComplexNum {
   public static ComplexNum unitOf(final double arg) {
     return newInstance(new Complex(Math.cos(arg), Math.sin(arg)));
   }
-
 
   /**
    * Creates a new instance of a {@link ComplexNum} from the given {@link Complex}. If both the real
@@ -312,6 +354,7 @@ public class ComplexNum implements IComplexNum {
     return newInstance(fComplex.add(((ComplexNum) val).fComplex));
   }
 
+
   @Override
   public IExpr agm(IExpr arg2) {
     if (arg2 instanceof INumber) {
@@ -321,7 +364,6 @@ public class ComplexNum implements IComplexNum {
     }
     return IComplexNum.super.agm(arg2);
   }
-
 
   @Override
   public IExpr airyAi() {
@@ -537,13 +579,6 @@ public class ComplexNum implements IComplexNum {
     return IComplexNum.super.chebyshevU(arg2);
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public int compareAbsValueToOne() {
-    double temp = dabs();
-    return Double.compare(temp, 1.0);
-  }
-
   // public static int compare(final Complex c1, final Complex c2) {
   // int c = Double.compare(c1.getReal(), c2.getReal());
   // if (c != 0) {
@@ -551,6 +586,13 @@ public class ComplexNum implements IComplexNum {
   // }
   // return Double.compare(c1.getImaginary(), c2.getImaginary());
   // }
+
+  /** {@inheritDoc} */
+  @Override
+  public int compareAbsValueToOne() {
+    double temp = dabs();
+    return Double.compare(temp, 1.0);
+  }
 
   public int compareTo(final Complex that) {
     // https://github.com/mtommila/apfloat/issues/27
@@ -838,7 +880,7 @@ public class ComplexNum implements IComplexNum {
       return F.CComplexInfinity;
     }
     try {
-      return F.complexNum(Arithmetic.lanczosApproxGamma(fComplex.add(Complex.ONE)));
+      return F.complexNum(ComplexNum.lanczosApproxGamma(fComplex.add(Complex.ONE)));
     } catch (ArithmeticException | NumericComputationException e) {
       // try as computation with complex numbers
     }
@@ -942,7 +984,7 @@ public class ComplexNum implements IComplexNum {
       // if (complexGamma.isFinite()) {
       // return F.complexNum(complexGamma);
       // }
-      Complex complexGamma = Arithmetic.lanczosApproxGamma(fComplex);
+      Complex complexGamma = ComplexNum.lanczosApproxGamma(fComplex);
       if (complexGamma.isFinite()) {
         return F.complexNum(complexGamma);
       }
@@ -1028,6 +1070,11 @@ public class ComplexNum implements IComplexNum {
     return IComplexNum.super.gegenbauerC(arg2, arg3);
   }
 
+  @Override
+  public IExpr getAddendum() {
+    return F.complexNum(new Complex(0, fComplex.getImaginary()));
+  }
+
   public Complex getCMComplex() {
     return new Complex(fComplex.getReal(), fComplex.getImaginary());
   }
@@ -1040,11 +1087,6 @@ public class ComplexNum implements IComplexNum {
       temp = 0.0;
     }
     return temp;
-  }
-
-  @Override
-  public IExpr getAddendum() {
-    return F.complexNum(new Complex(0, fComplex.getImaginary()));
   }
 
   @Override
@@ -1602,6 +1644,7 @@ public class ComplexNum implements IComplexNum {
     return IComplexNum.super.plus(that);
   }
 
+
   @Override
   public IInexactNumber plus(final IInexactNumber that) {
     if (that instanceof IComplexNum) {
@@ -1621,7 +1664,6 @@ public class ComplexNum implements IComplexNum {
     }
     throw new java.lang.ArithmeticException();
   }
-
 
   @Override
   public INumber plus(final INumber that) {

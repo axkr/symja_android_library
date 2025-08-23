@@ -106,6 +106,7 @@ public class ArchUnitTests {
           "org.apfloat..", //
           "org.jgrapht..", //
           "..core.builtin..", //
+          "..core.numerics..", //
           "..core.convert..", //
           "..core.eval..", //
           "..core.expression", //
@@ -115,6 +116,16 @@ public class ArchUnitTests {
           "..io.others", //
           "..io.system");
 
+  @ArchTest
+  public static final ArchRule coreBuiltInRule =
+      classes().that().resideInAPackage("org.matheclipse.core.builtin..") //
+          .should().onlyBeAccessed().byAnyPackage( //
+              "..core.basic..", //
+              "..core.builtin..", //
+              "..core.generic..", //
+              "..core.reflection.system..", //
+              "..core.sympy..", //
+              "..core.tensor..");
 
   /**
    * Don't use a log4j Logger in Config startup methods

@@ -2729,8 +2729,8 @@ public class UtilityFunctionCtors {
     ast = org.matheclipse.core.integrate.rubi.UtilityFunctions35.RULES;
     ast = org.matheclipse.core.integrate.rubi.UtilityFunctions36.RULES;
     ast = org.matheclipse.core.integrate.rubi.UtilityFunctions37.RULES;
-    ast = org.matheclipse.core.integrate.rubi.UtilityFunctions38.RULES;
-    ast = org.matheclipse.core.integrate.rubi.UtilityFunctions39.RULES;
+    // ast = org.matheclipse.core.integrate.rubi.UtilityFunctions38.RULES;
+    // ast = org.matheclipse.core.integrate.rubi.UtilityFunctions39.RULES;
 
     // org.matheclipse.core.integrate.rubi.UtilityFunctions.init();
   }

@@ -4,7 +4,6 @@ import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.Less;
 import static org.matheclipse.core.expression.F.Subtract;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.QuantityFunctions;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -717,10 +716,10 @@ public class Iterator {
         final IQuantity step) {
       this.unit = lowerLimit.unit();
       if (!lowerLimit.unit().equals(unit)) {
-        lowerLimit = (IQuantity) QuantityFunctions.unitConvert(lowerLimit, unit);
+        lowerLimit = (IQuantity) IQuantity.unitConvert(lowerLimit, unit);
       }
       if (!upperLimit.unit().equals(unit)) {
-        upperLimit = (IQuantity) QuantityFunctions.unitConvert(upperLimit, unit);
+        upperLimit = (IQuantity) IQuantity.unitConvert(upperLimit, unit);
       }
       this.variable = symbol;
       this.lowerLimit = lowerLimit;
@@ -734,10 +733,10 @@ public class Iterator {
     public QuantityIterator(final ISymbol symbol, IQuantity lowerLimit, IQuantity upperLimit) {
       this.unit = lowerLimit.unit();
       if (!lowerLimit.unit().equals(unit)) {
-        lowerLimit = (IQuantity) QuantityFunctions.unitConvert(lowerLimit, unit);
+        lowerLimit = (IQuantity) IQuantity.unitConvert(lowerLimit, unit);
       }
       if (!upperLimit.unit().equals(unit)) {
-        upperLimit = (IQuantity) QuantityFunctions.unitConvert(upperLimit, unit);
+        upperLimit = (IQuantity) IQuantity.unitConvert(upperLimit, unit);
       }
       this.step = IQuantity.of(F.C1, unit);
       this.variable = symbol;
@@ -751,7 +750,7 @@ public class Iterator {
     public QuantityIterator(final ISymbol symbol, IQuantity upperLimit) {
       this.unit = upperLimit.unit();
       if (!upperLimit.unit().equals(unit)) {
-        upperLimit = (IQuantity) QuantityFunctions.unitConvert(upperLimit, unit);
+        upperLimit = (IQuantity) IQuantity.unitConvert(upperLimit, unit);
       }
       this.lowerLimit = IQuantity.of(F.C1, unit);
       this.step = IQuantity.of(F.C1, unit);
