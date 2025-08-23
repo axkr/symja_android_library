@@ -6,6 +6,8 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometric0F1() {
+    check("Hypergeometric0F1(a, x) //FunctionExpand", //
+        "x^(1/2*(1-a))*BesselI(-1+a,2*Sqrt(x))*Gamma(a)");
     check("N(Hypergeometric0F1(1, -2), 50)", //
         "-0.19654809527046820004079337208793223132588978731089");
     check("Hypergeometric0F1(1, -2.00000000000000000000000000000)", //
@@ -45,6 +47,10 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometric1F1() {
+    check("Hypergeometric1F1(a, 1, x) //FunctionExpand", //
+        "LaguerreL(-a,x)");
+    check("Hypergeometric1F1(1/2, 1, x)", //
+        "E^(x/2)*BesselI(0,x/2)");
     checkNumeric("Hypergeometric1F1(a, a+2, z)", //
         "(Gamma(a)-Gamma(a,-z)+(Gamma(1+a)-Gamma(1+a,-z))/z)/((-z)^a*Beta(a,2))");
     checkNumeric("Hypergeometric1F1(1,1/2,z)", //
@@ -55,8 +61,8 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
         "1/2*(-1+b)*(2*(3-b)+2*z+E^z*z^(3-b)*((-2+b)/(E^z*z^(3-b))-1/(E^z*z^(2-b)))+(2-b)*(\n" //
             + "3-b)*E^z*z^(1-b)*(Gamma(-1+b)-Gamma(-1+b,z))+2*(3-b)*E^z*z^(2-b)*(Gamma(-1+b)-Gamma(-\n" //
             + "1+b,z))+E^z*z^(3-b)*(Gamma(-1+b)-Gamma(-1+b,z)))");
-//        "1/2*(-1+b)*(4-b+z+(2-b)*(3-b)*E^z*z^(1-b)*(Gamma(-1+b)-Gamma(-1+b,z))+2*(3-b)*E^z*z^(\n"
-//            + "2-b)*(Gamma(-1+b)-Gamma(-1+b,z))+E^z*z^(3-b)*(Gamma(-1+b)-Gamma(-1+b,z)))");
+    // "1/2*(-1+b)*(4-b+z+(2-b)*(3-b)*E^z*z^(1-b)*(Gamma(-1+b)-Gamma(-1+b,z))+2*(3-b)*E^z*z^(\n"
+    // + "2-b)*(Gamma(-1+b)-Gamma(-1+b,z))+E^z*z^(3-b)*(Gamma(-1+b)-Gamma(-1+b,z)))");
     check("Hypergeometric1F1(a,a+1,z)", //
         "(a*(Gamma(a,0)-Gamma(a,-z)))/(-z)^a");
     check("Hypergeometric1F1(1,a+1,z)", //
@@ -141,6 +147,16 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometric2F1() {
+    check("Hypergeometric2F1(1/2,1/2,3/2,x^10)", //
+        "ArcSin(x^5)/x^5");
+
+    check("Hypergeometric2F1( 2, -3, 4, x)", //
+        "1-3/2*x+9/10*x^2-x^3/5");
+    check("Hypergeometric2F1(-2, 3, 4, x)", //
+        "1-3/2*x+3/5*x^2");
+    // TODO
+    check("Hypergeometric2F1(2, 3, 4, x)", //
+        "Hypergeometric2F1(2,3,4,x)");
     check("Hypergeometric2F1(1,1/2,3/2,m*z^k)", //
         "ArcTanh(Sqrt(m)*z^(k/2))/(Sqrt(m)*z^(k/2))");
 
@@ -160,12 +176,20 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
         "Cos((-1+2*(1-a))*ArcSin(Sqrt(z)))/Sqrt(1-z)");
     check("Hypergeometric2F1(a,-a,1/2,z)", //
         "Cos(2*a*ArcSin(Sqrt(z)))");
+
+    check("Hypergeometric2F1(1/2,1,3/2,a*z^n)", //
+        "ArcTanh(Sqrt(a)*z^(n/2))/(Sqrt(a)*z^(n/2))");
+    check("Hypergeometric2F1(1/2,1,3/2,a+b*z^n)", //
+        "ArcTanh(Sqrt(a+b*z^n))/Sqrt(a+b*z^n)");
     check("Hypergeometric2F1(1/2,1,3/2,3)", //
-        "ArcTanh(3)/3");
+        "ArcTanh(Sqrt(3))/Sqrt(3)");
     check("Hypergeometric2F1(1/2,1,3/2,t^2)", //
         "ArcTanh(t)/t");
     check("Hypergeometric2F1(a, a + 1/2, 2*a, z)", //
         "(1+Sqrt(1-z))^(1-2*a)/(2^(1-2*a)*Sqrt(1-z))");
+
+    check("Hypergeometric2F1(1,3/2,5/2,a*z^n)", //
+        "(3*(-a*z^n+Sqrt(a)*z^(n/2)*ArcTanh(Sqrt(a)*z^(n/2))))/(a^2*z^(2*n))");
 
     // https://github.com/mtommila/apfloat/issues/29
     checkNumeric("Hypergeometric2F1(-3.0, -1, -2, 1.0)", //
@@ -225,9 +249,8 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
 
     // message Plus: m^2 and m are incompatible units
     check("Hypergeometric2F1(-5,Quantity(1.2,\"m\"),c,1)", //
-        "(-28.8[m]+72.0[m^2]+-60.48[m^3]+20.736[m^4]+-2.48832[m^5]+24*c+-120.0[m]*c+151.2[m^2]*c+-69.12[m^3]*c+10.368[m^4]*c+\n" //
-            + "50*c^2+-126.0[m]*c^2+86.4[m^2]*c^2+-17.28[m^3]*c^2+35*c^3+-48.0[m]*c^3+14.4[m^2]*c^\n" //
-            + "3+10*c^4+-6.0[m]*c^4+c^5)/(c*(1+c)*(2+c)*(3+c)*(4+c))");
+        "Expand((-1.2[m]+c)*(1+-1.2[m]+c)*(2+-1.2[m]+c)*(3+-1.2[m]+c)*(4+-1.2[m]+c))/(c*(\n" //
+            + "1+c)*(2+c)*(3+c)*(4+c))");
 
     // check("Hypergeometric2F1(1317624576693539401,0.333,-3/2,-0.5)", //
     // "Hypergeometric2F1(0.333,1.31762*10^18,-1.5,-0.5)");
@@ -301,7 +324,7 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
         "True");
 
     check("Hypergeometric2F1(1,2,3/2,x^2/9)", //
-        "3/2*(1/3*Sqrt(1-x^2/9)*Sqrt(x^2)+ArcSin(Sqrt(x^2)/3))/((1-x^2/9)^(3/2)*Sqrt(x^2))");
+        "1/(2*(1-x^2/9))+3/2*ArcSin(x/3)/(x*(1-x^2/9)^(3/2))");
 
     check("Hypergeometric2F1(-2,b,c,1)", //
         "(-b+b^2+c-2*b*c+c^2)/(c*(1+c))");
@@ -347,6 +370,40 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometricPFQ() {
+    // TODO
+    // check("HypergeometricPFQ({1, 1}, {3, 3, 3}, 30.0)", //
+    // "");
+    check("HypergeometricPFQ({6},{1},2)", //
+        "719/15*E^2");
+    check("N(HypergeometricPFQ({6},{1},2))", //
+        "354.1821");
+    check("HypergeometricPFQ({},{},z)", //
+        "E^z");
+    check("HypergeometricPFQ({0},{c1,c2},z)", //
+        "1");
+    check("HypergeometricPFQ({c1,c2},{c1,c2},z)", //
+        "E^z");
+
+    check("HypergeometricPFQ({2},{1},2)", //
+        "3*E^2");
+    check("HypergeometricPFQ({2},{b},z)", //
+        "(-1+b)*(1+(2-b)*E^z*z^(1-b)*(Gamma(-1+b)-Gamma(-1+b,z))+E^z*z^(2-b)*(Gamma(-1+b)-Gamma(-\n" //
+            + "1+b,z)))");
+    check("HypergeometricPFQ({0},{0},z)", //
+        "1");
+    check("HypergeometricPFQ({-1},{-1},z)", //
+        "1+z");
+
+    check("HypergeometricPFQ({a,-2,b,-5,-10}, {c}, z)", //
+        "1+(-100*a*b*z)/c+(1800*a*(1+a)*b*(1+b)*z^2)/(c*(1+c))");
+    check("HypergeometricPFQ({-2, -5}, {b}, z)", //
+        "1+(10*z)/b+(20*z^2)/(b*(1+b))");
+    check("HypergeometricPFQ({a1, -5}, {b}, z)", //
+        "1+(-5*a1*z)/b+(10*a1*(1+a1)*z^2)/(b*(1+b))+(-10*a1*(1+a1)*(2+a1)*z^3)/(b*(1+b)*(\n" //
+            + "2+b))+(5*a1*(1+a1)*(2+a1)*(3+a1)*z^4)/(b*(1+b)*(2+b)*(3+b))+(-a1*(1+a1)*(2+a1)*(\n" //
+            + "3+a1)*(4+a1)*z^5)/(b*(1+b)*(2+b)*(3+b)*(4+b))");
+    check("HypergeometricPFQ({-2, a}, {b}, z)", //
+        "1+(-2*a*z)/b+(a*(1+a)*z^2)/(b*(1+b))");
     check("HypergeometricPFQ({c1,c2},{c1,c2}, z)", //
         "E^z");
     check("N( HypergeometricPFQ({4},{},1) )", //
@@ -392,6 +449,8 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometricU() {
+    check("HypergeometricU({3,1},{2,4},{7,8})", //
+        "{HypergeometricU(3,2,7),41/256}");
     check("HypergeometricU(0,b,z)", //
         "1");
     check("HypergeometricU(-5,b,z)", //
@@ -434,5 +493,106 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
   }
 
 
+  @Test
+  public void testMeijerG() {
+    check("MeijerG({{}, {a,a,a,a,a}}, {{a-1,a-1,a-1,a-1,a-1 }, {}}, z)", //
+        "Piecewise({{Log(z)^4/(24*z^(1-a)),Abs(z)<=1}},0)");
+    // https://functions.wolfram.com/HypergeometricFunctions/MeijerG/03/01/01/08/0001/
+    check("MeijerG({{}, {a,a,a,a,a}}, {{a-1,a-1,a-1,a-1,a-1 }, {}}, z)", //
+        "Piecewise({{Log(z)^4/(24*z^(1-a)),Abs(z)<=1}},0)");
+    // https://functions.wolfram.com/HypergeometricFunctions/MeijerG/03/01/01/09/0001/
+    check("MeijerG({{}, {}}, {{a, a + 1/5, a + 2/5, a + 3/5, a + 4/5}, {}}, z)", //
+        "(4*Pi^2*z^a)/(Sqrt(5)*E^(5*z^(1/5)))");
+    // https://functions.wolfram.com/HypergeometricFunctions/MeijerG/03/01/06/01/0002/
+    check("MeijerG({{}, {}}, {{b1, b1 + 1/4, b1 + 1/2, b1+ 3/4}, {}}, z)", //
+        "(Sqrt(2)*Pi^(3/2)*z^b1)/E^(4*z^(1/4))");
+    check("MeijerG({{}, {}}, {{b}, {}}, z)", //
+        "z^b/E^z");
+    // https://functions.wolfram.com/HypergeometricFunctions/MeijerG/03/01/04/17/0001/
+    check("MeijerG({{a1}, { a2 , a3 }}, {{b1, b2}, {}}, z)", //
+        "(Gamma(1-a1+b1)*Gamma(1-a1+b2)*HypergeometricPFQRegularized({1-a1+b1,1-a1+b2},{1-a1+a2,\n" //
+            + "1-a1+a3},-1/z))/z^(1-a1)");
+    // https://functions.wolfram.com/HypergeometricFunctions/MeijerG/03/01/04/14/0001/
+    check("MeijerG({{a}, {c}}, {{b, d}, {}}, z)", //
+        "(Gamma(1-a+b)*Gamma(1-a+d)*Hypergeometric2F1Regularized(1-a+b,1-a+d,1-a+c,-1/z))/z^(\n" //
+            + "1-a)");
+    // https: // functions.wolfram.com/HypergeometricFunctions/MeijerG/03/01/04/12/0002/
+    check("MeijerG({{a1}, {}}, {{b1, b2}, {}}, z)", //
+        "z^b1*Gamma(1-a1+b1)*Gamma(1-a1+b2)*HypergeometricU(1-a1+b1,1+b1-b2,z)");
+    // https://functions.wolfram.com/HypergeometricFunctions/MeijerG/03/01/04/04/0002/
+    checkNumeric("N(MeijerG({{}, {2}}, {{1/2, 3/2}, {}}, 3), 50)", //
+        "MeijerG({{},{2}},{{1/2,3/2},{}},3)");
+    checkNumeric("MeijerG[{{}, {a}}, {{b, c}, {}}, z]", //
+        "Pi*((z^b*Csc((-b+c)*Pi)*Hypergeometric1F1Regularized(-1+a+b,1+b-c,-z))/Gamma(a-b)+(z^c*Csc((b-c)*Pi)*Hypergeometric1F1Regularized(-\n" //
+            + "1+a+c,1-b+c,-z))/Gamma(a-c))");
+    // https://functions.wolfram.com/HypergeometricFunctions/MeijerG/03/01/04/01/0004/
+    checkNumeric("MeijerG({{}, {}}, {{b, b + 1/2}, {}}, z)", //
+        "(Sqrt(2*Pi)*z^b)/(Sqrt(2)*E^(2*Sqrt(z)))");
+    // https://functions.wolfram.com/HypergeometricFunctions/MeijerG/03/01/04/01/0002/
+    checkNumeric("MeijerG({{}, {}}, {{b1, b2}, {}}, z)", //
+        "2*z^(b1/2+b2/2)*BesselK(-b1+b2,2*Sqrt(z))");
+
+    // https://functions.wolfram.com/HypergeometricFunctions/MeijerG/03/01/05/01/0002/
+    checkNumeric("MeijerG({{}, {}}, {{b, b+1/3, b+2/3}, {}}, z)", //
+        "(2*Pi*z^b)/(Sqrt(3)*E^(3*z^(1/3)))");
+    // https://functions.wolfram.com/07.34.03.0984.01
+    checkNumeric("MeijerG({{1/2}, {}}, {{0, 1/2, 1/2}, {}}, z)", //
+        "-2*Sqrt(Pi)*(CosIntegral(2*Sqrt(z))*Sin(2*Sqrt(z))+Cos(2*Sqrt(z))*(Pi/2-SinIntegral(\n"//
+            + "2*Sqrt(z))))");
+    checkNumeric("MeijerG({{3}, {}}, {{5/2, 3, 3}, {}}, z)", //
+        "-2*Sqrt(Pi)*z^(5/2)*(CosIntegral(2*Sqrt(z))*Sin(2*Sqrt(z))+Cos(2*Sqrt(z))*(Pi/2-SinIntegral(\n"//
+            + "2*Sqrt(z))))");
+    checkNumeric("MeijerG({{a}, {}}, {{a - 1/2, a, a}, {}}, z)", //
+        "(-2*Sqrt(Pi)*(CosIntegral(2*Sqrt(z))*Sin(2*Sqrt(z))+Cos(2*Sqrt(z))*(Pi/2-SinIntegral(\n"//
+            + "2*Sqrt(z)))))/z^(1/2-a)");
+
+    checkNumeric("MeijerG({{},{}}, {{0},{}}, 0)", //
+        "1");
+    checkNumeric("MeijerG({{ }, {a2}}, {{0}, {b2}}, 0)", //
+        "1/(Gamma(a2)*Gamma(1-b2))");
+    checkNumeric("MeijerG({{1}, {a2}}, {{b1}, {}}, 0)", //
+        "Gamma(b1)*Hypergeometric1F1Regularized(b1,a2,ComplexInfinity)");
+    checkNumeric("MeijerG({{1}, {a2}}, {{}, {b2}}, 0)", //
+        "Hypergeometric1F1Regularized(b2,a2,ComplexInfinity)/Gamma(1-b2)");
+    checkNumeric("MeijerG({{1}, {}}, {{}, {}}, 0)", //
+        "Infinity");
+    checkNumeric("MeijerG({{0}, {}}, {{}, {}}, 0)", //
+        "-Infinity");
+    checkNumeric("MeijerG({{a1}, {}}, {{0}, {}}, 0)", //
+        "Gamma(1-a1)");
+    checkNumeric("MeijerG({{1/2}, {}}, {{0}, {0}}, 0)", //
+        "Sqrt(Pi)");
+    checkNumeric("MeijerG({{}, {}}, {{b1}, {}},z)", //
+        "z^b1/E^z");
+    checkNumeric("MeijerG({{1/2}, {1/2}}, {{}, {}}, 0)//N", //
+        "ComplexInfinity");
+    checkNumeric("MeijerG({{1}, {2}}, {{2.3}, {4}}, 3)", //
+        "0.0");
+    check("MeijerG({{1, 1}, {}}, {{1}, {0}}, z)", //
+        "Log(1+z)");
+
+    checkNumeric("MeijerG({{}, {0.33}}, {{Pi}, {E}}, {-0.5,0.5})", //
+        "{0.01650236063766311+I*0.00786651270222696,-0.34952526547708834}");
+
+    check("MeijerG({{}, {a2}}, {{b1}, {b2}}, z)", //
+        "(z^b1*Hypergeometric1F1Regularized(1-a2+b1,1+b1-b2,z))/Gamma(a2-b1)");
+    check("MeijerG({{a1}, {}}, {{b1}, {b2}}, z)", //
+        "z^b1*Gamma(1-a1+b1)*Hypergeometric1F1Regularized(1-a1+b1,1+b1-b2,-z)");
+    check("MeijerG({{a1}, {a2}}, {{b1}, {}}, z)", //
+        "(Gamma(1-a1+b1)*Hypergeometric1F1Regularized(1-a1+b1,1-a1+a2,-1/z))/z^(1-a1)");
+    check("MeijerG({{a1}, {a2}}, {{}, {b2}}, z)", //
+        "Hypergeometric1F1Regularized(1-a1+b2,1-a1+a2,1/z)/(z^(1-a1)*Gamma(a1-b2))");
+    check("MeijerG({{}, {}}, {{b1}, {-b1}}, z)", //
+        "BesselJ(2*b1,2*Sqrt(z))");
+    check("MeijerG({{a1}, {a2}}, {{}, {}}, z)", //
+        "BesselJ(-a1+a2,2/Sqrt(z))/z^(1-a1-(-a1+a2)/2)");
+    check("MeijerG({{a}, {}}, {{}, {b}}, 2)", //
+        "2^b/Gamma(a-b)");
+    check("MeijerG({{a}, {}}, {{}, {}}, z) ", //
+        "1/(E^(1/z)*z^(1-a))");
+    // print message
+    check("MeijerG({{}, {}}, {{}, {}}, z) ", //
+        "MeijerG({{},{}},{{},{}},z)");
+  }
 
 }

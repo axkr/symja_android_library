@@ -1,4 +1,4 @@
-package org.matheclipse.core.builtin.functions;
+package org.matheclipse.core.numerics.functions;
 
 import static java.lang.Math.abs;
 import java.util.ArrayList;
@@ -7,11 +7,11 @@ import org.apfloat.Apfloat;
 import org.apfloat.NumericComputationException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.ResultException;
+import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.expression.S;
@@ -158,12 +158,12 @@ public class HypergeometricJS extends JS {
       x = x.sqrt().multiply(4.0);
 
       // copied from hypergeometric1F1
-      Complex t1 = Arithmetic.lanczosApproxGamma(b).multiply(x.negate().pow(a.negate()))
-          .multiply(Arithmetic.lanczosApproxGamma(b.subtract(a)).reciprocal());
+      Complex t1 = ComplexNum.lanczosApproxGamma(b).multiply(x.negate().pow(a.negate()))
+          .multiply(ComplexNum.lanczosApproxGamma(b.subtract(a)).reciprocal());
       t1 = t1.multiply(hypergeometric2F0(a, a.add(b.negate()).add(1), new Complex(-1.0).divide(x)));
 
-      Complex t2 = Arithmetic.lanczosApproxGamma(b).multiply(x.pow(a.subtract(b))).multiply(x.exp())
-          .multiply(Arithmetic.lanczosApproxGamma(a).reciprocal());
+      Complex t2 = ComplexNum.lanczosApproxGamma(b).multiply(x.pow(a.subtract(b))).multiply(x.exp())
+          .multiply(ComplexNum.lanczosApproxGamma(a).reciprocal());
       t2 = t2.multiply(
           hypergeometric2F0(b.subtract(a), Complex.ONE.subtract(a), Complex.ONE.divide(x)));
 

@@ -11,10 +11,10 @@ import static org.matheclipse.core.expression.F.Times;
 import org.apfloat.NumericComputationException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.functions.HypergeometricJS;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -33,6 +33,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.functions.HypergeometricJS;
 
 public class HypergeometricFunctions {
 
@@ -145,6 +146,15 @@ public class HypergeometricFunctions {
   private static class CosIntegral extends AbstractFunctionEvaluator { // implements INumeric,
                                                                        // DoubleUnaryOperator {
     @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() == 1) {
+        IExpr x = ast.arg1();
+        return x.isNonNegativeResult();
+      }
+      return false;
+    }
+
+    @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
       IExpr temp = basicRewrite(z);
@@ -201,6 +211,15 @@ public class HypergeometricFunctions {
   }
 
   private static class CoshIntegral extends AbstractFunctionEvaluator {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() == 1) {
+        IExpr x = ast.arg1();
+        return x.isNonNegativeResult();
+      }
+      return false;
+    }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -290,6 +309,30 @@ public class HypergeometricFunctions {
   private static class ExpIntegralE extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() == 2) {
+        IExpr x = ast.arg1();
+        IExpr y = ast.arg2();
+        if (x.isRealResult()) {
+          if (y.isNonNegativeResult()) {
+            if (y.isPositiveResult()) {
+              // y>0
+              return true;
+            }
+            if (x.greater(F.C1).isTrue()) {
+              // y>=0 && x>1
+              return true;
+            }
+          }
+          if ((x.isNegative() || x.isZero()) && x.isIntegerResult() && y.isReal() && !y.isZero()) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr v = ast.arg1();
@@ -303,12 +346,10 @@ public class HypergeometricFunctions {
               // https://functions.wolfram.com/GammaBetaErf/ExpIntegralE/03/01/02/0004/
               // ((-1)^n*Sqrt(Pi))/(z^(1/2-n)*Pochhammer(1/2,n))*Erfc(Sqrt(z))-Sum(z^k/Pochhammer(
               // 1/2-n,k+1),{k,0,-1+n})/E^z
-              IExpr sum = engine.evaluate(F.sum(
-                  k -> {
-                    return F.Times(F.Power(z, k),
-                        F.Power(F.Pochhammer(halfSubN, F.Plus(k, F.C1)), F.CN1));
-                  },
-                  0, n - 1));
+              IExpr sum = engine.evaluate(F.sum(k -> {
+                return F.Times(F.Power(z, k),
+                    F.Power(F.Pochhammer(halfSubN, F.Plus(k, F.C1)), F.CN1));
+              }, 0, n - 1));
               return F.Plus(
                   F.Times(F.Power(F.CN1, n), F.CSqrtPi, F.Power(z, F.Plus(F.CN1D2, ni)),
                       F.Power(F.Pochhammer(F.C1D2, ni), F.CN1), F.Erfc(F.Sqrt(z))),
@@ -316,14 +357,19 @@ public class HypergeometricFunctions {
             }
             // https://functions.wolfram.com/GammaBetaErf/ExpIntegralE/03/01/02/0014/
             // (1-Erf(Sqrt(z))*Gamma(1/2-n)+Sum(z^(1/2+k)/Pochhammer(1/2-n,1+k+n),{k,0,-1-n})/E^z-Sum(z^(1/2+k)/Pochhammer(1/2-n,1+k+n),{k,-n,-1})/E^z)/z^(1/2-n)
-            IExpr sum1 = engine.evaluate(F.sum(
-                k -> F.Times(F.Power(z, F.Plus(F.C1D2, k)),
-                    F.Power(F.Pochhammer(halfSubN, F.Plus(F.C1, k, ni)), F.CN1)),
-                0, -1 - n));
-            IExpr sum2 = engine.evaluate(F.sum(
-                k -> F.Times(F.Power(z, F.Plus(F.C1D2, k)),
-                    F.Power(F.Pochhammer(halfSubN, F.Plus(F.C1, k, ni)), F.CN1)),
-                -n, -1));
+            IExpr sum1 =
+                engine
+                    .evaluate(F.sum(
+                        k -> F.Times(F.Power(z, F.Plus(F.C1D2, k)),
+                            F.Power(F.Pochhammer(halfSubN, F.Plus(F.C1, k, ni)), F.CN1)),
+                        0, -1 - n));
+            IExpr sum2 =
+                engine
+                    .evaluate(
+                        F.sum(
+                            k -> F.Times(F.Power(z, F.Plus(F.C1D2, k)),
+                                F.Power(F.Pochhammer(halfSubN, F.Plus(F.C1, k, ni)), F.CN1)),
+                            -n, -1));
             return F.Times(F.Power(z, F.Plus(F.CN1D2, ni)),
                 F.Plus(F.Times(F.Subtract(F.C1, F.Erf(F.Sqrt(z))), F.Gamma(halfSubN)),
                     F.Times(F.Power(F.Exp(z), F.CN1), sum1),
@@ -427,7 +473,12 @@ public class HypergeometricFunctions {
   }
 
   private static class ExpIntegralEi extends AbstractFunctionEvaluator { // implements INumeric,
-                                                                         // DoubleUnaryOperator {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return ast.argSize() == 1 && ast.arg1().isRealResult();
+    }
+
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr z = ast.arg1();
@@ -484,6 +535,10 @@ public class HypergeometricFunctions {
   }
 
   private static class FresnelC extends AbstractFunctionEvaluator {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return ast.argSize() == 1 && ast.arg1().isRealResult();
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -538,6 +593,10 @@ public class HypergeometricFunctions {
   }
 
   private static class FresnelS extends AbstractFunctionEvaluator {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return ast.argSize() == 1 && ast.arg1().isRealResult();
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -595,12 +654,75 @@ public class HypergeometricFunctions {
       implements IFunctionExpand {
 
     @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() == 2) {
+        IExpr n = ast.arg1();
+        if (n.isIntegerResult()) {
+          return true;
+        }
+        IExpr z = ast.arg2();
+        return z.greaterEqual(F.CN1).isTrue();
+      }
+      if (ast.argSize() == 3) {
+        IExpr n = ast.arg1();
+        IExpr m = ast.arg2();
+        if (n.isIntegerResult() && m.isIntegerResult()) {
+          return true;
+        }
+        if (n.isRealResult() && m.isRealResult()) {
+          IExpr z = ast.arg3();
+          if (z.greater(F.CN1).isTrue()) {
+            IExpr temp = F.Plus(F.Times(F.C2, m), n).eval();
+            if (temp.isReal() && !temp.isInteger()) {
+              // n+2*m is not an integer
+              return true;
+            }
+            if (temp.isPositiveResult()) {
+              // n+2*m > 0
+              return true;
+            }
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
       if (ast.isAST2()) {
         IExpr n = ast.arg1();
         IExpr z = ast.arg2();
         // (2*Cos(n*ArcCos(z)))/n
         return F.Times(F.C2, F.Power(n, F.CN1), F.Cos(F.Times(n, F.ArcCos(z))));
+      }
+      if (ast.isAST3()) {
+        IExpr n = ast.arg1();
+        IExpr m = ast.arg2();
+        if (ast.arg3().isZero()) {
+          // GegenbauerC(n, m, 0)
+          // https://functions.wolfram.com/HypergeometricFunctions/GegenbauerC3General/03/01/01/0001/
+          // (2^n*Sqrt(Pi)*Gamma(m+n/2))/(Gamma(m)*Gamma(1/2-n/2)*Gamma(1+n))
+          F.Times(F.Power(F.C2, n), F.CSqrtPi, F.Gamma(F.Plus(m, F.Times(F.C1D2, n))),
+              F.Power(F.Times(F.Gamma(m), F.Gamma(F.Plus(F.C1D2, F.Times(F.CN1D2, n))),
+                  F.Gamma(F.Plus(F.C1, n))), F.CN1));
+        }
+        if (ast.arg3().isOne()) {
+          // GegenbauerC(n, m, 1)
+          // https://functions.wolfram.com/HypergeometricFunctions/GegenbauerC3General/03/01/01/0002/
+          // Gamma(2*m+n)/(Gamma(2*m)*Gamma(1+n))
+          return F.Times(
+              F.Power(F.Times(F.Gamma(F.Times(F.C2, m)), F.Gamma(F.Plus(F.C1, n))), F.CN1),
+              F.Gamma(F.Plus(F.Times(F.C2, m), n)));
+        }
+        if (ast.arg3().isMinusOne()) {
+          // GegenbauerC(n, m, -1)
+          // https://functions.wolfram.com/HypergeometricFunctions/GegenbauerC3General/03/01/01/0003/
+          // (Cos((m+n)*Pi)*Gamma(2*m+n)*Sec(m*Pi))/(Gamma(2*m)*Gamma(1+n))
+          return F.Times(F.Cos(F.Times(F.Plus(m, n), F.Pi)),
+              F.Power(F.Times(F.Gamma(F.Times(F.C2, m)), F.Gamma(F.Plus(F.C1, n))), F.CN1),
+              F.Gamma(F.Plus(F.Times(F.C2, m), n)), F.Sec(F.Times(m, F.Pi)));
+        }
       }
       return F.NIL;
     }
@@ -795,42 +917,39 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class Hypergeometric0F1 extends AbstractFunctionEvaluator {
+  private static class Hypergeometric0F1 extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() == 2) {
+        IExpr x = ast.arg1();
+        IExpr y = ast.arg1();
+        if (y.isRealResult()) {
+          return x.isPositiveResult() || (x.isReal() && !x.isInteger());
+        }
 
+      }
+      return false;
+    }
+
+    @Override
+    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        IExpr a = ast.arg1();
+        IExpr z = ast.arg2();
+        // z^(1/2*(1-a))*BesselI(-1+a,2*Sqrt(z))*Gamma(a)
+        return F.Times(F.Power(z, F.Times(F.C1D2, F.Subtract(F.C1, a))),
+            F.BesselI(F.Plus(F.CN1, a), F.Times(F.C2, F.Sqrt(z))), F.Gamma(a));
+      }
+      return F.NIL;
+    }
+
+    // Hypergeometric0F1(a_,z_) := z^(1/2-a/2)*BesselI(-1+a,2*Sqrt(z))*Gamma(a),
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       IExpr b = ast.arg1();
       IExpr z = ast.arg2();
-      return basicRewrite(b, z, engine);
-    }
-
-    private IExpr basicRewrite(IExpr b, IExpr z, EvalEngine engine) {
-      if (z.isZero()) {
-        return F.C1;
-      }
-      if (z.isInfinity()) {
-        return F.CComplexInfinity;
-      }
-      if (b.isRationalValue(F.C1D2)) {
-        if (z.isNegativeSigned()) {
-          // Hypergeometric0F1(1/2,z_) := Cos(2*Sqrt(z))
-          IExpr zNegate = z.negate();
-          return F.Cos(F.Times(F.C2, F.Sqrt(zNegate)));
-        }
-        // Hypergeometric0F1(1/2,z_) := Cosh(2*Sqrt(z))
-        return F.Cosh(F.Times(F.C2, F.Sqrt(z)));
-      }
-      if (b.isRationalValue(F.C3D2)) {
-        if (z.isNegativeSigned()) {
-          // Hypergeometric0F1(3/2,z_) := Sin(2*Sqrt(z))/(2*Sqrt(z))
-          IExpr v1 = F.Times(F.C2, F.Sqrt(z.negate()));
-          return F.Times(F.Power(v1, F.CN1), F.Sin(v1));
-        }
-        // Hypergeometric0F1(3/2,z_):= Sinh(2*Sqrt(z))/(2*Sqrt(z))
-        IExpr v1 = engine.evaluate(F.C2.times(F.Sqrt(z)));
-        return F.Times(F.Power(v1, F.CN1), F.Sinh(v1));
-      }
-      return F.NIL;
+      return hyperGeometric0F1Symbolic(b, z, engine);
     }
 
     @Override
@@ -838,7 +957,7 @@ public class HypergeometricFunctions {
       if (ast.argSize() == 2) {
         IInexactNumber b = (IInexactNumber) ast.arg1();
         IInexactNumber z = (IInexactNumber) ast.arg2();
-        IExpr result = basicRewrite(b, z, engine).eval(engine);
+        IExpr result = hyperGeometric0F1Symbolic(b, z, engine).eval(engine);
         if (result.isPresent()) {
           return result;
         }
@@ -869,7 +988,24 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class Hypergeometric0F1Regularized extends AbstractFunctionEvaluator {
+  private static class Hypergeometric0F1Regularized extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return ast.argSize() == 2 && ast.arg1().isRealResult() && ast.arg2().isRealResult();
+    }
+
+    @Override
+    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        IExpr b = ast.arg1();
+        IExpr z = ast.arg2();
+        // z^(1/2*(1-b))*BesselI(-1+b,2*Sqrt(z))
+        return F.Times(F.Power(z, F.Times(F.C1D2, F.Subtract(F.C1, b))),
+            F.BesselI(F.Plus(F.CN1, b), F.Times(F.C2, F.Sqrt(z))));
+      }
+      return F.NIL;
+    }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -920,7 +1056,46 @@ public class HypergeometricFunctions {
     }
   }
 
-  private static class Hypergeometric1F1 extends AbstractFunctionEvaluator implements IMatch {
+  private static class Hypergeometric1F1 extends AbstractFunctionEvaluator
+      implements IMatch, IFunctionExpand {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() == 3) {
+        IExpr y = ast.arg2();
+        if (ast.arg1().isRealResult() && ast.arg3().isRealResult()) {
+          return y.isPositiveResult() || (y.isReal() && !y.isInteger());
+        }
+      }
+      return false;
+    }
+
+    @Override
+    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+      if (ast.isAST3()) {
+        IExpr a = ast.arg1();
+        IExpr b = ast.arg2();
+        IExpr z = ast.arg3();
+        if (b.isOne() && !a.isInteger()) {
+          // https://functions.wolfram.com/HypergeometricFunctions/Hypergeometric1F1/03/01/02/0010/
+          // LaguerreL(-a,z)
+          return F.LaguerreL(a.negate(), z);
+        }
+        if (a.equals(b.times(F.C1D2))) {
+          // https://functions.wolfram.com/HypergeometricFunctions/Hypergeometric1F1/03/01/02/0018/
+          // (E^(z/2)*z^(1/2-a)*BesselI(1/2*(-1+b),z/2)*Gamma(1/2+a))/4^(1/2-a)/; a==b/2,
+          IExpr v1 = F.C1D2.times(z);
+          return F.Times(F.Power(F.C4, F.Plus(F.CN1D2, a)), F.Exp(v1),
+              F.Power(z, F.Subtract(F.C1D2, a)), F.BesselI(F.Times(F.C1D2, F.Plus(F.CN1, b)), v1),
+              F.Gamma(F.Plus(F.C1D2, a)));
+
+        }
+
+
+      }
+      return F.NIL;
+    }
+
     @Override
     public IExpr match4(IAST ast, EvalEngine engine) {
       return F.NIL;
@@ -932,15 +1107,19 @@ public class HypergeometricFunctions {
       IExpr a = ast.arg1();
       IExpr b = ast.arg2();
       IExpr z = ast.arg3();
-      IExpr result = basicRewrite(a, b, z);
+      return hypergeometric1F1Symbolic(a, b, z, engine);
+    }
+
+    private static IExpr hypergeometric1F1Symbolic(IExpr a, IExpr b, IExpr z, EvalEngine engine) {
+      IExpr result = Hypergeometric1F1.basicRewrite(a, b, z);
       if (result.isPresent()) {
         return result;
       }
 
-      if (z.isVariable() && !b.isOne()) {
-        int ni = a.toIntDefault();
-        if (ni > 0) {
-          IInteger n = F.ZZ(ni);
+      int ai = a.toIntDefault();
+      if (ai > 0) {
+        if (z.isVariable() && !b.isOne()) {
+          IInteger n = F.ZZ(ai);
           // https://functions.wolfram.com/HypergeometricFunctions/Hypergeometric1F1/03/01/03/0007/
           // (-1+b)/(-1+n)!*D(E^z/z^(b-n)*(Gamma(-1+b)-Gamma(-1+b,z)),{z,-1+n})
           return F.Times(F.Plus(F.CN1, b), F.Power(F.Factorial(F.Plus(F.CN1, n)), F.CN1),
@@ -948,12 +1127,33 @@ public class HypergeometricFunctions {
                   F.Subtract(F.Gamma(F.Plus(F.CN1, b)), F.Gamma(F.Plus(F.CN1, b), z))),
                   F.list(z, F.Plus(F.CN1, n))));
         }
+
+        if (ai >= 2 && ai < Integer.MAX_VALUE / 2 && b.isInteger() && z.isInteger()) {
+          int recursionLimit = engine.getRecursionLimit();
+          if (recursionLimit > 0 && ai <= recursionLimit) {
+            // too large, use recursive evaluation
+            return hypergeometric1F1Recursive(ai, b, z);
+          } else {
+            RecursionLimitExceeded.throwIt(ai, F.Hypergeometric1F1(a, b, z));
+          }
+        }
       }
-      if (a.isNumEqualInteger(F.C2) && !b.isOne()) {
+
+      if (b.isOne()) {
+        if (a.isNumEqualRational(F.C1D2)) {
+          // LaguerreL(-1/2,z) //FunctionExpand
+          IExpr zTimesHalf = z.times(F.C1D2);
+          return F.Times(F.Exp(zTimesHalf), F.BesselI(F.C0, zTimesHalf));
+        }
+        if (ai < 0 && F.isPresent(ai)) {
+          // https://functions.wolfram.com/HypergeometricFunctions/Hypergeometric1F1/03/01/02/0010/
+          // LaguerreL(-a,z)
+          return F.LaguerreL(F.ZZ(ai), z);
+        }
+
+      } else if (a.isNumEqualInteger(F.C2)) {
         // (-1 + b)*(1 + (2 - b)*E^z*z^(1 - b)* (Gamma(-1 + b) - Gamma(-1 + b, z)) + E^z*z^(2 -
-        // b)*(Gamma(-1
-        // +
-        // b] - Gamma(-1 + b, z)))
+        // b)*(Gamma(-1 + b) - Gamma(-1 + b, z)))
         return F.Times(F.Plus(F.CN1, b),
             F.Plus(F.C1,
                 F.Times(F.Plus(F.C2, F.Negate(b)), F.Power(S.E, z),
@@ -977,6 +1177,29 @@ public class HypergeometricFunctions {
         }
       }
       return F.NIL;
+    }
+
+    private static IExpr hypergeometric1F1Recursive(int a, IExpr b, IExpr z) {
+      if (a == 0) {
+        // Hypergeometric1F1(0,b,z) = 1
+        return F.C1;
+      }
+      if (a == 1) {
+        if (b.isOne()) {
+          // Hypergeometric1F1(1,1,z) = E^z
+          return F.Exp(z);
+        }
+        // (-1+b)*E^n*n^(1-b)*(Gamma(-1+b)-Gamma(-1+b,n))
+        return F.Times(F.Plus(F.CN1, b), F.Exp(z), F.Power(z, F.Subtract(F.C1, b)),
+            F.Subtract(F.Gamma(F.Plus(F.CN1, b)), F.Gamma(F.Plus(F.CN1, b), z)));
+      }
+      // recursion Formula
+      // https://functions.wolfram.com/HypergeometricFunctions/Hypergeometric1F1/17/01/01/0002/
+      IInteger v2 = F.ZZ(a - 1);
+      IRational v1 = F.QQ(F.C1, v2);
+      return F.Plus(F.Times(F.Plus(F.C1, F.ZZ(-a), b), v1, hypergeometric1F1Recursive(a - 2, b, z)),
+          F.Times(v1, F.Plus(F.CN2, F.ZZ(2 * a), F.Negate(b), z),
+              hypergeometric1F1Recursive(a - 1, b, z)));
     }
 
     private static IExpr basicRewrite(IExpr a, IExpr b, IExpr z) {
@@ -1064,7 +1287,32 @@ public class HypergeometricFunctions {
 
   }
 
-  private static class Hypergeometric1F1Regularized extends AbstractFunctionEvaluator {
+
+  private static class Hypergeometric1F1Regularized extends AbstractFunctionEvaluator
+      implements IFunctionExpand, IMatch {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() == 3) {
+        IExpr y = ast.arg2();
+        if (ast.arg1().isRealResult() && ast.arg3().isRealResult()) {
+          return y.isPositiveResult() || (y.isReal() && !y.isInteger());
+        }
+      }
+      return false;
+    }
+
+    @Override
+    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+      if (ast.isAST3()) {
+        IExpr a = ast.arg1();
+        IExpr b = ast.arg2();
+        IExpr z = ast.arg3();
+        // Hypergeometric1F1(a,b,z)/Gamma(b)
+        return F.Times(F.Power(F.Gamma(b), F.CN1), F.Hypergeometric1F1(a, b, z));
+      }
+      return F.NIL;
+    }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -1126,7 +1374,9 @@ public class HypergeometricFunctions {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
+
   }
+
 
   private static class Hypergeometric2F1 extends AbstractFunctionEvaluator implements IMatch {
     @Override
@@ -1141,7 +1391,12 @@ public class HypergeometricFunctions {
       IExpr b = ast.arg2();
       IExpr c = ast.arg3();
       IExpr z = ast.arg4();
-      IExpr temp = basicRewrite(a, b, c, z, engine);
+      return hypergeometric2F1Symbolic(a, b, c, z, engine);
+    }
+
+    private static IExpr hypergeometric2F1Symbolic(IExpr a, IExpr b, IExpr c, IExpr z,
+        EvalEngine engine) {
+      IExpr temp = Hypergeometric2F1.basicRewrite(a, b, c, z, engine);
       if (temp.isPresent()) {
         return temp;
       }
@@ -1154,9 +1409,6 @@ public class HypergeometricFunctions {
             F.Power(F.Times(F.Power(F.Subtract(F.C1, z), b), c, F.Plus(F.CN1, z)), F.CN1),
             F.Plus(F.Negate(c), F.Times(F.CN1, b, z), F.Times(c, z)));
       }
-
-
-
       return F.NIL;
     }
 
@@ -1253,6 +1505,17 @@ public class HypergeometricFunctions {
             F.Power(F.Plus(F.C1, F.Sqrt(F.Subtract(F.C1, z))), F.Plus(F.C1, F.Times(F.CN2, b))),
             F.Power(F.Subtract(F.C1, z), F.CN1D2));
       }
+
+      int ai = a.toIntDefault();
+      if (ai < 0 && F.isPresent(ai)) {
+        int mi = -ai;
+        if (mi > 0 && c.isInteger() && c.isPositive()) {
+          // https://en.wikipedia.org/wiki/Hypergeometric_function#The_hypergeometric_series
+          IInteger m = F.ZZ(mi);
+          return F.sum(n -> F.Times(F.Power(F.CN1, n), F.Binomial(m, n), F.Pochhammer(b, n),
+              F.Power(F.Pochhammer(c, n), F.CN1), F.Power(z, n)), 0, mi);
+        }
+      }
       return F.NIL;
     }
 
@@ -1299,6 +1562,7 @@ public class HypergeometricFunctions {
     }
   }
 
+
   private static class Hypergeometric2F1Regularized extends AbstractFunctionEvaluator
       implements IMatch {
     @Override
@@ -1318,7 +1582,7 @@ public class HypergeometricFunctions {
 
     private static IExpr basicRewrite(IExpr a, IExpr b, IExpr c, IExpr z) {
       if (a.isZero() || b.isZero() || z.isZero()) {
-        if (!c.isPossibleZero(true,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+        if (!c.isPossibleZero(true, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
           // 1/Gamma(c)
           return F.Power(F.Gamma(c), F.CN1);
         }
@@ -1381,6 +1645,7 @@ public class HypergeometricFunctions {
     }
   }
 
+
   private static class HypergeometricPFQ extends AbstractFunctionEvaluator implements IMatch {
     @Override
     public IExpr match4(IAST ast, EvalEngine engine) {
@@ -1401,18 +1666,18 @@ public class HypergeometricFunctions {
     }
 
     private static IExpr hypergeometricPFQ(EvalEngine engine, IExpr a, IExpr b, IExpr z) {
+
       if (a.isList() && b.isList()) {
         if (z.isZero()) {
           return F.C1;
         }
-        if (a.equals(b)) {
-          // HypergeometricPFQ({b___},{b___},z_) := E^(z),
-          return F.Exp(z);
-        }
       }
 
       IAST aVector = F.NIL;
-      if (a.isVector() > 0) {
+      IAST bVector = F.NIL;
+      int aLength = a.isVector();
+      int bLength = b.isVector();
+      if (aLength > 0) {
         aVector = (IAST) a.normal(false);
         if (!aVector.isEvalFlagOn(IAST.IS_SORTED)) {
           IASTMutable aResult = aVector.copy();
@@ -1422,13 +1687,15 @@ public class HypergeometricFunctions {
           aVector.addEvalFlags(IAST.IS_SORTED);
         }
         a = aVector;
+      } else if (aLength == 0) {
+        aVector = F.CEmptyList;
       }
-      if (b.isVector() > 0) {
-        if (aVector.isPresent() && aVector.arg1().isZero()) {
+      if (bLength > 0) {
+        if (aVector.isPresent() && aLength > 0 && aVector.arg1().isZero()) {
           // https://functions.wolfram.com/HypergeometricFunctions/HypergeometricPFQ/03/01/03/0001/
           return F.C1;
         }
-        IAST bVector = (IAST) b.normal(false);
+        bVector = (IAST) b.normal(false);
         if (!bVector.isEvalFlagOn(IAST.IS_SORTED)) {
           IASTMutable bResult = bVector.copy();
           if (EvalAttributes.sortWithFlags(bResult)) {
@@ -1437,8 +1704,40 @@ public class HypergeometricFunctions {
           bVector.addEvalFlags(IAST.IS_SORTED);
         }
         b = bVector;
+      } else if (bLength == 0) {
+        bVector = F.CEmptyList;
       }
 
+      if (aVector.argSize() > 0 && bVector.argSize() > 0) {
+        if (aVector.arg1().isMathematicalIntegerNegative()) {
+          int n = aVector.arg1().toIntDefault();
+          if (F.isPresent(n) && n < 0) {
+            return hypergeometricPFQNegativeN(aVector, bVector, z, n, engine);
+          }
+        }
+        if (b.isList1()) {
+          if (a.isList1()) {
+            // there are rules in Hypergeometric1F1Rules.m - don't use direct call
+            return engine.evaluateNIL(F.Hypergeometric1F1(a.first(), b.first(), z));
+          }
+          if (a.isList2()) {
+            // there are rules in Hypergeometric2F1Rules.m - don't use direct call
+            return engine.evaluateNIL(F.Hypergeometric2F1(a.first(), a.second(), b.first(), z));
+          }
+        }
+        if (aVector.equals(bVector)) {
+          // HypergeometricPFQ({b___},{b___},z_) := E^(z),
+          return F.Exp(z);
+        }
+      } else if (aVector.argSize() == 0) {
+        if (bVector.argSize() == 0) {
+          return F.Exp(z);
+        }
+        if (bVector.argSize() == 1) {
+          // there are no rules for Hypergeometric0F1 - use direct call
+          return hyperGeometric0F1Symbolic(b.first(), z, engine);
+        }
+      }
       // numeric mode isn't set here
 
       if (a.argSize() > 0 && b.argSize() == a.argSize() - 1) {
@@ -1446,10 +1745,44 @@ public class HypergeometricFunctions {
           return F.Divide(F.PolyLog(F.ZZ(b.argSize()), z), z);
         }
       }
+
       if (z.isInexactNumber() || a.isInexactVector() > 0 || b.isInexactVector() > 0) {
         return numericHypergeometricPFQ(a, b, z, engine);
       }
       return F.NIL;
+    }
+
+    /**
+     * HypergeometricPFQ for negative integer n.
+     * <p>
+     * See <a href=
+     * "https://functions.wolfram.com/HypergeometricFunctions/HypergeometricPFQ/02/0002/">functions.wolfram.com
+     * - HypergeometricPFQ</a>
+     * 
+     * @param aVector
+     * @param bVector
+     * @param z
+     * @param n
+     * @param engine
+     * 
+     * @return
+     */
+    private static IExpr hypergeometricPFQNegativeN(IAST aVector, IAST bVector, IExpr z, int n,
+        EvalEngine engine) {
+      n = -n;
+      // Sum(Product(Pochhammer(Subscript(a,j),k)*z^k,{j,1,p})/Product(Pochhammer(Subscript(b,j),k)*k!,{j,
+      // 1,q}),{k,0,n})
+      int p = aVector.argSize();
+      int q = bVector.argSize();
+      ISymbol j1 = F.Dummy("j1");
+      ISymbol j2 = F.Dummy("j2");
+      ISymbol k = F.Dummy("k");
+      IAST p1 = F.Times(F.Power(z, k), //
+          F.Product(F.Pochhammer(F.Part(aVector, j1), k), F.list(j1, F.C1, F.ZZ(p))));
+      IAST p2 = F.Times(F.Factorial(k), //
+          F.Product(F.Pochhammer(F.Part(bVector, j2), k), F.list(j2, F.C1, F.ZZ(q))));
+      IAST sum = F.Sum(F.Times(p1, F.Power(p2, F.CN1)), F.list(k, F.C0, F.ZZ(n)));
+      return engine.evaluate(sum);
     }
 
     private static IExpr numericHypergeometricPFQ(IExpr a, IExpr b, IExpr c, EvalEngine engine) {
@@ -1500,6 +1833,7 @@ public class HypergeometricFunctions {
       super.setUp(newSymbol);
     }
   }
+
 
   private static class HypergeometricU extends AbstractFunctionEvaluator
       implements IMatch, IFunctionExpand {
@@ -1602,13 +1936,13 @@ public class HypergeometricFunctions {
       }
       try {
         {
-          IExpr n = engine.evaluate(F.Subtract(b, a));
-          if (n.isInteger()) {
-            if (n.isOne()) {
+          IExpr difference = engine.evaluate(F.Subtract(b, a));
+          if (difference.isInteger()) {
+            if (difference.isOne()) {
               // b==a+1 ==> z^(-a)
               return F.Power(z, a.negate());
             }
-            int nInt = n.toIntDefault();
+            int nInt = difference.toIntDefault();
             if (nInt > 0) {
               int nMinus1 = nInt - 1;
               // Sum((Binomial(-1+n, -1-k+n)*Pochhammer(a, k))/z^k, {k, 0, n-1}) / z^a
@@ -1662,16 +1996,17 @@ public class HypergeometricFunctions {
           // Complex zc = z.evalfc();
           // return F.complexNum(HypergeometricJS.hypergeometricU(ac, bc, zc));
         }
-
-        if (a.isInteger() && (!b.isNumber() || !z.isNumber())) {
-          IInteger ni = (IInteger) a;
-          int n = ni.toIntDefault();
-          if (F.isPresent(n)) {
-            if (n > 0) {
-              return hypergeometzricUPositiveAFixedBZ(ni, b, z, n, engine);
-            } else {
-              // n is negative here
-              return hypergeometzricUNegativeAFixedBZ(ni, b, z, engine);
+        if (a.isInteger()) {
+          if (!b.isNumber() || !z.isNumber()) {
+            IInteger ni = (IInteger) a;
+            int n = ni.toIntDefault();
+            if (F.isPresent(n)) {
+              if (n > 0) {
+                return hypergeometzricUPositiveAFixedBZ(ni, b, z, n, engine);
+              } else {
+                // n is negative here
+                return hypergeometzricUNegativeAFixedBZ(ni, b, z, engine);
+              }
             }
           }
         }
@@ -1754,7 +2089,12 @@ public class HypergeometricFunctions {
     }
   }
 
+
   private static class LogIntegral extends AbstractFunctionEvaluator { // implements INumeric,
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return (ast.argSize() == 1) && ast.arg1().isNonNegativeResult();
+    }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -1805,8 +2145,14 @@ public class HypergeometricFunctions {
     }
   }
 
+
   private static class SinIntegral extends AbstractFunctionEvaluator { // implements INumeric,
                                                                        // DoubleUnaryOperator {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return ast.argSize() == 1 && ast.arg1().isRealResult();
+    }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -1876,7 +2222,13 @@ public class HypergeometricFunctions {
     }
   }
 
+
   private static class SinhIntegral extends AbstractFunctionEvaluator {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return ast.argSize() == 1 && ast.arg1().isRealResult();
+    }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -1974,6 +2326,7 @@ public class HypergeometricFunctions {
     }
   }
 
+
   private static class WhittakerM extends AbstractFunctionEvaluator implements IMatch {
     @Override
     public IExpr match4(IAST ast, EvalEngine engine) {
@@ -2041,6 +2394,7 @@ public class HypergeometricFunctions {
     }
   }
 
+
   private static class WhittakerW extends AbstractFunctionEvaluator implements IMatch {
     @Override
     public IExpr numericFunction(IAST ast, EvalEngine engine) {
@@ -2098,6 +2452,36 @@ public class HypergeometricFunctions {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
+
+  }
+
+  public static IExpr hyperGeometric0F1Symbolic(IExpr b, IExpr z, EvalEngine engine) {
+    if (z.isZero()) {
+      return F.C1;
+    }
+    if (z.isInfinity()) {
+      return F.CComplexInfinity;
+    }
+    if (b.isRationalValue(F.C1D2)) {
+      if (z.isNegativeSigned()) {
+        // Hypergeometric0F1(1/2,z_) := Cos(2*Sqrt(z))
+        IExpr zNegate = z.negate();
+        return F.Cos(F.Times(F.C2, F.Sqrt(zNegate)));
+      }
+      // Hypergeometric0F1(1/2,z_) := Cosh(2*Sqrt(z))
+      return F.Cosh(F.Times(F.C2, F.Sqrt(z)));
+    }
+    if (b.isRationalValue(F.C3D2)) {
+      if (z.isNegativeSigned()) {
+        // Hypergeometric0F1(3/2,z_) := Sin(2*Sqrt(z))/(2*Sqrt(z))
+        IExpr v1 = F.Times(F.C2, F.Sqrt(z.negate()));
+        return F.Times(F.Power(v1, F.CN1), F.Sin(v1));
+      }
+      // Hypergeometric0F1(3/2,z_):= Sinh(2*Sqrt(z))/(2*Sqrt(z))
+      IExpr v1 = engine.evaluate(F.C2.times(F.Sqrt(z)));
+      return F.Times(F.Power(v1, F.CN1), F.Sinh(v1));
+    }
+    return F.NIL;
   }
 
   public static void initialize() {
