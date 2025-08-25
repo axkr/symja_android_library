@@ -173,8 +173,10 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(miae.getMessage())), engine);
     } catch (MathIllegalStateException mise) {
       if (mise.getSpecifier().equals(LocalizedCoreFormats.MAX_COUNT_EXCEEDED)) {
+        Object[] parts = mise.getParts();
         // Failed to converge to the requested accuracy or precision within `1` iterations.
-        return Errors.printMessage(ast.topHead(), "cvmit", F.list(F.$str("?")), engine);
+        return Errors.printMessage(ast.topHead(), "cvmit", F.list(F.$str(parts[0].toString())),
+            engine);
       }
       // `1`.
       return Errors.printMessage(ast.topHead(), "error", F.list(F.$str(mise.getMessage())), engine);

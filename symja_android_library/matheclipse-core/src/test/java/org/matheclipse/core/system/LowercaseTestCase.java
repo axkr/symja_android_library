@@ -8630,6 +8630,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindMaximum() {
+    // FindMaximum: Failed to converge to the requested accuracy or precision within 2 iterations.
+    check("FindMaximum(-Exp(-1/x^2)+1., {x,1.2}, MaxIterations->2)", //
+        "FindMaximum(1.0-1/E^(1/x^2),{x,1.2},MaxIterations->2)");
     check(
         "FindMaximum({2/3*x^2*Cos(x^2/3)+Sin(x^2/3), x>=-19.1 && x<=-19.05}, {x, -19.1}, Method -> \"ConjugateGradient\")", //
         "{226.2146,{x->-18.42096}}");
