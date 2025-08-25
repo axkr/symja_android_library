@@ -1613,7 +1613,7 @@ public class SeriesFunctions {
         if (ast.isAST2()) {
           variable = ast.arg2();
         }
-        ps = ps.reversion(variable);
+        ps = ps.reversion(variable, engine);
         if (ps != null) {
           return ps;
         }
