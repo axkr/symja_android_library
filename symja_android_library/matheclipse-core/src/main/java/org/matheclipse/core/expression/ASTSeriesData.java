@@ -1038,7 +1038,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    * <li>When a₀ = x₀: Standard Lagrange inversion formula</li>
    * <li>When a₀ ≠ x₀: Reversion with shift to handle constant term</li>
    * </ul>
-   * @param variable TODO
+   * 
+   * @param variable the variable to use in the resulting series
    *
    * @return the inverse series, or null if the inverse cannot be computed
    */
@@ -1085,9 +1086,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     // Standard Lagrange inversion
     for (int n = 1; n < truncate; n++) {
       IExpr lagrangeCoefficient = computeLagrangeCoefficient(n);
-      if (n % 2 == 0 && lagrangeCoefficient.isNegative()) {
-        lagrangeCoefficient = lagrangeCoefficient.negate();
-      }
+      // System.out.println("n=" + n + " coeff=" + lagrangeCoefficient);
       result.setCoeff(n, lagrangeCoefficient);
     }
 
@@ -1117,11 +1116,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     for (int n = 2; n < truncate; n++) {
       // Calculate the coefficient magnitude
       IExpr coeff = shiftedSeries.computeLagrangeCoefficient(n);
-
-      if (n % 2 == 0 && coeff.isPositive()) {
-        coeff = coeff.negate();
-      }
-
       result.setCoeff(n, coeff);
     }
 
@@ -1144,7 +1138,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     if (n == 2) {
       IExpr a1 = coefficient(1);
       IExpr a2 = coefficient(2);
-      return a2.negate().divide(a1.power(F.C3));
+      return a2.negate().divide(a1.power(3));
     }
 
     if (n == 3) {
@@ -1152,12 +1146,10 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       IExpr a2 = coefficient(2);
       IExpr a3 = coefficient(3);
 
-      IExpr term1 = a2.power(F.C2).multiply(F.C2);
-      IExpr term2 = a1.multiply(a3);
-      IExpr numerator = term1.subtract(term2);
+      // 2*a2^2-a1*a3
+      IExpr numerator = F.Plus(F.Times(F.C2, F.Sqr(a2)), F.Times(F.CN1, a1, a3));
       IExpr denominator = a1.power(F.C5);
-
-      return numerator.divide(denominator);
+      return EvalEngine.get().evaluate(F.Divide(numerator, denominator));
     }
 
     if (n == 4) {
@@ -1165,15 +1157,12 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       IExpr a2 = coefficient(2);
       IExpr a3 = coefficient(3);
       IExpr a4 = coefficient(4);
-
-      IExpr term1 = a2.power(F.C3).multiply(F.C5);
-      IExpr term2 = a1.multiply(a2).multiply(a3).multiply(F.C5);
-      IExpr term3 = a1.power(F.C2).multiply(a4);
-
-      IExpr numerator = term1.subtract(term2).add(term3);
+      // -5*a2^3+5*a1*a2*a3-a1^2*a4
+      IExpr numerator = F.Plus(F.Times(F.CN5, F.Power(a2, F.C3)), F.Times(F.C5, a1, a2, a3),
+          F.Times(F.CN1, F.Sqr(a1), a4));
       IExpr denominator = a1.power(F.C7);
 
-      return numerator.divide(denominator);
+      return EvalEngine.get().evaluate(F.Divide(numerator, denominator));
     }
 
     // For higher orders, use the general formula
@@ -1197,7 +1186,9 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     ASTSeriesData fDivXPowerNeg = fDivX.powerSeries(-n);
 
     // Extract the coefficient of x^(n-1) and divide by n
-    return fDivXPowerNeg.coefficient(n - 1).divide(F.ZZ(n));
+    IExpr lagrangeCoefficient = EvalEngine.get()
+        .evaluate(F.Together(F.ExpandAll(fDivXPowerNeg.coefficient(n - 1).divide(F.ZZ(n)))));
+    return lagrangeCoefficient;
   }
 
   /**

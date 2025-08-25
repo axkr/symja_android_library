@@ -63,6 +63,16 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testInverseSeries() {
+    check("Series(a1*x+a2*x^2+a3*x^3+a4*x^4+a5*x^5+a6*x^6+a7*x^7, {x, 0, 7})", //
+        "a1*x+a2*x^2+a3*x^3+a4*x^4+a5*x^5+a6*x^6+a7*x^7+O(x)^8");
+    check("InverseSeries(Series(a1*x+a2*x^2+a3*x^3+a4*x^4+a5*x^5+a6*x^6+a7*x^7, {x, 0, 3}))", //
+        "x/a1+(-a2*x^2)/a1^3+((2*a2^2-a1*a3)*x^3)/a1^5+O(x)^4");
+    check("InverseSeries(Series(a1*x+a2*x^2+a3*x^3+a4*x^4+a5*x^5+a6*x^6+a7*x^7, {x, 0, 6}))", //
+        "x/a1+(-a2*x^2)/a1^3+((2*a2^2-a1*a3)*x^3)/a1^5+((-5*a2^3+5*a1*a2*a3-a1^2*a4)*x^4)/a1^\n" //
+            + "7+((14*a2^4-21*a1*a2^2*a3+3*a1^2*a3^2+6*a1^2*a2*a4-a1^3*a5)*x^5)/a1^9+((-42*a2^5+\n" //
+            + "84*a1*a2^3*a3-28*a1^2*a2*a3^2-28*a1^2*a2^2*a4+7*a1^3*a3*a4+7*a1^3*a2*a5-a1^4*a6)*x^\n" //
+            + "6)/a1^11+O(x)^7");
+
     // TODO needs Puiseux/Laurent series to handle this
     check("InverseSeries(Series(x*Sin(x), {x, 0, 10}))", //
         "InverseSeries(x^2-x^4/6+x^6/120-x^8/5040+x^10/362880+O(x)^11)");
