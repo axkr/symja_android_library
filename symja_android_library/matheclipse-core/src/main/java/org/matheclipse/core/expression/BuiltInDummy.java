@@ -405,7 +405,11 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     }
 
     if (hasAssignedSymbolValue()) {
-      return IExpr.ofNullable(assignedValue());
+      IExpr rightHandSide= assignedValue();
+      if(rightHandSide.isNIL()) {
+        return F.NIL;
+      }
+      return ISymbol.evalAssignedValue(rightHandSide, engine);
     }
     return F.NIL;
   }

@@ -558,7 +558,72 @@ public class PatternMatchingTestCase {
   }
 
   @Test
+  public void testBlockPatternMatching() {
+    check("g[x_] := Block[{}, Return[a]; x /; x != 0]", //
+        "");
+    check("g[1]", //
+        "a");
+    check("g[0]", //
+        "a");
+    check("g[x_] := Block[{}, Print[a]; x /; x != 0]", //
+        "");
+    check("g[1]", //
+        "1");
+    check("g[0]", //
+        "g[0]");
+    check("f[x_,y_]:=Block[{w = False}, {x,y} /; TrueQ[w]]", //
+        "");
+    check("f[a,b]", //
+        "f[a,b]");
+    check("g[x_,y_]:=Block[{w = True}, {x,y} /; TrueQ[w]]", //
+        "");
+    check("g[a,b]", //
+        "{a,b}");
+    check("w", //
+        "w");
+  }
+
+  @Test
+  public void testModulePatternMatching() {
+    check("g[x_] := Module[{}, Return[a]; x /; x != 0]", //
+        "");
+    check("g[1]", //
+        "a");
+    check("g[0]", //
+        "a");
+    check("g[x_] := Module[{}, Print[a]; x /; x != 0]", //
+        "");
+    check("g[1]", //
+        "1");
+    check("g[0]", //
+        "g[0]");
+
+    check("f[x_,y_]:=Module[{w = False}, {x,y} /; TrueQ[w]]", //
+        "");
+    check("f[a,b]", //
+        "f[a,b]");
+    check("g[x_,y_]:=Module[{w = True}, {x,y} /; TrueQ[w]]", //
+        "");
+    check("g[a,b]", //
+        "{a,b}");
+    check("w", //
+        "w");
+  }
+
+  @Test
   public void testWithPatternMatching() {
+    check("g[x_] := With[{}, Return[a]; x /; x != 0]", //
+        "");
+    check("g[1]", //
+        "a");
+    check("g[0]", //
+        "a");
+    check("g[x_] := With[{}, Print[a]; x /; x != 0]", //
+        "");
+    check("g[1]", //
+        "1");
+    check("g[0]", //
+        "g[0]");
     check("f[x_,y_]:=With[{w = False}, {x,y} /; TrueQ[w]]", //
         "");
     check("f[a,b]", //
@@ -567,6 +632,8 @@ public class PatternMatchingTestCase {
         "");
     check("g[a,b]", //
         "{a,b}");
+    check("w", //
+        "w");
   }
 
 }

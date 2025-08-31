@@ -2261,13 +2261,14 @@ public final class PatternMatching {
         } else if (!originalLHS.isAST()) {
           originalLHS = F.HoldPattern(originalLHS);
         }
-        lhsSymbol.putDownRule(IPatternMatcher.SET, false, (IAST) originalLHS, rightHandSide,
-            packageMode);
+
         if (evaledLHS.isSymbol()) {
           ((ISymbol) evaledLHS).assignValue(rightHandSide, true);
+        } else {
+          lhsSymbol.putDownRule(IPatternMatcher.SET, false, (IAST) originalLHS, rightHandSide,
+              packageMode);
         }
-        // lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, (IAST) originalLHS,
-        // rightHandSide, packageMode);
+
 
       }
       return rightHandSide;
@@ -2329,10 +2330,12 @@ public final class PatternMatching {
       } else if (!originalLHS.isAST()) {
         originalLHS = F.HoldPattern(originalLHS);
       }
-      lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, (IAST) originalLHS,
-          rightHandSide, packageMode);
+
       if (evaledLHS.isSymbol()) {
         ((ISymbol) evaledLHS).assignValue(rightHandSide, true);
+      } else {
+        lhsSymbol.putDownRule(flags | IPatternMatcher.SET_DELAYED, false, (IAST) originalLHS,
+            rightHandSide, packageMode);
       }
     }
     return;

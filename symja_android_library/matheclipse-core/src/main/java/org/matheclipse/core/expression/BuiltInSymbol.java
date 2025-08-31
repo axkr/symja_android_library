@@ -25,8 +25,7 @@ import org.matheclipse.parser.client.ParserConfig;
 
 /** Implements Symbols for function, constant and variable names */
 public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
-  private static class DummyEvaluator extends AbstractSymbolEvaluator
-      implements ISymbolEvaluator {
+  private static class DummyEvaluator extends AbstractSymbolEvaluator implements ISymbolEvaluator {
 
     /**
      * Causes the current thread to wait until the INIT_THREAD has initialized the Integrate()
@@ -198,7 +197,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
       }
     }
     if (hasAssignedSymbolValue()) {
-      return assignedValue();
+      return ISymbol.evalAssignedValue(assignedValue(), engine);
     }
     return F.NIL;
   }

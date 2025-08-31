@@ -465,6 +465,8 @@ public class PatternsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testReplaceAll() {
+    check("f(x)/.x ->-x", //
+        "f(-x)");
     // example from https://en.wikipedia.org/wiki/Wolfram_Language
     // check(
     // "sortRule := {x___,y_,z_,k___} /; y>z -> {x,z,y,k}", //

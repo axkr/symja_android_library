@@ -3384,6 +3384,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCondition() {
+    // https://stackoverflow.com/questions/5866016
+    check("Condition(Print(x),False)", //
+        "Print(x)/;False");
+    check("f[x_]:=Condition(Print(x),False); f[a]", //
+        "f(a)");
+    check("g:=Condition(Print(x),False); g", //
+        "g");
+
     check("Cases({z(1, 1), z(-1, 1), z(-2, 2)}, z(x_ /; x < 0, y_))", //
         "{z(-1,1),z(-2,2)}");
 
@@ -13061,6 +13069,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLimit() {
+    // TODO
+    // check("Limit(1/Exp(-x + Exp(-x)) - Exp(x), x -> Infinity)", //
+    // "-1");
+
+    // issue #931
+    check("Limit((-1/E^x+E^x)/(E^x+E^(-x)),x -> Infinity)", //
+        "1");
+    check("Limit((-1+Sqrt(x))/Sqrt(-1+x), x -> Infinity)", //
+        "1");
+
     check("Limit(Sin(x)/x,x->Infinity)", //
         "0");
 
@@ -13107,12 +13125,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Limit(1-Sqrt(7-2*x+4*x^2)+2*x,x->Infinity)", //
         "3/2");
 
-
-    // issue #931
-    check("Limit((-1/E^x+E^x)/(E^x+E^(-x)),x -> Infinity)", //
-        "1");
-    check("Limit((-1+Sqrt(x))/Sqrt(-1+x), x -> Infinity)", //
-        "1");
 
     check("Limit(x^2*Sin(1/x)^3,x->0)", //
         "0");
@@ -21062,6 +21074,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRefine() {
+    check("Refine(Power(x^27,1/3),Element(x,Reals))", //
+        "(x^27)^(1/3)");
+
+    check("Refine(Sqrt(x^4),Element(x,Reals))", //
+        "x^2");
+
     check("Refine(Abs(Sin(x)), 0 < x < Pi)", //
         "Sin(x)");
 

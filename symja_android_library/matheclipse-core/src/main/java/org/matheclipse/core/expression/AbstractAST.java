@@ -4170,9 +4170,16 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public final boolean isModuleOrWithCondition() {
-    if ((head() == S.With && size() >= 3) || (head() == S.Module && size() == 3)) {
-      return (last().isCondition() || last().isModuleOrWithCondition());
+  public final boolean isBlockModuleOrWithCondition() {
+    if (size() >= 3 //
+        && ((head() == S.Block) //
+            || (head() == S.With) //
+            || (head() == S.Module && size() == 3))) {
+      IExpr last = last();
+      if (last.head() == S.CompoundExpression && size() > 1) {
+        return last.last().isBlockModuleOrWithCondition();
+      }
+      return (last.isCondition() || last().isBlockModuleOrWithCondition());
     }
     return false;
   }

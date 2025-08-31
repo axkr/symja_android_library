@@ -13,6 +13,7 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
+import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -1214,4 +1215,19 @@ public interface ISymbol extends IExpr {
    * @return <code>false</code> if the symbol contains no rule definition.
    */
   public boolean writeRules(java.io.ObjectOutputStream stream) throws java.io.IOException;
+
+  public static IExpr evalAssignedValue(IExpr rightHandSide, EvalEngine engine) {
+    if (rightHandSide.isCondition() || rightHandSide.isBlockModuleOrWithCondition()) {
+      boolean evalRHSMode = engine.isEvalRHSMode();
+      try {
+        engine.setEvalRHSMode(true);
+        return engine.evaluate(rightHandSide);
+      } catch (ConditionException cex) {
+        return F.NIL;
+      } finally {
+        engine.setEvalRHSMode(evalRHSMode);
+      }
+    }
+    return rightHandSide;
+  }
 }

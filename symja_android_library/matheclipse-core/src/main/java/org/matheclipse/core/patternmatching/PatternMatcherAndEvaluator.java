@@ -166,7 +166,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       return true;
     }
 
-    if (!(fRightHandSide.isCondition() || fRightHandSide.isModuleOrWithCondition())) {
+    if (!(fRightHandSide.isCondition() || fRightHandSide.isBlockModuleOrWithCondition())) {
       return true;
     } else {
       if (!patternMap.isAllPatternsAssigned()) {

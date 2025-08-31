@@ -412,7 +412,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public IExpr evaluate(EvalEngine engine) {
     if (hasAssignedSymbolValue()) {
-      return assignedValue();
+      return ISymbol.evalAssignedValue(assignedValue(), engine);
     }
     return evalDownRule(engine, this);
   }

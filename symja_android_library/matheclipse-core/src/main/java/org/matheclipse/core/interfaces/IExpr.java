@@ -3824,7 +3824,7 @@ public interface IExpr
     return false;
   }
 
-  default boolean isModuleOrWithCondition() {
+  default boolean isBlockModuleOrWithCondition() {
     return false;
   }
 
@@ -4924,8 +4924,9 @@ public interface IExpr
   }
 
   /**
-   * Returns <code>true</code> if <code>this</code> is free of any special symbols
-   * {@link S#Indeterminate}, {@link S#DirectedInfinity}, {@link S#ComplexInfinity}.
+   * Returns <code>true</code> if <code>this</code> is {@link #isPresent()} and free of any special
+   * symbols/functions {@link S#Indeterminate}, {@link S#DirectedInfinity},
+   * {@link S#ComplexInfinity}.
    */
   default boolean isSpecialsFree() {
     Predicate<IExpr> predicate = x -> x.equals(S.DirectedInfinity) || x.equals(S.Indeterminate);
