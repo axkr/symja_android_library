@@ -33,6 +33,9 @@ matcher.caseOf($(elimzeroplus,Plus(Times(w_DEFAULT,Sqrt(Plus(a_DEFAULT,Times(b_D
     // elimzeroplus(c_.+Log(b_.*x_)*x_^a_.,x_):=((-a*c)/ProductLog((-a*c)/((1/b))^a))^(1/a)/;FreeQ({a,b,c},x)
 matcher.caseOf($(elimzeroplus,Plus(c_DEFAULT,Times(Log(Times(b_DEFAULT,x_)),Power(x_,a_DEFAULT))),x_),
       Condition(Power(Times(CN1,a,c,Power(ProductLog(Times(CN1,a,Power(Power(Power(b,CN1),a),CN1),c)),CN1)),Power(a,CN1)),FreeQ(list(a,b,c),x)));
+    // elimzeroplus(Log(c_.*x_)*b_.+d_.+a_.*x_^n_.,x_):=((b*ProductLog((a*((1/(E^(d/b)*c)))^n*n)/b))/(a*n))^(1/n)/;FreeQ({a,b,c,d,n},x)
+matcher.caseOf($(elimzeroplus,Plus(Times(Log(Times(c_DEFAULT,x_)),b_DEFAULT),d_DEFAULT,Times(a_DEFAULT,Power(x_,n_DEFAULT))),x_),
+      Condition(Power(Times(b,Power(Times(a,n),CN1),ProductLog(Times(a,Power(b,CN1),Power(Power(Times(Exp(Times(Power(b,CN1),d)),c),CN1),n),n))),Power(n,CN1)),FreeQ(List(a,b,c,d,n),x)));
     // elimzeroplus(w_.*Sqrt(a_.+b_.*x_)+x_*y_.+z_.,x_):={(b*w^2-2*y*z-w*Sqrt(b^2*w^2+4*a*y^2-4*b*y*z))/(2*y^2),(b*w^2-2*y*z+w*Sqrt(b^2*w^2+4*a*y^2-4*b*y*z))/(2*y^2)}/;FreeQ({a,b,w,y,z},x)&&!PossibleZeroQ(y)
 matcher.caseOf($(elimzeroplus,Plus(Times(w_DEFAULT,Sqrt(Plus(a_DEFAULT,Times(b_DEFAULT,x_)))),Times(x_,y_DEFAULT),z_DEFAULT),x_),
       Condition(list(Times(Power(Times(C2,Sqr(y)),CN1),Plus(Times(b,Sqr(w)),Times(CN2,y,z),Times(CN1,w,Sqrt(Plus(Times(Sqr(b),Sqr(w)),Times(C4,a,Sqr(y)),Times(CN4,b,y,z)))))),Times(Power(Times(C2,Sqr(y)),CN1),Plus(Times(b,Sqr(w)),Times(CN2,y,z),Times(w,Sqrt(Plus(Times(Sqr(b),Sqr(w)),Times(C4,a,Sqr(y)),Times(CN4,b,y,z))))))),And(FreeQ(List(a,b,w,y,z),x),Not(PossibleZeroQ(y)))));

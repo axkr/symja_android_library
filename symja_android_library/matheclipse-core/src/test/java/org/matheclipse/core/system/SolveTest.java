@@ -2254,6 +2254,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSolveLog() {
+    check("Solve(a*x^n+b*Log(c*x)+d==0, x)", //
+        "{{x->((b*ProductLog((a*(1/(c*E^(d/b)))^n*n)/b))/(a*n))^(1/n)}}");
     check("Solve(x^a*Log(b*x)+c==0, x)", //
         "{{x->((-a*c)/ProductLog((-a*c)/((1/b))^a))^(1/a)}}");
     check("Solve(x^c*Log(x)==0, x)", //
