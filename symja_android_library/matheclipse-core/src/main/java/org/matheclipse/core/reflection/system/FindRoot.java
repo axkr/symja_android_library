@@ -441,13 +441,18 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
           IExpr result = optimizeSupplier.get();
           // engine.evalBlock(optimizeSupplier, list);
           return F.list(F.Rule(list.arg1(), result));
-        } catch (MathIllegalStateException miae) {
-          if (miae.getSpecifier() == LocalizedCoreFormats.CONVERGENCE_FAILED) {
-            // Failed to converge to the requested accuracy or precision within `1` iterations.
-            return Errors.printMessage(S.FindRoot, "cvmit", F.list(F.ZZ(maxIterations)), engine);
+        } catch (MathIllegalStateException mise) {
+          if (mise.getSpecifier() == LocalizedCoreFormats.CONVERGENCE_FAILED) {
+            Object[] parts = mise.getParts();
+            if (parts != null && parts.length >= 1) {
+              // Failed to converge to the requested accuracy or precision within `1` iterations.
+              return Errors.printMessage(S.FindRoot, "cvmit", F.list(F.$str(parts[0].toString())),
+                  engine);
+            }
+
           }
           // `1`.
-          return Errors.printMessage(S.FindRoot, "error", F.list(F.$str(miae.getMessage())),
+          return Errors.printMessage(S.FindRoot, "error", F.list(F.$str(mise.getMessage())),
               engine);
         } catch (MathRuntimeException mre) {
           if (mre.getSpecifier() == LocalizedCoreFormats.NOT_BRACKETING_INTERVAL
