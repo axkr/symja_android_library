@@ -4061,12 +4061,16 @@ public final class Arithmetic {
         // F.Power(baseTimes.rest().oneIdentity1(), exponent));
         // }
       } else if (base.isPower()) {
-        if (base.exponent().isReal() && exponent.isReal()) {
+        // (a ^ b ) ^ c
+        if (exponent.isInteger() || (base.exponent().isReal() && exponent.isReal())) {
           IExpr baseBase = base.base();
           IExpr baseExponent = base.exponent();
           IExpr temp = baseExponent.times(exponent);
-          if (temp.isOne()) {
-            if (baseExponent.isNumEqualInteger(C2)) {
+          if (temp.isInteger()) {
+            final IInteger n = (IInteger) temp;
+            // (a^b)^c => a^(b*c) where b*c is an integer n
+            if (baseExponent.isNumEqualInteger(C2) && n.isOne()) {
+              // Sqrt(x)^2 ==> x
               if (baseBase.isRePositiveResult()) {
                 return baseBase;
               }
@@ -4074,13 +4078,11 @@ public final class Arithmetic {
                 return F.Negate(baseBase);
               }
             }
-            // (a ^ b )^exponent => a ^ (b * exponent) && b*exponent==1
             if (baseBase.isNonNegativeResult()) {
-              return baseBase;
+              return F.Power(baseBase, n);
             }
-            if (baseBase.isRealResult() && //
-                base.exponent().isEvenResult()) {
-              return F.Abs(baseBase);
+            if (baseBase.isRealResult() && base.exponent().isEvenResult()) {
+              return F.Power(F.Abs(baseBase), n);
             }
           }
         }
@@ -4246,7 +4248,7 @@ public final class Arithmetic {
       if (exponentArg1.isReal() && baseArg1.isNonNegativeResult()) {
         return true;
       }
-      if (exponent.isRational() && exponentArg1.isFraction() && exponentArg1.isRational()) {
+      if (exponent.isRational() && exponentArg1.isFraction()) {
         return true;
       }
       if (exponent.isNumIntValue() && exponent.isPositive()) {
