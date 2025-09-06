@@ -284,7 +284,8 @@ public final class BooleanFunctions {
         if (a.phase()) {
           return mapToSymbol(a.variable());
         }
-        return F.Not(mapToSymbol(a.variable()));
+        IExpr expr = mapToSymbol(a.variable());
+        return F.Not(expr);
       }
       // illegal arguments: \"`1`\" in `2`
       String str = Errors.getMessage("argillegal",
@@ -427,6 +428,12 @@ public final class BooleanFunctions {
               if (ast.isNot()) {
                 IExpr expr = ast.arg1();
                 return factory.not(expr2LogicNGFormula(expr, substituteExpressions));
+              }
+              break;
+            case ID.NotElement:
+              if (ast.isAST(S.NotElement, 3)) {
+                return factory.not(
+                    expr2LogicNGFormula(F.Element(ast.arg1(), ast.arg2()), substituteExpressions));
               }
               break;
             case ID.Slot:
@@ -4023,6 +4030,10 @@ public final class BooleanFunctions {
                 return temp.apply(S.GreaterEqual);
               case ID.LessEqual:
                 return temp.apply(S.Greater);
+              case ID.Element:
+                return temp.apply(S.NotElement);
+              case ID.NotElement:
+                return temp.apply(S.Element);
               default:
                 break;
             }

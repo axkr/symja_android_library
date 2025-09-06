@@ -318,6 +318,11 @@ public class BooleanTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testBooleanMinimize() {
+    check("BooleanMinimize(x>0&&Not(x<4))", //
+        "x>0&&x>=4");
+    check("BooleanMinimize(x>0&&NotElement(x,Integers))", //
+        "x>0&&x∉Integers");
+
     check("BooleanMinimize((x+1)&&(x+1))", //
         "1+x");
 
