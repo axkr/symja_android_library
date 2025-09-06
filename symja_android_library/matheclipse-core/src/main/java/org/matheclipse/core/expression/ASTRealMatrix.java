@@ -341,7 +341,7 @@ public final class ASTRealMatrix extends AbstractAST
   @Override
   public final IExpr getPart(final int... positions) {
     if (positions.length == 2) {
-      return F.num(matrix.getEntry(positions[0], positions[1]));
+      return F.num(matrix.getEntry(positions[0] - 1, positions[1] - 1));
     }
     return super.getPart(positions);
   }

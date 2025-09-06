@@ -330,6 +330,14 @@ public final class ASTRealVector extends AbstractAST
     return vector.getEntry(location - 1);
   }
 
+  @Override
+  public final IExpr getPart(final int... positions) {
+    if (positions.length == 1) {
+      return F.num(vector.getEntry(positions[0] - 1));
+    }
+    return super.getPart(positions);
+  }
+
   public RealVector getRealVector() {
     return vector;
   }
