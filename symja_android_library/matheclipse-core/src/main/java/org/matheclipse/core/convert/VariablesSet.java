@@ -411,14 +411,28 @@ public class VariablesSet {
   }
 
   /**
-   * Searches the set for the specified object.
-   *
-   * @param o
-   * @return
-   * @see java.util.Set#contains(java.lang.Object)
+   * Reduce the given list of allowed variables to the variables which are in the internal set of
+   * this VariablesSet.
+   * 
+   * @param allowedVariables an IAST list of allowed variables
    */
-  public boolean contains(IExpr o) {
-    return fVariablesSet.contains(o);
+  public IAST reduceVariables(IAST allowedVariables) {
+    IASTAppendable result = F.ListAlloc();
+    for (int i = 1; i < allowedVariables.size(); i++) {
+      if (fVariablesSet.contains(allowedVariables.get(i))) {
+        result.append(allowedVariables.get(i));
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns <code>true</code> if this variables set contains the specified variable.
+   *
+   * @param variable
+   */
+  public boolean contains(IExpr variable) {
+    return fVariablesSet.contains(variable);
   }
 
   /**

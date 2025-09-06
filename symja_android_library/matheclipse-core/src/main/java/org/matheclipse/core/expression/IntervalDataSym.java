@@ -191,11 +191,13 @@ public class IntervalDataSym {
           continue;
         }
         if (max.isInfinity()) {
-          result.append(F.binaryAST2(minLess, min, x));
+          // let's write the variable on the left-hand-side for normalization
+          result.append(F.binaryAST2(minLess == S.Less ? S.Greater : S.GreaterEqual, x, min));
           continue;
         }
+        // let's write the variable on the left-hand-side for normalization
         result.append(//
-            F.And(F.binaryAST2(minLess, min, x), //
+            F.And(F.binaryAST2(minLess == S.Less ? S.Greater : S.GreaterEqual, x, min), //
                 F.binaryAST2(maxLess, x, max)));
       }
       return result;
@@ -656,22 +658,14 @@ public class IntervalDataSym {
         F.num(h.nextUp(apfloat)));
   }
 
-  /**
-   * Rewrite an interval in terms of inequalities and logic operators.
-   * 
-   * @param andCopy
-   * @param interval
-   * @param variable
-   * @return
-   */
-  public static IExpr intervalToOr(IAST andCopy, IAST interval, IExpr variable) {
+  public static IExpr intervalToOr(IAST andTemplate, IAST interval, IExpr variable) {
     IASTAppendable orAST = F.ast(S.Or, interval.argSize());
     for (int i = 1; i < interval.size(); i++) {
       IAST list = (IAST) interval.get(i);
       if (list.isEmptyList() || list.argSize() != 4) {
         return S.False;
       }
-      IASTAppendable andArg = andCopy.copyAppendable();
+      IASTAppendable andArg = andTemplate.copyAppendable();
       if (list.arg1().isNegativeInfinity()) {
         if (list.arg4().isInfinity()) {
           //
@@ -692,7 +686,10 @@ public class IntervalDataSym {
             && list.arg3() == S.LessEqual) {
           andArg.append(F.binaryAST2(S.Equal, variable, list.arg1()));
         } else {
-          andArg.append(F.binaryAST2(list.arg2(), list.arg1(), variable));
+          //
+          // let's write the variable on the left-hand-side for normalization
+          andArg.append(F.binaryAST2(list.arg2() == S.Less ? S.Greater : S.GreaterEqual, variable,
+              list.arg1()));
           andArg.append(F.binaryAST2(list.arg3(), variable, list.arg4()));
         }
       }
@@ -1215,6 +1212,14 @@ public class IntervalDataSym {
       }
     }
 
+    return F.NIL;
+  }
+
+  public static IExpr normalizeExpr(final IAST inequality, IExpr variable, EvalEngine engine) {
+    IExpr intervalData = toIntervalData(inequality, variable, engine);
+    if (intervalData.isIntervalData()) {
+      return IntervalDataSym.intervalToOr((IAST) intervalData, variable);
+    }
     return F.NIL;
   }
 
@@ -2155,14 +2160,28 @@ public class IntervalDataSym {
    */
   public static IExpr toIntervalData(final IExpr logicOrDomainExpr, final IExpr variable,
       final EvalEngine engine) {
-    if (logicOrDomainExpr.isOr()) {
+    if (logicOrDomainExpr.isASTSizeGE(S.Or, 2)) {
       IAST orAST = (IAST) logicOrDomainExpr;
+      if (orAST.argSize() == 1) {
+        return toIntervalData(orAST.arg1(), variable, engine);
+      }
       IExpr orInterval = orAST.mapThread(x -> toIntervalData(x, variable, engine));
       if (orInterval.isOr()) {
         return IntervalDataSym.intervalDataUnion((IAST) orInterval, engine);
       }
-    } else if (logicOrDomainExpr.isAnd()) {
+    } else if (logicOrDomainExpr.isASTSizeGE(S.And, 2)) {
       IAST andAST = (IAST) logicOrDomainExpr;
+      if (andAST.argSize() == 1) {
+        return toIntervalData(andAST.arg1(), variable, engine);
+      }
+      // IASTAppendable list = F.ast(S.IntervalData, andAST.argSize());
+      // for (int i = 1; i < andAST.size(); i++) {
+      // IExpr temp = toIntervalData(andAST.get(i), variable, engine);
+      // if (temp.isNIL()) {
+      // return F.NIL;
+      // }
+      // list.append(temp);
+      // }
       IExpr andInterval = andAST.mapThread(x -> toIntervalData(x, variable, engine));
       if (andInterval.isAnd()) {
         return IntervalDataSym.intervalDataIntersection((IAST) andInterval, engine);

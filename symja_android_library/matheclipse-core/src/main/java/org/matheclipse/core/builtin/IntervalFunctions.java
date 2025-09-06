@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -88,9 +89,13 @@ public class IntervalFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isEvalFlagOff(IAST.BUILT_IN_EVALED)) {
-        IAST result = IntervalSym.normalize(ast, engine);
-        if (result.isPresent()) {
-          return result;
+        try {
+          IAST result = IntervalSym.normalize(ast, engine);
+          if (result.isPresent()) {
+            return result;
+          }
+        } catch (ArgumentTypeException ate) {
+          return S.$Failed;
         }
       }
       return F.NIL;

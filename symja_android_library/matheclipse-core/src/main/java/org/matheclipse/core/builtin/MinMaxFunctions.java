@@ -31,6 +31,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.exception.JASConversionException;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -65,35 +66,6 @@ import com.google.common.base.Suppliers;
  * various mathematical functions.
  */
 public class MinMaxFunctions {
-  private static final Logger LOGGER = LogManager.getLogger(MinMaxFunctions.class);
-
-  /**
-   * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
-   * in static initializer</a>
-   */
-  private static class Initializer {
-
-    /**
-     * The init method sets the evaluators for various mathematical functions.
-     */
-    private static void init() {
-      S.ArgMax.setEvaluator(new ArgMax());
-      S.ArgMin.setEvaluator(new ArgMin());
-      S.FunctionDomain.setEvaluator(new FunctionDomain());
-      S.FunctionPeriod.setEvaluator(new FunctionPeriod());
-      S.FunctionRange.setEvaluator(new FunctionRange());
-      S.Maximize.setEvaluator(new Maximize());
-      S.Minimize.setEvaluator(new Minimize());
-      S.NMaximize.setEvaluator(new NMaximize());
-      S.NMinimize.setEvaluator(new NMinimize());
-
-      S.NArgMax.setEvaluator(new NArgMax());
-      S.NArgMin.setEvaluator(new NArgMin());
-      S.NMaxValue.setEvaluator(new NMaxValue());
-      S.NMinValue.setEvaluator(new NMinValue());
-    }
-  }
-
   /**
    *
    *
@@ -142,65 +114,13 @@ public class MinMaxFunctions {
     }
 
     @Override
-    public int status() {
-      return ImplementationStatus.FULL_SUPPORT;
-    }
-
-    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
-    }
-  }
-
-  /**
-   * The NArgMax function is used to find the values of the variables that maximize the given
-   * function.
-   */
-  private static class NArgMax extends AbstractFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr maximize = engine.evaluate(F.NMaximize(ast.arg1(), ast.arg2()));
-      if (maximize.isList2() && maximize.second().isListOfRules()) {
-        IAST listOfRules = (IAST) maximize.second();
-        return listOfRules.map(x -> x.second());
-      }
-      return F.NIL;
     }
 
     @Override
     public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-  }
-
-  /**
-   * The NMaxValue function is used to find the maximum value for the given function.
-   */
-  private static class NMaxValue extends AbstractFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr maximize = engine.evaluate(F.NMaximize(ast.arg1(), ast.arg2()));
-      if (maximize.isList2() && maximize.second().isListOfRules()) {
-        return maximize.first();
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ImplementationStatus.FULL_SUPPORT;
     }
   }
 
@@ -252,88 +172,492 @@ public class MinMaxFunctions {
     }
 
     @Override
-    public int status() {
-      return ImplementationStatus.FULL_SUPPORT;
-    }
-
-    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
-  }
-
-  /**
-   * The NArgMin function is used to find the values of the variables that minimize the given
-   * function.
-   */
-  private static class NArgMin extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr minimize = engine.evaluate(F.NMinimize(ast.arg1(), ast.arg2()));
-      if (minimize.isList2() && minimize.second().isListOfRules()) {
-        IAST listOfRules = (IAST) minimize.second();
-        return listOfRules.map(x -> x.second());
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
+    }
+  }
+
+  private static final class FunctionDomain extends AbstractFunctionEvaluator {
+    private static final class ComplexesDomain {
+      IAST variables;
+      EvalEngine engine;
+
+      public ComplexesDomain(IAST variables, EvalEngine engine) {
+        this.variables = variables;
+        this.engine = engine;
       }
-      return F.NIL;
-    }
 
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
+      /**
+       * Recursively determine the domain of a function over the complexes as a logical expression.
+       *
+       * @param expr the expression to find the domain for.
+       * @param variables the variables in the expression.
+       * @param engine the evaluation engine.
+       * @return a logical expression representing the domain, or {@link F#NIL} if no constraints
+       *         are found.
+       */
+      private IExpr complexesDomain(IExpr expr) {
+        if (expr.isFree(x -> variables.contains(x), false)) {
+          return F.NIL;
+        }
 
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-  }
+        if (expr.isAST()) {
+          IAST ast = (IAST) expr;
+          IASTAppendable andConditions = F.And();
 
-  /**
-   * The NMinValue function is used to find the minimum value for the given function.
-   */
-  private static class NMinValue extends AbstractFunctionEvaluator {
+          // Recurse on arguments
+          for (IExpr arg : ast) {
+            IExpr argDomain = complexesDomain(arg);
+            if (argDomain.isPresent()) {
+              andConditions.append(argDomain);
+            }
+          }
 
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr minimize = engine.evaluate(F.NMinimize(ast.arg1(), ast.arg2()));
-      if (minimize.isList2() && minimize.second().isListOfRules()) {
-        return minimize.first();
+          // Add constraints from the head of the expression
+          if (ast.isPower()) {
+            IExpr base = ast.arg1();
+            IExpr exponent = ast.arg2();
+            // base!=0||Re(exponent)>0
+            andConditions.append(F.Or(F.Unequal(base, F.C0), F.Greater(F.Re(exponent), F.C0)));
+          } else if (ast.isTimes()) {
+            Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(ast, false);
+            if (parts.isPresent()) {
+              IExpr denominator = parts.get()[1];
+              if (!denominator.isOne()) {
+                andConditions.append(F.Unequal(denominator, F.C0));
+              }
+            }
+          } else {
+            int headID = ast.headID();
+            if (headID >= 0) {
+              int argSize = ast.argSize();
+              if (argSize == 1) {
+                arg1ComplexesDomain(ast, andConditions, headID);
+              }
+            }
+          }
+
+          if (andConditions.isAST0()) {
+            return S.True;
+          }
+          if (andConditions.isAST1()) {
+            return andConditions.arg1();
+          }
+          return andConditions;
+        }
+
+        return F.NIL;
       }
-      return F.NIL;
+
+      private void arg1ComplexesDomain(IAST ast, IASTAppendable andConditions, int headID) {
+        IExpr z = ast.arg1();
+        switch (headID) {
+
+          case ID.Cos:
+          case ID.Sin:
+            break;
+          case ID.Cot:
+          case ID.Csc:
+            // arg != k * Pi
+            andConditions.append(F.NotElement(F.Times(z, F.Power(S.Pi, F.CN1)), S.Integers));
+            break;
+          case ID.Coth:
+          case ID.Csch:
+            // -I*z / Pi is not an integer
+            andConditions.append(F.NotElement(F.Times(F.CNI, z, F.Power(S.Pi, F.CN1)), S.Integers));
+            break;
+          case ID.Tan:
+          case ID.Sec:
+            // arg != (k + 1/2) * Pi
+            andConditions
+                .append(F.NotElement(F.Plus(F.C1D2, F.Times(z, F.Power(S.Pi, F.CN1))), S.Integers));
+            break;
+          case ID.Tanh:
+            // 1/2+(-I*z)/Pi∉Integers
+            andConditions.append(
+                F.NotElement(F.Plus(F.C1D2, F.Times(F.CNI, F.Power(F.Pi, F.CN1), z)), F.Integers));
+            break;
+          case ID.ArcTan:
+          case ID.ArcCot:
+            andConditions.append(F.Unequal(z, F.CI));
+            andConditions.append(F.Unequal(z, F.CNI));
+            break;
+          case ID.ArcTanh:
+          case ID.ArcCoth:
+            andConditions.append(F.Unequal(z, F.C1));
+            andConditions.append(F.Unequal(z, F.CN1));
+            break;
+          case ID.ArcCsch:
+          case ID.ArcSech:
+          case ID.Log:
+            andConditions.append(F.Unequal(z, F.C0));
+            break;
+          case ID.Gamma:
+            // z is not a non-positive integer
+            andConditions.append(F.Or(F.Greater(F.Re(z), F.C0), F.NotElement(z, S.Integers)));
+            break;
+          default:
+        }
+      }
     }
 
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
+    private static final class RealsDomain {
+      IAST variables;
+      EvalEngine engine;
 
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-  }
+      public RealsDomain(IAST variables, EvalEngine engine) {
+        this.variables = variables;
+        this.engine = engine;
+      }
 
-  private static final class FunctionRange extends AbstractFunctionEvaluator {
-    private static Supplier<Matcher> LAZY_MATCHER;
+      /**
+       * Recursively determine the domain of a function as a logical expression.
+       *
+       * @param expr the expression to find the domain for.
+       * @param variables the variables in the expression.
+       * @param engine the evaluation engine.
+       * @return a logical expression representing the domain, or {@link F#NIL} if no constraints
+       *         are found.
+       */
+      private IExpr realsDomain(IExpr expr) {
+        if (expr.isFree(x -> variables.contains(x), false)) {
+          return F.NIL;
+        }
 
-    private static class Initializer {
+        if (expr.isAST()) {
+          IAST ast = (IAST) expr;
+          IASTAppendable andConditions = F.And();
 
-      private static Matcher init() {
-        Matcher MATCHER = new Matcher();
-        IAST list = FunctionRangeRules.RULES;
+          // Recurse on arguments
+          for (IExpr arg : ast) {
+            IExpr argDomain = realsDomain(arg);
+            if (argDomain.isPresent()) {
+              andConditions.append(argDomain);
+            }
+          }
 
-        for (int i = 1; i < list.size(); i++) {
-          IExpr arg = list.get(i);
-          if (arg.isAST(S.SetDelayed, 3)) {
-            MATCHER.caseOf(arg.first(), arg.second());
-          } else if (arg.isAST(S.Set, 3)) {
-            MATCHER.caseOf(arg.first(), arg.second());
+          // Add constraints from the head of the expression
+          if (ast.isPower()) {
+            IExpr x = ast.arg1();
+            IExpr n = ast.arg2();
+            boolean evaled = false;
+            if (!n.isFree(variables)) {
+              // Case f(x)^g(x) -> requires f(x) > 0
+              if (!x.isFree(variables)) {
+                andConditions.append(F.Greater(x, F.C0));
+                evaled = true;
+              }
+            } else {
+              if (n.isIntegerResult()) {
+                if (n.isNegativeResult()) {
+                  IExpr denominator = x;
+                  if (variables.argSize() == 1) {
+                    IExpr rootsCondition = roots(denominator, variables.arg1(), engine);
+                    if (rootsCondition.isPresent()) {
+                      andConditions.append(rootsCondition);
+                      evaled = true;
+                    }
+                  } else {
+                    // Case f(x)^-n -> requires f(x) != 0
+                    andConditions.append(F.Unequal(x, F.C0));
+                    evaled = true;
+                  }
+                }
+              } else if (n.isFraction()) {
+                // Case f(x)^(p/q)
+                IFraction frac = (IFraction) n;
+                if (frac.denominator().isEven()) {
+                  // requires f(x) >= 0
+                  andConditions.append(F.GreaterEqual(x, F.C0));
+                  evaled = true;
+                }
+              } else {
+
+                // Case f(x)^y, y is non-integer constant -> requires f(x) >= 0
+                andConditions.append(F.GreaterEqual(x, F.C0));
+                evaled = true;
+              }
+            }
+            if (!evaled) {
+              // (n∈Integers&&x!=0)||(n∈Integers&&n>=1)||(x>=0&&n>0)||x>0
+              andConditions.append(F.Or(F.And(F.Element(n, F.Integers), F.Unequal(x, F.C0)),
+                  F.And(F.Element(n, F.Integers), F.GreaterEqual(n, F.C1)),
+                  F.And(F.GreaterEqual(x, F.C0), F.Greater(n, F.C0)), F.Greater(x, F.C0)));
+            }
+          } else {
+            int headID = ast.headID();
+            if (headID >= 0) {
+              int argSize = ast.argSize();
+              if (argSize == 1) {
+                arg1RealsDomain(ast, andConditions, headID);
+              } else if (argSize == 2) {
+
+              }
+            }
+          }
+
+          if (andConditions.isAST0()) {
+            return S.True;
+          }
+          if (andConditions.isAST1()) {
+            return andConditions.arg1();
+          }
+          return andConditions;
+        }
+
+        return F.NIL;
+      }
+
+      private void arg1RealsDomain(IAST ast, IASTAppendable andConditions, int headID) {
+        IExpr x = ast.arg1();
+        IAST ineq;
+        switch (headID) {
+          case ID.ArcCot:
+          case ID.ArcTan:
+          case ID.ArcSinh:
+          case ID.Cos:
+          case ID.Cosh:
+          case ID.Sin:
+          case ID.Sinh:
+          case ID.Sech:
+          case ID.Tanh:
+            break;
+          case ID.ArcCos:
+          case ID.ArcSin:
+            // ineq = F.LessEqual(F.CN1, x, F.C1);
+            ineq = F.And(F.GreaterEqual(x, F.CN1), F.LessEqual(x, F.C1));
+            andConditions.append(reduceRelation(ineq).orElse(ineq));
+            break;
+          case ID.ArcCsc:
+          case ID.ArcSec:
+            ineq = F.Or(F.LessEqual(x, F.CN1), F.GreaterEqual(x, F.C1));
+            andConditions.append(reduceRelation(ineq).orElse(ineq));
+            break;
+          case ID.ArcCosh:
+            ineq = F.GreaterEqual(x, F.C1);
+            andConditions.append(reduceRelation(ineq).orElse(ineq));
+            break;
+          case ID.ArcCoth:
+            ineq = F.Or(F.Less(x, F.CN1), F.Greater(x, F.C1));
+            andConditions.append(reduceRelation(ineq).orElse(ineq));
+            break;
+          case ID.ArcCsch:
+            ineq = F.Or(F.Less(x, F.C0), F.Greater(x, F.C0));
+            andConditions.append(reduceRelation(ineq).orElse(ineq));
+            break;
+          case ID.ArcSech:
+            ineq = F.And(F.Greater(x, F.C0), F.LessEqual(x, F.C1));
+            andConditions.append(reduceRelation(ineq).orElse(ineq));
+            break;
+          case ID.ArcTanh:
+            ineq = F.And(F.Greater(x, F.CN1), F.Less(x, F.C1));
+            andConditions.append(reduceRelation(ineq).orElse(ineq));
+            break;
+          case ID.Cot:
+            // x != k * Pi
+            andConditions.append(F.NotElement(F.Times(x, F.Power(S.Pi, F.CN1)), S.Integers));
+            break;
+          case ID.Coth:
+          case ID.Csch:
+            // x != 0
+            ineq = F.Greater(F.Or(F.Greater(x, F.C0), F.Less(x, F.C0)), F.C0);
+            andConditions.append(reduceRelation(ineq).orElse(ineq));
+            break;
+          case ID.Csc:
+            // x != k * Pi
+            andConditions.append(F.NotElement(F.Times(x, F.Power(S.Pi, F.CN1)), S.Integers));
+            break;
+          case ID.Gamma:
+            // x>0||x∉Integers
+            andConditions.append(F.Or(F.Greater(x, F.C0), F.NotElement(x, F.Integers)));
+            break;
+          case ID.Log:
+            ineq = F.Greater(x, F.C0);
+            andConditions.append(reduceRelation(ineq).orElse(ineq));
+            break;
+          case ID.Sec:
+            // x != (k + 1/2) * Pi
+            andConditions
+                .append(F.NotElement(F.Plus(F.C1D2, F.Times(x, F.Power(S.Pi, F.CN1))), S.Integers));
+            break;
+          case ID.Tan:
+            // x != (k + 1/2) * Pi
+            andConditions
+                .append(F.NotElement(F.Plus(F.C1D2, F.Times(x, F.Power(S.Pi, F.CN1))), S.Integers));
+            break;
+        }
+      }
+
+      private IExpr reduceRelation(IAST gt) {
+        VariablesSet vset = new VariablesSet(gt);
+        IAST reduceVariables = vset.reduceVariables(variables);
+        if (reduceVariables.argSize() == 1) {
+          final IExpr variable = reduceVariables.arg1();
+          IExpr intervalData = IntervalDataSym.toIntervalData(gt, variable, engine);
+          if (intervalData.isPresent()) {
+            IExpr interval = engine.evaluate(intervalData);
+            if (interval.isIntervalData() && interval.argSize() > 0) {
+              IExpr intervalToOr = IntervalDataSym.intervalToOr((IAST) interval, variable);
+              if (intervalToOr.isPresent()) {
+                return intervalToOr;
+              }
+            }
           }
         }
-        return MATCHER;
+        return F.NIL;
       }
+
     }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr function = ast.arg1();
+      // IExpr vars = ast.arg2();
+
+      final IAST variables =
+          Validate.checkIsVariableOrVariableList(ast, 2, S.FunctionDomain, engine);
+      if (variables.isNIL()) {
+        return F.NIL;
+      }
+      //
+      // if (!vars.isList()) {
+      // if (!vars.isVariable()) {
+      // return F.NIL;
+      // }
+      // variables = vars.makeList();
+      // } else {
+      // variables = (IAST) vars;
+      // }
+
+      IBuiltInSymbol domain = S.Reals;
+      try {
+        VariablesSet vset = new VariablesSet(variables);
+        if (vset.isEmpty()) {
+          return S.True;
+        }
+
+        if (ast.isAST3()) {
+          if (ast.arg3() == S.Complexes) {
+            domain = S.Complexes;
+          } else if (ast.arg3() == S.Complexes) {
+            domain = S.Reals;
+          } else {
+            domain = null;
+          }
+        }
+
+        if (domain != null && function.isNumericFunction(vset)) {
+          IExpr result = F.NIL;
+          if (domain.equals(S.Complexes)) {
+            ComplexesDomain cd = new ComplexesDomain(variables, engine);
+            result = cd.complexesDomain(function);
+            if (result.isPresent()) {
+              return engine.evaluate(result);
+            }
+          } else {
+            RealsDomain rd = new RealsDomain(variables, engine);
+            result = rd.realsDomain(function);
+            if (result.isPresent()) {
+              result = engine.evaluate(result);
+              if (variables.argSize() == 1) {
+                result = IntervalDataSym
+                    .normalizeExpr(result.makeAST(S.And), variables.arg1(), engine).orElse(result);
+              }
+              return result;
+            }
+          }
+
+        }
+
+      } catch (ArgumentTypeStopException atse) {
+        if (Config.SHOW_STACKTRACE) {
+          atse.printStackTrace();
+        }
+        // Unable to find the domain with the available methods.
+        return Errors.printMessage(S.FunctionDomain, "nmet", F.CEmptyList, engine);
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
+    private static IExpr roots(IExpr denominator, IExpr x, EvalEngine engine)
+        throws ArgumentTypeStopException {
+      IExpr roots = RootsFunctions.roots(denominator, false, x.makeList(), engine);
+      if (roots.isNonEmptyList()) {
+        IAST list = (IAST) roots;
+        IASTAppendable condition = F.ast(S.And, list.argSize());
+        for (int i = 1; i < list.size(); i++) {
+          IExpr arg = list.get(i);
+          if (arg.isRealResult()) {
+            // x<7||x>7
+            condition.append(F.Or(F.Less(x, arg), F.Greater(x, arg)));
+          }
+        }
+        if (condition.size() > 1) {
+          if (condition.argSize() == 1) {
+            return condition.arg1();
+          }
+          return condition;
+        }
+        return S.True;
+      }
+
+      throw new ArgumentTypeStopException("Roots failed");
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+
+  }
+
+
+  private static final class FunctionPeriod extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr function = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      // TODO implement different domains
+      // ISymbol domain = S.Reals;
+      // if (ast.argSize() >= 3) {
+      // if (!domain.equals(ast.arg3())) {
+      //
+      // }
+      // }
+      IAST variables = arg2.makeList();
+      if (variables.argSize() != 1 || !variables.arg1().isSymbol()) {
+        return F.NIL;
+      }
+      return Util.periodicity(function, (ISymbol) variables.arg1());
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+  }
+
+
+  private static final class FunctionRange extends AbstractFunctionEvaluator {
     private static final class FunctionRangeRealsVisitor extends VisitorExpr {
       final EvalEngine engine;
 
@@ -403,6 +727,60 @@ public class MinMaxFunctions {
       }
     }
 
+    private static class Initializer {
+
+      private static Matcher init() {
+        Matcher MATCHER = new Matcher();
+        IAST list = FunctionRangeRules.RULES;
+
+        for (int i = 1; i < list.size(); i++) {
+          IExpr arg = list.get(i);
+          if (arg.isAST(S.SetDelayed, 3)) {
+            MATCHER.caseOf(arg.first(), arg.second());
+          } else if (arg.isAST(S.Set, 3)) {
+            MATCHER.caseOf(arg.first(), arg.second());
+          }
+        }
+        return MATCHER;
+      }
+    }
+
+    private static Supplier<Matcher> LAZY_MATCHER;
+
+
+    public static IExpr callMatcher(final IAST ast, IExpr arg1, EvalEngine engine) {
+      IExpr temp = getMatcher().replaceAll(ast);
+      if (temp.isPresent()) {
+        engine.putCache(ast, temp);
+      }
+      return temp;
+    }
+
+    private static Matcher getMatcher() {
+      return LAZY_MATCHER.get();
+    }
+
+    private IExpr convertInterval(IExpr result, ISymbol y) {
+      IAST list = (IAST) result.first();
+      return convertMinMaxList(list, y);
+    }
+
+    private IExpr convertMinMaxList(IAST list, ISymbol y) {
+      if (list.arg1().isRealResult()) {
+        if (list.arg2().isInfinity()) {
+          return F.GreaterEqual(y, list.arg1());
+        } else if (list.arg2().isRealResult()) {
+          return F.LessEqual(list.arg1(), y, list.arg2());
+        }
+      } else if (list.arg2().isRealResult()) {
+        if (list.arg1().isNegativeInfinity()) {
+          if (!list.arg2().isInfinity()) {
+            return F.LessEqual(y, list.arg2());
+          }
+        }
+      }
+      return F.NIL;
+    }
 
     // public IExpr evaluate(final IAST ast, EvalEngine engine) {
     // IExpr function = ast.arg1();
@@ -489,48 +867,9 @@ public class MinMaxFunctions {
       return F.NIL;
     }
 
-    private IExpr convertInterval(IExpr result, ISymbol y) {
-      IAST list = (IAST) result.first();
-      return convertMinMaxList(list, y);
-    }
-
-    private IExpr convertMinMaxList(IAST list, ISymbol y) {
-      if (list.arg1().isRealResult()) {
-        if (list.arg2().isInfinity()) {
-          return F.GreaterEqual(y, list.arg1());
-        } else if (list.arg2().isRealResult()) {
-          return F.LessEqual(list.arg1(), y, list.arg2());
-        }
-      } else if (list.arg2().isRealResult()) {
-        if (list.arg1().isNegativeInfinity()) {
-          if (!list.arg2().isInfinity()) {
-            return F.LessEqual(y, list.arg2());
-          }
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_3_3;
-    }
-
-    private static Matcher getMatcher() {
-      return LAZY_MATCHER.get();
-    }
-
-    public static IExpr callMatcher(final IAST ast, IExpr arg1, EvalEngine engine) {
-      IExpr temp = getMatcher().replaceAll(ast);
-      if (temp.isPresent()) {
-        engine.putCache(ast, temp);
-      }
-      return temp;
     }
 
     @Override
@@ -538,339 +877,41 @@ public class MinMaxFunctions {
       // Initializer.init();
       LAZY_MATCHER = Suppliers.memoize(Initializer::init);
     }
-  }
-
-  private static final class FunctionDomain extends AbstractFunctionEvaluator {
-
-
-    static final class FunctionDomainRealsVisitor extends VisitorExpr {
-      final EvalEngine engine;
-      IAST resultInterval;
-      IASTAppendable notElementList;
-      IExpr variable;
-
-      public FunctionDomainRealsVisitor(EvalEngine engine, IExpr variable) {
-        super();
-        this.engine = engine;
-        this.resultInterval = F.IntervalData(F.List(F.CNInfinity, F.Less, F.Less, F.CInfinity));
-        this.notElementList = F.ListAlloc();
-        this.variable = variable;
-      }
-
-      /** {@inheritDoc} */
-      @Override
-      public IExpr visit(IASTMutable ast) {
-        if (ast.isFree(variable)) {
-          return F.NIL;
-        }
-        if (ast.isTimes()) {
-          Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(ast, false);
-          if (parts.isPresent()) {
-            IExpr numerator = parts.get()[0];
-            IExpr denominator = parts.get()[1];
-            if (!denominator.isFree(variable)) {
-              numerator.accept(this);
-              roots(denominator);
-              return F.NIL;
-            }
-          }
-          determineIntervalSequence(ast);
-        } else if (ast.isPlus()) {
-          determineIntervalSequence(ast);
-        } else {
-          int headID = ast.headID();
-          if (headID >= 0) {
-            int argSize = ast.argSize();
-            switch (argSize) {
-              case 1:
-                arg1FunctionDomain(headID, ast);
-                break;
-              case 2:
-                arg2FunctionDomain(headID, ast);
-                break;
-              default:
-                throw new ArgumentTypeStopException("Not implemented");
-            }
-          }
-        }
-        return F.NIL;
-      }
-
-      private void arg1FunctionDomain(int headID, IASTMutable ast) {
-        IExpr arg1 = ast.arg1();
-        arg1.accept(this);
-        switch (headID) {
-          case ID.ArcCot:
-          case ID.ArcTan:
-          case ID.ArcSinh:
-          case ID.Cos:
-          case ID.Sin:
-            return;
-        }
-
-        if (arg1.isPolynomial(variable)) {
-          arg1FunctionDomain(headID, arg1);
-          return;
-        }
-
-        throw new ArgumentTypeStopException("Not implemented");
-      }
-
-      private void arg1FunctionDomain(int headID, IExpr arg1) {
-
-        switch (headID) {
-          // case ID.ArcCot:
-          // case ID.ArcTan:
-          // case ID.ArcSinh:
-          // case ID.Cos:
-          // case ID.Sin:
-          // return;
-          case ID.ArcCos:
-          case ID.ArcSin:
-            // -1 <= x <= 1
-            intervalIntersection(IntervalDataSym.simplifyRelationToInterval(arg1, S.GreaterEqual,
-                F.CN1, S.LessEqual, F.C1, variable, engine));
-            return;
-          case ID.ArcCsc:
-          case ID.ArcSec:
-            intervalIntersection(intervalUnion(//
-                IntervalDataSym.simplifyRelationToInterval(arg1, S.GreaterEqual, F.C1, variable,
-                    engine), //
-                IntervalDataSym.simplifyRelationToInterval(arg1, S.LessEqual, F.CN1, variable,
-                    engine)));
-            return;
-          case ID.ArcCosh:
-            intervalIntersection(IntervalDataSym.simplifyRelationToInterval(arg1, S.GreaterEqual,
-                F.C1, variable, engine));
-            return;
-          case ID.ArcCoth:
-            intervalIntersection(intervalUnion(//
-                IntervalDataSym.simplifyRelationToInterval(arg1, S.Greater, F.C1, variable, engine), //
-                IntervalDataSym.simplifyRelationToInterval(arg1, S.Less, F.CN1, variable, engine)));
-            return;
-          case ID.ArcTanh:
-            intervalIntersection(IntervalDataSym.simplifyRelationToInterval(arg1, S.Greater, F.CN1,
-                S.Less, F.C1, variable, engine));
-            return;
-          case ID.Cot:
-          case ID.Csc:
-            notElementList.append(F.NotElement(F.Times(arg1, F.Power(S.Pi, F.CN1)), S.Integers));
-            return;
-          case ID.Gamma:
-            intervalIntersection(IntervalDataSym.simplifyRelationToInterval(arg1, S.Greater, F.C0,
-                variable, engine));
-            notElementList.append(F.NotElement(arg1, S.Integers));
-            return;
-          case ID.Sec:
-          case ID.Tan:
-            notElementList.append(
-                F.NotElement(F.Plus(F.C1D2, F.Times(arg1, F.Power(S.Pi, F.CN1))), S.Integers));
-            return;
-          case ID.Log:
-            intervalIntersection(IntervalDataSym.simplifyRelationToInterval(arg1, S.Greater, F.C0,
-                variable, engine));
-            return;
-          default:
-        }
-
-        throw new ArgumentTypeStopException("Not implemented");
-      }
-
-      private void arg2FunctionDomain(int headID, IASTMutable ast) {
-        IExpr arg1 = ast.arg1();
-        IExpr arg2 = ast.arg2();
-        arg1.accept(this);
-        arg2.accept(this);
-
-        switch (headID) {
-          case ID.Power:
-            IExpr base = arg1;
-            IExpr exponent = arg2;
-            if (base.isFree(variable)) {
-              if (base.isPositive()) {
-                return;
-              }
-            } else if (exponent.isFree(variable)) {
-              if (exponent.isInteger()) {
-                if (exponent.isNegative()) {
-                  // exponent < 0 && x != 0
-                  intervalIntersection(IntervalDataSym.simplifyRelationToInterval(base, S.Unequal,
-                      F.C0, variable, engine));
-                  return;
-                }
-                return;
-              } else if (exponent.isPositive()) {
-                intervalIntersection(IntervalDataSym.simplifyRelationToInterval(base,
-                    S.GreaterEqual, F.C0, variable, engine));
-                return;
-              }
-              if (exponent.isNegativeResult()) {
-                IExpr denominator = base;
-                roots(denominator);
-                return;
-              }
-            }
-            throw new ArgumentTypeStopException("Not implemented");
-          default:
-            throw new ArgumentTypeStopException("Not implemented");
-        }
-      }
-
-      private void intervalIntersection(IAST interval) {
-        IAST temp = IntervalDataSym.intersection(resultInterval, interval, engine);
-        if (!temp.isIntervalData()) {
-          throw new ArgumentTypeStopException("IntervalIntersection failed");
-        }
-        resultInterval = temp;
-      }
-
-      private IAST intervalUnion(IAST interval1, IAST interval2) {
-        IAST temp = IntervalDataSym.union(interval1, interval2, engine);
-        if (!temp.isIntervalData()) {
-          throw new ArgumentTypeStopException("Interval union failed");
-        }
-        return temp;
-      }
-
-      private void roots(IExpr denominator) throws ArgumentTypeStopException {
-        IExpr roots = RootsFunctions.roots(denominator, false, variable.makeList(), engine);
-        if (roots.isNonEmptyList()) {
-          IAST list = (IAST) roots;
-          for (int i = 1; i < list.size(); i++) {
-            IExpr arg = list.get(i);
-            if (arg.isRealResult()) {
-              IAST notInRange = IntervalDataSym.notInRange(arg);
-              IAST temp = IntervalDataSym.intersection(resultInterval, notInRange, engine);
-              if (!temp.isIntervalData()) {
-                throw new ArgumentTypeStopException("Interval intersection failed");
-              }
-              resultInterval = temp;
-            }
-          }
-          return;
-        }
-        throw new ArgumentTypeStopException("Roots failed");
-      }
-
-      private void determineIntervalSequence(IAST ast) {
-        for (int i = 1; i < ast.size(); i++) {
-          IExpr arg = ast.get(i);
-          if (arg.isFree(variable)) {
-            continue;
-          }
-          arg.accept(this);
-        }
-      }
-    }
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr function = ast.arg1();
-      IExpr xExpr = ast.arg2();
-      // IBuiltInSymbol domain = S.Reals;
-      if (xExpr.isVariable()) {
-        try {
-          VariablesSet vset = new VariablesSet(function);
-          if (function.isNumericFunction(vset)) {
-            FunctionDomainRealsVisitor domainVisitor = functionDomain(function, xExpr, engine);
-            IAST resultInterval = domainVisitor.resultInterval;
-            IAST notElementList = domainVisitor.notElementList;
-            if (resultInterval.isPresent() && notElementList.isPresent()) {
-              return intervalToRelation(resultInterval, notElementList, xExpr);
-            }
-          }
-        } catch (ArgumentTypeStopException atse) {
-          if (Config.SHOW_STACKTRACE) {
-            atse.printStackTrace();
-          }
-          // Unable to find the domain with the available methods.
-          return Errors.printMessage(S.FunctionDomain, "nmet", F.CEmptyList, engine);
-        }
-      }
-      return F.NIL;
-    }
-
-    public IExpr intervalToRelation(IAST interval, IAST notElementList, IExpr variable) {
-      if (interval.isRealsIntervalData() && notElementList.argSize() == 0) {
-        return S.True;
-      }
-
-      IASTAppendable andAST = F.ast(S.And, notElementList.argSize() + 2);
-      andAST.appendArgs(notElementList);
-      IASTAppendable orAST = F.ast(S.Or, interval.argSize());
-      for (int i = 1; i < interval.size(); i++) {
-        IAST list = (IAST) interval.get(i);
-        if (list.isEmptyList() || list.argSize() != 4) {
-          return S.False;
-        }
-        IASTAppendable andArg = andAST.copyAppendable();
-        if (list.arg1().isNegativeInfinity()) {
-          if (list.arg4().isInfinity()) {
-            //
-          } else if (list.arg3() == S.Less) {
-            andArg.append(F.Less(variable, list.arg4()));
-          } else if (list.arg3() == S.LessEqual) {
-            andArg.append(F.LessEqual(variable, list.arg4()));
-          }
-        } else if (list.arg4().isInfinity()) {
-          if (list.arg2() == S.Less) {
-            andArg.append(F.Greater(variable, list.arg1()));
-          } else if (list.arg2() == S.LessEqual) {
-            andArg.append(F.GreaterEqual(variable, list.arg1()));
-          }
-        } else {
-          andArg.append(F.binaryAST2(list.arg2(), list.arg1(), variable));
-          andArg.append(F.binaryAST2(list.arg3(), variable, list.arg4()));
-        }
-        orAST.append(andArg);
-      }
-      return orAST;
-    }
 
     @Override
     public int status() {
       return ImplementationStatus.PARTIAL_SUPPORT;
     }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-
-
   }
 
-  private static final class FunctionPeriod extends AbstractFunctionEvaluator {
 
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr function = ast.arg1();
-      IExpr arg2 = ast.arg2();
-      // TODO implement different domains
-      // ISymbol domain = S.Reals;
-      // if (ast.argSize() >= 3) {
-      // if (!domain.equals(ast.arg3())) {
-      //
-      // }
-      // }
-      IAST variables = arg2.makeList();
-      if (variables.argSize() != 1 || !variables.arg1().isSymbol()) {
-        return F.NIL;
-      }
-      return Util.periodicity(function, (ISymbol) variables.arg1());
+  /**
+   * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
+   * in static initializer</a>
+   */
+  private static class Initializer {
+
+    /**
+     * The init method sets the evaluators for various mathematical functions.
+     */
+    private static void init() {
+      S.ArgMax.setEvaluator(new ArgMax());
+      S.ArgMin.setEvaluator(new ArgMin());
+      S.FunctionDomain.setEvaluator(new FunctionDomain());
+      S.FunctionPeriod.setEvaluator(new FunctionPeriod());
+      S.FunctionRange.setEvaluator(new FunctionRange());
+      S.Maximize.setEvaluator(new Maximize());
+      S.Minimize.setEvaluator(new Minimize());
+      S.NMaximize.setEvaluator(new NMaximize());
+      S.NMinimize.setEvaluator(new NMinimize());
+
+      S.NArgMax.setEvaluator(new NArgMax());
+      S.NArgMin.setEvaluator(new NArgMin());
+      S.NMaxValue.setEvaluator(new NMaxValue());
+      S.NMinValue.setEvaluator(new NMinValue());
     }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.EXPERIMENTAL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-
   }
+
 
   /**
    *
@@ -1004,13 +1045,69 @@ public class MinMaxFunctions {
     }
 
     @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
     public int status() {
       return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
+
+  /**
+   * The NArgMax function is used to find the values of the variables that maximize the given
+   * function.
+   */
+  private static class NArgMax extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr maximize = engine.evaluate(F.NMaximize(ast.arg1(), ast.arg2()));
+      if (maximize.isList2() && maximize.second().isListOfRules()) {
+        IAST listOfRules = (IAST) maximize.second();
+        return listOfRules.map(x -> x.second());
+      }
+      return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
+
+  /**
+   * The NArgMin function is used to find the values of the variables that minimize the given
+   * function.
+   */
+  private static class NArgMin extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr minimize = engine.evaluate(F.NMinimize(ast.arg1(), ast.arg2()));
+      if (minimize.isList2() && minimize.second().isListOfRules()) {
+        IAST listOfRules = (IAST) minimize.second();
+        return listOfRules.map(x -> x.second());
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 
@@ -1084,6 +1181,32 @@ public class MinMaxFunctions {
 
 
   /**
+   * The NMaxValue function is used to find the maximum value for the given function.
+   */
+  private static class NMaxValue extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr maximize = engine.evaluate(F.NMaximize(ast.arg1(), ast.arg2()));
+      if (maximize.isList2() && maximize.second().isListOfRules()) {
+        return maximize.first();
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
+
+  /**
    *
    *
    * <pre>
@@ -1138,10 +1261,86 @@ public class MinMaxFunctions {
    */
   private static class NMinimize extends AbstractFunctionEvaluator {
 
+    protected static List<LinearConstraint> getConstraints(VariablesSet vars,
+        IAST listOfconstraints) {
+      List<LinearConstraint> constraints =
+          new ArrayList<LinearConstraint>(listOfconstraints.size());
+      listOfconstraints.forEach(x -> {
+        Expr2LP x2LP = new Expr2LP(x, vars);
+        constraints.add(x2LP.expr2Constraint());
+      });
+      return constraints;
+    }
+
+    protected static LinearObjectiveFunction getObjectiveFunction(VariablesSet vars,
+        IExpr objectiveFunction) {
+      Expr2LP x2LP = new Expr2LP(objectiveFunction, vars);
+      return x2LP.expr2ObjectiveFunction();
+    }
+
+    /**
+     * @param func function to optimize.
+     * @param variables
+     * @param init Starting point.
+     * @param goal minimization or maximization.
+     * @param tolerance tolerance (relative error on the objective function) for "Powell" algorithm.
+     * @param lineTolerance tolerance (relative error on the objective function) for the internal
+     *        line search algorithm.
+     * @param pointTolerance Tolerance for checking that the optimum is correct.
+     */
+    private static IExpr optimizePowell( //
+        MultivariateFunction func, //
+        VariablesSet variables, //
+        double[] init, //
+        GoalType goal, //
+        double tolerance, //
+        double lineTolerance, //
+        double pointTolerance) { //
+      final MultivariateOptimizer optim =
+          new PowellOptimizer(tolerance, Math.ulp(1d), lineTolerance, Math.ulp(1d));
+
+      final PointValuePair solution = optim.optimize(//
+          new MaxEval(1000), //
+          new ObjectiveFunction(func), //
+          goal, //
+          new InitialGuess(init) //
+      );
+      // final double[] point = solution.getPoint();
+      // System.out.println("sol=" + Arrays.toString(solution.getPoint()));
+
+      double[] values = solution.getPointRef();
+      List<IExpr> varList = variables.getArrayList();
+      IASTAppendable list =
+          F.mapRange(0, varList.size(), i -> F.Rule(varList.get(i), F.num(values[i])));
+      IAST result = F.list(F.num(func.value(values)), list);
+      return result;
+    }
+
+    protected static IAST simplexSolver(VariablesSet variables,
+        LinearObjectiveFunction objectiveFunction, OptimizationData... optimizationData)
+        throws org.hipparchus.exception.MathRuntimeException {
+      SimplexSolver solver = new SimplexSolver();
+      PointValuePair solution = solver.optimize(optimizationData);
+      double[] values = solution.getPointRef();
+      List<IExpr> varList = variables.getArrayList();
+      IASTAppendable list =
+          F.mapRange(0, values.length, i -> F.Rule(varList.get(i), F.num(values[i])));
+      return F.list(F.num(objectiveFunction.value(values)), list);
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // switch to numeric calculation
       return numericEval(ast, engine);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    protected GoalType getGoalType() {
+      return GoalType.MINIMIZE;
     }
 
     @Override
@@ -1184,75 +1383,6 @@ public class MinMaxFunctions {
       return F.NIL;
     }
 
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-
-    protected GoalType getGoalType() {
-      return GoalType.MINIMIZE;
-    }
-
-    protected static LinearObjectiveFunction getObjectiveFunction(VariablesSet vars,
-        IExpr objectiveFunction) {
-      Expr2LP x2LP = new Expr2LP(objectiveFunction, vars);
-      return x2LP.expr2ObjectiveFunction();
-    }
-
-    protected static List<LinearConstraint> getConstraints(VariablesSet vars,
-        IAST listOfconstraints) {
-      List<LinearConstraint> constraints =
-          new ArrayList<LinearConstraint>(listOfconstraints.size());
-      listOfconstraints.forEach(x -> {
-        Expr2LP x2LP = new Expr2LP(x, vars);
-        constraints.add(x2LP.expr2Constraint());
-      });
-      return constraints;
-    }
-
-    /**
-     * @param func function to optimize.
-     * @param variables
-     * @param init Starting point.
-     * @param goal minimization or maximization.
-     * @param tolerance tolerance (relative error on the objective function) for "Powell" algorithm.
-     * @param lineTolerance tolerance (relative error on the objective function) for the internal
-     *        line search algorithm.
-     * @param pointTolerance Tolerance for checking that the optimum is correct.
-     */
-    private static IExpr optimizePowell( //
-        MultivariateFunction func, //
-        VariablesSet variables, //
-        double[] init, //
-        GoalType goal, //
-        double tolerance, //
-        double lineTolerance, //
-        double pointTolerance) { //
-      final MultivariateOptimizer optim =
-          new PowellOptimizer(tolerance, Math.ulp(1d), lineTolerance, Math.ulp(1d));
-
-      final PointValuePair solution = optim.optimize(//
-          new MaxEval(1000), //
-          new ObjectiveFunction(func), //
-          goal, //
-          new InitialGuess(init) //
-      );
-      // final double[] point = solution.getPoint();
-      // System.out.println("sol=" + Arrays.toString(solution.getPoint()));
-
-      double[] values = solution.getPointRef();
-      List<IExpr> varList = variables.getArrayList();
-      IASTAppendable list =
-          F.mapRange(0, varList.size(), i -> F.Rule(varList.get(i), F.num(values[i])));
-      IAST result = F.list(F.num(func.value(values)), list);
-      return result;
-    }
-
     private IAST optimizeSimplexSolver(IAST list1, VariablesSet variables, IExpr function) {
       IExpr listOfconstraints = list1.arg2().makeAST(S.And);
 
@@ -1264,34 +1394,52 @@ public class MinMaxFunctions {
           PivotSelectionRule.BLAND);
     }
 
-    protected static IAST simplexSolver(VariablesSet variables,
-        LinearObjectiveFunction objectiveFunction, OptimizationData... optimizationData)
-        throws org.hipparchus.exception.MathRuntimeException {
-      SimplexSolver solver = new SimplexSolver();
-      PointValuePair solution = solver.optimize(optimizationData);
-      double[] values = solution.getPointRef();
-      List<IExpr> varList = variables.getArrayList();
-      IASTAppendable list =
-          F.mapRange(0, values.length, i -> F.Rule(varList.get(i), F.num(values[i])));
-      return F.list(F.num(objectiveFunction.value(values)), list);
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 
+
   /**
-   * Determine the domain of a function by creating {@link S.IntervalData} results for the
-   * <code>function</code>.
-   * 
-   * @param function
-   * @param xExpr
-   * @param engine
-   * @return {@link F#NIL} if the domain couldn't be determined by current methods
+   * The NMinValue function is used to find the minimum value for the given function.
    */
-  public static FunctionDomain.FunctionDomainRealsVisitor functionDomain(IExpr function,
-      IExpr variable, EvalEngine engine) {
-    FunctionDomain.FunctionDomainRealsVisitor visitor =
-        new FunctionDomain.FunctionDomainRealsVisitor(engine, variable);
-    function.accept(visitor);
-    return visitor;
+  private static class NMinValue extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr minimize = engine.evaluate(F.NMinimize(ast.arg1(), ast.arg2()));
+      if (minimize.isList2() && minimize.second().isListOfRules()) {
+        return minimize.first();
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
+
+  private static final Logger LOGGER = LogManager.getLogger(MinMaxFunctions.class);
+
+  private static double[][] boundaries(int dim, double lower, double upper) {
+    double[][] boundaries = new double[2][dim];
+    for (int i = 0; i < dim; i++)
+      boundaries[0][i] = lower;
+    for (int i = 0; i < dim; i++)
+      boundaries[1][i] = upper;
+    return boundaries;
+  }
+
+  public static void initialize() {
+    Initializer.init();
   }
 
   private static IExpr maximize(ISymbol head, IExpr function, IExpr x, EvalEngine engine) {
@@ -1342,23 +1490,6 @@ public class MinMaxFunctions {
       LOGGER.log(engine.getLogLevel(), head, rex);
     }
     return F.NIL;
-  }
-
-  private static IAST maximizeExprPolynomial(final IExpr expr, IAST varList) {
-    IAST result = F.NIL;
-    try {
-      // try to generate a common expression polynomial
-      ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, varList);
-      ExprPolynomial ePoly = ring.create(expr, false, false, false);
-      ePoly = ePoly.multiplyByMinimumNegativeExponents();
-      result = maximizeCubicPolynomial(ePoly, varList.arg1());
-
-      // result = QuarticSolver.sortASTArguments(result);
-      return result;
-    } catch (ArithmeticException | JASConversionException e2) {
-      LOGGER.debug("MinMaxFunctions.maximizeExprPolynomial() failed", e2);
-    }
-    return result;
   }
 
   private static IAST maximizeCubicPolynomial(ExprPolynomial polynomial, IExpr x) {
@@ -1451,6 +1582,23 @@ public class MinMaxFunctions {
     return F.NIL;
   }
 
+  private static IAST maximizeExprPolynomial(final IExpr expr, IAST varList) {
+    IAST result = F.NIL;
+    try {
+      // try to generate a common expression polynomial
+      ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, varList);
+      ExprPolynomial ePoly = ring.create(expr, false, false, false);
+      ePoly = ePoly.multiplyByMinimumNegativeExponents();
+      result = maximizeCubicPolynomial(ePoly, varList.arg1());
+
+      // result = QuarticSolver.sortASTArguments(result);
+      return result;
+    } catch (ArithmeticException | JASConversionException e2) {
+      LOGGER.debug("MinMaxFunctions.maximizeExprPolynomial() failed", e2);
+    }
+    return result;
+  }
+
   private static final IExpr minimize(ISymbol head, IExpr function, IExpr x, EvalEngine engine) {
     try {
       IExpr temp = minimizeExprPolynomial(function, F.list(x));
@@ -1498,23 +1646,6 @@ public class MinMaxFunctions {
       LOGGER.log(engine.getLogLevel(), head, rex);
     }
     return F.NIL;
-  }
-
-  private static IAST minimizeExprPolynomial(final IExpr expr, IAST varList) {
-    IAST result = F.NIL;
-    try {
-      // try to generate a common expression polynomial
-      ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, varList);
-      ExprPolynomial ePoly = ring.create(expr, false, false, false);
-      ePoly = ePoly.multiplyByMinimumNegativeExponents();
-      result = minimizeCubicPolynomial(ePoly, varList.arg1());
-
-      // result = QuarticSolver.sortASTArguments(result);
-      return result;
-    } catch (ArithmeticException | JASConversionException e2) {
-      LOGGER.debug("MinMaxFunctions.minimizeExprPolynomial() failed", e2);
-    }
-    return result;
   }
 
   private static IAST minimizeCubicPolynomial(ExprPolynomial polynomial, IExpr x) {
@@ -1610,19 +1741,21 @@ public class MinMaxFunctions {
     return F.NIL;
   }
 
-  private static double[] point(int n, double value) {
-    double[] ds = new double[n];
-    Arrays.fill(ds, value);
-    return ds;
-  }
+  private static IAST minimizeExprPolynomial(final IExpr expr, IAST varList) {
+    IAST result = F.NIL;
+    try {
+      // try to generate a common expression polynomial
+      ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, varList);
+      ExprPolynomial ePoly = ring.create(expr, false, false, false);
+      ePoly = ePoly.multiplyByMinimumNegativeExponents();
+      result = minimizeCubicPolynomial(ePoly, varList.arg1());
 
-  private static double[][] boundaries(int dim, double lower, double upper) {
-    double[][] boundaries = new double[2][dim];
-    for (int i = 0; i < dim; i++)
-      boundaries[0][i] = lower;
-    for (int i = 0; i < dim; i++)
-      boundaries[1][i] = upper;
-    return boundaries;
+      // result = QuarticSolver.sortASTArguments(result);
+      return result;
+    } catch (ArithmeticException | JASConversionException e2) {
+      LOGGER.debug("MinMaxFunctions.minimizeExprPolynomial() failed", e2);
+    }
+    return result;
   }
 
   // static final int DIM = 2;
@@ -1652,8 +1785,10 @@ public class MinMaxFunctions {
   // init, GoalType.MINIMIZE, 1e-9, 1e-9, 1e-9);
   // }
 
-  public static void initialize() {
-    Initializer.init();
+  private static double[] point(int n, double value) {
+    double[] ds = new double[n];
+    Arrays.fill(ds, value);
+    return ds;
   }
 
   private MinMaxFunctions() {}

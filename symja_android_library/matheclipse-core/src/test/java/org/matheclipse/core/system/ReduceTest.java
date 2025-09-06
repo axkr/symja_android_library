@@ -13,21 +13,21 @@ public class ReduceTest extends ExprEvaluatorTestCase {
   @Test
   public void testReduce002() {
     check("Reduce(x > 1 && x < 5 || x >= 5 && x < 8)", //
-        "1<x&&x<8");
+        "x>1&&x<8");
     check("Reduce(x > 1 && x < 5 || x >= 9/2 && x < 8)", //
-        "1<x&&x<8");
+        "x>1&&x<8");
     check("Reduce(x > 1 && x < 4 || x >= 9/2 && x < 8)", //
-        "(1<x&&x<4)||(9/2<=x&&x<8)");
+        "(x>1&&x<4)||(x>=9/2&&x<8)");
   }
 
   @Test
   public void testReduceXReals() {
     check("Reduce(x > 1 && x < 5 || x >= 5 && x < 8,x,Reals)", //
-        "1<x&&x<8");
+        "x>1&&x<8");
     check("Reduce(x > 1 && x < 5 || x >= 9/2 && x < 8,x,Reals)", //
-        "1<x&&x<8");
+        "x>1&&x<8");
     check("Reduce(x > 1 && x < 4 || x >= 9/2 && x < 8,x,Reals)", //
-        "(1<x&&x<4)||(9/2<=x&&x<8)");
+        "(x>1&&x<4)||(x>=9/2&&x<8)");
   }
 
   @Test
@@ -72,14 +72,14 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "x<7");
 
     check("Reduce(x>1 &&x < 2 || x < 7 && x>1/2)", //
-        "1/2<x&&x<7");
+        "x>1/2&&x<7");
     check("Reduce(x<1 &&x < 2 )", //
         "x<1");
 
     check("Reduce(x > 1 && x < 4 || x >= 4)", //
         "x>1");
     check("Reduce(x < 2 || x < 7 && x>3)", //
-        "x<2||(3<x&&x<7)");
+        "x<2||(x>3&&x<7)");
     check("Reduce(x < 2 || x < 7 && x>1/2)", //
         "x<7");
   }
@@ -152,7 +152,7 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     check("{a = x > 1 && x < 5, b = x >= 5 && x < 8}", //
         "{x>1&&x<5,x>=5&&x<8}");
     check("Reduce(a||b)", //
-        "1<x&&x<8");
+        "x>1&&x<8");
 
 
 

@@ -229,7 +229,13 @@ public class ReduceVariableIntervalSet {
    */
   public static IAST reduce(IAST binaryRelation, IExpr variable, boolean multipleValues,
       EvalEngine engine) {
-    ReduceVariableIntervalSet rv = new ReduceVariableIntervalSet((IBuiltInSymbol) binaryRelation.head(), engine);
+    if ((binaryRelation.arg1().equals(variable)//
+        && binaryRelation.arg2().isFree(x -> x.equals(variable), false))//
+        || (binaryRelation.arg2().equals(variable) //
+            && binaryRelation.arg1().isFree(x -> x.equals(variable), false))) {
+      return IntervalDataSym.relationToIntervalSet(binaryRelation, variable);
+    }
+
     IExpr difference = engine.evaluate(//
         F.Subtract(F.Expand(binaryRelation.first()), F.Expand(binaryRelation.second()))//
     );
@@ -240,9 +246,14 @@ public class ReduceVariableIntervalSet {
         return intervalData;
       }
     }
+    ReduceVariableIntervalSet rv =
+        new ReduceVariableIntervalSet((IBuiltInSymbol) binaryRelation.head(), engine);
     IExpr value = rv.extractVariable(difference, variable, multipleValues);
     if (value.isIntervalData()) {
       return (IAST) value;
+    }
+    if (value.isNIL()) {
+      return F.NIL;
     }
     // don't inline #extractVariable() call here, because it can modify the relation
     return IntervalDataSym.relationToIntervalSet(F.binaryAST2(rv.relation(), variable, value),
@@ -294,6 +305,8 @@ public class ReduceVariableIntervalSet {
         return F.NIL;
       }
       result = extractVariableRecursive(expr, intervalData, predicate, variable);
+
+      return engine.evaluate(result);
     }
     return result;
   }
@@ -324,6 +337,7 @@ public class ReduceVariableIntervalSet {
         }
         IASTAppendable inverseFunction = InverseFunction.getUnaryInverseFunction(ast, true);
         if (inverseFunction.isPresent()) {
+
           // example: Sin(f(x)) == y -> f(x) == ArcSin(y)
           inverseFunction.append(exprWithoutVariable);
           return extractVariableRecursive(ast.arg1(), inverseFunction, predicate, variable);
