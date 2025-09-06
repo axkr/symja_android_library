@@ -2819,8 +2819,13 @@ public final class PatternMatching {
       for (int i = 1; i < lhsAST.size(); i++) {
         IExpr temp = lhsAST.get(i);
         ISymbol lhsSymbol = getLookupReferenceName(temp);
-        if (lhsSymbol == null || lhsSymbol.hasProtectedAttribute()) {
+        if (lhsSymbol == null) {
           continue;
+        }
+        if (lhsSymbol.hasProtectedAttribute()) {
+          // Tag `1` in `2` is Protected.
+          Errors.printMessage(S.UpSet, "write", F.list(lhsSymbol, leftHandSide), EvalEngine.get());
+          return result;
         }
         // if (lhsSymbol.hasProtectedAttribute()) {
         // // Tag `1` in `2` is Protected.
@@ -2888,8 +2893,13 @@ public final class PatternMatching {
       for (int i = 1; i < lhsAST.size(); i++) {
         IExpr temp = lhsAST.get(i);
         ISymbol lhsSymbol = getLookupReferenceName(temp);
-        if (lhsSymbol == null || lhsSymbol.hasProtectedAttribute()) {
+        if (lhsSymbol == null) {
           continue;
+        }
+        if (lhsSymbol.hasProtectedAttribute()) {
+          // Tag `1` in `2` is Protected.
+          Errors.printMessage(S.UpSet, "write", F.list(lhsSymbol, leftHandSide), EvalEngine.get());
+          throw new FailedException();
         }
         result[0] = lhsSymbol.putUpRule(flags[0] | IPatternMatcher.UPSET_DELAYED, false, lhsAST,
             rightHandSide);
