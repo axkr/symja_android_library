@@ -1818,12 +1818,14 @@ public final class LinearAlgebra {
           return temp;
         }
 
-        final IntList dimensions1 = LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, true);
+        final IntList dimensions1 =
+            LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, true);
         final int dims1Size = dimensions1.size();
         if (dims1Size == 0) {
           return F.NIL;
         }
-        final IntList dimensions2 = LinearAlgebraUtil.dimensions(arg2, S.List, Integer.MAX_VALUE, true);
+        final IntList dimensions2 =
+            LinearAlgebraUtil.dimensions(arg2, S.List, Integer.MAX_VALUE, true);
         final int dims2Size = dimensions2.size();
         if (dims2Size == 0) {
           return F.NIL;
@@ -3062,8 +3064,10 @@ public final class LinearAlgebra {
       }
 
       private IAST inner() {
-        IntArrayList list1Dimensions = LinearAlgebraUtil.dimensions(list1, list1.head(), Integer.MAX_VALUE);
-        IntArrayList list2Dimensions = LinearAlgebraUtil.dimensions(list2, list2.head(), Integer.MAX_VALUE);
+        IntArrayList list1Dimensions =
+            LinearAlgebraUtil.dimensions(list1, list1.head(), Integer.MAX_VALUE);
+        IntArrayList list2Dimensions =
+            LinearAlgebraUtil.dimensions(list2, list2.head(), Integer.MAX_VALUE);
         list2Dim0 = list2Dimensions.getInt(0);
         return recursionInner(new IntArrayList(), new IntArrayList(),
             list1Dimensions.subList(0, list1Dimensions.size() - 1),
@@ -4555,25 +4559,37 @@ public final class LinearAlgebra {
         }
         RealMatrix matrix;
         try {
-          matrix = arg1.toRealMatrix();
-          if (matrix != null) {
-            if (ast.isAST2() && ast.arg2().isString("Frobenius")) {
-              return F.Norm(F.Flatten(arg1));
+          int[] dims = arg1.isMatrix(false);
+          if (dims != null) {
+            matrix = arg1.toRealMatrix();
+            if (matrix != null) {
+              if (ast.isAST2() && ast.arg2().isString("Frobenius")) {
+                return F.Norm(F.Flatten(arg1));
+              }
+              if (matrixDim[0] < matrixDim[1]) {
+                int d = matrixDim[0];
+                matrixDim[0] = matrixDim[1];
+                matrixDim[1] = d;
+                matrix = matrix.transpose();
+              }
+              if (engine.isNumericMode() || arg1.isNumericArgument(true)) {
+                final org.hipparchus.linear.SingularValueDecomposition svd =
+                    new org.hipparchus.linear.SingularValueDecomposition(matrix);
+                RealMatrix sSVD = svd.getS();
+                IASTAppendable result = F.ast(S.Max, matrixDim[1]);
+                for (int i = 0; i < matrixDim[1]; i++) {
+                  result.append(sSVD.getEntry(i, i));
+                }
+                return result;
+              }
             }
-            if (matrixDim[0] < matrixDim[1]) {
-              int d = matrixDim[0];
-              matrixDim[0] = matrixDim[1];
-              matrixDim[1] = d;
-              matrix = matrix.transpose();
+            if (ast.isAST1()) {
+              IExpr singularValueList = engine.evaluate(F.SingularValueList(arg1));
+              if (singularValueList.isList() && singularValueList.argSize() > 0) {
+                return singularValueList.first();
+              }
             }
-            final org.hipparchus.linear.SingularValueDecomposition svd =
-                new org.hipparchus.linear.SingularValueDecomposition(matrix);
-            RealMatrix sSVD = svd.getS();
-            IASTAppendable result = F.ast(S.Max, matrixDim[1]);
-            for (int i = 0; i < matrixDim[1]; i++) {
-              result.append(sSVD.getEntry(i, i));
-            }
-            return result;
+            return F.NIL;
           }
         } catch (final IndexOutOfBoundsException e) {
           LOGGER.debug("Norm.evaluate() failed", e);
@@ -5526,20 +5542,119 @@ public final class LinearAlgebra {
    */
   private static final class SingularValueDecomposition extends AbstractFunctionEvaluator {
 
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      RealMatrix matrix;
-      try {
-        matrix = ast.arg1().toRealMatrix();
-        if (matrix != null) {
-          final org.hipparchus.linear.SingularValueDecomposition svd =
-              new org.hipparchus.linear.SingularValueDecomposition(matrix);
-          return F.list(new ASTRealMatrix(svd.getU(), false), new ASTRealMatrix(svd.getS(), false),
-              new ASTRealMatrix(svd.getV(), false));
+    /**
+     * Symbolic Singular Value Decomposition.
+     *
+     */
+    private static class SymbolicSingularValueDecomposition {
+      private final IAST matrix;
+      private final EvalEngine engine;
+      private final int rows;
+      private final int cols;
+
+      public SymbolicSingularValueDecomposition(final IAST matrix, final EvalEngine engine) {
+        this.matrix = matrix;
+        this.engine = engine;
+        int[] dims = matrix.isMatrix();
+        this.rows = dims[0];
+        this.cols = dims[1];
+      }
+
+      /**
+       * TODO solve sign error in symbolic implementation
+       * 
+       * @return
+       */
+      @Deprecated
+      public IAST svd() {
+        IAST aTa = (IAST) engine.evaluate(F.Dot(F.ConjugateTranspose(matrix), matrix));
+        IExpr eigenSystemaTa = engine.evaluate(F.Eigensystem(aTa));
+        if (!eigenSystemaTa.isList()) {
+          return F.NIL;
+        }
+        IExpr singularValuesSqExpr = ((IAST) eigenSystemaTa).arg1();
+        if (!singularValuesSqExpr.isList()) {
+          return F.NIL;
         }
 
-      } catch (final IndexOutOfBoundsException e) {
-        LOGGER.debug("SingularValueDecomposition.evaluate() failed", e);
+        IAST singularValuesSq = (IAST) singularValuesSqExpr;
+        IASTAppendable singularValuesList = F.ListAlloc(singularValuesSq.size());
+        for (int i = 1; i <= singularValuesSq.argSize(); i++) {
+          singularValuesList.append(engine.evaluate(Sqrt(singularValuesSq.get(i))));
+        }
+
+        IAST aaT = (IAST) engine.evaluate(F.Dot(matrix, F.ConjugateTranspose(matrix)));
+        IExpr eigenSystemaaT = engine.evaluate(F.Eigensystem(aaT));
+        if (!eigenSystemaaT.isList()) {
+          return F.NIL;
+        }
+        IAST sMatrix = createS(singularValuesList);
+        IAST uMatrix = (IAST) ((IAST) eigenSystemaaT).arg2();
+        // System.out.println("uMatrix1 = " + uMatrix);
+        uMatrix = (IAST) engine.evaluate(F.Transpose(F.Orthogonalize(uMatrix)));
+        // System.out.println("uMatrix2 = " + uMatrix);
+
+        IAST vMatrix = (IAST) ((IAST) eigenSystemaTa).arg2();
+        // System.out.println("vMatrix1 = " + vMatrix);
+        vMatrix = (IAST) engine.evaluate(F.Transpose(F.Orthogonalize(vMatrix)));
+        // System.out.println("vMatrix2 = " + vMatrix);
+        return List(uMatrix, sMatrix, vMatrix);
+      }
+
+      private IAST createS(IAST singularValues) {
+        IASTAppendable s = F.ListAlloc(rows);
+        for (int i = 0; i < rows; i++) {
+          IASTAppendable row = F.ListAlloc(cols);
+          for (int j = 0; j < cols; j++) {
+            if (i == j && i < singularValues.size()) {
+              row.append(singularValues.get(i + 1));
+            } else {
+              row.append(F.C0);
+            }
+          }
+          s.append(row);
+        }
+        return s;
+      }
+
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      int[] dims = arg1.isMatrix();
+      if (dims != null) {
+
+        // if ((engine.isNumericMode() || arg1.isNumericArgument(true)) && !arg1.isSparseArray()) {
+        if (true) {
+          try {
+            return numericSVD(arg1);
+          } catch (final RuntimeException rex) {
+            Errors.printMessage(S.SingularValueDecomposition, rex);
+          }
+        } else {
+          // TODO solve sign error in symbolic implementation
+          try {
+            engine.setTogetherMode(true);
+            SymbolicSingularValueDecomposition symbolicSVD =
+                new SymbolicSingularValueDecomposition((IAST) arg1, engine);
+            return symbolicSVD.svd();
+          } catch (final RuntimeException rex) {
+            Errors.printMessage(S.SingularValueDecomposition, rex);
+          }
+        }
+      }
+
+      return F.NIL;
+    }
+
+    private IAST numericSVD(IExpr arg1) {
+      RealMatrix matrix = arg1.toRealMatrix();
+      if (matrix != null) {
+        final org.hipparchus.linear.SingularValueDecomposition svd =
+            new org.hipparchus.linear.SingularValueDecomposition(matrix);
+        return F.list(new ASTRealMatrix(svd.getU(), false), new ASTRealMatrix(svd.getS(), false),
+            new ASTRealMatrix(svd.getV(), false));
       }
       return F.NIL;
     }
@@ -5837,7 +5952,8 @@ public final class LinearAlgebra {
       }
 
       try {
-        final IntList dimensions = LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+        final IntList dimensions =
+            LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
         final int dimsSize = dimensions.size();
         if (dimsSize == 0) {
           return F.NIL;
@@ -6021,6 +6137,12 @@ public final class LinearAlgebra {
         // Error messages inherits to S.ConjugateTranspose
         // The first two levels of `1` cannot be transposed.
         return Errors.printMessage(ast.topHead(), "nmtx", F.List(ast), engine);
+      }
+      if (length == 1 && arg2.isNIL() && arg1.isVector() > 0) {
+        IAST vector = (IAST) arg1.normal(false);
+        IASTAppendable resultList = F.ListAlloc();
+        resultList.append(vector, x -> transform(x));
+        return resultList;
       }
       if (arg1 instanceof ITensorAccess) {
         return transpose((ITensorAccess) arg1, arg2, dimensions, x -> transform(x), ast, engine);

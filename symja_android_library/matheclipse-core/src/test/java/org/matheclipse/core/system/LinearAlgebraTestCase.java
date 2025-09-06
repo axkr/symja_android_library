@@ -222,6 +222,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testConjugateTranspose() {
+    check("ConjugateTranspose({a*I,b*I,2*I,3*I} )", //
+        "{-I*Conjugate(a),-I*Conjugate(b),-I*2,-I*3}");
+
     check("ConjugateTranspose({{{0,0},{0,0}},{0,0}})", //
         "{{{0,0},0},{{0,0},0}}");
 
@@ -624,13 +627,14 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEigenvalues() {
+    check("Eigenvalues({{1,0,0,0,0},{3,1,0,0,0},{6,3,2,0,0},{10,6,3,2,0},{15,10,6,3,2}})", //
+        "{2,2,2,1,1}");
     check("mat = Array(a, {2,2}); Eigenvalues(mat.ConjugateTranspose(mat))[[1]] // FullSimplify", //
         "1/2*(Abs(a(1,1))^2+Abs(a(1,2))^2+Abs(a(2,1))^2+Abs(a(2,2))^2-Sqrt((Abs(a(1,1))^2+Abs(a(\n" //
             + "1,2))^2)^2-2*(Abs(a(1,1))^2+Abs(a(1,2))^2)*(Abs(a(2,1))^2+Abs(a(2,2))^2)+(Abs(a(\n" //
             + "2,1))^2+Abs(a(2,2))^2)^2+4*(a(2,1)*Conjugate(a(1,1))+a(2,2)*Conjugate(a(1,2)))*(a(\n" //
             + "1,1)*Conjugate(a(2,1))+a(1,2)*Conjugate(a(2,2)))))");
-    check("Eigenvalues({{1,0,0,0,0},{3,1,0,0,0},{6,3,2,0,0},{10,6,3,2,0},{15,10,6,3,2}})", //
-        "{2,2,2,1,1}");
+
     check("Eigenvalues({{1, 0, 0}, {-2, 1, 0}, {0, 1, 1}})", //
         "{1,1,1}");
     check("Eigenvalues({{7}},-1)", //
@@ -1783,9 +1787,10 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{1.0,2.0},\n" + //
             " {2.0,3.0},\n" + //
             " {3.0,4.0}}");
-    check("PseudoInverse({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}})", "{{-3.0,2.0,4.44089*10^-16},\n" + //
-        " {2.0,-1.0,-2.77556*10^-16},\n" + //
-        " {1.0,-2.0,1.0}}");
+    check("PseudoInverse({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}})", //
+        "{{-3.0,2.0,1.11022*10^-16},\n"//
+            + " {2.0,-1.0,2.77556*10^-17},\n"//
+            + " {1.0,-2.0,1.0}}");
     check("PseudoInverse({{1.0, 2.5}, {2.5, 1.0}})", //
         "{{-0.190476,0.47619},\n" + //
             " {0.47619,-0.190476}}");
@@ -1798,9 +1803,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             " {-0.0333333,-0.0111111,0.0111111,0.0333333},\n" + //
             " {0.416667,0.222222,0.0277778,-0.166667}}");
     check("PseudoInverse(N({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}))", //
-        "{{-0.638889,-0.166667,0.305556},\n" + //
-            " {-0.0555556,-3.50414*10^-16,0.0555556},\n" + //
-            " {0.527778,0.166667,-0.194444}}"); //
+        "{{-0.638889,-0.166667,0.305556},\n" //
+            + " {-0.0555556,-3.60822*10^-16,0.0555556},\n" //
+            + " {0.527778,0.166667,-0.194444}}"); //
   }
 
   @Test
@@ -2115,25 +2120,42 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSingularValueDecomposition() {
+    // check("Transpose(Orthogonalize({{1/13*(-6+Sqrt(205)),1},{1/13*(-6-Sqrt(205)),1}}))//N", //
+    // "{{0.538954,-0.842335},{0.842335,0.538954}}");
+
+    check("{u,s,v}=SingularValueDecomposition({{1.5, 2.0}, {2.5, 3.0}})", //
+        "{{{0.538954,0.842335},\n" //
+            + " {0.842335,-0.538954}},{{4.63555,0.0},\n" //
+            + " {0.0,0.107862}},{{0.628678,-0.777666},\n" //
+            + " {0.777666,0.628678}}}");
+    check("u.s.ConjugateTranspose(v)", //
+        "{{1.5,2.0},\n" //
+            + " {2.5,3.0}}");
+    check("{u,s,v}=SingularValueDecomposition({{3/2, 2}, {5/2, 3}})", //
+        "{{{0.538954,0.842335},\n" //
+            + " {0.842335,-0.538954}},{{4.63555,0.0},\n"//
+            + " {0.0,0.107862}},{{0.628678,-0.777666},\n" //
+            + " {0.777666,0.628678}}}");
+    check("u.s.ConjugateTranspose(v)//N", //
+        "{{1.5,2.0},{2.5,3.0}}");
+
+    // See http://issues.apache.org/jira/browse/MATH-320:
+    check("{u,s,v}=SingularValueDecomposition({{1,2},{1,2}})", //
+        "{{{-0.707107,-0.707107},\n" //
+            + " {-0.707107,0.707107}},{{3.16228,0.0},\n" //
+            + " {0.0,0.0}},{{-0.447214,-0.894427},\n" //
+            + " {-0.894427,0.447214}}}");
+    check("u.s.ConjugateTranspose(v)", //
+        "{{1.0,2.0},\n"//
+            + " {1.0,2.0}}");
+
     check("SingularValueDecomposition({{ 24.0/25.0, 43.0/25.0 },{57.0/25.0, 24.0/25.0 }})", //
         "{{{0.6,0.8},\n"//
             + " {0.8,-0.6}},{{3.0,0.0},\n" //
             + " {0.0,1.0}},{{0.8,-0.6},\n" //
             + " {0.6,0.8}}}");
 
-    // See http://issues.apache.org/jira/browse/MATH-320:
-    check("SingularValueDecomposition({{1,2},{1,2}})", //
-        "{{{-0.707107,-0.707107},\n" //
-            + " {-0.707107,0.707107}},{{3.16228,0.0},\n" //
-            + " {0.0,0.0}},{{-0.447214,-0.894427},\n" //
-            + " {-0.894427,0.447214}}}");
 
-    check("SingularValueDecomposition({{1.5, 2.0}, {2.5, 3.0}})", //
-        "{{{0.538954,0.842335},\n" + " {0.842335,-0.538954}},{{4.63555,0.0},\n"
-            + " {0.0,0.107862}},{{0.628678,-0.777666},\n" + " {0.777666,0.628678}}}");
-    check("SingularValueDecomposition({{3/2, 2}, {5/2, 3}})", //
-        "{{{0.538954,0.842335},\n" + " {0.842335,-0.538954}},{{4.63555,0.0},\n"
-            + " {0.0,0.107862}},{{0.628678,-0.777666},\n" + " {0.777666,0.628678}}}");
     check("SingularValueDecomposition({1, {2}})", //
         "SingularValueDecomposition({1,{2}})");
   }
@@ -2339,6 +2361,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTranspose() {
+    check("Transpose({0,1,2,3})", //
+        "{0,1,2,3}");
     check("Transpose({{0,0}, {0,0}},-0.8+I*1.2)", //
         "Transpose({{0,0},{0,0}},-0.8+I*1.2)");
 
