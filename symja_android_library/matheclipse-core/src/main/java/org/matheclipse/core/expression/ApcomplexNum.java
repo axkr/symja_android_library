@@ -210,6 +210,19 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
+  public IExpr angerJ(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      try {
+        return F.complexNum(
+            EvalEngine.getApfloat().angerJ(fApcomplex, ((INumber) arg2).apcomplexValue()));
+      } catch (ArithmeticException | NumericComputationException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return IComplexNum.super.angerJ(arg2);
+  }
+
+  @Override
   public ApcomplexNum apcomplexNumValue() {
     return this;
   }
@@ -1643,6 +1656,32 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public IExpr sqrt() {
     return valueOf(EvalEngine.getApfloat().sqrt(fApcomplex));
+  }
+
+  @Override
+  public IExpr struveH(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      try {
+        return F.complexNum(
+            EvalEngine.getApfloat().struveH(fApcomplex, ((INumber) arg2).apcomplexValue()));
+      } catch (ArithmeticException | NumericComputationException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return IComplexNum.super.angerJ(arg2);
+  }
+
+  @Override
+  public IExpr struveL(IExpr arg2) {
+    if (arg2 instanceof INumber) {
+      try {
+        return F.complexNum(
+            EvalEngine.getApfloat().struveL(fApcomplex, ((INumber) arg2).apcomplexValue()));
+      } catch (ArithmeticException | NumericComputationException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return IComplexNum.super.angerJ(arg2);
   }
 
   /**

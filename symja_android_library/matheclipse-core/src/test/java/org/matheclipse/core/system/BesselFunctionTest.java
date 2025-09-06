@@ -7,6 +7,19 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testAngerJ() {
+    checkNumeric("AngerJ(1,2.0)", //
+        "0.5767248077568734");
+    checkNumeric("AngerJ(1,-3.0)", //
+        "-0.3390589585259364");
+
+    checkNumeric("N(AngerJ(2, 3), 50)", //
+        "0.48609126058589107690783109411498403480166226564329");
+    checkNumeric("N(AngerJ(2, 3+I), 50)", //
+        "0.63416037014855353652729947568125478798456755684391+I*0.02533840000326950179626342065897534156397441542201");
+    checkNumeric("AngerJ(2,3.0+I)", //
+        "0.6341603701485535+I*0.0253384000032695");
+
+
     check("AngerJ(-42,z)", //
         "BesselJ(42,z)");
     check("AngerJ(-43,z)", //
@@ -27,9 +40,7 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
         "BesselJ(0,z)");
     check("AngerJ(n,0)", //
         "Sinc(n*Pi)");
-    // TODO
-    // checkNumeric("AngerJ(1,2.0)", //
-    // "");
+
   }
 
   @Test

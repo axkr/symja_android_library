@@ -61,7 +61,6 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.numerics.functions.BesselJS;
 import org.matheclipse.core.numerics.functions.GammaJS;
 import org.matheclipse.core.numerics.functions.ZetaJS;
 
@@ -2443,6 +2442,16 @@ public class SpecialFunctions {
     }
 
     @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        IInexactNumber n = (IInexactNumber) ast.arg1();
+        IInexactNumber z = (IInexactNumber) ast.arg2();
+        return n.struveH(z);
+      }
+      return F.NIL;
+    }
+
+    @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
@@ -2466,11 +2475,11 @@ public class SpecialFunctions {
             // StruveH(n_,0):=ComplexInfinity/;Re(n)<(-1)
             return F.CComplexInfinity;
           }
-        } else if (arg1 instanceof INum && arg2 instanceof INum) {
-          return F.num(BesselJS.struveH(arg1.evalf(), arg2.evalf()));
-          // return e2DblArg((INum) arg1, (INum) arg2);
-        } else if (arg1.isComplexNumeric() || arg2.isComplexNumeric()) {
-          return F.complexNum(BesselJS.struveH(arg1.evalfc(), arg2.evalfc()));
+          // } else if (arg1 instanceof INum && arg2 instanceof INum) {
+          // return F.num(BesselJS.struveH(arg1.evalf(), arg2.evalf()));
+          // // return e2DblArg((INum) arg1, (INum) arg2);
+          // } else if (arg1.isComplexNumeric() || arg2.isComplexNumeric()) {
+          // return F.complexNum(BesselJS.struveH(arg1.evalfc(), arg2.evalfc()));
         } else {
           IExpr negArg2 = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg2);
           if (negArg2.isPresent()) {
@@ -2529,6 +2538,16 @@ public class SpecialFunctions {
     }
 
     @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        IInexactNumber n = (IInexactNumber) ast.arg1();
+        IInexactNumber z = (IInexactNumber) ast.arg2();
+        return n.struveL(z);
+      }
+      return F.NIL;
+    }
+
+    @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
@@ -2552,11 +2571,11 @@ public class SpecialFunctions {
             // StruveL(n_,0):=ComplexInfinity/;Re(n)<(-1)
             return F.CComplexInfinity;
           }
-        } else if (arg1 instanceof INum && arg2 instanceof INum) {
-          return F.num(BesselJS.struveL(arg1.evalf(), arg2.evalf()));
-          // return e2DblArg((INum) arg1, (INum) arg2);
-        } else if (arg1.isComplexNumeric() || arg2.isComplexNumeric()) {
-          return F.complexNum(BesselJS.struveL(arg1.evalfc(), arg2.evalfc()));
+          // } else if (arg1 instanceof INum && arg2 instanceof INum) {
+          // return F.num(BesselJS.struveL(arg1.evalf(), arg2.evalf()));
+          // // return e2DblArg((INum) arg1, (INum) arg2);
+          // } else if (arg1.isComplexNumeric() || arg2.isComplexNumeric()) {
+          // return F.complexNum(BesselJS.struveL(arg1.evalfc(), arg2.evalfc()));
         } else {
           IExpr negArg2 = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg2);
           if (negArg2.isPresent()) {

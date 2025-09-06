@@ -26,6 +26,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numerics.functions.BesselJS;
 import org.matheclipse.core.numerics.functions.GammaJS;
 import org.matheclipse.core.numerics.functions.HypergeometricJS;
 import org.matheclipse.core.visit.IVisitor;
@@ -276,6 +277,30 @@ public class Num implements INum {
   @Override
   public IExpr airyBiPrime() {
     return F.num(EvalEngine.getApfloatDouble().airyBiPrime(apfloatValue()));
+  }
+
+  @Override
+  public IExpr angerJ(IExpr arg2) {
+    if (arg2 instanceof IReal) {
+      try {
+
+        Apfloat angerJ =
+            EvalEngine.getApfloatDouble().angerJ(apfloatValue(), ((IReal) arg2).apfloatValue());
+        return F.num(angerJ.doubleValue());
+      } catch (ArithmeticException | NumericComputationException e) {
+        // try as computation with complex numbers
+      }
+    }
+    if (arg2 instanceof INumber) {
+      try {
+        Apcomplex angerJ =
+            EvalEngine.getApfloatDouble().angerJ(apfloatValue(), ((INumber) arg2).apcomplexValue());
+        return F.complexNum(angerJ.real().doubleValue(), angerJ.imag().doubleValue());
+      } catch (ArithmeticException | NumericComputationException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return INum.super.angerJ(arg2);
   }
 
   @Override
@@ -2156,6 +2181,46 @@ public class Num implements INum {
       return F.complexNum(c.sqrt());
     }
     return valueOf(Math.sqrt(value));
+  }
+
+  @Override
+  public IExpr struveH(IExpr arg2) {
+    try {
+      return F.num(BesselJS.struveH(value, //
+          arg2.evalf()));
+    } catch (RuntimeException e) {
+      Errors.rethrowsInterruptException(e);
+      // try as computation with complex numbers
+    }
+
+    try {
+      return F.complexNum(BesselJS.struveH(new Complex(value), //
+          arg2.evalfc()));
+    } catch (RuntimeException e) {
+      Errors.rethrowsInterruptException(e);
+      // try as computation with complex numbers
+    }
+    return INum.super.struveH(arg2);
+  }
+
+  @Override
+  public IExpr struveL(IExpr arg2) {
+    try {
+      return F.num(BesselJS.struveL(value, //
+          arg2.evalf()));
+    } catch (RuntimeException e) {
+      Errors.rethrowsInterruptException(e);
+      // try as computation with complex numbers
+    }
+
+    try {
+      return F.complexNum(BesselJS.struveL(new Complex(value), //
+          arg2.evalfc()));
+    } catch (RuntimeException e) {
+      Errors.rethrowsInterruptException(e);
+      // try as computation with complex numbers
+    }
+    return INum.super.struveL(arg2);
   }
 
   @Override

@@ -488,6 +488,16 @@ public interface IExpr
   }
 
   /**
+   * Numeric AngerJ function.
+   *
+   * @param arg2
+   * @return J(this, arg2)
+   */
+  default IExpr angerJ(IExpr arg2) {
+    return F.NIL;
+  }
+
+  /**
    * @param leaves
    * @return an IExpr instance with the current expression as head(), and leaves as leaves().
    */
@@ -742,6 +752,28 @@ public interface IExpr
       // return F.pair(F.C1, ((IAST) this).setAtCopy(0, S.List));
     }
     return F.pair(F.C1, this);
+  }
+
+  /**
+   * Struve function H.
+   * 
+   * @param z
+   *
+   * @return <i>H<sub>this</sub>(z)</i>
+   */
+  default IExpr struveH(IExpr z) {
+    return F.NIL;
+  }
+
+  /**
+   * Struve function L.
+   * 
+   * @param z
+   *
+   * @return <i>L<sub>this</sub>(z)</i>
+   */
+  default IExpr struveL(IExpr z) {
+    return F.NIL;
   }
 
   @Override

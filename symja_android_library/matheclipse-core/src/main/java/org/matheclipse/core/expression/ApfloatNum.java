@@ -288,6 +288,26 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public IExpr angerJ(IExpr arg2) {
+    if (arg2 instanceof IReal) {
+      try {
+        return valueOf(EvalEngine.getApfloat().angerJ(fApfloat, ((IReal) arg2).apfloatValue()));
+      } catch (ArithmeticException | NumericComputationException e) {
+        // try as computation with complex numbers
+      }
+    }
+    if (arg2 instanceof INumber) {
+      try {
+        return F.complexNum(
+            EvalEngine.getApfloat().angerJ(fApfloat, ((INumber) arg2).apcomplexValue()));
+      } catch (ArithmeticException | NumericComputationException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return INum.super.angerJ(arg2);
+  }
+
+  @Override
   public ApcomplexNum apcomplexNumValue() {
     return ApcomplexNum.valueOf(fApfloat);
   }
@@ -2013,6 +2033,7 @@ public class ApfloatNum implements INum {
 
   @Override
   public IExpr sinIntegral() {
+    valueOf(EvalEngine.getApfloat().sinIntegral(fApfloat));
     return valueOf(EvalEngine.getApfloat().sinIntegral(fApfloat));
   }
 
@@ -2027,6 +2048,46 @@ public class ApfloatNum implements INum {
       return F.complexNum(EvalEngine.getApfloat().sqrt(apcomplexValue()));
     }
     return valueOf(EvalEngine.getApfloat().sqrt(fApfloat));
+  }
+
+  @Override
+  public IExpr struveH(IExpr arg2) {
+    if (arg2 instanceof IReal) {
+      try {
+        return valueOf(EvalEngine.getApfloat().struveH(fApfloat, ((IReal) arg2).apfloatValue()));
+      } catch (ArithmeticException | NumericComputationException e) {
+        // try as computation with complex numbers
+      }
+    }
+    if (arg2 instanceof INumber) {
+      try {
+        return F.complexNum(
+            EvalEngine.getApfloat().struveH(fApfloat, ((INumber) arg2).apcomplexValue()));
+      } catch (ArithmeticException | NumericComputationException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return INum.super.struveH(arg2);
+  }
+
+  @Override
+  public IExpr struveL(IExpr arg2) {
+    if (arg2 instanceof IReal) {
+      try {
+        return valueOf(EvalEngine.getApfloat().struveL(fApfloat, ((IReal) arg2).apfloatValue()));
+      } catch (ArithmeticException | NumericComputationException e) {
+        // try as computation with complex numbers
+      }
+    }
+    if (arg2 instanceof INumber) {
+      try {
+        return F.complexNum(
+            EvalEngine.getApfloat().struveL(fApfloat, ((INumber) arg2).apcomplexValue()));
+      } catch (ArithmeticException | NumericComputationException e) {
+        // try as computation with complex numbers
+      }
+    }
+    return INum.super.struveL(arg2);
   }
 
   @Override

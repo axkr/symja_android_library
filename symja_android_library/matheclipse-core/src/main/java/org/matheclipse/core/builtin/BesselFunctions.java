@@ -117,6 +117,16 @@ public class BesselFunctions {
     }
 
     @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        IInexactNumber n = (IInexactNumber) ast.arg1();
+        IInexactNumber z = (IInexactNumber) ast.arg2();
+        return n.angerJ(z);
+      }
+      return F.NIL;
+    }
+
+    @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr n = ast.arg1();
 
