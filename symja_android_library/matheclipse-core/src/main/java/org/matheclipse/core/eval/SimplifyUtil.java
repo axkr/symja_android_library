@@ -441,10 +441,7 @@ public class SimplifyUtil extends VisitorExpr {
     return fEngine.evaluate(a);
   }
 
-  private void functionExpand(IExpr expr, SimplifyUtil.SimplifiedResult sResult) { // long
-                                                                                   // minCounter,
-                                                                                   // IExpr
-    // result) {
+  private void functionExpand(IExpr expr, SimplifyUtil.SimplifiedResult sResult) {
     if (expr.isBooleanFunction()) {
       try {
         IExpr temp = eval(F.BooleanMinimize(expr));
@@ -505,14 +502,9 @@ public class SimplifyUtil extends VisitorExpr {
             IExpr conjugateArg = times.get(index1).first();
             int index2 = expr.indexOf(x -> x.equals(conjugateArg));
             if (index2 > 0) {
-              final IASTAppendable removeAtClone;
-              if (index2 > index1) {
-                removeAtClone = times.removeAtClone(index2);
-                removeAtClone.remove(index1);
-              } else {
-                removeAtClone = times.removeAtClone(index1);
-                removeAtClone.remove(index2);
-              }
+              final IASTAppendable removeAtClone =
+                  times.removePositionsAtCopy(new int[] {index1, index2}, 2);
+
               removeAtClone.append(F.Sqr(F.Abs(conjugateArg)));
               if (sResult.checkLessEqual(removeAtClone.oneIdentity1())) {
                 expr = sResult.result;

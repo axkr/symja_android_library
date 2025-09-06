@@ -5929,6 +5929,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     // if (untilIndex == 1) {
     // return removeAtCopy(removedPositions[0]);
     // }
+    Arrays.sort(removedPositions, 0, untilIndex);
     IASTAppendable result = copyAppendable();
     for (int j = untilIndex - 1; j >= 0; j--) {
       result.remove(removedPositions[j]);
