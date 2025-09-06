@@ -3004,6 +3004,14 @@ public class F extends S {
     return value.constantArray(List, 0, copies);
   }
 
+  public static IASTAppendable constantArray(final IExpr value, final int rows, final int columns) {
+    IASTAppendable result = F.ListAlloc(rows);
+    for (int i = 0; i < rows; i++) {
+      result.append(value.constantArray(List, 0, columns));
+    }
+    return result;
+  }
+
   public static IAST ConstantArray(final IExpr a0, final IExpr a1) {
     return new AST2(ConstantArray, a0, a1);
   }
@@ -4694,6 +4702,10 @@ public class F extends S {
 
   public static IAST GammaRegularized(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(GammaRegularized, a0, a1, a2);
+  }
+
+  public static IAST Gather(final IExpr a0) {
+    return new AST1(Gather, a0);
   }
 
   public static IAST Gather(final IExpr a0, final IExpr a1) {
@@ -8069,6 +8081,10 @@ public class F extends S {
     return new AST1(Ordering, a);
   }
 
+  public static IAST Orthogonalize(final IExpr m) {
+    return new AST1(Orthogonalize, m);
+  }
+
   public static IAST Out(final IExpr a0) {
     return new AST1(Out, a0);
   }
@@ -9605,6 +9621,10 @@ public class F extends S {
     return new AST1(Sinc, z);
   }
 
+  public static IAST SingularValueList(final IExpr matrix) {
+    return new AST1(SingularValueList, matrix);
+  }
+
   public static IAST Sinh(final IExpr z) {
 
     return new AST1(Sinh, z);
@@ -9699,6 +9719,10 @@ public class F extends S {
 
   public static IAST Sort(final IExpr a0, final IExpr a1) {
     return new AST2(Sort, a0, a1);
+  }
+
+  public static IAST SortBy(final IExpr a0, final IExpr a1) {
+    return new AST2(SortBy, a0, a1);
   }
 
   public static IAST Sow(final IExpr a) {
