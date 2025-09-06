@@ -32,7 +32,7 @@ import org.hipparchus.optim.nonlinear.vector.constrained.ConstraintOptimizer;
 import org.hipparchus.optim.nonlinear.vector.constrained.LagrangeSolution;
 import org.hipparchus.optim.nonlinear.vector.constrained.LinearEqualityConstraint;
 import org.hipparchus.optim.nonlinear.vector.constrained.LinearInequalityConstraint;
-import org.hipparchus.optim.nonlinear.vector.constrained.SQPOptimizerS;
+import org.hipparchus.optim.nonlinear.vector.constrained.SQPOptimizerS2;
 import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.JDKRandomGenerator;
 import org.hipparchus.random.RandomDataGenerator;
@@ -120,7 +120,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <h4>&quot;SequentialQuadratic&quot;</h4>
  * <p>
  * Implements the <a href=
- * "https://github.com/Hipparchus-Math/hipparchus/blob/main/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/vector/constrained/SQPOptimizerS.java">Sequential
+ * "https://github.com/Hipparchus-Math/hipparchus/blob/main/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/vector/constrained/SQPOptimizerS2.java">Sequential
  * Quadratic Programming</a> optimizer.
  * </p>
  * <p>
@@ -737,9 +737,8 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       IExpr function = engine.evaluate(originalFunction);
       if (method.equalsIgnoreCase(SEQUENTIAL_QUADRATIC_METHOD)) {
         try {
-          // TODO improve with new hipparchus implementation SQPOptimizerS2
           // https://github.com/Hipparchus-Math/hipparchus/pull/404
-          ConstraintOptimizer optim = new SQPOptimizerS();
+          ConstraintOptimizer optim = new SQPOptimizerS2();
           TwiceDifferentiableMultiVariateNumerical twiceDifferentiableFunction =
               new TwiceDifferentiableMultiVariateNumerical(function, variableList, true);
           // x > 0, y > 0

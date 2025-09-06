@@ -76,7 +76,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <h4>&quot;SequentialQuadratic&quot;</h4>
  * <p>
  * Implements the <a href=
- * "https://github.com/Hipparchus-Math/hipparchus/blob/main/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/vector/constrained/SQPOptimizerS.java">Sequential
+ * "https://github.com/Hipparchus-Math/hipparchus/blob/main/hipparchus-optim/src/main/java/org/hipparchus/optim/nonlinear/vector/constrained/SQPOptimizerS2.java">Sequential
  * Quadratic Programming</a> optimizer.
  * </p>
  * <p>
