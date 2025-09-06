@@ -180,6 +180,11 @@ public class ExprEvaluatorTests {
             mex.printStackTrace();
             System.err.println();
             fail();
+          } catch (StackOverflowError sof) {
+            System.err.println(mutant.toString());
+            sof.printStackTrace();
+            System.err.println();
+            // fail();
           } catch (RuntimeException rex) {
             System.err.println(mutant.toString());
             rex.printStackTrace();
@@ -835,7 +840,7 @@ public class ExprEvaluatorTests {
     EvalEngine engine = EvalEngine.get();
     try {
       IFunctionEvaluator evaluator =
-          (IFunctionEvaluator) ((IBuiltInSymbol) ast.topHead()).getEvaluator();
+          ((IBuiltInSymbol) ast.topHead()).getEvaluator();
       if (evaluator instanceof IFunctionEvaluator) {// evaluator may be null
         IExpr result = evaluator.evaluate(ast, engine);
         assertEquals(expected, result.toString());

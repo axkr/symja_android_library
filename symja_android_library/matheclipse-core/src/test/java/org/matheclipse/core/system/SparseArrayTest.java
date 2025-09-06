@@ -193,6 +193,8 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
     check("s = SparseArray({{1, 1} -> 1, {2, 2} -> 2, {3, 3} -> 3, {1, 3} -> 4})", //
         "SparseArray(Number of elements: 4 Dimensions: {3,3} Default value: 0)");
     check("t=Norm(s)", //
+        "Sqrt(13+4*Sqrt(10))");
+    check("Sqrt(13+4*Sqrt(10)) // N", //
         "5.0645");
     check("f=Norm(s,\"Frobenius\")", //
         "Sqrt(30)");

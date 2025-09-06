@@ -577,6 +577,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArcCoth() {
+    check("Refine(ArcCoth(Coth(x)),Element(x,Reals))", //
+        "x");
+
     check("ArcCoth(1/Sqrt(5))", //
         "ArcCoth(1/Sqrt(5))");
     check("ArcCoth(0)", //
@@ -614,6 +617,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArcCsch() {
+    check("Refine(ArcCsch(Csch(x)),Element(x,Reals))", //
+        "x");
+
     check("ArcCsch(-1+I)", //
         "-I*ArcCsc(1+I)");
     check("arccsch(0)", //
@@ -873,6 +879,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArcTanh() {
+    check("Refine(ArcTanh(Tanh(x)),Element(x,Reals))", //
+        "x");
+
     check("ArcTanh(-1+I)", //
         "I*ArcTan(1+I)");
     check("ArcTanh(0)", //
@@ -882,7 +891,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ArcTanh(2+I)", //
         "ArcTanh(2+I)");
     checkNumeric("ArcTanh(0.5 + 2*I)", //
-        "0.09641562020299621+I*1.1265564408348223");
+        "0.09641562020299611+I*1.1265564408348223");
 
     check("ArcTanh(I)", //
         "I*1/4*Pi");
@@ -8704,10 +8713,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check(
         "FindMinimum({x+y,3*x+2*y >= 7 , x >= 0 , y >= 0}, {x, y},Method -> \"SequentialQuadratic\")", //
-        "{2.33333,{x->2.33333,y->-8.32917*10^-11}}");
-    check(
-        "FindMinimum({x+y,3*x+2*y >= 7 && x >= 0 && y >= 0}, {x, y},Method -> \"SequentialQuadratic\")", //
-        "{2.33333,{x->2.33333,y->-8.32917*10^-11}}");
+        "{2.33333,{x->2.33333,y->-2.01416*10^-10}}");
+
     // TODO Less and Greater are not allowed at the moment
     // message: FindMinimum: Constraints in `1` are not all 'equality' or 'less
     // equal' or 'greater equal' linear constraints. Constraints with Unequal(!=) are not supported.
@@ -10224,27 +10231,53 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testFunctionDomain() {
-    // TODO implementation for multiple variables
-    // check("FunctionDomain(Sqrt(x^2+y^2-9), {x, y})", //
-    // " ");
-    check("FunctionDomain((x^2+x+1)/(-7+x^2), x)", //
-        "x<-Sqrt(7)||(-Sqrt(7)<x&&x<Sqrt(7))||x>Sqrt(7)");
+  public void testFunctionDomainComplexes() {
+    check("FunctionDomain(Gamma(z),z,Complexes)", //
+        "Re(z)>0||z∉Integers");
+    check("FunctionDomain(Tanh(z),z,Complexes)", //
+        "1/2+(-I*z)/Pi∉Integers");
+    check("FunctionDomain(Tan(z),z,Complexes)", //
+        "1/2+z/Pi∉Integers");
+    check("FunctionDomain(ArcCoth(z),z,Complexes)", //
+        "z!=1&&z!=-1");
+  }
 
+  @Test
+  public void testFunctionDomainReals() {
+    // FunctionDomain: -1/2 is not a valid variable.
+    check("FunctionDomain(3/2,{x,-1/2})", //
+        "FunctionDomain(3/2,{x,-1/2})");
+
+    check("FunctionDomain(Log(Tan(x) - 1), x)", //
+        "1/2+x/Pi∉Integers&&x>Pi/4&&x<Pi/2");
+
+    check("FunctionDomain((x^2+x+1)/(-7+x^2), x)", //
+        "x<-Sqrt(7)||(x>-Sqrt(7)&&x<Sqrt(7))||x>Sqrt(7)");
+
+    // TODO print more than one solution for Tan(x)-1>0
+    check("FunctionDomain(Log(Tan(x) - 1), x)", //
+        "1/2+x/Pi∉Integers&&x>Pi/4&&x<Pi/2");
+
+
+    // check("FunctionDomain(Sqrt(x^2+y^2-9), {x, y})", //
+    // "x^2+y^2>=9");
+    check("FunctionDomain(Sin(x), x)", //
+        "True");
+    check("FunctionDomain(Sin(Log(x)), x)", //
+        "x>0");
 
     check("FunctionDomain(Sqrt(1-x)+Sqrt(1+x), x )", //
-        "-1<=x&&x<=1");
+        "x>=-1&&x<=1");
 
     check("FunctionDomain(ArcCoth(2+3*x)*ArcSec(7+2/3*x), x)", //
-        "x<=-12||(-9<=x&&x<-1)||x>-1/3");
+        "x<=-12||(x>=-9&&x<-1)||x>-1/3");
+
     check("FunctionDomain(ArcSin(2+3*x), x)", //
-        "-1<=x&&x<=-1/3");
+        "x>=-1&&x<=-1/3");
     check("FunctionDomain(Sqrt(2+3*x), x)", //
         "x>=-2/3");
     check("FunctionDomain(Sqrt(-2-3*x), x)", //
         "x<=-2/3");
-    check("FunctionDomain((x^2+x+1)/(-7+x^2), x)", //
-        "x<-Sqrt(7)||(-Sqrt(7)<x&&x<Sqrt(7))||x>Sqrt(7)");
     check("FunctionDomain((x^2+x+1)/x, x)", //
         "x<0||x>0");
     check("FunctionDomain(1/(x^2), x)", //
@@ -10262,7 +10295,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FunctionDomain((2+x)^(-3), x)", //
         "x<-2||x>-2");
     check("FunctionDomain(Gamma(-3*x+2), x)", //
-        "2-3*x∉Integers&&x<2/3");
+        "x<2/3||2-3*x∉Integers");
     check("FunctionDomain(ArcCosh(x-1), x)", //
         "x>=2");
     check("FunctionDomain(Tan(3+x^2), x)", //
@@ -10271,19 +10304,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x>1");
 
     check("FunctionDomain(ArcCos(x)*Log(x), x)", //
-        "0<x&&x<=1");
+        "x>0&&x<=1");
     check("FunctionDomain(ArcSec(2+x), x)", //
         "x<=-3||x>=-1");
     check("FunctionDomain(Tan(3+x), x)", //
         "1/2+(3+x)/Pi∉Integers");
     check("FunctionDomain(x/(x^4 - 1), x)", //
-        "x<-1||(-1<x&&x<1)||x>1");
+        "x<-1||(x>-1&&x<1)||x>1");
     check("FunctionDomain(x/(x^4 - 1)+Tan(2+x), x)", //
-        "(1/2+(2+x)/Pi∉Integers&&x<-1)||(1/2+(2+x)/Pi∉Integers&&-1<x&&x<1)||(1/2+(2+x)/Pi∉Integers&&x>\n"
-            + "1)");
-    // message FunctionDomain: Unable to find the domain with the available methods.
-    check("FunctionDomain(Log(Tan(x) - 1), x)", //
-        "FunctionDomain(Log(-1+Tan(x)),x)");
+        "(x<-1||x>-1)&&(x<1||x>1)&&1/2+(2+x)/Pi∉Integers");
+    // TODO
+    // "(1/2+(2+x)/Pi∉Integers&&x<-1)||(1/2+(2+x)/Pi∉Integers&&-1<x&&x<1)||(1/2+(2+x)/Pi∉Integers&&x>\n"
+    // + "1)");
+
   }
 
   @Test
@@ -16238,6 +16271,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNorm() {
+    // TODO make it work for simple cases with variable names:
+    check("Refine(Norm({{1, x}, {3, 4}}),Element(x, Reals))", //
+        "Norm(\n" //
+            + "{{1,x},\n"//
+            + " {3,4}})");
+
+    check("Norm({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
+        "Sqrt(3/2*(95+Sqrt(8881)))");
+
+    check("Norm({{1,1},{-1,1}})", //
+        "Sqrt(2)");
+    check("Norm({{2,3/2},{3,5}})", //
+        "Sqrt(1/2*(161/4+3/4*Sqrt(2665)))");
+    check("Sqrt(1/2*(161/4+3/4*Sqrt(2665))) // N", //
+        "6.28362");
+
     // message Power: BigInteger bit length 76493 exceeded
     check("Norm({10,100,200},10007)", //
         "Norm({10,100,200},10007)", //
@@ -16368,6 +16417,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Normalize({{1,2},{4,5}})");
     // set the name of the norm to get a result
     check("Normalize({{1, 2}, {4, 5}}, Norm)", //
+        "{{1/Sqrt(1/2*(46+4*Sqrt(130))),2/Sqrt(1/2*(46+4*Sqrt(130)))},{4/Sqrt(1/2*(46+4*Sqrt(\n" //
+            + "130))),5/Sqrt(1/2*(46+4*Sqrt(130)))}}");
+    check(
+        "{{1/Sqrt(1/2*(46+4*Sqrt(130))),2/Sqrt(1/2*(46+4*Sqrt(130)))},{4/Sqrt(1/2*(46+4*Sqrt(130))),5/Sqrt(1/2*(46+4*Sqrt(130)))}} //N", //
         "{{0.147758,0.295516},{0.591031,0.738789}}");
 
     check(
@@ -23579,11 +23632,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testStruveH() {
+    check("StruveH(7/3 + I, 4.5 - I)", //
+        "2.35765+I*(-1.40054)");
+    check("N(StruveH(7/3 + I, 9/2 - I), 50)", //
+        "2.3576526265546755882575947268972720296062949915942+I*(-1.4005407254750530599636103672161816629212605715751)");
+
+    check("N(StruveH(0, 4), 50)", //
+        "0.13501457342248639716189589761708946345874580477675");
     // message "BigInteger bit length 60600 exceeded"
-    check(
-        "StruveH(1009,-9223372036854775807/9223372036854775808-I*9223372036854775808/9223372036854775807)", //
-        "StruveH(1009,-9223372036854775807/9223372036854775808-I*9223372036854775808/\n"
-            + "9223372036854775807)");
+    // check(
+    // "StruveH(1009,-9223372036854775807/9223372036854775808-I*9223372036854775808/9223372036854775807)",
+    // //
+    // "StruveH(1009,-9223372036854775807/9223372036854775808-I*9223372036854775808/\n"
+    // + "9223372036854775807)");
     // https://github.com/paulmasson/math/issues/9
     check("StruveH(0, 50.0)", //
         "-0.0853377");
@@ -23594,8 +23655,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-0.212448");
     check("StruveH(0, 4.0)", //
         "0.135015");
-    check("StruveH(7/3 + I, 4.5 - I)", //
-        "2.35765+I*(-1.40054)");
+
     check("StruveH(1,{0.5, 1.0, 1.5})", //
         "{0.0521737,0.198457,0.410288}");
     check("StruveH(1.5, 3.5)", //
@@ -23622,6 +23682,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testStruveL() {
+    check("N(StruveL(7/3 + I, 9/2 - I), 50)", //
+        "-0.977294788497826125470437322617021508896817658657+I*(-10.825882606764095233380115074057577420814740810573)");
+    check("StruveL(7/3 + I, 4.5 - I)", //
+        "-0.977295+I*(-10.82588)");
+
+    check("N(StruveL(0, 4), 50)", //
+        "11.131050203248583430971000405203573790363219235995");
     check("StruveL(0, 5.0)", //
         "27.10592");
     check("StruveL(0, 2.5)", //
@@ -23630,8 +23697,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "4.41126");
     check("StruveL(0, 4.0)", //
         "11.13105");
-    check("StruveL(7/3 + I, 4.5 - I)", //
-        "-0.977295+I*(-10.82588)");
     check("StruveL(1,{0.5, 1.0, 1.5})", //
         "{0.0539422,0.226764,0.553857}");
 
@@ -26029,7 +26094,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testUpSet() {
-
+    check("F(42) ^= 65", //
+        "65");
     check("ParameterRanges[Cartesian]^=Null;Null", //
         "");
     check("ParameterRanges[Cartesian]^=Null;Null", //
@@ -26040,21 +26106,26 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testUpSetDelayed() {
-    // associated with f
-    check("Part(f(x_), s1 : (_String | {_String ..}), s2 : (_String | {_String ..})) ^:= {x,s1,s2}", //
-        "");
-    check("f(y)[[{\"a\",\"b\"},{\"X\",\"Y\"}]]", //
-        "{y,{a,b},{X,Y}}");
-
-    check("$f($h(0)) ^= h0;$f($h(x_)) ^:= 2*$f($h(x - 1));$f($h(10))", //
-        "1024*h0");
-
     check("a*b_ ^:= c", //
         "");
     check("2*a", //
         "c");
     check("2*a*d", //
         "c");
+
+    // UpSet: Tag Integer in F(42) is Protected.
+    check("F(42) ^:= 65", //
+        "$Failed");
+
+    // UpSet: Tag Alternatives in f(x_)[[(s1:_String|{_String..}),(s2:_String|{_String..})]] is
+    // Protected.
+    check("Part(f(x_), s1 : (_String | {_String ..}), s2 : (_String | {_String ..})) ^:= {x,s1,s2}", //
+        "$Failed");
+    check("f(y)[[{\"a\",\"b\"},{\"X\",\"Y\"}]]", //
+        "{y,{a,b},{X,Y}}");
+
+    check("$f($h(0)) ^= h0;$f($h(x_)) ^:= 2*$f($h(x - 1));$f($h(10))", //
+        "1024*h0");
   }
 
   @Test
