@@ -651,6 +651,9 @@ public class ExpTrigsFunctions {
       if (imPart.isPresent()) {
         return F.Times(F.CNI, F.ArcCot(imPart));
       }
+      if (arg1.isAST(S.Coth, 2) && arg1.first().isRealResult()) {
+        return arg1.first();
+      }
       return F.NIL;
     }
 
@@ -766,6 +769,9 @@ public class ExpTrigsFunctions {
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
       if (negExpr.isPresent()) {
         return Negate(ArcCsch(negExpr));
+      }
+      if (arg1.isAST(S.Csch, 2) && arg1.first().isRealResult()) {
+        return arg1.first();
       }
       return F.NIL;
     }
@@ -1372,6 +1378,9 @@ public class ExpTrigsFunctions {
       // if (imPart.isPresent()) {
       // return F.Times(F.CI, F.ArcTan(imPart));
       // }
+      if (arg1.isTanh() && arg1.first().isRealResult()) {
+        return arg1.first();
+      }
       return F.NIL;
     }
 
