@@ -1,4 +1,4 @@
-# This workflow will build a Java project with Maven and will publish snapshot versions to the OSSRH Snapshots repository
+# This workflow will build a Java project with Maven and will publish snapshot versions to the Central Portal Snapshots repository
 # For more information see:
 # https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#Publishing-using-Apache-Maven
 # https://docs.github.com/en/actions/publishing-packages/publishing-java-packages-with-maven
@@ -27,8 +27,8 @@ jobs:
 
     - run: mvn deploy -Ppublish-to-maven-central
       working-directory: symja_android_library
-      # Deployment of all modules is deferred to the last module by nexus-staging-maven-plugin
+      # Deployment of all modules is deferred to the last module by central-publishing-maven-plugin
       env:
-        MAVEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USERNAME }}
-        MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN_PASSWORD }}
+        MAVEN_USERNAME: ${{ secrets.CENTRAL_PORTAL_TOKEN_USERNAME }}
+        MAVEN_PASSWORD: ${{ secrets.CENTRAL_PORTAL_TOKEN_PASSWORD }}
         MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
