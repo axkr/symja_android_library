@@ -117,6 +117,11 @@
 		<njord.version>0.8.3</njord.version>
 		<njord.releaseUrl>njord:template:release-sca</njord.releaseUrl>
 		<njord.snapshotUrl>njord:template:snapshot-sca</njord.snapshotUrl>
+		<!-- See https://github.com/maveniverse/njord/blob/60c02f746f0606aa685e7119f44c0a5b260bd336/publisher/sonatype-cp/src/main/java/eu/maveniverse/maven/njord/publisher/sonatype/cp/SonatypeCentralPortalPublisherConfig.java#L32-->
+		<njord.publisher.sonatype-cp.publishingType>USER_MANAGED</njord.publisher.sonatype-cp.publishingType>
+		<!-- See https://github.com/maveniverse/njord/tree/60c02f746f0606aa685e7119f44c0a5b260bd336/publisher/sonatype-cp -->
+		<njord.publisher.sonatype-cp.releaseRepositoryId>sonatype-central-portal</njord.publisher.sonatype-cp.releaseRepositoryId>
+		<njord.publisher.sonatype-cp.snapshotRepositoryId>sonatype-central-portal</njord.publisher.sonatype-cp.snapshotRepositoryId>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -560,6 +565,7 @@
 					<version>${njord.version}</version>
 					<configuration>
 						<publisher>sonatype-cp</publisher>
+						<details>true</details>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -704,6 +710,9 @@
 		</profile>
 		<profile>
 			<id>publish-to-maven-central</id>
+			<properties>
+				<altDeploymentRepository>id::njord:template:release-sca</altDeploymentRepository>
+			</properties>
 			<build>
 				<plugins>
 					<plugin>
