@@ -67,10 +67,10 @@ jobs:
 
     - run: mvn release:perform -DlocalCheckout=true
       working-directory: symja_android_library
-      # Deployment of all modules is deferred to the last module by nexus-staging-maven-plugin
+      # Deployment of all modules is deferred to the last module by central-publishing-maven-plugin
       env:
-        MAVEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USERNAME }}
-        MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN_PASSWORD }}
+        MAVEN_USERNAME: ${{ secrets.CENTRAL_PORTAL_TOKEN_USERNAME }}
+        MAVEN_PASSWORD: ${{ secrets.CENTRAL_PORTAL_TOKEN_PASSWORD }}
         MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
     - name: Publish release commits and tag to master
@@ -86,7 +86,7 @@ jobs:
         tag_name: ${{ env.release_tag }}
         draft: false
         prerelease: false
-        files: ./symja_android_library/target/checkout/symja_android_library/target/nexus-staging/**/*.jar
+        files: ./symja_android_library/target/checkout/symja_android_library/target/central-staging/**/*.jar
         body: |
           We are pleased to announce the release of Symja ${{ env.release_version }}.
           
