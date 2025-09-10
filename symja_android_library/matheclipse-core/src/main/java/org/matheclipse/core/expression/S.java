@@ -43,7 +43,6 @@ public class S {
     return BUILT_IN_SYMBOLS[id];
   }
 
-
   public final static IBuiltInSymbol $Aborted = S.initFinalSymbol("$Aborted", ID.$Aborted);
 
   /**
@@ -432,6 +431,15 @@ public class S {
 
   public final static IBuiltInSymbol AngerJ = S.initFinalSymbol("AngerJ", ID.AngerJ);
 
+  /**
+   * AnglePath({phi1, phi2, ...}) - returns the points formed by a turtle starting at `{0, 0}` and
+   * angled at `0` degrees going through the turns given by angles`phi1, phi2, ...` and using
+   * distance `1` for each step.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/AnglePath.md">AnglePath
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol AnglePath = S.initFinalSymbol("AnglePath", ID.AnglePath);
 
   /**
@@ -758,6 +766,14 @@ public class S {
    */
   public final static IBuiltInSymbol ArrayQ = S.initFinalSymbol("ArrayQ", ID.ArrayQ);
 
+  /**
+   * ArrayReduce(function, list-of-values, n) - returns the `list-of-values` structure reduced for
+   * dimension `n`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ArrayReduce.md">ArrayReduce
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ArrayReduce = S.initFinalSymbol("ArrayReduce", ID.ArrayReduce);
 
   /**
@@ -1096,6 +1112,13 @@ public class S {
   public final static IBuiltInSymbol BetaRegularized =
       S.initFinalSymbol("BetaRegularized", ID.BetaRegularized);
 
+  /**
+   * Between(expr, {min, max}) - equivalent to `(min <= expr) && (expr <= max)`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Between.md">Between
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Between = S.initFinalSymbol("Between", ID.Between);
 
   /**
@@ -1148,8 +1171,8 @@ public class S {
   public final static IBuiltInSymbol BinaryWrite = S.initFinalSymbol("BinaryWrite", ID.BinaryWrite);
 
   /**
-   * BinCounts(list, width-of-bin) - count the number of elements, if `list`, is divided into
-   * successive bins with width `width-of-bin`.
+   * BinCounts(list, widthOfBin) - count the number of elements, if `list`, is divided into
+   * successive bins with width `widthOfBin`.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BinCounts.md">BinCounts
@@ -1190,16 +1213,52 @@ public class S {
   public final static IBuiltInSymbol BioSequenceTranslate =
       S.initFinalSymbol("BioSequenceTranslate", ID.BioSequenceTranslate);
 
+  /**
+   * BipartiteGraphQ(expr) - test if `expr` is a bipartite graph object.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BipartiteGraphQ.md">BipartiteGraphQ
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol BipartiteGraphQ =
       S.initFinalSymbol("BipartiteGraphQ", ID.BipartiteGraphQ);
 
+  /**
+   * BitAnd(int1, int2, int3, ...) - returns the bitwise `AND` of the integer numbers `int1, int2,
+   * int3, ...`
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BitAnd.md">BitAnd
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol BitAnd = S.initFinalSymbol("BitAnd", ID.BitAnd);
 
+  /**
+   * BitClear(i, n) - clears the `n`th bit in the integer `i`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BitClear.md">BitClear
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol BitClear = S.initFinalSymbol("BitClear", ID.BitClear);
 
-  public final static IBuiltInSymbol BitGet = S.initFinalSymbol("BitGet", ID.BitGet);
-
+  /**
+   * BitFlip(i, n) - flips the `n`th bit in the integer `i`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BitFlip.md">BitFlip
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol BitFlip = S.initFinalSymbol("BitFlip", ID.BitFlip);
+
+  /**
+   * BitGet(i, n) - gets the `n`th bit in the integer `i`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BitGet.md">BitGet
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol BitGet = S.initFinalSymbol("BitGet", ID.BitGet);
 
   /**
    * BitLength(x) - gives the number of bits needed to represent the integer `x`. The sign of `x` is
@@ -1211,14 +1270,51 @@ public class S {
    */
   public final static IBuiltInSymbol BitLength = S.initFinalSymbol("BitLength", ID.BitLength);
 
+  /**
+   * BitNot(integer-value) - returns the bitwise `NOT` of the integer number `integer-value`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BitNot.md">BitNot
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol BitNot = S.initFinalSymbol("BitNot", ID.BitNot);
 
+  /**
+   * BitOr(int1, int2, int3, ...) - returns the bitwise `OR` of the integer numbers `int1, int2,
+   * int3, ...`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BitOr.md">BitOr
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol BitOr = S.initFinalSymbol("BitOr", ID.BitOr);
 
+  /**
+   * BitSet(i, b) - set the `b`th bit in the integer `i`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BitSet.md">BitSet
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol BitSet = S.initFinalSymbol("BitSet", ID.BitSet);
 
+  /**
+   * BitXor(int1, int2, int3, ...) - returns the bitwise `XOR` of the integer numbers `int1, int2,
+   * int3, ...`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/BitXor.md">BitXor
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol BitXor = S.initFinalSymbol("BitXor", ID.BitXor);
 
+  /**
+   * Black - RGB color value for the color black
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Black.md">Black
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Black = S.initFinalSymbol("Black", ID.Black);
 
   public final static IBuiltInSymbol BlackmanHarrisWindow =
@@ -1247,6 +1343,13 @@ public class S {
    */
   public final static IBuiltInSymbol Block = S.initFinalSymbol("Block", ID.Block);
 
+  /**
+   * Blue - RGB color value for the color blue
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Blue.md">Blue
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Blue = S.initFinalSymbol("Blue", ID.Blue);
 
   public final static IBuiltInSymbol BohrRadius = S.initFinalSymbol("BohrRadius", ID.BohrRadius);
@@ -1391,6 +1494,13 @@ public class S {
    */
   public final static IBuiltInSymbol Break = S.initFinalSymbol("Break", ID.Break);
 
+  /**
+   * Brown - RGB color value for the color brown
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Brown.md">Brown
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Brown = S.initFinalSymbol("Brown", ID.Brown);
 
   public final static IBuiltInSymbol BrownianBridgeProcess =
@@ -2106,6 +2216,14 @@ public class S {
   public final static IBuiltInSymbol ConjugateTranspose =
       S.initFinalSymbol("ConjugateTranspose", ID.ConjugateTranspose);
 
+  /**
+   * ConnectedGraphQ(graph) - returns `True` if the `graph` is strongly connected, which means that
+   * every vertex is reachable from every other vertex.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ConnectedGraphQ.md">ConnectedGraphQ
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ConnectedGraphQ =
       S.initFinalSymbol("ConnectedGraphQ", ID.ConnectedGraphQ);
 
@@ -2128,19 +2246,51 @@ public class S {
   public final static IBuiltInSymbol ConstantArray =
       S.initFinalSymbol("ConstantArray", ID.ConstantArray);
 
+  /**
+   * ContainsAll(list1, list2) - returns `True` if `list1` contains all of the elements that appear
+   * in `list2`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ContainsAll.md">ContainsAll
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ContainsAll = S.initFinalSymbol("ContainsAll", ID.ContainsAll);
 
+  /**
+   * ContainsAny(list1, list2) - returns `True` if `list1` contains one of the elements that appear
+   * in `list2`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ContainsAny.md">ContainsAny
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ContainsAny = S.initFinalSymbol("ContainsAny", ID.ContainsAny);
 
+  /**
+   * ContainsExactly(list1, list2) - returns `True` if `list1` contains exactly the elements that
+   * appear in `list2`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ContainsExactly.md">ContainsExactly
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ContainsExactly =
       S.initFinalSymbol("ContainsExactly", ID.ContainsExactly);
 
+  /**
+   * ContainsNone(list1, list2) - returns `True` if `list1` contains no element that appear in
+   * `list2`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ContainsNone.md">ContainsNone
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ContainsNone =
       S.initFinalSymbol("ContainsNone", ID.ContainsNone);
 
   /**
-   * ContainsOnly(list1, list2) - yields True if `list1` contains only elements that appear in
-   * `list2`.
+   * ContainsOnly(list1, list2) - returns `True` if `list1` contains only elements thatare elements
+   * in `list2`.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ContainsOnly.md">ContainsOnly
@@ -2158,6 +2308,13 @@ public class S {
    */
   public final static IBuiltInSymbol Context = S.initFinalSymbol("Context", ID.Context);
 
+  /**
+   * Contexts() - return a list of all contexts
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Contexts.md">Contexts
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Contexts = S.initFinalSymbol("Contexts", ID.Contexts);
 
   /**
@@ -2417,6 +2574,13 @@ public class S {
    */
   public final static IBuiltInSymbol Curl = S.initFinalSymbol("Curl", ID.Curl);
 
+  /**
+   * Cyan - RGB color value for the color cyan
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Cyan.md">Cyan
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Cyan = S.initFinalSymbol("Cyan", ID.Cyan);
 
   /**
@@ -2471,7 +2635,7 @@ public class S {
   public final static IBuiltInSymbol DataRange = S.initFinalSymbol("DataRange", ID.DataRange);
 
   /**
-   * - create a `Dataset` object from the `association`
+   * Dataset( association ) - create a `Dataset` object from the `association`
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Dataset.md">Dataset
@@ -2479,10 +2643,31 @@ public class S {
    */
   public final static IBuiltInSymbol Dataset = S.initFinalSymbol("Dataset", ID.Dataset);
 
+  /**
+   * DateObject() - return the current date
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DateObject.md">DateObject
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol DateObject = S.initFinalSymbol("DateObject", ID.DateObject);
 
+  /**
+   * DateString() - return the current date as string
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DateString.md">DateString
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol DateString = S.initFinalSymbol("DateString", ID.DateString);
 
+  /**
+   * DateValue("date-time-string") - return the current date in the specified date-time form
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DateValue.md">DateValue
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol DateValue = S.initFinalSymbol("DateValue", ID.DateValue);
 
   /**
@@ -2531,7 +2716,7 @@ public class S {
   public final static IBuiltInSymbol Defer = S.initFinalSymbol("Defer", ID.Defer);
 
   /**
-   * Definition(symbol) - prints user-defined values and rules associated with `symbol`.
+   * Definition(symbol) - prints values and rules associated with `symbol`.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Definition.md">Definition
@@ -2555,7 +2740,8 @@ public class S {
       S.initFinalSymbol("DegreeReverseLexicographic", ID.DegreeReverseLexicographic);
 
   /**
-   * Delete(expr, n) - returns `expr` with part `n` removed.
+   * Delete(expr, n) - deletes the element at position `n` in `expr`. The position is counted from
+   * the end if `n` is negative.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Delete.md">Delete
@@ -2803,12 +2989,33 @@ public class S {
 
   public final static IBuiltInSymbol Directive = S.initFinalSymbol("Directive", ID.Directive);
 
+  /**
+   * DirichletBeta(x) - `DirichletBeta` function returns the Dirichlet beta function.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DirichletBeta.md">DirichletBeta
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol DirichletBeta =
       S.initFinalSymbol("DirichletBeta", ID.DirichletBeta);
 
+  /**
+   * DirichletEta(x) - `DirichletEta` function returns the Dirichlet eta function.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DirichletEta.md">DirichletEta
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol DirichletEta =
       S.initFinalSymbol("DirichletEta", ID.DirichletEta);
 
+  /**
+   * DirichletLambda(z) - returns the Dirichlet lambda function.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DirichletLambda.md">DirichletLambda
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol DirichletLambda =
       S.initFinalSymbol("DirichletLambda", ID.DirichletLambda);
 
@@ -2980,7 +3187,7 @@ public class S {
       S.initFinalSymbol("Dodecahedron", ID.Dodecahedron);
 
   /**
-   * Dot(x, y) or x . y - `x . y` computes the vector dot product or matrix product `x . y`.
+   * Dot(x, y) - computes products of vectors, matrices, and tensors.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Dot.md">Dot
@@ -3445,9 +3652,23 @@ public class S {
    */
   public final static IBuiltInSymbol ExpandAll = S.initFinalSymbol("ExpandAll", ID.ExpandAll);
 
+  /**
+   * ExpandDenominator(expr) - expands the denominator of `expr`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ExpandDenominator.md">ExpandDenominator
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ExpandDenominator =
       S.initFinalSymbol("ExpandDenominator", ID.ExpandDenominator);
 
+  /**
+   * ExpandNumerator(expr) - expands the numerator of `expr`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ExpandNumerator.md">ExpandNumerator
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ExpandNumerator =
       S.initFinalSymbol("ExpandNumerator", ID.ExpandNumerator);
 
@@ -3511,6 +3732,13 @@ public class S {
    */
   public final static IBuiltInSymbol Export = S.initFinalSymbol("Export", ID.Export);
 
+  /**
+   * ExportString(string, export-format) - export the `string` in `export-format`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ExportString.md">ExportString
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ExportString =
       S.initFinalSymbol("ExportString", ID.ExportString);
 
@@ -3568,6 +3796,15 @@ public class S {
   public final static IBuiltInSymbol FactorialMoment =
       S.initFinalSymbol("FactorialMoment", ID.FactorialMoment);
 
+  /**
+   * FactorialPower(v, n) - The `FactorialPower` implements the falling factorial. The falling
+   * factorial (sometimes called the descending factorial, falling sequential product, or lower
+   * factorial) is defined as the polynomial `v*(v-1)*(v-2)*...*(v-n+1)`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FactorialPower.md">FactorialPower
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol FactorialPower =
       S.initFinalSymbol("FactorialPower", ID.FactorialPower);
 
@@ -3700,6 +3937,13 @@ public class S {
   public final static IBuiltInSymbol FindClusters =
       S.initFinalSymbol("FindClusters", ID.FindClusters);
 
+  /**
+   * FindCycle(graph) - Find a cycle in the given `graph`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindCycle.md">FindCycle
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol FindCycle = S.initFinalSymbol("FindCycle", ID.FindCycle);
 
   public final static IBuiltInSymbol FindEdgeCover =
@@ -3727,6 +3971,14 @@ public class S {
 
   public final static IBuiltInSymbol FindFormula = S.initFinalSymbol("FindFormula", ID.FindFormula);
 
+  /**
+   * FindGeneratingFunction({i1, i2, i3, ...}, var) - searches for a unary generating function
+   * applied to the variable `var`, where the series coefficients equals `{i1, i2, i3, ...}`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindGeneratingFunction.md">FindGeneratingFunction
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol FindGeneratingFunction =
       S.initFinalSymbol("FindGeneratingFunction", ID.FindGeneratingFunction);
 
@@ -3825,6 +4077,14 @@ public class S {
    */
   public final static IBuiltInSymbol FindRoot = S.initFinalSymbol("FindRoot", ID.FindRoot);
 
+  /**
+   * FindSequenceFunction({i1, i2, i3, ...}) - searches for a unary integer function, which
+   * generates the integer sequence `{i1, i2, i3, ...}`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FindSequenceFunction.md">FindSequenceFunction
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol FindSequenceFunction =
       S.initFinalSymbol("FindSequenceFunction", ID.FindSequenceFunction);
 
@@ -3902,7 +4162,7 @@ public class S {
       S.initFinalSymbol("FirstPosition", ID.FirstPosition);
 
   /**
-   * Fit(list-of-data-points, degree, variable) - solve a least squares problem using the
+   * Fit(list-of-data-points, terms-list, variable) - solve a least squares problem using the
    * Levenberg-Marquardt algorithm.
    * 
    * @see <a href=
@@ -4106,7 +4366,7 @@ public class S {
       S.initFinalSymbol("FrechetDistribution", ID.FrechetDistribution);
 
   /**
-   * FreeQ(`expr`, `x`) - returns 'True' if `expr` does not contain the expression `x`.
+   * FreeQ(expr, x) - returns `True` if `expr` does not contain the expression `x`.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FreeQ.md">FreeQ
@@ -4216,7 +4476,14 @@ public class S {
 
   public final static IBuiltInSymbol Full = S.initFinalSymbol("Full", ID.Full);
 
-
+  /**
+   * FullDefinition(symbol) - prints value and rule definitions associated with `symbol` and
+   * dependent symbols without attribute `Protected` recursively.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FullDefinition.md">FullDefinition
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol FullDefinition =
       S.initFinalSymbol("FullDefinition", ID.FullDefinition);
 
@@ -4408,9 +4675,23 @@ public class S {
    */
   public final static IBuiltInSymbol Glaisher = S.initFinalSymbol("Glaisher", ID.Glaisher);
 
+  /**
+   * GoldbachList(even-number) - return the list of Goldbach prime pairs for the `even-number`
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GoldbachList.md">GoldbachList
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol GoldbachList =
       S.initFinalSymbol("GoldbachList", ID.GoldbachList);
 
+  /**
+   * GoldenAngle - is the golden angle `Pi*(3-Sqrt(5))`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GoldenAngle.md">GoldenAngle
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol GoldenAngle = S.initFinalSymbol("GoldenAngle", ID.GoldenAngle);
 
   /**
@@ -4541,6 +4822,17 @@ public class S {
   public final static IBuiltInSymbol GraphPeriphery =
       S.initFinalSymbol("GraphPeriphery", ID.GraphPeriphery);
 
+  /**
+   * GraphPower(graph, n) - the function uses Dijkstra's algorithm (i.e.
+   * [FindShortestPath](FindShortestPath.md)) to find the shortest path between each pair of
+   * vertices. If the length of the shortest path is less than or equal to `n`, it adds an edge
+   * between the vertices in the new graph. The result is a new graph that is the power of the
+   * original graph.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GraphPower.md">GraphPower
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol GraphPower = S.initFinalSymbol("GraphPower", ID.GraphPower);
 
   /**
@@ -4571,6 +4863,13 @@ public class S {
    */
   public final static IBuiltInSymbol GraphUnion = S.initFinalSymbol("GraphUnion", ID.GraphUnion);
 
+  /**
+   * Gray - RGB color value for the color gray
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Gray.md">Gray
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Gray = S.initFinalSymbol("Gray", ID.Gray);
 
   public final static IBuiltInSymbol GrayLevel = S.initFinalSymbol("GrayLevel", ID.GrayLevel);
@@ -4599,8 +4898,22 @@ public class S {
 
   public final static IBuiltInSymbol GreaterThan = S.initFinalSymbol("GreaterThan", ID.GreaterThan);
 
+  /**
+   * Green - RGB color value for the color green
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Green.md">Green
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Green = S.initFinalSymbol("Green", ID.Green);
 
+  /**
+   * GridGraph({v1,v2}) - returns the grid graph with `v1 x v2` vertices.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GridGraph.md">GridGraph
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol GridGraph = S.initFinalSymbol("GridGraph", ID.GridGraph);
 
   /**
@@ -4669,10 +4982,31 @@ public class S {
   public final static IBuiltInSymbol HammingWindow =
       S.initFinalSymbol("HammingWindow", ID.HammingWindow);
 
+  /**
+   * HankelH1(n, x) - returns Hankel function of the first kind.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HankelH1.md">HankelH1
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol HankelH1 = S.initFinalSymbol("HankelH1", ID.HankelH1);
 
+  /**
+   * HankelH2(n, x) - returns Hankel function of the second kind.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HankelH2.md">HankelH2
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol HankelH2 = S.initFinalSymbol("HankelH2", ID.HankelH2);
 
+  /**
+   * HankelMatrix(n) - gives a Hankel matrix with the dimension `n`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HankelMatrix.md">HankelMatrix
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol HankelMatrix =
       S.initFinalSymbol("HankelMatrix", ID.HankelMatrix);
 
@@ -4724,7 +5058,7 @@ public class S {
   public final static IBuiltInSymbol HeavisidePi = S.initFinalSymbol("HeavisidePi", ID.HeavisidePi);
 
   /**
-   * HeavisideTheta(expr1, expr2, ... exprN) - returns `1` if all `expr1, expr2, ... exprN` are
+   * HeavisideTheta(expr1, expr2, ..., exprN) - returns `1` if all `expr1, expr2, ..., exprN` are
    * positive and `0` if one of the `expr1, expr2, ... exprN` is negative. `HeavisideTheta(0)`
    * returns unevaluated as `HeavisideTheta(0)`.
    * 
@@ -4819,6 +5153,14 @@ public class S {
    */
   public final static IBuiltInSymbol HoldAll = S.initFinalSymbol("HoldAll", ID.HoldAll);
 
+  /**
+   * HoldAllComplete - is an attribute specifying that all arguments of a function should be left
+   * completely unevaluated and `Sequence` expressions shouldn't be flattened out.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HoldAllComplete.md">HoldAllComplete
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol HoldAllComplete =
       S.initFinalSymbol("HoldAllComplete", ID.HoldAllComplete);
 
@@ -4885,7 +5227,7 @@ public class S {
   public final static IBuiltInSymbol Hue = S.initFinalSymbol("Hue", ID.Hue);
 
   /**
-   * HurwitzLerchPhi(z, s, a) - returns the Lerch transcendent function.
+   * HurwitzLerchPhi(z, s, a) - returns the Hurwitz-Lerch transcendent function.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HurwitzLerchPhi.md">HurwitzLerchPhi
@@ -4903,9 +5245,26 @@ public class S {
    */
   public final static IBuiltInSymbol HurwitzZeta = S.initFinalSymbol("HurwitzZeta", ID.HurwitzZeta);
 
+  /**
+   * HyperCubeGraph(order) - the hypercube graph `Q_n` is the graph formed from the vertices and
+   * edges of an n-dimensional hypercube. For instance, the cube graph `Q_3` is the graph formed by
+   * the 8 vertices and 12 edges of a three-dimensional cube.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HypercubeGraph.md">HypercubeGraph
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol HypercubeGraph =
       S.initFinalSymbol("HypercubeGraph", ID.HypercubeGraph);
 
+  /**
+   * Hyperfactorial(n) - returns the hyper factorial number of the integer `n`. The hyperfactorial
+   * of a positive integer n is the product of the numbers of the form `x^x` from `1^1` to `n^n`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Hyperfactorial.md">Hyperfactorial
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Hyperfactorial =
       S.initFinalSymbol("Hyperfactorial", ID.Hyperfactorial);
 
@@ -4971,6 +5330,14 @@ public class S {
   public final static IBuiltInSymbol HypergeometricPFQRegularized =
       S.initFinalSymbol("HypergeometricPFQRegularized", ID.HypergeometricPFQRegularized);
 
+  /**
+   * HypergeometricU(a, b, z) - return the Tricomi confluent hypergeometric function
+   * `HypergeometricU` fu
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/HypergeometricU.md">HypergeometricU
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol HypergeometricU =
       S.initFinalSymbol("HypergeometricU", ID.HypergeometricU);
 
@@ -5074,6 +5441,13 @@ public class S {
    */
   public final static IBuiltInSymbol Import = S.initFinalSymbol("Import", ID.Import);
 
+  /**
+   * ImportString(string, import-format) - import the `string` from `import-format`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ImportString.md">ImportString
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ImportString =
       S.initFinalSymbol("ImportString", ID.ImportString);
 
@@ -5321,6 +5695,13 @@ public class S {
   public final static IBuiltInSymbol InterpolatingPolynomial =
       S.initFinalSymbol("InterpolatingPolynomial", ID.InterpolatingPolynomial);
 
+  /**
+   * Interpolation(data-list) - return an `InterpolationFunction` for the `data-list`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Interpolation.md">Interpolation
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Interpolation =
       S.initFinalSymbol("Interpolation", ID.Interpolation);
 
@@ -5793,6 +6174,15 @@ public class S {
 
   public final static IBuiltInSymbol KeyAbsent = S.initFinalSymbol("KeyAbsent", ID.KeyAbsent);
 
+  /**
+   * KeyDrop(<|key1->value1, ...|>, {k1, k2,...}) - `KeyDrop` is a function used to remove specified
+   * keys `{k1, k2,...}` and their associated values from an association. It is useful for
+   * simplifying or filtering associations by excluding unwanted keys.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KeyDrop.md">KeyDrop
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol KeyDrop = S.initFinalSymbol("KeyDrop", ID.KeyDrop);
 
   public final static IBuiltInSymbol KeyExistsQ = S.initFinalSymbol("KeyExistsQ", ID.KeyExistsQ);
@@ -5835,6 +6225,16 @@ public class S {
    */
   public final static IBuiltInSymbol KeyTake = S.initFinalSymbol("KeyTake", ID.KeyTake);
 
+  /**
+   * KeyValuePattern( {rule-pattern1, rule-pattern1,...}) - `KeyValuePattern` is a pattern-matching
+   * construct used to identify elements in a collection (such as a list of associations) that match
+   * a specified set of key-value pairs. It is particularly useful for filtering data structures
+   * like lists of dictionaries or associations based on specific criteria.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/KeyValuePattern.md">KeyValuePattern
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol KeyValuePattern =
       S.initFinalSymbol("KeyValuePattern", ID.KeyValuePattern);
 
@@ -5871,7 +6271,7 @@ public class S {
   public final static IBuiltInSymbol KPartitions = S.initFinalSymbol("KPartitions", ID.KPartitions);
 
   /**
-   * KroneckerDelta(arg1, arg2, ... argN) - if all arguments `arg1` to `argN` are equal return `1`,
+   * KroneckerDelta(arg1, arg2, ..., argN) - if all arguments `arg1` to `argN` are equal return `1`,
    * otherwise return `0`.
    * 
    * @see <a href=
@@ -5933,6 +6333,13 @@ public class S {
   public final static IBuiltInSymbol LaplaceTransform =
       S.initFinalSymbol("LaplaceTransform", ID.LaplaceTransform);
 
+  /**
+   * Laplacian(function, {x1, x2, ... , xN}) - returns the Laplace operator
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Laplacian.md">Laplacian
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Laplacian = S.initFinalSymbol("Laplacian", ID.Laplacian);
 
   public final static IBuiltInSymbol Large = S.initFinalSymbol("Large", ID.Large);
@@ -6013,6 +6420,13 @@ public class S {
    */
   public final static IBuiltInSymbol LengthWhile = S.initFinalSymbol("LengthWhile", ID.LengthWhile);
 
+  /**
+   * LerchPhi(z, s, a) - returns the Lerch transcendent function.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LerchPhi.md">LerchPhi
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol LerchPhi = S.initFinalSymbol("LerchPhi", ID.LerchPhi);
 
   /**
@@ -6112,29 +6526,106 @@ public class S {
   public final static IBuiltInSymbol Lexicographic =
       S.initFinalSymbol("Lexicographic", ID.Lexicographic);
 
+  /**
+   * LightBlue - RGB color value for the color light blue
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LightBlue.md">LightBlue
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol LightBlue = S.initFinalSymbol("LightBlue", ID.LightBlue);
 
+  /**
+   * LightBrown - RGB color value for the color light brown
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LightBrown.md">LightBrown
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol LightBrown = S.initFinalSymbol("LightBrown", ID.LightBrown);
 
+  /**
+   * LightCyan - RGB color value for the color light cyan
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LightCyan.md">LightCyan
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol LightCyan = S.initFinalSymbol("LightCyan", ID.LightCyan);
 
+  /**
+   * LightGray - RGB color value for the color light gray
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LightGray.md">LightGray
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol LightGray = S.initFinalSymbol("LightGray", ID.LightGray);
 
+  /**
+   * LightGreen - RGB color value for the color light green
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LightGreen.md">LightGreen
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol LightGreen = S.initFinalSymbol("LightGreen", ID.LightGreen);
 
   public final static IBuiltInSymbol Lighting = S.initFinalSymbol("Lighting", ID.Lighting);
 
+  /**
+   * LightMagenta - RGB color value for the color light magenta
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LightMagenta.md">LightMagenta
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol LightMagenta =
       S.initFinalSymbol("LightMagenta", ID.LightMagenta);
 
+  /**
+   * LightOrange - RGB color value for the color light orange
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LightOrange.md">LightOrange
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol LightOrange = S.initFinalSymbol("LightOrange", ID.LightOrange);
 
+  /**
+   * LightPink - RGB color value for the color light pink
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LightPink.md">LightPink
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol LightPink = S.initFinalSymbol("LightPink", ID.LightPink);
 
+  /**
+   * LightPurple - RGB color value for the color light purple
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LightPurple.md">LightPurple
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol LightPurple = S.initFinalSymbol("LightPurple", ID.LightPurple);
 
+  /**
+   * LightRed - RGB color value for the color light red
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LightRed.md">LightRed
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol LightRed = S.initFinalSymbol("LightRed", ID.LightRed);
 
+  /**
+   * LightYellow - RGB color value for the color light yellow
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/LightYellow.md">LightYellow
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol LightYellow = S.initFinalSymbol("LightYellow", ID.LightYellow);
 
   /**
@@ -6341,12 +6832,11 @@ public class S {
    */
   public final static IBuiltInSymbol ListQ = S.initFinalSymbol("ListQ", ID.ListQ);
 
-  public final static IBuiltInSymbol ListStreamPlot =
-      S.initFinalSymbol("ListStreamPlot", ID.ListStreamPlot);
-
   public final static IBuiltInSymbol ListStepPlot =
       S.initFinalSymbol("ListStepPlot", ID.ListStepPlot);
 
+  public final static IBuiltInSymbol ListStreamPlot =
+      S.initFinalSymbol("ListStreamPlot", ID.ListStreamPlot);
 
   public final static IBuiltInSymbol ListVectorPlot =
       S.initFinalSymbol("ListVectorPlot", ID.ListVectorPlot);
@@ -6519,6 +7009,13 @@ public class S {
   public final static IBuiltInSymbol MachineNumberQ =
       S.initFinalSymbol("MachineNumberQ", ID.MachineNumberQ);
 
+  /**
+   * Magenta - RGB color value for the color magenta
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Magenta.md">Magenta
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Magenta = S.initFinalSymbol("Magenta", ID.Magenta);
 
   public final static IBuiltInSymbol MakeBoxes = S.initFinalSymbol("MakeBoxes", ID.MakeBoxes);
@@ -6567,10 +7064,25 @@ public class S {
    */
   public final static IBuiltInSymbol Map = S.initFinalSymbol("Map", ID.Map);
 
-  public final static IBuiltInSymbol MapApply = S.initFinalSymbol("MapApply", ID.MapApply);
-
   public final static IBuiltInSymbol MapAll = S.initFinalSymbol("MapAll", ID.MapAll);
 
+  /**
+   * MapApply(head, expr) - is equivalent to `Apply(head, expr, {1})`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MapApply.md">MapApply
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol MapApply = S.initFinalSymbol("MapApply", ID.MapApply);
+
+  /**
+   * MapAt(f, expr, n) - applies `f` to the element at position `n` in `expr`. If `n` is negative,
+   * the position is counted from the end.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MapAt.md">MapAt
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol MapAt = S.initFinalSymbol("MapAt", ID.MapAt);
 
   /**
@@ -6784,6 +7296,16 @@ public class S {
 
   public final static IBuiltInSymbol Medium = S.initFinalSymbol("Medium", ID.Medium);
 
+  /**
+   * MeijerG({{a(1),a(2),...,a(n)},{a(n+1),a(n+2),...,a(p)}},{{b(1),b(2),...,b(m)},{b(m+1),b(m+2),...,b(q)}},
+   * z) - return the `MeijerG` function. The G-function was introduced by Cornelis Simon Meijer
+   * (1936) as a very general function intended to include most of the known special functions as
+   * particular cases.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MeijerG.md">MeijerG
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol MeijerG = S.initFinalSymbol("MeijerG", ID.MeijerG);
 
   /**
@@ -6801,10 +7323,19 @@ public class S {
 
   public final static IBuiltInSymbol MemoryInUse = S.initFinalSymbol("MemoryInUse", ID.MemoryInUse);
 
+  /**
+   * Merge(list-of-rules-or-associations, function) - use the `function` to merge right-hand-side
+   * values with the left-hand-side key in the `list-of-rules-or-associations`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Merge.md">Merge
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Merge = S.initFinalSymbol("Merge", ID.Merge);
+
   /**
    * MersennePrimeExponent(n) - returns the `n`th mersenne prime exponent. `2^n - 1` must be a prime
-   * number. Currently `0 < n <= 47` can be computed, otherwise the function returns unevaluated.
+   * number. Currently `0 < n <= 52` can be computed, otherwise the function returns unevaluated.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MersennePrimeExponent.md">MersennePrimeExponent
@@ -6815,7 +7346,7 @@ public class S {
 
   /**
    * MersennePrimeExponentQ(n) - returns `True` if `2^n - 1` is a prime number. Currently `0 <= n <=
-   * 47` can be computed in reasonable time.
+   * 52` can be computed in reasonable time.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MersennePrimeExponentQ.md">MersennePrimeExponentQ
@@ -7049,10 +7580,6 @@ public class S {
    */
   public final static IBuiltInSymbol Names = S.initFinalSymbol("Names", ID.Names);
 
-  public final static IBuiltInSymbol NArgMax = S.initFinalSymbol("NArgMax", ID.NArgMax);
-
-  public final static IBuiltInSymbol NArgMin = S.initFinalSymbol("NArgMin", ID.NArgMin);
-
   /**
    * Nand(arg1, arg2, ...) - Logical NAND function. It evaluates its arguments in order, giving
    * `True` immediately if any of them are `False`, and `False` if they are all `True`.
@@ -7062,6 +7589,10 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Nand = S.initFinalSymbol("Nand", ID.Nand);
+
+  public final static IBuiltInSymbol NArgMax = S.initFinalSymbol("NArgMax", ID.NArgMax);
+
+  public final static IBuiltInSymbol NArgMin = S.initFinalSymbol("NArgMin", ID.NArgMin);
 
   /**
    * ND(function, x, value) - returns a numerical approximation of the partial derivative of the
@@ -7084,12 +7615,26 @@ public class S {
    */
   public final static IBuiltInSymbol NDSolve = S.initFinalSymbol("NDSolve", ID.NDSolve);
 
-
-  public final static IBuiltInSymbol NExpectation =
-      S.initFinalSymbol("NExpectation", ID.NExpectation);
-
+  /**
+   * Nearest(list-of-values, x-value) - returns the value from the `list-of-values` which is nearest
+   * to `x-value`. By default the `EuclideanDistance` is used. With the `DistanceFunction` option
+   * you can specify your own distance function.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Nearest.md">Nearest
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Nearest = S.initFinalSymbol("Nearest", ID.Nearest);
 
+  /**
+   * NearestTo(x-value) - returns the value from the `list-of-values` which is nearest to `x-value`.
+   * By default the `EuclideanDistance` is used. With the `DistanceFunction` option you can specify
+   * your own distance function.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NearestTo.md">NearestTo
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol NearestTo = S.initFinalSymbol("NearestTo", ID.NearestTo);
 
   public final static IBuiltInSymbol Needs = S.initFinalSymbol("Needs", ID.Needs);
@@ -7164,6 +7709,17 @@ public class S {
       S.initFinalSymbol("NestWhileList", ID.NestWhileList);
 
   public final static IBuiltInSymbol NewLimit = S.initFinalSymbol("NewLimit", ID.NewLimit);
+
+  /**
+   * NExpectation(pure-function, data-set) - returns the expected value of the `pure-function` for
+   * the given `data-set` numerically.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NExpectation.md">NExpectation
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol NExpectation =
+      S.initFinalSymbol("NExpectation", ID.NExpectation);
 
   /**
    * NextPrime(n) - gives the next prime after `n`.
@@ -7296,7 +7852,7 @@ public class S {
   public final static IBuiltInSymbol NonPositive = S.initFinalSymbol("NonPositive", ID.NonPositive);
 
   /**
-   * Nor(arg1, arg2, ...)' - Logical NOR function. It evaluates its arguments in order, giving
+   * Nor(arg1, arg2, ...) - Logical NOR function. It evaluates its arguments in order, giving
    * `False` immediately if any of them are `True`, and `True` if they are all `False`.
    * 
    * @see <a href=
@@ -7306,7 +7862,7 @@ public class S {
   public final static IBuiltInSymbol Nor = S.initFinalSymbol("Nor", ID.Nor);
 
   /**
-   * Norm(m, l) - computes the `l`-norm of matrix `m` (currently only works for vectors!).
+   * Norm(v) - returns the norm of the vector `v`
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Norm.md">Norm
@@ -7400,6 +7956,14 @@ public class S {
    */
   public final static IBuiltInSymbol NSolve = S.initFinalSymbol("NSolve", ID.NSolve);
 
+  /**
+   * NSum(expr, {i, imin, imax}) - evaluates the numerical approximated sum of `expr` with `i`
+   * ranging from `imin` to `imax`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NSum.md">NSum
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol NSum = S.initFinalSymbol("NSum", ID.NSum);
 
   /**
@@ -7421,6 +7985,8 @@ public class S {
   public final static IBuiltInSymbol NullSpace = S.initFinalSymbol("NullSpace", ID.NullSpace);
 
   public final static IBuiltInSymbol Number = S.initFinalSymbol("Number", ID.Number);
+
+  public final static IBuiltInSymbol NumberDigit = S.initFinalSymbol("NumberDigit", ID.NumberDigit);
 
   public final static IBuiltInSymbol NumberFieldRootsOfUnity =
       S.initFinalSymbol("NumberFieldRootsOfUnity", ID.NumberFieldRootsOfUnity);
@@ -7444,8 +8010,6 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol NumberQ = S.initFinalSymbol("NumberQ", ID.NumberQ);
-
-  public final static IBuiltInSymbol NumberDigit = S.initFinalSymbol("NumberDigit", ID.NumberDigit);
 
   /**
    * NumberString - represents the characters in a number.
@@ -7498,6 +8062,14 @@ public class S {
   public final static IBuiltInSymbol NumericArrayType =
       S.initFinalSymbol("NumericArrayType", ID.NumericArrayType);
 
+  /**
+   * NumericFunction - is an attribute for a symbol `f` to denote that the result of `f(arg1, arg2,
+   * ...)` can be treated as a numeric value provided that each `argN` is a numeric value.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/NumericFunction.md">NumericFunction
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol NumericFunction =
       S.initFinalSymbol("NumericFunction", ID.NumericFunction);
 
@@ -7618,6 +8190,15 @@ public class S {
    */
   public final static IBuiltInSymbol Options = S.initFinalSymbol("Options", ID.Options);
 
+  /**
+   * OptionsPattern(x) - is a pattern that stands for a sequence of options given to a function,
+   * with default values taken from `Options(x)`. The options can be of the form `opt->value` or
+   * `opt:>value`, and might be in arbitrarily nested lists.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/OptionsPattern.md">OptionsPattern
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol OptionsPattern =
       S.initFinalSymbol("OptionsPattern", ID.OptionsPattern);
 
@@ -7632,7 +8213,7 @@ public class S {
   public final static IBuiltInSymbol OptionValue = S.initFinalSymbol("OptionValue", ID.OptionValue);
 
   /**
-   * Or(expr1, expr2, ...)' - `expr1 || expr2 || ...` evaluates each expression in turn, returning
+   * Or(expr1, expr2, ...) - `expr1 || expr2 || ...` evaluates each expression in turn, returning
    * `True` as soon as an expression evaluates to `True`. If all expressions evaluate to `False`,
    * `Or` returns `False`.
    * 
@@ -7642,6 +8223,13 @@ public class S {
    */
   public final static IBuiltInSymbol Or = S.initFinalSymbol("Or", ID.Or);
 
+  /**
+   * Orange - RGB color value for the color orange
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Orange.md">Orange
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Orange = S.initFinalSymbol("Orange", ID.Orange);
 
   /**
@@ -7736,6 +8324,13 @@ public class S {
   public final static IBuiltInSymbol OutputStream =
       S.initFinalSymbol("OutputStream", ID.OutputStream);
 
+  /**
+   * Overflow( ) - represents a number too large to be represented by Symja.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Overflow.md">Overflow
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Overflow = S.initFinalSymbol("Overflow", ID.Overflow);
 
   public final static IBuiltInSymbol Overlaps = S.initFinalSymbol("Overlaps", ID.Overlaps);
@@ -7848,6 +8443,14 @@ public class S {
   public final static IBuiltInSymbol ParzenWindow =
       S.initFinalSymbol("ParzenWindow", ID.ParzenWindow);
 
+  /**
+   * PathGraph({vertex1, vertex2, ...}) - create a new path graph with the given vertices `vertex1,
+   * vertex2, ...`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PathGraph.md">PathGraph
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol PathGraph = S.initFinalSymbol("PathGraph", ID.PathGraph);
 
   public final static IBuiltInSymbol PathGraphQ = S.initFinalSymbol("PathGraphQ", ID.PathGraphQ);
@@ -7868,7 +8471,7 @@ public class S {
   public final static IBuiltInSymbol PatternTest = S.initFinalSymbol("PatternTest", ID.PatternTest);
 
   /**
-   * PauliMatrix(n) - returns `n`th Pauli spin `2x2` matrix for `n` between `0` and `4`.
+   * PauliMatrix(n) - returns the `n`th Pauli spin `2x2` matrix for `n` between `0` and `4`.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PauliMatrix.md">PauliMatrix
@@ -7911,7 +8514,8 @@ public class S {
 
   /**
    * PerfectNumber(n) - returns the `n`th perfect number. In number theory, a perfect number is a
-   * positive integer that is equal to the sum of its proper
+   * positive integer that is equal to the sum of its proper positive divisors, that is, the sum of
+   * its positive divisors excluding the number itself.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PerfectNumber.md">PerfectNumber
@@ -7922,7 +8526,8 @@ public class S {
 
   /**
    * PerfectNumberQ(n) - returns `True` if `n` is a perfect number. In number theory, a perfect
-   * number is a positive integer that is equal to the sum of its proper
+   * number is a positive integer that is equal to the sum of its proper positive divisors, that is,
+   * the sum of its positive divisors excluding the number itself.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PerfectNumberQ.md">PerfectNumberQ
@@ -8074,6 +8679,13 @@ public class S {
    */
   public final static IBuiltInSymbol PieChart = S.initFinalSymbol("PieChart", ID.PieChart);
 
+  /**
+   * Pink - RGB color value for the color pink
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Pink.md">Pink
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Pink = S.initFinalSymbol("Pink", ID.Pink);
 
   public final static IBuiltInSymbol PlanarGraph = S.initFinalSymbol("PlanarGraph", ID.PlanarGraph);
@@ -8286,7 +8898,7 @@ public class S {
       S.initFinalSymbol("PolynomialQuotientRemainder", ID.PolynomialQuotientRemainder);
 
   /**
-   * PolynomialQuotient(p, q, x) - returns the polynomial remainder of the polynomials `p` and `q`
+   * PolynomialRemainder(p, q, x) - returns the polynomial remainder of the polynomials `p` and `q`
    * for the variable `x`.
    * 
    * @see <a href=
@@ -8363,6 +8975,14 @@ public class S {
    */
   public final static IBuiltInSymbol PowerMod = S.initFinalSymbol("PowerMod", ID.PowerMod);
 
+  /**
+   * PowersRepresentations(intNumber, k, exponent) - computes the representations of the `intNumber`
+   * as sum of `x^exponent` terms which occur `k` times.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/PowersRepresentations.md">PowersRepresentations
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol PowersRepresentations =
       S.initFinalSymbol("PowersRepresentations", ID.PowersRepresentations);
 
@@ -8537,6 +9157,11 @@ public class S {
    */
   public final static IBuiltInSymbol Projection = S.initFinalSymbol("Projection", ID.Projection);
 
+  public final static IBuiltInSymbol Proportion = S.initFinalSymbol("Proportion", ID.Proportion);
+
+  public final static IBuiltInSymbol Proportional =
+      S.initFinalSymbol("Proportional", ID.Proportional);
+
   public final static IBuiltInSymbol Protect = S.initFinalSymbol("Protect", ID.Protect);
 
   public final static IBuiltInSymbol Protected = S.initFinalSymbol("Protected", ID.Protected);
@@ -8552,9 +9177,18 @@ public class S {
   public final static IBuiltInSymbol PseudoInverse =
       S.initFinalSymbol("PseudoInverse", ID.PseudoInverse);
 
+  /**
+   * Purple - RGB color value for the color purple
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Purple.md">Purple
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Purple = S.initFinalSymbol("Purple", ID.Purple);
 
   public final static IBuiltInSymbol Put = S.initFinalSymbol("Put", ID.Put);
+
+  public final static IBuiltInSymbol PutAppend = S.initFinalSymbol("PutAppend", ID.PutAppend);
 
   public final static IBuiltInSymbol Pyramid = S.initFinalSymbol("Pyramid", ID.Pyramid);
 
@@ -8614,6 +9248,13 @@ public class S {
 
   public final static IBuiltInSymbol QuantityQ = S.initFinalSymbol("QuantityQ", ID.QuantityQ);
 
+  /**
+   * QuantityUnit(quantity) - return the unit of the `quantity`
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/QuantityUnit.md">QuantityUnit
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol QuantityUnit =
       S.initFinalSymbol("QuantityUnit", ID.QuantityUnit);
 
@@ -8683,6 +9324,13 @@ public class S {
   public final static IBuiltInSymbol RamseyNumber =
       S.initFinalSymbol("RamseyNumber", ID.RamseyNumber);
 
+  /**
+   * Random() - gives a pseudorandom real number in the range `0.0` to `1.0`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Random.md">Random
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Random = S.initFinalSymbol("Random", ID.Random);
 
   /**
@@ -8825,6 +9473,9 @@ public class S {
 
   public final static IBuiltInSymbol Rationals = S.initFinalSymbol("Rationals", ID.Rationals);
 
+  public final static IBuiltInSymbol RawBackquote =
+      S.initFinalSymbol("RawBackquote", ID.RawBackquote);
+
   public final static IBuiltInSymbol RawBoxes = S.initFinalSymbol("RawBoxes", ID.RawBoxes);
 
   /**
@@ -8845,6 +9496,14 @@ public class S {
    */
   public final static IBuiltInSymbol Read = S.initFinalSymbol("Read", ID.Read);
 
+  /**
+   * ReadList(input-stream) - reads all the expressions until the end of file and return a list of
+   * these expressions.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ReadList.md">ReadList
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ReadList = S.initFinalSymbol("ReadList", ID.ReadList);
 
   public final static IBuiltInSymbol ReadProtected =
@@ -8923,6 +9582,13 @@ public class S {
 
   public final static IBuiltInSymbol Rectangle = S.initFinalSymbol("Rectangle", ID.Rectangle);
 
+  /**
+   * Red - RGB color value for the color red
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Red.md">Red
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Red = S.initFinalSymbol("Red", ID.Red);
 
   /**
@@ -9012,8 +9678,6 @@ public class S {
    */
   public final static IBuiltInSymbol Replace = S.initFinalSymbol("Replace", ID.Replace);
 
-  public final static IBuiltInSymbol ReplaceAt = S.initFinalSymbol("ReplaceAt", ID.ReplaceAt);
-
   /**
    * ReplaceAll(expr, i -> new) - replaces all `i` in `expr` with `new`.
    * 
@@ -9022,6 +9686,16 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol ReplaceAll = S.initFinalSymbol("ReplaceAll", ID.ReplaceAll);
+
+  /**
+   * ReplaceAt(expr, lhs -> rhs, position) - replaces the given `position` in `expr` which matches
+   * `lhs` with `rhs`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ReplaceAt.md">ReplaceAt
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol ReplaceAt = S.initFinalSymbol("ReplaceAt", ID.ReplaceAt);
 
   /**
    * ReplaceList(expr, lhs -> rhs) - replaces the left-hand-side pattern expression `lhs` in `expr`
@@ -9099,7 +9773,24 @@ public class S {
    */
   public final static IBuiltInSymbol Reverse = S.initFinalSymbol("Reverse", ID.Reverse);
 
+  public final static IBuiltInSymbol ReverseElement =
+      S.initFinalSymbol("ReverseElement", ID.ReverseElement);
+
+  public final static IBuiltInSymbol ReverseEquilibrium =
+      S.initFinalSymbol("ReverseEquilibrium", ID.ReverseEquilibrium);
+
+  /**
+   * ReverseSort(list) - sorts `list` (or the leaves of any other expression) according to reversed
+   * canonical ordering.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ReverseSort.md">ReverseSort
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ReverseSort = S.initFinalSymbol("ReverseSort", ID.ReverseSort);
+
+  public final static IBuiltInSymbol ReverseUpEquilibrium =
+      S.initFinalSymbol("ReverseUpEquilibrium", ID.ReverseUpEquilibrium);
 
   public final static IBuiltInSymbol RGBColor = S.initFinalSymbol("RGBColor", ID.RGBColor);
 
@@ -9128,6 +9819,14 @@ public class S {
 
   public final static IBuiltInSymbol Right = S.initFinalSymbol("Right", ID.Right);
 
+  public final static IBuiltInSymbol RightArrow = S.initFinalSymbol("RightArrow", ID.RightArrow);
+
+  public final static IBuiltInSymbol RightArrowBar =
+      S.initFinalSymbol("RightArrowBar", ID.RightArrowBar);
+
+  public final static IBuiltInSymbol RightArrowLeftArrow =
+      S.initFinalSymbol("RightArrowLeftArrow", ID.RightArrowLeftArrow);
+
   /**
    * RightComposition(sym1, sym2,...)[arg1, arg2,...] - creates a composition of the symbols applied
    * in reversed order at the arguments.
@@ -9138,6 +9837,49 @@ public class S {
    */
   public final static IBuiltInSymbol RightComposition =
       S.initFinalSymbol("RightComposition", ID.RightComposition);
+
+  public final static IBuiltInSymbol RightDownTeeVector =
+      S.initFinalSymbol("RightDownTeeVector", ID.RightDownTeeVector);
+
+  public final static IBuiltInSymbol RightDownVector =
+      S.initFinalSymbol("RightDownVector", ID.RightDownVector);
+
+  public final static IBuiltInSymbol RightDownVectorBar =
+      S.initFinalSymbol("RightDownVectorBar", ID.RightDownVectorBar);
+
+  public final static IBuiltInSymbol RightTee = S.initFinalSymbol("RightTee", ID.RightTee);
+
+  public final static IBuiltInSymbol RightTeeArrow =
+      S.initFinalSymbol("RightTeeArrow", ID.RightTeeArrow);
+
+  public final static IBuiltInSymbol RightTeeVector =
+      S.initFinalSymbol("RightTeeVector", ID.RightTeeVector);
+
+  public final static IBuiltInSymbol RightTriangle =
+      S.initFinalSymbol("RightTriangle", ID.RightTriangle);
+
+  public final static IBuiltInSymbol RightTriangleBar =
+      S.initFinalSymbol("RightTriangleBar", ID.RightTriangleBar);
+
+  public final static IBuiltInSymbol RightTriangleEqual =
+      S.initFinalSymbol("RightTriangleEqual", ID.RightTriangleEqual);
+
+  public final static IBuiltInSymbol RightUpDownVector =
+      S.initFinalSymbol("RightUpDownVector", ID.RightUpDownVector);
+
+  public final static IBuiltInSymbol RightUpTeeVector =
+      S.initFinalSymbol("RightUpTeeVector", ID.RightUpTeeVector);
+
+  public final static IBuiltInSymbol RightUpVector =
+      S.initFinalSymbol("RightUpVector", ID.RightUpVector);
+
+  public final static IBuiltInSymbol RightUpVectorBar =
+      S.initFinalSymbol("RightUpVectorBar", ID.RightUpVectorBar);
+
+  public final static IBuiltInSymbol RightVector = S.initFinalSymbol("RightVector", ID.RightVector);
+
+  public final static IBuiltInSymbol RightVectorBar =
+      S.initFinalSymbol("RightVectorBar", ID.RightVectorBar);
 
   /**
    * RogersTanimotoDissimilarity(u, v) - returns the Rogers-Tanimoto dissimilarity between the two
@@ -9168,6 +9910,13 @@ public class S {
   public final static IBuiltInSymbol RootIntervals =
       S.initFinalSymbol("RootIntervals", ID.RootIntervals);
 
+  /**
+   * RootMeanSquare(list) - calculate the root mean square
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/RootMeanSquare.md">RootMeanSquare
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol RootMeanSquare =
       S.initFinalSymbol("RootMeanSquare", ID.RootMeanSquare);
 
@@ -9231,6 +9980,9 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Round = S.initFinalSymbol("Round", ID.Round);
+
+  public final static IBuiltInSymbol RoundImplies =
+      S.initFinalSymbol("RoundImplies", ID.RoundImplies);
 
   public final static IBuiltInSymbol Row = S.initFinalSymbol("Row", ID.Row);
 
@@ -9345,6 +10097,15 @@ public class S {
   public final static IBuiltInSymbol SatisfiableQ =
       S.initFinalSymbol("SatisfiableQ", ID.SatisfiableQ);
 
+  /**
+   * Save("path-to-filename", expression) - if the file system is enabled, export the
+   * `FullDefinition` of the `expression` to the "path-to-filename" file. The saved file can be
+   * imported with `Get`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Save.md">Save
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Save = S.initFinalSymbol("Save", ID.Save);
 
   /**
@@ -9473,6 +10234,14 @@ public class S {
   public final static IBuiltInSymbol SequenceCases =
       S.initFinalSymbol("SequenceCases", ID.SequenceCases);
 
+  /**
+   * SequenceHold - is an attribute specifying that in all arguments of a function the `Sequence`
+   * expressions shouldn't be flattened out.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SequenceHold.md">SequenceHold
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol SequenceHold =
       S.initFinalSymbol("SequenceHold", ID.SequenceHold);
 
@@ -9566,7 +10335,19 @@ public class S {
 
   public final static IBuiltInSymbol Short = S.initFinalSymbol("Short", ID.Short);
 
+  public final static IBuiltInSymbol ShortDownArrow =
+      S.initFinalSymbol("ShortDownArrow", ID.ShortDownArrow);
+
   public final static IBuiltInSymbol Shortest = S.initFinalSymbol("Shortest", ID.Shortest);
+
+  public final static IBuiltInSymbol ShortLeftArrow =
+      S.initFinalSymbol("ShortLeftArrow", ID.ShortLeftArrow);
+
+  public final static IBuiltInSymbol ShortRightArrow =
+      S.initFinalSymbol("ShortRightArrow", ID.ShortRightArrow);
+
+  public final static IBuiltInSymbol ShortUpArrow =
+      S.initFinalSymbol("ShortUpArrow", ID.ShortUpArrow);
 
   public final static IBuiltInSymbol Show = S.initFinalSymbol("Show", ID.Show);
 
@@ -9672,6 +10453,8 @@ public class S {
    */
   public final static IBuiltInSymbol SixJSymbol = S.initFinalSymbol("SixJSymbol", ID.SixJSymbol);
 
+  public final static IBuiltInSymbol Skeleton = S.initFinalSymbol("Skeleton", ID.Skeleton);
+
   /**
    * Skewness(list) - gives Pearson's moment coefficient of skewness for `list` (a measure for
    * estimating the symmetry of a distribution).
@@ -9693,6 +10476,8 @@ public class S {
 
   public final static IBuiltInSymbol SlotAbsent = S.initFinalSymbol("SlotAbsent", ID.SlotAbsent);
 
+  public final static IBuiltInSymbol SlotNumber = S.initFinalSymbol("SlotNumber", ID.SlotNumber);
+
   /**
    * ## - is the sequence of arguments supplied to a pure function.
    * 
@@ -9703,9 +10488,12 @@ public class S {
   public final static IBuiltInSymbol SlotSequence =
       S.initFinalSymbol("SlotSequence", ID.SlotSequence);
 
+  public final static IBuiltInSymbol SlotSequenceNumber =
+      S.initFinalSymbol("SlotSequenceNumber", ID.SlotSequenceNumber);
+
   public final static IBuiltInSymbol Small = S.initFinalSymbol("Small", ID.Small);
 
-  public final static IBuiltInSymbol SudokuSolve = S.initFinalSymbol("SudokuSolve", ID.SudokuSolve);
+  public final static IBuiltInSymbol SmallCircle = S.initFinalSymbol("SmallCircle", ID.SmallCircle);
 
   /**
    * SokalSneathDissimilarity(u, v) - returns the Sokal-Sneath dissimilarity between the two boolean
@@ -9777,9 +10565,24 @@ public class S {
    */
   public final static IBuiltInSymbol SparseArray = S.initFinalSymbol("SparseArray", ID.SparseArray);
 
+  /**
+   * SparseArrayQ(expr) - return `True` if `expr` is a sparse array.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SparseArrayQ.md">SparseArrayQ
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol SparseArrayQ =
       S.initFinalSymbol("SparseArrayQ", ID.SparseArrayQ);
 
+  /**
+   * SpecialsFreeQ(expr) - returns `True` if `expr` does not contain the symbols `DirectedInfinity`
+   * or `Indeterminate`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SpecialsFreeQ.md">SpecialsFreeQ
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol SpecialsFreeQ =
       S.initFinalSymbol("SpecialsFreeQ", ID.SpecialsFreeQ);
 
@@ -9820,9 +10623,25 @@ public class S {
   public final static IBuiltInSymbol SphericalHankelH2 =
       S.initFinalSymbol("SphericalHankelH2", ID.SphericalHankelH2);
 
+  /**
+   * SphericalHarmonicY(l, m, theta, phi) - returns the spherical harmonic function `Y_l^m(theta,
+   * phi)`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SphericalHarmonicY.md">SphericalHarmonicY
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol SphericalHarmonicY =
       S.initFinalSymbol("SphericalHarmonicY", ID.SphericalHarmonicY);
 
+  /**
+   * Splice(list-of-elements) - the `list-of-elements` will automatically be converted into a
+   * `Sequence` of elements.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Splice.md">Splice
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Splice = S.initFinalSymbol("Splice", ID.Splice);
 
   /**
@@ -9857,6 +10676,8 @@ public class S {
 
   public final static IBuiltInSymbol SqrtBox = S.initFinalSymbol("SqrtBox", ID.SqrtBox);
 
+  public final static IBuiltInSymbol Square = S.initFinalSymbol("Square", ID.Square);
+
   /**
    * SquaredEuclideanDistance(u, v) - returns squared the euclidean distance between `u$` and `v`.
    * 
@@ -9877,6 +10698,9 @@ public class S {
    */
   public final static IBuiltInSymbol SquareFreeQ = S.initFinalSymbol("SquareFreeQ", ID.SquareFreeQ);
 
+  public final static IBuiltInSymbol SquareIntersection =
+      S.initFinalSymbol("SquareIntersection", ID.SquareIntersection);
+
   /**
    * SquareMatrixQ(m) - returns `True` if `m` is a square matrix.
    * 
@@ -9887,7 +10711,29 @@ public class S {
   public final static IBuiltInSymbol SquareMatrixQ =
       S.initFinalSymbol("SquareMatrixQ", ID.SquareMatrixQ);
 
+  /**
+   * SquaresR(k, intNumber) - counts the numbers of the representation of `intNumber` as sum of
+   * `x^2` terms which occur `k` times.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SquaresR.md">SquaresR
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol SquaresR = S.initFinalSymbol("SquaresR", ID.SquaresR);
+
+  public final static IBuiltInSymbol SquareSubset =
+      S.initFinalSymbol("SquareSubset", ID.SquareSubset);
+
+  public final static IBuiltInSymbol SquareSubsetEqual =
+      S.initFinalSymbol("SquareSubsetEqual", ID.SquareSubsetEqual);
+
+  public final static IBuiltInSymbol SquareSuperset =
+      S.initFinalSymbol("SquareSuperset", ID.SquareSuperset);
+
+  public final static IBuiltInSymbol SquareSupersetEqual =
+      S.initFinalSymbol("SquareSupersetEqual", ID.SquareSupersetEqual);
+
+  public final static IBuiltInSymbol SquareUnion = S.initFinalSymbol("SquareUnion", ID.SquareUnion);
 
   /**
    * SSSTriangle(a, b, c) - returns a triangle from 3 sides `a`, `b` and `c`.
@@ -9940,6 +10786,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Standardize = S.initFinalSymbol("Standardize", ID.Standardize);
+
+  public final static IBuiltInSymbol Star = S.initFinalSymbol("Star", ID.Star);
 
   /**
    * StarGraph(order) - create a new star graph with `order` number of total vertices including the
@@ -10295,6 +11143,25 @@ public class S {
   public final static IBuiltInSymbol SubscriptBox =
       S.initFinalSymbol("SubscriptBox", ID.SubscriptBox);
 
+  public final static IBuiltInSymbol Subset = S.initFinalSymbol("Subset", ID.Subset);
+
+  /**
+   * SubsetCases(list, sublist -> rhs) - returns a list of the right-hand-side `rhs` for the
+   * matching sublist pattern expression `sublist` in `list`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SubsetCases.md">SubsetCases
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SubsetCases = S.initFinalSymbol("SubsetCases", ID.SubsetCases);
+
+  public final static IBuiltInSymbol SubsetCount = S.initFinalSymbol("SubsetCount", ID.SubsetCount);
+
+  public final static IBuiltInSymbol SubsetEqual = S.initFinalSymbol("SubsetEqual", ID.SubsetEqual);
+
+  public final static IBuiltInSymbol SubsetPosition =
+      S.initFinalSymbol("SubsetPosition", ID.SubsetPosition);
+
   /**
    * SubsetQ(set1, set2) - returns `True` if `set2` is a subset of `set1`.
    * 
@@ -10305,6 +11172,17 @@ public class S {
   public final static IBuiltInSymbol SubsetQ = S.initFinalSymbol("SubsetQ", ID.SubsetQ);
 
   /**
+   * SubsetReplace(list, sublist -> rhs) - replaces the sublist pattern expression `sublist` in
+   * `list` with the right-hand-side `rhs`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SubsetReplace.md">SubsetReplace
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SubsetReplace =
+      S.initFinalSymbol("SubsetReplace", ID.SubsetReplace);
+
+  /**
    * Subsets(list) - finds a list of all possible subsets of `list`.
    * 
    * @see <a href=
@@ -10312,16 +11190,6 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Subsets = S.initFinalSymbol("Subsets", ID.Subsets);
-
-  public final static IBuiltInSymbol SubsetCases = S.initFinalSymbol("SubsetCases", ID.SubsetCases);
-
-  public final static IBuiltInSymbol SubsetCount = S.initFinalSymbol("SubsetCount", ID.SubsetCount);
-
-  public final static IBuiltInSymbol SubsetPosition =
-      S.initFinalSymbol("SubsetPosition", ID.SubsetPosition);
-
-  public final static IBuiltInSymbol SubsetReplace =
-      S.initFinalSymbol("SubsetReplace", ID.SubsetReplace);
 
   public final static IBuiltInSymbol Subsuperscript =
       S.initFinalSymbol("Subsuperscript", ID.Subsuperscript);
@@ -10360,6 +11228,32 @@ public class S {
   public final static IBuiltInSymbol SubtractSides =
       S.initFinalSymbol("SubtractSides", ID.SubtractSides);
 
+  public final static IBuiltInSymbol Succeeds = S.initFinalSymbol("Succeeds", ID.Succeeds);
+
+  public final static IBuiltInSymbol SucceedsEqual =
+      S.initFinalSymbol("SucceedsEqual", ID.SucceedsEqual);
+
+  public final static IBuiltInSymbol SucceedsSlantEqual =
+      S.initFinalSymbol("SucceedsSlantEqual", ID.SucceedsSlantEqual);
+
+  public final static IBuiltInSymbol SucceedsTilde =
+      S.initFinalSymbol("SucceedsTilde", ID.SucceedsTilde);
+
+  public final static IBuiltInSymbol SuchThat = S.initFinalSymbol("SuchThat", ID.SuchThat);
+
+  /**
+   * SudokuSolve(matrix) - In Sudoku, the objective is to fill a 9 × 9 `matrix` with digits so that
+   * each column, each row, and each of the nine 3 × 3 subgrids that compose the grid (also called
+   * "boxes", "blocks", or "regions") contains all of the digits from 1 to 9. Every input which is
+   * not a number between 1 and 9 will be replaced with the correct number to fully solve the
+   * sudoku.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SudokuSolve.md">SudokuSolve
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol SudokuSolve = S.initFinalSymbol("SudokuSolve", ID.SudokuSolve);
+
   /**
    * Sum(expr, {i, imin, imax}) - evaluates the discrete sum of `expr` with `i` ranging from `imin`
    * to `imax`.
@@ -10372,10 +11266,17 @@ public class S {
 
   public final static IBuiltInSymbol Summary = S.initFinalSymbol("Summary", ID.Summary);
 
+  public final static IBuiltInSymbol SuperDagger = S.initFinalSymbol("SuperDagger", ID.SuperDagger);
+
   public final static IBuiltInSymbol Superscript = S.initFinalSymbol("Superscript", ID.Superscript);
 
   public final static IBuiltInSymbol SuperscriptBox =
       S.initFinalSymbol("SuperscriptBox", ID.SuperscriptBox);
+
+  public final static IBuiltInSymbol Superset = S.initFinalSymbol("Superset", ID.Superset);
+
+  public final static IBuiltInSymbol SupersetEqual =
+      S.initFinalSymbol("SupersetEqual", ID.SupersetEqual);
 
   /**
    * Surd(expr, n) - returns the `n`-th root of `expr`. If the result is defined, it's a real value.
@@ -10522,6 +11423,8 @@ public class S {
    */
   public final static IBuiltInSymbol TagSetDelayed =
       S.initFinalSymbol("TagSetDelayed", ID.TagSetDelayed);
+
+  public final static IBuiltInSymbol TagUnset = S.initFinalSymbol("TagUnset", ID.TagUnset);
 
   /**
    * Take(expr, n) - returns `expr` with all but the first `n` leaves removed.
@@ -10696,6 +11599,8 @@ public class S {
   public final static IBuiltInSymbol TensorSymmetry =
       S.initFinalSymbol("TensorSymmetry", ID.TensorSymmetry);
 
+  public final static IBuiltInSymbol TensorWedge = S.initFinalSymbol("TensorWedge", ID.TensorWedge);
+
   public final static IBuiltInSymbol TestID = S.initFinalSymbol("TestID", ID.TestID);
 
   /**
@@ -10744,6 +11649,8 @@ public class S {
   public final static IBuiltInSymbol TextStructure =
       S.initFinalSymbol("TextStructure", ID.TextStructure);
 
+  public final static IBuiltInSymbol Therefore = S.initFinalSymbol("Therefore", ID.Therefore);
+
   public final static IBuiltInSymbol Thickness = S.initFinalSymbol("Thickness", ID.Thickness);
 
   /**
@@ -10788,6 +11695,15 @@ public class S {
 
   public final static IBuiltInSymbol TicksStyle = S.initFinalSymbol("TicksStyle", ID.TicksStyle);
 
+  public final static IBuiltInSymbol Tilde = S.initFinalSymbol("Tilde", ID.Tilde);
+
+  public final static IBuiltInSymbol TildeEqual = S.initFinalSymbol("TildeEqual", ID.TildeEqual);
+
+  public final static IBuiltInSymbol TildeFullEqual =
+      S.initFinalSymbol("TildeFullEqual", ID.TildeFullEqual);
+
+  public final static IBuiltInSymbol TildeTilde = S.initFinalSymbol("TildeTilde", ID.TildeTilde);
+
   /**
    * TimeConstrained(expression, seconds) - stop evaluation of `expression` if time measurement of
    * the evaluation exceeds `seconds` and return `$Aborted`.
@@ -10799,6 +11715,13 @@ public class S {
   public final static IBuiltInSymbol TimeConstrained =
       S.initFinalSymbol("TimeConstrained", ID.TimeConstrained);
 
+  /**
+   * TimeObject() - returns the current time
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TimeObject.md">TimeObject
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol TimeObject = S.initFinalSymbol("TimeObject", ID.TimeObject);
 
   public final static IBuiltInSymbol TimeRemaining =
@@ -10869,7 +11792,7 @@ public class S {
       S.initFinalSymbol("ToeplitzMatrix", ID.ToeplitzMatrix);
 
   /**
-   * ToExpression("string", form) - converts the `string` given in `form` into an expression.
+   * ToExpression("string") - interprets a given string as Symja input.
    * 
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ToExpression.md">ToExpression
@@ -10916,6 +11839,9 @@ public class S {
       S.initFinalSymbol("ToPolarCoordinates", ID.ToPolarCoordinates);
 
   public final static IBuiltInSymbol ToRadicals = S.initFinalSymbol("ToRadicals", ID.ToRadicals);
+
+  public final static IBuiltInSymbol TortoiseShellBracket =
+      S.initFinalSymbol("TortoiseShellBracket", ID.TortoiseShellBracket);
 
   /**
    * ToSphericalCoordinates({x, y, z}) - returns the spherical coordinates for the cartesian
@@ -11116,6 +12042,14 @@ public class S {
 
   public final static IBuiltInSymbol TwoWayRule = S.initFinalSymbol("TwoWayRule", ID.TwoWayRule);
 
+  public final static IBuiltInSymbol UnaryMinusPlus =
+      S.initFinalSymbol("UnaryMinusPlus", ID.UnaryMinusPlus);
+
+  public final static IBuiltInSymbol UnaryPlus = S.initFinalSymbol("UnaryPlus", ID.UnaryPlus);
+
+  public final static IBuiltInSymbol UnaryPlusMinus =
+      S.initFinalSymbol("UnaryPlusMinus", ID.UnaryPlusMinus);
+
   /**
    * Undefined - represents an undefined result for example in the `ConditionalExpression` function.
    * 
@@ -11196,6 +12130,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Union = S.initFinalSymbol("Union", ID.Union);
+
+  public final static IBuiltInSymbol UnionPlus = S.initFinalSymbol("UnionPlus", ID.UnionPlus);
 
   /**
    * Unique(expr) - create a unique symbol of the form `expr$...`.
@@ -11282,6 +12218,18 @@ public class S {
    */
   public final static IBuiltInSymbol Unset = S.initFinalSymbol("Unset", ID.Unset);
 
+  public final static IBuiltInSymbol UpArrow = S.initFinalSymbol("UpArrow", ID.UpArrow);
+
+  public final static IBuiltInSymbol UpArrowBar = S.initFinalSymbol("UpArrowBar", ID.UpArrowBar);
+
+  public final static IBuiltInSymbol UpArrowDownArrow =
+      S.initFinalSymbol("UpArrowDownArrow", ID.UpArrowDownArrow);
+
+  public final static IBuiltInSymbol UpDownArrow = S.initFinalSymbol("UpDownArrow", ID.UpDownArrow);
+
+  public final static IBuiltInSymbol UpEquilibrium =
+      S.initFinalSymbol("UpEquilibrium", ID.UpEquilibrium);
+
   /**
    * UpperCaseQ(str) - is `True` if the given `str` is a string which only contains upper case
    * characters.
@@ -11291,6 +12239,12 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol UpperCaseQ = S.initFinalSymbol("UpperCaseQ", ID.UpperCaseQ);
+
+  public final static IBuiltInSymbol UpperLeftArrow =
+      S.initFinalSymbol("UpperLeftArrow", ID.UpperLeftArrow);
+
+  public final static IBuiltInSymbol UpperRightArrow =
+      S.initFinalSymbol("UpperRightArrow", ID.UpperRightArrow);
 
   /**
    * UpperTriangularize(matrix) - create a upper triangular matrix from the given `matrix`.
@@ -11316,6 +12270,10 @@ public class S {
 
   public final static IBuiltInSymbol UpSetDelayed =
       S.initFinalSymbol("UpSetDelayed", ID.UpSetDelayed);
+
+  public final static IBuiltInSymbol UpTee = S.initFinalSymbol("UpTee", ID.UpTee);
+
+  public final static IBuiltInSymbol UpTeeArrow = S.initFinalSymbol("UpTeeArrow", ID.UpTeeArrow);
 
   public final static IBuiltInSymbol UpTo = S.initFinalSymbol("UpTo", ID.UpTo);
 
@@ -11391,14 +12349,52 @@ public class S {
    */
   public final static IBuiltInSymbol VectorAngle = S.initFinalSymbol("VectorAngle", ID.VectorAngle);
 
+  /**
+   * VectorGreater({vector1, vector2}) - the `VectorGreater` function is used to compare two
+   * vectors, `vector1` and `vector2` recursively. It returns `True` if each corresponding element
+   * of `vector1` is greater than the corresponding element of `vector2`, and `False` otherwise.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VectorGreater.md">VectorGreater
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol VectorGreater =
       S.initFinalSymbol("VectorGreater", ID.VectorGreater);
 
+  /**
+   * VectorGreaterEqual({vector1, vector2}) - the `VectorGreaterEqual` function is used to compare
+   * two vectors, `vector1` and `vector2` recursively. It returns `True` if each corresponding
+   * element of `vector1` is greater or equal than the corresponding element of `vector2`, and
+   * `False` otherwise.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VectorGreaterEqual.md">VectorGreaterEqual
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol VectorGreaterEqual =
       S.initFinalSymbol("VectorGreaterEqual", ID.VectorGreaterEqual);
 
+  /**
+   * VectorLess({vector1, vector2}) - the `VectorLess` function is used to compare two vectors,
+   * `vector1` and `vector2` recursively. It returns `True` if each corresponding element of
+   * `vector1` is less than the corresponding element of `vector2`, and `False` otherwise.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VectorLess.md">VectorLess
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol VectorLess = S.initFinalSymbol("VectorLess", ID.VectorLess);
 
+  /**
+   * VectorLessEqual({vector1, vector2}) - the `VectorLessEqual` function is used to compare two
+   * vectors, `vector1` and `vector2` recursively. It returns `True` if each corresponding element
+   * of `vector1` is less or equal than the corresponding element of `vector2`, and `False`
+   * otherwise.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/VectorLessEqual.md">VectorLessEqual
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol VectorLessEqual =
       S.initFinalSymbol("VectorLessEqual", ID.VectorLessEqual);
 
@@ -11414,6 +12410,8 @@ public class S {
   public final static IBuiltInSymbol VectorQ = S.initFinalSymbol("VectorQ", ID.VectorQ);
 
   public final static IBuiltInSymbol Vectors = S.initFinalSymbol("Vectors", ID.Vectors);
+
+  public final static IBuiltInSymbol Vee = S.initFinalSymbol("Vee", ID.Vee);
 
   /**
    * Verbatim(expr) - prevents pattern constructs in `expr` from taking effect, allowing them to
@@ -11475,6 +12473,14 @@ public class S {
 
   public final static IBuiltInSymbol VertexStyle = S.initFinalSymbol("VertexStyle", ID.VertexStyle);
 
+  public final static IBuiltInSymbol VerticalBar = S.initFinalSymbol("VerticalBar", ID.VerticalBar);
+
+  public final static IBuiltInSymbol VerticalSeparator =
+      S.initFinalSymbol("VerticalSeparator", ID.VerticalSeparator);
+
+  public final static IBuiltInSymbol VerticalTilde =
+      S.initFinalSymbol("VerticalTilde", ID.VerticalTilde);
+
   public final static IBuiltInSymbol ViewPoint = S.initFinalSymbol("ViewPoint", ID.ViewPoint);
 
   public final static IBuiltInSymbol Volume = S.initFinalSymbol("Volume", ID.Volume);
@@ -11483,6 +12489,8 @@ public class S {
       S.initFinalSymbol("WeaklyConnectedGraphQ", ID.WeaklyConnectedGraphQ);
 
   public final static IBuiltInSymbol WeberE = S.initFinalSymbol("WeberE", ID.WeberE);
+
+  public final static IBuiltInSymbol Wedge = S.initFinalSymbol("Wedge", ID.Wedge);
 
   /**
    * WeibullDistribution(a, b) - returns a Weibull distribution.
@@ -11537,6 +12545,14 @@ public class S {
   public final static IBuiltInSymbol WeightedGraphQ =
       S.initFinalSymbol("WeightedGraphQ", ID.WeightedGraphQ);
 
+  /**
+   * WheelGraph(order) - in graph theory, a wheel graph is a graph formed by connecting a single
+   * universal vertex to all vertices of a cycle.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WheelGraph.md">WheelGraph
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol WheelGraph = S.initFinalSymbol("WheelGraph", ID.WheelGraph);
 
   /**
@@ -11558,7 +12574,17 @@ public class S {
    */
   public final static IBuiltInSymbol While = S.initFinalSymbol("While", ID.While);
 
+  /**
+   * White - RGB color value for the color white
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/White.md">White
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol White = S.initFinalSymbol("White", ID.White);
+
+  public final static IBuiltInSymbol WhiteCornerBracket =
+      S.initFinalSymbol("WhiteCornerBracket", ID.WhiteCornerBracket);
 
   /**
    * Whitespace - represents a sequence of whitespace characters.
@@ -11579,10 +12605,32 @@ public class S {
   public final static IBuiltInSymbol WhitespaceCharacter =
       S.initFinalSymbol("WhitespaceCharacter", ID.WhitespaceCharacter);
 
+  /**
+   * WhittakerM(a, b, z) - returns the Whittaker function `M_a,b(z)`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WhittakerM.md">WhittakerM
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol WhittakerM = S.initFinalSymbol("WhittakerM", ID.WhittakerM);
 
+  /**
+   * WhittakerW(a, b, z) - returns the Whittaker function `W_a,b(z)`.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WhittakerW.md">WhittakerW
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol WhittakerW = S.initFinalSymbol("WhittakerW", ID.WhittakerW);
 
+  /**
+   * WignerD({j,m1,m2},a,b,c) - the Wigner D-function returns the matrix element of a rotation
+   * operator.
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/WignerD.md">WignerD
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol WignerD = S.initFinalSymbol("WignerD", ID.WignerD);
 
   /**
@@ -11633,6 +12681,13 @@ public class S {
    */
   public final static IBuiltInSymbol Xor = S.initFinalSymbol("Xor", ID.Xor);
 
+  /**
+   * Yellow - RGB color value for the color yellow
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Yellow.md">Yellow
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol Yellow = S.initFinalSymbol("Yellow", ID.Yellow);
 
   /**
@@ -11647,7 +12702,13 @@ public class S {
   public final static IBuiltInSymbol YuleDissimilarity =
       S.initFinalSymbol("YuleDissimilarity", ID.YuleDissimilarity);
 
-
+  /**
+   * ZernikeR(n,m,p) - returns the radial Zernike polynomial
+   * 
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/ZernikeR.md">ZernikeR
+   *      documentation</a>
+   */
   public final static IBuiltInSymbol ZernikeR = S.initFinalSymbol("ZernikeR", ID.ZernikeR);
 
   public final static IBuiltInSymbol ZeroSymmetric =

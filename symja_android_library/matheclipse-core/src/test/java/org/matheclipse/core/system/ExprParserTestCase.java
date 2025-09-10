@@ -69,4 +69,15 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
         result.toString());
   }
 
+  @Test
+  public void testParserForAll() {
+    EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
+    ExprParser p = new ExprParser(engine, true);
+    IExpr expr = p.parse("∀(a)");
+    assertEquals("ForAll(a)", //
+        expr.fullFormString());
+    IExpr result = engine.evaluate(expr);
+    assertEquals("∀a", //
+        result.toString());
+  }
 }

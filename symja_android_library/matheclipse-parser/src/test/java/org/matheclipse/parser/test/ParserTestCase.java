@@ -734,4 +734,11 @@ class ParserTestCase {
     ASTNode obj = PARSE_UNRELAXED.parse("f[a,b,]");
     assertEquals("f(a, b, Null)", obj.toString());
   }
+
+
+  @Test
+  void testParser88() {
+    ASTNode obj = PARSE_UNRELAXED.parse("∀a");
+    assertEquals("ForAll(a)", obj.toString());
+  }
 }

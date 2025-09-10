@@ -33,7 +33,7 @@ public class MatrixDTest extends ExprEvaluatorTestCase {
     check("MatrixD(A.X, X)", //
         "0.X+A.$SingleEntryMatrix");
     check("MatrixD(Det(MatrixPower(X, k)), X)", //
-        "k*Det(MatrixPower(X,k))*Inverse(Transpose(X))");
+        "k*Det(MatrixPower(X,k))*Inverse(Xᵀ)");
     check("MatrixD(Inverse(X), X)", //
         "(-Inverse(X)).$SingleEntryMatrix.Inverse(X)");
   }
@@ -47,17 +47,17 @@ public class MatrixDTest extends ExprEvaluatorTestCase {
     check("TensorRank(X)", //
         "2");
     check("MatrixD(Transpose(X), X)", //
-        "Transpose($SingleEntryMatrix)");
+        "$SingleEntryMatrixᵀ");
     check("MatrixD(Det(X), X)", //
-        "Det(X)*Transpose(Inverse(X))");
+        "Det(X)*Inverse(X)ᵀ");
     check("MatrixD(Det(A.X.B), X)", //
-        "Det(A.X.B)*Transpose(Inverse(X))");
+        "Det(A.X.B)*Inverse(X)ᵀ");
     check("MatrixD(Det(Inverse(X)),X)", //
-        "-Det(Inverse(X))*Transpose(Inverse(X))");
+        "-Det(Inverse(X))*Inverse(X)ᵀ");
     check("MatrixD(Log(Det(Transpose(X).X)), X)", // (55)
-        "2*Inverse(Transpose(X))");
+        "2*Inverse(Xᵀ)");
     check("MatrixD(Log @ Det(X), X)", // (57)
-        "Inverse(Transpose(X))");
+        "Inverse(Xᵀ)");
   }
 
   // @Test

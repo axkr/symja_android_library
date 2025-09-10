@@ -265,6 +265,23 @@ public class ASTNodeFactory implements INodeParserFactory {
       "CircleDot", "CircleTimes", "Distributed", "Element", "NotElement", "Intersection",
       "NotEqual", "Wedge", "TensorProduct", "Equivalent", "Implies", "PlusMinus", "PlusMinus", //
       "Star", // Rubi Star operator
+
+      "DifferenceDelta", //
+      "Exists", //
+      "ForAll", //
+      "Product", //
+      "Put", //
+      "PutAppend", //
+      "RightTee", //
+      "RoundImplies", //
+      "Sqrt", //
+      "Square", //
+      "SuchThat", //
+      "Sum", //
+      "Therefore", //
+      "Transpose", //
+      "UpTee", //
+
       "§TILDE§"};
 
   static final String[] OPERATOR_STRINGS =
@@ -293,7 +310,25 @@ public class ASTNodeFactory implements INodeParserFactory {
           "\u00b1", // PlusMinus infix operator
           "\u00b1", // PlusMinus prefix operator
           "\u22c6", // Rubi Star infix operator
-          "~"};
+
+          "∆", // DifferenceDelta", 550),
+          "∃", // Exists", 240), //
+          "∀", // ForAll", 240),
+          "∏", // Product", 380),
+          ">>", // "Put", 30, InfixExprOperator.LEFT_ASSOCIATIVE),
+          ">>>", // "PutAppend", 30, InfixExprOperator.LEFT_ASSOCIATIVE),
+          "⊢", // "RightTee", 190, InfixExprOperator.RIGHT_ASSOCIATIVE),
+          "⥰", // "RoundImplies", 193, InfixExprOperator.RIGHT_ASSOCIATIVE),
+          "√", // "Sqrt", 570), //
+          "▫", // "Square", 540), //
+          "∍", // "SuchThat", 180, InfixExprOperator.RIGHT_ASSOCIATIVE),
+          "∑", // "Sum", 325), //
+          "∴", // "Therefore", 50, InfixExprOperator.RIGHT_ASSOCIATIVE),
+          "ᵀ", // "Transpose", 670),
+          "⊥", // UpTee
+
+          "~" // Tilde
+      };
 
   public static final ApplyOperator APPLY_HEAD_OPERATOR =
       new ApplyOperator("@", "Apply", Precedence.APPLY_HEAD, InfixOperator.RIGHT_ASSOCIATIVE);
@@ -336,8 +371,7 @@ public class ASTNodeFactory implements INodeParserFactory {
               InfixOperator.NONE),
           APPLY_HEAD_OPERATOR,
           new InfixOperator("/@", "Map", Precedence.MAP, InfixOperator.RIGHT_ASSOCIATIVE),
-          new PostfixOperator("=.", "Unset", Precedence.UNSET), APPLY_OPERATOR,
-          MAPAPPLY_OPERATOR,
+          new PostfixOperator("=.", "Unset", Precedence.UNSET), APPLY_OPERATOR, MAPAPPLY_OPERATOR,
           // new ApplyOperator("@@", "Apply", APPLY_PRECEDENCE,
           // InfixOperator.RIGHT_ASSOCIATIVE),
           // new ApplyOperator("@@@", "Apply", APPLY_PRECEDENCE,
@@ -430,7 +464,28 @@ public class ASTNodeFactory implements INodeParserFactory {
               InfixOperator.LEFT_ASSOCIATIVE),
           new PrefixOperator("\u00b1", "PlusMinus", Precedence.PLUSMINUS),
           new StarOperator("\u22c6", "Star", Precedence.STAR, InfixOperator.NONE),
-          new TildeOperator("~", "§TILDE§", Precedence.TILDE_OPERATOR, InfixOperator.NONE)};
+
+          new PrefixOperator("∆", "DifferenceDelta", 550), //
+          new PrefixOperator("∃", "Exists", 240), //
+          new PrefixOperator("∀", "ForAll", 240), //
+          new PrefixOperator("∏", "Product", 380), //
+          new InfixOperator(">>", "Put", 30, InfixOperator.LEFT_ASSOCIATIVE), //
+          new InfixOperator(">>>", "PutAppend", 30, InfixOperator.LEFT_ASSOCIATIVE), //
+          new InfixOperator("⊢", "RightTee", 190, InfixOperator.RIGHT_ASSOCIATIVE), //
+          new InfixOperator("⥰", "RoundImplies", 193, InfixOperator.RIGHT_ASSOCIATIVE), //
+          new PrefixOperator("√", "Sqrt", 570), //
+          new PrefixOperator("▫", "Square", 540), //
+          new InfixOperator("∍", "SuchThat", 180, InfixOperator.RIGHT_ASSOCIATIVE), //
+          new PrefixOperator("∑", "Sum", 325), //
+          new InfixOperator("∴", "Therefore", 50, InfixOperator.RIGHT_ASSOCIATIVE), //
+          new PostfixOperator("ᵀ", "Transpose", 670), //
+          new InfixOperator("⊥", "UpTee", 197, InfixOperator.LEFT_ASSOCIATIVE),
+
+          new TildeOperator("~", "§TILDE§", Precedence.TILDE_OPERATOR, InfixOperator.NONE),
+
+
+      };
+
       StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
 
       fOperatorMap = ParserConfig.TRIE_STRING2OPERATOR_BUILDER.withMatch(TrieMatch.EXACT).build();

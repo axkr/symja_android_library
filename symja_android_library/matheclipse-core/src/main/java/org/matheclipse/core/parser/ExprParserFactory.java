@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.B2;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.PatternNested;
@@ -34,6 +35,7 @@ import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.trie.Trie;
 import org.matheclipse.parser.trie.TrieMatch;
+import org.matheclipse.parser.wma.tablegen.WMAOperatorTables;
 import com.google.common.base.CharMatcher;
 
 public class ExprParserFactory implements IParserFactory {
@@ -168,7 +170,7 @@ public class ExprParserFactory implements IParserFactory {
 
 
         if (lhs.equals(F.C1)) {
-          return (IASTMutable) F.Power(rhs, F.CN1);
+          return F.Power(rhs, F.CN1);
         }
         if (rhs.isPower() && rhs.exponent().isNumber()) {
           return F.Times(lhs, F.Power(rhs.base(), rhs.exponent().negate()));
@@ -298,7 +300,30 @@ public class ExprParserFactory implements IParserFactory {
       "CircleDot", "CircleTimes", "Distributed", "Element", "NotElement", "Intersection",
       "NotEqual", "Wedge", "TensorProduct", "Equivalent", "Implies", "PlusMinus", "PlusMinus", //
       "Star", //
-      "§TILDE§"};
+
+
+      "DifferenceDelta", //
+      "Exists", //
+      "ForAll", //
+      "Product", //
+      "Put", //
+      "PutAppend", //
+      "RightTee", //
+      "RoundImplies", //
+      "Sqrt", //
+      "Square", //
+      "SuchThat", //
+      "Sum", //
+      "Therefore", //
+      "Transpose", //
+      "UpTee", //
+
+
+      "§TILDE§" //
+
+  };
+
+
 
   static final String[] OPERATOR_STRINGS = {"::", "<<", "?", "??", "?", "//@", "*=", "+", "^=", ";",
       "@", "/@", "=.", "@@", "@@@", "//.", "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*",
@@ -325,7 +350,26 @@ public class ExprParserFactory implements IParserFactory {
       "\u001b", // PlusMinus infix operator
       "\u001b", // PlusMinus prefix operator
       "\u22c6", // Star infix operator
+
+
+      "∆", // DifferenceDelta", 550),
+      "∃", // Exists", 240), //
+      "∀", // ForAll", 240),
+      "∏", // Product", 380),
+      ">>", // "Put", 30, InfixExprOperator.LEFT_ASSOCIATIVE),
+      ">>>", // "PutAppend", 30, InfixExprOperator.LEFT_ASSOCIATIVE),
+      "⊢", // "RightTee", 190, InfixExprOperator.RIGHT_ASSOCIATIVE),
+      "⥰", // "RoundImplies", 193, InfixExprOperator.RIGHT_ASSOCIATIVE),
+      "√", // "Sqrt", 570), //
+      "▫", // "Square", 540), //
+      "∍", // "SuchThat", 180, InfixExprOperator.RIGHT_ASSOCIATIVE),
+      "∑", // "Sum", 325), //
+      "∴", // "Therefore", 50, InfixExprOperator.RIGHT_ASSOCIATIVE),
+      "ᵀ", // "Transpose", 670),
+      "⊥", // UpTee
+
       "~"};
+
   private static Operator[] OPERATORS;
 
   public static final ExprParserFactory MMA_STYLE_FACTORY = new ExprParserFactory();
@@ -337,6 +381,87 @@ public class ExprParserFactory implements IParserFactory {
 
   /** */
   private static Trie<String, ArrayList<Operator>> fOperatorTokenStartSet;
+
+  public static final String[] ADDITONAL_FUNCTION_STRINGS =
+      {"DifferenceDelta", "Exists", "ForAll", "Product", "Put", "PutAppend", "RightTee",
+          "RoundImplies", "Sqrt", "Square", "SuchThat", "Sum", "Therefore", "Transpose", "UpTee"};
+
+  public static void main(String[] args) {
+    initialize();
+    for (int i = 0; i < AST2Expr.FUNCTION_STRINGS.length; i++) {
+      String function = AST2Expr.FUNCTION_STRINGS[i];
+      if (WMAOperatorTables.isLeftAssociative(function) //
+          || WMAOperatorTables.isRightAssociative(function)
+          || WMAOperatorTables.isPostfixOperator(function)
+          || WMAOperatorTables.isPrefixOperator(function)) {
+        Operator operator = fOperatorMap.get(function);
+        if (operator == null) {
+          List<String> list = WMAOperatorTables.OPERATOR_TO_CHARACTERS.get(function);
+          if (list != null) {
+            System.out.println("\"" + function + "\",");
+          }
+
+        }
+      }
+    }
+    for (int i = 0; i < ADDITONAL_FUNCTION_STRINGS.length; i++) {
+      String operator = ADDITONAL_FUNCTION_STRINGS[i];
+      if (WMAOperatorTables.isLeftAssociative(operator)) {
+        // InfixExprOperator("//.", "ReplaceRepeated", precedence,
+        // InfixExprOperator.LEFT_ASSOCIATIVE)
+        List<String> list = WMAOperatorTables.OPERATOR_TO_CHARACTERS.get(operator);
+        if (list == null) {
+          System.out.println(operator);
+        }
+        Integer precedence = WMAOperatorTables.getOperatorPrecedence(operator);
+        for (int j = 0; j < list.size(); j++) {
+          System.out.println("new InfixExprOperator(\"" //
+              + list.get(j) + "\",\""//
+              + operator + "\"," //
+              + precedence + ", InfixExprOperator.LEFT_ASSOCIATIVE);");
+        }
+      } else if (WMAOperatorTables.isRightAssociative(operator)) {
+        List<String> list = WMAOperatorTables.OPERATOR_TO_CHARACTERS.get(operator);
+        if (list == null) {
+          System.out.println(operator);
+        }
+        Integer precedence = WMAOperatorTables.getOperatorPrecedence(operator);
+        for (int j = 0; j < list.size(); j++) {
+
+          System.out.println("new InfixExprOperator(\"" //
+              + list.get(j) + "\",\""//
+              + operator + "\"," //
+              + precedence + ", InfixExprOperator.RIGHT_ASSOCIATIVE);");
+        }
+      } else if (WMAOperatorTables.isPrefixOperator(operator)) {
+        List<String> list = WMAOperatorTables.OPERATOR_TO_CHARACTERS.get(operator);
+        if (list == null) {
+          System.out.println(operator);
+        }
+        Integer precedence = WMAOperatorTables.getOperatorPrecedence(operator);
+        for (int j = 0; j < list.size(); j++) {
+
+          System.out.println("new PrefixExprOperator(\"" //
+              + list.get(j) + "\",\""//
+              + operator + "\"," //
+              + precedence + ");");
+        }
+      } else if (WMAOperatorTables.isPostfixOperator(operator)) {
+        List<String> list = WMAOperatorTables.OPERATOR_TO_CHARACTERS.get(operator);
+        if (list == null) {
+          System.out.println(operator);
+        }
+        Integer precedence = WMAOperatorTables.getOperatorPrecedence(operator);
+        for (int j = 0; j < list.size(); j++) {
+          System.out.println("new PostfixExprOperator(\"" //
+              + list.get(j) + "\",\""//
+              + operator + "\"," //
+              + precedence + ");");
+        }
+      }
+
+    }
+  }
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -468,6 +593,23 @@ public class ExprParserFactory implements IParserFactory {
               InfixOperator.LEFT_ASSOCIATIVE),
           new PrefixExprOperator("\u00b1", "PlusMinus", Precedence.PLUSMINUS),
           new InfixExprOperator("\u22c6", "Star", Precedence.STAR, InfixExprOperator.NONE),
+
+          new PrefixExprOperator("∆", "DifferenceDelta", 550),
+          new PrefixExprOperator("∃", "Exists", 240), //
+          new PrefixExprOperator("∀", "ForAll", 240), new PrefixExprOperator("∏", "Product", 380),
+          new InfixExprOperator(">>", "Put", 30, InfixExprOperator.LEFT_ASSOCIATIVE),
+          new InfixExprOperator(">>>", "PutAppend", 30, InfixExprOperator.LEFT_ASSOCIATIVE),
+          new InfixExprOperator("⊢", "RightTee", 190, InfixExprOperator.RIGHT_ASSOCIATIVE),
+          new InfixExprOperator("⥰", "RoundImplies", 193, InfixExprOperator.RIGHT_ASSOCIATIVE),
+          new PrefixExprOperator("√", "Sqrt", 570), //
+          new PrefixExprOperator("▫", "Square", 540), //
+          new InfixExprOperator("∍", "SuchThat", 180, InfixExprOperator.RIGHT_ASSOCIATIVE),
+          new PrefixExprOperator("∑", "Sum", 325), //
+          new InfixExprOperator("∴", "Therefore", 50, InfixExprOperator.RIGHT_ASSOCIATIVE),
+          new PostfixExprOperator("ᵀ", "Transpose", 670),
+          new InfixExprOperator("⊥", "UpTee", 197, InfixExprOperator.LEFT_ASSOCIATIVE),
+
+
           new TildeExprOperator("~", "§TILDE§", Precedence.TILDE_OPERATOR, InfixOperator.NONE)};
       StringBuilder buf = new StringBuilder(BASIC_OPERATOR_CHARACTERS);
 
