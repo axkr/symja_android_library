@@ -8,7 +8,6 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.random.RandomDataGenerator;
 import org.hipparchus.util.MathArrays;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.StatisticsFunctions.IRandomVariate;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
@@ -29,6 +28,7 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.statistics.IRandomVariate;
 import org.matheclipse.parser.client.ParserConfig;
 
 public final class RandomFunctions {
