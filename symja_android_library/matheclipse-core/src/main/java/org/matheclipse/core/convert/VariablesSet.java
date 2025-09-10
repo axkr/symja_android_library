@@ -603,13 +603,15 @@ public class VariablesSet {
   }
 
   /**
-   * Copy the variables which are symbols to the <code>scopedVariablesMap</code>
+   * Insert the variables of this set, which are {@link ISymbol}s to the
+   * <code>scopedVariablesMap</code> and assign initial value {@link F#NIL}, if they are not already
+   * contained in the <code>scopedVariablesMap</code>.
    *
-   * @param scopedVariablesMap
+   * @param scopedVariablesMap the map to put the variables in
    */
-  public void putAllSymbols(Map<ISymbol, IExpr> scopedVariablesMap) {
+  public void initSymbols(Map<ISymbol, IExpr> scopedVariablesMap) {
     for (IExpr expr : fVariablesSet) {
-      if (expr.isSymbol()) {
+      if (expr.isSymbol() && !scopedVariablesMap.containsKey(expr)) {
         scopedVariablesMap.put((ISymbol) expr, F.NIL);
       }
     }

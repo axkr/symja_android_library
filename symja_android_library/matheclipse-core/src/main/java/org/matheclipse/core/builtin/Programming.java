@@ -3726,7 +3726,7 @@ public final class Programming {
       rightHandSide = engine.evaluate(rightHandSide);
     }
     final VariablesSet set = new VariablesSet(rightHandSide);
-    set.putAllSymbols(variablesMap);
+    set.initSymbols(variablesMap);
     variablesMap.put(oldSymbol, rightHandSide);
     return true;
   }
