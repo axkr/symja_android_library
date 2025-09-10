@@ -56,6 +56,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
+import org.matheclipse.core.interfaces.statistics.IContinuousDistribution;
 import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
