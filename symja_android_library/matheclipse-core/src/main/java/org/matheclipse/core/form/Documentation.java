@@ -11,9 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -40,18 +37,18 @@ public class Documentation {
   public static final String GITHUB = "https://github.com/";
 
   public static final String CORE_POM_PATH =
-  "axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/";
+      "axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/";
 
   public static final String IO_POM_PATH =
-  "axkr/symja_android_library/blob/master/symja_android_library/matheclipse-io/";
+      "axkr/symja_android_library/blob/master/symja_android_library/matheclipse-io/";
 
   public static final String SRC_PATH = "src/main/java/";
 
   public static final String RULES_PATH =
-  "axkr/symja_android_library/blob/master/symja_android_library/rules/";
+      "axkr/symja_android_library/blob/master/symja_android_library/rules/";
 
   public static final String RULE_SETS_PATH =
-  "axkr/symja_android_library/blob/master/symja_android_library/rule_sets/";
+      "axkr/symja_android_library/blob/master/symja_android_library/rule_sets/";
 
   public static String buildDocFilename(String docName) {
     return "doc/" + docName + ".md";
@@ -65,7 +62,7 @@ public class Documentation {
     String canonicalName = clazz.getCanonicalName();
     String packageName = clazz.getPackage().getName();
     String parentClass = canonicalName.substring(packageName.length() + 1);
-  
+
     StringBuilder buf = new StringBuilder(512);
     buf.append(Documentation.GITHUB);
     if (packageName.startsWith("org.matheclipse.io")) {
@@ -74,7 +71,7 @@ public class Documentation {
       buf.append(Documentation.CORE_POM_PATH);
     }
     buf.append(Documentation.SRC_PATH);
-  
+
     int index = parentClass.indexOf('.');
     if (index > 0) {
       parentClass = parentClass.substring(0, index);
@@ -152,6 +149,7 @@ public class Documentation {
     }
     return F.stringx(str);
   }
+
   /**
    * Returns the GitHub URL of the <code>built-in-symbol</code> implementation in the
    * <a href="https://github.com/axkr/symja_android_library">Symja GitHub repository</a>.
@@ -175,9 +173,11 @@ public class Documentation {
     }
     return null;
   }
+
   public static IAST getAllNames() {
     return F.mapRange(0, AST2Expr.FUNCTION_STRINGS.length, i -> F.$s(AST2Expr.FUNCTION_STRINGS[i]));
   }
+
   public static List<String> getAutoCompletionList(String namePrefix) {
     List<String> list = new ArrayList<String>();
     if (namePrefix.length() == 0) {
@@ -278,11 +278,11 @@ public class Documentation {
     Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
     java.util.regex.Pattern regexPattern =
         IStringX.toRegexPattern(pattern, true, ignoreCase, ast, groups, engine);
-  
+
     if (regexPattern == null) {
       return F.NIL;
     }
-  
+
     return Documentation.getNamesByPattern(regexPattern, engine);
   }
 
@@ -299,7 +299,8 @@ public class Documentation {
     Map<String, Context> contextMap = contextPath.getContextMap();
     for (Map.Entry<String, Context> mapEntry : contextMap.entrySet()) {
       Context context = mapEntry.getValue();
-      for (Map.Entry<String, ISymbol> entry : context.entrySet()) {
+      // avoid java.util.ConcurrentModificationException by creating ArrayList
+      for (Map.Entry<String, ISymbol> entry : new ArrayList<>(context.entrySet())) {
         String fullName = context.completeContextName() + entry.getKey();
         java.util.regex.Matcher matcher = pattern.matcher(fullName);
         if (matcher.matches()) {
@@ -319,7 +320,7 @@ public class Documentation {
         }
       }
     }
-  
+
     for (Context context : contextPath) {
       String completeContextName = context.completeContextName();
       if (!contextMap.containsKey(completeContextName)) {
@@ -398,11 +399,11 @@ public class Documentation {
     Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
     java.util.regex.Pattern regexPattern =
         IStringX.toRegexPattern(pattern, true, ignoreCase, ast, groups, engine);
-  
+
     if (regexPattern == null) {
       return F.NIL;
     }
-  
+
     return Documentation.getSymbolsByPattern(regexPattern, engine);
   }
 
@@ -427,7 +428,7 @@ public class Documentation {
         }
       }
     }
-  
+
     for (Context context : contextPath) {
       String completeContextName = context.completeContextName();
       if (!contextMap.containsKey(completeContextName)) {
@@ -510,8 +511,7 @@ public class Documentation {
         String symbolName = builtin.toString();
         String userHome = System.getProperty("user.home");
         File ruleFile = new File(userHome
-            + "/git/symja_android_library/symja_android_library/rules/"
-            + symbolName + "Rules.m");
+            + "/git/symja_android_library/symja_android_library/rules/" + symbolName + "Rules.m");
         if (ruleFile.exists()) {
           StringBuilder buf = new StringBuilder(512);
           buf.append(GITHUB);
@@ -519,10 +519,10 @@ public class Documentation {
           buf.append(symbolName);
           buf.append("Rules.m");
           return buf.toString();
-        }else {
-          File ruleSetsFile = new File(userHome
-              + "/git/symja_android_library/symja_android_library/rule_sets/"
-              + symbolName + "Rules.m");
+        } else {
+          File ruleSetsFile =
+              new File(userHome + "/git/symja_android_library/symja_android_library/rule_sets/"
+                  + symbolName + "Rules.m");
           if (ruleSetsFile.exists()) {
             StringBuilder buf = new StringBuilder(512);
             buf.append(GITHUB);
