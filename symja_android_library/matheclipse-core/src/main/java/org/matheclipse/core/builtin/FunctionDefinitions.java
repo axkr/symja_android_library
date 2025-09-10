@@ -164,6 +164,8 @@ public final class FunctionDefinitions {
     OutputFunctions.initialize();
     RandomFunctions.initialize();
     StatisticsFunctions.initialize();
+    StatisticsContinousDistribution.initialize();
+    StatisticsDiscreteDistributions.initialize();
     StatisticalMomentFunctions.initialize();
     HypergeometricFunctions.initialize();
     EllipticIntegrals.initialize();

@@ -1,7 +1,8 @@
-package org.matheclipse.core.interfaces;
+package org.matheclipse.core.interfaces.statistics;
 
 import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
+import org.matheclipse.core.interfaces.IExpr;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 public interface IDiscreteDistribution extends IDistribution {

@@ -10,11 +10,11 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
-import org.matheclipse.core.interfaces.IDistribution;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.statistics.ICentralMoment;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 public class StatisticalMomentFunctions {
@@ -26,13 +26,6 @@ public class StatisticalMomentFunctions {
       S.FactorialMoment.setEvaluator(new FactorialMoment());
       S.Moment.setEvaluator(new Moment());
     }
-  }
-
-  /** central moment function */
-  public interface ICentralMoment extends IDistribution {
-    IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine);
-
-    IExpr kurtosis(IAST dist, EvalEngine engine);
   }
 
   private static final class Moment extends AbstractEvaluator {
