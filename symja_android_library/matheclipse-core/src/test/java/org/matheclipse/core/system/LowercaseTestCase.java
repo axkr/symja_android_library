@@ -1982,7 +1982,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testBernoulliB() {
-
+    check("BernoulliB(42)", //
+        "1520097643918070802691/1806");
+    check("Table(BernoulliB(k), {k, 0, 20})", //
+        "{1,-1/2,1/6,0,-1/30,0,1/42,0,-1/30,0,5/66,0,-691/2730,0,7/6,0,-3617/510,0,43867/\n"
+            + "798,0,-174611/330}");
+    check("BernoulliB(100)", //
+        "-9459803781912212529522743306949372187270284153306693613338569620431139541519724\\\n"
+            + "7711/33330");
     // message from apfloat: BernoulliB: Not allowed to use file storage
     check("N(BernoulliB(10007,Pi),30)", //
         "BernoulliB(10007,3.14159265358979323846264338327)");
@@ -2029,12 +2036,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("BernoulliB(51)", //
         "0");
-    check("BernoulliB(42)", //
-        "1520097643918070802691/1806");
+
     check("BernoulliB(2)", //
         "1/6");
-    check("Table(BernoulliB(k), {k, 0, 10})", //
-        "{1,-1/2,1/6,0,-1/30,0,1/42,0,-1/30,0,5/66}");
 
     // http://fungrim.org/entry/555e10/
     check("Table(BernoulliB(k,x), {k, 0, 5})", //
@@ -15576,14 +15580,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "");
     check("Select(sysnames, MemberQ(Attributes(#), OneIdentity) &) // InputForm", //
         "{\"And\",\"Composition\",\"Dot\",\"GCD\",\"Intersection\",\"Join\",\"KroneckerProduct\",\"Max\",\"Min\",\"Or\",\"Plus\",\"Power\",\"RightComposition\",\"StringExpression\",\"StringJoin\",\"TensorProduct\",\"Times\",\"Union\",\"Xor\"}");
-
     check("Names(\"System`\" ~~ _ ~~ _) // InputForm", //
         "{\"Do\",\"Dt\",\"If\",\"Im\",\"In\",\"ND\",\"On\",\"Or\",\"Pi\",\"Re\",\"Tr\"}");
     check("Names(RegularExpression(\"System`...\")) // InputForm", //
-        "{\"Abs\",\"All\",\"And\",\"Arg\",\"CDF\",\"Cos\",\"Cot\",\"Csc\",\"Det\",\"Div\",\"Dot\",\"End\",\"Erf\",\"Exp\"," //
-            + "\"Fit\",\"For\",\"GCD\",\"Get\",\"Hue\",\"Key\",\"LCM\",\"Log\",\"Map\",\"Max\",\"Min\",\"Mod\",\"Nor\",\"Not\"," //
-            + "\"Now\",\"Off\",\"Out\",\"PDF\",\"Put\",\"Red\",\"Row\",\"Sec\",\"Set\",\"Sin\",\"Sow\",\"Sum\",\"Tan\",\"Top\"," //
-            + "\"Xor\"}");
+        "{\"Abs\",\"All\",\"And\",\"Arg\",\"CDF\",\"Cos\",\"Cot\",\"Csc\",\"Det\",\"Div\",\"Dot\","//
+            + "\"End\",\"Erf\",\"Exp\",\"Fit\",\"For\",\"GCD\",\"Get\",\"Hue\",\"Key\",\"LCM\",\"Log\","//
+            + "\"Map\",\"Max\",\"Min\",\"Mod\",\"Nor\",\"Not\",\"Now\",\"Off\",\"Out\",\"PDF\",\"Put\","//
+            + "\"Red\",\"Row\",\"Sec\",\"Set\",\"Sin\",\"Sow\",\"Sum\",\"Tan\",\"Top\",\"Vee\",\"Xor\"}");
 
     check("Names(\"Int*\" )", //
         "{Integer,IntegerDigits,IntegerExponent,IntegerLength,IntegerName,IntegerPart,IntegerPartitions,IntegerQ,Integers,Integrate,InterpolatingFunction,InterpolatingPolynomial,Interpolation,InterpolationOrder,InterquartileRange,Interrupt,IntersectingQ,Intersection,Interval,IntervalComplement,IntervalData,IntervalIntersection,IntervalMemberQ,IntervalUnion}");
@@ -26477,6 +26480,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("With({t=Sin(10/2*Pi+#)}, t &)", //
         "-Sin(#1)&");
+  }
+
+  @Test
+  public void testWith_14_3() {
+    check("With({x=1,y=x+1},f(x,y))", //
+        "f(1,1+x)");
+    check("With({x=1},With({y=x+1},f(x,y)))", //
+        "f(1,2)");
+    check("With({x=1},{y=x+1},f(x,y))", //
+        "f(1,2)");
+
   }
 
   @Test

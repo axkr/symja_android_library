@@ -30,6 +30,17 @@ public class EnumGenerator {
   /** @deprecated not needed anymore */
   @Deprecated
   public static void main(String[] args) {
+    // TreeSet<String> set = new TreeSet<String>(IStringX.US_COLLATOR);
+    // for (int i = 0; i < AST2Expr.FUNCTION_STRINGS.length; i++) {
+    // set.add(AST2Expr.FUNCTION_STRINGS[i]);
+    // }
+    // System.out.println(HEADER);
+    // for (Iterator iterator = set.iterator(); iterator.hasNext();) {
+    // String string = (String) iterator.next();
+    // System.out.print("\"");
+    // System.out.print(string);
+    // System.out.print("\",\n");
+    // }
     ArrayList<String> list = new ArrayList<String>();
     for (int i = 0; i < AST2Expr.UPPERCASE_SYMBOL_STRINGS.length; i++) {
       list.add(AST2Expr.UPPERCASE_SYMBOL_STRINGS[i]);
@@ -67,7 +78,7 @@ public class EnumGenerator {
     System.out.println("");
     System.out.println("");
     for (int i = 0; i < list.size(); i++) {
-      System.out.println("    " + list.get(i) + " = " + i + ";");
+      System.out.println(" " + list.get(i) + " = " + i + ";");
     }
   }
 }

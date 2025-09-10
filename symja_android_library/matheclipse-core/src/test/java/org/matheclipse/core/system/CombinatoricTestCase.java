@@ -292,7 +292,9 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testPermutatins() {
+  public void testPermutations() {
+    check("Permutations({x,0,0,0})", //
+        "{{x,0,0,0},{0,x,0,0},{0,0,x,0},{0,0,0,x}}");
     check("Permutations({1,2,1})", //
         "{{1,2,1},{1,1,2},{2,1,1}}");
   }
