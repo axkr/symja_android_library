@@ -304,7 +304,7 @@ public final class NumberTheory {
         }
         int bn = n.toIntDefault();
         if (bn >= 0) {
-          return IRational.bernoulliNumber(bn);
+          return AbstractFractionSym.bernoulliNumber(bn);
         }
         IExpr temp = engine.evaluate(F.Subtract(n, F.C3));
         if (temp.isIntegerResult() && temp.isPositiveResult() && temp.isEvenResult()) {

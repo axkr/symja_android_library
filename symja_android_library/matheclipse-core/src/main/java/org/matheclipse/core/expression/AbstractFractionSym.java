@@ -2,6 +2,9 @@ package org.matheclipse.core.expression;
 
 import static org.matheclipse.core.expression.NumberUtil.hasIntValue;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.DoubleFunction;
 import org.apfloat.Apcomplex;
@@ -15,8 +18,10 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -44,6 +49,23 @@ import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
  * @see BigFractionSym
  */
 public abstract class AbstractFractionSym implements IFraction {
+  /**
+   * A thread-safe, lazily initialized cache for Bernoulli numbers.
+   */
+  private static final class BernoulliCache {
+    private static final List<IRational> CACHE =
+        Collections.synchronizedList(new ArrayList<IRational>());
+
+    static {
+      // B(0) = 1
+      CACHE.add(F.C1);
+      // B(1) = -1/2
+      CACHE.add(F.CN1D2);
+    }
+
+    private BernoulliCache() {}
+  }
+
   private static final long serialVersionUID = -8743141041586314213L;
 
   static final int LOW_NUMER = -32;
@@ -756,6 +778,133 @@ public abstract class AbstractFractionSym implements IFraction {
   // }
 
   /**
+   * Compute the Bernoulli number of the first kind with the <a href=
+   * "https://oeis.org/wiki/User:Peter_Luschny/ComputationAndAsymptoticsOfBernoulliNumbers#Seidel">Seidel
+   * algorithm</a>
+   * 
+   * @param n
+   * @return throws ArithmeticException if n is a negative int number
+   */
+  public static IRational bernoulliNumber(int n) {
+    if (n == 0) {
+      return F.C1;
+    } else if (n == 1) {
+      return F.CN1D2;
+    } else if (n < 0) {
+      throw new ArithmeticException("BernoulliB(n): n is not a positive int number");
+    } else if (n % 2 != 0) {
+      // http://fungrim.org/entry/a98234/
+      return F.C0;
+    }
+    if (n > Config.MAX_AST_SIZE) {
+      throw new ASTElementLimitExceeded(n);
+    }
+
+    synchronized (BernoulliCache.CACHE) {
+      if (n < BernoulliCache.CACHE.size() && BernoulliCache.CACHE.get(n) != null) {
+        return BernoulliCache.CACHE.get(n);
+      }
+
+      int oldSize = BernoulliCache.CACHE.size();
+      if (n >= oldSize) {
+        BernoulliCache.CACHE.addAll(Collections.nCopies(n - oldSize + 1, null));
+      }
+
+      if (n == 0) {
+        BernoulliCache.CACHE.set(0, F.C1);
+        return F.C1;
+      }
+      if (n == 1) {
+        BernoulliCache.CACHE.set(1, F.CN1D2);
+        return F.CN1D2;
+      }
+      if (n % 2 != 0) {
+        BernoulliCache.CACHE.set(n, F.C0);
+        return F.C0;
+      }
+
+      // Seidel's algorithm implementation
+      int m = n / 2;
+      IRational[] d = new IRational[m + 3];
+      IRational[] r = new IRational[m + 3];
+      for (int i = 0; i < d.length; i++) {
+        d[i] = F.C0;
+      }
+      d[1] = F.C1;
+      r[0] = F.C1;
+
+      long iterationLimit = EvalEngine.get().getIterationLimit();
+      if (iterationLimit > 0 && iterationLimit < Integer.MAX_VALUE / 2) {
+        iterationLimit *= 10L;
+        iterationLimit += n;
+        if (iterationLimit > 0L && iterationLimit <= n) {
+          IterationLimitExceeded.throwIt(iterationLimit, F.BernoulliB(F.ZZ(n)));
+        }
+      }
+      int iterationCounter = 0;
+
+      boolean b = true;
+      int h = 1;
+      IInteger p = F.C1;
+      IInteger s = F.CN2;
+
+      IInteger q = F.C0;
+      for (int i = 0; i < n; i++) {
+        iterationCounter += h;
+        if (iterationLimit > 0L && iterationLimit <= iterationCounter) {
+          IterationLimitExceeded.throwIt(iterationCounter, F.BernoulliB(F.ZZ(n)));
+        }
+
+        if (b) {
+          h++;
+          p = p.multiply(4);
+          s = s.negate();
+          q = s.multiply(p.subtract(F.C1));
+          for (int k = h; k > 0; k--) {
+            d[k] = d[k].add(d[k + 1]);
+          }
+        } else {
+          for (int k = 1; k < h; k++) {
+            d[k] = d[k].add(d[k - 1]);
+          }
+          r[h] = d[h - 1].divideBy(q);
+
+        }
+        b = !b;
+      }
+      for (int i = oldSize; i <= n; i++) {
+        if (i % 2 != 0) {
+          BernoulliCache.CACHE.set(i, F.C0);
+        } else {
+          BernoulliCache.CACHE.set(i, r[i / 2 + 1]);
+        }
+      }
+      return BernoulliCache.CACHE.get(n);
+    }
+  }
+
+  /**
+   * Compute the Bernoulli number of the first kind.
+   *
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Bernoulli_number">Wikipedia - Bernoulli number</a>.
+   * <br>
+   * For better performing implementations see
+   * <a href= "http://oeis.org/wiki/User:Peter_Luschny/ComputationAndAsymptoticsOfBernoulliNumbers"
+   * >ComputationAndAsymptoticsOfBernoulliNumbers</a>
+   *
+   * @param n
+   * @return throws ArithmeticException if n is not an non-negative Java int number
+   */
+  public static IRational bernoulliNumber(final IInteger n) {
+    int bn = n.toIntDefault(-1);
+    if (bn >= 0) {
+      return bernoulliNumber(bn);
+    }
+    throw new ArithmeticException("BernoulliB(n): n is not a positive int number");
+  }
+
+  /**
    * Returns the last element of the series of convergent-steps to approximate the given value.
    * 
    * @param value value to approximate
@@ -863,6 +1012,34 @@ public abstract class AbstractFractionSym implements IFraction {
     } catch (MathRuntimeException e) { // assume no solution
     }
     return null;
+  }
+
+  public static IExpr rationalize(IExpr arg1) {
+    return rationalize(arg1, Config.DOUBLE_EPSILON, true);
+  }
+
+  /**
+   * Rationalize only pure numeric numbers in <code>expr</code>.
+   *
+   * @param expr
+   * @return {@link F#NIL} if no expression was transformed
+   */
+  public static IExpr rationalize(IExpr expr, boolean useConvergenceMethod) {
+    return AbstractFractionSym.rationalize(expr, Config.DOUBLE_EPSILON, useConvergenceMethod);
+  }
+
+  /**
+   * Rationalize only pure numeric numbers in expression <code>expr</code>.
+   *
+   * @param expr
+   * @param epsilon
+   * @param useConvergenceMethod
+   * @return {@link F#NIL} if no expression was transformed
+   */
+  public static IExpr rationalize(IExpr expr, double epsilon, boolean useConvergenceMethod) {
+    RationalizeNumericsVisitor rationalizeVisitor =
+        new RationalizeNumericsVisitor(epsilon, useConvergenceMethod);
+    return expr.accept(rationalizeVisitor);
   }
 
   public static IFraction valueOf(BigFraction fraction) {
@@ -1305,17 +1482,20 @@ public abstract class AbstractFractionSym implements IFraction {
     }
     Int2IntMap bMap = new Int2IntRBTreeMap();
     BigInteger number = b.toBigNumerator();
-    IAST bAST = AbstractIntegerSym.factorBigInteger(number, isNegative, rootNumerator, rootDenominator, bMap);
+    IAST bAST = AbstractIntegerSym.factorBigInteger(number, isNegative, rootNumerator,
+        rootDenominator, bMap);
     Int2IntMap dMap = new Int2IntRBTreeMap();
     number = d.toBigNumerator();
-    IAST dAST = AbstractIntegerSym.factorBigInteger(number, false, rootNumerator, rootDenominator, dMap);
+    IAST dAST =
+        AbstractIntegerSym.factorBigInteger(number, false, rootNumerator, rootDenominator, dMap);
     if (bAST.isPresent()) {
       if (dAST.isPresent()) {
         return F.Times(bAST, F.Power(dAST, F.CN1));
       }
       return F.Times(bAST, F.Power(denominator(), F.QQ(-rootNumerator, rootDenominator)));
     } else if (dAST.isPresent()) {
-      return F.Times(F.Power(numerator(), F.QQ(rootNumerator, rootDenominator)), F.Power(dAST, F.CN1));
+      return F.Times(F.Power(numerator(), F.QQ(rootNumerator, rootDenominator)),
+          F.Power(dAST, F.CN1));
     }
     return F.NIL;
   }
@@ -1721,33 +1901,5 @@ public abstract class AbstractFractionSym implements IFraction {
   @Override
   public int toIntRoot(int defaultValue) {
     return defaultValue;
-  }
-
-  public static IExpr rationalize(IExpr arg1) {
-    return rationalize(arg1, Config.DOUBLE_EPSILON, true);
-  }
-
-  /**
-   * Rationalize only pure numeric numbers in expression <code>expr</code>.
-   *
-   * @param expr
-   * @param epsilon
-   * @param useConvergenceMethod
-   * @return {@link F#NIL} if no expression was transformed
-   */
-  public static IExpr rationalize(IExpr expr, double epsilon, boolean useConvergenceMethod) {
-    RationalizeNumericsVisitor rationalizeVisitor =
-        new RationalizeNumericsVisitor(epsilon, useConvergenceMethod);
-    return expr.accept(rationalizeVisitor);
-  }
-
-  /**
-   * Rationalize only pure numeric numbers in <code>expr</code>.
-   *
-   * @param expr
-   * @return {@link F#NIL} if no expression was transformed
-   */
-  public static IExpr rationalize(IExpr expr, boolean useConvergenceMethod) {
-    return AbstractFractionSym.rationalize(expr, Config.DOUBLE_EPSILON, useConvergenceMethod);
   }
 }

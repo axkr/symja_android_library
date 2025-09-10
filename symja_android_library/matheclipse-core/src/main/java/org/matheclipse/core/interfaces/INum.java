@@ -1,6 +1,7 @@
 package org.matheclipse.core.interfaces;
 
 import org.apfloat.Apfloat;
+import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.F;
 
 /**
@@ -76,6 +77,6 @@ public interface INum extends IReal, IInexactNumber {
   public long precision();
 
   static double bernoulliDouble(int n) {
-    return IRational.bernoulliNumber(n).doubleValue();
+    return AbstractFractionSym.bernoulliNumber(n).doubleValue();
   }
 }
