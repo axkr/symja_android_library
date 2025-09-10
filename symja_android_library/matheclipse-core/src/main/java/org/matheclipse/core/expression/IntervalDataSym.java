@@ -1421,11 +1421,15 @@ public class IntervalDataSym {
           boolean evaled = false;
           if (min.isInfinity() || min.isNegativeInfinity()) {
             if (min.equals(max)) {
-              String str = Errors.getMessage("nvld", F.list(arg), engine);
-              throw new ArgumentTypeException(str);
+              left = S.Less;
+              right = S.Less;
+              evaled = true;
+              // String str = Errors.getMessage("nvld", F.list(arg), engine);
+              // throw new ArgumentTypeException(str);
+            } else {
+              left = S.Less;
+              evaled = true;
             }
-            left = S.Less;
-            evaled = true;
           }
           if (max.isInfinity() || max.isNegativeInfinity()) {
             right = S.Less;
