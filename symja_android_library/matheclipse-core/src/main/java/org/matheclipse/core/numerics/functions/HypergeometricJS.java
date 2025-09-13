@@ -61,8 +61,8 @@ public class HypergeometricJS extends JS {
   public static double hypergeometricSeries(double[] A, double[] B, double x) {
     // see https://github.com/paulmasson/math/issues/12
     double sOld1 = 0.0, sOld2;
-    double s = 1;
-    double p = 1;
+    double s = 1.0;
+    double p = 1.0;
     int i = 0;
 
     do {
@@ -205,6 +205,11 @@ public class HypergeometricJS extends JS {
       return Complex.ONE;
     }
 
+    // terminating hypergeometric series holds for entire complex plane
+    if (a.isMathematicalInteger() && a.getReal() < 0.0) {
+      return hypergeometricSeries(new Complex[] {a}, new Complex[] {b}, x);
+    }
+
     // Kummer transformation
     if (x.getReal() < 0) {
       return x.exp().multiply(hypergeometric1F1(b.subtract(a), b, x.negate()));
@@ -267,6 +272,11 @@ public class HypergeometricJS extends JS {
 
     if (F.isZero(a)) {
       return 1.0;
+    }
+
+    // terminating hypergeometric series holds for entire complex plane
+    if (a < 0.0 && F.isNumIntValue(a)) {
+      return hypergeometricSeries(new double[] {a}, new double[] {b}, x);
     }
 
     // Kummer transformation

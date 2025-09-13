@@ -1841,7 +1841,8 @@ public class PolynomialFunctions {
      * @param listOfPolynomials a list of polynomials
      * @param listOfVariables a list of variable symbols
      * @param termOrder the term order
-     * @return <code>F.NIL</code> if <code>stopUnevaluatedOnPolynomialConversionError==true</code> and one of the polynomials in <code>listOfPolynomials</code> are not convertible to
+     * @return <code>F.NIL</code> if <code>stopUnevaluatedOnPolynomialConversionError==true</code>
+     *         and one of the polynomials in <code>listOfPolynomials</code> are not convertible to
      *         JAS polynomials
      */
     private static IAST computeGroebnerBasis(IAST listOfPolynomials, IAST listOfVariables,
@@ -2414,7 +2415,11 @@ public class PolynomialFunctions {
         } else {
           final IInexactNumber m = (IInexactNumber) ast.arg2();
           z = (IInexactNumber) ast.arg3();
-          temp = n.legendreP(m, z);
+          if (m.isZero()) {
+            temp = n.legendreQ(z);
+          } else {
+            temp = n.legendreP(m, z);
+          }
         }
         if (temp.isPresent()) {
           return temp;
@@ -2526,7 +2531,11 @@ public class PolynomialFunctions {
         } else {
           final IInexactNumber m = (IInexactNumber) ast.arg2();
           z = (IInexactNumber) ast.arg3();
-          temp = n.legendreQ(m, z);
+          if (m.isZero()) {
+            temp = n.legendreQ(z);
+          } else {
+            temp = n.legendreQ(m, z);
+          }
         }
         if (temp.isPresent()) {
           return temp;
@@ -2764,8 +2773,8 @@ public class PolynomialFunctions {
   }
 
 
-  private static IExpr bellYMatrix(
-      int n, int k, IAST matrix, int rowSize, int colSize, IAST originalAST, EvalEngine engine) {
+  private static IExpr bellYMatrix(int n, int k, IAST matrix, int rowSize, int colSize,
+      IAST originalAST, EvalEngine engine) {
     // Generalized partial Bell polynomial for a matrix argument.
     // See:
     // https://en.wikipedia.org/wiki/Bell_polynomials#Multivariate_Bell_polynomials
@@ -2784,7 +2793,7 @@ public class PolynomialFunctions {
 
     IExpr result = F.C0;
     IExpr partitionsExpr = engine.evaluate(F.IntegerPartitions(F.ZZ(n), F.ZZ(k)));
-    IAST partitions =  (IAST)partitionsExpr;
+    IAST partitions = (IAST) partitionsExpr;
     for (int i = 1; i < partitions.size(); i++) {
       IAST partition = (IAST) partitions.get(i);
       IASTAppendable counts = ListFunctions.tally(partition);

@@ -72,7 +72,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
   public void testBetaRegularized() {
     // 4 args
     checkNumeric("BetaRegularized({2, 3, 5, 7}, 2, 7/2,1.5)", //
-        "{0.0,I*(-103.37304852766407),I*(-1069.1375512159648),I*(-4377.740983381134)}");
+        "{0.0,I*(-103.37304852766408),I*(-1069.1375512159648),I*(-4377.740983381134)}");
 
     // 3 args
     check("N(BetaRegularized(15/17, 5, 1), 50)", //
@@ -411,7 +411,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
   public void testErfi() {
     // https://github.com/Hipparchus-Math/hipparchus/issues/278
     checkNumeric("Erfi(1.5-I)", //
-        "-0.7013604642514806+I*(-1.8468330146085419)");
+        "-0.7013604642514806+I*(-1.846833014608542)");
 
     checkNumeric("N(Erfi(1/2),50)", //
         "0.6149520946965109808396811856236413930513456178954");
@@ -617,7 +617,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     check("FresnelC(2.0)", //
         "0.488253");
     checkNumeric("FresnelC(2.5+I)", //
-        "116.64806138055195+I*(-105.22873567055956)");
+        "116.64806138055195+I*(-105.22873567055957)");
     checkNumeric("FresnelC({1.5, 2.5, 3.5})", //
         "{0.4452611760398215,0.45741300964177706,0.5325724350280008}");
 
@@ -652,7 +652,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     check("FresnelS(2.0)", //
         "0.343416");
     checkNumeric("FresnelS(2.5+I)", //
-        "105.72873498286874+I*116.14801684869202");
+        "105.72873498286873+I*116.14801684869202");
     checkNumeric("FresnelS({1.5, 2.5, 3.5})", //
         "{0.6975049600820931,0.619181755819593,0.41524801197243755}");
 
@@ -1058,7 +1058,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     checkNumeric("LogGamma(-42.0)", //
         "Infinity");
     checkNumeric("LogGamma(-1.5)", //
-        "0.860047015376481+I*(-6.283185307179585)");
+        "0.860047015376481+I*(-6.283185307179586)");
 
     check("N(LogGamma(22/10), 50)", //
         "0.096947466790638776492015185854629186237721721052839");
@@ -1067,7 +1067,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
             + "1.20097,1.48682,1.79176,2.11446,2.45374,2.80857,3.17805,3.56138,3.95781,4.36672,4.78749,5.2196,5.66256,6.11592,6.57925," //
             + "7.05219,7.53436,8.02546,8.52516}");
     checkNumeric("LogGamma(2.5 + 3*I)", //
-        "-1.4709546103488411+I*2.822615638260799");
+        "-1.4709546103488411+I*2.8226156382607996");
     checkNumeric("LogGamma({2.0+ 3*I, 3+ 3.0*I, 4.0+ 3*I, 5.0+ 3*I, 6.0+ 3*I})", //
         "{-2.0928517530927335+I*2.302396543466868,-0.8103770743619652+I*3.2851902667141966,0.6348088045861172+I*4.070588430111645," //
             + "2.2442467170202174+I*4.714089538904929,4.007426979328298+I*5.254509039175513}");
@@ -1192,6 +1192,9 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testPochhammer() {
+    check("Pochhammer(2,3)", //
+        "24");
+
     check("Pochhammer(1.011111111111000000000000000, 8)", //
         "41552.27584908778038088829576");
 
@@ -1205,8 +1208,9 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "2.13868*10^-6+I*(-0.0000142187)");
 
     // iteration limit exceeded
-    check("Pochhammer(3/4,10007)", //
-        "Hold(Pochhammer(3/4,10007))");
+    check("Pochhammer(3/4,10007) // Short", //
+        "15186567377613065641770402<<SHORT>>048\\\n" //
+            + "475798133248972816384");
 
     check("Pochhammer(2-b,1)", //
         "2-b");
@@ -1273,8 +1277,8 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
   @Test
   public void testPolyGamma() {
     // https://github.com/mtommila/apfloat/issues/681
-    // checkNumeric("PolyGamma(1,-5003.5)", //
-    // "");
+    checkNumeric("PolyGamma(1,-5003.5)", //
+        "9.869404560962126");
 
     // switched to apfloat for this case
     // (formerly https://github.com/Hipparchus-Math/hipparchus/issues/394)

@@ -261,7 +261,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
         "0.68821856392835285644553764124515707164455717484011");
 
     checkNumeric("LaguerreL(6.1, 5)", //
-        "-1.874662491004828");
+        "-1.8746624910048282");
     checkNumeric("LaguerreL(2.5,8+I)", //
         "3.290735694157826+I*(-5.88415063864657)");
     check("LaguerreL(100, 0, N(5, 20))", //
@@ -317,6 +317,8 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLegendreP() {
+    check("LegendreP(n,0,z)", //
+        "LegendreP(n,z)");
     // message LegendreP: Not allowed to use file storage
     check("LegendreP(1317624576693539401,0.0)", //
         "LegendreP(1.31762*10^18,0.0)");
@@ -363,6 +365,8 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLegendreQ() {
+    check("LegendreQ(n,0,z)", //
+        "LegendreQ(n,z)");
     checkNumeric("LegendreQ({x,3,3},(Modulus->10)[[2]])", //
         "{LegendreQ(x,10),-748/3+2485/2*(-I*Pi-Log(9)+Log(11)),-748/3+2485/2*(-I*Pi-Log(9)+Log(\n" //
             + "11))}");

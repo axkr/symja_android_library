@@ -226,7 +226,7 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
     checkNumeric("N(Hypergeometric2F1(-23/10, 1/2 - 1/8 + 23/10 + 1, 1/8 + 1, (12 + 1)/2),50)", //
         "316.8942332151300302909232080800472001326090876729+I*436.16750112351808402055619284015549992820985322775");
     checkNumeric("Hypergeometric2F1(-2.3, 1/2 - 1/8 + 2.3 + 1, 1/8 + 1, (12 + 1)/2)", //
-        "316.89423321513+I*436.1675011235181");
+        "316.89423321513+I*436.16750112351804");
 
     check("D( Hypergeometric2F1(a,b,c,x), {x,-4})", //
         "D(Hypergeometric2F1(a,b,c,x),{x,-4})");
@@ -355,7 +355,7 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
 
 
     checkNumeric("Hypergeometric2F1Regularized(1, 2, -3, 4.5)", //
-        "26.768438320767704");
+        "26.768438320767707");
     check("Hypergeometric2F1Regularized(1, 1/3, -1, -0.3000000025555555555522220000)", //
         "0.0216866352303372915924565340457");
 
