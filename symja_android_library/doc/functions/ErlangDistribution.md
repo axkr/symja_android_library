@@ -14,7 +14,7 @@ See:
 The variance of the Erlang distribution is
 
 ```
->> Variance(ErlangDistribution(n, m)
+>> Variance(ErlangDistribution(n, m))
 n/m^2
 ```
 
