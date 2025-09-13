@@ -407,6 +407,13 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSphericalHarmonicY() {
+    check("SphericalHarmonicY(27, 5, Pi/4, 0)", //
+        "-44580915/549755813888*Sqrt(62093031)/Sqrt(2*Pi)");
+    check("N(SphericalHarmonicY(27, 5, Pi/4, 0),50)", //
+        "-0.25492395213084562609690191673291502381506002910716");
+    check("N(-44580915/549755813888*Sqrt(62093031)/Sqrt(2*Pi),50)", //
+        "-0.25492395213084562609690191673291502381506002910716");
+
     // TODO
     // check("SphericalHarmonicY(1317624576693539401,{x,-3,-1/2},10007,0.5)", //
     // "");
@@ -421,9 +428,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
         "0.0");
     check("SphericalHarmonicY(1, 0.5, -5, Pi/3)", //
         "-0.0975801+I*(-0.0563379)");
-    // TODO improve apfloat results
-    check("N(SphericalHarmonicY(27, 5, Pi/4, 0),50)", //
-        "-0.25492395213084562609690191673291502381506003049233");
+
     check("N(SphericalHarmonicY(2, 1, Pi/3, Pi),20 )", //
         "0.33452327177864458397");
     check("N(SphericalHarmonicY(2, 2, Pi/6, Pi/4.211111111111111111) )", //

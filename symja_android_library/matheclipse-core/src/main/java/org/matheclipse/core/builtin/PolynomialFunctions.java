@@ -1162,6 +1162,7 @@ public class PolynomialFunctions {
       return F.NIL;
     }
 
+    /** Use JAS to compute the resultant. */
     private static IExpr jasResultant(IExpr a, IExpr b, IExpr x, EvalEngine engine) {
       VariablesSet eVar = new VariablesSet();
       eVar.addVarList(x);
@@ -1599,13 +1600,14 @@ public class PolynomialFunctions {
         if (degree == 0) {
           return F.C1;
         }
+        final IExpr zDoubled = F.C2.times(z);
         if (degree == 1) {
-          return F.Times(F.C2, z);
+          return zDoubled;
         }
         if (degree > Config.MAX_POLYNOMIAL_DEGREE) {
           PolynomialDegreeLimitExceeded.throwIt(degree);
         }
-        IExpr zDoubled = F.C2.times(z);
+
         // (n, z) => Sum(((-1)^k*(n - k)!*(2*z)^(n - 2*k))/(k!*(n - 2*k)!), {k, 0, Floor(n/2)})
         return F
             .sum(k -> F.Times(F.Power(F.CN1, k), F.Power(zDoubled, F.Plus(F.Times(F.CN2, k), n)),
@@ -1618,8 +1620,9 @@ public class PolynomialFunctions {
         return F.Times(F.C1DSqrt2, F.Power(F.Plus(F.C1, z), F.CN1D2));
       }
       if (n.isNumEqualRational(F.C1D2)) {
+        final IExpr zDoubled = F.C2.times(z);
         // (1/2, z) => (1 + 2*z)/(Sqrt(2)* Sqrt(1 + z))
-        return F.Times(F.C1DSqrt2, F.Plus(F.C1, F.Times(F.C2, z)),
+        return F.Times(F.C1DSqrt2, F.Plus(F.C1, zDoubled),
             F.Power(F.Plus(F.C1, z), F.CN1D2));
       }
       if (z.isZero()) {

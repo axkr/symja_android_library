@@ -20966,10 +20966,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testRealAbs() {
 
-    check("xval = Solve(RealAbs(x) == 2, x)", //
-        "{{x->-2},{x->2}}");
     check("N(RealAbs(Pi - Catalan), 50)", //
         "2.2256270594125742234080398683471187734230200250934");
+    check("xval = Solve(RealAbs(x) == 2, x)", //
+        "{{x->-2},{x->2}}");
 
     check("RealAbs(Indeterminate)", //
         "Indeterminate");

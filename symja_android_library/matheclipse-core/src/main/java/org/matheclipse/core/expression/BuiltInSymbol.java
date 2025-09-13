@@ -183,10 +183,12 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   public IExpr evaluate(EvalEngine engine) {
     if (fEvaluator instanceof ISymbolEvaluator) {
       IExpr assignedValue = F.NIL;
-      if (engine.isArbitraryMode()) {
-        assignedValue = ((ISymbolEvaluator) fEvaluator).apfloatEval(this, engine);
-      } else if (engine.isNumericMode()) {
-        assignedValue = ((ISymbolEvaluator) fEvaluator).numericEval(this, engine);
+      if (engine.isNumericMode()) {
+        if (engine.isArbitraryMode()) {
+          assignedValue = ((ISymbolEvaluator) fEvaluator).apfloatEval(this, engine);
+        } else {
+          assignedValue = ((ISymbolEvaluator) fEvaluator).numericEval(this, engine);
+        }
       }
       if (assignedValue.isPresent()) {
         return assignedValue;

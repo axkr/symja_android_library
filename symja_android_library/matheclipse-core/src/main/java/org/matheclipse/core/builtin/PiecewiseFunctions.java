@@ -651,7 +651,8 @@ public class PiecewiseFunctions {
       public IExpr visit(IASTMutable ast) {
         IExpr expr = visitAST(ast).orElse(ast);
         if (expr.isAST()) {
-          return PiecewiseUtil.piecewiseExpand((IAST) expr, domain).orElseGet(() -> visitAST((IAST) expr));
+          return PiecewiseUtil.piecewiseExpand((IAST) expr, domain)
+              .orElseGet(() -> visitAST((IAST) expr));
         }
         return F.NIL;
       }
@@ -768,7 +769,7 @@ public class PiecewiseFunctions {
         }
         return F.NIL;
       }
-      if (arg1.isNumericFunction(true)) {
+      if (engine.isNumericMode() && arg1.isNumericFunction(true)) {
         IExpr temp = engine.evalN(arg1);
         if (temp.isReal()) {
           return temp.abs();
