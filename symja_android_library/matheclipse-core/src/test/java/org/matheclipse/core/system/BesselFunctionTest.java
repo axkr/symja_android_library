@@ -472,20 +472,6 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testSphericalHarmonicY() {
-    check("SphericalHarmonicY(0,0,t,p)", //
-        "1/(2*Sqrt(Pi))");
-    check("SphericalHarmonicY(a,0,0,p)", //
-        "Sqrt(1+2*a)/(2*Sqrt(Pi))");
-    check("SphericalHarmonicY(1,2,t,p)", //
-        "0");
-    check("SphericalHarmonicY(1,1,t,p)", //
-        "-1/2*E^(I*p)*Sqrt(3/2*1/Pi)*Sin(t)");
-    check("SphericalHarmonicY(n,-n-1,t,p)", //
-        "0");
-  }
-
-  @Test
   public void testWeberE() {
     // check("WeberE(101,IntervalData({0,LessEqual,LessEqual,2},{3,LessEqual,LessEqual,3}))", //
     // "a");
