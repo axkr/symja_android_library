@@ -85,7 +85,6 @@ import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.sympy.series.Sequences;
-import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import edu.jas.arith.BigRational;
@@ -544,7 +543,7 @@ public final class NumberTheory {
         int diff = F.eval(F.Subtract(n, k)).toIntDefault(-1);
         if (diff > 0 && diff <= 5) {
           IASTAppendable result = F.TimesAlloc(diff + 1);
-          result.append(F.Power(IInteger.factorial(diff), -1));
+          result.append(F.Power(AbstractIntegerSym.factorial(diff), -1));
           for (int i = 1; i <= diff; i++) {
             IAST temp = F.Plus(F.ZZ(i), k);
             result.append(temp);
@@ -682,7 +681,7 @@ public final class NumberTheory {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
       if (n.isInteger()) {
-        return IInteger.catalanNumber((IInteger) n);
+        return AbstractIntegerSym.catalanNumber((IInteger) n);
       } else if (n.isFraction()) {
         if (((IFraction) n).denominator().equals(F.C2)) {
           return functionExpand(ast, engine);
@@ -1948,7 +1947,8 @@ public final class NumberTheory {
         int thisn = a.size();
         for (int i = thisn - 1; i > 0; i--) {
           IInteger f = a.get(i);
-          f = f.multiply(AbstractIntegerSym.valueOf(BigIntegerMath.binomial(2 * thisn, 2 * i)));
+          f = f.multiply(
+              AbstractIntegerSym.binomial(2 * thisn, 2 * i));
           val = sigPos ? val.add(f) : val.subtract(f);
           sigPos = !sigPos;
         }
@@ -2937,7 +2937,7 @@ public final class NumberTheory {
             }
             return F.NIL;
           }
-          return IInteger.fibonacci(n);
+          return AbstractIntegerSym.fibonacci(n);
         }
       } else if (arg1.isInexactNumber()) {
         final IInexactNumber n = (IInexactNumber) arg1;
@@ -3782,7 +3782,7 @@ public final class NumberTheory {
             n *= (-1);
           }
           // LucasL(n) = Fibonacci(n-1) + Fibonacci(n+1)
-          IExpr lucalsL = IInteger.fibonacci(n - 1).add(IInteger.fibonacci(n + 1));
+          IExpr lucalsL = AbstractIntegerSym.fibonacci(n - 1).add(AbstractIntegerSym.fibonacci(n + 1));
           if (iArg < 0 && ((iArg & 0x00000001) == 0x00000001)) {
             return F.Negate(lucalsL);
           }
@@ -4287,7 +4287,7 @@ public final class NumberTheory {
           return F.NIL;
         }
       }
-      IInteger multinomial = IInteger.multinomial(k);
+      IInteger multinomial = AbstractIntegerSym.multinomial(k);
       if (multinomial == null) {
         return F.NIL;
       }

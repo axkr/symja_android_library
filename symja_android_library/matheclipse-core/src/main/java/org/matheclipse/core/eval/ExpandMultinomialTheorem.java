@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -75,7 +76,7 @@ public class ExpandMultinomialTheorem {
 
   private void addFactor(int[] j) {
     final KPermutationsIterable perm = new KPermutationsIterable(j, m, m);
-    IInteger multinomial = IInteger.multinomial(j, n);
+    IInteger multinomial = AbstractIntegerSym.multinomial(j, n);
     TimesOp timesOp = new TimesOp(32);
     for (int[] indices : perm) {
       if (!multinomial.isOne()) {

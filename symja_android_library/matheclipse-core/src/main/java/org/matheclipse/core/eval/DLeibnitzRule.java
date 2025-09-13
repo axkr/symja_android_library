@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -103,7 +104,7 @@ public class DLeibnitzRule {
       }
       if (!isZero) {
         if (multinomial == null) {
-          multinomial = IInteger.multinomial(j, n);
+          multinomial = AbstractIntegerSym.multinomial(j, n);
         }
         if (!multinomial.isOne()) {
           timesOp.appendRecursive(multinomial);

@@ -17,10 +17,12 @@ import org.apfloat.Apint;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.combinatoric.BinomialCache;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -40,6 +42,7 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.DoubleMath;
+import com.google.common.math.IntMath;
 import com.google.common.math.LongMath;
 import edu.jas.arith.PrimeInteger;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
@@ -54,6 +57,145 @@ import it.unimi.dsi.fastutil.ints.IntList;
  * @see BigIntegerSym
  */
 public abstract class AbstractIntegerSym implements IInteger, Externalizable {
+
+  public static final int[] FIBONACCI_45 = {0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377,
+  610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025, 121393, 196418, 317811,
+  514229, 832040, 1346269, 2178309, 3524578, 5702887, 9227465, 14930352, 24157817, 39088169,
+  63245986, 102334155, 165580141, 267914296, 433494437, 701408733, 1134903170};
+
+  /**
+   * Integer logarithm of <code>arg</code> for base <code>b</code>. Gives Log <sub>b</sub>(arg) or
+   * <code>Log(arg)/Log(b)</code> as a {@link IRational} number if the result is rational
+   *
+   * @param b the base of the logarithm
+   * @param arg
+   * @return {@link F#NIL} if the result is not rational.
+   */
+  public static IExpr baseBLog(final IInteger b, final IInteger arg) {
+    try {
+      long l1 = b.toLong();
+      long l2 = arg.toLong();
+      if (l1 > 0L && l2 > 0L) {
+        boolean inverse = false;
+        if (l1 > l2) {
+          long t = l2;
+          l2 = l1;
+          l1 = t;
+          inverse = true;
+        }
+        double numericResult = Math.log(l2) / Math.log(l1);
+        if (F.isNumIntValue(numericResult)) {
+          long symbolicResult = DoubleMath.roundToLong(numericResult, Config.ROUNDING_MODE);
+          if (inverse) {
+            if (b.equals(arg.powerRational(symbolicResult))) {
+              // cross checked result
+              return F.QQ(1L, symbolicResult);
+            }
+          } else {
+            if (arg.equals(b.powerRational(symbolicResult))) {
+              // cross checked result
+              return F.ZZ(symbolicResult);
+            }
+          }
+        }
+      }
+    } catch (ArithmeticException ae) {
+      // toLong() method failed
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Calculate integer binomial number. See definitions by
+   * <a href="https://arxiv.org/abs/1105.3689">Kronenburg 2011</a>
+   *
+   * @param n
+   * @param k
+   * @return
+   */
+  public static IInteger binomial(final IInteger n, final IInteger k)
+      throws BigIntegerLimitExceeded {
+    if (k.isZero() || k.equals(n)) {
+      return F.C1;
+    }
+
+    if (!n.isNegative() && !k.isNegative()) {
+      // k>n : by definition --> 0
+      if (k.compareTo(n) > 0) {
+        return F.C0;
+      }
+
+      int ni = n.toIntDefault(-1);
+      if (ni >= 0) {
+        int ki = k.toIntDefault(-1);
+        if (ki >= 0) {
+          if (ki > ni) {
+            return F.C0;
+          }
+
+          long bits = LongMath.log2(ni, CEILING) * ki;
+          if (bits < Config.MAX_BIT_LENGTH) {
+            return binomialBigInteger(ni, ki);
+          } else {
+            BigIntegerLimitExceeded.throwIt(bits);
+          }
+        }
+      }
+
+      IInteger bin = F.C1;
+      IInteger i = F.C1;
+      while (!(i.compareTo(k) > 0)) {
+        bin = bin.multiply(n.subtract(i).add(F.C1)).div(i);
+        i = i.add(F.C1);
+      }
+      return bin;
+    } else if (n.isNegative()) {
+      // see definitions at https://arxiv.org/abs/1105.3689
+      if (!k.isNegative()) {
+        // (-1)^k * Binomial(-n+k-1, k)
+        IInteger factor = k.isOdd() ? F.CN1 : F.C1;
+        return binomial(n.negate().add(k).add(F.CN1), k).multiply(factor);
+      }
+      if (n.compareTo(k) >= 0) {
+        // (-1)^(n-k) * Binomial(-k-1, n-k)
+        IInteger factor = n.subtract(k).isOdd() ? F.CN1 : F.C1;
+        return binomial(k.add(F.C1).negate(), n.subtract(k)).multiply(factor);
+      }
+    }
+    return F.C0;
+  }
+
+  public static IInteger binomial(final int n, final int k) {
+    return binomial(valueOf(n), valueOf(k));
+  }
+
+  private static IInteger binomialBigInteger(int n, int k) {
+    IInteger binomial;
+    if (n <= BinomialCache.MAX_N && k <= BinomialCache.MAX_N) {
+      binomial = BinomialCache.binomial(n, k);
+    } else {
+      binomial = F.ZZ(BigIntegerMath.binomial(n, k));
+    }
+    return binomial;
+  }
+
+  public static org.matheclipse.core.interfaces.IInteger catalanNumber(org.matheclipse.core.interfaces.IInteger n) {
+    if (n.equals(F.CN1)) {
+      return F.CN1;
+    }
+    n = n.add(F.C1);
+    if (n.isPositive()) {
+      org.matheclipse.core.interfaces.IInteger i = F.C1;
+      org.matheclipse.core.interfaces.IInteger c = F.C1;
+      final org.matheclipse.core.interfaces.IInteger temp1 = n.shiftLeft(1).subtract(F.C1);
+      while (i.compareTo(n) < 0) {
+        c = c.multiply(temp1.subtract(i)).div(i);
+        i = i.add(F.C1);
+      }
+      return c.div(n);
+    }
+    return F.C0;
+  }
 
   protected static IAST factorBigInteger(BigInteger number, boolean isNegative, int rootNumerator,
       int rootDenominator, Int2IntMap map) {
@@ -107,6 +249,27 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return F.NIL;
   }
 
+  public static org.matheclipse.core.interfaces.IInteger factorial(int n) {
+    final int absN = Math.abs(n);
+    final int iterationLimit = EvalEngine.get().getIterationLimit();
+    if (iterationLimit >= 0 && iterationLimit < absN) {
+      IterationLimitExceeded.throwIt(absN, F.Factorial(F.ZZ(n)));
+    }
+  
+    BigInteger result;
+    if (absN <= 20) {
+      result = BigInteger.valueOf(LongMath.factorial(absN));
+    } else {
+      result = BigIntegerMath.factorial(absN);
+    }
+  
+    if (n < 0 && n % 2 != 0) {
+      result = result.negate();
+    }
+  
+    return valueOf(result);
+  }
+
   public static IAST factorizeLong(long value) {
     int allocSize = 0;
     long longValue = value;
@@ -130,6 +293,74 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       }
     }
     return result;
+  }
+
+  /**
+   * Fibonacci sequence. Algorithm in <code>O(log(n))</code> time. See:
+   * <a href= "https://www.rosettacode.org/wiki/Fibonacci_sequence#Iterative_28"> Roseatta code:
+   * Fibonacci sequence.</a>
+   *
+   * @param iArg
+   * @return
+   */
+  public static org.matheclipse.core.interfaces.IInteger fibonacci(int iArg) {
+    int temp = iArg;
+    if (temp < 0) {
+      temp *= (-1);
+    }
+    if (temp < AbstractIntegerSym.FIBONACCI_45.length) {
+      int result = AbstractIntegerSym.FIBONACCI_45[temp];
+      if (iArg < 0 && ((iArg & 0x00000001) == 0x00000000)) {
+        return F.ZZ(-result);
+      }
+      return F.ZZ(result);
+    }
+  
+    BigInteger a = BigInteger.ONE;
+    BigInteger b = BigInteger.ZERO;
+    BigInteger c = BigInteger.ONE;
+    BigInteger d = BigInteger.ZERO;
+    BigInteger result = BigInteger.ZERO;
+    while (temp != 0) {
+      if ((temp & 0x00000001) == 0x00000001) { // odd?
+        d = result.multiply(c);
+        result = a.multiply(c).add(result.multiply(b).add(d));
+        if (result.bitLength() > Config.MAX_BIT_LENGTH) {
+          BigIntegerLimitExceeded.throwIt(result.bitLength());
+        }
+        a = a.multiply(b).add(d);
+      }
+  
+      d = c.multiply(c);
+      c = b.multiply(c).shiftLeft(1).add(d);
+      b = b.multiply(b).add(d);
+      temp >>= 1;
+    }
+  
+    if (iArg < 0 && ((iArg & 0x00000001) == 0x00000000)) { // even
+      return F.ZZ(result.negate());
+    }
+    return F.ZZ(result);
+  }
+
+  /**
+   * Returns the greatest common divisor of {@code a, b}. Returns {@code 0} if {@code a == 0 && b ==
+   * 0}.
+   * <p>
+   * See: <a href="https://medium.com/@m.langer798/stein-vs-stein-on-the-jvm-c911809bfce1">GCD:
+   * Stein vs. Stein on the JVM</a>
+   * 
+   * @param p
+   * @param q
+   * @return
+   */
+  public static long gcd(int p, int q) {
+    if (p == Integer.MIN_VALUE || q == Integer.MIN_VALUE) {
+      long pl = p;
+      long ql = q;
+      return LongMath.gcd(pl < 0L ? -pl : pl, ql < 0L ? -ql : ql);
+    }
+    return IntMath.gcd(p < 0 ? -p : p, q < 0 ? -q : q);
   }
 
   public static BigInteger jacobiSymbol(BigInteger a, BigInteger b) {
@@ -199,6 +430,77 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     BigInteger gcd = i0.gcd(b);
     BigInteger lcm = (a.multiply(b)).divide(gcd);
     return lcm;
+  }
+
+  /**
+   * Gives the multinomial coefficient <code>(k0+k1+...)!/(k0! * k1! ...)</code>.
+   *
+   * @param kArray the non-negative coefficients
+   * @param n the sum of the non-negative coefficients
+   */
+  public static org.matheclipse.core.interfaces.IInteger multinomial(final int[] kArray, final int n) {
+    org.matheclipse.core.interfaces.IInteger pPlus = F.C1;
+    org.matheclipse.core.interfaces.IRational pNeg = F.C1;
+    int nNeg = 0;
+    for (int k : kArray) {
+      if (k != 0) {
+        if (k < 0) {
+          nNeg++;
+          int temp = -1 - k;
+          pNeg = pNeg.divideBy(factorial(temp));
+          if ((temp & 1) == 1) {
+            pNeg = pNeg.negate();
+          }
+        } else {
+          pPlus = pPlus.multiply(factorial(k));
+        }
+      }
+    }
+    if (n < 0) {
+      nNeg--;
+      if (nNeg > 0) {
+        return F.C0;
+      }
+      int kFactor = -1 - n;
+      org.matheclipse.core.interfaces.IRational p = pPlus.multiply(pNeg).multiply(factorial(kFactor));
+      if ((kFactor & 1) == 1) {
+        p = p.negate();
+      }
+      return p.isNegative() ? p.denominator().negate() : p.denominator();
+    }
+    if (nNeg > 0) {
+      return F.C0;
+    }
+    org.matheclipse.core.interfaces.IInteger result = factorial(n).div(pPlus);
+    return result;
+  }
+
+  /**
+   * Gives the multinomial coefficient <code>(k0+k1+...)!/(k0! * k1! ...)</code>.
+   *
+   * @param kArray non-negative coefficients
+   * @return
+   */
+  public static org.matheclipse.core.interfaces.IInteger multinomial(org.matheclipse.core.interfaces.IInteger[] kArray) {
+    if (kArray == null || kArray.length == 0) {
+      return F.C1;
+    }
+    org.matheclipse.core.interfaces.IInteger n = F.C0;
+    for (int i = 0; i < kArray.length; i++) {
+      n = n.add(kArray[i]);
+    }
+    int ni = n.toIntDefault();
+    if (F.isNotPresent(ni)) {
+      return null;
+    }
+    int[] kIntArray = new int[kArray.length];
+    for (int i = 0; i < kArray.length; i++) {
+      kIntArray[i] = kArray[i].toIntDefault();
+      if (F.isNotPresent(kIntArray[i])) {
+        return null;
+      }
+    }
+    return AbstractIntegerSym.multinomial(kIntArray, ni);
   }
 
   /**
@@ -330,6 +632,12 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return visitor.visit(this);
   }
 
+  // /** {@inheritDoc} */
+  // @Override
+  // public IInteger gcd(final IInteger that) {
+  // return gcd( that);
+  // }
+
   /** {@inheritDoc} */
   @Override
   public long accept(IVisitorLong visitor) {
@@ -367,6 +675,36 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return this;
   }
 
+  // private IAST factorizeInt(int intValue) {
+  // IASTAppendable result = F.ListAlloc();// tdivFactors.size() + extraSize);
+  // if (intValue < 0) {
+  // intValue *= -1;
+  // result.append(F.CN1);
+  // }
+  // TDiv31Barrett TDIV31 = new TDiv31Barrett();
+  // int prime = TDIV31.findSingleFactor(intValue);
+  // while (true) {
+  // prime = TDIV31.findSingleFactor(intValue);
+  // intValue /= prime;
+  // if (prime != 1) {
+  // result.append(prime);
+  // } else {
+  // break;
+  // }
+  // }
+  // if (intValue != 1) {
+  // SortedMultiset<BigInteger> tdivFactors = TDIV31.factor(BigInteger.valueOf(intValue));
+  // for (Map.Entry<BigInteger, Integer> entry : tdivFactors.entrySet()) {
+  // final IInteger is = valueOf(entry.getKey());
+  // final int value = entry.getValue();
+  // for (int i = 0; i < value; i++) {
+  // result.append(is);
+  // }
+  // }
+  // }
+  // return result;
+  // }
+
   @Override
   public IInteger charmichaelLambda() {
     return AbstractIntegerSym.valueOf(Primality.charmichaelLambda(toBigNumerator()));
@@ -392,12 +730,6 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     }
     return IExpr.compareHierarchy(this, expr);
   }
-
-  // /** {@inheritDoc} */
-  // @Override
-  // public IInteger gcd(final IInteger that) {
-  // return gcd( that);
-  // }
 
   @Override
   public IExpr copy() {
@@ -552,41 +884,11 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return F.NIL;
   }
 
-  // private IAST factorizeInt(int intValue) {
-  // IASTAppendable result = F.ListAlloc();// tdivFactors.size() + extraSize);
-  // if (intValue < 0) {
-  // intValue *= -1;
-  // result.append(F.CN1);
-  // }
-  // TDiv31Barrett TDIV31 = new TDiv31Barrett();
-  // int prime = TDIV31.findSingleFactor(intValue);
-  // while (true) {
-  // prime = TDIV31.findSingleFactor(intValue);
-  // intValue /= prime;
-  // if (prime != 1) {
-  // result.append(prime);
-  // } else {
-  // break;
-  // }
-  // }
-  // if (intValue != 1) {
-  // SortedMultiset<BigInteger> tdivFactors = TDIV31.factor(BigInteger.valueOf(intValue));
-  // for (Map.Entry<BigInteger, Integer> entry : tdivFactors.entrySet()) {
-  // final IInteger is = valueOf(entry.getKey());
-  // final int value = entry.getValue();
-  // for (int i = 0; i < value; i++) {
-  // result.append(is);
-  // }
-  // }
-  // }
-  // return result;
-  // }
-
   @Override
   public IInteger factorial() {
     int ni = toIntDefault();
     if (ni > Integer.MIN_VALUE) {
-      return IInteger.factorial(ni);
+      return AbstractIntegerSym.factorial(ni);
     }
     // Machine-sized integer expected at position `2` in `1`.
     throw new ArgumentTypeException("intm", F.list(F.Factorial(this), F.C1));
@@ -688,6 +990,10 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return F.C1;
   }
 
+  // public static BigInteger jacobiSymbol(long a, long b) {
+  // return jacobiSymbol(BigInteger.valueOf(a), BigInteger.valueOf(b));
+  // }
+
   /** {@inheritDoc} */
   @Override
   public IRational gcd(IRational that) {
@@ -753,10 +1059,6 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   public boolean isNumEqualInteger(IInteger value) throws ArithmeticException {
     return equals(value);
   }
-
-  // public static BigInteger jacobiSymbol(long a, long b) {
-  // return jacobiSymbol(BigInteger.valueOf(a), BigInteger.valueOf(b));
-  // }
 
   /** {@inheritDoc} */
   @Override
@@ -1215,111 +1517,5 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   @Override
   public byte[] toByteArray() {
     return toBigNumerator().toByteArray();
-  }
-
-  public static IInteger binomial(final int n, final int k) {
-    return binomial(valueOf(n), valueOf(k));
-  }
-
-  /**
-   * Calculate integer binomial number. See definitions by
-   * <a href="https://arxiv.org/abs/1105.3689">Kronenburg 2011</a>
-   *
-   * @param n
-   * @param k
-   * @return
-   */
-  public static IInteger binomial(final IInteger n, final IInteger k)
-      throws BigIntegerLimitExceeded {
-    if (k.isZero() || k.equals(n)) {
-      return F.C1;
-    }
-  
-    if (!n.isNegative() && !k.isNegative()) {
-      // k>n : by definition --> 0
-      if (k.compareTo(n) > 0) {
-        return F.C0;
-      }
-  
-      int ni = n.toIntDefault(-1);
-      if (ni >= 0) {
-        int ki = k.toIntDefault(-1);
-        if (ki >= 0) {
-          if (ki > ni) {
-            return F.C0;
-          }
-  
-          long bits = LongMath.log2(ni, CEILING) * ki;
-          if (bits < Config.MAX_BIT_LENGTH) {
-            return valueOf(BigIntegerMath.binomial(ni, ki));
-          } else {
-            BigIntegerLimitExceeded.throwIt(bits);
-          }
-        }
-      }
-  
-      IInteger bin = F.C1;
-      IInteger i = F.C1;
-      while (!(i.compareTo(k) > 0)) {
-        bin = bin.multiply(n.subtract(i).add(F.C1)).div(i);
-        i = i.add(F.C1);
-      }
-      return bin;
-    } else if (n.isNegative()) {
-      // see definitions at https://arxiv.org/abs/1105.3689
-      if (!k.isNegative()) {
-        // (-1)^k * Binomial(-n+k-1, k)
-        IInteger factor = k.isOdd() ? F.CN1 : F.C1;
-        return binomial(n.negate().add(k).add(F.CN1), k).multiply(factor);
-      }
-      if (n.compareTo(k) >= 0) {
-        // (-1)^(n-k) * Binomial(-k-1, n-k)
-        IInteger factor = n.subtract(k).isOdd() ? F.CN1 : F.C1;
-        return binomial(k.add(F.C1).negate(), n.subtract(k)).multiply(factor);
-      }
-    }
-    return F.C0;
-  }
-
-  /**
-   * Integer logarithm of <code>arg</code> for base <code>b</code>. Gives Log <sub>b</sub>(arg) or
-   * <code>Log(arg)/Log(b)</code> as a {@link IRational} number if the result is rational
-   *
-   * @param b the base of the logarithm
-   * @param arg
-   * @return {@link F#NIL} if the result is not rational.
-   */
-  public static IExpr baseBLog(final IInteger b, final IInteger arg) {
-    try {
-      long l1 = b.toLong();
-      long l2 = arg.toLong();
-      if (l1 > 0L && l2 > 0L) {
-        boolean inverse = false;
-        if (l1 > l2) {
-          long t = l2;
-          l2 = l1;
-          l1 = t;
-          inverse = true;
-        }
-        double numericResult = Math.log(l2) / Math.log(l1);
-        if (F.isNumIntValue(numericResult)) {
-          long symbolicResult = DoubleMath.roundToLong(numericResult, Config.ROUNDING_MODE);
-          if (inverse) {
-            if (b.equals(arg.powerRational(symbolicResult))) {
-              // cross checked result
-              return F.QQ(1L, symbolicResult);
-            }
-          } else {
-            if (arg.equals(b.powerRational(symbolicResult))) {
-              // cross checked result
-              return F.ZZ(symbolicResult);
-            }
-          }
-        }
-      }
-    } catch (ArithmeticException ae) {
-      // toLong() method failed
-    }
-    return F.NIL;
   }
 }

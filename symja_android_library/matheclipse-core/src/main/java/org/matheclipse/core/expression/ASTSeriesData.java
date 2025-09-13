@@ -107,7 +107,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         }
       }
       IExpr coefficient =
-          engine.evalQuiet(F.Times(F.Power(IInteger.factorial(i), F.CN1), functionPart));
+          engine.evalQuiet(F.Times(F.Power(AbstractIntegerSym.factorial(i), F.CN1), functionPart));
       if (coefficient.isIndeterminate() || coefficient.isComplexInfinity()) {
         return null;
       }

@@ -59,6 +59,7 @@ import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.combinatoric.BinomialCache;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -88,6 +89,7 @@ import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ASTSeriesData;
+import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
@@ -3112,9 +3114,21 @@ public final class Arithmetic {
         return a;
       }
       int ni = n.toIntDefault();
-      if (a.isRational() && ni > Integer.MIN_VALUE) {
-        BigFraction bf = ((IRational) a).toBigFraction();
-        return pochhammer(bf, ni);
+      if (ni > Integer.MIN_VALUE) {
+        if (ni > 0 && ni < BinomialCache.MAX_N) {
+          int ai = a.toIntDefault();
+          if (ai > 0 && ai < BinomialCache.MAX_N) {
+            long maxBin = ai + ni - 1L;
+            if (maxBin < BinomialCache.MAX_N) {
+              return AbstractIntegerSym.binomial((int) maxBin, ni)
+                  .multiply(AbstractIntegerSym.factorial(ni));
+            }
+          }
+        }
+        if (a.isRational()) {
+          BigFraction bf = ((IRational) a).toBigFraction();
+          return pochhammer(bf, ni);
+        }
       }
       if (a.isInteger() && a.isPositive()) {
         IExpr temp = EvalEngine.get().evaluate(F.Plus(((IInteger) a).subtract(F.C1), n));
@@ -7084,20 +7098,16 @@ public final class Arithmetic {
       return F.fraction(res.reciprocal());
     } else if (n == 0) {
       return F.C1;
+    } else if (n == 1) {
+      return F.fraction(that);
     } else {
       if (that.equals(BigFraction.ZERO)) {
         return F.C0;
       }
 
-      int iterationLimit = EvalEngine.get().getIterationLimit();
-      if (iterationLimit >= 0 && iterationLimit <= n) {
-        IterationLimitExceeded.throwIt(n, F.Pochhammer(F.QQ(that), F.ZZ(n)));
-      }
-      BigFraction res = that;
-      for (int i = 1; i < n; i++) {
-        res = res.multiply(that.add(i));
-      }
-      return F.fraction(res);
+      // recursion is O(log(n)) times - https://github.com/mtommila/apfloat/issues/69
+      int k = n / 2;
+      return pochhammer(that, k).multiply(pochhammer(that.add(k), n - k));
     }
   }
 

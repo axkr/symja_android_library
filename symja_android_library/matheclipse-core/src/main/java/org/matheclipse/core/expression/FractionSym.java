@@ -96,7 +96,7 @@ public class FractionSym extends AbstractFractionSym {
       if (fDenominator == fs.fDenominator) {
         return valueOf((long) fNumerator + fs.fNumerator, fDenominator);
       }
-      long gcd = IInteger.gcd(fDenominator, fs.fDenominator);
+      long gcd = AbstractIntegerSym.gcd(fDenominator, fs.fDenominator);
       if (gcd == 1L) {
         long denomgcd = fDenominator;
         long otherdenomgcd = fs.fDenominator;
@@ -385,9 +385,9 @@ public class FractionSym extends AbstractFractionSym {
     /* new numerator = gcd(num, other.num) */
     /* new denominator = lcm(denom, other.denom) */
     FractionSym fs = (FractionSym) other;
-    long gcddenom = IInteger.gcd(fDenominator, fs.fDenominator);
+    long gcddenom = AbstractIntegerSym.gcd(fDenominator, fs.fDenominator);
     long denom = (fDenominator / gcddenom) * fs.fDenominator;
-    long num = IInteger.gcd(fNumerator < 0 ? -fNumerator : fNumerator,
+    long num = AbstractIntegerSym.gcd(fNumerator < 0 ? -fNumerator : fNumerator,
         fs.fNumerator < 0 ? -fs.fNumerator : fs.fNumerator);
     return valueOf(num, denom);
   }
@@ -517,10 +517,10 @@ public class FractionSym extends AbstractFractionSym {
     FractionSym fs = other;
     int numerator = fNumerator < 0 ? -fNumerator : fNumerator;
     int numeratorOther = fs.fNumerator < 0 ? -fs.fNumerator : fs.fNumerator;
-    long gcddenom = IInteger.gcd(numerator, numeratorOther);
+    long gcddenom = AbstractIntegerSym.gcd(numerator, numeratorOther);
     long newNumerator = (numerator / gcddenom) * numeratorOther;
 
-    long newDenominator = IInteger.gcd(fDenominator, fs.fDenominator);
+    long newDenominator = AbstractIntegerSym.gcd(fDenominator, fs.fDenominator);
     return valueOf(newNumerator, newDenominator);
   }
 

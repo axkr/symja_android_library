@@ -377,7 +377,7 @@ public class IntegerSym extends AbstractIntegerSym {
     if (that instanceof IntegerSym) {
       int p = fIntValue;
       int q = ((IntegerSym) that).fIntValue;
-      return valueOf(IInteger.gcd(p, q));
+      return valueOf(AbstractIntegerSym.gcd(p, q));
     }
     return valueOf(toBigNumerator().gcd(that.toBigNumerator()));
   }

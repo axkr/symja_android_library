@@ -15,6 +15,7 @@ import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.combinatoric.BinomialCache;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -785,6 +786,111 @@ public abstract class AbstractFractionSym implements IFraction {
    * @param n
    * @return throws ArithmeticException if n is a negative int number
    */
+  // public static IRational bernoulliNumber(int n) {
+  // if (n == 0) {
+  // return F.C1;
+  // } else if (n == 1) {
+  // return F.CN1D2;
+  // } else if (n < 0) {
+  // throw new ArithmeticException("BernoulliB(n): n is not a positive int number");
+  // } else if (n % 2 != 0) {
+  // // http://fungrim.org/entry/a98234/
+  // return F.C0;
+  // }
+  // if (n > Config.MAX_AST_SIZE) {
+  // throw new ASTElementLimitExceeded(n);
+  // }
+  //
+  // synchronized (BernoulliCache.CACHE) {
+  // if (n < BernoulliCache.CACHE.size() && BernoulliCache.CACHE.get(n) != null) {
+  // return BernoulliCache.CACHE.get(n);
+  // }
+  //
+  // int oldSize = BernoulliCache.CACHE.size();
+  // if (n >= oldSize) {
+  // BernoulliCache.CACHE.addAll(Collections.nCopies(n - oldSize + 1, null));
+  // }
+  //
+  // if (n == 0) {
+  // BernoulliCache.CACHE.set(0, F.C1);
+  // return F.C1;
+  // }
+  // if (n == 1) {
+  // BernoulliCache.CACHE.set(1, F.CN1D2);
+  // return F.CN1D2;
+  // }
+  // if (n % 2 != 0) {
+  // BernoulliCache.CACHE.set(n, F.C0);
+  // return F.C0;
+  // }
+  //
+  // // Seidel's algorithm implementation
+  // int m = n / 2;
+  // IRational[] d = new IRational[m + 3];
+  // IRational[] r = new IRational[m + 3];
+  // for (int i = 0; i < d.length; i++) {
+  // d[i] = F.C0;
+  // }
+  // d[1] = F.C1;
+  // r[0] = F.C1;
+  //
+  // long iterationLimit = EvalEngine.get().getIterationLimit();
+  // if (iterationLimit > 0 && iterationLimit < Integer.MAX_VALUE / 2) {
+  // iterationLimit *= 10L;
+  // iterationLimit += n;
+  // if (iterationLimit > 0L && iterationLimit <= n) {
+  // IterationLimitExceeded.throwIt(iterationLimit, F.BernoulliB(F.ZZ(n)));
+  // }
+  // }
+  // int iterationCounter = 0;
+  //
+  // boolean b = true;
+  // int h = 1;
+  // IInteger p = F.C1;
+  // IInteger s = F.CN2;
+  //
+  // IInteger q = F.C0;
+  // for (int i = 0; i < n; i++) {
+  // iterationCounter += h;
+  // if (iterationLimit > 0L && iterationLimit <= iterationCounter) {
+  // IterationLimitExceeded.throwIt(iterationCounter, F.BernoulliB(F.ZZ(n)));
+  // }
+  //
+  // if (b) {
+  // h++;
+  // p = p.multiply(4);
+  // s = s.negate();
+  // q = s.multiply(p.subtract(F.C1));
+  // for (int k = h; k > 0; k--) {
+  // d[k] = d[k].add(d[k + 1]);
+  // }
+  // } else {
+  // for (int k = 1; k < h; k++) {
+  // d[k] = d[k].add(d[k - 1]);
+  // }
+  // r[h] = d[h - 1].divideBy(q);
+  //
+  // }
+  // b = !b;
+  // }
+  // for (int i = oldSize; i <= n; i++) {
+  // if (i % 2 != 0) {
+  // BernoulliCache.CACHE.set(i, F.C0);
+  // } else {
+  // BernoulliCache.CACHE.set(i, r[i / 2 + 1]);
+  // }
+  // }
+  // return BernoulliCache.CACHE.get(n);
+  // }
+  // }
+
+
+  /**
+   * Compute the Bernoulli number of the first kind.
+   *
+   * @param n
+   * @return throws ArithmeticException if n is a negative int number
+   */
   public static IRational bernoulliNumber(int n) {
     if (n == 0) {
       return F.C1;
@@ -799,88 +905,41 @@ public abstract class AbstractFractionSym implements IFraction {
     if (n > Config.MAX_AST_SIZE) {
       throw new ASTElementLimitExceeded(n);
     }
+    IFraction[] bernoulli = new IFraction[n + 1];
+    bernoulli[0] = FractionSym.ONE;
+    bernoulli[1] = AbstractFractionSym.valueOf(-1L, 2L);
 
-    synchronized (BernoulliCache.CACHE) {
-      if (n < BernoulliCache.CACHE.size() && BernoulliCache.CACHE.get(n) != null) {
-        return BernoulliCache.CACHE.get(n);
+    long iterationLimit = EvalEngine.get().getIterationLimit();
+    if (iterationLimit > 0 && iterationLimit < Integer.MAX_VALUE / 2) {
+      iterationLimit *= 10L;
+      iterationLimit += n;
+      if (iterationLimit > 0L && iterationLimit <= n) {
+        IterationLimitExceeded.throwIt(iterationLimit, F.BernoulliB(F.ZZ(n)));
       }
-
-      int oldSize = BernoulliCache.CACHE.size();
-      if (n >= oldSize) {
-        BernoulliCache.CACHE.addAll(Collections.nCopies(n - oldSize + 1, null));
-      }
-
-      if (n == 0) {
-        BernoulliCache.CACHE.set(0, F.C1);
-        return F.C1;
-      }
-      if (n == 1) {
-        BernoulliCache.CACHE.set(1, F.CN1D2);
-        return F.CN1D2;
-      }
-      if (n % 2 != 0) {
-        BernoulliCache.CACHE.set(n, F.C0);
-        return F.C0;
-      }
-
-      // Seidel's algorithm implementation
-      int m = n / 2;
-      IRational[] d = new IRational[m + 3];
-      IRational[] r = new IRational[m + 3];
-      for (int i = 0; i < d.length; i++) {
-        d[i] = F.C0;
-      }
-      d[1] = F.C1;
-      r[0] = F.C1;
-
-      long iterationLimit = EvalEngine.get().getIterationLimit();
-      if (iterationLimit > 0 && iterationLimit < Integer.MAX_VALUE / 2) {
-        iterationLimit *= 10L;
-        iterationLimit += n;
-        if (iterationLimit > 0L && iterationLimit <= n) {
-          IterationLimitExceeded.throwIt(iterationLimit, F.BernoulliB(F.ZZ(n)));
-        }
-      }
-      int iterationCounter = 0;
-
-      boolean b = true;
-      int h = 1;
-      IInteger p = F.C1;
-      IInteger s = F.CN2;
-
-      IInteger q = F.C0;
-      for (int i = 0; i < n; i++) {
-        iterationCounter += h;
-        if (iterationLimit > 0L && iterationLimit <= iterationCounter) {
-          IterationLimitExceeded.throwIt(iterationCounter, F.BernoulliB(F.ZZ(n)));
-        }
-
-        if (b) {
-          h++;
-          p = p.multiply(4);
-          s = s.negate();
-          q = s.multiply(p.subtract(F.C1));
-          for (int k = h; k > 0; k--) {
-            d[k] = d[k].add(d[k + 1]);
-          }
-        } else {
-          for (int k = 1; k < h; k++) {
-            d[k] = d[k].add(d[k - 1]);
-          }
-          r[h] = d[h - 1].divideBy(q);
-
-        }
-        b = !b;
-      }
-      for (int i = oldSize; i <= n; i++) {
-        if (i % 2 != 0) {
-          BernoulliCache.CACHE.set(i, F.C0);
-        } else {
-          BernoulliCache.CACHE.set(i, r[i / 2 + 1]);
-        }
-      }
-      return BernoulliCache.CACHE.get(n);
     }
+
+    if (n <= BinomialCache.MAX_N) {
+      iterationLimit = -1;
+    }
+    int iterationCounter = 0;
+    for (int k = 2; k <= n; k++) {
+      bernoulli[k] = FractionSym.ZERO;
+      iterationCounter += k;
+      if (iterationLimit > 0 && iterationLimit <= iterationCounter) {
+        IterationLimitExceeded.throwIt(iterationCounter, F.BernoulliB(F.ZZ(n)));
+      }
+      for (int i = 0; i < k; i++) {
+        if (!bernoulli[i].isZero()) {
+          int nb = k + 1;
+          int mb = nb - i;
+          IFraction bin = AbstractFractionSym.valueOf(AbstractIntegerSym.binomial(nb, mb));
+          bernoulli[k] = bernoulli[k].sub(bin.mul(bernoulli[i]));
+        }
+      }
+      bernoulli[k] = bernoulli[k].div(AbstractFractionSym.valueOf(k + 1));
+
+    }
+    return bernoulli[n].normalize();
   }
 
   /**
@@ -935,7 +994,7 @@ public abstract class AbstractFractionSym implements IFraction {
     if (i1.equals(BigInteger.ONE) || i2.equals(BigInteger.ONE)) {
       return BigInteger.ONE;
     } else if (hasIntValue(i1) && hasIntValue(i2)) {
-      return BigInteger.valueOf(IInteger.gcd(i1.intValue(), i2.intValue()));
+      return BigInteger.valueOf(AbstractIntegerSym.gcd(i1.intValue(), i2.intValue()));
     } else {
       return i1.gcd(i2);
     }
