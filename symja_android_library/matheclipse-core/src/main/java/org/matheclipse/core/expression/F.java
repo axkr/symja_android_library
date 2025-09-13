@@ -2764,6 +2764,10 @@ public class F extends S {
     return new AST2(Complex, a0, a1);
   }
 
+  public static IAST ComplexExpand(final IExpr a0) {
+    return new AST1(ComplexExpand, a0);
+  }
+
   /**
    * Create a symbolic complex number.
    *

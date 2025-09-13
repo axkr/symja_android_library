@@ -1369,27 +1369,36 @@ public class PolynomialFunctions {
      */
     private IExpr integerArgsSphericalHarmonicY(IExpr l, IExpr m, IExpr t, IExpr p,
         EvalEngine engine) {
-      if (l.isMathematicalIntegerNonNegative() && m.isMathematicalIntegerNonNegative()) {
-        int n = l.toIntDefault();
+      if (l.isMathematicalIntegerNegative()) {
+        l = l.negate().subtract(F.C1);
+      }
+      // if (m.isMathematicalIntegerNegative()) {
+      // IExpr conjugateSphericalHarmonicY =
+      // F.Conjugate(integerArgsSphericalHarmonicY(l, m.negate(), t, p, engine));
+      // return F.Times(F.Power(F.CN1, m.negate()), conjugateSphericalHarmonicY);
+      // }
+      final IExpr ll = l;
+      if (ll.isMathematicalIntegerNonNegative() && m.isMathematicalIntegerNonNegative()) {
+        int n = ll.toIntDefault();
         if (n >= 0) {
           n /= 2;
-          if (m.lessEqual(l).isTrue()) {
+          if (m.lessEqual(ll).isTrue()) {
             // ((-1)^m/2^(1-l)*E^(I*p*m)*Sqrt(((2*l+1)*(l-m)!)/(l+m)!)*(Sin(t)^2)^(m/2)*Sum(((-
             // 1)^k*Gamma(-k+l+1/2))/(Cos(t)^(2*k-l)*2^(2*k)*k!*Gamma(-2*k+l-m+1)),{k,0,Floor(l/
             // 2)}))/(Pi*Cos(t)^m)
-            IExpr plusSubexpr = l.plus(m.negate()).plus(F.C1);
+            IExpr plusSubexpr = ll.plus(m.negate()).plus(F.C1);
             IExpr cosT = F.Cos(t);
             IExpr sum = F.sum(
-                k -> F.Times(F.Power(cosT, F.Plus(F.Times(F.CN2, k), l)), F.Power(F.CN1, k),
-                    F.Gamma(F.Plus(k.negate(), l, F.C1D2)),
+                k -> F.Times(F.Power(cosT, F.Plus(F.Times(F.CN2, k), ll)), F.Power(F.CN1, k),
+                    F.Gamma(F.Plus(k.negate(), ll, F.C1D2)),
                     F.Power(F.Times(F.Power(F.C2, F.Times(F.C2, k)), F.Factorial(k),
                         F.Gamma(F.Plus(F.Times(F.CN2, k), plusSubexpr))), F.CN1)), //
                 0, n);
-            IAST sphericalHarmonicY = F.Times(F.Power(F.CN1, m), F.Power(F.C2, F.Plus(F.CN1, l)),
+            IAST sphericalHarmonicY = F.Times(F.Power(F.CN1, m), F.Power(F.C2, F.Plus(F.CN1, ll)),
                 F.Exp(F.Times(F.CI, p, m)), F.Power(F.Times(F.Pi, F.Power(cosT, m)), F.CN1),
-                F.Sqrt(F.Times(F.Plus(F.Times(F.C2, l), F.C1), F.Factorial(F.Subtract(l, m)),
-                    F.Power(F.Factorial(F.Plus(l, m)), F.CN1))),
-                F.Power(F.Sqr(F.Sin(t)), F.Times(F.C1D2, m)), //
+                F.Sqrt(F.Times(F.Plus(F.Times(F.C2, ll), F.C1), F.Factorial(F.Subtract(ll, m)),
+                    F.Power(F.Factorial(F.Plus(ll, m)), F.CN1))),
+                F.Power(F.Sin(t), m), //
                 sum);
             return engine.evaluate(sphericalHarmonicY);
           }
@@ -1622,8 +1631,7 @@ public class PolynomialFunctions {
       if (n.isNumEqualRational(F.C1D2)) {
         final IExpr zDoubled = F.C2.times(z);
         // (1/2, z) => (1 + 2*z)/(Sqrt(2)* Sqrt(1 + z))
-        return F.Times(F.C1DSqrt2, F.Plus(F.C1, zDoubled),
-            F.Power(F.Plus(F.C1, z), F.CN1D2));
+        return F.Times(F.C1DSqrt2, F.Plus(F.C1, zDoubled), F.Power(F.Plus(F.C1, z), F.CN1D2));
       }
       if (z.isZero()) {
         // Cos((Pi*n)/2)

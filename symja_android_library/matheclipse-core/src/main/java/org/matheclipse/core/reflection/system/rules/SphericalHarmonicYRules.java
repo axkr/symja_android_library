@@ -58,9 +58,6 @@ public class SphericalHarmonicYRules {
       Times(Sqrt(Plus(C1,Times(C2,n))),Power(Times(C2,CSqrtPi),CN1),LegendreP(n,Cos(t)))),
     // SphericalHarmonicY(n_Integer,m_Integer,t_,p_):=0/;n>=0&&m>n
     ISetDelayed(SphericalHarmonicY($p(n, Integer),$p(m, Integer),t_,p_),
-      Condition(C0,And(GreaterEqual(n,C0),Greater(m,n)))),
-    // SphericalHarmonicY(n_,m_,t_,p_):=0/;m==-1-n
-    ISetDelayed(SphericalHarmonicY(n_,m_,t_,p_),
-      Condition(C0,Equal(m,Subtract(CN1,n))))
+      Condition(C0,And(GreaterEqual(n,C0),Greater(m,n))))
   );
 }
