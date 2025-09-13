@@ -301,7 +301,7 @@ public final class NumberTheory {
           }
           return F.NIL;
         }
-        int bn = n.toIntDefault();
+        final int bn = n.toIntDefault();
         if (bn >= 0) {
           return AbstractFractionSym.bernoulliNumber(bn);
         }
@@ -370,7 +370,7 @@ public final class NumberTheory {
             // http://fungrim.org/entry/03ee0b/
             return F.Times(F.Subtract(F.Power(F.C2, F.Subtract(F.C1, n)), F.C1), F.BernoulliB(n));
           }
-          int bn = n.toIntDefault();
+          final int bn = n.toIntDefault();
           if (bn >= 0) {
             // http://fungrim.org/entry/555e10/
             return F.sum(
@@ -6231,10 +6231,11 @@ public final class NumberTheory {
           } else {
             factorPlusMinus1 = F.C1;
           }
+          IInteger k = value.add(nSubtractm);
           temp.append(F.Times(factorPlusMinus1,
-              F.Binomial(Plus(value, nSubtract1), Plus(value, nSubtractm)),
-              F.Binomial(nTimes2Subtractm, F.Subtract(nSubtractm, value)),
-              F.StirlingS2(Plus(value, nSubtractm), value)));
+              AbstractIntegerSym.binomial(value.add(nSubtract1), k),
+              AbstractIntegerSym.binomial(nTimes2Subtractm, nSubtractm.subtract(value)),
+              F.StirlingS2(k, value)));
           leafCount += temp.leafCount();
           if (leafCount > Config.MAX_AST_SIZE) {
             ASTElementLimitExceeded.throwIt(leafCount);
@@ -6670,7 +6671,7 @@ public final class NumberTheory {
    * @return {@code S2(nArg1,kArg2)} or throw <code>ArithmeticException</code> if <code>n</code>
    *         cannot be converted into a positive int number
    */
-  public static IInteger stirlingS2(int n, IInteger k, int ki) throws MathRuntimeException {
+  public static IInteger stirlingS2(int n, IInteger k, final int ki) throws MathRuntimeException {
     if (ki > n || ki == 0) {
       return C0;
     }
@@ -6687,15 +6688,15 @@ public final class NumberTheory {
     }
     IInteger sum = F.C0;
     for (int i = 0; i < ki; i++) {
-      IInteger bin = AbstractIntegerSym.binomial(k, F.ZZ(i));
-      IInteger pow = k.add(F.ZZ(-i)).powerRational(n);
+      IInteger bin = AbstractIntegerSym.binomial(ki, i);
+      IInteger pow = F.ZZ(ki - i).powerRational(n);
       if ((i & 1) == 1) { // isOdd(i) ?
         sum = sum.add(bin.negate().multiply(pow));
       } else {
         sum = sum.add(bin.multiply(pow));
       }
     }
-    return sum.div(k.factorial());
+    return sum.div(AbstractIntegerSym.factorial(ki));
   }
 
   /**
