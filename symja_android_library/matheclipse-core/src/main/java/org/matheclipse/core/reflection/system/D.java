@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.math.BigInteger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.DLeibnitzRule;
 import org.matheclipse.core.eval.Errors;
@@ -21,7 +20,6 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
 
 /**
@@ -718,80 +716,6 @@ public class D extends AbstractFunctionEvaluator {
       return piecewise;
     }
     return F.NIL;
-  }
-
-  /**
-   * Use the <a href="https://en.wikipedia.org/wiki/General_Leibniz_rule">General Leibniz rule</a>
-   * to differentiate products multiple times.
-   *
-   * <p>
-   * D(f*g, {x, n}) = Sum(Binomial(n, k) * D(f, {x, k}) * D(g, {x, n-k}), {k, 0, n})
-   *
-   * @param timesAST the AST of the product `f*g`
-   * @param x the variable to differentiate with respect to.
-   * @param n the order of the derivative.
-   * @param engine the evaluation engine.
-   * @return the n-th derivative of the product.
-   */
-  private static IExpr generalizedProductRule(final IAST timesAST, IExpr x, final int n,
-      EvalEngine engine) {
-    if (timesAST.argSize() != 2) {
-      // Rule only implemented for 2 arguments for now
-      return F.NIL;
-    }
-    final IExpr f = timesAST.arg1();
-    final IExpr g = timesAST.arg2();
-    try {
-      IExpr[] df = new IExpr[n + 1];
-      IExpr[] dg = new IExpr[n + 1];
-      df[0] = engine.evaluate(F.D(f, x));
-      dg[0] = engine.evaluate(F.D(g, x));
-      for (int k = 1; k <= n; k++) {
-        df[k] = F.C0;
-        dg[k] = F.C0;
-      }
-      for (int k = 1; k <= n; k++) {
-        df[k] = engine.evaluate(F.D(df[k - 1], x));
-        if (df[k].isZero()) {
-          break;
-        }
-      }
-      for (int k = 1; k <= n; k++) {
-        dg[k] = engine.evaluate(F.D(dg[k - 1], x));
-        if (dg[k].isZero()) {
-          break;
-        }
-      }
-
-      final IASTAppendable plus = F.PlusAlloc(n);
-      for (int k = 0; k <= n; k++) {
-        BigInteger binom = BigIntegerMath.binomial(n, k);
-        final IExpr binomial = F.ZZ(binom);
-        final IExpr dF = df[k];
-        if (dF.isZero()) {
-          break;
-        }
-        final IExpr dG = dg[n - k];
-        if (dG.isZero()) {
-          continue;
-        }
-        // final IExpr df = engine.evaluate(F.D(f, F.list(x, F.ZZ(k))));
-        // if (df.isZero()) {
-        // continue;
-        // }
-        // final IExpr dg = engine.evaluate(F.D(g, F.list(x, F.ZZ(n - k))));
-        // if (dg.isZero()) {
-        // continue;
-        // }
-        plus.append(F.Times(binomial, dF, dG));
-      }
-      return plus;
-    } catch (IllegalArgumentException iex) {
-      // binomial(n, k) is not defined for the arguments
-      return F.NIL;
-    } catch (ArithmeticException ex) {
-      return F.NIL;
-    }
   }
 
   @Override

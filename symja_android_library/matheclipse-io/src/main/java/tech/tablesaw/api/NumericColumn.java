@@ -27,7 +27,6 @@ import java.util.function.BiPredicate;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleFunction;
 import java.util.function.DoublePredicate;
-import org.apache.commons.math3.exception.NotANumberException;
 import org.hipparchus.stat.correlation.KendallsCorrelation;
 import org.hipparchus.stat.correlation.PearsonsCorrelation;
 import org.hipparchus.stat.correlation.SpearmansCorrelation;
@@ -436,7 +435,6 @@ public interface NumericColumn<T extends Number>
    * Returns the Spearman's Rank correlation between the receiver and the otherColumn
    *
    * @param otherColumn A NumberColumn with no missing values
-   * @throws NotANumberException if either column contains any missing values
    */
   default double spearmans(NumericColumn<?> otherColumn) {
     double[] x = asDoubleArray();

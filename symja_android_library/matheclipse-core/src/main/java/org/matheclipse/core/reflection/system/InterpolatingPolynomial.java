@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.hipparchus.analysis.polynomials.FieldPolynomialFunctionLagrangeForm;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
@@ -206,7 +207,7 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
     if (ast.arg1().isList()) {
 
       final IAST list = (IAST) ast.arg1();
-      IExpr z = ast.arg2();
+      IExpr x = ast.arg2();
       int size = list.size();
       if (size > 1) {
         int n = size - 1;
@@ -235,11 +236,10 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
           // see org.hipparchus.analysis.interpolation.DividedDifferenceInterpolator
           IExpr[] a = computeDividedDifference(xv, yv, engine);
 
-          // IASTAppendable polynomial = F.PlusAlloc(16);
           n = c.length;
           IExpr value = a[n];
           for (int i = n - 1; i >= 0; i--) {
-            value = F.Plus(a[i], F.Times(F.Subtract(z, c[i]), value));
+            value = F.Plus(a[i], F.Times(F.Subtract(x, c[i]), value));
           }
 
           return value;
@@ -249,6 +249,35 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Return the coefficients of the Lagrange polynomial form of the interpolation polynomial for the
+   * given interpolation points and values.
+   *
+   * <p>
+   * The Lagrange form is defined by
+   *
+   * <pre>
+   * P(x) = sum(i=0..n-1, y[i] * L[i](x))
+   * L[i](x) = product(j=0..n-1, j!=i, (x - x[j]) / (x[i] - x[j]))
+   * </pre>
+   *
+   * <p>
+   * The computational complexity is O(N^2).
+   *
+   * @param x Interpolating points array.
+   * @param y Interpolating values array.
+   * @return the coefficients of the Lagrange form of the interpolation polynomial.
+   * @throws MathIllegalArgumentException if the array lengths are different.
+   * @throws MathIllegalArgumentException if the number of points is less than 2.
+   * @throws MathIllegalArgumentException if {@code x} is not sorted in strictly increasing order.
+   */
+  private static IExpr getLagrangeFormCoefficients(IExpr[] x, IExpr[] y) {
+    final FieldPolynomialFunctionLagrangeForm<IExpr> lagrangeForm =
+        new FieldPolynomialFunctionLagrangeForm<>(x, y);
+    IExpr[] coefficients = lagrangeForm.getCoefficients();
+    return F.List(coefficients);
   }
 
   @Override
