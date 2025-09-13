@@ -13,10 +13,13 @@ public class LegendreQRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 2, 3 };
+  final public static int[] SIZES = { 3, 3 };
 
   final public static IAST RULES = List(
     IInit(LegendreQ, SIZES),
+    // LegendreQ(x_,0,z_)=LegendreQ(x,z)
+    ISet(LegendreQ(x_,C0,z_),
+      LegendreQ(x,z)),
     // LegendreQ(x_,1)=ComplexInfinity
     ISet(LegendreQ(x_,C1),
       CComplexInfinity),

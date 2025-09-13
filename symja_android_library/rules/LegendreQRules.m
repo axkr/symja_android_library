@@ -1,4 +1,5 @@
- {  
+ { 
+   LegendreQ(x_, 0, z_) = LegendreQ(x, z), 
    LegendreQ(x_, 1) = ComplexInfinity,
    LegendreQ(x_, -1) = ComplexInfinity,
    LegendreQ(x_Integer, z_) := ComplexInfinity 

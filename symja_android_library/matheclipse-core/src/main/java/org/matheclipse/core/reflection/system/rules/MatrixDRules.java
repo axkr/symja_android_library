@@ -20,31 +20,31 @@ public class MatrixDRules {
     // MatrixD(Inverse(x_),x_?(TensorRank(x)==2)):=(-Inverse(x)).MatrixD(a,x).Inverse(x)
     ISetDelayed(MatrixD(Inverse(x_),PatternTest(x_,Equal(TensorRank(x),C2))),
       Dot(Negate(Inverse(x)),MatrixD(a,x),Inverse(x))),
-    // MatrixD(Transpose(x_),x_?(TensorRank(x)==2)):=Transpose(MatrixD(x,x))
+    // MatrixD(x_ᵀ,x_?(TensorRank(x)==2)):=MatrixD(x,x)ᵀ
     ISetDelayed(MatrixD(Transpose(x_),PatternTest(x_,Equal(TensorRank(x),C2))),
       Transpose(MatrixD(x,x))),
-    // MatrixD(Det(x_),x_?(TensorRank(x)==2)):=Det(x)*Transpose(Inverse(x))
+    // MatrixD(Det(x_),x_?(TensorRank(x)==2)):=Det(x)*Inverse(x)ᵀ
     ISetDelayed(MatrixD(Det(x_),PatternTest(x_,Equal(TensorRank(x),C2))),
       Times(Det(x),Transpose(Inverse(x)))),
-    // MatrixD(Det(a_?(TensorRank(x)==2).x_.b_?(TensorRank(x)==2)),x_?(TensorRank(x)==2)):=Det(a.x.b)*Transpose(Inverse(x))
+    // MatrixD(Det(a_?(TensorRank(x)==2).x_.b_?(TensorRank(x)==2)),x_?(TensorRank(x)==2)):=Det(a.x.b)*Inverse(x)ᵀ
     ISetDelayed(MatrixD(Det(Dot(PatternTest(a_,Equal(TensorRank(x),C2)),x_,PatternTest(b_,Equal(TensorRank(x),C2)))),PatternTest(x_,Equal(TensorRank(x),C2))),
       Times(Det(Dot(a,x,b)),Transpose(Inverse(x)))),
-    // MatrixD(Det(Transpose(x_).a_?(TensorRank(x)==2).x_),x_?(TensorRank(x)==2)):=2*Det(Transpose(x).a.x)*Inverse(Transpose(x))
+    // MatrixD(Det(x_ᵀ.a_?(TensorRank(x)==2).x_),x_?(TensorRank(x)==2)):=2*Det(xᵀ.a.x)*Inverse(xᵀ)
     ISetDelayed(MatrixD(Det(Dot(Transpose(x_),PatternTest(a_,Equal(TensorRank(x),C2)),x_)),PatternTest(x_,Equal(TensorRank(x),C2))),
       Times(C2,Det(Dot(Transpose(x),a,x)),Inverse(Transpose(x)))),
-    // MatrixD(Log(Det(Transpose(x_).x_)),x_?(TensorRank(x)==2)):=2*Inverse(Transpose(x))
+    // MatrixD(Log(Det(x_ᵀ.x_)),x_?(TensorRank(x)==2)):=2*Inverse(xᵀ)
     ISetDelayed(MatrixD(Log(Det(Dot(Transpose(x_),x_))),PatternTest(x_,Equal(TensorRank(x),C2))),
       Times(C2,Inverse(Transpose(x)))),
-    // MatrixD(Log(Det(x_)),x_?(TensorRank(x)==2)):=Inverse(Transpose(x))
+    // MatrixD(Log(Det(x_)),x_?(TensorRank(x)==2)):=Inverse(xᵀ)
     ISetDelayed(MatrixD(Log(Det(x_)),PatternTest(x_,Equal(TensorRank(x),C2))),
       Inverse(Transpose(x))),
-    // MatrixD(Det(MatrixPower(x_,k_)),x_?(TensorRank(x)==2)):=k*Det(MatrixPower(x,k))*Inverse(Transpose(x))
+    // MatrixD(Det(MatrixPower(x_,k_)),x_?(TensorRank(x)==2)):=k*Det(MatrixPower(x,k))*Inverse(xᵀ)
     ISetDelayed(MatrixD(Det(MatrixPower(x_,k_)),PatternTest(x_,Equal(TensorRank(x),C2))),
       Times(k,Det(MatrixPower(x,k)),Inverse(Transpose(x)))),
     // MatrixD(Inverse(x_),x_?(TensorRank(x)==2)):=(-Inverse(x)).$SingleEntryMatrix.Inverse(x)
     ISetDelayed(MatrixD(Inverse(x_),PatternTest(x_,Equal(TensorRank(x),C2))),
       Dot(Negate(Inverse(x)),$SingleEntryMatrix,Inverse(x))),
-    // MatrixD(Det(Inverse(x_)),x_?(TensorRank(x)==2)):=-Det(Inverse(x))*Transpose(Inverse(x))
+    // MatrixD(Det(Inverse(x_)),x_?(TensorRank(x)==2)):=-Det(Inverse(x))*Inverse(x)ᵀ
     ISetDelayed(MatrixD(Det(Inverse(x_)),PatternTest(x_,Equal(TensorRank(x),C2))),
       Times(CN1,Det(Inverse(x)),Transpose(Inverse(x))))
   );

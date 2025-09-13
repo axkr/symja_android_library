@@ -1,4 +1,5 @@
  { 
+   LegendreP(x_, 0, z_) = LegendreP(x, z), 
    LegendreP(x_, 1) = 1,
    
    LegendreP(x_?NumericQ, 0) :=  Sqrt(Pi)/(Gamma((1 - x)/2) * Gamma(1 + x/2)),

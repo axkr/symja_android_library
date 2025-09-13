@@ -13,10 +13,13 @@ public class LegendrePRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 1, 1 };
+  final public static int[] SIZES = { 2, 1 };
 
   final public static IAST RULES = List(
     IInit(LegendreP, SIZES),
+    // LegendreP(x_,0,z_)=LegendreP(x,z)
+    ISet(LegendreP(x_,C0,z_),
+      LegendreP(x,z)),
     // LegendreP(x_,1)=1
     ISet(LegendreP(x_,C1),
       C1),
