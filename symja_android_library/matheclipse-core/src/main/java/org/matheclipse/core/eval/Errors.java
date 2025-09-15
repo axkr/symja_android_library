@@ -216,6 +216,7 @@ public class Errors {
       "lrgexp", "Exponent ist out of bounds for function `1`.", //
       "lslc", "Coefficient matrix and target vector or matrix do not have the same dimensions.", //
       "lstpat", "List or pattern matching a list expected at position `1` in `2`.", //
+      "ltype", "Legendre type `1` is expected to be 1, 2, 3.", //
       "lvlist", "Local variable specification `1` is not a List.", //
       "lvws", "Variable `1` in local variable specification `2` requires assigning a value", //
       "lvset",

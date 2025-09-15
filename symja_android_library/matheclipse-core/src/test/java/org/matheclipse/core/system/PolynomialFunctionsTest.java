@@ -317,6 +317,27 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLegendreP() {
+    check("LegendreP(10,2,z)", //
+        "(1-z^2)*(3465/128-45045/32*z^2+675675/64*z^4-765765/32*z^6+2078505/128*z^8)");
+    check("LegendreP(10,-2,z)", //
+        "1/11880*(1-z^2)*(3465/128-45045/32*z^2+675675/64*z^4-765765/32*z^6+2078505/128*z^\n"
+            + "8)");
+
+    check("LegendreP(3,1,z)", //
+        "(3/2-15/2*z^2)*Sqrt(1-z^2)");
+    // TODO type 2 formula
+    // check("LegendreP(3,1,2,z)", //
+    // "((3/2-15/2*z^2)*Sqrt(1+z))/Sqrt(1-z)");
+    // TODO type 3 formula
+    // check("LegendreP(3,1,3,z)", //
+    // "((3/2-15/2*z^2)*Sqrt(1+z))/Sqrt(-1+z)");
+
+    check("LegendreP(-3,1,z)", //
+        "-3*z*Sqrt(1-z^2)");
+
+    check("LegendreP(2,2,2)", //
+        "-9");
+
     check("LegendreP(n,0,z)", //
         "LegendreP(n,z)");
     // message LegendreP: Not allowed to use file storage
@@ -407,12 +428,13 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSphericalHarmonicY() {
-    // TODO
     check("SphericalHarmonicY(-6,5,a,b)", //
         "-3/32*(Sqrt(77)*E^(I*5*b)*Sin(a)^5)/Sqrt(Pi)");
-    // TODO
+
     check("SphericalHarmonicY(-6,-5,a,b)", //
-        "SphericalHarmonicY(-6,-5,a,b)");
+        "-3/32*(Sqrt(77)*Sin(a)^5)/(E^(I*5*b)*Sqrt(Pi))");
+    check("SphericalHarmonicY(-6,-6,a,b)", //
+        "0");
 
     check("SphericalHarmonicY(6,5,a,b)", //
         "-3/32*(Sqrt(1001)*E^(I*5*b)*Cos(a)*Sin(a)^5)/Sqrt(Pi)");
