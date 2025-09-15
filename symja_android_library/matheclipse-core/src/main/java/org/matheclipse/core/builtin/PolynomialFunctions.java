@@ -2424,9 +2424,7 @@ public class PolynomialFunctions {
             return legendreP(ast.arg1(), arg2, z, 1, engine);
           }
           if (ast.arg3().isNumEqualInteger(F.C2)) {
-            // TODO
-            // return legendreP(ast.arg1(), arg2, z, 2, engine);
-            return F.NIL;
+            return legendreP(ast.arg1(), arg2, z, 2, engine);
           }
           if (ast.arg3().isNumEqualInteger(F.C3)) {
             // TODO
@@ -2498,13 +2496,12 @@ public class PolynomialFunctions {
       IAST onePlusZ = F.Plus(F.C1, z);
       IRational mHalf = F.QQ(m, 2);
       IRational mimusMHalf = F.QQ(-m, 2);
+      IAST oneSubtractZ = F.Subtract(F.C1, z);
       IExpr typeFactor;
       switch (type) {
         case 2:
-          IAST oneMinusZ = F.Subtract(F.C1, z);
           typeFactor = engine.evaluate( //
-              F.Times(F.Power(onePlusZ, mHalf), //
-                  F.Power(oneMinusZ, mimusMHalf))//
+              F.Times(F.Power(onePlusZ, mHalf), F.Power(oneSubtractZ, mHalf))//
           );
           break;
         case 3:
