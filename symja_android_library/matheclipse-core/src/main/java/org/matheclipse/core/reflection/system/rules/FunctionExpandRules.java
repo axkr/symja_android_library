@@ -159,9 +159,6 @@ public class FunctionExpandRules {
     // JacobiSD(f_,g_):=JacobiSN(f,g)/JacobiDN(f,g)
     SetDelayed(JacobiSD(f_,g_),
       Times(Power(JacobiDN(f,g),CN1),JacobiSN(f,g))),
-    // LegendreQ(l_,m_,x_):=(-Pi*Csc(m*Pi)*Gamma(1+l+m)*LegendreP(l,-m,x))/(2*Gamma(1+l-m))+1/2*Pi*Cot(m*Pi)*LegendreP(l,m,x)
-    SetDelayed(LegendreQ(l_,m_,x_),
-      Plus(Times(CN1,Pi,Csc(Times(m,Pi)),Power(Times(C2,Gamma(Plus(C1,l,Negate(m)))),CN1),Gamma(Plus(C1,l,m)),LegendreP(l,Negate(m),x)),Times(C1D2,Pi,Cot(Times(m,Pi)),LegendreP(l,m,x)))),
     // Log(1/2*(1+I*Sqrt(3)))=I*Pi/3
     Set(Log(Times(C1D2,Plus(C1,Times(CI,CSqrt3)))),
       Times(CC(0L,1L,1L,3L),Pi)),

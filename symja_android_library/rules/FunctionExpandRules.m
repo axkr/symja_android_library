@@ -77,8 +77,6 @@
  JacobiSC(f_, g_) := JacobiSN(f,g) / JacobiCN(f,g),
  JacobiSD(f_, g_) := JacobiSN(f,g) / JacobiDN(f,g),
  
- LegendreQ(l_, m_, x_) := -((Pi*Csc(m*Pi)*Gamma(1+l+m)*LegendreP(l, -m, x))/(2*Gamma(1+l-m))) + (1/2)*Pi*Cot(m*Pi)*LegendreP(l, m, x),
- 
  Log((1 + I*Sqrt(3))/2) = I*Pi/3,
  Log(ProductLog(x_)) = x,
  Log(x_^(a_)) = a*Log(x) 

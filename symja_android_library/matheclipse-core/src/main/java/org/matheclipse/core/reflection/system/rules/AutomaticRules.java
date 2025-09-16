@@ -52,8 +52,6 @@ public class AutomaticRules {
     rules = JacobiSCRules.RULES;
     rules = KleinInvariantJRules.RULES;
     rules = LaplaceTransformRules.RULES;
-    rules = LegendrePRules.RULES;
-    rules = LegendreQRules.RULES;
     rules = LimitRules.RULES;
     rules = LogRules.RULES;
     rules = MatrixDRules.RULES;
