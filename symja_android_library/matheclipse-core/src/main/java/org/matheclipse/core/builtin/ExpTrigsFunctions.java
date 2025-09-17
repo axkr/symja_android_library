@@ -47,6 +47,7 @@ import org.matheclipse.core.eval.interfaces.AbstractArg12;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.eval.interfaces.IMatch;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.IReciprocalTrigonometricFunction;
@@ -3638,7 +3639,20 @@ public class ExpTrigsFunctions {
    * <p>
    * See <a href="http://en.wikipedia.org/wiki/Sinc_function">Sinc function</a>
    */
-  private static class Sinc extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
+  private static class Sinc extends AbstractTrigArg1
+      implements INumeric, IFunctionExpand, DoubleUnaryOperator {
+
+    @Override
+    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        IExpr z = ast.arg1();
+        if (!z.isZero()) {
+          // Sinc(z_) := Sin(z) / z /; z!=0
+          return F.Times(F.Sin(z), F.Power(z, F.CN1));
+        }
+      }
+      return F.NIL;
+    }
 
     @Override
     public double applyAsDouble(double operand) {
@@ -3726,6 +3740,7 @@ public class ExpTrigsFunctions {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
+
   }
 
   // public static BinaryFunctorImpl<IExpr> integerLogFunction() {

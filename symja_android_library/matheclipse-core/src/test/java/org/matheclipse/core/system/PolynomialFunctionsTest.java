@@ -154,6 +154,22 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testHermiteH() {
+
+    check("Gamma(1/2,z)//FunctionExpand", //
+        "Sqrt(Pi)*(1-Erf(Sqrt(z)))");
+    check("HermiteH(-2,z) // FunctionExpand", //
+        "1/4*Pi*((-2*E^z^2*z)/Sqrt(Pi)+(2*(1+E^z^2*Sqrt(Pi)*z*Erf(z)))/Pi)");
+    check("HermiteH(-3,z) // FunctionExpand", //
+        "1/8*Pi*((2*E^z^2*(1/2+z^2))/Sqrt(Pi)+(-2*z*(1+(E^z^2*(Sqrt(Pi)+Sqrt(Pi)*(-1+Erf(z))))/(\n" //
+            + "2*z)+E^z^2*z*(Sqrt(Pi)+Sqrt(Pi)*(-1+Erf(z)))))/Pi)");
+
+    check("HermiteH(1,0)", //
+        "0");
+    check("HermiteH(0,0)", //
+        "1");
+    check("HermiteH(1,1)", //
+        "2");
+
     // TODO interrupt long running apfloat calculations
     // checkNumeric("HermiteH(2.718281828459045,10007)", //
     // "");
@@ -231,6 +247,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     // TODO
     // check("LaguerreL(-9223372036854775808/11,-3.141592653589793)", //
     // " ");
+
     // test for java.util.TimSort: IllegalArgumentException - Comparison method violates its general
     // contract!
     check("LaguerreL(42,-1+I)", //

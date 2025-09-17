@@ -1940,7 +1940,47 @@ public class PolynomialFunctions {
    * -28+I*4
    * </pre>
    */
-  private static final class HermiteH extends AbstractFunctionEvaluator {
+  private static final class HermiteH extends AbstractFunctionEvaluator implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      int ni = n.toIntDefault();
+      if (F.isPresent(ni) && ni < 0) {
+        IExpr z = ast.arg2();
+
+        // HypergeometricU(a,b,z):
+        // https://functions.wolfram.com/HypergeometricFunctions/HypergeometricU/26/01/01/
+        IRational a = F.QQ(-ni, 2);
+        IExpr b = F.C1D2;
+        // take the branch for z>=0
+        ISymbol zDummy = F.Dummy("z$", F.GreaterEqual(F.Slot1, F.C0));
+        IExpr x = zDummy.sqr();
+        // Hypergeometric1F1(a,b,x)/(Gamma(1+a-b)*Gamma(b))
+        IExpr term1 =
+            F.Times(F.Power(F.Times(F.Gamma(F.Plus(F.C1, a, F.Negate(b))), F.Gamma(b)), F.CN1),
+                F.Hypergeometric1F1(a, b, x));
+
+        // x^(1-b)*Hypergeometric1F1(1+a-b,2-b,x)/(Gamma(a)*Gamma(2-b))
+        IExpr term2 = F.Times(F.Power(x, F.Subtract(F.C1, b)),
+            F.Power(F.Times(F.Gamma(a), F.Gamma(F.Subtract(F.C2, b))), F.CN1),
+            F.Hypergeometric1F1(F.Plus(F.C1, a, F.Negate(b)), F.Subtract(F.C2, b), x));
+
+        // Pi/Sin(Pi*b)*(term1-term2)
+        IExpr hyperGeometricU =
+            F.Times(F.Pi, F.Power(F.Sin(F.Times(F.Pi, b)), F.CN1), F.Subtract(term1, term2));
+
+        // HermiteH(n,z): https://functions.wolfram.com/Polynomials/HermiteH/26/01/04/0001/
+        // 2^n*u
+        IExpr result =
+            engine.evaluate(F.FunctionExpand(F.Times(F.Power(F.C2, n), hyperGeometricU)));
+
+        // back substitution zDummy->z
+        result = F.subst(result, zDummy, z);
+        return result;
+      }
+      return F.NIL;
+    }
 
     @Override
     public boolean evalIsReal(IAST ast) {
@@ -2011,6 +2051,7 @@ public class PolynomialFunctions {
       newSymbol.setAttributes(ISymbol.NUMERICFUNCTION | ISymbol.LISTABLE);
       super.setUp(newSymbol);
     }
+
   }
 
   private static final class JacobiP extends AbstractFunctionEvaluator {

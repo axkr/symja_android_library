@@ -129,8 +129,6 @@
  Sin(n_Integer*ArcTan(z_)) := Sum((-1)^k*Binomial(n, 2*k + 1)*z^(2*k + 1), {k, 0, Floor((n-1)/2)}) / (1 + z^2)^(n/2) 
    /; n > 0,
 
- Sinc(z_) := Sin(z) / z 
-  /; z!=0,
  SinIntegral(Sqrt(z_^n_)) := (Sqrt(z^n)*SinIntegral(z^(n/2)))/z^(n/2), 
  SinhIntegral(Sqrt(z_^n_)) := (Sqrt(z^n)*SinhIntegral(z^(n/2)))/z^(n/2),
   

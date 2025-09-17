@@ -261,9 +261,6 @@ public class FunctionExpandRules {
     // Sin(n_Integer*ArcTan(z_)):=Sum((-1)^k*Binomial(n,2*k+1)*z^(2*k+1),{k,0,Floor(1/2*(-1+n))})/(1+z^2)^(n/2)/;n>0
     SetDelayed(Sin(Times(ArcTan(z_),$p(n, Integer))),
       Condition(Times(Power(Power(Plus(C1,Sqr(z)),Times(C1D2,n)),CN1),Sum(Times(Power(CN1,k),Binomial(n,Plus(Times(C2,k),C1)),Power(z,Plus(Times(C2,k),C1))),list(k,C0,Floor(Times(C1D2,Plus(CN1,n)))))),Greater(n,C0))),
-    // Sinc(z_):=Sin(z)/z/;z!=0
-    SetDelayed(Sinc(z_),
-      Condition(Times(Power(z,CN1),Sin(z)),Unequal(z,C0))),
     // SinIntegral(Sqrt(z_^n_)):=(Sqrt(z^n)*SinIntegral(z^(n/2)))/z^(n/2)
     SetDelayed(SinIntegral(Sqrt(Power(z_,n_))),
       Times(Power(Power(z,Times(C1D2,n)),CN1),Sqrt(Power(z,n)),SinIntegral(Power(z,Times(C1D2,n))))),
