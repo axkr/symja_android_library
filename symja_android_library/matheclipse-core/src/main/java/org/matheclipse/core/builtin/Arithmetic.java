@@ -6351,99 +6351,85 @@ public final class Arithmetic {
 
     @Override
     public IExpr e2ObjArg(IAST ast, final IExpr arg1, final IExpr arg2) {
-
-      // the case where both args are numbers is already handled in binaryOperator()
-      if (arg1.isZero()) {
+      // Fast path: handle zeros and ones
+      if (arg1.isZero())
         return evalZeroTimesX(arg1, arg2, false);
-      } else if (arg2.isZero()) {
+      if (arg2.isZero())
         return evalZeroTimesX(arg2, arg1, true);
-      } else if (arg1.isOne()) {
+      if (arg1.isOne())
         return arg2;
-      } else if (arg2.isOne()) {
+      if (arg2.isOne())
         return arg1;
-      } else if (arg1 == arg2) {
+      if (arg1 == arg2 || arg1.equals(arg2))
         return F.Power(arg1, C2);
-      } else if (arg1 instanceof INum && arg2.isOverflow()) {
+
+      // Fast path: handle numeric overflows
+      if (arg1 instanceof INum && arg2.isOverflow())
         return arg2;
-      } else if (arg2 instanceof INum && arg1.isOverflow()) {
+      if (arg2 instanceof INum && arg1.isOverflow())
         return arg1;
-      } else if (arg1.isNumber() && arg2.isNumber()) {
-        return F.NIL;
-      } else if (arg1.isSymbol() && arg2.isAtom()) {
-        return F.NIL;
-      } else if (arg2.isSymbol() && arg1.isAtom()) {
+
+      // Fast path: both numbers or symbol/atom combinations
+      if ((arg1.isNumber() && arg2.isNumber()) || (arg1.isSymbol() && arg2.isAtom())
+          || (arg2.isSymbol() && arg1.isAtom())) {
         return F.NIL;
       }
 
-      final int arg1Ordinal = arg1.headID();
+      // Handle special headIDs for arg1
+      int arg1Ordinal = arg1.headID();
       if (arg1Ordinal >= ID.DirectedInfinity) {
         switch (arg1Ordinal) {
           case ID.DirectedInfinity:
             if (arg1.isDirectedInfinity()) {
               IExpr temp = eInfinity((IAST) arg1, arg2);
-              if (temp.isPresent()) {
+              if (temp.isPresent())
                 return temp;
-              }
             }
             break;
           case ID.Underflow:
             if (arg1.isUnderflow()) {
               if (arg2.isNumericFunction()) {
-                if (EvalEngine.get().isNumericMode()) {
+                if (EvalEngine.get().isNumericMode())
                   return F.CD0;
-                }
                 return arg1;
               }
-              if (arg2.isOverflow()) {
+              if (arg2.isOverflow())
                 return S.Indeterminate;
-              }
             }
             break;
           case ID.Overflow:
             if (arg1.isOverflow()) {
-              if (arg2.isNumericFunction()) {
+              if (arg2.isNumericFunction())
                 return arg1;
-              }
-              if (arg2.isUnderflow()) {
+              if (arg2.isUnderflow())
                 return S.Indeterminate;
-              }
             }
             break;
           case ID.Interval:
             if (arg1.isInterval()) {
-              if (arg2.isInterval()) {
+              if (arg2.isInterval())
                 return IntervalSym.times((IAST) arg1, (IAST) arg2);
-              }
-              if (arg2.isRealResult()) {
-                // return timesInterval(arg1, arg2);
+              if (arg2.isRealResult())
                 return IntervalSym.times(arg2, (IAST) arg1);
-              }
-              // don't create Power(...,...)
               return F.NIL;
             }
             break;
           case ID.IntervalData:
             if (arg1.isIntervalData()) {
-              if (arg2.isIntervalData()) {
+              if (arg2.isIntervalData())
                 return IntervalDataSym.times((IAST) arg1, (IAST) arg2);
-              }
-              if (arg2.isRealResult()) {
+              if (arg2.isRealResult())
                 return IntervalDataSym.times(arg2, (IAST) arg1);
-              }
-              // don't create Power(...,...)
               return F.NIL;
             }
             break;
           case ID.Power:
             if (arg1.size() == 3) {
-              // (x^a) * b
               IExpr power0Base = arg1.base();
               IExpr power0Exponent = arg1.exponent();
               if (arg1.equalsAt(1, arg2)) {
-                // (x^a) * x
                 if ((power0Exponent.isNumber() && !arg2.isRational())
                     || !power0Exponent.isNumber()) {
-                  // avoid re-evaluation of a root of a rational number (example: 2*Sqrt(2) )
                   return F.Power(arg2, power0Exponent.inc());
                 }
               }
@@ -6452,73 +6438,61 @@ public final class Arithmetic {
                 IExpr power1Exponent = arg2.exponent();
                 IExpr temp =
                     timesPowerPower(power0Base, power0Exponent, power1Base, power1Exponent);
-                if (temp.isPresent()) {
+                if (temp.isPresent())
                   return temp;
-                }
               }
             }
             break;
           default:
         }
-
       }
 
-      final int arg2Ordinal = arg2.headID();
+      // Handle special headIDs for arg2
+      int arg2Ordinal = arg2.headID();
       if (arg2Ordinal >= ID.DirectedInfinity) {
         switch (arg2Ordinal) {
           case ID.DirectedInfinity:
             if (arg2.isDirectedInfinity()) {
               IExpr temp = eInfinity((IAST) arg2, arg1);
-              if (temp.isPresent()) {
+              if (temp.isPresent())
                 return temp;
-              }
             }
             break;
           case ID.Underflow:
             if (arg2.isUnderflow()) {
               if (arg1.isNumericFunction()) {
-                if (EvalEngine.get().isNumericMode()) {
+                if (EvalEngine.get().isNumericMode())
                   return F.CD0;
-                }
                 return arg2;
               }
-              if (arg1.isOverflow()) {
+              if (arg1.isOverflow())
                 return S.Indeterminate;
-              }
             }
             break;
           case ID.Overflow:
             if (arg2.isOverflow()) {
-              if (arg1.isNumericFunction()) {
+              if (arg1.isNumericFunction())
                 return arg2;
-              }
-              if (arg1.isUnderflow()) {
+              if (arg1.isUnderflow())
                 return S.Indeterminate;
-              }
             }
             break;
           case ID.Interval:
             if (arg2.isInterval()) {
-              if (arg1.isInterval()) {
+              if (arg1.isInterval())
                 return IntervalSym.times((IAST) arg1, (IAST) arg2);
-              }
               return IntervalSym.times(arg1, (IAST) arg2);
             }
-            if (arg1.isRealResult()) {
+            if (arg1.isRealResult())
               return IntervalSym.times(arg1, (IAST) arg2);
-            }
-            // don't create Power(...,...)
             return F.NIL;
           case ID.IntervalData:
             if (arg2.isIntervalData()) {
-              if (arg1.isRealResult()) {
+              if (arg1.isRealResult())
                 return IntervalDataSym.times(arg1, (IAST) arg2);
-              }
-              // don't create Power(...,...)
               return F.NIL;
             }
             break;
-
           case ID.Plus:
             if (arg1.isFraction() && arg2.isPlus() && arg1.isNegative()) {
               return F.Times(arg1.negate(), arg2.negate());
@@ -6529,16 +6503,14 @@ public final class Arithmetic {
               IExpr power1Base = arg2.base();
               IExpr power1Exponent = arg2.exponent();
               IExpr temp = timesArgPower(arg1, power1Base, power1Exponent);
-              if (temp.isPresent()) {
+              if (temp.isPresent())
                 return temp;
-              }
             }
             break;
           case ID.Log:
             if (arg1.isReal() && arg2.isLog() && arg1.isNegative() && arg2.first().isFraction()) {
               IFraction f = (IFraction) arg2.first();
               if (f.isPositive() && f.isLT(F.C1)) {
-                // -<number> * Log(<fraction>) -> <number> * Log(<fraction>.inverse())
                 return arg1.negate().times(F.Log(f.inverse()));
               }
             }
@@ -6548,30 +6520,15 @@ public final class Arithmetic {
               return ((ASTSeriesData) arg2).times(arg1);
             }
             break;
-
           default:
         }
       }
 
-      if (arg1.equals(arg2)) {
-        return F.Power(arg1, C2);
-      }
-      if (arg1.isQuantity()) {
-        IQuantity q = (IQuantity) arg1;
-        return q.times(arg2, true);
-      } else if (arg2.isQuantity()) {
-        IQuantity q = (IQuantity) arg2;
-        return q.times(arg1, true);
-      }
-      // long leafCountTimes = arg1.leafCountSimplify() + arg2.leafCountSimplify() + 3;
-      // if (leafCountTimes < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
-      // // hack for RubiIntegrationTest#testRubiRule006()
-      // IExpr expanded = Algebra.expandSimpleTimesPlus(arg1, arg2);
-      //
-      // if (expanded.isPresent() && expanded.leafCountSimplify() <= leafCountTimes) {
-      // return expanded;
-      // }
-      // }
+      // Quantities
+      if (arg1.isQuantity())
+        return ((IQuantity) arg1).times(arg2, true);
+      if (arg2.isQuantity())
+        return ((IQuantity) arg2).times(arg1, true);
 
       return F.NIL;
     }
