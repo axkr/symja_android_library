@@ -882,7 +882,7 @@ public class CompilerFunctions {
       }
       String source = compilePrint(ast, args, engine);
       if (source != null) {
-        SimpleCompiler comp = new SimpleCompiler();
+        SimpleCompiler comp = new org.codehaus.janino.SimpleCompiler();
         comp.cook(source);
         ClassLoader loader = comp.getClassLoader();
         Class<?> clazz = loader.loadClass("org.matheclipse.core.compile.CompiledFunction");

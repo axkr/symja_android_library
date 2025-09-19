@@ -1952,7 +1952,7 @@ public class PolynomialFunctions {
         // HypergeometricU(a,b,z):
         // https://functions.wolfram.com/HypergeometricFunctions/HypergeometricU/26/01/01/
         IRational a = F.QQ(-ni, 2);
-        IExpr b = F.C1D2;
+        IRational b = F.C1D2;
         // take the branch for z>=0
         ISymbol zDummy = F.Dummy("z$", F.GreaterEqual(F.Slot1, F.C0));
         IExpr x = zDummy.sqr();
