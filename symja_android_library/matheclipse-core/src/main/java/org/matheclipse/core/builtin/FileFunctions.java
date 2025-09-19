@@ -23,8 +23,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -60,7 +58,6 @@ import org.matheclipse.parser.client.ast.ASTNode;
 import com.google.common.io.CharStreams;
 
 public class FileFunctions {
-  private static final Logger LOGGER = LogManager.getLogger(FileFunctions.class);
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -83,6 +80,7 @@ public class FileFunctions {
         S.File.setEvaluator(new FileEvaluator());
         S.FileFormat.setEvaluator(new FileFormat());
         S.FilePrint.setEvaluator(new FilePrint());
+        S.FindList.setEvaluator(new FindList());
         S.Get.setEvaluator(new Get());
         S.InputStream.setEvaluator(new InputStream());
         S.Needs.setEvaluator(new Needs());
@@ -92,6 +90,7 @@ public class FileFunctions {
         S.OutputStream.setEvaluator(new OutputStream());
         S.Put.setEvaluator(new Put());
         S.Read.setEvaluator(new Read());
+        S.ReadLine.setEvaluator(new ReadLine());
         S.ReadList.setEvaluator(new ReadList());
         S.ReadString.setEvaluator(new ReadString());
         S.Save.setEvaluator(new Save());
@@ -146,7 +145,7 @@ public class FileFunctions {
                   new BufferedReader(new InputStreamReader(fis, StandardCharsets.UTF_8));) {
             PackageUtil.loadPackage(engine, reader);
           } catch (IOException e) {
-            LOGGER.debug("BeginPackage.evaluate() failed", e);
+            Errors.printMessage(S.BeginPackage, e);
           }
         }
       }
@@ -165,16 +164,7 @@ public class FileFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
         try {
-          IExpr arg1 = ast.arg1();
-          final DataInput reader;
-          if (arg1 instanceof FileExpr) {
-            InputStreamExpr stream = InputStreamExpr.getFromFile((FileExpr) arg1, "String", engine);
-            reader = stream.getDataInput();
-          } else if (arg1 instanceof InputStreamExpr) {
-            reader = ((InputStreamExpr) arg1).getDataInput();
-          } else {
-            reader = null;
-          }
+          final DataInput reader = getDataInput(ast.arg1(), engine);
           if (reader != null) {
             if (ast.isAST2()) {
               IExpr typeExpr = ast.arg2();
@@ -188,7 +178,7 @@ public class FileFunctions {
         } catch (EOFException ex) {
           return S.EndOfFile;
         } catch (IOException | RuntimeException ex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
+          Errors.printMessage(S.BinaryRead, ex);
           return S.$Failed;
         }
       }
@@ -245,9 +235,9 @@ public class FileFunctions {
             writeType(dataOutput, arg2, typeByte);
             return S.Null;
           }
-        } catch (RuntimeException | RangeException | TypeException | IOException e) {
-          Errors.rethrowsInterruptException(e);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
+        } catch (RuntimeException | RangeException | TypeException | IOException ex) {
+          Errors.rethrowsInterruptException(ex);
+          Errors.printMessage(S.BinaryWrite, ex);
           return F.$Failed;
         }
       }
@@ -295,7 +285,7 @@ public class FileFunctions {
           return F.stringx(in.getStreamName());
         }
       } catch (IOException | RuntimeException ex) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
+        Errors.printMessage(S.Close, ex);
       }
       return F.NIL;
     }
@@ -329,7 +319,7 @@ public class FileFunctions {
             return F.stringx(path.toString());
           }
         } catch (IOException | RuntimeException ex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
+          Errors.printMessage(S.CreateDirectory, ex);
         }
       }
       return F.NIL;
@@ -359,7 +349,7 @@ public class FileFunctions {
           } else if (ast.isAST1() && ast.arg1() instanceof IStringX) {
           }
         } catch (IOException | RuntimeException ex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
+          Errors.printMessage(S.CreateFile, ex);
         }
       }
       return F.NIL;
@@ -495,7 +485,7 @@ public class FileFunctions {
           }
         } catch (RuntimeException ex) {
           Errors.rethrowsInterruptException(ex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
+          Errors.printMessage(S.File, ex);
         }
       }
       return F.NIL;
@@ -581,7 +571,7 @@ public class FileFunctions {
             return S.Null;
 
           } catch (IOException | RuntimeException ex) {
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
+            Errors.printMessage(S.FilePrint, ex);
           }
         }
       }
@@ -596,6 +586,80 @@ public class FileFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+  }
+
+  private static final class FindList extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (Config.isFileSystemEnabled(engine)) {
+        try {
+          IAST searchStrings = Validate.checkListOfStrings(ast, 2, S.FindList, engine);
+          if (searchStrings.isNIL()) {
+            return F.NIL;
+          }
+          if (searchStrings.isEmpty()) {
+            return F.CEmptyList;
+          }
+
+          final DataInput reader = getDataInput(ast.arg1(), engine);
+          if (reader != null) {
+            int n = Integer.MAX_VALUE;
+            if (ast.isAST3()) {
+              n = ast.arg3().toIntDefault();
+              if (n <= 0) {
+                // Non-negative machine-sized integer expected at position `2` in `1`
+                return Errors.printMessage(S.FindList, "intnm", F.List(F.C3, ast), engine);
+              }
+            }
+
+            IASTAppendable result = F.ListAlloc();
+            int counter = 0;
+            try {
+              do {
+                String line = reader.readLine();
+                if (line == null) {
+                  break;
+                }
+                for (int i = 1; i < searchStrings.size(); i++) {
+                  String searchText = searchStrings.get(i).toString();
+                  if (line.indexOf(searchText) >= 0) {
+                    result.append(F.stringx(line));
+                    counter++;
+                    break;
+                  }
+                }
+
+                if (counter >= n) {
+                  break;
+                }
+              } while (true);
+            } catch (IOException e) {
+              //
+            }
+            if (result.isPresent()) {
+              return result;
+            }
+          }
+        } catch (EOFException ex) {
+          return S.EndOfFile;
+        } catch (IOException | RuntimeException ex) {
+          Errors.printMessage(S.FindList, ex);
+          return S.$Failed;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
     }
   }
 
@@ -719,7 +783,7 @@ public class FileFunctions {
             return InputStreamExpr.newInstance(arg1.toString(), "String");
           }
         } catch (FileNotFoundException | RuntimeException ex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
+          Errors.printMessage(S.InputStream, ex);
         }
       }
       return F.NIL;
@@ -767,7 +831,7 @@ public class FileFunctions {
             }
           }
         } catch (FileNotFoundException | RuntimeException ex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
+          Errors.printMessage(S.OpenRead, ex);
         }
       }
       return F.NIL;
@@ -811,7 +875,7 @@ public class FileFunctions {
             }
           }
         } catch (IOException | RuntimeException ex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
+          Errors.printMessage(S.OpenWrite, ex);
         }
       }
       return F.NIL;
@@ -839,7 +903,7 @@ public class FileFunctions {
             return OutputStreamExpr.newInstance(arg1.toString(), false);
           }
         } catch (IOException | RuntimeException ex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
+          Errors.printMessage(S.OutputStream, ex);
         }
       }
       return F.NIL;
@@ -899,7 +963,9 @@ public class FileFunctions {
         for (int i = 1; i < argSize; i++) {
           IExpr temp = engine.evaluate(ast.get(i));
           if (!OutputFormFactory.get().convert(buf, temp)) {
-            LOGGER.log(engine.getLogLevel(), "Put: file {} ERROR-IN_OUTPUTFORM", fileName);
+            Errors.printMessage(S.Put, "error",
+                F.List("File " + fileName + " ERROR-IN_OUTPUTFORM."));
+            // LOGGER.log(engine.getLogLevel(), "Put: file {} ERROR-IN_OUTPUTFORM", fileName);
             return F.NIL;
           }
           buf.append('\n');
@@ -909,8 +975,8 @@ public class FileFunctions {
         }
         try (FileWriter writer = new FileWriter(fileName.toString())) {
           writer.write(buf.toString());
-        } catch (IOException e) {
-          LOGGER.log(engine.getLogLevel(), "Put: file {} I/O exception !", fileName, e);
+        } catch (IOException ex) {
+          Errors.printMessage(S.Put, ex);
           return F.NIL;
         }
         return S.Null;
@@ -966,7 +1032,7 @@ public class FileFunctions {
             return readTypeOrHold(typeExpr, reader, engine);
           }
         } catch (IOException | RuntimeException ex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
+          Errors.printMessage(S.Read, ex);
           return S.$Failed;
         }
       }
@@ -1175,6 +1241,43 @@ public class FileFunctions {
       return ARGS_1_2;
     }
   }
+  private static final class ReadLine extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (Config.isFileSystemEnabled(engine)) {
+        try {
+          final DataInput reader = getDataInput(ast.arg1(), engine);
+          if (reader != null) {
+            try {
+              String line = reader.readLine();
+              if (line != null) {
+                return F.stringx(line);
+              }
+            } catch (IOException e) {
+              //
+            }
+          }
+        } catch (EOFException ex) {
+          return S.EndOfFile;
+        } catch (IOException | RuntimeException ex) {
+          Errors.printMessage(S.ReadLine, ex);
+          return S.$Failed;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
 
   private static final class ReadList extends AbstractFunctionEvaluator {
 
@@ -1182,16 +1285,7 @@ public class FileFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (Config.isFileSystemEnabled(engine)) {
         try {
-          IExpr arg1 = ast.arg1();
-          final DataInput reader;
-          if (arg1 instanceof FileExpr) {
-            InputStreamExpr stream = InputStreamExpr.getFromFile((FileExpr) arg1, "String", engine);
-            reader = stream.getDataInput();
-          } else if (arg1 instanceof InputStreamExpr) {
-            reader = ((InputStreamExpr) arg1).getDataInput();
-          } else {
-            reader = null;
-          }
+          final DataInput reader = getDataInput(ast.arg1(), engine);
           if (reader != null) {
             if (ast.argSize() >= 2) {
               IExpr typeExpr = ast.arg2();
@@ -1245,7 +1339,7 @@ public class FileFunctions {
         } catch (EOFException ex) {
           return S.EndOfFile;
         } catch (IOException | RuntimeException ex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
+          Errors.printMessage(S.ReadList, ex);
           return S.$Failed;
         }
       }
@@ -1277,9 +1371,8 @@ public class FileFunctions {
           try (java.io.InputStream in = new URL(arg1).openStream()) {
             String str = new String(in.readAllBytes(), StandardCharsets.UTF_8);
             return F.stringx(str);
-          } catch (IOException ioe) {
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), ioe);
-            return F.NIL;
+          } catch (IOException ex) {
+            return Errors.printMessage(S.ReadString, ex);
           }
         }
         Path file = Path.of(arg1);
@@ -1287,8 +1380,8 @@ public class FileFunctions {
           try {
             String str = Files.readString(file, Charset.defaultCharset());
             return F.stringx(str);
-          } catch (IOException e) {
-            LOGGER.log(engine.getLogLevel(), "ReadString exception", e);
+          } catch (IOException ex) {
+            Errors.printMessage(S.ReadString, ex);
           }
           return S.Null;
         }
@@ -1397,9 +1490,8 @@ public class FileFunctions {
           String str = ISymbol.fullDefinitionListToString(symbolsList);
           try (FileWriter writer = new FileWriter(fileName.toString())) {
             writer.write(str);
-          } catch (IOException e) {
-            LOGGER.log(engine.getLogLevel(), "Save: file {} I/O exception !", fileName, e);
-            return F.NIL;
+          } catch (IOException ex) {
+            return Errors.printMessage(S.Save, ex);
           }
           return S.Null;
         }
@@ -1438,7 +1530,7 @@ public class FileFunctions {
           }
         } catch (RuntimeException | IOException ex) {
           Errors.rethrowsInterruptException(ex);
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
+          Errors.printMessage(S.StringToStream, ex);
         }
       }
       return F.NIL;
@@ -1467,14 +1559,13 @@ public class FileFunctions {
         try (java.io.InputStream in = new URL(arg1Str).openStream()) {
           String str = new String(in.readAllBytes(), StandardCharsets.UTF_8);
           return F.$s(str);
-        } catch (IOException e) {
-          LOGGER.debug("URLFetch.evaluate() failed", e);
+        } catch (IOException ex) {
           // Cannot open `1`.
-          return Errors.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
+          return Errors.printMessage(S.URLFetch, "noopen", F.list(ast.arg1()), engine);
         }
       }
       // Cannot open `1`.
-      return Errors.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
+      return Errors.printMessage(S.URLFetch, "noopen", F.list(ast.arg1()), engine);
     }
 
     @Override
@@ -1513,7 +1604,7 @@ public class FileFunctions {
             return S.Null;
           }
         } catch (IOException | RuntimeException ex) {
-          LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
+          Errors.printMessage(S.Write, ex);
         }
       }
       return F.NIL;
@@ -1548,9 +1639,8 @@ public class FileFunctions {
         IStringX str = (IStringX) ast.arg2();
         try (FileWriter writer = new FileWriter(fileName.toString())) {
           writer.write(str.toString());
-        } catch (IOException e) {
-          LOGGER.log(engine.getLogLevel(), "{}: file {} I/O exception", ast.topHead(), fileName, e);
-          return F.NIL;
+        } catch (IOException ex) {
+          return Errors.printMessage(S.WriteString, ex);
         }
         return S.Null;
       }
@@ -1566,6 +1656,17 @@ public class FileFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
+  }
+
+  private static DataInput getDataInput(IExpr readerExpr, EvalEngine engine)
+      throws FileNotFoundException, IOException {
+    if (readerExpr instanceof FileExpr) {
+      InputStreamExpr stream = InputStreamExpr.getFromFile((FileExpr) readerExpr, "String", engine);
+      return stream.getDataInput();
+    } else if (readerExpr instanceof InputStreamExpr) {
+      return ((InputStreamExpr) readerExpr).getDataInput();
+    }
+    return null;
   }
 
   private static IExpr readType(DataInput reader, String typeStr) {

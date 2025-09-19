@@ -297,6 +297,25 @@ public final class Validate {
     return null;
   }
 
+  public static IAST checkListOfStrings(IAST ast, int position, ISymbol head, EvalEngine engine) {
+    if (ast.get(position).isList()) {
+      IAST strs = (IAST) ast.get(position);
+      for (int i = 1; i < strs.size(); i++) {
+        if (!strs.get(i).isString()) {
+          // String or list of strings expected at position `1` in `2`.
+          return Errors.printMessage(head, "strse", F.List(F.ZZ(position), ast), engine);
+        }
+      }
+      return strs;
+    } else {
+      if (!ast.get(position).isString()) {
+        // String or list of strings expected at position `1` in `2`.
+        return Errors.printMessage(head, "strse", F.List(F.ZZ(position), ast), engine);
+      }
+      return ast.get(position).makeList();
+    }
+  }
+
   /**
    * Get a dimension parameter. <code>arg</code> is expected to be a positive integer or a list of
    * positive integers.

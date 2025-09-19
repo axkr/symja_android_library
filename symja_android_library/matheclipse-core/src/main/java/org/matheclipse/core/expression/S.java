@@ -4033,6 +4033,9 @@ public class S {
   public final static IBuiltInSymbol FindLinearRecurrence =
       S.initFinalSymbol("FindLinearRecurrence", ID.FindLinearRecurrence);
 
+  public final static IBuiltInSymbol FindList = S.initFinalSymbol("FindList", ID.FindList);
+
+
   /**
    * FindMaximum(f, {x, xstart}) - searches for a local numerical maximum of `f` for the variable
    * `x` and the start value `xstart`.
@@ -9495,6 +9498,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Read = S.initFinalSymbol("Read", ID.Read);
+
+  public final static IBuiltInSymbol ReadLine = S.initFinalSymbol("ReadLine", ID.ReadLine);
 
   /**
    * ReadList(input-stream) - reads all the expressions until the end of file and return a list of

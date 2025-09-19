@@ -27,6 +27,28 @@ public class StreamTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFindList() {
+    check("sstream=StringToStream(\"12345\\n45\\nx\\ny\");", //
+        "");
+    check("FindList(sstream, \"4\") // InputForm", //
+        "{\"12345\",\"45\"}");
+    check("FindList(sstream,\"23\")", //
+        "{}");
+    check("FindList(StringToStream(\"12345\\n45\\nx\\ny\"),\"23\")", //
+        "{12345}");
+  }
+
+  @Test
+  public void testReadLine() {
+    check("sstream=StringToStream(\"123\\n45\\nx\\ny\");", //
+        "");
+    check("ReadLine(sstream) // InputForm", //
+        "\"123\"");
+    check("ReadLine(sstream)", //
+        "45");
+  }
+
+  @Test
   public void testRead001() {
     call("str = StringToStream(\"4711 dummy 0815\")");
     check("Read(str, Number)", //
