@@ -106,7 +106,7 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
               IAST derivedLaplaceTransform = (IAST) temp;
               if (derivedLaplaceTransform
                   .isFree(x -> x.isFunctionID(ID.D, ID.Derivative, ID.LaplaceTransform), true)) {
-                return F.Times(F.Power(F.CN1, n), derivedLaplaceTransform);
+                return F.Times(F.Power(-1, n), derivedLaplaceTransform);
               }
 
             }

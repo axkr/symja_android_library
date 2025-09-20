@@ -48,7 +48,7 @@ public class QuantumPhysicsFunctions {
           return clebschGordan;
         }
         // (-1)^(j1-j2+m3)*Sqrt(1+2*j3)*ThreeJSymbol({j1,m1},{j2,m2},{j3,-m3})
-        return F.Times(F.Power(F.CN1, F.Plus(j1, F.Negate(j2), m3)),
+        return F.Times(F.Power(-1, F.Plus(j1, F.Negate(j2), m3)),
             F.Sqrt(F.Plus(F.C1, F.Times(F.C2, j3))),
             F.ThreeJSymbol(F.list(j1, m1), F.list(j2, m2), F.list(j3, F.Negate(m3))));
       }

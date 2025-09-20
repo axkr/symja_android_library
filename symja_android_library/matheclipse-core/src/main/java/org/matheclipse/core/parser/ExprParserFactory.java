@@ -170,7 +170,7 @@ public class ExprParserFactory implements IParserFactory {
 
 
         if (lhs.equals(F.C1)) {
-          return F.Power(rhs, F.CN1);
+          return F.binaryAST2(S.Power, rhs, F.CN1);
         }
         if (rhs.isPower() && rhs.exponent().isNumber()) {
           return F.Times(lhs, F.Power(rhs.base(), rhs.exponent().negate()));

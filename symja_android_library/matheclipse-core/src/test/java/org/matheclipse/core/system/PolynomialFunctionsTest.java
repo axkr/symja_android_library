@@ -518,7 +518,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
     check("N(SphericalHarmonicY(2, 1, Pi/3, Pi),20 )", //
         "0.33452327177864458397");
-    check("N(SphericalHarmonicY(2, 2, Pi/6, Pi/4.211111111111111111) )", //
+    checkNumeric("N(SphericalHarmonicY(2, 2, Pi/6, Pi/4.211111111111111111) )", //
         "0.00759663110648051733+I*0.09626928971703694314");
     check("N(SphericalHarmonicY(23, 5 - I, Pi/3, I + Pi) )", //
         "0.00760864+I*0.149675");

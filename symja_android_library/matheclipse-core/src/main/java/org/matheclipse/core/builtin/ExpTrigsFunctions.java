@@ -1515,7 +1515,7 @@ public class ExpTrigsFunctions {
             }
           } else if (k.isIntegerResult()) {
             // (-1)^k * Cos( arg1 - k*Pi )
-            return F.Times(F.Power(F.CN1, k), F.Cos(F.Subtract(arg1, F.Times(k, S.Pi))));
+            return F.Times(F.Power(-1, k), F.Cos(F.Subtract(arg1, F.Times(k, S.Pi))));
           }
         }
       }
@@ -1599,7 +1599,7 @@ public class ExpTrigsFunctions {
         }
 
         if (t.isIntegerResult()) {
-          return F.Power(F.CN1, t);
+          return F.Power(-1, t);
         }
 
         // t - 1/2
@@ -1868,7 +1868,7 @@ public class ExpTrigsFunctions {
             return F.Csc(F.Plus(arg1, F.Times(F.CN2Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
             // (-1)^k * Csc( arg1 - k*Pi )
-            return F.Times(F.Power(F.CN1, k), F.Csc(F.Subtract(arg1, F.Times(k, S.Pi))));
+            return F.Times(F.Power(-1, k), F.Csc(F.Subtract(arg1, F.Times(k, S.Pi))));
           }
         }
       }
@@ -2067,7 +2067,7 @@ public class ExpTrigsFunctions {
                 .Cosh(F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
             // (-1)^k * Cosh( arg1 - list.arg2() )
-            return F.Times(F.Power(F.CN1, k), F.Cosh(F.Subtract(arg1, list.arg2())));
+            return F.Times(F.Power(-1, k), F.Cosh(F.Subtract(arg1, list.arg2())));
           }
         }
       } else if (arg1.isTimes()) {
@@ -2418,7 +2418,7 @@ public class ExpTrigsFunctions {
                 .Csch(F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
             // (-1)^k * Csch( arg1 - list.arg2() )
-            return F.Times(F.Power(F.CN1, k), F.Csch(F.Subtract(arg1, list.arg2())));
+            return F.Times(F.Power(-1, k), F.Csch(F.Subtract(arg1, list.arg2())));
           }
         }
       } else if (arg1.isTimes()) {
@@ -3181,7 +3181,7 @@ public class ExpTrigsFunctions {
             return F.Sec(F.Plus(arg1, F.Times(F.CN2Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
             // (-1)^k * Sec( arg1 - k*Pi )
-            return F.Times(F.Power(F.CN1, k), F.Sec(F.Subtract(arg1, F.Times(k, S.Pi))));
+            return F.Times(F.Power(-1, k), F.Sec(F.Subtract(arg1, F.Times(k, S.Pi))));
           }
         }
       }
@@ -3260,7 +3260,7 @@ public class ExpTrigsFunctions {
           return F.CN1;
         }
         if (t.isIntegerResult()) {
-          return F.Power(F.CN1, t);
+          return F.Power(-1, t);
         }
 
         // t - 1/2
@@ -3380,7 +3380,7 @@ public class ExpTrigsFunctions {
                 .Sech(F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
             // (-1)^k * Sech( arg1 - list.arg2() )
-            return F.Times(F.Power(F.CN1, k), F.Sech(F.Subtract(arg1, list.arg2())));
+            return F.Times(F.Power(-1, k), F.Sech(F.Subtract(arg1, list.arg2())));
           }
         }
       } else if (arg1.isTimes()) {
@@ -3510,7 +3510,7 @@ public class ExpTrigsFunctions {
             }
           } else if (k.isIntegerResult()) {
             // (-1)^k * Sin( arg1 - k*Pi )
-            return F.Times(F.Power(F.CN1, k), F.Sin(F.Subtract(arg1, F.Times(k, S.Pi))));
+            return F.Times(F.Power(-1, k), F.Sin(F.Subtract(arg1, F.Times(k, S.Pi))));
           }
         }
       }
@@ -3839,7 +3839,7 @@ public class ExpTrigsFunctions {
                 .Sinh(F.Plus(arg1, F.Times(F.CN2, F.CI, S.Pi, F.IntegerPart(F.Times(F.C1D2, t)))));
           } else if (k.isIntegerResult()) {
             // (-1)^k * Sinh( arg1 - list.arg2() )
-            return F.Times(F.Power(F.CN1, k), F.Sinh(F.Subtract(arg1, list.arg2())));
+            return F.Times(F.Power(-1, k), F.Sinh(F.Subtract(arg1, list.arg2())));
           }
         }
       } else if (arg1.isTimes()) {
@@ -4307,7 +4307,7 @@ public class ExpTrigsFunctions {
       // Pi/2 + k*Pi
       IExpr max = S.Times.of(F.Plus(F.C1D2, k), Pi);
       // (-1)^k * (z - Pi*k)
-      IAST result = F.Times(F.Power(F.CN1, k), F.Subtract(z, F.Times(k, S.Pi)));
+      IAST result = F.Times(F.Power(-1, k), F.Subtract(z, F.Times(k, S.Pi)));
       // (-(Pi/2) + k*Pi < Re(z) < Pi/2 + k*Pi
       if (S.Less.ofQ(min, zRe) && max.greater(zRe).isTrue()) {// S.Greater.ofQ(max, zRe)) {
         // (-1)^k * (z - Pi*k)
@@ -4347,7 +4347,7 @@ public class ExpTrigsFunctions {
       IExpr max = S.Times.of(k.inc(), Pi);
       // (-1)^k * (z - Pi*k - Pi/2) + Pi/2
       IAST result = F.Plus(
-          F.Times(F.Power(F.CN1, k), F.Plus(z, F.Times(F.CN1, k, S.Pi), F.CNPiHalf)), F.CPiHalf);
+          F.Times(F.Power(-1, k), F.Plus(z, F.Times(F.CN1, k, S.Pi), F.CNPiHalf)), F.CPiHalf);
 
       // (k*Pi < Re(z) < (k + 1)*Pi
       if (S.Less.ofQ(min, zRe) && max.greater(zRe).isTrue()) { // S.Greater.ofQ(max, zRe)) {

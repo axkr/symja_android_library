@@ -135,8 +135,8 @@ public class ComputationalGeometryFunctions {
         return Errors.printMessage(S.SASTriangle, "npa", F.List(b, S.Pi), engine);
       }
       IAST plus = F.Plus(F.Sqr(a), F.Sqr(c), F.Times(F.CN2, a, c, F.Cos(b)));
-      IAST sqrtNumerator = F.Power(plus, F.C1D2);
-      IAST sqrtDenominator = F.Power(plus, F.CN1D2);
+      IExpr sqrtNumerator = F.Power(plus, F.C1D2);
+      IExpr sqrtDenominator = F.Power(plus, F.CN1D2);
       // Triangle({{0, 0}, {Sqrt(a^2+c^2-2*a*c*Cos(b)), 0},
       // {(c^2-a*c*Cos(b))/Sqrt(a^2+c^2-2*a*c*Cos(b)),
       // (a*c*Sin(b))/Sqrt(a^2+c^2-2*a*c*Cos(b))}})

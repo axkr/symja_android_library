@@ -1845,7 +1845,7 @@ public class SpecialFunctions {
             // tail = F.Negate(F.intSum(i -> F.Power(F.Plus(i, z), e), 0, -coeff));
             // }
             // return F.Plus(F.PolyGamma(n, F.Subtract(z, coeffExpr)),
-            // F.Times(F.Power(F.CN1, n), F.Factorial(n), tail));
+            // F.Times(F.Power(-11, n), F.Factorial(n), tail));
             // }
             // }
 
@@ -2129,7 +2129,7 @@ public class SpecialFunctions {
           // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/PolyLog3/03/01/03/0002/
           IExpr v4 = F.CN1.pow(pInt);
           IExpr sum = F.sum(k -> F.Times(F.Power(F.Factorial(F.Plus(F.CN1, F.Negate(k), p)), F.CN1),
-              F.Power(F.CN1, k), F.Power(F.Log(F.Subtract(F.C1, z)), F.Plus(F.CN1, F.Negate(k), p)),
+              F.Power(-1, k), F.Power(F.Log(F.Subtract(F.C1, z)), F.Plus(F.CN1, F.Negate(k), p)),
               F.PolyLog(F.Plus(k, F.C2), F.Subtract(F.C1, z))), 0, pInt - 1);
           return F
               .Plus(

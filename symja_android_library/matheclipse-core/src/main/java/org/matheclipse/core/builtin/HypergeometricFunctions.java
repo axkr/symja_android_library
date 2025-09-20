@@ -790,7 +790,7 @@ public class HypergeometricFunctions {
         int nInt = n.toIntDefault();
         if (nInt > 0) {
           // Sum(((-1)^k*Pochhammer(l, n - k)*(2*z)^(n - 2*k))/(k!*(n - 2*k)!), {k, 0, Floor(n/2)})
-          return F.sum(k -> F.Times(F.Power(F.CN1, k),
+          return F.sum(k -> F.Times(F.Power(-1, k),
               F.Power(F.Times(F.C2, z), F.Plus(F.Times(F.CN2, k), n)), F.Power(F.Factorial(k), -1),
               F.Power(F.Factorial(F.Plus(F.Times(F.CN2, k), n)), -1),
               F.Pochhammer(l, F.Plus(F.Negate(k), n))), 0, nInt / 2);
@@ -851,7 +851,7 @@ public class HypergeometricFunctions {
       if (n.isInteger() && n.isPositive()) {
         negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
         if (negExpr.isPresent()) {
-          return F.Times(F.Power(F.CN1, n), F.GegenbauerC(n, negExpr));
+          return F.Times(F.Power(-1, n), F.GegenbauerC(n, negExpr));
         }
       }
       return F.NIL;
@@ -1513,7 +1513,7 @@ public class HypergeometricFunctions {
         if (mi > 0 && c.isInteger() && c.isPositive()) {
           // https://en.wikipedia.org/wiki/Hypergeometric_function#The_hypergeometric_series
           IInteger m = F.ZZ(mi);
-          return F.sum(n -> F.Times(F.Power(F.CN1, n), F.Binomial(m, n), F.Pochhammer(b, n),
+          return F.sum(n -> F.Times(F.Power(-1, n), F.Binomial(m, n), F.Pochhammer(b, n),
               F.Power(F.Pochhammer(c, n), F.CN1), F.Power(z, n)), 0, mi);
         }
       }
@@ -1893,9 +1893,9 @@ public class HypergeometricFunctions {
             F.LaguerreL(F.Plus(F.Negate(k), m), F.Plus(F.C1D2, k, F.Negate(m)), z), nestdSumP);
       }, 0, mi);
       return F.Plus(
-          F.Times(F.Power(F.CN1, F.Plus(m, n)), F.Gamma(F.Subtract(F.C1D2, n)), F.Exp(z),
+          F.Times(F.Power(-1, F.Plus(m, n)), F.Gamma(F.Subtract(F.C1D2, n)), F.Exp(z),
               F.LaguerreL(F.Plus(F.Negate(m), n), F.Plus(F.CN1D2, m), F.Negate(z))),
-          F.Times(F.Power(z, F.Subtract(F.C1D2, m)), F.Power(F.CN1, F.Plus(F.CN1, m)),
+          F.Times(F.Power(z, F.Subtract(F.C1D2, m)), F.Power(-1, F.Plus(F.CN1, m)),
               F.Power(F.C2, F.Times(F.C2, n)), F.Factorial(m),
               F.Power(F.Factorial(F.Times(F.C2, n)), F.CN1),
               F.Plus(F.Times(F.CSqrtPi, F.Power(z, F.CN1D2), F.Exp(z), F.Erf(F.Sqrt(z)), sum1),
@@ -2070,7 +2070,7 @@ public class HypergeometricFunctions {
       IInteger n = nNeg.negate();
       // (-1)^n*n!*LaguerreL(n,-1+b,z)
       return F.evalExpandAll(
-          F.Times(F.Power(F.CN1, n), F.Factorial(n), F.LaguerreL(n, F.Plus(F.CN1, b), z)));
+          F.Times(F.Power(-1, n), F.Factorial(n), F.LaguerreL(n, F.Plus(F.CN1, b), z)));
     }
 
     @Override

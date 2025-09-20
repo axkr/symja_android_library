@@ -435,7 +435,7 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
       int position = fListOfVariables.indexOf(lhs.base());
       if (position > 0) {
         Errors.printIfunMessage(S.InverseFunction);
-        IAST inverseFunction = F.Power(rhs, lhs.exponent().inverse());
+        IExpr inverseFunction = F.Power(rhs, lhs.exponent().inverse());
         return fEngine.evaluate(F.Subtract(lhs.base(), inverseFunction));
       }
     } else if (lhs.isTimes() && lhs.size() == 3 && lhs.first().isNumericFunction(true)

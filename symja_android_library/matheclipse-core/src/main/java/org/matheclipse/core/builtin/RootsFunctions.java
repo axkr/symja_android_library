@@ -772,7 +772,8 @@ public class RootsFunctions {
       // odd
       IExpr zNumerator;
       if (rhsNumerator.isTimes()) {
-        IASTMutable temp = rhsNumerator.mapThread(F.Power(F.Slot1, F.QQ(1, varDegree)), 1);
+        IASTMutable temp =
+            rhsNumerator.mapThread(F.binaryAST2(S.Power, F.Slot1, F.QQ(1, varDegree)), 1);
         if (rhsNumerator.first().isNegative()) {
           isNegative = true;
           temp.set(1, rhsNumerator.first().negate());
@@ -791,7 +792,8 @@ public class RootsFunctions {
           isNegative = !isNegative;
           rhsDenominator = ((IAST) rhsDenominator).setAtCopy(1, rhsDenominator.first().negate());
         }
-        IASTMutable temp = rhsDenominator.mapThread(F.Power(F.Slot1, F.QQ(-1, varDegree)), 1);
+        IASTMutable temp =
+            rhsDenominator.mapThread(F.binaryAST2(S.Power, F.Slot1, F.QQ(-1, varDegree)), 1);
         zDenominator = engine.evaluate(temp);
       } else {
         if (rhsDenominator.isNegative()) {
@@ -802,7 +804,7 @@ public class RootsFunctions {
       }
       final int increment = isNegative ? 1 : 0;
       return F.mapRange(0, varDegree, i -> //
-      F.Times(F.Power(F.CN1, i + increment), F.Power(F.CN1, F.QQ(i, varDegree)), zNumerator,
+      F.Times(F.Power(F.CN1, i + increment), F.Power(-1, F.QQ(i, varDegree)), zNumerator,
           zDenominator));
     } else {
       // even
@@ -827,7 +829,7 @@ public class RootsFunctions {
       long size = varDegree / 2;
       int k = 0; // isNegative?1:0;
       for (int i = 1; i <= size; i++) {
-        IExpr power = engine.evaluate(F.Power(F.CN1, F.QQ(k, varDegree)));
+        IExpr power = engine.evaluate(F.Power(-1, F.QQ(k, varDegree)));
         IAST times1 = F.Times(F.CN1, power, zNumerator, zDenominator);
         IAST times2 = F.Times(power, zNumerator, zDenominator);
         result.append(engine.evaluate(times1));

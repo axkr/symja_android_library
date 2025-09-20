@@ -8586,7 +8586,7 @@ public class F extends S {
    * @param exponent
    * @return
    */
-  public static IASTMutable Power(final IExpr base, final IExpr exponent) {
+  public static IAST Power(final IExpr base, final IExpr exponent) {
     return new B2.Power(base, exponent);
   }
 
@@ -8619,8 +8619,28 @@ public class F extends S {
       if (exponent == 0L && !base.isZero()) {
         return C1;
       }
+      if (base == F.CN1) {
+        return (exponent & 1L) == 0 ? F.C1 : F.CN1;
+      }
     }
     return new B2.Power(base, ZZ(exponent));
+  }
+
+  public static IExpr Power(final int base, final IExpr exponent) {
+    if (exponent == F.C1) {
+      return F.ZZ(base);
+    }
+    if (exponent == F.CN1) {
+      if (base == 0) {
+        LOGGER.log(EvalEngine.get().getLogLevel(), "Infinite expression 0^(-1)");
+        return CComplexInfinity;
+      }
+      return F.QQ(1, base);
+    }
+    if (base == -1 && exponent.isInteger()) {
+      return ((IInteger) exponent).isEven() ? F.C1 : F.CN1;
+    }
+    return new B2.Power(F.ZZ(base), exponent);
   }
 
   public static IAST PowerExpand(final IExpr a0) {

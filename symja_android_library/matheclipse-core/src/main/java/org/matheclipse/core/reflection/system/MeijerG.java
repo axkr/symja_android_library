@@ -349,7 +349,7 @@ public class MeijerG extends AbstractFunctionEvaluator implements IFunctionExpan
       // 1/((-1)^(1-m)*z^(1-a)*(-1+m)!*Log(z)^(1-m))
       IExpr v1 = F.Plus(F.CN1, m);
 
-      IAST fz = F.Times(F.Power(F.CN1, v1), F.Power(z, F.Plus(F.CN1, a)),
+      IAST fz = F.Times(F.Power(-1, v1), F.Power(z, F.Plus(F.CN1, a)),
           F.Power(F.Factorial(v1), F.CN1), F.Power(F.Log(z), v1));
       // Piecewise({{fz,Abs(z)<=1}},0)
       return F.Piecewise(F.list(F.list(fz, F.LessEqual(F.Abs(z), F.C1))), F.C0);

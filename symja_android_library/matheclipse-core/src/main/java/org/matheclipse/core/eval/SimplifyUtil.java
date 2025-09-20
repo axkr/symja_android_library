@@ -609,7 +609,7 @@ public class SimplifyUtil extends VisitorExpr {
               temp = simplifyStep(test, F.NIL, fComplexityFunction, minCounter, fFullSimplify,
                   false, fEngine);
               if (temp.isPresent()) {
-                IAST powerSimplified = F.Power(temp, rhs.exponent());
+                IExpr powerSimplified = F.Power(temp, rhs.exponent());
                 if (newTimes.isPresent()) {
                   newTimes.set(i, powerSimplified);
                   newTimes.remove(i + 1);
@@ -626,7 +626,7 @@ public class SimplifyUtil extends VisitorExpr {
               IExpr zeroCandidate = eval(F.Plus(lhsRest, rhsRest));
               if (zeroCandidate.isZero()) {
                 // found something like: (2-rest)^(z) * (2+rest)^(z) ==> (4-rest^2)^(z)
-                IAST powerSimplified =
+                IExpr powerSimplified =
                     F.Power(F.Subtract(F.Sqr(rhs.base().first()), F.Sqr(lhsRest)), rhs.exponent());
                 if (newTimes.isPresent()) {
                   newTimes.set(i, powerSimplified);

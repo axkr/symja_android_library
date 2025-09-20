@@ -1395,13 +1395,13 @@ public class PolynomialFunctions {
             IExpr plusSubexpr = ll.plus(m.negate()).plus(F.C1);
             IExpr cosT = F.Cos(t);
             IExpr sum = F.sum(
-                k -> F.Times(F.Power(cosT, F.Plus(F.Times(F.CN2, k), ll)), F.Power(F.CN1, k),
+                k -> F.Times(F.Power(cosT, F.Plus(F.Times(F.CN2, k), ll)), F.Power(-1, k),
                     F.Gamma(F.Plus(k.negate(), ll, F.C1D2)),
                     F.Power(F.Times(F.Power(F.C2, F.Times(F.C2, k)), F.Factorial(k),
                         F.Gamma(F.Plus(F.Times(F.CN2, k), plusSubexpr))), F.CN1)), //
                 0, n);
             IAST exp = conjugate ? F.Exp(F.Times(F.CNI, p, m)) : F.Exp(F.Times(F.CI, p, m));
-            IExpr condonShortlyPhase = engine.evaluate(F.Power(F.CN1, m));
+            IExpr condonShortlyPhase = engine.evaluate(F.Power(-1, m));
             IAST sphericalHarmonicY = F.Times(condonShortlyPhase, F.Power(F.C2, F.Plus(F.CN1, ll)),
                 exp, F.Power(F.Times(F.Pi, F.Power(cosT, m)), F.CN1),
                 F.Sqrt(F.Times(F.Plus(F.Times(F.C2, ll), F.C1), F.Factorial(F.Subtract(ll, m)),
@@ -1627,7 +1627,7 @@ public class PolynomialFunctions {
 
         // (n, z) => Sum(((-1)^k*(n - k)!*(2*z)^(n - 2*k))/(k!*(n - 2*k)!), {k, 0, Floor(n/2)})
         return F
-            .sum(k -> F.Times(F.Power(F.CN1, k), F.Power(zDoubled, F.Plus(F.Times(F.CN2, k), n)),
+            .sum(k -> F.Times(F.Power(-1, k), F.Power(zDoubled, F.Plus(F.Times(F.CN2, k), n)),
                 F.Power(F.Times(F.Factorial(k), F.Factorial(F.Plus(F.Times(F.CN2, k), n))), -1),
                 F.Factorial(F.Plus(F.Negate(k), n))), 0, degree / 2);
       }
@@ -2072,7 +2072,7 @@ public class PolynomialFunctions {
       IExpr negZ = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
       if (negZ.isPresent()) {
         // (-1)^n*JacobiP(n,b,a,z)
-        return F.Times(F.Power(F.CN1, n), F.JacobiP(n, b, a, negZ));
+        return F.Times(F.Power(-1, n), F.JacobiP(n, b, a, negZ));
       }
       if (n.isInteger()) {
         return jacobiPSum((INumber) n, a, b, z, engine);
@@ -2463,7 +2463,7 @@ public class PolynomialFunctions {
         }
         if (z.isMinusOne()) {
           // LegendreP(x_?IntegerQ, -1) := (-1)^x
-          return F.Power(F.CN1, z);
+          return F.Power(-1, z);
         }
 
         if (n.isRationalValue(F.CN1D2)) {
@@ -2538,14 +2538,14 @@ public class PolynomialFunctions {
           IExpr typeFactor = getTypeFactor(type, miAbs, dummyZ, engine);
           IExpr diff = engine.evaluate(F.D(legendreP, F.list(dummyZ, mAbs)));
           IExpr resultForPositiveM =
-              engine.evaluate(F.Times(F.Power(F.CN1, mAbs), typeFactor, diff));
+              engine.evaluate(F.Times(F.Power(-1, mAbs), typeFactor, diff));
 
           resultForPositiveM = F.subst(resultForPositiveM, dummyZ, z);
           // apply the identity for negative m if necessary
           if (mi < 0) {
             // (-1)^mAbs*(-mAbs+ni)!/(ni+mAbs)!*resultForPositiveM
             IExpr nEff = F.ZZ(ni);
-            return F.Times(F.Power(F.CN1, mAbs), F.Power(F.Factorial(F.Plus(nEff, mAbs)), F.CN1),
+            return F.Times(F.Power(-1, mAbs), F.Power(F.Factorial(F.Plus(nEff, mAbs)), F.CN1),
                 F.Factorial(F.Plus(F.Negate(mAbs), nEff)), resultForPositiveM);
           }
           return resultForPositiveM;
@@ -2799,7 +2799,7 @@ public class PolynomialFunctions {
           IInteger mAbs = F.ZZ(mi);
           IExpr diff = engine.evaluate(F.D(legendreQ, F.list(dummyZ, mAbs)));
           IExpr typeFactor = getTypeFactor(type, mi, dummyZ, engine);
-          IExpr result = F.Times(F.Power(F.CN1, mAbs), typeFactor, diff);
+          IExpr result = F.Times(F.Power(-1, mAbs), typeFactor, diff);
           result = F.subst(result, dummyZ, z);
           return result;
         }

@@ -470,7 +470,7 @@ public class BesselFunctions {
     // F.Times(
     // F.Cos(F.Plus(F.Times(F.C1D2, F.Plus(F.CN1D2, n), S.Pi),
     // F.Negate(z))),
-    // F.Sum(F.Times(F.Power(F.CN1, j),
+    // F.Sum(F.Times(F.Power(-1, j),
     // F.Power(F.Times(F.C2, z), F.Plus(F.CN1, F.Times(F.CN2, j))),
     // F.Factorial(F.Plus(F.Times(F.C2, j), F.Abs(n), F.C1D2)),
     // F.Power(
@@ -484,7 +484,7 @@ public class BesselFunctions {
     // F.Times(F.CN1,
     // F.Sin(F.Plus(F.Times(F.C1D2, F.Plus(F.CN1D2, n), S.Pi),
     // F.Negate(z))),
-    // F.Sum(F.Times(F.Power(F.CN1, j),
+    // F.Sum(F.Times(F.Power(-1, j),
     // F.Power(F.Times(F.Factorial(F.Times(F.C2, j)),
     // F.Factorial(F.Plus(F.CN1D2, F.Times(F.CN2, j), F.Abs(n))),
     // F.Power(F.Times(F.C2, z), F.Times(F.C2, j))), -1),
@@ -537,7 +537,7 @@ public class BesselFunctions {
       if (n.isInteger()) {
         if (n.isNegative()) {
           // (-n,z) => (-1)^n*BesselJ(n,z)
-          return F.Times(F.Power(F.CN1, n), F.BesselJ(n.negate(), z));
+          return F.Times(F.Power(-1, n), F.BesselJ(n.negate(), z));
         }
       }
 
@@ -1751,7 +1751,7 @@ public class BesselFunctions {
                   F.Gamma(F.Plus(F.CN1D2, F.Negate(k), npos)))),
               0, maxK);
           return F.Plus(F.Negate(F.StruveH(n, z)),
-              F.Times(F.Power(F.CN1, F.Plus(npos, F.C1)), F.Power(F.Pi, F.CN1), sum));
+              F.Times(F.Power(-1, F.Plus(npos, F.C1)), F.Power(F.Pi, F.CN1), sum));
         }
       }
 

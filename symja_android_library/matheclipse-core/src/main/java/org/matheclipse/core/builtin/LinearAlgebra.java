@@ -1253,7 +1253,7 @@ public final class LinearAlgebra {
           return F.NIL;
         }
         // (-1)^(i + j)*Det(Drop(matrix, {i}, {j}))
-        return F.Times(F.Power(F.CN1, F.ZZ(i + j)), //
+        return F.Times(F.Power(-1, F.ZZ(i + j)), //
             F.Det( //
                 F.Drop(matrix, F.list(F.ZZ(i)), F.list(F.ZZ(j))) //
             ));

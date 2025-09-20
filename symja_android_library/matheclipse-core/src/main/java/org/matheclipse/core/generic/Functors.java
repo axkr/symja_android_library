@@ -581,9 +581,9 @@ public class Functors {
     private static IASTMutable nestedPower(IExpr arg) {
       IAST expTimes = (IAST) arg.exponent();
       IExpr powerArg = arg.base();
-      IASTMutable nestedPower = F.NIL;;
+      IASTMutable nestedPower = F.NIL;
       for (int i = expTimes.argSize(); i > 0; i--) {
-        nestedPower = F.Power(powerArg, expTimes.get(i));
+        nestedPower = F.binaryAST2(S.Power, powerArg, expTimes.get(i));
         powerArg = nestedPower;
       }
       return nestedPower;

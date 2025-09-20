@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
@@ -25,7 +26,7 @@ public class TestExpr extends ExprEvaluatorTestCase {
     assertEquals(x.plus(F.C2).asCoeffAdd().toString(), "{2,Plus(x)}");
     assertEquals(x.plus(y).asCoeffAdd(y).toString(), "{x,Plus(y)}");
     assertEquals(F.C3.times(x).asCoeffAdd(y).toString(), "{3*x,Plus()}");
-    IAST e2 = F.Power(F.Plus(x, y), F.C2);
+    IExpr e2 = F.Power(F.Plus(x, y), F.C2);
     assertEquals(e2.asCoeffAdd(y).toString(), "{0,Plus((x+y)^2)}");
 
     // assert S(2).as_coeff_add() == (2, ())
@@ -61,7 +62,7 @@ public class TestExpr extends ExprEvaluatorTestCase {
 
     IAST e1 = F.Exp(F.Plus(x, y));
     assertEquals(e1.asCoeffmul(y, false).toString(), "{1,{E^(x+y)}}");
-    IAST e2 = F.Power(F.C2, F.Plus(x, y));
+    IExpr e2 = F.Power(F.C2, F.Plus(x, y));
     assertEquals(e2.asCoeffmul(y, false).toString(), "{1,{2^(x+y)}}");
     assertEquals(F.num(1.1).multiply(x).asCoeffmul(null, false).toString(), "{1.1,{x}}");
     assertEquals(F.num(1.1).multiply(x).asCoeffmul(null, true).toString(), "{1,{1.1,x}}");

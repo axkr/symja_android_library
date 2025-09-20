@@ -362,7 +362,7 @@ public final class NumberTheory {
           }
           if (xInt == 1 && n.isIntegerResult()) {
             // http://fungrim.org/entry/829185/
-            return F.Times(F.Power(F.CN1, n), F.BernoulliB(n));
+            return F.Times(F.Power(-1, n), F.BernoulliB(n));
           }
         }
         if (n.isInteger() && n.isNonNegativeResult()) {
@@ -5994,7 +5994,7 @@ public final class NumberTheory {
             // 16*Total(((-1)^(n+#1)*#1^3&)/@Divisors(n))
             return F.Times(F.ZZ(16L),
                 F.Total(F.Map(
-                    F.Function(F.Times(F.Power(F.CN1, F.Plus(n, F.Slot1)), F.Power(F.Slot1, F.C3))),
+                    F.Function(F.Times(F.Power(-1, F.Plus(n, F.Slot1)), F.Power(F.Slot1, F.C3))),
                     F.Divisors(n))));
           default:
             break;
@@ -6202,7 +6202,7 @@ public final class NumberTheory {
     private static IExpr stirlingS1(IInteger n, IInteger m) {
       IInteger nSubtract1 = n.subtract(F.C1);
       if (n.isPositive() && m.isOne()) {
-        return Times(F.Power(F.CN1, nSubtract1), F.Factorial(nSubtract1));
+        return Times(F.Power(-1, nSubtract1), F.Factorial(nSubtract1));
       }
       IInteger factorPlusMinus1;
       if (n.isPositive() && m.equals(F.C2)) {

@@ -2021,7 +2021,7 @@ public final class Arithmetic {
           return
           // [$ Expand( (1/m)*(BernoulliB(m, z + 1) + ((-1)^n)* BernoulliB(m)) ) $]
           F.Expand(F.Times(F.Power(m, F.CN1), F.Plus(F.BernoulliB(m, F.Plus(z, F.C1)),
-              F.Times(F.Power(F.CN1, ri), F.BernoulliB(m))))); // $$;
+              F.Times(F.Power(-1, ri), F.BernoulliB(m))))); // $$;
         }
 
         if (n.isInteger()) {
@@ -3466,13 +3466,13 @@ public final class Arithmetic {
               if (!arg1Plus.isOne()) {
                 IInteger factor = (((IInteger) exponent.first()).isEven()) ? F.C1 : F.CN1;
                 if (factor.isMinusOne()) {
-                  return F.Power(F.CN1, F.Plus(1, exponent.rest().oneIdentity1()));
+                  return F.Power(-1, F.Plus(1, exponent.rest().oneIdentity1()));
                 }
-                return F.Times(factor, F.Power(F.CN1, exponent.rest().oneIdentity1()));
+                return F.Times(factor, F.Power(-1, exponent.rest().oneIdentity1()));
               }
             } else if (exponent.isTimes() && exponent.first().isInteger()) {
               IInteger arg1Times = (IInteger) exponent.first();
-              return F.Power(F.Power(F.CN1, arg1Times), exponent.rest().oneIdentity1());
+              return F.Power(F.Power(-1, arg1Times), exponent.rest().oneIdentity1());
             }
           }
         }
@@ -3553,12 +3553,12 @@ public final class Arithmetic {
           }
         } else if (exponent.isNumEqualRational(F.CN1D2)) {
           // -(-1)^(3/4)
-          return F.Times(F.CN1, F.Power(F.CN1, F.C3D4));
+          return F.Times(F.CN1, F.Power(-1, F.C3D4));
         }
       }
       if (exponent.isPositive()) {
         if (base.isImaginaryUnit()) {
-          return F.Power(F.CN1, F.C1D2.times(exponent));
+          return F.Power(-1, F.C1D2.times(exponent));
         } else if (base.isNegativeImaginaryUnit()) {
           IInteger numerator = exponent.numerator();
           IInteger denominator = exponent.denominator();
@@ -3570,7 +3570,7 @@ public final class Arithmetic {
           numerator = rat.numerator();
           denominator = rat.denominator().multiply(F.C2);
           return F.Times(F.CN1, F.Power(F.CNI, div),
-              F.Power(F.CN1, F.fraction(denominator.subtract(numerator), denominator)));
+              F.Power(-1, F.fraction(denominator.subtract(numerator), denominator)));
         }
         if (exponent.equals(F.C1D2)) {
           IComplex sqrt = base.sqrtCC();
@@ -4052,7 +4052,7 @@ public final class Arithmetic {
       if (base.isTimes()) {
         final IAST baseTimes = base;
         if (exponent.isInteger() || exponent.isMinusOne()) {
-          return baseTimes.mapThread(Power(F.Slot1, exponent), 1);
+          return baseTimes.mapThread(F.binaryAST2(S.Power, F.Slot1, exponent), 1);
         }
         if (exponent.isFraction()) {
           // (a * b * c)^n => a^n * b^n * c^n => result * (rest ^ exponent)
@@ -4300,7 +4300,7 @@ public final class Arithmetic {
         return F.Times(F.Power(base.power(expDiv), F.CN1),
             F.Power(base.power(F.QQ(expMod, expDenominator)), F.CN1));
       } else if (base.isNegative() && exponent.isNegative()) {
-        return F.Times(F.CN1, F.Power(F.CN1, F.C1.add(exponent)), F.Power(base.negate(), exponent));
+        return F.Times(F.CN1, F.Power(-1, F.C1.add(exponent)), F.Power(base.negate(), exponent));
       }
       if (base.isRational() && !ast.isAllExpanded()) {
         // try factorizing base
@@ -4363,7 +4363,7 @@ public final class Arithmetic {
               return F.CInfinity;
             }
           } else if (realExponent.isFraction()) {
-            return F.DirectedInfinity(F.Power(F.CN1, realExponent));
+            return F.DirectedInfinity(F.Power(-1, realExponent));
           } else {
             int exp = realExponent.toIntDefault();
             if (F.isPresent(exp)) {
@@ -4778,7 +4778,7 @@ public final class Arithmetic {
           // Normally, f**e would evaluate to exp(e*log(f)) but on branch cuts
           // an other value is expected through the following computation
           // exp(e*(log(f) - 2*pi*I)) == f**e*exp(-2*e*pi*I) == f**e*(-1)**(-2*e).
-          return F.Times(F.Power(f, e), F.Power(F.CN1, F.Times(F.CN2, e)));
+          return F.Times(F.Power(f, e), F.Power(-1, F.Times(F.CN2, e)));
         }
         if (imNDir.isZero()) {
           IExpr log_leadterm = F.Log(b).evalAsLeadingTerm(x, logx, cdir);
@@ -6764,11 +6764,11 @@ public final class Arithmetic {
         if (base2.isMinusOne()) {
           if (arg1.isImaginaryUnit()) {
             // I * power1Arg1 ^ power1Arg2 -> (-1) ^ (power1Arg2 + (1/2))
-            return F.Power(F.CN1, exponent2.plus(F.C1D2));
+            return F.Power(-1, exponent2.plus(F.C1D2));
           }
           if (arg1.isNegativeImaginaryUnit()) {
             // (-I) * power1Arg1 ^ power1Arg2 -> (-1) * (-1) ^ (power1Arg2 + (1/2))
-            return F.Times(F.CN1, F.Power(F.CN1, exponent2.plus(F.C1D2)));
+            return F.Times(F.CN1, F.Power(-1, exponent2.plus(F.C1D2)));
           }
         }
         if (arg1.isRational()) {

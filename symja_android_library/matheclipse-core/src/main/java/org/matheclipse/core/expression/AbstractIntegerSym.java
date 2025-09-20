@@ -242,7 +242,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
         result.append(F.Power(valueOf(rest), F.QQ(1, rootDenominator)));
       }
       if (isNegative) {
-        result.append(F.Power(F.CN1, F.QQ(rootNumerator, rootDenominator)));
+        result.append(F.Power(-1, F.QQ(rootNumerator, rootDenominator)));
       }
       return result;
     }

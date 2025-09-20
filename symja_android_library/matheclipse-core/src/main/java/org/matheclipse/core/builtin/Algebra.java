@@ -3414,13 +3414,13 @@ public class Algebra {
           if (x1.isTimes()) {
             // Power[x_ * y_, z_] :> x^z * y^z
             IAST timesAST = (IAST) x1;
-            IASTMutable timesResult = x1.mapThread(Power(F.Slot1, x2), 1);
+            IASTMutable timesResult = x1.mapThread(F.binaryAST2(S.Power, F.Slot1, x2), 1);
             if (assumptions) {
               IASTAppendable plusResult = F.PlusAlloc(timesAST.size());
               plusResult.append(C1D2);
               plusResult.appendArgs(timesAST.size(),
                   i -> Negate(Divide(Arg(timesAST.get(i)), F.C2Pi)));
-              IAST expResult = Power(E, Times(C2, I, Pi, x2, Floor(plusResult)));
+              IExpr expResult = Power(E, Times(C2, I, Pi, x2, Floor(plusResult)));
               if (!(timesResult instanceof IASTAppendable)) {
                 timesResult = timesResult.copyAppendable();
               }
@@ -3443,10 +3443,10 @@ public class Algebra {
         // Power[x_ ^ y_, z_] :> x ^(y*z)
         IExpr base = x1.base();
         IExpr exponent = x1.exponent();
-        IAST powerResult = Power(base, Times(exponent, z));
+        IExpr powerResult = Power(base, Times(exponent, z));
         if (assumptions) {
           IAST floorResult = Floor(Divide(Subtract(Pi, Im(Times(exponent, Log(base)))), F.C2Pi));
-          IAST expResult = Power(E, Times(C2, I, Pi, z, floorResult));
+          IExpr expResult = Power(E, Times(C2, I, Pi, z, floorResult));
           IAST timesResult = Times(powerResult, expResult);
           return timesResult;
         }

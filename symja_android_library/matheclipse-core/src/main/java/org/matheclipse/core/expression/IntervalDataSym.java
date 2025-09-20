@@ -1671,7 +1671,7 @@ public class IntervalDataSym {
         if (base.isMinusOne()) {
           return F.NIL;
         }
-        return F.Times(F.Power(F.CN1, intervalExponent), F.Power(base.negate(), intervalExponent));
+        return F.Times(F.Power(-1, intervalExponent), F.Power(base.negate(), intervalExponent));
       }
       IASTAppendable result = F.IntervalDataAlloc(intervalExponent.size());
       for (int i = 1; i < interval.size(); i++) {

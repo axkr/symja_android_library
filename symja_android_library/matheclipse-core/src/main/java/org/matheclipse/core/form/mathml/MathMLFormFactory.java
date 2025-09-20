@@ -689,7 +689,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
           if (exp.isOne()) {
             fFactory.convertInternal(buf, arg1, Integer.MIN_VALUE, false);
           } else {
-            convert(buf, F.Power(arg1, exp), Integer.MIN_VALUE);
+            convert(buf, F.binaryAST2(S.Power, arg1, exp), Integer.MIN_VALUE);
           }
           fFactory.tagEnd(buf, "mfrac");
         } else {
