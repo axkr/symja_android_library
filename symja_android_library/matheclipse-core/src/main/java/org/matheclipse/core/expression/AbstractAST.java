@@ -2906,19 +2906,19 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
     String prefix = SourceCodeProperties.getPrefixF(properties);
     if (isInfinity()) {
-      return new StringBuilder(prefix).append("oo");
+      return prefix + "oo";
     }
     if (isNegativeInfinity()) {
-      return new StringBuilder(prefix).append("Noo");
+      return prefix + "Noo";
     }
     if (isComplexInfinity()) {
-      return new StringBuilder(prefix).append("CComplexInfinity");
+      return prefix + "CComplexInfinity";
     }
     if (this.equals(F.Slot1)) {
-      return new StringBuilder(prefix).append("Slot1");
+      return prefix + "Slot1";
     }
     if (this.equals(F.Slot2)) {
-      return new StringBuilder(prefix).append("Slot2");
+      return prefix + "Slot2";
     }
     if (temp.equals(S.Inequality) && size() >= 4) {
       return CompareUtil.inequality2And(this).internalJavaString(properties, depth, variables);
@@ -2930,72 +2930,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       }
     }
     if (isPower()) {
-      if (arg1().isInteger() && arg2().isMinusOne()) {
-        IInteger i = (IInteger) arg1();
-        if (i.equals(F.C2)) {
-          return new StringBuilder(prefix).append("C1D2");
-        } else if (i.equals(F.C3)) {
-          return new StringBuilder(prefix).append("C1D3");
-        } else if (i.equals(F.C4)) {
-          return new StringBuilder(prefix).append("C1D4");
-        } else if (i.equals(F.CN2)) {
-          return new StringBuilder(prefix).append("CN1D2");
-        } else if (i.equals(F.CN3)) {
-          return new StringBuilder(prefix).append("CN1D3");
-        } else if (i.equals(F.CN4)) {
-          return new StringBuilder(prefix).append("CN1D4");
-        }
+      CharSequence str = internalJavaPowerString(properties, depth, variables);
+      if (str != null) {
+        return str;
       }
-      if (equalsAt(1, S.E)) {
-        return new StringBuilder(prefix).append("Exp(")
-            .append(arg2().internalJavaString(properties, depth + 1, variables)).append(")");
-      }
-      if (equalsAt(2, F.C1D2)) {
-        if (base().isInteger()) {
-          // square root of an integer number
-          IInteger i = (IInteger) base();
-          if (i.equals(F.C2)) {
-            return new StringBuilder(prefix).append("CSqrt2");
-          } else if (i.equals(F.C3)) {
-            return new StringBuilder(prefix).append("CSqrt3");
-          } else if (i.equals(F.C5)) {
-            return new StringBuilder(prefix).append("CSqrt5");
-          } else if (i.equals(F.C6)) {
-            return new StringBuilder(prefix).append("CSqrt6");
-          } else if (i.equals(F.C7)) {
-            return new StringBuilder(prefix).append("CSqrt7");
-          } else if (i.equals(F.C10)) {
-            return new StringBuilder(prefix).append("CSqrt10");
-          }
-        }
-        if (base().isPi()) {
-          return new StringBuilder(prefix).append("CSqrtPi");
-        }
-        return new StringBuilder(prefix).append("Sqrt(")
-            .append(arg1().internalJavaString(properties, depth + 1, variables)).append(")");
-      }
-      if (equalsAt(2, F.C2)) {
-        return new StringBuilder(prefix).append("Sqr(")
-            .append(arg1().internalJavaString(properties, depth + 1, variables)).append(")");
-      }
-      if (equalsAt(2, F.CN1D2) && arg1().isInteger()) {
-        // negative square root of an integer number
-        IInteger i = (IInteger) arg1();
-        if (i.equals(F.C2)) {
-          return new StringBuilder(prefix).append("C1DSqrt2");
-        } else if (i.equals(F.C3)) {
-          return new StringBuilder(prefix).append("C1DSqrt3");
-        } else if (i.equals(F.C5)) {
-          return new StringBuilder(prefix).append("C1DSqrt5");
-        } else if (i.equals(F.C6)) {
-          return new StringBuilder(prefix).append("C1DSqrt6");
-        } else if (i.equals(F.C7)) {
-          return new StringBuilder(prefix).append("C1DSqrt7");
-        } else if (i.equals(F.C10)) {
-          return new StringBuilder(prefix).append("C1DSqrt10");
-        }
-      }
-      // don't optimize if arg2() is integer
     }
     StringBuilder text = new StringBuilder(size() * 10);
     if (temp.isSymbol()) {
@@ -3032,23 +2970,23 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (isTimes2()) {
       if (arg2().equals(S.Pi)) {
         if (equals(F.CNPi)) {
-          return new StringBuilder(prefix).append("CNPi");
+          return prefix + "CNPi";
         } else if (equals(F.CN2Pi)) {
-          return new StringBuilder(prefix).append("CN2Pi");
+          return prefix + "CN2Pi";
         } else if (equals(F.C2Pi)) {
-          return new StringBuilder(prefix).append("C2Pi");
+          return prefix + "C2Pi";
         } else if (equals(F.CNPiHalf)) {
-          return new StringBuilder(prefix).append("CNPiHalf");
+          return prefix + "CNPiHalf";
         } else if (equals(F.CPiHalf)) {
-          return new StringBuilder(prefix).append("CPiHalf");
+          return prefix + "CPiHalf";
         } else if (equals(F.CNPiThird)) {
-          return new StringBuilder(prefix).append("CNPiThird");
+          return prefix + "CNPiThird";
         } else if (equals(F.CPiThird)) {
-          return new StringBuilder(prefix).append("CPiThird");
+          return prefix + "CPiThird";
         } else if (equals(F.CNPiQuarter)) {
-          return new StringBuilder(prefix).append("CNPiQuarter");
+          return prefix + "CNPiQuarter";
         } else if (equals(F.CPiQuarter)) {
-          return new StringBuilder(prefix).append("CPiQuarter");
+          return prefix + "CPiQuarter";
         }
       }
       if (arg1().isMinusOne() && !arg2().isTimes()) {
@@ -3139,6 +3077,82 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       text.append('\n');
     }
     return text.append(')');
+  }
+
+  private CharSequence internalJavaPowerString(SourceCodeProperties properties, int depth,
+      Function<ISymbol, ? extends CharSequence> variables) {
+    String prefix = SourceCodeProperties.getPrefixF(properties);
+    if (arg1().isInteger() && arg2().isMinusOne()) {
+      IInteger i = (IInteger) arg1();
+      if (i.equals(F.C2)) {
+        return prefix + "C1D2";
+      } else if (i.equals(F.C3)) {
+        return prefix + "C1D3";
+      } else if (i.equals(F.C4)) {
+        return prefix + "C1D4";
+      } else if (i.equals(F.CN2)) {
+        return prefix + "CN1D2";
+      } else if (i.equals(F.CN3)) {
+        return prefix + "CN1D3";
+      } else if (i.equals(F.CN4)) {
+        return prefix + "CN1D4";
+      }
+    }
+    if (equalsAt(1, F.CN1)) {
+      return new StringBuilder(prefix).append("Power(-1,")
+          .append(arg2().internalJavaString(properties, depth + 1, variables)).append(")");
+    }
+    if (equalsAt(1, S.E)) {
+      return new StringBuilder(prefix).append("Exp(")
+          .append(arg2().internalJavaString(properties, depth + 1, variables)).append(")");
+    }
+    if (equalsAt(2, F.C1D2)) {
+      if (base().isInteger()) {
+        // square root of an integer number
+        IInteger i = (IInteger) base();
+        if (i.equals(F.C2)) {
+          return prefix + "CSqrt2";
+        } else if (i.equals(F.C3)) {
+          return prefix + "CSqrt3";
+        } else if (i.equals(F.C5)) {
+          return prefix + "CSqrt5";
+        } else if (i.equals(F.C6)) {
+          return prefix + "CSqrt6";
+        } else if (i.equals(F.C7)) {
+          return prefix + "CSqrt7";
+        } else if (i.equals(F.C10)) {
+          return prefix + "CSqrt10";
+        }
+      }
+      if (base().isPi()) {
+        return prefix + "CSqrtPi";
+      }
+      return new StringBuilder(prefix).append("Sqrt(")
+          .append(arg1().internalJavaString(properties, depth + 1, variables)).append(")");
+    }
+    if (equalsAt(2, F.C2)) {
+      return new StringBuilder(prefix).append("Sqr(")
+          .append(arg1().internalJavaString(properties, depth + 1, variables)).append(")");
+    }
+    if (equalsAt(2, F.CN1D2) && arg1().isInteger()) {
+      // negative square root of an integer number
+      IInteger i = (IInteger) arg1();
+      if (i.equals(F.C2)) {
+        return prefix + "C1DSqrt2";
+      } else if (i.equals(F.C3)) {
+        return prefix + "C1DSqrt3";
+      } else if (i.equals(F.C5)) {
+        return prefix + "C1DSqrt5";
+      } else if (i.equals(F.C6)) {
+        return prefix + "C1DSqrt6";
+      } else if (i.equals(F.C7)) {
+        return prefix + "C1DSqrt7";
+      } else if (i.equals(F.C10)) {
+        return prefix + "C1DSqrt10";
+      }
+    }
+    // don't optimize if arg2() is integer
+    return null;
   }
 
   private void internalOperatorForm(IExpr arg1, boolean isLowerPrecedence,

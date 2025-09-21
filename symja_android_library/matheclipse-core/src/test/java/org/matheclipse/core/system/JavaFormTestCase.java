@@ -5,7 +5,6 @@ import static org.matheclipse.core.expression.F.CI;
 import static org.matheclipse.core.expression.F.CInfinity;
 import static org.matheclipse.core.expression.F.Sinc;
 import static org.matheclipse.core.expression.F.Times;
-
 import org.junit.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalUtilities;
@@ -55,6 +54,23 @@ public class JavaFormTestCase extends ExprEvaluatorTestCase {
 
     result = util.evaluate(function);
     assertEquals("F.oo",
+        result.internalJavaString(SYMBOL_FACTORY_PROPERTIES, -1, x -> null).toString());
+  }
+
+  @Test
+  public void testJavaFormPower001() {
+    // don't distinguish between lower- and uppercase identifiers
+    ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = true;
+    EvalUtilities util = new EvalUtilities(false, true);
+
+    IAST function = F.Power(F.CN1, F.ZZ(17));
+
+    IExpr result = EvalEngine.get().evalHoldPattern(function);
+    assertEquals("F.Power(-1,F.ZZ(17L))",
+        result.internalJavaString(SYMBOL_FACTORY_PROPERTIES, -1, x -> null).toString());
+
+    result = util.evaluate(function);
+    assertEquals("F.CN1",
         result.internalJavaString(SYMBOL_FACTORY_PROPERTIES, -1, x -> null).toString());
   }
 

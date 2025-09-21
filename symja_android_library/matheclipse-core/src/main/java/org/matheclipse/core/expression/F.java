@@ -8606,12 +8606,20 @@ public class F extends S {
       return base;
     }
     if (base.isNumber()) {
+      if (base.isMinusOne()) {
+        return (exponent & 1L) == 0 ? base.negate() : base;
+      }
+      if (base.isOne()) {
+        return base;
+      }
       if (exponent > 0L) {
         return base.power(exponent);
       }
       if (exponent == -1L) {
         if (base.isZero()) {
-          LOGGER.log(EvalEngine.get().getLogLevel(), "Infinite expression 0^(-1)");
+          // Infinite expression `1` encountered.
+          Errors.printMessage(S.Power, "infy", F.list(new B2.Power(base, F.ZZ(exponent))),
+              EvalEngine.get());
           return CComplexInfinity;
         }
         return base.inverse();
@@ -8619,26 +8627,30 @@ public class F extends S {
       if (exponent == 0L && !base.isZero()) {
         return C1;
       }
-      if (base == F.CN1) {
-        return (exponent & 1L) == 0 ? F.C1 : F.CN1;
-      }
     }
     return new B2.Power(base, ZZ(exponent));
   }
 
   public static IExpr Power(final int base, final IExpr exponent) {
-    if (exponent == F.C1) {
-      return F.ZZ(base);
-    }
-    if (exponent == F.CN1) {
-      if (base == 0) {
-        LOGGER.log(EvalEngine.get().getLogLevel(), "Infinite expression 0^(-1)");
-        return CComplexInfinity;
+    if (exponent.isNumber()) {
+      if (exponent.isOne()) {
+        return F.ZZ(base);
       }
-      return F.QQ(1, base);
-    }
-    if (base == -1 && exponent.isInteger()) {
-      return ((IInteger) exponent).isEven() ? F.C1 : F.CN1;
+      if (exponent.isMinusOne()) {
+        if (base == 0) {
+          // Infinite expression `1` encountered.
+          Errors.printMessage(S.Power, "infy", F.list(new B2.Power(F.ZZ(base), exponent)),
+              EvalEngine.get());
+          return CComplexInfinity;
+        }
+        return F.QQ(1, base);
+      }
+      if (base == -1 && exponent.isInteger()) {
+        return ((IInteger) exponent).isEven() ? F.C1 : F.CN1;
+      }
+      if (exponent.isZero() && base != 0) {
+        return C1;
+      }
     }
     return new B2.Power(F.ZZ(base), exponent);
   }
