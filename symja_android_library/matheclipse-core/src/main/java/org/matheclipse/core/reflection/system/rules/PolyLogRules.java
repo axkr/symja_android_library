@@ -46,7 +46,7 @@ public class PolyLogRules {
       Times(QQ(1L,24L),Plus(Times(CN2,Sqr(Pi),Log(C2)),Times(C4,Power(Log(C2),C3)),Times(ZZ(21L),Zeta(C3)))), true),
     // PolyLog(i_Integer,z_):=Module({n=-i},Sum(Sum((-1)^(k+1)*Binomial(n+1,-1+k)*(-k+m+1)^n,{k,1,m})*z^m,{m,1,n})/(1-z)^(n+1)/;i<0)
     ISetDelayed(PolyLog($p(i, Integer),z_),
-      Module(list(Set(n,Negate(i))),Condition(Times(Power(Power(Subtract(C1,z),Plus(n,C1)),CN1),Sum(Times(Sum(Times(Power(CN1,Plus(k,C1)),Binomial(Plus(n,C1),Plus(CN1,k)),Power(Plus(Negate(k),m,C1),n)),list(k,C1,m)),Power(z,m)),list(m,C1,n))),Less(i,C0)))),
+      Module(list(Set(n,Negate(i))),Condition(Times(Power(Power(Subtract(C1,z),Plus(n,C1)),CN1),Sum(Times(Sum(Times(Power(-1,Plus(k,C1)),Binomial(Plus(n,C1),Plus(CN1,k)),Power(Plus(Negate(k),m,C1),n)),list(k,C1,m)),Power(z,m)),list(m,C1,n))),Less(i,C0)))),
     // PolyLog(Undefined,y_):=Undefined
     ISetDelayed(PolyLog(Undefined,y_),
       Undefined),

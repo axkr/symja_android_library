@@ -79,7 +79,7 @@ public class LimitRules {
       Condition(Exp(Subtract(a,b)),FreeQ(list(a,b,c),x))),
     // Limit(HarmonicNumber(y_Symbol,s_Integer),x_Symbol->Infinity):=With({v=s/2},((-1)^(v+1)*(2*Pi)^(2*v)*BernoulliB(2*v))/(2*(2*v)!))/;EvenQ(s)&&Positive(s)
     ISetDelayed(Limit(HarmonicNumber(y_Symbol,$p(s, Integer)),Rule(x_Symbol,oo)),
-      Condition(With(list(Set(v,Times(C1D2,s))),Times(Power(CN1,Plus(v,C1)),Power(C2Pi,Times(C2,v)),BernoulliB(Times(C2,v)),Power(Times(C2,Factorial(Times(C2,v))),CN1))),And(EvenQ(s),Positive(s)))),
+      Condition(With(list(Set(v,Times(C1D2,s))),Times(Power(-1,Plus(v,C1)),Power(C2Pi,Times(C2,v)),BernoulliB(Times(C2,v)),Power(Times(C2,Factorial(Times(C2,v))),CN1))),And(EvenQ(s),Positive(s)))),
     // Limit(Tan(x_),x_Symbol->Pi/2):=Indeterminate
     ISetDelayed(Limit(Tan(x_),Rule(x_Symbol,CPiHalf)),
       Indeterminate),

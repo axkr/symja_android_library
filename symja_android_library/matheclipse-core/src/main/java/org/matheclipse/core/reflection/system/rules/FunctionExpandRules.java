@@ -50,7 +50,7 @@ public class FunctionExpandRules {
       Condition(ChebyshevT(n,Sqrt(Subtract(C1,Sqr(z)))),Greater(n,C0))),
     // Cos(n_Integer*ArcCot(z_)):=n*Sum(((-1)^k*(-1-k+n)!)/(2^(1+2*k-n)*k!*(-2*k+n)!)*((1+z^2)/z^2)^(k-n/2),{k,0,Floor(n/2)})/;n>0
     SetDelayed(Cos(Times(ArcCot(z_),$p(n, Integer))),
-      Condition(Times(n,Sum(Times(Power(CN1,k),Factorial(Plus(CN1,Negate(k),n)),Power(Times(Power(C2,Plus(C1,Times(C2,k),Negate(n))),Factorial(k),Factorial(Plus(Times(CN2,k),n))),CN1),Power(Times(Power(z,CN2),Plus(C1,Sqr(z))),Plus(k,Times(CN1D2,n)))),list(k,C0,Floor(Times(C1D2,n))))),Greater(n,C0))),
+      Condition(Times(n,Sum(Times(Power(-1,k),Factorial(Plus(CN1,Negate(k),n)),Power(Times(Power(C2,Plus(C1,Times(C2,k),Negate(n))),Factorial(k),Factorial(Plus(Times(CN2,k),n))),CN1),Power(Times(Power(z,CN2),Plus(C1,Sqr(z))),Plus(k,Times(CN1D2,n)))),list(k,C0,Floor(Times(C1D2,n))))),Greater(n,C0))),
     // CosIntegral(Sqrt(z_^n_)):=CosIntegral(z^(n/2))-Log(z^(n/2))+Log(z^n)/2
     SetDelayed(CosIntegral(Sqrt(Power(z_,n_))),
       Plus(CosIntegral(Power(z,Times(C1D2,n))),Negate(Log(Power(z,Times(C1D2,n)))),Times(C1D2,Log(Power(z,n))))),
@@ -107,7 +107,7 @@ public class FunctionExpandRules {
       Times(C1D2,Subtract(C1,Cos(z)))),
     // HurwitzZeta(n_Integer,a_):=(-1)^n/(-1+n)!*PolyGamma(-1+n,a)/;n>1
     SetDelayed(HurwitzZeta($p(n, Integer),a_),
-      Condition(Times(Power(CN1,n),Power(Factorial(Plus(CN1,n)),CN1),PolyGamma(Plus(CN1,n),a)),Greater(n,C1))),
+      Condition(Times(Power(-1,n),Power(Factorial(Plus(CN1,n)),CN1),PolyGamma(Plus(CN1,n),a)),Greater(n,C1))),
     // HypergeometricPFQ({1/2},{1,1},z_):=BesselI(0,Sqrt(z))^2
     SetDelayed(HypergeometricPFQ(list(C1D2),list(C1,C1),z_),
       Sqr(BesselI(C0,Sqrt(z)))),
@@ -221,7 +221,7 @@ public class FunctionExpandRules {
       Plus(QQ(-3L,4L),Log(C2),Times(C2,Log(Glaisher)),Log(Pi))),
     // PolyGamma(n_Integer,1/2):=(-1)^(n+1)*n!*(-1+2^(n+1))*Zeta(n+1)/;n>0
     SetDelayed(PolyGamma($p(n, Integer),C1D2),
-      Condition(Times(Power(CN1,Plus(n,C1)),Factorial(n),Plus(CN1,Power(C2,Plus(n,C1))),Zeta(Plus(n,C1))),Greater(n,C0))),
+      Condition(Times(Power(-1,Plus(n,C1)),Factorial(n),Plus(CN1,Power(C2,Plus(n,C1))),Zeta(Plus(n,C1))),Greater(n,C0))),
     // PolyLog(2,1/2*(3-Sqrt(5)))=Pi^2/15-ArcCsch(2)^2
     Set(PolyLog(C2,Times(C1D2,Subtract(C3,CSqrt5))),
       Subtract(Times(QQ(1L,15L),Sqr(Pi)),Sqr(ArcCsch(C2)))),
@@ -260,7 +260,7 @@ public class FunctionExpandRules {
       Condition(Times(z,ChebyshevU(Plus(CN1,n),Sqrt(Subtract(C1,Sqr(z))))),Greater(n,C0))),
     // Sin(n_Integer*ArcTan(z_)):=Sum((-1)^k*Binomial(n,2*k+1)*z^(2*k+1),{k,0,Floor(1/2*(-1+n))})/(1+z^2)^(n/2)/;n>0
     SetDelayed(Sin(Times(ArcTan(z_),$p(n, Integer))),
-      Condition(Times(Power(Power(Plus(C1,Sqr(z)),Times(C1D2,n)),CN1),Sum(Times(Power(CN1,k),Binomial(n,Plus(Times(C2,k),C1)),Power(z,Plus(Times(C2,k),C1))),list(k,C0,Floor(Times(C1D2,Plus(CN1,n)))))),Greater(n,C0))),
+      Condition(Times(Power(Power(Plus(C1,Sqr(z)),Times(C1D2,n)),CN1),Sum(Times(Power(-1,k),Binomial(n,Plus(Times(C2,k),C1)),Power(z,Plus(Times(C2,k),C1))),list(k,C0,Floor(Times(C1D2,Plus(CN1,n)))))),Greater(n,C0))),
     // SinIntegral(Sqrt(z_^n_)):=(Sqrt(z^n)*SinIntegral(z^(n/2)))/z^(n/2)
     SetDelayed(SinIntegral(Sqrt(Power(z_,n_))),
       Times(Power(Power(z,Times(C1D2,n)),CN1),Sqrt(Power(z,n)),SinIntegral(Power(z,Times(C1D2,n))))),
@@ -290,10 +290,10 @@ public class FunctionExpandRules {
       Times(Power(Exp(Times(C1D2,z)),CN1),Power(z,Plus(C1D2,m)),HypergeometricU(Plus(C1D2,Negate(k),m),Plus(C1,Times(C2,m)),z))),
     // Zeta(n_Integer,x_):=PolyGamma(-1+n,x)/((-1)^n*(-1+n)!)/;EvenQ(n)&&n>1
     SetDelayed(Zeta($p(n, Integer),x_),
-      Condition(Times(Power(Times(Power(CN1,n),Factorial(Plus(CN1,n))),CN1),PolyGamma(Plus(CN1,n),x)),And(EvenQ(n),Greater(n,C1)))),
+      Condition(Times(Power(Times(Power(-1,n),Factorial(Plus(CN1,n))),CN1),PolyGamma(Plus(CN1,n),x)),And(EvenQ(n),Greater(n,C1)))),
     // Zeta'(m_Integer):=With({n=-m/2},1/2*(-1)^n*(2*n)!/(2*Pi)^(2*n)*Zeta(2*n+1)/;EvenQ(m)&&m<-1)
     SetDelayed($($(Derivative(C1),Zeta),$p(m, Integer)),
-      With(list(Set(n,Times(CN1D2,m))),Condition(Times(C1D2,Power(CN1,n),Power(Power(C2Pi,Times(C2,n)),CN1),Factorial(Times(C2,n)),Zeta(Plus(Times(C2,n),C1))),And(EvenQ(m),Less(m,CN1))))),
+      With(list(Set(n,Times(CN1D2,m))),Condition(Times(C1D2,Power(-1,n),Power(Power(C2Pi,Times(C2,n)),CN1),Factorial(Times(C2,n)),Zeta(Plus(Times(C2,n),C1))),And(EvenQ(m),Less(m,CN1))))),
     // Zeta'(2):=1/6*Pi^2*(EulerGamma+Log(2)-12*Log(Glaisher)+Log(Pi))
     SetDelayed($($(Derivative(C1),Zeta),C2),
       Times(QQ(1L,6L),Sqr(Pi),Plus(EulerGamma,Log(C2),Times(ZZ(-12L),Log(Glaisher)),Log(Pi))))

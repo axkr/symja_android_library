@@ -367,7 +367,7 @@ public class DerivativeRules {
       Function(Times(CN1,HypergeometricU(Plus(C1,Slot1),Plus(C1,Slot2),Slot(C3)),Slot1)), true),
     // Derivative(0,0,n_)[HypergeometricU]:=((-1)^n*HypergeometricU(n+#1,n+#2,#3)*Pochhammer(#1,n)&)/;IntegerQ(n)||!NumericQ(n)
     ISetDelayed($(Derivative(C0,C0,n_),HypergeometricU),
-      Condition(Function(Times(Power(CN1,n),HypergeometricU(Plus(n,Slot1),Plus(n,Slot2),Slot(C3)),Pochhammer(Slot1,n))),Or(IntegerQ(n),Not(NumericQ(n))))),
+      Condition(Function(Times(Power(-1,n),HypergeometricU(Plus(n,Slot1),Plus(n,Slot2),Slot(C3)),Pochhammer(Slot1,n))),Or(IntegerQ(n),Not(NumericQ(n))))),
     // Derivative(1,0)[Pochhammer]=Pochhammer(#1,#2)*(-PolyGamma(0,#1)+PolyGamma(0,#1+#2))&
     ISet($(Derivative(C1,C0),Pochhammer),
       Function(Times(Pochhammer(Slot1,Slot2),Plus(Negate(PolyGamma(C0,Slot1)),PolyGamma(C0,Plus(Slot1,Slot2))))), true),

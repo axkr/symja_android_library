@@ -25,7 +25,7 @@ public class PowerRules {
       CNI, true),
     // E^(I*Pi*n_):=(-1)^n/;n∈Integers
     ISetDelayed(Exp(Times(CI,Pi,n_)),
-      Condition(Power(CN1,n),Element(n,Integers))),
+      Condition(Power(-1,n),Element(n,Integers))),
     // E^(Pi*c_Complex):=Module({r=Re(c),j=Im(c)},If(EvenQ(j),1,-1)/;r==0&&IntegerQ(j))
     ISetDelayed(Exp(Times(Pi,$p(c,Complex))),
       Module(list(Set(r,Re(c)),Set(j,Im(c))),Condition(If(EvenQ(j),C1,CN1),And(Equal(r,C0),IntegerQ(j))))),

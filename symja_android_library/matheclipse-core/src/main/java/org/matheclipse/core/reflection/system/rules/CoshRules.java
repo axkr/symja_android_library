@@ -97,7 +97,7 @@ public class CoshRules {
       Times(CI,Sinh(x))),
     // Cosh(Pi*I*n_Integer+x_):=(-1)^n*Cosh(x)
     ISetDelayed(Cosh(Plus(Times(Pi,Complex(C0,$p(n, Integer))),x_)),
-      Times(Power(CN1,n),Cosh(x))),
+      Times(Power(-1,n),Cosh(x))),
     // Cosh(ArcSinh(x_)):=Sqrt(1+x^2)
     ISetDelayed(Cosh(ArcSinh(x_)),
       Sqrt(Plus(C1,Sqr(x)))),

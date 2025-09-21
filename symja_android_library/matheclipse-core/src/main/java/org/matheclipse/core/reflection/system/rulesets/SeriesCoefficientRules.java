@@ -16,7 +16,7 @@ matcher.caseOf(SeriesCoefficient(Fibonacci(x_),list(x_Symbol,C0,PatternTest(n_,N
       Condition(Piecewise(list(list(Times(CN1,Plus(Power(Subtract(Times(CNI,Pi),ArcCsch(C2)),n),Power(Subtract(Times(CI,Pi),ArcCsch(C2)),n),Times(CN2,Power(ArcCsch(C2),n))),Power(Times(C2,CSqrt5,Factorial(n)),CN1)),GreaterEqual(n,C1))),C0),FreeQ(n,x)));
     // SeriesCoefficient(HarmonicNumber(x_),{x_Symbol,a_,n_?NotListQ}):=Piecewise({{HarmonicNumber(a),n==0},{(-1)^(1+n)*Zeta(1+n,1+a),n>=1}},0)/;FreeQ(a,x)&&FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(HarmonicNumber(x_),list(x_Symbol,a_,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(list(list(HarmonicNumber(a),Equal(n,C0)),list(Times(Power(CN1,Plus(C1,n)),Zeta(Plus(C1,n),Plus(C1,a))),GreaterEqual(n,C1))),C0),And(FreeQ(a,x),FreeQ(n,x))));
+      Condition(Piecewise(list(list(HarmonicNumber(a),Equal(n,C0)),list(Times(Power(-1,Plus(C1,n)),Zeta(Plus(C1,n),Plus(C1,a))),GreaterEqual(n,C1))),C0),And(FreeQ(a,x),FreeQ(n,x))));
     // SeriesCoefficient(BernoulliB(m_,x_),{x_Symbol,a_,n_?NotListQ}):=Piecewise({{(BernoulliB(m-n,a)*Pochhammer(1+m-n,n))/n!,n>=0&&m>=n}},0)/;FreeQ({a,m,n},x)
 matcher.caseOf(SeriesCoefficient(BernoulliB(m_,x_),list(x_Symbol,a_,PatternTest(n_,NotListQ))),
       Condition(Piecewise(list(list(Times(BernoulliB(Subtract(m,n),a),Power(Factorial(n),CN1),Pochhammer(Plus(C1,m,Negate(n)),n)),And(GreaterEqual(n,C0),GreaterEqual(m,n)))),C0),FreeQ(list(a,m,n),x)));
@@ -25,28 +25,28 @@ matcher.caseOf(SeriesCoefficient(Times(Power(Plus(CN1,Power(a_,x_)),CN1),x_),lis
       Condition(Piecewise(list(list(Times(BernoulliB(n),Power(Factorial(n),CN1),Power(Log(a),Plus(CN1,n))),GreaterEqual(n,C0))),C0),And(FreeQ(a,x),FreeQ(n,x))));
     // SeriesCoefficient(Cos(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{((1+(-1)^n)*I^n)/(2*n!),n>=0}},0)/;FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(Cos(x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(list(list(Times(Plus(C1,Power(CN1,n)),Power(CI,n),Power(Times(C2,Factorial(n)),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x)));
+      Condition(Piecewise(list(list(Times(Plus(C1,Power(-1,n)),Power(CI,n),Power(Times(C2,Factorial(n)),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x)));
     // SeriesCoefficient(Cos(x_),{x_Symbol,Pi/2,n_?NotListQ}):=Piecewise({{((-1)*I*(-1+(-1)^n)*I^n)/(2*n!),n>=0}},0)/;FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(Cos(x_),list(x_Symbol,CPiHalf,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(list(list(Times(CN1,CI,Plus(CN1,Power(CN1,n)),Power(CI,n),Power(Times(C2,Factorial(n)),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x)));
+      Condition(Piecewise(list(list(Times(CN1,CI,Plus(CN1,Power(-1,n)),Power(CI,n),Power(Times(C2,Factorial(n)),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x)));
     // SeriesCoefficient(Sin(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{(I*(-1+(-1)^n)*I^n)/(2*n!),n>=0}},0)/;FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(Sin(x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(list(list(Times(CI,Plus(CN1,Power(CN1,n)),Power(CI,n),Power(Times(C2,Factorial(n)),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x)));
+      Condition(Piecewise(list(list(Times(CI,Plus(CN1,Power(-1,n)),Power(CI,n),Power(Times(C2,Factorial(n)),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x)));
     // SeriesCoefficient(Sin(x_),{x_Symbol,Pi/2,n_?NotListQ}):=Piecewise({{((1+(-1)^n)*I^n)/(2*n!),n>=0}},0)/;FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(Sin(x_),list(x_Symbol,CPiHalf,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(list(list(Times(Plus(C1,Power(CN1,n)),Power(CI,n),Power(Times(C2,Factorial(n)),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x)));
+      Condition(Piecewise(list(list(Times(Plus(C1,Power(-1,n)),Power(CI,n),Power(Times(C2,Factorial(n)),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x)));
     // SeriesCoefficient(Tan(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{((-1+(-1)^n)*I^(1+n)*2^n*(-1+2^(1+n))*BernoulliB(1+n))/(1+n)!,n>=1}},0)/;FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(Tan(x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(list(list(Times(Plus(CN1,Power(CN1,n)),Power(CI,Plus(C1,n)),Power(C2,n),Plus(CN1,Power(C2,Plus(C1,n))),BernoulliB(Plus(C1,n)),Power(Factorial(Plus(C1,n)),CN1)),GreaterEqual(n,C1))),C0),FreeQ(n,x)));
+      Condition(Piecewise(list(list(Times(Plus(CN1,Power(-1,n)),Power(CI,Plus(C1,n)),Power(C2,n),Plus(CN1,Power(C2,Plus(C1,n))),BernoulliB(Plus(C1,n)),Power(Factorial(Plus(C1,n)),CN1)),GreaterEqual(n,C1))),C0),FreeQ(n,x)));
     // SeriesCoefficient(Tan(x_),{x_Symbol,Pi/2,n_?NotListQ}):=Piecewise({{-1,n==-1},{((-1+(-1)^n)*I^(1+n)*2^n*BernoulliB(1+n))/(1+n)!,n>=0}},0)/;FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(Tan(x_),list(x_Symbol,CPiHalf,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(list(list(CN1,Equal(n,CN1)),list(Times(Plus(CN1,Power(CN1,n)),Power(CI,Plus(C1,n)),Power(C2,n),BernoulliB(Plus(C1,n)),Power(Factorial(Plus(C1,n)),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x)));
+      Condition(Piecewise(list(list(CN1,Equal(n,CN1)),list(Times(Plus(CN1,Power(-1,n)),Power(CI,Plus(C1,n)),Power(C2,n),BernoulliB(Plus(C1,n)),Power(Factorial(Plus(C1,n)),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x)));
     // SeriesCoefficient(Cot(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{1,n==-1},{((-1)*I*(-1+(-1)^n)*(2*I)^n*BernoulliB(1+n))/(1+n)!,n>=0}},0)/;FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(Cot(x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(list(list(C1,Equal(n,CN1)),list(Times(CN1,CI,Plus(CN1,Power(CN1,n)),Power(Times(C2,CI),n),BernoulliB(Plus(C1,n)),Power(Factorial(Plus(C1,n)),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x)));
+      Condition(Piecewise(list(list(C1,Equal(n,CN1)),list(Times(CN1,CI,Plus(CN1,Power(-1,n)),Power(Times(C2,CI),n),BernoulliB(Plus(C1,n)),Power(Factorial(Plus(C1,n)),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x)));
     // SeriesCoefficient(Cot(x_),{x_Symbol,Pi/2,n_?NotListQ}):=Piecewise({{((-1)*I*(-1+(-1)^n)*(-1+2^(1+n))*(2*I)^n*BernoulliB(1+n))/(1+n)!,n>=1}},0)/;FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(Cot(x_),list(x_Symbol,CPiHalf,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(list(list(Times(CN1,CI,Plus(CN1,Power(CN1,n)),Plus(CN1,Power(C2,Plus(C1,n))),Power(Times(C2,CI),n),BernoulliB(Plus(C1,n)),Power(Factorial(Plus(C1,n)),CN1)),GreaterEqual(n,C1))),C0),FreeQ(n,x)));
+      Condition(Piecewise(list(list(Times(CN1,CI,Plus(CN1,Power(-1,n)),Plus(CN1,Power(C2,Plus(C1,n))),Power(Times(C2,CI),n),BernoulliB(Plus(C1,n)),Power(Factorial(Plus(C1,n)),CN1)),GreaterEqual(n,C1))),C0),FreeQ(n,x)));
     // SeriesCoefficient(Cosh(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{1/n!,Mod(n,2)==0&&n>=0}},0)/;FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(Cosh(x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
       Condition(Piecewise(list(list(Power(Factorial(n),CN1),And(Equal(Mod(n,C2),C0),GreaterEqual(n,C0)))),C0),FreeQ(n,x)));
@@ -115,7 +115,7 @@ matcher.caseOf(SeriesCoefficient(ArcCoth(x_),list(x_Symbol,a_,PatternTest(n_,Not
       Condition(Piecewise(list(list(Times(Plus(Negate(Power(Subtract(CN1,a),Negate(n))),Power(Subtract(C1,a),Negate(n))),Power(Times(C2,n),CN1)),Greater(n,C0)),list(Times(C1D2,Subtract(Log(Plus(C1,Power(a,CN1))),Log(Times(Power(a,CN1),Plus(CN1,a))))),Equal(n,C0))),C0),And(FreeQ(a,x),FreeQ(n,x))));
     // SeriesCoefficient(ArcTanh(x_),{x_Symbol,a_,n_?NotListQ}):=Piecewise({{((-1)^n*((-1+a)^(-n)-1/(1+a)^n))/(2*n),n>=1},{1/2*(-Log(1-a)+Log(1+a)),n==0}},0)/;FreeQ(a,x)&&FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(ArcTanh(x_),list(x_Symbol,a_,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(list(list(Times(Power(CN1,n),Subtract(Power(Plus(CN1,a),Negate(n)),Power(Plus(C1,a),Negate(n))),Power(Times(C2,n),CN1)),GreaterEqual(n,C1)),list(Times(C1D2,Plus(Negate(Log(Subtract(C1,a))),Log(Plus(C1,a)))),Equal(n,C0))),C0),And(FreeQ(a,x),FreeQ(n,x))));
+      Condition(Piecewise(list(list(Times(Power(-1,n),Subtract(Power(Plus(CN1,a),Negate(n)),Power(Plus(C1,a),Negate(n))),Power(Times(C2,n),CN1)),GreaterEqual(n,C1)),list(Times(C1D2,Plus(Negate(Log(Subtract(C1,a))),Log(Plus(C1,a)))),Equal(n,C0))),C0),And(FreeQ(a,x),FreeQ(n,x))));
     // SeriesCoefficient(ArcCos(x_),{x_Symbol,a_,1}):=-1/Sqrt(1-a^2)/;FreeQ(a,x)
 matcher.caseOf(SeriesCoefficient(ArcCos(x_),list(x_Symbol,a_,C1)),
       Condition(Negate(Power(Subtract(C1,Sqr(a)),CN1D2)),FreeQ(a,x)));
@@ -136,13 +136,13 @@ matcher.caseOf(SeriesCoefficient(ArcSec(x_),list(x_Symbol,a_,C1)),
       Condition(Power(Times(Sqrt(Subtract(C1,Power(a,CN2))),Sqr(a)),CN1),FreeQ(a,x)));
     // SeriesCoefficient(Log(b_.+c_.*x_),{x_Symbol,a_,n_?NotListQ}):=If(c===1,Piecewise({{(-1)^(1+n)/((a+b)^n*n),n>=1},{Log(a+b),n==0}},0),Piecewise({{-(-c/(b+a*c))^n/n,n>0},{Log(b+a*c),n==0}},0))/;FreeQ({a,b,c,n},x)
 matcher.caseOf(SeriesCoefficient(Log(Plus(b_DEFAULT,Times(c_DEFAULT,x_))),list(x_Symbol,a_,PatternTest(n_,NotListQ))),
-      Condition(If(SameQ(c,C1),Piecewise(list(list(Times(Power(CN1,Plus(C1,n)),Power(Times(Power(Plus(a,b),n),n),CN1)),GreaterEqual(n,C1)),list(Log(Plus(a,b)),Equal(n,C0))),C0),Piecewise(list(list(Times(CN1,Power(Times(CN1,c,Power(Plus(b,Times(a,c)),CN1)),n),Power(n,CN1)),Greater(n,C0)),list(Log(Plus(b,Times(a,c))),Equal(n,C0))),C0)),FreeQ(List(a,b,c,n),x)));
+      Condition(If(SameQ(c,C1),Piecewise(list(list(Times(Power(-1,Plus(C1,n)),Power(Times(Power(Plus(a,b),n),n),CN1)),GreaterEqual(n,C1)),list(Log(Plus(a,b)),Equal(n,C0))),C0),Piecewise(list(list(Times(CN1,Power(Times(CN1,c,Power(Plus(b,Times(a,c)),CN1)),n),Power(n,CN1)),Greater(n,C0)),list(Log(Plus(b,Times(a,c))),Equal(n,C0))),C0)),FreeQ(List(a,b,c,n),x)));
     // SeriesCoefficient(ProductLog(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{1/((-n)^(1-n)*n!),n>=1}},0)/;FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(ProductLog(x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
       Condition(Piecewise(list(list(Times(Power(Negate(n),Plus(CN1,n)),Power(Factorial(n),CN1)),GreaterEqual(n,C1))),C0),FreeQ(n,x)));
     // SeriesCoefficient(PolyGamma(0,x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{-1,n==-1},{-EulerGamma,n==0},{(-1)^(1+n)*Zeta(1+n),n>=1}},0)/;FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(PolyGamma(C0,x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(list(list(CN1,Equal(n,CN1)),list(Negate(EulerGamma),Equal(n,C0)),list(Times(Power(CN1,Plus(C1,n)),Zeta(Plus(C1,n))),GreaterEqual(n,C1))),C0),FreeQ(n,x)));
+      Condition(Piecewise(list(list(CN1,Equal(n,CN1)),list(Negate(EulerGamma),Equal(n,C0)),list(Times(Power(-1,Plus(C1,n)),Zeta(Plus(C1,n))),GreaterEqual(n,C1))),C0),FreeQ(n,x)));
     // SeriesCoefficient(PolyLog(k_,x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{n^(-k),n>=1}},0)/;FreeQ(k,x)&&FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(PolyLog(k_,x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
       Condition(Piecewise(list(list(Power(n,Negate(k)),GreaterEqual(n,C1))),C0),And(FreeQ(k,x),FreeQ(n,x))));
