@@ -2,9 +2,6 @@ package org.matheclipse.core.expression;
 
 import static org.matheclipse.core.expression.NumberUtil.hasIntValue;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.DoubleFunction;
 import org.apfloat.Apcomplex;
@@ -50,22 +47,6 @@ import it.unimi.dsi.fastutil.ints.Int2IntRBTreeMap;
  * @see BigFractionSym
  */
 public abstract class AbstractFractionSym implements IFraction {
-  /**
-   * A thread-safe, lazily initialized cache for Bernoulli numbers.
-   */
-  private static final class BernoulliCache {
-    private static final List<IRational> CACHE =
-        Collections.synchronizedList(new ArrayList<IRational>());
-
-    static {
-      // B(0) = 1
-      CACHE.add(F.C1);
-      // B(1) = -1/2
-      CACHE.add(F.CN1D2);
-    }
-
-    private BernoulliCache() {}
-  }
 
   private static final long serialVersionUID = -8743141041586314213L;
 

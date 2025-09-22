@@ -2309,7 +2309,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("CarlsonRC(3, 1.234567890123456789012345)", //
         "0.762626353743812501642456");
     check("CarlsonRC(3, 1.2345678901234567890123456789012345)", //
-        "0.76262635374381250164245591358368878");
+        "0.76262635374381250164245591358368881");
     check("CarlsonRC(y,y)", //
         "Piecewise({{ComplexInfinity,Re(y)<=0&&Im(y)==0}},1/Sqrt(y))");
     check("CarlsonRC(42,42)", //

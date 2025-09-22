@@ -5558,10 +5558,40 @@ public interface IExpr
 
   @Override
   default IExpr linearCombination(double[] a, IExpr[] b) throws MathIllegalArgumentException {
-    IASTAppendable result = F.PlusAlloc(a.length);
-    for (int i = 0; i < a.length; i++) {
-      result.append(F.Times(F.num(a[i]), b[i]));
+    INumber number = F.C0;
+    if (a.length == 0) {
+      return number;
     }
+    int k = 0;
+    if (b[0] instanceof Num) {
+      double sum = 0.0;
+      for (k = 0; k < a.length; k++) {
+        IExpr bk = b[k];
+        if (bk instanceof Num) {
+          sum = Math.fma(a[k], bk.evalf(), sum);
+        } else {
+          break;
+        }
+      }
+      number = F.num(sum);
+      if (k >= a.length) {
+        return number;
+      }
+    }
+    IASTAppendable result = F.PlusAlloc(a.length);
+    result.append(number);
+    for (int i = k; i < a.length; i++) {
+      IExpr bi = b[i];
+      if (bi.isNumber()) {
+        number = number.plus(F.num(a[i]).times(((INumber) bi)));
+      } else {
+        result.append(F.Times(F.num(a[i]), bi));
+      }
+    }
+    if (result.argSize() == 1) {
+      return number;
+    }
+    result.set(1, number);
     return result;
   }
 
@@ -5583,10 +5613,42 @@ public interface IExpr
 
   @Override
   default IExpr linearCombination(IExpr[] a, IExpr[] b) throws MathIllegalArgumentException {
-    IASTAppendable result = F.PlusAlloc(a.length);
-    for (int i = 0; i < a.length; i++) {
-      result.append(F.Times(a[i], b[i]));
+    INumber number = F.C0;
+    if (a.length == 0) {
+      return number;
     }
+    int k = 0;
+    if (a[0] instanceof Num && b[0] instanceof Num) {
+      double sum = 0.0;
+      for (k = 0; k < a.length; k++) {
+        IExpr ak = a[k];
+        IExpr bk = b[k];
+        if (ak instanceof Num && bk instanceof Num) {
+          sum = Math.fma(a[k].evalf(), bk.evalf(), sum);
+        } else {
+          break;
+        }
+      }
+      number = F.num(sum);
+      if (k >= a.length) {
+        return number;
+      }
+    }
+    IASTAppendable result = F.PlusAlloc(a.length);
+    result.append(number);
+    for (int i = 0; i < a.length; i++) {
+      IExpr ai = a[i];
+      IExpr bi = b[i];
+      if (ai.isNumber() && bi.isNumber()) {
+        number = number.plus(((INumber) ai).times((INumber) bi));
+      } else {
+        result.append(F.Times(a[i], b[i]));
+      }
+    }
+    if (result.argSize() == 1) {
+      return number;
+    }
+    result.set(1, number);
     return result;
   }
 
