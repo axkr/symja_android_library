@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.B2;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.PatternNested;
@@ -35,7 +34,6 @@ import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.Precedence;
 import org.matheclipse.parser.trie.Trie;
 import org.matheclipse.parser.trie.TrieMatch;
-import org.matheclipse.parser.wma.tablegen.WMAOperatorTables;
 import com.google.common.base.CharMatcher;
 
 public class ExprParserFactory implements IParserFactory {
@@ -382,86 +380,86 @@ public class ExprParserFactory implements IParserFactory {
   /** */
   private static Trie<String, ArrayList<Operator>> fOperatorTokenStartSet;
 
-  public static final String[] ADDITONAL_FUNCTION_STRINGS =
-      {"DifferenceDelta", "Exists", "ForAll", "Product", "Put", "PutAppend", "RightTee",
-          "RoundImplies", "Sqrt", "Square", "SuchThat", "Sum", "Therefore", "Transpose", "UpTee"};
-
-  public static void main(String[] args) {
-    initialize();
-    for (int i = 0; i < AST2Expr.FUNCTION_STRINGS.length; i++) {
-      String function = AST2Expr.FUNCTION_STRINGS[i];
-      if (WMAOperatorTables.isLeftAssociative(function) //
-          || WMAOperatorTables.isRightAssociative(function)
-          || WMAOperatorTables.isPostfixOperator(function)
-          || WMAOperatorTables.isPrefixOperator(function)) {
-        Operator operator = fOperatorMap.get(function);
-        if (operator == null) {
-          List<String> list = WMAOperatorTables.OPERATOR_TO_CHARACTERS.get(function);
-          if (list != null) {
-            System.out.println("\"" + function + "\",");
-          }
-
-        }
-      }
-    }
-    for (int i = 0; i < ADDITONAL_FUNCTION_STRINGS.length; i++) {
-      String operator = ADDITONAL_FUNCTION_STRINGS[i];
-      if (WMAOperatorTables.isLeftAssociative(operator)) {
-        // InfixExprOperator("//.", "ReplaceRepeated", precedence,
-        // InfixExprOperator.LEFT_ASSOCIATIVE)
-        List<String> list = WMAOperatorTables.OPERATOR_TO_CHARACTERS.get(operator);
-        if (list == null) {
-          System.out.println(operator);
-        }
-        Integer precedence = WMAOperatorTables.getOperatorPrecedence(operator);
-        for (int j = 0; j < list.size(); j++) {
-          System.out.println("new InfixExprOperator(\"" //
-              + list.get(j) + "\",\""//
-              + operator + "\"," //
-              + precedence + ", InfixExprOperator.LEFT_ASSOCIATIVE);");
-        }
-      } else if (WMAOperatorTables.isRightAssociative(operator)) {
-        List<String> list = WMAOperatorTables.OPERATOR_TO_CHARACTERS.get(operator);
-        if (list == null) {
-          System.out.println(operator);
-        }
-        Integer precedence = WMAOperatorTables.getOperatorPrecedence(operator);
-        for (int j = 0; j < list.size(); j++) {
-
-          System.out.println("new InfixExprOperator(\"" //
-              + list.get(j) + "\",\""//
-              + operator + "\"," //
-              + precedence + ", InfixExprOperator.RIGHT_ASSOCIATIVE);");
-        }
-      } else if (WMAOperatorTables.isPrefixOperator(operator)) {
-        List<String> list = WMAOperatorTables.OPERATOR_TO_CHARACTERS.get(operator);
-        if (list == null) {
-          System.out.println(operator);
-        }
-        Integer precedence = WMAOperatorTables.getOperatorPrecedence(operator);
-        for (int j = 0; j < list.size(); j++) {
-
-          System.out.println("new PrefixExprOperator(\"" //
-              + list.get(j) + "\",\""//
-              + operator + "\"," //
-              + precedence + ");");
-        }
-      } else if (WMAOperatorTables.isPostfixOperator(operator)) {
-        List<String> list = WMAOperatorTables.OPERATOR_TO_CHARACTERS.get(operator);
-        if (list == null) {
-          System.out.println(operator);
-        }
-        Integer precedence = WMAOperatorTables.getOperatorPrecedence(operator);
-        for (int j = 0; j < list.size(); j++) {
-          System.out.println("new PostfixExprOperator(\"" //
-              + list.get(j) + "\",\""//
-              + operator + "\"," //
-              + precedence + ");");
-        }
-      }
-
-    }
-  }
+  // private static final String[] ADDITONAL_FUNCTION_STRINGS =
+  // {"DifferenceDelta", "Exists", "ForAll", "Product", "Put", "PutAppend", "RightTee",
+  // "RoundImplies", "Sqrt", "Square", "SuchThat", "Sum", "Therefore", "Transpose", "UpTee"};
+  //
+  // public static void main(String[] args) {
+  // initialize();
+  // for (int i = 0; i < AST2Expr.FUNCTION_STRINGS.length; i++) {
+  // String function = AST2Expr.FUNCTION_STRINGS[i];
+  // if (WMAOperatorTables.isLeftAssociative(function) //
+  // || WMAOperatorTables.isRightAssociative(function)
+  // || WMAOperatorTables.isPostfixOperator(function)
+  // || WMAOperatorTables.isPrefixOperator(function)) {
+  // Operator operator = fOperatorMap.get(function);
+  // if (operator == null) {
+  // List<String> list = WMAOperatorTables.OPERATOR_TO_CHARACTERS.get(function);
+  // if (list != null) {
+  // System.out.println("\"" + function + "\",");
+  // }
+  //
+  // }
+  // }
+  // }
+  // for (int i = 0; i < ADDITONAL_FUNCTION_STRINGS.length; i++) {
+  // String operator = ADDITONAL_FUNCTION_STRINGS[i];
+  // if (WMAOperatorTables.isLeftAssociative(operator)) {
+  // // InfixExprOperator("//.", "ReplaceRepeated", precedence,
+  // // InfixExprOperator.LEFT_ASSOCIATIVE)
+  // List<String> list = WMAOperatorTables.OPERATOR_TO_CHARACTERS.get(operator);
+  // if (list == null) {
+  // System.out.println(operator);
+  // }
+  // Integer precedence = WMAOperatorTables.getOperatorPrecedence(operator);
+  // for (int j = 0; j < list.size(); j++) {
+  // System.out.println("new InfixExprOperator(\"" //
+  // + list.get(j) + "\",\""//
+  // + operator + "\"," //
+  // + precedence + ", InfixExprOperator.LEFT_ASSOCIATIVE);");
+  // }
+  // } else if (WMAOperatorTables.isRightAssociative(operator)) {
+  // List<String> list = WMAOperatorTables.OPERATOR_TO_CHARACTERS.get(operator);
+  // if (list == null) {
+  // System.out.println(operator);
+  // }
+  // Integer precedence = WMAOperatorTables.getOperatorPrecedence(operator);
+  // for (int j = 0; j < list.size(); j++) {
+  //
+  // System.out.println("new InfixExprOperator(\"" //
+  // + list.get(j) + "\",\""//
+  // + operator + "\"," //
+  // + precedence + ", InfixExprOperator.RIGHT_ASSOCIATIVE);");
+  // }
+  // } else if (WMAOperatorTables.isPrefixOperator(operator)) {
+  // List<String> list = WMAOperatorTables.OPERATOR_TO_CHARACTERS.get(operator);
+  // if (list == null) {
+  // System.out.println(operator);
+  // }
+  // Integer precedence = WMAOperatorTables.getOperatorPrecedence(operator);
+  // for (int j = 0; j < list.size(); j++) {
+  //
+  // System.out.println("new PrefixExprOperator(\"" //
+  // + list.get(j) + "\",\""//
+  // + operator + "\"," //
+  // + precedence + ");");
+  // }
+  // } else if (WMAOperatorTables.isPostfixOperator(operator)) {
+  // List<String> list = WMAOperatorTables.OPERATOR_TO_CHARACTERS.get(operator);
+  // if (list == null) {
+  // System.out.println(operator);
+  // }
+  // Integer precedence = WMAOperatorTables.getOperatorPrecedence(operator);
+  // for (int j = 0; j < list.size(); j++) {
+  // System.out.println("new PostfixExprOperator(\"" //
+  // + list.get(j) + "\",\""//
+  // + operator + "\"," //
+  // + precedence + ");");
+  // }
+  // }
+  //
+  // }
+  // }
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
