@@ -19,7 +19,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
-import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -883,12 +882,10 @@ class TeXSegmentParser {
    */
   private boolean isFunctionArg1(IExpr head) {
     if (head.isBuiltInSymbolID()) {
-      IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
-      if (evaluator instanceof IFunctionEvaluator) {
-        int[] expectedArgSize = ((IFunctionEvaluator) evaluator).expectedArgSize(null);
-        if (expectedArgSize != null && expectedArgSize[0] == 1) {
-          return true;
-        }
+      IFunctionEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+      int[] expectedArgSize = evaluator.expectedArgSize(null);
+      if (expectedArgSize != null && expectedArgSize[0] == 1) {
+        return true;
       }
     }
     return false;

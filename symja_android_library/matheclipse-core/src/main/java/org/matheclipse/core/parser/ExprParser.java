@@ -27,7 +27,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
-import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -777,13 +776,11 @@ public class ExprParser extends Scanner {
   }
 
   private static int determineSize(final IExpr head, int defaultSize) {
-    if (head.isBuiltInSymbol()) {
-      IEvaluator eval = ((IBuiltInSymbol) head).getEvaluator();
-      if (eval instanceof IFunctionEvaluator) {
-        int[] args = ((IFunctionEvaluator) eval).expectedArgSize(F.NIL);
-        if (args != null && args[1] < 10) {
-          defaultSize = args[1] + 1;
-        }
+    if (head.isBuiltInSymbolID()) {
+      IFunctionEvaluator eval = ((IBuiltInSymbol) head).getEvaluator();
+      int[] args = eval.expectedArgSize(F.NIL);
+      if (args != null && args[1] < 10) {
+        defaultSize = args[1] + 1;
       }
     }
     return defaultSize;

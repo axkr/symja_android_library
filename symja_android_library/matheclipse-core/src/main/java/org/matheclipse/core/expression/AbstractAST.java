@@ -4338,20 +4338,20 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   }
 
   private boolean hasExpectedArgSize(final ISymbol header) {
-    if (header.isBuiltInSymbol()) {
-      final IEvaluator evaluator = ((IBuiltInSymbol) header).getEvaluator();
-      if (evaluator instanceof IFunctionEvaluator) {
-        int[] expected = ((IFunctionEvaluator) evaluator).expectedArgSize(this);
-        if (expected != null) {
-          int argSize = argSize();
-          if (argSize < expected[0] || argSize > expected[1]
-              || (expected[1] == Integer.MAX_VALUE && expected.length == 2)) {
-            if ((argSize < expected[0]) || (argSize > expected[1])) {
-              return false;
-            }
+    if (header.isBuiltInSymbolID()) {
+      final IFunctionEvaluator evaluator = ((IBuiltInSymbol) header).getEvaluator();
+      // if (evaluator instanceof IFunctionEvaluator) {
+      int[] expected = evaluator.expectedArgSize(this);
+      if (expected != null) {
+        int argSize = argSize();
+        if (argSize < expected[0] || argSize > expected[1]
+            || (expected[1] == Integer.MAX_VALUE && expected.length == 2)) {
+          if ((argSize < expected[0]) || (argSize > expected[1])) {
+            return false;
           }
         }
       }
+      // }
     }
     return true;
   }
@@ -4749,8 +4749,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     if (isBuiltInFunction()) {
-      IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
-      return evaluator instanceof IEvaluator && evaluator.evalIsReal(this);
+      IFunctionEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
+      return evaluator != null && evaluator.evalIsReal(this);
     }
     return false;
   }

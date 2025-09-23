@@ -1385,7 +1385,7 @@ public class EvalEngine implements Serializable {
       if (arg1.isInexactNumber()) {
         if (fNumericMode //
             && ast.isBuiltInFunction()) {
-          IExpr temp = numericFunction(symbol, ast);
+          IExpr temp = numericFunction((IBuiltInSymbol) symbol, ast);
           if (temp.isPresent()) {
             return temp;
           }
@@ -1437,76 +1437,77 @@ public class EvalEngine implements Serializable {
       // }
     }
 
-    if (symbol.isBuiltInSymbol()) {
+    if (symbol.isBuiltInSymbolID()) {
       if (ast.isEvalFlagOn(IAST.BUILT_IN_EVALED) && isSymbolicMode(attributes)) {
         return F.NIL;
       }
-      final IEvaluator evaluator = ((IBuiltInSymbol) symbol).getEvaluator();
-      if (evaluator instanceof IFunctionEvaluator) {
-        // evaluate a built-in function.
-        final IFunctionEvaluator functionEvaluator = (IFunctionEvaluator) evaluator;
+      final IFunctionEvaluator functionEvaluator = ((IBuiltInSymbol) symbol).getEvaluator();
+      // if (functionEvaluator != null) {
+      // evaluate a built-in function.
 
-        OptionsResult options = checkBuiltinArguments(ast, functionEvaluator);
-        if (options == null) {
-          ast.functionEvaled();
-          return F.NIL;
-        }
-        IAST newAST = options.result;
-        try {
-          if (evaluator instanceof AbstractFunctionOptionEvaluator) {
-            AbstractFunctionOptionEvaluator optionsEvaluator =
-                (AbstractFunctionOptionEvaluator) evaluator;
-            IExpr result =
-                optionsEvaluator.evaluate(newAST, options.argSize, options.options, this, ast);
-            if (result.isPresent()) {
-              return result;
-            }
-          } else {
-            if (Config.PROFILE_MODE) {
-              long beginTime = System.nanoTime();
-              try {
-                IExpr result = fNumericMode ? functionEvaluator.numericEval(newAST, this)
-                    : functionEvaluator.evaluate(newAST, this);
-                if (result.isPresent()) {
-                  return result;
-                }
-              } finally {
-                long endTime = System.nanoTime();
-                BuiltinFunctionCalls calls = new BuiltinFunctionCalls(symbol);
-                BuiltinFunctionCalls b = Config.PRINT_PROFILE.get(calls);
-                if (b == null) {
-                  Config.PRINT_PROFILE.put(calls, calls);
-                } else {
-                  calls = b;
-                }
-                calls.incCalls(endTime - beginTime);
-              }
-            } else {
+      OptionsResult options = checkBuiltinArguments(ast, functionEvaluator);
+      if (options == null) {
+        ast.functionEvaled();
+        return F.NIL;
+      }
+      IAST newAST = options.result;
+      try {
+        if (functionEvaluator instanceof AbstractFunctionOptionEvaluator) {
+          AbstractFunctionOptionEvaluator optionsEvaluator =
+              (AbstractFunctionOptionEvaluator) functionEvaluator;
+          IExpr result =
+              optionsEvaluator.evaluate(newAST, options.argSize, options.options, this, ast);
+          if (result.isPresent()) {
+            return result;
+          }
+        } else {
+          if (Config.PROFILE_MODE) {
+            long beginTime = System.nanoTime();
+            try {
               IExpr result = fNumericMode ? functionEvaluator.numericEval(newAST, this)
                   : functionEvaluator.evaluate(newAST, this);
               if (result.isPresent()) {
                 return result;
               }
+            } finally {
+              long endTime = System.nanoTime();
+              BuiltinFunctionCalls calls = new BuiltinFunctionCalls(symbol);
+              BuiltinFunctionCalls b = Config.PRINT_PROFILE.get(calls);
+              if (b == null) {
+                Config.PRINT_PROFILE.put(calls, calls);
+              } else {
+                calls = b;
+              }
+              calls.incCalls(endTime - beginTime);
+            }
+          } else {
+            IExpr result = fNumericMode ? functionEvaluator.numericEval(newAST, this)
+                : functionEvaluator.evaluate(newAST, this);
+            if (result.isPresent()) {
+              return result;
             }
           }
-        } catch (ValidateException ve) {
-          ve.printStackTrace();
-          return Errors.printMessage(ast.topHead(), ve, this);
-        } catch (FlowControlException e) {
-          throw e;
-        } catch (SymjaMathException ve) {
-          return Errors.printMessage(ast.topHead(), ve, this);
         }
-        // cannot generally set the result as evaluated in built-in function. Especially problems in
-        // `togetherMode`
-        // if (((attributes & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION)//
-        // && ast.argSize() == 1 //
-        // && ast.isNumericFunction()) {
-        // ast.functionEvaled();
-        // }
-      } else {
-        ast.functionEvaled();
+      } catch (ValidateException ve) {
+        ve.printStackTrace();
+        return Errors.printMessage(ast.topHead(), ve, this);
+      } catch (FlowControlException e) {
+        throw e;
+      } catch (SymjaMathException ve) {
+        return Errors.printMessage(ast.topHead(), ve, this);
       }
+      // cannot generally set the result as evaluated in built-in function. Especially problems in
+      // `togetherMode`
+      // if (((attributes & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION)//
+      // && ast.argSize() == 1 //
+      // && ast.isNumericFunction()) {
+      // ast.functionEvaled();
+      // }
+
+      // } else {
+      // System.out.println(symbol);
+      // ast.functionEvaled();
+      // }
     }
     return F.NIL;
   }
@@ -1580,7 +1581,7 @@ public class EvalEngine implements Serializable {
         if (fNumericMode //
             && mutableAST.isBuiltInFunction()//
             && mutableAST.forAll(x -> x.isInexactNumber())) {
-          IExpr temp = numericFunction(symbol, mutableAST);
+          IExpr temp = numericFunction((IBuiltInSymbol) symbol, mutableAST);
           if (temp.isPresent()) {
             return temp;
           }
@@ -3723,27 +3724,27 @@ public class EvalEngine implements Serializable {
    * @param ast
    * @return
    */
-  private IExpr numericFunction(final ISymbol symbol, final IAST ast) {
-    final IEvaluator evaluator = ((IBuiltInSymbol) symbol).getEvaluator();
-    if (evaluator instanceof IFunctionEvaluator) {
-      // evaluate a built-in function.
-      final IFunctionEvaluator functionEvaluator = (IFunctionEvaluator) evaluator;
-      try {
-        return functionEvaluator.numericFunction(ast, this);
-      } catch (ValidateException ve) {
-        ve.printStackTrace();
-        return Errors.printMessage(ast.topHead(), ve, this);
-      } catch (FlowControlException e) {
-        throw e;
-      } catch (NumberFormatException nfe) {
-        // this happens if org.apfloat.internal.LongApfloatImpl throws
-        // java.lang.NumberFormatException "Infinity is not a valid number"
-        return Errors.printMessage(ast.topHead(), nfe, this);
-      } catch (BackingStorageException | SymjaMathException ve) {
-        return Errors.printMessage(ast.topHead(), ve, this);
-      }
+  private IExpr numericFunction(final IBuiltInSymbol symbol, final IAST ast) {
+    final IFunctionEvaluator evaluator = symbol.getEvaluator();
+    // if (evaluator instanceof IFunctionEvaluator) {
+    // evaluate a built-in function.
+    final IFunctionEvaluator functionEvaluator = evaluator;
+    try {
+      return functionEvaluator.numericFunction(ast, this);
+    } catch (ValidateException ve) {
+      ve.printStackTrace();
+      return Errors.printMessage(ast.topHead(), ve, this);
+    } catch (FlowControlException e) {
+      throw e;
+    } catch (NumberFormatException nfe) {
+      // this happens if org.apfloat.internal.LongApfloatImpl throws
+      // java.lang.NumberFormatException "Infinity is not a valid number"
+      return Errors.printMessage(ast.topHead(), nfe, this);
+    } catch (BackingStorageException | SymjaMathException ve) {
+      return Errors.printMessage(ast.topHead(), ve, this);
     }
-    return F.NIL;
+    // }
+    // return F.NIL;
   }
 
   public Iterator<IdentityHashMap<ISymbol, IASTAppendable>> optionsStackIterator() {
