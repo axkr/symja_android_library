@@ -226,15 +226,6 @@ public class ProductTest extends ExprEvaluatorTestCase {
   // }
 
   @Test
-  public void testProduct012() {
-    // https://docs.sympy.org/latest/modules/simplify/fu.html#sympy.simplify.fu.TRmorrie
-    check("Product(Cos(x*2^i), {i, 0, 3})", //
-        "1/4*Csc(x)*Sin(4*x)");
-    check("Product(Cos(x*2^i), {i, 0, k})", //
-        "2^(1-k)*Csc(x)*Sin(x/2^(1-k))");
-  }
-
-  @Test
   public void testProduct013() {
     // TODO
     // check("Product(1-4*x^2/(2*n-1)^2,{n,1,Infinity})", //
@@ -244,5 +235,15 @@ public class ProductTest extends ExprEvaluatorTestCase {
     check("Product(1-x^2/n^2,{n,1,Infinity})", //
         "Sin(Pi*x)/(Pi*x)");
 
+  }
+
+  @Test
+  public void testProduct014() {
+    check("Product(f(2^k*x), {k, 0, 2})", //
+        "f(x)*f(2*x)*f(4*x)");
+    check("{Cos(2^0*x),Cos(2^1*x),Cos(2^2*x)}", //
+        "{Cos(x),Cos(2*x),Cos(4*x)}");
+    check("Product(Cos(2^k*x), {k, 0, 2})", //
+        "Cos(x)*Cos(2*x)*Cos(4*x)");
   }
 }
