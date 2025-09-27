@@ -18,8 +18,8 @@ runs:
           17
         distribution: 'temurin'
         cache: 'maven' # Cache Maven dependencies between workflow runs
-        # Properties for deployment to OSSRH:
-        server-id: ossrh
+        # Properties for deployment to Maven Central Portal:
+        server-id: sonatype-central-portal
         server-username: MAVEN_USERNAME
         server-password: MAVEN_PASSWORD
         # Properties for gpg signing:

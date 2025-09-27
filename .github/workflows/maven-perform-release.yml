@@ -27,10 +27,11 @@ jobs:
     # Perform the usual maven-release-plugin procedure, but prevent the release commits
     # and tag from being pushed to the master immediately. They are only pushed after
     # the release is performed successfully. This avoids to have the release
-    # commits on the master in case release publication fails in the last step).
+    # commits on the master in case release publication fails in the last step.
     # All file-system/git-operations are performed on the runnner's clone of this repo
 
-    - run: mvn -f symja_android_library -B release:clean release:prepare -DpushChanges=false
+    - run: mvn -f symja_android_library -B release:clean release:prepare \
+            -DaltDeploymentRepository=id::njord:template:release-sca
 
     - name: Read release version
       run: | # Create environment variables associcated to release version, derived from the release tag
@@ -64,8 +65,8 @@ jobs:
     - run: mvn -f symja_android_library -B release:perform -DlocalCheckout=true
       # Deployment of all modules is deferred to the last module by nexus-staging-maven-plugin
       env:
-        MAVEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USERNAME }}
-        MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN_PASSWORD }}
+        MAVEN_USERNAME: ${{ secrets.CENTRAL_PORTAL_TOKEN_USERNAME }}
+        MAVEN_PASSWORD: ${{ secrets.CENTRAL_PORTAL_TOKEN_PASSWORD }}
         MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
     - name: Publish release commits and tag to master

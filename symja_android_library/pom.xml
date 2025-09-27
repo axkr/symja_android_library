@@ -36,11 +36,9 @@
 		</developer>
 	</developers>
 	<modules>
-		<!-- Internal modules (not deployed).
-		Must not be last to not break
+		<!-- Internal modules (not deployed). Must not be last to not break
 		deployment entirely.
-		See description of 'skipNexusStagingDeployMojo'
-		in
+		See description of 'skipNexusStagingDeployMojo' in
 		https://github.com/sonatype/nexus-maven-plugins/blob/master/staging/maven-plugin/README.md#plugin-flags-->
 <!--	https://jitpack.io repository doesn't work anymore -->
 <!--		<module>matheclipse-beakerx</module> -->
@@ -74,12 +72,14 @@
 	</issueManagement>
 	<distributionManagement>
 		<repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+			<id>sonatype-central-portal</id>
+			<!-- This is only the URL where release artifacts will be available
+			for download, for upload the Central Portal Upload API service is used. -->
+			<url>https://repo.maven.apache.org/maven2</url>
 		</repository>
 		<snapshotRepository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<id>sonatype-central-portal</id>
+			<url>https://central.sonatype.com/repository/maven-snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
 
@@ -95,7 +95,7 @@
 			</snapshots>
 		</repository>
 		<repository>
-			<id>maven-snapshots</id>
+			<id>maven-central-snapshots</id>
 			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
 			<layout>default</layout>
 			<releases>
@@ -114,6 +114,14 @@
 		<deployment.suppress>false</deployment.suppress> <!-- child modules can
 		set this true to not be published -->
 		<guava.minimal.version>32.0</guava.minimal.version>
+		<njord.version>0.8.3</njord.version>
+		<njord.releaseUrl>njord:template:release-sca</njord.releaseUrl>
+		<njord.snapshotUrl>njord:template:snapshot-sca</njord.snapshotUrl>
+		<!-- See https://github.com/maveniverse/njord/blob/60c02f746f0606aa685e7119f44c0a5b260bd336/publisher/sonatype-cp/src/main/java/eu/maveniverse/maven/njord/publisher/sonatype/cp/SonatypeCentralPortalPublisherConfig.java#L32-->
+		<njord.publisher.sonatype-cp.publishingType>USER_MANAGED</njord.publisher.sonatype-cp.publishingType>
+		<!-- See https://github.com/maveniverse/njord/tree/60c02f746f0606aa685e7119f44c0a5b260bd336/publisher/sonatype-cp -->
+		<njord.publisher.sonatype-cp.releaseRepositoryId>sonatype-central-portal</njord.publisher.sonatype-cp.releaseRepositoryId>
+		<njord.publisher.sonatype-cp.snapshotRepositoryId>sonatype-central-portal</njord.publisher.sonatype-cp.snapshotRepositoryId>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -232,7 +240,7 @@
 			<dependency>
 				<groupId>org.apfloat</groupId>
 				<artifactId>apfloat</artifactId>
-				<version>1.14.1-SNAPSHOT</version>
+				<version>1.14.1-20250825.195357-4</version>
 			</dependency>
 			<dependency>
 				<groupId>org.codehaus.janino</groupId>
@@ -250,34 +258,34 @@
 				<version>1.1.3</version>
 			</dependency>
 			<dependency>
-			    <groupId>org.hipparchus</groupId>
-			    <artifactId>hipparchus-core</artifactId>
-		        <version>4.1-SNAPSHOT</version>
-		    </dependency>
+				<groupId>org.hipparchus</groupId>
+				<artifactId>hipparchus-core</artifactId>
+				<version>4.1-20250905.124235-15</version>
+			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-clustering</artifactId>
-				<version>4.1-SNAPSHOT</version>
+				<version>4.1-20250905.124235-15</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-fft</artifactId>
-				<version>4.1-SNAPSHOT</version>
+				<version>4.1-20250905.124235-15</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-fitting</artifactId>
-				<version>4.1-SNAPSHOT</version>
+				<version>4.1-20250905.124235-15</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-ode</artifactId>
-				<version>4.1-SNAPSHOT</version>
+				<version>4.1-20250905.124235-15</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-optim</artifactId>
-				<version>4.1-SNAPSHOT</version>
+				<version>4.1-20250905.124235-15</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jgrapht</groupId>
@@ -497,9 +505,9 @@
 						<tagNameFormat>v@{project.version}</tagNameFormat>
 						<autoVersionSubmodules>true</autoVersionSubmodules>
 						<useReleaseProfile>false</useReleaseProfile>
-						<releaseProfiles>
-							publish-to-maven-central,exact-target-jdk</releaseProfiles>
-						<arguments>-Drelease.build=true</arguments>
+						<releaseProfiles>publish-to-maven-central,exact-target-jdk</releaseProfiles>
+						<arguments>-Drelease.build=true -DskipTests</arguments>
+						<pushChanges>false</pushChanges>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -552,16 +560,23 @@
 					<version>3.5.1</version>
 				</plugin>
 				<plugin>
-					<groupId>org.sonatype.plugins</groupId>
-					<artifactId>nexus-staging-maven-plugin</artifactId>
-					<version>1.7.0</version>
+					<groupId>eu.maveniverse.maven.plugins</groupId>
+					<artifactId>njord</artifactId>
+					<version>${njord.version}</version>
 					<configuration>
-						<serverId>ossrh</serverId>
-						<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+						<publisher>sonatype-cp</publisher>
+						<details>true</details>
 					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>
+		<extensions>
+			<extension>
+				<groupId>eu.maveniverse.maven.njord</groupId>
+				<artifactId>extension3</artifactId>
+				<version>${njord.version}</version>
+			</extension>
+		</extensions>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -695,6 +710,9 @@
 		</profile>
 		<profile>
 			<id>publish-to-maven-central</id>
+			<properties>
+				<altDeploymentRepository>id::njord:template:release-sca</altDeploymentRepository>
+			</properties>
 			<build>
 				<plugins>
 					<plugin>
@@ -737,17 +755,6 @@
 								</goals>
 							</execution>
 						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.sonatype.plugins</groupId>
-						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<extensions>true</extensions>
-						<configuration>
-							<skipNexusStagingDeployMojo>${deployment.suppress}</skipNexusStagingDeployMojo>
-							<!-- Documentation:
-							https://github.com/sonatype/nexus-maven-plugins/blob/master/staging/maven-plugin/README.md-->
-							<autoReleaseAfterClose>false</autoReleaseAfterClose>
-						</configuration>
 					</plugin>
 				</plugins>
 			</build>
