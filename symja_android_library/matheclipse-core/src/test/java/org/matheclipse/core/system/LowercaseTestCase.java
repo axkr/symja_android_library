@@ -25635,13 +25635,120 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTrigReduce() {
+    check("TrigReduce(Cos(x)*Sinh(y))", //
+        "I*1/2*(Sin(x-I*y)-Sin(x+I*y))");
+    check("TrigReduce(Sin(x)*Sinh(y))", //
+        "-I*1/2*(Cos(x-I*y)-Cos(x+I*y))");
+    check("TrigReduce(2*Sinh(x)*Cosh(y))", //
+        "Sinh(x-y)+Sinh(x+y)");
+    check("TrigReduce(2*Cot(x)+3*Cot(y))", //
+        "Cot(y)+2*Csc(x)*Csc(y)*Sin(x+y)");
+
+    check("TrigReduce(Sin(x)*Tan(y))", //
+        "1/2*(Cos(x-y)-Cos(x+y))*Sec(y)");
+    check("TrigReduce(Cos(x)*Tan(y))", //
+        "1/2*Sec(y)*(-Sin(x-y)+Sin(x+y))");
+
+    check("TrigReduce(Cot(x)+Cot(y))", //
+        "Csc(x)*Csc(y)*Sin(x+y)");
+    check("TrigReduce(Cot(x)+Tan(y))", //
+        "Cos(x-y)*Csc(x)*Sec(y)");
+    check("TrigReduce(Tan(x)+Tan(y))", //
+        "Sec(x)*Sec(y)*Sin(x+y)");
+
+    check("TrigReduce(Coth(x)+Coth(y))", //
+        "Csch(x)*Csch(y)*Sinh(x+y)");
+    check("TrigReduce(Coth(x)+Tanh(y))", //
+        "Cosh(x+y)*Csch(x)*Sech(y)");
+    check("TrigReduce(Tanh(x)+Tanh(y))", //
+        "Sech(x)*Sech(y)*Sinh(x+y)");
+
+    // ChebychevT(2,Cos(x))
+    check("TrigReduce(-1 + 2*Cos(x)^2 )", //
+        "Cos(2*x)");
+    // ChebychevT(5,Cos(x))
+    check("TrigReduce(5*Cos(x)-20*Cos(x)^3+16*Cos(x)^5)", //
+        "Cos(5*x)");
+
+    check("TrigReduce(Csc(x)^2)", //
+        "2/(1-Cos(2*x))");
+    check("TrigReduce(Csc(x)^3)", //
+        "4/(3*Sin(x)-Sin(3*x))");
+    check("TrigReduce(Sec(x)^4)", //
+        "8/(3+4*Cos(2*x)+Cos(4*x))");
+    check("TrigReduce(Sec(x)^5)", //
+        "16/(10*Cos(x)+5*Cos(3*x)+Cos(5*x))");
+
+    check("TrigReduce(Csch(x)^4)", //
+        "8/(3-4*Cosh(2*x)+Cosh(4*x))");
+    check("TrigReduce(Csch(x)^5)", //
+        "16/(10*Sinh(x)-5*Sinh(3*x)+Sinh(5*x))");
+    check("TrigReduce(Sech(x)^2)", //
+        "2/(1+Cosh(2*x))");
+    check("TrigReduce(Sech(x)^3)", //
+        "4/(3*Cosh(x)+Cosh(3*x))");
+
+    check("TrigReduce(Coth(x)^4)", //
+        "(3+4*Cosh(2*x)+Cosh(4*x))/(3-4*Cosh(2*x)+Cosh(4*x))");
+    check("TrigReduce(Coth(x)^5)", //
+        "(10*Cosh(x)+5*Cosh(3*x)+Cosh(5*x))/(10*Sinh(x)-5*Sinh(3*x)+Sinh(5*x))");
+    check("TrigReduce(Tanh(x)^2)", //
+        "(-1+Cosh(2*x))/(1+Cosh(2*x))");
+    check("TrigReduce(Tanh(x)^3)", //
+        "(-3*Sinh(x)+Sinh(3*x))/(3*Cosh(x)+Cosh(3*x))");
+
+    check("TrigReduce(Cot(x)^4)", //
+        "(3+4*Cos(2*x)+Cos(4*x))/(3-4*Cos(2*x)+Cos(4*x))");
+    check("TrigReduce(Cot(x)^5)", //
+        "(10*Cos(x)+5*Cos(3*x)+Cos(5*x))/(10*Sin(x)-5*Sin(3*x)+Sin(5*x))");
+    check("TrigReduce(Tan(x)^4)", //
+        "(3-4*Cos(2*x)+Cos(4*x))/(3+4*Cos(2*x)+Cos(4*x))");
+    check("TrigReduce(Tan(x)^5)", //
+        "(10*Sin(x)-5*Sin(3*x)+Sin(5*x))/(10*Cos(x)+5*Cos(3*x)+Cos(5*x))");
+
+    check("TrigReduce(Cos(x)^2)", //
+        "1/2*(1+Cos(2*x))");
+    check("TrigReduce(Cos(x)^3)", //
+        "1/4*(3*Cos(x)+Cos(3*x))");
+    check("TrigReduce(Cos(x)^4)", //
+        "1/8*(3+4*Cos(2*x)+Cos(4*x))");
+    check("TrigReduce(Cos(x)^5)", //
+        "1/16*(10*Cos(x)+5*Cos(3*x)+Cos(5*x))");
+
+    check("TrigReduce(Sin(a*x)^2)", //
+        "1/2*(1-Cos(2*a*x))");
+    check("TrigReduce(Sin(a*x)^3)", //
+        "1/4*(3*Sin(a*x)-Sin(3*a*x))");
+    check("TrigReduce(Sin(x)^4)", //
+        "1/8*(3-4*Cos(2*x)+Cos(4*x))");
+    check("TrigReduce(Sin(x)^5)", //
+        "1/16*(10*Sin(x)-5*Sin(3*x)+Sin(5*x))");
+
+    check("TrigReduce(Cosh(x)^2)", //
+        "1/2*(1+Cosh(2*x))");
+    check("TrigReduce(Cosh(x)^3)", //
+        "1/4*(3*Cosh(x)+Cosh(3*x))");
+    check("TrigReduce(Cosh(x)^4)", //
+        "1/8*(3+4*Cosh(2*x)+Cosh(4*x))");
+    check("TrigReduce(Cosh(x)^5)", //
+        "1/16*(10*Cosh(x)+5*Cosh(3*x)+Cosh(5*x))");
+
+    check("TrigReduce(Sinh(x)^2)", //
+        "1/2*(-1+Cosh(2*x))");
+    check("TrigReduce(Sinh(x)^3)", //
+        "1/4*(-3*Sinh(x)+Sinh(3*x))");
+    check("TrigReduce(Sinh(x)^4)", //
+        "1/8*(3-4*Cosh(2*x)+Cosh(4*x))");
+    check("TrigReduce(Sinh(x)^5)", //
+        "1/16*(10*Sinh(x)-5*Sinh(3*x)+Sinh(5*x))");
+
     // check("TrigReduce(Tan(x)^2)", //
     // "(1-Cos(2*x))/(1+Cos(2*x))");
     // check("TrigReduce(Tan(x)^3)", //
     // "");
 
     check("TrigReduce(cos(x)^2)", //
-        "1/2+Cos(2*x)/2");
+        "1/2*(1+Cos(2*x))");
     check("TrigReduce(cos(x)^2*sin(x))", //
         "Sin(x)/4+Sin(3*x)/4");
     check("TrigReduce(cos(x)^2+sin(x))", //
@@ -25649,20 +25756,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("TrigReduce(Sin(x)*Cos(y))", //
         "1/2*(Sin(x-y)+Sin(x+y))");
+    // TODO
     check("TrigReduce(-I*Cos(x)^2-2*Cos(x)*Sin(x)+I*Sin(x)^2)", //
         "-I*Cos(2*x)-Sin(2*x)");
     check("TrigReduce(I*Cos(x)^4+I*2*Cos(x)^2*Sin(x)^2+I*Sin(x)^4)", //
         "I");
+    check("TrigReduce(4*Sin(x)^4 == 1 && 2*Cos(x)^2 >= 1)", //
+        "-4*Cos(2*x)+Cos(4*x)==-1&&Cos(2*x)>=0");
     check("TrigReduce(Cos(a*x)*Sin(a*x)^2)", //
         "Cos(a*x)/4-Cos(3*a*x)/4");
     check("TrigReduce(-a*Cos(x)^2+a*Sin(x)^2 )", //
         "-a*Cos(2*x)");
-    check("TrigReduce(Sin(x)*Tan(y))", //
-        "1/2*(Cos(x-y)-Cos(x+y))*Sec(y)");
-    check("TrigReduce(Sin(x)*Tan(y))", //
-        "1/2*(Cos(x-y)-Cos(x+y))*Sec(y)");
-    check("TrigReduce(Cos(x)*Tan(y))", //
-        "1/2*Sec(y)*(-Sin(x-y)+Sin(x+y))");
+
     check("TrigReduce(2*Cos(x)^2)", //
         "1+Cos(2*x)");
     check("TrigReduce(2*Cos(x)*Sin(y))", //
@@ -25672,9 +25777,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("TrigReduce(2*Sinh(u)*Cosh(v))", //
         "Sinh(u-v)+Sinh(u+v)");
     check("TrigReduce(3*Sinh(u)*Cosh(v)*k)", //
-        "3/2*k*Sinh(u-v)+3/2*k*Sinh(u+v)");
-    // check("TrigReduce(2 Tan(x)*Tan(y))",
-    // "(2*Cos(-y+x)-2*Cos(y+x))*(Cos(-y+x)+Cos(y+x))^(-1)");
+        "3/2*k*(Sinh(u-v)+Sinh(u+v))");
+    
+    check("TrigExpand(Sin(5*x))", //
+        "5*Cos(x)^4*Sin(x)-10*Cos(x)^2*Sin(x)^3+Sin(x)^5");
+    check("TrigReduce(Sin(5*x))", //
+        "Sin(5*x)");
+
+    check("4*Product(Cos(2^k*x), {k, 0, 2})", //
+        "4*Cos(x)*Cos(2*x)*Cos(4*x)");
+    check("TrigReduce(4*Cos(x)*Cos(2*x)*Cos(4*x))", //
+        "Cos(x)+Cos(3*x)+Cos(5*x)+Cos(7*x)");
   }
 
   @Test

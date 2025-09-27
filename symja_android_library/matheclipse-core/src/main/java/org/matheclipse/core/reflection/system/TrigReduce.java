@@ -1,33 +1,30 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.Cosh;
-import static org.matheclipse.core.expression.F.Cot;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Sinh;
-import static org.matheclipse.core.expression.F.Subtract;
-import static org.matheclipse.core.expression.F.Tan;
-import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.y_;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.CompareUtil;
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher;
+import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcherPlus;
 import org.matheclipse.core.visit.VisitorExpr;
 
 /**
@@ -53,7 +50,10 @@ import org.matheclipse.core.visit.VisitorExpr;
  * </pre>
  */
 public class TrigReduce extends AbstractEvaluator {
-  private static HashedOrderlessMatcher ORDERLESS_MATCHER = new HashedOrderlessMatcher();
+  // don't use HashedOrderlessMatcherTimes - powers of trig functions are handled separately
+  private static HashedOrderlessMatcher TIMES_MATCHER = new HashedOrderlessMatcher();
+
+  private static HashedOrderlessMatcher PLUS_MATCHER = new HashedOrderlessMatcherPlus();
 
   public TrigReduce() {}
 
@@ -67,46 +67,249 @@ public class TrigReduce extends AbstractEvaluator {
 
     @Override
     public IExpr visit(IASTMutable ast) {
-      if (ast.isTimes()) {
-        IAST result = ORDERLESS_MATCHER.evaluate(ast, fEngine);
+      if (ast.isPlus()) {
+        IAST result = PLUS_MATCHER.evaluate(ast, fEngine);
         if (result.isPresent()) {
           return result;
         }
+      } else if (ast.isTimes()) {
+        IExpr temp = visitTimes(ast);
+        if (temp.isPresent()) {
+          return temp;
+        }
       } else if (ast.isPower()) {
         if (ast.base().isAST()) {
-          int n = ast.exponent().toIntDefault();
-          if (n > 1) {
-            IAST base = (IAST) ast.base();
-            if (base.isSin()) {
-              return trigReduceSinPower(base, n);
-            } else if (base.isCos()) {
-              return trigReduceCosPower(base, n);
-              // } else if (base.isTan()) {
-              // return F.Together(F.Times(trigReduceSinPower(base, n),
-              // F.Power(trigReduceCosPower(base,
-              // n), F.CN1)));
-            }
+          IExpr temp = visitPower(ast);
+          if (temp.isPresent()) {
+            return temp;
           }
         }
       }
       return visitAST(ast);
     }
 
-    private static IExpr trigReduceCosPower(IAST base, int i) {
-      IExpr x = base.arg1();
-      IInteger n = F.ZZ(i);
-      // 1/2 * (1+Cos[2*x])*Cos[x]^(n-2)
-      return Times(C1D2, Plus(F.C1, Cos(Times(C2, x))), //
-          Power(Cos(x), n.subtract(C2)));
+    private IExpr visitPower(IASTMutable ast) {
+      int n = ast.exponent().toIntDefault();
+      if (n > 1) {
+        IAST base = (IAST) ast.base();
+        if (base.isCos()) {
+          return powerCos(base.arg1(), n);
+        } else if (base.isCosh()) {
+          return powerCosh(base.arg1(), n);
+        } else if (base.isSinh()) {
+          return powerSinh(base.arg1(), n);
+        } else if (base.isSin()) {
+          return powerSin(base.arg1(), n);
+        } else if (base.isAST(S.Cot, 2)) {
+          IExpr trigReduceSinPower = powerSin(base.arg1(), n);
+          IExpr trigReduceCosPower = powerCos(base.arg1(), n);
+          return F.Times(trigReduceCosPower, F.Power(trigReduceSinPower, F.CN1));
+        } else if (base.isTan()) {
+          IExpr trigReduceSinPower = powerSin(base.arg1(), n);
+          IExpr trigReduceCosPower = powerCos(base.arg1(), n);
+          return F.Times(trigReduceSinPower, F.Power(trigReduceCosPower, F.CN1));
+        } else if (base.isAST(S.Csc, 2)) {
+          IExpr trigReduceSinPower = powerSin(base.arg1(), n);
+          return F.Power(trigReduceSinPower, F.CN1);
+        } else if (base.isAST(S.Sec, 2)) {
+          IExpr trigReduceCosPower = powerCos(base.arg1(), n);
+          return F.Power(trigReduceCosPower, F.CN1);
+        } else if (base.isAST(S.Coth, 2)) {
+          IExpr trigReduceSinhPower = powerSinh(base.arg1(), n);
+          IExpr trigReduceCoshPower = powerCosh(base.arg1(), n);
+          return F.Times(trigReduceCoshPower, F.Power(trigReduceSinhPower, F.CN1));
+        } else if (base.isAST(S.Csch, 2)) {
+          IExpr trigReduceSinhPower = powerSinh(base.arg1(), n);
+          return F.Power(trigReduceSinhPower, F.CN1);
+        } else if (base.isAST(S.Sech, 2)) {
+          IExpr trigReduceCoshPower = powerCosh(base.arg1(), n);
+          return F.Power(trigReduceCoshPower, F.CN1);
+        } else if (base.isTanh()) {
+          IExpr trigReduceSinhPower = powerSinh(base.arg1(), n);
+          IExpr trigReduceCoshPower = powerCosh(base.arg1(), n);
+          return F.Times(trigReduceSinhPower, F.Power(trigReduceCoshPower, F.CN1));
+        }
+      }
+      return F.NIL;
     }
 
-    private static IExpr trigReduceSinPower(IAST base, int i) {
-      IExpr x = base.arg1();
-      IInteger n = F.ZZ(i);
-      // 1/2 * (1-Cos[2*x])*Sin[x]^(n-2)
-      return Times(C1D2, Subtract(F.C1, Cos(Times(C2, x))), //
-          Power(Sin(x), n.subtract(C2)));
+    private IExpr visitTimes(IASTMutable ast) {
+      IASTMutable mutTimes = ast.copy();
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr expr = ast.get(i);
+        if (expr.isAST1()) {
+          IExpr arg1 = expr.first();
+          if (expr.isAST(S.Cot)) {
+            mutTimes.set(i, F.Divide(F.Cos(arg1), F.Sin(arg1)));
+          } else if (expr.isAST(S.Tan)) {
+            mutTimes.set(i, F.Divide(F.Sin(arg1), F.Cos(arg1)));
+          } else if (expr.isAST(S.Csc)) {
+            mutTimes.set(i, F.Power(F.Sin(arg1), F.CN1));
+          } else if (expr.isAST(S.Sec)) {
+            mutTimes.set(i, F.Power(F.Cos(arg1), F.CN1));
+          } else if (expr.isAST(S.Coth)) {
+            mutTimes.set(i, F.Divide(F.Cosh(arg1), F.Sinh(arg1)));
+          } else if (expr.isAST(S.Tanh)) {
+            mutTimes.set(i, F.Divide(F.Sinh(arg1), F.Cosh(arg1)));
+          } else if (expr.isAST(S.Csch)) {
+            mutTimes.set(i, F.Power(F.Sinh(arg1), F.CN1));
+          } else if (expr.isAST(S.Sech)) {
+            mutTimes.set(i, F.Power(F.Cosh(arg1), F.CN1));
+          }
+        }
+      }
+      IAST flattened = EvalAttributes.flatten(S.Times, mutTimes);
+      if (!flattened.isTimes()) {
+        flattened = mutTimes;
+      }
+      if (flattened.isTimes()) {
+        IExpr[] parts = AlgebraUtil.numeratorDenominator(flattened, false, fEngine);
+        if (parts != null) {
+          boolean evaled = false;
+          IExpr p0 = parts[0];
+          if (parts[0].isTimes()) {
+            IExpr temp = timesMatcherEvalLoop((IAST) parts[0]);
+            if (temp.isPresent()) {
+              p0 = temp;
+              evaled = true;
+            }
+          }
+          IExpr p1 = parts[1];
+          if (parts[1].isTimes()) {
+            IExpr temp = timesMatcherEvalLoop((IAST) parts[1]);
+            if (temp.isPresent()) {
+              p1 = temp;
+              evaled = true;
+            }
+          }
+          if (evaled) {
+            return F.Divide(p0, p1);
+          }
+        }
+      }
+      return F.NIL;
     }
+
+    private IExpr timesMatcherEvalLoop(IAST ast) {
+      IExpr temp = TIMES_MATCHER.evaluate(ast, fEngine);
+      if (temp.isNIL()) {
+        return F.NIL;
+      }
+      if (!temp.isTimes()) {
+        return temp;
+      }
+
+      IAST result = (IAST) temp;
+      while (result.isPresent()) {
+        temp = TIMES_MATCHER.evaluate(result, fEngine);
+        if (temp.isNIL()) {
+          return result;
+        }
+        if (temp.isTimes()) {
+          result = (IAST) temp;
+        } else {
+          return temp;
+        }
+      }
+      return F.NIL;
+    }
+
+    private IExpr powerCos(IExpr x, int i) {
+      IInteger n = F.ZZ(i);
+      IExpr result = F.NIL;
+      if (n.isEven()) {
+        int mi = i / 2;
+        IInteger m = F.ZZ(mi);
+        // Sum(Binomial(n,k)*Cos((-2*k+n)*x),{k,0,-1+m})+Binomial(n,m)/2
+        IExpr sum =
+            F.sum(k -> F.Times(F.Binomial(n, k), F.Cos(F.Times(F.Plus(F.Times(F.CN2, k), n), x))),
+                0, mi - 1);
+        result = F.Plus(sum, F.Times(F.C1D2, F.Binomial(n, m)));
+      } else {
+        // odd case
+        int mi = (i - 1) / 2;
+        // Sum(Binomial(n,k)*Cos((-2*k+n)*x),{k,0,m})
+        result = F.sum(
+            k -> F.Times(F.Binomial(n, k), F.Cos(F.Times(F.Plus(F.Times(F.CN2, k), n), x))), 0, mi);
+
+      }
+      // result/2^(-1+n)
+      IRational inverse = F.C2.powerRational(i - 1).inverse();
+      return fEngine.evaluate(F.Times(inverse, result));
+    }
+
+    private IExpr powerCosh(IExpr x, int i) {
+      IInteger n = F.ZZ(i);
+      IExpr result = F.NIL;
+      if (n.isEven()) {
+        int mi = i / 2;
+        IInteger m = F.ZZ(mi);
+        // Sum(Binomial(n,k)*Cosh((-2*k+n)*x),{k,0,-1+m})+Binomial(n,m)/2
+        IExpr sum =
+            F.sum(k -> F.Times(F.Binomial(n, k), F.Cosh(F.Times(F.Plus(F.Times(F.CN2, k), n), x))),
+                0, mi - 1);
+        result = F.Plus(sum, F.Times(F.C1D2, F.Binomial(n, m)));
+
+
+      } else {
+        // odd case
+        int mi = (i - 1) / 2;
+        // Sum(Binomial(n,k)*Cosh((-2*k+n)*x),{k,0,m})
+        result =
+            F.sum(k -> F.Times(F.Binomial(n, k), F.Cosh(F.Times(F.Plus(F.Times(F.CN2, k), n), x))),
+                0, mi);
+      }
+      // result/2^(-1+n)
+      IRational inverse = F.C2.powerRational(i - 1).inverse();
+      return fEngine.evaluate(F.Times(inverse, result));
+    }
+
+    private IExpr powerSin(IExpr x, int i) {
+      IInteger n = F.ZZ(i);
+      IExpr result = F.NIL;
+      if (n.isEven()) {
+        int mi = i / 2;
+        IInteger m = F.ZZ(mi);
+        // Sum(Binomial(n,k)/(-1)^(k-m)*Cos((-2*k+n)*x),{k,0,-1+m})+(-1)^m/2*Binomial(n,m)
+        IExpr sum = F.sum(k -> F.Times(F.Power(-1, F.Plus(F.Negate(k), m)), F.Binomial(n, k),
+            F.Cos(F.Times(F.Plus(F.Times(F.CN2, k), n), x))), 0, mi - 1);
+        result = F.Plus(sum, F.Times(F.C1D2, F.Binomial(n, m)));
+      } else {
+        // odd case
+        int mi = (i - 1) / 2;
+        IInteger m = F.ZZ(mi);
+        // Sum(Binomial(n,k)/(-1)^(k-m)*Sin((-2*k+n)*x),{k,0,m})
+        result = F.sum(k -> F.Times(F.Power(-1, F.Plus(F.Negate(k), m)), F.Binomial(n, k),
+            F.Sin(F.Times(F.Plus(F.Times(F.CN2, k), n), x))), 0, mi);
+      }
+      // result/2^(-1+n)
+      IRational inverse = F.C2.powerRational(i - 1).inverse();
+      return fEngine.evaluate(F.Times(inverse, result));
+    }
+
+    private IExpr powerSinh(IExpr x, int i) {
+      IInteger n = F.ZZ(i);
+      IExpr result = F.NIL;
+      if (n.isEven()) {
+        int mi = i / 2;
+        IInteger m = F.ZZ(mi);
+        // Sum((-1)^k*Binomial(n,k)*Cosh((-2*k+n)*x),{k,0,-1+m})+(-1)^m/2*Binomial(n,m)
+        IExpr sum = F.sum(k -> F.Times(F.Power(-1, k), F.Binomial(n, k),
+            F.Cosh(F.Times(F.Plus(F.Times(F.CN2, k), n), x))), 0, mi - 1);
+        result = F.Plus(sum, F.Times(F.C1D2, F.Power(-1, m), F.Binomial(n, m)));
+      } else {
+        // odd case
+        int mi = (i - 1) / 2;
+        IInteger m = F.ZZ(mi);
+        // Sum((-1)^k*Binomial(n,k)*Sinh((-2*k+n)*x),{k,0,m})
+        result = F.sum(k -> F.Times(F.Power(-1, k), F.Binomial(n, k),
+            F.Sinh(F.Times(F.Plus(F.Times(F.CN2, k), n), x))), 0, mi);
+      }
+      // result/2^(-1+n)
+      IRational inverse = F.C2.powerRational(i - 1).inverse();
+      return fEngine.evaluate(F.Times(inverse, result));
+    }
+
   }
 
   /**
@@ -131,18 +334,29 @@ public class TrigReduce extends AbstractEvaluator {
     IExpr result = temp;
     if (result.isAST()) {
       TrigReduceVisitor trigReduceVisitor = new TrigReduceVisitor(engine);
+      IExpr lastResult = result;
       while (temp.isPresent()) {
         result = temp;
-        if (temp.isPlus() || temp.isTimes() || temp.isPower()) {
+        if (temp.isPower()) {
           result = F.evalExpand(temp);
+        } else if (temp.isPlus()) {
+          result = F.evalExpand(temp);
+          lastResult = result;
+        } else if (temp.isTimes()) {
+          if (temp.first().isNumber()) {
+            result = F.Times(temp.first(), F.evalExpand(temp.rest()));
+          } else {
+            result = F.evalExpand(temp);
+          }
         }
 
         temp = result.accept(trigReduceVisitor);
         if (temp.isPresent()) {
+          lastResult = temp;
           result = temp;
         }
       }
-      return engine.evaluate(result);
+      return engine.evaluate(lastResult);
     }
     return result;
   }
@@ -159,29 +373,62 @@ public class TrigReduce extends AbstractEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    ORDERLESS_MATCHER.defineHashRule(Sin(x_), Cos(y_),
-        // [$ 1/2 * (Sin(x+y)+Sin(x-y)) $]
-        F.Times(F.C1D2, F.Plus(F.Sin(F.Plus(x, y)), F.Sin(F.Subtract(x, y))))); // $$);
-    ORDERLESS_MATCHER.defineHashRule(Sin(x_), Sin(y_),
-        // [$ 1/2 * (Cos(x-y)-Cos(x+y)) $]
-        F.Times(F.C1D2, F.Subtract(F.Cos(F.Subtract(x, y)), F.Cos(F.Plus(x, y))))); // $$);
-    ORDERLESS_MATCHER.defineHashRule(Cos(x_), Cos(y_),
-        // [$ 1/2 * (Cos(x+y)+Cos(x-y)) $]
-        F.Times(F.C1D2, F.Plus(F.Cos(F.Plus(x, y)), F.Cos(F.Subtract(x, y))))); // $$);
-    ORDERLESS_MATCHER.defineHashRule(Sinh(x_), Cosh(y_),
-        // [$ 1/2 * (Sinh(x-y)+Sinh(x+y)) $]
-        F.Times(F.C1D2, F.Plus(F.Sinh(F.Subtract(x, y)), F.Sinh(F.Plus(x, y))))); // $$);
-    ORDERLESS_MATCHER.defineHashRule(Sin(x_), Tan(y_),
-        // [$ 1/2 * (Cos(x-y)-Cos(x+y)) * Sec(y) $]
-        F.Times(F.C1D2, F.Subtract(F.Cos(F.Subtract(x, y)), F.Cos(F.Plus(x, y))), F.Sec(y))); // $$);
-    ORDERLESS_MATCHER.defineHashRule(Cos(x_), Tan(y_),
-        // [$ -(1/2) * (Sin(x-y)-Sin(x+y)) * Sec(y) $]
-        F.Times(F.CN1D2, F.Subtract(F.Sin(F.Subtract(x, y)), F.Sin(F.Plus(x, y))), F.Sec(y))); // $$);
-    ORDERLESS_MATCHER.defineHashRule(Cos(x_), Cot(y_),
-        // [$ 1/2 * (Cos(x-y)+Cos(x+y)) * Csc(y) $]
-        F.Times(F.C1D2, F.Plus(F.Cos(F.Subtract(x, y)), F.Cos(F.Plus(x, y))), F.Csc(y))); // $$);
-    ORDERLESS_MATCHER.defineHashRule(Sin(x_), Cot(y_),
-        // [$ 1/2 * (Sin(x-y)+Sin(x+y)) * Csc(y) $]
-        F.Times(F.C1D2, F.Plus(F.Sin(F.Subtract(x, y)), F.Sin(F.Plus(x, y))), F.Csc(y))); // $$);
+    PLUS_MATCHER.defineHashRule(F.Cot(x_), F.Cot(y_),
+        // Csc(x)*Csc(y)*Sin(x+y)
+        F.Times(F.Csc(x), F.Csc(y), F.Sin(F.Plus(x, y))));
+    PLUS_MATCHER.defineHashRule(F.Cot(x_), F.Tan(y_),
+        // Cos(x-y)*Csc(x)*Sec(y)
+        F.Times(F.Cos(F.Subtract(x, y)), F.Csc(x), F.Sec(y)));
+    PLUS_MATCHER.defineHashRule(F.Tan(x_), F.Tan(y_),
+        // Sec(x)*Sec(y)*Sin(x+y)
+        F.Times(F.Sec(x), F.Sec(y), F.Sin(F.Plus(x, y))));
+
+    PLUS_MATCHER.defineHashRule(F.Coth(x_), F.Coth(y_),
+        // Csch(x)*Csch(y)*Sinh(x+y)
+        F.Times(F.Csch(x), F.Csch(y), F.Sinh(F.Plus(x, y))));
+    PLUS_MATCHER.defineHashRule(F.Coth(x_), F.Tanh(y_),
+        // Cosh(x+y)*Csch(x)*Sech(y)
+        F.Times(F.Cosh(F.Plus(x, y)), F.Csch(x), F.Sech(y)));
+    PLUS_MATCHER.defineHashRule(F.Tanh(x_), F.Tanh(y_),
+        // Sech(x)*Sech(y)*Sinh(x+y)
+        F.Times(F.Sech(x), F.Sech(y), F.Sinh(F.Plus(x, y))));
+
+    TIMES_MATCHER.defineHashRule(Sin(x_), Cos(y_),
+        // 1/2 * (Sin(x+y)+Sin(x-y))
+        F.Times(F.C1D2, F.Plus(F.Sin(F.Plus(x, y)), F.Sin(F.Subtract(x, y)))));
+    TIMES_MATCHER.defineHashRule(Cos(x_), Cos(y_),
+        // 1/2 * (Cos(x+y)+Cos(x-y))
+        F.Times(F.C1D2, F.Plus(F.Cos(F.Plus(x, y)), F.Cos(F.Subtract(x, y)))));
+    TIMES_MATCHER.defineHashRule(Sin(x_), Sin(y_),
+        // 1/2 * (Cos(x-y)-Cos(x+y))
+        F.Times(F.C1D2, F.Subtract(F.Cos(F.Subtract(x, y)), F.Cos(F.Plus(x, y)))));
+
+    TIMES_MATCHER.defineHashRule(Sinh(x_), Cosh(y_),
+        // 1/2*(Sinh(x-y)+Sinh(x+y))
+        F.Times(F.C1D2, F.Plus(F.Sinh(F.Subtract(x, y)), F.Sinh(F.Plus(x, y)))));
+    TIMES_MATCHER.defineHashRule(Cosh(x_), Cosh(y_),
+        // 1/2*(Cosh(x-y)+Cosh(x+y))
+        F.Times(F.C1D2, F.Plus(F.Cosh(F.Subtract(x, y)), F.Cosh(F.Plus(x, y)))));
+    TIMES_MATCHER.defineHashRule(Sinh(x_), Sinh(y_),
+        // 1/2*(-Cosh(x-y)+Cosh(x+y))
+        F.Times(F.C1D2, F.Plus(F.Negate(F.Cosh(F.Subtract(x, y))), F.Cosh(F.Plus(x, y)))));
+
+    TIMES_MATCHER.defineHashRule(Sin(x_), Cosh(y_),
+        // 1/2*(Sin(x-I*y)+Sin(x+I*y))
+        F.Times(F.C1D2,
+            F.Plus(F.Sin(F.Plus(x, F.Times(F.CNI, y))), F.Sin(F.Plus(x, F.Times(F.CI, y))))));
+    TIMES_MATCHER.defineHashRule(Cos(x_), Cosh(y_),
+        // 1/2*(Cos(x-I*y)+Cos(x+I*y))
+        F.Times(F.C1D2,
+            F.Plus(F.Cos(F.Plus(x, F.Times(F.CNI, y))), F.Cos(F.Plus(x, F.Times(F.CI, y))))));
+
+    TIMES_MATCHER.defineHashRule(Sin(x_), Sinh(y_),
+        // (-1/2)*I*(Cos(x-I*y)-Cos(x+I*y))
+        F.Times(F.CN1D2, F.CI,
+            F.Subtract(F.Cos(F.Plus(x, F.Times(F.CNI, y))), F.Cos(F.Plus(x, F.Times(F.CI, y))))));
+    TIMES_MATCHER.defineHashRule(Cos(x_), Sinh(y_),
+        // 1/2*I*(Sin(x-I*y)-Sin(x+I*y))
+        F.Times(F.C1D2, F.CI,
+            F.Subtract(F.Sin(F.Plus(x, F.Times(F.CNI, y))), F.Sin(F.Plus(x, F.Times(F.CI, y))))));
   }
 }

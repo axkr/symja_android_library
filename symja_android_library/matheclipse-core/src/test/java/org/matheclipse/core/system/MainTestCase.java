@@ -3546,9 +3546,9 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("TrigReduce(Sin(10)*Cos(11)*x^2*y^4+42)", //
         "42-1/2*x^2*y^4*Sin(1)+1/2*x^2*y^4*Sin(21)");
     check("TrigReduce(Sin(x)^3)", //
-        "3/4*Sin(x)-Sin(3*x)/4");
+        "1/4*(3*Sin(x)-Sin(3*x))");
     check("TrigReduce(Cos(x)^3)", //
-        "3/4*Cos(x)+Cos(3*x)/4");
+        "1/4*(3*Cos(x)+Cos(3*x))");
   }
 
   @Test
