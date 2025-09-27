@@ -207,6 +207,8 @@ public class SpecialFunctions {
             betaSymbolic = generalizedIncompleteBeta(z1, z2, a, b);
           }
             break;
+          default:
+            break;
         }
         if (betaSymbolic.isPresent()) {
           return engine.evaluate(betaSymbolic);
@@ -237,7 +239,7 @@ public class SpecialFunctions {
       if (a.isZero() || b.isZero()) {
         return F.CComplexInfinity;
       }
-      EvalEngine engine = EvalEngine.get();
+      // EvalEngine engine = EvalEngine.get();
 
       // if (engine.isDoubleMode()) {
       //

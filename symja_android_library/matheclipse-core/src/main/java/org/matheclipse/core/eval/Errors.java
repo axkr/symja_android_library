@@ -655,15 +655,11 @@ public class Errors {
 
   public static IAST printRuntimeException(ISymbol symbol, RuntimeException exception,
       EvalEngine engine) {
-    try {
+    try (StringBuilderWriter writer = new StringBuilderWriter()) {
       String message = exception.getMessage();
-      Writer writer = new StringBuilderWriter();
       writer.append(message);
       logMessage(symbol, writer.toString(), engine);
-    } catch (IOException e) {
-      LOGGER.error("IOFunctions.printMessage() failed", e);
     }
-
     return F.NIL;
   }
 

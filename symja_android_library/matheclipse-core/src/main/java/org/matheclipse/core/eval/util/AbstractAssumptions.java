@@ -170,7 +170,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
     if (expr.isNumericFunction()) {
       try {
         // side effect - throw ArgumentTypeException if no complex value can b evaluated
-        Complex c = expr.evalfc();
+        expr.evalfc();
         return S.True;
       } catch (ArgumentTypeException ate) {
 

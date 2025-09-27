@@ -19,27 +19,17 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.parser.client.ParserConfig;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * A &quot;blank pattern&quot; with no assigned &quot;pattern name&quot; (i.e. &quot;<code>_</code>
  * &quot;)
  */
-@SuppressFBWarnings("SING_SINGLETON_HAS_NONPRIVATE_CONSTRUCTOR")
 public class Blank implements IPattern {
 
   /** */
   private static final long serialVersionUID = 1306007999071682207L;
 
   protected static final Blank BLANK_PATTERN = new Blank();
-
-  private static IPattern valueOf() {
-    return BLANK_PATTERN;
-  }
-
-  private static IPattern valueOf(final IExpr condition) {
-    return new Blank(condition);
-  }
 
   /** The expression which should check the head of the matched expression */
   protected final IExpr fHeadTest;

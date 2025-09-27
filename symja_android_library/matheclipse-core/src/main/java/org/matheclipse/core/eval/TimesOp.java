@@ -163,7 +163,6 @@ public final class TimesOp {
     } else {
       if (expr.isAST()) {
         final IAST ast = (IAST) expr;
-        final IExpr head = expr.head();
         final int headID = expr.headID();
         switch (headID) {
           case ID.Power:

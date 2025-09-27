@@ -2827,16 +2827,10 @@ public final class PatternMatching {
           Errors.printMessage(S.UpSet, "write", F.list(lhsSymbol, leftHandSide), EvalEngine.get());
           return result;
         }
-        // if (lhsSymbol.hasProtectedAttribute()) {
-        // // Tag `1` in `2` is Protected.
-        // Errors.printMessage(S.TagSet, "write", F.list(lhsSymbol, leftHandSide),
-        // EvalEngine.get());
-        // throw new FailedException();
-        // }
-        if (lhsSymbol != null) {
-          result[0] =
-              lhsSymbol.putUpRule(flags[0] | IPatternMatcher.UPSET, false, lhsAST, rightHandSide);
-        }
+
+        result[0] =
+            lhsSymbol.putUpRule(flags[0] | IPatternMatcher.UPSET, false, lhsAST, rightHandSide);
+
       }
       if (result[0] == null) {
         // `1` does not contain a symbol to attach a rule to.

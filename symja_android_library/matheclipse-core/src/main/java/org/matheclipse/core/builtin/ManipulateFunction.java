@@ -1141,7 +1141,7 @@ public class ManipulateFunction {
       // }
       // }
       if ((plotID == ID.ParametricPlot || plotID == ID.PolarPlot)
-          && plotRangeYMax != Double.MIN_VALUE && plotRangeYMin != Double.MAX_VALUE) {
+          && plotRangeYMax > Double.MIN_VALUE && plotRangeYMin < Double.MAX_VALUE) {
         try {
           plotRangeXMin = plotRangeYMin;
           plotRangeXMax = plotRangeYMax;
@@ -2687,13 +2687,13 @@ public class ManipulateFunction {
 
   private static void xBoundingBoxFunctionRange(double[] boundingbox, Dimensions2D plotRange) {
     if (plotRange != null) {
-      double xValue = plotRange.xMin;
+      double xValue = plotRange.getXMin();
       if (Double.isFinite(xValue)) {
         if (xValue < boundingbox[0]) { // min
           boundingbox[0] = xValue;
         }
       }
-      xValue = plotRange.xMax;
+      xValue = plotRange.getXMax();
       if (Double.isFinite(xValue)) {
         if (xValue > boundingbox[2]) { // max
           boundingbox[2] = xValue;
@@ -2704,13 +2704,13 @@ public class ManipulateFunction {
 
   private static void yBoundingBoxFunctionRange(double[] boundingbox, Dimensions2D plotRange) {
     if (plotRange != null) {
-      double yValue = plotRange.yMin;
+      double yValue = plotRange.getYMin();
       if (Double.isFinite(yValue)) {
         if (yValue < boundingbox[3]) { // min
           boundingbox[3] = yValue;
         }
       }
-      yValue = plotRange.yMax;
+      yValue = plotRange.getYMax();
       if (Double.isFinite(yValue)) {
         if (yValue > boundingbox[1]) { // max
           boundingbox[1] = yValue;

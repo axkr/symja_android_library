@@ -185,11 +185,9 @@ public class MinMaxFunctions {
   private static final class FunctionDomain extends AbstractFunctionEvaluator {
     private static final class ComplexesDomain {
       IAST variables;
-      EvalEngine engine;
 
-      public ComplexesDomain(IAST variables, EvalEngine engine) {
+      public ComplexesDomain(IAST variables) {
         this.variables = variables;
-        this.engine = engine;
       }
 
       /**
@@ -490,6 +488,8 @@ public class MinMaxFunctions {
             andConditions
                 .append(F.NotElement(F.Plus(F.C1D2, F.Times(x, F.Power(S.Pi, F.CN1))), S.Integers));
             break;
+          default:
+            break;
         }
       }
 
@@ -554,7 +554,7 @@ public class MinMaxFunctions {
         if (domain != null && function.isNumericFunction(vset)) {
           IExpr result = F.NIL;
           if (domain.equals(S.Complexes)) {
-            ComplexesDomain cd = new ComplexesDomain(variables, engine);
+            ComplexesDomain cd = new ComplexesDomain(variables);
             result = cd.complexesDomain(function);
             if (result.isPresent()) {
               return engine.evaluate(result);

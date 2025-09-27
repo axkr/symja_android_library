@@ -104,8 +104,9 @@ public class CompilerFunctions {
         for (int i = 0; i < line.length() && PosOfComment == line.length(); i++) {
           switch (line.charAt(i)) {
             case '"':
-              for (i++; i < line.length(); i++) {
-                if (line.charAt(i) == '"' && line.charAt(i - 1) != '\\') {
+              for (int k = i + 1; k < line.length(); k++) {
+                if (line.charAt(k) == '"' && line.charAt(k - 1) != '\\') {
+                  i = k + 1;
                   break;
                 }
               }

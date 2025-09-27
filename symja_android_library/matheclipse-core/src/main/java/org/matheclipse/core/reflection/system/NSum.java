@@ -158,13 +158,11 @@ public class NSum extends Sum {
     if (lowerLimit.isNegativeInfinity()) {
       if (upperLimit.isInfinity()) {
         lowerLimit = F.C0;
-        IAST limit1 = F.List(variable, lowerLimit, upperLimit);
         IExpr sum1 = sumStartToInfinity(function, variable, lowerLimit, upperLimit);
         final IExpr variableNegate = EvalEngine.get().evaluate(F.Negate(variable));
         function = F.subst(function, x -> (x.equals(variable) ? variableNegate : F.NIL));
         lowerLimit = F.C1;
         upperLimit = F.CInfinity;
-        IAST limit2 = F.List(variable, lowerLimit, upperLimit);
         IExpr sum2 = sumStartToInfinity(function, variable, lowerLimit, upperLimit);
 
         return F.Plus(sum1, sum2);
@@ -173,7 +171,6 @@ public class NSum extends Sum {
       function = F.subst(function, x -> (x.equals(variable) ? variable.negate() : F.NIL));
       lowerLimit = upperLimit.negate();
       upperLimit = F.CInfinity;
-      IAST limit3 = F.List(variable, lowerLimit, upperLimit);
       IExpr sum3 = sumStartToInfinity(function, variable, lowerLimit, upperLimit);
       return sum3;
     }

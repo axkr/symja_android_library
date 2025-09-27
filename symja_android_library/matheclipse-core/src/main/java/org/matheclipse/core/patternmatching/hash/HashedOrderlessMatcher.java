@@ -219,6 +219,7 @@ public class HashedOrderlessMatcher {
    * @param orderlessAST
    * @return
    * @see HashedPatternRules
+   * @return {@link F#NIL} if no evaluation found
    */
   public IAST evaluate(final IAST orderlessAST, EvalEngine engine) {
     // Compute hash values for each argument of the orderlessAST

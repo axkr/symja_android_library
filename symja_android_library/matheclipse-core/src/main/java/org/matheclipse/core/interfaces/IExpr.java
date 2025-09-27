@@ -1,7 +1,6 @@
 package org.matheclipse.core.interfaces;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -253,29 +252,6 @@ public interface IExpr
       return F.booleSymbol(!arg1.equals(arg2));
     }
     return F.booleSymbol(arg1.isFree(arg2, true));
-  }
-
-  /**
-   * Return the standard has() if there are no literal symbols, else check to see that symbol-deps
-   * are in the free symbols.
-   * 
-   * @param e
-   * @param sym
-   * @param other
-   * @return
-   */
-  private static boolean has(IExpr e, Set sym, ArrayList<IExpr> other) {
-    boolean has_other = e.has(other);
-    if (!sym.isEmpty()) {
-      return has_other;
-    }
-    if (!has_other) {
-      VariablesSet vars = new VariablesSet(e);
-      List<IExpr> free_symbols = vars.getArrayList();
-      free_symbols.addAll(sym);
-      return e.has(free_symbols);
-    }
-    return true;
   }
 
   public static IASTAppendable join(IExpr head, IAST... lists) {

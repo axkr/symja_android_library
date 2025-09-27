@@ -412,8 +412,8 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
       if (!needsComplexComputation) {
         try {
           IExpr startValue = varValuePairs.second();
-          // throw an exception as side effect
-          double doubleValue = startValue.evalf();
+          // throw an ArgumentTypeException as side effect
+          startValue.evalf();
         } catch (ArgumentTypeException ate) {
           needsComplexComputation = true;
         }

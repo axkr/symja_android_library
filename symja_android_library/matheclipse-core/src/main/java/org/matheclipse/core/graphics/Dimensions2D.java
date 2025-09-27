@@ -7,22 +7,23 @@ import org.matheclipse.core.interfaces.IReal;
 
 public class Dimensions2D {
 
-  public RGBColor color;
-  public int width;
-  public int height;
+  private RGBColor color;
+  private int width;
+  private int height;
 
-  public double xMin;
-  public double xMax;
-  public double yMin;
-  public double yMax;
+  private double xMin;
+  private double xMax;
 
-  public boolean plotRange;
-  public boolean axes;
+  private double yMin;
 
+  private double yMax;
+
+  private boolean plotRange;
+
+  private boolean axes;
   public Dimensions2D() {
     this(600, 400);
   }
-
   public Dimensions2D(int width, int height) {
     this.color = RGBColor.BLACK;
     this.width = width;
@@ -45,12 +46,28 @@ public class Dimensions2D {
     buf.append("%");
   }
 
+  public double getXMax() {
+    return xMax;
+  }
+
+  public double getXMin() {
+    return xMin;
+  }
+
   public double getXScale() {
     double diff = xMax - xMin;
     if (F.isZero(diff)) {
       return 0.0;
     }
     return width / diff;
+  }
+
+  public double getYMax() {
+    return yMax;
+  }
+
+  public double getYMin() {
+    return yMin;
   }
 
   public double getYScale() {
