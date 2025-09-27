@@ -25523,6 +25523,49 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTrigExpand() {
+    check("TrigExpand(Cos(4*x))", //
+        "Cos(x)^4-6*Cos(x)^2*Sin(x)^2+Sin(x)^4");
+    check("TrigExpand(Cos(5*x))", //
+        "Cos(x)^5-10*Cos(x)^3*Sin(x)^2+5*Cos(x)*Sin(x)^4");
+
+    check("TrigExpand(Sin(4*x))", //
+        "4*Cos(x)^3*Sin(x)-4*Cos(x)*Sin(x)^3");
+    check("TrigExpand(Sin(5*x))", //
+        "5*Cos(x)^4*Sin(x)-10*Cos(x)^2*Sin(x)^3+Sin(x)^5");
+
+    check("TrigExpand(Cosh(2*a))", //
+        "Cosh(a)^2+Sinh(a)^2");
+    check("TrigExpand(Cosh(3*a))", //
+        "Cosh(a)^3+3*Cosh(a)*Sinh(a)^2");
+    check("TrigExpand(Cosh(4*a))", //
+        "Cosh(a)^4+6*Cosh(a)^2*Sinh(a)^2+Sinh(a)^4");
+    check("TrigExpand(Cosh(5*a))", //
+        "Cosh(a)^5+10*Cosh(a)^3*Sinh(a)^2+5*Cosh(a)*Sinh(a)^4");
+
+    check("TrigExpand(Sinh(-4*a))", //
+        "-4*Cosh(a)^3*Sinh(a)-4*Cosh(a)*Sinh(a)^3");
+
+    check("TrigExpand(Sinh(2*a))", //
+        "2*Cosh(a)*Sinh(a)");
+    check("TrigExpand(Sinh(3*a))", //
+        "3*Cosh(a)^2*Sinh(a)+Sinh(a)^3");
+    check("TrigExpand(Sinh(4*a))", //
+        "4*Cosh(a)^3*Sinh(a)+4*Cosh(a)*Sinh(a)^3");
+    check("TrigExpand(Sinh(5*a))", //
+        "5*Cosh(a)^4*Sinh(a)+10*Cosh(a)^2*Sinh(a)^3+Sinh(a)^5");
+
+    check("TrigExpand(Tanh(-3*x))", //
+        "(-3*Cosh(x)^2*Sinh(x))/(Cosh(x)^3+3*Cosh(x)*Sinh(x)^2)-Sinh(x)^3/(Cosh(x)^3+3*Cosh(x)*Sinh(x)^\n"
+            + "2)");
+    check("TrigExpand(Tanh(3*x))", //
+        "(3*Cosh(x)^2*Sinh(x))/(Cosh(x)^3+3*Cosh(x)*Sinh(x)^2)+Sinh(x)^3/(Cosh(x)^3+3*Cosh(x)*Sinh(x)^\n"
+            + "2)");
+    check("TrigExpand(7+Tan(4*x))", //
+        "7+(4*Cos(x)^3*Sin(x))/(Cos(x)^4-6*Cos(x)^2*Sin(x)^2+Sin(x)^4)+(-4*Cos(x)*Sin(x)^\n" //
+            + "3)/(Cos(x)^4-6*Cos(x)^2*Sin(x)^2+Sin(x)^4)");
+    check("TrigExpand({Tan(2*x), Sinh(x + y)})", //
+        "{(2*Cos(x)*Sin(x))/(Cos(x)^2-Sin(x)^2),Cosh(y)*Sinh(x)+Cosh(x)*Sinh(y)}");
+
     // issue #930
     check("TrigExpand(Sinh(a+b))", //
         "Cosh(b)*Sinh(a)+Cosh(a)*Sinh(b)");
@@ -25556,28 +25599,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("TrigExpand( Csch(2*x) )", //
         "1/2*Csch(x)*Sech(x)");
     check("TrigExpand( Csch(3*x) )", //
-        "Csch(x)/(-1+4*Cosh(x)^2)");
+        "1/(3*Cosh(x)^2*Sinh(x)+Sinh(x)^3)");
     check("TrigExpand( Csch(4*x) )", //
-        "Csch(x)/(-4*Cosh(x)+8*Cosh(x)^3)");
+        "1/(4*Cosh(x)^3*Sinh(x)+4*Cosh(x)*Sinh(x)^3)");
     check("TrigExpand(Cosh(x)*Csch(2*x)*Sinh(x))", //
         "1/2");
     check("TrigExpand(Cos(x)*Csc(2*x)*Sin(x))", //
         "1/2");
     check("TrigExpand(Cot(2*x))", //
         "Cot(x)/2-Tan(x)/2");
-
-    check("TrigExpand(Cosh(2*a))", //
-        "Cosh(a)^2+Sinh(a)^2");
-    check("TrigExpand(Cosh(3*a))", //
-        "Cosh(a)^3+3*Cosh(a)*Sinh(a)^2");
-
-
-    check("TrigExpand(Sinh(2*a))", //
-        "2*Cosh(a)*Sinh(a)");
-    check("TrigExpand(Sinh(3*a))", //
-        "3*Cosh(a)^2*Sinh(a)+Sinh(a)^3");
-    check("TrigExpand(Sinh(4*a))", //
-        "4*Cosh(a)^3*Sinh(a)+4*Cosh(a)*Sinh(a)^3");
 
     check("TrigExpand(Sinh(a+b))", //
         "Cosh(b)*Sinh(a)+Cosh(a)*Sinh(b)");
@@ -25778,7 +25808,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Sinh(u-v)+Sinh(u+v)");
     check("TrigReduce(3*Sinh(u)*Cosh(v)*k)", //
         "3/2*k*(Sinh(u-v)+Sinh(u+v))");
-    
+
     check("TrigExpand(Sin(5*x))", //
         "5*Cos(x)^4*Sin(x)-10*Cos(x)^2*Sin(x)^3+Sin(x)^5");
     check("TrigReduce(Sin(5*x))", //

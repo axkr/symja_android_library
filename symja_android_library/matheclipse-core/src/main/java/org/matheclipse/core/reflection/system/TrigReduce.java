@@ -10,7 +10,6 @@ import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.CompareUtil;
-import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -19,6 +18,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
@@ -134,34 +134,8 @@ public class TrigReduce extends AbstractEvaluator {
     }
 
     private IExpr visitTimes(IASTMutable ast) {
-      IASTMutable mutTimes = ast.copy();
-      for (int i = 1; i < ast.size(); i++) {
-        IExpr expr = ast.get(i);
-        if (expr.isAST1()) {
-          IExpr arg1 = expr.first();
-          if (expr.isAST(S.Cot)) {
-            mutTimes.set(i, F.Divide(F.Cos(arg1), F.Sin(arg1)));
-          } else if (expr.isAST(S.Tan)) {
-            mutTimes.set(i, F.Divide(F.Sin(arg1), F.Cos(arg1)));
-          } else if (expr.isAST(S.Csc)) {
-            mutTimes.set(i, F.Power(F.Sin(arg1), F.CN1));
-          } else if (expr.isAST(S.Sec)) {
-            mutTimes.set(i, F.Power(F.Cos(arg1), F.CN1));
-          } else if (expr.isAST(S.Coth)) {
-            mutTimes.set(i, F.Divide(F.Cosh(arg1), F.Sinh(arg1)));
-          } else if (expr.isAST(S.Tanh)) {
-            mutTimes.set(i, F.Divide(F.Sinh(arg1), F.Cosh(arg1)));
-          } else if (expr.isAST(S.Csch)) {
-            mutTimes.set(i, F.Power(F.Sinh(arg1), F.CN1));
-          } else if (expr.isAST(S.Sech)) {
-            mutTimes.set(i, F.Power(F.Cosh(arg1), F.CN1));
-          }
-        }
-      }
-      IAST flattened = EvalAttributes.flatten(S.Times, mutTimes);
-      if (!flattened.isTimes()) {
-        flattened = mutTimes;
-      }
+      IBuiltInSymbol head = S.Times;
+      IAST flattened = TrigExpand.rewriteCircularHyperbolicOrderless(ast, head);
       if (flattened.isTimes()) {
         IExpr[] parts = AlgebraUtil.numeratorDenominator(flattened, false, fEngine);
         if (parts != null) {

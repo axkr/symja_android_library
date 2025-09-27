@@ -1,24 +1,24 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.Binomial;
-import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.Cos;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.evalExpandAll;
 import java.util.function.Function;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.CompareUtil;
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.visit.VisitorPlusTimesPowerReplaceAll;
@@ -46,169 +46,7 @@ import org.matheclipse.core.visit.VisitorPlusTimesPowerReplaceAll;
  */
 public class TrigExpand extends AbstractEvaluator {
 
-  public static final Function<IExpr, IExpr> TRIG_EXPAND_FUNCTION = new TrigExpandFunction();
-
-  private static final VisitorPlusTimesPowerReplaceAll TRIG_EXPAND_VISITOR =
-      new VisitorPlusTimesPowerReplaceAll(TRIG_EXPAND_FUNCTION);
-
   private static final class TrigExpandFunction implements Function<IExpr, IExpr> {
-    @Override
-    public IExpr apply(IExpr ast) {
-      if (ast.isAST1()) {
-        IExpr first = ast.first();
-        if (first.isPlus()) {
-          IExpr temp = expandPlus((IAST) ast, (IAST) first);
-          if (temp.isPresent()) {
-            if (temp.isPlus()) {
-              temp = ((IAST) temp).map(S.Plus, x -> distributeTimes(x));
-            }
-            return temp;
-          }
-        } else if (first.isTimes()) {
-          return expandTimes((IAST) ast, (IAST) first);
-        }
-      }
-      return F.NIL;
-    }
-
-    private static IExpr distributeTimes(IExpr expr) {
-      return AlgebraUtil.distributeTimes(expr);
-    }
-
-    /**
-     * Expand <code>f(a+b+c+...)</code> and create a trig function.
-     *
-     * @param ast
-     * @param plusAST
-     * @return
-     */
-    private IExpr expandPlus(IAST ast, IAST plusAST) {
-      if (ast.isSin()) {
-        return expandCosSinPlus(plusAST, false);
-      } else if (ast.isCos()) {
-        return expandCosSinPlus(plusAST, true);
-        // return expandCosPlus(plusAST, 1);
-      } else if (ast.isAST(S.Cot, 2)) {
-        // Cos(x) / Sin(x)
-        return F.Divide(expandCosSinPlus(plusAST, true), expandCosSinPlus(plusAST, false));
-      } else if (ast.isTan()) {
-        // Sin(x) / Cos(x)
-        return F.Divide(expandCosSinPlus(plusAST, false), expandCosSinPlus(plusAST, true));
-      } else if (ast.isAST(S.Csc, 2)) {
-        // 1 / Sin(x)
-        return expandCosSinPlus(plusAST, false).inverse();
-      } else if (ast.isAST(S.Sec, 2)) {
-        // 1 / Cos(x)
-        return expandCosSinPlus(plusAST, true).inverse();
-      } else if (ast.isAST(S.Sech, 2)) {
-        return expandSechPlus(plusAST, 1);
-      } else if (ast.isSinh()) {
-        return expandCoshSinhPlus(plusAST, false);
-      } else if (ast.isCosh()) {
-        return expandCoshSinhPlus(plusAST, true);
-      } else if (ast.isAST(S.Csch, 2)) {
-        return expandCschPlus(plusAST, 1);
-      } else if (ast.isAST(S.Coth, 2)) {
-        // Cosh(x) / Sinh(x)
-        return F.Divide(expandCoshSinhPlus(plusAST, true), expandCoshSinhPlus(plusAST, false));
-      } else if (ast.isTanh()) {
-        // Sinh(x) / Cosh(x)
-        return F.Divide(expandCoshSinhPlus(plusAST, false), expandCoshSinhPlus(plusAST, true));
-      }
-      return F.NIL;
-    }
-
-    /**
-     * Expand <code>f(n*theta)</code> and create a trig function.
-     *
-     * @param ast
-     * @param timesAST
-     * @return
-     */
-    private IExpr expandTimes(IAST ast, IAST timesAST) {
-      if (timesAST.arg1().isInteger()) {
-        IInteger n = (IInteger) timesAST.arg1();
-        if (n.isPositive()) {
-          try {
-            IExpr theta = timesAST.rest().oneIdentity1();
-            if (ast.isSin()) {
-              return expandSinTimes(n, theta);
-            } else if (ast.isCos()) {
-              return expandCosTimes(n, theta);
-            } else if (ast.isAST(S.Cot, 2)) {
-              // Cos(x) / Sin(x)
-              return F.Divide(expandCosTimes(n, theta), expandSinTimes(n, theta));
-            } else if (ast.isTan()) {
-              // Sin(x) / Cos(x)
-              return F.Divide(expandSinTimes(n, theta), expandCosTimes(n, theta));
-            } else if (ast.isAST(S.Csc, 2)) {
-              // 1 / Sin(x)
-              return expandSinTimes(n, theta).inverse();
-            } else if (ast.isAST(S.Sec, 2)) {
-              // 1 / Cos(x)
-              return expandCosTimes(n, theta).inverse();
-            } else if (ast.isSinh()) {
-              int nInt = n.toInt();
-              // return expandSinhPlus(F.constantArray(F.Plus, theta, nInt), 1);
-              return expandCoshSinhPlus(theta.constantArray(S.Plus, 0, nInt), false);
-            } else if (ast.isCosh()) {
-              int nInt = n.toInt();
-              // return expandCoshPlus(F.constantArray(F.Plus, theta, nInt), 1);
-              return expandCoshSinhPlus(theta.constantArray(S.Plus, 0, nInt), true);
-            } else if (ast.isAST(S.Csch, 2)) {
-              // Csch(theta)/ChebyshevU(n - 1, Cosh(theta))
-              return F.TrigExpand(F.Times(F.Csch(theta),
-                  F.Power(F.ChebyshevU(F.Subtract(n, F.C1), F.Cosh(theta)), F.CN1)));
-              // int nInt = n.toInt();
-              // I^(n - 1)*2^(1 - n)* Product(Csch(theta + (I*k*Pi)/n], {k, 0, n - 1})
-              // return F.Times(F.Power(F.C2, F.Plus(F.C1, F.Negate(n))), F.Power(F.CI,
-              // F.Plus(F.CN1, n)),
-              // F.Product(F.Csch(F.Plus(theta, F.Times(F.CI, F.k, F.Power(n, -1), F.Pi))),
-              // F.List(F.k, F.C0, F.Plus(F.CN1, n))));
-            } else if (ast.isAST(S.Sech, 2)) {
-              int nInt = n.toInt();
-              return expandSechPlus(theta.constantArray(S.Plus, 0, nInt), 1);
-            }
-          } catch (ArithmeticException ae) {
-
-          }
-        }
-      }
-      return F.NIL;
-    }
-
-    /**
-     * <code>Cos(n*theta)</code>
-     *
-     * @param n
-     * @param theta
-     * @return
-     */
-    private static IExpr expandCosTimes(IInteger n, IExpr theta) {
-      int ni = n.toIntDefault();
-      if (ni > Integer.MIN_VALUE) {
-        return F.sum(i -> Times(Times(Times(Power(CN1, Times(i, C1D2)), Binomial(n, i)),
-            Power(Cos(theta), Plus(n, Times(CN1, i)))), Power(Sin(theta), i)), 0, ni, 2);
-      }
-      return F.NIL;
-    }
-
-    /**
-     * <code>Sin(n*theta)</code>
-     *
-     * @param n
-     * @param theta
-     * @return
-     */
-    private static IExpr expandSinTimes(IInteger n, IExpr theta) {
-      int ni = n.toIntDefault();
-      if (ni > Integer.MIN_VALUE) {
-        return F.sum(i -> Times(Times(Times(Power(CN1, Times(Plus(i, CN1), C1D2)), Binomial(n, i)),
-            Power(Cos(theta), Plus(n, Times(CN1, i)))), Power(Sin(theta), i)), 1, ni, 2);
-      }
-      return F.NIL;
-    }
-
     /**
      * <code>if (coshResult==true) then TrigExand(Cosh(a+b+c+...))  else TrigExand(Sinh(a+b+c+...))</code>
      * 
@@ -216,7 +54,7 @@ public class TrigExpand extends AbstractEvaluator {
      * @param coshResult
      * @return
      */
-    private static IExpr expandCoshSinhPlus(IAST plusAST, boolean coshResult) {
+    private static IExpr coshSinhPlus(IAST plusAST, boolean coshResult) {
       IExpr lhs = plusAST.arg1();
       IExpr rhs = plusAST.arg2();
       // Cosh(lhs)*Cosh(rhs) + Sinh(lhs)*Sinh(rhs)
@@ -242,7 +80,7 @@ public class TrigExpand extends AbstractEvaluator {
      * @param cosResult
      * @return
      */
-    private static IExpr expandCosSinPlus(IAST plusAST, boolean cosResult) {
+    private static IExpr cosSinPlus(IAST plusAST, boolean cosResult) {
       IExpr lhs = plusAST.arg1();
       IExpr rhs = plusAST.arg2();
       IExpr cosPlus = F.Plus(Times(Cos(lhs), Cos(rhs)), Times(CN1, Sin(lhs), Sin(rhs)));
@@ -260,47 +98,218 @@ public class TrigExpand extends AbstractEvaluator {
     }
 
     /**
-     * <code>Csch(a+b+c+...)</code>
+     * <code>Cos(n*x)</code>
      *
-     * @param plusAST
-     * @param startPosition
-     * @return
+     * @param n positive integer
+     * @param x the rest of the {@link S#Times} expression
+     * @return summation formula derive from de Moivre's theorem
      */
-    private static IExpr expandCschPlus(IAST plusAST, int startPosition) {
-      IExpr a = plusAST.get(startPosition);
-      IExpr b;
-      if (startPosition == plusAST.size() - 2) {
-        // Csch[a + b] --> 1/(Cosh(b)*Sinh(a) + Cosh(a)*Sinh(b))
-        b = plusAST.get(startPosition + 1);
-      } else {
-        // b = expandCschPlus(plusAST, startPosition + 1);
-        return F.NIL;
+    private static IExpr cosTimes(IInteger n, IExpr x) {
+      int ni = n.toIntDefault();
+      if (ni > Integer.MIN_VALUE) {
+        // Sum(((-1)^m*Binomial(n,2*m)*Sin(x)^(2*m))/Cos(x)^(2*m-n),{m,0,Floor(n/2)})
+        return F.sum(m -> F.Times(F.Power(-1, m), F.Binomial(n, F.Times(F.C2, m)),
+            F.Power(F.Cos(x), F.Plus(F.Times(F.CN2, m), n)), F.Power(F.Sin(x), F.Times(F.C2, m))),
+            0, ni / 2);
       }
-      return F.eval(F.Plus(
-          F.Power(F.Plus(F.Times(F.Cosh(b), F.Sinh(a)), F.Times(F.Cosh(a), F.Sinh(b))), F.CN1)));
+      return F.NIL;
     }
 
     /**
-     * <code>Sech(a+b+c+...)</code>
+     * <code>Cosh(n*x)</code>
      *
-     * @param plusAST
-     * @param startPosition
-     * @return
+     * @param n positive integer
+     * @param x the rest of the {@link S#Times} expression
+     * @return summation formula derive from de Moivre's theorem
      */
-    private static IExpr expandSechPlus(IAST plusAST, int startPosition) {
-      IExpr a = plusAST.get(startPosition);
-      IExpr b;
-      if (startPosition == plusAST.size() - 2) {
-        b = plusAST.get(startPosition + 1);
-      } else {
-        // b = expandSechPlus(plusAST, startPosition + 1);
-        return F.NIL;
+    private static IExpr coshTimes(IInteger n, IExpr x) {
+      int ni = n.toIntDefault();
+      if (ni > Integer.MIN_VALUE) {
+        // Sum((Binomial(n,2*m)*Sinh(x)^(2*m))/Cosh(x)^(2*m-n),{m,0,Floor(n/2)})
+        return F.sum(m -> F.Times(F.Binomial(n, F.Times(F.C2, m)),
+            F.Power(F.Cosh(x), F.Plus(F.Times(F.CN2, m), n)), F.Power(F.Sinh(x), F.Times(F.C2, m))),
+            0, ni / 2);
+
       }
-      // Sech(a + b) --> 1/(Cosh(b)*Cosh(a) + Sinh(a)*Sinh(b))
-      return F.eval(F.Plus(
-          F.Power(F.Plus(F.Times(F.Cosh(b), F.Cosh(a)), F.Times(F.Sinh(a), F.Sinh(b))), F.CN1)));
+      return F.NIL;
     }
 
+    private static IExpr distributeTimes(IExpr expr) {
+      return AlgebraUtil.distributeTimes(expr);
+    }
+
+    /**
+     * <code>Sin(n*x)</code>
+     *
+     * @param n positive integer
+     * @param x the rest of the {@link S#Times} expression
+     * @return summation formula derive from de Moivre's theorem
+     */
+    private static IExpr sinTimes(IInteger n, IExpr x) {
+      int ni = n.toIntDefault();
+      if (ni > Integer.MIN_VALUE) {
+        // Sum(((-1)^m*Binomial(n,2*m+1)*Sin(x)^(2*m+1))/Cos(x)^(2*m+1-n),{m,0,Floor(1/2*(-1+n))})
+        return F.sum(m -> F.Times(F.Power(-1, m), F.Binomial(n, F.Plus(F.Times(F.C2, m), F.C1)),
+            F.Power(F.Cos(x), F.Plus(F.Negate(F.Plus(F.Times(F.C2, m), F.C1)), n)),
+            F.Power(F.Sin(x), F.Plus(F.Times(F.C2, m), F.C1))), 0, (ni - 1) / 2);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * <code>Sinh(n*x)</code>
+     *
+     * @param n positive integer
+     * @param x the rest of the {@link S#Times} expression
+     * @return summation formula derive from de Moivre's theorem
+     */
+    private static IExpr sinhTimes(IInteger n, IExpr x) {
+      int ni = n.toIntDefault();
+      if (ni > Integer.MIN_VALUE) {
+        // Sum((Binomial(n,2*m+1)*Sinh(x)^(2*m+1))/Cosh(x)^(2*m+1-n),{m,0,Floor(1/2*(-1+n))})
+        return F.sum(m -> F.Times(F.Binomial(n, F.Plus(F.Times(F.C2, m), F.C1)),
+            F.Power(F.Cosh(x), F.Plus(F.Negate(F.Plus(F.Times(F.C2, m), F.C1)), n)),
+            F.Power(F.Sinh(x), F.Plus(F.Times(F.C2, m), F.C1))), 0, (ni - 1) / 2);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr apply(IExpr ast) {
+      if (ast.isAST1()) {
+        IExpr first = ast.first();
+        if (first.isPlus()) {
+          IExpr temp = expandPlus((IAST) ast, (IAST) first);
+          if (temp.isPresent()) {
+            if (temp.isPlus()) {
+              temp = ((IAST) temp).map(S.Plus, x -> distributeTimes(x));
+            }
+            return temp;
+          }
+        } else if (first.isTimes()) {
+          return expandTimes((IAST) ast, (IAST) first);
+        }
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Expand <code>f(a+b+c+...)</code> and create a trig function.
+     *
+     * @param ast
+     * @param plusAST
+     * @return
+     */
+    private IExpr expandPlus(IAST ast, IAST plusAST) {
+      if (ast.isSin()) {
+        return cosSinPlus(plusAST, false);
+      } else if (ast.isCos()) {
+        return cosSinPlus(plusAST, true);
+      } else if (ast.isSinh()) {
+        return coshSinhPlus(plusAST, false);
+      } else if (ast.isCosh()) {
+        return coshSinhPlus(plusAST, true);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Expand <code>f(n*theta)</code> and create a trig function.
+     *
+     * @param ast
+     * @param timesAST
+     * @return
+     */
+    private IExpr expandTimes(IAST ast, IAST timesAST) {
+      if (timesAST.arg1().isInteger()) {
+        IInteger n = (IInteger) timesAST.arg1();
+        final IExpr theta;
+        if (n.isNegative()) {
+          n = n.negate();
+          theta = timesAST.setAtCopy(1, F.CN1);
+        } else {
+          theta = timesAST.rest().oneIdentity1();
+        }
+        try {
+          if (ast.isSin()) {
+            return sinTimes(n, theta);
+          } else if (ast.isCos()) {
+            return cosTimes(n, theta);
+          } else if (ast.isSinh()) {
+            return sinhTimes(n, theta);
+          } else if (ast.isCosh()) {
+            return coshTimes(n, theta);
+          }
+        } catch (ArithmeticException ae) {
+
+        }
+      }
+      return F.NIL;
+    }
+
+  }
+
+  public static final Function<IExpr, IExpr> TRIG_EXPAND_FUNCTION = new TrigExpandFunction();
+
+  private static final VisitorPlusTimesPowerReplaceAll TRIG_EXPAND_VISITOR =
+      new VisitorPlusTimesPowerReplaceAll(TRIG_EXPAND_FUNCTION);
+
+  /**
+   * Rewrite to simpler circular or hyperbolic functions for {@link S#Cot}, {@link S#Coth},
+   * {@link S#Csc}, {@link S#Csch}, {@link S#Sec}, {@link S#Sech}, {@link S#Tan}, {@link S#Tanh}.
+   * 
+   * @param expr
+   * @return
+   */
+  private static IExpr rewriteCircularHyperbolic(IExpr expr) {
+    if (expr.isAST1()) {
+      int headID = expr.headID();
+      if (headID > -1) {
+        IExpr arg1 = expr.first();
+        switch (headID) {
+          case ID.Cot:
+            return F.Divide(F.Cos(arg1), F.Sin(arg1));
+          case ID.Tan:
+            return F.Divide(F.Sin(arg1), F.Cos(arg1));
+          case ID.Csc:
+            return F.Power(F.Sin(arg1), F.CN1);
+          case ID.Sec:
+            return F.Power(F.Cos(arg1), F.CN1);
+          case ID.Coth:
+            return F.Divide(F.Cosh(arg1), F.Sinh(arg1));
+          case ID.Tanh:
+            return F.Divide(F.Sinh(arg1), F.Cosh(arg1));
+          case ID.Csch:
+            return F.Power(F.Sinh(arg1), F.CN1);
+          case ID.Sech:
+            return F.Power(F.Cosh(arg1), F.CN1);
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  public static IAST rewriteCircularHyperbolicOrderless(IASTMutable orderlessAST,
+      IBuiltInSymbol orderlessHead) {
+    IASTMutable mutableOrderless = F.NIL;
+    for (int i = 1; i < orderlessAST.size(); i++) {
+      IExpr expr = orderlessAST.get(i);
+      IExpr temp = rewriteCircularHyperbolic(expr);
+      if (temp.isPresent()) {
+        if (mutableOrderless.isNIL()) {
+          mutableOrderless = orderlessAST.copy();
+        }
+        mutableOrderless.set(i, temp);
+      }
+    }
+    if (mutableOrderless.isNIL()) {
+      return orderlessAST;
+    }
+    IAST flattened = EvalAttributes.flatten(orderlessHead, mutableOrderless);
+    if (!flattened.isTimes()) {
+      flattened = mutableOrderless;
+    }
+    return flattened;
   }
 
   public TrigExpand() {}
@@ -319,25 +328,28 @@ public class TrigExpand extends AbstractEvaluator {
       return temp;
     }
 
-    IExpr result = evalExpandAll(ast.arg1(), engine);
+    IExpr arg1 = ast.arg1();
+    IExpr result = evalExpandAll(arg1, engine);
+    result = F.subst(result, x -> rewriteCircularHyperbolic(x));
     temp = result.accept(TRIG_EXPAND_VISITOR);
     if (temp.isNIL()) {
-      return ast.arg1();
+      return arg1;
     }
     do {
       result = evalExpandAll(temp, engine);
+      result = F.subst(result, x -> rewriteCircularHyperbolic(x));
       temp = result.accept(TRIG_EXPAND_VISITOR);
     } while (temp.isPresent());
     return result;
   }
 
   @Override
-  public int status() {
-    return ImplementationStatus.PARTIAL_SUPPORT;
+  public int[] expectedArgSize(IAST ast) {
+    return IFunctionEvaluator.ARGS_1_1;
   }
 
   @Override
-  public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_1_1;
+  public int status() {
+    return ImplementationStatus.PARTIAL_SUPPORT;
   }
 }
