@@ -32,9 +32,6 @@ matcher.caseOf(Product(Plus(C1,Times(CN4,Power(Plus(C1,Times(CN4,i_),Times(C4,Sq
     // Product(1-x_^2/i_^2,{i_Symbol,1,Infinity}):=Sin(Pi*x)/(Pi*x)/;FreeQ(x,i)
 matcher.caseOf(Product(Plus(C1,Times(CN1,Power(i_,CN2),Sqr(x_))),list(i_Symbol,C1,oo)),
       Condition(Times(Power(Times(Pi,x),CN1),Sin(Times(Pi,x))),FreeQ(x,i)));
-    // Product(Cos(x_*2^i_),{i_Symbol,0,l_}):=Module({k=-1+l},(Csc(x)*Sin(2^k*x))/2^k/;(!NumericQ(l)||(IntegerQ(l)&&l>0))&&FreeQ({x,l},i))
-matcher.caseOf(Product(Cos(Times(x_,Power(C2,i_))),list(i_Symbol,C0,l_)),
-      Module(list(Set(k,Plus(CN1,l))),Condition(Times(Power(Power(C2,k),CN1),Csc(x),Sin(Times(Power(C2,k),x))),And(Or(Not(NumericQ(l)),And(IntegerQ(l),Greater(l,C0))),FreeQ(list(x,l),i)))));
 return matcher;
 }
 }
