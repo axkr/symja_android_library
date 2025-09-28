@@ -137,20 +137,20 @@ public class TrigReduce extends AbstractEvaluator {
       IBuiltInSymbol head = S.Times;
       IAST flattened = TrigExpand.rewriteCircularHyperbolicOrderless(ast, head);
       if (flattened.isTimes()) {
-        IExpr[] parts = AlgebraUtil.numeratorDenominator(flattened, false, fEngine);
-        if (parts != null) {
+        IExpr[] fractionParts = AlgebraUtil.numeratorDenominator(flattened, false, fEngine);
+        if (fractionParts != null) {
           boolean evaled = false;
-          IExpr p0 = parts[0];
-          if (parts[0].isTimes()) {
-            IExpr temp = timesMatcherEvalLoop((IAST) parts[0]);
+          IExpr p0 = fractionParts[0];
+          if (fractionParts[0].isTimes()) {
+            IExpr temp = timesMatcherEvalLoop((IAST) fractionParts[0]);
             if (temp.isPresent()) {
               p0 = temp;
               evaled = true;
             }
           }
-          IExpr p1 = parts[1];
-          if (parts[1].isTimes()) {
-            IExpr temp = timesMatcherEvalLoop((IAST) parts[1]);
+          IExpr p1 = fractionParts[1];
+          if (fractionParts[1].isTimes()) {
+            IExpr temp = timesMatcherEvalLoop((IAST) fractionParts[1]);
             if (temp.isPresent()) {
               p1 = temp;
               evaled = true;

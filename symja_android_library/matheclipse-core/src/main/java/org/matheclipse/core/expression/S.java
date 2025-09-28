@@ -11981,6 +11981,8 @@ public class S {
    */
   public final static IBuiltInSymbol TrigExpand = S.initFinalSymbol("TrigExpand", ID.TrigExpand);
 
+  public final static IBuiltInSymbol TrigFactor = S.initFinalSymbol("TrigFactor", ID.TrigFactor);
+
   /**
    * TrigReduce(expr) - rewrites products and powers of trigonometric functions in `expr` in terms
    * of trigonometric functions with combined arguments.

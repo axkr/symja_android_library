@@ -612,12 +612,14 @@ public class SimplifyUtil extends VisitorExpr {
                 IExpr powerSimplified = F.Power(temp, rhs.exponent());
                 if (newTimes.isPresent()) {
                   newTimes.set(i, powerSimplified);
-                  newTimes.remove(i + 1);
                 } else {
                   newTimes = timesAST.setAtClone(i, powerSimplified);
-                  newTimes.remove(i + 1);
                 }
-                i++;
+                if (++i < newTimes.size()) {
+                  // TODO if no check for size is implemented TrigFactor(Sin(x)^2 + Tan(x)^2) throws
+                  // IndexOutOfBoundsException
+                  newTimes.remove(i);
+                }
                 continue; // while
               }
             } else {
@@ -1111,14 +1113,14 @@ public class SimplifyUtil extends VisitorExpr {
 
         if (fFullSimplify) {
           if (together.isTimes()) {
-            IExpr[] parts =
+            IExpr[] fractionParts =
                 AlgebraUtil.numeratorDenominator((IAST) together, true, EvalEngine.get());
-            IExpr numerator = parts[0];
-            IExpr denominator = parts[1];
+            IExpr numerator = fractionParts[0];
+            IExpr denominator = fractionParts[1];
             // common factors in numerator, denominator may be canceled here, so check if we
             // have
             // a new minimal expression
-            IExpr divide = F.Divide(parts[0], parts[1]);
+            IExpr divide = F.Divide(fractionParts[0], fractionParts[1]);
             simplifiedResult.checkLessPlusTimesPower(divide);
 
             if (!numerator.isOne() && //

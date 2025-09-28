@@ -261,7 +261,7 @@ public class TrigExpand extends AbstractEvaluator {
    * @param expr
    * @return
    */
-  private static IExpr rewriteCircularHyperbolic(IExpr expr) {
+  public static IExpr rewriteCircularHyperbolic(IExpr expr) {
     if (expr.isAST1()) {
       int headID = expr.headID();
       if (headID > -1) {
@@ -289,7 +289,7 @@ public class TrigExpand extends AbstractEvaluator {
     return F.NIL;
   }
 
-  public static IAST rewriteCircularHyperbolicOrderless(IASTMutable orderlessAST,
+  public static IAST rewriteCircularHyperbolicOrderless(IAST orderlessAST,
       IBuiltInSymbol orderlessHead) {
     IASTMutable mutableOrderless = F.NIL;
     for (int i = 1; i < orderlessAST.size(); i++) {

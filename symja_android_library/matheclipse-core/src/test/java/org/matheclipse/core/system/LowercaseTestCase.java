@@ -1,6 +1,6 @@
 package org.matheclipse.core.system;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.apfloat.Apfloat;
@@ -25661,6 +25661,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Cos(x)^2-Sin(x)^2");
     check("trigexpand(Sin(5*x))", //
         "5*Cos(x)^4*Sin(x)-10*Cos(x)^2*Sin(x)^3+Sin(x)^5");
+  }
+
+  @Test
+  public void testTrigFactor() {
+    // TODO TrigFactor is experimental and working very slow at the moment
+    // check("TrigFactor(Cos(x)^3 + Sin(x)^3)", //
+    // "(Cos(x)+Sin(x))*(1-Cos(x)*Sin(x))");
+    // check("TrigFactor(Sin(x)^2 + Tan(x)^2)", //
+    // "");
   }
 
   @Test

@@ -1371,12 +1371,12 @@ public class Algebra {
       if (!arg1.isTimes() && !arg1.isPower()) {
         expr = S.Together.of(engine, arg1);
         if (expr.isAST()) {
-          IExpr[] parts = AlgebraUtil.numeratorDenominator((IAST) expr, true, engine);
-          if (!parts[1].isOne()) {
+          IExpr[] fractionParts = AlgebraUtil.numeratorDenominator((IAST) expr, true, engine);
+          if (!fractionParts[1].isOne()) {
             try {
-              IExpr numerator = factorExpr(F.Factor(parts[0]), parts[0], eVar, squareFree,
+              IExpr numerator = factorExpr(F.Factor(fractionParts[0]), fractionParts[0], eVar, squareFree,
                   withHomogenization, engine);
-              IExpr denominator = factorExpr(F.Factor(parts[1]), parts[1], eVar, squareFree,
+              IExpr denominator = factorExpr(F.Factor(fractionParts[1]), fractionParts[1], eVar, squareFree,
                   withHomogenization, engine);
               if (numerator.isPresent() && denominator.isPresent()) {
                 IExpr temp = engine.evaluate(F.Divide(numerator, denominator));
@@ -1535,15 +1535,15 @@ public class Algebra {
         IExpr variable = eVar.getArrayList().get(0);
         expr = S.Together.of(engine, expr);
         if (expr.isAST()) {
-          IExpr[] parts = AlgebraUtil.numeratorDenominator((IAST) expr, true, engine);
+          IExpr[] fractionParts = AlgebraUtil.numeratorDenominator((IAST) expr, true, engine);
           try {
             IExpr numerator =
-                factorExprSolve(F.Factor(parts[0]), parts[0], variable, solveData, engine);
-            if (numerator.isList() && !parts[1].isOne()) {
+                factorExprSolve(F.Factor(fractionParts[0]), fractionParts[0], variable, solveData, engine);
+            if (numerator.isList() && !fractionParts[1].isOne()) {
               // IExpr denominator = factorExprSolve(F.Factor(parts[1]), parts[1], variable,
               // engine);
               // cross check for zero-values in denominator
-              IExpr denominator = parts[1];
+              IExpr denominator = fractionParts[1];
               IAST list = (IAST) numerator;
               return list.removePositionsAtCopy(
                   x -> crossCheckDivByZero(x, variable, denominator, engine));

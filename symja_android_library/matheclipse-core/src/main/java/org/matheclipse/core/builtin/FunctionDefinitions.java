@@ -116,6 +116,7 @@ public final class FunctionDefinitions {
       S.Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());
       S.Taylor.setEvaluator(new org.matheclipse.core.reflection.system.Taylor());
       S.TrigExpand.setEvaluator(new org.matheclipse.core.reflection.system.TrigExpand());
+      S.TrigFactor.setEvaluator(new org.matheclipse.core.reflection.system.TrigFactor());
       S.TrigReduce.setEvaluator(new org.matheclipse.core.reflection.system.TrigReduce());
       S.TrigSimplifyFu.setEvaluator(new org.matheclipse.core.reflection.system.TrigSimplifyFu());
       S.TrigToExp.setEvaluator(new org.matheclipse.core.reflection.system.TrigToExp());

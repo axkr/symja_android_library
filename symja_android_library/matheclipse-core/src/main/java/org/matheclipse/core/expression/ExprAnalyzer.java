@@ -782,10 +782,10 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
   }
 
   public void splitNumeratorDenominator(IAST ast) {
-    IExpr[] result = AlgebraUtil.numeratorDenominator(ast, true, fEngine);
-    this.fNumerator = result[0];
-    this.fDenominator = result[1];
-    this.fTogetherExpr = result[2];
+    IExpr[] fractionParts = AlgebraUtil.numeratorDenominator(ast, true, fEngine);
+    this.fNumerator = fractionParts[0];
+    this.fDenominator = fractionParts[1];
+    this.fTogetherExpr = fractionParts[2];
   }
 
   @Override
