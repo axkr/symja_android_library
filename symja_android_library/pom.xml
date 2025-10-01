@@ -197,7 +197,7 @@
 			<dependency>
 				<groupId>it.unimi.dsi</groupId>
 				<artifactId>fastutil</artifactId>
-				<version>8.5.16</version>
+				<version>8.5.17</version>
 			</dependency>
 			<dependency>
 				<groupId>it.unimi.dsi</groupId>
@@ -419,13 +419,13 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.13.4</version>
+			<version>6.0.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.vintage</groupId>
 			<artifactId>junit-vintage-engine</artifactId>
-			<version>5.13.4</version>
+			<version>6.0.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
