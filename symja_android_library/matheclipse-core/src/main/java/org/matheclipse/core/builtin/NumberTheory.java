@@ -1947,8 +1947,7 @@ public final class NumberTheory {
         int thisn = a.size();
         for (int i = thisn - 1; i > 0; i--) {
           IInteger f = a.get(i);
-          f = f.multiply(
-              AbstractIntegerSym.binomial(2 * thisn, 2 * i));
+          f = f.multiply(AbstractIntegerSym.binomial(2 * thisn, 2 * i));
           val = sigPos ? val.add(f) : val.subtract(f);
           sigPos = !sigPos;
         }
@@ -2677,6 +2676,13 @@ public final class NumberTheory {
    * </pre>
    */
   private static class Factorial2 extends AbstractEvaluator implements IFunctionExpand {
+    @Override
+    public IExpr numericFunction(IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        return functionExpand(ast, engine);
+      }
+      return F.NIL;
+    }
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
@@ -2742,9 +2748,9 @@ public final class NumberTheory {
       if (arg1.isComplexInfinity()) {
         return S.Indeterminate;
       }
-      if (engine.isNumericMode() && arg1.isNumber()) {
-        return functionExpand(ast, engine);
-      }
+      // if (engine.isNumericMode() && arg1.isNumber()) {
+      // return functionExpand(ast, engine);
+      // }
       return F.NIL;
     }
 
@@ -3782,7 +3788,8 @@ public final class NumberTheory {
             n *= (-1);
           }
           // LucasL(n) = Fibonacci(n-1) + Fibonacci(n+1)
-          IExpr lucalsL = AbstractIntegerSym.fibonacci(n - 1).add(AbstractIntegerSym.fibonacci(n + 1));
+          IExpr lucalsL =
+              AbstractIntegerSym.fibonacci(n - 1).add(AbstractIntegerSym.fibonacci(n + 1));
           if (iArg < 0 && ((iArg & 0x00000001) == 0x00000001)) {
             return F.Negate(lucalsL);
           }
@@ -5772,7 +5779,7 @@ public final class NumberTheory {
       }
       try {
         IExpr expr = F.evalExpandAll(ast.arg1(), engine);
-        List<IExpr> varList = eVar.getVarList().copyTo();
+        IAST varList = eVar.getVarList();
 
         if (hasOption) {
           return F.booleSymbol(isSquarefreeWithOption(ast, expr, varList, engine));
@@ -5791,8 +5798,7 @@ public final class NumberTheory {
       return ARGS_1_2;
     }
 
-    public static boolean isSquarefree(IExpr expr, List<IExpr> varList)
-        throws JASConversionException {
+    public static boolean isSquarefree(IExpr expr, IAST varList) throws JASConversionException {
       JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
       GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
       if (poly == null) {
@@ -5802,7 +5808,7 @@ public final class NumberTheory {
       return factorAbstract.isSquarefree(poly);
     }
 
-    public static boolean isSquarefreeWithOption(final IAST lst, IExpr expr, List<IExpr> varList,
+    public static boolean isSquarefreeWithOption(final IAST lst, IExpr expr, IAST varList,
         final EvalEngine engine) throws JASConversionException {
       final OptionArgs options = new OptionArgs(lst.topHead(), lst, 2, engine);
       IExpr option = options.getOption(S.Modulus);
@@ -6232,10 +6238,10 @@ public final class NumberTheory {
             factorPlusMinus1 = F.C1;
           }
           IInteger k = value.add(nSubtractm);
-          temp.append(F.Times(factorPlusMinus1,
-              AbstractIntegerSym.binomial(value.add(nSubtract1), k),
-              AbstractIntegerSym.binomial(nTimes2Subtractm, nSubtractm.subtract(value)),
-              F.StirlingS2(k, value)));
+          temp.append(
+              F.Times(factorPlusMinus1, AbstractIntegerSym.binomial(value.add(nSubtract1), k),
+                  AbstractIntegerSym.binomial(nTimes2Subtractm, nSubtractm.subtract(value)),
+                  F.StirlingS2(k, value)));
           leafCount += temp.leafCount();
           if (leafCount > Config.MAX_AST_SIZE) {
             ASTElementLimitExceeded.throwIt(leafCount);
@@ -6814,7 +6820,7 @@ public final class NumberTheory {
     try {
       // try to generate a common expression polynomial
       JASConvert<edu.jas.arith.BigInteger> jas = new JASConvert<edu.jas.arith.BigInteger>(
-          varSet.getArrayList(), edu.jas.arith.BigInteger.ZERO);
+          varSet.getVarList(), edu.jas.arith.BigInteger.ZERO);
       GenPolynomial<edu.jas.arith.BigInteger> ePoly = jas.expr2JAS(expr, false);
       if (ePoly == null) {
         return F.NIL;
