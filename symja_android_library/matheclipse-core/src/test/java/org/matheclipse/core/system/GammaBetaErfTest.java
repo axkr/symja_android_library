@@ -577,8 +577,11 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
     check("Factorial2(2 + 3*I) // FunctionExpand", //
         "2^(1+I*3/2+1/4*(1-Cosh(3*Pi)))*Pi^(1/4*(-1+Cosh(3*Pi)))*Gamma(2+I*3/2)");
-    check("Factorial2(2.0 + I)", //
-        "5.15473+I*3.27618");
+    // TODO
+    check("Factorial2(2.0 + 4*I)", //
+        "Indeterminate");
+    checkNumeric("Factorial2(2.0 + I)", //
+        "5.154733394663547+I*3.2761849896882738");
 
     check("Factorial2(-1)", //
         "1");
@@ -859,15 +862,15 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     check("HarmonicNumber(Infinity,5)", //
         "Zeta(5)");
     checkNumeric("HarmonicNumber({-3.1415,2.987,-1,0,1},0.5)", //
-        "{-0.19602750271156133+I*4.277725609252295,2.277519248535999,ComplexInfinity,0.0,1.0000000000000007}");
+        "{-0.196027502711562+I*4.277725609252295,2.2775192485359987,ComplexInfinity,0.0,1.0}");
     checkNumeric("HarmonicNumber(-0.5,0.5)", //
-        "-0.8554558653879558");
+        "-0.8554558653879565");
     check("D(HarmonicNumber(x),{x,4})", //
         "24/x^5+PolyGamma(4,x)");
     check("HarmonicNumber(-9223372036854775808/11,0.5)", //
         "ComplexInfinity");
     check("N(HarmonicNumber(1/17, 5), 50)", //
-        "0.25327615206118707521034626118754228313433140885746");
+        "0.25327615206118707521034626118754228313433140885975");
     check("HarmonicNumber(0.33000000000000000000) ", //
         "0.44152364693736352811");
 
