@@ -100,7 +100,7 @@ matcher.caseOf(Sum(Times(Log(i_),Power(i_,$p(n, Integer))),list(i_,C1,oo)),
       Condition(Negate($($(Derivative(C1),Zeta),Negate(n))),Less(n,CN2)));
     // Sum(c_^(a_.*i_),{i_Symbol,0,n_}):=(-1+c^(a+a*n))/(-1+c^a)/;FreeQ({a,c},i)&&SpecialsFreeQ(n)
 matcher.caseOf(Sum(Power(c_,Times(a_DEFAULT,i_)),list(i_Symbol,C0,n_)),
-      Condition(Times(Plus(CN1,Power(c,Plus(a,Times(a,n)))),Power(Plus(CN1,Power(c,a)),CN1)),And(FreeQ(list(a,c),i),SpecialsFreeQ(n))));
+      Condition(Times(Power(Plus(CN1,Power(c,a)),CN1),Plus(CN1,Power(c,Plus(a,Times(a,n))))),And(FreeQ(list(a,c),i),SpecialsFreeQ(n))));
     // Sum(c_^(i_+m_.),{i_Symbol,0,n_}):=(c^m*(-1+c^(1+n)))/(-1+c)/;FreeQ({c,n,m},i)&&SpecialsFreeQ(n)
 matcher.caseOf(Sum(Power(c_,Plus(i_,m_DEFAULT)),list(i_Symbol,C0,n_)),
       Condition(Times(Power(Plus(CN1,c),CN1),Power(c,m),Plus(CN1,Power(c,Plus(C1,n)))),And(FreeQ(list(c,n,m),i),SpecialsFreeQ(n))));

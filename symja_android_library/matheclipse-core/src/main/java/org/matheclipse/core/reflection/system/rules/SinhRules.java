@@ -80,18 +80,18 @@ public class SinhRules {
     // Sinh(ArcSinh(x_)):=x
     ISetDelayed(Sinh(ArcSinh(x_)),
       x),
-    // Sinh(ArcCosh(x_)):=Sqrt(x+1)*Sqrt(-1+x)
+    // Sinh(ArcCosh(x_)):=Sqrt((-1+x)/(1+x))*(1+x)
     ISetDelayed(Sinh(ArcCosh(x_)),
-      Times(Sqrt(Plus(x,C1)),Sqrt(Plus(CN1,x)))),
+      Times(Sqrt(Times(Plus(CN1,x),Power(Plus(C1,x),CN1))),Plus(C1,x))),
     // Sinh(ArcTanh(x_)):=x/Sqrt(1-x^2)
     ISetDelayed(Sinh(ArcTanh(x_)),
       Times(x,Power(Subtract(C1,Sqr(x)),CN1D2))),
-    // Sinh(ArcCoth(x_)):=1/(Sqrt(-1+x)*Sqrt(x+1))
+    // Sinh(ArcCoth(x_)):=1/(Sqrt(1-1/x^2)*x)
     ISetDelayed(Sinh(ArcCoth(x_)),
-      Power(Times(Sqrt(Plus(CN1,x)),Sqrt(Plus(x,C1))),CN1)),
-    // Sinh(ArcSech(x_)):=Sqrt(1/x+1)*Sqrt(-1+1/x)
+      Power(Times(Sqrt(Subtract(C1,Power(x,CN2))),x),CN1)),
+    // Sinh(ArcSech(x_)):=((1+x)*Sqrt((1-x)/(1+x)))/x
     ISetDelayed(Sinh(ArcSech(x_)),
-      Times(Sqrt(Plus(Power(x,CN1),C1)),Sqrt(Plus(CN1,Power(x,CN1))))),
+      Times(Power(x,CN1),Plus(C1,x),Sqrt(Times(Subtract(C1,x),Power(Plus(C1,x),CN1))))),
     // Sinh(ArcCsch(x_)):=1/x
     ISetDelayed(Sinh(ArcCsch(x_)),
       Power(x,CN1)),

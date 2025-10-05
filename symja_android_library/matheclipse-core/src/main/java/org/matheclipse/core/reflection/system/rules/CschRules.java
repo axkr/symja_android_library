@@ -62,15 +62,15 @@ public class CschRules {
     // Csch(ArcSinh(x_)):=1/x
     ISetDelayed(Csch(ArcSinh(x_)),
       Power(x,CN1)),
-    // Csch(ArcCosh(x_)):=1/(Sqrt(-1+x)*Sqrt(x+1))
+    // Csch(ArcCosh(x_)):=1/(Sqrt((-1+x)/(1+x))*(1+x))
     ISetDelayed(Csch(ArcCosh(x_)),
-      Power(Times(Sqrt(Plus(CN1,x)),Sqrt(Plus(x,C1))),CN1)),
-    // Csch(ArcTanh(x_)):=Sqrt(x+1)*Sqrt(1-x)/x
+      Power(Times(Sqrt(Times(Plus(CN1,x),Power(Plus(C1,x),CN1))),Plus(C1,x)),CN1)),
+    // Csch(ArcTanh(x_)):=Sqrt(1-x^2)/x
     ISetDelayed(Csch(ArcTanh(x_)),
-      Times(Sqrt(Plus(x,C1)),Sqrt(Subtract(C1,x)),Power(x,CN1))),
-    // Csch(ArcCoth(x_)):=Sqrt(-1+x)*Sqrt(x+1)
+      Times(Power(x,CN1),Sqrt(Subtract(C1,Sqr(x))))),
+    // Csch(ArcCoth(x_)):=Sqrt(1-1/x^2)*x
     ISetDelayed(Csch(ArcCoth(x_)),
-      Times(Sqrt(Plus(CN1,x)),Sqrt(Plus(x,C1)))),
+      Times(Sqrt(Subtract(C1,Power(x,CN2))),x)),
     // Csch(ArcSech(x_)):=x/(Sqrt((1-x)/(1+x))*(1+x))
     ISetDelayed(Csch(ArcSech(x_)),
       Times(x,Power(Times(Sqrt(Times(Subtract(C1,x),Power(Plus(C1,x),CN1))),Plus(C1,x)),CN1))),

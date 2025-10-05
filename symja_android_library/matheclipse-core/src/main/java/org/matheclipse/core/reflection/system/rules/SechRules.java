@@ -101,9 +101,9 @@ public class SechRules {
     // Sech(ArcTanh(x_)):=Sqrt(1-x^2)
     ISetDelayed(Sech(ArcTanh(x_)),
       Sqrt(Subtract(C1,Sqr(x)))),
-    // Sech(ArcCoth(x_)):=(Sqrt(-1+x)*Sqrt(x+1))/x
+    // Sech(ArcCoth(x_)):=Sqrt(1-1/x^2)
     ISetDelayed(Sech(ArcCoth(x_)),
-      Times(Power(x,CN1),Sqrt(Plus(CN1,x)),Sqrt(Plus(x,C1)))),
+      Sqrt(Subtract(C1,Power(x,CN2)))),
     // Sech(ArcSech(x_)):=x
     ISetDelayed(Sech(ArcSech(x_)),
       x),

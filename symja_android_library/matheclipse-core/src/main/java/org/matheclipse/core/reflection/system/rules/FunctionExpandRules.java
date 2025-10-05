@@ -270,9 +270,9 @@ public class FunctionExpandRules {
     // SphericalHarmonicY(l_,0,t_,p_):=(Sqrt(1+2*l)*LegendreP(l,Cos(t)))/(2*Sqrt(Pi))
     SetDelayed(SphericalHarmonicY(l_,C0,t_,p_),
       Times(Sqrt(Plus(C1,Times(C2,l))),Power(Times(C2,CSqrtPi),CN1),LegendreP(l,Cos(t)))),
-    // SphericalHarmonicY(l_,1,t_,p_):=(-E^(I*p)*l*(1+l)*Sqrt(1+2*l)*Sqrt(Gamma(l))*Hypergeometric2F1(1-l,2+l,2,Sin(t/2)^2)*Sin(t))/(4*Sqrt(Pi)*Sqrt(Gamma(2+l)))
+    // SphericalHarmonicY(l_,1,t_,p_):=(-E^(I*p)*l*Sqrt(1+2*l)*(1+l)*Sqrt(Gamma(l))*Hypergeometric2F1(1-l,2+l,2,Sin(t/2)^2)*Sin(t))/(4*Sqrt(Pi)*Sqrt(Gamma(2+l)))
     SetDelayed(SphericalHarmonicY(l_,C1,t_,p_),
-      Times(CN1,Exp(Times(CI,p)),l,Plus(C1,l),Sqrt(Plus(C1,Times(C2,l))),Sqrt(Gamma(l)),Power(Times(C4,CSqrtPi,Sqrt(Gamma(Plus(C2,l)))),CN1),Hypergeometric2F1(Subtract(C1,l),Plus(C2,l),C2,Sqr(Sin(Times(C1D2,t)))),Sin(t))),
+      Times(CN1,Exp(Times(CI,p)),l,Sqrt(Plus(C1,Times(C2,l))),Plus(C1,l),Sqrt(Gamma(l)),Power(Times(C4,CSqrtPi,Sqrt(Gamma(Plus(C2,l)))),CN1),Hypergeometric2F1(Subtract(C1,l),Plus(C2,l),C2,Sqr(Sin(Times(C1D2,t)))),Sin(t))),
     // SphericalHarmonicY(l_,m_,t_,p_):=(E^(I*m*p)*Sqrt(1+2*l)*Sqrt(Gamma(1+l-m))*Hypergeometric2F1(-l,1+l,1-m,Sin(t/2)^2)*Sin(t)^m)/((1-Cos(t))^m*2*Sqrt(Pi)*Gamma(1-m)*Sqrt(Gamma(1+l+m)))
     SetDelayed(SphericalHarmonicY(l_,m_,t_,p_),
       Times(Exp(Times(CI,m,p)),Sqrt(Plus(C1,Times(C2,l))),Sqrt(Gamma(Plus(C1,l,Negate(m)))),Power(Times(Power(Subtract(C1,Cos(t)),m),C2,CSqrtPi,Gamma(Subtract(C1,m)),Sqrt(Gamma(Plus(C1,l,m)))),CN1),Hypergeometric2F1(Negate(l),Plus(C1,l),Subtract(C1,m),Sqr(Sin(Times(C1D2,t)))),Power(Sin(t),m))),

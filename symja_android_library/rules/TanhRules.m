@@ -10,10 +10,10 @@
  Tanh(Pi*I)=0,
   
  Tanh(ArcSinh(x_)):=x/Sqrt(1 + x^2),
- Tanh(ArcCosh(x_)):=Sqrt(x - 1)*Sqrt(x + 1)/x,
+ Tanh(ArcCosh(x_)):=((1+x)*Sqrt((-1+x)/(1+x)))/x,
  Tanh(ArcTanh(x_)):=x,
  Tanh(ArcCoth(x_)):=1/x,
- Tanh(ArcSech(x_)):=x*Sqrt(1/x - 1)*Sqrt(1/x + 1),
+ Tanh(ArcSech(x_)):=Sqrt((1-x)/(1+x))*(1+x),
  Tanh(ArcCsch(x_)):=1/(Sqrt(1 + 1/x^2)*x),
  Tanh(Log(x_)):=(x^2-1)/(1+x^2), 
  

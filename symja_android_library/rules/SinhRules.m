@@ -22,10 +22,10 @@
  Sinh(Complex(0,n_Integer)*Pi+x_):=(-1)^n*Sinh(x),
  
  Sinh(ArcSinh(x_)):=x,
- Sinh(ArcCosh(x_)):=Sqrt(x + 1)*Sqrt(x - 1),
+ Sinh(ArcCosh(x_)):=Sqrt((-1+x)/(1+x))*(1+x),
  Sinh(ArcTanh(x_)):=x/Sqrt(1-x^2),
- Sinh(ArcCoth(x_)):=1/(Sqrt(x - 1)*Sqrt(x + 1)),
- Sinh(ArcSech(x_)):=Sqrt(1/x + 1)*Sqrt(1/x - 1),
+ Sinh(ArcCoth(x_)):=1/(Sqrt(1-1/x^2)*x),
+ Sinh(ArcSech(x_)):=((1+x)*Sqrt((1-x)/(1+x)))/x,
  Sinh(ArcCsch(x_)):=1/x,
  Sinh(Log(x_)):=(1/2)*x-(1/2)/x,
  

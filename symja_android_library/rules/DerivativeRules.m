@@ -112,6 +112,16 @@ Derivative(1,0,0)[CarlsonRG] = ((1/4)*CarlsonRF(#,#2,#3) - (1/12)*CarlsonRD(#2,#
 Derivative(0,1,0)[CarlsonRG] = ((1/4)*CarlsonRF(#,#2,#3) - (1/12)*CarlsonRD(#,#3,#2)*#2) &,
 Derivative(0,0,1)[CarlsonRG] = ((1/4)*CarlsonRF(#,#2,#3) - (1/12)*CarlsonRD(#,#2,#3)*#3) &,
 
+Derivative(1,0)[EllipticE] = Sqrt(1-Sin(#)^2*#2)&,
+Derivative(0,1)[EllipticE] = (EllipticE(#,#2)-EllipticF(#,#2))/(2*#2)&,
+Derivative(1,0)[EllipticF] = 1/Sqrt(1-Sin(#)^2*#2)&,
+Derivative(0,1)[EllipticF] = -EllipticF(#,#2)/(2*#2)-EllipticE(#,#2)/(2*(-1+#2)*#2)+Sin(2*#)/(4*(-1+#2)*Sqrt(1-Sin(#)^2*#2))&,
+Derivative(1,0)[EllipticPi] = (EllipticE(#2)+(EllipticPi(#,#2)*(#^2-#2))/#+(EllipticK(#2)*(-#+#2))/#)/(2*(-1+#)*(-#+#2))&,
+Derivative(0,1)[EllipticPi] = (EllipticPi(#,#2)+EllipticE(#2)/(-1+#2))/(2*(#-#2))&,
+Derivative(1,0,0)[EllipticPi] = (EllipticE(#2,#3)+(EllipticPi(#,#2,#3)*(#^2-#3))/#+(EllipticF(#2,#3)*(-#+#3))/#+(-Sin(2*#2)*#*Sqrt(1-Sin(#2)^2*#3))/(2*(1-Sin(#2)^2*#)))/(2*(-1+#)*(-#+#3))&,
+Derivative(0,1,0)[EllipticPi] = 1/((1-Sin(#2)^2*#)*Sqrt(1-Sin(#2)^2*#3))&,
+Derivative(0,0,1)[EllipticPi] = (EllipticPi(#,#2,#3)+EllipticE(#2,#3)/(-1+#3)+(-Sin(2*#2)*#3)/(2*(-1+#3)*Sqrt(1-Sin(#2)^2*#3)))/(2*(#-#3))&,
+
 Derivative(0,1)[Erf] = 2/(E^(#2^2)*Sqrt(Pi))&,
 Derivative(1,0)[Erf] = -2/(E^(#^2)*Sqrt(Pi))&,
 Derivative(0,1)[InverseErf] = 1/2*E^InverseErf(#,#2)^2*Sqrt(Pi)&,
