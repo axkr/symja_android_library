@@ -6,6 +6,7 @@ import java.util.Deque;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ConditionException;
@@ -1290,8 +1291,9 @@ public final class PatternMatching {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1() && ast.arg1().isSymbol()) {
-        ISymbol arg1 = (ISymbol) ast.arg1();
-        return org.matheclipse.core.expression.OptionsPattern.optionsList(arg1, false);
+        IAST result =
+            org.matheclipse.core.expression.OptionsPattern.optionsList((ISymbol) ast.arg1(), false);
+        return EvalAttributes.copySort(result);
       }
       return F.NIL;
     }
