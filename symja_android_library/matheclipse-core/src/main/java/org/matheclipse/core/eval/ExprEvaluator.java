@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import org.apfloat.ApfloatInterruptedException;
 import org.apfloat.internal.BackingStorageException;
 import org.hipparchus.complex.Complex;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ContinueException;
@@ -498,10 +499,10 @@ public class ExprEvaluator {
     if (inputExpression != null) {
       // F.join();
       EvalEngine.setReset(fEngine);
+      ExecutorService executorService = Executors.newSingleThreadExecutor(Config.THREAD_FACTORY);
       try {
         fExpr = fEngine.parse(inputExpression);
         if (fExpr != null) {
-          final ExecutorService executorService = Executors.newSingleThreadExecutor();
           EvalControlledCallable work = call == null ? new EvalControlledCallable(fEngine) : call;
           work.setExpr(fExpr);
           try {
@@ -517,12 +518,12 @@ public class ExprEvaluator {
           } catch (Exception e) {
             // LOGGER.debug("ExprEvaluator.evaluateWithTimeout() failed", e);
             return S.Null;
-          } finally {
-            work.cancel();
-            MoreExecutors.shutdownAndAwaitTermination(executorService, 1, TimeUnit.SECONDS);
+            // } finally {
+            // work.cancel();
           }
         }
       } finally {
+        MoreExecutors.shutdownAndAwaitTermination(executorService, 1, TimeUnit.SECONDS);
         EvalEngine.remove();
       }
     }

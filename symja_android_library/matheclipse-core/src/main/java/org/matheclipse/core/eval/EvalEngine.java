@@ -2830,12 +2830,10 @@ public class EvalEngine implements Serializable {
    *         longer than <code>seconds</code>.
    */
   public IExpr evalTimeConstrained(final IExpr expr, IExpr defaultValue, long seconds) {
-    final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    TimeLimiter timeLimiter = SimpleTimeLimiter.create(executorService); // Executors.newSingleThreadExecutor());
-    EvalControlledCallable work = new EvalControlledCallable(this);
-
-    try {
-      // seconds = seconds > 1 ? seconds - 1 : seconds;
+    ExecutorService executorService = Executors.newSingleThreadExecutor(Config.THREAD_FACTORY);
+    try  {
+      TimeLimiter timeLimiter = SimpleTimeLimiter.create(executorService); // Executors.newSingleThreadExecutor());
+      EvalControlledCallable work = new EvalControlledCallable(this);
       seconds = setSeconds(seconds);
       work.setExpr(expr, seconds);
       return timeLimiter.callWithTimeout(work, seconds, TimeUnit.SECONDS);
@@ -2880,7 +2878,6 @@ public class EvalEngine implements Serializable {
       return S.Null;
     } finally {
       if (!MoreExecutors.shutdownAndAwaitTermination(executorService, 1, TimeUnit.SECONDS)) {
-        // work.cancel();
       }
     }
   }

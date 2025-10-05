@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Executors;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import org.apfloat.Apfloat;
@@ -116,28 +117,34 @@ public class Config {
   public static final int MAX_APFLOAT_PROCESSORS = 1;
 
   /**
-   * Maximum number for the leaf count of an expression so that <code>PossibleZeroQ()</code> will
-   * try a factoring. Has to be an int value greater 0.
+   * Maximum number for the leaf count of an expression so that {@link S#PossibleZeroQ} > will try a
+   * factoring. Has to be an int value greater 0.
    */
   public static final int MAX_POSSIBLE_ZERO_LEAFCOUNT = 1000;
 
   /**
-   * Maximum number for the leaf count of an expression so that <code>Simplify()</code> will try
-   * calling <code>Factor()</code>.
+   * Maximum number for the leaf count of an expression so that {@link S#Simplify} will try calling
+   * {@link S#Factor}.
    */
   public static final int MAX_SIMPLIFY_FACTOR_LEAFCOUNT = 100;
 
   /**
-   * Maximum number for the leaf count of an expression so that <code>Simplify()</code> will try
-   * calling <code>Apart()</code>.
+   * Maximum number for the leaf count of an expression so that {@link S#Simplify} will try calling
+   * {@link S#Apart}.
    */
   public static final int MAX_SIMPLIFY_APART_LEAFCOUNT = 100;
 
   /**
-   * Maximum number for the leaf count of an expression so that <code>Simplify()</code> will try
-   * calling <code>Together()</code>.
+   * Maximum number for the leaf count of an expression so that {@link S#Simplify} will try calling
+   * {@link S#Together}.
    */
   public static final int MAX_SIMPLIFY_TOGETHER_LEAFCOUNT = 65;
+
+  /**
+   * Maximum number of the exponent if a {@link S#Plus} expression is in the base of the power so
+   * that {@link S#Simplify} will try calling {@link S#Expand}.
+   */
+  public static final int MAX_SIMPLIFY_EXPAND_PLUS_EXPONENT = 10;
 
   /** Maximum number of parsed input leaves of an expression */
   public static long MAX_INPUT_LEAVES = Long.MAX_VALUE;
@@ -370,7 +377,9 @@ public class Config {
    * For example <code>com.google.appengine.api.ThreadManager.currentRequestThreadFactory()
    * </code> can be used on Google appengine.
    */
-  public static java.util.concurrent.ThreadFactory THREAD_FACTORY = null;
+  public static java.util.concurrent.ThreadFactory THREAD_FACTORY =
+      // Java 21: Thread.ofVirtual().factory();
+      Executors.defaultThreadFactory();
 
   /**
    * Use <code>Num</code> objects for numeric calculations up to 16 digits precision.
