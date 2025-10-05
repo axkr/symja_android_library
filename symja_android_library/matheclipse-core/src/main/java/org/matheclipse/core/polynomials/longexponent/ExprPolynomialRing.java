@@ -392,23 +392,19 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
       if (ast.isDirectedInfinity()) {
         throw JASConversionException.FAILED;
       }
-      ExprPolynomial result = getZero();
-      ExprPolynomial p = getZero();
       if (ast.isPlus()) {
-        IExpr expr = ast.arg1();
-        result = create(expr, coefficient, checkNegativeExponents, coefficientListMode);
-        for (int i = 2; i < ast.size(); i++) {
-          expr = ast.get(i);
-          p = create(expr, coefficient, checkNegativeExponents, coefficientListMode);
+        ExprPolynomial result = getZero();
+        for (int i = 1; i < ast.size(); i++) {
+          ExprPolynomial p =
+              create(ast.get(i), coefficient, checkNegativeExponents, coefficientListMode);
           result = result.sum(p);
         }
         return result;
       } else if (ast.isTimes()) {
-        IExpr expr = ast.arg1();
-        result = create(expr, coefficient, checkNegativeExponents, coefficientListMode);
-        for (int i = 2; i < ast.size(); i++) {
-          expr = ast.get(i);
-          p = create(expr, coefficient, checkNegativeExponents, coefficientListMode);
+        ExprPolynomial result = getOne();
+        for (int i = 1; i < ast.size(); i++) {
+          ExprPolynomial p =
+              create(ast.get(i), coefficient, checkNegativeExponents, coefficientListMode);
           result = result.multiply(p);
         }
         return result;

@@ -3,16 +3,26 @@ package org.matheclipse.core.system;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.matheclipse.core.expression.F.CN1D2;
+import static org.matheclipse.core.expression.F.Integrate;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Sqr;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.a_;
 import static org.matheclipse.core.expression.F.ast;
+import static org.matheclipse.core.expression.F.b_DEFAULT;
+import static org.matheclipse.core.expression.F.c_;
+import static org.matheclipse.core.expression.F.d_DEFAULT;
 import static org.matheclipse.core.expression.F.x_;
+import static org.matheclipse.core.expression.F.x_Symbol;
 import static org.matheclipse.core.expression.S.a;
 import static org.matheclipse.core.expression.S.f;
 import static org.matheclipse.core.expression.S.x;
 import org.junit.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.patternmatching.PatternMatcher;
@@ -67,6 +77,17 @@ public class PatternsTest extends ExprEvaluatorTestCase {
         expr.toString());
     boolean isComplicated = RulesData.isComplicatedPatternRule(expr);
     assertFalse(isComplicated);
+  }
+
+  @Test
+  public void testPatternHashCode() {
+    IAST expr1 = Integrate(Times(Power(Plus(a_, Times(b_DEFAULT, Sqr(x_))), CN1D2),
+        Power(Plus(c_, Times(d_DEFAULT, Sqr(x_))), CN1D2)), x_Symbol);
+    // System.out.println("expr.patternHashCode 1: " + expr1.patternHashCode());
+    IAST expr2 =
+        F.Integrate(F.Times(F.Sqrt(F.Subtract(F.C2, F.Sqr(x))), F.Sqrt(F.Plus(F.C1, F.Sqr(x)))), x);
+    // System.out.println("expr.patternHashCode 2: " + expr2.patternHashCode());
+    assertEquals(expr1.patternHashCode(), expr2.patternHashCode());
   }
 
   @Test

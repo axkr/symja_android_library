@@ -1572,11 +1572,11 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             + "3)^2+32*E^(2*q)*Cosh(q/3)^2+64*E^(2*q)*Cosh(q/3)^3-4*Sech(q/3)-8*E^q*Sech(q/3)+8*E^(\n"
             + "2*q)*Sech(q/3)+8*E^q*Sech(q/3)^2+2*E^(2*q)*Sech(q/3)^2+2*E^(3*q)*Sech(q/3)^2+Sech(q/\n"
             + "3)^3+E^q*Sech(q/3)^3+E^(2*q)*Sech(q/3)^3)/(E^(2*q)*(-16*Cosh(q)+4/(3*Cosh(q/3)+Cosh(q))-\n"
-            + "12*Sech(q/3))),(4+12*E^(2*q)+32*E^q*Cosh(q/3)-8*E^(2*q)*Cosh(q/3)-32*E^q*Cosh(q/\n"
-            + "3)^3-8*E^q*Cosh(2/3*q)-8*E^(2*q)*Cosh(2/3*q)-4*E^q*Sech(q/3)+4*E^(2*q)*Sech(q/3)+\n"
-            + "2*E^(3*q)*Sech(q/3)-Sech(q/3)^2-E^q*Sech(q/3)^2-4*E^(2*q)*Sech(q/3)^2-1/2*E^q*Sech(q/\n"
-            + "3)^3-1/2*E^(2*q)*Sech(q/3)^3-1/2*E^(3*q)*Sech(q/3)^3)/(E^q*(4*Cosh(2/3*q)+1/(1+Cosh(\n"
-            + "2/3*q)))*(-4*Cosh(q/3)+Sech(q/3))),1}}");
+            + "12*Sech(q/3))),-(-8-16*E^q-40*E^(2*q)-64*E^q*Cosh(q/3)+16*E^(2*q)*Cosh(q/3)+32*E^q*Cosh(q/\n"
+            + "3)^2+32*E^(2*q)*Cosh(q/3)^2+64*E^q*Cosh(q/3)^3+8*E^q*Sech(q/3)-8*E^(2*q)*Sech(q/\n"
+            + "3)-4*E^(3*q)*Sech(q/3)+2*Sech(q/3)^2+2*E^q*Sech(q/3)^2+8*E^(2*q)*Sech(q/3)^2+E^q*Sech(q/\n"
+            + "3)^3+E^(2*q)*Sech(q/3)^3+E^(3*q)*Sech(q/3)^3)/(E^q*(-4*Cosh(q/3)+Sech(q/3))*(8*Cosh(\n"
+            + "2/3*q)+Sech(q/3)^2)),1}}");
 
     check("NullSpace({{10, 4, -6, -4}, {4, 10, -15, -4}, {0, 0, 0, 0}, {4, 4, -6, 2}} )", //
         "{{0,3,2,0}}");

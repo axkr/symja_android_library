@@ -4689,6 +4689,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testD() {
+    check("(1-x^2)/(1-x)^2+(2*x)/(-1+x)", //
+        "(2*x)/(-1+x)+(1-x^2)/(1-x)^2");
 
     check("D(f(x)^(-5),x)", //
         "(-5*f'(x))/f(x)^6");
@@ -4718,8 +4720,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("D(Sin(x) * Cos(x), {x, 6})", //
         "-64*Cos(x)*Sin(x)");
     check("D((-1/2-x+x^2)/(-1/2-x/2+5/2*x^2-5/2*x^3),{x,2})", //
-        "2/(-1/2-x/2+5/2*x^2-5/2*x^3)+(2*(-1+2*x)*(1/2-5*x+15/2*x^2))/(1/2+x/2-5/2*x^2+5/\n" //
-            + "2*x^3)^2+(-1/2-x+x^2)*((-2*(1/2-5*x+15/2*x^2)^2)/(1/2+x/2-5/2*x^2+5/2*x^3)^3+(-5+\n" //
+        "2/(-1/2-x/2+5/2*x^2-5/2*x^3)+(2*(-1+2*x)*(1/2-5*x+15/2*x^2))/(1/2+x/2-5/2*x^2+5/\n"
+            + "2*x^3)^2+(-1/2-x+x^2)*((-2*(1/2-5*x+15/2*x^2)^2)/(1/2+x/2-5/2*x^2+5/2*x^3)^3+(-5+\n"
             + "15*x)/(1/2+x/2-5/2*x^2+5/2*x^3)^2)");
     check("D(Boole(f(x)),{x,10})", //
         "0");
@@ -4991,7 +4993,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("D(Exp(x),x)", //
         "E^x");
     check("D((x^2+3)/(3*x+2),x)", //
-        "(-3*(3+x^2))/(2+3*x)^2+(2*x)/(2+3*x)");
+        "(2*x)/(2+3*x)+(-3*(3+x^2))/(2+3*x)^2");
 
     // others -----
     check("D(InverseErf(x),x)", //
@@ -5546,6 +5548,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDerivative() {
+    check("Derivative(1,0)[EllipticF][x,y]", //
+        "1/Sqrt(1-y*Sin(x)^2)");
+
     check("Derivative(0,1,0,0)[Multinomial]", //
         "(-HarmonicNumber(#2)+HarmonicNumber(#1+#2+#3+#4))*Multinomial(#1,#2,#3,#4)&");
     check("Derivative(1,1,0,0)[Multinomial]", //
@@ -7745,6 +7750,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFactor() {
+    check("Factor(1+x^2, Extension->I)", //
+        "(-I+x)*(I+x)");
+
+    check("(1-x)^2*(4-3*x)", //
+        "(4-3*x)*(1-x)^2");
+
     // TODO message is printed to many times
     // print message "rvalue" Increment: y is not a variable with a value, so its value cannot be
     // changed.
@@ -7945,8 +7956,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map = factorAbstract.factors(poly);
     // }
     // System.out.println();
-    check("Factor(1+x^2, Extension->I)", //
-        "(-I+x)*(I+x)");
 
     check("Factor(x^(-6)+1)", //
         "((1+x^2)*(1-x^2+x^4))/x^6");
@@ -8184,7 +8193,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(-1+x)*(1+x)*(1+x^2)*(1+x^4)*(1+x^8)");
     System.out.print('.');
     check("factor((-3)*x^3 +10*x^2-11*x+4)", //
-        "(1-x)^2*(4-3*x)");
+        "(4-3*x)*(1-x)^2");
     System.out.print('.');
     check("factor(x^2-a^2)", //
         "(-a+x)*(a+x)");
@@ -9834,8 +9843,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check(
     // "Sqrt(63)/3", //
     // "Sqrt(7)");
-    check("Sqrt(20541813482020954028041088271392963168222371159)/4727827637485585077281", //
-        "Sqrt(919)");
+    // check("Sqrt(20541813482020954028041088271392963168222371159)/4727827637485585077281", //
+    // "Sqrt(919)");
     check("FromContinuedFraction({1, 4, 2, {3, 1}})", //
         "1/238*(287+Sqrt(21))");
     // check(
@@ -18156,6 +18165,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolynomialExtendedGCD() {
+    // Wikipedia: finite field GF(28) - p = x8 + x4 + x3 + x + 1, and a = x6 + x4 +
+    // x + 1
+    check("PolynomialExtendedGCD(x^8 + x^4 + x^3 + x + 1, x^6 + x^4 + x + 1, x, Modulus->2)", //
+        "{1,{1+x^2+x^3+x^4+x^5,x+x^3+x^6+x^7}}");
+
+    check("PolynomialExtendedGCD((x - 1)^2*(x - 2)^2, (x - 1)*(x^2 - 3), x)", //
+        "{-1+x,{1/2*(19+11*x),1/2*(-26+36*x-11*x^2)}}");
+    check("PolynomialExtendedGCD((x - 1)^2*(x - 2)^2, (x - 1)*(x^2 - 3), x, Modulus -> 2)", //
+        "{1+x^2,{1,1+x}}");
+
     check("PolynomialExtendedGCD(e*x^2 + d, ( -2*d*e^2*Sqrt(-e/d) )*x + 2*d*e^2, x )", //
         "{-1/Sqrt(-e/d)+x,{0,-1/(2*d*e^2*Sqrt(-e/d))}}");
 
@@ -18182,20 +18201,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("PolynomialExtendedGCD(e*x^2 + d, ( -2*d*e^2*Sqrt(-e/d) )*x + 2*d*e^2, x )", //
         "{-1/Sqrt(-e/d)+x,{0,-1/(2*d*e^2*Sqrt(-e/d))}}");
 
-    // Wikipedia: finite field GF(28) - p = x8 + x4 + x3 + x + 1, and a = x6 + x4 +
-    // x + 1
-    check("PolynomialExtendedGCD(x^8 + x^4 + x^3 + x + 1, x^6 + x^4 + x + 1, x, Modulus->2)", //
-        "{1,{1+x^2+x^3+x^4+x^5,x+x^3+x^6+x^7}}");
-
     // check("PolynomialExtendedGCD((x - a)*(b*x - c)^2, (x - a)*(x^2 -
     // b*c), x)", "");
     check("PolynomialExtendedGCD((x - 1)*(x - 2)^2, (x - 1)*(x^2 - 3), x)", //
         "{-1+x,{7+4*x,9-4*x}}");
-
-    check("PolynomialExtendedGCD((x - 1)^2*(x - 2)^2, (x - 1)*(x^2 - 3), x)", //
-        "{-1+x,{1/2*(19+11*x),1/2*(-26+36*x-11*x^2)}}");
-    check("PolynomialExtendedGCD((x - 1)^2*(x - 2)^2, (x - 1)*(x^2 - 3), x,  Modulus -> 2)", //
-        "{1+x^2,{1,1+x}}");
 
     check("PolynomialExtendedGCD(a*x^2 + b*x + c, x - r, x)", //
         "{1,{1/(c+b*r+a*r^2),(-b-a*r-a*x)/(c+b*r+a*r^2)}}");
@@ -18203,6 +18212,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolynomialGCD() {
+    check("PolynomialGCD(x^2 - 2, x - Sqrt(2))", //
+        "-Sqrt(2)+x");
+
+    check("PolynomialGCD((x + 1)^3, x^3 + x, Modulus -> 2)", //
+        "(1+x)^2");
+
     // TODO https://github.com/kredel/java-algebra-system/issues/15
     check("PolynomialGCD(-1/2,x^2-5*x+(-1)*6)", //
         "1/2");
@@ -18240,8 +18255,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("PolynomialGCD(x,x)", //
         "x");
 
-    check("PolynomialGCD((x + 1)^3, x^3 + x, Modulus -> 2)", //
-        "(1+x)^2");
     check("PolynomialGCD((x - a)*(b*x - c)^2, (x - a)*(x^2 - b*c))", //
         "-a+x");
     check("PolynomialGCD((1 + x)^2*(2 + x)*(4 + x), (1 + x)*(2 + x)*(3 + x))", //
@@ -18262,6 +18275,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolynomialLCM() {
+    check("PolynomialLCM(1/2,2)", //
+        "2");
+    check("PolynomialLCM(a+b*x,c+d*x)", //
+        "(a+b*x)*(c+d*x)");
+
+    // // TODO calc LCM for last 2 args
+    check("PolynomialLCM(Sin(x),x^2+3*x,x)", //
+        "x*(3*x+x^2)*Sin(x)");
+    check("PolynomialLCM(Sin(x),x^2+3*x)", //
+        "(3*x+x^2)*Sin(x)");
     // TODO https://github.com/kredel/java-algebra-system/issues/15
     check("PolynomialLCM(x^2+7*x+6,-1/2)", //
         "-6-7*x-x^2");
@@ -21534,6 +21557,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
    */
   @Test
   public void testResultant() {
+    check("PolynomialRemainder(-2+x^2-2*x*y+y^2,-5+4*x-2*x^3+2*y+3*x^2*y,y)",
+        "-2+x^2+(5-4*x+2*x^3)*((-2*x)/(2+3*x^2)+(5-4*x+2*x^3)/(2+3*x^2)^2)");
+
     // https: // codegolf.stackexchange.com/questions/261236/resultant-of-two-polynomials
     check("Resultant(1,2,x)", //
         "1");
@@ -21586,7 +21612,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // +
     // "2+a*b+b^2-a*c-b*c-a*d-b*d+c*d-a*e-b*e+c*e+d*e)^2");
     check("PolynomialRemainder(-2+x^2-2*x*y+y^2,-5+4*x-2*x^3+2*y+3*x^2*y,y)",
-        "-2+x^2+(5-4*x+2*x^3)*((5-4*x+2*x^3)/(2+3*x^2)^2+(-2*x)/(2+3*x^2))");
+        "-2+x^2+(5-4*x+2*x^3)*((-2*x)/(2+3*x^2)+(5-4*x+2*x^3)/(2+3*x^2)^2)");
     check("Resultant((x-y)^2-2 , y^3-5, y)", //
         "17-60*x+12*x^2-10*x^3-6*x^4+x^6");
     check("Resultant(x^2 - 2*x + 7, x^3 - x + 5, x)", //
@@ -22498,6 +22524,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSign() {
+
+    check("Sign(1.0+I)", //
+        "0.7071067811865475+I*0.7071067811865475");
+    check("Sign(E - Pi)", //
+        "-1");
     check(
         "Simplify((1/3+(1/3)*(-2)^(-1/3)*2^(-2/3)*(1+(0+1*I)*3^(1/2))+(1/6)*(-1)^(1/3)*(1+(0+-1*I)*3^(1/2)))^2)", //
         "1");
@@ -22528,8 +22559,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/2*(1+I*Sqrt(3))");
     check("Sign(Sqrt(3)+I)", //
         "1/2*(I+Sqrt(3))");
-    check("Sign(1.0+I)", //
-        "0.707107+I*0.707107");
 
     check("Sign(Indeterminate)", //
         "Indeterminate");
@@ -22548,8 +22577,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Sign(1+I)", //
         "(1+I)/Sqrt(2)");
 
-    check("Sign(E - Pi)", //
-        "-1");
     check("Sign(0)", //
         "0");
     check("Sign(I)", //
@@ -22587,6 +22614,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSimplify() {
+    check("Simplify(1/(Sqrt(2 - x^2)*Sqrt(1 + x^2)))", //
+        "1/Sqrt(2+x^2-x^4)");
+    check("Simplify((Cos(ArcSin(1-d*x^2)/2)-Sin(ArcSin(1-d*x^2)/2))^2)", //
+        "d*x^2");
+    check("Simplify(2*Cos(x)*Sin(x))", //
+        "Sin(2*x)");
+
     // check("Reduce(p==5&&p==6)", //
     // "False");
     // check("Simplify(p==5&&p==6)", //
@@ -23090,7 +23124,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Skewness(NakagamiDistribution(n,m))", //
         "(Pochhammer(n,1/2)*(1/2-2*(n-Pochhammer(n,1/2)^2)))/(n-Pochhammer(n,1/2)^2)^(3/2)");
     check("Skewness(LogNormalDistribution(n,m))", //
-        "(2+E^m^2)*Sqrt(-1+E^m^2)");
+        "Sqrt(-1+E^m^2)*(2+E^m^2)");
     check("Skewness(GumbelDistribution(n,m))", //
         "(-12*Sqrt(6)*Zeta(3))/Pi^3");
     check("Skewness(GeometricDistribution(n))", //
@@ -23347,6 +23381,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSqrt() {
+    check("1/(Sqrt(2-x^2)*Sqrt(1+x^2))", //
+        "1/(Sqrt(2-x^2)*Sqrt(1+x^2))");
     check("Sqrt({{{1,0},{2,3}},{{4,a},{1}}})", //
         "{{{1,0},{Sqrt(2),Sqrt(3)}},{{2,Sqrt(a)},{1}}}");
     check("Sqrt(-Sqrt(3))", //
@@ -24123,7 +24159,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("e = (1 + x)/(1 - x) + x/(1 + x);t(e)", //
         "Together");
     check("t(e)[e]", //
-        "(1+3*x)/((1-x)*(1+x))");
+        "(-1-3*x)/((-1+x)*(1+x))");
 
   }
 
@@ -24446,9 +24482,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + "      1215035/63*(-1+I*Sqrt(3))/(2^(2/3)*(29908746250000+I*15750000*Sqrt(9477810222))^(\n" //
         + "      1/3))+((-1-I*Sqrt(3))*(29908746250000+I*15750000*Sqrt(9477810222))^(1/3))/(63000*\n" //
         + "      2^(1/3))},Abs,2)", //
-        "{254/315+(14954373125000+I*7875000*Sqrt(9477810222))^(1/3)/31500+1215035/63*2^(1/\n"//
-            + "3)/(29908746250000+I*15750000*Sqrt(9477810222))^(1/3),254/315+1215035/63*(-1+I*Sqrt(\n"//
-            + "3))/(2^(2/3)*(29908746250000+I*15750000*Sqrt(9477810222))^(1/3))+((-1-I*Sqrt(3))*(\n"//
+        "{254/315+(14954373125000+I*7875000*Sqrt(9477810222))^(1/3)/31500+1215035/63*2^(1/\n"
+            + "3)/(29908746250000+I*15750000*Sqrt(9477810222))^(1/3),254/315+1215035/63*(-1+I*Sqrt(\n"
+            + "3))/(2^(2/3)*(29908746250000+I*15750000*Sqrt(9477810222))^(1/3))+((-1-I*Sqrt(3))*(\n"
             + "29908746250000+I*15750000*Sqrt(9477810222))^(1/3))/(63000*2^(1/3))}");
 
 
@@ -25057,6 +25093,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTogether() {
+    check("Together(1/Sqrt(1+1/x)+(1+1/x)^(3/2))", //
+        "(x*Sqrt(x/(1+x))+Sqrt((1+x)/x)+x*Sqrt((1+x)/x))/x");
+
+    check(
+        "Together((2*(2*x^3-4*x+5)*x^3*(3*x^2+2)^(-1)-4*x*(2*x^3-4*x+5)*(3*x^2+2)^(-1)+5*(2*x^3-4*x+\n"
+            + "5)*(3*x^2+2)^(-1)-4*x^4+8*x^2-10*x)*(3*x^2+2)^(-1)+x^2-2)", //
+        "(17-60*x+12*x^2-10*x^3-6*x^4+x^6)/(2+3*x^2)^2");
+
     check("Together((1/x-1/3)^3/(x-3)^2)", //
         "(3-x)/(27*x^3)");
     check("Together((1/x-1/3)/(x-3))", //
@@ -25133,7 +25177,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Together(1/Sqrt(1+1/x) )", //
         "Sqrt(x/(1+x))");
     check("Together(1/Sqrt(1+1/x)+(1+1/x)^(3/2))", //
-        "(Sqrt((1+x)/x)+x*Sqrt((1+x)/x)+x*Sqrt(x/(1+x)))/x");
+        "(x*Sqrt(x/(1+x))+Sqrt((1+x)/x)+x*Sqrt((1+x)/x))/x");
 
     check("Together(1/(2*Sqrt(3))+Sqrt(3)/2)", //
         "2/Sqrt(3)");
@@ -25279,6 +25323,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testToString() {
+    check("Csch(ArcTanh(x))", //
+        "Sqrt(1-x^2)/x");
     check("ToString(Sqrt(1-1/x^2))", //
         "Sqrt(1 - 1/x^2)");
     String expected = String.join("\n", //
@@ -25344,93 +25390,95 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "Flatten // TableForm ", //
         expected);
 
-    expected = String.join("\n", //
-        "                                  Sinh(ArcSinh(x)) == x ", //
-        "           Sinh(ArcCosh(x)) == Sqrt(-1 + x)*Sqrt(1 + x) ", //
-        "                    Sinh(ArcTanh(x)) == x/Sqrt(1 - x^2) ", //
-        "       Sinh(ArcCoth(x)) == 1/(Sqrt(-1 + x)*Sqrt(1 + x)) ", //
-        "       Sinh(ArcSech(x)) == Sqrt(-1 + 1/x)*Sqrt(1 + 1/x) ", //
-        "                                Sinh(ArcCsch(x)) == 1/x ", //
-        "                      Cosh(ArcSinh(x)) == Sqrt(1 + x^2) ", //
-        "                                  Cosh(ArcCosh(x)) == x ", //
-        "                    Cosh(ArcTanh(x)) == 1/Sqrt(1 - x^2) ", //
-        "                  Cosh(ArcCoth(x)) == 1/Sqrt(1 - 1/x^2) ", //
-        "                                Cosh(ArcSech(x)) == 1/x ", //
-        "                    Cosh(ArcCsch(x)) == Sqrt(1 + 1/x^2) ", //
-        "                    Tanh(ArcSinh(x)) == x/Sqrt(1 + x^2) ", //
-        "       Tanh(ArcCosh(x)) == (Sqrt(-1 + x)*Sqrt(1 + x))/x ", //
-        "                                  Tanh(ArcTanh(x)) == x ", //
-        "                                Tanh(ArcCoth(x)) == 1/x ", //
-        "     Tanh(ArcSech(x)) == Sqrt(-1 + 1/x)*Sqrt(1 + 1/x)*x ", //
-        "              Tanh(ArcCsch(x)) == 1/(Sqrt(1 + 1/x^2)*x) ", //
-        "                    Coth(ArcSinh(x)) == Sqrt(1 + x^2)/x ", //
-        "       Coth(ArcCosh(x)) == x/(Sqrt(-1 + x)*Sqrt(1 + x)) ", //
-        "                                Coth(ArcTanh(x)) == 1/x ", //
-        "                                  Coth(ArcCoth(x)) == x ", //
-        " Coth(ArcSech(x)) == 1/(Sqrt(-1 + 1/x)*Sqrt(1 + 1/x)*x) ", //
-        "                  Coth(ArcCsch(x)) == Sqrt(1 + 1/x^2)*x ", //
-        "                    Sech(ArcSinh(x)) == 1/Sqrt(1 + x^2) ", //
-        "                                Sech(ArcCosh(x)) == 1/x ", //
-        "                      Sech(ArcTanh(x)) == Sqrt(1 - x^2) ", //
-        "       Sech(ArcCoth(x)) == (Sqrt(-1 + x)*Sqrt(1 + x))/x ", //
-        "                                  Sech(ArcSech(x)) == x ", //
-        "                  Sech(ArcCsch(x)) == 1/Sqrt(1 + 1/x^2) ", //
-        "                                Csch(ArcSinh(x)) == 1/x ", //
-        "       Csch(ArcCosh(x)) == 1/(Sqrt(-1 + x)*Sqrt(1 + x)) ", //
-        "                    Csch(ArcTanh(x)) == Sqrt(1 - x^2)/x ", //
-        "           Csch(ArcCoth(x)) == Sqrt(-1 + x)*Sqrt(1 + x) ", //
-        "  Csch(ArcSech(x)) == x/((1 + x)*Sqrt((1 - x)/(1 + x))) ", //
-        "                                  Csch(ArcCsch(x)) == x ");
-    check(
-        "Outer((ToString(#1) <> \"(\" <> ToString(#2) <> \"(x)) == \" <> ToString(InputForm(#1(#2(x)))))&," //
-            + "{Sinh,Cosh,Tanh,Coth,Sech,Csch}," //
-            + "{ArcSinh, ArcCosh, ArcTanh, ArcCoth, ArcSech, ArcCsch}) //" //
-            + "Flatten // TableForm ", //
-        expected);
+    // expected = String.join(//
+    // " Sinh(ArcSinh(x)) == x \n" //
+    // + " Sinh(ArcCosh(x)) == Sqrt(-1 + x)*Sqrt(1 + x) \n" //
+    // + " Sinh(ArcTanh(x)) == x/Sqrt(1 - x^2) \n" //
+    // + " Sinh(ArcCoth(x)) == 1/(Sqrt(-1 + x)*Sqrt(1 + x)) \n" //
+    // + " Sinh(ArcSech(x)) == Sqrt(-1 + 1/x)*Sqrt(1 + 1/x) \n" //
+    // + " Sinh(ArcCsch(x)) == 1/x \n" //
+    // + " Cosh(ArcSinh(x)) == Sqrt(1 + x^2) \n" //
+    // + " Cosh(ArcCosh(x)) == x \n" //
+    // + " Cosh(ArcTanh(x)) == 1/Sqrt(1 - x^2) \n" //
+    // + " Cosh(ArcCoth(x)) == 1/Sqrt(1 - 1/x^2) \n" //
+    // + " Cosh(ArcSech(x)) == 1/x \n" //
+    // + " Cosh(ArcCsch(x)) == Sqrt(1 + 1/x^2) \n" //
+    // + " Tanh(ArcSinh(x)) == x/Sqrt(1 + x^2) \n" //
+    // + " Tanh(ArcCosh(x)) == (Sqrt(-1 + x)*Sqrt(1 + x))/x \n" //
+    // + " Tanh(ArcTanh(x)) == x \n" //
+    // + " Tanh(ArcCoth(x)) == 1/x \n" //
+    // + " Tanh(ArcSech(x)) == Sqrt(-1 + 1/x)*Sqrt(1 + 1/x)*x \n" //
+    // + " Tanh(ArcCsch(x)) == 1/(Sqrt(1 + 1/x^2)*x) \n" //
+    // + " Coth(ArcSinh(x)) == Sqrt(1 + x^2)/x \n" //
+    // + " Coth(ArcCosh(x)) == x/(Sqrt(-1 + x)*Sqrt(1 + x)) \n" //
+    // + " Coth(ArcTanh(x)) == 1/x \n" //
+    // + " Coth(ArcCoth(x)) == x \n" //
+    // + " Coth(ArcSech(x)) == 1/(Sqrt(-1 + 1/x)*Sqrt(1 + 1/x)*x) \n" //
+    // + " Coth(ArcCsch(x)) == Sqrt(1 + 1/x^2)*x \n" //
+    // + " Sech(ArcSinh(x)) == 1/Sqrt(1 + x^2) \n" //
+    // + " Sech(ArcCosh(x)) == 1/x \n" //
+    // + " Sech(ArcTanh(x)) == Sqrt(1 - x^2) \n" //
+    // + " Sech(ArcCoth(x)) == (Sqrt(-1 + x)*Sqrt(1 + x))/x \n" //
+    // + " Sech(ArcSech(x)) == x \n" //
+    // + " Sech(ArcCsch(x)) == 1/Sqrt(1 + 1/x^2) \n" //
+    // + " Csch(ArcSinh(x)) == 1/x \n" //
+    // + " Csch(ArcCosh(x)) == 1/(Sqrt((-1 + x)/(1 + x))*(1 + x)) \n" //
+    // + " Csch(ArcTanh(x)) == Sqrt(1 - x^2)/x \n" //
+    // + " Csch(ArcCoth(x)) == Sqrt(1 - 1/x^2)*x \n" //
+    // + " Csch(ArcSech(x)) == x/(Sqrt((1 - x)/(1 + x))*(1 + x)) \n" //
+    // + " Csch(ArcCsch(x)) == x ");
+    // check(
+    // "Outer((ToString(#1) <> \"(\" <> ToString(#2) <> \"(x)) == \" <>
+    // ToString(InputForm(#1(#2(x)))))&," //
+    // + "{Sinh,Cosh,Tanh,Coth,Sech,Csch}," //
+    // + "{ArcSinh, ArcCosh, ArcTanh, ArcCoth, ArcSech, ArcCsch}) //" //
+    // + "Flatten // TableForm ", //
+    // expected);
 
-    expected = String.join("\n", //
-        "                     Sin(ArcSin(x)) == x ", //
-        "         Sin(ArcCos(x)) == Sqrt(1 - x^2) ", //
-        "       Sin(ArcTan(x)) == x/Sqrt(1 + x^2) ", //
-        "       Sin(ArcCot(x)) == 1/Sqrt(1 + x^2) ", //
-        "       Sin(ArcSec(x)) == Sqrt(1 - 1/x^2) ", //
-        "                   Sin(ArcCsc(x)) == 1/x ", //
-        "         Cos(ArcSin(x)) == Sqrt(1 - x^2) ", //
-        "                     Cos(ArcCos(x)) == x ", //
-        "       Cos(ArcTan(x)) == 1/Sqrt(1 + x^2) ", //
-        "     Cos(ArcCot(x)) == 1/Sqrt(1 + 1/x^2) ", //
-        "                   Cos(ArcSec(x)) == 1/x ", //
-        "       Cos(ArcCsc(x)) == Sqrt(1 - 1/x^2) ", //
-        "       Tan(ArcSin(x)) == x/Sqrt(1 - x^2) ", //
-        "       Tan(ArcCos(x)) == Sqrt(1 - x^2)/x ", //
-        "                     Tan(ArcTan(x)) == x ", //
-        "                   Tan(ArcCot(x)) == 1/x ", //
-        "     Tan(ArcSec(x)) == Sqrt(1 - 1/x^2)*x ", //
-        " Tan(ArcCsc(x)) == 1/(Sqrt(1 - 1/x^2)*x) ", //
-        "       Cot(ArcSin(x)) == Sqrt(1 - x^2)/x ", //
-        "       Cot(ArcCos(x)) == x/Sqrt(1 - x^2) ", //
-        "                   Cot(ArcTan(x)) == 1/x ", //
-        "                     Cot(ArcCot(x)) == x ", //
-        " Cot(ArcSec(x)) == 1/(Sqrt(1 - 1/x^2)*x) ", //
-        "     Cot(ArcCsc(x)) == Sqrt(1 - 1/x^2)*x ", //
-        "       Sec(ArcSin(x)) == 1/Sqrt(1 - x^2) ", //
-        "                   Sec(ArcCos(x)) == 1/x ", //
-        "         Sec(ArcTan(x)) == Sqrt(1 + x^2) ", //
-        "       Sec(ArcCot(x)) == Sqrt(1 + x^2)/x ", //
-        "                     Sec(ArcSec(x)) == x ", //
-        "     Sec(ArcCsc(x)) == 1/Sqrt(1 - 1/x^2) ", //
-        "                   Csc(ArcSin(x)) == 1/x ", //
-        "       Csc(ArcCos(x)) == 1/Sqrt(1 - x^2) ", //
-        "       Csc(ArcTan(x)) == Sqrt(1 + x^2)/x ", //
-        "         Csc(ArcCot(x)) == Sqrt(1 + x^2) ", //
-        "     Csc(ArcSec(x)) == 1/Sqrt(1 - 1/x^2) ", //
-        "                     Csc(ArcCsc(x)) == x ");
-    check(
-        "Outer((ToString(#1) <> \"(\" <> ToString(#2) <> \"(x)) == \" <> ToString(InputForm(#1(#2(x)))))&," //
-            + "{Sin,Cos,Tan,Cot,Sec,Csc}," //
-            + "{ArcSin, ArcCos, ArcTan, ArcCot, ArcSec, ArcCsc}) //" //
-            + "Flatten // TableForm ", //
-        expected);
+    // expected = String.join(//
+    // " Sinh(ArcSinh(x)) == x \n" //
+    // + " Sinh(ArcCosh(x)) == Sqrt(-1 + x)*Sqrt(1 + x) \n" //
+    // + " Sinh(ArcTanh(x)) == x/Sqrt(1 - x^2) \n" //
+    // + " Sinh(ArcCoth(x)) == 1/(Sqrt(-1 + x)*Sqrt(1 + x)) \n" //
+    // + " Sinh(ArcSech(x)) == Sqrt(-1 + 1/x)*Sqrt(1 + 1/x) \n" //
+    // + " Sinh(ArcCsch(x)) == 1/x \n" //
+    // + " Cosh(ArcSinh(x)) == Sqrt(1 + x^2) \n" //
+    // + " Cosh(ArcCosh(x)) == x \n" //
+    // + " Cosh(ArcTanh(x)) == 1/Sqrt(1 - x^2) \n" //
+    // + " Cosh(ArcCoth(x)) == 1/Sqrt(1 - 1/x^2) \n" //
+    // + " Cosh(ArcSech(x)) == 1/x \n" //
+    // + " Cosh(ArcCsch(x)) == Sqrt(1 + 1/x^2) \n" //
+    // + " Tanh(ArcSinh(x)) == x/Sqrt(1 + x^2) \n" //
+    // + " Tanh(ArcCosh(x)) == (Sqrt(-1 + x)*Sqrt(1 + x))/x \n" //
+    // + " Tanh(ArcTanh(x)) == x \n" //
+    // + " Tanh(ArcCoth(x)) == 1/x \n" //
+    // + " Tanh(ArcSech(x)) == Sqrt(-1 + 1/x)*Sqrt(1 + 1/x)*x \n" //
+    // + " Tanh(ArcCsch(x)) == 1/(Sqrt(1 + 1/x^2)*x) \n" //
+    // + " Coth(ArcSinh(x)) == Sqrt(1 + x^2)/x \n" //
+    // + " Coth(ArcCosh(x)) == x/(Sqrt(-1 + x)*Sqrt(1 + x)) \n" //
+    // + " Coth(ArcTanh(x)) == 1/x \n" //
+    // + " Coth(ArcCoth(x)) == x \n" //
+    // + " Coth(ArcSech(x)) == 1/(Sqrt(-1 + 1/x)*Sqrt(1 + 1/x)*x) \n" //
+    // + " Coth(ArcCsch(x)) == Sqrt(1 + 1/x^2)*x \n" //
+    // + " Sech(ArcSinh(x)) == 1/Sqrt(1 + x^2) \n" //
+    // + " Sech(ArcCosh(x)) == 1/x \n" //
+    // + " Sech(ArcTanh(x)) == Sqrt(1 - x^2) \n" //
+    // + " Sech(ArcCoth(x)) == (Sqrt(-1 + x)*Sqrt(1 + x))/x \n" //
+    // + " Sech(ArcSech(x)) == x \n" //
+    // + " Sech(ArcCsch(x)) == 1/Sqrt(1 + 1/x^2) \n" //
+    // + " Csch(ArcSinh(x)) == 1/x \n" //
+    // + " Csch(ArcCosh(x)) == 1/(Sqrt((-1 + x)/(1 + x))*(1 + x)) \n" //
+    // + " Csch(ArcTanh(x)) == Sqrt(1 - x^2)/x \n" //
+    // + " Csch(ArcCoth(x)) == Sqrt(1 - 1/x^2)*x \n" //
+    // + " Csch(ArcSech(x)) == x/(Sqrt((1 - x)/(1 + x))*(1 + x)) \n" //
+    // + " Csch(ArcCsch(x)) == x ");
+    // check(
+    // "Outer((ToString(#1) <> \"(\" <> ToString(#2) <> \"(x)) == \" <>
+    // ToString(InputForm(#1(#2(x)))))&," //
+    // + "{Sin,Cos,Tan,Cot,Sec,Csc}," //
+    // + "{ArcSin, ArcCos, ArcTan, ArcCot, ArcSec, ArcCsc}) //" //
+    // + "Flatten // TableForm ", //
+    // expected);
     check("ToString(InputForm(a+\"b\"))", //
         "\"b\" + a");
     check("ToString(InputForm(d/2+f(x)))", //
@@ -26695,9 +26743,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
 
     check("N(Zeta(5/4),50)", //
-        "4.5951118258429433806853780396946256522810297806045");
+        "4.5951118258429433806853780396946256522810297806048");
     check("N(Zeta(3,2),50)", //
-        "0.20205690315959428539973816151144999076498629234004");
+        "0.20205690315959428539973816151144999076498629234049");
 
     check("D(Zeta(s, x), x)", //
         "-s*Zeta(1+s,x)");

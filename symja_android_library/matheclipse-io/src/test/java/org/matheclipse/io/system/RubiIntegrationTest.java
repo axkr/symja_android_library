@@ -807,9 +807,9 @@ public class RubiIntegrationTest extends AbstractTestCase {
     check("Integrate((x^2+1)/(x^3+3*x),x)", //
         "Log(3*x+x^3)/3");
     check("Together(D(1/3*Log(3*x^2+9)+1/3*Log(x),x))", //
-        "(1+x^2)/(3*x+x^3)");
+        "(1+x^2)/(x*(3+x^2))");
     check("Together(D(1/3*Log(x^2+3)+1/3*Log(x),x))", //
-        "(1+x^2)/(3*x+x^3)");
+        "(1+x^2)/(x*(3+x^2))");
   }
 
   @Test

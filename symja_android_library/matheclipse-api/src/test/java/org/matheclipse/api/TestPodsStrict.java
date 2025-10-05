@@ -883,20 +883,32 @@ public class TestPodsStrict {
 
     final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
     assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"ComplexPlot3D((1+z^2)/(-1+z^2),{z,-2+(-2)*I,2+I*2},PlotRange-&gt;{0,3})\",\n"
-            + "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mi>ComplexPlot3D</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mfrac><mrow><msup><mi>z</mi><mn>2</mn></msup><mo>+</mo><mn>1</mn></mrow><mrow><msup><mi>z</mi><mn>2</mn></msup><mo>-</mo><mn>1</mn></mrow></mfrac><mo>,</mo><mrow><mo>{</mo><mrow><mi>z</mi><mo>,</mo><mrow><mrow><mrow><mo>(</mo><mn>-2</mn><mo>)</mo></mrow><mo>&#0183;</mo><mrow><mi>&#x2148;</mi></mrow></mrow><mo>-</mo><mn>2</mn></mrow><mo>,</mo><mrow><mrow><mrow><mi>&#x2148;</mi></mrow><mo>&#0183;</mo><mn>2</mn></mrow><mo>+</mo><mn>2</mn></mrow></mrow><mo>}</mo></mrow><mo>,</mo><mrow><mi>PlotRange</mi><mo>-&gt;</mo><mrow><mo>{</mo><mrow><mn>0</mn><mo>,</mo><mn>3</mn></mrow><mo>}</mo></mrow></mrow></mrow><mo>)</mo></mrow></mrow></math>\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Evaluated result\",\n"
-            + "      \"scanner\" : \"Expression\",\n" + "      \"error\" : \"true\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"JSFormData(var parent = document.currentScript.parentNode;\\nvar id = generateId();\\nparent.id = id;\\nMathCell( id, [  ] );\\n\\nparent.update = function( id ) {\\n\\n\\nfunction z1(z) { try { return  mul(add(1,pow(z,2)),inv(add(-1,pow(z,2))));}catch(e){return complex(Number.NaN);} }\\n\\nvar p1 = parametric( (re,im) =&gt; [ re, im, z1(complex(re,im)) ], [-2.0, 2.0], [-2.0, 2.0], { complexFunction: 'abs', colormap: 'complexArgument' } );\\n\\n  var config = { type: 'threejs', aspectRatio: [1.0,1,1], zMin: 0, zMax: 3 };\\n  var data = [p1];\\nevaluate( id, data, config );\\n\\n}\\nparent.update( id );\\n,mathcell)\",\n"
-            + "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mi>JSFormData</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mtext>var&nbsp;parent&nbsp;=&nbsp;document.currentScript.parentNode;</mtext><mspace linebreak='newline' /><mtext>var&nbsp;id&nbsp;=&nbsp;generateId();</mtext><mspace linebreak='newline' /><mtext>parent.id&nbsp;=&nbsp;id;</mtext><mspace linebreak='newline' /><mtext>MathCell(&nbsp;id,&nbsp;[&nbsp;&nbsp;]&nbsp;);</mtext><mspace linebreak='newline' /><mtext></mtext><mspace linebreak='newline' /><mtext>parent.update&nbsp;=&nbsp;function(&nbsp;id&nbsp;)&nbsp;{</mtext><mspace linebreak='newline' /><mtext></mtext><mspace linebreak='newline' /><mtext></mtext><mspace linebreak='newline' /><mtext>function&nbsp;z1(z)&nbsp;{&nbsp;try&nbsp;{&nbsp;return&nbsp;&nbsp;mul(add(1,pow(z,2)),inv(add(-1,pow(z,2))));}catch(e){return&nbsp;complex(Number.NaN);}&nbsp;}</mtext><mspace linebreak='newline' /><mtext></mtext><mspace linebreak='newline' /><mtext>var&nbsp;p1&nbsp;=&nbsp;parametric(&nbsp;(re,im)&nbsp;=&gt;&nbsp;[&nbsp;re,&nbsp;im,&nbsp;z1(complex(re,im))&nbsp;],&nbsp;[-2.0,&nbsp;2.0],&nbsp;[-2.0,&nbsp;2.0],&nbsp;{&nbsp;complexFunction:&nbsp;'abs',&nbsp;colormap:&nbsp;'complexArgument'&nbsp;}&nbsp;);</mtext><mspace linebreak='newline' /><mtext></mtext><mspace linebreak='newline' /><mtext>&nbsp;&nbsp;var&nbsp;config&nbsp;=&nbsp;{&nbsp;type:&nbsp;'threejs',&nbsp;aspectRatio:&nbsp;[1.0,1,1],&nbsp;zMin:&nbsp;0,&nbsp;zMax:&nbsp;3&nbsp;};</mtext><mspace linebreak='newline' /><mtext>&nbsp;&nbsp;var&nbsp;data&nbsp;=&nbsp;[p1];</mtext><mspace linebreak='newline' /><mtext>evaluate(&nbsp;id,&nbsp;data,&nbsp;config&nbsp;);</mtext><mspace linebreak='newline' /><mtext></mtext><mspace linebreak='newline' /><mtext>}</mtext><mspace linebreak='newline' /><mtext>parent.update(&nbsp;id&nbsp;);</mtext><mspace linebreak='newline' /><mo>,</mo><mtext>mathcell</mtext></mrow><mo>)</mo></mrow></mrow></math>\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
+        "{\n" //
+            + "  \"queryresult\" : {\n" //
+            + "    \"success\" : \"true\",\n" //
+            + "    \"numpods\" : 2,\n" //
+            + "    \"version\" : \"0.1\",\n" //
+            + "    \"pods\" : [ {\n" //
+            + "      \"title\" : \"Input\",\n" //
+            + "      \"scanner\" : \"Identity\",\n" //
+            + "      \"error\" : \"false\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"ComplexPlot3D((1+z^2)/(-1+z^2),{z,-2+(-2)*I,2+I*2},PlotRange-&gt;{0,3})\",\n" //
+            + "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mi>ComplexPlot3D</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mfrac><mrow><msup><mi>z</mi><mn>2</mn></msup><mo>+</mo><mn>1</mn></mrow><mrow><msup><mi>z</mi><mn>2</mn></msup><mo>-</mo><mn>1</mn></mrow></mfrac><mo>,</mo><mrow><mo>{</mo><mrow><mi>z</mi><mo>,</mo><mrow><mrow><mrow><mo>(</mo><mn>-2</mn><mo>)</mo></mrow><mo>&#0183;</mo><mrow><mi>&#x2148;</mi></mrow></mrow><mo>-</mo><mn>2</mn></mrow><mo>,</mo><mrow><mrow><mrow><mi>&#x2148;</mi></mrow><mo>&#0183;</mo><mn>2</mn></mrow><mo>+</mo><mn>2</mn></mrow></mrow><mo>}</mo></mrow><mo>,</mo><mrow><mi>PlotRange</mi><mo>-&gt;</mo><mrow><mo>{</mo><mrow><mn>0</mn><mo>,</mo><mn>3</mn></mrow><mo>}</mo></mrow></mrow></mrow><mo>)</mo></mrow></mrow></math>\"\n" //
+            + "      } ]\n" //
+            + "    }, {\n" //
+            + "      \"title\" : \"Evaluated result\",\n" //
+            + "      \"scanner\" : \"Expression\",\n" //
+            + "      \"error\" : \"true\",\n" //
+            + "      \"numsubpods\" : 1,\n" //
+            + "      \"subpods\" : [ {\n" //
+            + "        \"plaintext\" : \"JSFormData(var parent = document.currentScript.parentNode;\\nvar id = generateId();\\nparent.id = id;\\nMathCell( id, [  ] );\\n\\nparent.update = function( id ) {\\n\\n\\nfunction z1(z) { try { return  mul(inv(add(-1,pow(z,2))),add(1,pow(z,2)));}catch(e){return complex(Number.NaN);} }\\n\\nvar p1 = parametric( (re,im) =&gt; [ re, im, z1(complex(re,im)) ], [-2.0, 2.0], [-2.0, 2.0], { complexFunction: 'abs', colormap: 'complexArgument' } );\\n\\n  var config = { type: 'threejs', aspectRatio: [1.0,1,1], zMin: 0, zMax: 3 };\\n  var data = [p1];\\nevaluate( id, data, config );\\n\\n}\\nparent.update( id );\\n,mathcell)\",\n" //
+            + "        \"mathml\" : \"<math xmlns=\\\"http://www.w3.org/1999/xhtml\\\"><mrow><mi>JSFormData</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mtext>var&nbsp;parent&nbsp;=&nbsp;document.currentScript.parentNode;</mtext><mspace linebreak='newline' /><mtext>var&nbsp;id&nbsp;=&nbsp;generateId();</mtext><mspace linebreak='newline' /><mtext>parent.id&nbsp;=&nbsp;id;</mtext><mspace linebreak='newline' /><mtext>MathCell(&nbsp;id,&nbsp;[&nbsp;&nbsp;]&nbsp;);</mtext><mspace linebreak='newline' /><mtext></mtext><mspace linebreak='newline' /><mtext>parent.update&nbsp;=&nbsp;function(&nbsp;id&nbsp;)&nbsp;{</mtext><mspace linebreak='newline' /><mtext></mtext><mspace linebreak='newline' /><mtext></mtext><mspace linebreak='newline' /><mtext>function&nbsp;z1(z)&nbsp;{&nbsp;try&nbsp;{&nbsp;return&nbsp;&nbsp;mul(inv(add(-1,pow(z,2))),add(1,pow(z,2)));}catch(e){return&nbsp;complex(Number.NaN);}&nbsp;}</mtext><mspace linebreak='newline' /><mtext></mtext><mspace linebreak='newline' /><mtext>var&nbsp;p1&nbsp;=&nbsp;parametric(&nbsp;(re,im)&nbsp;=&gt;&nbsp;[&nbsp;re,&nbsp;im,&nbsp;z1(complex(re,im))&nbsp;],&nbsp;[-2.0,&nbsp;2.0],&nbsp;[-2.0,&nbsp;2.0],&nbsp;{&nbsp;complexFunction:&nbsp;'abs',&nbsp;colormap:&nbsp;'complexArgument'&nbsp;}&nbsp;);</mtext><mspace linebreak='newline' /><mtext></mtext><mspace linebreak='newline' /><mtext>&nbsp;&nbsp;var&nbsp;config&nbsp;=&nbsp;{&nbsp;type:&nbsp;'threejs',&nbsp;aspectRatio:&nbsp;[1.0,1,1],&nbsp;zMin:&nbsp;0,&nbsp;zMax:&nbsp;3&nbsp;};</mtext><mspace linebreak='newline' /><mtext>&nbsp;&nbsp;var&nbsp;data&nbsp;=&nbsp;[p1];</mtext><mspace linebreak='newline' /><mtext>evaluate(&nbsp;id,&nbsp;data,&nbsp;config&nbsp;);</mtext><mspace linebreak='newline' /><mtext></mtext><mspace linebreak='newline' /><mtext>}</mtext><mspace linebreak='newline' /><mtext>parent.update(&nbsp;id&nbsp;);</mtext><mspace linebreak='newline' /><mo>,</mo><mtext>mathcell</mtext></mrow><mo>)</mo></mrow></mrow></math>\"\n" //
+            + "      } ]\n" //
+            + "    } ]\n" //
+            + "  }\n" //
+            + "}"); //
   }
 
   @Test

@@ -334,6 +334,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLegendreP() {
+
     check("LegendreP(Pi,0)", //
         "Sqrt(Pi)/(Gamma(1/2-Pi/2)*Gamma(1+Pi/2))");
     check("LegendreP(-(1/2), 1 - 2*z)", //
@@ -348,11 +349,11 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     check("LegendreP(3,1,z)", //
         "(3/2-15/2*z^2)*Sqrt(1-z^2)");
     check("LegendreP(3,1,2,z)", //
-        "(3/2-15/2*z^2)*Sqrt(1-z^2)");
+        "Sqrt(1-z)*Sqrt(1+z)*(3/2-15/2*z^2)");
     check("LegendreP(6,3,2,z)", //
-        "(945/2*z-3465/2*z^3)*(1-z^2)^(3/2)");
+        "(1-z)^(3/2)*(1+z)^(3/2)*(945/2*z-3465/2*z^3)");
     check("LegendreP(-7,4,2,z)", //
-        "(1-z)^2*(-945/2+10395/2*z^2)*(1+z)^2");
+        "(1-z)^2*(1+z)^2*(-945/2+10395/2*z^2)");
     // TODO type 3 formula
     // check("LegendreP(3,1,3,z)", //
     // "Sqrt(-1+z)*(-3/2+15/2*z^2)*Sqrt(1+z)");
@@ -415,7 +416,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
         "(1-z)*(1+z)*(-5+1/2*(-3/2*z+5/2*z^3)*(1/(1-z)^2-1/(1+z)^2)+(-3/2+15/2*z^2)*(1/(1-z)+1/(\n" //
             + "1+z))+15/2*z*(-Log(1-z)+Log(1+z)))");
     check("LegendreQ(1,1,2,z)", //
-        "-Sqrt(1-z^2)*(1/2*z*(1/(1-z)+1/(1+z))+1/2*(-Log(1-z)+Log(1+z)))");
+        "-Sqrt(1-z)*Sqrt(1+z)*(1/2*z*(1/(1-z)+1/(1+z))+1/2*(-Log(1-z)+Log(1+z)))");
 
 
     check("LegendreQ(n,0,z)", //

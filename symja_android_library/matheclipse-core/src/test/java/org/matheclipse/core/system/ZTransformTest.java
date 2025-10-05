@@ -85,14 +85,9 @@ public class ZTransformTest extends ExprEvaluatorTestCase {
         "ZTransform(f(n),n,z)-z*Derivative(0,0,1)[ZTransform][f(n),n,z]+z^2*Derivative(0,\n"
             + "0,2)[ZTransform][f(n),n,z]");
     check("ZTransform((1+n)^2*Sin(n),n,z)", //
-        "z^2*(z*((-2*(2*z-2*Cos(1))*(-2*z+2*Cos(1)))/(1+z^2-2*z*Cos(1))^3-2/(1+z^2-2*z*Cos(\n" //
-            + "1))^2)+(2*(-2*z+2*Cos(1)))/(1+z^2-2*z*Cos(1))^2)*Sin(1)+(z*Sin(1))/(1+z^2-2*z*Cos(\n" //
-            + "1))+z*((z*(-2*z+2*Cos(1))*Sin(1))/(1+z^2-2*z*Cos(1))^2+Sin(1)/(1+z^2-2*z*Cos(1)))-z*((\n" //
+        "(z*Sin(1))/(1+z^2-2*z*Cos(1))+z^2*((2*(-2*z+2*Cos(1)))/(1+z^2-2*z*Cos(1))^2+z*((-\n"
+            + "2*(2*z-2*Cos(1))*(-2*z+2*Cos(1)))/(1+z^2-2*z*Cos(1))^3-2/(1+z^2-2*z*Cos(1))^2))*Sin(\n"
+            + "1)+z*((z*(-2*z+2*Cos(1))*Sin(1))/(1+z^2-2*z*Cos(1))^2+Sin(1)/(1+z^2-2*z*Cos(1)))-z*((\n"
             + "2*z*(-2*z+2*Cos(1))*Sin(1))/(1+z^2-2*z*Cos(1))^2+(2*Sin(1))/(1+z^2-2*z*Cos(1)))");
-    // "(z*Sin(1))/(1+z^2-2*z*Cos(1))+z^2*((-2*z*(2*z-2*Cos(1))*(-2*z+2*Cos(1))*Sin(1))/(\n"
-    // + "1+z^2-2*z*Cos(1))^3+(-2*z*Sin(1))/(1+z^2-2*z*Cos(1))^2+(2*(-2*z+2*Cos(1))*Sin(1))/(\n"
-    // + "1+z^2-2*z*Cos(1))^2)+z*((z*(-2*z+2*Cos(1))*Sin(1))/(1+z^2-2*z*Cos(1))^2+Sin(1)/(\n"
-    // + "1+z^2-2*z*Cos(1)))-z*((2*z*(-2*z+2*Cos(1))*Sin(1))/(1+z^2-2*z*Cos(1))^2+(2*Sin(1))/(\n"
-    // + "1+z^2-2*z*Cos(1)))");
   }
 }

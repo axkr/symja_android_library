@@ -4,7 +4,6 @@ import java.util.concurrent.Callable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.ApfloatInterruptedException;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
@@ -17,7 +16,7 @@ import edu.jas.kern.PreemptingException;
 
 public class EvalControlledCallable implements Callable<IExpr> {
   private static final Logger LOGGER = LogManager.getLogger(EvalControlledCallable.class);
- 
+
   protected final EvalEngine fEngine;
   private IExpr fExpr;
 
@@ -83,16 +82,16 @@ public class EvalControlledCallable implements Callable<IExpr> {
     return S.$Aborted;
   }
 
-  public void cancel() {
-    // fEngine.stopRequest();
-    try {
-      Thread.sleep(Config.TIME_CONSTRAINED_SLEEP_MILLISECONDS);
-    } catch (InterruptedException e) {
-      //
-    }
-    // if (fThread.isAlive()) {
-    // call the deprecated method as last possible exit
-    // fThread.stop();
-    // }
-  }
+  // public void cancel() {
+  // fEngine.stopRequest();
+  // try {
+  // Thread.sleep(Config.TIME_CONSTRAINED_SLEEP_MILLISECONDS);
+  // } catch (InterruptedException e) {
+  // //
+  // }
+  // if (fThread.isAlive()) {
+  // call the deprecated method as last possible exit
+  // fThread.stop();
+  // }
+  // }
 }

@@ -918,7 +918,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testSystem038() {
     check("Together(-(2*x-6)^(-1)-2*(-x+2)*(2*x-6)^(-2))", //
-        "-1/(-18+12*x-2*x^2)");
+        "1/(2*(3-x)^2)");
     check("Simplify(-(2*x-6)^(-1)-2*(-x+2)*(2*x-6)^(-2))", //
         "1/(2*(3-x)^2)");
 
@@ -3208,7 +3208,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Together(a/b+c/d)", //
         "(b*c+a*d)/(b*d)");
     check("Together((-x+3)*(x^2+2)^(-1)+6*x*(x^2+2)^(-2)+x^(-1))", //
-        "(4+6*x+8*x^2+3*x^3)/(4*x+4*x^3+x^5)");
+        "(4+6*x+8*x^2+3*x^3)/(x*(2+x^2)^2)");
   }
 
   @Test
@@ -3656,6 +3656,9 @@ public class MainTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSystem994() {
+    check("PolynomialExtendedGCD(2*x^5-2*x,(x^2-1)^2,x, Modulus->2)", //
+        "{1+x^4,{0,1}}");
+
     check("PolynomialGCD(3+3*x^3,3+3*x^3)", //
         "3+3*x^3");
     check("PolynomialExtendedGCD(3+3*x^3,3+3*x^3,x)", //
@@ -3685,7 +3688,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("PolynomialLCM((1+x)^2*(7+x)*(17+x),(1+x)*(7+x)*(11+x))", //
         "1309+3001*x+2110*x^2+454*x^3+37*x^4+x^5");
     check("PolynomialLCM((1+x)^2*(7+x)*(17+x),(1+x)*(7+x)*(11+x), Modulus->31)", //
-        "(7+x)*(11+x)*(17+x)*(1+x)^2");
+        "(1+x)^2*(7+x)*(11+x)*(17+x)");
   }
 
   @Test
@@ -4252,7 +4255,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("D((x+2)/(x-3),x)", //
         "1/(-3+x)-(2+x)/(3-x)^2");
     check("Together(1/(-3+x)-(2+x)/(3-x)^2)", //
-        "-5/(9-6*x+x^2)");
+        "-5/(3-x)^2");
     check("Simplify(1/(-3+x)-(2+x)/(3-x)^2)", //
         "-5/(3-x)^2");
   }

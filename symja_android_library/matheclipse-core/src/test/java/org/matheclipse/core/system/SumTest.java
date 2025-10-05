@@ -316,6 +316,9 @@ public class SumTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSum008() {
+    check("1/3*(-3/2*(2+n)^2+(2+n)^3+1/2*(2+n))", //
+        "1/3*(1/2*(2+n)-3/2*(2+n)^2+(2+n)^3)");
+
     check("Sum(Ceiling(Log(i)),{i,1,n})", //
         "(-E^Floor(Log(n))+n)*Ceiling(Log(n))+(1+E^(1+Floor(Log(n)))*Floor(Log(n))-E^Floor(Log(n))*(\n"
             + "1+Floor(Log(n))))/(-1+E)");
