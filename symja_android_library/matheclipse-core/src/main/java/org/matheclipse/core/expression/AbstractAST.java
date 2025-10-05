@@ -1773,6 +1773,17 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
                 return compareToASTDecreasing(this, rhs);
               }
             } else if (rhsOrdinal != ID.Plus && rhsOrdinal != ID.Times) {
+              if (rhsOrdinal == ID.Power && rhs.size() == 3 && rhs.arg1().headID() == ID.Plus) {
+                if (rhs.arg2().isNumber()) {
+                  // O-10
+                  // int compareTo = compareToASTDecreasingArg1(this, rhs.arg1(), F.C0);
+                  int compareTo = compareTo(rhs.arg1());
+                  if (compareTo != 0) {
+                    return compareTo;
+                  }
+                  return F.C1.compareTo(rhs.arg2());
+                }
+              }
               // O-10
               return compareToASTDecreasingArg1(this, rhsExpr, F.C0);
             }
@@ -1799,6 +1810,16 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
               }
               // O-9
               return compareToASTIncreasingArg1(this, rhsExpr, F.C1);
+            } else if (rhsOrdinal == ID.Plus && size() == 3 && arg1().headID() == ID.Plus) {
+              if (arg2().isNumber()) {
+                // O-10
+                // int compareTo = compareToASTIncreasingArg1(rhs, arg1(), F.C0);
+                int compareTo = arg1().compareTo(rhs);
+                if (compareTo != 0) {
+                  return compareTo;
+                }
+                return arg2().compareTo(F.C1);
+              }
             } else if (rhsOrdinal != ID.Plus && rhsOrdinal != ID.Times) {
               // O-9
               return compareToASTIncreasingArg1(this, rhsExpr, F.C1);
@@ -1828,7 +1849,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return -1 * rhsExpr.compareTo(this);
     }
 
-    if (lhsOrdinal >= ID.Not && lhsOrdinal <= ID.Times && size() > 1) {
+    if (lhsOrdinal >= ID.Not && lhsOrdinal <= ID.Times &&
+
+        size() > 1) {
 
       switch (lhsOrdinal) {
         case ID.Not:
