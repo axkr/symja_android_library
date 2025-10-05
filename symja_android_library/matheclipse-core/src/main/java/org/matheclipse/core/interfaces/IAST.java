@@ -1982,6 +1982,12 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
     return ast;
   }
 
+  default IASTMutable setAtCopy(int i, IExpr expr, int position) {
+    IASTMutable result = size() == position ? copy() : copyUntil(position);
+    result.set(i, expr);
+    return result;
+  }
+
   /**
    * Set the evaluation flags for this list (i.e. replace all existing flags).
    *
