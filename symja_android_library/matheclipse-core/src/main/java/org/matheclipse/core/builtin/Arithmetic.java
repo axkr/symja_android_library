@@ -65,6 +65,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.TimesOp;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
@@ -2020,8 +2021,8 @@ public final class Arithmetic {
           IInteger m = ri.inc();
           return
           // [$ Expand( (1/m)*(BernoulliB(m, z + 1) + ((-1)^n)* BernoulliB(m)) ) $]
-          F.Expand(F.Times(F.Power(m, F.CN1), F.Plus(F.BernoulliB(m, F.Plus(z, F.C1)),
-              F.Times(F.Power(-1, ri), F.BernoulliB(m))))); // $$;
+          F.Expand(F.Times(F.Power(m, F.CN1),
+              F.Plus(F.BernoulliB(m, F.Plus(z, F.C1)), F.Times(F.Power(-1, ri), F.BernoulliB(m))))); // $$;
         }
 
         if (n.isInteger()) {
@@ -5304,8 +5305,10 @@ public final class Arithmetic {
       IExpr result = F.NIL;
       IExpr arg1 = engine.evaluateNIL(ast.arg1());
       if (arg1.isPresent()) {
-        result = F.Sign(arg1);
-        arg1 = result;
+        if (!arg1.isNumber()) {
+          result = F.Sign(arg1);
+          arg1 = result;
+        }
       } else {
         arg1 = ast.arg1();
       }
@@ -5313,6 +5316,23 @@ public final class Arithmetic {
         return arg1.mapThread(F.Sign(F.Slot1), 1);
       }
 
+      if (arg1.isNumericFunction()) {
+        try {
+          IExpr evalN = engine.evalN(arg1, engine.getNumericPrecision());
+          if (evalN.isZero()) {
+            return F.C0;
+          }
+          if (evalN.isPositive()) {
+            return F.C1;
+          }
+          if (evalN.isNegative()) {
+            return F.CN1;
+          }
+
+        } catch (ArgumentTypeException ate) {
+          //
+        }
+      }
       if (arg1.isNumber()) {
         if (arg1.isZero()) {
           // avoid division by zero for complex numbers
@@ -7125,15 +7145,20 @@ public final class Arithmetic {
             if (temp.isNonNegativeResult()) {
               // https://functions.wolfram.com/ElementaryFunctions/Power/16/08/01/0004/
               // a^(c)*b^(c) => (a*b) ^c
-              long leafCountTimes = base1.leafCountSimplify() + base2.leafCountSimplify() + 4;
-              if (leafCountTimes < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
-                // hack for RubiIntegrationTest#testRubiRule006()
-                IExpr expanded = F.evalExpand(F.Times(base1, base2));
-                if (expanded.leafCountSimplify() <= leafCountTimes) {
-                  return F.Power(expanded, exponent1);
-                }
+              // long leafCountTimes = base1.leafCountSimplify() + base2.leafCountSimplify() + 4;
+              // if (leafCountTimes < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
+              // // hack for RubiIntegrationTest#testRubiRule006()
+              // IExpr expanded = F.evalExpand(F.Times(base1, base2));
+              // if (expanded.leafCountSimplify() <= leafCountTimes) {
+              // return F.Power(expanded, exponent1);
+              // }
+              // }
+              IExpr baseMul = F.evalExpand(base1.times(base2));
+              if (baseMul.isRealResult()
+                  || (baseMul.isTimes2() && baseMul.first().isRealResult())) {
+                return F.Power(baseMul, exponent1);
               }
-              return F.Power(F.Times(base1, base2), exponent1);
+              // return Power(F.Times(base1, base2), exponent1);
             }
           }
         } else if (exponent1.negate().equals(exponent2)) {
