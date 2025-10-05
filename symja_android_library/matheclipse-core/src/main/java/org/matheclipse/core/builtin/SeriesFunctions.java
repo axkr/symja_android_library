@@ -1467,7 +1467,7 @@ public class SeriesFunctions {
         IExpr x0, final int m, final int n) {
 
       UnivPowerSeriesRing<BigRational> fac = new UnivPowerSeriesRing<BigRational>(BigRational.ZERO);
-      JASConvert<BigRational> jas = new JASConvert<BigRational>(x, BigRational.ZERO);
+      JASConvert<BigRational> jas = new JASConvert<BigRational>(x.makeList(), BigRational.ZERO);
       BigRational bf = null;
       if (x0.isRational()) {
         bf = ((IRational) x0).toBigRational();
@@ -1498,6 +1498,25 @@ public class SeriesFunctions {
     private static IExpr taylorFunction(IExpr function, IExpr x, IExpr bf, int m, int n) {
       List<IExpr> varList = Lists.newArrayList(x);
       IASTAppendable list = F.ListAlloc(varList);
+      if (bf.isRational()) {
+        try {
+          BigRational expansionPoint = ((IRational) bf).toBigRational();
+          JASConvert<BigRational> jas = new JASConvert<BigRational>(list, BigRational.ZERO);
+          GenPolynomial<BigRational> numerator = jas.expr2JAS(function, false);
+          if (numerator != null) {
+            TaylorFunction<BigRational> TF = new PolynomialTaylorFunction<BigRational>(numerator);
+            UnivPowerSeriesRing<BigRational> fac =
+                new UnivPowerSeriesRing<BigRational>(BigRational.ZERO);
+            Quotient<BigRational> approximantOfPade =
+                PolyUfdUtil.<BigRational>approximantOfPade(fac, TF, expansionPoint, m, n);
+            IExpr numeratorExpr = jas.rationalPoly2Expr(approximantOfPade.num, false);
+            IExpr denominatorExpr = jas.rationalPoly2Expr(approximantOfPade.den, false);
+            return org.matheclipse.core.expression.F.Divide(numeratorExpr, denominatorExpr);
+          }
+        } catch (JASConversionException jce) {
+          //
+        }
+      }
       JASIExpr jas = new JASIExpr(varList, true);
       ExprPolynomialRing ring = new ExprPolynomialRing(list);
       ExprPolynomial poly = ring.create(function);
