@@ -6500,7 +6500,7 @@ public final class LinearAlgebra {
       GenPolynomialRing<BigComplex> pf = new GenPolynomialRing<BigComplex>(BigComplex.I, vars);
 
       GenPolynomial<BigComplex> charPolynomial = pf.charPolynomial(genMatrix);
-      JASConvert<BigComplex> jas = new JASConvert<BigComplex>(variable, BigComplex.I);
+      JASConvert<BigComplex> jas = new JASConvert<BigComplex>(variable.makeList(), BigComplex.I);
 
       IExpr bigcomplexPoly2Expr = jas.bigcomplexPoly2Expr(charPolynomial);
       return bigcomplexPoly2Expr;

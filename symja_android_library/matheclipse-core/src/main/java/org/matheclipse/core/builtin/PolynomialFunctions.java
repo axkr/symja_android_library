@@ -449,19 +449,19 @@ public class PolynomialFunctions {
       IExpr expr = F.evalExpandAll(ast.arg1(), engine);
       VariablesSet eVar;
       IAST symbolList;
-      List<IExpr> varList;
+      // IAST varList;
       if (ast.isAST1()) {
         // extract all variables from the polynomial expression
         eVar = new VariablesSet(ast.arg1());
-        varList = eVar.getArrayList();
+        // varList = eVar.getVarList();
         symbolList = eVar.getVarList();
       } else {
         symbolList = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
         if (symbolList.isNIL()) {
           return F.NIL;
         }
-        varList = new ArrayList<IExpr>(symbolList.argSize());
-        symbolList.forEach(x -> varList.add(x));
+        // varList = new ArrayList<IExpr>(symbolList.argSize());
+        // symbolList.forEach(x -> varList.add(x));
       }
       TermOrder termOrder = TermOrderByName.Lexicographic;
 
@@ -474,7 +474,7 @@ public class PolynomialFunctions {
           IExpr option = options.getOption(S.Modulus);
           if (option.isInteger()) {
             try {
-              return coefficientRulesModulus(expr, varList, termOrder, option);
+              return coefficientRulesModulus(expr, symbolList, termOrder, option);
             } catch (RuntimeException rex) {
               Errors.rethrowsInterruptException(rex);
               Errors.printMessage(S.CoefficientRules, rex, engine);
@@ -542,7 +542,7 @@ public class PolynomialFunctions {
      * @param option the &quot;Modulus&quot; option
      * @return the list of monomials of the univariate polynomial.
      */
-    private static IAST coefficientRulesModulus(IExpr polynomial, List<IExpr> variablesList,
+    private static IAST coefficientRulesModulus(IExpr polynomial, IAST variablesList,
         final TermOrder termOrder, IExpr option) throws JASConversionException {
       try {
         // found "Modulus" option => use ModIntegerRing
@@ -1168,9 +1168,9 @@ public class PolynomialFunctions {
       eVar.addVarList(x);
 
       try {
-        List<IExpr> varList = eVar.getVarList().copyTo();
         JASConvert<edu.jas.arith.BigInteger> jas =
-            new JASConvert<edu.jas.arith.BigInteger>(varList, edu.jas.arith.BigInteger.ZERO);
+            new JASConvert<edu.jas.arith.BigInteger>(eVar.getVarList(),
+                edu.jas.arith.BigInteger.ZERO);
         GenPolynomial<edu.jas.arith.BigInteger> p1 = jas.expr2JAS(a, false);
         if (p1 == null) {
           return resultantExpr(a, b, eVar);
@@ -1626,10 +1626,9 @@ public class PolynomialFunctions {
         }
 
         // (n, z) => Sum(((-1)^k*(n - k)!*(2*z)^(n - 2*k))/(k!*(n - 2*k)!), {k, 0, Floor(n/2)})
-        return F
-            .sum(k -> F.Times(F.Power(-1, k), F.Power(zDoubled, F.Plus(F.Times(F.CN2, k), n)),
-                F.Power(F.Times(F.Factorial(k), F.Factorial(F.Plus(F.Times(F.CN2, k), n))), -1),
-                F.Factorial(F.Plus(F.Negate(k), n))), 0, degree / 2);
+        return F.sum(k -> F.Times(F.Power(-1, k), F.Power(zDoubled, F.Plus(F.Times(F.CN2, k), n)),
+            F.Power(F.Times(F.Factorial(k), F.Factorial(F.Plus(F.Times(F.CN2, k), n))), -1),
+            F.Factorial(F.Plus(F.Negate(k), n))), 0, degree / 2);
       }
 
       if (n.isNumEqualRational(F.CN1D2)) {
@@ -1866,21 +1865,21 @@ public class PolynomialFunctions {
      */
     private static IAST computeGroebnerBasis(IAST listOfPolynomials, IAST listOfVariables,
         TermOrder termOrder) {
-      List<ISymbol> varList = new ArrayList<ISymbol>(listOfVariables.argSize());
+      // List<ISymbol> varList = new ArrayList<ISymbol>(listOfVariables.argSize());
       String[] pvars = new String[listOfVariables.argSize()];
 
       for (int i = 1; i < listOfVariables.size(); i++) {
         if (!listOfVariables.get(i).isSymbol()) {
           return F.NIL;
         }
-        varList.add((ISymbol) listOfVariables.get(i));
+        // varList.add((ISymbol) listOfVariables.get(i));
         pvars[i - 1] = listOfVariables.get(i).toString();
       }
 
       List<GenPolynomial<BigRational>> polyList =
           new ArrayList<GenPolynomial<BigRational>>(listOfPolynomials.argSize());
       JASConvert<BigRational> jas =
-          new JASConvert<BigRational>(varList, BigRational.ZERO, termOrder);
+          new JASConvert<BigRational>(listOfVariables, BigRational.ZERO, termOrder);
       for (int i = 1; i < listOfPolynomials.size(); i++) {
         IExpr expr = F.evalExpandAll(listOfPolynomials.get(i));
         try {
@@ -2537,8 +2536,7 @@ public class PolynomialFunctions {
           IExpr mAbs = F.ZZ(miAbs);
           IExpr typeFactor = getTypeFactor(type, miAbs, dummyZ, engine);
           IExpr diff = engine.evaluate(F.D(legendreP, F.list(dummyZ, mAbs)));
-          IExpr resultForPositiveM =
-              engine.evaluate(F.Times(F.Power(-1, mAbs), typeFactor, diff));
+          IExpr resultForPositiveM = engine.evaluate(F.Times(F.Power(-1, mAbs), typeFactor, diff));
 
           resultForPositiveM = F.subst(resultForPositiveM, dummyZ, z);
           // apply the identity for negative m if necessary
@@ -2918,20 +2916,20 @@ public class PolynomialFunctions {
       IExpr expr = F.evalExpandAll(ast.arg1(), engine);
       VariablesSet eVar;
       IAST symbolList;
-      List<IExpr> varList;
+      // List<IExpr> varList;
       if (ast.isAST1()) {
         // extract all variables from the polynomial expression
         eVar = new VariablesSet(ast.arg1());
         // eVar.appendToList(symbolList);
-        varList = eVar.getArrayList();
+        // varList = eVar.getArrayList();
         symbolList = eVar.getVarList();
       } else {
         symbolList = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
         if (symbolList.isNIL()) {
           return F.NIL;
         }
-        varList = new ArrayList<IExpr>(symbolList.argSize());
-        symbolList.forEach(x -> varList.add(x));
+        // varList = new ArrayList<IExpr>(symbolList.argSize());
+        // symbolList.forEach(x -> varList.add(x));
       }
       TermOrder termOrder = TermOrderByName.Lexicographic;
 
@@ -2944,7 +2942,7 @@ public class PolynomialFunctions {
           IExpr option = options.getOption(S.Modulus);
           if (option.isInteger()) {
             try {
-              return monomialListModulus(expr, varList, termOrder, option);
+              return monomialListModulus(expr, symbolList, termOrder, option);
             } catch (RuntimeException rex) {
               Errors.rethrowsInterruptException(rex);
               Errors.printMessage(S.MonomialList, rex, engine);
@@ -2983,7 +2981,7 @@ public class PolynomialFunctions {
      * @param option the &quot;Modulus&quot; option
      * @return the list of monomials of the univariate polynomial.
      */
-    private static IAST monomialListModulus(IExpr polynomial, List<IExpr> variablesList,
+    private static IAST monomialListModulus(IExpr polynomial, IAST variablesList,
         final TermOrder termOrder, IExpr option) throws JASConversionException {
       try {
         // found "Modulus" option => use ModIntegerRing
@@ -3240,18 +3238,19 @@ public class PolynomialFunctions {
    *         polynomials
    */
   public static IASTAppendable solveGroebnerBasis(IAST listOfPolynomials, IAST listOfVariables) {
-    List<IExpr> varList = new ArrayList<IExpr>(listOfVariables.argSize());
-    for (int i = 1; i < listOfVariables.size(); i++) {
-      // if (!listOfVariables.get(i).isSymbol() ) {
-      // return F.NIL;
-      // }
-      varList.add(listOfVariables.get(i));
-    }
+    // List<IExpr> varList = new ArrayList<IExpr>(listOfVariables.argSize());
+    // for (int i = 1; i < listOfVariables.size(); i++) {
+    // // if (!listOfVariables.get(i).isSymbol() ) {
+    // // return F.NIL;
+    // // }
+    // varList.add(listOfVariables.get(i));
+    // }
 
     List<GenPolynomial<BigRational>> polyList =
         new ArrayList<GenPolynomial<BigRational>>(listOfPolynomials.argSize());
     TermOrder termOrder = TermOrderByName.IGRLEX;
-    JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO, termOrder);
+    JASConvert<BigRational> jas =
+        new JASConvert<BigRational>(listOfVariables, BigRational.ZERO, termOrder);
     IASTAppendable rest = F.ListAlloc(8);
     for (int i = 1; i < listOfPolynomials.size(); i++) {
       IExpr expr = F.evalExpandAll(listOfPolynomials.get(i));

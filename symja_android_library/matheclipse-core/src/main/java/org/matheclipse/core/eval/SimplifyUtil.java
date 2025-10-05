@@ -295,7 +295,7 @@ public class SimplifyUtil extends VisitorExpr {
   }
 
   public static AbstractVisitorLong leafCountVisitor() {
-    return new SimplifyUtil.LeafCountVisitor(0);
+    return new LeafCountVisitor(0);
   }
 
   /**
@@ -325,7 +325,7 @@ public class SimplifyUtil extends VisitorExpr {
 
   public static IExpr simplifyStep(IExpr arg1, IExpr defaultResult, boolean fullSimplify,
       boolean noApart, EvalEngine engine) {
-    Function<IExpr, Long> complexityFunction = SimplifyUtil.createComplexityFunction(F.NIL, engine);
+    Function<IExpr, Long> complexityFunction = createComplexityFunction(F.NIL, engine);
     long minCounter = complexityFunction.apply(arg1);
     return simplifyStep(arg1, defaultResult, complexityFunction, minCounter, fullSimplify, noApart,
         engine);
@@ -441,7 +441,7 @@ public class SimplifyUtil extends VisitorExpr {
     return fEngine.evaluate(a);
   }
 
-  private void functionExpand(IExpr expr, SimplifyUtil.SimplifiedResult sResult) {
+  private void functionExpand(IExpr expr, SimplifiedResult sResult) {
     if (expr.isBooleanFunction()) {
       try {
         IExpr temp = eval(F.BooleanMinimize(expr));
@@ -545,8 +545,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @param timesAST
    * @param sResult
    */
-  private IExpr reduceConjugateFactors(IASTMutable timesAST,
-      SimplifyUtil.SimplifiedResult sResult) {
+  private IExpr reduceConjugateFactors(IASTMutable timesAST, SimplifiedResult sResult) {
     IExpr temp;
     IASTAppendable newTimes = F.NIL;
     int i = 1;
@@ -778,7 +777,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @param plusAST
    * @return <code>F.NIL</code> if no simplification was found
    */
-  private IExpr tryArg1IsOnePlus(IASTMutable plusAST, SimplifyUtil.SimplifiedResult sResult) {
+  private IExpr tryArg1IsOnePlus(IASTMutable plusAST, SimplifiedResult sResult) {
     IExpr plusArg1 = plusAST.arg1();
     if (plusArg1.isOne() || plusArg1.isMinusOne()) {
       int iterIndx = 2;
@@ -972,24 +971,27 @@ public class SimplifyUtil extends VisitorExpr {
     return F.NIL;
   }
 
-  private IExpr tryExpandTransformation(IAST plusAST, IExpr test) {
-    IExpr result = F.NIL;
-    long minCounter = fComplexityFunction.apply(plusAST);
+  private IExpr tryExpandTransformation(IAST ast, IExpr test) {
+    long minCounter = fComplexityFunction.apply(ast);
     IExpr temp;
     long count;
 
     try {
       temp = F.evalExpand(test);
-      count = fComplexityFunction.apply(temp);
-      if (count < minCounter) {
-        result = temp;
+      if (temp != test) {
+        IExpr simplified = temp.accept(this);
+        if (simplified.isPresent()) {
+          count = fComplexityFunction.apply(simplified);
+          if (count < minCounter) {
+            return simplified;
+          }
+        }
       }
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
-      //
     }
 
-    return result;
+    return F.NIL;
   }
 
   /**
@@ -1001,7 +1003,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @param sResult
    */
   private void tryPolynomialQuotientRemainder(IExpr numerator, IExpr denominator,
-      SimplifyUtil.SimplifiedResult sResult) {
+      SimplifiedResult sResult) {
     IExpr temp;
     VariablesSet variables = new VariablesSet(numerator);
     variables.addVarList(denominator);
@@ -1042,8 +1044,7 @@ public class SimplifyUtil extends VisitorExpr {
     }
     try {
       // try ExpandAll, Together, Apart, Factor to reduce the expression
-      SimplifyUtil.SimplifiedResult simplifiedResult =
-          new SimplifyUtil.SimplifiedResult(expr, fComplexityFunction);
+      SimplifiedResult simplifiedResult = new SimplifiedResult(expr, fComplexityFunction);
       IExpr temp;
       long expandAllCounter = 0;
       if (expr.isTimes()) {
@@ -1183,8 +1184,7 @@ public class SimplifyUtil extends VisitorExpr {
           simplifiedResult.checkLessEqual(temp);
         }
 
-        Optional<IExpr[]> commonFactors =
-            AlgebraUtil.InternalFindCommonFactorPlus.findCommonFactors((IAST) expr, true);
+        Optional<IExpr[]> commonFactors = AlgebraUtil.findCommonFactors((IAST) expr, true);
         if (commonFactors.isPresent()) {
           temp = eval(F.Times(commonFactors.get()[0], commonFactors.get()[1]));
           simplifiedResult.checkLessEqual(temp);
@@ -1210,8 +1210,7 @@ public class SimplifyUtil extends VisitorExpr {
 
   @Override
   public IExpr visit(IASTMutable ast) {
-    SimplifyUtil.SimplifiedResult sResult =
-        new SimplifyUtil.SimplifiedResult(ast, fComplexityFunction);
+    SimplifiedResult sResult = new SimplifiedResult(ast, fComplexityFunction);
 
     IExpr temp = visitAST(ast);
     if (temp.isPresent()) {
@@ -1267,7 +1266,7 @@ public class SimplifyUtil extends VisitorExpr {
     return sResult.result;
   }
 
-  private IExpr visitPlus(IASTMutable plusAST, SimplifyUtil.SimplifiedResult sResult) {
+  private IExpr visitPlus(IASTMutable plusAST, SimplifiedResult sResult) {
     IExpr temp = tryArg1IsOnePlus(plusAST, sResult);
     if (temp.isPresent()) {
       return temp;
@@ -1334,7 +1333,7 @@ public class SimplifyUtil extends VisitorExpr {
     return sResult.result;
   }
 
-  private IExpr visitPower(IASTMutable powerAST, SimplifyUtil.SimplifiedResult sResult) {
+  private IExpr visitPower(IAST powerAST, SimplifiedResult sResult) {
     if (fFullSimplify && powerAST.exponent().isComplex() && (powerAST.base().isExactNumber())) {
       IExpr powerSimplified = ArithmeticUtil.powerComplexComplex((IBigNumber) powerAST.base(),
           (IComplex) powerAST.exponent(), fEngine);
@@ -1342,19 +1341,38 @@ public class SimplifyUtil extends VisitorExpr {
         return powerSimplified;
       }
     }
-    if (powerAST.isPowerReciprocal() && powerAST.base().isPlus() && powerAST.base().size() == 3) {
-      // example 1/(5+Sqrt(17)) => 1/8*(5-Sqrt(17))
-      IAST plus1 = (IAST) powerAST.base();
-      IAST plus2 = plus1.setAtCopy(2, plus1.arg2().negate());
-      // example (5+Sqrt(17)) * (5-Sqrt(17))
-      IExpr expr = eval(F.Expand(F.Times(plus1, plus2)));
-      if (expr.isNumber() && !expr.isZero()) {
-        IExpr powerSimplified = S.Times.of(expr.inverse(), plus2);
-        if (sResult.checkLessPlusTimesPower(powerSimplified)) {
-          return powerSimplified;
+    if (powerAST.base().isPlus() && powerAST.base().size() == 3) {
+      if (powerAST.isPowerReciprocal()) {
+        // example 1/(5+Sqrt(17)) => 1/8*(5-Sqrt(17))
+        IAST plus1 = (IAST) powerAST.base();
+        IAST plus2 = plus1.setAtCopy(2, plus1.arg2().negate());
+        // example (5+Sqrt(17)) * (5-Sqrt(17))
+        IExpr expr = eval(F.Expand(F.Times(plus1, plus2)));
+        if (expr.isNumber() && !expr.isZero()) {
+          IExpr powerSimplified = S.Times.of(expr.inverse(), plus2);
+          if (sResult.checkLessPlusTimesPower(powerSimplified)) {
+            return powerSimplified;
+          }
+        }
+      } else {
+        int n = powerAST.exponent().toIntDefault();
+        if (F.isPresent(n) && Math.abs(n) < Config.MAX_SIMPLIFY_EXPAND_PLUS_EXPONENT) {
+          if (n < 0) {
+            powerAST = F.Power(powerAST.base(), F.ZZ(-n));
+          }
+          IExpr powerSimplified = tryExpandTransformation((IAST) powerAST.base(), powerAST);
+          // IExpr evalExpand = F.evalExpand(powerAST);
+          // IExpr powerSimplified = evalExpand.accept(this);
+          if (powerSimplified.isPresent()) {
+            if (n < 0) {
+              return F.Power(powerSimplified, -1);
+            }
+            return powerSimplified;
+          }
         }
       }
-    } else if (powerAST.base().isE() && powerAST.exponent().isPlus()) {
+    }
+    if (powerAST.base().isE() && powerAST.exponent().isPlus()) {
       // E^(a*Log(f)+b+Log(g)) ==> E^(b) * f^a * g
       IAST plusAST = (IAST) powerAST.exponent();
       IASTAppendable plusResult = F.NIL;
@@ -1397,7 +1415,7 @@ public class SimplifyUtil extends VisitorExpr {
     return F.NIL;
   }
 
-  private IExpr visitTimes(IASTMutable timesAST, SimplifyUtil.SimplifiedResult sResult) {
+  private IExpr visitTimes(IASTMutable timesAST, SimplifiedResult sResult) {
     final IExpr denominator = eval(F.Denominator(timesAST));
     if (!denominator.isNumber()) {
       final IExpr numerator = eval(F.Numerator(timesAST));
@@ -1433,6 +1451,35 @@ public class SimplifyUtil extends VisitorExpr {
     if (temp.isPresent()) {
       return temp;
     }
+
+    if (timesAST.isTimes2() && timesAST.arg1().isPower() && timesAST.arg2().isPower()) {
+      IAST sqrt1 = (IAST) timesAST.arg1();
+      IAST sqrt2 = (IAST) timesAST.arg2();
+      IExpr base1 = sqrt1.arg1();
+      IExpr base2 = sqrt2.arg1();
+      IExpr exponent1 = sqrt1.arg2();
+      IExpr exponent2 = sqrt2.arg2();
+      if (exponent1.equals(exponent2)) {
+        temp = base1.plus(base2);
+        if (temp.isNonNegativeResult()) {
+          // https://functions.wolfram.com/ElementaryFunctions/Power/16/08/01/0004/
+          // a^(c)*b^(c) => (a*b) ^c
+          long leafCountTimes = base1.leafCountSimplify() + base2.leafCountSimplify() + 4;
+          if (leafCountTimes < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
+            IExpr expanded = F.evalExpand(F.Times(base1, base2));
+            if (expanded.leafCountSimplify() <= leafCountTimes) {
+              return F.Power(expanded, exponent1);
+            }
+          }
+        }
+      }
+    }
+    // IExpr evalExpand = tryExpandTransformation(timesAST, timesAST);
+    // // IExpr evalExpand = F.evalExpand(powerAST);
+    // // IExpr powerSimplified = evalExpand.accept(this);
+    // if (evalExpand.isPresent()) {
+    // return evalExpand;
+    // }
 
     temp = tryTransformations(sResult.result.orElse(timesAST));
     if (temp.isPresent()) {

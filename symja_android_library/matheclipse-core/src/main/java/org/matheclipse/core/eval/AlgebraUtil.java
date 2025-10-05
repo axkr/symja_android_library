@@ -9,8 +9,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.VariablesSet;
@@ -41,6 +43,12 @@ import edu.jas.arith.BigRational;
 import edu.jas.poly.Complex;
 import edu.jas.poly.ComplexRing;
 import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.Monomial;
+import edu.jas.poly.TermOrderByName;
+import edu.jas.structure.RingElem;
+import edu.jas.ufd.FactorAbstract;
+import edu.jas.ufd.FactorComplex;
+import edu.jas.ufd.FactorFactory;
 import edu.jas.ufd.GCDFactory;
 import edu.jas.ufd.GreatestCommonDivisor;
 
@@ -156,6 +164,7 @@ public class AlgebraUtil {
     private static IExpr flattenOneIdentity(IAST result, IExpr defaultValue) {
       return EvalAttributes.flattenDeep(result).orElse(result).oneIdentity(defaultValue);
     }
+
     /**
      * ASTs which are expanded in this <code>Expander</code> are cached in a set. The expansion is
      * only cached in the set, if the AST doesn t get the {@link IAST#IS_EXPANDED} flag.
@@ -439,7 +448,10 @@ public class AlgebraUtil {
         plusAST0.forEach(x -> evalAndExpandAST(x, true, t, false, plusOp, engine));
         return plusOp.getSum();
       }
-      expandSimpleTimesPlus(plusAST0, plusAST1);
+      IExpr expanded = expandSimpleTimesPlus(plusAST0, plusAST1);
+      if (expanded.isPresent()) {
+        return expanded;
+      }
       long numberOfTerms = (long) (plusAST0.argSize()) * (long) (plusAST1.argSize());
       if (numberOfTerms > Config.MAX_AST_SIZE) {
         throw new ASTElementLimitExceeded(numberOfTerms);
@@ -647,196 +659,16 @@ public class AlgebraUtil {
 
   }
 
-  public static class InternalFindCommonFactorPlus {
-  
-    private static void splitTimesArg1(IExpr expr, HashMap<IExpr, IInteger> map) {
-      if (expr.isTimes()) {
-        IAST timesAST = (IAST) expr;
-        for (int i = 1; i < timesAST.size(); i++) {
-          final IExpr arg = timesAST.get(i);
-          if (arg.isPowerInteger()) {
-            if (!arg.base().isNumber()) {
-              map.put(arg.base(), (IInteger) arg.exponent());
-            }
-          } else {
-            if (!arg.isNumber()) {
-              map.put(arg, F.C1);
-            }
-          }
-        }
-      } else if (expr.isPowerInteger()) {
-        if (!expr.base().isNumber()) {
-          map.put(expr.base(), (IInteger) expr.exponent());
-        }
-      } else {
-        if (!expr.isNumber()) {
-          map.put(expr, F.C1);
-        }
-      }
-    }
-  
-    private static boolean splitTimesRest(IExpr expr, HashMap<IExpr, IInteger> map) {
-      if (map.size() > 0) {
-        if (expr.isTimes()) {
-          IAST timesAST = (IAST) expr;
-          Iterator<Entry<IExpr, IInteger>> iter = map.entrySet().iterator();
-          // for (Map.Entry<IExpr, IInteger> entry : map.entrySet()) {
-          while (iter.hasNext()) {
-            Map.Entry<IExpr, IInteger> entry = iter.next();
-            final IExpr key = entry.getKey();
-            boolean foundValue = false;
-            for (int i = 1; i < timesAST.size(); i++) {
-              final IExpr arg = timesAST.get(i);
-              if (arg.isPowerInteger()) {
-                if (arg.base().equals(key)) {
-                  IInteger value = entry.getValue();
-                  IInteger exponent = (IInteger) arg.exponent();
-                  if (value.equals(exponent.negate())) {
-                    return false;
-                  }
-                  if (exponent.isNegative()) {
-                    if (value.isLT(exponent)) {
-                      entry.setValue(exponent);
-                    }
-                  } else {
-                    if (value.isGT(exponent)) {
-                      entry.setValue(exponent);
-                    }
-                  }
-                  foundValue = true;
-                  break;
-                }
-              } else {
-                if (arg.equals(key)) {
-                  IInteger value = entry.getValue();
-                  if (value.isMinusOne()) {
-                    return false;
-                  }
-                  if (value.isGT(F.C1)) {
-                    entry.setValue(F.C1);
-                  }
-                  foundValue = true;
-                  break;
-                }
-              }
-            }
-            if (!foundValue) {
-              iter.remove();
-              if (map.size() == 0) {
-                return false;
-              }
-            }
-          }
-        } else {
-          Iterator<Entry<IExpr, IInteger>> iter = map.entrySet().iterator();
-          // for (Map.Entry<IExpr, IInteger> entry : map.entrySet()) {
-          while (iter.hasNext()) {
-            Map.Entry<IExpr, IInteger> entry = iter.next();
-            final IExpr key = entry.getKey();
-            if (expr.isPowerInteger()) {
-              if (!expr.base().equals(key)) {
-                iter.remove();
-                if (map.size() == 0) {
-                  return false;
-                }
-              } else {
-                IInteger value = entry.getValue();
-                IInteger exponent = (IInteger) expr.exponent();
-                if (value.equals(exponent.negate())) {
-                  return false;
-                }
-                if (exponent.isNegative()) {
-                  if (value.isLT(exponent)) {
-                    entry.setValue(exponent);
-                  }
-                } else {
-                  if (value.isGT(exponent)) {
-                    entry.setValue(exponent);
-                  }
-                }
-              }
-            } else {
-              if (!expr.equals(key)) {
-                iter.remove();
-                if (map.size() == 0) {
-                  return false;
-                }
-              } else {
-                IInteger value = entry.getValue();
-                if (value.isMinusOne()) {
-                  return false;
-                }
-                if (value.isGT(F.C1)) {
-                  entry.setValue(F.C1);
-                }
-              }
-            }
-          }
-        }
-      }
-      return map.size() != 0;
-    }
-  
-    /**
-     * Determine common factors in a <code>Plus(...)</code> expression. Index <code>[0]</code>
-     * contains the common factor. Index <code>[1]</code> contains the rest <code>Plus(...)</code>
-     * factor;
-     *
-     * @param list a <code>List(...)</code> or <code>Plus(...)</code> AST of terms
-     * @param reduceOneIdentityRest reduce the rest expression if only 1 argument is assigned
-     * @return {@link Optional#empty()} if no common factor was found.
-     */
-    public static Optional<IExpr[]> findCommonFactors(IAST list, boolean reduceOneIdentityRest) {
-      if (list.size() > 2) {
-        HashMap<IExpr, IInteger> map = new HashMap<IExpr, IInteger>();
-        splitTimesArg1(list.arg1(), map);
-        if (map.size() != 0) {
-          for (int i = 2; i < list.size(); i++) {
-            if (!splitTimesRest(list.get(i), map)) {
-              // fail fast
-              return Optional.empty();
-            }
-          }
-  
-          IASTAppendable commonFactor = F.TimesAlloc(map.size());
-          for (Map.Entry<IExpr, IInteger> entry : map.entrySet()) {
-            final IExpr key = entry.getKey();
-            IInteger exponent = entry.getValue();
-            if (exponent.isOne()) {
-              commonFactor.append(key);
-            } else {
-              commonFactor.append(F.Power(key, exponent));
-            }
-          }
-  
-          final IExpr[] result = new IExpr[2];
-          result[0] = commonFactor.oneIdentity1();
-          if (!result[0].isOne()) {
-            IExpr inverse = result[0].inverse();
-  
-            IASTAppendable commonPlus = F.PlusAlloc(list.argSize());
-            list.forEach(x -> commonPlus.append(F.Times(inverse, x)));
-            if (reduceOneIdentityRest) {
-              result[1] = commonPlus.oneIdentity1();
-            }
-            return Optional.of(result);
-          }
-        }
-      }
-      return Optional.empty();
-    }
-  }
-
   public static final IBuiltInSymbol reduceConstantTerm =
-  F.localFunction("reduceConstantTerm", (c) -> {
-    if (c.isNumber()) {
-      return F.list(c, F.C1);
-    }
-    if (c.isTimes() && c.first().isNumber()) {
-      return F.list(c.first(), c.rest().oneIdentity1());
-    }
-    return F.list(F.C1, c);
-  });
+      F.localFunction("reduceConstantTerm", (c) -> {
+        if (c.isNumber()) {
+          return F.list(c, F.C1);
+        }
+        if (c.isTimes() && c.first().isNumber()) {
+          return F.list(c.first(), c.rest().oneIdentity1());
+        }
+        return F.list(F.C1, c);
+      });
 
   private static boolean appendPlus(IASTAppendable ast, IExpr expr) {
     if (ast.head().equals(S.Plus) && expr.head().equals(S.Plus)) {
@@ -881,6 +713,7 @@ public class AlgebraUtil {
     }
   }
 
+
   /**
    * Return the result divided by the gcd value.
    *
@@ -893,7 +726,7 @@ public class AlgebraUtil {
       IInteger denominatorInt, IInteger gcd) {
     boolean[] error = new boolean[] {false};
     numeratorPlus
-        .forEach((IExpr x, int i) -> AlgebraUtil.calculateNumeratorGCD(x, i, numeratorPlus, gcd, error));
+        .forEach((IExpr x, int i) -> calculateNumeratorGCD(x, i, numeratorPlus, gcd, error));
     if (error[0]) {
       return Optional.empty();
     }
@@ -926,7 +759,7 @@ public class AlgebraUtil {
       IASTAppendable t1 = p1Times.copyAppendable();
       int i = 1;
       boolean evaled = false;
-  
+
       IASTAppendable commonFactors = F.NIL;
       termChanged: while (i < t0.size()) {
         IExpr t0Arg = t0.get(i);
@@ -1025,7 +858,7 @@ public class AlgebraUtil {
       }
     }
     return F.NIL;
-  
+
   }
 
   /**
@@ -1042,7 +875,7 @@ public class AlgebraUtil {
       IExpr denominator = parts.get()[1];
       if (numerator.isPlus() || numerator.isTimes() || denominator.isPlus()
           || denominator.isTimes()) {
-        IAST temp = AlgebraUtil.cancelCommonFactors(numerator, denominator);
+        IAST temp = cancelCommonFactors(numerator, denominator);
         if (temp.isPresent()) {
           numerator = temp.first();
           denominator = temp.second();
@@ -1053,10 +886,10 @@ public class AlgebraUtil {
       if (numerator.isPlus() && denominator.isPlus()) {
         // VariablesSet eVar = new VariablesSet(powerTimesAST);
         // IASTAppendable variables = eVar.getVarList();
-        IAST numParts = numerator.partitionPlus(x -> AlgebraUtil.isPolynomial(x), F.C0, F.C1, S.List);
-        IAST denParts = denominator.partitionPlus(x -> AlgebraUtil.isPolynomial(x), F.C0, F.C1, S.List);
+        IAST numParts = numerator.partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
+        IAST denParts = denominator.partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
         if (denParts.isPresent() && !denParts.arg1().isOne()) {
-          Optional<IExpr[]> result = AlgebraUtil.cancelGCD(numParts.arg1(), denParts.arg1());
+          Optional<IExpr[]> result = cancelGCD(numParts.arg1(), denParts.arg1());
           if (result.isPresent()) {
             IExpr[] elements = result.get();
             return F.Times(elements[0], elements[1], numParts.arg2(),
@@ -1094,19 +927,18 @@ public class AlgebraUtil {
       throws JASConversionException {
     try {
       if (denominator.isInteger() && numerator.isPlus()) {
-        Optional<IExpr[]> result =
-            AlgebraUtil.cancelPlusIntegerGCD((IAST) numerator, (IInteger) denominator);
+        Optional<IExpr[]> result = cancelPlusIntegerGCD((IAST) numerator, (IInteger) denominator);
         if (result.isPresent()) {
           return result;
         }
       }
-  
+
       VariablesSet eVar = new VariablesSet(numerator);
       eVar.addVarList(denominator);
       if (eVar.size() == 0) {
         return Optional.empty();
       }
-  
+
       IAST vars = eVar.getVarList();
       PolynomialHomogenization substitutions = new PolynomialHomogenization(eVar, EvalEngine.get());
       IExpr[] subst = substitutions.replaceForward(numerator, denominator);
@@ -1125,7 +957,7 @@ public class AlgebraUtil {
         JASIExpr jas = new JASIExpr(varList, true);
         GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
         GenPolynomial<IExpr> p2 = jas.expr2IExprJAS(pol2);
-  
+
         GreatestCommonDivisor<IExpr> engine;
         engine = GCDFactory.getImplementation(ExprRingFactory.CONST);
         GenPolynomial<IExpr> gcd = engine.gcd(p1, p2);
@@ -1147,9 +979,10 @@ public class AlgebraUtil {
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
       }
-      List<IExpr> varList = eVar.getVarList().copyTo();
+      // List<IExpr> varList = eVar.getVarList().copyTo();
       ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(BigRational.ZERO);
-      JASConvert<Complex<BigRational>> jas = new JASConvert<Complex<BigRational>>(varList, cfac);
+      JASConvert<Complex<BigRational>> jas =
+          new JASConvert<Complex<BigRational>>(eVar.getVarList(), cfac);
       GenPolynomial<Complex<BigRational>> p1 = jas.expr2JAS(numeratorPolynomial, false);
       if (p1 == null) {
         return Optional.empty();
@@ -1199,23 +1032,21 @@ public class AlgebraUtil {
    * @param denominator an integer value for the denominator
    * @return {@link Optional#empty()} if no gcd value was found
    */
-  public static Optional<IExpr[]> cancelPlusIntegerGCD(IAST numeratorPlus,
-      IInteger denominator) {
+  public static Optional<IExpr[]> cancelPlusIntegerGCD(IAST numeratorPlus, IInteger denominator) {
     IASTAppendable gcd = F.ast(S.GCD, numeratorPlus.size() + 1);
     gcd.append(denominator);
-    boolean evaled = !numeratorPlus.exists((IExpr x) -> AlgebraUtil.collectGCDFactors(x, gcd));
+    boolean evaled = !numeratorPlus.exists((IExpr x) -> collectGCDFactors(x, gcd));
     if (evaled) {
       // GCD() has attribute Orderless, so the arguments will
       // be sorted by evaluation!
       IExpr igcd = F.eval(gcd);
       if (igcd.isInteger() && !igcd.isOne()) {
         IASTAppendable plus = numeratorPlus.copyAppendable();
-        return AlgebraUtil.calculatePlusIntegerGCD(plus, denominator, (IInteger) igcd);
+        return calculatePlusIntegerGCD(plus, denominator, (IInteger) igcd);
       }
     }
     return Optional.empty();
   }
-
 
   /**
    * Append the gcd factors from <code>expr</code> in <code>gcdFactors</code>
@@ -1246,7 +1077,6 @@ public class AlgebraUtil {
     }
     return true;
   }
-
 
   /**
    * Get the &quot;denominator form&quot; of the given function. Example: <code>Csc[x]</code> gives
@@ -1299,6 +1129,7 @@ public class AlgebraUtil {
     return list;
   }
 
+
   /**
    * Call the distribute algorithm for a <code>Times(...)</code> {@link IAST}, which contains
    * <code>Plus(...)</code> terms. If <code>expr.isTimes() == false</code> return <code>expr</code>
@@ -1312,6 +1143,7 @@ public class AlgebraUtil {
     }
     return expr;
   }
+
 
   /**
    * Expand the given <code>ast</code> expression.
@@ -1340,8 +1172,8 @@ public class AlgebraUtil {
    */
   public static IExpr expand(final IAST ast, Predicate<IExpr> patt, boolean expandNegativePowers,
       boolean distributePlus, boolean evalParts, boolean factorTerms) {
-    AlgebraUtil.Expander expander = new AlgebraUtil.Expander(patt, expandNegativePowers,
-        distributePlus, evalParts, factorTerms);
+    Expander expander =
+        new Expander(patt, expandNegativePowers, distributePlus, evalParts, factorTerms);
     return expander.expandAST(ast);
   }
 
@@ -1422,6 +1254,392 @@ public class AlgebraUtil {
       return setAllExpanded(temp, expandNegativePowers, distributePlus);
     }
     return setAllExpanded(result[0], expandNegativePowers, distributePlus);
+  }
+
+  public static IExpr factor(IAST ast, IExpr arg1, VariablesSet eVar, boolean squareFree,
+      boolean withHomogenization, boolean togetherMode, EvalEngine engine) {
+    IExpr expr = arg1;
+    if (!arg1.isTimes() && !arg1.isPower()) {
+      if (togetherMode) {
+        expr = S.Together.of(engine, arg1);
+      }
+      if (expr.isAST()) {
+        IExpr[] fractionParts = numeratorDenominator((IAST) expr, true, engine);
+        if (!fractionParts[1].isOne()) {
+          try {
+            IExpr numerator = factorExpr(F.Factor(fractionParts[0]), fractionParts[0], eVar,
+                squareFree, withHomogenization, engine);
+            IExpr denominator = factorExpr(F.Factor(fractionParts[1]), fractionParts[1], eVar,
+                squareFree, withHomogenization, engine);
+            if (numerator.isPresent() && denominator.isPresent()) {
+              IExpr temp = engine.evaluate(F.Divide(numerator, denominator));
+              engine.putCache(ast, temp);
+              return temp;
+            }
+            engine.putCache(ast, F.NIL);
+          } catch (JASConversionException e) {
+            //
+          }
+          return arg1;
+        }
+      }
+    }
+    try {
+      IExpr temp = factorExpr(ast, expr, eVar, squareFree, withHomogenization, engine);
+      engine.putCache(ast, temp);
+      if (temp.isPresent()) {
+        return temp;
+      }
+    } catch (JASConversionException e) {
+    }
+    return arg1;
+  }
+
+  public static IExpr factor(IAST expr, VariablesSet eVar, boolean squareFree,
+      boolean withHomogenization, EvalEngine engine) throws JASConversionException {
+    if (expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT) {
+      return expr;
+    }
+
+    // use TermOrderByName.INVLEX here!
+    // See https://github.com/kredel/java-algebra-system/issues/8
+    Object[] objects = null;
+    JASConvert<BigRational> jas =
+        new JASConvert<BigRational>(eVar.getVarList(), BigRational.ZERO, TermOrderByName.INVLEX);
+    try {
+      GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, false);
+      if (polyRat == null) {
+        if (!squareFree && withHomogenization) {
+          return factorWithPolynomialHomogenization(expr, eVar, engine);
+        }
+        return F.NIL;
+      }
+      if (polyRat.length() <= 1) {
+        return expr;
+      }
+      objects = jas.factorTerms(polyRat);
+    } catch (JASConversionException e) {
+      if (!squareFree && withHomogenization) {
+        return factorWithPolynomialHomogenization(expr, eVar, engine);
+      }
+      return F.NIL;
+    }
+
+    if (objects != null) {
+
+      SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map = null;
+      try {
+        GenPolynomial<edu.jas.arith.BigInteger> poly =
+            (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
+        if (eVar.size() == 1) {
+          IExpr temp = heuristicXP2XPOne(poly, expr, eVar.getArrayList().get(0), engine);
+          if (temp.isPresent()) {
+            return temp;
+          }
+        }
+
+        FactorAbstract<edu.jas.arith.BigInteger> factorAbstract =
+            FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
+        if (squareFree) {
+          map = factorAbstract.squarefreeFactors(poly); // factors(poly);
+        } else {
+          map = factorAbstract.factors(poly);
+        }
+        // } catch (TimeExceededException texex) {
+        // LOGGER.debug("Factor.factor() time limit exceeded", texex);
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        return expr;
+      }
+      if (map != null) {
+        IASTAppendable result = F.TimesAlloc(map.size() + 1);
+        java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
+        java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
+        IRational f = F.C1;
+        if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
+          f = F.fraction(gcd, lcm).normalize();
+        }
+        for (SortedMap.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map
+            .entrySet()) {
+          if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
+            continue;
+          }
+          IExpr base = jas.integerPoly2Expr(entry.getKey());
+          if (entry.getValue() == 1L) {
+            if (f.isMinusOne() && base.isPlus()) {
+              base = ((IAST) base).map(x -> x.negate(), 1);
+              f = F.C1;
+            }
+            result.append(base);
+          } else {
+            result.append(F.Power(base, F.ZZ(entry.getValue())));
+          }
+        }
+        if (!f.isOne()) {
+          result.append(f);
+        }
+        return engine.evaluate(result);
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * @param polynomial the complex-rational polynomial which should be factored
+   * @param jas
+   * @param head the head of the factorization result AST (typically <code>F.Times</code> or <code>
+   *     F.List</code>)
+   * @param cfac
+   * @param original the original expression
+   * @return
+   */
+  public static IExpr factorComplex(GenPolynomial<Complex<BigRational>> polynomial,
+      JASConvert<? extends RingElem<?>> jas, ISymbol head, ComplexRing<BigRational> cfac,
+      IExpr original) {
+    if (polynomial.degree() > Config.MAX_POLYNOMIAL_DEGREE) {
+      // Exponent ist out of bounds for function `1`.
+      return Errors.printMessage(S.Factor, "lrgexp", F.List(S.Factor));
+    }
+    FactorComplex<BigRational> factorAbstract = new FactorComplex<BigRational>(cfac);
+    SortedMap<GenPolynomial<Complex<BigRational>>, Long> map = factorAbstract.factors(polynomial);
+
+    IASTAppendable result = F.ast(head, map.size());
+    for (SortedMap.Entry<GenPolynomial<Complex<BigRational>>, Long> entry : map.entrySet()) {
+      if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
+        continue;
+      }
+      final IExpr key = jas.complexPoly2Expr(entry.getKey());
+      if (entry.getValue().equals(1L) && map.size() <= 2
+          && (key.equals(F.CNI) || key.equals(F.CI))) {
+        // hack: factoring -I and I out of an expression should give no new factorized expression
+        return original;
+      }
+      result.append(F.Power(jas.complexPoly2Expr(entry.getKey()), F.ZZ(entry.getValue())));
+    }
+    return result;
+  }
+
+  /**
+   * Factor the <code>expr</code> in the domain of GaussianIntegers.
+   *
+   * @param expr the (polynomial) expression which should be factored
+   * @param varList the list of variables
+   * @param head the head of the factorization result AST (typically <code>F.Times</code> or <code>
+   *     F.List</code>)
+   * @param numeric2Rational transform numerical values to symbolic rational numbers
+   * @param gaussianIntegers if <code>true</code> use Gaussian integers
+   * @param engine
+   * @return factorization result AST (typically with head <code>F.Times</code> or <code>
+   *     F.List</code>)
+   * @throws JASConversionException
+   */
+  public static IExpr factorComplex(IExpr expr, IAST varList, ISymbol head,
+      boolean numeric2Rational, boolean gaussianIntegers, EvalEngine engine) {
+    try {
+      if (gaussianIntegers) {
+        ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(BigRational.ZERO);
+        JASConvert<Complex<BigRational>> jas = new JASConvert<Complex<BigRational>>(varList, cfac);
+        GenPolynomial<Complex<BigRational>> polyRat = jas.expr2JAS(expr, numeric2Rational);
+        if (polyRat == null) {
+          return expr;
+        }
+        return factorComplex(polyRat, jas, head, cfac, expr).eval(engine);
+      } else {
+        JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+        GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numeric2Rational);
+        if (polyRat == null) {
+          return expr;
+        }
+        return Algebra.factorRational(polyRat, jas, head);
+      }
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      // LOGGER.debug("Algebra.factorComplex() failed", rex);
+    }
+    return expr;
+  }
+
+  /**
+   * Factor the <code>expr</code> in the domain of GaussianIntegers.
+   *
+   * @param expr the (polynomial) expression which should be factored
+   * @param varList the list of variables
+   * @param head the head of the factorization result AST (typically <code>F.Times</code> or <code>
+   *     F.List</code>)
+   * @param gaussianIntegers if <code>true</code> use Gaussian integers
+   * @param engine the evaluation engine
+   * @return factorization result AST (typically with head <code>F.Times</code> or <code>
+   *     F.List</code>)
+   * @throws JASConversionException
+   */
+  public static IExpr factorComplex(IExpr expr, IAST varList, ISymbol head,
+      boolean gaussianIntegers, EvalEngine engine) {
+    return factorComplex(expr, varList, head, false, gaussianIntegers, engine);
+  }
+
+  public static IExpr factorExpr(final IAST ast, IExpr expr, VariablesSet eVar, boolean squareFree,
+      boolean withHomogenization, EvalEngine engine) {
+    if (expr.isAST()) {
+      IExpr temp;
+      // if (expr.isPower()&&expr.base().isPlus()) {
+      // temp = factorExpr(ast, expr.base(), varList);
+      // temp = F.Power(temp, expr.exponent());
+      // } else
+      if (expr.isPower()) {
+        IExpr p =
+            factorExpr((IAST) expr, expr.base(), eVar, squareFree, withHomogenization, engine);
+        if (p.isPresent() && !p.equals(expr.base())) {
+          return F.Power(p, expr.exponent());
+        }
+        return expr;
+      } else if (expr.isTimes()) {
+        temp = ((IAST) expr).map(x -> {
+          if (x.isPlus()) {
+            return factorExpr(ast, x, eVar, squareFree, withHomogenization, engine);
+          }
+          if (x.isPower() && x.base().isPlus()) {
+            IExpr p = factorExpr(ast, x.base(), eVar, squareFree, withHomogenization, engine);
+            if (p.isPresent() && !p.equals(x.base())) {
+              return F.Power(p, x.exponent());
+            }
+          }
+          return F.NIL;
+        }, 1);
+        return temp;
+      } else {
+        return factor((IAST) expr, eVar, squareFree, withHomogenization, engine);
+      }
+    }
+    return expr;
+  }
+
+  public static Optional<IRational> factorTermsGCD(IAST plusAST, EvalEngine engine) {
+    IRational gcd1 = null;
+    if (plusAST.arg1().isRational()) {
+      gcd1 = (IRational) plusAST.arg1();
+    } else if (plusAST.arg1().isTimes() && plusAST.arg1().first().isRational()) {
+      gcd1 = (IRational) plusAST.arg1().first();
+    }
+    if (gcd1 == null) {
+      return Optional.empty();
+    }
+    for (int i = 2; i < plusAST.size(); i++) {
+      IRational gcd2 = null;
+      if (plusAST.get(i).isRational()) {
+        gcd2 = (IRational) plusAST.get(i);
+      } else if (plusAST.get(i).isTimes() && plusAST.get(i).first().isRational()) {
+        gcd2 = (IRational) plusAST.get(i).first();
+      }
+      if (gcd2 == null) {
+        return Optional.empty();
+      }
+
+      final IExpr gcd12 = gcd1.gcd(gcd2); // engine.evaluate(F.GCD(gcd1, gcd2));
+      if (gcd12.isRational() && !gcd12.isOne()) {
+        if (gcd1.isNegative() && gcd2.isNegative()) {
+          gcd1 = ((IRational) gcd12).negate();
+        } else {
+          gcd1 = (IRational) gcd12;
+        }
+      } else {
+        return Optional.empty();
+      }
+    }
+    if (gcd1.isMinusOne()) {
+      return Optional.empty();
+    }
+    return Optional.of(gcd1);
+  }
+
+  /**
+   * Factor out a rational number which may be a factor in every sub-expression of <code>plus
+   * </code>.
+   *
+   * @param plusAST
+   * @param engine
+   * @return {@link F#NIL} if the factor couldn't be found
+   */
+  /* package private */ public static IExpr factorTermsPlus(IAST plusAST, EvalEngine engine) {
+    Optional<IRational> gcd1 = factorTermsGCD(plusAST, engine);
+    if (gcd1.isPresent()) {
+      IRational rationalGCD = gcd1.get();
+      return F.Times(rationalGCD, F.Expand(F.Times(rationalGCD.inverse(), plusAST))).eval(engine);
+    }
+    return F.NIL;
+  }
+
+  public static IExpr factorWithPolynomialHomogenization(IAST expr, VariablesSet eVar,
+      EvalEngine engine) {
+    boolean gaussianIntegers = !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
+    PolynomialHomogenization substitutions = new PolynomialHomogenization(eVar, engine);
+    IExpr subsPolynomial = substitutions.replaceForward(expr);
+    // System.out.println(subsPolynomial.toString());
+    // System.out.println(substitutions.substitutedVariables());
+    if (substitutions.size() == 0) {
+      return factorComplex(expr, eVar.getVarList(), S.Times, gaussianIntegers, engine);
+    }
+    if (subsPolynomial.isAST()) {
+      // System.out.println(subsPolynomial);
+      Set<ISymbol> varSet = substitutions.substitutedVariablesSet();
+      eVar.addAll(varSet);
+      IExpr factorization =
+          factorComplex(subsPolynomial, eVar.getVarList(), S.Times, gaussianIntegers, engine);
+      if (factorization.isPresent()) {
+        return substitutions.replaceBackward(factorization);
+      }
+    }
+    return expr;
+  }
+
+  /**
+   * Determine common factors in a <code>Plus(...)</code> expression. Index <code>[0]</code>
+   * contains the common factor. Index <code>[1]</code> contains the rest <code>Plus(...)</code>
+   * factor;
+   *
+   * @param list a <code>List(...)</code> or <code>Plus(...)</code> AST of terms
+   * @param reduceOneIdentityRest reduce the rest expression if only 1 argument is assigned
+   * @return {@link Optional#empty()} if no common factor was found.
+   */
+  public static Optional<IExpr[]> findCommonFactors(IAST list, boolean reduceOneIdentityRest) {
+    if (list.size() > 2) {
+      HashMap<IExpr, IInteger> map = new HashMap<IExpr, IInteger>();
+      splitTimesArg1(list.arg1(), map);
+      if (map.size() != 0) {
+        for (int i = 2; i < list.size(); i++) {
+          if (!splitTimesRest(list.get(i), map)) {
+            // fail fast
+            return Optional.empty();
+          }
+        }
+
+        IASTAppendable commonFactor = F.TimesAlloc(map.size());
+        for (Map.Entry<IExpr, IInteger> entry : map.entrySet()) {
+          final IExpr key = entry.getKey();
+          IInteger exponent = entry.getValue();
+          if (exponent.isOne()) {
+            commonFactor.append(key);
+          } else {
+            commonFactor.append(F.Power(key, exponent));
+          }
+        }
+
+        final IExpr[] result = new IExpr[2];
+        result[0] = commonFactor.oneIdentity1();
+        if (!result[0].isOne()) {
+          IExpr inverse = result[0].inverse();
+
+          IASTAppendable commonPlus = F.PlusAlloc(list.argSize());
+          list.forEach(x -> commonPlus.append(F.Times(inverse, x)));
+          if (reduceOneIdentityRest) {
+            result[1] = commonPlus.oneIdentity1();
+          } else {
+            result[1] = commonPlus;
+          }
+          return Optional.of(result);
+        }
+      }
+    }
+    return Optional.empty();
   }
 
   /**
@@ -1743,6 +1961,59 @@ public class AlgebraUtil {
     return Optional.empty();
   }
 
+  /**
+   * Polynomials of the form <code>x^(2*p) + x^p + 1</code> have exactly two factors for all primes
+   * <code>p != 3</code>. One is <code>x^2 + x + 1</code>, and its cofactor is a polynomial whose
+   * coefficients are all <code>1, 0, or −1</code>.
+   *
+   * @param poly
+   * @param expr
+   * @param variable
+   * @param engine
+   * @return
+   */
+  public static IExpr heuristicXP2XPOne(GenPolynomial<edu.jas.arith.BigInteger> poly, IAST expr,
+      IExpr variable, EvalEngine engine) {
+    if (poly.length() == 3 && poly.ring.tord == TermOrderByName.INVLEX && poly.ring.nvar == 1) {
+      edu.jas.arith.BigInteger a = edu.jas.arith.BigInteger.ZERO;
+      edu.jas.arith.BigInteger b = edu.jas.arith.BigInteger.ZERO;
+      edu.jas.arith.BigInteger c = edu.jas.arith.BigInteger.ZERO;
+      edu.jas.arith.BigInteger one = edu.jas.arith.BigInteger.ONE;
+      long expA = 0;
+      long p = 0;
+      long expC = 0;
+      int i = 0;
+      for (Monomial<edu.jas.arith.BigInteger> monomial : poly) {
+        final edu.jas.arith.BigInteger coeff = monomial.coefficient();
+        long lExp = monomial.exponent().getVal(0);
+        i++;
+        if (i == 1) {
+          a = coeff;
+          expA = lExp;
+        } else if (i == 2) {
+          b = coeff;
+          p = lExp;
+        } else if (i == 3) {
+          c = coeff;
+          expC = lExp;
+        }
+      }
+      if (a.equals(one) && b.equals(one) && c.equals(one)) {
+        if (expC == 0L && (p != 3L) && (expA == p * 2)
+            && java.math.BigInteger.valueOf(p).isProbablePrime(32)) {
+          // polynomials of the form x^(2*p) + x^p + 1 have exactly two factors for
+          // all primes p != 3. One is x^2 + x + 1, and its cofactor is a polynomial whose
+          // coefficients are all 1, 0, or −1.
+          IExpr x = variable;
+          IExpr p1 = F.Plus(F.Power(x, F.C2), x, F.C1);
+          IExpr p2 = engine.evaluate(F.PolynomialQuotient(expr, p1, x));
+          return F.Times(p1, p2);
+        }
+      }
+    }
+    return F.NIL;
+  }
+
   public static boolean isPolynomial(IExpr expr) {
     if (expr.isPlus() || expr.isTimes() || expr.isPower()) {
       IExpr expanded = F.evalExpand(expr);
@@ -1809,12 +2080,13 @@ public class AlgebraUtil {
   }
 
   public static IExpr reduceFactorConstant(IExpr p, EvalEngine engine) {
-  
+
     if (!engine.isNumericMode() && p.isPlus() && !engine.isTogetherMode()) {
       IAST plusAST = (IAST) p;
       // ((reduceConstantTerm /@ (List @@ plusAST)) // Transpose)[[1]]
-      IExpr cTerms = S.Transpose.of(engine,
-          F.Map(F.Function(F.unaryAST1(AlgebraUtil.reduceConstantTerm, F.Slot1)), F.Apply(S.List, plusAST)))
+      IExpr cTerms = S.Transpose
+          .of(engine,
+              F.Map(F.Function(F.unaryAST1(reduceConstantTerm, F.Slot1)), F.Apply(S.List, plusAST)))
           .first();
       if (cTerms.isList()) {
         // GCD @@ cTerms
@@ -1835,7 +2107,7 @@ public class AlgebraUtil {
         }
       }
     }
-  
+
     return p;
   }
 
@@ -1948,15 +2220,143 @@ public class AlgebraUtil {
     return result;
   }
 
+  private static void splitTimesArg1(IExpr expr, HashMap<IExpr, IInteger> map) {
+    if (expr.isTimes()) {
+      IAST timesAST = (IAST) expr;
+      for (int i = 1; i < timesAST.size(); i++) {
+        final IExpr arg = timesAST.get(i);
+        if (arg.isPowerInteger()) {
+          if (!arg.base().isNumber()) {
+            map.put(arg.base(), (IInteger) arg.exponent());
+          }
+        } else {
+          if (!arg.isNumber()) {
+            map.put(arg, F.C1);
+          }
+        }
+      }
+    } else if (expr.isPowerInteger()) {
+      if (!expr.base().isNumber()) {
+        map.put(expr.base(), (IInteger) expr.exponent());
+      }
+    } else {
+      if (!expr.isNumber()) {
+        map.put(expr, F.C1);
+      }
+    }
+  }
+
+  private static boolean splitTimesRest(IExpr expr, HashMap<IExpr, IInteger> map) {
+    if (map.size() > 0) {
+      if (expr.isTimes()) {
+        IAST timesAST = (IAST) expr;
+        Iterator<Entry<IExpr, IInteger>> iter = map.entrySet().iterator();
+        // for (Map.Entry<IExpr, IInteger> entry : map.entrySet()) {
+        while (iter.hasNext()) {
+          Map.Entry<IExpr, IInteger> entry = iter.next();
+          final IExpr key = entry.getKey();
+          boolean foundValue = false;
+          for (int i = 1; i < timesAST.size(); i++) {
+            final IExpr arg = timesAST.get(i);
+            if (arg.isPowerInteger()) {
+              if (arg.base().equals(key)) {
+                IInteger value = entry.getValue();
+                IInteger exponent = (IInteger) arg.exponent();
+                if (value.equals(exponent.negate())) {
+                  return false;
+                }
+                if (exponent.isNegative()) {
+                  if (value.isLT(exponent)) {
+                    entry.setValue(exponent);
+                  }
+                } else {
+                  if (value.isGT(exponent)) {
+                    entry.setValue(exponent);
+                  }
+                }
+                foundValue = true;
+                break;
+              }
+            } else {
+              if (arg.equals(key)) {
+                IInteger value = entry.getValue();
+                if (value.isMinusOne()) {
+                  return false;
+                }
+                if (value.isGT(F.C1)) {
+                  entry.setValue(F.C1);
+                }
+                foundValue = true;
+                break;
+              }
+            }
+          }
+          if (!foundValue) {
+            iter.remove();
+            if (map.size() == 0) {
+              return false;
+            }
+          }
+        }
+      } else {
+        Iterator<Entry<IExpr, IInteger>> iter = map.entrySet().iterator();
+        // for (Map.Entry<IExpr, IInteger> entry : map.entrySet()) {
+        while (iter.hasNext()) {
+          Map.Entry<IExpr, IInteger> entry = iter.next();
+          final IExpr key = entry.getKey();
+          if (expr.isPowerInteger()) {
+            if (!expr.base().equals(key)) {
+              iter.remove();
+              if (map.size() == 0) {
+                return false;
+              }
+            } else {
+              IInteger value = entry.getValue();
+              IInteger exponent = (IInteger) expr.exponent();
+              if (value.equals(exponent.negate())) {
+                return false;
+              }
+              if (exponent.isNegative()) {
+                if (value.isLT(exponent)) {
+                  entry.setValue(exponent);
+                }
+              } else {
+                if (value.isGT(exponent)) {
+                  entry.setValue(exponent);
+                }
+              }
+            }
+          } else {
+            if (!expr.equals(key)) {
+              iter.remove();
+              if (map.size() == 0) {
+                return false;
+              }
+            } else {
+              IInteger value = entry.getValue();
+              if (value.isMinusOne()) {
+                return false;
+              }
+              if (value.isGT(F.C1)) {
+                entry.setValue(F.C1);
+              }
+            }
+          }
+        }
+      }
+    }
+    return map.size() != 0;
+  }
+
   public static IExpr together(IAST ast, EvalEngine engine) {
-    IExpr result = AlgebraUtil.togetherExpr(ast, engine);
+    IExpr result = togetherExpr(ast, engine);
     if (result.isPresent()) {
       return engine.evaluate(result);
     }
     return ast;
   }
 
-  public static IExpr togetherExpr(IExpr arg1, EvalEngine engine) {
+  public static IExpr togetherExpr(final IExpr arg1, EvalEngine engine) {
     if (arg1.isPlusTimesPower()) {
       if (arg1.isPower()) {
         if (arg1.base().isAtom() && arg1.exponent().isAtom()) {
@@ -1990,12 +2390,12 @@ public class AlgebraUtil {
         // return temp;
         // }
       }
-      IExpr temp = AlgebraUtil.togetherNull((IAST) arg1, engine).orElse(arg1);
+      IExpr temp = togetherNull((IAST) arg1, engine).orElse(arg1);
       if (temp.isPresent()) {
-        return AlgebraUtil.reduceFactorConstant(temp, engine);
+        return reduceFactorConstant(temp, engine);
       }
     }
-    return AlgebraUtil.reduceFactorConstant(arg1, engine);
+    return reduceFactorConstant(arg1, engine);
   }
 
   /**
@@ -2049,24 +2449,98 @@ public class AlgebraUtil {
   }
 
   /**
+   * Combine the terms of a <code>Plus[...]</code> expression into a single fractional expression,
+   * if possible.
+   * 
    * @param plusAST a <code>Plus[...]</code> expression
-   * @return <code>null</code> couldn't be transformed by <code>ExpandAll(()</code> od <code>
-   *     togetherAST()</code>
+   * @return {@link F#NIL} if together couldn't be performed
    */
-  public static IExpr togetherPlus(IAST plusAST) {
+  public static IExpr togetherPlus(final IAST plusAST, EvalEngine engine) {
     if (plusAST.size() <= 2) {
       return F.NIL;
     }
+
+    if (plusAST.isFree(
+        x -> x.isInexactNumber()
+            || (x.isAST() && (!x.isPlusTimesPower() || (x.isPower() && !x.exponent().isInteger()))),
+        false)) {
+      if (plusAST.isFree(x -> x.isFraction() || x.isPower() && x.exponent().isNegative(), false)) {
+        return F.NIL;
+      }
+      VariablesSet eVar = new VariablesSet(plusAST);
+      if (eVar.size() == 1) {
+        try {
+          IExpr variable = eVar.firstVariable();
+          IExpr arg1Evaled = plusAST;
+          IAST termList = ((IAST) arg1Evaled).setAtCopy(0, S.List);
+          IASTAppendable numerators = F.ListAlloc(termList.argSize());
+          IASTAppendable denominators = F.ListAlloc(termList.argSize());
+          for (int i = 1; i < termList.size(); i++) {
+            IExpr arg = termList.get(i);
+            Optional<IExpr[]> fractionalParts = fractionalPartsRational(arg, false, false);
+            if (fractionalParts.isPresent()) {
+              IExpr[] parts = fractionalParts.get();
+              numerators.append(parts[0]);
+              denominators.append(parts[1]);
+              continue;
+            }
+            numerators.append(arg);
+            denominators.append(F.C1);
+          }
+          if (denominators.exists(a -> !a.isOne())) {
+            IExpr commonDenominator = engine.evaluate(denominators.setAtCopy(0, S.PolynomialLCM));
+            IASTAppendable sum = F.PlusAlloc(numerators.argSize());
+
+            boolean evaled = true;
+            for (int i = 1; i < numerators.size(); i++) {
+              IExpr numer = numerators.get(i);
+              IExpr denom = denominators.get(i);
+              IExpr polynomialQuotient =
+                  engine.evaluateNIL(F.PolynomialQuotient(commonDenominator, denom, variable));
+              if (polynomialQuotient.isNIL()) {
+                evaled = false;
+                break;
+              }
+              sum.append(numer.times(polynomialQuotient));
+            }
+            if (evaled) {
+              IExpr newNumerator = engine.evaluate(sum);
+              IExpr expandedNumerator = F.evalExpand(newNumerator);
+              IExpr gcd = engine.evaluate(F.PolynomialGCD(expandedNumerator, commonDenominator));
+              IExpr finalNumerator =
+                  engine.evaluateNIL(F.PolynomialQuotient(expandedNumerator, gcd, variable));
+              if (finalNumerator.isPresent()) {
+                IExpr finalDenominator =
+                    engine.evaluate(F.PolynomialQuotient(commonDenominator, gcd, variable));
+                IExpr factored = factor(F.Factor(finalDenominator), finalDenominator, eVar, false,
+                    true, true, engine);
+                if (finalNumerator.isNegative()) {
+                  return F.Divide(finalNumerator.negate(), factored.negate());
+                }
+                return F.Divide(finalNumerator, factored);
+              }
+            }
+          } else {
+            return F.NIL;
+          }
+        } catch (RuntimeException rex) {
+          if (Config.SHOW_STACKTRACE) {
+            rex.printStackTrace();
+          }
+          Errors.rethrowsInterruptException(rex);
+        }
+      }
+    }
+
     IASTAppendable numerator = F.ast(S.Plus, plusAST.size());
     IASTAppendable denominatorList = F.ast(S.Times, plusAST.size());
     boolean[] evaled = new boolean[1];
-    plusAST
-        .forEach((IExpr x, int i) -> AlgebraUtil.togetherPlusArg(x, i, numerator, denominatorList, evaled));
+    plusAST.forEach((IExpr x, int i) -> togetherPlusArg(x, i, numerator, denominatorList, evaled));
     if (!evaled[0]) {
       return F.NIL;
     }
     numerator.forEach(
-        (IExpr x, int i) -> AlgebraUtil.togetherPlusNumeratorArg(x, i, numerator, denominatorList, plusAST));
+        (IExpr x, int i) -> togetherPlusNumeratorArg(x, i, numerator, denominatorList, plusAST));
     int i = 1;
     while (denominatorList.size() > i) {
       if (denominatorList.get(i).isOne()) {
@@ -2078,7 +2552,7 @@ public class AlgebraUtil {
     if (denominatorList.isAST0()) {
       return F.NIL;
     }
-  
+
     IExpr exprNumerator = F.evalExpand(numerator.oneIdentity0());
     IExpr denom = F.eval(denominatorList.oneIdentity1());
     final IExpr exprDenominator = F.evalExpand(denom);
@@ -2168,19 +2642,19 @@ public class AlgebraUtil {
 
   public static IExpr togetherPlusTimesPower(final IAST ast, EvalEngine engine) {
     if (ast.isPlus()) {
-      IAST result = AlgebraUtil.togetherForEach(ast, engine);
+      IAST result = togetherForEach(ast, engine);
       if (result.isPresent()) {
-        return AlgebraUtil.togetherPlus(result).orElse(result);
+        return togetherPlus(result, engine).orElse(result);
       }
-      return AlgebraUtil.togetherPlus(ast);
+      return togetherPlus(ast, engine);
     } else if (ast.isTimes() || ast.isPower()) {
       try {
         IASTMutable result = F.NIL;
         if (ast.isTimes()) {
-          result = AlgebraUtil.togetherForEach(ast, engine);
+          result = togetherForEach(ast, engine);
         } else {
           // Power
-          result = AlgebraUtil.togetherPower(ast, result, engine);
+          result = togetherPower(ast, result, engine);
         }
         if (result.isPresent()) {
           IExpr temp = engine.evaluate(result);
@@ -2200,8 +2674,7 @@ public class AlgebraUtil {
     return F.NIL;
   }
 
-  public static IASTMutable togetherPower(final IAST ast, IASTMutable result,
-      EvalEngine engine) {
+  public static IASTMutable togetherPower(final IAST ast, IASTMutable result, EvalEngine engine) {
     if (ast.arg1().isAST()) {
       IExpr temp = togetherNull((IAST) ast.arg1(), engine);
       if (temp.isPresent()) {
@@ -2209,8 +2682,7 @@ public class AlgebraUtil {
           result = ast.copy();
         }
         if (ast.arg2().isNegative() && temp.isTimes()) {
-          Optional<IExpr[]> fractionalParts =
-              fractionalPartsRational(temp, false, true);
+          Optional<IExpr[]> fractionalParts = fractionalPartsRational(temp, false, true);
           if (fractionalParts.isPresent()) {
             IExpr[] parts = fractionalParts.get();
             result.set(1, F.Divide(parts[1], parts[0]));
@@ -2228,61 +2700,6 @@ public class AlgebraUtil {
 
   private AlgebraUtil() {
     // private constructor to avoid instantiation
-  }
-
-  /**
-   * Factor out a rational number which may be a factor in every sub-expression of <code>plus
-   * </code>.
-   *
-   * @param plusAST
-   * @param engine
-   * @return {@link F#NIL} if the factor couldn't be found
-   */
-  /* package private */ public static IExpr factorTermsPlus(IAST plusAST, EvalEngine engine) {
-    Optional<IRational> gcd1 = AlgebraUtil.factorTermsGCD(plusAST, engine);
-    if (gcd1.isPresent()) {
-      IRational rationalGCD = gcd1.get();
-      return F.Times(rationalGCD, F.Expand(F.Times(rationalGCD.inverse(), plusAST))).eval(engine);
-    }
-    return F.NIL;
-  }
-
-  public static Optional<IRational> factorTermsGCD(IAST plusAST, EvalEngine engine) {
-    IRational gcd1 = null;
-    if (plusAST.arg1().isRational()) {
-      gcd1 = (IRational) plusAST.arg1();
-    } else if (plusAST.arg1().isTimes() && plusAST.arg1().first().isRational()) {
-      gcd1 = (IRational) plusAST.arg1().first();
-    }
-    if (gcd1 == null) {
-      return Optional.empty();
-    }
-    for (int i = 2; i < plusAST.size(); i++) {
-      IRational gcd2 = null;
-      if (plusAST.get(i).isRational()) {
-        gcd2 = (IRational) plusAST.get(i);
-      } else if (plusAST.get(i).isTimes() && plusAST.get(i).first().isRational()) {
-        gcd2 = (IRational) plusAST.get(i).first();
-      }
-      if (gcd2 == null) {
-        return Optional.empty();
-      }
-  
-      final IExpr gcd12 = gcd1.gcd(gcd2); // engine.evaluate(F.GCD(gcd1, gcd2));
-      if (gcd12.isRational() && !gcd12.isOne()) {
-        if (gcd1.isNegative() && gcd2.isNegative()) {
-          gcd1 = ((IRational) gcd12).negate();
-        } else {
-          gcd1 = (IRational) gcd12;
-        }
-      } else {
-        return Optional.empty();
-      }
-    }
-    if (gcd1.isMinusOne()) {
-      return Optional.empty();
-    }
-    return Optional.of(gcd1);
   }
 
 }

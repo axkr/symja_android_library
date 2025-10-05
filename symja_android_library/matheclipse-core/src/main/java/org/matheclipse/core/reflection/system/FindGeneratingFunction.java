@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -57,6 +58,9 @@ public class FindGeneratingFunction extends AbstractFunctionEvaluator {
           }
         }
       } catch (IllegalArgumentException e) {
+        if (Config.SHOW_STACKTRACE) {
+          e.printStackTrace();
+        }
         //
       }
     }

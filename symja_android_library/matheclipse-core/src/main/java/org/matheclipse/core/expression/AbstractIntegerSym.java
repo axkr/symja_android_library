@@ -985,7 +985,19 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       return gcd((IInteger) that);
     }
     if (that instanceof IFraction) {
-      ((IFraction) that).gcd(F.fraction(toBigNumerator(), BigInteger.ONE));
+      return ((IFraction) that).gcd(F.fraction(toBigNumerator(), BigInteger.ONE));
+    }
+    return F.C1;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr lcm(IExpr that) {
+    if (that instanceof IInteger) {
+      return lcm((IInteger) that);
+    }
+    if (that instanceof IFraction) {
+      return that.lcm(F.fraction(toBigNumerator(), BigInteger.ONE));
     }
     return F.C1;
   }

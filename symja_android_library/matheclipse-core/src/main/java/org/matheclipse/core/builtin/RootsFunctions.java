@@ -95,12 +95,13 @@ public class RootsFunctions {
         IExpr expr = F.evalExpandAll(arg);
         // ASTRange r = new ASTRange(eVar.getVarList(), 1);
         // List<IExpr> varList = r;
-        List<IExpr> varList = eVar.getVarList().copyTo();
+        // List<IExpr> varList = eVar.getVarList().copyTo();
 
         ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(new BigRational(1));
         ComplexRootsAbstract<BigRational> cr = new ComplexRootsSturm<BigRational>(cfac);
 
-        JASConvert<Complex<BigRational>> jas = new JASConvert<Complex<BigRational>>(varList, cfac);
+        JASConvert<Complex<BigRational>> jas =
+            new JASConvert<Complex<BigRational>>(eVar.getVarList(), cfac);
         GenPolynomial<Complex<BigRational>> poly = jas.numericExpr2JAS(expr);
 
         if (poly != null) {
@@ -941,14 +942,14 @@ public class RootsFunctions {
       final IAST variables, boolean numericSolutions, boolean createSet, boolean sort,
       EvalEngine engine) {
     IASTMutable result = F.NIL;
-    List<IExpr> varList = variables.copyTo();
+    // List<IExpr> varList = variables.copyTo();
     try {
       IAST list = rootsOfQuadraticExprPolynomial(expr, variables);
       if (list.isPresent()) {
         return list;
       }
 
-      JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+      JASConvert<BigRational> jas = new JASConvert<BigRational>(variables, BigRational.ZERO);
       GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numericSolutions);
       if (polyRat == null) {
         result = rootsOfExprPolynomial(expr, variables, true);

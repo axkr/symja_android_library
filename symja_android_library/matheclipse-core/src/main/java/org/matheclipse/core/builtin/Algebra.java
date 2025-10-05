@@ -30,7 +30,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
-import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.AlgebraUtil;
@@ -75,27 +74,22 @@ import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
-import edu.jas.poly.Complex;
-import edu.jas.poly.ComplexRing;
 import edu.jas.poly.GenPolynomial;
-import edu.jas.poly.Monomial;
-import edu.jas.poly.TermOrderByName;
 import edu.jas.ps.PolynomialTaylorFunction;
 import edu.jas.ps.TaylorFunction;
 import edu.jas.ps.UnivPowerSeries;
 import edu.jas.ps.UnivPowerSeriesRing;
-import edu.jas.structure.RingElem;
 import edu.jas.ufd.FactorAbstract;
-import edu.jas.ufd.FactorComplex;
 import edu.jas.ufd.FactorFactory;
 import edu.jas.ufd.GCDFactory;
-import edu.jas.ufd.GreatestCommonDivisor;
 import edu.jas.ufd.GreatestCommonDivisorAbstract;
 import edu.jas.ufd.SquarefreeAbstract;
 import edu.jas.ufd.SquarefreeFactory;
 
 public class Algebra {
   private static final Logger LOGGER = LogManager.getLogger(Algebra.class);
+
+  private final static int MODULUS_OPTION = 0;
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -1022,7 +1016,7 @@ public class Algebra {
    */
   public static class Expand extends AbstractFunctionOptionEvaluator {
 
-    
+
 
     // private static class NumberPartition {
     // IASTAppendable expandedResult;
@@ -1311,18 +1305,21 @@ public class Algebra {
    * </code>
    * </pre>
    */
-  public static class Factor extends AbstractFunctionEvaluator {
+  public static class Factor extends AbstractFunctionOptionEvaluator {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, //
-          F.list(F.Rule(S.Extension, S.None), F.Rule(S.GaussianIntegers, S.False),
-              F.Rule(S.Modulus, F.C0)));
       newSymbol.setAttributes(ISymbol.LISTABLE);
+
+      IBuiltInSymbol[] optionKeys =
+          new IBuiltInSymbol[] {S.Modulus, S.Extension, S.GaussianIntegers};
+      IExpr[] optionValues = new IExpr[] {F.C0, S.None, S.False};
+      setOptions(newSymbol, optionKeys, optionValues);
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, IAST originalAST) {
       IExpr arg1 = ast.arg1();
       IAST list = CompareUtil.threadListLogicEquationOperators(arg1, ast, 1);
       if (list.isPresent()) {
@@ -1337,19 +1334,17 @@ public class Algebra {
         return arg1;
       }
       VariablesSet eVar = new VariablesSet(arg1);
-      List<IExpr> varList = eVar.getVarList().copyTo();
-      if (ast.isAST1()) {
-        return factor(ast, arg1, eVar, false, true, engine);
+      if (options[MODULUS_OPTION].isZero() && options[1].equals(S.None) && options[2].isFalse()) {
+        return AlgebraUtil.factor(ast, arg1, eVar, false, true, true, engine);
       }
 
       try {
-        if (ast.isAST2()) {
-          IExpr temp = factorWithOption(ast, arg1, varList, false, engine);
-          if (temp.isPresent()) {
-            return temp;
-          }
+        IExpr temp = factorWithOption(ast, arg1, eVar.getVarList(), false, options, engine);
+        if (temp.isPresent()) {
+          return temp;
         }
-        IExpr temp = factorExpr(ast, arg1, eVar, false, true, engine);
+
+        temp = AlgebraUtil.factorExpr(ast, arg1, eVar, false, true, engine);
         engine.putCache(ast, temp);
         if (temp.isPresent()) {
           return temp;
@@ -1362,171 +1357,7 @@ public class Algebra {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
-    }
-
-    private static IExpr factor(IAST ast, IExpr arg1, VariablesSet eVar, boolean squareFree,
-        boolean withHomogenization, EvalEngine engine) {
-      IExpr expr = arg1;
-      if (!arg1.isTimes() && !arg1.isPower()) {
-        expr = S.Together.of(engine, arg1);
-        if (expr.isAST()) {
-          IExpr[] fractionParts = AlgebraUtil.numeratorDenominator((IAST) expr, true, engine);
-          if (!fractionParts[1].isOne()) {
-            try {
-              IExpr numerator = factorExpr(F.Factor(fractionParts[0]), fractionParts[0], eVar, squareFree,
-                  withHomogenization, engine);
-              IExpr denominator = factorExpr(F.Factor(fractionParts[1]), fractionParts[1], eVar, squareFree,
-                  withHomogenization, engine);
-              if (numerator.isPresent() && denominator.isPresent()) {
-                IExpr temp = engine.evaluate(F.Divide(numerator, denominator));
-                engine.putCache(ast, temp);
-                return temp;
-              }
-              engine.putCache(ast, F.NIL);
-            } catch (JASConversionException e) {
-              //
-            }
-            return arg1;
-          }
-        }
-      }
-      try {
-        IExpr temp = factorExpr(ast, expr, eVar, squareFree, withHomogenization, engine);
-        engine.putCache(ast, temp);
-        if (temp.isPresent()) {
-          return temp;
-        }
-      } catch (JASConversionException e) {
-        LOGGER.debug("Factor.evaluate() failed", e);
-      }
-      return arg1;
-    }
-
-    protected static IExpr factorExpr(final IAST ast, IExpr expr, VariablesSet eVar,
-        boolean squareFree, boolean withHomogenization, EvalEngine engine) {
-      if (expr.isAST()) {
-        IExpr temp;
-        // if (expr.isPower()&&expr.base().isPlus()) {
-        // temp = factorExpr(ast, expr.base(), varList);
-        // temp = F.Power(temp, expr.exponent());
-        // } else
-        if (expr.isPower()) {
-          IExpr p =
-              factorExpr((IAST) expr, expr.base(), eVar, squareFree, withHomogenization, engine);
-          if (p.isPresent() && !p.equals(expr.base())) {
-            return F.Power(p, expr.exponent());
-          }
-          return expr;
-        } else if (expr.isTimes()) {
-          temp = ((IAST) expr).map(x -> {
-            if (x.isPlus()) {
-              return factorExpr(ast, x, eVar, squareFree, withHomogenization, engine);
-            }
-            if (x.isPower() && x.base().isPlus()) {
-              IExpr p = factorExpr(ast, x.base(), eVar, squareFree, withHomogenization, engine);
-              if (p.isPresent() && !p.equals(x.base())) {
-                return F.Power(p, x.exponent());
-              }
-            }
-            return F.NIL;
-          }, 1);
-          return temp;
-        } else {
-          return factor((IAST) expr, eVar, squareFree, withHomogenization, engine);
-        }
-      }
-      return expr;
-    }
-
-    private static IExpr factor(IAST expr, VariablesSet eVar, boolean squareFree,
-        boolean withHomogenization, EvalEngine engine) throws JASConversionException {
-      if (expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT) {
-        return expr;
-      }
-
-      // use TermOrderByName.INVLEX here!
-      // See https://github.com/kredel/java-algebra-system/issues/8
-      Object[] objects = null;
-      JASConvert<BigRational> jas = new JASConvert<BigRational>(eVar.getArrayList(),
-          BigRational.ZERO, TermOrderByName.INVLEX);
-      try {
-        GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, false);
-        if (polyRat == null) {
-          if (!squareFree && withHomogenization) {
-            return factorWithPolynomialHomogenization(expr, eVar, engine);
-          }
-          return F.NIL;
-        }
-        if (polyRat.length() <= 1) {
-          return expr;
-        }
-        objects = jas.factorTerms(polyRat);
-      } catch (JASConversionException e) {
-        if (!squareFree && withHomogenization) {
-          return factorWithPolynomialHomogenization(expr, eVar, engine);
-        }
-        return F.NIL;
-      }
-
-      if (objects != null) {
-
-        SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map = null;
-        try {
-          GenPolynomial<edu.jas.arith.BigInteger> poly =
-              (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
-          if (eVar.size() == 1) {
-            IExpr temp = heuristicXP2XPOne(poly, expr, eVar.getArrayList().get(0), engine);
-            if (temp.isPresent()) {
-              return temp;
-            }
-          }
-
-          FactorAbstract<edu.jas.arith.BigInteger> factorAbstract =
-              FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
-          if (squareFree) {
-            map = factorAbstract.squarefreeFactors(poly); // factors(poly);
-          } else {
-            map = factorAbstract.factors(poly);
-          }
-          // } catch (TimeExceededException texex) {
-          // LOGGER.debug("Factor.factor() time limit exceeded", texex);
-        } catch (RuntimeException rex) {
-          Errors.rethrowsInterruptException(rex);
-          LOGGER.debug("Factor.factor() failed", rex);
-          return expr;
-        }
-        if (map != null) {
-          IASTAppendable result = F.TimesAlloc(map.size() + 1);
-          java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
-          java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
-          IRational f = F.C1;
-          if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
-            f = F.fraction(gcd, lcm).normalize();
-          }
-          for (SortedMap.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map
-              .entrySet()) {
-            if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
-              continue;
-            }
-            IExpr base = jas.integerPoly2Expr(entry.getKey());
-            if (entry.getValue() == 1L) {
-              if (f.isMinusOne() && base.isPlus()) {
-                base = ((IAST) base).map(x -> x.negate(), 1);
-                f = F.C1;
-              }
-              result.append(base);
-            } else {
-              result.append(F.Power(base, F.ZZ(entry.getValue())));
-            }
-          }
-          if (!f.isOne()) {
-            result.append(f);
-          }
-          return engine.evaluate(result);
-        }
-      }
-      return F.NIL;
+      return ARGS_1_1;
     }
 
     public static IExpr evaluateSolve(IExpr expr, SolveData solveData, EvalEngine engine) {
@@ -1537,8 +1368,8 @@ public class Algebra {
         if (expr.isAST()) {
           IExpr[] fractionParts = AlgebraUtil.numeratorDenominator((IAST) expr, true, engine);
           try {
-            IExpr numerator =
-                factorExprSolve(F.Factor(fractionParts[0]), fractionParts[0], variable, solveData, engine);
+            IExpr numerator = factorExprSolve(F.Factor(fractionParts[0]), fractionParts[0],
+                variable, solveData, engine);
             if (numerator.isList() && !fractionParts[1].isOne()) {
               // IExpr denominator = factorExprSolve(F.Factor(parts[1]), parts[1], variable,
               // engine);
@@ -1604,11 +1435,14 @@ public class Algebra {
       PolynomialHomogenization substitutions = new PolynomialHomogenization(variablesSet, engine);
       IExpr subsPolynomial = substitutions.replaceForward(expr);
       Set<ISymbol> varSet = substitutions.substitutedVariablesSet();
-      List<IExpr> arrayList = new ArrayList<IExpr>(1);
-      arrayList.add(variable);
-      arrayList.addAll(varSet);
+      // List<IExpr> arrayList = new ArrayList<IExpr>(1);
+      // arrayList.add(variable);
+      // arrayList.addAll(varSet);
+      IASTAppendable varList = F.ListAlloc(2);
+      varList.append(variable);
+      varList.appendAll(varSet);
       IExpr factorization =
-          factorComplex(subsPolynomial, arrayList, S.Times, gaussianIntegers, engine);
+          AlgebraUtil.factorComplex(subsPolynomial, varList, S.Times, gaussianIntegers, engine);
       if (factorization.isNIL() || factorization.size() == 2) {
         VariablesSet newVariables = new VariablesSet(subsPolynomial);
         if (newVariables.size() == 1) {
@@ -1705,82 +1539,6 @@ public class Algebra {
     }
 
     /**
-     * Polynomials of the form <code>x^(2*p) + x^p + 1</code> have exactly two factors for all
-     * primes <code>p != 3</code>. One is <code>x^2 + x + 1</code>, and its cofactor is a polynomial
-     * whose coefficients are all <code>1, 0, or −1</code>.
-     *
-     * @param poly
-     * @param expr
-     * @param variable
-     * @param engine
-     * @return
-     */
-    private static IExpr heuristicXP2XPOne(GenPolynomial<edu.jas.arith.BigInteger> poly, IAST expr,
-        IExpr variable, EvalEngine engine) {
-      if (poly.length() == 3 && poly.ring.tord == TermOrderByName.INVLEX && poly.ring.nvar == 1) {
-        edu.jas.arith.BigInteger a = edu.jas.arith.BigInteger.ZERO;
-        edu.jas.arith.BigInteger b = edu.jas.arith.BigInteger.ZERO;
-        edu.jas.arith.BigInteger c = edu.jas.arith.BigInteger.ZERO;
-        edu.jas.arith.BigInteger one = edu.jas.arith.BigInteger.ONE;
-        long expA = 0;
-        long p = 0;
-        long expC = 0;
-        int i = 0;
-        for (Monomial<edu.jas.arith.BigInteger> monomial : poly) {
-          final edu.jas.arith.BigInteger coeff = monomial.coefficient();
-          long lExp = monomial.exponent().getVal(0);
-          i++;
-          if (i == 1) {
-            a = coeff;
-            expA = lExp;
-          } else if (i == 2) {
-            b = coeff;
-            p = lExp;
-          } else if (i == 3) {
-            c = coeff;
-            expC = lExp;
-          }
-        }
-        if (a.equals(one) && b.equals(one) && c.equals(one)) {
-          if (expC == 0L && (p != 3L) && (expA == p * 2)
-              && java.math.BigInteger.valueOf(p).isProbablePrime(32)) {
-            // polynomials of the form x^(2*p) + x^p + 1 have exactly two factors for
-            // all primes p != 3. One is x^2 + x + 1, and its cofactor is a polynomial whose
-            // coefficients are all 1, 0, or −1.
-            IExpr x = variable;
-            IExpr p1 = F.Plus(F.Power(x, F.C2), x, F.C1);
-            IExpr p2 = engine.evaluate(F.PolynomialQuotient(expr, p1, x));
-            return F.Times(p1, p2);
-          }
-        }
-      }
-      return F.NIL;
-    }
-
-    private static IExpr factorWithPolynomialHomogenization(IAST expr, VariablesSet eVar,
-        EvalEngine engine) {
-      boolean gaussianIntegers = !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
-      PolynomialHomogenization substitutions = new PolynomialHomogenization(eVar, engine);
-      IExpr subsPolynomial = substitutions.replaceForward(expr);
-      // System.out.println(subsPolynomial.toString());
-      // System.out.println(substitutions.substitutedVariables());
-      if (substitutions.size() == 0) {
-        return factorComplex(expr, eVar.getArrayList(), S.Times, gaussianIntegers, engine);
-      }
-      if (subsPolynomial.isAST()) {
-        // System.out.println(subsPolynomial);
-        Set<ISymbol> varSet = substitutions.substitutedVariablesSet();
-        eVar.addAll(varSet);
-        IExpr factorization =
-            factorComplex(subsPolynomial, eVar.getArrayList(), S.Times, gaussianIntegers, engine);
-        if (factorization.isPresent()) {
-          return substitutions.replaceBackward(factorization);
-        }
-      }
-      return expr;
-    }
-
-    /**
      * Factor the <code>expr</code> with the option given in <code>ast</code>.
      *
      * @param ast
@@ -1790,23 +1548,23 @@ public class Algebra {
      * @return
      * @throws JASConversionException
      */
-    public static IExpr factorWithOption(final IAST ast, IExpr expr, List<IExpr> varList,
-        boolean factorSquareFree, final EvalEngine engine) throws JASConversionException {
-      final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-      IExpr option = options.getOption(S.Modulus);
+    public static IExpr factorWithOption(final IAST ast, IExpr expr, IAST varList,
+        boolean factorSquareFree, final IExpr[] options, final EvalEngine engine)
+        throws JASConversionException {
+      IExpr option = options[MODULUS_OPTION];
       if (option.isInteger() && !option.isZero()) {
         return factorModulus(expr, varList, factorSquareFree, option);
       }
       if (!factorSquareFree) {
-        option = options.getOption(S.Extension);
+        option = options[1];
         if (option.isImaginaryUnit()) {
           // Exptension->I is like gaussian integers
-          return factorComplex(expr, varList, S.Times, false, true, engine);
+          return AlgebraUtil.factorComplex(expr, varList, S.Times, false, true, engine);
         }
 
-        option = options.getOption(S.GaussianIntegers);
+        option = options[2];
         if (option.isTrue()) {
-          return factorComplex(expr, varList, S.Times, false, true, engine);
+          return AlgebraUtil.factorComplex(expr, varList, S.Times, false, true, engine);
         }
       }
       return F.NIL; // no evaluation
@@ -1833,7 +1591,8 @@ public class Algebra {
   private static class FactorSquareFree extends Factor {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, IAST originalAST) {
       IExpr arg1 = ast.arg1();
       IAST list = CompareUtil.threadListLogicEquationOperators(arg1, ast, 1);
       if (list.isPresent()) {
@@ -1851,16 +1610,17 @@ public class Algebra {
         IExpr expr = F.evalExpandAll(arg1, engine);
         // ASTRange r = new ASTRange(eVar.getVarList(), 1);
         // List<IExpr> varList = r;
-        List<IExpr> varList = eVar.getVarList().copyTo();
 
-        if (ast.isAST2()) {
-          IExpr temp = factorWithOption(ast, expr, varList, true, engine);
-          if (temp.isPresent()) {
-            return temp;
+        if (options[MODULUS_OPTION].isZero() && options[1].equals(S.None) && options[2].isFalse()) {
+          if (expr.isAST()) {
+            IExpr temp = AlgebraUtil.factorExpr((IAST) expr, (IAST) expr, eVar, true, true, engine);
+            engine.putCache(ast, temp);
+            if (temp.isPresent()) {
+              return temp;
+            }
           }
-        } else if (expr.isAST()) {
-          IExpr temp = factorExpr((IAST) expr, (IAST) expr, eVar, true, true, engine);
-          engine.putCache(ast, temp);
+        } else {
+          IExpr temp = factorWithOption(ast, expr, eVar.getVarList(), true, options, engine);
           if (temp.isPresent()) {
             return temp;
           }
@@ -1882,6 +1642,7 @@ public class Algebra {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
+      super.setUp(newSymbol);
     }
   }
 
@@ -1905,19 +1666,13 @@ public class Algebra {
   private static class FactorSquareFreeList extends Factor {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, IAST originalAST) {
 
       VariablesSet eVar = new VariablesSet(ast.arg1());
       try {
         IExpr expr = F.evalExpandAll(ast.arg1(), engine);
-        // ASTRange r = new ASTRange(eVar.getVarList(), 1);
-        // List<IExpr> varList = r;
-        List<IExpr> varList = eVar.getVarList().copyTo();
-
-        // if (ast.isAST2()) {
-        // return factorWithOption(ast, expr, varList, true);
-        // }
-        return factorList(expr, varList, true);
+        return factorList(expr, eVar.getVarList(), true);
 
       } catch (JASConversionException jce) {
         // toInt() conversion failed
@@ -1931,7 +1686,7 @@ public class Algebra {
       return ARGS_1_1;
     }
 
-    private static IExpr factorList(IExpr expr, List<IExpr> varList, boolean factorSquareFree)
+    private static IExpr factorList(IExpr expr, IAST varList, boolean factorSquareFree)
         throws JASConversionException {
       if (!expr.isAST()) {
         if (expr.isNumber()) {
@@ -2045,10 +1800,9 @@ public class Algebra {
       // // FactorTerms only possible for univariate polynomials
       // return arg1;
       // }
-      List<IExpr> varList = variableList.copyTo();
       IExpr expr = expanded; // F.evalExpandAll(arg1, engine);
       try {
-        JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+        JASConvert<BigRational> jas = new JASConvert<BigRational>(variableList, BigRational.ZERO);
         GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
         if (poly == null) {
           return arg1;
@@ -2143,10 +1897,10 @@ public class Algebra {
       // // FactorTerms only possible for univariate polynomials
       // return F.NIL;
       // }
-      List<IExpr> varList = variableList.copyTo();
+
       IExpr expr = expanded;
       try {
-        JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+        JASConvert<BigRational> jas = new JASConvert<BigRational>(variableList, BigRational.ZERO);
         GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
         if (poly == null) {
           return F.List(F.C1, arg1);
@@ -2291,10 +2045,11 @@ public class Algebra {
    * </code>
    * </pre>
    */
-  private static class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
+  private static class PolynomialExtendedGCD extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
       IAST variables = VariablesSet.getAlgebraicVariables(ast.arg3());
       if (variables.size() != 2) {
         // `1` is not a valid variable.
@@ -2311,37 +2066,12 @@ public class Algebra {
         return Errors.printMessage(ast.topHead(), "poly", F.list(expr2), engine);
       }
 
-      if (ast.size() == 5) {
-        // List<IExpr> varList = r;
-        List<IExpr> varList = variables.copyTo();
-        final OptionArgs options = new OptionArgs(ast.topHead(), ast, 4, engine);
-        IExpr option = options.getOption(S.Modulus);
-        if (option.isInteger() && !option.isZero()) {
-          try {
-            // found "Modulus" option => use ModIntegerRing
-            ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
-            JASModInteger jas = new JASModInteger(varList, modIntegerRing);
-            GenPolynomial<ModLong> poly1 = jas.expr2JAS(expr1);
-            GenPolynomial<ModLong> poly2 = jas.expr2JAS(expr2);
-            GenPolynomial<ModLong>[] result = poly1.egcd(poly2);
-            IASTAppendable list = F.ListAlloc(2);
-            list.append(jas.modLongPoly2Expr(result[0]));
-            IASTAppendable subList = F.ListAlloc(2);
-            subList.append(jas.modLongPoly2Expr(result[1]));
-            subList.append(jas.modLongPoly2Expr(result[2]));
-            list.append(subList);
-            return list;
-          } catch (ArithmeticException aex) {
-            LOGGER.log(engine.getLogLevel(), S.PolynomialExtendedGCD, aex);
-          } catch (JASConversionException e) {
-            LOGGER.debug("PolynomialExtendedGCD.evaluate() failed", e);
-          }
-          return F.NIL;
-        }
+      if (!options[MODULUS_OPTION].isZero()) {
+        return polynomialExtendedGCDModulus(expr1, expr2, options[MODULUS_OPTION], variables,
+            engine);
       }
       try {
-        List<IExpr> varList = variables.copyTo();
-        IExpr variable = varList.get(0);
+        IExpr variable = variables.get(1);
         if (expr1.isFree(variable) || expr2.isFree(variable)) {
           IASTAppendable list = F.ListAlloc(2);
           list.append(F.C1);
@@ -2361,7 +2091,7 @@ public class Algebra {
           return list;
         }
 
-        JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+        JASConvert<BigRational> jas = new JASConvert<BigRational>(variables, BigRational.ZERO);
         GenPolynomial<BigRational> poly1 = jas.expr2JAS(expr1, false);
         if (poly1 == null) {
           return polynomialExtendedExpr(expr1, expr2, variables, engine);
@@ -2382,6 +2112,32 @@ public class Algebra {
         return polynomialExtendedExpr(expr1, expr2, variables, engine);
       }
 
+    }
+
+    private static IExpr polynomialExtendedGCDModulus(IExpr expr1, IExpr expr2, IExpr modulus,
+        IAST varList, EvalEngine engine) {
+      if (modulus.isInteger()) {
+        try {
+          // found "Modulus" option => use ModIntegerRing
+          ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) modulus);
+          JASModInteger jas = new JASModInteger(varList, modIntegerRing);
+          GenPolynomial<ModLong> poly1 = jas.expr2JAS(expr1);
+          GenPolynomial<ModLong> poly2 = jas.expr2JAS(expr2);
+          GenPolynomial<ModLong>[] result = poly1.egcd(poly2);
+          IASTAppendable list = F.ListAlloc(2);
+          list.append(jas.modLongPoly2Expr(result[0]));
+          IASTAppendable subList = F.ListAlloc(2);
+          subList.append(jas.modLongPoly2Expr(result[1]));
+          subList.append(jas.modLongPoly2Expr(result[2]));
+          list.append(subList);
+          return list;
+        } catch (ArithmeticException aex) {
+          LOGGER.log(engine.getLogLevel(), S.PolynomialExtendedGCD, aex);
+        } catch (JASConversionException e) {
+          LOGGER.debug("PolynomialExtendedGCD.evaluate() failed", e);
+        }
+      }
+      return F.NIL;
     }
 
     private static IExpr polynomialExtendedExpr(IExpr expr1, IExpr expr2, IAST variables,
@@ -2415,9 +2171,12 @@ public class Algebra {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
-      setOptions(newSymbol, //
-          F.list(F.Rule(S.Modulus, F.C0)));
+
+      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Modulus};
+      IExpr[] optionValues = new IExpr[] {F.C0};
+      setOptions(newSymbol, optionKeys, optionValues);
     }
+
   }
 
   /**
@@ -2451,16 +2210,17 @@ public class Algebra {
    *
    * </blockquote>
    */
-  private static class PolynomialGCD extends AbstractFunctionEvaluator {
+  private static class PolynomialGCD extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
 
-      if (ast.isAST0()) {
+      if (argSize == 0) {
         return F.NIL;
       }
       if (checkPolyStruct(ast, engine)) {
-        if (ast.isAST1()) {
+        if (argSize == 1) {
           IExpr arg1 = ast.arg1();
           if (arg1.isNegativeResult()) {
             return arg1.negate();
@@ -2471,56 +2231,72 @@ public class Algebra {
         eVar.addVarList(ast, 1);
 
         IExpr expr = F.evalExpandAll(ast.arg1(), engine);
-        if (ast.size() > 3 && ast.last().isRuleAST()) {
-          return gcdWithOption(ast, expr, eVar, engine);
+        if (!options[MODULUS_OPTION].isZero()) {
+          return gcdWithOption(ast, expr, eVar.getVarList(), options[MODULUS_OPTION], engine);
         }
-        try {
-          List<IExpr> varList = eVar.getVarList().copyTo();
-          JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
-          GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
-          if (poly == null) {
-            IExpr result = polynomialGCDExpr(ast, eVar, engine);
-            if (result.isPresent()) {
-              return result;
-            }
-          } else {
-            GenPolynomial<BigRational> temp;
-            GreatestCommonDivisorAbstract<BigRational> factory =
-                GCDFactory.getImplementation(BigRational.ZERO, true);
 
-            // TODO https://github.com/kredel/java-algebra-system/issues/15
-            // JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
-            // GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
-            // GenPolynomial<BigRational> temp;
-            // GreatestCommonDivisorAbstract<BigRational> factory =
-            // GCDFactory.getImplementation(BigRational.ZERO);
-            for (int i = 2; i < ast.size(); i++) {
-              expr = F.evalExpandAll(ast.get(i), engine);
-              temp = jas.expr2JAS(expr, false);
-              if (temp == null) {
-                throw JASConversionException.FAILED;
-              }
-              poly = factory.gcd(poly, temp);
-            }
-            // TODO https://github.com/kredel/java-algebra-system/issues/15
-            return jas.rationalPoly2Expr(poly, false);
-            // return jas.integerPoly2Expr(poly.monic());
-          }
-        } catch (ArithmeticException aex) {
-          LOGGER.log(engine.getLogLevel(), S.PolynomialGCD, aex);
-          return F.NIL;
-        } catch (ClassCastException | JASConversionException e) {
-          IExpr result = polynomialGCDExpr(ast, eVar, engine);
-          if (result.isPresent()) {
-            return result;
-          }
-        }
-        IAST list = ast.setAtCopy(0, S.List);
-        Optional<IExpr[]> result = AlgebraUtil.InternalFindCommonFactorPlus.findCommonFactors(list, false);
+        IExpr result = polynomialGCD(ast, argSize, eVar, engine);
         if (result.isPresent()) {
-          return result.get()[0];
+          return result;
+        }
+        IAST list = ast.setAtCopy(0, S.List, argSize + 1);
+        Optional<IExpr[]> commonFactors = AlgebraUtil.findCommonFactors(list, false);
+        if (commonFactors.isPresent()) {
+          return commonFactors.get()[0];
         }
         return F.C1;
+      }
+      return F.NIL;
+    }
+
+    private static IExpr polynomialGCD(IAST ast, int argSize, VariablesSet eVar,
+        EvalEngine engine) {
+      try {
+        ArrayList<GenPolynomial<BigRational>> polyList = new ArrayList<>();
+        IASTAppendable exprList = F.TimesAlloc(4);
+        JASConvert<BigRational> jas =
+            new JASConvert<BigRational>(eVar.getVarList(), BigRational.ZERO);
+        for (int i = 1; i <= argSize; i++) {
+          IExpr expr = F.evalExpandAll(ast.get(i), engine);
+          try {
+            GenPolynomial<BigRational> temp = jas.expr2JAS(expr, false);
+            if (temp != null) {
+              polyList.add(temp);
+            } else {
+              exprList.append(ast.get(i));
+            }
+          } catch (ClassCastException | JASConversionException e) {
+            exprList.append(ast.get(i));
+          }
+        }
+        if (polyList.size() > 0) {
+          IExpr polyExpr;
+          if (polyList.size() == 1) {
+            polyExpr = jas.rationalPoly2Expr(polyList.get(0), false);
+          } else {
+            GreatestCommonDivisorAbstract<BigRational> factory =
+                GCDFactory.getImplementation(BigRational.ZERO);
+            GenPolynomial<BigRational> poly = polyList.get(0);
+            for (int i = 1; i < polyList.size(); i++) {
+              GenPolynomial<BigRational> temp = polyList.get(i);
+              poly = factory.gcd(poly, temp);
+            }
+            polyExpr = jas.rationalPoly2Expr(poly, false);
+            if (exprList.argSize() == 0) {
+              return polyExpr;
+            }
+          }
+          exprList.append(polyExpr);
+        }
+        if (exprList.argSize() > 1) {
+          return polynomialGCDExpr(exprList, eVar, engine);
+        }
+      } catch (ClassCastException | JASConversionException e) {
+        // LOGGER.debug("PolynomialGCD.evaluate() failed", e);
+        IExpr result = polynomialGCDExpr(ast, eVar, engine);
+        if (result.isPresent()) {
+          return result;
+        }
       }
       return F.NIL;
     }
@@ -2543,24 +2319,6 @@ public class Algebra {
           p1 = p1.gcd(p2);
         }
         return p1.getExpr();
-
-        // ExprPolynomialRing ring = new ExprPolynomialRing(vars);
-        // ExprPolynomial pol1 = ring.create(expr);
-        // ExprPolynomial pol2;
-        // // ASTRange r = new ASTRange(eVar.getVarList(), 1);
-        // List<IExpr> varList = eVar.getVarList().copyTo();
-        // JASIExpr jas = new JASIExpr(varList, true);
-        // GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
-        // GenPolynomial<IExpr> p2;
-        //
-        // GreatestCommonDivisor<IExpr> factory =
-        // GCDFactory.getImplementation(ExprRingFactory.CONST);
-        // for (int i = 2; i < ast.size(); i++) {
-        // expr = F.evalExpandAll(ast.get(i), engine);
-        // p2 = jas.expr2IExprJAS(expr);
-        // p1 = factory.gcd(p1, p2);
-        // }
-        // return jas.exprPoly2Expr(p1);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         LOGGER.debug("PolynomialGCD.evaluate() failed", rex);
@@ -2568,17 +2326,15 @@ public class Algebra {
       return F.NIL;
     }
 
-    private IExpr gcdWithOption(final IAST ast, IExpr expr, VariablesSet eVar,
+    private IExpr gcdWithOption(final IAST ast, IExpr expr, IAST variables, IExpr option,
         final EvalEngine engine) {
-      final OptionArgs options = new OptionArgs(ast.topHead(), ast, ast.argSize(), engine);
-      IExpr option = options.getOption(S.Modulus);
-      if (option.isInteger() && !option.isZero()) {
-        return modulusGCD(ast, expr, eVar, option);
+      if (option.isInteger()) {
+        return polynomialGCDModulus(ast, expr, option, variables);
       }
       return F.NIL;
     }
 
-    private IExpr modulusGCD(final IAST ast, IExpr expr, VariablesSet eVar, IExpr option) {
+    private IExpr polynomialGCDModulus(final IAST ast, IExpr expr, IExpr modulus, IAST variables) {
       try {
         // found "Modulus" option => use ModIntegerRing
         // ASTRange r = new ASTRange(eVar.getVarList(), 1);
@@ -2586,8 +2342,8 @@ public class Algebra {
         // JASConvert.option2ModIntegerRing((IReal) option);
         // JASConvert<ModInteger> jas = new
         // JASConvert<ModInteger>(r.toList(), modIntegerRing);
-        ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
-        JASModInteger jas = new JASModInteger(eVar.getArrayList(), modIntegerRing);
+        ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) modulus);
+        JASModInteger jas = new JASModInteger(variables, modIntegerRing);
         GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
         GenPolynomial<ModLong> temp;
         GreatestCommonDivisorAbstract<ModLong> factory =
@@ -2595,7 +2351,7 @@ public class Algebra {
 
         for (int i = 2; i < ast.argSize(); i++) {
           final IExpr arg = ast.get(i);
-          eVar = new VariablesSet(arg);
+          VariablesSet eVar = new VariablesSet(arg);
           if (!eVar.isSize(1)) {
             // gcd only possible for univariate polynomials
             return F.NIL;
@@ -2612,10 +2368,16 @@ public class Algebra {
     }
 
     @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
-      setOptions(newSymbol, //
-          F.list(F.Rule(S.Modulus, F.C0)));
+      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Modulus};
+      IExpr[] optionValues = new IExpr[] {F.C0};
+      setOptions(newSymbol, optionKeys, optionValues);
     }
   }
 
@@ -2650,16 +2412,17 @@ public class Algebra {
    *
    * </blockquote>
    */
-  private static class PolynomialLCM extends AbstractFunctionEvaluator {
+  private static class PolynomialLCM extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isAST0()) {
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
+      if (argSize == 0) {
         return F.NIL;
       }
 
       if (checkPolyStruct(ast, engine)) {
-        if (ast.isAST1()) {
+        if (argSize == 1) {
           IExpr arg1 = ast.arg1();
           if (arg1.isNegativeResult()) {
             return arg1.negate();
@@ -2670,127 +2433,174 @@ public class Algebra {
         VariablesSet eVar = new VariablesSet();
         eVar.addVarList(ast, 1);
 
-        // ASTRange r = new ASTRange(eVar.getVarList(), 1);
-        IExpr expr = F.evalExpandAll(ast.arg1(), engine);
-        if (ast.size() > 3) {
-          final OptionArgs options = new OptionArgs(ast.topHead(), ast, ast.argSize(), engine);
-          IExpr option = options.getOption(S.Modulus);
-          if (option.isInteger() && !option.isZero()) {
-            try {
-              // found "Modulus" option => use ModIntegerRing
-              List<IExpr> varList = eVar.getVarList().copyTo();
-              ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
-              JASModInteger jas = new JASModInteger(varList, modIntegerRing);
-              GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
-              GenPolynomial<ModLong> temp;
-              GreatestCommonDivisorAbstract<ModLong> factory =
-                  GCDFactory.getImplementation(modIntegerRing);
-              for (int i = 2; i < ast.argSize(); i++) {
-                expr = F.evalExpandAll(ast.get(i), engine);
-                temp = jas.expr2JAS(expr);
-                poly = factory.lcm(poly, temp);
-              }
-
-              return Algebra.factorModulus(jas, modIntegerRing, poly.monic(), false);
-              // return jas.modLongPoly2Expr(poly.monic());
-
-            } catch (ArithmeticException aex) {
-              LOGGER.log(engine.getLogLevel(), S.PolynomialLCM, aex);
-              return F.NIL;
-            } catch (JASConversionException e) {
-              try {
-                if (eVar.size() == 0) {
-                  return F.NIL;
-                }
-                expr = F.evalExpandAll(ast.arg1(), engine);
-                IAST vars = eVar.getVarList();
-                ExprPolynomialRing ring = new ExprPolynomialRing(vars);
-                ExprPolynomial pol1 = ring.create(expr);
-                // ASTRange r = new ASTRange(eVar.getVarList(), 1);
-                List<IExpr> varList = eVar.getVarList().copyTo();
-                JASIExpr jas = new JASIExpr(varList, true);
-                GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
-                GenPolynomial<IExpr> p2;
-
-                GreatestCommonDivisor<IExpr> factory =
-                    GCDFactory.getImplementation(ExprRingFactory.CONST);
-                for (int i = 2; i < ast.size(); i++) {
-                  expr = F.evalExpandAll(ast.get(i), engine);
-                  p2 = jas.expr2IExprJAS(expr);
-                  p1 = factory.lcm(p1, p2);
-                }
-                return jas.exprPoly2Expr(p1);
-              } catch (RuntimeException rex) {
-                Errors.rethrowsInterruptException(rex);
-                LOGGER.debug("PolynomialLCM.evaluate() failed", rex);
-              }
-            }
+        if (!options[MODULUS_OPTION].isZero()) {
+          // found "Modulus" option => use ModIntegerRing
+          IExpr option = options[MODULUS_OPTION];
+          if (eVar.size() == 0) {
             return F.NIL;
           }
+          return polynomialLCMModulus(ast, argSize, option, eVar.getVarList());
         }
-        try {
-          List<IExpr> varList = eVar.getVarList().copyTo();
-          JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
-          GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
-          if (poly == null) {
-            IExpr result = polynomialLCMExpr(ast);
-            if (result.isPresent()) {
-              return result;
-            }
-            return ast.setAtCopy(0, S.Times);
-          }
-          GenPolynomial<BigRational> gcd;
-          boolean evaled = false;
-          GenPolynomial<BigRational> temp;
-          GreatestCommonDivisorAbstract<BigRational> factory =
-              GCDFactory.getImplementation(BigRational.ZERO, true);
-          for (int i = 2; i < ast.size(); i++) {
-            expr = F.evalExpandAll(ast.get(i), engine);
-            temp = jas.expr2JAS(expr, false);
-            if (temp == null) {
-              IExpr result = polynomialLCMExpr(ast);
-              if (result.isPresent()) {
-                return result;
-              }
-              return ast.setAtCopy(0, S.Times);
-            }
-            if (!evaled) {
-              gcd = factory.gcd(poly, temp);
-              if (!gcd.isONE()) {
-                evaled = true;
-              }
-            }
-            poly = factory.lcm(poly, temp);
-          }
-          if (evaled) {
-            return jas.rationalPoly2Expr(poly, false);
-          }
-        } catch (ClassCastException | JASConversionException e) {
-          LOGGER.debug("PolynomialLCM.evaluate() failed", e);
-          IExpr result = polynomialLCMExpr(ast);
-          if (result.isPresent()) {
-            return result;
-          }
-        }
-        return ast.setAtCopy(0, S.Times);
+
+        return polynomialLCM(ast, argSize, eVar, engine);
       }
       return F.NIL;
     }
 
-    private static IExpr polynomialLCMExpr(final IAST ast) {
+    private static IExpr polynomialLCM(IAST ast, int argSize, VariablesSet eVar,
+        EvalEngine engine) {
+      try {
+        boolean evaled = false;
+        IExpr lcm = F.C1;
+        ArrayList<GenPolynomial<edu.jas.arith.BigInteger>> polyList = new ArrayList<>();
+        IASTAppendable exprList = F.TimesAlloc(4);
+        JASConvert<BigRational> jas =
+            new JASConvert<BigRational>(eVar.getVarList(), BigRational.ZERO);
+        for (int i = 1; i <= argSize; i++) {
+          IExpr expr = F.evalExpandAll(ast.get(i), engine);
+          try {
+            GenPolynomial<BigRational> temp = jas.expr2JAS(expr, false);
+            if (temp != null) {
+              Object[] objects = jas.factorTerms(temp);
+              GenPolynomial<edu.jas.arith.BigInteger> intPoly =
+                  (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
+              java.math.BigInteger intGCD = (java.math.BigInteger) objects[0];
+              java.math.BigInteger intLCM = (java.math.BigInteger) objects[1];
+              if (!intGCD.equals(java.math.BigInteger.ONE)
+                  || !intLCM.equals(java.math.BigInteger.ONE)) {
+                lcm = lcm.lcm(F.QQ(intGCD, intLCM));
+                evaled = true;
+              }
+              polyList.add(intPoly);
+            } else {
+              exprList.append(ast.get(i));
+            }
+          } catch (ClassCastException | JASConversionException e) {
+            exprList.append(ast.get(i));
+          }
+        }
+        if (polyList.size() > 0) {
+          IExpr polyExpr;
+          if (polyList.size() == 1) {
+            polyExpr = jas.integerPoly2Expr(polyList.get(0));
+          } else {
+            GenPolynomial<edu.jas.arith.BigInteger> gcd;
+            GreatestCommonDivisorAbstract<edu.jas.arith.BigInteger> factory =
+                GCDFactory.getImplementation(edu.jas.arith.BigInteger.ZERO);
+
+            GenPolynomial<edu.jas.arith.BigInteger> poly = polyList.get(0);
+            for (int i = 1; i < polyList.size(); i++) {
+              GenPolynomial<edu.jas.arith.BigInteger> temp = polyList.get(i);
+              if (!evaled) {
+                gcd = factory.gcd(poly, temp);
+                if (!gcd.isONE()) {
+                  evaled = true;
+                }
+              }
+              poly = factory.lcm(poly, temp);
+            }
+            polyExpr = jas.integerPoly2Expr(poly);
+          }
+
+          if (!lcm.isOne()) {
+            polyExpr = F.Times(lcm, polyExpr);
+          }
+          if (exprList.argSize() == 0) {
+            if (!evaled) {
+              return ast.setAtCopy(0, S.Times, argSize + 1);
+            }
+            return polyExpr;
+          }
+          exprList.append(polyExpr);
+        }
+        if (exprList.argSize() > 1) {
+          IExpr result = polynomialLCMExpr(exprList, exprList.argSize());
+          if (result.isPresent()) {
+            return result;
+          }
+          return ast.setAtCopy(0, S.Times, argSize + 1);
+        }
+      } catch (ClassCastException | JASConversionException e) {
+        // LOGGER.debug("PolynomialLCM.evaluate() failed", e);
+        IExpr result = polynomialLCMExpr(ast, argSize);
+        if (result.isPresent()) {
+          return result;
+        }
+      }
+      return ast.setAtCopy(0, S.Times, argSize + 1);
+    }
+
+    private static IExpr polynomialLCMModulus(IAST ast, int argSize, IExpr modulus, IAST varList) {
+      if (modulus.isInteger()) {
+        try {
+          IExpr expr = F.evalExpand(ast.arg1());
+          ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) modulus);
+          JASModInteger jas = new JASModInteger(varList, modIntegerRing);
+          GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
+          GenPolynomial<ModLong> temp;
+          GreatestCommonDivisorAbstract<ModLong> factory =
+              GCDFactory.getImplementation(modIntegerRing);
+          for (int i = 2; i < ast.argSize(); i++) {
+            expr = F.evalExpandAll(ast.get(i));
+            temp = jas.expr2JAS(expr);
+            poly = factory.lcm(poly, temp);
+          }
+          return Algebra.factorModulus(jas, modIntegerRing, poly.monic(), false);
+        } catch (ArithmeticException aex) {
+          Errors.printMessage(S.PolynomialLCM, aex);
+          return F.NIL;
+        } catch (JASConversionException e) {
+          if (Config.SHOW_STACKTRACE) {
+            e.printStackTrace();
+          }
+          // try {
+          // IExpr expr = F.evalExpandAll(ast.arg1());
+          // // IAST vars = eVar.getVarList();
+          // ExprPolynomialRing ring = new ExprPolynomialRing(varList);
+          // ExprPolynomial pol1 = ring.create(expr);
+          // // ASTRange r = new ASTRange(eVar.getVarList(), 1);
+          // JASIExpr jas = new JASIExpr(varList, true);
+          // GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
+          // GenPolynomial<IExpr> p2;
+          //
+          // GreatestCommonDivisor<IExpr> factory =
+          // GCDFactory.getImplementation(ExprRingFactory.CONST);
+          // for (int i = 2; i < ast.size(); i++) {
+          // expr = F.evalExpandAll(ast.get(i));
+          // p2 = jas.expr2IExprJAS(expr);
+          // p1 = factory.lcm(p1, p2);
+          // }
+          // return jas.exprPoly2Expr(p1);
+          // } catch (RuntimeException rex) {
+          // Errors.rethrowsInterruptException(rex);
+          // Errors.printMessage(S.PolynomialLCM, rex);
+          // }
+        }
+      }
+      return F.NIL;
+    }
+
+    private static IExpr polynomialLCMExpr(final IAST ast, int argSize) {
       IAST list = ast.setAtCopy(0, S.List);
-      Optional<IExpr[]> result = AlgebraUtil.InternalFindCommonFactorPlus.findCommonFactors(list, true);
+      Optional<IExpr[]> result = AlgebraUtil.findCommonFactors(list, true);
       if (result.isPresent()) {
-        return F.Times(result.get()[0], ((IAST) result.get()[1]).setAtCopy(0, S.Times));
+        return F.Times(result.get()[0],
+            ((IAST) result.get()[1]).setAtCopy(0, S.Times, argSize + 1));
       }
       return F.NIL;
     }
 
     @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
-      setOptions(newSymbol, //
-          F.list(F.Rule(S.Modulus, F.C0)));
+      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Modulus};
+      IExpr[] optionValues = new IExpr[] {F.C0};
+      setOptions(newSymbol, optionKeys, optionValues);
     }
   }
 
@@ -2963,7 +2773,7 @@ public class Algebra {
           // `1` is not a polynomial.
           return Errors.printMessage(ast.topHead(), "poly", F.list(arg2), engine);
         }
-        IExpr option = options[0];
+        IExpr option = options[MODULUS_OPTION];
         if (isModpMessage(S.PolynomialQuotient, option)) {
           return F.NIL;
         }
@@ -2973,6 +2783,9 @@ public class Algebra {
             return result.get()[0];
           }
           return F.NIL;
+        }
+        if (arg2.isOne()) {
+          return arg1;
         }
         Optional<IExpr[]> result = quotientRemainder(arg1, arg2, variable);
         if (result.isPresent()) {
@@ -3040,7 +2853,8 @@ public class Algebra {
             F.C0});
       }
       try {
-        JASConvert<BigRational> jas = new JASConvert<BigRational>(variable, BigRational.ZERO);
+        JASConvert<BigRational> jas =
+            new JASConvert<BigRational>(variable.makeList(), BigRational.ZERO);
         GenPolynomial<BigRational> poly1 = jas.expr2JAS(arg1, false);
         if (poly1 == null) {
           return polynomialQuotientRemainderExpr(arg1, arg2, variable);
@@ -3128,7 +2942,7 @@ public class Algebra {
           return F.NIL;
         }
         IExpr result = F.NIL;
-        IExpr option = options[0];
+        IExpr option = options[MODULUS_OPTION];
         if (isModpMessage(S.PolynomialQuotientRemainder, option)) {
           return F.NIL;
         }
@@ -3169,7 +2983,7 @@ public class Algebra {
       try {
         // found "Modulus" option => use ModIntegerRing
         ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
-        JASModInteger jas = new JASModInteger(variable, modIntegerRing);
+        JASModInteger jas = new JASModInteger(variable.makeList(), modIntegerRing);
         GenPolynomial<ModLong> poly1 = jas.expr2JAS(arg1);
         GenPolynomial<ModLong> poly2 = jas.expr2JAS(arg2);
         if (poly2.isZERO()) {
@@ -3254,7 +3068,7 @@ public class Algebra {
         return Errors.printMessage(ast.topHead(), "poly", F.list(arg2), engine);
       }
       try {
-        IExpr option = options[0];
+        IExpr option = options[MODULUS_OPTION];
         if (isModpMessage(S.PolynomialRemainder, option)) {
           return F.NIL;
         }
@@ -3757,105 +3571,12 @@ public class Algebra {
     return logIntExpanded;
   }
 
-  /**
-   * Factor the <code>expr</code> in the domain of GaussianIntegers.
-   *
-   * @param expr the (polynomial) expression which should be factored
-   * @param varList the list of variables
-   * @param head the head of the factorization result AST (typically <code>F.Times</code> or <code>
-   *     F.List</code>)
-   * @param gaussianIntegers if <code>true</code> use Gaussian integers
-   * @param engine the evaluation engine
-   * @return factorization result AST (typically with head <code>F.Times</code> or <code>
-   *     F.List</code>)
-   * @throws JASConversionException
-   */
-  public static IExpr factorComplex(IExpr expr, List<IExpr> varList, ISymbol head,
-      boolean gaussianIntegers, EvalEngine engine) {
-    return factorComplex(expr, varList, head, false, gaussianIntegers, engine);
-  }
-
-  /**
-   * Factor the <code>expr</code> in the domain of GaussianIntegers.
-   *
-   * @param expr the (polynomial) expression which should be factored
-   * @param varList the list of variables
-   * @param head the head of the factorization result AST (typically <code>F.Times</code> or <code>
-   *     F.List</code>)
-   * @param numeric2Rational transform numerical values to symbolic rational numbers
-   * @param gaussianIntegers if <code>true</code> use Gaussian integers
-   * @param engine
-   * @return factorization result AST (typically with head <code>F.Times</code> or <code>
-   *     F.List</code>)
-   * @throws JASConversionException
-   */
-  private static IExpr factorComplex(IExpr expr, List<IExpr> varList, ISymbol head,
-      boolean numeric2Rational, boolean gaussianIntegers, EvalEngine engine) {
-    try {
-      if (gaussianIntegers) {
-        ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(BigRational.ZERO);
-        JASConvert<Complex<BigRational>> jas = new JASConvert<Complex<BigRational>>(varList, cfac);
-        GenPolynomial<Complex<BigRational>> polyRat = jas.expr2JAS(expr, numeric2Rational);
-        if (polyRat == null) {
-          return expr;
-        }
-        return factorComplex(polyRat, jas, head, cfac, expr).eval(engine);
-      } else {
-        JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
-        GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numeric2Rational);
-        if (polyRat == null) {
-          return expr;
-        }
-        return factorRational(polyRat, jas, head);
-      }
-    } catch (RuntimeException rex) {
-      Errors.rethrowsInterruptException(rex);
-      LOGGER.debug("Algebra.factorComplex() failed", rex);
-    }
-    return expr;
-  }
-
   public static IExpr factor(IExpr arg1, EvalEngine engine) {
     VariablesSet eVar = new VariablesSet(arg1);
-    return Factor.factor(F.Factor(arg1), arg1, eVar, false, false, engine);
+    return AlgebraUtil.factor(F.Factor(arg1), arg1, eVar, false, false, true, engine);
   }
 
-  /**
-   * @param polynomial the complex-rational polynomial which should be factored
-   * @param jas
-   * @param head the head of the factorization result AST (typically <code>F.Times</code> or <code>
-   *     F.List</code>)
-   * @param cfac
-   * @param original the original expression
-   * @return
-   */
-  private static IExpr factorComplex(GenPolynomial<Complex<BigRational>> polynomial,
-      JASConvert<? extends RingElem<?>> jas, ISymbol head, ComplexRing<BigRational> cfac,
-      IExpr original) {
-    if (polynomial.degree() > Config.MAX_POLYNOMIAL_DEGREE) {
-      // Exponent ist out of bounds for function `1`.
-      return Errors.printMessage(S.Factor, "lrgexp", F.List(S.Factor));
-    }
-    FactorComplex<BigRational> factorAbstract = new FactorComplex<BigRational>(cfac);
-    SortedMap<GenPolynomial<Complex<BigRational>>, Long> map = factorAbstract.factors(polynomial);
-
-    IASTAppendable result = F.ast(head, map.size());
-    for (SortedMap.Entry<GenPolynomial<Complex<BigRational>>, Long> entry : map.entrySet()) {
-      if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
-        continue;
-      }
-      final IExpr key = jas.complexPoly2Expr(entry.getKey());
-      if (entry.getValue().equals(1L) && map.size() <= 2
-          && (key.equals(F.CNI) || key.equals(F.CI))) {
-        // hack: factoring -I and I out of an expression should give no new factorized expression
-        return original;
-      }
-      result.append(F.Power(jas.complexPoly2Expr(entry.getKey()), F.ZZ(entry.getValue())));
-    }
-    return result;
-  }
-
-  private static IAST factorModulus(IExpr expr, List<IExpr> varList, boolean factorSquareFree,
+  private static IAST factorModulus(IExpr expr, IAST varList, boolean factorSquareFree,
       IExpr option) throws JASConversionException {
     try {
       // found "Modulus" option => use ModIntegerRing
@@ -4063,11 +3784,7 @@ public class Algebra {
     try {
       IExpr exprNumerator = F.evalExpandAll(parts[0]);
       IExpr exprDenominator = F.evalExpandAll(parts[1]);
-      // ASTRange r = new ASTRange(variableList, 1);
-      // List<IExpr> varList = r;
-      List<IExpr> varList = variableList.copyTo();
-
-      JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+      JASConvert<BigRational> jas = new JASConvert<BigRational>(variableList, BigRational.ZERO);
       GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator, false);
       if (numerator == null) {
         return F.NIL;
@@ -4144,7 +3861,7 @@ public class Algebra {
 
   public static UnivPowerSeries<BigRational> quotientPS(IExpr exprNumerator, IExpr exprDenominator,
       IExpr x) {
-    JASConvert<BigRational> jas = new JASConvert<BigRational>(x, BigRational.ZERO);
+    JASConvert<BigRational> jas = new JASConvert<BigRational>(x.makeList(), BigRational.ZERO);
     GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator, false);
     if (numerator == null) {
       return null;

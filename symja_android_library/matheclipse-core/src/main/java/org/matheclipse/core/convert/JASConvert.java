@@ -1,7 +1,6 @@
 package org.matheclipse.core.convert;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -173,39 +172,29 @@ public class JASConvert<C extends RingElem<C>> {
 
   private final GenPolynomialRing<edu.jas.arith.BigInteger> fBigIntegerPolyFactory;
 
-  private final List<? extends IExpr> fVariables;
+  private final IAST fVariables;
 
-  public JASConvert(IExpr variable, RingFactory<C> ringFactory) {
-    List<IExpr> varList = new ArrayList<IExpr>();
-    varList.add(variable);
-    this.fRingFactory = ringFactory;
-    this.fVariables = varList;
-    String[] vars = new String[fVariables.size()];
-    for (int i = 0; i < fVariables.size(); i++) {
-      vars[i] = fVariables.get(i).toString();
-    }
-    this.fTermOrder = TermOrderByName.INVLEX;
-    this.fPolyFactory = new GenPolynomialRing<C>(fRingFactory, fVariables.size(), fTermOrder, vars);
-    this.fBigIntegerPolyFactory = new GenPolynomialRing<edu.jas.arith.BigInteger>(
-        edu.jas.arith.BigInteger.ZERO, fVariables.size(), fTermOrder, vars);
+  public JASConvert(IAST varList, RingFactory<C> ringFactory) {
+    this(varList, ringFactory, TermOrderByName.INVLEX);
   }
 
-  public JASConvert(final List<? extends IExpr> variablesList, RingFactory<C> ringFactory) {
-    this(variablesList, ringFactory, TermOrderByName.INVLEX);
-  }
+  // public JASConvert(IAST varList, RingFactory<C> ringFactory) {
+  // this(variablesList, ringFactory, TermOrderByName.INVLEX);
+  // }
 
-  public JASConvert(final List<? extends IExpr> variablesList, RingFactory<C> ringFactory,
+  public JASConvert(IAST varList, RingFactory<C> ringFactory,
       TermOrder termOrder) {
     this.fRingFactory = ringFactory;
-    this.fVariables = variablesList;
-    String[] vars = new String[fVariables.size()];
-    for (int i = 0; i < fVariables.size(); i++) {
-      vars[i] = fVariables.get(i).toString();
+    this.fVariables = varList;
+    String[] vars = new String[fVariables.argSize()];
+    for (int i = 0; i < fVariables.argSize(); i++) {
+      vars[i] = fVariables.get(i + 1).toString();
     }
     this.fTermOrder = termOrder;
-    this.fPolyFactory = new GenPolynomialRing<C>(fRingFactory, fVariables.size(), fTermOrder, vars);
+    this.fPolyFactory =
+        new GenPolynomialRing<C>(fRingFactory, fVariables.argSize(), fTermOrder, vars);
     this.fBigIntegerPolyFactory = new GenPolynomialRing<edu.jas.arith.BigInteger>(
-        edu.jas.arith.BigInteger.ZERO, fVariables.size(), fTermOrder, vars);
+        edu.jas.arith.BigInteger.ZERO, fVariables.argSize(), fTermOrder, vars);
   }
 
   public IAST algebraicNumber2Expr(final AlgebraicNumber<BigRational> coeff)
@@ -339,17 +328,11 @@ public class JASConvert<C extends RingElem<C>> {
           // fall through
         }
       } else {
-        GenPolynomial<C> result = fPolyFactory.getZERO();
-        GenPolynomial<C> p = fPolyFactory.getZERO();
         if (ast.isPlus()) {
-          IExpr expr = ast.arg1();
-          result = expr2Poly(expr, numeric2Rational);
-          if (result == null) {
-            return null;
-          }
-          for (int i = 2; i < ast.size(); i++) {
-            expr = ast.get(i);
-            p = expr2Poly(expr, numeric2Rational);
+          GenPolynomial<C> result = fPolyFactory.getZERO();
+          for (int i = 1; i < ast.size(); i++) {
+            IExpr expr = ast.get(i);
+            GenPolynomial<C> p = expr2Poly(expr, numeric2Rational);
             if (p == null) {
               return null;
             }
@@ -357,14 +340,10 @@ public class JASConvert<C extends RingElem<C>> {
           }
           return result;
         } else if (ast.isTimes()) {
-          IExpr expr = ast.arg1();
-          result = expr2Poly(expr, numeric2Rational);
-          if (result == null) {
-            return null;
-          }
-          for (int i = 2; i < ast.size(); i++) {
-            expr = ast.get(i);
-            p = expr2Poly(expr, numeric2Rational);
+          GenPolynomial<C> result = fPolyFactory.getONE();
+          for (int i = 1; i < ast.size(); i++) {
+            IExpr expr = ast.get(i);
+            GenPolynomial<C> p = expr2Poly(expr, numeric2Rational);
             if (p == null) {
               return null;
             }
@@ -381,7 +360,7 @@ public class JASConvert<C extends RingElem<C>> {
           }
           try {
             int indexOf = fVariables.indexOf(base);
-            if (indexOf >= 0) {
+            if (indexOf >= 1) {
               GenPolynomial<C> v = fPolyFactory.univariate(base.getSymbolName(), 1L);
               return v.power(exponent);
             }
@@ -410,7 +389,7 @@ public class JASConvert<C extends RingElem<C>> {
           // throw new JASConversionException();
         }
         int indexOf = fVariables.indexOf(symbol);
-        if (indexOf >= 0) {
+        if (indexOf >= 1) {
           return fPolyFactory.univariate(symbol.getSymbolName(), 1L);
         }
       } catch (IllegalArgumentException iae) {
@@ -446,9 +425,9 @@ public class JASConvert<C extends RingElem<C>> {
         int ix = leer.varIndex(i);
         if (ix >= 0) {
           if (lExp == 1L) {
-            monomTimes.append(fVariables.get(ix));
+            monomTimes.append(fVariables.get(ix + 1));
           } else {
-            monomTimes.append(F.Power(fVariables.get(ix), F.ZZ(lExp)));
+            monomTimes.append(F.Power(fVariables.get(ix + 1), F.ZZ(lExp)));
           }
         } else {
           return false;
@@ -700,8 +679,7 @@ public class JASConvert<C extends RingElem<C>> {
    * @return <code>null</code> if the conversion isn't possible
    * @throws ArithmeticException
    */
-  private GenPolynomial<C> numericExpr2Poly(final IExpr exprPoly)
-      throws ArithmeticException {
+  private GenPolynomial<C> numericExpr2Poly(final IExpr exprPoly) throws ArithmeticException {
     return expr2Poly(exprPoly, true);
   }
 
