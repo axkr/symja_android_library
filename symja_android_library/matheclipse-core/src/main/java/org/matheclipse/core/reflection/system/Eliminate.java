@@ -3,7 +3,6 @@ package org.matheclipse.core.reflection.system;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.RootsFunctions;
@@ -70,10 +69,10 @@ import com.google.common.base.Suppliers;
 public class Eliminate extends AbstractFunctionEvaluator implements EliminateRules {
 
   /** Match <code>f(x) == y</code> expressions to determine the inverse function. */
-  private static Supplier<Matcher> INVERSE_MATCHER;
+  private static com.google.common.base.Supplier<Matcher> INVERSE_MATCHER;
 
   /** Match <code>Plus(....) == 0</code> expressions for a variable. */
-  private static Supplier<Matcher> ZERO_PLUS_MATCHER;
+  private static com.google.common.base.Supplier<Matcher> ZERO_PLUS_MATCHER;
 
   /** Get the matcher for <code>f(x) == y</code> expressions to determine the inverse function. */
   private static Matcher inverseMatcher() {

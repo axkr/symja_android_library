@@ -710,4 +710,10 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "15.0");
   }
 
+  @Test
+  public void testExampleIssue003() {
+    // https://github.com/axkr/symja-example/issues/3
+    check("Integrate(Sin(x^2),x)", //
+        "Sqrt(Pi/2)*FresnelS(Sqrt(2/Pi)*x)");
+  }
 }

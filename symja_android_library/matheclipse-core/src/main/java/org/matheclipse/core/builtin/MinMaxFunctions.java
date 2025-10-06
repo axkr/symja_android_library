@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.analysis.MultivariateFunction;
@@ -745,7 +744,7 @@ public class MinMaxFunctions {
       }
     }
 
-    private static Supplier<Matcher> LAZY_MATCHER;
+    private static com.google.common.base.Supplier<Matcher> LAZY_MATCHER;
 
 
     public static IExpr callMatcher(final IAST ast, IExpr arg1, EvalEngine engine) {

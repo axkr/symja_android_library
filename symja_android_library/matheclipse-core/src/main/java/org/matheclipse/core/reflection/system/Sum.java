@@ -7,7 +7,6 @@ import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
@@ -137,7 +136,7 @@ import com.google.common.base.Suppliers;
  */
 public class Sum extends ListFunctions.Table implements SumRules {
 
-  private static Supplier<Matcher> MATCHER1;
+  private static com.google.common.base.Supplier<Matcher> MATCHER1;
 
   public Sum() {}
 

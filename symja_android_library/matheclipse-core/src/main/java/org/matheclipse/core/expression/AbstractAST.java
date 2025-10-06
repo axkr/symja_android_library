@@ -1372,7 +1372,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** The enumeration map which possibly maps the properties (keys) to a user defined object. */
   // private static Cache<IAST, EnumMap<PROPERTY, Object>> IAST_CACHE = null;
-  private static Supplier<Cache<IAST, EnumMap<PROPERTY, Object>>> IAST_CACHE =
+  private static com.google.common.base.Supplier<Cache<IAST, EnumMap<PROPERTY, Object>>> IAST_CACHE =
       Suppliers.memoize(AbstractAST::initCache);
 
   private static Cache<IAST, EnumMap<PROPERTY, Object>> initCache() {

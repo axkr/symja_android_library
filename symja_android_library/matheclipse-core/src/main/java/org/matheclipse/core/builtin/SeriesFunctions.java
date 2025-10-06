@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.JASConvert;
@@ -1738,7 +1737,7 @@ public class SeriesFunctions {
    * </pre>
    */
   public static final class SeriesCoefficient extends AbstractFunctionEvaluator {
-    private static Supplier<Matcher> MATCHER1;
+    private static com.google.common.base.Supplier<Matcher> MATCHER1;
 
     private static Matcher matcher1() {
       return MATCHER1.get();

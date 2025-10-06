@@ -14,7 +14,6 @@ import static org.matheclipse.core.expression.S.m;
 import static org.matheclipse.core.expression.S.n;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
-import java.util.function.Supplier;
 import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.builtin.WindowFunctions;
 import org.matheclipse.core.eval.CompareUtil;
@@ -63,7 +62,7 @@ import com.google.common.base.Suppliers;
  */
 public class FunctionExpand extends AbstractEvaluator {
 
-  private static Supplier<Matcher> LAZY_MATCHER;
+  private static com.google.common.base.Supplier<Matcher> LAZY_MATCHER;
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
