@@ -1,9 +1,10 @@
 package org.matheclipse.core.system;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.function.Function;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -1200,9 +1201,9 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     EvalEngine.get().setIterationLimit(50000);
   }
 
-  @Override
+  @AfterEach
   public void tearDown() throws Exception {
-    super.tearDown();
+    // super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
   }
 }

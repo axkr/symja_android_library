@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -47,9 +48,8 @@ public class ConstantPhysicsTest extends ExprEvaluatorTestCase {
     engine.setRecursionLimit(256);
   }
 
-  @Override
+  @AfterEach
   public void tearDown() throws Exception {
-    super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
   }
 }

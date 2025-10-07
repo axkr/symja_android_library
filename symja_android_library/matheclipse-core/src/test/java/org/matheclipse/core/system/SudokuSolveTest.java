@@ -1,8 +1,6 @@
 package org.matheclipse.core.system;
 
-import org.junit.Test;
-import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.EvalEngine;
+import org.junit.jupiter.api.Test;
 
 /** Tests forSolve and Roots functions */
 public class SudokuSolveTest extends ExprEvaluatorTestCase {
@@ -119,18 +117,4 @@ public class SudokuSolveTest extends ExprEvaluatorTestCase {
             + " {6,0,0,0,9,0,0,0,0}})");
   }
 
-  /** The JUnit setup method */
-  @Override
-  public void setUp() {
-    super.setUp();
-    Config.SHORTEN_STRING_LENGTH = 1024;
-    Config.MAX_AST_SIZE = 1000000;
-    EvalEngine.get().setIterationLimit(50000);
-  }
-
-  @Override
-  public void tearDown() throws Exception {
-    super.tearDown();
-    Config.SHORTEN_STRING_LENGTH = 80;
-  }
 }

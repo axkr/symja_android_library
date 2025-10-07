@@ -1,6 +1,6 @@
 package org.matheclipse.core.system;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 
@@ -187,8 +187,4 @@ public class StreamTest extends ExprEvaluatorTestCase {
     EvalEngine.get().setIterationLimit(500);
   }
 
-  @Override
-  public void tearDown() throws Exception {
-    super.tearDown();
-  }
 }

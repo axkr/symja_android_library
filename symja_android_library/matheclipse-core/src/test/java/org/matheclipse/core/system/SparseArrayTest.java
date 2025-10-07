@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 
@@ -564,9 +565,9 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
     EvalEngine.get().setIterationLimit(50000);
   }
 
-  @Override
+  @AfterEach
   public void tearDown() throws Exception {
-    super.tearDown();
+    // super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
   }
 }

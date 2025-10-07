@@ -1,6 +1,6 @@
 package org.matheclipse.core.system;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
@@ -126,8 +126,4 @@ public class JavaLinkTestCase extends ExprEvaluatorTestCase {
     }
   }
 
-  @Override
-  public void tearDown() throws Exception {
-    super.tearDown();
-  }
 }

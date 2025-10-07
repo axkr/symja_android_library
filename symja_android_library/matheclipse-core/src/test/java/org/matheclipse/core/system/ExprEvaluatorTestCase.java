@@ -10,10 +10,6 @@ import java.math.RoundingMode;
 import java.util.Locale;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
@@ -34,7 +30,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
-@RunWith(JUnit4.class)
 public abstract class ExprEvaluatorTestCase {
   protected ExprEvaluator evaluator;
   protected ExprEvaluator evaluatorN;
@@ -56,6 +51,7 @@ public abstract class ExprEvaluatorTestCase {
   public ExprEvaluatorTestCase() {
     Locale.setDefault(Locale.US);
     Config.SERVER_MODE = false;
+    setUp();
   }
 
   public void check(String evalString, String expectedResult) {
@@ -308,7 +304,6 @@ public abstract class ExprEvaluatorTestCase {
   }
 
   /** The JUnit setup method */
-  @Before
   public void setUp() {
     try {
       ToggleFeature.COMPILE = true;
@@ -345,9 +340,5 @@ public abstract class ExprEvaluatorTestCase {
     }
   }
 
-  @After
-  public void tearDown() throws Exception {
-
-  }
 
 }

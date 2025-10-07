@@ -1,6 +1,6 @@
 package org.matheclipse.core.system;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 
@@ -318,14 +318,8 @@ public class TensorTest extends ExprEvaluatorTestCase {
   @Override
   public void setUp() {
     super.setUp();
-    Config.SHORTEN_STRING_LENGTH = 1024;
     Config.MAX_AST_SIZE = 1000000;
     EvalEngine.get().setIterationLimit(50000);
   }
 
-  @Override
-  public void tearDown() throws Exception {
-    super.tearDown();
-    Config.SHORTEN_STRING_LENGTH = 80;
-  }
 }
