@@ -110,6 +110,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>17</java.version>
+	    <java.target.version>11</java.target.version>
 		<release.build>false</release.build>
 		<deployment.suppress>false</deployment.suppress> <!-- child modules can
 		set this true to not be published -->
@@ -568,6 +569,7 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<release>${java.version}</release>
+					<target>${java.target.version}</target>
 					    <annotationProcessorPaths>
                         <!-- Include `log4j-core` providing
                           1. `org.apache.logging.log4j.core.config.plugins.processor.PluginProcessor` that generates `Log4j2Plugins.dat`
