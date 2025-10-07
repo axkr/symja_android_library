@@ -322,7 +322,7 @@ public class JSBuilder {
   private static final String[] CSS_CDN_ECHARTS = {};
 
   private static final String[] JS_CDN_ECHARTS = { //
-      "https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"};
+      "https://cdn.jsdelivr.net/npm/echarts@6.0.0/dist/echarts.min.js"};
 
   private static final String[] JS_CDN_MERMAID = { //
       "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs"};
@@ -336,12 +336,12 @@ public class JSBuilder {
 
   /** CSS libraries */
   private static final String[] CSS_CDN_JSXGRAPH =
-      {"https://cdn.jsdelivr.net/npm/jsxgraph@1.11.1/distrib/jsxgraph.css"};
+      {"https://cdn.jsdelivr.net/npm/jsxgraph@1.12.0/distrib/jsxgraph.css"};
 
   /** CDN JavaScript libraries */
   private static final String[] JS_CDN_JSXGRAPH =
       {"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.10/build/math.js",
-          "https://cdn.jsdelivr.net/npm/jsxgraph@1.11.1/distrib/jsxgraphcore.js",
+          "https://cdn.jsdelivr.net/npm/jsxgraph@1.12.0/distrib/jsxgraphcore.js",
           "https://cdn.jsdelivr.net/npm/json2d_jsxgraph@1.0.1/drawGraphics2d.js"};
 
   /** CSS libraries */
