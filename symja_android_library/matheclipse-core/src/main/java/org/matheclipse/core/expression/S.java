@@ -4960,6 +4960,9 @@ public class S {
   public final static IBuiltInSymbol GumbelDistribution =
       S.initFinalSymbol("GumbelDistribution", ID.GumbelDistribution);
 
+  public final static IBuiltInSymbol HalfNormalDistribution =
+      S.initFinalSymbol("HalfNormalDistribution", ID.HalfNormalDistribution);
+
   /**
    * HamiltonianGraphQ(graph) - returns `True` if `graph` is an hamiltonian graph, and `False`
    * otherwise.
@@ -5871,6 +5874,9 @@ public class S {
    */
   public final static IBuiltInSymbol InverseFunction =
       S.initFinalSymbol("InverseFunction", ID.InverseFunction);
+
+  public final static IBuiltInSymbol InverseGammaDistribution =
+      S.initFinalSymbol("InverseGammaDistribution", ID.InverseGammaDistribution);
 
   public final static IBuiltInSymbol InverseGammaRegularized =
       S.initFinalSymbol("InverseGammaRegularized", ID.InverseGammaRegularized);

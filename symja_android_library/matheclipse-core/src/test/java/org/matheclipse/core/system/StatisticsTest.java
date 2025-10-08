@@ -130,6 +130,10 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
         "-EulerGamma*m+n");
     check("Mean(HypergeometricDistribution(n, ns, nt))", //
         "(n*ns)/nt");
+    check("Mean(InverseGammaDistribution(n, m))", //
+        "Piecewise({{m/(-1+n),n>1}},Indeterminate)");
+    check("Mean(InverseGammaDistribution(a,b,g,d))", //
+        "Piecewise({{d+(b*Gamma(a-1/g))/Gamma(a),a*g>1}},Indeterminate)");
     check("Mean(StudentTDistribution(4))", //
         "0");
     check("Mean(StudentTDistribution(n))", //
@@ -259,6 +263,10 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
         "m*InverseGammaRegularized(n,0,1/2)");
     check("Median(GammaDistribution(a,b,g,d))", //
         "d+b*InverseGammaRegularized(a,1/2)^(1/g)");
+    check("Median(InverseGammaDistribution(n, m))", //
+        "m/InverseGammaRegularized(n,1/2)");
+    check("Median(InverseGammaDistribution(a,b,g,d))", //
+        "d+b*((1/InverseGammaRegularized(a,1/2)))^(1/g)");
     check("Median(GeometricDistribution(n))", //
         "Median(GeometricDistribution(n))");
     check("Median(GumbelDistribution( ))", //
@@ -405,6 +413,10 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
             "1},{2,2,2},-n)+12*EulerGamma*Log(n)+6*Log(n)^2))/(6*m^2)");
     check("Variance(HypergeometricDistribution(n, ns, nt))", //
         "(n*ns*(1-ns/nt)*(-n+nt))/((-1+nt)*nt)");
+    check("Variance(InverseGammaDistribution(n, m))", //
+        "Piecewise({{m^2/((1-n)^2*(-2+n)),n>2}},Indeterminate)");
+    check("Variance(InverseGammaDistribution(a,b,g,d))", //
+        "Piecewise({{(b^2*(Gamma(a)*Gamma(a-2/g)-Gamma(a-1/g)^2))/Gamma(a)^2,a*g>2}},Indeterminate)");
     check("Variance(PoissonDistribution(n))", //
         "n");
     check("Variance(StudentTDistribution(4))", //
