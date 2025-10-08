@@ -1527,7 +1527,6 @@ public class EvalEngine implements Serializable {
       return evalASTArg1(mutableAST);
     }
 
-    IExpr returnResult = F.NIL;
     IExpr result = mutableAST.head().evaluateHead(mutableAST, this);
     if (result.isPresent()) {
       return result;
@@ -1535,76 +1534,85 @@ public class EvalEngine implements Serializable {
 
     if (astSize != 1) {
       final int attributes = symbol.getAttributes();
-      if ((attributes & ISymbol.NO_EVAL_ENGINE_ATTRIBUTE) == ISymbol.NOATTRIBUTE) {
-        return evalNoAttributes(mutableAST);
-      }
+      return evalAttributes(mutableAST, astSize, symbol, attributes);
+    }
 
-      if ((attributes & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
-        if ((result = F.flattenSequence(mutableAST)).isPresent()) {
-          return result;
-        }
-      }
+    return F.NIL;
+  }
 
-      IASTMutable resultList = evalArgs(mutableAST, attributes, false);
-      if (resultList.isPresent()) {
-        return resultList;
-      }
+  public IExpr evalAttributes(IASTMutable mutableAST, final int astSize, ISymbol symbol,
+      final int attributes) {
+    IExpr returnResult = F.NIL;
+    IExpr result;
+    if ((attributes & ISymbol.NO_EVAL_ENGINE_ATTRIBUTE) == ISymbol.NOATTRIBUTE) {
+      return evalNoAttributes(mutableAST);
+    }
 
-      // ONEIDENTITY is checked in the evalASTArg1() method!
-      if (ISymbol.hasFlatAttribute(attributes)) {
-        // associative symbol
-        IASTAppendable flattened;
-        if ((flattened = EvalAttributes.flatten(mutableAST)).isPresent()) {
-          returnResult = flattened;
-          mutableAST = flattened;
-        }
-      }
-
-      result = evalTagSetPlusTimes(mutableAST);
-      if (result.isPresent()) {
+    if ((attributes & ISymbol.SEQUENCEHOLD) != ISymbol.SEQUENCEHOLD) {
+      if ((result = F.flattenSequence(mutableAST)).isPresent()) {
         return result;
-      }
-
-      if ((ISymbol.LISTABLE & attributes) == ISymbol.LISTABLE && !((mutableAST.getEvalFlags()
-          & IAST.IS_LISTABLE_THREADED) == IAST.IS_LISTABLE_THREADED)) {
-        // thread over the lists
-        resultList = threadASTListArgs(mutableAST, S.Thread, "tdlen");
-        if (resultList.isPresent()) {
-          if (resultList.isAssociation()) {
-            return resultList;
-          }
-          return evalArgs(resultList, ISymbol.NOATTRIBUTE, false).orElse(resultList);
-        }
-      }
-
-      if ((ISymbol.NUMERICFUNCTION & attributes) == ISymbol.NUMERICFUNCTION) {
-        if (fNumericMode //
-            && mutableAST.isBuiltInFunction()//
-            && mutableAST.forAll(x -> x.isInexactNumber())) {
-          IExpr temp = numericFunction((IBuiltInSymbol) symbol, mutableAST);
-          if (temp.isPresent()) {
-            return temp;
-          }
-        } else if (!((ISymbol.HOLDALL & attributes) == ISymbol.HOLDALL)) {
-          if (mutableAST.exists(x -> x.isIndeterminate())) {
-            return S.Indeterminate;
-          }
-          if (mutableAST.exists(x -> x.isUndefined())) {
-            return S.Undefined;
-          }
-        }
-      }
-
-      if (astSize > 2 && ISymbol.hasOrderlessAttribute(attributes)) {
-        // commutative symbol
-        EvalAttributes.sortWithFlags(mutableAST);
-      }
-      IExpr temp = mutableAST.extractConditionalExpression(false);
-      if (temp.isPresent()) {
-        return temp;
       }
     }
 
+    IASTMutable resultList = evalArgs(mutableAST, attributes, false);
+    if (resultList.isPresent()) {
+      return resultList;
+    }
+
+    // ONEIDENTITY is checked in the evalASTArg1() method!
+    if (ISymbol.hasFlatAttribute(attributes)) {
+      // associative symbol
+      IASTAppendable flattened;
+      if ((flattened = EvalAttributes.flatten(mutableAST)).isPresent()) {
+        returnResult = flattened;
+        mutableAST = flattened;
+      }
+    }
+
+    result = evalTagSetPlusTimes(mutableAST);
+    if (result.isPresent()) {
+      return result;
+    }
+
+    if ((ISymbol.LISTABLE & attributes) == ISymbol.LISTABLE && !((mutableAST.getEvalFlags()
+        & IAST.IS_LISTABLE_THREADED) == IAST.IS_LISTABLE_THREADED)) {
+      // thread over the lists
+      resultList = threadASTListArgs(mutableAST, S.Thread, "tdlen");
+      if (resultList.isPresent()) {
+        if (resultList.isAssociation()) {
+          return resultList;
+        }
+        return evalArgs(resultList, ISymbol.NOATTRIBUTE, false).orElse(resultList);
+      }
+    }
+
+    if ((ISymbol.NUMERICFUNCTION & attributes) == ISymbol.NUMERICFUNCTION) {
+      if (fNumericMode //
+          && mutableAST.isBuiltInFunction()//
+          && mutableAST.forAll(x -> x.isInexactNumber()) //
+          && symbol != S.None) {
+        IExpr temp = numericFunction((IBuiltInSymbol) symbol, mutableAST);
+        if (temp.isPresent()) {
+          return temp;
+        }
+      } else if (!((ISymbol.HOLDALL & attributes) == ISymbol.HOLDALL)) {
+        if (mutableAST.exists(x -> x.isIndeterminate())) {
+          return S.Indeterminate;
+        }
+        if (mutableAST.exists(x -> x.isUndefined())) {
+          return S.Undefined;
+        }
+      }
+    }
+
+    if (astSize > 2 && ISymbol.hasOrderlessAttribute(attributes)) {
+      // commutative symbol
+      EvalAttributes.sortWithFlags(mutableAST);
+    }
+    IExpr temp = mutableAST.extractConditionalExpression(false);
+    if (temp.isPresent()) {
+      return temp;
+    }
     return returnResult;
   }
 
@@ -2405,28 +2413,28 @@ public class EvalEngine implements Serializable {
    * Evaluate an AST, which may have only the {@link ISymbol#PROTECTED} attribute set in the header
    * symbol. Only the evaluation steps are processed, where no attributes are set.
    * 
-   * @param mutableAST the AST which should be evaluated.
+   * @param ast the AST which should be evaluated.
    * @param attributes
    * @return <code>F.NIL</code> if no evaluation was possible
    */
-  private IExpr evalNoAttributes(IASTMutable mutableAST) {
-    IExpr result = F.flattenSequence(mutableAST);
+  private IExpr evalNoAttributes(IAST ast) {
+    IExpr result = F.flattenSequence(ast);
     if (result.isPresent()) {
       return result;
     }
     final boolean localNumericMode = fNumericMode;
-    final boolean argNumericMode = isNumericArg(mutableAST);
+    final boolean argNumericMode = isNumericArg(ast);
     IASTMutable[] rlist = new IASTMutable[] {F.NIL};
-    mutableAST.forEach((arg, i) -> {
+    ast.forEach((arg, i) -> {
       if (!arg.isUnevaluated()) {
         fNumericMode = localNumericMode;
-        evalArg(rlist, mutableAST, arg, i, argNumericMode);
+        evalArg(rlist, ast, arg, i, argNumericMode);
       }
     });
     if (rlist[0].isPresent()) {
       return rlist[0];
     }
-    return mutableAST.extractConditionalExpression(false);
+    return ast.extractConditionalExpression(false);
   }
 
   public final IExpr evalNumericFunction(final IExpr expr) {

@@ -10150,6 +10150,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testFunction() {
     EvalEngine.resetModuleCounter4JUnit();
+
     // check("(p + #) & /. p -> q", //
     // "q+#1&");
     // check("fufufu=Function({x},Function({y},Function({z},x+y+z)))", //
@@ -10246,7 +10247,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "");
     check("h(1 + 1)", //
         "Hold(1+1+1)");
-
+    check("Function({u}, gg(u), Listable)[{a, b, c}]", //
+        "{gg(a),gg(b),gg(c)}");
+    check("Function({u}, gg(u))[{a, b, c}]", //
+        "gg({a,b,c})");
   }
 
   @Test

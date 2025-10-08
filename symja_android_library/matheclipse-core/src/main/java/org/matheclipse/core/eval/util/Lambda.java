@@ -29,9 +29,12 @@ public class Lambda {
     return expr.accept(new VisitorReplaceSlots(slotsList));
   }
 
-  public static IExpr replaceSlotsOrElse(IExpr expr, final IAST slotsList, IExpr elseExpr) {
-    IExpr temp = expr.accept(new VisitorReplaceSlots(slotsList));
-    return temp.orElse(elseExpr);
+  public static IExpr replaceSlotsOrElse(IExpr expr, final IExpr slotsList, IExpr elseExpr) {
+    if (slotsList.isAST()) {
+      IExpr temp = expr.accept(new VisitorReplaceSlots((IAST) slotsList));
+      return temp.orElse(elseExpr);
+    }
+    return elseExpr;
   }
 
   /**

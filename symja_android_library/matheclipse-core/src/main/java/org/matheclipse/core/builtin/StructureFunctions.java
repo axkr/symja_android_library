@@ -638,11 +638,10 @@ public class StructureFunctions {
         if (!validateArgs(engine, function)) {
           return F.NIL;
         }
-        int attributes = ISymbol.NOATTRIBUTE;
-        if (function.argSize() == 3) {
-          final IExpr arg3 = function.arg3();
-          attributes = AttributeFunctions.getSymbolsAsAttributes(arg3.makeList(), engine);
-        }
+        final int attributes = (function.argSize() == 3) ? //
+            AttributeFunctions.getSymbolsAsAttributes(function.arg3().makeList(), engine) : //
+            ISymbol.NOATTRIBUTE;
+
         IAST astEvaled = engine.evalArgs(ast, attributes, false).orElse(ast);
 
         IExpr arg1 = function.arg1();
@@ -657,17 +656,23 @@ public class StructureFunctions {
           }
           java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables =
               new IdentityHashMap<ISymbol, IExpr>();
-          // final long moduleCounter = engine.incModuleCounter();
           IExpr subst = arg2
               .accept(new ModuleReplaceAll(moduleVariables, engine, EvalEngine.uniqueName("$")));
           if (subst.isPresent()) {
             arg2 = subst;
           }
 
-          return F.subst(arg2, x -> { //
+          IExpr result = F.subst(arg2, x -> { //
             IExpr temp = getRulesMap(symbolSlots, astEvaled).get(x);
             return temp != null ? temp : F.NIL;
           });
+          if (result.isAST()) {
+            if (function.argSize() == 3) {
+              IASTMutable copy = ((IAST) result).copy();
+              return engine.evalAttributes(copy, copy.size(), S.None, attributes).orElse(result);
+            }
+          }
+          return engine.evaluate(result);
         }
 
       }
