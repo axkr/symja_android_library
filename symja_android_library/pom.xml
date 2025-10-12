@@ -108,9 +108,8 @@
 	</repositories>
 
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.version>17</java.version>
-	    <java.target.version>11</java.target.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> 
+	    <maven.compiler.release>11</maven.compiler.release>
 		<release.build>false</release.build>
 		<deployment.suppress>false</deployment.suppress> <!-- child modules can
 		set this true to not be published -->
@@ -567,9 +566,8 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<release>${java.version}</release>
-					<target>${java.target.version}</target>
+				<configuration> 
+					<release>${maven.compiler.release}</release>
 					    <annotationProcessorPaths>
                         <!-- Include `log4j-core` providing
                           1. `org.apache.logging.log4j.core.config.plugins.processor.PluginProcessor` that generates `Log4j2Plugins.dat`
@@ -621,6 +619,9 @@
 									<version>3.2.0</version>
 								</requireMavenVersion>
 								<banDuplicatePomDependencyVersions />
+						        <requireJavaVersion>
+                                  <version>[17,)</version>
+                                </requireJavaVersion>
 							</rules>
 						</configuration>
 					</execution>
@@ -636,6 +637,9 @@
 									<message>Release versions only permitted for
 										releases!</message>
 								</requireSnapshotVersion>
+								<requireJavaVersion>
+                                  <version>[17,)</version>
+                                </requireJavaVersion>
 							</rules>
 						</configuration>
 					</execution>
