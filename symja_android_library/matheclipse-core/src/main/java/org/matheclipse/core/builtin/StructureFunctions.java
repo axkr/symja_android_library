@@ -493,10 +493,10 @@ public class StructureFunctions {
         arg1 = arg1.normal(false);
       }
       if (arg1.isAST()) {
-        IAST arg1AST = (IAST) arg1;
+        final IAST arg1AST = (IAST) arg1;
 
         if (ast.isAST1()) {
-          IAST resultList = EvalAttributes.flattenDeep(arg1AST.topHead(), (IAST) arg1);
+          IAST resultList = EvalAttributes.flattenDeep(arg1AST.topHead(), arg1AST);
           if (resultList.isPresent()) {
             return resultList;
           }
@@ -507,22 +507,22 @@ public class StructureFunctions {
           int level = Validate.checkIntLevelType(arg2);
           if (level > 0) {
             IASTAppendable resultList = F.ast(arg1AST.topHead(), arg1AST.size());
-            if (EvalAttributes.flatten(arg1AST.topHead(), (IAST) arg1, resultList, 0, level)) {
+            if (EvalAttributes.flatten(arg1AST.topHead(), arg1AST, resultList, 0, level)) {
               return resultList;
             }
           }
-          return arg1;
+          return arg1AST;
         } else if (ast.isAST3() && ast.arg3().isSymbol()) {
           IExpr arg2 = engine.evaluate(ast.arg2());
 
           int level = Validate.checkIntLevelType(arg2);
           if (level > 0) {
             IASTAppendable resultList = F.ast(arg1AST.topHead());
-            if (EvalAttributes.flatten((ISymbol) ast.arg3(), (IAST) arg1, resultList, 0, level)) {
+            if (EvalAttributes.flatten((ISymbol) ast.arg3(), arg1AST, resultList, 0, level)) {
               return resultList;
             }
           }
-          return arg1;
+          return arg1AST;
         }
         return F.NIL;
       }
