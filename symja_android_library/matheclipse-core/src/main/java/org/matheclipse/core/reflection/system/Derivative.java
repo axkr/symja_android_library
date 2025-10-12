@@ -322,24 +322,25 @@ public class Derivative extends AbstractFunctionEvaluator {
   }
 
   private static IExpr multinomial(IAST head) {
-    int argSize = head.argSize();
+    final int argSize = head.argSize();
     IASTAppendable multinomial = F.ast(S.Multinomial, argSize);
     IASTAppendable harmonicPlus = F.ast(S.Plus, argSize);
-    IASTAppendable singleHarmonic = F.ast(S.HarmonicNumber, 1);
     int countOne = 0;
+    int harmonicIndex = -1;
     for (int i = 1; i <= argSize; i++) {
       final IAST slot = F.Slot(i);
       multinomial.append(slot);
       harmonicPlus.append(slot);
       if (head.get(i).isOne()) {
-        singleHarmonic.append(slot);
+        harmonicIndex = i;
         countOne++;
       }
     }
     if (countOne == 1) {
       // (-HarmonicNumber(#[i])+HarmonicNumber(harmonicPlus))*multinomial&
-      return F.Function(
-          F.Times(F.Plus(F.Negate(singleHarmonic), F.HarmonicNumber(harmonicPlus)), multinomial));
+      return F.Function(F.Times(
+          F.Plus(F.Negate(F.HarmonicNumber(F.Slot(harmonicIndex))), F.HarmonicNumber(harmonicPlus)),
+          multinomial));
     }
     return F.NIL;
   }
