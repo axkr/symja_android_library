@@ -1,11 +1,10 @@
 package org.matheclipse.core.sympy.ntheory;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.math.BigInteger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
-
-import static org.junit.Assert.assertEquals;
 
 public class TestFactor extends ExprEvaluatorTestCase {
 

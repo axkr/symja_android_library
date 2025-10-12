@@ -1,8 +1,8 @@
 package org.matheclipse.core.system;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.hipparchus.util.RosenNumberPartitionIterator;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.combinatoric.MultisetPartitionsIterator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;

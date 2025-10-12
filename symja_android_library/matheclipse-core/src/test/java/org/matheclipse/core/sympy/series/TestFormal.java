@@ -1,11 +1,10 @@
 package org.matheclipse.core.sympy.series;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
-
-import static org.junit.Assert.assertEquals;
 
 public class TestFormal extends ExprEvaluatorTestCase {
 

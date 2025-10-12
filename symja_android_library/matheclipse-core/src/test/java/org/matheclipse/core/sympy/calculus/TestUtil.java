@@ -1,7 +1,7 @@
 package org.matheclipse.core.sympy.calculus;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.ISymbol;

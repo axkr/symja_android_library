@@ -1,10 +1,9 @@
 package org.matheclipse.core.sympy.ntheory;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
-
-import static org.junit.Assert.assertEquals;
 
 public class TestGenerate extends ExprEvaluatorTestCase {
 

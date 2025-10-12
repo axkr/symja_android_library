@@ -1,6 +1,6 @@
 package org.matheclipse.core.system;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ComplexExpandTest extends ExprEvaluatorTestCase {
 
