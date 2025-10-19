@@ -3184,7 +3184,9 @@ public class F extends S {
   public static IAST cse(IExpr expr, Supplier<String> variablePrefix) {
     if (expr.isAST()) {
       IASTMutable mutable = ((IAST) expr).copy();
-      return org.matheclipse.core.reflection.system.OptimizeExpression.cse(mutable, variablePrefix);
+      IAST[] cse = org.matheclipse.core.reflection.system.OptimizeExpression.cse(mutable, S.Rule,
+          variablePrefix);
+      return F.List(cse[1], cse[0]);
     }
     return F.List(expr, F.CEmptyList);
   }
