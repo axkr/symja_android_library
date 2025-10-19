@@ -2,6 +2,8 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
@@ -13,6 +15,7 @@ import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -53,20 +56,31 @@ import org.matheclipse.core.visit.VisitorExpr;
  */
 public class OptimizeExpression extends AbstractFunctionEvaluator {
 
-  private static class ReferenceCounter implements Comparable<ReferenceCounter> {
-    final private IASTMutable expr;
+  private static class ReferenceCounter<T extends IExpr>
+      implements Comparable<ReferenceCounter<T>> {
+    /**
+     * The expression being referenced.
+     */
+    final private T expr;
 
+    /**
+     * The number of indivisible subexpressions (atoms/leaves) of the expression.
+     */
     final private long leafCount;
+
+    /**
+     * The number of times the expression is referenced.
+     */
     private int counter;
 
-    public ReferenceCounter(IASTMutable referenceExpr) {
+    public ReferenceCounter(T referenceExpr) {
       this.expr = referenceExpr;
       this.leafCount = referenceExpr.leafCount();
-      counter = 1;
+      this.counter = 1;
     }
 
     @Override
-    public int compareTo(ReferenceCounter o) {
+    public int compareTo(ReferenceCounter<T> o) {
       return leafCount < o.leafCount ? 1
           : leafCount != o.leafCount ? -1
               : (counter > o.counter ? 1 : counter != o.counter ? -1 : 0);
@@ -80,8 +94,12 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
         return false;
       if (getClass() != obj.getClass())
         return false;
-      ReferenceCounter other = (ReferenceCounter) obj;
-      return counter == other.counter;
+      ReferenceCounter<T> other = (ReferenceCounter<T>) obj;
+      return counter == other.counter && expr.equals(other.expr);
+    }
+
+    public T getExpr() {
+      return expr;
     }
 
     @Override
@@ -89,9 +107,12 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
       return Objects.hash(counter);
     }
 
-
     public void incCounter() {
       ++counter;
+    }
+
+    public boolean isGreaterOne() {
+      return counter > 1;
     }
 
     @Override
@@ -101,17 +122,17 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
   }
 
   private static class ShareFunction implements Function<IASTMutable, IASTMutable> {
-    java.util.Map<IASTMutable, ReferenceCounter> map;
+    java.util.Map<IASTMutable, ReferenceCounter<IASTMutable>> map;
 
     public ShareFunction() {
-      map = new TreeMap<IASTMutable, ReferenceCounter>();
+      map = new TreeMap<IASTMutable, ReferenceCounter<IASTMutable>>();
     }
 
     @Override
     public IASTMutable apply(IASTMutable t) {
-      ReferenceCounter value = map.get(t);
+      ReferenceCounter<IASTMutable> value = map.get(t);
       if (value == null) {
-        value = new ReferenceCounter(t);
+        value = new ReferenceCounter<IASTMutable>(t);
         map.put(t, value);
         return F.NIL;
       } else {
@@ -176,28 +197,20 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
     }
   }
 
-  public static IAST cseArray(final IAST ast, int minReferences, int minLeafCounter) {
-    ShareFunction function = new ShareFunction();
-    ShareReplaceAll sra = new ShareReplaceAll(function);
-    IExpr sharedExpr = ast.accept(sra);
-    if (sharedExpr.isPresent()) {
-      ArrayList<ReferenceCounter> list = new ArrayList<ReferenceCounter>();
-      for (Map.Entry<IASTMutable, ReferenceCounter> entry : function.map.entrySet()) {
-        ReferenceCounter rc = entry.getValue();
-        if (rc.counter >= minReferences && rc.expr.leafCount() > minLeafCounter) {
-          list.add(rc);
-        }
-      }
-
-      Collections.sort(list, Collections.reverseOrder());
-      IASTAppendable result = F.ListAlloc(list.size());
-      for (ReferenceCounter rc : list) {
-        IASTMutable ref = rc.expr;
-        result.append(ref);
-      }
-      return result;
+  private static void collectSubExpressions(IExpr expr,
+      Map<IExpr, ReferenceCounter<IExpr>> counts) {
+    if (expr.isAtom()) {
+      return;
     }
-    return F.NIL;
+    if (expr.isAST()) {
+      ReferenceCounter<IExpr> rf = counts.get(expr);
+      if (rf != null) {
+        rf.incCounter();
+      } else {
+        counts.put(expr, new ReferenceCounter<IExpr>(expr));
+      }
+      ((IAST) expr).forEach(child -> collectSubExpressions(child, counts));
+    }
   }
 
   /**
@@ -207,102 +220,94 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
    * @param ast the ast whose internal memory consumption should be minimized
    * @return the pair of <code>{shared-expressions, recursive-replacement-rules}</code>
    */
-  public static IAST cse(final IASTMutable ast) {
-    return cse(ast, () -> "v");
+  public static IAST cse(final IAST ast) {
+    IAST[] cse = cse(ast, S.Rule, () -> "v");
+    return F.list(cse[1], cse[0]);
   }
 
   /**
-   * Perform common subexpression elimination on an expression.Try to optimize/extract common
-   * sub-{@link IASTMutable} expressions to minimize the number of operations
+   * Analyzes an expression and performs Common Sub-expression Elimination (CSE).
    *
-   * @param ast the ast whose internal memory consumption should be minimized
-   * @param variablePrefix the prefix string, which should be used for the variable names
-   * @return the pair of <code>{shared-expressions, recursive-replacement-rules}</code>
+   * @param astExpr the input expression to optimize.
+   * @param assignmentsHead the head which wraps the (variable, sub-expression) pair. Typically
+   *        heads are {@link S#Set} or {@link S#Rule}
+   * @return an array of 2 IAST values: [0] - the list of assignments like Set(v1, ...), [1] - the
+   *         optimized expression.
    */
-  public static IAST cse(final IASTMutable ast, Supplier<String> variablePrefix) {
-    ShareFunction function = new ShareFunction();
-    ShareReplaceAll sra = new ShareReplaceAll(function);
-    IExpr sharedExpr = ast.accept(sra);
-    if (sharedExpr.isPresent()) {
-      ArrayList<ReferenceCounter> list = new ArrayList<ReferenceCounter>();
-      for (Map.Entry<IASTMutable, ReferenceCounter> entry : function.map.entrySet()) {
-        ReferenceCounter rc = entry.getValue();
-        if (rc.counter > 1) {
-          list.add(rc);
-        }
+  public static IAST[] cse(IAST astExpr, ISymbol assignmentsHead, Supplier<String> variablePrefix) {
+
+    // Traverse the expression and count occurrences of each sub-expression.
+    Map<IExpr, ReferenceCounter<IExpr>> subExprCounts = new HashMap<>();
+    collectSubExpressions(astExpr, subExprCounts);
+
+    // Filter for candidates for optimization.
+    List<ReferenceCounter<IExpr>> candidates = new ArrayList<>();
+    for (Map.Entry<IExpr, ReferenceCounter<IExpr>> entry : subExprCounts.entrySet()) {
+      if (entry.getValue().isGreaterOne() && entry.getKey().isAST()) {
+        candidates.add(entry.getValue());
       }
-
-      int varCounter = 1;
-      Collections.sort(list);
-      IASTAppendable variableSubstitutions = F.ListAlloc(list.size());
-      IASTAppendable replaceList = F.ListAlloc(list.size());
-
-      for (ReferenceCounter referenceCounter : list) {
-        IExpr reference = referenceCounter.expr;
-        IExpr temp1 = reference.replaceAll(variableSubstitutions).orElse(reference);
-        ISymbol dummyVariable = F.Dummy(variablePrefix.get() + varCounter);
-
-        IAST subs = F.Rule(reference, dummyVariable);
-        IExpr temp2 = sharedExpr.replaceRepeated(subs);
-        if (temp2 != sharedExpr && temp2.isPresent()) {
-          sharedExpr = temp2;
-          replaceList.append(F.Rule(dummyVariable, temp1));
-          variableSubstitutions.append(subs);
-          varCounter++;
-        }
-      }
-
-      if (replaceList.argSize() > 1) {
-        // replace expressions with variables `vN` inside the substitution rules:
-        IASTAppendable resultReplaceList2 = F.ListAlloc(replaceList.argSize());
-        resultReplaceList2.append(replaceList.last());
-        for (int i = replaceList.size() - 2; i > 0; i--) {
-          final IExpr lhs = replaceList.get(i).first();
-          IExpr rhs = replaceList.get(i).second();
-          for (int j = replaceList.argSize(); j > i; j--) {
-            IExpr temp = rhs.replaceAll((IAST) variableSubstitutions.get(j));
-            if (temp.isPresent()) {
-              rhs = temp;
-            }
-          }
-          resultReplaceList2.append(F.Rule(lhs, rhs));
-        }
-        return F.list(sharedExpr, resultReplaceList2);
-      }
-      return F.list(sharedExpr, replaceList);
     }
-    return F.list(ast, F.CEmptyList);
-  }
 
-  public OptimizeExpression() {}
-
-  @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    if (ast.arg1() instanceof IASTMutable) {
-      return cse((IASTMutable) ast.arg1());
+    if (candidates.isEmpty()) {
+      return new IAST[] {F.CEmptyList, astExpr};
     }
-    return F.NIL;
-  }
 
-  @Override
-  public int status() {
-    return ImplementationStatus.EXPERIMENTAL;
-  }
+    // Sort candidates by leafCount in descending order.
+    // This ensures that we replace larger expressions like Sin(a+b) before
+    // smaller, nested ones like a+b.
+    Collections.sort(candidates);
 
-  @Override
-  public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_1_1;
-  }
+    IAST modifiedExpr = astExpr;
+    IASTAppendable assignments = F.ListAlloc(candidates.size());
+    int varCounter = 1;
 
-  public static void csePairAsJava(IAST csePair, StringBuilder buf) {
-    IExpr arg1 = csePair.arg1();
-    IExpr arg2 = csePair.arg2();
-    // replacement rules
-    cseAsJavaRecursive((IAST) arg2, buf);
-    buf.append("return ");
-    buf.append(arg1.internalJavaString(SourceCodeProperties.JAVA_FORM_PROPERTIES_NO_SYMBOL_PREFIX,
-        1, x -> null));
-    buf.append(";\n");
+    // Replace sub-expressions in the main expression.
+    for (ReferenceCounter<IExpr> rc : candidates) {
+      IExpr candidate = rc.getExpr();
+      ISymbol tempVar = F.Dummy(variablePrefix.get() + varCounter);
+      IAST temp = (IAST) modifiedExpr.replaceAll(e -> e.equals(candidate) ? tempVar : F.NIL);
+      if (temp.isPresent()) {
+        varCounter++;
+        modifiedExpr = temp;
+        assignments.append(F.Set(tempVar, candidate));
+      }
+    }
+
+    // Substitute common parts within the assignments themselves.
+    // For example, if we have {v1=Sin(a+b), v2=a+b}, this pass
+    // will transform the first assignment into v1=Sin(v2).
+    for (int i = 1; i < assignments.size(); i++) {
+      IExpr currentAssignment = assignments.get(i);
+      // The right-hand side of the Set(lhs, rhs) expression
+      IExpr rhs = currentAssignment.second();
+
+      // Check all other assignments to see if their RHS can be substituted into the current RHS.
+      for (int j = 1; j < assignments.size(); j++) {
+        if (i == j)
+          continue;
+
+        IExpr otherAssignment = assignments.get(j);
+        ISymbol otherVar = (ISymbol) otherAssignment.first();
+        IExpr otherRHS = otherAssignment.second();
+
+        // Replace occurrences of `otherRHS` with `otherVar` in our `rhs`.
+        rhs = F.subst(rhs, e -> e.equals(otherRHS) ? otherVar : F.NIL);
+      }
+      // Update the assignment in the list with its newly optimized RHS.
+      assignments.set(i, F.binaryAST2(assignmentsHead, currentAssignment.first(), rhs));
+    }
+
+    // Reverse the list of assignments. For Module evaluation, variables for smaller
+    // sub-expressions (like a+b) must be defined before they are used in larger ones (like
+    // Sin(v..)).
+    if (!assignments.isEmpty()) {
+      assignments = assignments.reverse(F.ListAlloc(assignments.argSize()));
+    } else {
+      // No effective optimization was performed.
+      return new IAST[] {F.CEmptyList, astExpr};
+    }
+
+    return new IAST[] {assignments, modifiedExpr};
   }
 
   private static void cseAsJavaRecursive(IAST cseList, StringBuilder buf) {
@@ -328,6 +333,39 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
         }
       }
     }
+  }
+
+  public static void csePairAsJava(IAST csePair, StringBuilder buf) {
+    IExpr arg1 = csePair.arg1();
+    IExpr arg2 = csePair.arg2();
+    // replacement rules
+    cseAsJavaRecursive((IAST) arg2, buf);
+    buf.append("return ");
+    buf.append(arg1.internalJavaString(SourceCodeProperties.JAVA_FORM_PROPERTIES_NO_SYMBOL_PREFIX,
+        1, x -> null));
+    buf.append(";\n");
+  }
+
+  public OptimizeExpression() {}
+
+  @Override
+  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    if (ast.arg1() instanceof IAST) {
+      // IAST[] cse = cse((IAST) ast.arg1(), S.Set, () -> "v");
+      // return F.Hold(F.Module(cse[0], cse[1]));
+      return cse((IASTMutable) ast.arg1());
+    }
+    return F.NIL;
+  }
+
+  @Override
+  public int[] expectedArgSize(IAST ast) {
+    return IFunctionEvaluator.ARGS_1_1;
+  }
+
+  @Override
+  public int status() {
+    return ImplementationStatus.PARTIAL_SUPPORT;
   }
 
 }

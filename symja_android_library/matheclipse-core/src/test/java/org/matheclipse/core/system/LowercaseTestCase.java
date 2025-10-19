@@ -5548,14 +5548,25 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDerivative() {
-    check("Derivative(1,0)[EllipticF][x,y]", //
-        "1/Sqrt(1-y*Sin(x)^2)");
+    check("Derivative(2,3)[StruveH]", //
+        "Derivative(2,3)[StruveH]");
+    check("Derivative(1,0)[StruveH][#1,#2]", //
+        "Derivative(1,0)[StruveH][#1,#2]");
+    check("Derivative(3)[ArcCos]", //
+        "(-3*#1^2)/(1-#1^2)^(5/2)-1/(1-#1^2)^(3/2)&");
+    check("Derivative(1)[Abs]", //
+        "Derivative(1)[Abs]");
+    check("Derivative(1)[RealAbs]", //
+        "#1/RealAbs(#1)&");
+
+    check("Derivative(1,1,0,0)[Multinomial]", //
+        "(-HarmonicNumber(#1)+HarmonicNumber(#1+#2+#3+#4))*(-HarmonicNumber(#2)+HarmonicNumber(#1+#2+#3+#4))*Multinomial(#1,#2,#3,#4)+(Pi^\n" //
+            + "2/6-HarmonicNumber(#1+#2+#3+#4,2))*Multinomial(#1,#2,#3,#4)&");
 
     check("Derivative(0,1,0,0)[Multinomial]", //
         "(-HarmonicNumber(#2)+HarmonicNumber(#1+#2+#3+#4))*Multinomial(#1,#2,#3,#4)&");
-    check("Derivative(1,1,0,0)[Multinomial]", //
-        "Derivative(1,1,0,0)[Multinomial]");
-
+    check("Derivative(1,0)[EllipticF][x,y]", //
+        "1/Sqrt(1-y*Sin(x)^2)");
 
     check("Derivative(1)[I+2]", //
         "0&");
@@ -5565,12 +5576,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/(Log(2)*#1)&");
     check("Derivative(1)[Exp]", //
         "E^#1&");
-    check("Derivative(1)[Abs]", //
-        "Derivative(1)[Abs]");
-    check("Derivative(1)[RealAbs]", //
-        "#1/RealAbs(#1)&");
-    check("Derivative(3)[ArcCos]", //
-        "-(1+2*#1^2)/(1-#1^2)^(5/2)&");
+
     check("Derivative(0,0,0,n)[Hypergeometric2F1Regularized]", //
         "Hypergeometric2F1Regularized(n+#1,n+#2,n+#3,#4)*Pochhammer(#1,n)*Pochhammer(#2,n)&");
     check("Derivative(0,0,0,Sin(7))[Hypergeometric2F1Regularized]", //
@@ -5579,9 +5585,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Hypergeometric2F1Regularized(3+#1,3+#2,3+#3,#4)*Pochhammer(#1,3)*Pochhammer(#2,3)&");
     check("Derivative(0,0,0)[Sequence()]", //
         "Derivative(0,0,0)[]");
-
-    check("Derivative(1,0)[StruveH][#1,#2]", //
-        "Derivative(1,0)[StruveH][#1,#2]");
 
     check("f1(x_) := Sin(x)", //
         "");
@@ -5592,6 +5595,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "");
     check("Derivative(1,0)[f2][x, y]", //
         "-Sin(x)*Sin(y)");
+    check("Derivative(1,2)[f2][3, 4]", //
+        "Sin(3)*Sin(4)");
 
     check("D(f(x), x)", //
         "f'(x)");
@@ -5761,6 +5766,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("Derivative(1)[CatalanNumber]", //
         "CatalanNumber(#1)*(Log(4)+PolyGamma(1/2+#1)-PolyGamma(2+#1))&");
+
+    // TODO Derivative is Protected in Symja
+    // check("Derivative(1,0)[fxy][x_, y_] := y;", //
+    // "");
+    // check("Derivative(0,1)[fxy][x_, y_] := x;", //
+    // "");
+    // check("D(fxy(x, y), {{x, y}})", //
+    // "");
+
   }
 
 
@@ -7058,6 +7072,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testEntropy() {
     // Shannon entropy
+    check("Entropy(\"\")", //
+        "0");
+    check("Entropy(\"A quick brown fox jumps over the lazy dog\")", //
+        "8/41*Log(41/8)+4/41*Log(41/4)+6/41*Log(41/2)+23/41*Log(41)");
+
+    check("Entropy({ })", //
+        "0");
     check("Entropy({a, b, b})", //
         "2/3*Log(3/2)+Log(3)/3");
     check("Entropy({a, b, b,c,c,c,d})", //
@@ -7065,6 +7086,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("Entropy(b,{a,c,c})", //
         "2/3*Log(3/2)/Log(b)+Log(3)/(3*Log(b))");
+
+    // check("Entropy(RandomInteger(1, 1000))", //
+    // "101/200*Log(200/101)+99/200*Log(200/99)");
+
   }
 
 
@@ -16909,7 +16934,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{Sqrt(v1)+v1,{v1->(x-y)*(-y+z)}}");
 
     check("OptimizeExpression(#1+1+(#1+1)*(#1+1)&)", //
-        "{v1*v1+v1&,{v1->1+#1}}");
+        "{v2+1+v1*v1&,{v2->#1,v1->1+v2}}");
     check("OptimizeExpression(f(x))", //
         "{f(x),{}}");
     check(
@@ -16919,11 +16944,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + " 6*(4*(Sqrt(1 + a^2) - a*(2 + a^2 - a*Sqrt(1 + a^2)))*Log(a) + a*Log(1 + a^2)))", //
         //
         "{-3*a-2*a^3+4*v1*v2+4*v1*v2*v4+12*v3^(3/2)*Log(1+Sqrt(1+1/a^2))-6*(4*(v1-a*(2-a*v1+v4))*Log(a)+a*Log(v3))," //
-            + "{v4->a^\n" //
+            + "{v4->a^\n"//
             + "2," //
             + "v3->1+v4," //
             + "v2->5-9*Log(2)," //
-            + "v1->Sqrt(1+v4)}}");
+            + "v1->Sqrt(v3)}}");
 
     check(
         "OptimizeExpression((3 + 3*a^2 + Sqrt(5 + 6*a + 5*a^2) + a*(4 + Sqrt(5 + 6*a + 5*a^2)))/6)", //
