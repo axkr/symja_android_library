@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -184,64 +186,64 @@ public class Derivative extends AbstractFunctionEvaluator {
    * @param engine
    * @return
    */
-  private static IExpr evaluateDArg1IfPossible(IExpr n, IAST head, IAST headDerivative,
-      IAST fullDerivative, EvalEngine engine) {
-    IExpr newFunction;
-    IExpr symbol = F.Slot1;
-    if (fullDerivative != null) {
-      if (fullDerivative.size() != 2) {
-        return F.NIL;
-      }
-      symbol = fullDerivative.arg1();
-      if (!symbol.isVariable()) {
-        return F.NIL;
-      }
-    }
-    newFunction = engine.evaluate(F.unaryAST1(headDerivative.arg1(), symbol));
-
-    IAST dExpr;
-    if (n.isOne()) {
-      dExpr = F.D(newFunction, symbol);
-    } else {
-      int ni = n.toIntDefault();
-      if (ni > 0) {
-        int iterationLimit = engine.getIterationLimit();
-        if (iterationLimit > 0 && iterationLimit < ni) {
-          // Iteration limit of `1` exceeded.
-          return Errors.printMessage(S.Derivative, "itlim", F.list(F.ZZ(iterationLimit)), engine);
-        }
-      }
-      dExpr = F.D(newFunction, F.list(symbol, n));
-    }
-    dExpr.setEvalFlags(IAST.IS_DERIVATIVE_EVALED);
-
-    IExpr dResult = engine.evalRules(S.D, dExpr);
-
-    if (dResult.isPresent()) {
-      dResult = engine.evaluate(dResult);
-      return F.Function(dResult);
-    }
-    if (!n.isOne()) {
-      if (!symbol.isVariable()) {
-        return F.NIL;
-      }
-      int length = n.toIntDefault();
-      if (length > 1) {
-        for (int i = 0; i < length; i++) {
-          dExpr = F.D(newFunction, symbol);
-          dExpr.setEvalFlags(IAST.IS_DERIVATIVE_EVALED);
-          dResult = engine.evalRules(S.D, dExpr);
-          if (dResult.isNIL()) {
-            return F.NIL;
-          } else {
-            newFunction = engine.evaluate(dResult);
-          }
-        }
-        return F.Function(newFunction);
-      }
-    }
-    return F.NIL;
-  }
+  // private static IExpr evaluateDArg1IfPossible(IExpr n, IAST head, IAST headDerivative,
+  // IAST fullDerivative, EvalEngine engine) {
+  // IExpr newFunction;
+  // IExpr symbol = F.Slot1;
+  // if (fullDerivative != null) {
+  // if (fullDerivative.size() != 2) {
+  // return F.NIL;
+  // }
+  // symbol = fullDerivative.arg1();
+  // if (!symbol.isVariable()) {
+  // return F.NIL;
+  // }
+  // }
+  // newFunction = engine.evaluate(F.unaryAST1(headDerivative.arg1(), symbol));
+  //
+  // IAST dExpr;
+  // if (n.isOne()) {
+  // dExpr = F.D(newFunction, symbol);
+  // } else {
+  // int ni = n.toIntDefault();
+  // if (ni > 0) {
+  // int iterationLimit = engine.getIterationLimit();
+  // if (iterationLimit > 0 && iterationLimit < ni) {
+  // // Iteration limit of `1` exceeded.
+  // return Errors.printMessage(S.Derivative, "itlim", F.list(F.ZZ(iterationLimit)), engine);
+  // }
+  // }
+  // dExpr = F.D(newFunction, F.list(symbol, n));
+  // }
+  // dExpr.setEvalFlags(IAST.IS_DERIVATIVE_EVALED);
+  //
+  // IExpr dResult = engine.evalRules(S.D, dExpr);
+  //
+  // if (dResult.isPresent()) {
+  // dResult = engine.evaluate(dResult);
+  // return F.Function(dResult);
+  // }
+  // if (!n.isOne()) {
+  // if (!symbol.isVariable()) {
+  // return F.NIL;
+  // }
+  // int length = n.toIntDefault();
+  // if (length > 1) {
+  // for (int i = 0; i < length; i++) {
+  // dExpr = F.D(newFunction, symbol);
+  // dExpr.setEvalFlags(IAST.IS_DERIVATIVE_EVALED);
+  // dResult = engine.evalRules(S.D, dExpr);
+  // if (dResult.isNIL()) {
+  // return F.NIL;
+  // } else {
+  // newFunction = engine.evaluate(dResult);
+  // }
+  // }
+  // return F.Function(newFunction);
+  // }
+  // }
+  // return F.NIL;
+  // }
 
   private static IExpr evaluateDIfPossible(IAST head, IAST headDerivative, IAST fullDerivative,
       EvalEngine engine) {
@@ -302,7 +304,17 @@ public class Derivative extends AbstractFunctionEvaluator {
           if (dResult.isPresent()) {
             doEval = true;
           } else if (builtin == S.Multinomial) {
-            return multinomial(head);
+            temp = multinomial(head);
+            if (temp.isPresent()) {
+              return temp;
+            }
+          }
+        }
+        int[] orders = headDerivative.head().toIntVector();
+        if (orders != null) {
+          temp = pureMultipleOrderDerivative(builtin, engine, orders);
+          if (temp.isPresent()) {
+            return temp;
           }
         }
       }
@@ -319,6 +331,74 @@ public class Derivative extends AbstractFunctionEvaluator {
       return F.Function(engine.evaluate(dExpr));
     }
     return F.NIL;
+  }
+
+  /**
+   * Generates a symbolic expression for the partial derivative of a given multi-argument function.
+   *
+   * @param function the built-in symbol of the Symja function
+   * @param orders an array of integers representing the derivative orders for each argument.
+   * @return the symbolic expression of the derivative as an {@link IAST} object.
+   */
+  public static IAST pureMultipleOrderDerivative(IBuiltInSymbol function, EvalEngine engine,
+      int... orders) {
+    if (isEndlessRecursion(orders)) {
+      return F.NIL;
+    }
+
+    int numberOfSlots = orders.length;
+    List<IAST> slots = new ArrayList<>(numberOfSlots);
+    IASTAppendable functionExpr = F.ast(function, numberOfSlots);
+    for (int i = 0; i < numberOfSlots; i++) {
+      IAST slot = F.Slot(i + 1);
+      slots.add(slot);
+      functionExpr.append(slot);
+    }
+
+    // Dynamically create the base symbolic expression from the function name.
+    IExpr exprToDifferentiate = functionExpr;
+    for (int i = 0; i < numberOfSlots; i++) {
+      IAST currentVar = slots.get(i);
+      int order = orders[i];
+      for (int j = 0; j < order; j++) {
+        IExpr temp = engine.evaluateNIL(F.D(exprToDifferentiate, currentVar));
+        if (temp.isPresent() && temp.topHead() != S.Derivative) {
+          exprToDifferentiate = temp;
+        } else {
+          return F.NIL;
+        }
+      }
+    }
+
+  return F.Function(exprToDifferentiate);
+
+  }
+
+  /**
+   * Check for the case <code>orders.length == 0</code> or the case
+   * <code>Derivative(1,0,0,...,0)[f]</code> which could lead to endless recursion if <code>f</code>
+   * is a built-in numeric function symbol
+   * 
+   * @param orders
+   * @return
+   */
+  private static boolean isEndlessRecursion(int... orders) {
+    if (orders.length == 0) {
+      return true;
+    }
+    int countOne = 0;
+    int countUnequalZero = 0;
+    for (int i = 0; i < orders.length; i++) {
+      if (orders[i] < 0) {
+        return false;
+      }
+      if (orders[i] == 1) {
+        countOne++;
+      } else if (orders[i] != 0) {
+        countUnequalZero++;
+      }
+    }
+    return countUnequalZero == 0 && countOne == 1;
   }
 
   private static IExpr multinomial(IAST head) {
