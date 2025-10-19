@@ -44,10 +44,16 @@ public final class GaussianInteger {
       new GaussianInteger[] {ONE, IMAG_UNIT, NEGATIVE_ONE, NEGATIVE_IMAG_UNIT};// powers of i
 
   private static class GaussianFactors {
-    private BigInteger Primes[];
-    private int Exponents[];
-    private BigInteger ValA, ValB;
-    private int Ind;
+    /**
+     * Primes of the prime factorization of the norm
+     */
+    private BigInteger primes[];
+    /**
+     * Exponents of the prime factorization of the norm
+     */
+    private int exponents[];
+
+    private BigInteger valA, valB;
 
     GaussianFactors() {}
 
@@ -56,11 +62,11 @@ public final class GaussianInteger {
       real = real.abs();
       BigInteger temp;
       BigInteger norm = real.multiply(real).add(imag.multiply(imag));
-      BigInteger realNum = ValA.multiply(real).add(ValB.multiply(imag));
-      BigInteger imagNum = ValB.multiply(real).subtract(ValA.multiply(imag));
+      BigInteger realNum = valA.multiply(real).add(valB.multiply(imag));
+      BigInteger imagNum = valB.multiply(real).subtract(valA.multiply(imag));
       if (realNum.mod(norm).signum() == 0 && imagNum.mod(norm).signum() == 0) {
-        ValA = realNum.divide(norm);
-        ValB = imagNum.divide(norm);
+        valA = realNum.divide(norm);
+        valB = imagNum.divide(norm);
         if (real.signum() < 0) {
           real = real.negate();
           if (imag.signum() > 0) {
@@ -87,82 +93,79 @@ public final class GaussianInteger {
     }
 
     private SortedMap<ComplexSym, Integer> factorize(BigInteger re, BigInteger im) {
-      SortedMap<ComplexSym, Integer> complexMap = new TreeMap<ComplexSym, Integer>();
-      BigInteger BigInt2;
-      BigInt2 = BigInteger.valueOf(2L);
-      BigInteger K, Mult1, Mult2, p, q, M1, M2, Tmp;
-      int index, index2;
-      ValA = re;
-      ValB = im;
-      BigInteger norm = ValA.multiply(ValA).add(ValB.multiply(ValB));
-      Ind = 0;
+      SortedMap<ComplexSym, Integer> resultMap = new TreeMap<ComplexSym, Integer>();
+      valA = re;
+      valB = im;
+      BigInteger norm = valA.multiply(valA).add(valB.multiply(valB));
       if (norm.signum() == 0) {
         // Any gaussian prime divides this number
-        return complexMap;
+        return resultMap;
       }
       if (norm.compareTo(BigInteger.ONE) > 0) {
         SortedMap<BigInteger, Integer> bigMap = Config.PRIME_FACTORS.factorInteger(norm);
-        Ind = bigMap.size();
-        Primes = new BigInteger[Ind];
-        Exponents = new int[Ind];
+        primes = new BigInteger[bigMap.size()];
+        exponents = new int[bigMap.size()];
         int i = 0;
         for (Map.Entry<BigInteger, Integer> entry : bigMap.entrySet()) {
-          Primes[i] = entry.getKey();
-          Exponents[i++] = entry.getValue();
+          primes[i] = entry.getKey();
+          exponents[i++] = entry.getValue();
         }
-        for (index = 0; index < Ind; index++) {
-          p = Primes[index];
-          if (p.equals(BigInt2)) {
-            for (index2 = 0; index2 < Exponents[index]; index2++) {
-              divideGaussian(BigInteger.ONE, BigInteger.ONE, complexMap); /* Divide by 1+i */
+        final BigInteger TWO = BigInteger.valueOf(2L);
+        for (int index = 0; index < primes.length; index++) {
+          BigInteger p = primes[index];
+          final int exp = exponents[index];
+          if (p.equals(TWO)) {
+            for (int index2 = 0; index2 < exp; index2++) {
+              divideGaussian(BigInteger.ONE, BigInteger.ONE, resultMap); /* Divide by 1+i */
               divideGaussian(BigInteger.ONE, BigInteger.ONE.negate(),
-                  complexMap); /* Divide by 1-i */
+                  resultMap); /* Divide by 1-i */
             }
-          } else if (p.testBit(1) == false) {
+          } else if (!p.testBit(1)) {
             /* if p = 1 (mod 4) */
-            q = p.subtract(BigInteger.ONE); /* q = p-1 */
-            K = BigInteger.ONE;
+            BigInteger q = p.subtract(BigInteger.ONE); /* q = p-1 */
+            BigInteger k = BigInteger.ONE;
+            BigInteger mult1;
             do { // Compute Mult1 = sqrt(-1) mod p
-              K = K.add(BigInteger.ONE);
-              Mult1 = K.modPow(q.shiftRight(2), p);
-            } while (Mult1.equals(BigInteger.ONE) || Mult1.equals(q));
-            Mult2 = BigInteger.ONE;
+              k = k.add(BigInteger.ONE);
+              mult1 = k.modPow(q.shiftRight(2), p);
+            } while (mult1.equals(BigInteger.ONE) || mult1.equals(q));
+            BigInteger mult2 = BigInteger.ONE;
             while (true) {
-              K = Mult1.multiply(Mult1).add(Mult2.multiply(Mult2)).divide(p);
-              if (K.equals(BigInteger.ONE)) {
+              k = mult1.multiply(mult1).add(mult2.multiply(mult2)).divide(p);
+              if (k.equals(BigInteger.ONE)) {
                 break;
               }
-              M1 = Mult1.mod(K);
-              M2 = Mult2.mod(K);
-              if (M1.compareTo(K.shiftRight(1)) > 0) {
-                M1 = M1.subtract(K);
+              BigInteger m1 = mult1.mod(k);
+              BigInteger m2 = mult2.mod(k);
+              if (m1.compareTo(k.shiftRight(1)) > 0) {
+                m1 = m1.subtract(k);
               }
-              if (M2.compareTo(K.shiftRight(1)) > 0) {
-                M2 = M2.subtract(K);
+              if (m2.compareTo(k.shiftRight(1)) > 0) {
+                m2 = m2.subtract(k);
               }
-              Tmp = Mult1.multiply(M1).add(Mult2.multiply(M2)).divide(K);
-              Mult2 = Mult1.multiply(M2).subtract(Mult2.multiply(M1)).divide(K);
-              Mult1 = Tmp;
+              BigInteger temp = mult1.multiply(m1).add(mult2.multiply(m2)).divide(k);
+              mult2 = mult1.multiply(m2).subtract(mult2.multiply(m1)).divide(k);
+              mult1 = temp;
             } /* end while */
-            if (Mult1.abs().compareTo(Mult2.abs()) < 0) {
-              Tmp = Mult1;
-              Mult1 = Mult2;
-              Mult2 = Tmp;
+            if (mult1.abs().compareTo(mult2.abs()) < 0) {
+              BigInteger temp = mult1;
+              mult1 = mult2;
+              mult2 = temp;
             }
-            for (index2 = 0; index2 < Exponents[index]; index2++) {
-              divideGaussian(Mult1, Mult2, complexMap);
-              divideGaussian(Mult1, Mult2.negate(), complexMap);
+            for (int index2 = 0; index2 < exp; index2++) {
+              divideGaussian(mult1, mult2, resultMap);
+              divideGaussian(mult1, mult2.negate(), resultMap);
             }
             /* end p = 1 (mod 4) */
           } else {
             /* if p = 3 (mod 4) */
-            for (index2 = 0; index2 < Exponents[index]; index2++) {
-              divideGaussian(Primes[index], BigInteger.ZERO, complexMap);
+            for (int index2 = 0; index2 < exp; index2++) {
+              divideGaussian(primes[index], BigInteger.ZERO, resultMap);
             } /* end p = 3 (mod 4) */
           }
         }
       }
-      return complexMap;
+      return resultMap;
     }
   }
 
@@ -286,26 +289,22 @@ public final class GaussianInteger {
     GaussianFactors g = new GaussianFactors();
     SortedMap<ComplexSym, Integer> complexMap = g.factorize(realPart, imaginaryPart);
     IASTAppendable list = F.ListAlloc(complexMap.size() + 1);
-    IExpr factor = F.C1;
+
     IASTAppendable ast = F.TimesAlloc(complexMap.size());
-    for (Map.Entry<ComplexSym, Integer> entry : complexMap.entrySet()) {
-      ComplexSym key = entry.getKey();
-      int i = entry.getValue();
-      if (i == 1) {
-        ast.append(key);
+    for (Map.Entry<ComplexSym, Integer> e : complexMap.entrySet()) {
+      if (e.getValue() == 1) {
+        ast.append(e.getKey());
       } else {
-        IInteger is = F.ZZ(i);
-        ast.append(F.Power(key, is));
+        ast.append(F.Power(e.getKey(), F.ZZ(e.getValue())));
       }
     }
-    factor = F.eval(F.Divide(gaussianInteger, ast));
+
+    IExpr factor = F.eval(F.Divide(gaussianInteger, ast));
     if (!factor.isOne()) {
       list.append(F.list(factor, F.C1));
     }
-    for (Map.Entry<ComplexSym, Integer> entry : complexMap.entrySet()) {
-      ComplexSym key = entry.getKey();
-      IInteger is = F.ZZ(entry.getValue());
-      list.append(F.list(key, is));
+    for (Map.Entry<ComplexSym, Integer> e : complexMap.entrySet()) {
+      list.append(F.list(e.getKey(), F.ZZ(e.getValue())));
     }
     return list;
   }
@@ -362,28 +361,24 @@ public final class GaussianInteger {
    * @param realPart the real part of the gaussian integer
    * @param imaginaryPart the imaginary part of the gaussian integer
    * 
-   * @return
    */
   public static boolean isSquareFree(IBigNumber gaussianInteger, IInteger realPart,
       IInteger imaginaryPart) {
     IAST factors =
         factorize(gaussianInteger, realPart.toBigNumerator(), imaginaryPart.toBigNumerator());
-    if (factors.isListOfLists()) {
-      for (int i = 1; i < factors.size(); i++) {
-        IAST subList = factors.getAST(i);
-        if (!subList.isList2()) {
-          return false;
-        }
-        if (subList.second().isInteger()) {
-          IInteger exponent = (IInteger) subList.second();
-          if (exponent.isGE(F.C2)) {
-            return false;
-          }
-        }
-      }
-      return true;
+    if (!factors.isListOfLists()) {
+      return false;
     }
-    return false;
+    for (int i = 1; i < factors.size(); i++) {
+      IAST subList = factors.getAST(i);
+      if (!subList.isList2()) {
+        return false;
+      }
+      if (subList.second().isInteger() && ((IInteger) subList.second()).isGE(F.C2)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private static IInteger[] lcm(IInteger[] g1, IInteger[] g2) {
@@ -428,7 +423,7 @@ public final class GaussianInteger {
     final IInteger re = c2[0];
     final IInteger im = c2[1];
 
-    if (c2[0].isOne() && c2[1].isZero()) {
+    if (re.isOne() && im.isZero()) {
       // c2 is one
       return new IInteger[] {fReal, fImaginary, F.C0, F.C0};
     }
