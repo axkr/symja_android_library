@@ -716,4 +716,5 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Integrate(Sin(x^2),x)", //
         "Sqrt(Pi/2)*FresnelS(Sqrt(2/Pi)*x)");
   }
+
 }

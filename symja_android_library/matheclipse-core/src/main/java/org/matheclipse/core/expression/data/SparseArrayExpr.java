@@ -197,7 +197,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         for (int col = 0; col < nCols; ++col) {
           IExpr sum = F.C0;
           for (int i = 0; i < nSum; ++i) {
-            sum = sum.add(getEntry(row, i).multiply(m.getEntry(i, col)));
+            sum = sum.plus(getEntry(row, i).multiply(m.getEntry(i, col)));
           }
           out.setEntry(row, col, sum);
         }
@@ -252,7 +252,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         for (int row = 0; row < nRows; row++) {
           IExpr sum = F.C0;
           for (int i = 0; i < nCols; i++) {
-            sum = sum.add(getEntry(row, i).multiply(v.getEntry(i)));
+            sum = sum.plus(getEntry(row, i).multiply(v.getEntry(i)));
           }
           out.setEntry(row, sum);
         }
@@ -371,7 +371,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       checkVectorDimensions(n);
       SparseExprVector res = new SparseExprVector(getDimension(), array.fDefaultValue);
       for (int i = 0; i < n; i++) {
-        res.setEntry(i, v.getEntry(i).add(getEntry(i)));
+        res.setEntry(i, v.getEntry(i).plus(getEntry(i)));
       }
       return res;
     }
@@ -610,7 +610,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     @Override
     public SparseExprVector mapAddToSelf(IExpr d) throws NullArgumentException {
       for (int i = 0; i < virtualSize; i++) {
-        setEntry(i, getEntry(i).add(d));
+        setEntry(i, getEntry(i).plus(d));
       }
       return this;
     }

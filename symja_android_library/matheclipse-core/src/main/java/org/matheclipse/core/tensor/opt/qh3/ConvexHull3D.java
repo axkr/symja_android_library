@@ -451,8 +451,8 @@ public class ConvexHull3D {
     if (explicitTolerance == AUTOMATIC_TOLERANCE) {
       tolerance = S.Times.of(DOUBLE_PREC, F.C3, //
           F.Max(F.Abs(max.x), F.Abs(min.x)) //
-              .add(F.Max(F.Abs(max.y), F.Abs(min.y))) //
-              .add(F.Max(F.Abs(max.z), F.Abs(min.z))));
+              .plus(F.Max(F.Abs(max.y), F.Abs(min.y))) //
+              .plus(F.Max(F.Abs(max.z), F.Abs(min.z))));
       // Max.of(Abs.FUNCTION.apply(max.x), Abs.FUNCTION.apply(min.x)) //
       // .add(Max.of(Abs.FUNCTION.apply(max.y), Abs.FUNCTION.apply(min.y))) //
       // .add(Max.of(Abs.FUNCTION.apply(max.z), Abs.FUNCTION.apply(min.z))));

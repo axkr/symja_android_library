@@ -34,8 +34,8 @@ public class BSplineFunctionString extends BSplineFunctionBase {
     last = sequence.argSize() - 1;
     domain = Clips.positive(last);
     clip = Clips.interval( //
-        domain.min().add(shift), //
-        domain.max().add(shift));
+        domain.min().plus(shift), //
+        domain.max().plus(shift));
   }
 
   @Override // from BSplineFunction

@@ -190,7 +190,7 @@ public class Iterator {
         }
         count = ((IAST) maxCounterOrList).get(maxCounterOrListIndex++);
       } else {
-        count = evalEngine.evaluate(count.add(step));
+        count = evalEngine.evaluate(count.plus(step));
       }
       return temp;
     }

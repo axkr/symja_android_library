@@ -14,7 +14,7 @@ public abstract class BSplineFunctionBase extends BSplineFunction {
 
   @Override // from ScalarTensorFunction
   public final IExpr apply(IExpr scalar) {
-    scalar = requireValid(scalar).add(shift);
+    scalar = requireValid(scalar).plus(shift);
     return deBoor(scalar.floor().toIntDefault()).apply(scalar);
   }
 

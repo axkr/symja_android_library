@@ -25,7 +25,7 @@ public enum LinearBinaryAverage implements BinaryAverage {
     if (scalar.isOne()) {
       return q.copy();
     }
-    return EvalEngine.get().evaluate(q.subtract(p).times(scalar).add(p));
+    return EvalEngine.get().evaluate(q.subtract(p).times(scalar).plus(p));
   }
 
   @Override // from BinaryAverage

@@ -7254,7 +7254,7 @@ public final class Arithmetic {
           if (exp == null) {
             fn1Map.put(base, exponent);
           } else {
-            fn1Map.put(base, exp.add(exponent));
+            fn1Map.put(base, exp.plus(exponent));
           }
         }
       }

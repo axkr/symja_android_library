@@ -1650,7 +1650,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
 
     IExpr e = rv.exponent();
     if (e.isInteger() && ((IInteger) e).isOdd()) {
-      IExpr tr15Step = tr15Step(rv.base().pow(e.add(F.C1)), pow);
+      IExpr tr15Step = tr15Step(rv.base().pow(e.plus(F.C1)), pow);
       if (tr15Step.isPresent()) {
         return F.Divide(tr15Step, rv.base());
       }

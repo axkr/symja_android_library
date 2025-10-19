@@ -877,7 +877,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     IExpr n = ring.getZEROCoefficient();
     for (IExpr c : val.values()) {
       IExpr x = c.abs();
-      n = n.add(x);
+      n = n.plus(x);
     }
     return n;
   }
@@ -909,7 +909,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
       IExpr y = me.getValue(); // sv.get(e); // assert y != null
       IExpr x = nv.get(e);
       if (x != null) {
-        x = x.add(y);
+        x = x.plus(y);
         if (!x.isZERO()) {
           nv.put(e, x);
         } else {
@@ -941,7 +941,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     // if ( nv.size() == 0 ) { nv.put(e,a); return n; }
     IExpr x = nv.get(e);
     if (x != null) {
-      x = x.add(a);
+      x = x.plus(a);
       if (!x.isZERO()) {
         nv.put(e, x);
       } else {
@@ -984,7 +984,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
       IExpr y = me.getValue(); // sv.get(e); // assert y != null
       IExpr x = nv.get(e);
       if (x != null) {
-        x = x.add(y);
+        x = x.plus(y);
         if (!x.isZERO()) {
           nv.put(e, x);
         } else {
@@ -1009,7 +1009,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     SortedMap<ExpVectorLong, IExpr> nv = this.val;
     IExpr x = nv.get(e);
     if (x != null) {
-      x = x.add(a);
+      x = x.plus(a);
       if (!x.isZERO()) {
         nv.put(e, x);
       } else {
@@ -1428,7 +1428,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
           if (c0 == null) {
             pv.put(e, c);
           } else {
-            c0 = c0.add(c);
+            c0 = c0.plus(c);
             if (!c0.isZERO()) {
               pv.put(e, c0);
             } else {

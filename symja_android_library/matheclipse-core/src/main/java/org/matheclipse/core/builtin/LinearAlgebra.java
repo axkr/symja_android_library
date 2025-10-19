@@ -353,7 +353,7 @@ public final class LinearAlgebra {
         for (int k = 0; k < numColumns; k++) {
           // matrix[rowIndex2][k] += (matrix[rowIndex1][k] * scalar);
           rowReducedMatrix.setEntry(rowIndex2, k, rowReducedMatrix.getEntry(rowIndex2, k)
-              .add(rowReducedMatrix.getEntry(rowIndex1, k).multiply(scalar)));
+              .plus(rowReducedMatrix.getEntry(rowIndex1, k).multiply(scalar)));
         }
       }
     }
@@ -4081,12 +4081,12 @@ public final class LinearAlgebra {
         }
         ISymbol i = F.Dummy("i"); // new Symbol("§i", Context.SYSTEM);
         int n = 1;
-        IAST qu = F.CEmptyList;
         IAST mnm = (IAST) engine
             .evaluate(F.list(F.Flatten(diagonalMatrix(new IExpr[] {F.C0, F.C1}, dimensions[0]))));
         if (!(mnm instanceof IASTAppendable)) {
           mnm = mnm.copyAppendable(2);
         }
+        IAST qu = F.CEmptyList;
         while (qu.isEmpty()) {
           ((IASTAppendable) mnm).append(engine.evaluate(F.Flatten(F.MatrixPower(matrix, F.ZZ(n)))));
           qu = (IAST) S.NullSpace.of(engine, F.Transpose(mnm));
@@ -4347,7 +4347,7 @@ public final class LinearAlgebra {
             || Config.MAX_AST_SIZE < numberOfResultColumns) {
           throw new ASTElementLimitExceeded(numberOfResultColumns);
         }
-        IASTAppendable resultMatrix = F.ListAlloc(minorSize);
+        IASTAppendable resultMatrix = F.ListAlloc((int) numberOfResultRows);
         for (int i = 0; i < numberOfResultRows; i++) {
           resultMatrix.append(F.ListAlloc(minorSize));
         }

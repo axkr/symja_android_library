@@ -1025,7 +1025,7 @@ public class GraphicsFunctions {
           list2 = (IAST) ast.arg2();
         } else {
           // unit square
-          list2 = F.List(list1.arg1().add(F.C1), list1.arg2().add(F.C1));
+          list2 = F.List(list1.arg1().plus(F.C1), list1.arg2().plus(F.C1));
         }
         return rectangle(arrayNode, list1, list2, options);
       }

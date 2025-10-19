@@ -120,7 +120,7 @@ public class CoordinateBoundingBox {
   }
 
   private static IExpr median(Clip clip) {
-    return clip.min().add(clip.width().multiply(F.C1D2));
+    return clip.min().plus(clip.width().multiply(F.C1D2));
   }
 
   // ---

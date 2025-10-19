@@ -387,7 +387,20 @@ public interface IExpr
     return plus(F.num(that));
   }
 
+
+  /**
+   * Add two expressions.
+   * <p>
+   * Because of the ambiguity between {@link java.util.List#add(Object)} for appending objects to a
+   * list and the addition of numbers in {@link INumber#add(IExpr)} for addition of two values,
+   * avoid using this method (especially with an {@link IAST} object). Use {@link #plus(IExpr)}
+   * instead.
+   * 
+   * @deprecated use {@link #plus(IExpr)}
+   * @param that the expression to add
+   */
   @Override
+  @Deprecated
   default IExpr add(IExpr that) {
     return plus(that);
   }
@@ -6692,7 +6705,7 @@ public interface IExpr
 
   @Override
   default IExpr sum(final IExpr that) {
-    return add(that);
+    return plus(that);
   }
 
   @Override

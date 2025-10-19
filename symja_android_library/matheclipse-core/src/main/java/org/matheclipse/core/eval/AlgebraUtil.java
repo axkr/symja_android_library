@@ -1786,7 +1786,7 @@ public class AlgebraUtil {
       if (re.isFraction() || im.isFraction()) {
         IExpr[] parts = new IExpr[2];
         parts[0] = re.numerator().times(im.denominator())
-            .add(im.numerator().times(re.denominator()).times(F.CI));
+            .plus(im.numerator().times(re.denominator()).times(F.CI));
         parts[1] = re.denominator().times(im.denominator());
         return Optional.of(parts);
       }
@@ -1897,7 +1897,7 @@ public class AlgebraUtil {
             IRational im = cmp.getImaginaryPart();
             if (re.isFraction() || im.isFraction()) {
               numerator.append(re.numerator().times(im.denominator())
-                  .add(im.numerator().times(re.denominator()).times(F.CI)));
+                  .plus(im.numerator().times(re.denominator()).times(F.CI)));
               denominator.append(re.denominator().times(im.denominator()));
               evaled = true;
               continue;
@@ -2601,7 +2601,7 @@ public class AlgebraUtil {
       IRational im = ((IComplex) x).getImaginaryPart();
       if (re.isFraction() || im.isFraction()) {
         numerator.append(i, re.numerator().times(im.denominator())
-            .add(im.numerator().times(re.denominator()).times(F.CI)));
+            .plus(im.numerator().times(re.denominator()).times(F.CI)));
         denominator.append(i, re.denominator().times(im.denominator()));
       } else {
         numerator.append(i, x);

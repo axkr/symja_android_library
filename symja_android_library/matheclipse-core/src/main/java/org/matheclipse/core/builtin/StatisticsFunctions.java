@@ -2867,7 +2867,7 @@ public class StatisticsFunctions {
         if (matrix != null) {
           IASTAppendable[] columnElements = new IASTAppendable[matrix[1]];
           for (int i = 0; i < matrix[1]; i++) {
-            columnElements[i] = F.ast(S.List, matrix[1]);
+            columnElements[i] = F.ast(S.List, matrix[0] * matrix[1]);
           }
           for (int j = 1; j <= matrix[1]; j++) {
             IASTAppendable rootMeanList = columnElements[j - 1];
@@ -3386,7 +3386,7 @@ public class StatisticsFunctions {
           return F.mapRange(1, dim[1] + 1, i -> {
             final int ii = i;
             IASTAppendable list =
-                F.ListAlloc(dim[1]).appendArgs(dim[0] + 1, j -> assoc.getPart(j, ii));
+                F.ListAlloc(dim[1] + dim[0]).appendArgs(dim[0] + 1, j -> assoc.getPart(j, ii));
             return F.Variance(list);
           });
 

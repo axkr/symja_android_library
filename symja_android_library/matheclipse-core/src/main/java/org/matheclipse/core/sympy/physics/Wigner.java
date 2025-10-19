@@ -171,9 +171,9 @@ public class Wigner {
 
       IInteger kk1 = AbstractIntegerSym.factorial(kk + 1);
       if (kk == 0) {
-        sumres = sumres.add(F.QQ(kk1, den));
+        sumres = sumres.plus(F.QQ(kk1, den));
       } else {
-        sumres = sumres.add(F.CN1.power(F.ZZ(kk)).multiply(F.QQ(kk1, den)));
+        sumres = sumres.plus(F.CN1.power(F.ZZ(kk)).multiply(F.QQ(kk1, den)));
       }
     }
     IInteger exponent = aa.add(bb).add(cc).add(dd).numerator();
@@ -291,9 +291,9 @@ public class Wigner {
           .multiply(Wigner.factorial(F.ZZ(ii).add(j3).subtract(j2).add(m1).numerator())) //
           .multiply(Wigner.factorial(j1.add(j2).subtract(j3).subtract(F.ZZ(ii)).numerator()));
       if (ii == 0) {
-        sumres = sumres.add(F.Power(den, F.CN1));
+        sumres = sumres.plus(F.Power(den, F.CN1));
       } else {
-        sumres = sumres.add(F.Power(F.CN1, F.ZZ(ii)).divide(den));
+        sumres = sumres.plus(F.Power(F.CN1, F.ZZ(ii)).divide(den));
       }
     }
 

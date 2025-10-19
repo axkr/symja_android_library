@@ -119,7 +119,7 @@ public class Vector3d {
    * @param v2 right-hand vector
    */
   public void add(Vector3d v1, Vector3d v2) {
-    set((IAST) v1.toTensor().add(v2.toTensor()));
+    set((IAST) v1.toTensor().plus(v2.toTensor()));
   }
 
   /**
@@ -128,7 +128,7 @@ public class Vector3d {
    * @param v1 right-hand vector
    */
   public void add(Vector3d v1) {
-    set((IAST) toTensor().add(v1.toTensor()));
+    set((IAST) toTensor().plus(v1.toTensor()));
   }
 
   /**

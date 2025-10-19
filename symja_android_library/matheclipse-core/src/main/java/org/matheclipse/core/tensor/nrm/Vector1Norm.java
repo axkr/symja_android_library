@@ -29,7 +29,7 @@ public class Vector1Norm {
    * @throws Exception if stream is empty
    */
   public static IExpr of(Stream<IExpr> stream) {
-    return stream.map(x -> S.Abs.of(x)).reduce(IExpr::add).orElseThrow();
+    return stream.map(x -> S.Abs.of(x)).reduce(IExpr::plus).orElseThrow();
   }
 
   /**

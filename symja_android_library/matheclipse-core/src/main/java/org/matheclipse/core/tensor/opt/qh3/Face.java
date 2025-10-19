@@ -75,7 +75,7 @@ class Face {
       IExpr ux = p2.x.subtract(p1.x).divide(lenMax);
       IExpr uy = p2.y.subtract(p1.y).divide(lenMax);
       IExpr uz = p2.z.subtract(p1.z).divide(lenMax);
-      IExpr dot = normal.x.multiply(ux).add(normal.y.multiply(uy)).add(normal.z.multiply(uz));
+      IExpr dot = normal.x.multiply(ux).plus(normal.y.multiply(uy)).plus(normal.z.multiply(uz));
       normal.x = normal.x.subtract(ux.multiply(dot));
       normal.y = normal.y.subtract(uy.multiply(dot));
       normal.z = normal.z.subtract(uz.multiply(dot));
@@ -101,9 +101,9 @@ class Face {
       d2x = p2.x.subtract(p0.x);
       d2y = p2.y.subtract(p0.y);
       d2z = p2.z.subtract(p0.z);
-      normal.x = normal.x.add(d1y.multiply(d2z).subtract(d1z.multiply(d2y)));
-      normal.y = normal.y.add(d1z.multiply(d2x).subtract(d1x.multiply(d2z)));
-      normal.z = normal.z.add(d1x.multiply(d2y).subtract(d1y.multiply(d2x)));
+      normal.x = normal.x.plus(d1y.multiply(d2z).subtract(d1z.multiply(d2y)));
+      normal.y = normal.y.plus(d1z.multiply(d2x).subtract(d1x.multiply(d2z)));
+      normal.z = normal.z.plus(d1x.multiply(d2y).subtract(d1y.multiply(d2x)));
       he1 = he2;
       he2 = he2.next;
       numVerts++;

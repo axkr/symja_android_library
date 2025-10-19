@@ -376,8 +376,8 @@ public class ComputationalGeometryFunctions {
         a = geoForm.arg1().first();
         b = geoForm.arg1().second();
         if (geoForm.argSize() == 1) {
-          c = a.add(F.C1);
-          d = b.add(F.C1);
+          c = a.plus(F.C1);
+          d = b.plus(F.C1);
         } else if (geoForm.argSize() == 2 && geoForm.arg2().isList2()) {
           c = geoForm.arg2().first();
           d = geoForm.arg2().second();
@@ -507,8 +507,8 @@ public class ComputationalGeometryFunctions {
         a = geoForm.arg1().first();
         b = geoForm.arg1().second();
         if (geoForm.argSize() == 1) {
-          c = a.add(F.C1);
-          d = b.add(F.C1);
+          c = a.plus(F.C1);
+          d = b.plus(F.C1);
         } else if (geoForm.argSize() == 2 && geoForm.arg2().isList2()) {
           c = geoForm.arg2().first();
           d = geoForm.arg2().second();

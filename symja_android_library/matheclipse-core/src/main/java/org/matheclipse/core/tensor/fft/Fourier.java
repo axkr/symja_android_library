@@ -66,7 +66,7 @@ public class Fourier {
           int j = i + mmax;
           IExpr temp = array[j].multiply(w);
           array[j] = array[i].subtract(temp);
-          array[i] = array[i].add(temp);
+          array[i] = array[i].plus(temp);
         }
         w = w.multiply(wp);
       }

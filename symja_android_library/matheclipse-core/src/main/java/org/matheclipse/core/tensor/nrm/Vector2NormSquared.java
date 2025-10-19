@@ -28,7 +28,7 @@ public class Vector2NormSquared {
    * @return sum of squares of scalars in given stream
    */
   public static IExpr of(Stream<IExpr> stream) {
-    return stream.map(x -> x.multiply(x.conjugate())).reduce(IExpr::add).orElseThrow();
+    return stream.map(x -> x.multiply(x.conjugate())).reduce(IExpr::plus).orElseThrow();
   }
 
   /**

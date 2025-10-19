@@ -1033,7 +1033,7 @@ public class IntervalDataSym {
 
         IExpr lessMin = list.arg2();
         if (lessMin == S.Less && min.isInteger()) {
-          min = min.add(F.QQ(1, 10));
+          min = min.plus(F.QQ(1, 10));
         }
         IExpr lessMax = list.arg3();
         if (lessMax == S.Less && max.isInteger()) {

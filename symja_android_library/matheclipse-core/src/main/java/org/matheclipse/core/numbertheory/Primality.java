@@ -509,7 +509,7 @@ public class Primality implements IPrimality {
         map.put(-1, exponent);
       } else {
         evaled[0] = true;
-        map.put(-1, exp.add(exponent));
+        map.put(-1, exp.plus(exponent));
       }
       result = base.negate();
     }
@@ -529,11 +529,12 @@ public class Primality implements IPrimality {
           divRem = result.divideAndRemainder(BIprimes[i]);
         } while (divRem[1].signum() == 0);
         IExpr exp = map.get(PRIMES_2_1021[i]);
+        final IExpr countMulExponent = F.ZZ(count).times(exponent);
         if (exp == null) {
-          map.put(PRIMES_2_1021[i], F.ZZ(count).times(exponent));
+          map.put(PRIMES_2_1021[i], countMulExponent);
         } else {
           evaled[0] = true;
-          map.put(PRIMES_2_1021[i], exp.add(F.ZZ(count).times(exponent)));
+          map.put(PRIMES_2_1021[i], exp.plus(countMulExponent));
         }
       }
     }
@@ -562,7 +563,7 @@ public class Primality implements IPrimality {
         map.put(-1, exponent);
       } else {
         evaled[0] = true;
-        map.put(-1, exp.add(exponent));
+        map.put(-1, exp.plus(exponent));
       }
       result = -base;
     }
@@ -574,14 +575,15 @@ public class Primality implements IPrimality {
     }
     if (count > 0) {
       IExpr exp = map.get(2);
+      final IExpr countMulExponent = F.ZZ(count).times(exponent);
       if (exp == null) {
         if (setEvaled && count > 1) {
           evaled[0] = true;
         }
-        map.put(2, F.ZZ(count).times(exponent));
+        map.put(2, countMulExponent);
       } else {
         evaled[0] = true;
-        map.put(2, exp.add(F.ZZ(count).times(exponent)));
+        map.put(2, exp.plus(countMulExponent));
       }
     }
 
@@ -603,14 +605,15 @@ public class Primality implements IPrimality {
           rem = result % PRIMES_2_1021[i];
         } while (rem == 0);
         IExpr exp = map.get(PRIMES_2_1021[i]);
+        final IExpr countMulExponent = F.ZZ(count).times(exponent);
         if (exp == null) {
           if (setEvaled && count > 1) {
             evaled[0] = true;
           }
-          map.put(PRIMES_2_1021[i], F.ZZ(count).times(exponent));
+          map.put(PRIMES_2_1021[i], countMulExponent);
         } else {
           evaled[0] = true;
-          map.put(PRIMES_2_1021[i], exp.add(F.ZZ(count).times(exponent)));
+          map.put(PRIMES_2_1021[i], exp.plus(countMulExponent));
         }
       }
     }

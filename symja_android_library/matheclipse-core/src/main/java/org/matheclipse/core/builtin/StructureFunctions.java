@@ -784,10 +784,19 @@ public class StructureFunctions {
   private static class Head extends AbstractCoreFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      // if (arg1.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+      // IExpr head = arg1.head();
+      // if (ast.isAST2()) {
+      // return F.unaryAST1(engine.evaluate(ast.arg2()), head);
+      // }
+      // return head;
+      // }
+      IExpr head = engine.evaluate(arg1).head();
       if (ast.isAST2()) {
-        return F.unaryAST1(engine.evaluate(ast.arg2()), engine.evaluate(ast.arg1()).head());
+        return F.unaryAST1(engine.evaluate(ast.arg2()), head);
       }
-      return engine.evaluate(ast.arg1()).head();
+      return head;
     }
 
     @Override

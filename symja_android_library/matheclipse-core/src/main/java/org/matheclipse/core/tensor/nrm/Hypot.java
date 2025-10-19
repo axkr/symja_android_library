@@ -27,7 +27,7 @@ public class Hypot {
     IExpr ax = S.Abs.of(a);
     IExpr ay = S.Abs.of(b);
     if (ax.isZero() || ay.isZero()) {
-      return ax.add(ay);
+      return ax.plus(ay);
     }
     final IExpr max;
     IExpr r1 = (ax.lessThan(ay).isTrue()) //
@@ -35,7 +35,7 @@ public class Hypot {
         : ay.divide(max = ax);
     // valid at this point: 0 < max
     IExpr r2 = r1.multiply(r1);
-    return F.eval(F.Sqrt(r2.one().add(r2)).multiply(max));
+    return F.eval(F.Sqrt(r2.one().plus(r2)).multiply(max));
   }
 
   /**
@@ -47,10 +47,10 @@ public class Hypot {
     IExpr ax = S.Abs.of(a);
     IExpr one = ax.one();
     if (ax.lessThan(one).isTrue()) { // (Scalars.lessThan(ax, one)) {
-      return F.eval(F.Sqrt(ax.multiply(ax).add(one)));
+      return F.eval(F.Sqrt(ax.multiply(ax).plus(one)));
     }
     IExpr r1 = ax.reciprocal(); // in the unit interval [0, 1]
-    return F.eval(F.Sqrt(r1.multiply(r1).add(one)).multiply(ax));
+    return F.eval(F.Sqrt(r1.multiply(r1).plus(one)).multiply(ax));
   }
 
   /**

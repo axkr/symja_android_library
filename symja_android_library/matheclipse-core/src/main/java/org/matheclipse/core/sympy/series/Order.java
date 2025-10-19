@@ -242,8 +242,8 @@ public class Order {
 
       // Apply substitution if needed
       if (!subsRule.isEmpty()) {
-        IAST ruleList = F.ListAlloc(subsRule.size());
-        subsRule.forEach((k, v) -> ruleList.add(F.Rule(k, v)));
+        IASTAppendable ruleList = F.ListAlloc(subsRule.size());
+        subsRule.forEach((k, v) -> ruleList.append(F.Rule(k, v)));
         leadingTermExpr = leadingTermExpr.replaceAll(ruleList);
       }
 
@@ -322,8 +322,8 @@ public class Order {
 
       // Apply reverse substitution if needed
       if (!revSubsRule.isEmpty()) {
-        IAST revRuleList = F.ListAlloc(revSubsRule.size());
-        revSubsRule.forEach((k, v) -> revRuleList.add(F.Rule(k, v)));
+        IASTAppendable revRuleList = F.ListAlloc(revSubsRule.size());
+        revSubsRule.forEach((k, v) -> revRuleList.append(F.Rule(k, v)));
         leadingTermExpr = leadingTermExpr.replaceAll(revRuleList);
       }
     } // End if variables not empty
@@ -496,7 +496,7 @@ public class Order {
     }
     Collections.sort(pairs, VAR_POINT_COMPARATOR); // Sort by variable name
     IASTAppendable resultList = F.ListAlloc(pairs.size() + 1);
-    resultList.add(S.List);
+    // resultList.append(S.List);
     resultList.appendAll(pairs);
     return resultList;
   }
