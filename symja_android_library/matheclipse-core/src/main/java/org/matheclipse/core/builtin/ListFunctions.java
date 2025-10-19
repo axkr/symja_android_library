@@ -2668,18 +2668,29 @@ public final class ListFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IAST list = F.NIL;
       if (ast.isAST1()) {
-        list = Validate.checkListType(ast, 1, engine);
-      } else if (ast.isAST2()) {
-        list = Validate.checkListType(ast, 2, engine);
-      }
-      if (list.isPresent()) {
-        if (ast.isAST1()) {
-          // use base E logarithm
-          return entropy(list, F.Log(F.Slot1), 1);
+        IAST logAST = F.Log(F.Slot1);
+        if (ast.arg1().isString()) {
+          return stringEntropy(ast.arg1().toString(), logAST, 1);
+        } else {
+          list = Validate.checkListType(ast, 1, engine);
+          if (list.isPresent()) {
+            // use base E logarithm
+            return listEntropy(list, logAST, 1);
+          }
         }
+      } else if (ast.isAST2()) {
         IExpr shannonBase = ast.arg1();
-        return entropy(list, F.Log(shannonBase, F.Slot1), 2);
+        final IAST logAST = F.Log(shannonBase, F.Slot1);
+        if (ast.arg2().isString()) {
+          return stringEntropy(ast.arg2().toString(), logAST, 2);
+        } else {
+          list = Validate.checkListType(ast, 2, engine);
+          if (list.isPresent()) {
+            return listEntropy(list, logAST, 2);
+          }
+        }
       }
+
       return F.NIL;
     }
 
@@ -2688,9 +2699,10 @@ public final class ListFunctions {
       return ARGS_1_2;
     }
 
-    private static IExpr entropy(IAST list, IAST logAST, int logASTIndex) {
+    private static IExpr listEntropy(IAST list, IAST logAST, int logASTIndex) {
+      final int n = list.argSize();
       java.util.Map<IExpr, Integer> map = new LinkedHashMap<IExpr, Integer>();
-      for (int i = 1; i < list.size(); i++) {
+      for (int i = 1; i <= n; i++) {
         Integer value = map.get(list.get(i));
         if (value == null) {
           map.put(list.get(i), 1);
@@ -2698,15 +2710,34 @@ public final class ListFunctions {
           map.put(list.get(i), value + 1);
         }
       }
+      return calcEntropy(logAST, logASTIndex, n, map);
+    }
+
+    private static IExpr stringEntropy(String str, IAST logAST, int logASTIndex) {
+      final int n = str.length();
+      java.util.Map<Character, Integer> map = new LinkedHashMap<Character, Integer>();
+      for (int i = 0; i < n; i++) {
+        Character ch = str.charAt(i);
+        Integer value = map.get(ch);
+        if (value == null) {
+          map.put(ch, Integer.valueOf(1));
+        } else {
+          map.put(ch, value + 1);
+        }
+      }
+      return calcEntropy(logAST, logASTIndex, n, map);
+    }
+
+    private static IExpr calcEntropy(IAST logAST, int logASTIndex, final int n,
+        java.util.Map<?, Integer> map) {
       IASTAppendable result = F.PlusAlloc(map.size());
-      int n = list.argSize();
-      for (java.util.Map.Entry<IExpr, Integer> entry : map.entrySet()) {
+      for (java.util.Map.Entry<?, Integer> entry : map.entrySet()) {
         int count = entry.getValue();
         IRational p = F.QQ(count, n);
         IAST times = F.Times(p, logAST.setAtCopy(logASTIndex, p));
         result.append(times);
       }
-      return result.negate();
+      return result.oneIdentity0().negate();
     }
   }
 
