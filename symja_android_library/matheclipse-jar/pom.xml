@@ -45,7 +45,7 @@
 					<version>3.4.6</version>
 					<configuration>
 						<from>
-							<image>eclipse-temurin:21_35-jre</image>
+							<image>eclipse-temurin:25_36-jre</image>
 						</from>
 						<to>
 							<image>registry.hub.docker.com/symja/symja-3.0</image>
