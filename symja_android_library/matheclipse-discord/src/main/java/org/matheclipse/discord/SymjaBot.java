@@ -5,16 +5,15 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
-import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalControlledCallable;
 import org.matheclipse.core.eval.EvalEngine;
@@ -36,7 +35,7 @@ import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
-import discord4j.core.DiscordClientBuilder;
+import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -85,8 +84,16 @@ public class SymjaBot {
       initFunctions();
       System.out.println("Symja Version: " + Config.VERSION + " initialized");
       String theDiscordToken = args[0];
+      // ReactorResources reactor = ReactorResources.builder() //
+      // .httpClient(ReactorResources.DEFAULT_HTTP_CLIENT.get() //
+      // .resolver(DefaultAddressResolverGroup.INSTANCE)) //
+      // .build();
       GatewayDiscordClient client =
-          DiscordClientBuilder.create(theDiscordToken).build().login().block();
+          DiscordClient.builder(theDiscordToken)//
+              // .setReactorResources(reactor)//
+              .build()//
+              .login() //
+              .block();
       if (client != null) {
         client.getEventDispatcher().on(ReadyEvent.class).subscribe(event -> {
           LocalDateTime now = LocalDateTime.now();
@@ -102,8 +109,6 @@ public class SymjaBot {
             if (!user.isBot()) {
               if (filterMessage(message)) {
                 createMessage(message);
-              } else if (filterInlineMessage(message)) {
-                createInlineMessages(message);
               }
             }
           } ;
@@ -167,16 +172,6 @@ public class SymjaBot {
           channel.createMessage("\n" + result.toString().trim()).block();
         }
       }
-    }
-  }
-
-  private static void createInlineMessages(final Message message) {
-    String content = message.getContent().trim();
-    String result = inlineInterpreter(content);
-    Mono<MessageChannel> mChannel = message.getChannel();
-    final MessageChannel channel = mChannel.block();
-    if (channel != null) {
-      channel.createMessage(result.toString()).block();
     }
   }
 
@@ -245,26 +240,10 @@ public class SymjaBot {
     return false;
   }
 
-  private static boolean filterInlineMessage(Message message) {
-    String content = message.getContent().trim();
-    int beginIndex = content.indexOf("\n```mma");
-    if (beginIndex < 0) {
-      beginIndex = content.indexOf("\n```symja");
-    }
-    if (beginIndex > 0) {
-      int endIndex = content.indexOf("\n```", beginIndex + 6);
-      if (endIndex > beginIndex) {
-        String subStr = content.substring(beginIndex + 7, endIndex);
-        return true;
-      }
-    }
-    return false;
-  }
-
   public static Object interpreter(final String trimmedInput, int seconds) {
     ExprEvaluator evaluator = new ExprEvaluator(false, (short) 100);
     IExpr result;
-    final StringWriter buf = new StringWriter();
+    final StringBuilderWriter buf = new StringBuilderWriter();
     try {
       if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
         StringBuilder docBuf = new StringBuilder();
