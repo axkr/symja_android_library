@@ -9747,6 +9747,8 @@ public class S {
    */
   public final static IBuiltInSymbol Rescale = S.initFinalSymbol("Rescale", ID.Rescale);
 
+  public final static IBuiltInSymbol Residue = S.initFinalSymbol("Residue", ID.Residue);
+
   /**
    * Rest(expr) - returns `expr` with the first element removed.
    * 
