@@ -926,16 +926,6 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
   }
 
   @Override
-  public boolean isList() {
-    return false;
-  }
-
-  @Override
-  public boolean isList1() {
-    return false;
-  }
-
-  @Override
   public boolean isList2() {
     return false;
   }
@@ -995,7 +985,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
   /** {@inheritDoc} */
   @Override
   public final IExpr oneIdentity(IExpr defaultValue) {
-    return this;
+    return arg1;
   }
 
   @Override

@@ -1028,17 +1028,6 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
     return true;
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public boolean isFlatAST() {
-    return false;
-  }
-
-  @Override
-  public boolean isList() {
-    return false;
-  }
-
   @Override
   public boolean isList1() {
     return false;
@@ -1046,11 +1035,6 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
 
   @Override
   public boolean isList2() {
-    return false;
-  }
-
-  @Override
-  public boolean isList3() {
     return false;
   }
 

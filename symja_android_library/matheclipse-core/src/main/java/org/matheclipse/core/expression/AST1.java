@@ -435,7 +435,7 @@ public class AST1 extends AST0 {
   /** {@inheritDoc} */
   @Override
   public IExpr oneIdentity(IExpr defaultValue) {
-    return arg1();
+    return arg1;
   }
 
   @Override

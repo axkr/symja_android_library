@@ -733,6 +733,22 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     public final int headID() {
       return ID.Rule;
     }
+
+    @Override
+    public final boolean isRule() {
+      return true;
+    }
+
+    @Override
+    public final boolean isRuleAST() {
+      return true;
+    }
+
+    @Override
+    public final boolean isRuleDelayed() {
+      return false;
+    }
+
   }
 
   static final class RuleDelayed extends B2 {
@@ -757,6 +773,21 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     @Override
     public final int headID() {
       return ID.RuleDelayed;
+    }
+
+    @Override
+    public final boolean isRule() {
+      return false;
+    }
+
+    @Override
+    public final boolean isRuleAST() {
+      return true;
+    }
+
+    @Override
+    public final boolean isRuleDelayed() {
+      return true;
     }
   }
 
@@ -1485,17 +1516,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   }
 
   @Override
-  public boolean isList() {
-    return false;
-  }
-
-  @Override
   public boolean isList1() {
-    return false;
-  }
-
-  @Override
-  public boolean isList2() {
     return false;
   }
 
