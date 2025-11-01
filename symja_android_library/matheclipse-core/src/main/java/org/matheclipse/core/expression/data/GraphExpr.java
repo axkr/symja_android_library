@@ -19,6 +19,20 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.trie.Trie;
 
+
+/**
+ * Data wrapper around a JGraphT {@link Graph} whose vertices are {@link IExpr} instances.
+ *
+ * <p>
+ * This class provides conversion utilities between JGraphT graphs and the project's expression
+ * representations (IAST/IASTAppendable), support for VisJS JavaScript output, and helpers to
+ * produce adjacency matrices in sparse array form. The generic type parameter T denotes the edge
+ * object type used by the underlying graph (typically {@code ExprEdge} or
+ * {@code ExprWeightedEdge}).
+ * </p>
+ *
+ * @param <T> the edge type used by the wrapped graph
+ */
 public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> {
 
   private static final long serialVersionUID = 6160043985328230156L;

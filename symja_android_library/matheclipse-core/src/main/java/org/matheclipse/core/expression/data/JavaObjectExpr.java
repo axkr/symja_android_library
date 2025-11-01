@@ -8,6 +8,17 @@ import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 
+/**
+ * Wrapper expression that holds an arbitrary Java {@link Object}.
+ *
+ * <p>
+ * This class extends {@link DataExpr} parameterized with {@link Object} and implements
+ * {@link Externalizable} so the contained object can be explicitly serialized and deserialized.
+ *
+ * <p>
+ * Typical usage: embed Java objects inside the expression tree so they can be passed through
+ * evaluation and retrieved by Java-aware operations.
+ */
 public class JavaObjectExpr extends DataExpr<Object> implements Externalizable {
 
   public JavaObjectExpr() {
@@ -15,17 +26,30 @@ public class JavaObjectExpr extends DataExpr<Object> implements Externalizable {
   }
 
   /**
-   * @param object
-   * @return
+   * Create a new {@code JavaObjectExpr} that wraps the supplied object.
+   *
+   * @param object the Java object to wrap (may be {@code null})
+   * @return a new {@code JavaObjectExpr} instance containing {@code object}
    */
   public static JavaObjectExpr newInstance(final Object object) {
     return new JavaObjectExpr(object);
   }
 
+  /**
+   * Protected constructor that wraps the given object value.
+   *
+   * @param value the Java object to wrap
+   */
   protected JavaObjectExpr(final Object value) {
     super(S.JavaObject, value);
   }
 
+  /**
+   * Equality is based on the wrapped object.
+   *
+   * @param obj the object to compare with
+   * @return {@code true} if {@code obj} is the same instance or wraps an equal object
+   */
   @Override
   public boolean equals(final Object obj) {
     if (this == obj) {
@@ -47,6 +71,11 @@ public class JavaObjectExpr extends DataExpr<Object> implements Externalizable {
     return JAVAOBJECTEXPRID;
   }
 
+  /**
+   * Creates a shallow copy of this expression. The copy references the same wrapped object.
+   *
+   * @return a new {@code JavaObjectExpr} wrapping the same object
+   */
   @Override
   public IExpr copy() {
     return new JavaObjectExpr(fData);

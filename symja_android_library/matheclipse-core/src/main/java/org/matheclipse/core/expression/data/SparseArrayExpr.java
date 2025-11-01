@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import org.hipparchus.Field;
-import org.hipparchus.FieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
@@ -43,30 +42,30 @@ import org.matheclipse.parser.trie.TrieNode;
 import it.unimi.dsi.fastutil.ints.IntList;
 
 /**
- * Sparse array implementation. <b>Note:</b> in Symja sparse arrays the offset is +1 compared to
- * java arrays or hipparchus <code>FieldVector</code>, <code>FieldMatrix</code>.
+ * A sparse array implementation using a Trie data structure to store non-default elements. This
+ * class is designed for efficient handling of arrays with many default-valued (often zero)
+ * elements.
+ *
+ * <p>
+ * It supports multi-dimensional arrays and provides various methods for manipulation, such as
+ * algebraic operations, transformations, and conversions to other formats (dense arrays, matrices,
+ * vectors).
  */
 public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     implements ISparseArray, Externalizable {
 
   /**
-   * This class implements the {@link FieldMatrix} interface with a {@link SparseArrayExpr} backing
-   * store.
-   *
-   * <p>
-   * <b>Note:</b> in Symja sparse arrays the offset is +1 compared to java arrays or hipparchus
-   * <code>FieldMatrix</code>.
+   * Represents a sparse matrix of `IExpr` elements, backed by a `SparseArrayExpr`.
    */
   public static class SparseExprMatrix extends AbstractFieldMatrix<IExpr> {
     final SparseArrayExpr array;
 
     /**
-     * Create a new SparseExprMatrix with the supplied row and column dimensions.
+     * Creates a `SparseExprMatrix` with the given dimensions and default value.
      *
-     * @param rowDimension Number of rows in the new matrix.
-     * @param columnDimension Number of columns in the new matrix.
-     * @throws org.hipparchus.exception.MathIllegalArgumentException if row or column dimension is
-     *         not positive.
+     * @param rowDimension The number of rows.
+     * @param columnDimension The number of columns.
+     * @param defaultValue The default value for matrix elements.
      */
     public SparseExprMatrix(final int rowDimension, final int columnDimension, IExpr defaultValue) {
       super(F.EXPR_FIELD, rowDimension, columnDimension);
@@ -75,10 +74,10 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     }
 
     /**
-     * Copy constructor.
+     * Creates a `SparseExprMatrix` from a `SparseArrayExpr`.
      *
-     * @param array Instance to copy.
-     * @param copyArray Whether to copy or reference the input array.
+     * @param array The sparse array.
+     * @param copyArray if `true` a deep copy of the array is performed.
      */
     public SparseExprMatrix(SparseArrayExpr array, boolean copyArray) {
       super(F.EXPR_FIELD, array.fDimension[0], array.fDimension[1]);
@@ -291,28 +290,29 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
    * <code>FieldVector</code>.
    */
   public static class SparseExprVector implements FieldVector<IExpr> {
+    /** The underlying sparse array. */
     final SparseArrayExpr array;
     /** Dimension of the vector. */
     private final int virtualSize;
 
     /**
-     * Create a new SparseExprVector with the supplied row dimensions.
+     * Creates a `SparseExprVector` with a given size and default value.
      *
-     * @param dimension Number of elements in the new vector.
-     * @throws org.hipparchus.exception.MathIllegalArgumentException if row or column dimension is
-     *         not positive.
+     * @param virtualSize The size of the vector.
+     * @param defaultValue The default value for vector elements.
      */
-    public SparseExprVector(final int dimension, IExpr defaultValue) {
-      this.array = new SparseArrayExpr(Config.TRIE_INT2EXPR_BUILDER.build(), new int[] {dimension},
-          defaultValue, false);
-      this.virtualSize = dimension;
+    public SparseExprVector(final int virtualSize, IExpr defaultValue) {
+      this.array = new SparseArrayExpr(Config.TRIE_INT2EXPR_BUILDER.build(),
+          new int[] {virtualSize}, defaultValue, false);
+      this.virtualSize = virtualSize;
     }
 
+
     /**
-     * Copy constructor
+     * Creates a `SparseExprVector` from a `SparseArrayExpr`.
      *
-     * @param array
-     * @param copyArray Whether to copy or reference the input array.
+     * @param array The sparse array.
+     * @param copyArray if `true` a deep copy of the array is performed.
      */
     public SparseExprVector(SparseArrayExpr array, boolean copyArray) {
       if (copyArray) {
@@ -359,11 +359,11 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     }
 
     /**
-     * Compute the sum of {@code this} and {@code v}.
+     * Compute the sum of `this` and `v`.
      *
      * @param v vector to be added
-     * @return {@code this + v}
-     * @throws MathIllegalArgumentException if {@code v} is not the same size as {@code this}
+     * @return `this + v`
+     * @throws MathIllegalArgumentException if `v` is not the same size as `this`
      */
     @Override
     public SparseExprVector add(FieldVector<IExpr> v) throws MathIllegalArgumentException {
@@ -377,9 +377,9 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     }
 
     /**
-     * Construct a vector by appending a vector to this vector.
+     * Append a vector to `this` vector.
      *
-     * @param v vector to append to this one.
+     * @param v vector to be appended
      * @return a new vector
      */
     @Override
@@ -393,9 +393,9 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     }
 
     /**
-     * Construct a vector by appending a IExpr to this vector.
+     * Append a single element to `this` vector.
      *
-     * @param d IExpr to append.
+     * @param d element to be appended
      * @return a new vector
      */
     @Override
@@ -407,9 +407,9 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     }
 
     /**
-     * Check whether an index is valid.
+     * Checks if the given index is valid.
      *
-     * @param index Index to check.
+     * @param index the index to be checked.
      * @throws MathIllegalArgumentException if the index is not valid.
      */
     private void checkIndex(final int index) throws MathIllegalArgumentException {
@@ -439,10 +439,11 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     }
 
     /**
-     * Check if instance dimension is equal to some expected value.
+     * Compute the dot product.
      *
-     * @param n Expected dimension.
-     * @throws MathIllegalArgumentException if the dimensions do not match.
+     * @param v vector with which dot product should be computed
+     * @return the scalar dot product of {@code this} and {@code v}
+     * @throws MathIllegalArgumentException if {@code v} is not the same size as {@code this}
      */
     protected void checkVectorDimensions(int n) throws MathIllegalArgumentException {
       if (getDimension() != n) {
@@ -533,7 +534,6 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
      * @param index Index location of entry to be fetched.
      * @return the vector entry at {@code index}.
      * @throws MathIllegalArgumentException if the index is not valid.
-     * @see #setEntry(int, FieldElement)
      */
     @Override
     public IExpr getEntry(int index) throws MathIllegalArgumentException {
@@ -551,6 +551,11 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       return F.EXPR_FIELD;
     }
 
+    /**
+     * Get the underlying sparse array.
+     *
+     * @return The sparse array.
+     */
     public SparseArrayExpr getSparseArray() {
       return array;
     }

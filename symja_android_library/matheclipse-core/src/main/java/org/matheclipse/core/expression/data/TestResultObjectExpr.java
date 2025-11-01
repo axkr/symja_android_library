@@ -12,8 +12,18 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 
+/**
+ * Represents the result of a test case as a data expression. The underlying data is stored in an
+ * {@link IAssociation}. This class is {@link Externalizable} for serialization.
+ */
 public class TestResultObjectExpr extends DataExpr<IAssociation> implements Externalizable {
 
+  /**
+   * Factory method to create a new {@code TestResultObjectExpr}.
+   *
+   * @param listOfRules The association containing the test result data.
+   * @return A new instance of {@code TestResultObjectExpr}.
+   */
   public static TestResultObjectExpr newInstance(final IAssociation listOfRules) {
     return new TestResultObjectExpr(listOfRules);
   }
@@ -22,6 +32,11 @@ public class TestResultObjectExpr extends DataExpr<IAssociation> implements Exte
     super(S.TestResultObject, null);
   }
 
+  /**
+   * Protected constructor to initialize with test result data.
+   *
+   * @param listOfRules The association containing the test result data.
+   */
   protected TestResultObjectExpr(final IAssociation listOfRules) {
     super(S.TestResultObject, listOfRules);
   }
@@ -67,6 +82,12 @@ public class TestResultObjectExpr extends DataExpr<IAssociation> implements Exte
     output.writeObject(fData);
   }
 
+  /**
+   * Provides a string representation of the test result, summarizing the outcome and other relevant
+   * details like expected/actual output and test ID.
+   *
+   * @return A formatted string for the test result.
+   */
   @Override
   public String toString() {
     IExpr outcomeRule = fData.getRule("Outcome");

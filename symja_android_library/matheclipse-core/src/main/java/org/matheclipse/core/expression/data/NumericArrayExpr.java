@@ -30,8 +30,22 @@ import com.google.common.primitives.UnsignedInts;
 import com.google.common.primitives.UnsignedLong;
 import it.unimi.dsi.fastutil.ints.IntList;
 
+/**
+ * Representation of a numeric array expression.
+ *
+ * <p>
+ * This wrapper holds a primitive array or boxed numeric storage together with its dimensions and a
+ * {@code byte} typed descriptor (such as Integer8, Real64, ComplexReal32, etc.). It supports
+ * creation from nested AST lists, conversion back to AST normal form and serialization.
+ *
+ * <p>
+ * Supported element types are mapped via {@link #TYPE_MAP} and {@link #TYPE_STRING_MAP}.
+ */
 public class NumericArrayExpr extends DataExpr<Object> implements INumericArray, Externalizable {
 
+  /**
+   * Exception thrown when a value is out of the permitted range for the selected numeric type.
+   */
   public static class RangeException extends Exception {
     private static final long serialVersionUID = 5301913995459242598L;
 
@@ -40,6 +54,9 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     }
   }
 
+  /**
+   * Exception thrown when a value cannot be converted to the expected numeric type.
+   */
   public static class TypeException extends Exception {
     private static final long serialVersionUID = -8868546084855177025L;
 
@@ -49,9 +66,11 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
   }
 
 
-  private static final Map<String, Byte> TYPE_MAP;// = new HashMap<String, Byte>();
+  /** Mapping from string type names to internal {@code byte} type codes. */
+  private static final Map<String, Byte> TYPE_MAP;
 
-  private static final Map<Byte, String> TYPE_STRING_MAP;// = new HashMap<Byte, String>();
+  /** Mapping from internal {@code byte} type codes to string names. */
+  private static final Map<Byte, String> TYPE_STRING_MAP;
 
   static {
     ImmutableMap.Builder<String, Byte> string2ByteBuilderAP = ImmutableMap.builder();

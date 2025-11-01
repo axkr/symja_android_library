@@ -12,8 +12,18 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IExpr;
 
+/**
+ * Represents a test report object, which is a data expression wrapping an association of test
+ * results. This class is externalizable for serialization purposes.
+ */
 public class TestReportObjectExpr extends DataExpr<IAssociation> implements Externalizable {
 
+  /**
+   * Factory method to create a new instance of {@code TestReportObjectExpr}.
+   *
+   * @param listOfRules The association containing the test report data.
+   * @return A new {@code TestReportObjectExpr} instance.
+   */
   public static TestReportObjectExpr newInstance(final IAssociation listOfRules) {
     return new TestReportObjectExpr(listOfRules);
   }
@@ -22,6 +32,11 @@ public class TestReportObjectExpr extends DataExpr<IAssociation> implements Exte
     super(S.TestReportObject, null);
   }
 
+  /**
+   * Protected constructor to create a {@code TestReportObjectExpr} with the given association.
+   *
+   * @param listOfRules The association containing the test report data.
+   */
   protected TestReportObjectExpr(final IAssociation listOfRules) {
     super(S.TestReportObject, listOfRules);
   }
@@ -52,6 +67,13 @@ public class TestReportObjectExpr extends DataExpr<IAssociation> implements Exte
     return new TestReportObjectExpr(fData);
   }
 
+  /**
+   * Returns the normal form of this expression, which is an AST with the head {@code
+   * TestReportObject} and the normalized data as its argument.
+   *
+   * @param nilIfUnevaluated if true, return {@code null} if the expression remains unevaluated.
+   * @return The normalized AST or {@code null}.
+   */
   @Override
   public IAST normal(boolean nilIfUnevaluated) {
     return F.unaryAST1(S.TestReportObject, fData.normal(false));
@@ -67,10 +89,14 @@ public class TestReportObjectExpr extends DataExpr<IAssociation> implements Exte
     output.writeObject(fData);
   }
 
+  /**
+   * Returns a string representation of the test report object, focusing on the "TestResults" rule.
+   *
+   * @return a string in the format "TestReportObject(...)".
+   */
   @Override
   public String toString() {
     IExpr outcomeRule = fData.getRule("TestResults");
-    // IExpr testID = fData.getRule("TestID");
     return "TestReportObject(" + outcomeRule.toString() + ")";
   }
 }

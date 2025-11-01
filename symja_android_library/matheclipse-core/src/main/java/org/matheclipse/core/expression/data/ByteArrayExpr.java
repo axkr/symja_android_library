@@ -11,39 +11,53 @@ import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
+/**
+ * Wrapper expression that holds a raw byte array as data.
+ * <p>
+ * Instances represent a `ByteArray` data object and implement {@link Externalizable} to provide
+ * compact custom serialization of the underlying byte data.
+ * </p>
+ */
 public class ByteArrayExpr extends DataExpr<byte[]> implements Externalizable {
 
   /** */
   private static final long serialVersionUID = 5799157739970931450L;
 
   /**
-   * Create a new <a href=
-   * "https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/ByteArray.md">ByteArray</a>
-   * object.
+   * Factory method to create a new {@code ByteArrayExpr} wrapping the given byte array. Used in
+   * function {@link S#ByteArray}.
    *
-   * @param array the byte array which should be wrapped
-   * @return
+   * @param array the byte array to wrap
+   * @return a new {@code ByteArrayExpr} instance
    */
   public static ByteArrayExpr newInstance(final byte[] array) {
     return new ByteArrayExpr(array);
   }
 
+  /**
+   * No-argument constructor required for {@link Externalizable} deserialization. Initializes the
+   * expression with the {@link S#ByteArray} head and a null data payload.
+   */
   public ByteArrayExpr() {
     super(S.ByteArray, null);
   }
 
   /**
-   * Create a new <a href=
-   * "https://github.com/axkr/symja_android_library/tree/master/symja_android_library/doc/functions/ByteArray.md">ByteArray</a>
-   * object.
+   * Protected constructor that wraps the provided byte array.
    *
-   * @param array the byte array which should be wrapped
-   * @return
+   * @param array the byte array to store in this expression
    */
   protected ByteArrayExpr(final byte[] array) {
     super(S.ByteArray, array);
   }
 
+  /**
+   * Equality is based on the contents of the wrapped byte array. Two {@code ByteArrayExpr}
+   * instances are equal if their byte arrays are equal.
+   *
+   * @param obj the other object to compare
+   * @return {@code true} if equal, {@code false} otherwise
+   */
   @Override
   public boolean equals(final Object obj) {
     if (this == obj) {
@@ -55,6 +69,11 @@ public class ByteArrayExpr extends DataExpr<byte[]> implements Externalizable {
     return false;
   }
 
+  /**
+   * Return the internal hierarchy id for this expression type.
+   *
+   * @return the hierarchy id {@link IExpr#BYTEARRAYID}
+   */
   @Override
   public int hierarchy() {
     return BYTEARRAYID;
@@ -65,17 +84,37 @@ public class ByteArrayExpr extends DataExpr<byte[]> implements Externalizable {
     return (fData == null) ? 541 : 541 + Arrays.hashCode(fData);
   }
 
+  /**
+   * Create a shallow copy of this expression. The underlying byte array reference is copied (no
+   * deep clone of the array is performed).
+   *
+   * @return a new {@code ByteArrayExpr} with the same internal data reference
+   */
   @Override
   public IExpr copy() {
     return new ByteArrayExpr(fData);
   }
 
+
+  /**
+   * Convert the wrapped byte array into a MathEclipse list representation. This method is used to
+   * present the data in a normalized AST form.
+   *
+   * @param nilIfUnevaluated ignored for this data-holder implementation
+   * @return an {@link IAST} list representation of the byte array
+   */
   @Override
   public IAST normal(boolean nilIfUnevaluated) {
     byte[] bArray = toData();
     return WL.toList(bArray);
   }
 
+
+  /**
+   * Provide a succinct textual representation for debugging.
+   *
+   * @return a string like "ByteArray[<length> Bytes]"
+   */
   @Override
   public String toString() {
     return fHead.toString() + "[" + fData.length + " Bytes]";

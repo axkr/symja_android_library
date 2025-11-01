@@ -13,30 +13,63 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
+/**
+ * Wrapper expression that holds a {@link Class} reference.
+ *
+ * <p>
+ * This class extends {@link DataExpr} parameterized with {@code Class<?>} and implements
+ * {@link Externalizable} to allow explicit serialization of the contained {@link Class} object.
+ *
+ * <p>
+ * Typical usage: represent Java class objects within the expression tree and assist in reflective
+ * method invocation (see {@link #determineParameters}).
+ */
 public class JavaClassExpr extends DataExpr<Class<?>> implements Externalizable {
 
   public JavaClassExpr() {
     super(S.JavaClass, null);
   }
 
+
   /**
-   * @param clazz
-   * @return
+   * Create a new {@code JavaClassExpr} wrapping the supplied class.
+   *
+   * @param clazz the Java {@link Class} object to wrap
+   * @return a new {@code JavaClassExpr} instance containing {@code clazz}
    */
   public static JavaClassExpr newInstance(final Class<?> clazz) {
     return new JavaClassExpr(clazz);
   }
 
+  /**
+   * Create a new {@code JavaClassExpr} by loading the class with the provided {@link ClassLoader}.
+   *
+   * @param className the fully qualified class name to load
+   * @param classLoader the class loader to use for loading the class
+   * @return a new {@code JavaClassExpr} wrapping the loaded class
+   * @throws ClassNotFoundException if the class cannot be found by the loader
+   */
   public static JavaClassExpr newInstance(final String className, ClassLoader classLoader)
       throws ClassNotFoundException {
     Class<?> clazz = classLoader.loadClass(className);
     return new JavaClassExpr(clazz);
   }
 
+  /**
+   * Protected constructor that wraps the given {@link Class} instance.
+   *
+   * @param value the {@link Class} to wrap
+   */
   protected JavaClassExpr(final Class<?> value) {
     super(S.JavaClass, value);
   }
 
+  /**
+   * Equality is based on the wrapped {@link Class} object.
+   *
+   * @param obj the object to compare
+   * @return {@code true} if {@code obj} is the same instance or wraps an equal {@link Class}
+   */
   @Override
   public boolean equals(final Object obj) {
     if (this == obj) {
@@ -78,15 +111,27 @@ public class JavaClassExpr extends DataExpr<Class<?>> implements Externalizable 
     output.writeObject(fData);
   }
 
+
   /**
-   * Determine the parameters for a method call from the given <code>ast</code> expression and the
+   * Determine the Java method call parameters from the given expression arguments and the target
    * method parameters.
    *
-   * @param ast the expression which contains the arguments for the method call
-   * @param parameters the method parameters
-   * @param offset the offset in the <code>ast</code> expression where the arguments start
-   * @return an array of objects which can be used as parameters for a method call or
-   *         <code>null</code> if an argument is not compatible with the parameter type
+   * <p>
+   * This method inspects each target parameter's type and attempts to convert the corresponding
+   * expression argument into a Java value compatible with that type. Supported conversions include:
+   * - direct {@link DataExpr} to underlying data object when it matches the parameter type -
+   * boolean, numeric primitives (double, float, int, long, short, byte), char and String -
+   * {@link Complex} numbers via {@link IExpr#evalfc()} - {@link Class} via {@link JavaClassExpr}
+   *
+   * <p>
+   * If any argument cannot be converted to the required parameter type, the method returns
+   * {@code null}.
+   *
+   * @param ast the AST expression that contains the method call arguments
+   * @param parameters the Java reflection {@link Parameter} array of the target method
+   * @param offset the argument offset in {@code ast} where method arguments begin
+   * @return an array of Java objects suitable for invoking the method, or {@code null} if
+   *         conversion fails for any argument
    */
   public static Object[] determineParameters(final IAST ast, Parameter[] parameters, int offset) {
     try {
