@@ -390,19 +390,42 @@ public class ComputationalGeometryFunctions {
     }
 
     private static IExpr triangle(IAST geoForm) {
-
-      if (geoForm.argSize() >= 1 && geoForm.arg1().isList3() && geoForm.arg1().isListOfPoints(2)) {
-        IAST list = (IAST) geoForm.arg1();
-        IExpr a1 = list.arg1().first();
-        IExpr a2 = list.arg1().second();
-        IExpr b1 = list.arg2().first();
-        IExpr b2 = list.arg2().second();
-        IExpr c1 = list.arg3().first();
-        IExpr c2 = list.arg3().second();
-        return
-        // [$ (1/2)*Abs((-a2)*b1+a1*b2 +a2*c1-b2*c1-a1*c2+b1*c2) $]
-        F.Times(F.C1D2, F.Abs(F.Plus(F.Times(F.CN1, a2, b1), F.Times(a1, b2), F.Times(a2, c1),
-            F.Times(F.CN1, b2, c1), F.Times(F.CN1, a1, c2), F.Times(b1, c2)))); // $$;
+      if (geoForm.argSize() >= 1 && geoForm.arg1().isList3()) {
+        IAST list3 = (IAST) geoForm.arg1();
+        if (geoForm.arg1().isListOfPoints(2)) {
+          IExpr a1 = list3.arg1().first();
+          IExpr a2 = list3.arg1().second();
+          IExpr b1 = list3.arg2().first();
+          IExpr b2 = list3.arg2().second();
+          IExpr c1 = list3.arg3().first();
+          IExpr c2 = list3.arg3().second();
+          // (1/2)*Abs((-a2)*b1+a1*b2 +a2*c1-b2*c1-a1*c2+b1*c2)
+          return F.Times(F.C1D2, F.Abs(F.Plus(F.Times(F.CN1, a2, b1), F.Times(a1, b2),
+              F.Times(a2, c1), F.Times(F.CN1, b2, c1), F.Times(F.CN1, a1, c2), F.Times(b1, c2))));
+        }
+        if (list3.isListOfPoints(3)) {
+          IAST l1 = (IAST) list3.arg1();
+          IAST l2 = (IAST) list3.arg2();
+          IAST l3 = (IAST) list3.arg3();
+          IExpr a = l1.arg1();
+          IExpr b = l1.arg2();
+          IExpr c = l1.arg3();
+          IExpr d = l2.arg1();
+          IExpr e = l2.arg2();
+          IExpr f = l2.arg3();
+          IExpr g = l3.arg1();
+          IExpr h = l3.arg2();
+          IExpr i = l3.arg3();
+          // Sqrt((e*g+b*d-a*e-b*g+a*h-d*h)^2+(f*g+c*d-a*f-c*g+a*i-d*i)^2+(f*h+c*e-b*f-c*h+b*i-e*i)^2)/2
+          return F.Times(F.C1D2,
+              F.Sqrt(F.Plus(
+                  F.Sqr(F.Plus(F.Times(e, g), F.Times(b, d), F.Times(F.CN1, a, e),
+                      F.Times(F.CN1, b, g), F.Times(a, h), F.Times(F.CN1, d, h))),
+                  F.Sqr(F.Plus(F.Times(f, g), F.Times(c, d), F.Times(F.CN1, a, f),
+                      F.Times(F.CN1, c, g), F.Times(a, i), F.Times(F.CN1, d, i))),
+                  F.Sqr(F.Plus(F.Times(f, h), F.Times(c, e), F.Times(F.CN1, b, f),
+                      F.Times(F.CN1, c, h), F.Times(b, i), F.Times(F.CN1, e, i))))));
+        }
       }
       return F.NIL;
     }
@@ -435,6 +458,8 @@ public class ComputationalGeometryFunctions {
               return disk(geoForm);
             case ID.Rectangle:
               return rectangle(geoForm);
+            case ID.Triangle:
+              return triangle(geoForm);
           }
         }
       }
@@ -516,6 +541,51 @@ public class ComputationalGeometryFunctions {
           return F.NIL;
         }
         return F.Times(F.C2, F.Plus(F.Abs(F.Plus(F.Negate(a), c)), F.Abs(F.Plus(F.Negate(b), d))));
+      }
+      return F.NIL;
+    }
+
+    private static IExpr triangle(IAST geoForm) {
+      if (geoForm.argSize() == 1 && geoForm.arg1().isList3()) {
+        IAST list3 = (IAST) geoForm.arg1();
+        if (list3.isListOfPoints(2)) {
+          IAST l1 = (IAST) list3.arg1();
+          IAST l2 = (IAST) list3.arg2();
+          IAST l3 = (IAST) list3.arg3();
+          IExpr a = l1.arg1();
+          IExpr b = l1.arg2();
+          IExpr c = l2.arg1();
+          IExpr d = l2.arg2();
+          IExpr e = l3.arg1();
+          IExpr f = l3.arg2();
+          // Sqrt((a-c)^2+(b-d)^2)+Sqrt((a-e)^2+(b-f)^2)+Sqrt((c-e)^2+(d-f)^2)
+          return F.Plus(F.Sqrt(F.Plus(F.Sqr(F.Subtract(a, c)), F.Sqr(F.Subtract(b, d)))),
+              F.Sqrt(F.Plus(F.Sqr(F.Subtract(a, e)), F.Sqr(F.Subtract(b, f)))),
+              F.Sqrt(F.Plus(F.Sqr(F.Subtract(c, e)), F.Sqr(F.Subtract(d, f)))));
+        }
+        if (list3.isListOfPoints(3)) {
+          IAST l1 = (IAST) list3.arg1();
+          IAST l2 = (IAST) list3.arg2();
+          IAST l3 = (IAST) list3.arg3();
+          IExpr a = l1.arg1();
+          IExpr b = l1.arg2();
+          IExpr c = l1.arg3();
+          IExpr d = l2.arg1();
+          IExpr e = l2.arg2();
+          IExpr f = l2.arg3();
+          IExpr g = l3.arg1();
+          IExpr h = l3.arg2();
+          IExpr i = l3.arg3();
+          // Sqrt((a-d)^2+(b-e)^2+(c-f)^2)+Sqrt((a-g)^2+(b-h)^2+(c-i)^2)+Sqrt((d-g)^2+(e-h)^2+(f-i)^2)
+          return F.Plus(
+              F.Sqrt(F.Plus(F.Sqr(F.Subtract(a, d)), F.Sqr(F.Subtract(b, e)),
+                  F.Sqr(F.Subtract(c, f)))),
+              F.Sqrt(F.Plus(F.Sqr(F.Subtract(a, g)), F.Sqr(F.Subtract(b, h)),
+                  F.Sqr(F.Subtract(c, i)))),
+              F.Sqrt(F.Plus(F.Sqr(F.Subtract(d, g)), F.Sqr(F.Subtract(e, h)),
+                  F.Sqr(F.Subtract(f, i)))));
+
+        }
       }
       return F.NIL;
     }
