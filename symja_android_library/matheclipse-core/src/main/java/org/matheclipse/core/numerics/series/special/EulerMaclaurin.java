@@ -8,7 +8,7 @@ import java.util.function.Function;
 import org.matheclipse.core.numerics.integral.Quadrature;
 import org.matheclipse.core.numerics.series.dp.SeriesAlgorithm;
 import org.matheclipse.core.numerics.utils.Sequences;
-import org.matheclipse.core.numerics.utils.SimpleMath;
+import com.google.common.math.LongMath;
 
 /**
  * 
@@ -182,7 +182,7 @@ public final class EulerMaclaurin {
 
     // do binary search to find a suitable bound
     while (a != b) {
-      final long mid = SimpleMath.average(a, b);
+      final long mid = LongMath.mean(a, b);
       final double error = estimateError(f, df, mid);
       if (Double.isNaN(error)) {
         return -1L;

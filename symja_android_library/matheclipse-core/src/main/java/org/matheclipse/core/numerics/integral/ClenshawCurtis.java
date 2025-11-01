@@ -1,9 +1,11 @@
 package org.matheclipse.core.numerics.integral;
 
+import java.math.RoundingMode;
 import java.util.function.DoubleUnaryOperator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.numerics.utils.Constants;
 import org.matheclipse.core.numerics.utils.SimpleMath;
+import com.google.common.math.IntMath;
 
 /**
  * An adaptive numerical integrator based on the Clenshaw-Curtis quadrature rule. There are two
@@ -83,7 +85,9 @@ public final class ClenshawCurtis extends Quadrature {
     final int[] fev = new int[1];
     final boolean[] success = new boolean[1];
     final double epsin = myTol;
-    final int nupper = SimpleMath.log2Int(myMaxEvals) - 1;
+    // final int nupper = SimpleMath.log2Int(myMaxEvals) - 1;
+    final int nupper = IntMath.log2(myMaxEvals, RoundingMode.FLOOR) - 1;
+    // System.out.println("nupper:" + nupper);
     havie(f, a, b, nupper, epsin, epsout, result, fev, success);
     return new QuadratureResult(result[0], epsout[0], fev[0], success[0]);
   }
