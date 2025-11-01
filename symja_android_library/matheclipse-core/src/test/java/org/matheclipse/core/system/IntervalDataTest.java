@@ -333,6 +333,54 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testIntervalDataComplement() {
+    // Complement with an empty set as the first argument: The complement of an empty set with any
+    // other set is the empty set.
+    check("IntervalComplement(IntervalData(),IntervalData({1, LessEqual, LessEqual, 5}))", //
+        "IntervalData()");
+    // Complement with an empty set as the second argument: The complement of a set with an empty
+    // set is the original set.
+    check("IntervalComplement(IntervalData({1, LessEqual, LessEqual, 5}),IntervalData())", //
+        "IntervalData({1,LessEqual,LessEqual,5})");
+    // Complement of two disjoint intervals: If two intervals are disjoint, the complement is the
+    // first interval.
+    check(
+        "IntervalComplement(IntervalData({1, LessEqual, LessEqual, 5}),IntervalData({6, LessEqual, LessEqual,10}))", //
+        "IntervalData({1,LessEqual,LessEqual,5})");
+    // Second interval is a subset of the first interval: Subtracting a smaller interval from a
+    // larger one that contains it.
+    check(
+        "IntervalComplement(IntervalData({0, LessEqual, LessEqual, 10}),IntervalData({3, LessEqual, LessEqual,7}))", //
+        "IntervalData({0,LessEqual,Less,3},{7,Less,LessEqual,10})");
+    // First interval is a subset of the second interval: Subtracting a larger interval from a
+    // smaller one contained within it results in an empty set.
+    check(
+        "IntervalComplement(IntervalData({3, LessEqual, LessEqual, 7}),IntervalData({0, LessEqual, LessEqual,10}))", //
+        "IntervalData()");
+    // Complement of two overlapping intervals: Subtracting an overlapping interval.
+    check(
+        "IntervalComplement(IntervalData({1, LessEqual, LessEqual, 5}),IntervalData({3, LessEqual, LessEqual,7}))", //
+        "IntervalData({1,LessEqual,Less,3})");
+    // Complement with open and closed boundaries: Demonstrates correct handling of open (<) and
+    // closed (<=) boundaries.
+    check(
+        "IntervalComplement(IntervalData({0, Less, Less, 10}),IntervalData({3, LessEqual, LessEqual,7}))", //
+        "IntervalData({0,Less,Less,3},{7,Less,Less,10})");
+    // Complement involving infinity: Subtracting a finite interval from the set of all real
+    // numbers.
+    check(
+        "IntervalComplement(IntervalData({-Infinity, Less, Less, Infinity}),IntervalData({-5, LessEqual, Less,5}))", //
+        "IntervalData({-Infinity,Less,Less,-5},{5,LessEqual,Less,Infinity})");
+    // Complement with a union of intervals: Subtracting an interval from a union of two other
+    // intervals.
+    check(
+        "IntervalComplement(IntervalData({0, LessEqual, LessEqual, 10},{20, LessEqual, LessEqual, 30}),IntervalData({5, LessEqual, LessEqual,25}))", //
+        "IntervalData({0,LessEqual,Less,5},{25,Less,LessEqual,30})");
+    // Complement resulting in a single point removal: Subtracting an open interval from a closed
+    // interval where the boundaries meet.
+    check(
+        "IntervalComplement(IntervalData({0, LessEqual, LessEqual, 10}),IntervalData({0, Less, Less,10}))", //
+        "IntervalData({0,LessEqual,LessEqual,0},{10,LessEqual,LessEqual,10})");
+
     check("IntervalComplement(IntervalData({-Infinity, LessEqual, LessEqual, Infinity})," //
         + "IntervalData({-Infinity, Less, Less, Infinity}))", //
         "IntervalData()");

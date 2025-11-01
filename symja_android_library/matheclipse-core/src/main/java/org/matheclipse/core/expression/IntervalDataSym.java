@@ -488,6 +488,7 @@ public class IntervalDataSym {
   }
 
   /**
+   * Compute the complement of <code>interval2</code> in <code>interval1</code>. *
    * <p>
    * See:
    * <a href= "https://en.wikipedia.org/wiki/Complement_(set_theory)#Relative_complement">Complement
@@ -496,84 +497,69 @@ public class IntervalDataSym {
    * @param interval1
    * @param interval2
    * @param engine
-   * @return
+   * @return the complement of <code>interval2</code> in <code>interval1</code> or {@link F#NIL}
    */
   public static IAST intervalDataComplement(final IAST interval1, final IAST interval2,
       EvalEngine engine) {
-    if (interval1.isEmptyIntervalData()) {
+    if (isEmptySet(interval1)) {
       return F.CEmptyIntervalData;
     }
-    if (interval2.isEmptyIntervalData()) {
+    if (isEmptySet(interval2)) {
       return interval1;
     }
-
-    IASTAppendable intervalUnion = F.ast(S.IntervalUnion, 3);
-    for (int i = 1; i < interval1.size(); i++) {
-      final IAST list1 = (IAST) interval1.get(i);
-      final IExpr min1 = list1.arg1();
-      final IBuiltInSymbol minEnd1 = (IBuiltInSymbol) list1.arg2();
-      final IBuiltInSymbol maxEnd1 = (IBuiltInSymbol) list1.arg3();
-      final IExpr max1 = list1.arg4();
-      // use rule: list1 \setminus (list2A \cup list2B)=(list1 \setminus list2A) \cap (list1
-      // \setminus list2B)
-      IASTAppendable intervalIntersection = F.ast(S.IntervalIntersection, interval2.size());
-      for (int j = 1; j < interval2.size(); j++) {
-        IASTAppendable segmentResult = F.ast(S.IntervalData, interval2.size());
-        intervalIntersection.append(segmentResult);
-        final IAST list2 = (IAST) interval2.get(j);
-        final IExpr min2 = list2.arg1();
-        final IBuiltInSymbol minEnd2 = (IBuiltInSymbol) list2.arg2();
-        final IBuiltInSymbol maxEnd2 = (IBuiltInSymbol) list2.arg3();
-        final IExpr max2 = list2.arg4();
-        if (S.Less.ofQ(engine, max2, min1) || S.Less.ofQ(engine, max1, min2)) {
-          segmentResult.append(F.List(min1, minEnd1, maxEnd1, max1));
-          continue;
-        }
-        if (S.Less.ofQ(engine, min1, min2)) {
-          // left side
-          segmentResult.append(F.List(min1, minEnd1, toggle(min2, minEnd2), min2));
-        } else if (S.Equal.ofQ(engine, min1, min2)) {
-          // left side
-          if (minEnd2 == S.Less && minEnd1 == S.LessEqual && !min1.isNegativeInfinity()) {
-            segmentResult.append(F.List(min1, S.LessEqual, S.LessEqual, min1));
-          }
-        }
-
-        if (S.Less.ofQ(engine, max2, max1)) {
-          // right side
-          segmentResult.append(F.List(max2, toggle(max2, maxEnd2), maxEnd1, max1));
-        } else if (S.Equal.ofQ(engine, max2, max1)) {
-          // right side
-          if (maxEnd2 == S.Less && maxEnd1 == S.LessEqual && !max1.isInfinity()) {
-            segmentResult.append(F.List(max1, S.LessEqual, S.LessEqual, max1));
-          }
-        }
-
-      }
-      if (intervalIntersection.argSize() > 1) {
-        IExpr temp = engine.evaluate(intervalIntersection);
-        if (temp.isIntervalData()) {
-          intervalUnion.append(temp);
-        } else {
-          // TODO print error ?
-          return F.NIL;
-        }
-      } else if (intervalIntersection.argSize() == 1) {
-        intervalUnion.append(intervalIntersection.arg1());
-      } else if (intervalIntersection.argSize() == 0) {
-        intervalUnion.append(F.CEmptyIntervalData);
-      }
-
+    // A \ B == A intersect (complement of B)
+    IAST complementOf2 = complementOnReals(interval2, engine);
+    if (complementOf2.isPresent()) {
+      return intersection(interval1, complementOf2, engine);
     }
-    if (intervalUnion.argSize() == 1) {
-      return (IAST) intervalUnion.arg1();
-    }
-    IExpr eval = engine.evaluate(intervalUnion);
-    if (eval.isIntervalData()) {
-      return (IAST) eval;
-    }
-    // TODO print error ?
     return F.NIL;
+  }
+
+  /**
+   * Compute the complement of an interval with respect to the real line.
+   *
+   * @param interval
+   * @param engine
+   * @return the complement of <code>interval</code> with respect to the real line
+   */
+  private static IAST complementOnReals(final IAST interval, EvalEngine engine) {
+    IAST normalized = normalize(interval, engine);
+    if (normalized.isNIL()) {
+      normalized = interval;
+    }
+    if (isEmptySet(normalized)) {
+      return reals();
+    }
+
+    IASTAppendable result = F.ast(S.IntervalData, normalized.size() + 1);
+    IExpr current = F.CNInfinity;
+    IBuiltInSymbol currentBoundary = S.Less;
+
+    for (int i = 1; i < normalized.size(); i++) {
+      IAST segment = (IAST) normalized.get(i);
+      IExpr min2 = segment.arg1();
+      IBuiltInSymbol minEnd2 = (IBuiltInSymbol) segment.arg2();
+
+      if (S.Less.ofQ(engine, current, min2)) {
+        result.append(F.List(current, currentBoundary, toggle(min2, minEnd2), min2));
+      } else if (S.Equal.ofQ(engine, current, min2) && currentBoundary == S.Less
+          && minEnd2 == S.Less) {
+        // adjacent open intervals like (... a) and (a ...)
+        // do nothing, the point 'a' is not in the original set, so it's in the complement
+      }
+
+      current = segment.arg4();
+      currentBoundary = toggle(current, (IBuiltInSymbol) segment.arg3());
+    }
+
+    if (!(current.isInfinity() || current.isNegativeInfinity())) {
+      result.append(F.List(current, currentBoundary, S.Less, F.CInfinity));
+    }
+
+    if (result.size() == 1) {
+      return F.CEmptyIntervalData;
+    }
+    return result;
   }
 
   public static IExpr intervalDataIntersection(final IAST ast, EvalEngine engine) {
@@ -1250,8 +1236,8 @@ public class IntervalDataSym {
    *
    * @param intervalList
    * @param engine
-   * @return throw ArgumentTypeException if the interval could not be normalized. {@link F#NIL} if
-   *         the interval could not be normalized.
+   * @return {@link F#NIL} if the interval is already normalized.
+   * @throws ArgumentTypeException if the interval could not be normalized.
    */
   private static IAST normalize(final IAST intervalList, EvalEngine engine)
       throws ArgumentTypeException {
