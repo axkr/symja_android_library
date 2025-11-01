@@ -4,7 +4,7 @@
 FittedModel( )
 ```
  
-> `FittedModel`holds the model generated with `LinearModelFit`
+> `FittedModel` holds the model generated with `LinearModelFit`
    
 See:  
 * [Wikipedia - Linear regression](https://en.wikipedia.org/wiki/Linear_regression) 

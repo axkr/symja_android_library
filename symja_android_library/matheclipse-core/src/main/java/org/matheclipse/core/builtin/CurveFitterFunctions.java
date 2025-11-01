@@ -5,7 +5,10 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.fitting.AbstractCurveFitter;
 import org.hipparchus.fitting.SimpleCurveFitter;
 import org.hipparchus.fitting.WeightedObservedPoints;
-import org.hipparchus.stat.regression.SimpleRegression;
+import org.hipparchus.linear.Array2DRowFieldMatrix;
+import org.hipparchus.linear.FieldMatrix;
+import org.hipparchus.linear.FieldVector;
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
@@ -13,6 +16,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.FittedModelExpr;
 import org.matheclipse.core.generic.SumCurveFitter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -312,8 +316,7 @@ public class CurveFitterFunctions {
           }
           AbstractCurveFitter fitter =
               SumCurveFitter.create(new FindFit.FindFitParametricFunction(function,
-                  (IAST) gradientList, vars, ast.arg3(), engine), initialGuess,
-                  Integer.MAX_VALUE);
+                  (IAST) gradientList, vars, ast.arg3(), engine), initialGuess, Integer.MAX_VALUE);
           IAST data = (IAST) ast.arg1();
           WeightedObservedPoints obs = new WeightedObservedPoints();
           if (addWeightedObservedPoints(data, obs)) {
@@ -355,61 +358,94 @@ public class CurveFitterFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      IExpr arg2 = ast.arg2();
-      IExpr arg3 = ast.arg3();
-      if (!arg2.equals(arg3) || !arg3.isVariable()) {
-        // `1` currently not supported in `2`.
-        return Errors.printMessage(S.LinearModelFit, "unsupported",
-            F.List("Design matrix different from variable", "LinearModelFit"), engine);
+      if (ast.isAST1()) {
+        if (arg1.isList2()) {
+          IExpr m = arg1.first();
+          IExpr v = arg1.second();
+          return FittedModelExpr.linearModelFit(m, v);
+        }
+        return F.NIL;
       }
-      if (arg1.isList()) {
-        int[] dim = arg1.isMatrix();
-        if (dim != null && dim[1] == 2) {
-          double[][] matrix = arg1.toDoubleMatrix(true);
-          if (matrix != null) {
-            return createSimpleRegression(matrix, arg3);
+      if (ast.isAST3()) {
+        IAST arg2 = ast.arg2().makeList();
+        IAST arg3 = ast.arg3().makeList();
+        if (arg1.isList()) {
+          IAST basisFunctions = arg2;
+          // VariablesSet varSet = new VariablesSet(basisFunctions);
+          IAST variables = arg3;
+
+          boolean noIntercept = true;
+          // Intercept will be controlled by the 'basisFunctions'-list (i.e. if '1' is included).
+          if (!basisFunctions.exists(f -> f.isOne())) {
+            IASTAppendable temp = F.ListAlloc(basisFunctions.size());
+            temp.append(F.C1);
+            temp.appendArgs(basisFunctions);
+            basisFunctions = temp;
           }
-        } else {
-          int vectorLength = arg1.isVector();
-          if (vectorLength > 1) {
-            IExpr vector = arg1.normal(false);
-            double[] doubleVector = vector.toDoubleVector();
-            if (doubleVector != null) {
-              double[][] matrix = new double[vectorLength][2];
-              for (int i = 0; i < doubleVector.length; i++) {
-                matrix[i][0] = i + 1;
-                matrix[i][1] = doubleVector[i];
+
+          int[] dim = arg1.isMatrix(false);
+          if (dim != null && dim[1] >= 2) {
+            double[][] numericMatrix = arg1.toDoubleMatrix(false);
+            if (numericMatrix != null) {
+              if (dim[1] - 1 != variables.argSize()) {
+                // The number of coordinates (`1`) is not equal to the number of variables (`2`).
+                return Errors.printMessage(S.LinearModelFit, "fitc",
+                    F.List(F.ZZ(dim[1] - 1), F.ZZ(variables.argSize())), engine);
               }
-              return createSimpleRegression(matrix, arg3);
+              return FittedModelExpr.linearModelFit(numericMatrix, basisFunctions, variables,
+                  noIntercept, engine);
+            }
+            FieldMatrix<IExpr> matrix = Convert.list2Matrix(arg1);
+            FieldVector<IExpr> basis = Convert.list2Vector(basisFunctions);
+            FieldVector<IExpr> vars = Convert.list2Vector(variables);
+
+            if (matrix != null && basis != null && vars != null) {
+              if (dim[1] - 1 != variables.argSize()) {
+                // The number of coordinates (`1`) is not equal to the number of variables (`2`).
+                return Errors.printMessage(S.LinearModelFit, "fitc",
+                    F.List(F.ZZ(dim[1] - 1), F.ZZ(variables.argSize())), engine);
+              }
+              return FittedModelExpr.linearModelFit(matrix, basis, vars, noIntercept, engine);
+            }
+          } else {
+            int vectorLength = arg1.isVector();
+            if (vectorLength > 1) {
+              FieldVector<IExpr> vector = Convert.list2Vector(arg1);
+              // IExpr vector = arg1.normal(false);
+              // double[] doubleVector = vector.toDoubleVector();
+              if (vector != null) {
+                if (variables.argSize() != 1) {
+                  // The number of coordinates (`1`) is not equal to the number of variables (`2`).
+                  return Errors.printMessage(S.LinearModelFit, "fitc",
+                      F.List(F.C1, F.ZZ(variables.argSize())), engine);
+                }
+                FieldMatrix<IExpr> matrix =
+                    new Array2DRowFieldMatrix<IExpr>(F.EXPR_FIELD, vectorLength, 2);
+                // double[][] matrix = new double[vectorLength][2];
+                for (int i = 0; i < vector.getDimension(); i++) {
+                  matrix.setEntry(i, 0, F.ZZ(i + 1));
+                  matrix.setEntry(i, 1, vector.getEntry(i));
+                }
+                FieldVector<IExpr> basis = Convert.list2Vector(basisFunctions);
+                FieldVector<IExpr> vars = Convert.list2Vector(variables);
+                // double[][] matrix = arg1.toDoubleMatrix(false);
+                if (basis != null && vars != null) {
+                  return FittedModelExpr.linearModelFit(matrix, basis, vars, noIntercept, engine);
+                }
+              }
             }
           }
         }
       }
-      // The first argument is not a vector or matrix.
+      // The first argument is not a vector or matrix or a list containing a design matrix and
+      // response vector.
       return Errors.printMessage(S.LinearModelFit, "notdata", F.CEmptyList, engine);
     }
 
-    private static IExpr createSimpleRegression(double[][] matrix, final IExpr variable) {
-      SimpleRegression model = new SimpleRegression();
-      model.addData(matrix);
-      return F.Plus(F.num(model.getIntercept()), F.Times(F.num(model.getSlope()), variable));
-
-
-      // OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
-      // double[] y = new double[] { 11.0, 12.0, 13.0, 14.0, 15.0, 16.0 };
-      // double[][] x = new double[6][];
-      // x[0] = new double[] { 0, 0, 0, 0, 0 };
-      // x[1] = new double[] { 2.0, 0, 0, 0, 0 };
-      // x[2] = new double[] { 0, 3.0, 0, 0, 0 };
-      // x[3] = new double[] { 0, 0, 4.0, 0, 0 };
-      // x[4] = new double[] { 0, 0, 0, 5.0, 0 };
-      // x[5] = new double[] { 0, 0, 0, 0, 6.0 };
-      // regression.newSampleData(y, x);
-    }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_3;
+      return ARGS_1_3;
     }
   }
 

@@ -2,7 +2,6 @@ package org.matheclipse.core.convert;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -189,6 +188,25 @@ public class Convert {
       }
     }
     return null;
+  }
+
+  public static FieldMatrix<IExpr> list2Matrix(final double[][] expr)
+      throws ClassCastException, IndexOutOfBoundsException {
+    if (expr == null || expr.length == 0) {
+      return null;
+    }
+    int[] dim = new int[] {expr.length, expr[0].length};
+    if (dim[0] == 0 || dim[1] == 0) {
+      return null;
+    }
+    final IExpr[][] elements = new IExpr[dim[0]][dim[1]];
+    for (int i = 0; i < dim[0]; i++) {
+      for (int j = 0; j < dim[1]; j++) {
+        elements[i][j] = F.num(expr[i][j]);
+      }
+    }
+   
+    return new Array2DRowFieldMatrix<IExpr>(elements);
   }
 
   public static List<FieldVector<IExpr>> list2ListOfVectors(final IExpr expr)
@@ -614,6 +632,22 @@ public class Convert {
       return new ArrayFieldVector<IExpr>(elements, false);
     }
     return null;
+  }
+
+  public static FieldVector<IExpr> list2Vector(final double[] expr) throws ClassCastException {
+    if (expr == null) {
+      return null;
+    }
+    int dim = expr.length;
+    if (dim <= 0) {
+      return null;
+    }
+    final IExpr[] elements = new IExpr[dim];
+    for (int i = 0; i < dim; i++) {
+      elements[i] = F.num(expr[i]);
+    }
+    return new ArrayFieldVector<IExpr>(elements, false);
+
   }
 
   public static FieldVector<Complex> list2ComplexVector(IExpr expr) throws ClassCastException {
@@ -1277,7 +1311,7 @@ public class Convert {
   }
 
   public static IAST fromCSV(String fileName) throws IOException {
-    InputStreamReader reader = new FileReader(fileName);
+    FileReader reader = new FileReader(fileName);
     return Convert.fromCSV(reader);
   }
 

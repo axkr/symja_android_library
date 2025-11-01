@@ -321,20 +321,19 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDesignMatrix() {
-    // check("data = Table({i, i^(3/2) }, {i, 2})", //
-    // "{{1,1},{2,2*Sqrt(2)}}");
-    // check("DesignMatrix(data, x, x)", //
-    // "{{1,1},{1,2}}");
-    // check("DesignMatrix(data, {x, x^2}, x)", //
-    // "{{1,{{x,x^2}},{x,x},{1}},{1,{{x,x^2}},{x,x},{2}}}");
-    check("DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, x, x)", //
-        "{{1,2},{1,3},{1,5},{1,7}}");
-    check("DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, f(x), x)", //
-        "{{1,f(2)},{1,f(3)},{1,f(5)},{1,f(7)}}");
+    check("DesignMatrix({{1,1},{2,2*Sqrt(2)},{3,3*Sqrt(3)},{4,8},{5,5*Sqrt(5)}}, {x, x^2}, x)", //
+        "{{1,1,1},{1,2,4},{1,3,9},{1,4,16},{1,5,25}}");
+
+    check("data = Table({i, i^(3/2) }, {i, 5})", //
+        "{{1,1},{2,2*Sqrt(2)},{3,3*Sqrt(3)},{4,8},{5,5*Sqrt(5)}}");
+    check("DesignMatrix(data, x, x)", //
+        "{{1,1},{1,2},{1,3},{1,4},{1,5}}");
 
     check("DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, x, x)", //
-        "{{1,2},{1,3},{1,5},{1,7}}");
+        "{{1,2},{1,3},{1,5},{1,7}}"); //
     check("DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, f(x), x)", //
+        "{{1,f(2)},{1,f(3)},{1,f(5)},{1,f(7)}}");
+    check("DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}},{1, f(x)}, x)", //
         "{{1,f(2)},{1,f(3)},{1,f(5)},{1,f(7)}}");
   }
 

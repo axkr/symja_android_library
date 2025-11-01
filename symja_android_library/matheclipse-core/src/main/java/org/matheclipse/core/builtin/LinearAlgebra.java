@@ -8,19 +8,11 @@ import static org.matheclipse.core.expression.F.C4;
 import static org.matheclipse.core.expression.F.CN2;
 import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.Dot;
-import static org.matheclipse.core.expression.F.Function;
 import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Map;
-import static org.matheclipse.core.expression.F.MapThread;
-import static org.matheclipse.core.expression.F.Most;
 import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Norm;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Prepend;
-import static org.matheclipse.core.expression.F.ReplaceAll;
-import static org.matheclipse.core.expression.F.Rule;
-import static org.matheclipse.core.expression.F.Slot1;
 import static org.matheclipse.core.expression.F.Sqr;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Subtract;
@@ -82,6 +74,7 @@ import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.FittedModelExpr;
 import org.matheclipse.core.expression.data.LinearSolveFunctionExpr;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.IAST;
@@ -253,7 +246,6 @@ public final class LinearAlgebra {
      * See: <a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row echelon
      * form</a>.
      *
-     * @return
      */
     private void rowReduce() {
       int pivotRow = 0;
@@ -412,7 +404,6 @@ public final class LinearAlgebra {
      * See: <a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row echelon
      * form</a>.
      *
-     * @return
      */
     public FieldMatrix<IExpr> getRowReducedMatrix() {
       return rowReducedMatrix;
@@ -577,7 +568,6 @@ public final class LinearAlgebra {
      * See: <a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row echelon
      * form</a>.
      *
-     * @return
      */
     private void rowReduceAdvancedZeroTest() {
       RowColIndex pivot = new RowColIndex(0, 0);
@@ -1397,26 +1387,27 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr m = ast.arg1();
-      IExpr f = ast.arg2();
-      IExpr x = ast.arg3();
-      if (f.isList()) {
-        if (x.isAtom()) {
-          // DesignMatrix(m_, f_List, x_?AtomQ) :=
-          // DesignMatrix(m, {f}, ConstantArray(x, Length(f)))
-          return F.DesignMatrix(m, F.list(f), F.ConstantArray(x, F.ZZ(((IAST) f).argSize())));
-        } else if (x.isList()) {
-          // DesignMatrix(m_, f_List, x_List) :=
-          // Prepend(MapThread(Function({g, y, r}, g /. y -> r), {f, x, Most(#)}), 1)& /@ m
-          return Map(Function(
-              Prepend(MapThread(Function(List(S.g, S.y, S.r), ReplaceAll(S.g, Rule(S.y, S.r))),
-                  List(f, x, Most(Slot1))), C1)),
-              m);
+      int[] dim = m.isMatrix(false);
+      if (dim != null && dim[1] >= 2) {
+        // double[][] matrix = m.toDoubleMatrix(false);
+        IAST basisFunctions = ast.arg2().makeList();
+        IAST variables = ast.arg3().makeList();
+        if (dim[1] - 1 != variables.argSize()) {
+          // The number of coordinates (`1`) is not equal to the number of variables (`2`).
+          return Errors.printMessage(S.DesignMatrix, "fitc",
+              F.List(F.ZZ(dim[1] - 1), F.ZZ(variables.argSize())), engine);
         }
-      } else {
-        if (x.isAtom()) {
-          // DesignMatrix(m_, f_, x_?AtomQ) := DesignMatrix(m, {f}, {x})
-          return F.DesignMatrix(m, F.list(f), F.list(x));
+        // Intercept will be controlled by the 'basisFunctions'-list (i.e. if '1' is included).
+        if (!basisFunctions.exists(f -> f.isOne())) {
+          IASTAppendable temp = F.ListAlloc(basisFunctions.size());
+          temp.append(F.C1);
+          temp.appendArgs(basisFunctions);
+          basisFunctions = temp;
         }
+
+        IAST designMatrix =
+            FittedModelExpr.designMatrixSymbolic(m, basisFunctions, variables, engine);
+        return designMatrix;
       }
       return F.NIL;
     }
@@ -2218,14 +2209,14 @@ public final class LinearAlgebra {
               return Errors.printMessage(S.Eigenvalues, "takeeigen",
                   F.List(F.C1, F.ZZ(n), F.ZZ(eigenValuesList.argSize())));
             }
-            return eigenValuesList.copyFrom(eigenValuesList.size() + n, eigenValuesList.size());
+            return eigenValuesList.subList(eigenValuesList.size() + n, eigenValuesList.size());
           }
           if (eigenValuesList.argSize() < n) {
             // Cannot take eigenvalues `1` through `2` out of the total of `3` eigenvalues.
             return Errors.printMessage(S.Eigenvalues, "takeeigen",
                 F.List(F.C1, F.ZZ(n), F.ZZ(eigenValuesList.argSize())));
           }
-          return eigenValuesList.copyFrom(1, n + 1);
+          return eigenValuesList.subList(1, n + 1);
         }
         return eigenValuesList;
       }
@@ -5633,7 +5624,7 @@ public final class LinearAlgebra {
             Errors.printMessage(S.SingularValueDecomposition, rex);
           }
         } else {
-          // TODO solve sign error in symbolic implementation
+          // TODO DEAD CODE - solve sign error in symbolic implementation
           try {
             engine.setTogetherMode(true);
             SymbolicSingularValueDecomposition symbolicSVD =
@@ -6598,7 +6589,6 @@ public final class LinearAlgebra {
    * the matrix are already checked by the caller.
    *
    * @param matrix a 2x2 matrix
-   * @return
    */
   public static IExpr determinant2x2(final FieldMatrix<IExpr> matrix) {
     // 2x2 matrix

@@ -129,8 +129,9 @@ public class Errors {
       "fdup", "Duplicate parameter `1` found in `2`.", //
       "fdguess", "Form of start specification `1` supports only one start value for a variable.",
       "fdss", "Search specification `1` should be a list with 1 to 3 elements.", //
-      "flpar", "Parameter specification `1` in `2` should be a symbol or a list of symbols.", //
       "fftl", "Argument `1` is not a non-empty list or rectangular array of numeric quantities.", //
+      "fitc", "The number of coordinates (`1`) is not equal to the number of variables (`2`).", //
+      "flpar", "Parameter specification `1` in `2` should be a symbol or a list of symbols.", //
       "fttype", "The transform type `1` should be 1, 2, 3 or 4.", //
       "fpct", "To many parameters in `1` to be filled from `2`.", //
       "fnsym", "First argument in `1` is not a symbol or a string naming a symbol.", //
@@ -272,7 +273,8 @@ public class Errors {
       "normal", "Nonatomic expression expected at position `1` in `2`.", //
       "nostr", "`1` is not a string.", //
       "nosym", "`1` does not contain a symbol to attach a rule to.", //
-      "notdata", "The first argument is not a vector or matrix.", //
+      "notdata",
+      "The first argument is not a vector or matrix or a list containing a design matrix and response vector.", //
       "notent",
       "`1` is not a known entity, class or tag for GraphData. Use GraphData for a list of entities.", //
       "notunicode",

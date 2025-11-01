@@ -14,7 +14,7 @@ public class LinearAlgebraUtil {
     boolean isNonRectangular = false;
     final EvalEngine engine;
     final IntArrayList dimensions;
-  
+
     /**
      * Determine the <a href=
      * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Dimensions.md">Dimensions</a>
@@ -30,7 +30,7 @@ public class LinearAlgebraUtil {
       this.engine = EvalEngine.get();
       this.dimensions = dimensionsRecursive(ast, header, maxLevel, throwIllegalArgumentException);
     }
-  
+
     /**
      * Determine the <a href=
      * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Dimensions.md">Dimensions</a>
@@ -107,13 +107,13 @@ public class LinearAlgebraUtil {
       }
       return new IntArrayList();
     }
-  
-    public boolean isNonRectangular() {
-      return isNonRectangular;
-    }
-  
+
     public IntArrayList getDimensions() {
       return dimensions;
+    }
+
+    public boolean isNonRectangular() {
+      return isNonRectangular;
     }
   }
 
@@ -159,7 +159,7 @@ public class LinearAlgebraUtil {
    * @return a list of size <code>0</code> if no dimensions are found
    */
   public static IntArrayList dimensions(IAST ast) {
-    LinearAlgebraUtil.DimensionsData dimensionsData = new LinearAlgebraUtil.DimensionsData(ast, ast.head(), Integer.MAX_VALUE, false);
+    DimensionsData dimensionsData = new DimensionsData(ast, ast.head(), Integer.MAX_VALUE, false);
     return dimensionsData.getDimensions();
   }
 
@@ -178,13 +178,13 @@ public class LinearAlgebraUtil {
   public static IntArrayList dimensions(IExpr expr, IExpr header, int maxLevel,
       boolean throwIllegalArgumentException) {
     if (expr.isAST()) {
-      org.matheclipse.core.eval.LinearAlgebraUtil.DimensionsData dimensionsData =
-          new org.matheclipse.core.eval.LinearAlgebraUtil.DimensionsData((IAST) expr, header, maxLevel, throwIllegalArgumentException);
+      DimensionsData dimensionsData =
+          new DimensionsData((IAST) expr, header, maxLevel, throwIllegalArgumentException);
       return dimensionsData.getDimensions();
     }
     if (expr.isSparseArray()) {
       int[] dims = ((ISparseArray) expr).getDimension();
-  
+
       if (dims.length > maxLevel) {
         IntArrayList list = new IntArrayList(maxLevel);
         if (throwIllegalArgumentException) {
@@ -201,7 +201,7 @@ public class LinearAlgebraUtil {
       }
       return list;
     }
-  
+
     return new IntArrayList();
   }
 
@@ -216,7 +216,7 @@ public class LinearAlgebraUtil {
    * @return a list of size <code>0</code> if no dimensions are found
    */
   public static IntArrayList dimensions(ITensorAccess ast, IExpr header) {
-    return LinearAlgebraUtil.dimensions(ast, header, Integer.MAX_VALUE);
+    return dimensions(ast, header, Integer.MAX_VALUE);
   }
 
   /**
@@ -240,7 +240,7 @@ public class LinearAlgebraUtil {
       list.addElements(0, dims, 0, maxLevel);
       return list;
     }
-    org.matheclipse.core.eval.LinearAlgebraUtil.DimensionsData dimensionsData = new org.matheclipse.core.eval.LinearAlgebraUtil.DimensionsData((IAST) ast, header, maxLevel, false);
+    DimensionsData dimensionsData = new DimensionsData((IAST) ast, header, maxLevel, false);
     return dimensionsData.getDimensions();
   }
 
