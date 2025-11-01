@@ -756,11 +756,13 @@ public class Num implements INum {
 
   @Override
   public IExpr ellipticE() {
-    try {
-      Apfloat ellipticE = EvalEngine.getApfloatDouble().ellipticE(apfloatValue());
-      return F.num(ellipticE.doubleValue());
-    } catch (ArithmeticException aex) {
-      //
+    if (value <= 1.0) {
+      try {
+        Apfloat ellipticE = EvalEngine.getApfloatDouble().ellipticE(apfloatValue());
+        return F.num(ellipticE.doubleValue());
+      } catch (ArithmeticException aex) {
+        //
+      }
     }
     Apcomplex ellipticE = EvalEngine.getApfloatDouble().ellipticE(apcomplexValue());
     return F.complexNum(ellipticE.real().doubleValue(), ellipticE.imag().doubleValue());
@@ -768,11 +770,13 @@ public class Num implements INum {
 
   @Override
   public IExpr ellipticK() {
-    try {
-      Apfloat ellipticK = EvalEngine.getApfloatDouble().ellipticK(apfloatValue());
-      return F.num(ellipticK.doubleValue());
-    } catch (ArithmeticException aex) {
-      //
+    if (value <= 1.0) {
+      try {
+        Apfloat ellipticK = EvalEngine.getApfloatDouble().ellipticK(apfloatValue());
+        return F.num(ellipticK.doubleValue());
+      } catch (ArithmeticException aex) {
+        //
+      }
     }
     Apcomplex ellipticK = EvalEngine.getApfloatDouble().ellipticK(apcomplexValue());
     return F.complexNum(ellipticK.real().doubleValue(), ellipticK.imag().doubleValue());
@@ -1210,11 +1214,13 @@ public class Num implements INum {
 
   @Override
   public IExpr hypergeometric0F1(IExpr arg2) {
-    try {
-      return F.num(HypergeometricJS.hypergeometric0F1(value, arg2.evalf()));
-    } catch (RuntimeException e) {
-      Errors.rethrowsInterruptException(e);
-      // try as computation with complex numbers
+    if (!F.isNumIntValue(value) || value > 0) {
+      try {
+        return F.num(HypergeometricJS.hypergeometric0F1(value, arg2.evalf()));
+      } catch (RuntimeException e) {
+        Errors.rethrowsInterruptException(e);
+        // try as computation with complex numbers
+      }
     }
     try {
       return F.complexNum(

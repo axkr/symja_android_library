@@ -232,33 +232,15 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * Get the {@link FixedPrecisionApfloatHelper} for calculations with
-   * {@link ParserConfig#MACHINE_PRECISION}.
-   * 
-   * @return
-   */
-  public static FixedPrecisionApfloatHelper getApfloatDouble() {
-    return getApfloatDouble(get());
-  }
-
-
-  /**
    * Retrieves the {@link FixedPrecisionApfloatHelper} instance for calculations with
-   * {@link ParserConfig#MACHINE_PRECISION}. If the internal <code>fApfloatHelperDouble</code> field
-   * in the provided {@link EvalEngine} is <code>null</code>, a new instance of
-   * {@link FixedPrecisionApfloatHelper} is created with a precision of
-   * <code>{@link ParserConfig#MACHINE_PRECISION} + 1</code>.
+   * {@link ParserConfig#MACHINE_PRECISION}+1.
    *
    * @param engine the {@link EvalEngine} instance for which the {@link FixedPrecisionApfloatHelper}
    *        is retrieved
    * @return the {@link FixedPrecisionApfloatHelper} instance for the given evaluation engine
    */
-  public static FixedPrecisionApfloatHelper getApfloatDouble(EvalEngine engine) {
-    FixedPrecisionApfloatHelper h = engine.fApfloatHelperDouble;
-    if (h == null) {
-      h = new FixedPrecisionApfloatHelper(ParserConfig.MACHINE_PRECISION + 1);
-    }
-    return h;
+  public static FixedPrecisionApfloatHelper getApfloatDouble() {
+    return EvalEngine.APFLOAT_HELPER_DOUBLE;
   }
 
   /**
@@ -508,12 +490,18 @@ public class EvalEngine implements Serializable {
 
   transient String f$InputFileName = null;
 
-  /** The precision for numeric operations. */
-  // protected transient long fNumericPrecision;
-
+  /**
+   * The {@link FixedPrecisionApfloatHelper} instance for fixed precision calculations defined in
+   * the {@link S#N} function.
+   */
   protected transient FixedPrecisionApfloatHelper fApfloatHelper;
 
-  protected transient FixedPrecisionApfloatHelper fApfloatHelperDouble;
+  /**
+   * The {@link FixedPrecisionApfloatHelper} instance for double precision calculations in the
+   * Apfloat library.
+   */
+  private final static FixedPrecisionApfloatHelper APFLOAT_HELPER_DOUBLE =
+      new FixedPrecisionApfloatHelper(ParserConfig.MACHINE_PRECISION + 1);
 
   /** The number of significant figures in the output expression */
   protected int fSignificantFigures;
@@ -1016,7 +1004,8 @@ public class EvalEngine implements Serializable {
     engine.fNumericMode = fNumericMode;
     // engine.fNumericPrecision = fNumericPrecision;
     engine.fApfloatHelper = new FixedPrecisionApfloatHelper(getNumericPrecision());
-    engine.fApfloatHelperDouble = new FixedPrecisionApfloatHelper(ParserConfig.MACHINE_PRECISION);
+    // engine.fApfloatHelperDouble = new
+    // FixedPrecisionApfloatHelper(ParserConfig.MACHINE_PRECISION);
     engine.fSignificantFigures = fSignificantFigures;
     engine.fEvalHistory = fEvalHistory;
     engine.fOptionsStack = fOptionsStack != null ? (OptionsStack) fOptionsStack.clone() : null;
@@ -2839,7 +2828,7 @@ public class EvalEngine implements Serializable {
    */
   public IExpr evalTimeConstrained(final IExpr expr, IExpr defaultValue, long seconds) {
     ExecutorService executorService = Executors.newSingleThreadExecutor(Config.THREAD_FACTORY);
-    try  {
+    try {
       TimeLimiter timeLimiter = SimpleTimeLimiter.create(executorService); // Executors.newSingleThreadExecutor());
       EvalControlledCallable work = new EvalControlledCallable(this);
       seconds = setSeconds(seconds);
@@ -3463,7 +3452,7 @@ public class EvalEngine implements Serializable {
     stackBegin();
     // fNumericPrecision = 15;
     fApfloatHelper = null;
-    fApfloatHelperDouble = null;
+    // fApfloatHelperDouble = null;
     fConstantCounter = 1;
     fSignificantFigures = 6;
     fNumericMode = false;

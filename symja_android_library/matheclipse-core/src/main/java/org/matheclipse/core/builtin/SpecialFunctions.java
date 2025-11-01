@@ -2366,12 +2366,12 @@ public class SpecialFunctions {
           }
 
           if (z instanceof ComplexNum) {
-            FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble(engine);
+            FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
             Apcomplex ac = ((ComplexNum) z).apcomplexValue();
             Apcomplex productLog = h.w(ac, ki);
             return F.complexNum(productLog.real().doubleValue(), productLog.imag().doubleValue());
           } else if (z instanceof Num) {
-            FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble(engine);
+            FixedPrecisionApfloatHelper h = EvalEngine.getApfloatDouble();
             Apcomplex ac = ((Num) z).apcomplexValue();
             Apcomplex productLog = h.w(ac, ki);
             return F.complexNum(productLog.real().doubleValue(), productLog.imag().doubleValue());

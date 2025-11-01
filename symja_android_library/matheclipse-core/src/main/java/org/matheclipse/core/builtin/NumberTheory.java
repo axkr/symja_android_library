@@ -290,7 +290,7 @@ public final class NumberTheory {
                 Errors.rethrowsInterruptException(ce);
               }
             } else {
-              h = EvalEngine.getApfloatDouble(engine);
+              h = EvalEngine.getApfloatDouble();
               try {
                 return F.num(h.bernoulli(ln).doubleValue());
               } catch (Exception ce) {
@@ -324,7 +324,7 @@ public final class NumberTheory {
             if (engine.isArbitraryMode()) {
               h = EvalEngine.getApfloat(engine);
             } else {
-              h = EvalEngine.getApfloatDouble(engine);
+              h = EvalEngine.getApfloatDouble();
             }
             if (z.isReal()) {
               IReal r = (IReal) z;
@@ -2697,45 +2697,19 @@ public final class NumberTheory {
       return F.NIL;
     }
 
-    public static IInteger factorial2(final IInteger n) {
-      final boolean isNegative = n.isNegative();
-      IInteger result = isNegative ? F.CN1 : F.C1;
-      final IInteger start = n.isOdd() ? (isNegative ? F.CN3 : F.C3) : (isNegative ? F.CN2 : F.C2);
-      for (IInteger i = start; isNegative ? i.compareTo(n) >= 0 : i.compareTo(n) <= 0; i =
-          i.add(2)) {
-        result = result.multiply(i);
-      }
-
-      return result;
-    }
-
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (arg1.isInteger()) {
-        if (!arg1.isNegative()) {
-          return factorial2((IInteger) arg1);
+      long n = arg1.toLongDefault();
+      if (F.isPresent(n)) {
+        long nAbs = n < 0 ? -n : n;
+        final int iterationLimit = engine.getIterationLimit();
+        if (iterationLimit >= 0 && iterationLimit < nAbs) {
+          IterationLimitExceeded.throwIt(nAbs, F.Factorial2(F.ZZ(n)));
         }
-        int n = arg1.toIntDefault(0);
-        if (n < 0) {
-          switch (n) {
-            case -1:
-              return F.C1;
-            case -2:
-              return F.CComplexInfinity;
-            case -3:
-              return F.CN1;
-            case -4:
-              return F.CComplexInfinity;
-            case -5:
-              return F.C1D3;
-            case -6:
-              return F.CComplexInfinity;
-            case -7:
-              return F.QQ(-1L, 15L);
-          }
-        }
+        return factorial2(n);
       }
+
       if (arg1.isInfinity()) {
         return F.CInfinity;
       }
@@ -2748,10 +2722,28 @@ public final class NumberTheory {
       if (arg1.isComplexInfinity()) {
         return S.Indeterminate;
       }
-      // if (engine.isNumericMode() && arg1.isNumber()) {
-      // return functionExpand(ast, engine);
-      // }
       return F.NIL;
+    }
+
+    private static IExpr factorial2(long n) {
+      if (n < 0) {
+        if ((n & 1) == 0) { // is even
+          // ComplexInfinity
+          return F.CComplexInfinity;
+        }
+        // is odd
+        BigInteger result = BigInteger.ONE;
+        for (long i = -1; i > n; i -= 2) {
+          result = result.multiply(BigInteger.valueOf(i));
+        }
+        return F.QQ(BigInteger.ONE, result);
+      }
+      BigInteger result = BigInteger.ONE;
+      final int start = ((n & 1) == 0) ? 2 : 3;
+      for (long i = start; i <= n; i += 2) {
+        result = result.multiply(BigInteger.valueOf(i));
+      }
+      return F.ZZ(result);
     }
 
     @Override
