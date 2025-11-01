@@ -17,6 +17,12 @@ jobs:
     steps:
     - uses: actions/checkout@v5
 
+    - name: Set up JDK 17.0.17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17.0.17'  
+        distribution: 'temurin'
+
     - name: Set up Java for deployment
       uses: ./.github/actions/setup-java-for-deployment
       with:
