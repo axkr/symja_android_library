@@ -886,7 +886,8 @@ public abstract class DoubleFormFactory {
       return;
     }
     if (o instanceof IFraction) {
-      convertFraction(buf, (IFraction) o, precedence, caller);
+      double doubleValue = ((IFraction) o).evalf();
+      convertDouble(buf, F.num(doubleValue), precedence, caller);
       return;
     }
     if (o instanceof IComplex) {

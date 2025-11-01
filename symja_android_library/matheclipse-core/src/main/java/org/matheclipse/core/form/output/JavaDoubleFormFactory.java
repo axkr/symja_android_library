@@ -168,6 +168,14 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
         buf.append("Math.pow");
         convertArgs(buf, head, function);
         return;
+      } else if (function.isDirectedInfinity()) {
+        if (function.isInfinity()) {
+          buf.append("Double.POSITIVE_INFINITY");
+          return;
+        } else if (function.isNegativeInfinity()) {
+          buf.append("Double.NEGATIVE_INFINITY");
+          return;
+        }
       }
       buf.append("F.");
       buf.append(head.toString());

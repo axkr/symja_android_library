@@ -2,7 +2,6 @@ package org.matheclipse.core.form.output;
 
 import java.util.Map;
 import org.hipparchus.complex.Complex;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -53,7 +52,7 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
   }
 
   /**
-   * Get an <code>JavaDoubleFormFactory</code> for converting an internal expression to a user
+   * Get an <code>JavaComplexFormFactory</code> for converting an internal expression to a user
    * readable string.
    *
    * @param relaxedSyntax If <code>true</code> use paranthesis instead of square brackets and ignore
@@ -67,7 +66,7 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
   }
 
   /**
-   * Get an <code>JavaDoubleFormFactory</code> for converting an internal expression to a user
+   * Get an <code>JavaComplexFormFactory</code> for converting an internal expression to a user
    * readable string.
    *
    * @param relaxedSyntax if <code>true</code> use paranthesis instead of square brackets and ignore
@@ -84,7 +83,7 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
   }
 
   /**
-   * Get an <code>JavaDoubleFormFactory</code> for converting an internal expression to a user
+   * Get an <code>JavaComplexFormFactory</code> for converting an internal expression to a user
    * readable string.
    *
    * @param relaxedSyntax if <code>true</code> use paranthesis instead of square brackets and ignore
@@ -110,7 +109,7 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
   }
 
   /**
-   * Get an <code>JavaDoubleFormFactory</code> for converting an internal expression to a user
+   * Get an <code>JavaComplexFormFactory</code> for converting an internal expression to a user
    * readable string, with <code>relaxedSyntax</code> set to false.
    *
    * @return
@@ -150,6 +149,11 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
             convertInternal(buf, base);
             buf.append(").sqrt()");
             return;
+          } else if (exponent.isNumEqualRational(F.C1D3)) {
+            buf.append("(");
+            convertInternal(buf, base);
+            buf.append(").cbrt()");
+            return;
           } else if (exponent.isNumEqualRational(F.CN1D2)) {
             buf.append("(");
             convertInternal(buf, base);
@@ -161,6 +165,23 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
             buf.append(").reciprocal()");
             return;
           }
+        } else if (function.isDirectedInfinity()) {
+          if (function.isInfinity()) {
+            buf.append("Complex.INF");
+            return;
+          } else if (function.isNegativeInfinity()) {
+            buf.append("(-Complex.INF)");
+            return;
+          }
+          // Complex atan2(Complex x) {
+          buf.append("(");
+          convertInternal(buf, function.first());
+          buf.append(")" + str);
+          if (function.isAST(S.ArcTan, 3)) {
+            buf.append("2");
+          }
+          convertArgs(buf, head, function, 2);
+          return;
         }
         // Complex atan2(Complex x) {
         buf.append("(");
@@ -172,54 +193,56 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
         convertArgs(buf, head, function, 2);
         return;
       }
-    }
-    if (function.headID() > 0) {
-      if (function.isAST(S.Defer, 2) || function.isAST(S.Evaluate, 2) || function.isAST(S.Hold, 2)
-          || function.isUnevaluated()) {
-        convertInternal(buf, function.first());
-        return;
-      }
-      if (function.isPower()) {
-        IExpr base = function.base();
-        IExpr exponent = function.exponent();
-        if (exponent.isMinusOne()) {
-          buf.append("1.0/(");
-          convertInternal(buf, base);
-          buf.append(")");
+      if (function.headID() > 0) {
+        if (function.isAST(S.Defer, 2) || function.isAST(S.Evaluate, 2) || function.isAST(S.Hold, 2)
+            || function.isUnevaluated()) {
+          convertInternal(buf, function.first());
           return;
         }
-        if (exponent.isNumEqualRational(F.C1D2)) {
-          buf.append("Math.sqrt(");
-          convertInternal(buf, base);
-          buf.append(")");
+        if (function.isPower()) {
+          IExpr base = function.base();
+          IExpr exponent = function.exponent();
+          if (exponent.isMinusOne()) {
+            buf.append("1.0/(");
+            convertInternal(buf, base);
+            buf.append(")");
+            return;
+          }
+          if (exponent.isNumEqualRational(F.C1D2)) {
+            buf.append("Math.sqrt(");
+            convertInternal(buf, base);
+            buf.append(")");
+            return;
+          }
+          if (exponent.isNumEqualRational(F.C1D3)) {
+            buf.append("Math.cbrt(");
+            convertInternal(buf, base);
+            buf.append(")");
+            return;
+          }
+          buf.append("Math.pow");
+          convertArgs(buf, head, function, 1);
           return;
+        } else if (function.isDirectedInfinity()) {
+          if (function.isInfinity()) {
+            buf.append("Complex.INF");
+            return;
+          }
+          if (function.isNegativeInfinity()) {
+            buf.append("(-Complex.INF)");
+            return;
+          }
         }
-        if (exponent.isNumEqualRational(F.C1D3)) {
-          buf.append("Math.cbrt(");
-          convertInternal(buf, base);
-          buf.append(")");
-          return;
-        }
-        buf.append("Math.pow");
+        buf.append("F.");
+        buf.append(head.toString());
+        buf.append(".ofN(");
         convertArgs(buf, head, function, 1);
+        buf.append(")");
         return;
       }
-      buf.append("F.");
-      buf.append(head.toString());
-      buf.append(".ofN(");
+      convertInternal(buf, head);
       convertArgs(buf, head, function, 1);
-      buf.append(")");
-      return;
     }
-    if (function.isInfinity()) {
-      buf.append("Double.POSITIVE_INFINITY");
-      return;
-    }
-    if (function.isNegativeInfinity()) {
-      buf.append("Double.NEGATIVE_INFINITY");
-      return;
-    }
-    convertInternal(buf, head);
-    convertArgs(buf, head, function, 1);
   }
+
 }
