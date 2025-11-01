@@ -22,6 +22,10 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
   protected StackMatcher stackMatcher;
   protected IPatternMap fPatternMap;
   protected IAST fLhsPatternAST;
+
+  /**
+   *        
+   */
   protected final boolean fOneIdentity;
 
   public FlatStepVisitor(final ISymbol sym, IAST lhsPatternAST, IAST lhsEvalAST,
@@ -97,7 +101,7 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
   }
 
   public String toString(int[][] result) {
-    StringBuilder buf = new StringBuilder();
+    StringBuilder buf = new StringBuilder(16 + result.length * 10);
     for (int i = 0; i < result.length; i++) {
       if (result[i] == null) {
         buf.append("[null]");

@@ -56,7 +56,6 @@ public class HashedOrderlessMatcherTimes extends HashedOrderlessMatcher {
       }
       return false;
     }
-    IExpr temp;
     IExpr arg1 = orderlessAST.get(i + 1);
     IReal num1 = F.C1;
     if (arg1.isPowerInteger()) {
@@ -69,6 +68,7 @@ public class HashedOrderlessMatcherTimes extends HashedOrderlessMatcher {
       num2 = (IReal) arg2.exponent();
       arg2 = arg2.base();
     }
+    IExpr temp;
     if ((temp = hashRule.evalDownRule(arg1, num1, arg2, num2, engine)).isPresent()) {
       hashValues[i] = 0;
       hashValues[j] = 0;

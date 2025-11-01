@@ -46,8 +46,8 @@ public interface IPatternMap {
       return EMPTY_EXPR_ARRAY;
     }
 
-    @Override
-    public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {}
+    // @Override
+    // public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {}
 
     @Override
     public int indexOf(IExpr patternOrSymbol) {
@@ -190,15 +190,15 @@ public interface IPatternMap {
       return new IExpr[] {this.fValue1};
     }
 
-    @Override
-    public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
-      for (int i = 0; i < patternMap.size(); i++) {
-        // compare object references with operator '==' here !
-        if (fSymbol1 == getKey(i)) {
-          fValue1 = patternMap.getValue(i);
-        }
-      }
-    }
+    // @Override
+    // public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
+    // for (int i = 0; i < patternMap.size(); i++) {
+    // // compare object references with operator '==' here !
+    // if (fSymbol1 == getKey(i)) {
+    // fValue1 = patternMap.getValue(i);
+    // }
+    // }
+    // }
 
     @Override
     public int indexOf(IExpr patternOrSymbol) {
@@ -442,18 +442,18 @@ public interface IPatternMap {
       return new IExpr[] {this.fValue1, this.fValue2};
     }
 
-    @Override
-    public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
-      for (int i = 0; i < patternMap.size(); i++) {
-        // compare object references with operator '==' here !
-        IExpr temp = getKey(i);
-        if (fSymbol1 == temp) {
-          fValue1 = patternMap.getValue(i);
-        } else if (fSymbol2 == temp) {
-          fValue2 = patternMap.getValue(i);
-        }
-      }
-    }
+    // @Override
+    // public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
+    // for (int i = 0; i < patternMap.size(); i++) {
+    // // compare object references with operator '==' here !
+    // IExpr temp = getKey(i);
+    // if (fSymbol1 == temp) {
+    // fValue1 = patternMap.getValue(i);
+    // } else if (fSymbol2 == temp) {
+    // fValue2 = patternMap.getValue(i);
+    // }
+    // }
+    // }
 
     @Override
     public int indexOf(IExpr patternOrSymbol) {
@@ -768,20 +768,20 @@ public interface IPatternMap {
       return new IExpr[] {this.fValue1, this.fValue2, this.fValue3};
     }
 
-    @Override
-    public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
-      for (int i = 0; i < patternMap.size(); i++) {
-        // compare object references with operator '==' here !
-        IExpr temp = getKey(i);
-        if (fSymbol1 == temp) {
-          fValue1 = patternMap.getValue(i);
-        } else if (fSymbol2 == temp) {
-          fValue2 = patternMap.getValue(i);
-        } else if (fSymbol3 == temp) {
-          fValue3 = patternMap.getValue(i);
-        }
-      }
-    }
+    // @Override
+    // public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
+    // for (int i = 0; i < patternMap.size(); i++) {
+    // // compare object references with operator '==' here !
+    // IExpr temp = getKey(i);
+    // if (fSymbol1 == temp) {
+    // fValue1 = patternMap.getValue(i);
+    // } else if (fSymbol2 == temp) {
+    // fValue2 = patternMap.getValue(i);
+    // } else if (fSymbol3 == temp) {
+    // fValue3 = patternMap.getValue(i);
+    // }
+    // }
+    // }
 
     @Override
     public int indexOf(IExpr patternOrSymbol) {
@@ -1158,22 +1158,22 @@ public interface IPatternMap {
       return new IExpr[] {this.fValue1, this.fValue2, this.fValue3, this.fValue4};
     }
 
-    @Override
-    public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
-      for (int i = 0; i < patternMap.size(); i++) {
-        // compare object references with operator '==' here !
-        IExpr temp = getKey(i);
-        if (fSymbol1 == temp) {
-          fValue1 = patternMap.getValue(i);
-        } else if (fSymbol2 == temp) {
-          fValue2 = patternMap.getValue(i);
-        } else if (fSymbol3 == temp) {
-          fValue3 = patternMap.getValue(i);
-        } else if (fSymbol4 == temp) {
-          fValue4 = patternMap.getValue(i);
-        }
-      }
-    }
+    // @Override
+    // public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
+    // for (int i = 0; i < patternMap.size(); i++) {
+    // // compare object references with operator '==' here !
+    // IExpr temp = getKey(i);
+    // if (fSymbol1 == temp) {
+    // fValue1 = patternMap.getValue(i);
+    // } else if (fSymbol2 == temp) {
+    // fValue2 = patternMap.getValue(i);
+    // } else if (fSymbol3 == temp) {
+    // fValue3 = patternMap.getValue(i);
+    // } else if (fSymbol4 == temp) {
+    // fValue4 = patternMap.getValue(i);
+    // }
+    // }
+    // }
 
     @Override
     public int indexOf(IExpr patternOrSymbol) {
@@ -1613,24 +1613,24 @@ public interface IPatternMap {
       return new IExpr[] {this.fValue1, this.fValue2, this.fValue3, this.fValue4, this.fValue5};
     }
 
-    @Override
-    public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
-      for (int i = 0; i < patternMap.size(); i++) {
-        // compare object references with operator '==' here !
-        IExpr temp = getKey(i);
-        if (fSymbol1 == temp) {
-          fValue1 = patternMap.getValue(i);
-        } else if (fSymbol2 == temp) {
-          fValue2 = patternMap.getValue(i);
-        } else if (fSymbol3 == temp) {
-          fValue3 = patternMap.getValue(i);
-        } else if (fSymbol4 == temp) {
-          fValue4 = patternMap.getValue(i);
-        } else if (fSymbol5 == temp) {
-          fValue5 = patternMap.getValue(i);
-        }
-      }
-    }
+    // @Override
+    // public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
+    // for (int i = 0; i < patternMap.size(); i++) {
+    // // compare object references with operator '==' here !
+    // IExpr temp = getKey(i);
+    // if (fSymbol1 == temp) {
+    // fValue1 = patternMap.getValue(i);
+    // } else if (fSymbol2 == temp) {
+    // fValue2 = patternMap.getValue(i);
+    // } else if (fSymbol3 == temp) {
+    // fValue3 = patternMap.getValue(i);
+    // } else if (fSymbol4 == temp) {
+    // fValue4 = patternMap.getValue(i);
+    // } else if (fSymbol5 == temp) {
+    // fValue5 = patternMap.getValue(i);
+    // }
+    // }
+    // }
 
     @Override
     public int indexOf(IExpr patternOrSymbol) {
@@ -2136,26 +2136,26 @@ public interface IPatternMap {
           this.fValue6};
     }
 
-    @Override
-    public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
-      for (int i = 0; i < patternMap.size(); i++) {
-        // compare object references with operator '==' here !
-        IExpr temp = getKey(i);
-        if (fSymbol1 == temp) {
-          fValue1 = patternMap.getValue(i);
-        } else if (fSymbol2 == temp) {
-          fValue2 = patternMap.getValue(i);
-        } else if (fSymbol3 == temp) {
-          fValue3 = patternMap.getValue(i);
-        } else if (fSymbol4 == temp) {
-          fValue4 = patternMap.getValue(i);
-        } else if (fSymbol5 == temp) {
-          fValue5 = patternMap.getValue(i);
-        } else if (fSymbol6 == temp) {
-          fValue6 = patternMap.getValue(i);
-        }
-      }
-    }
+    // @Override
+    // public void copyPatternValuesFromPatternMatcher(IPatternMap patternMap) {
+    // for (int i = 0; i < patternMap.size(); i++) {
+    // // compare object references with operator '==' here !
+    // IExpr temp = getKey(i);
+    // if (fSymbol1 == temp) {
+    // fValue1 = patternMap.getValue(i);
+    // } else if (fSymbol2 == temp) {
+    // fValue2 = patternMap.getValue(i);
+    // } else if (fSymbol3 == temp) {
+    // fValue3 = patternMap.getValue(i);
+    // } else if (fSymbol4 == temp) {
+    // fValue4 = patternMap.getValue(i);
+    // } else if (fSymbol5 == temp) {
+    // fValue5 = patternMap.getValue(i);
+    // } else if (fSymbol6 == temp) {
+    // fValue6 = patternMap.getValue(i);
+    // }
+    // }
+    // }
 
     @Override
     public int indexOf(IExpr patternOrSymbol) {
@@ -2730,17 +2730,17 @@ public interface IPatternMap {
      *
      * @param patternMap
      */
-    @Override
-    public void copyPatternValuesFromPatternMatcher(final IPatternMap patternMap) {
-      for (int i = 0; i < patternMap.size(); i++) {
-        for (int j = 0; j < fSymbolsOrPattern.length; j++) {
-          // compare object references with operator '==' here !
-          if (fSymbolsOrPattern[j] == patternMap.getKey(i)) {
-            fSymbolsOrPatternValues[j] = patternMap.getValue(i);
-          }
-        }
-      }
-    }
+    // @Override
+    // public void copyPatternValuesFromPatternMatcher(final IPatternMap patternMap) {
+    // for (int i = 0; i < patternMap.size(); i++) {
+    // for (int j = 0; j < fSymbolsOrPattern.length; j++) {
+    // // compare object references with operator '==' here !
+    // if (fSymbolsOrPattern[j] == patternMap.getKey(i)) {
+    // fSymbolsOrPatternValues[j] = patternMap.getValue(i);
+    // }
+    // }
+    // }
+    // }
 
     /** {@inheritDoc} */
     @Override
@@ -3020,7 +3020,6 @@ public interface IPatternMap {
      *
      * @param rhsExpr right-hand-side expression, substitute all symbols from the pattern-matching
      *        values
-     * @return
      */
     @Override
     public IExpr substituteSymbols(final IExpr rhsExpr, final IExpr nilOrEmptySequence) {
@@ -3454,7 +3453,7 @@ public interface IPatternMap {
    *
    * @param patternMap
    */
-  public void copyPatternValuesFromPatternMatcher(final IPatternMap patternMap);
+  // public void copyPatternValuesFromPatternMatcher(final IPatternMap patternMap);
 
   /**
    * Get the first <code>int</code> index value mapped to the given pattern or symbol.

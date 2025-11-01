@@ -33,29 +33,26 @@ public class OrderlessStepVisitor extends FlatOrderlessStepVisitor implements IS
   @Override
   protected boolean matchSinglePartition(int[][] result, StackMatcher stackMatcher) {
     int lastStackSize = stackMatcher.size();
-    IExpr[] patternValues = fPatternMap.copyPattern();
-    boolean matched = true;
-    try {
+    IExpr[] savedPatterns = fPatternMap.copyPattern();
+    boolean matched = false;
 
+    try {
       for (int j = 0; j < result.length; j++) {
-        final int n = result[j].length;
-        if (n == 1) {
-          if (fOneIdentity) {
-            if (!stackMatcher.push(fLhsPatternAST.get(j + 1), array[result[j][0]])) {
-              matched = false;
-              return false;
-            }
-          } else {
-            if (!stackMatcher.push(fLhsPatternAST.get(j + 1),
-                F.unaryAST1(fSymbol, array[result[j][0]]))) {
-              matched = false;
-              return false;
-            }
-          }
-        } else {
+        int n = result[j].length;
+        if (n != 1) {
           throw new IllegalArgumentException(
               "OrderlessStepVisitor#matchSinglePartition() current length is " + n);
         }
+
+        IExpr value = array[result[j][0]];
+        if (!stackMatcher.push(fLhsPatternAST.get(j + 1), //
+            fOneIdentity //
+                ? value //
+                : F.unaryAST1(fSymbol, value))) {
+          // push failed -> will be cleaned up in finally via matched == false
+          return false;
+        }
+
       }
 
       matched = stackMatcher.matchRest();
@@ -63,7 +60,7 @@ public class OrderlessStepVisitor extends FlatOrderlessStepVisitor implements IS
     } finally {
       if (!matched) {
         stackMatcher.removeFrom(lastStackSize);
-        fPatternMap.resetPattern(patternValues);
+        fPatternMap.resetPattern(savedPatterns);
       }
     }
   }

@@ -712,130 +712,125 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
   protected boolean matchAST(IAST lhsPatternAST, final IExpr lhsEvalExpr, EvalEngine engine,
       StackMatcher stackMatcher) {
-    if (lhsEvalExpr instanceof IAST) {
-      if (lhsPatternAST.isFreeOfPatterns() && lhsPatternAST.equals(lhsEvalExpr)) {
-        return stackMatcher.matchRest();
-      }
+    if (!(lhsEvalExpr instanceof IAST)) {
+      return false;
+    }
 
-      IAST lhsEvalAST = (IAST) lhsEvalExpr;
-      final ISymbol sym = lhsPatternAST.topHead();
+    if (lhsPatternAST.isFreeOfPatterns() && lhsPatternAST.equals(lhsEvalExpr)) {
+      return stackMatcher.matchRest();
+    }
 
-      if (lhsPatternAST.size() <= lhsEvalAST.size()) {
-        if (lhsPatternAST.head().equals(lhsEvalAST.head())) {
-          if (lhsPatternAST.isOrderlessAST()) {
-            IExpr temp = fPatternMap.substituteASTPatternOrSymbols(lhsPatternAST, engine)
-                .orElse(lhsPatternAST);
-            if (temp.isAST(lhsPatternAST.head())) {
-              lhsPatternAST = (IAST) temp;
-              IAST[] removed = removeOrderless(lhsPatternAST, lhsEvalAST);
-              if (removed != null) {
-                lhsPatternAST = removed[0];
-                lhsEvalAST = removed[1];
-              }
+    IAST lhsEvalAST = (IAST) lhsEvalExpr;
+    final ISymbol sym = lhsPatternAST.topHead();
+
+    // Try to remove/evaluate orderless/flat parts when pattern length <= eval length
+    if (lhsPatternAST.size() <= lhsEvalAST.size()) {
+      if (lhsPatternAST.head().equals(lhsEvalAST.head())) {
+        // try Orderless substitution/removal
+        if (lhsPatternAST.isOrderlessAST()) {
+          IExpr temp = fPatternMap.substituteASTPatternOrSymbols(lhsPatternAST, engine)
+              .orElse(lhsPatternAST);
+          if (temp.isAST(lhsPatternAST.head())) {
+            lhsPatternAST = (IAST) temp;
+            IAST[] removed = removeOrderless(lhsPatternAST, lhsEvalAST);
+            if (removed != null) {
+              lhsPatternAST = removed[0];
+              lhsEvalAST = removed[1];
             }
-          } else if (lhsPatternAST.isFlatAST()) {
-            IExpr temp = fPatternMap.substituteASTPatternOrSymbols(lhsPatternAST, engine)
-                .orElse(lhsPatternAST);
-            if (temp.isAST(lhsPatternAST.head())) {
-              IAST[] removed = removeFlat((IAST) temp, lhsEvalAST);
-              if (removed != null) {
-                lhsPatternAST = removed[0];
-                lhsEvalAST = removed[1];
-              }
+          }
+        } else if (lhsPatternAST.isFlatAST()) {
+          // try Flat substitution/removal
+          IExpr temp = fPatternMap.substituteASTPatternOrSymbols(lhsPatternAST, engine)
+              .orElse(lhsPatternAST);
+          if (temp.isAST(lhsPatternAST.head())) {
+            IAST[] removed = removeFlat((IAST) temp, lhsEvalAST);
+            if (removed != null) {
+              lhsPatternAST = removed[0];
+              lhsEvalAST = removed[1];
             }
           }
         }
-
-        if ((lhsPatternAST.isFlatAST()) && sym.equals(lhsEvalAST.topHead())
-            && !(lhsPatternAST.isOrderlessAST() && lhsPatternAST.size() == lhsEvalAST.size())) {
-          if (!matchHeads(lhsPatternAST, lhsEvalAST, engine)) {
-            return false;
-          }
-          if (lhsPatternAST.size() == 1 && lhsEvalAST.size() == 1) {
-            return stackMatcher.matchRest();
-          }
-          return matchFlatAndFlatOrderless(sym, lhsPatternAST, lhsEvalAST, engine, stackMatcher);
-        }
       }
 
-      int lhsEvalSize = lhsEvalAST.size();
-      if (lhsPatternAST.isEvalFlagOn(IAST.CONTAINS_PATTERN_SEQUENCE)) {
+      // handle Flat (including Flat+Orderless special cases)
+      if (lhsPatternAST.isFlatAST() && sym.equals(lhsEvalAST.topHead())
+          && !(lhsPatternAST.isOrderlessAST() && lhsPatternAST.size() == lhsEvalAST.size())) {
         if (!matchHeads(lhsPatternAST, lhsEvalAST, engine)) {
           return false;
         }
-        if (lhsPatternAST.isEmpty() && lhsEvalAST.isEmpty()) {
+        if (lhsPatternAST.size() == 1 && lhsEvalAST.size() == 1) {
           return stackMatcher.matchRest();
         }
-        final int lastPosition = lhsPatternAST.argSize();
-        if (lastPosition == 1 && lhsPatternAST.get(lastPosition).isAST(S.PatternTest, 3)) {
-          if (lhsPatternAST.size() <= lhsEvalSize) {
-            IAST patternTest = (IAST) lhsPatternAST.get(lastPosition);
-            if (patternTest.arg1().isPatternSequence(false)) {
-              // TODO only the special case, where the last element is
-              // a pattern sequence, is handled here
-              IASTAppendable seq = F.Sequence();
-              seq.appendAll(lhsEvalAST, lastPosition, lhsEvalSize);
-              if (((IPatternSequence) patternTest.arg1()).matchPatternSequence(seq, fPatternMap,
-                  lhsPatternAST.topHead())) {
-                IAST lhsPatternEndRemoved = lhsPatternAST.removeFromEnd(lastPosition);
-                IPatternMap.setPatternFlags(lhsPatternEndRemoved);
-                if (matchAST(lhsPatternEndRemoved, lhsEvalAST.removeFromEnd(lastPosition), engine,
-                    stackMatcher)) {
-                  return fPatternMap.isPatternTest(patternTest.arg1(), patternTest.arg2(), engine);
-                }
-                return false;
+        return matchFlatAndFlatOrderless(sym, lhsPatternAST, lhsEvalAST, engine, stackMatcher);
+      }
+    }
+
+    final int lhsEvalSize = lhsEvalAST.size();
+
+    // handle pattern sequences (contains Sequence objects)
+    if (lhsPatternAST.isEvalFlagOn(IAST.CONTAINS_PATTERN_SEQUENCE)) {
+      if (!matchHeads(lhsPatternAST, lhsEvalAST, engine)) {
+        return false;
+      }
+      if (lhsPatternAST.isEmpty() && lhsEvalAST.isEmpty()) {
+        return stackMatcher.matchRest();
+      }
+
+      final int lastPosition = lhsPatternAST.argSize();
+      if (lastPosition == 1 && lhsPatternAST.get(lastPosition).isAST(S.PatternTest, 3)) {
+        if (lhsPatternAST.size() <= lhsEvalSize) {
+          IAST patternTest = (IAST) lhsPatternAST.get(lastPosition);
+          if (patternTest.arg1().isPatternSequence(false)) {
+            IASTAppendable seq = F.Sequence();
+            seq.appendAll(lhsEvalAST, lastPosition, lhsEvalSize);
+            if (((IPatternSequence) patternTest.arg1()).matchPatternSequence(seq, fPatternMap,
+                lhsPatternAST.topHead())) {
+              IAST lhsPatternEndRemoved = lhsPatternAST.removeFromEnd(lastPosition);
+              IPatternMap.setPatternFlags(lhsPatternEndRemoved);
+              if (matchAST(lhsPatternEndRemoved, lhsEvalAST.removeFromEnd(lastPosition), engine,
+                  stackMatcher)) {
+                return fPatternMap.isPatternTest(patternTest.arg1(), patternTest.arg2(), engine);
               }
-            }
-          }
-        } else if (lhsPatternAST.size() > 1 && lhsPatternAST.arg1().isPatternSequence(false)) {
-          IPatternSequence patternSequence = (IPatternSequence) lhsPatternAST.arg1();
-          return matchBlankSequence(patternSequence, lhsPatternAST, 1, lhsEvalAST, engine,
-              stackMatcher);
-        } else {
-          if (lhsPatternAST.size() > 1 && lhsEvalSize > 1) {
-            if (matchExpr(lhsPatternAST.arg1(), lhsEvalAST.arg1(), engine)) {
-              return matchAST(lhsPatternAST.rest().addEvalFlags(IAST.CONTAINS_PATTERN_SEQUENCE),
-                  lhsEvalAST.rest(), engine, stackMatcher);
+              return false;
             }
           }
         }
-        return false;
+      } else if (lhsPatternAST.size() > 1 && lhsPatternAST.arg1().isPatternSequence(false)) {
+        IPatternSequence patternSequence = (IPatternSequence) lhsPatternAST.arg1();
+        return matchBlankSequence(patternSequence, lhsPatternAST, 1, lhsEvalAST, engine,
+            stackMatcher);
+      } else {
+        if (lhsPatternAST.size() > 1 && lhsEvalSize > 1) {
+          if (matchExpr(lhsPatternAST.arg1(), lhsEvalAST.arg1(), engine)) {
+            return matchAST(lhsPatternAST.rest().addEvalFlags(IAST.CONTAINS_PATTERN_SEQUENCE),
+                lhsEvalAST.rest(), engine, stackMatcher);
+          }
+        }
       }
-
-      if (lhsPatternAST.size() != lhsEvalSize || !matchHeads(lhsPatternAST, lhsEvalAST, engine)) {
-        return false;
-      }
-
-      if (lhsPatternAST.isOrderlessAST() && lhsPatternAST.size() > 2) {
-        // IExpr evalHead = lhsEvalAST.head();
-        // if (sym.hasOneIdentityAttribute() && (lhsPatternAST.getEvalFlags()
-        // & IAST.CONTAINS_DEFAULT_PATTERN) == IAST.CONTAINS_DEFAULT_PATTERN) {
-        // if (lhsEvalAST.size() <= lhsPatternAST.size()) {
-        // IExpr[] patternValues = fPatternMap.copyPattern();
-        // int lastStackSize = stackMatcher.size();
-        // int[] ignoredPositions = new int[0];
-        // if (matchDefaultArgsRecursive(sym, evalHead, lhsPatternAST, lhsEvalAST, 1,
-        // patternValues, lastStackSize, ignoredPositions, engine, stackMatcher)) {
-        // return true;
-        // }
-        // return false;
-        // }
-        // }
-        // only "pure Orderless" and "FlatOrderless with same size()" will be handled here:
-        OrderlessStepVisitor visitor = new OrderlessStepVisitor(sym, lhsPatternAST, lhsEvalAST,
-            stackMatcher, fPatternMap, (sym.hasOneIdentityAttribute() || sym.hasFlatAttribute())
-                // if FLAT isn't set and the Orderless ASTs have
-                // same size ==> use OneIdentity in pattern matching
-                || (lhsPatternAST.size() == lhsEvalSize && !sym.hasFlatAttribute()));
-        MultisetPartitionsIterator iter =
-            new MultisetPartitionsIterator(visitor, lhsPatternAST.argSize());
-        return !iter.execute();
-      }
-
-      return matchASTSequence(lhsPatternAST, lhsEvalAST, 0, engine, stackMatcher);
+      return false;
     }
-    return false;
+
+    // size and head must match for the remaining cases
+    if (lhsPatternAST.size() != lhsEvalSize || !matchHeads(lhsPatternAST, lhsEvalAST, engine)) {
+      return false;
+    }
+
+    // Orderless with more than 2 elements: use partition iterator
+    if (lhsPatternAST.isOrderlessAST() && lhsPatternAST.size() > 2) {
+      OrderlessStepVisitor visitor =
+          new OrderlessStepVisitor(sym, lhsPatternAST, lhsEvalAST, stackMatcher, fPatternMap, //
+              sym.hasOneIdentityAttribute()//
+                  || sym.hasFlatAttribute()//
+                  || lhsPatternAST.size() == lhsEvalSize);
+      MultisetPartitionsIterator iter =
+          new MultisetPartitionsIterator(visitor, lhsPatternAST.argSize());
+      return !iter.execute();
+    }
+
+    // fallback: match sequentially
+    return matchASTSequence(lhsPatternAST, lhsEvalAST, 0, engine, stackMatcher);
   }
+
 
   /**
    * Return <code>true</code> if the {@link IAST#head()} expressions of the <code>evaledAST</code>

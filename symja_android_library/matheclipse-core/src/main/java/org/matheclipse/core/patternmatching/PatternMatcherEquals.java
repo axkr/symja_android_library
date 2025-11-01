@@ -14,15 +14,15 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Matches a given expression by simply comparing the left-hand-side expression of this pattern
- * matcher with the <code>equals()</code> method.
+ * matcher with the {@link IExpr#equals(Object)} method.
  */
 public class PatternMatcherEquals extends IPatternMatcher implements Externalizable {
   /** */
   private static final long serialVersionUID = 3566534441225675728L;
 
-  /** Contains the "pattern-matching" expression */
-  // protected IExpr fLhsPatternExpr;
-
+  /**
+   * The right-hand-side expression which should be evaluated if the "pattern-matching" succeeds
+   */
   protected IExpr fRightHandSide;
 
   /** Contains the flag for the "set" symbol used to define this pattern matcher */
@@ -117,7 +117,6 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
    * Are the given flags disabled ?
    *
    * @param flags
-   * @return
    * @see IAST#NO_FLAG
    */
   public final boolean isFlagOff(final int flags) {
@@ -128,7 +127,6 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
    * Are the given flags enabled ?
    *
    * @param flags
-   * @return
    * @see IAST#NO_FLAG
    */
   public final boolean isFlagOn(int flags) {
@@ -150,17 +148,6 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
     fRightHandSide = rightHandSide;
   }
 
-  // @Override
-  // public int compareTo(IPatternMatcher o) {
-  // if (getPriority() < o.getPriority()) {
-  // return -1;
-  // }
-  // if (getPriority() > o.getPriority()) {
-  // return 1;
-  // }
-  // return 0;
-  // }
-
   @Override
   public int equivalentTo(IPatternMatcher o) {
     if (getLHSPriority() < o.getLHSPriority()) {
@@ -170,7 +157,6 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
       return 1;
     }
     return 0;
-    // return equivalent(o);
   }
 
   @Override
@@ -183,6 +169,7 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
     return 0;
   }
 
+  @Override
   public IAST getAsAST() {
     ISymbol setSymbol = getSetSymbol();
     IAST temp = F.binaryAST2(setSymbol, getLHS(), getRHS());

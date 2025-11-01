@@ -23,7 +23,6 @@ public class Tester implements Predicate<IExpr> {
    * Method called in order to add a new pattern-matching rule to this rule-set.
    *
    * @param patternMatchingRule the pattern-matching rule
-   * @return a
    */
   public void caseOf(final IExpr patternMatchingRule) {
     rules.putDownRule(patternMatchingRule, S.True);

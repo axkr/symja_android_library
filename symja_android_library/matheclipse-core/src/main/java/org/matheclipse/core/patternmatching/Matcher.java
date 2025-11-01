@@ -41,7 +41,7 @@ public class Matcher implements Function<IExpr, IExpr> {
         }
       }
       boolean evaled = false;
-      IExpr temp = matcher.apply(list);
+      final IExpr temp = matcher.apply(list);
       if (temp.isPresent()) {
         if (temp.isASTOrAssociation()) {
           list = (IAST) temp;
@@ -53,33 +53,26 @@ public class Matcher implements Function<IExpr, IExpr> {
       IASTMutable result = F.NIL;
       int i = 1;
       while (i < list.size()) {
-        temp = list.get(i).accept(this);
-        if (temp.isPresent()) {
+        final IExpr childEval = list.get(i).accept(this);
+        if (childEval.isPresent()) {
           // something was evaluated - return a new IAST:
           result = list.copy();
-          result.set(i++, temp);
+          result.set(i++, childEval);
           break;
         }
         i++;
       }
       if (result.isPresent()) {
         while (i < list.size()) {
-          temp = list.get(i).accept(this);
-          if (temp.isPresent()) {
-            result.set(i, temp);
-            // } else {
-            // result.set(i, list.get(i));
+          final IExpr childEval = list.get(i).accept(this);
+          if (childEval.isPresent()) {
+            result.set(i, childEval);
           }
           i++;
         }
-      }
-      if (result.isPresent()) {
         return result;
       }
-      if (evaled) {
-        return list;
-      }
-      return F.NIL;
+      return evaled ? list : F.NIL;
     }
 
     @Override

@@ -54,23 +54,28 @@ public class FlatOrderlessStepVisitor extends FlatStepVisitor implements IStepVi
    * @param end
    */
   private final void toIntArray(IAST sortedList, int start, int end) {
-    multiset = new int[end - start];
-    array = new IExpr[end - start];
-    final IExpr[] lastT = new IExpr[1];
-    lastT[0] = sortedList.get(start);
-    final int[] index = new int[1];
-    final int[] j = new int[1];
-    multiset[j[0]++] = index[0];
-    array[index[0]] = lastT[0];
-    sortedList.forEach(start + 1, end, x -> {
-      if (x.equals(lastT[0])) {
-        multiset[j[0]++] = index[0];
+    int size = end - start;
+    multiset = new int[size];
+    array = new IExpr[size];
+
+    // initialize with the first element
+    IExpr last = sortedList.get(start);
+    int index = 0;
+    int pos = 0;
+    multiset[pos++] = index;
+    array[index] = last;
+
+    for (int k = start + 1; k < end; k++) {
+      IExpr x = sortedList.get(k);
+      if (x.equals(last)) {
+        multiset[pos++] = index;
       } else {
-        multiset[j[0]++] = ++index[0];
-        array[index[0]] = x;
-        lastT[0] = x;
+        index++;
+        multiset[pos++] = index;
+        array[index] = x;
+        last = x;
       }
-    });
+    }
   }
 
   @Override

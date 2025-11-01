@@ -91,16 +91,31 @@ public final class RulesData implements Serializable {
     return false;
   }
 
+  /**
+   * Default values for a symbol which could be determined with the {@link S#Default} function
+   */
   private OpenIntToIExprHashMap<IExpr> fDefaultValues;
 
+  /**
+   * Messages associated with this symbol which could be defined with {@link S#MessageName} function
+   */
   private Map<String, IStringX> fMessages;
 
+  /**
+   * Matches rules which contain no patterns and are defined with {@link S#Set} or
+   * {@link S#SetDelayed} function
+   */
   private Map<IExpr, PatternMatcherEquals> fEqualDownRules;
 
+  /**
+   * Pattern matcher for decision tree pattern matching (used for small IAST sizes only), defined by
+   * the experimental <code>org.matheclipse.core.decisiontree.RulesToDecionTree</code> class.
+   */
   private transient IMatch fMatcher;
 
   /**
-   * List of pattern matchers. The corresponding priority is stored in <code>fPriorityDownRules
+   * List of pattern matchers which are defined with {@link S#Set} or {@link S#SetDelayed} function.
+   * The corresponding priority is stored in <code>fPriorityDownRules
    * </code>.
    */
   private List<IPatternMatcher> fPatternDownRules;
@@ -110,7 +125,15 @@ public final class RulesData implements Serializable {
    */
   private IntArrayList fPriorityDownRules;
 
+  /**
+   * Matches rules which contain no patterns and are defined with {@link S#UpSet} or
+   * {@link S#UpSetDelayed} function
+   */
   private Map<IExpr, PatternMatcherEquals> fEqualUpRules;
+
+  /**
+   * Matches rules which are defined with {@link S#UpSet} or {@link S#UpSetDelayed} function
+   */
   private List<IPatternMatcher> fSimplePatternUpRules;
 
   public RulesData() {
@@ -495,8 +518,10 @@ public final class RulesData implements Serializable {
               continue;
             }
 
+
             if (integrateVar != null //
                 && pmEvaluator instanceof PatternMatcherAndEvaluator) {
+
               PatternMatcherAndEvaluator patternMatcher = (PatternMatcherAndEvaluator) pmEvaluator;
               IExpr lhs = patternMatcher.getLHS();
               if (lhs.isAST(S.Integrate, 3) && lhs.second().equals(F.x_Symbol)) {
@@ -515,6 +540,7 @@ public final class RulesData implements Serializable {
             } else {
               result = pmEvaluator.eval(expr, engine);
             }
+
             if (result.isPresent()) {
               if (patternEvaluator.fLhsPatternExpr.isAST(S.Integrate)) {
                 if (!expr.equals(result)) {
@@ -593,6 +619,13 @@ public final class RulesData implements Serializable {
     return head.equals(S.Integrate);
   }
 
+  /**
+   * Try matching the <code>expression</code> with this pattern-matching up-rules.
+   * 
+   * @param expression
+   * @param engine
+   * @return
+   */
   public IExpr evalUpRule(final IExpr expression, EvalEngine engine) {
     PatternMatcherEquals res;
     if (fEqualUpRules != null) {
@@ -616,6 +649,12 @@ public final class RulesData implements Serializable {
     return F.NIL;
   }
 
+  /**
+   * Default values for a symbol which could be determined with the {@link S#Default} function
+   * 
+   * @param pos
+   * @return <code>null</code> if no values are defined
+   */
   public final IExpr getDefaultValue(int pos) {
     if (fDefaultValues == null) {
       return null;
@@ -898,9 +937,13 @@ public final class RulesData implements Serializable {
 
   @Override
   public String toString() {
-    StringBuilder buf = new StringBuilder();
     List<IAST> list = definition();
     final int size = list.size();
+    if (size == 0) {
+      return "";
+    }
+    // Heuristic capacity: assume ~64 chars per entry to reduce reallocations
+    StringBuilder buf = new StringBuilder(size * 64);
     for (int i = 0; i < size; i++) {
       buf.append(list.get(i).toString());
       if (i < size - 1) {

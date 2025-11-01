@@ -9,7 +9,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
-import org.matheclipse.core.expression.B2;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.GenericPair;
@@ -20,39 +19,32 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class PatternMatcherAndEvaluator extends PatternMatcher implements Externalizable {
 
-  /** */
   private static final long serialVersionUID = 2241135467123931061L;
 
+  /**
+   * The right-hand-side expression of the pattern-matching rule.
+   */
   protected IExpr fRightHandSide;
 
+  /**
+   * 
+   */
   protected transient IExpr fReturnResult = F.NIL;
 
+  /**
+   * The substituted match after applying the pattern-matching rule.
+   */
   protected transient IExpr fSubstitutedMatch = F.NIL;
 
-  /** Public constructor for serialization. */
   public PatternMatcherAndEvaluator() {
     fRightHandSide = F.NIL;
     fSubstitutedMatch = F.NIL;
   }
 
-  /**
-   * Define a pattern-matching rule.
-   *
-   * @param leftHandSide could contain pattern expressions for "pattern-matching"
-   * @param rightHandSide the result which should be evaluated if the "pattern-matching" succeeds
-   */
   public PatternMatcherAndEvaluator(final IExpr leftHandSide, final IExpr rightHandSide) {
     this(SET_DELAYED, leftHandSide, rightHandSide);
   }
 
-  /**
-   * Define a pattern-matching rule.
-   *
-   * @param setSymbol the flags for the symbol which defines this pattern-matching rule (i.e. Set,
-   *        SetDelayed,...)
-   * @param leftHandSide could contain pattern expressions for "pattern-matching"
-   * @param rightHandSide the result which should be evaluated if the "pattern-matching" succeeds
-   */
   public PatternMatcherAndEvaluator(final int setSymbol, final IExpr leftHandSide,
       final IExpr rightHandSide) {
     this(setSymbol, leftHandSide, rightHandSide, true, 0);
@@ -61,18 +53,11 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
   public PatternMatcherAndEvaluator(final int setSymbol, final IExpr leftHandSide,
       final IExpr rightHandSide, boolean initAll, int patternHash) {
     super(setSymbol, leftHandSide, initAll);
-    // fSetFlags = setSymbol;
     fRightHandSide = rightHandSide;
     fPatterHash = patternHash;
     fPatternMap = createPatternMap();
   }
 
-  /**
-   * Check if <code>fPatterHash == 0 || fPatterHash == patternHash;</code>.
-   *
-   * @param patternHash
-   * @return
-   */
   @Override
   public final boolean isPatternHashAllowed(int patternHash) {
     return fPatterHash == 0 || fPatterHash == patternHash;
@@ -105,128 +90,61 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     return v;
   }
 
-  /**
-   * Check if the two expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to
-   * <code>f[a_,b_]</code> )
-   *
-   * @param patternExpr1
-   * @param patternExpr2
-   * @param pm1
-   * @param pm2
-   * @return
-   */
-  // private static int equivalentRHS(final IExpr patternExpr1, final IExpr patternExpr2,
-  // final IPatternMap pm1, final IPatternMap pm2) {
-  // IExpr p1, p2;
-  // if (patternExpr1.isCondition()) {
-  // p1 = patternExpr1.second();
-  // if (patternExpr2.isCondition()) {
-  // p2 = patternExpr2.second();
-  // if (equivalent(p1, p2, pm1, pm2)) {
-  // return 0;
-  // }
-  // return p1.compareTo(p2);
-  // } else if (patternExpr2.isModuleOrWithCondition()) {
-  // p2 = patternExpr2.last().second();
-  // if (equivalent(p1, p2, pm1, pm2)) {
-  // return 0;
-  // }
-  // return p1.compareTo(p2);
-  // }
-  // } else if (patternExpr1.isModuleOrWithCondition()) {
-  // p1 = patternExpr1.last().second();
-  // if (patternExpr2.isCondition()) {
-  // p2 = patternExpr2.second();
-  // if (equivalent(p1, p2, pm1, pm2)) {
-  // return 0;
-  // }
-  // return p1.compareTo(p2);
-  // } else if (patternExpr2.isModuleOrWithCondition()) {
-  // p2 = patternExpr2.last().second();
-  // if (equivalent(p1, p2, pm1, pm2)) {
-  // return 0;
-  // }
-  // return p1.compareTo(p2);
-  // }
-  // }
-  // return 0;
-  // }
-
-  /**
-   * Check if the condition for the right-hand-sides <code>Module[], With[] or Condition[]</code>
-   * expressions evaluates to <code>true</code>.
-   *
-   * @return <code>true</code> if the right-hand-sides condition is fulfilled or not all patterns
-   *         are assigned.
-   */
   @Override
   public boolean checkRHSCondition(EvalEngine engine) {
     IPatternMap patternMap = createPatternMap();
     if (patternMap.getRHSEvaluated()) {
       return true;
     }
-
     if (!(fRightHandSide.isCondition() || fRightHandSide.isBlockModuleOrWithCondition())) {
       return true;
-    } else {
-      if (!patternMap.isAllPatternsAssigned()) {
-        return true;
-      } else {
-        boolean matched = false;
-        IExpr rhs = patternMap.substituteSymbols(fRightHandSide, F.CEmptySequence);
-
-        engine.pushOptionsStack();
-        IEvalStepListener stepListener = engine.getStepListener();
-        final boolean isTraceMode =
-            Config.TRACE_REWRITE_RULE && engine.isTraceMode() && stepListener != null;
-        try {
-          engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
-          if (isTraceMode) {
-            IExpr lhs = getLHSExprToMatch();
-            if (lhs.isPresent()) {
-              stepListener.setUp(lhs, 0, lhs);
-              try {
-                fReturnResult =
-                    engine.addEvaluatedTraceStep(lhs, rhs, lhs.topHead(), F.$str("RewriteRule"));
-              } finally {
-                stepListener.tearDown(F.NIL, 0, true, lhs);
-              }
-            } else {
-              fReturnResult = rhs.eval(engine);
-            }
-          } else {
-            fReturnResult = rhs.eval(engine);
-          }
-          matched = true;
-        } catch (final ConditionException e) {
-          matched = false;
-        } catch (final ReturnException e) {
-          fReturnResult = e.getValue();
-          matched = true;
-        } finally {
-          engine.popOptionsStack();
-        }
-
-        patternMap.setRHSEvaluated(matched);
-        return matched;
-      }
     }
+    if (!patternMap.isAllPatternsAssigned()) {
+      return true;
+    }
+
+    boolean matched = false;
+    IExpr rhs = patternMap.substituteSymbols(fRightHandSide, F.CEmptySequence);
+    engine.pushOptionsStack();
+    IEvalStepListener stepListener = engine.getStepListener();
+    final boolean isTraceMode =
+        Config.TRACE_REWRITE_RULE && engine.isTraceMode() && stepListener != null;
+    try {
+      engine.setOptionsPattern(fLhsPatternExpr.topHead(), patternMap);
+      if (isTraceMode) {
+        IExpr lhs = getLHSExprToMatch();
+        if (lhs.isPresent()) {
+          stepListener.setUp(lhs, 0, lhs);
+          try {
+            fReturnResult =
+                engine.addEvaluatedTraceStep(lhs, rhs, lhs.topHead(), F.$str("RewriteRule"));
+          } finally {
+            stepListener.tearDown(F.NIL, 0, true, lhs);
+          }
+        } else {
+          fReturnResult = rhs.eval(engine);
+        }
+      } else {
+        fReturnResult = rhs.eval(engine);
+      }
+      matched = true;
+    } catch (final ConditionException e) {
+      matched = false;
+    } catch (final ReturnException e) {
+      fReturnResult = e.getValue();
+      matched = true;
+    } finally {
+      engine.popOptionsStack();
+    }
+    patternMap.setRHSEvaluated(matched);
+    return matched;
   }
 
-  /** {@inheritDoc} */
   @Override
   public final IExpr eval(final IExpr leftHandSide, EvalEngine engine) {
     return replaceEvaled(leftHandSide, engine);
   }
 
-  /**
-   * Eval the pattern matcher internally from the generated Java decision tree.
-   * 
-   * @param leftHandSide
-   * @param rightHandSide
-   * @param patternIndexMap
-   * @return
-   */
   public static IExpr evalInternal(final IExpr leftHandSide, final IExpr rightHandSide,
       List<GenericPair<IExpr, ISymbol>> patternIndexMap) {
     PatternMatcherAndEvaluator pm = new PatternMatcherAndEvaluator();
@@ -238,51 +156,23 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
   }
 
   public IExpr replace(final IExpr leftHandSide, EvalEngine engine) {
-    IPatternMap patternMap = null;
-    if (isRuleWithoutPatterns()) {
-      // no patterns found match equally:
-      if (fLhsPatternExpr.equals(leftHandSide)) {
-        return replaceEqualMatch(leftHandSide, engine, false);
-      }
-      if (!(fLhsPatternExpr.isOrderlessAST() && leftHandSide.isOrderlessAST())) {
-        if (!(fLhsPatternExpr.isFlatAST() && leftHandSide.isFlatAST())) {
-          return F.NIL;
-        }
-        // replaceSubExpressionOrderlessFlat() below implements equals matching for
-        // special cases, if the AST is Orderless or Flat
-      }
-      if (fLhsPatternExpr.size() == leftHandSide.size()) {
-        return F.NIL;
-      }
-    } else {
-      patternMap = createPatternMap();
-      patternMap.initPattern();
-      setLHSExprToMatch(leftHandSide);
-      if (matchExpr(fLhsPatternExpr, leftHandSide, engine, new StackMatcher(engine))) {
-        return replacePatternMatch(leftHandSide, patternMap, engine, false);
-      }
-    }
-
-    if (fLhsPatternExpr.isASTOrAssociation() && leftHandSide.isASTOrAssociation()) {
-      return replaceSubExpressionOrderlessFlat((IAST) fLhsPatternExpr, (IAST) leftHandSide,
-          fRightHandSide, engine);
-    }
-    return F.NIL;
+    return replaceInternal(leftHandSide, engine, false);
   }
 
   public IExpr replaceEvaled(final IExpr leftHandSide, EvalEngine engine) {
+    return replaceInternal(leftHandSide, engine, true);
+  }
+
+  private IExpr replaceInternal(final IExpr leftHandSide, EvalEngine engine, boolean evaluate) {
     IPatternMap patternMap = null;
+
     if (isRuleWithoutPatterns()) {
-      // no patterns found match equally:
       if (fLhsPatternExpr.equals(leftHandSide)) {
-        return replaceEqualMatch(leftHandSide, engine, true);
+        return replaceEqualMatch(leftHandSide, engine, evaluate);
       }
-      if (!(fLhsPatternExpr.isOrderlessAST() && leftHandSide.isOrderlessAST())) {
-        if (!(fLhsPatternExpr.isFlatAST() && leftHandSide.isFlatAST())) {
-          return F.NIL;
-        }
-        // replaceSubExpressionOrderlessFlat() below implements equals matching for
-        // special cases, if the AST is Orderless or Flat
+      if (!(fLhsPatternExpr.isOrderlessAST() && leftHandSide.isOrderlessAST())
+          && !(fLhsPatternExpr.isFlatAST() && leftHandSide.isFlatAST())) {
+        return F.NIL;
       }
       if (fLhsPatternExpr.size() == leftHandSide.size()) {
         return F.NIL;
@@ -292,7 +182,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
       patternMap.initPattern();
       setLHSExprToMatch(leftHandSide);
       if (matchExpr(fLhsPatternExpr, leftHandSide, engine, new StackMatcher(engine))) {
-        return replacePatternMatch(leftHandSide, patternMap, engine, true);
+        return replacePatternMatch(leftHandSide, patternMap, engine, evaluate);
       }
     }
 
@@ -304,16 +194,15 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
   }
 
   /**
-   * Match the left-hand-side first argument with the pattern-matching rules first argument.
+   *  Match the left-hand-side first argument with the pattern-matching rules first argument.
    * <p>
    * 
    * @param leftHandSide
    * @param patternMap
    * @param engine
-   * @return
    */
-  /* package private */ IExpr matchIntegrateFunction(final IExpr leftHandSide,
-      IPatternMap patternMap, EvalEngine engine) {
+  IExpr matchIntegrateFunction(final IExpr leftHandSide, IPatternMap patternMap,
+      EvalEngine engine) {
     IExpr LhsPatternFunction = fLhsPatternExpr.first();
     setLHSExprToMatch(LhsPatternFunction);
     if (matchExpr(LhsPatternFunction, leftHandSide.first(), engine, new StackMatcher(engine))) {
@@ -321,7 +210,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     }
     return F.NIL;
   }
-
 
   /**
    * A match which contains a pattern was found.
@@ -333,8 +221,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
    * @param leftHandSide
    * @param patternMap
    * @param engine
-   * @param evaluate
-   * @return
    */
   public IExpr replacePatternMatch(final IExpr leftHandSide, IPatternMap patternMap,
       EvalEngine engine, boolean evaluate) {
@@ -403,7 +289,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
    * @param leftHandSide
    * @param engine
    * @param evaluate
-   * @return
    */
   private IExpr replaceEqualMatch(final IExpr leftHandSide, EvalEngine engine, boolean evaluate) {
     IExpr result = fRightHandSide;
@@ -450,31 +335,20 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     return temp;
   }
 
-  /**
-   * Return <code>Set</code> or <code>SetDelayed</code> symbol.
-   *
-   * @return <code>null</code> if no symbol was defined
-   */
   @Override
   public ISymbol getSetSymbol() {
-    if (isFlagOn(SET_DELAYED)) {
+    if (isFlagOn(SET_DELAYED))
       return S.SetDelayed;
-    }
-    if (isFlagOn(SET)) {
+    if (isFlagOn(SET))
       return S.Set;
-    }
-    if (isFlagOn(UPSET_DELAYED)) {
+    if (isFlagOn(UPSET_DELAYED))
       return S.UpSetDelayed;
-    }
-    if (isFlagOn(UPSET)) {
+    if (isFlagOn(UPSET))
       return S.UpSet;
-    }
-    if (isFlagOn(TAGSET_DELAYED)) {
+    if (isFlagOn(TAGSET_DELAYED))
       return S.TagSetDelayed;
-    }
-    if (isFlagOn(TAGSET)) {
+    if (isFlagOn(TAGSET))
       return S.TagSet;
-    }
     return null;
   }
 
@@ -498,7 +372,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
     fSetFlags = objectInput.readShort();
     fLhsPatternExpr = (IExpr) objectInput.readObject();
     fRightHandSide = (IExpr) objectInput.readObject();
-
     if (fLhsPatternExpr != null) {
       int[] priority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
       this.fPatternMap = IPatternMap.determinePatterns(fLhsPatternExpr, priority, null);
@@ -515,23 +388,14 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (!super.equals(obj)) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
+    if (this == obj) return true;
+    if (!super.equals(obj)) return false;
+    if (getClass() != obj.getClass()) return false;
     PatternMatcherAndEvaluator other = (PatternMatcherAndEvaluator) obj;
     if (fRightHandSide == null) {
-      if (other.fRightHandSide != null) {
-        return false;
-      }
-    } else if (!fRightHandSide.equals(other.fRightHandSide)) {
-      return false;
+      return other.fRightHandSide == null;
+    } else {
+      return fRightHandSide.equals(other.fRightHandSide);
     }
-    return true;
   }
 }
