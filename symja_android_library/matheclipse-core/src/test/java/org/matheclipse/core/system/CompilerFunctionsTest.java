@@ -527,6 +527,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
   @Override
   public void setUp() {
     super.setUp();
+    ToggleFeature.COMPILE = true;
     Config.SHORTEN_STRING_LENGTH = 1024;
     Config.MAX_AST_SIZE = 1000000;
     EvalEngine.get().setIterationLimit(50000);
