@@ -2330,6 +2330,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testQuarticSolve() {
+    check("QuarticSolve(IntervalData(1+Sqrt(2)),1.5708)", //
+        "{IntervalData({-0.650647,LessEqual,LessEqual,-0.650647})}");
     check("QuarticSolve(IntervalData(),-2-I*2,11/9223372036854775807)", //
         "{IntervalData()*(2+I*2+Sqrt(I*8+IntervalData())),IntervalData()*(2+I*2-Sqrt(I*8+IntervalData()))}");
   }

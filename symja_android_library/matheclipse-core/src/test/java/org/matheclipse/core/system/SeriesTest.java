@@ -470,6 +470,9 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSeriesCoefficient() {
+    check("SeriesCoefficient(EllipticK(x),{x,2,3})", //
+        "1/64*(-9*EllipticE(2)-5*EllipticK(2))");
+
     if (Config.EXPENSIVE_JUNIT_TESTS) {
       check(
           "SeriesCoefficient((-1/2-x+x^2-2*x^3-5/2*x^5)/(-1/2-x/2+5/2*x^2-5/2*x^3+x^5+x^6),{x,0,11})", //
@@ -678,5 +681,18 @@ public class SeriesTest extends ExprEvaluatorTestCase {
             + "0))/a(0)^(1-n))*x^2+O(x)^3");
     check("Series(x^x, {x, 0, 4})", //
         "1+Log(x)*x+1/2*Log(x)^2*x^2+1/6*Log(x)^3*x^3+1/24*Log(x)^4*x^4+O(x)^5");
+  }
+
+  @Test
+  public void testResidue() {
+    // // TODO add Residue implementation
+    // check("Residue(Exp(z)/z,{z,0})", //
+    // "1");
+    // check("Residue(Cos(z)/z^3,{z,0})", //
+    // "-1/2");
+    // check("Residue(Exp(1/z),{z,0})", //
+    // "1");
+    // check("Residue(Sin(z)/z,{z,0})", //
+    // "0");
   }
 }

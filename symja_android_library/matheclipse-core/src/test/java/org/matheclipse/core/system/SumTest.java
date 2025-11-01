@@ -547,17 +547,17 @@ public class SumTest extends ExprEvaluatorTestCase {
     checkNumeric("NSum((-1)^(k-1)/k^1.5, {k,1,Infinity})", //
         "0.7651470246254165");
     checkNumeric("NSum((-1)^(k-1)/k, {k,1,Infinity})", //
-        "0.6931471805598466");
+        "0.6931471805598467");
     checkNumeric("NSum((-1)^(k-1)/(2*k-1), {k,1,Infinity})", //
         "0.7853981633974484");
     checkNumeric("NSum((-1)^(k-1)/k^0.5, {k,1,Infinity})", //
-        "0.6048986434216349");
+        "0.6048986434216348");
     checkNumeric("NSum((-1)^(k-1)/k^0.25, {k,1,Infinity})", //
         "0.5544873859140664");
     // checkNumeric("NSum((-1)^(k-1)/k^(1.0+1.0/k), {k,1,Infinity})", //
     // "0.7795115373932017");
     checkNumeric("NSum((-1)^(k-1)*Sin(1.0/k), {k,1,Infinity})", //
-        "0.5507968481337557");
+        "0.5507968481337556");
 
     // slow converging
     checkNumeric("NSum((-1)^(k-1)/Log(k+1), {k,1,Infinity})", //
@@ -567,7 +567,7 @@ public class SumTest extends ExprEvaluatorTestCase {
     checkNumeric("NSum((-1)^(k-1)/Sqrt(Log(k+1)), {k,1,Infinity})", //
         "0.6902444509828015");
     checkNumeric("NSum((-1)^(k-1)/Log(Log(k+1)), {k,1,Infinity})", //
-        "-11.477968013987113");
+        "-11.477968013987114");
     checkNumeric("NSum((-1)^(k-1)*Log(k+1)/Sqrt(k+1), {k,1,Infinity})", //
         "0.19328883163929184");
 

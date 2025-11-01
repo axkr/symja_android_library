@@ -68,6 +68,7 @@ public class SeriesFunctions {
         S.InverseSeries.setEvaluator(new InverseSeries());
         S.Normal.setEvaluator(new Normal());
         S.PadeApproximant.setEvaluator(new PadeApproximant());
+        S.Residue.setEvaluator(new Residue());
         S.Series.setEvaluator(new Series());
         S.SeriesCoefficient.setEvaluator(new SeriesCoefficient());
         S.SeriesData.setEvaluator(new SeriesData());
@@ -1650,6 +1651,35 @@ public class SeriesFunctions {
     }
   }
 
+  private static final class Residue extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2() && (ast.arg2().isList2())) {
+        IExpr function = ast.arg1();
+        IAST list = (IAST) ast.arg2();
+
+        IExpr x = list.arg1();
+        IExpr x0 = list.arg2();
+        if (!x.isVariable()) {
+          // `1` is not a valid variable.
+          return Errors.printMessage(S.General, "ivar", F.List(x), engine);
+        }
+        // TODO add implementation
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+  }
 
   /**
    *

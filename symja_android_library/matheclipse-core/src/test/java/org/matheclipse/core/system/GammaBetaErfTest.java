@@ -564,10 +564,14 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testFactorial2() {
-    check("Factorial2(x)", //
-        "x!!");
+    check("Factorial2(-9)", //
+        "1/105");
+    check("Factorial2(-10)", //
+        "ComplexInfinity");
     check("Factorial2(0)", //
         "1");
+    check("Factorial2(x)", //
+        "x!!");
     check("Factorial2(-1)", //
         "1");
     check("N(Factorial2(3/13), 10)", //
@@ -599,6 +603,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "-1/15");
     check("Factorial2(10)", //
         "3840");
+
     check("Factorial2(Infinity)", //
         "Infinity");
     check("Factorial(-Infinity)", //

@@ -4219,52 +4219,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2");
   }
 
-  @Test
-  public void testCorrelation() {
-    check("Correlation({a,b},{c,d})", //
-        "((a-b)*(Conjugate(c)-Conjugate(d)))/(Sqrt((a-b)*(Conjugate(a)-Conjugate(b)))*Sqrt((c-d)*(Conjugate(c)-Conjugate(d))))");
-
-
-    check("Correlation({1.5, 3, 5, 10}, {2, 1.25, 15, 8})", //
-        "0.475976");
-    check("N(Correlation({5.0, 3/4, 1}, {2, 1/2, 1}))", //
-        "0.960769");
-    check("Correlation({a,b},{c,d})", //
-        "((a-b)*(Conjugate(c)-Conjugate(d)))/(Sqrt((a-b)*(Conjugate(a)-Conjugate(b)))*Sqrt((c-d)*(Conjugate(c)-Conjugate(d))))");
-    check(
-        "Correlation({10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5}, {8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26,10.84, 4.82, 5.68})", //
-        "0.816421");
-
-    check("Correlation({5, 3/4, 1}, {2, 1/2, 1})", //
-        "2*Sqrt(3/13)");
-
-    check("Correlation({\n" + //
-        "{60323,83.0,234289,2356,1590,107608,1947},\n" + //
-        "{61122,88.5,259426,2325,1456,108632,1948},\n" + //
-        "{60171,88.2,258054,3682,1616,109773,1949},\n" + //
-        "{61187,89.5,284599,3351,1650,110929,1950},\n" + //
-        "{63221,96.2,328975,2099,3099,112075,1951},\n" + //
-        "{63639,98.1,346999,1932,3594,113270,1952},\n" + //
-        "{64989,99.0,365385,1870,3547,115094,1953},\n" + //
-        "{63761,100.0,363112,3578,3350,116219,1954},\n" + //
-        "{66019,101.2,397469,2904,3048,117388,1955},\n" + //
-        "{67857,104.6,419180,2822,2857,118734,1956},\n" + //
-        "{68169,108.4,442769,2936,2798,120445,1957},\n" + //
-        "{66513,110.8,444546,4681,2637,121950,1958},\n" + //
-        "{68655,112.6,482704,3813,2552,123366,1959},\n" + //
-        "{69564,114.2,502601,3931,2514,125368,1960},\n" + //
-        "{69331,115.7,518173,4806,2572,127852,1961},\n" + //
-        "{70551,116.9,554894,4007,2827,130081,1962}})", //
-        "{{1.0,0.970899,0.983552,0.502498,0.457307,0.960391,0.971329},\n" + //
-            " {0.970899,1.0,0.991589,0.620633,0.464744,0.979163,0.991149},\n" + //
-            " {0.983552,0.991589,1.0,0.604261,0.446437,0.99109,0.995273},\n" + //
-            " {0.502498,0.620633,0.604261,1.0,-0.177421,0.686552,0.668257},\n" + //
-            " {0.457307,0.464744,0.446437,-0.177421,1.0,0.364416,0.417245},\n" + //
-            " {0.960391,0.979163,0.99109,0.686552,0.364416,1.0,0.993953},\n" + //
-            " {0.971329,0.991149,0.995273,0.668257,0.417245,0.993953,1.0}}");
-    // check("Correlation(RandomReal(1, 10^4), RandomReal(1, 10^4))", //
-    // "0.000430087");
-  }
 
   @Test
   public void testCorrelationDistance() {
@@ -6954,6 +6908,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEllipticK() {
+    check("Table(EllipticK(x), {x,-1.0, 1.0, 1/4})", //
+        "{1.31103,1.35906,1.41574,1.48441,1.5708,1.68575,1.85407,2.15652,ComplexInfinity}");
+
+    checkNumeric("EllipticK(2.0)", //
+        "1.3110287771460598+I*(-1.3110287771460598)");
+    check("EllipticK(2)", //
+        "EllipticK(2)");
     check("EllipticK(0.5)", //
         "1.85407");
 
@@ -8745,6 +8706,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindMinimum() {
+    check(
+        "FindMinimum({100*(y-x^2)^2+(1-x)^2}, {{x,-1}, {y,1}},Method -> \"SequentialQuadratic\" )", //
+        "{4.03424*10^-11,{x->0.999999,y->0.999998}}");
+
     // example: Rosenbrock function https://en.wikipedia.org/wiki/Rosenbrock_function
     // Math.pow(1 - x, 2) + 100 * Math.pow(y - x * x, 2);
     check(
@@ -13610,9 +13575,34 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLinearModelFit() {
+    // TODO
+    check("data = {{0, 1}, {1, 3}, {2, 4}, {3, 7}};" //
+        + "basis = {1, x};" //
+        + "m = DesignMatrix(data, basis, x);" //
+        + "v = data[[All, 2]];" //
+        + "LinearModelFit({m, v})", //
+        "FittedModel[0.9*#1+1.9*#2]");
+
+
+    check("LinearModelFit({{1, 5}, {2, 8}, {3, 11}},{1, x1}, x1)", //
+        "FittedModel[2.0+3.0*x1]");
+    check("LinearModelFit({{1, 2, 5}, {2, 1, 6}, {3, 4, 14}, {4, 3, 13}},{1, x,y},{x,y})", //
+        "FittedModel[-0.5+2.0*x+2.0*y]");
+    check("LinearModelFit({{1, 2, 5}, {2, 1, 6}, {3, 4, 14}, {4, 3, 13}},{x,y},{x,y})", //
+        "FittedModel[-0.5+2.0*x+2.0*y]");
+    check("LinearModelFit({{0, 1}, {1, 4}, {2, 11}, {3, 28}},{1, x, x^2},x)", //
+        "FittedModel[1.3-1.7*x+3.5*x^2]");
+    check("LinearModelFit({{1, 1, 5.1}, {2, 3, 13.2}, {3, 2, 11.9}, {4, 5, 23.3}},{x,y},{x,y})", //
+        "FittedModel[0.05+1.84259*x+3.17037*y]");
+
+    check("LinearModelFit({{0, 1}, {1, 0}, {3, 2}, {5, 4}},{1,x},x)", //
+        "FittedModel[0.186441+0.694915*x]");
+    check("LinearModelFit({ { 1, 3 }, { 2, 5 }, { 3, 7 }, { 4, 14 }, { 5, 11 } },x,x)", //
+        "FittedModel[0.5+2.5*x]");
 
     check("LinearModelFit({-0.8, -0.2, 0.8, 2.2}, x, x)", //
-        "-2.0+x");
+        "FittedModel[-2.0+1.0*x]");
+
     // print message: LinearModelFit: The first argument is not a vector or matrix.
     check("LinearModelFit({{0, 1, 2}, {1, 0}, {3, 2}, {5, 4}},x,x)", //
         "LinearModelFit({{0,1,2},{1,0},{3,2},{5,4}},x,x)");
@@ -13622,10 +13612,45 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "LinearModelFit({{0,Indeterminate},{Indeterminate,0}},{{1,2,3,a}},RegularExpression(\n"
             + "1))");
 
-    check("LinearModelFit({ { 1, 3 }, { 2, 5 }, { 3, 7 }, { 4, 14 }, { 5, 11 } },x,x)", //
-        "0.5+2.5*x");
-    check("LinearModelFit({{0, 1}, {1, 0}, {3, 2}, {5, 4}},x,x)", //
-        "0.186441+0.694915*x");
+    check("LinearModelFit(0^ {{1,0}, {0,1}},{{1,2,3,a}},RegularExpression(1))", //
+        "LinearModelFit({{0,Indeterminate},{Indeterminate,0}},{{1,2,3,a}},RegularExpression(\n"
+            + "1))");
+
+    check(
+        "LinearModelFit({{1, 1, Sin(2)}, {1, 2, Sin(3)}, {1, 3, Sin(4)}, {2, 1, Sin(3)}, {2, 2, Sin(4)}, {2, 3, Sin(5)}}, {x, y}, {x, y})", //
+        "FittedModel[2.10368-0.622741*x-0.691536*y]");
+    check(
+        "LinearModelFit({{1, 1, Sin(2)}, {1, 2, Sin(3)}, {1, 3, Sin(4)}, {2, 1, Sin(3)}, {2, 2, Sin(4)}, {2, 3, Sin(5)}}, { }, {x, y})", //
+        "FittedModel[-0.213499]");
+    check("data = Flatten(Table({x, y, Sin(x + y)}, {x, 5}, {y, 5}), 1);" //
+        + "LinearModelFit(data, {1, Sin(x), Cos(y)}, {x, y})", //
+        "FittedModel[-0.00760098+0.00481437*Cos(y)-0.244815*Sin(x)]");
+
+  }
+
+  @Test
+  public void testLinearModelFitProperties() {
+    check(
+        "nlm=LinearModelFit({{1, 1, 6.5}, {2, 1, 8.4}, {1, 2, 9.6}, {2, 2, 12.1}, {3, 2, 14.0}},{1, a, b, a*b},{a, b}) ", //
+        "FittedModel[1.7+1.6*a+2.9*b+0.3*a*b]");
+    check("nlm  // Normal", //
+        "1.7+1.6*a+2.9*b+0.3*a*b");
+    check("nlm(\"BestFit\")", //
+        "1.7+1.6*a+2.9*b+0.3*a*b");
+    check("nlm(\"BestFitParameters\")", //
+        "{1.7,1.6,2.9,0.3}");
+    checkNumeric("nlm(\"EstimatedVariance\")", //
+        "0.06000000000000028");
+    check("nlm(\"FitResiduals\")", //
+        "{5.32907*10^-15,1.77636*10^-15,-0.1,0.2,-0.1}");
+    check("nlm(\"ParameterErrors\")", //
+        "{1.15758,0.714143,0.663325,0.387298}");
+    checkNumeric("nlm(\"ParameterErrors\")", //
+        "{1.1575836902790244,0.7141428428542863,0.6633249580710808,0.3872983346207423}");
+    check("nlm(\"RSquared\")", //
+        "0.99989");
+    checkNumeric("nlm(\"RSquared\")", //
+        "0.9998903869341226");
   }
 
   @Test

@@ -3,13 +3,8 @@ package org.matheclipse.core.builtin;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.convert.Convert;
@@ -1094,49 +1089,6 @@ public final class OutputFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
-    }
-  }
-
-  public static class VariableManager implements Function<IExpr, String> {
-    ArrayDeque<Map<IExpr, String>> varStack;
-
-    public void put(IExpr key, String variable) {
-      varStack.peek().put(key, variable);
-    }
-
-    public Map<IExpr, String> peek() {
-      return varStack.peek();
-    }
-
-    public void push() {
-      Map<IExpr, String> map = new HashMap<IExpr, String>();
-      varStack.push(map);
-    }
-
-    public void push(Map<IExpr, String> map) {
-      varStack.push(map);
-    }
-
-    public Map<IExpr, String> pop() {
-      return varStack.pop();
-    }
-
-    public VariableManager(Map<IExpr, String> map) {
-      varStack = new ArrayDeque<Map<IExpr, String>>();
-      varStack.add(map);
-    }
-
-    @Override
-    public String apply(IExpr expr) {
-      for (Iterator<Map<IExpr, String>> iterator = varStack.descendingIterator(); iterator
-          .hasNext();) {
-        Map<IExpr, String> map = iterator.next();
-        String temp = map.get(expr);
-        if (temp != null) {
-          return temp;
-        }
-      }
-      return null;
     }
   }
 

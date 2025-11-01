@@ -39,8 +39,11 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testArea() {
+    check("Area(Triangle({{0,0,0},{1,0,0},{0,1,1}}))", //
+        "1/Sqrt(2)");
     check("Area(Triangle({{0, 0}, {1, 0}, {1, 1}}))", //
         "1/2");
+
     check("Area(Disk({a,b}))", //
         "Pi");
     check("Area(Disk({a,b},{r1,r2}))", //
@@ -63,6 +66,11 @@ public class GeometricTestCase extends ExprEvaluatorTestCase {
             + "1-r1^2/r2^2)*UnitStep(-2*Pi+Abs(-t1+t2))");
     check("Perimeter(Rectangle({a,b},{c,d}))", //
         "2*(Abs(-a+c)+Abs(-b+d))");
+    check("Perimeter(SSSTriangle(5,6,7))", //
+        "18");
+    check("Perimeter(Triangle({{0,0,0},{1,0,0},{0,1,1}}))", //
+        "1+Sqrt(2)+Sqrt(3)");
+
   }
 
   @Test

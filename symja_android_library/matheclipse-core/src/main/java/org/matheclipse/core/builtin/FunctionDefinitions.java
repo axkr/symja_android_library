@@ -38,6 +38,7 @@ public final class FunctionDefinitions {
       S.FindRoot.setEvaluator(new org.matheclipse.core.reflection.system.FindRoot());
       S.FindSequenceFunction
           .setEvaluator(new org.matheclipse.core.reflection.system.FindSequenceFunction());
+      S.FittedModel.setEvaluator(new org.matheclipse.core.reflection.system.FittedModel());
       S.Fourier.setEvaluator(new org.matheclipse.core.reflection.system.Fourier());
       S.FourierCosTransform
           .setEvaluator(new org.matheclipse.core.reflection.system.FourierCosTransform());
@@ -103,6 +104,8 @@ public final class FunctionDefinitions {
       S.NSum.setEvaluator(new org.matheclipse.core.reflection.system.NSum());
       S.NumberLinePlot.setEvaluator(new org.matheclipse.core.reflection.system.NumberLinePlot());
 
+      S.OptimizeExpression
+          .setEvaluator(new org.matheclipse.core.reflection.system.OptimizeExpression());
       S.Out.setEvaluator(new org.matheclipse.core.reflection.system.Out());
       S.Outer.setEvaluator(new org.matheclipse.core.reflection.system.Outer());
       S.ParametricPlot.setEvaluator(new org.matheclipse.core.reflection.system.ParametricPlot());
@@ -124,8 +127,6 @@ public final class FunctionDefinitions {
 
       if (!Config.FUZZY_PARSER) {
         S.Export.setEvaluator(new org.matheclipse.core.reflection.system.Export());
-        S.OptimizeExpression
-            .setEvaluator(new org.matheclipse.core.reflection.system.OptimizeExpression());
         S.Share.setEvaluator(new org.matheclipse.core.reflection.system.Share());
       }
     }
@@ -204,7 +205,7 @@ public final class FunctionDefinitions {
     PiecewiseFunctions.initialize();
     QuantumPhysicsFunctions.initialize();
     ConstantPhysicsDefinitions.initialize();
-  
+
     AutomaticRules.initialize();
     return true;
   }
