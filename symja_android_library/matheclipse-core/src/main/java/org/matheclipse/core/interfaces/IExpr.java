@@ -6196,11 +6196,14 @@ public interface IExpr
         // or: rat1 * Sqrt( rat2 ) + rat3 * Sqrt( rat4 );
         IExpr p1 = first();
         IExpr p2 = second();
-        IRational denominator = (IRational) F.Subtract.of(p1.sqr(), p2.sqr());
-        denominator = denominator.inverse();
-        p1 = denominator.multiply(p1);
-        p2 = denominator.multiply(p2);
-        return p1.subtract(p2);
+
+        IExpr denominator = F.Subtract.of(p1.sqr(), p2.sqr());
+        if (denominator.isNumber()) {
+          denominator = denominator.inverse();
+          p1 = denominator.multiply(p1);
+          p2 = denominator.multiply(p2);
+          return p1.subtract(p2);
+        }
       }
       if (this.isFactorSqrtExpr()) {
         if (isSqrt()) {
