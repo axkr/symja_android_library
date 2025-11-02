@@ -112,6 +112,12 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testEdgeCount() {
+    check("EdgeCount(CompleteGraph(4))", //
+        "6");
+  }
+
+  @Test
   public void testEdgeList() {
     check("EdgeList(Graph({1 -> 2, 2 -> 3, 1 -> 3, 4 -> 2}))", //
         "{1->2,2->3,1->3,4->2}");
@@ -710,6 +716,12 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
         "SparseArray(Automatic, {4, 4}, 0, {1, {{0, 3, 4, 5, 6}, {{2}, {3}, {4}, {1}, {1}, {1}}}, {1, 1, 1, 1, 1, 1}}) // Normal", //
         "{{0,1,1,1},\n" //
             + " {1,0,0,0},\n" + " {1,0,0,0},\n" + " {1,0,0,0}}");
+  }
+
+  @Test
+  public void testVertexCount() {
+    check("VertexCount(CompleteGraph(4))", //
+        "4");
   }
 
   @Test

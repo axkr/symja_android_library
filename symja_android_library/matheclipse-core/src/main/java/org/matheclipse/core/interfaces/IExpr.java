@@ -4827,12 +4827,32 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is of the form <code>Rule[&lt;lhs&gt;, ...]</code>.
+   * 
+   * @param lhs
+   * @return
+   */
+  default boolean isRule(IExpr lhs) {
+    return false;
+  }
+
+  /**
    * Test if this expression is of the form <code>Rule[&lt;arg1&gt;, &lt;arg2&gt;]</code> or <code>
    * RuleDelayed[&lt;arg1&gt;, &lt;arg2&gt;]</code>.
    *
    * @return
    */
   default boolean isRuleAST() {
+    return false;
+  }
+
+  /**
+   * Test if this expression is of the form <code>Rule[&lt;lhs&gt;, ...]</code> or <code>
+   * RuleDelayed[&lt;lhs&gt;, ...]</code>.
+   *
+   * @return
+   */
+  default boolean isRuleAST(IExpr lhs) {
     return false;
   }
 

@@ -740,8 +740,18 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public final boolean isRule(IExpr lhs) {
+      return arg1.equals(lhs);
+    }
+
+    @Override
     public final boolean isRuleAST() {
       return true;
+    }
+
+    @Override
+    public final boolean isRuleAST(IExpr lhs) {
+      return arg1.equals(lhs);
     }
 
     @Override
@@ -781,8 +791,18 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
 
     @Override
+    public final boolean isRule(IExpr lhs) {
+      return false;
+    }
+
+    @Override
     public final boolean isRuleAST() {
       return true;
+    }
+
+    @Override
+    public final boolean isRuleAST(IExpr lhs) {
+      return arg1.equals(lhs);
     }
 
     @Override

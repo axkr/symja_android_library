@@ -873,7 +873,18 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
     /** {@inheritDoc} */
     @Override
+    public boolean isRule(IExpr lhs) {
+      return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public final boolean isRuleAST() {
+      return false;
+    }
+
+    @Override
+    public final boolean isRuleAST(IExpr lhs) {
       return false;
     }
 
@@ -4840,8 +4851,19 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
+  public boolean isRule(IExpr lhs) {
+    return S.Rule == head() && size() == 3 && arg1().equals(lhs);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public boolean isRuleAST() {
     return (S.Rule == head() || S.RuleDelayed == head()) && size() == 3;
+  }
+
+  @Override
+  public boolean isRuleAST(IExpr lhs) {
+    return isRuleAST() && lhs.equals(arg1());
   }
 
   /** {@inheritDoc} */
