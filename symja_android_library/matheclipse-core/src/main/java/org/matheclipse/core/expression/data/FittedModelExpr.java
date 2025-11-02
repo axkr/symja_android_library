@@ -1,5 +1,9 @@
 package org.matheclipse.core.expression.data;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Arrays;
 import org.hipparchus.linear.Array2DRowFieldMatrix;
 import org.hipparchus.linear.ArrayFieldVector;
@@ -17,7 +21,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
-public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> {
+public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> implements Externalizable {
 
   /** */
   private static final long serialVersionUID = -2779698690575246663L;
@@ -100,12 +104,11 @@ public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> {
    *        entries before are the x-value data points
    * @param basisFunctions the basis functions as a list of IExpr
    * @param variables the variables as a list of IExpr
-   * @param noIntercept whether to include an intercept term
    * @param engine the EvalEngine for evaluation
    * @return a FittedModelExpr containing the regression results or an error message
    */
   public static IExpr linearModelFit(double[][] matrix, IAST basisFunctions, IAST variables,
-      boolean noIntercept, EvalEngine engine) {
+      EvalEngine engine) {
     try {
       int numberOfPoints = matrix.length;
       double[] y = new double[numberOfPoints];
@@ -117,13 +120,10 @@ public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> {
 
       double[][] x = designMatrixNumeric(matrix, basisFunctions, variables, engine);
       if (x != null) {
-        ExprOLSLinearRegression regression = new ExprOLSLinearRegression();
-        regression.setNoIntercept(noIntercept);
         FieldVector<IExpr> yv = Convert.list2Vector(y);
         FieldMatrix<IExpr> xm = Convert.list2Matrix(x);
-        regression.newSampleData(yv, xm);
         FieldVector<IExpr> basis = Convert.list2Vector(basisFunctions);
-        return FittedModelExpr.newInstance(regression, basis);
+        return FittedModelExpr.newInstance(xm, yv, basis);
       }
       return F.NIL;
     } catch (Exception e) {
@@ -141,13 +141,11 @@ public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> {
    *        entries before are the x-value data points
    * @param basisFunctions the basis functions as a list of IExpr
    * @param variables the variables as a list of IExpr
-   * @param noIntercept whether to include an intercept term
    * @param engine the EvalEngine for evaluation
    * @return a FittedModelExpr containing the regression results or an error message
    */
   public static IExpr linearModelFit(FieldMatrix<IExpr> matrix, FieldVector<IExpr> basisFunctions,
-      FieldVector<IExpr> variables, boolean noIntercept,
-      org.matheclipse.core.eval.EvalEngine engine) {
+      FieldVector<IExpr> variables, org.matheclipse.core.eval.EvalEngine engine) {
     try {
       int numberOfPoints = matrix.getRowDimension();
       FieldVector<IExpr> y = new ArrayFieldVector<IExpr>(F.EXPR_FIELD, numberOfPoints);
@@ -158,19 +156,7 @@ public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> {
       }
       FieldMatrix<IExpr> designMatrix =
           designMatrixSymbolic(matrix, basisFunctions, variables, engine);
-      ExprOLSLinearRegression regression = new ExprOLSLinearRegression();
-      regression.setNoIntercept(noIntercept);
-      regression.newSampleData(y, designMatrix);
-      return newInstance(regression, basisFunctions);
-      // double[][] x = designMatrixNumeric(matrix, basisFunctions, variables, numberOfPoints,
-      // engine);
-      // if (x != null) {
-      // OLSSymbolicLinearRegression regression = new OLSSymbolicLinearRegression();
-      // regression.setNoIntercept(noIntercept);
-      // regression.newSampleData(n, x);
-      // return newInstance(regression, basisFunctions);
-      // }
-      // return F.NIL;
+      return newInstance(designMatrix, y, basisFunctions);
     } catch (Exception e) {
       if (Config.SHOW_STACKTRACE) {
         e.printStackTrace();
@@ -180,8 +166,8 @@ public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> {
   }
 
   public static IExpr linearModelFit(IExpr designMatrix, IExpr responseVector) {
-    int[] dims = designMatrix.isMatrix(false);
-    int vLength = responseVector.isVector();
+    final int[] dims = designMatrix.isMatrix(false);
+    final int vLength = responseVector.isVector();
     if (vLength > 0 && dims != null && dims[0] == vLength) {
       double[][] doubleMatrix = designMatrix.toDoubleMatrix(false);
       double[] doubleVector = responseVector.toDoubleVector();
@@ -191,7 +177,7 @@ public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> {
         regression.setNoIntercept(true);
         FieldMatrix<IExpr> designFieldMatrix = Convert.list2Matrix(doubleMatrix);
         FieldVector<IExpr> responseFieldVector = Convert.list2Vector(doubleVector);
-        FittedModelExpr model = newInstance(designFieldMatrix, responseFieldVector, dims);
+        FittedModelExpr model = newInstance(designFieldMatrix, responseFieldVector);
         if (model != null) {
           return model;
         }
@@ -199,7 +185,7 @@ public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> {
       // symbolic solution
       FieldMatrix<IExpr> designFieldMatrix = Convert.list2Matrix(designMatrix);
       FieldVector<IExpr> responseFieldVector = Convert.list2Vector(responseVector);
-      FittedModelExpr model = newInstance(designFieldMatrix, responseFieldVector, dims);
+      FittedModelExpr model = newInstance(designFieldMatrix, responseFieldVector);
       if (model != null) {
         return model;
       }
@@ -207,36 +193,48 @@ public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> {
     return F.NIL;
   }
 
-  public static FittedModelExpr newInstance(final FieldMatrix<IExpr> designMatrix,
-      final FieldVector<IExpr> responseVector, int[] matrixDimension) {
+  private static FittedModelExpr newInstance(final FieldMatrix<IExpr> designMatrix,
+      final FieldVector<IExpr> responseVector) {
+    // use slots as basis functions placeholder
+    final int columnDimension = designMatrix.getColumnDimension();
+    FieldVector<IExpr> basisFunctions = new ArrayFieldVector<IExpr>(F.EXPR_FIELD, columnDimension);
+    for (int i = 0; i < columnDimension; i++) {
+      basisFunctions.setEntry(i, F.Slot(i + 1));
+    }
+    return newInstance(designMatrix, responseVector, basisFunctions);
+  }
+
+  private static FittedModelExpr newInstance(final FieldMatrix<IExpr> designMatrix,
+      final FieldVector<IExpr> responseVector, final FieldVector<IExpr> basisFunctions) {
     ExprOLSLinearRegression regression = new ExprOLSLinearRegression();
     regression.setNoIntercept(true);
     regression.newSampleData(responseVector, designMatrix);
-    // use slots as basis functions placeholder
-    FieldVector<IExpr> basisFunctions =
-        new ArrayFieldVector<IExpr>(F.EXPR_FIELD, matrixDimension[1]);
-    for (int i = 0; i < matrixDimension[1]; i++) {
-      basisFunctions.setEntry(i, F.Slot(i + 1));
-    }
-    return newInstance(regression, basisFunctions);
+    return new FittedModelExpr(regression, designMatrix, responseVector, basisFunctions);
   }
 
-  public static FittedModelExpr newInstance(final ExprOLSLinearRegression value,
-      FieldVector<IExpr> basisFunctions) {
-    return new FittedModelExpr(value, basisFunctions);
+  private FieldMatrix<IExpr> designMatrix;
+  private FieldVector<IExpr> responseVector;
+  private FieldVector<IExpr> basisFunctions;
+
+  /**
+   * No-argument constructor required for {@link Externalizable} deserialization. Initializes the
+   * expression with the {@link S#FittedModel} head and a null data payload.
+   */
+  public FittedModelExpr() {
+    super(S.FittedModel, null);
   }
 
-  private final FieldVector<IExpr> basisFunctions;
-
-  protected FittedModelExpr(final ExprOLSLinearRegression function,
-      FieldVector<IExpr> basisFunctions) {
+  protected FittedModelExpr(final ExprOLSLinearRegression function, FieldMatrix<IExpr> designMatrix,
+      FieldVector<IExpr> responseVector, FieldVector<IExpr> basisFunctions) {
     super(S.FittedModel, function);
+    this.designMatrix = designMatrix;
+    this.responseVector = responseVector;
     this.basisFunctions = basisFunctions;
   }
 
   @Override
   public IExpr copy() {
-    return new FittedModelExpr(fData, basisFunctions);
+    return new FittedModelExpr(fData, designMatrix, responseVector, basisFunctions);
   }
 
   @Override
@@ -306,5 +304,29 @@ public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> {
   @Override
   public String toString() {
     return "FittedModel[" + normal(false) + "]";
+  }
+
+  @Override
+  public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+    IExpr m = (IExpr) in.readObject();
+    designMatrix = Convert.list2Matrix(m);
+    IExpr v = (IExpr) in.readObject();
+    responseVector = Convert.list2Vector(v);
+    IExpr b = (IExpr) in.readObject();
+    basisFunctions = Convert.list2Vector(b);
+    ExprOLSLinearRegression regression = new ExprOLSLinearRegression();
+    regression.setNoIntercept(true);
+    regression.newSampleData(responseVector, designMatrix);
+    fData = regression;
+  }
+
+  @Override
+  public void writeExternal(ObjectOutput output) throws IOException {
+    IExpr m = Convert.matrix2Expr(designMatrix);
+    output.writeObject(m);
+    IExpr v = Convert.vector2Expr(responseVector);
+    output.writeObject(v);
+    IExpr b = Convert.vector2Expr(basisFunctions);
+    output.writeObject(b);
   }
 }

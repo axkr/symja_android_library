@@ -374,7 +374,6 @@ public class CurveFitterFunctions {
           // VariablesSet varSet = new VariablesSet(basisFunctions);
           IAST variables = arg3;
 
-          boolean noIntercept = true;
           // Intercept will be controlled by the 'basisFunctions'-list (i.e. if '1' is included).
           if (!basisFunctions.exists(f -> f.isOne())) {
             IASTAppendable temp = F.ListAlloc(basisFunctions.size());
@@ -393,7 +392,7 @@ public class CurveFitterFunctions {
                     F.List(F.ZZ(dim[1] - 1), F.ZZ(variables.argSize())), engine);
               }
               return FittedModelExpr.linearModelFit(numericMatrix, basisFunctions, variables,
-                  noIntercept, engine);
+                  engine);
             }
             FieldMatrix<IExpr> matrix = Convert.list2Matrix(arg1);
             FieldVector<IExpr> basis = Convert.list2Vector(basisFunctions);
@@ -405,7 +404,7 @@ public class CurveFitterFunctions {
                 return Errors.printMessage(S.LinearModelFit, "fitc",
                     F.List(F.ZZ(dim[1] - 1), F.ZZ(variables.argSize())), engine);
               }
-              return FittedModelExpr.linearModelFit(matrix, basis, vars, noIntercept, engine);
+              return FittedModelExpr.linearModelFit(matrix, basis, vars, engine);
             }
           } else {
             int vectorLength = arg1.isVector();
@@ -430,7 +429,7 @@ public class CurveFitterFunctions {
                 FieldVector<IExpr> vars = Convert.list2Vector(variables);
                 // double[][] matrix = arg1.toDoubleMatrix(false);
                 if (basis != null && vars != null) {
-                  return FittedModelExpr.linearModelFit(matrix, basis, vars, noIntercept, engine);
+                  return FittedModelExpr.linearModelFit(matrix, basis, vars, engine);
                 }
               }
             }
