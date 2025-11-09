@@ -195,7 +195,7 @@ public class CurveFitterFunctions {
      */
     protected static IAST initialGuess(IAST listOfSymbolsOrPairs, double[] initialGuess) {
       return F.mapList(listOfSymbolsOrPairs, (temp, i) -> {
-        if (temp.isSymbol()) {
+        if (temp.isVariable()) {
           initialGuess[i - 1] = 1.0;
           return temp;
         } else if (temp.isList2() && temp.first().isSymbol()) {
