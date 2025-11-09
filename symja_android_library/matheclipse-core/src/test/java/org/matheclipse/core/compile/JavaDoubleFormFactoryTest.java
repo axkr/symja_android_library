@@ -59,13 +59,13 @@ class JavaDoubleFormFactoryTest {
     // This test assumes the expression is not considered a numeric function returning a complex
     // number
     // which would trigger the complex method calls like .sqrt()
-    IAST power = F.Power(F.symbol("a"), F.C1D2);
+    IAST power = F.Power(F.a, F.C1D2);
     assertEquals("Math.sqrt(a)", convert(power));
   }
 
   @Test
   void shouldConvertPowerWithCubicRootExponentToMathCbrt() {
-    IAST power = F.Power(F.symbol("a"), F.C1D3);
+    IAST power = F.Power(F.a, F.C1D3);
     assertEquals("Math.cbrt(a)", convert(power));
   }
 
