@@ -2,7 +2,6 @@ package org.matheclipse.core.system;
 
 import org.junit.Test;
 
-/** Tests forSolve and Roots functions */
 public class PartTest extends ExprEvaluatorTestCase {
 
   @Test
@@ -129,9 +128,17 @@ public class PartTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testPartSparse() {
-    check("SparseArray[{{0, a}, {b, 0}}]//Normal", //
+    check("sp=SparseArray[{{0, a}, {b, 0}}]", //
+        "SparseArray(Number of elements: 2 Dimensions: {2,2} Default value: 0)");
+    check("sp//Normal", //
         "{{0,a},\n" //
             + " {b,0}}");
+    check("sps=sp[[2]]", //
+        "SparseArray(Number of elements: 1 Dimensions: {2} Default value: 0)");
+    check("sps//Normal", //
+        "{b,0}");
+    check("sps=sp[[2,1]]", //
+        "b");
   }
 
   @Test

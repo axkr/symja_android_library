@@ -2960,7 +2960,8 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr first = ast.arg1().first();
+      IExpr arg1 = ast.arg1();
+      IExpr first = arg1.first();
       if (first.isPresent()) {
         return first;
       }
@@ -2968,7 +2969,7 @@ public final class ListFunctions {
         // default value
         return ast.arg2();
       }
-      if (ast.arg1().size() == 1) {
+      if (arg1.size() == 1) {
         // `1` has zero length and no first element.
         return Errors.printMessage(ast.topHead(), "nofirst", F.list(ast.arg1()), engine);
       }
@@ -4000,7 +4001,8 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr last = ast.arg1().last();
+      IExpr arg1 = ast.arg1();
+      IExpr last = arg1.last();
       if (last.isPresent()) {
         return last;
       }
@@ -4087,7 +4089,11 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
-      return arg1.isASTOrAssociation() ? F.ZZ(arg1.argSize()) : F.C0;
+      final int size = arg1.size();
+      if (size > 0) {
+        return F.ZZ(size - 1);
+      }
+      return F.C0;
     }
 
     @Override
@@ -4358,13 +4364,24 @@ public final class ListFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (arg1.isASTOrAssociation()) {
-        if (arg1.argSize() > 0) {
-          return ((IAST) arg1).most();
+      if (arg1.size() > 0) {
+        if (arg1.size() == 1) {
+          // Cannot take Most of expression `1` with length zero.
+          return Errors.printMessage(ast.topHead(), "nomost", F.list(arg1), engine);
         }
-        // Cannot take Most of expression `1` with length zero.
-        return Errors.printMessage(ast.topHead(), "nomost", F.list(arg1), engine);
+        IExpr most = arg1.most();
+        if (most.isPresent()) {
+          return most;
+        }
       }
+
+      // if (arg1.isASTOrAssociation()) {
+      // if (arg1.argSize() > 0) {
+      // return ((IAST) arg1).most();
+      // }
+      // // Cannot take Most of expression `1` with length zero.
+      // return Errors.printMessage(ast.topHead(), "nomost", F.list(arg1), engine);
+      // }
       // Nonatomic expression expected at position `1` in `2`.
       return Errors.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
     }
@@ -6307,10 +6324,18 @@ public final class ListFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr rest = ast.arg1().rest();
-      if (rest.isPresent()) {
-        return rest;
+      IExpr arg1 = ast.arg1();
+      if (arg1.size() > 0) {
+        if (arg1.size() == 1) {
+          // Cannot take Rest of expression `1` with length zero.
+          return Errors.printMessage(ast.topHead(), "norest", F.list(arg1), engine);
+        }
+        IExpr rest = arg1.rest();
+        if (rest.isPresent()) {
+          return rest;
+        }
       }
+
       // if (arg1.isASTOrAssociation() && ((IAST) arg1).size() > 1) {
       // return arg1.rest();
       // }

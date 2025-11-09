@@ -1786,8 +1786,8 @@ public class Pods {
           }
         }
 
-        if (rest.arg1().toString().equalsIgnoreCase("convert")) {
-          rest = inExpr.rest();
+        if (rest.arg1().toString().equalsIgnoreCase("convert") && inExpr.isAST()) {
+          rest = ((IAST) inExpr).rest();
         }
         if (rest.argSize() > 2) {
           rest = rest.removeIf(x -> x.toString().equals("in"));

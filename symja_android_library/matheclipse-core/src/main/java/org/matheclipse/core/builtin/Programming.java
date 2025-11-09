@@ -2457,8 +2457,17 @@ public final class Programming {
           if (arg1.isSparseArray()) {
             return sparseEvaluate(ast, (ISparseArray) arg1, engine);
           }
-          if (ast.size() == 3 && ast.arg2().isZero()) {
-            return arg1.head();
+          if (ast.isAST2()) {
+            if (arg1.size() > 0) {
+              int n = ast.arg2().toIntDefault();
+              if (n == 0) {
+                return arg1.head();
+              }
+              return arg1.get(n);
+            }
+            if (ast.arg2().isZero()) {
+              return arg1.head();
+            }
           }
           // Part specification `1` is longer than depth of object.
           return Errors.printMessage(S.Part, "partd", F.list(ast), engine);
@@ -2466,10 +2475,9 @@ public final class Programming {
       }
 
       IAST arg1AST = (IAST) arg1;
-      IExpr temp;
-      int astSize = ast.size();
+      final int astSize = ast.size();
       for (int i = 2; i < astSize; i++) {
-        temp = engine.evaluateNIL(ast.get(i));
+        IExpr temp = engine.evaluateNIL(ast.get(i));
         if (temp.isPresent()) {
           if (evaledAST.isPresent()) {
             evaledAST.set(i, temp);
@@ -2479,25 +2487,16 @@ public final class Programming {
           }
         }
       }
-
-      if (evaledAST.isPresent()) {
-        return part(arg1AST, evaledAST, 2, engine);
-      }
-      return part(arg1AST, ast, 2, engine);
-
+      return part(arg1AST, evaledAST.orElse(ast), 2, engine);
     }
 
     public IExpr sparseEvaluate(final IAST ast, ISparseArray arg1, EvalEngine engine) {
-
       ast.builtinEvaled();
       if (ast.size() >= 3) {
         IASTMutable evaledAST = F.NIL;
-
-        IExpr temp;
-
         int astSize = ast.size();
         for (int i = 2; i < astSize; i++) {
-          temp = engine.evaluateNIL(ast.get(i));
+          IExpr temp = engine.evaluateNIL(ast.get(i));
           if (temp.isPresent()) {
             if (evaledAST.isPresent()) {
               evaledAST.set(i, temp);
@@ -2507,11 +2506,7 @@ public final class Programming {
             }
           }
         }
-
-        if (evaledAST.isPresent()) {
-          return sparsePart(arg1, evaledAST, 2, engine);
-        }
-        return sparsePart(arg1, ast, 2, engine);
+        return sparsePart(arg1, evaledAST.orElse(ast), 2, engine);
       }
       return F.NIL;
     }
@@ -2557,7 +2552,7 @@ public final class Programming {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_0_INFINITY;
+      return ARGS_1_INFINITY;
     }
 
     @Override

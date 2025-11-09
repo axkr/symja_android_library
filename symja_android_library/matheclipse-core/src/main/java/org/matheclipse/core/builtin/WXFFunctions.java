@@ -62,7 +62,7 @@ public class WXFFunctions {
         IExpr arg1 = ast.arg1();
         if (arg1.isList()) {
           if (arg1.isEmptyList()) {
-            return F.CEmptyList;
+            return ByteArrayExpr.newInstance(new byte[] {});
           }
           byte[] bArray = WL.toByteArray((IAST) arg1);
           if (bArray == null) {

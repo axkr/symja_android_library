@@ -1037,6 +1037,22 @@ public class EvalEngine implements Serializable {
     return engine;
   }
 
+  public synchronized EvalEngine copyInit() {
+    EvalEngine engine = new EvalEngine();
+    engine.fRandomSeed = fRandom.nextLong();
+    engine.fRandom.setSeed(fRandomSeed);
+    engine.fSessionID = this.fSessionID;
+    engine.fRecursionLimit = this.fRecursionLimit;
+    engine.fIterationLimit = this.fIterationLimit;
+    engine.fOutPrintStream = this.fOutPrintStream;
+    engine.fErrorPrintStream =
+        this.fErrorPrintStream == null ? this.fOutPrintStream : this.fErrorPrintStream;
+    engine.fRelaxedSyntax = this.fRelaxedSyntax;
+    engine.fOutListDisabled = true;
+    engine.init();
+    return engine;
+  }
+
   /**
    * Decrement the counter for the constant {@link S#C} expressions. {@link F#C(int)} - represents
    * the `n`-th constant in a solution for an equation.

@@ -6,6 +6,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Arrays;
 import org.matheclipse.core.expression.DataExpr;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.interfaces.IAST;
@@ -52,6 +53,17 @@ public class ByteArrayExpr extends DataExpr<byte[]> implements Externalizable {
   }
 
   /**
+   * Create a shallow copy of this expression. The underlying byte array reference is copied (no
+   * deep clone of the array is performed).
+   *
+   * @return a new {@code ByteArrayExpr} with the same internal data reference
+   */
+  @Override
+  public IExpr copy() {
+    return new ByteArrayExpr(fData);
+  }
+
+  /**
    * Equality is based on the contents of the wrapped byte array. Two {@code ByteArrayExpr}
    * instances are equal if their byte arrays are equal.
    *
@@ -69,6 +81,25 @@ public class ByteArrayExpr extends DataExpr<byte[]> implements Externalizable {
     return false;
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public IExpr get(int location) {
+    if (location == 0) {
+      return head();
+    }
+    byte[] bArray = toData();
+    if (bArray.length > 0) {
+      return F.ZZ(bArray[location - 1]);
+    }
+    return super.get(location);
+  }
+
+  @Override
+  public int hashCode() {
+    return (fData == null) ? 541 : 541 + Arrays.hashCode(fData);
+  }
+
+
   /**
    * Return the internal hierarchy id for this expression type.
    *
@@ -77,22 +108,6 @@ public class ByteArrayExpr extends DataExpr<byte[]> implements Externalizable {
   @Override
   public int hierarchy() {
     return BYTEARRAYID;
-  }
-
-  @Override
-  public int hashCode() {
-    return (fData == null) ? 541 : 541 + Arrays.hashCode(fData);
-  }
-
-  /**
-   * Create a shallow copy of this expression. The underlying byte array reference is copied (no
-   * deep clone of the array is performed).
-   *
-   * @return a new {@code ByteArrayExpr} with the same internal data reference
-   */
-  @Override
-  public IExpr copy() {
-    return new ByteArrayExpr(fData);
   }
 
 
@@ -109,6 +124,28 @@ public class ByteArrayExpr extends DataExpr<byte[]> implements Externalizable {
     return WL.toList(bArray);
   }
 
+  @Override
+  public void readExternal(ObjectInput in) throws IOException {
+    final int len = in.readInt();
+    fData = new byte[len];
+    in.read(fData);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public int size() {
+    return toData().length + 1;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public IExpr subList(int startPosition, int endPosition) {
+    byte[] bArray = toData();
+    if (bArray.length > 0) {
+      return newInstance(Arrays.copyOfRange(bArray, startPosition - 1, endPosition - 1));
+    }
+    return super.subList(startPosition, endPosition);
+  }
 
   /**
    * Provide a succinct textual representation for debugging.
@@ -121,15 +158,9 @@ public class ByteArrayExpr extends DataExpr<byte[]> implements Externalizable {
   }
 
   @Override
-  public void readExternal(ObjectInput in) throws IOException {
-    final int len = in.readInt();
-    fData = new byte[len];
-    in.read(fData);
-  }
-
-  @Override
   public void writeExternal(ObjectOutput output) throws IOException {
     output.writeInt(fData.length);
     output.write(fData);
   }
+
 }

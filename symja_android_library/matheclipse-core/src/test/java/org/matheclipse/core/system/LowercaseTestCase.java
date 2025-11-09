@@ -2187,17 +2187,42 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testByteArray() {
+    check("b0=ByteArray({})", //
+        "ByteArray[0 Bytes]");
+    check("Length(b0)", //
+        "0");
+
     // message ByteArray: The argument at position 1 in ByteArray(asy) should be a vector of
     // unsigned byte values or a Base64 encoded string.
     check("ba=ByteArray(\"asy\")", //
         "ByteArray(asy)");
 
-    check("ByteArray({})", //
-        "{}");
     check("ba=ByteArray(\"AQIDBAUGBwg=\")", //
         "ByteArray[8 Bytes]");
+    check("Length(ba)", //
+        "8");
+    check("ba[[2]]", //
+        "2");
     check("Normal(ba)", //
         "{1,2,3,4,5,6,7,8}");
+    check("First(ba)", //
+        "1");
+    // First: ByteArray[0 Bytes] has zero length and no first element.
+    check("First(b0)", //
+        "First(ByteArray[0 Bytes])");
+    check("Last(ba)", //
+        "8");
+    check("Last(b0)", //
+        "Last(ByteArray[0 Bytes])");
+    check("Rest(ba)//Normal", //
+        "{2,3,4,5,6,7,8}");
+    // Rest: Cannot take Rest of expression ByteArray[0 Bytes] with length zero.
+    check("Rest(b0)", //
+        "Rest(ByteArray[0 Bytes])");
+    check("Most(ba)//Normal", //
+        "{1,2,3,4,5,6,7}");
+    check("Most(b0)", //
+        "Most(ByteArray[0 Bytes])");
 
   }
 
@@ -14208,7 +14233,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // Map: Options expected (instead of y_) beyond position Map(1/Sqrt(5),{},I,y_) in `3`. An
     // option must be a rule or a list of rules.
     check("Map(1/Sqrt(5),ByteArray[{}],I,y_)", //
-        "Map(1/Sqrt(5),{},I,y_)");
+        "Map(1/Sqrt(5),ByteArray[0 Bytes],I,y_)");
 
     check("s=SparseArray({1 -> 1, 2 -> 2, 100 -> 100})", //
         "SparseArray(Number of elements: 3 Dimensions: {100} Default value: 0)");
@@ -15413,9 +15438,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMost() {
-    // TODO
     check("Most(SparseArray({{1,2},{3,4}}))", //
-        "Most(SparseArray(Number of elements: 4 Dimensions: {2,2} Default value: 0))");
+        "SparseArray(Number of elements: 2 Dimensions: {1,2} Default value: 0)");
+    check("Most(SparseArray({{1,2},{3,4}})) // Normal", //
+        "{{1,2}}");
 
     check("Most(<|1 :> a, 2 -> b, 3 :> c|>)", //
         "<|1:>a,2->b|>");
@@ -21596,6 +21622,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{b,c}");
     check("Rest(a + b + c)", //
         "b+c");
+    // Rest: Nonatomic expression expected at position 1 in Rest(a).
     check("Rest(a)", //
         "Rest(a)");
   }

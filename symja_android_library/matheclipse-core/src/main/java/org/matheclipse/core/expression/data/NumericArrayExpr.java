@@ -9,7 +9,6 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Map;
 import org.hipparchus.complex.Complex;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -23,7 +22,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.IReal;
-import org.matheclipse.parser.trie.Trie;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedBytes;
 import com.google.common.primitives.UnsignedInts;
@@ -746,6 +744,7 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     }
   }
 
+
   /** The dimension of the numeric array. */
   int[] fDimension;
 
@@ -800,34 +799,74 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
 
   @Override
   public IExpr get(int position) {
-    int[] dims = getDimension();
-
-    final int partSize = 1;
-
-    int len = 0;
-    int[] partIndex = new int[dims.length];
-    int count = 0;
-    partIndex[0] = position;
-
-    for (int i = partSize; i < dims.length; i++) {
-      partIndex[i] = -1;
-      count++;
-    }
-    if (count == 0 && partSize == dims.length) {
-      // return fData.get(partIndex);
+    if (position < 1 || position > fDimension[0]) {
       return F.NIL;
     }
-    int[] newDimension = new int[count];
-    count = 0;
-    for (int i = 0; i < partIndex.length; i++) {
-      if (partIndex[i] == (-1)) {
-        len++;
-        newDimension[count++] = dims[i];
-      }
+    if (fDimension.length == 1) {
+      return getPart(new int[] {position});
     }
-    final Trie<int[], IExpr> value = Config.TRIE_INT2EXPR_BUILDER.build();
 
-    return new NumericArrayExpr(value, newDimension, fType);
+    int[] newDimension = Arrays.copyOfRange(fDimension, 1, fDimension.length);
+    int subArraySize = 1;
+    for (int dim : newDimension) {
+      subArraySize *= dim;
+    }
+
+    int startOffset = (position - 1) * subArraySize;
+    Object newArrayData;
+
+    switch (fType) {
+      case Integer8:
+      case UnsignedInteger8:
+        byte[] newByteArray = new byte[subArraySize];
+        System.arraycopy(fData, startOffset, newByteArray, 0, subArraySize);
+        newArrayData = newByteArray;
+        break;
+      case Integer16:
+      case UnsignedInteger16:
+        short[] newShortArray = new short[subArraySize];
+        System.arraycopy(fData, startOffset, newShortArray, 0, subArraySize);
+        newArrayData = newShortArray;
+        break;
+      case Integer32:
+      case UnsignedInteger32:
+        int[] newIntArray = new int[subArraySize];
+        System.arraycopy(fData, startOffset, newIntArray, 0, subArraySize);
+        newArrayData = newIntArray;
+        break;
+      case Integer64:
+      case UnsignedInteger64:
+        long[] newLongArray = new long[subArraySize];
+        System.arraycopy(fData, startOffset, newLongArray, 0, subArraySize);
+        newArrayData = newLongArray;
+        break;
+      case Real32:
+        float[] newFloatArray = new float[subArraySize];
+        System.arraycopy(fData, startOffset, newFloatArray, 0, subArraySize);
+        newArrayData = newFloatArray;
+        break;
+      case Real64:
+        double[] newDoubleArray = new double[subArraySize];
+        System.arraycopy(fData, startOffset, newDoubleArray, 0, subArraySize);
+        newArrayData = newDoubleArray;
+        break;
+      case ComplexReal32:
+        int complexFloatSize = subArraySize * 2;
+        float[] newComplexFloatArray = new float[complexFloatSize];
+        System.arraycopy(fData, startOffset * 2, newComplexFloatArray, 0, complexFloatSize);
+        newArrayData = newComplexFloatArray;
+        break;
+      case ComplexReal64:
+        int complexDoubleSize = subArraySize * 2;
+        double[] newComplexDoubleArray = new double[complexDoubleSize];
+        System.arraycopy(fData, startOffset * 2, newComplexDoubleArray, 0, complexDoubleSize);
+        newArrayData = newComplexDoubleArray;
+        break;
+      default:
+        return F.NIL;
+    }
+
+    return new NumericArrayExpr(newArrayData, newDimension, fType);
   }
 
   @Override
@@ -836,11 +875,53 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
   }
 
   private IExpr getPart(int[] position) {
-    int index = 1;
-    for (int i = 0; i < position.length; i++) {
-      index *= position[i];
+    // TODO needs more unit tests
+    if (position.length != fDimension.length) {
+      // Part specification is longer than depth of object.
+      return F.NIL;
+    }
+    int flatIndex = 0;
+    int stride = 1;
+    for (int i = fDimension.length - 1; i >= 0; i--) {
+      int pos = position[i];
+      if (pos < 1 || pos > fDimension[i]) {
+        // Part specification is longer than depth of object.
+        return F.NIL;
+      }
+      flatIndex += (pos - 1) * stride;
+      stride *= fDimension[i];
     }
 
+    switch (fType) {
+      case Integer8:
+        return F.ZZ(((byte[]) fData)[flatIndex]);
+      case Integer16:
+        return F.ZZ(((short[]) fData)[flatIndex]);
+      case Integer32:
+        return F.ZZ(((int[]) fData)[flatIndex]);
+      case Integer64:
+        return F.ZZ(((long[]) fData)[flatIndex]);
+      case UnsignedInteger8:
+        return F.ZZ(Byte.toUnsignedInt(((byte[]) fData)[flatIndex]));
+      case UnsignedInteger16:
+        return F.ZZ(Short.toUnsignedInt(((short[]) fData)[flatIndex]));
+      case UnsignedInteger32:
+        return F.ZZ(Integer.toUnsignedLong(((int[]) fData)[flatIndex]));
+      case UnsignedInteger64:
+        return F.ZZ(UnsignedLong.fromLongBits(((long[]) fData)[flatIndex]).bigIntegerValue());
+      case Real32:
+        return F.num(((float[]) fData)[flatIndex]);
+      case Real64:
+        return F.num(((double[]) fData)[flatIndex]);
+      case ComplexReal32:
+        int c32Index = flatIndex * 2;
+        float[] c32Data = (float[]) fData;
+        return F.complexNum(c32Data[c32Index], c32Data[c32Index + 1]);
+      case ComplexReal64:
+        int c64Index = flatIndex * 2;
+        double[] c64Data = (double[]) fData;
+        return F.complexNum(c64Data[c64Index], c64Data[c64Index + 1]);
+    }
     return F.NIL;
   }
 
@@ -954,6 +1035,120 @@ public class NumericArrayExpr extends DataExpr<Object> implements INumericArray,
     fDimension = (int[]) in.readObject();
     fData = in.readObject();
   }
+
+  /** {@inheritDoc} */
+  // @Override
+  // public IExpr subList(int startPosition, int endPosition) {
+  // // todo
+  // return super.subList(startPosition, endPosition);
+  // }
+  /** {@inheritDoc} */
+  @Override
+  public IExpr subList(int startPosition, int endPosition) {
+    if (startPosition < 1 || endPosition > fDimension[0] + 1 || startPosition >= endPosition) {
+      // Following AbstractAST#subList which returns an empty list for invalid ranges.
+      int[] newDimension = fDimension.clone();
+      newDimension[0] = 0;
+      Object newArrayData;
+      switch (fType) {
+        case Integer8:
+        case UnsignedInteger8:
+          newArrayData = new byte[0];
+          break;
+        case Integer16:
+        case UnsignedInteger16:
+          newArrayData = new short[0];
+          break;
+        case Integer32:
+        case UnsignedInteger32:
+          newArrayData = new int[0];
+          break;
+        case Integer64:
+        case UnsignedInteger64:
+          newArrayData = new long[0];
+          break;
+        case Real32:
+        case ComplexReal32:
+          newArrayData = new float[0];
+          break;
+        case Real64:
+        case ComplexReal64:
+          newArrayData = new double[0];
+          break;
+        default:
+          // Should not happen for a valid NumericArrayExpr
+          return F.NIL;
+      }
+      return new NumericArrayExpr(newArrayData, newDimension, fType);
+    }
+
+    int[] newDimension = fDimension.clone();
+    int newFirstDim = endPosition - startPosition;
+    newDimension[0] = newFirstDim;
+
+    int subArraySize = 1;
+    for (int i = 1; i < fDimension.length; i++) {
+      subArraySize *= fDimension[i];
+    }
+
+    int startOffset = (startPosition - 1) * subArraySize;
+    int elementsToCopy = newFirstDim * subArraySize;
+    Object newArrayData;
+
+    switch (fType) {
+      case Integer8:
+      case UnsignedInteger8:
+        byte[] newByteArray = new byte[elementsToCopy];
+        System.arraycopy(fData, startOffset, newByteArray, 0, elementsToCopy);
+        newArrayData = newByteArray;
+        break;
+      case Integer16:
+      case UnsignedInteger16:
+        short[] newShortArray = new short[elementsToCopy];
+        System.arraycopy(fData, startOffset, newShortArray, 0, elementsToCopy);
+        newArrayData = newShortArray;
+        break;
+      case Integer32:
+      case UnsignedInteger32:
+        int[] newIntArray = new int[elementsToCopy];
+        System.arraycopy(fData, startOffset, newIntArray, 0, elementsToCopy);
+        newArrayData = newIntArray;
+        break;
+      case Integer64:
+      case UnsignedInteger64:
+        long[] newLongArray = new long[elementsToCopy];
+        System.arraycopy(fData, startOffset, newLongArray, 0, elementsToCopy);
+        newArrayData = newLongArray;
+        break;
+      case Real32:
+        float[] newFloatArray = new float[elementsToCopy];
+        System.arraycopy(fData, startOffset, newFloatArray, 0, elementsToCopy);
+        newArrayData = newFloatArray;
+        break;
+      case Real64:
+        double[] newDoubleArray = new double[elementsToCopy];
+        System.arraycopy(fData, startOffset, newDoubleArray, 0, elementsToCopy);
+        newArrayData = newDoubleArray;
+        break;
+      case ComplexReal32:
+        int complexFloatSize = elementsToCopy * 2;
+        float[] newComplexFloatArray = new float[complexFloatSize];
+        System.arraycopy(fData, startOffset * 2, newComplexFloatArray, 0, complexFloatSize);
+        newArrayData = newComplexFloatArray;
+        break;
+      case ComplexReal64:
+        int complexDoubleSize = elementsToCopy * 2;
+        double[] newComplexDoubleArray = new double[complexDoubleSize];
+        System.arraycopy(fData, startOffset * 2, newComplexDoubleArray, 0, complexDoubleSize);
+        newArrayData = newComplexDoubleArray;
+        break;
+      default:
+        return F.NIL;
+    }
+
+    return new NumericArrayExpr(newArrayData, newDimension, fType);
+  }
+
 
   @Override
   public int size() {

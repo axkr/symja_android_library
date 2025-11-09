@@ -43,7 +43,7 @@ Normalize an association:
 ```
 
 ### Related terms  
-[Association](Association.md), [SeriesData](SeriesData.md) , [SparseArray](SparseArray.md) 
+[Association](Association.md), [ByteArray](ByteArray.md), [SeriesData](SeriesData.md), [SparseArray](SparseArray.md) 
 
 
 

@@ -270,6 +270,7 @@ public class Errors {
       "nord", "Invalid comparison with `1` attempted.", //
       "norel", "Expressions `1` and `2` cannot be related by a permutation.", //
       "norep", "Assignment on `2` for `1` not found.", //
+      "norest", "Cannot take Rest of expression `1` with length zero.", //
       "normal", "Nonatomic expression expected at position `1` in `2`.", //
       "nostr", "`1` is not a string.", //
       "nosym", "`1` does not contain a symbol to attach a rule to.", //

@@ -1145,7 +1145,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
     check("Multinomial(1,2,3,ByteArray({1}))", //
         "60*Binomial(6+ByteArray[1 Bytes],ByteArray[1 Bytes])");
     check("Multinomial(2147483647,10007,-1,ByteArray({}))", //
-        "{}");
+        "Binomial(2147493653+ByteArray[0 Bytes],ByteArray[0 Bytes])");
     // check("Multinomial(-5,3)", //
     // "-4");
     check("Multinomial(-11,2,3,5)", //

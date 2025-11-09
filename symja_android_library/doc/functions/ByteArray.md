@@ -4,7 +4,7 @@
 ByteArray({list-of-byte-values})
 ```
 
-> converts the `list-of-byte-values` into a byte array.
+> converts the `list-of-byte-values` into a byte array. The argument in `ByteArray` should be a vector of unsigned byte values or a Base64-encoded string.
  
 ### Examples
 
@@ -15,7 +15,7 @@ ByteArray[3 Bytes]
 
 
 ### Related terms 
-[BinaryDeserialize](BinaryDeserialize.md), [BinarySerialize](BinarySerialize.md), [ByteArrayQ](ByteArrayQ.md), [Export](Export.md), [Import](Import.md)
+[BinaryDeserialize](BinaryDeserialize.md), [BinarySerialize](BinarySerialize.md), [ByteArrayQ](ByteArrayQ.md), [Export](Export.md), [Import](Import.md), [Normal](Normal.md)
 
 
 

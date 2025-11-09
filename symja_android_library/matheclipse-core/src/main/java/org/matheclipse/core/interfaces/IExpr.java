@@ -744,28 +744,6 @@ public interface IExpr
     return F.pair(F.C1, this);
   }
 
-  /**
-   * Struve function H.
-   * 
-   * @param z
-   *
-   * @return <i>H<sub>this</sub>(z)</i>
-   */
-  default IExpr struveH(IExpr z) {
-    return F.NIL;
-  }
-
-  /**
-   * Struve function L.
-   * 
-   * @param z
-   *
-   * @return <i>L<sub>this</sub>(z)</i>
-   */
-  default IExpr struveL(IExpr z) {
-    return F.NIL;
-  }
-
   @Override
   default IExpr asin() {
     return S.ArcSin.of(this);
@@ -1599,7 +1577,6 @@ public interface IExpr
     return F.NIL;
   }
 
-
   default IExpr evaluateHead(IAST ast, EvalEngine engine) {
     IExpr result = engine.evaluateNIL(this);
     if (result.isPresent()) {
@@ -1705,6 +1682,9 @@ public interface IExpr
    * @see #rest()
    */
   default IExpr first() {
+    if (size() > 1) {
+      return get(1);
+    }
     return F.NIL;
   }
 
@@ -1839,11 +1819,25 @@ public interface IExpr
     return F.NIL;
   }
 
+  /**
+   * This implementation throws {@link IndexOutOfBoundsException}. Subclasses have to implement this
+   * method, if their {@link #size()} method could be greater than 0.
+   * <p>
+   * Returns the element at the specified location in this {@code IAST}. If this is an
+   * {@link IAssociation} return the value of the rule at the specified location.
+   *
+   * @param location the index of the element to return.
+   * @return the element at the specified location.
+   * @throws IndexOutOfBoundsException if {@code location < 0 || >= size()}
+   */
+  default IExpr get(int location) throws IndexOutOfBoundsException {
+    throw new IndexOutOfBoundsException("Index: " + location + ", Size: " + size());
+  }
+
   @Override
   default IExpr getAddendum() {
     return isFinite() ? subtract(re()) : zero();
   }
-
 
   /**
    * Return <code>this.get(position)</code> if <code>argSize() >= position</code>, otherwise return
@@ -1855,6 +1849,7 @@ public interface IExpr
   default IExpr getArg(int position, IExpr defaultValue) {
     return defaultValue;
   }
+
 
   /**
    * Get the element at the specified <code>index</code> if this object is of type
@@ -2724,6 +2719,10 @@ public interface IExpr
     return false;
   }
 
+  default boolean isBlockModuleOrWithCondition() {
+    return false;
+  }
+
   /**
    * Test if this expression is a boolean formula (i.e. a symbol or a boolean function <code>
    * And, Equivalent, Nand, Nor, Not, Or, Xor</code> where all arguments are also &quot;boolean
@@ -3467,7 +3466,6 @@ public interface IExpr
     return false;
   }
 
-
   /**
    * Test if this expression is a mixed opened/closed interval set expression with zero or more
    * <code>{min, Less/LessEqual, Less/LessEqual, max}</code> list arguments which represent the
@@ -3478,6 +3476,7 @@ public interface IExpr
   default boolean isIntervalData() {
     return false;
   }
+
 
   default COMPARE_TERNARY isIrrational() {
     return COMPARE_TERNARY.UNDECIDABLE;
@@ -3846,10 +3845,6 @@ public interface IExpr
     return false;
   }
 
-  default boolean isBlockModuleOrWithCondition() {
-    return false;
-  }
-
   @Override
   default boolean isNaN() {
     return false;
@@ -4023,7 +4018,6 @@ public interface IExpr
     return false;
   }
 
-
   /**
    * Test if this expression is the function <code>Not[&lt;arg&gt;]</code>.
    * 
@@ -4035,6 +4029,7 @@ public interface IExpr
   default boolean isNotDefined() {
     return isIndeterminate() || isDirectedInfinity();
   }
+
 
   /**
    * Test if this expression is an {@link IAST} and contains at least 1 argument
@@ -4267,7 +4262,6 @@ public interface IExpr
     return false;
   }
 
-
   /**
    * {@inheritDoc}
    *
@@ -4291,6 +4285,7 @@ public interface IExpr
   default boolean isOneIdentityAST1() {
     return false;
   }
+
 
   /**
    * Test if this expression is the <code>Optional</code> function <code>Optional[&lt;pattern&gt;]
@@ -5300,6 +5295,9 @@ public interface IExpr
    * @see #rest()
    */
   default IExpr last() {
+    if (size() > 1) {
+      return get(size() - 1);
+    }
     return F.NIL;
   }
 
@@ -5400,8 +5398,6 @@ public interface IExpr
     return F.NIL;
   }
 
-
-
   default IExpr legendreQ(IExpr arg2, IExpr arg3) {
     return F.NIL;
   }
@@ -5424,6 +5420,8 @@ public interface IExpr
     return F.Less(this, a1)//
         .eval();
   }
+
+
 
   /**
    * Evaluate {@link S#LessEqual} directly if both arguments are real numbers, otherwise evaluate
@@ -5843,6 +5841,10 @@ public interface IExpr
    * @see IExpr#head()
    */
   default IExpr most() {
+    int size = size();
+    if (size > 1) {
+      return subList(1, size - 1);
+    }
     return F.NIL;
   }
 
@@ -5968,6 +5970,14 @@ public interface IExpr
 
   default IExpr one() {
     return F.C1;
+  }
+
+  default IExpr oneIdentity0() {
+    return this;
+  }
+
+  default IExpr oneIdentity1() {
+    return this;
   }
 
   /**
@@ -6502,9 +6512,14 @@ public interface IExpr
    * @see #first()
    * @see #last()
    */
-  default IAST rest() {
+  default IExpr rest() {
+    int size = size();
+    if (size > 1) {
+      return subList(2, size);
+    }
     return F.NIL;
   }
+
 
   default IExpr rewrite(int functionID) {
     return F.NIL;
@@ -6679,6 +6694,46 @@ public interface IExpr
       return F.Times(timesRest, F.Sqrt(timesSqrt));
     }
     return F.Sqrt(this);
+  }
+
+  /**
+   * Struve function H.
+   * 
+   * @param z
+   *
+   * @return <i>H<sub>this</sub>(z)</i>
+   */
+  default IExpr struveH(IExpr z) {
+    return F.NIL;
+  }
+
+  /**
+   * Struve function L.
+   * 
+   * @param z
+   *
+   * @return <i>L<sub>this</sub>(z)</i>
+   */
+  default IExpr struveL(IExpr z) {
+    return F.NIL;
+  }
+
+  /**
+   * This implementation throws {@link IndexOutOfBoundsException}. Subclasses have to implement this
+   * method, if their {@link #size()} method could be greater than 0.
+   * <p>
+   * Create a copy of this expression, which contains the same head and all elements from the given
+   * <code>startPosition</code> (inclusive) to the <code>endPosition</code> (exclusive).
+   * 
+   * @param startPosition the position to start copying the elements (inclusive)
+   * @param endPosition the position to end copying the elements (exclusive)
+   * @return a copy of this expressions instance from the given <code>startPosition</code>
+   *         (inclusive) to the <code>endPosition</code> (exclusive)
+   * @throws IndexOutOfBoundsException
+   */
+  default IExpr subList(int startPosition, int endPosition) throws IndexOutOfBoundsException {
+    throw new IndexOutOfBoundsException(
+        "Start: " + startPosition + " End: " + startPosition + ", Size: " + size());
   }
 
   /**

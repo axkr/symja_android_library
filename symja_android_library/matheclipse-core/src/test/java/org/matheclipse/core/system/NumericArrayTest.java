@@ -41,8 +41,12 @@ public class NumericArrayTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testByteArrayInteger8() {
-    check("NumericArray(ByteArray({1, 2, 3, 4}), \"UnsignedInteger8\") // Normal", //
+    check("na=NumericArray(ByteArray({1, 2, 3, 4}), \"UnsignedInteger8\")  ", //
+        "NumericArray(Type: UnsignedInteger8 Dimensions: {4})");
+    check("na // Normal", //
         "{1,2,3,4}");
+    // check("Take(na,{2,3})", //
+    // "");
     check("NumericArray(ByteArray({1, 2, 3, 255}), \"Integer8\") // Normal", //
         "NumericArray({1,2,3,255},Integer8)");
     check("NumericArray(ByteArray({1, 2, 3, 255}), \"Integer16\")", //
@@ -92,17 +96,44 @@ public class NumericArrayTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testReal32() {
-    check(
-        "NumericArray(" + "{{0.71816,0.985858,0.462604,0.873427,0.837309},"
-            + "{0.248652,0.308832,0.159069,0.89764,0.879546},"
-            + "{0.285534,0.0789913,0.582489,0.635672,0.260148},"
-            + "{0.405098,0.627613,0.685662,0.767928,0.941469},"
-            + "{0.0446911,0.990178,0.765964,0.893501,0.35334}}, \"Real32\") // Normal", //
-        "{{0.71816,0.985858,0.462604,0.873427,0.837309},"
-            + "{0.248652,0.308832,0.159069,0.89764,0.879546},"
-            + "{0.285534,0.0789913,0.582489,0.635672,0.260148},"
-            + "{0.405098,0.627613,0.685662,0.767928,0.941469},"
-            + "{0.0446911,0.990178,0.765964,0.893501,0.35334}}");
+    check("n32=NumericArray(" //
+        + "{{0.71816,0.985858,0.462604,0.873427,0.837309}," //
+        + "{0.248652,0.308832,0.159069,0.89764,0.879546}," //
+        + "{0.285534,0.0789913,0.582489,0.635672,0.260148}," //
+        + "{0.405098,0.627613,0.685662,0.767928,0.941469}," //
+        + "{0.0446911,0.990178,0.765964,0.893501,0.35334}}, " //
+        + "\"Real32\")", //
+        "NumericArray(Type: Real32 Dimensions: {5,5})");
+    // check("n32 // Normal", //
+    // "{{0.71816,0.985858,0.462604,0.873427,0.837309},"
+    // + "{0.248652,0.308832,0.159069,0.89764,0.879546},"
+    // + "{0.285534,0.0789913,0.582489,0.635672,0.260148},"
+    // + "{0.405098,0.627613,0.685662,0.767928,0.941469},"
+    // + "{0.0446911,0.990178,0.765964,0.893501,0.35334}}");
+    check("n32[[2]]", //
+        "NumericArray(Type: Real32 Dimensions: {5})");
+    check("n32[[2]]//Normal", //
+        "{0.248652,0.308832,0.159069,0.89764,0.879546}");
+    check("Rest(n32)", //
+        "NumericArray(Type: Real32 Dimensions: {4,5})");
+    check("Rest(n32) // Normal", //
+        "{{0.248652,0.308832,0.159069,0.89764,0.879546}," //
+            + "{0.285534,0.0789913,0.582489,0.635672,0.260148}," //
+            + "{0.405098,0.627613,0.685662,0.767928,0.941469}," //
+            + "{0.0446911,0.990178,0.765964,0.893501,0.35334}}"); //
+    check("Most(n32)", //
+        "NumericArray(Type: Real32 Dimensions: {4,5})");
+    check("Most(n32) // Normal", //
+        "{{0.71816,0.985858,0.462604,0.873427,0.837309},"//
+            + "{0.248652,0.308832,0.159069,0.89764,0.879546},"//
+            + "{0.285534,0.0789913,0.582489,0.635672,0.260148},"//
+            + "{0.405098,0.627613,0.685662,0.767928,0.941469}}");
+    check("Length(n32)", //
+        "5");
+    check("First(n32)", //
+        "NumericArray(Type: Real32 Dimensions: {5})");
+    check("First(n32) //Normal", //
+        "{0.71816,0.985858,0.462604,0.873427,0.837309}");
     check("NumericArray({1, 2, 3, 4}, \"Real32\") // Normal", //
         "{1.0,2.0,3.0,4.0}");
     check("NumericArray({1/3, 2/3}, \"Real32\") // Normal", //
@@ -110,9 +141,9 @@ public class NumericArrayTest extends ExprEvaluatorTestCase {
 
     check("na=NumericArray( {-100, 0, 5, 120}, \"Integer8\")  ", //
         "NumericArray(Type: Integer8 Dimensions: {4})");
-    check(" NumericArray( na, \"Real32\")  ", //
+    check("NumericArray( na, \"Real32\")", //
         "NumericArray(Type: Real32 Dimensions: {4})");
-    check(" NumericArray( na, \"Real64\") // Normal ", //
+    check("NumericArray( na, \"Real64\") // Normal ", //
         "{-100.0,0.0,5.0,120.0}");
     check("Dimensions(na)", //
         "{4}");
@@ -122,6 +153,12 @@ public class NumericArrayTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testReal64() {
+    check("n64=NumericArray(" //
+        + "{0.71816,0.985858,0.462604,0.873427,0.837309}, " //
+        + "\"Real64\")", //
+        "NumericArray(Type: Real64 Dimensions: {5})");
+    check("n64[[2]]", //
+        "0.985858");
     check(
         "NumericArray(" + "{{0.71816,0.985858,0.462604,0.873427,0.837309},"
             + "{0.248652,0.308832,0.159069,0.89764,0.879546},"
