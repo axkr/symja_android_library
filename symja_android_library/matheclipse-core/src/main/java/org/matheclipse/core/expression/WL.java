@@ -171,8 +171,7 @@ public class WL {
             // head == F.Blank ||
             // head == F.BlankSequence ||
             // head == F.BlankNullSequence) {
-            IFunctionEvaluator evaluator =
-                ((IBuiltInSymbol) head).getEvaluator();
+            IFunctionEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
             IExpr temp = evaluator.evaluate(ast, EvalEngine.get());
             if (temp.isPresent()) {
               return temp;
@@ -593,7 +592,7 @@ public class WL {
           return;
 
         default:
-          throw new IllegalArgumentException("Unknown hierarchy ID: " + hier);
+          throw new IllegalArgumentException("WL.class hierarchy ID " + hier + " not implemented.");
       }
     }
 
