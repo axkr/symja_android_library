@@ -6,7 +6,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.JavaComplexFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 
-class JavaComplexFormFactoryTest {
+public class JavaComplexFormFactoryTest {
 
   private String convert(IAST ast) {
     JavaComplexFormFactory factory = JavaComplexFormFactory.get(true);
@@ -64,13 +64,13 @@ class JavaComplexFormFactoryTest {
     // This test assumes the expression is not considered a numeric function returning a complex
     // number
     // which would trigger the complex method calls like .sqrt()
-    IAST power = F.Power(F.symbol("a"), F.C1D2);
+    IAST power = F.Power(F.a, F.C1D2);
     assertEquals("(a).sqrt()", convert(power));
   }
 
   @Test
   void shouldConvertPowerWithCubicRootExponentToMathCbrt() {
-    IAST power = F.Power(F.symbol("a"), F.C1D3);
+    IAST power = F.Power(F.a, F.C1D3);
     assertEquals("(a).cbrt()", convert(power));
   }
 
