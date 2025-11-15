@@ -125,6 +125,9 @@ public final class FunctionDefinitions {
       S.TrigToExp.setEvaluator(new org.matheclipse.core.reflection.system.TrigToExp());
       S.ZTransform.setEvaluator(new org.matheclipse.core.reflection.system.ZTransform());
 
+      S.Hash.setEvaluator(new org.matheclipse.core.reflection.system.Hash());
+      S.FileHash.setEvaluator(new org.matheclipse.core.reflection.system.FileHash());
+
       if (!Config.FUZZY_PARSER) {
         S.Export.setEvaluator(new org.matheclipse.core.reflection.system.Export());
         S.Share.setEvaluator(new org.matheclipse.core.reflection.system.Share());

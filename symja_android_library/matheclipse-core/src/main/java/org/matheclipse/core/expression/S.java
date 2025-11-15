@@ -2173,6 +2173,9 @@ public class S {
   public final static IBuiltInSymbol CompoundExpression =
       S.initFinalSymbol("CompoundExpression", ID.CompoundExpression);
 
+  public final static IBuiltInSymbol Compress =
+      S.initFinalSymbol("Compress", ID.Compress);
+
   /**
    * Condition(pattern, expr) - places an additional constraint on `pattern` that only allows it to
    * match if `expr` evaluates to `True`.
@@ -5037,6 +5040,8 @@ public class S {
    */
   public final static IBuiltInSymbol HarmonicNumber =
       S.initFinalSymbol("HarmonicNumber", ID.HarmonicNumber);
+
+  public final static IBuiltInSymbol Hash = S.initFinalSymbol("Hash", ID.Hash);
 
   /**
    * Haversine(z) - returns the haversine function of `z`.
@@ -12065,6 +12070,9 @@ public class S {
   public final static IBuiltInSymbol UnaryPlusMinus =
       S.initFinalSymbol("UnaryPlusMinus", ID.UnaryPlusMinus);
 
+  public final static IBuiltInSymbol Uncompress =
+      S.initFinalSymbol("Uncompress", ID.Uncompress);
+
   /**
    * Undefined - represents an undefined result for example in the `ConditionalExpression` function.
    * 
@@ -12300,6 +12308,10 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol UpValues = S.initFinalSymbol("UpValues", ID.UpValues);
+
+  public final static IBuiltInSymbol URLDecode = S.initFinalSymbol("URLDecode", ID.URLDecode);
+
+  public final static IBuiltInSymbol URLEncode = S.initFinalSymbol("URLEncode", ID.URLEncode);
 
   public final static IBuiltInSymbol URLFetch = S.initFinalSymbol("URLFetch", ID.URLFetch);
 
