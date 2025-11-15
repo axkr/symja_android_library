@@ -41,12 +41,25 @@ public class NumericArrayTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testByteArrayInteger8() {
+    check("na=NumericArray({{1, 2, 3, 4} ,{5,6,7,8}}, \"UnsignedInteger8\")", //
+        "NumericArray(Type: UnsignedInteger8 Dimensions: {2,4})");
+    // Take: Cannot take positions 1 through 3 in {{1,2,3,4},{5,6,7,8}}.
+    check("Take({{1, 2, 3, 4} ,{5,6,7,8}},{1,3})", //
+        "Take({{1,2,3,4},{5,6,7,8}},{1,3})");
+    check("Take(na,{1,3})", //
+        "Take(NumericArray(Type: UnsignedInteger8 Dimensions: {2,4}),{1,3})");
+
+    check("Take(na,{2})", //
+        "NumericArray(Type: UnsignedInteger8 Dimensions: {1,4})");
+    check("Take(na,{2}) //Normal", //
+        "{{5,6,7,8}}");
+
+
     check("na=NumericArray(ByteArray({1, 2, 3, 4}), \"UnsignedInteger8\")  ", //
         "NumericArray(Type: UnsignedInteger8 Dimensions: {4})");
     check("na // Normal", //
         "{1,2,3,4}");
-    // check("Take(na,{2,3})", //
-    // "");
+
     check("NumericArray(ByteArray({1, 2, 3, 255}), \"Integer8\") // Normal", //
         "NumericArray({1,2,3,255},Integer8)");
     check("NumericArray(ByteArray({1, 2, 3, 255}), \"Integer16\")", //

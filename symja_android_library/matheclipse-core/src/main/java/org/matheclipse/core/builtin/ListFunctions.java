@@ -55,6 +55,9 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.DispatchExpr;
+import org.matheclipse.core.expression.data.NumericArrayExpr;
+import org.matheclipse.core.expression.data.NumericArrayExpr.RangeException;
+import org.matheclipse.core.expression.data.NumericArrayExpr.TypeException;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Comparators.SameTestComparator;
 import org.matheclipse.core.generic.Functors;
@@ -70,6 +73,7 @@ import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISparseArray;
@@ -7500,14 +7504,32 @@ public final class ListFunctions {
           }
           return take(arg1, 0, sequ);
         } else if (ast.arg1().isSparseArray()) {
-          // TODO return sparse array instead of lists
-          final IAST normal = ((ISparseArray) ast.arg1()).normal(false);
-          return take(normal, 0, sequ);
+          ISparseArray sparseArray = (ISparseArray) ast.arg1();
+          // TODO create sparse array directly instead of using Normal
+          final IAST normal = sparseArray.normal(false);
+          IAST take = take(normal, 0, sequ);
+          try {
+            return F.sparseArray(take, sparseArray.getDefaultValue());
+          } catch (RuntimeException rex) {
+            return F.NIL;
+          }
+        } else if (ast.arg1().isNumericArray()) {
+          INumericArray numericArray = (INumericArray) ast.arg1();
+          // TODO create numeric array directly instead of using Normal
+          final IAST normal = numericArray.normal(false);
+          IAST take = take(normal, 0, sequ);
+          try {
+            return NumericArrayExpr.newList(take, numericArray.getType());
+          } catch (RangeException | TypeException rex) {
+            return F.NIL;
+          }
         } else {
           // Nonatomic expression expected at position `1` in `2`.
           return Errors.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
         }
-      } catch (final ValidateException ve) {
+      } catch (
+
+      final ValidateException ve) {
         Errors.printMessage(ast.topHead(), ve, engine);
       } catch (final RuntimeException rex) {
         Errors.printMessage(S.Take, rex, EvalEngine.get());
@@ -7670,6 +7692,7 @@ public final class ListFunctions {
     }
   }
 
+
   private static final class TakeLargest extends AbstractEvaluator {
 
     @Override
@@ -7719,6 +7742,7 @@ public final class ListFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
+
 
   private static final class TakeLargestBy extends AbstractEvaluator {
 
@@ -7781,6 +7805,7 @@ public final class ListFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+
   private static final class TakeSmallest extends AbstractEvaluator {
 
     @Override
@@ -7830,6 +7855,7 @@ public final class ListFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
+
 
   private static final class TakeSmallestBy extends AbstractEvaluator {
 
@@ -7890,6 +7916,7 @@ public final class ListFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+
   private static final class TakeWhile extends AbstractFunctionEvaluator {
 
     @Override
@@ -7916,6 +7943,7 @@ public final class ListFunctions {
       return ARGS_2_2;
     }
   }
+
 
   /**
    *
@@ -8056,6 +8084,7 @@ public final class ListFunctions {
     }
   }
 
+
   /**
    *
    *
@@ -8142,6 +8171,7 @@ public final class ListFunctions {
       newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
       setOptions(newSymbol, S.SameTest, S.Automatic);
     }
+
   }
 
   /**

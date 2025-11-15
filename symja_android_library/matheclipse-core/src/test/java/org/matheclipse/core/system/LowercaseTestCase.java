@@ -11409,6 +11409,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testInputForm() {
+    check("N(Pi+I, 30) // InputForm", //
+        "3.14159265358979323846264338327`30+I*1`30");
+    check("N((Pi+I)^100, 30) // InputForm", //
+        "5.34082733002519747044708472258`30*^51+I*(-3.64617344759411802005783232516`30*^51)");
+    check("N(Pi, 30) // InputForm", //
+        "3.14159265358979323846264338327`30");
+    check("N(Pi^100, 30) // InputForm", //
+        "5.18784831431961319208626152463`30*^49");
     check("InputForm(Sin(0))", //
         "0");
     check("\"a string\" // InputForm", //
@@ -24475,6 +24483,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Take(<|1 -> a, 2 -> b, 3 -> c|>,0)", //
         "<||>");
     check("Take(SparseArray(Range(1000)), {100, 105})", //
+        "SparseArray(Number of elements: 6 Dimensions: {6} Default value: 0)");
+    check("Take(SparseArray(Range(1000)), {100, 105}) //Normal", //
         "{100,101,102,103,104,105}");
     check("Take(<|1 -> a, 2 -> b, 3 -> c|>, {2})", //
         "<|2->b|>");
