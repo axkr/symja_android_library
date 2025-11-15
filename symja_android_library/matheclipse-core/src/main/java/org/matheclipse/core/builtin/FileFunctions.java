@@ -1,6 +1,8 @@
 package org.matheclipse.core.builtin;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.EOFException;
@@ -17,12 +19,17 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -55,6 +62,7 @@ import org.matheclipse.core.io.Extension;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
+import org.matheclipse.parser.client.math.MathException;
 import com.google.common.io.CharStreams;
 
 public class FileFunctions {
@@ -74,6 +82,7 @@ public class FileFunctions {
         S.EndPackage.setEvaluator(new EndPackage());
         S.Begin.setEvaluator(new Begin());
         S.Close.setEvaluator(new Close());
+        S.Compress.setEvaluator(new Compress());
         S.CreateDirectory.setEvaluator(new CreateDirectory());
         S.CreateFile.setEvaluator(new CreateFile());
         S.End.setEvaluator(new End());
@@ -95,6 +104,9 @@ public class FileFunctions {
         S.ReadString.setEvaluator(new ReadString());
         S.Save.setEvaluator(new Save());
         S.StringToStream.setEvaluator(new StringToStream());
+        S.Uncompress.setEvaluator(new Uncompress());
+        S.URLDecode.setEvaluator(new URLDecode());
+        S.URLEncode.setEvaluator(new URLEncode());
         S.URLFetch.setEvaluator(new URLFetch());
         S.Write.setEvaluator(new Write());
         S.WriteString.setEvaluator(new WriteString());
@@ -300,6 +312,39 @@ public class FileFunctions {
       return ARGS_1_2;
     }
   }
+
+  private static final class Compress extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr expr = ast.arg1();
+
+      // Convert expression to string in InputForm
+      String inputForm = IStringX.inputForm(expr);
+
+      // Compress and Encode
+      try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+        try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream)) {
+          gzipOutputStream.write(inputForm.getBytes(StandardCharsets.UTF_8));
+        }
+        byte[] compressedBytes = byteArrayOutputStream.toByteArray();
+        return F.stringx(Base64.getEncoder().encodeToString(compressedBytes));
+      } catch (IOException e) {
+        throw new RuntimeException("Compression failed", e);
+      }
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
 
   /** Create a default temporary directory */
   private static class CreateDirectory extends AbstractEvaluator {
@@ -1547,6 +1592,117 @@ public class FileFunctions {
     }
   }
 
+
+  private static final class Uncompress extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (!(arg1 instanceof IStringX)) {
+        return F.NIL;
+      }
+      String compressedString = ast.arg1().toString();
+
+      try {
+        // Decode Base64
+        byte[] compressedBytes = Base64.getDecoder().decode(compressedString);
+
+        // Decompress GZIP
+        try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(compressedBytes);
+            GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayInputStream);
+            InputStreamReader reader =
+                new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8);
+            BufferedReader buffered = new BufferedReader(reader)) {
+
+          StringBuilder output = new StringBuilder();
+          String line;
+          while ((line = buffered.readLine()) != null) {
+            output.append(line);
+          }
+
+          String inputFormStr = output.toString();
+          // Parse string in InputForm back to IExpr
+          return engine.evaluate(inputFormStr);
+        }
+      } catch (IOException e) {
+        Errors.printMessage(S.Uncompress, e, engine);
+      } catch (MathException e) {
+        Errors.printMessage(S.Uncompress, e, engine);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+  }
+
+  private static final class URLDecode extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (!(arg1 instanceof IStringX)) {
+        return F.NIL;
+      }
+      String inputString = ast.arg1().toString();
+      String decoded = URLDecoder.decode(inputString, StandardCharsets.UTF_8);
+      return F.stringx(decoded);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  private static final class URLEncode extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (!(arg1 instanceof IStringX)) {
+        if (arg1.isTrue()) {
+          return F.stringx("true");
+        }
+        if (arg1.isFalse()) {
+          return F.stringx("false");
+        }
+        if (arg1 == S.Null || arg1 == S.Missing || arg1 == S.None) {
+          return F.CEmptyString;
+        }
+        return F.NIL;
+      }
+      String inputString = ast.arg1().toString();
+
+      String encoded = URLEncoder.encode(inputString, StandardCharsets.UTF_8);
+      // MMA style
+      encoded = encoded.replace("+", "%20");
+      return F.stringx(encoded);
+
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
   private static final class URLFetch extends AbstractFunctionEvaluator {
 
     @Override

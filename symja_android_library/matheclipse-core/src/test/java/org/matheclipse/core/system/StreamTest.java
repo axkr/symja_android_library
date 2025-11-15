@@ -2,7 +2,6 @@ package org.matheclipse.core.system;
 
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.EvalEngine;
 
 public class StreamTest extends ExprEvaluatorTestCase {
 
@@ -25,6 +24,16 @@ public class StreamTest extends ExprEvaluatorTestCase {
     check("BinaryRead(f, \"UnsignedInteger8\")", //
         "EndOfFile");
   }
+
+  @Test
+  public void testCompressUncompress() {
+    check("str = Compress(N(Pi, 100))", //
+        "H4sIAAAAAAAA/w3LuRHAAAwCsI1yGPzANtl/iqRSJT3VNeGOxrmIci+3JYuXAe2uXG2U6KYwJnKd7j8K59rG0ks4+THU5qhZddh7C/gA8p+qHmkAAAA=");
+    check("Uncompress(str)", //
+        "3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067");
+
+  }
+
 
   @Test
   public void testFindList() {
@@ -146,6 +155,31 @@ public class StreamTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFileHash() {
+    check("FileHash(StringToStream(\"Hello World\"),\"CRC32\")", //
+        "1243066710");
+    check("FileHash(StringToStream(\"Hello World\"),\"MD5\")", //
+        "235328152096874191772633713977838157797");
+    check("FileHash(StringToStream(\"Hello World\"),\"SHA\")", //
+        "58814527086678835124646218365765974827431397072");
+    check("FileHash(StringToStream(\"Hello World\"),\"SHA256\")", //
+        "74888964247292943290829644364954473609342749251111522634754282069725240300654");
+    check("FileHash(StringToStream(\"Hello World\"),\"SHA512\")", //
+        "2328401333974886873383385362411738102359762677572253218035172085337438831147144\\\n" //
+            + "388051624789144933618951067533458801064187563795115771720046463851513726363");
+  }
+
+  @Test
+  public void testHash() {
+    // Symja expression hash value
+    check("Hash(\"abcdef\")", //
+        "-1424385912");
+    check("Hash(ByteArray({123, 45, 67, 89, 98, 76, 54, 32, 1}), \"SHA\")", //
+        "205163851794085253373860936160163003382114085276");
+
+  }
+
+  @Test
   public void testOpenAppend001() {
     call("f = FileNameJoin({$TemporaryDirectory, \"test_open.txt\"});Print(f)");
     check("str = OpenWrite(f);", //
@@ -178,13 +212,32 @@ public class StreamTest extends ExprEvaluatorTestCase {
         "");
   }
 
+  @Test
+  public void testURLDecode() {
+    check("URLDecode(\"Hello%2C+World%21\")", //
+        "Hello, World!");
+  }
+
+  @Test
+  public void testURLEncode() {
+    check("URLEncode(\"Hello, World!\")", //
+        "Hello%2C%20World%21");
+    check("URLEncode(Null) // InputForm", //
+        "\"\"");
+    check("URLEncode(None) // InputForm", //
+        "\"\"");
+    check("URLEncode(Missing) // InputForm", //
+        "\"\"");
+    check("URLEncode(True) // InputForm", //
+        "\"true\"");
+    check("URLEncode(False) // InputForm", //
+        "\"false\"");
+  }
+
   /** The JUnit setup method */
   @Override
   public void setUp() {
     super.setUp();
     Config.FILESYSTEM_ENABLED = true;
-    Config.MAX_AST_SIZE = 10000;
-    EvalEngine.get().setIterationLimit(500);
   }
-
 }
