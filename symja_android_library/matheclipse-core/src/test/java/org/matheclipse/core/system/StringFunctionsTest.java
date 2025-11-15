@@ -9,6 +9,16 @@ import org.matheclipse.core.eval.EvalEngine;
 public class StringFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
+  public void testCreateUUID() {
+    // check("CreateUUID()", //
+    // "a13f186a-e9a3-4636-9e97-d0b3cbe7ada3");
+    // check("CreateUUID(\"test-\")", //
+    // "test-8029ae50-5db7-4bda-80e5-56eab144f5da");
+    // check("FromDigits(StringReplace(CreateUUID(), \"-\" -> \"\"), 16)", //
+    // "23546719887081055193239286128317645994");
+  }
+
+  @Test
   public void testEditDistance() {
     check("EditDistance(\"kitten\", \"kitchen\")", //
         "2");

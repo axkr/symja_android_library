@@ -9,6 +9,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import org.apache.commons.text.similarity.LevenshteinDistance;
@@ -287,6 +288,32 @@ public final class StringFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+  }
+
+  private static class CreateUUID extends AbstractFunctionEvaluator {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST0()) {
+        String uuid = UUID.randomUUID().toString();
+        return F.stringx(uuid);
+      }
+      IExpr arg1 = ast.arg1();
+      if (arg1.isString()) {
+        String uuid = UUID.randomUUID().toString();
+        return F.stringx(arg1.toString() + uuid);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      super.setUp(newSymbol);
     }
   }
 
@@ -780,6 +807,7 @@ public final class StringFunctions {
       S.ByteArrayToString.setEvaluator(new ByteArrayToString());
       S.Characters.setEvaluator(new Characters());
       S.CharacterRange.setEvaluator(new CharacterRange());
+      S.CreateUUID.setEvaluator(new CreateUUID());
       S.EditDistance.setEvaluator(new EditDistance());
 
       S.FileNameDrop.setEvaluator(new FileNameDrop());
@@ -1481,7 +1509,8 @@ public final class StringFunctions {
     private static IExpr stringFreeQ(IAST ast, IExpr arg1, IExpr arg2, boolean ignoreCase,
         EvalEngine engine) {
       Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
-      java.util.regex.Pattern pattern = IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
+      java.util.regex.Pattern pattern =
+          IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
       if (pattern == null) {
         return F.NIL;
       }
@@ -1951,7 +1980,8 @@ public final class StringFunctions {
         boolean ignoreCase, IASTAppendable result, EvalEngine engine) {
 
       Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
-      java.util.regex.Pattern pattern = IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
+      java.util.regex.Pattern pattern =
+          IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
       if (pattern == null) {
         return F.NIL;
       }
@@ -2222,8 +2252,8 @@ public final class StringFunctions {
             final IAST condition = (IAST) ruleLHS;
             final IExpr conditionPattern = condition.arg1();
             final IExpr conditionTest = condition.arg2();
-            java.util.regex.Pattern pattern =
-                IStringX.toRegexPattern(conditionPattern, true, ignoreCase, ast, namedRegexGroups, engine);
+            java.util.regex.Pattern pattern = IStringX.toRegexPattern(conditionPattern, true,
+                ignoreCase, ast, namedRegexGroups, engine);
             if (pattern == null) {
               return F.NIL;
             }
@@ -2699,7 +2729,8 @@ public final class StringFunctions {
           String str = ast.arg1().toString();
           try {
             Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
-            String regex = IStringX.toRegexString(ast.arg2(), true, ast, IStringX.REGEX_LONGEST, groups, engine);
+            String regex = IStringX.toRegexString(ast.arg2(), true, ast, IStringX.REGEX_LONGEST,
+                groups, engine);
             if (regex != null) {
               // prepend StartOfString
               java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\A" + regex);

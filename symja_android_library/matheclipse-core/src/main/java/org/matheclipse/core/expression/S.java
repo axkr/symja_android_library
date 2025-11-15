@@ -2173,8 +2173,7 @@ public class S {
   public final static IBuiltInSymbol CompoundExpression =
       S.initFinalSymbol("CompoundExpression", ID.CompoundExpression);
 
-  public final static IBuiltInSymbol Compress =
-      S.initFinalSymbol("Compress", ID.Compress);
+  public final static IBuiltInSymbol Compress = S.initFinalSymbol("Compress", ID.Compress);
 
   /**
    * Condition(pattern, expr) - places an additional constraint on `pattern` that only allows it to
@@ -2517,7 +2516,11 @@ public class S {
   public final static IBuiltInSymbol CreateDirectory =
       S.initFinalSymbol("CreateDirectory", ID.CreateDirectory);
 
-  public final static IBuiltInSymbol CreateFile = S.initFinalSymbol("CreateFile", ID.CreateFile);
+  public final static IBuiltInSymbol CreateFile =
+      S.initFinalSymbol("CreateFile", ID.CreateFile);
+
+  public final static IBuiltInSymbol CreateUUID =
+      S.initFinalSymbol("CreateUUID", ID.CreateUUID);
 
   /**
    * Cross(a, b) - computes the vector cross product of `a` and `b`.
@@ -12070,8 +12073,7 @@ public class S {
   public final static IBuiltInSymbol UnaryPlusMinus =
       S.initFinalSymbol("UnaryPlusMinus", ID.UnaryPlusMinus);
 
-  public final static IBuiltInSymbol Uncompress =
-      S.initFinalSymbol("Uncompress", ID.Uncompress);
+  public final static IBuiltInSymbol Uncompress = S.initFinalSymbol("Uncompress", ID.Uncompress);
 
   /**
    * Undefined - represents an undefined result for example in the `ConditionalExpression` function.
