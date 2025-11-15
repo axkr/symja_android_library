@@ -2233,13 +2233,14 @@ public class ApfloatNum implements INum {
     if (ParserConfig.EXPLICIT_TIMES_OPERATOR) {
       return str.replace("e", "E");
     }
+    long precision = fApfloat.precision();
     int index = str.indexOf('e');
     if (index > 0) {
       String exponentStr = str.substring(index + 1);
       String result = str.substring(0, index);
-      return result + "*10^" + exponentStr;
+      return result + "`" + precision + "*10^" + exponentStr;
     }
-    return str;
+    return str + "`" + precision;
   }
 
   @Override
