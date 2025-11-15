@@ -375,6 +375,8 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testStringJoin() {
+    check("NestList(# <> StringReverse(#) &, \"AB\", 5)", //
+        "{AB,ABBA,ABBAABBA,ABBAABBAABBAABBA,ABBAABBAABBAABBAABBAABBAABBAABBA,ABBAABBAABBAABBAABBAABBAABBAABBAABBAABBAABBAABBAABBAABBAABBAABBA}");
     check("StringJoin({\"a\", \"b\"})// InputForm", //
         "\"ab\"");
     check("StringJoin(\"test\")", //

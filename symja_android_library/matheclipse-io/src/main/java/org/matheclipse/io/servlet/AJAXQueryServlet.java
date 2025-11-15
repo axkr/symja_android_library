@@ -193,7 +193,9 @@ public class AJAXQueryServlet extends HttpServlet {
       try {
         temp = evaluateString(engine, inputString, numericMode, function, outWriter, errorWriter);
       } catch (RuntimeException rex) {
-        // rex.printStackTrace();
+        if (Config.SHOW_STACKTRACE) {
+          rex.printStackTrace();
+        }
         temp = JSONBuilder.createJSONError("RuntimeException: " + rex.getMessage());
       }
       return temp;
@@ -202,8 +204,14 @@ public class AJAXQueryServlet extends HttpServlet {
     try {
       return task.get(Config.SERVER_REQUEST_TIMEOUT_SECONDS * 1000, TimeUnit.MILLISECONDS);
     } catch (InterruptedException e) {
+      if (Config.SHOW_STACKTRACE) {
+        e.printStackTrace();
+      }
       return JSONBuilder.createJSONError("Timeout exceeded. Calculation interrupted!");
     } catch (ExecutionException | TimeoutException e) {
+      if (Config.SHOW_STACKTRACE) {
+        e.printStackTrace();
+      }
       // engine.setStopRequested(true);
       return JSONBuilder.createJSONError("Timeout exceeded. Calculation aborted!");
     } finally {

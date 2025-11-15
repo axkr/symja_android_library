@@ -24,6 +24,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.parser.client.math.MathException;
 import edu.jas.kern.PreemptingException;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import io.pebbletemplates.pebble.PebbleEngine;
 import io.pebbletemplates.pebble.cache.PebbleCache;
 import io.pebbletemplates.pebble.node.BodyNode;
@@ -366,6 +367,7 @@ public class Errors {
       "rvec2", "Input `1` is not a real-valued vector.", //
       "rubiendless",
       "Endless iteration detected in `1` (rule number `2`) for Rubi pattern-matching rules.", //
+      "sandbox", "The operation `1` is not allowed in sandbox mode.", //
       "sclr", "The scalar expression `1` does not have a `2`.", //
       "sdmint",
       "The number of subdivisions given in position `1` of `2` should be a positive machine-sized integer.", //
@@ -495,7 +497,8 @@ public class Errors {
    * @param engine
    * @return
    */
-  public static IExpr printMessage(ISymbol symbol, final MathException mex, EvalEngine engine) {
+  public static IExpr printMessage(@NonNull ISymbol symbol, final MathException mex,
+      EvalEngine engine) {
     if (Config.SHOW_STACKTRACE) {
       mex.printStackTrace();
     }
@@ -600,7 +603,7 @@ public class Errors {
    * @param engine
    * @return always {@link F#NIL}
    */
-  public static IAST printMessage(ISymbol symbol, String messageShortcut,
+  public static IAST printMessage(@NonNull ISymbol symbol, @NonNull String messageShortcut,
       final IAST listOfParameters, EvalEngine engine) {
     IExpr temp = symbol.evalMessage(messageShortcut);
     String message = null;
