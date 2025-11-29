@@ -21,6 +21,7 @@ import org.matheclipse.core.eval.exception.PolynomialDegreeLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.eval.interfaces.IMatch;
 import org.matheclipse.core.eval.util.OptionArgs;
@@ -30,6 +31,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
@@ -271,7 +273,7 @@ public class PolynomialFunctions {
 
       if (ast.size() > 3) {
         if (ast.arg3().isSymbol()) {
-          termOrder = JASIExpr.monomialOrder((ISymbol) ast.arg3(), termOrder);
+          termOrder = JASIExpr.monomialOrder(ast.arg3(), termOrder);
         }
       }
 
@@ -468,7 +470,7 @@ public class PolynomialFunctions {
       if (ast.size() > 3) {
 
         if (ast.arg3().isSymbol()) {
-          termOrder = JASIExpr.monomialOrder((ISymbol) ast.arg3(), termOrder);
+          termOrder = JASIExpr.monomialOrder(ast.arg3(), termOrder);
         } else {
           final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
           IExpr option = options.getOption(S.Modulus);
@@ -1088,10 +1090,11 @@ public class PolynomialFunctions {
    * 17-60*x+12*x^2-10*x^3-6*x^4+x^6
    * </pre>
    */
-  private static class Resultant extends AbstractFunctionEvaluator {
+  private static class Resultant extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
       // TODO allow multinomials
       IExpr arg1 = ast.arg1();
       IExpr arg2 = ast.arg2();
@@ -1099,7 +1102,7 @@ public class PolynomialFunctions {
         return F.C0;
       }
       IExpr arg3 = Validate.checkIsVariable(ast, 3, engine);
-      if (arg3.isPresent()) {
+      if (arg3.isPresent() && options[0].isZero()) {
         IExpr x = arg3;
         IExpr a = F.evalExpandAll(arg1, engine);
         IExpr b = F.evalExpandAll(arg2, engine);
@@ -1168,9 +1171,8 @@ public class PolynomialFunctions {
       eVar.addVarList(x);
 
       try {
-        JASConvert<edu.jas.arith.BigInteger> jas =
-            new JASConvert<edu.jas.arith.BigInteger>(eVar.getVarList(),
-                edu.jas.arith.BigInteger.ZERO);
+        JASConvert<edu.jas.arith.BigInteger> jas = new JASConvert<edu.jas.arith.BigInteger>(
+            eVar.getVarList(), edu.jas.arith.BigInteger.ZERO);
         GenPolynomial<edu.jas.arith.BigInteger> p1 = jas.expr2JAS(a, false);
         if (p1 == null) {
           return resultantExpr(a, b, eVar);
@@ -1284,6 +1286,9 @@ public class PolynomialFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
+      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Modulus};
+      IExpr[] optionValues = new IExpr[] {F.C0};
+      setOptions(newSymbol, optionKeys, optionValues);
     }
   }
 
@@ -1817,7 +1822,7 @@ public class PolynomialFunctions {
    * {-2*y+y^3,-2*y+x*y,x^2-2*y^2}
    * </pre>
    */
-  private static final class GroebnerBasis extends AbstractFunctionEvaluator {
+  private static final class GroebnerBasis extends AbstractFunctionOptionEvaluator {
 
     /**
      * Compute the Groebner basis for a list of polynomials.
@@ -1832,18 +1837,17 @@ public class PolynomialFunctions {
      * </ul>
      */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() >= 3) {
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
+
+      if (argSize >= 2) {
 
         if (!ast.arg1().isList() || !ast.arg2().isList()) {
           return F.NIL;
         }
-        TermOrder termOrder = TermOrderByName.Lexicographic;
-        if (ast.size() > 3) {
-          final OptionArgs options = new OptionArgs(ast.topHead(), ast, ast.argSize(), engine);
-          termOrder = JASIExpr.monomialOrder(options, termOrder);
-        }
 
+        TermOrder termOrder = TermOrderByName.Lexicographic;
+        termOrder = JASIExpr.monomialOrder(options[0], termOrder);
         IAST polys = (IAST) ast.arg1();
         IAST vars = (IAST) ast.arg2();
         if (vars.size() <= 1) {
@@ -1904,6 +1908,19 @@ public class PolynomialFunctions {
         return jas
             .integerPoly2Expr((GenPolynomial<edu.jas.arith.BigInteger>) jas.factorTerms(p)[2]);
       });
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_INFINITY;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      super.setUp(newSymbol);
+      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.MonomialOrder};
+      IExpr[] optionValues = new IExpr[] {S.Lexicographic};
+      setOptions(newSymbol, optionKeys, optionValues);
     }
   }
 
@@ -2904,56 +2921,43 @@ public class PolynomialFunctions {
    * <li><a href="http://en.wikipedia.org/wiki/Monomial">Wikipedia - Monomial</a><br>
    * </ul>
    */
-  private static final class MonomialList extends AbstractFunctionEvaluator {
+  private static final class MonomialList extends AbstractFunctionOptionEvaluator {
     /**
      * Get the list of monomials of a polynomial expression.
      *
      * <p>
      * See <a href="http://en.wikipedia.org/wiki/Monomial">Wikipedia - Monomial<a/>
      */
+
     @Override
-    public IExpr evaluate(final IAST ast, final EvalEngine engine) {
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
       IExpr expr = F.evalExpandAll(ast.arg1(), engine);
       VariablesSet eVar;
       IAST symbolList;
       // List<IExpr> varList;
-      if (ast.isAST1()) {
+      if (argSize == 1) {
         // extract all variables from the polynomial expression
         eVar = new VariablesSet(ast.arg1());
-        // eVar.appendToList(symbolList);
-        // varList = eVar.getArrayList();
         symbolList = eVar.getVarList();
       } else {
         symbolList = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
         if (symbolList.isNIL()) {
           return F.NIL;
         }
-        // varList = new ArrayList<IExpr>(symbolList.argSize());
-        // symbolList.forEach(x -> varList.add(x));
       }
       TermOrder termOrder = TermOrderByName.Lexicographic;
 
-      if (ast.size() > 3) {
-        if (ast.arg3().isSymbol()) {
-          // String orderStr = ast.arg3().toString(); // NegativeLexicographic
-          termOrder = JASIExpr.monomialOrder((ISymbol) ast.arg3(), termOrder);
-        } else {
-          final OptionArgs options = new OptionArgs(ast.topHead(), ast, 2, engine);
-          IExpr option = options.getOption(S.Modulus);
-          if (option.isInteger()) {
-            try {
-              return monomialListModulus(expr, symbolList, termOrder, option);
-            } catch (RuntimeException rex) {
-              Errors.rethrowsInterruptException(rex);
-              Errors.printMessage(S.MonomialList, rex, engine);
-              // LOGGER.debug("MonomialList.evaluate() failed", rex);
-            }
-          }
-          return F.NIL;
-        }
+      if (argSize == 3 && ast.arg3().isSymbol()) {
+        // String orderStr = ast.arg3().toString(); // NegativeLexicographic
+        termOrder = JASIExpr.monomialOrder(ast.arg3(), termOrder);
       }
 
       try {
+        IExpr option = options[0];// options.getOption(S.Modulus);
+        if (option.isInteger() && !option.isZero()) {
+          return monomialListModulus(expr, symbolList, termOrder, option);
+        }
         ExprPolynomialRing ring =
             new ExprPolynomialRing(symbolList, new ExprTermOrder(termOrder.getEvord()));
         ExprPolynomial poly = ring.create(expr, false, true, true);
@@ -2961,7 +2965,6 @@ public class PolynomialFunctions {
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.MonomialList, rex, engine);
-        // LOGGER.debug("MonomialList.evaluate() failed", rex);
       }
       // default mapping
       return F.list(expr);
@@ -2969,7 +2972,7 @@ public class PolynomialFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_4;
+      return ARGS_1_3;
     }
 
     /**
@@ -3003,6 +3006,13 @@ public class PolynomialFunctions {
         // LOGGER.debug("MonomialList.monomialListModulus() failed", ae);
       }
       return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Modulus};
+      IExpr[] optionValues = new IExpr[] {F.C0};
+      setOptions(newSymbol, optionKeys, optionValues);
     }
   }
 

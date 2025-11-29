@@ -51,9 +51,12 @@ public final class FunctionDefinitions {
 
       S.FrobeniusSolve.setEvaluator(new org.matheclipse.core.reflection.system.FrobeniusSolve());
       S.FunctionExpand.setEvaluator(new org.matheclipse.core.reflection.system.FunctionExpand());
+      S.Groupings.setEvaluator(new org.matheclipse.core.reflection.system.Groupings());
       S.HeavisideLambda.setEvaluator(new org.matheclipse.core.reflection.system.HeavisideLambda());
       S.HeavisidePi.setEvaluator(new org.matheclipse.core.reflection.system.HeavisidePi());
       S.HeavisideTheta.setEvaluator(new org.matheclipse.core.reflection.system.HeavisideTheta());
+      S.HermiteDecomposition
+          .setEvaluator(new org.matheclipse.core.reflection.system.HermiteDecomposition());
       S.Horner.setEvaluator(new org.matheclipse.core.reflection.system.Horner());
       S.ImportString.setEvaluator(new org.matheclipse.core.reflection.system.ImportString());
       S.In.setEvaluator(new org.matheclipse.core.reflection.system.In());
@@ -112,11 +115,17 @@ public final class FunctionDefinitions {
       S.Plot.setEvaluator(new org.matheclipse.core.reflection.system.Plot());
       S.Plot3D.setEvaluator(new org.matheclipse.core.reflection.system.Plot3D());
       S.PolarPlot.setEvaluator(new org.matheclipse.core.reflection.system.PolarPlot());
+      S.PolynomialReduce
+          .setEvaluator(new org.matheclipse.core.reflection.system.PolynomialReduce());
       S.Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
       S.Reduce.setEvaluator(new org.matheclipse.core.reflection.system.Reduce());
       S.Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
       S.SudokuSolve.setEvaluator(new org.matheclipse.core.reflection.system.SudokuSolve());
       S.Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());
+      S.SymmetricPolynomial
+          .setEvaluator(new org.matheclipse.core.reflection.system.SymmetricPolynomial());
+      S.SymmetricReduction
+          .setEvaluator(new org.matheclipse.core.reflection.system.SymmetricReduction());
       S.Taylor.setEvaluator(new org.matheclipse.core.reflection.system.Taylor());
       S.TrigExpand.setEvaluator(new org.matheclipse.core.reflection.system.TrigExpand());
       S.TrigFactor.setEvaluator(new org.matheclipse.core.reflection.system.TrigFactor());
