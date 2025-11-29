@@ -480,6 +480,7 @@ Functions in alphabetical order:
 * &#x2705; [Haversine](functions/Haversine.md)
 * &#x2705; [Head](functions/Head.md)
 * &#x2705; [HeavisideTheta](functions/HeavisideTheta.md)
+* &#x2705; [HermiteDecomposition](functions/HermiteDecomposition.md)
 * &#x2611; [HermiteH](functions/HermiteH.md)
 * &#x2705; [HermitianMatrixQ](functions/HermitianMatrixQ.md)
 * &#x2705; [HessenbergDecomposition](functions/HessenbergDecomposition.md)
