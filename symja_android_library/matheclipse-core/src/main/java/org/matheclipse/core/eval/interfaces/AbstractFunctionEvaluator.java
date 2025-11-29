@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Locale;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
@@ -52,6 +53,9 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
       if (minNumberOfArgs < 0) {
         minNumberOfArgs = 0;
       }
+    } else if (optionSymbol.length > 0) {
+      throw new NotImplementedException("If default options like " + F.List(optionSymbol).toString()
+          + " are used, the expected argument size of a function is expected.");
     }
 
     int counter = 0;
