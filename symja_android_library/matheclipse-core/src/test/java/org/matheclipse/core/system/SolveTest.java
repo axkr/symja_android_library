@@ -610,8 +610,6 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
     check("Solve(-28 - 4*Sqrt(-1 + x) + 4*x==0,x)", //
         "{{x->10}}");
-    check("Solve(Sqrt(5*x-25)-Sqrt(x-1)==2,x)", //
-        "{{x->10}}");
 
     check("Solve(Sqrt(x+6)-Sqrt(x-1)==1,x)", //
         "{{x->10}}");
@@ -1584,6 +1582,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSystemSqrtSqrt() {
+    check("Solve(Sqrt(5*x-25)-Sqrt(x-1)==2,x)", //
+        "{{x->10}}");
     check("Solve(Sqrt(x+2)-Sqrt(x+3)==1,x)", //
         "{}");
   }

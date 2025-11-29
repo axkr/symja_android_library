@@ -386,6 +386,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testApply() {
+    check("Times @@ {1, 2, 3, 4}", //
+        "24");
     check("(Count(#, Last(#))&) @@ {{1, 2},{3, 4}}", //
         "1");
 
@@ -412,8 +414,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("((#+##&) @@#&) /@{{1,2},{2,2,2},{3,4}}", //
         "{4,8,10}");
 
-    check("Times @@ {1, 2, 3, 4}", //
-        "24");
     check("f @@ {{a, b}, {c}, d}", //
         "f({a,b},{c},d)");
     check("apply(head, {3,4,5})", //
@@ -14614,6 +14614,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMatchQ() {
+    // test isUniform() in BlankSequence pattern matching
+    // check("Table(A=Table(1.*i^2,{i,0,n}); {n, Timing(MatchQ(A,
+    // {__Real}))},{n,{2,10,100,10000}})", //
+    // "{{2,{0.0,True}},{10,{0.0,True}},{100,{0.0,True}},{10000,{0.0,True}}}");
 
     check("MatchQ(<|a -> 1|>, <|key_ -> val_|>)", //
         "True");
@@ -15397,6 +15401,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMonomialList() {
+    check("MonomialList((x + 1)^5, x, Modulus -> 2)", //
+        "{x^5,x^4,x,1}");
+
     check("MonomialList(7*y^w, {y,z})", //
         "{7*y^w}");
     check("MonomialList(7*y^(3*w), y )", //
@@ -15414,8 +15421,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{x^3,x^2*y^2}");
     check("MonomialList(x^2*y^2 + x^3, {x, y},DegreeLexicographic)", //
         "{x^2*y^2,x^3}");
-    check("MonomialList((x + 1)^5, x, Modulus -> 2)", //
-        "{x^5,x^4,x,1}");
 
     check(
         "MonomialList(-10*x^5*y^4*z^2 + 7*x^2*y^5*z^3 - 10*x^2*y*z^5 - 7*x*y^5*z^4 +  6*x*y^4*z^3 + 6*x*y^3*z^3 + 3*x*y^2*z + y^4*z - 7*y^2*z + 2*z^5, {x, y, z})", //
@@ -16377,6 +16382,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNorm() {
+
     // TODO make it work for simple cases with variable names:
     check("Refine(Norm({{1, x}, {3, 4}}),Element(x, Reals))", //
         "Norm(\n" //
@@ -16403,16 +16409,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Norm({})");
     check("Norm({{}})", //
         "Norm({{}})");
+    check("Norm({a,b,c}, \"Frobenius\")", //
+        "Sqrt(Abs(a)^2+Abs(b)^2+Abs(c)^2)");
+    check("Norm({{2,-1,5},{0,3,-4}}, \"Frobenius\")", //
+        "Sqrt(55)");
     check("mat={{1.1284111012048381, 6.059642563882402, 4.016005969894351},\n" + //
         "{6.953004075736082, 2.0349603837230656, 1.9793505188774905},\n" + //
         "{7.9963143348211325, 0.18947057304877646, 3.1653764788092467}};", //
         "");
     check("Norm(mat)", //
         "11.93914");
-    check("Norm(mat,\"Frobenius\")", //
-        "13.58383567975505");
-    check("Norm({a,b,c}, \"Frobenius\")", //
-        "Sqrt(Abs(a)^2+Abs(b)^2+Abs(c)^2)");
+    checkNumeric("Norm(mat,\"Frobenius\")", //
+        "13.583835679755051");
+    checkNumeric("Norm(mat,1)", //
+        "16.07772951176205");
+    checkNumeric("Norm(mat,Infinity)", //
+        "11.351161386679156");
 
     check("Norm(0)", //
         "0");
@@ -18590,6 +18602,78 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1+x^2,0}");
     check("PolynomialQuotientRemainder(x^2 + 4*x + 1, 2*x + 1, x, Modulus -> 3)", //
         "{1+2*x,0}");
+  }
+
+  @Test
+  public void testPolynomialReduce001() {
+    check("f = x^3 + y^3;p = {x^2 - y^2 - 1, x + 2*y - 7};", //
+        "");
+    check("{q, r} = PolynomialReduce(f, p, {x, y})", //
+        "{{x,1+y^2},7-2*y+7*y^2-y^3}");
+    check("f == q . p + r // Expand", //
+        "True");
+  }
+
+  @Test
+  public void testPolynomialReduce002() {
+    check("f = 2*x^3 + y^3 + 3 y;p = {x^2 + y^2 - 1, x*y - 2};gb = GroebnerBasis(p, {x, y})", //
+        "{4-y^2+y^4,2*x-y+y^3}");
+    check("{q, r} = PolynomialReduce(f, p, {x, y})", //
+        "{{2*x,-2*y},2*x-y+y^3}");
+    check("f == q . p + r // Expand", //
+        "True");
+  }
+
+  @Test
+  public void testPolynomialReduce003() {
+    check("polys = {3*x^2 + y - 5*x - 1, 2*x + 3*x*y + y^2}; poly = x*y - 3*x*y^2 + 11*y + x^3;", //
+        "");
+
+    check("gb1 = GroebnerBasis(polys, {x, y})", //
+        "{-4-8*y+13*y^2+24*y^3+3*y^4,6+4*x+3*y-22*y^2-3*y^3}");
+    check("PolynomialReduce(poly, gb1, {x, y})", //
+        "{{-169/144-53/48*x+4/3*y+5/4*x*y+5/16*y^2+3/16*x*y^2,-13/24-3/8*x+x^2/4-7/48*y-3/\n" //
+            + "16*x*y+37/24*y^2+11/8*x*y^2+5/16*y^3+3/16*x*y^3},-13/9+85/9*y+58/9*y^2+2*y^3}");
+
+    check("gb2 = GroebnerBasis(polys, {x, y}, MonomialOrder -> DegreeReverseLexicographic)", //
+        "{2*x+3*x*y+y^2,-1-5*x+3*x^2+y,-6-4*x-3*y+22*y^2+3*y^3}");
+    check("PolynomialReduce(poly, gb2, {x, y}, MonomialOrder -> DegreeReverseLexicographic)", //
+        "{{8/9-y,5/9+x/3,1/3},23/9+8/3*x+103/9*y-74/9*y^2}");
+
+  }
+
+  @Test
+  public void testPolynomialReduce004() {
+    // TODO
+    // check("poly = 121*x-x*y+y^2-3;", //
+    // "");
+    // check(
+    // "gb = {-4 + 16*y + 19*y^2 + 5*y^3 + 11*y^4, -2 + 44*x + 9*y - 17*y^2 + 11*y^3, 2*x + x*y -
+    // y^2, -1 + 11*x^2 + 5*y} ;", //
+    // "");
+    // check("PolynomialReduce(poly, gb, {x, y}, CoefficientDomain -> Integers)", //
+    // "");
+  }
+
+  @Test
+  public void testSymmetricPolynomial() {
+    check("SymmetricPolynomial(3, {x1, x2, x3, x4})", //
+        "x1*x2*x3+x1*x2*x4+x1*x3*x4+x2*x3*x4");
+    check("SymmetricPolynomial(0, {x1, x2, x3, x4})", //
+        "1");
+  }
+
+  @Test
+  public void testSymmetricReduction() {
+    check("SymmetricReduction(x^2+y^2, {x, y})", //
+        "{-2*x*y+(x+y)^2,0}");
+    check("SymmetricReduction(x^2-y^2, {x, y})", //
+        "{-2*x*y+(x+y)^2,-2*y^2}");
+    check("SymmetricReduction(x^2 - y^2, {x, y}, {s1, s2})", //
+        "{s1^2-2*s2,-2*y^2}");
+    check("SymmetricReduction(x^10 - y^10, {x, y})", //
+        "{-2*x^5*y^5+25*x^4*y^4*(x+y)^2-50*x^3*y^3*(x+y)^4+35*x^2*y^2*(x+y)^6-10*x*y*(x+y)^\n"
+            + "8+(x+y)^10,-2*y^10}");
   }
 
   @Test
@@ -21646,6 +21730,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
    */
   @Test
   public void testResultant() {
+    // TODO
+    // check("Resultant(a*x^3+b*x^2+c*x+d,d*x^3+c*x^2+b*x+a,x,Modulus->2)",
+    // "-2+x^2+(5-4*x+2*x^3)*((-2*x)/(2+3*x^2)+(5-4*x+2*x^3)/(2+3*x^2)^2)");
+
     check("PolynomialRemainder(-2+x^2-2*x*y+y^2,-5+4*x-2*x^3+2*y+3*x^2*y,y)",
         "-2+x^2+(5-4*x+2*x^3)*((-2*x)/(2+3*x^2)+(5-4*x+2*x^3)/(2+3*x^2)^2)");
 
@@ -24405,6 +24493,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testUniformTable() {
+    EvalEngine.resetModuleCounter4JUnit();
+    check("t = Table(1./(1+i^2),{i,10});", //
+        "");
+    check("MatchQ(t, {__Real})", //
+        "True");
+    check("F(x__Real):=1;", //
+        "");
+    check("F@@t", //
+        "1");
+  }
+
+
+  @Test
   public void testTablePerformance001() {
     check("$IterationLimit=10000; " //
         + "  data = Table(\n"//
@@ -26136,7 +26238,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testUnevaluated() {
+  public void testUnevaluated001() {
     check(
         "Attributes(h) = Flat;h(items___) := Plus(items);h(1, Unevaluated(Sequence(Unevaluated(2), 3)), Sequence(4, Unevaluated(5)))", //
         "15");
@@ -26178,8 +26280,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "");
     check("ReplaceAll(Unevaluated(f(3)), 3 -> 1)", //
         "1");
+  }
 
-
+  @Test
+  public void testUnevaluated002() {
     check("F(x___Real):=List(x)^2; a=0.4;", //
         "");
     check("F(Unevaluated(a), a, Unevaluated(a))", //

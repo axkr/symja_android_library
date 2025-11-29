@@ -122,6 +122,7 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testMean() {
+
     // 2,2,2 tensor
     check("Mean({{{a,b},{c,d}},{{e,f},{g,h}}})", //
         "{{1/2*(a+e),1/2*(b+f)},{1/2*(c+g),1/2*(d+h)}}");
@@ -183,6 +184,8 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
         "Piecewise({{d+(b*Gamma(a-1/g))/Gamma(a),a*g>1}},Indeterminate)");
     check("Mean(StudentTDistribution(4))", //
         "0");
+    check("Mean(StudentTDistribution(4.0))", //
+        "0.0");
     check("Mean(StudentTDistribution(n))", //
         "Piecewise({{0,n>1}},Indeterminate)");
     check("Mean(WeibullDistribution(n, m))", //
@@ -468,6 +471,8 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
         "n");
     check("Variance(StudentTDistribution(4))", //
         "2");
+    check("Variance(StudentTDistribution(3.5))", //
+        "2.33333");
     check("Variance(StudentTDistribution(n))", //
         "Piecewise({{n/(-2+n),n>2}},Indeterminate)");
 

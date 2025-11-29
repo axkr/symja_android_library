@@ -72,10 +72,10 @@ public class CommonSubexpressionEliminationTestCase extends ExprEvaluatorTestCas
 
     StringBuilder buf = new StringBuilder();
     F.cseAsJava(ast, buf);
-    assertEquals("IExpr v3 = F.Times(F.C2,x);\n"//
-        + "IExpr v2 = F.Times(F.C2,y);\n"//
-        + "IExpr v1 = F.Power(F.Plus(F.Cos(v2),F.Cosh(v3)),F.CN1);\n"//
-        + "return F.Plus(F.Times(F.CI,v1,F.Sin(v2)),F.Times(v1,F.Sinh(v3)));\n"
+    assertEquals("IExpr v3 = F.Times(F.C2,x);\n" //
+        + "IExpr v2 = F.Times(F.C2,y);\n" //
+        + "IExpr v1 = F.Power(F.Plus(F.Cos(v2),F.Cosh(v3)),F.CN1);\n" //
+        + "return F.Plus(F.Times(F.CI,v1,F.Sin(v2)),F.Times(v1,F.Sinh(v3)));\n"//
         + "", //
         buf.toString());
   }

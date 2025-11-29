@@ -27,6 +27,10 @@ public class StreamTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testCompressUncompress() {
+    check("str = Compress(Expand((a+b)^3))", //
+        "H4sIAAAAAAAA/0uMM1bQVjDWSowz0kqCsLSS4oyArKQ4YwDZmlsNHQAAAA==");
+    check("Uncompress(str)", //
+        "a^3+3*a^2*b+3*a*b^2+b^3");
     check("str = Compress(N(Pi, 100))", //
         "H4sIAAAAAAAA/w3LuRHAAAwCsI1yGPzANtl/iqRSJT3VNeGOxrmIci+3JYuXAe2uXG2U6KYwJnKd7j8K59rG0ks4+THU5qhZddh7C/gA8p+qHmkAAAA=");
     check("Uncompress(str)", //

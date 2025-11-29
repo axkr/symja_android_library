@@ -384,14 +384,14 @@ public class TeXFormTest extends ExprEvaluatorTestCase {
 
    @Test
    public void testTeXForm1() {
+     check("TeXForm({{a, b}, {c}})", //
+         "\\{\\{a,b\\},\\{c\\}\\}");
     check("TeXForm /@ {Subscript(x, a), x^a, Subsuperscript(x,a,b)}", //
         "{{x}_{a},{x}^{a},{x}_{a}^{b}}");
     check("TeXForm /@ {Subscript(x, 2*k+1), x^(2*k+1)}", //
         "{{x}_{1+2 \\cdot k},{x}^{\\left( 1+2 \\cdot k\\right) }}");
     check("TeXForm({a,b,c})", //
         "\\{a,b,c\\}");
-    check("TeXForm({{a, b}, {c}})", //
-        "\\{\\{a,b\\},\\{c\\}\\}");
     check("TeXForm({{a, b, c}, {d, e, f}})", //
         "\\left(\n" //
             + "\\begin{array}{ccc}\n" //
