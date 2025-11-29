@@ -6275,12 +6275,18 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       IReal realNumber;
       for (int i = 1; i <= dim[0]; i++) {
         IAST row = (IAST) get(i);
-        for (int j = 1; j <= dim[1]; j++) {
-          realNumber = row.get(j).evalReal();
-          if (realNumber != null) {
-            result[i - 1][j - 1] = realNumber.evalf();
-          } else {
-            return null;
+        if (row.isUniform(UniformFlags.REAL)) {
+          for (int j = 1; j <= dim[1]; j++) {
+            result[i - 1][j - 1] = ((INum) row.get(j)).doubleValue();
+          }
+        } else {
+          for (int j = 1; j <= dim[1]; j++) {
+            realNumber = row.get(j).evalReal();
+            if (realNumber != null) {
+              result[i - 1][j - 1] = realNumber.evalf();
+            } else {
+              return null;
+            }
           }
         }
       }
@@ -6403,12 +6409,18 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       IExpr row = get(i);
       if (row.isList()) {
         IAST list = (IAST) row;
-        for (int j = 1; j <= dim[1]; j++) {
-          realNumber = list.get(j).evalReal();
-          if (realNumber != null) {
-            result[rowIndex][j - 1] = realNumber.doubleValue();
-          } else {
-            return null;
+        if (list.isUniform(UniformFlags.REAL)) {
+          for (int j = 1; j <= dim[1]; j++) {
+            result[i - 1][j - 1] = ((INum) list.get(j)).doubleValue();
+          }
+        } else {
+          for (int j = 1; j <= dim[1]; j++) {
+            realNumber = list.get(j).evalReal();
+            if (realNumber != null) {
+              result[rowIndex][j - 1] = realNumber.doubleValue();
+            } else {
+              return null;
+            }
           }
         }
         rowIndex++;
@@ -6422,8 +6434,14 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public double[] toDoubleVector() {
     try {
       double[] result = new double[argSize()];
-      for (int i = 1; i < size(); i++) {
-        result[i - 1] = get(i).evalf();
+      if (isUniform(UniformFlags.REAL)) {
+        for (int i = 1; i < size(); i++) {
+          result[i - 1] = ((INum) get(i)).doubleValue();
+        }
+      } else {
+        for (int i = 1; i < size(); i++) {
+          result[i - 1] = get(i).evalf();
+        }
       }
       return result;
     } catch (ArgumentTypeException rex) {
@@ -6463,8 +6481,14 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public Complex[] toComplexVector() {
     try {
       Complex[] result = new Complex[argSize()];
-      for (int i = 1; i < size(); i++) {
-        result[i - 1] = get(i).evalfc();
+      if (isUniform(UniformFlags.NUMBER)) {
+        for (int i = 1; i < size(); i++) {
+          result[i - 1] = ((INumber) get(i)).complexValue();
+        }
+      } else {
+        for (int i = 1; i < size(); i++) {
+          result[i - 1] = get(i).evalfc();
+        }
       }
       return result;
     } catch (ArgumentTypeException ex) {
@@ -6482,8 +6506,14 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         Complex[][] result = new Complex[dims[0]][dims[1]];
         for (int i = 0; i < dims[0]; i++) {
           IAST subList = (IAST) get(i + 1);
-          for (int j = 0; j < dims[1]; j++) {
-            result[i][j] = subList.get(j + 1).evalfc();
+          if (subList.isUniform(UniformFlags.NUMBER)) {
+            for (int j = 0; j < dims[1]; j++) {
+              result[i][j] = ((INumber) subList.get(j + 1)).complexValue();
+            }
+          } else {
+            for (int j = 0; j < dims[1]; j++) {
+              result[i][j] = subList.get(j + 1).evalfc();
+            }
           }
         }
         return result;
