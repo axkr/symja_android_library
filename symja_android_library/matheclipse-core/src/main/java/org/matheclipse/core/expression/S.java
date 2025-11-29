@@ -1945,6 +1945,8 @@ public class S {
   public final static IBuiltInSymbol CoefficientArrays =
       S.initFinalSymbol("CoefficientArrays", ID.CoefficientArrays);
 
+  public final static IBuiltInSymbol CoefficientDomain =
+      S.initFinalSymbol("CoefficientDomain", ID.CoefficientDomain);
   /**
    * CoefficientList(polynomial, variable) - get the coefficient list of a `polynomial`.
    * 
@@ -2516,11 +2518,9 @@ public class S {
   public final static IBuiltInSymbol CreateDirectory =
       S.initFinalSymbol("CreateDirectory", ID.CreateDirectory);
 
-  public final static IBuiltInSymbol CreateFile =
-      S.initFinalSymbol("CreateFile", ID.CreateFile);
+  public final static IBuiltInSymbol CreateFile = S.initFinalSymbol("CreateFile", ID.CreateFile);
 
-  public final static IBuiltInSymbol CreateUUID =
-      S.initFinalSymbol("CreateUUID", ID.CreateUUID);
+  public final static IBuiltInSymbol CreateUUID = S.initFinalSymbol("CreateUUID", ID.CreateUUID);
 
   /**
    * Cross(a, b) - computes the vector cross product of `a` and `b`.
@@ -4946,6 +4946,8 @@ public class S {
    */
   public final static IBuiltInSymbol GroupBy = S.initFinalSymbol("GroupBy", ID.GroupBy);
 
+  public final static IBuiltInSymbol Groupings = S.initFinalSymbol("Groupings", ID.Groupings);
+
   /**
    * Gudermannian(expr) - computes the gudermannian function.
    * 
@@ -5082,6 +5084,9 @@ public class S {
    */
   public final static IBuiltInSymbol HeavisideTheta =
       S.initFinalSymbol("HeavisideTheta", ID.HeavisideTheta);
+
+  public final static IBuiltInSymbol HermiteDecomposition =
+      S.initFinalSymbol("HermiteDecomposition", ID.HermiteDecomposition);
 
   /**
    * HermiteH(n, x) - returns the Hermite polynomial `H_n(x)`.
@@ -6164,6 +6169,9 @@ public class S {
   public final static IBuiltInSymbol Join = S.initFinalSymbol("Join", ID.Join);
 
   public final static IBuiltInSymbol Joined = S.initFinalSymbol("Joined", ID.Joined);
+
+  public final static IBuiltInSymbol JordanDecomposition =
+      S.initFinalSymbol("JordanDecomposition", ID.JordanDecomposition);
 
   /**
    * JSForm(expr) - returns the JavaScript form of the `expr`.
@@ -8914,6 +8922,10 @@ public class S {
   public final static IBuiltInSymbol PolynomialQuotientRemainder =
       S.initFinalSymbol("PolynomialQuotientRemainder", ID.PolynomialQuotientRemainder);
 
+  public final static IBuiltInSymbol PolynomialReduce =
+      S.initFinalSymbol("PolynomialReduce", ID.PolynomialReduce);
+
+
   /**
    * PolynomialRemainder(p, q, x) - returns the polynomial remainder of the polynomials `p` and `q`
    * for the variable `x`.
@@ -9487,6 +9499,9 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Rationalize = S.initFinalSymbol("Rationalize", ID.Rationalize);
+
+  public final static IBuiltInSymbol RationalFunctions =
+      S.initFinalSymbol("RationalFunctions", ID.RationalFunctions);
 
   public final static IBuiltInSymbol Rationals = S.initFinalSymbol("Rationals", ID.Rationals);
 
@@ -10516,6 +10531,9 @@ public class S {
 
   public final static IBuiltInSymbol SmallCircle = S.initFinalSymbol("SmallCircle", ID.SmallCircle);
 
+  public final static IBuiltInSymbol SmithDecomposition =
+      S.initFinalSymbol("SmithDecomposition", ID.SmithDecomposition);
+
   /**
    * SokalSneathDissimilarity(u, v) - returns the Sokal-Sneath dissimilarity between the two boolean
    * 1-D lists `u` and `v`, which is defined as `R / (c_tt + R)` where n is `len(u)`, `c_ij` is the
@@ -11372,6 +11390,12 @@ public class S {
    */
   public final static IBuiltInSymbol SymmetricMatrixQ =
       S.initFinalSymbol("SymmetricMatrixQ", ID.SymmetricMatrixQ);
+
+  public final static IBuiltInSymbol SymmetricPolynomial =
+      S.initFinalSymbol("SymmetricPolynomial", ID.SymmetricPolynomial);
+
+  public final static IBuiltInSymbol SymmetricReduction =
+      S.initFinalSymbol("SymmetricReduction", ID.SymmetricReduction);
 
   public final static IBuiltInSymbol SyntaxLength =
       S.initFinalSymbol("SyntaxLength", ID.SyntaxLength);
