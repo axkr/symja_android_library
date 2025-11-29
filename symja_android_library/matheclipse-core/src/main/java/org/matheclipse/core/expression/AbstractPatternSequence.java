@@ -151,7 +151,6 @@ public abstract class AbstractPatternSequence implements IPatternSequence {
       return sequence.equals(value);
     }
     return patternMap.setValue(this, sequence);
-    // return true;
   }
 
   /**

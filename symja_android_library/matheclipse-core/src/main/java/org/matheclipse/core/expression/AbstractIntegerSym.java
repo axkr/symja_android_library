@@ -823,51 +823,55 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   @Override
   public IExpr[] egcd(IExpr that) {
     if (that instanceof IInteger) {
-      BigInteger S = ((IInteger) that).toBigNumerator();
-      IInteger[] result = new IInteger[3];
-      result[0] = null;
-      result[1] = F.C1;
-      result[2] = F.C1;
-      if (that.isZero()) {
-        result[0] = this;
-        return result;
-      }
-      if (this.isZero()) {
-        result[0] = (BigIntegerSym) that;
-        return result;
-      }
-      BigInteger[] qr;
-      BigInteger q = toBigNumerator();
-      BigInteger r = S;
-      BigInteger c1 = BigInteger.ONE;
-      BigInteger d1 = BigInteger.ZERO;
-      BigInteger c2 = BigInteger.ZERO;
-      BigInteger d2 = BigInteger.ONE;
-      BigInteger x1;
-      BigInteger x2;
-      while (r.signum() != 0) {
-        qr = q.divideAndRemainder(r);
-        q = qr[0];
-        x1 = c1.subtract(q.multiply(d1));
-        x2 = c2.subtract(q.multiply(d2));
-        c1 = d1;
-        c2 = d2;
-        d1 = x1;
-        d2 = x2;
-        q = r;
-        r = qr[1];
-      }
-      if (q.signum() < 0) {
-        q = q.negate();
-        c1 = c1.negate();
-        c2 = c2.negate();
-      }
-      result[0] = valueOf(q);
-      result[1] = valueOf(c1);
-      result[2] = valueOf(c2);
-      return result;
+      return extendedGCD((IInteger) that);
     }
     return IInteger.super.egcd(that);
+  }
+
+  public IInteger[] extendedGCD(IInteger that) {
+    BigInteger S = that.toBigNumerator();
+    IInteger[] result = new IInteger[3];
+    result[0] = null;
+    result[1] = F.C1;
+    result[2] = F.C1;
+    if (that.isZero()) {
+      result[0] = this;
+      return result;
+    }
+    if (this.isZero()) {
+      result[0] = that;
+      return result;
+    }
+    BigInteger[] qr;
+    BigInteger q = toBigNumerator();
+    BigInteger r = S;
+    BigInteger c1 = BigInteger.ONE;
+    BigInteger d1 = BigInteger.ZERO;
+    BigInteger c2 = BigInteger.ZERO;
+    BigInteger d2 = BigInteger.ONE;
+    BigInteger x1;
+    BigInteger x2;
+    while (r.signum() != 0) {
+      qr = q.divideAndRemainder(r);
+      q = qr[0];
+      x1 = c1.subtract(q.multiply(d1));
+      x2 = c2.subtract(q.multiply(d2));
+      c1 = d1;
+      c2 = d2;
+      d1 = x1;
+      d2 = x2;
+      q = r;
+      r = qr[1];
+    }
+    if (q.signum() < 0) {
+      q = q.negate();
+      c1 = c1.negate();
+      c2 = c2.negate();
+    }
+    result[0] = valueOf(q);
+    result[1] = valueOf(c1);
+    result[2] = valueOf(c2);
+    return result;
   }
 
   @Override
