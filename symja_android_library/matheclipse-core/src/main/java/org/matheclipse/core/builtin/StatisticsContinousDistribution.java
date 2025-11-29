@@ -3510,7 +3510,13 @@ public class StatisticsContinousDistribution {
 
     @Override
     public IExpr mean(IAST dist) {
+
       if (dist.isAST1()) {
+        IExpr arg1 = dist.arg1();
+        if (EvalEngine.get().isDoubleMode() || arg1.isNumericArgument(true)) {
+          return F.num(new org.hipparchus.distribution.continuous.TDistribution(arg1.evalf())
+              .getNumericalMean());
+        }
         // (v) -> Piecewise({{0, v > 1}}, Indeterminate)
         return F.Piecewise(F.list(F.list(F.C0, F.Greater(dist.arg1(), F.C1))), S.Indeterminate);
       }
@@ -3579,6 +3585,10 @@ public class StatisticsContinousDistribution {
     public IExpr variance(IAST dist) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
+        if (EvalEngine.get().isDoubleMode() || n.isNumericArgument(true)) {
+          return F.num(new org.hipparchus.distribution.continuous.TDistribution(n.evalf())
+              .getNumericalVariance());
+        }
         return F.Piecewise(F.list(F.list(F.Divide(n, F.Plus(F.CN2, n)), F.Greater(n, F.C2))),
             S.Indeterminate);
       }

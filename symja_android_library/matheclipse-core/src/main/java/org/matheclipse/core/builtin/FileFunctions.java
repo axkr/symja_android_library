@@ -1525,7 +1525,7 @@ public class FileFunctions {
         IAST symbolsList = F.NIL;
         if (arg2.isSymbol()) {
           symbolsList = arg2.makeList();
-        } else if (arg2.isList(IExpr::isSymbol)) {
+        } else if (arg2.isListOf(S.Symbol)) {
           symbolsList = (IAST) arg2;
         } else if (arg2.isString()) {
           boolean ignoreCase = false;

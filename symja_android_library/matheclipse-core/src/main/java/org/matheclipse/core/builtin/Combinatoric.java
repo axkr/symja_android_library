@@ -40,41 +40,6 @@ import org.matheclipse.core.reflection.system.FrobeniusSolve;
 public final class Combinatoric {
 
   /**
-   * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
-   * in static initializer</a>
-   */
-  private static class Initializer {
-
-    private static void init() {
-      S.CartesianProduct.setEvaluator(new CartesianProduct());
-      S.Cycles.setEvaluator(new Cycles());
-      S.DiceDissimilarity.setEvaluator(new DiceDissimilarity());
-      S.FindPermutation.setEvaluator(new FindPermutation());
-      S.IntegerPartitions.setEvaluator(new IntegerPartitions());
-      S.JaccardDissimilarity.setEvaluator(new JaccardDissimilarity());
-      S.KOrderlessPartitions.setEvaluator(new KOrderlessPartitions());
-      S.KPartitions.setEvaluator(new KPartitions());
-      S.MatchingDissimilarity.setEvaluator(new MatchingDissimilarity());
-      S.Partition.setEvaluator(new Partition());
-      S.Permute.setEvaluator(new Permute());
-      S.PermutationCycles.setEvaluator(new PermutationCycles());
-      S.PermutationCyclesQ.setEvaluator(new PermutationCyclesQ());
-      S.PermutationList.setEvaluator(new PermutationList());
-      S.PermutationListQ.setEvaluator(new PermutationListQ());
-      S.PermutationReplace.setEvaluator(new PermutationReplace());
-      S.Permutations.setEvaluator(new Permutations());
-      S.PolygonalNumber.setEvaluator(new PolygonalNumber());
-      S.RogersTanimotoDissimilarity.setEvaluator(new RogersTanimotoDissimilarity());
-      S.RussellRaoDissimilarity.setEvaluator(new RussellRaoDissimilarity());
-      S.Signature.setEvaluator(new Signature());
-      S.SokalSneathDissimilarity.setEvaluator(new SokalSneathDissimilarity());
-      S.Subsets.setEvaluator(new Subsets());
-      S.Tuples.setEvaluator(new Tuples());
-      S.YuleDissimilarity.setEvaluator(new YuleDissimilarity());
-    }
-  }
-
-  /**
    *
    *
    * <pre>
@@ -293,22 +258,6 @@ public final class Combinatoric {
    */
   private static final class Cycles extends AbstractFunctionEvaluator {
 
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.head().equals(S.Cycles)) {
-        if (ast.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
-          return F.NIL;
-        }
-        IExpr temp = canonicalizeCycles(ast, false, engine);
-        if (temp.equals(ast)) {
-          ast.builtinEvaled();
-          return F.NIL;
-        }
-        return temp;
-      }
-      return F.NIL;
-    }
-
     /**
      * The <code>cycles</code> expression is canonicalized by dropping empty and singleton cycles,
      * rotating each cycle so that the smallest position is at index 1.
@@ -410,6 +359,22 @@ public final class Combinatoric {
       if (!quiet) {
         // `1` is expected to contain a list of lists of integers.
         Errors.printMessage(S.Cycles, "intpoint", F.list(cycles), engine);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.head().equals(S.Cycles)) {
+        if (ast.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+          return F.NIL;
+        }
+        IExpr temp = canonicalizeCycles(ast, false, engine);
+        if (temp.equals(ast)) {
+          ast.builtinEvaled();
+          return F.NIL;
+        }
+        return temp;
       }
       return F.NIL;
     }
@@ -535,6 +500,33 @@ public final class Combinatoric {
    */
   private static final class FindPermutation extends AbstractFunctionEvaluator {
 
+    /**
+     * Create a permutation list from two {@link IAST} expressions, which differ only in the order
+     * of their arguments. Therefore it's assumed that both expressions have same size and all
+     * arguments of <code>ast1</code> appear in the arguments of <code>ast2</code>.
+     *
+     * @param ast1
+     * @param ast2
+     * @return the permutation list of all integer position permutations.
+     */
+    private static IAST permutationList(IAST ast1, IAST ast2) {
+      int positions[] = new int[ast1.argSize()];
+      for (int i = 0; i < positions.length; i++) {
+        positions[i] = i + 1;
+      }
+      return F.mapList(ast1, expr1 -> {
+        for (int i = 1; i < ast2.size(); i++) {
+          if (positions[i - 1] > 0) {
+            if (expr1.equals(ast2.get(i))) {
+              positions[i - 1] = -1;
+              return F.ZZ(i);
+            }
+          }
+        }
+        return F.NIL;
+      });
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
@@ -581,36 +573,44 @@ public final class Combinatoric {
       return CombinatoricUtil.permutationCycles(permList);
     }
 
-    /**
-     * Create a permutation list from two {@link IAST} expressions, which differ only in the order
-     * of their arguments. Therefore it's assumed that both expressions have same size and all
-     * arguments of <code>ast1</code> appear in the arguments of <code>ast2</code>.
-     *
-     * @param ast1
-     * @param ast2
-     * @return the permutation list of all integer position permutations.
-     */
-    private static IAST permutationList(IAST ast1, IAST ast2) {
-      int positions[] = new int[ast1.argSize()];
-      for (int i = 0; i < positions.length; i++) {
-        positions[i] = i + 1;
-      }
-      return F.mapList(ast1, expr1 -> {
-        for (int i = 1; i < ast2.size(); i++) {
-          if (positions[i - 1] > 0) {
-            if (expr1.equals(ast2.get(i))) {
-              positions[i - 1] = -1;
-              return F.ZZ(i);
-            }
-          }
-        }
-        return F.NIL;
-      });
-    }
-
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
+    }
+  }
+
+  /**
+   * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
+   * in static initializer</a>
+   */
+  private static class Initializer {
+
+    private static void init() {
+      S.CartesianProduct.setEvaluator(new CartesianProduct());
+      S.Cycles.setEvaluator(new Cycles());
+      S.DiceDissimilarity.setEvaluator(new DiceDissimilarity());
+      S.FindPermutation.setEvaluator(new FindPermutation());
+      S.IntegerPartitions.setEvaluator(new IntegerPartitions());
+      S.JaccardDissimilarity.setEvaluator(new JaccardDissimilarity());
+      S.KOrderlessPartitions.setEvaluator(new KOrderlessPartitions());
+      S.KPartitions.setEvaluator(new KPartitions());
+      S.MatchingDissimilarity.setEvaluator(new MatchingDissimilarity());
+      S.Partition.setEvaluator(new Partition());
+      S.Permute.setEvaluator(new Permute());
+      S.PermutationCycles.setEvaluator(new PermutationCycles());
+      S.PermutationCyclesQ.setEvaluator(new PermutationCyclesQ());
+      S.PermutationList.setEvaluator(new PermutationList());
+      S.PermutationListQ.setEvaluator(new PermutationListQ());
+      S.PermutationReplace.setEvaluator(new PermutationReplace());
+      S.Permutations.setEvaluator(new Permutations());
+      S.PolygonalNumber.setEvaluator(new PolygonalNumber());
+      S.RogersTanimotoDissimilarity.setEvaluator(new RogersTanimotoDissimilarity());
+      S.RussellRaoDissimilarity.setEvaluator(new RussellRaoDissimilarity());
+      S.Signature.setEvaluator(new Signature());
+      S.SokalSneathDissimilarity.setEvaluator(new SokalSneathDissimilarity());
+      S.Subsets.setEvaluator(new Subsets());
+      S.Tuples.setEvaluator(new Tuples());
+      S.YuleDissimilarity.setEvaluator(new YuleDissimilarity());
     }
   }
 
@@ -696,10 +696,6 @@ public final class Combinatoric {
      */
     public static final class NumberPartitionsIterable implements Iterable<int[]> {
 
-      private final int n;
-
-      private final int len;
-
       private class NumberPartitionsIterator implements Iterator<int[]> {
 
         private int i = 0;
@@ -720,6 +716,18 @@ public final class Combinatoric {
           fPartititionsIndex = new int[size];
           fCopiedResultIndex = new int[size];
           fResultIndex = nextBeforehand();
+        }
+
+        @Override
+        public boolean hasNext() {
+          return fResultIndex != null;
+        }
+
+        @Override
+        public int[] next() {
+          System.arraycopy(fResultIndex, 0, fCopiedResultIndex, 0, fResultIndex.length);
+          fResultIndex = nextBeforehand();
+          return fCopiedResultIndex;
         }
 
         private final int[] nextBeforehand() {
@@ -766,19 +774,11 @@ public final class Combinatoric {
           i = 0;
           return fPartititionsIndex;
         }
-
-        @Override
-        public int[] next() {
-          System.arraycopy(fResultIndex, 0, fCopiedResultIndex, 0, fResultIndex.length);
-          fResultIndex = nextBeforehand();
-          return fCopiedResultIndex;
-        }
-
-        @Override
-        public boolean hasNext() {
-          return fResultIndex != null;
-        }
       }
+
+      private final int n;
+
+      private final int len;
 
       /**
        * @param n with <code>n > 1</code>
@@ -804,6 +804,99 @@ public final class Combinatoric {
       public Iterator<int[]> iterator() {
         return new NumberPartitionsIterator();
       }
+    }
+
+    /**
+     * @param frobeniusSolution a single solution from the FrobeniusSolver
+     * @param numberSpecification original given possible numbers for the partitions
+     * @param lowerLimitOfCoins minimum number of coins
+     * @param upperLimitOfCoins maximum number of coins
+     * @param result
+     * @return
+     */
+    private static boolean createFrobeniusSolution(IInteger[] frobeniusSolution,
+        int[] numberSpecification, IInteger lowerLimitOfCoins, IInteger upperLimitOfCoins,
+        IASTAppendable result) {
+      IInteger sum = F.C0;
+      for (int i = 0; i < frobeniusSolution.length; i++) {
+        sum = sum.add(frobeniusSolution[i]);
+      }
+      if (sum.isGE(lowerLimitOfCoins) && sum.isLE(upperLimitOfCoins)) {
+        IASTAppendable list = F.ListAlloc();
+        for (int i = frobeniusSolution.length - 1; i >= 0; i--) {
+          int counter = frobeniusSolution[i].toIntDefault();
+          if (F.isNotPresent(counter)) {
+            return false;
+          }
+          if (counter > 0) {
+            IInteger value = F.ZZ(numberSpecification[i]);
+            for (int j = 0; j < counter; j++) {
+              list.append(value);
+            }
+          }
+        }
+        result.append(list);
+      }
+      return true;
+    }
+
+    private static IExpr frobeniusPartition(final IAST ast, EvalEngine engine) {
+      if (ast.arg3().isNonEmptyList() && ast.arg1().isInteger()) {
+        try {
+          int[] listInt = Validate.checkListOfInts(ast, ast.arg3(), Config.INVALID_INT,
+              Integer.MAX_VALUE, engine);
+          if (listInt != null) {
+            IInteger lowerLimitOfCoins = F.C0;
+            IInteger upperLimitOfCoins = F.ZZ(Integer.MAX_VALUE);
+            if (ast.arg2().isInteger()) {
+              upperLimitOfCoins = (IInteger) ast.arg2();
+            } else if (ast.arg2().isList2() && ast.arg2().first().isInteger()
+                && ast.arg2().second().isInteger()) {
+              lowerLimitOfCoins = (IInteger) ast.arg2().first();
+              upperLimitOfCoins = (IInteger) ast.arg2().second();
+            } else if (ast.arg2() != S.All) {
+              return F.NIL;
+            }
+            IInteger[] solution;
+
+            FrobeniusSolver solver = FrobeniusSolve.getSolver(listInt, (IInteger) ast.arg1());
+            int numberOfSolutions = -1; // all solutions
+            if (ast.size() == 5) {
+              numberOfSolutions = ast.arg5().toIntDefault(-1);
+            }
+
+            IASTAppendable result = F.ListAlloc(8);
+            int iterations = 0;
+            int iterationLimit = engine.getIterationLimit();
+            while ((solution = solver.take()) != null) {
+              if (iterationLimit > 0 && iterations > iterationLimit) {
+                Errors.printMessage(ast.topHead(), "itlimpartial", F.list(F.ZZ(iterationLimit)),
+                    engine);
+                return result;
+              }
+              if (numberOfSolutions >= 0) {
+                if (--numberOfSolutions < 0) {
+                  break;
+                }
+              }
+              iterations++;
+              if (createFrobeniusSolution(solution, listInt, lowerLimitOfCoins, upperLimitOfCoins,
+                  result)) {
+                continue;
+              }
+              return F.NIL;
+            }
+
+            return result;
+          }
+        } catch (LimitException le) {
+          throw le;
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          Errors.printMessage(S.IntegerPartitions, rex, engine);
+        }
+      }
+      return F.NIL;
     }
 
     /** {@inheritDoc} */
@@ -917,99 +1010,6 @@ public final class Combinatoric {
       return F.NIL;
     }
 
-    private static IExpr frobeniusPartition(final IAST ast, EvalEngine engine) {
-      if (ast.arg3().isNonEmptyList() && ast.arg1().isInteger()) {
-        try {
-          int[] listInt = Validate.checkListOfInts(ast, ast.arg3(), Config.INVALID_INT,
-              Integer.MAX_VALUE, engine);
-          if (listInt != null) {
-            IInteger lowerLimitOfCoins = F.C0;
-            IInteger upperLimitOfCoins = F.ZZ(Integer.MAX_VALUE);
-            if (ast.arg2().isInteger()) {
-              upperLimitOfCoins = (IInteger) ast.arg2();
-            } else if (ast.arg2().isList2() && ast.arg2().first().isInteger()
-                && ast.arg2().second().isInteger()) {
-              lowerLimitOfCoins = (IInteger) ast.arg2().first();
-              upperLimitOfCoins = (IInteger) ast.arg2().second();
-            } else if (ast.arg2() != S.All) {
-              return F.NIL;
-            }
-            IInteger[] solution;
-
-            FrobeniusSolver solver = FrobeniusSolve.getSolver(listInt, (IInteger) ast.arg1());
-            int numberOfSolutions = -1; // all solutions
-            if (ast.size() == 5) {
-              numberOfSolutions = ast.arg5().toIntDefault(-1);
-            }
-
-            IASTAppendable result = F.ListAlloc(8);
-            int iterations = 0;
-            int iterationLimit = engine.getIterationLimit();
-            while ((solution = solver.take()) != null) {
-              if (iterationLimit > 0 && iterations > iterationLimit) {
-                Errors.printMessage(ast.topHead(), "itlimpartial", F.list(F.ZZ(iterationLimit)),
-                    engine);
-                return result;
-              }
-              if (numberOfSolutions >= 0) {
-                if (--numberOfSolutions < 0) {
-                  break;
-                }
-              }
-              iterations++;
-              if (createFrobeniusSolution(solution, listInt, lowerLimitOfCoins, upperLimitOfCoins,
-                  result)) {
-                continue;
-              }
-              return F.NIL;
-            }
-
-            return result;
-          }
-        } catch (LimitException le) {
-          throw le;
-        } catch (RuntimeException rex) {
-          Errors.rethrowsInterruptException(rex);
-          Errors.printMessage(S.IntegerPartitions, rex, engine);
-        }
-      }
-      return F.NIL;
-    }
-
-    /**
-     * @param frobeniusSolution a single solution from the FrobeniusSolver
-     * @param numberSpecification original given possible numbers for the partitions
-     * @param lowerLimitOfCoins minimum number of coins
-     * @param upperLimitOfCoins maximum number of coins
-     * @param result
-     * @return
-     */
-    private static boolean createFrobeniusSolution(IInteger[] frobeniusSolution,
-        int[] numberSpecification, IInteger lowerLimitOfCoins, IInteger upperLimitOfCoins,
-        IASTAppendable result) {
-      IInteger sum = F.C0;
-      for (int i = 0; i < frobeniusSolution.length; i++) {
-        sum = sum.add(frobeniusSolution[i]);
-      }
-      if (sum.isGE(lowerLimitOfCoins) && sum.isLE(upperLimitOfCoins)) {
-        IASTAppendable list = F.ListAlloc();
-        for (int i = frobeniusSolution.length - 1; i >= 0; i--) {
-          int counter = frobeniusSolution[i].toIntDefault();
-          if (F.isNotPresent(counter)) {
-            return false;
-          }
-          if (counter > 0) {
-            IInteger value = F.ZZ(numberSpecification[i]);
-            for (int j = 0; j < counter; j++) {
-              list.append(value);
-            }
-          }
-        }
-        result.append(list);
-      }
-      return true;
-    }
-
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_4;
@@ -1092,45 +1092,6 @@ public final class Combinatoric {
 
   private static final class KOrderlessPartitions extends AbstractFunctionEvaluator {
 
-    /** {@inheritDoc} */
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final int k = ast.arg2().toIntDefault();
-      if (ast.arg1().isAST() && ast.arg1().size() > 1 && k > 0) {
-        final IAST listArg0 = (IAST) ast.arg1();
-        if (k == 1) {
-          return F.list(listArg0);
-        }
-        final int n = listArg0.argSize();
-        if (k > n) {
-          return F.NIL;
-        }
-        final ISymbol sym = listArg0.topHead();
-        final IASTAppendable result = F.ListAlloc(50);
-        final KPermutationsIterable permutationIterator = new KPermutationsIterable(listArg0, n, 1);
-        IAST partition;
-
-        // first generate all permutations:
-        for (int permutationsIndex[] : permutationIterator) {
-          // second generate all partitions:
-          final KPartitionsIterable partitionIterator = new KPartitionsIterable(n, k);
-          for (int partitionsIndex[] : partitionIterator) {
-            partition = createSinglePartition(listArg0, sym, permutationsIndex, partitionsIndex);
-            if (partition.isPresent()) {
-              result.append(partition);
-            }
-          }
-        }
-        return result;
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-
     private IAST createSinglePartition(final IAST listArg0, final ISymbol symbol,
         final int[] permutationsIndex, final int[] partitionsIndex) {
       IASTAppendable partitionElement;
@@ -1190,6 +1151,45 @@ public final class Combinatoric {
 
       return partition;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      final int k = ast.arg2().toIntDefault();
+      if (ast.arg1().isAST() && ast.arg1().size() > 1 && k > 0) {
+        final IAST listArg0 = (IAST) ast.arg1();
+        if (k == 1) {
+          return F.list(listArg0);
+        }
+        final int n = listArg0.argSize();
+        if (k > n) {
+          return F.NIL;
+        }
+        final ISymbol sym = listArg0.topHead();
+        final IASTAppendable result = F.ListAlloc(50);
+        final KPermutationsIterable permutationIterator = new KPermutationsIterable(listArg0, n, 1);
+        IAST partition;
+
+        // first generate all permutations:
+        for (int permutationsIndex[] : permutationIterator) {
+          // second generate all partitions:
+          final KPartitionsIterable partitionIterator = new KPartitionsIterable(n, k);
+          for (int partitionsIndex[] : partitionIterator) {
+            partition = createSinglePartition(listArg0, sym, permutationsIndex, partitionsIndex);
+            if (partition.isPresent()) {
+              result.append(partition);
+            }
+          }
+        }
+        return result;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
   }
 
 
@@ -1222,6 +1222,69 @@ public final class Combinatoric {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
+    }
+  }
+
+
+  /**
+   * Iterate over the lists of all k-combinations from a given list
+   *
+   * <p>
+   * See <a href="http://en.wikipedia.org/wiki/Combination">Combination</a>
+   */
+  public static final class KSubsetsList implements Iterable<IAST> {
+
+    private class KSubsetsIterator implements Iterator<IAST> {
+
+      private final Iterator<int[]> fIterable;
+
+      private KSubsetsIterator() {
+        this.fIterable = new KSubsetsIterable(fList.size() - fOffset, fK).iterator();
+      }
+
+      @Override
+      public boolean hasNext() {
+        return fIterable.hasNext();
+      }
+
+      /**
+       * Get the index array for the next partition.
+       *
+       * @return <code>null</code> if no further index array could be generated
+       */
+      @Override
+      public IAST next() {
+        int j[] = fIterable.next();
+        if (j == null) {
+          return null;
+        }
+
+        IASTAppendable temp = fResultList.copyAppendable();
+        return temp.appendArgs(0, fK, i -> {
+          if (j.length > i && fList.size() > (j[i] + fOffset)) {
+            return fList.get(j[i] + fOffset);
+          }
+          return F.NIL;
+        });
+      }
+    }
+    private final IAST fList;
+    private final IAST fResultList;
+
+    private final int fOffset;
+
+    private final int fK;
+
+    private KSubsetsList(final IAST list, final int k, IAST resultList, final int offset) {
+      fList = list;
+      fK = k;
+      fResultList = resultList;
+      fOffset = offset;
+    }
+
+    @Override
+    public Iterator<IAST> iterator() {
+      return new KSubsetsIterator();
     }
   }
 
@@ -1395,95 +1458,6 @@ public final class Combinatoric {
    *
    *
    * <pre>
-   * <code>Permute(list, Cycles({permutationCycles}))
-   * </code>
-   * </pre>
-   *
-   * <p>
-   * permutes the <code>list</code> from the cycles in <code>permutationCycles</code>.
-   *
-   * <pre>
-   * <code>Permute(list, permutation-list)
-   * </code>
-   * </pre>
-   *
-   * <p>
-   * permutes the <code>list</code> from the permutations defined in <code>permutation-list
-   * </code>.
-   *
-   * <p>
-   * See
-   *
-   * <ul>
-   * <li><a href="https://en.wikipedia.org/wiki/Permutation">Wikipedia - Permutation</a>
-   * </ul>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * <code>&gt;&gt; Permute(CharacterRange(&quot;v&quot;, &quot;z&quot;), Cycles({{1, 5, 3}}))
-   * {x,w,z,y,v}
-   * </code>
-   * </pre>
-   *
-   * <h3>Related terms</h3>
-   *
-   * <p>
-   * <a href="Cycles.md">Cycles</a>, <a href="FindPermutation.md">FindPermutation</a>,
-   * <a href="PermutationCycles.md">PermutationCycles</a>,
-   * <a href="PermutationCyclesQ.md">PermutationCyclesQ</a>,
-   * <a href="PermutationList.md">PermutationList</a>,
-   * <a href="PermutationListQ.md">PermutationListQ</a>,
-   * <a href="PermutationReplace.md">PermutationReplace</a>,
-   * <a href="Permutations.md">Permutations</a>
-   */
-  private static final class Permute extends AbstractFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      IExpr arg2 = ast.arg2();
-      if (arg1.isAST()) {
-        if (arg2.isList()) {
-          return permuteCycles((IAST) arg1, (IAST) arg2, ast);
-        } else if (arg2.isAST(S.Cycles, 2)) {
-          IAST cycles;
-          if (arg2.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
-            cycles = (IAST) arg2;
-          } else {
-            cycles = checkCycles((IAST) arg2, false, engine);
-          }
-          if (cycles.isPresent()) {
-            IAST mainList = (IAST) cycles.arg1();
-            return CombinatoricUtil.permute((IAST) arg1, mainList, ast);
-          }
-        }
-      }
-      // Nonatomic expression expected at position `1` in `2`.
-      return Errors.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
-    }
-
-    private static IExpr permuteCycles(IAST list, IAST permutationList, final IAST ast) {
-      IExpr temp = CombinatoricUtil.permutationCycles(permutationList);
-      if (temp.isAST(S.Cycles, 2)) {
-        IAST permutationMainList = (IAST) temp.first();
-        return CombinatoricUtil.permute(list, permutationMainList, ast);
-      }
-      return F.NIL;
-    }
-
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-  }
-
-
-  /**
-   *
-   *
-   * <pre>
    * <code>PermutationCycles(permutation-list)
    * </code>
    * </pre>
@@ -1642,6 +1616,26 @@ public final class Combinatoric {
    */
   private static final class PermutationList extends AbstractFunctionEvaluator {
 
+    /**
+     * Determine the permutations list length from the Cycles first argument.
+     *
+     * @param cyclesMainList first arg of Cycles
+     * @return
+     */
+    private static int determineLengthFromCycles(IAST cyclesMainList) {
+      int permutationsListLength = -1;
+      for (int j = 1; j < cyclesMainList.size(); j++) {
+        IAST list = (IAST) cyclesMainList.get(j);
+        for (int i = 1; i < list.size(); i++) {
+          int position = list.get(i).toIntDefault();
+          if (position > permutationsListLength) {
+            permutationsListLength = position;
+          }
+        }
+      }
+      return permutationsListLength;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
@@ -1679,26 +1673,6 @@ public final class Combinatoric {
         }
       }
       return F.NIL;
-    }
-
-    /**
-     * Determine the permutations list length from the Cycles first argument.
-     *
-     * @param cyclesMainList first arg of Cycles
-     * @return
-     */
-    private static int determineLengthFromCycles(IAST cyclesMainList) {
-      int permutationsListLength = -1;
-      for (int j = 1; j < cyclesMainList.size(); j++) {
-        IAST list = (IAST) cyclesMainList.get(j);
-        for (int i = 1; i < list.size(); i++) {
-          int position = list.get(i).toIntDefault();
-          if (position > permutationsListLength) {
-            permutationsListLength = position;
-          }
-        }
-      }
-      return permutationsListLength;
     }
 
     @Override
@@ -1802,6 +1776,25 @@ public final class Combinatoric {
    */
   private static final class PermutationReplace extends AbstractFunctionEvaluator {
 
+    private static IInteger replaceSingleElement(IAST mainList, IInteger intArg1) {
+      IInteger result = intArg1;
+      for (int j = 1; j < mainList.size(); j++) {
+        IAST list = (IAST) mainList.get(j);
+        for (int i = 1; i < list.size(); i++) {
+          IInteger arg = (IInteger) list.get(i);
+          if (arg.equals(result)) {
+            if (i < list.size() - 1) {
+              result = (IInteger) list.get(i + 1);
+            } else {
+              result = (IInteger) list.arg1();
+            }
+            return result;
+          }
+        }
+      }
+      return result;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
@@ -1834,25 +1827,6 @@ public final class Combinatoric {
         }
       }
       return F.NIL;
-    }
-
-    private static IInteger replaceSingleElement(IAST mainList, IInteger intArg1) {
-      IInteger result = intArg1;
-      for (int j = 1; j < mainList.size(); j++) {
-        IAST list = (IAST) mainList.get(j);
-        for (int i = 1; i < list.size(); i++) {
-          IInteger arg = (IInteger) list.get(i);
-          if (arg.equals(result)) {
-            if (i < list.size() - 1) {
-              result = (IInteger) list.get(i + 1);
-            } else {
-              result = (IInteger) list.arg1();
-            }
-            return result;
-          }
-        }
-      }
-      return result;
     }
 
     @Override
@@ -1930,17 +1904,17 @@ public final class Combinatoric {
      */
     private static final class KPermutationsList implements Iterable<IAST> {
 
-      private final IAST fList;
-      private final IAST fResultList;
-      private final int fOffset;
-      private final int fParts;
-
       private class KPermutationsIterator implements Iterator<IAST> {
 
         private final Iterator<int[]> fIterable;
 
         private KPermutationsIterator() {
           this.fIterable = new KPermutationsIterable(fList, fParts, fOffset).iterator();
+        }
+
+        @Override
+        public boolean hasNext() {
+          return fIterable.hasNext();
         }
 
         /**
@@ -1961,12 +1935,12 @@ public final class Combinatoric {
           }
           return temp;
         }
-
-        @Override
-        public boolean hasNext() {
-          return fIterable.hasNext();
-        }
       }
+      private final IAST fList;
+      private final IAST fResultList;
+      private final int fOffset;
+
+      private final int fParts;
 
       /**
        * Create an iterator which gives all possible permutations of <code>list</code> which
@@ -1991,6 +1965,38 @@ public final class Combinatoric {
       public Iterator<IAST> iterator() {
         return new KPermutationsIterator();
       }
+    }
+
+    /**
+     * All permutations with exactly <code>parts</code>.
+     *
+     * @param list
+     * @param parts
+     * @param result
+     * @return
+     */
+    private IAST createPermutationsWithNParts(final IAST list, int parts,
+        final IASTAppendable result) {
+      if (parts == 0) {
+        result.append(F.List());
+        return result;
+      }
+      if (list.size() <= 2) {
+        if (list.isAST1()) {
+          result.append(list);
+        }
+        return result;
+      }
+
+      final KPermutationsList perm = new KPermutationsList(list, parts, F.ast(list.head()), 1);
+      Set<IAST> set = new HashSet<IAST>();
+      for (IAST temp : perm) {
+        if (!set.contains(temp)) {
+          result.append(temp);
+          set.add(temp);
+        }
+      }
+      return result;
     }
 
     /** {@inheritDoc} */
@@ -2044,37 +2050,94 @@ public final class Combinatoric {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_2;
     }
+  }
 
-    /**
-     * All permutations with exactly <code>parts</code>.
-     *
-     * @param list
-     * @param parts
-     * @param result
-     * @return
-     */
-    private IAST createPermutationsWithNParts(final IAST list, int parts,
-        final IASTAppendable result) {
-      if (parts == 0) {
-        result.append(F.List());
-        return result;
-      }
-      if (list.size() <= 2) {
-        if (list.isAST1()) {
-          result.append(list);
-        }
-        return result;
-      }
 
-      final KPermutationsList perm = new KPermutationsList(list, parts, F.ast(list.head()), 1);
-      Set<IAST> set = new HashSet<IAST>();
-      for (IAST temp : perm) {
-        if (!set.contains(temp)) {
-          result.append(temp);
-          set.add(temp);
+  /**
+   *
+   *
+   * <pre>
+   * <code>Permute(list, Cycles({permutationCycles}))
+   * </code>
+   * </pre>
+   *
+   * <p>
+   * permutes the <code>list</code> from the cycles in <code>permutationCycles</code>.
+   *
+   * <pre>
+   * <code>Permute(list, permutation-list)
+   * </code>
+   * </pre>
+   *
+   * <p>
+   * permutes the <code>list</code> from the permutations defined in <code>permutation-list
+   * </code>.
+   *
+   * <p>
+   * See
+   *
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Permutation">Wikipedia - Permutation</a>
+   * </ul>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * <code>&gt;&gt; Permute(CharacterRange(&quot;v&quot;, &quot;z&quot;), Cycles({{1, 5, 3}}))
+   * {x,w,z,y,v}
+   * </code>
+   * </pre>
+   *
+   * <h3>Related terms</h3>
+   *
+   * <p>
+   * <a href="Cycles.md">Cycles</a>, <a href="FindPermutation.md">FindPermutation</a>,
+   * <a href="PermutationCycles.md">PermutationCycles</a>,
+   * <a href="PermutationCyclesQ.md">PermutationCyclesQ</a>,
+   * <a href="PermutationList.md">PermutationList</a>,
+   * <a href="PermutationListQ.md">PermutationListQ</a>,
+   * <a href="PermutationReplace.md">PermutationReplace</a>,
+   * <a href="Permutations.md">Permutations</a>
+   */
+  private static final class Permute extends AbstractFunctionEvaluator {
+
+    private static IExpr permuteCycles(IAST list, IAST permutationList, final IAST ast) {
+      IExpr temp = CombinatoricUtil.permutationCycles(permutationList);
+      if (temp.isAST(S.Cycles, 2)) {
+        IAST permutationMainList = (IAST) temp.first();
+        return CombinatoricUtil.permute(list, permutationMainList, ast);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      if (arg1.isAST()) {
+        if (arg2.isList()) {
+          return permuteCycles((IAST) arg1, (IAST) arg2, ast);
+        } else if (arg2.isAST(S.Cycles, 2)) {
+          IAST cycles;
+          if (arg2.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+            cycles = (IAST) arg2;
+          } else {
+            cycles = checkCycles((IAST) arg2, false, engine);
+          }
+          if (cycles.isPresent()) {
+            IAST mainList = (IAST) cycles.arg1();
+            return CombinatoricUtil.permute((IAST) arg1, mainList, ast);
+          }
         }
       }
-      return result;
+      // Nonatomic expression expected at position `1` in `2`.
+      return Errors.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
+    }
+
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
     }
   }
 
@@ -2482,67 +2545,6 @@ public final class Combinatoric {
    */
   private static final class Subsets extends AbstractFunctionEvaluator {
 
-    /**
-     * Iterate over the lists of all k-combinations from a given list
-     *
-     * <p>
-     * See <a href="http://en.wikipedia.org/wiki/Combination">Combination</a>
-     */
-    public static final class KSubsetsList implements Iterable<IAST> {
-
-      private final IAST fList;
-      private final IAST fResultList;
-      private final int fOffset;
-
-      private final int fK;
-
-      private class KSubsetsIterator implements Iterator<IAST> {
-
-        private final Iterator<int[]> fIterable;
-
-        private KSubsetsIterator() {
-          this.fIterable = new KSubsetsIterable(fList.size() - fOffset, fK).iterator();
-        }
-
-        /**
-         * Get the index array for the next partition.
-         *
-         * @return <code>null</code> if no further index array could be generated
-         */
-        @Override
-        public IAST next() {
-          int j[] = fIterable.next();
-          if (j == null) {
-            return null;
-          }
-
-          IASTAppendable temp = fResultList.copyAppendable();
-          return temp.appendArgs(0, fK, i -> {
-            if (j.length > i && fList.size() > (j[i] + fOffset)) {
-              return fList.get(j[i] + fOffset);
-            }
-            return F.NIL;
-          });
-        }
-
-        @Override
-        public boolean hasNext() {
-          return fIterable.hasNext();
-        }
-      }
-
-      private KSubsetsList(final IAST list, final int k, IAST resultList, final int offset) {
-        fList = list;
-        fK = k;
-        fResultList = resultList;
-        fOffset = offset;
-      }
-
-      @Override
-      public Iterator<IAST> iterator() {
-        return new KSubsetsIterator();
-      }
-    }
 
     /** {@inheritDoc} */
     @Override
@@ -2574,7 +2576,7 @@ public final class Combinatoric {
           if (k > f.argSize()) {
             return F.CEmptyList;
           }
-          final KSubsetsList iter = createKSubsets(f, k, F.ast(f.head()), 1);
+          final KSubsetsList iter = subsets(f, k, F.ast(f.head()), 1);
           for (IAST part : iter) {
             if (part == null) {
               break;
@@ -2680,10 +2682,7 @@ public final class Combinatoric {
       return ARGS_1_3;
     }
 
-    public static KSubsetsList createKSubsets(final IAST list, final int k, IAST resultList,
-        final int offset) {
-      return new KSubsetsList(list, k, resultList, offset);
-    }
+
   }
 
 
@@ -2734,37 +2733,6 @@ public final class Combinatoric {
    */
   private static final class Tuples extends AbstractFunctionEvaluator {
 
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (ast.isAST1() && arg1.isList()) {
-
-        IAST list = (IAST) arg1;
-        if (list.exists(x -> !x.isAST())) {
-          return F.NIL;
-        }
-        IASTAppendable result = F.ListAlloc(16);
-        IAST temp = F.List();
-        tuplesOfListsRecursive(list, 1, result, temp, ast, engine);
-        return result;
-
-      } else if (ast.isAST2() && arg1.isAST()) {
-        int k = ast.arg2().toIntDefault();
-        if (k >= 0) {
-          IASTAppendable result = F.ListAlloc(16);
-          IAST temp = F.ast(arg1.head());
-          tuples((IAST) arg1, k, result, temp, ast, engine);
-          return result;
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
-    }
-
     /**
      * Generate all n-tuples form a list.
      *
@@ -2801,6 +2769,37 @@ public final class Combinatoric {
           engine.decRecursionCounter();
         }
       }
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (ast.isAST1() && arg1.isList()) {
+
+        IAST list = (IAST) arg1;
+        if (list.exists(x -> !x.isAST())) {
+          return F.NIL;
+        }
+        IASTAppendable result = F.ListAlloc(16);
+        IAST temp = F.List();
+        tuplesOfListsRecursive(list, 1, result, temp, ast, engine);
+        return result;
+
+      } else if (ast.isAST2() && arg1.isAST()) {
+        int k = ast.arg2().toIntDefault();
+        if (k >= 0) {
+          IASTAppendable result = F.ListAlloc(16);
+          IAST temp = F.ast(arg1.head());
+          tuples((IAST) arg1, k, result, temp, ast, engine);
+          return result;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
 
     /**
@@ -2936,6 +2935,15 @@ public final class Combinatoric {
     return F.NIL;
   }
 
+  public static KSubsetsList subsets(final IAST list, final int k, IAST resultList,
+      final int offset) {
+    return new KSubsetsList(list, k, resultList, offset);
+  }
+
+  public static void initialize() {
+    Initializer.init();
+  }
+
   public static IExpr permutationReplace(IAST list1, IAST mainList) {
     IASTMutable result = list1.copy();
 
@@ -2951,10 +2959,6 @@ public final class Combinatoric {
       }
     }
     return changed ? result : list1;
-  }
-
-  public static void initialize() {
-    Initializer.init();
   }
 
   private Combinatoric() {}

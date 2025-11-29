@@ -3223,23 +3223,6 @@ public final class LinearAlgebra {
       return Convert.checkNonEmptySquareMatrix(S.Inverse, arg1);
     }
 
-    public static FieldMatrix<IExpr> inverseMatrix(FieldMatrix<IExpr> matrix,
-        Predicate<IExpr> zeroChecker) {
-      // @since version 1.9
-      // final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix,
-      // zeroChecker);
-      final FieldLUDecomposition<IExpr> lu =
-          new FieldLUDecomposition<IExpr>(matrix, zeroChecker, false);
-      FieldDecompositionSolver<IExpr> solver = lu.getSolver();
-      if (!solver.isNonSingular()) {
-        // Matrix `1` is singular.
-        Errors.printMessage(S.Inverse, "sing", F.list(Convert.matrix2List(matrix, false)),
-            EvalEngine.get());
-        return null;
-      }
-      return solver.getInverse();
-    }
-
     @Override
     public FieldMatrix<IExpr> matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
       return inverseMatrix(matrix, zeroChecker);
@@ -4180,7 +4163,7 @@ public final class LinearAlgebra {
             return Errors.printMessage(ast.topHead(), "matsq", F.list(arg1, F.C1), engine);
           }
           if (p < 0) {
-            resultMatrix = Inverse.inverseMatrix(matrix,
+            resultMatrix = inverseMatrix(matrix,
                 x -> x.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE));
             matrix = resultMatrix;
             p *= (-1);
@@ -4254,16 +4237,12 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      FieldMatrix<IExpr> matrix;
       try {
         IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isMatrix() != null) {
-          matrix = Convert.list2Matrix(arg1);
-          if (matrix != null) {
-            Predicate<IExpr> zeroChecker = AbstractMatrix1Expr.optionZeroTest(ast, 2, engine);
-            FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix, zeroChecker);
-            return F.ZZ(fmw.getMatrixRank());
-          }
+          IAST normal = (IAST) arg1.normal(false);
+          Predicate<IExpr> zeroChecker = AbstractMatrix1Expr.optionZeroTest(ast, 2, engine);
+          return matrixRank(normal, zeroChecker);
         }
 
       } catch (final ClassCastException | IndexOutOfBoundsException e) {
@@ -4542,46 +4521,71 @@ public final class LinearAlgebra {
         }
         return F.NIL;
       }
-      int[] matrixDim = arg1.isMatrix();
-      if (matrixDim != null) {
-        if (matrixDim[1] == 0) {
+      final int[] dims = arg1.isMatrix(false);
+      if (dims != null) {
+        if (dims[1] == 0) {
           // The first Norm argument should be a scalar, vector or matrix.
           return Errors.printMessage(ast.topHead(), "nvm", F.CEmptyList, engine);
         }
+        IExpr matrixNorm = F.C2; // 2 is the dafult "Spectral norm"
+        if (ast.isAST2()) {
+          IExpr arg2 = ast.arg2();
+          if (arg2.isString("Frobenius")) {
+            matrixNorm = arg2;
+          } else if (arg2.isOne()) {
+            matrixNorm = F.C1;
+          } else if (arg2.toIntDefault() == 2) {
+            // default value
+          } else if (arg2.isInfinity()) {
+            matrixNorm = F.CInfinity;
+          } else {
+            // The second argument of Norm, `1`, should be a symbol, Infinity, or a number greater
+            // equal 1 for p-norms, or \"Frobenius\" for matrix norms.
+            return Errors.printMessage(S.Norm, "ptype", F.List(arg2));
+          }
+        }
         RealMatrix matrix;
         try {
-          int[] dims = arg1.isMatrix(false);
-          if (dims != null) {
-            matrix = arg1.toRealMatrix();
-            if (matrix != null) {
-              if (ast.isAST2() && ast.arg2().isString("Frobenius")) {
+          matrix = arg1.toRealMatrix();
+          if (matrix != null) {
+            if (dims[0] < dims[1]) {
+              int d = dims[0];
+              dims[0] = dims[1];
+              dims[1] = d;
+              matrix = matrix.transpose();
+            }
+            if (engine.isNumericMode() || arg1.isNumericArgument(true)) {
+              if (matrixNorm.isString("Frobenius")) {
+                // Frobenius or Hilbert–Schmidt norm
+                return F.num(matrix.getFrobeniusNorm());
+              } else if (matrixNorm == F.C1) {
+                return F.num(matrix.getNorm1());
+              } else if (matrixNorm == F.CInfinity) {
+                return F.num(matrix.getNormInfty());
+              }
+              // spectral or operator norm
+              final org.hipparchus.linear.SingularValueDecomposition svd =
+                  new org.hipparchus.linear.SingularValueDecomposition(matrix);
+              RealMatrix sSVD = svd.getS();
+              IASTAppendable result = F.ast(S.Max, dims[1]);
+              for (int i = 0; i < dims[1]; i++) {
+                result.append(sSVD.getEntry(i, i));
+              }
+              return result;
+            } else {
+              if (matrixNorm.isString("Frobenius")) {
                 return F.Norm(F.Flatten(arg1));
               }
-              if (matrixDim[0] < matrixDim[1]) {
-                int d = matrixDim[0];
-                matrixDim[0] = matrixDim[1];
-                matrixDim[1] = d;
-                matrix = matrix.transpose();
-              }
-              if (engine.isNumericMode() || arg1.isNumericArgument(true)) {
-                final org.hipparchus.linear.SingularValueDecomposition svd =
-                    new org.hipparchus.linear.SingularValueDecomposition(matrix);
-                RealMatrix sSVD = svd.getS();
-                IASTAppendable result = F.ast(S.Max, matrixDim[1]);
-                for (int i = 0; i < matrixDim[1]; i++) {
-                  result.append(sSVD.getEntry(i, i));
-                }
-                return result;
-              }
             }
-            if (ast.isAST1()) {
-              IExpr singularValueList = engine.evaluate(F.SingularValueList(arg1));
-              if (singularValueList.isList() && singularValueList.argSize() > 0) {
-                return singularValueList.first();
-              }
-            }
-            return F.NIL;
           }
+          if (ast.isAST1()) {
+            IExpr singularValueList = engine.evaluate(F.SingularValueList(arg1));
+            if (singularValueList.isList() && singularValueList.argSize() > 0) {
+              return singularValueList.first();
+            }
+          }
+          return F.NIL;
+
         } catch (final IndexOutOfBoundsException e) {
           LOGGER.debug("Norm.evaluate() failed", e);
         }
@@ -4761,9 +4765,7 @@ public final class LinearAlgebra {
         if (dims != null) {
           matrix = Convert.list2Matrix(ast.arg1());
           if (matrix != null) {
-            FieldReducedRowEchelonForm fmw =
-                new FieldReducedRowEchelonForm(matrix, AbstractMatrix1Expr.POSSIBLE_ZEROQ_TEST);
-            FieldMatrix<IExpr> nullspace = fmw.getNullSpace(F.CN1);
+            FieldMatrix<IExpr> nullspace = nullSpace(matrix);
             if (nullspace == null) {
               return F.CEmptyList;
             }
@@ -6483,7 +6485,7 @@ public final class LinearAlgebra {
   public static IExpr characteristicPolynomial(int n, IAST matrix, IExpr variable) {
     // see: https://en.wikipedia.org/wiki/Faddeev%E2%80%93LeVerrier_algorithm
 
-    GenMatrix<BigComplex> genMatrix = Convert.list2GenMatrixComplex(matrix);
+    GenMatrix<BigComplex> genMatrix = JASConvert.list2GenMatrixComplex(matrix);
     if (genMatrix != null //
         && genMatrix.ring.rows == genMatrix.ring.cols //
         && genMatrix.ring.rows > 1) {
@@ -6492,7 +6494,6 @@ public final class LinearAlgebra {
 
       GenPolynomial<BigComplex> charPolynomial = pf.charPolynomial(genMatrix);
       JASConvert<BigComplex> jas = new JASConvert<BigComplex>(variable.makeList(), BigComplex.I);
-
       IExpr bigcomplexPoly2Expr = jas.bigcomplexPoly2Expr(charPolynomial);
       return bigcomplexPoly2Expr;
     }
@@ -6714,6 +6715,45 @@ public final class LinearAlgebra {
     Initializer.init();
   }
 
+  public static FieldMatrix<IExpr> inverseMatrix(FieldMatrix<IExpr> matrix) {
+    return inverseMatrix(matrix, AbstractMatrix1Expr.POSSIBLE_ZEROQ_TEST);
+  }
+
+  public static FieldMatrix<IExpr> inverseMatrix(FieldMatrix<IExpr> matrix,
+      Predicate<IExpr> zeroChecker) {
+    // @since version 1.9
+    // final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix,
+    // zeroChecker);
+    final FieldLUDecomposition<IExpr> lu =
+        new FieldLUDecomposition<IExpr>(matrix, zeroChecker, false);
+    FieldDecompositionSolver<IExpr> solver = lu.getSolver();
+    if (!solver.isNonSingular()) {
+      // Matrix `1` is singular.
+      Errors.printMessage(S.Inverse, "sing", F.list(Convert.matrix2List(matrix, false)),
+          EvalEngine.get());
+      return null;
+    }
+    return solver.getInverse();
+  }
+
+  public static IInteger matrixRank(IAST matrix) {
+    return matrixRank(matrix, AbstractMatrix1Expr.POSSIBLE_ZEROQ_TEST);
+  }
+
+  public static IInteger matrixRank(IAST matrix, Predicate<IExpr> zeroChecker) {
+    FieldMatrix<IExpr> m = Convert.list2Matrix(matrix);
+    return matrixRank(m, zeroChecker);
+  }
+
+  public static IInteger matrixRank(FieldMatrix<IExpr> matrix) {
+    return matrixRank(matrix, AbstractMatrix1Expr.POSSIBLE_ZEROQ_TEST);
+  }
+
+  public static IInteger matrixRank(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
+    FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix, zeroChecker);
+    return F.ZZ(fmw.getMatrixRank());
+  }
+
   private static IExpr linearSolve(LinearSolveFunctionExpr<?> linearSolveFunction,
       IExpr vectorOrMatrix, final IAST ast, EvalEngine engine) {
     int vectorSize = vectorOrMatrix.isVector();
@@ -6810,6 +6850,19 @@ public final class LinearAlgebra {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Return the null space of the given <code>matrix</code>.
+   * 
+   * @param matrix
+   * @return <code>null</code> if the null space is trivial (only the zero vector)
+   */
+  public static FieldMatrix<IExpr> nullSpace(FieldMatrix<IExpr> matrix) {
+    FieldReducedRowEchelonForm fmw =
+        new FieldReducedRowEchelonForm(matrix, AbstractMatrix1Expr.POSSIBLE_ZEROQ_TEST);
+    FieldMatrix<IExpr> nullspace = fmw.getNullSpace(F.CN1);
+    return nullspace;
   }
 
   /**

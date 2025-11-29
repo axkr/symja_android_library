@@ -1546,6 +1546,15 @@ public class StatisticsFunctions {
           if (centralMoment.isPossibleZero(true, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
             return S.Indeterminate;
           }
+          // TODO
+          // if (engine.isNumericMode() || list.isNumericArgument(true)) {
+          // double[] doubleVector = list.toDoubleVector();
+          // if (doubleVector != null) {
+          // DescriptiveStatistics descriptiveStatistics =
+          // new org.hipparchus.stat.descriptive.DescriptiveStatistics(doubleVector);
+          // return F.num(descriptiveStatistics.getKurtosis());
+          // }
+          // }
           return F.Divide(F.CentralMoment(list, 4), F.Power(centralMoment, F.C2));
         }
 

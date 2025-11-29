@@ -195,6 +195,10 @@ public class StructureFunctions {
       IExpr level = F.C0;
       if (lastIndex == 3) {
         level = evaledAST.get(3);
+      } else {
+        if (arg2.isAST()) {
+          return ((IAST) arg2).setAtCopy(0, arg1);
+        }
       }
       return evalApply(arg1, arg2, level, lastIndex, includeHeads, engine);
     }

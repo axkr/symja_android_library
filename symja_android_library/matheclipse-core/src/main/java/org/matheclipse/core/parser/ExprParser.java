@@ -132,7 +132,7 @@ public class ExprParser extends Scanner {
     this.fEngine = engine;
   }
 
-  private IExpr convert(IASTMutable ast) {
+  private IExpr convert(IAST ast) {
     int headID = ast.headID();
     if (headID >= ID.Blank && headID <= ID.Sqrt) {
       // ID.Blank is lowest and ID.Sqrt is highest integer ID in followinh switch statement
@@ -717,7 +717,7 @@ public class ExprParser extends Scanner {
   }
 
   /** Get a function f[...][...] */
-  IASTMutable getFunction(final IExpr head) throws SyntaxError {
+  IAST getFunction(final IExpr head) throws SyntaxError {
 
     getNextToken();
 
@@ -786,7 +786,7 @@ public class ExprParser extends Scanner {
     return defaultSize;
   }
 
-  private static IASTMutable reduceAST(IASTMutable function) {
+  private static IAST reduceAST(IASTMutable function) {
     int size = function.size();
     switch (size) {
       case 1:
@@ -802,7 +802,7 @@ public class ExprParser extends Scanner {
   }
 
   /** Get a function f[...][...] */
-  IASTMutable getFunctionArguments(final IExpr head) throws SyntaxError {
+  IAST getFunctionArguments(final IExpr head) throws SyntaxError {
 
     fRecursionDepth++;
 
@@ -1163,15 +1163,15 @@ public class ExprParser extends Scanner {
               throwSyntaxError("'(' expected after symbol or pattern instead of '['.");
             }
           }
-          IASTMutable ast = getFunctionArguments(head);
+          IAST ast = getFunctionArguments(head);
           return convert(ast);
         } else if (fToken == TT_PRECEDENCE_OPEN) {
-          IASTMutable ast = getFunction(head);
+          IAST ast = getFunction(head);
           return convert(ast);
         }
       } else {
         if (fToken == TT_ARGUMENTS_OPEN) {
-          IASTMutable ast = getFunctionArguments(head);
+          IAST ast = getFunctionArguments(head);
           return convert(ast);
         }
       }

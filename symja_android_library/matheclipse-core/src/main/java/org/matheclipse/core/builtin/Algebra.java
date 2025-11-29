@@ -640,14 +640,14 @@ public class Algebra {
           return result;
         }
         if (head != null) {
-          IASTMutable simplifyAST = F.unaryAST1(head, null);
+          IAST simplifyTemplate = F.unaryAST1(head, null);
           rest.forEach((arg, i) -> {
-            simplifyAST.set(1, arg);
-            rest.set(i, engine.evaluate(simplifyAST));
+            IExpr temp = simplifyTemplate.setAtCopy(1, arg);
+            rest.set(i, engine.evaluate(temp));
           });
           rest.append(defaultdict.getMap(), (key, value) -> {
-            simplifyAST.set(1, value);
-            IExpr coefficient = engine.evaluate(simplifyAST);
+            IExpr temp = simplifyTemplate.setAtCopy(1, value);
+            IExpr coefficient = engine.evaluate(temp);
             if (coefficient.isPlus()) {
               return F.Times(key).appendOneIdentity((IAST) coefficient);
             } else {

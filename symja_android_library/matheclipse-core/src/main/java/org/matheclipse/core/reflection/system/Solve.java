@@ -1413,7 +1413,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         if (equationsAndInequations.isFreeAST(x -> chocoSolver(x))) {
           // choco-solver doesn't handle Power() expressions very well at the moment!
           try {
-            LOGGER.debug("Choco solver");
+            // LOGGER.debug("Choco solver");
             IAST resultList = ChocoConvert.integerSolve(equationsAndInequations, equationVariables,
                 userDefinedVariables, maximumNumberOfResults, hybridVars, hybridTuples, domain,
                 engine);

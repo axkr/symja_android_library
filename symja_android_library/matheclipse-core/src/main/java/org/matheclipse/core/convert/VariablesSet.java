@@ -310,7 +310,7 @@ public class VariablesSet {
     fVariablesSet = new HashSet<IExpr>();
   }
 
-  /** Determine the variable symbols from a Symja expression. */
+  /** Determine the variable symbols from an expression. */
   public VariablesSet(final IExpr expression) {
     super();
     fVariablesSet = new HashSet<IExpr>();
