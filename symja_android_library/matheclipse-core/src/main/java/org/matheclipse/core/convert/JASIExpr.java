@@ -415,7 +415,7 @@ public class JASIExpr {
     IExpr option = optionArgs.getOption(S.MonomialOrder);
     if (option.isSymbol()) {
       // String orderStr = option.toString();
-      termOrder = monomialOrder((ISymbol) option, termOrder);
+      termOrder = monomialOrder(option, termOrder);
     }
     return termOrder;
   }
@@ -427,7 +427,7 @@ public class JASIExpr {
    * @param defaultTermOrder
    * @return
    */
-  public static TermOrder monomialOrder(ISymbol orderOption, TermOrder defaultTermOrder) {
+  public static TermOrder monomialOrder(IExpr orderOption, TermOrder defaultTermOrder) {
     TermOrder termOrder = defaultTermOrder;
     if (orderOption == S.Lexicographic) {
       termOrder = TermOrderByName.Lexicographic;

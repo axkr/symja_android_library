@@ -3,6 +3,7 @@ package org.matheclipse.core.convert;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,56 +34,236 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
-import org.matheclipse.core.interfaces.IBigNumber;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
-import edu.jas.arith.BigComplex;
-import edu.jas.arith.BigRational;
-import edu.jas.vector.GenMatrix;
-import edu.jas.vector.GenMatrixRing;
 
 /** Conversions between an IExpr object and misc other object class types */
 public class Convert {
 
-  /**
-   * Convert rules of the form <code>x-&gt;y</code> or <code>{a-&gt;b, c-&gt;d}</code> into <code>
-   * java.util.Map</code>.
-   *
-   * @param astRules rules of the form <code>x-&gt;y</code> or <code>{a-&gt;b, c-&gt;d}</code>
-   * @return <code>F.NIL</code> if no substitution of a (sub-)expression was possible.
-   */
-  public static Map<IExpr, IExpr> rules2Map(IAST astRules) {
-    final Map<IExpr, IExpr> map = new HashMap<IExpr, IExpr>();
-    IAST rule;
-    if (astRules.isListOfLists()) {
-      // {{a->b,...},{...}....}
-      // what to do in this case?
-    } else if (astRules.isList()) {
-      // {a->b, c->d, ...}
-      if (astRules.size() > 1) {
-        // assuming multiple rules in a list
-        for (final IExpr expr : astRules) {
-          if (expr.isRuleAST()) {
-            rule = (IAST) expr;
-            map.put(rule.arg1(), rule.arg2());
-          }
-        }
-      }
-    } else if (astRules.isRuleAST()) {
-      // a->b
-      rule = astRules;
-      map.put(rule.arg1(), rule.arg2());
+  public static IASTAppendable assoc2List(final IAssociation vector) {
+    if (vector == null) {
+      return F.NIL;
     }
-    return map;
+    final int rowSize = vector.isAssociationVector();
+    if (rowSize < 0) {
+      return F.NIL;
+    }
+    return F.mapRange(1, rowSize + 1, i -> vector.get(i));
   }
 
+
+  public static FieldMatrix<IExpr> augmentedFieldMatrix(final FieldMatrix<IExpr> listMatrix,
+      final FieldVector<IExpr> listVector) throws ClassCastException, IndexOutOfBoundsException {
+    if (listMatrix == null || listVector == null) {
+      return null;
+    }
+    int matrixRows = listMatrix.getRowDimension();
+    int matrixColumns = listMatrix.getColumnDimension();
+    int vectorDimension = listVector.getDimension();
+    if (matrixRows != vectorDimension) {
+      return null;
+    }
+
+    if (matrixColumns == 0) {
+      // special case 0-Matrix
+      IExpr[][] array = new IExpr[0][0];
+      return new Array2DRowFieldMatrix<IExpr>(array, false);
+    }
+
+    final IExpr[][] elements = new IExpr[matrixRows][matrixColumns + 1];
+    for (int i = 0; i < matrixRows; i++) {
+      for (int j = 0; j < matrixColumns; j++) {
+        elements[i][j] = listMatrix.getEntry(i, j);
+      }
+      elements[i][matrixColumns] = listVector.getEntry(i);
+    }
+    return new Array2DRowFieldMatrix<IExpr>(elements, false);
+  }
+
+  public static int[] checkNonEmptyRectangularMatrix(ISymbol symbol, IExpr arg1) {
+    int[] dim = arg1.isMatrix();
+    if (dim == null || dim[1] == 0) {
+      if (arg1.isListOrAssociation() || arg1.isSparseArray()) {
+        if (arg1.isAST()) {
+          ((IAST) arg1).setEvalFlags(IAST.NO_FLAG);
+        }
+        // Argument `1` at position `2` is not a non-empty rectangular matrix.
+        Errors.printMessage(symbol, "matrix", F.list(arg1, F.C1));
+      }
+      return null;
+    }
+    return dim;
+  }
+
+  public static int[] checkNonEmptySquareMatrix(ISymbol symbol, IExpr arg1) {
+    int[] dim = arg1.isMatrix();
+    if (dim == null || dim[0] != dim[1] || dim[1] == 0) {
+      if (arg1.isListOrAssociation() || arg1.isSparseArray()) {
+        if (arg1.isAST()) {
+          ((IAST) arg1).setEvalFlags(IAST.NO_FLAG);
+        }
+        // Argument `1` at position `2` is not a non-empty square matrix.
+        Errors.printMessage(symbol, "matsq", F.list(arg1, F.C1));
+        return null;
+      }
+    }
+    return dim;
+  }
+
+  /**
+   * Converts a complex FieldMatrix to the list expression representation.
+   *
+   * @param matrix
+   * @return <code>F.NIL</code> if no conversion was possible
+   */
+  public static IASTAppendable complexMatrix2List(final FieldMatrix<Complex> matrix) {
+    return complexMatrix2List(matrix, true);
+  }
+
+  public static IASTAppendable complexMatrix2List(final FieldMatrix<Complex> matrix,
+      boolean matrixFormat) {
+    if (matrix == null) {
+      return F.NIL;
+    }
+    final int rowSize = matrix.getRowDimension();
+    final int colSize = matrix.getColumnDimension();
+
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> {
+      Complex entry = matrix.getEntry(i, j);
+      if (entry.isReal()) {
+        return F.num(entry.getRealPart());
+      }
+      return F.complexNum(entry);
+    }));
+    if (matrixFormat) {
+      // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
+      // isMatrix() must be used!
+      out.isMatrix(true);
+    }
+    return out;
+  }
+
+  /**
+   * Convert an array of {@link Complex} values to an {@link IAST} list.
+   * 
+   * @return
+   */
+  public static IASTAppendable complexValues2List(final Complex[] vector) {
+    return complexValues2List(vector, true);
+  }
+
+  /**
+   * Convert an array of {@link Complex} values to an {@link IAST} list.
+   * 
+   * @param vectorFormat set flag for isVector() method
+   * @return
+   */
+  public static IASTAppendable complexValues2List(final Complex[] vector, boolean vectorFormat) {
+    if (vector == null) {
+      return F.NIL;
+    }
+    final int rowSize = vector.length;
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> {
+      Complex cmp = vector[i];
+      if (cmp.isReal()) {
+        return F.num(cmp.getReal());
+      }
+      return F.complexNum(cmp);
+    });
+    if (vectorFormat) {
+      out.addEvalFlags(IAST.IS_VECTOR);
+    }
+    return out;
+  }
+
+  /**
+   * Convert a {@link FieldVector} to an {@link IAST} list.
+   *
+   * @return <code>F.NIL</code> if no conversion was possible
+   */
+  public static IASTAppendable complexVector2List(final FieldVector<Complex> vector) {
+    return complexVector2List(vector, true);
+  }
+
+  /**
+   * Convert a {@link FieldVector} to an {@link IAST} list.
+   *
+   * @param vectorFormat set flag for isVector() method
+   * @return <code>F.NIL</code> if no conversion was possible
+   */
+  public static IASTAppendable complexVector2List(final FieldVector<Complex> vector,
+      boolean vectorFormat) {
+    if (vector == null) {
+      return F.NIL;
+    }
+    final int rowSize = vector.getDimension();
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> {
+      Complex cmp = vector.getEntry(i);
+      if (cmp.isReal()) {
+        return F.num(cmp.getReal());
+      }
+      return F.complexNum(cmp);
+    });
+    if (vectorFormat) {
+      out.addEvalFlags(IAST.IS_VECTOR);
+    }
+    return out;
+  }
+
+  public static IAST fromCSV(Reader reader) throws IOException {
+    EvalEngine engine = EvalEngine.get();
+    AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
+    final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
+
+    CSVFormat csvFormat = Builder.create()//
+        .setDelimiter(',') //
+        .setQuote('"') //
+        .build();
+    // CSVFormat.RFC4180.withDelimiter(',');
+    Iterable<CSVRecord> records = csvFormat.parse(reader);
+    IASTAppendable rowList = F.ListAlloc(256);
+    for (CSVRecord record : records) {
+      IASTAppendable columnList = F.ListAlloc(record.size());
+      for (String string : record) {
+        final ASTNode node = parser.parse(string);
+        IExpr temp = ast2Expr.convert(node);
+        columnList.append(temp);
+      }
+      rowList.append(columnList);
+    }
+    return rowList;
+  }
+
+
+  public static IAST fromCSV(String fileName) throws IOException {
+    FileReader reader = new FileReader(fileName);
+    return fromCSV(reader);
+  }
+
+  /**
+   * Append a String composed of the elements of the {@code vector} joined together with the
+   * specified {@code delimiter}.
+   *
+   * @param vector the vector which should be appended
+   * @param builder join the elements as strings
+   * @param delimiter the delimiter that separates each element
+   */
+  public static void joinToString(double[] vector, StringBuilder builder, CharSequence delimiter) {
+    final int size = vector.length;
+    for (int i = 0; i < size; i++) {
+      builder.append(Double.toString(vector[i]));
+      if (i < size - 1) {
+        builder.append(delimiter);
+      }
+    }
+  }
 
   private static IExpr[][] list2Array(final IExpr expr, boolean ifNumericReturnNull)
       throws ClassCastException, IndexOutOfBoundsException {
@@ -147,29 +328,7 @@ public class Convert {
     return null;
   }
 
-  /**
-   * Returns a <code>FieldMatrix<IExpr></code> if possible.
-   *
-   * @param expr
-   * @return <code>null</code> if the conversion isn't possible.
-   * @throws ClassCastException
-   * @throws IndexOutOfBoundsException
-   */
-  public static FieldMatrix<IExpr> list2Matrix(final IExpr expr)
-      throws ClassCastException, IndexOutOfBoundsException {
-    return list2Matrix(expr, false);
-  }
-
-  /**
-   * Returns a <code>FieldMatrix<IExpr></code> if possible.
-   *
-   * @param expr
-   * @param ifNumericReturnNull if all elements are numeric stop conversion by returning null
-   * @return <code>null</code> if the conversion isn't possible.
-   * @throws ClassCastException
-   * @throws IndexOutOfBoundsException
-   */
-  public static FieldMatrix<IExpr> list2Matrix(final IExpr expr, boolean ifNumericReturnNull)
+  private static BigInteger[][] list2BigIntegerArray(final IExpr expr)
       throws ClassCastException, IndexOutOfBoundsException {
     if (expr == null) {
       return null;
@@ -178,96 +337,71 @@ public class Convert {
     if (dim == null || dim[0] == 0 || dim[1] == 0) {
       return null;
     }
-    if (expr.isSparseArray()) {
-      return ((ISparseArray) expr).toFieldMatrix(false);
-    }
     if (expr.isList()) {
-      IExpr[][] elements = list2Array(expr, ifNumericReturnNull);
-      if (elements != null) {
-        return new Array2DRowFieldMatrix<IExpr>(elements, false);
+      IAST list = (IAST) expr;
+      IAST currInRow = (IAST) list.arg1();
+      if (currInRow.isAST0()) {
+        // special case 0-Matrix
+        return new BigInteger[0][0];
       }
-    }
-    return null;
-  }
-
-  public static FieldMatrix<IExpr> list2Matrix(final double[][] expr)
-      throws ClassCastException, IndexOutOfBoundsException {
-    if (expr == null || expr.length == 0) {
-      return null;
-    }
-    int[] dim = new int[] {expr.length, expr[0].length};
-    if (dim[0] == 0 || dim[1] == 0) {
-      return null;
-    }
-    final IExpr[][] elements = new IExpr[dim[0]][dim[1]];
-    for (int i = 0; i < dim[0]; i++) {
-      for (int j = 0; j < dim[1]; j++) {
-        elements[i][j] = F.num(expr[i][j]);
-      }
-    }
-   
-    return new Array2DRowFieldMatrix<IExpr>(elements);
-  }
-
-  public static List<FieldVector<IExpr>> list2ListOfVectors(final IExpr expr)
-      throws ClassCastException, IndexOutOfBoundsException {
-    return list2ListOfVectors(expr, false);
-  }
-
-  public static List<FieldVector<IExpr>> list2ListOfVectors(final IExpr expr,
-      boolean ifNumericReturnNull) throws ClassCastException, IndexOutOfBoundsException {
-    if (expr == null) {
-      return null;
-    }
-    int[] dim = expr.isMatrix(false);
-    if (dim == null || dim[0] == 0 || dim[1] == 0) {
-      return null;
-    }
-    // if (expr.isSparseArray()) {
-    // ISparseArray array = (ISparseArray) expr;
-    // return array.toFieldMatrix(false);
-    // }
-    if (expr.isList()) {
-      IExpr[][] elements = list2Array(expr, ifNumericReturnNull);
-      if (elements != null) {
-        int length = elements.length;
-        List<FieldVector<IExpr>> listOfVectors = new ArrayList<>(length);
-        for (int i = 0; i < length; i++) {
-          listOfVectors.add(new ArrayFieldVector<>(elements[i], false));
+      final int rowSize = expr.argSize();
+      final int colSize = currInRow.argSize();
+      final BigInteger[][] elements = new BigInteger[rowSize][colSize];
+      for (int i = 1; i < rowSize + 1; i++) {
+        currInRow = (IAST) list.get(i);
+        if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
+          return null;
         }
-        return listOfVectors;
+        for (int j = 1; j < colSize + 1; j++) {
+          IExpr elem = currInRow.get(j);
+          if (elem.isInteger()) {
+            elements[i - 1][j - 1] = ((IInteger) elem).toBigNumerator();
+          } else {
+            return null;
+          }
+        }
+      }
+      return elements;
+    }
+    return null;
+  }
+
+  public static BigInteger[][] list2BigIntegerMatrix(final IExpr expr)
+      throws ClassCastException, IndexOutOfBoundsException {
+    if (expr == null) {
+      return null;
+    }
+    int[] dim = expr.isMatrix(false);
+    if (dim == null || dim[0] == 0 || dim[1] == 0) {
+      return null;
+    }
+    if (expr.isList()) {
+      BigInteger[][] elements = list2BigIntegerArray(expr);
+      if (elements != null) {
+        return elements;
       }
     }
     return null;
   }
 
+  public static Complex[] list2Complex(final IAST vector) throws ClassCastException {
+    if (vector == null) {
+      return null;
+    }
+    final Object header = vector.head();
+    if (header != S.List) {
+      return null;
+    }
 
-  /**
-   * Converts a FieldMatrix to the list expression representation.
-   *
-   * @param listOfVectors
-   * @return <code>F.NIL</code> if no conversion was possible
-   */
-  public static IASTAppendable listOfVectors2ListOfLists(
-      final List<FieldVector<IExpr>> listOfVectors) {
-    if (listOfVectors == null) {
-      return F.NIL;
+    final int size = vector.argSize();
+
+    final Complex[] elements = new Complex[size];
+    EvalEngine engine = EvalEngine.get();
+    for (int i = 0; i < size; i++) {
+      IExpr element = vector.get(i + 1);
+      elements[i] = engine.evalComplex(element);
     }
-    final int rowSize = listOfVectors.size();
-    if (rowSize <= 0) {
-      return F.NIL;
-    }
-    final IASTAppendable result = F.ListAlloc(rowSize);
-    for (int i = 0; i < rowSize; i++) {
-      FieldVector<IExpr> fieldVector = listOfVectors.get(i);
-      int colSize = fieldVector.getDimension();
-      IASTAppendable currOutRow = F.ListAlloc(colSize);
-      result.append(currOutRow);
-      for (int j = 0; j < colSize; j++) {
-        currOutRow.append(fieldVector.getEntry(j));
-      }
-    }
-    return result;
+    return elements;
   }
 
   /**
@@ -322,62 +456,84 @@ public class Convert {
     return null;
   }
 
-  /**
-   * Returns a <code>GenMatrix<BigComplex></code> if possible.
-   *
-   * @param expr must be a Symja matrix
-   * @return <code>null</code> if the conversion isn't possible.
-   */
-  public static GenMatrix<BigComplex> list2GenMatrixComplex(IExpr expr)
-      throws ClassCastException, IndexOutOfBoundsException {
+  public static FieldVector<Complex> list2ComplexVector(IExpr expr) throws ClassCastException {
     if (expr == null) {
       return null;
     }
-    int[] dim = expr.isMatrix();
-    if (dim == null || dim[0] == 0 || dim[1] == 0) {
+    int dim = expr.isVector();
+    if (dim <= 0) {
       return null;
     }
-    GenMatrixRing<BigComplex> ring = new GenMatrixRing<BigComplex>(BigComplex.I, dim[0], dim[1]);
     if (expr.isSparseArray()) {
-      // TODO optimize for sparse arrays
       // ISparseArray array = (ISparseArray) expr;
+      // return array.toFieldVector(false);
       expr = ((ISparseArray) expr).normal(false);
     }
     if (expr.isList()) {
       try {
-        IAST list = (IAST) expr;
-        IAST currInRow = (IAST) list.arg1();
-        if (currInRow.isAST0()) {
-          // special case 0-Matrix
-          BigComplex[][] array = new BigComplex[0][0];
-
-          return new GenMatrix<BigComplex>(ring, array);
-
-        }
         final int rowSize = expr.argSize();
-        final int colSize = currInRow.argSize();
-
-        final BigComplex[][] elements = new BigComplex[rowSize][colSize];
-        for (int i = 1; i < rowSize + 1; i++) {
-          currInRow = (IAST) list.get(i);
-          if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
-            return null;
-          }
-          for (int j = 1; j < colSize + 1; j++) {
-            IExpr element = currInRow.get(j);
-            if (element instanceof IBigNumber) {
-              elements[i - 1][j - 1] = ((IBigNumber) element).toBigComplex();
-            } else {
-              return null;
-            }
-          }
+        IAST list = (IAST) expr;
+        final Complex[] elements = new Complex[rowSize];
+        for (int i = 0; i < rowSize; i++) {
+          elements[i] = list.get(i + 1).evalfc();
         }
-        return new GenMatrix<BigComplex>(ring, elements);
+        return new ArrayFieldVector<Complex>(elements, false);
       } catch (ValidateException vex) {
         // pass
       }
     }
     return null;
+  }
+
+  public static List<FieldVector<IExpr>> list2ListOfVectors(final IExpr expr)
+      throws ClassCastException, IndexOutOfBoundsException {
+    return list2ListOfVectors(expr, false);
+  }
+
+  public static List<FieldVector<IExpr>> list2ListOfVectors(final IExpr expr,
+      boolean ifNumericReturnNull) throws ClassCastException, IndexOutOfBoundsException {
+    if (expr == null) {
+      return null;
+    }
+    int[] dim = expr.isMatrix(false);
+    if (dim == null || dim[0] == 0 || dim[1] == 0) {
+      return null;
+    }
+    // if (expr.isSparseArray()) {
+    // ISparseArray array = (ISparseArray) expr;
+    // return array.toFieldMatrix(false);
+    // }
+    if (expr.isList()) {
+      IExpr[][] elements = list2Array(expr, ifNumericReturnNull);
+      if (elements != null) {
+        int length = elements.length;
+        List<FieldVector<IExpr>> listOfVectors = new ArrayList<>(length);
+        for (int i = 0; i < length; i++) {
+          listOfVectors.add(new ArrayFieldVector<>(elements[i], false));
+        }
+        return listOfVectors;
+      }
+    }
+    return null;
+  }
+
+  public static FieldMatrix<IExpr> list2Matrix(final double[][] expr)
+      throws ClassCastException, IndexOutOfBoundsException {
+    if (expr == null || expr.length == 0) {
+      return null;
+    }
+    int[] dim = new int[] {expr.length, expr[0].length};
+    if (dim[0] == 0 || dim[1] == 0) {
+      return null;
+    }
+    final IExpr[][] elements = new IExpr[dim[0]][dim[1]];
+    for (int i = 0; i < dim[0]; i++) {
+      for (int j = 0; j < dim[1]; j++) {
+        elements[i][j] = F.num(expr[i][j]);
+      }
+    }
+
+    return new Array2DRowFieldMatrix<IExpr>(elements);
   }
 
   /**
@@ -424,119 +580,103 @@ public class Convert {
     return new Array2DRowFieldMatrix<IExpr>(elements, false);
   }
 
-  public static GenMatrix<IExpr> list2GenMatrix(final IExpr expr, boolean ifNumericReturnNull)
+  /**
+   * Returns a <code>FieldMatrix<IExpr></code> if possible.
+   *
+   * @param expr
+   * @return <code>null</code> if the conversion isn't possible.
+   * @throws ClassCastException
+   * @throws IndexOutOfBoundsException
+   */
+  public static FieldMatrix<IExpr> list2Matrix(final IExpr expr)
+      throws ClassCastException, IndexOutOfBoundsException {
+    return list2Matrix(expr, false);
+  }
+
+  /**
+   * Returns a <code>FieldMatrix<IExpr></code> if possible.
+   *
+   * @param expr
+   * @param ifNumericReturnNull if all elements are numeric stop conversion by returning null
+   * @return <code>null</code> if the conversion isn't possible.
+   * @throws ClassCastException
+   * @throws IndexOutOfBoundsException
+   */
+  public static FieldMatrix<IExpr> list2Matrix(final IExpr expr, boolean ifNumericReturnNull)
       throws ClassCastException, IndexOutOfBoundsException {
     if (expr == null) {
       return null;
     }
-    int[] dim = expr.isMatrix();
+    int[] dim = expr.isMatrix(false);
     if (dim == null || dim[0] == 0 || dim[1] == 0) {
       return null;
     }
-    // if (expr.isSparseArray()) {
-    // ISparseArray array = (ISparseArray) expr;
-    // return array.toFieldMatrix(false);
-    // }
+    if (expr.isSparseArray()) {
+      return ((ISparseArray) expr).toFieldMatrix(false);
+    }
+    if (expr.isList()) {
+      IExpr[][] elements = list2Array(expr, ifNumericReturnNull);
+      if (elements != null) {
+        return new Array2DRowFieldMatrix<IExpr>(elements, false);
+      }
+    }
+    return null;
+  }
+
+  private static IRational[][] list2RationalArray(final IExpr expr)
+      throws ClassCastException, IndexOutOfBoundsException {
+    if (expr == null) {
+      return null;
+    }
+    int[] dim = expr.isMatrix(false);
+    if (dim == null || dim[0] == 0 || dim[1] == 0) {
+      return null;
+    }
     if (expr.isList()) {
       IAST list = (IAST) expr;
       IAST currInRow = (IAST) list.arg1();
       if (currInRow.isAST0()) {
         // special case 0-Matrix
-        IExpr[][] array = new IExpr[0][0];
-        GenMatrixRing<IExpr> ring = new GenMatrixRing<IExpr>(ExprRingFactory.CONST, 0, 0);
-        return new GenMatrix<IExpr>(ring, array);
+        return new IRational[0][0];
       }
       final int rowSize = expr.argSize();
       final int colSize = currInRow.argSize();
-      if (ifNumericReturnNull) {
-        boolean hasInexactNumber = false;
-        boolean isNoNumericFunction = true;
-        for (int i = 1; i < rowSize + 1; i++) {
-          currInRow = (IAST) list.get(i);
-          if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
-            return null;
-          }
-          for (int j = 1; j < colSize + 1; j++) {
-            final IExpr arg = currInRow.get(j);
-            if (arg.isInexactNumber()) {
-              hasInexactNumber = true;
-            }
-            if (!arg.isNumericFunction()) {
-              isNoNumericFunction = false;
-              break;
-            }
-          }
-          if (!isNoNumericFunction) {
-            break;
-          }
-        }
-        if (hasInexactNumber && isNoNumericFunction) {
-          if (!EvalEngine.get().isArbitraryMode()) {
-            // if all elements are numeric stop conversion
-            return null;
-          }
-        }
-      }
-      final IExpr[][] elements = new IExpr[rowSize][colSize];
+      final IRational[][] elements = new IRational[rowSize][colSize];
       for (int i = 1; i < rowSize + 1; i++) {
         currInRow = (IAST) list.get(i);
         if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
           return null;
         }
         for (int j = 1; j < colSize + 1; j++) {
-          elements[i - 1][j - 1] = currInRow.get(j);
+          IExpr elem = currInRow.get(j);
+          if (elem.isRational()) {
+            elements[i - 1][j - 1] = ((IRational) elem);
+          } else {
+            return null;
+          }
         }
       }
-      GenMatrixRing<IExpr> ring = new GenMatrixRing<IExpr>(ExprRingFactory.CONST, rowSize, colSize);
-      return new GenMatrix<IExpr>(ring, elements);
+      return elements;
     }
     return null;
   }
 
-  public static FieldMatrix<IExpr> augmentedFieldMatrix(final FieldMatrix<IExpr> listMatrix,
-      final FieldVector<IExpr> listVector) throws ClassCastException, IndexOutOfBoundsException {
-    if (listMatrix == null || listVector == null) {
+  public static IRational[][] list2RationalMatrix(final IExpr expr)
+      throws ClassCastException, IndexOutOfBoundsException {
+    if (expr == null) {
       return null;
     }
-    int matrixRows = listMatrix.getRowDimension();
-    int matrixColumns = listMatrix.getColumnDimension();
-    int vectorDimension = listVector.getDimension();
-    if (matrixRows != vectorDimension) {
+    int[] dim = expr.isMatrix(false);
+    if (dim == null || dim[0] == 0 || dim[1] == 0) {
       return null;
     }
-
-    if (matrixColumns == 0) {
-      // special case 0-Matrix
-      IExpr[][] array = new IExpr[0][0];
-      return new Array2DRowFieldMatrix<IExpr>(array, false);
-    }
-
-    final IExpr[][] elements = new IExpr[matrixRows][matrixColumns + 1];
-    for (int i = 0; i < matrixRows; i++) {
-      for (int j = 0; j < matrixColumns; j++) {
-        elements[i][j] = listMatrix.getEntry(i, j);
-      }
-      elements[i][matrixColumns] = listVector.getEntry(i);
-    }
-    return new Array2DRowFieldMatrix<IExpr>(elements, false);
-  }
-
-  /**
-   * Append a String composed of the elements of the {@code vector} joined together with the
-   * specified {@code delimiter}.
-   *
-   * @param vector the vector which should be appended
-   * @param builder join the elements as strings
-   * @param delimiter the delimiter that separates each element
-   */
-  public static void joinToString(double[] vector, StringBuilder builder, CharSequence delimiter) {
-    final int size = vector.length;
-    for (int i = 0; i < size; i++) {
-      builder.append(Double.toString(vector[i]));
-      if (i < size - 1) {
-        builder.append(delimiter);
+    if (expr.isList()) {
+      IRational[][] elements = list2RationalArray(expr);
+      if (elements != null) {
+        return elements;
       }
     }
+    return null;
   }
 
   /**
@@ -603,6 +743,22 @@ public class Convert {
     return new ArrayRealVector(elements, false);
   }
 
+  public static FieldVector<IExpr> list2Vector(final double[] expr) throws ClassCastException {
+    if (expr == null) {
+      return null;
+    }
+    int dim = expr.length;
+    if (dim <= 0) {
+      return null;
+    }
+    final IExpr[] elements = new IExpr[dim];
+    for (int i = 0; i < dim; i++) {
+      elements[i] = F.num(expr[i]);
+    }
+    return new ArrayFieldVector<IExpr>(elements, false);
+
+  }
+
   /**
    * Returns a FieldVector if possible.
    *
@@ -634,97 +790,32 @@ public class Convert {
     return null;
   }
 
-  public static FieldVector<IExpr> list2Vector(final double[] expr) throws ClassCastException {
-    if (expr == null) {
-      return null;
-    }
-    int dim = expr.length;
-    if (dim <= 0) {
-      return null;
-    }
-    final IExpr[] elements = new IExpr[dim];
-    for (int i = 0; i < dim; i++) {
-      elements[i] = F.num(expr[i]);
-    }
-    return new ArrayFieldVector<IExpr>(elements, false);
-
-  }
-
-  public static FieldVector<Complex> list2ComplexVector(IExpr expr) throws ClassCastException {
-    if (expr == null) {
-      return null;
-    }
-    int dim = expr.isVector();
-    if (dim <= 0) {
-      return null;
-    }
-    if (expr.isSparseArray()) {
-      // ISparseArray array = (ISparseArray) expr;
-      // return array.toFieldVector(false);
-      expr = ((ISparseArray) expr).normal(false);
-    }
-    if (expr.isList()) {
-      try {
-        final int rowSize = expr.argSize();
-        IAST list = (IAST) expr;
-        final Complex[] elements = new Complex[rowSize];
-        for (int i = 0; i < rowSize; i++) {
-          elements[i] = list.get(i + 1).evalfc();
-        }
-        return new ArrayFieldVector<Complex>(elements, false);
-      } catch (ValidateException vex) {
-        // pass
-      }
-    }
-    return null;
-  }
-
-  public static Complex[] list2Complex(final IAST vector) throws ClassCastException {
-    if (vector == null) {
-      return null;
-    }
-    final Object header = vector.head();
-    if (header != S.List) {
-      return null;
-    }
-
-    final int size = vector.argSize();
-
-    final Complex[] elements = new Complex[size];
-    EvalEngine engine = EvalEngine.get();
-    for (int i = 0; i < size; i++) {
-      IExpr element = vector.get(i + 1);
-      elements[i] = engine.evalComplex(element);
-    }
-    return elements;
-  }
-
-  /**
-   * @param vector
-   * @return <code>F.NIL</code> if conversion is not possible
-   */
-  public static IAST toVector(Complex[] vector) {
-    if (vector == null) {
-      return F.NIL;
-    }
-    return F.mapRange(0, vector.length, i -> F.complexNum(vector[i]));
-  }
-
-  public static IAST toVector(double[] vector) {
-    if (vector == null) {
-      return F.NIL;
-    }
-    return F.mapRange(0, vector.length, i -> F.num(vector[i]));
-  }
-
   /**
    * Converts a FieldMatrix to the list expression representation.
    *
-   * @param matrix
+   * @param listOfVectors
    * @return <code>F.NIL</code> if no conversion was possible
    */
-  public static IASTAppendable matrix2List(final FieldMatrix<IExpr> matrix) {
-    return matrix2List(matrix, true);
+  public static IASTAppendable listOfVectors2ListOfLists(
+      final List<FieldVector<IExpr>> listOfVectors) {
+    if (listOfVectors == null) {
+      return F.NIL;
+    }
+    final int rowSize = listOfVectors.size();
+    if (rowSize <= 0) {
+      return F.NIL;
+    }
+    final IASTAppendable result = F.ListAlloc(rowSize);
+    for (int i = 0; i < rowSize; i++) {
+      FieldVector<IExpr> fieldVector = listOfVectors.get(i);
+      int colSize = fieldVector.getDimension();
+      IASTAppendable currOutRow = F.ListAlloc(colSize);
+      result.append(currOutRow);
+      for (int j = 0; j < colSize; j++) {
+        currOutRow.append(fieldVector.getEntry(j));
+      }
+    }
+    return result;
   }
 
   /**
@@ -737,7 +828,17 @@ public class Convert {
     if (matrix instanceof SparseArrayExpr.SparseExprMatrix) {
       return ((SparseArrayExpr.SparseExprMatrix) matrix).getSparseArray();
     }
-    return Convert.matrix2List(matrix);
+    return matrix2List(matrix);
+  }
+
+  /**
+   * Converts a FieldMatrix to the list expression representation.
+   *
+   * @param matrix
+   * @return <code>F.NIL</code> if no conversion was possible
+   */
+  public static IASTAppendable matrix2List(final FieldMatrix<IExpr> matrix) {
+    return matrix2List(matrix, true);
   }
 
   /**
@@ -777,81 +878,6 @@ public class Convert {
       }
     }
     return result;
-  }
-
-  public static IASTAppendable genmatrix2List(final GenMatrix<IExpr> matrix, boolean matrixFormat) {
-    if (matrix == null) {
-      return F.NIL;
-    }
-    final int rowSize = matrix.ring.rows;
-    final int colSize = matrix.ring.cols;
-
-    final IASTAppendable out =
-        F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> matrix.get(i, j)));
-    if (matrixFormat) {
-      // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
-      // isMatrix() must be used!
-      out.isMatrix(true);
-    }
-    return out;
-  }
-
-  public static IASTAppendable genmatrixComplex2List(final GenMatrix<BigComplex> matrix,
-      boolean matrixFormat) {
-    if (matrix == null) {
-      return F.NIL;
-    }
-    final int rowSize = matrix.ring.rows;
-    final int colSize = matrix.ring.cols;
-
-    final IASTAppendable out = F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> {
-      BigComplex bigComplex = matrix.get(i, j);
-      BigRational re = bigComplex.getRe();
-      if (bigComplex.getIm().isZERO()) {
-        return F.QQ(re.numerator(), re.denominator());
-      }
-      BigRational im = bigComplex.getIm();
-      return F.CC(F.QQ(re.numerator(), re.denominator()), F.QQ(im.numerator(), im.denominator()));
-    }));
-    if (matrixFormat) {
-      // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
-      // isMatrix() must be used!
-      out.isMatrix(true);
-    }
-    return out;
-  }
-
-  /**
-   * Converts a complex FieldMatrix to the list expression representation.
-   *
-   * @param matrix
-   * @return <code>F.NIL</code> if no conversion was possible
-   */
-  public static IASTAppendable complexMatrix2List(final FieldMatrix<Complex> matrix) {
-    return complexMatrix2List(matrix, true);
-  }
-
-  public static IASTAppendable complexMatrix2List(final FieldMatrix<Complex> matrix,
-      boolean matrixFormat) {
-    if (matrix == null) {
-      return F.NIL;
-    }
-    final int rowSize = matrix.getRowDimension();
-    final int colSize = matrix.getColumnDimension();
-
-    final IASTAppendable out = F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> {
-      Complex entry = matrix.getEntry(i, j);
-      if (entry.isReal()) {
-        return F.num(entry.getRealPart());
-      }
-      return F.complexNum(entry);
-    }));
-    if (matrixFormat) {
-      // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
-      // isMatrix() must be used!
-      out.isMatrix(true);
-    }
-    return out;
   }
 
   /**
@@ -951,110 +977,61 @@ public class Convert {
   }
 
   /**
-   * Convert a {@link FieldVector} to an {@link IAST} list.
+   * Convert rules of the form <code>x-&gt;y</code> or <code>{a-&gt;b, c-&gt;d}</code> into <code>
+   * java.util.Map</code>.
    *
-   * @return <code>F.NIL</code> if no conversion was possible
+   * @param astRules rules of the form <code>x-&gt;y</code> or <code>{a-&gt;b, c-&gt;d}</code>
+   * @return <code>F.NIL</code> if no substitution of a (sub-)expression was possible.
    */
-  public static IASTAppendable complexVector2List(final FieldVector<Complex> vector) {
-    return complexVector2List(vector, true);
-  }
-
-  /**
-   * Convert a {@link FieldVector} to an {@link IAST} list.
-   *
-   * @param vectorFormat set flag for isVector() method
-   * @return <code>F.NIL</code> if no conversion was possible
-   */
-  public static IASTAppendable complexVector2List(final FieldVector<Complex> vector,
-      boolean vectorFormat) {
-    if (vector == null) {
-      return F.NIL;
-    }
-    final int rowSize = vector.getDimension();
-    final IASTAppendable out = F.mapRange(0, rowSize, i -> {
-      Complex cmp = vector.getEntry(i);
-      if (cmp.isReal()) {
-        return F.num(cmp.getReal());
+  public static Map<IExpr, IExpr> rules2Map(IAST astRules) {
+    final Map<IExpr, IExpr> map = new HashMap<IExpr, IExpr>();
+    IAST rule;
+    if (astRules.isListOfLists()) {
+      // {{a->b,...},{...}....}
+      // what to do in this case?
+    } else if (astRules.isList()) {
+      // {a->b, c->d, ...}
+      if (astRules.size() > 1) {
+        // assuming multiple rules in a list
+        for (final IExpr expr : astRules) {
+          if (expr.isRuleAST()) {
+            rule = (IAST) expr;
+            map.put(rule.arg1(), rule.arg2());
+          }
+        }
       }
-      return F.complexNum(cmp);
-    });
-    if (vectorFormat) {
-      out.addEvalFlags(IAST.IS_VECTOR);
+    } else if (astRules.isRuleAST()) {
+      // a->b
+      rule = astRules;
+      map.put(rule.arg1(), rule.arg2());
     }
-    return out;
+    return map;
   }
 
   /**
-   * Convert an array of {@link Complex} values to an {@link IAST} list.
-   * 
-   * @return
-   */
-  public static IASTAppendable complexValues2List(final Complex[] vector) {
-    return complexValues2List(vector, true);
-  }
-
-  /**
-   * Convert an array of {@link Complex} values to an {@link IAST} list.
-   * 
-   * @param vectorFormat set flag for isVector() method
-   * @return
-   */
-  public static IASTAppendable complexValues2List(final Complex[] vector, boolean vectorFormat) {
-    if (vector == null) {
-      return F.NIL;
-    }
-    final int rowSize = vector.length;
-    final IASTAppendable out = F.mapRange(0, rowSize, i -> {
-      Complex cmp = vector[i];
-      if (cmp.isReal()) {
-        return F.num(cmp.getReal());
-      }
-      return F.complexNum(cmp);
-    });
-    if (vectorFormat) {
-      out.addEvalFlags(IAST.IS_VECTOR);
-    }
-    return out;
-  }
-
-  /**
-   * Convert a RealVector to a IAST list.
+   * Convert the <code>RGBColor(r,g,b)</code> to a <code>org.matheclipse.core.convert.RGBColor
+   * </code>
    *
-   * @param vector
-   * @return <code>F.NIL</code> if no conversion was possible
+   * @param rgbColorAST
+   * @return <code>null</code> if the conversion is not possible
    */
-  public static IASTAppendable vector2List(final RealVector vector) {
-    return vector2List(vector, true);
+  public static RGBColor toAWTColor(IExpr rgbColorAST) {
+    return toAWTColorDefault(rgbColorAST, null);
   }
 
-  /**
-   * Convert a RealVector to a IAST list.
-   *
-   * @param vector
-   * @param vectorFormat set flag for isVector() method
-   * @return <code>F.NIL</code> if no conversion was possible
-   */
-  public static IASTAppendable vector2List(final RealVector vector, boolean vectorFormat) {
-    if (vector == null) {
-      return F.NIL;
-    }
-    final int rowSize = vector.getDimension();
-    final IASTAppendable out = F.mapRange(0, rowSize, i -> F.num(vector.getEntry(i)));
-    if (vectorFormat) {
-      out.addEvalFlags(IAST.IS_VECTOR);
-    }
-    return out;
+  public static RGBColor toAWTColorDefault(IAST rgbColor) {
+    return toAWTColorDefault(rgbColor, RGBColor.BLACK);
   }
 
-  public static IASTAppendable assoc2List(final IAssociation vector) {
-    if (vector == null) {
-      return F.NIL;
+  public static RGBColor toAWTColorDefault(IExpr rgbColorAST, RGBColor defaultColor) {
+    if (rgbColorAST.isAST(S.RGBColor, 4, 5)) {
+      IAST rgbColor = (IAST) rgbColorAST;
+      float r = (float) rgbColor.arg1().evalf();
+      float g = (float) rgbColor.arg2().evalf();
+      float b = (float) rgbColor.arg3().evalf();
+      return new RGBColor(r, g, b);
     }
-    final int rowSize = vector.isAssociationVector();
-    if (rowSize < 0) {
-      return F.NIL;
-    }
-    return F.mapRange(1, rowSize + 1, i -> vector.get(i));
+    return defaultColor;
   }
 
   /**
@@ -1100,93 +1077,8 @@ public class Convert {
     return F.NIL;
   }
 
-  /**
-   * Convert a FieldVector to a IAST list.
-   *
-   * @param vector
-   * @return <code>F.NIL</code> if no conversion was possible
-   */
-  public static IAST vector2List(final FieldVector<IExpr> vector) {
-    if (vector == null) {
-      return F.NIL;
-    }
-    final int rowSize = vector.getDimension();
-    final IASTAppendable out = F.mapRange(0, rowSize, i -> vector.getEntry(i));
-    out.addEvalFlags(IAST.IS_VECTOR);
-    return out;
-  }
-
-  /**
-   * Converts a FieldVector to the sparse array or list expression representation.
-   *
-   * @param vector
-   * @return <code>F.NIL</code> if no conversion was possible
-   */
-  public static IExpr vector2Expr(final FieldVector<IExpr> vector) {
-    if (vector == null) {
-      return F.NIL;
-    }
-    if (vector instanceof SparseArrayExpr.SparseExprVector) {
-      return ((SparseArrayExpr.SparseExprVector) vector).getSparseArray();
-    }
-    return Convert.vector2List(vector);
-  }
-
-  private Convert() {}
-
-  /**
-   * Convert/copy the <code>expr</code> into a list of IStringX.
-   *
-   * @param expr the <code>expr</code> which has to be a IStringX or list of IStringX
-   * @return a list of String or <code>null</code> otherwise
-   */
-  public static List<String> toStringList(IExpr expr) {
-    if (expr.isList()) {
-      List<String> result = new ArrayList<String>(expr.argSize());
-      IAST listOfStrings = (IAST) expr;
-      for (int i = 1; i < listOfStrings.size(); i++) {
-        if (listOfStrings.get(i) instanceof IStringX) {
-          result.add(listOfStrings.get(i).toString());
-          continue;
-        }
-        return null;
-      }
-      return result;
-    } else {
-      List<String> result = new ArrayList<String>(1);
-      if (expr instanceof IStringX) {
-        result.add(expr.toString());
-        return result;
-      }
-    }
-    return null;
-  }
-
-  public static IInteger[][] toRationalArray(IExpr expr) {
-    if (expr.isList()) {
-      IAST listOfRationals = (IAST) expr;
-      IInteger[] numerator = new IInteger[listOfRationals.argSize()];
-      IInteger[] denominator = new IInteger[listOfRationals.argSize()];
-
-      boolean isFraction = false;
-      for (int i = 1; i < listOfRationals.size(); i++) {
-        if (listOfRationals.get(i) instanceof IInteger) {
-          numerator[i - 1] = (IInteger) listOfRationals.get(i);
-          denominator[i - 1] = F.C1;
-        } else if (listOfRationals.get(i) instanceof IFraction) {
-          IFraction fraction = (IFraction) listOfRationals.get(i);
-          numerator[i - 1] = fraction.numerator();
-          denominator[i - 1] = fraction.denominator();
-          isFraction = true;
-        } else {
-          return null;
-        }
-      }
-      return isFraction ? //
-          new IInteger[][] {numerator, denominator} : //
-          new IInteger[][] {numerator, null};
-    }
-    return null;
+  public static String toHex(RGBColor c) {
+    return "#" + Integer.toHexString(c.getRGB()).substring(2);
   }
 
   public static IInteger[] toIntegerArray(IExpr expr) {
@@ -1250,92 +1142,139 @@ public class Convert {
     return result;
   }
 
-  public static int[] checkNonEmptySquareMatrix(ISymbol symbol, IExpr arg1) {
-    int[] dim = arg1.isMatrix();
-    if (dim == null || dim[0] != dim[1] || dim[1] == 0) {
-      if (arg1.isListOrAssociation() || arg1.isSparseArray()) {
-        if (arg1.isAST()) {
-          ((IAST) arg1).setEvalFlags(IAST.NO_FLAG);
-        }
-        // Argument `1` at position `2` is not a non-empty square matrix.
-        Errors.printMessage(symbol, "matsq", F.list(arg1, F.C1));
-        return null;
-      }
-    }
-    return dim;
-  }
+  public static IInteger[][] toRationalArray(IExpr expr) {
+    if (expr.isList()) {
+      IAST listOfRationals = (IAST) expr;
+      IInteger[] numerator = new IInteger[listOfRationals.argSize()];
+      IInteger[] denominator = new IInteger[listOfRationals.argSize()];
 
-  public static int[] checkNonEmptyRectangularMatrix(ISymbol symbol, IExpr arg1) {
-    int[] dim = arg1.isMatrix();
-    if (dim == null || dim[1] == 0) {
-      if (arg1.isListOrAssociation() || arg1.isSparseArray()) {
-        if (arg1.isAST()) {
-          ((IAST) arg1).setEvalFlags(IAST.NO_FLAG);
+      boolean isFraction = false;
+      for (int i = 1; i < listOfRationals.size(); i++) {
+        if (listOfRationals.get(i) instanceof IInteger) {
+          numerator[i - 1] = (IInteger) listOfRationals.get(i);
+          denominator[i - 1] = F.C1;
+        } else if (listOfRationals.get(i) instanceof IFraction) {
+          IFraction fraction = (IFraction) listOfRationals.get(i);
+          numerator[i - 1] = fraction.numerator();
+          denominator[i - 1] = fraction.denominator();
+          isFraction = true;
+        } else {
+          return null;
         }
-        // Argument `1` at position `2` is not a non-empty rectangular matrix.
-        Errors.printMessage(symbol, "matrix", F.list(arg1, F.C1));
       }
-      return null;
+      return isFraction ? //
+          new IInteger[][] {numerator, denominator} : //
+          new IInteger[][] {numerator, null};
     }
-    return dim;
+    return null;
   }
 
   /**
-   * Convert the <code>RGBColor(r,g,b)</code> to a <code>org.matheclipse.core.convert.RGBColor
-   * </code>
+   * Convert/copy the <code>expr</code> into a list of IStringX.
    *
-   * @param rgbColorAST
-   * @return <code>null</code> if the conversion is not possible
+   * @param expr the <code>expr</code> which has to be a IStringX or list of IStringX
+   * @return a list of String or <code>null</code> otherwise
    */
-  public static RGBColor toAWTColor(IExpr rgbColorAST) {
-    return toAWTColorDefault(rgbColorAST, null);
-  }
-
-  public static RGBColor toAWTColorDefault(IExpr rgbColorAST, RGBColor defaultColor) {
-    if (rgbColorAST.isAST(S.RGBColor, 4, 5)) {
-      IAST rgbColor = (IAST) rgbColorAST;
-      float r = (float) rgbColor.arg1().evalf();
-      float g = (float) rgbColor.arg2().evalf();
-      float b = (float) rgbColor.arg3().evalf();
-      return new RGBColor(r, g, b);
-    }
-    return defaultColor;
-  }
-
-  public static RGBColor toAWTColorDefault(IAST rgbColor) {
-    return toAWTColorDefault(rgbColor, RGBColor.BLACK);
-  }
-
-  public static String toHex(RGBColor c) {
-    return "#" + Integer.toHexString(c.getRGB()).substring(2);
-  }
-
-  public static IAST fromCSV(String fileName) throws IOException {
-    FileReader reader = new FileReader(fileName);
-    return Convert.fromCSV(reader);
-  }
-
-  public static IAST fromCSV(Reader reader) throws IOException {
-    EvalEngine engine = EvalEngine.get();
-    AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
-    final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
-
-    CSVFormat csvFormat = Builder.create()//
-        .setDelimiter(',') //
-        .setQuote('"') //
-        .build();
-    // CSVFormat.RFC4180.withDelimiter(',');
-    Iterable<CSVRecord> records = csvFormat.parse(reader);
-    IASTAppendable rowList = F.ListAlloc(256);
-    for (CSVRecord record : records) {
-      IASTAppendable columnList = F.ListAlloc(record.size());
-      for (String string : record) {
-        final ASTNode node = parser.parse(string);
-        IExpr temp = ast2Expr.convert(node);
-        columnList.append(temp);
+  public static List<String> toStringList(IExpr expr) {
+    if (expr.isList()) {
+      List<String> result = new ArrayList<String>(expr.argSize());
+      IAST listOfStrings = (IAST) expr;
+      for (int i = 1; i < listOfStrings.size(); i++) {
+        if (listOfStrings.get(i) instanceof IStringX) {
+          result.add(listOfStrings.get(i).toString());
+          continue;
+        }
+        return null;
       }
-      rowList.append(columnList);
+      return result;
+    } else {
+      List<String> result = new ArrayList<String>(1);
+      if (expr instanceof IStringX) {
+        result.add(expr.toString());
+        return result;
+      }
     }
-    return rowList;
+    return null;
   }
+
+  /**
+   * @param vector
+   * @return <code>F.NIL</code> if conversion is not possible
+   */
+  public static IAST toVector(Complex[] vector) {
+    if (vector == null) {
+      return F.NIL;
+    }
+    return F.mapRange(0, vector.length, i -> F.complexNum(vector[i]));
+  }
+
+  public static IAST toVector(double[] vector) {
+    if (vector == null) {
+      return F.NIL;
+    }
+    return F.mapRange(0, vector.length, i -> F.num(vector[i]));
+  }
+
+  /**
+   * Converts a FieldVector to the sparse array or list expression representation.
+   *
+   * @param vector
+   * @return <code>F.NIL</code> if no conversion was possible
+   */
+  public static IExpr vector2Expr(final FieldVector<IExpr> vector) {
+    if (vector == null) {
+      return F.NIL;
+    }
+    if (vector instanceof SparseArrayExpr.SparseExprVector) {
+      return ((SparseArrayExpr.SparseExprVector) vector).getSparseArray();
+    }
+    return vector2List(vector);
+  }
+
+  /**
+   * Convert a FieldVector to a IAST list.
+   *
+   * @param vector
+   * @return <code>F.NIL</code> if no conversion was possible
+   */
+  public static IAST vector2List(final FieldVector<IExpr> vector) {
+    if (vector == null) {
+      return F.NIL;
+    }
+    final int rowSize = vector.getDimension();
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> vector.getEntry(i));
+    out.addEvalFlags(IAST.IS_VECTOR);
+    return out;
+  }
+
+  /**
+   * Convert a RealVector to a IAST list.
+   *
+   * @param vector
+   * @return <code>F.NIL</code> if no conversion was possible
+   */
+  public static IASTAppendable vector2List(final RealVector vector) {
+    return vector2List(vector, true);
+  }
+
+  /**
+   * Convert a RealVector to a IAST list.
+   *
+   * @param vector
+   * @param vectorFormat set flag for isVector() method
+   * @return <code>F.NIL</code> if no conversion was possible
+   */
+  public static IASTAppendable vector2List(final RealVector vector, boolean vectorFormat) {
+    if (vector == null) {
+      return F.NIL;
+    }
+    final int rowSize = vector.getDimension();
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> F.num(vector.getEntry(i)));
+    if (vectorFormat) {
+      out.addEvalFlags(IAST.IS_VECTOR);
+    }
+    return out;
+  }
+
+  private Convert() {}
 }

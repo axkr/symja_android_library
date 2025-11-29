@@ -6,12 +6,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import org.matheclipse.core.eval.Errors;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
+import org.matheclipse.core.eval.exception.ValidateException;
 // import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBigNumber;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -21,7 +24,9 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
+import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import edu.jas.arith.BigComplex;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModIntegerRing;
@@ -43,6 +48,8 @@ import edu.jas.structure.RingElem;
 import edu.jas.structure.RingFactory;
 import edu.jas.structure.UnaryFunctor;
 import edu.jas.ufd.Quotient;
+import edu.jas.vector.GenMatrix;
+import edu.jas.vector.GenMatrixRing;
 
 /**
  * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from and to Symja objects.
@@ -80,6 +87,115 @@ public class JASConvert<C extends RingElem<C>> {
     }
   }
 
+  public static IASTAppendable genmatrix2List(final GenMatrix<IExpr> matrix, boolean matrixFormat) {
+    if (matrix == null) {
+      return F.NIL;
+    }
+    final int rowSize = matrix.ring.rows;
+    final int colSize = matrix.ring.cols;
+
+    final IASTAppendable out =
+        F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> matrix.get(i, j)));
+    if (matrixFormat) {
+      // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
+      // isMatrix() must be used!
+      out.isMatrix(true);
+    }
+    return out;
+  }
+
+  public static IASTAppendable genmatrixComplex2List(final GenMatrix<BigComplex> matrix,
+      boolean matrixFormat) {
+    if (matrix == null) {
+      return F.NIL;
+    }
+    final int rowSize = matrix.ring.rows;
+    final int colSize = matrix.ring.cols;
+
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> {
+      BigComplex bigComplex = matrix.get(i, j);
+      BigRational re = bigComplex.getRe();
+      if (bigComplex.getIm().isZERO()) {
+        return F.QQ(re.numerator(), re.denominator());
+      }
+      BigRational im = bigComplex.getIm();
+      return F.CC(F.QQ(re.numerator(), re.denominator()), F.QQ(im.numerator(), im.denominator()));
+    }));
+    if (matrixFormat) {
+      // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
+      // isMatrix() must be used!
+      out.isMatrix(true);
+    }
+    return out;
+  }
+
+  public static IASTAppendable genmatrixRational2List(final GenMatrix<BigRational> matrix,
+      boolean matrixFormat) {
+    if (matrix == null) {
+      return F.NIL;
+    }
+    final int rowSize = matrix.ring.rows;
+    final int colSize = matrix.ring.cols;
+
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> {
+      BigRational re = matrix.get(i, j);
+      return F.QQ(re.numerator(), re.denominator());
+    }));
+    if (matrixFormat) {
+      // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
+      // isMatrix() must be used!
+      out.isMatrix(true);
+    }
+    return out;
+  }
+
+  /**
+   * Check if the polynomial has maximum degree 2 in 1 variable and return the coefficients.
+   *
+   * @param poly
+   * @return <code>false</code> if the polynomials degree > 2 and number of variables <> 1
+   */
+  private static boolean isQuadratic(GenPolynomial<BigRational> poly, BigRational[] result) {
+    if (poly.degree() <= 2 && poly.numberOfVariables() == 1) {
+      result[0] = BigRational.ZERO;
+      result[1] = BigRational.ZERO;
+      result[2] = BigRational.ZERO;
+      for (Monomial<BigRational> monomial : poly) {
+        BigRational coeff = monomial.coefficient();
+        ExpVector exp = monomial.exponent();
+        for (int i = 0; i < exp.length(); i++) {
+          result[(int) exp.getVal(i)] = coeff;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Check if the polynomial has maximum degree 2 in 1 variable and return the coefficients.
+   *
+   * @param poly
+   * @return <code>false</code> if the polynomials degree > 2 and number of variables <> 1
+   */
+  private static boolean isQuadratic(GenPolynomial<edu.jas.arith.BigInteger> poly,
+      edu.jas.arith.BigInteger[] result) {
+    if (poly.degree() <= 2 && poly.numberOfVariables() == 1) {
+      result[0] = edu.jas.arith.BigInteger.ZERO;
+      result[1] = edu.jas.arith.BigInteger.ZERO;
+      result[2] = edu.jas.arith.BigInteger.ZERO;
+      for (Monomial<edu.jas.arith.BigInteger> monomial : poly) {
+        edu.jas.arith.BigInteger coeff = monomial.coefficient();
+        ExpVector exp = monomial.exponent();
+        for (int i = 0; i < exp.length(); i++) {
+          result[(int) exp.getVal(i)] = coeff;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
   public static IComplex jas2Complex(edu.jas.poly.Complex<BigRational> c) {
     IFraction re = F.fraction(c.getRe().numerator(), c.getRe().denominator());
     IFraction im = F.fraction(c.getIm().numerator(), c.getIm().denominator());
@@ -98,6 +214,249 @@ public class JASConvert<C extends RingElem<C>> {
     double red = c.getReal();
     double imd = c.getImaginary();
     return F.chopNumber(F.complexNum(red, imd), epsilon);
+  }
+
+  public static GenMatrix<IExpr> list2GenMatrix(final IExpr expr, boolean ifNumericReturnNull)
+      throws ClassCastException, IndexOutOfBoundsException {
+    if (expr == null) {
+      return null;
+    }
+    int[] dim = expr.isMatrix();
+    if (dim == null || dim[0] == 0 || dim[1] == 0) {
+      return null;
+    }
+    // if (expr.isSparseArray()) {
+    // ISparseArray array = (ISparseArray) expr;
+    // return array.toFieldMatrix(false);
+    // }
+    if (expr.isList()) {
+      IAST list = (IAST) expr;
+      IAST currInRow = (IAST) list.arg1();
+      if (currInRow.isAST0()) {
+        // special case 0-Matrix
+        IExpr[][] array = new IExpr[0][0];
+        GenMatrixRing<IExpr> ring = new GenMatrixRing<IExpr>(ExprRingFactory.CONST, 0, 0);
+        return new GenMatrix<IExpr>(ring, array);
+      }
+      final int rowSize = expr.argSize();
+      final int colSize = currInRow.argSize();
+      if (ifNumericReturnNull) {
+        boolean hasInexactNumber = false;
+        boolean isNoNumericFunction = true;
+        for (int i = 1; i < rowSize + 1; i++) {
+          currInRow = (IAST) list.get(i);
+          if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
+            return null;
+          }
+          for (int j = 1; j < colSize + 1; j++) {
+            final IExpr arg = currInRow.get(j);
+            if (arg.isInexactNumber()) {
+              hasInexactNumber = true;
+            }
+            if (!arg.isNumericFunction()) {
+              isNoNumericFunction = false;
+              break;
+            }
+          }
+          if (!isNoNumericFunction) {
+            break;
+          }
+        }
+        if (hasInexactNumber && isNoNumericFunction) {
+          if (!EvalEngine.get().isArbitraryMode()) {
+            // if all elements are numeric stop conversion
+            return null;
+          }
+        }
+      }
+      final IExpr[][] elements = new IExpr[rowSize][colSize];
+      for (int i = 1; i < rowSize + 1; i++) {
+        currInRow = (IAST) list.get(i);
+        if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
+          return null;
+        }
+        for (int j = 1; j < colSize + 1; j++) {
+          elements[i - 1][j - 1] = currInRow.get(j);
+        }
+      }
+      GenMatrixRing<IExpr> ring = new GenMatrixRing<IExpr>(ExprRingFactory.CONST, rowSize, colSize);
+      return new GenMatrix<IExpr>(ring, elements);
+    }
+    return null;
+  }
+
+  /**
+   * Returns a <code>GenMatrix<BigComplex></code> if possible.
+   *
+   * @param expr must be a Symja matrix
+   * @return <code>null</code> if the conversion isn't possible.
+   */
+  public static GenMatrix<BigComplex> list2GenMatrixComplex(IExpr expr)
+      throws ClassCastException, IndexOutOfBoundsException {
+    if (expr == null) {
+      return null;
+    }
+    int[] dim = expr.isMatrix();
+    if (dim == null || dim[0] == 0 || dim[1] == 0) {
+      return null;
+    }
+    GenMatrixRing<BigComplex> ring = new GenMatrixRing<BigComplex>(BigComplex.I, dim[0], dim[1]);
+    if (expr.isSparseArray()) {
+      // TODO optimize for sparse arrays
+      // ISparseArray array = (ISparseArray) expr;
+      expr = ((ISparseArray) expr).normal(false);
+    }
+    if (expr.isList()) {
+      try {
+        IAST list = (IAST) expr;
+        IAST currInRow = (IAST) list.arg1();
+        if (currInRow.isAST0()) {
+          // special case 0-Matrix
+          BigComplex[][] array = new BigComplex[0][0];
+
+          return new GenMatrix<BigComplex>(ring, array);
+
+        }
+        final int rowSize = expr.argSize();
+        final int colSize = currInRow.argSize();
+
+        final BigComplex[][] elements = new BigComplex[rowSize][colSize];
+        for (int i = 1; i < rowSize + 1; i++) {
+          currInRow = (IAST) list.get(i);
+          if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
+            return null;
+          }
+          for (int j = 1; j < colSize + 1; j++) {
+            IExpr element = currInRow.get(j);
+            if (element instanceof IBigNumber) {
+              elements[i - 1][j - 1] = ((IBigNumber) element).toBigComplex();
+            } else {
+              return null;
+            }
+          }
+        }
+        return new GenMatrix<BigComplex>(ring, elements);
+      } catch (ValidateException vex) {
+        // pass
+      }
+    }
+    return null;
+  }
+
+  public static GenMatrix<BigRational> list2GenMatrixRational(IExpr expr)
+      throws ClassCastException, IndexOutOfBoundsException {
+    if (expr == null) {
+      return null;
+    }
+    int[] dim = expr.isMatrix();
+    if (dim == null || dim[0] == 0 || dim[1] == 0) {
+      return null;
+    }
+    GenMatrixRing<BigRational> ring =
+        new GenMatrixRing<BigRational>(BigRational.ONE, dim[0], dim[1]);
+    if (expr.isSparseArray()) {
+      // TODO optimize for sparse arrays
+      // ISparseArray array = (ISparseArray) expr;
+      expr = ((ISparseArray) expr).normal(false);
+    }
+    if (expr.isList()) {
+      try {
+        IAST list = (IAST) expr;
+        IAST currInRow = (IAST) list.arg1();
+        if (currInRow.isAST0()) {
+          // special case 0-Matrix
+          BigRational[][] array = new BigRational[0][0];
+
+          return new GenMatrix<BigRational>(ring, array);
+
+        }
+        final int rowSize = expr.argSize();
+        final int colSize = currInRow.argSize();
+
+        final BigRational[][] elements = new BigRational[rowSize][colSize];
+        for (int i = 1; i < rowSize + 1; i++) {
+          currInRow = (IAST) list.get(i);
+          if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
+            return null;
+          }
+          for (int j = 1; j < colSize + 1; j++) {
+            IExpr element = currInRow.get(j);
+            if (element instanceof IRational) {
+              IRational rat = ((IRational) element);
+              elements[i - 1][j - 1] = rat.toBigRational();
+            } else {
+              return null;
+            }
+          }
+        }
+        return new GenMatrix<BigRational>(ring, elements);
+      } catch (ValidateException vex) {
+        // pass
+      }
+    }
+    return null;
+  }
+
+  // public JASConvert(IAST varList, RingFactory<C> ringFactory) {
+  // this(variablesList, ringFactory, TermOrderByName.INVLEX);
+  // }
+
+  static edu.jas.arith.BigInteger[][] list2JASArray(final IExpr expr)
+      throws ClassCastException, IndexOutOfBoundsException {
+    if (expr == null) {
+      return null;
+    }
+    int[] dim = expr.isMatrix(false);
+    if (dim == null || dim[0] == 0 || dim[1] == 0) {
+      return null;
+    }
+    if (expr.isList()) {
+      IAST list = (IAST) expr;
+      IAST currInRow = (IAST) list.arg1();
+      if (currInRow.isAST0()) {
+        // special case 0-Matrix
+        edu.jas.arith.BigInteger[][] array = new edu.jas.arith.BigInteger[0][0];
+        return array;
+      }
+      final int rowSize = expr.argSize();
+      final int colSize = currInRow.argSize();
+      final edu.jas.arith.BigInteger[][] elements = new edu.jas.arith.BigInteger[rowSize][colSize];
+      for (int i = 1; i < rowSize + 1; i++) {
+        currInRow = (IAST) list.get(i);
+        if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
+          return null;
+        }
+        for (int j = 1; j < colSize + 1; j++) {
+          IExpr elem = currInRow.get(j);
+          if (elem.isInteger()) {
+            elements[i - 1][j - 1] =
+                new edu.jas.arith.BigInteger(((IInteger) elem).toBigNumerator());
+          } else {
+            return null;
+          }
+        }
+      }
+      return elements;
+    }
+    return null;
+  }
+
+  public static edu.jas.arith.BigInteger[][] list2JASBigIntegerMatrix(final IExpr expr)
+      throws ClassCastException, IndexOutOfBoundsException {
+    if (expr == null) {
+      return null;
+    }
+    int[] dim = expr.isMatrix(false);
+    if (dim == null || dim[0] == 0 || dim[1] == 0) {
+      return null;
+    }
+    if (expr.isList()) {
+      edu.jas.arith.BigInteger[][] elements = list2JASArray(expr);
+      if (elements != null) {
+        return elements;
+      }
+    }
+    return null;
   }
 
   public static ModIntegerRing option2ModIntegerRing(IReal option) {
@@ -178,12 +537,7 @@ public class JASConvert<C extends RingElem<C>> {
     this(varList, ringFactory, TermOrderByName.INVLEX);
   }
 
-  // public JASConvert(IAST varList, RingFactory<C> ringFactory) {
-  // this(variablesList, ringFactory, TermOrderByName.INVLEX);
-  // }
-
-  public JASConvert(IAST varList, RingFactory<C> ringFactory,
-      TermOrder termOrder) {
+  public JASConvert(IAST varList, RingFactory<C> ringFactory, TermOrder termOrder) {
     this.fRingFactory = ringFactory;
     this.fVariables = varList;
     String[] vars = new String[fVariables.argSize()];
@@ -201,6 +555,22 @@ public class JASConvert<C extends RingElem<C>> {
       throws ArithmeticException {
     GenPolynomial<BigRational> val = coeff.val;
     return rationalPoly2Expr(val, false); // , variable);
+  }
+
+  public IExpr bigcomplexPoly2Expr(final GenPolynomial<BigComplex> poly)
+      throws ArithmeticException, JASConversionException {
+    if (poly.length() == 0) {
+      return F.C0;
+    }
+    IASTAppendable result = F.PlusAlloc(poly.length());
+    for (Monomial<BigComplex> monomial : poly) {
+      BigComplex coeff = monomial.coefficient();
+      ExpVector exp = monomial.exponent();
+      IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
+      monomialBigComplexToExpr(coeff, exp, monomTimes);
+      result.append(monomTimes.oneIdentity1());
+    }
+    return result.oneIdentity0();
   }
 
   /**
@@ -266,22 +636,6 @@ public class JASConvert<C extends RingElem<C>> {
       ExpVector exp = monomial.exponent();
       IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
       monomialToExpr(coeff, exp, monomTimes);
-      result.append(monomTimes.oneIdentity1());
-    }
-    return result.oneIdentity0();
-  }
-
-  public IExpr bigcomplexPoly2Expr(final GenPolynomial<BigComplex> poly)
-      throws ArithmeticException, JASConversionException {
-    if (poly.length() == 0) {
-      return F.C0;
-    }
-    IASTAppendable result = F.PlusAlloc(poly.length());
-    for (Monomial<BigComplex> monomial : poly) {
-      BigComplex coeff = monomial.coefficient();
-      ExpVector exp = monomial.exponent();
-      IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
-      monomialBigComplexToExpr(coeff, exp, monomTimes);
       result.append(monomTimes.oneIdentity1());
     }
     return result.oneIdentity0();
@@ -601,6 +955,15 @@ public class JASConvert<C extends RingElem<C>> {
     return plus;
   }
 
+  public boolean monomialBigComplexToExpr(BigComplex coeff, ExpVector exp,
+      IASTAppendable monomTimes) {
+    BigRational re = coeff.getRe();
+    BigRational im = coeff.getIm();
+    monomTimes.append(F.CC(F.fraction(re.numerator(), re.denominator()).normalize(),
+        F.fraction(im.numerator(), im.denominator()).normalize()));
+    return expVectorToExpr(exp, monomTimes);
+  }
+
   public boolean monomialIntegerToExpr(Complex<edu.jas.arith.BigInteger> coeff, ExpVector exp,
       IASTAppendable monomTimes) {
     edu.jas.arith.BigInteger re = coeff.getRe();
@@ -614,15 +977,6 @@ public class JASConvert<C extends RingElem<C>> {
     if (!coeff.isONE()) {
       monomTimes.append(algebraicNumber2Expr(coeff));
     }
-    return expVectorToExpr(exp, monomTimes);
-  }
-
-  public boolean monomialBigComplexToExpr(BigComplex coeff, ExpVector exp,
-      IASTAppendable monomTimes) {
-    BigRational re = coeff.getRe();
-    BigRational im = coeff.getIm();
-    monomTimes.append(F.CC(F.fraction(re.numerator(), re.denominator()).normalize(),
-        F.fraction(im.numerator(), im.denominator()).normalize()));
     return expVectorToExpr(exp, monomTimes);
   }
 
@@ -787,52 +1141,5 @@ public class JASConvert<C extends RingElem<C>> {
       result.append(monomTimes.oneIdentity1());
     }
     return result;
-  }
-
-  /**
-   * Check if the polynomial has maximum degree 2 in 1 variable and return the coefficients.
-   *
-   * @param poly
-   * @return <code>false</code> if the polynomials degree > 2 and number of variables <> 1
-   */
-  private static boolean isQuadratic(GenPolynomial<BigRational> poly, BigRational[] result) {
-    if (poly.degree() <= 2 && poly.numberOfVariables() == 1) {
-      result[0] = BigRational.ZERO;
-      result[1] = BigRational.ZERO;
-      result[2] = BigRational.ZERO;
-      for (Monomial<BigRational> monomial : poly) {
-        BigRational coeff = monomial.coefficient();
-        ExpVector exp = monomial.exponent();
-        for (int i = 0; i < exp.length(); i++) {
-          result[(int) exp.getVal(i)] = coeff;
-        }
-      }
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * Check if the polynomial has maximum degree 2 in 1 variable and return the coefficients.
-   *
-   * @param poly
-   * @return <code>false</code> if the polynomials degree > 2 and number of variables <> 1
-   */
-  private static boolean isQuadratic(GenPolynomial<edu.jas.arith.BigInteger> poly,
-      edu.jas.arith.BigInteger[] result) {
-    if (poly.degree() <= 2 && poly.numberOfVariables() == 1) {
-      result[0] = edu.jas.arith.BigInteger.ZERO;
-      result[1] = edu.jas.arith.BigInteger.ZERO;
-      result[2] = edu.jas.arith.BigInteger.ZERO;
-      for (Monomial<edu.jas.arith.BigInteger> monomial : poly) {
-        edu.jas.arith.BigInteger coeff = monomial.coefficient();
-        ExpVector exp = monomial.exponent();
-        for (int i = 0; i < exp.length(); i++) {
-          result[(int) exp.getVal(i)] = coeff;
-        }
-      }
-      return true;
-    }
-    return false;
   }
 }
