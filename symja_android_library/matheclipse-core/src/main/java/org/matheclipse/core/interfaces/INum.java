@@ -3,6 +3,7 @@ package org.matheclipse.core.interfaces;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.UniformFlags;
 
 /**
  * Interface for a numeric double or {@link Apfloat} number.
@@ -18,31 +19,32 @@ public interface INum extends IReal, IInexactNumber {
   public static final double Khinchin = 2.6854520010653064453097148354817956938203822939945;
   double EULER_GAMMA = 0.57721566490153286060651209008240243104215933593992;
 
-  public double getRealPart();
+  static double bernoulliDouble(int n) {
+    return AbstractFractionSym.bernoulliNumber(n).doubleValue();
+  }
+
+  public INum add(INum val);
 
   @Override
   default IReal add(IReal val) {
     return add(F.num(val.reDoubleValue()));
   }
 
-  public INum add(INum val);
-
   @Override
   public IInteger ceilFraction();
 
   public INum divide(INum val);
 
-  public INum multiply(INum val);
+  public double getRealPart();
 
 
-  @Override
-  default IReal multiply(IReal val) {
-    return multiply(F.num(val.reDoubleValue()));
-  }
-
-  public INum pow(INum val);
-
-  public INum subtract(INum val);
+  /**
+   * Returns the value of this number as an <code>int</code> (by simply casting to type <code>int
+   * </code>).
+   *
+   * @return
+   */
+  public int intValue();
 
   /** {@inheritDoc} */
   @Override
@@ -54,13 +56,18 @@ public interface INum extends IReal, IInexactNumber {
   @Override
   public boolean isNumIntValue();
 
-  /**
-   * Returns the value of this number as an <code>int</code> (by simply casting to type <code>int
-   * </code>).
-   *
-   * @return
-   */
-  public int intValue();
+  public INum multiply(INum val);
+
+  @Override
+  default IReal multiply(IReal val) {
+    return multiply(F.num(val.reDoubleValue()));
+  }
+
+  public INum pow(INum val);
+
+  public long precision();
+
+  public INum subtract(INum val);
 
   /**
    * Converts this double value to an <code>int</code> value; unlike {@link #intValue} this method
@@ -74,9 +81,8 @@ public interface INum extends IReal, IInexactNumber {
   @Override
   public int toInt() throws ArithmeticException;
 
-  public long precision();
-
-  static double bernoulliDouble(int n) {
-    return AbstractFractionSym.bernoulliNumber(n).doubleValue();
+  @Override
+  default int uniformFlags() {
+    return UniformFlags.REAL | UniformFlags.NUMBER | UniformFlags.ATOM;
   }
 }

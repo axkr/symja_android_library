@@ -65,6 +65,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
@@ -4088,9 +4089,46 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isListOfStrings() {
+    return isListOf(S.String);
+  }
+
+  @Override
+  public boolean isListOf(IBuiltInSymbol patternHead) {
     if (isList() && size() > 1) {
+      if (patternHead instanceof BuiltInSymbol) {
+        int uniformMask = UniformFlags.uniformMask((BuiltInSymbol) patternHead);
+        if (uniformMask != UniformFlags.NONE) {
+          if (isUniform(uniformMask)) {
+            return true;
+          }
+          switch (patternHead.ordinal()) {
+            case ID.Integer:
+              // The pattern _Integer stands for a integer number
+              return forAll(x -> x.isInteger());
+            case ID.Rational:
+              // The pattern _Rational stands for a fractional number not for a integer number
+              return forAll(x -> x.isFraction());
+            case ID.Real:
+              // The pattern _Real stands for real floating-point numbers
+              return forAll(x -> x instanceof INum);
+            case ID.Complex:
+              // The pattern _Complex stands for complex exact and complex floating-point numbers
+              return forAll(x -> x instanceof IComplexNum || x instanceof IComplex);
+            case ID.Number:
+              // The pattern _Number stands for any number
+              return forAll(x -> x.isNumber());
+            case ID.Symbol:
+              // The pattern _Symbol stands for any number
+              return forAll(x -> x.isSymbol());
+            case ID.String:
+              // The pattern _String stands for any number
+              return forAll(x -> x.isString());
+          }
+          return false;// undefined?
+        }
+      }
       for (int i = 1; i < size(); i++) {
-        if (!get(i).isString()) {
+        if (get(i).head() != patternHead) {
           return false;
         }
       }
@@ -4141,10 +4179,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
               // this row has another dimension
               return null;
             }
-            for (int j = 1; j < rowList.size(); j++) {
-              if (rowList.get(j).isList()) {
-                // this row is not a list
-                return null;
+            if (!isUniform(UniformFlags.ATOM)) {
+              for (int j = 1; j < rowList.size(); j++) {
+                if (rowList.get(j).isList()) {
+                  // this row is not a list
+                  return null;
+                }
               }
             }
           }
@@ -5160,13 +5200,15 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (isList()) {
       final int length = argSize();
       if (length > 0) {
-        if (arg1().isList()) {
-          return -1;
-        }
-        for (int i = 2; i < size(); i++) {
-          if (get(i).isList()) {
-            // row is a list
+        if (!isUniform(UniformFlags.ATOM)) {
+          if (arg1().isList()) {
             return -1;
+          }
+          for (int i = 2; i < size(); i++) {
+            if (get(i).isList()) {
+              // row is a list
+              return -1;
+            }
           }
         }
       }

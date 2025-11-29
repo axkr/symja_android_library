@@ -52,6 +52,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.Pair;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.UniformFlags;
 import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
@@ -3686,6 +3687,20 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is a list with the given pattern-head symbol.
+   * <p>
+   * The special built-in symbols {@link S#Integer}, {@link S#Rational}, {@link S#Real},
+   * {@link S#String}, {@link S#Symbol} are used the same way as in pattern-matching
+   * <code>_Symbol</code>.
+   * 
+   * @param patternHead
+   * @return
+   */
+  default boolean isListOf(IBuiltInSymbol patternHead) {
+    return false;
+  }
+
+  /**
    * Test if this expression is a list (i.e. an AST with head (head {@link S#List}) or an
    * Association
    *
@@ -7189,6 +7204,16 @@ public interface IExpr
       return S.True;
     }
     return F.NIL;
+  }
+
+  /**
+   * Get the type flags for this expression to support {@link IAST#isUniform(int)}.
+   * 
+   * @return default value {@link UniformFlags#NONE} and specialized flags for sub-types
+   * @see IAST#isUniform(int)
+   */
+  public default int uniformFlags() {
+    return UniformFlags.NONE;
   }
 
   /**

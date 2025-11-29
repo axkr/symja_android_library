@@ -13,6 +13,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.PatternNested;
 import org.matheclipse.core.expression.RepeatedPattern;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.UniformFlags;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.parser.client.ParserConfig;
 
@@ -542,4 +543,8 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
 
   public String toUpperCase();
 
+  @Override
+  default int uniformFlags() {
+    return UniformFlags.STRING | UniformFlags.ATOM;
+  }
 }

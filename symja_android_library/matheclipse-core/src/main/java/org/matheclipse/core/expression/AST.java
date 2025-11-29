@@ -295,6 +295,7 @@ public class AST extends HMArrayList implements Externalizable {
     // ast.fProperties = null;
     ast.array = array.clone();
     ast.hashValue = 0;
+    ast.uniformTypeFlags = uniformTypeFlags;
     ast.firstIndex = firstIndex;
     ast.lastIndex = lastIndex;
     return ast;
@@ -316,6 +317,7 @@ public class AST extends HMArrayList implements Externalizable {
       ast.array = array.clone();
     }
     ast.hashValue = 0;
+    ast.uniformTypeFlags = uniformTypeFlags;
     ast.firstIndex = firstIndex;
     ast.lastIndex = lastIndex;
     return ast;
@@ -349,6 +351,7 @@ public class AST extends HMArrayList implements Externalizable {
     // ast.fProperties = null;
     ast.array = array.clone();
     ast.hashValue = 0;
+    ast.uniformTypeFlags = uniformTypeFlags;
     ast.firstIndex = firstIndex;
     ast.lastIndex = lastIndex;
     return ast;
@@ -449,6 +452,14 @@ public class AST extends HMArrayList implements Externalizable {
     for (int i = 0; i < size; i++) {
       this.array[i] = (IExpr) objectInput.readObject();
     }
+  }
+
+
+  @Override
+  public IASTMutable setAtCopy(int i, IExpr expr) {
+    IASTMutable ast = copy();
+    ast.set(i, expr);
+    return ast;
   }
 
   @Override

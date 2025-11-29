@@ -49,6 +49,7 @@ import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.AbstractAST.NILPointer;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.BuiltInSymbol;
 import org.matheclipse.core.expression.BuiltinFunctionCalls;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
@@ -56,6 +57,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.OptionsPattern;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.UniformFlags;
 import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -3093,23 +3095,34 @@ public class EvalEngine implements Serializable {
    *         {@link F#NIL} if no rules were applied
    */
   public IExpr evalUpRules(IAST ast) {
-    IExpr[] result = new IExpr[1];
-    result[0] = F.NIL;
-    if (ast.exists(x -> {
-      if (x.isSymbol()) {
-        result[0] = ((ISymbol) x).evalUpRules(ast, this);
-        if (result[0].isPresent()) {
-          return true;
-        }
-      } else if (!(x instanceof IPatternObject) && x.isPresent()) {
-        result[0] = x.topHead().evalUpRules(ast, this);
-        if (result[0].isPresent()) {
-          return true;
+    IExpr result = F.NIL;
+    if (ast.size() > 1) {
+      IExpr x = ast.arg1();
+      if (!(x instanceof IPatternObject) && x.isPresent()) {
+        ISymbol head = x.isSymbol() ? (ISymbol) x : x.topHead();
+        result = head.evalUpRules(ast, this);
+        if (result.isPresent()) {
+          return result;
+        } else {
+          if (head instanceof BuiltInSymbol) {
+            int requiredMask = UniformFlags.uniformMask((BuiltInSymbol) head);
+            if (requiredMask != UniformFlags.NONE && ast.isUniform(requiredMask)) {
+              return F.NIL;
+            }
+          }
         }
       }
-      return false;
-    })) {
-      return result[0];
+      for (int i = 2; i < ast.size(); i++) {
+        x = ast.get(i);
+        if (x.isSymbol()) {
+          result = ((ISymbol) x).evalUpRules(ast, this);
+        } else if (!(x instanceof IPatternObject) && x.isPresent()) {
+          result = x.topHead().evalUpRules(ast, this);
+        }
+        if (result.isPresent()) {
+          return result;
+        }
+      }
     }
     return F.NIL;
   }
@@ -4331,6 +4344,9 @@ public class EvalEngine implements Serializable {
   public IASTMutable threadASTListArgs(final IAST ast, ISymbol commandHead,
       String messageShortcut) {
     ISymbol determineHead = null;
+    if (ast.isUniform()) {
+      return F.NIL;
+    }
     for (int i = 1; i < ast.size(); i++) {
       IExpr expr = ast.get(i);
       if (expr.isList()) {

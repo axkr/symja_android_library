@@ -8194,6 +8194,10 @@ public class F extends S {
     return part;
   }
 
+  public static IAST Partition(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(Partition, a0, a1, a2);
+  }
+
   public static IAST PartitionsP(final IExpr a0) {
     return new AST1(PartitionsP, a0);
   }
@@ -10660,6 +10664,10 @@ public class F extends S {
    */
   public static IAST Symmetric(final IExpr a0) {
     return new AST1(Symmetric, a0);
+  }
+
+  public static IAST SymmetricPolynomial(final IExpr a0, final IExpr a1) {
+    return new AST2(SymmetricPolynomial, a0, a1);
   }
 
   /**

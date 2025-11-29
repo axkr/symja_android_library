@@ -1,5 +1,7 @@
 package org.matheclipse.core.interfaces;
 
+import org.matheclipse.core.expression.UniformFlags;
+
 /** An expression representing a complex number */
 public interface IComplex extends IBigNumber {
   public IComplex add(IComplex val);
@@ -58,4 +60,9 @@ public interface IComplex extends IBigNumber {
   public IComplex sqrtCC();
 
   public IComplex subtract(IComplex that);
+
+  @Override
+  default int uniformFlags() {
+    return UniformFlags.COMPLEX | UniformFlags.NUMBER | UniformFlags.ATOM;
+  }
 }

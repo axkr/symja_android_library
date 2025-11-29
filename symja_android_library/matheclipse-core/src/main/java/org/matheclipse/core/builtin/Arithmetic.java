@@ -101,6 +101,7 @@ import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.UniformFlags;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -2916,6 +2917,20 @@ public final class Arithmetic {
       if (size > 2) {
         if (ast.head() != S.Plus) {
           return F.NIL;
+        }
+        if (ast.isUniform(UniformFlags.REAL)) {
+          INum numResult = (INum) ast.arg1();
+          for (int i = 2; i < ast.size(); i++) {
+            numResult = numResult.add((INum) ast.get(i));
+          }
+          return numResult;
+        }
+        if (ast.isUniform(UniformFlags.NUMBER)) {
+          INumber numResult = (INumber) ast.arg1();
+          for (int i = 2; i < ast.size(); i++) {
+            numResult = numResult.plus((INumber) ast.get(i));
+          }
+          return numResult;
         }
         if (ast.isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG)) {
           IAST temp = engine.evalArgsOrderlessN(ast);
@@ -6590,6 +6605,20 @@ public final class Arithmetic {
       if (size == 2) {
         // OneIdentity ?
         return (ast.head() == S.Times) ? ast.arg1() : F.NIL;
+      }
+      if (ast.isUniform(UniformFlags.REAL)) {
+        INum numResult = (INum) ast.arg1();
+        for (int i = 2; i < ast.size(); i++) {
+          numResult = numResult.multiply((INum) ast.get(i));
+        }
+        return numResult;
+      }
+      if (ast.isUniform(UniformFlags.NUMBER)) {
+        INumber numResult = (INumber) ast.arg1();
+        for (int i = 2; i < ast.size(); i++) {
+          numResult = numResult.times((INumber) ast.get(i));
+        }
+        return numResult;
       }
       IExpr timesOP = TimesOp.getProductNIL(ast);
       if (timesOP.isPresent()) {

@@ -1,6 +1,7 @@
 package org.matheclipse.core.eval;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.UniformFlags;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumericArray;
@@ -48,54 +49,56 @@ public class LinearAlgebraUtil {
       final int size = ast.size();
       if (header.equals(ast.head())) {
         IntArrayList subDim = null;
-        IntArrayList sub = new IntArrayList();
-        for (int i = 1; i < size; i++) {
-          IExpr element = ast.get(i);
-          if (element.isAST() && maxLevel > 0) {
-            sub = dimensionsRecursive((IAST) element, header, maxLevel - 1,
-                throwIllegalArgumentException);
-          } else {
-            if (element.isSparseArray()) {
-              sub = new IntArrayList(((ISparseArray) element).getDimension());
-            } else if (element.isNumericArray()) {
-              sub = new IntArrayList(((INumericArray) element).getDimension());
+        if (!ast.isUniform(UniformFlags.ATOM)) {
+          IntArrayList sub = new IntArrayList();
+          for (int i = 1; i < size; i++) {
+            IExpr element = ast.get(i);
+            if (element.isAST() && maxLevel > 0) {
+              sub = dimensionsRecursive((IAST) element, header, maxLevel - 1,
+                  throwIllegalArgumentException);
             } else {
-              sub = new IntArrayList();
-            }
-          }
-          if (subDim == null) {
-            subDim = sub;
-          } else {
-            if (!subDim.equals(sub)) {
-              if (subDim.size() != sub.size()) {
-                isNonRectangular = true;
-                if (throwIllegalArgumentException) {
-                  throw new IllegalArgumentException();
-                } else {
-                  // print message: Nonrectangular tensor encountered
-                  Errors.printMessage(ast.topHead(), "rect", F.CEmptyList, engine);
-                }
+              if (element.isSparseArray()) {
+                sub = new IntArrayList(((ISparseArray) element).getDimension());
+              } else if (element.isNumericArray()) {
+                sub = new IntArrayList(((INumericArray) element).getDimension());
+              } else {
+                sub = new IntArrayList();
               }
-              int minSize = subDim.size() > sub.size() ? sub.size() : subDim.size();
-              int j = 0;
-              while (j < minSize) {
-                if (subDim.getInt(j) != sub.getInt(j)) {
+            }
+            if (subDim == null) {
+              subDim = sub;
+            } else {
+              if (!subDim.equals(sub)) {
+                if (subDim.size() != sub.size()) {
                   isNonRectangular = true;
                   if (throwIllegalArgumentException) {
                     throw new IllegalArgumentException();
                   } else {
                     // print message: Nonrectangular tensor encountered
-                    Errors.printMessage(ast.topHead(), "rect", F.list(ast), engine);
+                    Errors.printMessage(ast.topHead(), "rect", F.CEmptyList, engine);
                   }
-                  break;
                 }
-                j++;
+                int minSize = subDim.size() > sub.size() ? sub.size() : subDim.size();
+                int j = 0;
+                while (j < minSize) {
+                  if (subDim.getInt(j) != sub.getInt(j)) {
+                    isNonRectangular = true;
+                    if (throwIllegalArgumentException) {
+                      throw new IllegalArgumentException();
+                    } else {
+                      // print message: Nonrectangular tensor encountered
+                      Errors.printMessage(ast.topHead(), "rect", F.list(ast), engine);
+                    }
+                    break;
+                  }
+                  j++;
+                }
+                sub = new IntArrayList();
+                for (int k = 0; k < j; k++) {
+                  sub.add(subDim.getInt(k));
+                }
+                subDim = sub;
               }
-              sub = new IntArrayList();
-              for (int k = 0; k < j; k++) {
-                sub.add(subDim.getInt(k));
-              }
-              subDim = sub;
             }
           }
         }

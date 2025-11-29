@@ -65,6 +65,8 @@ public class ASTRRBTree extends AbstractAST
   /** The underlying RRB Tree */
   protected MutRrbt<IExpr> rrbTree;
 
+  protected int uniformTypeFlags = UniformFlags.NONE;
+
   public ASTRRBTree() {
     super();
     // When Externalizable objects are deserialized, they first need to be constructed by invoking
@@ -235,7 +237,9 @@ public class ASTRRBTree extends AbstractAST
   /** {@inheritDoc} */
   @Override
   public ASTRRBTree copy() {
-    return new ASTRRBTree(rrbTree);
+    ASTRRBTree astRRBTree = new ASTRRBTree(rrbTree);
+    astRRBTree.uniformTypeFlags = uniformTypeFlags;
+    return astRRBTree;
   }
 
   @Override
@@ -434,6 +438,17 @@ public class ASTRRBTree extends AbstractAST
   }
 
   @Override
+  public boolean isUniform(int typeMask) {
+    // check if the bit (ex: INTEGER) is set in the flags
+    return uniformTypeFlags != UniformFlags.NONE && (uniformTypeFlags & typeMask) == typeMask;
+  }
+
+  @Override
+  public boolean isUniform() {
+    return uniformTypeFlags != UniformFlags.NONE;
+  }
+
+  @Override
   public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
     this.fEvalFlags = objectInput.readShort();
     // MutRrbt is not serializable
@@ -445,16 +460,19 @@ public class ASTRRBTree extends AbstractAST
    * object. Internally the <code>hashValue</code> will be reset to <code>0</code>.
    *
    * @param location the index at which to put the specified object.
-   * @param object the object to add.
+   * @param expr the object to add.
    * @return the previous element at the index.
    * @throws IndexOutOfBoundsException when {@code location < 0 || >= size()}
    */
   @Override
-  public IExpr set(int location, IExpr object) {
+  public IExpr set(int location, IExpr expr) {
     hashValue = 0;
+    if (location != 0) {
+      uniformTypeFlags &= expr.uniformFlags();
+    }
     if (location < rrbTree.size()) {
       IExpr value = rrbTree.get(location);
-      rrbTree = rrbTree.replace(location, object);
+      rrbTree = rrbTree.replace(location, expr);
       return value;
     }
     throw new IndexOutOfBoundsException("Index: " + location + ", Size: " + rrbTree.size());
@@ -462,7 +480,7 @@ public class ASTRRBTree extends AbstractAST
 
   @Override
   public IASTMutable setAtCopy(int i, IExpr expr) {
-    IASTMutable ast = copy();
+    ASTRRBTree ast = copy();
     ast.set(i, expr);
     return ast;
   }
@@ -504,6 +522,15 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public boolean append(IExpr expr) {
     hashValue = 0;
+    if (size() > 0) {
+      if (size() == 1) {
+        // first argument
+        uniformTypeFlags = expr.uniformFlags();
+      } else {
+        // example: (Integer | Rational) & (Fraction | Rational) = Rational
+        uniformTypeFlags &= expr.uniformFlags();
+      }
+    }
     rrbTree = rrbTree.append(expr);
     return true;
   }
@@ -511,6 +538,7 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public void append(int location, IExpr expr) {
     hashValue = 0;
+    uniformTypeFlags = UniformFlags.NONE;
     if (location >= 0 && location <= size()) {
       if (location == size()) {
         append(expr);
@@ -526,6 +554,7 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public boolean appendAll(Collection<? extends IExpr> collection) {
     hashValue = 0;
+    uniformTypeFlags = UniformFlags.NONE;
     rrbTree.addAll(collection);
     return true;
   }
@@ -533,6 +562,7 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public boolean appendAll(Map<? extends IExpr, ? extends IExpr> map) {
     hashValue = 0;
+    uniformTypeFlags = UniformFlags.NONE;
     for (Map.Entry<? extends IExpr, ? extends IExpr> entry : map.entrySet()) {
       rrbTree.append(F.Rule(entry.getKey(), entry.getValue()));
     }
@@ -543,6 +573,19 @@ public class ASTRRBTree extends AbstractAST
   public boolean appendAll(IAST ast, int startPosition, int endPosition) {
     if (ast.size() > 0 && startPosition < endPosition) {
       hashValue = 0;
+      if (ast instanceof ASTRRBTree) {
+        if (size() == 1) {
+          uniformTypeFlags = ((ASTRRBTree) ast).uniformTypeFlags;
+        } else if (size() > 1) {
+          uniformTypeFlags &= ((ASTRRBTree) ast).uniformTypeFlags;
+        }
+      } else if (ast instanceof HMArrayList) {
+        if (size() == 1) {
+          uniformTypeFlags = ((HMArrayList) ast).uniformTypeFlags;
+        } else if (size() > 1) {
+          uniformTypeFlags &= ((HMArrayList) ast).uniformTypeFlags;
+        }
+      }
       for (int i = startPosition; i < endPosition; i++) {
         rrbTree = rrbTree.append(ast.get(i));
       }
@@ -554,6 +597,7 @@ public class ASTRRBTree extends AbstractAST
   @Override
   public boolean appendAll(int location, Collection<? extends IExpr> collection) {
     hashValue = 0;
+    uniformTypeFlags = UniformFlags.NONE;
     final int size = rrbTree.size();
     if (location < 0 || location > size) {
       throw new IndexOutOfBoundsException(
@@ -579,6 +623,7 @@ public class ASTRRBTree extends AbstractAST
   public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition) {
     if (list.size() > 0 && startPosition < endPosition) {
       hashValue = 0;
+      uniformTypeFlags = UniformFlags.NONE;
       for (int i = startPosition; i < endPosition; i++) {
         rrbTree = rrbTree.append(list.get(i));
       }
@@ -591,6 +636,7 @@ public class ASTRRBTree extends AbstractAST
   public boolean appendAll(IExpr[] args, int startPosition, int endPosition) {
     if (args.length > 0 && startPosition < endPosition) {
       hashValue = 0;
+      uniformTypeFlags = UniformFlags.NONE;
       for (int i = startPosition; i < endPosition; i++) {
         rrbTree = rrbTree.append(args[i]);
       }
@@ -608,12 +654,36 @@ public class ASTRRBTree extends AbstractAST
   public boolean appendArgs(IAST ast, int untilPosition) {
     if (untilPosition > 1) {
       hashValue = 0;
+      if (untilPosition == ast.size()) {
+        if (ast instanceof ASTRRBTree) {
+          if (size() == 1) {
+            uniformTypeFlags = ((ASTRRBTree) ast).uniformTypeFlags;
+          } else if (size() > 1) {
+            uniformTypeFlags &= ((ASTRRBTree) ast).uniformTypeFlags;
+          } else {
+            uniformTypeFlags = UniformFlags.NONE;
+          }
+        } else if (ast instanceof HMArrayList) {
+          if (size() == 1) {
+            uniformTypeFlags = ((HMArrayList) ast).uniformTypeFlags;
+          } else if (size() > 1) {
+            uniformTypeFlags &= ((HMArrayList) ast).uniformTypeFlags;
+          } else {
+            uniformTypeFlags = UniformFlags.NONE;
+          }
+        } else {
+          uniformTypeFlags = UniformFlags.NONE;
+        }
+      } else {
+        uniformTypeFlags = UniformFlags.NONE;
+      }
       for (int i = 1; i < untilPosition; i++) {
         rrbTree = rrbTree.append(ast.get(i));
       }
       return true;
     }
     return false;
+
   }
 
   @Override
@@ -622,6 +692,7 @@ public class ASTRRBTree extends AbstractAST
       return this;
     }
     hashValue = 0;
+    uniformTypeFlags = UniformFlags.NONE;
     for (int i = start; i < end; i++) {
       IExpr temp = function.apply(i);
       if (temp.isPresent()) {
@@ -656,6 +727,9 @@ public class ASTRRBTree extends AbstractAST
 
     final int size = rrbTree.size();
     if (location >= 0 && location < size) {
+      if (location == 1 && size == 2) {
+        uniformTypeFlags = UniformFlags.NONE;
+      }
       IExpr expr = rrbTree.get(location);
       rrbTree = rrbTree.without(location);
       // deprecated?

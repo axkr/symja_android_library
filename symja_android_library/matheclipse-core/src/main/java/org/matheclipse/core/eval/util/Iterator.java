@@ -490,13 +490,18 @@ public class Iterator {
       return variable != null;
     }
 
+    @Override
+    public boolean isUniform() {
+      return true;
+    }
+
     /**
      * Returns the next element of this enumeration.
      *
      * @return the next element of this enumeration.
      */
     @Override
-    public IExpr next() {
+    public INum next() {
       final INum temp = F.num(count);
       if (variable != null) {
         variable.assignValue(temp, false);
@@ -636,13 +641,19 @@ public class Iterator {
       return variable != null;
     }
 
+
+    @Override
+    public boolean isUniform() {
+      return true;
+    }
+
     /**
      * Returns the next element of this enumeration.
      *
      * @return the next element of this enumeration.
      */
     @Override
-    public IExpr next() {
+    public IRational next() {
       final IRational temp = count;
       if (variable != null) {
         variable.assignValue(temp, false);
@@ -830,7 +841,7 @@ public class Iterator {
      * @return the next element of this enumeration.
      */
     @Override
-    public IExpr next() {
+    public IQuantity next() {
       final IQuantity temp = count;
       if (variable != null) {
         variable.assignValue(temp, false);
@@ -875,7 +886,7 @@ public class Iterator {
     }
   }
 
-  private static class IRealIterator implements IIterator<IExpr> {
+  private static class RealIterator implements IIterator<IExpr> {
     IReal count;
 
     IReal lowerLimit;
@@ -898,7 +909,7 @@ public class Iterator {
 
     final IReal stepReal;
 
-    public IRealIterator(final ISymbol symbol, final IReal lowerLimit, final IReal upperLimit,
+    public RealIterator(final ISymbol symbol, final IReal lowerLimit, final IReal upperLimit,
         final IReal step) {
       this.variable = symbol;
       this.lowerLimit = lowerLimit;
@@ -963,13 +974,18 @@ public class Iterator {
       return variable != null;
     }
 
+    @Override
+    public boolean isUniform() {
+      return true;
+    }
+
     /**
      * Returns the next element of this enumeration.
      *
      * @return the next element of this enumeration.
      */
     @Override
-    public IExpr next() {
+    public IReal next() {
       final IReal temp = count;
       if (variable != null) {
         variable.assignValue(temp, false);
@@ -1122,13 +1138,18 @@ public class Iterator {
       return variable != null;
     }
 
+    @Override
+    public boolean isUniform() {
+      return true;
+    }
+
     /**
      * Returns the next element of this enumeration.
      *
      * @return the next element of this enumeration.
      */
     @Override
-    public IExpr next() {
+    public IInteger next() {
       final IInteger temp = F.ZZ(nextElement);
       if (variable != null) {
         variable.assignValue(temp, false);
@@ -1234,7 +1255,7 @@ public class Iterator {
           } else if (upperLimit.isQuantity()) {
             return new QuantityIterator(variable, (IQuantity) upperLimit);
           } else if (upperLimit.isReal()) {
-            return new IRealIterator(variable, F.C1, (IReal) upperLimit, F.C1);
+            return new RealIterator(variable, F.C1, (IReal) upperLimit, F.C1);
           }
           if (!list.arg1().isVariable()) {
             throw new ArgumentTypeException(
@@ -1282,7 +1303,7 @@ public class Iterator {
           } else if (upperLimit.isQuantity()) {
             return new QuantityIterator(variable, (IQuantity) upperLimit);
           } else if (upperLimit.isReal()) {
-            return new IRealIterator(variable, F.C1, (IReal) upperLimit, F.C1);
+            return new RealIterator(variable, F.C1, (IReal) upperLimit, F.C1);
           }
 
           break;
@@ -1329,7 +1350,7 @@ public class Iterator {
           } else if (lowerLimit.isReal() && upperLimit.isReal()) {
             IReal iLowerLimit = (IReal) lowerLimit;
             IReal iUpperLimit = (IReal) upperLimit;
-            return new IRealIterator(variable, iLowerLimit, iUpperLimit, F.C1);
+            return new RealIterator(variable, iLowerLimit, iUpperLimit, F.C1);
           }
           break;
 
@@ -1375,7 +1396,7 @@ public class Iterator {
             return new QuantityIterator(variable, (IQuantity) lowerLimit, (IQuantity) upperLimit,
                 (IQuantity) step);
           } else if (lowerLimit.isReal() && upperLimit.isReal() && step.isReal()) {
-            return new IRealIterator(variable, (IReal) lowerLimit, (IReal) upperLimit,
+            return new RealIterator(variable, (IReal) lowerLimit, (IReal) upperLimit,
                 (IReal) step);
           }
 
@@ -1462,7 +1483,7 @@ public class Iterator {
           } else if (upperLimit.isQuantity()) {
             return new QuantityIterator(symbol, (IQuantity) upperLimit);
           } else if (upperLimit.isReal()) {
-            return new IRealIterator(variable, F.C1, (IReal) upperLimit, F.C1);
+            return new RealIterator(variable, F.C1, (IReal) upperLimit, F.C1);
           }
           break;
         case 3:
@@ -1507,7 +1528,7 @@ public class Iterator {
           } else if (lowerLimit.isQuantity() && upperLimit.isQuantity()) {
             return new QuantityIterator(symbol, (IQuantity) lowerLimit, (IQuantity) upperLimit);
           } else if (lowerLimit.isReal() && upperLimit.isReal()) {
-            return new IRealIterator(variable, (IReal) lowerLimit, (IReal) upperLimit, F.C1);
+            return new RealIterator(variable, (IReal) lowerLimit, (IReal) upperLimit, F.C1);
           }
           break;
         case 4:
@@ -1540,7 +1561,7 @@ public class Iterator {
             return new QuantityIterator(symbol, (IQuantity) lowerLimit, (IQuantity) upperLimit,
                 (IQuantity) step);
           } else if (lowerLimit.isReal() && upperLimit.isReal() && step.isReal()) {
-            return new IRealIterator(variable, (IReal) lowerLimit, (IReal) upperLimit,
+            return new RealIterator(variable, (IReal) lowerLimit, (IReal) upperLimit,
                 (IReal) step);
           }
           break;

@@ -104,6 +104,10 @@ public interface IIterator<E> extends Iterator<E> {
     return false;
   }
 
+  default boolean isUniform() {
+    return false;
+  }
+
   default boolean isInvalidNumeric() {
     if (!isSetIterator()) {
       IExpr step = getStep();

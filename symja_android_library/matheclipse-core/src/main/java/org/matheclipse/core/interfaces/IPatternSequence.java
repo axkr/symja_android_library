@@ -18,7 +18,7 @@ public interface IPatternSequence extends IPatternObject, IExpr {
    *
    * @param sequence the sequence which should be matched.
    * @param patternMap a map from a pattern to a possibly found value during pattern-matching.
-   * @param optionsPatternHead TODO
+   * @param optionsPatternHead the &quot;head test&quot; of the pattern sequence
    * @return
    */
   public boolean matchPatternSequence(final IAST sequence, IPatternMap patternMap,

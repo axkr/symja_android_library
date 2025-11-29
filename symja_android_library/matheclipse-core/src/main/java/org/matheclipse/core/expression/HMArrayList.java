@@ -53,6 +53,8 @@ public abstract class HMArrayList extends AbstractAST
 
   private static final long serialVersionUID = 8683452581122892189L;
 
+  protected int uniformTypeFlags = UniformFlags.NONE;
+
   protected transient IExpr[] array;
 
   transient int firstIndex;
@@ -164,12 +166,21 @@ public abstract class HMArrayList extends AbstractAST
    * @return always true
    */
   @Override
-  public boolean append(IExpr object) {
+  public boolean append(IExpr expr) {
     hashValue = 0;
+    if (size() > 0) {
+      if (size() == 1) {
+        // first argument
+        uniformTypeFlags = expr.uniformFlags();
+      } else {
+        // example: (Integer | Rational) & (Fraction | Rational) = Rational
+        uniformTypeFlags &= expr.uniformFlags();
+      }
+    }
     if (lastIndex == array.length) {
       growAtEnd(2);
     }
-    array[lastIndex++] = object;
+    array[lastIndex++] = expr;
     return true;
   }
 
@@ -179,12 +190,13 @@ public abstract class HMArrayList extends AbstractAST
    * the size of this {@code ArrayList}, the object is added at the end.
    *
    * @param location the index at which to insert the object.
-   * @param object the object to add.
+   * @param expr the object to add.
    * @throws IndexOutOfBoundsException when {@code location < 0 || > size()}
    */
   @Override
-  public final void append(int location, IExpr object) {
+  public final void append(int location, IExpr expr) {
     hashValue = 0;
+    uniformTypeFlags = UniformFlags.NONE;
     int size = lastIndex - firstIndex;
     if (0 < location && location < size) {
       if (firstIndex == 0 && lastIndex == array.length) {
@@ -196,17 +208,17 @@ public abstract class HMArrayList extends AbstractAST
         System.arraycopy(array, index, array, index + 1, size - location);
         lastIndex++;
       }
-      array[location + firstIndex] = object;
+      array[location + firstIndex] = expr;
     } else if (location == 0) {
       if (firstIndex == 0) {
         growAtFront(1);
       }
-      array[--firstIndex] = object;
+      array[--firstIndex] = expr;
     } else if (location == size) {
       if (lastIndex == array.length) {
         growAtEnd(1);
       }
-      array[lastIndex++] = object;
+      array[lastIndex++] = expr;
     } else {
       throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: "
           + Integer.valueOf(lastIndex - firstIndex));
@@ -222,6 +234,7 @@ public abstract class HMArrayList extends AbstractAST
   @Override
   public boolean appendAll(Collection<? extends IExpr> collection) {
     hashValue = 0;
+    uniformTypeFlags = UniformFlags.NONE;
     Object[] dumpArray = collection.toArray();
     if (dumpArray.length == 0) {
       return false;
@@ -236,6 +249,7 @@ public abstract class HMArrayList extends AbstractAST
 
   @Override
   public boolean appendAll(Map<? extends IExpr, ? extends IExpr> map) {
+    uniformTypeFlags = UniformFlags.NONE;
     for (Map.Entry<? extends IExpr, ? extends IExpr> entry : map.entrySet()) {
       append(F.Rule(entry.getKey(), entry.getValue()));
     }
@@ -247,6 +261,14 @@ public abstract class HMArrayList extends AbstractAST
   public boolean appendAll(IAST ast, int startPosition, int endPosition) {
     if (ast.size() > 0 && startPosition < endPosition) {
       hashValue = 0;
+      if (ast instanceof HMArrayList) {
+        if (size() == 1) {
+          uniformTypeFlags = ((HMArrayList) ast).uniformTypeFlags;
+        } else if (size() > 1) {
+          uniformTypeFlags &= ((HMArrayList) ast).uniformTypeFlags;
+        }
+      }
+
       int length = endPosition - startPosition;
       if (length > array.length - lastIndex) {
         growAtEnd(length);
@@ -263,6 +285,7 @@ public abstract class HMArrayList extends AbstractAST
       // return true;
     }
     return false;
+
   }
 
   /**
@@ -277,6 +300,7 @@ public abstract class HMArrayList extends AbstractAST
   @Override
   public boolean appendAll(int location, Collection<? extends IExpr> collection) {
     hashValue = 0;
+    uniformTypeFlags = UniformFlags.NONE;
     int size = lastIndex - firstIndex;
     if (location < 0 || location > size) {
       throw new IndexOutOfBoundsException(
@@ -325,6 +349,7 @@ public abstract class HMArrayList extends AbstractAST
   public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition) {
     if (list.size() > 0 && startPosition < endPosition) {
       hashValue = 0;
+      uniformTypeFlags = UniformFlags.NONE;
       int length = endPosition - startPosition;
       if (length > array.length - lastIndex) {
         growAtEnd(length);
@@ -348,6 +373,7 @@ public abstract class HMArrayList extends AbstractAST
   public boolean appendAll(IExpr[] args, int startPosition, int endPosition) {
     if (args.length > 0 && startPosition < endPosition) {
       hashValue = 0;
+      uniformTypeFlags = UniformFlags.NONE;
       int length = endPosition - startPosition;
       if (length > array.length - lastIndex) {
         growAtEnd(length);
@@ -393,6 +419,29 @@ public abstract class HMArrayList extends AbstractAST
   public final boolean appendArgs(IAST ast, int untilPosition) {
     if (untilPosition > 1) {
       hashValue = 0;
+      if (untilPosition == ast.size()) {
+        if (ast instanceof HMArrayList) {
+          if (size() == 1) {
+            uniformTypeFlags = ((HMArrayList) ast).uniformTypeFlags;
+          } else if (size() > 1) {
+            uniformTypeFlags &= ((HMArrayList) ast).uniformTypeFlags;
+          } else {
+            uniformTypeFlags = UniformFlags.NONE;
+          }
+        } else if (ast instanceof ASTRRBTree) {
+          if (size() == 1) {
+            uniformTypeFlags = ((ASTRRBTree) ast).uniformTypeFlags;
+          } else if (size() > 1) {
+            uniformTypeFlags &= ((ASTRRBTree) ast).uniformTypeFlags;
+          } else {
+            uniformTypeFlags = UniformFlags.NONE;
+          }
+        } else {
+          uniformTypeFlags = UniformFlags.NONE;
+        }
+      } else {
+        uniformTypeFlags = UniformFlags.NONE;
+      }
       int length = untilPosition - 1;
       if (length > array.length - lastIndex) {
         growAtEnd(length);
@@ -412,6 +461,7 @@ public abstract class HMArrayList extends AbstractAST
       return this;
     }
     hashValue = 0;
+    uniformTypeFlags = UniformFlags.NONE;
     int length = end - start;
     if (length > array.length - lastIndex) {
       growAtEnd(length);
@@ -706,6 +756,17 @@ public abstract class HMArrayList extends AbstractAST
     return -1;
   }
 
+  @Override
+  public boolean isUniform(int typeMask) {
+    // check if the bit (ex: INTEGER) is set in the flags
+    return uniformTypeFlags != UniformFlags.NONE && (uniformTypeFlags & typeMask) == typeMask;
+  }
+
+  @Override
+  public boolean isUniform() {
+    return uniformTypeFlags != UniformFlags.NONE;
+  }
+
   /** {@inheritDoc} */
   @Override
   public final IExpr findFirst(Function<IExpr, IExpr> function) {
@@ -944,8 +1005,11 @@ public abstract class HMArrayList extends AbstractAST
     }
     hashValue = 0;
     IExpr result;
-    int size = lastIndex - firstIndex;
+    final int size = lastIndex - firstIndex;
     if (0 <= location && location < size) {
+      if (location == 1 && size == 2) {
+        uniformTypeFlags = UniformFlags.NONE;
+      }
       if (location == size - 1) {
         result = array[--lastIndex];
         array[lastIndex] = null;
@@ -1034,19 +1098,22 @@ public abstract class HMArrayList extends AbstractAST
    * object. Internally the <code>hashValue</code> will be reset to <code>0</code>.
    *
    * @param location the index at which to put the specified object.
-   * @param object the object to add.
+   * @param expr the object to add.
    * @return the previous element at the index.
    * @throws IndexOutOfBoundsException when {@code location < 0 || >= size()}
    */
   @Override
-  public IExpr set(int location, IExpr object) {
+  public IExpr set(int location, IExpr expr) {
     if (Config.FUZZ_TESTING && isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
       throw new NullPointerException("Index: " + location + ", Size: " + (lastIndex - firstIndex));
     }
     hashValue = 0;
+    if (location != 0) {
+      uniformTypeFlags &= expr.uniformFlags();
+    }
     // if (0 <= location && location < (lastIndex - firstIndex)) {
     IExpr result = array[firstIndex + location];
-    array[firstIndex + location] = object;
+    array[firstIndex + location] = expr;
     return result;
     // }
     // throw new IndexOutOfBoundsException(

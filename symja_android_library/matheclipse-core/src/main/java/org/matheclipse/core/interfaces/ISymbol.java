@@ -18,6 +18,7 @@ import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.UniformFlags;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.patternmatching.IPatternMap;
@@ -257,6 +258,21 @@ public interface ISymbol extends IExpr {
         }
       }
     }
+  }
+
+  public static IExpr evalAssignedValue(IExpr rightHandSide, EvalEngine engine) {
+    if (rightHandSide.isCondition() || rightHandSide.isBlockModuleOrWithCondition()) {
+      boolean evalRHSMode = engine.isEvalRHSMode();
+      try {
+        engine.setEvalRHSMode(true);
+        return engine.evaluate(rightHandSide);
+      } catch (ConditionException cex) {
+        return F.NIL;
+      } finally {
+        engine.setEvalRHSMode(evalRHSMode);
+      }
+    }
+    return rightHandSide;
   }
 
   static IAST fullDefinitionList(IAST symbolsList) {
@@ -1207,6 +1223,11 @@ public interface ISymbol extends IExpr {
 
   public void setRulesData(RulesData rd);
 
+  @Override
+  default int uniformFlags() {
+    return UniformFlags.SYMBOL | UniformFlags.ATOM;
+  }
+
   /**
    * Serialize the rule definitions associated to this symbol
    *
@@ -1215,19 +1236,4 @@ public interface ISymbol extends IExpr {
    * @return <code>false</code> if the symbol contains no rule definition.
    */
   public boolean writeRules(java.io.ObjectOutputStream stream) throws java.io.IOException;
-
-  public static IExpr evalAssignedValue(IExpr rightHandSide, EvalEngine engine) {
-    if (rightHandSide.isCondition() || rightHandSide.isBlockModuleOrWithCondition()) {
-      boolean evalRHSMode = engine.isEvalRHSMode();
-      try {
-        engine.setEvalRHSMode(true);
-        return engine.evaluate(rightHandSide);
-      } catch (ConditionException cex) {
-        return F.NIL;
-      } finally {
-        engine.setEvalRHSMode(evalRHSMode);
-      }
-    }
-    return rightHandSide;
-  }
 }

@@ -1,5 +1,7 @@
 package org.matheclipse.core.interfaces;
 
+import org.matheclipse.core.expression.UniformFlags;
+
 /** */
 public interface IComplexNum extends INumber, IInexactNumber {
   public IComplexNum add(IComplexNum val);
@@ -38,10 +40,14 @@ public interface IComplexNum extends INumber, IInexactNumber {
 
   public IComplexNum multiply(IComplexNum val);
 
-  public IComplexNum subtract(IComplexNum subtrahend);
-
   public IComplexNum pow(IComplexNum val);
 
   public long precision();
 
+  public IComplexNum subtract(IComplexNum subtrahend);
+
+  @Override
+  default int uniformFlags() {
+    return UniformFlags.COMPLEX | UniformFlags.NUMBER | UniformFlags.ATOM;
+  }
 }

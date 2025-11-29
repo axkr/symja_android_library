@@ -21,6 +21,7 @@ import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.UniformFlags;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.visit.IVisitor;
@@ -1419,6 +1420,29 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   public boolean isTimes();
 
   /**
+   * Returns <code>true</code> if all elements in this IAST from index <code>1</code> to
+   * <code>argSize()</code> have the same uniform Java class {@link UniformFlags}
+   * 
+   * @return
+   */
+  default boolean isUniform(int typeMask) {
+    return false;
+  }
+
+  /**
+   * Returns <code>true</code> if all elements in this IAST from index <code>1</code> to
+   * <code>argSize()</code> have any uniform Java class {@link UniformFlags}.
+   * <p>
+   * <b>Note</b>: if isUniform returns <code>true</code> the arguments contain no {@link S#List}
+   * argument.
+   * 
+   * @return
+   */
+  default boolean isUniform() {
+    return false;
+  }
+
+  /**
    * Returns an iterator over the elements in this list starting with offset <b>1</b>. Use
    * {@link #args()} if you use the iterator in a Sympy context.
    * 
@@ -1713,6 +1737,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @return the argument at index <code>1</code>, if the <code>argSize() == 1</code> or
    *         <code>0</code> if the <code>argSize() == 0</code>; otherwise return <code>this</code>.
    */
+  @Override
   default IExpr oneIdentity0() {
     return oneIdentity(F.C0);
   }
@@ -1724,6 +1749,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @return the argument at index 1, if the <code>argSize() == 1</code> or <code>1</code> if the
    *         <code>argSize() == 0</code>; otherwise return <code>this</code>.
    */
+  @Override
   default IExpr oneIdentity1() {
     return oneIdentity(F.C1);
   }
@@ -2085,6 +2111,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
     return copyFrom(startPosition);
   }
 
+  @Override
   public IASTAppendable subList(int startPosition, int endPosition);
 
   /**

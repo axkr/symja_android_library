@@ -3,6 +3,7 @@ package org.matheclipse.core.interfaces;
 import java.math.BigInteger;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.UniformFlags;
 
 /** An expression representing a big integer number */
 public interface IInteger extends IRational {
@@ -129,6 +130,8 @@ public interface IInteger extends IRational {
    * @throws ArithmeticException
    */
   public IInteger eulerPhi() throws ArithmeticException;
+
+  public IInteger[] extendedGCD(IInteger that);
 
   /**
    * Get the highest exponent of <code>base</code> that divides <code>this</code>
@@ -438,4 +441,9 @@ public interface IInteger extends IRational {
   public BigInteger toBigNumerator();
 
   public byte[] toByteArray();
+
+  @Override
+  default int uniformFlags() {
+    return UniformFlags.INTEGER | UniformFlags.NUMBER | UniformFlags.ATOM;
+  }
 }

@@ -25,17 +25,18 @@ public class PatternSequence extends AbstractPatternSequence {
    *
    * @param symbol the associated symbol of the pattern sequence. Maybe <code>null</code>.
    * @param check a header check.Maybe <code>null</code>.
-   * @param def if <code>true</code> replace with default value, if no matching was possible
+   * @param defaultEnabled if <code>true</code> replace with default value, if no matching was
+   *        possible
    * @param zeroArgsAllowed if <code>true</code>, 0 arguments are allowed, otherwise the number of
    *        args has to be >= 1.
    * @return a new PatternSequence
    */
-  public static PatternSequence valueOf(final ISymbol symbol, final IExpr check, final boolean def,
-      boolean zeroArgsAllowed) {
+  public static PatternSequence valueOf(final ISymbol symbol, final IExpr check,
+      final boolean defaultEnabled, boolean zeroArgsAllowed) {
     PatternSequence p = new PatternSequence();
     p.fSymbol = symbol;
     p.fHeadTest = check;
-    p.fDefault = def;
+    p.fDefault = defaultEnabled;
     p.fZeroArgsAllowed = zeroArgsAllowed;
     return p;
   }
@@ -284,11 +285,22 @@ public class PatternSequence extends AbstractPatternSequence {
   public boolean isConditionMatchedSequence(final IAST sequence, IPatternMap patternMap) {
     if (fHeadTest == null) {
       return patternMap.setValue(this, sequence);
-      // return true;
     }
-    for (int i = 1; i < sequence.size(); i++) {
-      if (!sequence.get(i).head().equals(fHeadTest)) {
+    if (sequence.size() > 1) {
+      if (!sequence.arg1().head().equals(fHeadTest)) {
         return false;
+      }
+      if (fHeadTest instanceof BuiltInSymbol) {
+        int requiredMask = UniformFlags.uniformMask((BuiltInSymbol) fHeadTest);
+        if (requiredMask != UniformFlags.NONE && sequence.isUniform(requiredMask)) {
+          return patternMap.setValue(this, sequence);
+        }
+      }
+
+      for (int i = 2; i < sequence.size(); i++) {
+        if (!sequence.get(i).head().equals(fHeadTest)) {
+          return false;
+        }
       }
     }
     return patternMap.setValue(this, sequence);

@@ -5,6 +5,7 @@ import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Pair;
+import org.matheclipse.core.expression.UniformFlags;
 
 /** interface for "fractional" numbers */
 public interface IFraction extends IRational {
@@ -122,6 +123,11 @@ public interface IFraction extends IRational {
    * @return
    */
   public int toIntRoot(int defaultValue);
+
+  @Override
+  default int uniformFlags() {
+    return UniformFlags.FRACTION | UniformFlags.NUMBER | UniformFlags.ATOM;
+  }
 
   @Override
   default Pair asCoeffMul(boolean rational) {
