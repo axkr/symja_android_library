@@ -255,6 +255,16 @@ public class FunctionExpand extends AbstractEvaluator {
       return trigTrivial(times, ast);
     }
     return callFunctionExpand(ast, EvalEngine.get());
+    // IExpr result = callFunctionExpand(ast, EvalEngine.get());
+    // while (result.isPresent() && result.isAST()) {
+    // IExpr temp = callFunctionExpand((IAST) result, EvalEngine.get());
+    // if (temp.isPresent()) {
+    // result = temp;
+    // } else {
+    // break;
+    // }
+    // }
+    // return result;
   }
 
   /**
@@ -604,9 +614,9 @@ public class FunctionExpand extends AbstractEvaluator {
       if (evaluator instanceof IFunctionExpand) {
         IExpr temp = ((IFunctionExpand) evaluator).functionExpand(ast, engine);
         if (temp.isPresent()) {
-          IExpr result = engine.evaluate(temp);
-          if (result.isAST()) {
-            IASTMutable newAST = ((IAST) result).copy();
+          IExpr evalResult = engine.evaluate(temp);
+          if (evalResult.isAST()) {
+            IASTMutable newAST = ((IAST) evalResult).copy();
             for (int i = 1; i < newAST.size(); i++) {
               IExpr arg = newAST.get(i);
               if (arg.isAST()) {
@@ -615,7 +625,7 @@ public class FunctionExpand extends AbstractEvaluator {
             }
             return newAST;
           }
-          return result;
+          return evalResult;
         }
       }
     }
@@ -674,6 +684,26 @@ public class FunctionExpand extends AbstractEvaluator {
    * @return {@link F#NIL} if no match was found
    */
   public static IExpr callMatcher(final IAST ast, IExpr arg1, EvalEngine engine) {
+    if (arg1.isAST()) {
+      IASTMutable result = F.NIL;
+      IAST list = (IAST) arg1;
+      for (int i = 1; i < list.size(); i++) {
+        IExpr subArg = list.get(i);
+        if (subArg.isAST()) {
+          IExpr temp = callMatcher(ast.setAtCopy(1, subArg), subArg, engine);
+          if (temp.isPresent()) {
+            if (result.isNIL()) {
+              result = list.copy();
+            }
+            result.set(i, temp);
+          }
+        }
+      }
+      if (result.isPresent()) {
+        arg1 = result;
+      }
+    }
+
     IExpr temp = getMatcher().replaceAll(arg1, FunctionExpand::beforeRules).orElse(arg1);
     engine.putCache(ast, temp);
     return temp;

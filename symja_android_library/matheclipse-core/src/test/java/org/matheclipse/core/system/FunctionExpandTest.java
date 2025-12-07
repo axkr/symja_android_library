@@ -337,6 +337,20 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFunctionExpandTimes() {
+    check("FunctionExpand(Factorial(k)/Factorial(-3+k))", //
+        "(-2+k)*(-1+k)*k");
+    check("FunctionExpand(Factorial(k)/Factorial(3+k))", //
+        "1/((1+k)*(2+k)*(3+k))");
+    check("FunctionExpand(Gamma(1+k)/Gamma(4+k))", //
+        "1/((1+k)*(2+k)*(3+k))");
+    check("FunctionExpand(Gamma(k)/Gamma(4+k))", //
+        "1/(k*(1+k)*(2+k)*(3+k))");
+    check("FunctionExpand(Gamma(k)/Gamma(-4+k))", //
+        "(-4+k)*(-3+k)*(-2+k)*(-1+k)");
+  }
+
+  @Test
   public void testFunctionC1D2TimesArcFunction() {
     check("FunctionExpand(Cos(ArcSin(x)/2))", //
         "Sqrt(1+Sqrt(1-x)*Sqrt(1+x))/Sqrt(2)");
