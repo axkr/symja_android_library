@@ -891,7 +891,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ArcTanh(2+I)", //
         "ArcTanh(2+I)");
     checkNumeric("ArcTanh(0.5 + 2*I)", //
-        "0.09641562020299611+I*1.1265564408348223");
+        "0.09641562020299621+I*1.1265564408348223");
 
     check("ArcTanh(I)", //
         "I*1/4*Pi");
@@ -2301,7 +2301,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Cancel((x^2 - 1)/(x - 1))", //
         "1+x");
     check("Cancel((x - y)/(x^2 - y^2) + (x^3 - 27)/(x^2 - 9) + (x^3 + 1)/(x^2 - x + 1))", //
-        "1+x+(9+3*x+x^2)/(3+x)-1/(-x-y)");
+        "1+x+(9+3*x+x^2)/(3+x)+1/(x+y)");
     check("cancel((x - 1)/(x^2 - 1) + (x - 2)/(x^2 - 4))", //
         "1/(1+x)+1/(2+x)");
     check("together((x - 1)/(x^2 - 1) + (x - 2)/(x^2 - 4))", //
@@ -5771,6 +5771,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDifferenceDelta() {
+    check("DifferenceDelta({f(i), g(i)}, i)", //
+        "{-f(i)+f(1+i),-g(i)+g(1+i)}");
     check("DifferenceDelta(Cosh(a*i+b),{i,2,h})", //
         "Cosh(b+a*i)-2*Cosh(b+a*(h+i))+Cosh(b+a*(2*h+i))");
     check("DifferenceDelta(Sin(a*i+b),{i,5})", //
@@ -5786,6 +5788,41 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-b(a)+b(a+c)");
     check("DifferenceDelta(b(a),a)", //
         "-b(a)+b(1+a)");
+    check("DifferenceDelta(f(i, j), i, j)", //
+        "f(i,j)-f(i,1+j)-f(1+i,j)+f(1+i,1+j)");
+    check("DifferenceDelta(f(i, j), {i,2}, j)", //
+        "-f(i,j)+f(i,1+j)+2*f(1+i,j)-2*f(1+i,1+j)-f(2+i,j)+f(2+i,1+j)");
+
+
+  }
+
+  @Test
+  public void testDifferenceQuotient() {
+    // we use Simplify inside DifferenceQuotient
+    check("DifferenceQuotient(Sin(x), {x, h})", //
+        "(-Sin(x)+Sin(h+x))/h");
+    check("DifferenceQuotient(x^2, {x, h})", //
+        "h+2*x");
+    check("DifferenceQuotient(f(x), x)", //
+        "DifferenceQuotient(f(x),x)");
+    check("DifferenceQuotient(f(x), {x, h})", //
+        "(-f(x)+f(h+x))/h");
+    check("DifferenceQuotient(f(x), {x, -h})", //
+        "(f(x)-f(-h+x))/h");
+    check("DifferenceQuotient(f(x-h),{x,2*h})", //
+        "(-f(-h+x)+f(h+x))/(2*h)");
+    check("DifferenceQuotient(f(x),{x,3,h})", //
+        "(-f(x)+3*f(h+x)-3*f(2*h+x)+f(3*h+x))/h^3");
+    check("DifferenceQuotient(f(x, y), {x, r}, {y, s})", //
+        "(f(x,y)-f(x,s+y)-f(r+x,y)+f(r+x,s+y))/(r*s)");
+    check("DifferenceQuotient({f(x),g(x)},{x,h})", //
+        "{(-f(x)+f(h+x))/h,(-g(x)+g(h+x))/h}");
+
+    check("f(x_) := x*Sin(x)", //
+        "");
+    check("dq = DifferenceQuotient(f(x), {x, h})", //
+        "(-x*Sin(x)+(h+x)*Sin(h+x))/h");
+
   }
 
   @Test
@@ -5912,6 +5949,50 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
     check("DiscreteDelta(1, 2, 3)", //
         "0");
+  }
+
+
+  @Test
+  public void testDiscreteRatio() {
+    check("DiscreteRatio(k!, k)", //
+        "1+k");
+    check("DiscreteRatio(Gamma(k), k)", //
+        "k");
+    check("DiscreteRatio(2^k, k)", //
+        "2");
+    check("DiscreteRatio(2^(k^2), {k, 2})", //
+        "4");
+    check("DiscreteRatio(x^n * y^m, n, m)", //
+        "1");
+  }
+
+  @Test
+  public void testDiscreteShift() {
+    check("DiscreteShift(n^2, n)", //
+        "(1+n)^2");
+    check("DiscreteShift(f(n), {n, 2})", //
+        "f(2+n)");
+    check("DiscreteShift(m*n, m, n)", //
+        "(1+m)*(1+n)");
+    check("DiscreteShift(m*n, {m, 2}, {n, 2})", //
+        "(2+m)*(2+n)");
+    check("DiscreteRatio(2^(k^2), {k, 2})", //
+        "4");
+    check("DiscreteShift(x, n)", //
+        "x");
+    // Note: The result is mathematically correct but not simplified modulo 7
+    check("DiscreteShift(Sin(i^3*2*Pi/7), {i, 10})", //
+        "Sin(2/7*(10+i)^3*Pi)");
+
+    check("DiscreteShift(f(x), x)", //
+        "f(1+x)");
+    check("DiscreteShift(f(x), {x,2})", //
+        "f(2+x)");
+
+    check("DiscreteShift(f(x), {x,1,h})", //
+        "f(h+x)");
+    check("DiscreteShift(f(x), {x,2,h})", //
+        "f(2*h+x)");
   }
 
   @Test
@@ -20831,6 +20912,44 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testRatios() {
+    check("Ratios({{a11,a12,a13}, {a21,a22,a23}, {a31,a32,a33}} )", //
+        "{{a21/a11,a22/a12,a23/a13},{a31/a21,a32/a22,a33/a23}}");
+    check("Ratios({{a11,a12,a13}, {a21,a22,a23}, {a31,a32,a33}}, {1, 0})", //
+        "{{a21/a11,a22/a12,a23/a13},{a31/a21,a32/a22,a33/a23}}");
+    check("Ratios({{a11,a12,a13}, {a21,a22,a23}, {a31,a32,a33}}, {0,1})", //
+        "{{a12/a11,a13/a12},{a22/a21,a23/a22},{a32/a31,a33/a32}}");
+
+    check("r=Ratios({a, b, c, d, e})", //
+        "{b/a,c/b,d/c,e/d}");
+    check("FoldList(Times, a, r)", //
+        "{a,b,c,d,e}");
+
+    check("Ratios({a, b, c, d, e},2)", //
+        "{(a*c)/b^2,(b*d)/c^2,(c*e)/d^2}");
+    check("Ratios({a,b,c,d,e,f,g,h},5)", //
+        "{(b^5*d^10*f)/(a*c^10*e^5),(c^5*e^10*g)/(b*d^10*f^5),(d^5*f^10*h)/(c*e^10*g^5)}");
+
+    check("t = {{{a1, a2, a3}, {b1, b2, b3}}, {{c1, c2, c3}, {d1, d2, d3}}};", //
+        "");
+    check("Ratios(t, {0, 0, 1})", //
+        "{{{a2/a1,a3/a2},{b2/b1,b3/b2}},{{c2/c1,c3/c2},{d2/d1,d3/d2}}}");
+    check("Ratios(t, {1, 1, 1})", //
+        "{{{(a2*b1*c1*d2)/(a1*b2*c2*d1),(a3*b2*c2*d3)/(a2*b3*c3*d2)}}}");
+    check("Ratios(t, {0, 1, 1})", //
+        "{{{(a1*b2)/(a2*b1),(a2*b3)/(a3*b2)}},{{(c1*d2)/(c2*d1),(c2*d3)/(c3*d2)}}}");
+    check("Ratios(t, {0, 2, 1})", //
+        "{{},{}}");
+    // message Ratios: Requested ratios {0,0,1} exceeds the array depth 1, of the input.
+    check("Ratios({a,b,c}, {0, 0, 1})", //
+        "Ratios({a,b,c},{0,0,1})");
+    check("t=Table(2^i, {i, 0, 10})", //
+        "{1,2,4,8,16,32,64,128,256,512,1024}");
+    check("Ratios(t)", //
+        "{2,2,2,2,2,2,2,2,2,2}");
+  }
+
+  @Test
   public void testRationalizeIssue1065() {
     // issue 1065
     checkNumeric("Rationalize(878159.58,1*10^-12) - Rationalize(431874.32,1*10^-12)", //
@@ -23737,6 +23856,40 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testPowerRange() {
+    check("PowerRange(a^m)", //
+        "PowerRange(a^m)");
+
+    check("PowerRange(32)", //
+        "{1,10}");
+    check("PowerRange(3, 30)", //
+        "{3,30}");
+    check("PowerRange(2, 30, 3)", //
+        "{2,6,18}");
+
+
+    check("PowerRange(a, a^10, a)", //
+        "{a,a^2,a^3,a^4,a^5,a^6,a^7,a^8,a^9,a^10}");
+    check("PowerRange(y/x^2, y*x^2, x)", //
+        "{y/x^2,y/x,y,x*y,x^2*y}");
+    check("PowerRange(1, x^10, Sqrt(x))", //
+        "{1,Sqrt(x),x,x^(3/2),x^2,x^(5/2),x^3,x^(7/2),x^4,x^(9/2),x^5,x^(11/2),x^6,x^(13/\n" //
+            + "2),x^7,x^(15/2),x^8,x^(17/2),x^9,x^(19/2),x^10}");
+
+
+
+    check("PowerRange(1, 10^6)", //
+        "{1,10,100,1000,10000,100000,1000000}");
+    check("PowerRange(1, 100, 2)", //
+        "{1,2,4,8,16,32,64}");
+    check("PowerRange(10, 5000, 5)", //
+        "{10,50,250,1250}");
+    check("PowerRange(-1, -5000)", //
+        "{-1,-10,-100,-1000}");
+
+  }
+
+  @Test
   public void testPowersRepresentations() {
     // Message
     check("PowersRepresentations(2147483647,1,{0})", //
@@ -25286,6 +25439,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTogether() {
+    check("Together((h^2+2*h*x)/h)", //
+        "h+2*x");
+
     check("Together(1/Sqrt(1+1/x)+(1+1/x)^(3/2))", //
         "(x*Sqrt(x/(1+x))+Sqrt((1+x)/x)+x*Sqrt((1+x)/x))/x");
 
@@ -25365,7 +25521,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2*(a+b)");
 
     check("Together(-(a^2-c^2)/(a*b-b*c))", //
-        "-(a+c)/b");
+        "(-a-c)/b");
 
     check("Together(1/Sqrt(1+1/x) )", //
         "Sqrt(x/(1+x))");
@@ -26460,6 +26616,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0,1,1}");
     check("UnitStep(1, 2, 3)", //
         "1");
+  }
+
+  @Test
+  public void testUnitTriangle() {
+    check("UnitTriangle(0.8)", //
+        "0.2");
+    check("UnitTriangle(1/4)", //
+        "3/4");
+    check("UnitTriangle(1, Pi, 5.3)", //
+        "0");
+    check("UnitTriangle({-3, -1, 0, 1/3, 1})", //
+        "{0,0,1,2/3,0}");
   }
 
   @Test

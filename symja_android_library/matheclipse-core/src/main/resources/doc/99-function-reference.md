@@ -839,6 +839,7 @@ Functions in alphabetical order:
 * &#x2705; [Power](functions/Power.md)
 * &#x2705; [PowerExpand](functions/PowerExpand.md)
 * &#x2705; [PowerMod](functions/PowerMod.md)
+* &#x2705; [PowerRange](functions/PowerRange.md)
 * &#x2611; [PowersRepresentations](functions/PowersRepresentations.md)
 * &#x2705; [PreDecrement](functions/PreDecrement.md)
 * &#x2705; [PreIncrement](functions/PreIncrement.md)
