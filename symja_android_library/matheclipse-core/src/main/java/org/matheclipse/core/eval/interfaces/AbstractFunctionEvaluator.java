@@ -359,7 +359,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
    *         {@link S#Plus} expressions
    */
   public static IAST getNegativePlusInTimes(IExpr expr) {
-    final IAST timesAST = expr.isTimes() ? (IAST) expr : F.Times(expr);
+    final IAST timesAST = expr.isASTSizeGE(S.Times, 2) ? (IAST) expr : F.Times(expr);
     IASTAppendable timesAppendable = F.NIL;
     if (EvalEngine.get().isNoSimplifyMode()) {
       return timesAST;
