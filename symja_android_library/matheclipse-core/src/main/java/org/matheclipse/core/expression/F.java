@@ -3326,6 +3326,10 @@ public class F extends S {
     return new AST1(DialogReturn, a0);
   }
 
+  public static IAST DifferenceDelta(final IExpr a0, final IExpr a1) {
+    return new AST2(DifferenceDelta, a0, a1);
+  }
+
   /**
    *
    *

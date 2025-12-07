@@ -101,6 +101,7 @@ public class Errors {
       "cvmit", "Failed to converge to the requested accuracy or precision within `1` iterations.", //
       "depth",
       "The array depth of the expression at position `1` of `2` must be at least equal to the specified rank `3`.", //
+      "depthratios", "Requested ratios `1` exceeds the array depth `2`, of the input.", //
       "divz", "The argument `1` should be nonzero.", //
       "digit", "Digit at position `1` in `2` is too large to be used in base `3`.", //
       "dmval",

@@ -53,34 +53,65 @@ public class DifferenceDelta extends AbstractCoreFunctionEvaluator {
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     IExpr arg1 = ast.arg1();
     IExpr arg2 = ast.arg2();
-    if (arg2.isList()) {
-      if (arg2.isList2() || arg2.isList3()) {
-        if (arg2.second().isInteger() && arg2.second().isNonNegativeResult()) {
-          IExpr stepH = F.C1;
-          int n = arg2.second().toIntDefault();
-          if (n >= 1) {
-            IExpr symbolX = arg2.first();
-            if (arg2.isList3()) {
-              stepH = arg2.getAt(3);
-            }
-            IASTAppendable result = F.PlusAlloc(n + 1);
+    if (arg1.isList()) {
+      // thread elementwise over list in arg1
+      return arg1.mapThread(ast.setAtCopy(1, F.Slot1), 1);
+    }
 
-            for (int i = 0; i <= n; i++) {
-              IExpr diffTerm = F.xreplace(arg1, symbolX, F.Plus(F.Times(F.ZZ(i), stepH), symbolX));
-              result.append(F.Times(F.Power(F.CN1, n - i), F.Binomial(n, i), diffTerm));
+    if (ast.argSize() > 2) {
+      // DifferenceDelta[f, i, j, ...] is evaluated as
+      // DifferenceDelta[DifferenceDelta[f, i], j, ...]
+      IAST newAST = ast.removeAtCopy(ast.argSize());
+      return engine.evaluate(F.DifferenceDelta(engine.evaluate(newAST), ast.last()));
+    }
+
+
+
+    if (arg2.isList()) {
+      // DifferenceDelta[f, {x, n, h}]
+      if (arg2.isList2() || arg2.isList3()) {
+        IExpr symbolX = arg2.first();
+        if (!arg1.isFree(symbolX, true)) {
+          if (arg2.second().isInteger() && arg2.second().isNonNegativeResult()) {
+            int n = arg2.second().toIntDefault();
+            if (n == 0) {
+              return arg1;
             }
-            return result;
+            if (n > 0) {
+              IExpr stepH = F.C1;
+              if (arg2.isList3()) {
+                stepH = arg2.getAt(3);
+              }
+              IASTAppendable result = F.PlusAlloc(n + 1);
+              for (int i = 0; i <= n; i++) {
+                IExpr diffTerm =
+                    F.xreplace(arg1, symbolX, F.Plus(F.Times(F.ZZ(i), stepH), symbolX));
+                result.append(F.Times(F.Power(F.CN1, n - i), F.Binomial(n, i), diffTerm));
+              }
+              return result;
+            }
           }
+        } else {
+          // All quantities that do not explicitly depend on the variables given are taken to have
+          // zero partial difference.
+          return F.C0;
         }
       }
       return F.NIL;
     }
-    IExpr f2 = F.xreplace(arg1, arg2, F.Plus(F.C1, arg2));
-    return F.Subtract(f2, arg1);
+
+    // DifferenceDelta[f, x]
+    if (!arg1.isFree(arg2, true)) {
+      IExpr f2 = F.xreplace(arg1, arg2, F.Plus(F.C1, arg2));
+      return F.Subtract(f2, arg1);
+    }
+    // All quantities that do not explicitly depend on the variables given are taken to have zero
+    // partial difference.
+    return F.C0;
   }
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_2_2;
+    return IFunctionEvaluator.ARGS_2_INFINITY;
   }
 }

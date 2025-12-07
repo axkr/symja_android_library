@@ -260,6 +260,12 @@ public class S {
   public final static IBuiltInSymbol AbsoluteCorrelation =
       S.initFinalSymbol("AbsoluteCorrelation", ID.AbsoluteCorrelation);
 
+  public final static IBuiltInSymbol AbsolutePointSize =
+      S.initFinalSymbol("AbsolutePointSize", ID.AbsolutePointSize);
+
+  public final static IBuiltInSymbol AbsoluteThickness =
+      S.initFinalSymbol("AbsoluteThickness", ID.AbsoluteThickness);
+
   public final static IBuiltInSymbol AbsoluteTime =
       S.initFinalSymbol("AbsoluteTime", ID.AbsoluteTime);
 
@@ -2917,6 +2923,9 @@ public class S {
   public final static IBuiltInSymbol DifferenceDelta =
       S.initFinalSymbol("DifferenceDelta", ID.DifferenceDelta);
 
+  public final static IBuiltInSymbol DifferenceQuotient =
+      S.initFinalSymbol("DifferenceQuotient", ID.DifferenceQuotient);
+
   public final static IBuiltInSymbol Differences = S.initFinalSymbol("Differences", ID.Differences);
 
   /**
@@ -3048,6 +3057,12 @@ public class S {
    */
   public final static IBuiltInSymbol DiscretePlot =
       S.initFinalSymbol("DiscretePlot", ID.DiscretePlot);
+
+  public final static IBuiltInSymbol DiscreteRatio =
+      S.initFinalSymbol("DiscreteRatio", ID.DiscreteRatio);
+
+  public final static IBuiltInSymbol DiscreteShift =
+      S.initFinalSymbol("DiscreteShift", ID.DiscreteShift);
 
   /**
    * DiscreteUniformDistribution({min, max}) - returns a discrete uniform distribution.
@@ -5584,6 +5599,8 @@ public class S {
   public final static IBuiltInSymbol InsertionFunction =
       S.initFinalSymbol("InsertionFunction", ID.InsertionFunction);
 
+  public final static IBuiltInSymbol Inset = S.initFinalSymbol("Inset", ID.Inset);
+
   public final static IBuiltInSymbol InstallJava = S.initFinalSymbol("InstallJava", ID.InstallJava);
 
   /**
@@ -7544,6 +7561,8 @@ public class S {
    */
   public final static IBuiltInSymbol Most = S.initFinalSymbol("Most", ID.Most);
 
+  public final static IBuiltInSymbol MrvLimit = S.initFinalSymbol("MrvLimit", ID.MrvLimit);
+
   /**
    * Multinomial(n1, n2, ...) - gives the multinomial coefficient `(n1+n2+...)!/(n1! n2! ...)`.
    * 
@@ -9004,6 +9023,8 @@ public class S {
    */
   public final static IBuiltInSymbol PowerMod = S.initFinalSymbol("PowerMod", ID.PowerMod);
 
+  public final static IBuiltInSymbol PowerRange = S.initFinalSymbol("PowerRange", ID.PowerRange);
+
   /**
    * PowersRepresentations(intNumber, k, exponent) - computes the representations of the `intNumber`
    * as sum of `x^exponent` terms which occur `k` times.
@@ -9504,6 +9525,8 @@ public class S {
       S.initFinalSymbol("RationalFunctions", ID.RationalFunctions);
 
   public final static IBuiltInSymbol Rationals = S.initFinalSymbol("Rationals", ID.Rationals);
+
+  public final static IBuiltInSymbol Ratios = S.initFinalSymbol("Ratios", ID.Ratios);
 
   public final static IBuiltInSymbol RawBackquote =
       S.initFinalSymbol("RawBackquote", ID.RawBackquote);

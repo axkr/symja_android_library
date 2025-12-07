@@ -378,6 +378,7 @@ public class PiecewiseFunctions {
       S.SawtoothWave.setEvaluator(new SawtoothWave());
       S.Unitize.setEvaluator(new Unitize());
       S.UnitStep.setEvaluator(new UnitStep());
+      S.UnitTriangle.setEvaluator(new UnitTriangle());
     }
   }
 
@@ -1121,6 +1122,50 @@ public class PiecewiseFunctions {
         }
       }
       return F.C1;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+    }
+  }
+
+  private static class UnitTriangle extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      // multiple arguments are treated as a Product
+      // UnitTriangle(x, y) becomes UnitTriangle(x) * UnitTriangle(y)
+      if (ast.size() > 2) {
+        IAST result = ast.mapThread(x -> F.unaryAST1(S.UnitTriangle, x));
+        return result.apply(S.Times);
+      }
+
+      // single argument UnitTriangle(x)
+      IExpr arg1 = ast.arg1();
+
+      // Numeric Evaluation for Reals (Doubles, Rationals, Integers)
+      // Definition: Max(0, 1 - Abs(x))
+      if (arg1.isReal()) {
+        IExpr absArg = arg1.abs();
+
+        // If |x| >= 1, the result is 0
+        if (absArg.greaterEqual(F.C1).isTrue()) {
+          return F.C0;
+        }
+
+        // If |x| < 1, the result is 1 - |x|
+        if (absArg.less(F.C1).isTrue()) {
+          return F.C1.subtract(absArg);
+        }
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
     }
 
     @Override
