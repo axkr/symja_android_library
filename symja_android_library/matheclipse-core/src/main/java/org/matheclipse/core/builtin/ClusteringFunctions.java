@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.hipparchus.clustering.Cluster;
 import org.hipparchus.clustering.Clusterer;
 import org.hipparchus.clustering.DBSCANClusterer;
@@ -16,6 +17,7 @@ import org.hipparchus.util.MathArrays;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
@@ -26,22 +28,15 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.ISymbol;
 
 public class ClusteringFunctions {
 
-  private abstract static class AbstractDistance extends AbstractEvaluator
-      implements DistanceMeasure {
+  private abstract static class AbstractDistance extends AbstractEvaluator implements IDistance {
     private static final long serialVersionUID = -295980120043414467L;
 
+    @Override
     public abstract IExpr distance(IExpr a, IExpr b, EvalEngine engine);
-
-    public IExpr scalarDistance(INumber a, INumber b, EvalEngine engine) {
-      return F.NIL;
-    }
-
-    public IExpr numericFunctionDistance(IExpr a, IExpr b, EvalEngine engine) {
-      return F.NIL;
-    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -73,6 +68,21 @@ public class ClusteringFunctions {
       return F.NIL;
     }
 
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public IExpr numericFunctionDistance(IExpr a, IExpr b, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr scalarDistance(INumber a, INumber b, EvalEngine engine) {
+      return F.NIL;
+    }
+
     protected IExpr vectorDistance(IExpr arg1, IExpr arg2, EvalEngine engine) {
       if (engine.isDoubleMode() && arg1.isNumericAST() && arg2.isNumericAST()) {
         double[] a = arg1.toDoubleVector();
@@ -84,11 +94,6 @@ public class ClusteringFunctions {
         }
       }
       return distance(arg1, arg2, engine);
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
     }
   }
 
@@ -113,14 +118,14 @@ public class ClusteringFunctions {
     }
 
     @Override
-    protected IExpr vectorDistance(IExpr arg1, IExpr arg2, EvalEngine engine) {
-      // don't call numeric case here!
-      return distance(arg1, arg2, engine);
+    public IExpr distance(IExpr a, IExpr b, EvalEngine engine) {
+      return a.equals(b) ? F.C1 : F.C0;
     }
 
     @Override
-    public IExpr distance(IExpr a, IExpr b, EvalEngine engine) {
-      return a.equals(b) ? F.C1 : F.C0;
+    protected IExpr vectorDistance(IExpr arg1, IExpr arg2, EvalEngine engine) {
+      // don't call numeric case here!
+      return distance(arg1, arg2, engine);
     }
   }
 
@@ -379,19 +384,24 @@ public class ClusteringFunctions {
     }
 
     @Override
-    public IExpr scalarDistance(INumber arg1, INumber arg2, EvalEngine engine) {
-      IExpr norm1 = arg1.abs();
+    public IExpr distance(IExpr arg1, IExpr arg2, EvalEngine engine) {
+      IExpr norm1 = F.Norm.of(engine, arg1);
       if (norm1.isZero()) {
         return F.C0;
       }
-      IExpr norm2 = arg2.abs();
+      IExpr norm2 = F.Norm.of(engine, arg2);
       if (norm2.isZero()) {
         return F.C0;
       }
-      final INumber c = arg1.times(arg2.conjugate());
-      return engine.evaluate(F.Subtract(F.C1, F.Divide(c, F.Times(norm1, norm2))));
+      return engine.evaluate(
+          F.Subtract(F.C1, F.Divide(F.Dot(arg1, F.Conjugate(arg2)), F.Times(norm1, norm2))));
     }
 
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
 
     @Override
     public IExpr numericFunctionDistance(IExpr arg1, IExpr arg2, EvalEngine engine) {
@@ -408,22 +418,17 @@ public class ClusteringFunctions {
     }
 
     @Override
-    public IExpr distance(IExpr arg1, IExpr arg2, EvalEngine engine) {
-      IExpr norm1 = F.Norm.of(engine, arg1);
+    public IExpr scalarDistance(INumber arg1, INumber arg2, EvalEngine engine) {
+      IExpr norm1 = arg1.abs();
       if (norm1.isZero()) {
         return F.C0;
       }
-      IExpr norm2 = F.Norm.of(engine, arg2);
+      IExpr norm2 = arg2.abs();
       if (norm2.isZero()) {
         return F.C0;
       }
-      return engine.evaluate(
-          F.Subtract(F.C1, F.Divide(F.Dot(arg1, F.Conjugate(arg2)), F.Times(norm1, norm2))));
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      final INumber c = arg1.times(arg2.conjugate());
+      return engine.evaluate(F.Subtract(F.C1, F.Divide(c, F.Times(norm1, norm2))));
     }
   }
 
@@ -474,6 +479,25 @@ public class ClusteringFunctions {
   }
 
   private static class FindClusters extends AbstractEvaluator {
+
+    /**
+     * Convert the calculated list of clusters to a symja list.
+     * 
+     * @param clusters
+     * @param isListOfLists
+     * @return
+     */
+    private static IAST clustersToList(final List<? extends Cluster<DoublePoint>> clusters,
+        boolean isListOfLists) {
+      return F.mapRange(0, clusters.size(), j -> {
+        final List<DoublePoint> clusterPoints = clusters.get(j).getPoints();
+        if (isListOfLists) {
+          return F.mapRange(0, clusterPoints.size(),
+              i -> new ASTRealVector(clusterPoints.get(i).getPoint().clone(), false));
+        }
+        return F.mapRange(0, clusterPoints.size(), i -> F.num(clusterPoints.get(i).getPoint()[0]));
+      });
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -566,28 +590,100 @@ public class ClusteringFunctions {
       return F.NIL;
     }
 
-    /**
-     * Convert the calculated list of clusters to a symja list.
-     * 
-     * @param clusters
-     * @param isListOfLists
-     * @return
-     */
-    private static IAST clustersToList(final List<? extends Cluster<DoublePoint>> clusters,
-        boolean isListOfLists) {
-      return F.mapRange(0, clusters.size(), j -> {
-        final List<DoublePoint> clusterPoints = clusters.get(j).getPoints();
-        if (isListOfLists) {
-          return F.mapRange(0, clusterPoints.size(),
-              i -> new ASTRealVector(clusterPoints.get(i).getPoint().clone(), false));
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_5;
+    }
+  }
+
+  static final class HammingDistance extends AbstractFunctionOptionEvaluator implements IDistance {
+
+    private static final long serialVersionUID = -5707435719120777249L;
+
+    @Override
+    public IExpr distance(IExpr a, IExpr b, EvalEngine engine) {
+      IAST vect1 = (IAST) a.normal(false);
+      IAST vect2 = (IAST) b.normal(false);
+      long count = 0L;
+      for (int i = 1; i < vect1.size(); i++) {
+        if (!vect1.get(i).isSame(vect2.get(i))) {
+          count++;
         }
-        return F.mapRange(0, clusterPoints.size(), i -> F.num(clusterPoints.get(i).getPoint()[0]));
-      });
+      }
+      return F.ZZ(count);
+    }
+
+    @Override
+    public double compute(double[] u, double[] v) throws MathIllegalArgumentException {
+      double count = 0.0;
+      for (int i = 0; i < u.length; i++) {
+        if (!F.isEqual(u[i], v[i])) {
+          count++;
+        }
+      }
+      return count;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
+        final EvalEngine engine, IAST originalAST) {
+
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      if (arg1.isString() && arg2.isString()) {
+        boolean ignoreCase = option[0].isTrue();
+
+        org.apache.commons.text.similarity.HammingDistance hammingDistance =
+            new org.apache.commons.text.similarity.HammingDistance();
+        String str1 = arg1.toString();
+        String str2 = arg2.toString();
+        if (str1.length() != str2.length()) {
+          // `1` and `2` must have the same length.
+          return Errors.printMessage(ast.topHead(), "idim", F.list(arg1, arg2), engine);
+        }
+
+        if (ignoreCase) {
+          return F
+              .ZZ(hammingDistance.apply(str1.toLowerCase(Locale.US), str2.toLowerCase(Locale.US)));
+        }
+        return F.ZZ(hammingDistance.apply(str1, str2));
+      }
+
+      int dim1 = arg1.isVector();
+      if (dim1 > (-1)) {
+        int dim2 = arg2.isVector();
+        if (dim2 > (-1)) {
+          if (dim1 != dim2) {
+            // The arguments `1` and `2` do not have compatible dimensions.
+            return Errors.printMessage(ast.topHead(), "bldim", F.List(arg1, arg2), engine);
+          }
+          if (dim1 != 0) {
+            return distance(arg1, arg2, engine);
+          }
+        }
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunctionDistance(IExpr a, IExpr b, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr scalarDistance(INumber a, INumber b, EvalEngine engine) {
+      return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_5;
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.IgnoreCase, S.False);
     }
   }
 
@@ -606,6 +702,7 @@ public class ClusteringFunctions {
       S.CosineDistance.setEvaluator(new CosineDistance());
       S.EuclideanDistance.setEvaluator(new EuclideanDistance());
       S.FindClusters.setEvaluator(new FindClusters());
+      S.HammingDistance.setEvaluator(new HammingDistance());
       S.ManhattanDistance.setEvaluator(new ManhattanDistance());
       S.SquaredEuclideanDistance.setEvaluator(new SquaredEuclideanDistance());
     }

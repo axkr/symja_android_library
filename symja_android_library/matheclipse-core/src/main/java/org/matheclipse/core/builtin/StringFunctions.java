@@ -377,7 +377,7 @@ public final class StringFunctions {
       if (arg1.isString() && arg2.isString()) {
         boolean ignoreCase = option[0].isTrue();
 
-        LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
+        LevenshteinDistance levenshteinDistance = LevenshteinDistance.getDefaultInstance();
         if (ignoreCase) {
           return F.ZZ(levenshteinDistance.apply(arg1.toString().toLowerCase(Locale.US),
               arg2.toString().toLowerCase(Locale.US)));
@@ -745,47 +745,6 @@ public final class StringFunctions {
     }
   }
 
-  private static final class HammingDistance extends AbstractFunctionOptionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] option,
-        final EvalEngine engine, IAST originalAST) {
-
-      IExpr arg1 = ast.arg1();
-      IExpr arg2 = ast.arg2();
-      if (arg1.isString() && arg2.isString()) {
-        boolean ignoreCase = option[0].isTrue();
-
-        org.apache.commons.text.similarity.HammingDistance hammingDistance =
-            new org.apache.commons.text.similarity.HammingDistance();
-        String str1 = arg1.toString();
-        String str2 = arg2.toString();
-        if (str1.length() != str2.length()) {
-          // `1` and `2` must have the same length.
-          return Errors.printMessage(ast.topHead(), "idim", F.list(arg1, arg2), engine);
-        }
-
-        if (ignoreCase) {
-          return F
-              .ZZ(hammingDistance.apply(str1.toLowerCase(Locale.US), str2.toLowerCase(Locale.US)));
-        }
-        return F.ZZ(hammingDistance.apply(str1, str2));
-      }
-
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, S.IgnoreCase, S.False);
-    }
-  }
-
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -815,7 +774,6 @@ public final class StringFunctions {
       S.FileNameTake.setEvaluator(new FileNameTake());
       S.FromCharacterCode.setEvaluator(new FromCharacterCode());
       S.FromLetterNumber.setEvaluator(new FromLetterNumber());
-      S.HammingDistance.setEvaluator(new HammingDistance());
       S.LetterNumber.setEvaluator(new LetterNumber());
       S.LetterQ.setEvaluator(new LetterQ());
       S.LowerCaseQ.setEvaluator(new LowerCaseQ());

@@ -96,6 +96,12 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "1");
     check("HammingDistance(\"TIME\", \"dime\", IgnoreCase -> True)", //
         "1");
+    check("HammingDistance({1, 0, 0, 1, 1}, {0, 0, 1, 0, 1})", //
+        "3");
+    check("HammingDistance({0, 1,-1, 0, 0, 1, 0}, {1, 1, 0, 0, 1, 2, 0})", //
+        "4");
+    check("HammingDistance({1.0, 0.0, 0, 1, 1 }, {0.0, 0.0, 1.0, 0.0, 1.0})", //
+        "4");
   }
 
   @Test
