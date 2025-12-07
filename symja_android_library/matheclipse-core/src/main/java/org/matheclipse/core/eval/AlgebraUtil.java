@@ -737,22 +737,38 @@ public class AlgebraUtil {
     return Optional.of(result);
   }
 
-  public static IAST cancelCommonFactors(IExpr part0, IExpr part1) {
-    IExpr p0 = part0;
-    if (part0.isPlus() || part0.isTimes()) {
-      if (VariablesSet.isUnivariate(part0)) {
-        p0 = S.Factor.of(part0);
+  /**
+   * Cancel common factors in numerator and denominator.
+   * 
+   * @param numerator
+   * @param denominator
+   * @return a {@link IAST} list <code>{numerator, denominator}</code> with common factors canceled
+   *         out or {@link F#NIL} if no cmmon factors were found
+   */
+  public static IAST cancelCommonFactors(IExpr numerator, IExpr denominator) {
+    IExpr numer = numerator;
+    if (numerator.isPlus() //
+        || (numerator.isTimes() && numerator.exists(x -> x.isPlus()))) {
+      if (VariablesSet.isMultivariate(numerator, 3)) {
+        numer = S.Factor.of(numerator);
       }
+    } else if (numerator.isSymbol() //
+        || (numerator.isPower() && numerator.first().isSymbol())) {
+      numer = F.Times(numerator);
     }
-    IExpr p1 = part1;
-    if (part1.isPlus() || part1.isTimes()) {
-      if (VariablesSet.isUnivariate(part1)) {
-        p1 = S.Factor.of(part1);
+    IExpr denom = denominator;
+    if (denominator.isPlus()//
+        || (denominator.isTimes() && denominator.exists(x -> x.isPlus()))) {
+      if (VariablesSet.isMultivariate(denominator, 3)) {
+        denom = S.Factor.of(denominator);
       }
+    } else if (denominator.isSymbol() //
+        || (denominator.isPower() && denominator.first().isSymbol())) {
+      denom = F.Times(denominator);
     }
-    if (p0.isTimes() || p1.isTimes()) {
-      IAST p0Times = AbstractFunctionEvaluator.getNegativePlusInTimes(p0);
-      IAST p1Times = AbstractFunctionEvaluator.getNegativePlusInTimes(p1);
+    if (numer.isTimes() || denom.isTimes()) {
+      IAST p0Times = AbstractFunctionEvaluator.getNegativePlusInTimes(numer);
+      IAST p1Times = AbstractFunctionEvaluator.getNegativePlusInTimes(denom);
       // IAST p0Times = p0.isTimes() ? (IAST) p0 : F.Times(p0);
       // IAST p1Times = p1.isTimes() ? (IAST) p1 : F.Times(p0);
       IASTAppendable t0 = p0Times.copyAppendable();
@@ -842,19 +858,20 @@ public class AlgebraUtil {
         IExpr p1Result = t1.oneIdentity1();
         if (Config.TRACE_BASIC_ARITHMETIC && EvalEngine.get().isTraceMode()) {
           if (EvalEngine.get().isTraceMode()) {
-            if (!p0.equals(part0)) {
-              EvalEngine.get().addTraceStep(F.Divide(part0, part1), F.Divide(p0, part1),
-                  F.List(S.Cancel, F.$str("Factor"), part0, p0));
+            if (!numer.equals(numerator)) {
+              EvalEngine.get().addTraceStep(F.Divide(numerator, denominator),
+                  F.Divide(numer, denominator),
+                  F.List(S.Cancel, F.$str("Factor"), numerator, numer));
             }
-            if (!p1.equals(part1)) {
-              EvalEngine.get().addTraceStep(F.Divide(p0, part1), F.Divide(p0, p1),
-                  F.List(S.Cancel, F.$str("Factor"), part1, p1));
+            if (!denom.equals(denominator)) {
+              EvalEngine.get().addTraceStep(F.Divide(numer, denominator), F.Divide(numer, denom),
+                  F.List(S.Cancel, F.$str("Factor"), denominator, denom));
             }
-            EvalEngine.get().addTraceStep(F.Divide(p0, p1), F.Divide(p0Result, p1Result),
+            EvalEngine.get().addTraceStep(F.Divide(numer, denom), F.Divide(p0Result, p1Result),
                 F.List(S.Cancel, F.$str("CancelCommonFactors"), commonFactors));
           }
         }
-        return F.List(p0Result, p1Result);
+        return F.pair(p0Result, p1Result);
       }
     }
     return F.NIL;
