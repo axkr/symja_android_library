@@ -520,13 +520,10 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         IExpr temp = expr.replaceAll(substitutionRule);
         if (temp.isPresent()) {
           expr = engine.evaluate(temp);
-          exprAnalyzer = new ExprAnalyzer(expr, variablesList, isGenerateConditions(), engine);
-          exprAnalyzer.simplifyAndAnalyze();
-        } else {
-          // reusing old analyzer not possible; we've removed 1 variable in variablesList
-          exprAnalyzer = new ExprAnalyzer(expr, variablesList, isGenerateConditions(), engine);
-          exprAnalyzer.simplifyAndAnalyze();
         }
+        // reusing old analyzer not possible; we've removed 1 variable in variablesList
+        exprAnalyzer = new ExprAnalyzer(expr, variablesList, isGenerateConditions(), engine);
+        exprAnalyzer.simplifyAndAnalyze();
         subAnalyzerList.add(exprAnalyzer);
       }
       return subAnalyzerList;

@@ -911,17 +911,17 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   public boolean forAllLeaves(Predicate<? super IExpr> predicate, int startOffset);
 
   /**
-   * Iterate over all <code>value-elements</code> from index <code>1</code> to <code>size()-1</code>
-   * and call the method <code>Consumer.accept()</code> for these elements. <b>Note:</b> the 0-th
-   * element (i.e. the head of the AST) will not be selected.
+   * Iterate over all <code>value-elements</code> from index <code>1</code> (included) to
+   * <code>size()</code> (excluded) and call the method <code>Consumer.accept()</code> for these
+   * elements. <b>Note:</b> the 0-th element (i.e. the head of the AST) will not be selected.
    */
   @Override
   public void forEach(Consumer<? super IExpr> action);
 
   /**
-   * Iterate over all <code>value-elements</code> from index <code>startOffset</code> to
-   * <code>size()-1</code> and call the method <code>Consumer.accept()</code> for these elements.
-   * <b>Note:</b> the 0-th element (i.e. the head of the AST) will not be selected.
+   * Iterate over all <code>value-elements</code> from index <code>startOffset</code> (included) to
+   * <code>size()</code> (excluded) and call the method <code>Consumer.accept()</code> for these
+   * elements. <b>Note:</b> the 0-th element (i.e. the head of the AST) will not be selected.
    *
    * @param action the action which should be executed for each element
    * @param startOffset the start offset from which the action.accept() method should be executed
@@ -1022,8 +1022,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   }
 
   /**
-   * Iterate over all elements from index <code>1</code> to <code>size()-1</code> and call the
-   * method <code>Consumer.accept()</code> for these elements.
+   * Iterate over all elements from index <code>1</code> (include) to <code>size()</code>
+   * (excluded)and call the method <code>Consumer.accept()</code> for these elements.
    * <p>
    * <b>Note:</b> the 0-th element (i.e. the head of the AST) will not be selected. If the element
    * is an Association the complete rule will be selected as element.
@@ -1031,10 +1031,10 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   public void forEachRule(Consumer<? super IExpr> action);
 
   /**
-   * Iterate over all elements from index <code>startOffset</code> to <code>size()-1</code> and call
-   * the method <code>Consumer.accept()</code> for these elements. <b>Note:</b> the 0-th element
-   * (i.e. the head of the AST) will not be selected. If the element is an Association the complete
-   * rule will be selected as element.
+   * Iterate over all elements from index <code>startOffset</code> (included) to <code>size()</code>
+   * (excluded) and call the method <code>Consumer.accept()</code> for these elements. <b>Note:</b>
+   * the 0-th element (i.e. the head of the AST) will not be selected. If the element is an
+   * Association the complete rule will be selected as element.
    *
    * @param action the action which should be executed for each element
    * @param startOffset the start offset from which the action.accept() method should be executed
@@ -1042,8 +1042,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   public void forEachRule(Consumer<? super IExpr> action, int startOffset);
 
   /**
-   * Iterate over all elements from index <code>start</code> to <code>size()-1</code> and call the
-   * method {@link ObjIntConsumer#accept(Object, int)} for these elements.
+   * Iterate over all elements from index <code>start</code> (included) to <code>end</code>
+   * (excluded) and call the method {@link ObjIntConsumer#accept(Object, int)} for these elements.
    * <p>
    * <b>Note:</b> If the element is an {@link IAssociation} the right-hand-side
    * &quot;value&quot;-part of the rule will be selected as element.
@@ -1058,6 +1058,15 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
     }
   }
 
+  /**
+   * Iterate over all elements from index <code>1</code> (included) to <code>size()</code>
+   * (excluded) and call the method {@link ObjIntConsumer#accept(Object, int)} for these elements.
+   * <p>
+   * <b>Note:</b> If the element is an {@link IAssociation} the right-hand-side
+   * &quot;value&quot;-part of the rule will be selected as element.
+   * 
+   * @param consumer
+   */
   default void forEachRule(ObjIntConsumer<? super IExpr> consumer) {
     forEachRule(1, size(), consumer);
   }

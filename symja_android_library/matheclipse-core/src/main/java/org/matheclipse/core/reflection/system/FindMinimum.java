@@ -680,7 +680,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
     }
     IExpr initialResult = F.NIL;
     try {
-      initialResult = engine.evaluate(function.replaceAll(rules));
+      initialResult = engine.evaluate(F.subst(function, rules));
       if (!initialResult.isNumericFunction(true)) {
         // The Function value `1` is not a real number at `2`=`3`.
         return Errors.printMessage(goalType == GoalType.MINIMIZE ? S.FindMinimum : S.FindMaximum,

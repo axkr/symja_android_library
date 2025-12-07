@@ -244,7 +244,7 @@ public class Order {
       if (!subsRule.isEmpty()) {
         IASTAppendable ruleList = F.ListAlloc(subsRule.size());
         subsRule.forEach((k, v) -> ruleList.append(F.Rule(k, v)));
-        leadingTermExpr = leadingTermExpr.replaceAll(ruleList);
+        leadingTermExpr = F.subst(leadingTermExpr, ruleList);
       }
 
       // Pre-processing before loop
@@ -324,7 +324,7 @@ public class Order {
       if (!revSubsRule.isEmpty()) {
         IASTAppendable revRuleList = F.ListAlloc(revSubsRule.size());
         revSubsRule.forEach((k, v) -> revRuleList.append(F.Rule(k, v)));
-        leadingTermExpr = leadingTermExpr.replaceAll(revRuleList);
+        leadingTermExpr = F.subst(leadingTermExpr, revRuleList);
       }
     } // End if variables not empty
 

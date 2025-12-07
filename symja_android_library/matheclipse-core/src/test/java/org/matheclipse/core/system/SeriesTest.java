@@ -321,12 +321,24 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
     check("Series(f(x),{x,a,3})",
         "f(a)+f'(a)*(-a+x)+1/2*f''(a)*(-a+x)^2+1/6*Derivative(3)[f][a]*(-a+x)^3+O(-a+x)^4");
-    check("Series(Exp(x),{x,0,2})", "1+x+x^2/2+O(x)^3");
+    check("Series(Exp(x),{x,0,2})", //
+        "1+x+x^2/2+O(x)^3");
     check("Series(Exp(f(x)),{x,0,2})",
         "E^f(0)+E^f(0)*f'(0)*x+1/2*(E^f(0)*f'(0)^2+E^f(0)*f''(0))*x^2+O(x)^3");
-    check("Series(Exp(x),{x,0,5})", "1+x+x^2/2+x^3/6+x^4/24+x^5/120+O(x)^6");
-    check("Series(100,{x,a,5})", "100");
-    check("Series(y,{x,a,5})", "y");
+    check("Series(Exp(x),{x,0,5})", //
+        "1+x+x^2/2+x^3/6+x^4/24+x^5/120+O(x)^6");
+    check("Series(100,{x,a,5})", //
+        "100");
+    check("Series(y,{x,a,5})", //
+        "y");
+  }
+
+  @Test
+  public void testSeriesMrv() {
+    check("Series((-1/E^(E^(-E^x*t^0)-1/x)+E^(E^(-x)+(E^(-E^x*t^0))^0/E^x^2+1/x))*E^x*t^0,{t,0,1})", //
+        "(-1/E^(E^(-E^x)-1/x)+E^(E^(-x)+E^(-x^2)+1/x))*E^x");
+    check("Series((1+1/(1/t))^2/((-1+1+1/(1/t))*(1+1+1/(1/t))),{t,0,1})", //
+        "1/(2*t)+3/4+t/8+O(t)^2");
   }
 
   @Test
@@ -641,6 +653,14 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     check("Series(Sin(x)/x^2, {x, 0, 3})", //
         "1/x-x/6+x^3/120+O(x)^4");
   }
+
+  // @Test
+  // public void testGammaSinSeries() {
+  // check("Series(Gamma(Sin(x) - x)^3, {x,0,1})", //
+  // "");
+  // check("Series(Gamma(Sin(x) - x)^3, x -> 0)", //
+  // "");
+  // }
 
   @Test
   public void testPadeApproximant() {

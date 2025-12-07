@@ -3842,7 +3842,7 @@ public class Algebra {
       IExpr exprDenominator = F.evalExpandAll(parts[1]);
 
       final UnivPowerSeries<BigRational> ps = quotientPS(exprNumerator, exprDenominator, x);
-      if (ps != null) {
+      if (ps != null && !ps.isZERO()) {
         ASTSeriesData seriesData = new ASTSeriesData(x, x0, 0, n + expDenominator, expDenominator);
         // reversed order seems to be a bit faster
         for (int i = n; i >= 0; i--) {

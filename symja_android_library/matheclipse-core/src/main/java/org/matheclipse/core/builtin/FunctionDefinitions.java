@@ -22,7 +22,11 @@ public final class FunctionDefinitions {
       S.D.setEvaluator(new org.matheclipse.core.reflection.system.D());
       S.Derivative.setEvaluator(new org.matheclipse.core.reflection.system.Derivative());
       S.DifferenceDelta.setEvaluator(new org.matheclipse.core.reflection.system.DifferenceDelta());
+      S.DifferenceQuotient
+          .setEvaluator(new org.matheclipse.core.reflection.system.DifferenceQuotient());
       S.DiscretePlot.setEvaluator(new org.matheclipse.core.reflection.system.DiscretePlot());
+      S.DiscreteRatio.setEvaluator(new org.matheclipse.core.reflection.system.DiscreteRatio());
+      S.DiscreteShift.setEvaluator(new org.matheclipse.core.reflection.system.DiscreteShift());
       S.DSolve.setEvaluator(new org.matheclipse.core.reflection.system.DSolve());
       S.EasterSunday.setEvaluator(new org.matheclipse.core.reflection.system.EasterSunday());
       S.ElementData.setEvaluator(new org.matheclipse.core.data.ElementData());
@@ -117,7 +121,9 @@ public final class FunctionDefinitions {
       S.PolarPlot.setEvaluator(new org.matheclipse.core.reflection.system.PolarPlot());
       S.PolynomialReduce
           .setEvaluator(new org.matheclipse.core.reflection.system.PolynomialReduce());
+      S.PowerRange.setEvaluator(new org.matheclipse.core.reflection.system.PowerRange());
       S.Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
+      S.Ratios.setEvaluator(new org.matheclipse.core.reflection.system.Ratios());
       S.Reduce.setEvaluator(new org.matheclipse.core.reflection.system.Reduce());
       S.Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
       S.SudokuSolve.setEvaluator(new org.matheclipse.core.reflection.system.SudokuSolve());
@@ -136,6 +142,7 @@ public final class FunctionDefinitions {
 
       S.Hash.setEvaluator(new org.matheclipse.core.reflection.system.Hash());
       S.FileHash.setEvaluator(new org.matheclipse.core.reflection.system.FileHash());
+      // S.MrvLimit.setEvaluator(new org.matheclipse.core.reflection.system.MrvLimit());
 
       if (!Config.FUZZY_PARSER) {
         S.Export.setEvaluator(new org.matheclipse.core.reflection.system.Export());

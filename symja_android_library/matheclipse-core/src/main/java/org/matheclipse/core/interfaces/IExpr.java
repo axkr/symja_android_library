@@ -2496,7 +2496,7 @@ public interface IExpr
   /**
    * Test if this expression is an AST function, which contains the given <b>header element</b> at
    * index position <code>0</code> and some optional <b>argument elements</b> at the index positions
-   * <code>1..(size()-1)</code>. Therefore this expression is not an <b>atomic expression</b>.
+   * <code>1..argSize()</code>. Therefore this expression is not an <b>atomic expression</b>.
    *
    * @param header the header element at position 0, which should be tested
    * 
@@ -2524,7 +2524,7 @@ public interface IExpr
   /**
    * Test if this expression is an AST function, which contains the given <b>header element</b> at
    * index position <code>0</code> and some optional <b>argument elements</b> at the index positions
-   * <code>1..(size()-1)</code>. Therefore this expression is not an <b>atomic expression</b>.
+   * <code>1..argSize()</code>. Therefore this expression is not an <b>atomic expression</b>.
    *
    * @param header the header element at position 0, which should be tested
    * 

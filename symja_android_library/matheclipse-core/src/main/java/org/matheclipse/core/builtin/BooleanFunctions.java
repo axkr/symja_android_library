@@ -3109,11 +3109,8 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (ast.arg1().isAST()) {
-        IExpr subst = ast.arg1().replaceAll(logicalExpand(engine));
-        if (subst.isPresent()) {
-          return subst;
-        }
+      if (arg1.isAST()) {
+        return F.subst(arg1, logicalExpand(engine));
       }
       return arg1;
     }

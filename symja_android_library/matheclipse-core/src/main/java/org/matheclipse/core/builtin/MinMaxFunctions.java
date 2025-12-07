@@ -838,8 +838,7 @@ public class MinMaxFunctions {
           if (evaled) {
             return convertMinMaxList(minMaxList, y);
           }
-          IExpr f = function.replaceAll(F.Rule(x, F.Interval(F.CNInfinity, F.CInfinity)))
-              .orElse(function);
+          IExpr f = F.subst(function, x, F.Interval(F.CNInfinity, F.CInfinity));
           IExpr result = engine.evaluate(f);
           if (result.isInterval1()) {
             return convertInterval(result, y);

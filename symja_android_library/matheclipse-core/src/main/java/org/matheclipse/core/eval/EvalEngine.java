@@ -139,7 +139,7 @@ public class EvalEngine implements Serializable {
       } catch (final ValidateException ve) {
         //
       } catch (Exception | OutOfMemoryError | StackOverflowError ex) {
-        Errors.printMessage(S.TimeConstrained, ex, EvalEngine.get());
+        Errors.printMessage(S.TimeConstrained, ex, fEngine);
         if (Config.FUZZ_TESTING) {
           throw ex;
         }
@@ -856,6 +856,13 @@ public class EvalEngine implements Serializable {
     return fApfloatHelper;
   }
 
+  /**
+   * Begin ({@link S#Begin}) the new context <code>contextName</code>
+   * 
+   * @param contextName
+   * @param parentContext
+   * @return the new package context
+   */
   public Context begin(String contextName, Context parentContext) {
     fContextPathStack.push(fContextPath);
     fContextPath = fContextPath.copy();
@@ -864,6 +871,12 @@ public class EvalEngine implements Serializable {
     return packageContext;
   }
 
+  /**
+   * Begin ({@link S#BeginPackage}) the new package context <code>contextName</code>
+   * 
+   * @param contextName
+   * @return
+   */
   public Context beginPackage(String contextName) {
     fContextPathStack.push(fContextPath);
     Context packageContext = fContextPath.getContext(contextName);
@@ -872,10 +885,6 @@ public class EvalEngine implements Serializable {
     return packageContext;
   }
 
-  private void beginTrace(Predicate<IExpr> matcher) {
-    setTraceMode(true);
-    fTraceStack = new TraceStack(matcher);
-  }
 
   /**
    * Check the number of arguments and print a message to error stream if necessary.
@@ -1074,6 +1083,11 @@ public class EvalEngine implements Serializable {
     return --fRecursionCounter;
   }
 
+  /**
+   * End ({@link S#End}) the current context and return to the previous context.
+   * 
+   * @return the current context or <code>null</code>
+   */
   public Context end() {
     if (fContextPathStack.size() > 0) {
       ContextPath p = fContextPath;
@@ -1085,6 +1099,9 @@ public class EvalEngine implements Serializable {
     return null;
   }
 
+  /**
+   * End the current package {@link S#EndPackage} context and return to the previous context.
+   */
   public void endPackage() {
     if (fContextPathStack.size() > 0) {
       ContextPath p = fContextPath;
@@ -2865,7 +2882,7 @@ public class EvalEngine implements Serializable {
         }
       }
       // e.printStackTrace();
-      Errors.printMessage(S.TimeConstrained, e, EvalEngine.get());
+      Errors.printMessage(S.TimeConstrained, e, this);
       if (defaultValue.isPresent()) {
         return defaultValue;
       }
@@ -2886,7 +2903,7 @@ public class EvalEngine implements Serializable {
         }
       }
       // Appengine example: com.google.apphosting.api.DeadlineExceededException
-      Errors.printMessage(S.TimeConstrained, e, EvalEngine.get());
+      Errors.printMessage(S.TimeConstrained, e, this);
       if (defaultValue.isPresent()) {
         return defaultValue;
       }
@@ -2913,7 +2930,8 @@ public class EvalEngine implements Serializable {
   public final IAST evalTrace(final IExpr expr, Predicate<IExpr> matcher) {
     IAST traceList = F.List();
     try {
-      beginTrace(matcher);
+      setTraceMode(true);
+      fTraceStack = new TraceStack(matcher);
       evaluate(expr);
     } finally {
       traceList = endTrace();
@@ -3530,18 +3548,31 @@ public class EvalEngine implements Serializable {
   }
 
   /**
-   * The engine evaluates the left-hand-side of a <code>Set, SetDelayed,...</code> expression.
+   * The engine evaluates the left-hand-side of a {@link S#Set}, {@link S#SetDelayed},
+   * {@link S#TagSet}, {@link S#TagSetDelayed}, {@link S#UpSet}, {@link S#UpSetDelayed} expression.
    *
-   * @return
+   * @return <code>true</code> if the engine evaluates the left-hand-side of a rule expression.
    */
   public final boolean isEvalLHSMode() {
     return fEvalLHSMode;
   }
 
+  /**
+   * The engine evaluates the right-hand-side of a {@link S#Set}, {@link S#SetDelayed},
+   * {@link S#TagSet}, {@link S#TagSetDelayed}, {@link S#UpSet}, {@link S#UpSetDelayed} expression.
+   * 
+   * @return <code>true</code> if the engine evaluates the right-hand-side of a rule expression.
+   */
   public final boolean isEvalRHSMode() {
     return fEvalRHSMode;
   }
 
+  /**
+   * Check if the file system access is enabled. In sandbox mode {@link Config#FILESYSTEM_ENABLED}
+   * is set to <code>false</code> the file system access is disabled.
+   * 
+   * @return
+   */
   public final boolean isFileSystemEnabled() {
     return fFileSystemEnabled;
   }
@@ -3566,7 +3597,7 @@ public class EvalEngine implements Serializable {
       } else {
         if (refArgSize[0] != ((IAST) argument).argSize()) {
           // tdlen: Objects of unequal length in `1` cannot be combined.
-          Errors.printMessage(errorHead, errorShortcut, F.list(errorAST), EvalEngine.get());
+          Errors.printMessage(errorHead, errorShortcut, F.list(errorAST), this);
           // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
           return true;
         }
@@ -3581,14 +3612,14 @@ public class EvalEngine implements Serializable {
         } else {
           if (refArgSize[0] != dimensions[0]) {
             // Objects of unequal length in `1` cannot be combined.
-            Errors.printMessage(S.Thread, "tdlen", F.list(errorAST), EvalEngine.get());
+            Errors.printMessage(S.Thread, "tdlen", F.list(errorAST), this);
             // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
             return true;
           }
         }
       } else {
         // Objects of unequal length in `1` cannot be combined.
-        Errors.printMessage(S.Thread, "tdlen", F.list(errorAST), EvalEngine.get());
+        Errors.printMessage(S.Thread, "tdlen", F.list(errorAST), this);
         // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
         return true;
       }
@@ -3601,7 +3632,7 @@ public class EvalEngine implements Serializable {
         }
         if (refArgSize[0] != association.argSize()) {
           // tdlen: Objects of unequal length in `1` cannot be combined.
-          Errors.printMessage(errorHead, errorShortcut, F.list(errorAST), EvalEngine.get());
+          Errors.printMessage(errorHead, errorShortcut, F.list(errorAST), this);
           // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
           return true;
         }
@@ -3832,7 +3863,7 @@ public class EvalEngine implements Serializable {
       if (expr.isPresent()) {
         IExpr temp = evaluate(expr);
         // backward substitution
-        return temp.replaceAll(dummyVariablesMap).orElse(temp);
+        return F.subst(temp, dummyVariablesMap);
       }
     } finally {
       setQuietMode(quietMode);

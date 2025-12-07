@@ -2278,12 +2278,18 @@ public class SeriesFunctions {
       series = temp;
     } else {
       arg = seriesDataRecursive(rest.arg1(), x, x0, n, engine);
+      if (arg == null) {
+        return null;
+      }
       series = arg;
       start = 2;
     }
     if (series != null) {
       for (int i = start; i < rest.size(); i++) {
         arg = seriesDataRecursive(rest.get(i), x, x0, n, engine);
+        if (arg == null) {
+          return null;
+        }
         series = series.plusPS(arg);
       }
       if (series != null) {

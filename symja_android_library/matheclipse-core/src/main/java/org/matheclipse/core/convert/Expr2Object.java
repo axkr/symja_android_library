@@ -2,9 +2,8 @@ package org.matheclipse.core.convert;
 
 import java.math.RoundingMode;
 import org.hipparchus.util.OpenIntToDoubleHashMap;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
@@ -12,8 +11,8 @@ import com.google.common.math.DoubleMath;
 
 public class Expr2Object {
 
-  public static double[] toPolynomial(IExpr expr, IExpr sym) {
-    OpenIntToDoubleHashMap map = toPolynomialMap(expr, sym);
+  public static double[] toPolynomial(IExpr expr, IExpr sym, EvalEngine engine) {
+    OpenIntToDoubleHashMap map = toPolynomialMap(expr, sym, engine);
     if (map == null) {
       return null;
     }
@@ -56,7 +55,8 @@ public class Expr2Object {
    * @param variable
    * @return <code>null</code> if the expression couldn't be converted to a polynomial.
    */
-  private static OpenIntToDoubleHashMap toPolynomialMap(IExpr expr, IExpr variable) {
+  private static OpenIntToDoubleHashMap toPolynomialMap(IExpr expr, IExpr variable,
+      EvalEngine engine) {
     try {
       OpenIntToDoubleHashMap map = new OpenIntToDoubleHashMap();
       if (expr.isPlus()) {
@@ -73,7 +73,7 @@ public class Expr2Object {
                   if (exp != (-1)) {
                     return null;
                   }
-                  IExpr res = F.evaln(power.exponent());
+                  IExpr res = engine.evalN(power.exponent());
                   if (!(res instanceof INum)) {
                     return null;
                   }
@@ -96,7 +96,7 @@ public class Expr2Object {
                 coeff += ((INum) times.get(j)).doubleValue();
                 continue;
               }
-              IExpr res = F.evaln(times.get(j));
+              IExpr res = engine.evalN(times.get(j));
               if (!(res instanceof INum)) {
                 return null;
               }
@@ -110,7 +110,7 @@ public class Expr2Object {
           } else if (plus.get(i).isPower()) {
             IAST power = (IAST) plus.get(i);
             if (power.arg1().equals(variable)) {
-              IExpr res = F.evaln(power.arg2());
+              IExpr res = engine.evalN(power.arg2());
               if (!(res instanceof INum)) {
                 return null;
               }
@@ -133,7 +133,7 @@ public class Expr2Object {
             addCoefficient(map, ((INum) plus.get(i)).doubleValue(), 0);
             continue;
           }
-          IExpr res = F.evaln(plus.get(i));
+          IExpr res = engine.evalN(plus.get(i));
           if (!(res instanceof INum)) {
             return null;
           }

@@ -405,8 +405,8 @@ public class Config {
   public static boolean MATRIX_TEXFORM = true;
 
   /**
-   * Enable tests and functions which use the local files. Don't use <code>final</code> here because
-   * of grpc interface.
+   * Enable tests and functions which use the local files. Don't use <code>final</code> here. Set
+   * this switch to <code>true</code> to leave the sandbox mode.
    */
   public static boolean FILESYSTEM_ENABLED = false;
 

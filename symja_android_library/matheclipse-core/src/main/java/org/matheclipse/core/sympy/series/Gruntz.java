@@ -84,7 +84,7 @@ public class Gruntz {
       for (Map.Entry<ISymbol, IExpr> entry : s2.rewrites.entrySet()) {
         ISymbol var = entry.getKey();
         IExpr rewr = entry.getValue();
-        res.rewrites.put(var, rewr.replaceAll(tr));
+        res.rewrites.put(var, F.subst(rewr, tr));
       }
 
       return new Object[] {res, exps};
@@ -374,8 +374,8 @@ public class Gruntz {
       return new Object[] {union, expsboth};
     }
 
-     IExpr f0 = f.keySet().iterator().next();
-     IExpr g0 = g.keySet().iterator().next();
+    IExpr f0 = f.keySet().iterator().next();
+    IExpr g0 = g.keySet().iterator().next();
     char c = compare(f0, g0, x);
     if (c == '>') {
       return new Object[] {f, expsf};
@@ -636,8 +636,7 @@ public class Gruntz {
       }
       O2.add(F.pair(var,
           // exp((arg - c*g.exp))*wsym**c
-          F.Times(F.Exp(F.Plus(arg, F.Times(F.CN1, c, g.exponent()))), F.Power(wsym, c))
-              .eval()));
+          F.Times(F.Exp(F.Plus(arg, F.Times(F.CN1, c, g.exponent()))), F.Power(wsym, c)).eval()));
     }
 
     IExpr f = Powsimp.powsimp(e, true, "exp");

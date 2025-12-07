@@ -161,7 +161,7 @@ public class ChocoConvert {
     final Predicate<IExpr> isPrime =
         (domain == S.Primes) ? Predicates.isTrue(EvalEngine.get(), S.PrimeQ) : null;
     // Create a constraint network
-    Model model = new Model();
+    Model model = new Model(); // Settings.init().setLCG(true)
     for (int i = 1; i < variables.size(); i++) {
       IExpr expr = variables.get(i);
       if (expr instanceof ISymbol) {

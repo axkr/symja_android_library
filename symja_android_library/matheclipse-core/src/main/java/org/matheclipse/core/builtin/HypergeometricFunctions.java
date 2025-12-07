@@ -29,7 +29,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInexactNumber;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -1803,11 +1802,8 @@ public class HypergeometricFunctions {
                 HypergeometricJS.hypergeometricPFQ(AC, BC, c.evalfc(), Config.DOUBLE_TOLERANCE));
           }
         } else {
-          INum result = F.num(HypergeometricJS.hypergeometricPFQ(A, B, cDouble));
-
-          return result;
+          return F.num(HypergeometricJS.hypergeometricPFQ(A, B, cDouble));
         }
-
       } catch (ValidateException ve) {
         return Errors.printMessage(S.HypergeometricPFQ, ve, engine);
       } catch (RuntimeException rex) {

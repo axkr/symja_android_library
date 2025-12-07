@@ -172,7 +172,6 @@ public class Object2Expr {
     }
     if (obj instanceof double[]) {
       return new ASTRealVector((double[]) obj, true);
-      // return AST.newInstance(F.List, (double[]) obj);
     }
     if (obj instanceof double[][]) {
       return new ASTRealMatrix((double[][]) obj, true);

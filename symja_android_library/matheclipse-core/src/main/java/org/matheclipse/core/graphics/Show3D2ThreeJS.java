@@ -55,9 +55,6 @@ public class Show3D2ThreeJS {
     appendDoubleArray(builder, "viewpoint", viewpoints);
     try {
       for (int i = 1; i < numericAST.size(); i++) {
-        // if (numericAST.get(i).isASTSizeGE(F.Line, 2)) {
-        // lineToSVG(numericAST.getAST(i), buf, dim);
-        // } else
         if (numericAST.get(i).isSameHeadSizeGE(S.Polygon, 2)) {
           elements("polygon", numericAST.getAST(i), builder, dim);
         } else if (numericAST.get(i).isSameHeadSizeGE(S.Point, 2)) {

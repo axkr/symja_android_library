@@ -7,7 +7,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPair;
 
 /**
- * A pair of values extnding the {@link IAST} interface. Create pairs with
+ * A pair of values extending the {@link IAST} interface. Create pairs with
  * {@link F#pair(IExpr, IExpr)} method.
  *
  */

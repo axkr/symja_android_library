@@ -438,7 +438,7 @@ public class RootsFunctions {
     IExpr expr = evalExpandAll(arg1, engine);
 
     IExpr variable = variables.arg1();
-    double[] coefficients = Expr2Object.toPolynomial(expr, variable);
+    double[] coefficients = Expr2Object.toPolynomial(expr, variable, engine);
     if (coefficients != null) {
       try {
         IASTMutable list;

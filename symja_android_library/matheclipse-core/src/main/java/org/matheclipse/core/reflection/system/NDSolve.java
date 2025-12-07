@@ -5,7 +5,6 @@ import org.hipparchus.ode.ODEState;
 import org.hipparchus.ode.ODEStateAndDerivative;
 import org.hipparchus.ode.OrdinaryDifferentialEquation;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -60,7 +59,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
       rules.append(F.Rule(fT, F.num(t)));
       IExpr[] dotEquations = new IExpr[fDimension];
       for (int i = 0; i < fDimension; i++) {
-        dotEquations[i] = fDotEquations[i].replaceAll(rules);
+        dotEquations[i] = F.subst(fDotEquations[i], rules);
       }
       for (int i = 0; i < fDimension; i++) {
         xyzDot[i] = ((INum) fEngine.evalN(dotEquations[i])).doubleValue();
