@@ -16,7 +16,25 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
 
   static {
     ImmutableMap.Builder<ISymbol, String> builder = ImmutableMap.builder();
+    builder.put(S.AiryAi, "DMath.airyAi");
+    builder.put(S.AiryAiPrime, "DMath.airyAiPrime");
+    builder.put(S.AiryBi, "DMath.airyBi");
+    builder.put(S.AiryBiPrime, "DMath.airyBiPrime");
+    builder.put(S.BesselI, "DMath.besselI");
+    builder.put(S.BesselJ, "DMath.besselJ");
+    builder.put(S.BesselK, "DMath.besselK");
+    builder.put(S.BesselY, "DMath.besselY");
+    builder.put(S.Beta, "DMath.beta");
+    builder.put(S.EllipticE, "DMath.ellipticE");
+    builder.put(S.EllipticK, "DMath.ellipticK");
+    builder.put(S.Erf, "DMath.erf");
+    builder.put(S.Erfc, "DMath.erfc");
+    builder.put(S.Erfi, "DMath.erfi");
+
     builder.put(S.Abs, "Math.abs");
+    builder.put(S.RealAbs, "Math.abs");
+    builder.put(S.Sign, "Math.signum");
+    builder.put(S.RealSign, "Math.signum");
 
     builder.put(S.ArcCos, "Math.acos");
     builder.put(S.ArcSin, "Math.asin");
@@ -25,9 +43,10 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
     builder.put(S.Ceiling, "Math.ceil");
     builder.put(S.Cos, "Math.cos");
     builder.put(S.Cosh, "Math.cosh");
+    builder.put(S.CubeRoot, "Math.cbrt");
     builder.put(S.Floor, "Math.floor");
-
     builder.put(S.Log, "Math.log");
+    builder.put(S.Log10, "Math.log10");
     builder.put(S.Max, "Math.max");
     builder.put(S.Min, "Math.min");
     // Power is handled by coding

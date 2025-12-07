@@ -45,6 +45,7 @@ public class CompilerFunctions {
           + "import org.matheclipse.core.expression.ExprTrie;                           \n"
           + "import org.matheclipse.core.expression.S;                                  \n"
           + "import static org.matheclipse.core.expression.S.*;                         \n"
+          + "import org.matheclipse.core.expression.DMath;                              \n"
           + "import org.matheclipse.core.expression.F;                                  \n"
           + "import static org.matheclipse.core.expression.F.*;                         \n"
           + "                                                                           \n"
@@ -327,7 +328,7 @@ public class CompilerFunctions {
             Errors.printMessage(S.CompiledFunction, "cfn", F.CEmptyList, engine);
             IAST variables = compiledFunction.getVariables();
             IExpr expr = compiledFunction.getExpr();
-            return expr.replaceAll(Functors.equalRules(variables, ast));
+            return F.subst(expr, Functors.equalRules(variables, ast));
           }
           return result;
         }

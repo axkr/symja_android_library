@@ -261,22 +261,22 @@ public class Num implements INum {
 
   @Override
   public IExpr airyAi() {
-    return F.num(EvalEngine.getApfloatDouble().airyAi(apfloatValue()));
+    return F.num(DMath.airyAi(value));
   }
 
   @Override
   public IExpr airyAiPrime() {
-    return F.num(EvalEngine.getApfloatDouble().airyAiPrime(apfloatValue()));
+    return F.num(DMath.airyAiPrime(value));
   }
 
   @Override
   public IExpr airyBi() {
-    return F.num(EvalEngine.getApfloatDouble().airyBi(apfloatValue()));
+    return F.num(DMath.airyBi(value));
   }
 
   @Override
   public IExpr airyBiPrime() {
-    return F.num(EvalEngine.getApfloatDouble().airyBiPrime(apfloatValue()));
+    return F.num(DMath.airyBiPrime(value));
   }
 
   @Override
@@ -346,9 +346,13 @@ public class Num implements INum {
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal) {
         try {
-          Apfloat besselI =
-              EvalEngine.getApfloatDouble().besselI(apfloatValue(), ((IReal) arg2).apfloatValue());
-          return F.num(besselI.doubleValue());
+          if (arg2 instanceof Num) {
+            return F.num(DMath.besselI(value, ((Num) arg2).value));
+          } else {
+            Apfloat besselI = EvalEngine.getApfloatDouble().besselI(apfloatValue(),
+                ((IReal) arg2).apfloatValue());
+            return F.num(besselI.doubleValue());
+          }
         } catch (ArithmeticException | ApfloatRuntimeException are) {
           // result would be complex exception
         }
@@ -369,9 +373,13 @@ public class Num implements INum {
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal) {
         try {
-          Apfloat besselJ =
-              EvalEngine.getApfloatDouble().besselJ(apfloatValue(), ((IReal) arg2).apfloatValue());
-          return F.num(besselJ.doubleValue());
+          if (arg2 instanceof Num) {
+            return F.num(DMath.besselJ(value, ((Num) arg2).value));
+          } else {
+            Apfloat besselJ = EvalEngine.getApfloatDouble().besselJ(apfloatValue(),
+                ((IReal) arg2).apfloatValue());
+            return F.num(besselJ.doubleValue());
+          }
         } catch (LossOfPrecisionException lopex) {
           if (lopex.getLocalizationKey().equals("lossOfPrecision")) {
             return F.NIL;
@@ -400,9 +408,13 @@ public class Num implements INum {
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal) {
         try {
-          Apfloat besselK =
-              EvalEngine.getApfloatDouble().besselK(apfloatValue(), ((IReal) arg2).apfloatValue());
-          return F.num(besselK.doubleValue());
+          if (arg2 instanceof Num) {
+            return F.num(DMath.besselK(value, ((Num) arg2).value));
+          } else {
+            Apfloat besselK = EvalEngine.getApfloatDouble().besselK(apfloatValue(),
+                ((IReal) arg2).apfloatValue());
+            return F.num(besselK.doubleValue());
+          }
         } catch (ArithmeticException | ApfloatRuntimeException are) {
           // result would be complex exception
         }
@@ -423,9 +435,13 @@ public class Num implements INum {
     if (arg2 instanceof INumber) {
       if (arg2 instanceof IReal) {
         try {
-          Apfloat besselY =
-              EvalEngine.getApfloatDouble().besselY(apfloatValue(), ((IReal) arg2).apfloatValue());
-          return F.num(besselY.doubleValue());
+          if (arg2 instanceof Num) {
+            return F.num(DMath.besselY(value, ((Num) arg2).value));
+          } else {
+            Apfloat besselY = EvalEngine.getApfloatDouble().besselY(apfloatValue(),
+                ((IReal) arg2).apfloatValue());
+            return F.num(besselY.doubleValue());
+          }
         } catch (ArithmeticException | ApfloatRuntimeException are) {
           // result would be complex exception
         }
@@ -445,9 +461,13 @@ public class Num implements INum {
   public IExpr beta(IExpr b) {
     if (b instanceof IReal) {
       try {
-        Apfloat beta =
-            EvalEngine.getApfloatDouble().beta(apfloatValue(), ((IReal) b).apfloatValue());
-        return F.num(beta.doubleValue());
+        if (b instanceof Num) {
+          return F.num(DMath.beta(value, ((Num) b).value));
+        } else {
+          Apfloat beta =
+              EvalEngine.getApfloatDouble().beta(apfloatValue(), ((IReal) b).apfloatValue());
+          return F.num(beta.doubleValue());
+        }
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
       }
@@ -467,24 +487,28 @@ public class Num implements INum {
   @Override
   public IExpr beta(IExpr a, IExpr b) {
     if (a instanceof IReal && b instanceof IReal) {
-      Apfloat xf = apfloatValue();
-      Apfloat af = ((IReal) a).apfloatValue();
-      Apfloat bf = ((IReal) b).apfloatValue();
-      if (!(xf.signum() == 0 && af.signum() < 0 && !af.isInteger()
-          || xf.signum() < 0 && !af.isInteger())) {
-        try {
-          Apfloat beta = EvalEngine.getApfloatDouble().beta(xf, af, bf);
-          return F.num(beta.doubleValue());
-        } catch (ApfloatArithmeticException aaex) {
-          if ("divide.byZero".equals(aaex.getLocalizationKey())) {
-            return F.ComplexInfinity;
+      try {
+        if (a instanceof Num && b instanceof Num) {
+          return F.num(DMath.beta(value, ((Num) a).value, ((Num) b).value));
+        } else {
+          Apfloat xf = apfloatValue();
+          Apfloat af = ((IReal) a).apfloatValue();
+          Apfloat bf = ((IReal) b).apfloatValue();
+          if (!(xf.signum() == 0 && af.signum() < 0 && !af.isInteger()
+              || xf.signum() < 0 && !af.isInteger())) {
+            Apfloat beta = EvalEngine.getApfloatDouble().beta(xf, af, bf);
+            return F.num(beta.doubleValue());
           }
-        } catch (ArithmeticException | NumericComputationException ex) {
-          if ("Division by zero".equals(ex.getMessage())) {
-            return F.ComplexInfinity;
-          }
-          // try as computation with complex numbers
         }
+      } catch (ApfloatArithmeticException aaex) {
+        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
+          return F.ComplexInfinity;
+        }
+      } catch (ArithmeticException | NumericComputationException ex) {
+        if ("Division by zero".equals(ex.getMessage())) {
+          return F.ComplexInfinity;
+        }
+        // try as computation with complex numbers
       }
     }
     if (a instanceof INumber && b instanceof INumber) {
@@ -508,24 +532,27 @@ public class Num implements INum {
   @Override
   public IExpr beta(IExpr x2, IExpr a, IExpr b) {
     if (x2 instanceof IReal && a instanceof IReal && b instanceof IReal) {
-      Apfloat x1f = apfloatValue();
-      Apfloat x2f = ((IReal) x2).apfloatValue();
-      Apfloat af = ((IReal) a).apfloatValue();
-      Apfloat bf = ((IReal) b).apfloatValue();
-      if (!((x1f.signum() == 0 || x2f.signum() == 0) && af.signum() < 0 && !af.isInteger()
-          || (x1f.signum() < 0 || x2f.signum() < 0) && !af.isInteger())) {
-        try {
-          Apfloat beta = EvalEngine.getApfloatDouble().beta(x1f, x2f, af, bf);
-          return F.num(beta.doubleValue());
-
-        } catch (ApfloatArithmeticException aaex) {
-          if ("divide.byZero".equals(aaex.getLocalizationKey())) {
-            return F.ComplexInfinity;
+      try {
+        if (x2 instanceof Num && a instanceof Num && b instanceof Num) {
+          return F.num(DMath.beta(value, ((Num) x2).value, ((Num) a).value, ((Num) b).value));
+        } else {
+          Apfloat x1f = apfloatValue();
+          Apfloat x2f = ((IReal) x2).apfloatValue();
+          Apfloat af = ((IReal) a).apfloatValue();
+          Apfloat bf = ((IReal) b).apfloatValue();
+          if (!((x1f.signum() == 0 || x2f.signum() == 0) && af.signum() < 0 && !af.isInteger()
+              || (x1f.signum() < 0 || x2f.signum() < 0) && !af.isInteger())) {
+            Apfloat beta = EvalEngine.getApfloatDouble().beta(x1f, x2f, af, bf);
+            return F.num(beta.doubleValue());
           }
-        } catch (ArithmeticException | NumericComputationException ex) {
-          if ("Division by zero".equals(ex.getMessage())) {
-            return F.ComplexInfinity;
-          }
+        }
+      } catch (ApfloatArithmeticException aaex) {
+        if ("divide.byZero".equals(aaex.getLocalizationKey())) {
+          return F.ComplexInfinity;
+        }
+      } catch (ArithmeticException | NumericComputationException ex) {
+        if ("Division by zero".equals(ex.getMessage())) {
+          return F.ComplexInfinity;
         }
       }
     }
@@ -758,8 +785,7 @@ public class Num implements INum {
   public IExpr ellipticE() {
     if (value <= 1.0) {
       try {
-        Apfloat ellipticE = EvalEngine.getApfloatDouble().ellipticE(apfloatValue());
-        return F.num(ellipticE.doubleValue());
+        return F.num(DMath.ellipticE(value));
       } catch (ArithmeticException aex) {
         //
       }
@@ -772,8 +798,7 @@ public class Num implements INum {
   public IExpr ellipticK() {
     if (value <= 1.0) {
       try {
-        Apfloat ellipticK = EvalEngine.getApfloatDouble().ellipticK(apfloatValue());
-        return F.num(ellipticK.doubleValue());
+        return F.num(DMath.ellipticK(value));
       } catch (ArithmeticException aex) {
         //
       }
@@ -802,7 +827,7 @@ public class Num implements INum {
   @Override
   public IExpr erf() {
     try {
-      double doubleErf = org.hipparchus.special.Erf.erf(value);
+      double doubleErf = DMath.erf(value);
       if (Double.isFinite(doubleErf)) {
         return F.num(doubleErf);
       }
@@ -822,7 +847,7 @@ public class Num implements INum {
   @Override
   public IExpr erfc() {
     try {
-      double doubleErfc = org.hipparchus.special.Erf.erfc(value);
+      double doubleErfc = DMath.erfc(value);
       if (Double.isFinite(doubleErfc)) {
         return F.num(doubleErfc);
       }
@@ -844,8 +869,7 @@ public class Num implements INum {
       // if (Double.isFinite(doubleErfi)) {
       // return F.num(doubleErfi);
       // }
-      Apfloat erfi = EvalEngine.getApfloatDouble().erfi(apfloatValue());
-      return F.num(erfi.doubleValue());
+      return F.num(DMath.erfi(value));
     } catch (OverflowException of) {
       // return Underflow? https://github.com/mtommila/apfloat/issues/38
       return F.Overflow();
