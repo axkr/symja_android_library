@@ -20,7 +20,7 @@ jobs:
 
     - run: mvn -f symja_android_library -B -U -Pexact-target-jdk verify
 
-    - uses: actions/upload-artifact@v5
+    - uses: actions/upload-artifact@v6
       with:
         name: Package
         path: '**/target/*.jar'
