@@ -37,7 +37,10 @@
 			<artifactId>matheclipse-logging</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+		<dependency>
+    			<groupId>com.github.weisj</groupId>
+    			<artifactId>jsvg</artifactId> 
+		</dependency>
 		<dependency>
 			<groupId>org.jfree</groupId>
 			<artifactId>jfreechart</artifactId>
