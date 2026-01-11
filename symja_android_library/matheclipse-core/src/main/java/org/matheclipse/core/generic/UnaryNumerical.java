@@ -249,6 +249,9 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
   @Override
   public double applyAsDouble(double value) {
     fDummyVariable.assignValue(F.num(value));
+    if (fUnaryFunction.isAST(S.Labeled, 3) || fUnaryFunction.isAST(S.Style, 3)) {
+      return fUnaryFunction.first().evalf();
+    }
     return fUnaryFunction.evalf();
   }
 

@@ -129,7 +129,7 @@ public final class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDiff
   @Override
   public IExpr apply(double value) {
     try {
-      return fEngine.evalNumericFunction(F.subst(fUnaryFunction, F.Rule(fVariable, F.num(value))));
+      return fEngine.evalNumericFunction(F.subst(fUnaryFunction, fVariable, F.num(value)));
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return S.Indeterminate;
@@ -229,6 +229,6 @@ public final class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDiff
 
   @Override
   public double applyAsDouble(double value) {
-    return F.subst(fUnaryFunction, F.Rule(fVariable, F.num(value))).evalf();
+    return F.subst(fUnaryFunction, fVariable, F.num(value)).evalf();
   }
 }

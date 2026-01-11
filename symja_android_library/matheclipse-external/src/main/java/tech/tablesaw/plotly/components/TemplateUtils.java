@@ -28,7 +28,7 @@ public class TemplateUtils {
       if (templateLocations != null && !templateLocations.isEmpty()) {
         List<Loader<?>> loaders = new ArrayList<>();
         for (String templateLocation : templateLocations) {
-          FileLoader fileLoader = new FileLoader();
+          FileLoader fileLoader = new FileLoader("");
           fileLoader.setPrefix(templateLocation);
           loaders.add(fileLoader);
         }
