@@ -48,6 +48,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.statistics.ICDF;
 import org.matheclipse.core.interfaces.statistics.ICentralMoment;
+import org.matheclipse.core.interfaces.statistics.ICovariance;
 import org.matheclipse.core.interfaces.statistics.IDiscreteDistribution;
 import org.matheclipse.core.interfaces.statistics.IDistribution;
 import org.matheclipse.core.interfaces.statistics.IPDF;
@@ -147,22 +148,13 @@ public class StatisticsFunctions {
         try {
           if (ast.arg1().isAST()) {
             IAST dist = (IAST) ast.arg1();
-            IExpr xArg = F.NIL;
-            if (ast.isAST2()) {
-              xArg = ast.arg2();
-            }
-            if (dist.head().isSymbol()) {
-              ISymbol head = (ISymbol) dist.head();
-
-              if (dist.head().isSymbol()) {
-                if (head instanceof IBuiltInSymbol) {
-                  IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
-                  if (evaluator instanceof ICDF) {
-                    ICDF inverseCDF = (ICDF) evaluator;
-                    return inverseCDF.inverseCDF(dist, xArg, engine);
-                  }
-                }
+            ICDF evaluator = dist.headInstanceOf(ICDF.class);
+            if (evaluator != null) {
+              IExpr xArg = F.NIL;
+              if (ast.isAST2()) {
+                xArg = ast.arg2();
               }
+              return evaluator.inverseCDF(dist, xArg, engine);
             }
           }
         } catch (RuntimeException rex) {
@@ -353,22 +345,13 @@ public class StatisticsFunctions {
         try {
           if (ast.arg1().isAST()) {
             IAST dist = (IAST) ast.arg1();
-            IExpr xArg = F.NIL;
-            if (ast.isAST2()) {
-              xArg = ast.arg2();
-            }
-            if (dist.head().isSymbol()) {
-              ISymbol head = (ISymbol) dist.head();
-
-              if (dist.head().isSymbol()) {
-                if (head instanceof IBuiltInSymbol) {
-                  IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
-                  if (evaluator instanceof ICDF) {
-                    ICDF cdf = (ICDF) evaluator;
-                    return cdf.cdf(dist, xArg, engine);
-                  }
-                }
+            ICDF evaluator = dist.headInstanceOf(ICDF.class);
+            if (evaluator != null) {
+              IExpr xArg = F.NIL;
+              if (ast.isAST2()) {
+                xArg = ast.arg2();
               }
+              return evaluator.cdf(dist, xArg, engine);
             }
           }
         } catch (RuntimeException rex) {
@@ -928,9 +911,29 @@ public class StatisticsFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() == 2) {
+      if (ast.isAST1()) {
+        try {
+          if (ast.arg1().isAST()) {
+            IAST dist = (IAST) ast.arg1();
+            if (dist.head().isSymbol()) {
+              ISymbol head = (ISymbol) dist.head();
+
+              if (dist.head().isSymbol()) {
+                if (head instanceof IBuiltInSymbol) {
+                  IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+                  if (evaluator instanceof ICovariance) {
+                    ICovariance covariance = (ICovariance) evaluator;
+                    return covariance.covariance(dist, engine);
+                  }
+                }
+              }
+            }
+          }
+        } catch (RuntimeException rex) {
+        }
         return super.evaluate(ast, engine);
       }
+
       try {
         if (ast.size() == 3 && ast.arg1().isAST() && ast.arg2().isAST()) {
           final IAST arg1 = (IAST) ast.arg1();
@@ -1104,7 +1107,7 @@ public class StatisticsFunctions {
             // Sum( predicate , data ) / data.argSize()
             IASTAppendable sum = F.PlusAlloc(data.size());
             for (int i = 1; i < data.size(); i++) {
-              sum.append(F.subst(xExpr, F.Rule(x, data.get(i))));
+              sum.append(F.subst(xExpr, x, data.get(i)));
             }
             return sum.divide(F.ZZ(data.argSize()));
           } else if (distribution.isContinuousDistribution()) {
@@ -1179,7 +1182,7 @@ public class StatisticsFunctions {
             INumber sumValue = F.C0;
             sum.append(sumValue);
             for (int i = 1; i < data.size(); i++) {
-              IExpr summand = engine.evaluate(F.subst(xExpr, F.Rule(x, data.get(i))));
+              IExpr summand = engine.evaluate(F.subst(xExpr, x, data.get(i)));
               if (summand.isNumber()) {
                 sumValue = sumValue.plus((INumber) summand);
               } else {
@@ -1259,7 +1262,7 @@ public class StatisticsFunctions {
               // Sum( Boole(predicate), data ) / data.argSize()
               int sum = 0;
               for (int i = 1; i < data.size(); i++) {
-                if (engine.evalTrue(F.subst(predicate, F.Rule(x, data.get(i))))) {
+                if (engine.evalTrue(F.subst(predicate, x, data.get(i)))) {
                   sum++;
                 }
               }
@@ -1274,8 +1277,8 @@ public class StatisticsFunctions {
                   IASTAppendable sum = F.PlusAlloc(10);
                   for (int i = 0; i < interval.size(); i += 2) {
                     for (int j = interval.getInt(i); j <= interval.getInt(i + 1); j++) {
-                      if (engine.evalTrue(F.subst(predicate, F.Rule(x, F.num(j))))) {
-                        sum.append(F.subst(pdf, F.Rule(x, F.num(j))));
+                      if (engine.evalTrue(F.subst(predicate, x, F.num(j)))) {
+                        sum.append(F.subst(pdf, x, F.num(j)));
                       }
                     }
                   }
@@ -2115,7 +2118,7 @@ public class StatisticsFunctions {
               // Sum( Boole(predicate), data ) / data.argSize()
               int sum = 0;
               for (int i = 1; i < data.size(); i++) {
-                if (engine.evalTrue(F.subst(predicate, F.Rule(x, data.get(i))))) {
+                if (engine.evalTrue(F.subst(predicate, x, data.get(i)))) {
                   sum++;
                 }
               }
@@ -2130,8 +2133,8 @@ public class StatisticsFunctions {
                   IASTAppendable sum = F.PlusAlloc(10);
                   for (int i = 0; i < interval.size(); i += 2) {
                     for (int j = interval.getInt(i); j <= interval.getInt(i + 1); j++) {
-                      if (engine.evalTrue(F.subst(predicate, F.Rule(x, F.ZZ(j))))) {
-                        sum.append(F.subst(pdf, F.Rule(x, F.ZZ(j))));
+                      if (engine.evalTrue(F.subst(predicate, x, F.ZZ(j)))) {
+                        sum.append(F.subst(pdf, x, F.ZZ(j)));
                       }
                     }
                   }
@@ -2261,20 +2264,11 @@ public class StatisticsFunctions {
             if (ast.isAST2()) {
               xArg = ast.arg2();
             }
-            if (dist.head().isSymbol()) {
-              ISymbol head = (ISymbol) dist.head();
-
-              if (dist.head().isSymbol()) {
-                if (head instanceof IBuiltInSymbol) {
-                  IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
-                  if (evaluator instanceof IPDF) {
-                    IPDF pdf = (IPDF) evaluator;
-                    dist = pdf.checkParameters(dist);
-                    if (dist.isPresent()) {
-                      return pdf.pdf(dist, xArg, engine);
-                    }
-                  }
-                }
+            IPDF pdf = dist.headInstanceOf(IPDF.class);
+            if (pdf != null) {
+              dist = pdf.checkParameters(dist);
+              if (dist.isPresent()) {
+                return pdf.pdf(dist, xArg, engine);
               }
             }
           }
