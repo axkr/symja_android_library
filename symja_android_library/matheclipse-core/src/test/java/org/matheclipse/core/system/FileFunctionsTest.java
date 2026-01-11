@@ -11,7 +11,7 @@ public class FileFunctionsTest extends ExprEvaluatorTestCase {
   public void setUp() {
     super.setUp();
     try {
-      F.initSymbols();
+      F.initSymja();
       F.await();
       // wait especially for Rubi` context to be initialized otherwise
       // java.util.ConcurrentModificationException can occur in saving Global` context in

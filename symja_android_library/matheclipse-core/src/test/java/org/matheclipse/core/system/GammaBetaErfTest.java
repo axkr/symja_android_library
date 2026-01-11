@@ -1298,9 +1298,9 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "ComplexInfinity");
     checkNumeric("PolyGamma(-1.0+I*0.5,-10000)", //
         "Indeterminate");
-    // TODO
     check("N(PolyGamma(-2,3/2),30)", //
-        "PolyGamma(-2,1.5)");
+        "0.876084792554381797223706695849");
+    // TODO
     check("N(PolyGamma(-I*1.0,0),30)", //
         "PolyGamma(I*(-1),0)");
     // TODO calculate for complex n:

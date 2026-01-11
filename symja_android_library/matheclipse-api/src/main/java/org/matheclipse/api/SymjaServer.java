@@ -127,7 +127,7 @@ public class SymjaServer {
     Config.MAX_MATRIX_DIMENSION_SIZE = 100;
     Config.SERVER_REQUEST_TIMEOUT_SECONDS = 10;
     EvalEngine.get().setPackageMode(true);
-    F.initSymbols();
+    F.initSymja();
     S.IntegerName.setEvaluator(new org.matheclipse.nlp.builtin.IntegerName());
     S.RemoveDiacritics.setEvaluator(new org.matheclipse.nlp.builtin.RemoveDiacritics());
     S.Transliterate.setEvaluator(new org.matheclipse.nlp.builtin.Transliterate());

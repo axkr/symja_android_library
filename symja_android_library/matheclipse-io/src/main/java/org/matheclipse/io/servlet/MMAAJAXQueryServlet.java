@@ -53,7 +53,7 @@ public class MMAAJAXQueryServlet extends AJAXQueryServlet {
 
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
     Config.FILESYSTEM_ENABLED = true;
-    F.initSymbols();
+    F.initSymja();
     IOInit.init();
     engine.setRecursionLimit(Config.DEFAULT_RECURSION_LIMIT);
     engine.setIterationLimit(Config.DEFAULT_ITERATION_LIMIT);
