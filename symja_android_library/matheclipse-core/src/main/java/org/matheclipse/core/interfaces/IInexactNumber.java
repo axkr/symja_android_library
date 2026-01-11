@@ -57,4 +57,10 @@ public interface IInexactNumber extends INumber {
 
   @Override
   public IInexactNumber log();
+
+  @Override
+  public IInexactNumber barnesG();
+
+  @Override
+  public IInexactNumber logBarnesG();
 }

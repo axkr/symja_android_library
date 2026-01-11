@@ -1660,6 +1660,28 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public IInexactNumber barnesG() {
+    try {
+      return valueOf(EvalEngine.getApfloat().barnesG(fApfloat));
+    } catch (ApfloatArithmeticException aae) {
+      //
+    }
+    Apcomplex barnesG = EvalEngine.getApfloat().barnesG(apcomplexValue());
+    return F.complexNum(barnesG);
+  }
+
+  @Override
+  public IInexactNumber logBarnesG() {
+    try {
+      return valueOf(EvalEngine.getApfloat().logBarnesG(fApfloat));
+    } catch (ApfloatArithmeticException aae) {
+      //
+    }
+    Apcomplex logBarnesG = EvalEngine.getApfloat().logBarnesG(apcomplexValue());
+    return F.complexNum(logBarnesG);
+  }
+
+  @Override
   public IInexactNumber log() {
     if (isNegative()) {
       return ApcomplexNum.valueOf(EvalEngine.getApfloat().log(apcomplexValue()));

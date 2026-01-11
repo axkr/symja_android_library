@@ -1551,6 +1551,18 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
+  public IComplexNum barnesG() {
+    Apcomplex barnesG = EvalEngine.getApfloat().barnesG(apcomplexValue());
+    return F.complexNum(barnesG.real().doubleValue(), barnesG.imag().doubleValue());
+  }
+
+  @Override
+  public IComplexNum logBarnesG() {
+    Apcomplex logBarnesG = EvalEngine.getApfloat().logBarnesG(apcomplexValue());
+    return F.complexNum(logBarnesG.real().doubleValue(), logBarnesG.imag().doubleValue());
+  }
+
+  @Override
   public ComplexNum log() {
     return valueOf(fComplex.log());
   }

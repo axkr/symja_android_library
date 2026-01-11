@@ -129,7 +129,7 @@ public class ApcomplexNum implements IComplexNum {
   }
 
   @Override
-  public IExpr abs() {
+  public INumber abs() {
     return ApfloatNum.valueOf(EvalEngine.getApfloat().abs(fApcomplex));
   }
 
@@ -1351,6 +1351,16 @@ public class ApcomplexNum implements IComplexNum {
   @Override
   public ApcomplexNum log() {
     return valueOf(EvalEngine.getApfloat().log(fApcomplex));
+  }
+
+  @Override
+  public ApcomplexNum barnesG() {
+    return valueOf(EvalEngine.getApfloat().barnesG(fApcomplex));
+  }
+
+  @Override
+  public ApcomplexNum logBarnesG() {
+    return valueOf(EvalEngine.getApfloat().logBarnesG(fApcomplex));
   }
 
   @Override
