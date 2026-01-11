@@ -16,17 +16,22 @@ import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.ArraySymbolExpr;
+import org.matheclipse.core.expression.data.MatrixSymbolExpr;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
+import org.matheclipse.core.expression.data.VectorSymbolExpr;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IArraySymbol;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.ISymbolicArray;
 import org.matheclipse.core.interfaces.ITensorAccess;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -47,8 +52,12 @@ public class TensorFunctions {
       S.LeviCivitaTensor.setEvaluator(new LeviCivitaTensor());
       S.ListConvolve.setEvaluator(new ListConvolve());
       S.ListCorrelate.setEvaluator(new ListCorrelate());
+      S.SymbolicDeltaProductArray.setEvaluator(new SymbolicDeltaProductArray());
+      S.SymbolicOnesArray.setEvaluator(new SymbolicOnesArray());
+      S.SymbolicIdentityArray.setEvaluator(new SymbolicIdentityArray());
+      S.SymbolicZerosArray.setEvaluator(new SymbolicZerosArray());
       S.TensorDimensions.setEvaluator(new TensorDimensions());
-      S.TensorProduct.setEvaluator(new TensorProduct());
+      // S.TensorProduct.setEvaluator(new TensorProduct());
       S.TensorRank.setEvaluator(new TensorRank());
       S.TensorSymmetry.setEvaluator(new TensorSymmetry());
 
@@ -93,7 +102,7 @@ public class TensorFunctions {
      */
     private ITensorAccess arrayReduce(IExpr f, ITensorAccess array, IntList dimensions, int level,
         EvalEngine engine, boolean doMap) {
-      int iDepth = dimensions == null ? LinearAlgebra.arrayDepth(array) : dimensions.size();
+      int iDepth = dimensions == null ? LinearAlgebraUtil.arrayDepth(array) : dimensions.size();
       IAST range = IAST.range(iDepth + 1);
       IAST rotateRight = range.rotateRight(F.NIL, level);
       if (dimensions == null) {
@@ -793,6 +802,14 @@ public class TensorFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+
+      if (arg1 instanceof IArraySymbol) {
+        return ((IArraySymbol) arg1).getDimensions();
+      }
+      ISymbolicArray symbolicArray = arg1.headInstanceOf(ISymbolicArray.class);
+      if (symbolicArray != null) {
+        return symbolicArray.getDimensions((IAST) arg1);
+      }
       if (arg1.isList() || arg1.isSparseArray()) {
         // same as Dimensions for List structures
         return F.Dimensions(arg1);
@@ -897,7 +914,11 @@ public class TensorFunctions {
       }
       IExpr assumptionExpr = OptionArgs.determineAssumptions(ast, 2, options);
 
-      IExpr arg1 = ast.arg1().normal(false);
+      IExpr arg1 = ast.arg1();
+      if (arg1 instanceof IArraySymbol) {
+        return ((IArraySymbol) arg1).getSymmetry();
+      }
+      arg1 = arg1.normal(false);
       if (arg1.isAST()) {
         IAST tensor = (IAST) arg1;
         final IntList dims = LinearAlgebraUtil.dimensions(tensor, tensor.head());
@@ -931,7 +952,7 @@ public class TensorFunctions {
               if (tensorArg1.last().isAST()) {
                 IAST arg3 = (IAST) tensorArg1.last();
                 if (arg3.isAST(S.Symmetric, 2) //
-                    || arg3.isAST(S.AntiSymmetric, 2) || arg3.isAST(S.ZeroSymmetric, 2)) {
+                    || arg3.isAST(S.Antisymmetric, 2) || arg3.isAST(S.ZeroSymmetric, 2)) {
                   return arg3;
                 }
               }
@@ -1018,7 +1039,7 @@ public class TensorFunctions {
         return F.Symmetric(F.list(F.C1, F.C2));
       }
       if (isAntiSymmetric) {
-        return F.AntiSymmetric(F.list(F.C1, F.C2));
+        return F.Antisymmetric(F.list(F.C1, F.C2));
       }
       return F.CEmptyList;
     }
@@ -1106,6 +1127,57 @@ public class TensorFunctions {
           }
           return tensor1;
         }
+      } else {
+        // We will build a new TensorProduct (or Times if all are scalars)
+        // This accumulator collects the non-scalar tensor parts
+        IASTAppendable tensorParts = F.ast(S.TensorProduct, ast.argSize());
+
+        // This accumulator collects the scalar parts (extracted factors)
+        IASTAppendable scalarParts = F.TimesAlloc(ast.argSize());
+
+        boolean hasScalars = false;
+        boolean flattened = false;
+
+        for (IExpr arg : ast) {
+          IExpr tensorRank = engine.evaluate(F.TensorRank(arg));
+
+          // Handle Scalars (Rank 0)
+          if (tensorRank.isZero()) {
+            scalarParts.append(arg);
+            hasScalars = true;
+            continue;
+          }
+
+          // Handle Nested TensorProducts (Associativity)
+          // TensorProduct[a, TensorProduct[b, c]] -> TensorProduct[a, b, c]
+          if (arg.isAST(S.TensorProduct)) {
+            tensorParts.appendArgs((IAST) arg);
+            flattened = true;
+          } else {
+            tensorParts.append(arg);
+          }
+        }
+
+        // If everything was a scalar, return the product of scalars
+        if (tensorParts.isEmpty()) {
+          return scalarParts;
+        }
+
+        // If we found scalars, we return: scalars * TensorProduct[...]
+        if (hasScalars) {
+          // If only one tensor part remains after extraction: c * v
+          if (tensorParts.argSize() == 1) {
+            return F.Times(scalarParts, tensorParts.arg1());
+          }
+          return F.Times(scalarParts, tensorParts);
+        }
+
+        // If we flattened the structure, return the new flat TensorProduct
+        if (flattened) {
+          return tensorParts;
+        }
+
+        return F.NIL;
       }
       return F.NIL;
     }
@@ -1143,6 +1215,22 @@ public class TensorFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (arg1.isTimes2() || arg1.isPlus2()) {
+        if (arg1.first().isNumber()) {
+          return ast.setAtCopy(1, arg1.second());
+        }
+      }
+      if (arg1 instanceof VectorSymbolExpr) {
+        return F.C1;
+      } else if (arg1 instanceof MatrixSymbolExpr) {
+        return F.C2;
+      } else if (arg1 instanceof ArraySymbolExpr) {
+        ArraySymbolExpr arraySym = (ArraySymbolExpr) arg1;
+        // The dimensions are stored as an IAST list {d1, d2, ...}
+        // argSize() returns the number of elements in that list.
+        return F.ZZ(arraySym.getDimensions().argSize());
+      }
+
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
         IntList intList = LinearAlgebraUtil.dimensions((IAST) arg1, list.head());
@@ -1280,7 +1368,95 @@ public class TensorFunctions {
       return ARGS_1_2;
     }
   }
+  private static class SymbolicDeltaProductArray extends AbstractFunctionEvaluator
+      implements ISymbolicArray {
 
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public IAST getDimensions(IAST ast) {
+      if (ast.isAST2() && ast.first().isList()) {
+        return (IAST) ast.first();
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+  }
+
+  private static class SymbolicIdentityArray extends AbstractFunctionEvaluator
+      implements ISymbolicArray {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public IAST getDimensions(IAST ast) {
+      if (ast.isAST1() && ast.first().isList()) {
+        return (IAST) ast.first();
+      }
+      return F.NIL;
+    }
+  }
+
+  private static class SymbolicOnesArray extends AbstractFunctionEvaluator
+      implements ISymbolicArray {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public IAST getDimensions(IAST ast) {
+      if (ast.isAST1() && ast.first().isList()) {
+        return (IAST) ast.first();
+      }
+      return F.NIL;
+    }
+
+  }
+
+  private static class SymbolicZerosArray extends AbstractFunctionEvaluator
+      implements ISymbolicArray {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public IAST getDimensions(IAST ast) {
+      if (ast.isAST1() && ast.first().isList()) {
+        return (IAST) ast.first();
+      }
+      return F.NIL;
+    }
+  }
 
   private static class ShearingTransform extends AbstractFunctionEvaluator {
 

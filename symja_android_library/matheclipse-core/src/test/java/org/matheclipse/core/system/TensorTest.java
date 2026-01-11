@@ -71,6 +71,15 @@ public class TensorTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testTensorDimensions() {
+    check("A=ArraySymbol(a, {2, 3, 4});TensorDimensions(A)", //
+        "{2,3,4}");
+    // TODO
+    // check("TensorDimensions(A+2)", //
+    // "{2,3,4}");
+    // check("TensorDimensions(A*3)", //
+    // "{2,3,4}");
+    // check("TensorDimensions(A^3)", //
+    // "{2,3,4}");
     check("A=Array(a, {2, 3, 4});TensorDimensions(A)", //
         "{2,3,4}");
     check("TensorDimensions({{1,2},{3,4},{a,b},{c,d}})", //
@@ -102,7 +111,7 @@ public class TensorTest extends ExprEvaluatorTestCase {
     check("TensorSymmetry({{a,b,c,d}, {b,e,f,g}, {c,f,h,i},{d,g,i,j}})", //
         "Symmetric({1,2})");
     check("TensorSymmetry({{0, a, b}, {-a, 0, c}, {-b, -c, 0}})", //
-        "AntiSymmetric({1,2})");
+        "Antisymmetric({1,2})");
     check("TensorSymmetry({{a}})", //
         "Symmetric({1,2})");
     check("TensorSymmetry({{0}})", //
