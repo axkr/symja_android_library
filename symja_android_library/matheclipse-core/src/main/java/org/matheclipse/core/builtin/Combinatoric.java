@@ -595,7 +595,6 @@ public final class Combinatoric {
       S.KOrderlessPartitions.setEvaluator(new KOrderlessPartitions());
       S.KPartitions.setEvaluator(new KPartitions());
       S.MatchingDissimilarity.setEvaluator(new MatchingDissimilarity());
-      S.Partition.setEvaluator(new Partition());
       S.Permute.setEvaluator(new Permute());
       S.PermutationCycles.setEvaluator(new PermutationCycles());
       S.PermutationCyclesQ.setEvaluator(new PermutationCyclesQ());
@@ -1354,103 +1353,6 @@ public final class Combinatoric {
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
-  }
-
-
-  /**
-   *
-   *
-   * <pre>
-   * <code>Partition(list, n)
-   * </code>
-   * </pre>
-   *
-   * <p>
-   * partitions <code>list</code> into sublists of length <code>n</code>.
-   *
-   * <pre>
-   * <code>Partition(list, n, d)
-   * </code>
-   * </pre>
-   *
-   * <p>
-   * partitions <code>list</code> into sublists of length <code>n</code> which overlap <code>d
-   * </code> indices.
-   *
-   * <p>
-   * See
-   *
-   * <ul>
-   * <li><a href="https://en.wikipedia.org/wiki/Partition_of_a_set">Wikipedia - Partition of a
-   * set</a>
-   * </ul>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * <code>&gt;&gt; Partition({a, b, c, d, e, f}, 2)
-   * {{a,b},{c,d},{e,f}}
-   *
-   * &gt;&gt; Partition({a, b, c, d, e, f}, 3, 1)
-   * {{a,b,c},{b,c,d},{c,d,e},{d,e,f}}
-   *
-   * &gt;&gt; Partition({a, b, c, d, e}, 2)
-   * {{a,b},{c,d}}
-   * </code>
-   * </pre>
-   */
-  private static class Partition extends AbstractFunctionEvaluator {
-
-    /** {@inheritDoc} */
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isAST()) {
-        final int partitionLength = ast.arg2().toIntDefault();
-        if (partitionLength > 0) {
-          final IAST f = (IAST) ast.arg1();
-          int i = partitionLength;
-          if (i > f.argSize()) {
-            return F.headAST0(f.head());
-          }
-
-          int offset = partitionLength;
-          if ((ast.isAST3()) && ast.arg3().isInteger()) {
-            offset = ast.arg3().toIntDefault();
-          }
-          if (offset > 0) {
-            final int allocSize = f.argSize() / offset + 1;
-            final IASTAppendable resultListOfPartitions = F.ast(f.head(), allocSize);
-            while (true) {
-
-              IASTAppendable singlePartition = F.ast(f.head());
-              for (int j = i - partitionLength; j < i; j++) {
-                if (j + 1 < 1 || j + 1 >= f.size()) {
-                  return resultListOfPartitions;
-                }
-                singlePartition.append(f.get(j + 1));
-              }
-              resultListOfPartitions.append(singlePartition);
-
-              if (offset <= f.argSize() - i) { // beware of integer overflow problems
-                i += offset;
-              } else {
-                break;
-              }
-            }
-            return resultListOfPartitions;
-          } else {
-            // "Positive machine-sized integer expected at position `2` in `1`.", //
-            return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C3), engine);
-          }
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
-    }
   }
 
 

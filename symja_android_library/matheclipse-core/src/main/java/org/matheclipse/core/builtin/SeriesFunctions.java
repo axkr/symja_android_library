@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.JASConvert;
@@ -66,7 +65,6 @@ public class SeriesFunctions {
       if (ToggleFeature.SERIES) {
         S.ComposeSeries.setEvaluator(new ComposeSeries());
         S.InverseSeries.setEvaluator(new InverseSeries());
-        S.Normal.setEvaluator(new Normal());
         S.PadeApproximant.setEvaluator(new PadeApproximant());
         S.Residue.setEvaluator(new Residue());
         S.Series.setEvaluator(new Series());
@@ -1329,64 +1327,6 @@ public class SeriesFunctions {
           new IBuiltInSymbol[] {S.Direction, S.Assumptions, S.GenerateConditions}, //
           new IExpr[] {S.Reals, S.$Assumptions, S.Automatic});
       super.setUp(newSymbol);
-    }
-  }
-
-
-  /**
-   *
-   *
-   * <pre>
-   * Normal(series)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * converts a <code>series</code> expression into a standard expression.
-   *
-   * </blockquote>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; Normal(SeriesData(x, 0, {1, 0, -1, -4, -17, -88, -549}, -1, 6, 1))
-   * 1/x-x-4*x^2-17*x^3-88*x^4-549*x^5
-   * </pre>
-   */
-  private static final class Normal extends AbstractFunctionEvaluator {
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IAST heads = F.CEmptyList;
-      if (ast.isAST2()) {
-        heads = ast.arg2().makeList();
-      }
-      final IExpr arg1 = ast.arg1();
-      return F.subst(arg1, normal(heads));
-    }
-
-    private Function<IExpr, IExpr> normal(final IAST heads) {
-      return x -> {
-        final int size = heads.size();
-        if (size == 1) {
-          return x.normal(true);
-        }
-        final IExpr head = x.head();
-        if (heads.exists(y -> y.equals(head))) {
-          return x.normal(true);
-        }
-        return F.NIL;
-      };
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 
