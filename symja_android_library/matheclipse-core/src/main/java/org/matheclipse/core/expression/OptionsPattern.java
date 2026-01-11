@@ -18,6 +18,62 @@ import org.matheclipse.parser.client.ParserConfig;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
+/**
+ * Represents the <b>Options Pattern</b> ({@code OptionsPattern[]} or
+ * {@code name:OptionsPattern[]}).
+ * <p>
+ * This class implements a specialized sequence pattern used to match a sequence of <b>options</b>
+ * (expressions with head {@code Rule} or {@code RuleDelayed}) at the end of a function call. It
+ * corresponds to the {@code OptionsPattern[]} construct.
+ * </p>
+ *
+ * <h3>1. Functionality</h3>
+ * <p>
+ * When a function is defined with {@code OptionsPattern[]}, it accepts zero or more optional rules
+ * after its required arguments. These rules are typically used to configure the behavior of the
+ * function.
+ * </p>
+ * <ul>
+ * <li><b>Matching:</b> Matches a sequence of arguments where each argument is a {@code Rule}
+ * ({@code ->}) or {@code RuleDelayed} ({@code :>}).</li>
+ * <li><b>Validation:</b> If written as {@code OptionsPattern[Symbol]}, it may check if the passed
+ * options are valid for that specific {@code Symbol}.</li>
+ * <li><b>Retrieval:</b> The values of these options are typically retrieved inside the function
+ * body using {@code OptionValue[...]}.</li>
+ * </ul>
+ *
+ * <h3>2. Variable Binding</h3>
+ * <p>
+ * Like other patterns, {@code OptionsPattern} can be named (e.g., {@code opt : OptionsPattern[]}).
+ * If named, the variable {@code opt} is bound to the list of matched rules. However, it is more
+ * common to leave it unnamed and access values via {@code OptionValue}.
+ * </p>
+ *
+ * <h3>3. Usage Examples</h3>
+ *
+ * <h4>Basic Usage</h4>
+ * 
+ * <pre>
+ * // Define f with required argument 'x' and optional rules
+ * // f[x_, OptionsPattern[]] := OptionValue[opt1]
+ *
+ * // Call: f[10, opt1 -> 5, opt2 -> "A"]
+ * // x matches 10
+ * // OptionsPattern[] matches the sequence (opt1 -> 5, opt2 -> "A")
+ * </pre>
+ *
+ * <h4>Usage with Defaults</h4>
+ * 
+ * <pre>
+ * // Assume Options[f] = {Method -> "Default"}
+ * // f[x_, OptionsPattern[]] := ...
+ *
+ * // Calling f[x] (no options) matches successfully.
+ * // OptionValue[Method] would return "Default".
+ * </pre>
+ *
+ * @see org.matheclipse.core.expression.AbstractPatternSequence
+ */
 public class OptionsPattern extends AbstractPatternSequence {
 
   private static final long serialVersionUID = 1086461999754718513L;
