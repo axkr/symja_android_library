@@ -11,6 +11,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
+import org.matheclipse.core.tensor.QuantityParser;
 import org.matheclipse.parser.client.math.MathException;
 
 /**
@@ -39,7 +40,7 @@ public class SimpleUnitSystem implements UnitSystem {
   public static UnitSystem from(Properties properties) {
     return new SimpleUnitSystem(properties.stringPropertyNames().stream().collect(Collectors.toMap( //
         UnitHelper::requireValid,
-        key -> requireNumeric(F.fromString(properties.getProperty(key))))));
+        key -> requireNumeric(QuantityParser.fromString(properties.getProperty(key))))));
   }
 
   /**
