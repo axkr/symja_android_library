@@ -27,7 +27,90 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
 import org.matheclipse.core.patternmatching.RulesData;
 
-/** An expression representing a symbol (i.e. variable- constant- or function-name) */
+/**
+ * Interface for <b>Symbols</b>, the atomic identifiers in the Symja system.
+ * <p>
+ * An {@code ISymbol} represents a unique named entity (like {@code x}, {@code Sin}, or
+ * {@code MyFunction}). Symbols are the "atoms" of names in the language; they are unique within
+ * their {@link Context}. Unlike strings, symbols carry rich metadata and state, making them the
+ * backbone of symbolic computation.
+ * </p>
+ *
+ * <h3>1. Roles of a Symbol</h3> A single symbol can simultaneously serve multiple purposes:
+ * <ul>
+ * <li><b>Identifier:</b> A unique name (e.g., "Global`x") used to refer to entities.</li>
+ * <li><b>Variable:</b> It can store a value (known as <i>OwnValues</i>). For example, if
+ * {@code x = 5}, the symbol {@code x} holds the expression {@code 5}.</li>
+ * <li><b>Function Head:</b> It can store transformation rules (known as <i>DownValues</i>). For
+ * example, {@code f[x_] := x^2} attaches a rule to the symbol {@code f}.</li>
+ * <li><b>Attribute Holder:</b> It maintains flags that dictate evaluation behavior, such as
+ * {@link S#Constant}, {@link S#Flat}, {@link S#Orderless}, or {@link S#Protected}.</li>
+ * </ul>
+ *
+ * <h3>2. Storage Categories</h3>
+ * <p>
+ * Symja distinguishes between values assigned to the symbol itself and rules defined for the symbol
+ * as a function:
+ * </p>
+ * <ul>
+ * <li><b>{@link #assignedValue()}:</b> The "value" of the variable (e.g., from {@code x = 1}).</li>
+ * <li><b>{@link #setRulesData(RulesData)}:</b> A container for pattern-matching rules defined for
+ * this symbol (DownValues, UpValues, SubValues).</li>
+ * </ul>
+ *
+ * <h3>3. System vs. User Symbols</h3>
+ * <p>
+ * While {@code ISymbol} is the general interface, the system distinguishes between:
+ * </p>
+ * <ul>
+ * <li><b>User Symbols:</b> Created dynamically in the {@code Global`} context. They typically use
+ * {@link RulesData} to evaluate.</li>
+ * <li><b>Built-In Symbols ({@link IBuiltInSymbol}):</b> System-defined symbols (like {@code Sin},
+ * {@code Plus}) that map directly to Java implementations for performance.</li>
+ * </ul>
+ *
+ * <h3>4. Usage Examples</h3>
+ *
+ * <h4>Creating and Using Variables</h4>
+ * 
+ * <pre>
+ * // Get or create a symbol "x" in the current context
+ * ISymbol x = F.Dummy("x");
+ *
+ * // Assign a value (x = 42)
+ * x.assignValue(F.ZZ(42), false);
+ *
+ * // Retrieve it
+ * IExpr val = x.assignedValue(); // Returns 42
+ * </pre>
+ *
+ * <h4>Defining User Functions</h4>
+ * 
+ * <pre>
+ * // Define f[x_] := x^2
+ * ISymbol f = F.Dummy("f");
+ * ISymbol xVar = F.Dummy("x");
+ *
+ * // Create the rule: f[x_] :> x^2
+ * IAST lhs = F.unary(f, F.$p(xVar));
+ * IExpr rhs = F.Sqr(xVar);
+ *
+ * // This internally updates f.setRulesData(...), if evaluated
+ * F.SetDelayed(lhs, rhs);
+ * </pre>
+ *
+ * <h4>Setting Attributes</h4>
+ * 
+ * <pre>
+ * ISymbol plus = S.Plus;
+ * // Check if Plus is Orderless (commutative)
+ * boolean isCommutative = plus.hasOrderlessAttribute();
+ * </pre>
+ *
+ * @see org.matheclipse.core.interfaces.IBuiltInSymbol
+ * @see org.matheclipse.core.expression.Context
+ * @see org.matheclipse.core.patternmatching.RulesData
+ */
 public interface ISymbol extends IExpr {
 
   /**
@@ -1192,6 +1275,21 @@ public interface ISymbol extends IExpr {
    */
   public boolean removeRule(final int setSymbol, final boolean equalRule, final IExpr leftHandSide,
       boolean packageMode);
+
+  @Override
+  default IExpr replaceAll(ISymbol x, IExpr y) {
+    return this == x ? y : F.NIL;
+  }
+
+  @Override
+  default IExpr replaceAll(ISymbol[] x, IExpr[] y) {
+    for (int s = 0; s < x.length; s++) {
+      if (this == x[s]) {
+        return y[s];
+      }
+    }
+    return F.NIL;
+  }
 
   /**
    * Set the Attributes of this symbol (i.e. LISTABLE, FLAT, ORDERLESS,...)

@@ -742,6 +742,64 @@ public abstract class HMArrayList extends AbstractAST
     return -1;
   }
 
+  @Override
+  public IExpr replaceAll(ISymbol x, IExpr y) {
+    IASTMutable result = F.NIL;
+    IExpr head = array[firstIndex];
+    if (x == head) {
+      result = setAtCopy(0, y);
+    } else if (head.isASTOrAssociation()) {
+      IExpr replaced = head.replaceAll(x, y);
+      if (replaced.isPresent()) {
+        result = setAtCopy(0, replaced);
+      }
+    }
+    if (isUniform(UniformFlags.SYMBOL)) {
+      int i = firstIndex + 1;
+      int j = 1;
+      while (i < lastIndex) {
+        IExpr arg = array[i];
+        if (x == arg) {
+          if (result.isNIL()) {
+            result = setAtCopy(j, y);
+          } else {
+            result.set(j, y);
+          }
+        }
+        i++;
+        j++;
+      }
+      return result;
+    }
+    if (isUniform(UniformFlags.NUMBER | UniformFlags.STRING)) {
+      return result;
+    }
+    int i = firstIndex + 1;
+    int j = 1;
+    while (i < lastIndex) {
+      IExpr arg = array[i];
+      if (x == arg) {
+        if (result.isNIL()) {
+          result = setAtCopy(j, y);
+        } else {
+          result.set(j, y);
+        }
+      } else if (arg.isASTOrAssociation()) {
+        IExpr replaced = arg.replaceAll(x, y);
+        if (replaced.isPresent()) {
+          if (result.isNIL()) {
+            result = setAtCopy(j, replaced);
+          } else {
+            result.set(j, replaced);
+          }
+        }
+      }
+      i++;
+      j++;
+    }
+    return result;
+  }
+
   /** {@inheritDoc} */
   @Override
   public int indexOf(Predicate<? super IExpr> predicate, int fromIndex) {

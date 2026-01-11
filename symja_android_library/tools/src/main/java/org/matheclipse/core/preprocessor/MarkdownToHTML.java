@@ -108,7 +108,7 @@ public class MarkdownToHTML {
   public static void main(final String[] args) {
     System.out.println(
         "Create a Javadoc string from the existing *.md functions file.\nFor example type 'Integrate' in input line to get the Javadoc for 'Integrate'.");
-    F.initSymbols();
+    F.initSymja();
     String userHome = System.getProperty("user.home");
     File sourceLocation =
         new File(userHome + "/git/symja_android_library/symja_android_library/doc/functions");

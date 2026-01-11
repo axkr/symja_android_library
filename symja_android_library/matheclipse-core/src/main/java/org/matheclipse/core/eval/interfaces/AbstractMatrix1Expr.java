@@ -3,6 +3,7 @@ package org.matheclipse.core.eval.interfaces;
 import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
@@ -82,7 +83,12 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
    * @param ast TODO
    * @return <code>F.NIL</code> if the evaluation isn't possible
    */
-  public abstract IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker, IAST ast);
+  public abstract IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker,
+      IAST ast);
+
+  public IExpr matrixComplexEval(FieldMatrix<Complex> matrix, IAST ast) {
+    return F.NIL;
+  }
 
   @Override
   public IExpr numericEval(final IAST ast, final EvalEngine engine) {
@@ -107,6 +113,11 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
         if (matrix != null) {
           return realMatrixEval(matrix, engine, ast);
         } else {
+          FieldMatrix<Complex> complexFieldMatrix = Convert.list2ComplexMatrix(ast.arg1());
+          if (complexFieldMatrix != null) {
+            return matrixComplexEval(complexFieldMatrix, ast);
+          }
+
           FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(arg1);
           if (fieldMatrix != null) {
             Predicate<IExpr> zeroChecker = optionZeroTest(ast, 2, engine);

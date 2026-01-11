@@ -3915,7 +3915,7 @@ public class Algebra {
       if (!polynomialQTest || variable.isVariable(polynomialQTest)) {
         if (variable.isAST() && !variable.isPower()) {
           ISymbol dummy = F.Dummy(dummyStr + i);
-          polyExpr = F.subst(polyExpr, F.Rule(variable, dummy));
+          polyExpr = F.subst(polyExpr, variable, dummy);
           substitutedVariableList.append(dummy);
         } else {
           substitutedVariableList.append(variable);

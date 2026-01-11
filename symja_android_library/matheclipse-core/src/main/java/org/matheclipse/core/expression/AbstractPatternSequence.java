@@ -1,7 +1,5 @@
 package org.matheclipse.core.expression;
 
-
-
 import java.util.Collection;
 import java.util.Map;
 import org.matheclipse.core.interfaces.IAST;
@@ -16,8 +14,54 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 /**
- * Abstract base class for patters with sequence handling.
+ * Abstract base class for patterns that match a variable number of expressions (sequences).
+ * <p>
+ * This class provides the common infrastructure for implementing {@link IPatternSequence}. It
+ * manages the state shared by most sequence patterns, such as the bound pattern symbol (e.g., the
+ * {@code x} in {@code x__}), default value flags, and whether the sequence is allowed to be empty
+ * (zero-length).
+ * </p>
  *
+ * <h3>1. Key Responsibilities</h3>
+ * <ul>
+ * <li><b>Symbol Binding:</b> Stores the {@link ISymbol} ({@code fSymbol}) to which the matched
+ * sequence will be bound in the {@link IPatternMap}.</li>
+ * <li><b>Zero-Length Handling:</b> Manages the {@code fZeroArgsAllowed} flag.
+ * <ul>
+ * <li>If {@code true}, the pattern matches 0 or more arguments (e.g., {@code BlankNullSequence}
+ * {@code ___}).</li>
+ * <li>If {@code false}, the pattern requires at least 1 argument (e.g., {@code BlankSequence}
+ * {@code __}).</li>
+ * </ul>
+ * </li>
+ * <li><b>Default Values:</b> Manages the {@code fDefault} flag, allowing the pattern to adopt a
+ * default value if missing (used in {@code Optional} patterns like {@code x___.}).</li>
+ * </ul>
+ *
+ * <h3>2. Concrete Subclasses</h3>
+ * <p>
+ * This class serves as the parent for the core sequence pattern implementations:
+ * </p>
+ * <ul>
+ * <li>{@link PatternSequence}: The standard implementation for {@code BlankSequence} ({@code __})
+ * and {@code BlankNullSequence} ({@code ___}).</li>
+ * <li>{@link RepeatedPattern}: Implementation for {@code Repeated} ({@code p..}) and
+ * {@code RepeatedNull} ({@code p...}).</li>
+ * <li>{@link OptionsPattern}: Specialized handling for sequences of rules/options at the end of
+ * function calls.</li>
+ * </ul>
+ *
+ * <h3>3. Implementation Details</h3>
+ * <p>
+ * Subclasses generally only need to implement the specific matching logic (e.g., checking if
+ * specific elements match a head test or a repeated pattern). The {@link #matchPatternSequence}
+ * method provides a standard skeleton that delegates condition checking to
+ * {@link #isConditionMatchedSequence} and handles the final storage into the pattern map.
+ * </p>
+ *
+ * @see org.matheclipse.core.interfaces.IPatternSequence
+ * @see org.matheclipse.core.expression.PatternSequence
+ * @see org.matheclipse.core.expression.RepeatedPattern
  */
 public abstract class AbstractPatternSequence implements IPatternSequence {
 

@@ -95,9 +95,116 @@ import edu.jas.kern.PreemptingException;
 import jakarta.annotation.Nonnull;
 
 /**
- * The main evaluation algorithms for the Symja computer algebra system. A single <code>EvalEngine
- * </code> is associated with the current thread through a
- * <a href="https://en.wikipedia.org/wiki/Thread-local_storage">ThreadLocal</a> mechanism.
+ * The <b>EvalEngine</b> is the central processor for evaluating mathematical expressions within the
+ * Symja computer algebra system. It manages the entire lifecycle of the evaluation process, acting
+ * as the context holder for symbol definitions, recursion limits, numeric precision settings, and
+ * evaluation history.
+ *
+ * <h3>Core Architecture</h3>
+ * <p>
+ * The engine operates on the fundamental data structure {@link IExpr} (Interface for Expressions).
+ * It implements the "evaluation loop" common to symbolic algebra systems:
+ * </p>
+ * <ol>
+ * <li><b>Head Evaluation:</b> Determines the head of an expression (e.g., the symbol
+ * <code>Plus</code> in <code>Plus(1, 2)</code>) and retrieves its associated rules or
+ * {@link IFunctionEvaluator}.</li>
+ * <li><b>Argument Evaluation:</b> Recursively evaluates arguments based on the head's attributes
+ * (e.g., {@link ISymbol#HOLDALL} prevents argument evaluation).</li>
+ * <li><b>Transformation:</b> Applies built-in logic or pattern-matching rules (DownValues,
+ * UpValues) to transform the expression until a fixed point is reached (no further rules
+ * apply).</li>
+ * </ol>
+ *
+ * <h3>Thread Context & Lifecycle</h3>
+ * <p>
+ * The <code>EvalEngine</code> is designed to be thread-local. A unique instance is associated with
+ * the current executing thread to ensure that evaluation state (like local variables in a
+ * {@link S#Block} or recursion depth) is isolated.
+ * </p>
+ * <ul>
+ * <li>Use {@link #get()} to retrieve the engine instance for the current thread.</li>
+ * <li>Use {@link #remove()} to clean up the thread-local variable when the thread finishes
+ * work.</li>
+ * </ul>
+ *
+ * <h3>Numeric & Symbolic Modes</h3>
+ * <p>
+ * The engine can switch between symbolic and numeric modes.
+ * </p>
+ * <ul>
+ * <li><b>Symbolic Mode (Default):</b> Exact arithmetic is used (e.g., <code>1/2 + 1/3</code>
+ * results in <code>5/6</code>).</li>
+ * <li><b>Numeric Mode:</b> When triggered (e.g., via {@link S#N}), the engine performs calculations
+ * using floating-point arithmetic. It supports both standard machine precision
+ * (<code>double</code>) and arbitrary precision using the <code>Apfloat</code> library. See
+ * {@link #setNumericMode(boolean, long, int)}.</li>
+ * </ul>
+ *
+ * <h3>Usage Examples</h3>
+ *
+ * <h4>1. Basic Parsing and Evaluation</h4>
+ * 
+ * <pre>
+ * // 1. Get the engine for the current thread
+ * EvalEngine engine = EvalEngine.get();
+ *
+ * // 2. Parse a string expression (e.g., derivative of x^2)
+ * IExpr ast = engine.parse("D(x^2, x)");
+ *
+ * // 3. Evaluate the Abstract Syntax Tree (AST)
+ * IExpr result = engine.evaluate(ast);
+ *
+ * // 4. Print the result
+ * System.out.println(result.toString()); // Output: 2*x
+ * </pre>
+ *
+ * <h4>2. Numeric Evaluation (Machine Precision)</h4>
+ * 
+ * <pre>
+ * EvalEngine engine = EvalEngine.get();
+ * IExpr expr = F.Sin(F.num(1.5)); // Sin(1.5)
+ *
+ * // Evaluate to a Java double
+ * double value = engine.evalf(expr);
+ * </pre>
+ *
+ * <h4>3. Arbitrary Precision</h4>
+ * 
+ * <pre>
+ * EvalEngine engine = EvalEngine.get();
+ * // Evaluate Pi to 50 significant digits
+ * IExpr piN = engine.evalN(S.Pi, 50);
+ * System.out.println(piN.toString());
+ * </pre>
+ *
+ * <h4>4. Defining Variables</h4>
+ * 
+ * <pre>
+ * EvalEngine engine = EvalEngine.get();
+ * // Define x = 42 globally
+ * S.x.assignValue(F.ZZ(42), false);
+ *
+ * IExpr res = engine.evaluate("x + 10");
+ * System.out.println(res.toString()); // Output: 52
+ * </pre>
+ *
+ * <h3>Constraints & Safety</h3>
+ * <p>
+ * To prevent runaway calculations (e.g., infinite recursion or massive memory usage), the engine
+ * enforces several limits:
+ * </p>
+ * <ul>
+ * <li>{@link #setRecursionLimit(int)}: Max depth of the evaluation stack.</li>
+ * <li>{@link #setIterationLimit(int)}: Max iterations in a loop.</li>
+ * <li>{@link #evalTimeConstrained(IExpr, long)}: Aborts evaluation if it exceeds a specified time
+ * duration.</li>
+ * </ul>
+ *
+ * @see org.matheclipse.core.expression.F
+ * @see org.matheclipse.core.interfaces.IExpr
+ * @see org.matheclipse.core.interfaces.IAST
+ * @see org.matheclipse.core.builtin.IOFunctions
  */
 @NotThreadSafe
 public class EvalEngine implements Serializable {
@@ -402,11 +509,11 @@ public class EvalEngine implements Serializable {
    * </code> result to indicate that a new evaluation of a function is unnecessary. See:
    * <a href="https://en.wikipedia.org/wiki/Memoization">Wikipedia - Memoization</a>
    */
-  private transient final Cache<IAST, IExpr> globalASTCache =
-      CacheBuilder.newBuilder().maximumSize(500).build();
+  private transient Cache<IAST, IExpr> globalASTCache;
+  // CacheBuilder.newBuilder().maximumSize(500).build();
 
-  private transient final Cache<IExpr, Object> globalObjectCache =
-      CacheBuilder.newBuilder().maximumSize(500).build();
+  private transient Cache<IExpr, Object> globalObjectCache;
+  // CacheBuilder.newBuilder().maximumSize(500).build();
 
   /**
    * Cache for the Rubi integration rules evaluation
@@ -3517,6 +3624,8 @@ public class EvalEngine implements Serializable {
     fMessageShortcut = null;
     rubiASTCache = null;
     fOptionsStack = new OptionsStack();
+    globalASTCache = CacheBuilder.newBuilder().maximumSize(500).build();
+    globalObjectCache = CacheBuilder.newBuilder().maximumSize(500).build();
   }
 
   /**

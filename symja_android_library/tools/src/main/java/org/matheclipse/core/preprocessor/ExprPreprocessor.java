@@ -30,7 +30,7 @@ public class ExprPreprocessor extends AbstractCodeGenerator {
   public static void main(String[] args) {
     AbstractCodeGenerator epp = new ExprPreprocessor();
     ParserConfig.EXPLICIT_TIMES_OPERATOR = true;
-    F.initSymbols();
+    F.initSymja();
 
     System.out.println("Input qualified Java file for converting Symja expressions to Java source");
     System.out.println(

@@ -39,7 +39,7 @@ public final class BinomialCache {
 
   /** Load the pre-computed binomial coefficients from a file. */
   private static void readBinomialCoefficients() {
-    F.initSymbols();
+    F.initSymja();
     String filename = "binomials.dat";
     IInteger[][] loadedCoefficients = null;
 

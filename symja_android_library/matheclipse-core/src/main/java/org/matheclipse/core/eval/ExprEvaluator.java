@@ -138,7 +138,7 @@ import edu.jas.kern.PreemptingException;
 public class ExprEvaluator {
 
   static {
-    F.initSymbols();
+    F.initSymja();
   }
 
   private Map<ISymbol, IExpr> fVariableMap;

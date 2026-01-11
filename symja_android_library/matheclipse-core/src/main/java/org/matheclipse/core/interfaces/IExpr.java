@@ -77,52 +77,130 @@ import edu.jas.structure.ElemFactory;
 import edu.jas.structure.GcdRingElem;
 
 /**
- * (I)nterface for a mathematical (Expr)ession<br>
- * <code>IExpr</code> is the main interface for the Symja object type hierarchy:
- *
+ * 
+ * The root interface for all mathematical expressions in the Symja computer algebra system.
+ * 
+ * <p>
+ * 
+ * {@code IExpr} (Interface for Expression) represents the fundamental data type for symbolic
+ * manipulation. Every object in Symja—whether it is an atomic number, a symbol, or a complex
+ * function call—implements this interface.
+ * 
+ * </p>
+ * 
+ * <h3>1. The Data Model: Atoms and ASTs</h3>
+ * 
+ * <p>
+ * 
+ * Symja expressions are structured as trees. {@code IExpr} serves as the common type for both nodes
+ * and leaves in this tree structure:
+ * 
+ * </p>
+ * 
+ * <ul>
+ * <li><b>Atoms:</b> Indivisible elements such as numbers ({@link IInteger}, {@link IFraction},
+ * {@link IComplexNum}),
+ * 
+ * symbols ({@link ISymbol}), and strings ({@link IStringX}).</li>
+ * 
+ * <li><b>ASTs (Abstract Syntax Trees):</b> Composite expressions representing function calls or
+ * lists.
+ * 
+ * An AST consists of a <b>Head</b> (the function operator) and a sequence of <b>Arguments</b>.
+ * 
+ * For example, {@code Sin(x)} is an AST where the head is {@code Sin} and the first argument is
+ * {@code x}.
+ * 
+ * These implement the {@link org.matheclipse.core.interfaces.IAST} interface.</li>
+ * </ul>
+ * 
+ * <h3>2. Type Hierarchy</h3>
+ * 
+ * <p>
+ * This interface sits at the top of a rich hierarchy, integrating with external libraries like
+ * <b>Hipparchus</b> for calculus fields and <b>JAS</b> (Java Algebra System) for ring elements.
+ * </p>
+ * 
+ * <ul>
+ * 
+ * <li>{@code IExpr} extends {@link org.hipparchus.CalculusFieldElement} allowing expressions to be
+ * used in
+ * 
+ * Hipparchus numerical algorithms (matrices, solvers).</li>
+ * 
+ * <li>{@code IExpr} extends {@link edu.jas.structure.GcdRingElem} for algebraic structural
+ * operations.</li>
+ * 
+ * </ul>
+ * 
+ * <h3>3. Core Capabilities</h3>
+ * 
+ * <p>
+ * 
+ * The interface defines operations essential for symbolic algebra:
+ * 
+ * </p>
+ * 
+ * <ul>
+ * 
+ * <li><b>Arithmetic:</b> Methods like {@link #plus(IExpr)}, {@link #times(IExpr)}, and
+ * {@link #power(IExpr)}
+ * 
+ * perform symbolic arithmetic.</li>
+ * 
+ * <li><b>Evaluation:</b> Methods like {@link #eval(EvalEngine)} and {@link #evalf()} trigger the
+ * simplification or numerical approximation of the expression.</li>
+ * 
+ * <li><b>Pattern Matching & Inspection:</b> Methods like {@link #match(IExpr)},
+ * {@link #isFree(IExpr)},
+ * 
+ * and {@link #isAST(IExpr)} allow inspecting the structure and determining if an expression matches
+ * a specific form.</li>
+ * 
+ * </ul>
+ * 
+ * <h3>4. Usage Examples</h3>
+ * 
+ * <h4>Creating and Manipulating Expressions</h4>
+ * 
  * <pre>
- * java.lang.Object
- *    |--- org.matheclipse.core.expression.AbstractAST
- *    |       |--- org.matheclipse.core.expression.HMArrayList
- *    |               |--- org.matheclipse.core.expression.AST - abstract syntax tree which represents lists, vectors, matrices and functions
- *    |                                   implements IAST, IASTMutable, IASTAppendable, IExpr
- *    |
- *    |--- org.matheclipse.core.expression.ExprImpl
- *            |           implements IExpr
- *            |
- *            |--- org.matheclipse.core.expression.ApcomplexNum - Apcomplex number
- *            |                   implements IComplexNum, INumber, IExpr
- *            |
- *            |--- org.matheclipse.core.expression.ApfloatNum - Apfloat number
- *            |                   implements INum, IReal, INumber, IExpr
- *            |
- *            |--- org.matheclipse.core.expression.ComplexNum - a complex number with real and imaginary part represented by Java <code>double</code>
- *            |                   implements IComplexNum, INumber, IExpr
- *            |
- *            |--- org.matheclipse.core.expression.ComplexSym - exact complex number
- *            |                   implements IComplex, IBigNumber, INumber, IExpr
- *            |
- *            |--- org.matheclipse.core.expression.FractionSym - exact fraction number
- *            |                   implements IFraction, IRational, IReal, IBigNumber, INumber, IExpr
- *            |
- *            |--- org.matheclipse.core.expression.IntegerSym - exact integer number
- *            |                   implements IInteger, IRational, IReal, IBigNumber, INumber, IExpr
- *            |
- *            |--- org.matheclipse.core.expression.Num - a real number which is represented by a Java <code>double</code> value
- *            |                   implements INum, IReal, INumber, IExpr
- *            |
- *            |--- org.matheclipse.core.expression.Pattern - a pattern object (i.e. <code>x_</code>)
- *            |                   implements IPattern, IPatternObject, IExpr
- *            |
- *            |--- org.matheclipse.core.expression.PatternSequence - a pattern sequence object (i.e. <code>x__</code>)
- *            |                   implements IPatternSequence, IPatternObject, IExpr
- *            |
- *            |--- org.matheclipse.core.expression.StringX - a Java <code>string</code> wrapper
- *            |                   implements IStringX, IExpr
- *            |
- *            |--- org.matheclipse.core.expression.Symbol - represents variables, function names or constants
- *                                implements ISymbol, IExpr
+ * // Create symbolic expression: 1 + x
+ * IExpr expr = F.Plus(F.C1, F.x);
+ * // Create a function call: Sin(x)
+ * IExpr fn = F.Sin(F.x);
+ * // Symbolic substitution: replace x with 2 in (1 + x)
+ * // Result: 1 + 2 -> 3
+ * IExpr result = expr.replaceAll(F.Rule(F.x, F.C2));
  * </pre>
+ * 
+ * <h4>Numerical Evaluation</h4>
+ * 
+ * <pre>
+ * // Create: Pi * 2
+ * IExpr expr = F.Times(S.Pi, F.C2);
+ * // Evaluate to Java double (approx 6.28...)
+ * try {
+ *   double value = expr.evalf();
+ * } catch (ArgumentTypeException e) {
+ *   // Handle conversion errors
+ * }
+ * </pre>
+ * 
+ * <h4>Structure Inspection</h4>
+ * 
+ * <pre>
+ * IExpr expr = F.Plus(F.a, F.b);
+ * if (expr.isAST()) {
+ *   IExpr head = expr.head(); // Returns S.Plus
+ *   int size = expr.size(); // Returns 3 (Head + 2 args)
+ *   IExpr arg1 = expr.get(1); // Returns F.a
+ * }
+ * </pre>
+ * 
+ * @see org.matheclipse.core.expression.F
+ * @see org.matheclipse.core.interfaces.IAST
+ * @see org.matheclipse.core.interfaces.ISymbol
+ * @see org.matheclipse.core.interfaces.INumber
  */
 public interface IExpr
     extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializable, CalculusFieldElement<IExpr> {
@@ -224,6 +302,12 @@ public interface IExpr
   public static final int BDDEXPRID = DATAID + 23;
 
   public static final int BEZIERFUNCTONID = DATAID + 24;
+
+  public static final int ARRAYSYMBOLID = DATAID + 25;
+
+  public static final int MARIXSYMBOLID = DATAID + 26;
+
+  public static final int VECTORSYMBOLID = DATAID + 27;
 
   /**
    * Compares {@code a} expressions {@link #hierarchy()} number with the {@link #hierarchy()} number
@@ -847,6 +931,10 @@ public interface IExpr
   @Override
   default IExpr atanh() {
     return S.ArcTanh.of(this);
+  }
+
+  default IExpr barnesG() {
+    return F.NIL;
   }
 
   /**
@@ -2108,6 +2196,18 @@ public interface IExpr
         ID.UNKNOWN;
   }
 
+  /**
+   * Test if <code>this</code> is an {@link IAST} and the <code>head</code> of this AST is a
+   * {@link IBuiltInSymbol} those {@link IBuiltInSymbol#getEvaluator()} implements the interface
+   * class and return the evaluator casted to type <code>T</code>.
+   * 
+   * @param interfaceClass the interface to check against.
+   * @return the evaluator if it implements the interface, otherwise <code>null</code>
+   */
+  default <T> T headInstanceOf(Class<T> interfaceClass) {
+    return null;
+  }
+
   default IExpr hermiteH(IExpr arg2) {
     return F.NIL;
   }
@@ -2711,6 +2811,13 @@ public interface IExpr
    */
   default boolean isAtomicConstant() {
     return this instanceof IAtomicConstant;
+  }
+
+  /**
+   * Test if this expression is the symbol {@link S#Automatic}
+   */
+  default boolean isAutomatic() {
+    return false;
   }
 
   /**
@@ -3478,10 +3585,10 @@ public interface IExpr
     return false;
   }
 
-
   default COMPARE_TERNARY isIrrational() {
     return COMPARE_TERNARY.UNDECIDABLE;
   }
+
 
   /**
    * Test if this expression is the function <code>Key(&lt;key&gt;)</code> by checking the head is
@@ -3594,6 +3701,20 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is a list with the given pattern-head symbol.
+   * <p>
+   * The special built-in symbols {@link S#Integer}, {@link S#Rational}, {@link S#Real},
+   * {@link S#String}, {@link S#Symbol} are used the same way as in pattern-matching
+   * <code>_Symbol</code>.
+   * 
+   * @param patternHead
+   * @return
+   */
+  default boolean isListOf(IBuiltInSymbol patternHead) {
+    return false;
+  }
+
+  /**
    * Test if this expression is a list of DirectedEdge or UndirectedEdge expressions
    *
    * @return <code>true</code>, if the given expression is a list of DirectedEdge or UndirectedEdge
@@ -3683,20 +3804,6 @@ public interface IExpr
    * @see #isVector()
    */
   default boolean isListOfStrings() {
-    return false;
-  }
-
-  /**
-   * Test if this expression is a list with the given pattern-head symbol.
-   * <p>
-   * The special built-in symbols {@link S#Integer}, {@link S#Rational}, {@link S#Real},
-   * {@link S#String}, {@link S#Symbol} are used the same way as in pattern-matching
-   * <code>_Symbol</code>.
-   * 
-   * @param patternHead
-   * @return
-   */
-  default boolean isListOf(IBuiltInSymbol patternHead) {
     return false;
   }
 
@@ -3954,6 +4061,13 @@ public interface IExpr
    * @see java.util.Optional#isPresent()
    */
   default boolean isNIL() {
+    return false;
+  }
+
+  /**
+   * Test if this expression is the symbol {@link S#None}
+   */
+  default boolean isNone() {
     return false;
   }
 
@@ -5705,6 +5819,10 @@ public interface IExpr
     return S.Log.of(this.inc());
   }
 
+  default IExpr logBarnesG() {
+    return F.NIL;
+  }
+
   /**
    * Numeric logarithm of the gamma function.
    *
@@ -6780,6 +6898,14 @@ public interface IExpr
     return subs(F.List(F.Rule(x, y)));
   }
 
+  default IExpr replaceAll(ISymbol x, IExpr y) {
+    return F.NIL;
+  }
+
+  default IExpr replaceAll(ISymbol[] x, IExpr[] y) {
+    return F.NIL;
+  }
+
   @Override
   default IExpr subtract(double arg0) {
     return subtract(F.num(arg0));
@@ -7278,14 +7404,27 @@ public interface IExpr
    * 
    * @param x
    * @param y
-   * @return
    */
   default IExpr xreplace(IExpr x, IExpr y) {
+    if (x.isSymbol()) {
+      return replaceAll((ISymbol) x, y).orElse(this);
+    }
     return replaceAll(F.Rule(x, y)).orElse(this);
   }
 
   default IExpr zero() {
     return F.C0;
+  }
+
+  /**
+   * Check if the expression is a {@link S#Graphics} or {@link S#GraphicsRow} or a list of
+   * {@link S#Graphics} AST's.
+   * 
+   * @return <code>true</code> if the expression is a graphics object
+   */
+  default boolean isGraphicsObject() {
+    return (this instanceof IAST)
+        && (isAST(S.Graphics) || isAST(S.GraphicsRow) || isListOf(S.Graphics));
   }
 
 }

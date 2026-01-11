@@ -84,7 +84,7 @@ public class FunctionIDGenerator {
   public static void printGithubSymjaFunctionLineNumber() {
     try {
       ParserConfig.EXPLICIT_TIMES_OPERATOR = true;
-      F.initSymbols();
+      F.initSymja();
       ArrayList<String> list = new ArrayList<String>();
       for (int i = 0; i < AST2Expr.UPPERCASE_SYMBOL_STRINGS.length; i++) {
         list.add(AST2Expr.UPPERCASE_SYMBOL_STRINGS[i]);

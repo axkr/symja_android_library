@@ -30,11 +30,62 @@ import org.matheclipse.parser.trie.TrieMatch;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 /**
- * The pattern matching rules associated with a symbol. Contains <code>DownValues</code> and <code>
- * UpValues</code> rules for pattern matching.
- *
+ * Container for the <b>Transformation Rules</b> associated with a specific {@link ISymbol}.
  * <p>
- * <b>Note:</b> <code>OwnValues</code> are directly stored in a symbol.
+ * {@code RulesData} is the data structure that holds the "definitions" of a user-defined function.
+ * When you define a function like {@code f[x_] := x^2} or {@code f[1] = 0}, Symja stores these
+ * definitions inside the {@code RulesData} object attached to the symbol {@code f}.
+ * </p>
+ *
+ * <h3>1. Types of Rules Stored</h3>
+ * <p>
+ * This class optimizes storage by distinguishing between two types of rules:
+ * </p>
+ * <ul>
+ * <li><b>Equal Rules (Constant Keys):</b> Rules where the Left-Hand Side (LHS) contains no patterns
+ * (e.g., {@code f[1] = 0}, {@code f["a"] = 5}). These are stored in a Hash Map for O(1) fast
+ * lookup.</li>
+ * <li><b>Pattern Rules:</b> Rules containing patterns (e.g., {@code f[x_Int] := ...}). These are
+ * stored in a sorted list and checked sequentially based on specificity and priority.</li>
+ * </ul>
+ *
+ * <h3>2. Evaluation Flow</h3>
+ * <p>
+ * When the {@link EvalEngine} evaluates an expression like {@code f[arg]}:
+ * </p>
+ * <ol>
+ * <li>It retrieves the {@code RulesData} from the symbol {@code f}.</li>
+ * <li>It first checks the <b>Equal Rules</b> map to see if {@code f[arg]} matches a known constant
+ * definition exactly.</li>
+ * <li>If no constant match is found, it iterates through the <b>Pattern Rules</b>.</li>
+ * <li>The first pattern rule that matches (and satisfies any conditions) is applied.</li>
+ * </ol>
+ *
+ * <h3>3. Usage Examples</h3>
+ *
+ * <h4>Accessing Rules Programmatically</h4>
+ * 
+ * <pre>
+ * ISymbol f = F.Dummy("f");
+ *
+ * // Define f[1] = 10 (Constant Rule)
+ * engine.evaluate(F.Set(F.unary(f, F.C1), F.C10));
+ *
+ * // Define f[x_] := x^2 (Pattern Rule)
+ * ISymbol x = F.Dummy("x");
+ * engine.evaluate(F.SetDelayed(F.unary(f, F.Pattern(x, null)), F.Sqr(x)));
+ *
+ * // Inspect RulesData
+ * RulesData rules = f.getRulesData();
+ * if (rules != null) {
+ *   // Print all definitions for f
+ *   System.out.println(rules.toString());
+ * }
+ * </pre>
+ *
+ * @see org.matheclipse.core.interfaces.ISymbol
+ * @see org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator
+ * @see org.matheclipse.core.patternmatching.IPatternMatcher
  */
 public final class RulesData implements Serializable {
   private static final long serialVersionUID = -7747268035549814899L;

@@ -54,7 +54,6 @@ public class AutomaticRules {
     rules = LaplaceTransformRules.RULES;
     rules = LimitRules.RULES;
     rules = LogRules.RULES;
-    rules = MatrixDRules.RULES;
     rules = PolyGammaRules.RULES;
     rules = PolyLogRules.RULES;
     rules = PowerRules.RULES;

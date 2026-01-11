@@ -49,7 +49,7 @@ import org.matheclipse.parser.client.operator.Precedence;
 public class ExprParser extends Scanner {
 
   static {
-    F.initSymbols();
+    F.initSymja();
   }
 
   public static final ISymbol DERIVATIVE = F.Derivative;

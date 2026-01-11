@@ -346,7 +346,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
         maxIterations = 100;
       }
     }
-    if (!options[1].equals(S.Automatic)) {
+    if (!options[1].isAutomatic()) {
       if (options[1].isSymbol() || options[1].isString()) {
         // S.Method
         method = options[1].toString();

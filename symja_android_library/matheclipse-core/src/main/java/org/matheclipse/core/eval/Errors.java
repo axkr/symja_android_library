@@ -102,6 +102,7 @@ public class Errors {
       "depth",
       "The array depth of the expression at position `1` of `2` must be at least equal to the specified rank `3`.", //
       "depthratios", "Requested ratios `1` exceeds the array depth `2`, of the input.", //
+      "dimss", "`1` is not a valid dimension specification for `2`.", //
       "divz", "The argument `1` should be nonzero.", //
       "digit", "Digit at position `1` in `2` is too large to be used in base `3`.", //
       "dmval",
@@ -257,6 +258,7 @@ public class Errors {
       "nnumeq",
       "`1` is expected to be a polynomial equation in the variable `2` with numeric coefficients.", //
       "nocatch", "Uncaught `1` returned to top level.", //
+      "nodim", "Invalid dimension specification `1`.", //
       "nofirst", "`1` has zero length and no first element.", //
       "nofwd", "No enclosing For, While or Do found for `1`.", //
       "noneg", "Argument `1` should be a real non-negative number.", //
@@ -327,6 +329,8 @@ public class Errors {
       "pkspec1", "The expression `1` cannot be used as a part specification.", //
       "poly", "`1` is not a polynomial.", //
       "polynomial", "Polynomial expected at position `1` in `2`.", //
+      "posdefprm",
+      "The value `1` at position `2` in `3` is expected to be a symmetric positive definite matrix", //
       "posdim",
       "The dimension parameter `1` is expected to be a positive integer or a list of positive integers.", //
       "pospoint", "`1` contains integers that are not positive.", //
@@ -349,7 +353,8 @@ public class Errors {
       "range", "Range specification in `1` does not have appropriate bounds.", //
       "rbase", "Base `1` is not a real number greater than 1.", //
       "rank", "The rank `1` is not an integer between `2` and  `3`.", //
-      "rankl", "The list `1` of dimensions must have length `2`.", "rctndm1",
+      "rankl", "The list `1` of dimensions `3` must have length `2`.", //
+      "rctndm1",
       "The argument `1` at position `2` should be a rectangular array of real numbers with length greater than the dimension of the array or two such arrays with of equal dimension.",
       "realx", "The value `1` is not a real number.", //
       "reclim2", "Recursion depth of `1` exceeded during evaluation of `2`.", //

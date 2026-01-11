@@ -17,7 +17,7 @@ import org.matheclipse.parser.client.ast.ASTNode;
 public class ElementPreprocessor {
 
   public static void main(String[] args) {
-    F.initSymbols();
+    F.initSymja();
     FileReader reader = null;
     try {
       EvalEngine engine = EvalEngine.get();

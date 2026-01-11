@@ -131,7 +131,7 @@ public class MarkdownGithubLinkPreprocessor {
 
   /** Add a github link to the implementation of a Symja function. */
   public static void main(final String[] args) {
-    F.initSymbols();
+    F.initSymja();
 
     System.out.println("Append Github link to the Symja functions markdown file.");
 

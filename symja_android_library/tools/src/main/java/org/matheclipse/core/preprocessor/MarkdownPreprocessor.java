@@ -72,7 +72,7 @@ public class MarkdownPreprocessor {
   }
 
   public static void main(final String[] args) {
-    F.initSymbols();
+    F.initSymja();
 
     String userHome = System.getProperty("user.home");
     File sourceLocation = new File(

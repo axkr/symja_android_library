@@ -87,14 +87,12 @@ public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
    * <li><code>-1</code>, if the absolute value is less than 1
    * </ul>
    *
-   * @return
    */
   public int compareAbsValueToOne();
 
   /**
    * Get the argument of the complex number
    *
-   * @return
    */
   @Override
   public IExpr complexArg();
@@ -102,7 +100,6 @@ public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
   /**
    * Get a <code>ComplexNum</code> number object.
    *
-   * @return
    */
   public ComplexNum complexNumValue();
 

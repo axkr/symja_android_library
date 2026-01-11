@@ -402,7 +402,7 @@ public class DecisionTree {
 
 
   public static void main(String[] args) {
-    F.initSymbols();
+    F.initSymja();
     TreeMap<String, String> ts;
 
     List<IPatternMatcher> pmList = new ArrayList<IPatternMatcher>();

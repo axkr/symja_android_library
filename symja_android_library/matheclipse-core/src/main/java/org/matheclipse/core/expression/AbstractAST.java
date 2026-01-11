@@ -42,6 +42,7 @@ import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.SimplifyUtil;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.FlowControlException;
@@ -5771,6 +5772,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (isConditionalExpression()) {
       return arg1();
     }
+    if (isAST(S.SymbolicIdentityArray, 2)) {
+      IExpr dimensions = arg1();
+      if (dimensions.isList()) {
+        return LinearAlgebraUtil.normalSymbolicIdentityArray((IAST) dimensions);
+      }
+    }
     IExpr temp = map(x -> x.normal(nilIfUnevaluated));
     if (temp.isPresent() && temp != this) {
       return temp;
@@ -6071,6 +6078,115 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         break;
       }
       result.remove(position);
+    }
+    return result;
+  }
+
+  @Override
+  public IExpr replaceAll(ISymbol x, IExpr y) {
+    IASTMutable result = F.NIL;
+    IExpr head = head();
+    if (x == head) {
+      result = setAtCopy(0, y);
+    } else if (head.isASTOrAssociation()) {
+      IExpr replaced = head.replaceAll(x, y);
+      if (replaced.isPresent()) {
+        result = setAtCopy(0, replaced);
+      }
+    }
+    if (isUniform(UniformFlags.SYMBOL)) {
+      int indx = indexOf(x);
+      if (indx >= 0) {
+        if (result.isNIL()) {
+          result = setAtCopy(indx, y);
+        }
+        for (int i = indx + 1; i < size(); i++) {
+          if (x == getRule(i)) {
+            result.set(i, y);
+          }
+        }
+      }
+      return result;
+    }
+    if (isUniform(UniformFlags.NUMBER | UniformFlags.STRING)) {
+      return result;
+    }
+    for (int i = 1; i < size(); i++) {
+      IExpr arg = getRule(i);
+      if (x == arg) {
+        if (result.isNIL()) {
+          result = setAtCopy(i, y);
+        } else {
+          result.set(i, y);
+        }
+      } else if (arg.isASTOrAssociation()) {
+        IExpr replaced = arg.replaceAll(x, y);
+        if (replaced.isPresent()) {
+          if (result.isNIL()) {
+            result = setAtCopy(i, replaced);
+          } else {
+            result.set(i, replaced);
+          }
+        }
+      }
+    }
+    return result;
+  }
+
+  @Override
+  public IExpr replaceAll(ISymbol[] x, IExpr[] y) {
+    IASTMutable result = F.NIL;
+    IExpr head = head();
+    for (int s = 0; s < x.length; s++) {
+      if (x[s] == head) {
+        result = setAtCopy(0, y[s]);
+        break;
+      } else if (head.isASTOrAssociation()) {
+        IExpr replaced = head.replaceAll(x, y);
+        if (replaced.isPresent()) {
+          result = setAtCopy(0, replaced);
+          break;
+        }
+      }
+    }
+    if (isUniform(UniformFlags.SYMBOL)) {
+      for (int i = 1; i < size(); i++) {
+        for (int s = 0; s < x.length; s++) {
+          if (x[s] == getRule(i)) {
+            result.set(i, y[s]);
+            break;
+          }
+        }
+      }
+      return result;
+    }
+    if (isUniform(UniformFlags.NUMBER | UniformFlags.STRING)) {
+      return result;
+    }
+    for (int i = 1; i < size(); i++) {
+      IExpr arg = getRule(i);
+      for (int s = 0; s < x.length; s++) {
+        if (x[s] == arg) {
+          if (result.isNIL()) {
+            result = setAtCopy(i, y[s]);
+            break;
+          } else {
+            result.set(i, y[s]);
+            break;
+          }
+        } else if (arg.isASTOrAssociation()) {
+          IExpr replaced = arg.replaceAll(x, y);
+          if (replaced.isPresent()) {
+            if (result.isNIL()) {
+              result = setAtCopy(i, replaced);
+              break;
+            } else {
+              result.set(i, replaced);
+              break;
+            }
+          }
+        }
+      }
     }
     return result;
   }

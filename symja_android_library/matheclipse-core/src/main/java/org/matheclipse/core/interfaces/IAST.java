@@ -28,25 +28,82 @@ import org.matheclipse.core.visit.IVisitor;
 import it.unimi.dsi.fastutil.ints.IntList;
 
 /**
- * (I)nterface for the (A)bstract (S)yntax (T)ree of a given function.
- *
+ * Interface for an <b>Abstract Syntax Tree (AST)</b>, representing a function or operation in the
+ * form <code>head[arg1, arg2, ...]</code>.
  * <p>
- * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic
- * structure of the Symja source code. Each node of the tree denotes a construct occurring in the
- * source code. The syntax is 'abstract' in the sense that it does not represent every detail that
- * appears in the real syntax. For instance, grouping parentheses are implicit in the tree
- * structure, and a syntactic construct such as a <code>Sin(x)</code> expression will be denoted by
- * an AST with 2 nodes. One node for the header <code>Sin</code> and one node for the argument
- * <code>x</code>. Internally an AST is represented as a list which contains
+ * The {@code IAST} is the central data structure for symbolic computation in Symja. It represents
+ * composite expressions such as mathematical functions (e.g., <code>Sin[x]</code>), operations
+ * (e.g., <code>Plus[a, b]</code>), and lists (e.g., <code>List[1, 2, 3]</code>).
+ * </p>
  *
+ * <h3>1. Structure and Indexing</h3>
+ * <p>
+ * An {@code IAST} behaves like a list containing a <b>Head</b> (the operator) followed by
+ * <b>Arguments</b> (the operands). Indices are 0-based:
+ * </p>
  * <ul>
- * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus,
- * Times,...) at index <code>0</code> and
- * <li>the <code>n</code> arguments of a function in the index <code>1 to n</code>
+ * <li><b>Index 0:</b> The <b>Head</b> of the expression (e.g., {@code Sin}, {@code Plus},
+ * {@code List}). Accessible via {@link #head()} or {@link #get(int) get(0)}.</li>
+ * <li><b>Indices 1..N:</b> The <b>Arguments</b> of the expression. Accessible via {@link #arg1()},
+ * {@link #arg2()}, ..., or {@link #get(int)}.</li>
  * </ul>
+ * <p>
+ * The {@link #size()} method returns the total number of elements (Head + Arguments). The
+ * {@link #argSize()} method returns the number of arguments ({@code size() - 1}).
+ * </p>
+ * 
  *
- * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>,
- * <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed acyclic graph</a>
+ * <h3>2. Iteration</h3>
+ * <p>
+ * The {@code IAST} interface extends {@link Iterable}. The iterator provided by this interface
+ * typically iterates over the <b>Arguments</b> (indices 1 to N), skipping the Head (index 0). This
+ * allows for convenient "for-each" loops over the operands.
+ * </p>
+ *
+ * <h3>3. Evaluation Flags</h3>
+ * <p>
+ * {@code IAST} maintains a set of bit-flags (e.g., {@link #IS_FLAT_ORDERLESS_EVALED}) to optimize
+ * evaluation. These flags indicate properties like whether the expression has already been sorted,
+ * flattened, or processed by specific evaluation rules, preventing redundant computations.
+ * </p>
+ *
+ * <h3>4. Usage Examples</h3>
+ *
+ * <h4>Creation</h4>
+ * 
+ * <pre>
+ * // Create a function: Sin(x)
+ * // Resulting IAST: [Sin, x]
+ * IAST function = F.Sin(F.x);
+ *
+ * // Create a list: {1, 2, 3}
+ * // Resulting IAST: [List, 1, 2, 3]
+ * IAST list = F.List(F.C1, F.C2, F.C3);
+ * </pre>
+ *
+ * <h4>Accessing Elements</h4>
+ * 
+ * <pre>
+ * IAST expr = F.Plus(F.x, F.y); // Plus[x, y]
+ *
+ * IExpr op = expr.head(); // Returns S.Plus
+ * IExpr arg1 = expr.arg1(); // Returns F.x
+ * IExpr arg2 = expr.arg2(); // Returns F.y
+ *
+ * int args = expr.argSize(); // Returns 2
+ * </pre>
+ *
+ * <h4>Transformation</h4>
+ * 
+ * <pre>
+ * // Map a function over arguments: {1, 2, 3} -> {f(1), f(2), f(3)}
+ * IAST list = F.List(F.C1, F.C2, F.C3);
+ * IAST mapped = list.map(x -> F.unary(F.f, x));
+ * </pre>
+ *
+ * @see org.matheclipse.core.expression.F
+ * @see org.matheclipse.core.interfaces.IExpr
+ * @see org.matheclipse.core.interfaces.ISymbol
  */
 public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
 
@@ -1329,6 +1386,19 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @return <code>true</code>, if one of the headers of this AST contains a trigonometric function.
    */
   public boolean hasTrigonometricFunction();
+
+
+  @Override
+  default <T> T headInstanceOf(Class<T> interfaceClass) {
+    IExpr head = head();
+    if (head.isBuiltInSymbol()) {
+      IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+      if (interfaceClass.isInstance(evaluator)) {
+        return interfaceClass.cast(evaluator);
+      }
+    }
+    return null;
+  }
 
   @Override
   default boolean isASTOrAssociation() {

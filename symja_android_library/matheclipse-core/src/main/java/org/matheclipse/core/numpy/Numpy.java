@@ -2,6 +2,16 @@ package org.matheclipse.core.numpy;
 
 public class Numpy {
 
+  /**
+   * Generate numbers spaced evenly over a specified interval.
+   * 
+   * @param start
+   * @param stop
+   * @param num
+   * @param endpoint
+   * @return samples, equally spaced over the interval [start, stop] (if endpoint is true) or
+   *         [start, stop) (if endpoint is false).
+   */
   public static double[] linspace(double start, double stop, int num, boolean endpoint) {
     double[] result = new double[num];
     double step;
@@ -25,6 +35,16 @@ public class Numpy {
     return result;
   }
 
+  /**
+   * Generate numbers spaced evenly on a log scale.
+   * 
+   * @param start
+   * @param stop
+   * @param num
+   * @param endpoint
+   * @param base
+   * @return samples, equally spaced on a log scale.
+   */
   public static double[] logspace(double start, double stop, int num, boolean endpoint,
       double base) {
     double[] result = linspace(start, stop, num, endpoint);

@@ -9881,32 +9881,6 @@ public class J extends S {
     return new AST1(MathMLForm, Object2Expr.convert(a1));
   }
 
-
-  /**
-   * MatrixD(f, X) - gives the matrix derivative of `f` with respect to the matrix `X`.
-   * 
-   * @see <a href=
-   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MatrixD.md">MatrixD
-   *      documentation</a>
-   */
-  public static IAST matrixD(final Object a1, final Object a2) {
-    return new AST2(MatrixD, Object2Expr.convert(a1), Object2Expr.convert(a2));
-  }
-
-
-  /**
-   * MatrixD(f, X) - gives the matrix derivative of `f` with respect to the matrix `X`.
-   * 
-   * @see <a href=
-   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/MatrixD.md">MatrixD
-   *      documentation</a>
-   */
-  public static IAST matrixD(final Object a1, final Object a2, final Object a3) {
-    return new AST3(MatrixD, Object2Expr.convert(a1), Object2Expr.convert(a2),
-        Object2Expr.convert(a3));
-  }
-
-
   /**
    * MatrixExp(matrix) - computes the matrix exponential of the square `matrix`.
    * 
