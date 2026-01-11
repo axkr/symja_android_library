@@ -66,6 +66,8 @@ public class PredicateQ {
       S.MatrixQ.setEvaluator(new MatrixQ());
       S.MemberQ.setEvaluator(new MemberQ());
       S.MissingQ.setPredicateQ(x -> x.isAST(S.Missing, 2));
+      S.NegativeDefiniteMatrixQ.setEvaluator(new NegativeDefiniteMatrixQ());
+      S.NegativeSemidefiniteMatrixQ.setEvaluator(new NegativeSemidefiniteMatrixQ());
       S.NotListQ.setPredicateQ(x -> !x.isList());
       S.NormalMatrixQ.setEvaluator(new NormalMatrixQ());
       S.NameQ.setEvaluator(new NameQ());
@@ -74,6 +76,8 @@ public class PredicateQ {
       S.OddQ.setEvaluator(new OddQ());
       S.OrthogonalMatrixQ.setEvaluator(new OrthogonalMatrixQ());
       S.PossibleZeroQ.setEvaluator(new PossibleZeroQ());
+      S.PositiveDefiniteMatrixQ.setEvaluator(new PositiveDefiniteMatrixQ());
+      S.PositiveSemidefiniteMatrixQ.setEvaluator(new PositiveSemidefiniteMatrixQ());
       S.PrimeQ.setEvaluator(new PrimeQ());
       S.QuantityQ.setEvaluator(new QuantityQ());
       S.RealValuedNumberQ.setEvaluator(new RealValuedNumberQ());
@@ -881,6 +885,81 @@ public class PredicateQ {
     }
   }
 
+  private static final class NegativeDefiniteMatrixQ extends AbstractFunctionEvaluator
+      implements IPredicate {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+
+      // A negative definite matrix must be Hermitian (and thus square)
+      if (!S.HermitianMatrixQ.ofQ(engine, arg1)) {
+        return S.False;
+      }
+
+      // All eigenvalues must be negative
+      IExpr eigenvalues = engine.evaluate(F.Eigenvalues(arg1));
+      if (eigenvalues.isList()) {
+        IAST list = (IAST) eigenvalues;
+        if (list.argSize() == 0) {
+          return S.False;
+        }
+
+        for (IExpr eigenvalue : list) {
+          // If any eigenvalue is not negative (< 0), return False
+          if (eigenvalue.isNonNegativeResult()) {
+            return S.False;
+          }
+        }
+        return S.True;
+      }
+
+      return S.False;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  private static final class NegativeSemidefiniteMatrixQ extends AbstractFunctionEvaluator
+      implements IPredicate {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+
+      // 1. A negative semidefinite matrix must be Hermitian (and thus square)
+      if (!S.HermitianMatrixQ.ofQ(engine, arg1)) {
+        return S.False;
+      }
+
+      // 2. All eigenvalues must be non-positive (<= 0)
+      IExpr eigenvalues = engine.evaluate(F.Eigenvalues(arg1));
+      if (eigenvalues.isList()) {
+        IAST list = (IAST) eigenvalues;
+        if (list.argSize() == 0) {
+          return S.False;
+        }
+
+        for (IExpr eigenvalue : list) {
+          // If any eigenvalue is not non-positive (<= 0), return False
+          if (eigenvalue.isPositiveResult()) {
+            return S.False;
+          }
+        }
+        return S.True;
+      }
+
+      return S.False;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
 
   private static final class NormalMatrixQ extends AbstractEvaluator {
 
@@ -1128,6 +1207,88 @@ public class PredicateQ {
       newSymbol.setAttributes(ISymbol.LISTABLE);
       setOptions(newSymbol, //
           F.list(F.Rule(S.Assumptions, S.$Assumptions)));
+    }
+  }
+
+  private static final class PositiveDefiniteMatrixQ extends AbstractFunctionEvaluator
+      implements IPredicate {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+
+      // A positive definite matrix must be Hermitian (and thus square)
+      if (!S.HermitianMatrixQ.ofQ(engine, arg1)) {
+        return S.False;
+      }
+
+      // All eigenvalues must be positive
+      IExpr eigenvalues = engine.evaluate(F.Eigenvalues(arg1));
+      if (eigenvalues.isList()) {
+        IAST list = (IAST) eigenvalues;
+        if (list.argSize() == 0) {
+          // Empty matrix is not positive definite
+          return S.False;
+        }
+
+        for (IExpr eigenvalue : list) {
+          // If any eigenvalue is not positive (<= 0 or complex or indeterminate), return False
+          if (eigenvalue.isNegativeResult()) {
+            return S.False;
+          }
+          if (eigenvalue.isPossibleZero(true)) {
+            return S.False;
+          }
+        }
+        return S.True;
+      }
+
+      return S.False;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+  }
+
+  private static final class PositiveSemidefiniteMatrixQ extends AbstractFunctionEvaluator
+      implements IPredicate {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+
+      // 1. A positive semidefinite matrix must be Hermitian (and thus square)
+      if (!S.HermitianMatrixQ.ofQ(engine, arg1)) {
+        return S.False;
+      }
+
+      // 2. All eigenvalues must be non-negative (>= 0)
+      // Note: Eigenvalues of a Hermitian matrix are real.
+      IExpr eigenvalues = engine.evaluate(F.Eigenvalues(arg1));
+      if (eigenvalues.isList()) {
+        IAST list = (IAST) eigenvalues;
+        if (list.argSize() == 0) {
+          // Empty matrix is typically not considered positive semidefinite in this context
+          return S.False;
+        }
+
+        for (IExpr eigenvalue : list) {
+          // Check if eigenvalue is non-negative (>= 0)
+          if (eigenvalue.isNegativeResult()) {
+            return S.False;
+          }
+        }
+        return S.True;
+      }
+
+      return S.False;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
     }
   }
 
@@ -1547,11 +1708,11 @@ public class PredicateQ {
           IExpr expr = row.get(j);
           if (i == j) {
             IExpr temp = expr.minus(F.C1);
-            if (temp.isPossibleZero(true,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+            if (temp.isPossibleZero(true, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
               continue;
             }
           } else {
-            if (expr.isPossibleZero(true,  Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+            if (expr.isPossibleZero(true, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
               continue;
             }
           }
