@@ -470,6 +470,43 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testBinormalDistribution() {
+    check("Skewness(BinormalDistribution(p))", //
+        "{0,0}");
+    check("Skewness(BinormalDistribution({s1,s2},p))", //
+        "{0,0}");
+    check("Skewness(BinormalDistribution({m1, m2}, {s1,s2},p))", //
+        "{0,0}");
+
+    check("Mean(BinormalDistribution(p))", //
+        "{0,0}");
+    check("Mean(BinormalDistribution({s1,s2},p))", //
+        "{0,0}");
+    check("Mean(BinormalDistribution({m1, m2}, {s1,s2},p))", //
+        "{m1,m2}");
+    check("Variance(BinormalDistribution(p))", //
+        "{1,1}");
+    check("Variance(BinormalDistribution({s1,s2},p))", //
+        "{s1^2,s2^2}");
+    check("Variance(BinormalDistribution({m1, m2}, {s1,s2},p))", //
+        "{s1^2,s2^2}");
+  }
+
+  @Test
+  public void testMultinormalDistribution() {
+    check("s = {{s1^2, p*s1*s2}, {p*s1*s2, s2^2}};", //
+        "");
+    check("Mean(MultinormalDistribution({m1, m2}, s))", //
+        "{m1,m2}");
+    check("Variance(MultinormalDistribution({m1, m2}, s))", //
+        "{s1^2,s2^2}");
+    check("Skewness(MultinormalDistribution({m1, m2}, s))", //
+        "{0,0}");
+    check("Skewness(MultinormalDistribution(s))", //
+        "{0,0}");
+  }
+
+  @Test
   public void testNakagamiDistribution() {
     check("Mean(NakagamiDistribution(m,w))", //
         "(Sqrt(w)*Pochhammer(m,1/2))/Sqrt(m)");

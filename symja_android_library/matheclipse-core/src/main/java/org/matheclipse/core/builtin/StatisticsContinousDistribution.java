@@ -13,12 +13,15 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IAST.PROPERTY;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.statistics.ICDF;
 import org.matheclipse.core.interfaces.statistics.ICentralMoment;
 import org.matheclipse.core.interfaces.statistics.IContinuousDistribution;
+import org.matheclipse.core.interfaces.statistics.ICovariance;
 import org.matheclipse.core.interfaces.statistics.IPDF;
 import org.matheclipse.core.interfaces.statistics.IRandomVariate;
 import org.matheclipse.core.interfaces.statistics.IStatistics;
@@ -172,9 +175,6 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {}
-
-    @Override
     public IExpr skewness(IAST dist) {
       if (dist.isAST1()) {
         IExpr s = dist.arg1();
@@ -198,6 +198,201 @@ public class StatisticsContinousDistribution {
     }
   }
 
+  private static final class BinormalDistribution extends AbstractEvaluator
+      implements IContinuousDistribution, ICDF, ICovariance, IPDF, IStatistics, IRandomVariate,
+      ICentralMoment {
+
+    @Override
+    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr covariance(IAST dist, EvalEngine engine) {
+      if (dist.isAST1()) {
+        IExpr p = dist.arg2();
+        return F.list(F.list(F.C1, p), F.list(p, F.C1));
+      }
+      if (dist.isAST2() && dist.first().isList2()) {
+        IAST sigma = (IAST) dist.first();
+        IExpr s1 = sigma.arg1();
+        IExpr s2 = sigma.arg2();
+        IExpr p = dist.arg2();
+        IExpr v1 = F.Times(p, s1, s2);
+        return F.list(F.list(F.Sqr(s1), v1), F.list(v1, F.Sqr(s2)));
+      }
+      if (dist.isAST3() && dist.first().isList2() && dist.second().isList2()) {
+        // IAST mean = (IAST) dist.first();
+        IAST sigma = (IAST) dist.second();
+        IExpr s1 = sigma.arg1();
+        IExpr s2 = sigma.arg2();
+        IExpr p = dist.arg3();
+        IExpr v1 = F.Times(p, s1, s2);
+        return F.list(F.list(F.Sqr(s1), v1), F.list(v1, F.Sqr(s2)));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
+    }
+
+    @Override
+    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+      // {3, 3}
+      return F.List(F.C3, F.C3);
+    }
+
+    @Override
+    public IExpr mean(IAST dist) {
+      if (dist.isAST1()) {
+        return F.CListC0C0;
+      }
+      if (dist.isAST2()) {
+        return F.CListC0C0;
+      }
+      if (dist.isAST3()) {
+        return dist.arg1();
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr median(IAST dist) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr pdf(IAST dist, IExpr X, EvalEngine engine) {
+      if (dist.isAST3()) {
+        if (X.isList2()) {
+          IExpr mu = dist.arg1();
+          IExpr sigma = dist.arg2();
+          IExpr rho = dist.arg3();
+          if (mu.isList2() && sigma.isList2()) {
+            IExpr mu1 = mu.first();
+            IExpr mu2 = mu.second();
+            IExpr sigma1 = sigma.first();
+            IExpr sigma2 = sigma.second();
+            IExpr x = X.first();
+            IExpr y = X.second();
+
+            // z = (x-mu1)^2/sigma1^2 - (2*rho*(x-mu1)*(y-mu2))/(sigma1*sigma2) + (y-mu2)^2/sigma2^2
+            IExpr xTerm = F.Divide(F.Subtract(x, mu1), sigma1);
+            IExpr yTerm = F.Divide(F.Subtract(y, mu2), sigma2);
+
+            IExpr z = F.Plus(F.Sqr(xTerm), F.Times(F.CN2, rho, xTerm, yTerm), F.Sqr(yTerm));
+
+            // 1 / (2*Pi*sigma1*sigma2*Sqrt(1-rho^2)) * Exp( -z / (2*(1-rho^2)) )
+            IExpr oneMinusRhoSq = F.Subtract(F.C1, F.Sqr(rho));
+
+            IExpr factor = F.Power(F.Times(F.C2Pi, sigma1, sigma2, F.Sqrt(oneMinusRhoSq)), F.CN1);
+            IExpr exponent = F.Times(F.CN1, z, F.Power(F.Times(F.C2, oneMinusRhoSq), F.CN1));
+
+            return F.Times(factor, F.Exp(exponent));
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      IExpr mu = F.List(F.C0, F.C0);
+      IExpr rhoExpr;
+      double[] means = new double[] {0.0, 0.0};
+      double[][] covariances;
+      if (dist.isAST1()) {
+        rhoExpr = dist.arg1();
+        double p = rhoExpr.evalf();
+        covariances = new double[][] {{1.0, p}, {p, 1.0}};
+      } else if (dist.isAST2()) {
+        IExpr sigma = dist.arg1();
+        rhoExpr = dist.arg2();
+        double s1 = sigma.first().evalf();
+        double s2 = sigma.second().evalf();
+        rhoExpr = dist.arg3();
+        double p = rhoExpr.evalf();
+        double cov12 = p * s1 * s2;
+        covariances = new double[][] {{s1 * s1, cov12}, {cov12, s2 * s2}};
+      } else if (dist.isAST3()) {
+        mu = dist.arg1();
+        double mu1 = mu.first().evalf();
+        double mu2 = mu.second().evalf();
+        means = new double[] {mu1, mu2};
+        IExpr sigma = dist.arg2();
+        double s1 = sigma.first().evalf();
+        double s2 = sigma.second().evalf();
+        rhoExpr = dist.arg3();
+        double p = rhoExpr.evalf();
+        double cov12 = p * s1 * s2;
+        covariances = new double[][] {{s1 * s1, cov12}, {cov12, s2 * s2}};
+      } else {
+        return F.NIL;
+      }
+      try {
+        org.hipparchus.distribution.multivariate.MultivariateNormalDistribution mnd =
+            new org.hipparchus.distribution.multivariate.MultivariateNormalDistribution(means,
+                covariances);
+
+        IASTAppendable list = F.ListAlloc(size);
+        for (int i = 0; i < size; i++) {
+          double[] sample = mnd.sample();
+          list.append(F.List(F.num(sample[0]), F.num(sample[1])));
+        }
+        return list;
+
+      } catch (RuntimeException rex) {
+        // Fallback or NIL if evalf fails
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+
+    @Override
+    public IExpr skewness(IAST dist) {
+      // {0, 0}
+      return F.List(F.C0, F.C0);
+    }
+
+    @Override
+    public IExpr variance(IAST dist) {
+      if (dist.isAST1()) {
+        return F.List(F.C1, F.C1);
+      }
+      IExpr sigma = F.NIL;
+      if (dist.isAST2()) {
+        sigma = dist.arg1();
+      }
+      if (dist.isAST3()) {
+        sigma = dist.arg2();
+      }
+      if (sigma.isList2()) {
+        return F.List(F.Sqr(sigma.first()), F.Sqr(sigma.second()));
+      }
+      return F.NIL;
+    }
+
+  }
 
   private static final class CauchyDistribution extends AbstractEvaluator
       implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate, ICentralMoment {
@@ -2015,6 +2210,7 @@ public class StatisticsContinousDistribution {
 
     private static void init() {
       S.BetaDistribution.setEvaluator(new BetaDistribution());
+      S.BinormalDistribution.setEvaluator(new BinormalDistribution());
       S.CauchyDistribution.setEvaluator(new CauchyDistribution());
       S.ChiSquareDistribution.setEvaluator(new ChiSquareDistribution());
 
@@ -2028,6 +2224,7 @@ public class StatisticsContinousDistribution {
       S.GumbelDistribution.setEvaluator(new GumbelDistribution());
       S.InverseGammaDistribution.setEvaluator(new InverseGammaDistribution());
       S.LogNormalDistribution.setEvaluator(new LogNormalDistribution());
+      S.MultinormalDistribution.setEvaluator(new MultinormalDistribution());
       S.NakagamiDistribution.setEvaluator(new NakagamiDistribution());
       S.NormalDistribution.setEvaluator(new NormalDistribution());
       S.ParetoDistribution.setEvaluator(new ParetoDistribution());
@@ -2551,6 +2748,230 @@ public class StatisticsContinousDistribution {
 
   }
 
+  private static final class MultinormalDistribution extends AbstractEvaluator
+      implements IContinuousDistribution, ICDF, ICovariance, IPDF, IStatistics, ICentralMoment,
+      IRandomVariate {
+
+    @Override
+    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+      // No simple closed form for the CDF of a general MultinormalDistribution.
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr centralMoment(IAST dist, IExpr m, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr covariance(IAST dist, EvalEngine engine) {
+      if (dist.isAST1()) {
+        return dist.arg1();
+      } else if (dist.isAST2()) {
+        return dist.arg2();
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
+
+    @Override
+    public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr kurtosis(IAST dist, EvalEngine engine) {
+      // The kurtosis of a normal distribution is 3.
+      // For Multinormal, this returns a vector of component-wise kurtosis values.
+      IExpr mu = mean(dist);
+      if (mu.isList()) {
+        return F.constantArray(F.C3, mu.argSize());
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr mean(IAST dist) {
+      if (dist.isAST2()) {
+        IExpr sigmaMatrix = dist.arg2();
+        if (isSigmaMatrix(dist, sigmaMatrix, F.C2)) {
+          return dist.arg1();
+        }
+      } else if (dist.isAST1()) {
+        // Assume zero mean vector, dimension inferred from Sigma
+        IExpr sigmaMatrix = dist.arg1();
+        if (isSigmaMatrix(dist, sigmaMatrix, F.C1)) {
+          // Sigma is an nxn matrix, so mean is a vector of size n
+          return F.constantArray(F.C0, sigmaMatrix.argSize());
+        }
+      }
+      return F.NIL;
+    }
+
+    private static boolean isSigmaMatrix(IAST dist, IExpr sigmaMatrix, IInteger position) {
+      int[] sigmaDimensions = sigmaMatrix.isMatrix(false);
+      if (sigmaDimensions == null || sigmaDimensions[0] != sigmaDimensions[1]
+          || sigmaDimensions[0] == 0) {
+        // The value `1` at position `2` in `3` is expected to be a symmetric positive definite
+        // matrix
+        Errors.printMessage(S.MultinormalDistribution, "posdefprm",
+            F.List(sigmaMatrix, position, dist));
+        return false;
+      }
+      if (!S.SymmetricMatrixQ.ofQ(EvalEngine.get(), sigmaMatrix)) {
+        // The value `1` at position `2` in `3` is expected to be a symmetric positive definite
+        // matrix
+        Errors.printMessage(S.MultinormalDistribution, "posdefprm",
+            F.List(sigmaMatrix, position, dist));
+        return false;
+      }
+      // TODO test symmetric positive definite
+      // if (!S.PositiveDefiniteMatrixQ.ofQ(EvalEngine.get(), sigmaMatrix)) {
+      // // The value `1` at position `2` in `3` is expected to be a symmetric positive definite
+      // // matrix
+      // Errors.printMessage(S.MultinormalDistribution, "posdefprm",
+      // F.List(sigmaMatrix, position, dist));
+      // return false;
+      // }
+
+      return true;
+    }
+
+    @Override
+    public IExpr median(IAST dist) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr pdf(IAST dist, IExpr X, EvalEngine engine) {
+      IExpr mu = F.NIL;
+      IExpr sigma = F.NIL;
+
+      if (dist.isAST1()) {
+        sigma = dist.arg1();
+        if (sigma.isList()) {
+          mu = F.constantArray(F.C0, sigma.argSize());
+        }
+      } else if (dist.isAST2()) {
+        mu = dist.arg1();
+        sigma = dist.arg2();
+      }
+      int[] dims = sigma.isMatrix();
+      if (mu.isPresent() && dims != null && dims[0] == dims[1]) {
+        // Dimension k
+        int k = dims[0]; // Rows of sigma
+        IExpr kExpr = F.ZZ(k);
+
+        // PDF = (2*Pi)^(-k/2) * Det(Sigma)^(-1/2) * Exp( -1/2 * (x-mu).Inverse(Sigma).(x-mu) )
+
+        // Pre-factor: ( (2*Pi)^k * Det(Sigma) ) ^ (-1/2)
+        IExpr preFactor = F.Power(F.Times(F.Power(F.C2Pi, kExpr), F.Det(sigma)), F.CN1D2);
+
+        // Exponent term: -1/2 * (X - Mu) . Inverse(Sigma) . (X - Mu)
+        IExpr diff = F.Subtract(X, mu);
+        IExpr invSigma = F.Inverse(sigma);
+        IExpr exponent = F.Times(F.CN1D2, F.Dot(diff, invSigma, diff));
+
+        return F.Times(preFactor, F.Exp(exponent));
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      try {
+        double[] meanVector;
+        double[][] covMatrix;
+
+        if (dist.isAST1()) {
+          // MultinormalDistribution(Sigma) -> Mu is zeros
+          IExpr sigmaExpr = dist.arg1();
+          covMatrix = sigmaExpr.toDoubleMatrix();
+          if (covMatrix == null) {
+            return F.NIL;
+          }
+          int dim = covMatrix.length;
+          meanVector = new double[dim]; // Java doubles default to 0.0
+        } else if (dist.isAST2()) {
+          // MultinormalDistribution(Mu, Sigma)
+          IExpr muExpr = dist.arg1();
+          IExpr sigmaExpr = dist.arg2();
+          meanVector = muExpr.toDoubleVector();
+          covMatrix = sigmaExpr.toDoubleMatrix();
+        } else {
+          return F.NIL;
+        }
+
+        if (meanVector != null && covMatrix != null) {
+          org.hipparchus.distribution.multivariate.MultivariateNormalDistribution mnd =
+              new org.hipparchus.distribution.multivariate.MultivariateNormalDistribution(
+                  meanVector, covMatrix);
+
+          IASTAppendable list = F.ListAlloc(size);
+          for (int i = 0; i < size; i++) {
+            double[] sample = mnd.sample();
+            list.append(F.List(sample));
+          }
+          return list;
+        }
+
+      } catch (RuntimeException rex) {
+        // Fallback if numerical evaluation fails (e.g., symbolic parameters)
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+
+    @Override
+    public IExpr skewness(IAST dist) {
+      // Skewness of multivariate normal distribution is a vector of zeros
+      IExpr mu = mean(dist);
+      if (mu.isList()) {
+        return F.constantArray(F.C0, mu.argSize());
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr variance(IAST dist) {
+      // Variance vector contains the diagonal elements of the covariance matrix
+      IExpr sigma = F.NIL;
+      if (dist.isAST1()) {
+        sigma = dist.arg1();
+      } else if (dist.isAST2()) {
+        sigma = dist.arg2();
+      }
+      int[] dims = sigma.isMatrix();
+      if (dims != null && dims[0] == dims[1]) {
+        IAST matrix = (IAST) sigma;
+        int dim = matrix.argSize();
+        IASTAppendable varianceVec = F.ListAlloc(dim);
+        for (int i = 1; i <= dim; i++) {
+          // Get the i-th row (IAST) and then the i-th element
+          IExpr row = matrix.get(i);
+          if (row.isList() && row.size() > i) {
+            varianceVec.append(row.get(i));
+          } else {
+            return F.NIL;
+          }
+        }
+        return varianceVec;
+      }
+      return F.NIL;
+    }
+  }
 
   private static final class NakagamiDistribution extends AbstractEvaluator
       implements ICDF, IContinuousDistribution, IPDF, IRandomVariate, IStatistics {
@@ -2677,6 +3098,23 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      if (dist.isAST2()) {
+        // see exception handling in RandonmVariate() function
+        double n = dist.arg1().evalf();
+        double m = dist.arg2().evalf();
+
+        // TODO cache RandomDataGenerator instance
+        RandomDataGenerator rdg = new RandomDataGenerator();
+        double[] vector = rdg.nextDeviates( //
+            new org.hipparchus.distribution.continuous.NakagamiDistribution(n, m), //
+            size);
+        return new ASTRealVector(vector, false);
+      }
+      return F.NIL;
+    }
+
+    @Override
     public void setUp(final ISymbol newSymbol) {}
 
     @Override
@@ -2702,23 +3140,6 @@ public class StatisticsContinousDistribution {
         IExpr m = dist.arg2();
         // m - (m*Pochhammer(n, 1/2)^2)/n
         return F.Subtract(m, F.Divide(F.Times(m, F.Sqr(F.Pochhammer(n, F.C1D2))), n));
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public IExpr randomVariate(Random random, IAST dist, int size) {
-      if (dist.isAST2()) {
-        // see exception handling in RandonmVariate() function
-        double n = dist.arg1().evalf();
-        double m = dist.arg2().evalf();
-
-        // TODO cache RandomDataGenerator instance
-        RandomDataGenerator rdg = new RandomDataGenerator();
-        double[] vector = rdg.nextDeviates( //
-            new org.hipparchus.distribution.continuous.NakagamiDistribution(n, m), //
-            size);
-        return new ASTRealVector(vector, false);
       }
       return F.NIL;
     }
