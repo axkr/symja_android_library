@@ -129,9 +129,10 @@ public class Partition extends AbstractFunctionEvaluator {
   }
 
   /**
-   * Recursive partition implementation for multi-dimensional support. * @param list The current
-   * level list. * @param nList The full list of partition sizes {n1, n2...}.
+   * Recursive partition implementation for multi-dimensional support.
    * 
+   * @param list The current level list.
+   * @param nList The full list of partition sizes {n1, n2...}.
    * @param level The current depth level (1-based).
    * @param dList The full specification of offsets.
    * @param kList The full specification of alignments.
@@ -143,7 +144,7 @@ public class Partition extends AbstractFunctionEvaluator {
       return list;
     }
 
-    // 1. Get parameters for this level
+    // Get parameters for this level
     int n = nList.get(level).toIntDefault(); // The partition size for this level
 
     // Resolve d (Offset)
@@ -179,10 +180,10 @@ public class Partition extends AbstractFunctionEvaluator {
       }
     }
 
-    // 2. Perform 1D Partition on the current list
+    // Perform 1D Partition on the current list
     IAST partitions = partition1D(list, n, d, kL, kR, pad);
 
-    // 3. Recursion for Nested Dimensions
+    // Recursion for Nested Dimensions
     if (level < nList.argSize()) {
       // Use F.ast(list.head()) to maintain the head (e.g., List or f)
       IASTAppendable nextLevelResult = F.ast(list.head(), partitions.size());
@@ -240,7 +241,6 @@ public class Partition extends AbstractFunctionEvaluator {
     IASTAppendable result = F.ast(list.head());
 
     for (long s = start; s <= endLimit; s += d) {
-      // Allocate sublist using the same head as the input list
       IASTAppendable sublist = F.ast(list.head(), n);
 
       // Optimization for no-padding case fully inside bounds

@@ -1793,6 +1793,51 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testBarnesG() {
+    check("BarnesG({-1/2, 3/2})", //
+        "{-E^(1/8)/(2^(23/24)*Glaisher^(3/2)*Pi^(3/4)),(2^(1/24)*E^(1/8)*Pi^(1/4))/Glaisher^(\n"
+            + "3/2)}");
+    check("BarnesG(1/4)", //
+        "E^(3/32-Catalan/(4*Pi))/(Glaisher^(9/8)*Gamma(1/4)^(3/4))");
+    check("BarnesG(-3/4)", //
+        "E^(3/32-Catalan/(4*Pi))/(Glaisher^(9/8)*Gamma(-3/4)*Gamma(1/4)^(3/4))");
+
+    check("BarnesG(0.5)", //
+        "0.603244");
+    check("N(BarnesG(1/7), 20)", //
+        "0.1597843850035697404");
+    check("BarnesG(0.222255555666222222222222222)", //
+        "0.258492333082583342675272806");
+    check("BarnesG(1.3+I)", //
+        "1.44461+I*(-0.298549)");
+
+    check("BarnesG(3)", //
+        "1");
+    check("BarnesG(10)", //
+        "5056584744960000");
+  }
+
+  @Test
+  public void testLogBarnesG() {
+    check("LogBarnesG(0.7)", //
+        "-0.21459");
+    // TODO
+    check("LogBarnesG(15.^500)", //
+        "LogBarnesG(Overflow())");
+    check("N(LogBarnesG(1/5), 20)", //
+        "-1.4678549668316788416");
+    check("LogBarnesG(0.2225566255555666222222222222222)", //
+        "-1.351415275469106474268300887987");
+    check("LogBarnesG(1.7+I)", //
+        "0.121379+I*(-0.313562)");
+
+    check("LogBarnesG(1)", //
+        "0");
+    check("LogBarnesG(2)", //
+        "0");
+  }
+
+  @Test
   public void testBaseDecode() {
     check(
         "ba1 = BaseEncode(StringToByteArray(\"Man is distinguished, not only by his reason, but by this singular passion from other animals, "
@@ -11142,8 +11187,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3319766398771200000");
   }
 
-
-
   @Test
   public void testI() {
     check("I*0.0//FullForm", //
@@ -12295,38 +12338,40 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // + "board.create('functiongraph',[$f1, 0, (6.283185307179586)],{strokecolor:'#5e81b5'});\n"
     // + "\n" + "\n" + "board.unsuspendUpdate();\n" + "");
 
-    // Mathcell syntax / generate TeX for MathJAX
-    check("JSForm(Manipulate(Factor(x^n + 1), {n, 1, 5, 1}))", //
-        "var parent = document.currentScript.parentNode;\n" //
-            + "var id = generateId();\n" //
-            + "parent.id = id;\n" //
-            + "MathCell( id, [ { type: 'slider', min: 1.0, max: 5.0, step: 1.0, name: 'n', label: 'n' }\n" //
-            + " ] );\n" //
-            + "\n" //
-            + "parent.update = function( id ) {\n" //
-            + "\n" //
-            + "var n = getVariable(id, 'n');\n" //
-            + "\n" //
-            + "\n" //
-            + "var expressions = [ '1 + x',\n" //
-            + "'1 + {x}^{2}',\n" //
-            + "'\\\\\\\\left( 1 + x\\\\\\\\right)  \\\\\\\\cdot \\\\\\\\left( 1 - x + {x}^{2}\\\\\\\\right) ',\n" //
-            + "'1 + {x}^{4}',\n" //
-            + "'\\\\\\\\left( 1 + x\\\\\\\\right)  \\\\\\\\cdot \\\\\\\\left( 1 - x + {x}^{2} - {x}^{3} + {x}^{4}\\\\\\\\right) ' ];\n" //
-            + "\n" //
-            + "  var data = '\\\\\\\\[' + expressions[Math.trunc((n-1.0)/1.0)] + '\\\\\\\\]';\n" //
-            + "\n" //
-            + "  data = data.replace( /\\\\\\\\/g, '&#92;' );\n" //
-            + "\n" //
-            + "  var config = {type: 'text', center: true };\n" //
-            + "\n" //
-            + "  evaluate( id, data, config );\n" //
-            + "\n" //
-            + "  MathJax.Hub.Queue( [ 'Typeset', MathJax.Hub, id ] );\n" //
-            + "\n" //
-            + "}\n" //
-            + "parent.update( id );\n" //
-            + "");
+    if (Config.USE_MANIPULATE_JS) {
+      // Mathcell syntax / generate TeX for MathJAX
+      check("JSForm(Manipulate(Factor(x^n + 1), {n, 1, 5, 1}))", //
+          "var parent = document.currentScript.parentNode;\n" //
+              + "var id = generateId();\n" //
+              + "parent.id = id;\n" //
+              + "MathCell( id, [ { type: 'slider', min: 1.0, max: 5.0, step: 1.0, name: 'n', label: 'n' }\n" //
+              + " ] );\n" //
+              + "\n" //
+              + "parent.update = function( id ) {\n" //
+              + "\n" //
+              + "var n = getVariable(id, 'n');\n" //
+              + "\n" //
+              + "\n" //
+              + "var expressions = [ '1 + x',\n" //
+              + "'1 + {x}^{2}',\n" //
+              + "'\\\\\\\\left( 1 + x\\\\\\\\right)  \\\\\\\\cdot \\\\\\\\left( 1 - x + {x}^{2}\\\\\\\\right) ',\n" //
+              + "'1 + {x}^{4}',\n" //
+              + "'\\\\\\\\left( 1 + x\\\\\\\\right)  \\\\\\\\cdot \\\\\\\\left( 1 - x + {x}^{2} - {x}^{3} + {x}^{4}\\\\\\\\right) ' ];\n" //
+              + "\n" //
+              + "  var data = '\\\\\\\\[' + expressions[Math.trunc((n-1.0)/1.0)] + '\\\\\\\\]';\n" //
+              + "\n" //
+              + "  data = data.replace( /\\\\\\\\/g, '&#92;' );\n" //
+              + "\n" //
+              + "  var config = {type: 'text', center: true };\n" //
+              + "\n" //
+              + "  evaluate( id, data, config );\n" //
+              + "\n" //
+              + "  MathJax.Hub.Queue( [ 'Typeset', MathJax.Hub, id ] );\n" //
+              + "\n" //
+              + "}\n" //
+              + "parent.update( id );\n" //
+              + "");
+    }
 
     // JSXGraph.org syntax
     // @Ignore Deactivate, because of change to Graphics output
@@ -17580,14 +17625,31 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPartition() {
+    // TODO
+    check("Partition({a, b, c, d, e, f, g}, UpTo(3))", //
+        "{{a,b,c},{d,e,f},{g}}");
+
+    check("Partition({a, b, c, d, e, f}, 3, 1, {1, 1}, pad)", //
+        "{{a,b,c},{b,c,d},{c,d,e},{d,e,f},{e,f,pad},{f,pad,pad}}");
+    check("Partition({a, b, c, d, e, f}, 3, 1, {-1, -1}, pad)", //
+        "{{pad,pad,a},{pad,a,b},{a,b,c},{b,c,d},{c,d,e},{d,e,f}}");
+    check("Partition({a, b, c, d, e, f}, 3, 1, {-1, 1}, pad)", //
+        "{{pad,pad,a},{pad,a,b},{a,b,c},{b,c,d},{c,d,e},{d,e,f},{e,f,pad},{f,pad,pad}}");
+    check("Partition({a, b, c, d, e, f}, 4, 1, {-1, 1}, {pad,dap})", //
+        "{{dap,pad,dap,a},{pad,dap,a,b},{dap,a,b,c},{a,b,c,d},{b,c,d,e},{c,d,e,f},{d,e,f,pad},{e,f,pad,dap},{f,pad,dap,pad}}");
+
     check("Partition({-1/2,-2,3},3,2147483647)", //
         "{{-1/2,-2,3}}");
+    // TODO
     check("Partition(f(),1)", //
         "f()");
+    // TODO
     check("Partition(f(x),1)", //
         "f(f(x))");
+    // TODO
     check("Partition({a,b,c,d,e,f},3,0)", //
         "Partition({a,b,c,d,e,f},3,0)");
+    // TODO
     check("Partition({a, b, c, d, e, f}, -1)", //
         "Partition({a,b,c,d,e,f},-1)");
     check("Partition({a, b, c, d, e, f}, 2)", //
@@ -22600,12 +22662,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("u->Sequence[a,b]", //
         "u->Sequence(a,b)");
 
-    check("myOpts(func_, target_) := {o1 -> thick,  If(func === target, o2 -> 0, Sequence @@ {})}", //
+    check("myOpts(func_, target_) := {o1 -> Thick,  If(func === target, o2 -> 0, Sequence @@ {})}", //
         "");
     check("myOpts(x^2,x^2)", //
-        "{o1->thick,o2->0}");
+        "{o1->Thick,o2->0}");
     check("myOpts(3*x,x^2)", //
-        "{o1->thick}");
+        "{o1->Thick}");
 
     check("f(x, Sequence(a, b), y)", //
         "f(x,a,b,y)");

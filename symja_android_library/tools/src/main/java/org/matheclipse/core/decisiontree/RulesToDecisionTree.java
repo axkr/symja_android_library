@@ -725,7 +725,7 @@ public class RulesToDecisionTree {
     // fail:
     // TEST_LHS_FOR_VARIABLES = true;
 
-    F.initSymbols();
+    F.initSymja();
 
     if (args != null && args.length > 0) {
 
