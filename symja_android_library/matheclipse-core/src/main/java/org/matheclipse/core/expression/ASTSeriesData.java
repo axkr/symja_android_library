@@ -1434,7 +1434,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
       ASTSeriesData ps = new ASTSeriesData(x, x0, end + 1, end + denominator, denominator);
       for (int i = 0; i <= end; i++) {
-        ps.setCoeff(i, engine.evalQuiet(F.subst(temp, F.Rule(power, F.ZZ(i)))));
+        ps.setCoeff(i, engine.evalQuiet(F.subst(temp, power, F.ZZ(i))));
       }
       return ps;
     } else {

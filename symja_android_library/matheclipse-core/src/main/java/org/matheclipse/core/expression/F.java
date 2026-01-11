@@ -85,7 +85,6 @@ import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.parser.ExprParserFactory;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.core.tensor.QuantityParser;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.SyntaxError;
@@ -98,7 +97,95 @@ import edu.jas.kern.ComputerThreads;
 import edu.jas.kern.JASConfig;
 import edu.jas.kern.PreemptStatus;
 
-/** Factory for creating Symja predefined function expression objects (interface {@link IAST}). */
+/**
+ * Factory class for creating and manipulating Symja predefined function expressions ({@link IAST})
+ * and symbols ({@link ISymbol}).
+ * <p>
+ * This class extends {@link S}, which contains static constant definitions for built-in symbols
+ * (e.g., {@link S#Sin}, {@link S#Plus}, {@link S#List}). By statically importing this class, you
+ * can write mathematical expressions in Java that closely resemble the functional structure (or
+ * FullForm) of the Symja Language.
+ * </p>
+ *
+ * <h3>General Usage</h3>
+ * <p>
+ * It is recommended to use a static import to improve code readability:
+ * </p>
+ * 
+ * <pre>
+ * import static org.matheclipse.core.expression.F.*;
+ * </pre>
+ *
+ * <h3>Examples</h3>
+ *
+ * <h4>1. Creating Symbolic Expressions</h4>
+ * <p>
+ * To create the expression <code>Sin(x) + 2 * Cos(y)</code>:
+ * </p>
+ * 
+ * <pre>
+ * // Use F.symbol() or standard formal symbols like F.x, F.y if available in F or S
+ * // Construct the AST: Plus(Sin(x), Times(C2, Cos(y)))
+ * IExpr expr = Plus(Sin(x), Times(C2, Cos(y)));
+ * </pre>
+ *
+ * <h4>2. Evaluation</h4>
+ * <p>
+ * Use {@link #eval(IExpr)} for symbolic evaluation or {@link IExpr#evalf()} for numeric evaluation.
+ * </p>
+ * 
+ * <pre>
+ * IExpr result = eval(Plus(C1, C1)); // Returns F.C2 (integer 2)
+ * IExpr numeric = Sqrt(C2).evalf(); // Returns 1.4142...
+ * </pre>
+ *
+ * <h4>3. Substitution</h4>
+ * <p>
+ * To replace variables within an expression, prefer {@link #subst(IExpr, IExpr, IExpr)} over
+ * <code>replaceAll</code>.
+ * </p>
+ * 
+ * <pre>
+ * IExpr expr = Power(x, C2); // x^2
+ * IExpr res = eval(subst(expr, x, C5)); // returns 25
+ * </pre>
+ *
+ * <h4>4. Creating Lists and Appending</h4>
+ * <p>
+ * When building lists or expressions dynamically, use the <code>*Alloc</code> methods to create an
+ * {@link IASTAppendable}.
+ * </p>
+ * 
+ * <pre>
+ * // Create a list {1, 2, ...}
+ * IASTAppendable list = ListAlloc(10);
+ * list.append(C1);
+ * list.append(C2);
+ *
+ * // Create a sum 1 + 2 + ...
+ * IASTAppendable sum = PlusAlloc(10);
+ * sum.append(C1);
+ * sum.append(C2);
+ * </pre>
+ *
+ * <h4>5. Working with AST Arguments</h4>
+ * <p>
+ * When iterating arguments, use {@link IAST#argSize()} to get the number of arguments (excluding
+ * the head).
+ * </p>
+ * 
+ * <pre>
+ * IAST function = Sin(x);
+ * if (function.argSize() == 1) {
+ *   IExpr arg = function.arg1();
+ * }
+ * </pre>
+ *
+ * @see S
+ * @see IExpr
+ * @see IAST
+ * @see IASTAppendable
+ */
 public class F extends S {
 
   /**
@@ -645,7 +732,7 @@ public class F extends S {
   public static final IAST CNIInfinity;
 
   /**
-   * Represents {@link S#ComplexInfinity} as {@link F#DirectedInfinity()}.
+   * Represents {@link S#ComplexInfinity} as {@link F#CComplexInfinity}.
    */
   public static final IAST CComplexInfinity;
 
@@ -945,7 +1032,6 @@ public class F extends S {
    * @param head the header expression of the function. If the ast represents a function like <code>
    *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
    * @param a
-   * @return
    */
   public static final IASTMutable $(final IExpr head, final IExpr... a) {
     switch (a.length) {
@@ -1140,8 +1226,7 @@ public class F extends S {
    *
    * @param symbol the associated symbol of the pattern sequence. Maybe <code>null</code>.
    * @param zeroArgsAllowed if <code>true</code>, 0 arguments are allowed, otherwise the number of
-   *        args has to be >= 1.
-   * @return
+   *        arguments has to be >= 1.
    */
   public static IPatternSequence $ps(final ISymbol symbol, boolean zeroArgsAllowed) {
     return PatternSequence.valueOf(symbol, zeroArgsAllowed);
@@ -1184,11 +1269,12 @@ public class F extends S {
   }
 
   /**
+   * Create a {@link RepeatedPattern}
+   * 
    * @param patternExpr
    * @param min if <code>min==0</code> RepeatedNull is assumed
    * @param max
    * @param engine
-   * @return
    */
   public static IPatternSequence $Repeated(final IExpr patternExpr, int min, int max,
       EvalEngine engine) {
@@ -1538,8 +1624,8 @@ public class F extends S {
     return new AST1(AngleVector, a0);
   }
 
-  public static IAST AntiSymmetric(final IExpr a0) {
-    return new AST1(AntiSymmetric, a0);
+  public static IAST Antisymmetric(final IExpr a0) {
+    return new AST1(Antisymmetric, a0);
   }
 
   public static IAST Apart(final IExpr a0) {
@@ -1762,6 +1848,10 @@ public class F extends S {
     return new ASTAssociation();
   }
 
+  public static IAST Arrow(final IExpr a0) {
+    return new AST1(Arrow, a0);
+  }
+
   /**
    * Create an association data structure <code>&lt;| x0-&gt;y0, x1-&gt;y1, ... |&gt;</code> from a
    * map of rules.
@@ -1854,7 +1944,6 @@ public class F extends S {
    * @param head the header expression of the function. If the ast represents a function like <code>
    *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
    * @param collection the collection which holds the elements which should be appended
-   * @return
    */
   public static IASTAppendable ast(final IExpr head, Collection<? extends IExpr> collection) {
     return ast(head, collection, 0);
@@ -1866,7 +1955,6 @@ public class F extends S {
    * @param collection the collection which holds the elements which should be appended
    * @param initialCapacity the additional capacity added to the collections size (i.e. number of
    *        arguments without the header element) of the list.
-   * @return
    */
   public static IASTAppendable ast(final IExpr head, Collection<? extends IExpr> collection,
       int initialCapacity) {
@@ -1943,7 +2031,6 @@ public class F extends S {
    * @param head the header expression of the function. If the ast represents a function like <code>
    *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
    * @param arr the integer arguments of the function expression
-   * @return
    */
   public static IASTAppendable ast(final ISymbol head, final int[] arr) {
     return AST.newInstance(head, arr);
@@ -2032,6 +2119,14 @@ public class F extends S {
   /** Causes the current thread to wait until the main initialization has finished. */
   public static final void await() throws InterruptedException {
     COUNT_DOWN_LATCH.await();
+  }
+
+  public static IAST BarLegend(final IExpr a0) {
+    return new AST1(BarLegend, a0);
+  }
+
+  public static IAST BarLegend(final IExpr a0, final IExpr a1) {
+    return new AST2(BarLegend, a0, a1);
   }
 
   public static IAST BaseForm(final IExpr a0, final IExpr a1) {
@@ -2297,7 +2392,6 @@ public class F extends S {
    * {@link S#ConditionalExpression}.
    * 
    * @param n
-   * @return
    */
   public static IAST C(final int n) {
     return new AST1(C, ZZ(n));
@@ -2436,6 +2530,10 @@ public class F extends S {
 
   public static IAST Ceiling(final IExpr z) {
     return new AST1(Ceiling, z);
+  }
+
+  public static IAST Cell(final IExpr contents, final IExpr style) {
+    return new AST2(Cell, contents, style);
   }
 
   public static IAST CentralMoment(final IExpr a0, final int r) {
@@ -3425,7 +3523,6 @@ public class F extends S {
    *
    * @param a
    * @param b
-   * @return
    */
   public static IAST DirectedEdge(final IExpr a, final IExpr b) {
     return new B2.DirectedEdge(a, b);
@@ -3438,6 +3535,19 @@ public class F extends S {
   public static IASTMutable DirectionalLight(final IExpr color, final IExpr point) {
     return new AST2(DirectionalLight, color, point);
   }
+
+  public static IAST Directive(final IExpr a0) {
+    return new AST1(Directive, a0);
+  }
+
+  public static IASTMutable Directive(final IExpr a0, final IExpr a1) {
+    return new AST2(Directive, a0, a1);
+  }
+
+  public static IASTMutable Directive(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(Directive, a0, a1, a2);
+  }
+
 
   public static IAST DiscreteDelta(final IExpr a) {
     return new AST1(DiscreteDelta, a);
@@ -3703,6 +3813,10 @@ public class F extends S {
       }
     }
     return symbol;
+  }
+
+  public static IAST EdgeForm(final IExpr a0) {
+    return new AST1(EdgeForm, a0);
   }
 
   public static IAST Eigensystem(final IExpr m) {
@@ -3993,7 +4107,6 @@ public class F extends S {
    * Evaluate the given expression and test if the result equals the symbol <code>True</code>.
    *
    * @param expr
-   * @return
    * @deprecated use EvalEngine#evalTrue()
    */
   @Deprecated
@@ -4251,6 +4364,10 @@ public class F extends S {
     return ast(a, f4);
   }
 
+  public static IAST FaceForm(final IExpr a0) {
+    return new AST1(FaceForm, a0);
+  }
+
   public static IAST Factor(final IExpr poly) {
     return new AST1(Factor, poly);
   }
@@ -4432,6 +4549,10 @@ public class F extends S {
     return new AST3(ForAll, a0, a1, a2);
   }
 
+  public static IAST Fourier(final IExpr a0, final IExpr a1) {
+    return new AST2(Fourier, a0, a1);
+  }
+
   /**
    * Create a "fractional" number
    *
@@ -4563,7 +4684,6 @@ public class F extends S {
    *
    * @param expr
    * @param form
-   * @return
    */
   public static IAST FreeQ(final IExpr expr, final IExpr form) {
     return new B2.FreeQ(expr, form);
@@ -4585,38 +4705,6 @@ public class F extends S {
     return new AST1(FromSphericalCoordinates, a);
   }
 
-  /**
-   * Parses a given string to an instance of {@link IExpr}
-   *
-   * <p>
-   * Examples:
-   *
-   * <pre>
-   * "7/9" -> RationalScalar.of(7, 9)
-   * "3.14" -> DoubleScalar.of(3.14)
-   * "(3+2)*I/(-1+4)+8-I" -> ComplexScalar.of(8, 2/3) == "8+2/3*I"
-   * "9.81[m*s^-2]" -> Quantity.of(9.81, "m*s^-2")
-   * </pre>
-   *
-   * If the parsing logic encounters an inconsistency, the return type is a {@link IStringX} that
-   * holds the input string.
-   *
-   * <p>
-   * Scalar types that are not supported include {@link GaussScalar}.
-   *
-   * @param string
-   * @return scalar
-   */
-  public static IExpr fromString(String string) {
-    try {
-      return QuantityParser.of(string);
-    } catch (Exception exception) {
-      Errors.rethrowsInterruptException(exception);
-
-    }
-    return stringx(string);
-  }
-
   public static IAST FullForm(final IExpr a0) {
     return new AST1(FullForm, a0);
   }
@@ -4631,7 +4719,6 @@ public class F extends S {
    * @param head the header symbol of the function. If the ast represents a function like <code>
    *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
    * @param a
-   * @return
    */
   public static IASTMutable function(IExpr head, final IExpr... a) {
     final int size = a.length;
@@ -4809,6 +4896,16 @@ public class F extends S {
     return ast;
   }
 
+  public static IAST GraphicsComplex(final IExpr pointsList, final IExpr primitives) {
+    return new AST2(GraphicsComplex, pointsList, primitives);
+  }
+
+  public static IAST GraphicsComplex(final IExpr pointsList, final IExpr primitives,
+      final IAST options) {
+    return new AST3(GraphicsComplex, pointsList, primitives, options);
+  }
+
+
   public static IASTAppendable Graphics3D(final IExpr graphicPrimitives) {
     IASTAppendable ast = ast(Graphics3D);
     ast.append(graphicPrimitives);
@@ -4820,6 +4917,14 @@ public class F extends S {
     ast.append(graphicPrimitives);
     ast.append(option);
     return ast;
+  }
+
+  public static IAST GrayLevel(final double d) {
+    return new AST1(GrayLevel, F.num(d));
+  }
+
+  public static IAST GrayLevel(final IExpr a0) {
+    return new AST1(GrayLevel, a0);
   }
 
   /**
@@ -4876,7 +4981,6 @@ public class F extends S {
    *
    * @param x
    * @param y
-   * @return
    */
   public static IAST GreaterEqual(final IExpr x, final int y) {
     return new B2.GreaterEqual(x, ZZ(y));
@@ -4997,6 +5101,14 @@ public class F extends S {
     return new AST1(HoldPattern, a0);
   }
 
+  public static IAST Hue(final IExpr a0) {
+    return new AST1(Hue, a0);
+  }
+
+  public static IAST Hue(final IExpr z, final IExpr s, final IExpr a) {
+    return new AST3(Hue, z, s, a);
+  }
+
   public static IAST HurwitzLerchPhi(final IExpr z, final IExpr s, final IExpr a) {
     return new AST3(HurwitzLerchPhi, z, s, a);
   }
@@ -5103,7 +5215,6 @@ public class F extends S {
    * @param condition
    * @param trueExpr
    * @param falseExpr
-   * @return
    */
   public static IAST If(final IExpr condition, final IExpr trueExpr, final IExpr falseExpr,
       final IExpr undefinedExpr) {
@@ -5262,8 +5373,16 @@ public class F extends S {
     return temp;
   }
 
-  /** Initialize the complete System */
-  public static synchronized void initSymbols() {
+  /**
+   * @deprecated use {@link #initSymja()}
+   */
+  @Deprecated
+  public static void initSymbols() {
+    initSymja();
+  }
+
+  /** Initialize the Symja Core system */
+  public static synchronized void initSymja() {
 
     if (!isSystemStarted) {
       // AndroidLoggerFix.fix();
@@ -5289,9 +5408,9 @@ public class F extends S {
               }
             }
           }
-        } catch (java.security.AccessControlException acex) {
-          // no read access for current user
-          LOGGER.warn("Cannot read packages in autoload folder:", acex);
+          // } catch (java.security.AccessControlException acex) {
+          // // no read access for current user
+          // LOGGER.warn("Cannot read packages in autoload folder:", acex);
         } catch (Exception ex) {
           Errors.rethrowsInterruptException(ex);
           LOGGER.error(ex);
@@ -5403,7 +5522,6 @@ public class F extends S {
    *
    * @param f
    * @param x
-   * @return
    */
   public static IAST Integrate(final IExpr f, final IExpr x) {
     return new B2.Integrate(f, x);
@@ -5433,7 +5551,6 @@ public class F extends S {
    * Create an "interval" expression: <code>Interval(list)</code>.
    *
    * @param list
-   * @return
    */
   public static IAST Interval(final IExpr list) {
     return new AST1(Interval, list);
@@ -5444,7 +5561,6 @@ public class F extends S {
    *
    * @param min minimum value of the interval
    * @param max maximum value of the interval
-   * @return
    */
   public static IAST Interval(final IExpr min, final IExpr max) {
     return new AST1(Interval, binaryAST2(List, min, max));
@@ -5455,7 +5571,6 @@ public class F extends S {
    *
    * @param capacity the assumed number of arguments (+ 1 for the header expression is added
    *        internally).
-   * @return
    */
   public static IASTAppendable IntervalAlloc(int capacity) {
     return ast(Interval, capacity);
@@ -5540,7 +5655,6 @@ public class F extends S {
    * @param from from this position (included)
    * @param to to this position (included)
    * @param step
-   * @return
    */
   public static IAST intIterator(ISymbol head, final Function<IExpr, IExpr> function,
       final int from, final int to, final int step) {
@@ -5566,7 +5680,6 @@ public class F extends S {
    * @param from
    * @param to
    * @param step
-   * @return
    */
   public static IAST intIterator(ISymbol head, final IntFunction<IExpr> function, final int from,
       final int to, final int step) {
@@ -5585,7 +5698,6 @@ public class F extends S {
    * @param from from this position (included)
    * @param to to this position (included)
    * @param step
-   * @return
    */
   public static IExpr intProduct(final Function<IInteger, IExpr> function, final int from,
       final int to, final int step) {
@@ -5643,7 +5755,6 @@ public class F extends S {
    * @param to to this position (included)
    * @param step
    * @param expand expand {@link S#Plus}, {@link S#Times}, {@link S#Power} subexpressions
-   * @return
    */
   public static IExpr intSum(final Function<IInteger, IExpr> function, final int from, final int to,
       final int step, boolean expand) {
@@ -5687,7 +5798,6 @@ public class F extends S {
    * @param function
    * @param iMin from this position (included)
    * @param iMax to this position (included)
-   * @return
    */
   public static IExpr intSum(final IntFunction<IExpr> function, final int iMin, final int iMax) {
     if (iMin > iMax) {
@@ -5953,7 +6063,6 @@ public class F extends S {
    * 
    * @param lhs left-hand-side of the assignment
    * @param rhs right-hand-side of the assignment
-   * @return
    */
   public static IAST ISet(final ISymbol lhs, final IExpr rhs) {
     F.setDownRule(lhs, rhs);
@@ -6069,7 +6178,6 @@ public class F extends S {
    *
    * @param value
    * @param rational
-   * @return
    * @throws ArithmeticException
    */
   public static boolean isNumEqualRational(double value, IRational rational)
@@ -6082,7 +6190,6 @@ public class F extends S {
    * Config.DOUBLE_TOLERANCE</code>.
    *
    * @param value
-   * @return
    */
   public static boolean isNumIntValue(double value) {
     return isZero(value - Math.rint(value), Config.DOUBLE_TOLERANCE);
@@ -6094,7 +6201,6 @@ public class F extends S {
    *
    * @param value
    * @param epsilon the tolerance
-   * @return
    */
   public static boolean isNumIntValue(double value, double epsilon) {
     return isZero(value - Math.rint(value), epsilon);
@@ -6151,7 +6257,6 @@ public class F extends S {
    * Test if the absolute value is less <code>Config.DOUBLE_EPSILON</code>.
    *
    * @param value
-   * @return
    */
   public static boolean isZero(double value) {
     return isZero(value, Config.MACHINE_EPSILON);
@@ -6162,7 +6267,6 @@ public class F extends S {
    *
    * @param x
    * @param epsilon
-   * @return
    */
   public static boolean isZero(double x, double epsilon) {
     return isFuzzyEquals(x, 0.0, epsilon);
@@ -6172,7 +6276,6 @@ public class F extends S {
    * Test if the absolute value is less <code>Config.MACHINE_EPSILON</code>.
    *
    * @param value
-   * @return
    */
   public static boolean isZero(org.hipparchus.complex.Complex value) {
     return org.hipparchus.complex.Complex.equals(value, org.hipparchus.complex.Complex.ZERO,
@@ -6186,7 +6289,6 @@ public class F extends S {
    *
    * @param x
    * @param epsilon
-   * @return
    */
   public static boolean isZero(org.hipparchus.complex.Complex x, double epsilon) {
     return org.hipparchus.complex.Complex.equals(x, org.hipparchus.complex.Complex.ZERO, epsilon);
@@ -6257,7 +6359,6 @@ public class F extends S {
    *
    * @param plainJavaScript
    * @param format
-   * @return
    */
   public static IAST JSFormData(final String plainJavaScript, final String format) {
     return new AST2(JSFormData, $str(plainJavaScript), $str(format));
@@ -6315,6 +6416,10 @@ public class F extends S {
     return new AST1(LeafCount, expr);
   }
 
+  public static IAST Legended(final IExpr a0, final IExpr a1) {
+    return new AST2(Legended, a0, a1);
+  }
+
   public static IAST LegendreP(final IExpr a0, final IExpr a1) {
     return new AST2(LegendreP, a0, a1);
   }
@@ -6348,7 +6453,6 @@ public class F extends S {
    *
    * @param x
    * @param y
-   * @return
    */
   public static IAST Less(final IExpr x, final IExpr y) {
     return new B2.Less(x, y);
@@ -6365,7 +6469,6 @@ public class F extends S {
    * @param x1
    * @param x2
    * @param x3
-   * @return
    */
   public static IAST Less(final IExpr x1, final IExpr x2, final IExpr x3) {
     return new AST3(Less, x1, x2, x3);
@@ -6389,7 +6492,6 @@ public class F extends S {
    *
    * @param x
    * @param y
-   * @return
    */
   public static IAST Less(final IExpr x, final int y) {
     return new B2.Less(x, ZZ(y));
@@ -6404,7 +6506,6 @@ public class F extends S {
    *
    * @param x
    * @param y
-   * @return
    */
   public static IAST LessEqual(final IExpr x, final IExpr y) {
     return new B2.LessEqual(x, y);
@@ -6421,7 +6522,6 @@ public class F extends S {
    * @param x1
    * @param x2
    * @param x3
-   * @return
    */
   public static IAST LessEqual(final IExpr x1, final IExpr x2, final IExpr x3) {
     return new AST3(LessEqual, x1, x2, x3);
@@ -6440,7 +6540,6 @@ public class F extends S {
    *
    * @param x
    * @param y
-   * @return
    */
   public static IAST LessEqual(final IExpr x, final int y) {
     return new B2.LessEqual(x, ZZ(y));
@@ -6495,7 +6594,6 @@ public class F extends S {
    * Return a single value as a <code>List()</code>
    *
    * @param expr
-   * @return
    */
   public static IAST list(final IExpr expr) {
     return new B1.List(expr);
@@ -6513,7 +6611,6 @@ public class F extends S {
    *
    * @param x1
    * @param x2
-   * @return
    */
   public static IAST list(final IExpr x1, final IExpr x2) {
     return new B2.List(x1, x2);
@@ -6533,7 +6630,6 @@ public class F extends S {
    * @param x1
    * @param x2
    * @param x3
-   * @return
    */
   public static IAST list(final IExpr x1, final IExpr x2, final IExpr x3) {
     return new B3.List(x1, x2, x3);
@@ -6550,9 +6646,8 @@ public class F extends S {
 
   /**
    * Create an empty immutable list <code>{ }</code> (i.e. <code>List()</code>).
-   *
-   * @return
-   * @see {@link #ListAlloc()} to create an appendable list
+   * <p>
+   * See {@link #ListAlloc()} - to create an appendable list
    */
   public static IAST List() {
     return CEmptyList;
@@ -6563,15 +6658,21 @@ public class F extends S {
     for (int i = 0; i < numbers.length; i++) {
       a[i] = num(numbers[i]);
     }
+    if (numbers.length > 3) {
+      AST ast = new AST(List, a);
+      ast.uniformTypeFlags = a[0].uniformFlags();
+      return ast;
+    }
     return function(List, a);
   }
 
   /**
    * Create an immutable list from the arguments.
-   *
+   * <p>
+   * See {@link #ListAlloc(final IExpr...)} to create an appendable list
+   * 
    * @param a
-   * @return
-   * @see {@link #ListAlloc(final IExpr...)} to create an appendable list
+   *
    */
   public static IAST List(final IExpr... a) {
     switch (a.length) {
@@ -6622,6 +6723,11 @@ public class F extends S {
     for (int i = 0; i < numbers.length; i++) {
       a[i] = ZZ(numbers[i]);
     }
+    if (numbers.length > 3) {
+      AST ast = new AST(List, a);
+      ast.uniformTypeFlags = a[0].uniformFlags();
+      return ast;
+    }
     return function(List, a);
   }
 
@@ -6630,6 +6736,11 @@ public class F extends S {
     for (int i = 0; i < numbers.length; i++) {
       a[i] = ZZ(numbers[i]);
     }
+    if (numbers.length > 3) {
+      AST ast = new AST(List, a);
+      ast.uniformTypeFlags = a[0].uniformFlags();
+      return ast;
+    }
     return List(a);
   }
 
@@ -6637,6 +6748,11 @@ public class F extends S {
     IStringX[] a = new IStringX[strs.length];
     for (int i = 0; i < strs.length; i++) {
       a[i] = stringx(strs[i]);
+    }
+    if (strs.length > 3) {
+      AST ast = new AST(List, a);
+      ast.uniformTypeFlags = a[0].uniformFlags();
+      return ast;
     }
     return function(List, a);
   }
@@ -6672,7 +6788,6 @@ public class F extends S {
    *
    * @param collection
    * @param capacity
-   * @return
    */
   public static IASTAppendable ListAlloc(Collection<? extends IExpr> collection, int capacity) {
     IASTAppendable result = ast(List, collection.size() + capacity);
@@ -6682,10 +6797,11 @@ public class F extends S {
 
   /**
    * Create an appendable list <code>{ }</code>.
+   * <p>
+   * See {@link #List(final IExpr...)} to create an unmodifiable AST
    *
    * @param a
-   * @return
-   * @see {@link #List(final IExpr...)} to create an unmodifiable AST
+   * 
    */
   public static IASTAppendable ListAlloc(final IExpr... a) {
     return ast(a, List);
@@ -6736,10 +6852,12 @@ public class F extends S {
   /**
    * Create an immutable list <code>{ }</code> by converting the {@link Object}s expression types
    * into {@link IExpr} types.
+   * <p>
+   * See {@link Object2Expr#convert(Object, boolean, boolean)} for the conversion rules.
    *
    * @param objects the objects which should be converted, before adding them to the list
    * @return a <code>List(...)</code> of expressions
-   * @see {@link Object2Expr#convert(Object, boolean, boolean)} for the conversion rules.
+   * 
    */
   public static IAST listOfObjects(final Object... objects) {
     IExpr[] a = new IExpr[objects.length];
@@ -6794,7 +6912,6 @@ public class F extends S {
 
   /**
    * @param a0
-   * @return
    * @deprecated use HoldPattern
    */
   @Deprecated
@@ -6853,7 +6970,6 @@ public class F extends S {
    * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Log.md">Log</a>
    *
    * @param z
-   * @return
    */
   public static IAST Log(final IExpr z) {
     return new B1.Log(z);
@@ -6868,7 +6984,6 @@ public class F extends S {
    *
    * @param base
    * @param z
-   * @return
    */
   public static IAST Log(final IExpr base, final IExpr z) {
     return new AST2(Log, base, z);
@@ -6879,7 +6994,6 @@ public class F extends S {
    * 
    * @param base
    * @param z
-   * @return
    */
   public static IAST Log(final IExpr base, final int z) {
     return Log(base, F.ZZ(z));
@@ -6889,7 +7003,6 @@ public class F extends S {
    * Returns the natural logarithm of <code>z</code>.
    * 
    * @param z
-   * @return
    */
   public static IAST Log(final int z) {
     return new B1.Log(F.ZZ(z));
@@ -6900,7 +7013,6 @@ public class F extends S {
    * 
    * @param base
    * @param z
-   * @return
    */
   public static IAST Log(final int base, final int z) {
     return Log(F.ZZ(base), F.ZZ(z));
@@ -7047,7 +7159,6 @@ public class F extends S {
    * @param start start of the range (inclusive) of elements which should be mapped
    * @param end end of the range (exclusive) of elements which should be mapped
    * @param function
-   * @return
    */
   public static <T extends IExpr> IASTAppendable mapFunction(final IExpr head, final IAST ast,
       int start, int end, Function<T, IExpr> function) {
@@ -7066,7 +7177,6 @@ public class F extends S {
    * @param end end of the range (exclusive) of elements which should be mapped
    * @param function
    * @param predicate
-   * @return
    */
   public static <T extends IExpr> IASTAppendable mapFunction(final IExpr head, final IAST ast,
       int start, int end, Function<T, IExpr> function, Predicate<T> predicate) {
@@ -7224,7 +7334,6 @@ public class F extends S {
    * @param function those <code>apply(x)</code> method will be called with each number in the
    *        range. If the <code>apply</code> method returns <code>null</code> then return
    *        {@link F#NIL}.
-   * @return
    */
   public static <T extends IExpr> IASTAppendable mapRange(final IExpr head, final int iMin,
       final int iMax, IntFunction<T> function) {
@@ -7246,7 +7355,6 @@ public class F extends S {
    * @param function function those <code>apply(x)</code> method will be called with each number in
    *        the range. If the <code>apply</code> method returns <code>null</code> then return
    *        {@link F#NIL}.
-   * @return
    */
   public static <T extends IExpr> IASTAppendable mapRange(final int iMin, final int iMax,
       IntFunction<T> function) {
@@ -7305,7 +7413,6 @@ public class F extends S {
    * @param biFunction
    * @param n the number of rows of the matrix.
    * @param m the number of elements in one row
-   * @return
    */
   public static IASTMutable matrix(BiIntFunction<? extends IExpr> biFunction, int n, int m) {
     if (n > Config.MAX_MATRIX_DIMENSION_SIZE || m > Config.MAX_MATRIX_DIMENSION_SIZE) {
@@ -7316,10 +7423,6 @@ public class F extends S {
     // isMatrix() must be used!
     matrix.isMatrix(true);
     return matrix;
-  }
-
-  public static IAST MatrixD(final IExpr expr, final IExpr x) {
-    return new AST2(MatrixD, expr, x);
   }
 
   public static IAST MatrixExp(final IExpr a0) {
@@ -7392,7 +7495,6 @@ public class F extends S {
    *
    * @param list
    * @param form
-   * @return
    */
   public static IAST MemberQ(final IExpr list, final IExpr form) {
     return new B2.MemberQ(list, form);
@@ -7517,7 +7619,6 @@ public class F extends S {
    *
    * @param listOfLocalVariables
    * @param expr
-   * @return
    */
   public static IAST Module(final IExpr listOfLocalVariables, final IExpr expr) {
     return new AST2(Module, listOfLocalVariables, expr);
@@ -7567,7 +7668,6 @@ public class F extends S {
    * Evaluate the given (symbolic) expression in numeric mode.
    *
    * @param symbolicExpr
-   * @return
    */
   public static IAST N(final IExpr symbolicExpr) {
     return new AST1(N, symbolicExpr);
@@ -7578,7 +7678,6 @@ public class F extends S {
    * 
    * @param symbolicExpr
    * @param precision
-   * @return
    */
   public static IAST N(final IExpr symbolicExpr, final IExpr precision) {
     return new AST2(N, symbolicExpr, precision);
@@ -7611,7 +7710,6 @@ public class F extends S {
    * Times(CN1, x)</code> AST would be created.
    *
    * @param x the expression which should be negated.
-   * @return
    */
   public static IExpr Negate(final IExpr x) {
     if (x.isNumber()) {
@@ -7644,7 +7742,6 @@ public class F extends S {
    * @param intialArgumentsCapacity the initial capacity of arguments of the AST.
    * @param head the header expression of the function. If the ast represents a function like <code>
    *     f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
-   * @return
    */
   public static IAST newInstance(final int intialArgumentsCapacity, final IExpr head) {
     return AST.newInstance(intialArgumentsCapacity, head, false);
@@ -7712,10 +7809,13 @@ public class F extends S {
    * "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Not.md">Not</a>
    *
    * @param expr
-   * @return
    */
   public static IAST Not(final IExpr expr) {
     return new B1.Not(expr);
+  }
+
+  public static IAST Notebook(final IExpr a0) {
+    return new AST1(Notebook, a0);
   }
 
   public static IAST NotElement(final IExpr x, final IExpr domain) {
@@ -7739,7 +7839,6 @@ public class F extends S {
    * number.
    * 
    * @param af
-   * @return
    */
   public static INum num(final Apfloat af) {
     return ApfloatNum.valueOf(af);
@@ -7749,7 +7848,6 @@ public class F extends S {
    * Return a {@link Num} which wraps a Java double number.
    *
    * @param value
-   * @return
    */
   public static Num num(final double value) {
     return Num.valueOf(value);
@@ -7777,7 +7875,6 @@ public class F extends S {
    * floating-point number with the engines precision.
    *
    * @param valueString the numeric value represented as a string.
-   * @return
    */
   public static INum num(final String valueString) {
     EvalEngine engine = EvalEngine.get();
@@ -7911,6 +8008,10 @@ public class F extends S {
 
   public static IAST On(final IExpr a0, final IExpr a1) {
     return new AST2(On, a0, a1);
+  }
+
+  public static IAST Opacity(final double d) {
+    return new AST1(Opacity, F.num(d));
   }
 
   public static String openHTMLOnDesktop(String html) throws IOException {
@@ -8111,6 +8212,14 @@ public class F extends S {
     return new AST2(PadeApproximant, a0, a1);
   }
 
+  public static IAST PadLeft(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(PadLeft, a0, a1, a2);
+  }
+
+  public static IAST PadRight(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(PadRight, a0, a1, a2);
+  }
+
   /**
    * Return a pair of values as a <code>List()</code>
    *
@@ -8200,6 +8309,11 @@ public class F extends S {
 
   public static IAST Partition(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(Partition, a0, a1, a2);
+  }
+
+  public static IAST Partition(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3,
+      final IExpr a4) {
+    return quinary(Partition, a0, a1, a2, a3, a4);
   }
 
   public static IAST PartitionsP(final IExpr a0) {
@@ -9001,6 +9115,16 @@ public class F extends S {
     return new AST1(Quartiles, a0);
   }
 
+  /**
+   * Define a quaternary expression <code>head(a0, a1, a2, a3)</code>.
+   * 
+   * @param head
+   * @param a0
+   * @param a1
+   * @param a2
+   * @param a3
+   * @return
+   */
   public static final IASTAppendable quaternary(final IExpr head, final IExpr a0, final IExpr a1,
       final IExpr a2, final IExpr a3) {
     return new AST(new IExpr[] {head, a0, a1, a2, a3});
@@ -9010,6 +9134,17 @@ public class F extends S {
     return new AST1(Quiet, a0);
   }
 
+  /**
+   * Define a quinary expression <code>head(a0, a1, a2, a3, a4)</code>.
+   * 
+   * @param head
+   * @param a0
+   * @param a1
+   * @param a2
+   * @param a3
+   * @param a4
+   * @return
+   */
   public static final IASTMutable quinary(final IExpr head, final IExpr a0, final IExpr a1,
       final IExpr a2, final IExpr a3, final IExpr a4) {
     return new AST(new IExpr[] {head, a0, a1, a2, a3, a4});
@@ -9108,6 +9243,10 @@ public class F extends S {
 
   public static IAST Rectangle(final IAST originList) {
     return new AST1(Rectangle, originList);
+  }
+
+  public static IAST Rectangle(final IAST minCoordinates, final IAST maxCoordinates) {
+    return new AST2(Rectangle, minCoordinates, maxCoordinates);
   }
 
   /**
@@ -9577,6 +9716,15 @@ public class F extends S {
     try {
       if (expr.isSameHeadSizeGE(Graphics, 2)) {
         StringBuilder buf = new StringBuilder();
+        // if (GraphicsUtil.renderGraphics2DSVG(buf, (IAST) expr, EvalEngine.get())) {
+        // try {
+        // String graphicsStr = buf.toString();
+        // String html = JSBuilder.buildGraphics2D(JSBuilder.GRAPHICS2D_TEMPLATE, graphicsStr);
+        // return openHTMLOnDesktop(html);
+        // } catch (Exception ex) {
+        // Errors.rethrowsInterruptException(ex);
+        // }
+        // }
         if (GraphicsUtil.renderGraphics2D(buf, (IAST) expr, EvalEngine.get())) {
           try {
             String graphicsStr = buf.toString();
@@ -10029,6 +10177,10 @@ public class F extends S {
     return new AST2(Style, a0, a1);
   }
 
+  public static IAST Style(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(Style, a0, a1, a2);
+  }
+
   /**
    * Create a list by dividing the range <code>xMin</code> to <code>xMax</code> into <code>n</code>
    * parts.
@@ -10215,8 +10367,15 @@ public class F extends S {
    *         the substituted expression.
    */
   public static IExpr subst(IExpr expr, IExpr subExpr, IExpr replacementExpr) {
+    if (subExpr.isSymbol()) {
+      return expr.replaceAll((ISymbol) subExpr, replacementExpr).orElse(expr);
+    }
     return expr.replaceAll(Functors.rules(Rule(subExpr, replacementExpr), EvalEngine.get()))
         .orElse(expr);
+  }
+
+  public static IExpr subst(IExpr expr, ISymbol[] symbols, IExpr[] replacementExpr) {
+    return expr.replaceAll(symbols, replacementExpr).orElse(expr);
   }
 
   /**
@@ -10499,6 +10658,18 @@ public class F extends S {
       }
     }
     return symbol;
+  }
+
+  public static IAST SymbolicIdentityArray(final IExpr a0) {
+    return new AST1(SymbolicIdentityArray, a0);
+  }
+
+  public static IAST SymbolicOnesArray(final IExpr a0) {
+    return new AST1(SymbolicOnesArray, a0);
+  }
+
+  public static IAST SymbolicZerosArray(final IExpr a0) {
+    return new AST1(SymbolicZerosArray, a0);
   }
 
   public static String symbolNameNormalized(final String symbolName) {
@@ -10821,6 +10992,10 @@ public class F extends S {
     return new AST2(TensorSymmetry, a0, a1);
   }
 
+  public static IAST TensorTranspose(final IExpr expr, final IExpr permutationList) {
+    return new AST2(TensorTranspose, expr, permutationList);
+  }
+
   /**
    * Create a function <code>head(arg1, arg2, arg3)</code> with 3 argument as an <code>AST3</code>
    * mutable object without evaluation.
@@ -10844,8 +11019,20 @@ public class F extends S {
     return new AST1(TeXForm, expr);
   }
 
+  public static IAST Text(final IExpr expr) {
+    return new AST1(Text, expr);
+  }
+
   public static IAST Text(final IExpr expr, IAST coords) {
     return new AST2(Text, expr, coords);
+  }
+
+  public static IAST Text(final IExpr expr, IAST coords, IAST a2) {
+    return new AST3(Text, expr, coords, a2);
+  }
+
+  public static IAST Thickness(final double value) {
+    return new AST1(Thickness, F.num(value));
   }
 
   /**
