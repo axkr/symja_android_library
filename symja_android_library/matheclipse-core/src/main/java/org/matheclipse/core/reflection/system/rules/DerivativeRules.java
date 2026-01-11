@@ -334,7 +334,7 @@ public class DerivativeRules {
       Function(Power(Times(Plus(C1,Times(CN1,Sqr(Sin(Slot2)),Slot1)),Sqrt(Plus(C1,Times(CN1,Sqr(Sin(Slot2)),Slot(C3))))),CN1)), true),
     // Derivative(0,0,1)[EllipticPi]=(EllipticPi(#1,#2,#3)+EllipticE(#2,#3)/(-1+#3)+(-Sin(2*#2)*#3)/(2*(-1+#3)*Sqrt(1-Sin(#2)^2*#3)))/(2*(#1-#3))&
     ISet($(Derivative(C0,C0,C1),EllipticPi),
-      Function(Times(Plus(EllipticPi(Slot1,Slot2,Slot(C3)),Times(EllipticE(Slot2,Slot(C3)),Power(Plus(CN1,Slot(C3)),CN1)),Times(CN1,Sin(Times(C2,Slot2)),Slot(C3),Power(Times(C2,Plus(CN1,Slot(C3)),Sqrt(Plus(C1,Times(CN1,Sqr(Sin(Slot2)),Slot(C3))))),CN1))),Power(Times(C2,Subtract(Slot1,Slot(C3))),CN1))), true),
+      Function(Times(Power(Times(C2,Subtract(Slot1,Slot(C3))),CN1),Plus(EllipticPi(Slot1,Slot2,Slot(C3)),Times(EllipticE(Slot2,Slot(C3)),Power(Plus(CN1,Slot(C3)),CN1)),Times(CN1,Sin(Times(C2,Slot2)),Slot(C3),Power(Times(C2,Plus(CN1,Slot(C3)),Sqrt(Plus(C1,Times(CN1,Sqr(Sin(Slot2)),Slot(C3))))),CN1))))), true),
     // Derivative(0,1)[Erf]=2/(E^#2^2*Sqrt(Pi))&
     ISet($(Derivative(C0,C1),Erf),
       Function(Times(C2,Power(Times(Exp(Sqr(Slot2)),CSqrtPi),CN1))), true),

@@ -15,11 +15,13 @@ import org.matheclipse.core.generic.BinaryBindIth1st;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IArraySymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.ISymbolicArray;
 import com.google.common.math.LongMath;
 
 /**
@@ -344,6 +346,19 @@ public class D extends AbstractFunctionEvaluator {
         return list.mapThreadEvaled(engine, F.ListAlloc(list.size()), ast, 1);
       }
 
+      if (x instanceof IArraySymbol) {
+        if (fx.isFree(x, true)) {
+          IExpr result = freeOfX(fx, engine);
+          if (result.isAST(S.SymbolicZerosArray, 2)) {
+            return result;
+          }
+          return F.SymbolicZerosArray(((IArraySymbol) x).getDimensions());
+        }
+        if (fx.equals(x)) {
+          return F.SymbolicIdentityArray(((IArraySymbol) x).getDimensions());
+        }
+        return F.NIL;
+      }
       if (x.isList()) {
         // D[fx_, {...}]
         IAST xList = (IAST) x;
@@ -492,7 +507,7 @@ public class D extends AbstractFunctionEvaluator {
       return F.C0;
     }
     if (functionOfX.isFree(x, true)) {
-      return F.C0;
+      return freeOfX(functionOfX, engine);
     }
 
     if (functionOfX.isNumber()) {
@@ -604,6 +619,19 @@ public class D extends AbstractFunctionEvaluator {
       if (ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
         return getDerivativeArgN(x, function, function.head(), engine);
       }
+    }
+    return F.NIL;
+  }
+
+  private static IExpr freeOfX(final IExpr functionOfX, EvalEngine engine) {
+    if (functionOfX.isFree(
+        t -> (t instanceof IArraySymbol) || t.headInstanceOf(ISymbolicArray.class) != null,
+        false)) {
+      return F.C0;
+    }
+    IExpr dimensions = engine.evaluateNIL(F.TensorDimensions(functionOfX));
+    if (dimensions.isList()) {
+      return F.SymbolicZerosArray(dimensions);
     }
     return F.NIL;
   }
