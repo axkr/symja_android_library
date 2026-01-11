@@ -22,14 +22,22 @@ public class ImageTest extends AbstractTestCase {
 
   @Test
   public void testArrayPlot() {
-    check("ArrayPlot(SparseArray({{1, 1} -> 0, {2, 2} -> 0} ))", //
+    check("i=ArrayPlot(SparseArray({{1, 1} -> 0, {2, 2} -> 0} ))", //
         "Image(Dimensions: 600,480 Transparency: 3)");
+    check("ImageDimensions(i)", //
+        "{600,480}");
   }
 
   @Test
   public void testImageGray001() {
-    check("Image({{0.1,0.2,0.3},{0.4,0.5,0.6},{0.7,0.8,0.9}})", //
+    check("i=Image({{0.1,0.2,0.3},{0.4,0.5,0.6},{0.7,0.8,0.9}})", //
         "Image(Dimensions: 3,3 Transparency: 1)");
+    check("ImageDimensions(i)", //
+        "{3,3}");
+    check("ImageData(i)", //
+        "{{0.1,0.2,0.3},\n" //
+            + " {0.4,0.5,0.6},\n" //
+            + " {0.7,0.8,0.9}}");
   }
 
   @Test
@@ -40,9 +48,15 @@ public class ImageTest extends AbstractTestCase {
 
   @Test
   public void testImageRGB001() {
-    check("Image({{{0.1,0.6,0.0},{0.4,0.1,0.8},{0.7,0.9,0.7}}," //
-        + "{{1.0,0.0,0.9},{0.6,0.6,1.0},{1.0,0.8,0.3}}}," + "ColorSpace->RGB)",
+    check(
+        "i=Image({{{0.1,0.6,0.0},{0.4,0.1,0.8},{0.7,0.9,0.7}}, {{1.0,0.0,0.9},{0.6,0.6,1.0},{1.0,0.8,0.3}}},ColorSpace->\"RGB\")",
         "Image(Dimensions: 3,2 Transparency: 3)");
+    check("ImageDimensions(i)", //
+        "{3,2}");
+    check("d=ImageData(i);Dimensions(d)", //
+        "{2,3,3}");
+    check("d", //
+        "{{{0.1,0.6,0.0},{0.4,0.1,0.8},{0.7,0.9,0.7}},{{1.0,0.0,0.9},{0.6,0.6,1.0},{1.0,0.8,0.3}}}");
   }
 
   @Test
