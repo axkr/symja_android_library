@@ -23,7 +23,63 @@ import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorReplaceAllWithPatternFlags;
 
-/** Interface for mapping ISymbol objects to int values. */
+/**
+ * Interface for the <b>Pattern Matching Context</b>, which stores variable bindings during the
+ * matching process.
+ * <p>
+ * The {@code IPatternMap} acts as the state container when the engine matches a target expression
+ * against a pattern. When a pattern object (like {@link org.matheclipse.core.expression.Pattern}
+ * {@code x_}) matches a value, it records that binding in this map. This ensures consistency across
+ * the pattern; if {@code x_} appears twice in a pattern (e.g., {@code f[x_, x_]}), the
+ * {@code IPatternMap} verifies that both occurrences match the exact same value.
+ * </p>
+ *
+ * <h3>1. Core Responsibilities</h3>
+ * <ul>
+ * <li><b>Binding Storage:</b> Maps pattern objects (or their indices) to the matched {@link IExpr}
+ * values.</li>
+ * <li><b>Consistency Checks:</b> Used to verify that repeated pattern variables match identical
+ * values.</li>
+ * <li><b>Rule Application:</b> Once matching is complete, the map provides the substitution values
+ * needed to instantiate the right-hand side of a rule.</li>
+ * </ul>
+ *
+ * <h3>2. Matching Lifecycle</h3>
+ * <p>
+ * When {@code PatternMatcher.test(expression)} is called:
+ * </p>
+ * <ol>
+ * <li>An empty {@code IPatternMap} is initialized.</li>
+ * <li>The matcher traverses the pattern tree.</li>
+ * <li>When it encounters a {@code Pattern} (e.g., {@code x_}), it calls
+ * {@link #setValue(IPatternObject, IExpr)}.</li>
+ * <li>If {@code x_} was already bound, the map checks if the new value equals the old value. If
+ * not, the match fails.</li>
+ * <li>If matching succeeds, the map contains the solution (e.g., {@code {x->5, y->Sin[z]}}).</li>
+ * </ol>
+ *
+ * <h3>3. Usage Examples</h3>
+ *
+ * <h4>Internal Mechanism (Conceptual)</h4>
+ * 
+ * <pre>
+ * // Pattern: f[x_, x_]
+ * // Target: f[2, 2]
+ *
+ * IPatternMap map = new PatternMap();
+ *
+ * // 1. First argument: x_ matches 2
+ * map.setValue(xPattern, F.C2); // Returns true
+ *
+ * // 2. Second argument: x_ matches 2 again
+ * // Map checks existing value for 'x'. Found 2.
+ * // 2 == 2, so match proceeds.
+ * </pre>
+ *
+ * @see org.matheclipse.core.interfaces.IPatternObject
+ * @see org.matheclipse.core.patternmatching.PatternMatcher
+ * @see org.matheclipse.core.expression.Pattern
+ */
 public interface IPatternMap {
   /**
    * The default priority when associating a new rule to a symbol. Lower values have higher

@@ -9,8 +9,69 @@ import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.parser.client.ParserConfig;
 
 /**
- * A pattern with assigned &quot;pattern name&quot; (i.e. <code>x: -nested-pattern-expression-
- * </code>).
+ * Represents a <b>Nested Pattern</b> ({@code name:pattern}), which matches a specific pattern
+ * structure and binds the result to a symbol.
+ * <p>
+ * The {@code PatternNested} class corresponds to the construct {@code Pattern[name, pattern]} or
+ * the shorthand {@code name : pattern}. It serves a dual purpose:
+ * </p>
+ * <ol>
+ * <li><b>Structural Constraint:</b> It enforces that the input expression must match the inner
+ * {@code pattern}.</li>
+ * <li><b>Variable Binding:</b> If the match succeeds, the <i>entire</i> expression matched by
+ * {@code pattern} is bound to the symbol {@code name}.</li>
+ * </ol>
+ *
+ * <h3>1. Syntax and Forms</h3>
+ * <ul>
+ * <li><b>{@code x : pattern}:</b> Matches if the input matches {@code pattern}, and binds the
+ * matched input to {@code x}. <br>
+ * <i>Example:</i> {@code list : {__Integer}} matches {@code {1, 2, 3}} and binds {@code list -> {1,
+ * 2, 3}}.</li>
+ * <li><b>{@code x : _Head}:</b> Matches an expression with the given head and binds it. <br>
+ * <i>Example:</i> {@code z : _Complex} matches {@code 1+I} and binds {@code z -> 1+I}.</li>
+ * </ul>
+ *
+ * <h3>2. Difference from Simple Patterns</h3>
+ * <p>
+ * A standard {@link Pattern} like {@code x_Integer} only checks the <i>head</i> of the expression.
+ * A {@code PatternNested} allows you to check for deep, complex structures (like a list of
+ * integers, or a specific algebraic form) while still capturing the result in a convenient
+ * variable.
+ * </p>
+ *
+ * <h3>3. Examples</h3>
+ *
+ * <h4>Capturing a List</h4>
+ * 
+ * <pre>
+ * // Define a function that only accepts lists of integers
+ * // f[list:{__Integer}] := Total[list]
+ *
+ * ISymbol f = F.Dummy("f");
+ * ISymbol list = F.Dummy("list");
+ *
+ * // Create the pattern: list : {__Integer}
+ * // 1. Inner pattern: {__Integer} (List containing 1 or more integers)
+ * // 2. Nested pattern: binds that list to 'list'
+ * IPattern inner = F.List(F.PatternSequence(null, S.Integer, false));
+ * IPatternNested nested = PatternNested.valueOf(list, inner);
+ *
+ * F.SetDelayed(F.unary(f, nested), F.Total(list));
+ *
+ * // f[{1, 2, 3}] -> Matches. 'list' is bound to {1, 2, 3}. Returns 6.
+ * // f[{1, 2.5}] -> Does not match (2.5 is not Integer).
+ * </pre>
+ *
+ * <h4>Algebraic Forms</h4>
+ * 
+ * <pre>
+ * // Match terms of the form a*x^n and capture the whole term
+ * // term : Times[_, Power[x, _]]
+ * </pre>
+ *
+ * @see org.matheclipse.core.expression.Pattern
+ * @see org.matheclipse.core.interfaces.IPatternObject
  */
 public class PatternNested extends Pattern {
   private static final long serialVersionUID = 7897154396467939141L;
@@ -159,13 +220,13 @@ public class PatternNested extends Pattern {
   @Override
   public String toString() {
     final StringBuilder buffer = new StringBuilder();
-  
+
     buffer.append('(');
     buffer.append(fSymbol.toString());
     buffer.append(':');
     buffer.append(fPatternExpr.toString());
     buffer.append(')');
-  
+
     return buffer.toString();
   }
 

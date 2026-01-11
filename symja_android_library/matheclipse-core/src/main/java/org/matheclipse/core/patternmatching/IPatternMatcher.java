@@ -12,7 +12,65 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-/** Interface for the pattern matcher */
+/**
+ * Abstract base class for <b>Pattern Matching Engines</b>.
+ * <p>
+ * {@code IPatternMatcher} defines the contract for checking if a target expression matches a
+ * specific structural pattern (the "Left-Hand Side" or LHS of a rule). It implements
+ * {@link Predicate}, allowing pattern matchers to be used directly in Java streams and filters.
+ * </p>
+ *
+ * <h3>1. Hierarchy</h3>
+ * <p>
+ * This class serves as the parent for:
+ * </p>
+ * <ul>
+ * <li><b>{@link PatternMatcher}:</b> The standard matcher that verifies if {@code expr} matches a
+ * pattern and binds variables (like {@code x_}) to an {@link IPatternMap}.</li>
+ * <li><b>{@link PatternMatcherAndEvaluator}:</b> Extends matching by also holding the "Right-Hand
+ * Side" (RHS). If the match succeeds, it can immediately substitute the bound variables into the
+ * RHS to produce a result.</li>
+ * </ul>
+ *
+ * <h3>2. Key Methods</h3>
+ * <ul>
+ * <li>{@link #test(IExpr)}: The primary method to check if the input expression matches the pattern
+ * structure.</li>
+ * <li>{@link #eval(IExpr, EvalEngine)}: Match the given left-hand-side and return an evaluated
+ * expression if match succeeds.</li>
+ * </ul>
+ *
+ * <h3>3. Usage Examples</h3>
+ *
+ * <h4>Basic Matching</h4>
+ * 
+ * <pre>
+ * // Create a pattern: f[x_Integer]
+ * IAST pattern = F.unary(F.Dummy("f"), F.$p(F.Dummy("x"), S.Integer));
+ *
+ * // Create the matcher
+ * IPatternMatcher matcher = new PatternMatcher(pattern);
+ *
+ * // Test against expressions
+ * boolean match1 = matcher.test(F.unary(F.Dummy("f"), F.C10)); // True
+ * boolean match2 = matcher.test(F.unary(F.Dummy("f"), F.num(2.5))); // False (not Integer)
+ * </pre>
+ *
+ * <h4>Usage as Predicate</h4>
+ * 
+ * <pre>
+ * // Filter a list of expressions
+ * List&lt;IExpr&gt; exprs = Arrays.asList(F.C1, F.a, F.C2);
+ * IPatternMatcher isInteger = new PatternMatcher(F.$b(S.Integer)); // _Integer
+ *
+ * // Keep only integers: {1, 2}
+ * exprs.stream().filter(isInteger).collect(Collectors.toList());
+ * </pre>
+ *
+ * @see org.matheclipse.core.patternmatching.PatternMatcher
+ * @see org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator
+ * @see org.matheclipse.core.patternmatching.IPatternMap
+ */
 public abstract class IPatternMatcher implements Cloneable, Predicate<IExpr>, Serializable {
 
   /**

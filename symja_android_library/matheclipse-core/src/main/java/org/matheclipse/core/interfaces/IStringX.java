@@ -17,7 +17,62 @@ import org.matheclipse.core.expression.UniformFlags;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.parser.client.ParserConfig;
 
-/** (I)nterface for a (String) e(X)pression */
+/**
+ * Interface for <b>String Expressions</b> in the Symja Algebra System.
+ * <p>
+ * {@code IStringX} represents a character string acting as an atomic expression within the system.
+ * Unlike {@link ISymbol}, which represents an identifier (variable or function name), an
+ * {@code IStringX} represents raw textual data (e.g., {@code "Hello World"}). It extends
+ * {@link IExpr} to allow strings to be treated as first-class citizens in abstract syntax trees.
+ * </p>
+ *
+ * <h3>1. Core Capabilities</h3>
+ * <p>
+ * This interface mirrors much of the standard {@link java.lang.String} API to facilitate easy
+ * manipulation of string data within the CAS context:
+ * </p>
+ * <ul>
+ * <li><b>Search:</b> Methods like {@link #indexOf(String)} and {@link #lastIndexOf(int)} allow
+ * searching for substrings or characters.</li>
+ * <li><b>Slicing:</b> Methods like {@link #substring(int, int)} allow extracting parts of the
+ * text.</li>
+ * <li><b>MIME Types:</b> The interface defines constants (e.g., {@link #TEXT_HTML},
+ * {@link #TEXT_LATEX}) often used to tag the format of the string content during output
+ * generation.</li>
+ * </ul>
+ *
+ * <h3>2. Usage Examples</h3>
+ *
+ * <h4>Creating a String Expression</h4>
+ * 
+ * <pre>
+ * // Create a Symja string "Hello"
+ * IStringX str = F.stringx("Hello");
+ * </pre>
+ *
+ * <h4>Manipulation</h4>
+ * 
+ * <pre>
+ * IStringX s = F.stringx("Symja System");
+ *
+ * // Get character at index 1
+ * char c = s.charAt(1); // 'y'
+ *
+ * // Extract substring
+ * String sub = s.substring(0, 5); // "Symja"
+ * </pre>
+ *
+ * <h4>Usage in Lists</h4>
+ * 
+ * <pre>
+ * // Strings can be arguments in functions or lists
+ * // List["Label", 10]
+ * IAST list = F.List(F.stringx("Label"), F.C10);
+ * </pre>
+ *
+ * @see org.matheclipse.core.expression.StringX
+ * @see org.matheclipse.core.expression.F#stringx(String)
+ */
 public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
   public static final short TEXT_PLAIN = 1;
   public static final short TEXT_HTML = 2;
@@ -439,6 +494,8 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
         F.list(partOfRegex, stringFunction.topHead()), engine);
     return null;
   }
+
+  public char charAt(final int index);
 
   /**
    * Test if this string equals the given character sequence.

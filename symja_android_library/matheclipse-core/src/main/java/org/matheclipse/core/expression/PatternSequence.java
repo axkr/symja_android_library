@@ -14,7 +14,68 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.parser.client.ParserConfig;
 
-/** A concrete pattern sequence implementation (i.e. x__) */
+/**
+ * Represents a <b>Standard Sequence Pattern</b> ({@code x__} or {@code x___}) which matches a
+ * variable number of expressions.
+ * <p>
+ * This class corresponds to the constructs {@link S#BlankSequence} and {@link S#BlankNullSequence}.
+ * It is the most common form of "variable-length" pattern matching, allowing a single pattern
+ * object to consume multiple arguments in a function call or list.
+ * </p>
+ *
+ * <h3>1. Syntax and Forms</h3>
+ * <ul>
+ * <li><b>{@code x__} (BlankSequence):</b> Matches <b>1 or more</b> expressions. <br>
+ * <i>Example:</i> {@code f[a, b]} matches {@code f[x__]} with {@code x} bound to the sequence
+ * {@code (a, b)}.</li>
+ * <li><b>{@code x___} (BlankNullSequence):</b> Matches <b>0 or more</b> expressions. <br>
+ * <i>Example:</i> {@code f[]} matches {@code f[x___]} with {@code x} bound to an empty
+ * sequence.</li>
+ * <li><b>{@code x__Head}:</b> Matches a sequence where <b>every</b> element has the specified
+ * {@code Head}. <br>
+ * <i>Example:</i> {@code {1, 2, 3}} matches {@code {x__Integer}}, but {@code {1, 2.5}} does
+ * not.</li>
+ * </ul>
+ *
+ * <h3>2. Variable Binding</h3>
+ * <p>
+ * When a match is found, the sequence of expressions is wrapped in a {@link S#Sequence} AST (or
+ * kept as a list range) and stored in the {@link IPatternMap}. When substituted into the Right-Hand
+ * Side (RHS), the {@link S#Sequence} wrapper is usually flattened, effectively splicing the
+ * arguments into the new expression.
+ * </p>
+ *
+ * <h3>3. Usage Examples</h3>
+ *
+ * <h4>Splitting a List</h4>
+ * 
+ * <pre>
+ * // Define f[first_, rest___] := {first, {rest}}
+ * // 'first_' takes the 1st argument (IPattern)
+ * // 'rest___' takes the remaining 0 or more arguments (PatternSequence)
+ *
+ * ISymbol f = F.Dummy("f");
+ * ISymbol first = F.Dummy("first");
+ * ISymbol rest = F.Dummy("rest");
+ *
+ * // Create rule
+ * // true -> allow zero args
+ * IAST lhs = F.unary(f, F.$p(first, null), F.$ps(rest, null, true));
+ *
+ * // f[1, 2, 3] -> first=1, rest=(2, 3)
+ * // Result: {1, {2, 3}}
+ * </pre>
+ *
+ * <h4>Type Constraints</h4>
+ * 
+ * <pre>
+ * // Sum only if all arguments are Integers
+ * // sumInts[x__Integer] := Plus[x]
+ * </pre>
+ *
+ * @see org.matheclipse.core.expression.AbstractPatternSequence
+ * @see org.matheclipse.core.expression.RepeatedPattern
+ */
 public class PatternSequence extends AbstractPatternSequence {
 
   /** */

@@ -14,7 +14,61 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.parser.client.ParserConfig;
 
-/** A pattern with assigned &quot;pattern name&quot; (i.e. <code>x_</code>) */
+/**
+ * Represents a <b>Named Pattern</b> ({@code x_}, {@code x_Head}, or {@code x_.}) which matches a
+ * single expression and binds it to a symbol.
+ * <p>
+ * The {@code Pattern} class extends {@link Blank} to add variable binding capabilities. While a
+ * {@link Blank} ({@code _}) simply acts as a placeholder that matches an expression, a
+ * {@code Pattern} ({@code x_}) matches the expression <i>and</i> stores it in the
+ * {@link IPatternMap} under the variable name {@code x}. This allows the matched value to be used
+ * on the right-hand side of a rule.
+ * </p>
+ *
+ * <h3>1. Syntax and Forms</h3>
+ * <ul>
+ * <li><b>{@code x_} (Pattern):</b> Matches any single expression and binds it to {@code x}.</li>
+ * <li><b>{@code x_Head} (Pattern with HeadTest):</b> Matches any single expression with head
+ * {@code Head} and binds it to {@code x}. For example, {@code n_Integer} matches {@code 5} (binding
+ * {@code n->5}) but not {@code 5.0}.</li>
+ * <li><b>{@code x_.} (Optional Pattern):</b> Matches an expression or uses a default value if the
+ * argument is missing. This is often used for optional function arguments.</li>
+ * </ul>
+ *
+ * <h3>2. Usage in Rules</h3>
+ * <p>
+ * Named patterns are the primary mechanism for defining functions and transformation rules where
+ * the output depends on the input.
+ * </p>
+ *
+ * <h3>3. Examples</h3>
+ *
+ * <h4>Function Definition</h4>
+ * 
+ * <pre>
+ * // Define f[x_] := x^2
+ * // 'x_' is a Pattern object.
+ * // When f[3] is called:
+ * // 1. 'x_' matches 3.
+ * // 2. 'x' is bound to 3.
+ * // 3. The RHS 'x^2' is evaluated as '3^2' -> 9.
+ * ISymbol f = F.Dummy("f");
+ * ISymbol x = F.Dummy("x");
+ * F.SetDelayed(F.unary(f, F.$p(x, null)), F.Sqr(x));
+ * </pre>
+ *
+ * <h4>Typed Pattern</h4>
+ * 
+ * <pre>
+ * // Define g[n_Integer] := "Integer"
+ * // 'n_Integer' is a Pattern object with a specific HeadTest.
+ * // Matches g[10] -> binds n=10.
+ * // Does NOT match g[Pi].
+ * </pre>
+ *
+ * @see org.matheclipse.core.expression.Blank
+ * @see org.matheclipse.core.expression.PatternNested
+ */
 public class Pattern extends Blank {
 
   public static IPattern valueOf(final ISymbol symbol) {

@@ -30,6 +30,69 @@ import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.ISymbol;
 
+/**
+ * The standard <b>Pattern Matching Engine</b> implementation.
+ * <p>
+ * {@code PatternMatcher} is responsible for verifying if a given input expression matches a
+ * specific "Left-Hand Side" (LHS) pattern. Unlike the abstract {@link IPatternMatcher}, this class
+ * contains the concrete logic to:
+ * </p>
+ * <ol>
+ * <li><b>Compare Structures:</b> Recursively traverse the input and the pattern to ensure they
+ * match (e.g., matching heads and arguments).</li>
+ * <li><b>Bind Variables:</b> When a {@link org.matheclipse.core.expression.Pattern} (like
+ * {@code x_}) is encountered, extract the corresponding part of the input and store it in an
+ * {@link IPatternMap}.</li>
+ * <li><b>Check Conditions:</b> Verify that any attached conditions ({@code /; condition}) evaluate
+ * to {@code True}.</li>
+ * </ol>
+ *
+ * <h3>1. Optimization for Constants</h3>
+ * <p>
+ * The class distinguishes between rules that contain patterns and rules that are purely constant.
+ * </p>
+ * <ul>
+ * <li><b>Constant Rules (e.g., {@code f[1] -> 0}):</b> The matcher uses a fast {@code equals()}
+ * check, bypassing the overhead of the pattern mapping system.</li>
+ * <li><b>Pattern Rules (e.g., {@code f[x_] -> x^2}):</b> The matcher initializes an
+ * {@link IPatternMap} and performs full structural matching.</li>
+ * </ul>
+ *
+ * <h3>2. Usage Examples</h3>
+ *
+ * <h4>Basic Structural Check</h4>
+ * 
+ * <pre>
+ * // Define LHS pattern: f[x_Integer]
+ * IAST lhs = F.unary(F.Dummy("f"), F.$p(F.Dummy("x"), S.Integer));
+ * PatternMatcher matcher = new PatternMatcher(lhs);
+ *
+ * // Test inputs
+ * matcher.test(F.unary(F.Dummy("f"), F.C10)); // Returns true
+ * matcher.test(F.unary(F.Dummy("f"), F.a)); // Returns false
+ * </pre>
+ *
+ * <h4>Variable Extraction</h4>
+ * 
+ * <pre>
+ * // Pattern: Sin[x_]
+ * IPatternObject xVar = F.$p(F.Dummy("x"));
+ * IAST lhs = F.Sin(xVar);
+ * PatternMatcher matcher = new PatternMatcher(lhs);
+ *
+ * IExpr input = F.Sin(F.Pi);
+ *
+ * if (matcher.test(input)) {
+ *   // Retrieve the map containing bindings
+ *   IPatternMap bindings = matcher.getPatternMap();
+ *   IExpr xValue = bindings.getValue(xVar); // Returns Pi
+ * }
+ * </pre>
+ *
+ * @see org.matheclipse.core.patternmatching.IPatternMatcher
+ * @see org.matheclipse.core.patternmatching.IPatternMap
+ * @see org.matheclipse.core.expression.Pattern
+ */
 public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
   /**

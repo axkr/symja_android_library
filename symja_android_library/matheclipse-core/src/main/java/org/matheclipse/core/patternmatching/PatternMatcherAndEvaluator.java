@@ -17,6 +17,72 @@ import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
+/**
+ * A specialized <b>Pattern Matcher</b> that holds a Right-Hand Side (RHS) expression for immediate
+ * substitution.
+ * <p>
+ * {@code PatternMatcherAndEvaluator} extends the standard {@link PatternMatcher} to represent a
+ * complete transformation rule (e.g., {@code f[x_] := x^2} or {@code x_ -> 0}). While the parent
+ * class is responsible for verifying if an input matches the <i>structure</i> of the Left-Hand Side
+ * (LHS) and binding variables, this class stores the <b>Right-Hand Side (RHS)</b> to be evaluated
+ * if that match succeeds.
+ * </p>
+ *
+ * <h3>1. The Transformation Process</h3>
+ * <p>
+ * This class encapsulates the logic for the "Match & Replace" cycle:
+ * </p>
+ * <ol>
+ * <li><b>Match (Inherited):</b> The input is tested against the LHS pattern using
+ * {@link PatternMatcher#test(IExpr)}. If successful, variables are bound in the {@link IPatternMap}
+ * (e.g., {@code x -> 5}).</li>
+ * <li><b>Substitute:</b> The bound variables are substituted into the stored {@code fRightHandSide}
+ * expression.</li>
+ * <li><b>Evaluate:</b> The resulting expression is evaluated (if the rule is immediate) or returned
+ * (if delayed) to produce the final result.</li>
+ * </ol>
+ *
+ * <h3>2. Usage in Symja</h3>
+ * <p>
+ * This is the underlying engine for:
+ * </p>
+ * <ul>
+ * <li><b>Function Definitions:</b> {@code SetDelayed[f[x_], body]} creates a
+ * {@code PatternMatcherAndEvaluator} attached to the symbol {@code f}.</li>
+ * <li><b>Replacement Rules:</b> {@code ReplaceAll[expr, lhs :> rhs]} uses this class to scan and
+ * transform parts of {@code expr}.</li>
+ * </ul>
+ *
+ * <h3>3. Usage Examples</h3>
+ *
+ * <h4>Defining a Transformation Rule</h4>
+ * 
+ * <pre>
+ * // Represents the rule: f[x_] :> x^2
+ * ISymbol f = F.Dummy("f");
+ * ISymbol x = F.Dummy("x");
+ *
+ * // 1. LHS Pattern: f[x_]
+ * IAST lhs = F.unary(f, F.$p(x, null));
+ *
+ * // 2. RHS Expression: x^2
+ * IExpr rhs = F.Sqr(x);
+ *
+ * // 3. Create the evaluator
+ * PatternMatcherAndEvaluator rule = new PatternMatcherAndEvaluator(lhs, rhs);
+ *
+ * // 4. Apply to input: f[4]
+ * IExpr input = F.unary(f, F.C4);
+ * if (rule.test(input)) {
+ *   // The rule internally calculates the result during the test/replace phase
+ *   // In a real scenario, you would use rule.replaceAll(input) or similar methods.
+ * }
+ * </pre>
+ *
+ * @see org.matheclipse.core.patternmatching.PatternMatcher
+ * @see org.matheclipse.core.patternmatching.IPatternMap
+ * @see org.matheclipse.core.expression.Pattern
+ */
 public class PatternMatcherAndEvaluator extends PatternMatcher implements Externalizable {
 
   private static final long serialVersionUID = 2241135467123931061L;
