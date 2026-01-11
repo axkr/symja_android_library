@@ -12,6 +12,66 @@ import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.parser.client.ParserConfig;
 
+/**
+ * Represents a <b>Repeated Pattern</b> ({@code p..} or {@code p...}) which matches a sequence of
+ * expressions defined by a sub-pattern.
+ * <p>
+ * While standard sequence patterns like {@code x__} ({@link PatternSequence}) match <i>any</i>
+ * sequence of expressions, a {@code RepeatedPattern} enforces that <b>every individual element</b>
+ * in the sequence must match the given pattern {@code p}. This corresponds to the constructs
+ * {@link S#Repeated} and {@link S#RepeatedNull}.
+ * </p>
+ *
+ * <h3>1. Syntax and Forms</h3>
+ * <ul>
+ * <li><b>{@code p..} (Repeated):</b> Matches <b>1 or more</b> arguments where each argument matches
+ * {@code p}. <br>
+ * <i>Example:</i> {@code _Integer..} matches {@code 1, 2, 3} but not {@code 1, 2.5, 3}.</li>
+ * <li><b>{@code p...} (RepeatedNull):</b> Matches <b>0 or more</b> arguments where each argument
+ * matches {@code p}. <br>
+ * <i>Example:</i> {@code a...} matches an empty sequence or {@code a, a, a}.</li>
+ * </ul>
+ *
+ * <h3>2. Constraint Checking</h3>
+ * <p>
+ * The matcher iterates through the target sequence and verifies that {@code p} matches every single
+ * item. Unlike {@code PatternSequence} which often checks a shared "Head Test",
+ * {@code RepeatedPattern} performs a full pattern match (using
+ * {@link org.matheclipse.core.patternmatching.IPatternMatcher}) on each element.
+ * </p>
+ *
+ * <h3>3. Usage Examples</h3>
+ *
+ * <h4>Type-Safe Sequences</h4>
+ * 
+ * <pre>
+ * // Define f to accept only sequences of Integers
+ * // f[n: _Integer..] := Total[{n}]
+ *
+ * ISymbol f = F.Dummy("f");
+ * ISymbol n = F.Dummy("n");
+ *
+ * // Create pattern: _Integer..
+ * IPatternObject repeatedInts = RepeatedPattern.valueOf(F.Blank(S.Integer), engine);
+ *
+ * // Create nested pattern: n : (_Integer..)
+ * IPatternObject nested = PatternNested.valueOf(n, repeatedInts);
+ *
+ * // f[1, 2, 3] -> Match. n bound to {1, 2, 3}
+ * // f[1, x] -> No Match.
+ * </pre>
+ *
+ * <h4>Specific Value Repetition</h4>
+ * 
+ * <pre>
+ * // Match a sequence of zeros
+ * // 0...
+ * IPatternObject zeros = RepeatedPattern.valueOf(F.C0, 0, Integer.MAX_VALUE, true, engine);
+ * </pre>
+ *
+ * @see org.matheclipse.core.expression.PatternSequence
+ * @see org.matheclipse.core.expression.AbstractPatternSequence
+ */
 public class RepeatedPattern extends AbstractPatternSequence {
 
   private static final long serialVersionUID = 1086461999754718513L;
