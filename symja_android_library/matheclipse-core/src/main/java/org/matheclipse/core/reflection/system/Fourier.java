@@ -1,107 +1,310 @@
 package org.matheclipse.core.reflection.system;
 
 import org.hipparchus.complex.Complex;
-import org.matheclipse.core.basic.OperationSystem;
+import org.hipparchus.transform.DftNormalization;
+import org.hipparchus.transform.FastFourierTransformer;
+import org.hipparchus.transform.TransformType;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class Fourier extends AbstractFunctionEvaluator {
+/**
+ * <p>
+ * Implement the Fourier function.
+ * </p>
+ * * *
+ * 
+ * <pre>
+ * Fourier(list)
+ * Fourier(list, {p1, p2, ...})
+ * </pre>
+ * <p>
+ * Options: FourierParameters -> {a, b} (default {0, 1})
+ * </p>
+ */
+public class Fourier extends AbstractFunctionOptionEvaluator {
 
   public Fourier() {}
 
   @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IExpr expr = ast.arg1();
-    try {
-      if (expr.isVector() >= 0) {
-        final int n = ((IAST) expr).argSize();
-        if (n == 0 || 0 != (n & (n - 1))) {
-          return Errors.printMessage(S.Fourier, "vpow2", F.list(expr), engine);
-        }
-        IExpr result = fourier((IAST) expr, 1);
-        if (result.isPresent()) {
-          return result;
-        }
-      }
-    } catch (RuntimeException rex) {
-      Errors.rethrowsInterruptException(rex);
+  public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+      IAST originalAST) {
+
+    IExpr arg1 = ast.arg1();
+    // Force numeric evaluation of the input list
+    IExpr listExpr = engine.evalN(arg1);
+
+    if (!listExpr.isList()) {
+      return F.NIL;
     }
-    // Argument `1` is not a non-empty list or rectangular array of numeric quantities.
-    return Errors.printMessage(S.Fourier, "fftl", F.list(expr), engine);
+
+    // Parse FourierParameters Option
+    // Default {0, 1}
+    double paramA = 0.0;
+    double paramB = 1.0;
+
+    try {
+      final IExpr fourierParameters = options[0];
+      if (fourierParameters.isList2()) {
+        IAST params = (IAST) fourierParameters;
+        paramA = params.arg1().evalf();
+        paramB = params.arg2().evalf();
+      }
+
+      // Handle Fourier[list, {p1, p2, ...}] (Sparse / Selective Extraction)
+      if (ast.argSize() >= 2 && ast.arg2().isList()) {
+        IAST positions = (IAST) ast.arg2();
+        return computeSparseFourier(listExpr, positions, paramA, paramB, originalAST);
+      }
+
+      // Handle standard Fourier[list]
+      return computeFourierRecursive(listExpr, paramA, paramB);
+
+    } catch (RuntimeException rex) {
+      // Likely numeric errors or interrupt
+      return F.NIL;
+    }
   }
 
   /**
-   * Uses decimation-in-time or Cooley-Tukey FFT
-   *
-   * @param vector of length of power of 2
-   * @param b is +1 for forward, and -1 for inverse transform
-   * @return discrete Fourier transform of given vector
+   * Computes specific positions of the DFT. If the input is 1D, we use the direct summation formula
+   * for the requested indices. If the input is ND, we generally compute the full transform and
+   * extract, as sparse ND DFT is complex to implement generically without a tensor library.
    */
-  private static IExpr fourier(IAST vector, int b) {
-    final int n = vector.argSize();
-    Complex[] array = Convert.list2Complex(vector);
-    if (array == null) {
+  private IExpr computeSparseFourier(IExpr listExpr, IAST positions, double a, double b,
+      IAST originalAST) {
+    IAST list = (IAST) listExpr;
+
+    // Check for 1D case: list of numbers
+    // If list contains sublists, it is multidimensional.
+    if (list.size() > 1 && list.arg1().isList()) {
+      // Multidimensional Case: Fallback to Full Compute + Extract
+      // This is less efficient but correct.
+      IExpr fullResult = computeFourierRecursive(listExpr, a, b);
+      return F.Extract(fullResult, positions);
+    }
+
+    // 1D Sparse Computation
+    int n = list.argSize();
+    Complex[] input = Convert.list2Complex(list);
+    if (input == null) {
       return F.NIL;
     }
-    // FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.UNITARY);
-    // org.hipparchus.complex.Complex[] result = fft.transform(array, TransformType.FORWARD);
-    // return Object2Expr.convertComplex(true, result);
 
-    int j = 0;
-    for (int i = 0; i < n; ++i) {
-      if (j > i) {
-        Complex val = array[i];
-        array[i] = array[j];
-        array[j] = val;
+    IASTAppendable result = F.ListAlloc(positions.argSize());
+
+    double prefactorExp = (1.0 - a) / 2.0;
+    double scale = 1.0 / Math.pow(n, prefactorExp);
+    double basePhase = 2.0 * Math.PI * b / n;
+
+    for (IExpr p : positions) {
+      if (!p.isInteger()) {
+        // Invalid position specifier for this simple implementation
+        return F.NIL;
       }
-      int m = n >> 1;
-      while (m > 0 && j >= m) {
-        j -= m;
-        m >>= 1;
+
+      // s in formula is (p - 1)
+      int pInt = p.toIntDefault();
+      if (Math.abs(pInt) > list.argSize()) {
+        // Position specification `1` in `2` is not applicable.
+        return Errors.printMessage(S.Fourier, "psl1", F.List(positions, originalAST));
       }
-      j += m;
+
+      // Handle cyclic indexing if p is out of bounds [1, n]
+      int s = (pInt - 1) % n;
+      if (s < 0)
+        s += n;
+
+      double sumRe = 0.0;
+      double sumIm = 0.0;
+
+      // Direct Summation for this frequency s
+      // v_s = scale * Sum[ u_r * exp( i * basePhase * r * s ) ]
+      // r is 0-based index (0 to n-1)
+
+      for (int r = 0; r < n; r++) {
+        double theta = basePhase * r * s;
+        double wRe = Math.cos(theta);
+        double wIm = Math.sin(theta);
+
+        double uRe = input[r].getReal();
+        double uIm = input[r].getImaginary();
+
+        // Complex Multiply: u * w
+        // (uRe + i uIm) * (wRe + i wIm)
+        // = (uRe*wRe - uIm*wIm) + i(uRe*wIm + uIm*wRe)
+        sumRe += (uRe * wRe - uIm * wIm);
+        sumIm += (uRe * wIm + uIm * wRe);
+      }
+
+      result.append(F.complexNum(scale * sumRe, scale * sumIm));
     }
 
-    int mmax = 1;
-    while (n > mmax) {
-      int istep = mmax << 1;
-      final double thalf = b * Math.PI / istep;
-      final double wtemp = Math.sin(thalf);
-      Complex wp = new Complex(-2 * wtemp * wtemp, Math.sin(thalf + thalf));
-      Complex w = Complex.ONE;
-      for (int m = 0; m < mmax; ++m) {
-        for (int i = m; i < n; i += istep) {
-          j = i + mmax;
-          Complex temp = array[j].multiply(w);
-          array[j] = array[i].subtract(temp);
-          array[i] = array[i].add(temp);
-        }
-        w = w.add(w.multiply(wp));
-      }
-      mmax = istep;
-    }
-    return F.Divide(Convert.toVector(array), F.Sqrt(n));
+    return result;
   }
 
-  @Override
-  public int status() {
-    return ImplementationStatus.PARTIAL_SUPPORT;
+  /**
+   * Recursive helper to handle multi-dimensional Fourier transforms.
+   * <p>
+   * Logic: 1. If 1D list of numbers, apply 1D Transform. 2. If N-D list: a. Recursively transform
+   * all inner dimensions (elements of the list). b. Transform the current outer dimension.
+   */
+  private IExpr computeFourierRecursive(IExpr expr, double a, double b) {
+    if (!expr.isList()) {
+      return expr;
+    }
+    IAST list = (IAST) expr;
+
+    // Base Case: 1D List of Numbers
+    if (list.size() > 1 && list.arg1().isNumber()) {
+      return compute1D(list, a, b);
+    }
+
+    // N-Dimensional Case
+    if (list.size() > 1) {
+      // Apply Fourier recursively to each sub-tensor (transform inner dimensions)
+      IASTAppendable subTransformed = F.ListAlloc(list.argSize());
+      for (IExpr row : list) {
+        subTransformed.append(computeFourierRecursive(row, a, b));
+      }
+
+      // Step 2: Transform the current outer dimension
+      return transformOuterDimension(subTransformed, a, b);
+    }
+
+    // Empty list or single element edge cases
+    if (list.isEmpty()) {
+      return F.CEmptyList;
+    }
+    return compute1D(list, a, b);
+  }
+
+  /**
+   * Transforms the outermost dimension of a multidimensional tensor.
+   * <p>
+   * It uses Transpose to peel off dimensions until it reaches a 1D list, applies the transform, and
+   * then reverses the transposes.
+   */
+  private IExpr transformOuterDimension(IAST list, double a, double b) {
+    // If the elements are numbers, we are at the bottom -> Apply 1D Transform
+    if (list.size() > 1 && list.arg1().isNumber()) {
+      return compute1D(list, a, b);
+    }
+
+    // If elements are lists, we need to apply the transform along the list axis.
+    // We use Transpose to swap Dim 1 (Outer) with Dim 2.
+    // list is [N1, N2, ...]
+    // transposed is [N2, N1, ...]
+    IExpr transposedExpr = F.eval(F.Transpose(list));
+
+    if (!transposedExpr.isList()) {
+      // Fallback for ragged arrays or errors
+      return list;
+    }
+    IAST transposed = (IAST) transposedExpr;
+
+    IASTAppendable result = F.ListAlloc(transposed.argSize());
+    // Now iterate over the new outer dimension (originally Dim 2).
+    // Each element is a tensor where the Outer Dim is our original Dim 1.
+    for (IExpr row : transposed) {
+      if (row.isList()) {
+        result.append(transformOuterDimension((IAST) row, a, b));
+      } else {
+        result.append(row);
+      }
+    }
+
+    // Transpose back to restore original dimension order
+    return F.eval(F.Transpose(result));
+  }
+
+  private IExpr compute1D(IAST list, double a, double b) {
+    int n = list.argSize();
+    Complex[] input = Convert.list2Complex(list);
+    if (input == null)
+      return F.NIL;
+
+    Complex[] output;
+
+    // Optimization: Use FFT if n is power of 2 AND parameters are standard-ish.
+    if (isPowerOfTwo(n) && (b == 1.0 || b == -1.0)) {
+      FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.STANDARD);
+      // TransformType.FORWARD in Hipparchus usually uses exp(-i...).
+      // Default (b=1) uses exp( i...). This is Hipparchus INVERSE (ignoring scale).
+      TransformType type = (b == -1.0) ? TransformType.FORWARD : TransformType.INVERSE;
+
+      output = fft.transform(input, type);
+
+      // Adjust Scaling
+      // We need: 1 / n^((1-a)/2)
+      // Hipparchus Inverse applies 1/n.
+      double scale = 1.0 / Math.pow(n, (1.0 - a) / 2.0);
+
+      if (type == TransformType.INVERSE) {
+        // Hipparchus Inverse has multiplied by 1/n. We want 'scale'.
+        // To convert 1/n -> scale, multiply by (n * scale)
+        double correction = n * scale;
+        for (int i = 0; i < n; i++)
+          output[i] = output[i].multiply(correction);
+      } else {
+        // Hipparchus Forward has scale 1.0. We want 'scale'.
+        for (int i = 0; i < n; i++)
+          output[i] = output[i].multiply(scale);
+      }
+
+    } else {
+      // Direct DFT implementation for general N and {a,b}
+      output = new Complex[n];
+      double prefactorExp = (1.0 - a) / 2.0;
+      double scale = 1.0 / Math.pow(n, prefactorExp);
+
+      // Precompute exponent constant: 2 * pi * i * b / n
+      double constant = 2.0 * Math.PI * b / n;
+
+      for (int s = 0; s < n; s++) {
+        double sumRe = 0;
+        double sumIm = 0;
+
+        for (int r = 0; r < n; r++) {
+          // exp( i * constant * r * s )
+          double theta = constant * r * s;
+          double wRe = Math.cos(theta);
+          double wIm = Math.sin(theta);
+
+          double uRe = input[r].getReal();
+          double uIm = input[r].getImaginary();
+
+          sumRe += (uRe * wRe - uIm * wIm);
+          sumIm += (uRe * wIm + uIm * wRe);
+        }
+        output[s] = new Complex(scale * sumRe, scale * sumIm);
+      }
+    }
+
+    return Convert.toVector(output);
+  }
+
+  private boolean isPowerOfTwo(int n) {
+    return n > 0 && (n & (n - 1)) == 0;
   }
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return IFunctionEvaluator.ARGS_1_1;
+    return ARGS_1_2;
   }
 
   @Override
-  public void setUp(final ISymbol newSymbol) {}
+  public void setUp(final ISymbol newSymbol) {
+    setOptions(newSymbol, //
+        new IBuiltInSymbol[] {S.FourierParameters}, //
+        new IExpr[] {F.List(F.C0, F.C1)});
+  }
 }
