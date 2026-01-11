@@ -2,7 +2,6 @@ package org.matheclipse.core.generic;
 
 import org.hipparchus.analysis.CalculusFieldUnivariateFunction;
 import org.hipparchus.complex.Complex;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -36,7 +35,7 @@ public final class ComplexUnaryNumerical
   @Override
   public Complex value(Complex value) {
     try {
-      return fEngine.evalComplex(F.subst(fUnaryFunction, F.Rule(fVariable, F.complexNum(value))));
+      return fEngine.evalComplex(F.subst(fUnaryFunction, fVariable, F.complexNum(value)));
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       return Complex.NaN;

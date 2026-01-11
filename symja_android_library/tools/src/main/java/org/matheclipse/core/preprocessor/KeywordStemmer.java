@@ -201,7 +201,7 @@ public class KeywordStemmer {
 
   public static void main(String[] args) {
     try {
-      F.initSymbols();
+      F.initSymja();
       String userHonme = System.getProperty("user.home");
       File sourceLocation = new File(
           // C:\\Users\\dev\\git\\symja_android_library\\

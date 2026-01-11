@@ -297,7 +297,7 @@ public class KryoUtil {
     // "kryo.register(B3." + asList.get(i).getSimpleName() + ".class);");
     // }
 
-    F.initSymbols();
+    F.initSymja();
     Kryo kryo = initKryo();
     // IBuiltInSymbol object = S.Im;
     // IAST object = F.Sin(F.x);

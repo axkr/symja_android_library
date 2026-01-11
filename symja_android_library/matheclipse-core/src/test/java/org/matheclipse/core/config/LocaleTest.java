@@ -22,7 +22,7 @@ public class LocaleTest extends ExprEvaluatorTestCase {
   public void test001() {
     Locale turkishLang = Locale.forLanguageTag("tr");
     Locale.setDefault(turkishLang);
-    F.initSymbols();
+    F.initSymja();
     SuggestTree suggestTree = AST2Expr.getSuggestTree();
     SuggestTree.Iterator iterator = suggestTree.iterator();
     while (iterator.hasNext()) {

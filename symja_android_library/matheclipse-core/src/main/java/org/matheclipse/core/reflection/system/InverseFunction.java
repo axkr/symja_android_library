@@ -48,7 +48,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
       if (xFunction.isAST()) {
         IAST[] arr = InverseFunction.eliminateSlotInverseFunction(xFunction, dummy, engine);
         if (arr != null) {
-          return F.Function(F.subst(arr[1].second(), F.Rule(dummy, F.Slot1)));
+          return F.Function(F.subst(arr[1].second(), dummy, F.Slot1));
         }
       }
     } else if (arg1.isBuiltInSymbol()) {

@@ -268,15 +268,15 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
       IAST list = (IAST) ast.arg2();
       IExpr function = ast.arg1();
       int maxPoints = DEFAULT_MAX_POINTS;
-      if (option[1] != S.Automatic) {
+      if (!option[1].isAutomatic()) {
         maxPoints = option[1].toIntDefault(DEFAULT_MAX_POINTS);
       }
       int maxIterations = DEFAULT_MAX_ITERATIONS;
-      if (option[2] != S.Automatic) {
+      if (!option[2].isAutomatic()) {
         maxIterations = option[2].toIntDefault(DEFAULT_MAX_ITERATIONS);
       }
       int precisionGoal = 16; // automatic scale value
-      if (option[3] != S.Automatic) {
+      if (!option[3].isAutomatic()) {
         precisionGoal = option[3].toIntDefault(-1);
         if (precisionGoal <= 0) {
           // Inappropriate parameter: `1`.
@@ -292,7 +292,7 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
           function = F.Plus(equalAST.arg1(), F.Negate(equalAST.arg2()));
         }
         String method = "Romberg";
-        if (option[0] != S.Automatic) {
+        if (!option[0].isAutomatic()) {
           method = option[0].toString();
         } else {
           if (list.arg2().isInfinite() || list.arg3().isInfinite()) {

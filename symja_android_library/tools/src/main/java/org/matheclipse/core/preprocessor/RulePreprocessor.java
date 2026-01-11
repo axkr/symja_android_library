@@ -650,7 +650,7 @@ public class RulePreprocessor {
     // fail:
     // TEST_LHS_FOR_VARIABLES = true;
 
-    F.initSymbols();
+    F.initSymja();
 
     System.out.println("Generate Java source files from rule definitions");
 

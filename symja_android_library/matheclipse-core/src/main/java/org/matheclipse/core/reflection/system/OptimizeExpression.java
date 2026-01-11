@@ -255,7 +255,8 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
     // Sort candidates by leafCount in descending order.
     // This ensures that we replace larger expressions like Sin(a+b) before
     // smaller, nested ones like a+b.
-    Collections.sort(candidates);
+    Collections.sort(candidates, //
+        (a, b) -> compareLeafCountDescending(a, b));
 
     IAST modifiedExpr = astExpr;
     IASTAppendable assignments = F.ListAlloc(candidates.size());
@@ -310,6 +311,31 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
     return new IAST[] {assignments, modifiedExpr};
   }
 
+  /**
+   * Compare two ReferenceCounter objects by their expression leaf count in descending order.
+   * 
+   * @param a
+   * @param b
+   * @return
+   */
+  private static int compareLeafCountDescending(ReferenceCounter<IExpr> a,
+      ReferenceCounter<IExpr> b) {
+    IExpr ax = a.getExpr();
+    IExpr bx = b.getExpr();
+    // descending by leaf count:
+    int compare = Long.compare(bx.leafCount(), ax.leafCount());
+    if (compare == 0) {
+      return bx.compareTo(ax);
+    }
+    return compare;
+  }
+
+  /**
+   * Generate Java code for a CSE list recursively into the {@link StringBuilder}.
+   * 
+   * @param cseList
+   * @param buf
+   */
   private static void cseAsJavaRecursive(IAST cseList, StringBuilder buf) {
     for (int i = 1; i < cseList.size(); i++) {
       IExpr element = cseList.get(i);
@@ -335,6 +361,12 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
     }
   }
 
+  /**
+   * Generate Java code for a CSE pair.
+   * 
+   * @param csePair
+   * @param buf
+   */
   public static void csePairAsJava(IAST csePair, StringBuilder buf) {
     IExpr arg1 = csePair.arg1();
     IExpr arg2 = csePair.arg2();

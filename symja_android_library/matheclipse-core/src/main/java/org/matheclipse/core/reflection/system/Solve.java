@@ -1187,7 +1187,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       if (maxRoots < 1) {
         if (options[1].isInfinity()) {
           maxRoots = Integer.MAX_VALUE;
-        } else if (options[1] == S.Automatic) {
+        } else if (options[1].isAutomatic()) {
           maxRoots = 1000;
         } else {
           // The value `1` of the `2` options is not a positive integer, Infinity or Automatic

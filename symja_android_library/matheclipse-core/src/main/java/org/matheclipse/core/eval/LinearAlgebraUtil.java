@@ -1,13 +1,16 @@
 package org.matheclipse.core.eval;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.UniformFlags;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumericArray;
 import org.matheclipse.core.interfaces.ISparseArray;
 import org.matheclipse.core.interfaces.ITensorAccess;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 
 public class LinearAlgebraUtil {
 
@@ -249,5 +252,79 @@ public class LinearAlgebraUtil {
 
   private LinearAlgebraUtil() {
     // private constructor to avoid instantiation
+  }
+
+  /**
+   * Returns the depth of an array. The depth of a vector is <code>1</code>. The depth of a matrix
+   * is <code>2</code>. The depth of a tensor is the {@link S#Length} of the {@link S#Dimensions}
+   * list. The depth of any other expression is <code>0</code>.
+   * 
+   * @param arg1
+   */
+  public static int arrayDepth(IExpr arg1) {
+    if (arg1.isAST()) {
+      IAST list = (IAST) arg1;
+      IExpr header = list.head();
+      IntList dims = dimensions(list, header);
+      return dims.size();
+    }
+    if (arg1.isSparseArray()) {
+      int[] dims = ((ISparseArray) arg1).getDimension();
+      return dims.length;
+    }
+    if (arg1.isNumericArray()) {
+      int[] dims = ((INumericArray) arg1).getDimension();
+      return dims.length;
+    }
+    return 0;
+  }
+
+  public static IExpr normalSymbolicIdentityArray(IAST dimensions) {
+    if (dimensions.argSize() == 0) {
+      return F.C1;
+    } else if (dimensions.argSize() == 1) {
+      if (dimensions.first().isInteger()) {
+        int n = dimensions.first().toIntDefault();
+        if (n > 0) {
+          // identity matrix
+          return F.matrix((i, j) -> i == j ? F.C1 : F.C0, n, n);
+        }
+      }
+    } else {
+      int[] dims = new int[dimensions.argSize()];
+      for (int i = 0; i < dims.length; i++) {
+        int d = dimensions.get(i + 1).toIntDefault();
+        if (d < 0) {
+          return F.NIL;
+        }
+        dims[i] = d;
+      }
+      int[] newDims = new int[dims.length * 2];
+      System.arraycopy(dims, 0, newDims, 0, dims.length);
+      System.arraycopy(dims, 0, newDims, dims.length, dims.length);
+      return createIdentityArray(newDims, 0, new int[0]);
+    }
+    return F.NIL;
+  }
+
+  private static IExpr createIdentityArray(int[] dims, int k, int[] indices) {
+    if (k >= dims.length) {
+      int mid = dims.length / 2;
+      for (int i = 0; i < mid; i++) {
+        if (indices[i] != indices[i + mid]) {
+          return F.C0;
+        }
+      }
+      return F.C1;
+    }
+
+    IASTAppendable list = F.ListAlloc(dims[k]);
+    for (int i = 0; i < dims[k]; i++) {
+      int[] newIndices = new int[indices.length + 1];
+      System.arraycopy(indices, 0, newIndices, 0, indices.length);
+      newIndices[indices.length] = i;
+      list.append(createIdentityArray(dims, k + 1, newIndices));
+    }
+    return list;
   }
 }

@@ -27,10 +27,10 @@ public class CommonSubexpressionEliminationTestCase extends ExprEvaluatorTestCas
         ast.toString());
     StringBuilder buf = new StringBuilder();
     F.cseAsJava(ast, buf);
-    assertEquals("IExpr v3 = F.Negate(y);\n" //
-        + "IExpr v2 = F.Sqr(x);\n" //
+    assertEquals("IExpr v3 = F.Sqr(x);\n" //
+        + "IExpr v2 = F.Negate(y);\n" //
         + "IExpr v1 = F.Times(F.CI,x);\n" //
-        + "return F.Plus(F.Times(F.CN1D2,F.Arg(F.Subtract(F.C1,F.Plus(v1,v3)))),F.Times(F.C1D2,F.Arg(F.Plus(F.C1,v1,v3))),F.Times(F.CI,F.Plus(F.Times(F.CN1D4,F.Log(F.Plus(v2,F.Sqr(F.Plus(F.C1,v3))))),F.Times(F.C1D4,F.Log(F.Plus(v2,F.Sqr(F.Plus(F.C1,y))))))));\n"
+        + "return F.Plus(F.Times(F.CN1D2,F.Arg(F.Subtract(F.C1,F.Plus(v1,v2)))),F.Times(F.C1D2,F.Arg(F.Plus(F.C1,v1,v2))),F.Times(F.CI,F.Plus(F.Times(F.CN1D4,F.Log(F.Plus(v3,F.Sqr(F.Plus(F.C1,v2))))),F.Times(F.C1D4,F.Log(F.Plus(v3,F.Sqr(F.Plus(F.C1,y))))))));\n"
         + "", //
         buf.toString());
   }
@@ -74,8 +74,8 @@ public class CommonSubexpressionEliminationTestCase extends ExprEvaluatorTestCas
     F.cseAsJava(ast, buf);
     assertEquals("IExpr v3 = F.Times(F.C2,x);\n" //
         + "IExpr v2 = F.Times(F.C2,y);\n" //
-        + "IExpr v1 = F.Power(F.Plus(F.Cos(v2),F.Cosh(v3)),F.CN1);\n" //
-        + "return F.Plus(F.Times(F.CI,v1,F.Sin(v2)),F.Times(v1,F.Sinh(v3)));\n"//
+        + "IExpr v1 = F.Power(F.Plus(F.Cos(v2),F.Cosh(v3)),F.CN1);\n"//
+        + "return F.Plus(F.Times(F.CI,v1,F.Sin(v2)),F.Times(v1,F.Sinh(v3)));\n" //
         + "", //
         buf.toString());
   }

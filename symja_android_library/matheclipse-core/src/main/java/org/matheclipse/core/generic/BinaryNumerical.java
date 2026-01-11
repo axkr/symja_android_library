@@ -3,7 +3,6 @@ package org.matheclipse.core.generic;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import org.hipparchus.analysis.BivariateFunction;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -32,13 +31,11 @@ public final class BinaryNumerical implements BinaryOperator<IExpr>, BivariateFu
       final EvalEngine engine) {
     if (!v1.isVariable() || v1.isBuiltInSymbol()) {
       // Cannot assign to raw object `1`.
-      throw new ArgumentTypeException(
-          Errors.getMessage("setraw", F.list(v1), EvalEngine.get()));
+      throw new ArgumentTypeException(Errors.getMessage("setraw", F.list(v1), EvalEngine.get()));
     }
     if (!v2.isVariable() || v2.isBuiltInSymbol()) {
       // Cannot assign to raw object `1`.
-      throw new ArgumentTypeException(
-          Errors.getMessage("setraw", F.list(v2), EvalEngine.get()));
+      throw new ArgumentTypeException(Errors.getMessage("setraw", F.list(v2), EvalEngine.get()));
     }
     variable1 = v1;
     variable2 = v2;
@@ -48,8 +45,8 @@ public final class BinaryNumerical implements BinaryOperator<IExpr>, BivariateFu
 
   @Override
   public IExpr apply(final IExpr firstArg, final IExpr secondArg) {
-    return fEngine
-        .evalNumericFunction(F.subst(fun, F.list(F.Rule(variable1, firstArg), F.Rule(variable2, secondArg))));
+    return fEngine.evalNumericFunction(
+        F.subst(fun, new ISymbol[] {variable1, variable2}, new IExpr[] {firstArg, secondArg}));
   }
 
   @Override

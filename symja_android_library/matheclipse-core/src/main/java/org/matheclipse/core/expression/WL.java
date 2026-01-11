@@ -38,11 +38,44 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.tensor.qty.IQuantity;
 
 /**
- * Methods for handling the WXF serialization format.
- *
+ * Static utility class for <b>Wolfram Language (WL) Compatibility</b> and data conversion.
  * <p>
  * See: <a href="https://reference.wolfram.com/language/tutorial/WXFFormatDescription.html">WXF
  * Format Description</a>
+ * </p>
+ * <p>
+ * The {@code WL} class acts as a bridge between low-level Java types (byte arrays, streams,
+ * primitives) and high-level Symja expressions ({@link IExpr}, {@link IAST}). It provides a suite
+ * of static helper methods commonly used for input/output operations, binary data handling (WXF,
+ * ByteArray), and general type coercion.
+ * </p>
+ *
+ * <h3>1. Key Utilities</h3>
+ * <ul>
+ * <li><b>Byte Array Conversion:</b> Methods like {@link #toByteArray(IAST)} and
+ * {@link #toList(byte[])} facilitate converting between Java {@code byte[]} and Symja lists of
+ * integers.</li>
+ * <li><b>IO Helpers:</b> Utilities for reading input streams into strings or byte arrays, ensuring
+ * consistent character encoding (UTF-8) and buffer management.</li>
+ * <li><b>Serialization Support:</b> Helper methods for handling "VarInt" encoding and other binary
+ * formats often used in WXF (Wolfram Exchange Format) serialization.</li>
+ * </ul>
+ *
+ * <h3>2. Usage Examples</h3>
+ *
+ * <h4>Converting Data</h4>
+ * 
+ * <pre>
+ * // Convert a Java byte array to a Symja List: {10, 20, 255}
+ * byte[] data = new byte[] {10, 20, (byte) 255};
+ * IAST list = WL.toList(data);
+ *
+ * // Convert back
+ * byte[] original = WL.toByteArray(list);
+ * </pre>
+ *
+ * @see org.matheclipse.core.expression.F
+ * @see org.matheclipse.core.expression.S
  */
 public class WL {
   /** The list of all array value type tokens. */
@@ -486,10 +519,6 @@ public class WL {
       super();
     }
 
-    public WriteInternalObject(ByteArrayOutputStream stream) {
-      super(stream);
-    }
-
     @Override
     public void write(IExpr arg1) throws IOException {
       Short exprID = S.GLOBAL_IDS_MAP.get(arg1);
@@ -559,10 +588,10 @@ public class WL {
           writeAST2(S.Complex, ((IComplexNum) arg1).re(), ((IComplexNum) arg1).im());
           return;
         case IExpr.GRAPHEXPRID:
-          writeGraphExpr(arg1);
+          writeGraphExpr((GraphExpr) arg1);
           return;
         case IExpr.BYTEARRAYID:
-          writeBinaryString(arg1);
+          writeBinaryString((ByteArrayExpr) arg1);
           return;
 
         case IExpr.NUMERICARRAYID:
@@ -665,8 +694,8 @@ public class WL {
       write(arg2);
     }
 
-    private void writeBinaryString(IExpr arg1) throws IOException {
-      byte[] bArray = ((ByteArrayExpr) arg1).toData();
+    private void writeBinaryString(ByteArrayExpr arg1) throws IOException {
+      byte[] bArray = arg1.toData();
       int size = bArray.length;
       stream.write(WXF_CONSTANTS.BinaryString);
       stream.write(varintBytes(size));
@@ -711,8 +740,8 @@ public class WL {
       stream.write((byte) ((bits >> 24) & 0x000000ff));
     }
 
-    private void writeGraphExpr(IExpr arg1) throws IOException {
-      GraphExpr graph = (GraphExpr) arg1;
+    private void writeGraphExpr(GraphExpr arg1) throws IOException {
+      GraphExpr graph = arg1;
       IAST fullForm = graph.fullForm();
       writeAST(fullForm);
       // stream.write(WXF_CONSTANTS.Function);

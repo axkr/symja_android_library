@@ -26,7 +26,7 @@ public class Interpolation extends AbstractFunctionOptionEvaluator {
     if (dims != null && dims[0] > 2 && dims[1] >= 2) {
       String method = "";
       IExpr option = options[0];
-      if (option.isPresent() && option != S.Automatic) {
+      if (!option.isAutomatic()) {
         method = option.toString();
       }
       IExpr temp = interpolation(ast, dims, method, engine);

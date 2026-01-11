@@ -18,6 +18,7 @@ import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
@@ -30,6 +31,7 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.BlockFieldMatrix;
 import org.hipparchus.linear.ComplexEigenDecomposition;
+import org.hipparchus.linear.ComplexSchurTransformer;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.DependentVectorsHandler;
 import org.hipparchus.linear.EigenDecompositionNonSymmetric;
@@ -782,7 +784,7 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      return F.ZZ(arrayDepth(arg1));
+      return F.ZZ(LinearAlgebraUtil.arrayDepth(arg1));
     }
 
     @Override
@@ -2226,6 +2228,15 @@ public final class LinearAlgebra {
     @Override
     public IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker, IAST ast) {
       return F.NIL;
+    }
+
+    @Override
+    public IExpr matrixComplexEval(FieldMatrix<Complex> matrix, IAST ast) {
+      // TODO https://github.com/Hipparchus-Math/hipparchus/issues/442
+      Complex[] complexEigenvalues = ComplexSchurTransformer.getEigenvalues(matrix);
+      // sort descending
+      Arrays.sort(complexEigenvalues, (a, b) -> Double.compare(b.norm(), a.norm()));
+      return Convert.complexValues2List(complexEigenvalues);
     }
 
     @Override
@@ -6455,31 +6466,6 @@ public final class LinearAlgebra {
       return ARGS_2_2;
     }
 
-  }
-
-  /**
-   * Returns the depth of an array. The depth of a vector is <code>1</code>. The depth of a matrix
-   * is <code>2</code>. The depth of a tensor is the {@link S#Length} of the {@link S#Dimensions}
-   * list. The depth of any other expression is <code>0</code>.
-   * 
-   * @param arg1
-   */
-  public static int arrayDepth(IExpr arg1) {
-    if (arg1.isAST()) {
-      IAST list = (IAST) arg1;
-      IExpr header = list.head();
-      IntList dims = LinearAlgebraUtil.dimensions(list, header);
-      return dims.size();
-    }
-    if (arg1.isSparseArray()) {
-      int[] dims = ((ISparseArray) arg1).getDimension();
-      return dims.length;
-    }
-    if (arg1.isNumericArray()) {
-      int[] dims = ((INumericArray) arg1).getDimension();
-      return dims.length;
-    }
-    return 0;
   }
 
   public static IExpr characteristicPolynomial(int n, IAST matrix, IExpr variable) {

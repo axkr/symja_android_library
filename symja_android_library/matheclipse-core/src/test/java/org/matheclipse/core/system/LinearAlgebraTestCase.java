@@ -626,6 +626,13 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEigenvalues() {
+    check("Eigenvalues("//
+        + "{{5.42,3.26+I*0.643,-0.467+I*(-0.193)}," //
+        + " {3.26+I*(-0.643),3.82,1.04+I*(-2.35)}," //
+        + " {-0.467+I*0.193,1.04+I*2.35,4.88}})", //
+        "{8.76846+I*4.60561*10^-16,5.16361,0.187924}");
+
+
     check("Eigenvalues({{1,0,0,0,0},{3,1,0,0,0},{6,3,2,0,0},{10,6,3,2,0},{15,10,6,3,2}})", //
         "{2,2,2,1,1}");
     check("mat = Array(a, {2,2}); Eigenvalues(mat.ConjugateTranspose(mat))[[1]] // FullSimplify", //
@@ -791,16 +798,6 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testEigenvectorsIssue979() {
-    // https://github.com/Hipparchus-Math/hipparchus/issues/337
-    // TODO Hipparchus checks submatrices for singularity
-    check("Eigenvectors({{1,0,0},\n" //
-        + "{-2,1,0},\n"//
-        + "{0,1,1}})", //
-        "{{0,0,1},{0,0,0},{0,0,0}}");
-  }
-
-  @Test
   public void testEigenvectorsIssue718() {
     check("Eigenvectors({{-1,-5},{0,4}})", //
         "{{-0.707107,0.707107},{1.0,0.0}}");
@@ -809,6 +806,16 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Eigenvectors({{-2,-2,4}, {-1,-3,7}, {2, 4, 6.00001}})", //
         "{{0.223932,0.482825,0.846602},{0.580105,0.74736,-0.323932},{0.894427,-0.447214,-7.22845*10^-18}}");
 
+  }
+
+  @Test
+  public void testEigenvectorsIssue979() {
+    // https://github.com/Hipparchus-Math/hipparchus/issues/337
+    // TODO Hipparchus checks submatrices for singularity
+    check("Eigenvectors({{1,0,0},\n" //
+        + "{-2,1,0},\n"//
+        + "{0,1,1}})", //
+        "{{0,0,1},{0,0,0},{0,0,0}}");
   }
 
   @Test
@@ -839,6 +846,25 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{r*Cos(p)*Sin(t),r*Sin(p)*Sin(t),r*Cos(t)}");
     check("FromSphericalCoordinates({{1, Pi/2, 0}, {2, 3/4*Pi, Pi}, {1, Pi/4, Pi/4}})", //
         "{{1,0,0},{-Sqrt(2),0,-Sqrt(2)},{1/2,1/2,1/Sqrt(2)}}");
+  }
+
+  @Test
+  public void testGroupings() {
+    // TODO
+    // check("Groupings({{1, 2, 3, 4, 5}, {a, b, c, d, e}}, 3)", //
+    // " ");
+    check("Groupings({a, b, c, d, e, f}, 3)", //
+        "{}");
+    check("Groupings({a, b, c, d, e, f}, 2)", //
+        "{{{{{{a,b},c},d},e},f},{a,{{{{b,c},d},e},f}},{{a,{{{b,c},d},e}},f},{a,{b,{{{c,d},e},f}}},{{{a,{{b,c},d}},e},f},{a,{{b,{{c,d},e}},f}},{{a,{b,{{c,d},e}}},f},{a,{b,{c,{{d,e},f}}}},{{{{a,{b,c}},d},e},f},{a,{{{b,{c,d}},e},f}},{{a,{{b,{c,d}},e}},f},{a,{b,{{c,{d,e}},f}}},{{{a,{b,{c,d}}},e},f},{a,{{b,{c,{d,e}}},f}},{{a,{b,{c,{d,e}}}},f},{a,{b,{c,{d,{e,f}}}}},{{{{a,b},{c,d}},e},f},{a,{{{b,c},{d,e}},f}},{{a,{{b,c},{d,e}}},f},{a,{b,{{c,d},{e,f}}}},{{{{a,b},c},{d,e}},f},{a,{{{b,c},d},{e,f}}},{{{a,b},{{c,d},e}},f},{a,{{b,c},{{d,e},f}}},{{{a,{b,c}},{d,e}},f},{a,{{b,{c,d}},{e,f}}},{{{a,b},{c,{d,e}}},f},{a,{{b,c},{d,{e,f}}}},{{{{a,b},c},d},{e,f}},{{a,b},{{{c,d},e},f}},{{a,{{b,c},d}},{e,f}},{{a,b},{c,{{d,e},f}}},{{{a,{b,c}},d},{e,f}},{{a,b},{{c,{d,e}},f}},{{a,{b,{c,d}}},{e,f}},{{a,b},{c,{d,{e,f}}}},{{{a,b},{c,d}},{e,f}},{{a,b},{{c,d},{e,f}}},{{{a,b},c},{{d,e},f}},{{{a,b},c},{d,{e,f}}},{{a,{b,c}},{{d,e},f}},{{a,{b,c}},{d,{e,f}}}}");
+    check("Groupings({a, b, c, d, e}, 2)", //
+        "{{{{{a,b},c},d},e},{a,{{{b,c},d},e}},{{a,{{b,c},d}},e},{a,{b,{{c,d},e}}},{{{a,{b,c}},d},e},{a,{{b,{c,d}},e}},{{a,{b,{c,d}}},e},{a,{b,{c,{d,e}}}},{{{a,b},{c,d}},e},{a,{{b,c},{d,e}}},{{{a,b},c},{d,e}},{{a,b},{{c,d},e}},{{a,{b,c}},{d,e}},{{a,b},{c,{d,e}}}}");
+    check("Groupings({a, b, c, d, e}, 3)", //
+        "{{{a,b,c},d,e},{a,{b,c,d},e},{a,b,{c,d,e}}}");
+    check("Groupings(5, 3)", //
+        "{{{1,2,3},4,5},{1,{2,3,4},5},{1,2,{3,4,5}}}");
+    check("Groupings(4, 2)", //
+        "{{{{1,2},3},4},{1,{{2,3},4}},{{1,{2,3}},4},{1,{2,{3,4}}},{{1,2},{3,4}}}");
   }
 
   @Test
@@ -884,6 +910,43 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testHermiteDecomposition() {
+    check("m={{1,2,3},{5,4,3},{8,7,9}}", //
+        "{{1,2,3},{5,4,3},{8,7,9}}");
+    check("{u,r}=HermiteDecomposition(m)", //
+        "{{{1,0,0},{3,1,-1},{-1,-3,2}},{{1,2,3},{0,3,3},{0,0,6}}}");
+    check("Abs(Det(u))", //
+        "1");
+    check("u.m==r", //
+        "True");
+
+    check("m2={{1,2,3},{5,4,3}}", //
+        "{{1,2,3},{5,4,3}}");
+    check("{u,r}=HermiteDecomposition(m2)", //
+        "{{{1,0},{5,-1}},{{1,2,3},{0,6,12}}}");
+
+    // test singular matrix
+    check("m={{1,2,3},{4,5,6},{7,8,9}}", //
+        "{{1,2,3},{4,5,6},{7,8,9}}");
+    check("{u,r}=HermiteDecomposition(m)", //
+        "{{{1,0,0},{4,-1,0},{1,-2,1}},{{1,2,3},{0,3,6},{0,0,0}}}");
+    check("{u,r}=HermiteDecomposition({{2,0,0,0},{0,2,0,0},{0,0,2,0},{0,0,0,2}})", //
+        "{{{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}},{{2,0,0,0},{0,2,0,0},{0,0,2,0},{0,0,0,\n"
+            + "2}}}");
+    check("{u,r}=HermiteDecomposition({{4,12,-3,5},{2,6,1,0},{-1,0,5,2},{8,4,10,1}})", //
+        "{{{127,-264,99,15},{69,-143,54,8},{51,-106,40,6},{128,-266,100,15}},{{1,0,0,848},{\n"
+            + "0,2,0,461},{0,0,1,341},{0,0,0,855}}}");
+    check("{u,r}=HermiteDecomposition({{3,0,1,1},{0,1,0,0},{0,0,19,1},{0,0,0,3}})", //
+        "{{{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}},{{3,0,1,1},{0,1,0,0},{0,0,19,1},{0,0,\n"
+            + "0,3}}}");
+    check(
+        "{u,r}=HermiteDecomposition({{ 5, 2, -1, 4, 0}, {3,8,2,0,6}, {1,-4,5,2,1}, {0,3,7,9,2}, {6,1,0,5,8}})", //
+        "{{{-298,6,-69,5,257},{-51,1,-12,1,44},{-457,9,-106,8,394},{-270,5,-63,5,233},{-\n"
+            + "703,14,-163,12,606}},{{1,0,0,0,2033},{0,1,0,1,348},{0,0,1,2,3116},{0,0,0,4,1841},{\n"
+            + "0,0,0,0,4793}}}");
+  }
+
+  @Test
   public void testHermitianMatrixQ() {
     // example from https://en.wikipedia.org/wiki/Hermitian_matrix
     check("HermitianMatrixQ({{2, 2 + I, 4}, {2-I, 3, I}, {4, -I, 1}})", //
@@ -920,7 +983,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
     check("UpperTriangularMatrixQ(h, -1)", //
         "True");
-    
+
     check("{p, h} = HessenbergDecomposition({{2.0,5,8,7},{5,2,2,8},{7,5,6,6},{5,4,4,8}})", //
         "{\n" //
             + "{{1.0,0.0,0.0,0.0},\n" //
@@ -1574,6 +1637,36 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testNegativeDefiniteMatrixQ() {
+    check("NegativeDefiniteMatrixQ({{5,-1},{-1, 4} })", //
+        "False");
+    check("NegativeDefiniteMatrixQ({{-2,0},{0,0}})", //
+        "False");
+    check("NegativeDefiniteMatrixQ({{-5,1},{1,-4}})", //
+        "True");
+  }
+
+  @Test
+  public void testNegativeSemidefiniteMatrixQ() {
+    check("NegativeSemidefiniteMatrixQ({{5,-1},{-1, 4} })", //
+        "False");
+    check("NegativeSemidefiniteMatrixQ({{-2,0},{0,0}})", //
+        "True");
+    check("NegativeSemidefiniteMatrixQ({{-5,1},{1,-4}})", //
+        "True");
+  }
+
+  @Test
+  public void testNormalMatrixQ() {
+    check("NormalMatrixQ({{5 + I, -2*I}, {2, 4 + 2*I}})", //
+        "True");
+    check("NormalMatrixQ({{1, 2, -1}, {-1, 1, 2}, {2, -1, 1}})", //
+        "True");
+    check("NormalMatrixQ({{a,b,c}, {d,e,f}, {g,h,i}})", //
+        "False");
+  }
+
+  @Test
   public void testNullSpace() {
     // TODO improve Zero tests
     // see https://docs.sympy.org/latest/tutorials/intro-tutorial/matrices.html#zero-testing
@@ -1767,6 +1860,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{{cover,covering,covers},{draw,drawing,draws},{wind,winding,winds}},{{recover,recovering,recovers},{redraw,redrawing,redraws},{rewind,rewinding,rewinds}},{{uncover,uncovering,uncovers},{undraw,undrawing,undraws},{unwind,unwinding,unwinds}}}");
   }
 
+
   @Test
   public void testOuterSparseArray() {
     check("(s1=SparseArray(Table(2^i -> i, {i, 3}))) // MatrixForm", //
@@ -1781,6 +1875,31 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   public void testPauliMatrix() {
     check("PauliMatrix({0,1,2,3,4})", //
         "{{{1,0},{0,1}},{{0,1},{1,0}},{{0,-I},{I,0}},{{1,0},{0,-1}},{{1,0},{0,1}}}");
+  }
+
+  @Test
+  public void testPositiveDefiniteMatrixQ() {
+    // TODO https://github.com/Hipparchus-Math/hipparchus/issues/442
+    check(
+        "PositiveDefiniteMatrixQ({{5.42,3.26 + 0.643*I,-0.467-0.193*I},{3.26-0.643*I,3.82,1.04-2.35*I},{-0.467+0.193*I,1.04+2.35*I,4.88}})",
+        "True");
+    check("PositiveDefiniteMatrixQ({{-5,1},{1,-4}})", //
+        "False");
+    check("PositiveDefiniteMatrixQ({{2,0},{0,0}})", //
+        "False");
+    check("PositiveDefiniteMatrixQ({{5,-1},{-1, 4} })", //
+        "True");
+  }
+
+  @Test
+  public void testPositiveSemidefiniteMatrixQ() {
+    check("PositiveSemidefiniteMatrixQ({{-5,1},{1,-4}})", //
+        "False");
+    check("PositiveSemidefiniteMatrixQ({{2,0},{0,0}})", //
+        "True");
+    check("PositiveSemidefiniteMatrixQ({{5,-1},{-1, 4} })", //
+        "True");
+
   }
 
   @Test
@@ -1813,7 +1932,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("PseudoInverse(N({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}))", //
         "{{-0.638889,-0.166667,0.305556},\n"//
             + " {-0.0555556,-3.50414*10^-16,0.0555556},\n"//
-        + " {0.527778,0.166667,-0.194444}}"); //
+            + " {0.527778,0.166667,-0.194444}}"); //
   }
 
   @Test
@@ -2205,16 +2324,6 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testNormalMatrixQ() {
-    check("NormalMatrixQ({{5 + I, -2*I}, {2, 4 + 2*I}})", //
-        "True");
-    check("NormalMatrixQ({{1, 2, -1}, {-1, 1, 2}, {2, -1, 1}})", //
-        "True");
-    check("NormalMatrixQ({{a,b,c}, {d,e,f}, {g,h,i}})", //
-        "False");
-  }
-
-  @Test
   public void testSymmetricMatrixQ() {
     // example from https://en.wikipedia.org/wiki/Symmetric_matrix
     check("SymmetricMatrixQ(SparseArray({{1,7,3}, {7,4,-5}, {3,-5,6}}))", //
@@ -2589,6 +2698,23 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testVectorGreater() {
+    check("VectorGreaterEqual({SparseArray({1,2,3}),{0,1}})", //
+        "False");
+
+    check("VectorGreater({{ },{ }})", //
+        "True");
+    check("VectorGreater({{ },{ }})", //
+        "True");
+    check("VectorGreater({{11,12,13},{1/2,-4,-2/3}})", //
+        "True");
+    check("VectorGreater({{11,12,13},{1/2,12,-2/3}})", //
+        "False");
+    check("VectorGreater({{11,12,13},{1/2,b,-2/3}})", //
+        "VectorGreater({{11,12,13},{1/2,b,-2/3}})");
+  }
+
+  @Test
   public void testVectorQ() {
     check("VectorQ({-11/4,33/4,-5/4})", //
         "True");
@@ -2613,78 +2739,5 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "True");
     check("VectorQ({a, b, c})", //
         "True");
-  }
-
-  @Test
-  public void testVectorGreater() {
-    check("VectorGreaterEqual({SparseArray({1,2,3}),{0,1}})", //
-        "False");
-
-    check("VectorGreater({{ },{ }})", //
-        "True");
-    check("VectorGreater({{ },{ }})", //
-        "True");
-    check("VectorGreater({{11,12,13},{1/2,-4,-2/3}})", //
-        "True");
-    check("VectorGreater({{11,12,13},{1/2,12,-2/3}})", //
-        "False");
-    check("VectorGreater({{11,12,13},{1/2,b,-2/3}})", //
-        "VectorGreater({{11,12,13},{1/2,b,-2/3}})");
-  }
-
-  @Test
-  public void testHermiteDecomposition() {
-    check("m={{1,2,3},{5,4,3},{8,7,9}}", //
-        "{{1,2,3},{5,4,3},{8,7,9}}");
-    check("{u,r}=HermiteDecomposition(m)", //
-        "{{{1,0,0},{3,1,-1},{-1,-3,2}},{{1,2,3},{0,3,3},{0,0,6}}}");
-    check("Abs(Det(u))", //
-        "1");
-    check("u.m==r", //
-        "True");
-
-    check("m2={{1,2,3},{5,4,3}}", //
-        "{{1,2,3},{5,4,3}}");
-    check("{u,r}=HermiteDecomposition(m2)", //
-        "{{{1,0},{5,-1}},{{1,2,3},{0,6,12}}}");
-
-    // test singular matrix
-    check("m={{1,2,3},{4,5,6},{7,8,9}}", //
-        "{{1,2,3},{4,5,6},{7,8,9}}");
-    check("{u,r}=HermiteDecomposition(m)", //
-        "{{{1,0,0},{4,-1,0},{1,-2,1}},{{1,2,3},{0,3,6},{0,0,0}}}");
-    check("{u,r}=HermiteDecomposition({{2,0,0,0},{0,2,0,0},{0,0,2,0},{0,0,0,2}})", //
-        "{{{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}},{{2,0,0,0},{0,2,0,0},{0,0,2,0},{0,0,0,\n"
-            + "2}}}");
-    check("{u,r}=HermiteDecomposition({{4,12,-3,5},{2,6,1,0},{-1,0,5,2},{8,4,10,1}})", //
-        "{{{127,-264,99,15},{69,-143,54,8},{51,-106,40,6},{128,-266,100,15}},{{1,0,0,848},{\n"
-            + "0,2,0,461},{0,0,1,341},{0,0,0,855}}}");
-    check("{u,r}=HermiteDecomposition({{3,0,1,1},{0,1,0,0},{0,0,19,1},{0,0,0,3}})", //
-        "{{{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}},{{3,0,1,1},{0,1,0,0},{0,0,19,1},{0,0,\n"
-            + "0,3}}}");
-    check(
-        "{u,r}=HermiteDecomposition({{ 5, 2, -1, 4, 0}, {3,8,2,0,6}, {1,-4,5,2,1}, {0,3,7,9,2}, {6,1,0,5,8}})", //
-        "{{{-298,6,-69,5,257},{-51,1,-12,1,44},{-457,9,-106,8,394},{-270,5,-63,5,233},{-\n"
-            + "703,14,-163,12,606}},{{1,0,0,0,2033},{0,1,0,1,348},{0,0,1,2,3116},{0,0,0,4,1841},{\n"
-            + "0,0,0,0,4793}}}");
-  }
-
-  @Test
-  public void testGroupings() {
-    // TODO
-    // check("Groupings({{1, 2, 3, 4, 5}, {a, b, c, d, e}}, 3)", //
-    // " ");
-    check("Groupings({a, b, c, d, e, f}, 3)", //
-        "{}");
-    check("Groupings({a, b, c, d, e, f}, 2)", //
-        "{{{{{{a,b},c},d},e},f},{a,{{{{b,c},d},e},f}},{{a,{{{b,c},d},e}},f},{a,{b,{{{c,d},e},f}}},{{{a,{{b,c},d}},e},f},{a,{{b,{{c,d},e}},f}},{{a,{b,{{c,d},e}}},f},{a,{b,{c,{{d,e},f}}}},{{{{a,{b,c}},d},e},f},{a,{{{b,{c,d}},e},f}},{{a,{{b,{c,d}},e}},f},{a,{b,{{c,{d,e}},f}}},{{{a,{b,{c,d}}},e},f},{a,{{b,{c,{d,e}}},f}},{{a,{b,{c,{d,e}}}},f},{a,{b,{c,{d,{e,f}}}}},{{{{a,b},{c,d}},e},f},{a,{{{b,c},{d,e}},f}},{{a,{{b,c},{d,e}}},f},{a,{b,{{c,d},{e,f}}}},{{{{a,b},c},{d,e}},f},{a,{{{b,c},d},{e,f}}},{{{a,b},{{c,d},e}},f},{a,{{b,c},{{d,e},f}}},{{{a,{b,c}},{d,e}},f},{a,{{b,{c,d}},{e,f}}},{{{a,b},{c,{d,e}}},f},{a,{{b,c},{d,{e,f}}}},{{{{a,b},c},d},{e,f}},{{a,b},{{{c,d},e},f}},{{a,{{b,c},d}},{e,f}},{{a,b},{c,{{d,e},f}}},{{{a,{b,c}},d},{e,f}},{{a,b},{{c,{d,e}},f}},{{a,{b,{c,d}}},{e,f}},{{a,b},{c,{d,{e,f}}}},{{{a,b},{c,d}},{e,f}},{{a,b},{{c,d},{e,f}}},{{{a,b},c},{{d,e},f}},{{{a,b},c},{d,{e,f}}},{{a,{b,c}},{{d,e},f}},{{a,{b,c}},{d,{e,f}}}}");
-    check("Groupings({a, b, c, d, e}, 2)", //
-        "{{{{{a,b},c},d},e},{a,{{{b,c},d},e}},{{a,{{b,c},d}},e},{a,{b,{{c,d},e}}},{{{a,{b,c}},d},e},{a,{{b,{c,d}},e}},{{a,{b,{c,d}}},e},{a,{b,{c,{d,e}}}},{{{a,b},{c,d}},e},{a,{{b,c},{d,e}}},{{{a,b},c},{d,e}},{{a,b},{{c,d},e}},{{a,{b,c}},{d,e}},{{a,b},{c,{d,e}}}}");
-    check("Groupings({a, b, c, d, e}, 3)", //
-        "{{{a,b,c},d,e},{a,{b,c,d},e},{a,b,{c,d,e}}}");
-    check("Groupings(5, 3)", //
-        "{{{1,2,3},4,5},{1,{2,3,4},5},{1,2,{3,4,5}}}");
-    check("Groupings(4, 2)", //
-        "{{{{1,2},3},4},{1,{{2,3},4}},{{1,{2,3}},4},{1,{2,{3,4}}},{{1,2},{3,4}}}");
   }
 }

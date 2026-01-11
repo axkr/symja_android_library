@@ -53,7 +53,7 @@ import jakarta.annotation.Nullable;
 public class FuzzyParser extends Scanner {
 
   static {
-    F.initSymbols();
+    F.initSymja();
   }
 
   public static final ISymbol DERIVATIVE = F.Derivative;

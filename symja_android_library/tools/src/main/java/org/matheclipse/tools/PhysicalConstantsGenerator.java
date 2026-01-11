@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.tensor.QuantityParser;
 import org.matheclipse.core.tensor.io.ResourceData;
 
 public class PhysicalConstantsGenerator {
@@ -14,7 +14,7 @@ public class PhysicalConstantsGenerator {
     Properties properties =
         ResourceData.properties("/org/matheclipse/core/tools/physical_constants.properties");
     for (String key : properties.stringPropertyNames())
-      MAP.put(key, F.fromString(properties.getProperty(key)));
+      MAP.put(key, QuantityParser.fromString(properties.getProperty(key)));
   }
 
   public static void main(String[] args) {

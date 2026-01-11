@@ -10,7 +10,7 @@ import org.matheclipse.parser.client.math.MathException;
 public class QuantityExample {
   public static void main(String[] args) {
     try {
-      F.initSymbols();
+      F.initSymja();
       EvalEngine engine = new EvalEngine(false);
       // ExprEvaluator engine = new ExprEvaluator(false, 100);
 
