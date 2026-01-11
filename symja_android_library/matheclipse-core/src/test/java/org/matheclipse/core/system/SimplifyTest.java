@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.function.Function;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -21,7 +22,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
    * "https://github.com/sympy/sympy/blob/master/sympy/simplify/tests/test_fu.py">sympy/simplify/tests/test_fu.py</a>
    */
   @Test
-  public void testTrigSimplifyFu() {
+  public void testTrigSimplifyFu001() {
 
     // CTR1 example
     check("TrigSimplifyFu(Sin(x)^4 - Cos(y)^2 + Sin(y)^2 + 2*Cos(x)^2)", //
@@ -194,6 +195,62 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check(
         "TrigSimplifyFu((-14*sin(x)^3 + 35*sin(x) + 6*sqrt(3)*cos(x)^3 + 9*sqrt(3)*cos(x))/((cos(2*x)+4)))", //
         "(9*Sqrt(3)*Cos(x)+6*Sqrt(3)*Cos(x)^3+35*Sin(x)-14*Sin(x)^3)/(4+Cos(2*x))");
+  }
+
+  @Test
+  public void testTrigSimplifyFu003() {
+    check("TrigSimplifyFu(sin(2*x)*cos(3*x) + cos(2*x)*sin(3*x))", //
+        "Sin(5*x)");
+
+    // sympy.trigsimp(sin(x)/csc(x)) -> sin(x)**2
+    check("TrigSimplifyFu(sin(x)/csc(x))", "Sin(x)^2");
+
+    // sympy.trigsimp(cos(x)/sec(x)) -> cos(x)**2
+    check("TrigSimplifyFu(cos(x)/sec(x))", "Cos(x)^2");
+
+    // sympy.trigsimp(tan(x)/cot(x)) -> tan(x)**2
+    check("TrigSimplifyFu(tan(x)/cot(x))", "Tan(x)^2");
+
+    // sympy.trigsimp(sin(x)*tan(x)/sec(x)) -> sin(x)**2
+    check("TrigSimplifyFu(sin(x)*tan(x)/sec(x))", "Sin(x)^2");
+
+    // sympy.trigsimp(cos(x)*cot(x)/csc(x)) -> cos(x)**2
+    check("TrigSimplifyFu(cos(x)*cot(x)/csc(x))", "Cos(x)^2");
+
+    // sympy.trigsimp(tan(x)*sec(x)*csc(x)) -> sec(x)**2
+    check("TrigSimplifyFu(tan(x)*sec(x)*csc(x))", "Sec(x)^2");
+
+    // sympy.trigsimp(cot(x)*sec(x)*csc(x)) -> csc(x)**2
+    check("TrigSimplifyFu(cot(x)*sec(x)*csc(x))", "Csc(x)^2");
+
+    // sympy.trigsimp(sin(x)**4 + cos(x)**4) -> cos(4*x)/4 + 3/4
+    // check("TrigSimplifyFu(sin(x)^4 + cos(x)^4)", //
+    // "3/4+Cos(4*x)/4");
+
+    // sympy.trigsimp(sin(x)**6 + cos(x)**6) -> 3*cos(4*x)/8 + 5/8
+    // check("TrigSimplifyFu(sin(x)^6 + cos(x)^6)", //
+    // "5/8+3/8*Cos(4*x)");
+
+    // sympy.trigsimp(sin(2*x)*cos(3*x) + cos(2*x)*sin(3*x)) -> sin(5*x)
+    check("TrigSimplifyFu(sin(2*x)*cos(3*x) + cos(2*x)*sin(3*x))", //
+        "Sin(5*x)");
+
+    // sympy.trigsimp(sin(x+y)*cos(x-y) + cos(x+y)*sin(x-y)) -> sin(2*x)
+    check("TrigSimplifyFu(sin(x+y)*cos(x-y) + cos(x+y)*sin(x-y))", //
+        "Sin(2*x)");
+
+    // sympy.trigsimp(cos(x+y)*cos(x-y) - sin(x+y)*sin(x-y)) -> cos(2*x)
+    check("TrigSimplifyFu(cos(x+y)*cos(x-y) - sin(x+y)*sin(x-y))", //
+        "Cos(2*x)");
+
+
+    // sympy.trigsimp(cos(x+y)*cos(x-y) + sin(x+y)*sin(x-y)) -> cos(2*y)
+    check("TrigSimplifyFu(cos(x+y)*cos(x-y) + sin(x+y)*sin(x-y))", //
+        "Cos(2*y)");
+
+    // sympy.trigsimp(sin(x-y)*cos(x+y) - cos(x-y)*sin(x+y)) -> -sin(2*y)
+     check("TrigSimplifyFu(sin(x-y)*cos(x+y) - cos(x-y)*sin(x+y))", //
+     "-Sin(2*y)");
   }
 
   @Test
@@ -657,13 +714,10 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testTrigSimplifyTR9() {
-    ISymbol a = F.Dummy("a");
-    a.assignValue(F.C1D2);
-    ISymbol b = F.Dummy("a");
-    b.assignValue(F.C3D2);
-    IExpr tr9 = TrigSimplifyFu.tr9(a);
+
+    IExpr tr9 = TrigSimplifyFu.tr9(F.C1D2);
     assertEquals(tr9.toString(), //
-        a.toString());
+        F.C1D2.toString());
 
     // cos(1) + cos(2)
     tr9 = TrigSimplifyFu.tr9(F.Plus(F.Cos(F.C1), F.Cos(F.C2)));
@@ -1194,6 +1248,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
 
   /** The JUnit setup method */
   @Override
+  @BeforeEach
   public void setUp() {
     super.setUp();
     Config.SHORTEN_STRING_LENGTH = 1024;
@@ -1204,6 +1259,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
   @AfterEach
   public void tearDown() throws Exception {
     // super.tearDown();
+    EvalEngine.setReset(EvalEngine.get());
     Config.SHORTEN_STRING_LENGTH = 80;
   }
 }
