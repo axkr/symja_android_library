@@ -23,7 +23,67 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.parser.client.ParserConfig;
 
-/** Implements Symbols for function, constant and variable names */
+/**
+ * A concrete implementation of {@link IBuiltInSymbol} for system-defined functions.
+ * <p>
+ * The {@code BuiltInSymbol} class represents core Symja functions (e.g., {@code Sin}, {@code Plus},
+ * {@code Integrate}) that are implemented directly in Java for performance. Unlike a standard
+ * {@link Symbol}, which evaluates via pattern-matching rules, a {@code BuiltInSymbol} holds a
+ * reference to an {@link IFunctionEvaluator}.
+ * </p>
+ *
+ * <h3>1. Performance Optimization</h3>
+ * <p>
+ * This class is designed for speed:
+ * </p>
+ * <ul>
+ * <li><b>Direct Delegation:</b> The {@link #evaluate(IAST, EvalEngine)} method delegates directly
+ * to the associated {@code IFunctionEvaluator}, bypassing the overhead of looking up and matching
+ * {@code DownValues} rules.</li>
+ * <li><b>Ordinal IDs:</b> Each built-in symbol is assigned a unique integer {@code ordinal}. This
+ * allows for fast switch-case dispatching and array lookups inside the evaluation engine.</li>
+ * <li><b>Singleton Identity:</b> Built-in symbols are singletons. Serialization is handled via
+ * {@link #readResolve()} to ensure that deserialized instances map back to the unique static
+ * instances in the {@code S} class.</li>
+ * </ul>
+ *
+ * <h3>2. Evaluation Mechanism</h3>
+ * <p>
+ * When the engine encounters a function call like {@code Sin[x]}:
+ * </p>
+ * <ol>
+ * <li>It identifies the head {@link S#Sin} as a {@code BuiltInSymbol}.</li>
+ * <li>It calls {@code Sin.evaluate(ast, engine)}.</li>
+ * <li>This invokes {@code org.matheclipse.core.builtin.function.Sin#evaluate()}, which executes the
+ * compiled Java logic.</li>
+ * </ol>
+ *
+ * <h3>3. Usage Examples</h3>
+ *
+ * <h4>Accessing Built-Ins</h4>
+ * 
+ * <pre>
+ * // Access the standard symbol for Sine
+ * IBuiltInSymbol sin = S.Sin;
+ *
+ * // Check its ordinal ID
+ * int id = sin.ordinal();
+ *
+ * // Retrieve its Java evaluator
+ * IFunctionEvaluator evaluator = sin.getEvaluator();
+ * </pre>
+ *
+ * <h4>Defining a Predicate</h4>
+ * 
+ * <pre>
+ * // BuiltInSymbol can also wrap simple predicates
+ * S.IntegerQ.setPredicateQ(x -> x.isInteger());
+ * </pre>
+ *
+ * @see org.matheclipse.core.interfaces.IBuiltInSymbol
+ * @see org.matheclipse.core.expression.Symbol
+ * @see org.matheclipse.core.expression.S
+ */
 public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   private static class DummyEvaluator extends AbstractSymbolEvaluator implements ISymbolEvaluator {
 
@@ -243,6 +303,12 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
   /** {@inheritDoc} */
   @Override
+  public final boolean isAutomatic() {
+    return this == S.Automatic;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public final boolean isBooleanFormulaSymbol() {
     return fEvaluator instanceof IBooleanFormula;
   }
@@ -303,6 +369,12 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
       return ((IRealConstant) fEvaluator).isNegative();
     }
     return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public final boolean isNone() {
+    return this == S.None;
   }
 
   @Override

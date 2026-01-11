@@ -15,19 +15,61 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 /**
- * A concrete IString implementation
+ * A concrete implementation of {@link IStringX} representing a standard text string.
+ * <p>
+ * The {@code StringX} class wraps a standard Java {@link String} into the Symja {@link IExpr}
+ * hierarchy. It is an <b>Atomic Constant</b>, meaning it evaluates to itself and contains no
+ * sub-expressions.
+ * </p>
+ *
+ * <h3>1. Internal Structure</h3>
+ * <p>
+ * The class holds a single {@code String} field ({@code fString}). Most operations defined in the
+ * {@link IStringX} interface are delegated directly to this internal string object, ensuring
+ * performance characteristics similar to native Java strings.
+ * </p>
+ *
+ * <h3>2. Creation</h3>
+ * <p>
+ * While specific constructors exist, it is best practice to use the static factory methods in
+ * {@link F} (Factory) method to ensure proper instance management.
+ * </p>
+ *
+ * <h3>3. Usage Examples</h3>
+ *
+ * <h4>Basic Instantiation</h4>
+ * 
+ * <pre>
+ * // Best practice: use the Factory 'F'
+ * IStringX s1 = F.stringx("Mathematics");
+ * 
+ * </pre>
+ *
+ * <h4>Comparison</h4>
+ * 
+ * <pre>
+ * IStringX sA = F.stringx("Alpha");
+ * IStringX sB = F.stringx("Alpha");
+ *
+ * // Standard value equality
+ * if (sA.equals(sB)) {
+ *   // True
+ * }
+ * </pre>
  *
  * @see org.matheclipse.core.interfaces.IStringX
+ * @see org.matheclipse.core.expression.F
  */
 public class StringX implements IStringX {
 
   private static final long serialVersionUID = -68464824682534930L;
 
   /**
+   * Copy the charcter array as a new {@code IStringX} instance
+   * 
    * @param data
-   * @return
    */
-  public static StringX copyValueOf(final char[] data) {
+  public static IStringX copyValueOf(final char[] data) {
     return newInstance(String.copyValueOf(data));
   }
 
@@ -201,6 +243,7 @@ public class StringX implements IStringX {
    * @param index
    * @return
    */
+  @Override
   public char charAt(final int index) {
     return fString.charAt(index);
   }

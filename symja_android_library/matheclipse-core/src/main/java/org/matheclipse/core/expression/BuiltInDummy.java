@@ -39,6 +39,65 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.parser.client.ParserConfig;
 
+/**
+ * A specialized {@link ISymbol} implementation representing a <b>Dummy Variable</b>.
+ * <p>
+ * A {@code BuiltInDummy} is a symbol designed to be unique, even if it shares a name with a global
+ * symbol. These are primarily used to implement <b>lexical scoping</b> in functions like
+ * {@code Module}, {@code Unique}, and during pattern matching renaming to prevent variable capture.
+ * </p>
+ *
+ * <h3>1. The Concept of "Dummy"</h3>
+ * <p>
+ * In symbolic computation, it is often necessary to generate a variable that is guaranteed not to
+ * collide with any existing user variable.
+ * </p>
+ * <ul>
+ * <li><b>Global Symbol:</b> {@code x} (Context: {@code Global`}) refers to the same entity
+ * everywhere.</li>
+ * <li><b>Dummy Symbol:</b> {@code x} (Context: {@code DUMMY`}) is a distinct object, often printed
+ * as {@code x$123} internally but displayed as {@code x} to the user.</li>
+ * </ul>
+ *
+ * <h3>2. Usage in Scoping</h3>
+ * <p>
+ * When {@code Module[{x}, body]} is evaluated:
+ * </p>
+ * <ol>
+ * <li>The engine creates a new {@code BuiltInDummy} with a unique suffix (e.g., {@code x$1}).</li>
+ * <li>It replaces all occurrences of the local {@code x} in {@code body} with this new dummy.</li>
+ * <li>It evaluates the body.</li>
+ * <li>The dummy ensures that the local {@code x} does not interfere with a global {@code x}.</li>
+ * </ol>
+ *
+ * <h3>3. Examples</h3>
+ *
+ * <h4>Creating a Dummy</h4>
+ * 
+ * <pre>
+ * // Create a dummy symbol with base name "x"
+ * ISymbol dummy = F.Dummy("x");
+ *
+ * // It is distinct from the formal  "x"
+ * ISymbol formalX = F.x
+ *
+ * System.out.println(dummy.equals(formalX)); // false
+ * </pre>
+ *
+ * <h4>Unique Generation</h4>
+ * 
+ * <pre>
+ * // Repeated calls generate distinct objects
+ * ISymbol d1 = F.Dummy("temp");
+ * ISymbol d2 = F.Dummy("temp");
+ *
+ * // They are different symbols
+ * boolean same = d1.equals(d2); // false
+ * </pre>
+ *
+ * @see org.matheclipse.core.expression.Symbol
+ * @see org.matheclipse.core.expression.F#Dummy(String)
+ */
 public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   private static final long serialVersionUID = -1921824292485125087L;
 

@@ -21,8 +21,55 @@ import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.parser.client.ParserConfig;
 
 /**
- * A &quot;blank pattern&quot; with no assigned &quot;pattern name&quot; (i.e. &quot;<code>_</code>
- * &quot;)
+ * Represents the <b>Blank</b> pattern object ({@code _} or {@code _Head}), which matches any single
+ * expression.
+ * <p>
+ * The {@code Blank} class is the foundational "wildcard" in Symja pattern matching. It corresponds
+ * to the symbol {@code Blank[]}. Unlike {@link Pattern} (e.g., {@code x_}), a {@code Blank} does
+ * not bind the matched expression to a symbol name; it simply asserts that an expression exists
+ * (and optionally checks its head).
+ * </p>
+ *
+ * <h3>1. Syntax and Forms</h3>
+ * <ul>
+ * <li><b>{@code _} (Blank):</b> Matches any single expression (e.g., {@code 1}, {@code x},
+ * {@code Sin[y]}). It does <i>not</i> match a sequence of expressions (e.g., {@code 1, 2}).</li>
+ * <li><b>{@code _Head} (Blank with HeadTest):</b> Matches any single expression whose head is
+ * exactly {@code Head}. For example, {@code _Integer} matches {@code 5} but not {@code 5.0} (Real)
+ * or {@code x} (Symbol).</li>
+ * </ul>
+ *
+ * <h3>2. Usage in Rules</h3>
+ * <p>
+ * Blanks are commonly used as anonymous placeholders in transformation rules where the specific
+ * value of the argument is irrelevant, only its presence or type matters.
+ * </p>
+ *
+ * <h3>3. Examples</h3>
+ *
+ * <h4>Basic Matching</h4>
+ * 
+ * <pre>
+ * // Define a rule f[_] := "Matched"
+ * // Matches f[1], f[x], f[List[1,2]]
+ * // Does NOT match f[1, 2] (use BlankSequence "__" for that)
+ * ISymbol f = F.Dummy("f");
+ * F.SetDelayed(F.unary(f, F.$b()), F.stringx("Matched"));
+ * </pre>
+ *
+ * <h4>Type-Constrained Matching</h4>
+ * 
+ * <pre>
+ * // Define g[_Integer] := "Integer"
+ * // Matches g[42]
+ * // Does NOT match g[3.14] or g[x]
+ * ISymbol g = F.Dummy("g");
+ * F.SetDelayed(F.unary(g, F.$b(S.Integer)), F.stringx("Integer"));
+ * </pre>
+ *
+ * @see org.matheclipse.core.interfaces.IPattern
+ * @see org.matheclipse.core.expression.Pattern
+ * @see org.matheclipse.core.expression.PatternSequence
  */
 public class Blank implements IPattern {
 

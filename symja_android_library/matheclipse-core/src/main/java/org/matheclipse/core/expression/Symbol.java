@@ -39,6 +39,77 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.parser.client.ParserConfig;
 
+
+/**
+ * A concrete implementation of {@link ISymbol} representing a standard variable or function
+ * identifier.
+ * <p>
+ * The {@code Symbol} class is the fundamental data structure for named entities in Symja. Unlike
+ * {@link org.matheclipse.core.expression.BuiltInSymbol} (which delegates to compiled Java code), a
+ * standard {@code Symbol} relies on the Symja pattern-matching engine to evaluate. It stores its
+ * definitions, values, and attributes dynamically.
+ * </p>
+ *
+ * <h3>1. Internal State</h3>
+ * <p>
+ * A {@code Symbol} maintains the following state:
+ * </p>
+ * <ul>
+ * <li><b>Identity:</b> Defined by a {@link String} name (e.g., "x") and a {@link Context} (e.g.,
+ * "Global`").</li>
+ * <li><b>Value (OwnValues):</b> The expression assigned to the symbol (e.g., {@code x = 5}). If no
+ * value is assigned, the symbol evaluates to itself.</li>
+ * <li><b>Rules (DownValues/UpValues):</b> A {@link RulesData} object containing transformation
+ * rules defined for this symbol (e.g., {@code f[x_] := x^2}).</li>
+ * <li><b>Attributes:</b> Bit-flags defining properties like {@link S#Flat}, {@link S#Orderless}, or
+ * {@link S#Protected}.</li>
+ * </ul>
+ *
+ * <h3>2. Evaluation Mechanism</h3>
+ * <p>
+ * When the {@link EvalEngine} evaluates a {@code Symbol}:
+ * </p>
+ * <ol>
+ * <li>It checks if the symbol has an assigned value (OwnValue). If so, it returns that value.</li>
+ * <li>If the symbol is the head of an expression (e.g., {@code f[1]}), the engine retrieves the
+ * {@link RulesData} from the symbol and attempts to match the arguments against the stored
+ * rules.</li>
+ * </ol>
+ *
+ * <h3>3. Usage Examples</h3>
+ *
+ * <h4>Creating and Assigning</h4>
+ * 
+ * <pre>
+ * // Create a symbol "a" in the current context (usually Global)
+ * ISymbol a = F.$s("a");
+ *
+ * // Assign a value: a = 10
+ * a.assignValue(F.C10, false);
+ *
+ * // Use in expression
+ * IExpr result = F.Plus(a, F.C1); // returns 11
+ * </pre>
+ *
+ * <h4>Defining Functions (Rules)</h4>
+ * 
+ * <pre>
+ * // Define a function myFunc[x_] := x + 1
+ * ISymbol myFunc = F.$s("myFunc");
+ * ISymbol x = F.Dummy("x");
+ *
+ * // Create the rule definitions
+ * IAST lhs = F.unary(myFunc, F.Pattern(x, null));
+ * IExpr rhs = F.Plus(x, F.C1);
+ *
+ * // Attach the rule to the symbol
+ * engine.evaluate(F.SetDelayed(lhs, rhs));
+ * </pre>
+ *
+ * @see org.matheclipse.core.interfaces.ISymbol
+ * @see org.matheclipse.core.expression.BuiltInSymbol
+ * @see org.matheclipse.core.patternmatching.RulesData
+ */
 @NotThreadSafe
 public class Symbol implements ISymbol, Serializable {
   private static final long serialVersionUID = 6048546131696113624L;
