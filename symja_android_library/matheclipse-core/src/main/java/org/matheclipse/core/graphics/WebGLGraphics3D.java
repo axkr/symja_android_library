@@ -53,6 +53,217 @@ public class WebGLGraphics3D {
     }
   }
 
+  /**
+   * Generates an HTML snippet (DIV + SCRIPT) to render the graphics embedded in a page. Assumes
+   * THREE and THREE.OrbitControls are loaded globally. * @param graphics the graphics AST
+   * 
+   * @return HTML code string starting with &lt;div data-type="webgl"...
+   */
+  public static String generateHTMLSnippet(IAST graphics) {
+    try {
+      ObjectNode rootNode = mapper.createObjectNode();
+      ArrayNode elementsArray = rootNode.putArray("elements");
+
+      // Reuse existing processing logic
+      if (graphics.isAST(S.SurfaceGraphics)) {
+        processSurfaceGraphics(elementsArray, graphics, new GraphicsState());
+      } else if (graphics.isAST(S.Graphics3D) && graphics.argSize() >= 1) {
+        processExpr(elementsArray, graphics.arg1(), new GraphicsState(), null);
+      } else if (graphics.argSize() >= 1) {
+        processExpr(elementsArray, graphics.arg1(), new GraphicsState(), null);
+      }
+
+      String jsonData = mapper.writeValueAsString(rootNode);
+
+      // Create a unique ID for this plot instance
+      String containerId =
+          "webgl_" + System.currentTimeMillis() + "_" + (int) (Math.random() * 10000);
+
+      StringBuilder html = new StringBuilder();
+
+      // 1. The Container DIV
+      html.append("<div data-type=\"webgl\" id=\"").append(containerId).append(
+          "\" style=\"width: 500px; height: 400px; border: 1px solid #eee; background: #fff;\"></div>");
+
+      // 2. The Script
+      html.append("<script type=\"text/javascript\">\n");
+      html.append("(function() {\n");
+      html.append("  var container = document.getElementById('" + containerId + "');\n");
+      html.append("  if (!container) return;\n");
+
+      html.append("  var width = container.clientWidth || 500;\n");
+      html.append("  var height = container.clientHeight || 400;\n");
+
+      html.append("  var scene = new THREE.Scene();\n");
+      html.append("  scene.background = new THREE.Color(0xffffff);\n");
+
+      html.append("  var camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 10000);\n");
+      html.append("  camera.up.set(0, 0, 1);\n");
+      html.append("  camera.position.set(10, -10, 10);\n");
+
+      html.append("  var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });\n");
+      html.append("  renderer.setSize(width, height);\n");
+      html.append("  renderer.shadowMap.enabled = true;\n");
+      html.append("  container.appendChild(renderer.domElement);\n");
+
+      // Use global THREE.OrbitControls
+      html.append("  var controls = new THREE.OrbitControls(camera, renderer.domElement);\n");
+      html.append("  controls.enableDamping = true;\n");
+
+      html.append("  var hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.0);\n");
+      html.append("  hemiLight.position.set(0, 0, 50);\n");
+      html.append("  scene.add(hemiLight);\n");
+
+      html.append("  var dl = new THREE.DirectionalLight(0xffffff, 0.5);\n");
+      html.append("  dl.position.set(10, -20, 20);\n");
+      html.append("  dl.castShadow = true;\n");
+      html.append("  scene.add(dl);\n");
+
+      // Inject JSON Data
+      html.append("  var data = ").append(jsonData).append(";\n");
+
+      // Material Helper
+      html.append("  function getMat(el, isLine) {\n");
+      html.append("      var params = {\n");
+      html.append("          color: el.color,\n");
+      html.append("          transparent: el.opacity < 1.0,\n");
+      html.append("          opacity: el.opacity,\n");
+      html.append("          side: THREE.DoubleSide,\n");
+      html.append("          depthWrite: el.opacity >= 1.0,\n");
+      html.append("          vertexColors: (el.vertexColors && el.vertexColors.length > 0)\n");
+      html.append("      };\n");
+      html.append("      if (isLine) {\n");
+      html.append(
+          "          if (el.dashed) return new THREE.LineDashedMaterial(Object.assign(params, {dashSize: 0.5, gapSize: 0.3, scale: 1}));\n");
+      html.append(
+          "          return new THREE.LineBasicMaterial(Object.assign(params, {linewidth: 2}));\n");
+      html.append("      }\n");
+      html.append(
+          "      var mat = new THREE.MeshPhongMaterial(Object.assign(params, {shininess: 20, specular: 0x111111, flatShading: false}));\n");
+      html.append(
+          "      if (el.type === 'Polygon') { mat.polygonOffset = true; mat.polygonOffsetFactor = 1; mat.polygonOffsetUnits = 1; }\n");
+      html.append("      return mat;\n");
+      html.append("  }\n");
+
+      // Geometry Builder
+      html.append("  var objectsGroup = new THREE.Group();\n");
+      html.append("  if (data.elements) {\n");
+      html.append("      data.elements.forEach(function(el) {\n");
+      html.append("          var mesh;\n");
+
+      // --- Polygon ---
+      html.append("          if (el.type === 'Polygon') {\n");
+      html.append("              var geom = new THREE.BufferGeometry();\n");
+      html.append(
+          "              geom.setAttribute('position', new THREE.Float32BufferAttribute(el.points, 3));\n");
+      html.append("              if (el.vertexColors && el.vertexColors.length > 0) {\n");
+      html.append(
+          "                  geom.setAttribute('color', new THREE.Float32BufferAttribute(el.vertexColors, 3));\n");
+      html.append("              }\n");
+      html.append("              geom.computeVertexNormals();\n");
+      html.append("              mesh = new THREE.Mesh(geom, getMat(el, false));\n");
+
+      // --- Sphere ---
+      html.append("          } else if (el.type === 'Sphere') {\n");
+      html.append(
+          "              mesh = new THREE.Mesh(new THREE.SphereGeometry(el.radius, 32, 32), getMat(el, false));\n");
+      html.append("              mesh.position.set(el.center[0], el.center[1], el.center[2]);\n");
+
+      // --- Cuboid ---
+      html.append("          } else if (el.type === 'Cuboid') {\n");
+      html.append("              var w = el.max[0] - el.min[0];\n");
+      html.append("              var h = el.max[1] - el.min[1];\n");
+      html.append("              var d = el.max[2] - el.min[2];\n");
+      html.append(
+          "              mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), getMat(el, false));\n");
+      html.append(
+          "              mesh.position.set(el.min[0] + w/2, el.min[1] + h/2, el.min[2] + d/2);\n");
+
+      // --- Cylinder ---
+      html.append("          } else if (el.type === 'Cylinder') {\n");
+      html.append(
+          "              var s = new THREE.Vector3(el.start[0], el.start[1], el.start[2]);\n");
+      html.append("              var e = new THREE.Vector3(el.end[0], el.end[1], el.end[2]);\n");
+      html.append("              var h = s.distanceTo(e);\n");
+      html.append(
+          "              var geom = new THREE.CylinderGeometry(el.radius, el.radius, h, 32);\n");
+      html.append("              geom.translate(0, h/2, 0);\n");
+      html.append("              mesh = new THREE.Mesh(geom, getMat(el, false));\n");
+      html.append("              mesh.position.copy(s);\n");
+      html.append(
+          "              mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), e.clone().sub(s).normalize());\n");
+
+      // --- Cone ---
+      html.append("          } else if (el.type === 'Cone') {\n");
+      html.append(
+          "              var s = new THREE.Vector3(el.start[0], el.start[1], el.start[2]);\n");
+      html.append("              var e = new THREE.Vector3(el.end[0], el.end[1], el.end[2]);\n");
+      html.append("              var h = s.distanceTo(e);\n");
+      html.append("              var geom = new THREE.ConeGeometry(el.radius, h, 32);\n");
+      html.append("              geom.translate(0, h/2, 0);\n");
+      html.append("              mesh = new THREE.Mesh(geom, getMat(el, false));\n");
+      html.append("              mesh.position.copy(s);\n");
+      html.append(
+          "              mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), e.clone().sub(s).normalize());\n");
+
+      // --- Line ---
+      html.append("          } else if (el.type === 'Line') {\n");
+      html.append("             var pts = [];\n");
+      html.append(
+          "             for(var i=0; i<el.points.length; i+=3) pts.push(new THREE.Vector3(el.points[i], el.points[i+1], el.points[i+2]));\n");
+      html.append("             var geom = new THREE.BufferGeometry().setFromPoints(pts);\n");
+      html.append("             mesh = new THREE.Line(geom, getMat(el, true));\n");
+      html.append("             if (el.dashed) mesh.computeLineDistances();\n");
+
+      // --- Point ---
+      html.append("          } else if (el.type === 'Point') {\n");
+      html.append("             for(var i=0; i<el.points.length; i+=3) {\n");
+      html.append(
+          "                 var m = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), getMat(el, false));\n");
+      html.append(
+          "                 m.position.set(el.points[i], el.points[i+1], el.points[i+2]);\n");
+      html.append("                 objectsGroup.add(m);\n");
+      html.append("             }\n");
+      html.append("             mesh = null;\n");
+      html.append("          }\n");
+
+      html.append("          if (mesh) {\n");
+      html.append("              if (el.opacity >= 1.0) mesh.castShadow = true;\n");
+      html.append("              mesh.receiveShadow = true;\n");
+      html.append("              objectsGroup.add(mesh);\n");
+      html.append("          }\n");
+      html.append("      });\n");
+      html.append("  }\n");
+
+      html.append("  scene.add(objectsGroup);\n");
+
+      // Auto-Fit Camera
+      html.append("  var box = new THREE.Box3().setFromObject(objectsGroup);\n");
+      html.append("  if (!box.isEmpty()) {\n");
+      html.append("      var center = box.getCenter(new THREE.Vector3());\n");
+      html.append("      var size = box.getSize(new THREE.Vector3());\n");
+      html.append("      var maxDim = Math.max(size.x, Math.max(size.y, size.z));\n");
+      html.append("      var fov = camera.fov * (Math.PI / 180);\n");
+      html.append("      var cameraZ = Math.abs(maxDim / 2 * Math.tan(fov * 2));\n");
+      html.append(
+          "      camera.position.set(center.x + maxDim, center.y - maxDim, center.z + maxDim);\n");
+      html.append("      camera.lookAt(center);\n");
+      html.append("      controls.target.copy(center);\n");
+      html.append("  }\n");
+
+      html.append(
+          "  function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }\n");
+      html.append("  animate();\n");
+      html.append("})();\n");
+      html.append("</script>");
+
+      return html.toString();
+    } catch (IOException e) {
+      e.printStackTrace();
+      return "Error generating WebGL";
+    }
+  }
+
   public static String generateHTML(IAST graphics) {
     try {
       ObjectNode rootNode = mapper.createObjectNode();
