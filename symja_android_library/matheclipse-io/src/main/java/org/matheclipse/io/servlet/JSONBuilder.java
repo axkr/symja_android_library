@@ -236,6 +236,46 @@ public class JSONBuilder {
     return new String[] {"mathml", json.toString()};
   }
 
+  public static String[] createJSONSVG(EvalEngine engine, String svgStr,
+      StringBuilderWriter outWriter, StringBuilderWriter errorWriter) {
+    ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
+    resultsJSON.put("line", 21);
+    resultsJSON.put("result", svgStr);
+    ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
+
+    String message = errorWriter.toString();
+    if (message.length() > 0) {
+      message = MathMLFormFactory.mathMLMtext(message);
+      ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
+      messageJSON.put("prefix", "Error");
+      messageJSON.put("message", Boolean.TRUE);
+      messageJSON.put("tag", "evaluation");
+      messageJSON.put("symbol", "General");
+      messageJSON.put("text", "<math><mrow>" + message + "</mrow></math>");
+      temp.add(messageJSON);
+    }
+
+    message = outWriter.toString();
+    if (message.length() > 0) {
+      message = MathMLFormFactory.mathMLMtext(message);
+      ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
+      messageJSON.put("prefix", "Output");
+      messageJSON.put("message", Boolean.TRUE);
+      messageJSON.put("tag", "evaluation");
+      messageJSON.put("symbol", "General");
+      messageJSON.put("text", "<math><mrow>" + message + "</mrow></math>");
+      temp.add(messageJSON);
+    }
+    resultsJSON.putPOJO("out", temp);
+
+    temp = JSON_OBJECT_MAPPER.createArrayNode();
+    temp.add(resultsJSON);
+    ObjectNode json = JSON_OBJECT_MAPPER.createObjectNode();
+    json.putPOJO("results", temp);
+
+    return new String[] {"mathml", json.toString()};
+  }
+
   /**
    * Create a JSON mathml output <code>new String[] {"mathml", json.toString()}</code>.
    *

@@ -196,13 +196,13 @@ function translateDOMElement(element, svg) {
 		}
 	}
 	var object = null;
-	if (nodeName == 'graphics3d') {
-		var data = element.getAttribute('data').evalJSON();
-		var div = document.createElement('div');
-		drawGraphics3D(div, data);
-		dom = div;
-	}
-	if (nodeName == 'svg' || nodeName == 'graphics3d') {
+//	if (nodeName == 'graphics3d') {
+//		var data = element.getAttribute('data').evalJSON();
+//		var div = document.createElement('div');
+//		drawGraphics3D(div, data);
+//		dom = div;
+//	}
+	if (nodeName == 'svg') { //} || nodeName == 'graphics3d') {
 		// create <mspace> that will contain the graphics
 		object = createMathNode('mspace');
 		var width, height;
@@ -275,17 +275,27 @@ function translateDOMElement(element, svg) {
 	return dom;
 }
 
-function createLine(value) {
+function createLine(value) { 
 	if (value.startsWith('<math')) {
 		var dom = document.createElement('div');
 		dom.updateDOM(value);
 		return translateDOMElement(dom.childNodes[0]);
+	} else if (value.startsWith('<svg')) {
+		var dom = document.createElement('div');   
+		dom.setAttribute('style', 'width: 600px; height: 400px; margin: 0; padding: 0');
+		dom.update(value); 
+		return dom;
 	} else if (value.startsWith('<iframe')) {
 		var dom = document.createElement('div'); 
 		dom.setAttribute('id', 'mathcell');
 		dom.setAttribute('style', 'width: 600px; height: 440px; margin: 0; padding: 0');
 		dom.update(value); 
 		return dom;
+	} else if (value.startsWith('<div data-type="webgl"')) {
+        var dom = document.createElement('div');
+        // The script inside 'value' will be executed by Prototype.js here
+        dom.update(value); 
+        return dom;
 	} else if (value.startsWith('<table')) {
 		var dom = document.createElement('div');
 		dom.updateDOM(value);

@@ -58,8 +58,8 @@ public class MMAAJAXQueryServlet extends AJAXQueryServlet {
     engine.setRecursionLimit(Config.DEFAULT_RECURSION_LIMIT);
     engine.setIterationLimit(Config.DEFAULT_ITERATION_LIMIT);
 
-    S.Plot.setEvaluator(org.matheclipse.core.reflection.system.Plot.CONST);
-    S.Plot3D.setEvaluator(org.matheclipse.core.reflection.system.Plot3D.CONST);
+    S.Plot.setEvaluator(org.matheclipse.core.builtin.graphics.Plot.CONST);
+    S.Plot3D.setEvaluator(org.matheclipse.core.builtin.graphics3d.Plot3D.CONST);
     // F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);
     // Config.JAS_NO_THREADS = true;
     // MMAAJAXQueryServlet.log.info(servlet + " initialized");

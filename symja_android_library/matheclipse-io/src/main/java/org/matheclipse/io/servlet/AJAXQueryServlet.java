@@ -12,7 +12,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.apache.commons.io.output.StringBuilderWriter;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,6 +31,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.graphics.WebGLGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
@@ -244,26 +244,37 @@ public class AJAXQueryServlet extends HttpServlet {
         StringBuilderWriter outBuffer = new StringBuilderWriter();
         IExpr outExpr = evalTopLevel(engine, outBuffer, inExpr);
         if (outExpr != null) {
-          if (outExpr.isAST(S.Graphics)) {
+          if (outExpr.isGraphicsObject()) {
             StringBuilder buf = new StringBuilder();
-            if (GraphicsUtil.renderGraphics2D(buf, (IAST) outExpr, engine)) {
-              try {
-                return JSONBuilder.createGraphics2DIFrame(JSBuilder.GRAPHICS2D_IFRAME_TEMPLATE,
-                    buf.toString());
-              } catch (Exception ex) {
-                LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
-              }
+            if (GraphicsUtil.renderGraphics2DSVG(buf, (IAST) outExpr, engine)) {
+              String svg = buf.toString();
+              return JSONBuilder.createJSONJavaScript(
+                  "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"400\" viewBox=\"0 0 600 400\">"
+                      + svg + "</svg>");
             }
+            // if (GraphicsUtil.renderGraphics2D(buf, (IAST) outExpr, engine)) {
+            // try {
+            // return JSONBuilder.createGraphics2DIFrame(JSBuilder.GRAPHICS2D_IFRAME_TEMPLATE,
+            // buf.toString());
+            // } catch (Exception ex) {
+            // LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
+            // }
+            // }
           } else if (outExpr.isASTSizeGE(S.Graphics3D, 2)) {
-            StringBuilder buf = new StringBuilder();
-            if (GraphicsUtil.renderGraphics3D(buf, (IAST) outExpr, engine)) {
-              try {
-                return JSONBuilder.createGraphics3DIFrame(JSBuilder.GRAPHICS3D_IFRAME_TEMPLATE,
-                    buf.toString());
-              } catch (Exception ex) {
-                LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
-              }
-            }
+            // Use new WebGL generation
+            String webglSnippet = WebGLGraphics3D.generateHTMLSnippet((IAST) outExpr);
+            // Return as a JSON JavaScript result (which creates a line in the output UI)
+            return JSONBuilder.createJSONJavaScript(webglSnippet);
+
+            // StringBuilder buf = new StringBuilder();
+            // if (GraphicsUtil.renderGraphics3D(buf, (IAST) outExpr, engine)) {
+            // try {
+            // return JSONBuilder.createGraphics3DIFrame(JSBuilder.GRAPHICS3D_IFRAME_TEMPLATE,
+            // buf.toString());
+            // } catch (Exception ex) {
+            // LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
+            // }
+            // }
           }
           if (outExpr.isASTSizeGE(S.Show, 2)) {
             IAST show = (IAST) outExpr;
@@ -272,8 +283,8 @@ public class AJAXQueryServlet extends HttpServlet {
             String javaScriptStr = ((GraphExpr) outExpr).graphToJSForm();
             if (javaScriptStr != null) {
               String html = VISJS_IFRAME;
-              html = StringUtils.replace(html, "`1`", javaScriptStr);
-              html = StringUtils.replace(html, "`2`", //
+              html = html.replace("`1`", javaScriptStr);
+              html = html.replace("`2`", //
                   "  var options = { };\n" //
               );
               html = StringEscapeUtils.escapeHtml4(html);
@@ -355,8 +366,8 @@ public class AJAXQueryServlet extends HttpServlet {
               try {
                 String manipulateStr = jsFormData.arg1().toString();
                 String html = VISJS_IFRAME;
-                html = StringUtils.replace(html, "`1`", manipulateStr);
-                html = StringUtils.replace(html, "`2`", //
+                html = html.replace("`1`", manipulateStr);
+                html = html.replace("`2`", //
                     "  var options = {\n" + "		  edges: {\n" + "              smooth: {\n"
                         + "                  type: 'cubicBezier',\n"
                         + "                  forceDirection:  'vertical',\n"
@@ -379,7 +390,7 @@ public class AJAXQueryServlet extends HttpServlet {
             if (str.getMimeType() == IStringX.TEXT_HTML) {
               String htmlSnippet = str.toString();
               String htmlPage = HTML_IFRAME;
-              htmlPage = StringUtils.replace(htmlPage, "`1`", htmlSnippet);
+              htmlPage = htmlPage.replace("`1`", htmlSnippet);
               return JSONBuilder.createJSONJavaScript("<iframe srcdoc=\"" + htmlPage
                   + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
             }
@@ -641,13 +652,13 @@ public class AJAXQueryServlet extends HttpServlet {
     EvalEngine engine = new EvalEngine(isRelaxedSyntax());
     EvalEngine.set(engine);
     Config.FILESYSTEM_ENABLED = true;
-    F.initSymbols();
+    F.initSymja();
     IOInit.init();
     engine.setRecursionLimit(Config.DEFAULT_RECURSION_LIMIT);
     engine.setIterationLimit(Config.DEFAULT_ITERATION_LIMIT);
 
-    S.Plot.setEvaluator(org.matheclipse.core.reflection.system.Plot.CONST);
-    S.Plot3D.setEvaluator(org.matheclipse.core.reflection.system.Plot3D.CONST);
+    S.Plot.setEvaluator(org.matheclipse.core.builtin.graphics.Plot.CONST);
+    S.Plot3D.setEvaluator(org.matheclipse.core.builtin.graphics3d.Plot3D.CONST);
     // F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);
     // Config.JAS_NO_THREADS = true;
     // AJAXQueryServlet.log.info(servlet + " initialized");

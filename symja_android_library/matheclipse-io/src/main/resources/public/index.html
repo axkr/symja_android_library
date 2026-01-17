@@ -12,7 +12,6 @@
 <title>Symja</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"> 
-<!-- make page fit nicer in iOS -->
 
 <link rel="search" href="http://matheclipse.org/opensearch.xml" type="application/opensearchdescription+xml" title="Symja" />
 
@@ -33,8 +32,44 @@
 
  
 <script type="text/javascript" src="/media/js/prototype/prototype.js"></script>
-<script type="text/javascript" src="/media/js/three/Three.js"></script>
-<script type="text/javascript" src="/media/js/three/Detector.js"></script>
+<script type="importmap">
+  {
+    "imports": {
+      "three": "/media/js/three/three.module.js",
+      "three/addons/": "/media/js/three/jsm/"
+    }
+  }
+</script>
+
+<script type="module">
+import * as THREE_MODULE from 'three';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+  // 1. Convert the read-only module to a regular, mutable object
+  const THREE = { ...THREE_MODULE };
+
+  // 2. Now we can attach OrbitControls to it (mimicking the old behavior)
+  THREE.OrbitControls = OrbitControls;
+
+  // 3. Expose it globally so prototype.js and symja.js can find 'window.THREE'
+  window.THREE = THREE;
+</script>
+
+<script type="module">
+import * as THREE_MODULE from 'three';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+  // 1. Convert the read-only module to a regular, mutable object
+  const THREE = { ...THREE_MODULE };
+
+  // 2. Now we can attach OrbitControls to it (mimicking the old behavior)
+  THREE.OrbitControls = OrbitControls;
+
+  // 3. Expose it globally so prototype.js and symja.js can find 'window.THREE'
+  window.THREE = THREE;
+
+  console.log("Three.js loaded (Mutable Mode with OrbitControls)");
+</script>
  
 <script type="text/javascript" src="/media/js/mathjax/MathJax.js?config=MML_HTMLorMML&amp;delayStartupUntil=configured"></script>
 
@@ -43,6 +78,7 @@
 <script type="text/javascript" src="/media/js/inout.js"></script>
 <script type="text/javascript" src="/media/js/utils.js"></script>
 <script type="text/javascript" src="/media/js/symja.js"></script> 
+<script type="text/javascript" src="/media/js/symja_webgl.js"></script>
 <script type="text/javascript" src="/media/js/doc.js"></script>
 
 
