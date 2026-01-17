@@ -8,11 +8,13 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.statistics.ICDF;
 import org.matheclipse.core.interfaces.statistics.ICentralMoment;
+import org.matheclipse.core.interfaces.statistics.ICovariance;
 import org.matheclipse.core.interfaces.statistics.IDiscreteDistribution;
 import org.matheclipse.core.interfaces.statistics.IPDF;
 import org.matheclipse.core.interfaces.statistics.IRandomVariate;
@@ -953,7 +955,6 @@ public class StatisticsDiscreteDistributions {
     }
   }
 
-
   /** Functionality for a discrete probability distribution */
   private interface IExpectationDiscreteDistribution extends IDiscreteDistribution {
     /**
@@ -964,7 +965,6 @@ public class StatisticsDiscreteDistributions {
 
     IExpr randomVariate(Random random, IAST dist, int size);
   }
-
 
   private static class Initializer {
 
@@ -980,8 +980,204 @@ public class StatisticsDiscreteDistributions {
       S.HypergeometricDistribution
           .setEvaluator(new StatisticsDiscreteDistributions.HypergeometricDistribution());
       S.PoissonDistribution.setEvaluator(new StatisticsDiscreteDistributions.PoissonDistribution());
+      S.MultivariatePoissonDistribution
+          .setEvaluator(new StatisticsDiscreteDistributions.MultivariatePoissonDistribution());
 
     }
+  }
+
+
+  /**
+   *
+   * <pre>
+   * MultivariatePoissonDistribution(theta, {lambda1, lambda2, ...})
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * returns a multivariate Poisson distribution where the components are X_i = Y_0 + Y_i, with Y_0
+   * ~ Poisson(theta) and Y_i ~ Poisson(lambda_i).
+   *
+   * </blockquote>
+   *
+   * <p>
+   * See:
+   *
+   * <ul>
+   * <li><a href=
+   * "https://reference.wolfram.com/language/ref/MultivariatePoissonDistribution.html">Wolfram -
+   * MultivariatePoissonDistribution</a>
+   * </ul>
+   */
+  private static final class MultivariatePoissonDistribution extends AbstractEvaluator
+      implements IDiscreteDistribution, ICDF, IPDF, IStatistics, IRandomVariate, ICovariance {
+
+    @Override
+    public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr covariance(IAST dist, EvalEngine engine) {
+      if (dist.isAST2()) {
+        IExpr theta = dist.arg1();
+        IExpr lambda = dist.arg2();
+        if (lambda.isList()) {
+          final int n = lambda.argSize();
+          // Cov(X_i, X_j) = theta if i != j, else theta + lambda_i
+          IASTAppendable matrix = F.ListAlloc(n);
+          for (int i = 1; i <= n; i++) {
+            IASTAppendable row = F.ListAlloc(n);
+            for (int j = 1; j <= n; j++) {
+              if (i == j) {
+                row.append(F.Plus(theta, lambda.get(i)));
+              } else {
+                row.append(theta);
+              }
+            }
+            matrix.append(row);
+          }
+          return matrix;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public IExpr inverseCDF(IAST dist, IExpr x, EvalEngine engine) {
+      return null;
+    }
+
+    @Override
+    public IExpr mean(IAST dist) {
+      if (dist.isAST2()) {
+        IExpr theta = dist.arg1();
+        IExpr lambda = dist.arg2();
+        // Mean vector: {theta + lambda1, theta + lambda2, ...}
+        if (lambda.isList()) {
+          return ((IAST) lambda).map(val -> F.Plus(theta, val));
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr median(IAST dist) {
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST2()) {
+        IExpr theta = dist.arg1();
+        IExpr lambda = dist.arg2();
+        if (lambda.isList() && k.isList() && lambda.argSize() == k.argSize()) {
+          // PDF(x1...xn) = Exp[-(theta + Sum(lambda))] * // Sum[ (theta^i/i!) * Product[
+          // lambda_j^(xj-i)/(xj-i)!, {j} ], {i, 0, Min(x)} ]
+
+          IExpr i = F.Dummy("i");
+          IExpr minK = F.Min(k);
+
+          // theta^i / i!
+          IExpr term1 = F.Power(theta, i);
+          IExpr term2 = F.Factorial(i).inverse();
+
+          // Product over j: lambda_j^(kj - i) / (kj - i)!
+          IASTAppendable productTerms = F.TimesAlloc(lambda.argSize());
+          for (int j = 1; j <= lambda.argSize(); j++) {
+            IExpr lj = lambda.get(j);
+            IExpr kj = k.get(j);
+            IExpr diff = F.Subtract(kj, i);
+            productTerms.append(F.Times(F.Power(lj, diff), F.Factorial(diff).inverse()));
+          }
+
+          IExpr sumBody = F.Times(term1, term2, productTerms);
+          IExpr sum = F.Sum(sumBody, F.List(i, F.C0, minK));
+
+          IExpr totalLambda = F.Total(lambda);
+          IExpr expTerm = F.Exp(F.Negate(F.Plus(theta, totalLambda)));
+
+          return F.Times(expTerm, sum);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      if (dist.isAST2()) {
+        IExpr thetaExpr = dist.arg1();
+        IExpr lambdaExpr = dist.arg2();
+        if (lambdaExpr.isList()) {
+          try {
+            double theta = thetaExpr.evalf();
+            double[] lambdas = lambdaExpr.toDoubleVector();
+            if (lambdas != null && theta > 0) {
+              RandomDataGenerator rdg = new RandomDataGenerator();
+
+              // Generate the shared component Y_0 ~ Poisson(theta)
+              org.hipparchus.distribution.discrete.PoissonDistribution p0 =
+                  new org.hipparchus.distribution.discrete.PoissonDistribution(theta);
+              int[] y0_vec = rdg.nextDeviates(p0, size);
+
+              // Generate independent components Y_i ~ Poisson(lambda_i)
+              int[][] yi_vecs = new int[lambdas.length][];
+              for (int j = 0; j < lambdas.length; j++) {
+                org.hipparchus.distribution.discrete.PoissonDistribution pj =
+                    new org.hipparchus.distribution.discrete.PoissonDistribution(lambdas[j]);
+                yi_vecs[j] = rdg.nextDeviates(pj, size);
+              }
+
+              // Combine: X_i = Y_0 + Y_i
+              IASTAppendable resultList = F.ListAlloc(size);
+              for (int s = 0; s < size; s++) {
+                IASTAppendable sampleVec = F.ListAlloc(lambdas.length);
+                for (int j = 0; j < lambdas.length; j++) {
+                  sampleVec.append(y0_vec[s] + yi_vecs[j][s]);
+                }
+                resultList.append(sampleVec);
+              }
+              return resultList;
+            }
+          } catch (Exception e) {
+            // Fallback for symbolic or invalid numeric inputs
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr skewness(IAST dist) {
+      if (dist.isAST2()) {
+        IExpr theta = dist.arg1();
+        IExpr lambda = dist.arg2();
+        // Mean vector: {theta + lambda1, theta + lambda2, ...}
+        if (lambda.isList()) {
+          return ((IAST) lambda).map(val -> F.Power(F.Plus(theta, val), F.CN1D2));
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr variance(IAST dist) {
+      // For multivariate Poisson X_i = Y_0 + Y_i, Var(X_i) = Var(Y_0) + Var(Y_i) = theta + lambda_i
+      // This is identical to the Mean vector.
+      return mean(dist);
+    }
+
   }
 
 

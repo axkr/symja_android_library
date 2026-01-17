@@ -733,6 +733,18 @@ public class DistributionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testMultivariatePoissonDistribution() {
+    check("Mean(MultivariatePoissonDistribution(m, {m1,m2,m3})) // MatrixForm", //
+        "{m+m1,m+m2,m+m3}");
+    check("Skewness(MultivariatePoissonDistribution(m, {m1,m2,m3})) // MatrixForm", //
+        "{1/Sqrt(m+m1),1/Sqrt(m+m2),1/Sqrt(m+m3)}");
+    check("Covariance(MultivariatePoissonDistribution(m, {m1,m2,m3})) // MatrixForm", //
+        "{{m+m1,m,m},\n" //
+            + " {m,m+m2,m},\n" //
+        + " {m,m,m+m3}}");
+  }
+
+  @Test
   public void testPoissonProcess() {
     check("PoissonProcess(m)[t]", //
         "PoissonDistribution(m*t)");
