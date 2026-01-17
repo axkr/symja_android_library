@@ -733,6 +733,18 @@ public abstract class HMArrayList extends AbstractAST
   public int indexOf(final IExpr expr) {
     int index = 1;
     int i = firstIndex + 1;
+    if (isUniform(UniformFlags.SYMBOL)) {
+      if (!expr.isSymbol()) {
+        return -1;
+      }
+      while (i < lastIndex) {
+        if (array[i++] == expr) {
+          return index;
+        }
+        index++;
+      }
+      return -1;
+    }
     while (i < lastIndex) {
       if (array[i++].equals(expr)) {
         return index;

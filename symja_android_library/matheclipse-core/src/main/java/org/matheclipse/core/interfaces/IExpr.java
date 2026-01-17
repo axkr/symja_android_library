@@ -6870,11 +6870,33 @@ public interface IExpr
   }
 
   /**
-   * The subs method replaces all instances of <code>x</code> in an expression with an
-   * <code>y</code> expression. Substitutes similar to the Sympy <code>subs()</code> method.
+   * The subs method replaces all the substitution rules in {@code listOfRules}.
+   * <p>
+   * The <code>subs</code> method is Sympy style for <code>replaceAll</code> with automatic
+   * evaluation of the substituted result expression.
+   * </p>
+   * 
+   * <p>
+   * The method attempts to match {@code this} against each rule in {@code listOfRules} (rules are
+   * expected to be of the form {@code lhs->rhs} or {@code lhs:>rhs} stored as an {@link IAST}).
+   * Matching proceeds in order and supports:
+   * <ul>
+   * <li>Exact matches: if a rule's left-hand side equals {@code this}, the corresponding right-hand
+   * side is returned immediately.</li>
+   * <li>Associative additions ({@link S#Plus}) when a rule LHS is a sum, occurrences of its
+   * summands are removed from the target sum and replaced by the RHS (including
+   * multiplicities).</li>
+   * <li>Multiplicative matches ({@link S#Times}): when a rule LHS is a product, occurrences of its
+   * factors are removed from the target product and replaced by the RHS (including multiplicities
+   * and rational factors)</li>
+   * <li>({@link S#Power}): when a rule LHS is a power, exponents in the target expression are
+   * inspected and appropriately reduced or transformed according to the rule's exponent.</li>
+   * </ul>
+   * </p>
    * 
    * @param listOfRules
-   * @return
+   * @see #xreplace(IAST)
+   * @see #replaceAll(IAST)
    */
   default IExpr subs(IAST listOfRules) {
     IAST list = listOfRules.makeList();
@@ -6889,12 +6911,42 @@ public interface IExpr
   /**
    * The subs method replaces all instances of <code>x</code> in an expression with an
    * <code>y</code> expression.
+   * <p>
+   * The <code>subs</code> method is Sympy style for <code>replaceAll</code> with automatic
+   * evaluation of the substituted result expression.
+   * </p>
+   *
+   * <p>
+   * The method attempts to match {@code this} against each rule in {@code listOfRules} (rules are
+   * expected to be of the form {@code lhs->rhs} or {@code lhs:>rhs} stored as an {@link IAST}).
+   * Matching proceeds in order and supports:
+   * <ul>
+   * <li>Exact matches: if a rule's left-hand side equals {@code this}, the corresponding right-hand
+   * side is returned immediately.</li>
+   * <li>Associative additions ({@link S#Plus}) when a rule LHS is a sum, occurrences of its
+   * summands are removed from the target sum and replaced by the RHS (including
+   * multiplicities).</li>
+   * <li>Multiplicative matches ({@link S#Times}): when a rule LHS is a product, occurrences of its
+   * factors are removed from the target product and replaced by the RHS (including multiplicities
+   * and rational factors)</li>
+   * <li>({@link S#Power}): when a rule LHS is a power, exponents in the target expression are
+   * inspected and appropriately reduced or transformed according to the rule's exponent.</li>
+   * </ul>
+   * </p>
    * 
    * @param x
    * @param y
-   * @return
+   * @see #xreplace(IExpr, IExpr)
+   * @see #replaceAll(IAST)
    */
   default IExpr subs(IExpr x, IExpr y) {
+    if (x.isSymbol()) {
+      IExpr replaceAll = replaceAll((ISymbol) x, y);
+      if (replaceAll.isPresent()) {
+        return EvalEngine.get().evaluate(replaceAll);
+      }
+      return this;
+    }
     return subs(F.List(F.Rule(x, y)));
   }
 
@@ -7389,9 +7441,14 @@ public interface IExpr
   /**
    * Replaces all instances of the <code>left-hand-side</code> of the rules in list with the
    * <code>right-hand-side</code> of the correponding rule or returns <code>this</code>.
+   * <p>
+   * The <code>xreplace</code> method is Sympy style for <code>replaceAll</code> with returning
+   * <code>this</code> if no substitution was possible. The result won't be evaluated.
+   * </p>
    * 
    * @param listOfRules
-   * @return
+   * @see #subs(IAST)
+   * @see #replaceAll(IAST)
    */
   default IExpr xreplace(IAST listOfRules) {
     return replaceAll(listOfRules).orElse(this);
@@ -7401,9 +7458,15 @@ public interface IExpr
   /**
    * Replaces all instances of <code>x</code> in an expression with an <code>y</code> expression or
    * returns <code>this</code>.
+   * <p>
+   * The <code>xreplace</code> method is Sympy style for <code>replaceAll</code> with returning
+   * <code>this</code> if no substitution was possible. The result won't be evaluated.
+   * </p>
    * 
    * @param x
    * @param y
+   * @see #subs(IExpr, IExpr)
+   * @see #replaceAll(IAST)
    */
   default IExpr xreplace(IExpr x, IExpr y) {
     if (x.isSymbol()) {

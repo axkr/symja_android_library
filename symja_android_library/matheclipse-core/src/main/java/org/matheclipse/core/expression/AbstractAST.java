@@ -2893,6 +2893,17 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public int indexOf(final IExpr expr) {
+    if (isUniform(UniformFlags.SYMBOL)) {
+      if (!expr.isSymbol()) {
+        return -1;
+      }
+      for (int i = 1; i < size(); i++) {
+        if (getRule(i) == expr) {
+          return i;
+        }
+      }
+      return -1;
+    }
     for (int i = 1; i < size(); i++) {
       if (getRule(i).equals(expr)) {
         return i;

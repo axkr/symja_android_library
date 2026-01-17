@@ -3110,6 +3110,9 @@ public class S {
   public final static IBuiltInSymbol DiscretePlot =
       S.initFinalSymbol("DiscretePlot", ID.DiscretePlot);
 
+  public final static IBuiltInSymbol DiscretePlot3D =
+      S.initFinalSymbol("DiscretePlot3D", ID.DiscretePlot3D);
+
   public final static IBuiltInSymbol DiscreteRatio =
       S.initFinalSymbol("DiscreteRatio", ID.DiscreteRatio);
 
@@ -3831,6 +3834,8 @@ public class S {
   public final static IBuiltInSymbol ExtendedGCD = S.initFinalSymbol("ExtendedGCD", ID.ExtendedGCD);
 
   public final static IBuiltInSymbol Extension = S.initFinalSymbol("Extension", ID.Extension);
+
+  public final static IBuiltInSymbol ExtentSize = S.initFinalSymbol("ExtentSize", ID.ExtentSize);
 
   /**
    * Extract(expr, list) - extracts parts of `expr` specified by `list`.
@@ -7679,6 +7684,9 @@ public class S {
   public final static IBuiltInSymbol MultiplySides =
       S.initFinalSymbol("MultiplySides", ID.MultiplySides);
 
+  public final static IBuiltInSymbol MultivariatePoissonDistribution =
+      S.initFinalSymbol("MultivariatePoissonDistribution", ID.MultivariatePoissonDistribution);
+
   /**
    * N(expr) - gives the numerical value of `expr`.
    * 
@@ -10831,6 +10839,17 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Splice = S.initFinalSymbol("Splice", ID.Splice);
+
+  public final static IBuiltInSymbol SplineClosed =
+      S.initFinalSymbol("SplineClosed", ID.SplineClosed);
+
+  public final static IBuiltInSymbol SplineDegree =
+      S.initFinalSymbol("SplineDegree", ID.SplineDegree);
+
+  public final static IBuiltInSymbol SplineKnots = S.initFinalSymbol("SplineKnots", ID.SplineKnots);
+
+  public final static IBuiltInSymbol SplineWeights =
+      S.initFinalSymbol("SplineWeights", ID.SplineWeights);
 
   /**
    * Split(list) - splits `list` into collections of consecutive identical elements.
