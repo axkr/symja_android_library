@@ -10877,7 +10877,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-HeavisideTheta(-1+x)+x*HeavisideTheta(-1+x)-2*x*HeavisideTheta(x)+HeavisideTheta(\n" //
             + "1+x)+x*HeavisideTheta(1+x)");
     check("HeavisideLambda(D(Sin(x),x))", //
-        "HeavisideLambda(D(Sin(x),x))");
+        "HeavisideLambda(Cos(x))");
     check("Derivative(1)[HeavisideLambda]", //
         "-HeavisidePi(1/2-#1)+HeavisidePi(1/2+#1)&");
     check("HeavisideLambda(x)", //
@@ -18749,6 +18749,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolynomialReduce001() {
+    check("PolynomialReduce(0,-2)", //
+        "{{0},0}");
+
     check("f = x^3 + y^3;p = {x^2 - y^2 - 1, x + 2*y - 7};", //
         "");
     check("{q, r} = PolynomialReduce(f, p, {x, y})", //

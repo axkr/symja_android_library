@@ -47,7 +47,7 @@ public class FindFormula extends AbstractFunctionOptionEvaluator {
 
     @Override
     public int compareTo(ModelTemplate o) {
-      return aic > o.aic ? 1 : aic < o.aic ? -1 : 0;
+      return Double.compare(aic, o.aic);
     }
   }
 

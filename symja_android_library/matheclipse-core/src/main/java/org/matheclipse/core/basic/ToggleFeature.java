@@ -65,7 +65,7 @@ public class ToggleFeature {
   /**
    * Use Apache ECharts for rendering some 2D plot functions.
    */
-  public static boolean JS_ECHARTS = true;
+  public static boolean JS_ECHARTS = false;
 
   public static boolean SHOW_STEPS = false;
 }

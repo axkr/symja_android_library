@@ -79,8 +79,7 @@ public class HeavisideLambda extends AbstractEvaluator implements IFunctionExpan
 
   @Override
   public void setUp(ISymbol newSymbol) {
-    newSymbol.setAttributes(
-        ISymbol.HOLDALL | ISymbol.ORDERLESS | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+    newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
   }
 
 }

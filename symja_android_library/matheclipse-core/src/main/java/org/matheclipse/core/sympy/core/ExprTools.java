@@ -68,7 +68,7 @@ public class ExprTools {
         return;
       }
       this.dict = new TreeMap<IExpr, IExpr>();
-      if (factors.isOne() || factors == S.None || factors.isEmptyList()) {
+      if (factors.isOne() || factors.isNone() || factors.isEmptyList()) {
         //
       } else if (factors.isZero()) {
         dict.put(F.C0, F.C1);

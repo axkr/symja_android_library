@@ -133,10 +133,9 @@ public class SymmetricReduction extends AbstractFunctionEvaluator {
 
       return F.List(symmetricPart, remainderExpr);
 
-    } catch (Exception e) {
-      Errors.printMessage(S.Symmetric, e);
+    } catch (RuntimeException rex) {
+      return Errors.printMessage(S.Symmetric, rex);
     }
-    return F.NIL;
   }
 
   private static GenPolynomial<BigInteger> generateElementarySymmetricPoly(

@@ -863,12 +863,12 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
         boolean hit = false;
         for (int i = 1; i < args.size(); i++) {
           IExpr ai = args.get(i);
-          if (ai == S.None) {
+          if (ai.isNone()) {
             continue;
           }
           for (int j = i + 1; j < args.size(); j++) {
             IExpr aj = args.get(j);
-            if (aj == S.None) {
+            if (aj.isNone()) {
               continue;
             }
             IExpr was = ai.plus(aj);
@@ -886,7 +886,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
           IASTAppendable plusAST = F.PlusAlloc(args.size());
           for (int i = 1; i < args.size(); i++) {
             IExpr _f = args.get(i);
-            if (_f != S.None) {
+            if (!_f.isNone()) {
               plusAST.append(_f);
             }
           }
@@ -1504,12 +1504,12 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       boolean hit = false;
       for (int i = 1; i < rv.size(); i++) {
         IExpr ai = rv.get(i);
-        if (ai == S.None) {
+        if (ai.isNone()) {
           continue;
         }
         for (int j = i + 1; j < rv.size(); j++) {
           IExpr aj = rv.get(j);
-          if (aj == S.None) {
+          if (aj.isNone()) {
             continue;
           }
           IExpr was = ai.plus(aj);
@@ -1524,7 +1524,7 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
       }
       IExpr res = F.NIL;
       if (hit) {
-        rv = rv.remove(x -> x == S.None);
+        rv = rv.remove(x -> x.isNone());
         if (rv.isPlus()) {
           res = tr10iDoIt(rv).orElse(rv);
         } else {

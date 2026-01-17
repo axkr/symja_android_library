@@ -3,7 +3,6 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ArraySymbolExpr;
 import org.matheclipse.core.expression.data.MatrixSymbolExpr;
 import org.matheclipse.core.expression.data.VectorSymbolExpr;
@@ -45,14 +44,14 @@ public class TensorSymmetry extends AbstractEvaluator {
     if (arg instanceof MatrixSymbolExpr) {
       MatrixSymbolExpr m = (MatrixSymbolExpr) arg;
       IExpr sym = m.getSymmetry();
-      return sym == S.None ? F.Cycles(F.List()) : sym;
+      return sym.isNone() ? F.Cycles(F.List()) : sym;
     }
 
     // 3. ArraySymbol
     if (arg instanceof ArraySymbolExpr) {
       ArraySymbolExpr a = (ArraySymbolExpr) arg;
       IExpr sym = a.getSymmetry();
-      return sym == S.None ? F.Cycles(F.List()) : sym;
+      return sym.isNone() ? F.Cycles(F.List()) : sym;
     }
 
     // 4. Explicit Lists (Data inspection)

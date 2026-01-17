@@ -33,13 +33,9 @@ public class PolynomialReduce extends AbstractFunctionOptionEvaluator {
   public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
       IAST originalAST) {
     IExpr polynomialExpr = ast.arg1();
-    IExpr divisorsListExpr = ast.arg2();
+    IExpr divisorsListExpr = ast.arg2().makeList();
     IAST variablesListExpr = (argSize == 3) ? ast.arg3().makeList() : F.CEmptyList;
 
-    // Check: Is the second argument a list?
-    if (!divisorsListExpr.isList()) {
-      return null;
-    }
     IAST divisorsAST = (IAST) divisorsListExpr;
 
     try {

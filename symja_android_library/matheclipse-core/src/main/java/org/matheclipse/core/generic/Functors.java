@@ -148,6 +148,37 @@ public class Functors {
       this.listOfRules = rulesList;
     }
 
+    /**
+     * Apply the substitution rules in {@code listOfRules} to the given expression {@code arg}.
+     *
+     * <p>
+     * The method attempts to match {@code arg} against each rule in {@code listOfRules} (rules are
+     * expected to be of the form {@code lhs->rhs} or {@code lhs:>rhs} stored as an {@code IAST}).
+     * Matching proceeds in order and supports:
+     * <ul>
+     * <li>Exact matches: if a rule's left-hand side equals {@code arg}, the corresponding
+     * right-hand side is returned immediately.</li>
+     * <li>Associative additions (plus): when a rule LHS is a sum, occurrences of its summands are
+     * removed from the target sum and replaced by the RHS (including multiplicities).</li>
+     * <li>Multiplicative matches (times): when a rule LHS is a product, occurrences of its factors
+     * are removed from the target product and replaced by the RHS (including multiplicities and
+     * rational factors); special handling exists for rational numeric factors and nested
+     * powers.</li>
+     * <li>Powers: when a rule LHS is a power, exponents in the target expression are inspected and
+     * appropriately reduced or transformed according to the rule's exponent; nested power
+     * combinations are handled.</li>
+     * </ul>
+     *
+     * <p>
+     * After a rule produces a non-trivial replacement (i.e. the expression is changed), the result
+     * is further examined by {@link #mapArgumentsToRule(IExpr,IExpr[])} which applies the full set
+     * of rules recursively to sub-arguments until no more replacements occur. If no rule applies,
+     * this method returns {@code F.NIL} to indicate no substitution.
+     *
+     * @param arg the expression to which the substitution rules should be applied
+     * @return the substituted expression (possibly an {@code IAST} for composite results), or
+     *         {@code F.NIL} if no rule matched or no change was produced
+     */
     @Override
     public IExpr apply(final IExpr arg) {
       IExpr[] resultArg = new IExpr[] {arg};

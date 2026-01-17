@@ -1679,7 +1679,7 @@ public class FileFunctions {
         if (arg1.isFalse()) {
           return F.stringx("false");
         }
-        if (arg1 == S.Null || arg1 == S.Missing || arg1 == S.None) {
+        if (arg1 == S.Null || arg1.isAST(S.Missing) || arg1 == S.Missing || arg1.isNone()) {
           return F.CEmptyString;
         }
         return F.NIL;

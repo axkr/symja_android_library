@@ -16,7 +16,6 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
-import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  *
@@ -290,8 +289,4 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
     return IFunctionEvaluator.ARGS_2_2;
   }
 
-  @Override
-  public void setUp(final ISymbol newSymbol) {
-    // newSymbol.setAttributes(ISymbol.HOLDALL);
-  }
 }

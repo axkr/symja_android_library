@@ -7,7 +7,6 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Implementation of the {@code DifferenceQuotient} function. *
@@ -75,8 +74,4 @@ public class DifferenceQuotient extends AbstractFunctionEvaluator {
     return ImplementationStatus.PARTIAL_SUPPORT;
   }
 
-  @Override
-  public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.HOLDALL);
-  }
 }

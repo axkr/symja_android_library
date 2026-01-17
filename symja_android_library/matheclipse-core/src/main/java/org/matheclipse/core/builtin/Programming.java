@@ -2463,7 +2463,12 @@ public final class Programming {
               if (n == 0) {
                 return arg1.head();
               }
-              return arg1.get(n);
+              try {
+                return arg1.get(n);
+              } catch (IndexOutOfBoundsException ioobe) {
+                // Part `1` of `2` does not exist.
+                return Errors.printMessage(S.Part, "partw", F.list(ast.arg2(), arg1), engine);
+              }
             }
             if (ast.arg2().isZero()) {
               return arg1.head();
