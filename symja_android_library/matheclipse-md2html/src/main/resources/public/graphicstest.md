@@ -49,6 +49,10 @@ ListPlot[
 ```
 
 ```mma
+ListPlot[Labeled[#, #] & /@ Table[n*3, {n, 10}],PlotStyle -> PointSize[Medium]]
+```
+
+```mma
 ListLogLogPlot[{Range[20], Sqrt[Range[20]], Log[Range[20]]}, Joined -> True]
 ```
 

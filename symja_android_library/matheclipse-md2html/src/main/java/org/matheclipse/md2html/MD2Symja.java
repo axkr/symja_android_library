@@ -162,10 +162,11 @@ public class MD2Symja {
 
       html = Errors.templateRender(HTML_TEMPLATE, new String[] {html});
       // html = StringEscapeUtils.escapeHtml4(html);
-      System.out.println(html);
+
       try {
         F.openHTMLOnDesktop(html);
       } catch (IOException e) {
+        System.out.println(html);
         e.printStackTrace();
       }
     }

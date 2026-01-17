@@ -72,7 +72,7 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
   private void fencedCodeBlock(FencedCodeBlock fencedCodeBlock) {
     String info = fencedCodeBlock.getInfo();
     String codeStr = fencedCodeBlock.getLiteral();
-    System.out.println(info + "\n" + codeStr);
+    // System.out.println(info + "\n" + codeStr);
 
     WolframFormFactory wolframForm = WolframFormFactory.get();
     String code = codeStr.trim();
@@ -104,17 +104,17 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
         IExpr result = F.eval(expr);
         if (result.isSameHeadSizeGE(S.Graphics, 2)) {
           StringBuilder buf = new StringBuilder();
-          if (GraphicsUtil.renderGraphics2D(buf, (IAST) result, EvalEngine.get())) {
-
+          if (GraphicsUtil.renderGraphics2DSVG(buf, (IAST) result, true, EvalEngine.get())) {
+            html.raw(buf.toString());
+            return true;
+          } else if (GraphicsUtil.renderGraphics2D(buf, (IAST) result, EvalEngine.get())) {
             String graphicsStr = buf.toString();
-
             String htmlStr =
                 JSBuilder.buildGraphics2D(JSBuilder.GRAPHICS2D_IFRAME_TEMPLATE, graphicsStr);
             htmlStr = StringEscapeUtils.escapeHtml4(htmlStr);
             html.raw("<iframe srcdoc=\"" + htmlStr
                 + "\" style=\"display: block; width: 600px; height: 600px; border: none;\" ></iframe>");
             return true;
-
           }
           // return openSVGOnDesktop((IAST) expr);
         } else if (result.isSameHeadSizeGE(S.Graphics3D, 2)) {
