@@ -306,7 +306,7 @@ public class Plot extends ListPlot {
     double[] minMax =
         new double[] {Double.MAX_VALUE, Double.MIN_VALUE, Double.MAX_VALUE, Double.MIN_VALUE};
     IASTAppendable[] pointSets =
-        org.matheclipse.core.reflection.system.ListPlot.pointsOfMatrix(ast, minMax);
+        org.matheclipse.core.builtin.graphics.ListPlot.pointsOfMatrix(ast, minMax);
     if (pointSets != null) {
       for (int i = 0; i < pointSets.length; i++) {
         IASTAppendable points = pointSets[i];
