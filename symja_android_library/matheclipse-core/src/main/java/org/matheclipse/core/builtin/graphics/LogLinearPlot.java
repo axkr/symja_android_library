@@ -1,24 +1,29 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.graphics;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class LogLinearPlot extends Plot {
+  @Override
+  protected GraphicsOptions setGraphicsOptions(final IExpr[] options, final EvalEngine engine) {
+    GraphicsOptions graphicsOptions =
+        setGraphicsOptions(options, GraphicsOptions.listPlotDefaultOptionKeys(), engine);
+    graphicsOptions.setXScale("Log");
+    return graphicsOptions;
+  }
 
   @Override
-  protected GraphicsOptions setGraphicsOptions(final IExpr[] options,
-      final EvalEngine engine) {
-    GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
-    graphicsOptions.setGraphicOptions(options, engine);
-    graphicsOptions.setXFunction(x -> F.Log(x));
-    graphicsOptions.setXScale("Log10");
-    graphicsOptions.setJoined(true);
-    return graphicsOptions;
+  protected IExpr createGraphicsFunction(IAST graphicsPrimitives, GraphicsOptions graphicsOptions,
+      IAST plotAST) {
+    graphicsOptions.addPadding();
+    graphicsOptions.addOption(F.Rule(S.$Scaling, F.List(F.stringx("Log"), S.None)));
+    return super.createGraphicsFunction(graphicsPrimitives, graphicsOptions, plotAST);
   }
 
   @Override

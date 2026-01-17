@@ -502,7 +502,7 @@ public class GraphicsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_3;
     }
 
     @Override
@@ -1289,7 +1289,7 @@ public class GraphicsFunctions {
         json.put("type", "text");
         GraphicsOptions.setColor(json, color, F.NIL, true);
         setOpacity(json, opacity.orElse(F.C1));
-        if (graphics3DCoords(json, F.List(coords))) {
+        if (graphics3DCoords(json, F.List(coords), true)) {
           return graphicsTexts(json, expr.toString());
         }
       }
@@ -1444,10 +1444,15 @@ public class GraphicsFunctions {
   }
 
   private static boolean graphics3DCoords(ObjectNode json, IAST ast) {
-    return graphics3DCoords(json, ast, "coords");
+    return graphics3DCoords(json, ast, false);
   }
 
-  private static boolean graphics3DCoords(ObjectNode json, IAST ast, String coordStr) {
+  private static boolean graphics3DCoords(ObjectNode json, IAST ast, boolean relativeCoords) {
+    return graphics3DCoords(json, ast, "coords", relativeCoords);
+  }
+
+  private static boolean graphics3DCoords(ObjectNode json, IAST ast, String coordStr,
+      boolean relativeCoords) {
     ArrayNode array = json.arrayNode();
     for (int i = 1; i < ast.size(); i++) {
       IExpr arg = ast.get(i);
@@ -1455,83 +1460,21 @@ public class GraphicsFunctions {
         return false;
       }
       IAST coords = (IAST) arg;
-      ArrayNode arrayNode0 = json.arrayNode();
       ArrayNode arrayNode = json.arrayNode();
       arrayNode.add(coords.arg1().evalf());
       arrayNode.add(coords.arg2().evalf());
       arrayNode.add(coords.arg3().evalf());
+
+      ArrayNode arrayNode0 = json.arrayNode();
+      if (relativeCoords) {
+        arrayNode0.addPOJO(null);
+      }
       arrayNode0.add(arrayNode);
       array.add(arrayNode0);
-
-      // IAST coords = (IAST) arg;
-      // buf.append("[[");
-      // coords.joinToString(buf, ",");
-      // buf.append("]]");
-      // if (i < ast.size() - 1) {
-      // buf.append(",");
-      // }
     }
     json.set(coordStr, array);
     return true;
   }
-
-  // private static boolean graphics3DCoords(StringBuilder buf, IAST ast) {
-  // return graphics3DCoords(buf, ast, "coords");
-  // }
-
-  // private static boolean graphics3DCoords(StringBuilder buf, IAST ast, String coordStr) {
-  // buf.append(coordStr + ": [");
-  //
-  // for (int i = 1; i < ast.size(); i++) {
-  // IExpr arg = ast.get(i);
-  // if (!arg.isList3()) {
-  // return false;
-  // }
-  // IAST coords = (IAST) arg;
-  // buf.append("[[");
-  // coords.joinToString(buf, ",");
-  // buf.append("]]");
-  // if (i < ast.size() - 1) {
-  // buf.append(",");
-  // }
-  // }
-  // buf.append("]");
-  // return true;
-  // }
-
-  
-
-  
-
-  // private static boolean exportGraphics2DOptions(ArrayNode arrayNode, IAST optionsList) {
-  // for (int i = 1; i < optionsList.size(); i++) {
-  // IExpr arg = optionsList.get(i);
-  // if (arg.isRule()) {
-  // IAST rule = (IAST) arg;
-  // IExpr lhs = rule.arg1();
-  // IExpr rhs = rule.arg2();
-  // ObjectNode g = JSON_OBJECT_MAPPER.createObjectNode();
-  // if (lhs == S.Axes) {
-  // continue;
-  // }
-  // if (rhs.isSymbol()) {
-  // if (rhs.isTrue()) {
-  // g.put(lhs.toString(), true);
-  // } else if (rhs.isFalse()) {
-  // g.put(lhs.toString(), false);
-  // } else {
-  // g.put(lhs.toString(), rhs.toString());
-  // }
-  // } else {
-  // g.set(lhs.toString(), ExpressionJSONConvert.exportExpressionJSON(rhs));
-  // }
-  // arrayNode.add(g);
-  // } else {
-  // return false;
-  // }
-  // }
-  // return true;
-  // }
 
   public static void initialize() {
     Initializer.init();

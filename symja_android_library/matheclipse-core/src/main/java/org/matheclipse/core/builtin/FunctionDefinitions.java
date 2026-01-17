@@ -16,31 +16,24 @@ public final class FunctionDefinitions {
     private static void init() {
       S.QuarticSolve.setEvaluator(new QuarticSolve());
 
-      // S.ArrayPlot.setEvaluator(new org.matheclipse.core.reflection.system.ArrayPlot());
+      S.ArrayPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ArrayPlot());
       S.ArraySymbol.setEvaluator(new org.matheclipse.core.reflection.system.ArraySymbol());
       S.MatrixSymbol.setEvaluator(new org.matheclipse.core.reflection.system.MatrixSymbol());
       S.VectorSymbol.setEvaluator(new org.matheclipse.core.reflection.system.VectorSymbol());
-      // S.BarChart.setEvaluator(new org.matheclipse.core.reflection.system.BarChart());
+      S.BarChart.setEvaluator(new org.matheclipse.core.builtin.graphics.BarChart());
       S.BarnesG.setEvaluator(new org.matheclipse.core.reflection.system.BarnesG());
-      // S.BoxWhiskerChart.setEvaluator(new
-      // org.matheclipse.core.reflection.system.BoxWhiskerChart());
+      S.BoxWhiskerChart.setEvaluator(new org.matheclipse.core.builtin.graphics.BoxWhiskerChart());
       S.LogBarnesG.setEvaluator(new org.matheclipse.core.reflection.system.LogBarnesG());
       S.Beep.setEvaluator(new org.matheclipse.core.reflection.system.Beep());
       S.BezierFunction.setEvaluator(new org.matheclipse.core.reflection.system.BezierFunction());
       S.ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
-      // S.ComplexPlot.setEvaluator(new org.matheclipse.core.reflection.system.ComplexPlot());
-      // S.ComplexPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ComplexPlot3D());
-      // S.ContourPlot.setEvaluator(new org.matheclipse.core.reflection.system.ContourPlot());
-      // S.ContourPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ContourPlot3D());
+
       S.D.setEvaluator(new org.matheclipse.core.reflection.system.D());
-      // S.DensityHistogram
-      // .setEvaluator(new org.matheclipse.core.reflection.system.DensityHistogram());
-      // S.DensityPlot.setEvaluator(new org.matheclipse.core.reflection.system.DensityPlot());
       S.Derivative.setEvaluator(new org.matheclipse.core.reflection.system.Derivative());
       S.DifferenceDelta.setEvaluator(new org.matheclipse.core.reflection.system.DifferenceDelta());
       S.DifferenceQuotient
           .setEvaluator(new org.matheclipse.core.reflection.system.DifferenceQuotient());
-      S.DiscretePlot.setEvaluator(new org.matheclipse.core.reflection.system.DiscretePlot());
+      S.DiscretePlot.setEvaluator(new org.matheclipse.core.builtin.graphics.DiscretePlot());
       S.DiscreteRatio.setEvaluator(new org.matheclipse.core.reflection.system.DiscreteRatio());
       S.DiscreteShift.setEvaluator(new org.matheclipse.core.reflection.system.DiscreteShift());
       S.DSolve.setEvaluator(new org.matheclipse.core.reflection.system.DSolve());
@@ -77,7 +70,6 @@ public final class FunctionDefinitions {
       S.HeavisideTheta.setEvaluator(new org.matheclipse.core.reflection.system.HeavisideTheta());
       S.HermiteDecomposition
           .setEvaluator(new org.matheclipse.core.reflection.system.HermiteDecomposition());
-      // S.Histogram.setEvaluator(new org.matheclipse.core.reflection.system.Histogram());
       S.Horner.setEvaluator(new org.matheclipse.core.reflection.system.Horner());
       S.ImportString.setEvaluator(new org.matheclipse.core.reflection.system.ImportString());
       S.In.setEvaluator(new org.matheclipse.core.reflection.system.In());
@@ -98,24 +90,6 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.LinearOptimization());
       S.LinearProgramming
           .setEvaluator(new org.matheclipse.core.reflection.system.LinearProgramming());
-      // S.ListContourPlot.setEvaluator(new
-      // org.matheclipse.core.reflection.system.ListContourPlot());
-      S.ListLinePlot.setEvaluator(new org.matheclipse.core.reflection.system.ListLinePlot());
-      S.ListLinePlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListLinePlot3D());
-      S.ListPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot());
-      S.ListLogPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListLogPlot());
-      S.ListLogLogPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListLogLogPlot());
-      S.ListLogLinearPlot
-          .setEvaluator(new org.matheclipse.core.reflection.system.ListLogLinearPlot());
-      S.ListPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListPlot3D());
-      S.ListPointPlot3D.setEvaluator(new org.matheclipse.core.reflection.system.ListPointPlot3D());
-      S.ListPolarPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListPolarPlot());
-      S.ListStepPlot.setEvaluator(new org.matheclipse.core.reflection.system.ListStepPlot());
-      S.LogPlot.setEvaluator(new org.matheclipse.core.reflection.system.LogPlot());
-      S.LogLinearPlot.setEvaluator(new org.matheclipse.core.reflection.system.LogLinearPlot());
-      S.LogLogPlot.setEvaluator(new org.matheclipse.core.reflection.system.LogLogPlot());
-
-      // S.MatrixPlot.setEvaluator(new org.matheclipse.core.reflection.system.MatrixPlot());
 
       S.MeijerG.setEvaluator(new org.matheclipse.core.reflection.system.MeijerG());
 
@@ -130,35 +104,25 @@ public final class FunctionDefinitions {
       S.Normal.setEvaluator(new org.matheclipse.core.reflection.system.Normal());
       S.NSolve.setEvaluator(new org.matheclipse.core.reflection.system.NSolve());
       S.NSum.setEvaluator(new org.matheclipse.core.reflection.system.NSum());
-      S.NumberLinePlot.setEvaluator(new org.matheclipse.core.reflection.system.NumberLinePlot());
+      S.NumberLinePlot.setEvaluator(new org.matheclipse.core.builtin.graphics.NumberLinePlot());
 
       S.OptimizeExpression
           .setEvaluator(new org.matheclipse.core.reflection.system.OptimizeExpression());
       S.Out.setEvaluator(new org.matheclipse.core.reflection.system.Out());
       S.Outer.setEvaluator(new org.matheclipse.core.reflection.system.Outer());
       S.Partition.setEvaluator(new org.matheclipse.core.reflection.system.Partition());
-      S.ParametricPlot.setEvaluator(new org.matheclipse.core.reflection.system.ParametricPlot());
-      // S.ParametricPlot3D
-      // .setEvaluator(new org.matheclipse.core.reflection.system.ParametricPlot3D());
       S.PeriodogramArray
           .setEvaluator(new org.matheclipse.core.reflection.system.PeriodogramArray());
-      // S.PieChart.setEvaluator(new org.matheclipse.core.reflection.system.PieChart());
-      S.Plot.setEvaluator(new org.matheclipse.core.reflection.system.Plot());
-      S.Plot3D.setEvaluator(new org.matheclipse.core.reflection.system.Plot3D());
-      S.PolarPlot.setEvaluator(new org.matheclipse.core.reflection.system.PolarPlot());
+
       S.PolynomialReduce
           .setEvaluator(new org.matheclipse.core.reflection.system.PolynomialReduce());
       S.PowerRange.setEvaluator(new org.matheclipse.core.reflection.system.PowerRange());
       S.Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
       S.Ratios.setEvaluator(new org.matheclipse.core.reflection.system.Ratios());
       S.Reduce.setEvaluator(new org.matheclipse.core.reflection.system.Reduce());
-      // S.RevolutionPlot3D
-      // .setEvaluator(new org.matheclipse.core.reflection.system.RevolutionPlot3D());
       S.Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
       S.SpectrogramArray
           .setEvaluator(new org.matheclipse.core.reflection.system.SpectrogramArray());
-      // S.SphericalPlot3D.setEvaluator(new
-      // org.matheclipse.core.reflection.system.SphericalPlot3D());
       S.SudokuSolve.setEvaluator(new org.matheclipse.core.reflection.system.SudokuSolve());
       S.Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());
       S.SymbolicIdentityArray
@@ -177,10 +141,48 @@ public final class FunctionDefinitions {
 
       S.Hash.setEvaluator(new org.matheclipse.core.reflection.system.Hash());
       S.FileHash.setEvaluator(new org.matheclipse.core.reflection.system.FileHash());
-      // S.MrvLimit.setEvaluator(new org.matheclipse.core.reflection.system.MrvLimit());
+      S.MrvLimit.setEvaluator(new org.matheclipse.core.reflection.system.MrvLimit());
       S.TensorContract.setEvaluator(new org.matheclipse.core.reflection.system.TensorContract());
       S.TensorProduct.setEvaluator(new org.matheclipse.core.reflection.system.TensorProduct());
       S.TensorTranspose.setEvaluator(new org.matheclipse.core.reflection.system.TensorTranspose());
+
+      // Graphics
+      S.ComplexPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ComplexPlot());
+      S.ContourPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ContourPlot());
+      S.DensityHistogram.setEvaluator(new org.matheclipse.core.builtin.graphics.DensityHistogram());
+      S.DensityPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.DensityPlot());
+      S.Histogram.setEvaluator(new org.matheclipse.core.builtin.graphics.Histogram());
+      S.ListContourPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListContourPlot());
+      S.ListLinePlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListLinePlot());
+      S.ListPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListPlot());
+      S.ListLogPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListLogPlot());
+      S.ListLogLogPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListLogLogPlot());
+      S.ListLogLinearPlot
+          .setEvaluator(new org.matheclipse.core.builtin.graphics.ListLogLinearPlot());
+      S.ListPolarPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListPolarPlot());
+      S.ListStepPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListStepPlot());
+      S.LogPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.LogPlot());
+      S.LogLinearPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.LogLinearPlot());
+      S.LogLogPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.LogLogPlot());
+      S.MatrixPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.MatrixPlot());
+      S.ParametricPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ParametricPlot());
+      S.PieChart.setEvaluator(new org.matheclipse.core.builtin.graphics.PieChart());
+      S.Plot.setEvaluator(new org.matheclipse.core.builtin.graphics.Plot());
+
+      // Graphics3D
+      S.ContourPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ContourPlot3D());
+      S.ComplexPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ComplexPlot3D());
+      S.DiscretePlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.DiscretePlot3D());
+      S.ListLinePlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ListLinePlot3D());
+      S.ListPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ListPlot3D());
+      S.ListPointPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ListPointPlot3D());
+      S.Plot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.Plot3D());
+      S.ParametricPlot3D
+          .setEvaluator(new org.matheclipse.core.builtin.graphics3d.ParametricPlot3D());
+      S.PolarPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.PolarPlot());
+      S.RevolutionPlot3D
+          .setEvaluator(new org.matheclipse.core.builtin.graphics3d.RevolutionPlot3D());
+      S.SphericalPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.SphericalPlot3D());
 
       if (!Config.FUZZY_PARSER) {
         S.Export.setEvaluator(new org.matheclipse.core.reflection.system.Export());

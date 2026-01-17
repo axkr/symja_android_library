@@ -1,41 +1,34 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.graphics;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class LogLogPlot extends Plot {
 
-  public LogLogPlot() {
+  public LogLogPlot() {}
 
-  }
   @Override
-  protected GraphicsOptions setGraphicsOptions(final IExpr[] options,
-      final EvalEngine engine) {
-    GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
-    graphicsOptions.setGraphicOptions(options, engine);
-    graphicsOptions.setXFunction(x -> F.Log10(x));
-    graphicsOptions.setYFunction(y -> F.Log10(y));
-    graphicsOptions.setXScale("Log10");
-    graphicsOptions.setYScale("Log10");
-    graphicsOptions.setJoined(true);
+  protected GraphicsOptions setGraphicsOptions(final IExpr[] options, final EvalEngine engine) {
+    GraphicsOptions graphicsOptions =
+        setGraphicsOptions(options, GraphicsOptions.listPlotDefaultOptionKeys(), engine);
+    graphicsOptions.setXScale("Log");
     return graphicsOptions;
   }
 
-  // @Override
-  // protected IAST listOfOptionRules(GraphicsOptions listPlotOptions) {
-  // IAST listOfOptions = F.List(//
-  // F.Rule(S.$Scaling, //
-  // F.List(F.stringx("Log10"), //
-  // F.stringx("Log10"))), //
-  // F.Rule(S.Axes, S.True), //
-  // listPlotOptions.plotRange());
-  // return listOfOptions;
-  // }
+  @Override
+  protected IExpr createGraphicsFunction(IAST graphicsPrimitives, GraphicsOptions graphicsOptions,
+      IAST plotAST) {
+    graphicsOptions.addPadding();
+    // Use Natural Log "Log"
+    graphicsOptions.addOption(F.Rule(S.$Scaling, F.List(F.stringx("Log"), F.stringx("Log"))));
+    return super.createGraphicsFunction(graphicsPrimitives, graphicsOptions, plotAST);
+  }
 
   @Override
   public int status() {

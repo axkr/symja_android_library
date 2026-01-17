@@ -8,6 +8,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.IGraphics2D;
 import org.matheclipse.core.graphics.IGraphics3D;
+import org.matheclipse.core.graphics.SVGGraphics;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
@@ -22,6 +23,19 @@ public class GraphicsUtil {
     // private constructor to avoid instantiation
   }
 
+  public static boolean renderGraphics2DSVG(StringBuilder graphics2DBuffer, IAST graphics2DAST,
+      EvalEngine engine) {
+    return renderGraphics2DSVG(graphics2DBuffer, graphics2DAST, false, engine);
+  }
+
+  public static boolean renderGraphics2DSVG(StringBuilder graphics2DBuffer, IAST graphics2DAST,
+      boolean withSVGTag, EvalEngine engine) {
+    SVGGraphics svg = new SVGGraphics(600, 400);
+    String svgString = svg.toSVG(graphics2DAST, withSVGTag);
+    graphics2DBuffer.append(svgString);
+    return true;
+  }
+
   public static boolean renderGraphics2D(StringBuilder graphics2DBuffer, IAST graphics2DAST,
       EvalEngine engine) {
     return GraphicsUtil.renderGraphics2D(graphics2DBuffer, graphics2DAST, true, false, engine);
@@ -33,8 +47,8 @@ public class GraphicsUtil {
     // IExpr lighting = S.Automatic;
     final OptionArgs options =
         new OptionArgs(graphics2DAST.topHead(), graphics2DAST, 2, engine, true);
-    if (arg1.isBuiltInFunction() && GraphicsUtil.graphics2DJSON(graphics2DBuffer, arg1,
-        options, javaScript, prettyPrint)) {
+    if (arg1.isBuiltInFunction()
+        && GraphicsUtil.graphics2DJSON(graphics2DBuffer, arg1, options, javaScript, prettyPrint)) {
       return true;
     }
     return false;
@@ -75,17 +89,17 @@ public class GraphicsUtil {
     GraphicsOptions graphicsOptions = new GraphicsOptions(EvalEngine.get());
     graphicsOptions.setOptions(options);
     IExpr plotRange = options.getOption(S.PlotRange);
-  
+
     if (GraphicsUtil.exportGraphics2D(json, arrayNode, (IAST) data2D, graphicsOptions)) {
       try {
         if (javaScript) {
           graphics2DBuffer.append("drawGraphics2d(\"graphics2d\",\n");
         }
         json.set("elements", arrayNode);
-  
+
         options = graphicsOptions.options();
         ObjectNode objectNode = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
-  
+
         // IExpr coordinateBounds = S.CoordinateBounds.ofNIL(EvalEngine.get(), listOfCoords);
         IExpr option = options.getOption(S.PlotRange);
         int[] matrix = option.isMatrix();
@@ -101,12 +115,12 @@ public class GraphicsUtil {
             // fall through?
           }
         }
-  
+
         if (plotRange.isPresent()
             && graphicsOptions.graphicsExtent2D(objectNode, (IAST) plotRange)) {
           json.set("extent", objectNode);
         }
-  
+
         // if (options.size() > 0) {
         // IAST optionsList = F.List();
         // // lighting = options.getOption(S.Lighting).orElse(lighting);
@@ -159,8 +173,8 @@ public class GraphicsUtil {
     return false;
   }
 
-  public static boolean graphics3DJSON(StringBuilder graphics3DBuffer, IExpr lighting,
-      IExpr data3D, boolean javaScript) {
+  public static boolean graphics3DJSON(StringBuilder graphics3DBuffer, IExpr lighting, IExpr data3D,
+      boolean javaScript) {
     ObjectNode json = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
     ArrayNode arrayNode = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
     if (GraphicsUtil.exportGraphics3DRecursive(arrayNode, (IAST) data3D)) {
@@ -209,17 +223,17 @@ public class GraphicsUtil {
       // ObjectNode blackJSON = JSON_OBJECT_MAPPER.createObjectNode();
       GraphicsOptions.setColorOption(arrayNode, GraphicsOptions.BLACK);
       // arrayNode.add(blackJSON);
-  
+
       // graphicsOptions.graphics2DScalingFunctions(arrayNode);
       graphicsOptions.graphics2DAxes(objectNode);
       GraphicsUtil.graphics2DAspectRatio(arrayNode, graphicsOptions.options());
       graphicsOptions.graphics2DFilling(arrayNode, graphicsOptions.options());
-  
+
       IAST list = data2D;
       return GraphicsUtil.export2DRecursive(arrayNode, list, 1, data2D.size(), graphicsOptions);
     }
     return false;
-  
+
   }
 
   public static boolean exportGraphics3DRecursive(ArrayNode arrayNode, IAST data3D) {
@@ -250,11 +264,10 @@ public class GraphicsUtil {
           } else if (ast.isAST(S.Opacity, 2)) {
             opacity = ast.arg1();
           } else if (ast.isBuiltInFunction()) {
-            IBuiltInSymbol symbol = (IBuiltInSymbol) ast.head();
-            IEvaluator evaluator = symbol.getEvaluator();
-            if (evaluator instanceof IGraphics3D) {
+            IGraphics3D graphics3DEvaluator = ast.headInstanceOf(IGraphics3D.class);
+            if (graphics3DEvaluator != null) {
               ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
-              if (((IGraphics3D) evaluator).graphics3D(g, ast, rgbColor, opacity)) {
+              if (graphics3DEvaluator.graphics3D(g, ast, rgbColor, opacity)) {
                 arrayNode.add(g);
               }
             }
@@ -324,7 +337,7 @@ public class GraphicsUtil {
                 array.add(rgb.getGreen() / 255.0);
                 array.add(rgb.getBlue() / 255.0);
                 edgeList.set("color", array);
-  
+
                 if (grayLevel.isAST2()) {
                   g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
                   double opacity = grayLevel.arg2().toDoubleDefault(1.0);
@@ -422,7 +435,7 @@ public class GraphicsUtil {
     } else if (lighting.isAST()) {
       result = (IAST) lighting;
     }
-  
+
     boolean lightingDone = false;
     // graphics3DBuffer.append("\nlighting: [");
     ArrayNode arrayNode = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
@@ -448,7 +461,7 @@ public class GraphicsUtil {
         }
       }
     }
-  
+
     if (!lightingDone) {
       ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
       lightingDone = graphics3DSingleLight(g, automatic);
@@ -510,7 +523,7 @@ public class GraphicsUtil {
       }
     } else if (result.isAST(S.List, 4, 5) && result.arg3().isList() && result.size() > 2) {
       String name = result.arg1().toString();
-  
+
       IExpr color = result.arg2();
       IAST list = (IAST) result.arg3();
       if (color.isRGBColor()) {
@@ -543,7 +556,7 @@ public class GraphicsUtil {
       }
     }
     return false;
-  
+
   }
 
   public static boolean graphics3DCoordsOrListOfCoords(ObjectNode json, IAST coordsOrListOfCoords,

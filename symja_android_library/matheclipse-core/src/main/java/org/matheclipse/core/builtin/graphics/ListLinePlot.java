@@ -1,4 +1,4 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.graphics;
 
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
@@ -26,7 +26,7 @@ public class ListLinePlot extends ListPlot {
       ast = ast.copyUntil(argSize + 1);
     }
     StringBuilder jsControl = new StringBuilder();
-    GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
+    GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
     String graphicsPrimitivesStr = listLinePlot(ast, options, graphicsOptions, engine);
     if (graphicsPrimitivesStr != null) {
       jsControl.append(
@@ -44,7 +44,7 @@ public class ListLinePlot extends ListPlot {
     if (plot.size() < 2) {
       return null;
     }
-    graphicsOptions.setGraphicOptions(options, engine);
+    // graphicsOptions.setGraphicOptions(options, engine);
 
     IExpr arg1 = plot.arg1();
     if (!arg1.isList()) {
@@ -139,13 +139,14 @@ public class ListLinePlot extends ListPlot {
       }
       return F.NIL;
     }
-
-    GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
+    GraphicsOptions graphicsOptions =
+        setGraphicsOptions(options, GraphicsOptions.listPlotDefaultOptionKeys(), engine);
+    // GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
     graphicsOptions.setJoined(true);
     IAST graphicsPrimitives = listPlot(ast, options, graphicsOptions, engine);
     if (graphicsPrimitives.isPresent()) {
       graphicsOptions.addPadding();
-      return createGraphicsFunction(graphicsPrimitives, graphicsOptions);
+      return createGraphicsFunction(graphicsPrimitives, graphicsOptions, ast);
     }
 
     return F.NIL;

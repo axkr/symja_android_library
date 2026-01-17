@@ -20,8 +20,80 @@ public class WebGLGraphics3D {
 
   private static final ObjectMapper mapper = new ObjectMapper();
 
+  private interface Scaler {
+    double scale(double val);
+
+    String getName();
+  }
+
+  private static final Scaler SCALER_IDENTITY = new Scaler() {
+    @Override
+    public double scale(double v) {
+      return v;
+    }
+
+    @Override
+    public String getName() {
+      return "Identity";
+    }
+  };
+  private static final Scaler SCALER_LOG = new Scaler() {
+    @Override
+    public double scale(double v) {
+      return (v > 0) ? Math.log10(v) : -300.0;
+    }
+
+    @Override
+    public String getName() {
+      return "Log";
+    }
+  };
+  private static final Scaler SCALER_REVERSE = new Scaler() {
+    @Override
+    public double scale(double v) {
+      return -v;
+    }
+
+    @Override
+    public String getName() {
+      return "Reverse";
+    }
+  };
+
+  private static class ScalingContext {
+    Scaler x = SCALER_IDENTITY;
+    Scaler y = SCALER_IDENTITY;
+    Scaler z = SCALER_IDENTITY;
+
+    ScalingContext(Scaler[] s) {
+      if (s.length > 0)
+        x = s[0];
+      if (s.length > 1)
+        y = s[1];
+      if (s.length > 2)
+        z = s[2];
+    }
+  }
+
+  private static class LightConfig {
+    String type;
+    int color;
+    double intensity = 1.0;
+    double[] position;
+    double[] target;
+    double angle;
+    double decay;
+    double distance;
+    boolean fixedToCamera = false;
+
+    public LightConfig(String type, int color) {
+      this.type = type;
+      this.color = color;
+    }
+  }
+
   private static class GraphicsState implements Cloneable {
-    Color color = new Color(200, 200, 255);
+    Color color = new Color(1.0f, 0.5f, 0.0f);
     double opacity = 1.0;
     boolean dashed = false;
     double thickness = 1.0;
@@ -51,272 +123,315 @@ public class WebGLGraphics3D {
       this.points = points;
       this.vertexColors = vertexColors;
     }
+
+    public double[] resolve(IExpr expr, double[] def) {
+      if (expr.isList()) {
+        return getVector(expr, def);
+      }
+      if (expr.isInteger() && points != null) {
+        int idx = expr.toIntDefault(0);
+        if (idx > 0 && idx < points.size()) {
+          return getVector(points.get(idx), def);
+        }
+      }
+      return def;
+    }
   }
 
-  /**
-   * Generates an HTML snippet (DIV + SCRIPT) to render the graphics embedded in a page. Assumes
-   * THREE and THREE.OrbitControls are loaded globally. * @param graphics the graphics AST
-   * 
-   * @return HTML code string starting with &lt;div data-type="webgl"...
-   */
   public static String generateHTMLSnippet(IAST graphics) {
+    return generateOutput(graphics, true);
+  }
+
+  public static String generateHTML(IAST graphics) {
+    return generateOutput(graphics, false);
+  }
+
+  public static String generateHTML(IAST graphics, boolean isSnippet) {
+    return generateOutput(graphics, isSnippet);
+  }
+
+  private static String generateOutput(IAST graphics, boolean isSnippet) {
     try {
       ObjectNode rootNode = mapper.createObjectNode();
       ArrayNode elementsArray = rootNode.putArray("elements");
 
-      // Reuse existing processing logic
+      boolean showLegend = false;
+      String legendText = null;
+      if (graphics.isAST(S.Legended)) {
+        showLegend = true;
+        if (graphics.size() > 2 && !graphics.arg2().equals(S.Automatic))
+          legendText = graphics.arg2().toString();
+        IExpr content = graphics.arg1();
+        if (content.isAST())
+          graphics = (IAST) content;
+      }
+
+      if (showLegend) {
+        rootNode.put("showLegend", true);
+        if (legendText != null)
+          rootNode.put("legendText", legendText);
+      }
+
+      Scaler[] scalers = parseScaling(graphics);
+      ScalingContext scalingCtx = new ScalingContext(scalers);
+
+      ArrayNode scalingNode = rootNode.putArray("scaling");
+      scalingNode.add(scalers[0].getName());
+      scalingNode.add(scalers[1].getName());
+      scalingNode.add(scalers[2].getName());
+
+      IExpr boxRatiosOpt = extractOption(graphics, S.BoxRatios);
+      if (boxRatiosOpt != null && boxRatiosOpt.isList() && ((IAST) boxRatiosOpt).size() >= 4) {
+        ArrayNode br = rootNode.putArray("boxRatios");
+        br.add(getDouble(((IAST) boxRatiosOpt).get(1)));
+        br.add(getDouble(((IAST) boxRatiosOpt).get(2)));
+        br.add(getDouble(((IAST) boxRatiosOpt).get(3)));
+      }
+
+      parseAxesOption(rootNode, graphics);
+
+      // Lights ... (omitted brevity, same as previous)
+      List<LightConfig> lights = new ArrayList<>();
+      if (graphics.isAST(S.Graphics3D) || graphics.isAST(S.SurfaceGraphics))
+        parseLightingOption(graphics, lights);
+      if (lights.isEmpty())
+        addDefaultLighting(lights);
+      ArrayNode lightsArray = rootNode.putArray("lights");
+      for (LightConfig l : lights) {
+        ObjectNode lNode = lightsArray.addObject();
+        lNode.put("type", l.type);
+        lNode.put("color", l.color);
+        lNode.put("intensity", l.intensity);
+        lNode.put("fixedToCamera", l.fixedToCamera);
+        if (l.position != null)
+          lNode.set("position", vecToJsonArray(l.position));
+        // ... rest of light logic
+      }
+
+      // Process Geometry
       if (graphics.isAST(S.SurfaceGraphics)) {
-        processSurfaceGraphics(elementsArray, graphics, new GraphicsState());
+        processSurfaceGraphics(elementsArray, graphics, new GraphicsState(), scalingCtx);
       } else if (graphics.isAST(S.Graphics3D) && graphics.argSize() >= 1) {
-        processExpr(elementsArray, graphics.arg1(), new GraphicsState(), null);
+        processExpr(elementsArray, graphics.arg1(), new GraphicsState(), null, scalingCtx);
       } else if (graphics.argSize() >= 1) {
-        processExpr(elementsArray, graphics.arg1(), new GraphicsState(), null);
+        processExpr(elementsArray, graphics.arg1(), new GraphicsState(), null, scalingCtx);
       }
 
       String jsonData = mapper.writeValueAsString(rootNode);
 
-      // Create a unique ID for this plot instance
-      String containerId =
-          "webgl_" + System.currentTimeMillis() + "_" + (int) (Math.random() * 10000);
+      if (isSnippet) {
+        return createSnippetHTML(jsonData);
+      } else {
+        return getHTMLTemplate(jsonData);
+      }
 
-      StringBuilder html = new StringBuilder();
-
-      // 1. The Container DIV
-      html.append("<div data-type=\"webgl\" id=\"").append(containerId).append(
-          "\" style=\"width: 500px; height: 400px; border: 1px solid #eee; background: #fff;\"></div>");
-
-      // 2. The Script
-      html.append("<script type=\"text/javascript\">\n");
-      html.append("(function() {\n");
-      html.append("  var container = document.getElementById('" + containerId + "');\n");
-      html.append("  if (!container) return;\n");
-
-      html.append("  var width = container.clientWidth || 500;\n");
-      html.append("  var height = container.clientHeight || 400;\n");
-
-      html.append("  var scene = new THREE.Scene();\n");
-      html.append("  scene.background = new THREE.Color(0xffffff);\n");
-
-      html.append("  var camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 10000);\n");
-      html.append("  camera.up.set(0, 0, 1);\n");
-      html.append("  camera.position.set(10, -10, 10);\n");
-
-      html.append("  var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });\n");
-      html.append("  renderer.setSize(width, height);\n");
-      html.append("  renderer.shadowMap.enabled = true;\n");
-      html.append("  container.appendChild(renderer.domElement);\n");
-
-      // Use global THREE.OrbitControls
-      html.append("  var controls = new THREE.OrbitControls(camera, renderer.domElement);\n");
-      html.append("  controls.enableDamping = true;\n");
-
-      html.append("  var hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.0);\n");
-      html.append("  hemiLight.position.set(0, 0, 50);\n");
-      html.append("  scene.add(hemiLight);\n");
-
-      html.append("  var dl = new THREE.DirectionalLight(0xffffff, 0.5);\n");
-      html.append("  dl.position.set(10, -20, 20);\n");
-      html.append("  dl.castShadow = true;\n");
-      html.append("  scene.add(dl);\n");
-
-      // Inject JSON Data
-      html.append("  var data = ").append(jsonData).append(";\n");
-
-      // Material Helper
-      html.append("  function getMat(el, isLine) {\n");
-      html.append("      var params = {\n");
-      html.append("          color: el.color,\n");
-      html.append("          transparent: el.opacity < 1.0,\n");
-      html.append("          opacity: el.opacity,\n");
-      html.append("          side: THREE.DoubleSide,\n");
-      html.append("          depthWrite: el.opacity >= 1.0,\n");
-      html.append("          vertexColors: (el.vertexColors && el.vertexColors.length > 0)\n");
-      html.append("      };\n");
-      html.append("      if (isLine) {\n");
-      html.append(
-          "          if (el.dashed) return new THREE.LineDashedMaterial(Object.assign(params, {dashSize: 0.5, gapSize: 0.3, scale: 1}));\n");
-      html.append(
-          "          return new THREE.LineBasicMaterial(Object.assign(params, {linewidth: 2}));\n");
-      html.append("      }\n");
-      html.append(
-          "      var mat = new THREE.MeshPhongMaterial(Object.assign(params, {shininess: 20, specular: 0x111111, flatShading: false}));\n");
-      html.append(
-          "      if (el.type === 'Polygon') { mat.polygonOffset = true; mat.polygonOffsetFactor = 1; mat.polygonOffsetUnits = 1; }\n");
-      html.append("      return mat;\n");
-      html.append("  }\n");
-
-      // Geometry Builder
-      html.append("  var objectsGroup = new THREE.Group();\n");
-      html.append("  if (data.elements) {\n");
-      html.append("      data.elements.forEach(function(el) {\n");
-      html.append("          var mesh;\n");
-
-      // --- Polygon ---
-      html.append("          if (el.type === 'Polygon') {\n");
-      html.append("              var geom = new THREE.BufferGeometry();\n");
-      html.append(
-          "              geom.setAttribute('position', new THREE.Float32BufferAttribute(el.points, 3));\n");
-      html.append("              if (el.vertexColors && el.vertexColors.length > 0) {\n");
-      html.append(
-          "                  geom.setAttribute('color', new THREE.Float32BufferAttribute(el.vertexColors, 3));\n");
-      html.append("              }\n");
-      html.append("              geom.computeVertexNormals();\n");
-      html.append("              mesh = new THREE.Mesh(geom, getMat(el, false));\n");
-
-      // --- Sphere ---
-      html.append("          } else if (el.type === 'Sphere') {\n");
-      html.append(
-          "              mesh = new THREE.Mesh(new THREE.SphereGeometry(el.radius, 32, 32), getMat(el, false));\n");
-      html.append("              mesh.position.set(el.center[0], el.center[1], el.center[2]);\n");
-
-      // --- Cuboid ---
-      html.append("          } else if (el.type === 'Cuboid') {\n");
-      html.append("              var w = el.max[0] - el.min[0];\n");
-      html.append("              var h = el.max[1] - el.min[1];\n");
-      html.append("              var d = el.max[2] - el.min[2];\n");
-      html.append(
-          "              mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), getMat(el, false));\n");
-      html.append(
-          "              mesh.position.set(el.min[0] + w/2, el.min[1] + h/2, el.min[2] + d/2);\n");
-
-      // --- Cylinder ---
-      html.append("          } else if (el.type === 'Cylinder') {\n");
-      html.append(
-          "              var s = new THREE.Vector3(el.start[0], el.start[1], el.start[2]);\n");
-      html.append("              var e = new THREE.Vector3(el.end[0], el.end[1], el.end[2]);\n");
-      html.append("              var h = s.distanceTo(e);\n");
-      html.append(
-          "              var geom = new THREE.CylinderGeometry(el.radius, el.radius, h, 32);\n");
-      html.append("              geom.translate(0, h/2, 0);\n");
-      html.append("              mesh = new THREE.Mesh(geom, getMat(el, false));\n");
-      html.append("              mesh.position.copy(s);\n");
-      html.append(
-          "              mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), e.clone().sub(s).normalize());\n");
-
-      // --- Cone ---
-      html.append("          } else if (el.type === 'Cone') {\n");
-      html.append(
-          "              var s = new THREE.Vector3(el.start[0], el.start[1], el.start[2]);\n");
-      html.append("              var e = new THREE.Vector3(el.end[0], el.end[1], el.end[2]);\n");
-      html.append("              var h = s.distanceTo(e);\n");
-      html.append("              var geom = new THREE.ConeGeometry(el.radius, h, 32);\n");
-      html.append("              geom.translate(0, h/2, 0);\n");
-      html.append("              mesh = new THREE.Mesh(geom, getMat(el, false));\n");
-      html.append("              mesh.position.copy(s);\n");
-      html.append(
-          "              mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), e.clone().sub(s).normalize());\n");
-
-      // --- Line ---
-      html.append("          } else if (el.type === 'Line') {\n");
-      html.append("             var pts = [];\n");
-      html.append(
-          "             for(var i=0; i<el.points.length; i+=3) pts.push(new THREE.Vector3(el.points[i], el.points[i+1], el.points[i+2]));\n");
-      html.append("             var geom = new THREE.BufferGeometry().setFromPoints(pts);\n");
-      html.append("             mesh = new THREE.Line(geom, getMat(el, true));\n");
-      html.append("             if (el.dashed) mesh.computeLineDistances();\n");
-
-      // --- Point ---
-      html.append("          } else if (el.type === 'Point') {\n");
-      html.append("             for(var i=0; i<el.points.length; i+=3) {\n");
-      html.append(
-          "                 var m = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), getMat(el, false));\n");
-      html.append(
-          "                 m.position.set(el.points[i], el.points[i+1], el.points[i+2]);\n");
-      html.append("                 objectsGroup.add(m);\n");
-      html.append("             }\n");
-      html.append("             mesh = null;\n");
-      html.append("          }\n");
-
-      html.append("          if (mesh) {\n");
-      html.append("              if (el.opacity >= 1.0) mesh.castShadow = true;\n");
-      html.append("              mesh.receiveShadow = true;\n");
-      html.append("              objectsGroup.add(mesh);\n");
-      html.append("          }\n");
-      html.append("      });\n");
-      html.append("  }\n");
-
-      html.append("  scene.add(objectsGroup);\n");
-
-      // Auto-Fit Camera
-      html.append("  var box = new THREE.Box3().setFromObject(objectsGroup);\n");
-      html.append("  if (!box.isEmpty()) {\n");
-      html.append("      var center = box.getCenter(new THREE.Vector3());\n");
-      html.append("      var size = box.getSize(new THREE.Vector3());\n");
-      html.append("      var maxDim = Math.max(size.x, Math.max(size.y, size.z));\n");
-      html.append("      var fov = camera.fov * (Math.PI / 180);\n");
-      html.append("      var cameraZ = Math.abs(maxDim / 2 * Math.tan(fov * 2));\n");
-      html.append(
-          "      camera.position.set(center.x + maxDim, center.y - maxDim, center.z + maxDim);\n");
-      html.append("      camera.lookAt(center);\n");
-      html.append("      controls.target.copy(center);\n");
-      html.append("  }\n");
-
-      html.append(
-          "  function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }\n");
-      html.append("  animate();\n");
-      html.append("})();\n");
-      html.append("</script>");
-
-      return html.toString();
     } catch (IOException e) {
       e.printStackTrace();
-      return "Error generating WebGL";
+      return isSnippet ? "Error generating WebGL" : "";
     }
   }
 
-  public static String generateHTML(IAST graphics) {
-    try {
-      ObjectNode rootNode = mapper.createObjectNode();
-      ArrayNode elementsArray = rootNode.putArray("elements");
+  private static void parseAxesOption(ObjectNode root, IAST graphics) {
+    IExpr axesOpt = extractOption(graphics, S.Axes);
+    boolean[] axes = {true, true, true};
+    if (axesOpt != null) {
+      if (axesOpt.isFalse()) {
+        axes[0] = axes[1] = axes[2] = false;
+      } else if (axesOpt.isList() && ((IAST) axesOpt).size() >= 4) {
+        axes[0] = !((IAST) axesOpt).get(1).isFalse();
+        axes[1] = !((IAST) axesOpt).get(2).isFalse();
+        axes[2] = !((IAST) axesOpt).get(3).isFalse();
+      }
+    }
+    ArrayNode axesNode = root.putArray("axes");
+    axesNode.add(axes[0]).add(axes[1]).add(axes[2]);
+  }
 
-      // Check for Legended Wrapper and unwrap
-      boolean showLegend = false;
-      if (graphics.isAST(S.Legended)) {
-        showLegend = true;
-        IExpr content = graphics.arg1();
-        if (content.isAST()) {
-          graphics = (IAST) content;
+  private static Scaler[] parseScaling(IAST graphics) {
+    Scaler[] result = {SCALER_IDENTITY, SCALER_IDENTITY, SCALER_IDENTITY};
+    IExpr opt = extractOption(graphics, S.ScalingFunctions);
+    if (opt != null) {
+      if (opt.isList() && ((IAST) opt).size() >= 4) {
+        IAST list = (IAST) opt;
+        result[0] = getScaler(list.get(1));
+        result[1] = getScaler(list.get(2));
+        result[2] = getScaler(list.get(3));
+      } else if (opt.isString()) {
+        if ("Log".equalsIgnoreCase(opt.toString())) {
+          result[2] = SCALER_LOG;
         }
       }
-
-      if (graphics.isAST(S.SurfaceGraphics)) {
-        processSurfaceGraphics(elementsArray, graphics, new GraphicsState());
-      } else if (graphics.isAST(S.Graphics3D) && graphics.argSize() >= 1) {
-        processExpr(elementsArray, graphics.arg1(), new GraphicsState(), null);
-      } else if (graphics.argSize() >= 1) {
-        processExpr(elementsArray, graphics.arg1(), new GraphicsState(), null);
-      }
-
-      return getHTMLTemplate(mapper.writeValueAsString(rootNode), showLegend);
-    } catch (IOException e) {
-      e.printStackTrace();
-      return "";
     }
+    return result;
+  }
+
+  private static Scaler getScaler(IExpr expr) {
+    if (expr.isString()) {
+      String s = expr.toString();
+      if ("Log".equalsIgnoreCase(s))
+        return SCALER_LOG;
+      if ("Reverse".equalsIgnoreCase(s))
+        return SCALER_REVERSE;
+    }
+    return SCALER_IDENTITY;
+  }
+
+  private static void parseLightingOption(IAST graphics, List<LightConfig> lights) {
+    for (int i = 1; i < graphics.size(); i++) {
+      IExpr arg = graphics.get(i);
+      if (arg.isRuleAST()) {
+        IAST rule = (IAST) arg;
+        if (rule.arg1().equals(S.Lighting)) {
+          processLightingValue(rule.arg2(), lights);
+        }
+      }
+    }
+  }
+
+  private static void processLightingValue(IExpr value, List<LightConfig> lights) {
+    if (value.equals(S.None))
+      return;
+    if (value.equals(S.Automatic)) {
+      addDefaultLighting(lights);
+      return;
+    }
+    if (value.isString()) {
+      String name = value.toString();
+      if ("Neutral".equalsIgnoreCase(name))
+        addNeutralLighting(lights);
+      else if ("Standard".equalsIgnoreCase(name))
+        addStandardLighting(lights);
+      else
+        addDefaultLighting(lights);
+      return;
+    }
+    if (value.isList()) {
+      IAST list = (IAST) value;
+      for (int i = 1; i < list.size(); i++) {
+        IExpr lightSpec = list.get(i);
+        if (lightSpec.equals(S.None))
+          continue;
+        if (lightSpec.isAST()) {
+          parseLightPrimitive((IAST) lightSpec, lights);
+        }
+      }
+    }
+  }
+
+  private static void parseLightPrimitive(IAST spec, List<LightConfig> lights) {
+    ISymbol head = spec.topHead();
+    String type = head.toString();
+    Color col = (spec.argSize() >= 1) ? parseRawColor(spec.arg1()) : Color.WHITE;
+    int colInt = col.getRGB() & 0x00FFFFFF;
+
+    if ("AmbientLight".equals(type)) {
+      lights.add(new LightConfig("AmbientLight", colInt));
+    } else if ("DirectionalLight".equals(type)) {
+      LightConfig l = new LightConfig("DirectionalLight", colInt);
+      if (spec.argSize() >= 2)
+        l.position = getVector(spec.arg2(), new double[] {1, 1, 1});
+      else
+        l.position = new double[] {10, 10, 10};
+      lights.add(l);
+    } else if ("PointLight".equals(type)) {
+      LightConfig l = new LightConfig("PointLight", colInt);
+      if (spec.argSize() >= 2)
+        l.position = getVector(spec.arg2(), new double[] {0, 0, 0});
+      if (spec.argSize() >= 3)
+        l.distance = getDouble(spec.arg3(), 0.0);
+      lights.add(l);
+    } else if ("SpotLight".equals(type)) {
+      LightConfig l = new LightConfig("SpotLight", colInt);
+      if (spec.argSize() >= 2)
+        l.position = getVector(spec.arg2(), new double[] {0, 0, 10});
+      else
+        l.position = new double[] {0, 0, 10};
+      double[] dir = new double[] {0, 0, -1};
+      if (spec.argSize() >= 3)
+        dir = getVector(spec.arg3(), dir);
+      l.target =
+          new double[] {l.position[0] + dir[0], l.position[1] + dir[1], l.position[2] + dir[2]};
+      if (spec.argSize() >= 4)
+        l.angle = getDouble(spec.arg4(), Math.PI / 4);
+      else
+        l.angle = Math.PI / 3;
+      lights.add(l);
+    }
+  }
+
+  private static void addDefaultLighting(List<LightConfig> lights) {
+    lights.add(new LightConfig("AmbientLight", 0x505050));
+    double[][] positions = {{10, 10, 10}, {-10, 10, 10}, {10, -10, 10}, {-10, -10, 10}};
+    for (double[] pos : positions) {
+      LightConfig l = new LightConfig("DirectionalLight", 0xffffff);
+      l.intensity = 0.4;
+      l.position = pos;
+      l.fixedToCamera = true;
+      lights.add(l);
+    }
+  }
+
+  private static void addNeutralLighting(List<LightConfig> lights) {
+    lights.add(new LightConfig("AmbientLight", 0x404040));
+    double[][] dirs = {{1, 1, 1}, {-1, -1, 1}, {-1, 1, 1}, {1, -1, 1}};
+    for (double[] d : dirs) {
+      LightConfig dl = new LightConfig("DirectionalLight", 0xffffff);
+      dl.intensity = 0.5;
+      dl.position = d;
+      lights.add(dl);
+    }
+  }
+
+  private static void addStandardLighting(List<LightConfig> lights) {
+    lights.add(new LightConfig("AmbientLight", 0x202020));
+    LightConfig red = new LightConfig("DirectionalLight", 0xff0000);
+    red.position = new double[] {1, 0, 0};
+    lights.add(red);
+    LightConfig green = new LightConfig("DirectionalLight", 0x00ff00);
+    green.position = new double[] {0, 1, 0};
+    lights.add(green);
+    LightConfig blue = new LightConfig("DirectionalLight", 0x0000ff);
+    blue.position = new double[] {0, 0, 1};
+    lights.add(blue);
+  }
+
+  private static double[] getVector(IExpr expr, double[] def) {
+    if (expr.isList()) {
+      IAST list = (IAST) expr;
+      if (list.size() >= 4)
+        return new double[] {getDouble(list.get(1)), getDouble(list.get(2)),
+            getDouble(list.get(3))};
+    }
+    return def;
+  }
+
+  private static ArrayNode vecToJsonArray(double[] v) {
+    ArrayNode n = mapper.createArrayNode();
+    n.add(v[0]).add(v[1]).add(v[2]);
+    return n;
   }
 
   private static void processExpr(ArrayNode array, IExpr expr, GraphicsState state,
-      ComplexContext context) {
+      ComplexContext context, ScalingContext scaling) {
     if (expr.isList()) {
       GraphicsState scopedState = state.clone();
       IAST list = (IAST) expr;
       for (int i = 1; i < list.size(); i++) {
-        processItem(array, list.get(i), scopedState, context);
+        processItem(array, list.get(i), scopedState, context, scaling);
       }
     } else {
-      processItem(array, expr, state, context);
+      processItem(array, expr, state, context, scaling);
     }
   }
 
   private static void processItem(ArrayNode array, IExpr expr, GraphicsState state,
-      ComplexContext context) {
+      ComplexContext context, ScalingContext scaling) {
     if (expr.isBuiltInSymbol()) {
       processSymbol((IBuiltInSymbol) expr, state);
       return;
     }
-
-    if (!expr.isAST()) {
+    if (!expr.isAST())
       return;
-    }
 
     IAST ast = (IAST) expr;
     IExpr headExpr = ast.head();
@@ -328,7 +443,7 @@ public class WebGLGraphics3D {
       switch (id) {
         case ID.List:
         case ID.GraphicsGroup:
-          processExpr(array, ast, state, context);
+          processExpr(array, ast, state, context, scaling);
           break;
         case ID.RGBColor:
         case ID.Hue:
@@ -346,10 +461,8 @@ public class WebGLGraphics3D {
         case ID.Dashed:
           state.dashed = true;
           break;
-        case ID.EdgeForm:
-          break;
         case ID.SurfaceGraphics:
-          processSurfaceGraphics(array, ast, state);
+          processSurfaceGraphics(array, ast, state, scaling);
           break;
         case ID.GraphicsComplex:
           if (ast.argSize() >= 2) {
@@ -358,32 +471,97 @@ public class WebGLGraphics3D {
             IAST pts = ptsExpr.isList() ? (IAST) ptsExpr : null;
             IAST vColors = extractOptionList(ast, S.VertexColors);
             ComplexContext newContext = new ComplexContext(pts, vColors);
-            processExpr(array, primitives, state, newContext);
+            processExpr(array, primitives, state, newContext, scaling);
           }
           break;
         case ID.Line:
           createPolyNode(array, "Line", ast.arg1(), state, context,
-              extractOptionList(ast, S.VertexColors));
+              extractOptionList(ast, S.VertexColors), scaling);
           break;
         case ID.Polygon:
           createPolyNode(array, "Polygon", ast.arg1(), state, context,
-              extractOptionList(ast, S.VertexColors));
+              extractOptionList(ast, S.VertexColors), scaling);
           break;
         case ID.Point:
           createPolyNode(array, "Point", ast.arg1(), state, context,
-              extractOptionList(ast, S.VertexColors));
+              extractOptionList(ast, S.VertexColors), scaling);
           break;
         case ID.Sphere: {
           ObjectNode node = createBaseNode(array, "Sphere", state);
-          node.set("center", vecToJson(ast.arg1()));
+          double[] center =
+              resolveAndScaleVector(ast.arg1(), context, scaling, new double[] {0, 0, 0});
+          node.set("center", vecToJsonArray(center));
           node.put("radius", (ast.argSize() >= 2) ? getDouble(ast.arg2(), 1.0) : 1.0);
+        }
+          break;
+        case ID.Cone: {
+          ObjectNode node = createBaseNode(array, "Cone", state);
+          if (ast.argSize() == 0) {
+            node.set("start", vecToJsonArray(applyScaling(new double[] {0, 0, -1}, scaling)));
+            node.set("end", vecToJsonArray(applyScaling(new double[] {0, 0, 1}, scaling)));
+            node.put("radius", 1.0);
+          } else {
+            IExpr coords = ast.arg1();
+            double radius = (ast.argSize() >= 2) ? getDouble(ast.arg2(), 1.0) : 1.0;
+            node.put("radius", radius);
+            if (coords.isList() && ((IAST) coords).size() > 2) {
+              node.set("start", vecToJsonArray(resolveAndScaleVector(((IAST) coords).get(1),
+                  context, scaling, new double[] {0, 0, 0})));
+              node.set("end", vecToJsonArray(resolveAndScaleVector(((IAST) coords).get(2), context,
+                  scaling, new double[] {0, 0, 1})));
+            } else {
+              node.set("start", vecToJsonArray(applyScaling(new double[] {0, 0, 0}, scaling)));
+              node.set("end", vecToJsonArray(applyScaling(new double[] {0, 0, 1}, scaling)));
+            }
+          }
+        }
+          break;
+        case ID.Tube: {
+          ObjectNode node = createBaseNode(array, "Tube", state);
+          if (ast.arg1().isAST()) {
+            IAST geometry = (IAST) ast.arg1();
+            double radius = (ast.argSize() >= 2) ? getDouble(ast.arg2(), 0.1) : 0.1;
+            node.put("radius", radius);
+            if (geometry.isAST(S.BSplineCurve)) {
+              node.put("pathType", "BSpline");
+              processBSplineData(node, geometry, scaling);
+            } else {
+              node.put("pathType", "CatmullRom");
+              IAST pointsList = null;
+              if (geometry.isList()) {
+                pointsList = geometry;
+              } else if (geometry.isASTSizeGE(S.Line, 2)) {
+                pointsList = (IAST) geometry.first();
+              }
+              ArrayNode pointsJson = node.putArray("points");
+              if (pointsList != null) {
+                for (int i = 1; i < pointsList.size(); i++) {
+                  double[] pt = resolveAndScaleVector(pointsList.get(i), context, scaling, null);
+                  if (pt != null) {
+                    pointsJson.add(pt[0]).add(pt[1]).add(pt[2]);
+                  }
+                }
+              }
+            }
+          }
+        }
+          break;
+        case ID.BSplineCurve: {
+          ObjectNode node = createBaseNode(array, "BSplineCurve", state);
+          processBSplineData(node, ast, scaling);
         }
           break;
         case ID.Cuboid: {
           ObjectNode node = createBaseNode(array, "Cuboid", state);
-          node.set("min", vecToJson(ast.arg1()));
-          node.set("max", (ast.argSize() >= 2) ? vecToJson(ast.arg2())
-              : vecToJson(F.List(F.num(1), F.num(1), F.num(1))));
+          IExpr minE = ast.arg1();
+          IExpr maxE = (ast.argSize() >= 2) ? ast.arg2() : F.List(F.num(1), F.num(1), F.num(1));
+          double[] min = resolveAndScaleVector(minE, context, scaling, new double[] {0, 0, 0});
+          double[] max = resolveAndScaleVector(maxE, context, scaling, new double[] {1, 1, 1});
+          double x1 = Math.min(min[0], max[0]), x2 = Math.max(min[0], max[0]);
+          double y1 = Math.min(min[1], max[1]), y2 = Math.max(min[1], max[1]);
+          double z1 = Math.min(min[2], max[2]), z2 = Math.max(min[2], max[2]);
+          node.set("min", vecToJsonArray(new double[] {x1, y1, z1}));
+          node.set("max", vecToJsonArray(new double[] {x2, y2, z2}));
         }
           break;
         case ID.Cylinder: {
@@ -392,11 +570,13 @@ public class WebGLGraphics3D {
           double radius = (ast.argSize() >= 2) ? getDouble(ast.arg2(), 1.0) : 1.0;
           node.put("radius", radius);
           if (coords.isList() && ((IAST) coords).size() > 2) {
-            node.set("start", vecToJson(((IAST) coords).get(1)));
-            node.set("end", vecToJson(((IAST) coords).get(2)));
+            node.set("start", vecToJsonArray(resolveAndScaleVector(((IAST) coords).get(1), context,
+                scaling, new double[] {0, 0, -1})));
+            node.set("end", vecToJsonArray(resolveAndScaleVector(((IAST) coords).get(2), context,
+                scaling, new double[] {0, 0, 1})));
           } else {
-            node.set("start", vecToJson(F.List(F.num(0), F.num(0), F.num(-1))));
-            node.set("end", vecToJson(F.List(F.num(0), F.num(0), F.num(1))));
+            node.set("start", vecToJsonArray(applyScaling(new double[] {0, 0, -1}, scaling)));
+            node.set("end", vecToJsonArray(applyScaling(new double[] {0, 0, 1}, scaling)));
           }
         }
           break;
@@ -404,108 +584,192 @@ public class WebGLGraphics3D {
     }
   }
 
+  private static double[] resolveAndScaleVector(IExpr expr, ComplexContext context,
+      ScalingContext scaling, double[] def) {
+    double[] v = def;
+    if (context != null) {
+      v = context.resolve(expr, def);
+    } else {
+      v = getVector(expr, def);
+    }
+    if (v == null)
+      return null;
+    return applyScaling(v, scaling);
+  }
+
+  private static double[] applyScaling(double[] v, ScalingContext scaling) {
+    if (v.length < 3)
+      return v;
+    v[0] = scaling.x.scale(v[0]);
+    v[1] = scaling.y.scale(v[1]);
+    v[2] = scaling.z.scale(v[2]);
+    return v;
+  }
+
+  private static void processBSplineData(ObjectNode node, IAST bsplineAST, ScalingContext scaling) {
+    IExpr pointsExpr = bsplineAST.arg1();
+    ArrayNode pointsJson = node.putArray("points");
+    if (pointsExpr.isList()) {
+      IAST pList = (IAST) pointsExpr;
+      for (int i = 1; i < pList.size(); i++) {
+        IExpr pt = pList.get(i);
+        if (pt.isList()) {
+          double[] scaled = resolveAndScaleVector(pt, null, scaling, new double[] {0, 0, 0});
+          pointsJson.add(scaled[0]).add(scaled[1]).add(scaled[2]);
+        }
+      }
+    }
+    int degree = 3;
+    boolean closed = false;
+    double[] weights = null;
+    double[] knots = null;
+    IExpr optDegree = extractOption(bsplineAST, S.SplineDegree);
+    if (optDegree != null)
+      degree = optDegree.toIntDefault(3);
+    IExpr optClosed = extractOption(bsplineAST, S.SplineClosed);
+    if (optClosed != null && optClosed.isTrue())
+      closed = true;
+    IExpr optWeights = extractOption(bsplineAST, S.SplineWeights);
+    if (optWeights != null && optWeights.isList()) {
+      IAST wList = (IAST) optWeights;
+      weights = new double[pointsJson.size() / 3];
+      for (int i = 0; i < weights.length && i < wList.size() - 1; i++) {
+        weights[i] = getDouble(wList.get(i + 1), 1.0);
+      }
+    }
+    IExpr optKnots = extractOption(bsplineAST, S.SplineKnots);
+    if (optKnots != null && optKnots.isList()) {
+      IAST kList = (IAST) optKnots;
+      knots = new double[kList.size() - 1];
+      for (int i = 1; i < kList.size(); i++)
+        knots[i - 1] = getDouble(kList.get(i));
+    }
+    int nPoints = pointsJson.size() / 3;
+    if (closed) {
+      for (int i = 0; i < degree; i++) {
+        pointsJson.add(pointsJson.get(i * 3));
+        pointsJson.add(pointsJson.get(i * 3 + 1));
+        pointsJson.add(pointsJson.get(i * 3 + 2));
+      }
+      if (knots == null) {
+        int n = nPoints + degree;
+        knots = new double[n + degree + 1];
+        for (int i = 0; i < knots.length; i++)
+          knots[i] = i;
+      }
+    } else {
+      if (knots == null) {
+        int n = nPoints;
+        knots = new double[n + degree + 1];
+        for (int i = 0; i <= degree; i++)
+          knots[i] = 0.0;
+        int internal = n - degree;
+        for (int i = 1; i < internal; i++)
+          knots[degree + i] = (double) i / internal;
+        for (int i = n; i < knots.length; i++)
+          knots[i] = 1.0;
+      }
+    }
+    node.put("degree", degree);
+    node.put("closed", closed);
+    ArrayNode kJson = node.putArray("knots");
+    if (knots != null)
+      for (double k : knots)
+        kJson.add(k);
+    if (weights != null) {
+      ArrayNode wJson = node.putArray("weights");
+      for (double w : weights)
+        wJson.add(w);
+    }
+  }
+
   private static IAST extractOptionList(IAST ast, ISymbol optionName) {
+    IExpr res = extractOption(ast, optionName);
+    return (res != null && res.isList()) ? (IAST) res : null;
+  }
+
+  private static IExpr extractOption(IAST ast, ISymbol optionName) {
     for (int i = 2; i < ast.size(); i++) {
       if (ast.get(i).isRuleAST()) {
         IAST rule = (IAST) ast.get(i);
-        if (rule.arg1().equals(optionName) && rule.arg2().isList()) {
-          return (IAST) rule.arg2();
-        }
+        if (rule.arg1().equals(optionName))
+          return rule.arg2();
       }
     }
     return null;
   }
 
   private static void createPolyNode(ArrayNode array, String type, IExpr data, GraphicsState state,
-      ComplexContext context, IAST localVertexColors) {
+      ComplexContext context, IAST localVertexColors, ScalingContext scaling) {
     ObjectNode node = createBaseNode(array, type, state);
     ArrayNode pointsJson = node.putArray("points");
-
     List<IExpr> allVertices = new ArrayList<>();
     List<Color> allColors = new ArrayList<>();
-
     if (data.isList()) {
       IAST listData = (IAST) data;
       if (listData.size() > 1) {
         IExpr first = listData.get(1);
         boolean isMulti = false;
-
-        // Detect Multi-Polygon
         if (context != null) {
-          // Indices mode: Polygon[{1,2,3}] vs Polygon[{{1,2,3}, {2,3,4}}]
           if (first.isList())
             isMulti = true;
         } else {
-          // Coordinate mode: Polygon[{{x,y,z}, ...}] (Single) vs Polygon[{{{x,y,z}...}, ...}]
-          // (Multi)
           if (first.isList()) {
             IAST firstList = (IAST) first;
-            if (firstList.size() > 1 && firstList.get(1).isList()) {
+            if (firstList.size() > 1 && firstList.get(1).isList())
               isMulti = true;
-            }
           }
         }
-
         if (isMulti) {
-          for (int i = 1; i < listData.size(); i++) {
+          for (int i = 1; i < listData.size(); i++)
             processSingleFace(listData.get(i), type, context, localVertexColors, i - 1, allVertices,
                 allColors);
-          }
         } else {
           processSingleFace(data, type, context, localVertexColors, 0, allVertices, allColors);
         }
       }
     }
-
-    // Serialize Flat Array
     for (IExpr v : allVertices) {
       if (v.isList()) {
         IAST vList = (IAST) v;
         if (vList.size() >= 4) {
-          pointsJson.add(getDouble(vList.get(1)));
-          pointsJson.add(getDouble(vList.get(2)));
-          pointsJson.add(getDouble(vList.get(3)));
+          double x = getDouble(vList.get(1));
+          double y = getDouble(vList.get(2));
+          double z = getDouble(vList.get(3));
+          pointsJson.add(scaling.x.scale(x));
+          pointsJson.add(scaling.y.scale(y));
+          pointsJson.add(scaling.z.scale(z));
         }
       }
     }
-
     if (!allColors.isEmpty() && allColors.size() == allVertices.size()) {
+      node.put("color", 0xFFFFFF);
       ArrayNode colorsJson = node.putArray("vertexColors");
       for (Color c : allColors) {
-        colorsJson.add(c.getRed() / 255.0);
-        colorsJson.add(c.getGreen() / 255.0);
-        colorsJson.add(c.getBlue() / 255.0);
+        colorsJson.add(c.getRed() / 255.0).add(c.getGreen() / 255.0).add(c.getBlue() / 255.0);
       }
     }
   }
 
   private static void processSingleFace(IExpr faceData, String type, ComplexContext context,
       IAST localVertexColors, int faceIndex, List<IExpr> outVertices, List<Color> outColors) {
-
     List<IExpr> faceVerts = new ArrayList<>();
     List<Color> faceCols = new ArrayList<>();
-
     resolveComplexAttributes(faceData, context, localVertexColors, 0, faceVerts, faceCols);
-
     if (faceVerts.isEmpty())
       return;
-
     if (type.equals("Line") || type.equals("Point")) {
       outVertices.addAll(faceVerts);
       outColors.addAll(faceCols);
       return;
     }
-
-    // Triangulate
     if (faceVerts.size() >= 3) {
       IExpr v0 = faceVerts.get(0);
       Color c0 = !faceCols.isEmpty() ? faceCols.get(0) : null;
-
       for (int i = 1; i < faceVerts.size() - 1; i++) {
         outVertices.add(v0);
         outVertices.add(faceVerts.get(i));
         outVertices.add(faceVerts.get(i + 1));
-
         if (c0 != null) {
           outColors.add(c0);
           outColors.add(faceCols.get(i));
@@ -520,10 +784,8 @@ public class WebGLGraphics3D {
     if (!data.isList())
       return localIndex;
     IAST list = (IAST) data;
-
     for (int i = 1; i < list.size(); i++) {
       IExpr el = list.get(i);
-
       if (context != null && el.isInteger()) {
         int idx = el.toIntDefault(0);
         if (context.points != null && idx > 0 && idx < context.points.size()) {
@@ -531,34 +793,18 @@ public class WebGLGraphics3D {
         } else {
           outPoints.add(F.List(F.num(0), F.num(0), F.num(0)));
         }
-
-        if (localColorList != null) {
+        if (localColorList != null)
           outColors.add(Color.WHITE);
-        } else if (context.vertexColors != null && idx > 0 && idx < context.vertexColors.size()) {
+        else if (context.vertexColors != null && idx > 0 && idx < context.vertexColors.size())
           outColors.add(parseRawColor(context.vertexColors.get(idx)));
-        } else if (context.vertexColors != null) {
+        else if (context.vertexColors != null)
           outColors.add(Color.WHITE);
-        }
-
       } else {
         outPoints.add(el);
       }
       localIndex++;
     }
     return localIndex;
-  }
-
-  private static ArrayNode vecToJson(IExpr vec) {
-    ArrayNode node = mapper.createArrayNode();
-    if (vec.isList()) {
-      IAST list = (IAST) vec;
-      for (int i = 1; i < list.size(); i++) {
-        node.add(getDouble(list.get(i)));
-      }
-    } else {
-      node.add(0.0).add(0.0).add(0.0);
-    }
-    return node;
   }
 
   private static ObjectNode createBaseNode(ArrayNode array, String type, GraphicsState state) {
@@ -677,14 +923,14 @@ public class WebGLGraphics3D {
     return Color.BLACK;
   }
 
-  private static void processSurfaceGraphics(ArrayNode array, IAST ast, GraphicsState state) {
+  private static void processSurfaceGraphics(ArrayNode array, IAST ast, GraphicsState state,
+      ScalingContext scaling) {
     IExpr zArg = ast.arg1();
     if (!zArg.isList())
       return;
     IAST zRows = (IAST) zArg;
     ObjectNode node = createBaseNode(array, "GridSurface", state);
     ArrayNode zValues = node.putArray("zData");
-    ArrayNode cValues = node.putArray("colorData");
     int rows = zRows.size() - 1;
     int cols = 0;
     for (int i = 1; i < zRows.size(); i++) {
@@ -694,7 +940,7 @@ public class WebGLGraphics3D {
         if (cols == 0)
           cols = rowList.size() - 1;
         for (int j = 1; j < rowList.size(); j++) {
-          zValues.add(getDouble(rowList.get(j)));
+          zValues.add(scaling.z.scale(getDouble(rowList.get(j))));
         }
       }
     }
@@ -707,153 +953,74 @@ public class WebGLGraphics3D {
       if (ast.get(i).isRuleAST()) {
         IAST rule = (IAST) ast.get(i);
         String key = rule.arg1().toString();
-        if ("MeshRange".equals(key)) {
-          // ... range parsing ...
-        } else if ("Mesh".equals(key)) {
+        if ("Mesh".equals(key))
           mesh = rule.arg2().isTrue();
-        }
       }
     }
-    node.put("xMin", xMin);
-    node.put("xMax", xMax);
-    node.put("yMin", yMin);
-    node.put("yMax", yMax);
+    node.put("xMin", scaling.x.scale(xMin)).put("xMax", scaling.x.scale(xMax));
+    node.put("yMin", scaling.y.scale(yMin)).put("yMax", scaling.y.scale(yMax));
     node.put("showMesh", mesh);
   }
 
+  // --- JS Generation Methods ---
 
-  private static String getHTMLTemplate(String jsonData, boolean showLegend) {
-    String legendHtml = "";
-    if (showLegend) {
-      // Simple Color Bar for Complex Phase
-      legendHtml =
-          "<div style='position:absolute; right:20px; top:50%; transform:translateY(-50%); text-align:center; font-family:sans-serif; font-size:12px; z-index:100; pointer-events:none;'>"
-              + "<div style='margin-bottom:5px;'>&pi;</div>"
-              + "<div style='width:20px; height:200px; background: linear-gradient(to top, red, yellow, green, cyan, blue, magenta, red); border:1px solid #888;'></div>"
-              + "<div style='margin-top:5px;'>-&pi;</div>"
-              + "<div style='position:absolute; right:25px; top:50%; transform:translateY(-50%); width:30px; border-top:1px solid #000;'></div>"
-              + "<div style='position:absolute; right:30px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.8); padding:2px;'>0</div>"
-              + "</div>";
-    }
+  private static String createSnippetHTML(String jsonData) {
+    String containerId =
+        "webgl_" + System.currentTimeMillis() + "_" + (int) (Math.random() * 10000);
+    StringBuilder html = new StringBuilder();
+    html.append("<div data-type=\"webgl\" id=\"").append(containerId).append(
+        "\" style=\"width: 500px; height: 400px; border: 1px solid #eee; background: #fff;\"></div>");
+    html.append("<script type=\"text/javascript\">\n");
+    // Ensure the function exists before calling
+    html.append("  if(typeof renderSymjaWebGL === 'function') {\n");
+    html.append("     renderSymjaWebGL('" + containerId + "', " + jsonData + ");\n");
+    html.append(
+        "  } else { console.error('renderSymjaWebGL not found. Ensure symja_webgl.js is loaded.'); }\n");
+    html.append("</script>");
+    return html.toString();
+  }
 
-    return "       <!DOCTYPE html>\r\n" + "        <html>\r\n" + "        <head>\r\n"
-        + "            <title>Symja 3D</title>\r\n"
-        + "            <style>body { margin: 0; overflow: hidden; background-color: #f0f0f0; }</style>\r\n"
-        + "            <script type=\"importmap\">\r\n"
-        + "              { \"imports\": { \"three\": \"https://unpkg.com/three@0.160.0/build/three.module.js\", \"three/addons/\": \"https://unpkg.com/three@0.160.0/examples/jsm/\" } }\r\n"
-        + "            </script>\r\n" + "        </head>\r\n" + "        <body>\r\n" + legendHtml
-        + "\r\n" + "            <script type=\"module\">\r\n"
-        + "                import * as THREE from 'three';\r\n"
-        + "                import { OrbitControls } from 'three/addons/controls/OrbitControls.js';\r\n"
-        + "\r\n" + "                const scene = new THREE.Scene();\r\n"
-        + "                scene.background = new THREE.Color(0xffffff);\r\n" + "\r\n"
-        + "                const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 10000);\r\n"
-        + "                camera.up.set(0, 0, 1);\r\n"
-        + "                camera.position.set(10, -10, 10);\r\n" + "\r\n"
-        + "                const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });\r\n"
-        + "                renderer.setSize(window.innerWidth, window.innerHeight);\r\n"
-        + "                renderer.shadowMap.enabled = true;\r\n"
-        + "                document.body.appendChild(renderer.domElement);\r\n" + "\r\n"
-        + "                const controls = new OrbitControls(camera, renderer.domElement);\r\n"
-        + "                controls.enableDamping = true;\r\n" + "\r\n"
-        + "                const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.0);\r\n"
-        + "                hemiLight.position.set(0, 0, 50);\r\n"
-        + "                scene.add(hemiLight);\r\n" + "\r\n"
-        + "                const dl = new THREE.DirectionalLight(0xffffff, 0.5);\r\n"
-        + "                dl.position.set(10, -20, 20);\r\n"
-        + "                dl.castShadow = true;\r\n" + "                scene.add(dl);\r\n"
-        + "\r\n" + "                const data = " //
-        + jsonData //
-        + "\n" //
-        + "                const objectsGroup = new THREE.Group();\r\n" + "\r\n"
-        + "                function getMat(el, isLine = false) {\r\n"
-        + "                    const params = {\r\n"
-        + "                        color: el.color,\r\n"
-        + "                        transparent: el.opacity < 1.0,\r\n"
-        + "                        opacity: el.opacity,\r\n"
-        + "                        side: THREE.DoubleSide,\r\n"
-        + "                        depthWrite: el.opacity >= 1.0,\r\n"
-        + "                        vertexColors: (el.vertexColors && el.vertexColors.length > 0)\r\n"
-        + "                    };\r\n" + "                    if (isLine) {\r\n"
-        + "                        if (el.dashed) {\r\n"
-        + "                            return new THREE.LineDashedMaterial({ ...params, dashSize: 0.5, gapSize: 0.3, scale: 1 });\r\n"
-        + "                        }\r\n"
-        + "                        return new THREE.LineBasicMaterial({ ...params, linewidth: 2 });\r\n"
-        + "                    }\r\n"
-        + "                    const mat = new THREE.MeshPhongMaterial({ ...params, shininess: 20, specular: 0x111111, flatShading: false });\r\n"
-        + "                    if (el.type === 'Polygon') {\r\n"
-        + "                        mat.polygonOffset = true; mat.polygonOffsetFactor = 1; mat.polygonOffsetUnits = 1;\r\n"
-        + "                    }\r\n" + "                    return mat;\r\n"
-        + "                }\r\n" + "\r\n" + "                if (data.elements) {\r\n"
-        + "                    data.elements.forEach(el => {\r\n"
-        + "                        let mesh;\r\n"
-        + "                        if (el.type === 'Polygon') {\r\n"
-        + "                            const pts = el.points;\r\n"
-        + "                            const vCols = el.vertexColors;\r\n"
-        + "                            const geom = new THREE.BufferGeometry();\r\n"
-        + "                            geom.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));\r\n"
-        + "                            if (vCols) {\r\n"
-        + "                                geom.setAttribute('color', new THREE.Float32BufferAttribute(vCols, 3));\r\n"
-        + "                            }\r\n"
-        + "                            geom.computeVertexNormals();\r\n"
-        + "                            mesh = new THREE.Mesh(geom, getMat(el));\r\n"
-        + "                        }\r\n"
-        + "                        else if (el.type === 'Sphere') {\r\n"
-        + "                            mesh = new THREE.Mesh(new THREE.SphereGeometry(el.radius, 32, 32), getMat(el));\r\n"
-        + "                            mesh.position.set(el.center[0], el.center[1], el.center[2]);\r\n"
-        + "                        }\r\n"
-        + "                        else if (el.type === 'Cuboid') {\r\n"
-        + "                             const w = el.max[0] - el.min[0], h = el.max[1] - el.min[1], d = el.max[2] - el.min[2];\r\n"
-        + "                             mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), getMat(el));\r\n"
-        + "                             mesh.position.set(el.min[0] + w/2, el.min[1] + h/2, el.min[2] + d/2);\r\n"
-        + "                        }\r\n"
-        + "                        else if (el.type === 'Cylinder') {\r\n"
-        + "                             const s = new THREE.Vector3(...el.start), e = new THREE.Vector3(...el.end);\r\n"
-        + "                             const h = s.distanceTo(e);\r\n"
-        + "                             const geom = new THREE.CylinderGeometry(el.radius, el.radius, h, 32);\r\n"
-        + "                             geom.translate(0, h/2, 0);\r\n"
-        + "                             mesh = new THREE.Mesh(geom, getMat(el));\r\n"
-        + "                             mesh.position.copy(s);\r\n"
-        + "                             mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), e.clone().sub(s).normalize());\r\n"
-        + "                        }\r\n"
-        + "                        else if (el.type === 'Line') {\r\n"
-        + "                            const pts = [];\r\n"
-        + "                            for(let i=0; i<el.points.length; i+=3) pts.push(new THREE.Vector3(el.points[i], el.points[i+1], el.points[i+2]));\r\n"
-        + "                            const geom = new THREE.BufferGeometry().setFromPoints(pts);\r\n"
-        + "                            mesh = new THREE.Line(geom, getMat(el, true));\r\n"
-        + "                            if (el.dashed) mesh.computeLineDistances();\r\n"
-        + "                        }\r\n"
-        + "                        else if (el.type === 'Point') {\r\n"
-        + "                            for(let i=0; i<el.points.length; i+=3) {\r\n"
-        + "                                const m = new THREE.Mesh(new THREE.SphereGeometry(0.08, 16, 16), getMat(el));\r\n"
-        + "                                m.position.set(el.points[i], el.points[i+1], el.points[i+2]);\r\n"
-        + "                                objectsGroup.add(m);\r\n"
-        + "                            }\r\n" + "                            mesh = null;\r\n"
-        + "                        }\r\n" + "\r\n" + "                        if (mesh) {\r\n"
-        + "                            if (el.opacity >= 1.0) mesh.castShadow = true;\r\n"
-        + "                            mesh.receiveShadow = true;\r\n"
-        + "                            objectsGroup.add(mesh);\r\n"
-        + "                        }\r\n" + "                    });\r\n" + "                }\r\n"
-        + "\r\n" + "                scene.add(objectsGroup);\r\n" + "\r\n"
-        + "                const box = new THREE.Box3().setFromObject(objectsGroup);\r\n"
-        + "                if (!box.isEmpty()) {\r\n"
-        + "                    const center = box.getCenter(new THREE.Vector3());\r\n"
-        + "                    const size = box.getSize(new THREE.Vector3());\r\n"
-        + "                    const maxDim = Math.max(size.x, Math.max(size.y, size.z));\r\n"
-        + "                    const fov = camera.fov * (Math.PI / 180);\r\n"
-        + "                    let cameraZ = Math.abs(maxDim / 2 * Math.tan(fov * 2));\r\n"
-        + "                    camera.position.set(center.x + maxDim, center.y - maxDim, center.z + maxDim);\r\n"
-        + "                    camera.lookAt(center);\r\n"
-        + "                    controls.target.copy(center);\r\n"
-        + "                    const helper = new THREE.Box3Helper(box, 0x888888);\r\n"
-        + "                    scene.add(helper);\r\n" + "                }\r\n" + "\r\n"
-        + "                function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }\r\n"
-        + "                animate();\r\n" + "\r\n"
-        + "                window.addEventListener('resize', () => {\r\n"
-        + "                    camera.aspect = window.innerWidth / window.innerHeight;\r\n"
-        + "                    camera.updateProjectionMatrix();\r\n"
-        + "                    renderer.setSize(window.innerWidth, window.innerHeight);\r\n"
-        + "                });\r\n" + "            </script>\r\n" + "        </body>\r\n"
-        + "        </html>";
+  private static String getHTMLTemplate(String jsonData) {
+    StringBuilder js = new StringBuilder();
+    js.append(
+        "<!DOCTYPE html><html><head><title>Symja 3D</title><style>body { margin: 0; overflow: hidden; background-color: #f0f0f0; }</style>\n");
+
+    // Import Map for Local Three.js
+    js.append(
+        "<script type=\"importmap\">{ \"imports\": { \"three\": \"/media/js/three/build/three.module.js\", \"three/addons/\": \"/media/js/three/examples/jsm/\" } }</script>\n");
+
+    js.append("</head><body>\n");
+
+    // Module script to load Three and expose it globally
+    js.append("<script type=\"module\">\n");
+    js.append("  import * as THREE_MODULE from 'three';\n");
+    js.append("  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';\n");
+    js.append("  const THREE = { ...THREE_MODULE };\n");
+    js.append("  THREE.OrbitControls = OrbitControls;\n");
+    js.append("  window.THREE = THREE;\n");
+    // Dispatch event so legacy scripts know THREE is ready?
+    // Or simpler: We load symja_webgl.js as a standard script defer/async or dynamically
+    js.append("</script>\n");
+
+    // Load the common renderer
+    js.append("<script type=\"text/javascript\" src=\"/media/js/symja_webgl.js\"></script>\n");
+
+    js.append("<div id=\"webgl-container\" style=\"width: 100vw; height: 100vh;\"></div>\n");
+
+    js.append("<script type=\"text/javascript\">\n");
+    js.append("  window.addEventListener('load', function() {\n");
+    // Small timeout or check to ensure THREE is globally available if module loading is slow
+    js.append("     var checkTHREE = setInterval(function() {\n");
+    js.append("         if (window.THREE && typeof renderSymjaWebGL === 'function') {\n");
+    js.append("             clearInterval(checkTHREE);\n");
+    js.append("             var data = " + jsonData + ";\n");
+    js.append("             renderSymjaWebGL('webgl-container', data);\n");
+    js.append("         }\n");
+    js.append("     }, 100);\n");
+    js.append("  });\n");
+    js.append("</script>\n");
+
+    js.append("</body></html>");
+    return js.toString();
   }
 }

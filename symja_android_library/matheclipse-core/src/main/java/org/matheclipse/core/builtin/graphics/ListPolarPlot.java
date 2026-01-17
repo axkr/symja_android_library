@@ -1,4 +1,4 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.builtin.graphics;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -8,23 +8,25 @@ import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class ListPolarPlot extends ListPlot {
 
   @Override
-  protected GraphicsOptions setGraphicsOptions(final IExpr[] options, final EvalEngine engine) {
+  protected GraphicsOptions setGraphicsOptions(final IExpr[] options,
+      final IBuiltInSymbol[] optionSymbols, final EvalEngine engine) {
     GraphicsOptions graphicsOptions = new GraphicsOptions(engine);
-    graphicsOptions.setGraphicOptions(options, engine);
+    graphicsOptions.setGraphicOptions(optionSymbols, options, engine);
     graphicsOptions.setYFunction(y -> F.Log10(y));
     graphicsOptions.setYScale("Log10");
     return graphicsOptions;
   }
 
   @Override
-  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
-      final EvalEngine engine, IAST originalAST) {
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
+      IAST originalAST) {
     if (argSize > 0 && argSize < ast.size()) {
       ast = ast.copyUntil(argSize + 1);
     }
@@ -33,11 +35,12 @@ public class ListPolarPlot extends ListPlot {
       IASTAppendable table = createTable(engine, list, 0);
       if (table.isPresent()) {
         IASTMutable listPlot = ast.setAtCopy(1, table);
+
         GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);
         IAST graphicsPrimitives = listPlot(listPlot, options, graphicsOptions, engine);
         if (graphicsPrimitives.isPresent()) {
           graphicsOptions.addPadding();
-          return createGraphicsFunction(graphicsPrimitives, graphicsOptions);
+          return createGraphicsFunction(graphicsPrimitives, graphicsOptions, ast);
         }
       }
     }
@@ -100,6 +103,6 @@ public class ListPolarPlot extends ListPlot {
   @Override
   public void setUp(final ISymbol newSymbol) {
     setOptions(newSymbol, GraphicsOptions.listPlotDefaultOptionKeys(),
-        GraphicsOptions.listPlotDefaultOptionValues(true, false));
+        GraphicsOptions.listPlotDefaultOptionValues(false, false));
   }
 }

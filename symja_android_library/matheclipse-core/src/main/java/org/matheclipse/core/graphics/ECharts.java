@@ -107,7 +107,7 @@ public class ECharts {
 
   protected static boolean isNonReal(IExpr point) {
     return point.isComplex() || point.isComplexNumeric() || point.isDirectedInfinity()
-        || point == S.Indeterminate || point == S.None || point.isAST(S.Missing);
+        || point.isIndeterminate() || point.isNone() || point.isAST(S.Missing);
   }
 
   protected static boolean isNonReal(IExpr lastPointX, IExpr lastPointY) {
@@ -521,11 +521,11 @@ public class ECharts {
 
   private String xAxisLabel() {
     IExpr axesLabel = graphicsOptions.axesLabel();
-    if (axesLabel == S.Automatic) {
+    if (axesLabel.isAutomatic()) {
       // TODO
       return "";
     }
-    if (axesLabel == S.None) {
+    if (axesLabel.isNone()) {
       return "";
     }
     if (axesLabel.isList() && axesLabel.argSize() > 0) {
@@ -534,7 +534,7 @@ public class ECharts {
         // TODO
         return "";
       }
-      if (labelX == S.None) {
+      if (labelX.isNone()) {
         return "";
       }
       return labelX.toString();

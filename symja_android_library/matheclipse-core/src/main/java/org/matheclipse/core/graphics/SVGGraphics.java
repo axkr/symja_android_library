@@ -9,7 +9,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.DoubleUnaryOperator;
 import java.util.stream.Collectors;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.RGBColor;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
@@ -66,7 +68,7 @@ public class SVGGraphics {
     }
   }
 
-  private class Options {
+  private static class Options {
     IExpr axes = S.False;
     double[] axesOrigin = null;
     GraphicState axesStyle = new GraphicState();
@@ -151,263 +153,146 @@ public class SVGGraphics {
     return options.imageSize;
   }
 
-  // --- Main Entry Point ---
+  /**
+   * Converts a Graphics expression to an SVG string. * @param graphicsExpr graphics expression
+   * argument; Typically an {@link S#List} of graphics primitives
+   * 
+   * @return SVG string or <code>null</code> if error occurred
+   */
   public String toSVG(IAST graphicsExpr) {
     return toSVG(graphicsExpr, true);
   }
 
-  // public String toSVG(IAST graphicsExpr, boolean withSVGTag) {
-  // if (graphicsExpr.isList() || graphicsExpr.isAST(S.GraphicsRow)) {
-  // return toSVGRow(graphicsExpr, withSVGTag);
-  // }
-  //
-  // resetBounds();
-  // parseOptions(graphicsExpr);
-  //
-  // if (graphicsExpr.argSize() >= 1) {
-  // scanBounds(graphicsExpr.arg1(), options.globalStyle.clone());
-  // }
-  //
-  // refineDataBounds();
-  // adjustBoundsForLogScale();
-  //
-  // if (options.plotLegends != null) {
-  // if (options.plotLegends.isList() || isBarLegend(options.plotLegends)) {
-  // paddingRight += LEGEND_WIDTH;
-  // }
-  // }
-  // calculateViewport();
-  //
-  // // --- Build SVG DOM ---
-  // List<DomContent> elements = new ArrayList<>();
-  //
-  // String plotAreaId = "plotArea" + idSuffix;
-  // String gradientId = "sunsetGradient" + idSuffix;
-  //
-  // // Base Canvas (White, covers everything)
-  // elements.add(tag("rect").attr("width", "100%").attr("height", "100%").attr("fill", "white"));
-  //
-  // // Background
-  // if (options.background != null) {
-  // elements.add(tag("rect").attr("width", "100%").attr("height", "100%").attr("fill",
-  // colorToCss(options.background)));
-  // } else {
-  // elements.add(tag("rect").attr("width", "100%").attr("height", "100%").attr("fill", "white"));
-  // }
-  //
-  // // Prolog
-  // if (options.prolog != null) {
-  // ContainerTag<?> prologGroup = tag("g").attr("id", "prolog");
-  // processElement(options.prolog, options.globalStyle.clone(), prologGroup);
-  // elements.add(prologGroup);
-  // }
-  //
-  // // GridLines
-  // if (options.gridLines != null && !options.gridLines.isFalse() && !options.gridLines.isNone()) {
-  // ContainerTag<?> gridGroup = tag("g").attr("class", "grid");
-  // drawGridLines(gridGroup);
-  // elements.add(gridGroup);
-  // }
-  //
-  // // Defs (Gradient & ClipPath)
-  // ContainerTag<?> defs = tag("defs");
-  // boolean hasDefs = false;
-  //
-  // if (options.plotLegends != null && isBarLegend(options.plotLegends)) {
-  // ContainerTag<?> gradient = tag("linearGradient").attr("id", gradientId).attr("x1", "0%")
-  // .attr("y1", "100%").attr("x2", "0%").attr("y2", "0%");
-  //
-  // double[][] colors = GraphicsOptions.SUNSET_COLORS;
-  // int n = colors.length - 1;
-  // for (int i = 0; i < colors.length; i++) {
-  // double offset = (double) i / n * 100.0;
-  // String color = String.format(Locale.US, "rgb(%d,%d,%d)", (int) (colors[i][0] * 255),
-  // (int) (colors[i][1] * 255), (int) (colors[i][2] * 255));
-  // gradient.with(tag("stop").attr("offset", String.format(Locale.US, "%.1f%%", offset))
-  // .attr("style", "stop-color:" + color + ";stop-opacity:1"));
-  // }
-  // defs.with(gradient);
-  // hasDefs = true;
-  // }
-  //
-  // // Clip Path
-  // double plotX1 = paddingLeft;
-  // double plotX2 = paddingLeft + (mapMaxX - mapMinX) * scaleX;
-  // double plotY2 = options.imageSize[1] - paddingBottom;
-  // double plotY1 = plotY2 - (mapMaxY - mapMinY) * scaleY;
-  // // Ensure positive dimensions
-  // double clipW = Math.max(0, plotX2 - plotX1);
-  // double clipH = Math.max(0, plotY2 - plotY1);
-  //
-  // defs.with(tag("clipPath").attr("id", plotAreaId).with(tag("rect").attr("x", fmt(plotX1))
-  // .attr("y", fmt(plotY1)).attr("width", fmt(clipW)).attr("height", fmt(clipH))));
-  // hasDefs = true;
-  //
-  // if (hasDefs)
-  // elements.add(defs);
-  //
-  // // Main Plot
-  // ContainerTag<?> mainGroup =
-  // tag("g").attr("id", "main").attr("clip-path", "url(#" + plotAreaId + ")");
-  //
-  // if (graphicsExpr.argSize() >= 1) {
-  // ContainerTag<?> contentGroup =
-  // tag("g").attr("font-family", "sans-serif").attr("font-size", "12.0");
-  // processElement(graphicsExpr.arg1(), options.globalStyle.clone(), contentGroup);
-  // mainGroup.with(contentGroup);
-  // }
-  // elements.add(mainGroup);
-  //
-  // // Axes & Frame
-  // ContainerTag<?> axesGroup = tag("g").attr("class", "axes");
-  // if (!options.axes.isFalse() && !options.axes.isNone()) {
-  // drawAxesWithTicks(axesGroup);
-  // }
-  // if (options.frame) {
-  // drawFrame(axesGroup);
-  // }
-  // if (axesGroup.getNumChildren() > 0)
-  // elements.add(axesGroup);
-  //
-  // // Legends
-  // if (options.plotLegends != null) {
-  // ContainerTag<?> legendGroup = tag("g").attr("class", "legends");
-  // drawLegends(legendGroup, gradientId);
-  // elements.add(legendGroup);
-  // }
-  //
-  // // Epilog
-  // if (options.epilog != null) {
-  // ContainerTag<?> epilogGroup = tag("g").attr("id", "epilog");
-  // processElement(options.epilog, options.globalStyle.clone(), epilogGroup);
-  // elements.add(epilogGroup);
-  // }
-  //
-  // // Render
-  // if (withSVGTag) {
-  // return tag("svg").attr("xmlns", "http://www.w3.org/2000/svg")
-  // .attr("width", fmt(options.imageSize[0])).attr("height", fmt(options.imageSize[1]))
-  // .attr("viewBox",
-  // String.format(Locale.US, "0 0 %.0f %.0f", options.imageSize[0], options.imageSize[1]))
-  // .with(elements).render();
-  // } else {
-  // return elements.stream().map(DomContent::render).collect(Collectors.joining("\n"));
-  // }
-  // }
-
+  /**
+   * Converts a Graphics expression to an SVG string. * @param graphicsExpr graphics expression
+   * argument
+   * 
+   * @param withSVGTag if <code>true</code> print the svg tag
+   * @return SVG string or <code>null</code> if error occurred
+   */
   public String toSVG(IAST graphicsExpr, boolean withSVGTag) {
-    if (graphicsExpr.isList() || graphicsExpr.isAST(S.GraphicsRow))
+    if (graphicsExpr.isList() || graphicsExpr.isAST(S.GraphicsRow)) {
       return toSVGRow(graphicsExpr, withSVGTag);
-    resetBounds();
-    parseOptions(graphicsExpr);
-    if (graphicsExpr.argSize() >= 1)
-      scanBounds(graphicsExpr.arg1(), options.globalStyle.clone());
-    refineDataBounds();
-    adjustBoundsForLogScale();
-    if (options.plotLegends != null) {
-      if (options.plotLegends.isList() || isBarLegend(options.plotLegends))
-        paddingRight += LEGEND_WIDTH;
     }
-    calculateViewport();
-
-    List<DomContent> elements = new ArrayList<>();
-    String plotAreaId = "plotArea" + idSuffix;
-    String gradientId = "sunsetGradient" + idSuffix;
-
-    // 1. Base Canvas (White, covers everything)
-    elements.add(tag("rect").attr("width", "100%").attr("height", "100%").attr("fill", "white"));
-
-    // 2. Calculated Plot Area Dimensions
-    double plotX1 = paddingLeft;
-    double plotX2 = paddingLeft + (mapMaxX - mapMinX) * scaleX;
-    double plotY2 = options.imageSize[1] - paddingBottom;
-    double plotY1 = plotY2 - (mapMaxY - mapMinY) * scaleY;
-    double clipW = Math.max(0, plotX2 - plotX1);
-    double clipH = Math.max(0, plotY2 - plotY1);
-
-    // 3. User Background (Clipped to Plot Area)
-    if (options.background != null) {
-      elements
-          .add(tag("rect").attr("x", fmt(plotX1)).attr("y", fmt(plotY1)).attr("width", fmt(clipW))
-              .attr("height", fmt(clipH)).attr("fill", colorToCss(options.background)));
-    }
-
-    if (options.prolog != null) {
-      ContainerTag<?> prologGroup = tag("g").attr("id", "prolog");
-      processElement(options.prolog, options.globalStyle.clone(), prologGroup);
-      elements.add(prologGroup);
-    }
-
-    if (options.gridLines != null && !options.gridLines.isFalse() && !options.gridLines.isNone()) {
-      ContainerTag<?> gridGroup = tag("g").attr("class", "grid");
-      drawGridLines(gridGroup);
-      elements.add(gridGroup);
-    }
-
-    ContainerTag<?> defs = tag("defs");
-    boolean hasDefs = false;
-
-    if (options.plotLegends != null && isBarLegend(options.plotLegends)) {
-      ContainerTag<?> gradient = tag("linearGradient").attr("id", gradientId).attr("x1", "0%")
-          .attr("y1", "100%").attr("x2", "0%").attr("y2", "0%");
-      double[][] colors = GraphicsOptions.SUNSET_COLORS;
-      int n = colors.length - 1;
-      for (int i = 0; i < colors.length; i++) {
-        double offset = (double) i / n * 100.0;
-        String color = String.format(Locale.US, "rgb(%d,%d,%d)", (int) (colors[i][0] * 255),
-            (int) (colors[i][1] * 255), (int) (colors[i][2] * 255));
-        gradient.with(tag("stop").attr("offset", String.format(Locale.US, "%.1f%%", offset))
-            .attr("style", "stop-color:" + color + ";stop-opacity:1"));
+    try {
+      resetBounds();
+      parseOptions(graphicsExpr);
+      if (graphicsExpr.argSize() >= 1)
+        scanBounds(graphicsExpr.arg1(), options.globalStyle.clone());
+      refineDataBounds();
+      adjustBoundsForLogScale();
+      if (options.plotLegends != null) {
+        if (options.plotLegends.isList() || isBarLegend(options.plotLegends))
+          paddingRight += LEGEND_WIDTH;
       }
-      defs.with(gradient);
+      calculateViewport();
+
+      List<DomContent> elements = new ArrayList<>();
+      String plotAreaId = "plotArea" + idSuffix;
+      String gradientId = "sunsetGradient" + idSuffix;
+
+      // 1. Base Canvas (White, covers everything)
+      elements.add(tag("rect").attr("width", "100%").attr("height", "100%").attr("fill", "white"));
+
+      // 2. Calculated Plot Area Dimensions
+      double plotX1 = paddingLeft;
+      double plotX2 = paddingLeft + (mapMaxX - mapMinX) * scaleX;
+      double plotY2 = options.imageSize[1] - paddingBottom;
+      double plotY1 = plotY2 - (mapMaxY - mapMinY) * scaleY;
+      double clipW = Math.max(0, plotX2 - plotX1);
+      double clipH = Math.max(0, plotY2 - plotY1);
+
+      // 3. User Background (Clipped to Plot Area)
+      if (options.background != null) {
+        elements
+            .add(tag("rect").attr("x", fmt(plotX1)).attr("y", fmt(plotY1)).attr("width", fmt(clipW))
+                .attr("height", fmt(clipH)).attr("fill", colorToCss(options.background)));
+      }
+
+      if (options.prolog != null) {
+        ContainerTag<?> prologGroup = tag("g").attr("id", "prolog");
+        processElement(options.prolog, options.globalStyle.clone(), prologGroup);
+        elements.add(prologGroup);
+      }
+
+      if (options.gridLines != null && !options.gridLines.isFalse()
+          && !options.gridLines.isNone()) {
+        ContainerTag<?> gridGroup = tag("g").attr("class", "grid");
+        drawGridLines(gridGroup);
+        elements.add(gridGroup);
+      }
+
+      ContainerTag<?> defs = tag("defs");
+      boolean hasDefs = false;
+
+      if (options.plotLegends != null && isBarLegend(options.plotLegends)) {
+        ContainerTag<?> gradient = tag("linearGradient").attr("id", gradientId).attr("x1", "0%")
+            .attr("y1", "100%").attr("x2", "0%").attr("y2", "0%");
+        double[][] colors = GraphicsOptions.SUNSET_COLORS;
+        int n = colors.length - 1;
+        for (int i = 0; i < colors.length; i++) {
+          double offset = (double) i / n * 100.0;
+          String color = String.format(Locale.US, "rgb(%d,%d,%d)", (int) (colors[i][0] * 255),
+              (int) (colors[i][1] * 255), (int) (colors[i][2] * 255));
+          gradient.with(tag("stop").attr("offset", String.format(Locale.US, "%.1f%%", offset))
+              .attr("style", "stop-color:" + color + ";stop-opacity:1"));
+        }
+        defs.with(gradient);
+        hasDefs = true;
+      }
+
+      defs.with(tag("clipPath").attr("id", plotAreaId).with(tag("rect").attr("x", fmt(plotX1))
+          .attr("y", fmt(plotY1)).attr("width", fmt(clipW)).attr("height", fmt(clipH))));
       hasDefs = true;
+      if (hasDefs)
+        elements.add(defs);
+
+      ContainerTag<?> mainGroup =
+          tag("g").attr("id", "main").attr("clip-path", "url(#" + plotAreaId + ")");
+      if (graphicsExpr.argSize() >= 1) {
+        ContainerTag<?> contentGroup =
+            tag("g").attr("font-family", "sans-serif").attr("font-size", "12.0");
+        processElement(graphicsExpr.arg1(), options.globalStyle.clone(), contentGroup);
+        mainGroup.with(contentGroup);
+      }
+      elements.add(mainGroup);
+
+      ContainerTag<?> axesGroup = tag("g").attr("class", "axes");
+      if (!options.axes.isFalse() && !options.axes.isNone())
+        drawAxesWithTicks(axesGroup);
+      if (options.frame)
+        drawFrame(axesGroup);
+      if (axesGroup.getNumChildren() > 0)
+        elements.add(axesGroup);
+
+      if (options.plotLegends != null) {
+        ContainerTag<?> legendGroup = tag("g").attr("class", "legends");
+        drawLegends(legendGroup, gradientId);
+        elements.add(legendGroup);
+      }
+
+      if (options.epilog != null) {
+        ContainerTag<?> epilogGroup = tag("g").attr("id", "epilog");
+        processElement(options.epilog, options.globalStyle.clone(), epilogGroup);
+        elements.add(epilogGroup);
+      }
+
+      if (withSVGTag) {
+        return tag("svg")
+            .attr("xmlns", "http://www.w3.org/2000/svg").attr("width", fmt(options.imageSize[0]))
+            .attr("height", fmt(options.imageSize[1])).attr("viewBox", String.format(Locale.US,
+                "0 0 %.0f %.0f", options.imageSize[0], options.imageSize[1]))
+            .with(elements).render();
+      } else {
+        return elements.stream().map(DomContent::render).collect(Collectors.joining("\n"));
+      }
+    } catch (RuntimeException rex) {
+      Errors.printMessage(S.Graphics, rex);
+      if (Config.SHOW_STACKTRACE) {
+        rex.printStackTrace();
+      }
     }
-
-    defs.with(tag("clipPath").attr("id", plotAreaId).with(tag("rect").attr("x", fmt(plotX1))
-        .attr("y", fmt(plotY1)).attr("width", fmt(clipW)).attr("height", fmt(clipH))));
-    hasDefs = true;
-    if (hasDefs)
-      elements.add(defs);
-
-    ContainerTag<?> mainGroup =
-        tag("g").attr("id", "main").attr("clip-path", "url(#" + plotAreaId + ")");
-    if (graphicsExpr.argSize() >= 1) {
-      ContainerTag<?> contentGroup =
-          tag("g").attr("font-family", "sans-serif").attr("font-size", "12.0");
-      processElement(graphicsExpr.arg1(), options.globalStyle.clone(), contentGroup);
-      mainGroup.with(contentGroup);
-    }
-    elements.add(mainGroup);
-
-    ContainerTag<?> axesGroup = tag("g").attr("class", "axes");
-    if (!options.axes.isFalse() && !options.axes.isNone())
-      drawAxesWithTicks(axesGroup);
-    if (options.frame)
-      drawFrame(axesGroup);
-    if (axesGroup.getNumChildren() > 0)
-      elements.add(axesGroup);
-
-    if (options.plotLegends != null) {
-      ContainerTag<?> legendGroup = tag("g").attr("class", "legends");
-      drawLegends(legendGroup, gradientId);
-      elements.add(legendGroup);
-    }
-
-    if (options.epilog != null) {
-      ContainerTag<?> epilogGroup = tag("g").attr("id", "epilog");
-      processElement(options.epilog, options.globalStyle.clone(), epilogGroup);
-      elements.add(epilogGroup);
-    }
-
-    if (withSVGTag) {
-      return tag("svg").attr("xmlns", "http://www.w3.org/2000/svg")
-          .attr("width", fmt(options.imageSize[0])).attr("height", fmt(options.imageSize[1]))
-          .attr("viewBox",
-              String.format(Locale.US, "0 0 %.0f %.0f", options.imageSize[0], options.imageSize[1]))
-          .with(elements).render();
-    } else {
-      return elements.stream().map(DomContent::render).collect(Collectors.joining("\n"));
-    }
+    return null;
   }
 
   private void adjustBoundsForLogScale() {
@@ -559,22 +444,26 @@ public class SVGGraphics {
       if (i < list.size())
         totalWidth += gap;
     }
-    if (withSVGTag)
+    if (withSVGTag) {
       combined.append(String.format(Locale.US,
-          "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%.0f\" height=\"%.0f\" viewBox=\"0 0 %.0f %.0f\">\n",
+          "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%.0f\" height=\"%.0f\" viewBox=\"0 0 %.0f %.0f\">",
           totalWidth, maxHeight, totalWidth, maxHeight));
+      combined.append("\n");
+    }
     double currentX = 0;
     for (int i = 0; i < parts.size(); i++) {
       double[] size = sizes.get(i);
       double yOffset = (maxHeight - size[1]) / 2.0;
       combined.append(
-          String.format(Locale.US, "<g transform=\"translate(%.2f, %.2f)\">\n", currentX, yOffset));
+          String.format(Locale.US, "<g transform=\"translate(%.2f, %.2f)\">", currentX, yOffset));
+      combined.append("\n");
       combined.append(parts.get(i));
       combined.append("</g>\n");
       currentX += size[0] + gap;
     }
-    if (withSVGTag)
-      combined.append("</svg>");
+    if (withSVGTag) {
+      combined.append("\n</svg>");
+    }
     return combined.toString();
   }
 
@@ -1537,21 +1426,39 @@ public class SVGGraphics {
       showY = ((IAST) options.axes).arg2().isTrue();
     }
 
-    double ox = (options.axesOrigin != null) ? options.axesOrigin[0] : 0.0;
-    double oy = (options.axesOrigin != null) ? options.axesOrigin[1] : 0.0;
-    if (isLog(options.scalingX) && ox <= 0)
-      ox = (dataMinX > 0) ? dataMinX : LOG_MIN_CLAMP;
-    if (isLog(options.scalingY) && oy <= 0)
-      oy = (dataMinY > 0) ? dataMinY : LOG_MIN_CLAMP;
+    // Determine Axis positions.
+    // Default to Automatic behavior (edges) if Origin is null.
+    // If Log scale, Automatic means Bottom/Left edges of the view, NOT 0.
+    double screenOx, screenOy;
+    double oxMap, oyMap;
 
-    double oxMap = GraphicsOptions.getScalingFunction(options.scalingX).applyAsDouble(ox);
-    double oyMap = GraphicsOptions.getScalingFunction(options.scalingY).applyAsDouble(oy);
+    if (options.axesOrigin != null) {
+      double ox = options.axesOrigin[0];
+      double oy = options.axesOrigin[1];
 
-    double plotX1 = paddingLeft;
-    double plotX2 = paddingLeft + (mapMaxX - mapMinX) * scaleX;
-    double plotY2 = options.imageSize[1] - paddingBottom;
-    double plotY1 = plotY2 - (mapMaxY - mapMinY) * scaleY;
+      if (isLog(options.scalingX) && ox <= 0)
+        ox = (dataMinX > 0) ? dataMinX : LOG_MIN_CLAMP;
+      if (isLog(options.scalingY) && oy <= 0)
+        oy = (dataMinY > 0) ? dataMinY : LOG_MIN_CLAMP;
 
+      oxMap = GraphicsOptions.getScalingFunction(options.scalingX).applyAsDouble(ox);
+      oyMap = GraphicsOptions.getScalingFunction(options.scalingY).applyAsDouble(oy);
+    } else {
+      // Automatic Origin
+      // For Log scales, default to the minimum visible value (edge of plot).
+      // For Linear scales, default to 0 if 0 is sensible, else edge.
+      if (isLog(options.scalingX))
+        oxMap = mapMinX;
+      else
+        oxMap = 0.0;
+
+      if (isLog(options.scalingY))
+        oyMap = mapMinY;
+      else
+        oyMap = 0.0;
+    }
+
+    // Clamp axis drawing to the viewport
     if (oxMap < mapMinX)
       oxMap = mapMinX;
     if (oxMap > mapMaxX)
@@ -1561,9 +1468,15 @@ public class SVGGraphics {
     if (oyMap > mapMaxY)
       oyMap = mapMaxY;
 
-    double screenOx = paddingLeft + (oxMap - mapMinX) * scaleX;
-    double screenOy = (options.imageSize[1] - paddingBottom) - (oyMap - mapMinY) * scaleY;
+    screenOx = paddingLeft + (oxMap - mapMinX) * scaleX;
+    screenOy = (options.imageSize[1] - paddingBottom) - (oyMap - mapMinY) * scaleY;
 
+    double plotX1 = paddingLeft;
+    double plotX2 = paddingLeft + (mapMaxX - mapMinX) * scaleX;
+    double plotY2 = options.imageSize[1] - paddingBottom;
+    double plotY1 = plotY2 - (mapMaxY - mapMinY) * scaleY;
+
+    // Apply clamping again to ensure we don't draw outside due to float errors
     if (screenOx < plotX1)
       screenOx = plotX1;
     if (screenOx > plotX2)
@@ -1815,10 +1728,11 @@ public class SVGGraphics {
   }
 
   private void drawLegends(ContainerTag<?> parent, String gradientId) {
-    if (options.plotLegends.isList())
+    if (options.plotLegends.isList()) {
       drawListLegend((IAST) options.plotLegends, parent);
-    else if (isBarLegend(options.plotLegends))
+    } else if (isBarLegend(options.plotLegends)) {
       drawBarLegend((IAST) options.plotLegends, gradientId, parent);
+    }
   }
 
   private void drawListLegend(IAST legends, ContainerTag<?> parent) {
@@ -1834,11 +1748,8 @@ public class SVGGraphics {
     for (int i = 0; i < count; i++) {
       IExpr label = legends.get(i + 1);
       Color c = Color.BLACK;
-      try {
-        RGBColor rgb = GraphicsOptions.plotStyleColor(i, options.plotStyleRaw);
-        c = new Color(rgb.getRed(), rgb.getGreen(), rgb.getBlue());
-      } catch (Exception e) {
-      }
+      RGBColor rgb = GraphicsOptions.plotStyleColor(i, options.plotStyleRaw);
+      c = new Color(rgb.getRed(), rgb.getGreen(), rgb.getBlue());
       double y = yBase + i * lineHeight;
 
       if (options.joined) {
@@ -2306,9 +2217,8 @@ public class SVGGraphics {
   }
 
   /**
-   * Handles Lighter[col, f] and Darker[col, f].
+   * Handles Lighter[col, f] and Darker[col, f]. * @param ast The AST (e.g. Lighter[Red, 0.5])
    * 
-   * @param ast The AST (e.g. Lighter[Red, 0.5])
    * @param isLighter true for Lighter, false for Darker
    */
   private Color getLighterDarkerColor(IAST ast, boolean isLighter) {

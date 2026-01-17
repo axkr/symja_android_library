@@ -79,16 +79,16 @@ public class ManipulateFunction {
 
     private static void init() {
       if (Config.USE_MANIPULATE_JS) {
-        S.BarChart.setEvaluator(new BarChart());
-        S.BoxWhiskerChart.setEvaluator(new BoxWhiskerChart());
-        S.ComplexPlot3D.setEvaluator(new ComplexPlot3D());
-        S.ContourPlot.setEvaluator(new ContourPlot());
-        S.DensityPlot.setEvaluator(new DensityPlot());
-        S.DensityHistogram.setEvaluator(new DensityHistogram());
-        S.Histogram.setEvaluator(new Histogram());
-        S.PieChart.setEvaluator(new PieChart());
+        // S.BarChart.setEvaluator(new BarChart());
+        // S.BoxWhiskerChart.setEvaluator(new BoxWhiskerChart());
+        // S.ComplexPlot3D.setEvaluator(new ComplexPlot3D());
+        // S.ContourPlot.setEvaluator(new ContourPlot());
+        // S.DensityPlot.setEvaluator(new DensityPlot());
+        // S.DensityHistogram.setEvaluator(new DensityHistogram());
+        // S.Histogram.setEvaluator(new Histogram());
+        // S.PieChart.setEvaluator(new PieChart());
         S.Manipulate.setEvaluator(new Manipulate());
-        S.MatrixPlot.setEvaluator(new MatrixPlot());
+        // S.MatrixPlot.setEvaluator(new MatrixPlot());
       }
     }
   }
@@ -1974,25 +1974,25 @@ public class ManipulateFunction {
     }
   }
 
-  private static final class ContourPlot extends AbstractEvaluator {
+  // private static final class ContourPlot extends AbstractEvaluator {
+  //
+  // @Override
+  // public IExpr evaluate(final IAST ast, EvalEngine engine) {
+  // // "Function `1` not implemented.", //
+  // return Errors.printMessage(ast.topHead(), "zznotimpl", F.list(ast.topHead()), engine);
+  // // return redirectToManipulate(ast, engine);
+  // }
+  // }
 
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // "Function `1` not implemented.", //
-      return Errors.printMessage(ast.topHead(), "zznotimpl", F.list(ast.topHead()), engine);
-      // return redirectToManipulate(ast, engine);
-    }
-  }
-
-  private static final class DensityPlot extends AbstractEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // "Function `1` not implemented.", //
-      return Errors.printMessage(ast.topHead(), "zznotimpl", F.list(ast.topHead()), engine);
-      // return redirectToManipulate(ast, engine);
-    }
-  }
+  // private static final class DensityPlot extends AbstractEvaluator {
+  //
+  // @Override
+  // public IExpr evaluate(final IAST ast, EvalEngine engine) {
+  // // "Function `1` not implemented.", //
+  // return Errors.printMessage(ast.topHead(), "zznotimpl", F.list(ast.topHead()), engine);
+  // // return redirectToManipulate(ast, engine);
+  // }
+  // }
 
   private static final class DensityHistogram extends AbstractEvaluator {
     @Override
@@ -2434,7 +2434,7 @@ public class ManipulateFunction {
   }
 
   private static boolean isNonReal(IExpr lastPoint) {
-    return lastPoint == S.Indeterminate || lastPoint == S.None || lastPoint.isAST(S.Missing);
+    return lastPoint.isIndeterminate() || lastPoint.isNone() || lastPoint.isAST(S.Missing);
   }
 
   private static boolean isNonReal(IExpr lastPointX, IExpr lastPointY) {
