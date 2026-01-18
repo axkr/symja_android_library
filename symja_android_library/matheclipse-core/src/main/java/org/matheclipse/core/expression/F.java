@@ -4901,8 +4901,13 @@ public class F extends S {
   }
 
   public static IAST GraphicsComplex(final IExpr pointsList, final IExpr primitives,
-      final IAST options) {
-    return new AST3(GraphicsComplex, pointsList, primitives, options);
+      final IAST option1) {
+    return new AST3(GraphicsComplex, pointsList, primitives, option1);
+  }
+
+  public static IAST GraphicsComplex(final IExpr pointsList, final IExpr primitives,
+      final IAST option1, final IAST option2) {
+    return quaternary(GraphicsComplex, pointsList, primitives, option1, option2);
   }
 
 
@@ -10374,6 +10379,16 @@ public class F extends S {
         .orElse(expr);
   }
 
+  /**
+   * Substitute all (sub-) expressions which match the given symbols with the corresponding
+   * replacement expressions. If no (sub-) expression matches, the method returns the given
+   * <code>expr</code>.
+   * 
+   * @param expr
+   * @param symbols
+   * @param replacementExpr
+   * @return
+   */
   public static IExpr subst(IExpr expr, ISymbol[] symbols, IExpr[] replacementExpr) {
     return expr.replaceAll(symbols, replacementExpr).orElse(expr);
   }

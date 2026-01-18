@@ -7648,6 +7648,8 @@ public class S {
    */
   public final static IBuiltInSymbol Most = S.initFinalSymbol("Most", ID.Most);
 
+  public final static IBuiltInSymbol Mouseover = S.initFinalSymbol("Mouseover", ID.Mouseover);
+
   public final static IBuiltInSymbol MrvLimit = S.initFinalSymbol("MrvLimit", ID.MrvLimit);
 
   /**
@@ -11029,6 +11031,9 @@ public class S {
   public final static IBuiltInSymbol StaticsVisible =
       S.initFinalSymbol("StaticsVisible", ID.StaticsVisible);
 
+  public final static IBuiltInSymbol StatusArea =
+      S.initFinalSymbol("StatusArea", ID.StatusArea);
+
   /**
    * StieltjesGamma(a) - returns Stieltjes constant.
    * 
@@ -12710,6 +12715,9 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol VertexList = S.initFinalSymbol("VertexList", ID.VertexList);
+
+  public final static IBuiltInSymbol VertexNormals =
+      S.initFinalSymbol("VertexNormals", ID.VertexNormals);
 
   /**
    * VertexQ(graph, vertex) - test if `vertex` is a vertex in the `graph` object.
