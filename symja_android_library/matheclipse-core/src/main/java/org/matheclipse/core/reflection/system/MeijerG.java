@@ -469,7 +469,7 @@ public class MeijerG extends AbstractFunctionEvaluator implements IFunctionExpan
     if (a1.equals(b2) && a1.equals(b3)) {
       IExpr a1Half2 = F.CN1D2.plus(a1);
       if (a1Half2.subtract(b1).isPossibleZero(true)) {
-        // https://functions.wolfram.com/07.34.03.0984.01
+        // https://functions.wolfram.com/HypergeometricFunctions/MeijerG/03/01/05/10/
         // -2*Sqrt(Pi)
         final IExpr factor1 = F.Times(F.CN2, F.CSqrtPi);
         final IExpr factor2 = a1Half2.isPossibleZero(true) //

@@ -159,7 +159,7 @@ public class InverseFourier extends AbstractFunctionOptionEvaluator {
     Complex[] output;
 
     // Calculate Target Scaling and Exponent Sign
-    // Wolfram InverseFourier: 1 / n^((1+a)/2) * Sum[ v_s * exp( -2pi * i * b * ... ) ]
+    // WMA InverseFourier: 1 / n^((1+a)/2) * Sum(v_s * exp( -2pi * i * b * ... ))
     double prefactorExp = (1.0 + a) / 2.0;
     double targetScale = 1.0 / Math.pow(n, prefactorExp);
 
