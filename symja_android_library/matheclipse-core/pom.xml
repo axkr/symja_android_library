@@ -52,6 +52,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.hipparchus</groupId>
+			<artifactId>hipparchus-geometry</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.hipparchus</groupId>
 			<artifactId>hipparchus-ode</artifactId>
 		</dependency>
 		<dependency>
