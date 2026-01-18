@@ -4,6 +4,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -232,8 +233,12 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
   }
 
   @Override
+  public int status() {
+    return ImplementationStatus.EXPERIMENTAL;
+  }
+
+  @Override
   public void setUp(final ISymbol newSymbol) {
-    // Define options: PlotStyle, DataRange
     setOptions(newSymbol, new IBuiltInSymbol[] {S.PlotStyle, S.DataRange},
         new IExpr[] {S.Automatic, S.Automatic});
   }

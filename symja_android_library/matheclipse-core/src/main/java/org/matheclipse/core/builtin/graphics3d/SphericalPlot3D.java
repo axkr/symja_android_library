@@ -1,8 +1,10 @@
 package org.matheclipse.core.builtin.graphics3d;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -122,18 +124,21 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
 
         for (int j = 0; j < plotPoints; j++) {
           double phi = phiMin + j * phiStep;
+          try {
+            IExpr subst =
+                F.subst(rExpr, F.List(F.Rule(thetaVar, F.num(theta)), F.Rule(phiVar, F.num(phi))));
+            IExpr rValExpr = engine.evaluate(subst);
+            double r = rValExpr.evalf();
 
-          IExpr subst =
-              F.subst(rExpr, F.List(F.Rule(thetaVar, F.num(theta)), F.Rule(phiVar, F.num(phi))));
-          IExpr rValExpr = engine.evaluate(subst);
-          double r = rValExpr.evalDouble();
+            double x = r * sinTheta * Math.cos(phi);
+            double y = r * sinTheta * Math.sin(phi);
+            double z = r * cosTheta;
 
-          double x = r * sinTheta * Math.cos(phi);
-          double y = r * sinTheta * Math.sin(phi);
-          double z = r * cosTheta;
-
-          allPoints.append(F.List(F.num(x), F.num(y), F.num(z)));
-          globalPointIndex++;
+            allPoints.append(F.List(F.num(x), F.num(y), F.num(z)));
+            globalPointIndex++;
+          } catch (ArgumentTypeException ate) {
+            // don't append if exception occurs
+          }
         }
       }
 
@@ -189,6 +194,11 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
   @Override
   public int[] expectedArgSize(IAST ast) {
     return ARGS_3_3;
+  }
+
+  @Override
+  public int status() {
+    return ImplementationStatus.EXPERIMENTAL;
   }
 
   @Override

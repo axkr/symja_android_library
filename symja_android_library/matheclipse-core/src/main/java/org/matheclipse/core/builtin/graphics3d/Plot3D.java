@@ -123,14 +123,15 @@ public class Plot3D extends AbstractFunctionOptionEvaluator {
     return F.NIL;
   }
 
-  @Override
-  public int status() {
-    return ImplementationStatus.PARTIAL_SUPPORT;
-  }
 
   @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_2_INFINITY;
+  }
+
+  @Override
+  public int status() {
+    return ImplementationStatus.EXPERIMENTAL;
   }
 
   @Override

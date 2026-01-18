@@ -5,6 +5,7 @@ import java.util.List;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -197,18 +198,6 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     return true;
   }
 
-  @Override
-  public int[] expectedArgSize(IAST ast) {
-    return ARGS_1_2;
-  }
-
-  @Override
-  public void setUp(final ISymbol newSymbol) {
-    setOptions(newSymbol,
-        new IBuiltInSymbol[] {S.DataRange, S.PlotRange, S.Mesh, S.InterpolationOrder, S.BoxRatios},
-        new IExpr[] {S.Automatic, S.Automatic, S.Automatic, S.None, S.Automatic});
-  }
-
   // --- Simple Delaunay Triangulation (Bowyer-Watson) Helpers ---
 
   private static class PointXYZ {
@@ -332,5 +321,23 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
         p2 = b;
       }
     }
+  }
+
+
+  @Override
+  public int[] expectedArgSize(IAST ast) {
+    return ARGS_1_2;
+  }
+
+  @Override
+  public int status() {
+    return ImplementationStatus.EXPERIMENTAL;
+  }
+
+  @Override
+  public void setUp(final ISymbol newSymbol) {
+    setOptions(newSymbol,
+        new IBuiltInSymbol[] {S.DataRange, S.PlotRange, S.Mesh, S.InterpolationOrder, S.BoxRatios},
+        new IExpr[] {S.Automatic, S.Automatic, S.Automatic, S.None, S.Automatic});
   }
 }

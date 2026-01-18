@@ -118,10 +118,12 @@ public class WebGLGraphics3D {
   private static class ComplexContext {
     final IAST points;
     final IAST vertexColors;
+    final IAST vertexNormals;
 
-    public ComplexContext(IAST points, IAST vertexColors) {
+    public ComplexContext(IAST points, IAST vertexColors, IAST vertexNormals) {
       this.points = points;
       this.vertexColors = vertexColors;
+      this.vertexNormals = vertexNormals;
     }
 
     public double[] resolve(IExpr expr, double[] def) {
@@ -190,7 +192,7 @@ public class WebGLGraphics3D {
 
       parseAxesOption(rootNode, graphics);
 
-      // Lights ... (omitted brevity, same as previous)
+      // Lights
       List<LightConfig> lights = new ArrayList<>();
       if (graphics.isAST(S.Graphics3D) || graphics.isAST(S.SurfaceGraphics))
         parseLightingOption(graphics, lights);
@@ -205,7 +207,10 @@ public class WebGLGraphics3D {
         lNode.put("fixedToCamera", l.fixedToCamera);
         if (l.position != null)
           lNode.set("position", vecToJsonArray(l.position));
-        // ... rest of light logic
+        if (l.target != null)
+          lNode.set("target", vecToJsonArray(l.target));
+        lNode.put("angle", l.angle);
+        lNode.put("distance", l.distance);
       }
 
       // Process Geometry
@@ -470,21 +475,23 @@ public class WebGLGraphics3D {
             IExpr primitives = ast.arg2();
             IAST pts = ptsExpr.isList() ? (IAST) ptsExpr : null;
             IAST vColors = extractOptionList(ast, S.VertexColors);
-            ComplexContext newContext = new ComplexContext(pts, vColors);
+            IAST vNormals = extractOptionList(ast, S.VertexNormals);
+            ComplexContext newContext = new ComplexContext(pts, vColors, vNormals);
             processExpr(array, primitives, state, newContext, scaling);
           }
           break;
         case ID.Line:
           createPolyNode(array, "Line", ast.arg1(), state, context,
-              extractOptionList(ast, S.VertexColors), scaling);
+              extractOptionList(ast, S.VertexColors), null, scaling);
           break;
         case ID.Polygon:
           createPolyNode(array, "Polygon", ast.arg1(), state, context,
-              extractOptionList(ast, S.VertexColors), scaling);
+              extractOptionList(ast, S.VertexColors), extractOptionList(ast, S.VertexNormals),
+              scaling);
           break;
         case ID.Point:
           createPolyNode(array, "Point", ast.arg1(), state, context,
-              extractOptionList(ast, S.VertexColors), scaling);
+              extractOptionList(ast, S.VertexColors), null, scaling);
           break;
         case ID.Sphere: {
           ObjectNode node = createBaseNode(array, "Sphere", state);
@@ -700,11 +707,14 @@ public class WebGLGraphics3D {
   }
 
   private static void createPolyNode(ArrayNode array, String type, IExpr data, GraphicsState state,
-      ComplexContext context, IAST localVertexColors, ScalingContext scaling) {
+      ComplexContext context, IAST localVertexColors, IAST localVertexNormals,
+      ScalingContext scaling) {
     ObjectNode node = createBaseNode(array, type, state);
     ArrayNode pointsJson = node.putArray("points");
     List<IExpr> allVertices = new ArrayList<>();
     List<Color> allColors = new ArrayList<>();
+    List<IExpr> allNormals = new ArrayList<>();
+
     if (data.isList()) {
       IAST listData = (IAST) data;
       if (listData.size() > 1) {
@@ -722,10 +732,11 @@ public class WebGLGraphics3D {
         }
         if (isMulti) {
           for (int i = 1; i < listData.size(); i++)
-            processSingleFace(listData.get(i), type, context, localVertexColors, i - 1, allVertices,
-                allColors);
+            processSingleFace(listData.get(i), type, context, localVertexColors, localVertexNormals,
+                i - 1, allVertices, allColors, allNormals);
         } else {
-          processSingleFace(data, type, context, localVertexColors, 0, allVertices, allColors);
+          processSingleFace(data, type, context, localVertexColors, localVertexNormals, 0,
+              allVertices, allColors, allNormals);
         }
       }
     }
@@ -749,23 +760,43 @@ public class WebGLGraphics3D {
         colorsJson.add(c.getRed() / 255.0).add(c.getGreen() / 255.0).add(c.getBlue() / 255.0);
       }
     }
+    if (!allNormals.isEmpty() && allNormals.size() == allVertices.size()) {
+      ArrayNode normalsJson = node.putArray("vertexNormals");
+      for (IExpr n : allNormals) {
+        if (n.isList() && ((IAST) n).size() >= 4) {
+          normalsJson.add(getDouble(((IAST) n).get(1)));
+          normalsJson.add(getDouble(((IAST) n).get(2)));
+          normalsJson.add(getDouble(((IAST) n).get(3)));
+        } else {
+          normalsJson.add(0).add(0).add(1);
+        }
+      }
+    }
   }
 
   private static void processSingleFace(IExpr faceData, String type, ComplexContext context,
-      IAST localVertexColors, int faceIndex, List<IExpr> outVertices, List<Color> outColors) {
+      IAST localVertexColors, IAST localVertexNormals, int faceIndex, List<IExpr> outVertices,
+      List<Color> outColors, List<IExpr> outNormals) {
     List<IExpr> faceVerts = new ArrayList<>();
     List<Color> faceCols = new ArrayList<>();
-    resolveComplexAttributes(faceData, context, localVertexColors, 0, faceVerts, faceCols);
+    List<IExpr> faceNorms = new ArrayList<>();
+
+    resolveComplexAttributes(faceData, context, localVertexColors, localVertexNormals, 0, faceVerts,
+        faceCols, faceNorms);
+
     if (faceVerts.isEmpty())
       return;
     if (type.equals("Line") || type.equals("Point")) {
       outVertices.addAll(faceVerts);
       outColors.addAll(faceCols);
+      outNormals.addAll(faceNorms);
       return;
     }
     if (faceVerts.size() >= 3) {
       IExpr v0 = faceVerts.get(0);
       Color c0 = !faceCols.isEmpty() ? faceCols.get(0) : null;
+      IExpr n0 = !faceNorms.isEmpty() ? faceNorms.get(0) : null;
+
       for (int i = 1; i < faceVerts.size() - 1; i++) {
         outVertices.add(v0);
         outVertices.add(faceVerts.get(i));
@@ -775,12 +806,18 @@ public class WebGLGraphics3D {
           outColors.add(faceCols.get(i));
           outColors.add(faceCols.get(i + 1));
         }
+        if (n0 != null) {
+          outNormals.add(n0);
+          outNormals.add(faceNorms.get(i));
+          outNormals.add(faceNorms.get(i + 1));
+        }
       }
     }
   }
 
   private static int resolveComplexAttributes(IExpr data, ComplexContext context,
-      IAST localColorList, int localIndex, List<IExpr> outPoints, List<Color> outColors) {
+      IAST localColorList, IAST localNormalList, int localIndex, List<IExpr> outPoints,
+      List<Color> outColors, List<IExpr> outNormals) {
     if (!data.isList())
       return localIndex;
     IAST list = (IAST) data;
@@ -793,14 +830,29 @@ public class WebGLGraphics3D {
         } else {
           outPoints.add(F.List(F.num(0), F.num(0), F.num(0)));
         }
-        if (localColorList != null)
-          outColors.add(Color.WHITE);
-        else if (context.vertexColors != null && idx > 0 && idx < context.vertexColors.size())
+
+        if (localColorList != null && localIndex < localColorList.size() - 1) {
+          outColors.add(parseRawColor(localColorList.get(localIndex + 1)));
+        } else if (context.vertexColors != null && idx > 0 && idx < context.vertexColors.size()) {
           outColors.add(parseRawColor(context.vertexColors.get(idx)));
-        else if (context.vertexColors != null)
+        } else if (context.vertexColors != null) {
           outColors.add(Color.WHITE);
+        }
+
+        if (localNormalList != null && localIndex < localNormalList.size() - 1) {
+          outNormals.add(localNormalList.get(localIndex + 1));
+        } else if (context.vertexNormals != null && idx > 0 && idx < context.vertexNormals.size()) {
+          outNormals.add(context.vertexNormals.get(idx));
+        }
+
       } else {
         outPoints.add(el);
+        if (localColorList != null && localIndex < localColorList.size() - 1) {
+          outColors.add(parseRawColor(localColorList.get(localIndex + 1)));
+        }
+        if (localNormalList != null && localIndex < localNormalList.size() - 1) {
+          outNormals.add(localNormalList.get(localIndex + 1));
+        }
       }
       localIndex++;
     }
@@ -931,6 +983,7 @@ public class WebGLGraphics3D {
     IAST zRows = (IAST) zArg;
     ObjectNode node = createBaseNode(array, "GridSurface", state);
     ArrayNode zValues = node.putArray("zData");
+    ArrayNode cValues = node.putArray("colorData");
     int rows = zRows.size() - 1;
     int cols = 0;
     for (int i = 1; i < zRows.size(); i++) {
@@ -953,8 +1006,11 @@ public class WebGLGraphics3D {
       if (ast.get(i).isRuleAST()) {
         IAST rule = (IAST) ast.get(i);
         String key = rule.arg1().toString();
-        if ("Mesh".equals(key))
+        if ("MeshRange".equals(key)) {
+          // ... range parsing ...
+        } else if ("Mesh".equals(key)) {
           mesh = rule.arg2().isTrue();
+        }
       }
     }
     node.put("xMin", scaling.x.scale(xMin)).put("xMax", scaling.x.scale(xMax));

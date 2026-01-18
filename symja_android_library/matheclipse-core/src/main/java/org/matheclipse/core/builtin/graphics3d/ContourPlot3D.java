@@ -7,6 +7,7 @@ import java.util.Map;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -504,6 +505,11 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
   @Override
   public int[] expectedArgSize(IAST ast) {
     return ARGS_4_4;
+  }
+
+  @Override
+  public int status() {
+    return ImplementationStatus.EXPERIMENTAL;
   }
 
   @Override
