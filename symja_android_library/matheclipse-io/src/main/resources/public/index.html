@@ -54,22 +54,6 @@ import * as THREE_MODULE from 'three';
   // 3. Expose it globally so prototype.js and symja.js can find 'window.THREE'
   window.THREE = THREE;
 </script>
-
-<script type="module">
-import * as THREE_MODULE from 'three';
-  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-
-  // 1. Convert the read-only module to a regular, mutable object
-  const THREE = { ...THREE_MODULE };
-
-  // 2. Now we can attach OrbitControls to it (mimicking the old behavior)
-  THREE.OrbitControls = OrbitControls;
-
-  // 3. Expose it globally so prototype.js and symja.js can find 'window.THREE'
-  window.THREE = THREE;
-
-  console.log("Three.js loaded (Mutable Mode with OrbitControls)");
-</script>
  
 <script type="text/javascript" src="/media/js/mathjax/MathJax.js?config=MML_HTMLorMML&amp;delayStartupUntil=configured"></script>
 

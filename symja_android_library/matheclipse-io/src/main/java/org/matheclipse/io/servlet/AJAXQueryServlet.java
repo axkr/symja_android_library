@@ -261,7 +261,6 @@ public class AJAXQueryServlet extends HttpServlet {
             // }
             // }
           } else if (outExpr.isASTSizeGE(S.Graphics3D, 2)) {
-            // Use new WebGL generation
             String webglSnippet = WebGLGraphics3D.generateHTMLSnippet((IAST) outExpr);
             // Return as a JSON JavaScript result (which creates a line in the output UI)
             return JSONBuilder.createJSONJavaScript(webglSnippet);
