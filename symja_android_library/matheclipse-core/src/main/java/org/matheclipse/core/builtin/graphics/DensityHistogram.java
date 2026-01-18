@@ -18,8 +18,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Functions for generating 2D Density Histograms.
  * <p>
- * Example:
- * <code>DensityHistogram[RandomReal[NormalDistribution[0, 1], {1000, 2}], ChartLegends -> Automatic]</code>
  */
 public class DensityHistogram extends ListPlot {
 

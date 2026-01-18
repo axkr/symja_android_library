@@ -114,8 +114,6 @@ public class SVGGraphics {
   // --- Fields ---
 
   private final Options options = new Options();
-
-  // Unique ID suffix to prevent ID collisions (e.g. #plotArea) when combining multiple SVGs
   private final String idSuffix;
 
   // Data Bounds (Raw Values)
@@ -130,7 +128,7 @@ public class SVGGraphics {
   private double scaleX, scaleY;
 
   // Margins
-  private double paddingLeft = 50; // Increased for Y-axis labels
+  private double paddingLeft = 50;
   private double paddingBottom = 30;
   private double paddingTop = 20;
   private double paddingRight = 20;
@@ -139,8 +137,6 @@ public class SVGGraphics {
   private static final double LOG_MIN_CLAMP = 1e-10;
 
   public SVGGraphics() {
-    // this.svgBuilder = new StringBuilder();
-    // Generate a short unique suffix based on object hash
     this.idSuffix = "_" + Integer.toHexString(System.identityHashCode(this));
   }
 
@@ -153,23 +149,10 @@ public class SVGGraphics {
     return options.imageSize;
   }
 
-  /**
-   * Converts a Graphics expression to an SVG string. * @param graphicsExpr graphics expression
-   * argument; Typically an {@link S#List} of graphics primitives
-   * 
-   * @return SVG string or <code>null</code> if error occurred
-   */
   public String toSVG(IAST graphicsExpr) {
     return toSVG(graphicsExpr, true);
   }
 
-  /**
-   * Converts a Graphics expression to an SVG string. * @param graphicsExpr graphics expression
-   * argument
-   * 
-   * @param withSVGTag if <code>true</code> print the svg tag
-   * @return SVG string or <code>null</code> if error occurred
-   */
   public String toSVG(IAST graphicsExpr, boolean withSVGTag) {
     if (graphicsExpr.isList() || graphicsExpr.isAST(S.GraphicsRow)) {
       return toSVGRow(graphicsExpr, withSVGTag);
@@ -191,10 +174,10 @@ public class SVGGraphics {
       String plotAreaId = "plotArea" + idSuffix;
       String gradientId = "sunsetGradient" + idSuffix;
 
-      // 1. Base Canvas (White, covers everything)
+      // 1. Base Canvas (White)
       elements.add(tag("rect").attr("width", "100%").attr("height", "100%").attr("fill", "white"));
 
-      // 2. Calculated Plot Area Dimensions
+      // 2. Plot Area
       double plotX1 = paddingLeft;
       double plotX2 = paddingLeft + (mapMaxX - mapMinX) * scaleX;
       double plotY2 = options.imageSize[1] - paddingBottom;
@@ -202,7 +185,7 @@ public class SVGGraphics {
       double clipW = Math.max(0, plotX2 - plotX1);
       double clipH = Math.max(0, plotY2 - plotY1);
 
-      // 3. User Background (Clipped to Plot Area)
+      // 3. User Background
       if (options.background != null) {
         elements
             .add(tag("rect").attr("x", fmt(plotX1)).attr("y", fmt(plotY1)).attr("width", fmt(clipW))
@@ -329,10 +312,6 @@ public class SVGGraphics {
     }
   }
 
-  /**
-   * Applies common graphic state attributes to a tag. Can be overridden by explicit attributes
-   * passed as arguments.
-   */
   private void applyState(ContainerTag<?> t, GraphicState s, String strokeOverride,
       String fillOverride) {
     String stroke = (strokeOverride != null) ? strokeOverride : colorToCss(s.strokeColor);
@@ -344,22 +323,17 @@ public class SVGGraphics {
         .attr("stroke-linejoin", s.lineJoin);
   }
 
-  // --- Robust Heuristic for Singularities ---
   private void refineDataBounds() {
-    // Only apply if PlotRange -> Automatic and we have sufficient data
     if (!options.plotRangeAutomatic || allYValues.size() < 10)
       return;
 
     Collections.sort(allYValues);
     int n = allYValues.size();
-
-    // 1. Calculate Core Percentiles (10% and 90% to find the "body")
     double p10 = allYValues.get(n / 10);
     double p90 = allYValues.get(9 * n / 10);
     double bodyRange = p90 - p10;
 
     if (bodyRange <= 1e-10) {
-      // Fallback to IQR if body is degenerate
       double q1 = allYValues.get(n / 4);
       double q3 = allYValues.get(3 * n / 4);
       if (q3 - q1 > 1e-10) {
@@ -367,45 +341,32 @@ public class SVGGraphics {
         p90 = q3;
         bodyRange = q3 - q1;
       } else {
-        return; // Data is essentially flat
+        return;
       }
     }
 
-    // 2. Define "Reasonable" limits relative to the body
-    // Typically, extending the core by 100-150% covers "interesting" variation
-    // without chasing asymptotes.
     double expansion = 1.0;
     double softMin = p10 - expansion * bodyRange;
     double softMax = p90 + expansion * bodyRange;
 
-    // 3. Define "Hard" fences using standard Outlier logic (3 * IQR)
-    // to absolutely chop off singularities even if the distribution is wide.
     double q1 = allYValues.get(n / 4);
     double q3 = allYValues.get(3 * n / 4);
     double iqr = q3 - q1;
     double lowerFence = q1 - 3.0 * iqr;
     double upperFence = q3 + 3.0 * iqr;
 
-    // 4. Combine: Use the more restrictive of the Soft expansion and Hard fence
-    // effectively clamping the view to the relevant central behavior.
     double targetMin = Math.max(softMin, lowerFence);
     double targetMax = Math.min(softMax, upperFence);
 
-    // Ensure we don't shrink smaller than actual data if data is small
-    // But we DO want to shrink smaller than dataMinY if dataMinY is -Inf
-
-    // Find nearest actual data points to these target bounds to avoid whitespace
     double newMin = dataMinY;
     double newMax = dataMaxY;
 
-    // Scan for lower bound
     for (int i = 0; i < n; i++) {
       if (allYValues.get(i) >= targetMin) {
         newMin = allYValues.get(i);
         break;
       }
     }
-    // Scan for upper bound
     for (int i = n - 1; i >= 0; i--) {
       if (allYValues.get(i) <= targetMax) {
         newMax = allYValues.get(i);
@@ -413,18 +374,12 @@ public class SVGGraphics {
       }
     }
 
-    // Apply changes. Note: we might be shrinking the range (cutting off asymptotes)
-    // so we override dataMinY/MaxY instead of just checking < or >.
-    // However, we shouldn't expand beyond actual data.
     if (newMin > dataMinY)
       dataMinY = newMin;
     if (newMax < dataMaxY)
       dataMaxY = newMax;
   }
 
-  /**
-   * Helper to layout a list of Graphics objects side-by-side (Row).
-   */
   private String toSVGRow(IAST list, boolean withSVGTag) {
     StringBuilder combined = new StringBuilder();
     List<String> parts = new ArrayList<>();
@@ -475,7 +430,6 @@ public class SVGGraphics {
     allYValues.clear();
   }
 
-  // --- Viewport & Scaling ---
   private void calculateViewport() {
     DoubleUnaryOperator tx = GraphicsOptions.getScalingFunction(options.scalingX);
     DoubleUnaryOperator ty = GraphicsOptions.getScalingFunction(options.scalingY);
@@ -512,16 +466,11 @@ public class SVGGraphics {
     double drawingHeight = options.imageSize[1] - paddingTop - paddingBottom;
     double targetRatio;
 
-    // FIX: Default to rangeY/rangeX (Automatic) for Graphics, even if Axes are present.
-    // Only use forced aspect ratio if explicitly requested or if it was POSITIVE_INFINITY
-    // (Automatic).
     if (options.aspectRatio == Double.POSITIVE_INFINITY)
       targetRatio = rangeY / rangeX;
     else if (!Double.isNaN(options.aspectRatio))
       targetRatio = options.aspectRatio;
     else {
-      // Default for Graphics is Automatic (preserve shape), so scale factors should be equal.
-      // Previously this checked for Axes/Frame and forced stretching, which distorted Disks.
       targetRatio = rangeY / rangeX;
     }
 
@@ -529,7 +478,6 @@ public class SVGGraphics {
     double effectiveH = drawingHeight;
     double screenRatio = drawingHeight / drawingWidth;
 
-    // Fit the target aspect ratio within the available screen area
     if (targetRatio > screenRatio) {
       effectiveH = drawingHeight;
       effectiveW = effectiveH / targetRatio;
@@ -558,13 +506,9 @@ public class SVGGraphics {
     return (options.imageSize[1] - paddingBottom) - (val - mapMinY) * scaleY;
   }
 
-  // --- Legends ---
-
   private boolean isBarLegend(IExpr expr) {
     return expr.isAST(S.BarLegend);
   }
-
-  // --- Axis & Ticks ---
 
   private boolean isLog(String scale) {
     return scale != null && (scale.equalsIgnoreCase("Log") || scale.equalsIgnoreCase("Log10"));
@@ -585,19 +529,12 @@ public class SVGGraphics {
     int startPow = (int) Math.floor(logMin);
     int endPow = (int) Math.ceil(logMax);
 
-    // If span is large (>= 3 decades), show ONLY powers of 10.
-    // If span is huge (>= 8 decades), step by more than 1 power.
     if (span >= 3.0) {
-      // Calculate stride to aim for roughly 5-10 ticks max
       int stride = 1;
       if (span >= 8.0) {
         stride = (int) Math.ceil(span / 8.0);
       }
-
-      // Generate purely powers of 10
       for (int p = startPow; p <= endPow; p++) {
-        // Check alignment with stride (optional, or just simple stride logic)
-        // Ideally we anchor at 0: p % stride == 0
         if (Math.abs(p) % stride == 0) {
           double val = Math.pow(10, p);
           if (val >= min && val <= max) {
@@ -606,7 +543,6 @@ public class SVGGraphics {
         }
       }
     } else {
-      // Small span (< 3 decades): Show 1, 2, 5 pattern
       for (int p = startPow; p <= endPow; p++) {
         double base = Math.pow(10, p);
         double[] steps = {1.0, 2.0, 5.0};
@@ -630,10 +566,7 @@ public class SVGGraphics {
 
     if (isPowerOf10) {
       long exponent = (long) roundLog;
-      // Mathematica style: 100, 10, 1, 0.1, 0.01 are usually printed as numbers.
-      // 10^3 (1000) and up, or 10^-3 (0.001) and down are printed as scientific.
       if (exponent >= 3 || exponent <= -3) {
-        // Scientific notation 10^x using SVG tspan for superscript
         return String.format(Locale.US, "10<tspan dy=\"-0.6em\" font-size=\"70%%\">%d</tspan>",
             exponent);
       }
@@ -680,7 +613,6 @@ public class SVGGraphics {
   private String fmt(double d) {
     if (Math.abs(d - Math.round(d)) < 1e-9)
       return String.format("%d", Math.round(d));
-    // Use %.3f instead of %.1f to prevent 0.04 rounding to 0.0, causing gaps/overlaps
     return String.format(Locale.US, "%.3f", d);
   }
 
@@ -749,10 +681,6 @@ public class SVGGraphics {
     Color c = parseColor(ast);
     state.strokeColor = c;
     state.fillColor = c;
-    // FIX: Only overwrite state.opacity if the color AST explicitly defines an alpha component.
-    // RGBColor[r,g,b,a] has 4 args. RGBColor[r,g,b] has 3.
-    // Hue[h,s,b,a] has 4 args.
-    // GrayLevel[g,a] has 2 args.
     IExpr head = ast.head();
     if (head.isBuiltInSymbol()) {
       int ord = ((IBuiltInSymbol) head).ordinal();
@@ -785,7 +713,6 @@ public class SVGGraphics {
     state.edgeFormSet = true;
     IExpr arg = ast.arg1();
     if (arg.isList()) {
-      // Iterate through list to find color/opacity/etc
       for (IExpr e : (IAST) arg) {
         if (e.isAST()) {
           ISymbol head = e.topHead();
@@ -804,11 +731,8 @@ public class SVGGraphics {
             }
           }
         } else if (e.isBuiltInSymbol()) {
-          // Handle symbols like Red, Blue, Thick in EdgeForm
-          // ... simplified:
           if (e.equals(S.Thick))
             state.strokeWidth = options.imageSize[0] * 0.006;
-          // etc
         }
       }
     } else if (arg.equals(F.None)) {
@@ -1005,7 +929,14 @@ public class SVGGraphics {
           processGraphicsComplex(ast, state, parent);
           break;
         case ID.GraphicsGroup:
-          processElement(ast.arg1(), state, parent);
+        case ID.Annotation:
+        case ID.Tooltip:
+        case ID.Mouseover:
+        case ID.StatusArea:
+        case ID.Legended:
+          if (ast.argSize() >= 1) {
+            processElement(ast.arg1(), state, parent);
+          }
           break;
         case ID.Line:
           drawLine(ast, state, parent);
@@ -1144,7 +1075,6 @@ public class SVGGraphics {
         .attr("height", fmt(h));
     applyState(rect, state, stroke, null);
     if ("none".equals(stroke) && state.getEffectiveFillColor().getAlpha() > 0) {
-      // If no stroke, use crispEdges to eliminate white anti-aliasing gaps between cells
       rect.attr("shape-rendering", "crispEdges");
     }
     parent.with(rect);
@@ -1169,7 +1099,6 @@ public class SVGGraphics {
     double[] pos = parsePoint(ast.arg2(), state);
     double sx = mapX(pos[0]);
     double sy = mapY(pos[1]);
-
     double ox = 0.0, oy = 0.0;
     if (ast.argSize() >= 3) {
       IExpr offsetExpr = ast.arg3();
@@ -1193,7 +1122,20 @@ public class SVGGraphics {
   }
 
   private void drawPolygon(IAST ast, GraphicState state, ContainerTag<?> parent) {
-    List<double[]> points = extractPoints(ast.arg1(), state);
+    // Check if the argument represents multiple polygons: {{pt...}, {pt...}}
+    if (isMultiSegment(ast.arg1(), state)) {
+      // Iterate through the list of polygons
+      for (IExpr singlePolygonPts : (IAST) ast.arg1()) {
+        drawSinglePolygon(singlePolygonPts, state, parent);
+      }
+    } else {
+      // Standard case: Single Polygon {pt1, pt2, ...}
+      drawSinglePolygon(ast.arg1(), state, parent);
+    }
+  }
+
+  private void drawSinglePolygon(IExpr coords, GraphicState state, ContainerTag<?> parent) {
+    List<double[]> points = extractPoints(coords, state);
     drawPolygonPoints(state, parent, points.toArray(new double[0][]));
   }
 
@@ -1221,24 +1163,17 @@ public class SVGGraphics {
       ContainerTag<?> parent) {
     double[] c = parsePoint(ast.arg1(), state);
     double r = getDouble(ast, 2, 1.0);
-
-    // Calculate radii for X and Y separately to handle non-uniform scaling
     double rx = r * scaleX;
     double ry = r * scaleY;
-
     String fill = filled ? null : "none";
     String stroke = "none";
-
     if (filled && state.edgeFormSet && state.edgeColor != null) {
       stroke = colorToCss(state.edgeColor);
     } else if (!filled) {
       stroke = colorToCss(state.strokeColor);
     }
-
-    // Use ellipse to handle potential aspect ratio distortion correctly
     ContainerTag<?> ellipse = tag("ellipse").attr("cx", fmt(mapX(c[0]))).attr("cy", fmt(mapY(c[1])))
         .attr("rx", fmt(rx)).attr("ry", fmt(ry));
-
     applyState(ellipse, state, stroke, fill);
     parent.with(ellipse);
   }
@@ -1263,14 +1198,12 @@ public class SVGGraphics {
       double py = c[1] + r * Math.sin(theta);
       sb.append(fmt(mapX(px))).append(",").append(fmt(mapY(py))).append(" ");
     }
-
     String stroke = null;
     if (state.edgeFormSet && state.edgeColor != null) {
       stroke = colorToCss(state.edgeColor);
     } else {
       stroke = "none";
     }
-
     ContainerTag<?> poly = tag("polygon").attr("points", sb.toString().trim());
     applyState(poly, state, stroke, null);
     parent.with(poly);
@@ -1315,7 +1248,18 @@ public class SVGGraphics {
   }
 
   private void drawBezierCurve(IAST ast, GraphicState state, ContainerTag<?> parent) {
-    List<double[]> points = extractPoints(ast.arg1(), state);
+    if (isMultiSegment(ast.arg1(), state)) {
+      for (IExpr segment : (IAST) ast.arg1()) {
+        drawSingleBezierCurve(segment, ast, state, parent);
+      }
+    } else {
+      drawSingleBezierCurve(ast.arg1(), ast, state, parent);
+    }
+  }
+
+  private void drawSingleBezierCurve(IExpr coords, IAST ast, GraphicState state,
+      ContainerTag<?> parent) {
+    List<double[]> points = extractPoints(coords, state);
     if (points.isEmpty())
       return;
     StringBuilder d = new StringBuilder();
@@ -1811,7 +1755,7 @@ public class SVGGraphics {
     }
     return false;
   }
-
+ 
   private String getGridCss(GraphicState state) {
     return String.format(Locale.US,
         "stroke:%s; stroke-width:%.2fpx; stroke-opacity:%.2f; stroke-dasharray:%s; stroke-linecap:%s; stroke-linejoin:%s;",
@@ -2124,22 +2068,36 @@ public class SVGGraphics {
     return parsePointRaw(expr);
   }
 
+  /**
+   * Corrected extractPoints to handle nested index lists in GraphicsComplex recursively.
+   */
   private List<double[]> extractPoints(IExpr expr, GraphicState state) {
     List<double[]> pts = new ArrayList<>();
     if (expr.isList()) {
       IAST list = (IAST) expr;
-      // In GraphicsComplex, a list of numbers like {1, 2, 3} are indices, not a single coordinate.
-      // Outside, {x, y} is a coordinate.
+
+      // Determine if we should treat this list as a coordinate {x, y} directly.
+      // Outside GraphicsComplex, {x, y} (numbers) is a coordinate.
+      // Inside GraphicsComplex, we typically see indices (Integers) or Lists of Indices.
       boolean treatAsCoordinate = list.argSize() > 0 && list.arg1().isNumber();
       if (state.complexVertices != null) {
         treatAsCoordinate = false;
       }
 
-      if (treatAsCoordinate)
+      if (treatAsCoordinate) {
         pts.add(parsePoint(list, state));
-      else
-        for (int i = 1; i <= list.argSize(); i++)
-          pts.add(parsePoint(list.get(i), state));
+      } else {
+        for (int i = 1; i <= list.argSize(); i++) {
+          IExpr elem = list.get(i);
+          // If we are in a GraphicsComplex and the element is a list (e.g. {i1, i2, i3, ...}),
+          // we must recurse to extract vertices for all those indices.
+          if (state.complexVertices != null && elem.isList()) {
+            pts.addAll(extractPoints(elem, state));
+          } else {
+            pts.add(parsePoint(elem, state));
+          }
+        }
+      }
     } else if (state.complexVertices != null && expr.isInteger()) {
       pts.add(parsePoint(expr, state));
     }
@@ -2150,7 +2108,6 @@ public class SVGGraphics {
     try {
       if (expr instanceof INumber)
         return ((INumber) expr).reDoubleValue();
-      // Try evaluating symbolic numbers
       return expr.evalf();
     } catch (RuntimeException e) {
     }
@@ -2192,7 +2149,6 @@ public class SVGGraphics {
           float s = (ast.argSize() >= 2) ? (float) getDouble(ast.arg2()) : 1.0f;
           float b = (ast.argSize() >= 3) ? (float) getDouble(ast.arg3()) : 1.0f;
           float ha = (ast.argSize() >= 4) ? (float) getDouble(ast.arg4()) : 1.0f;
-          // getHSBColor returns opaque color, so we must recreate with alpha
           Color c = Color.getHSBColor(h, s, b);
           return new Color(c.getRed(), c.getGreen(), c.getBlue(), (int) (ha * 255));
         case ID.GrayLevel:
@@ -2216,27 +2172,16 @@ public class SVGGraphics {
     return Color.BLACK;
   }
 
-  /**
-   * Handles Lighter[col, f] and Darker[col, f]. * @param ast The AST (e.g. Lighter[Red, 0.5])
-   * 
-   * @param isLighter true for Lighter, false for Darker
-   */
   private Color getLighterDarkerColor(IAST ast, boolean isLighter) {
     if (ast.size() < 2)
       return Color.BLACK;
-
-    // Recursively parse the base color (arg1)
     Color base = toColor(ast.arg1());
     if (base == null)
       base = Color.BLACK;
-
-    // Default fraction is 1/3 if not specified
     double fraction = 1.0 / 3.0;
     if (ast.size() >= 3) {
       fraction = getDouble(ast.arg2());
     }
-
-    // Clamp fraction 0..1
     if (fraction < 0)
       fraction = 0;
     if (fraction > 1)
@@ -2245,22 +2190,18 @@ public class SVGGraphics {
     float r = base.getRed() / 255.0f;
     float g = base.getGreen() / 255.0f;
     float b = base.getBlue() / 255.0f;
-    float a = base.getAlpha() / 255.0f; // Preserve alpha
+    float a = base.getAlpha() / 255.0f;
 
     float newR, newG, newB;
-
     if (isLighter) {
-      // Blend with White: val * (1-f) + 1.0 * f
       newR = (float) (r * (1.0 - fraction) + fraction);
       newG = (float) (g * (1.0 - fraction) + fraction);
       newB = (float) (b * (1.0 - fraction) + fraction);
     } else {
-      // Blend with Black: val * (1-f) + 0.0 * f
       newR = (float) (r * (1.0 - fraction));
       newG = (float) (g * (1.0 - fraction));
       newB = (float) (b * (1.0 - fraction));
     }
-
     return new Color(clamp(newR), clamp(newG), clamp(newB), a);
   }
 
@@ -2269,10 +2210,9 @@ public class SVGGraphics {
   }
 
   private String colorToCss(Color c) {
-    // Note: This returns standard rgb(), ignoring alpha for the main color string.
-    // Alpha is handled via fill-opacity / stroke-opacity attributes using state.opacity/edgeOpacity
     return (c.getAlpha() == 0 && c.getRed() == 0 && c.getGreen() == 0 && c.getBlue() == 0) ? "none"
         : String.format(Locale.US, "rgb(%d,%d,%d)", c.getRed(), c.getGreen(), c.getBlue());
   }
 
+  
 }
