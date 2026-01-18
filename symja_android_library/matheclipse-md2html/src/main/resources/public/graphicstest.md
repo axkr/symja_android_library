@@ -10,6 +10,14 @@ Plot[Tan[x], {x, -Pi, Pi}, PlotRange->{-10,10}]
 ```
 
 ```mma
+ParametricPlot[{Cos[u], Cos[2*u]}, {u, 0, 2 Pi}]
+```
+
+```mma
+ParametricPlot[ r^2 { Sqrt[t]*Sin[t], Cos[t]}, {t, 0, 3 Pi/2}, {r, 1, 2}]
+```
+
+```mma
 Plot[Sin[E^x],{x,-2,6},PlotRange->{-3,3}]
 ```
 
@@ -63,9 +71,41 @@ ListLogLogPlot[Range[20]^3, Filling -> Bottom]
 ```mma
 ListLogLogPlot[Range[20]^3, Filling -> Axis]
 ```
- 
+
+``` 
+DiscretePlot[MoebiusMu[k], {k, 1, 50}]
+```
+
 ```mma
 ListLogLinearPlot[ Table[{n, n^k}, {k, {-1, -0.5, 0.5, 1}}, {n, 1, 10}], Joined -> True ]
+```
+
+```mma
+ContourPlot[Sin[x] + Sin[y], {x, 0, 4 Pi}, {y, 0, 4 Pi}]
+```
+
+```mma
+DensityPlot[Cos[x]*Cos[y], {x, -6.5, 6.5}, {y, -6.5, 6.5}]
+```
+
+```mma
+MatrixPlot[Inverse@ Table[Which[i==j, 2., i==j+1 || i==j-1, -1.,True,0.], {i,100},{j,100}]]
+```
+
+```mma
+MatrixPlot[Table[Binomial[n, k], {n, 0, 25}, {k, 0, n}],Background -> Lighter[Yellow]]
+```
+
+```mma
+ComplexPlot[(z^2 + 1)/(z^2 - 1), {z, -2 - 2*I, 2 + 2*I}, PlotLegends -> Automatic]
+```
+
+```mma
+DensityHistogram[RandomVariate[BinormalDistribution[.5], 500],ChartLegends -> Automatic]
+```
+
+```mma
+BoxWhiskerChart[ Table[RandomVariate[NormalDistribution[\[Mu], 1], 100], {\[Mu], {0, 3, 2, 5}}]]
 ```
 
 ```mma

@@ -25,6 +25,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.form.output.WolframFormFactory;
+import org.matheclipse.core.graphics.WebGLGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
@@ -117,6 +118,11 @@ public class DocNodeRenderer extends CoreHtmlNodeRenderer {
             return true;
           }
           // return openSVGOnDesktop((IAST) expr);
+        } else if (result.isASTSizeGE(S.Graphics3D, 2)
+            || result.isASTSizeGE(S.SurfaceGraphics, 2)) {
+          String webglSnippet = WebGLGraphics3D.generateHTMLSnippet((IAST) result);
+          html.raw(webglSnippet);
+          return true;
         } else if (result.isSameHeadSizeGE(S.Graphics3D, 2)) {
           StringBuilder buf = new StringBuilder();
           if (GraphicsUtil.renderGraphics3D(buf, (IAST) result, EvalEngine.get())) {
