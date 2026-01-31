@@ -717,4 +717,10 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "Sqrt(Pi/2)*FresnelS(Sqrt(2/Pi)*x)");
   }
 
+  @Test
+  public void testIntegrateDiverging() {
+    // Message: Integral of `1` does not converge on `2`.
+    check("Integrate(1/(x^2),{x,-2,1})", //
+        "Integrate(-1/x,{x,-2,0})+Integrate(-1/x,{x,0,1})");
+  }
 }

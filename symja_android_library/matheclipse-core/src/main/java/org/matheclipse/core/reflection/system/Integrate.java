@@ -691,7 +691,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * <p>
    * See: <a href="https://en.wikipedia.org/wiki/Integral">Wikipedia - Integral</a>
    * <p>
-   * <b>Note:</b>: the method does not check whether the domain of integration is continuous.
+   * <b>Note:</b>: the method does not strictly check whether the domain of integration is
+   * continuous.
    * 
    * @param function a function of <code>x</code>
    * @param xValueList a list of the form <code>{x, lower, upper}</code> with <code>3</code>
@@ -701,10 +702,50 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    */
   private static IExpr definiteIntegral(IExpr function, IAST xValueList, IAST originalAST,
       EvalEngine engine) {
-    // see Rubi rule for definite integrals
+    // see also Rubi rule for definite integrals
     IExpr x = xValueList.arg1();
     IExpr lower = xValueList.arg2();
     IExpr upper = xValueList.arg3();
+
+    // Singularity Detection
+    Optional<IExpr[]> fractionalParts = AlgebraUtil.fractionalParts(function, true);
+    if (fractionalParts.isPresent()) {
+      IExpr denominator = fractionalParts.get()[1];
+      if (!denominator.isNumber() || denominator.isZero()) {
+        // Find singularities by solving denominator == 0
+        IExpr singularities = engine.evaluate(F.Solve(F.Equal(denominator, F.C0), x));
+        if (singularities.isList()) {
+          for (IExpr solution : (IAST) singularities) {
+            if (solution.isList()) {
+              // Assuming Solve returns rules like {{x->0}, ...}
+              // Extract the value from the rule
+              IExpr singularPoint = F.NIL;
+              for (IExpr rule : (IAST) solution) {
+                if (rule.isRule() && rule.first().equals(x)) {
+                  singularPoint = rule.second();
+                  break;
+                }
+              }
+
+              if (singularPoint.isPresent()) {
+                // Check if lower < singularPoint < upper
+                if (engine
+                    .evalTrue(F.And(F.Less(lower, singularPoint), F.Less(singularPoint, upper)))) {
+                  // Singularity found strictly inside the interval.
+                  // Split the integral: Integrate(f, {x, lower, point}) + Integrate(f, {x, point,
+                  // upper})
+                  // The recursive calls will handle the Limit check at the singularity.
+                  IExpr left = F.Integrate(function, F.List(x, lower, singularPoint));
+                  IExpr right = F.Integrate(function, F.List(x, singularPoint, upper));
+                  return F.Plus(left, right);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
     IExpr diff = engine.evaluate(F.Subtract(upper, lower));
     if (S.PossibleZeroQ.ofQ(engine, diff)) {
       return F.C0;
@@ -719,26 +760,16 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       upperDirection = F.Rule(F.Direction, F.C1);
     }
     IExpr lowerLimit = engine.evaluate(F.Limit(function, F.Rule(x, lower), lowerDirection));
-    if (!lowerLimit.isFree(S.DirectedInfinity, true) || !lowerLimit.isFree(S.Indeterminate, true)) {
-      // if (lowerLimit.isDirectedInfinity() || lowerLimit.isIndeterminate()) {
+    if (!lowerLimit.isSpecialsFree()) {
       // Integral of `1` does not converge on `2`.
       return Errors.printMessage(S.Integrate, "idiv", F.List(originalAST.arg1(), xValueList),
           engine);
-      // }
-      // LOGGER.log(engine.getLogLevel(), "Not integrable: {} for limit {} -> {}", function, x,
-      // lower);
-      // return F.NIL;
     }
     IExpr upperLimit = engine.evaluate(F.Limit(function, F.Rule(x, upper), upperDirection));
-    if (!upperLimit.isFree(S.DirectedInfinity, true) || !upperLimit.isFree(S.Indeterminate, true)) {
-      // if (upperLimit.isDirectedInfinity() || upperLimit.isIndeterminate()) {
+    if (!upperLimit.isSpecialsFree()) {
       // Integral of `1` does not converge on `2`.
       return Errors.printMessage(S.Integrate, "idiv", F.List(originalAST.arg1(), xValueList),
           engine);
-      // }
-      // LOGGER.log(engine.getLogLevel(), "Not integrable: {} for limit {} -> {}", function, x,
-      // upper);
-      // return F.NIL;
     }
 
     if (upperLimit.isAST() && lowerLimit.isAST()) {

@@ -542,6 +542,10 @@ public class Errors {
     return printMessage(symbol, "error", F.List(message), engine);
   }
 
+  public static IAST printMessage(ISymbol symbol, final String errorMessage) {
+    return printMessage(symbol, "error", F.List(errorMessage), EvalEngine.get());
+  }
+
   /**
    * Print message <code>experimental</code> -
    * <code>Experimental implementation (search in Github issues for identifier `1`).</code>
