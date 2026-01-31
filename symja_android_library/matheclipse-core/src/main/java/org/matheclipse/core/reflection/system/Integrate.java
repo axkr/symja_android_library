@@ -735,8 +735,16 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
                   // Split the integral: Integrate(f, {x, lower, point}) + Integrate(f, {x, point,
                   // upper})
                   // The recursive calls will handle the Limit check at the singularity.
-                  IExpr left = F.Integrate(function, F.List(x, lower, singularPoint));
-                  IExpr right = F.Integrate(function, F.List(x, singularPoint, upper));
+                  IExpr left = definiteIntegral(function, F.List(x, lower, singularPoint),
+                      originalAST, engine);
+                  if (left.isNIL()) {
+                    return F.NIL;
+                  }
+                  IExpr right = definiteIntegral(function, F.List(x, singularPoint, upper),
+                      originalAST, engine);
+                  if (right.isNIL()) {
+                    return F.NIL;
+                  }
                   return F.Plus(left, right);
                 }
               }
@@ -762,13 +770,15 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     IExpr lowerLimit = engine.evaluate(F.Limit(function, F.Rule(x, lower), lowerDirection));
     if (!lowerLimit.isSpecialsFree()) {
       // Integral of `1` does not converge on `2`.
-      return Errors.printMessage(S.Integrate, "idiv", F.List(originalAST.arg1(), xValueList),
+      return Errors.printMessage(S.Integrate, "idiv",
+          F.List(originalAST.arg1(), originalAST.arg2()),
           engine);
     }
     IExpr upperLimit = engine.evaluate(F.Limit(function, F.Rule(x, upper), upperDirection));
     if (!upperLimit.isSpecialsFree()) {
       // Integral of `1` does not converge on `2`.
-      return Errors.printMessage(S.Integrate, "idiv", F.List(originalAST.arg1(), xValueList),
+      return Errors.printMessage(S.Integrate, "idiv",
+          F.List(originalAST.arg1(), originalAST.arg2()),
           engine);
     }
 
