@@ -307,7 +307,7 @@
 			<dependency>
 				<groupId>org.choco-solver</groupId>
 				<artifactId>choco-solver</artifactId>
-				<version>4.10.18</version>
+				<version>5.0.0</version>
 				<exclusions>
 					<exclusion>
 						<groupId>org.knowm.xchart</groupId>
