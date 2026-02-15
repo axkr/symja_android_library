@@ -289,6 +289,9 @@ public class S {
   public final static IBuiltInSymbol AccuracyGoal =
       S.initFinalSymbol("AccuracyGoal", ID.AccuracyGoal);
 
+  public final static IBuiltInSymbol Activate = S.initFinalSymbol("Activate", ID.Activate);
+
+
   /**
    * AddSides(compare-expr, value) - add `value` to all elements of the `compare-expr`.
    * `compare-expr` can be `True`, `False` or an comparison expression with head `Equal, Unequal,
@@ -311,6 +314,9 @@ public class S {
 
   public final static IBuiltInSymbol AddToClassPath =
       S.initFinalSymbol("AddToClassPath", ID.AddToClassPath);
+
+  public final static IBuiltInSymbol AdjacencyGraph =
+      S.initFinalSymbol("AdjacencyGraph", ID.AdjacencyGraph);
 
   /**
    * AdjacencyMatrix(graph) - convert the `graph` into a adjacency matrix in sparse array format.
@@ -915,6 +921,8 @@ public class S {
       S.initFinalSymbol("AvogadroConstant", ID.AvogadroConstant);
 
   public final static IBuiltInSymbol Axes = S.initFinalSymbol("Axes", ID.Axes);
+
+  public final static IBuiltInSymbol AxesEdge = S.initFinalSymbol("AxesEdge", ID.AxesEdge);
 
   public final static IBuiltInSymbol AxesLabel = S.initFinalSymbol("AxesLabel", ID.AxesLabel);
 
@@ -2033,6 +2041,9 @@ public class S {
 
   public final static IBuiltInSymbol ColorData = S.initFinalSymbol("ColorData", ID.ColorData);
 
+  public final static IBuiltInSymbol ColorDataFunction =
+      S.initFinalSymbol("ColorDataFunction", ID.ColorDataFunction);
+
   public final static IBuiltInSymbol ColorFunction =
       S.initFinalSymbol("ColorFunction", ID.ColorFunction);
 
@@ -2105,6 +2116,9 @@ public class S {
    */
   public final static IBuiltInSymbol CompleteGraph =
       S.initFinalSymbol("CompleteGraph", ID.CompleteGraph);
+
+  public final static IBuiltInSymbol CompleteKaryTree =
+      S.initFinalSymbol("CompleteKaryTree", ID.CompleteKaryTree);
 
   /**
    * Complex - is the head of complex numbers.
@@ -2255,6 +2269,9 @@ public class S {
    */
   public final static IBuiltInSymbol ConjugateTranspose =
       S.initFinalSymbol("ConjugateTranspose", ID.ConjugateTranspose);
+
+  public final static IBuiltInSymbol ConnectedGraphComponents =
+      S.initFinalSymbol("ConnectedGraphComponents", ID.ConnectedGraphComponents);
 
   /**
    * ConnectedGraphQ(graph) - returns `True` if the `graph` is strongly connected, which means that
@@ -4430,6 +4447,11 @@ public class S {
 
   public final static IBuiltInSymbol Frame = S.initFinalSymbol("Frame", ID.Frame);
 
+  public final static IBuiltInSymbol Framed = S.initFinalSymbol("Framed", ID.Framed);
+
+  public final static IBuiltInSymbol FrameMargins =
+      S.initFinalSymbol("FrameMargins", ID.FrameMargins);
+
   public final static IBuiltInSymbol FrameStyle = S.initFinalSymbol("FrameStyle", ID.FrameStyle);
 
   public final static IBuiltInSymbol FrameTicks = S.initFinalSymbol("FrameTicks", ID.FrameTicks);
@@ -4610,6 +4632,12 @@ public class S {
    */
   public final static IBuiltInSymbol Function = S.initFinalSymbol("Function", ID.Function);
 
+  public final static IBuiltInSymbol FunctionDiscontinuities =
+      S.initFinalSymbol("FunctionDiscontinuities", ID.FunctionDiscontinuities);
+
+  public final static IBuiltInSymbol FunctionContinuous =
+      S.initFinalSymbol("FunctionContinuous", ID.FunctionContinuous);
+
   public final static IBuiltInSymbol FunctionDomain =
       S.initFinalSymbol("FunctionDomain", ID.FunctionDomain);
 
@@ -4629,6 +4657,9 @@ public class S {
 
   public final static IBuiltInSymbol FunctionRange =
       S.initFinalSymbol("FunctionRange", ID.FunctionRange);
+
+  public final static IBuiltInSymbol FunctionSingularities =
+      S.initFinalSymbol("FunctionSingularities", ID.FunctionSingularities);
 
   /**
    * FunctionURL(built-in-symbol) - returns the GitHub URL of the `built-in-symbol` implementation
@@ -4820,6 +4851,8 @@ public class S {
    */
   public final static IBuiltInSymbol Graph = S.initFinalSymbol("Graph", ID.Graph);
 
+  public final static IBuiltInSymbol Graph3D = S.initFinalSymbol("Graph3D", ID.Graph3D);
+
   /**
    * GraphCenter(graph) - compute the `graph` center. The center of a `graph` is the set of vertices
    * of graph eccentricity equal to the `graph` radius.
@@ -4873,7 +4906,12 @@ public class S {
   public final static IBuiltInSymbol GraphDisjointUnion =
       S.initFinalSymbol("GraphDisjointUnion", ID.GraphDisjointUnion);
 
+  public final static IBuiltInSymbol GraphLayout = S.initFinalSymbol("GraphLayout", ID.GraphLayout);
+
   public final static IBuiltInSymbol Graphics = S.initFinalSymbol("Graphics", ID.Graphics);
+
+  public final static IBuiltInSymbol GraphicsGrid =
+      S.initFinalSymbol("GraphicsGrid", ID.GraphicsGrid);
 
   /**
    * Graphics3D(primitives, options) - represents a three-dimensional graphic.
@@ -4919,6 +4957,8 @@ public class S {
    */
   public final static IBuiltInSymbol GraphPeriphery =
       S.initFinalSymbol("GraphPeriphery", ID.GraphPeriphery);
+
+  public final static IBuiltInSymbol GraphPlot = S.initFinalSymbol("GraphPlot", ID.GraphPlot);
 
   /**
    * GraphPower(graph, n) - the function uses Dijkstra's algorithm (i.e.
@@ -5574,6 +5614,10 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol In = S.initFinalSymbol("In", ID.In);
+
+  public final static IBuiltInSymbol Inactivate = S.initFinalSymbol("Inactivate", ID.Inactivate);
+
+  public final static IBuiltInSymbol Inactive = S.initFinalSymbol("Inactive", ID.Inactive);
 
   /**
    * Increment(x) - increments `x` by `1`, returning the original value of `x`.
@@ -6284,6 +6328,8 @@ public class S {
 
   public final static IBuiltInSymbol JSFormData = S.initFinalSymbol("JSFormData", ID.JSFormData);
 
+  public final static IBuiltInSymbol KaryTree = S.initFinalSymbol("KaryTree", ID.KaryTree);
+
   public final static IBuiltInSymbol KelvinBei = S.initFinalSymbol("KelvinBei", ID.KelvinBei);
 
   public final static IBuiltInSymbol KelvinBer = S.initFinalSymbol("KelvinBer", ID.KelvinBer);
@@ -6445,6 +6491,9 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol LaguerreL = S.initFinalSymbol("LaguerreL", ID.LaguerreL);
+
+  public final static IBuiltInSymbol LaplacianPDETerm =
+      S.initFinalSymbol("LaplacianPDETerm", ID.LaplacianPDETerm);
 
   public final static IBuiltInSymbol LambertW = S.initFinalSymbol("LambertW", ID.LambertW);
 
@@ -8888,6 +8937,9 @@ public class S {
 
   public final static IBuiltInSymbol PlotRange = S.initFinalSymbol("PlotRange", ID.PlotRange);
 
+  public final static IBuiltInSymbol PlotRangePadding =
+      S.initFinalSymbol("PlotRangePadding", ID.PlotRangePadding);
+
   public final static IBuiltInSymbol PlotStyle = S.initFinalSymbol("PlotStyle", ID.PlotStyle);
 
   /**
@@ -9922,6 +9974,8 @@ public class S {
 
   public final static IBuiltInSymbol Residue = S.initFinalSymbol("Residue", ID.Residue);
 
+  public final static IBuiltInSymbol Resolve = S.initFinalSymbol("Resolve", ID.Resolve);
+
   /**
    * Rest(expr) - returns `expr` with the first element removed.
    * 
@@ -10172,6 +10226,10 @@ public class S {
 
   public final static IBuiltInSymbol RoundImplies =
       S.initFinalSymbol("RoundImplies", ID.RoundImplies);
+
+  public final static IBuiltInSymbol RoundingRadius =
+      S.initFinalSymbol("RoundingRadius", ID.RoundingRadius);
+
 
   public final static IBuiltInSymbol Row = S.initFinalSymbol("Row", ID.Row);
 
@@ -11031,8 +11089,7 @@ public class S {
   public final static IBuiltInSymbol StaticsVisible =
       S.initFinalSymbol("StaticsVisible", ID.StaticsVisible);
 
-  public final static IBuiltInSymbol StatusArea =
-      S.initFinalSymbol("StatusArea", ID.StatusArea);
+  public final static IBuiltInSymbol StatusArea = S.initFinalSymbol("StatusArea", ID.StatusArea);
 
   /**
    * StieltjesGamma(a) - returns Stieltjes constant.
@@ -12206,6 +12263,10 @@ public class S {
    */
   public final static IBuiltInSymbol TreeForm = S.initFinalSymbol("TreeForm", ID.TreeForm);
 
+  public final static IBuiltInSymbol TreeGraph = S.initFinalSymbol("TreeGraph", ID.TreeGraph);
+
+  public final static IBuiltInSymbol TreePlot = S.initFinalSymbol("TreePlot", ID.TreePlot);
+
   public final static IBuiltInSymbol Triangle = S.initFinalSymbol("Triangle", ID.Triangle);
 
   public final static IBuiltInSymbol Trig = S.initFinalSymbol("Trig", ID.Trig);
@@ -12690,6 +12751,9 @@ public class S {
 
   public final static IBuiltInSymbol VertexColors =
       S.initFinalSymbol("VertexColors", ID.VertexColors);
+
+  public final static IBuiltInSymbol VertexCoordinates =
+      S.initFinalSymbol("VertexCoordinates", ID.VertexCoordinates);
 
   public final static IBuiltInSymbol VertexCount = S.initFinalSymbol("VertexCount", ID.VertexCount);
 

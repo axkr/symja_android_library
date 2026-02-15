@@ -412,6 +412,8 @@ public class Errors {
       "tolnn", "Tolerance specification `1` must be a non-negative number.", //
       "tri", "`1` is not triangular.", //
       "udist", "The specification `1` is not a random distribution recognized by the system.", //
+      "unkds",
+      "Warning: the set of discontinuities may be incomplete due to missing domain and discontinuity information for some of the functions involved.", //
       "unkunit", "Unable to interpret unit specification `1`.", //
       "unsdst", "The first argument `1` is not a valid distribution.", //
       "unsupported", "`1` currently not supported in `2`.", //

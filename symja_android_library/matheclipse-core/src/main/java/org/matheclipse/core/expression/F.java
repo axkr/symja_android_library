@@ -882,6 +882,7 @@ public class F extends S {
       Slot.setEvaluator(ICoreFunctionEvaluator.ARGS_EVALUATOR);
       SlotSequence.setAttributes(ISymbol.NHOLDALL);
       SlotSequence.setEvaluator(ICoreFunctionEvaluator.ARGS_EVALUATOR);
+      Inactive.setAttributes(ISymbol.HOLDFIRST);
       PatternTest.setAttributes(ISymbol.HOLDREST);
       List.setEvaluator(ICoreFunctionEvaluator.ARGS_EVALUATOR);
 
@@ -1850,6 +1851,10 @@ public class F extends S {
 
   public static IAST Arrow(final IExpr a0) {
     return new AST1(Arrow, a0);
+  }
+
+  public static IAST Arrowheads(final double size) {
+    return new AST1(Arrowheads, F.num(size));
   }
 
   /**
@@ -3565,6 +3570,10 @@ public class F extends S {
     return new AST1(Disk, originList);
   }
 
+  public static IAST Disk(final IAST a0, final IExpr a1) {
+    return new AST2(Disk, a0, a1);
+  }
+
   public static IAST Distribute(final IExpr a) {
     return new AST1(Distribute, a);
   }
@@ -3575,6 +3584,10 @@ public class F extends S {
 
   public static IAST Distribute(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(Distribute, a0, a1, a2);
+  }
+
+  public static IAST Div(final IExpr a0, final IExpr a1) {
+    return new AST2(Div, a0, a1);
   }
 
   /**
@@ -4445,6 +4458,10 @@ public class F extends S {
     return new AST2(FindGeneratingFunction, data, x);
   }
 
+  public static IAST FindInstance(final IExpr f, final IExpr a, IExpr b, IExpr c) {
+    return quaternary(FindInstance, f, a, b, c);
+  }
+
   public static IAST FindMaximum(final IExpr f, final IExpr x) {
     return new AST2(FindMaximum, f, x);
   }
@@ -4669,6 +4686,10 @@ public class F extends S {
   public static IExpr fractionExact(final double value, final boolean attemptNiceFraction) {
     return !attemptNiceFraction ? AbstractFractionSym.valueOfExact(value)
         : AbstractFractionSym.valueOfExactNice(value);
+  }
+
+  public static IAST Framed(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(Framed, a0, a1, a2);
   }
 
   public static IAST FrechetDistribution(final IExpr a0, final IExpr a1) {
@@ -5254,6 +5275,10 @@ public class F extends S {
     return new B1.Im(a0);
   }
 
+  public static IAST ImageScaled(final IExpr a0) {
+    return new AST1(ImageScaled, a0);
+  }
+
   public static IAST Implies(final IExpr a0, final IExpr a1) {
     return new AST2(Implies, a0, a1);
   }
@@ -5734,6 +5759,10 @@ public class F extends S {
     // replace placeholder with evaluated number
     result.set(1, number);
     return result.oneIdentity0();
+  }
+
+  public static IAST Inset(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+    return quaternary(Inset, a0, a1, a2, a3);
   }
 
   /**
@@ -9291,6 +9320,10 @@ public class F extends S {
     return new AST2(Reduce, logicExpr, variable);
   }
 
+  public static IAST Reduce(final IExpr logicExpr, final IExpr variable, final IExpr domain) {
+    return new AST3(Reduce, logicExpr, variable, domain);
+  }
+
   public static IAST Refine(final IExpr a) {
     return new AST1(Refine, a);
   }
@@ -9406,6 +9439,11 @@ public class F extends S {
 
   public static IAST RGBColor(final IExpr red, final IExpr green, final IExpr blue) {
     return new AST3(RGBColor, red, green, blue);
+  }
+
+  public static IAST RGBColor(final IExpr red, final IExpr green, final IExpr blue,
+      final IExpr opacity) {
+    return quaternary(RGBColor, red, green, blue, opacity);
   }
 
   public static IAST RomanNumeral(final IExpr a) {
@@ -11302,6 +11340,10 @@ public class F extends S {
 
   public static IAST ToIntervalData(final IExpr expr, final IExpr variable) {
     return new AST2(ToIntervalData, expr, variable);
+  }
+
+  public static IAST Tooltip(final IExpr a0, final IExpr a1) {
+    return new AST2(Tooltip, a0, a1);
   }
 
   public static IAST ToPolarCoordinates(final IExpr a0) {
