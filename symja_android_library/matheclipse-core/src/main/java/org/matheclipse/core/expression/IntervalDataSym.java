@@ -562,7 +562,7 @@ public class IntervalDataSym {
     return result;
   }
 
-  public static IExpr intervalDataIntersection(final IAST ast, EvalEngine engine) {
+  public static IAST intervalDataIntersection(final IAST ast, EvalEngine engine) {
     for (int i = 1; i < ast.size(); i++) {
       if (!ast.get(i).isIntervalData()) {
         return F.NIL;
@@ -600,7 +600,7 @@ public class IntervalDataSym {
     return normalized.orElse(result);
   }
 
-  public static IExpr intervalDataUnion(final IAST ast, EvalEngine engine) {
+  public static IAST intervalDataUnion(final IAST ast, EvalEngine engine) {
     int calculatedResultSize = 2;
     for (int i = 1; i < ast.size(); i++) {
       IAST interval;
@@ -1202,7 +1202,7 @@ public class IntervalDataSym {
   }
 
   public static IExpr normalizeExpr(final IAST inequality, IExpr variable, EvalEngine engine) {
-    IExpr intervalData = toIntervalData(inequality, variable, engine);
+    IExpr intervalData = toIntervalData(inequality, variable, engine, false);
     if (intervalData.isIntervalData()) {
       return IntervalDataSym.intervalToOr((IAST) intervalData, variable);
     }
@@ -2135,7 +2135,7 @@ public class IntervalDataSym {
    *         {@link F#NIL} if the conversion is not applicable or fails.
    */
   public static IExpr toIntervalData(IExpr logicOrDomainExpr, EvalEngine engine) {
-    return toIntervalData(logicOrDomainExpr, S.Nonexistent, engine);
+    return toIntervalData(logicOrDomainExpr, S.Nonexistent, engine, false);
   }
 
   /**
@@ -2145,24 +2145,27 @@ public class IntervalDataSym {
    * @param logicOrDomainExpr the logical expression or domain expression to convert
    * @param variable the variable to use in the conversion, if applicable
    * @param engine the evaluation engine
+   * @param listAsAnd if {@link S#List} expressions should be treated as {@link S#And} expressions
+   *        when converting to interval
    * @return an {@link F#IntervalData(IAST...)} expression representing the interval data, or
    *         {@link F#NIL} if the conversion is not applicable or fails.
    */
-  public static IExpr toIntervalData(final IExpr logicOrDomainExpr, final IExpr variable,
-      final EvalEngine engine) {
+  public static IAST toIntervalData(final IExpr logicOrDomainExpr, final IExpr variable,
+      final EvalEngine engine, boolean listAsAnd) {
     if (logicOrDomainExpr.isASTSizeGE(S.Or, 2)) {
       IAST orAST = (IAST) logicOrDomainExpr;
       if (orAST.argSize() == 1) {
-        return toIntervalData(orAST.arg1(), variable, engine);
+        return toIntervalData(orAST.arg1(), variable, engine, false);
       }
-      IExpr orInterval = orAST.mapThread(x -> toIntervalData(x, variable, engine));
+      IExpr orInterval = orAST.mapThread(x -> toIntervalData(x, variable, engine, false));
       if (orInterval.isOr()) {
         return IntervalDataSym.intervalDataUnion((IAST) orInterval, engine);
       }
-    } else if (logicOrDomainExpr.isASTSizeGE(S.And, 2)) {
+    } else if (logicOrDomainExpr.isASTSizeGE(S.And, 2)
+        || (listAsAnd && logicOrDomainExpr.isASTSizeGE(S.List, 2))) {
       IAST andAST = (IAST) logicOrDomainExpr;
       if (andAST.argSize() == 1) {
-        return toIntervalData(andAST.arg1(), variable, engine);
+        return toIntervalData(andAST.arg1(), variable, engine, false);
       }
       // IASTAppendable list = F.ast(S.IntervalData, andAST.argSize());
       // for (int i = 1; i < andAST.size(); i++) {
@@ -2172,13 +2175,13 @@ public class IntervalDataSym {
       // }
       // list.append(temp);
       // }
-      IExpr andInterval = andAST.mapThread(x -> toIntervalData(x, variable, engine));
-      if (andInterval.isAnd()) {
+      IExpr andInterval = andAST.mapThread(x -> toIntervalData(x, variable, engine, false));
+      if (andInterval.isASTSizeGE(S.And, 3) || (listAsAnd && andInterval.isASTSizeGE(S.List, 3))) {
         return IntervalDataSym.intervalDataIntersection((IAST) andInterval, engine);
       }
     } else if (logicOrDomainExpr.isNot()) {
       IAST notAST = (IAST) logicOrDomainExpr;
-      IExpr interval = toIntervalData(notAST.arg1(), variable, engine);
+      IExpr interval = toIntervalData(notAST.arg1(), variable, engine, false);
       if (interval.isIntervalData()) {
         return IntervalDataSym.intervalDataComplement(reals(), (IAST) interval, engine);
       }

@@ -3,8 +3,10 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.S.Power;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hipparchus.analysis.MultivariateFunction;
@@ -178,6 +180,313 @@ public class MinMaxFunctions {
     @Override
     public int status() {
       return ImplementationStatus.FULL_SUPPORT;
+    }
+  }
+
+  private static class FunctionContinuous extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      IExpr domain = ast.isAST3() ? ast.arg3() : S.Reals;
+
+      IExpr function = arg1;
+      IExpr constraints = S.True;
+
+      // Handle the syntax: FunctionContinuous[{f, cons}, x]
+      // We differentiate {f1, f2} (list of functions) from {f, cons} (function and constraint)
+      // by checking if the second element looks like a constraint (inequality/logical).
+      if (arg1.isList() && arg1.argSize() == 2) {
+        IExpr maybeCons = arg1.second();
+        if (isLikelyConstraint(maybeCons)) {
+          function = arg1.first();
+          constraints = maybeCons;
+        }
+      }
+
+      IAST variables = arg2.isList() ? (IAST) arg2 : F.List(arg2);
+
+      // 1. Calculate the set of discontinuities for the function(s)
+      // We delegate this to the registered FunctionDiscontinuities evaluator
+      IAST discontQuery = F.ternaryAST3(S.FunctionDiscontinuities, function, variables, domain);
+      IExpr discontinuities = engine.evaluate(discontQuery);
+
+      if (discontinuities.isFalse()) {
+        // No discontinuities found -> Function is continuous
+        return S.True;
+      }
+      if (discontinuities.isTrue()) {
+        // Discontinuous everywhere or indeterminate
+        return S.False;
+      }
+
+      // 2. Check if the discontinuities exist within the valid constraints
+      // We form the logical expression: Discontinuities && Constraints
+      IExpr problem = constraints.isTrue() ? discontinuities : F.And(discontinuities, constraints);
+
+      // 3. Use Resolve to check satisfiability
+      // If we find an instance, it means a discontinuity exists in the domain -> Continuous =
+      // False.
+      // If we find no instances ({}), it means no discontinuity in domain -> Continuous = True.
+      IAST exists = F.Exists(variables, problem);
+      IAST resolve = F.binaryAST2(S.Resolve, exists, domain);
+      IExpr result = engine.evaluate(resolve);
+
+      if (result.isTrue()) {
+        return S.False;
+      }
+      if (result.isFalse()) {
+        return S.True;
+      }
+
+      // If Resolve returns unevaluated, we cannot decide.
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
+    /**
+     * Helper to determine if an expression is likely a constraint (logical or relational).
+     */
+    private boolean isLikelyConstraint(IExpr expr) {
+      if (expr.isAST()) {
+        IExpr head = expr.head();
+        if (head.isBuiltInSymbol()) {
+          switch (((IBuiltInSymbol) head).ordinal()) {
+            case ID.Equal:
+            case ID.Unequal:
+            case ID.Less:
+            case ID.LessEqual:
+            case ID.Greater:
+            case ID.GreaterEqual:
+            case ID.And:
+            case ID.Or:
+            case ID.Not:
+            case ID.Nand:
+            case ID.Nor:
+            case ID.Xor:
+            case ID.Implies:
+            case ID.Element:
+              return true;
+            default:
+              return false;
+          }
+        }
+      }
+      return false;
+    }
+  }
+
+  private static class FunctionDiscontinuities extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr function = ast.arg1();
+      IAST variables = ast.arg2().makeList();
+      IExpr domain = ast.isAST3() ? ast.arg3() : S.Reals;
+
+      Set<IExpr> discontinuities = new LinkedHashSet<>();
+      if (!collectDiscontinuities(function, variables, discontinuities, domain)) {
+        // Warning: the set of discontinuities may be incomplete due to missing domain and
+        // discontinuity information for some of the functions involved.
+        Errors.printMessage(S.FunctionDiscontinuities, "unkds", F.CEmptyList, engine);
+      }
+
+      if (discontinuities.isEmpty()) {
+        return S.False;
+      }
+
+      if (discontinuities.size() == 1) {
+        return discontinuities.iterator().next();
+      }
+
+      IASTAppendable or = F.Or();
+      or.appendAll(discontinuities);
+      return or;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
+    /**
+     * Recursively collects discontinuity conditions.
+     *
+     * @param expr The expression to analyze.
+     * @param variables The variables of interest.
+     * @param conditions The set to populate with conditions.
+     * @param domain The domain (Reals or Complexes).
+     */
+    private boolean collectDiscontinuities(IExpr expr, IAST variables, Set<IExpr> conditions,
+        IExpr domain) {
+      // Check if expression depends on any variable
+      if (expr.isFree(x -> variables.contains(x), false) || variables.contains(expr)) {
+        return true;
+      }
+
+      if (expr.isAST()) {
+        IAST ast = (IAST) expr;
+        IExpr head = ast.head();
+
+        // Recurse check arguments first
+        boolean noWarning = true;
+        for (IExpr arg : ast) {
+          if (!collectDiscontinuities(arg, variables, conditions, domain)) {
+            noWarning = false;
+          }
+        }
+
+        if (head.isBuiltInSymbol() && ast.argSize() >= 1) {
+          IExpr arg1 = ast.arg1();
+          switch (((IBuiltInSymbol) head).ordinal()) {
+            case ID.Floor:
+            case ID.Ceiling:
+              conditions.add(F.Equal(F.Sin(F.Times(S.Pi, arg1)), F.C0));
+              return noWarning;
+            case ID.Round:
+              IExpr arg2 = F.C1;
+              if (ast.isAST2()) {
+                arg2 = ast.arg2();
+              }
+              conditions
+                  .add(F.Equal(F.Sin(F.Times(S.Pi, F.Plus(F.C1D2, F.Divide(arg1, arg2)))), F.C0));
+              return noWarning;
+            case ID.Sign:
+            case ID.UnitStep:
+              // Discontinuous at zero
+              conditions.add(F.Equal(arg1, F.C0));
+              return noWarning;
+            case ID.Mod:
+              // Mod(x, m) is discontinuous when x/m is an integer
+              if (ast.argSize() == 2) {
+                IExpr x = arg1;
+                IExpr y = ast.arg2();
+                conditions.add(F.Or(F.Equal(y, F.C0),
+                    F.Equal(F.Sin(F.Times(F.Pi, x, F.Power(y, F.CN1))), F.C0)));
+                return noWarning;
+              }
+              return false;
+            case ID.Tan:
+            case ID.Sec:
+              // Poles when Cos(x) == 0
+              conditions.add(F.Equal(F.Cos(arg1), F.C0));
+              return noWarning;
+            case ID.Cot:
+            case ID.Csc:
+              // Poles when Sin(x) == 0
+              conditions.add(F.Equal(F.Sin(arg1), F.C0));
+              return noWarning;
+            case ID.Log:
+              if (domain.equals(S.Complexes)) {
+                // Branch cut (-Infinity, 0] => Im(arg) == 0 && Re(arg) <= 0
+                IAST andCondition = F.And(F.Equal(F.Im(arg1), F.C0), F.LessEqual(F.Re(arg1), F.C0));
+                IAST orCondition = F.Or(F.Equal(arg1, F.C0), andCondition);
+                conditions.add(orCondition);
+              } else {
+                conditions.add(F.LessEqual(arg1, F.C0));
+              }
+              return noWarning;
+            case ID.Power:
+              IExpr base = ast.base();
+              IExpr exponent = ast.exponent();
+              if (exponent.isInteger()) {
+                if (exponent.isNegative()) {
+                  conditions.add(F.Equal(base, F.C0));
+                }
+              } else {
+                // Non-integer exponent
+                if (domain.equals(S.Complexes)) {
+                  // Branch cut (-inf, 0]
+                  conditions.add(F.And(F.Equal(F.Im(base), F.C0), F.LessEqual(F.Re(base), F.C0)));
+                } else {
+                  // For Reals x^y (y non-integer) -> x <= 0
+                  conditions.add(F.LessEqual(base, F.C0));
+                }
+              }
+              return noWarning;
+            case ID.Beta:
+              // Beta(x,y) = Gamma(x)Gamma(y)/Gamma(x+y)
+              // Discontinuities at x <= 0 integers or y <= 0 integers
+              for (IExpr arg : ast) {
+                conditions.add(
+                    F.And(F.Equal(F.Sin(F.Times(S.Pi, arg)), F.C0), F.LessEqual(F.Re(arg), F.C0)));
+              }
+              return noWarning;
+            case ID.Gamma:
+            case ID.LogGamma:
+            case ID.Factorial:
+              // Gamma is singular at non-positive integers.
+              conditions
+                  .add(F.And(F.Equal(F.Sin(F.Times(S.Pi, arg1)), F.C0), F.LessEqual(arg1, F.C0)));
+              return noWarning;
+            case ID.Piecewise:
+              // Piecewise({{val, cond}, ...})
+              // Discontinuities include the boundaries of the conditions
+              if (arg1.isList()) {
+                IAST list = (IAST) arg1;
+                for (IExpr pArg : list) {
+                  if (pArg.isList()) {
+                    IExpr cond = ((IAST) pArg).second();
+                    extractBoundaries(cond, variables, conditions);
+                  }
+                }
+                return noWarning;
+              }
+              return false;
+            default:
+              break;
+          }
+        }
+      }
+      return false;
+    }
+
+    /**
+     * Helper to extract equality boundaries from inequalities (e.g. x < 0 -> x == 0).
+     */
+    private void extractBoundaries(IExpr cond, IAST variables, Set<IExpr> conditions) {
+      if (cond.isFree(variables)) {
+        return;
+      }
+
+      if (cond.isAST()) {
+        IAST ast = (IAST) cond;
+        IExpr head = ast.head();
+        if (head.isBuiltInSymbol()) {
+          if (ast.isNot()) {
+            extractBoundaries(ast.arg1(), variables, conditions);
+            return;
+          }
+          if (ast.argSize() >= 2) {
+            switch (((IBuiltInSymbol) head).ordinal()) {
+              case ID.Less:
+              case ID.LessEqual:
+              case ID.Greater:
+              case ID.GreaterEqual:
+              case ID.Equal:
+              case ID.Unequal:
+                // Simple heuristic: LHS == RHS
+                if (ast.argSize() == 2) {
+                  conditions.add(F.Equal(ast.arg1(), ast.arg2()));
+                }
+                break;
+              case ID.And:
+              case ID.Or:
+                for (IExpr arg : ast) {
+                  extractBoundaries(arg, variables, conditions);
+                }
+                break;
+              default:
+                break;
+            }
+          }
+        }
+      }
     }
   }
 
@@ -492,12 +801,12 @@ public class MinMaxFunctions {
         }
       }
 
-      private IExpr reduceRelation(IAST gt) {
-        VariablesSet vset = new VariablesSet(gt);
+      private IExpr reduceRelation(IAST inequation) {
+        VariablesSet vset = new VariablesSet(inequation);
         IAST reduceVariables = vset.reduceVariables(variables);
         if (reduceVariables.argSize() == 1) {
           final IExpr variable = reduceVariables.arg1();
-          IExpr intervalData = IntervalDataSym.toIntervalData(gt, variable, engine);
+          IExpr intervalData = IntervalDataSym.toIntervalData(inequation, variable, engine, false);
           if (intervalData.isPresent()) {
             IExpr interval = engine.evaluate(intervalData);
             if (interval.isIntervalData() && interval.argSize() > 0) {
@@ -882,6 +1191,253 @@ public class MinMaxFunctions {
     }
   }
 
+  private static class FunctionSingularities extends AbstractFunctionEvaluator {
+
+    public FunctionSingularities() {}
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      IExpr function = ast.arg1();
+      IExpr vars = ast.arg2();
+      IExpr domain = S.Reals; // Default domain
+
+      if (ast.isAST3()) {
+        domain = ast.arg3();
+      }
+
+      IAST variables;
+      if (vars.isList()) {
+        variables = (IAST) vars;
+      } else if (vars.isSymbol()) {
+        variables = F.List(vars);
+      } else {
+        return F.NIL;
+      }
+
+      Set<IExpr> singularities = new LinkedHashSet<>();
+      collectSingularities(function, variables, singularities, domain);
+
+      if (singularities.isEmpty()) {
+        return S.False;
+      }
+
+      if (singularities.size() == 1) {
+        return singularities.iterator().next();
+      }
+
+      IASTAppendable or = F.Or();
+      or.appendAll(singularities);
+      return or;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
+    /**
+     * Recursively collects singularity conditions.
+     *
+     * @param expr The expression to analyze.
+     * @param variables The variables of interest.
+     * @param conditions The set to populate with conditions (e.g., x == 0).
+     */
+    private void collectSingularities(IExpr expr, IAST variables, Set<IExpr> conditions,
+        IExpr domain) {
+      // Check if expression depends on any variable
+      if (expr.isFree(x -> variables.contains(x), false)) {
+        return;
+      }
+
+      if (expr.isAST()) {
+        IAST ast = (IAST) expr;
+        ISymbol head = ast.topHead();
+
+        // Recurse check arguments first
+        for (IExpr arg : ast) {
+          collectSingularities(arg, variables, conditions, domain);
+        }
+
+        if (domain.equals(S.Complexes)) {
+          if (ast.isPower()) {
+            // Base^Exponent
+            IExpr base = ast.base();
+            IExpr exponent = ast.exponent();
+            if (exponent.isInteger()) {
+              if (exponent.isNegative()) {
+                // Pole at base == 0
+                conditions.add(F.Equal(base, F.C0));
+              }
+            } else {
+              // Branch point at base == 0
+              conditions.add(F.Equal(base, F.C0));
+              // Branch cut (-inf, 0] => Im(base) == 0 && Re(base) <= 0
+              conditions.add(F.And(F.Equal(F.Im(base), F.C0), F.LessEqual(F.Re(base), F.C0)));
+            }
+          }
+          if (ast.argSize() == 1) {
+            if (head.equals(S.Log)) {
+              // Branch point at arg == 0
+              conditions.add(F.Equal(ast.arg1(), F.C0));
+              // Branch cut (-inf, 0] => Im(arg) == 0 && Re(arg) <= 0
+              conditions
+                  .add(F.And(F.Equal(F.Im(ast.arg1()), F.C0), F.LessEqual(F.Re(ast.arg1()), F.C0)));
+            } else if (head.equals(S.Tan) || head.equals(S.Sec)) {
+              // Poles when Cos(x) == 0
+              conditions.add(F.Equal(F.Cos(ast.arg1()), F.C0));
+            } else if (head.equals(S.Cot) || head.equals(S.Csc)) {
+              // Poles when Sin(x) == 0
+              conditions.add(F.Equal(F.Sin(ast.arg1()), F.C0));
+            } else if (head.equals(S.ArcSin) || head.equals(S.ArcCos)) {
+              // Branch points at z == 1, z == -1
+              IExpr z = ast.arg1();
+              conditions.add(F.Equal(F.Subtract(F.C1, z), F.C0));
+              conditions.add(F.Equal(F.Plus(F.C1, z), F.C0));
+              // Branch cuts: (-inf, -1] U [1, inf)
+              conditions.add(F.And(F.Equal(F.Im(z), F.C0), F.LessEqual(F.Re(z), F.CN1)));
+              conditions.add(F.And(F.Equal(F.Im(z), F.C0), F.GreaterEqual(F.Re(z), F.C1)));
+            } else if (head.equals(S.ArcTan)) {
+              // Branch points at z == I, z == -I
+              IExpr z = ast.arg1();
+              conditions.add(F.Equal(F.Plus(F.CI, z), F.C0));
+              conditions.add(F.Equal(F.Subtract(F.CI, z), F.C0)); // -I + z == 0
+              // Branch cuts: [I, I*inf) U (-I*inf, -I]
+              conditions.add(F.And(F.Equal(F.Re(z), F.C0), F.GreaterEqual(F.Im(z), F.C1)));
+              conditions.add(F.And(F.Equal(F.Re(z), F.C0), F.LessEqual(F.Im(z), F.CN1)));
+            } else if (head.equals(S.ArcCot)) {
+              // Branch points at z == I, z == -I
+              IExpr z = ast.arg1();
+              conditions.add(F.Equal(F.Plus(F.CI, z), F.C0));
+              conditions.add(F.Equal(F.Subtract(F.CI, z), F.C0));
+              // Branch cut: [-I, I]
+              conditions.add(F.And(F.Equal(F.Re(z), F.C0), F.GreaterEqual(F.Im(z), F.CN1),
+                  F.LessEqual(F.Im(z), F.C1)));
+            } else if (head.equals(S.ArcSec) || head.equals(S.ArcCsc)) {
+              // Branch points z == +/- 1 and z == 0
+              IExpr z = ast.arg1();
+              conditions.add(F.Equal(z, F.C0));
+              conditions.add(F.Equal(F.Subtract(F.C1, z), F.C0));
+              conditions.add(F.Equal(F.Plus(F.C1, z), F.C0));
+              // Branch cut: [-1, 1]
+              conditions.add(F.And(F.Equal(F.Im(z), F.C0), F.GreaterEqual(F.Re(z), F.CN1),
+                  F.LessEqual(F.Re(z), F.C1)));
+            } else if (head.equals(S.ArcCosh)) {
+              // Branch points z == 1, z == -1
+              IExpr z = ast.arg1();
+              conditions.add(F.Equal(F.Subtract(F.C1, z), F.C0));
+              conditions.add(F.Equal(F.Plus(F.C1, z), F.C0));
+              // Branch cut: (-inf, 1]
+              conditions.add(F.And(F.Equal(F.Im(z), F.C0), F.LessEqual(F.Re(z), F.C1)));
+            } else if (head.equals(S.ArcTanh)) {
+              // Branch points z == 1, z == -1
+              IExpr z = ast.arg1();
+              conditions.add(F.Equal(F.Subtract(F.C1, z), F.C0));
+              conditions.add(F.Equal(F.Plus(F.C1, z), F.C0));
+              // Branch cuts: (-inf, -1] U [1, inf)
+              conditions.add(F.And(F.Equal(F.Im(z), F.C0), F.LessEqual(F.Re(z), F.CN1)));
+              conditions.add(F.And(F.Equal(F.Im(z), F.C0), F.GreaterEqual(F.Re(z), F.C1)));
+            } else if (head.equals(S.ArcCoth)) {
+              // Branch points z == 1, z == -1
+              IExpr z = ast.arg1();
+              conditions.add(F.Equal(F.Subtract(F.C1, z), F.C0));
+              conditions.add(F.Equal(F.Plus(F.C1, z), F.C0));
+              // Branch cut: [-1, 1]
+              conditions.add(F.And(F.Equal(F.Im(z), F.C0), F.GreaterEqual(F.Re(z), F.CN1),
+                  F.LessEqual(F.Re(z), F.C1)));
+            } else if (head.equals(S.ArcSech)) {
+              // ArcSech(z) = ArcCosh(1/z).
+              IExpr z = ast.arg1();
+              conditions.add(F.Equal(z, F.C0));
+              conditions.add(F.Equal(F.Subtract(F.C1, z), F.C0));
+              conditions.add(F.Equal(F.Plus(F.C1, z), F.C0));
+              // Cuts: (-inf, 0] U [1, inf)
+              conditions.add(F.And(F.Equal(F.Im(z), F.C0), F.LessEqual(F.Re(z), F.C0)));
+              conditions.add(F.And(F.Equal(F.Im(z), F.C0), F.GreaterEqual(F.Re(z), F.C1)));
+            } else if (head.equals(S.ArcCsch)) {
+              // ArcCsch(z) = ArcSinh(1/z).
+              IExpr z = ast.arg1();
+              conditions.add(F.Equal(z, F.C0));
+              conditions.add(F.Equal(F.Plus(F.CI, z), F.C0));
+              conditions.add(F.Equal(F.Subtract(F.CI, z), F.C0));
+              // Cut: [-I, I]
+              conditions.add(F.And(F.Equal(F.Re(z), F.C0), F.GreaterEqual(F.Im(z), F.CN1),
+                  F.LessEqual(F.Im(z), F.C1)));
+            }
+          }
+        } else {
+          // Logic for Reals (simplified)
+          if (ast.isPower()) {
+            IExpr base = ast.base();
+            IExpr exponent = ast.exponent();
+            if (exponent.isNegative()) {
+              conditions.add(F.Equal(base, F.C0));
+            } else if (!exponent.isInteger()) {
+              conditions.add(F.Equal(base, F.C0));
+            }
+          }
+
+          if (ast.argSize() == 1) {
+            if (head.equals(S.Log)) {
+              conditions.add(F.Equal(ast.arg1(), F.C0));
+            } else if (head.equals(S.Tan) || head.equals(S.Sec)) {
+              conditions.add(F.Equal(F.Cos(ast.arg1()), F.C0));
+            } else if (head.equals(S.Cot) || head.equals(S.Csc)) {
+              conditions.add(F.Equal(F.Sin(ast.arg1()), F.C0));
+            } else if (head.equals(S.ArcSec) || head.equals(S.ArcCsc) || head.equals(S.ArcSech)
+                || head.equals(S.ArcCsch)) {
+              conditions.add(F.Equal(ast.arg1(), F.C0));
+            }
+          }
+        }
+
+        if (ast.argSize() == 1) {
+          if (head.equals(S.Gamma) || head.equals(S.LogGamma) || head.equals(S.Factorial)) {
+            // Gamma is singular at non-positive integers.
+            IExpr arg = ast.arg1();
+            conditions.add(F.And(F.Equal(F.Sin(F.Times(S.Pi, arg)), F.C0), F.LessEqual(arg, F.C0)));
+          }
+        }
+        int[] piecewise = ast.isPiecewise();
+        if (piecewise != null) {
+          // Piecewise({{val, cond}, ...})
+          // Singularities include the boundaries of the conditions
+          IAST list = (IAST) ast.arg1();
+          for (IExpr arg : list) {
+            if (arg.isList()) {
+              IExpr cond = ((IAST) arg).second();
+              extractBoundaries(cond, variables, conditions);
+            }
+          }
+        }
+      }
+    }
+
+    /**
+     * Helper to extract equality boundaries from inequalities (e.g. x < 0 -> x == 0).
+     */
+    private void extractBoundaries(IExpr cond, IAST variables, Set<IExpr> conditions) {
+      if (cond.isFree(variables)) {
+        return;
+      }
+
+      if (cond.isAST()) {
+        IAST ast = (IAST) cond;
+        ISymbol head = ast.topHead();
+        if (head.equals(S.Less) || head.equals(S.LessEqual) || head.equals(S.Greater)
+            || head.equals(S.GreaterEqual) || head.equals(S.Equal) || head.equals(S.Unequal)) {
+
+          // Simple heuristic: LHS == RHS
+          if (ast.size() == 3) {
+            conditions.add(F.Equal(ast.arg1(), ast.arg2()));
+          }
+        } else if (head.equals(S.And) || head.equals(S.Or) || head.equals(S.Not)) {
+          for (IExpr arg : ast) {
+            extractBoundaries(arg, variables, conditions);
+          }
+        }
+      }
+    }
+  }
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -895,9 +1451,12 @@ public class MinMaxFunctions {
     private static void init() {
       S.ArgMax.setEvaluator(new ArgMax());
       S.ArgMin.setEvaluator(new ArgMin());
+      S.FunctionContinuous.setEvaluator(new FunctionContinuous());
+      S.FunctionDiscontinuities.setEvaluator(new FunctionDiscontinuities());
       S.FunctionDomain.setEvaluator(new FunctionDomain());
       S.FunctionPeriod.setEvaluator(new FunctionPeriod());
       S.FunctionRange.setEvaluator(new FunctionRange());
+      S.FunctionSingularities.setEvaluator(new FunctionSingularities());
       S.Maximize.setEvaluator(new Maximize());
       S.Minimize.setEvaluator(new Minimize());
       S.NMaximize.setEvaluator(new NMaximize());
@@ -1157,10 +1716,10 @@ public class MinMaxFunctions {
    * with the constraints:
    *
    * <pre>
-   *   x  + 2y &lt;=  6
-   *   3x + 2y &lt;= 12
-   *         x &gt;= 0
-   *         y &gt;= 0
+   * x  + 2y &lt;=  6
+   * 3x + 2y &lt;= 12
+   * x &gt;= 0
+   * y &gt;= 0
    * </pre>
    */
   private static final class NMaximize extends NMinimize {
@@ -1251,10 +1810,10 @@ public class MinMaxFunctions {
    * with the constraints:
    *
    * <pre>
-   *   x  + 2y &lt;=  6
-   *   3x + 2y &lt;= 12
-   *         x &gt;= 0
-   *         y &gt;= 0
+   * x  + 2y &lt;=  6
+   * 3x + 2y &lt;= 12
+   * x &gt;= 0
+   * y &gt;= 0
    * </pre>
    */
   private static class NMinimize extends AbstractFunctionEvaluator {
@@ -1537,7 +2096,8 @@ public class MinMaxFunctions {
             return F
                 .List(
                     F.Piecewise(
-                        F.list(F.list(e, F.And(F.Equal(d, 0), F.LessEqual(c, 0))), F.list(
+                        F.list(F.list(e, F.And(F.Equal(d, 0), F.LessEqual(c, 0))),
+                            F.list(
                                 F.Times(F.C1D4, F.Power(c, -1),
                                     F.Plus(F.Times(-1, F.Power(d, 2)), F.Times(4, c, e))),
                                 F.Or(F.And(F.Greater(d, 0), F.Less(c, 0)),
@@ -1545,7 +2105,8 @@ public class MinMaxFunctions {
                         F.CInfinity),
                     F.list(F.Rule(x,
                         F.Piecewise(
-                            F.list(F.list(F.Times(F.CN1D2, F.Power(c, -1), d),
+                            F.list(
+                                F.list(F.Times(F.CN1D2, F.Power(c, -1), d),
                                     F.Or(F.And(F.Greater(d, 0), F.Less(c, 0)),
                                         F.And(F.Less(d, 0), F.Less(c, 0)))),
                                 F.list(F.C0, F.And(F.Equal(d, 0), F.LessEqual(c, 0)))),
@@ -1555,7 +2116,8 @@ public class MinMaxFunctions {
           // cubic
           return F.list(
               F.Piecewise(
-                  F.list(F.list(e,
+                  F.list(
+                      F.list(e,
                           F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
                               F.And(F.Equal(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)))),
                       F.list(
@@ -1566,7 +2128,8 @@ public class MinMaxFunctions {
                   F.oo),
               F.list(F.Rule(x,
                   F.Piecewise(
-                      F.list(F.list(F.Times(F.CN1D2, F.Power(c, F.CN1), d),
+                      F.list(
+                          F.list(F.Times(F.CN1D2, F.Power(c, F.CN1), d),
                               F.Or(F.And(F.Greater(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)),
                                   F.And(F.Less(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)))),
                           F.list(F.C0,
@@ -1693,7 +2256,8 @@ public class MinMaxFunctions {
             return F
                 .List(
                     F.Piecewise(
-                        F.list(F.list(e, F.And(F.Equal(d, 0),
+                        F.list(
+                            F.list(e, F.And(F.Equal(d, 0),
                                 F.GreaterEqual(c, 0))),
                             F.list(
                                 F.Times(
@@ -1704,7 +2268,8 @@ public class MinMaxFunctions {
                         F.CNInfinity),
                     F.list(F.Rule(x,
                         F.Piecewise(
-                            F.list(F.list(F.Times(F.CN1D2, F.Power(c, -1), d),
+                            F.list(
+                                F.list(F.Times(F.CN1D2, F.Power(c, -1), d),
                                     F.Or(F.And(F.Greater(d, 0), F.Greater(c, 0)),
                                         F.And(F.Less(d, 0), F.Greater(c, 0)))),
                                 F.list(F.C0, F.And(F.Equal(d, 0), F.GreaterEqual(c, 0)))),
@@ -1714,7 +2279,8 @@ public class MinMaxFunctions {
           // cubic
           return F.list(
               F.Piecewise(
-                  F.list(F.list(e,
+                  F.list(
+                      F.list(e,
                           F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
                               F.And(F.Equal(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)))),
                       F.list(
@@ -1725,7 +2291,8 @@ public class MinMaxFunctions {
                   F.Noo),
               F.list(F.Rule(x,
                   F.Piecewise(
-                      F.list(F.list(F.Times(F.CN1D2, F.Power(c, F.CN1), d),
+                      F.list(
+                          F.list(F.Times(F.CN1D2, F.Power(c, F.CN1), d),
                               F.Or(F.And(F.Greater(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)),
                                   F.And(F.Less(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)))),
                           F.list(F.C0,

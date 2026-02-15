@@ -175,7 +175,7 @@ public class IntervalFunctions {
         return IntervalDataSym.toIntervalData(arg1, engine);
       }
       final IExpr arg2 = ast.arg2();
-      return IntervalDataSym.toIntervalData(arg1, arg2, engine);
+      return IntervalDataSym.toIntervalData(arg1, arg2, engine, false);
     }
 
     @Override

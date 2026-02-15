@@ -2050,8 +2050,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
   @Test
   public void testIssue897() {
     check("Solve(E^E^x == 1, x)", //
-        "{{x->ConditionalExpression(ConditionalExpression(I*2*Pi*C(2)+Log(I*2*Pi*C(1)),C(\n"
-            + "1)∈Integers),C(2)∈Integers)}}");
+        "{{x->ConditionalExpression(I*2*Pi*C(2)+Log(I*2*Pi*C(1)),C(2)∈Integers&&C(1)∈Integers)}}");
   }
 
   @Test
@@ -2335,6 +2334,24 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("QuarticSolve(IntervalData(),-2-I*2,11/9223372036854775807)", //
         "{IntervalData()*(2+I*2+Sqrt(I*8+IntervalData())),IntervalData()*(2+I*2-Sqrt(I*8+IntervalData()))}");
   }
+
+  @Test
+  public void testCosSingularities() {
+    check("Solve({Cos(x)==0},x)", //
+        "{{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"
+            + "2+2*Pi*C(1),C(1)∈Integers)}}");
+  }
+
+  @Test
+  public void testCosSingularitiesConstraint() {
+    check("Solve({Cos(x)==0,x>=2,x<9},x)", //
+        "{{x->3/2*Pi},{x->5/2*Pi}}");
+    // TODO: find values from conditional expressions
+    check("Solve({Cos(x)==0,x>2,x<14},x)", //
+        "{{x->5/2*Pi},{x->3/2*Pi,x->7/2*Pi}}");
+    // "{{x->(3*Pi)/2},{x->(5*Pi)/2},{x->(7*Pi)/2}} ")
+  }
+
 
   // @Test
   // public void testDigammaStackoverflow() {

@@ -2,6 +2,8 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
@@ -38,6 +40,7 @@ import org.matheclipse.core.expression.ExprAnalyzer;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
@@ -889,7 +892,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           return solveRowReducedMatrix(matrix, vector, variables, inequationsList, F.NIL,
               resultList, engine);
         }
-        return solveInequations(resultList, inequationsList, engine);
+        return solveInequations(resultList, inequationsList, variables, engine);
         // return sortASTArguments(resultList);
       } catch (NoSolution e) {
         if (e.getType() == NoSolution.WRONG_SOLUTION) {
@@ -920,7 +923,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         IASTAppendable subSolutionList = LinearAlgebra.rowReduced2RulesList(augmentedMatrix,
             variables, additionalRule, resultList, engine);
         if (inequationsList.isPresent()) {
-          return solveInequations(subSolutionList, inequationsList, engine);
+          return solveInequations(subSolutionList, inequationsList, variables, engine);
         }
         return subSolutionList;
       }
@@ -928,31 +931,95 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     }
 
     protected static IASTAppendable solveInequations(IASTMutable subSolutionList,
-        IAST inequationsList, EvalEngine engine) {
+        IAST inequationsList, IAST variables, EvalEngine engine) {
       if (inequationsList.isEmpty()) {
         return (IASTAppendable) QuarticSolver.sortASTArguments(subSolutionList);
       }
-
       if (subSolutionList.isListOfLists()) {
-        final boolean[] isNumeric = new boolean[] {false};
-        return F.mapList(subSolutionList, t -> {
-          IASTMutable list = (IASTMutable) t;
-          IExpr temp = F.subst(inequationsList, list);
-          temp = engine.evalQuiet(temp);
-          if (temp.isAST()) {
-            IASTMutable[] lists = SolveUtils.filterSolveLists((IASTMutable) temp, list, isNumeric);
-            if (lists[2].isPresent()) {
-              if (!lists[2].isEmptyList()) {
-                return lists[2];
-              }
-            }
+        final Map<IExpr, IAST> intervalDataMap = new HashMap<IExpr, IAST>();
+        for (int i = 1; i < variables.size(); i++) {
+          IExpr variable = variables.get(i);
+          IAST intervalData =
+              IntervalDataSym.toIntervalData(inequationsList, variable, engine, true);
+          if (intervalData.isPresent()) {
+            intervalDataMap.put(variable, intervalData);
           }
-          return F.NIL;
-        });
+        }
+
+        final boolean[] isNumeric = new boolean[] {false};
+        return F.mapList(subSolutionList,
+            t -> filterSingleSolution(t, inequationsList, intervalDataMap, isNumeric, engine));
       }
 
       // TODO solve inequations here?
 
+      return F.NIL;
+    }
+
+    private static IExpr filterSingleSolution(IExpr value, IAST inequationsList,
+        Map<IExpr, IAST> intervalDataMap, final boolean[] isNumeric, EvalEngine engine) {
+      IASTMutable list = (IASTMutable) value;
+      IExpr temp = F.subst(inequationsList, list);
+      temp = engine.evalQuiet(temp);
+      if (temp.isAST()) {
+        IASTMutable[] lists = SolveUtils.filterSolveLists((IASTMutable) temp, list, isNumeric);
+        if (lists[2].isPresent()) {
+          if (!lists[2].isEmptyList()) {
+            return lists[2];
+          }
+        } else {
+          // check if we can determine the solutions values with SolveUtils#collectConstants()
+          // method
+          if (lists[1].size() > 1) {
+            // we have inequalities
+            IASTAppendable resultList = F.ListAlloc();
+            for (int i = 1; i < list.size(); i++) {
+              if (list.get(i).isRule()) {
+                IAST rule = (IAST) list.get(i);
+                IExpr variable = rule.arg1();
+                IExpr val = rule.arg2();
+                if (val.isConditionalExpression()) {
+                  IAST condExpr = (IAST) val;
+                  IExpr condition = condExpr.arg2();
+                  if (condition.isAST(S.Element, 3) && condition.second().equals(S.Integers)) {
+                    IAST intervalData = intervalDataMap.get(variable);
+                    if (intervalData.isPresent()) {
+                      // System.out.println(intervalData);
+
+                      for (int j = 1; j < intervalData.size(); j++) {
+                        if (!intervalData.get(j).isList4()) {
+                          return F.NIL;
+                        }
+                        IAST interval = (IAST) intervalData.get(j);
+                        IExpr min = interval.arg1();
+                        IBuiltInSymbol minSymbol = (IBuiltInSymbol) interval.arg2();
+                        IBuiltInSymbol maxSymbol = (IBuiltInSymbol) interval.arg3();
+                        IExpr max = interval.arg4();
+                        if (min.isReal() || max.isReal()) {
+                          // TODO allow real symbolic expressions as well
+                          try {
+                            IASTAppendable collector = F.ListAlloc();
+                            SolveUtils.collectConstants(val, min, max, minSymbol, maxSymbol,
+                                collector, engine);
+                            if (collector.size() > 1) {
+                              collector.forEach(x -> resultList.append(F.Rule(rule.first(), x)));
+                              return resultList;
+                            }
+                          } catch (RuntimeException rex) {
+                            if (Config.SHOW_STACKTRACE) {
+                              rex.printStackTrace();
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
       return F.NIL;
     }
 
@@ -994,7 +1061,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                     IAST listOfValues = (IAST) temp;
                     IASTAppendable listOfLists = F.ListAlloc(listOfValues.argSize());
                     listOfValues.forEach(x -> listOfLists.append(F.List(F.Rule(variable, x))));
-                    solveInequations(listOfLists, inequationsList, engine)
+                    solveInequations(listOfLists, inequationsList, variables, engine)
                         .forEach(x -> subSolutionSet.add(x));
                     continue;
                   }

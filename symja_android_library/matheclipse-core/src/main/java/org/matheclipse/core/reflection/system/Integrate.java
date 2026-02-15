@@ -424,11 +424,11 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * @param function the function to integrate which will be analyzed for {@link S#Boole} function
    * @param xList the integration variable and the limits of integration, e.g. <code>{x,
    *        -Infinity,Infinity}</code>
-   * @param numericMode TODO
+   * @param useNIntegrate use {@link S#NIntegrate} instead of {@link S#Integrate}
    * @param engine the evaluation engine
    * @return the integrated function or {@link F#NIL} if no {@link S#Boole} function was found
    */
-  public static IExpr integrateBooleTimesFxRegion(IExpr function, IAST xList, boolean numericMode,
+  public static IExpr integrateBooleTimesFxRegion(IExpr function, IAST xList, boolean useNIntegrate,
       final EvalEngine engine) {
     if (function.isAST(S.Boole, 2)) {
       // 1 * Boole(condition)
@@ -441,7 +441,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         // Integrate(Boole(condition)*f(x), {x,-Infinity,Infinity})
         IExpr condition = ((IAST) function).get(index).first();
         IExpr x = xList.arg1();
-        IExpr interval = IntervalDataSym.toIntervalData(condition, x, engine);
+        IExpr interval = IntervalDataSym.toIntervalData(condition, x, engine, false);
 
         if (interval.isIntervalData()) {
           if (interval.argSize() == 0) {
@@ -457,7 +457,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
             }
             IAST intervalList = (IAST) arg;
             final IExpr integratedInterval;
-            if (numericMode) {
+            if (useNIntegrate) {
               integratedInterval = engine
                   .evaluate(F.NIntegrate(fx, F.List(x, intervalList.arg1(), intervalList.arg4()),
                       F.Rule(S.Method, "LegendreGauss")));
@@ -684,6 +684,27 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * Recursively collects potential branch points by finding arguments of Log() and Power()
+   * (fractional) that depend on the integration variable x.
+   *
+   * @param expr The expression to scan.
+   * @param x The integration variable.
+   */
+  private static IAST collectBranchPoints(IExpr expr, IExpr x, IExpr lower, IExpr upper,
+      EvalEngine engine) {
+    if (expr.isFree(x, true)) {
+      return F.NIL;
+    }
+    if (expr.isAST()) {
+      IExpr result = engine.evaluate(F.binaryAST2(S.FunctionSingularities, expr, x)).makeList();
+      if (result.isList()) {
+        return (IAST) result;
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
    * Given a continuous <code>function</code> of a real variable <code>x</code> and an interval
    * <code>[lower, upper]</code> of the real line, calculate the definite integral
    * <code>F(upper)-F(lower)</code>.
@@ -702,51 +723,55 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    */
   private static IExpr definiteIntegral(IExpr function, IAST xValueList, IAST originalAST,
       EvalEngine engine) {
-    // see also Rubi rule for definite integrals
     IExpr x = xValueList.arg1();
     IExpr lower = xValueList.arg2();
     IExpr upper = xValueList.arg3();
 
-    // Singularity Detection
-    Optional<IExpr[]> fractionalParts = AlgebraUtil.fractionalParts(function, true);
-    if (fractionalParts.isPresent()) {
-      IExpr denominator = fractionalParts.get()[1];
-      if (!denominator.isNumber() || denominator.isZero()) {
-        // Find singularities by solving denominator == 0
-        IExpr singularities = engine.evaluate(F.Solve(F.Equal(denominator, F.C0), x));
-        if (singularities.isList()) {
-          for (IExpr solution : (IAST) singularities) {
-            if (solution.isList()) {
-              // Assuming Solve returns rules like {{x->0}, ...}
-              // Extract the value from the rule
-              IExpr singularPoint = F.NIL;
-              for (IExpr rule : (IAST) solution) {
-                if (rule.isRule() && rule.first().equals(x)) {
-                  singularPoint = rule.second();
-                  break;
-                }
-              }
 
-              if (singularPoint.isPresent()) {
-                // Check if lower < singularPoint < upper
-                if (engine
-                    .evalTrue(F.And(F.Less(lower, singularPoint), F.Less(singularPoint, upper)))) {
-                  // Singularity found strictly inside the interval.
-                  // Split the integral: Integrate(f, {x, lower, point}) + Integrate(f, {x, point,
-                  // upper})
-                  // The recursive calls will handle the Limit check at the singularity.
-                  IExpr left = definiteIntegral(function, F.List(x, lower, singularPoint),
-                      originalAST, engine);
-                  if (left.isNIL()) {
-                    return F.NIL;
-                  }
-                  IExpr right = definiteIntegral(function, F.List(x, singularPoint, upper),
-                      originalAST, engine);
-                  if (right.isNIL()) {
-                    return F.NIL;
-                  }
-                  return F.Plus(left, right);
+    // Branch points (Log arguments, Root bases)
+    IAST potentialSingularityEquations = collectBranchPoints(function, x, lower, upper, engine);
+
+    // Solve and Split
+    if (potentialSingularityEquations.isPresent()) {
+      IASTAppendable singularities = F.ListAlloc();
+      // Solve eq for x
+      for (IExpr eq : potentialSingularityEquations) {
+        // Solve({eq, x >= lower, x <= upper}, x)
+        IExpr solved = engine
+            .evaluate(F.Solve(F.List(eq, F.GreaterEqual(x, lower), F.LessEqual(x, upper)), x));
+        if (solved.isList()) {
+          singularities.appendArgs((IAST) solved);
+        }
+      }
+
+      if (!singularities.isEmpty()) {
+        for (IExpr solution : singularities) {
+          if (solution.isList()) {
+            // Extract value from Rule: {{x->val}, ...}
+            IExpr singularPoint = F.NIL;
+            for (IExpr rule : (IAST) solution) {
+              if (rule.isRule() && rule.first().equals(x)) {
+                singularPoint = rule.second();
+                break;
+              }
+            }
+
+            if (singularPoint.isPresent()) {
+              // Check if lower < singularPoint < upper
+              if (engine
+                  .evalTrue(F.And(F.Less(lower, singularPoint), F.Less(singularPoint, upper)))) {
+                // Singularity/Branch point found strictly inside. Split.
+                IExpr left = definiteIntegral(function, F.List(x, lower, singularPoint),
+                    originalAST, engine);
+                if (left.isNIL()) {
+                  return F.NIL;
                 }
+                IExpr right = definiteIntegral(function, F.List(x, singularPoint, upper),
+                    originalAST, engine);
+                if (right.isNIL()) {
+                  return F.NIL;
+                }
+                return F.Plus(left, right);
               }
             }
           }
@@ -754,11 +779,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       }
     }
 
+
+    // Standard Newton-Leibniz
     IExpr diff = engine.evaluate(F.Subtract(upper, lower));
     if (S.PossibleZeroQ.ofQ(engine, diff)) {
       return F.C0;
     }
-
     IExpr lowerDirection, upperDirection;
     if (diff.isNegativeResult()) {
       lowerDirection = F.Rule(F.Direction, F.C1);
@@ -769,17 +795,13 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     }
     IExpr lowerLimit = engine.evaluate(F.Limit(function, F.Rule(x, lower), lowerDirection));
     if (!lowerLimit.isSpecialsFree()) {
-      // Integral of `1` does not converge on `2`.
       return Errors.printMessage(S.Integrate, "idiv",
-          F.List(originalAST.arg1(), originalAST.arg2()),
-          engine);
+          F.List(originalAST.arg1(), originalAST.arg2()), engine);
     }
     IExpr upperLimit = engine.evaluate(F.Limit(function, F.Rule(x, upper), upperDirection));
     if (!upperLimit.isSpecialsFree()) {
-      // Integral of `1` does not converge on `2`.
       return Errors.printMessage(S.Integrate, "idiv",
-          F.List(originalAST.arg1(), originalAST.arg2()),
-          engine);
+          F.List(originalAST.arg1(), originalAST.arg2()), engine);
     }
 
     if (upperLimit.isAST() && lowerLimit.isAST()) {
@@ -856,7 +878,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * </ul>
    *
    * @param ast a <code>List(...)</code> or <code>Plus(...)</code> ast
-   * @param x the integ ration veariable
+   * @param x the integ ration variable
    * @return
    */
   private static IExpr mapIntegrate(IAST ast, final IExpr x) {
@@ -867,12 +889,11 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * See <a href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia- Integration by
    * parts</a>
    *
-   * @param ast TODO - not used
    * @param arg1
    * @param symbol
    * @return
    */
-  private static IExpr integratePolynomialByParts(IAST ast, final IAST arg1, IExpr symbol,
+  private static IExpr integratePolynomialByParts(final IAST arg1, IExpr symbol,
       EvalEngine engine) {
     IASTAppendable fTimes = F.TimesAlloc(arg1.size());
     IASTAppendable gTimes = F.TimesAlloc(arg1.size());

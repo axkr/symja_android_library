@@ -830,28 +830,29 @@ public final class Arithmetic {
       if (arg2Evaled.isFalse()) {
         return S.Undefined;
       }
-
       IAssumptions oldAssumptions = engine.getAssumptions();
-      if (oldAssumptions != null) {
-        try {
-          IAssumptions assumptions = oldAssumptions.copy();
+      try {
+        IAssumptions assumptions;
+        if (oldAssumptions != null) {
+          // oldAssumptions may be set by Refine, Solve,... "wrapping" functions
+          // so we add possible assumptions here to the engine,
+          // so that they are used for the evaluation of arg1
+          assumptions = oldAssumptions.copy();
           assumptions = assumptions.addAssumption(arg2Evaled);
           engine.setAssumptions(assumptions);
-
-          IExpr arg1Evaled = engine.evaluate(arg1);
-          if (arg1Evaled.equals(arg1) && arg2Evaled.equals(arg2)) {
-            return F.NIL;
-          }
-          return F.ConditionalExpression(arg1Evaled, arg2Evaled);
-        } finally {
-          engine.setAssumptions(oldAssumptions);
         }
-      } else {
+
         IExpr arg1Evaled = engine.evaluate(arg1);
+        if (arg1Evaled.isConditionalExpression()) {
+          return F.ConditionalExpression(arg1Evaled.first(),
+              F.And(arg2Evaled, arg1Evaled.second()));
+        }
         if (arg1Evaled.equals(arg1) && arg2Evaled.equals(arg2)) {
           return F.NIL;
         }
         return F.ConditionalExpression(arg1Evaled, arg2Evaled);
+      } finally {
+        engine.setAssumptions(oldAssumptions);
       }
     }
 
