@@ -720,7 +720,14 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   @Test
   public void testIntegrateDiverging() {
     // Message: Integral of `1` does not converge on `2`.
+
+    // Integrate: Integral of Tan(x) does not converge on {x,2,7}.
+    check("Integrate(Tan(x),{x,2,7})", //
+        "Integrate(Tan(x),{x,2,7})");
+    check("Integrate(Tan(x),{x,3,4})", //
+        "Log(-Cos(3))-Log(-Cos(4))");
+
     check("Integrate(1/(x^2),{x,-2,1})", //
-        "Integrate(-1/x,{x,-2,0})+Integrate(-1/x,{x,0,1})");
+        "Integrate(1/x^2,{x,-2,1})");
   }
 }
