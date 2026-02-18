@@ -5,6 +5,9 @@ name: Release to Maven-Central
 on:
   workflow_dispatch
 
+env:
+  MAVEN_ARGS: --batch-mode --no-transfer-progress
+
 jobs:
   maven-perform-release:
     runs-on: ubuntu-latest
@@ -27,10 +30,11 @@ jobs:
     # Perform the usual maven-release-plugin procedure, but prevent the release commits
     # and tag from being pushed to the master immediately. They are only pushed after
     # the release is performed successfully. This avoids to have the release
-    # commits on the master in case release publication fails in the last step).
+    # commits on the master in case release publication fails in the last step.
     # All file-system/git-operations are performed on the runnner's clone of this repo
 
-    - run: mvn -f symja_android_library -B release:clean release:prepare -DpushChanges=false
+    - run: mvn release:clean release:prepare -DpushChanges=false
+      working-directory: symja_android_library
 
     - name: Read release version
       run: | # Create environment variables associcated to release version, derived from the release tag
@@ -61,7 +65,8 @@ jobs:
       # are not on the master in case performing/publishing the release fails
       run: git push origin HEAD:refs/heads/draft_${{ env.release_version }}
 
-    - run: mvn -f symja_android_library -B release:perform -DlocalCheckout=true
+    - run: mvn release:perform -DlocalCheckout=true
+      working-directory: symja_android_library
       # Deployment of all modules is deferred to the last module by nexus-staging-maven-plugin
       env:
         MAVEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USERNAME }}

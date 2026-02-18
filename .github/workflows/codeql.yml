@@ -20,6 +20,9 @@ on:
   schedule:
     - cron: '36 17 * * 2'
 
+env:
+  MAVEN_ARGS: --batch-mode --no-transfer-progress
+
 jobs:
   analyze:
     name: Analyze
@@ -54,11 +57,11 @@ jobs:
         # Details on CodeQL's query packs refer to : https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
         # queries: security-extended,security-and-quality
 
-
     - name: Set up Java
       uses: ./.github/actions/setup-java-for-deployment
 
-    - run: mvn -f symja_android_library -B -U -Pexact-target-jdk -DskipTests verify
+    - run: mvn verify -DskipTests
+      working-directory: symja_android_library
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v4

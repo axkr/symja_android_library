@@ -95,7 +95,7 @@
 			</snapshots>
 		</repository>
 		<repository>
-			<id>maven-snapshots</id>
+			<id>maven-central-snapshots</id>
 			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
 			<layout>default</layout>
 			<releases>
@@ -512,8 +512,7 @@
 						<tagNameFormat>v@{project.version}</tagNameFormat>
 						<autoVersionSubmodules>true</autoVersionSubmodules>
 						<useReleaseProfile>false</useReleaseProfile>
-						<releaseProfiles>
-							publish-to-maven-central,exact-target-jdk</releaseProfiles>
+						<releaseProfiles>publish-to-maven-central</releaseProfiles>
 						<arguments>-Drelease.build=true</arguments>
 					</configuration>
 				</plugin>
@@ -631,7 +630,7 @@
 						<configuration>
 							<rules>
 								<requireMavenVersion>
-									<version>3.2.0</version>
+									<version>3.9.0</version>
 								</requireMavenVersion>
 								<banDuplicatePomDependencyVersions />
 						        <requireJavaVersion>
@@ -649,8 +648,7 @@
 							<skip>${release.build}</skip>
 							<rules>
 								<requireSnapshotVersion>
-									<message>Release versions only permitted for
-										releases!</message>
+									<message>Release versions only permitted for releases!</message>
 								</requireSnapshotVersion>
 								<requireJavaVersion>
                                   <version>[17,)</version>
@@ -686,34 +684,6 @@
 		</plugins>
 	</build>
 	<profiles>
-		<profile>
-			<id>exact-target-jdk</id>
-			<build>
-				<plugins>
-					<!-- Activate toolchains only on demand to not require a set
-					up toolchains.xml for everyone building Symja-->
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-toolchains-plugin</artifactId>
-						<executions>
-							<execution>
-								<goals>
-									<goal>toolchain</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<toolchains>
-								<jdk>
-									<version>${java.version}</version>
-								</jdk>
-							</toolchains>
-						</configuration>
-					</plugin>
-
-				</plugins>
-			</build>
-		</profile>
 		<profile>
 			<id>publish-to-maven-central</id>
 			<build>
