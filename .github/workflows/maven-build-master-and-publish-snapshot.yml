@@ -9,6 +9,9 @@ on:
   push:
     branches: [ master ]
 
+env:
+  MAVEN_ARGS: --batch-mode --no-transfer-progress
+
 jobs:
   maven-build-master-and-publish-to-maven-central:
     runs-on: ubuntu-latest
@@ -22,7 +25,8 @@ jobs:
       with:
         gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
 
-    - run: mvn -f symja_android_library -B -U -P publish-to-maven-central,exact-target-jdk deploy -Dgpg.skip=true
+    - run: mvn deploy -Ppublish-to-maven-central -Dgpg.skip=true
+      working-directory: symja_android_library
       # Deployment of all modules is deferred to the last module by nexus-staging-maven-plugin
       env:
         MAVEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USERNAME }}

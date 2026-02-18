@@ -9,11 +9,11 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Set up JDK 17 for Maven Central Repository deployment
+    - name: Set up JDK for Maven Central Repository deployment
       uses: actions/setup-java@v4
       with:
         # Also generates a corresponding Maven toolchains.xml
-        java-version: '17.0.17'
+        java-version: '17'
         distribution: 'temurin'
         cache: 'maven' # Cache Maven dependencies between workflow runs
         # Properties for deployment to OSSRH:
