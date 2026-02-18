@@ -2,7 +2,7 @@
 
 Noteworthy changes are documented in this file.
 
-## [unreleased](https://github.com/axkr/symja_android_library/compare/...) - YYYY-MM-DD
+## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.0.0...HEAD)
 - Java 11 required
 - Maven modules matheclipse-parser, matheclipse-logging, matheclipse-core are LGPL licensed
 - Maven modules matheclipse-gpl and dependents are GPL licensed
