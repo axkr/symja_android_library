@@ -48,11 +48,6 @@
 			<artifactId>rewrite-java</artifactId>
 			<version>8.66.1</version>
 			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.github.haifengl</groupId>
-			<artifactId>smile-core</artifactId>
-			<version>3.1.1</version>
-		</dependency>
+		</dependency> 
 	</dependencies>
 </project>
