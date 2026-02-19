@@ -147,9 +147,8 @@ public class ComplexPlot extends ListPlot {
   /**
    * Maps a complex value to HSB colors based on the selected ColorFunction strategy.
    * <p>
-   * Logic updated to produce "sharp" grid lines similar to Mathematica's rasterized output. Instead
-   * of smooth Sin^2 waves, we use Pow(Sin, 0.1) to create broad bright areas and narrow dark drops
-   * (grid lines).
+   * Instead of smooth Sin^2 waves, we use Pow(Sin, 0.1) to create broad bright areas and narrow
+   * dark drops (grid lines).
    */
   private double[] complexToHSB(IExpr val, String mode) {
     if (val.isNumber()) {

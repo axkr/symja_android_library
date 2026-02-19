@@ -225,7 +225,6 @@ public class NumberLinePlot extends ListPlot {
           .append(F.Arrow(F.List(F.List(F.num(b), F.num(y)), F.List(F.num(drawMin), F.num(y)))));
     } else if (aInf && bInf) {
       // Full line arrow both sides? Or just line across.
-      // Mathematica draws arrows on both ends.
       primitives
           .append(F.Arrow(F.List(F.List(F.num(0), F.num(y)), F.List(F.num(drawMax), F.num(y)))));
       primitives

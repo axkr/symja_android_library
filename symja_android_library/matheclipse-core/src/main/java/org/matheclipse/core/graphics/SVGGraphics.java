@@ -24,14 +24,9 @@ import j2html.tags.ContainerTag;
 import j2html.tags.DomContent;
 
 /**
- * Advanced 2D Graphics to SVG converter. Updated to support PlotLegends, automatic axis scaling,
- * ticks, labels, adaptive aspect ratios, correct color model parsing (including Opacity), symbolic
- * PointSize, Logarithmic Ticks (10^x), comprehensive GraphicsComplex/Primitive support, Frame
- * scales, extended GridLines styling, and row layout for lists of graphics.
+ * Advanced 2D Graphics to SVG converter.
  */
 public class SVGGraphics {
-
-  // --- Inner Classes: State & Options ---
 
   private static class GraphicState implements Cloneable {
     Color strokeColor = Color.BLACK;

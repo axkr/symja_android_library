@@ -1451,7 +1451,7 @@ public class MinMaxFunctions {
     private static void init() {
       S.ArgMax.setEvaluator(new ArgMax());
       S.ArgMin.setEvaluator(new ArgMin());
-      S.FunctionContinuous.setEvaluator(new FunctionContinuous());
+      // S.FunctionContinuous.setEvaluator(new FunctionContinuous());
       S.FunctionDiscontinuities.setEvaluator(new FunctionDiscontinuities());
       S.FunctionDomain.setEvaluator(new FunctionDomain());
       S.FunctionPeriod.setEvaluator(new FunctionPeriod());

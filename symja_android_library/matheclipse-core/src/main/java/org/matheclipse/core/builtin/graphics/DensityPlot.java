@@ -20,7 +20,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class DensityPlot extends ListPlot {
 
-  // "Sunset" color map control points (RGB) to match standard Mathematica DensityPlot
+  // "Sunset" color map control points (RGB)
   private static final double[][] COLOR_MAP = {{0.10, 0.05, 0.30}, // Dark Indigo
       {0.35, 0.10, 0.55}, // Purple
       {0.75, 0.15, 0.45}, // Red-Magenta

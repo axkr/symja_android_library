@@ -43,12 +43,6 @@ public class ReduceVariableEqual {
     return F.NIL;
   }
 
-  public static void main(String[] args) {
-    ReduceVariableEqual rv = new ReduceVariableEqual();
-    IExpr expr = rv.extractVariable(F.Subtract(F.Exp(F.x), F.C3), F.x, false);
-    System.out.println(expr);
-  }
-
   /**
    * Print message "Inverse functions are being used. Values may be lost for multivalued inverses."
    *

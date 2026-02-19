@@ -101,8 +101,7 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
     // List of primitives (Point[...]) to be added to GraphicsComplex
     IASTAppendable primitives = F.ListAlloc();
 
-    int pointCounter = 0; // Tracks global index in allPoints (0-based for logic, 1-based for
-                          // Mathematica)
+    int pointCounter = 0;
 
     // Helper to wrap single dataset logic
     // If not multi-dataset, we treat 'data' as a list containing 1 dataset

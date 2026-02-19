@@ -10403,17 +10403,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "gg({a,b,c})");
   }
 
-  @Test
-  public void testFunctionContinuous() {
-    check("FunctionContinuous(Sin(x), x)", //
-        "True");
-    check("FunctionContinuous({Log(x), x > 0}, x)", //
-        "True");
-
-    // TODO
-    // check("FunctionContinuous(Sqrt(x), x, Complexes)", //
-    // "");
-  }
+  // @Test
+  // public void testFunctionContinuous() {
+  // check("FunctionContinuous(Sin(x), x)", //
+  // "True");
+  // check("FunctionContinuous({Log(x), x > 0}, x)", //
+  // "True");
+  //
+  // // TODO
+  // // check("FunctionContinuous(Sqrt(x), x, Complexes)", //
+  // // "");
+  // }
 
   @Test
   public void testFunctionDiscontinuities() {
