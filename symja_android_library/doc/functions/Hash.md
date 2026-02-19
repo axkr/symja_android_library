@@ -20,3 +20,11 @@ Hash(expression, hash-type)
 
 ### Related terms 
 [FileHash](FileHash.md) 
+
+### Implementation status
+
+* &#x2705; - full supported
+
+### Github
+
+* [Implementation of Hash](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Hash.java#L27) 

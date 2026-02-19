@@ -40,4 +40,4 @@ Missing(KeyAbsent,c)
 
 ### Github
 
-* [Implementation of Lookup](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/AssociationFunctions.java#L949) 
+* [Implementation of Lookup](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/AssociationFunctions.java#L1007) 

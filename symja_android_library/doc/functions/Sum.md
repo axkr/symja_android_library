@@ -112,6 +112,6 @@ Non-integer bounds:
 
 ### Github
 
-* [Implementation of Sum](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Sum.java#L138) 
+* [Implementation of Sum](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Sum.java#L137) 
 
 * [Rule definitions of Sum](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rule_sets/SumRules.m) 

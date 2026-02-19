@@ -18,3 +18,11 @@ See:
 
 ### Examples
  
+
+### Implementation status
+
+* &#x1F9EA; - experimental
+
+### Github
+
+* [Implementation of KaryTree](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/KaryTree.java#L24) 

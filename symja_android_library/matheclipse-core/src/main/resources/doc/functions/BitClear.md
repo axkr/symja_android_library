@@ -33,4 +33,4 @@ BitClear(36,-4)
 
 ### Github
 
-* [Implementation of BitClear](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntegerFunctions.java#L382) 
+* [Implementation of BitClear](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntegerFunctions.java#L391) 

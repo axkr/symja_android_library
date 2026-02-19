@@ -19,3 +19,11 @@ FittedModel[0.9*#1+1.9*#2]
 
 ### Related terms 
 [FittedModel](FittedModel.md), [LinearModelFit](LinearModelFit.md)
+
+### Implementation status
+
+* &#x2705; - full supported
+
+### Github
+
+* [Implementation of DesignMatrix](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L1387) 

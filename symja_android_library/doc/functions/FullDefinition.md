@@ -46,4 +46,4 @@ b(u_,v_):={{u,v},a}
 
 ### Github
 
-* [Implementation of FullDefinition](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L764) 
+* [Implementation of FullDefinition](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L762) 

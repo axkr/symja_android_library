@@ -26,3 +26,11 @@ h+2*x
 (-Sin(x)+Sin(h+x))/h
 ```
  
+
+### Implementation status
+
+* &#x2611; - partially implemented
+
+### Github
+
+* [Implementation of DifferenceQuotient](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/DifferenceQuotient.java#L17) 

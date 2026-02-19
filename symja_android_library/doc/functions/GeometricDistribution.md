@@ -33,4 +33,4 @@ The variance of the geometric distribution is
 
 ### Github
 
-* [Implementation of GeometricDistribution](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L2566) 
+* [Implementation of GeometricDistribution](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsDiscreteDistributions.java#L636) 

@@ -18,3 +18,11 @@ a^3+3*a^2*b+3*a*b^2+b^3
 
 ### Related terms 
 [Uncompress](Uncompress.md) 
+
+### Implementation status
+
+* &#x2705; - full supported
+
+### Github
+
+* [Implementation of Compress](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/FileFunctions.java#L316) 

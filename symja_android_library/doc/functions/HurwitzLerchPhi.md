@@ -26,6 +26,6 @@ See:
 
 ### Github
 
-* [Implementation of HurwitzLerchPhi](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SpecialFunctions.java#L1054) 
+* [Implementation of HurwitzLerchPhi](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SpecialFunctions.java#L1109) 
 
 * [Rule definitions of HurwitzLerchPhi](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/HurwitzLerchPhiRules.m) 

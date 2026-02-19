@@ -24,4 +24,4 @@ Graph({1,2,3,4,5,6},{1->2,1->3,2->3,2->4,3->4,3->5,4->5,4->6,5->6})
 
 ### Github
 
-* [Implementation of GraphPower](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphFunctions.java#L702) 
+* [Implementation of GraphPower](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphFunctions.java#L735) 

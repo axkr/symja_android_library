@@ -49,4 +49,4 @@ Use the operator form of `MapAt`:
 
 ### Github
 
-* [Implementation of MapAt](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StructureFunctions.java#L995) 
+* [Implementation of MapAt](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StructureFunctions.java#L935) 

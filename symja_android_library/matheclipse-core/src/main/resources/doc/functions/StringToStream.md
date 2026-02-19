@@ -33,4 +33,4 @@ String
 
 ### Github
 
-* [Implementation of StringToStream](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/FileFunctions.java#L1459) 
+* [Implementation of StringToStream](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/FileFunctions.java#L1563) 

@@ -41,6 +41,6 @@ See
 
 ### Github
 
-* [Implementation of Conjugate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L977) 
+* [Implementation of Conjugate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Arithmetic.java#L906) 
 
 * [Rule definitions of Conjugate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/ConjugateRules.m) 

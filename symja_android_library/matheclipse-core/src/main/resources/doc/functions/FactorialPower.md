@@ -15,3 +15,11 @@ See
 >> FactorialPower(v,4) // FunctionExpand 
 (-3+v)*(-2+v)*(-1+v)*v
 ```
+
+### Implementation status
+
+* &#x1F9EA; - experimental
+
+### Github
+
+* [Implementation of FactorialPower](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L2421) 

@@ -29,6 +29,6 @@ See
 
 ### Github
 
-* [Implementation of Sech](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L3037) 
+* [Implementation of Sech](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L3310) 
 
 * [Rule definitions of Sech](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/SechRules.m) 

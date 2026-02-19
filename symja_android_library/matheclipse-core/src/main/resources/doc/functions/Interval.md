@@ -44,4 +44,4 @@ Interval({-Pi/2,-Pi/4},{0,Pi/2})
 
 ### Github
 
-* [Implementation of Interval](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntervalFunctions.java#L86) 
+* [Implementation of Interval](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntervalFunctions.java#L87) 

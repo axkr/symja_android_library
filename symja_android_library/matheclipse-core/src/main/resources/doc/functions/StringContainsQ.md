@@ -27,4 +27,4 @@ StringContainsQ(str1, str2)
 
 ### Github
 
-* [Implementation of StringContainsQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L1395) 
+* [Implementation of StringContainsQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L1191) 

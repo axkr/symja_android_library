@@ -28,4 +28,4 @@ See
 
 ### Github
 
-* [Implementation of SinIntegral](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L1696) 
+* [Implementation of SinIntegral](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L2146) 

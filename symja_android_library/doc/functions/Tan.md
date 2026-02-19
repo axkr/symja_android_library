@@ -40,6 +40,6 @@ ComplexInfinity
 
 ### Github
 
-* [Implementation of Tan](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L3630) 
+* [Implementation of Tan](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ExpTrigsFunctions.java#L3926) 
 
 * [Rule definitions of Tan](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/TanRules.m) 

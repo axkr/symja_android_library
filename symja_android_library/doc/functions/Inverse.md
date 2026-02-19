@@ -42,4 +42,4 @@ Inverse({{1, 0}, {0, 0}})
 
 ### Github
 
-* [Implementation of Inverse](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L3221) 
+* [Implementation of Inverse](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L3230) 

@@ -36,4 +36,4 @@ FilterRules(list-of-option-rules, list-of-symbols)
 
 ### Github
 
-* [Implementation of FilterRules](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L682) 
+* [Implementation of FilterRules](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PatternMatching.java#L680) 

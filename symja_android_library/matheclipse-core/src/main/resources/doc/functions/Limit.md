@@ -51,6 +51,6 @@ Infinity
 
 ### Github
 
-* [Implementation of Limit](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SeriesFunctions.java#L99) 
+* [Implementation of Limit](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SeriesFunctions.java#L98) 
 
 * [Rule definitions of Limit](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/LimitRules.m) 

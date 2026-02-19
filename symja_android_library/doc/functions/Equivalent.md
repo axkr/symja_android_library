@@ -48,4 +48,4 @@ True
 
 ### Github
 
-* [Implementation of Equivalent](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BooleanFunctions.java#L1917) 
+* [Implementation of Equivalent](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BooleanFunctions.java#L1929) 

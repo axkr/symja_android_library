@@ -24,3 +24,11 @@ Ratios({x1, x2,...}, {n1, n2,...,nk})
 >> Ratios({a,b,c,d,e,f,g,h},5)
 {(b^5*d^10*f)/(a*c^10*e^5),(c^5*e^10*g)/(b*d^10*f^5),(d^5*f^10*h)/(c*e^10*g^5)}
 ```
+
+### Implementation status
+
+* &#x2705; - full supported
+
+### Github
+
+* [Implementation of Ratios](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Ratios.java#L22) 

@@ -43,4 +43,4 @@ The third argument of `PowerMod` should be nonzero.
 
 ### Github
 
-* [Implementation of PowerMod](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntegerFunctions.java#L1603) 
+* [Implementation of PowerMod](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntegerFunctions.java#L1648) 

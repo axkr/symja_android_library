@@ -28,6 +28,4 @@ See
 
 ### Github
 
-* [Implementation of LegendreQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L2252) 
-
-* [Rule definitions of LegendreQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/LegendreQRules.m) 
+* [Implementation of LegendreQ](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L2675) 

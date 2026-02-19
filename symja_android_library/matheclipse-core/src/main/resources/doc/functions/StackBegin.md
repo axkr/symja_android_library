@@ -27,4 +27,4 @@ Stack(expr)
 
 ### Github
 
-* [Implementation of StackBegin](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L2992) 
+* [Implementation of StackBegin](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Programming.java#L2978) 

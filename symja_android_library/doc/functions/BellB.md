@@ -32,4 +32,4 @@ x+15*x^2+25*x^3+10*x^4+x^5
 
 ### Github
 
-* [Implementation of BellB](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L144) 
+* [Implementation of BellB](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/NumberTheory.java#L136) 

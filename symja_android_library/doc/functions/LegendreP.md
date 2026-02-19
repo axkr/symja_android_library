@@ -33,6 +33,4 @@ See
 
 ### Github
 
-* [Implementation of LegendreP](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L2164) 
-
-* [Rule definitions of LegendreP](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/LegendrePRules.m) 
+* [Implementation of LegendreP](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L2436) 

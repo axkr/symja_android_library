@@ -25,4 +25,4 @@ BitXor(int1, int2, int3, ...)
 
 ### Github
 
-* [Implementation of BitXor](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntegerFunctions.java#L318) 
+* [Implementation of BitXor](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntegerFunctions.java#L319) 

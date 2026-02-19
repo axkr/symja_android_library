@@ -36,4 +36,4 @@ Piecewise({{n/(-2+n),n>2}},Indeterminate)
 
 ### Github
 
-* [Implementation of StudentTDistribution](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsFunctions.java#L7385) 
+* [Implementation of StudentTDistribution](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StatisticsContinousDistribution.java#L3843) 

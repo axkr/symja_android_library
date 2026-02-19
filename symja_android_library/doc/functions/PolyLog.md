@@ -23,6 +23,6 @@ See:
 
 ### Github
 
-* [Implementation of PolyLog](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SpecialFunctions.java#L1922) 
+* [Implementation of PolyLog](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SpecialFunctions.java#L1991) 
 
 * [Rule definitions of PolyLog](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/PolyLogRules.m) 

@@ -29,4 +29,4 @@ ReplaceAt(expr, lhs -> rhs, list-of-positions)
 
 ### Github
 
-* [Implementation of ReplaceAt](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StructureFunctions.java#L1054) 
+* [Implementation of ReplaceAt](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StructureFunctions.java#L994) 

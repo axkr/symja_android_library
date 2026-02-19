@@ -24,3 +24,11 @@ PowerRange(min, base, factor)
 >> PowerRange(1, x^10, Sqrt(x)) 
 {1,Sqrt(x),x,x^(3/2),x^2,x^(5/2),x^3,x^(7/2),x^4,x^(9/2),x^5,x^(11/2),x^6,x^(13/2),x^7,x^(15/2),x^8,x^(17/2),x^9,x^(19/2),x^10}
 ```
+
+### Implementation status
+
+* &#x2705; - full supported
+
+### Github
+
+* [Implementation of PowerRange](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/PowerRange.java#L16) 

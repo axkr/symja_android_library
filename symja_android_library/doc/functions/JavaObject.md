@@ -48,4 +48,4 @@ Calls the `format` method of the `dm` Java object.
 
 ### Github
 
-* [Implementation of JavaObject](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/JavaFunctions.java#L323) 
+* [Implementation of JavaObject](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/JavaFunctions.java#L322) 

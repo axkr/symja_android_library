@@ -34,4 +34,4 @@ KeySort(<|key1->value1, ...|>, comparator)
 
 ### Github
 
-* [Implementation of KeySort](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/AssociationFunctions.java#L815) 
+* [Implementation of KeySort](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/AssociationFunctions.java#L873) 

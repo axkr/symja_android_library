@@ -17,4 +17,4 @@ HankelH2(n, x)
 
 ### Github
 
-* [Implementation of HankelH2](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BesselFunctions.java#L1115) 
+* [Implementation of HankelH2](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/BesselFunctions.java#L1144) 

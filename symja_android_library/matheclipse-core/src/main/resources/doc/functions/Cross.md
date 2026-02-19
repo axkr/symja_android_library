@@ -37,4 +37,4 @@ Cross({1, 2}, {3, 4, 5})
 
 ### Github
 
-* [Implementation of Cross](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L1312) 
+* [Implementation of Cross](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L1307) 

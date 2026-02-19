@@ -19,4 +19,4 @@ GraphUnion(graph1, graph2, graph3,...)
 
 ### Github
 
-* [Implementation of GraphUnion](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphFunctions.java#L389) 
+* [Implementation of GraphUnion](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/GraphFunctions.java#L422) 

@@ -11,6 +11,6 @@ KeyValuePattern( {rule-pattern1, rule-pattern1,...})
 ```
 >> peopleData = {<|"Name" -> "Alice", "Age" -> 30, "City" -> "New York"|>,<|"Name" -> "Bob", "Age" -> 25, "City" -> "Los Angeles"|>,<|"Name" -> "Charlie", "Age" -> 35, "City" -> "Chicago"|>,<|"Name" -> "David", "Age" -> 25, "City" -> "New York"|>,<|"Name" -> "Eve", "Age" -> 40, "City" -> "Los Angeles"|>};
 
->> Cases[peopleData, KeyValuePattern[{"Age" -> 25}]] 
+>> Cases(peopleData, KeyValuePattern({"Age" -> 25})) 
 {<|Name->Bob,Age->25,City->Los Angeles|>,<|Name->David,Age->25,City->New York|>}
 ```

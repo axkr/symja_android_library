@@ -20,4 +20,4 @@ BitNot(integer-value)
 
 ### Github
 
-* [Implementation of BitNot](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntegerFunctions.java#L207) 
+* [Implementation of BitNot](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/IntegerFunctions.java#L208) 

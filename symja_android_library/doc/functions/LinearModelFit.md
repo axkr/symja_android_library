@@ -60,3 +60,11 @@ FittedModel[0.5+2.5*x]
 ### Related terms 
 [DesignMatrix](DesignMatrix.md), [Fit](Fit.md), [FindFit](FindFit.md), [FittedModel](FittedModel.md) 
 
+
+### Implementation status
+
+* &#x2705; - full supported
+
+### Github
+
+* [Implementation of LinearModelFit](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/CurveFitterFunctions.java#L356) 

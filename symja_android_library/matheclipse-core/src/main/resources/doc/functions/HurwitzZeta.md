@@ -31,4 +31,4 @@ See:
 
 ### Github
 
-* [Implementation of HurwitzZeta](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SpecialFunctions.java#L1095) 
+* [Implementation of HurwitzZeta](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SpecialFunctions.java#L1150) 

@@ -69,4 +69,4 @@ Implements the [Covariance Matrix Adaptation Evolution Strategy (CMA-ES)](https:
 
 ### Github
 
-* [Implementation of FindMaximum](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/FindMaximum.java#L78) 
+* [Implementation of FindMaximum](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/FindMaximum.java#L113) 

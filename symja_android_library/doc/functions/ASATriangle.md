@@ -32,4 +32,4 @@ Triangle({{0,0},{b,0},{0,Sqrt(3)*b}})
 
 ### Github
 
-* [Implementation of ASATriangle](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ComputationalGeometryFunctions.java#L93) 
+* [Implementation of ASATriangle](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ComputationalGeometryFunctions.java#L94) 

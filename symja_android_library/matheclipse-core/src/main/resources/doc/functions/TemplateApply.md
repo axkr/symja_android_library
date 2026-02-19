@@ -31,4 +31,4 @@ The quick brown fox jumps over the lazy dog.
 
 ### Github
 
-* [Implementation of TemplateApply](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L2863) 
+* [Implementation of TemplateApply](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L2737) 

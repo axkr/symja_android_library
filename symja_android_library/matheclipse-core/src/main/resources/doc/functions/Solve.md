@@ -58,4 +58,4 @@ The solutions for multi-valued inverse functions are generated with the `Conditi
 
 ### Github
 
-* [Implementation of Solve](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Solve.java#L100) 
+* [Implementation of Solve](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/Solve.java#L103) 

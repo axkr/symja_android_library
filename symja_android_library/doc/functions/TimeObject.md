@@ -25,4 +25,4 @@ TimeObject({H,M,S})
 
 ### Github
 
-* [Implementation of TimeObject](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/QuantityFunctions.java#L248) 
+* [Implementation of TimeObject](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/QuantityFunctions.java#L249) 

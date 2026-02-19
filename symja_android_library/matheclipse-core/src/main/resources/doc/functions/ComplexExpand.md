@@ -41,4 +41,4 @@ Cos(1/2*x*Log(9))+I*Sin(1/2*x*Log(9))
 
 ### Github
 
-* [Implementation of ComplexExpand](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/ComplexExpand.java#L61) 
+* [Implementation of ComplexExpand](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/ComplexExpand.java#L62) 

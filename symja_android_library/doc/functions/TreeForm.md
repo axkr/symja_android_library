@@ -25,3 +25,11 @@ Generate a [Graphics](Graphics.md) output to visualize the structure of the inpu
 
 ### Related terms 
 [Manipulate](Manipulate.md) [Graph](Graph.md)  
+
+### Implementation status
+
+* &#x2705; - full supported
+
+### Github
+
+* [Implementation of TreeForm](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/TreeForm.java#L20) 

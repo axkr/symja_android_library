@@ -17,24 +17,19 @@ See:
 
 ### Examples 
 
-Generate HTML/JavaScript output to visualize the structure of the input expression:
+Generate a [Graphics](Graphics.md) output to visualize the structure of the input expression:
 
 ```
 >> TreeForm(a+(b*q*s)^(2*y)+Sin(c)^(3-z)) 
 ```
 
 ### Related terms 
-[Manipulate](Manipulate.md) [Graph](Graph.md) 
-
-
-
-
-
+[Manipulate](Manipulate.md) [Graph](Graph.md)  
 
 ### Implementation status
 
-* &#x2611; - partially implemented
+* &#x2705; - full supported
 
 ### Github
 
-* [Implementation of TreeForm](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/OutputFunctions.java#L951) 
+* [Implementation of TreeForm](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/TreeForm.java#L20) 

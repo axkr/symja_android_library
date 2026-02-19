@@ -30,4 +30,4 @@ Cycles({{1,3,2},{4,5}})
 
 ### Github
 
-* [Implementation of PermutationCycles](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Combinatoric.java#L1556) 
+* [Implementation of PermutationCycles](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/Combinatoric.java#L1396) 

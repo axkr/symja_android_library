@@ -25,4 +25,4 @@ Sat 01 Jan 2000 00:00:00
 
 ### Github
 
-* [Implementation of DateString](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/QuantityFunctions.java#L137) 
+* [Implementation of DateString](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/QuantityFunctions.java#L138) 

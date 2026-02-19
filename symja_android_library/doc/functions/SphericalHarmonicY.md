@@ -22,6 +22,6 @@ See
 
 ### Github
 
-* [Implementation of SphericalHarmonicY](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L1172) 
+* [Implementation of SphericalHarmonicY](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/PolynomialFunctions.java#L1297) 
 
 * [Rule definitions of SphericalHarmonicY](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/SphericalHarmonicYRules.m) 

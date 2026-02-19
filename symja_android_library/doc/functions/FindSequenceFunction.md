@@ -37,4 +37,4 @@ See
 
 ### Github
 
-* [Implementation of FindSequenceFunction](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/FindSequenceFunction.java#L16) 
+* [Implementation of FindSequenceFunction](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/FindSequenceFunction.java#L18) 

@@ -18,3 +18,11 @@ a13f186a-e9a3-4636-9e97-d0b3cbe7ada3
 >> CreateUUID("test-") 
 test-8029ae50-5db7-4bda-80e5-56eab144f5da
 ```
+
+### Implementation status
+
+* &#x2705; - full supported
+
+### Github
+
+* [Implementation of CreateUUID](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/StringFunctions.java#L294) 

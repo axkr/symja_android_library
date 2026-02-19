@@ -29,4 +29,4 @@ Count(list, pattern, ls)
 
 ### Github
 
-* [Implementation of Count](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L1986) 
+* [Implementation of Count](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ListFunctions.java#L1993) 

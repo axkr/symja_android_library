@@ -23,6 +23,6 @@ See
 
 ### Github
 
-* [Implementation of WhittakerM](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L1865) 
+* [Implementation of WhittakerM](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/HypergeometricFunctions.java#L2327) 
 
 * [Rule definitions of WhittakerM](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/rules/WhittakerMRules.m) 

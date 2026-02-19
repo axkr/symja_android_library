@@ -560,7 +560,7 @@ Functions in alphabetical order:
 * &#x2611; [InverseErfc](functions/InverseErfc.md)
 * &#x2705; [InverseFourier](functions/InverseFourier.md)
 * &#x2611; [InverseFunction](functions/InverseFunction.md)
-* &#x2705; [InverseGammaDistribution](functions/InverseGammaDistribution.md)
+* [InverseGammaDistribution](functions/InverseGammaDistribution.md)
 * &#x2705; [InverseGudermannian](functions/InverseGudermannian.md)
 * &#x2705; [InverseHaversine](functions/InverseHaversine.md)
 * &#x1F9EA; [InverseLaplaceTransform](functions/InverseLaplaceTransform.md)

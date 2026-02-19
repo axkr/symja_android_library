@@ -15,3 +15,11 @@ See:
 >> MeijerG({{}, {}}, {{b1}, {}},z)
 z^b1/E^z
 ```
+
+### Implementation status
+
+* &#x1F9EA; - experimental
+
+### Github
+
+* [Implementation of MeijerG](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/reflection/system/MeijerG.java#L15) 

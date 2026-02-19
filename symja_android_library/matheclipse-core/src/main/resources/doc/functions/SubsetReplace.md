@@ -30,4 +30,4 @@ SubsetReplace(list, sublist :> rhs)
 
 ### Github
 
-* [Implementation of SubsetReplace](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SubsetFunctions.java#L260) 
+* [Implementation of SubsetReplace](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/SubsetFunctions.java#L263) 
