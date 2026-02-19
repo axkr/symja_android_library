@@ -32,7 +32,7 @@ import org.hipparchus.optim.nonlinear.vector.constrained.ConstraintOptimizer;
 import org.hipparchus.optim.nonlinear.vector.constrained.LagrangeSolution;
 import org.hipparchus.optim.nonlinear.vector.constrained.LinearEqualityConstraint;
 import org.hipparchus.optim.nonlinear.vector.constrained.LinearInequalityConstraint;
-import org.hipparchus.optim.nonlinear.vector.constrained.SQPOptimizerS2;
+import org.hipparchus.optim.nonlinear.vector.constrained.SQPOptimizerS;
 import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.JDKRandomGenerator;
 import org.hipparchus.random.RandomDataGenerator;
@@ -738,7 +738,7 @@ public class FindMinimum extends AbstractFunctionOptionEvaluator {
       if (method.equalsIgnoreCase(SEQUENTIAL_QUADRATIC_METHOD)) {
         try {
           // https://github.com/Hipparchus-Math/hipparchus/pull/404
-          ConstraintOptimizer optim = new SQPOptimizerS2();
+          ConstraintOptimizer optim = new SQPOptimizerS();
           TwiceDifferentiableMultiVariateNumerical twiceDifferentiableFunction =
               new TwiceDifferentiableMultiVariateNumerical(function, variableList, true);
           // x > 0, y > 0

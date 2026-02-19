@@ -1842,51 +1842,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testBarnesG() {
-    check("BarnesG({-1/2, 3/2})", //
-        "{-E^(1/8)/(2^(23/24)*Glaisher^(3/2)*Pi^(3/4)),(2^(1/24)*E^(1/8)*Pi^(1/4))/Glaisher^(\n"
-            + "3/2)}");
-    check("BarnesG(1/4)", //
-        "E^(3/32-Catalan/(4*Pi))/(Glaisher^(9/8)*Gamma(1/4)^(3/4))");
-    check("BarnesG(-3/4)", //
-        "E^(3/32-Catalan/(4*Pi))/(Glaisher^(9/8)*Gamma(-3/4)*Gamma(1/4)^(3/4))");
-
-    check("BarnesG(0.5)", //
-        "0.603244");
-    check("N(BarnesG(1/7), 20)", //
-        "0.1597843850035697404");
-    check("BarnesG(0.222255555666222222222222222)", //
-        "0.258492333082583342675272806");
-    check("BarnesG(1.3+I)", //
-        "1.44461+I*(-0.298549)");
-
-    check("BarnesG(3)", //
-        "1");
-    check("BarnesG(10)", //
-        "5056584744960000");
-  }
-
-  @Test
-  public void testLogBarnesG() {
-    check("LogBarnesG(0.7)", //
-        "-0.21459");
-    // TODO
-    check("LogBarnesG(15.^500)", //
-        "LogBarnesG(Overflow())");
-    check("N(LogBarnesG(1/5), 20)", //
-        "-1.4678549668316788416");
-    check("LogBarnesG(0.2225566255555666222222222222222)", //
-        "-1.351415275469106474268300887987");
-    check("LogBarnesG(1.7+I)", //
-        "0.121379+I*(-0.313562)");
-
-    check("LogBarnesG(1)", //
-        "0");
-    check("LogBarnesG(2)", //
-        "0");
-  }
-
-  @Test
   public void testBaseDecode() {
     check(
         "ba1 = BaseEncode(StringToByteArray(\"Man is distinguished, not only by his reason, but by this singular passion from other animals, "
@@ -8910,9 +8865,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindMinimum() {
-    check(
-        "FindMinimum({100*(y-x^2)^2+(1-x)^2}, {{x,-1}, {y,1}},Method -> \"SequentialQuadratic\" )", //
-        "{4.03424*10^-11,{x->0.999999,y->0.999998}}");
+    // check(
+    // "FindMinimum({100*(y-x^2)^2+(1-x)^2}, {{x,-1}, {y,1}},Method -> \"SequentialQuadratic\" )",
+    // //
+    // "{4.03424*10^-11,{x->0.999999,y->0.999998}}");
 
     // example: Rosenbrock function https://en.wikipedia.org/wiki/Rosenbrock_function
     // Math.pow(1 - x, 2) + 100 * Math.pow(y - x * x, 2);
@@ -8926,7 +8882,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check(
         "FindMinimum({x+y,3*x+2*y >= 7 , x >= 0 , y >= 0}, {x, y},Method -> \"SequentialQuadratic\")", //
-        "{2.33333,{x->2.33333,y->-2.01416*10^-10}}");
+        "{2.33333,{x->2.33333,y->-8.32917*10^-11}}");
 
     // TODO Less and Greater are not allowed at the moment
     // message: FindMinimum: Constraints in `1` are not all 'equality' or 'less

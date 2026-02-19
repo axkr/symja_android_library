@@ -23,9 +23,7 @@ public final class FunctionDefinitions {
       S.MatrixSymbol.setEvaluator(new org.matheclipse.core.reflection.system.MatrixSymbol());
       S.VectorSymbol.setEvaluator(new org.matheclipse.core.reflection.system.VectorSymbol());
       S.BarChart.setEvaluator(new org.matheclipse.core.builtin.graphics.BarChart());
-      S.BarnesG.setEvaluator(new org.matheclipse.core.reflection.system.BarnesG());
       S.BoxWhiskerChart.setEvaluator(new org.matheclipse.core.builtin.graphics.BoxWhiskerChart());
-      S.LogBarnesG.setEvaluator(new org.matheclipse.core.reflection.system.LogBarnesG());
       S.Beep.setEvaluator(new org.matheclipse.core.reflection.system.Beep());
       S.BezierFunction.setEvaluator(new org.matheclipse.core.reflection.system.BezierFunction());
       S.ColorData.setEvaluator(new org.matheclipse.core.reflection.system.ColorData());
