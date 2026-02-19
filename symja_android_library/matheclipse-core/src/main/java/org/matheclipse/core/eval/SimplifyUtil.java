@@ -2,7 +2,6 @@ package org.matheclipse.core.eval;
 
 import static org.matheclipse.core.expression.F.Log;
 import static org.matheclipse.core.expression.F.x_;
-import static org.matheclipse.core.expression.S.Log;
 import static org.matheclipse.core.expression.S.x;
 import java.util.List;
 import java.util.Optional;
@@ -361,7 +360,7 @@ public class SimplifyUtil extends VisitorExpr {
    * @param plusAST
    * @return
    */
-  private static IExpr tryPlusLog(IAST plusAST) {
+  private IExpr tryPlusLog(IAST plusAST) {
     if (plusAST.size() > 2) {
       IASTAppendable logPlus = F.PlusAlloc(plusAST.size());
       IExpr a1 = F.NIL;
@@ -370,12 +369,12 @@ public class SimplifyUtil extends VisitorExpr {
         IExpr a2 = plusAST.get(i);
         IExpr arg = F.NIL;
         if (a2.isTimes2() && a2.first().isInteger() && //
-            a2.second().isLog() && a2.second().first().isReal()) {
+            a2.second().isLog() && a2.second().first().isRealResult()) {
           arg = S.Power.of(a2.second().first(), a2.first());
-        } else if (a2.isLog() && a2.first().isReal()) {
+        } else if (a2.isLog() && a2.first().isRealResult()) {
           arg = a2.first();
         }
-        if (arg.isReal()) {
+        if (arg.isRealResult()) {
           if (a1.isPresent()) {
             a1 = a1.multiply(arg);
             evaled = true;
@@ -387,10 +386,11 @@ public class SimplifyUtil extends VisitorExpr {
         logPlus.append(a2);
       }
       if (evaled) {
+        a1 = eval(a1);
         if (logPlus.isEmpty()) {
-          return Log.of(a1);
+          return F.Log(a1);
         } else {
-          logPlus.append(Log(a1));
+          logPlus.append(F.Log(a1));
           return logPlus;
         }
       }
@@ -1196,7 +1196,6 @@ public class SimplifyUtil extends VisitorExpr {
           temp = tryPlusLog((IAST) expr);
         }
         if (temp.isPresent()) {
-          temp = eval(temp);
           simplifiedResult.checkLessEqual(temp);
         }
       }

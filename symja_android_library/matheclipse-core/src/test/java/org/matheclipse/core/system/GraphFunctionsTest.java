@@ -7,6 +7,11 @@ import org.matheclipse.core.eval.EvalEngine;
 
 /** Tests for graphics functions */
 public class GraphFunctionsTest extends ExprEvaluatorTestCase {
+  @Test
+  public void testAdjacencyGraph() {
+    check("AdjacencyGraph({{0,1,1,0},{0,0,1,0},{0,0,0,0},{0,1,0,0}})", //
+        "Graph({1,2,3,4},{1->2,1->3,2->3,4->2})");
+  }
 
   @Test
   public void testAdjacencyMatrix() {
@@ -437,6 +442,13 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
     check(
         "GraphDiameter({UndirectedEdge(1, 2), UndirectedEdge(1, 3), UndirectedEdge(1, 4),  UndirectedEdge(2, 3), UndirectedEdge(3, 4)})", //
         "2");
+  }
+
+  @Test
+  public void testConnectedGraphComponents() {
+    // TODO
+    check("ConnectedGraphComponents(Graph(Table(i -> Mod(i^2, 7), {i, 10})))", //
+        "{Graph({0},{}),Graph({1},{1->1}),Graph({2,4},{2->4,4->2}),Graph({3},{}),Graph({5},{}),Graph({6},{}),Graph({7},{}),Graph({8},{}),Graph({9},{}),Graph({10},{})}");
   }
 
   @Test

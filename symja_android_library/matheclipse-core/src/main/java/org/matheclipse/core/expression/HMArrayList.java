@@ -1198,6 +1198,23 @@ public abstract class HMArrayList extends AbstractAST
   }
 
   @Override
+  public void sortInplace(Comparator<IExpr> comparator) {
+    if (size() > 1) {
+      if (Config.FUZZ_TESTING) {
+        try {
+          Arrays.sort(array, firstIndex + 1, lastIndex, comparator);
+        } catch (java.lang.IllegalArgumentException iae) {
+          // java.util.TimSort.mergeHi(TimSort.java:899) - Comparison method violates its general
+          // contract!
+          throw iae;
+        }
+      } else {
+        Arrays.sort(array, firstIndex + 1, lastIndex, comparator);
+      }
+    }
+  }
+
+  @Override
   public Stream<IExpr> stream() {
     return Arrays.stream(array, firstIndex + 1, lastIndex);
   }

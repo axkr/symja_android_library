@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -15,7 +16,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
 
-  private static final IExpr DEFAULT_COLOR = F.RGBColor(F.num(1.0), F.num(0.8), F.num(0.4));
+  // private static final IExpr DEFAULT_COLOR = F.RGBColor(F.num(1.0), F.num(0.8), F.num(0.4));
 
   public ParametricPlot3D() {}
 
@@ -53,35 +54,65 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
       functions.add(listArg);
     }
 
-    IExpr plotStyleOpt = options[3];
-    List<IExpr> styles = new ArrayList<>();
-    if (plotStyleOpt.isList()) {
-      IAST styleList = (IAST) plotStyleOpt;
-      for (int i = 1; i < styleList.size(); i++)
-        styles.add(styleList.get(i));
-    } else if (!plotStyleOpt.equals(S.Automatic)) {
-      styles.add(plotStyleOpt);
-    } else {
-      styles.add(DEFAULT_COLOR);
-    }
+    IExpr plotStyle = options[3];
+    // List<IExpr> styles = new ArrayList<>();
+    // if (plotStyle.isList()) {
+    // IAST styleList = (IAST) plotStyle;
+    // for (int i = 1; i < styleList.size(); i++)
+    // styles.add(styleList.get(i));
+    // } else if (plotStyle != S.Automatic) {
+    // styles.add(plotStyle);
+    // } else {
+    // styles.add(DEFAULT_COLOR);
+    // }
 
     IASTAppendable allPoints = F.ListAlloc();
     IASTAppendable allPrimitives = F.ListAlloc();
 
     int currentPointOffset = 0;
-
+    IAST explicitStyles = F.NIL;
+    if (plotStyle.isList()) {
+      explicitStyles = (IAST) plotStyle;
+    }
     if (isSurface) {
       for (int i = 0; i < functions.size(); i++) {
-        IExpr style = styles.get(i % styles.size());
+        // IExpr style = styles.get(i % styles.size());
+        IExpr currentStyle;
+        if (explicitStyles.size() > 1) {
+          // Explicit list {Red, Green...}
+          int styleIdx = (i) % (explicitStyles.size() - 1) + 1;
+          currentStyle = explicitStyles.get(styleIdx);
+        } else if (plotStyle.isAST() && !plotStyle.isList()) {
+          // Explicit single style
+          currentStyle = plotStyle;
+        } else {
+          // Automatic: Cycle default colors
+          int colorIdx = GraphicsOptions.incColorIndex(i);
+          currentStyle = GraphicsOptions.plotStyleColorExpr(colorIdx, F.NIL);
+        }
+
         createSurfaceGeometry(functions.get(i), (IAST) ast.arg2(), (IAST) ast.arg3(), plotPoints,
-            engine, allPoints, allPrimitives, style, currentPointOffset);
+            engine, allPoints, allPrimitives, currentStyle, currentPointOffset);
         currentPointOffset += (plotPoints * plotPoints);
       }
     } else if (argSize >= 2 && ast.arg2().isList()) {
       for (int i = 0; i < functions.size(); i++) {
-        IExpr style = styles.get(i % styles.size());
+        // IExpr style = styles.get(i % styles.size());
+        IExpr currentStyle;
+        if (explicitStyles.size() > 1) {
+          // Explicit list {Red, Green...}
+          int styleIdx = (i) % (explicitStyles.size() - 1) + 1;
+          currentStyle = explicitStyles.get(styleIdx);
+        } else if (plotStyle.isAST() && !plotStyle.isList()) {
+          // Explicit single style
+          currentStyle = plotStyle;
+        } else {
+          // Automatic: Cycle default colors
+          int colorIdx = GraphicsOptions.incColorIndex(i);
+          currentStyle = GraphicsOptions.plotStyleColorExpr(colorIdx, F.NIL);
+        }
         createCurveGeometry(functions.get(i), (IAST) ast.arg2(), plotPoints, engine, allPoints,
-            allPrimitives, style, currentPointOffset);
+            allPrimitives, currentStyle, currentPointOffset);
         currentPointOffset += plotPoints;
       }
     } else {
@@ -186,5 +217,6 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     setOptions(newSymbol,
         new IBuiltInSymbol[] {S.PlotPoints, S.PlotRange, S.ColorFunction, S.PlotStyle, S.BoxRatios},
         new IExpr[] {S.Automatic, S.Automatic, S.Automatic, S.Automatic, S.Automatic});
+
   }
 }

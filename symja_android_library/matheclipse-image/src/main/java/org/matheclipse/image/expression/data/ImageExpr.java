@@ -17,6 +17,7 @@ import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.JSBuilder;
+import org.matheclipse.core.graphics.SVGGraphics3D;
 import org.matheclipse.core.graphics.SVGGraphics;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -124,13 +125,20 @@ final public class ImageExpr extends DataExpr<byte[]> {
    */
   public static ImageExpr toImageExpr(IAST imageData, String colorSpace) {
     if (imageData.isGraphicsObject()) {
-      // ... [Existing Logic for Graphics objects] ...
-      // Graphics typically render to RGB directly via SVG.
-      // Copied from previous logic:
       int rowSize = 600;
       int colSize = 400;
       SVGGraphics converter = new SVGGraphics(rowSize, colSize);
       String svgContent = converter.toSVG(imageData);
+      BufferedImage bufferedImage = SVG2BufferedImage.createBufferedImage(svgContent);
+      if (bufferedImage != null) {
+        return new ImageExpr(bufferedImage, null);
+      }
+      return null;
+    }
+    if (imageData.isAST(S.Graphics3D)) {
+      int rowSize = 600;
+      int colSize = 400;
+      String svgContent = SVGGraphics3D.toSVG(imageData);
       BufferedImage bufferedImage = SVG2BufferedImage.createBufferedImage(svgContent);
       if (bufferedImage != null) {
         return new ImageExpr(bufferedImage, null);

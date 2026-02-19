@@ -295,7 +295,10 @@ public class Predicates {
    * @see IExpr#isFree(Predicate, boolean)
    */
   public static Predicate<IExpr> toFreeQ(IExpr pattern) {
-    if (pattern.isSymbol() || pattern.isAtomicConstant()) {
+    if (pattern.isSymbol()) {
+      return x -> x == pattern;
+    }
+    if (pattern.isAtomicConstant()) {
       return x -> x.equals(pattern);
     }
     final IPatternMatcher matcher;
@@ -318,7 +321,10 @@ public class Predicates {
    * @return
    */
   public static Predicate<IExpr> toMemberQ(IExpr pattern) {
-    if (pattern.isSymbol() || pattern.isNumber() || pattern.isString()) {
+    if (pattern.isSymbol()) {
+      return x -> x == pattern;
+    }
+    if (pattern.isNumber() || pattern.isString()) {
       return x -> x.equals(pattern);
     }
     return new PatternMatcher(pattern);

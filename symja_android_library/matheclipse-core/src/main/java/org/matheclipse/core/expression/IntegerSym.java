@@ -1061,6 +1061,11 @@ public class IntegerSym extends AbstractIntegerSym {
   }
 
   @Override
+  public int uniformFlags() {
+    return UniformFlags.INT | UniformFlags.INTEGER | UniformFlags.NUMBER | UniformFlags.ATOM;
+  }
+
+  @Override
   public void writeExternal(ObjectOutput objectOutput) throws IOException {
     if (fIntValue <= Byte.MAX_VALUE && fIntValue >= Byte.MIN_VALUE) {
       objectOutput.writeByte(1);

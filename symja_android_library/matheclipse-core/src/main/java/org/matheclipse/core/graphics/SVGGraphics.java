@@ -111,10 +111,282 @@ public class SVGGraphics {
     boolean joined = false;
   }
 
+
+  /**
+   * Generates the root SVG Element (ContainerTag) for the given graphics expression. This allows
+   * valid modification of the SVG tag before rendering (e.g. adding x, y attributes).
+   * 
+   * @param graphicsExpr
+   * @return
+   */
+  public ContainerTag buildSVGTag(IAST graphicsExpr) {
+    if (graphicsExpr.isList() || graphicsExpr.isAST(S.GraphicsRow)) {
+      // GraphicsRow not yet supported in this refactoring for buildSVGTag, fall back roughly
+      // But toSVGRow returns string. We might need a dummy wrapper if used here.
+      // For Inset, usually single Graphics is used.
+      return null;
+    }
+
+    resetBounds();
+    parseOptions(graphicsExpr);
+    adjustPadding();
+
+    if (graphicsExpr.argSize() >= 1)
+      scanBounds(graphicsExpr.arg1(), options.globalStyle.clone());
+    refineDataBounds();
+    adjustBoundsForLogScale();
+    if (options.plotLegends != null) {
+      if (options.plotLegends.isList() || isBarLegend(options.plotLegends))
+        paddingRight += LEGEND_WIDTH;
+    }
+    calculateViewport();
+
+    List<DomContent> elements = new ArrayList<>();
+    String plotAreaId = "plotArea" + idSuffix;
+    String gradientId = "sunsetGradient" + idSuffix;
+
+    // 1. Base Canvas (White)
+    elements.add(tag("rect").attr("width", "100%").attr("height", "100%").attr("fill", "white"));
+
+    // 2. Plot Area
+    double plotX1 = paddingLeft;
+    double plotX2 = paddingLeft + (mapMaxX - mapMinX) * scaleX;
+    double plotY2 = options.imageSize[1] - paddingBottom;
+    double plotY1 = plotY2 - (mapMaxY - mapMinY) * scaleY;
+    double clipW = Math.max(0, plotX2 - plotX1);
+    double clipH = Math.max(0, plotY2 - plotY1);
+
+    // 3. User Background
+    if (options.background != null) {
+      elements
+          .add(tag("rect").attr("x", fmt(plotX1)).attr("y", fmt(plotY1)).attr("width", fmt(clipW))
+              .attr("height", fmt(clipH)).attr("fill", colorToCss(options.background)));
+    }
+
+    if (options.prolog != null) {
+      ContainerTag<?> prologGroup = tag("g").attr("id", "prolog");
+      processElement(options.prolog, options.globalStyle.clone(), prologGroup);
+      elements.add(prologGroup);
+    }
+
+    if (options.gridLines != null && !options.gridLines.isFalse() && !options.gridLines.isNone()) {
+      ContainerTag<?> gridGroup = tag("g").attr("class", "grid");
+      drawGridLines(gridGroup);
+      elements.add(gridGroup);
+    }
+
+    ContainerTag<?> defs = tag("defs");
+    boolean hasDefs = false;
+
+    if (options.plotLegends != null && isBarLegend(options.plotLegends)) {
+      ContainerTag<?> gradient = tag("linearGradient").attr("id", gradientId).attr("x1", "0%")
+          .attr("y1", "100%").attr("x2", "0%").attr("y2", "0%");
+      double[][] colors = GraphicsOptions.SUNSET_COLORS;
+      int n = colors.length - 1;
+      for (int i = 0; i < colors.length; i++) {
+        double offset = (double) i / n * 100.0;
+        String color = String.format(Locale.US, "rgb(%d,%d,%d)", (int) (colors[i][0] * 255),
+            (int) (colors[i][1] * 255), (int) (colors[i][2] * 255));
+        gradient.with(tag("stop").attr("offset", String.format(Locale.US, "%.1f%%", offset))
+            .attr("style", "stop-color:" + color + ";stop-opacity:1"));
+      }
+      defs.with(gradient);
+      hasDefs = true;
+    }
+
+    defs.with(tag("clipPath").attr("id", plotAreaId).with(tag("rect").attr("x", fmt(plotX1))
+        .attr("y", fmt(plotY1)).attr("width", fmt(clipW)).attr("height", fmt(clipH))));
+    hasDefs = true;
+    if (hasDefs)
+      elements.add(defs);
+
+    ContainerTag<?> mainGroup =
+        tag("g").attr("id", "main").attr("clip-path", "url(#" + plotAreaId + ")");
+    if (graphicsExpr.argSize() >= 1) {
+      ContainerTag<?> contentGroup =
+          tag("g").attr("font-family", "sans-serif").attr("font-size", "12.0");
+      processElement(graphicsExpr.arg1(), options.globalStyle.clone(), contentGroup);
+      mainGroup.with(contentGroup);
+    }
+    elements.add(mainGroup);
+
+    ContainerTag<?> axesGroup = tag("g").attr("class", "axes");
+    if (!options.axes.isFalse() && !options.axes.isNone())
+      drawAxesWithTicks(axesGroup);
+    if (options.frame)
+      drawFrame(axesGroup);
+    if (axesGroup.getNumChildren() > 0)
+      elements.add(axesGroup);
+
+    if (options.plotLegends != null) {
+      ContainerTag<?> legendGroup = tag("g").attr("class", "legends");
+      drawLegends(legendGroup, gradientId);
+      elements.add(legendGroup);
+    }
+
+    if (options.epilog != null) {
+      ContainerTag<?> epilogGroup = tag("g").attr("id", "epilog");
+      processElement(options.epilog, options.globalStyle.clone(), epilogGroup);
+      elements.add(epilogGroup);
+    }
+    return tag("svg")//
+        .attr("xmlns", "http://www.w3.org/2000/svg")//
+        .attr("width", fmt(options.imageSize[0])) //
+        .attr("height", fmt(options.imageSize[1])) //
+        .attr("style", "max-width: 100%; height: auto;") // <-- PREVENTS CLIPPING
+        .attr("viewBox",
+            String.format(Locale.US, "0 0 %.0f %.0f", options.imageSize[0], options.imageSize[1]))//
+        .with(elements);
+  }
+
+  private void drawInset(IAST ast, GraphicState state, ContainerTag<?> parent) {
+    IExpr obj = ast.arg1();
+    if (obj.isAST() && (obj.isAST(S.Graphics) || obj.isAST(S.Graphics3D))) {
+      // Handle nested graphics
+      double[] pos = {0.0, 0.0};
+      if (ast.argSize() >= 2) {
+        pos = parsePoint(ast.arg2(), state);
+      }
+
+      IExpr oposExpr = (ast.argSize() >= 3) ? ast.arg3() : null;
+      // Default opos is center {0,0} relative to object, but if object is Graphics, center usually
+      // means geometric center
+      // For Graphics, typical default alignment is Center.
+
+      IExpr sizeExpr = (ast.argSize() >= 4) ? ast.arg4() : null;
+
+      // Determine dimensions of the inset
+      double w = 0, h = 0;
+      boolean explicitSize = false;
+
+      if (sizeExpr != null) {
+        if (sizeExpr.isList()) {
+          IAST szList = (IAST) sizeExpr;
+          double valW = getDouble(szList.arg1(), Double.NaN);
+          double valH = getDouble(szList.arg2(), Double.NaN);
+          if (!Double.isNaN(valW) && !Double.isNaN(valH)) {
+            // Size is in outer coordinates
+            w = Math.abs(valW * scaleX);
+            h = Math.abs(valH * scaleY);
+            explicitSize = true;
+          }
+        } else if (sizeExpr.isNumber()) {
+          double val = getDouble(sizeExpr);
+          w = Math.abs(val * scaleX);
+          // h calculated from aspect ratio later
+          explicitSize = true;
+        }
+      }
+
+      // If we don't have explicit size, we might use a default or try to determine.
+      if (!explicitSize) {
+        w = options.imageSize[0] / 3.0; // Default to 1/3 of view
+        h = options.imageSize[1] / 3.0;
+      } else if (h == 0) {
+        // Maintain aspect ratio if possible (needs internal aspect ratio)
+        h = w; // fallback
+      }
+
+      SVGGraphics subGraphics = new SVGGraphics(w, h);
+      ContainerTag<?> subSVG = subGraphics.buildSVGTag((IAST) obj);
+      if (subSVG == null)
+        return; // Error or unsupported
+
+      // If we only had width, try to correct height if aspect ratio is available from subGraphics
+      // options
+      if (explicitSize && sizeExpr.isNumber()) {
+        // If aspect ratio is known
+        double ar = subGraphics.options.aspectRatio;
+        if (Double.isNaN(ar)) {
+          // Try to imply from plot range
+          double rangeX = subGraphics.mapMaxX - subGraphics.mapMinX;
+          double rangeY = subGraphics.mapMaxY - subGraphics.mapMinY;
+          if (rangeX > 0)
+            ar = rangeY / rangeX;
+          else
+            ar = 1.0;
+        }
+        h = w * ar;
+        // Update height attribute
+        subSVG.attr("height", fmt(h));
+        subSVG.attr("viewBox", String.format(Locale.US, "0 0 %.0f %.0f", w, h));
+        // Also update subGraphics imageSize for correct alignment mapping?
+        // The subGraphics was built with w,w. Recalculation is hard.
+        // Ideally we should have known H before building.
+        // However, let's assume square default for fallback or use what we got.
+      }
+
+
+      // Calculate position
+      double outerX = mapX(pos[0]);
+      double outerY = mapY(pos[1]);
+
+      // Alignment (opos)
+      double alignX = 0, alignY = 0; // Displacement in pixels from top-left of sub-image
+
+      if (oposExpr != null) {
+        if (oposExpr.isAST(S.ImageScaled) && oposExpr.first().isList()) {
+          // ImageScaled[{x,y}] - 0..1 relative to image size
+          IAST is = (IAST) oposExpr.first();
+          double rx = getDouble(is.arg1(), 0.5);
+          double ry = getDouble(is.arg2(), 0.5); // Mathematica 0,0 is bottom-left?
+          // In ImageScaled, {0,0} is bottom-left usually.
+          // In SVG, 0,0 is top-left.
+          // Let's assume standard Mathematica coords for ImageScaled: 0,0 bottom-left, 1,1
+          // top-right.
+
+          alignX = rx * w;
+          alignY = (1.0 - ry) * h;
+
+        } else {
+          // Coordinates in the object's system
+          double[] op = parsePoint(oposExpr, state); // Parse using current state? No, raw parse.
+          // We need to map op to subGraphics pixels.
+          double opPx = subGraphics.mapX(op[0]);
+          double opPy = subGraphics.mapY(op[1]);
+          if (Double.isFinite(opPx) && Double.isFinite(opPy)) {
+            alignX = opPx; // relative to subGraphics origin (0, top-left of image) which includes
+                           // padding
+            alignY = opPy;
+            // But mapX/mapY includes padding.
+            // subSVG is the whole image.
+            // So mapX returns pixel coordinate relative to top-left of image.
+            // Yes, that's exactly what we need.
+          } else {
+            // Fallback to center
+            alignX = w / 2.0;
+            alignY = h / 2.0;
+          }
+        }
+      } else {
+        // Default alignment: Center
+        alignX = w / 2.0;
+        alignY = h / 2.0;
+      }
+
+      double finalX = outerX - alignX;
+      double finalY = outerY - alignY;
+
+      subSVG.attr("x", fmt(finalX));
+      subSVG.attr("y", fmt(finalY));
+
+      // We must ensure width/height match what we calculated
+      subSVG.attr("width", fmt(w));
+      subSVG.attr("height", fmt(h));
+
+      parent.with(subSVG);
+
+    } else {
+      drawText(ast, state, parent);
+    }
+  }
+
+
   // --- Fields ---
 
   private final Options options = new Options();
   private final String idSuffix;
+  private boolean imageSizeSet = false;
 
   // Data Bounds (Raw Values)
   private double dataMinX = Double.MAX_VALUE, dataMaxX = -Double.MAX_VALUE;
@@ -138,11 +410,13 @@ public class SVGGraphics {
 
   public SVGGraphics() {
     this.idSuffix = "_" + Integer.toHexString(System.identityHashCode(this));
+    this.imageSizeSet = false;
   }
 
   public SVGGraphics(double w, double h) {
     this();
     options.imageSize = new double[] {w, h};
+    this.imageSizeSet = true;
   }
 
   public double[] getImageSize() {
@@ -156,10 +430,17 @@ public class SVGGraphics {
   public String toSVG(IAST graphicsExpr, boolean withSVGTag) {
     if (graphicsExpr.isList() || graphicsExpr.isAST(S.GraphicsRow)) {
       return toSVGRow(graphicsExpr, withSVGTag);
+    } else if (graphicsExpr.isAST(S.GraphicsColumn)) {
+      return toSVGColumn(graphicsExpr, withSVGTag);
+    } else if (graphicsExpr.isAST(S.GraphicsGrid)) {
+      return toSVGGrid(graphicsExpr, withSVGTag);
     }
+
     try {
       resetBounds();
       parseOptions(graphicsExpr);
+      adjustPadding();
+
       if (graphicsExpr.argSize() >= 1)
         scanBounds(graphicsExpr.arg1(), options.globalStyle.clone());
       refineDataBounds();
@@ -261,11 +542,16 @@ public class SVGGraphics {
       }
 
       if (withSVGTag) {
-        return tag("svg")
-            .attr("xmlns", "http://www.w3.org/2000/svg").attr("width", fmt(options.imageSize[0]))
-            .attr("height", fmt(options.imageSize[1])).attr("viewBox", String.format(Locale.US,
-                "0 0 %.0f %.0f", options.imageSize[0], options.imageSize[1]))
-            .with(elements).render();
+        return tag("svg") //
+            .attr("xmlns", "http://www.w3.org/2000/svg") //
+            .attr("width", fmt(options.imageSize[0])) //
+            .attr("height", fmt(options.imageSize[1])) //
+            .attr("style", "max-width: 100%; height: auto;") // <-- PREVENTS CLIPPING
+            .attr("viewBox",
+                String.format(Locale.US, "0 0 %.0f %.0f", options.imageSize[0],
+                    options.imageSize[1])) //
+            .with(elements) //
+            .render();
       } else {
         return elements.stream().map(DomContent::render).collect(Collectors.joining("\n"));
       }
@@ -310,6 +596,24 @@ public class SVGGraphics {
         dataMaxY += 0.5;
       }
     }
+  }
+
+  private void adjustPadding() {
+    boolean showX = false;
+    boolean showY = false;
+    if (options.axes.isTrue()) {
+      showX = true;
+      showY = true;
+    } else if (options.axes.isList2()) {
+      showX = ((IAST) options.axes).arg1().isTrue();
+      showY = ((IAST) options.axes).arg2().isTrue();
+    }
+
+    // Shrink padding to a tight 5px margin if no axes/frames require the space
+    paddingLeft = (showY || options.frame) ? 50 : 5;
+    paddingBottom = (showX || options.frame) ? 30 : 5;
+    paddingTop = options.frame ? 20 : 5;
+    paddingRight = options.frame ? 20 : 5;
   }
 
   private void applyState(ContainerTag<?> t, GraphicState s, String strokeOverride,
@@ -380,46 +684,273 @@ public class SVGGraphics {
       dataMaxY = newMax;
   }
 
-  private String toSVGRow(IAST list, boolean withSVGTag) {
-    StringBuilder combined = new StringBuilder();
-    List<String> parts = new ArrayList<>();
-    List<double[]> sizes = new ArrayList<>();
-    double totalWidth = 0;
-    double maxHeight = 0;
+  private String toSVGColumn(IAST graphicsExpr, boolean withSVGTag) {
+    IAST items = graphicsExpr;
+    // Extract the inner list and parse GraphicsColumn options (like ImageSize)
+    if (graphicsExpr.isAST(S.GraphicsColumn)) {
+      if (graphicsExpr.argSize() >= 1 && graphicsExpr.arg1().isList()) {
+        items = (IAST) graphicsExpr.arg1();
+      } else {
+        return "";
+      }
+      parseOptions(graphicsExpr);
+    }
+
+    int n = items.argSize();
+    if (n == 0)
+      return "";
+
     double gap = 20.0;
-    for (int i = 1; i < list.size(); i++) {
-      IExpr expr = list.get(i);
-      SVGGraphics sub = new SVGGraphics();
+    double totalW = options.imageSize[0];
+    double totalH = options.imageSize[1];
+
+    // Distribute total height equally among the items, minus the gaps
+    double itemH = (totalH - gap * (n - 1)) / n;
+    double itemW = totalW;
+
+    List<String> innerSvgs = new ArrayList<>();
+    List<Double> sizesW = new ArrayList<>();
+    List<Double> sizesH = new ArrayList<>();
+
+    // Process each child graphic using the scaled dimensions
+    for (int i = 1; i <= n; i++) {
+      IExpr expr = items.get(i);
+      SVGGraphics sub = new SVGGraphics(itemW, itemH);
       String svg = sub.toSVG((IAST) expr, false);
       double[] size = sub.getImageSize();
-      parts.add(svg);
-      sizes.add(size);
-      totalWidth += size[0];
-      maxHeight = Math.max(maxHeight, size[1]);
-      if (i < list.size())
-        totalWidth += gap;
+
+      innerSvgs.add(svg);
+      sizesW.add(size[0]);
+      sizesH.add(size[1]);
     }
+
+    List<DomContent> groupElements = new ArrayList<>();
+    double currentY = 0;
+    for (int i = 0; i < innerSvgs.size(); i++) {
+      double w = sizesW.get(i);
+      double h = sizesH.get(i);
+      // Center horizontally
+      double xOffset = (totalW - w) / 2.0;
+
+      ContainerTag<?> g = tag("g")
+          .attr("transform", String.format(Locale.US, "translate(%.2f, %.2f)", xOffset, currentY))
+          .with(rawHtml(innerSvgs.get(i)));
+      groupElements.add(g);
+      currentY += h + gap;
+    }
+
+    // Draw Grid Frames if requested (e.g., Frame -> All)
+    if (options.frame) {
+      String frameStyle = "stroke:black;stroke-width:1px;fill:none;";
+
+      // Outer Rectangle
+      groupElements.add(tag("rect").attr("x", "0").attr("y", "0").attr("width", fmt(totalW))
+          .attr("height", fmt(totalH)).attr("style", frameStyle));
+
+      // Horizontal lines dividing the rows
+      for (int i = 0; i < n - 1; i++) {
+        double y = (i + 1) * (itemH + gap) - (gap > 0 ? gap / 2.0 : 0);
+        groupElements.add(tag("line").attr("x1", "0").attr("y1", fmt(y)).attr("x2", fmt(totalW))
+            .attr("y2", fmt(y)).attr("style", frameStyle));
+      }
+    }
+
     if (withSVGTag) {
-      combined.append(String.format(Locale.US,
-          "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%.0f\" height=\"%.0f\" viewBox=\"0 0 %.0f %.0f\">",
-          totalWidth, maxHeight, totalWidth, maxHeight));
-      combined.append("\n");
+      return tag("svg").attr("xmlns", "http://www.w3.org/2000/svg").attr("width", fmt(totalW))
+          .attr("height", fmt(totalH)).attr("style", "max-width: 100%; height: auto;")
+          .attr("viewBox", String.format(Locale.US, "0 0 %.0f %.0f", totalW, totalH))
+          .with(groupElements).render();
+    } else {
+      return groupElements.stream().map(DomContent::render).collect(Collectors.joining("\n"));
     }
+  }
+
+  private String toSVGGrid(IAST graphicsExpr, boolean withSVGTag) {
+    IAST grid = graphicsExpr;
+    // Extract the inner list and parse GraphicsGrid options (like ImageSize, Frame)
+    if (graphicsExpr.isAST(S.GraphicsGrid)) {
+      if (graphicsExpr.argSize() >= 1 && graphicsExpr.arg1().isList()) {
+        grid = (IAST) graphicsExpr.arg1();
+      } else {
+        return "";
+      }
+      parseOptions(graphicsExpr);
+    }
+
+    int rows = grid.argSize();
+    if (rows == 0)
+      return "";
+    int maxCols = 0;
+
+    // Determine maximum columns in the grid
+    for (int r = 1; r <= rows; r++) {
+      IExpr row = grid.get(r);
+      if (row.isList()) {
+        maxCols = Math.max(maxCols, row.argSize());
+      }
+    }
+    if (maxCols == 0)
+      return "";
+
+    // Expand the total SVG canvas dynamically based on grid dimensions if not overridden
+    // by constructor (SVGGraphics(w, h)) or by explicit ImageSize option.
+    if (!imageSizeSet) {
+      options.imageSize[0] = maxCols * 200.0;
+      options.imageSize[1] = rows * 200.0;
+    }
+
+    double gap = 0.0; // GraphicsGrid typically places items flush against each other
+    double totalW = options.imageSize[0];
+    double totalH = options.imageSize[1];
+
+    // Distribute total width and height equally among the items
+    double itemW = (totalW - gap * (maxCols - 1)) / maxCols;
+    double itemH = (totalH - gap * (rows - 1)) / rows;
+
+    List<DomContent> groupElements = new ArrayList<>();
+
+    // Process each child graphic using the scaled dimensions
+    for (int r = 1; r <= rows; r++) {
+      IExpr rowExpr = grid.get(r);
+      if (!rowExpr.isList())
+        continue;
+      IAST rowList = (IAST) rowExpr;
+
+      for (int c = 1; c <= rowList.argSize(); c++) {
+        IExpr expr = rowList.get(c);
+        // Skip common spanning placeholders to avoid crashes; they render as empty cells
+        if (expr.isNone() || expr == S.SpanFromLeft || expr == S.SpanFromAbove
+            || expr == S.SpanFromBoth) {
+          continue;
+        }
+
+        if (expr.isGraphicsObject()) {
+          SVGGraphics sub = new SVGGraphics(itemW, itemH);
+          String svg = sub.toSVG((IAST) expr, false);
+
+          // Calculate Top-Left layout coordinate
+          double xOffset = (c - 1) * (itemW + gap);
+          double yOffset = (r - 1) * (itemH + gap);
+
+          ContainerTag<?> g = tag("g")
+              .attr("transform",
+                  String.format(Locale.US, "translate(%.2f, %.2f)", xOffset, yOffset))
+              .with(rawHtml(svg));
+          groupElements.add(g);
+        }
+      }
+    }
+
+    // Draw Grid Frames if requested (e.g., Frame -> All)
+    if (options.frame) {
+      String frameStyle = "stroke:black;stroke-width:1px;fill:none;";
+
+      // Outer Rectangle
+      groupElements.add(tag("rect").attr("x", "0").attr("y", "0").attr("width", fmt(totalW))
+          .attr("height", fmt(totalH)).attr("style", frameStyle));
+
+      // Vertical lines dividing the columns
+      for (int c = 1; c < maxCols; c++) {
+        double x = c * (itemW + gap) - (gap > 0 ? gap / 2.0 : 0);
+        groupElements.add(tag("line").attr("x1", fmt(x)).attr("y1", "0").attr("x2", fmt(x))
+            .attr("y2", fmt(totalH)).attr("style", frameStyle));
+      }
+
+      // Horizontal lines dividing the rows
+      for (int r = 1; r < rows; r++) {
+        double y = r * (itemH + gap) - (gap > 0 ? gap / 2.0 : 0);
+        groupElements.add(tag("line").attr("x1", "0").attr("y1", fmt(y)).attr("x2", fmt(totalW))
+            .attr("y2", fmt(y)).attr("style", frameStyle));
+      }
+    }
+
+    if (withSVGTag) {
+      return tag("svg").attr("xmlns", "http://www.w3.org/2000/svg").attr("width", fmt(totalW))
+          .attr("height", fmt(totalH)).attr("style", "max-width: 100%; height: auto;")
+          .attr("viewBox", String.format(Locale.US, "0 0 %.0f %.0f", totalW, totalH))
+          .with(groupElements).render();
+    } else {
+      return groupElements.stream().map(DomContent::render).collect(Collectors.joining("\n"));
+    }
+  }
+
+  private String toSVGRow(IAST graphicsExpr, boolean withSVGTag) {
+    IAST items = graphicsExpr;
+    // Extract the inner list and parse GraphicsRow options
+    if (graphicsExpr.isAST(S.GraphicsRow)) {
+      if (graphicsExpr.argSize() >= 1 && graphicsExpr.arg1().isList()) {
+        items = (IAST) graphicsExpr.arg1();
+      } else {
+        return "";
+      }
+      parseOptions(graphicsExpr);
+    }
+
+    int n = items.argSize();
+    if (n == 0)
+      return "";
+
+    double gap = 20.0;
+    double totalW = options.imageSize[0];
+    double totalH = options.imageSize[1];
+
+    // Distribute total width equally among the items, minus the gaps
+    double itemW = (totalW - gap * (n - 1)) / n;
+    double itemH = totalH;
+
+    List<String> innerSvgs = new ArrayList<>();
+    List<Double> sizesW = new ArrayList<>();
+    List<Double> sizesH = new ArrayList<>();
+
+    // Process each child graphic using the scaled dimensions
+    for (int i = 1; i <= n; i++) {
+      IExpr expr = items.get(i);
+      SVGGraphics sub = new SVGGraphics(itemW, itemH);
+      String svg = sub.toSVG((IAST) expr, false);
+      double[] size = sub.getImageSize();
+
+      innerSvgs.add(svg);
+      sizesW.add(size[0]);
+      sizesH.add(size[1]);
+    }
+
+    List<DomContent> groupElements = new ArrayList<>();
     double currentX = 0;
-    for (int i = 0; i < parts.size(); i++) {
-      double[] size = sizes.get(i);
-      double yOffset = (maxHeight - size[1]) / 2.0;
-      combined.append(
-          String.format(Locale.US, "<g transform=\"translate(%.2f, %.2f)\">", currentX, yOffset));
-      combined.append("\n");
-      combined.append(parts.get(i));
-      combined.append("</g>\n");
-      currentX += size[0] + gap;
+    for (int i = 0; i < innerSvgs.size(); i++) {
+      double w = sizesW.get(i);
+      double h = sizesH.get(i);
+      // Center vertically
+      double yOffset = (totalH - h) / 2.0;
+
+      ContainerTag<?> g = tag("g")
+          .attr("transform", String.format(Locale.US, "translate(%.2f, %.2f)", currentX, yOffset))
+          .with(rawHtml(innerSvgs.get(i)));
+      groupElements.add(g);
+      currentX += w + gap;
+    }
+    // Draw Grid Frames if requested (e.g., Frame -> All)
+    if (options.frame) {
+      String frameStyle = "stroke:black;stroke-width:1px;fill:none;";
+
+      // Outer Rectangle
+      groupElements.add(tag("rect").attr("x", "0").attr("y", "0").attr("width", fmt(totalW))
+          .attr("height", fmt(totalH)).attr("style", frameStyle));
+
+      // Vertical lines dividing the columns
+      for (int i = 0; i < n - 1; i++) {
+        double x = (i + 1) * (itemW + gap) - (gap > 0 ? gap / 2.0 : 0);
+        groupElements.add(tag("line").attr("x1", fmt(x)).attr("y1", "0").attr("x2", fmt(x))
+            .attr("y2", fmt(totalH)).attr("style", frameStyle));
+      }
     }
     if (withSVGTag) {
-      combined.append("\n</svg>");
+      return tag("svg").attr("xmlns", "http://www.w3.org/2000/svg").attr("width", fmt(totalW))
+          .attr("height", fmt(totalH)).attr("style", "max-width: 100%; height: auto;")
+          .attr("viewBox", String.format(Locale.US, "0 0 %.0f %.0f", totalW, totalH))
+          .with(groupElements).render();
+    } else {
+      return groupElements.stream().map(DomContent::render).collect(Collectors.joining("\n"));
     }
-    return combined.toString();
   }
 
   private void resetBounds() {
@@ -960,8 +1491,10 @@ public class SVGGraphics {
             drawCircleOrDisk(ast, state, true, parent);
           break;
         case ID.Text:
-        case ID.Inset:
           drawText(ast, state, parent);
+          break;
+        case ID.Inset:
+          drawInset(ast, state, parent);
           break;
         case ID.Arrow:
           drawArrow(ast, state, parent);
@@ -970,7 +1503,7 @@ public class SVGGraphics {
           drawBezierCurve(ast, state, parent);
           break;
         case ID.BSplineCurve:
-          drawBezierCurve(ast, state, parent);
+          drawBSplineCurve(ast, state, parent);
           break;
         case ID.Parallelogram:
           drawParallelogram(ast, state, parent);
@@ -990,14 +1523,62 @@ public class SVGGraphics {
         case ID.AASTriangle:
           drawTriangleAAS(ast, state, parent);
           break;
+        case ID.Rule:
+          processRule(ast, state);
+          break;
       }
     }
   }
 
+  private void processRule(IAST ast, GraphicState state) {
+    IExpr key = ast.arg1();
+    IExpr val = ast.arg2();
+    if (key.isBuiltInSymbol()) {
+      switch (((IBuiltInSymbol) key).ordinal()) {
+        case ID.FontColor:
+          Color c = toColor(val);
+          if (c != null) {
+            state.strokeColor = c;
+            state.fillColor = c;
+          }
+          break;
+        case ID.FontSize:
+          if (val.isAST(S.Scaled, 2)) {
+            // Apply scale proportionately to the main horizontal image capacity
+            state.fontSize = getDouble(((IAST) val).arg1(), 0.05) * options.imageSize[0];
+          } else if (val.isAST(S.Offset, 2)) {
+            state.fontSize = getDouble(((IAST) val).arg1(), 12.0);
+          } else {
+            double size = getDouble(val, 12.0);
+            if (val.isBuiltInSymbol()) {
+              switch (((IBuiltInSymbol) val).ordinal()) {
+                case ID.Tiny:
+                  size = 8.0;
+                  break;
+                case ID.Small:
+                  size = 10.0;
+                  break;
+                case ID.Medium:
+                  size = 12.0;
+                  break;
+                case ID.Large:
+                  size = 18.0;
+                  break;
+              }
+            }
+            state.fontSize = size;
+          }
+          break;
+        case ID.FontFamily:
+          state.fontFamily = val.toString().replace("\"", "");
+          break;
+      }
+    }
+  }
   private void processStyle(IAST ast, GraphicState state, ContainerTag<?> parent) {
     GraphicState styleState = state.clone();
     for (int i = 2; i <= ast.argSize(); i++) {
-      processElement(ast.get(i), styleState, parent);
+      parseStyle(ast.get(i), styleState);
     }
     processElement(ast.arg1(), styleState, parent);
   }
@@ -1095,7 +1676,43 @@ public class SVGGraphics {
   }
 
   private void drawText(IAST ast, GraphicState state, ContainerTag<?> parent) {
-    String txt = ast.arg1().toString().replace("\"", "");
+    IExpr content = ast.arg1();
+    GraphicState textState = state.clone();
+
+    boolean isFramed = false;
+    Color boxFrameColor = Color.BLACK;
+    Color boxBackgroundColor = null;
+
+    while (content.isAST()) {
+      IAST wrapper = (IAST) content;
+      IExpr head = wrapper.head();
+      if (head.equals(S.Framed)) {
+        isFramed = true;
+        IExpr bg = extractOption(wrapper, S.Background);
+        if (bg != null) {
+          boxBackgroundColor = toColor(bg);
+        }
+
+        IExpr fs = extractOption(wrapper, S.FrameStyle);
+        if (fs != null) {
+          Color c = toColor(fs);
+          if (c != null) {
+            boxFrameColor = c;
+          }
+        }
+        content = wrapper.arg1();
+      } else if (head.equals(S.Style)) {
+        // Parse the embedded styles dynamically into the text graphics state
+        for (int i = 2; i <= wrapper.argSize(); i++) {
+          parseStyle(wrapper.get(i), textState);
+        }
+        content = wrapper.arg1();
+      } else {
+        break;
+      }
+    }
+
+    String txt = content.toString().replace("\"", "");
     double[] pos = parsePoint(ast.arg2(), state);
     double sx = mapX(pos[0]);
     double sy = mapY(pos[1]);
@@ -1107,15 +1724,35 @@ public class SVGGraphics {
         oy = getDouble(((IAST) offsetExpr).arg2(), 0.0);
       }
     }
-    double w = txt.length() * state.fontSize * 0.6;
-    double h = state.fontSize;
+
+    // Scale text bounds based on updated state explicitly rather than global state
+    double w = txt.length() * textState.fontSize * 0.6;
+    double h = textState.fontSize;
     double shiftX = -ox * (w / 2.0);
     double shiftY = oy * (h / 2.0);
 
     if (Double.isFinite(sx) && Double.isFinite(sy)) {
+      if (isFramed) {
+        double padding = 4.0;
+        double rectW = w + 2 * padding;
+        double rectH = h + padding;
+        double rectX = sx + shiftX - rectW / 2.0;
+        double rectY = sy + shiftY - h / 2.0 - padding;
+
+        String fill = "none";
+        if (boxBackgroundColor != null) {
+          fill = colorToCss(boxBackgroundColor);
+        }
+        String stroke = colorToCss(boxFrameColor);
+
+        parent
+            .with(tag("rect").attr("x", fmt(rectX)).attr("y", fmt(rectY)).attr("width", fmt(rectW))
+                .attr("height", fmt(rectH)).attr("fill", fill).attr("stroke", stroke));
+      }
+
       parent.with(tag("text").attr("x", fmt(sx)).attr("y", fmt(sy))
-          .attr("fill", colorToCss(state.strokeColor)).attr("font-family", state.fontFamily)
-          .attr("font-size", fmt(state.fontSize)).attr("text-anchor", "middle")
+          .attr("fill", colorToCss(textState.strokeColor)).attr("font-family", textState.fontFamily)
+          .attr("font-size", fmt(textState.fontSize)).attr("text-anchor", "middle")
           .attr("transform", String.format(Locale.US, "translate(%.2f, %.2f)", shiftX, shiftY))
           .withText(txt));
     }
@@ -1298,6 +1935,163 @@ public class SVGGraphics {
     applyState(path, state, null, "none");
     parent.with(path);
   }
+
+  private void drawBSplineCurve(IAST ast, GraphicState state, ContainerTag<?> parent) {
+    List<double[]> points = extractPoints(ast.arg1(), state);
+    if (points.isEmpty()) {
+      return;
+    }
+
+    int degree = 3;
+    IExpr optDegree = extractOption(ast, S.SplineDegree);
+    if (optDegree != null) {
+      degree = optDegree.toIntDefault(3);
+    }
+
+    boolean closed = false;
+    IExpr optClosed = extractOption(ast, S.SplineClosed);
+    if (optClosed != null && optClosed.isTrue()) {
+      closed = true;
+    }
+
+    double[] weights = null;
+    IExpr optWeights = extractOption(ast, S.SplineWeights);
+    if (optWeights != null && optWeights.isList()) {
+      IAST wList = (IAST) optWeights;
+      weights = new double[points.size()];
+      int count = Math.min(weights.length, wList.size() - 1);
+      for (int i = 0; i < count; i++) {
+        weights[i] = wList.get(i + 1).evalf();
+      }
+      for (int i = count; i < weights.length; i++)
+        weights[i] = 1.0;
+    }
+
+    double[] knots = null;
+    IExpr optKnots = extractOption(ast, S.SplineKnots);
+    if (optKnots != null && optKnots.isList()) {
+      IAST kList = (IAST) optKnots;
+      knots = new double[kList.size() - 1];
+      for (int i = 0; i < knots.length; i++) {
+        knots[i] = kList.get(i + 1).evalf();
+      }
+    }
+
+    if (closed) {
+      int n = points.size();
+      for (int i = 0; i < degree; i++) {
+        points.add(points.get(i % n));
+      }
+      if (weights != null) {
+        double[] newWeights = new double[points.size()];
+        System.arraycopy(weights, 0, newWeights, 0, n);
+        for (int i = 0; i < degree; i++) {
+          newWeights[n + i] = weights[i % n];
+        }
+        weights = newWeights;
+      }
+    }
+
+    int n = points.size();
+    if (knots == null) {
+      int kCount = n + degree + 1;
+      knots = new double[kCount];
+      if (!closed) {
+        for (int i = 0; i <= degree; i++)
+          knots[i] = 0.0;
+        for (int i = 1; i < n - degree; i++) {
+          knots[degree + i] = i;
+        }
+        for (int i = n; i < kCount; i++)
+          knots[i] = n - degree;
+      } else {
+        for (int i = 0; i < kCount; i++)
+          knots[i] = i;
+      }
+    }
+
+    int stepsPerSpan = 20;
+    StringBuilder d = new StringBuilder();
+    boolean first = true;
+
+    double tStart = knots[degree];
+    double tEnd = knots[n];
+
+    int totalSteps = (int) ((tEnd - tStart) * stepsPerSpan);
+    if (totalSteps < 20)
+      totalSteps = 20;
+
+    for (int i = 0; i <= totalSteps; i++) {
+      double t = tStart + (tEnd - tStart) * i / totalSteps;
+      if (t < tStart)
+        t = tStart;
+      if (t > tEnd - 1e-9)
+        t = tEnd - 1e-9;
+
+      double[] pt = deBoorEval(t, degree, knots, points, weights);
+      if (first) {
+        d.append(String.format(Locale.US, "M %.2f %.2f ", mapX(pt[0]), mapY(pt[1])));
+        first = false;
+      } else {
+        d.append(String.format(Locale.US, "L %.2f %.2f ", mapX(pt[0]), mapY(pt[1])));
+      }
+    }
+
+    if (closed)
+      d.append("Z");
+
+    ContainerTag<?> path = tag("path").attr("d", d.toString());
+    applyState(path, state, null, "none");
+    parent.with(path);
+  }
+
+  private double[] deBoorEval(double u, int degree, double[] knots, List<double[]> points,
+      double[] weights) {
+    int n = points.size();
+    int k = -1;
+    for (int i = degree; i < n; i++) {
+      if (u >= knots[i] && u < knots[i + 1]) {
+        k = i;
+        break;
+      }
+    }
+    if (k == -1)
+      return points.get(points.size() - 1);
+
+    double[][] d = new double[degree + 1][(weights != null) ? 3 : 2];
+    for (int j = 0; j <= degree; j++) {
+      int pIdx = k - degree + j;
+      double[] p = points.get(pIdx);
+      double w = (weights != null) ? weights[pIdx] : 1.0;
+      d[j][0] = p[0] * w;
+      d[j][1] = p[1] * w;
+      if (weights != null)
+        d[j][2] = w;
+    }
+
+    for (int r = 1; r <= degree; r++) {
+      for (int j = degree; j >= r; j--) {
+        double denom = knots[j + 1 + k - r] - knots[j + k - degree];
+        double alpha = (denom == 0) ? 0.0 : (u - knots[j + k - degree]) / denom;
+        for (int z = 0; z < ((weights != null) ? 3 : 2); z++) {
+          d[j][z] = (1.0 - alpha) * d[j - 1][z] + alpha * d[j][z];
+        }
+      }
+    }
+    double rw = (weights != null) ? d[degree][2] : 1.0;
+    return new double[] {d[degree][0] / rw, d[degree][1] / rw};
+  }
+
+  private IExpr extractOption(IAST ast, ISymbol optionName) {
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (arg.isRuleAST() && arg.first().equals(optionName)) {
+        return ((IAST) arg).second();
+      }
+    }
+    return null;
+  }
+
 
   private void drawParallelogram(IAST ast, GraphicState state, ContainerTag<?> parent) {
     if (ast.argSize() < 2)
@@ -1755,7 +2549,7 @@ public class SVGGraphics {
     }
     return false;
   }
- 
+
   private String getGridCss(GraphicState state) {
     return String.format(Locale.US,
         "stroke:%s; stroke-width:%.2fpx; stroke-opacity:%.2f; stroke-dasharray:%s; stroke-linecap:%s; stroke-linejoin:%s;",
@@ -1782,7 +2576,7 @@ public class SVGGraphics {
             options.axes = val; // Store the IExpr value (True, False, or List)
             break;
           case ID.Frame:
-            options.frame = val.equals(F.True);
+            options.frame = val.isTrue() || val == S.All;
             break;
           case ID.AxesOrigin:
             options.axesOrigin = parsePointRaw(val);
@@ -1794,12 +2588,20 @@ public class SVGGraphics {
             parseStyle(val, options.gridLinesStyle);
             break;
           case ID.ImageSize:
+            imageSizeSet = true;
             if (val.isList())
               options.imageSize =
                   new double[] {getDouble(((IAST) val).arg1()), getDouble(((IAST) val).arg2())};
             else if (val.isNumber()) {
               double s = getDouble(val);
               options.imageSize = new double[] {s, s};
+            }
+            break;
+          case ID.PlotRangePadding:
+            if (val.isNone() || val.isFalse()) {
+              options.plotRangePadding = 0.0;
+            } else if (val.isNumber()) {
+              options.plotRangePadding = getDouble(val, 0.05);
             }
             break;
           case ID.PlotRange:
@@ -1951,11 +2753,25 @@ public class SVGGraphics {
           case ID.Thickness:
             state.strokeWidth = getDouble(ast.arg1()) * options.imageSize[0];
             break;
+          case ID.AbsoluteThickness:
+            state.strokeWidth = getDouble(ast.arg1(), 1.0);
+            break;
           case ID.Opacity:
             state.opacity = getDouble(ast.arg1());
             break;
           case ID.PointSize:
             updatePointSize(ast, state);
+            break;
+          case ID.AbsolutePointSize:
+            state.pointRadius = getDouble(ast.arg1(), 3.0);
+            break;
+          case ID.Rule:
+            processRule(ast, state);
+            break;
+          case ID.Directive:
+            for (int i = 1; i <= ast.argSize(); i++) {
+              parseStyle(ast.get(i), state);
+            }
             break;
         }
       }
@@ -2214,5 +3030,6 @@ public class SVGGraphics {
         : String.format(Locale.US, "rgb(%d,%d,%d)", c.getRed(), c.getGreen(), c.getBlue());
   }
 
-  
+
 }
+

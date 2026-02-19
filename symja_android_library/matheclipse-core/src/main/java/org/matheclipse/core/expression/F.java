@@ -2668,8 +2668,12 @@ public class F extends S {
     return arg;
   }
 
-  public static IAST Circle(final IAST originList) {
-    return new AST1(Circle, originList);
+  public static IAST Circle(final IAST centerPoint) {
+    return new AST1(Circle, centerPoint);
+  }
+
+  public static IAST Circle(final IAST centerPoint, IExpr radius) {
+    return new AST2(Circle, centerPoint, radius);
   }
 
   public static IAST Clear(final IExpr... a) {
@@ -4917,6 +4921,10 @@ public class F extends S {
     return ast;
   }
 
+  public static IAST GraphicsColumn(final IExpr a0) {
+    return new AST1(GraphicsColumn, a0);
+  }
+
   public static IAST GraphicsComplex(final IExpr pointsList, final IExpr primitives) {
     return new AST2(GraphicsComplex, pointsList, primitives);
   }
@@ -4931,6 +4939,17 @@ public class F extends S {
     return quaternary(GraphicsComplex, pointsList, primitives, option1, option2);
   }
 
+  public static IAST GraphicsGrid(final IExpr a0) {
+    return new AST1(GraphicsGrid, a0);
+  }
+
+  public static IAST GraphicsGrid(final IExpr pointsList, final IExpr option) {
+    return new AST2(GraphicsGrid, pointsList, option);
+  }
+
+  public static IAST GraphicsRow(final IExpr a0) {
+    return new AST1(GraphicsRow, a0);
+  }
 
   public static IASTAppendable Graphics3D(final IExpr graphicPrimitives) {
     IASTAppendable ast = ast(Graphics3D);
@@ -9595,6 +9614,10 @@ public class F extends S {
 
   public static IAST ScalingTransform(final IExpr z) {
     return new AST1(ScalingTransform, z);
+  }
+
+  public static IAST Scaled(final double s) {
+    return new AST1(Scaled, F.num(s));
   }
 
   public static IAST Scan(final IExpr a0, final IExpr a1) {

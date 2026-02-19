@@ -31,6 +31,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.graphics.GraphGraphics;
 import org.matheclipse.core.graphics.WebGLGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -244,12 +245,19 @@ public class AJAXQueryServlet extends HttpServlet {
         StringBuilderWriter outBuffer = new StringBuilderWriter();
         IExpr outExpr = evalTopLevel(engine, outBuffer, inExpr);
         if (outExpr != null) {
+          if (outExpr instanceof GraphExpr) {
+            GraphGraphics graphGraphics = new GraphGraphics(outExpr);
+            IAST graphics = graphGraphics.toGraphics();
+            if (graphics.isPresent()) {
+              outExpr = graphics;
+            }
+          }
           if (outExpr.isGraphicsObject()) {
             StringBuilder buf = new StringBuilder();
             if (GraphicsUtil.renderGraphics2DSVG(buf, (IAST) outExpr, engine)) {
               String svg = buf.toString();
               return JSONBuilder.createJSONJavaScript(
-                  "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"400\" viewBox=\"0 0 600 400\">"
+                  "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"400\" style=\"max-width: 100%; height: auto;\" viewBox=\"0 0 600 400\">"
                       + svg + "</svg>");
             }
             // if (GraphicsUtil.renderGraphics2D(buf, (IAST) outExpr, engine)) {

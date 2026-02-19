@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
@@ -293,6 +294,9 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
         return binaryOperator(ast, ast.arg1(), ast.arg2());
       }
     } catch (LimitException le) {
+      if (Config.SHOW_STACKTRACE) {
+        le.printStackTrace();
+      }
       throw le;
     } catch (RuntimeException rex) {
       LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);

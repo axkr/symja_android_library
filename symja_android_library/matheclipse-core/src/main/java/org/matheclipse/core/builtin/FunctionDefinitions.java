@@ -16,6 +16,8 @@ public final class FunctionDefinitions {
     private static void init() {
       S.QuarticSolve.setEvaluator(new QuarticSolve());
 
+      S.Activate.setEvaluator(new org.matheclipse.core.reflection.system.Activate());
+      S.AdjacencyGraph.setEvaluator(new org.matheclipse.core.reflection.system.AdjacencyGraph());
       S.ArrayPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ArrayPlot());
       S.ArraySymbol.setEvaluator(new org.matheclipse.core.reflection.system.ArraySymbol());
       S.MatrixSymbol.setEvaluator(new org.matheclipse.core.reflection.system.MatrixSymbol());
@@ -26,8 +28,14 @@ public final class FunctionDefinitions {
       S.LogBarnesG.setEvaluator(new org.matheclipse.core.reflection.system.LogBarnesG());
       S.Beep.setEvaluator(new org.matheclipse.core.reflection.system.Beep());
       S.BezierFunction.setEvaluator(new org.matheclipse.core.reflection.system.BezierFunction());
+      S.ColorData.setEvaluator(new org.matheclipse.core.reflection.system.ColorData());
+      S.ColorDataFunction
+          .setEvaluator(new org.matheclipse.core.reflection.system.ColorDataFunction());
+      S.CompleteKaryTree
+          .setEvaluator(new org.matheclipse.core.reflection.system.CompleteKaryTree());
       S.ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
-
+      S.ConnectedGraphComponents
+          .setEvaluator(new org.matheclipse.core.reflection.system.ConnectedGraphComponents());
       S.D.setEvaluator(new org.matheclipse.core.reflection.system.D());
       S.Derivative.setEvaluator(new org.matheclipse.core.reflection.system.Derivative());
       S.DifferenceDelta.setEvaluator(new org.matheclipse.core.reflection.system.DifferenceDelta());
@@ -73,6 +81,7 @@ public final class FunctionDefinitions {
       S.Horner.setEvaluator(new org.matheclipse.core.reflection.system.Horner());
       S.ImportString.setEvaluator(new org.matheclipse.core.reflection.system.ImportString());
       S.In.setEvaluator(new org.matheclipse.core.reflection.system.In());
+      S.Inactivate.setEvaluator(new org.matheclipse.core.reflection.system.Inactivate());
       S.InterpolatingFunction
           .setEvaluator(new org.matheclipse.core.reflection.system.InterpolatingFunction());
       S.InterpolatingPolynomial
@@ -84,6 +93,9 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.InverseLaplaceTransform());
       S.InverseZTransform
           .setEvaluator(new org.matheclipse.core.reflection.system.InverseZTransform());
+
+      S.KaryTree.setEvaluator(new org.matheclipse.core.reflection.system.KaryTree());
+
       S.LaplaceTransform
           .setEvaluator(new org.matheclipse.core.reflection.system.LaplaceTransform());
       S.LinearOptimization
@@ -120,6 +132,7 @@ public final class FunctionDefinitions {
       S.Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
       S.Ratios.setEvaluator(new org.matheclipse.core.reflection.system.Ratios());
       S.Reduce.setEvaluator(new org.matheclipse.core.reflection.system.Reduce());
+      S.Resolve.setEvaluator(new org.matheclipse.core.reflection.system.Resolve());
       S.Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
       S.SpectrogramArray
           .setEvaluator(new org.matheclipse.core.reflection.system.SpectrogramArray());
@@ -132,6 +145,9 @@ public final class FunctionDefinitions {
       S.SymmetricReduction
           .setEvaluator(new org.matheclipse.core.reflection.system.SymmetricReduction());
       S.Taylor.setEvaluator(new org.matheclipse.core.reflection.system.Taylor());
+      S.TreeForm.setEvaluator(new org.matheclipse.core.reflection.system.TreeForm());
+      S.TreeGraph.setEvaluator(new org.matheclipse.core.reflection.system.TreeGraph());
+      S.TreePlot.setEvaluator(new org.matheclipse.core.reflection.system.TreePlot());
       S.TrigExpand.setEvaluator(new org.matheclipse.core.reflection.system.TrigExpand());
       S.TrigFactor.setEvaluator(new org.matheclipse.core.reflection.system.TrigFactor());
       S.TrigReduce.setEvaluator(new org.matheclipse.core.reflection.system.TrigReduce());
@@ -141,7 +157,7 @@ public final class FunctionDefinitions {
 
       S.Hash.setEvaluator(new org.matheclipse.core.reflection.system.Hash());
       S.FileHash.setEvaluator(new org.matheclipse.core.reflection.system.FileHash());
-      // S.MrvLimit.setEvaluator(new org.matheclipse.core.reflection.system.MrvLimit());
+      S.MrvLimit.setEvaluator(new org.matheclipse.core.reflection.system.MrvLimit());
       S.TensorContract.setEvaluator(new org.matheclipse.core.reflection.system.TensorContract());
       S.TensorProduct.setEvaluator(new org.matheclipse.core.reflection.system.TensorProduct());
       S.TensorTranspose.setEvaluator(new org.matheclipse.core.reflection.system.TensorTranspose());
@@ -151,6 +167,7 @@ public final class FunctionDefinitions {
       S.ContourPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ContourPlot());
       S.DensityHistogram.setEvaluator(new org.matheclipse.core.builtin.graphics.DensityHistogram());
       S.DensityPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.DensityPlot());
+      S.Graph3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.Graph3D());
       S.Histogram.setEvaluator(new org.matheclipse.core.builtin.graphics.Histogram());
       S.ListContourPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListContourPlot());
       S.ListLinePlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ListLinePlot());
@@ -168,6 +185,7 @@ public final class FunctionDefinitions {
       S.ParametricPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ParametricPlot());
       S.PieChart.setEvaluator(new org.matheclipse.core.builtin.graphics.PieChart());
       S.Plot.setEvaluator(new org.matheclipse.core.builtin.graphics.Plot());
+      S.WordCloud.setEvaluator(new org.matheclipse.core.builtin.graphics.WordCloud());
 
       // Graphics3D
       S.ContourPlot3D.setEvaluator(new org.matheclipse.core.builtin.graphics3d.ContourPlot3D());

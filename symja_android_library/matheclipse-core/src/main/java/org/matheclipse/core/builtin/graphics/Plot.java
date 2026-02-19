@@ -1,12 +1,12 @@
 package org.matheclipse.core.builtin.graphics;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.DoubleUnaryOperator;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -145,7 +145,7 @@ public class Plot extends ListPlot {
       data = org.matheclipse.core.sympy.plotting.Plot.computePlot(hun, data, xMinD, xMaxD, scale);
       if (data != null) {
         dataList.add(data);
-        automaticYPlotRange(//
+        GraphicsUtil.automaticPlotRange2D(//
             graphicsOptions.plotRange().isAutomatic() ? function : null, //
             data[1], yMinMax);
       }
@@ -294,93 +294,6 @@ public class Plot extends ListPlot {
       lineList = F.NIL;
     }
     return listOfLines;
-  }
-
-  /**
-   * Automatic y-plot range determination based on robust percentiles (10th-90th) to handle
-   * singularities and exponential growth gracefully.
-   *
-   * @param function the current function
-   * @param values current y-values of the current function curve
-   * @param yMinMax y-plot range which will be updated [min, max]
-   */
-  private static void automaticYPlotRange(final IExpr function, final double[] values,
-      double[] yMinMax) {
-    if (values == null || values.length == 0) {
-      return; // No data to analyze
-    }
-
-    if (function != null) {
-      int headID = function.headID();
-      switch (headID) {
-        case ID.Cot:
-        case ID.Csc:
-        case ID.Sec:
-        case ID.Tan:
-          setYRange(-7.0, 7.0, yMinMax);
-          return;
-      }
-    }
-
-    // Filter and Sort Data
-    // We need a sorted list of finite values to determine percentiles.
-    double[] sorted = Arrays.stream(values).filter(Double::isFinite).sorted().toArray();
-    int n = sorted.length;
-
-    if (n == 0) {
-      return; // All NaNs
-    }
-
-    // Identify Core Distribution (10th to 90th percentile)
-    // This ignores the extreme tails (asymptotes or exponential explosions).
-    double p10 = sorted[(int) (n * 0.10)];
-    double p90 = sorted[(int) (n * 0.90)];
-    double median = sorted[n / 2];
-
-    double bodyRange = p90 - p10;
-
-    // Handle flat functions (e.g., y=5)
-    if (bodyRange < 1.0e-9) {
-      double margin = Math.abs(median) * 0.1;
-      if (margin < 1.0e-9)
-        margin = 1.0;
-      setYRange(median - margin, median + margin, yMinMax);
-      return;
-    }
-
-    // Define "Reasonable" Visual Bounds
-    // Expand the core body by a factor (1.5x) to include "interesting" variation
-    // but cut off extreme outliers found in the top/bottom 10%.
-    double expansionFactor = 1.5;
-    double proposedMin = p10 - (bodyRange * expansionFactor);
-    double proposedMax = p90 + (bodyRange * expansionFactor);
-
-    // Clamp to Actual Data Limits
-    // We never want to show a range *larger* than the actual data exists (empty whitespace).
-    // But we *do* want to show a range *smaller* than data if data has singularities.
-    double actualMin = sorted[0];
-    double actualMax = sorted[n - 1];
-
-    // If proposed bound extends beyond actual data, clamp it.
-    // If proposed bound is inside actual data (cutting off singularity), keep it.
-    double finalMin = Math.max(proposedMin, actualMin);
-    double finalMax = Math.min(proposedMax, actualMax);
-
-    if (actualMin >= 0 && finalMin < 0) {
-      finalMin = actualMin;
-    }
-
-    setYRange(finalMin, finalMax, yMinMax);
-  }
-
-
-  private static void setYRange(double vmin, double vmax, double[] yMinMax) {
-    if (vmin < yMinMax[0]) {
-      yMinMax[0] = vmin;
-    }
-    if (vmax > yMinMax[1]) {
-      yMinMax[1] = vmax;
-    }
   }
 
   @Override

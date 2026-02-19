@@ -2298,6 +2298,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     final ISymbol symbol = topHead();
     boolean oldNumericMode = engine.isNumericMode();
     try {
+      // System.out.println("Evaluating: " + this);
       return engine.evalAttributes(symbol, this).orElseGet(() -> engine.evalRules(symbol, this));
     } finally {
       engine.setNumericMode(oldNumericMode);
@@ -4446,6 +4447,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public boolean isNumericFunction(VariablesSet varSet) {
     if (head().isSymbol() && ((ISymbol) head()).hasNumericFunctionAttribute() || isList()) {
+      if (isUniform(UniformFlags.NUMBER)) {
+        return true;
+      }
       // check if all arguments are &quot;numeric&quot;
       return forAll(x -> x.isNumericFunction(varSet));
     }
@@ -4456,6 +4460,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   @Override
   public boolean isNumericFunction(IExpr expr) {
     if (head().isSymbol() && ((ISymbol) head()).hasNumericFunctionAttribute() || isList()) {
+      if (isUniform(UniformFlags.NUMBER)) {
+        return true;
+      }
       // check if all arguments are &quot;numeric&quot;
       return forAll(x -> x.isNumericFunction(expr));
     }
@@ -4467,6 +4474,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public boolean isNumericFunction(Function<IExpr, String> list) {
     if (head().isSymbol() && ((ISymbol) head()).hasNumericFunctionAttribute() || isList()
         || list.apply(this) != null) {
+      if (isUniform(UniformFlags.NUMBER)) {
+        return true;
+      }
       // check if all arguments are &quot;numeric&quot;
       return forAll(x -> x.isNumericFunction(list));
     }
@@ -4478,6 +4488,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public boolean isNumericMode() {
     ISymbol symbol = topHead();
     if (isList() || symbol.hasNumericFunctionAttribute()) {
+      if (isUniform(UniformFlags.DOUBLE)||isUniform(UniformFlags.DOUBLECOMPLEX)) {
+        return true;
+      } 
       // check if one of the arguments is &quot;numeric&quot;
       for (int i = 1; i < size(); i++) {
         if (get(i).isNumericMode()) {

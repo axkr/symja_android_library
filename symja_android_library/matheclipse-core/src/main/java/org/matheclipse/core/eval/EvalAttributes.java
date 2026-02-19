@@ -365,8 +365,8 @@ public class EvalAttributes {
   }
 
   /**
-   * Sort the <code>ast</code> in place using function <code>Order</code>. <b>Example:</b> suppose
-   * the Symbol f has the attribute ISymbol.ORDERLESS <code>f(z,d,a,b) ==> f(a,b,d,z)</code>
+   * Sort the <code>ast</code> in place using function {@link S#Order} <b>Example:</b> suppose the
+   * Symbol f has the attribute ISymbol.ORDERLESS <code>f(z,d,a,b) ==> f(a,b,d,z)</code>
    *
    * @param ast the AST will be sorted in place.
    * @return <code>true</code> if the sort algorithm was used; <code>false</code> otherwise

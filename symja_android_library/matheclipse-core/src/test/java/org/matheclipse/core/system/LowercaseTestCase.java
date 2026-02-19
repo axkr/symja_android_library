@@ -201,6 +201,55 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testActivate() {
+    check("Inactivate(f(2+2))", //
+        "Inactive(f)[Inactive(Plus)[2,2]]");
+    check("Inactivate[Sin[Cos[x]]]", //
+        "Inactive(Sin)[Inactive(Cos)[x]]");
+    check("Activate(Inactivate(3+4+5^3), Power)", //
+        "Inactive(Plus)[3,4,125]");
+    check("Activate(Inactivate(f(2+2)), Heads->True)", //
+        "f(4)");
+    check("Activate(Inactivate(f(2+2)), Heads->False)", //
+        "Inactive(f)[Inactive(Plus)[2,2]]");
+
+    check("Inactivate(3+4+5^3)//FullForm", //
+        "Inactive(Plus)[3, 4, Inactive(Power)[5, 3]]");
+    check("expr=Inactivate(3+4+5^3)", //
+        "Inactive(Plus)[3,4,Inactive(Power)[5,3]]");
+    check("Activate(expr, Power)", //
+        "Inactive(Plus)[3,4,125]");
+
+    check("Inactivate(2 + 2 + 3^2)//FullForm", //
+        "Inactive(Plus)[2, 2, Inactive(Power)[3, 2]]");
+
+    // Activate all
+    check("Activate(Inactivate(2 + 2 + 3^2))", //
+        "13");
+
+    check("Activate(Inactivate(2 + 2 + 3^2), Plus)", //
+        "4+Inactive(Power)[3,2]");
+
+    check("Activate(Inactivate(2 + 2 + 3^2), Power)", //
+        "Inactive(Plus)[2,2,9]");
+
+    check("Activate(Inactivate(Sin(Cos[x])), Cos)", //
+        "Inactive(Sin)[Cos(x)]");
+    check("Activate(Inactivate(Sin(Cos[x])), Sin)", //
+        "Sin(Inactive(Cos)[x])");
+
+    check("Activate(Inactivate(f(x)))", //
+        "f(x)");
+    check("Activate[Inactivate[f[x]], Heads->False]", //
+        "Inactive(f)[x]");
+    check("Activate(Inactivate(f(x)), Heads->False)", //
+        "Inactive(f)[x]");
+    check("Activate(Inactivate(f(x)), Heads->True)", //
+        "f(x)");
+
+  }
+
+  @Test
   public void testAddTo() {
     // print: AddTo: d is not a variable with a value, so its value cannot be changed.
     check("d += 7", //
@@ -3601,6 +3650,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testConditionalExpression() {
+    check("ConditionalExpression(p,c)&&(ConditionalExpression(q,d)||r)", //
+        "ConditionalExpression(p&&(q||r),c&&d)");
+    check("ConditionalExpression(q,d) || r", //
+        "ConditionalExpression(q||r,d)");
     check("Refine(Sin(2*Pi*C(1)),Element(C(1),Integers))", //
         "0");
     check("Refine(Cos(2*Pi*C(1)),Element(C(1),Integers))", //
@@ -10395,6 +10448,36 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFunctionContinuous() {
+    check("FunctionContinuous(Sin(x), x)", //
+        "True");
+    check("FunctionContinuous({Log(x), x > 0}, x)", //
+        "True");
+
+    // TODO
+    // check("FunctionContinuous(Sqrt(x), x, Complexes)", //
+    // "");
+  }
+
+  @Test
+  public void testFunctionDiscontinuities() {
+    check("FunctionDiscontinuities(Mod[x,y], x)", //
+        "y==0||Sin((Pi*x)/y)==0");
+    check("FunctionDiscontinuities(Floor(x), x)", //
+        "Sin(Pi*x)==0");
+    check("FunctionDiscontinuities(Round(x,y), x)", //
+        "Sin(Pi*(1/2+x/y))==0");
+    check("FunctionDiscontinuities(Tan(x), x)", //
+        "Cos(x)==0");
+    check("FunctionDiscontinuities(Log(x), x, Complexes)", //
+        "x==0||(Im(x)==0&&Re(x)<=0)");
+    check("FunctionDiscontinuities(Beta(x, y), {x, y})", //
+        "(Sin(Pi*x)==0&&Re(x)<=0)||(Sin(Pi*y)==0&&Re(y)<=0)");
+    check("FunctionDiscontinuities(Gamma(x), x)", //
+        "Sin(Pi*x)==0&&x<=0");
+  }
+
+  @Test
   public void testFunctionDomainComplexes() {
     check("FunctionDomain(Gamma(z),z,Complexes)", //
         "Re(z)>0||z∉Integers");
@@ -10523,6 +10606,23 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-1<=y<=1");
     check("FunctionRange(Cos(x),x,y)", //
         "-1<=y<=1");
+  }
+
+  @Test
+  public void testFunctionSingularities() {
+    check("FunctionSingularities(-1/x, x)", //
+        "x==0");
+    check("FunctionSingularities(Tan(x), x)", //
+        "Cos(x)==0");
+    check("FunctionSingularities(Tan(x^2), x)", //
+        "Cos(x^2)==0");
+    check("FunctionSingularities(1/x^2, x)", //
+        "x==0");
+    check("FunctionSingularities(Log(x), x, Complexes)", //
+        "x==0||(Im(x)==0&&Re(x)<=0)");
+    check("FunctionSingularities(ArcTan(x^y), {x, y}, Complexes)", //
+        "x==0||(Im(x)==0&&Re(x)<=0)||x^y==-I||x^y==I||(Re(x^y)==0&&Im(x^y)>=1)||(Re(x^y)==\n"
+            + "0&&Im(x^y)<=-1)");
   }
 
   @Test
@@ -14364,6 +14464,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMap() {
+    check("Map(h, <|a -> b, c -> d|>)", //
+        "<|a->h(b),c->h(d)|>");
+
     // Map: Options expected (instead of y_) beyond position Map(1/Sqrt(5),{},I,y_) in `3`. An
     // option must be a rule or a list of rules.
     check("Map(1/Sqrt(5),ByteArray[{}],I,y_)", //
@@ -22110,12 +22213,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRoot() {
+    check("Root({Sin(#) &, 3.1415926535897932385})", //
+        "Pi");
     check("Root(EvenQ(#1)&,1009)", //
         "Root(EvenQ(#1)&,1009)");
     check("Root((#^2 - 3*# - 1)&, 2)", //
         "3/2+Sqrt(13)/2");
     check("Root((-3*#-1)&, 1)", //
         "-1/3");
+
   }
 
   @Test
@@ -23278,6 +23384,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "a&&x1&&x2&&x5");
     check("Simplify(a&&b&&a)", //
         "a&&b");
+  }
+
+  @Test
+  public void testSimplifyNonRecursive() {
+    check("Log(Cos(3)*Sec(4))", //
+        "Log(Cos(3)*Sec(4))");
+    check("Simplify(Log(-Cos(3))-Log(-Cos(4)))", //
+        "Log(Cos(3)*Sec(4))");
   }
 
   @Test
@@ -25960,16 +26074,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testTreeForm() {
     check("TreeForm(a+b)", //
-        "JSFormData(var nodes = new vis.DataSet([\n" + //
-            "  {id: 1, label: 'Plus', level: 0}\n" + //
-            ", {id: 2, label: 'a', level: 1}\n" + //
-            ", {id: 3, label: 'b', level: 1}\n" + //
-            "]);\n" + //
-            "var edges = new vis.DataSet([\n" + //
-            "  {from: 1, to: 2 , arrows: { to: { enabled: true, type: 'arrow'}}}\n" + //
-            ", {from: 1, to: 3 , arrows: { to: { enabled: true, type: 'arrow'}}}\n" + //
-            "]);\n" + //
-            ",treeform)");
+        "Graphics({RGBColor(0.5,0.5,0.5),Line({{1.25,0.0},{0.5,-2.0}}),Line({{1.25,0.0},{2.0,-2.0}}),RGBColor(0.0,0.0,0.0),Tooltip(Text(Framed(Plus,FrameStyle->RGBColor(0.85,0.85,0.85),Background->RGBColor(1.0,1.0,0.85)),{1.25,0.0},{\n" //
+            + "0,0}),a+b),Tooltip(Text(Framed(a,FrameStyle->RGBColor(0.85,0.85,0.85),Background->RGBColor(1.0,1.0,0.85)),{0.5,-2.0},{\n" //
+            + "0,0}),a),Tooltip(Text(Framed(b,FrameStyle->RGBColor(0.85,0.85,0.85),Background->RGBColor(1.0,1.0,0.85)),{2.0,-2.0},{\n" //
+            + "0,0}),b)},{AspectRatio->Automatic})");
   }
 
   @Test

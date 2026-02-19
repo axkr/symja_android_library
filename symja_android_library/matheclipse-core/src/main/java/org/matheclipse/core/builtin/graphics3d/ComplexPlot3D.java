@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin.graphics3d;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -64,9 +65,6 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
         plotPoints = optPoints;
     }
 
-    // Safety clamp for infinite poles
-    double maxZValue = 100.0;
-
     // 3. Data Generation
     int rows = plotPoints;
     int cols = plotPoints;
@@ -77,6 +75,9 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
     // Arrays to store intermediate values for Normal calculation
     Vector3D[][] points3D = new Vector3D[rows][cols];
     IExpr[][] colorData = new IExpr[rows][cols];
+    // Store valid heights to compute range
+    double[] zValues = new double[rows * cols];
+    int zCount = 0;
 
     // Pass 1: Evaluate Function & Coordinates
     for (int i = 0; i < rows; i++) {
@@ -97,19 +98,42 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
           arg = cn.complexArg().evalf(); // -Pi to Pi
         }
 
-        // Handle poles
-        if (Double.isInfinite(height) || Double.isNaN(height) || height > maxZValue) {
-          height = maxZValue;
+        if (Double.isFinite(height)) {
+          zValues[zCount++] = height;
         }
 
+        // Store raw height (will clamp later)
         points3D[i][j] = new Vector3D(re, im, height);
 
         // Color Mapping: Hue determined by Argument
         // Normalize arg (-Pi, Pi) -> (0, 1)
         double hue = (arg + Math.PI) / (2 * Math.PI);
-        // Standard Mathematica coloring often varies Saturation/Brightness based on magnitude too,
+        // Coloring often varies Saturation/Brightness based on magnitude too,
         // but Hue is the primary indicator.
         colorData[i][j] = F.Hue(F.num(hue), F.num(0.6), F.num(1.0));
+      }
+    }
+
+    // Determine max Z to clamp poles
+    double maxZValue = 100.0;
+    if (zCount > 0) {
+      double[] validZ = new double[zCount];
+      System.arraycopy(zValues, 0, validZ, 0, zCount);
+      double[] range = GraphicsUtil.automaticPlotRange3D(validZ);
+      // We are only interested in the upper bound for keeping poles check
+      if (range[1] > range[0]) {
+        maxZValue = range[1];
+      }
+    }
+
+    // Pass 1.5: Clamp Z in points3D
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < cols; j++) {
+        Vector3D p = points3D[i][j];
+        double h = p.getZ();
+        if (Double.isInfinite(h) || Double.isNaN(h) || h > maxZValue) {
+          points3D[i][j] = new Vector3D(p.getX(), p.getY(), maxZValue);
+        }
       }
     }
 
@@ -143,23 +167,21 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
           n = n.negate();
 
         normalsList.append(F.List(F.num(n.getX()), F.num(n.getY()), F.num(n.getZ())));
-        }
+      }
     }
 
-    // 5. Generate Indices (Quads)
+    // Generate Indices (Quads)
     for (int i = 0; i < rows - 1; i++) {
       for (int j = 0; j < cols - 1; j++) {
-        // 1-based indexing for Mathematica GraphicsComplex
         int p1 = (i * cols) + j + 1;
         int p2 = p1 + 1;
         int p3 = p2 + cols;
         int p4 = p1 + cols;
 
         polygons.append(F.Polygon(F.List(F.ZZ(p1), F.ZZ(p2), F.ZZ(p3), F.ZZ(p4))));
-        }
+      }
     }
 
-    // 6. Final Structure
     // Graphics3D[GraphicsComplex[pts, polygons, VertexColors->..., VertexNormals->...], opts]
     IExpr graphicsComplex = F.GraphicsComplex(pointsList, polygons,
         F.Rule(S.VertexColors, colorsList), F.Rule(S.VertexNormals, normalsList));
@@ -169,9 +191,7 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
 
     // Add default visual options
     result.append(F.Rule(S.PlotRange, S.Automatic));
-    result.append(F.Rule(S.BoxRatios, F.List(F.num(1), F.num(1), F.num(0.4)))); // flattened box
-                                                                                // usually looks
-                                                                                // better
+    result.append(F.Rule(S.BoxRatios, F.List(F.num(1), F.num(1), F.num(0.4))));
     result.append(F.Rule(S.Axes, S.True));
     result.append(F.Rule(S.Lighting, F.stringx("Neutral")));
 
@@ -186,6 +206,7 @@ public class ComplexPlot3D extends AbstractFunctionOptionEvaluator {
     // System.out.println(result);
     return result;
   }
+
 
   /**
    * Helper to convert various numeric types to IComplexNum

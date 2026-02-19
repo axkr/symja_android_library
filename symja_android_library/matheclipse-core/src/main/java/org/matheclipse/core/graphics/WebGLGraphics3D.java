@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
@@ -12,6 +13,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.tensor.img.ColorDataGradients;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -250,6 +252,25 @@ public class WebGLGraphics3D {
     }
     ArrayNode axesNode = root.putArray("axes");
     axesNode.add(axes[0]).add(axes[1]).add(axes[2]);
+
+    // AxesEdge
+    IExpr axesEdgeOpt = extractOption(graphics, S.AxesEdge);
+    if (axesEdgeOpt != null && axesEdgeOpt.isList()) {
+      ArrayNode edgeNode = root.putArray("axesEdge");
+      IAST list = (IAST) axesEdgeOpt;
+      for (int i = 1; i < list.size(); i++) {
+        IExpr spec = list.get(i);
+        if (spec.isList() && ((IAST) spec).size() >= 3) {
+          ArrayNode s = edgeNode.addArray();
+          s.add(getDouble(((IAST) spec).get(1), 1.0));
+          s.add(getDouble(((IAST) spec).get(2), 1.0));
+        } else if (spec.isNone()) {
+          edgeNode.add("None");
+        } else {
+          edgeNode.add("Automatic");
+        }
+      }
+    }
   }
 
   private static Scaler[] parseScaling(IAST graphics) {
@@ -970,6 +991,27 @@ public class WebGLGraphics3D {
               y = (float) getDouble(ast.arg3()), k = (float) getDouble(ast.arg4());
           return new Color(clamp((1 - c) * (1 - k)), clamp((1 - m) * (1 - k)),
               clamp((1 - y) * (1 - k)));
+        case ID.ColorDataFunction:
+          // Handle ColorDataFunction["Name", "Gradients", ...][arg]
+          if (ast.head().isAST() && ast.head().head().equals(S.ColorDataFunction)) {
+            IAST cdf = (IAST) ast.head();
+            if (cdf.size() >= 3) {
+              String name = cdf.arg1().toString();
+              if (name.startsWith("\"")) {
+                name = name.substring(1, name.length() - 1);
+              }
+              String type = cdf.arg2().toString();
+              if (type.contains("Gradients")) {
+                try {
+                  ColorDataGradients grad = ColorDataGradients.valueOf(name.toUpperCase(Locale.US));
+                  int rgb = ast.arg1().toIntDefault();
+                  return new Color(rgb);
+                } catch (Exception e) {
+                }
+              }
+            }
+          }
+          break;
       }
     }
     return Color.BLACK;

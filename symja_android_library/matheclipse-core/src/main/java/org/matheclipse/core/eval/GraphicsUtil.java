@@ -1,9 +1,11 @@
 package org.matheclipse.core.eval;
 
+import java.util.Arrays;
 import java.util.Locale;
 import org.matheclipse.core.convert.RGBColor;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.graphics.IGraphics2D;
@@ -19,264 +21,120 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class GraphicsUtil {
 
-  private GraphicsUtil() {
-    // private constructor to avoid instantiation
-  }
-
-  public static boolean renderGraphics2DSVG(StringBuilder graphics2DBuffer, IAST graphics2DAST,
-      EvalEngine engine) {
-    return renderGraphics2DSVG(graphics2DBuffer, graphics2DAST, false, engine);
-  }
-
-  public static boolean renderGraphics2DSVG(StringBuilder graphics2DBuffer, IAST graphics2DAST,
-      boolean withSVGTag, EvalEngine engine) {
-    SVGGraphics svg = new SVGGraphics(600, 400);
-    String svgString = svg.toSVG(graphics2DAST, withSVGTag);
-    graphics2DBuffer.append(svgString);
-    return true;
-  }
-
-  public static boolean renderGraphics2D(StringBuilder graphics2DBuffer, IAST graphics2DAST,
-      EvalEngine engine) {
-    return GraphicsUtil.renderGraphics2D(graphics2DBuffer, graphics2DAST, true, false, engine);
-  }
-
-  public static boolean renderGraphics2D(StringBuilder graphics2DBuffer, IAST graphics2DAST,
-      boolean javaScript, boolean prettyPrint, EvalEngine engine) {
-    IAST arg1 = graphics2DAST.first().makeList();
-    // IExpr lighting = S.Automatic;
-    final OptionArgs options =
-        new OptionArgs(graphics2DAST.topHead(), graphics2DAST, 2, engine, true);
-    if (arg1.isBuiltInFunction()
-        && GraphicsUtil.graphics2DJSON(graphics2DBuffer, arg1, options, javaScript, prettyPrint)) {
-      return true;
-    }
-    return false;
-  }
-
-  public static boolean renderGraphics3D(StringBuilder graphics3DBuffer, IAST graphics3DAST,
-      EvalEngine engine) {
-    return GraphicsUtil.renderGraphics3D(graphics3DBuffer, graphics3DAST, true, engine);
-  }
-
-  public static boolean renderGraphics3D(StringBuilder graphics3DBuffer, IAST graphics3DAST,
-      boolean javaScript, EvalEngine engine) {
-    IExpr arg1 = graphics3DAST.first();
-    if (!arg1.isList()) {
-      arg1 = F.list(arg1);
-    }
-    IExpr lighting = S.Automatic; // .List(F.$str("Auto"), F.RGBColor(F.C1, F.C1, F.C1));
-    OptionArgs options = OptionArgs.createOptionArgs(graphics3DAST, engine);
-    if (options != null) {
-      lighting = options.getOption(S.Lighting).orElse(lighting);
-
-      // if (option.isList1() && option.first().isList() && option.first().first().isString()) {
-      // lighting = option.first();
-      // }
+  /**
+   * Automatic y-plot range determination based on robust percentiles (10th-90th) to handle
+   * singularities and exponential growth gracefully.
+   *
+   * @param function the current function
+   * @param values current y-values of the current function curve
+   * @param yMinMax y-plot range which will be updated [min, max]
+   */
+  public static void automaticPlotRange2D(final IExpr function, final double[] values,
+      double[] yMinMax) {
+    if (values == null || values.length == 0) {
+      return; // No data to analyze
     }
 
-    if (arg1.isBuiltInFunction()
-        && GraphicsUtil.graphics3DJSON(graphics3DBuffer, lighting, arg1, javaScript)) {
-      return true;
-    }
-    return false;
-  }
-
-  public static boolean graphics2DJSON(StringBuilder graphics2DBuffer, IExpr data2D,
-      OptionArgs options, boolean javaScript, boolean prettyPrint) {
-    ObjectNode json = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
-    ArrayNode arrayNode = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
-    GraphicsOptions graphicsOptions = new GraphicsOptions(EvalEngine.get());
-    graphicsOptions.setOptions(options);
-    IExpr plotRange = options.getOption(S.PlotRange);
-
-    if (GraphicsUtil.exportGraphics2D(json, arrayNode, (IAST) data2D, graphicsOptions)) {
-      try {
-        if (javaScript) {
-          graphics2DBuffer.append("drawGraphics2d(\"graphics2d\",\n");
-        }
-        json.set("elements", arrayNode);
-
-        options = graphicsOptions.options();
-        ObjectNode objectNode = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
-
-        // IExpr coordinateBounds = S.CoordinateBounds.ofNIL(EvalEngine.get(), listOfCoords);
-        IExpr option = options.getOption(S.PlotRange);
-        int[] matrix = option.isMatrix();
-        if (matrix != null && matrix[0] == 2 && matrix[1] == 2) {
-          if (graphicsOptions.graphicsExtent2D(objectNode, (IAST) option)) {
-            json.set("extent", objectNode);
-          }
-        } else {
-          if (graphicsOptions.graphicsExtent2D(objectNode)) {
-            json.set("extent", objectNode);
-          } else {
-            // return false;
-            // fall through?
-          }
-        }
-
-        if (plotRange.isPresent()
-            && graphicsOptions.graphicsExtent2D(objectNode, (IAST) plotRange)) {
-          json.set("extent", objectNode);
-        }
-
-        // if (options.size() > 0) {
-        // IAST optionsList = F.List();
-        // // lighting = options.getOption(S.Lighting).orElse(lighting);
-        // optionsList = options.getCurrentOptionsList();
-        //
-        // for (int i = 1; i < optionsList.size(); i++) {
-        // IExpr arg = optionsList.get(i);
-        // if (arg.isRule()) {
-        // IAST rule = (IAST) arg;
-        // IExpr lhs = rule.arg1();
-        // IExpr rhs = rule.arg2();
-        //
-        // if (lhs == S.Axes) {
-        // axesDefined = graphics2DAxes(json, options);
-        // }
-        // }
-        // }
-        //
-        // arrayNode = JSON_OBJECT_MAPPER.createArrayNode();
-        // if (GraphicsFunctions.exportGraphics2DOptions(arrayNode, optionsList)) {
-        // if (arrayNode.size() > 0) {
-        // json.set("options", arrayNode);
-        // }
-        // } else {
-        // return false;
-        // }
-        // }
-        if (prettyPrint) {
-          graphics2DBuffer.append(json.toPrettyString());
-        } else {
-          graphics2DBuffer.append(json.toString());
-        }
-        // graphics2DBuffer.append("{");
-        // // graphics2DBuffer.append("\naxes: {},");
-        // graphics2DBuffer.append("elements: [");
-        // graphics2DBuffer.append(arrayNode.toString());
-        // graphics2DBuffer.append("]");
-        // // graphics3DLigthing(graphics2DBuffer, lighting);
-        // // graphics2DBuffer.append("\nviewpoint: [1.3, -2.4, 2.0]");
-        // graphics2DBuffer.append("}");
-        if (javaScript) {
-          graphics2DBuffer.append("\n);");
-        }
-        return true;
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
-        Errors.printMessage(S.Graphics, rex, EvalEngine.get());
+    if (function != null) {
+      int headID = function.headID();
+      switch (headID) {
+        case ID.Cot:
+        case ID.Csc:
+        case ID.Sec:
+        case ID.Tan:
+          setYRange(-7.0, 7.0, yMinMax);
+          return;
       }
     }
-    return false;
-  }
 
-  public static boolean graphics3DJSON(StringBuilder graphics3DBuffer, IExpr lighting, IExpr data3D,
-      boolean javaScript) {
-    ObjectNode json = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
-    ArrayNode arrayNode = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
-    if (GraphicsUtil.exportGraphics3DRecursive(arrayNode, (IAST) data3D)) {
-      try {
-        if (javaScript) {
-          graphics3DBuffer.append("drawGraphics3d(document.getElementById('graphics3d'),\n");
-        }
-        json.set("elements", arrayNode);
-        GraphicsUtil.graphics3DLigthing(json, lighting);
-        ArrayNode vp = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
-        vp.add(1.3);
-        vp.add(-2.4);
-        vp.add(2.0);
-        json.set("viewpoint", vp);
-        graphics3DBuffer.append(json.toString());
-        // graphics3DBuffer.append("{");
-        // graphics3DBuffer.append("\naxes: {},");
-        // graphics3DBuffer.append("\nelements: [");
-        // graphics3DBuffer.append(jsonPrimitives.toString());
-        // graphics3DBuffer.append("],");
-        // graphics3DLigthing(graphics3DBuffer, lighting);
-        // graphics3DBuffer.append("\nviewpoint: [1.3, -2.4, 2.0]");
-        // graphics3DBuffer.append("}");
-        if (javaScript) {
-          graphics3DBuffer.append("\n);");
-        }
-        return true;
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
-        Errors.printMessage(S.Graphics3D, rex, EvalEngine.get());
-      }
+    // Filter and Sort Data
+    // We need a sorted list of finite values to determine percentiles.
+    double[] sorted = Arrays.stream(values).filter(Double::isFinite).sorted().toArray();
+    int n = sorted.length;
+
+    if (n == 0) {
+      return; // All NaNs
     }
-    return false;
-  }
 
-  public static boolean exportGraphics2D(ObjectNode objectNode, ArrayNode arrayNode, IAST data2D,
-      GraphicsOptions graphicsOptions) {
-    if (data2D.isList()) {
-      // GraphicsOptions graphicsOptions = new GraphicsOptions(EvalEngine.get());
-      // graphicsOptions.setOptions(options);
-      GraphicsOptions.optionDouble(arrayNode, "opacity", graphicsOptions.opacity());
-      GraphicsOptions.optionDouble(arrayNode, "pointSize", graphicsOptions.pointSize());
-      // TODO delete textSize because of renaming to fontSize in next version
-      // GraphicsOptions.optionInt(arrayNode, "textSize", graphicsOptions.fontSize());
-      GraphicsOptions.optionInt(arrayNode, "fontSize", graphicsOptions.fontSize());
-      // ObjectNode blackJSON = JSON_OBJECT_MAPPER.createObjectNode();
-      GraphicsOptions.setColorOption(arrayNode, GraphicsOptions.BLACK);
-      // arrayNode.add(blackJSON);
+    // Identify Core Distribution (10th to 90th percentile)
+    // This ignores the extreme tails (asymptotes or exponential explosions).
+    double p10 = sorted[(int) (n * 0.10)];
+    double p90 = sorted[(int) (n * 0.90)];
+    double median = sorted[n / 2];
 
-      // graphicsOptions.graphics2DScalingFunctions(arrayNode);
-      graphicsOptions.graphics2DAxes(objectNode);
-      GraphicsUtil.graphics2DAspectRatio(arrayNode, graphicsOptions.options());
-      graphicsOptions.graphics2DFilling(arrayNode, graphicsOptions.options());
+    double bodyRange = p90 - p10;
 
-      IAST list = data2D;
-      return GraphicsUtil.export2DRecursive(arrayNode, list, 1, data2D.size(), graphicsOptions);
+    // Handle flat functions (e.g., y=5)
+    if (bodyRange < 1.0e-9) {
+      double margin = Math.abs(median) * 0.1;
+      if (margin < 1.0e-9)
+        margin = 1.0;
+      setYRange(median - margin, median + margin, yMinMax);
+      return;
     }
-    return false;
 
+    // Define "Reasonable" Visual Bounds
+    // Expand the core body by a factor (1.5x) to include "interesting" variation
+    // but cut off extreme outliers found in the top/bottom 10%.
+    double expansionFactor = 1.5;
+    double proposedMin = p10 - (bodyRange * expansionFactor);
+    double proposedMax = p90 + (bodyRange * expansionFactor);
+
+    // Clamp to Actual Data Limits
+    // We never want to show a range *larger* than the actual data exists (empty whitespace).
+    // But we *do* want to show a range *smaller* than data if data has singularities.
+    double actualMin = sorted[0];
+    double actualMax = sorted[n - 1];
+
+    // If proposed bound extends beyond actual data, clamp it.
+    // If proposed bound is inside actual data (cutting off singularity), keep it.
+    double finalMin = Math.max(proposedMin, actualMin);
+    double finalMax = Math.min(proposedMax, actualMax);
+
+    if (actualMin >= 0 && finalMin < 0) {
+      finalMin = actualMin;
+    }
+
+    setYRange(finalMin, finalMax, yMinMax);
   }
 
-  public static boolean exportGraphics3DRecursive(ArrayNode arrayNode, IAST data3D) {
-    if (data3D.isList()) {
-      // boolean first = true;
-      IAST rgbColor = F.RGBColor(1.0, 0.5, 0.0);
-      IExpr opacity = F.num(1.0);
-      IAST list = data3D;
-      for (int i = 1; i < list.size(); i++) {
-        IExpr arg = list.get(i);
-        if (arg.isAST()) {
-          IAST ast = (IAST) arg;
-          if (ast.isList()) {
-            if (exportGraphics3DRecursive(arrayNode, ast)) {
-            }
-          } else if (ast.isAST(S.Hue, 2, 5)) {
-            IAST hueColor = ast;
-            RGBColor rgb = RGBColor.hueToRGB(hueColor);
-            if (hueColor.argSize() == 4) {
-              opacity = ast.arg4();
-            }
-            if (rgb != null) {
-              rgbColor =
-                  F.RGBColor(rgb.getRed() / 255.0, rgb.getGreen() / 255.0, rgb.getBlue() / 255.0);
-            }
-          } else if (ast.isRGBColor()) {
-            rgbColor = ast;
-          } else if (ast.isAST(S.Opacity, 2)) {
-            opacity = ast.arg1();
-          } else if (ast.isBuiltInFunction()) {
-            IGraphics3D graphics3DEvaluator = ast.headInstanceOf(IGraphics3D.class);
-            if (graphics3DEvaluator != null) {
-              ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
-              if (graphics3DEvaluator.graphics3D(g, ast, rgbColor, opacity)) {
-                arrayNode.add(g);
-              }
+  /**
+   * Compute the visible plot range of a sorted list of values.
+   *
+   * @param values unsorted values
+   * @return the min and max value (possibly clipped to exclude outliers)
+   */
+  public static double[] automaticPlotRange3D(double[] values) {
+    if (values == null || values.length == 0) {
+      return new double[] {0.0, 1.0};
+    }
+    Arrays.sort(values);
+    int size = values.length;
+    double min = values[0];
+    double max = values[size - 1];
+    if (size > 10) {
+      double q1 = values[size / 4];
+      double q3 = values[(size * 3) / 4];
+      double iqr = q3 - q1;
+      if (iqr > 10.0 * Math.ulp(q3)) {
+        // Upper fence. 2.0 * IQR is a heuristic to include most data but cut massive poles
+        double upperFence = q3 + 2.0 * iqr;
+        if (max > upperFence) {
+          int idx = Arrays.binarySearch(values, upperFence);
+          if (idx < 0) {
+            idx = -idx - 1;
+          }
+          if (idx < size) {
+            max = values[idx];
+            // Ensure we don't accidentally clamp below the fence if binary search lands oddly
+            if (max < upperFence) {
+              max = upperFence;
             }
           }
         }
       }
-      return true;
     }
-    return false;
+    return new double[] {min, max};
   }
 
   public static boolean export2DRecursive(ArrayNode arrayNode, IAST list, int startPosition,
@@ -395,6 +253,75 @@ public class GraphicsUtil {
     return true;
   }
 
+  public static boolean exportGraphics2D(ObjectNode objectNode, ArrayNode arrayNode, IAST data2D,
+      GraphicsOptions graphicsOptions) {
+    if (data2D.isList()) {
+      // GraphicsOptions graphicsOptions = new GraphicsOptions(EvalEngine.get());
+      // graphicsOptions.setOptions(options);
+      GraphicsOptions.optionDouble(arrayNode, "opacity", graphicsOptions.opacity());
+      GraphicsOptions.optionDouble(arrayNode, "pointSize", graphicsOptions.pointSize());
+      // TODO delete textSize because of renaming to fontSize in next version
+      // GraphicsOptions.optionInt(arrayNode, "textSize", graphicsOptions.fontSize());
+      GraphicsOptions.optionInt(arrayNode, "fontSize", graphicsOptions.fontSize());
+      // ObjectNode blackJSON = JSON_OBJECT_MAPPER.createObjectNode();
+      GraphicsOptions.setColorOption(arrayNode, GraphicsOptions.BLACK);
+      // arrayNode.add(blackJSON);
+
+      // graphicsOptions.graphics2DScalingFunctions(arrayNode);
+      graphicsOptions.graphics2DAxes(objectNode);
+      GraphicsUtil.graphics2DAspectRatio(arrayNode, graphicsOptions.options());
+      graphicsOptions.graphics2DFilling(arrayNode, graphicsOptions.options());
+
+      IAST list = data2D;
+      return GraphicsUtil.export2DRecursive(arrayNode, list, 1, data2D.size(), graphicsOptions);
+    }
+    return false;
+
+  }
+
+  public static boolean exportGraphics3DRecursive(ArrayNode arrayNode, IAST data3D) {
+    if (data3D.isList()) {
+      // boolean first = true;
+      IAST rgbColor = F.RGBColor(1.0, 0.5, 0.0);
+      IExpr opacity = F.num(1.0);
+      IAST list = data3D;
+      for (int i = 1; i < list.size(); i++) {
+        IExpr arg = list.get(i);
+        if (arg.isAST()) {
+          IAST ast = (IAST) arg;
+          if (ast.isList()) {
+            if (exportGraphics3DRecursive(arrayNode, ast)) {
+            }
+          } else if (ast.isAST(S.Hue, 2, 5)) {
+            IAST hueColor = ast;
+            RGBColor rgb = RGBColor.hueToRGB(hueColor);
+            if (hueColor.argSize() == 4) {
+              opacity = ast.arg4();
+            }
+            if (rgb != null) {
+              rgbColor =
+                  F.RGBColor(rgb.getRed() / 255.0, rgb.getGreen() / 255.0, rgb.getBlue() / 255.0);
+            }
+          } else if (ast.isRGBColor()) {
+            rgbColor = ast;
+          } else if (ast.isAST(S.Opacity, 2)) {
+            opacity = ast.arg1();
+          } else if (ast.isBuiltInFunction()) {
+            IGraphics3D graphics3DEvaluator = ast.headInstanceOf(IGraphics3D.class);
+            if (graphics3DEvaluator != null) {
+              ObjectNode g = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+              if (graphics3DEvaluator.graphics3D(g, ast, rgbColor, opacity)) {
+                arrayNode.add(g);
+              }
+            }
+          }
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
   public static void graphics2DAspectRatio(ArrayNode arrayNode, OptionArgs options) {
     IExpr option;
     option = options.getOption(S.AspectRatio);
@@ -416,6 +343,160 @@ public class GraphicsUtil {
       aspectRatio.set("aspectRatio", g);
       arrayNode.add(aspectRatio);
     }
+  }
+
+  public static boolean graphics2DJSON(StringBuilder graphics2DBuffer, IExpr data2D,
+      OptionArgs options, boolean javaScript, boolean prettyPrint) {
+    ObjectNode json = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+    ArrayNode arrayNode = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
+    GraphicsOptions graphicsOptions = new GraphicsOptions(EvalEngine.get());
+    graphicsOptions.setOptions(options);
+    IExpr plotRange = options.getOption(S.PlotRange);
+
+    if (GraphicsUtil.exportGraphics2D(json, arrayNode, (IAST) data2D, graphicsOptions)) {
+      try {
+        if (javaScript) {
+          graphics2DBuffer.append("drawGraphics2d(\"graphics2d\",\n");
+        }
+        json.set("elements", arrayNode);
+
+        options = graphicsOptions.options();
+        ObjectNode objectNode = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+
+        // IExpr coordinateBounds = S.CoordinateBounds.ofNIL(EvalEngine.get(), listOfCoords);
+        IExpr option = options.getOption(S.PlotRange);
+        int[] matrix = option.isMatrix();
+        if (matrix != null && matrix[0] == 2 && matrix[1] == 2) {
+          if (graphicsOptions.graphicsExtent2D(objectNode, (IAST) option)) {
+            json.set("extent", objectNode);
+          }
+        } else {
+          if (graphicsOptions.graphicsExtent2D(objectNode)) {
+            json.set("extent", objectNode);
+          } else {
+            // return false;
+            // fall through?
+          }
+        }
+
+        if (plotRange.isPresent()
+            && graphicsOptions.graphicsExtent2D(objectNode, (IAST) plotRange)) {
+          json.set("extent", objectNode);
+        }
+
+        // if (options.size() > 0) {
+        // IAST optionsList = F.List();
+        // // lighting = options.getOption(S.Lighting).orElse(lighting);
+        // optionsList = options.getCurrentOptionsList();
+        //
+        // for (int i = 1; i < optionsList.size(); i++) {
+        // IExpr arg = optionsList.get(i);
+        // if (arg.isRule()) {
+        // IAST rule = (IAST) arg;
+        // IExpr lhs = rule.arg1();
+        // IExpr rhs = rule.arg2();
+        //
+        // if (lhs == S.Axes) {
+        // axesDefined = graphics2DAxes(json, options);
+        // }
+        // }
+        // }
+        //
+        // arrayNode = JSON_OBJECT_MAPPER.createArrayNode();
+        // if (GraphicsFunctions.exportGraphics2DOptions(arrayNode, optionsList)) {
+        // if (arrayNode.size() > 0) {
+        // json.set("options", arrayNode);
+        // }
+        // } else {
+        // return false;
+        // }
+        // }
+        if (prettyPrint) {
+          graphics2DBuffer.append(json.toPrettyString());
+        } else {
+          graphics2DBuffer.append(json.toString());
+        }
+        // graphics2DBuffer.append("{");
+        // // graphics2DBuffer.append("\naxes: {},");
+        // graphics2DBuffer.append("elements: [");
+        // graphics2DBuffer.append(arrayNode.toString());
+        // graphics2DBuffer.append("]");
+        // // graphics3DLigthing(graphics2DBuffer, lighting);
+        // // graphics2DBuffer.append("\nviewpoint: [1.3, -2.4, 2.0]");
+        // graphics2DBuffer.append("}");
+        if (javaScript) {
+          graphics2DBuffer.append("\n);");
+        }
+        return true;
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        Errors.printMessage(S.Graphics, rex, EvalEngine.get());
+      }
+    }
+    return false;
+  }
+
+  public static boolean graphics3DCoordsOrListOfCoords(ObjectNode json, IAST coordsOrListOfCoords,
+      String coordStr) {
+    ArrayNode arrayNode = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
+    if (coordsOrListOfCoords.isListOfLists()) {
+      final int size = coordsOrListOfCoords.size();
+      for (int i = 1; i < size; i++) {
+        ArrayNode subArrayNode = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
+        IAST subList = (IAST) coordsOrListOfCoords.get(i);
+        for (int j = 1; j < subList.size(); j++) {
+          subArrayNode.add(subList.get(j).evalf());
+        }
+        arrayNode.add(subArrayNode);
+      }
+    } else if (coordsOrListOfCoords.isList()) {
+      ArrayNode subArrayNode = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
+      for (int i = 1; i < coordsOrListOfCoords.size(); i++) {
+        subArrayNode.add(coordsOrListOfCoords.get(i).evalf());
+      }
+      arrayNode.add(subArrayNode);
+    } else {
+      return false;
+    }
+    json.set(coordStr, arrayNode);
+    return true;
+  }
+
+  public static boolean graphics3DJSON(StringBuilder graphics3DBuffer, IExpr lighting, IExpr data3D,
+      boolean javaScript) {
+    ObjectNode json = GraphicsOptions.JSON_OBJECT_MAPPER.createObjectNode();
+    ArrayNode arrayNode = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
+    if (GraphicsUtil.exportGraphics3DRecursive(arrayNode, (IAST) data3D)) {
+      try {
+        if (javaScript) {
+          graphics3DBuffer.append("drawGraphics3d(document.getElementById('graphics3d'),\n");
+        }
+        json.set("elements", arrayNode);
+        GraphicsUtil.graphics3DLigthing(json, lighting);
+        ArrayNode vp = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
+        vp.add(1.3);
+        vp.add(-2.4);
+        vp.add(2.0);
+        json.set("viewpoint", vp);
+        graphics3DBuffer.append(json.toString());
+        // graphics3DBuffer.append("{");
+        // graphics3DBuffer.append("\naxes: {},");
+        // graphics3DBuffer.append("\nelements: [");
+        // graphics3DBuffer.append(jsonPrimitives.toString());
+        // graphics3DBuffer.append("],");
+        // graphics3DLigthing(graphics3DBuffer, lighting);
+        // graphics3DBuffer.append("\nviewpoint: [1.3, -2.4, 2.0]");
+        // graphics3DBuffer.append("}");
+        if (javaScript) {
+          graphics3DBuffer.append("\n);");
+        }
+        return true;
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        Errors.printMessage(S.Graphics3D, rex, EvalEngine.get());
+      }
+    }
+    return false;
   }
 
   public static void graphics3DLigthing(ObjectNode json, IExpr lighting) {
@@ -559,30 +640,76 @@ public class GraphicsUtil {
 
   }
 
-  public static boolean graphics3DCoordsOrListOfCoords(ObjectNode json, IAST coordsOrListOfCoords,
-      String coordStr) {
-    ArrayNode arrayNode = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
-    if (coordsOrListOfCoords.isListOfLists()) {
-      final int size = coordsOrListOfCoords.size();
-      for (int i = 1; i < size; i++) {
-        ArrayNode subArrayNode = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
-        IAST subList = (IAST) coordsOrListOfCoords.get(i);
-        for (int j = 1; j < subList.size(); j++) {
-          subArrayNode.add(subList.get(j).evalf());
-        }
-        arrayNode.add(subArrayNode);
-      }
-    } else if (coordsOrListOfCoords.isList()) {
-      ArrayNode subArrayNode = GraphicsOptions.JSON_OBJECT_MAPPER.createArrayNode();
-      for (int i = 1; i < coordsOrListOfCoords.size(); i++) {
-        subArrayNode.add(coordsOrListOfCoords.get(i).evalf());
-      }
-      arrayNode.add(subArrayNode);
-    } else {
-      return false;
+  public static boolean renderGraphics2D(StringBuilder graphics2DBuffer, IAST graphics2DAST,
+      boolean javaScript, boolean prettyPrint, EvalEngine engine) {
+    IAST arg1 = graphics2DAST.first().makeList();
+    // IExpr lighting = S.Automatic;
+    final OptionArgs options =
+        new OptionArgs(graphics2DAST.topHead(), graphics2DAST, 2, engine, true);
+    if (arg1.isBuiltInFunction()
+        && GraphicsUtil.graphics2DJSON(graphics2DBuffer, arg1, options, javaScript, prettyPrint)) {
+      return true;
     }
-    json.set(coordStr, arrayNode);
+    return false;
+  }
+
+  public static boolean renderGraphics2D(StringBuilder graphics2DBuffer, IAST graphics2DAST,
+      EvalEngine engine) {
+    return GraphicsUtil.renderGraphics2D(graphics2DBuffer, graphics2DAST, true, false, engine);
+  }
+
+  public static boolean renderGraphics2DSVG(StringBuilder graphics2DBuffer, IAST graphics2DAST,
+      boolean withSVGTag, EvalEngine engine) {
+    SVGGraphics svg = new SVGGraphics(600, 400);
+    String svgString = svg.toSVG(graphics2DAST, withSVGTag);
+    graphics2DBuffer.append(svgString);
     return true;
+  }
+
+  public static boolean renderGraphics2DSVG(StringBuilder graphics2DBuffer, IAST graphics2DAST,
+      EvalEngine engine) {
+    return renderGraphics2DSVG(graphics2DBuffer, graphics2DAST, false, engine);
+  }
+
+  public static boolean renderGraphics3D(StringBuilder graphics3DBuffer, IAST graphics3DAST,
+      boolean javaScript, EvalEngine engine) {
+    IExpr arg1 = graphics3DAST.first();
+    if (!arg1.isList()) {
+      arg1 = F.list(arg1);
+    }
+    IExpr lighting = S.Automatic; // .List(F.$str("Auto"), F.RGBColor(F.C1, F.C1, F.C1));
+    OptionArgs options = OptionArgs.createOptionArgs(graphics3DAST, engine);
+    if (options != null) {
+      lighting = options.getOption(S.Lighting).orElse(lighting);
+
+      // if (option.isList1() && option.first().isList() && option.first().first().isString()) {
+      // lighting = option.first();
+      // }
+    }
+
+    if (arg1.isBuiltInFunction()
+        && GraphicsUtil.graphics3DJSON(graphics3DBuffer, lighting, arg1, javaScript)) {
+      return true;
+    }
+    return false;
+  }
+
+  public static boolean renderGraphics3D(StringBuilder graphics3DBuffer, IAST graphics3DAST,
+      EvalEngine engine) {
+    return GraphicsUtil.renderGraphics3D(graphics3DBuffer, graphics3DAST, true, engine);
+  }
+
+  public static void setYRange(double vmin, double vmax, double[] yMinMax) {
+    if (vmin < yMinMax[0]) {
+      yMinMax[0] = vmin;
+    }
+    if (vmax > yMinMax[1]) {
+      yMinMax[1] = vmax;
+    }
+  }
+
+  private GraphicsUtil() {
+    // private constructor to avoid instantiation
   }
 
 }

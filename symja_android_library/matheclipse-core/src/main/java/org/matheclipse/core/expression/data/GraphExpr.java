@@ -136,13 +136,13 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
     Graph<IExpr, ExprWeightedEdge> g;
     GraphType t = arg1.isListOfEdges();
     if (t != null) {
-  
+
       if (t.isDirected()) {
         g = new DefaultDirectedWeightedGraph<IExpr, ExprWeightedEdge>(ExprWeightedEdge.class);
       } else {
         g = new DefaultUndirectedWeightedGraph<IExpr, ExprWeightedEdge>(ExprWeightedEdge.class);
       }
-  
+
       IAST list = arg1;
       for (int i = 1; i < list.size(); i++) {
         IAST edge = list.getAST(i);
@@ -150,7 +150,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
         g.addVertex(edge.arg2());
         g.addEdge(edge.arg1(), edge.arg2());
       }
-  
+
       if (t.isDirected()) {
         DefaultDirectedWeightedGraph gw = (DefaultDirectedWeightedGraph<IExpr, ExprWeightedEdge>) g;
         for (int i = 1; i < list.size(); i++) {
@@ -165,10 +165,10 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
           gw.setEdgeWeight(edge.arg1(), edge.arg2(), edgeWeight.get(i).evalf());
         }
       }
-  
+
       return newInstance(g);
     }
-  
+
     return null;
   }
 
@@ -384,7 +384,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
     } else {
       resultGraph = new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
     }
-  
+
     HashMap<IExpr, IExpr> hashMap = new HashMap<IExpr, IExpr>();
     for (IExpr v : graph.vertexSet()) {
       IInteger indexExpr = F.ZZ(newIndex++);
@@ -400,7 +400,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
       resultGraph.addEdge(lhs, rhs);
     }
     return resultGraph;
-  
+
   }
 
   /**
@@ -413,8 +413,28 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
     return new GraphExpr<T>(value);
   }
 
+  public static <T> GraphExpr<T> newInstance(final Graph<IExpr, T> value, IASTAppendable options) {
+    return new GraphExpr<T>(value, options);
+  }
+
+  public static <T> GraphExpr<T> newInstance(final Graph<IExpr, T> value, IASTAppendable options,
+      String graphLayout) {
+    boolean hasGraphLayout = false;
+    for (int i = 1; i < options.size(); i++) {
+      IExpr option = options.get(i);
+      if (option.isRule(S.GraphLayout)) {
+        hasGraphLayout = true;
+        break;
+      }
+    }
+    if (!hasGraphLayout) {
+      options.append(F.Rule(S.GraphLayout, F.stringx(graphLayout)));
+    }
+    return newInstance(value, options);
+  }
+
   public static GraphExpr<ExprEdge> newInstance(final IAST vertices, final IAST edges) {
-  
+
     Graph<IExpr, ExprEdge> resultGraph;
     GraphType t = edges.isListOfEdges();
     if (t != null) {
@@ -429,17 +449,17 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
           resultGraph.addVertex(vertices.get(i));
         }
       }
-  
+
       for (int i = 1; i < edges.size(); i++) {
         IAST edge = edges.getAST(i);
         resultGraph.addVertex(edge.arg1());
         resultGraph.addVertex(edge.arg2());
         resultGraph.addEdge(edge.arg1(), edge.arg2());
       }
-  
+
       return newInstance(resultGraph);
     }
-  
+
     return null;
   }
 
@@ -459,7 +479,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
         } else {
           resultGraph = new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
         }
-  
+
         IAST list = (IAST) arg1;
         for (int i = 1; i < list.size(); i++) {
           IAST edge = list.getAST(i);
@@ -467,17 +487,17 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
           resultGraph.addVertex(edge.arg2());
           resultGraph.addEdge(edge.arg1(), edge.arg2());
         }
-  
+
         return newInstance(resultGraph);
       }
       return null;
     }
-    if (arg1.head().equals(S.Graph) && arg1 instanceof GraphExpr) {
+    if (arg1.head() == S.Graph && arg1 instanceof GraphExpr) {
       return (GraphExpr<?>) arg1;
     }
     if (arg1.isASTSizeGE(S.Graph, 2)) {
       arg1 = arg1.first();
-  
+
       GraphType t = arg1.isListOfEdges();
       if (t != null) {
         if (t.isDirected()) {
@@ -485,7 +505,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
         } else {
           resultGraph = new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
         }
-  
+
         IAST list = (IAST) arg1;
         for (int i = 1; i < list.size(); i++) {
           IAST edge = list.getAST(i);
@@ -493,11 +513,11 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
           resultGraph.addVertex(edge.arg2());
           resultGraph.addEdge(edge.arg1(), edge.arg2());
         }
-  
+
         return newInstance(resultGraph);
       }
     }
-  
+
     return null;
   }
 
@@ -667,6 +687,8 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
     return new SparseArrayExpr(trie, new int[] {size, size}, F.C0, false);
   }
 
+  IAST options = F.CEmptyList;
+
   /**
    * No-argument constructor required for {@link Externalizable} deserialization. Initializes the
    * expression with the {@link S#Graph} head and a null data payload.
@@ -679,9 +701,14 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
     super(S.Graph, graph);
   }
 
+  protected GraphExpr(final Graph<IExpr, T> graph, IAST options) {
+    super(S.Graph, graph);
+    this.options = options;
+  }
+
   @Override
   public IExpr copy() {
-    return new GraphExpr<T>(fData);
+    return new GraphExpr<T>(fData, options.copyAppendable());
   }
 
   @Override
@@ -701,6 +728,15 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
    */
   public IAST fullForm() {
     return fullForm((AbstractBaseGraph<IExpr, ExprEdge>) toData());
+  }
+
+  /**
+   * Return the list of options associated with this graph expression.
+   *
+   * @return the options of the graph expression or {@link F#CEmptyList} if no options are set.
+   */
+  public IAST options() {
+    return options;
   }
 
   // private static IExpr fullFormWeightedGraph(AbstractBaseGraph<IExpr, ExprWeightedEdge> graph) {
@@ -760,6 +796,10 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
     }
     this.fData = createGraph(ast);
 
+  }
+
+  public void setOptions(IAST options) {
+    this.options = options;
   }
 
   @Override

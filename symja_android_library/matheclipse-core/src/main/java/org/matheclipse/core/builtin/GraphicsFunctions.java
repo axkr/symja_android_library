@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractSymbolEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -492,17 +493,19 @@ public class GraphicsFunctions {
     }
   }
 
-  private static class GraphicsComplex extends AbstractEvaluator
+  private static class GraphicsComplex extends AbstractFunctionOptionEvaluator
       implements IGraphics2D, IGraphics3D {
 
+
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return ARGS_2_2;
     }
 
     @Override
@@ -565,7 +568,12 @@ public class GraphicsFunctions {
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {}
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, //
+          new IBuiltInSymbol[] {S.VertexColors, S.VertexNormals}, //
+          new IExpr[] {S.Automatic, S.Automatic});
+    }
+
   }
 
   private static class Graphics3DJSON extends AbstractEvaluator {

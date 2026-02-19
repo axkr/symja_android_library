@@ -50,7 +50,7 @@ public final class BinomialCache {
       // Read the object and cast it back to the correct type
       loadedCoefficients = (IInteger[][]) ois.readObject();
 
-    } catch (IOException | ClassNotFoundException | NullPointerException e) {
+    } catch (IOException | ClassNotFoundException e) {
       System.err.println("FATAL: Could not load binomial coefficients file: " + filename);
       e.printStackTrace();
     }

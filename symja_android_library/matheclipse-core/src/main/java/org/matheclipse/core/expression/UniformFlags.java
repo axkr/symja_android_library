@@ -10,12 +10,33 @@ public final class UniformFlags {
   public static final int NONE = 0;
   public static final int ATOM = 1 << 0;
   public static final int NUMBER = 1 << 1;
-  public static final int INTEGER = 1 << 2;
-  public static final int FRACTION = 1 << 3;
-  public static final int REAL = 1 << 4;
-  public static final int COMPLEX = 1 << 5;
-  public static final int SYMBOL = 1 << 6;
-  public static final int STRING = 1 << 7;
+  /**
+   * Small integer numbers {@link IntegerSym}
+   */
+  public static final int INT = 1 << 2;
+  /**
+   * Small integer numbers {@link IntegerSym} or {@link BigIntegerSym}
+   */
+  public static final int INTEGER = 1 << 3;
+  public static final int FRACTION = 1 << 4;
+  /**
+   * Double numbers {@link Num}
+   */
+  public static final int DOUBLE = 1 << 5;
+  /**
+   * floating-point numbers {@link Num} or {@link ApfloatNum}
+   */
+  public static final int REAL = 1 << 6;
+  /**
+   * Double complex numbers {@link ComplexNum}
+   */
+  public static final int DOUBLECOMPLEX = 1 << 7;
+  /**
+   * Double complex numbers {@link ComplexNum}, {@link ApcomplexNum} or symbolic {@link ComplexSym}
+   */
+  public static final int COMPLEX = 1 << 8;
+  public static final int SYMBOL = 1 << 9;
+  public static final int STRING = 1 << 10;
 
   /**
    * Get the type mask for a &quot;head test&quot; in a pattern.

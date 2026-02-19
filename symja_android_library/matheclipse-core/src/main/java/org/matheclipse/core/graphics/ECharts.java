@@ -507,10 +507,10 @@ public class ECharts {
 
   private boolean isXAxis() {
     IExpr axes = graphicsOptions.axes();
-    if (axes == S.True) {
+    if (axes.isTrue()) {
       return true;
     }
-    if (axes == S.False) {
+    if (axes.isFalse()) {
       return false;
     }
     if (axes.isList() && axes.argSize() > 0) {
@@ -602,10 +602,10 @@ public class ECharts {
 
   private boolean isYAxis() {
     IExpr axes = graphicsOptions.axes();
-    if (axes == S.True) {
+    if (axes.isTrue()) {
       return true;
     }
-    if (axes == S.False) {
+    if (axes.isFalse()) {
       return false;
     }
     if (axes.isList() && axes.argSize() > 1) {

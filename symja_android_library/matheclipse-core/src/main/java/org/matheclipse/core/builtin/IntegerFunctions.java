@@ -2134,8 +2134,7 @@ public class IntegerFunctions {
                 return expr;
               }
             } else {
-              // Internal precision limit `1` reached while evaluating `2`.
-              return Errors.printMessage(S.Round, "meprec", F.List(F.CEmptyString, k), engine);
+              return F.NIL;
             }
           }
 

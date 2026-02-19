@@ -692,14 +692,6 @@ public class PredicateQ {
         if (arg1Evaled.isAST()) {
           return F.booleSymbol(matcher.test(arg1, engine));
         }
-        // if (!arg2.isCondition()) {
-        // try {
-        // arg2 = engine.evaluate(arg2);
-        // } catch (RuntimeException rte) {
-        //
-        // }
-        // }
-        // return F.bool(engine.evalPatternMatcher(arg2).test(arg1, engine));
 
       }
       return S.False;

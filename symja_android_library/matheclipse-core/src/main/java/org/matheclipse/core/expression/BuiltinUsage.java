@@ -134,6 +134,9 @@ public class BuiltinUsage {
     USAGE[ID.Cross] = "get vector cross product";
     USAGE[ID.Csc] = "cosecant function";
     USAGE[ID.Csch] = "hyperbolic cosecant function";
+    USAGE[ID.ComplexPlot] = "plots a complex function showing phase using colors";
+    USAGE[ID.ComplexPlot3D] = "plots one or more complex functions as a 3D surface";
+    USAGE[ID.ContourPlot] = "creates a contour plot";
     USAGE[ID.Count] = "count the number of occurrences of a pattern";
     USAGE[ID.Covariance] = "covariance matrix for a pair of datasets";
     USAGE[ID.CubeRoot] = "real-valued cube root";
@@ -150,6 +153,7 @@ public class BuiltinUsage {
     USAGE[ID.DeleteCases] = "delete all occurrences of a pattern";
     USAGE[ID.DeleteDuplicates] = "delete duplicate elements in a list";
     USAGE[ID.Denominator] = "denominator of an expression";
+    USAGE[ID.DensityPlot] = "density plot for a function";
     USAGE[ID.Depth] = "get maximum number of indices to specify any part";
     USAGE[ID.Derivative] = "symbolic and numerical derivative functions";
     USAGE[ID.DesignMatrix] = "design matrix for a linear model";
@@ -356,6 +360,7 @@ public class BuiltinUsage {
     USAGE[ID.Locked] = "keep all attributes locked (settable but not clearable)";
     USAGE[ID.Log] = "natural logarithm function";
     USAGE[ID.LogGamma] = "logarithm of the gamma function";
+    USAGE[ID.LogPlot] = "plot on a log scale curves of one or more functions";
     USAGE[ID.Log2] = "base-2 logarithm function";
     USAGE[ID.Log10] = "base-10 logarithm function";
     USAGE[ID.LogisticSigmoid] = "logistic function";
@@ -469,7 +474,8 @@ public class BuiltinUsage {
     USAGE[ID.Pi] = "Pi, \u03c0≃3.1416";
     USAGE[ID.Pick] = "pick out elements according to a boolean mask";
     USAGE[ID.Piecewise] = "an arbitrary piecewise function";
-    USAGE[ID.Plot] = "curves of one or more functions";
+    USAGE[ID.Plot] = "plot curves of one or more functions";
+    USAGE[ID.Plot3D] = "plots 3D surfaces of one or more functions";
     USAGE[ID.Plus] = "add";
     USAGE[ID.Pochhammer] = "Pochhammer's symbols";
     USAGE[ID.PolarPlot] = "draw a polar plot";

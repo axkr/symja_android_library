@@ -207,6 +207,7 @@ public class ArrayPlot extends ListPlot {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
+
     IExpr[] defaults = GraphicsOptions.listPlotDefaultOptionValues(false, false);
 
     // ArrayPlot Defaults

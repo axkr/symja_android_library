@@ -23,14 +23,17 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ExprEdge;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.expression.data.IExprEdge;
+import org.matheclipse.core.graphics.GraphGraphics;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -210,10 +213,12 @@ public class GraphDataFunctions {
     }
   }
 
-  private static class CycleGraph extends AbstractEvaluator {
+  private static class CycleGraph extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, IAST originalAST) {
+
 
       int order = ast.arg1().toIntDefault();
       if (order <= 0) {
@@ -224,17 +229,18 @@ public class GraphDataFunctions {
         ASTElementLimitExceeded.throwIt(order);
       }
 
-      return cycleGraph(engine, order);
+      IASTAppendable optionsList = GraphGraphics.createOptionsList(options);
+      return cycleGraph(engine, order, optionsList);
     }
 
-    private static IExpr cycleGraph(EvalEngine engine, int order) {
+    private static IExpr cycleGraph(EvalEngine engine, int order, IASTAppendable optionsList) {
       RingGraphGenerator<IExpr, ExprEdge> gen = new RingGraphGenerator<IExpr, ExprEdge>(order);
       Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
           .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
           .vertexSupplier(new IntegerSupplier(1)).edgeClass(ExprEdge.class) //
           .buildGraph();
       gen.generateGraph(target);
-      return GraphExpr.newInstance(target);
+      return GraphExpr.newInstance(target, optionsList);
     }
 
     @Override
@@ -245,6 +251,14 @@ public class GraphDataFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      IBuiltInSymbol[] defaultGraphOptionKeys = GraphGraphics.defaultGraphOptionKeys();
+      IExpr[] defaultGraphOptionValues = GraphGraphics.defaultGraphOptionValues();
+      defaultGraphOptionValues[GraphGraphics.X_GRAPH_LAYOUT] = F.stringx("CircularEmbedding");
+      setOptions(newSymbol, defaultGraphOptionKeys, defaultGraphOptionValues);
     }
   }
 
@@ -332,18 +346,19 @@ public class GraphDataFunctions {
     }
   }
 
-  private static class PathGraph extends AbstractEvaluator {
-
+  private static class PathGraph extends AbstractFunctionOptionEvaluator {
     @Override
-    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
-      if (ast.isAST1() && ast.arg1().isList()) {
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, IAST originalAST) {
+      if (argSize == 1 && ast.arg1().isList()) {
         IAST list = (IAST) ast.arg1();
-        return pathGraph(list);
+        IASTAppendable optionsList = GraphGraphics.createOptionsList(options);
+        return pathGraph(list, optionsList);
       }
       return F.NIL;
     }
 
-    private static IExpr pathGraph(IAST list) {
+    private static IExpr pathGraph(IAST list, IASTAppendable options) {
       Graph<IExpr, ? extends IExprEdge> resultGraph =
           new DefaultUndirectedGraph<IExpr, ExprEdge>(ExprEdge.class);
       if (list.argSize() > 1) {
@@ -355,7 +370,7 @@ public class GraphDataFunctions {
           resultGraph.addVertex(list.get(i));
           resultGraph.addEdge(list.get(i - 1), list.get(i));
         }
-        return GraphExpr.newInstance(resultGraph);
+        return GraphExpr.newInstance(resultGraph, options);
       }
       return F.NIL;
     }
@@ -368,6 +383,14 @@ public class GraphDataFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      IBuiltInSymbol[] defaultGraphOptionKeys = GraphGraphics.defaultGraphOptionKeys();
+      IExpr[] defaultGraphOptionValues = GraphGraphics.defaultGraphOptionValues();
+      defaultGraphOptionValues[GraphGraphics.X_GRAPH_LAYOUT] = F.stringx("DiscreteSpiralEmbedding");
+      setOptions(newSymbol, defaultGraphOptionKeys, defaultGraphOptionValues);
     }
   }
 
@@ -502,11 +525,11 @@ public class GraphDataFunctions {
     }
   }
 
-  private static class StarGraph extends AbstractEvaluator {
+  private static class StarGraph extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
-
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, IAST originalAST) {
       int order = ast.arg1().toIntDefault();
       if (order <= 0) {
         // Positive machine-sized integer expected at position `2` in `1`
@@ -515,11 +538,11 @@ public class GraphDataFunctions {
       if (order > Config.MAX_GRAPH_VERTICES_SIZE) {
         ASTElementLimitExceeded.throwIt(order);
       }
-
-      return starGraph(engine, order);
+      IASTAppendable optionsList = GraphGraphics.createOptionsList(options);
+      return starGraph(engine, order, optionsList);
     }
 
-    private static IExpr starGraph(EvalEngine engine, int order) {
+    private static IExpr starGraph(EvalEngine engine, int order, IASTAppendable options) {
       StarGraphGenerator<IExpr, ExprEdge> gen = new StarGraphGenerator<IExpr, ExprEdge>(order);
       Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
           .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
@@ -528,7 +551,7 @@ public class GraphDataFunctions {
       // Graph<IExpr, ExprEdge> target = new DefaultUndirectedGraph<IExpr,
       // ExprEdge>(ExprEdge.class);
       gen.generateGraph(target);
-      return GraphExpr.newInstance(target);
+      return GraphExpr.newInstance(target, options);
     }
 
     @Override
@@ -540,12 +563,21 @@ public class GraphDataFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
-  }
-
-  private static class WheelGraph extends AbstractEvaluator {
 
     @Override
-    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
+    public void setUp(final ISymbol newSymbol) {
+      IBuiltInSymbol[] defaultGraphOptionKeys = GraphGraphics.defaultGraphOptionKeys();
+      IExpr[] defaultGraphOptionValues = GraphGraphics.defaultGraphOptionValues();
+      defaultGraphOptionValues[GraphGraphics.X_GRAPH_LAYOUT] = F.stringx("StarEmbedding");
+      setOptions(newSymbol, defaultGraphOptionKeys, defaultGraphOptionValues);
+    }
+  }
+
+  private static class WheelGraph extends AbstractFunctionOptionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, IAST originalAST) {
 
       int order = ast.arg1().toIntDefault();
       if (order <= 0) {
@@ -555,11 +587,12 @@ public class GraphDataFunctions {
       if (order > Config.MAX_GRAPH_VERTICES_SIZE) {
         ASTElementLimitExceeded.throwIt(order);
       }
+      IASTAppendable optionsList = GraphGraphics.createOptionsList(options);
 
-      return wheelGraph(engine, order);
+      return wheelGraph(engine, order, optionsList);
     }
 
-    private IExpr wheelGraph(EvalEngine engine, int order) {
+    private IExpr wheelGraph(EvalEngine engine, int order, IASTAppendable options) {
       WheelGraphGenerator<IExpr, ExprEdge> gen = new WheelGraphGenerator<IExpr, ExprEdge>(order);
       Graph<IExpr, ExprEdge> target = GraphTypeBuilder //
           .undirected().allowingMultipleEdges(false).allowingSelfLoops(false) //
@@ -568,7 +601,7 @@ public class GraphDataFunctions {
       // Graph<IExpr, ExprEdge> target = new DefaultUndirectedGraph<IExpr,
       // ExprEdge>(ExprEdge.class);
       gen.generateGraph(target);
-      return GraphExpr.newInstance(target);
+      return GraphExpr.newInstance(target, options);
     }
 
     @Override
@@ -579,6 +612,14 @@ public class GraphDataFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      IBuiltInSymbol[] defaultGraphOptionKeys = GraphGraphics.defaultGraphOptionKeys();
+      IExpr[] defaultGraphOptionValues = GraphGraphics.defaultGraphOptionValues();
+      defaultGraphOptionValues[GraphGraphics.X_GRAPH_LAYOUT] = F.stringx("StarEmbedding");
+      setOptions(newSymbol, defaultGraphOptionKeys, defaultGraphOptionValues);
     }
   }
 

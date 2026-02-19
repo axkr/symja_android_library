@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin.graphics3d;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -14,6 +15,8 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.tensor.img.ColorDataGradients;
+import org.matheclipse.core.tensor.img.ColorFormat;
 
 public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
 
@@ -335,6 +338,11 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
       plotPoints = options[0].toIntDefault();
     }
 
+    IExpr colorFunction = options[2];
+    if (colorFunction.equals(S.Automatic)) {
+      colorFunction = F.stringx("Sunset");
+    }
+
     // Generate Scalar Field
     int resX = plotPoints;
     int resY = plotPoints;
@@ -367,19 +375,46 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
     }
 
     // Marching Cubes
-    return marchingCubes(scalarField, xMin, yMin, zMin, dx, dy, dz, 0.0);
+    return marchingCubes(scalarField, xMin, xMax, yMin, yMax, zMin, zMax, dx, dy, dz, 0.0,
+        colorFunction, engine);
   }
 
-  private IExpr marchingCubes(double[][][] field, double xMin, double yMin, double zMin, double dx,
-      double dy, double dz, double isoLevel) {
+  private IExpr marchingCubes(double[][][] field, double xMin, double xMax, double yMin, double yMax,
+      double zMin, double zMax, double dx, double dy, double dz, double isoLevel,
+      IExpr colorFunction, EvalEngine engine) {
 
     List<IExpr> vertices = new ArrayList<>();
+    List<IExpr> vertexColors = new ArrayList<>();
     Map<String, Integer> vertexMap = new HashMap<>(); // "ix,iy,iz,edgeIndex" -> index
     IASTAppendable polygons = F.ListAlloc();
 
     int dimX = field.length;
     int dimY = field[0].length;
     int dimZ = field[0][0].length;
+
+    // Resolve gradient if string
+    ColorDataGradients gradient = null;
+    if (colorFunction.isString()) {
+      try {
+        String name = colorFunction.toString();
+        gradient = ColorDataGradients.valueOf(name.toUpperCase(Locale.US));
+      } catch (IllegalArgumentException e) {
+        // Fallback or custom string
+        try {
+          String name = colorFunction.toString().replace(" ", "").replace("_", "")
+              .toUpperCase(Locale.US);
+          for (ColorDataGradients g : ColorDataGradients.values()) {
+            String gName = g.name().replace("_", "");
+            if (gName.equals(name)) {
+              gradient = g;
+              break;
+            }
+          }
+        } catch (Exception ex) {
+
+        }
+      }
+    }
 
     for (int i = 0; i < dimX - 1; i++) {
       for (int j = 0; j < dimY - 1; j++) {
@@ -422,12 +457,15 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
               break;
             }
 
-            int idx1 = getOrCreateVertex(i, j, k, triEdges[t], vals, xMin, yMin, zMin, dx, dy, dz,
-                isoLevel, vertices, vertexMap);
-            int idx2 = getOrCreateVertex(i, j, k, triEdges[t + 1], vals, xMin, yMin, zMin, dx, dy,
-                dz, isoLevel, vertices, vertexMap);
-            int idx3 = getOrCreateVertex(i, j, k, triEdges[t + 2], vals, xMin, yMin, zMin, dx, dy,
-                dz, isoLevel, vertices, vertexMap);
+            int idx1 = getOrCreateVertex(i, j, k, triEdges[t], vals, xMin, xMax, yMin, yMax, zMin,
+                zMax, dx, dy, dz, isoLevel, vertices, vertexColors, vertexMap, gradient,
+                colorFunction, engine);
+            int idx2 = getOrCreateVertex(i, j, k, triEdges[t + 1], vals, xMin, xMax, yMin, yMax,
+                zMin, zMax, dx, dy, dz, isoLevel, vertices, vertexColors, vertexMap, gradient,
+                colorFunction, engine);
+            int idx3 = getOrCreateVertex(i, j, k, triEdges[t + 2], vals, xMin, xMax, yMin, yMax,
+                zMin, zMax, dx, dy, dz, isoLevel, vertices, vertexColors, vertexMap, gradient,
+                colorFunction, engine);
 
             if (idx1 != -1 && idx2 != -1 && idx3 != -1) {
               polygons.append(F.List(F.ZZ(idx1), F.ZZ(idx2), F.ZZ(idx3)));
@@ -443,13 +481,30 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
       pointsList.append(v);
     }
 
-    // Group polygons
+    // Convert colors list if available
+    IASTAppendable colorsList = null;
+    if (vertexColors.size() == vertices.size()) {
+      colorsList = F.ListAlloc(vertexColors.size());
+      for (IExpr c : vertexColors) {
+        colorsList.append(c);
+      }
+    }
+
+    // Group pointing to polygons.
+    // If we have vertex colors we don't need a default face color if GraphicsComplex uses VertexColors
     IASTAppendable polyGroup = F.ListAlloc(2);
-    // Default Color for Contours (e.g. Light Blue/Cyan)
-    polyGroup.append(F.RGBColor(F.num(0.6), F.num(0.8), F.num(1.0)));
+    if (colorsList == null) {
+      polyGroup.append(F.RGBColor(F.num(0.6), F.num(0.8), F.num(1.0)));
+    }
     polyGroup.append(F.Polygon(polygons));
 
-    IExpr graphicsComplex = F.GraphicsComplex(pointsList, F.List(polyGroup));
+    IExpr graphicsComplex;
+    if (colorsList != null) {
+      graphicsComplex =
+          F.GraphicsComplex(pointsList, F.List(polyGroup), F.Rule(S.VertexColors, colorsList));
+    } else {
+      graphicsComplex = F.GraphicsComplex(pointsList, F.List(polyGroup));
+    }
     IASTAppendable result = F.ast(S.Graphics3D);
     result.append(graphicsComplex);
     result.append(F.Rule(S.PlotRange, S.Automatic));
@@ -460,8 +515,10 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
   }
 
   private int getOrCreateVertex(int i, int j, int k, int edgeIndex, double[] vals, double xMin,
-      double yMin, double zMin, double dx, double dy, double dz, double iso, List<IExpr> vertices,
-      Map<String, Integer> map) {
+      double xMax, double yMin, double yMax, double zMin, double zMax, double dx, double dy,
+      double dz, double iso, List<IExpr> vertices, List<IExpr> vertexColors,
+      Map<String, Integer> map, ColorDataGradients gradient, IExpr colorFunction,
+      EvalEngine engine) {
 
     // Safety check for invalid edge index
     if (edgeIndex < 0 || edgeIndex >= 12)
@@ -497,6 +554,43 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
     double pz = zMin + (k + gz) * dz;
 
     vertices.add(F.List(F.num(px), F.num(py), F.num(pz)));
+
+    // Calculate color
+    IExpr color = null;
+    double nx = (px - xMin) / (xMax - xMin);
+    double ny = (py - yMin) / (yMax - yMin);
+    double nz = (pz - zMin) / (zMax - zMin);
+
+    try {
+      if (gradient != null) {
+        // Gradient maps [0,1] -> Color. Use nz (Z-coordinate) by default standard
+        IExpr rgbaExpr = gradient.apply(F.num(nz));
+        if (rgbaExpr.isAST() && rgbaExpr.size() >= 4) {
+          IAST rgba = (IAST) rgbaExpr;
+          // Convert 0..255 to 0..1 for RGBColor
+          org.matheclipse.core.convert.RGBColor c = ColorFormat.toColor(rgba);
+          color = F.RGBColor(F.num(c.getRed() / 255.0), F.num(c.getGreen() / 255.0),
+              F.num(c.getBlue() / 255.0));
+        }
+      } else if (colorFunction != null && !colorFunction.equals(S.None)) {
+        // Evaluate ColorFunction[x, y, z]
+        // Note: Check ColorFunctionScaling options if needed, here assuming Scaled (0..1)
+        IExpr res = engine.evaluate(F.function(colorFunction, F.num(nx), F.num(ny), F.num(nz)));
+        if (res.isAST() && (res.head().equals(S.RGBColor) || res.head().equals(S.Hue)
+            || res.head().equals(S.GrayLevel))) {
+          color = res;
+        }
+      }
+    } catch (Exception e) {
+    }
+
+    if (color != null) {
+      vertexColors.add(color);
+    } else {
+      // Fallback
+      vertexColors.add(F.RGBColor(F.num(0.6), F.num(0.8), F.num(1.0)));
+    }
+
     int newIndex = vertices.size(); // 1-based
     map.put(key, newIndex);
     return newIndex;
@@ -514,8 +608,8 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
 
   @Override
   public void setUp(final ISymbol newSymbol) {
-    setOptions(newSymbol, new IBuiltInSymbol[] {S.PlotPoints, S.PlotRange},
-        new IExpr[] {S.Automatic, S.Automatic});
+    setOptions(newSymbol, new IBuiltInSymbol[] {S.PlotPoints, S.PlotRange, S.ColorFunction},
+        new IExpr[] {S.Automatic, S.Automatic, S.Automatic});
   }
 
 }

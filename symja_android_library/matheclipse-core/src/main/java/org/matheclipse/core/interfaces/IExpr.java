@@ -3939,7 +3939,9 @@ public interface IExpr
    */
   default boolean isMember(IExpr pattern, boolean heads, IVisitorBoolean visitor) {
     Predicate<IExpr> predicate;
-    if (pattern.isSymbol() || pattern.isNumber() || pattern.isString()) {
+    if (pattern.isSymbol()) {
+      predicate = x -> x == pattern;
+    } else if (pattern.isAtomicConstant()) {
       predicate = x -> x.equals(pattern);
     } else {
       predicate = new PatternMatcher(pattern);
@@ -7486,8 +7488,8 @@ public interface IExpr
    * @return <code>true</code> if the expression is a graphics object
    */
   default boolean isGraphicsObject() {
-    return (this instanceof IAST)
-        && (isAST(S.Graphics) || isAST(S.GraphicsRow) || isListOf(S.Graphics));
+    return (this instanceof IAST) && (isAST(S.Graphics) || isAST(S.GraphicsColumn)
+        || isAST(S.GraphicsGrid) || isAST(S.GraphicsRow) || isListOf(S.Graphics));
   }
 
 }

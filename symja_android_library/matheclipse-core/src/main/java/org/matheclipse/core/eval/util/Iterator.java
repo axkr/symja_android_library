@@ -12,7 +12,6 @@ import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -223,11 +222,11 @@ public class Iterator {
       }
       if (step.isReal()) {
         if (step.isNegative()) {
-          if (evalEngine.evaluate(Less(lowerLimit, maxCounterOrList)) == S.True) {
+          if (evalEngine.evaluate(Less(lowerLimit, maxCounterOrList)).isTrue()) {
             return false;
           }
         } else {
-          if (evalEngine.evaluate(Less(maxCounterOrList, lowerLimit)) == S.True) {
+          if (evalEngine.evaluate(Less(maxCounterOrList, lowerLimit)).isTrue()) {
             return false;
           }
         }

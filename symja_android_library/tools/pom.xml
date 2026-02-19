@@ -1,9 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.matheclipse</groupId>
 		<artifactId>matheclipse</artifactId>
-		<version>3.1.0-SNAPSHOT</version>
+		<version>3.1.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>tools</artifactId>
 	<packaging>jar</packaging>
@@ -14,7 +16,8 @@
 			<name>GNU General Public License, Version 3</name>
 			<url>https://www.gnu.org/licenses/gpl-3.0.html</url>
 			<distribution>repo</distribution>
-			<comments>A free, copyleft license for software and other kinds of works</comments>
+			<comments>A free, copyleft license for software and other kinds of
+				works</comments>
 		</license>
 	</licenses>
 	<properties>
@@ -35,6 +38,21 @@
 			<groupId>org.openapitools</groupId>
 			<artifactId>openapi-generator-cli</artifactId>
 			<version>7.20.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.openrewrite</groupId>
+			<artifactId>rewrite-java</artifactId>
+			<version>8.66.1</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.haifengl</groupId>
+			<artifactId>smile-core</artifactId>
+			<version>3.1.1</version>
 		</dependency>
 	</dependencies>
 </project>

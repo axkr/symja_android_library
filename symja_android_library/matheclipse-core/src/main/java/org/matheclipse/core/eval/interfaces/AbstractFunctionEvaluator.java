@@ -146,7 +146,6 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
    * @param expectedArgSize
    * @param optionSymbol
    * @param engine
-   * @return
    */
   public static int determineOptions(IExpr[] options, IAST ast, int argSize, int[] expectedArgSize,
       IBuiltInSymbol[] optionSymbol, EvalEngine engine) {
@@ -473,9 +472,6 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
           }
         } else if (arg1.isNegativeInfinity()) {
           return timesAST.setAtCopy(1, F.CInfinity);
-        } else if (arg1.isNegative()) {
-          IExpr negNum = arg1.negate();
-          return timesAST.setAtCopy(1, negNum);
         }
       } else if (checkTimesPlus && expression.isPlus()) {
         IAST plusAST = ((IAST) expression);
@@ -662,7 +658,6 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
    *
    * @param ast
    * @param checkTimesPlus check <code>Times(...)</code> and <code>Plus(...)</code> expressions
-   * @return
    */
   public static boolean isNegativeWeighted(final IAST ast, boolean checkTimesPlus) {
     return isNegativeWeighted(ast, checkTimesPlus, ast.size() / 2);
@@ -675,7 +670,6 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
    * @param checkTimesPlus check <code>Times(...)</code> and <code>Plus(...)</code> expressions
    * @param maxNegativeExpr maximum number of negative valued terms which have to be found before
    *        returning <code>true</code>
-   * @return
    */
   public static boolean isNegativeWeighted(final IAST ast, boolean checkTimesPlus,
       int maxNegativeExpr) {

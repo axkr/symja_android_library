@@ -1997,12 +1997,13 @@ public final class BooleanFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       boolean evaled = false;
       // TODO localize x
-      IExpr x = engine.evaluateNIL(ast.arg1());
-      if (x.isPresent()) {
+      IExpr arg1 = engine.evaluateNIL(ast.arg1());
+      if (arg1.isPresent()) {
         evaled = true;
       } else {
-        x = ast.arg1();
+        arg1 = ast.arg1();
       }
+      IAST vars = arg1.makeList();
 
       IExpr expr = engine.evaluateNIL(ast.arg2());
       if (expr.isPresent()) {
@@ -2019,16 +2020,16 @@ public final class BooleanFunctions {
           arg3 = ast.arg3();
         }
         if (evaled) {
-          return F.Exists(x, expr, arg3);
+          return F.Exists(vars, expr, arg3);
         }
         return F.NIL;
       }
 
-      if (expr.isFree(x)) {
+      if (expr.isFree(x -> vars.contains(x), true)) {
         return expr;
       }
       if (evaled) {
-        return F.Exists(x, expr);
+        return F.Exists(vars, expr);
       }
       return F.NIL;
     }

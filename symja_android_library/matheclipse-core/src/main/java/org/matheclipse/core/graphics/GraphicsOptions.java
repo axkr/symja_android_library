@@ -657,6 +657,14 @@ public class GraphicsOptions {
     return colorIndex++;
   }
 
+  public static int incColorIndex(int colorIndex) {
+    if (PLOT_COLORS.length - 1 == colorIndex) {
+      colorIndex = 1;
+      return PLOT_COLORS.length - 1;
+    }
+    return ++colorIndex;
+  }
+
   public boolean isJoined() {
     return joined;
   }

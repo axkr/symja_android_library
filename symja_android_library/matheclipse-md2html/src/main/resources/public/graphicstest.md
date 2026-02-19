@@ -141,3 +141,7 @@ Graphics[GraphicsComplex[data, {Green, Line[{1, 2, 3, 4, 5, 6}], Red, Point[{1, 
 ```mma
 Graphics[Line[{{-1, -1}, {3,3}, {1, 1}, {4, 5}}],Axes->True, PlotRange->{0.0, 2.0}]
 ```
+
+```mma
+TreeForm[a+(b*q*s)^(2*y)+Sin[c]^(3-z)]
+```

@@ -2,8 +2,6 @@ package org.matheclipse.core.builtin;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.hipparchus.linear.FieldMatrix;
@@ -72,7 +70,6 @@ public final class OutputFunctions {
       S.Row.setEvaluator(new Row());
       S.TableForm.setEvaluator(new TableForm());
       S.TeXForm.setEvaluator(new TeXForm());
-      S.TreeForm.setEvaluator(new TreeForm());
       S.ScientificForm.setEvaluator(new ScientificForm());
     }
   }
@@ -977,118 +974,6 @@ public final class OutputFunctions {
     @Override
     public void setUp(ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
-    }
-  }
-
-  private static class TreeForm extends AbstractCoreFunctionEvaluator {
-    private static void edgesToVisjs(StringBuilder buf,
-        List<SimpleImmutableEntry<Integer, Integer>> edgeSet) {
-      boolean first = true;
-
-      buf.append("var edges = new vis.DataSet([\n");
-      for (SimpleImmutableEntry<Integer, Integer> edge : edgeSet) {
-        // {from: 1, to: 3},
-        if (first) {
-          buf.append("  {from: ");
-        } else {
-          buf.append(", {from: ");
-        }
-        buf.append(edge.getKey());
-        buf.append(", to: ");
-        buf.append(edge.getValue());
-        // , arrows: { to: { enabled: true, type: 'arrow'}}
-        buf.append(" , arrows: { to: { enabled: true, type: 'arrow'}}");
-        buf.append("}\n");
-        first = false;
-      }
-      buf.append("]);\n");
-    }
-
-    private static void treeToGraph(IAST tree, final int level, final int maxLevel,
-        int[] currentCount, List<SimpleImmutableEntry<String, Integer>> vertexList,
-        List<SimpleImmutableEntry<Integer, Integer>> edgeList) {
-      vertexList.add(new SimpleImmutableEntry<String, Integer>(tree.head().toString(), level));
-      int currentNode = vertexList.size();
-      final int nextLevel = level + 1;
-      for (int i = 1; i < tree.size(); i++) {
-        currentCount[0]++;
-        edgeList.add(new SimpleImmutableEntry<Integer, Integer>(currentNode, currentCount[0]));
-        IExpr arg = tree.get(i);
-        if (nextLevel >= maxLevel || !arg.isAST()) {
-          vertexList.add(new SimpleImmutableEntry<String, Integer>(arg.toString(), nextLevel));
-        } else {
-          treeToGraph((IAST) arg, nextLevel, maxLevel, currentCount, vertexList, edgeList);
-        }
-      }
-    }
-
-    private static void vertexToVisjs(StringBuilder buf,
-        List<SimpleImmutableEntry<String, Integer>> vertexSet) {
-      buf.append("var nodes = new vis.DataSet([\n");
-      boolean first = true;
-      int counter = 1;
-      for (SimpleImmutableEntry<String, Integer> expr : vertexSet) {
-        // {id: 1, label: 'Node 1'},
-        if (first) {
-          buf.append("  {id: ");
-        } else {
-          buf.append(", {id: ");
-        }
-        buf.append(counter++);
-        buf.append(", label: '");
-        buf.append(expr.getKey().toString());
-        buf.append("', level: ");
-        buf.append(expr.getValue().toString());
-        buf.append("}\n");
-        first = false;
-      }
-      buf.append("]);\n");
-    }
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      try {
-        int maxLevel = Integer.MAX_VALUE;
-        if (ast.isAST2()) {
-          maxLevel = ast.arg2().toIntDefault();
-          if (maxLevel < 0) {
-            return F.NIL;
-          }
-        }
-        IExpr arg1 = engine.evaluate(ast.arg1());
-        List<SimpleImmutableEntry<String, Integer>> vertexList =
-            new ArrayList<SimpleImmutableEntry<String, Integer>>();
-        List<SimpleImmutableEntry<Integer, Integer>> edgeList =
-            new ArrayList<SimpleImmutableEntry<Integer, Integer>>();
-        StringBuilder jsControl = new StringBuilder();
-        if (maxLevel > 0 && arg1.isAST()) {
-          IAST tree = (IAST) arg1;
-          int[] currentCount = new int[] {1};
-          treeToGraph(tree, 0, maxLevel, currentCount, vertexList, edgeList);
-          vertexToVisjs(jsControl, vertexList);
-          edgesToVisjs(jsControl, edgeList);
-          return F.JSFormData(jsControl.toString(), "treeform");
-        } else {
-          vertexList.add(new SimpleImmutableEntry<String, Integer>(arg1.toString(), 0));
-          vertexToVisjs(jsControl, vertexList);
-          edgesToVisjs(jsControl, edgeList);
-          return F.JSFormData(jsControl.toString(), "treeform");
-        }
-
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
-        return Errors.printMessage(S.TreeForm, rex, engine);
-      }
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
     }
   }
 

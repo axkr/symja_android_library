@@ -337,10 +337,10 @@ public abstract class ComplexFormFactory {
     } else if (symbol == S.Pi) {
       buf.append("Math.PI");
       return;
-    } else if (symbol == S.False) {
+    } else if (symbol.isFalse()) {
       buf.append("false");
       return;
-    } else if (symbol == S.True) {
+    } else if (symbol.isTrue()) {
       buf.append("true");
       return;
     } else if (symbol == S.Indeterminate) {

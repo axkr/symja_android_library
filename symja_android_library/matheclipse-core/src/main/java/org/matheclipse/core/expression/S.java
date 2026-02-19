@@ -4375,6 +4375,12 @@ public class S {
    */
   public final static IBuiltInSymbol FoldList = S.initFinalSymbol("FoldList", ID.FoldList);
 
+  public final static IBuiltInSymbol FontColor = S.initFinalSymbol("FoldColor", ID.FontColor);
+
+  public final static IBuiltInSymbol FontFamily = S.initFinalSymbol("FontFamily", ID.FontFamily);
+
+  public final static IBuiltInSymbol FontSize = S.initFinalSymbol("FontSize", ID.FontSize);
+
   /**
    * For(start, test, incr, body) - evaluates `start`, and then iteratively `body` and `incr` as
    * long as test evaluates to `True`.
@@ -4924,6 +4930,9 @@ public class S {
 
   public final static IBuiltInSymbol Graphics3DJSON =
       S.initFinalSymbol("Graphics3DJSON", ID.Graphics3DJSON);
+
+  public final static IBuiltInSymbol GraphicsColumn =
+      S.initFinalSymbol("GraphicsColumn", ID.GraphicsColumn);
 
   public final static IBuiltInSymbol GraphicsComplex =
       S.initFinalSymbol("GraphicsComplex", ID.GraphicsComplex);
@@ -10806,6 +10815,15 @@ public class S {
    */
   public final static IBuiltInSymbol Span = S.initFinalSymbol("Span", ID.Span);
 
+  public final static IBuiltInSymbol SpanFromAbove =
+      S.initFinalSymbol("SpanFromAbove", ID.SpanFromAbove);
+
+  public final static IBuiltInSymbol SpanFromBoth =
+      S.initFinalSymbol("SpanFromBoth", ID.SpanFromBoth);
+
+  public final static IBuiltInSymbol SpanFromLeft =
+      S.initFinalSymbol("SpanFromLeft", ID.SpanFromLeft);
+
   /**
    * SparseArray(nestedList) - create a sparse array from a `nestedList` structure.
    * 
@@ -12970,6 +12988,8 @@ public class S {
   public final static IBuiltInSymbol With = S.initFinalSymbol("With", ID.With);
 
   public final static IBuiltInSymbol Word = S.initFinalSymbol("Word", ID.Word);
+
+  public final static IBuiltInSymbol WordCloud = S.initFinalSymbol("WordCloud", ID.WordCloud);
 
   /**
    * WordBoundary - represents the boundary between words.

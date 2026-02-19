@@ -1036,8 +1036,7 @@ public class RootsFunctions {
   private static IAST rootsOfVariableEndProcessing(IASTMutable result, final IAST variables,
       final IExpr denominator, boolean createSet, boolean sort, EvalEngine engine) {
     if (!denominator.isNumber()) {
-      // eliminate roots from the result list, which occur in the
-      // denominator
+      // eliminate roots from the result list, which occur in the denominator
       int i = 1;
       IASTAppendable appendable = F.NIL;
       while (i < result.size()) {

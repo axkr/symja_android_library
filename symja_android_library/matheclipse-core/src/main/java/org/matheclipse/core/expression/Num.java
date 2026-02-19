@@ -2401,6 +2401,11 @@ public class Num implements INum {
   }
 
   @Override
+  public int uniformFlags() {
+    return UniformFlags.DOUBLE | UniformFlags.REAL | UniformFlags.NUMBER | UniformFlags.ATOM;
+  }
+
+  @Override
   public INum zero() {
     return F.CD0;
   }

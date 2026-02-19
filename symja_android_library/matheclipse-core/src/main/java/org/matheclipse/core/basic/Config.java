@@ -220,7 +220,7 @@ public class Config {
   /**
    * The time in seconds a server request can evaluate an expression.
    */
-  public static long SERVER_REQUEST_TIMEOUT_SECONDS = 30;
+  public static long SERVER_REQUEST_TIMEOUT_SECONDS = 60;
 
   /** Switch debug mode on/off */
   public static final boolean DEBUG = false;
@@ -653,7 +653,7 @@ public class Config {
       // don't use a Logger in Config startup methods. Print the message to console instead:
       System.out.println("Config.getVersion() failed: " + e.getMessage());
     }
-    return "3.1.0-SNAPSHOT";
+    return "3.1.1-SNAPSHOT";
   }
 
   /** A trie builder for mapping int[] sequences to IExpr. */

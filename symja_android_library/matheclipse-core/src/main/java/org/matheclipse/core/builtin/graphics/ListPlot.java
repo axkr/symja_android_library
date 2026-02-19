@@ -7,6 +7,7 @@ import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -302,7 +303,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
         IExpr defaultColor =
             GraphicsOptions.plotStyleColorExpr(graphicsOptions.incColorIndex(), F.NIL);
         IExpr style = defaultColor;
-        if (plotStyle.isPresent() && plotStyle != S.None) {
+        if (!plotStyle.isNone()) {
           IExpr userStyle = GraphicsOptions.getPlotStyle(plotStyle, j - 1);
           style = F.Directive(defaultColor, userStyle);
         }
@@ -560,10 +561,10 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
     boolean useDataRange = false;
     if (dataRange.isList2()) {
       try {
-        drMin = ((IAST) dataRange).arg1().evalDouble();
-        drMax = ((IAST) dataRange).arg2().evalDouble();
+        drMin = ((IAST) dataRange).arg1().evalf();
+        drMax = ((IAST) dataRange).arg2().evalf();
         useDataRange = true;
-      } catch (Exception e) {
+      } catch (ArgumentTypeException e) {
       }
     }
 

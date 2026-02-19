@@ -1,6 +1,6 @@
 /**
  * symja_webgl.js
- * * Renders Symja Graphics3D JSON data using Three.js.
+ * Renders Symja Graphics3D JSON data using Three.js.
  * Requires: three.module.js and OrbitControls.js to be loaded and exposed as window.THREE.
  */
 
@@ -52,10 +52,41 @@
     }
 
     // --- Helper: Axis Drawing with Ticks ---
-    function drawAxes(visualBox, dataBox, axes, scene, scalingTypes) {
+    function drawAxes(visualBox, dataBox, axes, scene, scalingTypes, axesEdge) {
         var THREE = global.THREE;
         var vMin = visualBox.min; var vMax = visualBox.max; var vSize = vMax.clone().sub(vMin);
         var dMin = dataBox.min; var dMax = dataBox.max; var dSize = dMax.clone().sub(dMin);
+        
+        // Resolve Origin based on AxesEdge or default
+        var getOrigin = function(idx, dim1, dim2) {
+        	var origin = vMin.clone();
+        	// Default: automatic choice
+        	// If automatic, we generally pick lowest coords, except maybe for Y axis (up) we might pick min X, max Z?
+        	// Standard default: min, min, min.
+        	// However, users might want ticks on other edges.
+        	
+        	if (axesEdge && axesEdge.length > idx) {
+        		var edge = axesEdge[idx];
+        		if (edge !== 'Automatic' && edge !== 'None' && Array.isArray(edge)) {
+        			// edge is [dir1, dir2] where dir is +1 or -1 (or scaled val?)
+        			// Assuming input from Java is +1/-1 or actual value?
+        			// Java code:  So it's +1.0 or -1.0.
+        			var d1 = edge[0]; // along dim1
+        			var d2 = edge[1]; // along dim2
+        			
+        			var c = origin.toArray(); // [x, y, z]
+        			var minArr = vMin.toArray();
+        			var maxArr = vMax.toArray();
+        			
+        			if (d1 > 0) c[dim1] = maxArr[dim1]; else c[dim1] = minArr[dim1];
+        			if (d2 > 0) c[dim2] = maxArr[dim2]; else c[dim2] = minArr[dim2];
+        			
+        			origin.fromArray(c);
+        			return origin;
+        		}
+        	}
+        	return origin;
+        }
 
         var createLabel = function(text, pos) {
             var canvas = document.createElement('canvas'); var ctx = canvas.getContext('2d');
@@ -82,6 +113,7 @@
         };
 
         var drawAxis = function(vStart, vEnd, axisIdx) {
+            // Check current start/end coords to decide tick direction?  
             var color = 0x000000;
             // Axis Line
             scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([vStart, vEnd]), new THREE.LineBasicMaterial({ color: color })));
@@ -99,8 +131,20 @@
             var visualDir = vEnd.clone().sub(vStart).normalize();
             var visualLen = vEnd.clone().sub(vStart).length();
             var tickSize = Math.max(vSize.x, Math.max(vSize.y, vSize.z)) * 0.02;
-            var tickDir = new THREE.Vector3(0, 0, 0);
-            if (axisIdx === 0) tickDir.set(0, -1, 0); else if (axisIdx === 1) tickDir.set(-1, 0, 0); else tickDir.set(-1, 0, 0);
+            
+            // Determine tick direction based on edge location
+            // If axis is at max dim, tick should point inward (negative).
+            var center = vMin.clone().add(vMax).multiplyScalar(0.5);
+            var axisCenter = vStart.clone().add(vEnd).multiplyScalar(0.5);
+            // Point towards box center
+            var tD = center.sub(axisCenter).normalize(); 
+            // Avoid zero vector if axis goes through center (unlikely for box edges, but possible for centered axes)
+            if (tD.lengthSq() < 0.0001) {
+             	// Fallback
+             	if (axisIdx === 0) tD.set(0, -1, 0);
+             	else if (axisIdx === 1) tD.set(-1, 0, 0);
+             	else tD.set(-1, 0, 0);
+            }
 
             var firstTick = Math.ceil(dataStart / step) * step;
             if (firstTick < dataStart - 1e-9) firstTick += step; // Handle float precision
@@ -111,7 +155,7 @@
                 var p = vStart.clone().add(visualDir.clone().multiplyScalar(ratio * visualLen));
 
                 // Tick mark
-                scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([p, p.clone().add(tickDir.clone().multiplyScalar(tickSize))]), new THREE.LineBasicMaterial({ color: color })));
+                scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([p, p.clone().add(tD.clone().multiplyScalar(tickSize))]), new THREE.LineBasicMaterial({ color: color })));
 
                 // Grid lines (optional, faint)
                 // ...
@@ -124,14 +168,26 @@
                 var labelText = Math.abs(labelVal) < 1e-6 ? "0" : labelVal.toPrecision(4).replace(/\.?0+$/, '');
                 if (Math.abs(labelVal) >= 1000 || (Math.abs(labelVal) < 0.01 && labelVal !== 0)) labelText = labelVal.toExponential(2);
 
-                var labelPos = p.clone().add(tickDir.clone().multiplyScalar(tickSize * 3.5));
+                var labelPos = p.clone().add(tD.clone().multiplyScalar(tickSize * 3.5));
                 scene.add(createLabel(labelText, labelPos));
             }
         };
 
-        if (axes[0]) drawAxis(vMin.clone(), vMin.clone().add(new THREE.Vector3(vSize.x, 0, 0)), 0);
-        if (axes[1]) drawAxis(vMin.clone(), vMin.clone().add(new THREE.Vector3(0, vSize.y, 0)), 1);
-        if (axes[2]) drawAxis(vMin.clone(), vMin.clone().add(new THREE.Vector3(0, 0, vSize.z)), 2);
+        if (axes[0]) {
+        	var origin = getOrigin(0, 1, 2); // dim1=Y(1), dim2=Z(2)
+        	var end = origin.clone(); end.x = vMax.x; origin.x = vMin.x; 
+        	drawAxis(origin, end, 0);
+        }
+        if (axes[1]) {
+        	var origin = getOrigin(1, 0, 2); // dim1=X(0), dim2=Z(2)
+        	var end = origin.clone(); end.y = vMax.y; origin.y = vMin.y; 
+        	drawAxis(origin, end, 1);
+        }
+        if (axes[2]) {
+        	var origin = getOrigin(2, 0, 1); // dim1=X(0), dim2=Y(1)
+        	var end = origin.clone(); end.z = vMax.z; origin.z = vMin.z; 
+        	drawAxis(origin, end, 2);
+        }
     }
 
     // --- Main Rendering Function ---
@@ -185,6 +241,36 @@
 
         var objectsGroup = new THREE.Group();
 
+        // --- B-Spline Curve Class ---
+        class SymjaBSplineCurve extends THREE.Curve {
+            constructor(degree, points, knots, weights) {
+                super();
+                this.degree = degree;
+                this.points = points;
+                this.knots = knots;
+                this.weights = weights;
+            }
+            getPoint(t) {
+                // Map t [0, 1] to domain [knots[degree], knots[n]]
+                // Assuming standard domain mapping if t is normalized
+                // Or assume knots are normalized?
+                // The evaluateBSpline expects t in knot domain.
+                // Standard THREE curve expects t in [0,1].
+                
+                var d = this.degree;
+                var n = this.points.length / 3;
+                var startK = this.knots[d];
+                var endK = this.knots[n]; // Or knots[knots.length - 1 - d]?
+                // Knots length = n + d + 1.
+                // Domain is [u_d, u_n]
+                startK = this.knots[d];
+                endK = this.knots[this.knots.length - 1 - d]; // usually u_{n}
+                
+                var u = startK + t * (endK - startK);
+                return evaluateBSpline(u, this.degree, this.points, this.knots, this.weights);
+            }
+        }
+
         // --- Geometry Primitives ---
         if (data.elements) {
             data.elements.forEach(function(el) {
@@ -195,13 +281,18 @@
                 else if (el.type === 'Cylinder') { var s = new THREE.Vector3(el.start[0], el.start[1], el.start[2]); var e = new THREE.Vector3(el.end[0], el.end[1], el.end[2]); var h = s.distanceTo(e); var geom = new THREE.CylinderGeometry(el.radius, el.radius, h, 32); geom.translate(0, h / 2, 0); mesh = new THREE.Mesh(geom, getMat(el, false)); mesh.position.copy(s); mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), e.clone().sub(s).normalize()); }
                 else if (el.type === 'Cuboid') { var w = el.max[0] - el.min[0]; var h = el.max[1] - el.min[1]; var d = el.max[2] - el.min[2]; mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), getMat(el, false)); mesh.position.set(el.min[0] + w / 2, el.min[1] + h / 2, el.min[2] + d / 2); }
                 else if (el.type === 'Line') { var pts = []; for (var i = 0;i < el.points.length;i += 3) pts.push(new THREE.Vector3(el.points[i], el.points[i + 1], el.points[i + 2])); var geom = new THREE.BufferGeometry().setFromPoints(pts); mesh = new THREE.Line(geom, getMat(el, true)); if (el.dashed) mesh.computeLineDistances(); }
+                else if (el.type === 'BSplineCurve') {
+                	var curve = new SymjaBSplineCurve(el.degree, el.points, el.knots, el.weights);
+                	var points = curve.getPoints(50); // resolution
+                	var geom = new THREE.BufferGeometry().setFromPoints(points);
+                	mesh = new THREE.Line(geom, getMat(el, true));
+                	if (el.dashed) mesh.computeLineDistances();
+                }
                 else if (el.type === 'Tube') {
                     // requires BSplinePath definition or Catmull
                     var path;
                     if (el.pathType === 'BSpline') {
-                        // Define BSplinePath class if not exists or use generic Curve
-                        // Simplified for this context:
-                        // path = new BSplinePath(el.degree, el.points, el.knots, el.weights); 
+                        path = new SymjaBSplineCurve(el.degree, el.points, el.knots, el.weights); 
                     } else {
                         var pts = [];
                         for (var i = 0;i < el.points.length;i += 3) pts.push(new THREE.Vector3(el.points[i], el.points[i + 1], el.points[i + 2]));
@@ -261,7 +352,7 @@
 
             // Axes with Ticks
             if (data.axes) {
-                drawAxes(visualBox, dataBox, data.axes, scene, data.scaling);
+                drawAxes(visualBox, dataBox, data.axes, scene, data.scaling, data.axesEdge);
             }
 
             // Legend

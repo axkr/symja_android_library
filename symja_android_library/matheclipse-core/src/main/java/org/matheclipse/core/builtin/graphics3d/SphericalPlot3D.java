@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -17,12 +18,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  * (x, y, z) and generates a GraphicsComplex. Supports multiple surfaces with cyclic coloring.
  */
 public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
-
-  // Standard Color Palette for cyclic coloring (Golden, Blue, Green, Red)
-  private static final IAST DEFAULT_COLORS = F.List(F.RGBColor(F.num(1.0), F.num(0.8), F.num(0.4)),
-      F.RGBColor(F.num(0.4), F.num(0.6), F.num(1.0)),
-      F.RGBColor(F.num(0.6), F.num(0.8), F.num(0.4)),
-      F.RGBColor(F.num(1.0), F.num(0.4), F.num(0.4)));
 
   public SphericalPlot3D() {}
 
@@ -71,31 +66,31 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
     try {
       thetaVar = (ISymbol) ((IAST) thetaRange).arg1();
       if (((IAST) thetaRange).size() == 3) {
-        thetaMax = ((IAST) thetaRange).arg2().evalDouble();
+        thetaMax = ((IAST) thetaRange).arg2().evalf();
       } else {
-        thetaMin = ((IAST) thetaRange).arg2().evalDouble();
-        thetaMax = ((IAST) thetaRange).arg3().evalDouble();
+        thetaMin = ((IAST) thetaRange).arg2().evalf();
+        thetaMax = ((IAST) thetaRange).arg3().evalf();
       }
 
       phiVar = (ISymbol) ((IAST) phiRange).arg1();
       if (((IAST) phiRange).size() == 3) {
-        phiMax = ((IAST) phiRange).arg2().evalDouble();
+        phiMax = ((IAST) phiRange).arg2().evalf();
       } else {
-        phiMin = ((IAST) phiRange).arg2().evalDouble();
-        phiMax = ((IAST) phiRange).arg3().evalDouble();
+        phiMin = ((IAST) phiRange).arg2().evalf();
+        phiMax = ((IAST) phiRange).arg3().evalf();
       }
-    } catch (Exception e) {
+    } catch (RuntimeException rex) {
       return F.NIL;
     }
 
     // 5. Generate Graphics3D
     return createSphericalPlot(functions, thetaVar, thetaMin, thetaMax, phiVar, phiMin, phiMax,
-        plotPoints, engine, plotStyle);
+        plotPoints, plotStyle, engine);
   }
 
   private IExpr createSphericalPlot(IAST functions, ISymbol thetaVar, double thetaMin,
       double thetaMax, ISymbol phiVar, double phiMin, double phiMax, int plotPoints,
-      EvalEngine engine, IExpr plotStyle) {
+      IExpr plotStyle, EvalEngine engine) {
 
     IASTAppendable allPoints = F.ListAlloc();
     IASTAppendable primitives = F.ListAlloc();
@@ -106,7 +101,7 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
     double phiStep = (phiMax - phiMin) / (plotPoints - 1);
 
     // Prepare styles list if explicit
-    IAST explicitStyles = null;
+    IAST explicitStyles = F.NIL;
     if (plotStyle.isList()) {
       explicitStyles = (IAST) plotStyle;
     }
@@ -157,19 +152,19 @@ public class SphericalPlot3D extends AbstractFunctionOptionEvaluator {
         }
       }
 
-      // --- Apply Style ---
+
       IExpr currentStyle;
-      if (explicitStyles != null && explicitStyles.size() > 1) {
+      if (explicitStyles.size() > 1) {
         // Explicit list {Red, Green...}
         int styleIdx = (k - 1) % (explicitStyles.size() - 1) + 1;
         currentStyle = explicitStyles.get(styleIdx);
-      } else if (plotStyle.isAST() && !plotStyle.isList() && !plotStyle.equals(S.Automatic)) {
+      } else if (plotStyle.isAST() && !plotStyle.isList()) {
         // Explicit single style
         currentStyle = plotStyle;
       } else {
         // Automatic: Cycle default colors
-        int colorIdx = (k - 1) % (DEFAULT_COLORS.size() - 1) + 1;
-        currentStyle = DEFAULT_COLORS.get(colorIdx);
+        int colorIdx = GraphicsOptions.incColorIndex(k - 1);
+        currentStyle = GraphicsOptions.plotStyleColorExpr(colorIdx, F.NIL);
       }
 
       // Create Group {Style, Polygon[Faces]}

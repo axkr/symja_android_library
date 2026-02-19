@@ -37,6 +37,7 @@ import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.SimplifyUtil;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -3362,6 +3363,11 @@ public class Algebra {
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       return rootToRadicals(ast, engine);
     }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
   }
 
 
@@ -4066,6 +4072,69 @@ public class Algebra {
   }
 
   private static IExpr rootToRadicals(final IAST ast, EvalEngine engine) {
+    if (ast.isAST1() && ast.arg1().isList2()) {
+      IExpr f = ast.arg1().first();
+      IExpr c = ast.arg1().second();
+
+      double targetC = 0.0;
+      try {
+        targetC = c.evalf();
+      } catch (ArgumentTypeException e) {
+        // If the hint 'c' cannot be evaluated to a number, we can't compare distances.
+        return F.NIL;
+      }
+
+      // Represents the root of the general equation f(x) == 0 near x = c
+      ISymbol x = F.Dummy("x");
+      IAST eq = F.Equal(F.unaryAST1(f, x), F.C0);
+
+      try {
+        // Attempt to find exact symbolic solutions using Solve(eq, x)
+        double value = c.evalf();
+        double cmin = value - Config.DEFAULT_CHOP_DELTA;
+        double cmax = value + Config.DEFAULT_CHOP_DELTA;
+        IAST solve = F.Solve(F.List(eq, F.LessEqual(x, F.Rationalize(F.num(cmax))),
+            F.GreaterEqual(x, F.Rationalize(F.num(cmin)))), x);
+        IExpr solveResult = engine.evaluate(
+            solve);
+
+        if (solveResult.isList()) {
+          IAST list = (IAST) solveResult;
+          IExpr bestExactRoot = F.NIL;
+          double minDiff = Double.MAX_VALUE;
+
+          // Iterate through the solutions to find the one closest to 'c'
+          for (int i = 1; i <= list.argSize(); i++) {
+            IExpr ruleList = list.get(i);
+            if (ruleList.isList1() && ruleList.first().isRuleAST()) {
+              IExpr exactVal = ruleList.first().second();
+              try {
+                double val = exactVal.evalf();
+                double diff = Math.abs(val - targetC);
+
+                // Define a reasonable threshold for "near" x = c, e.g., 1e-6
+                if (diff < minDiff && diff < 1e-6) {
+                  minDiff = diff;
+                  bestExactRoot = exactVal;
+                }
+              } catch (ArgumentTypeException e) {
+                // Skip if the exact value cannot be evaluated to a double
+                continue;
+              }
+            }
+          }
+
+          if (bestExactRoot.isPresent()) {
+            return bestExactRoot;
+          }
+        }
+
+      } catch (ArgumentTypeException e) {
+      }
+      // If no exact root is found close enough to 'c', leave the Root object unevaluated
+      return F.NIL;
+    }
+
     if (ast.size() == 3 && ast.arg2().isInteger()) {
       IExpr expr = ast.arg1();
       if (expr.isFunction()) {

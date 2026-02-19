@@ -2013,6 +2013,12 @@ public class ComplexNum implements IComplexNum {
   }
 
   @Override
+  public int uniformFlags() {
+    return UniformFlags.DOUBLECOMPLEX | UniformFlags.COMPLEX | UniformFlags.NUMBER
+        | UniformFlags.ATOM;
+  }
+
+  @Override
   public ComplexNum ulp() {
     return valueOf(fComplex.ulp());
   }

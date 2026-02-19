@@ -2903,7 +2903,9 @@ public class ExpTrigsFunctions {
       if (arg1.isNumericFunction()) {
         // Re(arg1)^2 + Im(arg1)^2
         EvalEngine engine = EvalEngine.get();
-        IExpr temp = engine.evaluate(F.Plus(F.Sqr(F.Re(arg1)), F.Sqr(F.Im(arg1))));
+        IExpr re = arg1.re();
+        IExpr im = arg1.im();
+        IExpr temp = engine.evaluate(F.Plus(F.Sqr(re), F.Sqr(im)));
         if (temp.isOne()) {
           // Log(x + I*y) == (1/2)*Log(x^2 + y^2) + I*Arg(x + I y) with Log(1) == 0
           // ==> I*Arg(x + I y)

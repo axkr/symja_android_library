@@ -58,6 +58,7 @@ import org.matheclipse.core.expression.data.ExprWeightedEdge;
 import org.matheclipse.core.expression.data.GeoPositionExpr;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.expression.data.IExprEdge;
+import org.matheclipse.core.graphics.GraphGraphics;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -124,6 +125,35 @@ public class GraphFunctions {
       S.WeaklyConnectedGraphQ.setEvaluator(new WeaklyConnectedGraphQ());
       S.WeightedAdjacencyMatrix.setEvaluator(new WeightedAdjacencyMatrix());
       S.WeightedGraphQ.setEvaluator(new WeightedGraphQ());
+      S.GraphPlot.setEvaluator(new GraphPlot());
+    }
+  }
+
+  private static class GraphPlot extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.size() > 1) {
+        GraphExpr<?> graph = GraphExpr.newInstance(ast.arg1());
+        if (graph == null) {
+          return F.NIL;
+        }
+        try {
+          GraphGraphics gg = new GraphGraphics(graph);
+          IExpr gExpr = gg.toGraphics();
+
+          if (gExpr.isAST(S.Graphics)) {
+            IASTAppendable gApp = (IASTAppendable) gExpr;
+            // Inject proportional sizing to fix microscopic nodes and thin edges
+            gApp.append(F.Rule(S.BaseStyle, F.List(F.PointSize(0.04), F.Thickness(0.005))));
+            return gApp;
+          }
+          return gExpr;
+        } catch (Exception e) {
+          // Fallthrough
+        }
+      }
+      return F.NIL;
     }
   }
 
@@ -2598,7 +2628,7 @@ public class GraphFunctions {
    * @param arg1
    * @return
    */
-  private static GraphExpr<?> getGraphExpr(IExpr arg1) {
+  public static GraphExpr<?> getGraphExpr(IExpr arg1) {
     if (arg1 instanceof GraphExpr) {
       return (GraphExpr<?>) arg1;
     }
@@ -2718,3 +2748,4 @@ public class GraphFunctions {
 
   private GraphFunctions() {}
 }
+
