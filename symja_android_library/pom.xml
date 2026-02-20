@@ -42,8 +42,8 @@
 		See description of 'skipNexusStagingDeployMojo'
 		in
 		https://github.com/sonatype/nexus-maven-plugins/blob/master/staging/maven-plugin/README.md#plugin-flags-->
-<!--	https://jitpack.io repository doesn't work anymore -->
-<!--		<module>matheclipse-beakerx</module> -->
+		<!--	https://jitpack.io repository doesn't work anymore -->
+		<!--		<module>matheclipse-beakerx</module> -->
 		<module>matheclipse-jar</module>
 		<module>tools</module>
 		<module>matheclipse-md2html</module>
@@ -54,10 +54,10 @@
 		<module>matheclipse-gpl</module>
 		<module>matheclipse-image</module>
 		<module>matheclipse-nlp</module>
-<!-- 		<module>matheclipse-llm</module> -->
+		<!-- 		<module>matheclipse-llm</module> -->
 		<module>matheclipse-api</module>
 		<module>matheclipse-io</module>
- 		<module>matheclipse-discord</module> 
+		<module>matheclipse-discord</module>
 		<module>matheclipse-logging</module>
 		<module>matheclipse-script</module>
 	</modules>
@@ -110,8 +110,8 @@
 	</repositories>
 
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> 
-	    <maven.compiler.release>11</maven.compiler.release>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.release>11</maven.compiler.release>
 		<release.build>false</release.build>
 		<deployment.suppress>false</deployment.suppress> <!-- child modules can
 		set this true to not be published -->
@@ -120,9 +120,9 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-    			<groupId>jakarta.annotation</groupId>
-    			<artifactId>jakarta.annotation-api</artifactId>
-    			<version>3.0.0</version>
+				<groupId>jakarta.annotation</groupId>
+				<artifactId>jakarta.annotation-api</artifactId>
+				<version>3.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
@@ -240,10 +240,10 @@
 				<version>1.1.3</version>
 			</dependency>
 			<dependency>
-			    <groupId>org.hipparchus</groupId>
-			    <artifactId>hipparchus-core</artifactId>
-		        <version>4.0.3</version>
-		    </dependency>
+				<groupId>org.hipparchus</groupId>
+				<artifactId>hipparchus-core</artifactId>
+				<version>4.0.3</version>
+			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-clustering</artifactId>
@@ -303,16 +303,15 @@
 						<groupId>org.knowm.xchart</groupId>
 						<artifactId>xchart</artifactId>
 					</exclusion>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+						<artifactId>slf4j-nop</artifactId>
+					</exclusion>
 				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
-				<version>2.0.17</version>
-			</dependency>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-simple</artifactId>
 				<version>2.0.17</version>
 			</dependency>
 			<dependency>
@@ -347,7 +346,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
-				<artifactId>log4j-slf4j-impl</artifactId>
+				<artifactId>log4j-slf4j2-impl</artifactId>
 				<version>2.25.3</version>
 			</dependency>
 			<dependency>
@@ -397,21 +396,21 @@
 				<version>0.5.15</version>
 			</dependency>
 			<dependency>
-    				<groupId>com.j2html</groupId>
-    				<artifactId>j2html</artifactId>
-     			<version>1.6.0</version>
-       		</dependency>
-			<dependency>
-    				<groupId>com.github.spotbugs</groupId>
-    				<artifactId>spotbugs-annotations</artifactId>
-    				<version>4.9.8</version> 
-    				<scope>provided</scope>  
+				<groupId>com.j2html</groupId>
+				<artifactId>j2html</artifactId>
+				<version>1.6.0</version>
 			</dependency>
 			<dependency>
-    			  <groupId>com.github.weisj</groupId>
-    			  <artifactId>jsvg</artifactId>
-   	 		  <version>2.0.0</version>
-		    </dependency>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-annotations</artifactId>
+				<version>4.9.8</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.github.weisj</groupId>
+				<artifactId>jsvg</artifactId>
+				<version>2.0.0</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
@@ -561,7 +560,8 @@
 					<version>0.10.0</version>
 					<extensions>true</extensions>
 					<configuration>
-						<!-- See also: https://central.sonatype.org/publish/publish-portal-maven/#stagingdirectory -->
+						<!-- See also:
+						https://central.sonatype.org/publish/publish-portal-maven/#stagingdirectory -->
 						<autoPublish>false</autoPublish>
 						<skipPublishing>${deployment.suppress}</skipPublishing>
 						<deploymentName>MathEclipse-${project.version}</deploymentName>
@@ -575,30 +575,37 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration> 
+				<configuration>
 					<release>${maven.compiler.release}</release>
-					    <annotationProcessorPaths>
-                        <!-- Include `log4j-core` providing
-                          1. `org.apache.logging.log4j.core.config.plugins.processor.PluginProcessor` that generates `Log4j2Plugins.dat`
-                          2. `org.apache.logging.log4j.core.config.plugins.processor.GraalVmProcessor` that generates the GraalVM reachability metadata file 
+					<annotationProcessorPaths>
+						<!-- Include `log4j-core` providing
+                          1. `org.apache.logging.log4j.core.config.plugins.processor.PluginProcessor`
+						that generates `Log4j2Plugins.dat`
+                          2. `org.apache.logging.log4j.core.config.plugins.processor.GraalVmProcessor`
+						that generates the GraalVM reachability metadata file 
                          -->
-                             <path>
-                                 <groupId>org.apache.logging.log4j</groupId>
-                                 <artifactId>log4j-core</artifactId>
-                                 <version>2.25.3</version>
-                             </path>
-                        </annotationProcessorPaths>
-                        <annotationProcessors>
-                            <!-- Process sources using `PluginProcessor` to generate `Log4j2Plugins.dat` -->
-                            <processor>org.apache.logging.log4j.core.config.plugins.processor.PluginProcessor</processor>
-                            <!-- Process sources using `GraalVmProcessor` to generate a GraalVM reachability metadata file -->
-                            <processor>org.apache.logging.log4j.core.config.plugins.processor.GraalVmProcessor</processor>
-                        </annotationProcessors>
-                        <compilerArgs>
-                            <!-- Provide the project coordinates to `GraalVmProcessor`: -->
-                            <arg>-Alog4j.graalvm.groupId=${project.groupId}</arg>
-                            <arg>-Alog4j.graalvm.artifactId=${project.artifactId}</arg>
-                        </compilerArgs>
+						<path>
+							<groupId>org.apache.logging.log4j</groupId>
+							<artifactId>log4j-core</artifactId>
+							<version>2.25.3</version>
+						</path>
+					</annotationProcessorPaths>
+					<annotationProcessors>
+						<!-- Process sources using `PluginProcessor` to generate
+						`Log4j2Plugins.dat` -->
+						<processor>
+							org.apache.logging.log4j.core.config.plugins.processor.PluginProcessor</processor>
+						<!-- Process sources using `GraalVmProcessor` to
+						generate a GraalVM reachability metadata file -->
+						<processor>
+							org.apache.logging.log4j.core.config.plugins.processor.GraalVmProcessor</processor>
+					</annotationProcessors>
+					<compilerArgs>
+						<!-- Provide the project coordinates to
+						`GraalVmProcessor`: -->
+						<arg>-Alog4j.graalvm.groupId=${project.groupId}</arg>
+						<arg>-Alog4j.graalvm.artifactId=${project.artifactId}</arg>
+					</compilerArgs>
 					<!--				<compilerArgs>
 						<arg>-XDcompilePolicy=simple</arg>
 					<arg>-Xplugin:ErrorProne</arg>
@@ -628,9 +635,9 @@
 									<version>3.9.0</version>
 								</requireMavenVersion>
 								<banDuplicatePomDependencyVersions />
-						        <requireJavaVersion>
-                                  <version>[17,)</version>
-                                </requireJavaVersion>
+								<requireJavaVersion>
+									<version>[17,)</version>
+								</requireJavaVersion>
 							</rules>
 						</configuration>
 					</execution>
@@ -643,11 +650,12 @@
 							<skip>${release.build}</skip>
 							<rules>
 								<requireSnapshotVersion>
-									<message>Release versions only permitted for releases!</message>
+									<message>Release versions only permitted for
+										releases!</message>
 								</requireSnapshotVersion>
 								<requireJavaVersion>
-                                  <version>[17,)</version>
-                                </requireJavaVersion>
+									<version>[17,)</version>
+								</requireJavaVersion>
 							</rules>
 						</configuration>
 					</execution>

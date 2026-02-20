@@ -30,12 +30,7 @@
 
 		<dependency> <!-- bind slf4j to log4j-2-core -->
 			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-slf4j-impl</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
+			<artifactId>log4j-slf4j2-impl</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
