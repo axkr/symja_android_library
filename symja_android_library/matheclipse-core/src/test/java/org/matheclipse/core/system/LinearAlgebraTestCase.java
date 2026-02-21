@@ -1438,6 +1438,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMatrixRank() {
+    check("MatrixRank({{}})", //
+        "0");
     // github #232
     check("RowReduce({{1,2,3,4,5},{2,4,6,8,11},{3,6,9,12,14},{4,8,12,16,20}})", //
         "{{1,2,3,4,0},\n" //

@@ -130,13 +130,14 @@ public class Graph3D extends AbstractFunctionOptionEvaluator {
     if (vertexCoordinatesOpt.isList()) {
       // Try to parse explicit coordinates
       IAST coordsList = (IAST) vertexCoordinatesOpt;
-      if (coordsList.size() > 0 && coordsList.arg1().isList()) {
+      if (coordsList.argSize() > 0 && coordsList.arg1().isList()) {
         // List of coordinates { {x,y,z}, ... } matching vertex order
         // This is simplistic; robust impl would match length or rules
         int i = 1;
         for (IExpr v : vertices) {
-          if (i >= coordsList.size())
+          if (i >= coordsList.size()) {
             break;
+          }
           IExpr pt = coordsList.get(i++);
           if (pt.isList() && ((IAST) pt).size() >= 4) {
             coordinates.put(v,

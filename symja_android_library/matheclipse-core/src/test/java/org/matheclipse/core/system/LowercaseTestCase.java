@@ -21938,6 +21938,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRest() {
+    check("Rest(SparseArray({{0,1},{0,1}})) // Normal", //
+        "{{0,1}}");
+    check("Rest(SparseArray({0}))", //
+        "{}");
     check("Rest(<|1 :> a, 2 -> b, 3 :> c|>)", //
         "<|2->b,3:>c|>");
     check("Rest(f(x))", //

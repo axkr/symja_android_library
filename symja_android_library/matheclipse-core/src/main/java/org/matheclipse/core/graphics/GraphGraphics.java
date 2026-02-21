@@ -119,11 +119,12 @@ public class GraphGraphics {
 
     if (coordsOpt.isList()) {
       IAST list = (IAST) coordsOpt;
-      if (list.size() > 0 && list.arg1().isList()) {
+      if (list.argSize() > 0 && list.arg1().isList()) {
         int i = 1;
         for (IExpr v : g.vertexSet()) {
-          if (i >= list.size())
+          if (i >= list.size()) {
             break;
+          }
           IExpr pt = list.get(i++);
           if (pt.isList() && ((IAST) pt).size() >= 3) {
             vertexCoords.put(v, new double[] {((INumber) ((IAST) pt).arg1()).reDoubleValue(),
@@ -131,7 +132,7 @@ public class GraphGraphics {
           }
         }
         hasCoords = true;
-      } else if (list.size() > 0 && list.arg1().isRuleAST()) {
+      } else if (list.argSize() > 0 && list.arg1().isRuleAST()) {
         for (IExpr rule : list) {
           if (rule.isRuleAST()) {
             IExpr v = ((IAST) rule).arg1();
@@ -190,8 +191,8 @@ public class GraphGraphics {
   /**
    * Layouts a single component using a Circular embedding.
    */
-  private <E> void layoutComponentCircular(Graph<IExpr, E> g, Set<IExpr> component,
-      double centerX, double centerY, double scale) {
+  private <E> void layoutComponentCircular(Graph<IExpr, E> g, Set<IExpr> component, double centerX,
+      double centerY, double scale) {
     List<IExpr> vertices = new ArrayList<>(component);
     if (vertices.isEmpty()) {
       return;
@@ -476,8 +477,8 @@ public class GraphGraphics {
   /**
    * Layouts a single component using a Star embedding.
    */
-  private <E> void layoutComponentStar(Graph<IExpr, E> g, Set<IExpr> component,
-      double centerX, double centerY, double scale) {
+  private <E> void layoutComponentStar(Graph<IExpr, E> g, Set<IExpr> component, double centerX,
+      double centerY, double scale) {
     List<IExpr> vertices = new ArrayList<>(component);
     if (vertices.isEmpty()) {
       return;
@@ -516,10 +517,10 @@ public class GraphGraphics {
     double angleStep = 2.0 * Math.PI / n;
 
     for (int i = 0; i < n; i++) {
-        double angle = i * angleStep;
-        double x = centerX + radius * Math.cos(angle);
-        double y = centerY + radius * Math.sin(angle);
-        vertexCoords.put(others.get(i), new double[] {x, y});
+      double angle = i * angleStep;
+      double x = centerX + radius * Math.cos(angle);
+      double y = centerY + radius * Math.sin(angle);
+      vertexCoords.put(others.get(i), new double[] {x, y});
     }
   }
 

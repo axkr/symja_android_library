@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin.graphics3d;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -55,17 +56,6 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     }
 
     IExpr plotStyle = options[3];
-    // List<IExpr> styles = new ArrayList<>();
-    // if (plotStyle.isList()) {
-    // IAST styleList = (IAST) plotStyle;
-    // for (int i = 1; i < styleList.size(); i++)
-    // styles.add(styleList.get(i));
-    // } else if (plotStyle != S.Automatic) {
-    // styles.add(plotStyle);
-    // } else {
-    // styles.add(DEFAULT_COLOR);
-    // }
-
     IASTAppendable allPoints = F.ListAlloc();
     IASTAppendable allPrimitives = F.ListAlloc();
 
@@ -75,6 +65,41 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
       explicitStyles = (IAST) plotStyle;
     }
     if (isSurface) {
+      if (!ast.arg2().isList3() || !ast.arg2().first().isSymbol()) {
+        // Range specification `1` is not of the form {x, xmin, xmax}.
+        return Errors.printMessage(S.Plot, "pllim", F.list(ast.arg2()), engine);
+      }
+      if (!ast.arg3().isList3() || !ast.arg3().first().isSymbol()) {
+        // Range specification `1` is not of the form {x, xmin, xmax}.
+        return Errors.printMessage(S.Plot, "pllim", F.list(ast.arg3()), engine);
+      }
+      IAST uRange = (IAST) ast.arg2();
+      IAST vRange = (IAST) ast.arg3();
+      for (int i = 0; i < functions.size(); i++) {
+        // IExpr style = styles.get(i % styles.size());
+        IExpr currentStyle;
+        if (explicitStyles.size() > 1) {
+          // Explicit list {Red, Green...}
+          int styleIdx = (i) % (explicitStyles.size() - 1) + 1;
+          currentStyle = explicitStyles.get(styleIdx);
+        } else if (plotStyle.isAST() && !plotStyle.isList()) {
+          // Explicit single style
+          currentStyle = plotStyle;
+        } else {
+          // Automatic: Cycle default colors
+          int colorIdx = GraphicsOptions.incColorIndex(i);
+          currentStyle = GraphicsOptions.plotStyleColorExpr(colorIdx, F.NIL);
+        }
+        createSurfaceGeometry(functions.get(i), uRange, vRange, plotPoints,
+            engine, allPoints, allPrimitives, currentStyle, currentPointOffset);
+        currentPointOffset += (plotPoints * plotPoints);
+      }
+    } else if (argSize >= 2 && ast.arg2().isList()) {
+      if (!ast.arg2().first().isSymbol()) {
+        // Range specification `1` is not of the form {x, xmin, xmax}.
+        return Errors.printMessage(S.Plot, "pllim", F.list(ast.arg2()), engine);
+      }
+      IAST range = (IAST) ast.arg2();
       for (int i = 0; i < functions.size(); i++) {
         // IExpr style = styles.get(i % styles.size());
         IExpr currentStyle;
@@ -91,27 +116,7 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
           currentStyle = GraphicsOptions.plotStyleColorExpr(colorIdx, F.NIL);
         }
 
-        createSurfaceGeometry(functions.get(i), (IAST) ast.arg2(), (IAST) ast.arg3(), plotPoints,
-            engine, allPoints, allPrimitives, currentStyle, currentPointOffset);
-        currentPointOffset += (plotPoints * plotPoints);
-      }
-    } else if (argSize >= 2 && ast.arg2().isList()) {
-      for (int i = 0; i < functions.size(); i++) {
-        // IExpr style = styles.get(i % styles.size());
-        IExpr currentStyle;
-        if (explicitStyles.size() > 1) {
-          // Explicit list {Red, Green...}
-          int styleIdx = (i) % (explicitStyles.size() - 1) + 1;
-          currentStyle = explicitStyles.get(styleIdx);
-        } else if (plotStyle.isAST() && !plotStyle.isList()) {
-          // Explicit single style
-          currentStyle = plotStyle;
-        } else {
-          // Automatic: Cycle default colors
-          int colorIdx = GraphicsOptions.incColorIndex(i);
-          currentStyle = GraphicsOptions.plotStyleColorExpr(colorIdx, F.NIL);
-        }
-        createCurveGeometry(functions.get(i), (IAST) ast.arg2(), plotPoints, engine, allPoints,
+        createCurveGeometry(functions.get(i), range, plotPoints, engine, allPoints,
             allPrimitives, currentStyle, currentPointOffset);
         currentPointOffset += plotPoints;
       }

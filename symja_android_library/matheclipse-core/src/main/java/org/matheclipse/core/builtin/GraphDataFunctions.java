@@ -225,6 +225,9 @@ public class GraphDataFunctions {
         // Positive machine-sized integer expected at position `2` in `1`
         return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
       }
+      if (order == 1) {
+        return F.Graph(F.List(F.C1), F.List(F.UndirectedEdge(F.C1, F.C1)));
+      }
       if (order > Config.MAX_GRAPH_VERTICES_SIZE) {
         ASTElementLimitExceeded.throwIt(order);
       }
@@ -586,6 +589,9 @@ public class GraphDataFunctions {
       }
       if (order > Config.MAX_GRAPH_VERTICES_SIZE) {
         ASTElementLimitExceeded.throwIt(order);
+      }
+      if (order  == 1) {
+        return GraphExpr.newInstance(F.List(F.C1), F.List());
       }
       IASTAppendable optionsList = GraphGraphics.createOptionsList(options);
 

@@ -1628,6 +1628,9 @@ public class FileFunctions {
         Errors.printMessage(S.Uncompress, e, engine);
       } catch (MathException e) {
         Errors.printMessage(S.Uncompress, e, engine);
+      } catch (IllegalArgumentException iae) {
+        // Compressed data `1` is corrupt and does not represent an expression.
+        Errors.printMessage(S.Uncompress, "corrupt", F.List(ast.arg1()), engine);
       }
       return F.NIL;
     }
@@ -1642,6 +1645,7 @@ public class FileFunctions {
       return ARGS_1_2;
     }
   }
+
 
   private static final class URLDecode extends AbstractFunctionEvaluator {
 
@@ -1666,6 +1670,7 @@ public class FileFunctions {
       return ARGS_1_1;
     }
   }
+
 
   private static final class URLEncode extends AbstractFunctionEvaluator {
 
@@ -1703,6 +1708,8 @@ public class FileFunctions {
       return ARGS_1_1;
     }
   }
+
+
   private static final class URLFetch extends AbstractFunctionEvaluator {
 
     @Override
@@ -1734,6 +1741,7 @@ public class FileFunctions {
       return ARGS_1_1;
     }
   }
+
 
   private static final class Write extends AbstractFunctionEvaluator {
 
@@ -1777,6 +1785,7 @@ public class FileFunctions {
     }
   }
 
+
   private static final class WriteString extends AbstractFunctionEvaluator {
 
     @Override
@@ -1812,6 +1821,7 @@ public class FileFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
+
   }
 
   private static DataInput getDataInput(IExpr readerExpr, EvalEngine engine)

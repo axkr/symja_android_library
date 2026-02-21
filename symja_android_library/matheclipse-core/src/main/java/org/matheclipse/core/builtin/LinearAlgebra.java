@@ -6728,6 +6728,12 @@ public final class LinearAlgebra {
 
   public static IInteger matrixRank(IAST matrix, Predicate<IExpr> zeroChecker) {
     FieldMatrix<IExpr> m = Convert.list2Matrix(matrix);
+    if (m == null) {
+      int[] dim = matrix.isMatrix(false);
+      if (dim != null && dim[0] == 1 && dim[1] == 0) {
+        return F.C0;
+      }
+    }
     return matrixRank(m, zeroChecker);
   }
 

@@ -32,8 +32,8 @@ public class ComplexPlot extends ListPlot {
     }
 
     IExpr f = ast.arg1();
-    IExpr rangeSpec = ast.arg2();
 
+    IExpr rangeSpec = ast.arg2();
     ISymbol zVar = null;
     IExpr zMin = null;
     IExpr zMax = null;
@@ -41,14 +41,14 @@ public class ComplexPlot extends ListPlot {
     // Parse Range {z, n} or {z, min, max}
     if (rangeSpec.isList()) {
       IAST rangeList = (IAST) rangeSpec;
-      if (rangeList.size() >= 2 && rangeList.arg1().isSymbol()) {
+      if (rangeList.argSize() >= 2 && rangeList.arg1().isSymbol()) {
         zVar = (ISymbol) rangeList.arg1();
-        if (rangeList.size() == 2) {
+        if (rangeList.argSize() == 2) {
           // {z, n} -> -n-nI to n+nI
           IExpr n = rangeList.arg2();
           zMin = F.Times(F.CN1, F.Plus(n, F.Times(n, F.CI))); // -n - n I
           zMax = F.Plus(n, F.Times(n, F.CI)); // n + n I
-        } else if (rangeList.size() >= 3) {
+        } else if (rangeList.argSize() >= 3) {
           // {z, min, max}
           zMin = rangeList.arg2();
           zMax = rangeList.arg3();
@@ -57,7 +57,8 @@ public class ComplexPlot extends ListPlot {
     }
 
     if (zVar == null || zMin == null || zMax == null) {
-      return F.NIL;
+      // Range specification `1` is not of the form {x, xmin, xmax}.
+      return Errors.printMessage(S.ComplexPlot, "pllim", F.list(rangeSpec), engine);
     }
 
     GraphicsOptions graphicsOptions = setGraphicsOptions(options, engine);

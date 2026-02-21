@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin.graphics3d;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -148,6 +149,9 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
 
     IASTAppendable points = F.ListAlloc(rows * cols);
     for (int i = 1; i <= rows; i++) {
+      if (!heightData.get(i).isAST()) {
+        return Errors.printMessage(S.ListPlot3D, "arrayerr", F.List(heightData));
+      }
       IAST row = (IAST) heightData.get(i);
       double y = (rows > 1) ? yMin + (i - 1) * (yMax - yMin) / (rows - 1.0) : yMin;
       for (int j = 1; j <= cols; j++) {

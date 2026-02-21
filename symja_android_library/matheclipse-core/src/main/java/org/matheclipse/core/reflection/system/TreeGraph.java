@@ -51,7 +51,7 @@ public class TreeGraph extends AbstractFunctionEvaluator {
       // Distinguish Case: {v...}, {e...} vs {v...}, {u...}
       // If the second list contains Rules or DirectedEdges, it's an edge list.
       // Otherwise, it's a predecessor list.
-      if (edgesOrPreds.size() > 0) {
+      if (edgesOrPreds.argSize() > 0) {
         IExpr first = edgesOrPreds.arg1();
         if (!first.isRuleAST() && !first.isAST(S.DirectedEdge) && !first.isAST(S.UndirectedEdge)) {
           isPredecessorForm = true;
@@ -87,7 +87,7 @@ public class TreeGraph extends AbstractFunctionEvaluator {
     // Wolfram TreeGraph creates DirectedGraph by default for rules/predecessors.
 
     Set<IExpr> vSet = new HashSet<>();
-    if (vertices != null && vertices.size() > 0) {
+    if (vertices != null && vertices.argSize() > 0) {
       for (IExpr v : vertices) {
         graph.addVertex(v);
         vSet.add(v);
@@ -121,7 +121,7 @@ public class TreeGraph extends AbstractFunctionEvaluator {
     } else {
       // Standard Edge List
       for (IExpr e : edgesOrPreds) {
-        if (e.isRuleAST() || e.isAST(S.DirectedEdge)) {
+        if (e.isRuleAST() || e.isAST(S.DirectedEdge, 3)) {
           IExpr u = ((IAST) e).arg1();
           IExpr v = ((IAST) e).arg2();
           if (!vSet.contains(u)) {
@@ -133,7 +133,7 @@ public class TreeGraph extends AbstractFunctionEvaluator {
             vSet.add(v);
           }
           graph.addEdge(u, v);
-        } else if (e.isAST(S.UndirectedEdge)) {
+        } else if (e.isAST(S.UndirectedEdge, 3)) {
           // If we encounter UndirectedEdge, we might need an UndirectedGraph container.
           // For simplicity here, we stick to Directed or require mixed graph support.
           // Symja GraphExpr often wraps JGraphT which can be strictly directed/undirected.
@@ -149,14 +149,12 @@ public class TreeGraph extends AbstractFunctionEvaluator {
             graph.addVertex(v);
             vSet.add(v);
           }
-          // Treat undirected as bidir in directed graph or fail?
-          // Better: Create Directed Edge for tree structure logic.
           graph.addEdge(u, v);
         }
       }
     }
 
-    // 3. Validate Tree Property
+    // Validate Tree Property
     // A finite graph is a tree if and only if:
     // 1. It is non-empty (usually V >= 1)
     // 2. It is connected (weakly connected for directed)
@@ -167,13 +165,12 @@ public class TreeGraph extends AbstractFunctionEvaluator {
 
     if (vCount == 0) {
       // Empty graph is usually NOT a tree in strict definitions (requires 1 node),
-      // but Wolfram returns empty Graph[].
+      // but return empty Graph[].
       return GraphExpr.newInstance(graph);
     }
 
     if (eCount != vCount - 1) {
-      // Not a tree (Cyclic or Disconnected forest)
-      return Errors.printMessage(S.TreeGraph, "The graph not a tree.");
+      return Errors.printMessage(S.TreeGraph, "The graph is not a tree.");
     }
 
     ConnectivityInspector<IExpr, IExprEdge> inspector = new ConnectivityInspector<>(graph);
@@ -181,16 +178,6 @@ public class TreeGraph extends AbstractFunctionEvaluator {
       return Errors.printMessage(S.TreeGraph, "The graph is not connected.");
     }
 
-    // Check for self-loops (ConnectivityInspector doesn't strictly check self-loops for
-    // "connectedness" but E=V-1 logic usually fails if loop exists unless disconnected, but here we
-    // checked connected+count.
-    // Wait: A graph with 1 vertex and 1 self-loop has V=1, E=1. (fails E=V-1).
-    // A graph with 2 vertices and 1 edge is tree.
-    // So E=V-1 + Connected is sufficient for simple graphs.
-    // But JGraphT allows multiple edges? GraphExpr uses SimpleGraph usually?
-    // Assuming simple graph construction.
-
-    // 4. Return
     return GraphExpr.newInstance(graph, options, "LayeredEmbedding");
   }
 }

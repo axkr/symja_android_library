@@ -111,6 +111,8 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testCycleGraph() {
+    check("CycleGraph(1) // AdjacencyMatrix // Normal", //
+        "{{1}}");
     check("CycleGraph(4) // AdjacencyMatrix // Normal", //
         "{{0,1,0,1},\n" //
             + " {1,0,1,0},\n" + " {0,1,0,1},\n" + " {1,0,1,0}}");
@@ -773,6 +775,8 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testWheelGraph() {
+    check("WheelGraph(1)", //
+        "Graph({1},{})");
     check("WheelGraph(4) // AdjacencyMatrix // Normal", //
         "{{0,1,1,1},\n" //
             + " {1,0,1,1},\n" //

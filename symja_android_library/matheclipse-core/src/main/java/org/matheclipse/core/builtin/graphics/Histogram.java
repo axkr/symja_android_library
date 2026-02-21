@@ -47,7 +47,7 @@ public class Histogram extends ListPlot {
 
     IAST dataList = (IAST) dataArg;
     boolean isMultiDataset = false;
-    if (dataList.size() > 0 && dataList.arg1().isList()) {
+    if (dataList.size() > 1 && dataList.arg1().isList()) {
       isMultiDataset = true;
     }
 

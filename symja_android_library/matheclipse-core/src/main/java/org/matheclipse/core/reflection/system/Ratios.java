@@ -11,22 +11,13 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
-/**
- * Implements the Ratios function.
- * <p>
- * Supported usages: 1. Ratios[list] - Standard ratios of successive elements (Order 1). 2.
- * Ratios[list, n] - n-th repeated ratios (Order n). 3. Ratios[array, {n1, n2, ...}] - Applies n1-th
- * ratios to dim 1, n2-th to dim 2, etc.
- * </p>
- */
 public class Ratios extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     IExpr arg1 = ast.arg1();
 
-    // Ratios requires the first argument to be an AST (List/Array)
-    if (!arg1.isAST()) {
+    if (!arg1.isList()) {
       return F.NIL;
     }
     IAST list = (IAST) arg1;
@@ -137,6 +128,11 @@ public class Ratios extends AbstractFunctionEvaluator {
       for (int i = 1; i < size; i++) {
         IExpr numerator = currentList.get(i + 1);
         IExpr denominator = currentList.get(i);
+        if (denominator.isZero()) {
+          // Infinite expression `1` encountered.
+          return Errors.printMessage(S.Power, "infy", F.list(F.List(F.Divide(F.C1, F.C0))),
+              EvalEngine.get());
+        }
         nextList.append(numerator.times(denominator.inverse()));
       }
       currentExpr = nextList;

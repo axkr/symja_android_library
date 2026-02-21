@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin.graphics;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -55,7 +56,7 @@ public class PieChart extends ListPlot {
           chartLegends = val;
         } else if (key.toString().equals("SectorOrigin")) {
           // Basic parsing for SectorOrigin -> {val, "Clockwise"/"CounterClockwise"}
-          if (val.isList() && ((IAST) val).size() > 0) {
+          if (val.isList() && val.argSize() > 0) {
             try {
               startAngle = ((IAST) val).arg1().evalf();
               // Convert degrees to radians if mostly numbers are used?
@@ -64,7 +65,7 @@ public class PieChart extends ListPlot {
               // If simple number, assume radians to match Disk? Or Degrees to match SectorOrigin
               // default?
               // "SectorOrigin -> {90 Degree, ...}" -> 1.57
-            } catch (Exception e) {
+            } catch (ArgumentTypeException e) {
             }
           }
         }

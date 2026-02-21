@@ -94,6 +94,7 @@ public class Errors {
       "color", "`1` is not a valid color or gray-level specification.", //
       "compat", "`1` and `2` are incompatible units", //
       "condp", "Pattern `1` appears on the right-hand-side of condition `2`.", //
+      "corrupt", "Compressed data `1` is corrupt and does not represent an expression.", //
       "crs",
       "Warning: the column element `1` and row element `2` at positions `3` and `4` are not the same. Using column element.", //
       "cxt", "`1` is not a valid context name.", //
@@ -248,6 +249,7 @@ public class Errors {
       "The argument `1` cannot be converted to a NumericArray of type `2` using method `3`", //
       "ncvi", "NIntegrate failed to converge after `1` refinements in `2` in the region `3`.", //
       "ndimv", "There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.", //
+      "neql", "Lists `1` and `2` have different lengths.", //
       "nliter", "Non-list iterator `1` at position `2` does not evaluate to a real numeric value.", //
       "nlnmt2",
       "The first argument is not a number or a vector, or the second argument is not a norm function that always returns a non-negative real number for any numeric argument.", // ",
@@ -293,6 +295,7 @@ public class Errors {
       "The system cannot be solved with the methods available to `1`.", //
       "nsolc", "There are no points which satisfy the constraints.", //
       "nupr", "`1` is not a univariate polynomial with rational number coefficients.", //
+      "nvarl", "`1` is not list of variables.", //
       "nvld", "The expression `1` is not a valid interval.", //
       "nvm", "The first Norm argument should be a scalar, vector or matrix.", //
       "nwargs",

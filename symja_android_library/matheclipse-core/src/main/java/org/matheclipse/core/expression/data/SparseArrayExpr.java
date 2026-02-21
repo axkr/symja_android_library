@@ -2045,7 +2045,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   /** {@inheritDoc} */
   @Override
   public IExpr subList(int startPosition, int endPosition) {
-    if (fDimension.length > 0 && fDimension[0] > startPosition && fDimension[0] <= endPosition
+    if (fDimension.length > 0 && fDimension[0] >= startPosition && fDimension[0] <= endPosition
         && startPosition < endPosition) {
       SparseArrayExpr result = new SparseArrayExpr();
       result.fDefaultValue = fDefaultValue;
@@ -2066,6 +2066,9 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
         }
       }
       return result;
+    }
+    if (fDimension.length >= 1 && fDimension[0] == 1 && startPosition == endPosition) {
+      return F.CEmptyList;
     }
     return super.subList(startPosition, endPosition);
   }

@@ -30,19 +30,26 @@ public class SymmetricReduction extends AbstractFunctionEvaluator {
 
     IExpr polyExpr = ast.arg1();
     IExpr varsExpr = ast.arg2();
-    IExpr symbolsExpr = (ast.size() == 4) ? ast.arg3() : null;
+    IExpr symbolsExpr = (ast.size() == 4) ? ast.arg3().makeList() : F.NIL;
 
-    if (!varsExpr.isList()) {
-      return null;
+    IAST varsList = varsExpr.makeList();
+    if (varsList.size() == 1 || varsList.exists(expr -> !expr.isVariable())) {
+      // `1` is not list of variables.
+      return Errors.printMessage(S.SymmetricReduction, "nvarl", F.List(varsList));
     }
-    IAST varsList = (IAST) varsExpr;
     int n = varsList.size() - 1;
 
-    IAST symPolySymbols = null;
-    if (symbolsExpr != null && symbolsExpr.isList()) {
+    if (!polyExpr.isPolynomial(varsList)) {
+      // `1` is not a polynomial.
+      return Errors.printMessage(S.SymmetricReduction, "poly", F.List(polyExpr));
+    }
+
+    IAST symPolySymbols = F.NIL;
+    if (symbolsExpr.isList()) {
       symPolySymbols = (IAST) symbolsExpr;
       if (symPolySymbols.size() != varsList.size()) {
-        return null;
+        // Lists `1` and `2` have different lengths.
+        return Errors.printMessage(S.SymmetricReduction, "neql", F.List(varsList, symPolySymbols));
       }
     }
 
@@ -106,7 +113,7 @@ public class SymmetricReduction extends AbstractFunctionEvaluator {
               subtrahend = subtrahend.multiply(ek.power(d[k]));
 
               IExpr symSymbol;
-              if (symPolySymbols != null) {
+              if (symPolySymbols.isPresent()) {
                 symSymbol = symPolySymbols.get(k + 1);
               } else {
                 ISymbol symPolyHead = S.SymmetricPolynomial;
@@ -134,7 +141,7 @@ public class SymmetricReduction extends AbstractFunctionEvaluator {
       return F.List(symmetricPart, remainderExpr);
 
     } catch (RuntimeException rex) {
-      return Errors.printMessage(S.Symmetric, rex);
+      return Errors.printMessage(S.SymmetricReduction, rex);
     }
   }
 
@@ -158,14 +165,14 @@ public class SymmetricReduction extends AbstractFunctionEvaluator {
    * @param n
    * @return
    */
-  private static GenPolynomial<BigInteger> elemSymRec(GenPolynomialRing<BigInteger> ring, int startIdx,
-      int depth, int n) {
+  private static GenPolynomial<BigInteger> elemSymRec(GenPolynomialRing<BigInteger> ring,
+      int startIdx, int depth, int n) {
     if (depth == 0) {
       return ring.getONE();
     }
 
     GenPolynomial<BigInteger> sum = ring.getZERO();
-    for (int i = startIdx; i <= n - depth; i++) { 
+    for (int i = startIdx; i <= n - depth; i++) {
       int jasIndex = n - 1 - i;
       GenPolynomial<BigInteger> xi = ring.univariate(jasIndex);
       GenPolynomial<BigInteger> rest = elemSymRec(ring, i + 1, depth - 1, n);

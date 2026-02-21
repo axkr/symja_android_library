@@ -2538,7 +2538,7 @@ public class SVGGraphics {
       return true;
     } else {
       // Standard: {{{x,y},{x,y}}...} implies multi-segment
-      if (((IAST) first).size() > 0 && ((IAST) first).arg1().isList()) {
+      if (((IAST) first).argSize() > 0 && ((IAST) first).arg1().isList()) {
         return true;
       }
     }

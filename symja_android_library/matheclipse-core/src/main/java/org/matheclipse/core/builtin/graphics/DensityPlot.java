@@ -1,6 +1,8 @@
 package org.matheclipse.core.builtin.graphics;
 
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -67,12 +69,20 @@ public class DensityPlot extends ListPlot {
     IExpr xIter = ast.arg2();
     IExpr yIter = ast.arg3();
 
+
+
     // 2. Parse Ranges
     double[] xRange = parseRange(xIter, engine);
-    double[] yRange = parseRange(yIter, engine);
-    if (xRange == null || yRange == null) {
-      return F.NIL;
+    if (xRange == null || !xIter.isList() || !xIter.first().isSymbol()) {
+      // Range specification `1` is not of the form {x, xmin, xmax}.
+      return Errors.printMessage(S.DensityPlot, "pllim", F.list(xIter), engine);
     }
+    double[] yRange = parseRange(yIter, engine);
+    if (yRange == null || !yIter.isList() || !yIter.first().isSymbol()) {
+      // Range specification `1` is not of the form {x, xmin, xmax}.
+      return Errors.printMessage(S.DensityPlot, "pllim", F.list(yIter), engine);
+    }
+
 
     graphicsOptions.setBoundingBox(new double[] {xRange[0], xRange[1], yRange[0], yRange[1]});
 
@@ -196,10 +206,10 @@ public class DensityPlot extends ListPlot {
   private double[] parseRange(IExpr iter, EvalEngine engine) {
     if (iter.isList() && iter.size() >= 3) {
       try {
-        double min = engine.evalDouble(((IAST) iter).arg2());
-        double max = engine.evalDouble(((IAST) iter).arg3());
+        double min = ((IAST) iter).arg2().evalf();
+        double max = ((IAST) iter).arg3().evalf();
         return new double[] {min, max};
-      } catch (Exception e) {
+      } catch (ArgumentTypeException e) {
       }
     }
     return null;

@@ -82,7 +82,7 @@ public class BoxWhiskerChart extends ListPlot {
     IAST dataList = (IAST) dataArg;
 
     boolean isMultiDataset = false;
-    if (dataList.size() > 0 && dataList.arg1().isList()) {
+    if (dataList.argSize() > 0 && dataList.arg1().isList()) {
       isMultiDataset = true;
     }
 

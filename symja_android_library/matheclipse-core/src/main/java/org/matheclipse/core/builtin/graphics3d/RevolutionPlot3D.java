@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin.graphics3d;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -38,16 +39,16 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
     if (!tRange.isList() || ((IAST) tRange).argSize() < 2) {
       return F.NIL;
     }
-    ISymbol tVar = (ISymbol) ((IAST) tRange).arg1();
+    IExpr tVar = ((IAST) tRange).arg1();
     double tMin = 0.0, tMax = 1.0;
     try {
       if (tRange.isList3()) {
-        tMin = ((IAST) tRange).arg2().evalDouble();
-        tMax = ((IAST) tRange).arg3().evalDouble();
+        tMin = ((IAST) tRange).arg2().evalf();
+        tMax = ((IAST) tRange).arg3().evalf();
       } else {
-        tMax = ((IAST) tRange).arg2().evalDouble();
+        tMax = ((IAST) tRange).arg2().evalf();
       }
-    } catch (Exception e) {
+    } catch (ArgumentTypeException e) {
       return F.NIL;
     }
 
@@ -92,10 +93,10 @@ public class RevolutionPlot3D extends AbstractFunctionOptionEvaluator {
               zVal = 0;
             }
           } else {
-            zVal = val.evalDouble();
+            zVal = val.evalf();
             rVal = t; // Default r=t for function plot
           }
-        } catch (Exception e) {
+        } catch (ArgumentTypeException e) {
           // Evaluation failed (e.g. division by zero), handle gracefully
           zVal = 0.0;
           rVal = t;

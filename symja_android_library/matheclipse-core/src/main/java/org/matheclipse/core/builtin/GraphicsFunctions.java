@@ -1248,7 +1248,8 @@ public class GraphicsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      // Text(expr,coords,offset) specifies an offset for the block
+      return ARGS_1_3;
     }
 
     @Override
