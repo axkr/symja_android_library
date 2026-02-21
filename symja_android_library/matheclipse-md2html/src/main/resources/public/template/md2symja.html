@@ -253,7 +253,26 @@
         if (data.elements) {
             data.elements.forEach(function(el) {
                 var mesh;
-                if (el.type === 'Polygon') { var geom = new THREE.BufferGeometry(); geom.setAttribute('position', new THREE.Float32BufferAttribute(el.points, 3)); if (el.vertexColors) geom.setAttribute('color', new THREE.Float32BufferAttribute(el.vertexColors, 3)); geom.computeVertexNormals(); mesh = new THREE.Mesh(geom, getMat(el, false)); }
+                if (el.type === 'Polygon') {
+                    var geom = new THREE.BufferGeometry();
+                    geom.setAttribute('position', new THREE.Float32BufferAttribute(el.points, 3));
+                    if (el.vertexColors) geom.setAttribute('color', new THREE.Float32BufferAttribute(el.vertexColors, 3));
+                    
+                    if (el.indices) {
+                        geom.setIndex(el.indices);
+                    }
+                    
+                    geom.computeVertexNormals();
+                    mesh = new THREE.Mesh(geom, getMat(el, false));
+
+                    if (el.showMesh) {
+                        var edgeGeom = new THREE.EdgesGeometry(geom, 2); 
+                        var edgeMat = new THREE.LineBasicMaterial({
+                            color: 0x111111, linewidth: 1, transparent: true, opacity: 0.35
+                        });
+                        mesh.add(new THREE.LineSegments(edgeGeom, edgeMat));
+                    }
+                }
                 else if (el.type === 'Sphere') { mesh = new THREE.Mesh(new THREE.SphereGeometry(el.radius, 32, 32), getMat(el, false)); mesh.position.set(el.center[0], el.center[1], el.center[2]); }
                 else if (el.type === 'Cone') { var s = new THREE.Vector3(el.start[0], el.start[1], el.start[2]); var e = new THREE.Vector3(el.end[0], el.end[1], el.end[2]); var h = s.distanceTo(e); var geom = new THREE.ConeGeometry(el.radius, h, 32); geom.translate(0, h / 2, 0); mesh = new THREE.Mesh(geom, getMat(el, false)); mesh.position.copy(s); mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), e.clone().sub(s).normalize()); }
                 else if (el.type === 'Cylinder') { var s = new THREE.Vector3(el.start[0], el.start[1], el.start[2]); var e = new THREE.Vector3(el.end[0], el.end[1], el.end[2]); var h = s.distanceTo(e); var geom = new THREE.CylinderGeometry(el.radius, el.radius, h, 32); geom.translate(0, h / 2, 0); mesh = new THREE.Mesh(geom, getMat(el, false)); mesh.position.copy(s); mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), e.clone().sub(s).normalize()); }

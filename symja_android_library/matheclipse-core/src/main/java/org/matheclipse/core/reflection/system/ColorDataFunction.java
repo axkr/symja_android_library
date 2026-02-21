@@ -19,7 +19,7 @@ public class ColorDataFunction extends AbstractFunctionEvaluator {
 
   public ColorDataFunction() {}
 
-  private IExpr applyGradient(ColorDataGradients gradientDetails, IExpr param) {
+  public static IAST applyGradient(ColorDataGradients gradientDetails, IExpr param) {
     IExpr result = gradientDetails.apply(param);
     if (result.isAST() && result.size() == 5) {
       return F.RGBColor(F.Divide(result.getAt(1), F.num(255)),
@@ -27,6 +27,34 @@ public class ColorDataFunction extends AbstractFunctionEvaluator {
           F.Divide(result.getAt(4), F.num(255)));
     }
     return F.NIL;
+  }
+
+  public static int applyGradientToRGB(ColorDataGradients gradientDetails, IExpr param) {
+    IExpr result = gradientDetails.apply(param);
+
+    // Check if result is an AST with 4 arguments (Head + 4 args = size 5)
+    if (result.isAST() && result.size() == 5) {
+      IExpr rgbColor = EvalEngine.get()
+          .evaluate(F.RGBColor(F.Divide(result.getAt(1), F.num(255)),
+              F.Divide(result.getAt(2), F.num(255)), F.Divide(result.getAt(3), F.num(255)),
+              F.Divide(result.getAt(4), F.num(255))));
+
+      if (rgbColor.isAST(S.RGBColor)) {
+        IAST ast = (IAST) rgbColor;
+
+        if (ast.argSize() >= 3) {
+          // Extract the normalized color components using evalf()
+          float r = (float) ast.arg1().evalf();
+          float g = (float) ast.arg2().evalf();
+          float b = (float) ast.arg3().evalf();
+          float a = ast.argSize() >= 4 ? (float) ast.arg4().evalf() : 1.0f;
+
+          RGBColor color = new RGBColor(r, g, b, a);
+          return color.getRGB();
+        }
+      }
+    }
+    return Integer.MIN_VALUE;
   }
 
   @Override
@@ -93,7 +121,7 @@ public class ColorDataFunction extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
-  private IExpr evaluateGradient(String name, IExpr param) {
+  private static IExpr evaluateGradient(String name, IExpr param) {
     try {
       ColorDataGradients gradientDetails = ColorDataGradients.valueOf(name.toUpperCase(Locale.US));
       return applyGradient(gradientDetails, param);
@@ -120,9 +148,8 @@ public class ColorDataFunction extends AbstractFunctionEvaluator {
         IAST res = ColorFormat.toVector(rgb);
 
         if (res.isAST() && res.size() == 5) {
-          return F.RGBColor(F.Divide(res.getAt(1), F.num(255)),
-              F.Divide(res.getAt(2), F.num(255)), F.Divide(res.getAt(3), F.num(255)),
-              F.Divide(res.getAt(4), F.num(255)));
+          return F.RGBColor(F.Divide(res.getAt(1), F.num(255)), F.Divide(res.getAt(2), F.num(255)),
+              F.Divide(res.getAt(3), F.num(255)), F.Divide(res.getAt(4), F.num(255)));
         }
       }
     } catch (Exception e) {

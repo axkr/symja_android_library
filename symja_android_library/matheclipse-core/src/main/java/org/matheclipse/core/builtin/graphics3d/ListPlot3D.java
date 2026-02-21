@@ -8,6 +8,8 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.GraphicsComplexBuilder;
+import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -25,20 +27,17 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
   @Override
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
-    if (argSize < 1) {
-      return F.NIL;
-    }
-
     IExpr data = ast.arg1();
     if (!data.isList()) {
       return F.NIL;
     }
 
     // --- Option Parsing ---
-    // 0: DataRange, 1: PlotRange, 2: Mesh, 3: InterpolationOrder, 4: BoxRatios
-    IExpr dataRangeOpt = options[0];
-    IExpr boxRatiosOpt = options[4];
+    // 0: PlotPoints, 1: PlotRange, 2: DataRange, 3: InterpolationOrder, 4: BoxRatios, 5: Mesh
     IExpr plotRangeOpt = options[1];
+    IExpr dataRangeOpt = options[2];
+    IExpr boxRatiosOpt = options[4];
+    IExpr meshOpt = options[5];
 
     IAST listData = (IAST) data;
     if (listData.isEmpty()) {
@@ -46,27 +45,22 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     }
 
     // --- Data Detection ---
-    // Heuristic:
-    // If explicit DataRange is present -> Treat as Height Map.
-    // Else if inner dimension is 3 (Nx3) -> Treat as Coordinate List (Irregular).
-    // Else -> Treat as Height Map.
-
     boolean treatAsCoordinates = false;
 
     // Check dimensions
     IExpr firstRow = listData.arg1();
     if (firstRow.isList()) {
-      int cols = ((IAST) firstRow).size() - 1;
+      int cols = ((IAST) firstRow).argSize();
       if (cols == 3 && dataRangeOpt.equals(S.Automatic)) {
         treatAsCoordinates = true;
       }
     }
 
     if (treatAsCoordinates) {
-      return processCoordinateList(listData, boxRatiosOpt, plotRangeOpt);
+      return processCoordinateList(listData, boxRatiosOpt, plotRangeOpt, meshOpt);
     } else {
       if (isRectangularArray(listData)) {
-        return processHeightMap(listData, dataRangeOpt, boxRatiosOpt, plotRangeOpt);
+        return processHeightMap(listData, dataRangeOpt, boxRatiosOpt, plotRangeOpt, meshOpt);
       }
     }
 
@@ -76,34 +70,43 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
   /**
    * Processes a list of {x,y,z} coordinates using Delaunay Triangulation.
    */
-  private IExpr processCoordinateList(IAST data, IExpr boxRatiosOpt, IExpr plotRangeOpt) {
-    int n = data.size() - 1;
+  private IExpr processCoordinateList(IAST data, IExpr boxRatiosOpt, IExpr plotRangeOpt,
+      IExpr meshOpt) {
+    int n = data.argSize();
     if (n < 3)
       return F.NIL; // Need at least 3 points for a surface
 
-    // 1. Extract Points
-    List<PointXYZ> points = new ArrayList<>(n);
-    IASTAppendable graphicsPoints = F.ListAlloc(n);
+    GraphicsComplexBuilder builder = new GraphicsComplexBuilder(false, false);
+    applyMeshStyle(builder, meshOpt);
 
+    // 1. Extract Points and Register with Builder
+    List<PointXYZ> points = new ArrayList<>(n);
     for (int i = 1; i <= n; i++) {
       IAST row = (IAST) data.get(i);
-      double x = row.get(1).evalDouble();
-      double y = row.get(2).evalDouble();
-      double z = row.get(3).evalDouble();
-      points.add(new PointXYZ(x, y, z, i)); // 1-based index
-      graphicsPoints.append(row);
+      double x = row.arg1().evalf();
+      double y = row.arg2().evalf();
+      double z = row.arg3().evalf();
+
+      if (!Double.isNaN(x) && !Double.isNaN(y) && !Double.isNaN(z) && !Double.isInfinite(x)
+          && !Double.isInfinite(y) && !Double.isInfinite(z)) {
+        int idx = builder.addVertex(x, y, z, null, null);
+        points.add(new PointXYZ(x, y, z, idx));
+      }
     }
 
     // 2. Triangulate (Projected to XY plane)
     List<Triangle> triangles = Triangulator.delaunay(points);
 
-    // 3. Construct GraphicsComplex
-    IASTAppendable polygons = F.ListAlloc(triangles.size());
+    // 3. Construct Polygons
     for (Triangle t : triangles) {
-      polygons.append(F.Polygon(F.List(F.ZZ(t.p1), F.ZZ(t.p2), F.ZZ(t.p3))));
+      builder.addPolygon(t.p1, t.p2, t.p3); // Triangulator retains builder indices
     }
 
-    IExpr graphicsComplex = F.GraphicsComplex(graphicsPoints, polygons);
+    IExpr graphicsComplex = builder.build();
+    if (graphicsComplex.equals(F.NIL)) {
+      return F.NIL;
+    }
+
     IASTAppendable result = F.ast(S.Graphics3D);
     result.append(graphicsComplex);
 
@@ -121,17 +124,17 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
    * Processes a rectangular array of z-values {{z11, z12...}, ...}
    */
   private IExpr processHeightMap(IAST heightData, IExpr dataRangeOpt, IExpr boxRatiosOpt,
-      IExpr plotRangeOpt) {
-    int rows = heightData.size() - 1;
+      IExpr plotRangeOpt, IExpr meshOpt) {
+    int rows = heightData.argSize();
     IExpr firstRow = heightData.arg1();
-    int cols = ((IAST) firstRow).size() - 1;
+    int cols = ((IAST) firstRow).argSize();
 
     double xMin = 1.0;
     double xMax = cols;
     double yMin = 1.0;
     double yMax = rows;
 
-    if (dataRangeOpt.isList() && ((IAST) dataRangeOpt).size() == 3) {
+    if (dataRangeOpt.isList() && ((IAST) dataRangeOpt).argSize() == 2) {
       IAST range = (IAST) dataRangeOpt;
       if (range.arg1().isList() && range.arg2().isList()) {
         try {
@@ -142,36 +145,53 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
           yMin = yRange.arg1().evalf();
           yMax = yRange.arg2().evalf();
         } catch (RuntimeException rex) {
-          // ignore
+          // ignore parsing error, stick to defaults
         }
       }
     }
 
-    IASTAppendable points = F.ListAlloc(rows * cols);
+    GraphicsComplexBuilder builder = new GraphicsComplexBuilder(false, false);
+    applyMeshStyle(builder, meshOpt);
+
+    int[][] indices = new int[rows][cols];
+
     for (int i = 1; i <= rows; i++) {
       if (!heightData.get(i).isAST()) {
         return Errors.printMessage(S.ListPlot3D, "arrayerr", F.List(heightData));
       }
       IAST row = (IAST) heightData.get(i);
       double y = (rows > 1) ? yMin + (i - 1) * (yMax - yMin) / (rows - 1.0) : yMin;
+
       for (int j = 1; j <= cols; j++) {
+        indices[i - 1][j - 1] = -1;
         double x = (cols > 1) ? xMin + (j - 1) * (xMax - xMin) / (cols - 1.0) : xMin;
-        points.append(F.List(F.num(x), F.num(y), row.get(j)));
+        double z = row.get(j).evalf();
+
+        if (!Double.isNaN(z) && !Double.isInfinite(z)) {
+          indices[i - 1][j - 1] = builder.addVertex(x, y, z, null, null);
+        }
       }
     }
 
-    IASTAppendable polygons = F.ListAlloc((rows - 1) * (cols - 1));
     for (int r = 0; r < rows - 1; r++) {
       for (int c = 0; c < cols - 1; c++) {
-        int p1 = (r * cols) + c + 1;
-        int p2 = p1 + 1;
-        int p3 = p2 + cols;
-        int p4 = p1 + cols;
-        polygons.append(F.Polygon(F.List(F.ZZ(p1), F.ZZ(p2), F.ZZ(p3), F.ZZ(p4))));
+        int p1 = indices[r][c];
+        int p2 = indices[r][c + 1];
+        int p3 = indices[r + 1][c + 1];
+        int p4 = indices[r + 1][c];
+
+        // Exclude faces that contain NaN/Infinity vertices
+        if (p1 != -1 && p2 != -1 && p3 != -1 && p4 != -1) {
+          builder.addPolygon(new int[] {p1, p2, p3, p4});
+        }
       }
     }
 
-    IExpr graphicsComplex = F.GraphicsComplex(points, polygons);
+    IExpr graphicsComplex = builder.build();
+    if (graphicsComplex.equals(F.NIL)) {
+      return F.NIL;
+    }
+
     IASTAppendable result = F.ast(S.Graphics3D);
     result.append(graphicsComplex);
     result.append(F.Rule(S.PlotRange, plotRangeOpt));
@@ -183,19 +203,32 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     return result;
   }
 
+  private void applyMeshStyle(GraphicsComplexBuilder builder, IExpr meshOpt) {
+    IExpr defaultColor = GraphicsOptions.plotStyleColorExpr(0, F.NIL);
+
+    if (meshOpt.isFalse() || meshOpt.equals(S.None)) {
+      IASTAppendable edgeForm = F.ast(S.EdgeForm);
+      edgeForm.append(S.None);
+      builder.setStyle(defaultColor, edgeForm);
+    } else {
+      builder.setStyle(defaultColor);
+    }
+  }
+
   private boolean isRectangularArray(IAST list) {
     if (list.isEmpty())
       return false;
     IExpr first = list.arg1();
     if (!first.isList())
       return false;
+
     IAST firstRow = (IAST) first;
     if (firstRow.isEmpty())
       return false;
-    // Note: Ambiguity between 3-element Z-row and XYZ-point is handled by caller logic
-    int expectedCols = firstRow.size();
-    for (int i = 2; i < list.size(); i++) {
-      if (list.get(i).isList() && ((IAST) list.get(i)).size() != expectedCols) {
+
+    int expectedCols = firstRow.argSize();
+    for (int i = 2; i <= list.argSize(); i++) {
+      if (list.get(i).isList() && ((IAST) list.get(i)).argSize() != expectedCols) {
         return false;
       }
     }
@@ -206,7 +239,7 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
 
   private static class PointXYZ {
     double x, y, z;
-    int originalIndex;
+    int originalIndex; // Mapped to GraphicsComplexBuilder index
 
     PointXYZ(double x, double y, double z, int id) {
       this.x = x;
@@ -217,7 +250,7 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
   }
 
   private static class Triangle {
-    int p1, p2, p3; // Indices into vertex list
+    int p1, p2, p3;
     PointXYZ a, b, c;
 
     Triangle(PointXYZ a, PointXYZ b, PointXYZ c) {
@@ -239,8 +272,9 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
       List<Triangle> triangulation = new ArrayList<>();
 
       // 1. Super Triangle (must encompass all points)
-      double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, maxX = -Double.MAX_VALUE,
-          maxY = -Double.MAX_VALUE;
+      double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
+      double maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+
       for (PointXYZ p : points) {
         if (p.x < minX)
           minX = p.x;
@@ -251,9 +285,13 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
         if (p.y > maxY)
           maxY = p.y;
       }
+
       double dx = maxX - minX;
       double dy = maxY - minY;
       double dMax = Math.max(dx, dy);
+      if (dMax == 0.0)
+        dMax = 1.0;
+
       double midX = (minX + maxX) / 2.0;
       double midY = (minY + maxY) / 2.0;
 
@@ -267,8 +305,9 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
       for (PointXYZ p : points) {
         List<Triangle> badTriangles = new ArrayList<>();
         for (Triangle t : triangulation) {
-          if (isPointInCircumcircle(p, t))
+          if (isPointInCircumcircle(p, t)) {
             badTriangles.add(t);
+          }
         }
 
         List<Edge> polygon = new ArrayList<>();
@@ -327,7 +366,6 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     }
   }
 
-
   @Override
   public int[] expectedArgSize(IAST ast) {
     return ARGS_1_2;
@@ -341,7 +379,8 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
   @Override
   public void setUp(final ISymbol newSymbol) {
     setOptions(newSymbol,
-        new IBuiltInSymbol[] {S.DataRange, S.PlotRange, S.Mesh, S.InterpolationOrder, S.BoxRatios},
-        new IExpr[] {S.Automatic, S.Automatic, S.Automatic, S.None, S.Automatic});
+        new IBuiltInSymbol[] {S.PlotPoints, S.PlotRange, S.DataRange, S.InterpolationOrder,
+            S.BoxRatios, S.Mesh},
+        new IExpr[] {S.Automatic, S.Automatic, S.Automatic, S.None, S.Automatic, S.True});
   }
 }

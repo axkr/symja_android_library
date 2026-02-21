@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.ColorDataFunction;
 import org.matheclipse.core.tensor.img.ColorDataGradients;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -194,7 +195,6 @@ public class WebGLGraphics3D {
 
       parseAxesOption(rootNode, graphics);
 
-      // Lights
       List<LightConfig> lights = new ArrayList<>();
       if (graphics.isAST(S.Graphics3D) || graphics.isAST(S.SurfaceGraphics))
         parseLightingOption(graphics, lights);
@@ -213,6 +213,7 @@ public class WebGLGraphics3D {
           lNode.set("target", vecToJsonArray(l.target));
         lNode.put("angle", l.angle);
         lNode.put("distance", l.distance);
+        lNode.put("decay", l.decay);
       }
 
       // Process Geometry
@@ -307,7 +308,7 @@ public class WebGLGraphics3D {
       IExpr arg = graphics.get(i);
       if (arg.isRuleAST()) {
         IAST rule = (IAST) arg;
-        if (rule.arg1().equals(S.Lighting)) {
+        if (rule.arg1() == S.Lighting) {
           processLightingValue(rule.arg2(), lights);
         }
       }
@@ -381,6 +382,12 @@ public class WebGLGraphics3D {
         l.angle = getDouble(spec.arg4(), Math.PI / 4);
       else
         l.angle = Math.PI / 3;
+
+      if (spec.argSize() >= 5)
+        l.distance = getDouble(spec.arg5(), 0.0);
+      if (spec.argSize() >= 6)
+        l.decay = getDouble(spec.get(6), 2.0);
+
       lights.add(l);
     }
   }
@@ -470,6 +477,19 @@ public class WebGLGraphics3D {
         case ID.List:
         case ID.GraphicsGroup:
           processExpr(array, ast, state, context, scaling);
+          break;
+        case ID.EdgeForm:
+          if (ast.argSize() >= 1) {
+            if (ast.arg1().isNone() || ast.arg1().isFalse()) {
+              state.showMesh = false;
+            } else {
+              state.showMesh = true;
+              // Note: If adding edge coloring to symja_webgl.js,
+              // parse state.meshColor = parseColor(ast.arg1()) here.
+            }
+          } else {
+            state.showMesh = true;
+          }
           break;
         case ID.RGBColor:
         case ID.Hue:
@@ -720,8 +740,9 @@ public class WebGLGraphics3D {
     for (int i = 2; i < ast.size(); i++) {
       if (ast.get(i).isRuleAST()) {
         IAST rule = (IAST) ast.get(i);
-        if (rule.arg1().equals(optionName))
+        if (rule.arg1() == optionName) {
           return rule.arg2();
+        }
       }
     }
     return null;
@@ -731,7 +752,6 @@ public class WebGLGraphics3D {
       ComplexContext context, IAST localVertexColors, IAST localVertexNormals,
       ScalingContext scaling) {
     ObjectNode node = createBaseNode(array, type, state);
-    ArrayNode pointsJson = node.putArray("points");
     List<IExpr> allVertices = new ArrayList<>();
     List<Color> allColors = new ArrayList<>();
     List<IExpr> allNormals = new ArrayList<>();
@@ -761,35 +781,63 @@ public class WebGLGraphics3D {
         }
       }
     }
-    for (IExpr v : allVertices) {
-      if (v.isList()) {
-        IAST vList = (IAST) v;
-        if (vList.size() >= 4) {
-          double x = getDouble(vList.get(1));
-          double y = getDouble(vList.get(2));
-          double z = getDouble(vList.get(3));
-          pointsJson.add(scaling.x.scale(x));
-          pointsJson.add(scaling.y.scale(y));
-          pointsJson.add(scaling.z.scale(z));
+
+    if (type.equals("Polygon")) {
+      ArrayNode pointsJson = node.putArray("points");
+      ArrayNode indicesJson = node.putArray("indices");
+      java.util.Map<String, Integer> vMap = new java.util.HashMap<>();
+      int vIndex = 0;
+
+      ArrayNode colorsJson = null;
+      if (!allColors.isEmpty() && allColors.size() == allVertices.size()) {
+        node.put("color", 0xFFFFFF);
+        colorsJson = node.putArray("vertexColors");
+      }
+
+      // Compress duplicate vertices into an Index map
+      for (int i = 0; i < allVertices.size(); i++) {
+        IExpr v = allVertices.get(i);
+        if (v.isList()) {
+          IAST vList = (IAST) v;
+          if (vList.size() >= 4) {
+            double x = scaling.x.scale(getDouble(vList.get(1)));
+            double y = scaling.y.scale(getDouble(vList.get(2)));
+            double z = scaling.z.scale(getDouble(vList.get(3)));
+
+            // Scaled key to prevent floating point misses
+            long kx = Math.round(x * 1e5);
+            long ky = Math.round(y * 1e5);
+            long kz = Math.round(z * 1e5);
+            String key = kx + "_" + ky + "_" + kz;
+
+            if (!vMap.containsKey(key)) {
+              vMap.put(key, vIndex++);
+              pointsJson.add(x).add(y).add(z);
+              if (colorsJson != null) {
+                Color c = allColors.get(i);
+                colorsJson.add(c.getRed() / 255.0).add(c.getGreen() / 255.0)
+                    .add(c.getBlue() / 255.0);
+              }
+            }
+            indicesJson.add(vMap.get(key));
+          }
         }
       }
-    }
-    if (!allColors.isEmpty() && allColors.size() == allVertices.size()) {
-      node.put("color", 0xFFFFFF);
-      ArrayNode colorsJson = node.putArray("vertexColors");
-      for (Color c : allColors) {
-        colorsJson.add(c.getRed() / 255.0).add(c.getGreen() / 255.0).add(c.getBlue() / 255.0);
+    } else {
+      // Lines and Points remain unindexed
+      ArrayNode pointsJson = node.putArray("points");
+      for (IExpr v : allVertices) {
+        if (v.isList() && ((IAST) v).size() >= 4) {
+          pointsJson.add(scaling.x.scale(getDouble(((IAST) v).get(1))));
+          pointsJson.add(scaling.y.scale(getDouble(((IAST) v).get(2))));
+          pointsJson.add(scaling.z.scale(getDouble(((IAST) v).get(3))));
+        }
       }
-    }
-    if (!allNormals.isEmpty() && allNormals.size() == allVertices.size()) {
-      ArrayNode normalsJson = node.putArray("vertexNormals");
-      for (IExpr n : allNormals) {
-        if (n.isList() && ((IAST) n).size() >= 4) {
-          normalsJson.add(getDouble(((IAST) n).get(1)));
-          normalsJson.add(getDouble(((IAST) n).get(2)));
-          normalsJson.add(getDouble(((IAST) n).get(3)));
-        } else {
-          normalsJson.add(0).add(0).add(1);
+      if (!allColors.isEmpty() && allColors.size() == allVertices.size()) {
+        node.put("color", 0xFFFFFF);
+        ArrayNode colorsJson = node.putArray("vertexColors");
+        for (Color c : allColors) {
+          colorsJson.add(c.getRed() / 255.0).add(c.getGreen() / 255.0).add(c.getBlue() / 255.0);
         }
       }
     }
@@ -885,8 +933,13 @@ public class WebGLGraphics3D {
     node.put("type", type);
     node.put("color", state.color.getRGB() & 0x00FFFFFF);
     node.put("opacity", state.opacity);
-    if (state.dashed)
+    if (state.dashed) {
       node.put("dashed", true);
+    }
+
+    // EXPLICITLY output the mesh state so the JS renderer doesn't default to false
+    node.put("showMesh", state.showMesh);
+
     return node;
   }
 
@@ -995,7 +1048,7 @@ public class WebGLGraphics3D {
           // Handle ColorDataFunction["Name", "Gradients", ...][arg]
           if (ast.head().isAST() && ast.head().head().equals(S.ColorDataFunction)) {
             IAST cdf = (IAST) ast.head();
-            if (cdf.size() >= 3) {
+            if (cdf.argSize() >= 2) {
               String name = cdf.arg1().toString();
               if (name.startsWith("\"")) {
                 name = name.substring(1, name.length() - 1);
@@ -1004,9 +1057,21 @@ public class WebGLGraphics3D {
               if (type.contains("Gradients")) {
                 try {
                   ColorDataGradients grad = ColorDataGradients.valueOf(name.toUpperCase(Locale.US));
-                  int rgb = ast.arg1().toIntDefault();
+
+                  // Extract the float/double value (usually between 0.0 and 1.0) using evalf()
+                  double val = ast.arg1().evalf();
+
+                  // Use the gradient enum to map the value to an RGB color.
+                  // Note: Depending on your Symja build, this method might be getRGB(), color(), or
+                  // evaluate().
+                  int rgb = ColorDataFunction.applyGradientToRGB(grad, F.num(val));
+                  if (rgb == Integer.MIN_VALUE) {
+                    // Fallback if the above method is not available or fails
+                    rgb = ast.arg1().toIntDefault();
+                  }
                   return new Color(rgb);
-                } catch (Exception e) {
+                } catch (RuntimeException e) {
+                  // Fallback
                 }
               }
             }
@@ -1020,41 +1085,65 @@ public class WebGLGraphics3D {
   private static void processSurfaceGraphics(ArrayNode array, IAST ast, GraphicsState state,
       ScalingContext scaling) {
     IExpr zArg = ast.arg1();
-    if (!zArg.isList())
+    if (!zArg.isList()) {
       return;
+    }
     IAST zRows = (IAST) zArg;
     ObjectNode node = createBaseNode(array, "GridSurface", state);
     ArrayNode zValues = node.putArray("zData");
     ArrayNode cValues = node.putArray("colorData");
-    int rows = zRows.size() - 1;
+
+    int rows = zRows.argSize();
     int cols = 0;
-    for (int i = 1; i < zRows.size(); i++) {
+
+    // Parse the Z elevation matrix
+    for (int i = 1; i <= zRows.argSize(); i++) {
       IExpr row = zRows.get(i);
       if (row.isList()) {
         IAST rowList = (IAST) row;
-        if (cols == 0)
-          cols = rowList.size() - 1;
-        for (int j = 1; j < rowList.size(); j++) {
+        if (cols == 0) {
+          cols = rowList.argSize();
+        }
+        for (int j = 1; j <= rowList.argSize(); j++) {
           zValues.add(scaling.z.scale(getDouble(rowList.get(j))));
         }
       }
     }
+
+    // Extract optional shade/color matrix if provided as the second argument
+    if (ast.argSize() >= 2 && ast.arg2().isList()) {
+      IAST colorRows = (IAST) ast.arg2();
+      for (int i = 1; i <= colorRows.argSize(); i++) {
+        IExpr colorRow = colorRows.get(i);
+        if (colorRow.isList()) {
+          IAST cRowList = (IAST) colorRow;
+          for (int j = 1; j <= cRowList.argSize(); j++) {
+            Color c = parseRawColor(cRowList.get(j));
+            cValues.add(c.getRed() / 255.0).add(c.getGreen() / 255.0).add(c.getBlue() / 255.0);
+          }
+        }
+      }
+    }
+
     node.put("rows", rows);
     node.put("cols", cols);
     double xMin = 1, xMax = Math.max(1, cols);
     double yMin = 1, yMax = Math.max(1, rows);
     boolean mesh = true;
-    for (int i = 2; i < ast.size(); i++) {
+
+    // Process options
+    for (int i = 2; i <= ast.argSize(); i++) {
       if (ast.get(i).isRuleAST()) {
         IAST rule = (IAST) ast.get(i);
-        String key = rule.arg1().toString();
-        if ("MeshRange".equals(key)) {
+        IExpr key = rule.arg1();
+        if (S.MeshRange == key) {
           // ... range parsing ...
-        } else if ("Mesh".equals(key)) {
+        } else if (S.Mesh == key) {
           mesh = rule.arg2().isTrue();
         }
       }
     }
+
     node.put("xMin", scaling.x.scale(xMin)).put("xMax", scaling.x.scale(xMax));
     node.put("yMin", scaling.y.scale(yMin)).put("yMax", scaling.y.scale(yMax));
     node.put("showMesh", mesh);

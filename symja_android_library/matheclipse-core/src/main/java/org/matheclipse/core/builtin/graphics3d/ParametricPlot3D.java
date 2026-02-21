@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.graphics.GraphicsComplexBuilder;
 import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -15,9 +16,10 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
+/**
+ * Implementation of ParametricPlot3D.
+ */
 public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
-
-  // private static final IExpr DEFAULT_COLOR = F.RGBColor(F.num(1.0), F.num(0.8), F.num(0.4));
 
   public ParametricPlot3D() {}
 
@@ -25,17 +27,20 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
   public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
       IAST originalAST) {
 
-    if (argSize < 2)
+    if (argSize < 2) {
       return F.NIL;
+    }
 
     IExpr functionArg = ast.arg1();
-    if (!functionArg.isList())
+    if (!functionArg.isList()) {
       return F.NIL;
+    }
 
     int defaultPoints = 40;
     boolean isSurface = (argSize >= 3 && ast.arg2().isList() && ast.arg3().isList());
-    if (!isSurface)
+    if (!isSurface) {
       defaultPoints = 150;
+    }
 
     int plotPoints = defaultPoints;
     if (options[0].isInteger()) {
@@ -43,168 +48,214 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
     } else if (options[0].isList()) {
       plotPoints = ((IAST) options[0]).arg1().toIntDefault(defaultPoints);
     }
-    if (plotPoints < 5)
+    if (plotPoints < 5) {
       plotPoints = 5;
+    }
 
     List<IExpr> functions = new ArrayList<>();
     IAST listArg = (IAST) functionArg;
-    if (listArg.size() > 1 && listArg.arg1().isList()) {
-      for (int i = 1; i < listArg.size(); i++)
+
+    // Check if it's a list of parametric functions
+    if (listArg.argSize() > 0 && listArg.arg1().isList()) {
+      for (int i = 1; i <= listArg.argSize(); i++) {
         functions.add(listArg.get(i));
+      }
     } else {
       functions.add(listArg);
     }
 
     IExpr plotStyle = options[3];
-    IASTAppendable allPoints = F.ListAlloc();
-    IASTAppendable allPrimitives = F.ListAlloc();
+    IASTAppendable graphicsList = F.ListAlloc();
 
-    int currentPointOffset = 0;
     IAST explicitStyles = F.NIL;
     if (plotStyle.isList()) {
       explicitStyles = (IAST) plotStyle;
     }
+
     if (isSurface) {
       if (!ast.arg2().isList3() || !ast.arg2().first().isSymbol()) {
-        // Range specification `1` is not of the form {x, xmin, xmax}.
         return Errors.printMessage(S.Plot, "pllim", F.list(ast.arg2()), engine);
       }
       if (!ast.arg3().isList3() || !ast.arg3().first().isSymbol()) {
-        // Range specification `1` is not of the form {x, xmin, xmax}.
         return Errors.printMessage(S.Plot, "pllim", F.list(ast.arg3()), engine);
       }
+
       IAST uRange = (IAST) ast.arg2();
       IAST vRange = (IAST) ast.arg3();
+
       for (int i = 0; i < functions.size(); i++) {
-        // IExpr style = styles.get(i % styles.size());
         IExpr currentStyle;
-        if (explicitStyles.size() > 1) {
-          // Explicit list {Red, Green...}
-          int styleIdx = (i) % (explicitStyles.size() - 1) + 1;
+        if (explicitStyles.argSize() >= 1) {
+          int styleIdx = i % explicitStyles.argSize() + 1;
           currentStyle = explicitStyles.get(styleIdx);
         } else if (plotStyle.isAST() && !plotStyle.isList()) {
-          // Explicit single style
           currentStyle = plotStyle;
         } else {
-          // Automatic: Cycle default colors
-          int colorIdx = GraphicsOptions.incColorIndex(i);
-          currentStyle = GraphicsOptions.plotStyleColorExpr(colorIdx, F.NIL);
-        }
-        createSurfaceGeometry(functions.get(i), uRange, vRange, plotPoints,
-            engine, allPoints, allPrimitives, currentStyle, currentPointOffset);
-        currentPointOffset += (plotPoints * plotPoints);
-      }
-    } else if (argSize >= 2 && ast.arg2().isList()) {
-      if (!ast.arg2().first().isSymbol()) {
-        // Range specification `1` is not of the form {x, xmin, xmax}.
-        return Errors.printMessage(S.Plot, "pllim", F.list(ast.arg2()), engine);
-      }
-      IAST range = (IAST) ast.arg2();
-      for (int i = 0; i < functions.size(); i++) {
-        // IExpr style = styles.get(i % styles.size());
-        IExpr currentStyle;
-        if (explicitStyles.size() > 1) {
-          // Explicit list {Red, Green...}
-          int styleIdx = (i) % (explicitStyles.size() - 1) + 1;
-          currentStyle = explicitStyles.get(styleIdx);
-        } else if (plotStyle.isAST() && !plotStyle.isList()) {
-          // Explicit single style
-          currentStyle = plotStyle;
-        } else {
-          // Automatic: Cycle default colors
           int colorIdx = GraphicsOptions.incColorIndex(i);
           currentStyle = GraphicsOptions.plotStyleColorExpr(colorIdx, F.NIL);
         }
 
-        createCurveGeometry(functions.get(i), range, plotPoints, engine, allPoints,
-            allPrimitives, currentStyle, currentPointOffset);
-        currentPointOffset += plotPoints;
+        GraphicsComplexBuilder builder = new GraphicsComplexBuilder(false, false);
+
+        IExpr meshOption = options[5];
+        if (meshOption.isFalse() || meshOption.equals(S.None)) {
+          IASTAppendable edgeForm = F.ast(S.EdgeForm);
+          edgeForm.append(S.None);
+          builder.setStyle(currentStyle, edgeForm);
+        } else {
+          builder.setStyle(currentStyle);
+        }
+
+        createSurfaceGeometry(functions.get(i), uRange, vRange, plotPoints, engine, builder);
+
+        IExpr complex = builder.build();
+        if (!complex.equals(F.NIL)) {
+          graphicsList.append(complex);
+        }
+      }
+    } else if (argSize >= 2 && ast.arg2().isList()) {
+      if (!ast.arg2().first().isSymbol()) {
+        return Errors.printMessage(S.Plot, "pllim", F.list(ast.arg2()), engine);
+      }
+
+      IAST range = (IAST) ast.arg2();
+
+      for (int i = 0; i < functions.size(); i++) {
+        IExpr currentStyle;
+        if (explicitStyles.argSize() >= 1) {
+          int styleIdx = i % explicitStyles.argSize() + 1;
+          currentStyle = explicitStyles.get(styleIdx);
+        } else if (plotStyle.isAST() && !plotStyle.isList()) {
+          currentStyle = plotStyle;
+        } else {
+          int colorIdx = GraphicsOptions.incColorIndex(i);
+          currentStyle = GraphicsOptions.plotStyleColorExpr(colorIdx, F.NIL);
+        }
+
+        GraphicsComplexBuilder builder = new GraphicsComplexBuilder(false, false);
+        builder.setStyle(currentStyle);
+
+        createCurveGeometry(functions.get(i), range, plotPoints, engine, builder);
+
+        IExpr complex = builder.build();
+        if (!complex.equals(F.NIL)) {
+          graphicsList.append(complex);
+        }
       }
     } else {
       return F.NIL;
     }
 
-    IExpr graphicsComplex = F.GraphicsComplex(allPoints, allPrimitives);
+    if (graphicsList.argSize() == 0) {
+      return F.NIL;
+    }
+
     IASTAppendable result = F.ast(S.Graphics3D);
-    result.append(graphicsComplex);
+    result.append(graphicsList);
     result.append(F.Rule(S.PlotRange, S.Automatic));
-    result.append(F.Rule(S.BoxRatios, S.Automatic)); // Changed to Automatic
+    result.append(F.Rule(S.BoxRatios, S.Automatic));
     result.append(F.Rule(S.Axes, S.True));
 
     return result;
   }
 
   private void createCurveGeometry(IExpr func, IAST range, int pointsCount, EvalEngine engine,
-      IASTAppendable allPoints, IASTAppendable allPrimitives, IExpr style, int indexOffset) {
+      GraphicsComplexBuilder builder) {
 
     ISymbol uVar = (ISymbol) range.arg1();
-    double uMin = range.arg2().evalDouble();
-    double uMax = range.arg3().evalDouble();
+    double uMin = range.arg2().evalf();
+    double uMax = range.arg3().evalf();
     double step = (uMax - uMin) / (pointsCount - 1);
+
+    IASTAppendable currentLine = F.ListAlloc();
 
     for (int i = 0; i < pointsCount; i++) {
       double u = uMin + i * step;
-      IExpr subst = F.subst(func, F.Rule(uVar, F.num(u)));
+      IExpr subst = F.subst(func, F.List(F.Rule(uVar, F.num(u))));
       IExpr res = engine.evaluate(subst);
-      if (res.isList() && ((IAST) res).size() >= 4)
-        allPoints.append(res);
-      else
-        allPoints.append(F.List(F.C0, F.C0, F.C0));
+
+      boolean validPoint = false;
+
+      if (res.isList() && ((IAST) res).argSize() >= 3) {
+        try {
+          double x = ((IAST) res).arg1().evalf();
+          double y = ((IAST) res).arg2().evalf();
+          double z = ((IAST) res).arg3().evalf();
+
+          if (!Double.isNaN(x) && !Double.isNaN(y) && !Double.isNaN(z)) {
+            int idx = builder.addVertex(x, y, z, null, null);
+            currentLine.append(F.ZZ(idx));
+            validPoint = true;
+          }
+        } catch (Exception e) {
+          // Ignored. Fall through to break line segment.
+        }
+      }
+
+      // If a point evaluates to NaN (e.g., asymptote), break the line and start a new one
+      if (!validPoint && currentLine.argSize() > 0) {
+        builder.addPrimitive(F.Line(currentLine));
+        currentLine = F.ListAlloc();
+      }
     }
 
-    IASTAppendable lineIndices = F.ListAlloc(pointsCount);
-    for (int i = 1; i <= pointsCount; i++)
-      lineIndices.append(F.ZZ(indexOffset + i));
-
-    IASTAppendable group = F.ListAlloc(2);
-    group.append(style);
-    group.append(F.Line(lineIndices));
-    allPrimitives.append(group);
+    if (currentLine.argSize() > 0) {
+      builder.addPrimitive(F.Line(currentLine));
+    }
   }
 
   private void createSurfaceGeometry(IExpr func, IAST uRange, IAST vRange, int pointsCount,
-      EvalEngine engine, IASTAppendable allPoints, IASTAppendable allPrimitives, IExpr style,
-      int indexOffset) {
+      EvalEngine engine, GraphicsComplexBuilder builder) {
 
     ISymbol uVar = (ISymbol) uRange.arg1();
-    double uMin = uRange.arg2().evalDouble();
-    double uMax = uRange.arg3().evalDouble();
+    double uMin = uRange.arg2().evalf();
+    double uMax = uRange.arg3().evalf();
     ISymbol vVar = (ISymbol) vRange.arg1();
-    double vMin = vRange.arg2().evalDouble();
-    double vMax = vRange.arg3().evalDouble();
+    double vMin = vRange.arg2().evalf();
+    double vMax = vRange.arg3().evalf();
     double uStep = (uMax - uMin) / (pointsCount - 1);
     double vStep = (vMax - vMin) / (pointsCount - 1);
+
+    int[][] indices = new int[pointsCount][pointsCount];
 
     for (int i = 0; i < pointsCount; i++) {
       double u = uMin + i * uStep;
       for (int j = 0; j < pointsCount; j++) {
+        indices[i][j] = -1;
         double v = vMin + j * vStep;
+
         IExpr subst = F.subst(func, F.List(F.Rule(uVar, F.num(u)), F.Rule(vVar, F.num(v))));
         IExpr res = engine.evaluate(subst);
-        if (res.isList() && ((IAST) res).size() >= 4)
-          allPoints.append(res);
-        else
-          allPoints.append(F.List(F.C0, F.C0, F.C0));
+
+        if (res.isList() && ((IAST) res).argSize() >= 3) {
+          try {
+            double x = ((IAST) res).arg1().evalf();
+            double y = ((IAST) res).arg2().evalf();
+            double z = ((IAST) res).arg3().evalf();
+
+            if (!Double.isNaN(x) && !Double.isNaN(y) && !Double.isNaN(z)) {
+              indices[i][j] = builder.addVertex(x, y, z, null, null);
+            }
+          } catch (Exception e) {
+            // Point failed to evaluate; leave index as -1
+          }
+        }
       }
     }
 
-    IASTAppendable polyFaceList = F.ListAlloc((pointsCount - 1) * (pointsCount - 1));
     for (int i = 0; i < pointsCount - 1; i++) {
       for (int j = 0; j < pointsCount - 1; j++) {
-        int p1 = (i * pointsCount) + j + 1;
-        int p2 = p1 + 1;
-        int p3 = p2 + pointsCount;
-        int p4 = p1 + pointsCount;
+        int p1 = indices[i][j];
+        int p2 = indices[i + 1][j];
+        int p3 = indices[i + 1][j + 1];
+        int p4 = indices[i][j + 1];
 
-        polyFaceList.append(F.List(F.ZZ(indexOffset + p1), F.ZZ(indexOffset + p2),
-            F.ZZ(indexOffset + p3), F.ZZ(indexOffset + p4)));
+        // Form polygon only if all 4 corners are valid coordinates
+        if (p1 != -1 && p2 != -1 && p3 != -1 && p4 != -1) {
+          builder.addPolygon(new int[] {p1, p2, p3, p4});
+        }
       }
     }
-
-    IASTAppendable group = F.ListAlloc(2);
-    group.append(style);
-    group.append(F.Polygon(polyFaceList));
-    allPrimitives.append(group);
   }
 
   @Override
@@ -220,8 +271,8 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
   @Override
   public void setUp(final ISymbol newSymbol) {
     setOptions(newSymbol,
-        new IBuiltInSymbol[] {S.PlotPoints, S.PlotRange, S.ColorFunction, S.PlotStyle, S.BoxRatios},
-        new IExpr[] {S.Automatic, S.Automatic, S.Automatic, S.Automatic, S.Automatic});
-
+        new IBuiltInSymbol[] {S.PlotPoints, S.PlotRange, S.ColorFunction, S.PlotStyle, S.BoxRatios,
+            S.Mesh},
+        new IExpr[] {S.Automatic, S.Automatic, S.Automatic, S.Automatic, S.Automatic, S.True});
   }
 }

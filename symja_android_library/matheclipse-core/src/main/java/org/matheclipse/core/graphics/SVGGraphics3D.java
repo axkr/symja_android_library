@@ -1,7 +1,6 @@
 package org.matheclipse.core.graphics;
 
 import static j2html.TagCreator.tag;
-
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,7 +12,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
-
 import j2html.tags.DomContent;
 import j2html.tags.UnescapedText;
 
@@ -94,12 +92,18 @@ public class SVGGraphics3D {
       double x = v.x * val[0] + v.y * val[4] + v.z * val[8] + val[12];
       double y = v.x * val[1] + v.y * val[5] + v.z * val[9] + val[13];
       double z = v.x * val[2] + v.y * val[6] + v.z * val[10] + val[14];
-      // We skip w and perspective division for simple orthographic/isometric like
-      // projection if ViewPoint is far?
-      // Actually Mathematica defaults to a perspective like view.
-      // Let's assume w=1 for now unless we implement full perspective.
-      // For full perspective we need full 4D multiplication.
       return new Vector3(x, y, z);
+    }
+  }
+
+  private static class ViewContext {
+    Matrix4 viewMatrix;
+    Vector3 dataScale;
+
+    Vector3 project(Vector3 pRaw) {
+      Vector3 scaled =
+          new Vector3(pRaw.x * dataScale.x, pRaw.y * dataScale.y, pRaw.z * dataScale.z);
+      return viewMatrix.project(scaled);
     }
   }
 
@@ -120,18 +124,13 @@ public class SVGGraphics3D {
   }
 
   private static abstract class Renderable implements Comparable<Renderable> {
-    double zDepth; // Average Z for sorting
+    double zDepth;
 
     abstract DomContent toSVG();
 
     @Override
     public int compareTo(Renderable o) {
-      // Sort so that furthest (smallest Z in typical Opengl, but here we likely want
-      // Painter's algo)
-      // Let's assume standard LookAt, Camera is at +Z relative to LookAt. Points with
-      // higher Z are closer?
-      // In LookAt matrix: +Z is out of screen (Right Handed).
-      // So larger Z is closer. We want to draw smaller Z first.
+      // Painter's algorithm: sort from furthest (smallest/most negative Z) to closest
       return Double.compare(this.zDepth, o.zDepth);
     }
   }
@@ -157,8 +156,7 @@ public class SVGGraphics3D {
       for (Vector3 p : points) {
         sb.append(String.format(Locale.US, "%.2f,%.2f ", p.x, p.y));
       }
-      return tag("polyline").attr("points", sb.toString())
-          .attr("fill", "none")
+      return tag("polyline").attr("points", sb.toString()).attr("fill", "none")
           .attr("stroke", colorToHex(state.color))
           .attr("stroke-width", Math.max(1, state.thickness))
           .condAttr(state.opacity < 1.0, "stroke-opacity", String.valueOf(state.opacity))
@@ -187,10 +185,9 @@ public class SVGGraphics3D {
       for (Vector3 p : points) {
         sb.append(String.format(Locale.US, "%.2f,%.2f ", p.x, p.y));
       }
-      return tag("polygon").attr("points", sb.toString())
-          .attr("fill", colorToHex(state.color))
+      return tag("polygon").attr("points", sb.toString()).attr("fill", colorToHex(state.color))
           .condAttr(state.opacity < 1.0, "fill-opacity", String.valueOf(state.opacity))
-          .attr("stroke", "none");
+          .attr("stroke", colorToHex(state.color.darker())).attr("stroke-width", "0.5");
     }
   }
 
@@ -206,13 +203,12 @@ public class SVGGraphics3D {
 
     @Override
     DomContent toSVG() {
-      double r = Math.max(2.0, state.thickness * 2); // heuristic radius
-      return tag("circle")
-          .attr("cx", String.format(Locale.US, "%.2f", point.x))
+      double r = Math.max(2.0, state.thickness * 2);
+      return tag("circle").attr("cx", String.format(Locale.US, "%.2f", point.x))
           .attr("cy", String.format(Locale.US, "%.2f", point.y))
-          .attr("r", String.format(Locale.US, "%.2f", r))
-          .attr("fill", colorToHex(state.color))
-          .attr("fill-opacity", String.format(Locale.US, "%.2f", state.opacity));
+          .attr("r", String.format(Locale.US, "%.2f", r)).attr("fill", colorToHex(state.color))
+          .attr("fill-opacity", String.format(Locale.US, "%.2f", state.opacity))
+          .attr("stroke", "none");
     }
   }
 
@@ -220,28 +216,23 @@ public class SVGGraphics3D {
     Vector3 point;
     String text;
     RenderState state;
-    String anchor = "middle"; // start, middle, end
+    String anchor;
 
     RenderableText(Vector3 point, String text, RenderState state, String anchor) {
       this.point = point;
       this.text = text;
       this.state = state;
       this.anchor = anchor;
-      this.zDepth = point.z; // - 100? Text usually should be on top?
-      // Ideally text doesn't depth sort with geometry strictly if it's axis label.
-      // Keep zDepth as point.z.
+      this.zDepth = point.z;
     }
 
     @Override
     DomContent toSVG() {
-      return tag("text")
-          .attr("x", String.format(Locale.US, "%.2f", point.x))
+      return tag("text").attr("x", String.format(Locale.US, "%.2f", point.x))
           .attr("y", String.format(Locale.US, "%.2f", point.y + 4))
           .attr("fill", colorToHex(state.color))
           .attr("fill-opacity", String.format(Locale.US, "%.2f", state.opacity))
-          .attr("font-family", "sans-serif")
-          .attr("font-size", "12")
-          .attr("text-anchor", anchor)
+          .attr("font-family", "sans-serif").attr("font-size", "10").attr("text-anchor", anchor)
           .withText(text);
     }
   }
@@ -265,12 +256,12 @@ public class SVGGraphics3D {
     if (vpOpt != null && vpOpt.isList())
       viewPoint = parseVector((IAST) vpOpt, viewPoint);
 
-    Vector3 viewCenterRel = new Vector3(0.5, 0.5, 0.5); 
+    Vector3 viewCenterRel = new Vector3(0.5, 0.5, 0.5);
     IExpr vcOpt = extractOption(graphics3D, "ViewCenter");
     if (vcOpt != null && vcOpt.isList()) {
-    	viewCenterRel = parseVector((IAST) vcOpt, viewCenterRel);
+      viewCenterRel = parseVector((IAST) vcOpt, viewCenterRel);
     }
-    
+
     IExpr vvOpt = extractOption(graphics3D, "ViewVertical");
     if (vvOpt != null && vvOpt.isList())
       viewVertical = parseVector((IAST) vvOpt, viewVertical);
@@ -281,23 +272,20 @@ public class SVGGraphics3D {
       boxRatios[1] = getDouble(((IAST) brOpt).arg2(), 1.0);
       boxRatios[2] = getDouble(((IAST) brOpt).arg3(), 1.0);
     }
-    
-    // Axes Option
+
     boolean[] showAxes = {false, false, false};
     IExpr axesOpt = extractOption(graphics3D, "Axes");
     if (axesOpt != null) {
-    	if (axesOpt.isTrue()) {
-    		showAxes[0] = showAxes[1] = showAxes[2] = true;
-    	} else if (axesOpt.isList() && ((IAST)axesOpt).size() >= 4) {
-    		// Axes -> {x, y, z}
-    		showAxes[0] = !((IAST)axesOpt).get(1).isFalse();
-    		showAxes[1] = !((IAST)axesOpt).get(2).isFalse();
-    		showAxes[2] = !((IAST)axesOpt).get(3).isFalse();
-    	}
+      if (axesOpt.isTrue()) {
+        showAxes[0] = showAxes[1] = showAxes[2] = true;
+      } else if (axesOpt.isList() && ((IAST) axesOpt).size() >= 4) {
+        showAxes[0] = !((IAST) axesOpt).get(1).isFalse();
+        showAxes[1] = !((IAST) axesOpt).get(2).isFalse();
+        showAxes[2] = !((IAST) axesOpt).get(3).isFalse();
+      }
     }
 
-    // 2. Pre-scan for Bounding Box (needed for normalization)
-    // Assuming GraphicsComplex contains all points.
+    // 2. Scan Bounding Box
     List<Vector3> allPointsRaw = new ArrayList<>();
     collectPoints(graphics3D, allPointsRaw);
 
@@ -317,72 +305,64 @@ public class SVGGraphics3D {
       max = new Vector3(1, 1, 1);
     }
 
-    // Calculate center based on ViewCenter option (relative to bounding box)
-    double bboxX = max.x - min.x; if (bboxX == 0) bboxX = 1.0;
-    double bboxY = max.y - min.y; if (bboxY == 0) bboxY = 1.0;
-    double bboxZ = max.z - min.z; if (bboxZ == 0) bboxZ = 1.0;
-    
-    Vector3 center = new Vector3(
-    		min.x + viewCenterRel.x * bboxX, 
-    		min.y + viewCenterRel.y * bboxY, 
-    		min.z + viewCenterRel.z * bboxZ);
-    
-    double maxDim = Math.max(bboxX, Math.max(bboxY, bboxZ));
+    double bboxX = max.x - min.x;
+    if (bboxX == 0)
+      bboxX = 1.0;
+    double bboxY = max.y - min.y;
+    if (bboxY == 0)
+      bboxY = 1.0;
+    double bboxZ = max.z - min.z;
+    if (bboxZ == 0)
+      bboxZ = 1.0;
 
-    // 3. Compute Transform Matrix
-    // Standardize points to [-1, 1] box based on boxRatios
-    // Or simpler: Transform World -> Camera.
+    double scaleX = boxRatios[0] / bboxX;
+    double scaleY = boxRatios[1] / bboxY;
+    double scaleZ = boxRatios[2] / bboxZ;
 
-    // ViewPoint is usually defined in "View Coordinates" where the bounding box is Scale dependent.
-    // Let's construct a View Matrix that looks at the center of the bounding box.
+    Vector3 scaledMin = new Vector3(min.x * scaleX, min.y * scaleY, min.z * scaleZ);
+    Vector3 scaledMax = new Vector3(max.x * scaleX, max.y * scaleY, max.z * scaleZ);
 
-    // "Camera" Position in World Space:
-    // Mathematica ViewPoint {1.3, -2.4, 2} means relative to the bounding box.
-    // Formula: C = Center + ViewPoint * (Size/2)? Not exactly.
+    double sBboxX = scaledMax.x - scaledMin.x;
+    double sBboxY = scaledMax.y - scaledMin.y;
+    double sBboxZ = scaledMax.z - scaledMin.z;
 
-    // Let's implement a simple LookAt from ViewPoint (scaled) to Center.
-    Vector3 eye = new Vector3(center.x + viewPoint.x * maxDim, // simplistic approximation
-        center.y + viewPoint.y * maxDim, center.z + viewPoint.z * maxDim);
-    // If ViewPoint coordinates are relative to "Bounding Box center is 0,0,0 and radius 1"?
-    // Just using center + viewPoint * maxDim/2 might work for reasonably centered plots.
+    Vector3 center = new Vector3(scaledMin.x + viewCenterRel.x * sBboxX,
+        scaledMin.y + viewCenterRel.y * sBboxY, scaledMin.z + viewCenterRel.z * sBboxZ);
 
-    Matrix4 viewMatrix = Matrix4.lookAt(eye, center, viewVertical);
+    double maxDim = Math.max(sBboxX, Math.max(sBboxY, sBboxZ));
+    Vector3 eye = new Vector3(center.x + viewPoint.x * maxDim, center.y + viewPoint.y * maxDim,
+        center.z + viewPoint.z * maxDim);
+
+    ViewContext vCtx = new ViewContext();
+    vCtx.dataScale = new Vector3(scaleX, scaleY, scaleZ);
+    vCtx.viewMatrix = Matrix4.lookAt(eye, center, viewVertical);
 
     // 4. Collect Renderables
     List<Renderable> renderables = new ArrayList<>();
     RenderState state = new RenderState();
 
-    // Process Graphics Data
-    // Use a recursive function that transforms points on the fly or looks them up from Context
-    processExpr(graphics3D.arg1(), state, null, renderables, viewMatrix, boxRatios);
-    
-    // Add Axes
-    RenderState axesState = new RenderState();
-    axesState.color = Color.BLACK;
-    axesState.thickness = 1.0;
-    
-    // Boxed Option
+    processExpr(graphics3D.arg1(), state, null, renderables, vCtx);
+
     boolean boxed = true;
     IExpr boxedOpt = extractOption(graphics3D, "Boxed");
-    if (boxedOpt != null && boxedOpt.isFalse()) boxed = false;
+    if (boxedOpt != null && boxedOpt.isFalse())
+      boxed = false;
 
     if (boxed) {
-    	createBox(min, max, viewMatrix, renderables);
+      createBox(min, max, vCtx, renderables);
     }
-    
+
     IExpr axesEdgeOpt = extractOption(graphics3D, "AxesEdge");
-    createAxes(min, max, viewMatrix, renderables, showAxes, eye, axesEdgeOpt);
+    createAxes(min, max, vCtx, renderables, showAxes, eye, axesEdgeOpt);
 
     // 5. Sort
     Collections.sort(renderables);
 
     // 6. Generate SVG in Pixel Coordinates
-    int width = 400;
-    int height = 400;
-    // padding in pixels
-    double padding = 20.0;
+    int width = 500;
+    int height = 500;
+    double padding = 25.0;
 
-    // Collect unique points to compute bounds and transform
     java.util.Set<Vector3> uniquePoints =
         Collections.newSetFromMap(new java.util.IdentityHashMap<>());
     for (Renderable r : renderables) {
@@ -415,54 +395,40 @@ public class SVGGraphics3D {
     }
 
     double rangeX = maxX - minX;
-    double rangeY = maxY - minY;
     if (rangeX == 0)
       rangeX = 1.0;
+    double rangeY = maxY - minY;
     if (rangeY == 0)
       rangeY = 1.0;
 
-    // Scale to fit width/height with padding
-    double scaleX = (width - 2 * padding) / rangeX;
-    double scaleY = (height - 2 * padding) / rangeY;
-    double scale = Math.min(scaleX, scaleY);
+    double scale = Math.min((width - 2 * padding) / rangeX, (height - 2 * padding) / rangeY);
 
-    // Center alignment
     double contentWidth = rangeX * scale;
     double contentHeight = rangeY * scale;
     double shiftX = padding + (width - 2 * padding - contentWidth) / 2.0;
     double shiftY = padding + (height - 2 * padding - contentHeight) / 2.0;
 
-    // Transform all points to Pixel Coordinates
-    // Math Y is Up. SVG Y is Down.
-    // y_svg = height - ( (y_math - minY) * scale + shiftY )
     for (Vector3 p : uniquePoints) {
       p.x = (p.x - minX) * scale + shiftX;
       p.y = height - ((p.y - minY) * scale + shiftY);
     }
 
-    final int w = width;
-    final int h = height;
     List<DomContent> content = new ArrayList<>();
     for (Renderable r : renderables) {
       content.add(r.toSVG());
     }
 
-    return tag("svg")
-        .with(content)
-        .attr("xmlns", "http://www.w3.org/2000/svg")
-        .attr("width", w)
-        .attr("height", h)
-        .attr("viewBox", "0 0 " + w + " " + h)
-        .render();
+    return tag("svg").with(content).attr("xmlns", "http://www.w3.org/2000/svg").attr("width", width)
+        .attr("height", height).attr("viewBox", "0 0 " + width + " " + height).render();
   }
 
   private static void processExpr(IExpr expr, RenderState state, ComplexContext context,
-      List<Renderable> renderables, Matrix4 viewMatrix, double[] boxRatios) {
+      List<Renderable> renderables, ViewContext vCtx) {
     if (expr.isList()) {
       RenderState scopedState = state.clone();
       IAST list = (IAST) expr;
       for (int i = 1; i < list.size(); i++) {
-        processExpr(list.get(i), scopedState, context, renderables, viewMatrix, boxRatios);
+        processExpr(list.get(i), scopedState, context, renderables, vCtx);
       }
       return;
     }
@@ -479,126 +445,108 @@ public class SVGGraphics3D {
     IExpr head = ast.head();
 
     if (head.equals(S.GraphicsComplex)) {
-      // GraphicsComplex[points, primitives]
       if (ast.argSize() >= 2) {
         IExpr ptsArgs = ast.arg1();
         if (ptsArgs.isList()) {
           IAST ptsList = (IAST) ptsArgs;
           List<Vector3> tfPts = new ArrayList<>(ptsList.size());
-          tfPts.add(null); // 1-based indexing
+          tfPts.add(null);
           for (int i = 1; i < ptsList.size(); i++) {
             Vector3 p = parseVector((IAST) ptsList.get(i), new Vector3(0, 0, 0));
-            // Apply BoxRatios?
-            // p.x *= boxRatios[0]; ... // BoxRatios are usually applied to the unit cube mapping
-
-            Vector3 proj = viewMatrix.project(p);
-            tfPts.add(proj);
+            tfPts.add(vCtx.project(p));
           }
           ComplexContext newContext = new ComplexContext(tfPts);
-          processExpr(ast.arg2(), state, newContext, renderables, viewMatrix, boxRatios);
+          processExpr(ast.arg2(), state, newContext, renderables, vCtx);
         }
       }
     } else if (head.equals(S.Line)) {
       IExpr arg = ast.arg1();
       if (arg.isList()) {
         IAST list = (IAST) arg;
-        // Check if it is Line[{p1, p2...}] or Line[{{p1, p2}, {p3, p4}}] (multi-line)
         if (list.size() > 1 && list.arg1().isList() && !isVector3(list.arg1())) {
-          // Multi-line
           for (int i = 1; i < list.size(); i++) {
-            createLine(list.get(i), state, context, renderables, viewMatrix);
+            createLine(list.get(i), state, context, renderables, vCtx);
           }
         } else {
-          createLine(list, state, context, renderables, viewMatrix);
+          createLine(list, state, context, renderables, vCtx);
         }
       }
-		} else if (head.equals(S.Polygon)) {
-			IExpr arg = ast.arg1();
-			if (arg.isList()) {
-				IAST list = (IAST) arg;
-				boolean isMulti = false;
-				if (list.size() > 1 && list.arg1().isList()) {
-					IAST firstPolyOrPoint = (IAST) list.arg1();
-					if (firstPolyOrPoint.size() > 1) {
-						IExpr firstElem = firstPolyOrPoint.arg1();
-						if (context != null) {
-							// In GraphicsComplex, List of Integers = Polygon of Indices -> MultiPolygon
-							// List of Reals/Lists = Point -> Single Polygon
-							if (firstElem.isInteger()) {
-								isMulti = true;
-							}
-						} else {
-							// In Raw graphics
-							// List of Lists = Polygon -> MultiPolygon
-							// List of Scalars = Point -> Single Polygon
-							if (firstElem.isList()) {
-								isMulti = true;
-							}
-						}
-					}
-				}
-				
-				if (isMulti) {
-					// Multi-polygon (list of lists of indices or points)
-					for(int i=1; i<list.size(); i++) {
-						createPolygon(list.get(i), state, context, renderables, viewMatrix);
-					}
-				} else {
-					createPolygon(list, state, context, renderables, viewMatrix);
-				}
-			}
-		} else if (head.equals(S.Point)) {
+    } else if (head.equals(S.Polygon)) {
+      IExpr arg = ast.arg1();
+      if (arg.isList()) {
+        IAST list = (IAST) arg;
+        boolean isMulti = false;
+        if (list.size() > 1 && list.arg1().isList()) {
+          IAST firstPolyOrPoint = (IAST) list.arg1();
+          if (firstPolyOrPoint.size() > 1) {
+            IExpr firstElem = firstPolyOrPoint.arg1();
+            if (context != null) {
+              if (firstElem.isInteger())
+                isMulti = true;
+            } else {
+              if (firstElem.isList())
+                isMulti = true;
+            }
+          }
+        }
+        if (isMulti) {
+          for (int i = 1; i < list.size(); i++) {
+            createPolygon(list.get(i), state, context, renderables, vCtx);
+          }
+        } else {
+          createPolygon(list, state, context, renderables, vCtx);
+        }
+      }
+    } else if (head.equals(S.Cuboid)) {
+      createCuboid(ast, state, context, renderables, vCtx);
+    } else if (head.equals(S.Point)) {
       IExpr arg = ast.arg1();
       if (arg.isList()) {
         IAST list = (IAST) arg;
         if (list.size() > 1 && list.arg1().isList() && !isVector3(list.arg1())) {
           for (int i = 1; i < list.size(); i++) {
-            createPoint(list.get(i), state, context, renderables, viewMatrix);
+            createPoint(list.get(i), state, context, renderables, vCtx);
           }
         } else {
-          createPoint(list, state, context, renderables, viewMatrix);
+          createPoint(list, state, context, renderables, vCtx);
         }
       }
     } else if (head.equals(S.GraphicsGroup)) {
-      processExpr(ast.arg1(), state, context, renderables, viewMatrix, boxRatios);
-    }
-    // Handle Styles
-    else if (head.equals(S.RGBColor) || head.equals(S.Hue) || head.equals(S.GrayLevel)
+      processExpr(ast.arg1(), state, context, renderables, vCtx);
+    } else if (head.equals(S.RGBColor) || head.equals(S.Hue) || head.equals(S.GrayLevel)
         || head.equals(S.CMYKColor)) {
       state.color = parseColor(ast);
     } else if (head.equals(S.Opacity)) {
       state.opacity = getDouble(ast.arg1(), 1.0);
     } else if (head.equals(S.Thickness) || head.equals(S.AbsoluteThickness)) {
       state.thickness =
-          getDouble(ast.arg1(), 1.0) * ((head.equals(S.AbsoluteThickness)) ? 1.0 : 500.0); // Rough
-                                                                                           // scaling
+          getDouble(ast.arg1(), 1.0) * ((head.equals(S.AbsoluteThickness)) ? 1.0 : 500.0);
     } else if (head.equals(S.Dashed)) {
       state.dashed = true;
     }
   }
 
-  private static boolean isElementIndex(IExpr expr) {
-    return expr.isInteger();
-  }
-
   private static boolean isVector3(IExpr expr) {
     if (expr.isList()) {
-      return ((IAST) expr).size() >= 4; // {x,y,z} size 4 (head + 3 args)
+      IAST list = (IAST) expr;
+      if (list.size() >= 4) {
+        return !list.get(1).isList();
+      }
     }
     return false;
   }
 
   private static void createLine(IExpr data, RenderState state, ComplexContext context,
-      List<Renderable> renderables, Matrix4 mat) {
-    List<Vector3> pts = resolvePoints(data, context, mat);
+      List<Renderable> renderables, ViewContext vCtx) {
+    List<Vector3> pts = resolvePoints(data, context, vCtx);
     if (!pts.isEmpty()) {
       renderables.add(new RenderableLine(pts, state.clone()));
     }
   }
 
   private static void createPolygon(IExpr data, RenderState state, ComplexContext context,
-      List<Renderable> renderables, Matrix4 mat) {
-    List<Vector3> pts = resolvePoints(data, context, mat);
+      List<Renderable> renderables, ViewContext vCtx) {
+    List<Vector3> pts = resolvePoints(data, context, vCtx);
     if (!pts.isEmpty()) {
       RenderState lightedState = state.clone();
       lightedState.color = calculateLighting(state.color, pts);
@@ -606,27 +554,63 @@ public class SVGGraphics3D {
     }
   }
 
-  private static void createPoint(IExpr data, RenderState state, ComplexContext context,
-      List<Renderable> renderables, Matrix4 mat) {
-    // Point can be single coord or list of coords.
-    // Using resolvePoints handles List of Indices or List of Vectors.
-    // Wait, Point[{1,2}] means Indices 1,2 -> 2 points.
-    // Point[{x,y,z}] means 1 point.
-    // My resolvePoints logic creates a list of points from the input.
+  private static void createCuboid(IAST ast, RenderState state, ComplexContext context,
+      List<Renderable> renderables, ViewContext vCtx) {
+    if (ast.argSize() >= 1) {
+      Vector3 p1 = parseVector((IAST) ast.arg1(), new Vector3(0, 0, 0));
+      Vector3 p2 = (ast.argSize() >= 2)
+          ? parseVector((IAST) ast.arg2(), new Vector3(p1.x + 1, p1.y + 1, p1.z + 1))
+          : new Vector3(p1.x + 1, p1.y + 1, p1.z + 1);
 
+      Vector3[] v = new Vector3[8];
+      v[0] = new Vector3(p1.x, p1.y, p1.z);
+      v[1] = new Vector3(p2.x, p1.y, p1.z);
+      v[2] = new Vector3(p2.x, p2.y, p1.z);
+      v[3] = new Vector3(p1.x, p2.y, p1.z);
+      v[4] = new Vector3(p1.x, p1.y, p2.z);
+      v[5] = new Vector3(p2.x, p1.y, p2.z);
+      v[6] = new Vector3(p2.x, p2.y, p2.z);
+      v[7] = new Vector3(p1.x, p2.y, p2.z);
+
+      Vector3[] proj = new Vector3[8];
+      for (int i = 0; i < 8; i++) {
+        proj[i] = vCtx.project(v[i]);
+      }
+
+      int[][] faces = {{0, 3, 2, 1}, // Bottom
+          {4, 5, 6, 7}, // Top
+          {0, 1, 5, 4}, // Front
+          {1, 2, 6, 5}, // Right
+          {2, 3, 7, 6}, // Back
+          {3, 0, 4, 7} // Left
+      };
+
+      for (int[] face : faces) {
+        List<Vector3> pts = new ArrayList<>();
+        for (int idx : face) {
+          pts.add(proj[idx]);
+        }
+        RenderState faceState = state.clone();
+        faceState.color = calculateLighting(state.color, pts);
+        renderables.add(new RenderablePolygon(pts, faceState));
+      }
+    }
+  }
+
+  private static void createPoint(IExpr data, RenderState state, ComplexContext context,
+      List<Renderable> renderables, ViewContext vCtx) {
     if (data.isList() && isVector3(data)) {
-      // Single point {x,y,z}
       Vector3 p = parseVector((IAST) data, new Vector3(0, 0, 0));
-      renderables.add(new RenderablePoint(mat.project(p), state.clone()));
+      renderables.add(new RenderablePoint(vCtx.project(p), state.clone()));
     } else {
-      List<Vector3> pts = resolvePoints(data, context, mat);
+      List<Vector3> pts = resolvePoints(data, context, vCtx);
       for (Vector3 p : pts) {
         renderables.add(new RenderablePoint(p, state.clone()));
       }
     }
   }
 
-  private static List<Vector3> resolvePoints(IExpr data, ComplexContext context, Matrix4 mat) {
+  private static List<Vector3> resolvePoints(IExpr data, ComplexContext context, ViewContext vCtx) {
     List<Vector3> result = new ArrayList<>();
     if (data.isList()) {
       IAST list = (IAST) data;
@@ -639,7 +623,7 @@ public class SVGGraphics3D {
           }
         } else if (el.isList() && ((IAST) el).size() >= 4) {
           Vector3 p = parseVector((IAST) el, new Vector3(0, 0, 0));
-          result.add(mat.project(p));
+          result.add(vCtx.project(p));
         }
       }
     }
@@ -649,16 +633,47 @@ public class SVGGraphics3D {
   private static void collectPoints(IExpr expr, List<Vector3> points) {
     if (expr.isAST()) {
       IAST ast = (IAST) expr;
-      if (ast.head().equals(S.GraphicsComplex)) {
+      IExpr head = ast.head();
+
+      if (head.equals(S.GraphicsComplex)) {
         if (ast.argSize() >= 1 && ast.arg1().isList()) {
           IAST pts = (IAST) ast.arg1();
           for (int i = 1; i < pts.size(); i++) {
             points.add(parseVector((IAST) pts.get(i), new Vector3(0, 0, 0)));
           }
         }
+      } else if (head.equals(S.Point) || head.equals(S.Line) || head.equals(S.Polygon)) {
+        extractRawPoints(ast.arg1(), points);
+      } else if (head.equals(S.Cuboid)) {
+        if (ast.argSize() >= 1) {
+          Vector3 p1 = parseVector((IAST) ast.arg1(), new Vector3(0, 0, 0));
+          Vector3 p2 = (ast.argSize() >= 2)
+              ? parseVector((IAST) ast.arg2(), new Vector3(p1.x + 1, p1.y + 1, p1.z + 1))
+              : new Vector3(p1.x + 1, p1.y + 1, p1.z + 1);
+          points.add(p1);
+          points.add(p2);
+        }
       } else {
         for (int i = 1; i < ast.size(); i++) {
           collectPoints(ast.get(i), points);
+        }
+      }
+    } else if (expr.isList()) {
+      IAST list = (IAST) expr;
+      for (int i = 1; i < list.size(); i++) {
+        collectPoints(list.get(i), points);
+      }
+    }
+  }
+
+  private static void extractRawPoints(IExpr data, List<Vector3> points) {
+    if (data.isList()) {
+      if (isVector3(data)) {
+        points.add(parseVector((IAST) data, new Vector3(0, 0, 0)));
+      } else {
+        IAST list = (IAST) data;
+        for (int i = 1; i < list.size(); i++) {
+          extractRawPoints(list.get(i), points);
         }
       }
     }
@@ -683,15 +698,11 @@ public class SVGGraphics3D {
   }
 
   private static IExpr extractOption(IAST ast, String optionName) {
-    // iterate from end or check all args for Rule/RuleDelayed
     for (int i = 1; i < ast.size(); i++) {
       IExpr arg = ast.get(i);
       if (arg.isRuleAST() && ((IAST) arg).arg1().toString().equals(optionName)) {
         return ((IAST) arg).arg2();
       } else if (arg.isList()) {
-        // Options can be in a list? Usually options are flat sequence at end.
-        // But sometimes {Opt->Val, ...}
-        // simplify - only check top level or flattening.
         IExpr res = extractOption((IAST) arg, optionName);
         if (res != null)
           return res;
@@ -704,8 +715,17 @@ public class SVGGraphics3D {
     return String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
   }
 
+  private static String formatTick(double val, double range) {
+    if (range < 0.1)
+      return String.format(Locale.US, "%.3f", val);
+    if (range < 1.0)
+      return String.format(Locale.US, "%.2f", val);
+    if (Math.abs(val) >= 100)
+      return String.format(Locale.US, "%.0f", val);
+    return String.format(Locale.US, "%.1f", val);
+  }
+
   private static void processSymbol(IBuiltInSymbol sym, RenderState state) {
-    // Copy from WebGLGraphics3D...
     int id = sym.ordinal();
     if (id == ID.Red)
       state.color = Color.RED;
@@ -717,12 +737,9 @@ public class SVGGraphics3D {
       state.color = Color.BLACK;
     else if (id == ID.White)
       state.color = Color.WHITE;
-    // ... etc
   }
 
   private static Color parseColor(IAST ast) {
-    // Simply reuse code logic or call WebGLGraphics3D logic if visible?
-    // Use local simplified version.
     IBuiltInSymbol head = (IBuiltInSymbol) ast.head();
     if (head.equals(S.RGBColor))
       return new Color(clamp(getDouble(ast.arg1(), 0)), clamp(getDouble(ast.arg2(), 0)),
@@ -730,229 +747,208 @@ public class SVGGraphics3D {
     return Color.BLACK;
   }
 
+  private static void createBox(Vector3 min, Vector3 max, ViewContext vCtx,
+      List<Renderable> renderables) {
+    RenderState boxState = new RenderState();
+    boxState.color = Color.GRAY;
+    boxState.thickness = 0.5;
 
-	private static void createBox(Vector3 min, Vector3 max, Matrix4 mat, List<Renderable> renderables) {
-		RenderState boxState = new RenderState();
-		boxState.color = Color.GRAY;
-		boxState.thickness = 0.5;
-		// 12 edges
-		Vector3[] p = new Vector3[8];
-		for(int i=0; i<8; i++) {
-			double x = ((i & 1) == 0) ? min.x : max.x;
-			double y = ((i & 2) == 0) ? min.y : max.y;
-			double z = ((i & 4) == 0) ? min.z : max.z;
-			p[i] = mat.project(new Vector3(x, y, z));
-		}
-		int[][] edges = {{0,1}, {0,2}, {0,4}, {1,3}, {1,5}, {2,3}, {2,6}, {4,5}, {4,6}, {3,7}, {5,7}, {6,7}};
-		for(int[] e : edges) {
-			List<Vector3> pts = new ArrayList<>();
-			pts.add(p[e[0]]);
-			pts.add(p[e[1]]);
-			renderables.add(new RenderableLine(pts, boxState));
-		}
-	}
+    Vector3[] p = new Vector3[8];
+    for (int i = 0; i < 8; i++) {
+      double x = ((i & 1) == 0) ? min.x : max.x;
+      double y = ((i & 2) == 0) ? min.y : max.y;
+      double z = ((i & 4) == 0) ? min.z : max.z;
+      p[i] = vCtx.project(new Vector3(x, y, z));
+    }
+    int[][] edges = {{0, 1}, {0, 2}, {0, 4}, {1, 3}, {1, 5}, {2, 3}, {2, 6}, {4, 5}, {4, 6}, {3, 7},
+        {5, 7}, {6, 7}};
+    for (int[] e : edges) {
+      List<Vector3> pts = new ArrayList<>();
+      pts.add(p[e[0]]);
+      pts.add(p[e[1]]);
+      renderables.add(new RenderableLine(pts, boxState));
+    }
+  }
 
-	private static void createAxes(Vector3 min, Vector3 max, Matrix4 mat, List<Renderable> renderables,
-			boolean[] showAxes, Vector3 eye, IExpr axesEdgeOpt) {
-		RenderState axesState = new RenderState();
-		axesState.color = Color.BLACK;
-		axesState.thickness = 1.0;
-		RenderState textState = new RenderState();
-		textState.color = Color.BLACK;
-		textState.opacity = 1.0;
+  private static void createAxes(Vector3 min, Vector3 max, ViewContext vCtx,
+      List<Renderable> renderables, boolean[] showAxes, Vector3 eye, IExpr axesEdgeOpt) {
+    RenderState axesState = new RenderState();
+    axesState.color = Color.BLACK;
+    axesState.thickness = 1.0;
+    RenderState textState = new RenderState();
+    textState.color = Color.BLACK;
+    textState.opacity = 1.0;
 
-		// 1. Determine Origin (furthest corner)
-		Vector3[] corners = { new Vector3(min.x, min.y, min.z), new Vector3(max.x, min.y, min.z),
-				new Vector3(min.x, max.y, min.z), new Vector3(min.x, min.y, max.z), new Vector3(max.x, max.y, min.z),
-				new Vector3(max.x, min.y, max.z), new Vector3(min.x, max.y, max.z),
-				new Vector3(max.x, max.y, max.z) };
+    Vector3 scaledMin =
+        new Vector3(min.x * vCtx.dataScale.x, min.y * vCtx.dataScale.y, min.z * vCtx.dataScale.z);
+    Vector3 scaledMax =
+        new Vector3(max.x * vCtx.dataScale.x, max.y * vCtx.dataScale.y, max.z * vCtx.dataScale.z);
 
-		Vector3 defaultOrigin = min;
-		double maxDistSq = -1.0;
+    Vector3[] rawCorners = {new Vector3(min.x, min.y, min.z), new Vector3(max.x, min.y, min.z),
+        new Vector3(min.x, max.y, min.z), new Vector3(min.x, min.y, max.z),
+        new Vector3(max.x, max.y, min.z), new Vector3(max.x, min.y, max.z),
+        new Vector3(min.x, max.y, max.z), new Vector3(max.x, max.y, max.z)};
 
-		for (Vector3 c : corners) {
-			double d2 = (c.x - eye.x) * (c.x - eye.x) + (c.y - eye.y) * (c.y - eye.y) + (c.z - eye.z) * (c.z - eye.z);
-			if (d2 > maxDistSq) {
-				maxDistSq = d2;
-				defaultOrigin = c;
-			}
-		}
-		
-		Vector3 xOrigin = defaultOrigin;
-		Vector3 yOrigin = defaultOrigin;
-		Vector3 zOrigin = defaultOrigin;
+    Vector3 defaultOrigin = min;
+    double maxDistSq = -1.0;
 
-		// Preserve previous fix: Default Y axis at max Z if using automatic/default
-		boolean customY = false;
+    for (Vector3 c : rawCorners) {
+      Vector3 scaledC =
+          new Vector3(c.x * vCtx.dataScale.x, c.y * vCtx.dataScale.y, c.z * vCtx.dataScale.z);
+      double d2 = (scaledC.x - eye.x) * (scaledC.x - eye.x)
+          + (scaledC.y - eye.y) * (scaledC.y - eye.y) + (scaledC.z - eye.z) * (scaledC.z - eye.z);
+      if (d2 > maxDistSq) {
+        maxDistSq = d2;
+        defaultOrigin = c;
+      }
+    }
 
-		if (axesEdgeOpt != null && axesEdgeOpt.isList()) {
-			IAST list = (IAST) axesEdgeOpt;
-			if (list.size() >= 4) {
-				// X Axis Spec {dirY, dirZ}
-				IExpr xSpec = list.get(1);
-				if (xSpec.toString().equals("None")) {
-					showAxes[0] = false;
-				} else if (xSpec.isList()) {
-					xOrigin = resolveOrigin(xOrigin, (IAST) xSpec, 1, 2, min, max);
-				}
+    Vector3 xOrigin = defaultOrigin;
+    Vector3 yOrigin = defaultOrigin;
+    Vector3 zOrigin = defaultOrigin;
 
-				// Y Axis Spec {dirX, dirZ}
-				IExpr ySpec = list.get(2);
-				if (ySpec.toString().equals("None")) {
-					showAxes[1] = false;
-				} else if (ySpec.isList()) {
-					customY = true;
-					yOrigin = resolveOrigin(yOrigin, (IAST) ySpec, 0, 2, min, max);
-				}
+    boolean customY = false;
 
-				// Z Axis Spec {dirX, dirY}
-				IExpr zSpec = list.get(3);
-				if (zSpec.toString().equals("None")) {
-					showAxes[2] = false;
-				} else if (zSpec.isList()) {
-					zOrigin = resolveOrigin(zOrigin, (IAST) zSpec, 0, 1, min, max);
-				}
-			}
-		}
+    if (axesEdgeOpt != null && axesEdgeOpt.isList()) {
+      IAST list = (IAST) axesEdgeOpt;
+      if (list.size() >= 4) {
+        IExpr xSpec = list.get(1);
+        if (xSpec.toString().equals("None")) {
+          showAxes[0] = false;
+        } else if (xSpec.isList()) {
+          xOrigin = resolveOrigin(xOrigin, (IAST) xSpec, 1, 2, min, max);
+        }
 
-		if (!customY) {
-			// Apply the fix requested previously: Y ticks on upper edge (max.z)
-			yOrigin = new Vector3(yOrigin.x, yOrigin.y, max.z);
-		}
+        IExpr ySpec = list.get(2);
+        if (ySpec.toString().equals("None")) {
+          showAxes[1] = false;
+        } else if (ySpec.isList()) {
+          customY = true;
+          yOrigin = resolveOrigin(yOrigin, (IAST) ySpec, 0, 2, min, max);
+        }
 
-		// Helper to generate linear ticks
-		int numTicks = 5;
+        IExpr zSpec = list.get(3);
+        if (zSpec.toString().equals("None")) {
+          showAxes[2] = false;
+        } else if (zSpec.isList()) {
+          zOrigin = resolveOrigin(zOrigin, (IAST) zSpec, 0, 1, min, max);
+        }
+      }
+    }
 
-		if (showAxes[0]) {
-			// X Axis
-			double start = min.x;
-			double end = max.x;
-			Vector3 pStart = mat.project(new Vector3(start, xOrigin.y, xOrigin.z));
-			Vector3 pEnd = mat.project(new Vector3(end, xOrigin.y, xOrigin.z));
-			List<Vector3> pts = new ArrayList<>();
-			pts.add(pStart);
-			pts.add(pEnd);
-			renderables.add(new RenderableLine(pts, axesState));
-			
-			// Ticks
-			double minVal = min.x;
-			double maxVal = max.x;
-			double step = (maxVal - minVal) / (numTicks - 1);
-			for (int i = 0; i < numTicks; i++) {
-				double val = minVal + i * step;
-				Vector3 pos = new Vector3(val, xOrigin.y, xOrigin.z);
-				Vector3 pPos = mat.project(pos);
-				renderables.add(new RenderableText(pPos, String.format(Locale.US, "%.1f", val), textState, "middle"));
-			}
-		}
-		
-		if (showAxes[1]) {
-			// Y Axis
-			double start = min.y;
-			double end = max.y;
-			Vector3 pStart = mat.project(new Vector3(yOrigin.x, start, yOrigin.z));
-			Vector3 pEnd = mat.project(new Vector3(yOrigin.x, end, yOrigin.z));
-			List<Vector3> pts = new ArrayList<>();
-			pts.add(pStart);
-			pts.add(pEnd);
-			renderables.add(new RenderableLine(pts, axesState));
-			
-			double minVal = min.y;
-			double maxVal = max.y;
-			double step = (maxVal - minVal) / (numTicks - 1);
-			for (int i = 0; i < numTicks; i++) {
-				double val = minVal + i * step;
-				Vector3 pos = new Vector3(yOrigin.x, val, yOrigin.z);
-				Vector3 pPos = mat.project(pos);
-				renderables.add(new RenderableText(pPos, String.format(Locale.US, "%.1f", val), textState, "middle"));
-			}
-		}
-		
-		if (showAxes[2]) {
-			// Z Axis
-			double start = min.z;
-			double end = max.z;
-			Vector3 pStart = mat.project(new Vector3(zOrigin.x, zOrigin.y, start));
-			Vector3 pEnd = mat.project(new Vector3(zOrigin.x, zOrigin.y, end));
-			List<Vector3> pts = new ArrayList<>();
-			pts.add(pStart);
-			pts.add(pEnd);
-			renderables.add(new RenderableLine(pts, axesState));
-			
-			double minVal = min.z;
-			double maxVal = max.z;
-			double step = (maxVal - minVal) / (numTicks - 1);
-			for (int i = 0; i < numTicks; i++) {
-				double val = minVal + i * step;
-				Vector3 pos = new Vector3(zOrigin.x, zOrigin.y, val);
-				Vector3 pPos = mat.project(pos);
-				renderables.add(new RenderableText(pPos, String.format(Locale.US, "%.1f", val), textState, "end"));
-			}
-		}
-	}
+    if (!customY) {
+      yOrigin = new Vector3(yOrigin.x, yOrigin.y, max.z);
+    }
 
-	private static Vector3 resolveOrigin(Vector3 def, IAST spec, int dim1, int dim2, Vector3 min, Vector3 max) {
-		double[] coords = { def.x, def.y, def.z };
-		// spec is {dir1, dir2}
-		if (spec.size() > 1) {
-			IExpr d1 = spec.get(1);
-			if (d1.isNumber()) { // +1 or -1
-				double val = getDouble(d1, 0);
-				if (val > 0)
-					coords[dim1] = (dim1 == 0) ? max.x : (dim1 == 1) ? max.y : max.z;
-				else if (val < 0)
-					coords[dim1] = (dim1 == 0) ? min.x : (dim1 == 1) ? min.y : min.z;
-			}
-		}
-		if (spec.size() > 2) {
-			IExpr d2 = spec.get(2);
-			if (d2.isNumber()) { // +1 or -1
-				double val = getDouble(d2, 0);
-				if (val > 0)
-					coords[dim2] = (dim2 == 0) ? max.x : (dim2 == 1) ? max.y : max.z;
-				else if (val < 0)
-					coords[dim2] = (dim2 == 0) ? min.x : (dim2 == 1) ? min.y : min.z;
-			}
-		}
-		return new Vector3(coords[0], coords[1], coords[2]);
-	}
+    int numTicks = 5;
 
-	private static Color calculateLighting(Color baseColor, List<Vector3> points) {
-		if (points.size() < 3) return baseColor;
-		
-		// 1. Calculate Face Normal
-		Vector3 v0 = points.get(0);
-		Vector3 v1 = points.get(1);
-		Vector3 v2 = points.get(2);
-		
-		Vector3 edge1 = v1.sub(v0);
-		Vector3 edge2 = v2.sub(v0);
-		Vector3 normal = edge1.cross(edge2).normalize();
-		
-		// 2. Define Light Source (Top-Right-Front)
-		Vector3 lightDir = new Vector3(0.5, -0.5, 1.0).normalize();
-		
-		// 3. Diffuse Component
-		double diffuse = Math.max(0.0, normal.dot(lightDir));
-		// Two-sided lighting (if we see backfaces)
-		diffuse = Math.abs(normal.dot(lightDir));
-		
-		// 4. Combine
-		double ambientParams = 0.5;
-		double diffuseParams = 0.5;
-		
-		double intensity = ambientParams + diffuseParams * diffuse;
-		intensity = Math.min(1.0, Math.max(0.0, intensity));
-		
-		int r = (int)(baseColor.getRed() * intensity);
-		int g = (int)(baseColor.getGreen() * intensity);
-		int b = (int)(baseColor.getBlue() * intensity);
-		
-		return new Color(r, g, b);
-	}
-	
-	private static float clamp(double val) {
+    if (showAxes[0]) {
+      Vector3 pStart = vCtx.project(new Vector3(min.x, xOrigin.y, xOrigin.z));
+      Vector3 pEnd = vCtx.project(new Vector3(max.x, xOrigin.y, xOrigin.z));
+      List<Vector3> pts = new ArrayList<>();
+      pts.add(pStart);
+      pts.add(pEnd);
+      renderables.add(new RenderableLine(pts, axesState));
 
+      double step = (max.x - min.x) / (numTicks - 1);
+      for (int i = 0; i < numTicks; i++) {
+        double val = min.x + i * step;
+        Vector3 pPos = vCtx.project(new Vector3(val, xOrigin.y, xOrigin.z));
+        renderables
+            .add(new RenderableText(pPos, formatTick(val, max.x - min.x), textState, "middle"));
+      }
+    }
+
+    if (showAxes[1]) {
+      Vector3 pStart = vCtx.project(new Vector3(yOrigin.x, min.y, yOrigin.z));
+      Vector3 pEnd = vCtx.project(new Vector3(yOrigin.x, max.y, yOrigin.z));
+      List<Vector3> pts = new ArrayList<>();
+      pts.add(pStart);
+      pts.add(pEnd);
+      renderables.add(new RenderableLine(pts, axesState));
+
+      double step = (max.y - min.y) / (numTicks - 1);
+      for (int i = 0; i < numTicks; i++) {
+        double val = min.y + i * step;
+        Vector3 pPos = vCtx.project(new Vector3(yOrigin.x, val, yOrigin.z));
+        renderables
+            .add(new RenderableText(pPos, formatTick(val, max.y - min.y), textState, "middle"));
+      }
+    }
+
+    if (showAxes[2]) {
+      Vector3 pStart = vCtx.project(new Vector3(zOrigin.x, zOrigin.y, min.z));
+      Vector3 pEnd = vCtx.project(new Vector3(zOrigin.x, zOrigin.y, max.z));
+      List<Vector3> pts = new ArrayList<>();
+      pts.add(pStart);
+      pts.add(pEnd);
+      renderables.add(new RenderableLine(pts, axesState));
+
+      double step = (max.z - min.z) / (numTicks - 1);
+      for (int i = 0; i < numTicks; i++) {
+        double val = min.z + i * step;
+        Vector3 pPos = vCtx.project(new Vector3(zOrigin.x, zOrigin.y, val));
+        renderables.add(new RenderableText(pPos, formatTick(val, max.z - min.z), textState, "end"));
+      }
+    }
+  }
+
+  private static Vector3 resolveOrigin(Vector3 def, IAST spec, int dim1, int dim2, Vector3 min,
+      Vector3 max) {
+    double[] coords = {def.x, def.y, def.z};
+    if (spec.size() > 1) {
+      IExpr d1 = spec.get(1);
+      if (d1.isNumber()) {
+        double val = getDouble(d1, 0);
+        if (val > 0)
+          coords[dim1] = (dim1 == 0) ? max.x : (dim1 == 1) ? max.y : max.z;
+        else if (val < 0)
+          coords[dim1] = (dim1 == 0) ? min.x : (dim1 == 1) ? min.y : min.z;
+      }
+    }
+    if (spec.size() > 2) {
+      IExpr d2 = spec.get(2);
+      if (d2.isNumber()) {
+        double val = getDouble(d2, 0);
+        if (val > 0)
+          coords[dim2] = (dim2 == 0) ? max.x : (dim2 == 1) ? max.y : max.z;
+        else if (val < 0)
+          coords[dim2] = (dim2 == 0) ? min.x : (dim2 == 1) ? min.y : min.z;
+      }
+    }
+    return new Vector3(coords[0], coords[1], coords[2]);
+  }
+
+  private static Color calculateLighting(Color baseColor, List<Vector3> points) {
+    if (points.size() < 3)
+      return baseColor;
+
+    Vector3 v0 = points.get(0);
+    Vector3 v1 = points.get(1);
+    Vector3 v2 = points.get(2);
+
+    Vector3 edge1 = v1.sub(v0);
+    Vector3 edge2 = v2.sub(v0);
+    Vector3 normal = edge1.cross(edge2).normalize();
+
+    Vector3 lightDir = new Vector3(0.5, -0.5, 1.0).normalize();
+
+    double diffuse = Math.abs(normal.dot(lightDir));
+
+    double ambientParams = 0.5;
+    double diffuseParams = 0.5;
+
+    double intensity = ambientParams + diffuseParams * diffuse;
+    intensity = Math.min(1.0, Math.max(0.0, intensity));
+
+    int r = (int) (baseColor.getRed() * intensity);
+    int g = (int) (baseColor.getGreen() * intensity);
+    int b = (int) (baseColor.getBlue() * intensity);
+
+    return new Color(r, g, b);
+  }
+
+  private static float clamp(double val) {
     return (float) Math.max(0.0, Math.min(1.0, val));
   }
 }
