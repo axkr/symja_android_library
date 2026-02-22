@@ -114,11 +114,11 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
         }
       }
     } else if (argSize >= 2 && ast.arg2().isList()) {
-      if (!ast.arg2().first().isSymbol()) {
-        return Errors.printMessage(S.Plot, "pllim", F.list(ast.arg2()), engine);
-      }
-
       IAST range = (IAST) ast.arg2();
+      if (!range.isList3() || !range.first().isSymbol()) {
+        // Range specification `1` is not of the form {x, xmin, xmax}.
+        return Errors.printMessage(S.ParametricPlot3D, "pllim", F.list(range), engine);
+      }
 
       for (int i = 0; i < functions.size(); i++) {
         IExpr currentStyle;

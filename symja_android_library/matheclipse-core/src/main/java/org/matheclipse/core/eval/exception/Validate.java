@@ -825,7 +825,9 @@ public final class Validate {
       termsEqualZeroList = F.ListAlloc(eqns.size());
       for (int i = 1; i < eqns.size(); i++) {
         IExpr arg = eqns.get(i);
-        if (arg.isAST2()) {
+        if (arg.isOr()) {
+          termsEqualZeroList.append(arg);
+        } else if (arg.isAST2()) {
           IAST eq = (IAST) arg;
           checkEquationAndInequation(eq, termsEqualZeroList);
         } else {

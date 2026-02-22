@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import java.util.Comparator;
+import java.util.Map;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.matheclipse.core.eval.Errors;
@@ -2199,6 +2200,110 @@ public class IntervalDataSym {
       return F.CRealsIntervalData;
     }
     return F.NIL;
+  }
+
+  public static void extractIntervalData(final IASTAppendable remainingInequations,
+      final IAST variables, Map<IExpr, IAST> intervalDataMap, final EvalEngine engine,
+      boolean listAsAnd) {
+    int i = 1;
+    while (i < remainingInequations.size()) {
+      IExpr expr = remainingInequations.get(i);
+      IExpr remainingExpr = extractFromExpr(expr, variables, intervalDataMap, engine, listAsAnd);
+
+      if (remainingExpr.isTrue()) {
+        // Expression fully transformed into interval(s); safely discard.
+        remainingInequations.remove(i);
+      } else {
+        // Only partially extracted (or not extracted at all); update the list.
+        remainingInequations.set(i, remainingExpr);
+        i++;
+      }
+    }
+  }
+
+  /**
+   * Recursively attempts to extract interval data for the given variables. * @param expr the
+   * expression to extract intervals from
+   * 
+   * @param variables the target variables
+   * @param intervalDataMap the map gathering variable boundary definitions
+   * @param engine the evaluation engine
+   * @param listAsAnd treat List as And during descent
+   * @return S.True if the expression was fully consumed into the interval map, otherwise the
+   *         unconsumed leftovers
+   */
+  private static IExpr extractFromExpr(IExpr expr, IAST variables, Map<IExpr, IAST> intervalDataMap,
+      EvalEngine engine, boolean listAsAnd) {
+    // 1. Try to extract the entire expression for a specific variable
+    for (int v = 1; v < variables.size(); v++) {
+      IExpr var = variables.get(v);
+      IAST interval = toIntervalData(expr, var, engine, listAsAnd);
+      if (interval.isPresent()) {
+        if (!isNumericFunctionInterval(expr, interval)) {
+          return expr;
+        }
+        IAST existing = intervalDataMap.get(var);
+        if (existing != null) {
+          intervalDataMap.put(var, intersection(existing, interval, engine));
+        } else {
+          intervalDataMap.put(var, interval);
+        }
+        return S.True;
+      }
+    }
+
+    // 2. If expression is an And or List, process its arguments recursively
+    if (expr.isAnd() || (listAsAnd && expr.isList())) {
+      IAST ast = (IAST) expr;
+      IASTAppendable newAst = ast.isAnd() ? F.ast(S.And, ast.argSize()) : F.ListAlloc(ast.size());
+      boolean changed = false;
+
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr arg = ast.get(i);
+        IExpr rem = extractFromExpr(arg, variables, intervalDataMap, engine, listAsAnd);
+
+        if (rem.isTrue()) {
+          changed = true;
+        } else if (rem.isPresent() && !rem.equals(arg)) {
+          if (rem.isAST(ast.head())) {
+            newAst.appendArgs((IAST) rem); // Flatten nested components
+          } else {
+            newAst.append(rem);
+          }
+          changed = true;
+        } else {
+          newAst.append(arg);
+        }
+      }
+
+      if (changed) {
+        if (newAst.argSize() == 0) {
+          return S.True;
+        }
+        if (newAst.argSize() == 1 && ast.isAnd()) {
+          return newAst.arg1(); // Cleanly return the single element instead of And(x)
+        }
+        return newAst;
+      }
+    }
+
+    return expr;
+  }
+
+  private static boolean isNumericFunctionInterval(IExpr expr, IAST interval) {
+    if (interval.isIntervalData()) {
+      for (int i = 1; i < interval.size(); i++) {
+        IAST list = (IAST) interval.get(i);
+        if (!list.arg1().isNumericFunction() && !list.arg1().isDirectedInfinity()) {
+          return false; // Not a numeric interval, skip
+        }
+        if (!list.arg4().isNumericFunction() && !list.arg4().isDirectedInfinity()) {
+          return false; // Not a numeric interval, skip
+        }
+      }
+      return true;
+    }
+    return false;
   }
 
   /**

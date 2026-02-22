@@ -2344,12 +2344,17 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testCosSingularitiesConstraint() {
+    check("Solve(Cos(x)==0&&(x>=2&&x<9||x>=10&&x<20),x)", //
+        "{{x->3/2*Pi},{x->5/2*Pi},{x->7/2*Pi},{x->9/2*Pi},{x->11/2*Pi}}");
+
     check("Solve({Cos(x)==0,x>=2,x<9},x)", //
         "{{x->3/2*Pi},{x->5/2*Pi}}");
-    // TODO: find values from conditional expressions
+    // should be equivalent
+    check("Solve(Cos(x)==0&&x>=2&&x<9,x)", //
+        "{{x->3/2*Pi},{x->5/2*Pi}}");
+
     check("Solve({Cos(x)==0,x>2,x<14},x)", //
-        "{{x->5/2*Pi},{x->3/2*Pi,x->7/2*Pi}}");
-    // "{{x->(3*Pi)/2},{x->(5*Pi)/2},{x->(7*Pi)/2}} ")
+        "{{x->3/2*Pi},{x->5/2*Pi},{x->7/2*Pi}}");
   }
 
 
