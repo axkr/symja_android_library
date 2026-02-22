@@ -721,13 +721,24 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   public void testIntegrateDiverging() {
     // Message: Integral of `1` does not converge on `2`.
 
+    check("Integrate(1/(x * Log(x)), {x, 2, Infinity})", //
+        "Integrate(1/(x*Log(x)),{x,2,Infinity})");
+
+    check("Integrate(Cos(x), {x, 0, Infinity})", //
+        "Integrate(Cos(x),{x,0,Infinity})");
+
+    check("Integrate(1/Sqrt(x), {x, 1, Infinity})", //
+        "Integrate(1/Sqrt(x),{x,1,Infinity})");
+
+    check("Integrate(1/(x^2),{x,-2,1})", //
+        "Integrate(1/x^2,{x,-2,1})");
+
     // Integrate: Integral of Tan(x) does not converge on {x,2,7}.
     check("Integrate(Tan(x),{x,2,7})", //
         "Integrate(Tan(x),{x,2,7})");
     check("Integrate(Tan(x),{x,3,4})", //
         "Log(-Cos(3))-Log(-Cos(4))");
 
-    check("Integrate(1/(x^2),{x,-2,1})", //
-        "Integrate(1/x^2,{x,-2,1})");
+
   }
 }

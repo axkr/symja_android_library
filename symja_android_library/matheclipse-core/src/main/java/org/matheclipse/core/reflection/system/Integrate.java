@@ -794,15 +794,18 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       upperDirection = F.Rule(F.Direction, F.C1);
     }
     IExpr lowerLimit = engine.evaluate(F.Limit(function, F.Rule(x, lower), lowerDirection));
-    if (!lowerLimit.isSpecialsFree()) {
+    if (!lowerLimit.isSpecialsFree() || lowerLimit.isInterval() || lowerLimit.isIntervalData()) {
+      // Integral of `1` does not converge on `2`.
       return Errors.printMessage(S.Integrate, "idiv",
           F.List(originalAST.arg1(), originalAST.arg2()), engine);
     }
     IExpr upperLimit = engine.evaluate(F.Limit(function, F.Rule(x, upper), upperDirection));
-    if (!upperLimit.isSpecialsFree()) {
+    if (!upperLimit.isSpecialsFree() || upperLimit.isInterval() || upperLimit.isIntervalData()) {
+      // Integral of `1` does not converge on `2`.
       return Errors.printMessage(S.Integrate, "idiv",
           F.List(originalAST.arg1(), originalAST.arg2()), engine);
     }
+
 
     if (upperLimit.isAST() && lowerLimit.isAST()) {
       IExpr bDenominator = engine.evaluate(F.Denominator(upperLimit));
