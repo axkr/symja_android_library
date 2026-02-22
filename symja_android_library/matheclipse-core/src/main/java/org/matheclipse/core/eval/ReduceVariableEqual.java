@@ -285,12 +285,14 @@ public class ReduceVariableEqual {
         if (inverseFunction.isPresent()) {
           if (exprWithVariable.isAbs()) {
             if (exprWithoutVariable.isNonNegativeResult()) {
+              Errors.printMessage(S.Solve, "ifun", F.List());
               inverseFunction.append(exprWithoutVariable);
               return extractVariableRecursive(ast.arg1(), inverseFunction, predicate, variable,
                   multipleValues);
             }
             return S.True;
           } else {
+            Errors.printMessage(S.Solve, "ifun", F.List());
             // example: Sin(f(x)) == y -> f(x) == ArcSin(y)
             inverseFunction.append(exprWithoutVariable);
             return extractVariableRecursive(ast.arg1(), inverseFunction, predicate, variable,
