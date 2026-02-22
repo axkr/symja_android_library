@@ -204,7 +204,7 @@ public class DensityPlot extends ListPlot {
   }
 
   private double[] parseRange(IExpr iter, EvalEngine engine) {
-    if (iter.isList() && iter.size() >= 3) {
+    if (iter.isList() && iter.argSize() >= 3) {
       try {
         double min = ((IAST) iter).arg2().evalf();
         double max = ((IAST) iter).arg3().evalf();

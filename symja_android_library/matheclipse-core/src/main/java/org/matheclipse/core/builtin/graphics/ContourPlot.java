@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.graphics;
 
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -69,9 +70,14 @@ public class ContourPlot extends ListPlot {
     IExpr yIter = ast.arg3();
 
     double[] xRange = parseRange(xIter, engine);
+    if (xRange == null || !xIter.isList() || !xIter.first().isSymbol()) {
+      // Range specification `1` is not of the form {x, xmin, xmax}.
+      return Errors.printMessage(S.ContourPlot, "pllim", F.list(xIter), engine);
+    }
     double[] yRange = parseRange(yIter, engine);
-    if (xRange == null || yRange == null) {
-      return F.NIL;
+    if (yRange == null || !yIter.isList() || !yIter.first().isSymbol()) {
+      // Range specification `1` is not of the form {y, ymin, ymax}.
+      return Errors.printMessage(S.ContourPlot, "pllim", F.list(yIter), engine);
     }
 
     graphicsOptions.setBoundingBox(new double[] {xRange[0], xRange[1], yRange[0], yRange[1]});
@@ -471,7 +477,7 @@ public class ContourPlot extends ListPlot {
       {-1, -1, -1, -1}};
 
   private double[] parseRange(IExpr iter, EvalEngine engine) {
-    if (iter.isList() && iter.size() >= 3) {
+    if (iter.isList() && iter.argSize() >= 3) {
       try {
         double min = engine.evalDouble(((IAST) iter).arg2());
         double max = engine.evalDouble(((IAST) iter).arg3());
