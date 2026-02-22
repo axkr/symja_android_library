@@ -22173,6 +22173,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRoot() {
+    // TODO
+    // message: Solve: The system cannot be solved with the methods available to Solve.
+    check("Root({Exp[#] - 2 &, 0.6931471805599453})", //
+        "Root({-2+E^#1&,0.693147})");
+
+    check("Root({#^2 - 2 &, 1.4142135623730951})", //
+        "Sqrt(2)");
     check("Root({Sin(#) &, 3.1415926535897932385})", //
         "Pi");
     check("Root(EvenQ(#1)&,1009)", //

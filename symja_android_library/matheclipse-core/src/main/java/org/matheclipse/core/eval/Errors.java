@@ -354,6 +354,7 @@ public class Errors {
       "ptype",
       "The second argument of Norm, `1`, should be a symbol, Infinity, or a number greater equal 1 for p-norms, or \"Frobenius\" for matrix norms.",
       "range", "Range specification in `1` does not have appropriate bounds.", //
+      "rapp", "Root approximation `1` is not a number.", //
       "rbase", "Base `1` is not a real number greater than 1.", //
       "rank", "The rank `1` is not an integer between `2` and  `3`.", //
       "rankl", "The list `1` of dimensions `3` must have length `2`.", //
