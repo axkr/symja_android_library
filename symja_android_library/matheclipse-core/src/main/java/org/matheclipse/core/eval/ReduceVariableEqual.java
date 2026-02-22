@@ -225,8 +225,7 @@ public class ReduceVariableEqual {
    */
   public static IExpr reduce(IAST binaryRelation, IExpr variable, boolean multipleValues) {
     EvalEngine engine = EvalEngine.get();
-    ReduceVariableEqual rv =
-        new ReduceVariableEqual(engine);
+    ReduceVariableEqual rv = new ReduceVariableEqual(engine);
     IExpr difference = engine.evaluate(//
         F.Subtract(F.Expand(binaryRelation.first()), F.Expand(binaryRelation.second()))//
     );
@@ -285,14 +284,14 @@ public class ReduceVariableEqual {
         if (inverseFunction.isPresent()) {
           if (exprWithVariable.isAbs()) {
             if (exprWithoutVariable.isNonNegativeResult()) {
-              Errors.printMessage(S.Solve, "ifun", F.List());
+              Errors.printMessage("ifun", F.List());
               inverseFunction.append(exprWithoutVariable);
               return extractVariableRecursive(ast.arg1(), inverseFunction, predicate, variable,
                   multipleValues);
             }
             return S.True;
           } else {
-            Errors.printMessage(S.Solve, "ifun", F.List());
+            Errors.printMessage("ifun", F.List());
             // example: Sin(f(x)) == y -> f(x) == ArcSin(y)
             inverseFunction.append(exprWithoutVariable);
             return extractVariableRecursive(ast.arg1(), inverseFunction, predicate, variable,

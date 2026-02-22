@@ -3,6 +3,7 @@ package org.matheclipse.core.eval;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -600,6 +601,10 @@ public class Errors {
     return printMessage(symbol, messageShortcut, listOfParameters, EvalEngine.get());
   }
 
+  public static IAST printMessage(String messageShortcut, final IAST listOfParameters) {
+    return printMessage(messageShortcut, listOfParameters, EvalEngine.get());
+  }
+
   /**
    * Format a message according to the shortcut from the {@link #MESSAGES} array and print it to the
    * error stream with the help of the {@link EvalEngine#getErrorPrintStream()} method.
@@ -661,6 +666,18 @@ public class Errors {
       }
     }
     return F.NIL;
+  }
+
+  public static IAST printMessage(@NonNull String messageShortcut, final IAST listOfParameters,
+      EvalEngine engine) {
+    Deque<IExpr> stack = engine.getStack();
+    final ISymbol symbol;
+    if (stack == null || stack.isEmpty()) {
+      symbol = S.General;
+    } else {
+      symbol = engine.getStack().peek().topHead();
+    }
+    return printMessage(symbol, messageShortcut, listOfParameters, engine);
   }
 
   public static void logMessage(ISymbol symbol, String str, EvalEngine engine) {
