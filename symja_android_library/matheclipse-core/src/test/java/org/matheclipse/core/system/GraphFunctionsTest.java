@@ -777,6 +777,10 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
   public void testWheelGraph() {
     check("WheelGraph(1)", //
         "Graph({1},{})");
+    check("WheelGraph(2)", //
+        "Graph({1,2},{1<->2,2<->2})");
+    check("WheelGraph(3)", //
+        "Graph({1,2,3},{1<->2,1<->3,2<->3})");
     check("WheelGraph(4) // AdjacencyMatrix // Normal", //
         "{{0,1,1,1},\n" //
             + " {1,0,1,1},\n" //

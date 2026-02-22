@@ -590,8 +590,12 @@ public class GraphDataFunctions {
       if (order > Config.MAX_GRAPH_VERTICES_SIZE) {
         ASTElementLimitExceeded.throwIt(order);
       }
-      if (order  == 1) {
+      if (order == 1) {
         return GraphExpr.newInstance(F.List(F.C1), F.List());
+      }
+      if (order == 2) {
+        return GraphExpr.newInstance(F.List(F.C1, F.C2),
+            F.List(F.UndirectedEdge(F.C1, F.C2), F.UndirectedEdge(F.C2, F.C2)));
       }
       IASTAppendable optionsList = GraphGraphics.createOptionsList(options);
 

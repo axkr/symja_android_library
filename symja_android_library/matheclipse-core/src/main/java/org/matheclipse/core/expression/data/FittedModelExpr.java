@@ -93,6 +93,9 @@ public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> implement
     FieldMatrix<IExpr> m = Convert.list2Matrix(matrix);
     FieldVector<IExpr> basis = Convert.list2Vector(basisFunctions);
     FieldVector<IExpr> vars = Convert.list2Vector(variables);
+    if (m == null || basis == null || vars == null) {
+      return F.NIL;
+    }
     FieldMatrix<IExpr> designMatrixSymbolic = designMatrixSymbolic(m, basis, vars, engine);
     return Convert.matrix2List(designMatrixSymbolic, false);
   }
