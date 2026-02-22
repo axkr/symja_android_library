@@ -529,75 +529,87 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         return solveNumeric(QuarticSolver.sortASTArguments(temp), numericFlag, engine);
       }
 
-      if (inequationsList.isEmpty() && termsEqualZeroList.size() == 2 && variables.size() == 2) {
-        IExpr firstVariable = variables.arg1();
-        IExpr res =
-            eliminateOneVariable(termsEqualZeroList, firstVariable, true, numericFlag, engine);
-        if (res.isNIL()) {
-          if (numericFlag) {
-            // find numerically with start value 0
-            res = engine
-                .evalQuiet(F.FindRoot(termsEqualZeroList.arg1(), F.list(firstVariable, F.C0)));
-          }
-        }
-        if (!res.isList()
-            || !res.isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(), true)) {
-          return F.NIL;
-        }
-        IASTAppendable resultList = F.ListAlloc(1);
-        resultList.append(res);
-
-        IASTMutable crossChecking = crossChecking(termsEqualZeroList, resultList, engine);
-        if (crossChecking.argSize() != 1) {
-          return F.CEmptyList;
-        }
-
-        return solveNumeric(res, numericFlag, engine);
+      if (termsEqualZeroList.size() == 2 && variables.size() == 2 && inequationsList.isEmpty()) {
+        return solveTwoVariableSystem(termsEqualZeroList, numericFlag, variables.arg1(), engine);
       }
 
       if (termsEqualZeroList.size() > 2 && variables.size() >= 3) {
-        // expensive recursion try
-        IExpr firstEquation = termsEqualZeroList.arg1();
+        return solveMultiVariableSystem(termsEqualZeroList, inequationsList, numericFlag, variables,
+            engine);
+      }
+      return F.NIL;
+    }
 
-        IASTMutable reducedEqualZeroList = termsEqualZeroList.copyAppendable();
-        for (int i = 1; i < variables.size(); i++) {
-          IExpr variable = variables.get(i);
+    private IExpr solveMultiVariableSystem(IASTMutable termsEqualZeroList, IAST inequationsList,
+        boolean numericFlag, IAST variables, EvalEngine engine) {
+      // expensive recursion try
+      IExpr firstEquation = termsEqualZeroList.arg1();
 
-          IAST[] reduced = Eliminate.eliminateOneVariable(F.list(F.Equal(firstEquation, F.C0)),
-              variable, true, engine);
-          if (reduced != null) {
-            variables = variables.splice(i);
-            reducedEqualZeroList = reducedEqualZeroList.removeAtCopy(1);
-            // oneVariableRule = ( firstVariable -> reducedExpression )
-            IAST oneVariableRule = reduced[1];
-            IExpr replaced = reducedEqualZeroList.replaceAll(oneVariableRule);
-            if (replaced.isList()) {
-              IExpr subResult = solveRecursive((IASTMutable) replaced, inequationsList, numericFlag,
-                  variables, engine);
-              if (subResult.isListOfLists()) {
-                IASTMutable result = F.mapList((IAST) subResult, t -> {
-                  final IAST listOfRules = (IAST) t;
-                  IExpr replaceAllExpr = oneVariableRule.second().replaceAll(listOfRules);
-                  if (replaceAllExpr.isPresent()) {
-                    replaceAllExpr = S.Simplify.of(engine, replaceAllExpr);
-                    return listOfRules.appendClone(F.Rule(variable, replaceAllExpr));
-                  }
-                  return F.NIL;
-                });
-                return crossChecking(termsEqualZeroList, result, engine);
-              } else if (subResult.isList()) { // important for NSolve
-                replaced = oneVariableRule.second().replaceAll((IAST) subResult);
-                if (replaced.isPresent()) {
-                  IASTAppendable result = ((IAST) subResult).copyAppendable();
-                  result.append(F.Rule(variable, replaced));
-                  return crossChecking(termsEqualZeroList, result, engine);
+      IASTMutable reducedEqualZeroList = termsEqualZeroList.copyAppendable();
+      for (int i = 1; i < variables.size(); i++) {
+        IExpr variable = variables.get(i);
+
+        IAST[] reduced = Eliminate.eliminateOneVariable(F.list(F.Equal(firstEquation, F.C0)),
+            variable, true, engine);
+        if (reduced != null) {
+          variables = variables.splice(i);
+          reducedEqualZeroList = reducedEqualZeroList.removeAtCopy(1);
+          // oneVariableRule = ( firstVariable -> reducedExpression )
+          IAST oneVariableRule = reduced[1];
+          IExpr replaced = reducedEqualZeroList.replaceAll(oneVariableRule);
+          if (replaced.isList()) {
+            IExpr subResult = solveRecursive((IASTMutable) replaced, inequationsList, numericFlag,
+                variables, engine);
+            if (subResult.isListOfLists()) {
+              IASTMutable result = F.mapList((IAST) subResult, t -> {
+                final IAST listOfRules = (IAST) t;
+                IExpr replaceAllExpr = oneVariableRule.second().replaceAll(listOfRules);
+                if (replaceAllExpr.isPresent()) {
+                  replaceAllExpr = S.Simplify.of(engine, replaceAllExpr);
+                  return listOfRules.appendClone(F.Rule(variable, replaceAllExpr));
                 }
+                return F.NIL;
+              });
+              return crossChecking(termsEqualZeroList, result, engine);
+            } else if (subResult.isList()) { // important for NSolve
+              replaced = oneVariableRule.second().replaceAll((IAST) subResult);
+              if (replaced.isPresent()) {
+                IASTAppendable result = ((IAST) subResult).copyAppendable();
+                result.append(F.Rule(variable, replaced));
+                return crossChecking(termsEqualZeroList, result, engine);
               }
             }
           }
         }
       }
       return F.NIL;
+    }
+
+    private IExpr solveTwoVariableSystem(IASTMutable termsEqualZeroList, boolean numericFlag,
+        IExpr firstVariable, EvalEngine engine) {
+      IExpr res =
+          eliminateOneVariable(termsEqualZeroList, firstVariable, true, numericFlag, engine);
+      if (res.isNIL()) {
+        if (numericFlag) {
+          IExpr termEqualZero = termsEqualZeroList.arg1();
+          // find numerically with start value 0
+          res = engine
+              .evalQuiet(F.FindRoot(termEqualZero, F.list(firstVariable, F.C0)));
+        }
+      }
+      if (!res.isList()
+          || !res.isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(), true)) {
+        return F.NIL;
+      }
+      IASTAppendable resultList = F.ListAlloc(1);
+      resultList.append(res);
+
+      IASTMutable crossChecking = crossChecking(termsEqualZeroList, resultList, engine);
+      if (crossChecking.argSize() != 1) {
+        return F.CEmptyList;
+      }
+
+      return solveNumeric(res, numericFlag, engine);
     }
 
     /**
