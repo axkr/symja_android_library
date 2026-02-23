@@ -548,9 +548,19 @@ public class QuarticSolver {
       // (-2)*b^3 + 9*a*b*c - 27*a^2*d
       IExpr delta1 = F.eval(Plus(Times(ZZ(-2L), Power(b, C3)), Times(ZZ(9L), a, b, c),
           Times(CN1, ZZ(27L), Power(a, C2), d)));
-      // (delta1 + Sqrt[delta1^2-4*delta0^3])^(1/3)
-      IExpr argDelta3 =
-          F.eval(Plus(delta1, Sqrt(Plus(Power(delta1, C2), Times(CN1, C4, Power(delta0, C3))))));
+
+      // Extract the shared discriminant term inside the square root
+      IExpr discriminantTerm = Plus(Power(delta1, C2), Times(CN1, C4, Power(delta0, C3)));
+
+      // (delta1 + Sqrt[delta1^2-4*delta0^3])
+      IExpr argDelta3 = F.eval(Plus(delta1, Sqrt(discriminantTerm)));
+
+      // Prevent cancellation or selecting the zero-root.
+      // If the positive branch of the resolvent evaluates to 0, use the negative branch.
+      if (argDelta3.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+        argDelta3 = F.eval(Plus(delta1, Times(CN1, Sqrt(discriminantTerm))));
+      }
+
       IExpr delta3 = F.eval(Power(argDelta3, C1D3));
 
       IAST value = Times(CN1, b, Power(Times(C3, a), CN1));

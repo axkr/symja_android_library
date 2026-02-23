@@ -2105,9 +2105,14 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Sqrt(59049*Pi^4)", //
         "243*Pi^2");
     check("Solve({9==x/y, x==pi*y^4},{x,y})", //
-        "{}");
+        "{{y->((1-I*Sqrt(3))*3^(2/3)*(-2*Pi^2)^(1/3))/(2*2^(1/3)*Pi),x->9/2*((1-I*Sqrt(3))*\n"
+            + "3^(2/3)*(-2*Pi^2)^(1/3))/(2^(1/3)*Pi)},{y->((1+I*Sqrt(3))*3^(2/3)*(-2*Pi^2)^(1/3))/(\n"
+            + "2*2^(1/3)*Pi),x->9/2*((1+I*Sqrt(3))*3^(2/3)*(-2*Pi^2)^(1/3))/(2^(1/3)*Pi)},{y->(-\n"
+            + "3^(2/3)*(-Pi^2)^(1/3))/Pi,x->(-9*3^(2/3)*(-Pi^2)^(1/3))/Pi}}");
     check("Solve({9==x/y, x==pi*y^4},{x,y}) //N", //
-        "{}");
+        "{{y->1.42025,x->12.78223+I*(-6.91229*10^-16)}," //
+            + "{y->-0.710124+I*1.22997,x->-6.39112+I*11.06974}," //
+            + "{y->-0.710124+I*(-1.22997),x->-6.39112+I*(-11.06974)}}");
     check("Solve({x==Pi*y^2, 5==x/y}, {x,y})", //
         "{{y->5/Pi,x->25/Pi}}");
   }
@@ -2302,7 +2307,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
   @Test
   public void testSolveEquationWithConstraints() {
     check("NSolve({13+x^3==-7.853981633974483, x>=-10, x<=10}, x)", //
-        "{{x->-2.7525147964038587}}");
+        "{{x->-2.7525147964038584}}");
     check("NSolve({13+x^3==-785/100, x>=-10, x<=10}, x)", //
         "{{x->-2.75234}}");
     check("Solve({13+x^3==-785/100, x>=-10, x<=10}, x)", //
@@ -2361,11 +2366,15 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->3/2*Pi},{x->5/2*Pi},{x->7/2*Pi}}");
   }
 
-
-  // @Test
-  // public void testDigammaStackoverflow() {
-  // Gamma.digamma(-10000);
-  // }
+  @Test
+  public void testIssue1298() {
+    // see testIssue918
+    check("Solve(9*y-Pi*y^4==0,y)", //
+        "{{y->0},{y->((1-I*Sqrt(3))*3^(2/3)*(-2*Pi^2)^(1/3))/(2*2^(1/3)*Pi)},{y->((1+I*Sqrt(\n"
+            + "3))*3^(2/3)*(-2*Pi^2)^(1/3))/(2*2^(1/3)*Pi)},{y->(-3^(2/3)*(-Pi^2)^(1/3))/Pi}}");
+    check("Solve({x==Pi*y^2,5==x/y},{x,y})", //
+        "{{y->5/Pi,x->25/Pi}}");
+  }
 
   /** The JUnit setup method */
   @Override
