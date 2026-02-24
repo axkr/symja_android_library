@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin.graphics3d;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -82,6 +81,9 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     // 1. Extract Points and Register with Builder
     List<PointXYZ> points = new ArrayList<>(n);
     for (int i = 1; i <= n; i++) {
+      if (!data.get(i).isList() || ((IAST) data.get(i)).argSize() != 3) {
+        return F.NIL;
+      }
       IAST row = (IAST) data.get(i);
       double x = row.arg1().evalf();
       double y = row.arg2().evalf();
@@ -156,10 +158,11 @@ public class ListPlot3D extends AbstractFunctionOptionEvaluator {
     int[][] indices = new int[rows][cols];
 
     for (int i = 1; i <= rows; i++) {
-      if (!heightData.get(i).isAST()) {
-        return Errors.printMessage(S.ListPlot3D, "arrayerr", F.List(heightData));
+      IExpr arg = heightData.get(i);
+      if (!arg.isAST() || arg.argSize() != cols) {
+        return F.NIL;
       }
-      IAST row = (IAST) heightData.get(i);
+      IAST row = (IAST) arg;
       double y = (rows > 1) ? yMin + (i - 1) * (yMax - yMin) / (rows - 1.0) : yMin;
 
       for (int j = 1; j <= cols; j++) {
