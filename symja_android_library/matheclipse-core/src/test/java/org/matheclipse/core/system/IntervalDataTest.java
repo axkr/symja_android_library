@@ -127,6 +127,8 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
         "Interval({0,81})");
   }
 
+
+
   @Test
   public void testIntervalDataArccos() {
     check("ArcCos(IntervalData({-1,LessEqual,LessEqual,1/2}))", //
@@ -137,6 +139,8 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
   public void testIntervalDataPower() {
     check("IntervalData({-3,LessEqual,LessEqual,2})^4", //
         "IntervalData({0,LessEqual,LessEqual,81})");
+    check("IntervalData({-3,LessEqual,Less,3})^2", //
+        "IntervalData({0,LessEqual,LessEqual,9})");
   }
 
   @Test
@@ -440,14 +444,13 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     check("-Infinity > -Infinity", //
         "False");
 
-    // print message IntervalData: The expression {Infinity,Less,Less,Infinity} is not a valid
-    // interval.
-    check("IntervalData({Infinity,Less,  Less, Infinity })", //
-        "IntervalData({Infinity,Less,Less,Infinity})");
-    // print message IntervalData: The expression {-Infinity,Less,Less,-Infinity} is not a valid
-    // interval.
+    check("IntervalData({-Infinity,Less, Less, Infinity })", //
+        "IntervalData({-Infinity,Less,Less,Infinity})");
+    // create empty interval for infinit on both sides
+    check("IntervalData({Infinity,Less, Less, Infinity })", //
+        "IntervalData()");
     check("IntervalData({-Infinity,Less,  Less, -Infinity })", //
-        "IntervalData({-Infinity,Less,Less,-Infinity})");
+        "IntervalData()");
 
     check("IntervalData({1,LessEqual,  Less, -1 })", //
         "IntervalData({-1,Less,LessEqual,1})");

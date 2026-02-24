@@ -1383,14 +1383,8 @@ public class IntervalDataSym {
                   arg1);
             }
             if (S.Equal.ofQ(arg1, arg4)) {
-              if (left == S.Less && right == S.Less) {
-                return F.CEmptyList;
-              }
               if (left == S.Less || right == S.Less) {
-                return F.List(arg1, //
-                    S.LessEqual, //
-                    S.LessEqual, //
-                    arg4);
+                return F.CEmptyList;
               }
             }
             return F.NIL;
@@ -1403,6 +1397,11 @@ public class IntervalDataSym {
                   list.arg3(), //
                   list.arg2(), //
                   min);
+            }
+            if (S.Equal.ofQ(min, max)) {
+              if (left == S.Less || right == S.Less) {
+                return F.CEmptyList;
+              }
             }
           }
           boolean evaled = false;
@@ -1573,13 +1572,25 @@ public class IntervalDataSym {
                 result.append(F.List(maxPower, lessMax, lessMin, minPower));
               } else {
                 final IExpr isGreater = minPower.greater(maxPower);
-                final IBuiltInSymbol newRelation =
-                    isGreater.isTrue() ? lessMin : isGreater.isFalse() ? lessMax : null;
-                if (newRelation == null) {
+                final IExpr isLess = minPower.less(maxPower);
+                IBuiltInSymbol newRelation;
+                IExpr newMax;
+                if (isGreater.isTrue()) {
+                  newRelation = lessMin;
+                  newMax = minPower;
+                } else if (isLess.isTrue()) {
+                  newRelation = lessMax;
+                  newMax = maxPower;
+                } else if (minPower.equals(maxPower)
+                    || S.Equal.ofQ(EvalEngine.get(), minPower, maxPower)) {
+                  // Tie-breaker: If either side was strictly inclusive, the result is inclusive
+                  newRelation =
+                      (lessMin == S.LessEqual || lessMax == S.LessEqual) ? S.LessEqual : S.Less;
+                  newMax = maxPower;
+                } else {
                   return F.NIL;
                 }
-                result.append(F.List(F.C0, S.LessEqual, newRelation,
-                    isGreater.isTrue() ? minPower : maxPower));
+                result.append(F.List(F.C0, S.LessEqual, newRelation, newMax));
               }
             }
           } else {
