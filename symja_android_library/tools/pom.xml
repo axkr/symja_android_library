@@ -46,7 +46,7 @@
 		<dependency>
 			<groupId>org.openrewrite</groupId>
 			<artifactId>rewrite-java</artifactId>
-			<version>8.66.1</version>
+			<version>8.74.0</version>
 			<scope>runtime</scope>
 		</dependency> 
 	</dependencies>
