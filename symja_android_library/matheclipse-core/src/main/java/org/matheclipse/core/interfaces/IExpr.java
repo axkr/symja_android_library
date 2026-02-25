@@ -1465,7 +1465,7 @@ public interface IExpr
   }
 
   /**
-   * Compare if <code>this == that</code:
+   * Compare if <code>this == that</code>. Numerical values are not exactly compared.
    * <ul>
    * <li>return S.True if the comparison is <code>true</code></li>
    * <li>return S.False if the comparison is <code>false</code></li>

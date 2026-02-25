@@ -5,11 +5,13 @@ import java.util.Comparator;
 import java.util.function.BiPredicate;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 
 /** Provide <code>Comparator<IExpr></code> classes. */
 public final class Comparators {
@@ -70,7 +72,7 @@ public final class Comparators {
 
     @Override
     public final int compare(final IExpr o1, final IExpr o2) {
-      if (sameTest.test(o1,o2)) {
+      if (sameTest.test(o1, o2)) {
         return 0;
       }
       return o1.compareTo(o2);
@@ -191,6 +193,36 @@ public final class Comparators {
     @Override
     public int compare(final IExpr o1, final IExpr o2) {
       return comparator.compare(o2, o1);
+    }
+  }
+
+  /**
+   * Use the {@link IExpr#equalTernary(IExpr, EvalEngine)} method to compare for equality. If not
+   * equal call the {@link IExpr#compareTo(IExpr)} method.
+   */
+  public static final class EqualToComparator implements Comparator<IExpr>, Serializable {
+
+    private static final long serialVersionUID = 8573538159803537280L;
+
+    final EvalEngine engine;
+
+    /**
+     * Use the {@link IExpr#equalTernary(IExpr, EvalEngine)} method to compare for equality. If not
+     * equal call the {@link IExpr#compareTo(IExpr)} method.
+     * 
+     * @param engine
+     */
+    public EqualToComparator(EvalEngine engine) {
+      this.engine = engine;
+    }
+
+    @Override
+    public final int compare(final IExpr o1, final IExpr o2) {
+      COMPARE_TERNARY equalTernary = o1.equalTernary(o2, engine);
+      if (equalTernary == COMPARE_TERNARY.TRUE) {
+        return 0;
+      }
+      return o1.compareTo(o2);
     }
   }
 

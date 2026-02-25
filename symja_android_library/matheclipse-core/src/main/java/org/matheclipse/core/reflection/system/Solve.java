@@ -41,6 +41,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -50,6 +51,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPair;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.QuarticSolver;
 
@@ -447,7 +449,19 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       // try to solve the original expr for one of the variables in the symbol set
       IExpr originalExpr = exprAnalyzer.getOriginalExpr();
       if (originalExpr != null) {
+        Comparators.EqualToComparator comparator = new Comparators.EqualToComparator(engine);
         for (IExpr variable : exprAnalyzer.getVariableSet()) {
+
+          // heuristic to find roots: find maximum/minimum and search for roots around these values.
+          Set<IExpr> solutionSet = new TreeSet<>(comparator);
+          IExpr maximum = engine.evaluate(F.NMaximize(originalExpr, variable));
+          findRootsFromExtremum(maximum, originalExpr, variable, solutionSet, engine);
+          IExpr minimum = engine.evaluate(F.NMinimize(originalExpr, variable));
+          findRootsFromExtremum(minimum, originalExpr, variable, solutionSet, engine);
+          if (!solutionSet.isEmpty()) {
+            return F.ListAlloc(solutionSet);
+          }
+
           IExpr temp = engine.evaluate( //
               F.FindRoot(originalExpr, //
                   F.List(variable, F.C1)));
@@ -457,6 +471,29 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         }
       }
       return F.NIL;
+    }
+
+    private static void findRootsFromExtremum(IExpr valueList, IExpr originalExpr, IExpr variable,
+        Set<IExpr> solutionSet, EvalEngine engine) {
+      if (valueList.isList2() && valueList.second().isList1()
+          && valueList.second().first().isRule()) {
+        IAST rule = (IAST) valueList.second().first();
+        if (rule.second().isReal()) {
+          IReal value = (IReal) rule.second();
+          IExpr list1Root = engine.evaluate( //
+              F.FindRoot(originalExpr, //
+                  F.List(variable, value.add(Config.DEFAULT_ROOTS_CHOP_DELTA))));
+          if (list1Root.isList1()) {
+            solutionSet.add(list1Root.first());
+          }
+          list1Root = engine.evaluate( //
+              F.FindRoot(originalExpr, //
+                  F.List(variable, value.subtract(Config.DEFAULT_ROOTS_CHOP_DELTA))));
+          if (list1Root.isList1()) {
+            solutionSet.add(list1Root.first());
+          }
+        }
+      }
     }
 
     /**
@@ -593,12 +630,10 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         if (numericFlag) {
           IExpr termEqualZero = termsEqualZeroList.arg1();
           // find numerically with start value 0
-          res = engine
-              .evalQuiet(F.FindRoot(termEqualZero, F.list(firstVariable, F.C0)));
+          res = engine.evalQuiet(F.FindRoot(termEqualZero, F.list(firstVariable, F.C0)));
         }
       }
-      if (!res.isList()
-          || !res.isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(), true)) {
+      if (!res.isList() || !res.isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(), true)) {
         return F.NIL;
       }
       IASTAppendable resultList = F.ListAlloc(1);

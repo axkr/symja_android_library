@@ -1225,9 +1225,6 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testNSolve002() {
-    // check("125*2^(3-2*z)", //
-    // "");
-
     checkNumeric("NSolve({2==x-0.091*y, y==0.054-0.0171*z, x==Exp(z)+1}, {x,y,z})", //
         "{{z->0.004894386769035759,y->0.053916305986249774,x->2.004906383844749}}");
 
@@ -2374,6 +2371,142 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "3))*3^(2/3)*(-2*Pi^2)^(1/3))/(2*2^(1/3)*Pi)},{y->(-3^(2/3)*(-Pi^2)^(1/3))/Pi}}");
     check("Solve({x==Pi*y^2,5==x/y},{x,y})", //
         "{{y->5/Pi,x->25/Pi}}");
+  }
+
+  @Test
+  public void testIssue1300() {
+    check("NMaxValue[Sin[x] - x^2 + 1, x]", //
+        "1.23247");
+    check("NSolve(Sin(x) == x^2 - 1,x)", //
+        "{{x->-0.636733},{x->1.40962}}");
+  }
+
+  @Test
+  public void testTripleRoot() {
+    // Edge Case: (x - 2)^3 == 0
+    // Expanded: x^3 - 6*x^2 + 12*x - 8 == 0
+    // Both the discriminant and delta0 are exactly 0.
+    check("Solve(x^3 - 6*x^2 + 12*x - 8 == 0, x)", //
+        "{{x->2}}");
+  }
+
+  @Test
+  public void testDoubleAndSimpleRoot() {
+    // Edge Case: (x - 1)^2 * (x + 2) == 0
+    // Expanded: x^3 - 3*x + 2 == 0
+    // Discriminant is 0, but delta0 is NOT 0.
+    // Triggers the branch that calculates a double root and a distinct simple root.
+    check("Solve(x^3 - 3*x + 2 == 0, x)", //
+        "{{x->-2},{x->1}}");
+  }
+
+  @Test
+  public void testThreeDistinctRealRoots() {
+    // Edge Case: (x - 1)*(x - 2)*(x - 3) == 0
+    // Expanded: x^3 - 6*x^2 + 11*x - 6 == 0
+    // This is the "casus irreducibilis" where the cubic has 3 real roots,
+    // but the formula requires passing through complex numbers.
+    // The solver must correctly cancel the imaginary parts.
+    check("Solve(x^3 - 6*x^2 + 11*x - 6 == 0, x)", //
+        "{{x->1},{x->2},{x->3}}");
+  }
+
+  @Test
+  public void testOneRealTwoComplexRoots() {
+    // Edge Case: x^3 - 1 == 0
+    // Tests the standard branch with delta3 in the denominator.
+    // Should yield 1 and the two complex conjugate roots.
+    check("Solve(x^3 - 1 == 0, x)", //
+        "{{x->1},{x->-(-1)^(1/3)},{x->(-1)^(2/3)}}");
+  }
+
+  @Test
+  public void testZeroResolventConjugateBranch() {
+    // Edge Case: -Pi*x^3 + 9 == 0
+    // This is the specific case where delta0 == 0 and delta1 < 0.
+    // It tests the fix that prevents argDelta3 from evaluating to 0,
+    // which would otherwise cause an Indeterminate division by zero.
+    check("Solve(-Pi*x^3 + 9 == 0, x)", //
+        "{{x->(-3)^(2/3)/Pi^(1/3)},{x->3^(2/3)/Pi^(1/3)},{x->(-(-1)^(1/3)*3^(2/3))/Pi^(1/\n"
+            + "3)}}");
+  }
+
+  @Test
+  public void testDegenerateCubicToQuadratic() {
+    // Edge Case: a == 0
+    // Equation: 0*x^3 + x^2 - 4 == 0
+    // Tests the immediate fallback routing to quadraticSolve.
+    check("Solve(0*x^3 + x^2 - 4 == 0, x)", //
+        "{{x->-2},{x->2}}");
+  }
+
+  @Test
+  public void testZeroConstantTerm() {
+    // Edge Case: d == 0
+    // Equation: x^3 - 4*x == 0
+    // Tests the immediate fallback routing that factors out x=0
+    // and solves the remaining quadratic a*x^2 + b*x + c == 0.
+    check("Solve(x^3 - 4*x == 0, x)", //
+        "{{x->-2},{x->0},{x->2}}");
+  }
+
+  @Test
+  public void testBiquadraticZeroResolvent() {
+    // Edge Case: Biquadratic equation (a*x^4 + c*x^2 + e == 0)
+    // This causes the standard resolvent cubic to have a root at 0.
+    // If the algorithm blindly divides by this root, it throws an exception or returns
+    // Indeterminate.
+    // Expected: {{x->-2}, {x->-1}, {x->1}, {x->2}}
+    check("Solve(x^4 - 5*x^2 + 4 == 0, x)", //
+        "{{x->-2},{x->-1},{x->1},{x->2}}");
+  }
+
+  @Test
+  public void testRootMultiplicityFour() {
+    // Edge Case: (x - 1)^4 == 0
+    // Expanded: x^4 - 4*x^3 + 6*x^2 - 4*x + 1 == 0
+    // The discriminant of the quartic and its resolvent cubic are both completely 0.
+    check("Solve(x^4 - 4*x^3 + 6*x^2 - 4*x + 1 == 0, x)", //
+        "{{x->1}}");
+  }
+
+  @Test
+  public void testTwoDoubleRoots() {
+    // Edge Case: (x^2 - 2)^2 == 0
+    // Expanded: x^4 - 4*x^2 + 4 == 0
+    // Resolvent roots will collapse, requiring fallback to depressed quadratic handling.
+    check("Solve(x^4 - 4*x^2 + 4 == 0, x)", //
+        "{{x->-Sqrt(2)},{x->Sqrt(2)}}");
+  }
+
+  @Test
+  public void testCasusIrreducibilisRealRoots() {
+    // Edge Case: (x-1)*(x-2)*(x-3)*(x-4) == 0
+    // Expanded: x^4 - 10*x^3 + 35*x^2 - 50*x + 24 == 0
+    // Four distinct real roots force the resolvent cubic into complex arithmetic.
+    // The solver must correctly cancel out the imaginary parts to return pure real roots.
+    check("Solve(x^4 - 10*x^3 + 35*x^2 - 50*x + 24 == 0, x)", //
+        "{{x->1},{x->2},{x->3},{x->4}}");
+  }
+
+  @Test
+  public void testDepressedQuarticNoLinearTerm() {
+    // Edge Case: x^4 + x^2 = 0
+    // Roots are 0 (double root), I, and -I.
+    // Checks if the solver correctly switches domains without throwing exceptions in the linear
+    // branch.
+    check("Solve(x^4 + x^2 == 0, x)", //
+        "{{x->-I},{x->0},{x->I}}");
+  }
+
+  @Test
+  public void testGoldenRatioRelatedRoots() {
+    // Edge Case: x^4 - x^3 - x^2 - x + 1 == 0
+    // This symmetric polynomial evaluates to expressions involving Sqrt(5).
+    check("Solve(x^4 - x^3 - x^2 - x + 1 == 0, x)", //
+        "{{x->1/4*(1+Sqrt(13)-2*Sqrt(-1/2+Sqrt(13)/2))},{x->1/2*(1/2*(1-Sqrt(13))-I*Sqrt(\n" //
+            + "4-(1-Sqrt(13))^2/4))},{x->1/2*(1/2*(1-Sqrt(13))+I*Sqrt(4-(1-Sqrt(13))^2/4))},{x->\n" //
+            + "1/2*(1/2*(1+Sqrt(13))+Sqrt(-4+(1+Sqrt(13))^2/4))}}");
   }
 
   /** The JUnit setup method */
