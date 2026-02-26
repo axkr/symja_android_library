@@ -291,6 +291,7 @@ public class PolynomialFunctions {
       return F.list(F.Rule(F.mapRange(1, symbolList.size(), i -> F.C0), expr));
     }
 
+    @Deprecated
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_4;
@@ -1595,6 +1596,11 @@ public class PolynomialFunctions {
       if (ast.argSize() == 2) {
         IExpr n = ast.arg1();
         IExpr z = ast.arg2();
+        if (z.isCos()) {
+          IExpr t = z.first();
+          // Csc(t) * Sin((1 + n) * t)
+          return F.Times(F.Csc(t), F.Sin(F.Times(F.Plus(F.C1, n), t)));
+        }
         // Sin((1+n)*ArcCos(z))/(Sqrt(1-z)*Sqrt(1+z))
         return F.Times(
             F.Power(F.Times(F.Sqrt(F.Subtract(F.C1, z)), F.Sqrt(F.Plus(F.C1, z))), F.CN1),

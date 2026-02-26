@@ -331,6 +331,22 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFunctionChebychevT() {
+    check("FunctionExpand(ChebyshevT(n, Cos(theta)))", //
+        "Cos(n*ArcCos(Cos(theta)))");
+    check("FunctionExpand(ChebyshevT(n, Sin(theta)))", //
+        "Cos(n*ArcCos(Sin(theta)))");
+  }
+
+  @Test
+  public void testFunctionChebychevU() {
+    check("FunctionExpand(ChebyshevU(n, Cos(theta)))", //
+        "Csc(theta)*Sin((1+n)*theta)");
+    check("FunctionExpand(ChebyshevU(n, Sin(theta)))", //
+        "Sin((1+n)*ArcCos(Sin(theta)))/(Sqrt(1-Sin(theta))*Sqrt(1+Sin(theta)))");
+  }
+
+  @Test
   public void testFunctionExpandBinomial() {
     check("FunctionExpand(Binomial(a,b))", //
         "Gamma(1+a)/(Gamma(1+a-b)*Gamma(1+b))");
@@ -371,6 +387,12 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
     check("FunctionExpand(MeijerG({{},{a2}},{{b1},{}},z))", //
         "Piecewise({{z^b1/((1-z)^(1-a2+b1)*Gamma(a2-b1)),(z==1&&-Re(a2)+Re(b1)<-1)||Abs(z)<\n"
             + "1},{0,Abs(z)>1}},Indeterminate)");
+  }
+
+  @Test
+  public void testFunctionMod() {
+    check("FunctionExpand(Mod((p-1)!, p),Element(p,Primes))", //
+        "p");
   }
 
   @Test

@@ -1462,6 +1462,19 @@ public class IntegerFunctions {
       if (ast.isAST2()) {
         IExpr m = ast.arg1();
         IExpr n = ast.arg2();
+        if (m.isAST(S.Factorial, 2) && AbstractAssumptions.assumePrime(n).isTrue()) {
+          IExpr f = m.first();
+          if (f.subtract(n).isOne()) {
+            // Mod[(n-1)!, n]
+            return f;
+          }
+        } else if (m.isAST(S.Gamma, 2) && AbstractAssumptions.assumePrime(n).isTrue()) {
+          IExpr f = m.first();
+          if (f.equals(n)) {
+            // Mod[(n-1)!, n]
+            return f;
+          }
+        }
         // m-n*Floor(m/n)
         return F.Plus(m, F.Times(F.CN1, n, F.Floor(F.Times(m, F.Power(n, F.CN1)))));
       }
