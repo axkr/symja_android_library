@@ -1281,7 +1281,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         }
         IAST equationVariables = VariablesSet.getVariables(ast.arg1());
         IAST variables = F.NIL;
-        if (ast.argSize() > 1) {
+        if (ast.argSize() > 1 && !ast.arg2().isNIL() && !ast.arg2().isEmptyList()) {
           variables = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
         } else {
           variables = equationVariables;
