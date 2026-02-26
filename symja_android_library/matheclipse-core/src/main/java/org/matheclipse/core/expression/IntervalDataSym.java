@@ -433,7 +433,7 @@ public class IntervalDataSym {
    * @return the intersection of the two intervals
    */
   public static IAST intersection(final IAST interval1, final IAST interval2, EvalEngine engine) {
-    IASTAppendable result = F.ast(S.IntervalData, 3);
+    IASTAppendable result = F.IntervalDataAlloc(interval1.argSize() + interval2.argSize());
     for (int i = 1; i < interval1.size(); i++) {
       IAST list1 = (IAST) interval1.get(i);
       for (int j = 1; j < interval2.size(); j++) {
@@ -460,7 +460,7 @@ public class IntervalDataSym {
             continue;
           }
         }
-        if (min1.lessEqual(min2).isTrue()) {
+        if (S.LessEqual.ofQ(engine, min1, min2)) {
           if (S.Equal.ofQ(engine, min1, min2)) {
             if (left2 == S.Less) {
               min1 = min2;
@@ -471,7 +471,7 @@ public class IntervalDataSym {
             left1 = left2;
           }
         }
-        if (max1.greaterEqual(max2).isTrue()) {
+        if (S.GreaterEqual.ofQ(engine, max1, max2)) {
           if (S.Equal.ofQ(engine, max1, max2)) {
             if (right2 == S.Less) {
               max1 = max2;
@@ -623,7 +623,7 @@ public class IntervalDataSym {
         }
       }
     }
-    IASTAppendable result = F.ast(S.IntervalData, calculatedResultSize);
+    IASTAppendable result = F.IntervalDataAlloc(calculatedResultSize);
     for (int i = 1; i < ast.size(); i++) {
       IAST interval = (IAST) ast.get(i);
       for (int j = 1; j < interval.size(); j++) {
@@ -2169,10 +2169,15 @@ public class IntervalDataSym {
       if (orAST.argSize() == 1) {
         return toIntervalData(orAST.arg1(), variable, engine, false);
       }
-      IExpr orInterval = orAST.mapThread(x -> toIntervalData(x, variable, engine, false));
-      if (orInterval.isOr()) {
-        return IntervalDataSym.intervalDataUnion((IAST) orInterval, engine);
+      IASTAppendable orInterval = F.ast(S.Or, orAST.argSize());
+      for (int i = 1; i < orAST.size(); i++) {
+        IAST temp = toIntervalData(orAST.get(i), variable, engine, false);
+        if (temp.isNIL()) {
+          return F.NIL;
+        }
+        orInterval.append(temp);
       }
+      return IntervalDataSym.intervalDataUnion(orInterval, engine);
     } else if (logicOrDomainExpr.isASTSizeGE(S.And, 2)
         || (listAsAnd && logicOrDomainExpr.isASTSizeGE(S.List, 2))) {
       IAST andAST = (IAST) logicOrDomainExpr;
@@ -2341,7 +2346,7 @@ public class IntervalDataSym {
   }
 
   public static IAST union(final IAST interval1, final IAST interval2, EvalEngine engine) {
-    IASTAppendable result = F.ast(S.IntervalData, interval1.size() + interval2.size());
+    IASTAppendable result = F.IntervalDataAlloc(interval1.argSize() + interval2.argSize());
     result.appendArgs(interval1);
     result.appendArgs(interval2);
 
