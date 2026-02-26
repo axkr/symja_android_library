@@ -2751,6 +2751,8 @@ public class S {
    */
   public final static IBuiltInSymbol DateValue = S.initFinalSymbol("DateValue", ID.DateValue);
 
+  public final static IBuiltInSymbol DawsonF = S.initFinalSymbol("DawsonF", ID.DawsonF);
+
   /**
    * Decrement(x) - decrements `x` by `1`, returning the original value of `x`.
    * 
