@@ -35,6 +35,12 @@ public class Assumptions extends AbstractAssumptions {
       unequalValues.add(expr);
     }
 
+    public ComplexRelations copy() {
+      ComplexRelations clone = new ComplexRelations();
+      clone.unequalValues.addAll(this.unequalValues);
+      return clone;
+    }
+
     public final ArrayList<INumber> getUnequals() {
       return unequalValues;
     }
@@ -118,6 +124,13 @@ public class Assumptions extends AbstractAssumptions {
         interval = IntervalDataSym.union(interval, //
             IntervalDataSym.close(lhs, rhs), engine);
       }
+    }
+
+    public RealRelations copy() {
+      RealRelations clone = new RealRelations();
+      clone.engine = this.engine;
+      clone.interval = this.interval; 
+      return clone;
     }
 
     public IAST getInterval() {
@@ -465,11 +478,14 @@ public class Assumptions extends AbstractAssumptions {
           if (relations == null) {
             relations = new RealRelations();
           }
-          if (operator == RelationalOperator.GREATER //
-              || operator == RelationalOperator.GREATER_EQUAL) {
+          if (operator == RelationalOperator.GREATER) {
+            relations.addLess(num3, num1, intersection);
+          } else if (operator == RelationalOperator.GREATER_EQUAL) {
             relations.addLessEqual(num3, num1, intersection);
-          } else {
+          } else if (operator == RelationalOperator.LESS) {
             relations.addLess(num1, num3, intersection);
+          } else if (operator == RelationalOperator.LESS_EQUAL) {
+            relations.addLessEqual(num1, num3, intersection);
           }
           assumptions.realRelationsMap.put(key, relations);
           return true;
@@ -543,6 +559,23 @@ public class Assumptions extends AbstractAssumptions {
     return false;
   }
 
+  @Override
+  public IAssumptions copy() {
+    Assumptions assumptions = new Assumptions();
+    assumptions.distributionsMap = new HashMap<>(distributionsMap);
+    assumptions.elementsMap = new HashMap<>(elementsMap);
+
+    assumptions.realRelationsMap = new HashMap<>();
+    for (Map.Entry<IExpr, RealRelations> entry : realRelationsMap.entrySet()) {
+      assumptions.realRelationsMap.put(entry.getKey(), entry.getValue().copy());
+    }
+
+    assumptions.complexRelationsMap = new HashMap<>();
+    for (Map.Entry<IExpr, ComplexRelations> entry : complexRelationsMap.entrySet()) {
+      assumptions.complexRelationsMap.put(entry.getKey(), entry.getValue().copy());
+    }
+    return assumptions;
+  }
 
   /**
    * Create a new empty <code>IAssumptions</code>.
@@ -655,16 +688,6 @@ public class Assumptions extends AbstractAssumptions {
       }
     }
     return false;
-  }
-
-  @Override
-  public IAssumptions copy() {
-    Assumptions assumptions = new Assumptions();
-    assumptions.distributionsMap = new HashMap<>(distributionsMap);
-    assumptions.elementsMap = new HashMap<>(elementsMap);
-    assumptions.realRelationsMap = new HashMap<>(realRelationsMap);
-    assumptions.complexRelationsMap = new HashMap<>(complexRelationsMap);
-    return assumptions;
   }
 
   @Override
@@ -872,7 +895,7 @@ public class Assumptions extends AbstractAssumptions {
           return null;
         }
         int iMax = max.toIntDefault();
-        if (F.isNotPresent(iMin)) {
+        if (F.isNotPresent(iMax)) {
           return null;
         }
         iList.add(iMin);
