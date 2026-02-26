@@ -2480,6 +2480,20 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testNoExplicitVariableList() {
+    check("Solve(x^2 - 1 == 0)", //
+        "{{x->-1},{x->1}}");
+  }
+
+  @Test
+  public void testEmptyVariableList() {
+    // In case the specified variable list is empty, fall back to implicit search
+    check("Solve(x^2 - 1 == 0,{})", //
+        "{{x->-1},{x->1}}");
+  }
+
+
+  @Test
   public void testCasusIrreducibilisRealRoots() {
     // Edge Case: (x-1)*(x-2)*(x-3)*(x-4) == 0
     // Expanded: x^4 - 10*x^3 + 35*x^2 - 50*x + 24 == 0
