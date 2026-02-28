@@ -1834,27 +1834,27 @@ public class Num implements INum {
     return INum.super.legendreQ(arg2, arg3);
   }
 
-  // @Override
-  // public IInexactNumber barnesG() {
-  // try {
-  // return valueOf(EvalEngine.getApfloatDouble().barnesG(apfloatValue()).doubleValue());
-  // } catch (ApfloatArithmeticException aae) {
-  // //
-  // }
-  // Apcomplex barnesG = EvalEngine.getApfloatDouble().barnesG(apcomplexValue());
-  // return F.complexNum(barnesG.real().doubleValue(), barnesG.imag().doubleValue());
-  // }
-  //
-  // @Override
-  // public IInexactNumber logBarnesG() {
-  // try {
-  // return valueOf(EvalEngine.getApfloatDouble().logBarnesG(apfloatValue()).doubleValue());
-  // } catch (ApfloatArithmeticException aae) {
-  //
-  // }
-  // Apcomplex logBarnesG = EvalEngine.getApfloatDouble().logBarnesG(apcomplexValue());
-  // return F.complexNum(logBarnesG.real().doubleValue(), logBarnesG.imag().doubleValue());
-  // }
+  @Override
+  public IInexactNumber barnesG() {
+    try {
+      return valueOf(EvalEngine.getApfloatDouble().barnesG(apfloatValue()).doubleValue());
+    } catch (ApfloatArithmeticException aae) {
+      //
+    }
+    Apcomplex barnesG = EvalEngine.getApfloatDouble().barnesG(apcomplexValue());
+    return F.complexNum(barnesG.real().doubleValue(), barnesG.imag().doubleValue());
+  }
+
+  @Override
+  public IInexactNumber logBarnesG() {
+    try {
+      return valueOf(EvalEngine.getApfloatDouble().logBarnesG(apfloatValue()).doubleValue());
+    } catch (ApfloatArithmeticException aae) {
+
+    }
+    Apcomplex logBarnesG = EvalEngine.getApfloatDouble().logBarnesG(apcomplexValue());
+    return F.complexNum(logBarnesG.real().doubleValue(), logBarnesG.imag().doubleValue());
+  }
 
   @Override
   public IInexactNumber log() {

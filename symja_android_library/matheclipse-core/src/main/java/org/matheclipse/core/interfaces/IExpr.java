@@ -933,9 +933,9 @@ public interface IExpr
     return S.ArcTanh.of(this);
   }
 
-  // default IExpr barnesG() {
-  // return F.NIL;
-  // }
+  default IExpr barnesG() {
+    return F.NIL;
+  }
 
   /**
    * Get the first element of this <code>AST</code> list (i.e. get(1)). Return <code>F.NIL</code> if
@@ -5821,9 +5821,9 @@ public interface IExpr
     return S.Log.of(this.inc());
   }
 
-  // default IExpr logBarnesG() {
-  // return F.NIL;
-  // }
+  default IExpr logBarnesG() {
+    return F.NIL;
+  }
 
   /**
    * Numeric logarithm of the gamma function.

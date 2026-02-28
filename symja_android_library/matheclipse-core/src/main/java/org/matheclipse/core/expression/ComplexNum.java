@@ -394,9 +394,8 @@ public class ComplexNum implements IComplexNum {
   public IExpr angerJ(IExpr arg2) {
     if (arg2 instanceof INumber) {
       try {
-        Apcomplex angerJ =
-            EvalEngine.getApfloatDouble().angerJ(apcomplexValue(),
-                ((INumber) arg2).apcomplexValue());
+        Apcomplex angerJ = EvalEngine.getApfloatDouble().angerJ(apcomplexValue(),
+            ((INumber) arg2).apcomplexValue());
         return F.complexNum(angerJ.real().doubleValue(), angerJ.imag().doubleValue());
       } catch (ArithmeticException | NumericComputationException e) {
         // try as computation with complex numbers
@@ -1550,17 +1549,17 @@ public class ComplexNum implements IComplexNum {
     return IComplexNum.super.legendreQ(arg2, arg3);
   }
 
-  // @Override
-  // public IComplexNum barnesG() {
-  // Apcomplex barnesG = EvalEngine.getApfloat().barnesG(apcomplexValue());
-  // return F.complexNum(barnesG.real().doubleValue(), barnesG.imag().doubleValue());
-  // }
-  //
-  // @Override
-  // public IComplexNum logBarnesG() {
-  // Apcomplex logBarnesG = EvalEngine.getApfloat().logBarnesG(apcomplexValue());
-  // return F.complexNum(logBarnesG.real().doubleValue(), logBarnesG.imag().doubleValue());
-  // }
+  @Override
+  public IComplexNum barnesG() {
+    Apcomplex barnesG = EvalEngine.getApfloat().barnesG(apcomplexValue());
+    return F.complexNum(barnesG.real().doubleValue(), barnesG.imag().doubleValue());
+  }
+
+  @Override
+  public IComplexNum logBarnesG() {
+    Apcomplex logBarnesG = EvalEngine.getApfloat().logBarnesG(apcomplexValue());
+    return F.complexNum(logBarnesG.real().doubleValue(), logBarnesG.imag().doubleValue());
+  }
 
   @Override
   public ComplexNum log() {

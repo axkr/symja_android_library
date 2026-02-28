@@ -20,6 +20,7 @@ public final class FunctionDefinitions {
       S.AdjacencyGraph.setEvaluator(new org.matheclipse.core.reflection.system.AdjacencyGraph());
       S.ArrayPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ArrayPlot());
       S.ArraySymbol.setEvaluator(new org.matheclipse.core.reflection.system.ArraySymbol());
+      S.BarnesG.setEvaluator(new org.matheclipse.core.reflection.system.BarnesG());
       S.MatrixSymbol.setEvaluator(new org.matheclipse.core.reflection.system.MatrixSymbol());
       S.VectorSymbol.setEvaluator(new org.matheclipse.core.reflection.system.VectorSymbol());
       S.BarChart.setEvaluator(new org.matheclipse.core.builtin.graphics.BarChart());
@@ -100,6 +101,7 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.LinearOptimization());
       S.LinearProgramming
           .setEvaluator(new org.matheclipse.core.reflection.system.LinearProgramming());
+      S.LogBarnesG.setEvaluator(new org.matheclipse.core.reflection.system.LogBarnesG());
 
       S.MeijerG.setEvaluator(new org.matheclipse.core.reflection.system.MeijerG());
 

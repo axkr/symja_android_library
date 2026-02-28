@@ -1353,15 +1353,15 @@ public class ApcomplexNum implements IComplexNum {
     return valueOf(EvalEngine.getApfloat().log(fApcomplex));
   }
 
-  // @Override
-  // public ApcomplexNum barnesG() {
-  // return valueOf(EvalEngine.getApfloat().barnesG(fApcomplex));
-  // }
-  //
-  // @Override
-  // public ApcomplexNum logBarnesG() {
-  // return valueOf(EvalEngine.getApfloat().logBarnesG(fApcomplex));
-  // }
+  @Override
+  public ApcomplexNum barnesG() {
+    return valueOf(EvalEngine.getApfloat().barnesG(fApcomplex));
+  }
+
+  @Override
+  public ApcomplexNum logBarnesG() {
+    return valueOf(EvalEngine.getApfloat().logBarnesG(fApcomplex));
+  }
 
   @Override
   public IExpr log(final IExpr base) {

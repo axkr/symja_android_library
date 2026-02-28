@@ -1841,6 +1841,52 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "144");
   }
 
+
+  @Test
+  public void testBarnesG() {
+    check("BarnesG({-1/2, 3/2})", //
+        "{-E^(1/8)/(2^(23/24)*Glaisher^(3/2)*Pi^(3/4)),(2^(1/24)*E^(1/8)*Pi^(1/4))/Glaisher^(\n"
+            + "3/2)}");
+    check("BarnesG(1/4)", //
+        "E^(3/32-Catalan/(4*Pi))/(Glaisher^(9/8)*Gamma(1/4)^(3/4))");
+    check("BarnesG(-3/4)", //
+        "E^(3/32-Catalan/(4*Pi))/(Glaisher^(9/8)*Gamma(-3/4)*Gamma(1/4)^(3/4))");
+
+    check("BarnesG(0.5)", //
+        "0.603244");
+    check("N(BarnesG(1/7), 20)", //
+        "0.1597843850035697404");
+    check("BarnesG(0.222255555666222222222222222)", //
+        "0.258492333082583342675272806");
+    check("BarnesG(1.3+I)", //
+        "1.44461+I*(-0.298549)");
+
+    check("BarnesG(3)", //
+        "1");
+    check("BarnesG(10)", //
+        "5056584744960000");
+  }
+
+  @Test
+  public void testLogBarnesG() {
+    check("LogBarnesG(0.7)", //
+        "-0.21459");
+    // TODO
+    check("LogBarnesG(15.^500)", //
+        "LogBarnesG(Overflow())");
+    check("N(LogBarnesG(1/5), 20)", //
+        "-1.4678549668316788416");
+    check("LogBarnesG(0.2225566255555666222222222222222)", //
+        "-1.351415275469106474268300887987");
+    check("LogBarnesG(1.7+I)", //
+        "0.121379+I*(-0.313562)");
+
+    check("LogBarnesG(1)", //
+        "0");
+    check("LogBarnesG(2)", //
+        "0");
+  }
+
   @Test
   public void testBaseDecode() {
     check(
