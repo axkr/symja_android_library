@@ -642,8 +642,7 @@ public class Config {
   public static boolean RUBI_CONVERT_SYMBOLS = false;
 
   public static String getVersion() {
-    try (InputStream resourceAsStream = Config.class
-        .getResourceAsStream("/META-INF/maven/org.matheclipse/matheclipse-core/pom.properties")) {
+    try (InputStream resourceAsStream = Config.class.getResourceAsStream("/version.properties")) {
       if (resourceAsStream != null) {
         Properties prop = new Properties();
         prop.load(resourceAsStream);
