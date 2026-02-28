@@ -13,27 +13,96 @@ import com.google.common.collect.ImmutableMap;
 
 /** Converts an internal <code>IExpr</code> into a user readable string. */
 public class JavaComplexFormFactory extends ComplexFormFactory {
-  private static final Map<ISymbol, String> FUNCTIONS_STR;// = new HashMap<ISymbol, String>();
+  private static final Map<ISymbol, String> FUNCTIONS_STR;
 
   static {
     ImmutableMap.Builder<ISymbol, String> builder = ImmutableMap.builder();
-    builder.put(S.Abs, ".abs");
+    builder.put(S.ArithmeticGeometricMean, "CMath.agm");
+    builder.put(S.AiryAi, "CMath.airyAi");
+    builder.put(S.AiryAiPrime, "CMath.airyAiPrime");
+    builder.put(S.AiryBi, "CMath.airyBi");
+    builder.put(S.AiryBiPrime, "CMath.airyBiPrime");
+    builder.put(S.AngerJ, "CMath.angerJ");
+    builder.put(S.BarnesG, "CMath.barnesG");
+    builder.put(S.BesselI, "CMath.besselI");
+    builder.put(S.BesselJ, "CMath.besselJ");
+    builder.put(S.BesselK, "CMath.besselK");
+    builder.put(S.BesselY, "CMath.besselY");
+    builder.put(S.Beta, "CMath.beta");
+    builder.put(S.ChebyshevT, "CMath.chebyshevT");
+    builder.put(S.ChebyshevU, "CMath.chebyshevU");
+    builder.put(S.CoshIntegral, "CMath.coshIntegral");
+    builder.put(S.CosIntegral, "CMath.cosIntegral");
+    builder.put(S.EllipticE, "CMath.ellipticE");
+    builder.put(S.EllipticK, "CMath.ellipticK");
+    builder.put(S.Erf, "CMath.erf");
+    builder.put(S.Erfc, "CMath.erfc");
+    builder.put(S.Erfi, "CMath.erfi");
+    builder.put(S.ExpIntegralE, "CMath.expIntegralE");
+    builder.put(S.ExpIntegralEi, "CMath.expIntegralEi");
+    builder.put(S.Fibonacci, "CMath.fibonacci");
+    builder.put(S.FresnelC, "CMath.fresnelC");
+    builder.put(S.FresnelS, "CMath.fresnelS");
+    builder.put(S.Gamma, "CMath.gamma");
+    builder.put(S.GegenbauerC, "CMath.gegenbauerC");
+    builder.put(S.HarmonicNumber, "CMath.harmonicNumber");
+    builder.put(S.HermiteH, "CMath.hermiteH");
+    builder.put(S.Hypergeometric0F1, "CMath.hypergeometric0F1");
+    builder.put(S.Hypergeometric0F1Regularized, "CMath.hypergeometric0F1Regularized");
+    builder.put(S.Hypergeometric1F1, "CMath.hypergeometric1F1");
+    builder.put(S.Hypergeometric1F1Regularized, "CMath.hypergeometric1F1Regularized");
+    builder.put(S.Hypergeometric2F1, "CMath.hypergeometric2F1");
+    builder.put(S.Hypergeometric2F1Regularized, "CMath.hypergeometric2F1Regularized");
+    builder.put(S.HypergeometricU, "CMath.hypergeometricU");
+    builder.put(S.JacobiP, "CMath.jacobiP");
+    builder.put(S.LaguerreL, "CMath.laguerreL");
+    builder.put(S.LegendreP, "CMath.legendreP");
+    builder.put(S.LegendreQ, "CMath.legendreQ");
+    builder.put(S.LogBarnesG, "CMath.logBarnesG");
+    builder.put(S.LogGamma, "CMath.logGamma");
+    builder.put(S.LogIntegral, "CMath.logIntegral");
+    builder.put(S.LogisticSigmoid, "CMath.logisticSigmoid");
+    builder.put(S.Pochhammer, "CMath.pochhammer");
+    builder.put(S.PolyGamma, "CMath.polyGamma");
+    builder.put(S.PolyLog, "CMath.polyLog");
+    builder.put(S.SinhIntegral, "CMath.sinhIntegral");
+    builder.put(S.SinIntegral, "CMath.sinIntegral");
+    builder.put(S.StruveH, "CMath.struveH");
+    builder.put(S.StruveL, "CMath.struveL");
 
+    // --- Added Arc- and Hyperbolic Functions via CMath ---
+    builder.put(S.ArcCosh, "CMath.acosh");
+    builder.put(S.ArcSinh, "CMath.asinh");
+    builder.put(S.ArcTanh, "CMath.atanh");
+
+    builder.put(S.Csc, "CMath.csc");
+    builder.put(S.Sec, "CMath.sec");
+    builder.put(S.Cot, "CMath.cot");
+    builder.put(S.Csch, "CMath.csch");
+    builder.put(S.Sech, "CMath.sech");
+    builder.put(S.Coth, "CMath.coth");
+
+    builder.put(S.ArcCsc, "CMath.acsc");
+    builder.put(S.ArcSec, "CMath.asec");
+    builder.put(S.ArcCot, "CMath.acot");
+    builder.put(S.ArcCsch, "CMath.acsch");
+    builder.put(S.ArcSech, "CMath.asech");
+    builder.put(S.ArcCoth, "CMath.acoth");
+
+    // --- Native Hipparchus Instance Methods ---
+    builder.put(S.Abs, ".abs");
     builder.put(S.ArcCos, ".acos");
     builder.put(S.ArcSin, ".asin");
     builder.put(S.ArcTan, ".atan");
-
     builder.put(S.Ceiling, ".ceil");
     builder.put(S.Cos, ".cos");
     builder.put(S.Cosh, ".cosh");
     builder.put(S.Floor, ".floor");
-
     builder.put(S.Log, ".log");
     builder.put(S.Max, ".max");
     builder.put(S.Min, ".min");
-    // Power is handled by coding
+    // Power is handled manually by coding logic below
     builder.put(S.Power, ".pow");
-
     builder.put(S.Sin, ".sin");
     builder.put(S.Sinh, ".sinh");
     builder.put(S.Tan, ".tan");
@@ -141,39 +210,50 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
     if (head.isSymbol() && function.size() > 1) {
       String str = functionHead((ISymbol) head);
       if (str != null) {
-        if (function.isPower()) {
-          IExpr base = function.base();
-          IExpr exponent = function.exponent();
-          if (exponent.isNumEqualRational(F.C1D2)) {
+        if (str.startsWith(".")) {
+          // Native Hipparchus Complex Instance Methods (e.g., .abs(), .sin())
+          if (function.isPower()) {
+            IExpr base = function.base();
+            IExpr exponent = function.exponent();
+            if (exponent.isNumEqualRational(F.C1D2)) {
+              buf.append("(");
+              convertInternal(buf, base);
+              buf.append(").sqrt()");
+              return;
+            } else if (exponent.isNumEqualRational(F.C1D3)) {
+              buf.append("(");
+              convertInternal(buf, base);
+              buf.append(").cbrt()");
+              return;
+            } else if (exponent.isNumEqualRational(F.CN1D2)) {
+              buf.append("(");
+              convertInternal(buf, base);
+              buf.append(").reciprocal().sqrt()");
+              return;
+            } else if (exponent.isMinusOne()) {
+              buf.append("(");
+              convertInternal(buf, base);
+              buf.append(").reciprocal()");
+              return;
+            }
+          } else if (function.isDirectedInfinity()) {
+            if (function.isInfinity()) {
+              buf.append("Complex.INF");
+              return;
+            } else if (function.isNegativeInfinity()) {
+              buf.append("(-Complex.INF)");
+              return;
+            }
             buf.append("(");
-            convertInternal(buf, base);
-            buf.append(").sqrt()");
-            return;
-          } else if (exponent.isNumEqualRational(F.C1D3)) {
-            buf.append("(");
-            convertInternal(buf, base);
-            buf.append(").cbrt()");
-            return;
-          } else if (exponent.isNumEqualRational(F.CN1D2)) {
-            buf.append("(");
-            convertInternal(buf, base);
-            buf.append(").reciprocal().sqrt()");
-            return;
-          } else if (exponent.isMinusOne()) {
-            buf.append("(");
-            convertInternal(buf, base);
-            buf.append(").reciprocal()");
+            convertInternal(buf, function.first());
+            buf.append(")" + str);
+            if (function.isAST(S.ArcTan, 3)) {
+              buf.append("2");
+            }
+            convertArgs(buf, head, function, 2);
             return;
           }
-        } else if (function.isDirectedInfinity()) {
-          if (function.isInfinity()) {
-            buf.append("Complex.INF");
-            return;
-          } else if (function.isNegativeInfinity()) {
-            buf.append("(-Complex.INF)");
-            return;
-          }
-          // Complex atan2(Complex x) {
+
           buf.append("(");
           convertInternal(buf, function.first());
           buf.append(")" + str);
@@ -182,16 +262,12 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
           }
           convertArgs(buf, head, function, 2);
           return;
+        } else {
+          // Static CMath Function Calls (e.g. CMath.gamma(x), CMath.acosh(x))
+          buf.append(str);
+          convertArgs(buf, head, function, 1);
+          return;
         }
-        // Complex atan2(Complex x) {
-        buf.append("(");
-        convertInternal(buf, function.first());
-        buf.append(")" + str);
-        if (function.isAST(S.ArcTan, 3)) {
-          buf.append("2");
-        }
-        convertArgs(buf, head, function, 2);
-        return;
       }
       if (function.headID() > 0) {
         if (function.isAST(S.Defer, 2) || function.isAST(S.Evaluate, 2) || function.isAST(S.Hold, 2)
@@ -235,14 +311,12 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
         }
         buf.append("F.");
         buf.append(head.toString());
-        buf.append(".ofN(");
+        buf.append(".ofN");
         convertArgs(buf, head, function, 1);
-        buf.append(")");
         return;
       }
       convertInternal(buf, head);
       convertArgs(buf, head, function, 1);
     }
   }
-
 }

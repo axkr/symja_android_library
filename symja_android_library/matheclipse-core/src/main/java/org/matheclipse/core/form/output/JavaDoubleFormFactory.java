@@ -16,21 +16,67 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
 
   static {
     ImmutableMap.Builder<ISymbol, String> builder = ImmutableMap.builder();
+    builder.put(S.ArithmeticGeometricMean, "DMath.agm");
     builder.put(S.AiryAi, "DMath.airyAi");
     builder.put(S.AiryAiPrime, "DMath.airyAiPrime");
     builder.put(S.AiryBi, "DMath.airyBi");
     builder.put(S.AiryBiPrime, "DMath.airyBiPrime");
+    builder.put(S.AngerJ, "DMath.angerJ");
     builder.put(S.BesselI, "DMath.besselI");
     builder.put(S.BesselJ, "DMath.besselJ");
     builder.put(S.BesselK, "DMath.besselK");
     builder.put(S.BesselY, "DMath.besselY");
     builder.put(S.Beta, "DMath.beta");
+    builder.put(S.ChebyshevT, "DMath.chebyshevT");
+    builder.put(S.ChebyshevU, "DMath.chebyshevU");
     builder.put(S.EllipticE, "DMath.ellipticE");
     builder.put(S.EllipticK, "DMath.ellipticK");
     builder.put(S.Erf, "DMath.erf");
     builder.put(S.Erfc, "DMath.erfc");
     builder.put(S.Erfi, "DMath.erfi");
+    builder.put(S.Fibonacci, "DMath.fibonacci");
+    builder.put(S.FresnelC, "DMath.fresnelC");
+    builder.put(S.FresnelS, "DMath.fresnelS");
+    builder.put(S.Gamma, "DMath.gamma");
+    builder.put(S.GegenbauerC, "DMath.gegenbauerC");
+    builder.put(S.HarmonicNumber, "DMath.harmonicNumber");
+    builder.put(S.HermiteH, "DMath.hermiteH");
+    builder.put(S.Hypergeometric0F1Regularized, "DMath.hypergeometric0F1Regularized");
+    builder.put(S.Hypergeometric1F1Regularized, "DMath.hypergeometric1F1Regularized");
+    builder.put(S.Hypergeometric2F1, "DMath.hypergeometric2F1");
+    builder.put(S.Hypergeometric2F1Regularized, "DMath.hypergeometric2F1Regularized");
+    builder.put(S.InverseErf, "DMath.inverseErf");
+    builder.put(S.InverseErfc, "DMath.inverseErfc");
+    builder.put(S.JacobiP, "DMath.jacobiP");
+    builder.put(S.LaguerreL, "DMath.laguerreL");
+    builder.put(S.LegendreP, "DMath.legendreP");
+    builder.put(S.LegendreQ, "DMath.legendreQ");
+    builder.put(S.LogGamma, "DMath.logGamma");
+    builder.put(S.LogisticSigmoid, "DMath.logisticSigmoid");
+    builder.put(S.Pochhammer, "DMath.pochhammer");
+    builder.put(S.PolyGamma, "DMath.polyGamma");
+    builder.put(S.PolyLog, "DMath.polyLog");
 
+    // --- Added Arc- and Hyperbolic Functions via DMath ---
+    builder.put(S.ArcCosh, "DMath.acosh");
+    builder.put(S.ArcSinh, "DMath.asinh");
+    builder.put(S.ArcTanh, "DMath.atanh");
+
+    builder.put(S.Csc, "DMath.csc");
+    builder.put(S.Sec, "DMath.sec");
+    builder.put(S.Cot, "DMath.cot");
+    builder.put(S.Csch, "DMath.csch");
+    builder.put(S.Sech, "DMath.sech");
+    builder.put(S.Coth, "DMath.coth");
+
+    builder.put(S.ArcCsc, "DMath.acsc");
+    builder.put(S.ArcSec, "DMath.asec");
+    builder.put(S.ArcCot, "DMath.acot");
+    builder.put(S.ArcCsch, "DMath.acsch");
+    builder.put(S.ArcSech, "DMath.asech");
+    builder.put(S.ArcCoth, "DMath.acoth");
+
+    // --- Native java.lang.Math Methods ---
     builder.put(S.Abs, "Math.abs");
     builder.put(S.RealAbs, "Math.abs");
     builder.put(S.Sign, "Math.signum");
@@ -49,8 +95,8 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
     builder.put(S.Log10, "Math.log10");
     builder.put(S.Max, "Math.max");
     builder.put(S.Min, "Math.min");
-    // Power is handled by coding
-    // FUNCTIONS_STR.put(F.Power, "Math.pow");
+    // Power is handled manually by coding logic below
+    // builder.put(S.Power, "Math.pow");
 
     builder.put(S.Sin, "Math.sin");
     builder.put(S.Sinh, "Math.sinh");
@@ -200,7 +246,6 @@ public class JavaDoubleFormFactory extends DoubleFormFactory {
       buf.append(head.toString());
       buf.append(".ofN");
       convertArgs(buf, head, function);
-      // buf.append("");
       return;
     }
     if (function.isInfinity()) {

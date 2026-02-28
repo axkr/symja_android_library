@@ -140,171 +140,58 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
           + "   If(Re(zn) > 0, 1, If(Im(zn)> 0, 2, 3))));", //
           "");
       check("newt(-0.75,25)", //
-          "3.0");
+          "3");
     }
   }
 
   @Test
   public void testCompileModuleOverflow() {
     if (ToggleFeature.COMPILE) {
-      // check(
-      // "CompilePrint({{n, _Integer}},\n" //
-      // + " Module({s = 1}, Do(s = (2*s + i), {i, n}); s))", //
-      // "3.80295*10^30 ");
       check("fi1 = Compile({{n, _Integer}},\n" //
           + "   Module({s = 1}, Do(s = (2*s + i), {i, n}); s));\n" //
           + "fi1(100)", //
-          "3802951800684688204490109616026");
+          "3.80295*10^30");
     }
   }
 
   @Test
-  public void testCompilePrint002() {
+  public void testCompile002() {
     if (ToggleFeature.COMPILE) {
-      check("f=CompilePrint({x}, E^3-Cos(Pi^2/x))", //
-          "/** Compile with <a href=\"https://github.com/janino-compiler/janino\">Janino compiler</a> */\n" //
-              + "package org.matheclipse.core.compile;\n" //
-              + "\n" //
-              + "import java.util.ArrayList;\n" //
-              + "import org.hipparchus.complex.Complex;\n" //
-              + "import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;\n" //
-              + "import org.matheclipse.core.interfaces.*;\n" //
-              + "import org.matheclipse.core.eval.EvalEngine;\n" //
-              + "import org.matheclipse.core.expression.ExprTrie;\n" //
-              + "import org.matheclipse.core.expression.S;\n" //
-              + "import static org.matheclipse.core.expression.S.*;\n" //
-              + "import org.matheclipse.core.expression.DMath;\n" //
-              + "import org.matheclipse.core.expression.F;\n" //
-              + "import static org.matheclipse.core.expression.F.*;\n" //
-              + "\n" //
-              + "public class CompiledFunction extends AbstractFunctionEvaluator {\n" //
-              + "  EvalEngine engine;\n" //
-              + "  IASTAppendable stack;\n" //
-              + "  ExprTrie vars;\n" //
-              + "  int top=1;\n" //
-              + "  public IExpr evaluate(final IAST ast, EvalEngine engine){\n" //
-              + "    if (ast.argSize()!=1) { return print(ast,1,engine); }\n" //
-              + "    this.engine = engine;\n" //
-              + "    stack  = F.ast(S.List, 100, true);\n" //
-              + "    vars = new ExprTrie();\n" //
-              + "    IExpr x = ast.get(1);\n" //
-              + "    double xd = engine.evalDouble(x);\n" //
-              + "    stack.set(top++, F.num(xd));\n" //
-              + "    \n" //
-              + "    return F.num(20.085536923187668-Math.cos(9.869604401089358/evalDouble(stack.get(1))));\n" //
-              + "    \n" //
-              + "  }\n" //
-              + "  public double evalDouble(IExpr expr)  {\n" //
-              + "    return engine.evalDouble(expr);\n" //
-              + "  }\n" //
-              + "  \n" //
-              + "  public Complex evalComplex(IExpr expr)  {\n" //
-              + "    return engine.evalComplex(expr);\n" //
-              + "  }\n" //
-              + "  \n" //
-              + "  \n" //
-              + "}\n" //
-              + "");
+      check("f=Compile({x}, E^3-Cos(Pi^2/x));", //
+          "");
+      check("f(10.0)", //
+          "19.53431");
     }
   }
 
   @Test
-  public void testCompilePrint003() {
+  public void testCompile003() {
     if (ToggleFeature.COMPILE) {
-
-      check("CompilePrint({x}, x^3+Cos(x^2))", //
-          "/** Compile with <a href=\"https://github.com/janino-compiler/janino\">Janino compiler</a> */\n"
-              + "package org.matheclipse.core.compile;\n" + "\n" + "import java.util.ArrayList;\n"
-              + "import org.hipparchus.complex.Complex;\n"
-              + "import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;\n"
-              + "import org.matheclipse.core.interfaces.*;\n"
-              + "import org.matheclipse.core.eval.EvalEngine;\n"
-              + "import org.matheclipse.core.expression.ExprTrie;\n"
-              + "import org.matheclipse.core.expression.S;\n"
-              + "import static org.matheclipse.core.expression.S.*;\n"
-              + "import org.matheclipse.core.expression.DMath;\n"
-              + "import org.matheclipse.core.expression.F;\n"
-              + "import static org.matheclipse.core.expression.F.*;\n" + "\n"
-              + "public class CompiledFunction extends AbstractFunctionEvaluator {\n"
-              + "  EvalEngine engine;\n" + "  IASTAppendable stack;\n" + "  ExprTrie vars;\n"
-              + "  int top=1;\n" + "  public IExpr evaluate(final IAST ast, EvalEngine engine){\n"
-              + "    if (ast.argSize()!=1) { return print(ast,1,engine); }\n"
-              + "    this.engine = engine;\n" + "    stack  = F.ast(S.List, 100, true);\n"
-              + "    vars = new ExprTrie();\n" + "    IExpr x = ast.get(1);\n"
-              + "    double xd = engine.evalDouble(x);\n" + "    stack.set(top++, F.num(xd));\n"
-              + "    \n"
-              + "    return F.num(Math.pow(evalDouble(stack.get(1)),3)+Math.cos(Math.pow(evalDouble(stack.get(1)),2)));\n"
-              + "    \n" + "  }\n" + "  public double evalDouble(IExpr expr)  {\n"
-              + "    return engine.evalDouble(expr);\n" + "  }\n" + "  \n"
-              + "  public Complex evalComplex(IExpr expr)  {\n"
-              + "    return engine.evalComplex(expr);\n" + "  }\n" + "  \n" + "  \n" + "}\n" + "");
+      check("f=Compile({x}, x^3+Cos(x^2));", //
+          "");
+      check("f(0.5)", //
+          "1.09391");
     }
   }
 
   @Test
-  public void testCompilePrint004() {
+  public void testCompile004() {
     if (ToggleFeature.COMPILE) {
-
-      check("CompilePrint({x}, x^3+Gamma(x^2)) ", //
-          "/** Compile with <a href=\"https://github.com/janino-compiler/janino\">Janino compiler</a> */\n"
-              + "package org.matheclipse.core.compile;\n" + "\n" + "import java.util.ArrayList;\n"
-              + "import org.hipparchus.complex.Complex;\n"
-              + "import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;\n"
-              + "import org.matheclipse.core.interfaces.*;\n"
-              + "import org.matheclipse.core.eval.EvalEngine;\n"
-              + "import org.matheclipse.core.expression.ExprTrie;\n"
-              + "import org.matheclipse.core.expression.S;\n"
-              + "import static org.matheclipse.core.expression.S.*;\n"
-              + "import org.matheclipse.core.expression.DMath;\n"
-              + "import org.matheclipse.core.expression.F;\n"
-              + "import static org.matheclipse.core.expression.F.*;\n" + "\n"
-              + "public class CompiledFunction extends AbstractFunctionEvaluator {\n"
-              + "  EvalEngine engine;\n" + "  IASTAppendable stack;\n" + "  ExprTrie vars;\n"
-              + "  int top=1;\n" + "  public IExpr evaluate(final IAST ast, EvalEngine engine){\n"
-              + "    if (ast.argSize()!=1) { return print(ast,1,engine); }\n"
-              + "    this.engine = engine;\n" + "    stack  = F.ast(S.List, 100, true);\n"
-              + "    vars = new ExprTrie();\n" + "    IExpr x = ast.get(1);\n"
-              + "    double xd = engine.evalDouble(x);\n" + "    stack.set(top++, F.num(xd));\n"
-              + "    \n"
-              + "    return F.num(Math.pow(evalDouble(stack.get(1)),3)+F.Gamma.ofN(Math.pow(evalDouble(stack.get(1)),2)));\n"
-              + "    \n" + "  }\n" + "  public double evalDouble(IExpr expr)  {\n"
-              + "    return engine.evalDouble(expr);\n" + "  }\n" + "  \n"
-              + "  public Complex evalComplex(IExpr expr)  {\n"
-              + "    return engine.evalComplex(expr);\n" + "  }\n" + "  \n" + "  \n" + "}\n" + "");
+      check("f=Compile({x}, x^3+Gamma(x^2));", //
+          "");
+      check("f(1.1)", //
+          "2.24658");
     }
   }
 
   @Test
-  public void testCompilePrint005() {
+  public void testCompile005() {
     if (ToggleFeature.COMPILE) {
 
-      check("CompilePrint({x, y}, x + 2*y)", //
-          "/** Compile with <a href=\"https://github.com/janino-compiler/janino\">Janino compiler</a> */\n"
-              + "package org.matheclipse.core.compile;\n" + "\n" + "import java.util.ArrayList;\n"
-              + "import org.hipparchus.complex.Complex;\n"
-              + "import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;\n"
-              + "import org.matheclipse.core.interfaces.*;\n"
-              + "import org.matheclipse.core.eval.EvalEngine;\n"
-              + "import org.matheclipse.core.expression.ExprTrie;\n"
-              + "import org.matheclipse.core.expression.S;\n"
-              + "import static org.matheclipse.core.expression.S.*;\n"
-              + "import org.matheclipse.core.expression.DMath;\n"
-              + "import org.matheclipse.core.expression.F;\n"
-              + "import static org.matheclipse.core.expression.F.*;\n" + "\n"
-              + "public class CompiledFunction extends AbstractFunctionEvaluator {\n"
-              + "  EvalEngine engine;\n" + "  IASTAppendable stack;\n" + "  ExprTrie vars;\n"
-              + "  int top=1;\n" + "  public IExpr evaluate(final IAST ast, EvalEngine engine){\n"
-              + "    if (ast.argSize()!=2) { return print(ast,2,engine); }\n"
-              + "    this.engine = engine;\n" + "    stack  = F.ast(S.List, 100, true);\n"
-              + "    vars = new ExprTrie();\n" + "    IExpr x = ast.get(1);\n"
-              + "    double xd = engine.evalDouble(x);\n" + "    stack.set(top++, F.num(xd));\n"
-              + "    IExpr y = ast.get(2);\n" + "    double yd = engine.evalDouble(y);\n"
-              + "    stack.set(top++, F.num(yd));\n" + "    \n"
-              + "    return F.num(evalDouble(stack.get(1))+2*evalDouble(stack.get(2)));\n"
-              + "    \n" + "  }\n" + "  public double evalDouble(IExpr expr)  {\n"
-              + "    return engine.evalDouble(expr);\n" + "  }\n" + "  \n"
-              + "  public Complex evalComplex(IExpr expr)  {\n"
-              + "    return engine.evalComplex(expr);\n" + "  }\n" + "  \n" + "  \n" + "}\n" + "");
+      check("f=Compile({x, y}, x + 2*y);", //
+          "");
+      check("f(2,3)", //
+          "8.0");
     }
   }
 
@@ -319,71 +206,34 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testCompilePrint008() {
+  public void testCompile008() {
     if (ToggleFeature.COMPILE) {
 
-      check("CompilePrint({{x, _Real}, {y, _Integer}}, Sin(x + z))", //
-          "/** Compile with <a href=\"https://github.com/janino-compiler/janino\">Janino compiler</a> */\n"
-              + "package org.matheclipse.core.compile;\n" + "\n" + "import java.util.ArrayList;\n"
-              + "import org.hipparchus.complex.Complex;\n"
-              + "import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;\n"
-              + "import org.matheclipse.core.interfaces.*;\n"
-              + "import org.matheclipse.core.eval.EvalEngine;\n"
-              + "import org.matheclipse.core.expression.ExprTrie;\n"
-              + "import org.matheclipse.core.expression.S;\n"
-              + "import static org.matheclipse.core.expression.S.*;\n"
-              + "import org.matheclipse.core.expression.DMath;\n"
-              + "import org.matheclipse.core.expression.F;\n"
-              + "import static org.matheclipse.core.expression.F.*;\n" + "\n"
-              + "public class CompiledFunction extends AbstractFunctionEvaluator {\n"
-              + "  EvalEngine engine;\n" + "  IASTAppendable stack;\n" + "  ExprTrie vars;\n"
-              + "  int top=1;\n" + "  public IExpr evaluate(final IAST ast, EvalEngine engine){\n"
-              + "    if (ast.argSize()!=2) { return print(ast,2,engine); }\n"
-              + "    this.engine = engine;\n" + "    stack  = F.ast(S.List, 100, true);\n"
-              + "    vars = new ExprTrie();\n" + "    IExpr x = ast.get(1);\n"
-              + "    double xd = engine.evalDouble(x);\n" + "    stack.set(top++, F.num(xd));\n"
-              + "    IExpr y = ast.get(2);\n" + "    int yi = engine.evalInt(y);\n"
-              + "    stack.set(top++, F.ZZ(yi));\n" + "    \n"
-              + "    return F.eval(F.Sin(F.Plus(stack.get(1),F.z)));\n" + "    \n" + "  }\n"
-              + "  public double evalDouble(IExpr expr)  {\n"
-              + "    return engine.evalDouble(expr);\n" + "  }\n" + "  \n"
-              + "  public Complex evalComplex(IExpr expr)  {\n"
-              + "    return engine.evalComplex(expr);\n" + "  }\n" + "  \n" + "  \n" + "}\n" + "");
+      check("f=Compile({{x, _Real}, {y, _Integer}}, Sin(x + z));", //
+          "");
+      check("f(Pi/2, 42)", //
+          "Sin(1.5708+z)");
+
+      check("f=Compile({{x, _Real}, {y, _Integer}}, Sin(x + y));", //
+          "");
+      check("f(Pi/2, 42)", //
+          "-0.399985");
     }
   }
 
   @Test
-  public void testCompilePrint009() {
+  public void testCompile009() {
     if (ToggleFeature.COMPILE) {
 
       check(
-          "CompilePrint({{x, _Real}, {y, _Integer}}, If(x == 0.0 && y <= 0, 0.0,  Sin(x ^ y) + 1 / Min(x, 0.5)) + 0.5)", //
-          "/** Compile with <a href=\"https://github.com/janino-compiler/janino\">Janino compiler</a> */\n"
-              + "package org.matheclipse.core.compile;\n" + "\n" + "import java.util.ArrayList;\n"
-              + "import org.hipparchus.complex.Complex;\n"
-              + "import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;\n"
-              + "import org.matheclipse.core.interfaces.*;\n"
-              + "import org.matheclipse.core.eval.EvalEngine;\n"
-              + "import org.matheclipse.core.expression.ExprTrie;\n"
-              + "import org.matheclipse.core.expression.S;\n"
-              + "import static org.matheclipse.core.expression.S.*;\n"
-              + "import org.matheclipse.core.expression.DMath;\n"
-              + "import org.matheclipse.core.expression.F;\n"
-              + "import static org.matheclipse.core.expression.F.*;\n" + "\n"
-              + "public class CompiledFunction extends AbstractFunctionEvaluator {\n"
-              + "  EvalEngine engine;\n" + "  IASTAppendable stack;\n" + "  ExprTrie vars;\n"
-              + "  int top=1;\n" + "  public IExpr evaluate(final IAST ast, EvalEngine engine){\n"
-              + "    if (ast.argSize()!=2) { return print(ast,2,engine); }\n"
-              + "    this.engine = engine;\n" + "    stack  = F.ast(S.List, 100, true);\n"
-              + "    vars = new ExprTrie();\n" + "    IExpr x = ast.get(1);\n"
-              + "    double xd = engine.evalDouble(x);\n" + "    stack.set(top++, F.num(xd));\n"
-              + "    IExpr y = ast.get(2);\n" + "    int yi = engine.evalInt(y);\n"
-              + "    stack.set(top++, F.ZZ(yi));\n" + "    \n"
-              + "    return F.eval(F.Plus(F.If(F.And(F.Equal(stack.get(1),F.CD0),F.LessEqual(stack.get(2),F.C0)),F.CD0,F.Plus(F.Sin(F.Power(stack.get(1),stack.get(2))),F.Power(F.Min(stack.get(1),F.num(0.5)),F.CN1))),F.num(0.5)));\n"
-              + "    \n" + "  }\n" + "  public double evalDouble(IExpr expr)  {\n"
-              + "    return engine.evalDouble(expr);\n" + "  }\n" + "  \n"
-              + "  public Complex evalComplex(IExpr expr)  {\n"
-              + "    return engine.evalComplex(expr);\n" + "  }\n" + "  \n" + "  \n" + "}\n" + "");
+          "f=Compile({{x, _Real}, {y, _Integer}}, If(x == 0.0 && y <= 0, 0.0,  Sin(x ^ y) + 1 / Min(x, 0.5)) + 0.5);", //
+          "");
+      check("f(0.0, -1)", //
+          "0.5");
+      check("f(0.0, 2)", //
+          "ComplexInfinity");
+      check("f(1.0, -1)", //
+          "3.34147");
     }
   }
 
@@ -391,134 +241,31 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
   public void testCompilePrintModule001() {
     if (ToggleFeature.COMPILE) {
       check(
-          "CompilePrint({{n, _Integer}}, Module({p = Range(n),i,x,t}, Do(x = RandomInteger({1,i}); t = p[[i]]; p[[i]] = p[[x]]; p[[x]] = t,{i,n,2,-1}); p))", //
-          "/** Compile with <a href=\"https://github.com/janino-compiler/janino\">Janino compiler</a> */\n"
-              + "package org.matheclipse.core.compile;\n" + "\n" + "import java.util.ArrayList;\n"
-              + "import org.hipparchus.complex.Complex;\n"
-              + "import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;\n"
-              + "import org.matheclipse.core.interfaces.*;\n"
-              + "import org.matheclipse.core.eval.EvalEngine;\n"
-              + "import org.matheclipse.core.expression.ExprTrie;\n"
-              + "import org.matheclipse.core.expression.S;\n"
-              + "import static org.matheclipse.core.expression.S.*;\n"
-              + "import org.matheclipse.core.expression.DMath;\n"
-              + "import org.matheclipse.core.expression.F;\n"
-              + "import static org.matheclipse.core.expression.F.*;\n" + "\n"
-              + "public class CompiledFunction extends AbstractFunctionEvaluator {\n"
-              + "  EvalEngine engine;\n" + "  IASTAppendable stack;\n" + "  ExprTrie vars;\n"
-              + "  int top=1;\n" + "  public IExpr evaluate(final IAST ast, EvalEngine engine){\n"
-              + "    if (ast.argSize()!=1) { return print(ast,1,engine); }\n"
-              + "    this.engine = engine;\n" + "    stack  = F.ast(S.List, 100, true);\n"
-              + "    vars = new ExprTrie();\n" + "    IExpr n = ast.get(1);\n"
-              + "    int ni = engine.evalInt(n);\n" + "    stack.set(top++, F.ZZ(ni));\n" + "    \n"
-              + "    return moduleExpression1();\n" + "    \n" + "  }\n"
-              + "  public double evalDouble(IExpr expr)  {\n"
-              + "    return engine.evalDouble(expr);\n" + "  }\n" + "  \n"
-              + "  public Complex evalComplex(IExpr expr)  {\n"
-              + "    return engine.evalComplex(expr);\n" + "  }\n" + "  \n"
-              + "  public IExpr moduleExpression1() {\n"
-              + "    ExprTrie oldVars = vars; int oldTop =  top;\n" + "    try {\n"
-              + "      vars = vars.copy();\n" + "      ISymbol p = F.Dummy(\"p\");\n"
-              + "      vars.put(\"p\",p);\n" + "      F.eval(F.Set(p,F.Range(stack.get(1))));\n"
-              + "      ISymbol i = F.Dummy(\"i\");\n" + "      vars.put(\"i\",i);\n"
-              + "      ISymbol x = F.Dummy(\"x\");\n" + "      vars.put(\"x\",x);\n"
-              + "      ISymbol t = F.Dummy(\"t\");\n" + "      vars.put(\"t\",t);\n"
-              + "      return compoundExpression2();\n"
-              + "    } finally {top = oldTop; vars = oldVars;}\n" + "  }\n" + "  \n"
-              + "  public IExpr compoundExpression2() {\n" + "    int oldTop =  top;\n"
-              + "    try {\n"
-              + "      F.eval(F.Do(F.CompoundExpression(F.Set(vars.get(\"x\"),F.RandomInteger(F.list(F.C1,vars.get(\"i\")))),F.Set(vars.get(\"t\"),F.Part(vars.get(\"p\"),vars.get(\"i\"))),F.Set(F.Part(vars.get(\"p\"),vars.get(\"i\")),F.Part(vars.get(\"p\"),vars.get(\"x\"))),F.Set(F.Part(vars.get(\"p\"),vars.get(\"x\")),vars.get(\"t\"))),F.List(\n"
-              + "      vars.get(\"i\"),\n" + "      stack.get(1),\n" + "      F.C2,\n"
-              + "      F.CN1\n" + "      )));\n" + "      return F.eval(vars.get(\"p\"));\n"
-              + "    } finally {top = oldTop;}\n" + "  }\n" + "  \n" + "  \n" + "}\n" + "");
-      // check(
-      // "f = Compile({{n, _Integer}}, Module({p = Range(n),i,x,t}, Do(x =
-      // RandomInteger({1,i}); t = p[[i]]; p[[i]] = p[[x]]; p[[x]] = t,{i,n,2,-1}); p));", //
-      // "");
-      // check(
-      // " f(4)", //
-      // "{3,1,2,4}");
+          "f=CompilePrint({{n, _Integer}}, Module({p = Range(n),i,x,t}, Do(x = RandomInteger({1,i}); t = p[[i]]; p[[i]] = p[[x]]; p[[x]] = t,{i,n,2,-1}); p));", //
+          "");
+      // check("f(10)", //
+      // "{3,8,1,2,9,7,4,5,10,6}");
     }
   }
 
   @Test
-  public void testCompilePrintReal001() {
+  public void testCompileReal001() {
     if (ToggleFeature.COMPILE) {
 
-      check("CompilePrint({{x, _Real}}, Sin(x))", //
-          "/** Compile with <a href=\"https://github.com/janino-compiler/janino\">Janino compiler</a> */\n"
-              + "package org.matheclipse.core.compile;\n" + "\n" + "import java.util.ArrayList;\n"
-              + "import org.hipparchus.complex.Complex;\n"
-              + "import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;\n"
-              + "import org.matheclipse.core.interfaces.*;\n"
-              + "import org.matheclipse.core.eval.EvalEngine;\n"
-              + "import org.matheclipse.core.expression.ExprTrie;\n"
-              + "import org.matheclipse.core.expression.S;\n"
-              + "import static org.matheclipse.core.expression.S.*;\n"
-              + "import org.matheclipse.core.expression.DMath;\n"
-              + "import org.matheclipse.core.expression.F;\n"
-              + "import static org.matheclipse.core.expression.F.*;\n" + "\n"
-              + "public class CompiledFunction extends AbstractFunctionEvaluator {\n"
-              + "  EvalEngine engine;\n" + "  IASTAppendable stack;\n" + "  ExprTrie vars;\n"
-              + "  int top=1;\n" + "  public IExpr evaluate(final IAST ast, EvalEngine engine){\n"
-              + "    if (ast.argSize()!=1) { return print(ast,1,engine); }\n"
-              + "    this.engine = engine;\n" + "    stack  = F.ast(S.List, 100, true);\n"
-              + "    vars = new ExprTrie();\n" + "    IExpr x = ast.get(1);\n"
-              + "    double xd = engine.evalDouble(x);\n" + "    stack.set(top++, F.num(xd));\n"
-              + "    \n" + "    return F.num(Math.sin(evalDouble(stack.get(1))));\n" + "    \n"
-              + "  }\n" + "  public double evalDouble(IExpr expr)  {\n"
-              + "    return engine.evalDouble(expr);\n" + "  }\n" + "  \n"
-              + "  public Complex evalComplex(IExpr expr)  {\n"
-              + "    return engine.evalComplex(expr);\n" + "  }\n" + "  \n" + "  \n" + "}\n" + "");
+      check("f=Compile({{x, _Real}}, Sin(x));", //
+          "");
+      check("f(Pi)", //
+          "1.22465*10^-16");
     }
   }
 
   @Test
-  public void testCompilePrintReal002() {
+  public void testCompileReal002() {
     if (ToggleFeature.COMPILE) {
-
-      check("CompilePrint({{x, _Real}}, AiryAi(x)+BesselJ(x,0.5))", //
-          "/** Compile with <a href=\"https://github.com/janino-compiler/janino\">Janino compiler</a> */\n"
-              + "package org.matheclipse.core.compile;\n" + "\n" + "import java.util.ArrayList;\n"
-              + "import org.hipparchus.complex.Complex;\n"
-              + "import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;\n"
-              + "import org.matheclipse.core.interfaces.*;\n"
-              + "import org.matheclipse.core.eval.EvalEngine;\n"
-              + "import org.matheclipse.core.expression.ExprTrie;\n"
-              + "import org.matheclipse.core.expression.S;\n" //
-              + "import static org.matheclipse.core.expression.S.*;\n" //
-              + "import org.matheclipse.core.expression.DMath;\n" //
-              + "import org.matheclipse.core.expression.F;\n" //
-              + "import static org.matheclipse.core.expression.F.*;\n" //
-              + "\n" //
-              + "public class CompiledFunction extends AbstractFunctionEvaluator {\n" //
-              + "  EvalEngine engine;\n" //
-              + "  IASTAppendable stack;\n" //
-              + "  ExprTrie vars;\n" //
-              + "  int top=1;\n" //
-              + "  public IExpr evaluate(final IAST ast, EvalEngine engine){\n" //
-              + "    if (ast.argSize()!=1) { return print(ast,1,engine); }\n" //
-              + "    this.engine = engine;\n" //
-              + "    stack  = F.ast(S.List, 100, true);\n" //
-              + "    vars = new ExprTrie();\n" //
-              + "    IExpr x = ast.get(1);\n" //
-              + "    double xd = engine.evalDouble(x);\n" //
-              + "    stack.set(top++, F.num(xd));\n" //
-              + "    \n" //
-              + "    return F.num(DMath.airyAi(evalDouble(stack.get(1)))+DMath.besselJ(evalDouble(stack.get(1)),0.5));\n" //
-              + "    \n" //
-              + "  }\n" //
-              + "  public double evalDouble(IExpr expr)  {\n" //
-              + "    return engine.evalDouble(expr);\n" //
-              + "  }\n" //
-              + "  \n" //
-              + "  public Complex evalComplex(IExpr expr)  {\n" //
-              + "    return engine.evalComplex(expr);\n" //
-              + "  }\n" //
-              + "  \n" //
-              + "  \n" //
-              + "}\n" //
-              + "");
+      check("cp=Compile({{x, _Real}}, AiryAi(x)+BesselJ(x,0.5));", //
+          "");
+      check("cp(3.5)", //
+          "0.00324648");
     }
   }
 
@@ -536,6 +283,23 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
           "9.62815");
       check("cf(I*(-3.0))", //
           "-9.1+I*(-10.31787)");
+    }
+  }
+
+  @Test
+  public void testCompileLogGammaComplex() {
+    if (ToggleFeature.COMPILE) {
+      check("cf = Compile({{x, _Real}}, xr=LogGamma(x) + x^2 - 1/(1 + x);xr+1);", //
+          "");
+      check("cf(Pi)", //
+          "11.45585");
+
+      check("cf = Compile({{x, _Complex}}, LogGamma(x) + x^2 - 1/(1 + x));", //
+          "");
+      check("cf(Pi)", //
+          "10.45585");
+      check("cf(I*(-3.0))", //
+          "-13.44276+I*0.217446");
     }
   }
 
@@ -593,6 +357,30 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
           "3.0");
       check("cf(1.0,2.0)", //
           "1.41421");
+    }
+  }
+
+  @Test
+  public void testCompileWhile() {
+    if (ToggleFeature.COMPILE) {
+      // Compile( (n, _Integer), Module( (i = 0, sum = 0), While(i < n, i = i + 1; sum = sum + i);
+      // sum) )
+      check("cf = Compile({{n, _Integer}},\n" //
+          + "  Module({i = 0, sum = 0},\n" //
+          + "    While(i < n,\n" //
+          + "      i = i + 1;\n" //
+          + "      sum = sum + i\n" //
+          + "    );\n" //
+          + "    sum\n" //
+          + "  )\n" //
+          + ");", //
+          "");
+
+      // Test the compiled while loop logic
+      check("cf(5)", // 1 + 2 + 3 + 4 + 5 = 15
+          "15.0");
+      check("cf(10)", // 1 + 2 + ... + 10 = 55
+          "55.0");
     }
   }
 }

@@ -56,9 +56,6 @@ class JavaDoubleFormFactoryTest {
 
   @Test
   void shouldConvertPowerWithFractionalExponentToMathSqrt() {
-    // This test assumes the expression is not considered a numeric function returning a complex
-    // number
-    // which would trigger the complex method calls like .sqrt()
     IAST power = F.Power(F.a, F.C1D2);
     assertEquals("Math.sqrt(a)", convert(power));
   }
@@ -82,5 +79,61 @@ class JavaDoubleFormFactoryTest {
   @Test
   void shouldConvertUnevaluatedExpression() {
     assertEquals("a", convert(F.Unevaluated(F.a)));
+  }
+
+  @Test
+  void shouldConvertDMathSpecialFunctions() {
+    assertEquals("DMath.agm(a,b)", convert(F.ArithmeticGeometricMean(F.a, F.b)));
+    assertEquals("DMath.airyAi(x)", convert(F.AiryAi(F.x)));
+    assertEquals("DMath.besselJ(v,x)", convert(F.BesselJ(F.v, F.x)));
+    assertEquals("DMath.beta(a,b)", convert(F.Beta(F.a, F.b)));
+    assertEquals("DMath.chebyshevT(n,x)", convert(F.ChebyshevT(F.n, F.x)));
+    assertEquals("DMath.polyGamma(x)", convert(F.PolyGamma(F.x)));
+    assertEquals("DMath.ellipticE(x)", convert(F.EllipticE(F.x)));
+    assertEquals("DMath.erf(x)", convert(F.Erf(F.x)));
+    assertEquals("DMath.fibonacci(n,x)", convert(F.Fibonacci(F.n, F.x)));
+    assertEquals("DMath.gamma(x)", convert(F.Gamma(F.x)));
+    assertEquals("DMath.harmonicNumber(n)", convert(F.HarmonicNumber(F.n)));
+    assertEquals("DMath.inverseErf(x)", convert(F.InverseErf(F.x)));
+    assertEquals("DMath.laguerreL(n,x)", convert(F.LaguerreL(F.n, F.x)));
+    assertEquals("DMath.legendreP(n,x)", convert(F.LegendreP(F.n, F.x)));
+    assertEquals("DMath.logGamma(x)", convert(F.LogGamma(F.x)));
+    assertEquals("DMath.polyLog(n,x)", convert(F.PolyLog(F.n, F.x)));
+  }
+
+  @Test
+  void shouldConvertDMathArcAndHyperbolicTrig() {
+    assertEquals("DMath.acosh(x)", convert(F.ArcCosh(F.x)));
+    assertEquals("DMath.asinh(x)", convert(F.ArcSinh(F.x)));
+    assertEquals("DMath.atanh(x)", convert(F.ArcTanh(F.x)));
+
+    assertEquals("DMath.csc(x)", convert(F.Csc(F.x)));
+    assertEquals("DMath.sec(x)", convert(F.Sec(F.x)));
+    assertEquals("DMath.cot(x)", convert(F.Cot(F.x)));
+
+    assertEquals("DMath.csch(x)", convert(F.Csch(F.x)));
+    assertEquals("DMath.sech(x)", convert(F.Sech(F.x)));
+    assertEquals("DMath.coth(x)", convert(F.Coth(F.x)));
+
+    assertEquals("DMath.acsc(x)", convert(F.ArcCsc(F.x)));
+    assertEquals("DMath.asec(x)", convert(F.ArcSec(F.x)));
+    assertEquals("DMath.acot(x)", convert(F.ArcCot(F.x)));
+    assertEquals("DMath.acsch(x)", convert(F.ArcCsch(F.x)));
+    assertEquals("DMath.asech(x)", convert(F.ArcSech(F.x)));
+    assertEquals("DMath.acoth(x)", convert(F.ArcCoth(F.x)));
+  }
+
+  @Test
+  void shouldConvertDMathHypergeometricFunctions() {
+    assertEquals("DMath.hypergeometric0F1Regularized(a,x)",
+        convert(F.Hypergeometric0F1Regularized(F.a, F.x)));
+    assertEquals("DMath.hypergeometric2F1(a,b,c,x)",
+        convert(F.Hypergeometric2F1(F.a, F.b, F.c, F.x)));
+  }
+
+  @Test
+  void shouldConvertDMathJacobiAndGegenbauer() {
+    assertEquals("DMath.jacobiP(n,a,b,x)", convert(F.JacobiP(F.n, F.a, F.b, F.x)));
+    assertEquals("DMath.gegenbauerC(n,m,x)", convert(F.GegenbauerC(F.n, F.m, F.x)));
   }
 }

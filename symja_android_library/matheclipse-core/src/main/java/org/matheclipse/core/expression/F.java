@@ -5170,6 +5170,10 @@ public class F extends S {
     return new AST2(Hypergeometric0F1, a0, a1);
   }
 
+  public static IAST Hypergeometric0F1Regularized(final IExpr a0, final IExpr a1) {
+    return new AST2(Hypergeometric0F1Regularized, a0, a1);
+  }
+
   public static IAST Hypergeometric1F1(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(Hypergeometric1F1, a0, a1, a2);
   }
@@ -10799,6 +10803,10 @@ public class F extends S {
    */
   public static INum symjify(final double value) {
     return num(value);
+  }
+
+  public static IComplexNum symjify(final Complex value) {
+    return complexNum(value);
   }
 
   /**
