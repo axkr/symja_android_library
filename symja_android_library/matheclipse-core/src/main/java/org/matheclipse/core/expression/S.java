@@ -10277,6 +10277,9 @@ public class S {
    */
   public final static IBuiltInSymbol RuleDelayed = S.initFinalSymbol("RuleDelayed", ID.RuleDelayed);
 
+  public final static IBuiltInSymbol RuntimeAttributes =
+      S.initFinalSymbol("RuntimeAttributes", ID.RuntimeAttributes);
+
   /**
    * RussellRaoDissimilarity(u, v) - returns the Russell-Rao dissimilarity between the two boolean
    * 1-D lists `u` and `v`, which is defined as `(n - c_tt) / c_tt` where `n` is `len(u)` and `c_ij`

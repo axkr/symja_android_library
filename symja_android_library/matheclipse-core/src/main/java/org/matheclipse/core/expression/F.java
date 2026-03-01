@@ -9696,6 +9696,18 @@ public class F extends S {
     return new B2.B2Set(lhs, rhs);
   }
 
+  public static IAST Set(final IExpr lhs, final int rhs) {
+    return new B2.B2Set(lhs, F.ZZ(rhs));
+  }
+
+  public static IAST Set(final IExpr lhs, final double rhs) {
+    return new B2.B2Set(lhs, F.num(rhs));
+  }
+
+  public static IAST Set(final IExpr lhs, final Complex rhs) {
+    return new B2.B2Set(lhs, F.complexNum(rhs));
+  }
+
   public static IAST SetAttributes(final IExpr symbol, final IExpr attribute) {
     return new AST2(SetAttributes, symbol, attribute);
   }
