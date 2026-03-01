@@ -56,7 +56,6 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.eval.interfaces.INumeric;
-import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.AbstractIntegerSym;
@@ -2032,12 +2031,12 @@ public final class NumberTheory {
           // integer to large?
         }
       } else {
-        if (S.True.equals(AbstractAssumptions.assumePrime(arg1))) {
+        if (arg1.isProbablePrimeResult()) {
           // fungrim "cb410e"
           return F.Plus(F.CN1, arg1);
         }
         if (arg1.isPower() && arg1.exponent().isIntegerResult()
-            && AbstractAssumptions.assumePrime(arg1.base()).isTrue()) {
+            && arg1.base().isProbablePrimeResult()) {
           IExpr p = arg1.base();
           IExpr n = arg1.exponent();
           // Power(p, n) => p^n - p^(n - 1)
@@ -4189,7 +4188,7 @@ public final class NumberTheory {
           // integer to large?
         }
       } else {
-        if (AbstractAssumptions.assumePrime(arg1).isTrue()) {
+        if (arg1.isProbablePrimeResult()) {
           return F.CN1;
         }
         IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);

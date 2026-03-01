@@ -4743,6 +4743,14 @@ public interface IExpr
     return false;
   }
 
+  default boolean isProbablePrime() {
+    return false;
+  }
+
+  default boolean isProbablePrimeResult() {
+    return isProbablePrime() || AbstractAssumptions.assumePrime(this).isTrue();
+  }
+
   /**
    * Return {@code true} if this expression unequals <code>F.NIL</code>, otherwise {@code false}.
    * This method is similar to <code>java.util.Optional#isPresent()</code>.
