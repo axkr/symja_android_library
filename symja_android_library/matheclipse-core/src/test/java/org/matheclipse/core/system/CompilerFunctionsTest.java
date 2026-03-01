@@ -57,7 +57,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
       // error: CompiledFunction: CompiledFunction(Arg count: 2 Types: {Real,Real} Variables:
       // {x,_Real})[1.4567] called with 1 arguments; 2 arguments are expected.
       check("f(1.4567)", //
-          "CompiledFunction(Arg count: 2 Types: {Real,Real} Variables: {x,_Real})[1.4567]");
+          "CompiledFunction(Arg count: 2 Types: {Real,Real} Variables: {x,_Real} Attributes: {})[1.4567]");
 
       check("f=Compile({x}, x^3+Cos(x^2)); ", //
           "");
@@ -94,7 +94,54 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
           "0.14112");
       // message: ... called with 1 arguments; 2 arguments are expected.
       check("cf(x+y)", //
-          "CompiledFunction(Arg count: 2 Types: {Real,Integer} Variables: {x,y})[x+y]");
+          "CompiledFunction(Arg count: 2 Types: {Real,Integer} Variables: {x,y} Attributes: {})[x+y]");
+    }
+  }
+
+  @Test
+  public void testCompileIntegerVector() {
+    if (ToggleFeature.COMPILE) {
+      // argument v is a 1D integer vector
+      check("iv1 = Compile({{v, _Integer, 1}, {c, _Integer}},\n" //
+          + " Module({res = v, n = Length(v)},\n" //
+          + " Do(res = Table(res[[i]] * c + 2, {i, n}), {k, 1});\n" //
+          + " res\n" //
+          + " )\n" //
+          + " );", //
+          "");
+
+      // Test the compiled integer vector algorithm
+      // Vector v = {1, 2, 3}
+      // Scalar c = 3
+      // res[[1]] = 1 * 3 + 2 = 5
+      // res[[2]] = 2 * 3 + 2 = 8
+      // res[[3]] = 3 * 3 + 2 = 11
+      check("iv1({1, 2, 3}, 3)", //
+          "{5,8,11}");
+    }
+  }
+
+  @Test
+  public void testCompileIntegerMatrix() {
+    if (ToggleFeature.COMPILE) {
+      // argument m is a 2D integer matrix
+      check("im1 = Compile({{m, _Integer, 2}, {c, _Integer}},\n" //
+          + " Module({res = m, n = Length(m)},\n" //
+          + " Do(res = Table(res[[i, j]] * c - 1, {i, n}, {j, n}), {k, 1});\n" //
+          + " res\n" //
+          + " )\n" //
+          + " );", //
+          "");
+
+      // Test the compiled integer matrix algorithm
+      // Matrix m = {{1, 2}, {3, 4}}
+      // Scalar c = 2
+      // res[[1,1]] = 1 * 2 - 1 = 1
+      // res[[1,2]] = 2 * 2 - 1 = 3
+      // res[[2,1]] = 3 * 2 - 1 = 5
+      // res[[2,2]] = 4 * 2 - 1 = 7
+      check("im1({{1, 2}, {3, 4}}, 2)", //
+          "{{1,3},{5,7}}");
     }
   }
 
@@ -102,16 +149,73 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
   public void testCompileDP1() {
     if (ToggleFeature.COMPILE) {
       // argument p is a matrix
-      // check("DP1 = Compile({{p, _Real, 2}, {m, _Integer}},\n" //
-      // + " Module({np = p, k, n = Length(p)},\n" //
-      // + " Do(np = Table(If((np[[i, k]] == 1.0*m) || (np[[k, j]] == 1.0*m), \n" //
-      // + " np[[i,j]], Min(np[[i,k]]+ np[[k,j]], np[[i,j]])\n" //
-      // + " ), {i,n},{j,n}\r\n" //
-      // + " ), {k, n});\n" //
-      // + " np\n" //
-      // + " )\n" //
-      // + " )", //
-      // "");
+      check("dp1 = Compile({{p, _Real, 2}, {m, _Integer}},\n" //
+          + " Module({np = p, k, n = Length(p)},\n" //
+          + " Do(np = Table(If((np[[i, k]] == 1.0*m) || (np[[k, j]] == 1.0*m), \n" //
+          + " np[[i,j]], Min(np[[i,k]]+ np[[k,j]], np[[i,j]])\n" //
+          + " ), {i,n},{j,n}\r\n" //
+          + " ), {k, n});\n" //
+          + " np\n" //
+          + " )\n" //
+          + " );", //
+          "");
+      // Test the compiled shortest path (Floyd-Warshall) algorithm
+      // Node 1 -> Node 2: 5.0
+      // Node 1 -> Node 4: 10.0 (but Node 1 -> Node 2 -> Node 3 -> Node 4 = 5 + 3 + 1 = 9.0)
+      // Disconnected paths are represented by the "infinity" weight: m = 99
+      check("dp1({{0.0, 5.0, 99.0, 10.0}, " //
+          + "     {99.0, 0.0, 3.0, 99.0}, " //
+          + "     {99.0, 99.0, 0.0, 1.0}, " //
+          + "     {99.0, 99.0, 99.0, 0.0}}, 99)", //
+          // The compiled function should successfully substitute the 10.0 with the shorter path 9.0
+          // and establish the 1->3 route as 8.0
+          "{{0.0,5.0,8.0,9.0},{99.0,0.0,3.0,4.0},{99.0,99.0,0.0,1.0},{99.0,99.0,99.0,0.0}}");
+    }
+  }
+
+  @Test
+  public void testCompileComplexVector() {
+    if (ToggleFeature.COMPILE) {
+      // argument v is a 1D complex vector
+      check("cv1 = Compile({{v, _Complex, 1}, {c, _Complex}},\n" //
+          + " Module({res = v, n = Length(v)},\n" //
+          + " Do(res = Table(res[[i]] * c + 1.0, {i, n}), {k, 1});\n" //
+          + " res\n" //
+          + " )\n" //
+          + " );", //
+          "");
+
+      // Test the compiled complex vector algorithm
+      // Vector v = {1.0+I, 2.0-I}
+      // Scalar c = 1.0+I
+      // res[[1]] = (1.0+I)*(1.0+I) + 1.0 = (1.0 + 2.0*I - 1.0) + 1.0 = 1.0 + 2.0*I
+      // res[[2]] = (2.0-I)*(1.0+I) + 1.0 = (2.0 + 2.0*I - I + 1.0) + 1.0 = 4.0 + I
+      check("cv1({1.0+I, 2.0-I}, 1.0+I)", //
+          "{1.0+I*2.0,4.0+I*1.0}");
+    }
+  }
+
+  @Test
+  public void testCompileComplexMatrix() {
+    if (ToggleFeature.COMPILE) {
+      // argument m is a 2D complex matrix
+      check("cm1 = Compile({{m, _Complex, 2}, {c, _Complex}},\n" //
+          + " Module({res = m, n = Length(m)},\n" //
+          + " Do(res = Table(res[[i, j]] * c, {i, n}, {j, n}), {k, 1});\n" //
+          + " res\n" //
+          + " )\n" //
+          + " );", //
+          "");
+
+      // Test the compiled complex matrix algorithm
+      // Matrix m = {{1.0+I, 2.0*I}, {-I, 3.0}}
+      // Scalar c = -I
+      // res[[1,1]] = (1.0+I)*(-I) = -I - I^2 = 1.0 - I
+      // res[[1,2]] = (2.0*I)*(-I) = -2.0*I^2 = 2.0
+      // res[[2,1]] = (-I)*(-I) = I^2 = -1.0
+      // res[[2,2]] = (3.0)*(-I) = -3.0*I
+      check("cm1({{1.0+I, 2.0*I}, {-I, 3.0}}, 0.0-I)", //
+          "{{1.0+I*(-1.0),2.0},{-1.0,I*(-3.0)}}");
     }
   }
 
@@ -127,7 +231,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
           "newt = Compile({{z, _Complex}, {n, _Integer}}, Module({zn = z},\n"
               + "   Do(zn = (2*zn + 1/zn^2)/3, {n}); \n"
               + "   If(Re(zn) > 0, 1, If(Im(zn)> 0, 2, 3))))", //
-          "CompiledFunction(Arg count: 2 Types: {Complex,Integer} Variables: {z,n})");
+          "CompiledFunction(Arg count: 2 Types: {Complex,Integer} Variables: {z,n} Attributes: {})");
       check("newt(0.5+I*0.75,25)", //
           "3.0");
 
@@ -381,6 +485,20 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
           "15.0");
       check("cf(10)", // 1 + 2 + ... + 10 = 55
           "55.0");
+    }
+  }
+
+
+  @Test
+  public void testCompileRuntimeAttributes() {
+    if (ToggleFeature.COMPILE) {
+      check("cf = Compile({x}, x^2, RuntimeAttributes -> {Listable});", //
+          "");
+      check("cf(10.1)", //
+          "102.01");
+
+      check("cf({-5,0,5})", //
+          "{25.0,0.0,25.0}");
     }
   }
 }

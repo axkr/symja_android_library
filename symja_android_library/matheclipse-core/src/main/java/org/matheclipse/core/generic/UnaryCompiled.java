@@ -9,7 +9,7 @@ import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.matheclipse.core.builtin.CompilerFunctions;
-import org.matheclipse.core.builtin.CompilerFunctions.CompiledFunctionArg;
+import org.matheclipse.core.compile.CompiledFunctionArg;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -88,9 +88,10 @@ public final class UnaryCompiled implements UnaryOperator<IExpr>, UnivariateDiff
     fVariable = variable;
     fUnaryFunction = unaryFunction;
     fEngine = engine;
-    CompilerFunctions.CompiledFunctionArg[] cf = new CompilerFunctions.CompiledFunctionArg[1];
+    CompiledFunctionArg[] cf = new CompiledFunctionArg[1];
     cf[0] = new CompiledFunctionArg(fVariable, S.Real);
-    fUnaryCompiled = CompilerFunctions.compile(F.Compile(F.NIL, fUnaryFunction), cf, engine);
+    fUnaryCompiled =
+        CompilerFunctions.compile(F.Compile(F.NIL, fUnaryFunction), cf, F.CEmptyList, engine);
     if (fUnaryCompiled != null) {
       if (firstDerivative) {
         IExpr temp = engine.evaluate(F.D(fUnaryFunction, fVariable));

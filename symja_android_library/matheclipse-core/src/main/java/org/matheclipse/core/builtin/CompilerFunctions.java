@@ -12,11 +12,13 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.compile.CompileAnalyzer;
 import org.matheclipse.core.compile.CompileFactory;
+import org.matheclipse.core.compile.CompiledFunctionArg;
 import org.matheclipse.core.compile.VariableManager;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.Blank;
 import org.matheclipse.core.expression.F;
@@ -27,6 +29,7 @@ import org.matheclipse.core.expression.data.CompiledFunctionExpr;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
@@ -53,8 +56,7 @@ public class CompilerFunctions {
           + "                                                                           \n"
           + "public class CompiledFunction extends AbstractFunctionEvaluator {          \n"
           + "  EvalEngine engine;\n" + "  IASTAppendable stack;\n" + "  ExprTrie vars;\n"
-          + "  int top=1;\n"
-          + "  {$fields}\n" // Primitive Class Attributes
+          + "  int top=1;\n" + "  {$fields}\n" // Primitive Class Attributes
           + "    public IExpr evaluate(final IAST ast, EvalEngine engine){              \n"
           + "        if (ast.argSize()!={$size}) { return print(ast,{$size},engine); }  \n"
           + "        this.engine = engine;\n"
@@ -64,12 +66,7 @@ public class CompilerFunctions {
           + "{$methods}\n"
           + "}                                                                          \n";
 
-  /**
-   * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
-   * in static initializer</a>
-   */
   private static class Initializer {
-
     private static void init() {
       if (!Config.FUZZY_PARSER) {
         S.Compile.setEvaluator(new Compile());
@@ -169,39 +166,6 @@ public class CompilerFunctions {
     }
   }
 
-  public static class CompiledFunctionArg {
-    private enum Rank {
-      SCALAR, VECTOR, MATRIX
-    }
-
-    IExpr argument;
-    IExpr type;
-    Rank rank;
-
-    public CompiledFunctionArg(IExpr argument, IExpr type) {
-      this.argument = argument;
-      this.type = type;
-      this.rank = Rank.SCALAR;
-    }
-
-    public CompiledFunctionArg(IExpr argument, IExpr type, Rank rank) {
-      this.argument = argument;
-      this.type = type;
-      this.rank = rank;
-    }
-
-    public static Rank getRank(int rank) {
-      if (rank == 0) {
-        return Rank.SCALAR;
-      } else if (rank == 1) {
-        return Rank.VECTOR;
-      } else if (rank == 2) {
-        return Rank.MATRIX;
-      }
-      return null;
-    }
-  }
-
   static class MemoryClassLoader extends URLClassLoader {
     Map<String, byte[]> classBytes = new HashMap<>();
 
@@ -221,10 +185,10 @@ public class CompilerFunctions {
     }
   }
 
-  private static class Compile extends AbstractCoreFunctionEvaluator {
+  private static class Compile extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    protected IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine) {
       if (!ToggleFeature.COMPILE) {
         return F.NIL;
       }
@@ -233,7 +197,11 @@ public class CompilerFunctions {
         if (args == null) {
           return F.NIL;
         }
-        CompiledFunctionExpr compiled = compile(ast, args, engine);
+        // Extract RuntimeAttributes from options array (populated by setUp defaults if not
+        // provided)
+        IExpr runtimeAttributes = options[0];
+
+        CompiledFunctionExpr compiled = compile(ast, args, runtimeAttributes, engine);
         if (compiled != null) {
           return compiled;
         }
@@ -256,17 +224,31 @@ public class CompilerFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
+      setOptions(newSymbol, S.RuntimeAttributes, F.CEmptyList);
     }
+
   }
 
   private static final class CompiledFunction extends AbstractCoreFunctionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
       final IExpr head = ast.head();
       if (head instanceof CompiledFunctionExpr) {
 
         CompiledFunctionExpr compiledFunction = (CompiledFunctionExpr) head;
+        int attributes = compiledFunction.getAttributes();
+        if (attributes != ISymbol.NOATTRIBUTE) {
+          IASTMutable copy = (ast instanceof IASTMutable) ? (IASTMutable) ast : ast.copy();
+          IExpr temp = engine.evalAttributes(copy, copy.size(), S.None, attributes);
+          if (temp.isAST()) {
+            if (!(temp.head() instanceof CompiledFunctionExpr)) {
+              return temp;
+            }
+            ast = (IAST) temp;
+          }
+        }
+
         IExpr result = F.NIL;
         try {
           result = compiledFunction.evaluate(ast, engine);
@@ -299,13 +281,14 @@ public class CompilerFunctions {
     }
   }
 
-  public static class CompilePrint extends AbstractCoreFunctionEvaluator {
+  public static class CompilePrint extends AbstractCoreFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!ToggleFeature.COMPILE_PRINT) {
+    protected IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine) {
+      if (!ToggleFeature.COMPILE) {
         return F.NIL;
       }
+
       CompiledFunctionArg[] args = checkIsVariableOrVariableList(ast, engine);
       if (args == null) {
         return F.NIL;
@@ -331,6 +314,12 @@ public class CompilerFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return IFunctionEvaluator.ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDALL);
+      setOptions(newSymbol, S.RuntimeAttributes, F.CEmptyList);
     }
   }
 
@@ -412,14 +401,15 @@ public class CompilerFunctions {
     return new CompiledFunctionArg(sym, headTest, rank);
   }
 
+  // UPDATED: Now receives and wires runtimeAttributes
   public static CompiledFunctionExpr compile(final IAST ast, CompiledFunctionArg[] args,
-      EvalEngine engine) {
+      IExpr runtimeAttributes, EvalEngine engine) {
     try {
       IASTAppendable variables = F.ListAlloc(args.length);
       IASTAppendable types = F.ListAlloc(args.length);
       for (CompiledFunctionArg arg : args) {
-        variables.append(arg.argument);
-        types.append(arg.type);
+        variables.append(arg.argument());
+        types.append(arg.type());
       }
       String source = compilePrint(ast, args, engine);
       if (source != null) {
@@ -427,7 +417,8 @@ public class CompilerFunctions {
         comp.cook(source);
         ClassLoader loader = comp.getClassLoader();
         Class<?> clazz = loader.loadClass("org.matheclipse.core.compile.CompiledFunction");
-        return CompiledFunctionExpr.newInstance(variables, types, ast.arg2(), clazz);
+        return CompiledFunctionExpr.newInstance(variables, types, ast.arg2(), clazz,
+            runtimeAttributes);
       }
     } catch (CompileException | ClassNotFoundException | RuntimeException e) {
       Errors.printMessage(S.Compile, e, engine);
@@ -446,14 +437,14 @@ public class CompilerFunctions {
     IBuiltInSymbol domain = S.Reals;
 
     for (int j = 0; j < args.length; j++) {
-      IExpr variable = args[j].argument;
+      IExpr variable = args[j].argument();
       if (numericVariables.containsKey(variable)) {
         Errors.printMessage(ast.topHead(), "fdup", F.list(variable, ast.arg1()), engine);
         return null;
       }
 
       String typeStr = "", suffix = "", evalName = "";
-      IExpr argType = args[j].type;
+      IExpr argType = args[j].type();
 
       if (argType.isBuiltInSymbol()) {
         switch (((IBuiltInSymbol) argType).ordinal()) {
@@ -485,14 +476,28 @@ public class CompilerFunctions {
         continue;
       }
 
+      String rankStr = "";
+      String evalRankStr = "";
+      switch (args[j].rank) {
+        case VECTOR:
+          rankStr = "[]";
+          evalRankStr = "Vector";
+          break;
+        case MATRIX:
+          rankStr = "[][]";
+          evalRankStr = "Matrix";
+          break;
+        case SCALAR:
+          break;
+      }
+
       String fieldName = "arg_" + (j + 1) + "_" + suffix;
 
-      // Declare native Java primitive field
-      fieldsBuf.append("  ").append(typeStr).append(" ").append(fieldName).append(";\n");
+      fieldsBuf.append("  ").append(typeStr).append(rankStr).append(" ").append(fieldName)
+          .append(";\n");
 
-      // Initialize the field inside the evaluate method
       variablesBuf.append("this.").append(fieldName).append(" = engine.eval").append(evalName)
-          .append("(ast.get(").append(j + 1).append("));\n");
+          .append(evalRankStr).append("(ast.get(").append(j + 1).append("));\n");
 
       symbolicVariables.put(variable, variable.toString());
       numericVariables.put(variable, "this." + fieldName);
@@ -505,8 +510,7 @@ public class CompilerFunctions {
 
     CompileAnalyzer analyzer = new CompileAnalyzer();
     analyzer.analyze(expression);
-
-    CompileFactory cf = new CompileFactory(numericVars, symbolicVars, args, top, domain,
+    CompileFactory cf = new CompileFactory(numericVars, symbolicVars, args, domain,
         analyzer.getNodeTypes(), fieldsBuf);
 
     return generateClassSource(cf, expression, variablesBuf, fieldsBuf, args.length);
@@ -518,9 +522,13 @@ public class CompilerFunctions {
     StringBuilder methodsBuf = new StringBuilder();
     cf.convert(expressionBuf, methodsBuf, expression, false, true);
 
-    // Unconditionally wrap the top-level evaluate() return with Symjify
-    // This securely forces double, int, boolean, or Complex back into an IExpr
-    String exprWrapped = "F.symjify(" + expressionBuf.toString() + ");\n";
+    String exprWrapped;
+    String exprStr = expressionBuf.toString();
+    if (exprStr.startsWith("throw ")) {
+      exprWrapped = exprStr + ";\n";
+    } else {
+      exprWrapped = "F.symjify(" + exprStr + ");\n";
+    }
 
     String source = JAVA_SOURCE_CODE.replace("{$fields}", fieldsBuf.toString());
     source = source.replace("{$variables}", variablesBuf.toString());

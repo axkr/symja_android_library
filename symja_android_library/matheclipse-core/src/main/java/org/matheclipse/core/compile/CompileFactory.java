@@ -3,7 +3,6 @@ package org.matheclipse.core.compile;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.function.Function;
-import org.matheclipse.core.builtin.CompilerFunctions.CompiledFunctionArg;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.expression.F;
@@ -12,6 +11,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.JavaComplexFormFactory;
 import org.matheclipse.core.form.output.JavaDoubleFormFactory;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -22,19 +22,17 @@ public class CompileFactory {
   private HashSet<String> localVariables;
   private final VariableManager numericVariables;
   private final VariableManager variables;
-  private int topOfStack;
   final CompiledFunctionArg[] args;
   private final Map<IExpr, CompileAnalyzer.VarType> nodeTypes;
   private final StringBuilder fieldsBuf;
 
   public CompileFactory(VariableManager numericVariables, VariableManager variables,
-      CompiledFunctionArg[] args, int topOfStack, IBuiltInSymbol domain,
+      CompiledFunctionArg[] args, IBuiltInSymbol domain,
       Map<IExpr, CompileAnalyzer.VarType> nodeTypes, StringBuilder fieldsBuf) {
     this.localVariables = new HashSet<>();
     this.numericVariables = numericVariables;
     this.variables = variables;
     this.args = args;
-    this.topOfStack = topOfStack;
     this.domain = domain;
     this.nodeTypes = nodeTypes;
     this.fieldsBuf = fieldsBuf;
@@ -51,15 +49,26 @@ public class CompileFactory {
       int m = factory.module++;
       methods.append("public IExpr compoundExpression").append(m).append("() {\n");
       tryBegin(methods);
-      var subMethods = new StringBuilder();
+      StringBuilder subMethods = new StringBuilder();
       for (int i = 1; i < f.argSize(); i++) {
-        var expressions = new StringBuilder();
+        StringBuilder expressions = new StringBuilder();
         factory.convert(expressions, subMethods, f.get(i), false, true);
-        methods.append("      ").append(expressions).append(";\n");
+        String exprStr = expressions.toString();
+        if (exprStr.startsWith("throw ")) {
+          methods.append("      ").append(exprStr).append(";\n");
+        } else {
+          methods.append("      Object _discard_").append(m).append("_").append(i).append(" = ")
+              .append(exprStr).append(";\n");
+        }
       }
-      var expressions = new StringBuilder();
+      StringBuilder expressions = new StringBuilder();
       factory.convert(expressions, subMethods, f.last(), false, true);
-      methods.append("return F.symjify(").append(expressions).append(");\n");
+      String exprStr = expressions.toString();
+      if (exprStr.startsWith("throw ")) {
+        methods.append(exprStr).append(";\n");
+      } else {
+        methods.append("return F.symjify(").append(exprStr).append(");\n");
+      }
       tryEnd(methods);
       methods.append("}\n\n").append(subMethods);
       parentBuffer.append("compoundExpression").append(m).append("()");
@@ -84,8 +93,8 @@ public class CompileFactory {
         || f.arg2().isNumericFunction(factory.numericVariables);
 
     if (isNumericRHS) {
-      var numericBuffer = new StringBuilder();
-      int type = factory.convertNumeric(numericBuffer, f.arg2(), factory.domain);
+      StringBuilder numericBuffer = new StringBuilder();
+      int type = factory.convertNumeric(numericBuffer, methods, f.arg2(), factory.domain);
       if (type > 0) {
         int m = factory.module++;
         String existingVar = factory.numericVariables.apply(f.arg1());
@@ -130,8 +139,8 @@ public class CompileFactory {
     try {
       int m = factory.module++;
       methods.append("public IExpr ifExpression").append(m).append("() {\n");
-      var subMethods = new StringBuilder();
-      var expression = new StringBuilder();
+      StringBuilder subMethods = new StringBuilder();
+      StringBuilder expression = new StringBuilder();
 
       boolean optimizedTest = factory.tryOptimizeCondition(expression, f.arg1());
       if (!optimizedTest) {
@@ -143,14 +152,30 @@ public class CompileFactory {
 
       expression.setLength(0);
       factory.convert(expression, subMethods, f.arg2(), false, true);
-      methods.append("return F.symjify(").append(expression).append(");\n");
+      String exprStr1 = expression.toString();
+      if (exprStr1.startsWith("throw ")) {
+        methods.append(exprStr1).append(";\n");
+      } else {
+        methods.append("return F.symjify(").append(exprStr1).append(");\n");
+      }
+
       if (f.isAST3()) {
         methods.append("} else {\n");
         expression.setLength(0);
         factory.convert(expression, subMethods, f.arg3(), false, true);
-        methods.append("return F.symjify(").append(expression).append(");\n");
+        String exprStr2 = expression.toString();
+        if (exprStr2.startsWith("throw ")) {
+          methods.append(exprStr2).append(";\n");
+        } else {
+          methods.append("return F.symjify(").append(exprStr2).append(");\n");
+        }
+        methods.append("}\n");
+      } else {
+        methods.append("} else {\n");
+        methods.append("  return F.Null;\n");
+        methods.append("}\n");
       }
-      methods.append("}\n}\n\n").append(subMethods);
+      methods.append("}\n\n").append(subMethods);
       parentBuffer.append("ifExpression").append(m).append("()");
     } finally {
       factory.variables.pop();
@@ -169,10 +194,10 @@ public class CompileFactory {
     try {
       int m = factory.module++;
       methods.append("public IExpr whichExpression").append(m).append("() {\n");
-      var subMethods = new StringBuilder();
+      StringBuilder subMethods = new StringBuilder();
 
       for (int i = 1; i < f.argSize(); i += 2) {
-        var testExpr = new StringBuilder();
+        StringBuilder testExpr = new StringBuilder();
         boolean optimized = factory.tryOptimizeCondition(testExpr, f.get(i));
         if (!optimized) {
           factory.convert(testExpr, subMethods, f.get(i), false, true);
@@ -181,9 +206,14 @@ public class CompileFactory {
         } else {
           methods.append(i == 1 ? "if(" : "} else if(").append(testExpr).append("){\n");
         }
-        var valExpr = new StringBuilder();
+        StringBuilder valExpr = new StringBuilder();
         factory.convert(valExpr, subMethods, f.get(i + 1), false, true);
-        methods.append("return F.symjify(").append(valExpr).append(");\n");
+        String valStr = valExpr.toString();
+        if (valStr.startsWith("throw ")) {
+          methods.append(valStr).append(";\n");
+        } else {
+          methods.append("return F.symjify(").append(valStr).append(");\n");
+        }
       }
       methods.append("}\nreturn F.Null;\n}\n\n").append(subMethods);
       parentBuffer.append("whichExpression").append(m).append("()");
@@ -209,11 +239,11 @@ public class CompileFactory {
     try {
       int m = factory.module++;
       methods.append("public IExpr doExpression").append(m).append("() {\n");
-      var subMethods = new StringBuilder();
+      StringBuilder subMethods = new StringBuilder();
 
       if (iter.argSize() == 1) {
         String iterName = "iter_" + m;
-        var imaxBuf = new StringBuilder();
+        StringBuilder imaxBuf = new StringBuilder();
         factory.convert(imaxBuf, subMethods, iter.arg1(), false, true);
         methods.append("  double ").append(iterName).append("_max = engine.evalDouble(F.symjify(")
             .append(imaxBuf).append("));\n");
@@ -227,9 +257,15 @@ public class CompileFactory {
             .append("++) {\n");
 
         methods.append("    int oldTop = top;\n    try {\n");
-        var bodyExpr = new StringBuilder();
+        StringBuilder bodyExpr = new StringBuilder();
         factory.convert(bodyExpr, subMethods, f.arg1(), false, true);
-        methods.append("      ").append(bodyExpr).append(";\n");
+        String exprStr = bodyExpr.toString();
+        if (exprStr.startsWith("throw ")) {
+          methods.append("      ").append(exprStr).append(";\n");
+        } else {
+          methods.append("      Object _discard_").append(m).append(" = ").append(exprStr)
+              .append(";\n");
+        }
         methods.append(
             "    } catch (org.matheclipse.core.eval.exception.BreakException e) { break; }\n");
         methods
@@ -252,11 +288,11 @@ public class CompileFactory {
           step = iter.arg4();
         }
 
-        var iminBuf = new StringBuilder();
+        StringBuilder iminBuf = new StringBuilder();
         factory.convert(iminBuf, subMethods, imin, false, true);
-        var imaxBuf = new StringBuilder();
+        StringBuilder imaxBuf = new StringBuilder();
         factory.convert(imaxBuf, subMethods, imax, false, true);
-        var stepBuf = new StringBuilder();
+        StringBuilder stepBuf = new StringBuilder();
         factory.convert(stepBuf, subMethods, step, false, true);
 
         String iterName = "iter_" + m;
@@ -271,7 +307,6 @@ public class CompileFactory {
         String loopVarName = "loop_var_" + loopId + "_d";
         factory.fieldsBuf.append("  double ").append(loopVarName).append(";\n");
 
-        // Check step direction natively to allow loops from N down to 2 with step -1
         String loopCond = iterName + "_step > 0 ? this." + loopVarName + " <= " + iterName
             + "_max : this." + loopVarName + " >= " + iterName + "_max";
 
@@ -285,7 +320,6 @@ public class CompileFactory {
 
         methods.append("    int oldTop = top;\n    try {\n");
 
-        // Force synchronization to vars so inner components like compoundExpression() can access i
         methods.append("      IExpr syncVar_").append(m).append(" = vars.get(\"")
             .append(loopVar.toString()).append("\");\n");
         methods.append("      if (syncVar_").append(m).append(" != null) {\n");
@@ -293,9 +327,15 @@ public class CompileFactory {
             .append(loopVarName).append(")));\n");
         methods.append("      }\n");
 
-        var bodyExpr = new StringBuilder();
+        StringBuilder bodyExpr = new StringBuilder();
         factory.convert(bodyExpr, subMethods, f.arg1(), false, true);
-        methods.append("      ").append(bodyExpr).append(";\n");
+        String exprStr = bodyExpr.toString();
+        if (exprStr.startsWith("throw ")) {
+          methods.append("      ").append(exprStr).append(";\n");
+        } else {
+          methods.append("      Object _discard_").append(m).append(" = ").append(exprStr)
+              .append(";\n");
+        }
         methods.append(
             "    } catch (org.matheclipse.core.eval.exception.BreakException e) { break; }\n");
         methods
@@ -323,8 +363,8 @@ public class CompileFactory {
     try {
       int m = factory.module++;
       methods.append("public IExpr whileExpression").append(m).append("() {\n");
-      var subMethods = new StringBuilder();
-      var testExpr = new StringBuilder();
+      StringBuilder subMethods = new StringBuilder();
+      StringBuilder testExpr = new StringBuilder();
 
       boolean optimizedTest = factory.tryOptimizeCondition(testExpr, f.arg1());
       if (!optimizedTest) {
@@ -336,9 +376,15 @@ public class CompileFactory {
 
       if (f.argSize() == 2) {
         methods.append("    int oldTop = top;\n    try {\n");
-        var bodyExpr = new StringBuilder();
+        StringBuilder bodyExpr = new StringBuilder();
         factory.convert(bodyExpr, subMethods, f.arg2(), false, true);
-        methods.append("      ").append(bodyExpr).append(";\n");
+        String exprStr = bodyExpr.toString();
+        if (exprStr.startsWith("throw ")) {
+          methods.append("      ").append(exprStr).append(";\n");
+        } else {
+          methods.append("      Object _discard_").append(m).append(" = ").append(exprStr)
+              .append(";\n");
+        }
         methods.append(
             "    } catch (org.matheclipse.core.eval.exception.BreakException e) { break; }\n");
         methods.append(
@@ -364,13 +410,18 @@ public class CompileFactory {
     try {
       int m = factory.module++;
       methods.append("public IExpr forExpression").append(m).append("() {\n");
-      var subMethods = new StringBuilder();
+      StringBuilder subMethods = new StringBuilder();
 
-      var startExpr = new StringBuilder();
+      StringBuilder startExpr = new StringBuilder();
       factory.convert(startExpr, subMethods, f.arg1(), false, true);
-      methods.append("  ").append(startExpr).append(";\n");
+      String startStr = startExpr.toString();
+      if (startStr.startsWith("throw ")) {
+        methods.append("  ").append(startStr).append(";\n");
+      } else {
+        methods.append("  Object _start_").append(m).append(" = ").append(startStr).append(";\n");
+      }
 
-      var testExpr = new StringBuilder();
+      StringBuilder testExpr = new StringBuilder();
       boolean optimizedTest = factory.tryOptimizeCondition(testExpr, f.arg2());
       if (!optimizedTest) {
         factory.convert(testExpr, subMethods, f.arg2(), false, true);
@@ -380,17 +431,28 @@ public class CompileFactory {
       }
 
       methods.append("    int oldTop = top;\n    try {\n");
-      var bodyExpr = new StringBuilder();
+      StringBuilder bodyExpr = new StringBuilder();
       factory.convert(bodyExpr, subMethods, f.arg4(), false, true);
-      methods.append("      ").append(bodyExpr).append(";\n");
+      String bodyStr = bodyExpr.toString();
+      if (bodyStr.startsWith("throw ")) {
+        methods.append("      ").append(bodyStr).append(";\n");
+      } else {
+        methods.append("      Object _discard_").append(m).append(" = ").append(bodyStr)
+            .append(";\n");
+      }
       methods.append(
           "    } catch (org.matheclipse.core.eval.exception.BreakException e) { break; }\n");
       methods.append("      catch (org.matheclipse.core.eval.exception.ContinueException e) { }\n");
       methods.append("      finally { top = oldTop; }\n");
 
-      var incrExpr = new StringBuilder();
+      StringBuilder incrExpr = new StringBuilder();
       factory.convert(incrExpr, subMethods, f.arg3(), false, true);
-      methods.append("    ").append(incrExpr).append(";\n");
+      String incrStr = incrExpr.toString();
+      if (incrStr.startsWith("throw ")) {
+        methods.append("    ").append(incrStr).append(";\n");
+      } else {
+        methods.append("    Object _incr_").append(m).append(" = ").append(incrStr).append(";\n");
+      }
 
       methods.append("  }\n  return F.Null;\n}\n\n").append(subMethods);
       parentBuffer.append("forExpression").append(m).append("()");
@@ -410,7 +472,7 @@ public class CompileFactory {
     factory.numericVariables.push();
     HashSet<String> oldLocalVariables = factory.localVariables;
     try {
-      var localVariables = new HashSet<>(factory.localVariables);
+      HashSet<String> localVariables = new HashSet<>(factory.localVariables);
       factory.localVariables = localVariables;
       IAST variableList = (IAST) f.arg1();
       int m = factory.module++;
@@ -444,8 +506,8 @@ public class CompileFactory {
           if (inferredType == CompileAnalyzer.VarType.REAL
               || inferredType == CompileAnalyzer.VarType.INTEGER
               || arg.second().isNumericFunction(factory.numericVariables)) {
-            var numericBuffer = new StringBuilder();
-            int type = factory.convertNumeric(numericBuffer, arg.second(), factory.domain);
+            StringBuilder numericBuffer = new StringBuilder();
+            int type = factory.convertNumeric(numericBuffer, methods, arg.second(), factory.domain);
             if (type > 0) {
               int fieldId = factory.fieldCounter++;
               String fieldName = "local_var_" + fieldId + "_" + (type == 1 ? "d" : "c");
@@ -464,17 +526,22 @@ public class CompileFactory {
           }
 
           if (!isNumericInit) {
-            var expressions = new StringBuilder();
+            StringBuilder expressions = new StringBuilder();
             factory.convert(expressions, methods, arg.second(), true, false);
-            methods.append("  F.eval(F.Set(").append(symbolName).append(", F.symjify(")
-                .append(expressions).append(")));\n");
+            methods.append("  F.eval(F.Set(").append(symbolName).append(", ").append(expressions)
+                .append("));\n");
           }
         }
       }
-      var expressions = new StringBuilder();
-      var subMethods = new StringBuilder();
+      StringBuilder expressions = new StringBuilder();
+      StringBuilder subMethods = new StringBuilder();
       factory.convert(expressions, subMethods, f.arg2(), false, true);
-      methods.append("return F.symjify(").append(expressions).append(");\n");
+      String exprStr = expressions.toString();
+      if (exprStr.startsWith("throw ")) {
+        methods.append(exprStr).append(";\n");
+      } else {
+        methods.append("return F.symjify(").append(exprStr).append(");\n");
+      }
       methods.append("} finally {top = oldTop; vars = oldVars;}\n");
       methods.append("}\n\n").append(subMethods);
       parentBuffer.append("scopeExpression").append(m).append("()");
@@ -486,10 +553,62 @@ public class CompileFactory {
     return true;
   }
 
+  private static boolean convertPart(CompileFactory factory, final StringBuilder parentBuffer,
+      StringBuilder methods, final IAST f) {
+    if (f.argSize() < 2) {
+      return false;
+    }
+    IExpr head = f.arg1();
+    String arrName = factory.numericVariables.apply(head);
+    if (arrName != null && arrName.startsWith("this.")) {
+      CompiledFunctionArg argInfo = null;
+      for (CompiledFunctionArg a : factory.args) {
+        if (a.argument.equals(head)) {
+          argInfo = a;
+          break;
+        }
+      }
+      if (argInfo != null && argInfo.rank != CompiledFunctionArg.Rank.SCALAR) {
+        StringBuilder sb = new StringBuilder(arrName);
+        for (int i = 2; i <= f.argSize(); i++) {
+          StringBuilder idxBuf = new StringBuilder();
+          factory.convert(idxBuf, methods, f.get(i), false, true);
+          sb.append("[(int)(").append(idxBuf).append(") - 1]");
+        }
+        parentBuffer.append(sb);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean convertLength(CompileFactory factory, final StringBuilder parentBuffer,
+      StringBuilder methods, final IAST f) {
+    if (f.argSize() != 1) {
+      return false;
+    }
+    IExpr head = f.arg1();
+    String arrName = factory.numericVariables.apply(head);
+    if (arrName != null && arrName.startsWith("this.")) {
+      CompiledFunctionArg argInfo = null;
+      for (CompiledFunctionArg a : factory.args) {
+        if (a.argument.equals(head)) {
+          argInfo = a;
+          break;
+        }
+      }
+      if (argInfo != null && argInfo.rank != CompiledFunctionArg.Rank.SCALAR) {
+        parentBuffer.append(arrName).append(".length");
+        return true;
+      }
+    }
+    return false;
+  }
+
   public void convert(StringBuilder buf, StringBuilder methods, IExpr expression, boolean symbolic,
       boolean addEval) {
     if (!symbolic && expression.isNumericFunction(numericVariables)) {
-      int type = convertNumeric(buf, expression, domain);
+      int type = convertNumeric(buf, methods, expression, domain);
       if (type > 0) {
         return;
       }
@@ -499,7 +618,7 @@ public class CompileFactory {
       IExpr head = ast.head();
       if (head.isBuiltInSymbol()) {
         boolean converted = false;
-        var sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
 
         switch (((IBuiltInSymbol) head).ordinal()) {
           case ID.CompoundExpression:
@@ -538,16 +657,27 @@ public class CompileFactory {
             converted = true;
             break;
           case ID.Return:
-            sb.append("throw new org.matheclipse.core.eval.exception.ReturnException(");
             if (ast.argSize() == 1) {
-              var tempBuf = new StringBuilder();
+              StringBuilder tempBuf = new StringBuilder();
               convert(tempBuf, methods, ast.arg1(), symbolic, addEval);
-              sb.append("F.symjify(").append(tempBuf).append(")");
+              String tStr = tempBuf.toString();
+              if (tStr.startsWith("throw ")) {
+                sb.append(tStr);
+              } else {
+                sb.append(
+                    "throw new org.matheclipse.core.eval.exception.ReturnException(F.symjify(")
+                    .append(tStr).append("))");
+              }
             } else {
-              sb.append("F.Null");
+              sb.append("throw new org.matheclipse.core.eval.exception.ReturnException(F.Null)");
             }
-            sb.append(")");
             converted = true;
+            break;
+          case ID.Part:
+            converted = convertPart(this, sb, methods, ast);
+            break;
+          case ID.Length:
+            converted = convertLength(this, sb, methods, ast);
             break;
         }
 
@@ -598,9 +728,9 @@ public class CompileFactory {
         }
 
         if (op != null) {
-          var leftBuf = new StringBuilder();
-          var rightBuf = new StringBuilder();
-          var doubleFactory = JavaDoubleFormFactory.get(true, false);
+          StringBuilder leftBuf = new StringBuilder();
+          StringBuilder rightBuf = new StringBuilder();
+          JavaDoubleFormFactory doubleFactory = JavaDoubleFormFactory.get(true, false);
 
           try {
             doubleFactory.convert(leftBuf,
@@ -619,12 +749,73 @@ public class CompileFactory {
     return false;
   }
 
-  private int convertNumeric(StringBuilder parentBuffer, IExpr expression, IBuiltInSymbol domain) {
+  private IExpr prepareForNumeric(IExpr expr, StringBuilder methods) {
+    if (expr.isAST(S.Part) && expr.argSize() >= 2) {
+      IAST part = (IAST) expr;
+      IExpr head = part.arg1();
+      String arrName = numericVariables.apply(head);
+      if (arrName != null && arrName.startsWith("this.")) {
+        CompiledFunctionArg argInfo = null;
+        for (CompiledFunctionArg a : args) {
+          if (a.argument.equals(head)) {
+            argInfo = a;
+            break;
+          }
+        }
+        if (argInfo != null && argInfo.rank != CompiledFunctionArg.Rank.SCALAR) {
+          StringBuilder sb = new StringBuilder(arrName);
+          for (int i = 2; i <= part.argSize(); i++) {
+            StringBuilder idxBuf = new StringBuilder();
+            convert(idxBuf, methods, part.get(i), false, true);
+            sb.append("[(int)(").append(idxBuf).append(") - 1]");
+          }
+          return F.stringx(sb.toString());
+        }
+      }
+    }
+    if (expr.isAST(S.Length) && expr.argSize() == 1) {
+      IExpr head = ((IAST) expr).arg1();
+      String arrName = numericVariables.apply(head);
+      if (arrName != null && arrName.startsWith("this.")) {
+        CompiledFunctionArg argInfo = null;
+        for (CompiledFunctionArg a : args) {
+          if (a.argument.equals(head)) {
+            argInfo = a;
+            break;
+          }
+        }
+        if (argInfo != null && argInfo.rank != CompiledFunctionArg.Rank.SCALAR) {
+          return F.stringx(arrName + ".length");
+        }
+      }
+    }
+    if (expr.isAST()) {
+      IAST ast = (IAST) expr;
+      IASTAppendable result = F.ast(ast.head(), ast.argSize());
+      for (int i = 1; i <= ast.argSize(); i++) {
+        result.append(prepareForNumeric(ast.get(i), methods));
+      }
+      return result;
+    }
+    if (expr.isSymbol()) {
+      for (CompiledFunctionArg a : args) {
+        if (a.argument.equals(expr) && a.rank != CompiledFunctionArg.Rank.SCALAR) {
+          throw new IllegalArgumentException(
+              "Matrix cannot be used directly as a primitive scalar.");
+        }
+      }
+    }
+    return expr;
+  }
+
+  private int convertNumeric(StringBuilder parentBuffer, StringBuilder methods, IExpr expression,
+      IBuiltInSymbol domain) {
     if (domain == S.Reals) {
       try {
-        var buf = new StringBuilder();
-        var factory = JavaDoubleFormFactory.get(true, false);
-        IExpr substituted = F.subst(expression, getNumericSubstFunction("evalf"));
+        StringBuilder buf = new StringBuilder();
+        JavaDoubleFormFactory factory = JavaDoubleFormFactory.get(true, false);
+        IExpr preprocessed = prepareForNumeric(expression, methods);
+        IExpr substituted = F.subst(preprocessed, getNumericSubstFunction("evalf"));
         factory.convert(buf, substituted);
         parentBuffer.append(buf);
         return 1;
@@ -633,9 +824,10 @@ public class CompileFactory {
       }
     }
     try {
-      var buf = new StringBuilder();
-      var factory = JavaComplexFormFactory.get(true, false, -1, -1, true);
-      IExpr substituted = F.subst(expression, getNumericSubstFunction("evalComplex"));
+      StringBuilder buf = new StringBuilder();
+      JavaComplexFormFactory factory = JavaComplexFormFactory.get(true, false, -1, -1, true);
+      IExpr preprocessed = prepareForNumeric(expression, methods);
+      IExpr substituted = F.subst(preprocessed, getNumericSubstFunction("evalComplex"));
       factory.convert(buf, substituted);
       parentBuffer.append(buf);
       return 2;
@@ -649,10 +841,7 @@ public class CompileFactory {
     return x -> {
       String str = numericVariables.apply(x);
       if (x.isSymbol() && str != null) {
-        if (str.startsWith("this.")) {
-          return F.stringx(str);
-        }
-        return F.stringx(evalMethod + "(" + str + ")");
+        return F.stringx(str);
       }
       return F.NIL;
     };

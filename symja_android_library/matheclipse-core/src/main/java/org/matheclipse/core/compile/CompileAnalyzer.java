@@ -32,7 +32,7 @@ public class CompileAnalyzer {
         return REAL;
       if (a == INTEGER || b == INTEGER)
         return INTEGER;
-      if (a == BOOLEAN && b == BOOLEAN)
+      if (a == BOOLEAN || b == BOOLEAN)
         return BOOLEAN;
       return UNKNOWN;
     }
@@ -133,7 +133,9 @@ public class CompileAnalyzer {
         case ID.For:
           return analyzeLoop(ast);
         case ID.If:
+          return analyzeIf(ast);
         case ID.Which:
+          return analyzeWhich(ast);
         case ID.Switch:
           return analyzeConditional(ast);
         case ID.CompoundExpression:
@@ -150,6 +152,10 @@ public class CompileAnalyzer {
         case ID.GreaterEqual:
         case ID.Equal:
         case ID.Unequal:
+        case ID.And:
+        case ID.Or:
+        case ID.Not:
+        case ID.Xor:
           return analyzeComparison(ast);
         case ID.Break:
         case ID.Continue:
@@ -167,9 +173,9 @@ public class CompileAnalyzer {
   }
 
   private VarType analyzeSet(IAST ast) {
-    if (ast.argSize() != 2)
+    if (ast.argSize() != 2) {
       return VarType.UNKNOWN;
-
+    }
     VarType rhsType = analyze(ast.arg2());
     if (ast.arg1().isSymbol()) {
       currentScope.put((ISymbol) ast.arg1(), rhsType);
@@ -178,8 +184,9 @@ public class CompileAnalyzer {
   }
 
   private VarType analyzeScope(IAST ast) {
-    if (ast.argSize() < 2)
+    if (ast.argSize() < 2) {
       return VarType.UNKNOWN;
+    }
 
     currentScope = new Scope(currentScope);
     try {
@@ -204,12 +211,14 @@ public class CompileAnalyzer {
 
   private VarType analyzeLoop(IAST ast) {
     loopDepth++;
+    currentScope = new Scope(currentScope); // Push isolated scope
     try {
       for (int i = 1; i <= ast.argSize(); i++) {
         analyze(ast.get(i));
       }
       return VarType.SYMBOLIC;
     } finally {
+      currentScope = currentScope.parent;
       loopDepth--;
     }
   }
@@ -225,10 +234,30 @@ public class CompileAnalyzer {
     return mergedType;
   }
 
-  private VarType analyzeCompoundExpression(IAST ast) {
-    if (ast.argSize() == 0)
-      return VarType.UNKNOWN;
+  private VarType analyzeIf(IAST ast) {
+    analyze(ast.arg1());
+    VarType merged = analyze(ast.arg2()); // True branch
+    if (ast.argSize() >= 3) {
+      merged = VarType.widen(merged, analyze(ast.arg3())); // False branch
+    }
+    return merged;
+  }
 
+  private VarType analyzeWhich(IAST ast) {
+    VarType merged = VarType.UNKNOWN;
+    for (int i = 1; i <= ast.argSize(); i += 2) {
+      analyze(ast.get(i));
+      if (i + 1 <= ast.argSize()) {
+        merged = VarType.widen(merged, analyze(ast.get(i + 1))); // Merge Value
+      }
+    }
+    return merged;
+  }
+
+  private VarType analyzeCompoundExpression(IAST ast) {
+    if (ast.argSize() == 0) {
+      return VarType.UNKNOWN;
+    }
     for (int i = 1; i < ast.argSize(); i++) {
       analyze(ast.get(i));
     }
