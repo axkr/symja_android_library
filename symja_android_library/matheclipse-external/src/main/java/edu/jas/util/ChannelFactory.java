@@ -254,20 +254,12 @@ public class ChannelFactory extends Thread {
                 srvrun = false;
             }
             this.interrupt();
-            IOException first = null;
             while (!buf.isEmpty()) {
                 logger.debug("closing unused SocketChannel");
                 SocketChannel c  = buf.poll();
                 if ( c != null ) {
-                    try {
-                        c.close();
-                    } catch (IOException) {
-                        if (first == null) first = e;
-                        else first.addSuppressed(e);
-                    }
-            }
-            if (first != null) {
-                logger.info("One or more SocketChannels failed to close during terminate()", first);
+                    c.close();
+                }
             }
         } catch (IOException e) {
             //} catch (InterruptedException e) {
