@@ -84,7 +84,6 @@ import org.matheclipse.core.visit.VisitorReplaceAll;
  * </pre>
  */
 public class TrigSimplifyFu extends AbstractFunctionEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger(TrigSimplifyFu.class);
 
   private static class PowerVisitor extends VisitorExpr {
     final Function<IExpr, IExpr> f;
