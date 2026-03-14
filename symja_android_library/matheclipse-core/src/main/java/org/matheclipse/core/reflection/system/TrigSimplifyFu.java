@@ -1,32 +1,10 @@
 package org.matheclipse.core.reflection.system;
 
-import java.util.ArrayList;
-
-/*
- * Copyright 2005-2022 Axel Kramer (axel.kramer@gmail.com)
- *
- * This file is part of Symja.
- *
- * Symja is free software: you can redistribute it and/or modify it under the terms of the GNU
- * General Public License as published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- *
- * Symja is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
- * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with Symja. If not, see
- * <http://www.gnu.org/licenses/>.
- */
-
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.CompareUtil;
@@ -55,113 +33,88 @@ import org.matheclipse.core.sympy.core.Operations;
 import org.matheclipse.core.sympy.core.Traversal;
 import org.matheclipse.core.sympy.exception.ValueError;
 import org.matheclipse.core.sympy.ntheory.Factor;
-import org.matheclipse.core.visit.VisitorExpr;
-import org.matheclipse.core.visit.VisitorReplaceAll;
 
-/**
- *
- *
- * <pre>
- * TrigSimplify(expr)
- * </pre>
- *
- * <blockquote>
- *
- * <p>
- * simplifies a trigonometric expression.
- *
- * </blockquote>
- *
- * <p>
- * See: <a href="https://en.wikipedia.org/wiki/List_of_trigonometric_identities">List of
- * trigonometric identities</a>
- *
- * <h3>Examples</h3>
- *
- * <pre>
- * >> TrigSimplify(Sin(x)^2+Cos(x)^2)
- * 1
- * </pre>
- */
 public class TrigSimplifyFu extends AbstractFunctionEvaluator {
 
-  private static class PowerVisitor extends VisitorExpr {
-    final Function<IExpr, IExpr> f;
-    IExpr result;
-
-    public PowerVisitor(Function<IExpr, IExpr> f) {
-      super();
-      this.f = f;
-      this.result = F.NIL;
-    }
-
-    @Override
-    public IExpr visitAST(IAST ast) {
-      if (ast.isPower()) {
-        IExpr base = ast.base();
-        IExpr exponent = ast.exponent();
-        if (exponent.isInteger() && ((IInteger) exponent).isPositive()) {
-          return f.apply(ast);
-        }
-      }
-      return F.NIL;
-    }
-
-    public IExpr getResult() {
-      return result;
-    }
-  }
-
-  public TrigSimplifyFu() {}
-
-  @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IExpr arg1 = ast.arg1();
-    IAST tempAST = CompareUtil.threadListLogicEquationOperators(arg1, ast, 1);
-    if (tempAST.isPresent()) {
-      return tempAST;
-    }
-
-    IExpr assumptionExpr = F.NIL;
-    IExpr complexityFunctionHead = F.NIL;
-    if (ast.size() > 2) {
-      OptionArgs options = null;
-      if (ast.size() > 2) {
-        options = new OptionArgs(ast.topHead(), ast, ast.argSize(), engine);
-        complexityFunctionHead = options.getOptionAutomatic(S.ComplexityFunction);
-      }
-      assumptionExpr = OptionArgs.determineAssumptions(ast, 2, options);
-    }
-    // arg1 = engine.evaluate(F.ExpandAll(arg1));
-    if (assumptionExpr.isPresent()) {
-      if (assumptionExpr.isAST()) {
-        IAssumptions oldAssumptions = engine.getAssumptions();
-        IAssumptions assumptions;
-        if (oldAssumptions == null) {
-          assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
-        } else {
-          assumptions = oldAssumptions.copy();
-          assumptions = assumptions.addAssumption(assumptionExpr);
-        }
-        if (assumptions != null) {
-          try {
-            engine.setAssumptions(assumptions);
-            return simplifyFu(arg1, complexityFunctionHead, engine);
-          } finally {
-            engine.setAssumptions(oldAssumptions);
-          }
-        }
-      }
-    }
-
-    return simplifyFu(arg1, complexityFunctionHead, engine);
-  }
-
   final static Function<IExpr, IExpr> TR0 = TrigSimplifyFu::tr0;
+
   final static Function<IExpr, IExpr> TR5 = TrigSimplifyFu::tr5;
+
   final static Function<IExpr, IExpr> TR6 = TrigSimplifyFu::tr6;
   final static Function<IExpr, IExpr> TR10 = TrigSimplifyFu::tr10;
   final static Function<IExpr, IExpr> TR11 = TrigSimplifyFu::tr11;
+
+  private static IAST asFSign1(IExpr e) {
+    if (!e.isPlus() || e.argSize() != 2) {
+      return F.NIL;
+    }
+    IExpr a = e.first();
+    IExpr b = e.second();
+
+    if (a.isOne() || a.isMinusOne()) {
+      IExpr g = F.C1;
+      if (b.isTimes() && b.first().isNumber() && b.first().isNegative()) {
+        a = a.negate();
+        b = b.negate();
+        g = g.negate();
+      }
+      return F.List(g, b, a);
+    }
+
+    IPair pa = a.asCoeffMul();
+    IPair pb = b.asCoeffMul();
+    IExpr ca = pa.first();
+    IExpr ma = pa.second();
+    IExpr cb = pb.first();
+    IExpr mb = pb.second();
+
+    if (ma.equals(F.C1)) {
+      IExpr temp = ma;
+      ma = mb;
+      mb = temp;
+      temp = ca;
+      ca = cb;
+      cb = temp;
+    }
+
+    if (mb.isOne() && ca instanceof IInteger && cb instanceof IInteger) {
+      IInteger gcd = ((IInteger) ca).gcd((IInteger) cb);
+      IExpr g = gcd;
+      IExpr s1 = ca.divide(g);
+      IExpr s2 = cb.divide(g);
+      if (s1.isNegative()) {
+        g = g.negate();
+        s1 = s1.negate();
+        s2 = s2.negate();
+      }
+      if (s1.isOne()) {
+        return F.List(g, ma, s2);
+      }
+    }
+    return F.NIL;
+  }
+
+  public static Function<IExpr, Long> createComplexityFunction(IExpr complexityFunctionHead,
+      EvalEngine engine) {
+    Function<IExpr, Long> complexityFunction = x -> {
+      if (x.isIndeterminate() || x.isComplexInfinity()) {
+        // Tan(Pi/2) and similar expressions in some sub-steps, create non-wanted results
+        return Long.MAX_VALUE;
+      }
+      return x.leafCountSimplify();
+    };
+    if (complexityFunctionHead.isPresent()) {
+      final IExpr head = complexityFunctionHead;
+      complexityFunction = x -> {
+        IExpr temp = engine.evaluate(F.unaryAST1(head, x));
+        if (temp.isInteger() && !temp.isNegative()) {
+          return ((IInteger) temp).toLong();
+        }
+        return Long.MAX_VALUE;
+      };
+    }
+    return complexityFunction;
+  }
 
   private static IExpr ctr1(IExpr rv, Function<IExpr, Long> measure) {
     // [(TR5, TR0), (TR6, TR0), identity]
@@ -210,175 +163,6 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     return rv;
   }
 
-  private static IExpr rl1(IExpr rv) {
-    return tr0(tr4(tr13(tr4(tr12(tr4(tr3(tr4(rv))))))));
-  }
-
-  private static IExpr rl2(IExpr rv, Function<IExpr, Long> measure) {
-    IExpr rl21 = tr11(tr3(tr4(tr10(tr3(tr4(rv))))));
-    IExpr rl22 = tr4(tr11(tr7(tr5(rv))));
-    IExpr rl23 = ctr4(tr9(tr9(tr4(ctr2(tr9(ctr1(ctr3(rv, measure), measure)), measure)))), measure);
-    IExpr rl24 = tr10i(rv);
-    if (measure.apply(rl24) < measure.apply(rv)) {
-      rv = rl24;
-    }
-    if (measure.apply(rl22) < measure.apply(rv)) {
-      rv = rl22;
-    }
-    if (measure.apply(rl21) < measure.apply(rv)) {
-      rv = rl21;
-    }
-    if (measure.apply(rl23) < measure.apply(rv)) {
-      rv = rl23;
-    }
-    return rv;
-  }
-  // private static IExpr rl2(IExpr rv, Function<IExpr, Long> measure) {
-  // IExpr rl21 = tr11(tr3(tr4(tr10(tr3(tr4(rv))))));
-  // IExpr rl22 = tr4(tr11(tr7(tr5(rv))));
-  // IExpr rl23 = ctr4(tr9(tr9(tr4(ctr2(tr9(ctr1(ctr3(rv, measure), measure)), measure)))),
-  // measure);
-  // if (measure.apply(rl22) < measure.apply(rv)) {
-  // rv = rl22;
-  // }
-  // if (measure.apply(rl21) < measure.apply(rv)) {
-  // rv = rl21;
-  // }
-  // if (measure.apply(rl23) < measure.apply(rv)) {
-  // rv = rl23;
-  // }
-  // return rv;
-  // }
-
-  /**
-   * See: <a href=
-   * "https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/simplify/fu.py#L1569">sympy/simplify/fu.py#L1569</a>
-   *
-   * @param expr
-   * @param complexityFunctionHead
-   * @param engine
-   * @return
-   */
-  private IExpr simplifyFu(IExpr expr, IExpr complexityFunctionHead, EvalEngine engine) {
-    if (!expr.isAST()) {
-      return expr;
-    }
-    IAST was = (IAST) expr;
-    Function<IExpr, Long> measure = createComplexityFunction(complexityFunctionHead, engine);
-
-    IExpr rv = tr1(was);
-    if (rv.has(x -> x.isTan() || x.isAST(S.Cot, 2), true)) {
-      IExpr rv1 = rl1(rv);
-      if (measure.apply(rv1) < measure.apply(rv)) {
-        rv = rv1;
-      }
-      if (rv.has(x -> x.isTan() || x.isAST(S.Cot, 2), true)) {
-        rv = tr2(rv);
-      }
-    }
-
-    if (rv.has(x -> x.isSin() || x.isCos(), true)) {
-      IExpr rv1 = rl2(rv, measure);
-      IExpr trMorrie = trMorrie(rv1);
-      IExpr rv2 = tr8(trMorrie, true);
-      if (measure.apply(was) < measure.apply(rv)) {
-        rv = was;
-      }
-      if (measure.apply(rv1) < measure.apply(rv)) {
-        rv = rv1;
-      }
-      if (measure.apply(rv2) < measure.apply(rv)) {
-        rv = rv2;
-      }
-    }
-
-    IExpr rv3 = tr2i(rv, false);
-    if (measure.apply(rv3) < measure.apply(rv)) {
-      rv = rv3;
-    }
-    return rv;
-  }
-
-  public static Function<IExpr, Long> createComplexityFunction(IExpr complexityFunctionHead,
-      EvalEngine engine) {
-    Function<IExpr, Long> complexityFunction = x -> {
-      if (x.isIndeterminate() || x.isComplexInfinity()) {
-        // Tan(Pi/2) and similar expressions in some sub-steps, create non-wanted results
-        return Long.MAX_VALUE;
-      }
-      return x.leafCountSimplify();
-    };
-    if (complexityFunctionHead.isPresent()) {
-      final IExpr head = complexityFunctionHead;
-      complexityFunction = x -> {
-        IExpr temp = engine.evaluate(F.unaryAST1(head, x));
-        if (temp.isInteger() && !temp.isNegative()) {
-          return ((IInteger) temp).toLong();
-        }
-        return Long.MAX_VALUE;
-      };
-    }
-    return complexityFunction;
-  }
-
-  /**
-   * Evaluate the expression. if the expression is an IAST factor and then expand the expression.
-   *
-   * @param expr
-   * @return
-   */
-  private static IExpr tr0(IExpr expr) {
-    if (expr.isAST()) {
-      IExpr factor = Algebra.factor(expr, EvalEngine.get());
-      return F.eval(F.Expand(factor));
-    }
-    return F.eval(expr);
-  }
-
-  public static IExpr tr1(IExpr expr) {
-    return Traversal.bottomUp(expr, x -> tr1Step(x));
-  }
-
-  private static IExpr tr1Step(IExpr expr) {
-    if (expr.isAST(S.Sec, 2)) {
-      IExpr arg1 = expr.first();
-      return F.Power(F.Cos(arg1), F.CN1);
-    }
-    if (expr.isAST(S.Csc, 2)) {
-      IExpr arg1 = expr.first();
-      return F.Power(F.Sin(arg1), F.CN1);
-    }
-    return F.NIL;
-  }
-
-  public static IExpr tr2(IExpr expr) {
-    return Traversal.bottomUp(expr, x -> tr2Step(x));
-  }
-
-  /**
-   * Replace tan and cot with sin/cos and cos/sin.
-   *
-   * @param expr
-   * @return
-   */
-  private static IExpr tr2Step(IExpr expr) {
-    if (expr.isTan()) {
-      IExpr arg1 = expr.first();
-      return F.Divide(F.Sin(arg1), F.Cos(arg1));
-    }
-    if (expr.isAST(S.Cot, 2)) {
-      IExpr arg1 = expr.first();
-      return F.Divide(F.Cos(arg1), F.Sin(arg1));
-    }
-    return F.NIL;
-  }
-
-  private static boolean ok(IExpr k, IExpr e, boolean half) {
-    return (e.isIntegerResult() || k.isPositive()) //
-        && (k.isCos() || k.isSin())
-        || (half && k.isPlus() && (k.argSize() >= 2) && k.indexOf(x -> x.isCos()) > 0);
-  }
-
   public static void factorize(DefaultDict<IExpr> d, IASTAppendable ddone, boolean half) {
     IASTAppendable newk = F.ListAlloc();
     for (IExpr k : d.keySet()) {
@@ -410,661 +194,17 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     }
   }
 
-  public static IExpr tr2i(IExpr expr, boolean half) {
-    return Traversal.bottomUp(expr, x -> tr2iStep(x, half));
+  private static IExpr min(IExpr a, IExpr b) {
+    if (F.Less(a, b).isTrue()) {
+      return a;
+    }
+    return b;
   }
 
-  /**
-   * <p>
-   * Converts ratios involving sin and cos as follows:
-   *
-   * <pre>
-   *        sin(x)/cos(x) -> tan(x)
-   *        sin(x)/(cos(x) + 1) -> tan(x/2) if half=True
-   * </pre>
-   *
-   * @param expr
-   * @return
-   */
-  private static IExpr tr2iStep(IExpr expr, boolean half) {
-    if (expr.isTimes()) {
-      Pair asNumerDenom = expr.asNumerDenom();
-      IExpr numer = asNumerDenom.first();
-      IExpr denom = asNumerDenom.second();
-      if (numer.isAST() && denom.isAST()) {
-        IAST n = (IAST) numer;
-        IAST d = (IAST) denom;
-        DefaultDict<IExpr> nDict = n.asPowersDict();
-        IASTAppendable ndone = F.ListAlloc();
-
-        IASTAppendable toBeRemoved = F.ListAlloc(nDict.size());
-        for (IExpr k : nDict.keySet()) {
-          IExpr value = nDict.getValue(k);
-          if (!ok(k, value, half)) {
-            toBeRemoved.append(k);
-            ndone.append(F.List(k, value));
-          }
-        }
-        for (int i = 1; i < toBeRemoved.size(); i++) {
-          nDict.remove(toBeRemoved.get(i));
-        }
-        if (nDict.isEmpty()) {
-          return F.NIL;
-        }
-
-        DefaultDict<IExpr> dDict = d.asPowersDict();
-        IASTAppendable ddone = F.ListAlloc();
-        toBeRemoved = F.ListAlloc(dDict.size());
-        for (IExpr k : dDict.keySet()) {
-          IExpr value = dDict.getValue(k);
-          if (!ok(k, value, half)) {
-            toBeRemoved.append(k);
-            ddone.append(F.List(k, value));
-          }
-        }
-        for (int i = 1; i < toBeRemoved.size(); i++) {
-          dDict.remove(toBeRemoved.get(i));
-        }
-        if (dDict.isEmpty()) {
-          return F.NIL;
-        }
-
-        factorize(nDict, ndone, half);
-        factorize(dDict, ddone, half);
-
-        IASTAppendable t = F.ListAlloc();
-        for (IExpr k : nDict.keySet()) {
-          if (k.isSin()) {
-            IExpr a = F.Cos(k.first());
-            if (dDict.containsKey(a) && dDict.getValue(a).equals(nDict.getValue(k))) {
-              t.append(F.Power(F.Tan(k.first()), nDict.getValue(k)));
-              nDict.put(k, F.NIL);
-              dDict.put(a, F.NIL);
-            } else if (half) {
-              IExpr a1 = a.plus(F.C1);
-              if (dDict.containsKey(a1) && dDict.getValue(a1).equals(nDict.getValue(k))) {
-                t.append(F.Power(F.Tan(k.first().divide(F.C2)), nDict.getValue(k)));
-                nDict.put(k, F.NIL);
-                dDict.put(a1, F.NIL);
-              }
-            }
-          } else if (k.isCos()) {
-            IExpr a = F.Sin(k.first());
-            if (dDict.containsKey(a) && dDict.getValue(a).equals(nDict.getValue(k))) {
-              t.append(F.Power(F.Tan(k.first()), nDict.getValue(k).negate()));
-              nDict.put(k, F.NIL);
-              dDict.put(a, F.NIL);
-            }
-          } else if (half && k.isPlus() && k.first().isOne() && k.second().isCos()) {
-            IExpr a = F.Sin(k.second().first());
-            if (dDict.containsKey(a) && dDict.getValue(a).equals(nDict.getValue(k))
-                && (dDict.getValue(a).isIntegerResult() || a.isPositive())) {
-              t.append(F.Power(F.Tan(a.first().divide(F.C2)), nDict.getValue(k).negate()));
-              nDict.put(k, F.NIL);
-              dDict.put(a, F.NIL);
-            }
-          }
-        }
-
-        if (!t.isEmpty()) {
-          // IExpr rv = F.Times();
-          IAST testt;
-          IASTAppendable mul1 = F.TimesAlloc(nDict.size() + 1);
-          mul1.appendArgs(t);
-          mul1 =
-              nDict.forEach(mul1, (b, e) -> (e.isPresent() && !e.isZero()) ? F.Power(b, e) : F.NIL);
-          IASTAppendable mul2 = F.TimesAlloc(dDict.size());
-          mul2 =
-              dDict.forEach(mul2, (b, e) -> (e.isPresent() && !e.isZero()) ? F.Power(b, e) : F.NIL);
-          IASTAppendable mul3 = F.TimesAlloc(ndone.argSize());
-          mul3 =
-              ndone.forEach(mul3, (b, e) -> (e.isPresent() && !e.isZero()) ? F.Power(b, e) : F.NIL);
-          IASTAppendable mul4 = F.TimesAlloc(ddone.argSize());
-          mul4 =
-              ddone.forEach(mul4, (b, e) -> (e.isPresent() && !e.isZero()) ? F.Power(b, e) : F.NIL);
-          return F.Times(F.Divide(mul1.oneIdentity1(), mul2.oneIdentity1()),
-              F.Divide(mul3.oneIdentity1(), mul4.oneIdentity1()));
-        }
-      }
-    }
-    return F.NIL;
-  }
-
-  public static IExpr tr3(IExpr expr) {
-    return Traversal.bottomUp(expr, TrigSimplifyFu::tr3Step);
-  }
-
-  private static boolean tr3IsPositive(IExpr arg) {
-    return AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg).isNIL();
-  }
-
-  private static IExpr tr3Step(IExpr expr) {
-    if (expr.isAST1()) {
-      IExpr arg1 = expr.first();
-      int headID = expr.headID();
-      if (headID >= 0) {
-        IBuiltInSymbol newHead = null;
-        switch (headID) {
-          case ID.Cos:
-            newHead = S.Sin;
-            break;
-          case ID.Sin:
-            newHead = S.Cos;
-            break;
-          case ID.Cot:
-            newHead = S.Tan;
-            break;
-          case ID.Tan:
-            newHead = S.Cot;
-            break;
-          case ID.Csc:
-            newHead = S.Sec;
-            break;
-          case ID.Sec:
-            newHead = S.Csc;
-            break;
-          default:
-            break;
-        }
-        if (newHead != null) {
-          if (tr3IsPositive(arg1.subtract(F.CPiQuarter))
-              || tr3IsPositive(F.CPiHalf.subtract(arg1))) {
-            return F.unaryAST1(newHead, F.CPiHalf.subtract(arg1));
-          }
-        }
-      }
-    }
-    return F.NIL;
-  }
-
-  private static IExpr tr4(IExpr expr) {
-    // special values at 0, pi/6, pi/4, pi/3, pi/2 already handled
-    return expr;
-  }
-
-  public static IExpr tr5(IExpr expr) {
-    return tr5(expr, F.C4, false);
-  }
-
-  public static IExpr tr5(IExpr expr, IInteger max, boolean pow) {
-    return tr56(expr, S.Sin, S.Cos, x -> F.C1.subtract(x), max, pow);
-  }
-
-  /**
-   * <p>
-   * Replacement of sin^2 with 1 - cos(x)^2.
-   *
-   * <p>
-   * Examples:
-   *
-   * <pre>
-   * >> TR5(sin(x)^2)
-   * 1 - cos(x)^2
-   * >> TR5(sin(x)^-2)  # unchanged
-   * sin(x)^(-2)
-   * >> TR5(sin(x)^4)
-   * (1 - cos(x)^2)^^ 2
-   * </pre>
-   *
-   * @param expr
-   * @return
-   */
-  // private static IExpr tr5Step(IExpr expr) {
-  // if (expr.isPresent()) {
-  // if (expr.isPower() && expr.first().isSin() && expr.second().isInteger()) {
-  // IAST sinExpr = (IAST) expr.base();
-  // IInteger exponent = (IInteger) expr.exponent();
-  // if (exponent.isPositive() && exponent.isEven()) {
-  // IInteger div2 = exponent.div(F.C2);
-  // if (div2.isOne()) {
-  // return EvalEngine.get().evaluate(F.Subtract(F.C1, F.Sqr(F.Cos(sinExpr.arg1()))));
-  // }
-  // return EvalEngine.get()
-  // .evaluate(F.Power(F.Subtract(F.C1, F.Sqr(F.Cos(sinExpr.arg1()))), div2));
-  // }
-  // }
-  // }
-  // return F.NIL;
-  // }
-
-  public static IExpr tr6(IExpr expr) {
-    return tr6(expr, F.C4, false);
-  }
-
-  public static IExpr tr6(IExpr expr, IInteger max, boolean pow) {
-    return tr56(expr, S.Cos, S.Sin, x -> F.C1.subtract(x), max, pow);
-  }
-
-  /**
-   * <p>
-   * Replacement of cos^2 with 1 - sin(x)^2.
-   *
-   * <p>
-   * Examples:
-   *
-   * <pre>
-   * >> TR6(cos(x)^2)
-   * 1 - sin(x)^2
-   * >> TR&(cos(x)^-2)  # unchanged
-   * cos(x)^(-2)
-   * >> TR6(cos(x)^4)
-   * (1 - sin(x)^2)^^ 2
-   * </pre>
-   *
-   * @param expr
-   * @return
-   */
-  // private static IExpr tr6Step(IExpr expr) {
-  // if (expr.isPower() && expr.first().isCos() && expr.second().isInteger()) {
-  // IAST cosExpr = (IAST) expr.base();
-  // IInteger exponent = (IInteger) expr.exponent();
-  // if (exponent.isPositive() && exponent.isEven()) {
-  // IInteger div2 = exponent.div(F.C2);
-  // if (div2.isOne()) {
-  // return EvalEngine.get().evaluate(F.Subtract(F.C1, F.Sqr(F.Sin(cosExpr.arg1()))));
-  // }
-  // return EvalEngine.get()
-  // .evaluate(F.Power(F.Subtract(F.C1, F.Sqr(F.Sin(cosExpr.arg1()))), div2));
-  // }
-  // }
-  // return F.NIL;
-  // }
-
-  public static IExpr tr56(IExpr expr, IExpr f, IExpr g, Function<IExpr, IExpr> h, IReal max,
-      boolean pow) {
-    return Traversal.bottomUp(expr, x -> tr56Step(x, f, g, h, max, pow));
-  }
-
-  private static IExpr tr56Step(IExpr rv, IExpr f, IExpr g, Function<IExpr, IExpr> h, IReal max,
-      boolean pow) {
-    if (!rv.isPower() || !rv.base().head().equals(f)) {
-      return F.NIL;
-    }
-
-    if (!rv.exponent().isReal()) {
-      return F.NIL;
-    }
-    IReal exp = (IReal) rv.exponent();
-    if (exp.isNegative()) {
-      return F.NIL;
-    }
-    if (exp.isNegative()) {
-      return F.NIL;
-    }
-    if (exp.isGT(max)) {
-      return F.NIL;
-    }
-    if (exp.isOne()) {
-      return F.NIL;
-    }
-    if (exp.isNumEqualInteger(F.C2)) {
-      return h.apply(F.unaryAST1(g, rv.base().first()).pow(2));
-    }
-
-    IExpr e;
-    if (exp.isInteger() && ((IInteger) exp).isOdd()) {
-      e = ((IInteger) exp).iquo(F.C2);
-      return F.unaryAST1(f, rv.base().first()).pow(2)
-          .times(h.apply(F.unaryAST1(g, rv.base().first()).pow(2)).pow(e));
-    } else if (exp.isNumEqualInteger(F.C4)) {
-      e = F.C2;
-    } else if (!pow) {
-      if (exp.isInteger() && ((IInteger) exp).isOdd()) {
-        return F.NIL;
-      }
-      e = ((IInteger) exp).iquo(F.C2);
-    } else {
-      IExpr p = Factor.perfectPower(exp);
-      if (p.isNIL()) {
-        return F.NIL;
-      }
-      e = ((IInteger) exp).iquo(F.C2);
-    }
-    return h.apply(F.unaryAST1(g, rv.base().first()).pow(2)).pow(e);
-  }
-
-  public static IExpr tr7(IExpr expr) {
-    return Traversal.bottomUp(expr, TrigSimplifyFu::tr7Step);
-  }
-
-  private static IExpr tr7Step(IExpr expr) {
-    if (expr.isPower() && expr.base().isCos() && expr.exponent() == F.C2) {
-      // 1 + cos(2*rv.base.args[0]))/2
-      return F.Plus(F.C1D2, F.Times(F.C1D2, F.Cos(F.Times(2, expr.base().first()))));
-    }
-    return F.NIL;
-  }
-
-  public static IExpr tr8(IExpr expr) {
-    return Traversal.bottomUp(expr, x -> tr8Step(x, true));
-  }
-
-  public static IExpr tr8(IExpr expr, boolean first) {
-    return Traversal.bottomUp(expr, x -> tr8Step(x, first));
-  }
-
-  /**
-   * @param expr
-   * @param first TODO
-   * @return
-   */
-  public static IExpr tr8Step(IExpr expr, boolean first) {
-    if (expr.isTimes() || (expr.isPower() && (expr.base().isSin() || expr.base().isCos())
-        && (expr.exponent().isIntegerResult() || expr.base().isPositive()))) {
-
-      if (first) {
-        EvalEngine engine = EvalEngine.get();
-        Pair numerDenom = expr.asNumerDenom();
-        IExpr n = numerDenom.first();
-        IExpr d = numerDenom.second();
-        IExpr newn = tr8(TrigReduce.trigReduce(n, engine), false);
-        IExpr newd = tr8(TrigReduce.trigReduce(d, engine), false);
-        if (!newn.equals(n) || !newd.equals(d)) {
-          if (newd.isOne()) {
-            return newn;
-          }
-          IExpr rv = ExprTools.gcdTerms(F.Divide(newn, newd));
-          if (rv.isTimes() && rv.first().isRational() && rv.argSize() == 2
-              && rv.second().isPlus()) {
-            Pair asCoeffMul = rv.asCoeffMul();
-            IASTAppendable result = F.TimesAlloc(3);
-            result.append(asCoeffMul.first());
-            result.appendArgs((IAST) asCoeffMul.second());
-            return result;
-          }
-          return rv;
-        }
-        return F.NIL;
-      }
-
-      DefaultDict<IASTAppendable> args = new DefaultDict<IASTAppendable>();
-      args.getValue(S.Cos);
-      args.getValue(S.Sin);
-
-      IASTMutable argsList = Operations.makeArgs(S.Times, expr);
-      IASTAppendable argsResult = F.TimesAlloc(argsList.argSize() + 5);
-      argsList.sortInplace();
-      for (int i = 1; i < argsList.size(); i++) {
-        IExpr a = argsList.get(i);
-        if (a.isCos() || a.isSin()) {
-          args.getValue(a.head()).append(a.first());
-        } else if (a.isPower() && a.exponent().isIntegerResult() && a.exponent().isPositive()
-            && (a.base().isCos() || a.base().isSin())) {
-          args.getValue(a.base().head()).append(a.base().first().times(a.exponent()));
-        } else {
-          argsResult.append(a);
-        }
-      }
-      IASTAppendable c = args.getValue(S.Cos);
-      IASTAppendable s = args.getValue(S.Sin);
-      if (!(c.argSize() > 1 || s.argSize() > 1)) {
-        return F.NIL;
-      }
-
-      int n = Math.min(c.argSize(), s.argSize());
-      for (int i = 0; i < n; i++) {
-        IExpr a1 = s.pop();
-        IExpr a2 = c.pop();
-        argsResult.append(F.Divide(F.Plus(F.Sin(F.Plus(a1, a2)), F.Sin(F.Subtract(a1, a2))), 2));
-      }
-      while (c.argSize() > 1) {
-        IExpr a1 = c.pop();
-        IExpr a2 = c.pop();
-        argsResult.append(F.Divide(F.Plus(F.Cos(F.Plus(a1, a2)), F.Cos(F.Subtract(a1, a2))), 2));
-      }
-      if (c.argSize() > 0) {
-        argsResult.append(F.Cos(c.pop()));
-      }
-      while (s.argSize() > 1) {
-        IExpr a1 = s.pop();
-        IExpr a2 = s.pop();
-        argsResult
-            .append(F.Divide(F.Subtract(F.Cos(F.Subtract(a1, a2)), F.Cos(F.Plus(a1, a2))), 2));
-      }
-      if (s.argSize() > 0) {
-        argsResult.append(F.Sin(s.pop()));
-      }
-
-      IExpr evalExpandAll = F.evalExpandAll(argsResult);
-      return tr8(evalExpandAll, true);
-    }
-    return F.NIL;
-  }
-
-  public static IExpr tr9(IExpr expr) {
-    return Traversal.bottomUp(expr, x -> tr9Step(x));
-  }
-
-  private static IExpr tr9Step(IExpr expr) {
-    // TODO implement missing methods
-    if (expr.isPlus()) {
-      return processCommonAddends((IAST) expr, TrigSimplifyFu::tr9DoIt, null, true);
-    }
-    return F.NIL;
-  }
-
-  public static IExpr tr9DoIt(IExpr rv) {
-    // # cos(a)+/-cos(b) can be combined into a product of cosines and
-    // # sin(a)+/-sin(b) can be combined into a product of cosine and
-    // # sine.
-    // #
-    // # If there are more than two args, the pairs which "work" will
-    // # have a gcd extractable and the remaining two terms will have
-    // # the above structure -- all pairs must be checked to find the
-    // # ones that work. args that don't have a common set of symbols
-    // # are skipped since this doesn't lead to a simpler formula and
-    // # also has the arbitrariness of combining, for example, the x
-    // # and y term instead of the y and z term in something like
-    // # cos(x) + cos(y) + cos(z).
-    if (rv.isPlus()) {
-      IASTMutable args = ((IAST) rv).copy();
-      if (args.argSize() != 2) {
-        boolean hit = false;
-        for (int i = 1; i < args.size(); i++) {
-          IExpr ai = args.get(i);
-          if (ai.isNone()) {
-            continue;
-          }
-          for (int j = i + 1; j < args.size(); j++) {
-            IExpr aj = args.get(j);
-            if (aj.isNone()) {
-              continue;
-            }
-            IExpr was = ai.plus(aj);
-            IExpr newDoIt = tr9DoIt(was);
-            if (newDoIt.isPresent() && !newDoIt.equals(was)) {
-              args.set(i, newDoIt);
-              args.set(j, S.None);
-              hit = true;
-              break; // go to next i
-            }
-          }
-        }
-
-        if (hit) {
-          IASTAppendable plusAST = F.PlusAlloc(args.size());
-          for (int i = 1; i < args.size(); i++) {
-            IExpr _f = args.get(i);
-            if (!_f.isNone()) {
-              plusAST.append(_f);
-            }
-          }
-          rv = plusAST.oneIdentity0();
-          if (rv.isPlus()) {
-            rv = tr9DoIt(rv).orElse(rv);
-          }
-          return rv;
-        }
-
-        return F.NIL;
-      }
-
-      // two args Plus(a1, a2)
-      IAST split = trigSplit(args.arg1(), args.arg2());
-      if (split.isNIL()) {
-        return rv;
-      }
-      IExpr gcd = split.arg1();
-      IExpr n1 = split.arg2();
-      IExpr n2 = split.arg3();
-      IExpr a = split.get(4);
-      IExpr b = split.get(5);
-      IExpr isCos = split.get(6);
-
-      // application of rule if possible
-      if (isCos.isTrue()) {
-        if (n1.equals(n2)) {
-          // gcd*n1*2*cos((a + b)/2)*cos((a - b)/2)
-          return F.eval(F.Times(F.C2, gcd, n1, F.Cos(F.Times(F.C1D2, F.Plus(a, b))),
-              F.Cos(F.Times(F.C1D2, F.Subtract(a, b)))));
-        } else if (n1.isNegative()) {
-          IExpr temp = a;
-          a = b;
-          b = temp;
-        }
-        // -2*gcd*sin((a + b)/2)*sin((a - b)/2)
-        return F.eval(F.Times(F.CN2, gcd, F.Sin(F.Times(F.C1D2, F.Plus(a, b))),
-            F.Sin(F.Times(F.C1D2, F.Subtract(a, b)))));
-      }
-      if (n1.equals(n2)) {
-        // gcd*n1*2*sin((a + b)/2)*cos((a - b)/2)
-        return F.eval(F.Times(F.C2, gcd, n1, F.Sin(F.Times(F.C1D2, F.Plus(a, b))),
-            F.Cos(F.Times(F.C1D2, F.Subtract(a, b)))));
-      } else if (n1.isNegative()) {
-        IExpr temp = a;
-        a = b;
-        b = temp;
-      }
-      // 2*gcd*cos((a + b)/2)*sin((a - b)/2)
-      return F.eval(F.Times(F.C2, gcd, F.Cos(F.Times(F.C1D2, F.Plus(a, b))),
-          F.Sin(F.Times(F.C1D2, F.Subtract(a, b)))));
-    }
-    return F.NIL;
-  }
-
-  public static IAST trigSplit(IExpr a, IExpr b) {
-    return trigSplit(a, b, false);
-  }
-
-  public static IAST trigSplit(IExpr a, IExpr b, boolean two) {
-    // TODO
-    // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/simplify/fu.py#L1716
-
-    Factors aFactors = new Factors(a);
-    Factors bFactors = new Factors(b);
-    Factors[] normal = aFactors.normal(bFactors);
-    Factors ua = normal[0];
-    Factors ub = normal[1];
-    IExpr gcd = aFactors.gcd(bFactors).asExpr();
-    IExpr n1 = F.C1;
-    IExpr n2 = F.C1;
-    IExpr temp = ua.factorsMap().get(F.CN1);
-    if (temp != null) {
-      ua = ua.quo(F.CN1);
-      n1 = n1.negate();
-    } else {
-      temp = ub.factorsMap().get(F.CN1);
-      if (temp != null) {
-        ub = ub.quo(F.CN1);
-        n2 = n2.negate();
-      }
-    }
-    a = ua.asExpr();
-    b = ub.asExpr();
-
-    // get the parts
-    IAST m = powCosSin(a, two);
-    if (m.isNIL()) {
-      return F.NIL;
-    }
-    IExpr coa = m.arg1();
-    IExpr ca = m.arg2();
-    IExpr sa = m.arg3();
-
-    m = powCosSin(b, two);
-    if (m.isNIL()) {
-      return F.NIL;
-    }
-    IExpr cob = m.arg1();
-    IExpr cb = m.arg2();
-    IExpr sb = m.arg3();
-
-    // check them
-
-    if (ca.isNIL() && cb.isPresent() || ca.isSin()) {
-      // coa, ca, sa, cob, cb, sb = cob, cb, sb, coa, ca, sa
-      temp = coa;
-      coa = cob;
-      cob = temp;
-
-      temp = ca;
-      ca = cb;
-      cb = temp;
-
-      temp = sa;
-      sa = sb;
-      sb = temp;
-      // n1, n2 = n2, n1
-      temp = n1;
-      n1 = n2;
-      n2 = temp;
-    }
-
-    if (!two) {
-      IExpr c = ca.isPresent() ? ca : sa;
-      IExpr s = cb.isPresent() ? cb : sb;
-      if (!c.isAST(s.head())) {
-        return F.NIL;
-      }
-      return F.List(gcd, n1, n2, c.first(), s.first(), F.booleSymbol(c.isCos()));
-    }
-
-    if (coa.isNIL() && cob.isNIL()) {
-      if (ca.isPresent() && cb.isPresent() && sa.isPresent() && sb.isPresent()) {
-        if (ca.isAST(sa.head()) && !cb.isAST(sb.head())) {
-          return F.NIL;
-        }
-        IASTAppendable args = F.ListAlloc();
-        args.appendArgs((IAST) ca);
-        args.appendArgs((IAST) sa);
-        if (!(((IAST) cb).forAll(x -> args.indexOf(x) > 0)
-            && ((IAST) sb).forAll(x -> args.indexOf(x) > 0))) {
-          return F.NIL;
-        }
-        // if not all(i.args in args for i in (cb, sb)):
-        // return
-        return F.List(gcd, n1, n2, ca.first(), sa.first(), F.booleSymbol(ca.isAST(sa.head())));
-      }
-    }
-    if (ca.isPresent() && sa.isPresent() || cb.isPresent() && sb.isPresent() //
-        || two && (ca.isNIL() && sa.isNIL() || cb.isNIL() && sb.isNIL())) {
-      return F.NIL;
-    }
-    IExpr c = ca.isPresent() ? ca : sa;
-    IExpr s = cb.isPresent() ? cb : sb;
-    if (!c.equalsArgs(s)) {
-      return F.NIL;
-    }
-    if (coa.isNIL()) {
-      coa = F.C1;
-    }
-    if (cob.isNIL()) {
-      cob = F.C1;
-    }
-    if (coa.equals(cob)) {
-      gcd = gcd.times(F.CSqrt2);
-      return F.List(gcd, n1, n2, c.first(), F.CPiQuarter, S.False);
-    }
-    temp = coa.divide(cob);
-    if (temp.equals(F.CSqrt3)) {
-      gcd = gcd.times(F.C2.times(cob));
-      return F.List(gcd, n1, n2, c.first(), F.CPiThird, S.False);
-    }
-    if (temp.equals(F.C1DSqrt3)) {
-      gcd = gcd.times(F.C2.times(coa));
-      return F.List(gcd, n1, n2, c.first(), F.Times(F.C1D6, S.Pi), S.False);
-    }
-    return F.NIL;
+  private static boolean ok(IExpr k, IExpr e, boolean half) {
+    return (e.isIntegerResult() || k.isPositive()) //
+        && (k.isCos() || k.isSin())
+        || (half && k.isPlus() && (k.argSize() >= 2) && k.indexOf(x -> x.isCos()) > 0);
   }
 
   private static IAST powCosSin(IExpr a, boolean two) {
@@ -1195,186 +335,168 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  private static IExpr rl1(IExpr rv) {
+    return tr0(tr4(tr13(tr4(tr12(tr4(tr3(tr4(rv))))))));
+  }
+
+  private static IExpr rl2(IExpr rv, Function<IExpr, Long> measure) {
+    IExpr rl21 = tr11(tr3(tr4(tr10(tr3(tr4(rv))))));
+    IExpr rl22 = tr4(tr11(tr7(tr5(rv))));
+    IExpr rl23 = ctr4(tr9(tr9(tr4(ctr2(tr9(ctr1(ctr3(rv, measure), measure)), measure)))), measure);
+    IExpr rl24 = tr10i(rv);
+
+    if (measure.apply(rl24) < measure.apply(rv)) {
+      rv = rl24;
+    }
+    if (measure.apply(rl22) < measure.apply(rv)) {
+      rv = rl22;
+    }
+    if (measure.apply(rl21) < measure.apply(rv)) {
+      rv = rl21;
+    }
+    if (measure.apply(rl23) < measure.apply(rv)) {
+      rv = rl23;
+    }
+    return rv;
+  }
+
+  /**
+   * Static entry point for external simplifiers to avoid AST instantiation overhead. Includes a
+   * fast-fail guard to ensure trigonometric expressions are actually present.
+   */
+  public static IExpr simplify(IAST expr, EvalEngine engine, Function<IExpr, Long> measure) {
+    // Fast check for trig functions before committing to the Fu search
+    boolean hasTrig = expr.hasTrigonometricFunction();
+
+    if (!hasTrig) {
+      return F.NIL;
+    }
+
+    TrigSimplifyFu fuAlgorithm = new TrigSimplifyFu();
+    // Overload or extract the core logic of simplifyFu to accept the measure directly
+    IExpr result = fuAlgorithm.simplifyFuCore(expr, measure, engine);
+
+    return result.equals(expr) ? F.NIL : result;
+  }
+
+  /**
+   * Evaluate the expression. if the expression is an IAST factor and then expand the expression.
+   *
+   * @param expr
+   * @return
+   */
+  private static IExpr tr0(IExpr expr) {
+    if (expr.isAST()) {
+      IExpr factor = Algebra.factor(expr, EvalEngine.get());
+      return F.eval(F.Expand(factor));
+    }
+    return F.eval(expr);
+  }
+
+  public static IExpr tr1(IExpr expr) {
+    // F.eval ensures (Sin(x)^-1)^2 flattens to Sin(x)^-2
+    return F.eval(Traversal.bottomUp(expr, x -> tr1Step(x)));
+  }
+
   public static IExpr tr10(IExpr expr) {
     return Traversal.bottomUp(expr, x -> tr10Step(x));
   }
 
-  private static IExpr tr10Step(IExpr expr) {
-    if ((expr.isSin() || expr.isCos())) {
-      IExpr temp = TrigExpand.TRIG_EXPAND_FUNCTION.apply(expr);
-      if (temp.isPresent()) {
-        IExpr result = temp;
-        do {
-          temp = Traversal.bottomUpNIL(result, x -> tr10Step(x));
-          if (temp.isPresent()) {
-            result = temp;
-          }
-        } while (temp.isPresent());
-        return result;
-      }
-    }
-    return F.NIL;
-  }
-
-  // Insert this helper near other helpers in the class
-  private static IExpr tryCombineIntoCosPlusSin(IAST expr) {
-    // Try to match an expression of the shape:
-    // sin(a)*(cos(b)-sin(b)) + cos(a)*(sin(b)+cos(b))
-    // More generally: sin(a)*(p*Cos(b)+q*Sin(b)) + cos(a)*(r*Cos(b)+s*Sin(b))
-    // If coefficients satisfy sc == cs and ss == -cc (see explanation below),
-    // rewrite as alpha*Cos(a+b) + beta*Sin(a+b)
-    // alpha corresponds to cc, beta corresponds to cs (see derivation).
-    // This implementation attempts to collect coefficients for basis:
-    // cos(a)*cos(b), cos(a)*sin(b), sin(a)*cos(b), sin(a)*sin(b)
-
-    // flatten sum
-    List<IExpr> terms = new ArrayList<>();
-    if (expr.isAST(S.Plus)) {
-      IAST ast = expr;
-      for (int i = 1; i < ast.size(); i++) {
-        terms.add(ast.get(i));
-      }
-    } else {
-      terms.add(expr);
-    }
-
-    // coefficients initialized to zero
-    IExpr cc = F.C0, cs = F.C0, sc = F.C0, ss = F.C0;
-    ISymbol symA = null, symB = null;
-
-    // walk terms and try to extract numeric coefficient and trigonometric factors
-    for (IExpr t : terms) {
-      IExpr coef = F.C1;
-      IExpr core = t;
-      if (core.isAST(S.Times)) {
-        // separate numeric coefficient if present
-        IAST times = (IAST) core;
-        List<IExpr> nonNum = new ArrayList<>();
-        for (int i = 1; i < times.size(); i++) {
-          IExpr f = times.get(i);
-          if (f.isNumber()) {
-            coef = coef.times(f);
-          } else {
-            nonNum.add(f);
-          }
-        }
-        // rebuild core from non-numeric factors
-        if (nonNum.isEmpty()) {
-          core = coef; // pure number
-        } else if (nonNum.size() == 1) {
-          core = nonNum.get(0);
-        } else {
-          core = F.Times(nonNum.toArray(new IExpr[0]));
-        }
-      }
-
-      // core should be a product of two trig atoms like Sin(a)*Cos(b) or Cos(a)*Sin(b) etc.
-      IExpr f1 = null, f2 = null;
-      if (core.isAST(S.Times)) {
-        IAST times = (IAST) core;
-        if (times.size() == 3) { // head + 2 args
-          f1 = times.get(1);
-          f2 = times.get(2);
-        } else {
-          // not matching expected pattern
-          return F.NIL;
-        }
-      } else if (core.isAST()) {
-        // single trig atom — not enough to match the 2-variable pattern
-        return F.NIL;
-      } else {
-        return F.NIL;
-      }
-
-      // ensure f1 and f2 are Sin or Cos
-      if (!(f1.isAST(S.Sin) || f1.isAST(S.Cos)) || !(f2.isAST(S.Sin) || f2.isAST(S.Cos))) {
-        return F.NIL;
-      }
-      if (!(f1.first().isSymbol() || f2.first().isSymbol())) {
-        return F.NIL;
-      }
-
-      ISymbol aCand = (ISymbol) ((IAST) f1).get(1);
-      ISymbol bCand = (ISymbol) ((IAST) f2).get(1);
-      // Accept either order: trig(a)*trig(b) or trig(b)*trig(a)
-      if (symA == null && symB == null) {
-        symA = aCand;
-        symB = bCand;
-      } else {
-        // if order reversed, swap to keep a->first arg and b->second
-        if (!aCand.equals(symA) && !aCand.equals(symB)) {
-          return F.NIL; // inconsistent symbols
-        }
-        if (!bCand.equals(symB) && !bCand.equals(symA)) {
-          return F.NIL;
-        }
-      }
-
-      boolean f1IsSin = f1.isSin();
-      boolean f1IsCos = f1.isCos();
-      boolean f2IsSin = f2.isSin();
-      boolean f2IsCos = f2.isCos();
-
-      // Determine which basis term this is: cos(a)*cos(b), cos(a)*sin(b), sin(a)*cos(b),
-      // sin(a)*sin(b)
-      // We want a to be the 'a' symbol (first) and b to be 'b' (second).
-      // If detected swapped, adjust mapping.
-      ISymbol detectedA = (ISymbol) ((IAST) f1).get(1);
-      ISymbol detectedB = (ISymbol) ((IAST) f2).get(1);
-      boolean swapped = false;
-      if (!detectedA.equals(symA) && detectedA.equals(symB) && detectedB.equals(symA)) {
-        // factors are (trig(b), trig(a)) — swap roles
-        swapped = true;
-        boolean tmp = f1IsSin;
-        f1IsSin = f2IsSin;
-        f2IsSin = tmp;
-        tmp = f1IsCos;
-        f1IsCos = f2IsCos;
-      }
-
-      // map to coefficients
-      if (f1IsCos && f2IsCos) {
-        cc = cc.plus(coef);
-      } else if (f1IsCos && f2IsSin) {
-        cs = cs.plus(coef);
-      } else if (f1IsSin && f2IsCos) {
-        sc = sc.plus(coef);
-      } else if (f1IsSin && f2IsSin) {
-        ss = ss.plus(coef);
-      } else {
-        return F.NIL;
-      }
-    } // end for terms
-
-    // Now check if expression can be represented as alpha*Cos(a+b) + beta*Sin(a+b)
-    // Expansion gives:
-    // alpha*Cos(a+b) + beta*Sin(a+b)
-    // => cc = alpha
-    // cs = beta
-    // sc = beta
-    // ss = -alpha
-    // So require sc == cs and ss == -cc
-    if (sc.equals(cs) && ss.equals(cc.negate())) {
-      IExpr alpha = cc; // may be zero
-      IExpr beta = cs;
-      IExpr a = symA;
-      IExpr b = symB;
-      IExpr combined =
-          F.Plus(F.Times(alpha, F.Cos(F.Plus(a, b))), F.Times(beta, F.Sin(F.Plus(a, b))));
-      return combined;
-    }
-
-    return F.NIL;
-  }
-
   public static IExpr tr10i(IExpr expr) {
-    // if (expr.isPlus()) {
-    // IExpr tryCombined = tryCombineIntoCosPlusSin((IAST) expr);
-    // if (tryCombined != null && !tryCombined.isNIL()) {
-    // return tryCombined;
-    // }
-    // }
+    if (expr.isPlus()) {
+      IExpr tryCombined = tryCombineIntoCosPlusSin((IAST) expr);
+      if (tryCombined.isPresent()) {
+        return tryCombined;
+      }
+    }
     return Traversal.bottomUp(expr, x -> tr10iStep(x));
+  }
+
+  public static IExpr tr10iDoIt(IExpr rv) {
+    return tr10iDoIt(rv, false);
+  }
+
+  public static IExpr tr10iDoIt(IExpr expr, boolean first) {
+    if (!expr.isPlus()) {
+      if (expr.isTan() || expr.isAST(S.Cot, 2)) {
+        IExpr arg = expr.first();
+        if (arg.isPlus() && arg.argSize() == 2) {
+          IExpr a = arg.first();
+          IExpr b = arg.second();
+          if (expr.isTan()) {
+            return F.Divide(F.Plus(F.Tan(a), F.Tan(b)),
+                F.Subtract(F.C1, F.Times(F.Tan(a), F.Tan(b))));
+          } else { // Cot
+            return F.Divide(F.Subtract(F.Times(F.Cot(a), F.Cot(b)), F.C1),
+                F.Plus(F.Cot(a), F.Cot(b)));
+          }
+        }
+      }
+      return F.NIL;
+    }
+    IASTMutable rv = ((IAST) expr).copy();
+    if (rv.argSize() != 2) {
+      boolean hit = false;
+      for (int i = 1; i < rv.size(); i++) {
+        IExpr ai = rv.get(i);
+        if (ai.isNone()) {
+          continue;
+        }
+        for (int j = i + 1; j < rv.size(); j++) {
+          IExpr aj = rv.get(j);
+          if (aj.isNone()) {
+            continue;
+          }
+          IExpr was = ai.plus(aj);
+          IExpr newExpr = tr10iDoIt(was);
+          if (newExpr.isPresent() && !newExpr.equals(was)) {
+            rv.set(i, newExpr);
+            rv.set(j, S.None);
+            hit = true;
+            break;
+          }
+        }
+      }
+      IExpr res = F.NIL;
+      if (hit) {
+        rv = rv.remove(x -> x.isNone());
+        if (rv.isPlus()) {
+          res = tr10iDoIt(rv).orElse(rv);
+        } else {
+          res = rv;
+        }
+        return F.eval(res);
+      }
+    }
+
+    // two-arg Plus
+    IAST split = trigSplit(rv.arg1(), rv.arg2(), true);
+    if (split.isNIL()) {
+      return F.NIL;
+    }
+    IExpr gcd = split.arg1();
+    IExpr n1 = split.arg2();
+    IExpr n2 = split.arg3();
+    IExpr a = split.get(4);
+    IExpr b = split.get(5);
+    IExpr same = split.get(6);
+
+    // identify and get c1 to be cos then apply rule if possible
+    if (same.isTrue()) {
+      // coscos, sinsin
+      gcd = n1.times(gcd);
+      if (n1.equals(n2)) {
+        return gcd.times(F.Cos(a.subtract(b)));
+      }
+      return gcd.times(F.Cos(a.plus(b)));
+    } else {
+      // cossin, cossin
+      gcd = n1.times(gcd);
+      if (n1.equals(n2)) {
+        return gcd.times(F.Sin(a.plus(b)));
+      }
+      return gcd.times(F.Sin(b.subtract(a)));
+    }
   }
 
   private static IExpr tr10iStep(IExpr rv) {
@@ -1476,95 +598,47 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     }
   }
 
-  public static IExpr tr10iDoIt(IExpr rv) {
-    return tr10iDoIt(rv, false);
-  }
-
-  public static IExpr tr10iDoIt(IExpr expr, boolean first) {
-    if (!expr.isPlus()) {
-      if (expr.isTan() || expr.isAST(S.Cot, 2)) {
-        IExpr arg = expr.first();
-        if (arg.isPlus() && arg.argSize() == 2) {
-          IExpr a = arg.first();
-          IExpr b = arg.second();
-          if (expr.isTan()) {
-            return F.Divide(F.Plus(F.Tan(a), F.Tan(b)),
-                F.Subtract(F.C1, F.Times(F.Tan(a), F.Tan(b))));
-          } else { // Cot
-            return F.Divide(F.Subtract(F.Times(F.Cot(a), F.Cot(b)), F.C1),
-                F.Plus(F.Cot(a), F.Cot(b)));
+  private static IExpr tr10Step(IExpr expr) {
+    if ((expr.isSin() || expr.isCos())) {
+      IExpr temp = TrigExpand.TRIG_EXPAND_FUNCTION.apply(expr);
+      if (temp.isPresent()) {
+        IExpr result = temp;
+        do {
+          temp = Traversal.bottomUpNIL(result, x -> tr10Step(x));
+          if (temp.isPresent()) {
+            result = temp;
           }
-        }
+        } while (temp.isPresent());
+        return result;
       }
-      return F.NIL;
     }
-    IASTMutable rv = ((IAST) expr).copy();
-    if (rv.argSize() != 2) {
-      boolean hit = false;
-      for (int i = 1; i < rv.size(); i++) {
-        IExpr ai = rv.get(i);
-        if (ai.isNone()) {
-          continue;
-        }
-        for (int j = i + 1; j < rv.size(); j++) {
-          IExpr aj = rv.get(j);
-          if (aj.isNone()) {
-            continue;
-          }
-          IExpr was = ai.plus(aj);
-          IExpr newExpr = tr10iDoIt(was);
-          if (newExpr.isPresent() && !newExpr.equals(was)) {
-            rv.set(i, newExpr);
-            rv.set(j, S.None);
-            hit = true;
-            break;
-          }
-        }
-      }
-      IExpr res = F.NIL;
-      if (hit) {
-        rv = rv.remove(x -> x.isNone());
-        if (rv.isPlus()) {
-          res = tr10iDoIt(rv).orElse(rv);
-        } else {
-          res = rv;
-        }
-      }
-      return F.eval(res);
-    }
-
-    // two-arg Plus
-    IAST split = trigSplit(rv.arg1(), rv.arg2(), true);
-    if (split.isNIL()) {
-      return F.NIL;
-    }
-    IExpr gcd = split.arg1();
-    IExpr n1 = split.arg2();
-    IExpr n2 = split.arg3();
-    IExpr a = split.get(4);
-    IExpr b = split.get(5);
-    IExpr same = split.get(6);
-
-    // identify and get c1 to be cos then apply rule if possible
-    if (same.isTrue()) {
-      // coscos, sinsin
-      gcd = n1.times(gcd);
-      if (n1.equals(n2)) {
-        return gcd.times(F.Cos(a.subtract(b)));
-      }
-      return gcd.times(F.Cos(a.plus(b)));
-    } else {
-      // cossin, cossin
-      gcd = n1.times(gcd);
-      if (n1.equals(n2)) {
-        return gcd.times(F.Sin(a.plus(b)));
-      }
-      return gcd.times(F.Sin(b.subtract(a)));
-    }
+    return F.NIL;
   }
 
   public static IExpr tr11(IExpr expr) {
     return Traversal.bottomUp(expr, x -> tr11Step(x));
+  }
+
+  public static IExpr tr111(IExpr expr) {
+    return F.eval(Traversal.bottomUp(expr, TrigSimplifyFu::tr111Step));
+  }
+
+
+
+  private static IExpr tr111Step(IExpr rv) {
+    if (rv.isPower() && (rv.base().isPositiveResult()
+        || (rv.exponent().isInteger() && rv.exponent().isNegative()))) {
+      IExpr base = rv.base();
+      IExpr exp = rv.exponent();
+      if (base.isTan()) {
+        return F.eval(F.Power(F.Cot(base.first()), exp.negate()));
+      } else if (base.isSin()) {
+        return F.eval(F.Power(F.Csc(base.first()), exp.negate()));
+      } else if (base.isCos()) {
+        return F.eval(F.Power(F.Sec(base.first()), exp.negate()));
+      }
+    }
+    return F.NIL;
   }
 
   private static IExpr tr11Step(IExpr expr) {
@@ -1821,104 +895,716 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
   }
 
   public static IExpr tr15(IExpr expr) {
-    return tr15(expr, false);
+    return tr15(expr, F.C4, false);
   }
 
-  public static IExpr tr15(IExpr expr, boolean pow) {
-    return Traversal.bottomUp(expr, x -> tr15Step(x, pow));
+  public static IExpr tr15(IExpr expr, IInteger max, boolean pow) {
+    return F.eval(Traversal.bottomUp(expr, x -> tr15Step(x, max, pow)));
   }
 
-  private static IExpr tr15Step(IExpr rv, boolean pow) {
+  private static IExpr tr15Step(IExpr rv, IInteger max, boolean pow) {
     if (!rv.isPower()) {
       return F.NIL;
     }
     IExpr b = rv.base();
     IExpr e = rv.exponent();
-    if (e.isInteger() && ((IInteger) e).isOdd()) {
-      IExpr step = tr15Step(F.Power(b, e.plus(F.C1)), pow);
-      if (step.isPresent()) {
-        return F.Divide(step, b);
+    if (b.isSin()) {
+      if (e.isInteger() && ((IInteger) e).isOdd()) {
+        IExpr step = tr15Step(F.eval(F.Power(b, e.plus(F.C1))), max, pow);
+        if (step.isPresent()) {
+          return F.eval(F.Divide(step, b));
+        }
       }
-    }
 
-    IExpr बदला = osborne(rv);
-    if (बदला.isPresent() && !बदला.equals(rv)) {
-      return बदला;
+      // Compute 1/rv by directly negating the exponent to avoid nested ASTs
+      IExpr ia = F.eval(F.Power(b, e.negate()));
+
+      IExpr a = tr56(ia, S.Sin, S.Cot, x -> F.Plus(F.C1, x), max, pow);
+      if (a.isPresent() && !a.equals(ia)) {
+        return a;
+      }
     }
     return F.NIL;
   }
 
-  private static IExpr osborne(IExpr expr) {
-    VisitorReplaceAll vra = new VisitorReplaceAll(x -> {
-      if (x.isSin())
-        return F.Times(F.CI, F.Sinh(F.Times(F.CNI, x.first())));
-      if (x.isCos())
-        return F.Cosh(F.Times(F.CNI, x.first()));
+  public static IExpr tr16(IExpr expr) {
+    return tr16(expr, F.C4, false);
+  }
+
+  public static IExpr tr16(IExpr expr, IInteger max, boolean pow) {
+    return F.eval(Traversal.bottomUp(expr, x -> tr16Step(x, max, pow)));
+  }
+
+  private static IExpr tr16Step(IExpr rv, IInteger max, boolean pow) {
+    if (!rv.isPower()) {
       return F.NIL;
-    });
-    IExpr rv = expr.accept(vra);
-    if (rv.isPresent()) {
-      vra = new VisitorReplaceAll(x -> {
-        if (x.isSinh())
-          return F.Times(F.CNI, F.Sin(F.Times(F.CI, x.first())));
-        if (x.isCosh())
-          return F.Cos(F.Times(F.CI, x.first()));
-        return F.NIL;
-      });
-      rv = rv.accept(vra);
-      if (rv.isPresent()) {
-        return rv;
+    }
+    IExpr b = rv.base();
+    IExpr e = rv.exponent();
+    if (b.isCos()) {
+      if (e.isInteger() && ((IInteger) e).isOdd()) {
+        IExpr step = tr16Step(F.eval(F.Power(b, e.plus(F.C1))), max, pow);
+        if (step.isPresent()) {
+          return F.eval(F.Divide(step, b));
+        }
+      }
+
+      // Compute 1/rv by directly negating the exponent to avoid nested ASTs
+      IExpr ia = F.eval(F.Power(b, e.negate()));
+
+      IExpr a = tr56(ia, S.Cos, S.Tan, x -> F.Plus(F.C1, x), max, pow);
+      if (a.isPresent() && !a.equals(ia)) {
+        return a;
       }
     }
+    return F.NIL;
+  }
+
+  private static IExpr tr1Step(IExpr expr) {
+    if (expr.isAST(S.Sec, 2)) {
+      IExpr arg1 = expr.first();
+      return F.Power(F.Cos(arg1), F.CN1);
+    }
+    if (expr.isAST(S.Csc, 2)) {
+      IExpr arg1 = expr.first();
+      return F.Power(F.Sin(arg1), F.CN1);
+    }
+
+    // Flatten nested powers created during the bottom-up traversal
+    if (expr.isPower()) {
+      IExpr base = expr.base();
+      IExpr exp = expr.exponent();
+      if (base.isPower() && base.exponent().isMinusOne()) {
+        if (base.base().isSin() || base.base().isCos()) {
+          return F.Power(base.base(), exp.negate());
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  public static IExpr tr2(IExpr expr) {
+    return Traversal.bottomUp(expr, x -> tr2Step(x));
+  }
+
+  public static IExpr tr22(IExpr expr) {
+    return tr22(expr, F.C4, false);
+  }
+
+  public static IExpr tr22(IExpr expr, IInteger max, boolean pow) {
+    return F.eval(Traversal.bottomUp(expr, x -> tr22Step(x, max, pow)));
+  }
+
+  private static IExpr tr22Step(IExpr rv, IInteger max, boolean pow) {
+    if (!rv.isPower())
+      return F.NIL;
+    IExpr b = rv.base();
+    if (b.isTan()) {
+      IExpr a = tr56(rv, S.Tan, S.Sec, x -> F.Subtract(x, F.C1), max, pow);
+      if (a.isPresent() && !a.equals(rv))
+        return a;
+    } else if (b.isAST(S.Cot, 2)) {
+      IExpr a = tr56(rv, S.Cot, S.Csc, x -> F.Subtract(x, F.C1), max, pow);
+      if (a.isPresent() && !a.equals(rv))
+        return a;
+    }
+    return F.NIL;
+  }
+
+  public static IExpr tr2i(IExpr expr, boolean half) {
+    return Traversal.bottomUp(expr, x -> tr2iStep(x, half));
+  }
+
+  /**
+   * <p>
+   * Converts ratios involving sin and cos as follows:
+   *
+   * <pre>
+   *        sin(x)/cos(x) -> tan(x)
+   *        sin(x)/(cos(x) + 1) -> tan(x/2) if half=True
+   * </pre>
+   *
+   * @param expr
+   * @return
+   */
+  private static IExpr tr2iStep(IExpr expr, boolean half) {
+    if (expr.isTimes()) {
+      Pair asNumerDenom = expr.asNumerDenom();
+      IExpr numer = asNumerDenom.first();
+      IExpr denom = asNumerDenom.second();
+      if (numer.isAST() && denom.isAST()) {
+        IAST n = (IAST) numer;
+        IAST d = (IAST) denom;
+        DefaultDict<IExpr> nDict = n.asPowersDict();
+        IASTAppendable ndone = F.ListAlloc();
+
+        IASTAppendable toBeRemoved = F.ListAlloc(nDict.size());
+        for (IExpr k : nDict.keySet()) {
+          IExpr value = nDict.getValue(k);
+          if (!ok(k, value, half)) {
+            toBeRemoved.append(k);
+            ndone.append(F.List(k, value));
+          }
+        }
+        for (int i = 1; i < toBeRemoved.size(); i++) {
+          nDict.remove(toBeRemoved.get(i));
+        }
+        if (nDict.isEmpty()) {
+          return F.NIL;
+        }
+
+        DefaultDict<IExpr> dDict = d.asPowersDict();
+        IASTAppendable ddone = F.ListAlloc();
+        toBeRemoved = F.ListAlloc(dDict.size());
+        for (IExpr k : dDict.keySet()) {
+          IExpr value = dDict.getValue(k);
+          if (!ok(k, value, half)) {
+            toBeRemoved.append(k);
+            ddone.append(F.List(k, value));
+          }
+        }
+        for (int i = 1; i < toBeRemoved.size(); i++) {
+          dDict.remove(toBeRemoved.get(i));
+        }
+        if (dDict.isEmpty()) {
+          return F.NIL;
+        }
+
+        factorize(nDict, ndone, half);
+        factorize(dDict, ddone, half);
+
+        IASTAppendable t = F.ListAlloc();
+        for (IExpr k : nDict.keySet()) {
+          if (k.isSin()) {
+            IExpr a = F.Cos(k.first());
+            if (dDict.containsKey(a) && dDict.getValue(a).equals(nDict.getValue(k))) {
+              t.append(F.Power(F.Tan(k.first()), nDict.getValue(k)));
+              nDict.put(k, F.NIL);
+              dDict.put(a, F.NIL);
+            } else if (half) {
+              IExpr a1 = a.plus(F.C1);
+              if (dDict.containsKey(a1) && dDict.getValue(a1).equals(nDict.getValue(k))) {
+                t.append(F.Power(F.Tan(k.first().divide(F.C2)), nDict.getValue(k)));
+                nDict.put(k, F.NIL);
+                dDict.put(a1, F.NIL);
+              }
+            }
+          } else if (k.isCos()) {
+            IExpr a = F.Sin(k.first());
+            if (dDict.containsKey(a) && dDict.getValue(a).equals(nDict.getValue(k))) {
+              t.append(F.Power(F.Tan(k.first()), nDict.getValue(k).negate()));
+              nDict.put(k, F.NIL);
+              dDict.put(a, F.NIL);
+            }
+          } else if (half && k.isPlus() && k.first().isOne() && k.second().isCos()) {
+            IExpr a = F.Sin(k.second().first());
+            if (dDict.containsKey(a) && dDict.getValue(a).equals(nDict.getValue(k))
+                && (dDict.getValue(a).isIntegerResult() || a.isPositive())) {
+              t.append(F.Power(F.Tan(a.first().divide(F.C2)), nDict.getValue(k).negate()));
+              nDict.put(k, F.NIL);
+              dDict.put(a, F.NIL);
+            }
+          }
+        }
+
+        if (!t.isEmpty()) {
+          IASTAppendable mul1 = F.TimesAlloc(nDict.size() + 1);
+          mul1.appendArgs(t);
+          mul1 =
+              nDict.forEach(mul1, (b, e) -> (e.isPresent() && !e.isZero()) ? F.Power(b, e) : F.NIL);
+          IASTAppendable mul2 = F.TimesAlloc(dDict.size());
+          mul2 =
+              dDict.forEach(mul2, (b, e) -> (e.isPresent() && !e.isZero()) ? F.Power(b, e) : F.NIL);
+          IASTAppendable mul3 = F.TimesAlloc(ndone.argSize());
+          mul3 =
+              ndone.forEach(mul3, (b, e) -> (e.isPresent() && !e.isZero()) ? F.Power(b, e) : F.NIL);
+          IASTAppendable mul4 = F.TimesAlloc(ddone.argSize());
+          mul4 =
+              ddone.forEach(mul4, (b, e) -> (e.isPresent() && !e.isZero()) ? F.Power(b, e) : F.NIL);
+          return F.Times(F.Divide(mul1.oneIdentity1(), mul2.oneIdentity1()),
+              F.Divide(mul3.oneIdentity1(), mul4.oneIdentity1()));
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Replace tan and cot with sin/cos and cos/sin.
+   *
+   * @param expr
+   * @return
+   */
+  private static IExpr tr2Step(IExpr expr) {
+    if (expr.isTan()) {
+      IExpr arg1 = expr.first();
+      return F.Divide(F.Sin(arg1), F.Cos(arg1));
+    }
+    if (expr.isAST(S.Cot, 2)) {
+      IExpr arg1 = expr.first();
+      return F.Divide(F.Cos(arg1), F.Sin(arg1));
+    }
+    return F.NIL;
+  }
+
+  public static IExpr tr3(IExpr expr) {
+    return Traversal.bottomUp(expr, TrigSimplifyFu::tr3Step);
+  }
+
+  private static IExpr tr3Step(IExpr expr) {
+    if (expr.isAST1()) {
+      IExpr arg1 = expr.first();
+      IExpr head = expr.head();
+
+      if (head.isBuiltInSymbol()) {
+        IBuiltInSymbol newHead = null;
+        switch (((IBuiltInSymbol) head).ordinal()) {
+          case ID.Cos:
+            newHead = S.Sin;
+            break;
+          case ID.Sin:
+            newHead = S.Cos;
+            break;
+          case ID.Cot:
+            newHead = S.Tan;
+            break;
+          case ID.Tan:
+            newHead = S.Cot;
+            break;
+          case ID.Csc:
+            newHead = S.Sec;
+            break;
+          case ID.Sec:
+            newHead = S.Csc;
+            break;
+        }
+
+        if (newHead != null) {
+          // Force evaluation so Symja can accurately determine positivity
+          // and output a minimal AST (e.g., Pi/11 instead of Pi/2 - 9/22*Pi)
+          IExpr sub1 = F.eval(F.Subtract(arg1, F.CPiQuarter));
+          IExpr sub2 = F.eval(F.Subtract(F.CPiHalf, arg1));
+
+          // Angle must be strictly between Pi/4 and Pi/2
+          if (sub1.isPositiveResult() && sub2.isPositiveResult()) {
+            return F.unaryAST1(newHead, sub2);
+          }
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  private static IExpr tr4(IExpr expr) {
+    // special values at 0, pi/6, pi/4, pi/3, pi/2 already handled
     return expr;
   }
 
-  private static IAST asFSign1(IExpr e) {
-    if (!e.isPlus() || e.argSize() != 2) {
+  public static IExpr tr5(IExpr expr) {
+    return tr5(expr, F.C4, false);
+  }
+
+  public static IExpr tr5(IExpr expr, IInteger max, boolean pow) {
+    return tr56(expr, S.Sin, S.Cos, x -> F.C1.subtract(x), max, pow);
+  }
+
+  public static IExpr tr56(IExpr expr, IExpr f, IExpr g, Function<IExpr, IExpr> h, IReal max,
+      boolean pow) {
+    return F.eval(Traversal.bottomUp(expr, x -> tr56Step(x, f, g, h, max, pow)));
+  }
+
+  private static IExpr tr56Step(IExpr rv, IExpr f, IExpr g, Function<IExpr, IExpr> h, IReal max,
+      boolean pow) {
+    if (!rv.isPower() || !rv.base().head().equals(f)) {
       return F.NIL;
     }
-    IExpr a = e.first();
-    IExpr b = e.second();
 
-    if (a.isOne() || a.isMinusOne()) {
-      IExpr g = F.C1;
-      if (b.isTimes() && b.first().isNumber() && b.first().isNegative()) {
-        a = a.negate();
-        b = b.negate();
-        g = g.negate();
-      }
-      return F.List(g, b, a);
+    if (!rv.exponent().isReal()) {
+      return F.NIL;
+    }
+    IReal exp = (IReal) rv.exponent();
+    if (exp.isNegative()) {
+      return F.NIL;
+    }
+    if (exp.isGT(max)) {
+      return F.NIL;
+    }
+    if (exp.isOne()) {
+      return F.NIL;
+    }
+    if (exp.isNumEqualInteger(F.C2)) {
+      return h.apply(F.unaryAST1(g, rv.base().first()).pow(2));
     }
 
-    IPair pa = a.asCoeffMul();
-    IPair pb = b.asCoeffMul();
-    IExpr ca = pa.first();
-    IExpr ma = pa.second();
-    IExpr cb = pb.first();
-    IExpr mb = pb.second();
+    IExpr e;
+    if (exp.isInteger() && ((IInteger) exp).isOdd()) {
+      e = ((IInteger) exp).iquo(F.C2);
+      return F.unaryAST1(f, rv.base().first()).pow(2)
+          .times(h.apply(F.unaryAST1(g, rv.base().first()).pow(2)).pow(e));
+    } else if (exp.isNumEqualInteger(F.C4)) {
+      e = F.C2;
+    } else if (!pow) {
+      if (exp.isInteger() && ((IInteger) exp).isOdd()) {
+        return F.NIL;
+      }
+      e = ((IInteger) exp).iquo(F.C2);
+    } else {
+      IExpr p = Factor.perfectPower(exp);
+      if (p.isNIL()) {
+        return F.NIL;
+      }
+      e = ((IInteger) exp).iquo(F.C2);
+    }
+    return h.apply(F.unaryAST1(g, rv.base().first()).pow(2)).pow(e);
+  }
 
-    if (ma.equals(F.C1)) {
-      IExpr temp = ma;
-      ma = mb;
-      mb = temp;
+  public static IExpr tr6(IExpr expr) {
+    return tr6(expr, F.C4, false);
+  }
+
+  public static IExpr tr6(IExpr expr, IInteger max, boolean pow) {
+    return tr56(expr, S.Cos, S.Sin, x -> F.C1.subtract(x), max, pow);
+  }
+
+  public static IExpr tr7(IExpr expr) {
+    return Traversal.bottomUp(expr, TrigSimplifyFu::tr7Step);
+  }
+
+  private static IExpr tr7Step(IExpr expr) {
+    if (expr.isPower() && expr.base().isCos() && expr.exponent() == F.C2) {
+      // 1 + cos(2*rv.base.args[0]))/2
+      return F.Plus(F.C1D2, F.Times(F.C1D2, F.Cos(F.Times(2, expr.base().first()))));
+    }
+    return F.NIL;
+  }
+
+  public static IExpr tr8(IExpr expr) {
+    return Traversal.bottomUp(expr, x -> tr8Step(x, true));
+  }
+
+  public static IExpr tr8(IExpr expr, boolean first) {
+    return Traversal.bottomUp(expr, x -> tr8Step(x, first));
+  }
+
+  /**
+   * @param expr
+   * @param first
+   */
+  public static IExpr tr8Step(IExpr expr, boolean first) {
+    if (expr.isTimes() || (expr.isPower() && (expr.base().isSin() || expr.base().isCos())
+        && (expr.exponent().isIntegerResult() || expr.base().isPositive()))) {
+
+      if (first) {
+        EvalEngine engine = EvalEngine.get();
+        Pair numerDenom = expr.asNumerDenom();
+        IExpr n = numerDenom.first();
+        IExpr d = numerDenom.second();
+        IExpr newn = tr8(TrigReduce.trigReduce(n, engine), false);
+        IExpr newd = tr8(TrigReduce.trigReduce(d, engine), false);
+        if (!newn.equals(n) || !newd.equals(d)) {
+          if (newd.isOne()) {
+            return newn;
+          }
+          IExpr rv = ExprTools.gcdTerms(F.Divide(newn, newd));
+          if (rv.isTimes() && rv.first().isRational() && rv.argSize() == 2
+              && rv.second().isPlus()) {
+            Pair asCoeffMul = rv.asCoeffMul();
+            IASTAppendable result = F.TimesAlloc(3);
+            result.append(asCoeffMul.first());
+            result.appendArgs((IAST) asCoeffMul.second());
+            return result;
+          }
+          return rv;
+        }
+        return F.NIL;
+      }
+
+      DefaultDict<IASTAppendable> args = new DefaultDict<IASTAppendable>();
+      args.put(S.Cos, F.ListAlloc());
+      args.put(S.Sin, F.ListAlloc());
+
+      IASTMutable argsList = Operations.makeArgs(S.Times, expr);
+      IASTAppendable argsResult = F.TimesAlloc(argsList.argSize() + 5);
+      argsList.sortInplace();
+      for (int i = 1; i < argsList.size(); i++) {
+        IExpr a = argsList.get(i);
+        if (a.isCos() || a.isSin()) {
+          args.getValue(a.head()).append(a.first());
+        } else if (a.isPower() && a.exponent().isIntegerResult() && a.exponent().isPositive()
+            && (a.base().isCos() || a.base().isSin())) {
+          args.getValue(a.base().head()).append(a.base().first().times(a.exponent()));
+        } else {
+          argsResult.append(a);
+        }
+      }
+      IASTAppendable c = args.getValue(S.Cos);
+      IASTAppendable s = args.getValue(S.Sin);
+      if (!(c.argSize() > 1 || s.argSize() > 1)) {
+        return F.NIL;
+      }
+
+      int n = Math.min(c.argSize(), s.argSize());
+      for (int i = 0; i < n; i++) {
+        IExpr a1 = s.pop();
+        IExpr a2 = c.pop();
+        argsResult.append(F.Divide(F.Plus(F.Sin(F.Plus(a1, a2)), F.Sin(F.Subtract(a1, a2))), 2));
+      }
+      while (c.argSize() > 1) {
+        IExpr a1 = c.pop();
+        IExpr a2 = c.pop();
+        argsResult.append(F.Divide(F.Plus(F.Cos(F.Plus(a1, a2)), F.Cos(F.Subtract(a1, a2))), 2));
+      }
+      if (c.argSize() > 0) {
+        argsResult.append(F.Cos(c.pop()));
+      }
+      while (s.argSize() > 1) {
+        IExpr a1 = s.pop();
+        IExpr a2 = s.pop();
+        argsResult
+            .append(F.Divide(F.Subtract(F.Cos(F.Subtract(a1, a2)), F.Cos(F.Plus(a1, a2))), 2));
+      }
+      if (s.argSize() > 0) {
+        argsResult.append(F.Sin(s.pop()));
+      }
+
+      IExpr evalExpandAll = F.evalExpandAll(argsResult);
+      return tr8(evalExpandAll, true);
+    }
+    return F.NIL;
+  }
+
+  public static IExpr tr9(IExpr expr) {
+    return Traversal.bottomUp(expr, x -> tr9Step(x));
+  }
+
+  public static IExpr tr9DoIt(IExpr rv) {
+    // # cos(a)+/-cos(b) can be combined into a product of cosines and
+    // # sin(a)+/-sin(b) can be combined into a product of cosine and
+    // # sine.
+    // #
+    // # If there are more than two args, the pairs which "work" will
+    // # have a gcd extractable and the remaining two terms will have
+    // # the above structure -- all pairs must be checked to find the
+    // # ones that work. args that don't have a common set of symbols
+    // # are skipped since this doesn't lead to a simpler formula and
+    // # also has the arbitrariness of combining, for example, the x
+    // # and y term instead of the y and z term in something like
+    // # cos(x) + cos(y) + cos(z).
+    if (rv.isPlus()) {
+      IASTMutable args = ((IAST) rv).copy();
+      if (args.argSize() != 2) {
+        boolean hit = false;
+        for (int i = 1; i < args.size(); i++) {
+          IExpr ai = args.get(i);
+          if (ai.isNone()) {
+            continue;
+          }
+          for (int j = i + 1; j < args.size(); j++) {
+            IExpr aj = args.get(j);
+            if (aj.isNone()) {
+              continue;
+            }
+            IExpr was = ai.plus(aj);
+            IExpr newDoIt = tr9DoIt(was);
+            if (newDoIt.isPresent() && !newDoIt.equals(was)) {
+              args.set(i, newDoIt);
+              args.set(j, S.None);
+              hit = true;
+              break; // go to next i
+            }
+          }
+        }
+
+        if (hit) {
+          IASTAppendable plusAST = F.PlusAlloc(args.size());
+          for (int i = 1; i < args.size(); i++) {
+            IExpr _f = args.get(i);
+            if (!_f.isNone()) {
+              plusAST.append(_f);
+            }
+          }
+          rv = plusAST.oneIdentity0();
+          if (rv.isPlus()) {
+            rv = tr9DoIt(rv).orElse(rv);
+          }
+          return rv;
+        }
+
+        return F.NIL;
+      }
+
+      // two args Plus(a1, a2)
+      IAST split = trigSplit(args.arg1(), args.arg2());
+      if (split.isNIL()) {
+        return rv;
+      }
+      IExpr gcd = split.arg1();
+      IExpr n1 = split.arg2();
+      IExpr n2 = split.arg3();
+      IExpr a = split.get(4);
+      IExpr b = split.get(5);
+      IExpr isCos = split.get(6);
+
+      // application of rule if possible
+      if (isCos.isTrue()) {
+        if (n1.equals(n2)) {
+          // gcd*n1*2*cos((a + b)/2)*cos((a - b)/2)
+          return F.eval(F.Times(F.C2, gcd, n1, F.Cos(F.Times(F.C1D2, F.Plus(a, b))),
+              F.Cos(F.Times(F.C1D2, F.Subtract(a, b)))));
+        } else if (n1.isNegative()) {
+          IExpr temp = a;
+          a = b;
+          b = temp;
+        }
+        // -2*gcd*sin((a + b)/2)*sin((a - b)/2)
+        return F.eval(F.Times(F.CN2, gcd, F.Sin(F.Times(F.C1D2, F.Plus(a, b))),
+            F.Sin(F.Times(F.C1D2, F.Subtract(a, b)))));
+      }
+      if (n1.equals(n2)) {
+        // gcd*n1*2*sin((a + b)/2)*cos((a - b)/2)
+        return F.eval(F.Times(F.C2, gcd, n1, F.Sin(F.Times(F.C1D2, F.Plus(a, b))),
+            F.Cos(F.Times(F.C1D2, F.Subtract(a, b)))));
+      } else if (n1.isNegative()) {
+        IExpr temp = a;
+        a = b;
+        b = temp;
+      }
+      // 2*gcd*cos((a + b)/2)*sin((a - b)/2)
+      return F.eval(F.Times(F.C2, gcd, F.Cos(F.Times(F.C1D2, F.Plus(a, b))),
+          F.Sin(F.Times(F.C1D2, F.Subtract(a, b)))));
+    }
+    return F.NIL;
+  }
+
+  private static IExpr tr9Step(IExpr expr) {
+    // TODO implement missing methods
+    if (expr.isPlus()) {
+      return processCommonAddends((IAST) expr, TrigSimplifyFu::tr9DoIt, null, true);
+    }
+    return F.NIL;
+  }
+
+  public static IAST trigSplit(IExpr a, IExpr b) {
+    return trigSplit(a, b, false);
+  }
+
+  public static IAST trigSplit(IExpr a, IExpr b, boolean two) {
+    // TODO
+    // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/simplify/fu.py#L1716
+
+    Factors aFactors = new Factors(a);
+    Factors bFactors = new Factors(b);
+    Factors[] normal = aFactors.normal(bFactors);
+    Factors ua = normal[0];
+    Factors ub = normal[1];
+    IExpr gcd = aFactors.gcd(bFactors).asExpr();
+    IExpr n1 = F.C1;
+    IExpr n2 = F.C1;
+    IExpr temp = ua.factorsMap().get(F.CN1);
+    if (temp != null) {
+      ua = ua.quo(F.CN1);
+      n1 = n1.negate();
+    } else {
+      temp = ub.factorsMap().get(F.CN1);
+      if (temp != null) {
+        ub = ub.quo(F.CN1);
+        n2 = n2.negate();
+      }
+    }
+    a = ua.asExpr();
+    b = ub.asExpr();
+
+    // get the parts
+    IAST m = powCosSin(a, two);
+    if (m.isNIL()) {
+      return F.NIL;
+    }
+    IExpr coa = m.arg1();
+    IExpr ca = m.arg2();
+    IExpr sa = m.arg3();
+
+    m = powCosSin(b, two);
+    if (m.isNIL()) {
+      return F.NIL;
+    }
+    IExpr cob = m.arg1();
+    IExpr cb = m.arg2();
+    IExpr sb = m.arg3();
+
+    // check them
+
+    if (ca.isNIL() && cb.isPresent() || ca.isSin()) {
+      // coa, ca, sa, cob, cb, sb = cob, cb, sb, coa, ca, sa
+      temp = coa;
+      coa = cob;
+      cob = temp;
+
       temp = ca;
       ca = cb;
       cb = temp;
+
+      temp = sa;
+      sa = sb;
+      sb = temp;
+      // n1, n2 = n2, n1
+      temp = n1;
+      n1 = n2;
+      n2 = temp;
     }
 
-    if (mb.isOne() && ca instanceof IInteger && cb instanceof IInteger) {
-      IInteger gcd = ((IInteger) ca).gcd((IInteger) cb);
-      IExpr g = gcd;
-      IExpr s1 = ca.divide(g);
-      IExpr s2 = cb.divide(g);
-      if (s1.isNegative()) {
-        g = g.negate();
-        s1 = s1.negate();
-        s2 = s2.negate();
+    if (!two) {
+      IExpr c = ca.isPresent() ? ca : sa;
+      IExpr s = cb.isPresent() ? cb : sb;
+      if (!c.isAST(s.head())) {
+        return F.NIL;
       }
-      if (s1.isOne()) {
-        return F.List(g, ma, s2);
+      return F.List(gcd, n1, n2, c.first(), s.first(), F.booleSymbol(c.isCos()));
+    }
+
+    if (coa.isNIL() && cob.isNIL()) {
+      if (ca.isPresent() && cb.isPresent() && sa.isPresent() && sb.isPresent()) {
+        if (ca.isAST(sa.head()) && !cb.isAST(sb.head())) {
+          return F.NIL;
+        }
+        IASTAppendable args = F.ListAlloc();
+        args.appendArgs((IAST) ca);
+        args.appendArgs((IAST) sa);
+        if (!(((IAST) cb).forAll(x -> args.indexOf(x) > 0)
+            && ((IAST) sb).forAll(x -> args.indexOf(x) > 0))) {
+          return F.NIL;
+        }
+        // if not all(i.args in args for i in (cb, sb)):
+        // return
+        return F.List(gcd, n1, n2, ca.first(), sa.first(), F.booleSymbol(ca.isAST(sa.head())));
       }
+    }
+    if (ca.isPresent() && sa.isPresent() || cb.isPresent() && sb.isPresent() //
+        || two && (ca.isNIL() && sa.isNIL() || cb.isNIL() && sb.isNIL())) {
+      return F.NIL;
+    }
+    IExpr c = ca.isPresent() ? ca : sa;
+    IExpr s = cb.isPresent() ? cb : sb;
+    if (!c.equalsArgs(s)) {
+      return F.NIL;
+    }
+    if (coa.isNIL()) {
+      coa = F.C1;
+    }
+    if (cob.isNIL()) {
+      cob = F.C1;
+    }
+    if (coa.equals(cob)) {
+      gcd = gcd.times(F.CSqrt2);
+      return F.List(gcd, n1, n2, c.first(), F.CPiQuarter, S.False);
+    }
+    temp = coa.divide(cob);
+    if (temp.equals(F.CSqrt3)) {
+      gcd = gcd.times(F.C2.times(cob));
+      return F.List(gcd, n1, n2, c.first(), F.CPiThird, S.False);
+    }
+    if (temp.equals(F.C1DSqrt3)) {
+      gcd = gcd.times(F.C2.times(coa));
+      return F.List(gcd, n1, n2, c.first(), F.Times(F.C1D6, S.Pi), S.False);
     }
     return F.NIL;
   }
@@ -2025,11 +1711,165 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
-  private static IExpr min(IExpr a, IExpr b) {
-    if (F.Less(a, b).isTrue()) {
-      return a;
+  // Insert this helper near other helpers in the class
+  private static IExpr tryCombineIntoCosPlusSin(IAST expr) {
+    IASTAppendable terms = F.ListAlloc();
+    if (expr.isAST(S.Plus)) {
+      for (int i = 1; i <= expr.argSize(); i++) {
+        terms.append(expr.get(i));
+      }
+    } else {
+      terms.append(expr);
     }
-    return b;
+
+    IExpr cc = F.C0, cs = F.C0, sc = F.C0, ss = F.C0;
+    ISymbol symA = null, symB = null;
+
+    for (int k = 1; k <= terms.argSize(); k++) {
+      IExpr t = terms.get(k);
+      IExpr coef = F.C1;
+      IExpr core = t;
+
+      if (core.isAST(S.Times)) {
+        IAST times = (IAST) core;
+        IASTAppendable nonNum = F.TimesAlloc();
+        for (int i = 1; i <= times.argSize(); i++) {
+          IExpr f = times.get(i);
+          if (f.isNumber()) {
+            coef = coef.times(f);
+          } else {
+            nonNum.append(f);
+          }
+        }
+
+        if (nonNum.isEmpty()) {
+          core = coef;
+        } else if (nonNum.argSize() == 1) {
+          core = nonNum.arg1();
+        } else {
+          core = nonNum;
+        }
+      }
+
+      IExpr f1 = F.NIL, f2 = F.NIL;
+      if (core.isAST(S.Times)) {
+        IAST times = (IAST) core;
+        if (times.argSize() == 2) {
+          f1 = times.arg1();
+          f2 = times.arg2();
+        } else {
+          return F.NIL;
+        }
+      } else {
+        return F.NIL;
+      }
+
+      if (!(f1.isAST(S.Sin) || f1.isAST(S.Cos)) || !(f2.isAST(S.Sin) || f2.isAST(S.Cos))) {
+        return F.NIL;
+      }
+      if (!(f1.first().isSymbol() || f2.first().isSymbol())) {
+        return F.NIL;
+      }
+
+      ISymbol aCand = (ISymbol) ((IAST) f1).arg1();
+      ISymbol bCand = (ISymbol) ((IAST) f2).arg1();
+
+      if (symA != null && symB != null) {
+        symA = aCand;
+        symB = bCand;
+      } else {
+        if (!aCand.equals(symA) && !aCand.equals(symB)) {
+          return F.NIL;
+        }
+        if (!bCand.equals(symB) && !bCand.equals(symA)) {
+          return F.NIL;
+        }
+      }
+
+      boolean f1IsSin = f1.isSin();
+      boolean f1IsCos = f1.isCos();
+      boolean f2IsSin = f2.isSin();
+      boolean f2IsCos = f2.isCos();
+
+      ISymbol detectedA = (ISymbol) ((IAST) f1).arg1();
+      ISymbol detectedB = (ISymbol) ((IAST) f2).arg1();
+
+      if (!detectedA.equals(symA) && detectedA.equals(symB) && detectedB.equals(symA)) {
+        boolean tmp = f1IsSin;
+        f1IsSin = f2IsSin;
+        f2IsSin = tmp;
+        tmp = f1IsCos;
+        f1IsCos = f2IsCos;
+        f2IsCos = tmp;
+      }
+
+      if (f1IsCos && f2IsCos) {
+        cc = cc.plus(coef);
+      } else if (f1IsCos && f2IsSin) {
+        cs = cs.plus(coef);
+      } else if (f1IsSin && f2IsCos) {
+        sc = sc.plus(coef);
+      } else if (f1IsSin && f2IsSin) {
+        ss = ss.plus(coef);
+      } else {
+        return F.NIL;
+      }
+    }
+
+    if (sc.equals(cs) && ss.equals(cc.negate())) {
+      IExpr alpha = cc;
+      IExpr beta = cs;
+      ISymbol a = symA;
+      ISymbol b = symB;
+      return F.Plus(F.Times(alpha, F.Cos(F.Plus(a, b))), F.Times(beta, F.Sin(F.Plus(a, b))));
+    }
+
+    return F.NIL;
+  }
+
+  public TrigSimplifyFu() {}
+
+  @Override
+  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    IExpr arg1 = ast.arg1();
+    IAST tempAST = CompareUtil.threadListLogicEquationOperators(arg1, ast, 1);
+    if (tempAST.isPresent()) {
+      return tempAST;
+    }
+
+    IExpr assumptionExpr = F.NIL;
+    IExpr complexityFunctionHead = F.NIL;
+    if (ast.size() > 2) {
+      OptionArgs options = null;
+      if (ast.size() > 2) {
+        options = new OptionArgs(ast.topHead(), ast, ast.argSize(), engine);
+        complexityFunctionHead = options.getOptionAutomatic(S.ComplexityFunction);
+      }
+      assumptionExpr = OptionArgs.determineAssumptions(ast, 2, options);
+    }
+    // arg1 = engine.evaluate(F.ExpandAll(arg1));
+    if (assumptionExpr.isPresent()) {
+      if (assumptionExpr.isAST()) {
+        IAssumptions oldAssumptions = engine.getAssumptions();
+        IAssumptions assumptions;
+        if (oldAssumptions == null) {
+          assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
+        } else {
+          assumptions = oldAssumptions.copy();
+          assumptions = assumptions.addAssumption(assumptionExpr);
+        }
+        if (assumptions != null) {
+          try {
+            engine.setAssumptions(assumptions);
+            return simplifyFu(arg1, complexityFunctionHead, engine);
+          } finally {
+            engine.setAssumptions(oldAssumptions);
+          }
+        }
+      }
+    }
+
+    return simplifyFu(arg1, complexityFunctionHead, engine);
   }
 
   @Override
@@ -2042,5 +1882,126 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     setOptions(newSymbol, //
         F.list(F.Rule(S.Assumptions, S.$Assumptions), //
             F.Rule(S.ComplexityFunction, S.Automatic)));
+  }
+
+  /**
+   * See: <a href=
+   * "https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/simplify/fu.py#L1569">sympy/simplify/fu.py#L1569</a>
+   *
+   * @param expr
+   * @param complexityFunctionHead
+   * @param engine
+   * @return
+   */
+  private IExpr simplifyFu(IExpr expr, IExpr complexityFunctionHead, EvalEngine engine) {
+    if (!expr.isAST()) {
+      return expr;
+    }
+    IAST was = (IAST) expr;
+    Function<IExpr, Long> measure = createComplexityFunction(complexityFunctionHead, engine);
+
+    IExpr rv = tr1(was);
+    if (rv.has(x -> x.isTan() || x.isAST(S.Cot, 2), true)) {
+      IExpr rv1 = rl1(rv);
+      if (measure.apply(rv1) < measure.apply(rv)) {
+        rv = rv1;
+      }
+      if (rv.has(x -> x.isTan() || x.isAST(S.Cot, 2), true)) {
+        rv = tr2(rv);
+      }
+    }
+
+    if (rv.has(x -> x.isSin() || x.isCos(), true)) {
+      IExpr rv1 = rl2(rv, measure);
+      IExpr trMorrie = trMorrie(rv1);
+      IExpr rv2 = tr8(trMorrie, true);
+      if (measure.apply(was) < measure.apply(rv)) {
+        rv = was;
+      }
+      if (measure.apply(rv1) < measure.apply(rv)) {
+        rv = rv1;
+      }
+      if (measure.apply(rv2) < measure.apply(rv)) {
+        rv = rv2;
+      }
+    }
+
+    IExpr rv3 = tr2i(rv, false);
+    if (measure.apply(rv3) < measure.apply(rv)) {
+      rv = rv3;
+    }
+
+    IExpr rv4 = tr0(tr15(rv));
+    if (measure.apply(rv4) < measure.apply(rv)) {
+      rv = rv4;
+    }
+    IExpr rv5 = tr0(tr16(rv));
+    if (measure.apply(rv5) < measure.apply(rv)) {
+      rv = rv5;
+    }
+    IExpr rv6 = tr0(tr22(rv));
+    if (measure.apply(rv6) < measure.apply(rv)) {
+      rv = rv6;
+    }
+    IExpr rv7 = tr0(tr111(rv));
+    if (measure.apply(rv7) < measure.apply(rv)) {
+      rv = rv7;
+    }
+
+    return rv;
+  }
+
+  private IExpr simplifyFuCore(IExpr expr, Function<IExpr, Long> measure, EvalEngine engine) {
+    IAST was = (IAST) expr;
+    IExpr rv = tr1(was);
+
+    if (rv.has(x -> x.isTan() || x.isAST(S.Cot, 2), true)) {
+      IExpr rv1 = rl1(rv);
+      if (measure.apply(rv1) < measure.apply(rv)) {
+        rv = rv1;
+      }
+      if (rv.has(x -> x.isTan() || x.isAST(S.Cot, 2), true)) {
+        rv = tr2(rv);
+      }
+    }
+
+    if (rv.has(x -> x.isSin() || x.isCos(), true)) {
+      IExpr rv1 = rl2(rv, measure);
+      IExpr trMorrie = trMorrie(rv1);
+      IExpr rv2 = tr8(trMorrie, true);
+      if (measure.apply(was) < measure.apply(rv)) {
+        rv = was;
+      }
+      if (measure.apply(rv1) < measure.apply(rv)) {
+        rv = rv1;
+      }
+      if (measure.apply(rv2) < measure.apply(rv)) {
+        rv = rv2;
+      }
+    }
+
+    IExpr rv3 = tr2i(rv, false);
+    if (measure.apply(rv3) < measure.apply(rv)) {
+      rv = rv3;
+    }
+
+    IExpr rv4 = tr0(tr15(rv));
+    if (measure.apply(rv4) < measure.apply(rv)) {
+      rv = rv4;
+    }
+    IExpr rv5 = tr0(tr16(rv));
+    if (measure.apply(rv5) < measure.apply(rv)) {
+      rv = rv5;
+    }
+    IExpr rv6 = tr0(tr22(rv));
+    if (measure.apply(rv6) < measure.apply(rv)) {
+      rv = rv6;
+    }
+    IExpr rv7 = tr0(tr111(rv));
+    if (measure.apply(rv7) < measure.apply(rv)) {
+      rv = rv7;
+    }
+
+    return rv;
   }
 }

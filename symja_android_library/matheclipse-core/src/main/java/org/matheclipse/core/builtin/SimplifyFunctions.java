@@ -13,6 +13,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.TrigSimplifyFu;
 
 public class SimplifyFunctions {
   /**
@@ -147,7 +148,7 @@ public class SimplifyFunctions {
         }
       }
 
-      // note: this should also cache FullSimplify calls
+      // Note: this should also cache FullSimplify calls
       IExpr defaultResult = engine.getCache(ast);
       if (defaultResult != null) {
         return defaultResult;
@@ -155,7 +156,7 @@ public class SimplifyFunctions {
 
       IExpr complexityFunctionHead = F.NIL;
       OptionArgs options = null;
-      if (ast.size() > 2) {
+      if (ast.argSize() > 1) {
         options = new OptionArgs(ast.topHead(), ast, ast.argSize(), engine);
         complexityFunctionHead = options.getOptionAutomatic(S.ComplexityFunction);
       }
@@ -182,25 +183,43 @@ public class SimplifyFunctions {
           }
         }
 
-        IExpr temp = arg1.replaceAll(F.list( //
-            F.Rule(S.GoldenAngle, //
-                F.Times(F.Subtract(F.C3, F.CSqrt5), S.Pi)), //
-            F.Rule(S.GoldenRatio, //
-                F.Times(F.C1D2, F.Plus(F.C1, F.CSqrt5))), //
-            F.Rule(S.Degree, //
-                F.Divide(S.Pi, F.ZZ(180))) //
+        // Apply initial standard substitutions
+        IExpr temp = F.subst(arg1, F.list( //
+            F.Rule(S.GoldenAngle, F.Times(F.Subtract(F.C3, F.CSqrt5), S.Pi)), //
+            F.Rule(S.GoldenRatio, F.Times(F.C1D2, F.Plus(F.C1, F.CSqrt5))), //
+            F.Rule(S.Degree, F.Divide(S.Pi, F.ZZ(180))) //
         ));
+
         if (temp.isPresent()) {
           arg1 = temp;
         }
 
+        // run the standard algebraic simplify steps first
         temp = SimplifyUtil.simplifyStep(arg1, defaultResult, complexityFunction, minCounter,
             isFullSimplifyMode(), false, engine);
-        engine.putCache(ast, temp);
-        return temp;
+
+        IExpr currentResult = temp.isPresent() ? temp : defaultResult;
+
+        if (currentResult.isAST()) {
+          IExpr trigTemp =
+              TrigSimplifyFu.simplify((IAST) currentResult, engine, complexityFunction);
+
+          if (trigTemp.isPresent() && !trigTemp.equals(currentResult)) {
+            long trigCount = complexityFunction.apply(trigTemp);
+            if (trigCount < minCounter) {
+              minCounter = trigCount;
+              temp = trigTemp;
+            }
+          }
+        }
+
+        if (temp.isPresent()) {
+          engine.putCache(ast, temp);
+          return temp;
+        }
 
       } catch (ArithmeticException e) {
-        //
+        // Fall back gracefully
       } finally {
         engine.setAssumptions(oldAssumptions);
       }
