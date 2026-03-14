@@ -330,6 +330,12 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return F.NIL;
     }
 
+    @Override
+    public IExpr arg6() {
+      ArgumentTypeException.throwNIL();
+      return F.NIL;
+    }
+
     /** {@inheritDoc} */
     @Override
     public int argSize() {
@@ -769,7 +775,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
     /** {@inheritDoc} */
     @Override
-    public final boolean isOneIdentityAST1() {
+    public final boolean isOneIdentityAST() {
       return false;
     }
 
@@ -4488,9 +4494,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   public boolean isNumericMode() {
     ISymbol symbol = topHead();
     if (isList() || symbol.hasNumericFunctionAttribute()) {
-      if (isUniform(UniformFlags.DOUBLE)||isUniform(UniformFlags.DOUBLECOMPLEX)) {
+      if (isUniform(UniformFlags.DOUBLE) || isUniform(UniformFlags.DOUBLECOMPLEX)) {
         return true;
-      } 
+      }
       // check if one of the arguments is &quot;numeric&quot;
       for (int i = 1; i < size(); i++) {
         if (get(i).isNumericMode()) {
@@ -4503,7 +4509,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public boolean isOneIdentityAST1() {
+  public boolean isOneIdentityAST() {
     return isAST1() && topHead().hasOneIdentityAttribute();
   }
 
@@ -5202,10 +5208,13 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
         }
         return !isPlusTimesPower();
       }
-      return isSlot() || isSubscript();
+      return isSlot() || isSubscript() || isAST(S.C, 2);
     }
     if (!head().isSymbol()) {
       return false;
+    }
+    if (head().isVariable()) {
+      return true;
     }
     for (int i = 1; i < size(); i++) {
       IExpr arg = get(i);

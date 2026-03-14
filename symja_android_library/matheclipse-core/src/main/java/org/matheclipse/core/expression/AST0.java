@@ -148,6 +148,12 @@ public class AST0 extends AbstractAST implements Externalizable, RandomAccess {
     throw new IndexOutOfBoundsException("Index: 5, Size: " + size());
   }
 
+  @Override
+  public IExpr arg6() {
+    // be compatible with get() contract
+    throw new IndexOutOfBoundsException("Index: 6, Size: " + size());
+  }
+
   /** {@inheritDoc} */
   @Override
   public int argSize() {

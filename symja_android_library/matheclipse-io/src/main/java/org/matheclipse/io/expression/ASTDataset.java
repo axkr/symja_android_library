@@ -728,6 +728,11 @@ public class ASTDataset extends AbstractAST
   }
 
   @Override
+  public IExpr arg6() {
+    return get(6);
+  }
+
+  @Override
   public IASTAppendable copyAppendable() {
     return normal(false);
   }

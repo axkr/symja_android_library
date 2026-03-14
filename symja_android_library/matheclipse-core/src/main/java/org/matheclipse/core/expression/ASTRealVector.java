@@ -175,6 +175,11 @@ public final class ASTRealVector extends AbstractAST
     return F.num(vector.getEntry(4));
   }
 
+  @Override
+  public IExpr arg6() {
+    return F.num(vector.getEntry(5));
+  }
+
   /** {@inheritDoc} */
   @Override
   public int argSize() {

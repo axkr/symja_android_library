@@ -574,6 +574,12 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
     throw new IndexOutOfBoundsException("Index: 5, Size: " + size());
   }
 
+  @Override
+  public IExpr arg6() {
+    // be compatible with get() contract
+    throw new IndexOutOfBoundsException("Index: 6, Size: " + size());
+  }
+
   /** {@inheritDoc} */
   @Override
   final public int argSize() {

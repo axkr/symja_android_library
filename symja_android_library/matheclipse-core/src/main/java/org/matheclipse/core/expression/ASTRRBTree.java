@@ -206,6 +206,11 @@ public class ASTRRBTree extends AbstractAST
     return rrbTree.get(5);
   }
 
+  @Override
+  public IExpr arg6() {
+    return rrbTree.get(6);
+  }
+
   /** {@inheritDoc} */
   @Override
   public int argSize() {

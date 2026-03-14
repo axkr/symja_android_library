@@ -387,6 +387,19 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   public IExpr arg5();
 
   /**
+   * Get the sixth argument (i.e. the seventh element of the underlying list structure) of the
+   * <code>
+   * AST</code> function (i.e. get(6) ).<br>
+   * <b>Example:</b> for the AST representing the expression <code>f(a, b ,c, d, e, f)</code>,
+   * <code>
+   * arg6()</code> returns <code>f</code> .
+   *
+   * @return the sixth argument of the function represented by this <code>AST</code>.
+   * @see IExpr#head()
+   */
+  public IExpr arg6();
+
+  /**
    * Returns an iterator over all arguments in this list starting with offset <b>1</b>. Calls
    * {@link #iterator()}.
    *
@@ -1851,9 +1864,9 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
       BiPredicate<? super IExpr, ? super IExpr> predicate);
 
   /**
-   * Calculate a hash value especially for pattern matching
+   * Returns a structural bitmask (Bloom filter) for pattern matching optimization.
    *
-   * @return the pattern hash value
+   * @return a 32-bit mask representing the structural features of this expression.
    */
   public int patternHashCode();
 

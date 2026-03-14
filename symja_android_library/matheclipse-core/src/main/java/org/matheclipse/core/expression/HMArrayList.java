@@ -548,6 +548,11 @@ public abstract class HMArrayList extends AbstractAST
     return array[firstIndex + 5];
   }
 
+  @Override
+  public IExpr arg6() {
+    return array[firstIndex + 6];
+  }
+
   /** {@inheritDoc} */
   @Override
   public final int argSize() {

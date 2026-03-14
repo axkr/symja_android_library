@@ -190,6 +190,11 @@ public final class ASTRealMatrix extends AbstractAST
     return new ASTRealVector(matrix.getRowVector(4), false);
   }
 
+  @Override
+  public IExpr arg6() {
+    return new ASTRealVector(matrix.getRowVector(5), false);
+  }
+
   /** {@inheritDoc} */
   @Override
   public int argSize() {

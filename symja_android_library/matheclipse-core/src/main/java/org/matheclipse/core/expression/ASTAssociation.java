@@ -179,6 +179,11 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   }
 
   @Override
+  public IExpr arg6() {
+    return get(6);
+  }
+
+  @Override
   public ASTAssociation copy() {
     ASTAssociation ast = new ASTAssociation();
     ast.rrbTree = rrbTree.toMutRrbt();
