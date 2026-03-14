@@ -94,7 +94,7 @@ public class EvalAttributes {
         // }
       }
     }
-    if (temp.isOneIdentityAST1()) {
+    if (temp.isOneIdentityAST()) {
       return temp.first();
     }
 

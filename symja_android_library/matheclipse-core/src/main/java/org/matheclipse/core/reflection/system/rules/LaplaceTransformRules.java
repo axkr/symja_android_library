@@ -29,15 +29,15 @@ public class LaplaceTransformRules {
     // LaplaceTransform(Cos(a_.*t_),t_,s_):=s/(s^2+a^2)/;FreeQ({a,s},t)&&FreeQ(a,s)
     ISetDelayed(LaplaceTransform(Cos(Times(a_DEFAULT,t_)),t_,s_),
       Condition(Times(Power(Plus(Sqr(s),Sqr(a)),CN1),s),And(FreeQ(list(a,s),t),FreeQ(a,s)))),
-    // LaplaceTransform(Sinh(t_),t_,s_):=c/(-1+s^2)/;FreeQ(s,t)
-    ISetDelayed(LaplaceTransform(Sinh(t_),t_,s_),
-      Condition(Times(c,Power(Plus(CN1,Sqr(s)),CN1)),FreeQ(s,t))),
-    // LaplaceTransform(Cosh(t_),t_,s_):=s/(-1+s^2)/;FreeQ(s,t)
-    ISetDelayed(LaplaceTransform(Cosh(t_),t_,s_),
-      Condition(Times(s,Power(Plus(CN1,Sqr(s)),CN1)),FreeQ(s,t))),
-    // LaplaceTransform(Tanh(t_),t_,s_):=1/2*(-2/s-PolyGamma(0,s/4)+PolyGamma(0,1/4*(2+s)))/;FreeQ(s,t)
-    ISetDelayed(LaplaceTransform(Tanh(t_),t_,s_),
-      Condition(Times(C1D2,Plus(Times(CN1,C2,Power(s,CN1)),Negate(PolyGamma(C0,Times(C1D4,s))),PolyGamma(C0,Times(C1D4,Plus(C2,s))))),FreeQ(s,t))),
+    // LaplaceTransform(Sinh(a_.*t_),t_,s_):=a/(-a^2+s^2)/;FreeQ({a,s},t)
+    ISetDelayed(LaplaceTransform(Sinh(Times(a_DEFAULT,t_)),t_,s_),
+      Condition(Times(a,Power(Plus(Negate(Sqr(a)),Sqr(s)),CN1)),FreeQ(list(a,s),t))),
+    // LaplaceTransform(Cosh(a_.*t_),t_,s_):=s/(-a^2+s^2)/;FreeQ({a,s},t)
+    ISetDelayed(LaplaceTransform(Cosh(Times(a_DEFAULT,t_)),t_,s_),
+      Condition(Times(s,Power(Plus(Negate(Sqr(a)),Sqr(s)),CN1)),FreeQ(list(a,s),t))),
+    // LaplaceTransform(Tanh(a_.*t_),t_,s_):=(-2*a-s*PolyGamma(s/(4*a))+s*PolyGamma(1/4*(2+s/a)))/(2*a*s)/;FreeQ({a,s},t)
+    ISetDelayed(LaplaceTransform(Tanh(Times(a_DEFAULT,t_)),t_,s_),
+      Condition(Times(Power(Times(C2,a,s),CN1),Plus(Times(CN2,a),Times(CN1,s,PolyGamma(Times(Power(Times(C4,a),CN1),s))),Times(s,PolyGamma(Times(C1D4,Plus(C2,Times(Power(a,CN1),s))))))),FreeQ(list(a,s),t))),
     // LaplaceTransform(DiracDelta(a_*t_),t_,s_):=1/Abs(a)/;FreeQ({a,s},t)
     ISetDelayed(LaplaceTransform(DiracDelta(Times(a_,t_)),t_,s_),
       Condition(Power(Abs(a),CN1),FreeQ(list(a,s),t))),

@@ -68,6 +68,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Matrix;
 import org.matheclipse.core.eval.interfaces.AbstractNonOrderlessArgMultiple;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IndexFunctionDiagonal;
 import org.matheclipse.core.eval.util.IndexTableGenerator;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -3885,88 +3886,239 @@ public final class LinearAlgebra {
   }
 
 
-  private static class MatrixExp extends AbstractFunctionEvaluator {
+  /**
+   * <pre>
+   * MatrixExp(matrix)
+   * </pre>
+   *
+   * <blockquote>
+   * <p>
+   * evaluates the matrix exponential.
+   * </p>
+   * </blockquote>
+   *
+   * <pre>
+   * MatrixExp(matrix, v)
+   * </pre>
+   *
+   * <blockquote>
+   * <p>
+   * evaluates the matrix exponential applied to the vector v.
+   * </p>
+   * </blockquote>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * &gt;&gt; MatrixExp({{0,1},{0,1}})
+   * {{1,-1+E},{0,E}}
+   * </pre>
+   */
+  public static class MatrixExp extends AbstractFunctionEvaluator {
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() >= 1 && ast.argSize() <= 2) {
+        IExpr arg1 = ast.arg1();
+        if (arg1.isList()) {
+          IAST matrix = (IAST) arg1;
+          int[] dim = matrix.isMatrix();
+          if (dim != null && dim[0] == dim[1]) {
+            int n = dim[0];
+            IExpr v = ast.argSize() == 2 ? ast.arg2() : null;
 
-      int[] dim = ast.arg1().isMatrix();
-      if (dim != null && dim[0] > 0) {
-        if (dim[0] != dim[1]) {
-          // Argument `1` at position `2` is not a non-empty square matrix.
-          return Errors.printMessage(S.MatrixExp, "matsq", F.List(ast.arg1(), F.C1), engine);
-        }
-        RealMatrix matrix = ast.arg1().toRealMatrix();
-        if (matrix != null) {
-          try {
-            RealMatrix result = MatrixUtils.matrixExponential(matrix);
-            return new ASTRealMatrix(result, false);
-          } catch (MathIllegalArgumentException miae) {
-            return Errors.printMessage(ast.topHead(), "error", F.list(F.stringx(miae.getMessage())),
-                engine);
-          }
-        }
-        if (dim[0] == 1) {
-          IAST m = (IAST) ast.arg1().normal(false);
-          IExpr a = m.first().first();
-          return F.List(F.List(F.Power(S.E, a)));
-        }
-        if (dim[0] == 2) {
-          IAST m = (IAST) ast.arg1().normal(false);
-          IExpr a = m.first().first();
-          IExpr b = m.first().second();
-          IExpr c = m.second().first();
-          IExpr d = m.second().second();
-          if (a.isZero() && d.isZero()) {
-            if (b.equals(c.negate())) {
-              // {{Cos(b),Sin(b)},{-Sin(b),Cos(b)}}
-              IExpr v2 = F.Sin(b);
-              IExpr v1 = F.Cos(b);
-              return F.list(F.list(v1, v2), F.list(F.Negate(v2), v1));
+            IExpr expMat = computeMatrixExp(matrix, n, engine);
+            if (expMat.isPresent()) {
+              if (v != null) {
+                return engine.evaluate(F.Dot(expMat, v));
+              }
+              return expMat;
             }
           }
-          IExpr v7 = F.Sqr(d);
-          IExpr v6 = F.Negate(d);
-          IExpr v5 = F.Negate(a);
-          IExpr v4 = F.Times(F.C1D2, d);
-          IExpr v3 = F.Times(F.C1D2, a);
-          IExpr v2 = F.Plus(F.Sqr(a), F.Times(F.C4, b, c), F.Times(F.CN2, a, d));
-          IExpr v1 = F.Exp(F.Plus(v3, v4, F.Times(F.CN1D2, F.Sqrt(F.Plus(v2, v7)))));
-          return F
-              .list(
-                  F.list(
-                      F.Plus(
-                          F.Times(
-                              F.C1D2, v1, F.Power(F.Plus(v2, v7), F.CN1D2), F.Plus(d, v5,
-                                  F.Sqrt(F.Plus(v2, v7)))),
-                          F.Times(F.C1D2,
-                              F.Exp(F.Plus(v3, v4, F.Times(F.C1D2, F.Sqrt(F.Plus(v2, v7))))),
-                              F.Power(F.Plus(v2, v7), F.CN1D2),
-                              F.Plus(a, v6, F.Sqrt(F.Plus(v2, v7))))),
-                      F.Plus(
-                          F.Times(
-                              b, F.Exp(F.Plus(v3, v4,
-                                  F.Times(F.C1D2, F.Sqrt(F.Plus(v2, v7))))),
-                              F.Power(F.Plus(v2, v7), F.CN1D2)),
-                          F.Times(F.CN1, b, v1, F.Power(F.Plus(v2, v7), F.CN1D2)))),
-                  F.list(F.Plus(F.Times(c,
-                      F.Exp(F.Plus(v3, v4, F.Times(F.C1D2, F.Sqrt(F.Plus(v2, v7))))), F
-                          .Power(F.Plus(v2, v7), F.CN1D2)),
-                      F.Times(F.CN1, c, v1, F.Power(F.Plus(v2, v7), F.CN1D2))),
-                      F.Plus(F.Times(F.C1D2,
-                          F.Exp(F.Plus(v3, v4, F.Times(F.C1D2, F.Sqrt(F.Plus(v2, v7))))),
-                          F.Power(F.Plus(v2, v7), F.CN1D2), F.Plus(d, v5, F.Sqrt(F.Plus(v2, v7)))),
-                          F.Times(F.C1D2, v1, F.Power(F.Plus(v2, v7), F.CN1D2),
-                              F.Plus(a, v6, F.Sqrt(F.Plus(v2, v7)))))));
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return IFunctionEvaluator.ARGS_1_2;
+    }
+
+    private IExpr computeMatrixExp(IAST matrix, int n, EvalEngine engine) {
+      // Fast, exact algebraic path for 2x2 matrices using Sylvester's formula
+      if (n == 1) {
+        IExpr a = ((IAST) matrix.get(1)).get(1);
+        return F.List(F.List(F.Exp(a)));
+      }
+      if (n == 2) {
+        IExpr a = ((IAST) matrix.get(1)).get(1);
+        IExpr b = ((IAST) matrix.get(1)).get(2);
+        IExpr c = ((IAST) matrix.get(2)).get(1);
+        IExpr d = ((IAST) matrix.get(2)).get(2);
+        return computeMatrix2x2(a, b, c, d, engine);
+      }
+
+      // Try Diagonalization
+      IExpr eigensystem = engine.evaluate(F.Eigensystem(matrix));
+      if (eigensystem.isList() && ((IAST) eigensystem).argSize() == 2) {
+        IAST vals = (IAST) ((IAST) eigensystem).arg1();
+        IAST vecs = (IAST) ((IAST) eigensystem).arg2();
+
+        IExpr vecsInv = engine.evaluate(F.Inverse(vecs));
+        if (vecsInv.isList() && !vecsInv.has(S.Indeterminate) && !vecsInv.isDirectedInfinity()) {
+          IASTAppendable expD = F.ListAlloc(n);
+          for (int i = 1; i <= n; i++) {
+            IASTAppendable row = F.ListAlloc(n);
+            for (int j = 1; j <= n; j++) {
+              if (i == j) {
+                row.append(engine.evaluate(F.Exp(vals.get(i))));
+              } else {
+                row.append(F.C0);
+              }
+            }
+            expD.append(row);
+          }
+          IExpr result = engine.evaluate(F.Dot(vecs, F.Dot(expD, vecsInv)));
+          return result;
         }
       }
 
       return F.NIL;
     }
 
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+    private IExpr computeMatrix2x2(IExpr a, IExpr b, IExpr c, IExpr d, EvalEngine engine) {
+      if (b.isPossibleZero(true)) {
+        if (a.isPossibleZero(true) && d.isPossibleZero(true)) {
+          return F.List(F.List(F.C1, F.C0), F.List(c, F.C1));
+        }
+        // {{E^a,0},{(c*(E^a-E^d))/(a-d),E^d}}
+        IExpr v2 = F.Exp(a);
+        IExpr v1 = F.Exp(d);
+        return F.list(F.list(v2, F.C0),
+            F.list(F.Times(c, F.Power(F.Subtract(a, d), F.CN1), F.Subtract(v2, v1)), v1));
+      }
+      if (c.isPossibleZero(true)) {
+        if (a.isPossibleZero(true) && d.isPossibleZero(true)) {
+          return F.List(F.List(F.C1, b), F.List(F.C0, F.C1));
+        }
+        // {{E^a,(b*(E^a-E^d))/(a-d)},{0,E^d}}
+        IExpr v2 = F.Exp(a);
+        IExpr v1 = F.Exp(d);
+        return F.list(F.list(v2, F.Times(b, F.Power(F.Subtract(a, d), F.CN1), F.Subtract(v2, v1))),
+            F.list(F.C0, v1));
+      }
+      if (b.plus(c).isPossibleZero(true)) {
+        return F.List(F.List(F.Cos(b), F.Sin(b)), F.List(F.Times(F.CN1, F.Sin(b)), F.Cos(b)));
+      }
+      if (a.isPossibleZero(true) && d.isPossibleZero(true)) {
+        IExpr zeroDiagonalNegativeProduct = computeZeroDiagonalNegativeProduct(b, c, engine);
+        if (zeroDiagonalNegativeProduct.isPresent()) {
+          return zeroDiagonalNegativeProduct;
+        }
+        // {{1/(2*E^(Sqrt(b)*Sqrt(c)))+E^(Sqrt(b)*Sqrt(c))/2,-Sqrt(b)/(E^(Sqrt(b)*Sqrt(c))*
+        // 2*Sqrt(c))+(Sqrt(b)*E^(Sqrt(b)*Sqrt(c)))/(2*Sqrt(c))},{-Sqrt(c)/(E^(Sqrt(b)*Sqrt(c))*
+        // 2*Sqrt(b))+(Sqrt(c)*E^(Sqrt(b)*Sqrt(c)))/(2*Sqrt(b)),1/(2*E^(Sqrt(b)*Sqrt(c)))+E^(Sqrt(b)*Sqrt(c))/
+        // 2}}
+        IExpr v6 = F.Sqrt(b);
+        IExpr v5 = F.Sqrt(c);
+        IExpr v4 = F.Times(F.C2, v6);
+        IExpr v3 = F.Times(F.C2, v5);
+        IExpr v2 = F.Exp(F.Times(v6, v5));
+        IExpr v1 = F.Plus(F.Times(F.C1D2, F.Power(v2, F.CN1)), F.Times(F.C1D2, v2));
+        return F.list(
+            F.list(v1,
+                F.Plus(F.Times(F.CN1, v6, F.Power(F.Times(v2, v3), F.CN1)),
+                    F.Times(v6, F.Power(v3, F.CN1), v2))),
+            F.list(F.Plus(F.Times(F.CN1, F.Power(F.Times(v2, v4), F.CN1), v5),
+                F.Times(F.Power(v4, F.CN1), v5, v2)), v1));
+      }
+      IExpr tr = engine.evaluate(F.Plus(a, d));
+      IExpr det = engine.evaluate(F.Subtract(F.Times(a, d), F.Times(b, c)));
+
+      // Discriminant: delta = tr^2 - 4*det
+      IExpr delta = engine.evaluate(F.Subtract(F.Sqr(tr), F.Times(F.C4, det)));
+      if (delta.isPossibleZero(true)) {
+        // Defective / Repeated eigenvalue case: e^A = e^(tr/2) * (I + A - (tr/2)*I)
+        IExpr trHalf = engine.evaluate(F.Divide(tr, F.C2));
+        IExpr expTrHalf = engine.evaluate(F.Exp(trHalf));
+        IExpr termI = engine.evaluate(F.Subtract(F.C1, trHalf));
+
+        IASTAppendable row1 = F.ListAlloc(2);
+        row1.append(engine.evaluate(F.Times(expTrHalf, F.Plus(termI, a))));
+        row1.append(engine.evaluate(F.Times(expTrHalf, b)));
+
+        IASTAppendable row2 = F.ListAlloc(2);
+        row2.append(engine.evaluate(F.Times(expTrHalf, c)));
+        row2.append(engine.evaluate(F.Times(expTrHalf, F.Plus(termI, d))));
+
+        return F.list(row1, row2);
+      } else {
+        // Distinct eigenvalues case: e^A = (e^L1 - e^L2)/(L1 - L2) * A + (L1*e^L2 - L2*e^L1)/(L1
+        // - L2) * I
+        IExpr sqrtDelta = engine.evaluate(F.Power(delta, F.C1D2));
+        IExpr lambda1 = engine.evaluate(F.Divide(F.Plus(tr, sqrtDelta), F.C2));
+        IExpr lambda2 = engine.evaluate(F.Divide(F.Subtract(tr, sqrtDelta), F.C2));
+
+        IExpr expL1 = engine.evaluate(F.Exp(lambda1));
+        IExpr expL2 = engine.evaluate(F.Exp(lambda2));
+
+        IExpr diffL = engine.evaluate(F.Subtract(lambda1, lambda2));
+        if (!diffL.isPossibleZero(true)) {
+          // {{(-(a-d-Sqrt(a^2+4*b*c-2*a*d+d^2))*E^(a/2+d/2-Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/(2*Sqrt(a^
+          // 2+4*b*c-2*a*d+d^2))+((a-d+Sqrt(a^2+4*b*c-2*a*d+d^2))*E^(a/2+d/2+Sqrt(a^2+4*b*c-2*a*d+d^
+          // 2)/2))/(2*Sqrt(a^2+4*b*c-2*a*d+d^2)),(-b*E^(a/2+d/2-Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/Sqrt(a^
+          // 2+4*b*c-2*a*d+d^2)+(b*E^(a/2+d/2+Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/Sqrt(a^2+4*b*c-2*a*d+d^
+          // 2)},{(-c*E^(a/2+d/2-Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/Sqrt(a^2+4*b*c-2*a*d+d^2)+(c*E^(a/
+          // 2+d/2+Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/Sqrt(a^2+4*b*c-2*a*d+d^2),(-(-a+d-Sqrt(a^2+4*b*c-
+          // 2*a*d+d^2))*E^(a/2+d/2-Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/(2*Sqrt(a^2+4*b*c-2*a*d+d^2))+((-a+d+Sqrt(a^
+          // 2+4*b*c-2*a*d+d^2))*E^(a/2+d/2+Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/(2*Sqrt(a^2+4*b*c-2*a*d+d^
+          // 2))}}
+          IExpr v8 = F.Negate(a);
+          IExpr v7 = F.Negate(d);
+          IExpr v6 = F.Power(F.Plus(F.Sqr(a), F.Times(F.C4, b, c), F.Times(F.CN2, a, d), F.Sqr(d)),
+              F.CN1D2);
+          IExpr v5 = F.Sqrt(F.Plus(F.Sqr(a), F.Times(F.C4, b, c), F.Times(F.CN2, a, d), F.Sqr(d)));
+          IExpr v4 = F.Negate(v5);
+          IExpr v3 = F.Power(F.Times(F.C2, v5), F.CN1);
+          IExpr v2 = F.Exp(F.Plus(F.Times(F.C1D2, a), F.Times(F.C1D2, d), F.Times(F.CN1D2, v5)));
+          IExpr v1 = F.Exp(F.Plus(F.Times(F.C1D2, a), F.Times(F.C1D2, d), F.Times(F.C1D2, v5)));
+          return F.list(
+              F.list(
+                  F.Plus(F.Times(F.CN1, v3, F.Plus(a, v7, v4), v2),
+                      F.Times(v3, F.Plus(a, v7, v5), v1)),
+                  F.Plus(F.Times(F.CN1, b, v6, v2), F.Times(b, v6, v1))),
+              F.list(F.Plus(F.Times(F.CN1, c, v6, v2), F.Times(c, v6, v1)), F.Plus(
+                  F.Times(F.CN1, v3, F.Plus(v8, d, v4), v2), F.Times(v3, F.Plus(v8, d, v5), v1))));
+
+        }
+        return F.NIL;
+      }
     }
+
+    /**
+     * Computes the matrix exponential for a 2x2 matrix of the form {{0, b}, {c, 0}} specifically
+     * for the case where b * c < 0 (resulting in real Sin/Cos terms).
+     *
+     * @param b the top-right matrix element (a12)
+     * @param c the bottom-left matrix element (a21)
+     * @param engine the evaluation engine
+     * @return the evaluated matrix exponential, or F.NIL if b * c < 0 is not met
+     */
+    private IExpr computeZeroDiagonalNegativeProduct(IExpr b, IExpr c, EvalEngine engine) {
+      IExpr bc = engine.evaluate(F.Times(b, c));
+      // Check if b * c < 0
+      if (bc.isNegativeResult()) {
+        // For A = {{0, b}, {c, 0}} with b*c < 0: omega = Sqrt(-b*c)
+        IExpr omega = engine.evaluate(F.Sqrt(F.Negate(bc)));
+        IExpr cosOmega = engine.evaluate(F.Cos(omega));
+        IExpr sinOmegaOverOmega = engine.evaluate(F.Divide(F.Sin(omega), omega));
+        return F.list(F.List(cosOmega, engine.evaluate(F.Times(b, sinOmegaOverOmega))), //
+            F.List(engine.evaluate(F.Times(c, sinOmegaOverOmega)), cosOmega));
+      }
+      return F.NIL;
+    }
+
   }
 
 

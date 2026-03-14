@@ -120,6 +120,7 @@ public class Errors {
       "dup", "Duplicate local variable `1` found in local variable specification `2`.", //
       "dvar",
       "Multiple derivative specifier `1` does not have the form {variable, n} where n is a symbolic expression or a non-negative integer.", //
+      "dvnoarg", "The function `1` appears with no arguments.", //
       "empt", "Argument `1` should be a non-empty list.", //
       "eqf", "`1` is not a well-formed equation.", //
       "eqin", "`1` should be an equation or inequality.", //

@@ -7,13 +7,13 @@
  LaplaceTransform(Sin(a_.*t_), t_, s_) := a/(s^2+a^2)
    /; FreeQ({a,s}, t)&&FreeQ(a,s),
  LaplaceTransform(Cos(a_.*t_), t_, s_) := s/(s^2+a^2)
-   /; FreeQ({a,s}, t)&&FreeQ(a,s),
- LaplaceTransform(Sinh(t_), t_, s_) := c/(s^2-1)
-   /; FreeQ(s, t),
- LaplaceTransform(Cosh(t_), t_, s_) := s/(s^2-1)
-   /; FreeQ(s, t),
- LaplaceTransform(Tanh(t_), t_, s_) := (1/2)*(-(2/s)-PolyGamma(0,s/4)+PolyGamma(0,(2+s)/4))
-   /; FreeQ(s, t),
+   /; FreeQ({a,s}, t)&&FreeQ(a,s), 
+ LaplaceTransform(Sinh(a_.*t_), t_, s_) := a/(s^2-a^2)
+   /; FreeQ({a,s}, t),
+ LaplaceTransform(Cosh(a_.*t_), t_, s_) := s/(s^2-a^2)
+   /; FreeQ({a,s}, t),
+ LaplaceTransform(Tanh(a_.*t_), t_, s_) := (-2*a-s*PolyGamma(s/(4*a))+s*PolyGamma(1/4*(2+s/a)))/(2*a*s)
+   /; FreeQ({a,s}, t),
  LaplaceTransform(DiracDelta(a_*t_), t_, s_) := 1/Abs(a)
    /; FreeQ({a,s}, t),
  LaplaceTransform(E^t_, t_, s_) := 1/(s-1)

@@ -674,6 +674,28 @@ public final class Validate {
     }
   }
 
+  public static IAST checkIsAlgebraicVariableOrAlgebraicVariableList(IAST ast, int position,
+      ISymbol head, EvalEngine engine) {
+    IAST vars = null;
+    IExpr temp = null;
+    if (ast.get(position).isList()) {
+      vars = (IAST) ast.get(position);
+      for (int i = 1; i < vars.size(); i++) {
+        temp = Validate.checkIsAlgebraicVariable(vars, i, head, engine);
+        if (temp.isNIL()) {
+          return F.NIL;
+        }
+      }
+      return vars;
+    } else {
+      temp = Validate.checkIsAlgebraicVariable(ast, position, head, engine);
+      if (temp.isNIL()) {
+        return F.NIL;
+      }
+      return F.list(temp);
+    }
+  }
+
   /**
    * Check if the argument at the given position is a symbol.
    *
@@ -714,6 +736,20 @@ public final class Validate {
   public static IExpr checkIsVariable(IAST ast, int position, ISymbol head, EvalEngine engine) {
     IExpr arg = ast.get(position);
     if (arg.isVariable()) {
+      return arg;
+    }
+    // `1` is not a valid variable.
+    return Errors.printMessage(head, "ivar", F.list(arg), engine);
+  }
+
+  public static IExpr checkIsAlgebraicVariable(IAST ast, int position, ISymbol head,
+      EvalEngine engine) {
+    IExpr arg = ast.get(position);
+    if (arg.isVariable()) {
+      return arg;
+    }
+    IAST[] derivative = arg.isDerivative();
+    if (derivative != null) {
       return arg;
     }
     // `1` is not a valid variable.

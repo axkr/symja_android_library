@@ -117,8 +117,8 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
             return F.Divide(F.Gamma(F.Plus(F.C1, n)), F.Power(s, F.Plus(F.C1, n)));
           }
         } else if (arg1.isPlus()) {
-          // LaplaceTransform[a_+b_+c_,t_,s_] ->
-          // LaplaceTransform[a,t,s]+LaplaceTransform[b,t,s]+LaplaceTransform[c,t,s]
+          // LaplaceTransform(a_+b_+c_,t_,s_) ->
+          // LaplaceTransform(a,t,s)+LaplaceTransform(b,t,s)+LaplaceTransform(c,t,s)
           return arg1.mapThread(F.LaplaceTransform(F.Slot1, t, s), 1);
         }
       }

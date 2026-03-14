@@ -34,13 +34,17 @@ public class VariablesSet {
    * @see IExpr#isVariable()
    */
   static class AlgebraVariablesVisitor extends VisitorCollectionBoolean<IExpr> {
-    public AlgebraVariablesVisitor(Collection<IExpr> collection) {
+    final boolean mimikVariables;
+
+    public AlgebraVariablesVisitor(Collection<IExpr> collection, boolean mimikVariables) {
       super(collection);
+      this.mimikVariables = mimikVariables;
     }
 
     @Override
     public boolean visit(IAST list) {
-      if (list.isList() || list.isPlus() || list.isTimes()) {
+      if (list.isList() || list.isPlus() || list.isTimes() || list.isRelational()
+          || list.isBooleanFunction()) {
         list.forEach(x -> x.accept(this));
         return false;
       } else if (list.isPower()) {
@@ -56,7 +60,13 @@ public class VariablesSet {
           fCollection.add(list);
         }
       } else {
-        if (!list.isBuiltInFunction() || list.isNumericFunctionAST()) {
+        if (list.isVariable()) {
+          fCollection.add(list);
+        } else if (!list.isBuiltInFunction() || list.isNumericFunctionAST()) {
+          if (!mimikVariables && list.isNumericFunctionAST()) {
+            list.forEach(x -> x.accept(this));
+            return false;
+          }
           if (!list.isNumericFunction(true)) {
             fCollection.add(list);
           }
@@ -199,7 +209,7 @@ public class VariablesSet {
         return false;
       }
       if (list instanceof ASTSeriesData) {
-        fCollection.add(((ASTSeriesData) list).getX());
+        fCollection.add(((ASTSeriesData) list).expansionVariable());
         return true;
       }
       IExpr head = list.head();
@@ -232,8 +242,9 @@ public class VariablesSet {
    * @param expr
    * @return
    */
-  public static IAST addAlgebraicVariables(Set<IExpr> fVariablesSet, IExpr expr) {
-    expr.accept(new AlgebraVariablesVisitor(fVariablesSet));
+  public static IAST addAlgebraicVariables(Set<IExpr> fVariablesSet, IExpr expr,
+      boolean mimikVariables) {
+    expr.accept(new AlgebraVariablesVisitor(fVariablesSet, mimikVariables));
     final IASTAppendable list = F.mapSet(fVariablesSet, x -> x);
     list.sortInplace(Comparators.CANONICAL_COMPARATOR);
     return list;
@@ -263,7 +274,20 @@ public class VariablesSet {
    */
   public static IAST getAlgebraicVariables(IExpr expr) {
     Set<IExpr> fVariablesSet = new HashSet<IExpr>();
-    return addAlgebraicVariables(fVariablesSet, expr);
+    return addAlgebraicVariables(fVariablesSet, expr, true);
+  }
+
+  /**
+   * Transform the set of variables into an <code>IAST</code> list of ordered variables. Looks only
+   * inside sums, products, and rational powers and lists for variables. See the Variables()
+   * function in <code>Cos(x) + Sin(x)</code>, <code>Cos(x)</code> and <code>Sin(x)</code> are
+   * extracted as variables^.
+   *
+   * @return the ordered list of variables.
+   */
+  public static IAST getAlgebraicVariables(IExpr expr, boolean mimikVariables) {
+    Set<IExpr> fVariablesSet = new HashSet<IExpr>();
+    return addAlgebraicVariables(fVariablesSet, expr, mimikVariables);
   }
 
   /**

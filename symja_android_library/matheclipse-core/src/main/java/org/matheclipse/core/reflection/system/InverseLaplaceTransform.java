@@ -2,7 +2,6 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.Optional;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -119,7 +118,7 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator implement
       if (time == 0.0) {
         time = Config.DOUBLE_EPSILON;
       } else if (time == -0.0) {
-        time = -Config.DOUBLE_EPSILON;;
+        time = -Config.DOUBLE_EPSILON;
       }
       double ln2t = ln2 / time;
       double x = 0;
@@ -168,7 +167,7 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator implement
         if (arg1.isTimes() || arg1.isPower()) {
           Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, false);
           if (parts.isPresent()) {
-            IExpr temp = Algebra.partsApart(parts.get(), s, engine);
+            IExpr temp = AlgebraUtil.partsApart(parts.get(), s, engine);
             // IExpr temp = Algebra.partialFractionDecompositionRational(new
             // PartialFractionGenerator(),
             // parts,s);
@@ -178,8 +177,8 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator implement
           }
         }
         if (arg1.isPlus()) {
-          // InverseLaplaceTransform[a_+b_+c_,s_,t_] ->
-          // InverseLaplaceTransform[a,s,t]+InverseLaplaceTransform[b,s,t]+InverseLaplaceTransform[c,s,t]
+          // InverseLaplaceTransform(a_+b_+c_,s_,t_) ->
+          // InverseLaplaceTransform(a,s,t)+InverseLaplaceTransform(b,s,t)+InverseLaplaceTransform(c,s,t)
           return arg1.mapThread(F.InverseLaplaceTransform(F.Slot1, s, t), 1);
         }
       }
