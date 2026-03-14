@@ -233,7 +233,7 @@ public class ParametricPlot extends Plot {
   private static IExpr evalPoint(IExpr fx, IExpr fy, ISymbol uSym, ISymbol vSym, double u, double v,
       GraphicsOptions graphicsOptions, EvalEngine engine) {
     try {
-      // Use F.subst for clean substitution [cite: 2025-12-05]
+      // Use F.subst for clean substitution
       IAST rules = F.List(F.Rule(uSym, F.num(u)), F.Rule(vSym, F.num(v)));
       IExpr xExpr = F.subst(fx, rules);
       IExpr yExpr = F.subst(fy, rules);

@@ -72,7 +72,7 @@ ListLogLogPlot[Range[20]^3, Filling -> Bottom]
 ListLogLogPlot[Range[20]^3, Filling -> Axis]
 ```
 
-``` 
+```mma
 DiscretePlot[MoebiusMu[k], {k, 1, 50}]
 ```
 

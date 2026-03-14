@@ -68,7 +68,7 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
       // If the first element is a list of coordinates {{x,y,z}...} or list of numbers {z,z...},
       // then 'data' contains multiple items or rows.
 
-      if (isCoordinate(firstList)) {
+      if (firstList.isList3() && !firstList.arg1().isList()) {
         // Case: {{x,y,z}, {x,y,z}} -> Single Dataset, Explicit Coords
         isMultiDataset = false;
         isHeightMap = false;
@@ -174,10 +174,18 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
         // Process Explicit Coordinates: datasetList is {{x,y,z}, ...}
         for (int k = 1; k < datasetList.size(); k++) {
           IExpr pt = datasetList.get(k);
-          if (isCoordinate(pt)) {
-            allPoints.append(pt);
-            pointCounter++;
-            pointIndices.append(F.ZZ(pointCounter));
+          if (pt.isList3()) {
+            try {
+              double x = pt.get(1).evalf();
+              double y = pt.get(2).evalf();
+              double z = pt.get(3).evalf();
+              allPoints.append(F.List(x, y, z));
+              pointCounter++;
+              pointIndices.append(F.ZZ(pointCounter));
+            } catch (RuntimeException rex) {
+              Errors.printMessage(S.ListPlot3D, rex);
+              return F.NIL;
+            }
           }
         }
       }
@@ -217,14 +225,6 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
     return result;
   }
 
-  /**
-   * Checks if an expression is a valid 3D coordinate {x, y, z}.
-   */
-  private boolean isCoordinate(IExpr expr) {
-    return expr.isList() && ((IAST) expr).size() == 4 && // Head + 3 args
-        ((IAST) expr).get(1).isNumber() && ((IAST) expr).get(2).isNumber()
-        && ((IAST) expr).get(3).isNumber();
-  }
 
   @Override
   public int[] expectedArgSize(IAST ast) {

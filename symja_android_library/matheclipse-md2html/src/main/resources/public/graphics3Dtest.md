@@ -50,6 +50,10 @@ ContourPlot3D[x^3 + y^2 - z^2 == 0, {x, -2, 2}, {y, -2, 2}, {z, -2, 2}]
 ```
 
 ```mma
+ListPointPlot3D[N[Table[{Sin[t],Cos[t],Cos[t^2]},{t,500}]]]
+```
+
+```mma
 Graphics3D[{Blue, Cylinder[], Red, Sphere[{0, 0, 2}], Black, Thick, 
   Dashed, Line[{{-2, 0, 2}, {2, 0, 2}, {0, 0, 4}, {-2, 0, 2}}], 
   Yellow, Polygon[{{-3, -3, -2}, {-3, 3, -2}, {3, 

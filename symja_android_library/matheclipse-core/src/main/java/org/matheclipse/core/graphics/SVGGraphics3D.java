@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -15,8 +16,27 @@ import org.matheclipse.core.interfaces.INumber;
 import j2html.tags.DomContent;
 import j2html.tags.UnescapedText;
 
+/**
+ * A standalone 3D-to-2D rendering engine that converts {@link S#Graphics3D} expressions into
+ * scalable vector graphics (SVG). *
+ * <p>
+ * This engine performs its own 3D math (projection, scaling, and lighting) and relies on a
+ * "Painter's Algorithm" (sorting polygons by Z-depth from back to front) to render 3D scenes into
+ * flat 2D SVG elements.
+ * <p>
+ * Supported 3D Primitives:
+ * <ul>
+ * <li>{@code Point}, {@code Line}, {@code Polygon}</li>
+ * <li>{@code Cuboid}, {@code Sphere}, {@code Cylinder}, {@code Cone} (tessellated into
+ * polygons)</li>
+ * <li>{@code GraphicsComplex} (shared coordinate meshes)</li>
+ * </ul>
+ */
 public class SVGGraphics3D {
 
+  /**
+   * Represents a point or vector in 3D space.
+   */
   private static class Vector3 {
     double x, y, z;
 
@@ -54,6 +74,9 @@ public class SVGGraphics3D {
     }
   }
 
+  /**
+   * A 4x4 matrix used for 3D view projection calculations.
+   */
   private static class Matrix4 {
     double[] val = new double[16];
 
@@ -96,6 +119,10 @@ public class SVGGraphics3D {
     }
   }
 
+  /**
+   * Encapsulates the global transformation state for projecting coordinates according to
+   * {@code BoxRatios} and the camera {@code ViewPoint}.
+   */
   private static class ViewContext {
     Matrix4 viewMatrix;
     Vector3 dataScale;
@@ -107,11 +134,16 @@ public class SVGGraphics3D {
     }
   }
 
+  /**
+   * Tracks the current styling directives (color, opacity, line thickness) as the AST is
+   * recursively traversed.
+   */
   private static class RenderState implements Cloneable {
     Color color = Color.BLACK;
     double opacity = 1.0;
     double thickness = 1.0;
     boolean dashed = false;
+    boolean hideEdges = false; // Used to hide wireframes on smooth solid bodies
 
     @Override
     public RenderState clone() {
@@ -123,6 +155,9 @@ public class SVGGraphics3D {
     }
   }
 
+  /**
+   * Base class for an SVG element that can be sorted by depth for the Painter's Algorithm.
+   */
   private static abstract class Renderable implements Comparable<Renderable> {
     double zDepth;
 
@@ -130,7 +165,6 @@ public class SVGGraphics3D {
 
     @Override
     public int compareTo(Renderable o) {
-      // Painter's algorithm: sort from furthest (smallest/most negative Z) to closest
       return Double.compare(this.zDepth, o.zDepth);
     }
   }
@@ -185,9 +219,16 @@ public class SVGGraphics3D {
       for (Vector3 p : points) {
         sb.append(String.format(Locale.US, "%.2f,%.2f ", p.x, p.y));
       }
+      // If hideEdges is true (e.g. Sphere/Cylinder), stroke matches the fill color to avoid dark
+      // polygon seams
+      String edgeColor =
+          state.hideEdges ? colorToHex(state.color) : colorToHex(state.color.darker());
+      String edgeWidth = state.hideEdges ? "0.6" : "0.5";
+
       return tag("polygon").attr("points", sb.toString()).attr("fill", colorToHex(state.color))
           .condAttr(state.opacity < 1.0, "fill-opacity", String.valueOf(state.opacity))
-          .attr("stroke", colorToHex(state.color.darker())).attr("stroke-width", "0.5");
+          .attr("stroke", edgeColor).attr("stroke-width", edgeWidth)
+          .attr("stroke-linejoin", "round");
     }
   }
 
@@ -237,14 +278,34 @@ public class SVGGraphics3D {
     }
   }
 
+  /**
+   * Holds coordinates specifically mapped for {@code GraphicsComplex} resolution.
+   */
   private static class ComplexContext {
+    List<Vector3> rawPoints;
     List<Vector3> transformedPoints;
 
-    ComplexContext(List<Vector3> pts) {
-      this.transformedPoints = pts;
+    ComplexContext(List<Vector3> rawPts, List<Vector3> tfPts) {
+      this.rawPoints = rawPts;
+      this.transformedPoints = tfPts;
     }
   }
 
+  /**
+   * Main entry point to convert a {@link S#Graphics3D} expression into an SVG string.
+   * <p>
+   * Executes the following pipeline:
+   * <ol>
+   * <li>Parses plot options ({@link S#ViewPoint}, {@link S#BoxRatios}, {@link S#Axes}).</li>
+   * <li>Computes the bounding box of all coordinates to scale and center the view.</li>
+   * <li>Traverses the AST, projecting 3D coordinates to 2D screen space.</li>
+   * <li>Applies a Painter's Algorithm to sort faces by depth.</li>
+   * <li>Generates the final SVG markup.</li>
+   * </ol>
+   * * @param graphics3D The evaluated Graphics3D AST.
+   * 
+   * @return A valid HTML SVG string representation of the 3D scene.
+   */
   public static String toSVG(IAST graphics3D) {
 
     // 1. Parse Options
@@ -355,7 +416,7 @@ public class SVGGraphics3D {
     IExpr axesEdgeOpt = extractOption(graphics3D, "AxesEdge");
     createAxes(min, max, vCtx, renderables, showAxes, eye, axesEdgeOpt);
 
-    // 5. Sort
+    // 5. Sort via Painter's Algorithm
     Collections.sort(renderables);
 
     // 6. Generate SVG in Pixel Coordinates
@@ -449,13 +510,16 @@ public class SVGGraphics3D {
         IExpr ptsArgs = ast.arg1();
         if (ptsArgs.isList()) {
           IAST ptsList = (IAST) ptsArgs;
+          List<Vector3> rawPts = new ArrayList<>(ptsList.size());
           List<Vector3> tfPts = new ArrayList<>(ptsList.size());
+          rawPts.add(null);
           tfPts.add(null);
           for (int i = 1; i < ptsList.size(); i++) {
             Vector3 p = parseVector((IAST) ptsList.get(i), new Vector3(0, 0, 0));
+            rawPts.add(p);
             tfPts.add(vCtx.project(p));
           }
-          ComplexContext newContext = new ComplexContext(tfPts);
+          ComplexContext newContext = new ComplexContext(rawPts, tfPts);
           processExpr(ast.arg2(), state, newContext, renderables, vCtx);
         }
       }
@@ -499,6 +563,12 @@ public class SVGGraphics3D {
       }
     } else if (head.equals(S.Cuboid)) {
       createCuboid(ast, state, context, renderables, vCtx);
+    } else if (head.equals(S.Sphere)) {
+      createSphere(ast, state, context, renderables, vCtx);
+    } else if (head.equals(S.Cylinder)) {
+      createCylinder(ast, state, context, renderables, vCtx);
+    } else if (head.equals(S.Cone)) {
+      createCone(ast, state, context, renderables, vCtx);
     } else if (head.equals(S.Point)) {
       IExpr arg = ast.arg1();
       if (arg.isList()) {
@@ -534,6 +604,244 @@ public class SVGGraphics3D {
       }
     }
     return false;
+  }
+
+  // --- Solid Generators ---
+
+  private static Vector3 getRawPoint(IExpr expr, ComplexContext context) {
+    if (expr.isInteger() && context != null && context.rawPoints != null) {
+      int idx = expr.toIntDefault(0);
+      if (idx > 0 && idx < context.rawPoints.size()) {
+        return context.rawPoints.get(idx);
+      }
+    } else if (isVector3(expr)) {
+      return parseVector((IAST) expr, new Vector3(0, 0, 0));
+    }
+    return null;
+  }
+
+  private static void createSphere(IAST ast, RenderState state, ComplexContext context,
+      List<Renderable> renderables, ViewContext vCtx) {
+    IExpr arg1 = ast.argSize() >= 1 ? ast.arg1() : F.List(F.C0, F.C0, F.C0);
+    double radius = ast.argSize() >= 2 ? getDouble(ast.arg2(), 1.0) : 1.0;
+
+    Vector3 p = getRawPoint(arg1, context);
+    if (p != null) {
+      createSingleSphere(p, radius, state, renderables, vCtx);
+    } else if (arg1.isList()) {
+      IAST list = (IAST) arg1;
+      for (int i = 1; i <= list.argSize(); i++) {
+        Vector3 cp = getRawPoint(list.get(i), context);
+        if (cp != null) {
+          createSingleSphere(cp, radius, state, renderables, vCtx);
+        }
+      }
+    }
+  }
+
+  private static void createSingleSphere(Vector3 center, double r, RenderState state,
+      List<Renderable> renderables, ViewContext vCtx) {
+    int latSegments = 16;
+    int lonSegments = 24;
+    Vector3[][] pts = new Vector3[latSegments + 1][lonSegments + 1];
+
+    for (int i = 0; i <= latSegments; i++) {
+      double theta = i * Math.PI / latSegments;
+      double sinTheta = Math.sin(theta);
+      double cosTheta = Math.cos(theta);
+      for (int j = 0; j <= lonSegments; j++) {
+        double phi = j * 2 * Math.PI / lonSegments;
+        double x = center.x + r * sinTheta * Math.cos(phi);
+        double y = center.y + r * sinTheta * Math.sin(phi);
+        double z = center.z + r * cosTheta;
+        pts[i][j] = vCtx.project(new Vector3(x, y, z));
+      }
+    }
+
+    for (int i = 0; i < latSegments; i++) {
+      for (int j = 0; j < lonSegments; j++) {
+        List<Vector3> poly = new ArrayList<>();
+        poly.add(pts[i][j]);
+        poly.add(pts[i + 1][j]);
+        poly.add(pts[i + 1][j + 1]);
+        poly.add(pts[i][j + 1]);
+
+        RenderState faceState = state.clone();
+        faceState.color = calculateLighting(state.color, poly);
+        faceState.hideEdges = true;
+        renderables.add(new RenderablePolygon(poly, faceState));
+      }
+    }
+  }
+
+  private static void createCylinder(IAST ast, RenderState state, ComplexContext context,
+      List<Renderable> renderables, ViewContext vCtx) {
+    IExpr arg1 = ast.argSize() >= 1 ? ast.arg1()
+        : F.List(F.List(F.C0, F.C0, F.CN1), F.List(F.C0, F.C0, F.C1));
+    double radius = ast.argSize() >= 2 ? getDouble(ast.arg2(), 1.0) : 1.0;
+
+    if (arg1.isList()) {
+      IAST list = (IAST) arg1;
+      if (list.argSize() == 2) {
+        Vector3 p1 = getRawPoint(list.arg1(), context);
+        Vector3 p2 = getRawPoint(list.arg2(), context);
+        if (p1 != null && p2 != null) {
+          createSingleCylinder(p1, p2, radius, state, renderables, vCtx);
+          return;
+        }
+      }
+      for (int i = 1; i <= list.argSize(); i++) {
+        IExpr el = list.get(i);
+        if (el.isList() && ((IAST) el).argSize() == 2) {
+          Vector3 p1 = getRawPoint(((IAST) el).arg1(), context);
+          Vector3 p2 = getRawPoint(((IAST) el).arg2(), context);
+          if (p1 != null && p2 != null) {
+            createSingleCylinder(p1, p2, radius, state, renderables, vCtx);
+          }
+        }
+      }
+    }
+  }
+
+  private static void createSingleCylinder(Vector3 p1, Vector3 p2, double r, RenderState state,
+      List<Renderable> renderables, ViewContext vCtx) {
+    Vector3 a = p2.sub(p1);
+    double len = Math.sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+    if (len < 1e-9)
+      return;
+    Vector3 aHat = a.scale(1.0 / len);
+
+    Vector3 u;
+    if (Math.abs(aHat.x) < 0.9)
+      u = new Vector3(1, 0, 0);
+    else
+      u = new Vector3(0, 1, 0);
+
+    Vector3 n1 = aHat.cross(u).normalize();
+    Vector3 n2 = n1.cross(aHat).normalize();
+
+    int segments = 24;
+    Vector3[] circle1 = new Vector3[segments];
+    Vector3[] circle2 = new Vector3[segments];
+
+    for (int i = 0; i < segments; i++) {
+      double angle = i * 2 * Math.PI / segments;
+      Vector3 offset = n1.scale(r * Math.cos(angle)).add(n2.scale(r * Math.sin(angle)));
+      circle1[i] = p1.add(offset);
+      circle2[i] = p2.add(offset);
+    }
+
+    // Side Quads
+    for (int i = 0; i < segments; i++) {
+      int next = (i + 1) % segments;
+      List<Vector3> poly = new ArrayList<>();
+      poly.add(vCtx.project(circle1[i]));
+      poly.add(vCtx.project(circle2[i]));
+      poly.add(vCtx.project(circle2[next]));
+      poly.add(vCtx.project(circle1[next]));
+
+      RenderState faceState = state.clone();
+      faceState.color = calculateLighting(state.color, poly);
+      faceState.hideEdges = true;
+      renderables.add(new RenderablePolygon(poly, faceState));
+    }
+
+    // End Caps
+    List<Vector3> cap1 = new ArrayList<>();
+    List<Vector3> cap2 = new ArrayList<>();
+    for (int i = 0; i < segments; i++) {
+      cap1.add(vCtx.project(circle1[segments - 1 - i])); // Reversed for outward normal
+      cap2.add(vCtx.project(circle2[i]));
+    }
+    RenderState cap1State = state.clone();
+    cap1State.color = calculateLighting(state.color, cap1);
+    cap1State.hideEdges = true;
+    renderables.add(new RenderablePolygon(cap1, cap1State));
+
+    RenderState cap2State = state.clone();
+    cap2State.color = calculateLighting(state.color, cap2);
+    cap2State.hideEdges = true;
+    renderables.add(new RenderablePolygon(cap2, cap2State));
+  }
+
+  private static void createCone(IAST ast, RenderState state, ComplexContext context,
+      List<Renderable> renderables, ViewContext vCtx) {
+    IExpr arg1 = ast.argSize() >= 1 ? ast.arg1()
+        : F.List(F.List(F.C0, F.C0, F.CN1), F.List(F.C0, F.C0, F.C1));
+    double radius = ast.argSize() >= 2 ? getDouble(ast.arg2(), 1.0) : 1.0;
+
+    if (arg1.isList()) {
+      IAST list = (IAST) arg1;
+      if (list.argSize() == 2) {
+        Vector3 p1 = getRawPoint(list.arg1(), context);
+        Vector3 p2 = getRawPoint(list.arg2(), context);
+        if (p1 != null && p2 != null) {
+          createSingleCone(p1, p2, radius, state, renderables, vCtx);
+          return;
+        }
+      }
+      for (int i = 1; i <= list.argSize(); i++) {
+        IExpr el = list.get(i);
+        if (el.isList() && ((IAST) el).argSize() == 2) {
+          Vector3 p1 = getRawPoint(((IAST) el).arg1(), context);
+          Vector3 p2 = getRawPoint(((IAST) el).arg2(), context);
+          if (p1 != null && p2 != null) {
+            createSingleCone(p1, p2, radius, state, renderables, vCtx);
+          }
+        }
+      }
+    }
+  }
+
+  private static void createSingleCone(Vector3 p1, Vector3 p2, double r, RenderState state,
+      List<Renderable> renderables, ViewContext vCtx) {
+    Vector3 a = p2.sub(p1);
+    double len = Math.sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+    if (len < 1e-9)
+      return;
+    Vector3 aHat = a.scale(1.0 / len);
+
+    Vector3 u;
+    if (Math.abs(aHat.x) < 0.9)
+      u = new Vector3(1, 0, 0);
+    else
+      u = new Vector3(0, 1, 0);
+
+    Vector3 n1 = aHat.cross(u).normalize();
+    Vector3 n2 = n1.cross(aHat).normalize();
+
+    int segments = 24;
+    Vector3[] circle = new Vector3[segments];
+
+    for (int i = 0; i < segments; i++) {
+      double angle = i * 2 * Math.PI / segments;
+      Vector3 offset = n1.scale(r * Math.cos(angle)).add(n2.scale(r * Math.sin(angle)));
+      circle[i] = p1.add(offset);
+    }
+
+    Vector3 projP2 = vCtx.project(p2);
+
+    for (int i = 0; i < segments; i++) {
+      int next = (i + 1) % segments;
+      List<Vector3> poly = new ArrayList<>();
+      poly.add(vCtx.project(circle[i]));
+      poly.add(projP2);
+      poly.add(vCtx.project(circle[next]));
+
+      RenderState faceState = state.clone();
+      faceState.color = calculateLighting(state.color, poly);
+      faceState.hideEdges = true;
+      renderables.add(new RenderablePolygon(poly, faceState));
+    }
+
+    List<Vector3> cap = new ArrayList<>();
+    for (int i = 0; i < segments; i++) {
+      cap.add(vCtx.project(circle[segments - 1 - i]));
+    }
+    RenderState capState = state.clone();
+    capState.color = calculateLighting(state.color, cap);
+    capState.hideEdges = true;
+    renderables.add(new RenderablePolygon(cap, capState));
   }
 
   private static void createLine(IExpr data, RenderState state, ComplexContext context,
@@ -577,13 +885,8 @@ public class SVGGraphics3D {
         proj[i] = vCtx.project(v[i]);
       }
 
-      int[][] faces = {{0, 3, 2, 1}, // Bottom
-          {4, 5, 6, 7}, // Top
-          {0, 1, 5, 4}, // Front
-          {1, 2, 6, 5}, // Right
-          {2, 3, 7, 6}, // Back
-          {3, 0, 4, 7} // Left
-      };
+      int[][] faces =
+          {{0, 3, 2, 1}, {4, 5, 6, 7}, {0, 1, 5, 4}, {1, 2, 6, 5}, {2, 3, 7, 6}, {3, 0, 4, 7}};
 
       for (int[] face : faces) {
         List<Vector3> pts = new ArrayList<>();
@@ -592,6 +895,7 @@ public class SVGGraphics3D {
         }
         RenderState faceState = state.clone();
         faceState.color = calculateLighting(state.color, pts);
+        // Default cuboids have visible wireframes in Mathematica, so we do not set hideEdges = true
         renderables.add(new RenderablePolygon(pts, faceState));
       }
     }
@@ -653,6 +957,15 @@ public class SVGGraphics3D {
           points.add(p1);
           points.add(p2);
         }
+      } else if (head.equals(S.Sphere)) {
+        IExpr arg1 = ast.argSize() >= 1 ? ast.arg1() : F.List(F.C0, F.C0, F.C0);
+        double radius = ast.argSize() >= 2 ? getDouble(ast.arg2(), 1.0) : 1.0;
+        collectSolidBounds(arg1, radius, points, false);
+      } else if (head.equals(S.Cylinder) || head.equals(S.Cone)) {
+        IExpr arg1 = ast.argSize() >= 1 ? ast.arg1()
+            : F.List(F.List(F.C0, F.C0, F.CN1), F.List(F.C0, F.C0, F.C1));
+        double radius = ast.argSize() >= 2 ? getDouble(ast.arg2(), 1.0) : 1.0;
+        collectSolidBounds(arg1, radius, points, true);
       } else {
         for (int i = 1; i < ast.size(); i++) {
           collectPoints(ast.get(i), points);
@@ -664,6 +977,49 @@ public class SVGGraphics3D {
         collectPoints(list.get(i), points);
       }
     }
+  }
+
+  private static void collectSolidBounds(IExpr arg1, double radius, List<Vector3> points,
+      boolean isPair) {
+    if (arg1.isInteger())
+      return; // Already captured by GraphicsComplex wrapper
+    if (arg1.isList()) {
+      IAST list = (IAST) arg1;
+      if (isPair) {
+        if (list.argSize() == 2 && isVector3(list.arg1()) && isVector3(list.arg2())) {
+          addSphereBounds(parseVector((IAST) list.arg1(), new Vector3(0, 0, 0)), radius, points);
+          addSphereBounds(parseVector((IAST) list.arg2(), new Vector3(0, 0, 0)), radius, points);
+        } else {
+          for (int i = 1; i <= list.argSize(); i++) {
+            IExpr el = list.get(i);
+            if (el.isList() && ((IAST) el).argSize() == 2) {
+              IExpr ep1 = ((IAST) el).arg1();
+              IExpr ep2 = ((IAST) el).arg2();
+              if (isVector3(ep1) && isVector3(ep2)) {
+                addSphereBounds(parseVector((IAST) ep1, new Vector3(0, 0, 0)), radius, points);
+                addSphereBounds(parseVector((IAST) ep2, new Vector3(0, 0, 0)), radius, points);
+              }
+            }
+          }
+        }
+      } else {
+        if (isVector3(arg1)) {
+          addSphereBounds(parseVector(list, new Vector3(0, 0, 0)), radius, points);
+        } else {
+          for (int i = 1; i <= list.argSize(); i++) {
+            if (isVector3(list.get(i))) {
+              addSphereBounds(parseVector((IAST) list.get(i), new Vector3(0, 0, 0)), radius,
+                  points);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private static void addSphereBounds(Vector3 c, double r, List<Vector3> points) {
+    points.add(new Vector3(c.x - r, c.y - r, c.z - r));
+    points.add(new Vector3(c.x + r, c.y + r, c.z + r));
   }
 
   private static void extractRawPoints(IExpr data, List<Vector3> points) {
@@ -737,6 +1093,16 @@ public class SVGGraphics3D {
       state.color = Color.BLACK;
     else if (id == ID.White)
       state.color = Color.WHITE;
+    else if (id == ID.Yellow)
+      state.color = Color.YELLOW;
+    else if (id == ID.Orange)
+      state.color = Color.ORANGE;
+    else if (id == ID.Pink)
+      state.color = Color.PINK;
+    else if (id == ID.Cyan)
+      state.color = Color.CYAN;
+    else if (id == ID.Magenta)
+      state.color = Color.MAGENTA;
   }
 
   private static Color parseColor(IAST ast) {
@@ -778,11 +1144,6 @@ public class SVGGraphics3D {
     RenderState textState = new RenderState();
     textState.color = Color.BLACK;
     textState.opacity = 1.0;
-
-    Vector3 scaledMin =
-        new Vector3(min.x * vCtx.dataScale.x, min.y * vCtx.dataScale.y, min.z * vCtx.dataScale.z);
-    Vector3 scaledMax =
-        new Vector3(max.x * vCtx.dataScale.x, max.y * vCtx.dataScale.y, max.z * vCtx.dataScale.z);
 
     Vector3[] rawCorners = {new Vector3(min.x, min.y, min.z), new Vector3(max.x, min.y, min.z),
         new Vector3(min.x, max.y, min.z), new Vector3(min.x, min.y, max.z),
