@@ -1330,33 +1330,59 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMatrixExp() {
+    check("MatrixExp[{{a}}]", //
+        "{{E^a}}");
+    check("MatrixExp({{0,1}, {0,1}})", //
+        "{{1,-1+E},{0,E}}");
     check("MatrixExp({{0, 1}, {-1, 0}}*t)", //
         "{{Cos(t),Sin(t)},{-Sin(t),Cos(t)}}");
+    check("MatrixExp({{0, a}, {-a, 0}})*t", //
+        "{{t*Cos(a),t*Sin(a)},{-t*Sin(a),t*Cos(a)}}");
+    check("MatrixExp({{0,t},{0,0}})", //
+        "{{1,t},{0,1}}");
+    check("MatrixExp({{0,0},{t,0}})", //
+        "{{1,0},{t,1}}");
+    check("MatrixExp({{a,b},{0,d}})", //
+        "{{E^a,(b*(E^a-E^d))/(a-d)},{0,E^d}}");
+    check("MatrixExp({{a,0},{c,d}})", //
+        "{{E^a,0},{(c*(E^a-E^d))/(a-d),E^d}}");
     check("MatrixExp({{0, a}, {b, 0}})", //
-        "{{1/(2*E^Sqrt(a*b))+E^Sqrt(a*b)/2,-a/(2*Sqrt(a*b)*E^Sqrt(a*b))+(a*E^Sqrt(a*b))/(\n" //
-            + "2*Sqrt(a*b))},{-b/(2*Sqrt(a*b)*E^Sqrt(a*b))+(b*E^Sqrt(a*b))/(2*Sqrt(a*b)),1/(2*E^Sqrt(a*b))+E^Sqrt(a*b)/\n"
-            + "2}}");
+        "{{E^(Sqrt(a)*Sqrt(b))/2+1/(2*E^(Sqrt(a)*Sqrt(b))),(Sqrt(a)*E^(Sqrt(a)*Sqrt(b)))/(\n" //
+            + "2*Sqrt(b))-Sqrt(a)/(2*Sqrt(b)*E^(Sqrt(a)*Sqrt(b)))},{(Sqrt(b)*E^(Sqrt(a)*Sqrt(b)))/(\n" //
+            + "2*Sqrt(a))-Sqrt(b)/(2*Sqrt(a)*E^(Sqrt(a)*Sqrt(b))),E^(Sqrt(a)*Sqrt(b))/2+1/(2*E^(Sqrt(a)*Sqrt(b)))}}");
     check("MatrixExp({{a,b}, {c,d}})", //
-        "{{((-a+d+Sqrt(a^2+4*b*c-2*a*d+d^2))*E^(a/2+d/2-Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/(2*Sqrt(a^\n" //
-            + "2+4*b*c-2*a*d+d^2))+((a-d+Sqrt(a^2+4*b*c-2*a*d+d^2))*E^(a/2+d/2+Sqrt(a^2+4*b*c-2*a*d+d^\n" //
-            + "2)/2))/(2*Sqrt(a^2+4*b*c-2*a*d+d^2)),(-b*E^(a/2+d/2-Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/Sqrt(a^\n" //
-            + "2+4*b*c-2*a*d+d^2)+(b*E^(a/2+d/2+Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/Sqrt(a^2+4*b*c-2*a*d+d^\n" //
+        "{{((-a+d+Sqrt(a^2+4*b*c-2*a*d+d^2))*E^(a/2+d/2-Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/(2*Sqrt(a^\n"
+            //
+            + "2+4*b*c-2*a*d+d^2))+((a-d+Sqrt(a^2+4*b*c-2*a*d+d^2))*E^(a/2+d/2+Sqrt(a^2+4*b*c-2*a*d+d^\n"
+            //
+            + "2)/2))/(2*Sqrt(a^2+4*b*c-2*a*d+d^2)),(-b*E^(a/2+d/2-Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/Sqrt(a^\n"
+            //
+            + "2+4*b*c-2*a*d+d^2)+(b*E^(a/2+d/2+Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/Sqrt(a^2+4*b*c-2*a*d+d^\n"
+            //
             + "2)},{(-c*E^(a/2+d/2-Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/Sqrt(a^2+4*b*c-2*a*d+d^2)+(c*E^(a/\n" //
             + "2+d/2+Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/Sqrt(a^2+4*b*c-2*a*d+d^2),((a-d+Sqrt(a^2+4*b*c-\n" //
-            + "2*a*d+d^2))*E^(a/2+d/2-Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/(2*Sqrt(a^2+4*b*c-2*a*d+d^2))+((-a+d+Sqrt(a^\n" //
-            + "2+4*b*c-2*a*d+d^2))*E^(a/2+d/2+Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/(2*Sqrt(a^2+4*b*c-2*a*d+d^\n" //
+            + "2*a*d+d^2))*E^(a/2+d/2-Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/(2*Sqrt(a^2+4*b*c-2*a*d+d^2))+((-a+d+Sqrt(a^\n"
+            //
+            + "2+4*b*c-2*a*d+d^2))*E^(a/2+d/2+Sqrt(a^2+4*b*c-2*a*d+d^2)/2))/(2*Sqrt(a^2+4*b*c-2*a*d+d^\n"
+            //
             + "2))}}");
 
+    check("MatrixExp[{{2, 3, 0}, {4, 9, 0}, {0, 0, 4}}]", //
+        "{{1/194*(97*E^4+7*Sqrt(97)*E^4+97*E^(1/2*(11+Sqrt(97)))-7*Sqrt(97)*E^(1/2*(11+Sqrt(\n" //
+            + "97)))),0,1/194*(97*E^4-7*Sqrt(97)*E^4-97*E^(1/2*(11+Sqrt(97)))+7*Sqrt(97)*E^(1/2*(\n" //
+            + "11+Sqrt(97))))},\n" //
+            + " {0,E^(1/2*(11-Sqrt(97))),0},\n" //
+            + " {1/194*(97+7*Sqrt(97))*(E^4-E^(1/2*(11+Sqrt(97)))),0,1/2*(E^4+(-7*E^4)/Sqrt(97)+E^(\n" //
+            + "1/2*(11+Sqrt(97)))+(7*E^(1/2*(11+Sqrt(97))))/Sqrt(97))}}");
+
     check("MatrixExp({{3.4, 1.2}, {0.001, -0.9}})", //
-        "{{29.97054,8.24991},\n" + //
-            " {0.00687492,0.408375}}");
+        "{{29.97054,8.24991},{0.00687492,0.408375}}");
     check("MatrixExp({{1.2, 5.6}, {3, 4}})", //
-        "{{346.5575,661.7346},\n" + //
-            " {354.5007,677.4248}}");
+        "{{346.5575,661.7346},{354.5007,677.4248}}");
     check("MatrixExp({{2, 0, 0}, {0, 1, -1}, {0, 1, 1}})", //
-        "{{7.38906,0.0,0.0},\n" + //
-            " {0.0,1.46869,-2.28736},\n" + //
-            " {0.0,2.28736,1.46869}}");
+        "{{7.38906,0.0,0.0},\n" //
+            + " {0.0,1.46869+I*2.22045*10^-16,-5.99991*10^-11+I*(-2.28736)},\n" //
+            + " {0.0,5.9999*10^-11+I*(-2.28736),1.46869+I*2.22045*10^-16}}");
 
   }
 
