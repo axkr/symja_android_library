@@ -109,4 +109,14 @@ class RelaxedParserTestCase {
     ASTNode obj = PARSE_RELAXED.parse("f(a,b,)");
     assertEquals("f(a, b, Null)", obj.toString());
   }
+
+
+  @Test
+  void testParser16() {
+    ASTNode obj = PARSE_RELAXED.parse("-y'(x)^2");
+    assertEquals(
+        "Times(-1, Power(Derivative(1)[y][x], 2))",
+        obj.toString());
+  }
+
 }

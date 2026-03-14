@@ -1242,7 +1242,7 @@ public class Parser extends Scanner {
         if (fToken == TT_DERIVATIVE) {
           rhs = parseDerivative(rhs);
         }
-        if (lookahead != TT_OPERATOR) {
+        if (lookahead != TT_OPERATOR && fToken != TT_OPERATOR) {
           break;
         }
         InfixOperator infixOperator = determineBinaryOperator();
