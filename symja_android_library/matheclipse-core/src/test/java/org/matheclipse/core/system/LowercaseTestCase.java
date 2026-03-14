@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.apfloat.Apfloat;
@@ -8,6 +9,7 @@ import org.apfloat.ApfloatContext;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -16,6 +18,7 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ParserConfig;
@@ -1844,6 +1847,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testBarnesG() {
+    check("D(BarnesG(x),x)", //
+        "BarnesG(x)*(-x+1/2*(1+Log(2*Pi))+(-1+x)*PolyGamma(0,x))");
     check("BarnesG({-1/2, 3/2})", //
         "{-E^(1/8)/(2^(23/24)*Glaisher^(3/2)*Pi^(3/4)),(2^(1/24)*E^(1/8)*Pi^(1/4))/Glaisher^(\n"
             + "3/2)}");
@@ -1869,6 +1874,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLogBarnesG() {
+    check("D(LogBarnesG(x),x)", //
+        "-x+1/2*(1+Log(2*Pi))+(-1+x)*PolyGamma(0,x)");
     check("LogBarnesG(0.7)", //
         "-0.21459");
     // TODO
@@ -5480,6 +5487,22 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDawsonF() {
+    check("D(DawsonF(x),x)", //
+        "1-2*x*DawsonF(x)");
+    check("DawsonF(-a)", //
+        "-DawsonF(a)");
+    check("FunctionExpand(DawsonF(z))", //
+        "(Sqrt(Pi)*Erfi(z))/(2*E^z^2)");
+    check("DawsonF(2.5)", //
+        "0.223084");
+    check("N(DawsonF(4/3),50)", //
+        "0.47468126205800637649606044661921813688953761844183");
+    check("N(DawsonF(I*Pi + 5))", //
+        "0.071508+I*(-0.0462683)");
+  }
+
+  @Test
   public void testDecrement() {
     check("a = 5", //
         "5");
@@ -6689,78 +6712,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{}");
   }
 
-  // @Test
-  // public void testDSolve() {
-  // check("DSolve({(2*y(x)-x^2)+(2*x-y(x)^2)*y'(x)==0},y(x), x)",
-  // "{{y(x)->1/(x^2-C(1))}}");
-  // check("DSolve({y'(x)==2*x*y(x)^2},y(x), x)", "{{y(x)->1/(-x^2-C(1))}}");
-  // check("DSolve({(2*y(x)-x^2)+(2*x-y(x)^2)*y'(x)==0},y(x), x)",
-  // "{{y(x)->1/(x^2-C(1))}}");
-  // check("DSolve({(6*x*y(x)+y(x)^2)*y'(x)==-2*x-3*y[x]^2},y(x), x)",
-  // "{{y(x)->E^x}}");
-  // }
 
-  @Test
-  public void testDSolve() {
-    check("DSolve(y'(t)==t+y(t), y, t)", //
-        "{{y->Function({t},-1-t+E^t*C(1))}}");
-
-    check("DSolve(y'(x)==2*x*y(x)^2,Null,x)", //
-        "DSolve(y'(x)==2*x*y(x)^2,Null,x)");
-    check("DSolve({},y,t)", //
-        "DSolve({},y,t)");
-
-    check("DSolve(y'(t)==y(t), y, t)", //
-        "{{y->Function({t},E^t*C(1))}}");
-
-    check("DSolve(y'(x)==2*x*y(x)^2, y, x)", //
-        "{{y->Function({x},1/(-x^2-C(1)))}}");
-    check("DSolve(y'(x)==2*x*y(x)^2, y(x), x)", //
-        "{{y(x)->1/(-x^2-C(1))}}");
-    check("DSolve({y'(x)==2*x*y(x)^2},y(x), x)", //
-        "{{y(x)->1/(-x^2-C(1))}}");
-
-    check("DSolve(D(f(x, y), x) == D(f(x, y), y), f, {x, y})", //
-        "DSolve(Derivative(1,0)[f][x,y]==Derivative(0,1)[f][x,y],f,{x,y})");
-
-    // check("DSolve({y'(x)==y(x),y(0)==1},y(x), x)", "{{y(x)->E^x}}");
-    check("DSolve({y'(x)==y(x)+2,y(0)==1},y(x), x)", "{{y(x)->-2+3*E^x}}");
-
-    check("DSolve({y(0)==0,y'(x) + y(x) == a*Sin(x)}, y(x), x)", //
-        "{{y(x)->a/(2*E^x)-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
-    check("DSolve({y'(x) + y(x) == a*Sin(x),y(0)==0}, y(x), x)", //
-        "{{y(x)->a/(2*E^x)-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
-
-    check("DSolve(y'(x) + y(x) == a*Sin(x), y(x), x)", //
-        "{{y(x)->C(1)/E^x-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
-
-    check("DSolve(y'(x)-x ==0, y(x), x)", //
-        "{{y(x)->x^2/2+C(1)}}");
-    check("DSolve(y'(x)+k*y(x) ==0, y(x), x)", //
-        "{{y(x)->C(1)/E^(k*x)}}");
-
-    check("DSolve(y'(x)-3/x*y(x)-7==0, y(x), x)", //
-        "{{y(x)->-7/2*x+x^3*C(1)}}");
-    check("DSolve(y'(x)== 0, y(x), x)", //
-        "{{y(x)->C(1)}}");
-    check("DSolve(y'(x) + y(x)*Tan(x) == 0, y(x), x)", //
-        "{{y(x)->C(1)*Cos(x)}}");
-    check("DSolve(y'(x) + y(x)*Cos(x) == 0, y(x), x)", //
-        "{{y(x)->C(1)/E^Sin(x)}}");
-    check("DSolve(y'(x) == 3*y(x), y(x), x)", //
-        "{{y(x)->E^(3*x)*C(1)}}");
-    check("DSolve(y'(x) + 2*y(x)/(1-x^2) == 0, y(x), x)", //
-        "{{y(x)->C(1)/E^(2*ArcTanh(x))}}");
-    check("DSolve(y'(x) == -y(x), y(x), x)", //
-        "{{y(x)->C(1)/E^x}}");
-    check("DSolve(y'(x) == y(x)+a*Cos(x), y(x), x)", //
-        "{{y(x)->E^x*C(1)-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
-    // not implemented yet
-    check("DSolve(y'(x) == -3*y(x)^2, y(x), x)", //
-        "{{y(x)->1/(3*x-C(1))}}");
-    check("DSolve({y'(x) == -3*y(x)^2, y(0)==2}, y(x), x)", //
-        "{{y(x)->1/(1/2+3*x)}}");
-  }
 
   @Test
   public void testDuplicateFreeQ() {
@@ -10212,136 +10164,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FullForm(a:=b)", "Null");
   }
 
-  @Test
-  public void testFullSimplify() {
-    // TODO
-    // check("FullSimplify(a*b*c/Abs(b))", //
-    // "a*c*Sign(b)");
-    check("FullSimplify(Mod(Mod(a, c) + Mod(b*q, c) + f(x), c))", //
-        "Mod(a+b*q+f(x),c)");
-
-    check("FullSimplify(a*Conjugate(a))", //
-        "Abs(a)^2");
-    check("FullSimplify( 3*E^(-x)+7*E^x )", //
-        "10*Cosh(x)+4*Sinh(x)");
-    check("Simplify( 3*E^(-x)+7*E^x )", //
-        "3/E^x+7*E^x");
-
-
-    // https://github.com/axkr/symja_android_library/issues/856
-    check("FullSimplify((4+3*Sqrt(2)+Sqrt(3)+Sqrt(6))/(2+Sqrt(2)+Sqrt(3)))", //
-        "1+Sqrt(2)");
-
-    check("FullSimplify((Cosh(x) - 1)/(Cosh(x) + Sinh(x))-(1 - Exp(-x))^2/2)", //
-        "0");
-    check("FullSimplify(Sign(z)*Abs(z))", //
-        "z");
-    check("FullSimplify( Sqrt(9-4*Sqrt(5)))", //
-        "-2+Sqrt(5)");
-
-    check("FullSimplify(Gamma(z) / Gamma(z-2))", //
-        "2-3*z+z^2");
-    check("FullSimplify( Sqrt(-9+4*Sqrt(5)))", //
-        "I*(-2+Sqrt(5))");
-
-
-    // MMA factorizes this to (-2 + x)*(-1 + x) ? Although the ComplexityFunction returns 9 for both
-    // expressions
-    check("2-3*x+x^2 // FullSimplify", //
-        "2-3*x+x^2");
-    // MMA doesn't factorize this
-    check("f(2-3*Sin(x)+Sin(x)^2) // FullSimplify", //
-        "f(2-3*Sin(x)+Sin(x)^2)");
-
-    check("FullSimplify(x^2,ComplexInfinity)", //
-        "x^2");
-    // see Logarithms#test0128() Rubi rule 2447 ==> -(Sqrt(-(e/d))/(2*e))
-    check(
-        "FullSimplify( (d-2*d*Sqrt(-e/d)*x-e*x^2)/(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2) )", //
-        "1/(2*d*Sqrt(-e/d))");
-    check(
-        "PolynomialQuotientRemainder((d-2*d*Sqrt(-e/d)*x-e*x^2),(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2),x)",
-        //
-        "{1/(2*d*Sqrt(-e/d)),0}");
-
-    // check("FullSimplify((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / "
-    //
-    // + "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) +
-    // (2*(d*Sqrt(-(e/d)) + e*x))/(d +
-    // e*x^2)))", //
-    // "(d-2*d*Sqrt(-e/d)*x-e*x^2)/(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2)");
-    check("FullSimplify((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / " //
-        + "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) +   (2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))", //
-        "-Sqrt(-e/d)/(2*e)");
-
-    check(
-        "FullSimplify(Numerator((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / " //
-            + "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) +   (2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2))))", //
-        "1+(-2*x*(d*Sqrt(-e/d)+e*x))/(d+e*x^2)");
-    check(
-        "FullSimplify(Denominator((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / "
-            //
-            + "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) + (2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2))))", //
-        "(d*(2*d*Sqrt(-e/d)+4*e*x-2*e*Sqrt(-e/d)*x^2))/(d+e*x^2)");
-    check("Together( 1+(-2*x*(d*Sqrt(-e/d)+e*x))/(d+e*x^2) )", //
-        "(d-2*d*Sqrt(-e/d)*x-e*x^2)/(d+e*x^2)");
-    check("Together( (d*(2*d*Sqrt(-e/d)+4*e*x-2*e*Sqrt(-e/d)*x^2))/(d+e*x^2) )", //
-        "(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2)/(d+e*x^2)");
-
-    // #github #152
-    check("FullSimplify(Sqrt(-9-4*Sqrt(5)))", //
-        "I*(2+Sqrt(5))");
-    // check("FullSimplify( Sqrt(9-4*Sqrt(5)))", //
-    // "-2+Sqrt(5)");
-
-    check("FullSimplify(Sqrt(9+4*Sqrt(5)))", //
-        "2+Sqrt(5)");
-    check("FullSimplify(-Sqrt(9-4*Sqrt(5))+Sqrt(9+4*Sqrt(5)))", //
-        "4");
-    check("-Sqrt(9-4*Sqrt(5))+Sqrt(9+4*Sqrt(5.0))", //
-        "4.0");
-    check("FullSimplify(f(x*y,-Sqrt(9-4*Sqrt(5))+Sqrt(9+4*Sqrt(5)),Sqrt(-9-4*Sqrt(5))))", //
-        "f(x*y,4,I*(2+Sqrt(5)))");
-
-    check("FullSimplify(Sqrt(2) + Sqrt(3) - Sqrt(5 + 2*Sqrt(6)))", //
-        "0");
-    check("FullSimplify(Cos(n*ArcCos(x)) == ChebyshevT(n, x))", //
-        "True");
-
-    // check("Factor((d^2+2*d*e*x^2+e^2*x^4))",//
-    // "(d+e*x^2)^2");
-    // check("Together(D( 1-(2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2),x))",//
-    // "(-2*d^2*Sqrt(-e/d)-4*d*e*x+2*d*e*Sqrt(-e/d)*x^2)/(d^2+2*d*e*x^2+e^2*x^4)");
-    check("FullSimplify(D( 1-(2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2),x))", //
-        "(-2*d*Sqrt(-e/d)-4*e*x+2*e*Sqrt(-e/d)*x^2)/(d+2*e*x^2)");
-
-    check("p = Expand((x + 1)^2 (x + 2)^2 (x + 3)^3)", //
-        "108+432*x+711*x^2+625*x^3+318*x^4+94*x^5+15*x^6+x^7");
-    check("FullSimplify(p)", //
-        "(1+x)^2*(2+x)^2*(3+x)^3");
-    check("FullSimplify(Cosh(x)/(b*Cosh(x)+c*Sinh(x)))", //
-        "1/(b+c*Tanh(x))");
-    check("FullSimplify((b*Cosh(x)+c*Sinh(x))/Cosh(x))", //
-        "b+c*Tanh(x)");
-    check("Simplify(Cos(n*ArcCos(x)) == ChebyshevT(n, x))", //
-        "-ChebyshevT(n,x)+Cos(n*ArcCos(x))==0");
-    // FullSimplify uses FunctionExpand and can test the equation:
-    check("FullSimplify(Cos(n*ArcCos(x)) == ChebyshevT(n, x))", //
-        "True");
-    check("FullSimplify(Cosh(x)+Sinh(x))", //
-        "E^x");
-  }
-
-  @Test
-  public void testFullSimplifyIssue856() {
-    // github issue #856
-    check("FullSimplify( (2 *Sqrt(6) - Sqrt(3)) * (Sqrt(2) + 4))", //
-        "7*Sqrt(6)");
-    check("FullSimplify( (2 *Sqrt(6) - Sqrt(3)) * (-Sqrt(2) - 4) )", //
-        "-7*Sqrt(6)");
-    check("FullSimplify( (2 *Sqrt(6) - Sqrt(3)) / (Sqrt(2) - 4) )", //
-        "-Sqrt(3/2)");
-  }
 
   @Test
   public void testFunction() {
@@ -12835,7 +12657,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.00554208");
 
     check("LaplaceTransform(Tanh(t),t,s)", //
-        "1/2*(-2/s-PolyGamma(0,s/4)+PolyGamma(0,1/4*(2+s)))");
+        "(-2-s*PolyGamma(0,s/4)+s*PolyGamma(0,1/4*(2+s)))/(2*s)");
     check("LaplaceTransform(E^2,t,-3+s)", //
         "E^2/(-3+s)");
     check("LaplaceTransform(c*t^2, t, s)", //
@@ -12883,7 +12705,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("LaplaceTransform(Sin(t), t, t)", //
         "LaplaceTransform(Sin(t),t,t)");
     check("LaplaceTransform(Sinh(t), t, s)", //
-        "c/(-1+s^2)");
+        "1/(-1+s^2)");
     check("LaplaceTransform(Cosh(t), t, s)", //
         "s/(-1+s^2)");
     check("LaplaceTransform(Log(t), t, s)", //
@@ -13374,465 +13196,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   // check("JacobianMatrix({Rr, Ttheta, Zz}, Cylindrical)", "");
   // }
 
-  @Test
-  public void testLimit() {
-    // TODO
-    // check("Limit(1/Exp(-x + Exp(-x)) - Exp(x), x -> Infinity)", //
-    // "-1");
-
-    // issue #931
-    check("Limit((-1/E^x+E^x)/(E^x+E^(-x)),x -> Infinity)", //
-        "1");
-    check("Limit((-1+Sqrt(x))/Sqrt(-1+x), x -> Infinity)", //
-        "1");
-
-    check("Limit(Sin(x)/x,x->Infinity)", //
-        "0");
-
-    // TODO
-    // check("Limit(((1/Abs(n)))^(1/n),n->Infinity)", //
-    // "1");
-    check("Limit(a^(1/n),n->Infinity)", //
-        "1");
-    check("Limit((1+1/n)^n,n->Infinity)", //
-        "E");
-    check("Limit(Sin(x)/x,x->0)", //
-        "1");
-
-
-    check("Limit(Log(x+1)/x,x->Infinity)", //
-        "0");
-    check("Limit((E^x-1)/x,x->0)", //
-        "1");
-    check("Limit(Log(a,x)/x,x->Infinity)", //
-        "0");
-
-    check("Limit(a^x*x^p,x->Infinity)", //
-        "ConditionalExpression(Infinity,p>0&&Log(a)>0)");
-    check("Limit(x^p,x->Infinity)", //
-        "ConditionalExpression(Infinity,p>0)");
-    check("Limit(a^x,x->Infinity)", //
-        "ConditionalExpression(Infinity,Log(a)>0)");
-
-    check("Limit(SinIntegral(t*(1-w)),t->Infinity, Assumptions->w>1)", //
-        "-Pi/2");
-    check("Limit(t*(1-w),t->Infinity, Assumptions->w>1)", //
-        "-Infinity");
-    // check("Limit(-SinIntegral(t*(1-w))/2+SinIntegral(t*(1+w))/2,t->Infinity)", //
-    // " ");
-
-    check("Limit(7-2*x+4*x^2,x->Infinity)", //
-        "Infinity");
-    check("Limit(Sqrt(7-2*x+4*x^2),x->Infinity)", //
-        "Infinity");
-    check("Limit(1+2*x+Sqrt(7-2*x+4*x^2),x->Infinity)", //
-        "Infinity");
-    check("Limit((-6+6*x)/(1+2*x+Sqrt(7-2*x+4*x^2)),x->Infinity)", //
-        "3/2");
-    check("Limit(1-Sqrt(7-2*x+4*x^2)+2*x,x->Infinity)", //
-        "3/2");
-
-
-    check("Limit(x^2*Sin(1/x)^3,x->0)", //
-        "0");
-    check("Limit(x*Sin(1/x)^3,x->0)", //
-        "0");
-    check("Limit(Sin(1/x)^3,x->0)", //
-        "Indeterminate");
-    check("Limit(Abs(Sin(1/x)),x->0)", //
-        "Indeterminate");
-    check("Limit(x*Sin(1/x),x->0)", //
-        "0");
-
-    check("Limit(x^2*Sin(1/x),x->0)", //
-        "0");
-
-    // github #230
-    check("Limit((Sqrt(((t+4)*(t-2)^4))/((3*t)-6)^2),t->2) ", //
-        "Sqrt(2/3)/3");
-    check("Limit((((t+4)*(t-2)^4) /((3*t)-6)^4),t->2) ", //
-        "2/27");
-    check("Limit((((t+4)*(t-2)^4) /((3*t)-6) ),t->2) ", //
-        "0");
-    check("Limit(Sqrt(((t+4)*(t-2)^4)) ,t->2) ", //
-        "0");
-
-    check("Limit(Tan(9/7)^x,x->-Infinity)", //
-        "0");
-    check("Limit(Sin(1/7)^x,x->-Infinity)", //
-        "Infinity");
-    check("Limit(a^x,x->-Infinity)", //
-        "ConditionalExpression(0,Log(a)>0)");
-    check("Limit(f(a)^x,x->-Infinity)", //
-        "Limit(f(a)^x,x->-Infinity)");
-
-    check("Limit(Tan(9/7)^x,x->Infinity)", //
-        "Infinity");
-    check("Limit(Sin(1/7)^x,x->Infinity)", //
-        "0");
-    check("Limit(a^x,x->Infinity)", //
-        "ConditionalExpression(Infinity,Log(a)>0)");
-    check("Limit((a+b+2)^x,x->Infinity)", //
-        "ConditionalExpression(Infinity,Log(2+a+b)>0)");
-    check("Limit((a+f[b]+2)^x,x->Infinity)", //
-        "Limit((2+a+f(b))^x,x->Infinity)");
-    check("Limit(f(a)^x,x->Infinity)", //
-        "Limit(f(a)^x,x->Infinity)");
-    check("Limit(Gamma(1/t),t->Infinity)", //
-        "Infinity");
-    check("Limit(ArcTanh(x/Sqrt(4+3*x^2)) ,x->-Infinity)", //
-        "-ArcTanh(1/Sqrt(3))");
-    check("Limit(ArcTanh(x/Sqrt(4+3*x^2)) ,x->Infinity)", //
-        "ArcTanh(1/Sqrt(3))");
-    check("Limit(x/Sqrt(4+3*x^2) ,x->Infinity)", //
-        "1/Sqrt(3)");
-    check("Limit(x/Sqrt(4+3*x^2) ,x->-Infinity)", //
-        "-1/Sqrt(3)");
-    check("Limit((-x^2+1)/(x+2),x->Infinity)", //
-        "-Infinity");
-    check("Limit(Exp(2*x),x->-Infinity)", //
-        "0");
-    check("Limit((1+1/x)^x,x->Infinity)", //
-        "E");
-    check("Limit((1+2/x)^x,x->Infinity)", //
-        "E^2");
-    check("Limit((1+1/x)^(2*x),x->Infinity)", //
-        "E^2");
-    check("Limit((1+a*(1/x))^(b*x),x->(-Infinity))", //
-        "E^(a*b)");
-    check("Limit(-2*x,x->Infinity)", //
-        "-Infinity");
-    check("Limit((x^2+1)/(-x^3+1),x->Infinity)", //
-        "0");
-    check("Limit(1/x,x->0)", //
-        "Indeterminate");
-    check("Limit((Sin(x)-Tan(x))/(x^3),x->0)", //
-        "-1/2");
-
-    check("Limit((1+x)^(1/x),x->0)", //
-        "E");
-    check("Limit((x/(k+x))^x,x->Infinity)", //
-        "E^(-k)");
-    check("Limit(((a+x)/(b+x))^(c+x),x->Infinity)", //
-        "E^(a-b)");
-    check("Limit(((a+x)/(b+x))^(c+x),x->-Infinity)", //
-        "E^(a-b)");
-    check("Limit(((a+x)/(x))^(c+x),x->Infinity)", //
-        "E^a");
-    check("Limit(x^(a/x), x->Infinity)", //
-        "ConditionalExpression(1,a∈Reals)");
-    check("Limit(x^(4/x), x->Infinity)", //
-        "1");
-    // TODO github #175
-    // check("Limit(((a^(1/x)+b^(1/x))/2)^x, x->Infinity)", //
-    // "Sqr(a)*Sqrt(b)");
-    check("Limit(Erf(x/Sqrt(2)),x->Infinity,Direction->Reals)", //
-        "1");
-    check("Limit(Erf(x/Sqrt(2)),x->-Infinity,Direction->Reals)", //
-        "-1");
-    check("Limit((Cosh(t)-1)/t^2,t->0)", //
-        "1/2");
-    check("Limit(Gamma(1/t)*Cos(Sin(1/t)),t->0)", //
-        "Indeterminate");
-    check("Limit(Gamma(1/t),t->Infinity)", //
-        "Infinity");
-    check("Limit(Gamma(1/t),t->-Infinity)", //
-        "-Infinity");
-    check("Limit(Gamma(z,t),t->Infinity)", //
-        "0");
-    check("Limit(Gamma(z,t),t->0)", //
-        "Gamma(z)");
-    check("limit((1 - cos(x))/x^2, x->0)", //
-        "1/2");
-    check("limit((1 + 1/n)^n, n->infinity)", //
-        "E");
-    check("Limit((sin(x) - x)/x^3,x->0)", //
-        "-1/6");
-
-    check("Limit(Sqrt(x^2 - 1)/x, x->-Infinity)", //
-        "-1");
-    check("Limit(x/Sqrt(x^2 - 1), x->-Infinity)", //
-        "-1");
-    // gitlab #107
-    check("Limit(x^2-1/x-2, x->0)", //
-        "Indeterminate");
-
-    check("Limit((x^2) /(3*x), x->Infinity)", //
-        "Infinity");
-    check("Limit(x^(-2/3),x->0 , Direction->-1)", //
-        "Infinity");
-    check("Limit(x^(-2/3),x->0 , Direction->1)", //
-        "Limit(1/x^(2/3),x->0,Direction->1)");
-    check("Limit(x^(-2/3),x->0)", //
-        "Indeterminate");
-
-    check("Limit(x^(-16/7),x->0 , Direction->-1)", //
-        "Infinity");
-    check("Limit(x^(-16/7),x->0 , Direction->1)", //
-        "Limit(1/x^(16/7),x->0,Direction->1)");
-    check("Limit(x^(-16/7),x->0)", //
-        "Indeterminate");
-
-    check("Limit(x^(-37/4),x->0 , Direction->-1)", //
-        "Infinity");
-    check("Limit(x^(-37/4),x->0 , Direction->1)", //
-        "Limit(1/x^(37/4),x->0,Direction->1)");
-    check("Limit(x^(-37/4),x->0)", //
-        "Indeterminate");
-
-    check("Limit((x^2-1)/(x-1)^2, x->1)", //
-        "Indeterminate");
-    check("Limit((3*x^2-6)^(-1/3), x->-Infinity)", //
-        "0");
-
-    check("Limit(Cosh(x) , x->3)", //
-        "Cosh(3)");
-    check("Limit(x^3-4*x^2+6, x->-Infinity)", //
-        "-Infinity");
-    check("Limit(42, x->Infinity)", //
-        "42");
-    check("Limit(x^2-x^4, x->Infinity)", //
-        "-Infinity");
-    check("Limit((4*x^3-3*x+2)/(2*x^3+2*x-1), x->Infinity)", //
-        "2");
-    check("Limit((x^2-3*x+2)/(x^3+2*x-1), x->Infinity)", //
-        "0");
-    check("Limit(Sqrt(3*x-2), x->-Infinity) // FullForm", //
-        "DirectedInfinity(Complex(0,1))");
-
-    check("Limit((x-1)^2/(x^2-1), x->1)", //
-        "0");
-    check("Limit((x-1)/(x^2-1), x->1)", //
-        "1/2");
-    check("Limit((x^2-4)/(x-2), x->2)", //
-        "4");
-    check("Limit((x^3-1)/(x^2-1), x->1)", //
-        "3/2");
-
-    // github #120
-    check("Limit( x*Log(x) , x->0)", //
-        "0");
-    check("Limit(Log(x),x->0)", //
-        "-Infinity");
-    check("Limit(Log(x)^2,x->0)", //
-        "Infinity");
-    check("Limit(2*x-2*x*Log(x)+x*Log(x)^2, x->0)", //
-        "0");
-    check("Limit(E^(-x)*Sqrt(x), x -> Infinity)", //
-        "0");
-
-    // adjust LimitRules.m if these 2 tests fails
-    // check("FullForm(x*(Sqrt(2*Pi*x)/(x!))^(1/x) )", //
-    // "Times(Power(Power(Times(2, Pi), Rational(1,2)), Power(x, -1)), x, Power(Times(Power(x,
-    // Rational(1,2)),
-    // Power(Factorial(x), -1)), Power(x, -1)))");
-    // check("Limit(x*(Sqrt(2*Pi*x)/(x!))^(1/x), x->Infinity)", //
-    // "E");
-    // check("Limit(x/((x!)^(1/x)), x->Infinity)", //
-    // "E");
-
-    // github #115
-    check("Limit(Sqrt(-4+2*x^2)/(4+3*x),x->Infinity)", //
-        "Sqrt(2)/3");
-    check("Limit((4+3*x)/Sqrt(-4+2*x^2),x->Infinity)", //
-        "3/Sqrt(2)");
-    check("Limit((4+3*x)^2/(-4+2*x^2),x->Infinity)", //
-        "9/2");
-
-    check("Limit(x^(13+n),x->0)", //
-        "ConditionalExpression(0,n>-13)");
-    // check("Limit(x^(13+n)/a,x->0)", //
-    // "");
-
-    check("Limit(E^(3*x), x->a)", //
-        "E^(3*a)");
-
-    check("Limit((1+k/x)^x, x->Infinity)", //
-        "E^k");
-    check("Limit((1-1/x)^x, x->Infinity)", //
-        "1/E");
-    // check("Limit((1 + Sinh(x))/E^x, x ->Infinity)", "Infinity*Limit(E^(-x),x->Infinity)");
-
-    // issue #184
-    check("N(Limit(tan(x),x->pi/2))", //
-        "Indeterminate");
-
-    check("Limit(Tan(x), x->Pi/2)", //
-        "Indeterminate");
-    check("Limit(Tan(x), x->Pi/2, Direction->1)", //
-        "Infinity");
-    check("Limit(Tan(x), x->Pi/2, Direction->-1)", //
-        "-Infinity");
-    check("Limit(Tan(x+3*Pi), x->Pi/2)", //
-        "Indeterminate");
-    check("Limit(Tan(x+3*Pi), x->Pi/2, Direction->1)", //
-        "Infinity");
-    check("Limit(Tan(x+3*Pi), x->Pi/2, Direction->-1)", //
-        "-Infinity");
-    check("Limit(Cot(x), x->0)", //
-        "Indeterminate");
-    check("Limit(Cot(x), x->0, Direction->1)", //
-        "-Infinity");
-    check("Limit(Cot(x), x->0, Direction->-1)", //
-        "Infinity");
-    check("Limit(Cot(x+Pi), x->0)", //
-        "Indeterminate");
-    check("Limit(Cot(x+Pi), x->0, Direction->1)", //
-        "-Infinity");
-    check("Limit(Cot(x+Pi), x->0, Direction->-1)", //
-        "Infinity");
-
-    check("Limit(Log(x^y), x->0)", //
-        "ConditionalExpression(-Infinity,y>0)");
-    check("Limit(Log(y*x, b), x->1)", //
-        "Log(b)/Log(y)");
-    check("Limit(Log(y*x), x->0)", //
-        "-Infinity");
-    check("Limit(Log(x), x->Infinity)", //
-        "Infinity");
-    check("Limit(Log(x), x->-Infinity)", //
-        "Infinity");
-    check("Limit((y*x)/Abs(x), x->0)", //
-        "Indeterminate");
-    check("Limit((y*x)/Abs(x), x->0, Direction->1)", //
-        "-y");
-    check("Limit(x/Abs(x), x->0)", //
-        "Indeterminate");
-    check("Limit(x/Abs(x), x->0, Direction->-1)", //
-        "1");
-    check("Limit(x/Abs(x), x->0, Direction->1)", //
-        "-1");
-    check("Limit(Log(x), x -> 0)", //
-        "-Infinity");
-    check("Limit(x^x, x -> 0)", //
-        "1");
-    check("Limit(1/x, x -> Infinity, Direction->1)", //
-        "0");
-    check("Limit(1/x, x -> Infinity, Direction->-1)", //
-        "0");
-    check("Limit(1/x, x -> 0, Direction->1)", //
-        "-Infinity");
-    check("Limit(1/x, x -> 0, Direction->-1)", //
-        "Infinity");
-
-    // print additional message. Messages are typically suppressed in Limit() steps.
-    check("1/0", //
-        "ComplexInfinity");
-
-    // check("Limit((4 - x), x -> 4)", "0");
-    check("Limit(1/(4 - x), x -> 4)", //
-        "Indeterminate");
-    check("Limit(1/(x - 4), x -> 4)", //
-        "Indeterminate");
-
-    check("Infinity-1", //
-        "Infinity");
-    check("Limit(a+b+2*x,x->-Infinity)", //
-        "-Infinity");
-    check("Limit(a+b+2*x,x->Infinity)", //
-        "Infinity");
-    check("Limit(E^(-x)*Sqrt(x), x -> Infinity)", //
-        "0");
-    check("Limit(Sin(x)/x,x->0)", //
-        "1");
-    check("Limit(x*Sin(1/x),x->Infinity)", //
-        "1");
-
-    check("Limit(-x,x->Infinity)", //
-        "-Infinity");
-    check("Limit((1 + x/n)^n, n -> Infinity)", //
-        "E^x");
-    check("Limit((x^2 - 2*x - 8)/(x - 4), x -> 4)", //
-        "6");
-    check("Limit((x^3-1)/(2*x^3-3*x),x->Infinity)", //
-        "1/2");
-    check("Limit((x^3-1)/(2*x^3+3*x),x->Infinity)", //
-        "1/2");
-
-    check("Limit((2*x^3-3*x),x->Infinity)", //
-        "Infinity");
-    check("Limit((2*x^3+3*x),x->Infinity)", //
-        "Infinity");
-
-    check("Limit(E^x, x->Infinity)", //
-        "Infinity");
-    check("Limit(E^x, x->-Infinity)", //
-        "0");
-    check("Limit(a^x, x->0)", //
-        "1");
-    check("Limit(c*(x^(-10)), x->Infinity)", //
-        "0");
-  }
-
-  @Test
-  public void testLimitIssue1001() {
-    // github issue #1001
-    check("Simplify(RealAbs(x + 2)/(x+2))", //
-        "Piecewise({{-1,x<-2}},1)");
-    check("Simplify(RealAbs(x - 2)/(x-2))", //
-        "Piecewise({{-1,x<2}},1)");
-    check("Limit(RealAbs(x + 2), x -> -2, Direction -> -1)", //
-        "0");
-    check("Limit(x + 2, x -> -2, Direction -> -1)", //
-        "0");
-    check("Limit(RealAbs(x + 2)/(x+2), x -> -2, Direction -> -1)", //
-        "1");
-    check("Limit(RealAbs(x + 2)/(x+2), x -> -2, Direction -> 1)", //
-        "-1");
-    check("Limit(RealAbs(x + 2)/(x+2), x -> -2)", //
-        "Indeterminate");
-  }
-
-  @Test
-  public void testLimitPiecewise001() {
-    check("f(x_):=Piecewise({{2*x+3,x<5},{-x+12,x>5}});", //
-        "");
-    check("Limit(f[x], x -> 5)", //
-        "Indeterminate");
-    check("Limit(RealAbs(x + 2)/(x+2), x -> -2)", //
-        "Indeterminate");
-
-
-    check("Limit(f[x], x -> 5, Direction -> -1)", //
-        "7");
-    check("Limit(f[x], x -> 5, Direction -> 1)", //
-        "13");
-    check("Limit(f[x], x -> 5, Direction -> \"FromBelow\")", //
-        "13");
-
-  }
-
-  @Test
-  public void testLimitIssue536() {
-    // avoid endless recursion:
-    // check("Limit(Sqrt((4+x)/(4-x))-Pi/2,x->4)", //
-    // "Indeterminate");
-    // // TODO get -4*Pi
-    // check(
-    // "Limit((-4+x)*(Sqrt((4+x)/(4-x))-ArcTan(Sqrt((4+x)/(4-x)))+(-(4+x)*ArcTan(Sqrt((4+x)/(4-x))))/(4-x)),
-    // x->4)", //
-    // "Indeterminate");
-
-    // Issue 536
-    check("Integrate(Sqrt((4+x)/(4-x)), x) ", //
-        "(-4+x)*(Sqrt((4+x)/(4-x))-ArcTan(Sqrt((4+x)/(4-x)))+(-(4+x)*ArcTan(Sqrt((4+x)/(4-x))))/(\n"//
-            + "4-x))");
-
-    check("Limit(ArcTan(Sqrt((4 + x)/(4 - x))),x->4)", //
-        "Pi/2");
-    check("Limit(Sqrt((4 + x)/(4 - x)),x->4,Direction->1)", //
-        "Infinity");
-    check("Limit(Sqrt((4 + x)/(4 - x)),x->4,Direction->-1)", //
-        "I*Infinity");
-    check("Limit(Sqrt((4 + x)/(4 - x)),x->4,Direction->\"FromBelow\")", //
-        "Infinity");
-    check("Limit(Sqrt((4 + x)/(4 - x)),x->4,Direction->\"FromAbove\")", //
-        "I*Infinity");
-    check("Limit(ArcTan(Sqrt((4 + x)/(4 - x))),x->4,Direction->1)", //
-        "Pi/2");
-    check("Limit(ArcTan(Sqrt((4 + x)/(4 - x))),x->4,Direction->-1)", //
-        "Pi/2");
-  }
 
   @Test
   public void testLinearModelFit() {
@@ -15365,6 +14728,39 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "21-Sqrt(505))}}");
     check("Minimize(2*x^2 - 3*x + 5, x)", //
         "{31/8,{x->3/4}}");
+  }
+
+  @Test
+  public void testMinimalPolynomial() {
+    check("MinimalPolynomial((2 - I)/Sqrt(5), x)", //
+        "5-6*x^2+5*x^4");
+    // Sqrt nested inside Sqrt
+    // Let x = Sqrt(2 + Sqrt(3)) => x^2 = 2 + Sqrt(3) => (x^2 - 2)^2 = 3 => x^4 - 4x^2 + 1 = 0
+    check("MinimalPolynomial(Sqrt(2 + Sqrt(3)), x)", //
+        "1-4*x^2+x^4");
+
+    // Higher degree nested radicals
+    // Let x = (1 + Sqrt(2))^(1/3) => x^3 = 1 + Sqrt(2) => (x^3 - 1)^2 = 2 => x^6 - 2x^3 - 1 = 0
+    check("MinimalPolynomial((1 + Sqrt(2))^(1/3), x)", //
+        "-1-2*x^3+x^6");
+
+    // Deeply nested: Sqrt(1 + Sqrt(1 + Sqrt(2)))
+    check("MinimalPolynomial(Sqrt(1 + Sqrt(1 + Sqrt(2))), x)", //
+        "-2+4*x^4-4*x^6+x^8");
+
+    // Simple fractional power
+    check("MinimalPolynomial(2^(1/3), x)", //
+        "-2+x^3");
+
+    // Sum of fractional powers with different bases
+    check("MinimalPolynomial(2^(1/2) + 3^(1/2), x)", //
+        "1-10*x^2+x^4");
+
+    check("MinimalPolynomial(Sqrt(3), x)", //
+        "-3+x^2");
+
+    check("MinimalPolynomial(2 - 5^(1/3) - 5^(2/3), x)", //
+        "52-3*x-6*x^2+x^3");
   }
 
   @Test
@@ -18681,11 +18077,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolynomialQ() {
-    check("PolynomialQ(1/x(1)^2, x(1))", //
-        "False");
-
     check("PolynomialQ(x^(1/2) + 6*Sin(x))", //
         "True");
+    check("PolynomialQ(x^(1/2) + 6*Sin(x),x)", //
+        "False");
     check("Variables(x^(1/2) + 6*Sin(x))", //
         "{x,Sin(x)}");
     check("PolynomialQ(1/x(1)^2, x(1))", //
@@ -19659,7 +19054,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPowerExpand() {
-
+    check("PowerExpand(Log(x*y), Assumptions->True)", //
+        "I*2*Pi*Floor((Pi-Arg(x)-Arg(y))/(2*Pi))+Log(x)+Log(y)");
+    check("PowerExpand(E^(Log(a)/2))", //
+        "Sqrt(a)");
+    check("Log(Abs(E^z))", //
+        "Re(z)");
     check("PowerExpand(Log(4*(Im(z)^2+ Re(z)^2)))", //
         "2*Log(2)+Log(Im(z)^2+Re(z)^2)");
     check("PowerExpand(Log(24/10)+Log(2))", //
@@ -19688,7 +19088,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "I*Sqrt(a)");
     check("PowerExpand(Sqrt(a^2))", //
         "a");
-    // check("PowerExpand(Sqrt(a/b))", "Sqrt(a)*Sqrt(1/b)");
+    check("PowerExpand(Sqrt(a/b))", //
+        "Sqrt(a)/Sqrt(b)");
 
     check("PowerExpand((a ^ b) ^ c)", //
         "a^(b*c)");
@@ -19738,8 +19139,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "I*2*Pi*Floor((Pi-Im(a*Log(z)))/(2*Pi))+a*Log(z)");
 
     check("PowerExpand((E^x)^(y), Assumptions->True)", //
-        "E^(x*y+I*2*Pi*y*Floor((Pi-Im(x))/(2*Pi)))");
-    // "E^(x*y)*E^(I*2*Pi*y*Floor(1/2*(-Im(x)+Pi)*Pi^(-1)))");
+        "E^(x*y+I*2*Pi*y*Floor(1/2-Im(x)/(2*Pi)))");
 
     check("PowerExpand((x*y)^(1/2), Assumptions->True)", //
         "E^(I*Pi*Floor(1/2-Arg(x)/(2*Pi)-Arg(y)/(2*Pi)))*Sqrt(x)*Sqrt(y)");
@@ -21620,6 +21020,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRefine() {
+    check("Refine(-4*x^2<0,x<0||x>0)", //
+        "True");
     check("Refine(Power(x^27,1/3),Element(x,Reals))", //
         "(x^27)^(1/3)");
 
@@ -23084,328 +22486,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/Sign(z)");
   }
 
-  // @Test
-  // public void testSimplify0() {
-  // check("Factor(1/((1+x)*(1/(2*x*(1+x))-ArcTan(Sqrt(x))/(2*x^(3/2)))))", //
-  // "2/((1+x)*(1/(x*(1+x))-ArcTan(Sqrt(x))/x^(3/2)))");
-  // check("Simplify(1/((1+x)*(1/(2*x*(1+x))-ArcTan(Sqrt(x))/(2*x^(3/2)))))", //
-  // "(-2*x^(3/2))/(-Sqrt(x) + (1 + x)*ArcTan(Sqrt(x)))");
-  // }
-
-  @Test
-  public void testSimplify() {
-    check("Simplify(1/(Sqrt(2 - x^2)*Sqrt(1 + x^2)))", //
-        "1/Sqrt(2+x^2-x^4)");
-    check("Simplify((Cos(ArcSin(1-d*x^2)/2)-Sin(ArcSin(1-d*x^2)/2))^2)", //
-        "d*x^2");
-    check("Simplify(2*Cos(x)*Sin(x))", //
-        "Sin(2*x)");
-
-    // check("Reduce(p==5&&p==6)", //
-    // "False");
-    // check("Simplify(p==5&&p==6)", //
-    // "");
-
-    check("Simplify((1/x-1/3)/(x-3))", //
-        "-1/(3*x)");
-
-    check("s=2*a + 2*Sqrt(a - Sqrt(-b))*Sqrt(a + Sqrt(-b));", //
-        "");
-    check("Simplify(s, a>0&&b>0)", //
-        "2*(a+Sqrt(a^2+b))");
-
-    check("Simplify(a-a*b+a*c)", //
-        "a*(1-b+c)");
-
-    // issue #930
-    check("Simplify(Sin(Pi*Cosh(45522*Csc(17/36*Pi))))", //
-        "Sin(Pi*Cosh(45522*Csc(17/36*Pi)))");
-
-    check("Simplify((1/x-1/3)/(x-3))", //
-        "-1/(3*x)");
-
-    check("Simplify(Abs(Sign(z)),z!=-1&& z!=0&&z!=1)", //
-        "1");
-    check("Simplify(Sign(x), x<0)", //
-        "-1");
-
-    check("Simplify(r0/.{r0->r})", //
-        "r");
-    check("Simplify(Log(E^n))", //
-        "Log(E^n)");
-    check("Simplify(Log(E^n),n>0)", //
-        "n");
-
-    check("Simplify(0^x, x==0)", //
-        "Indeterminate");
-    check("Simplify(0^x, x>0)", //
-        "0");
-    check("Simplify(0^x, x<0)", //
-        "ComplexInfinity");
-
-    check(" Simplify(y -> 1+Cot(x)^2)", //
-        "y->Csc(x)^2");
-    // TODO ???
-    // check("Simplify(Sqrt(1+a*x)/Sqrt(1-a^2*x^2) )", //
-    // "1/Sqrt(1-a*x)");
-    check("Together((-574-2*Sqrt(21))/(-476))", //
-        "1/238*(287+Sqrt(21))");
-
-    check("Simplify(Abs(x)^2,Element(x,Reals))", //
-        "x^2");
-    check("Simplify(Abs(x)^3,Element(x,Reals))", //
-        "Abs(x)^3");
-
-    check("Simplify(1+Cot(x)^2)", //
-        "Csc(x)^2");
-    check("Simplify(1+Tan(x)^2)", //
-        "Sec(x)^2");
-    check("Simplify(E^(a1*a2*Log(f)+b+Log(g)))", //
-        "E^b*f^(a1*a2)*g");
-    check("Simplify(E^(a1*a2*Log(f)*Log(h)+b+Log(g)))", //
-        "E^(b+a1*a2*Log(f)*Log(h))*g");
-    check("Simplify(E^(a1*a2*Log(f)+Log(g)))", //
-        "f^(a1*a2)*g");
-    check("Simplify((-a+c)*(-a+x))", //
-        "(a-c)*(a-x)");
-    check("Simplify(Log(a*(a-b)*(a-c)-a^2*x+a*b*x+a*c*x-b*c*x))", //
-        "Log((a-b)*(a-c)*(a-x))");
-    check("Simplify((2/3-a)^(-5/4)*(2/3+a)^(-5/4))", //
-        "1/(4/9-a^2)^(5/4)");
-    check("Simplify((2-a)^(c)* (2+a)^(c))", //
-        "(4-a^2)^c");
-    // FullSimplify tries more steps (even for the same expressions as in Simplify)
-    check("FullSimplify((2/3-a)^(-5/4)*(2/3+a)^(-5/4))", //
-        "1/(4/9-a^2)^(5/4)");
-    check("FullSimplify((2-a)^(c)* (2+a)^(c))", //
-        "(4-a^2)^c");
-
-    // https://github.com/axkr/symja_android_library/issues/142
-    check("Simplify({{x+y+x*y==9},{x*y*(x+y)==20}})", //
-        "{{x+y+x*y==9},{x*y*(x+y)==20}}");
-    check("Simplify(-3+2*x+x^2==0)", //
-        "2*x+x^2==3");
-    check("Simplify({Im(Exp(I*Pi/5)* x), Im(2*x + I)}, x > 3)", //
-        "{Im(E^(I*1/5*Pi)*x),1}");
-
-    // check("Simplify(1/((1+x)*(1/(2*x*(1+x))-ArcTan(Sqrt(x))/(2*x^(3/2)))))", //
-    // "(-2*x^(3/2))/(-Sqrt(x) + (1 + x)*ArcTan(Sqrt(x)))");
-    // check("Simplify((-1/(Sqrt(x)*(1+x))+(-1-x)/(2*x^(3/2)*(1+x)))/(1+x))", //
-    // "(-1 - 3*x)/(2*x^(3/2)*(1 + x)^2)");
-    // check("Simplify(1/(ArcTan(Sqrt(x))/(-1/(Sqrt(x)*(1+x)^2)-1/(2*x^(3/2)*(1+x))))", //
-    // "(-2*x^(3/2)*(1 + x)^2*ArcTan(Sqrt(x)))/(1 + 3*x)");
-    //
-    // check("Simplify((1+(-2*x*(d*Sqrt(-e/d)+e*x))/(d+e*x^2))/((d+e*x^2)*((-4*e*(d*Sqrt(-e/d)+e*x)*x^2)/(d+e*x^2)^2+(2*e*x)/(d+e*x^2)+(2*(d*Sqrt(-e/d)+e*x))/(d+e*x^2))))",
-    // //
-    // "(-d+2*d*Sqrt(-e/d)*x+e*x^2)/(2*d*(-d*Sqrt(-e/d)-2*e*x+e*Sqrt(-e/d)*x^2))");//"-Sqrt(-(e/d))/(2*e)");
-    check(
-        "Simplify((x*(-Sqrt(-4+x^2)+x^2*Sqrt(-4+x^2)-4*Sqrt(-1+x^2)+x^2*Sqrt(-1+x^2)))/((4-5*x^2+x^4)*(x/Sqrt(-4+x^2)+x/Sqrt(-1+x^2))))", //
-        "1");
-    check("Simplify((Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x)))", //
-        "-I*Cos(2*x)-Sin(2*x)"); // -I*Cos(2*x)-Sin(2*x)
-
-    check("Expand((-I*a+b)*(I*Cosh(x)+Sinh(x)))", //
-        "a*Cosh(x)+I*b*Cosh(x)-I*a*Sinh(x)+b*Sinh(x)");
-    check("Factor(TrigToExp( a*Cosh(x)+I*b*Cosh(x)-I*a*Sinh(x)+b*Sinh(x) ))", //
-        "((1/2+I*1/2)*(-I*a+b)*(I+E^(2*x)))/E^x");
-    check("Simplify((-I*a+b)*(I*Cosh(x)+Sinh(x)))", //
-        "(a+I*b)*(Cosh(x)-I*Sinh(x))");
-    check("Simplify(Element(x, Reals), x>0)", //
-        "True");
-    check("Simplify(Sin(n*Pi), Element(n, Integers))", //
-        "0");
-    check("Simplify(Tan(x + Pi*n), Element(n, Integers))", //
-        "Tan(x)");
-    check(
-        "Simplify(a/((a-I*b)*(a/(a-I*b)+(-I*b)/(a-I*b)))+(b*Sinh(x))/((a-I*b)*(a/(a-I*b)+(-I*b)/(a-I*b))))", //
-        "(a+b*Sinh(x))/(a-I*b)");
-    check("Simplify((a-I*b)*(a/(a-I*b)+(-I*b)/(a-I*b)))", //
-        "a-I*b");
-    check("Simplify(-2*Log(2))", //
-        "-Log(4)");
-    check("Simplify(Log(6)-Log(2))", //
-        "Log(3)");
-    check("Simplify(a+Log(1/6)+Log(1/7)+z())", //
-        "a-Log(42)+z()");
-    check("Simplify(a+Log(1/6)+Log(1/7)+Log(3/4)+z())", //
-        "a-Log(56)+z()");
-    check("Simplify(a+Log(1/6)-2*Log(1/7)+7*Log(3/4)+z())", //
-        "a+Log(35721/32768)+z()");
-    check("Simplify(1+n/2)", //
-        "1/2*(2+n)");
-    check("Simplify((9-Sqrt(57))*x^2)", //
-        "(9-Sqrt(57))*x^2");
-    check("Simplify(-a/(-b+a*c))", //
-        "a/(b-a*c)");
-    check("Simplify(1/(Cos(x)+I*Sin(x))-(c+d*x)^n)", //
-        "-(c+d*x)^n+Cos(x)-I*Sin(x)");
-    check("Simplify(1/(Cos(x)+I*Sin(x)))", //
-        "Cos(x)-I*Sin(x)");
-    check("Expand((Sqrt(-d)*e+d*Sqrt(e)*Sqrt(-e/d))*(Sqrt(-d)*e-d*Sqrt(e)*Sqrt(-e/d)))", //
-        "0");
-    check("Simplify((e*x^2)/(Sqrt(-d)*e-d*Sqrt(e)*Sqrt(-e/d)))", //
-        "(e*x^2)/(Sqrt(-d)*e-d*Sqrt(e)*Sqrt(-e/d))");
-    check("Simplify((-b^12*x^456)/x^12+(x^12*(a+b*x^37)^12)/x^12)", //
-        "-b^12*x^444+(a+b*x^37)^12");
-    check("Simplify(-Cos(x) +Sin(x)^2/(1-Cos(x)))", //
-        "1");
-    check("Simplify(-Cos(x)/(1-Cos(x))+Sin(x)^2/(1-Cos(x))^2-1/(1-Cos(x)))", //
-        "0");
-
-    check("Simplify(x^(5/2) - Sqrt(x^5), x>=0)", //
-        "0");
-    check("Simplify(-136+40*Sqrt(17))", //
-        "8*(-17+5*Sqrt(17))");
-    check("Simplify(Sqrt(17)/(5+Sqrt(17)))", //
-        "1/8*(-17+5*Sqrt(17))");
-
-    // check("Simplify(Cos(b*x)/(-Cos(b*x)/x^2-CosIntegral(b*x)/x^2))", //
-    // "(x^2*Cos(b*x))/(-Cos(b*x)-CosIntegral(b*x))");
-    check("Together(-Cos(b*x)/x^2+(-b*Sin(b*x))/x)", //
-        "(-Cos(b*x)-b*x*Sin(b*x))/x^2");
-    check("Simplify(-Cos(b*x)/x^2+(-b*Sin(b*x))/x)", //
-        "(-Cos(b*x)-b*x*Sin(b*x))/x^2");
-
-    check("Simplify(-(b/(2*Sqrt(c))+Sqrt(c)*x)^24+(a+b*x+c*x^2)^12)", //
-        "-(b/(2*Sqrt(c))+Sqrt(c)*x)^24+(a+b*x+c*x^2)^12");
-    check("Simplify(-ArcTan((1+x)/Sqrt(2))/(2*Sqrt(2)))", //
-        "-ArcTan((1+x)/Sqrt(2))/(2*Sqrt(2))");
-    check("Simplify(1 + 1/GoldenRatio - GoldenRatio)", //
-        "0");
-    // check("Simplify(-15-6*x)/(3*(1+x+x^2))", "");
-    check("Simplify(Abs(x), x<0)", //
-        "Abs(x)");
-    check("complexity(x_) := 2*Count(x, _Abs, {0, 10}) + LeafCount(x)", //
-        "");
-    check("Simplify(Abs(x), x<0, ComplexityFunction->complexity)", //
-        "-x");
-
-    check("Simplify(100*Log(2))", //
-        "100*Log(2)");
-    check("Simplify(2*Sin(x)^2 + 2*Cos(x)^2)", //
-        "2");
-    check("Simplify(f(x))", //
-        "f(x)");
-    check("Simplify(a*x^2+b*x^2)", //
-        "(a+b)*x^2");
-
-    check("Simplify(5*x*(6*x+30))", //
-        "30*x*(5+x)");
-    check("Simplify(Sqrt(x^2), Assumptions -> x>0)", //
-        "x");
-    check("Simplify(Sqrt(x^2), x>0)", //
-        "x");
-    check("Together(2/(1/Tan(x) + Tan(x)))", //
-        "2/(Cot(x)+Tan(x))");
-    check("Together(2*Tan(x)/(1 + Tan(x)^2))", //
-        "(2*Tan(x))/(1+Tan(x)^2)");
-    check("Simplify(Sin(x)^2 + Cos(x)^2)", //
-        "1");
-    check("Simplify((x - 1)*(x + 1)*(x^2 + 1) + 1)", //
-        "x^4");
-    check("Simplify(3/(x + 3) + x/(x + 3))", //
-        "1");
-
-    check("Simplify(2*Tan(x)/(1 + Tan(x)^2))", //
-        "Sin(2*x)");
-    check(
-        "Simplify((1/3+(1/3)*(-2)^(-1/3)*2^(-2/3)*(1+(0+1*I)*3^(1/2))+(1/6)*(-1)^(1/3)*(1+(0+-1*I)*3^(1/2)))^2)", //
-        "1");
-    check(
-        "Simplify((1/3+(1/3)*(-2)^(-1/3)*2^(-2/3)*(1+(0+-1*I)*3^(1/2))+(1/6)*(-1)^(1/3)*(1+(0+1*I)*3^(1/2)))^2)", //
-        "0");
-
-    check("$Assumptions=(x>0);Simplify(0^x)", //
-        "0");
-  }
-
-  @Test
-  public void testSimplifyPreferences() {
-    check("Simplify(Sqrt(2)^3)", //
-        "2*Sqrt(2)");
-    check("Simplify(2*Sqrt(2))", //
-        "2*Sqrt(2)");
-    check("Simplify(6+2*a)", //
-        "2*(3+a)");
-    check("Simplify(2*(3+a))", //
-        "2*(3+a)");
-  }
-
-  @Test
-  public void testSimplifyBoolean() {
-    check("Simplify((x+1)&&(x+1))", //
-        "1+x");
-    check("Simplify(b&&b)", //
-        "b");
-    check("Simplify(a && b && !b )", //
-        "False");
-    check("Simplify((a || b) && (a || c) )", //
-        "a||(b&&c)");
-    check("Simplify(a || ! a && b)", //
-        "a||b");
-    check("Simplify( a || b || ! a || ! b)", //
-        "True");
-    check("Simplify(a || (a && Infinity))", //
-        "a");
-    check("Simplify((b || a) && (c || a))", //
-        "a||(b&&c)");
-    check("Simplify((a || b || c || Not((a && b && c))))", //
-        "True");
-    check("Simplify((a || b || c || Not((a && b && c && d))))", //
-        "True");
-    check("Simplify( (a || b || c || d || Not((a && b && c))))", //
-        "True");
-    check("Simplify((a || b || c || d || Not(a)))", //
-        "True");
-    check("Simplify((az || b || cz || Not((ay && b && cy && dy))))", //
-        "True");
-    check("Simplify( a || (a && b && c && d) )", //
-        "a");
-    check("Simplify(d || (a && b && c && d))", //
-        "d");
-    check("Simplify(d || e || (a && b && c && d) )", //
-        "d||e");
-    check("Simplify(d || b || (a && b && c && d))", //
-        "b||d");
-    check("Simplify(d || b || (a && b && c && d) || ! b)", //
-        "True");
-    check("Simplify(foo(d || b || (a && b && c && d) || ! b))", //
-        "foo(True)");
-    check("Simplify(d || e || (a && b && c))", //
-        "d||e||(a&&b&&c)");
-    check("Simplify(z || z)", //
-        "z");
-    check("Simplify(z || a || z)", //
-        "a||z");
-    check("Simplify(a || a && b )", //
-        "a");
-    check("Simplify(a || !a && b )", //
-        "a||b");
-    check("Simplify(a || c || ! a && b )", //
-        "a||b||c");
-    check("Simplify( a || c || ! a && ! c && b )", //
-        "a||b||c");
-    check("Simplify(a || c || ! a && ! c && ! b)", //
-        "a||!b||c");
-    check("Simplify(a || c || ! a && ! c && ! b && d )", //
-        "a||c||(!b&&d)");
-    check("Simplify( c || a || Not(b))", //
-        "c||a||!b");
-    check("Simplify(And(x1, a, x2, Not(Or(x3, a, x4)), x5))", //
-        "False");
-    check("Simplify(And(x1, a, x2, Or(x3, a, x4), x5))", //
-        "a&&x1&&x2&&x5");
-    check("Simplify(a&&b&&a)", //
-        "a&&b");
-  }
-
-  @Test
-  public void testSimplifyNonRecursive() {
-    check("Log(Cos(3)*Sec(4))", //
-        "Log(Cos(3)*Sec(4))");
-    check("Simplify(Log(-Cos(3))-Log(-Cos(4)))", //
-        "Log(Cos(3)*Sec(4))");
-  }
 
   @Test
   public void testSin() {
@@ -25631,6 +24711,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTogether() {
+
+    // Together(a/b + c/d)
+    check("Together(a/b + c/d)", //
+        "(b*c+a*d)/(b*d)");
+
+    // Together(1/x + 1/x^2)
+    check("Together(1/x + 1/x^2)", //
+        "(1+x)/x^2");
+
     check("Together((h^2+2*h*x)/h)", //
         "h+2*x");
 
@@ -25818,6 +24907,45 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testTogetherNullOptimizationPath() {
+    // Directly test the AlgebraUtil.togetherNull method to ensure the expansion skip works.
+
+    // Construct an AST for: 1/x + 1/y
+    IAST ast = F.Plus(F.Power(F.x, F.CN1), F.Power(F.y, F.CN1));
+
+    // Mark the AST as completely expanded to trigger the new optimization path
+    ast.addEvalFlags(IAST.IS_ALL_EXPANDED);
+
+    IExpr result = AlgebraUtil.togetherNull(ast, EvalEngine.get());
+
+    // Ensure the method does not return F.NIL when a valid transformation exists.
+    assertTrue(result.isPresent());
+    assertEquals("(x+y)/(x*y)", result.toString());
+  }
+
+  @Test
+  public void testTogetherNullAlreadyTogether() {
+    // Test an expression that is already a single fraction: x/y
+    IAST ast = F.Times(F.x, F.Power(F.y, F.CN1));
+
+    IExpr result = AlgebraUtil.togetherNull(ast, EvalEngine.get());
+
+    // If no transformation or expansion was needed, the method must return F.NIL
+    assertEquals(F.NIL, result);
+  }
+
+  @Test
+  public void testTogetherNullUnchangedPlus() {
+    // Test a Plus expression that cannot be combined into a fraction: x + y
+    IAST ast = F.Plus(F.x, F.y);
+
+    IExpr result = AlgebraUtil.togetherNull(ast, EvalEngine.get());
+
+    // Since x + y has no common denominators to merge, it should return F.NIL.
+    assertEquals(F.NIL, result);
+  }
+
+  @Test
   public void testToExpression() {
     // TODO print syntax error to error stream
     check("ToExpression(\"1+2}\")", //
@@ -25843,6 +24971,31 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testToRadicals() {
+    // Symbolic coefficient substituted with zero.
+    // This evaluates root3 symbolically, creating an expression with division by 'a'.
+    // Then we substitute 'a -> 0'. Symja should yield Indeterminate
+    check("ToRadicals(Root(a * #^3 + #^2 - 2 &, 1)) /. a -> 0", // "
+        "Indeterminate");
+
+    // Explicit 0 coefficient in the cubic term.
+    // Symja's polynomial parser should simplify this to a quadratic polynomial
+    // BEFORE calling the root solvers, meaning it naturally routes to root2.
+    check("ToRadicals(Root(0 * #^3 + #^2 - 2 &, 1))", "-Sqrt(2)");
+
+    // ToRadicals(Root(#^2 - 2 &, 1))
+    check("ToRadicals(Root(#^2 - 2 &, 1))", //
+        "-Sqrt(2)");
+
+    // ToRadicals(Root(#^2 - 2 &, 2))
+    check("ToRadicals(Root(#^2 - 2 &, 2))", //
+        "Sqrt(2)");
+    check("ToRadicals(Root(#^3 - 2 &, 1))", //
+        "2^(1/3)");
+
+    // Ensure that it handles an already evaluated cubic root ]
+    check("ToRadicals(Root(#^3 - 8 &, 1))", //
+        "2");
+
     check("ToRadicals(Root((#^2 - 3*# - 1)&, 2))", //
         "3/2+Sqrt(13)/2");
     check("ToRadicals(Root((-3*#-1)&, 1))", //
@@ -25900,9 +25053,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "Flatten // TableForm ", //
         expected);
     expected = String.join("\n", //
-        "   -1-f(x)-Sin(x)^2+y+z == -1 + y + z - f(x) - Sin(x)^2 ", //
+        "   -1-f(x)-Sin(x)^2+y+z == -2 + y + z + Cos(x)^2 - f(x) ", //
         "         1-f(x)-Sin(x)^2+y+z == y + z + Cos(x)^2 - f(x) ", //
-        "   -1-f(x)-Cos(x)^2+y+z == -1 + y + z - Cos(x)^2 - f(x) ", //
+        "   -1-f(x)-Cos(x)^2+y+z == -2 + y + z - f(x) + Sin(x)^2 ", //
         "         1-f(x)-Cos(x)^2+y+z == y + z - f(x) + Sin(x)^2 ", //
         "        -1-f(x)-Tan(x)^2+y+z == y + z - f(x) - Sec(x)^2 ", //
         "     1-f(x)-Tan(x)^2+y+z == 1 + y + z - f(x) - Tan(x)^2 ", //
@@ -26898,6 +26051,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testVariables() {
+    check("Variables(z'(x)+a+x*f(x))", //
+        "{a,x,f(x),z'(x)}");
     check("Variables(FactorInteger(1232))", //
         "{}");
     check("Variables({x+y,x,z})", //

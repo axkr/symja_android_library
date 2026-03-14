@@ -57,11 +57,12 @@ public class CreamConvert {
         IASTAppendable temp = F.ListAlloc(set.size());
         for (Entry<ISymbol, IntVariable> entry : set) {
           ISymbol variable = entry.getKey();
+          IntVariable value = entry.getValue();
           if (listOfZZVariables.isPresent()) {
-            temp.append(F.Rule(variable, F.ConditionalExpression(
-                F.ZZ(solution.getIntValue(entry.getValue())), listOfZZVariables)));
+            temp.append(F.Rule(variable,
+                F.ConditionalExpression(F.ZZ(solution.getIntValue(value)), listOfZZVariables)));
           } else {
-            temp.append(F.Rule(variable, F.ZZ(solution.getIntValue(entry.getValue()))));
+            temp.append(F.Rule(variable, F.ZZ(solution.getIntValue(value))));
           }
         }
         result.append(temp);

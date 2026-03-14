@@ -75,24 +75,24 @@ public class TreeForm extends AbstractFunctionEvaluator {
       }
     }
 
-    // 1. Build the Tree Structure
+    // Build the Tree Structure
     TreeNode root = buildTree(expr, 0, maxLevel);
 
-    // 2. Calculate Layout considering widths and max depth
+    // Calculate Layout considering widths and max depth
     calculateLayout(root);
 
-    // 3. Generate Graphics Primitives
+    // Generate Graphics Primitives
     IASTAppendable primitives = F.ListAlloc();
 
-    // 3a. Draw Edges (Gray Lines)
+    // Draw Edges (Gray Lines)
     primitives.append(F.Gray);
     drawEdges(root, primitives);
 
-    // 3b. Draw Vertices (Text or Points)
+    // Draw Vertices (Text or Points)
     primitives.append(F.Black);
     drawVertices(root, primitives, showLabels, tooltips);
 
-    // 4. Default Options
+    // Default Options
     if (!containsOption(graphicsOptions, S.AspectRatio)) {
       graphicsOptions.append(F.Rule(S.AspectRatio, S.Automatic));
     }
@@ -125,7 +125,7 @@ public class TreeForm extends AbstractFunctionEvaluator {
    * Calculates X and Y coordinates.
    */
   private void calculateLayout(TreeNode root) {
-    // 1. Calculate X based on accumulation of children widths
+    // Calculate X based on accumulation of children widths
     // A simplified layout strategy:
     // - Post-order traversal to determine subtree width.
     // - Pre-order traversal to assign positions.
@@ -140,7 +140,6 @@ public class TreeForm extends AbstractFunctionEvaluator {
     CurrentX tracker = new CurrentX();
     assignX(root, tracker);
 
-    // 2. Assign Y
     // Scale Y by a factor to prevent overlapping vertical levels if text is high
     double yStep = 2.0;
     assignY(root, yStep);

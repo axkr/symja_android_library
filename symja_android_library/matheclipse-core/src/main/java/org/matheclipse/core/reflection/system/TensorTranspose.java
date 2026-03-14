@@ -45,31 +45,30 @@ public class TensorTranspose extends AbstractEvaluator {
     IExpr tensor = ast.arg1();
     IExpr permSpec = ast.arg2();
 
-    // 1. Determine Tensor Rank
+    // Determine Tensor Rank
     int rank = getTensorRank(tensor, engine);
     if (rank < 0) {
       // Rank could not be determined
       return F.NIL;
     }
 
-    // 2. Normalize Permutation (Cycles -> List)
+    // Normalize Permutation (Cycles -> List)
     IExpr permListExpr = normalizePermutation(permSpec, rank);
     if (!permListExpr.isPresent()) {
       return F.NIL;
     }
     IAST permList = (IAST) permListExpr;
 
-    // 3. Optimization: Identity Permutation
     if (isIdentityPermutation(permList)) {
       return tensor;
     }
 
-    // 4. Handle Explicit Lists (Data)
+    // Handle Explicit Lists (Data)
     if (tensor.isList()) {
       return F.Transpose(tensor, permList);
     }
 
-    // 5. Handle Nested TensorTranspose
+    // Handle Nested TensorTranspose
     if (tensor.isAST(S.TensorTranspose)) {
       IAST innerTranspose = (IAST) tensor;
       if (innerTranspose.argSize() == 2) {
@@ -86,7 +85,7 @@ public class TensorTranspose extends AbstractEvaluator {
       return F.NIL;
     }
 
-    // 6. Handle TensorProduct
+    // Handle TensorProduct
     if (tensor.isAST(S.TensorProduct)) {
       IExpr productResult = transposeTensorProduct((IAST) tensor, permList, rank, engine);
       if (productResult.isPresent()) {
@@ -95,7 +94,7 @@ public class TensorTranspose extends AbstractEvaluator {
       return F.NIL;
     }
 
-    // 7. Handle Symbolic Tensor Symmetry
+    // Handle Symbolic Tensor Symmetry
     // If the tensor has defined symmetries (e.g., Symmetric[{1,2}]),
     // and the permutation respects them, simplify to the tensor itself (or -tensor).
     IExpr symmetrySimplified = checkSymbolicSymmetry(tensor, permList, rank);
@@ -103,7 +102,7 @@ public class TensorTranspose extends AbstractEvaluator {
       return symmetrySimplified;
     }
 
-    // 8. Return canonical form if input was Cycles notation, otherwise NIL
+    // Return canonical form if input was Cycles notation, otherwise NIL
     if (permSpec.isAST(S.Cycles)) {
       return F.TensorTranspose(tensor, permList);
     }
@@ -114,7 +113,7 @@ public class TensorTranspose extends AbstractEvaluator {
   // --- Helper Methods ---
 
   private int getTensorRank(IExpr tensor, EvalEngine engine) {
-    // 1. Symbolic Objects
+    // Symbolic Objects
     if (tensor instanceof VectorSymbolExpr) {
       return 1;
     }
@@ -126,12 +125,12 @@ public class TensorTranspose extends AbstractEvaluator {
       return ((ArraySymbolExpr) tensor).getDimensions().argSize();
     }
 
-    // 2. Explicit Lists
+    // Explicit Lists
     if (tensor.isList()) {
       return LinearAlgebraUtil.arrayDepth(tensor);
     }
 
-    // 3. Symbolic Expression (TensorRank)
+    // Symbolic Expression (TensorRank)
     IExpr rankExpr = engine.evaluate(F.TensorRank(tensor));
     if (rankExpr.isInteger()) {
       return rankExpr.toIntDefault();

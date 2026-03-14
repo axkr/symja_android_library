@@ -2611,7 +2611,7 @@ public class EvalEngine implements Serializable {
         return evalWithoutNumericReset(expr);
       }
       if (expr.isAST()) {
-        if (expr.isOneIdentityAST1()) {
+        if (expr.isOneIdentityAST()) {
           if (expr.first().isAST()) {
             return evalHoldPattern((IAST) expr.first()).orElse(expr.first());
           }

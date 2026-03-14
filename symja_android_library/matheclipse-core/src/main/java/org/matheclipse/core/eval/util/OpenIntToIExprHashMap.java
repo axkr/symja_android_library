@@ -524,6 +524,10 @@ public final class OpenIntToIExprHashMap<T extends IExpr> implements Serializabl
     return keysStatesHashCode() + 67 * Arrays.hashCode(values);
   }
 
+  public boolean isEmpty() {
+    return size == 0;
+  }
+
   /**
    * Get an iterator over map elements.
    *

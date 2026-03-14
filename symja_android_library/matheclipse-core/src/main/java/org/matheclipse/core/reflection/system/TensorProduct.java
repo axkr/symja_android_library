@@ -29,7 +29,7 @@ public class TensorProduct extends AbstractEvaluator {
       return ast.arg1();
     }
 
-    // 1. Explicit List Evaluation (Matrices/Arrays)
+    // Explicit List Evaluation (Matrices/Arrays)
     if (ast.arg1().isList() && ast.arg2().isList()) {
       IAST tensor1 = (IAST) ast.arg1();
       IntList dim1 = LinearAlgebraUtil.dimensions(tensor1, S.List);
@@ -164,17 +164,14 @@ public class TensorProduct extends AbstractEvaluator {
   }
 
   private int getTensorRank(IExpr arg, EvalEngine engine) {
-    // 1. Fast path for Numbers (Rank 0)
     if (arg.isNumber()) {
       return 0;
     }
 
-    // 2. Fast path for Explicit Lists
     if (arg.isList()) {
       return LinearAlgebraUtil.arrayDepth(arg);
     }
 
-    // 3. Fast path for Known Symbolic Types (avoids evaluator overhead)
     if (arg instanceof VectorSymbolExpr) {
       return 1;
     }
@@ -185,7 +182,7 @@ public class TensorProduct extends AbstractEvaluator {
       return ((ArraySymbolExpr) arg).getDimensions().argSize();
     }
 
-    // 4. Fallback: Evaluate F.TensorRank
+    // Fallback: Evaluate F.TensorRank
     IExpr rankExpr = engine.evaluate(F.TensorRank(arg));
     if (rankExpr.isInteger()) {
       return rankExpr.toIntDefault();

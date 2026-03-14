@@ -122,6 +122,11 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     }
 
     @Override
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
+    }
+
+    @Override
     public int[] expectedArgSize(IAST ast) {
       return IFunctionEvaluator.ARGS_1_1;
     }

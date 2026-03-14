@@ -35,26 +35,23 @@ public class TensorSymmetry extends AbstractEvaluator {
 
     IExpr arg = ast.arg1();
 
-    // 1. VectorSymbol (Rank 1) -> Identity
+    // VectorSymbol (Rank 1) -> Identity
     if (arg instanceof VectorSymbolExpr) {
       return F.Cycles(F.List());
     }
 
-    // 2. MatrixSymbol
     if (arg instanceof MatrixSymbolExpr) {
       MatrixSymbolExpr m = (MatrixSymbolExpr) arg;
       IExpr sym = m.getSymmetry();
       return sym.isNone() ? F.Cycles(F.List()) : sym;
     }
 
-    // 3. ArraySymbol
     if (arg instanceof ArraySymbolExpr) {
       ArraySymbolExpr a = (ArraySymbolExpr) arg;
       IExpr sym = a.getSymmetry();
       return sym.isNone() ? F.Cycles(F.List()) : sym;
     }
 
-    // 4. Explicit Lists (Data inspection)
     if (arg.isList()) {
       return getExplicitSymmetry((IAST) arg, engine);
     }

@@ -61,14 +61,12 @@ public class DiscreteRatio extends AbstractFunctionEvaluator {
    * Calculates Simplify( f(k) / f(k-1) )
    */
   private IExpr computeSingleRatio(IExpr expr, ISymbol variable, EvalEngine engine) {
-    // 1. Calculate denominator: f(k-1)
+    // Calculate denominator: f(k-1)
     // We use subst to substitute k -> 1+k
     IExpr numerator = F.subst(expr, variable, F.Plus(F.C1, variable));
 
-    // 2. Construct the division: expr / denominator
     IExpr fraction = F.Divide(numerator, expr);
 
-    // 3. CRITICAL STEP: Simplify/Cancel the fraction.
     // Standard evaluate() is not enough to cancel terms like x^n / x^(n-1).
     // F.Cancel divides out common factors from numerator and denominator.
     // F.Simplify is more powerful but slower; usually Cancel is sufficient for Ratios.

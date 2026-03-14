@@ -50,7 +50,7 @@ public class FourierTest extends ExprEvaluatorTestCase {
     check("Fourier({1, 2, 0, 0}, {5})", //
         "Fourier({1,2,0,0},{5})");
 
-    // 1. Basic extraction from a simple list
+    // Basic extraction from a simple list
     // Full: Fourier({1, 2, 0, 0}) -> {1.5, 0.5+I*1.0, -0.5, 0.5+I*(-1.0)}
     check("Fourier({1, 2, 0, 0}, {1, 3})", //
         "{1.5,-0.5}");
@@ -61,7 +61,7 @@ public class FourierTest extends ExprEvaluatorTestCase {
     check("Fourier({1, 2, 0, 0}, {3, 1, 3})", //
         "{-0.5,1.5,-0.5}");
 
-    // 3. Extraction with Complex input
+    // Extraction with Complex input
     // Full: Fourier({1, 2-I, -I, -1+2*I}) -> {1.0, 2.0+I*2.0, I*(-1.0), -1.0+I*(-1.0)}
     check("Fourier({1, 2-I, -I, -1+2*I}, {1, 4})", //
         "{1.0,-1.0+I*(-1.0)}");
@@ -320,7 +320,7 @@ public class FourierTest extends ExprEvaluatorTestCase {
     check("InverseFourier({1, 2, 0, 0}, {5})", //
         "InverseFourier({1,2,0,0},{5})");
 
-    // 1. Basic extraction from a simple list
+    // Basic extraction from a simple list
     // Full: InverseFourier({1, 0, 0, 0}) (n=4) -> {0.5, 0.5, 0.5, 0.5} (Default Scale 1/sqrt(n))
     check("InverseFourier({1, 0, 0, 0}, {1, 3})", //
         "{0.5,0.5}");
@@ -331,30 +331,30 @@ public class FourierTest extends ExprEvaluatorTestCase {
     check("InverseFourier({0, 1, 0, 0}, {2})", //
         "{I*0.5}");
 
-    // 2. Unsorted and repeated indices
+    // Unsorted and repeated indices
     check("InverseFourier({0, 1, 0, 0}, {4, 2, 4})", //
         "{I*(-0.5),I*0.5,I*(-0.5)}");
 
-    // 3. Extraction with Complex input
+    // Extraction with Complex input
     // Reversing the Fourier test logic:
     // Fourier({1, 2, 0, 0}) -> {1.5, 0.5+I, -0.5, 0.5-I}
     // Therefore InverseFourier({1.5, 0.5+I, -0.5, 0.5-I}) -> {1.0, 2.0, 0.0, 0.0}
     check("InverseFourier({1.5, 0.5+I, -0.5, 0.5-I}, {1, 2})", //
         "{1.0,0.0}");
 
-    // 4. Extraction with FourierParameters -> {1, 1}
+    // Extraction with FourierParameters -> {1, 1}
     // Formula: 1/n^((1+a)/2) * Sum[...] = 1/n * Sum[...]
     // Input {1, 0, 0, 0}, n=4. Scale 1/4 = 0.25.
     check("InverseFourier({1, 0, 0, 0}, {1, 2}, FourierParameters -> {1, 1})", //
         "{0.25,0.25}");
 
-    // 5. Extraction with FourierParameters -> {-1, 1} (Data Analysis convention)
+    // Extraction with FourierParameters -> {-1, 1} (Data Analysis convention)
     // Formula: 1/n^((1+a)/2) * Sum[...] = 1/n^0 * Sum[...] = 1 * Sum[...]
     // Input {1, 0, 0, 0}, n=4. Scale 1.
     check("InverseFourier({1, 0, 0, 0}, {1, 2}, FourierParameters -> {-1, 1})", //
         "{1.0,1.0}");
 
-    // 6. Larger list specific positions
+    // Larger list specific positions
     // InverseFourier of {1, 2, 3, 4} (n=4)
     // Scale 0.5. Sum = 10 -> DC = 5.0.
     // Index 2 (k=1): 0.5 * (1 - 2i - 3 + 4i) = 0.5 * (-2 + 2i) = -1 + I

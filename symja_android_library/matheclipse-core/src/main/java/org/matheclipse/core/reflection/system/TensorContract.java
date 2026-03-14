@@ -33,14 +33,14 @@ public class TensorContract extends AbstractEvaluator {
     IExpr tensor = ast.arg1();
     IExpr slots = ast.arg2();
 
-    // 1. Handle MatrixSymbol
+    // Handle MatrixSymbol
     if (tensor instanceof MatrixSymbolExpr) {
       if (isTraceContraction(slots)) {
         return F.Tr(tensor);
       }
     }
 
-    // 2. Handle ArraySymbol
+    // Handle ArraySymbol
     if (tensor instanceof ArraySymbolExpr) {
       return evaluateArraySymbol((ArraySymbolExpr) tensor, slots);
     }
@@ -50,7 +50,7 @@ public class TensorContract extends AbstractEvaluator {
       return F.NIL;
     }
 
-    // 4. Handle Explicit Lists (Calculation)
+    // Handle Explicit Lists (Calculation)
     if (tensor.isList()) {
       return contractList((IAST) tensor, slots, engine);
     }

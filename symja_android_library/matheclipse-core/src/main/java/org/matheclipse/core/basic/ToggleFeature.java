@@ -50,13 +50,6 @@ public class ToggleFeature {
   public static boolean SERIES = true;
 
   /**
-   * If <code>true</code>, enable usage of <code>denominators != 1</code> in <code>
-   * org.matheclipse.core.reflection.system.Series</code> and <code>
-   * org.matheclipse.core.reflection.system.SeriesData</code> functions.
-   */
-  public static boolean SERIES_DENOMINATOR = false;
-
-  /**
    * If <code>true</code>, enable solvers from package <code>io.github.mangara.diophantine</code> to
    * find some solutions in {@link S#FindInstance}
    */
