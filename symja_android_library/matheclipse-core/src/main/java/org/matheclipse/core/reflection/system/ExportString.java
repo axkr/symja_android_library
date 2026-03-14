@@ -25,6 +25,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
+import org.matheclipse.core.graphics.SVGGraphics;
+import org.matheclipse.core.graphics.SVGGraphics3D;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTDataset;
 import org.matheclipse.core.interfaces.IExpr;
@@ -59,6 +61,17 @@ public class ExportString extends AbstractEvaluator {
         return ExpressionJSONConvert.exportExpressionJSONIStringX(arg1);
       }
 
+      if (format.equals(Extension.SVG)) {
+        if (arg1.isGraphicsObject()) {
+          SVGGraphics svgGraphics = new SVGGraphics(360, 360);
+          String svgString=svgGraphics.toSVG((IAST) arg1, true);
+          return F.stringx(svgString);
+        }
+        if (arg1.isAST(S.Graphics3D)) {
+          String svgString = SVGGraphics3D.toSVG((IAST) arg1);
+          return F.stringx(svgString);
+        }
+      }
       if (arg1 instanceof GraphExpr) {
         graphExport(((GraphExpr<DefaultEdge>) arg1).toData(), writer, format);
         return F.stringx(writer.toString());
