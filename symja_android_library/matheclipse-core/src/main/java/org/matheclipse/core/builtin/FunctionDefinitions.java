@@ -21,6 +21,7 @@ public final class FunctionDefinitions {
       S.ArrayPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ArrayPlot());
       S.ArraySymbol.setEvaluator(new org.matheclipse.core.reflection.system.ArraySymbol());
       S.BarnesG.setEvaluator(new org.matheclipse.core.reflection.system.BarnesG());
+      S.DawsonF.setEvaluator(new org.matheclipse.core.reflection.system.DawsonF());
       S.MatrixSymbol.setEvaluator(new org.matheclipse.core.reflection.system.MatrixSymbol());
       S.VectorSymbol.setEvaluator(new org.matheclipse.core.reflection.system.VectorSymbol());
       S.BarChart.setEvaluator(new org.matheclipse.core.builtin.graphics.BarChart());
@@ -40,6 +41,7 @@ public final class FunctionDefinitions {
       S.DifferenceDelta.setEvaluator(new org.matheclipse.core.reflection.system.DifferenceDelta());
       S.DifferenceQuotient
           .setEvaluator(new org.matheclipse.core.reflection.system.DifferenceQuotient());
+      S.DifferenceRoot.setEvaluator(new org.matheclipse.core.reflection.system.DifferenceRoot());
       S.DiscretePlot.setEvaluator(new org.matheclipse.core.builtin.graphics.DiscretePlot());
       S.DiscreteRatio.setEvaluator(new org.matheclipse.core.reflection.system.DiscreteRatio());
       S.DiscreteShift.setEvaluator(new org.matheclipse.core.reflection.system.DiscreteShift());
@@ -97,6 +99,7 @@ public final class FunctionDefinitions {
 
       S.LaplaceTransform
           .setEvaluator(new org.matheclipse.core.reflection.system.LaplaceTransform());
+      S.Limit.setEvaluator(new org.matheclipse.core.reflection.system.Limit());
       S.LinearOptimization
           .setEvaluator(new org.matheclipse.core.reflection.system.LinearOptimization());
       S.LinearProgramming
@@ -104,7 +107,8 @@ public final class FunctionDefinitions {
       S.LogBarnesG.setEvaluator(new org.matheclipse.core.reflection.system.LogBarnesG());
 
       S.MeijerG.setEvaluator(new org.matheclipse.core.reflection.system.MeijerG());
-
+      S.MinimalPolynomial
+          .setEvaluator(new org.matheclipse.core.reflection.system.MinimalPolynomial());
       S.N.setEvaluator(new org.matheclipse.core.reflection.system.N());
       S.ND.setEvaluator(new org.matheclipse.core.reflection.system.ND());
       S.NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
