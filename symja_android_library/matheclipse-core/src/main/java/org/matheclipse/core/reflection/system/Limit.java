@@ -832,8 +832,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     }
     if (temp.isNIL()) {
       if (evaledExpr.isNumericFunction(data.variable)) {
-        System.out.println("Standard heuristics failed for expression: " + evaledExpr
-            + " with limit value: " + limitValue);
+        // System.out.println("Standard heuristics failed for expression: " + evaledExpr
+        // + " with limit value: " + limitValue);
         // Fallback to Gruntz algorithm if standard heuristics fail
         IExpr gruntzResult = GruntzLimit.evaluateLimit(evaledExpr, data.variable(),
             data.limitValue(), data.direction(), engine);
