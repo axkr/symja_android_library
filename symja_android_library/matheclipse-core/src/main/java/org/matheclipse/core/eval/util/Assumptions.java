@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.statistics.IDistribution;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -129,7 +130,7 @@ public class Assumptions extends AbstractAssumptions {
     public RealRelations copy() {
       RealRelations clone = new RealRelations();
       clone.engine = this.engine;
-      clone.interval = this.interval; 
+      clone.interval = this.interval;
       return clone;
     }
 
@@ -419,46 +420,55 @@ public class Assumptions extends AbstractAssumptions {
    * @return <code>null</code> if assumptions couldn't be assigned
    */
   private static IAssumptions addList(IAST ast, boolean intersection, Assumptions assumptions) {
-    for (int i = 1; i < ast.size(); i++) {
+    if (ast.size() > 1 && ast.arg1().isAST()) {
+      IAST temp = (IAST) ast.arg1();
+      if (!addSingleRelation(temp, true, assumptions)) {
+        return null;
+      }
+    }
+    for (int i = 2; i < ast.size(); i++) {
       if (ast.get(i).isAST()) {
         IAST temp = (IAST) ast.get(i);
-        if (temp.isAST(S.Element, 3)) {
-          if (!addElement(temp, assumptions)) {
-            return null;
-          }
-        } else if (temp.isAST(S.Greater, 3, 4)) {
-          if (!addGreater(temp, intersection, assumptions)) {
-            return null;
-          }
-        } else if (temp.isAST(S.GreaterEqual, 3, 4)) {
-          if (!addGreaterEqual(temp, intersection, assumptions)) {
-            return null;
-          }
-        } else if (temp.isAST(S.Less, 3, 4)) {
-          if (!addLess(temp, intersection, assumptions)) {
-            return null;
-          }
-        } else if (temp.isAST(S.LessEqual, 3, 4)) {
-          if (!addLessEqual(temp, intersection, assumptions)) {
-            return null;
-          }
-        } else if (temp.isEqual()) {
-          if (!addEqual(temp, intersection, assumptions)) {
-            return null;
-          }
-        } else if (temp.isAST(S.Unequal, 3)) {
-          if (!addUnequal(temp, assumptions)) {
-            return null;
-          }
-          // } else if (temp.isAnd()) {
-          // IAssumptions assum = addList(temp, intersection, assumptions);
-          // if (assum == null) {
-          // return null;
-          // }
+        if (!addSingleRelation(temp, intersection, assumptions)) {
+          return null;
         }
       }
     }
     return assumptions;
+  }
+
+  private static boolean addSingleRelation(IAST temp, boolean intersection,
+      Assumptions assumptions) {
+    if (temp.isAST(S.Element, 3)) {
+      if (!addElement(temp, assumptions)) {
+        return false;
+      }
+    } else if (temp.isAST(S.Greater, 3, 4)) {
+      if (!addGreater(temp, intersection, assumptions)) {
+        return false;
+      }
+    } else if (temp.isAST(S.GreaterEqual, 3, 4)) {
+      if (!addGreaterEqual(temp, intersection, assumptions)) {
+        return false;
+      }
+    } else if (temp.isAST(S.Less, 3, 4)) {
+      if (!addLess(temp, intersection, assumptions)) {
+        return false;
+      }
+    } else if (temp.isAST(S.LessEqual, 3, 4)) {
+      if (!addLessEqual(temp, intersection, assumptions)) {
+        return false;
+      }
+    } else if (temp.isEqual()) {
+      if (!addEqual(temp, intersection, assumptions)) {
+        return false;
+      }
+    } else if (temp.isAST(S.Unequal, 3)) {
+      if (!addUnequal(temp, assumptions)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private static boolean addRelationalAssumption(IAST relationalAST, boolean intersection,
@@ -858,11 +868,20 @@ public class Assumptions extends AbstractAssumptions {
 
   @Override
   public boolean isUnequal(IExpr expr, INumber number) {
-    ComplexRelations relations = complexRelationsMap.get(expr);
-    if (relations != null) {
-      ArrayList<INumber> unequals = relations.getUnequals();
+    ComplexRelations complexRelations = complexRelationsMap.get(expr);
+    if (complexRelations != null) {
+      ArrayList<INumber> unequals = complexRelations.getUnequals();
       if (unequals.contains(number)) {
         return true;
+      }
+    }
+    if (number.isReal()) {
+      RealRelations relations = realRelationsMap.get(expr);
+      if (relations != null) {
+        IAST interval = relations.getInterval();
+        if (interval.isPresent() && !IntervalDataSym.isMember(interval, (IReal) number)) {
+          return true;
+        }
       }
     }
     return false;

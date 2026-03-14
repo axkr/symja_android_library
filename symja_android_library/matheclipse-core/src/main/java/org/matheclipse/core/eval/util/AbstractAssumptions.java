@@ -896,7 +896,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
               return true;
             }
           }
-          if (base.isPositiveResult() && exponent.isInteger()) {
+          if (base.isRealResult() && base.isUnequalResult(F.C0) && exponent.isInteger()) {
             if (iArg2.isEven()) {
               return true;
             }
