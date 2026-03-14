@@ -345,7 +345,7 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
   public void testCompilePrintModule001() {
     if (ToggleFeature.COMPILE) {
       check(
-          "f=CompilePrint({{n, _Integer}}, Module({p = Range(n),i,x,t}, Do(x = RandomInteger({1,i}); t = p[[i]]; p[[i]] = p[[x]]; p[[x]] = t,{i,n,2,-1}); p));", //
+          "f=Compile({{n, _Integer}}, Module({p = Range(n),i,x,t}, Do(x = RandomInteger({1,i}); t = p[[i]]; p[[i]] = p[[x]]; p[[x]] = t,{i,n,2,-1}); p));", //
           "");
       // check("f(10)", //
       // "{3,8,1,2,9,7,4,5,10,6}");

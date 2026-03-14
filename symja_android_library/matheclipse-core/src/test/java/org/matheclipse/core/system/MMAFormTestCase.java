@@ -5,7 +5,6 @@ import static org.matheclipse.core.expression.F.CI;
 import static org.matheclipse.core.expression.F.CInfinity;
 import static org.matheclipse.core.expression.F.Sinc;
 import static org.matheclipse.core.expression.F.Times;
-
 import org.junit.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -56,4 +55,13 @@ public class MMAFormTestCase extends ExprEvaluatorTestCase {
     IExpr expr = parser.parse("a+i*b^2+k*c^3+d");
     assertEquals(expr.toMMA(), "a + i*b^2 + k*c^3 + d");
   }
+
+  @Test
+  public void testWLHeadTest() {
+    EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
+    ExprParser parser = new ExprParser(engine, true);
+    IExpr expr = parser.parse("f=compile({{x, _real}}, E^3-cos(Pi^2/x));");
+    assertEquals(expr.toMMA(), "f=Compile[{{x,_Real}},E^3 - Cos[Pi^2/x]];Null");
+  }
+
 }

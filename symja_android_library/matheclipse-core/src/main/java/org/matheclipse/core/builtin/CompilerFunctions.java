@@ -3,11 +3,12 @@ package org.matheclipse.core.builtin;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.lang.model.element.Modifier;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.SimpleCompiler;
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.compile.CompileAnalyzer;
@@ -19,8 +20,10 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionOptionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.Blank;
+import org.matheclipse.core.expression.ExprTrie;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -34,37 +37,15 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import com.squareup.javapoet.ArrayTypeName;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeName;
+import com.squareup.javapoet.TypeSpec;
 
 public class CompilerFunctions {
-
-  public static final String JAVA_SOURCE_CODE = //
-      "/** Compile with <a href=\"https://github.com/janino-compiler/janino\">Janino compiler</a> */\n"
-          + "package org.matheclipse.core.compile;                                      \n"
-          + "                                                                           \n"
-          + "import java.util.ArrayList;                                                \n"
-          + "import org.hipparchus.complex.Complex;                                     \n"
-          + "import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;     \n"
-          + "import org.matheclipse.core.interfaces.*;                                  \n"
-          + "import org.matheclipse.core.eval.EvalEngine;                               \n"
-          + "import org.matheclipse.core.expression.ExprTrie;                           \n"
-          + "import org.matheclipse.core.expression.S;                                  \n"
-          + "import static org.matheclipse.core.expression.S.*;                         \n"
-          + "import org.matheclipse.core.expression.CMath;                              \n"
-          + "import org.matheclipse.core.expression.DMath;                              \n"
-          + "import org.matheclipse.core.expression.F;                                  \n"
-          + "import static org.matheclipse.core.expression.F.*;                         \n"
-          + "                                                                           \n"
-          + "public class CompiledFunction extends AbstractFunctionEvaluator {          \n"
-          + "  EvalEngine engine;\n" + "  IASTAppendable stack;\n" + "  ExprTrie vars;\n"
-          + "  int top=1;\n" + "  {$fields}\n" // Primitive Class Attributes
-          + "    public IExpr evaluate(final IAST ast, EvalEngine engine){              \n"
-          + "        if (ast.argSize()!={$size}) { return print(ast,{$size},engine); }  \n"
-          + "        this.engine = engine;\n"
-          + "        {$variables}                                                       \n"
-          + "        return {$expression}\n"
-          + "    }                                                                      \n"
-          + "{$methods}\n"
-          + "}                                                                          \n";
 
   private static class Initializer {
     private static void init() {
@@ -78,92 +59,6 @@ public class CompilerFunctions {
 
   public static void initialize() {
     Initializer.init();
-  }
-
-  private static class JavaIndenter {
-    private static class JavaSourceLine {
-      private String java;
-      private int lenJava;
-      private int block = 0;
-
-      public JavaSourceLine(String line, int lenJava) {
-        line = line.trim();
-        int PosOfComment = line.length();
-        this.lenJava = lenJava;
-
-        for (int i = 0; i < line.length() && PosOfComment == line.length(); i++) {
-          switch (line.charAt(i)) {
-            case '"':
-              for (int k = i + 1; k < line.length(); k++) {
-                if (line.charAt(k) == '"' && line.charAt(k - 1) != '\\') {
-                  i = k + 1;
-                  break;
-                }
-              }
-              break;
-            case '{':
-              block++;
-              break;
-            case '}':
-              block--;
-              break;
-            default:
-              break;
-          }
-        }
-        if (block == -1) {
-          this.lenJava--;
-        }
-        java = line.substring(0, PosOfComment);
-      }
-
-      public int getIndentation() {
-        return this.lenJava;
-      }
-
-      public boolean startOfBlock() {
-        return block > 0 && (block & 1) == 1;
-      }
-
-      public String returnIndentedLine() {
-        int number = 2 * this.lenJava;
-        StringBuilder buf = new StringBuilder(number + java.length());
-        for (int i = 0; i < number; i++) {
-          buf.append(" ");
-        }
-        buf.append(java);
-        return buf.toString();
-      }
-    }
-
-    private ArrayList<JavaSourceLine> programLines = new ArrayList<>();
-
-    public JavaIndenter() {
-      programLines.clear();
-    }
-
-    public void addSourceLine(String sourceLine) {
-      if (programLines.isEmpty()) {
-        programLines.add(new JavaSourceLine(sourceLine, 0));
-        return;
-      }
-      JavaSourceLine previous = programLines.get(programLines.size() - 1);
-      int indentation = previous.getIndentation();
-
-      if (previous.startOfBlock()) {
-        indentation++;
-      }
-      programLines.add(new JavaSourceLine(sourceLine, indentation));
-    }
-
-    public String indentProgram() {
-      StringBuilder buf = new StringBuilder();
-      for (JavaSourceLine line : programLines) {
-        buf.append(line.returnIndentedLine());
-        buf.append("\n");
-      }
-      return buf.toString();
-    }
   }
 
   static class MemoryClassLoader extends URLClassLoader {
@@ -186,7 +81,6 @@ public class CompilerFunctions {
   }
 
   private static class Compile extends AbstractCoreFunctionOptionEvaluator {
-
     @Override
     protected IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine) {
       if (!ToggleFeature.COMPILE) {
@@ -197,10 +91,7 @@ public class CompilerFunctions {
         if (args == null) {
           return F.NIL;
         }
-        // Extract RuntimeAttributes from options array (populated by setUp defaults if not
-        // provided)
         IExpr runtimeAttributes = options[0];
-
         CompiledFunctionExpr compiled = compile(ast, args, runtimeAttributes, engine);
         if (compiled != null) {
           return compiled;
@@ -226,11 +117,9 @@ public class CompilerFunctions {
       newSymbol.setAttributes(ISymbol.HOLDALL);
       setOptions(newSymbol, S.RuntimeAttributes, F.CEmptyList);
     }
-
   }
 
   private static final class CompiledFunction extends AbstractCoreFunctionEvaluator {
-
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       final IExpr head = ast.head();
@@ -282,33 +171,20 @@ public class CompilerFunctions {
   }
 
   public static class CompilePrint extends AbstractCoreFunctionOptionEvaluator {
-
     @Override
     protected IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine) {
-      if (!ToggleFeature.COMPILE) {
+      if (!ToggleFeature.COMPILE_PRINT) {
         return F.NIL;
       }
-
       CompiledFunctionArg[] args = checkIsVariableOrVariableList(ast, engine);
       if (args == null) {
-        return F.NIL;
+        return F.NIL; 
       }
-
       String source = compilePrint(ast, args, engine);
       if (source != null) {
-        source = indentSource(source);
         return F.stringx(source, IStringX.APPLICATION_JAVA);
       }
       return F.NIL;
-    }
-
-    private String indentSource(String source) {
-      String[] split = source.split("\n");
-      JavaIndenter p = new JavaIndenter();
-      for (int i = 0; i < split.length; i++) {
-        p.addSourceLine(split[i].trim());
-      }
-      return p.indentProgram();
     }
 
     @Override
@@ -401,7 +277,6 @@ public class CompilerFunctions {
     return new CompiledFunctionArg(sym, headTest, rank);
   }
 
-  // UPDATED: Now receives and wires runtimeAttributes
   public static CompiledFunctionExpr compile(final IAST ast, CompiledFunctionArg[] args,
       IExpr runtimeAttributes, EvalEngine engine) {
     try {
@@ -429,12 +304,40 @@ public class CompilerFunctions {
   public static String compilePrint(final IAST ast, CompiledFunctionArg[] args, EvalEngine engine) {
     Map<IExpr, String> symbolicVariables = new HashMap<>();
     Map<IExpr, String> numericVariables = new HashMap<>();
-    StringBuilder fieldsBuf = new StringBuilder();
-    StringBuilder variablesBuf = new StringBuilder();
-    variablesBuf.append("stack  = F.ast(S.List, 100, true);\n");
-    variablesBuf.append("vars = new ExprTrie();\n");
-    int top = 1;
     IBuiltInSymbol domain = S.Reals;
+
+    TypeSpec.Builder classBuilder = TypeSpec.classBuilder("CompiledFunction")
+        .addModifiers(Modifier.PUBLIC).superclass(AbstractFunctionEvaluator.class);
+
+    classBuilder.addField(EvalEngine.class, "engine", Modifier.PRIVATE);
+    classBuilder.addField(IASTAppendable.class, "stack", Modifier.PRIVATE);
+    classBuilder.addField(ExprTrie.class, "vars", Modifier.PRIVATE);
+    classBuilder.addField(
+        FieldSpec.builder(TypeName.INT, "top", Modifier.PRIVATE).initializer("1").build());
+
+    // Force TYPE imports for all dynamically generated references so Janino recognizes "F.xxx()"
+    classBuilder.addMethod(MethodSpec.methodBuilder("dummyImports").addModifiers(Modifier.PRIVATE)
+        .returns(void.class).addParameter(org.matheclipse.core.expression.CMath.class, "c")
+        .addParameter(org.matheclipse.core.expression.DMath.class, "d")
+        .addParameter(org.matheclipse.core.expression.F.class, "f")
+        .addParameter(org.matheclipse.core.expression.S.class, "s")
+        .addParameter(org.hipparchus.complex.Complex.class, "cmp")
+        .addParameter(org.matheclipse.core.interfaces.ISymbol.class, "isy")
+        .addParameter(org.matheclipse.core.interfaces.IExpr.class, "iex")
+        .addParameter(org.matheclipse.core.expression.ExprTrie.class, "et").build());
+
+    MethodSpec.Builder evalMethod = MethodSpec.methodBuilder("evaluate")
+        .addAnnotation(Override.class).addModifiers(Modifier.PUBLIC).returns(IExpr.class)
+        .addParameter(IAST.class, "ast", Modifier.FINAL).addParameter(EvalEngine.class, "engine");
+
+    evalMethod.beginControlFlow("if (ast.argSize() != $L)", args.length);
+    evalMethod.addStatement("return print(ast, $L, engine)", args.length);
+    evalMethod.endControlFlow();
+
+    evalMethod.addStatement("this.engine = engine");
+
+    evalMethod.addStatement("this.stack = $T.ast($T.List, 100, true)", F.class, S.class);
+    evalMethod.addStatement("this.vars = new $T()", ExprTrie.class);
 
     for (int j = 0; j < args.length; j++) {
       IExpr variable = args[j].argument();
@@ -443,29 +346,30 @@ public class CompilerFunctions {
         return null;
       }
 
-      String typeStr = "", suffix = "", evalName = "";
+      TypeName baseTypeName = null;
+      String suffix = "", evalName = "";
       IExpr argType = args[j].type();
 
       if (argType.isBuiltInSymbol()) {
         switch (((IBuiltInSymbol) argType).ordinal()) {
           case ID.Real:
-            typeStr = "double";
+            baseTypeName = TypeName.DOUBLE;
             suffix = "d";
             evalName = "Double";
             break;
           case ID.Integer:
-            typeStr = "int";
+            baseTypeName = TypeName.INT;
             suffix = "i";
             evalName = "Int";
             break;
           case ID.Complex:
             domain = S.Complexes;
-            typeStr = "Complex";
+            baseTypeName = ClassName.get(Complex.class);
             suffix = "c";
             evalName = "Complex";
             break;
           case ID.Booleans:
-            typeStr = "boolean";
+            baseTypeName = TypeName.BOOLEAN;
             suffix = "b";
             evalName = "Boolean";
             break;
@@ -476,15 +380,15 @@ public class CompilerFunctions {
         continue;
       }
 
-      String rankStr = "";
+      TypeName finalTypeName = baseTypeName;
       String evalRankStr = "";
       switch (args[j].rank) {
         case VECTOR:
-          rankStr = "[]";
+          finalTypeName = ArrayTypeName.of(baseTypeName);
           evalRankStr = "Vector";
           break;
         case MATRIX:
-          rankStr = "[][]";
+          finalTypeName = ArrayTypeName.of(ArrayTypeName.of(baseTypeName));
           evalRankStr = "Matrix";
           break;
         case SCALAR:
@@ -493,15 +397,12 @@ public class CompilerFunctions {
 
       String fieldName = "arg_" + (j + 1) + "_" + suffix;
 
-      fieldsBuf.append("  ").append(typeStr).append(rankStr).append(" ").append(fieldName)
-          .append(";\n");
-
-      variablesBuf.append("this.").append(fieldName).append(" = engine.eval").append(evalName)
-          .append(evalRankStr).append("(ast.get(").append(j + 1).append("));\n");
+      classBuilder.addField(finalTypeName, fieldName, Modifier.PRIVATE);
+      evalMethod.addStatement("this.$L = engine.eval$L$L(ast.get($L))", fieldName, evalName,
+          evalRankStr, j + 1);
 
       symbolicVariables.put(variable, variable.toString());
       numericVariables.put(variable, "this." + fieldName);
-      top++;
     }
 
     IExpr expression = ast.arg2();
@@ -510,31 +411,27 @@ public class CompilerFunctions {
 
     CompileAnalyzer analyzer = new CompileAnalyzer();
     analyzer.analyze(expression);
+
     CompileFactory cf = new CompileFactory(numericVars, symbolicVars, args, domain,
-        analyzer.getNodeTypes(), fieldsBuf);
+        analyzer.getNodeTypes(), classBuilder);
 
-    return generateClassSource(cf, expression, variablesBuf, fieldsBuf, args.length);
-  }
-
-  private static String generateClassSource(CompileFactory cf, IExpr expression,
-      StringBuilder variablesBuf, StringBuilder fieldsBuf, int argsSize) {
     StringBuilder expressionBuf = new StringBuilder();
-    StringBuilder methodsBuf = new StringBuilder();
-    cf.convert(expressionBuf, methodsBuf, expression, false, true);
+    cf.convert(expressionBuf, expression, false, true);
 
-    String exprWrapped;
     String exprStr = expressionBuf.toString();
     if (exprStr.startsWith("throw ")) {
-      exprWrapped = exprStr + ";\n";
+      evalMethod.addStatement("$L", exprStr);
     } else {
-      exprWrapped = "F.symjify(" + exprStr + ");\n";
+      evalMethod.addStatement("return $T.symjify($L)", F.class, exprStr);
     }
 
-    String source = JAVA_SOURCE_CODE.replace("{$fields}", fieldsBuf.toString());
-    source = source.replace("{$variables}", variablesBuf.toString());
-    source = source.replace("{$methods}", methodsBuf.toString());
-    source = source.replace("{$expression}", exprWrapped);
-    source = source.replace("{$size}", Integer.toString(argsSize));
-    return source;
+    classBuilder.addMethod(evalMethod.build());
+
+    // Build the File without trying to use .addStaticImport()
+    JavaFile javaFile = JavaFile.builder("org.matheclipse.core.compile", classBuilder.build())
+        .addFileComment("Compile with Janino compiler\nDynamically generated by JavaPoet")
+        .skipJavaLangImports(true).build();
+
+    return javaFile.toString();
   }
 }
