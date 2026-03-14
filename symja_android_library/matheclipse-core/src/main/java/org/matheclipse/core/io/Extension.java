@@ -42,6 +42,8 @@ public enum Extension {
   RAWJSON, //
   /** text format */
   STRING,
+  /** structured vector graphics format */
+  SVG,
   /** table format */
   TABLE,
   /** Tab-Separated Values */
