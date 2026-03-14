@@ -2523,6 +2523,14 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "1/2*(1/2*(1+Sqrt(13))+Sqrt(-4+(1+Sqrt(13))^2/4))}}");
   }
 
+  @Test
+  public void testSolveDSolve() {
+    check("Solve({C(1)/E^(3/2*Pi)==0},{C(1)})", //
+        "{{C(1)->0}}");
+    check("Solve({-Sin(x)-3*z(x)+y'(x)==0,-1/5+y(x)+z(x)==0},{y'(x),z(x)})", //
+        "{{y'(x)->1/5*(3+5*Sin(x)-15*y(x)),z(x)->1/5-y(x)}}");
+  }
+
   /** The JUnit setup method */
   @Override
   public void setUp() {
