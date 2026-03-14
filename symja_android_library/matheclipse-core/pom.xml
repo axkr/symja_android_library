@@ -37,8 +37,8 @@
 			<artifactId>apfloat</artifactId>
 		</dependency>
 		<dependency>
-    			<groupId>jakarta.annotation</groupId>
-    			<artifactId>jakarta.annotation-api</artifactId> 
+			<groupId>jakarta.annotation</groupId>
+			<artifactId>jakarta.annotation-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.hipparchus</groupId>
@@ -129,15 +129,19 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
 		</dependency>
-        <dependency>
-    			<groupId>com.github.spotbugs</groupId>
-    			<artifactId>spotbugs-annotations</artifactId>
-    			<scope>provided</scope>  
-     	</dependency>
 		<dependency>
-    			<groupId>com.j2html</groupId>
-    			<artifactId>j2html</artifactId> 
-       	</dependency>
+			<groupId>com.github.spotbugs</groupId>
+			<artifactId>spotbugs-annotations</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.j2html</groupId>
+			<artifactId>j2html</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.squareup</groupId>
+			<artifactId>javapoet</artifactId>
+		</dependency>
 		<!-- test dependencies -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
