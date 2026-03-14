@@ -12,12 +12,12 @@ See
 ### Examples
 
 ```
->> people = <|236234 -> <|"name" -> "bob", "age" -> 18, "sex" -> "M"|>,253456 -> <|"name" -> "sue", "age" -> 25, "sex" -> "F"|>, 323442 -> <|"name" -> "ann", "age" -> 18, "sex" -> "F"|>
+>> people = <|236234 -> <|"name" -> "bob", "age" -> 18, "sex" -> "M"|>,253456 -> <|"name" -> "sue", "age" -> 25, "sex" -> "F"|>, 323442 -> <|"name" -> "ann", "age" -> 18, "sex" -> "F"|>|>
 
 <|236234-><|name->bob,age->20,sex->M|>,253456-><|name->sue,age->25,sex->F|>,323442-><|name->ann,age->18,sex->F|>|>
 ```
 
-`"age" -> 18` and `"sex" -> "F"` could be replaced once each times by the same reference internally:
+ `"age" -> 18` and `"sex" -> "F"` could be replaced once each times by the same reference internally:
 
 ```
 >> Share(people) 
