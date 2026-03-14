@@ -1840,24 +1840,33 @@ public class OutputFormFactory {
     try {
       IExpr plusArg;
       // SeriesData[x, x0, list, nmin, nmax, den]
-      IExpr x = seriesData.getX();
-      IExpr x0 = seriesData.getX0();
-      int nmin = seriesData.getNMin();
-      int nmax = seriesData.getNMax();
-      int order = seriesData.order();
-      long den = seriesData.getDenominator();
+      IExpr expansionVariable = seriesData.expansionVariable();
+      IExpr expansionPoint = seriesData.expansionPoint();
+      int minExponent = seriesData.minExponent();
+      int exponentBound = seriesData.exponentBound();
+      int truncateOrder = seriesData.truncateOrder();
+      long puiseuxDenominator = seriesData.puiseuxDenominator();
+      IExpr base;
+      if (expansionPoint.isDirectedInfinity()) {
+        // For expansions at Infinity or -Infinity, the base is always 1/x
+        base = F.Power(expansionVariable, F.CN1);
+      } else if (expansionPoint.isZero()) {
+        base = expansionVariable;
+      } else {
+        base = F.Subtract(expansionVariable, expansionPoint);
+      }
       boolean call = NO_PLUS_CALL;
-      if (nmax > nmin) {
-        INumber exp = F.QQ(nmin, den).normalize();
-        IExpr pow = x.subtract(x0).power(exp);
-        call = convertSeriesDataArg(tempBuffer, seriesData.coefficient(nmin), pow, call);
-        for (int i = nmin + 1; i < nmax; i++) {
-          exp = F.QQ(i, den).normalize();
-          pow = x.subtract(x0).power(exp);
+      if (exponentBound > minExponent) {
+        INumber exp = F.QQ(minExponent, puiseuxDenominator).normalize();
+        IExpr pow = base.power(exp);
+        call = convertSeriesDataArg(tempBuffer, seriesData.coefficient(minExponent), pow, call);
+        for (int i = minExponent + 1; i < exponentBound; i++) {
+          exp = F.QQ(i, puiseuxDenominator).normalize();
+          pow = base.power(exp);
           call = convertSeriesDataArg(tempBuffer, seriesData.coefficient(i), pow, call);
         }
       }
-      plusArg = F.Power(F.O(x.subtract(x0)), F.QQ(order, den).normalize());
+      plusArg = F.Power(F.O(base), F.QQ(truncateOrder, puiseuxDenominator).normalize());
       if (!plusArg.isZero()) {
         convertPlusArgument(tempBuffer, plusArg, call);
         call = PLUS_CALL;

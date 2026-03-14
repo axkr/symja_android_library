@@ -2250,7 +2250,7 @@ public class IntervalDataSym {
    */
   private static IExpr extractFromExpr(IExpr expr, IAST variables, Map<IExpr, IAST> intervalDataMap,
       EvalEngine engine, boolean listAsAnd) {
-    // 1. Try to extract the entire expression for a specific variable
+    // Try to extract the entire expression for a specific variable
     for (int v = 1; v < variables.size(); v++) {
       IExpr var = variables.get(v);
       IAST interval = toIntervalData(expr, var, engine, listAsAnd);
@@ -2268,7 +2268,7 @@ public class IntervalDataSym {
       }
     }
 
-    // 2. If expression is an And or List, process its arguments recursively
+    // If expression is an And or List, process its arguments recursively
     if (expr.isAnd() || (listAsAnd && expr.isList())) {
       IAST ast = (IAST) expr;
       IASTAppendable newAst = ast.isAnd() ? F.ast(S.And, ast.argSize()) : F.ListAlloc(ast.size());

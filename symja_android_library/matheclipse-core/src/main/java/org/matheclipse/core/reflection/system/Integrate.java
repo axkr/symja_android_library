@@ -16,7 +16,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apfloat.ApfloatInterruptedException;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -338,7 +337,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       }
       if (arg1 instanceof ASTSeriesData) {
         ASTSeriesData series = ((ASTSeriesData) arg1);
-        if (series.getX().equals(x)) {
+        if (series.expansionVariable().equals(x)) {
           final IExpr temp = ((ASTSeriesData) arg1).integrate(x);
           if (temp != null) {
             return temp;
@@ -847,7 +846,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         if (!arg1AST.isEvalFlagOn(IAST.IS_DECOMPOSED_PARTIAL_FRACTION) && x.isSymbol()) {
           Optional<IExpr[]> parts = AlgebraUtil.fractionalParts(arg1, true);
           if (parts.isPresent()) {
-            IExpr temp = Algebra.partsApart(parts.get(), x, engine);
+            IExpr temp = AlgebraUtil.partsApart(parts.get(), x, engine);
             if (temp.isPresent() && !temp.equals(arg1)) {
               if (temp.isPlus()) {
                 return mapIntegrate((IAST) temp, x);

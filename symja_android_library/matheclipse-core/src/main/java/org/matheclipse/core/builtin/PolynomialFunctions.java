@@ -416,7 +416,7 @@ public class PolynomialFunctions {
       IAST list = ast.arg2().makeList();
       if (arg1 instanceof ASTSeriesData && list.argSize() == 1) {
         ASTSeriesData series = (ASTSeriesData) arg1;
-        if (series.getX().equals(list.arg1())) {
+        if (series.expansionVariable().equals(list.arg1())) {
           return series.coefficientList();
         }
       }

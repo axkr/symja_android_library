@@ -34,6 +34,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
@@ -169,16 +170,19 @@ public class AlgebraUtil {
      * ASTs which are expanded in this <code>Expander</code> are cached in a set. The expansion is
      * only cached in the set, if the AST doesn t get the {@link IAST#IS_EXPANDED} flag.
      */
-    Set<IAST> expandedASTs = Collections.newSetFromMap(new IdentityHashMap<>());
+    /**
+     * ASTs which are expanded in this Expander are cached in a set. The expansion is only cached in
+     * the set if the AST doesn't get the IAST.IS_EXPANDED flag. * Optimized: initialized lazily to
+     * prevent massive memory allocations during deep tree traversals.
+     */
+    Set<IAST> expandedASTs = null;
+
     final boolean expandNegativePowers;
-
     final boolean distributePlus;
-
     final boolean evalParts;
-
     final boolean factorTerms;
 
-    /** Pattern matcher which may be <code>null</code> if undefined */
+    /** Pattern matcher which may be F.NIL if undefined */
     final Predicate<IExpr> matcher;
 
     public Expander(Predicate<IExpr> matcher, boolean expandNegativePowers, boolean distributePlus,
@@ -196,6 +200,10 @@ public class AlgebraUtil {
             && matcher == null) {
           ((IAST) expr).addEvalFlags(IAST.IS_EXPANDED);
         } else {
+          // Lazy initialization to save memory for nodes that don't require map caching
+          if (expandedASTs == null) {
+            expandedASTs = Collections.newSetFromMap(new IdentityHashMap<>());
+          }
           expandedASTs.add((IAST) expr);
         }
       }
@@ -281,7 +289,7 @@ public class AlgebraUtil {
 
     /**
      * @param ast
-     * @return
+     * @return F.NIL if no evaluation is possible
      */
     public IExpr expandAST(final IAST ast) {
       if (isPatternFree(ast)) {
@@ -290,9 +298,11 @@ public class AlgebraUtil {
       if (ast.isExpanded() && expandNegativePowers && !distributePlus) {
         return F.NIL;
       }
-      if (expandedASTs.contains(ast)) {
+      // Check the lazily initialized map safely
+      if (expandedASTs != null && expandedASTs.contains(ast)) {
         return F.NIL;
       }
+
       if (ast.isPower()) {
         return expandPowerNIL(ast);
       } else if (ast.isTimes()) {
@@ -359,11 +369,10 @@ public class AlgebraUtil {
         if (distributePlus && parts3[0].isPlus()) {
           IAST mappedAST =
               ((IAST) parts3[0]).mapThreadEvaled(EvalEngine.get(), F.Times(null, powerAST), 1);
-          IExpr flattened = flattenOneIdentity(mappedAST, F.C0); // EvalAttributes.flatten(mappedAST).orElse(mappedAST);
+          IExpr flattened = flattenOneIdentity(mappedAST, F.C0);
           return addExpanded(flattened);
         }
         if (evaled) {
-          // return addExpanded(binaryFlatTimesExpr(temp[0], powerAST, engine));
           return addExpanded(binaryFlatTimes(parts3[0], powerAST));
         }
         addExpanded(ast);
@@ -371,6 +380,7 @@ public class AlgebraUtil {
       } else if (ast.isPlus()) {
         return expandPlus(ast);
       }
+
       addExpanded(ast);
       return F.NIL;
     }
@@ -434,14 +444,12 @@ public class AlgebraUtil {
         if (isPatternFree(plusAST1)) {
           return F.NIL;
         }
-        // result = F.ast(S.Plus, (int) plusAST1.argSize());
         PlusOp plusOp = new PlusOp(plusAST1.argSize());
         final IExpr t =
             plusAST0.isPlusTimesPower() ? expandAST(plusAST0).orElse(plusAST0) : plusAST0;
         plusAST1.forEach(x -> evalAndExpandAST(t, false, x, true, plusOp, engine));
         return plusOp.getSum();
       } else if (isPatternFree(plusAST1)) {
-        // result = F.ast(S.Plus, plusAST0.argSize());
         PlusOp plusOp = new PlusOp(plusAST0.argSize());
         final IExpr t =
             plusAST1.isPlusTimesPower() ? expandAST(plusAST1).orElse(plusAST1) : plusAST1;
@@ -756,6 +764,7 @@ public class AlgebraUtil {
         || (numerator.isPower() && numerator.first().isSymbol())) {
       numer = F.Times(numerator);
     }
+
     IExpr denom = denominator;
     if (denominator.isPlus()//
         || (denominator.isTimes() && denominator.exists(x -> x.isPlus()))) {
@@ -766,116 +775,129 @@ public class AlgebraUtil {
         || (denominator.isPower() && denominator.first().isSymbol())) {
       denom = F.Times(denominator);
     }
+
     if (numer.isTimes() || denom.isTimes()) {
       IAST p0Times = AbstractFunctionEvaluator.getNegativePlusInTimes(numer);
       IAST p1Times = AbstractFunctionEvaluator.getNegativePlusInTimes(denom);
-      // IAST p0Times = p0.isTimes() ? (IAST) p0 : F.Times(p0);
-      // IAST p1Times = p1.isTimes() ? (IAST) p1 : F.Times(p0);
-      IASTAppendable t0 = p0Times.copyAppendable();
-      IASTAppendable t1 = p1Times.copyAppendable();
-      int i = 1;
-      boolean evaled = false;
 
+      // Optimized: Avoid IASTAppendable.remove() which causes O(N^2) array shifting overhead.
+      // Use local arrays to track remaining terms.
+      int p0ArgSize = p0Times.argSize();
+      int p1ArgSize = p1Times.argSize();
+
+      IExpr[] t0Args = new IExpr[p0ArgSize + 1];
+      for (int i = 1; i <= p0ArgSize; i++) {
+        t0Args[i] = p0Times.get(i);
+      }
+
+      IExpr[] t1Args = new IExpr[p1ArgSize + 1];
+      for (int i = 1; i <= p1ArgSize; i++) {
+        t1Args[i] = p1Times.get(i);
+      }
+
+      boolean evaled = false;
       IASTAppendable commonFactors = F.NIL;
-      termChanged: while (i < t0.size()) {
-        IExpr t0Arg = t0.get(i);
-        int j = 1;
-        while (j < t1.size()) {
-          IExpr t1Arg = t1.get(j);
-          if (t0Arg.equals(t1Arg)) {
-            t0.remove(i);
-            t1.remove(j);
-            evaled = true;
-            if (Config.TRACE_BASIC_ARITHMETIC) {
-              if (EvalEngine.get().isTraceMode()) {
-                if (commonFactors.isNIL()) {
-                  commonFactors = F.TimesAlloc(i);
-                }
-                commonFactors.append(t0Arg);
+
+      for (int i = 1; i <= p0ArgSize; i++) {
+        if (t0Args[i] == null)
+          continue;
+
+        for (int j = 1; j <= p1ArgSize; j++) {
+          if (t1Args[j] == null)
+            continue;
+
+          if (t0Args[i].equals(t1Args[j])) {
+            if (Config.TRACE_BASIC_ARITHMETIC && EvalEngine.get().isTraceMode()) {
+              if (commonFactors.isNIL()) {
+                commonFactors = F.TimesAlloc(p0ArgSize + 1);
               }
+              commonFactors.append(t0Args[i]);
             }
-            break termChanged;
-          } else if (t0Arg.isPower() || t1Arg.isPower()) {
-            final IExpr t0Base;
-            final IExpr t0Exponent;
-            if (!t0Arg.isPower()) {
-              t0Base = t0Arg;
-              t0Exponent = F.C1;
-            } else {
-              t0Base = t0Arg.base();
-              t0Exponent = t0Arg.exponent();
-            }
-            final IExpr t1Base;
-            final IExpr t1Exponent;
-            if (!t1Arg.isPower()) {
-              t1Base = t1Arg;
-              t1Exponent = F.C1;
-            } else {
-              t1Base = t1Arg.base();
-              t1Exponent = t1Arg.exponent();
-            }
+
+            t0Args[i] = null;
+            t1Args[j] = null;
+            evaled = true;
+            break; // completely cancelled, move to next numerator term
+          } else if (t0Args[i].isPower() || t1Args[j].isPower()) {
+            final IExpr t0Base = t0Args[i].isPower() ? t0Args[i].base() : t0Args[i];
+            final IExpr t0Exponent = t0Args[i].isPower() ? t0Args[i].exponent() : F.C1;
+
+            final IExpr t1Base = t1Args[j].isPower() ? t1Args[j].base() : t1Args[j];
+            final IExpr t1Exponent = t1Args[j].isPower() ? t1Args[j].exponent() : F.C1;
+
             if (t0Exponent.isReal() && t1Exponent.isReal() && t0Base.equals(t1Base)) {
               IReal exp0 = (IReal) t0Exponent;
               IReal exp1 = (IReal) t1Exponent;
-              final IReal subtracted;
+
               if (exp0.isGE(exp1)) {
-                subtracted = exp0.subtractFrom(exp1);
-                t0.set(i, F.Power(t0Base, subtracted));
-                t1.remove(j);
-                i++;
-                if (Config.TRACE_BASIC_ARITHMETIC) {
-                  if (EvalEngine.get().isTraceMode()) {
-                    if (commonFactors.isNIL()) {
-                      commonFactors = F.TimesAlloc(i);
-                    }
-                    commonFactors.append(F.Power(t0Base, exp1));
+                IReal subtracted = exp0.subtractFrom(exp1);
+                if (subtracted.isZero()) {
+                  t0Args[i] = null;
+                } else {
+                  t0Args[i] = F.Power(t0Base, subtracted);
+                }
+                t1Args[j] = null;
+
+                if (Config.TRACE_BASIC_ARITHMETIC && EvalEngine.get().isTraceMode()) {
+                  if (commonFactors.isNIL()) {
+                    commonFactors = F.TimesAlloc(p0ArgSize + 1);
                   }
+                  commonFactors.append(F.Power(t0Base, exp1));
                 }
               } else {
-                subtracted = exp1.subtractFrom(exp0);
-                t0.remove(i);
-                t1.set(j, F.Power(t1Base, subtracted));
-                j++;
-                if (Config.TRACE_BASIC_ARITHMETIC) {
-                  if (EvalEngine.get().isTraceMode()) {
-                    if (commonFactors.isNIL()) {
-                      commonFactors = F.TimesAlloc(i);
-                    }
-                    commonFactors.append(F.Power(t0Base, exp0));
+                IReal subtracted = exp1.subtractFrom(exp0);
+                t0Args[i] = null;
+                t1Args[j] = F.Power(t1Base, subtracted);
+
+                if (Config.TRACE_BASIC_ARITHMETIC && EvalEngine.get().isTraceMode()) {
+                  if (commonFactors.isNIL()) {
+                    commonFactors = F.TimesAlloc(p0ArgSize + 1);
                   }
+                  commonFactors.append(F.Power(t0Base, exp0));
                 }
               }
               evaled = true;
-              break termChanged;
+              if (t0Args[i] == null) {
+                break; // move to next numerator term if this one is fully cancelled
+              }
             }
           }
-          j++;
         }
-        i++;
       }
+
       if (evaled) {
-        IExpr p0Result = t0.oneIdentity1();
-        IExpr p1Result = t1.oneIdentity1();
+        // Collect surviving factors into appropriately sized buffers
+        IASTAppendable t0Final = F.TimesAlloc(p0ArgSize + 1);
+        for (int i = 1; i <= p0ArgSize; i++) {
+          if (t0Args[i] != null)
+            t0Final.append(t0Args[i]);
+        }
+
+        IASTAppendable t1Final = F.TimesAlloc(p1ArgSize + 1);
+        for (int j = 1; j <= p1ArgSize; j++) {
+          if (t1Args[j] != null)
+            t1Final.append(t1Args[j]);
+        }
+
+        IExpr p0Result = t0Final.oneIdentity1();
+        IExpr p1Result = t1Final.oneIdentity1();
+
         if (Config.TRACE_BASIC_ARITHMETIC && EvalEngine.get().isTraceMode()) {
-          if (EvalEngine.get().isTraceMode()) {
-            if (!numer.equals(numerator)) {
-              EvalEngine.get().addTraceStep(F.Divide(numerator, denominator),
-                  F.Divide(numer, denominator),
-                  F.List(S.Cancel, F.$str("Factor"), numerator, numer));
-            }
-            if (!denom.equals(denominator)) {
-              EvalEngine.get().addTraceStep(F.Divide(numer, denominator), F.Divide(numer, denom),
-                  F.List(S.Cancel, F.$str("Factor"), denominator, denom));
-            }
-            EvalEngine.get().addTraceStep(F.Divide(numer, denom), F.Divide(p0Result, p1Result),
-                F.List(S.Cancel, F.$str("CancelCommonFactors"), commonFactors));
+          if (!numer.equals(numerator)) {
+            EvalEngine.get().addTraceStep(F.Divide(numerator, denominator),
+                F.Divide(numer, denominator), F.List(S.Cancel, F.$str("Factor"), numerator, numer));
           }
+          if (!denom.equals(denominator)) {
+            EvalEngine.get().addTraceStep(F.Divide(numer, denominator), F.Divide(numer, denom),
+                F.List(S.Cancel, F.$str("Factor"), denominator, denom));
+          }
+          EvalEngine.get().addTraceStep(F.Divide(numer, denom), F.Divide(p0Result, p1Result),
+              F.List(S.Cancel, F.$str("CancelCommonFactors"), commonFactors));
         }
         return F.pair(p0Result, p1Result);
       }
     }
     return F.NIL;
-
   }
 
   /**
@@ -2096,6 +2118,30 @@ public class AlgebraUtil {
     return F.NIL;
   }
 
+  /**
+   * If possible returns an AST with head Plus, which contains the partial fraction decomposition of
+   * the numerator and denominator parts.
+   *
+   * @param parts numerator and denominator parts
+   * @param variable
+   * @param engine
+   * @return an AST with head Plus, which contains the partial fraction decomposition of the
+   *         numerator and denominator parts. Otherwise return F.NIL
+   */
+  public static IExpr partsApart(IExpr[] parts, IExpr variable, EvalEngine engine) {
+    IExpr temp =
+        Algebra.partialFractionDecompositionRational(new PartialFractionGenerator(), parts, variable);
+    if (temp.isPresent()) {
+      return temp;
+    }
+    temp = S.Factor.of(parts[1]);
+    if (temp.isTimes()) {
+      // The iterative method no longer requires a 'count' recursion tracker.
+      return Algebra.partialFractionDecomposition(parts[0], temp, variable, engine);
+    }
+    return F.NIL;
+  }
+
   public static IExpr reduceFactorConstant(IExpr p, EvalEngine engine) {
 
     if (!engine.isNumericMode() && p.isPlus() && !engine.isTogetherMode()) {
@@ -2439,26 +2485,34 @@ public class AlgebraUtil {
   }
 
   /**
-   * Do a <code>ExpandAll(ast)</code> and call <code>togetherAST</code> afterwards with the result..
+   * Do a ExpandAll(ast) and call togetherAST afterwards with the result. Optimized to skip
+   * redundant expansions for performance.
    *
    * @param ast
-   * @return {@link F#NIL} couldn't be transformed by <code>ExpandAll(()</code> od <code>
-   *     togetherAST()</code>
+   * @return F.NIL couldn't be transformed by ExpandAll() or togetherAST()
    */
   public static IExpr togetherNull(IAST ast, EvalEngine engine) {
     boolean evaled = false;
-    IExpr temp = expandAll(ast, null, true, false, true, engine);
+    IExpr temp = F.NIL;
+
+    // Skip expensive deep expansions if the expression is already marked as expanded
+    if (!ast.isAllExpanded()) {
+      temp = expandAll(ast, null, true, false, true, engine);
+    }
+
     if (temp.isNIL()) {
       temp = ast;
     } else {
       evaled = true;
     }
+
     if (temp.isAST()) {
       IExpr result = togetherPlusTimesPower((IAST) temp, engine);
       if (result.isPresent()) {
         return engine.evaluate(result);
       }
     }
+
     if (evaled) {
       return temp;
     }
@@ -2466,14 +2520,13 @@ public class AlgebraUtil {
   }
 
   /**
-   * Combine the terms of a <code>Plus[...]</code> expression into a single fractional expression,
-   * if possible.
+   * Combine the terms of a Plus(...) expression into a single fractional expression, if possible.
+   * * @param plusAST a Plus(...) expression
    * 
-   * @param plusAST a <code>Plus[...]</code> expression
-   * @return {@link F#NIL} if together couldn't be performed
+   * @return F.NIL if together couldn't be performed
    */
   public static IExpr togetherPlus(final IAST plusAST, EvalEngine engine) {
-    if (plusAST.size() <= 2) {
+    if (plusAST.argSize() <= 1) {
       return F.NIL;
     }
 
@@ -2488,32 +2541,38 @@ public class AlgebraUtil {
       if (eVar.size() == 1) {
         try {
           IExpr variable = eVar.firstVariable();
-          IExpr arg1Evaled = plusAST;
-          IAST termList = ((IAST) arg1Evaled).setAtCopy(0, S.List);
-          IASTAppendable numerators = F.ListAlloc(termList.argSize());
-          IASTAppendable denominators = F.ListAlloc(termList.argSize());
-          for (int i = 1; i < termList.size(); i++) {
+          IAST termList = plusAST.setAtCopy(0, S.List);
+          int argSize = termList.argSize();
+
+          IASTAppendable numerators = F.ListAlloc(argSize);
+          IASTAppendable denominators = F.ListAlloc(argSize);
+
+          for (int i = 1; i <= argSize; i++) {
             IExpr arg = termList.get(i);
             Optional<IExpr[]> fractionalParts = fractionalPartsRational(arg, false, false);
             if (fractionalParts.isPresent()) {
               IExpr[] parts = fractionalParts.get();
               numerators.append(parts[0]);
               denominators.append(parts[1]);
-              continue;
+            } else {
+              numerators.append(arg);
+              denominators.append(F.C1);
             }
-            numerators.append(arg);
-            denominators.append(F.C1);
           }
+
           if (denominators.exists(a -> !a.isOne())) {
             IExpr commonDenominator = engine.evaluate(denominators.setAtCopy(0, S.PolynomialLCM));
-            IASTAppendable sum = F.PlusAlloc(numerators.argSize());
+            IASTAppendable sum = F.PlusAlloc(numerators.argSize()); // 2025-12-05]
 
             boolean evaled = true;
-            for (int i = 1; i < numerators.size(); i++) {
+            for (int i = 1; i <= numerators.argSize(); i++) {
               IExpr numer = numerators.get(i);
               IExpr denom = denominators.get(i);
-              IExpr polynomialQuotient =
-                  engine.evaluateNIL(F.PolynomialQuotient(commonDenominator, denom, variable));
+
+              // Fast path: avoid symbolic quotient calculation if denominator is 1
+              IExpr polynomialQuotient = denom.isOne() ? commonDenominator
+                  : engine.evaluateNIL(F.PolynomialQuotient(commonDenominator, denom, variable));
+
               if (polynomialQuotient.isNIL()) {
                 evaled = false;
                 break;
@@ -2541,23 +2600,24 @@ public class AlgebraUtil {
             return F.NIL;
           }
         } catch (RuntimeException rex) {
-          if (Config.SHOW_STACKTRACE) {
-            rex.printStackTrace();
-          }
           Errors.rethrowsInterruptException(rex);
         }
       }
     }
 
-    IASTAppendable numerator = F.ast(S.Plus, plusAST.size());
-    IASTAppendable denominatorList = F.ast(S.Times, plusAST.size());
+    int plusArgSize = plusAST.argSize();
+    IASTAppendable numerator = F.PlusAlloc(plusArgSize);
+    IASTAppendable denominatorList = F.TimesAlloc(plusArgSize);
     boolean[] evaled = new boolean[1];
+
     plusAST.forEach((IExpr x, int i) -> togetherPlusArg(x, i, numerator, denominatorList, evaled));
     if (!evaled[0]) {
       return F.NIL;
     }
+
     numerator.forEach(
         (IExpr x, int i) -> togetherPlusNumeratorArg(x, i, numerator, denominatorList, plusAST));
+
     int i = 1;
     while (denominatorList.size() > i) {
       if (denominatorList.get(i).isOne()) {
@@ -2570,9 +2630,13 @@ public class AlgebraUtil {
       return F.NIL;
     }
 
-    IExpr exprNumerator = F.evalExpand(numerator.oneIdentity0());
-    IExpr denom = F.eval(denominatorList.oneIdentity1());
-    final IExpr exprDenominator = F.evalExpand(denom);
+    IExpr numOneId = numerator.oneIdentity0();
+    IExpr denom = denominatorList.oneIdentity1();
+
+    // Avoid double expansions if already expanded
+    IExpr exprNumerator = numOneId.isExpanded() ? numOneId : F.evalExpand(numOneId);
+    final IExpr exprDenominator = denom.isExpanded() ? denom : F.evalExpand(denom);
+
     if (exprNumerator.isNumber()) {
       if (exprNumerator.isZero()) {
         if (exprDenominator.isZero()) {
@@ -2584,6 +2648,7 @@ public class AlgebraUtil {
         return ArithmeticUtil.printInfy(S.Divide, exprNumerator, exprDenominator);
       }
     }
+
     if (!exprDenominator.isOne()) {
       try {
         Optional<IExpr[]> result = cancelGCD(exprNumerator, exprDenominator);
@@ -2596,9 +2661,7 @@ public class AlgebraUtil {
           return F.Times(parts[0], parts[1], pInv);
         }
       } catch (JASConversionException jce) {
-        if (Config.DEBUG) {
-          jce.printStackTrace();
-        }
+        // Handled silently
       }
       if (exprDenominator.isNumber()) {
         return exprDenominator.inverse().times(exprNumerator);

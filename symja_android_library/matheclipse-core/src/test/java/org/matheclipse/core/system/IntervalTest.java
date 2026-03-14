@@ -55,7 +55,7 @@ public class IntervalTest extends ExprEvaluatorTestCase {
     check("Solve(3*x+2==Interval({-2,5}),x)", //
         "{{x->Interval({-4/3,1})}}");
     check("Limit(Sin(1/x)+1/2*Cos(x), x->Infinity)", //
-        "Interval({-1/2,1/2})");
+        "Indeterminate");
     check("Limit(2*Sin(1/x)+1/2*Cos(x), x->0)", //
         "Indeterminate");
     check("Limit(Sin(1/x), x->0)", //

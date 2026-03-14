@@ -2262,12 +2262,12 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
     try {
       IExpr plusArg;
       // SeriesData[x, x0, list, nmin, nmax, den]
-      IExpr x = seriesData.getX();
-      IExpr x0 = seriesData.getX0();
-      int nMin = seriesData.getNMin();
-      int nMax = seriesData.getNMax();
-      int power = seriesData.order();
-      int den = seriesData.getDenominator();
+      IExpr x = seriesData.expansionVariable();
+      IExpr x0 = seriesData.expansionPoint();
+      int nMin = seriesData.minExponent();
+      int nMax = seriesData.exponentBound();
+      int power = seriesData.truncateOrder();
+      int den = seriesData.puiseuxDenominator();
       boolean call = NO_PLUS_CALL;
       INumber exp;
       IExpr pow;

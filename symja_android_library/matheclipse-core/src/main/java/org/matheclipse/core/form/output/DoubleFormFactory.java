@@ -1134,12 +1134,12 @@ public abstract class DoubleFormFactory {
     try {
       IExpr plusArg;
       // SeriesData[x, x0, list, nmin, nmax, den]
-      IExpr x = seriesData.getX();
-      IExpr x0 = seriesData.getX0();
-      int nmin = seriesData.getNMin();
-      int nmax = seriesData.getNMax();
-      int order = seriesData.order();
-      long den = seriesData.getDenominator();
+      IExpr x = seriesData.expansionVariable();
+      IExpr x0 = seriesData.expansionPoint();
+      int nmin = seriesData.minExponent();
+      int nmax = seriesData.exponentBound();
+      int order = seriesData.truncateOrder();
+      long den = seriesData.puiseuxDenominator();
       boolean call = NO_PLUS_CALL;
       if (nmax > nmin) {
         INumber exp = F.QQ(nmin, den).normalize();
