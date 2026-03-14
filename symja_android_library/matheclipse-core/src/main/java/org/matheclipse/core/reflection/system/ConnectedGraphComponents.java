@@ -46,7 +46,6 @@ public class ConnectedGraphComponents extends AbstractFunctionEvaluator {
     IExpr arg1 = ast.arg1();
     GraphExpr graphExpr = null;
 
-    // 1. Resolve the graph argument
     if (arg1 instanceof GraphExpr) {
       graphExpr = (GraphExpr) arg1;
     } else if (arg1.isList()) {

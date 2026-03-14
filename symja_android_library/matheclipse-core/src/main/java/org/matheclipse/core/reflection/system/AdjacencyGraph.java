@@ -32,9 +32,8 @@ public class AdjacencyGraph extends AbstractFunctionEvaluator {
     IAST matrix = null;
     IAST vertices = null;
 
-    // 1. Parse Arguments
     if (arg1.isList() && ast.argSize() == 1) {
-      // Case: AdjacencyGraph[matrix]
+      // Case: AdjacencyGraph(matrix)
       matrix = (IAST) arg1;
     } else if (ast.argSize() >= 2 && arg1.isList() && ast.arg2().isList()) {
       // Case: AdjacencyGraph[{v1, ...}, matrix]
@@ -46,7 +45,7 @@ public class AdjacencyGraph extends AbstractFunctionEvaluator {
       return F.NIL;
     }
 
-    // 2. Validate Matrix Dimensions
+    // Validate Matrix Dimensions
     int rows = matrix.argSize();
     if (rows == 0) {
       return F.Graph(F.List(), F.List()); // Empty graph
@@ -60,7 +59,7 @@ public class AdjacencyGraph extends AbstractFunctionEvaluator {
       }
     }
 
-    // 3. Determine Vertices
+    // Determine Vertices
     if (vertices == null) {
       // Auto-generate vertices 1..n
       IASTAppendable vList = F.ListAlloc(rows);
@@ -75,7 +74,7 @@ public class AdjacencyGraph extends AbstractFunctionEvaluator {
       }
     }
 
-    // 4. Parse Options and Determine Directionality
+    // Parse Options and Determine Directionality
     Boolean directedOption = null;
     int optStartIndex = (arg2 != null) ? 3 : 2;
 
@@ -117,7 +116,6 @@ public class AdjacencyGraph extends AbstractFunctionEvaluator {
       directed = !isSymmetric;
     }
 
-    // 5. Build Graph
     // Use JGraphT directly to construct the graph data
     Graph<IExpr, IExprEdge> graph;
     if (directed) {
@@ -162,7 +160,6 @@ public class AdjacencyGraph extends AbstractFunctionEvaluator {
       }
     }
 
-    // 6. Return GraphExpr
     return GraphExpr.newInstance(graph);
   }
 }

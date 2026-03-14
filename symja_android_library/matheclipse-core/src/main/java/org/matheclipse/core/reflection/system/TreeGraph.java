@@ -39,7 +39,6 @@ public class TreeGraph extends AbstractFunctionEvaluator {
     IASTAppendable options = F.ListAlloc();
     boolean isPredecessorForm = false;
 
-    // 1. Parse Arguments
     if (ast.argSize() == 1 && arg1.isList()) {
       // TreeGraph[{e1, ...}]
       vertices = F.List(); // Auto-detect
@@ -79,12 +78,11 @@ public class TreeGraph extends AbstractFunctionEvaluator {
       }
     }
 
-    // 2. Build the Graph
     // TreeGraph usually defaults to Directed unless UndirectedEdge is used.
     Graph<IExpr, IExprEdge> graph = new DefaultDirectedGraph<>(ExprEdge.class);
 
     // Check for "DirectedEdges -> False" option or UndirectedEdge presence to switch type?
-    // Wolfram TreeGraph creates DirectedGraph by default for rules/predecessors.
+    // TreeGraph creates DirectedGraph by default for rules/predecessors.
 
     Set<IExpr> vSet = new HashSet<>();
     if (vertices != null && vertices.argSize() > 0) {
