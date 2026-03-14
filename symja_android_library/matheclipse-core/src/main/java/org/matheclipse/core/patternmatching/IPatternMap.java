@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import org.matheclipse.core.basic.RuleConfig;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -3183,62 +3184,6 @@ public interface IPatternMap {
     patternIndexMap.add(new GenericPair(pattern, pattern));
   }
 
-  /**
-   * Determine all patterns (i.e. all objects of instance IPattern) in the given expression
-   *
-   * <p>
-   * Increments this classes pattern counter.
-   *
-   * @param lhsPatternExpr the (left-hand-side) expression which could contain pattern objects.
-   * @return the priority of this pattern-matcher
-   */
-  static IPatternMap determinePatterns(final IExpr lhsPatternExpr, int[] priority,
-      PatternNested p2) {
-    // int[] priority = new int[] { DEFAULT_RULE_PRIORITY };
-
-    if (lhsPatternExpr instanceof IAST) {
-      List<GenericPair<IExpr, IPatternObject>> patternIndexMap =
-          new ArrayList<GenericPair<IExpr, IPatternObject>>();
-      boolean[] ruleWithoutPattern = new boolean[] {true};
-      if (p2 != null) {
-        ruleWithoutPattern[0] = false;
-        int[] result = p2.addPattern(patternIndexMap);
-        priority[0] -= result[1];
-      }
-
-      determinePatternsRecursive(patternIndexMap, (IAST) lhsPatternExpr, priority,
-          ruleWithoutPattern, 1);
-      boolean isRuleWithoutPattern = ruleWithoutPattern[0];
-      return createSymbolToPatternObjetMap(patternIndexMap, isRuleWithoutPattern);
-    } else if (lhsPatternExpr instanceof PatternNested) {
-      PatternNested pattern2 = (PatternNested) lhsPatternExpr;
-      // PatternMap1 patternMap1 = new PatternMap1();
-      // IPatternObject pattern = (IPatternObject) lhsPatternExpr;
-      // final ISymbol sym = pattern.getSymbol();
-      // patternMap1.fSymbol1 = (sym != null) ? sym : pattern;
-      // patternMap1.fPatternObject1 = pattern;
-      return determinePatterns(pattern2.getPatternExpr(), priority, pattern2);
-    } else if (lhsPatternExpr instanceof IPatternObject) {
-      if (p2 != null) {
-        PatternMap2 patternMap2 = new PatternMap2();
-        patternMap2.fSymbol1 = p2.getSymbol();
-        patternMap2.fPatternObject1 = p2;
-
-        IPatternObject pattern = (IPatternObject) lhsPatternExpr;
-        final ISymbol sym = pattern.getSymbol();
-        patternMap2.fSymbol2 = (sym != null) ? sym : pattern;
-        patternMap2.fPatternObject2 = pattern;
-        return patternMap2;
-      }
-      PatternMap1 patternMap1 = new PatternMap1();
-      IPatternObject pattern = (IPatternObject) lhsPatternExpr;
-      final ISymbol sym = pattern.getSymbol();
-      patternMap1.fSymbol1 = (sym != null) ? sym : pattern;
-      patternMap1.fPatternObject1 = pattern;
-      return patternMap1;
-    }
-    return new PatternMap0();
-  }
 
   public static IPatternMap createSymbolToValueMap(
       List<GenericPair<IExpr, ISymbol>> patternIndexMap) {
@@ -3404,8 +3349,63 @@ public interface IPatternMap {
    * <p>
    * Increments this classes pattern counter.
    *
+   * @param lhsPatternExpr the (left-hand-side) expression which could contain pattern objects.
+   * @param priority the current priority score array of the rule
+   * @param p2 a nested pattern to process, or null
+   * @return the pattern map mapping symbols to pattern objects
+   */
+  static IPatternMap determinePatterns(final IExpr lhsPatternExpr, int[] priority,
+      PatternNested p2) {
+
+    if (lhsPatternExpr instanceof IAST) {
+      List<GenericPair<IExpr, IPatternObject>> patternIndexMap =
+          new ArrayList<GenericPair<IExpr, IPatternObject>>();
+      boolean[] ruleWithoutPattern = new boolean[] {true};
+      if (p2 != null) {
+        ruleWithoutPattern[0] = false;
+        int[] result = p2.addPattern(patternIndexMap);
+        priority[0] -= result[1];
+      }
+
+      determinePatternsRecursive(patternIndexMap, (IAST) lhsPatternExpr, priority,
+          ruleWithoutPattern, 1);
+      boolean isRuleWithoutPattern = ruleWithoutPattern[0];
+      return createSymbolToPatternObjetMap(patternIndexMap, isRuleWithoutPattern);
+    } else if (lhsPatternExpr instanceof PatternNested) {
+      PatternNested pattern2 = (PatternNested) lhsPatternExpr;
+      return determinePatterns(pattern2.getPatternExpr(), priority, pattern2);
+    } else if (lhsPatternExpr instanceof IPatternObject) {
+      if (p2 != null) {
+        PatternMap2 patternMap2 = new PatternMap2();
+        patternMap2.fSymbol1 = p2.getSymbol();
+        patternMap2.fPatternObject1 = p2;
+
+        IPatternObject pattern = (IPatternObject) lhsPatternExpr;
+        final ISymbol sym = pattern.getSymbol();
+        patternMap2.fSymbol2 = (sym != null) ? sym : pattern;
+        patternMap2.fPatternObject2 = pattern;
+        return patternMap2;
+      }
+      PatternMap1 patternMap1 = new PatternMap1();
+      IPatternObject pattern = (IPatternObject) lhsPatternExpr;
+      final ISymbol sym = pattern.getSymbol();
+      patternMap1.fSymbol1 = (sym != null) ? sym : pattern;
+      patternMap1.fPatternObject1 = pattern;
+      return patternMap1;
+    }
+    return new PatternMap0();
+  }
+
+  /**
+   * Determine all patterns (i.e. all objects of instance IPattern) in the given expression
+   *
+   * <p>
+   * Increments this classes pattern counter.
+   *
    * @param patternIndexMap
    * @param lhsPatternExpr the (left-hand-side) expression which could contain pattern objects.
+   * @param priority the priority score array
+   * @param ruleWithoutPattern flag array
    * @param treeLevel the level of the tree where the patterns are determined
    */
   private static int determinePatternsRecursive(
@@ -3432,11 +3432,6 @@ public interface IPatternMap {
       determinePatternsRecursive(condition, patternIndexMap, dummyPriority, ruleWithoutPattern,
           listEvalFlags, treeLevel);
     } else {
-      // int[] dummyPriority = new int[] {IPatternMap.DEFAULT_RULE_PRIORITY};
-      // determinePatternsRecursive(lhsPatternExpr, patternIndexMap, dummyPriority,
-      // ruleWithoutPattern,
-      // listEvalFlags, treeLevel);
-
       // get the patterns from right argument to left argument, to get the pattern x_ in D(f,x_) and
       // Integrate(f,x_) as first pattern in the pattern map
       for (int i = lhsPatternExpr.argSize(); i >= 0; i--) {
@@ -3445,8 +3440,8 @@ public interface IPatternMap {
       }
     }
     lhsPatternExpr.setEvalFlags(listEvalFlags[0]);
-    if (lhsPatternExpr.size() > 1 //
-        && ((listEvalFlags[0] & IAST.CONTAINS_DEFAULT_PATTERN) == IAST.CONTAINS_DEFAULT_PATTERN)//
+    if (lhsPatternExpr.size() > 1
+        && ((listEvalFlags[0] & IAST.CONTAINS_DEFAULT_PATTERN) == IAST.CONTAINS_DEFAULT_PATTERN)
         && lhsPatternExpr.forAll(IExpr::isPatternDefault)) {
       lhsPatternExpr.addEvalFlags(IAST.CONTAINS_ALL_DEFAULT_PATTERN);
     }
@@ -3456,6 +3451,7 @@ public interface IPatternMap {
   private static void determinePatternsRecursive(final IExpr x,
       List<GenericPair<IExpr, IPatternObject>> patternIndexMap, int[] priority,
       boolean[] ruleWithoutPattern, int[] listEvalFlags, int treeLevel) {
+
     if (x.isASTOrAssociation()) {
       final IAST lhsPatternAST = (IAST) x;
       if (lhsPatternAST.isPatternMatchingFunction()) {
@@ -3463,11 +3459,14 @@ public interface IPatternMap {
       }
       listEvalFlags[0] |= determinePatternsRecursive(patternIndexMap, lhsPatternAST, priority,
           ruleWithoutPattern, treeLevel + 1);
-      priority[0] -= 11;
+
+      // Replaced hardcoded 11 with the constant
+      priority[0] -= RuleConfig.PRIORITY_AST_PENALTY;
+
       if (x.isPatternDefault()) {
         listEvalFlags[0] |= IAST.CONTAINS_DEFAULT_PATTERN | IAST.CONTAINS_ALL_DEFAULT_PATTERN;
-      } else if (lhsPatternAST.size() > 1 //
-          && ((listEvalFlags[0] & IAST.CONTAINS_DEFAULT_PATTERN) == IAST.CONTAINS_DEFAULT_PATTERN) //
+      } else if (lhsPatternAST.size() > 1
+          && ((listEvalFlags[0] & IAST.CONTAINS_DEFAULT_PATTERN) == IAST.CONTAINS_DEFAULT_PATTERN)
           && lhsPatternAST.forAll(IExpr::isPatternDefault)) {
         lhsPatternAST.addEvalFlags(IAST.CONTAINS_ALL_DEFAULT_PATTERN);
       }
@@ -3481,7 +3480,10 @@ public interface IPatternMap {
         if (patternExpr.isASTOrAssociation()) {
           listEvalFlags[0] |= determinePatternsRecursive(patternIndexMap, (IAST) patternExpr,
               priority, ruleWithoutPattern, treeLevel + 1);
-          priority[0] -= 11;
+
+          // Replaced hardcoded 11 with the constant
+          priority[0] -= RuleConfig.PRIORITY_AST_PENALTY;
+
           if (x.isPatternDefault()) {
             listEvalFlags[0] |= IAST.CONTAINS_DEFAULT_PATTERN;
           }
@@ -3489,9 +3491,10 @@ public interface IPatternMap {
       }
 
     } else {
-      priority[0] -= (50 - treeLevel);
+      priority[0] -= (RuleConfig.PRIORITY_BASE_PENALTY - treeLevel);
     }
   }
+
 
   public IPatternMap copy();
 

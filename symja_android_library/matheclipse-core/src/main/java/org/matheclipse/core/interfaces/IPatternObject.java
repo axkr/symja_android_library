@@ -85,7 +85,9 @@ public interface IPatternObject extends IExpr, IAtomicEvaluate {
    * Add this pattern to the given <code>patternIndexMap</code>.
    *
    * @param patternIndexMap a map from the pattern symbol to the intern array index
-   * @return
+   * @return an array of two integers which contains the indices for this pattern object. The first
+   *         element are the pattern flags for the parent-AST. The second element is the priority
+   *         for this pattern object.
    */
   public int[] addPattern(List<GenericPair<IExpr, IPatternObject>> patternIndexMap);
 

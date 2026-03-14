@@ -4,7 +4,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import org.matheclipse.core.basic.RuleConfig;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
+import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.GenericPair;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -130,14 +132,14 @@ public class Blank implements IPattern {
       // the ast contains a pattern with default value (i.e. "_." or
       // "_:")
       result[0] = IAST.CONTAINS_DEFAULT_PATTERN;
-      result[1] = 2;
+      result[1] = RuleConfig.PRIORITY_BLANK_OPTIONAL;
     } else {
       // the ast contains a pattern without default value (i.e. "_")
       result[0] = IAST.CONTAINS_PATTERN;
-      result[1] = 5;
+      result[1] = RuleConfig.PRIORITY_BLANK;
     }
     if (fHeadTest != null) {
-      result[1] += 2;
+      result[1] += RuleConfig.PRIORITY_BLANK_HEADTEST;
     }
     return result;
   }
@@ -363,11 +365,24 @@ public class Blank implements IPattern {
   public String toString() {
     final StringBuilder buffer = new StringBuilder();
     buffer.append('_');
+    if (fDefault) {
+      buffer.append('.');
+    }
     if (fHeadTest != null) {
       buffer.append(fHeadTest.toString());
     }
+    return buffer.toString();
+  }
+
+  @Override
+  public String toWolframString() {
+    final StringBuilder buffer = new StringBuilder();
+    buffer.append('_');
     if (fDefault) {
       buffer.append('.');
+    }
+    if (fHeadTest != null) {
+      buffer.append(WolframFormFactory.get().toString(fHeadTest));
     }
     return buffer.toString();
   }

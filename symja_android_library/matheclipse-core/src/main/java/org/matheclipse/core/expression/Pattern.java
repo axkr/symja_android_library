@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import java.util.List;
 import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.RuleConfig;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.GenericPair;
@@ -135,14 +136,14 @@ public class Pattern extends Blank {
       // the ast contains a pattern with default value (i.e. "x_." or
       // "x_:")
       result[0] = IAST.CONTAINS_DEFAULT_PATTERN;
-      result[1] = 3;
+      result[1] = RuleConfig.PRIORITY_PATTERN_OPTIONAL;
     } else {
       // the ast contains a pattern without default value (i.e. "x_")
       result[0] = IAST.CONTAINS_PATTERN;
-      result[1] = 6;
+      result[1] = RuleConfig.PRIORITY_PATTERN;
     }
     if (fHeadTest != null) {
-      result[1] += 2;
+      result[1] += RuleConfig.PRIORITY_PATTERN_HEADTEST;
     }
     return result;
   }

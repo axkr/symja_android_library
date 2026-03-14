@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.util.List;
 import java.util.function.Function;
+import org.matheclipse.core.basic.RuleConfig;
 import org.matheclipse.core.eval.util.SourceCodeProperties;
 import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.GenericPair;
@@ -288,9 +289,9 @@ public class PatternSequence extends AbstractPatternSequence {
     // the ast contains a pattern sequence (i.e. "x__")
     int[] result = new int[2];
     result[0] = IAST.CONTAINS_PATTERN_SEQUENCE;
-    result[1] = 1;
+    result[1] = RuleConfig.PRIORITY_PATTERN_SEQUENCE;
     if (fHeadTest != null) {
-      result[1] += 2;
+      result[1] += RuleConfig.PRIORITY_PATTERN_SEQUENCE_HEADTEST;
     }
     return result;
   }

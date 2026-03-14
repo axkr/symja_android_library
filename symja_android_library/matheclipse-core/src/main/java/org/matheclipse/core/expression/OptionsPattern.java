@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import org.matheclipse.core.basic.RuleConfig;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.GenericPair;
@@ -168,7 +169,7 @@ public class OptionsPattern extends AbstractPatternSequence {
     // the ast contains a pattern sequence (i.e. "x__")
     int[] result = new int[2];
     result[0] = IAST.CONTAINS_PATTERN_SEQUENCE;
-    result[1] = 1;
+    result[1] = RuleConfig.PRIORITY_OPTIONS_PATTERN;
     return result;
   }
 

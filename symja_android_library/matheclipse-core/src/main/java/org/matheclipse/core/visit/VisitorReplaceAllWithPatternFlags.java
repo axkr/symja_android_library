@@ -24,7 +24,7 @@ public class VisitorReplaceAllWithPatternFlags extends VisitorReplaceAll {
   private IExpr visitPatternObject(IPatternObject element) {
     IExpr temp = fFunction.apply(element);
     if (temp.isPresent()) {
-      if (temp.isOneIdentityAST1()) {
+      if (temp.isOneIdentityAST()) {
         return temp.first();
       }
     }
