@@ -9,6 +9,7 @@ import org.matheclipse.core.graphics.GraphicsOptions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 public class DiscretePlot extends ListPlot {
 
@@ -19,8 +20,9 @@ public class DiscretePlot extends ListPlot {
       ast = ast.copyUntil(argSize + 1);
     }
     IExpr function = ast.arg1();
-    if (ast.arg2().isAST(S.List, 3, 5)) {
-      IAST iteratorList = (IAST) ast.arg2();
+    IExpr arg2 = engine.evaluate(ast.arg2());
+    if (arg2.isAST(S.List, 3, 5)) {
+      IAST iteratorList = (IAST) arg2;
       IExpr variable = iteratorList.arg1();
       if (variable.isVariable()) {
         IExpr tableValues;
@@ -62,5 +64,11 @@ public class DiscretePlot extends ListPlot {
   @Override
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_2_INFINITY;
+  }
+
+  @Override
+  public void setUp(final ISymbol newSymbol) {
+    super.setUp(newSymbol);
+    newSymbol.setAttributes(ISymbol.HOLDALL);
   }
 }

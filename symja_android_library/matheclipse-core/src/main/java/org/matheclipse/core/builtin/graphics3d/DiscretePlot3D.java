@@ -218,5 +218,6 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
         new IBuiltInSymbol[] {S.ExtentSize, S.PlotRange, S.ColorFunction, S.PlotLegends,
             S.ScalingFunctions, S.Axes},
         new IExpr[] {S.Automatic, S.Automatic, S.Automatic, S.None, S.None, S.True});
+    newSymbol.setAttributes(ISymbol.HOLDALL);
   }
 }
