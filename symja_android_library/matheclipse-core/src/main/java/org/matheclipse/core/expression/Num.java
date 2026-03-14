@@ -730,6 +730,17 @@ public class Num implements INum {
     // return F.complexNum(cosIntegral.real().doubleValue(), cosIntegral.imag().doubleValue());
   }
 
+  @Override
+  public IInexactNumber dawsonF() {
+    try {
+      return valueOf(EvalEngine.getApfloatDouble().dawsonF(apfloatValue()).doubleValue());
+    } catch (ApfloatArithmeticException aae) {
+      //
+    }
+    Apcomplex dawsonF = EvalEngine.getApfloatDouble().dawsonF(apcomplexValue());
+    return F.complexNum(dawsonF.real().doubleValue(), dawsonF.imag().doubleValue());
+  }
+
   /** {@inheritDoc} */
   @Override
   public IExpr dec() {

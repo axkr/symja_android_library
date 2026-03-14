@@ -640,6 +640,11 @@ public class ApcomplexNum implements IComplexNum {
 
   }
 
+  @Override
+  public ApcomplexNum dawsonF() {
+    return valueOf(EvalEngine.getApfloat().dawsonF(fApcomplex));
+  }
+
   /** {@inheritDoc} */
   @Override
   public IExpr dec() {

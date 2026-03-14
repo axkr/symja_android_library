@@ -33,6 +33,7 @@ public class JavaComplexFormFactory extends ComplexFormFactory {
     builder.put(S.ChebyshevU, "CMath.chebyshevU");
     builder.put(S.CoshIntegral, "CMath.coshIntegral");
     builder.put(S.CosIntegral, "CMath.cosIntegral");
+    builder.put(S.DawsonF, "CMath.dawsonF");
     builder.put(S.EllipticE, "CMath.ellipticE");
     builder.put(S.EllipticK, "CMath.ellipticK");
     builder.put(S.Erf, "CMath.erf");

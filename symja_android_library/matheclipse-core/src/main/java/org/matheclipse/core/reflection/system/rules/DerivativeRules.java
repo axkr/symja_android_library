@@ -13,7 +13,7 @@ public class DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 149, 0 };
+  final public static int[] SIZES = { 152, 0 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -65,12 +65,18 @@ public class DerivativeRules {
     // Derivative(1)[ArcSech]=-1/(#1*Sqrt(1-#1^2))&
     ISet($(Derivative(C1),ArcSech),
       Function(Times(CN1,Power(Slot1,CN1),Power(Subtract(C1,Sqr(Slot1)),CN1D2))), true),
+    // Derivative(1)[BarnesG]=BarnesG(#1)*((-1+#1)*PolyGamma(#1)-#1+1/2*(Log(2*Pi)+1))&
+    ISet($(Derivative(C1),BarnesG),
+      Function(Times(BarnesG(Slot1),Plus(Times(Plus(CN1,Slot1),PolyGamma(Slot1)),Negate(Slot1),Times(C1D2,Plus(Log(C2Pi),C1))))), true),
     // Derivative(1)[CatalanNumber]=CatalanNumber(#1)*(Log(4)+PolyGamma(1/2+#1)-PolyGamma(2+#1))&
     ISet($(Derivative(C1),CatalanNumber),
       Function(Times(CatalanNumber(Slot1),Plus(Log(C4),PolyGamma(Plus(C1D2,Slot1)),Negate(PolyGamma(Plus(C2,Slot1)))))), true),
     // Derivative(1)[Ceiling]=Piecewise({{0,#1<Ceiling(#1)}},Indeterminate)&
     ISet($(Derivative(C1),Ceiling),
       Function(Piecewise(list(list(C0,Less(Slot1,Ceiling(Slot1)))),Indeterminate)), true),
+    // Derivative(1)[DawsonF]=1-2*#1*DawsonF(#1)&
+    ISet($(Derivative(C1),DawsonF),
+      Function(Plus(C1,Times(CN2,Slot1,DawsonF(Slot1)))), true),
     // Derivative(1)[EllipticE]=(EllipticE(#1)-EllipticK(#1))/(2*#1)&
     ISet($(Derivative(C1),EllipticE),
       Function(Times(Subtract(EllipticE(Slot1),EllipticK(Slot1)),Power(Times(C2,Slot1),CN1))), true),
@@ -164,6 +170,9 @@ public class DerivativeRules {
     // Derivative(1)[Log2]=1/(Log(2)*#1)&
     ISet($(Derivative(C1),Log2),
       Function(Power(Times(Log(C2),Slot1),CN1)), true),
+    // Derivative(1)[LogBarnesG]=(-1+#1)*PolyGamma(#1)-#1+1/2*(Log(2*Pi)+1)&
+    ISet($(Derivative(C1),LogBarnesG),
+      Function(Plus(Times(Plus(CN1,Slot1),PolyGamma(Slot1)),Negate(Slot1),Times(C1D2,Plus(Log(C2Pi),C1)))), true),
     // Derivative(1)[LogGamma]=PolyGamma(0,#1)&
     ISet($(Derivative(C1),LogGamma),
       Function(PolyGamma(C0,Slot1)), true),

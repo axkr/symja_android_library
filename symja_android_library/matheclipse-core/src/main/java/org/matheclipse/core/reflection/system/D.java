@@ -230,7 +230,9 @@ public class D extends AbstractFunctionEvaluator {
     if (deriv != null) {
       IASTAppendable plus = F.PlusAlloc(size);
       ast.forEach(size, (expr, i) -> {
-        plus.append(F.Times(F.D(expr, x), addDerivative(i, deriv[0], deriv[1].arg1(), ast)));
+        if (!expr.isFree(x)) { // Cut off AST explosion for constant terms
+          plus.append(F.Times(F.D(expr, x), addDerivative(i, deriv[0], deriv[1].arg1(), ast)));
+        }
       });
       return engine.addTraceStep(ast, plus, "ChainRule");
     }
@@ -420,6 +422,11 @@ public class D extends AbstractFunctionEvaluator {
               if (temp.isNIL() || temp.isZero()) {
                 return temp;
               }
+              // Prune AST explosion by grouping like-terms and expanding products
+              // before feeding the AST into the next derivative iteration.
+              if (i < n - 1 && temp.isAST() && temp.leafCount() > 64) {
+                temp = engine.evaluate(F.Expand(temp));
+              }
             }
             return temp;
           }
@@ -497,7 +504,7 @@ public class D extends AbstractFunctionEvaluator {
 
     if (functionOfX instanceof ASTSeriesData) {
       ASTSeriesData series = ((ASTSeriesData) functionOfX);
-      if (series.getX().equals(x)) {
+      if (series.expansionVariable().equals(x)) {
         final IExpr temp = ((ASTSeriesData) functionOfX).derive(x);
         if (temp != null) {
           return temp;
@@ -534,6 +541,13 @@ public class D extends AbstractFunctionEvaluator {
         // Apply the sum/difference rule $(f \pm g)' = f' \pm g'$.
         return engine.addEvaluatedTraceStep(ast, plusResult, "PlusRule");
       } else if (function.isTimes()) {
+        if (function.argSize() > 4) {
+          // Apply Logarithmic Differentiation for products with 5 or more terms
+          // to prevent combinatorial AST explosion of the standard product rule.
+          IExpr logDeriv = logarithmicDerivative(function, x, engine);
+          return engine.addEvaluatedTraceStep(F.D(function, x), logDeriv, S.D,
+              F.$str("LogarithmicDerivativeRule"));
+        }
         IExpr result =
             function.map(F.PlusAlloc(16), new BinaryBindIth1st(function, F.D(S.Null, x)));
         return engine.addEvaluatedTraceStep(F.D(function, x), result, S.D, F.$str("MulRule"));
@@ -634,6 +648,58 @@ public class D extends AbstractFunctionEvaluator {
       return F.SymbolicZerosArray(dimensions);
     }
     return F.NIL;
+  }
+
+  /**
+   * Applies Logarithmic Differentiation: D(y, x) = y * D(Log(y), x). This avoids the combinatorial
+   * AST explosion of the standard product rule for large multiplications and powers, keeping the
+   * result strictly factored.
+   * 
+   * @param timesAST the product expression to differentiate
+   * @param x the variable of differentiation
+   * @param engine the evaluation engine
+   * @return the logarithmically differentiated expression
+   */
+  private static IExpr logarithmicDerivative(final IAST timesAST, IExpr x, EvalEngine engine) {
+    IASTAppendable sum = F.PlusAlloc(timesAST.argSize());
+    IASTAppendable constants = F.TimesAlloc(timesAST.argSize());
+    IASTAppendable variables = F.TimesAlloc(timesAST.argSize());
+
+    for (int i = 1; i <= timesAST.argSize(); i++) {
+      IExpr fi = timesAST.get(i);
+      if (fi.isFree(x)) {
+        constants.append(fi);
+      } else {
+        variables.append(fi);
+
+        // Fast path for nested powers to prevent unnecessary expansion
+        if (fi.isPower()) {
+          IExpr base = fi.base();
+          IExpr exp = fi.exponent();
+          if (exp.isFree(x)) {
+            sum.append(F.Times(exp, F.D(base, x), F.Power(base, F.CN1)));
+          } else {
+            sum.append(F.Plus(F.Times(exp, F.D(base, x), F.Power(base, F.CN1)),
+                F.Times(F.D(exp, x), F.Log(base))));
+          }
+        } else {
+          // General case: f' / f
+          sum.append(F.Times(F.D(fi, x), F.Power(fi, F.CN1)));
+        }
+      }
+    }
+
+    if (variables.argSize() == 0) {
+      return F.C0;
+    }
+
+    IExpr y = engine.evaluate(variables);
+    IExpr dy = engine.evaluate(F.Expand(F.Times(y, sum)));
+
+    if (constants.argSize() > 0) {
+      return engine.evaluate(F.Times(constants, dy));
+    }
+    return dy;
   }
 
   private static IExpr power(final IAST function, IExpr x, EvalEngine engine) {

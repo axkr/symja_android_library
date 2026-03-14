@@ -11,15 +11,6 @@ import org.matheclipse.core.eval.EvalEngine;
 public interface IInexactNumber extends INumber {
 
   @Override
-  default IInexactNumber eval(EvalEngine engine) {
-    return this;
-  }
-
-  public IInexactNumber plus(final IInexactNumber that);
-
-  public IInexactNumber times(final IInexactNumber that);
-
-  @Override
   public IInexactNumber acos();
 
   @Override
@@ -29,38 +20,50 @@ public interface IInexactNumber extends INumber {
   public IInexactNumber atan();
 
   @Override
+  public IInexactNumber barnesG();
+
+  @Override
   public IInexactNumber cos();
-
-  @Override
-  public IInexactNumber exp();
-
-  @Override
-  public IInexactNumber sin();
-
-  @Override
-  public IInexactNumber tan();
 
   @Override
   public IInexactNumber cosh();
 
   @Override
-  public IInexactNumber reciprocal();
+  public IInexactNumber dawsonF();
 
   @Override
-  public IInexactNumber sinh();
+  default IInexactNumber eval(EvalEngine engine) {
+    return this;
+  }
 
   @Override
-  public IInexactNumber tanh();
-
-  @Override
-  public IInexactNumber times(INumber that);
+  public IInexactNumber exp();
 
   @Override
   public IInexactNumber log();
 
   @Override
-  public IInexactNumber barnesG();
+  public IInexactNumber logBarnesG();
+
+  public IInexactNumber plus(final IInexactNumber that);
 
   @Override
-  public IInexactNumber logBarnesG();
+  public IInexactNumber reciprocal();
+
+  @Override
+  public IInexactNumber sin();
+
+  @Override
+  public IInexactNumber sinh();
+
+  @Override
+  public IInexactNumber tan();
+
+  @Override
+  public IInexactNumber tanh();
+
+  public IInexactNumber times(final IInexactNumber that);
+
+  @Override
+  public IInexactNumber times(INumber that);
 }

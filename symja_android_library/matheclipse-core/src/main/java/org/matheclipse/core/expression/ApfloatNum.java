@@ -716,6 +716,17 @@ public class ApfloatNum implements INum {
   // return fApfloat;
   // }
 
+  @Override
+  public IInexactNumber dawsonF() {
+    try {
+      return valueOf(EvalEngine.getApfloat().dawsonF(fApfloat));
+    } catch (ApfloatArithmeticException aae) {
+      //
+    }
+    Apcomplex dawsonF = EvalEngine.getApfloat().dawsonF(apcomplexValue());
+    return F.complexNum(dawsonF);
+  }
+
   /** {@inheritDoc} */
   @Override
   public IExpr dec() {
@@ -1524,7 +1535,9 @@ public class ApfloatNum implements INum {
         return F
             .complexNum(EvalEngine.getApfloat().jacobiP(fApfloat, ((INumber) arg2).apcomplexValue(),
                 ((INumber) arg3).apcomplexValue(), ((INumber) arg4).apcomplexValue()));
-      } catch (ArithmeticException aex) {
+      } catch (OverflowException of) {
+        return F.Overflow();
+      } catch (ArithmeticException | NumericComputationException e) {
         //
       }
     }

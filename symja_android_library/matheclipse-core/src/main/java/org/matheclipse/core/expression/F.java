@@ -2134,6 +2134,10 @@ public class F extends S {
     return new AST2(BarLegend, a0, a1);
   }
 
+  public static IAST BarnesG(final IExpr a0) {
+    return new AST1(BarnesG, a0);
+  }
+
   public static IAST BaseForm(final IExpr a0, final IExpr a1) {
     return new AST2(BaseForm, a0, a1);
   }
@@ -3371,6 +3375,10 @@ public class F extends S {
     return new AST1(Dashing, a);
   }
 
+  public static IAST DawsonF(final IExpr a0) {
+    return new AST1(DawsonF, a0);
+  }
+
   public static IAST Decrement(final IExpr a) {
     return new AST1(Decrement, a);
   }
@@ -3435,6 +3443,10 @@ public class F extends S {
 
   public static IAST DifferenceDelta(final IExpr a0, final IExpr a1) {
     return new AST2(DifferenceDelta, a0, a1);
+  }
+
+  public static IAST DifferenceRoot(final IExpr a0) {
+    return new AST1(DifferenceRoot, a0);
   }
 
   /**
@@ -5029,6 +5041,10 @@ public class F extends S {
    */
   public static IAST GreaterEqual(final IExpr x, final int y) {
     return new B2.GreaterEqual(x, ZZ(y));
+  }
+
+  public static IAST GroebnerBasis(final IAST polynomialsList, final IAST variablesList) {
+    return new AST2(GroebnerBasis, polynomialsList, variablesList);
   }
 
   public static IAST Gudermannian(final IExpr a0) {
@@ -7086,6 +7102,10 @@ public class F extends S {
     return new AST2(Log, C10, a0);
   }
 
+  public static IAST LogBarnesG(final IExpr a0) {
+    return new AST1(LogBarnesG, a0);
+  }
+
   public static IAST LogGamma(final IExpr a0) {
     return new AST1(LogGamma, a0);
   }
@@ -8572,6 +8592,10 @@ public class F extends S {
     ast.append(ZZ(num));
     ast.appendAll(a, 0, a.length);
     return ast;
+  }
+
+  public static IASTAppendable PlusAlloc() {
+    return ast(Plus, 7);
   }
 
   /**
@@ -11248,6 +11272,10 @@ public class F extends S {
     ast.append(ZZ(num));
     ast.appendAll(a, 0, a.length);
     return ast;
+  }
+
+  public static IASTAppendable TimesAlloc() {
+    return ast(Times, 7);
   }
 
   /**

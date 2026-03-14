@@ -163,6 +163,10 @@ public class CMath {
     return GammaJS.cosIntegral(z);
   }
 
+  public static Complex dawsonF(Complex z) {
+    return toComplex(EvalEngine.getApfloatDouble().dawsonF(apcomplex(z)));
+  }
+
   public static Complex digamma(Complex z) {
     return toComplex(EvalEngine.getApfloatDouble().digamma(apcomplex(z)));
   }

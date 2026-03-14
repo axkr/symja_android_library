@@ -1206,6 +1206,10 @@ public interface IExpr
     return F.NIL;
   }
 
+  default IExpr dawsonF() {
+    return F.NIL;
+  }
+
   /**
    * Returns an <code>IExpr</code> whose value is <code>(this - 1)</code>. Calculates <code>
    * F.eval(F.Subtract(this, C1))</code> in the common case and uses a specialized implementation
@@ -4413,8 +4417,16 @@ public interface IExpr
    * 
    * @see #isAtom()
    */
-  default boolean isOneIdentityAST1() {
+  default boolean isOneIdentityAST() {
     return false;
+  }
+
+  /**
+   * @deprecated use {@link #isOneIdentityAST()} instead.
+   */
+  @Deprecated
+  default boolean isOneIdentityAST1() {
+    return isOneIdentityAST();
   }
 
 
@@ -4895,10 +4907,10 @@ public interface IExpr
   }
 
   /**
-   * Test if this expression is a relational binary operation for
-   * {@link S#Equal},{@link S#Unequal},@link S#GreaterEqual},{@link S#LessEqual},@link S#Greater} or
-   * {@link S#Less} or ternary operation for @link S#GreaterEqual},{@link S#LessEqual},@link
-   * S#Greater} or {@link S#Less}
+   * Test if this expression is a relational operation for {@link S#Equal},{@link S#Unequal},@link
+   * S#GreaterEqual},{@link S#LessEqual},@link S#Greater} or {@link S#Less} or ternary operation
+   * for @link S#GreaterEqual},{@link S#LessEqual},@link S#Greater} or {@link S#Less} or quaterny
+   * operation for {@link S#Inequality}
    * 
    * @return
    */

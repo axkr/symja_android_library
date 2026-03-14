@@ -716,6 +716,12 @@ public class ComplexNum implements IComplexNum {
     return dabs(fComplex);
   }
 
+  @Override
+  public IComplexNum dawsonF() {
+    Apcomplex dawsonF = EvalEngine.getApfloat().dawsonF(apcomplexValue());
+    return F.complexNum(dawsonF.real().doubleValue(), dawsonF.imag().doubleValue());
+  }
+
   /** {@inheritDoc} */
   @Override
   public IExpr dec() {

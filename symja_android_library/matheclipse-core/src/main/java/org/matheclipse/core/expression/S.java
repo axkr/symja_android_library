@@ -2997,6 +2997,9 @@ public class S {
   public final static IBuiltInSymbol DifferenceQuotient =
       S.initFinalSymbol("DifferenceQuotient", ID.DifferenceQuotient);
 
+  public final static IBuiltInSymbol DifferenceRoot =
+      S.initFinalSymbol("DifferenceRoot", ID.DifferenceRoot);
+
   public final static IBuiltInSymbol Differences = S.initFinalSymbol("Differences", ID.Differences);
 
   /**
