@@ -489,7 +489,7 @@ public class BuiltinUsage {
     USAGE[ID.Postfix] = "postfix form";
     USAGE[ID.Power] = "exponentiate";
     USAGE[ID.PowerExpand] = "expand out powers";
-    USAGE[ID.PowerMod] = "modular powers and roots";
+    USAGE[ID.PowerMod] = "compute modular exponentiation";
     USAGE[ID.PowersRepresentations] = "represent a number as a sum of powers";
     USAGE[ID.PreDecrement] = "decrease the value by one and assigns that returning the new value";
     USAGE[ID.Prefix] = "prefix form";

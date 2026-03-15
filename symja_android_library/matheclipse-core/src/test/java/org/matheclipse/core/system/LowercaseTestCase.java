@@ -19150,6 +19150,29 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPowerMod() {
+    // gaussian integer tests
+    check("PowerMod(2+I,3,3+2*I)", //
+        "I");
+    check("PowerMod(2+I,2,19)", //
+        "3+I*4");
+    // PowerMod: 1+I is not invertible modulo 3+I.
+    check("PowerMod(1+I,-1,3+I)", //
+        "PowerMod(1+I,-1,3+I)");
+    // PowerMod: The equation x^2==Mod(I*2,3+I) has no integer solutions.
+    check("PowerMod(2*I,1/2,3+I)", //
+        "PowerMod(I*2,1/2,3+I)");
+
+    check("PowerMod(11, -7/3, 19)", //
+        "4");
+    check("PowerMod(11, 7/3, 19)", //
+        "5");
+    check("PowerMod(11, 4/3, 19)", //
+        "5");
+    check("PowerMod(11, 1/3, 19)", //
+        "5");
+    check("PowerMod(3, 1/2, 2)", //
+        "1");
+
     // 2 is a primitive root for 13
     check("PowerMod(2, Range(12), 13)", //
         "{2,4,8,3,6,12,11,9,5,10,7,1}");

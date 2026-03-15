@@ -38,6 +38,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numerics.utils.RealDigitsResult;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -1660,30 +1661,196 @@ public class IntegerFunctions {
    */
   private static class PowerMod extends AbstractFunctionEvaluator {
 
+    // Helper: Modulo operation using GaussianInteger.quotientRemainder
+    private static org.matheclipse.core.numbertheory.GaussianInteger mod(
+        org.matheclipse.core.numbertheory.GaussianInteger a,
+        org.matheclipse.core.numbertheory.GaussianInteger m) {
+      IInteger[] qr = org.matheclipse.core.numbertheory.GaussianInteger
+          .quotientRemainder(new IInteger[] {a.re(), a.im()}, new IInteger[] {m.re(), m.im()});
+      return new org.matheclipse.core.numbertheory.GaussianInteger(qr[2], qr[3]);
+    }
+
+    // Helper: Modular Exponentiation for Gaussian Integers
+    private static org.matheclipse.core.numbertheory.GaussianInteger modPow(
+        org.matheclipse.core.numbertheory.GaussianInteger base, BigInteger exp,
+        org.matheclipse.core.numbertheory.GaussianInteger m) {
+      org.matheclipse.core.numbertheory.GaussianInteger result =
+          new org.matheclipse.core.numbertheory.GaussianInteger(F.C1, F.C0);
+      org.matheclipse.core.numbertheory.GaussianInteger currentBase = mod(base, m);
+      BigInteger e = exp;
+
+      while (e.compareTo(BigInteger.ZERO) > 0) {
+        if (e.testBit(0)) {
+          result = mod(result.multiply(currentBase), m);
+        }
+        currentBase = mod(currentBase.multiply(currentBase), m);
+        e = e.shiftRight(1);
+      }
+      return result;
+    }
+
+    // Helper: Norm squared calculation
+    private static BigInteger norm(org.matheclipse.core.numbertheory.GaussianInteger a) {
+      BigInteger re = a.re().toBigNumerator();
+      BigInteger im = a.im().toBigNumerator();
+      return re.multiply(re).add(im.multiply(im));
+    }
+
+    // Conversion: IExpr to GaussianInteger
+    private static GaussianInteger fromIExpr(IExpr expr) {
+      if (expr.isInteger()) {
+        return new GaussianInteger((IInteger) expr, F.C0);
+      }
+      if (expr.isComplex()) {
+        IExpr r = expr.re();
+        IExpr i = expr.im();
+        if (r.isInteger() && i.isInteger()) {
+          return new GaussianInteger((IInteger) r, (IInteger) i);
+        }
+      }
+      return null;
+    }
+
+    // Conversion: GaussianInteger to IExpr
+    private static IExpr toIExpr(org.matheclipse.core.numbertheory.GaussianInteger g) {
+      if (g.im().isZero()) {
+        return g.re();
+      }
+      return F.CC(g.re(), g.im());
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.exists(x -> !x.isInteger())) {
+
+      // 1. FAST PATH: Standard integers over Z (preserves SymPy/native fast integer algorithms)
+      if (ast.arg1().isInteger() && ast.arg3().isInteger()) {
+        final IInteger arg1 = (IInteger) ast.arg1();
+        final IInteger arg3 = (IInteger) ast.arg3();
+        final IExpr arg2 = ast.arg2();
+
+        try {
+          if (arg3.isZero()) {
+            return Errors.printMessage(ast.topHead(), "divz", F.List(arg3, ast), engine);
+          }
+
+          if (arg2.isInteger()) {
+            IInteger iArg2 = (IInteger) arg2;
+            if (arg1.isZero() && iArg2.isNegativeResult()) {
+              return Errors.printMessage(ast.topHead(), "ninv", F.List(arg1, arg3), engine);
+            }
+            if (iArg2.isMinusOne()) {
+              IExpr result =
+                  org.matheclipse.core.sympy.ntheory.ResidueNTheory.modInverse(arg1, arg3);
+              return result.isPresent() ? result
+                  : Errors.printMessage(ast.topHead(), "ninv", F.List(arg1, arg3), engine);
+            }
+            return arg1.modPow(iArg2, arg3);
+          }
+
+          if (arg2.isFraction()) {
+            IFraction fArg2 = (IFraction) arg2;
+            BigInteger u = fArg2.toBigNumerator();
+            BigInteger v = fArg2.toBigDenominator();
+            BigInteger mVal = arg3.toBigNumerator().abs();
+
+            if (arg1.isZero() && u.signum() < 0) {
+              return Errors.printMessage(ast.topHead(), "ninv", F.List(arg1, arg3), engine);
+            }
+
+            IInteger n = F.ZZ(v);
+            BigInteger aPowU = arg1.toBigNumerator().modPow(u, mVal);
+            IInteger base = F.ZZ(aPowU);
+
+            IExpr result;
+            if (n.equals(F.C2)) {
+              result = org.matheclipse.core.sympy.ntheory.ResidueNTheory.sqrtMod(base, arg3);
+            } else {
+              result = org.matheclipse.core.sympy.ntheory.ResidueNTheory.nthRootMod(base, n, arg3);
+            }
+
+            if (result.isPresent()) {
+              return result;
+            }
+
+            // If no integer solution exists: "The equation `1` has no integer solutions."
+            IExpr eqn = F.Equal(F.Power(S.x, n), F.Mod(ast.arg1(), ast.arg3()));
+            return Errors.printMessage(ast.topHead(), "root2", F.List(eqn), engine);
+          }
+        } catch (ArithmeticException ae) {
+          if (ae.getMessage() != null && ae.getMessage().toLowerCase().contains("not invertible")) {
+            return Errors.printMessage(ast.topHead(), "ninv", F.List(arg1, arg3), engine);
+          }
+          return Errors.printMessage(S.PowerMod, ae, engine);
+        }
         return F.NIL;
       }
-      final IInteger arg1 = (IInteger) ast.arg1();
-      final IInteger arg2 = (IInteger) ast.arg2();
-      final IInteger arg3 = (IInteger) ast.arg3();
-      try {
-        if (arg1.isZero() && arg2.isNegativeResult()) {
-          // `1` is not invertible modulo `2`.
-          return Errors.printMessage(ast.topHead(), "ninv", F.list(arg1, arg3), engine);
+
+      // Gaussian Integers over Z[i]
+      GaussianInteger arg1 = fromIExpr(ast.arg1());
+      GaussianInteger arg3 = fromIExpr(ast.arg3());
+      final IExpr arg2 = ast.arg2();
+
+      if (arg1 != null && arg3 != null) {
+        try {
+          if (norm(arg3).equals(BigInteger.ZERO)) {
+            return Errors.printMessage(ast.topHead(), "pmod", F.List(ast.arg3(), ast), engine);
+          }
+
+          // Integer Exponents & Inverses
+          if (arg2.isInteger()) {
+            BigInteger exp = ((IInteger) arg2).toBigNumerator();
+
+            if (exp.compareTo(BigInteger.ZERO) < 0) {
+              BigInteger norm = norm(arg3);
+
+              // Brute force inverse: a * x = 1 mod m
+              org.matheclipse.core.numbertheory.GaussianInteger target =
+                  new org.matheclipse.core.numbertheory.GaussianInteger(F.C1, F.C0);
+              long bound = (long) Math.sqrt(norm.doubleValue()) + 1;
+              for (long r = -bound; r <= bound; r++) {
+                for (long i = -bound; i <= bound; i++) {
+                  org.matheclipse.core.numbertheory.GaussianInteger x =
+                      new org.matheclipse.core.numbertheory.GaussianInteger(F.ZZ(r), F.ZZ(i));
+                  if (mod(arg1.multiply(x), arg3).equals(target)) {
+                    if (exp.equals(BigInteger.ONE.negate())) {
+                      return toIExpr(x);
+                    }
+                    return toIExpr(modPow(x, exp.negate(), arg3));
+                  }
+                }
+              }
+              // If loop finishes without finding an inverse, correctly return `ninv`
+              return Errors.printMessage(ast.topHead(), "ninv", F.List(ast.arg1(), ast.arg3()),
+                  engine);
+            }
+
+            return toIExpr(modPow(arg1, exp, arg3));
+          }
+
+          // Fractional Exponents (Roots modulo m)
+          if (arg2.isFraction()) {
+            IFraction fArg2 = (IFraction) arg2;
+            BigInteger u = fArg2.toBigNumerator();
+            BigInteger v = fArg2.toBigDenominator();
+
+            if (u.signum() < 0) {
+              return Errors.printMessage(ast.topHead(), "ninv", F.List(ast.arg1(), ast.arg3()),
+                  engine);
+            }
+
+            IExpr eqn = F.Equal(F.Power(S.x, F.ZZ(v)), F.Mod(ast.arg1(), ast.arg3()));
+            return Errors.printMessage(ast.topHead(), "root2", F.List(eqn), engine);
+          }
+        } catch (IllegalArgumentException | ArithmeticException ae) {
+          // Catch and translate standard Gaussian integer operation exceptions directly
+          if (ae.getMessage() != null && ae.getMessage().toLowerCase().contains("not invertible")) {
+            return Errors.printMessage(ast.topHead(), "ninv", F.List(ast.arg1(), ast.arg3()),
+                engine);
+          }
+          return Errors.printMessage(ast.topHead(), "pmod", F.List(ast), engine);
         }
-        if (arg3.isZero()) {
-          // The argument `1` should be nonzero.
-          return Errors.printMessage(ast.topHead(), "divz", F.list(arg3, ast), engine);
-        }
-        if (arg2.isMinusOne()) {
-          return arg1.modInverse(arg3);
-        }
-        return arg1.modPow(arg2, arg3);
-      } catch (ArithmeticException ae) {
-        return Errors.printMessage(S.PowerMod, ae, engine);
       }
+      return F.NIL;
     }
 
     @Override

@@ -332,6 +332,8 @@ public class Errors {
       "pllim", "Range specification `1` is not of the form {x, xmin, xmax}.", //
       "plln", "Limiting value `1` in `2` is not a machine-size real number.", //
       "pkspec1", "The expression `1` cannot be used as a part specification.", //
+      "pmod",
+      "The base and modulus arguments in `1` must be Gaussian integers and the power must be an integer or rational.", //
       "poly", "`1` is not a polynomial.", //
       "polynomial", "Polynomial expected at position `1` in `2`.", //
       "posdefprm",
@@ -371,6 +373,7 @@ public class Errors {
       "reps",
       "(`1`) is neither a list of replacement rules nor a valid dispatch table and cannot be used for replacing.", //
       "root", "Unable to determine the appropriate root for the periodic continued fraction.", //
+      "root2", "The equation `1` has no integer solutions.", //
       "rrlim", "Exiting after `1` scanned `2` times.", //
       "rspec",
       "Rotation specification `1` should be a machine-sized integer or list of machine-sized integers.", //

@@ -4,7 +4,7 @@
 PowerMod(x, y, m)
 ```
 
-> computes `x^y` modulo `m`.
+> computes `x^y` modulo `m`. `x` and `m` must be Gaussian integers and the `y` must be an integer or rational number.
 
 See
 * [Wikipedia - Exponentiation](https://en.wikipedia.org/wiki/Modular_exponentiation)
@@ -32,10 +32,19 @@ The third argument of `PowerMod` should be nonzero.
  PowerMod(5, 2, 0)
 ```
 
+`PowerMod` works on square roots.
 
+```
+>> PowerMod(3,1/2,2)
+1
+```
 
+`PowerMod` works on Gaussian integers.
 
-
+```
+>> PowerMod(2+I,2,19)
+3+I*4
+```
 
 ### Implementation status
 
