@@ -2531,6 +2531,15 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{y'(x)->1/5*(3+5*Sin(x)-15*y(x)),z(x)->1/5-y(x)}}");
   }
 
+
+  @Test
+  public void testSolveIssue1317() {
+    check(
+        "Solve({var0==ArcCos(Sqrt(700000^2+2*700000*6378000)/((700000+6378000)*Cos(-8258413328561117/18014398509481984)))/(884279719003555/281474976710656)},{var0})", //
+        "{{var0->281474976710656/884279719003555*ArcCos(580/3539*Sqrt(7)*Sec(\n"
+            + "8258413328561117/18014398509481984))}}");
+  }
+
   /** The JUnit setup method */
   @Override
   public void setUp() {

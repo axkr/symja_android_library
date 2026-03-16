@@ -46,6 +46,7 @@ public class CompareUtil {
     CompareUtil.LIST_LOGIC_EQUATION_HEADS.addAll(CompareUtil.LOGIC_EQUATION_HEADS);
     CompareUtil.LIST_LOGIC_EQUATION_HEADS.add(S.List);
   }
+
   /**
    * Transform the {@link S#Inequality} AST to an {@link S#And} expression.
    *
@@ -152,7 +153,6 @@ public class CompareUtil {
    * @param tolerance typically {@link Config#SPECIAL_FUNCTIONS_TOLERANCE} for the numeric
    *        {@link F#isZero(double, double)} check
    * @param engine
-   * @return
    */
   public static boolean isPossibleZeroQ(IAST function, boolean fastTest, double tolerance,
       EvalEngine engine) {
@@ -168,7 +168,14 @@ public class CompareUtil {
     }
     try {
       VariablesSet varSet = new VariablesSet(function);
-      IAST variables = varSet.getVarList();
+      if (varSet.isEmpty()) {
+        INumber num = function.isNumericFunction(true) ? function.evalNumber() : null;
+        if (num == null || !(F.isZero(num.reDoubleValue(), tolerance)
+            && F.isZero(num.imDoubleValue(), tolerance))) {
+          return false;
+        }
+        return true;
+      }
 
       if (function.leafCount() < Config.MAX_POSSIBLE_ZERO_LEAFCOUNT / 5) {
         IExpr expr;
@@ -180,12 +187,10 @@ public class CompareUtil {
             expr = engine.evaluate(expr);
           }
         } else {
-          // expr = S.TrigExpand.of(engine, function);
           expr = F.evalExpandAll(function);
           if (expr.isZero()) {
             return true;
           }
-          // expr = engine.evaluate(expr);
         }
 
         if (!expr.isAST()) {
@@ -194,105 +199,92 @@ public class CompareUtil {
         function = (IAST) expr;
       }
 
-      if (variables.isEmpty()) {
-        INumber num = function.isNumericFunction(true) ? function.evalNumber() : null;
-
-        // if (num == null
-        // || !(F.isZero(num.reDoubleValue(), 1.0e-9) && F.isZero(num.imDoubleValue(), 1.0e-9))) {
-        // return false;
-        // }
-        if (num == null || !(F.isZero(num.reDoubleValue(), tolerance)
-            && F.isZero(num.imDoubleValue(), tolerance))) {
-          return false;
-        }
-        return true;
-      } else {
-        if (function.isNumericFunction(varSet)) {
-          if (variables.argSize() == 1) {
-            IExpr derived = engine.evaluate(F.D(function, variables.get(1)));
-            if (derived.isNumericFunction()) {
-              if (!derived.isNumber()) {
-                derived = engine.evalN(derived);
-              }
-              if (derived.isNumber()) {
-                if (derived.isZero()) {
-                  COMPARE_TERNARY possibeZero =
-                      isPossibeZeroFixedValues(F.C0, function, variables, engine);
-                  if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
-                    return true;
-                  }
-                  if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
-                    return false;
-                  }
-                } else {
-                  return false;
+      if (function.isNumericFunction(varSet)) {
+        IAST variables = varSet.getVarList();
+        if (variables.argSize() == 1) {
+          IExpr derived = engine.evaluate(F.D(function, variables.get(1)));
+          if (derived.isNumericFunction()) {
+            if (!derived.isNumber()) {
+              derived = engine.evalN(derived);
+            }
+            if (derived.isNumber()) {
+              if (derived.isZero()) {
+                COMPARE_TERNARY possibeZero =
+                    isPossibeZeroFixedValues(F.C0, function, variables, engine);
+                if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+                  return true;
                 }
-              }
-            }
-          }
-
-          if (function.isFreeAST(h -> isSpecialNumericFunction(h))) {
-            int trueCounter = 0;
-
-            // 1. step test some special complex numeric values
-            COMPARE_TERNARY possibeZero =
-                isPossibeZeroFixedValues(F.C0, function, variables, engine);
-            if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
-              return false;
-            }
-            if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
-              trueCounter++;
-            }
-            possibeZero = isPossibeZeroFixedValues(F.C1, function, variables, engine);
-            if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
-              return false;
-            }
-            if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
-              trueCounter++;
-            }
-            possibeZero = isPossibeZeroFixedValues(F.CN1, function, variables, engine);
-            if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
-              return false;
-            }
-            if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
-              trueCounter++;
-            }
-            possibeZero = isPossibeZeroFixedValues(F.CI, function, variables, engine);
-            if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
-              return false;
-            }
-            if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
-              trueCounter++;
-            }
-            possibeZero = isPossibeZeroFixedValues(F.CNI, function, variables, engine);
-            if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
-              return false;
-            }
-            if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
-              trueCounter++;
-            }
-
-            if (trueCounter == 5) {
-              // 2. step test some random complex numeric values
-              for (int i = 0; i < 36; i++) {
-                possibeZero = isPossibeZero(function, variables, engine);
                 if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
                   return false;
                 }
-                if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
-                  trueCounter++;
-                }
+              } else {
+                return false;
               }
-              if (trueCounter > 28) {
-                return true;
-              }
-            }
-            if (fastTest) {
-              return false;
             }
           }
         }
+
+        if (function.isFreeAST(h -> isSpecialNumericFunction(h))) {
+          int trueCounter = 0;
+
+          // 1. step test some special complex numeric values
+          COMPARE_TERNARY possibeZero = isPossibeZeroFixedValues(F.C0, function, variables, engine);
+          if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+            return false;
+          }
+          if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+            trueCounter++;
+          }
+          possibeZero = isPossibeZeroFixedValues(F.C1, function, variables, engine);
+          if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+            return false;
+          }
+          if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+            trueCounter++;
+          }
+          possibeZero = isPossibeZeroFixedValues(F.CN1, function, variables, engine);
+          if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+            return false;
+          }
+          if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+            trueCounter++;
+          }
+          possibeZero = isPossibeZeroFixedValues(F.CI, function, variables, engine);
+          if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+            return false;
+          }
+          if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+            trueCounter++;
+          }
+          possibeZero = isPossibeZeroFixedValues(F.CNI, function, variables, engine);
+          if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+            return false;
+          }
+          if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+            trueCounter++;
+          }
+
+          if (trueCounter == 5) {
+            // 2. step test some random complex numeric values
+            for (int i = 0; i < 36; i++) {
+              possibeZero = isPossibeZero(function, variables, engine);
+              if (possibeZero == IExpr.COMPARE_TERNARY.FALSE) {
+                return false;
+              }
+              if (possibeZero == IExpr.COMPARE_TERNARY.TRUE) {
+                trueCounter++;
+              }
+            }
+            if (trueCounter > 28) {
+              return true;
+            }
+          }
+          if (fastTest) {
+            return false;
+          }
+        }
       }
+
 
       IExpr temp = function.replaceAll(x -> x.isNumericFunction(true) //
           ? IExpr.ofNullable(x.evalNumber())
@@ -303,24 +295,6 @@ public class CompareUtil {
           return true;
         }
       }
-
-      // if (function.isPlus()) {
-      // IExpr[] commonFactors = InternalFindCommonFactorPlus.findCommonFactors(function,
-      // true);
-      // if (commonFactors != null) {
-      // temp = S.Simplify.of(engine, F.Times(commonFactors[0], commonFactors[1]));
-      // if (temp.isNumber()) {
-      // return temp.isZero();
-      // }
-      // temp = temp.evalNumber();
-      // if (temp != null) {
-      // if (temp.isZero()) {
-      // return true;
-      // }
-      // }
-      // }
-      // }
-
       return isZeroTogether(function, engine);
     } catch (ValidateException ve) {
       Errors.printMessage(S.PossibleZeroQ, ve, engine);
