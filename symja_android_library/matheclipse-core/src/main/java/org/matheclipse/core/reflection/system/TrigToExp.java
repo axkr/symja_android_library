@@ -13,18 +13,13 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorReplaceAllDFS;
 
 /**
- *
- *
  * <pre>
  * TrigToExp(expr)
  * </pre>
  *
  * <blockquote>
- *
  * <p>
- * converts trigonometric functions in <code>expr</code> to exponentials.
- *
- * </blockquote>
+ * converts trigonometric functions in <code>expr</code> to exponentials. </blockquote>
  *
  * <h3>Examples</h3>
  *
@@ -34,6 +29,14 @@ import org.matheclipse.core.visit.VisitorReplaceAllDFS;
  * </pre>
  */
 public class TrigToExp extends AbstractEvaluator {
+
+  private static final Function<IExpr, IExpr> REWRITE_FUN = x -> {
+    IExpr t = x.rewrite(ID.Exp);
+    if (t.isPresent()) {
+      return t;
+    }
+    return x.rewrite(ID.Log);
+  };
 
   public TrigToExp() {}
 
@@ -54,14 +57,7 @@ public class TrigToExp extends AbstractEvaluator {
     }
 
     IExpr arg1 = ast.arg1();
-    Function<IExpr, IExpr> fun = x -> {
-      IExpr t = x.rewrite(ID.Exp);
-      if (t.isNIL()) {
-        return x.rewrite(ID.Log);
-      }
-      return t.rewrite(ID.Log).orElse(t);
-    };
-    VisitorReplaceAllDFS dfs = new VisitorReplaceAllDFS(fun, 1);
+    VisitorReplaceAllDFS dfs = new VisitorReplaceAllDFS(REWRITE_FUN, 1);
     return arg1.accept(dfs).orElse(arg1);
   }
 
