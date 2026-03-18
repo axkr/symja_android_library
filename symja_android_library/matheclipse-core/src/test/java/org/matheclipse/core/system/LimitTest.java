@@ -467,8 +467,8 @@ public class LimitTest extends ExprEvaluatorTestCase {
 
     // Issue 536
     check("Integrate(Sqrt((4+x)/(4-x)), x) ", //
-        "(-4+x)*(Sqrt((4+x)/(4-x))-ArcTan(Sqrt((4+x)/(4-x)))+(-(4+x)*ArcTan(Sqrt((4+x)/(4-x))))/(\n"//
-            + "4-x))");
+        "(-4+x)*(Sqrt(-1+8/(4-x))-ArcTan(Sqrt((4+x)/(4-x)))+(1-8/(4-x))*ArcTan(Sqrt((4+x)/(\n"
+            + "4-x))))");
 
     check("Limit(ArcTan(Sqrt((4 + x)/(4 - x))),x->4)", //
         "Pi/2");
