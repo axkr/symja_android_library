@@ -206,6 +206,8 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testMeanDeviation() {
+    check("MeanDeviation({Pi, E, 2}) // Together", //
+        "2/9*(-4+E+Pi)");
     // Config.MAX_AST_SIZE=Integer.MAX_VALUE;
     // check(
     // "MeanDeviation(RandomReal(1, 10^4))", //
@@ -220,7 +222,7 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
         "{3/2,9/2}");
     check("MeanDeviation({1, 2, 3, 7})", //
         "15/8");
-    check("MeanDeviation({Pi, E, 2})//Together", //
+    check("MeanDeviation({Pi, E, 2}) // Together", //
         "2/9*(-4+E+Pi)");
   }
 

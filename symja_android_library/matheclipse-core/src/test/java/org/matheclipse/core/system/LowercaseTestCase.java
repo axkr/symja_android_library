@@ -2014,8 +2014,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // {m, 2, 4}) ",
     // //
     // "");
-    // check("BellY(4, 2, {x1, x2, y1})", //
-    // "3*x2^2+4*x1*y1");
+
+    // check("BellY({{x1, x2, x3}, {y1, y2, y3}, {z1, z2, z3}})", //
+    // "");
+    // check("BellY(4, 2, {{x1, x2, x3}, {y1, y2, y3}})", //
+    // "3*y2+4*x1*{{x1,x2,x3},{y1,y2,y3}}[[3,1]]");
+    check("BellY(4, 2, {x1, x2, y1})", //
+        "3*x2^2+4*x1*y1");
+
     // check(
     // "Apply(Plus, {BellY(4, 2, {x1,x2,y1}), BellY(4, 2, {x1, x2, y2}), BellY(4, 2, {x1, x2, y3}),
     // BellY(4, 2, {x1, x3, y1}), " //
@@ -3956,14 +3962,24 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void test$MachinePrecision() {
-    check("$MachinePrecision", //
-        "16");
+    check("$MachinePrecision // InputForm", //
+        "15.954589770191003`");
     check("N(Sqrt(2), $MachinePrecision)", //
         "1.414213562373095");
     // compare shorter string result to work under unix and windows:
     String evalStr = evalString("N(Sqrt(2), $MachinePrecision+1)");
     String resultStr = "1.414213562373095";
     assertEquals(evalStr.substring(0, evalStr.length()), resultStr);
+
+    evalStr = evalString("N(Sqrt(2),  MachinePrecision+1)");
+    resultStr = "1.414213562373095";
+    assertEquals(evalStr.substring(0, evalStr.length()), resultStr);
+  }
+
+  @Test
+  public void testMachinePrecision() {
+    check("N(3^200, MachinePrecision)", //
+        "2.656139888758748*10^95");
   }
 
   @Test
@@ -5896,10 +5912,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("DifferenceDelta({f(i), g(i)}, i)", //
         "{-f(i)+f(1+i),-g(i)+g(1+i)}");
     check("DifferenceDelta(Cosh(a*i+b),{i,2,h})", //
-        "Cosh(b+a*i)-2*Cosh(b+a*(h+i))+Cosh(b+a*(2*h+i))");
+        "4*Cosh(b+a*h+a*i)*Sinh(1/2*a*h)^2");
     check("DifferenceDelta(Sin(a*i+b),{i,5})", //
-        "-Sin(b+a*i)+5*Sin(b+a*(1+i))-10*Sin(b+a*(2+i))+10*Sin(b+a*(3+i))-5*Sin(b+a*(4+i))+Sin(b+a*(\n"
-            + "5+i))");
+        "32*Sin(a/2)^5*Sin(b+a*i+5/2*(a+Pi))");
+    check("DifferenceDelta(Sinh(a*i+b),{i,4})", //
+        "16*Sinh(a/2)^4*Sinh(2*a+b+a*i)");
+    check("DifferenceDelta(Cosh(a*i+b),{i,4})", //
+        "16*Cosh(2*a+b+a*i)*Sinh(a/2)^4");
+    check("DifferenceDelta(Exp(a*i+b),{i,5})", //
+        "E^(b+a*i)*(-1+E^a)^5");
     check("DifferenceDelta(b(a),{a,2,c})", //
         "b(a)-2*b(a+c)+b(a+2*c)");
     check("DifferenceDelta(b(a),{a,3,c})", //
@@ -7640,6 +7661,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("ExpandAll(( ( ( X3 - X1$c) * ( ( X1 + ( ( X4$c * X3 ) + X5$c))
     // + X3$b)) * ( ( X3 - X1 ) + ( X3$c + X5 ))))",
     // "");
+
+    // TODO
+    check("ExpandAll(1/(12*(1/2+x)))", //
+        "1/(6+12*x)");
     check("ExpandAll(a+f(Log((1+x)^3)))", //
         "a+f(Log(1+3*x+3*x^2+x^3))");
     check("ExpandAll(Sum(9*x,{x,x,2*x}))", //
@@ -8863,10 +8888,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindMinimum() {
-    // check(
-    // "FindMinimum({100*(y-x^2)^2+(1-x)^2}, {{x,-1}, {y,1}},Method -> \"SequentialQuadratic\" )",
-    // //
-    // "{4.03424*10^-11,{x->0.999999,y->0.999998}}");
+    check(
+        "FindMinimum({100*(y-x^2)^2+(1-x)^2}, {{x,-1}, {y,1}},Method -> \"SequentialQuadratic\" )", //
+        "{4.03424*10^-11,{x->0.999999,y->0.999998}}");
 
     // example: Rosenbrock function https://en.wikipedia.org/wiki/Rosenbrock_function
     // Math.pow(1 - x, 2) + 100 * Math.pow(y - x * x, 2);
@@ -8880,7 +8904,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check(
         "FindMinimum({x+y,3*x+2*y >= 7 , x >= 0 , y >= 0}, {x, y},Method -> \"SequentialQuadratic\")", //
-        "{2.33333,{x->2.33333,y->-8.32917*10^-11}}");
+        "{2.33333,{x->2.33333,y->-2.01416*10^-10}}");
 
     // TODO Less and Greater are not allowed at the moment
     // message: FindMinimum: Constraints in `1` are not all 'equality' or 'less
@@ -13375,6 +13399,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testListable() {
+    check("Sin[{x,0,2,1},SparseArray({x,y,v,w})]", //
+        "{Sin(x,x),Sin(0,y),Sin(2,v),Sin(1,w)}");
+    // Thread: Objects of unequal length in Sin({x,0,2,1},SparseArray(Number of elements: 2
+    // Dimensions: {2} Default value: 0)) cannot be combined.
+    check(
+        "Sin[{x,0,2,1},SparseArray({x,y})]", //
+        "Sin({x,0,2,1},SparseArray(Number of elements: 2 Dimensions: {2} Default value: 0))");
     check("SetAttributes(f, Listable)", //
         "");
     check("f({1, 2, 3}, {4, 5, 6})", //
@@ -14863,6 +14894,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // message ModularInverse: 3 is not invertible modulo 9.
     check("ModularInverse(3, 9)", //
         "ModularInverse(3,9)");
+    // message ModularInverse: 2 is not invertible modulo 2.
+    check("ModularInverse(2,2)", //
+        "ModularInverse(2,2)");
 
     check("ModularInverse(2, 3)", //
         "2");
@@ -15258,6 +15292,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNIssue1065() {
+    check(
+        "(529944115939767556068257065958983640547328-67852391143724744330116623333929624535040*Sqrt(61))/((203833064-26073320*Sqrt(61))*(-650282536985455220412264441675776+83260147110523554988992408780800*Sqrt(61))) // Together", //
+        "-2");
+
     check("m = {{-2,-2,4},{-1,-3,7},{2,4,6}};", //
         "");
     check("s= Transpose(Eigenvectors(m))", //
@@ -19054,6 +19092,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPowerExpand() {
+    check("PowerExpand(Log(Exp(-g)))", //
+        "-g");
+    check("PowerExpand(Log(c/w))", //
+        "Log(c)-Log(w)");
+    check("PowerExpand(Log(Power(w,-1.0)))", //
+        "-Log(w)");
     check("PowerExpand(Log(x*y), Assumptions->True)", //
         "I*2*Pi*Floor((Pi-Arg(x)-Arg(y))/(2*Pi))+Log(x)+Log(y)");
     check("PowerExpand(E^(Log(a)/2))", //
@@ -22512,6 +22556,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSin() {
+    check("Sin(1/Infinity)", //
+        "0");
+    check("Sin(1/(-Infinity))", //
+        "0");
     check("Sin(11/8*Pi)", //
         "-Cos(Pi/8)");
     // check("Sin(4/15*Pi)", //
@@ -23012,6 +23060,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("SquareFreeQ(-45+28*I)", //
         "False");
     check("SquareFreeQ(6+7*I)", //
+        "True");
+    check("SquareFreeQ(2+I)", //
         "True");
 
     // message: SquareFreeQ: Currently not supported: number of variables in expression (2) unequals
@@ -24474,6 +24524,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTimes() {
+    check("((1+Infinity)*(2+Infinity))/Infinity^2", //
+        "Indeterminate");
     check("0.0*Sin(#)", //
         "0");
     check("8.88178*10^-16 * Binomial(50.0, #)", //

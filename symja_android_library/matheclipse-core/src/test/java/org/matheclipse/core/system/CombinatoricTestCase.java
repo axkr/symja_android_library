@@ -78,7 +78,7 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
         "Cycles({})");
     check("Cycles({{1}, {2}, {3}, {4}})", //
         "Cycles({})");
-    check("Cycles({SparseArray[{1 -> 1000, 2 -> 10}], {100, 1, 10000}})", //
+    check("Cycles({SparseArray({1 -> 1000, 2 -> 10}), {100, 1, 10000}})", //
         "Cycles({{1,10000,100},{10,1000}})");
   }
 
@@ -322,13 +322,14 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
     assertEquals(true, b);
   }
 
-  public static void testRosenNumberPartitionIterator() {
+  @Test
+  public void testRosenNumberPartitionIterator() {
     RosenNumberPartitionIterator i = new RosenNumberPartitionIterator(10, 4);
     StringBuilder buf = new StringBuilder(256);
     while (i.hasNext()) {
       int[] t = i.next();
       for (int j = 0; j < t.length; j++) {
-        // System.out.print(t[j]);
+        // System.out.print(t(j));
         buf.append(t[j]);
         buf.append(" ");
       }
@@ -338,5 +339,221 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
     assertEquals(
         "1 1 1 7 |1 1 2 6 |1 1 3 5 |1 1 4 4 |1 1 5 3 |1 1 6 2 |1 1 7 1 |1 2 1 6 |1 2 2 5 |1 2 3 4 |1 2 4 3 |1 2 5 2 |1 2 6 1 |1 3 1 5 |1 3 2 4 |1 3 3 3 |1 3 4 2 |1 3 5 1 |1 4 1 4 |1 4 2 3 |1 4 3 2 |1 4 4 1 |1 5 1 3 |1 5 2 2 |1 5 3 1 |1 6 1 2 |1 6 2 1 |1 7 1 1 |2 1 1 6 |2 1 2 5 |2 1 3 4 |2 1 4 3 |2 1 5 2 |2 1 6 1 |2 2 1 5 |2 2 2 4 |2 2 3 3 |2 2 4 2 |2 2 5 1 |2 3 1 4 |2 3 2 3 |2 3 3 2 |2 3 4 1 |2 4 1 3 |2 4 2 2 |2 4 3 1 |2 5 1 2 |2 5 2 1 |2 6 1 1 |3 1 1 5 |3 1 2 4 |3 1 3 3 |3 1 4 2 |3 1 5 1 |3 2 1 4 |3 2 2 3 |3 2 3 2 |3 2 4 1 |3 3 1 3 |3 3 2 2 |3 3 3 1 |3 4 1 2 |3 4 2 1 |3 5 1 1 |4 1 1 4 |4 1 2 3 |4 1 3 2 |4 1 4 1 |4 2 1 3 |4 2 2 2 |4 2 3 1 |4 3 1 2 |4 3 2 1 |4 4 1 1 |5 1 1 3 |5 1 2 2 |5 1 3 1 |5 2 1 2 |5 2 2 1 |5 3 1 1 |6 1 1 2 |6 1 2 1 |6 2 1 1 |7 1 1 1 |", //
         buf.toString());
+  }
+
+
+  @Test
+  public void testFiniteGroupCount001() {
+    // Base cases and explicitly known small group counts
+    check("FiniteGroupCount(1)", "1");
+    check("FiniteGroupCount(2)", "1");
+    check("FiniteGroupCount(3)", "1");
+
+    // Order 4: Z4, Z2 x Z2
+    check("FiniteGroupCount(4)", "2");
+
+    // Order 8: Z8, Z4 x Z2, Z2 x Z2 x Z2, D4, Q8
+    check("FiniteGroupCount(8)", "5");
+
+    // Order 15: Z15
+    check("FiniteGroupCount(15)", "1");
+
+    // Order 16
+    check("FiniteGroupCount(16)", "14");
+
+    // Upper boundary of the lookup table
+    check("FiniteGroupCount(2047)", "1");
+  }
+
+  @Test
+  public void testFiniteGroupCount002() {
+    // Out of bounds / invalid inputs should remain unevaluated
+    check("FiniteGroupCount(2048)", "FiniteGroupCount(2048)");
+    check("FiniteGroupCount(5000)", "FiniteGroupCount(5000)");
+
+    check("FiniteGroupCount(0)", "FiniteGroupCount(0)");
+    check("FiniteGroupCount(-5)", "FiniteGroupCount(-5)");
+    check("FiniteGroupCount(x)", "FiniteGroupCount(x)");
+    check("FiniteGroupCount(8.0)", "FiniteGroupCount(8.0)");
+
+  }
+
+  @Test
+  public void testCyclicNumbers() {
+    // A number n is cyclic if GCD(n, EulerPhi(n)) == 1.
+    // In this case, there is exactly 1 group of order n (the cyclic group Z_n).
+
+    // n = 2739 (3 * 11 * 83).
+    // EulerPhi(2739) = 2 * 10 * 82 = 1640.
+    // GCD(2739, 1640) == 1.
+    check("FiniteGroupCount(2739)", "1");
+
+    // n = 4255 (5 * 23 * 37)
+    // EulerPhi(4255) = 4 * 22 * 36 = 3168.
+    // GCD(4255, 3168) == 1.
+    check("FiniteGroupCount(4255)", "1");
+  }
+
+  @Test
+  public void testPrimePowers() {
+    // Single prime p (p^1) -> exactly 1 group
+    // n = 2053 (a prime number > 2048)
+    check("FiniteGroupCount(2053)", "1");
+
+    // Prime squared (p^2) -> exactly 2 groups (Z_{p^2} and Z_p x Z_p)
+    // n = 47^2 = 2209
+    check("FiniteGroupCount(2209)", "2");
+
+    // Prime cubed (p^3) -> exactly 5 groups
+    // n = 13^3 = 2197
+    check("FiniteGroupCount(2197)", "5");
+
+    // Prime to the 4th power (p^4) -> exactly 15 groups for p > 2
+    // n = 7^4 = 2401
+    check("FiniteGroupCount(2401)", "15");
+  }
+
+  @Test
+  public void testSemiprimes() {
+    // Semiprime n = p * q (where p > q).
+    // If q divides p - 1, there are 2 groups. Otherwise, there is 1 group.
+
+    // Case 1: q divides (p - 1) -> 2 groups
+    // Let q = 3. We need a prime p = 1 (mod 3). Let p = 733.
+    // n = 3 * 733 = 2199. 3 divides 732.
+    check("FiniteGroupCount(2199)", "2");
+
+    // Let q = 5. We need a prime p = 1 (mod 5). Let p = 431.
+    // n = 5 * 431 = 2155. 5 divides 430.
+    check("FiniteGroupCount(2155)", "2");
+
+    // Case 2: q does NOT divide (p - 1) -> 1 group
+    // Let q = 3. We need a prime p = 2 (mod 3). Let p = 743.
+    // n = 3 * 743 = 2229. 3 does not divide 742.
+    check("FiniteGroupCount(2229)", "1");
+  }
+
+  @Test
+  public void testUnevaluatedComplexOrders() {
+    // For numbers beyond the lookup table that don't fit the simple
+    // algorithmic rules, the function should safely remain unevaluated.
+
+    // n = 2048 = 2^11. Our prime power logic stops at p^4.
+    check("FiniteGroupCount(2048)", "FiniteGroupCount(2048)");
+
+    // n = 2052 = 2^2 * 3^3 * 19. Highly composite, no simple theorem applies.
+    check("FiniteGroupCount(2052)", "FiniteGroupCount(2052)");
+  }
+
+  @Test
+  public void testFiniteAbelianGroupCount001() {
+    // Order 1: Trivial group
+    check("FiniteAbelianGroupCount(1)", "1");
+
+    // Prime orders
+    check("FiniteAbelianGroupCount(2)", "1");
+    check("FiniteAbelianGroupCount(7)", "1");
+
+    // Composite and prime power orders
+    check("FiniteAbelianGroupCount(4)", "2");
+    check("FiniteAbelianGroupCount(8)", "3");
+    check("FiniteAbelianGroupCount(16)", "5");
+    check("FiniteAbelianGroupCount(36)", "4");
+
+    // Large composite order (100000 = 2^5 * 5^5 -> P(5) * P(5) = 7 * 7 = 49)
+    check("FiniteAbelianGroupCount(100000)", "49");
+  }
+
+  @Test
+  public void testFiniteAbelianGroupCount002() {
+    // Out of bounds / invalid inputs should remain unevaluated
+    check("FiniteAbelianGroupCount(0)", "FiniteAbelianGroupCount(0)");
+    check("FiniteAbelianGroupCount(-10)", "FiniteAbelianGroupCount(-10)");
+    check("FiniteAbelianGroupCount(n)", "FiniteAbelianGroupCount(n)");
+    check("FiniteAbelianGroupCount(36.0)", "FiniteAbelianGroupCount(36.0)");
+
+  }
+
+
+  @Test
+  public void testDeBruijnSequence001() {
+    // Integer alphabet sizes: DeBruijnSequence(k, n) -> implies alphabet {0, 1, ..., k-1}
+
+    // k=2, n=3 (binary alphabet, length 3 combinations)
+    check("DeBruijnSequence(2, 3)", //
+        "{0,0,0,1,0,1,1,1}");
+
+    // k=3, n=2 (ternary alphabet, length 2 combinations)
+    check("DeBruijnSequence(3, 2)", //
+        "{0,0,1,0,2,1,1,2,2}");
+
+    // k=2, n=4
+    check("DeBruijnSequence(2, 4)", //
+        "{0,0,0,0,1,0,0,1,1,0,1,0,1,1,1,1}");
+
+    // Base cases for k=1 and k=0
+    check("DeBruijnSequence(1, 5)", //
+        "{0}");
+    check("DeBruijnSequence(0, 3)", //
+        "{}");
+  }
+
+
+  @Test
+  public void testDeBruijnSequence002() {
+    check("DeBruijnSequence(\"abcd\", 2)", //
+        "aabacadbbcbdccdd");
+
+    // Explicit alphabet lists: DeBruijnSequence({a, b, ...}, n)
+
+    // Character/Symbol alphabet
+    check("DeBruijnSequence({a, b}, 3)", //
+        "{a,a,a,b,a,b,b,b}");
+    check("DeBruijnSequence({x, y, z}, 2)", //
+        "{x,x,y,x,z,y,y,z,z}");
+
+    // Explicit integer values in the alphabet list
+    check("DeBruijnSequence({10, 20}, 3)", //
+        "{10,10,10,20,10,20,20,20}");
+
+    // Base cases for single element and empty list
+    check("DeBruijnSequence({a}, 4)", //
+        "{a}");
+    check("DeBruijnSequence({}, 4)", //
+        "{}");
+  }
+
+
+  @Test
+  public void testDeBruijnSequence003() {
+    // Invalid inputs that should remain unevaluated (F.NIL fallback)
+
+    // Negative or zero 'n' (length of sub-sequences)
+    check("DeBruijnSequence(2, 0)", //
+        "DeBruijnSequence(2,0)");
+    check("DeBruijnSequence({a, b}, -2)", //
+        "DeBruijnSequence({a,b},-2)");
+
+    // Negative 'k' (alphabet size)
+    check("DeBruijnSequence(-2, 3)", //
+        "DeBruijnSequence(-2,3)");
+
+    // Non-integer sequence lengths
+    check("DeBruijnSequence(2,3.5)", //
+        "DeBruijnSequence(2,3.5)");
+    check("DeBruijnSequence(2, n)", //
+        "DeBruijnSequence(2,n)");
+
+    // Symbolic alphabet size instead of list/integer
+    check("DeBruijnSequence(k, 3)", //
+        "DeBruijnSequence(k,3)");
+
+    // Wrong number of arguments
+    check("DeBruijnSequence()", //
+        "DeBruijnSequence()");
+    check("DeBruijnSequence(2)", //
+        "DeBruijnSequence(2)");
+    check("DeBruijnSequence(2, 3, 4)", //
+        "DeBruijnSequence(2,3,4)");
   }
 }

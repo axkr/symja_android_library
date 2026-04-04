@@ -9,7 +9,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("Factor(1/((1+x)*(1/(2*x*(1+x))-ArcTan(Sqrt(x))/(2*x^(3/2)))))", //
         "1/((1+x)*(1/(2*x*(1+x))-ArcTan(Sqrt(x))/(2*x^(3/2))))");
     check("Simplify(1/((1+x)*(1/(2*x*(1+x))-ArcTan(Sqrt(x))/(2*x^(3/2)))))", //
-        "2/((1+x)*(1/(x+x^2)-ArcTan(Sqrt(x))/x^(3/2)))");
+        "(2*x^(3/2))/(Sqrt(x)-ArcTan(Sqrt(x))-x*ArcTan(Sqrt(x)))");
   }
 
   @Test

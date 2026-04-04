@@ -4106,7 +4106,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Limit(x^(-37/4),x->0, Direction->-1)", //
         "Infinity");
     check("Limit(x^(-37/4),x->0, Direction->1)", //
-        "Limit(1/x^(37/4),x->0,Direction->1)");
+        "DirectedInfinity((-1)^(3/4))");
 
     check("Limit(1/x^2,x->0)", //
         "Infinity");
