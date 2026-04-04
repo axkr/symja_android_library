@@ -2,9 +2,8 @@ package org.matheclipse.core.sympy.core;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TreeMap;
-import org.matheclipse.core.eval.EvalEngine;
+import java.util.Map.Entry;
 import org.matheclipse.core.expression.DefaultDict;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Pair;
@@ -22,7 +21,6 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.sympy.exception.ValueError;
 
 public class ExprTools {
-
   /**
    * Efficient representation of <code>f_1*f_2*...*f_n</code>.
    *
@@ -31,21 +29,8 @@ public class ExprTools {
     // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/exprtools.py#L284
     private TreeMap<IExpr, IExpr> dict;
 
-    public Factors(TreeMap<IExpr, IExpr> dict) {
-      this(dict, false);
-    }
-
     public Factors() {
       this(S.None);
-    }
-
-    public Factors(TreeMap<IExpr, IExpr> dictionary, boolean copy) {
-      if (copy) {
-        this.dict = (TreeMap<IExpr, IExpr>) dictionary.clone();
-      } else {
-        this.dict = dictionary;
-      }
-      normalize(this.dict);
     }
 
     /**
@@ -132,66 +117,17 @@ public class ExprTools {
       }
     }
 
-    private void normalize(TreeMap<IExpr, IExpr> dictionary) {
-      this.dict = dictionary;
-      IExpr i1 = F.C1;
-      Iterator<IExpr> it = dictionary.keySet().iterator();
-      while (it.hasNext()) {
-        IExpr k = it.next();
-        if (k.equals(F.CI) || k.isOne() || k.isMinusOne()) {
-          IExpr v = dict.get(k);
-          if (v.isNumber()) {
-            i1 = i1.times(k.pow(v));
-            it.remove();
-          }
-        }
+    public Factors(TreeMap<IExpr, IExpr> dict) {
+      this(dict, false);
+    }
+
+    public Factors(TreeMap<IExpr, IExpr> dictionary, boolean copy) {
+      if (copy) {
+        this.dict = (TreeMap<IExpr, IExpr>) dictionary.clone();
+      } else {
+        this.dict = dictionary;
       }
-      if (!i1.equals(F.C1)) {
-        IAST args = i1.isTimes() ? (IAST) i1 : F.Times(i1);
-        for (int i = 1; i < args.size(); i++) {
-          IExpr a = args.get(i);
-          if (a.isMinusOne() || a.isOne()) {
-            dict.put(a, F.C1);
-          } else if (a.isImaginaryUnit()) {
-            if (a instanceof IComplexNum) {
-              dict.put(F.CI, F.C1);
-              dict.put(F.CD1, F.C1);
-            } else {
-              dict.put(F.CI, F.C1);
-            }
-          } else if (a.isNegativeImaginaryUnit()) {
-            dict.put(F.CN1, F.C1);
-            dict.put(F.CI, F.C1);
-          } else if (a.isPower()) {
-            IExpr v = dict.get(a.base());
-            dict.put(a.base(), (v != null ? v : F.C0).plus(a.exponent()));
-          } else {
-            throw new ValueError("unexpected factor in i1: " + a);
-          }
-        }
-      }
-    }
-
-    @Override
-    public int hashCode() {
-      return dict.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj)
-        return true;
-      if (obj == null)
-        return false;
-      if (getClass() != obj.getClass())
-        return false;
-      Factors other = (Factors) obj;
-      return dict.equals(other.dict);
-    }
-
-    @Override
-    public String toString() {
-      return dict.toString();
+      normalize(this.dict);
     }
 
     /**
@@ -216,20 +152,162 @@ public class ExprTools {
           args.append(F.Power(factor, exp));
         }
       }
-//      args.sortInplace();
+      // args.sortInplace();
       return args.oneIdentity1();
     }
 
-    public boolean isZero() {
-      return dict.size() == 1 && dict.get(F.C0) != null;
+    public Factors[] div(Factors other) {
+      if (other.isZero()) {
+        throw new ArithmeticException("Factors#div: division by zero");
+      }
+      if (isZero()) {
+        return new Factors[] {new Factors(F.C0), new Factors()};
+      }
+
+      TreeMap<IExpr, IExpr> quo = (TreeMap<IExpr, IExpr>) dict.clone();
+      TreeMap<IExpr, IExpr> rem = new TreeMap<IExpr, IExpr>();
+
+      for (Map.Entry<IExpr, IExpr> entry : other.dict.entrySet()) {
+        IExpr factor = entry.getKey();
+        IExpr exp = entry.getValue();
+        if (quo.containsKey(factor)) {
+          IExpr quoFactor = quo.get(factor);
+          IExpr d = quoFactor.subtract(exp);
+          if (d.isNumber()) {
+            if (d.isNegative() || d.isZero()) {
+              quo.remove(factor);
+            }
+            if (d.isPositive() || d.isZero()) {
+              if (!d.isZero()) {
+                quo.put(factor, d);
+              }
+              continue;
+            }
+            exp = d.negate();
+          } else {
+            IExpr r = Expr.extractAdditively(quoFactor, exp);
+            if (r.isPresent()) {
+              if (r.isZero()) {
+                quo.remove(factor);
+              } else {
+                quo.put(factor, r);
+              }
+            } else {
+              IExpr otherExp = exp;
+              Pair ps = quoFactor.asCoeffAdd();
+              IExpr sc = ps.first();
+              IExpr sa = F.eval(ps.second());
+              if (!sc.isZero()) {
+                Pair po = otherExp.asCoeffAdd();
+                IExpr oc = po.first();
+                IExpr oa = F.eval(po.second());
+                IExpr diff = sc.subtract(oc);
+                if (diff.isPositive()) {
+                  quo.put(factor, quoFactor.subtract(oc));
+                  otherExp = oa;
+                } else if (diff.isNegative()) {
+                  quo.put(factor, quoFactor.subtract(sc));
+                  otherExp = oa.subtract(diff);
+                } else {
+                  quo.put(factor, sa);
+                  otherExp = oa;
+                }
+
+              }
+              if (!otherExp.isZero()) {
+                rem.put(factor, otherExp);
+              } else {
+                assert rem.get(factor) == null;
+              }
+            }
+            continue;
+          }
+        }
+
+        rem.put(factor, exp);
+      }
+      return new Factors[] {new Factors(quo), new Factors(rem)};
+    }
+
+    public Factors[] div(IExpr other) {
+      return div(new Factors(other));
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj)
+        return true;
+      if (obj == null)
+        return false;
+      if (getClass() != obj.getClass())
+        return false;
+      Factors other = (Factors) obj;
+      return dict.equals(other.dict);
+    }
+
+    public TreeMap<IExpr, IExpr> factorsMap() {
+      return dict;
+    }
+
+    public Factors gcd(Factors other) {
+      if (other.isZero()) {
+        return this;
+      }
+      TreeMap<IExpr, IExpr> factors = new TreeMap<IExpr, IExpr>();
+
+      for (Map.Entry<IExpr, IExpr> entry : dict.entrySet()) {
+        IExpr factor = entry.getKey();
+        IExpr exp = entry.getValue();
+        IExpr otherValue = other.dict.get(factor);
+        if (otherValue != null) {
+          IExpr lt = exp.subtract(otherValue);
+          if (lt.isNegative() || lt.isZero()) {
+            factors.put(factor, exp);
+          } else if (lt.isPositive()) {
+            factors.put(factor, otherValue);
+          }
+        }
+      }
+      return new Factors(factors);
+    }
+
+    public Factors gcd(IExpr other) {
+      return gcd(new Factors(other));
+    }
+
+    @Override
+    public int hashCode() {
+      return dict.hashCode();
     }
 
     public boolean isOne() {
       return dict.size() == 0;
     }
 
-    public Factors mul(IExpr other) {
-      return mul(new Factors(other));
+    public boolean isZero() {
+      return dict.size() == 1 && dict.get(F.C0) != null;
+    }
+
+    public Factors lcm(Factors other) {
+      if (isZero() || other.isZero()) {
+        return new Factors(F.C0);
+      }
+      TreeMap<IExpr, IExpr> factors = (TreeMap<IExpr, IExpr>) dict.clone();
+
+      for (Map.Entry<IExpr, IExpr> entry : other.dict.entrySet()) {
+        IExpr factor = entry.getKey();
+        IExpr exp = entry.getValue();
+        IExpr value = factors.get(factor);
+        if (value != null) {
+          exp = F.Max.of(exp, value);
+        }
+        factors.put(factor, exp);
+      }
+      return new Factors(factors);
+    }
+
+    public Factors lcm(IExpr other) {
+      return lcm(new Factors(other));
     }
 
     public Factors mul(Factors other) {
@@ -253,6 +331,10 @@ public class ExprTools {
         factors.put(factor, exp);
       }
       return new Factors(factors);
+    }
+
+    public Factors mul(IExpr other) {
+      return mul(new Factors(other));
     }
 
     public Factors[] normal(IExpr other) {
@@ -333,97 +415,44 @@ public class ExprTools {
       return new Factors[] {new Factors(self_factors), new Factors(other_factors)};
     }
 
-    public Factors[] div(IExpr other) {
-      return div(new Factors(other));
-    }
-
-    public Factors[] div(Factors other) {
-      if (other.isZero()) {
-        throw new ArithmeticException("Factors#div: division by zero");
-      }
-      if (isZero()) {
-        return new Factors[] {new Factors(F.C0), new Factors()};
-      }
-
-      TreeMap<IExpr, IExpr> quo = (TreeMap<IExpr, IExpr>) dict.clone();
-      TreeMap<IExpr, IExpr> rem = new TreeMap<IExpr, IExpr>();
-
-      for (Map.Entry<IExpr, IExpr> entry : other.dict.entrySet()) {
-        IExpr factor = entry.getKey();
-        IExpr exp = entry.getValue();
-        if (quo.containsKey(factor)) {
-          IExpr quoFactor = quo.get(factor);
-          IExpr d = quoFactor.subtract(exp);
-          if (d.isNumber()) {
-            if (d.isNegative() || d.isZero()) {
-              quo.remove(factor);
-            }
-            if (d.isPositive() || d.isZero()) {
-              if (!d.isZero()) {
-                quo.put(factor, d);
-              }
-              continue;
-            }
-            exp = d.negate();
-          } else {
-            IExpr r = Expr.extractAdditively(quoFactor, exp);
-            if (r.isPresent()) {
-              if (r.isZero()) {
-                quo.remove(factor);
-              } else {
-                quo.put(factor, r);
-              }
-            } else {
-              IExpr otherExp = exp;
-              Pair ps = quoFactor.asCoeffAdd();
-              IExpr sc = ps.first();
-              IExpr sa = F.eval(ps.second());
-              if (!sc.isZero()) {
-                Pair po = otherExp.asCoeffAdd();
-                IExpr oc = po.first();
-                IExpr oa = F.eval(po.second());
-                IExpr diff = sc.subtract(oc);
-                if (diff.isPositive()) {
-                  quo.put(factor, quoFactor.subtract(oc));
-                  otherExp = oa;
-                } else if (diff.isNegative()) {
-                  quo.put(factor, quoFactor.subtract(sc));
-                  otherExp = oa.subtract(diff);
-                } else {
-                  quo.put(factor, sa);
-                  otherExp = oa;
-                }
-
-              }
-              if (!otherExp.isZero()) {
-                rem.put(factor, otherExp);
-              } else {
-                assert rem.get(factor) == null;
-              }
-            }
-            continue;
+    private void normalize(TreeMap<IExpr, IExpr> dictionary) {
+      this.dict = dictionary;
+      IExpr i1 = F.C1;
+      Iterator<IExpr> it = dictionary.keySet().iterator();
+      while (it.hasNext()) {
+        IExpr k = it.next();
+        if (k.equals(F.CI) || k.isOne() || k.isMinusOne()) {
+          IExpr v = dict.get(k);
+          if (v.isNumber()) {
+            i1 = i1.times(k.pow(v));
+            it.remove();
           }
         }
-
-        rem.put(factor, exp);
       }
-      return new Factors[] {new Factors(quo), new Factors(rem)};
-    }
-
-    public Factors quo(IExpr other) {
-      return quo(new Factors(other));
-    }
-
-    public Factors quo(Factors other) {
-      return div(other)[0];
-    }
-
-    public Factors rem(IExpr other) {
-      return rem(new Factors(other));
-    }
-
-    public Factors rem(Factors other) {
-      return div(other)[1];
+      if (!i1.equals(F.C1)) {
+        IAST args = i1.isTimes() ? (IAST) i1 : F.Times(i1);
+        for (int i = 1; i < args.size(); i++) {
+          IExpr a = args.get(i);
+          if (a.isMinusOne() || a.isOne()) {
+            dict.put(a, F.C1);
+          } else if (a.isImaginaryUnit()) {
+            if (a instanceof IComplexNum) {
+              dict.put(F.CI, F.C1);
+              dict.put(F.CD1, F.C1);
+            } else {
+              dict.put(F.CI, F.C1);
+            }
+          } else if (a.isNegativeImaginaryUnit()) {
+            dict.put(F.CN1, F.C1);
+            dict.put(F.CI, F.C1);
+          } else if (a.isPower()) {
+            IExpr v = dict.get(a.base());
+            dict.put(a.base(), (v != null ? v : F.C0).plus(a.exponent()));
+          } else {
+            throw new ValueError("unexpected factor in i1: " + a);
+          }
+        }
+      }
     }
 
     /**
@@ -454,69 +483,272 @@ public class ExprTools {
       throw new ValueError("expected non-negative integer, got " + n);
     }
 
-    public Factors gcd(IExpr other) {
-      return gcd(new Factors(other));
+    public Factors quo(Factors other) {
+      return div(other)[0];
     }
 
-    public Factors gcd(Factors other) {
-      if (other.isZero()) {
-        return this;
-      }
-      TreeMap<IExpr, IExpr> factors = new TreeMap<IExpr, IExpr>();
-
-      for (Map.Entry<IExpr, IExpr> entry : dict.entrySet()) {
-        IExpr factor = entry.getKey();
-        IExpr exp = entry.getValue();
-        IExpr otherValue = other.dict.get(factor);
-        if (otherValue != null) {
-          IExpr lt = exp.subtract(otherValue);
-          if (lt.isNegative() || lt.isZero()) {
-            factors.put(factor, exp);
-          } else if (lt.isPositive()) {
-            factors.put(factor, otherValue);
-          }
-        }
-      }
-      return new Factors(factors);
+    public Factors quo(IExpr other) {
+      return quo(new Factors(other));
     }
 
-    public Factors lcm(IExpr other) {
-      return lcm(new Factors(other));
+    public Factors rem(Factors other) {
+      return div(other)[1];
     }
 
-    public Factors lcm(Factors other) {
-      if (isZero() || other.isZero()) {
-        return new Factors(F.C0);
-      }
-      TreeMap<IExpr, IExpr> factors = (TreeMap<IExpr, IExpr>) dict.clone();
-
-      for (Map.Entry<IExpr, IExpr> entry : other.dict.entrySet()) {
-        IExpr factor = entry.getKey();
-        IExpr exp = entry.getValue();
-        IExpr value = factors.get(factor);
-        if (value != null) {
-          exp = F.Max.of(exp, value);
-        }
-        factors.put(factor, exp);
-      }
-      return new Factors(factors);
+    public Factors rem(IExpr other) {
+      return rem(new Factors(other));
     }
 
-    public TreeMap<IExpr, IExpr> factorsMap() {
-      return dict;
+    @Override
+    public String toString() {
+      return dict.toString();
     }
 
   }
 
   /**
+   * Efficient representation of {@code coeff*(numer/denom)}.
+   */
+  public final static class Term {
+    public final IExpr coeff;
+    public final Factors numer;
+    public final Factors denom;
+
+    public Term(IExpr term) {
+      IExpr c = F.C1;
+      TreeMap<IExpr, IExpr> nMap = new TreeMap<>();
+      TreeMap<IExpr, IExpr> dMap = new TreeMap<>();
+
+      if (term.isNumber()) {
+        c = term;
+      } else {
+        IAST mul;
+        if (term.isTimes()) {
+          mul = (IAST) term;
+        } else {
+          mul = F.Times(term);
+        }
+
+        IASTAppendable rest = F.TimesAlloc(mul.argSize());
+        for (int i = 1; i <= mul.argSize(); i++) {
+          IExpr arg = mul.get(i);
+          if (arg.isNumber()) {
+            c = F.eval(F.Times(c, arg));
+          } else {
+            rest.append(arg);
+          }
+        }
+
+        Factors factors = new Factors(rest.oneIdentity1());
+        for (Map.Entry<IExpr, IExpr> entry : factors.factorsMap().entrySet()) {
+          IExpr base = entry.getKey();
+          IExpr exp = entry.getValue();
+
+          boolean isNegative = false;
+          if (exp.isNumber() && exp.isNegative()) {
+            isNegative = true;
+          } else if (exp.isTimes() && exp.first().isNumber() && exp.first().isNegative()) {
+            isNegative = true;
+          }
+
+          if (isNegative) {
+            dMap.put(base, F.eval(exp.negate()));
+          } else {
+            nMap.put(base, exp);
+          }
+        }
+      }
+
+      this.coeff = c;
+      this.numer = new Factors(nMap);
+      this.denom = new Factors(dMap);
+    }
+
+    public Term(IExpr coeff, Factors numer, Factors denom) {
+      this.coeff = coeff;
+      this.numer = numer;
+      this.denom = denom;
+    }
+
+    public IExpr asExpr() {
+      IExpr n = this.numer.asExpr();
+      IExpr d = this.denom.asExpr();
+      return F.eval(F.Times(this.coeff, n, F.Power(d, F.CN1)));
+    }
+
+    public Term gcd(Term other) {
+      IExpr newCoeff = fractionalGCD(this.coeff, other.coeff);
+      Factors newNumer = this.numer.gcd(other.numer);
+      Factors newDenom = this.denom.gcd(other.denom);
+      return new Term(newCoeff, newNumer, newDenom);
+    }
+
+    public Term lcm(Term other) {
+      IExpr newCoeff = fractionalLCM(this.coeff, other.coeff);
+      Factors newNumer = this.numer.lcm(other.numer);
+      Factors newDenom = this.denom.lcm(other.denom);
+      return new Term(newCoeff, newNumer, newDenom);
+    }
+
+    public Term quo(Term other) {
+      IExpr newCoeff = F.eval(F.Divide(this.coeff, other.coeff));
+      Factors[] nDiv = this.numer.div(other.numer);
+      Factors[] dDiv = this.denom.div(other.denom);
+      Factors newNumer = nDiv[0].mul(dDiv[1]);
+      Factors newDenom = dDiv[0].mul(nDiv[1]);
+      return new Term(newCoeff, newNumer, newDenom);
+    }
+  }
+
+  /**
+   * Helper function for {@link #gcdTerms(IExpr, boolean, boolean, boolean)}.
+   */
+  public static IExpr[] _gcdTerms(IAST terms, boolean isprimitive, boolean fraction) {
+    int size = terms.argSize();
+    if (size == 0) {
+      return new IExpr[] {F.C0, F.C0, F.C1};
+    }
+
+    Term[] termArr = new Term[size];
+    for (int i = 0; i < size; i++) {
+      termArr[i] = new Term(terms.get(i + 1));
+    }
+
+    if (size == 1) {
+      return new IExpr[] {termArr[0].coeff, termArr[0].numer.asExpr(), termArr[0].denom.asExpr()};
+    }
+
+    Term cont = termArr[0];
+    for (int i = 1; i < size; i++) {
+      cont = cont.gcd(termArr[i]);
+    }
+
+    for (int i = 0; i < size; i++) {
+      termArr[i] = termArr[i].quo(cont);
+    }
+
+    IExpr denomExpr;
+    IExpr numerExpr;
+    if (fraction) {
+      Factors denom = termArr[0].denom;
+      for (int i = 1; i < size; i++) {
+        denom = denom.lcm(termArr[i].denom);
+      }
+      denomExpr = denom.asExpr();
+
+      IASTAppendable numers = F.PlusAlloc(size);
+      for (int i = 0; i < size; i++) {
+        Factors n = termArr[i].numer.mul(denom.quo(termArr[i].denom));
+        numers.append(F.eval(F.Times(termArr[i].coeff, n.asExpr())));
+      }
+      numerExpr = numers;
+    } else {
+      IASTAppendable numers = F.PlusAlloc(size);
+      for (int i = 0; i < size; i++) {
+        numers.append(termArr[i].asExpr());
+      }
+      numerExpr = numers;
+      denomExpr = F.C1;
+    }
+
+    IExpr contExpr = cont.asExpr();
+    numerExpr = F.eval(numerExpr);
+
+    return new IExpr[] {contExpr, numerExpr, denomExpr};
+  }
+
+  private static IExpr fractionalGCD(IExpr a, IExpr b) {
+    if (a.isRational() && b.isRational()) {
+      IInteger numA = a.isFraction() ? ((IFraction) a).numerator() : (IInteger) a;
+      IInteger denA = a.isFraction() ? ((IFraction) a).denominator() : F.C1;
+      IInteger numB = b.isFraction() ? ((IFraction) b).numerator() : (IInteger) b;
+      IInteger denB = b.isFraction() ? ((IFraction) b).denominator() : F.C1;
+
+      IExpr numGCD = F.eval(F.GCD(numA, numB));
+      IExpr denLCM = F.eval(F.LCM(denA, denB));
+      return F.eval(F.Divide(numGCD, denLCM));
+    }
+    return F.eval(F.GCD(a, b));
+  }
+
+  private static IExpr fractionalLCM(IExpr a, IExpr b) {
+    if (a.isRational() && b.isRational()) {
+      IInteger numA = a.isFraction() ? ((IFraction) a).numerator() : (IInteger) a;
+      IInteger denA = a.isFraction() ? ((IFraction) a).denominator() : F.C1;
+      IInteger numB = b.isFraction() ? ((IFraction) b).numerator() : (IInteger) b;
+      IInteger denB = b.isFraction() ? ((IFraction) b).denominator() : F.C1;
+
+      IExpr numLCM = F.eval(F.LCM(numA, numB));
+      IExpr denGCD = F.eval(F.GCD(denA, denB));
+      return F.eval(F.Divide(numLCM, denGCD));
+    }
+    return F.eval(F.LCM(a, b));
+  }
+
+  /**
    * Compute the GCD of <code>terms</code> and put them together.
-   * 
-   * @param terms
-   * @return
+   *
+   * @param terms the expression or sequence to process
+   * @return the combined expression
    */
   public static IExpr gcdTerms(IExpr terms) {
-    return S.Cancel.of(EvalEngine.get(), terms);
+    return gcdTerms(terms, false, true, true);
   }
+
+  /**
+   * Compute the GCD of <code>terms</code> and put them together.
+   *
+   * @param terms the expression or sequence to process
+   * @param fraction whether to put the expression over a common denominator
+   * @return the combined expression
+   */
+  public static IExpr gcdTerms(IExpr terms, boolean fraction) {
+    return gcdTerms(terms, false, true, fraction);
+  }
+
+  /**
+   * Compute the GCD of <code>terms</code> and put them together.
+   *
+   * @param terms the expression or sequence to process
+   * @param isprimitive if true, bypass primitive extraction
+   * @param clear whether to remove integers from the denominator of Add
+   * @param fraction whether to put the expression over a common denominator
+   * @return the combined expression
+   */
+  public static IExpr gcdTerms(IExpr terms, boolean isprimitive, boolean clear, boolean fraction) {
+    if (!terms.isPlus() && !terms.isList()) {
+      if (terms.isAtom()) {
+        return terms;
+      }
+      if (terms.isTimes()) {
+        IAST mul = (IAST) terms;
+        IASTAppendable newMul = F.TimesAlloc(mul.argSize());
+        for (int i = 1; i <= mul.argSize(); i++) {
+          newMul.append(gcdTerms(mul.get(i), isprimitive, clear, fraction));
+        }
+        return F.eval(newMul);
+      }
+      return terms;
+    }
+
+    IAST ast = (IAST) terms;
+    IExpr[] parts = _gcdTerms(ast, isprimitive, fraction);
+    IExpr cont = parts[0];
+    IExpr numer = parts[1];
+    IExpr denom = parts[2];
+
+    return F.eval(F.Times(cont, numer, F.Power(denom, F.CN1)));
+  }
+
+  // /**
+  // * Compute the GCD of <code>terms</code> and put them together.
+  // *
+  // * @param terms
+  // * @return
+  // */
+  // public static IExpr gcdTerms(IExpr terms) {
+  // return S.Cancel.of(EvalEngine.get(), terms);
+  // }
 
   public static IExpr normal(IExpr self, IExpr others) {
     if (!others.isAST(S.Factor)) {

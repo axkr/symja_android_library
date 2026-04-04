@@ -74,6 +74,9 @@ matcher.caseOf(SeriesCoefficient(ArcTan(x_),list(x_Symbol,C0,PatternTest(n_,NotL
     // SeriesCoefficient(ArcCosh(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{I*1/2*Pi,n==0},{((-1)*I*Pochhammer(1/2,1/2*(-1+n)))/(n*(1/2*(-1+n))!),n>=1&&Mod(n,2)==1}},0)/;FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(ArcCosh(x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
       Condition(Piecewise(list(list(Times(CI,C1D2,Pi),Equal(n,C0)),list(Times(CN1,CI,Power(Times(n,Factorial(Times(C1D2,Plus(CN1,n)))),CN1),Pochhammer(C1D2,Times(C1D2,Plus(CN1,n)))),And(GreaterEqual(n,C1),Equal(Mod(n,C2),C1)))),C0),FreeQ(n,x)));
+    // SeriesCoefficient(ArcCoth(x_),{x_Symbol,0,a_?NotListQ}):=Piecewise({{DifferenceRoot(Function({y,n},{-n*y(n)+(2+n)*y(2+n)==0,y(0)==I*1/2*Pi,y(1)==1}))[a],a>=0}},0)/;FreeQ(a,x)
+matcher.caseOf(SeriesCoefficient(ArcCoth(x_),list(x_Symbol,C0,PatternTest(a_,NotListQ))),
+      Condition(Piecewise(list(list($(DifferenceRoot(Function(list(y,n),list(Equal(Plus(Times(CN1,n,$(y,n)),Times(Plus(C2,n),$(y,Plus(C2,n)))),C0),Equal($(y,C0),Times(CI,C1D2,Pi)),Equal($(y,C1),C1)))),a),GreaterEqual(a,C0))),C0),FreeQ(a,x)));
     // SeriesCoefficient(ArcSinh(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{Pochhammer(1/2,1/2*(-1+n))/(I^(1-n)*n*(1/2*(-1+n))!),Mod(n,2)==1&&n>=0}},0)/;FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(ArcSinh(x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
       Condition(Piecewise(list(list(Times(Power(CI,Plus(CN1,n)),Power(Times(n,Factorial(Times(C1D2,Plus(CN1,n)))),CN1),Pochhammer(C1D2,Times(C1D2,Plus(CN1,n)))),And(Equal(Mod(n,C2),C1),GreaterEqual(n,C0)))),C0),FreeQ(n,x)));
@@ -146,12 +149,12 @@ matcher.caseOf(SeriesCoefficient(PolyGamma(C0,x_),list(x_Symbol,C0,PatternTest(n
     // SeriesCoefficient(PolyLog(k_,x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{n^(-k),n>=1}},0)/;FreeQ(k,x)&&FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(PolyLog(k_,x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
       Condition(Piecewise(list(list(Power(n,Negate(k)),GreaterEqual(n,C1))),C0),And(FreeQ(k,x),FreeQ(n,x))));
-    // SeriesCoefficient(ChebyshevT(k_,x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{((-1/2)^n*Sqrt(Pi)*Gamma(1/2+n)*Pochhammer(-k,n)*Pochhammer(k,n))/(n!*Gamma(1/2*(1-k+n))*Gamma(1/2*(1+k+n))*Pochhammer(1/2,n)),n>=0}},0)/;FreeQ(k,x)&&FreeQ(n,x)
-matcher.caseOf(SeriesCoefficient(ChebyshevT(k_,x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(list(list(Times(Power(CN1D2,n),CSqrtPi,Gamma(Plus(C1D2,n)),Power(Times(Factorial(n),Gamma(Times(C1D2,Plus(C1,Negate(k),n))),Gamma(Times(C1D2,Plus(C1,k,n))),Pochhammer(C1D2,n)),CN1),Pochhammer(Negate(k),n),Pochhammer(k,n)),GreaterEqual(n,C0))),C0),And(FreeQ(k,x),FreeQ(n,x))));
-    // SeriesCoefficient(ChebyshevU(k_,x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{((-1/2)^n*Sqrt(Pi)*Gamma(3/2+n)*Pochhammer(-k,n)*Pochhammer(2+k,n))/(n!*Gamma(1/2*(1-k+n))*Gamma(1/2*(3+k+n))*Pochhammer(3/2,n)),n>=0}},0)/;FreeQ(k,x)&&FreeQ(n,x)
-matcher.caseOf(SeriesCoefficient(ChebyshevU(k_,x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
-      Condition(Piecewise(list(list(Times(Power(CN1D2,n),CSqrtPi,Gamma(Plus(QQ(3L,2L),n)),Power(Times(Factorial(n),Gamma(Times(C1D2,Plus(C1,Negate(k),n))),Gamma(Times(C1D2,Plus(C3,k,n))),Pochhammer(QQ(3L,2L),n)),CN1),Pochhammer(Negate(k),n),Pochhammer(Plus(C2,k),n)),GreaterEqual(n,C0))),C0),And(FreeQ(k,x),FreeQ(n,x))));
+    // SeriesCoefficient(ChebyshevT(k_,x_),{x_Symbol,p_,a_?NotListQ}):=Piecewise({{DifferenceRoot(Function({y,n},{(-k^2+n^2)*y(n)+(1+n)*(1+2*n)*p*y(1+n)+(1+n)*(2+n)*(-1+p)*(1+p)*y(2+n)==0,y(0)==ChebyshevT(k,p),y(1)==k*ChebyshevT(-1+k,p)}))[a],a>=0}},0)/;FreeQ(k,x)&&FreeQ(a,x)
+matcher.caseOf(SeriesCoefficient(ChebyshevT(k_,x_),list(x_Symbol,p_,PatternTest(a_,NotListQ))),
+      Condition(Piecewise(list(list($(DifferenceRoot(Function(list(y,n),list(Equal(Plus(Times(Plus(Negate(Sqr(k)),Sqr(n)),$(y,n)),Times(Plus(C1,n),Plus(C1,Times(C2,n)),p,$(y,Plus(C1,n))),Times(Plus(C1,n),Plus(C2,n),Plus(CN1,p),Plus(C1,p),$(y,Plus(C2,n)))),C0),Equal($(y,C0),ChebyshevT(k,p)),Equal($(y,C1),Times(k,ChebyshevT(Plus(CN1,k),p)))))),a),GreaterEqual(a,C0))),C0),And(FreeQ(k,x),FreeQ(a,x))));
+    // SeriesCoefficient(ChebyshevU(k_,x_),{x_Symbol,p_,a_?NotListQ}):=Piecewise({{DifferenceRoot(Function({y,n},{-(-n+k)*(2+n+k)*y(n)+(1+n)*(3+2*n)*p*y(1+n)+(1+n)*(2+n)*(-1+p)*(1+p)*y(2+n)==0,y(0)==ChebyshevU(k,p),y(1)==(-(1+k)*ChebyshevU(-1+k,p)+k*p*ChebyshevU(k,p))/(-1+p^2)}))[a],a>=0}},0)/;FreeQ(k,x)&&FreeQ(a,x)
+matcher.caseOf(SeriesCoefficient(ChebyshevU(k_,x_),list(x_Symbol,p_,PatternTest(a_,NotListQ))),
+      Condition(Piecewise(list(list($(DifferenceRoot(Function(list(y,n),list(Equal(Plus(Times(CN1,Plus(Negate(n),k),Plus(C2,n,k),$(y,n)),Times(Plus(C1,n),Plus(C3,Times(C2,n)),p,$(y,Plus(C1,n))),Times(Plus(C1,n),Plus(C2,n),Plus(CN1,p),Plus(C1,p),$(y,Plus(C2,n)))),C0),Equal($(y,C0),ChebyshevU(k,p)),Equal($(y,C1),Times(Power(Plus(CN1,Sqr(p)),CN1),Plus(Times(CN1,Plus(C1,k),ChebyshevU(Plus(CN1,k),p)),Times(k,p,ChebyshevU(k,p)))))))),a),GreaterEqual(a,C0))),C0),And(FreeQ(k,x),FreeQ(a,x))));
     // SeriesCoefficient(EllipticE(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{(-Gamma(-1/2+n)*Gamma(1/2+n))/(4*Gamma(1+n)^2),n>=0}},0)/;FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(EllipticE(x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
       Condition(Piecewise(list(list(Times(CN1,Gamma(Plus(CN1D2,n)),Gamma(Plus(C1D2,n)),Power(Times(C4,Sqr(Gamma(Plus(C1,n)))),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x)));

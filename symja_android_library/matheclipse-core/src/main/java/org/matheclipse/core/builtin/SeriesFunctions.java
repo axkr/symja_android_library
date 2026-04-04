@@ -12,15 +12,19 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -264,9 +268,32 @@ public class SeriesFunctions {
    * x+x^3/6+3/40*x^5+5/112*x^7+O(x)^8
    * </pre>
    */
+  /**
+   * <pre>
+   * InverseSeries(series)
+   * </pre>
+   * 
+   * <blockquote>
+   * <p>
+   * return the inverse series.
+   * </p>
+   * </blockquote> *
+   * 
+   * <pre>
+   * InverseSeries(f(x), x)
+   * </pre>
+   * 
+   * <blockquote>
+   * <p>
+   * generates the inverse power series of the function f(x) using the Lagrange-Bürmann formula.
+   * </p>
+   * </blockquote>
+   */
   private static final class InverseSeries extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      // 1. Invertierung eines bereits generierten ASTSeriesData Objekts
       if (ast.arg1() instanceof ASTSeriesData) {
         ASTSeriesData ps = (ASTSeriesData) ast.arg1();
         IExpr variable = ps.expansionVariable();
@@ -276,6 +303,30 @@ public class SeriesFunctions {
         IExpr temp = ps.reversion(variable, engine);
         if (temp.isPresent()) {
           return temp;
+        }
+      }
+      // 2. Direkte analytische Invertierung einer Funktion f(x) via Lagrange-Bürmann
+      else if (ast.isAST2() && ast.arg2().isSymbol()) {
+        IExpr f = ast.arg1();
+        IExpr x = ast.arg2();
+
+        // prüfen, ob f(0) == 0 gilt
+        IExpr f0 = engine.evaluate(F.subst(f, x, F.C0));
+        if (f0.isZero()) {
+          int order = 6;
+          IASTAppendable coeffs = F.ListAlloc(order);
+
+          for (int i = 1; i < order; i++) {
+            IExpr c = ASTSeriesData.lagrangeBurmannCoefficient(f, x, F.C0, F.ZZ(i), engine);
+            if (c.isPresent()) {
+              coeffs.append(c);
+            } else {
+              return F.NIL;
+            }
+          }
+
+          // Konstruiert exakt ein SeriesData Objekt bis zur Ordnung O(x^6)
+          return new ASTSeriesData(x, F.C0, coeffs, 1, order, 1);
         }
       }
       return F.NIL;
@@ -304,226 +355,29 @@ public class SeriesFunctions {
         IExpr x0 = list.arg2();
         if (!x.isVariable()) {
           // `1` is not a valid variable.
-          return Errors.printMessage(S.General, "ivar", F.List(x), engine);
-        }
-        // TODO add implementation
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.EXPERIMENTAL;
-    }
-  }
-
-  /**
-   *
-   *
-   * <pre>
-   * Series(expr, {x, x0, n})
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * create a power series of <code>expr</code> up to order <code>(x- x0)^n</code> at the point
-   * <code>x = x0</code>
-   *
-   * </blockquote>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; Series(f(x),{x,a,3})
-   * f(a)+f'(a)*(-a+x)+1/2*f''(a)*(-a+x)^2+1/6*Derivative(3)[f][a]*(-a+x)^3+O(-a+x)^4
-   * </pre>
-   */
-  private static final class Series extends AbstractFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.isAST2()) {
-        IExpr function = ast.arg1();
-        IExpr x = F.NIL;
-
-        if (ast.arg2().isVector() == 3) {
-          // Existing logic for Series(expr, {x, x0, n})
-          IAST list = (IAST) ast.arg2();
-          x = list.arg1();
-          IExpr x0 = list.arg2();
-          if (!x.isVariable()) {
-            return Errors.printMessage(S.Series, "ivar", F.List(x), engine);
-          }
-          final int n = list.arg3().toIntDefault();
-          if (F.isNotPresent(n)) {
-            return F.NIL;
-          }
-          if (function.isFree(x)) {
-            return function;
-          }
-
-          boolean isInfinity = x0.isDirectedInfinity();
-          int direction = 0;
-          if (x0.equals(F.CInfinity)) {
-            direction = -1;
-          } else if (x0.equals(F.CNInfinity)) {
-            direction = 1;
-          }
-
-          IExpr seriesX0 = x0;
-          IExpr seriesFunction = function;
-
-          if (isInfinity) {
-            seriesX0 = F.C0;
-            seriesFunction = engine.evaluate(F.subst(function, x, F.Power(x, F.CN1)));
-          }
-
-          ASTSeriesData series =
-              ASTSeriesData.seriesDataRecursive(seriesFunction, x, seriesX0, n, direction, engine);
-          if (series != null) {
-            if (isInfinity) {
-              // Repackage the series computed at 0 with the original Infinity expansion point
-              return new ASTSeriesData(x, x0, series.arg3(), series.minExponent(),
-                  series.truncateOrder(), series.puiseuxDenominator());
-            }
-            return series;
-          }
-        } else if (ast.arg2().isRuleAST()) {
-          // New logic for Series(expr, x -> x0) to generate the leading term
-          IAST rule = (IAST) ast.arg2();
-          x = rule.arg1();
-          IExpr x0 = rule.arg2();
-          if (!x.isVariable()) {
-            return Errors.printMessage(S.Series, "ivar", F.List(x), engine);
-          }
-          if (function.isFree(x)) {
-            return function;
-          }
-
-          boolean isInfinity = x0.isInfinity() || x0.isNegativeInfinity();
-          int direction = 0;
-          if (x0.equals(F.CInfinity)) {
-            direction = -1;
-          } else if (x0.equals(F.CNInfinity)) {
-            direction = 1;
-          }
-
-          IExpr seriesX0 = x0;
-          IExpr seriesFunction = function;
-
-          if (isInfinity) {
-            seriesX0 = F.C0;
-            seriesFunction = engine.evaluate(F.subst(function, x, F.Power(x, F.CN1)));
-          }
-
-          // FIX: Default expansion order changed to 1. This prevents over-calculating
-          // truncation bounds for single simple poles, allowing rigorous matching of `2`.
-          int currentN = 1;
-          ASTSeriesData series = ASTSeriesData.seriesDataRecursive(seriesFunction, x, seriesX0,
-              currentN, direction, engine);
-
-          // Force probe deeper if the series evaluates entirely to O(x^n) zeroes
-          int probeLimit = 30;
-          while (series != null && currentN < probeLimit) {
-            boolean foundNonZero = false;
-            if (!series.isOrder()) {
-              for (int i = series.minExponent(); i < series.truncateOrder(); i++) {
-                if (!series.coefficient(i).isZero()) {
-                  foundNonZero = true;
-                  break;
-                }
-              }
-            }
-            if (foundNonZero) {
-              break;
-            }
-            currentN += 4;
-            series = ASTSeriesData.seriesDataRecursive(seriesFunction, x, seriesX0, currentN,
-                direction, engine);
-          }
-
-          if (series != null && !series.isOrder()) {
-            int leadIndex = Integer.MAX_VALUE;
-            // Locate the first mathematically non-zero term
-            for (int i = series.minExponent(); i < series.truncateOrder(); i++) {
-              if (!series.coefficient(i).isZero()) {
-                leadIndex = i;
-                break;
-              }
-            }
-            if (leadIndex != Integer.MAX_VALUE) {
-              int nextIndex = -1;
-
-              // For Laurent series (poles) or expansions at Infinity,
-              // dynamically scan for the true next non-zero term to establish a rigorous asymptotic
-              // boundary.
-              if (isInfinity || leadIndex < 0) {
-                for (int i = leadIndex + 1; i < series.truncateOrder(); i++) {
-                  if (!series.coefficient(i).isZero()) {
-                    nextIndex = i;
-                    break;
-                  }
-                }
-
-                // If no non-zero terms exist before the evaluated truncation bound,
-                // the strict Big-O boundary is exactly the truncation limit itself.
-                if (nextIndex == -1) {
-                  nextIndex = series.truncateOrder();
-                }
-              }
-
-              // Fallback for regular Taylor series (x -> x0) where the mathematical
-              // boundary safely decays to the next incremental precision step.
-              if (nextIndex == -1) {
-                nextIndex = leadIndex + series.puiseuxDenominator();
-              }
-
-              IASTAppendable coeffs = F.ListAlloc(2);
-              coeffs.append(series.coefficient(leadIndex));
-
-              if (isInfinity) {
-                return new ASTSeriesData(x, x0, coeffs, leadIndex, nextIndex,
-                    series.puiseuxDenominator());
-              }
-              return new ASTSeriesData(x, seriesX0, coeffs, leadIndex, nextIndex,
-                  series.puiseuxDenominator());
-            }
-          }
+          return Errors.printMessage(S.Residue, "ivar", F.List(x), engine);
         }
 
-        // --- NEW FALLBACK HEURISTIC ---
-        // For functions with essential singularities (e.g. Exp(x) as x -> Infinity),
-        // they cannot be mathematically mapped to a standard Puiseux SeriesData object.
-        // We bypass the series generator by pushing the series request recursively into the AST
-        // arguments.
-        if (function.isAST() && x.isPresent()) {
-          IAST astFunc = (IAST) function;
-          IASTAppendable resultAST = F.ast(astFunc.head(), astFunc.argSize());
-          boolean changed = false;
-          for (int i = 1; i <= astFunc.argSize(); i++) {
-            IExpr arg = astFunc.get(i);
-            if (!arg.isFree(x)) {
-              IExpr argSeries = engine.evaluate(F.Series(arg, ast.arg2()));
-              if (argSeries.isPresent() && !argSeries.equals(arg)) {
-                resultAST.append(argSeries);
-                changed = true;
-              } else {
-                resultAST.append(arg);
-              }
-            } else {
-              resultAST.append(arg);
-            }
-          }
-          if (changed) {
-            // When evaluated, functions like Exp(SeriesData) auto-convert to E^SeriesData natively
-            return engine.evaluate(resultAST);
-          }
+        // Handle Residue at Infinity
+        // Res(f(x), {x, Infinity}) = -Res(1/x^2 * f(1/x), {x, 0})
+        if (x0.isDirectedInfinity()) {
+          IExpr subFunc = engine.evaluate(F.subst(function, x, F.Power(x, F.CN1)));
+          IExpr newFunc = engine.evaluate(F.Times(F.CN1, F.Power(x, F.CN2), subFunc));
+          return engine.evaluate(F.Residue(newFunc, F.List(x, F.C0)));
+        }
+
+        // Fast-Path: Try direct evaluation via our optimized SeriesCoefficient
+        IExpr coeff = engine.evaluate(F.SeriesCoefficient(function, F.List(x, x0, F.CN1)));
+        if (coeff.isPresent() && !coeff.isAST(S.SeriesCoefficient)) {
+          return coeff;
+        }
+
+        // Robust Fallback: Compute the Laurent series explicitly up to O((x-x0)^0)
+        // and extract the precise -1 coefficient using ASTSeriesData properties.
+        IExpr series = engine.evaluate(F.Series(function, F.List(x, x0, F.C0)));
+        if (series instanceof ASTSeriesData) {
+          ASTSeriesData seriesData = (ASTSeriesData) series;
+          return engine.evaluate(F.Together(seriesData.coefficient(-1)));
         }
       }
       return F.NIL;
@@ -540,6 +394,288 @@ public class SeriesFunctions {
     }
   }
 
+  /**
+   *
+   * <pre>
+   * Series(expr, {x, x0, n})
+   * </pre>
+   *
+   * <blockquote>
+   * <p>
+   * create a power series of <code>expr</code> up to order <code>(x- x0)^n</code> at the point
+   * <code>x = x0</code> </blockquote>
+   */
+  private static final class Series extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() >= 2) {
+        IExpr currentExpr = ast.arg1();
+
+        // Process iterators from LEFT to RIGHT to build the SeriesData hierarchy correctly!
+        // Series(f, {x, x0, nx}, {y, y0, ny}) -> expands x first, then y.
+        // This mathematically ensures x is the outer-most boundary.
+        for (int i = 2; i <= ast.argSize(); i++) {
+          IExpr iterator = ast.get(i);
+
+          if (iterator.isList3()) {
+            IAST list = (IAST) iterator;
+            IExpr x = list.arg1();
+            IExpr x0 = list.arg2();
+            if (!x.isVariable()) {
+              return Errors.printMessage(S.Series, "ivar", F.List(x), engine);
+            }
+            final int n = list.arg3().toIntDefault();
+            if (F.isNotPresent(n)) {
+              return F.NIL;
+            }
+            if (currentExpr.isFree(x)) {
+              continue; // Optimization: if free of x, series in x is the expression itself
+            }
+
+            // Handle ASTSeriesData multi-variate mapping natively
+            if (currentExpr instanceof ASTSeriesData) {
+              ASTSeriesData outerSeries = (ASTSeriesData) currentExpr;
+              if (!outerSeries.expansionVariable().equals(x)) {
+                // Multivariate: map the new series iterator over the coefficients
+                IAST coefficients = outerSeries.arg3();
+                IASTAppendable newCoeffs = F.ListAlloc(coefficients.argSize());
+                for (int j = 1; j <= coefficients.argSize(); j++) {
+                  IExpr coeffSeries = engine.evaluate(F.Series(coefficients.get(j), iterator));
+                  newCoeffs.append(coeffSeries);
+                }
+                currentExpr = new ASTSeriesData(outerSeries.expansionVariable(),
+                    outerSeries.expansionPoint(), newCoeffs, outerSeries.minExponent(),
+                    outerSeries.truncateOrder(), outerSeries.puiseuxDenominator());
+                continue;
+              } else {
+                // Re-expanding in the same variable
+                if (outerSeries.expansionPoint().equals(x0)) {
+                  int targetTruncate = n * outerSeries.puiseuxDenominator() + 1;
+                  if (targetTruncate >= outerSeries.truncateOrder()) {
+                    continue; // Cannot increase precision of existing series
+                  } else {
+                    int newNMin = Math.min(outerSeries.minExponent(), targetTruncate);
+                    int capacity = targetTruncate - newNMin;
+                    IASTAppendable newList = F.ListAlloc(capacity < 0 ? 1 : capacity + 1);
+                    for (int j = newNMin; j < targetTruncate; j++) {
+                      newList.append(outerSeries.coefficient(j));
+                    }
+                    currentExpr = new ASTSeriesData(x, x0, newList, newNMin, targetTruncate,
+                        outerSeries.puiseuxDenominator());
+                    continue;
+                  }
+                } else {
+                  // Expanding at a different point! Flatten it first.
+                  currentExpr = outerSeries.normal(false);
+                }
+              }
+            }
+
+            boolean isInfinity = x0.isDirectedInfinity();
+            int direction = 0;
+            if (x0.equals(F.CInfinity)) {
+              direction = -1;
+            } else if (x0.equals(F.CNInfinity)) {
+              direction = 1;
+            }
+
+            IExpr seriesX0 = x0;
+            IExpr seriesFunction = currentExpr;
+
+            if (isInfinity) {
+              seriesX0 = F.C0;
+              seriesFunction = engine.evaluate(F.subst(currentExpr, x, F.Power(x, F.CN1)));
+            }
+
+            ASTSeriesData series = ASTSeriesData.seriesDataRecursive(seriesFunction, x, seriesX0, n,
+                direction, engine);
+
+            if (series != null) {
+              if (isInfinity) {
+                currentExpr = new ASTSeriesData(x, x0, series.arg3(), series.minExponent(),
+                    series.truncateOrder(), series.puiseuxDenominator());
+              } else {
+                currentExpr = series;
+              }
+            } else {
+              // --- NEW FALLBACK HEURISTIC ---
+              if (currentExpr.isAST() && x.isPresent()) {
+                IAST astFunc = (IAST) currentExpr;
+                IASTAppendable resultAST = F.ast(astFunc.head(), astFunc.argSize());
+                boolean changed = false;
+                for (int j = 1; j <= astFunc.argSize(); j++) {
+                  IExpr arg = astFunc.get(j);
+                  if (!arg.isFree(x)) {
+                    IExpr argSeries = engine.evaluate(F.Series(arg, iterator));
+                    if (argSeries.isPresent() && !argSeries.equals(arg)) {
+                      resultAST.append(argSeries);
+                      changed = true;
+                    } else {
+                      resultAST.append(arg);
+                    }
+                  } else {
+                    resultAST.append(arg);
+                  }
+                }
+                if (changed) {
+                  currentExpr = engine.evaluate(resultAST);
+                  continue;
+                }
+              }
+              return F.NIL;
+            }
+          } else if (iterator.isRuleAST()) {
+            IAST rule = (IAST) iterator;
+            IExpr x = rule.arg1();
+            IExpr x0 = rule.arg2();
+            if (!x.isVariable()) {
+              return Errors.printMessage(S.Series, "ivar", F.List(x), engine);
+            }
+            if (currentExpr.isFree(x)) {
+              continue;
+            }
+
+            if (currentExpr instanceof ASTSeriesData) {
+              ASTSeriesData outerSeries = (ASTSeriesData) currentExpr;
+              if (!outerSeries.expansionVariable().equals(x)) {
+                IAST coefficients = outerSeries.arg3();
+                IASTAppendable newCoeffs = F.ListAlloc(coefficients.argSize());
+                for (int j = 1; j <= coefficients.argSize(); j++) {
+                  IExpr coeffSeries = engine.evaluate(F.Series(coefficients.get(j), iterator));
+                  newCoeffs.append(coeffSeries);
+                }
+                currentExpr = new ASTSeriesData(outerSeries.expansionVariable(),
+                    outerSeries.expansionPoint(), newCoeffs, outerSeries.minExponent(),
+                    outerSeries.truncateOrder(), outerSeries.puiseuxDenominator());
+                continue;
+              } else {
+                currentExpr = outerSeries.normal(false);
+              }
+            }
+
+            boolean isInfinity = x0.isInfinity() || x0.isNegativeInfinity();
+            int direction = 0;
+            if (x0.equals(F.CInfinity)) {
+              direction = -1;
+            } else if (x0.equals(F.CNInfinity)) {
+              direction = 1;
+            }
+
+            IExpr seriesX0 = x0;
+            IExpr seriesFunction = currentExpr;
+
+            if (isInfinity) {
+              seriesX0 = F.C0;
+              seriesFunction = engine.evaluate(F.subst(currentExpr, x, F.Power(x, F.CN1)));
+            }
+
+            int currentN = 1;
+            ASTSeriesData series = ASTSeriesData.seriesDataRecursive(seriesFunction, x, seriesX0,
+                currentN, direction, engine);
+
+            int probeLimit = 30;
+            while (series != null && currentN < probeLimit) {
+              boolean foundNonZero = false;
+              if (!series.isOrder()) {
+                for (int j = series.minExponent(); j < series.truncateOrder(); j++) {
+                  if (!series.coefficient(j).isZero()) {
+                    foundNonZero = true;
+                    break;
+                  }
+                }
+              }
+              if (foundNonZero) {
+                break;
+              }
+              currentN += 4;
+              series = ASTSeriesData.seriesDataRecursive(seriesFunction, x, seriesX0, currentN,
+                  direction, engine);
+            }
+
+            if (series != null && !series.isOrder()) {
+              int leadIndex = Integer.MAX_VALUE;
+              for (int j = series.minExponent(); j < series.truncateOrder(); j++) {
+                if (!series.coefficient(j).isZero()) {
+                  leadIndex = j;
+                  break;
+                }
+              }
+              if (leadIndex != Integer.MAX_VALUE) {
+                int nextIndex = -1;
+                if (isInfinity || leadIndex < 0) {
+                  for (int j = leadIndex + 1; j < series.truncateOrder(); j++) {
+                    if (!series.coefficient(j).isZero()) {
+                      nextIndex = j;
+                      break;
+                    }
+                  }
+                  if (nextIndex == -1) {
+                    nextIndex = series.truncateOrder();
+                  }
+                }
+                if (nextIndex == -1) {
+                  nextIndex = leadIndex + series.puiseuxDenominator();
+                }
+
+                IASTAppendable coeffs = F.ListAlloc(2);
+                coeffs.append(series.coefficient(leadIndex));
+
+                if (isInfinity) {
+                  currentExpr = new ASTSeriesData(x, x0, coeffs, leadIndex, nextIndex,
+                      series.puiseuxDenominator());
+                } else {
+                  currentExpr = new ASTSeriesData(x, seriesX0, coeffs, leadIndex, nextIndex,
+                      series.puiseuxDenominator());
+                }
+              } else {
+                return F.NIL;
+              }
+            } else {
+              if (currentExpr.isAST() && x.isPresent()) {
+                IAST astFunc = (IAST) currentExpr;
+                IASTAppendable resultAST = F.ast(astFunc.head(), astFunc.argSize());
+                boolean changed = false;
+                for (int j = 1; j <= astFunc.argSize(); j++) {
+                  IExpr arg = astFunc.get(j);
+                  if (!arg.isFree(x)) {
+                    IExpr argSeries = engine.evaluate(F.Series(arg, iterator));
+                    if (argSeries.isPresent() && !argSeries.equals(arg)) {
+                      resultAST.append(argSeries);
+                      changed = true;
+                    } else {
+                      resultAST.append(arg);
+                    }
+                  } else {
+                    resultAST.append(arg);
+                  }
+                }
+                if (changed) {
+                  currentExpr = engine.evaluate(resultAST);
+                  continue;
+                }
+              }
+              return F.NIL;
+            }
+          } else {
+            return F.NIL;
+          }
+        }
+        return currentExpr;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return IFunctionEvaluator.ARGS_2_INFINITY;
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
   /**
    *
    *
@@ -570,12 +706,59 @@ public class SeriesFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // IExpr result = matcher1().apply(ast);
-      // if (result.isPresent()) {
-      // return result;
-      // }
+      // SeriesCoefficient(expr, {x, 0, nx}, {y, 0, ny})
+      // Evaluates sequentially from left to right.
+      if (ast.argSize() > 2) {
+        IExpr currentExpr = ast.arg1();
+        for (int i = 2; i <= ast.argSize(); i++) {
+          currentExpr = engine.evaluate(F.SeriesCoefficient(currentExpr, ast.get(i)));
+          if (!currentExpr.isPresent()) {
+            return F.NIL;
+          }
+        }
+        return currentExpr;
+      }
 
       if (ast.isAST2()) {
+        if (ast.arg1() instanceof ASTSeriesData) {
+          ASTSeriesData series = (ASTSeriesData) ast.arg1();
+
+          // Case 1: SeriesCoefficient(series, n)
+          if (ast.arg2().isInteger()) {
+            int n = ast.arg2().toIntDefault();
+            if (n >= 0) {
+              int order = series.truncateOrder();
+              if (order > n) {
+                return series.coefficient(n);
+              } else {
+                return S.Indeterminate;
+              }
+            }
+            return F.NIL;
+          }
+
+          // Case 2: SeriesCoefficient(series, {x, x0, n})
+          if (ast.arg2().isList3()) {
+            IAST list = (IAST) ast.arg2();
+            IExpr x = list.arg1();
+            IExpr x0 = list.arg2();
+            IExpr nExpr = list.arg3();
+
+            // Extract the coefficient if the variable and expansion point match
+            if (series.expansionVariable().equals(x) && series.expansionPoint().equals(x0)) {
+              if (nExpr.isInteger()) {
+                int n = nExpr.toIntDefault();
+                int order = series.truncateOrder();
+                if (order > n) {
+                  return series.coefficient(n);
+                } else {
+                  return S.Indeterminate;
+                }
+              }
+            }
+            return F.NIL;
+          }
+        }
         if (ast.arg1() instanceof ASTSeriesData && ast.arg2().isInteger()) {
           ASTSeriesData series = (ASTSeriesData) ast.arg1();
           int n = ast.arg2().toIntDefault();
@@ -601,7 +784,16 @@ public class SeriesFunctions {
           IExpr x0 = list.arg2();
 
           IExpr n = list.arg3();
-          IExpr functionCoefficient = functionCoefficient(ast, function, x, x0, n, engine);
+          IExpr functionCoefficient = F.NIL;
+
+          if (function.isAST()) {
+            functionCoefficient = specialFunctionCoefficient((IAST) function, x, x0, n);
+            if (functionCoefficient.isPresent()
+                && functionCoefficient.isFree(f -> f.isIndeterminate(), true)) {
+              return functionCoefficient;
+            }
+          }
+          functionCoefficient = functionCoefficient(ast, function, x, x0, n, engine);
           if (functionCoefficient.isPresent()
               && functionCoefficient.isFree(f -> f.isIndeterminate(), true)) {
             return functionCoefficient;
@@ -618,8 +810,15 @@ public class SeriesFunctions {
 
       // Map Infinity evaluations to 0 by inverting x
       if (x0.isDirectedInfinity()) {
-        IExpr subFunc = engine.evaluate(F.subst(function, x, F.Power(x, F.CN1)));
+        // Wrap in F.Together to normalize nested fractions like 1/(1 - 1/x) -> x/(x - 1)
+        IExpr subFunc = engine.evaluate(F.Together(F.subst(function, x, F.Power(x, F.CN1))));
         return functionCoefficient(ast, subFunc, x, F.C0, n, engine);
+      }
+
+      // Rational Function Expansion Fast-Path ---
+      IExpr rationalCoeff = rationalSeriesCoefficient(function, x, x0, n, engine);
+      if (rationalCoeff.isPresent()) {
+        return rationalCoeff;
       }
 
       if (n.isReal()) {
@@ -640,6 +839,36 @@ public class SeriesFunctions {
       if (temp.isPresent()) {
         return temp;
       }
+      // Lagrange-Bürmann Inversion Fast-Path
+      if (function.isAST(S.InverseSeries)) {
+        IExpr f = function.first();
+        IExpr innerX = x;
+        if (function.argSize() >= 2) {
+          innerX = function.second();
+        }
+        IExpr lbCoeff = ASTSeriesData.lagrangeBurmannCoefficient(f, innerX, x0, n, engine);
+        if (lbCoeff.isPresent()) {
+          return lbCoeff;
+        }
+      } else if (function.isAST1() && function.head().isAST(S.InverseFunction)) {
+        // SeriesCoefficient(InverseFunction(f)[x], {x, 0, n})
+        IExpr fExpr = function.head().first();
+        // Restrict to valid mathematical function heads to match Mathematica
+        if (fExpr.isSymbol() || fExpr.isAST(S.Function)) {
+          IExpr f = engine.evaluate(F.unaryAST1(fExpr, x));
+          IExpr lbCoeff = ASTSeriesData.lagrangeBurmannCoefficient(f, x, x0, n, engine);
+          if (lbCoeff.isPresent()) {
+            return lbCoeff;
+          }
+        } else {
+          return F.NIL;
+        }
+      }
+      // Composition of Series Fast-Path (Faà di Bruno) ---
+      IExpr compositeCoeff = compositeSeriesCoefficient(function, x, x0, n, engine);
+      if (compositeCoeff.isPresent()) {
+        return engine.evaluate(F.Expand(compositeCoeff));
+      }
       if (n.isReal()) {
         if (n.isFraction() && !((IFraction) n).denominator().isOne()) {
           return F.C0;
@@ -653,10 +882,6 @@ public class SeriesFunctions {
           return function;
         }
         return F.Piecewise(F.list(F.list(function, F.Equal(n, F.C0))), F.C0);
-      }
-      temp = polynomialSeriesCoefficient(function, x, x0, n, ast, engine);
-      if (temp.isPresent()) {
-        return temp;
       }
       if (function.isPower()) {
         IExpr b = function.base();
@@ -725,6 +950,244 @@ public class SeriesFunctions {
       return taylorCoefficient(function, x, x0, n, engine);
     }
 
+    /**
+     * Resolves the general series coefficients of simple rational functions using Partial Fraction
+     * Decomposition and shifted Geometric Series boundary formulas, preventing O(n!) catastrophic
+     * derivative evaluation.
+     */
+    private static IExpr rationalSeriesCoefficient(IExpr function, IExpr x, IExpr x0, IExpr n,
+        EvalEngine engine) {
+      // Simple heuristic check: Abort early if not a fraction
+      IExpr den = engine.evaluate(F.Denominator(function));
+      if (den.isOne() || den.isFree(x)) {
+        return F.NIL;
+      }
+
+      // Decompose into simple fractions
+      IExpr apart = engine.evaluate(F.Apart(function, x));
+
+      if (apart.isPlus()) {
+        IAST apartPlus = (IAST) apart;
+        Map<IExpr, IASTAppendable> condMap = new HashMap<IExpr, IASTAppendable>();
+        boolean canMerge = true;
+        IASTAppendable fallbackSum = F.PlusAlloc(apartPlus.argSize());
+
+        for (int i = 1; i <= apartPlus.argSize(); i++) {
+          IExpr termCoeff = rationalTermCoefficient(apartPlus.get(i), x, x0, n, engine);
+          if (!termCoeff.isPresent()) {
+            return F.NIL; // Abort cleanly if any term isn't a simple rational
+          }
+          fallbackSum.append(termCoeff);
+
+          // Try to extract Piecewise({{val, cond}}, 0)
+          if (canMerge && termCoeff.isAST(S.Piecewise, 3)) {
+            IAST pw = (IAST) termCoeff;
+            if (pw.arg1().isList1() && pw.arg1().first().isList2() && pw.arg2().isZero()) {
+              IAST rule = (IAST) pw.arg1().first();
+              IExpr val = rule.arg1();
+              IExpr cond = rule.arg2();
+
+              IASTAppendable sumForCond = condMap.get(cond);
+              if (sumForCond == null) {
+                sumForCond = F.PlusAlloc();
+                condMap.put(cond, sumForCond);
+              }
+              sumForCond.append(val);
+            } else {
+              canMerge = false; // Fallback if a term has complex/nested piecewise rules
+            }
+          } else {
+            canMerge = false;
+          }
+        }
+
+        if (canMerge) {
+          IASTAppendable mergedRules = F.ListAlloc(condMap.size());
+          for (Map.Entry<IExpr, IASTAppendable> entry : condMap.entrySet()) {
+            IExpr cond = entry.getKey();
+            // oneIdentity1() naturally converts Plus(x) to x, or Plus(x, y) remains Plus(x, y)
+            IExpr mergedVal = engine.evaluate(entry.getValue().oneIdentity1());
+            mergedRules.append(F.List(mergedVal, cond));
+          }
+          return F.Piecewise(mergedRules, F.C0);
+        }
+
+        return engine.evaluate(fallbackSum);
+      } else {
+        return rationalTermCoefficient(apart, x, x0, n, engine);
+      }
+    }
+
+    private static IExpr rationalTermCoefficient(IExpr term, IExpr x, IExpr x0, IExpr n,
+        EvalEngine engine) {
+      IExpr c = F.C1;
+      IExpr core = term;
+
+      // Separate coefficient C from core p(x)^m
+      if (term.isTimes()) {
+        IAST times = (IAST) term;
+        IASTAppendable cTimes = F.TimesAlloc(times.argSize());
+        IASTAppendable coreTimes = F.TimesAlloc(times.argSize());
+        for (int i = 1; i <= times.argSize(); i++) {
+          IExpr arg = times.get(i);
+          if (arg.isFree(x)) {
+            cTimes.append(arg);
+          } else {
+            coreTimes.append(arg);
+          }
+        }
+        c = cTimes.oneIdentity1();
+        core = coreTimes.oneIdentity1();
+      }
+
+      if (core.isPower()) {
+        IExpr base = core.base();
+        IExpr exp = core.exponent();
+
+        if (exp.isInteger() && ((IInteger) exp).isNegative()) {
+          IExpr[] linear = base.linear(x);
+          if (linear != null) {
+            IExpr a = linear[0];
+            IExpr b = linear[1];
+
+            // Shift expansion point: a + b(x + x0) = (a + b*x0) + b*x
+            IExpr aPrime = engine.evaluate(F.Plus(a, F.Times(b, x0)));
+            IExpr bPrime = b;
+
+            // Handles native Laurent series limits for expansions right AT the pole
+            if (aPrime.isZero()) {
+              IExpr coeff = engine.evaluate(F.Times(c, F.Power(bPrime, exp)));
+              return F.Piecewise(F.list(F.list(coeff, F.Equal(n, exp))), F.C0);
+            }
+
+            // Use grouping (-a)^(-m-n) for symbolic variables, but standard (-b/a)^n for pure
+            // numbers
+            boolean useGroupedBase = !aPrime.isNumber();
+            IExpr negRatio = engine.evaluate(F.Divide(F.Negate(bPrime), aPrime));
+
+            IExpr coeff;
+            if (exp.isMinusOne()) {
+              if (useGroupedBase) {
+                // Exact Geometric Series Fallback: exp = -1 -> c * (-a')^(-1-n) * (b')^n *
+                // (-1)^(-1)
+                IExpr signShift = F.CN1; // (-1)^(-1) = -1
+                IExpr baseA = F.Power(F.Negate(aPrime), F.Subtract(exp, n));
+                IExpr baseB = F.Power(bPrime, n);
+                coeff = engine.evaluate(F.Together(F.Times(c, signShift, baseA, baseB)));
+              } else {
+                coeff = engine.evaluate(F.Times(c, F.Power(aPrime, F.CN1), F.Power(negRatio, n)));
+              }
+            } else {
+              int m = exp.negate().toIntDefault();
+              // Expand higher-order poles into explicit polynomials (safeguard against extreme m)
+              if (m > 1 && m < 1000) {
+                // Expand Binomial(-m, n) = (-1)^n * (n+1)*...*(n+m-1) / (m-1)!
+                IASTAppendable num = F.TimesAlloc(m);
+                for (int i = 1; i < m; i++) {
+                  num.append(F.Plus(n, F.ZZ(i)));
+                }
+                IExpr den = engine.evaluate(F.Factorial(F.ZZ(m - 1)));
+                IExpr binomialExpanded = engine.evaluate(F.Divide(F.ExpandAll(num), den));
+
+                if (useGroupedBase) {
+                  // Merge exactly to MMA format: c * (-a')^(exp-n) * (b')^n * (-1)^exp * P(n)
+                  IExpr signShift = F.Power(F.CN1, exp);
+                  IExpr baseA = F.Power(F.Negate(aPrime), F.Subtract(exp, n));
+                  IExpr baseB = F.Power(bPrime, n);
+
+                  coeff = engine
+                      .evaluate(F.Together(F.Times(c, signShift, baseA, baseB, binomialExpanded)));
+                } else {
+                  coeff = engine.evaluate(F.Together(
+                      F.Times(c, F.Power(aPrime, exp), F.Power(negRatio, n), binomialExpanded)));
+                }
+              } else {
+                // General Formula Fallback
+                coeff = engine.evaluate(F.Times(c, F.Power(aPrime, exp), F.Binomial(exp, n),
+                    F.Power(F.Divide(bPrime, aPrime), n)));
+              }
+            }
+            return F.Piecewise(F.list(F.list(coeff, F.GreaterEqual(n, F.C0))), F.C0);
+
+            // IExpr coeff;
+            // if (exp.isMinusOne()) {
+            // // Exact Geometric Series Fallback: exp = -1 -> c * aPrime^(-1) * (-bPrime /
+            // aPrime)^n
+            // IExpr negRatio = engine.evaluate(F.Divide(F.Negate(bPrime), aPrime));
+            // coeff = engine.evaluate(F.Times(c, F.Power(aPrime, F.CN1), F.Power(negRatio, n)));
+            // } else {
+            // // General Formula: C * (a')^exp * Binomial(exp, n) * (b' / a')^n
+            // coeff = engine.evaluate(F.Times(c, F.Power(aPrime, exp), F.Binomial(exp, n),
+            // F.Power(F.Divide(bPrime, aPrime), n)));
+            // }
+            // return F.Piecewise(F.list(F.list(coeff, F.GreaterEqual(n, F.C0))), F.C0);
+          }
+        }
+      } else if (core.isFree(x)) {
+        return F.Piecewise(F.list(F.list(engine.evaluate(F.Times(c, core)), F.Equal(n, F.C0))),
+            F.C0);
+      }
+
+      return F.NIL;
+    }
+
+    /**
+     * Computes the SeriesCoefficient of a composed function f(g(x)) utilizing Faà di Bruno's
+     * formula and Bell Polynomials.
+     */
+    private static IExpr compositeSeriesCoefficient(IExpr function, IExpr x, IExpr x0, IExpr n,
+        EvalEngine engine) {
+      if (!n.isInteger() || !n.isPositive()) {
+        return F.NIL;
+      }
+      int nInt = n.toIntDefault();
+
+      if (function.isAST1()) {
+        IExpr fHead = function.head();
+        IExpr gExpr = function.first();
+
+        if (gExpr.isFree(x)) {
+          return F.NIL;
+        }
+
+        IExpr g0 = engine.evaluate(F.subst(gExpr, x, x0));
+
+        // Extract inner derivatives g_1 ... g_n
+        IASTAppendable gDerivs = F.ListAlloc(nInt);
+        IExpr currentGDeriv = gExpr;
+        for (int i = 1; i <= nInt; i++) {
+          currentGDeriv = engine.evaluate(F.D(currentGDeriv, x));
+          IExpr gDerivAtX0 = engine.evaluate(F.subst(currentGDeriv, x, x0));
+          gDerivs.append(gDerivAtX0);
+        }
+
+        IASTAppendable sum = F.PlusAlloc(nInt);
+        ISymbol yDum = F.Dummy("y");
+        IExpr currentFDeriv = F.unaryAST1(fHead, yDum);
+
+        // Global DP Cache for the entire Faà di Bruno sequence ---
+        IExpr[][] bellCache = new IExpr[nInt + 1][nInt + 1];
+
+        // Faà di Bruno iteration Sum
+        for (int k = 1; k <= nInt; k++) {
+          currentFDeriv = engine.evaluate(F.D(currentFDeriv, yDum));
+          IExpr fDerivAtG0 = engine.evaluate(F.subst(currentFDeriv, yDum, g0));
+
+          // Directly invoke the recursive BellY with persistent cache.
+          // Because BellY ignores indices > (n - k + 1) internally, we can safely
+          // pass the entire gDerivs list without manually truncating it!
+          IExpr bellY = org.matheclipse.core.builtin.PolynomialFunctions.bellY(nInt, k, gDerivs,
+              (IAST) function, engine, bellCache);
+
+          sum.append(F.Times(fDerivAtG0, bellY));
+        }
+
+        return engine.evaluate(F.Times(F.Power(F.Factorial(n), F.CN1), sum));
+      }
+      return F.NIL;
+    }
+
+
     private static IExpr taylorCoefficient(IExpr function, IExpr x, IExpr x0, IExpr n,
         EvalEngine engine) {
       final int degree = n.toIntDefault();
@@ -738,8 +1201,148 @@ public class SeriesFunctions {
       }
       IExpr derivedFunction = S.D.of(engine, function, F.list(x, n));
       IExpr substituted = derivedFunction.subs(x, x0);
-      return engine.evaluate(F.Together(F.Times(F.Power(F.Factorial(n), F.CN1), substituted)));
+
+      IExpr rawCoefficient = engine.evaluate(F.Times(F.Power(F.Factorial(n), F.CN1), substituted));
+      return engine.evaluate(F.Together(F.ExpandAll(rawCoefficient)));
     }
+
+    /**
+     * Fast-path closed-form series coefficients for known special functions.
+     */
+    private static IExpr specialFunctionCoefficient(IAST function, IExpr x, IExpr x0, IExpr n) {
+      // if (function.isAST1()) {
+      // IExpr head = function.head();
+      // IExpr arg = function.first();
+      //
+      // Match f(x)
+      // if (arg.equals(x) && head.isBuiltInSymbol()) {
+      // switch (((IBuiltInSymbol) head).ordinal()) {
+      // case ID.Exp:
+      // return F.Times(F.Exp(x0), F.Power(F.Factorial(n), F.CN1));
+      //
+      // case ID.Sin:
+      // return F.Times(F.Sin(F.Plus(x0, F.Times(n, S.Pi, F.C1D2))),
+      // F.Power(F.Factorial(n), F.CN1));
+      //
+      // case ID.Cos:
+      // return F.Times(F.Cos(F.Plus(x0, F.Times(n, S.Pi, F.C1D2))),
+      // F.Power(F.Factorial(n), F.CN1));
+      //
+      // case ID.Sinh:
+      // if (x0.isZero()) {
+      // return F.Times(F.Subtract(F.C1, F.Power(F.CN1, n)),
+      // F.Power(F.Times(F.C2, F.Factorial(n)), F.CN1));
+      // }
+      // break;
+      //
+      // case ID.Cosh:
+      // if (x0.isZero()) {
+      // return F.Times(F.Plus(F.C1, F.Power(F.CN1, n)),
+      // F.Power(F.Times(F.C2, F.Factorial(n)), F.CN1));
+      // }
+      // break;
+      // }
+      // }
+      // } else if (function.isAST2()) {
+      // IExpr head = function.head();
+      // IExpr arg1 = function.first();
+      // IExpr arg2 = function.second();
+      //
+      // // Match f(k, x)
+      // if (arg2.equals(x) && head.isBuiltInSymbol()) {
+      // switch (((IBuiltInSymbol) head).ordinal()) {
+      // case ID.ChebyshevU:
+      // return F.Times(F.Power(F.C2, n),
+      // F.GegenbauerC(F.Subtract(arg1, n), F.Plus(n, F.C1), x0));
+      //
+      // case ID.BesselJ:
+      // if (x0.isZero()) {
+      // IExpr k = F.Divide(F.Subtract(n, arg1), F.C2);
+      // IExpr coeff = F.Times(F.Power(F.CN1, k),
+      // F.Power(
+      // F.Times(F.Power(F.C2, n), F.Factorial(k), F.Gamma(F.Plus(k, arg1, F.C1))),
+      // F.CN1));
+      // return F.Piecewise(
+      // F.list(F.list(coeff, F.And(F.Equal(F.Mod(F.Subtract(n, arg1), F.C2), F.C0),
+      // F.GreaterEqual(k, F.C0)))),
+      // F.C0);
+      // }
+      // break;
+      // }
+      // }
+      // } else
+      if (function.isAST3()) {
+        IExpr head = function.head();
+        IExpr arg1 = function.first();
+        IExpr arg2 = function.second();
+        IExpr arg3 = function.arg3();
+
+        // Match HypergeometricPFQ({a...}, {b...}, x)
+        if (arg3.equals(x) && head.isBuiltInSymbol()) {
+          switch (((IBuiltInSymbol) head).ordinal()) {
+            case ID.HypergeometricPFQ:
+              if (x0.isZero() && arg1.isList() && arg2.isList()) {
+                IAST aList = (IAST) arg1;
+                IAST bList = (IAST) arg2;
+
+                if (n.isInteger()) {
+                  int nInt = n.toIntDefault();
+                  if (nInt < 0) {
+                    return F.C0;
+                  }
+
+                  // Integer n
+                  IASTAppendable num = F.TimesAlloc(aList.argSize() * nInt + 1);
+                  IASTAppendable den = F.TimesAlloc(bList.argSize() * nInt + 2);
+
+                  for (int i = 1; i <= aList.argSize(); i++) {
+                    IExpr a = aList.get(i);
+                    for (int j = 0; j < nInt; j++) {
+                      num.append(F.Plus(a, F.ZZ(j)));
+                    }
+                  }
+
+                  for (int i = 1; i <= bList.argSize(); i++) {
+                    IExpr b = bList.get(i);
+                    for (int j = 0; j < nInt; j++) {
+                      den.append(F.Plus(b, F.ZZ(j)));
+                    }
+                  }
+                  den.append(F.Factorial(n));
+
+                  return F.Divide(num.oneIdentity1(), den.oneIdentity1());
+
+                } else {
+                  // symbolic n
+                  IASTAppendable num = F.TimesAlloc(aList.argSize() + bList.argSize() + 1);
+                  IASTAppendable den = F.TimesAlloc(aList.argSize() + bList.argSize() + 2);
+
+                  // (a)_n = Gamma(a + n) / Gamma(a)
+                  for (int i = 1; i <= aList.argSize(); i++) {
+                    IExpr a = aList.get(i);
+                    num.append(F.Gamma(F.Plus(a, n)));
+                    den.append(F.Gamma(a));
+                  }
+
+                  // 1 / (b)_n = Gamma(b) / Gamma(b + n)
+                  for (int i = 1; i <= bList.argSize(); i++) {
+                    IExpr b = bList.get(i);
+                    num.append(F.Gamma(b));
+                    den.append(F.Gamma(F.Plus(b, n)));
+                  }
+                  den.append(F.Factorial(n));
+
+                  IExpr coeff = F.Divide(num.oneIdentity1(), den.oneIdentity1());
+                  return F.Piecewise(F.list(F.list(coeff, F.GreaterEqual(n, F.C0))), F.C0);
+                }
+              }
+              break;
+          }
+        }
+      }
+      return F.NIL;
+    }
+
 
     /**
      * @param univariatePolynomial
@@ -752,100 +1355,118 @@ public class SeriesFunctions {
     public static IExpr polynomialSeriesCoefficient(IExpr univariatePolynomial, IExpr x, IExpr x0,
         IExpr n, final IAST seriesTemplate, EvalEngine engine) {
       try {
-        // if (!x0.isZero()) {
         Map<IExpr, IExpr> coefficientMap = new HashMap<IExpr, IExpr>();
         IASTAppendable rest = F.ListAlloc(4);
         ExprPolynomialRing.create(univariatePolynomial, x, coefficientMap, rest);
         IASTAppendable coefficientPlus = F.PlusAlloc(2);
-        if (coefficientMap.size() > 0) {
-          IExpr defaultValue = F.C0;
-          IASTAppendable rules = F.ListAlloc(2);
-          IASTAppendable plus = F.PlusAlloc(coefficientMap.size());
-          IAST comparator = F.GreaterEqual(n, F.C0);
-          for (Map.Entry<IExpr, IExpr> entry : coefficientMap.entrySet()) {
-            final IExpr exp = entry.getKey();
-            if (exp.isZero()) {
-              continue;
-            }
-            if (exp.isNegative() && x0.isZero()) {
-              if (exp.equals(n)) {
-                defaultValue = F.C1;
-              }
-              continue;
-            }
-            IExpr coefficient = entry.getValue();
-            if (coefficient.isZero()) {
-              continue;
-            }
 
-            IAST powerPart = F.Power(x0, exp);
-            comparator = F.Greater(n, F.C0);
-            IAST bin;
-            int k = exp.toIntDefault();
-            if (F.isPresent(k)) {
-              if (k < 0) {
-                // powerPart = F.Power(x0.negate(), exp);
-                x0 = x0.negate();
-                int nk = -k;
-                IASTAppendable binomial = F.TimesAlloc(nk + 1);
-                for (int i = 1; i < nk; i++) {
-                  binomial.append(F.Plus(n, F.ZZ(i)));
-                }
-                binomial.append(F.Power(F.Factorial(F.ZZ(nk - 1)), -1));
-                bin = binomial;
-                comparator = F.GreaterEqual(n, F.C0);
-              } else {
-                comparator = F.LessEqual(F.C0, n, exp);
-                bin = F.Binomial(exp, n);
-                // binomial = F.TimesAlloc(k);
-                // for (int i = 0; i < k; i++) {
-                // binomial.append(F.Subtract(n, F.ZZ(i)));
-                // }
-                // binomial.append(F.Power(F.Factorial(F.ZZ(k)), -1));
+        if (coefficientMap.size() > 0) {
+
+          // FAST-PATH FOR x0 == 0:
+          // Avoid the 0^(-n) Infinity bug entirely. For expansions around 0,
+          // the coefficient for x^n is strictly the coefficient mapped to n.
+          if (x0.isZero()) {
+            IExpr coeff = coefficientMap.get(n);
+            if (coeff != null) {
+              coefficientPlus.append(coeff);
+            } else if (!n.isNumber()) {
+              // If n is symbolic, construct a Piecewise function for the coefficients
+              IASTAppendable rules = F.ListAlloc(coefficientMap.size());
+              for (Map.Entry<IExpr, IExpr> entry : coefficientMap.entrySet()) {
+                rules.append(F.list(entry.getValue(), F.Equal(n, entry.getKey())));
               }
-            } else {
-              bin = F.Binomial(exp, n);
+              coefficientPlus.append(F.Piecewise(rules, F.C0));
             }
-            if (coefficient.isOne()) {
-              plus.append(F.Times(powerPart, bin));
-            } else {
-              plus.append(F.Times(coefficient, powerPart, bin));
-            }
-          }
-          IExpr temp = engine.evaluate(plus);
-          if (!temp.isZero()) {
-            rules.append(
-                F.list(engine.evaluate(F.Times(F.Power(x0, n.negate()), plus)), comparator));
-          }
-          if (comparator.isAST(S.Greater)) {
-            plus = F.PlusAlloc(coefficientMap.size());
+            // Note: If n is a number and not in the map, it appends nothing, which correctly
+            // evaluates to 0 via oneIdentity0() below.
+          } else {
+
+            // LOGIC FOR x0 != 0: Generalized binomial Taylor shift
+            IExpr defaultValue = F.C0;
+            IASTAppendable rules = F.ListAlloc(2);
+            IASTAppendable plus = F.PlusAlloc(coefficientMap.size());
+            IAST comparator = F.GreaterEqual(n, F.C0);
+
             for (Map.Entry<IExpr, IExpr> entry : coefficientMap.entrySet()) {
-              IExpr exp = entry.getKey();
+              final IExpr exp = entry.getKey();
+              if (exp.isZero()) {
+                continue;
+              }
+
               IExpr coefficient = entry.getValue();
               if (coefficient.isZero()) {
                 continue;
               }
-              if (coefficient.isOne()) {
-                plus.append(F.Times(F.Power(x0, exp)));
+
+              IAST powerPart = F.Power(x0, exp);
+              comparator = F.Greater(n, F.C0);
+              IAST bin;
+              int k = exp.toIntDefault();
+
+              if (F.isPresent(k)) {
+                if (k < 0) {
+                  x0 = x0.negate();
+                  int nk = -k;
+                  IASTAppendable binomial = F.TimesAlloc(nk + 1);
+                  for (int i = 1; i < nk; i++) {
+                    binomial.append(F.Plus(n, F.ZZ(i)));
+                  }
+                  binomial.append(F.Power(F.Factorial(F.ZZ(nk - 1)), -1));
+                  bin = binomial;
+                  comparator = F.GreaterEqual(n, F.C0);
+                } else {
+                  comparator = F.LessEqual(F.C0, n, exp);
+                  bin = F.Binomial(exp, n);
+                }
               } else {
-                plus.append(F.Times(coefficient, F.Power(x0, exp)));
+                bin = F.Binomial(exp, n);
+              }
+
+              if (coefficient.isOne()) {
+                plus.append(F.Times(powerPart, bin));
+              } else {
+                plus.append(F.Times(coefficient, powerPart, bin));
               }
             }
-            rules.append(F.list(engine.evaluate(plus), F.Equal(n, F.C0)));
+
+            IExpr temp = engine.evaluate(plus);
+            if (!temp.isZero()) {
+              rules.append(
+                  F.list(engine.evaluate(F.Times(F.Power(x0, n.negate()), plus)), comparator));
+            }
+
+            if (comparator.isAST(S.Greater)) {
+              plus = F.PlusAlloc(coefficientMap.size());
+              for (Map.Entry<IExpr, IExpr> entry : coefficientMap.entrySet()) {
+                IExpr exp = entry.getKey();
+                IExpr coefficient = entry.getValue();
+                if (coefficient.isZero()) {
+                  continue;
+                }
+                if (coefficient.isOne()) {
+                  plus.append(F.Times(F.Power(x0, exp)));
+                } else {
+                  plus.append(F.Times(coefficient, F.Power(x0, exp)));
+                }
+              }
+              rules.append(F.list(engine.evaluate(plus), F.Equal(n, F.C0)));
+            }
+            coefficientPlus.append(F.Piecewise(rules, defaultValue));
           }
-          coefficientPlus.append(F.Piecewise(rules, defaultValue));
         } else {
           if (!univariatePolynomial.isPlus()) {
             return F.NIL;
           }
         }
+
         for (int i = 1; i < rest.size(); i++) {
           IASTMutable term = seriesTemplate.copy();
           term.set(1, rest.get(i));
           coefficientPlus.append(term);
         }
+
         return coefficientPlus.oneIdentity0();
-        // }
+
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.SeriesCoefficient, rex, engine);
@@ -855,7 +1476,8 @@ public class SeriesFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      // Allow 2 or more arguments for nested / multi-variate extractions
+      return IFunctionEvaluator.ARGS_2_INFINITY;
     }
 
     @Override

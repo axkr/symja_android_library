@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.hipparchus.util.ArithmeticUtils;
@@ -32,6 +33,17 @@ import jakarta.annotation.Nullable;
 
 public class ASTSeriesData extends AbstractAST implements Externalizable {
 
+  private static int actualMinExponent(ASTSeriesData result) {
+    int actualMinExp = Config.INVALID_INT;
+    for (int i = result.minExponent(); i < result.truncateOrder(); i++) {
+      if (!result.coefficient(i).isZero()) {
+        actualMinExp = i;
+        break;
+      }
+    }
+    return actualMinExp;
+  }
+
   /**
    * Returns the list of coefficients of a polynomial expression with respect to the variables in
    * <code>listOfVariables</code>.
@@ -52,7 +64,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       throw le;
     } catch (RuntimeException ex) {
       Errors.rethrowsInterruptException(ex);
-      // org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing.create()
     }
     if (listOfVariables.argSize() > 0) {
       return F.Nest(S.List, polynomialExpr, listOfVariables.argSize());
@@ -60,18 +71,12 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return F.NIL;
   }
 
-  /**
-   * Evaluates the series expansion of a composite function f(g(x)) using ComposeSeries logic. This
-   * bypasses direct Taylor expansion of nested structures, avoiding catastrophic symbolic
-   * derivative explosions (e.g., trying to take 11 derivatives of Gamma(Sin(x)-x)).
-   */
   private static ASTSeriesData compositionSeries(final IAST function, IExpr x, IExpr x0,
       final int n, final int direction, EvalEngine engine) {
     if (function.argSize() == 1) {
       IExpr arg = function.arg1();
       if (!arg.isFree(x) && !arg.equals(x)) {
 
-        // Find the inner evaluation point u0
         IExpr u0 = engine.evalQuiet(F.subst(arg, x, x0));
         if (u0.isIndeterminate() || u0.isDirectedInfinity()) {
           IExpr dirExpr = direction == 0 ? S.Reals : F.ZZ(direction);
@@ -79,12 +84,9 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         }
 
         if (u0.isSpecialsFree()) {
-          // Generate the series for the inner argument
           int currentN = n;
           ASTSeriesData innerSeries = seriesDataRecursive(arg, x, x0, currentN, direction, engine);
 
-          // Step up evaluation if the inner series mathematically cancels out
-          // This prevents false constant evaluations that lead to ComplexInfinity poles
           int probeLimit = Math.max(n, 0) + 12;
           while (innerSeries != null && innerSeries.isOrder() && currentN < probeLimit) {
             currentN += 3;
@@ -92,7 +94,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
           }
 
           if (innerSeries != null) {
-            // Find the lowest non-constant mathematical growth rate (k)
             int k = innerSeries.minExponent();
             if (k <= 0) {
               k = 1;
@@ -102,7 +103,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
             }
 
             if (k >= innerSeries.truncateOrder()) {
-              // The inner function evaluates to a constant up to the requested order
               IExpr f0 = engine.evalQuiet(F.subst(function, x, x0));
               ASTSeriesData constSeries =
                   new ASTSeriesData(x, x0, 0, n, innerSeries.puiseuxDenominator());
@@ -112,20 +112,16 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
             if (k > 0) {
               int den = innerSeries.puiseuxDenominator();
-              // Scale the required outer boundary.
-              // If inner grows as O(x^3) and target is O(x^11), outer only needs O(y^4).
               int outerN = (n * den + k - 1) / k;
-              outerN = Math.max(outerN, 1) + 2; // Buffer terms for safety
+              outerN = Math.max(outerN, 1) + 2;
 
               IExpr y = F.Dummy("y");
               IExpr outerFunc = function.setAtCopy(1, y);
 
-              // Evaluate the fast Taylor series of the isolated outer function
               ASTSeriesData outerSeries =
                   seriesDataRecursive(outerFunc, y, u0, outerN, direction, engine);
 
               if (outerSeries != null) {
-                // Compose them together algebraically
                 return outerSeries.compose(innerSeries);
               }
             }
@@ -136,15 +132,21 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return null;
   }
 
-  /**
-   * Universal fallback to dynamically extract the mathematically dominant term of an arbitrary
-   * expression by computing its series and isolating the lowest-order non-zero term.
-   */
   private static IExpr extractFromSeries(IExpr expr, IExpr x, IExpr x0, EvalEngine engine) {
     int n = 1;
     ASTSeriesData sd = null;
+
+    IExpr seriesFunction = expr;
+    IExpr seriesX0 = x0;
+    boolean isInfinity = x0.isInfinity() || x0.isNegativeInfinity();
+
+    if (isInfinity) {
+      seriesX0 = F.C0;
+      seriesFunction = engine.evaluate(F.subst(expr, x, F.Power(x, F.CN1)));
+    }
+
     while (n < 20) {
-      sd = ASTSeriesData.seriesDataRecursive(expr, x, x0, n, engine);
+      sd = ASTSeriesData.seriesDataRecursive(seriesFunction, x, seriesX0, n, engine);
       if (sd != null && !sd.isOrder()) {
         int nMin = sd.minExponent();
         while (nMin < sd.truncateOrder() && sd.coefficient(nMin).isZero()) {
@@ -154,16 +156,22 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
           IExpr coeff = sd.coefficient(nMin);
           IExpr varPart;
 
-          if (x0.isInfinity() || x0.isNegativeInfinity()) {
-            // SeriesData at infinity conceptually expands in (1/x).
-            // The leading term is mathematically coeff * x^(-nMin).
-            return engine.evaluate(F.Times(coeff, F.Power(x, F.ZZ(-nMin))));
+          int den = sd.puiseuxDenominator();
+          IExpr pow;
+          if (den == 1) {
+            pow = F.ZZ(nMin);
+          } else {
+            pow = F.QQ(nMin, den).normalize();
+          }
+
+          if (isInfinity) {
+            return engine.evaluate(F.Times(coeff, F.Power(x, F.Negate(pow))));
           } else if (x0.isZero()) {
             varPart = x;
           } else {
             varPart = F.Subtract(x, x0);
           }
-          return engine.evaluate(F.Times(coeff, F.Power(varPart, F.ZZ(nMin))));
+          return engine.evaluate(F.Times(coeff, F.Power(varPart, pow)));
         }
       }
       n += 2;
@@ -171,16 +179,152 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return F.NIL;
   }
 
+  public static ASTSeriesData fromCoefficientMap(IExpr x, IExpr x0, final int n,
+      Map<IExpr, IExpr> coefficientMap, IASTAppendable rest) {
+    int maxExponent = Config.INVALID_INT;
+    for (IExpr exp : coefficientMap.keySet()) {
+      int exponent = exp.toIntDefault();
+      if (F.isPresent(exponent) && exponent > maxExponent) {
+        maxExponent = exponent;
+      }
+    }
+
+    int truncate = n + 1;
+    if (F.isPresent(maxExponent)) {
+      truncate = Math.max(truncate, maxExponent + 1);
+    }
+
+    ASTSeriesData series = new ASTSeriesData(x, x0, 0, truncate, 1);
+    boolean evaled = false;
+    for (Map.Entry<IExpr, IExpr> entry : coefficientMap.entrySet()) {
+      IExpr coefficient = entry.getValue();
+      if (coefficient.isZero()) {
+        continue;
+      }
+      IExpr exp = entry.getKey();
+      int exponent = exp.toIntDefault();
+      if (F.isNotPresent(exponent)) {
+        rest.append(F.Times(coefficient, F.Power(x, exp)));
+      } else {
+        series.setCoeff(exponent, coefficient);
+        evaled = true;
+      }
+    }
+    if (evaled) {
+      return series;
+    }
+    return null;
+  }
+
+  // private static ASTSeriesData plusSeriesDataRecursive(final IAST plusAST, IExpr x, IExpr x0,
+  // final int n, EvalEngine engine) {
+  // Map<IExpr, IExpr> coefficientMap = new HashMap<IExpr, IExpr>();
+  // IASTAppendable rest = F.PlusAlloc(4);
+  //
+  // ASTSeriesData temp = null;
+  // if (x0.isZero()) {
+  // temp = ASTSeriesData.polynomialSeries(plusAST, x, x0, n, coefficientMap, rest);
+  // } else {
+  // rest.appendArgs(plusAST);
+  // }
+  //
+  // if (temp != null) {
+  // if (rest.size() <= 1) {
+  // return temp;
+  // }
+  // }
+  //
+  // ASTSeriesData series = null;
+  // int start = 1;
+  // if (temp != null) {
+  // series = temp;
+  // } else {
+  // if (rest.size() > 1) {
+  // series = seriesDataRecursive(rest.arg1(), x, x0, n, engine);
+  // if (series == null) {
+  // return null;
+  // }
+  // start = 2;
+  // }
+  // }
+  //
+  // if (series != null) {
+  // for (int i = start; i < rest.size(); i++) {
+  // ASTSeriesData arg = seriesDataRecursive(rest.get(i), x, x0, n, engine);
+  // if (arg == null) {
+  // return null;
+  // }
+  // series = series.plusPS(arg);
+  // }
+  // return series;
+  // }
+  // return null;
+  // }
+
   /**
-   * Computes the leading term of an expression asymptotically approaching x0. Mimics SymPy's
-   * as_leading_term function to evaluate the bottom-up dominant term.
+   * Calculate the n-th coefficient of the inverse function f^(-1)(x) using the Lagrange-Bürmann
+   * inversion theorem. [x^n] f^(-1)(x) = (1/n) * [x^(n-1)] (f(x) / x)^(-n)
    */
+  public static IExpr lagrangeBurmannCoefficient(IExpr f, IExpr x, IExpr x0, IExpr n,
+      EvalEngine engine) {
+    if (!n.isInteger() || !n.isPositive()) {
+      return F.NIL;
+    }
+    int nInt = n.toIntDefault();
+    if (nInt == 0) {
+      return F.C0;
+    }
+
+    if (x0.isZero()) {
+      IExpr f0 = engine.evaluate(F.subst(f, x, F.C0));
+
+      // condition 1: f(0) = 0
+      if (f0.isZero()) {
+        // condition 2: f'(0) != 0
+        IExpr df0 = engine.evaluate(F.subst(F.D(f, x), x, F.C0));
+        if (df0.isZero()) {
+          return F.NIL;
+        }
+
+        int targetOrder = nInt - 1;
+
+        // FAST-PATH: Use ASTSeriesData for exact algebraic manipulation
+        ASTSeriesData fSeries = ASTSeriesData.seriesDataRecursive(f, x, F.C0, nInt + 1, engine);
+
+        if (fSeries != null) {
+          // Clean encapsulation: Shift the series mathematically by -puiseuxDenominator
+          ASTSeriesData fDivX = fSeries.shift(-fSeries.puiseuxDenominator());
+
+          // Evaluate (f(x)/x)^(-n)
+          IExpr innerSeriesExpr = fDivX.powerSeries(F.QQ(-nInt, 1), engine);
+
+          if (innerSeriesExpr instanceof ASTSeriesData) {
+            ASTSeriesData innerSeries = (ASTSeriesData) innerSeriesExpr;
+            IExpr innerCoeff = innerSeries.coefficient(targetOrder);
+            if (innerCoeff != null) {
+              return engine.evaluate(F.Together(F.Times(F.Power(F.ZZ(nInt), F.CN1), innerCoeff)));
+            }
+          }
+        }
+
+        // FALLBACK: If the series generator fails
+        IExpr innerFunc = engine.evaluate(F.Power(F.Divide(f, x), F.ZZ(-nInt)));
+        IExpr fallbackCoeff =
+            engine.evaluate(F.SeriesCoefficient(innerFunc, F.List(x, F.C0, F.ZZ(targetOrder))));
+        if (fallbackCoeff.isPresent() && !fallbackCoeff.isAST(S.SeriesCoefficient)) {
+          return engine.evaluate(F.Together(F.Times(F.Power(F.ZZ(nInt), F.CN1), fallbackCoeff)));
+        }
+      }
+    }
+    return F.NIL;
+  }
+
   public static IExpr leadingTerm(IExpr expr, IExpr x, IExpr x0, EvalEngine engine) {
     if (expr.isFree(x)) {
       return expr;
     }
     if (expr.equals(x)) {
-      if (x0.isZero()) {
+      if (x0.isZero() || x0.isInfinity() || x0.isNegativeInfinity()) {
         return x;
       }
       return F.Subtract(x, x0);
@@ -194,31 +338,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
         switch (((IBuiltInSymbol) head).ordinal()) {
           case ID.Plus: {
-            // Defer immediately to the universal series extractor
             return extractFromSeries(expr, x, x0, engine);
           }
-          // case ID.Plus: {
-          // // Extract the series up to an order where terms do not completely cancel out.
-          // // We step up the truncation boundary until a mathematically non-zero term survives.
-          // int n = 1;
-          // ASTSeriesData sd = null;
-          // while (n < 20) {
-          // sd = ASTSeriesData.seriesDataRecursive(expr, x, x0, n, engine);
-          // if (sd != null && !sd.isOrder()) {
-          // int nMin = sd.minExponent();
-          // while (nMin < sd.truncateOrder() && sd.coefficient(nMin).isZero()) {
-          // nMin++;
-          // }
-          // if (nMin < sd.truncateOrder()) {
-          // IExpr coeff = sd.coefficient(nMin);
-          // IExpr varPart = x0.isZero() ? x : F.Subtract(x, x0);
-          // return engine.evaluate(F.Times(coeff, F.Power(varPart, F.ZZ(nMin))));
-          // }
-          // }
-          // n += 2;
-          // }
-          // return F.NIL;
-          // }
           case ID.Times: {
             IASTAppendable timesResult = F.TimesAlloc(ast.argSize());
             for (int i = 1; i <= ast.argSize(); i++) {
@@ -233,9 +354,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
           case ID.Power: {
             IExpr baseLt = leadingTerm(ast.base(), x, x0, engine);
             IExpr expLimit = engine.evaluate(F.subst(ast.exponent(), x, x0));
-            // Be strictly conservative: only apply baseLt^expLimit if the exponent limit is
-            // completely free of mathematical singularities. Fallback to Series if 0^0 or
-            // Infinity^0.
             if (baseLt.isPresent() && expLimit.isSpecialsFree() && !expLimit.isZero()) {
               return engine.evaluate(F.Power(baseLt, expLimit));
             }
@@ -246,7 +364,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
             IExpr arg = ast.arg1();
             IExpr argLimit = engine.evaluate(F.subst(arg, x, x0));
             if (argLimit.isZero()) {
-              // ArcCos(u) -> Pi/2 as u -> 0
               return engine.evaluate(F.Divide(S.Pi, F.C2));
             }
             break;
@@ -279,7 +396,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
           case ID.Gamma: {
             IExpr arg = ast.arg1();
             IExpr argLimit = engine.evaluate(F.subst(arg, x, x0));
-            // Intercept all poles for Gamma (0, -1, -2, ...)
             if (argLimit.isInteger() && (argLimit.isZero() || argLimit.isNegativeResult())) {
               IExpr ltArg = leadingTerm(F.Subtract(arg, argLimit), x, x0, engine);
               if (ltArg.isPresent()) {
@@ -296,7 +412,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
               IExpr n = ast.arg1();
               IExpr z = ast.arg2();
               IExpr zLimit = engine.evaluate(F.subst(z, x, x0));
-              // PolyGamma(n, z) ~ (-1)^(n+1) * n! * z^(-n-1) as z -> 0
               if (zLimit.isZero() && n.isInteger() && !n.isNegativeResult()) {
                 IExpr ltZ = leadingTerm(z, x, x0, engine);
                 if (ltZ.isPresent()) {
@@ -387,7 +502,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
               if (zLimit.isZero()) {
                 IExpr ltZ = leadingTerm(z, x, x0, engine);
                 if (ltZ.isPresent()) {
-                  // Evaluate nu at the limit point to drop symbolic x-dependencies
                   IExpr nuLimit = engine.evaluate(F.subst(nu, x, x0));
                   IExpr halfZ = engine.evaluate(F.Times(F.C1D2, ltZ));
                   IExpr gammaTerm = engine.evaluate(F.Power(F.Gamma(F.Plus(nuLimit, F.C1)), F.CN1));
@@ -412,76 +526,12 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
     }
 
-    // Attempt direct evaluation for non-zero constants
     IExpr limit = engine.evaluate(F.subst(expr, x, x0));
     if (limit.isPresent() && !limit.isZero() && !limit.isIndeterminate()
         && !limit.isDirectedInfinity()) {
       return limit;
     }
     return F.NIL;
-    // UNIVERSAL FALLBACK: If limit is 0 (e.g. Sin(x) at Pi) or Indeterminate,
-    // mathematically generate the generic Taylor/Laurent series to find the actual leading term.
-    // return extractFromSeries(expr, x, x0, engine);
-  }
-
-  /**
-   * Computes the power series expansion for an addition expression ({@code Plus[...]}).
-   * <p>
-   * This method separates exact polynomial terms from transcendental functions to prevent Big-O
-   * truncation from prematurely swallowing exact terms. It recursively generates the series for the
-   * transcendental components and combines them using exact fractional grid merging via
-   * {@link ASTSeriesData#plusPS(ASTSeriesData)}.
-   *
-   * @param plusAST the addition expression to expand
-   * @param x the expansion variable
-   * @param x0 the point around which to expand
-   * @param n the requested mathematical order of the expansion
-   * @param engine the evaluation engine
-   * @return the combined {@code ASTSeriesData}, or {@code null} if the series cannot be generated
-   */
-  private static ASTSeriesData plusSeriesDataRecursive(final IAST plusAST, IExpr x, IExpr x0,
-      final int n, EvalEngine engine) {
-    Map<IExpr, IExpr> coefficientMap = new HashMap<IExpr, IExpr>();
-    IASTAppendable rest = F.PlusAlloc(4);
-
-    ASTSeriesData temp = null;
-    if (x0.isZero()) {
-      temp = ASTSeriesData.polynomialSeries(plusAST, x, x0, n, coefficientMap, rest);
-    } else {
-      rest.appendArgs(plusAST);
-    }
-
-    if (temp != null) {
-      if (rest.size() <= 1) {
-        return temp;
-      }
-    }
-
-    ASTSeriesData series = null;
-    int start = 1;
-    if (temp != null) {
-      series = temp;
-    } else {
-      if (rest.size() > 1) {
-        series = seriesDataRecursive(rest.arg1(), x, x0, n, engine);
-        if (series == null) {
-          return null;
-        }
-        start = 2;
-      }
-    }
-
-    if (series != null) {
-      for (int i = start; i < rest.size(); i++) {
-        ASTSeriesData arg = seriesDataRecursive(rest.get(i), x, x0, n, engine);
-        if (arg == null) {
-          return null;
-        }
-        series = series.plusPS(arg);
-      }
-      return series;
-    }
-    return null;
   }
 
   private static ASTSeriesData plusSeriesDataRecursive(final IAST plusAST, IExpr x, IExpr x0,
@@ -491,7 +541,15 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
     ASTSeriesData temp = null;
     if (x0.isZero()) {
-      temp = ASTSeriesData.polynomialSeries(plusAST, x, x0, n, coefficientMap, rest);
+      try {
+        temp = ASTSeriesData.polynomialSeries(plusAST, x, x0, n, coefficientMap, rest);
+      } catch (RuntimeException rex) {
+        // Exception caught: expression contains non-polynomial terms.
+        // The 'rest' appendable is corrupted by the aborted loop, so we must reset it.
+        coefficientMap.clear();
+        rest = F.PlusAlloc(plusAST.size());
+        rest.appendArgs(plusAST);
+      }
     } else {
       rest.appendArgs(plusAST);
     }
@@ -529,53 +587,23 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return null;
   }
 
-  /**
-   * Attempts to extract exact polynomial terms from a given function and construct a power series.
-   * <p>
-   * This method delegates to the polynomial ring evaluator {@link ExprPolynomialRing} to separate
-   * pure polynomial components from transcendental or unresolved components. Extracted polynomial
-   * terms are populated into the {@code coefficientMap}, while leftover terms are appended to
-   * {@code rest}. If any polynomial terms are found, it generates the corresponding
-   * {@code ASTSeriesData}.
-   *
-   * @param function the mathematical expression to parse for polynomial terms
-   * @param x the expansion variable
-   * @param x0 the point around which to expand
-   * @param n the requested mathematical order of the expansion
-   * @param coefficientMap an empty map to be populated with extracted exponents and coefficients
-   * @param rest an accumulator list to hold any non-polynomial or leftover terms
-   * @return the resulting {@code ASTSeriesData} representing the polynomial portion, or
-   *         {@code null} if no polynomial terms could be extracted
-   */
+  private static ASTSeriesData polynomialSeries(final IExpr function, IExpr x, IExpr x0,
+      final int n, Map<IExpr, IExpr> coefficientMap) {
+    IASTAppendable rest = F.PlusAlloc(4);
+    return polynomialSeries(function, x, x0, n, coefficientMap, rest);
+  }
+
   private static ASTSeriesData polynomialSeries(final IExpr function, IExpr x, IExpr x0,
       final int n, Map<IExpr, IExpr> coefficientMap, IASTAppendable rest) {
     coefficientMap = ExprPolynomialRing.create(function, x, coefficientMap, rest);
     if (coefficientMap.size() > 0) {
-      return seriesFromMap(x, x0, n, coefficientMap, rest);
+      return fromCoefficientMap(x, x0, n, coefficientMap, rest);
     }
     return null;
   }
 
-  /**
-   * Computes the power series expansion for an exponentiation expression ({@code Power[...]}). *
-   * <p>
-   * Generates the series for the base expression and raises it to the requested rational or integer
-   * power using the J.C.P. Miller formula. <br>
-   * If the requested power degrades the target boundary (e.g., when the base is a Laurent series
-   * raised to a negative power), this method dynamically recalculates the required extra base
-   * terms, steps up the base order {@code n}, and re-evaluates the power to perfectly hit the
-   * target {@code O(x^n)} bound without dropping coefficients.
-   *
-   * @param powerAST the exponentiation expression to expand
-   * @param x the expansion variable
-   * @param x0 the point around which to expand
-   * @param n the requested mathematical order of the expansion
-   * @param engine the evaluation engine
-   * @return the exponentiated {@code ASTSeriesData}, or {@code null} if the series cannot be
-   *         generated
-   */
   private static ASTSeriesData powerSeriesDataRecursive(final IExpr powerAST, IExpr x, IExpr x0,
-      final int n, final int direction, EvalEngine engine) {
+      final int n, final int direction, EvalEngine engine) throws ArithmeticException {
     IExpr base = powerAST.base();
     IExpr exponent = powerAST.exponent();
 
@@ -597,13 +625,13 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
               return series;
             }
           }
+          throw new ArithmeticException("Denominator too large for series expansion");
         }
       }
     } else if (!(base instanceof ASTSeriesData)) {
       if (x0.isZero()) {
         Map<IExpr, IExpr> coefficientMap = new HashMap<IExpr, IExpr>();
-        IASTAppendable rest = F.PlusAlloc(4);
-        ASTSeriesData temp = polynomialSeries(powerAST, x, x0, n, coefficientMap, rest);
+        ASTSeriesData temp = polynomialSeries(powerAST, x, x0, n, coefficientMap);
         if (temp != null) {
           return temp;
         }
@@ -611,7 +639,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     }
 
     int currentN = n;
-    // Extract the mathematically exact starting degree to prevent empty series generation
     IExpr lt = leadingTerm(base, x, x0, engine);
     if (lt.isPresent() && !lt.isZero()) {
       IExpr varPart = x0.isZero() ? x : F.Subtract(x, x0);
@@ -642,7 +669,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         }
       }
 
-      // If we found the valid mathematical degree, ensure currentN is large enough to capture it
       if (leadDegree != -1 && currentN <= leadDegree) {
         currentN = leadDegree + 1;
       }
@@ -667,7 +693,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
 
       if (p != null) {
-        // Dispatch to fractional/integer power generation
         IExpr pExpr = series.powerSeries(p, engine);
 
         if (pExpr.isPresent()) {
@@ -690,21 +715,15 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
               targetTruncate = Math.max(targetTruncate, actualMinExp + 1);
             }
 
-            // If exponentiation didn't yield enough precision, step up the base order
-            // If exponentiation didn't yield enough precision to satisfy the target
-            // error bound, aggressively step up the base order and re-evaluate!
             int loopCount = 0;
             while (pTruncate < targetTruncate && loopCount++ < 4) {
               int b = p.denominator().toIntDefault();
               if (b != Config.INVALID_INT && b > 0) {
                 int extraBaseTerms = (targetTruncate - pTruncate + b - 1) / b;
-                // Overcompensate slightly to guarantee we breach the boundary for nested degrading
-                // chains
                 currentN += extraBaseTerms + 2;
 
-                // NOTE: Use the correct overload below. If you are in the method with 'direction',
-                // pass 'direction' instead of omitting it.
-                ASTSeriesData series2 = seriesDataRecursive(base, x, x0, currentN, engine);
+                ASTSeriesData series2 =
+                    seriesDataRecursive(base, x, x0, currentN, direction, engine);
 
                 if (series2 != null) {
                   IExpr pExpr2 = series2.powerSeries(p, engine);
@@ -722,7 +741,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
               }
             }
 
-            // Truncate the final series so it precisely matches the requested O(x^n) boundary
             if (pTruncate > targetTruncate) {
               int newNMin = Math.min(pNMin, targetTruncate);
               int capacity = targetTruncate - newNMin;
@@ -736,8 +754,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
             return pSeries;
           } else {
-            // Catch ComplexInfinity or other constant IExpr evaluations
-            // Package it as a constant term in the series to propagate the pole safely
             int targetTruncate = Math.max(n, 0) + 1;
             ASTSeriesData constSeries = new ASTSeriesData(x, x0, 0, targetTruncate, 1);
             constSeries.setCoeff(0, pExpr);
@@ -749,33 +765,16 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return null;
   }
 
-  /**
-   * Try to find a series with function {@link S#SeriesCoefficient}
-   *
-   * @param function the function which should be generated as a power series
-   * @param x the variable
-   * @param x0 the point to do the power expansion for
-   * @param n the order of the expansion
-   * @param denominator
-   * @param varSet the variables of the function (including x)
-   * @param engine the evaluation engine
-   * @return the <code>SeriesCoefficient()</code> series or <code>null</code> if the function is not
-   *         numeric w.r.t the varSet
-   */
   private static ASTSeriesData seriesCoefficient(final IExpr function, IExpr x, IExpr x0,
       final int n, final int denominator, VariablesSet varSet, EvalEngine engine) {
-    // Start probing from negative indices to capture Laurent series poles correctly
     int startN = Math.min(n, -10);
     int maxProbe = Math.max(n, 0) + 10;
     int targetN = n;
     ISymbol power = F.Dummy("$$$n");
     IExpr temp = engine.evalQuiet(F.SeriesCoefficient(function, F.list(x, x0, power)));
 
-    // RELAXED CHECK: Only require that SeriesCoefficient successfully evaluated without returning
-    // itself
     if (temp.isPresent() && temp.isFree(S.SeriesCoefficient, true)) {
       boolean foundNonZero = false;
-      // FIX: Use maxProbe + denominator so setCoeff doesn't discard probed terms!
       ASTSeriesData ps = new ASTSeriesData(x, x0, startN, maxProbe + denominator, denominator);
 
       for (int i = startN; i <= Math.max(targetN, maxProbe); i++) {
@@ -795,7 +794,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         targetN = n;
       }
 
-      // Re-bound the series safely
       int finalNMin = ps.coefficientMap.isEmpty() ? startN : ps.minExponent();
       ASTSeriesData result =
           new ASTSeriesData(x, x0, finalNMin, targetN + denominator, denominator);
@@ -807,13 +805,11 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     } else {
       boolean foundNonZero = false;
       boolean evaled = true;
-      // Use maxProbe + denominator so setCoeff doesn't discard probed terms!
       ASTSeriesData ps = new ASTSeriesData(x, x0, startN, maxProbe + denominator, denominator);
 
       for (int i = startN; i <= Math.max(targetN, maxProbe); i++) {
         temp = engine.evalQuiet(F.SeriesCoefficient(function, F.list(x, x0, F.ZZ(i))));
 
-        // RELAXED CHECK
         if (temp.isPresent() && temp.isFree(S.SeriesCoefficient, true)) {
           ps.setCoeff(i, temp);
           if (!temp.isZero()) {
@@ -845,37 +841,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return null;
   }
 
-  /**
-   * The core recursive factory method for generating a power series expansion of a mathematical
-   * expression.
-   * <p>
-   * This method acts as the central router for evaluating the equivalent of {@code Series(function,
-   * {x, x0, n})}. It recursively analyzes the Abstract Syntax Tree (AST) of the given expression
-   * and delegates to specialized structural handlers (e.g., for addition, multiplication, and
-   * exponentiation) to construct the mathematical series. *
-   * <p>
-   * Key mathematical enforcements handled at this master level include:
-   * <ul>
-   * <li><b>Expansion Point Shifts:</b> Safely intercepts and maps expansions around non-zero points
-   * ({@code x0 != 0}) to generate accurate Taylor and Laurent series without polynomial offset
-   * degradation.</li>
-   * <li><b>Universal Error Clamping:</b> Enforces the dynamic target truncation boundary. It
-   * guarantees that regardless of the intermediate fractional grid scaling (Puiseux denominators)
-   * or recursive depth, the final series strictly adheres to the mathematically requested
-   * {@code O((x-x0)^n)} bound.</li>
-   * <li><b>Exact Polynomial Preservation:</b> Ensures that exact polynomial terms (which inherently
-   * possess infinite precision) are never artificially swallowed or clipped by smaller Big-O
-   * truncation requests.</li>
-   * </ul>
-   *
-   * @param function the function to be expanded
-   * @param x the expansion variable
-   * @param x0 the point around which the series is expanded
-   * @param n the requested mathematical order of the expansion (the Big-O term)
-   * @param engine the evaluation engine
-   * @return the generated {@code ASTSeriesData} representing the power series, or {@code null} if
-   *         the series cannot be mathematically evaluated
-   */
   @Nullable
   public static ASTSeriesData seriesDataRecursive(final IExpr function, IExpr x, IExpr x0,
       final int n, EvalEngine engine) {
@@ -891,10 +856,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     if (function.isFree(x) || function.equals(x)) {
       if (x0.isZero() || function.isFree(x)) {
         Map<IExpr, IExpr> coefficientMap = new HashMap<IExpr, IExpr>();
-        IASTAppendable rest = F.PlusAlloc(4);
-        result = polynomialSeries(function, x, x0, n, coefficientMap, rest);
+        result = polynomialSeries(function, x, x0, n, coefficientMap);
       } else {
-        // function equals x, x0 != 0. Expand as x0 + (x-x0)
         ASTSeriesData series = new ASTSeriesData(x, x0, 0, n + 1, 1);
         series.setCoeff(0, x0);
         series.setCoeff(1, F.C1);
@@ -906,7 +869,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       Optional<IExpr[]> numeratorDenominatorParts = AlgebraUtil.fractionalParts(function, false);
       if (numeratorDenominatorParts.isPresent()) {
         IExpr[] parts = numeratorDenominatorParts.get();
-        // PROTECT TRANSCENDENTALS: Only use fast-path if both parts are purely polynomial
         if (x0.isZero() && parts[0].isPolynomial(x) && parts[1].isPolynomial(x)) {
           IExpr sd = Algebra.polynomialTaylorSeries(parts, x, x0, n, denominator);
           if (sd.isPresent()) {
@@ -920,15 +882,12 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     } else if (function.isPower()) {
       result = powerSeriesDataRecursive(function, x, x0, n, direction, engine);
     } else if (function.isAST(S.Gamma, 2)) {
-      // Evaluate the limit of the inner argument to detect Gamma poles
       IExpr arg = function.first();
       IExpr limit = engine.evalQuiet(F.subst(arg, x, x0));
       if (limit.isIndeterminate() || limit.isDirectedInfinity()) {
         limit = engine.evalQuiet(F.Limit(arg, F.Rule(x, x0)));
       }
 
-      // If expanding around 0 or a negative integer pole, rewrite to bypass the singularity!
-      // Gamma(z) -> Gamma(z + |k| + 1) / (z * (z+1) * ... * (z + |k|))
       if (limit.isInteger() && (limit.isNegativeResult() || limit.isZero())) {
         int k = limit.toIntDefault();
         if (F.isPresent(k)) {
@@ -939,17 +898,11 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
             denom.append(F.Plus(arg, F.ZZ(i)));
           }
 
-          // Do NOT use the Dummy variable Series[] expansion here!
           IExpr rewritten = engine.evaluate(F.Divide(F.Gamma(F.Plus(arg, F.ZZ(absK + 1))), denom));
-          // Use a higher recursion depth (n + 10) to ensure leading terms of
-          // vanishing denominators are found, preventing spurious ComplexInfinity results
-          // when inversion occurs on small-order series.
           result = seriesDataRecursive(rewritten, x, x0, n, direction, engine);
         }
       }
 
-      // Allow non-pole Gamma compositions to be resolved via compositionSeries
-      // instead of dropping to pure Taylor series derivatives, which explode for nested functions.
       if (result == null && !arg.isFree(x) && !arg.equals(x)) {
         ASTSeriesData compSeries = compositionSeries((IAST) function, x, x0, n, direction, engine);
         if (compSeries != null) {
@@ -959,8 +912,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     } else if (function.isLog() && function.first().equals(x) && x0.isZero() && n >= 0) {
       result = new ASTSeriesData(x, x0, F.list(function), 0, n + 1, 1);
     } else if (function.isAST1() && !function.first().isFree(x) && !function.first().equals(x)) {
-      // Fast-path composition trap for standard 1-arg numeric functions
-      // (like Gamma, Sin, Exp) to prevent Taylor derivative explosions!
       IExpr head = function.head();
       if (head.isBuiltInSymbol()) {
         ASTSeriesData compSeries = compositionSeries((IAST) function, x, x0, n, direction, engine);
@@ -978,14 +929,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       int pDen = result.puiseuxDenominator();
       int targetTruncate = n * pDen + 1;
 
-      int actualMinExp = Integer.MAX_VALUE;
-      for (int i = result.minExponent(); i < result.truncateOrder(); i++) {
-        if (!result.coefficient(i).isZero()) {
-          actualMinExp = i;
-          break;
-        }
-      }
-      if (actualMinExp != Integer.MAX_VALUE) {
+      int actualMinExp = actualMinExponent(result);
+      if (F.isPresent(actualMinExp)) {
         targetTruncate = Math.max(targetTruncate, actualMinExp + 1);
       }
 
@@ -1002,64 +947,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
     }
     return result;
-  }
-
-  /**
-   * Constructs an {@code ASTSeriesData} object directly from a map of exponents and coefficients. *
-   * <p>
-   * This method dynamically enforces mathematical precision rules for exact polynomials. Because
-   * exact polynomial terms (e.g., {@code b * x^5}) have infinite precision, their mathematical
-   * Big-O truncation bound must never be forced below their actual maximum degree. This method
-   * scans the highest exponent present in the map and safely steps up the truncation bound
-   * ({@code truncate = Math.max(n + 1, maxExponent + 1)}) to ensure leading polynomial terms are
-   * perfectly preserved and not clipped by a smaller requested order {@code n}. *
-   * <p>
-   * Any mapped exponents that cannot resolve to standard integers are safely rejected and pushed
-   * back into the {@code rest} accumulator for secondary transcendental evaluation.
-   *
-   * @param x the expansion variable
-   * @param x0 the point around which to expand
-   * @param n the requested mathematical order of the expansion
-   * @param coefficientMap the map containing parsed exponent keys and coefficient values
-   * @param rest an accumulator list to catch terms with non-integer exponents
-   * @return the generated {@code ASTSeriesData}, or {@code null} if no valid integer-exponent terms
-   *         were processed
-   */
-  private static ASTSeriesData seriesFromMap(IExpr x, IExpr x0, final int n,
-      Map<IExpr, IExpr> coefficientMap, IASTAppendable rest) {
-    int maxExponent = Integer.MIN_VALUE;
-    for (IExpr exp : coefficientMap.keySet()) {
-      int exponent = exp.toIntDefault();
-      if (F.isPresent(exponent) && exponent > maxExponent) {
-        maxExponent = exponent;
-      }
-    }
-
-    int truncate = n + 1;
-    if (maxExponent != Integer.MIN_VALUE) {
-      truncate = Math.max(truncate, maxExponent + 1);
-    }
-
-    ASTSeriesData series = new ASTSeriesData(x, x0, 0, truncate, 1);
-    boolean evaled = false;
-    for (Map.Entry<IExpr, IExpr> entry : coefficientMap.entrySet()) {
-      IExpr coefficient = entry.getValue();
-      if (coefficient.isZero()) {
-        continue;
-      }
-      IExpr exp = entry.getKey();
-      int exponent = exp.toIntDefault();
-      if (F.isNotPresent(exponent)) {
-        rest.append(F.Times(coefficient, F.Power(x, exp)));
-      } else {
-        series.setCoeff(exponent, coefficient);
-        evaled = true;
-      }
-    }
-    if (evaled) {
-      return series;
-    }
-    return null;
   }
 
   public static ASTSeriesData simpleSeries(final IExpr function, IExpr x, IExpr x0, final int n,
@@ -1090,13 +977,11 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     for (int i = 0; i <= Math.max(targetN, maxProbe); i++) {
       IExpr functionPart = engine.evalQuiet(F.subst(derivedFunction, x, x0));
 
-      // Attempt limit if substitution fails, yields a pole, or yields unevaluated complex forms
       if (!functionPart.isSpecialsFree()) {
         IExpr dirExpr = direction == 0 ? S.Reals : F.ZZ(direction);
         IExpr limitPart =
             engine.evalQuiet(F.Limit(derivedFunction, F.Rule(x, x0), F.Rule(S.Direction, dirExpr)));
 
-        // Ensure the limit resolved the ambiguity cleanly
         if (limitPart.isSpecialsFree()) {
           functionPart = limitPart;
         } else {
@@ -1139,7 +1024,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   private static ASTSeriesData timesSeriesDataRecursive(IAST timesAST, IExpr x, IExpr x0,
       final int n, final int direction, EvalEngine engine) {
     IASTAppendable rest = F.TimesAlloc(4);
-    Map<IExpr, IExpr> coefficientMap = new HashMap<IExpr, IExpr>();
+    Map<IExpr, IExpr> coefficientMap = new LinkedHashMap<IExpr, IExpr>();
 
     if (x0.isZero()) {
       coefficientMap = ExprPolynomialRing.createTimes(timesAST, x, coefficientMap, rest);
@@ -1158,7 +1043,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     }
 
     if (rest.size() <= 1) {
-      return ASTSeriesData.seriesFromMap(x, x0, n, coefficientMap, rest);
+      return ASTSeriesData.fromCoefficientMap(x, x0, n, coefficientMap, rest);
     }
 
     int ni = n + Math.abs(shift);
@@ -1211,49 +1096,25 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     }
 
     if (shift != 0) {
-      series = series.shift(shift, coefficient, series.truncateOrder() + shift);
+      int indexShift = shift * series.puiseuxDenominator();
+      series = series.shift(indexShift, coefficient, series.truncateOrder() + indexShift);
     }
 
     return series;
   }
 
-  /** A map of the truncated power series coefficients <code>value != 0</code> */
   OpenIntToIExprHashMap<IExpr> coefficientMap;
-
-  /**
-   * Truncation of computations. Represents the truncation bound or the order of the Big-O error
-   * term.
-   */
   private int truncateOrder;
-
-  /** The expansion variable symbol of this series. */
   private IExpr expansionVariable;
-
-  /** The point <code>expansionVariable = expansionPoint</code> of this series. */
   private IExpr expansionPoint;
-
-  /**
-   * The minimum exponent (inclusive) used in <code>coefficientValues</code>, where the coefficient
-   * is not 0.
-   */
   private int minExponent;
-
-  /**
-   * The maximum bound (exclusive) used in <code>coefficientValues</code>, where the coefficient is
-   * not 0.
-   */
   private int exponentBound;
-
-  /** The common denominator for fractional exponents (used in Puiseux series) */
   private int puiseuxDenominator;
 
   public ASTSeriesData() {
     super();
     truncateOrder = 0;
     puiseuxDenominator = 1;
-    // When Externalizable objects are deserialized, they first need to be constructed by invoking
-    // the void constructor. Since this class does not have one, serialization and deserialization
-    // will fail at runtime.
   }
 
   public ASTSeriesData(IExpr x, IExpr x0, IAST coefficients, final int nMin, final int truncate,
@@ -1283,8 +1144,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     this.exponentBound = nMax;
     this.truncateOrder = truncate;
 
-    // Allow negative truncation orders for Laurent series
-    // Safely align empty series boundaries if truncate falls below nMin
     if (this.coefficientMap.isEmpty() && this.minExponent > this.truncateOrder) {
       this.minExponent = this.truncateOrder;
       this.exponentBound = this.truncateOrder;
@@ -1292,7 +1151,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
     this.puiseuxDenominator = denominator;
   }
-
 
   @Override
   public final IExpr arg1() {
@@ -1333,24 +1191,12 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return 6;
   }
 
-  /**
-   * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity
-   * as this {@code HMArrayList}.
-   *
-   * @return a shallow copy of this {@code ArrayList}
-   * @see java.lang.Cloneable
-   */
   @Override
   public IAST clone() {
     return new ASTSeriesData(expansionVariable, expansionPoint, minExponent, exponentBound,
         truncateOrder, puiseuxDenominator, new OpenIntToIExprHashMap<IExpr>(coefficientMap));
   }
 
-  /**
-   * Get the coefficient for <code>(x-x0)^k</code>.
-   *
-   * @param k the coefficient index
-   */
   public IExpr coefficient(int k) {
     if (k < minExponent || k >= exponentBound) {
       return F.C0;
@@ -1362,24 +1208,22 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return coefficient;
   }
 
+  /**
+   * 
+   * @return
+   */
   public IAST coefficientList() {
     if (expansionPoint.isZero()) {
-      // If x0 is zero, we can return the coefficients directly
-      // as a list of the coefficients of the polynomial.
-
-      // Safeguard against negative capacities for Laurent series bounds
-      int capacity = truncateOrder > 0 ? truncateOrder : 4;
+      int startIndex = Math.min(0, minExponent);
+      int endIndex = exponentBound;
+      int capacity = endIndex - startIndex;
+      if (capacity < 4) {
+        capacity = 4;
+      }
       IASTAppendable coefficientList = F.ListAlloc(capacity);
 
-      for (int i = 0; i < truncateOrder; i++) {
+      for (int i = startIndex; i < endIndex; i++) {
         coefficientList.append(coefficient(i));
-      }
-      for (int i = coefficientList.argSize(); i > 2; i--) {
-        if (coefficientList.get(i).isZero()) {
-          coefficientList.remove(i);
-        } else {
-          break;
-        }
       }
       return coefficientList;
     }
@@ -1429,43 +1273,16 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return IExpr.compareHierarchy(this, rhsExpr);
   }
 
-  /**
-   *
-   *
-   * <pre>
-   * series1.compose(series2)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * substitute <code>series2</code> into <code>series1</code>
-   *
-   * </p>
-   *
-   * </blockquote>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; ComposeSeries(SeriesData(x, 0, {1, 3}, 2, 4, 1), SeriesData(x, 0, {1, 1,0,0}, 0, 4, 1) - 1)
-   * x^2+3*x^3+O(x)^4
-   * </pre>
-   *
-   * @param series2
-   * @return the composed series
-   */
   public ASTSeriesData compose(ASTSeriesData series2) {
+    EvalEngine engine = EvalEngine.get();
     IExpr coeff0 = series2.coefficient(0);
     if (!coeff0.equals(expansionPoint)) {
-      // `1`.
       Errors.printMessage(S.SeriesData, "error", F.List("Constant " + coeff0 + " of series "
           + series2 + " unequals point " + expansionPoint + " of series " + this));
       return null;
     }
     ASTSeriesData series = new ASTSeriesData(series2.expansionVariable, series2.expansionPoint, 0,
         series2.truncateOrder, series2.puiseuxDenominator);
-    ASTSeriesData s;
     ASTSeriesData x0Term;
     if (expansionPoint.isZero()) {
       x0Term = series2;
@@ -1475,25 +1292,26 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     for (int n = minExponent; n < exponentBound; n++) {
       IExpr temp = coefficient(n);
       if (!temp.isZero()) {
-        s = x0Term.powerSeries(n);
-        s = s.times(temp);
-        series = series.plusPS(s);
+        IRational p =
+            puiseuxDenominator == 1 ? F.QQ(n, 1) : F.QQ(n, puiseuxDenominator).normalize();
+        IExpr sExpr = x0Term.powerSeries(p, engine);
+        if (sExpr instanceof ASTSeriesData) {
+          ASTSeriesData s = (ASTSeriesData) sExpr;
+          s = s.times(temp);
+          series = series.plusPS(s);
+        } else if (sExpr.isPresent()) {
+          ASTSeriesData constSeries = new ASTSeriesData(series2.expansionVariable,
+              series2.expansionPoint, 0, series2.truncateOrder, series2.puiseuxDenominator);
+          constSeries.setCoeff(0, engine.evaluate(F.Times(sExpr, temp)));
+          series = series.plusPS(constSeries);
+        }
       }
     }
     return series;
   }
 
-  /**
-   * Computes the general case Lagrange inversion coefficient for higher orders.
-   * 
-   * @param n The power of the term
-   * @return The coefficient for the nth term in the inverse series
-   */
   private IExpr computeGeneralLagrangeCoefficient(int n, ASTSeriesData fDivX, EvalEngine engine) {
-    // Compute (f(x)/x)^(-n)
     ASTSeriesData fDivXPowerNeg = fDivX.powerSeries(-n);
-
-    // Extract the coefficient of x^(n-1) and divide by n
     IExpr lagrangeCoefficient =
         engine.evaluate(F.Together(F.ExpandAll(fDivXPowerNeg.coefficient(n - 1).divide(F.ZZ(n)))));
     return lagrangeCoefficient;
@@ -1539,7 +1357,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return computeGeneralLagrangeCoefficient(n, fDivXAST, engine);
   }
 
-  /** {@inheritDoc} */
   @Override
   public ASTSeriesData copy() {
     return new ASTSeriesData(expansionVariable, expansionPoint, minExponent, exponentBound,
@@ -1559,54 +1376,92 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   /**
    * Differentiation of a power series.
    *
-   * <p>
-   * See
-   * <a href="https://en.wikipedia.org/wiki/Power_series#Differentiation_and_integration">Wikipedia:
-   * Power series - Differentiation and integration</a>
-   *
    * @param x the variable
    */
   public ASTSeriesData derive(IExpr x) {
+    EvalEngine engine = EvalEngine.get();
     if (this.expansionVariable.equals(x)) {
       if (isProbableZero()) {
         return this;
       }
-      if (truncateOrder > 0) {
-        ASTSeriesData series = new ASTSeriesData(x, expansionPoint, minExponent, minExponent,
-            truncateOrder - 1, puiseuxDenominator, new OpenIntToIExprHashMap<IExpr>());
-        if (minExponent >= 0) {
-          if (minExponent > 0) {
-            series.setCoeff(minExponent - 1,
-                this.coefficient(minExponent + 1).times(F.ZZ(minExponent + 1)));
+      if (truncateOrder - puiseuxDenominator >= minExponent - puiseuxDenominator) {
+        ASTSeriesData series =
+            new ASTSeriesData(x, expansionPoint, minExponent - puiseuxDenominator,
+                minExponent - puiseuxDenominator, truncateOrder - puiseuxDenominator,
+                puiseuxDenominator, new OpenIntToIExprHashMap<IExpr>());
+        for (int i = minExponent; i < exponentBound; i++) {
+          IExpr coeff = this.coefficient(i);
+          if (coeff != null && !coeff.isZero()) {
+            IExpr multiplier =
+                puiseuxDenominator == 1 ? F.ZZ(i) : F.QQ(i, puiseuxDenominator).normalize();
+            series.setCoeff(i - puiseuxDenominator, engine.evaluate(F.Times(coeff, multiplier)));
           }
-          for (int i = minExponent; i < exponentBound - 1; i++) {
-            series.setCoeff(i, this.coefficient(i + 1).times(F.ZZ(i + 1)));
+        }
+        return series;
+      }
+      return new ASTSeriesData(x, expansionPoint, 0, 0, puiseuxDenominator);
+    } else {
+      ASTSeriesData result = new ASTSeriesData(expansionVariable, expansionPoint, minExponent,
+          exponentBound, truncateOrder, puiseuxDenominator, new OpenIntToIExprHashMap<IExpr>());
+      boolean hasNonZero = false;
+      for (int i = minExponent; i < exponentBound; i++) {
+        IExpr coeff = this.coefficient(i);
+        if (coeff != null && !coeff.isZero()) {
+          IExpr dCoeff = engine.evaluate(F.D(coeff, x));
+          result.setCoeff(i, dCoeff);
+          if (!dCoeff.isZero()) {
+            hasNonZero = true;
           }
-          return series;
         }
       }
+      if (!hasNonZero) {
+        ASTSeriesData zeroSeries = new ASTSeriesData(expansionVariable, expansionPoint, 0,
+            truncateOrder, puiseuxDenominator);
+        zeroSeries.setCoeff(0, F.C0);
+        return zeroSeries;
+      }
+      return result;
     }
-    return null;
   }
 
-  public ASTSeriesData dividePS(ASTSeriesData ps) {
-    if (ps.isInvertible()) {
+  /**
+   * Division of two power series, with the assumption that the second one is invertible. If the
+   * second series is not invertible, it tries to find the leading exponent of each series and
+   * perform the division accordingly, which may still succeed if the leading coefficient of the
+   * divisor is a unit.
+   * 
+   * @param ps the divisor power series
+   * @return the quotient power series, or throws ArithmeticException if the division cannot be
+   *         performed due to non-unit
+   */
+  public ASTSeriesData dividePS(ASTSeriesData ps) throws ArithmeticException {
+    if (ps.isNonZero()) {
       ASTSeriesData inverse = timesPS(ps.inverse());
       if (inverse != null) {
         return inverse;
       }
     }
-    int m = truncateOrder();
-    int n = ps.truncateOrder();
-    if (m < n) {
-      return new ASTSeriesData(F.C0, expansionPoint, 0, 1, 1);
-      // return ring.getZERO();
+
+    // Find the actual leading (minimum non-zero) exponent of each series
+    int m = minExponent;
+    while (m < exponentBound && coefficient(m).isZero()) {
+      m++;
+    }
+    int n = ps.minExponent;
+    while (n < ps.exponentBound && ps.coefficient(n).isZero()) {
+      n++;
+    }
+
+    if (n >= ps.exponentBound) {
+      throw new ArithmeticException("division by zero series");
+    }
+    if (m >= exponentBound) {
+      return new ASTSeriesData(expansionVariable, expansionPoint, 0, 1, puiseuxDenominator);
     }
     if (!ps.coefficient(n).isUnit()) {
       throw new ArithmeticException(
           "division by non unit coefficient " + ps.coefficient(n) + ", n = " + n);
     }
-    // now m >= n
     ASTSeriesData st, sps, q, sq;
     if (m == 0) {
       st = this;
@@ -1626,6 +1481,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     }
     return sq;
   }
+
 
   @Override
   public boolean equals(final Object obj) {
@@ -1667,33 +1523,38 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return F.NIL;
   }
 
-  /** {@inheritDoc} */
   @Override
   public IExpr evaluate(EvalEngine engine) {
-    // if ((getEvalFlags() & IAST.DEFER_AST) == IAST.DEFER_AST) {
-    // return F.NIL;
-    // }
     return F.NIL;
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public String fullFormString() {
-    IAST seriesData = toSeriesData();
-    return seriesData.fullFormString();
+  public IExpr expansionPoint() {
+    return expansionPoint;
   }
 
-  // private IExpr inverseRecursion(int n) {
-  // if (n == 0) {
-  // // a1^(-1)
-  // return coeff(1).inverse();
-  // }
-  // IExpr dn = F.C0;
-  // for (int k = 0; k < n - 1; k++) {
-  // dn = dn.plus(inverseRecursion(k).divide(coeff(1)).times(coeff(n - k)));
-  // }
-  // return dn.negate();
-  // }
+  public IExpr expansionVariable() {
+    return expansionVariable;
+  }
+
+  public int exponentBound() {
+    return exponentBound;
+  }
+
+  @Override
+  public String fullFormString() {
+    // Explicitly build the string to guarantee strict InputForm/FullForm propagation,
+    // avoiding the intermediate toSeriesData() AST which can be intercepted by OutputForm rules.
+    StringBuilder buf = new StringBuilder();
+    buf.append("SeriesData(");
+    buf.append(expansionVariable.fullFormString()).append(",");
+    buf.append(expansionPoint.fullFormString()).append(",");
+    buf.append(arg3().fullFormString()).append(",");
+    buf.append(minExponent).append(",");
+    buf.append(truncateOrder).append(",");
+    buf.append(puiseuxDenominator).append(")");
+    return buf.toString();
+  }
+
 
   @Override
   public IExpr get(int location) {
@@ -1702,60 +1563,31 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         case 0:
           return head();
         case 1:
-          // x
           return arg1();
         case 2:
-          // x0
           return arg2();
         case 3:
-          // Coefficients
           return arg3();
         case 4:
-          // nMin
           return arg4();
         case 5:
-          // power
           return arg5();
         case 6:
-          // denominator
           return F.ZZ(puiseuxDenominator);
       }
     }
     throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 1");
   }
 
-  /**
-   * Safely retrieves a coefficient, guaranteeing F.C0 is returned
-   */
   private IExpr getCoeffSafe(int index) {
     IExpr c = coefficient(index);
     return c == null ? F.C0 : c;
-  }
-
-  public int puiseuxDenominator() {
-    return puiseuxDenominator;
   }
 
   @Override
   public IAST getItems(int[] items, int length, int offset) {
     IAST result = normal(false);
     return result.getItems(items, length, offset);
-  }
-
-  public int exponentBound() {
-    return exponentBound;
-  }
-
-  public int minExponent() {
-    return minExponent;
-  }
-
-  public IExpr expansionVariable() {
-    return expansionVariable;
-  }
-
-  public IExpr expansionPoint() {
-    return expansionPoint;
   }
 
   @Override
@@ -1775,178 +1607,114 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return S.SeriesData;
   }
 
-  /** {@inheritDoc} */
   @Override
   public int hierarchy() {
     return SERIESID;
   }
 
-  /**
-   * Integration of a power series.
-   *
-   * <p>
-   * See
-   * <a href="https://en.wikipedia.org/wiki/Power_series#Differentiation_and_integration">Wikipedia:
-   * Power series - Differentiation and integration</a>
-   *
-   * @param x the variable
-   */
   public ASTSeriesData integrate(IExpr x) {
+    EvalEngine engine = EvalEngine.get();
     if (this.expansionVariable.equals(x)) {
       if (isProbableZero()) {
         return this;
       }
-      if (truncateOrder > 0) {
-        ASTSeriesData series = new ASTSeriesData(x, expansionPoint, minExponent, minExponent,
-            truncateOrder + 1, puiseuxDenominator, new OpenIntToIExprHashMap<IExpr>());
-        if (minExponent + 1 > 0) {
-          for (int i = minExponent + 1; i <= exponentBound; i++) {
-            series.setCoeff(i, this.coefficient(i - 1).times(F.QQ(1, i)));
+      ASTSeriesData series = new ASTSeriesData(x, expansionPoint, minExponent + puiseuxDenominator,
+          minExponent + puiseuxDenominator, truncateOrder + puiseuxDenominator, puiseuxDenominator,
+          new OpenIntToIExprHashMap<IExpr>());
+      for (int i = minExponent; i < exponentBound; i++) {
+        if (i + puiseuxDenominator != 0) {
+          IExpr coeff = this.coefficient(i);
+          if (coeff != null && !coeff.isZero()) {
+            IExpr multiplier = puiseuxDenominator == 1 ? F.QQ(1, i + 1)
+                : F.QQ(puiseuxDenominator, i + puiseuxDenominator).normalize();
+            series.setCoeff(i + puiseuxDenominator, engine.evaluate(F.Times(coeff, multiplier)));
           }
-          return series;
         }
       }
+      return series;
     }
     return null;
   }
 
-  // private ASTSeriesData internalTimes(ASTSeriesData b, int minSize, int newPower,
-  // int newDenominator) {
-  // ASTSeriesData series = new ASTSeriesData(expansionVariable, expansionPoint,
-  // minExponent + b.minExponent, newPower, newDenominator);
-  // int start = series.minExponent;
-  // int end = exponentBound + b.exponentBound + 1;
-  // for (int n = start; n < end; n++) {
-  // if (n - start >= series.truncateOrder) {
-  // continue;
-  // }
-  // final int iMax = n;
-  // IASTAppendable sum = F.mapRange(S.Plus, minSize, iMax + 1,
-  // i -> this.coefficient(i).times(b.coefficient(iMax - i)));
-  //
-  // // for (int i = minSize; i <= n; i++) {
-  // // sum.append(this.coefficient(i).times(b.coefficient(n - i)));
-  // // }
-  //
-  // IExpr value = F.eval(sum);
-  // if (value.isZero()) {
-  // continue;
-  // }
-  // series.setCoeff(n, value);
-  // }
-  // return series;
-  // }
-
-  /**
-   *
-   *
-   * <pre>
-   * series.inverse()
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * return the inverse series.
-   *
-   * </p>
-   *
-   * </blockquote>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; InverseSeries(Series(Sin(x), {x, 0, 7}))
-   * x+x^3/6+3/40*x^5+5/112*x^7+O(x)^8
-   * </pre>
-   *
-   * @return the inverse series if possible
-   */
   @Override
   public ASTSeriesData inverse() {
-    // Find the true leading term (could be negative in a Laurent series)
     int actualNMin = minExponent;
     while (actualNMin < exponentBound && coefficient(actualNMin).isZero()) {
       actualNMin++;
     }
 
     if (actualNMin >= exponentBound) {
-      // Series is effectively 0
       throw new ArgumentTypeException("infy", F.List(F.C0));
     }
 
     IExpr leadingCoeff = coefficient(actualNMin);
     IExpr d = leadingCoeff.inverse();
 
-    // The new lowest power will be the negative of the old lowest power
     int newNMin = -actualNMin;
     int newTruncate = truncateOrder - 2 * actualNMin;
+    int numTerms = newTruncate - newNMin; // = truncateOrder - actualNMin
 
     ASTSeriesData result = new ASTSeriesData(expansionVariable, expansionPoint, newNMin,
         newTruncate, puiseuxDenominator);
 
-    for (int i = 0; i < truncateOrder - actualNMin; i++) {
+    for (int i = 0; i < numTerms; i++) {
       if (i == 0) {
         result.setCoeff(newNMin, d);
       } else {
         IExpr c = F.C0;
         for (int k = 0; k < i; k++) {
           IExpr coeffK = result.coefficient(newNMin + k);
-          IExpr m = coeffK.multiply(coefficient(actualNMin + i - k));
-          c = c.sum(m);
+          int sourceIndex = actualNMin + i - k;
+          if (sourceIndex < truncateOrder) {
+            IExpr m = coeffK.multiply(coefficient(sourceIndex));
+            c = c.sum(m);
+          }
         }
         c = c.multiply(d.negate());
-        result.setCoeff(newNMin + i, c);
+        int targetIndex = newNMin + i;
+        if (targetIndex < newTruncate) {
+          result.setCoeff(targetIndex, c);
+        }
       }
     }
     return result;
   }
 
-  /** {@inheritDoc} */
   @Override
   public boolean isAST0() {
     return false;
   }
 
-  /** {@inheritDoc} */
   @Override
   public boolean isAST1() {
     return false;
   }
 
-  /** {@inheritDoc} */
   @Override
   public boolean isAST2() {
     return false;
   }
 
-  /** {@inheritDoc} */
   @Override
   public boolean isAST3() {
     return false;
   }
 
-  public boolean isInvertible() {
-    return !coefficient(0).isZero();
+  public boolean isNonZero() {
+    for (int i = minExponent; i < exponentBound; i++) {
+      if (!coefficient(i).isZero()) {
+        return true;
+      }
+    }
+    return false;
   }
+
 
   @Override
   public boolean isOrder() {
     for (int i = minExponent; i < exponentBound; i++) {
       IExpr expr = coefficient(i);
       if (!expr.isZero()) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  public boolean isProbableOne() {
-    if (!coefficient(0).isOne()) {
-      return false;
-    }
-    for (int i = minExponent; i < exponentBound; i++) {
-      if (!coefficient(i).isZero()) {
         return false;
       }
     }
@@ -1965,6 +1733,10 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return true;
   }
 
+  public int minExponent() {
+    return minExponent;
+  }
+
   @Override
   public ASTSeriesData negate() {
     ASTSeriesData series = copy();
@@ -1975,36 +1747,16 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   }
 
   /**
-   *
-   *
-   * <pre>
-   * series.normal()
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * converts a <code>series</code> expression into a standard expression.
-   *
-   * </p>
-   *
-   * </blockquote>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; Normal(SeriesData(x, 0, {1, 0, -1, -4, -17, -88, -549}, -1, 6, 1))
-   * 1/x-x-4*x^2-17*x^3-88*x^4-549*x^5
-   * </pre>
-   *
-   * @return the standard expression generated from this series <code>Plus(....)</code>.
+   * Normalizes the series data to a polynomial-like expression.
+   * 
+   * @param nilIfUnevaluated parameter has no effect for this class
    */
   @Override
   public IASTMutable normal(boolean nilIfUnevaluated) {
     IExpr x = expansionVariable();
     IExpr x0 = expansionPoint();
     int nMin = minExponent();
-    int nMax = exponentBound();
+    int nMax = truncateOrder();
     int denominator = puiseuxDenominator();
     int size = nMax - nMin;
     if (size < 4) {
@@ -2012,14 +1764,16 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     }
     IExpr base;
     if (x0.isInfinity() || x0.isNegativeInfinity()) {
-      // For expansions at Infinity or -Infinity, the base is always 1/x
       base = F.Power(x, F.CN1);
     } else if (x0.isZero()) {
       base = x;
     } else {
       base = F.Subtract(x, x0);
     }
+
     IASTAppendable result = F.PlusAlloc(size);
+    EvalEngine engine = EvalEngine.get();
+
     for (int i = nMin; i < nMax; i++) {
       IExpr expr = coefficient(i);
       if (!expr.isZero()) {
@@ -2030,15 +1784,19 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
           exp = F.QQ(i, denominator).normalize();
         }
         IExpr pow = base.power(exp);
+
+        if (expr instanceof ASTSeriesData) {
+          expr = ((ASTSeriesData) expr).normal(false);
+        } else if (expr.isAST()) {
+          expr = engine.evaluate(expr.normal(nilIfUnevaluated));
+        }
+
         result.append(F.Times(expr, pow));
       }
     }
     return result;
   }
 
-  public int truncateOrder() {
-    return truncateOrder;
-  }
 
   @Override
   public ASTSeriesData plus(IExpr b) {
@@ -2058,15 +1816,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return series;
   }
 
-  /**
-   * Add two power series.
-   *
-   * <p>
-   * See <a href="https://en.wikipedia.org/wiki/Power_series#Addition_and_subtraction">Wikipedia:
-   * Power series - Addition and subtraction</a>
-   *
-   * @param that the other power series
-   */
   public ASTSeriesData plusPS(ASTSeriesData that) {
     int newDenominator = ArithmeticUtils.lcm(puiseuxDenominator, that.puiseuxDenominator);
     int scaleA = newDenominator / puiseuxDenominator;
@@ -2100,13 +1849,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return series;
   }
 
-  /**
-   * Compute the fractional power of a series using the J.C.P. Miller formula.
-   *
-   * @param p the rational power
-   * @param engine the evaluation engine
-   * @return the resulting series, or F.NIL if it cannot be computed
-   */
   public IExpr powerSeries(IRational p, EvalEngine engine) {
     if (p.isZero()) {
       ASTSeriesData series = new ASTSeriesData(expansionVariable, expansionPoint, 0, truncateOrder,
@@ -2131,7 +1873,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         return new ASTSeriesData(expansionVariable, expansionPoint, 0, truncateOrder,
             puiseuxDenominator);
       } else {
-        // Correctly handle negative power on a zero series: 1/0 -> ComplexInfinity
         Errors.printMessage(S.Power, "infy", F.List(F.C0), engine);
         return S.ComplexInfinity;
       }
@@ -2162,7 +1903,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     for (int k = 1; k < numTerms; k++) {
       IExpr ck = F.C0;
       for (int j = 1; j <= k; j++) {
-        // Safe coefficient retrieval to prevent NPE and boundary overruns
         IExpr coeff = getCoeffSafe(actualNMin + j);
         if (!coeff.isZero()) {
           IExpr bj = engine.evaluate(F.Divide(coeff, cMin));
@@ -2187,7 +1927,16 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   }
 
   public ASTSeriesData powerSeries(final long n) {
-    return (ASTSeriesData) powerSeries(F.ZZ(n), EvalEngine.get());
+    IExpr result = powerSeries(F.ZZ(n), EvalEngine.get());
+    if (result instanceof ASTSeriesData) {
+      return (ASTSeriesData) result;
+    }
+    return new ASTSeriesData(expansionVariable, expansionPoint, 0, truncateOrder,
+        puiseuxDenominator);
+  }
+
+  public int puiseuxDenominator() {
+    return puiseuxDenominator;
   }
 
   @Override
@@ -2217,34 +1966,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return normal(false);
   }
 
-  /**
-   * Computes the inverse series (reversion) of this series.
-   * 
-   * <p>
-   * Implements the reversion of a power series following the Lagrange inversion formula. For a
-   * series f(x) = a₀ + a₁(x-x₀) + a₂(x-x₀)² + ..., the reversion gives a series g such that g(f(x))
-   * = x.
-   * 
-   * <p>
-   * The method handles different cases:
-   * <ul>
-   * <li>When a₀ = x₀: Standard Lagrange inversion formula</li>
-   * <li>When a₀ ≠ x₀: Reversion with shift to handle constant term</li>
-   * </ul>
-   * 
-   * @param variable the variable to use in the resulting series
-   *
-   * @return the inverse series, or null if the inverse cannot be computed
-   */
-  /**
-   * Computes the inverse series (reversion) of this series. Handles standard Taylor series, Puiseux
-   * series (fractional powers), and series missing a linear term (where the first non-zero
-   * coefficient is k > 1).
-   *
-   * @param variable the variable to use in the resulting series
-   * @param engine the evaluation engine
-   * @return the inverse series, or F.NIL if the inverse cannot be computed
-   */
   public IExpr reversion(IExpr variable, EvalEngine engine) {
     IExpr constantTerm = getCoeffSafe(0);
 
@@ -2392,9 +2113,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         minExponent = k;
       } else if (k >= exponentBound) {
         exponentBound = k + 1;
-        // if (k >= truncate) {
-        // truncate = k + 1;
-        // }
       }
     }
   }
@@ -2403,21 +2121,40 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     this.puiseuxDenominator = denominator;
   }
 
+  /**
+   * Sets the coefficient of the k-th term to zero, and updates the minExponent and exponentBound
+   * accordingly.
+   * 
+   * @param k the index of the term to set to zero
+   */
   public void setZero(int k) {
     if (coefficientMap.containsKey(k)) {
       coefficientMap.remove(k);
-      if (k == minExponent) {
-        minExponent = k + 1;
-      }
-      if (k == exponentBound) {
-        exponentBound = k - 1;
+      if (coefficientMap.isEmpty()) {
+        minExponent = truncateOrder;
+        exponentBound = truncateOrder;
+      } else {
+        if (k == minExponent) {
+          int newMin = minExponent + 1;
+          while (newMin < exponentBound && !coefficientMap.containsKey(newMin)) {
+            newMin++;
+          }
+          minExponent = newMin;
+        }
+        if (k == exponentBound - 1) {
+          int newMax = exponentBound - 2;
+          while (newMax >= minExponent && !coefficientMap.containsKey(newMax)) {
+            newMax--;
+          }
+          exponentBound = newMax + 1;
+        }
       }
     }
   }
 
   public ASTSeriesData shift(int shift) {
     ASTSeriesData series = new ASTSeriesData(this.expansionVariable, this.expansionPoint,
-        this.minExponent, truncateOrder, puiseuxDenominator);
+        this.minExponent + shift, truncateOrder + shift, puiseuxDenominator);
     for (int i = this.minExponent; i < this.exponentBound; i++) {
       series.setCoeff(i + shift, this.coefficient(i));
     }
@@ -2426,7 +2163,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
   public ASTSeriesData shift(int shift, IExpr coefficient, int power) {
     ASTSeriesData series = new ASTSeriesData(this.expansionVariable, this.expansionPoint,
-        this.minExponent, power, puiseuxDenominator);
+        this.minExponent + shift, power, puiseuxDenominator);
     for (int i = this.minExponent; i < this.exponentBound; i++) {
       series.setCoeff(i + shift, this.coefficient(i).times(coefficient));
     }
@@ -2434,13 +2171,16 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   }
 
   public ASTSeriesData shiftTimes(int shift, IExpr coefficient, int power) {
+    int newMinExponent = this.minExponent * shift;
+    int newPower = power * shift;
     ASTSeriesData series = new ASTSeriesData(this.expansionVariable, this.expansionPoint,
-        this.minExponent, power, puiseuxDenominator);
+        newMinExponent, newPower, puiseuxDenominator);
     for (int i = this.minExponent; i < this.exponentBound; i++) {
       series.setCoeff(i * shift, this.coefficient(i).times(coefficient));
     }
     return series;
   }
+
 
   @Override
   public int size() {
@@ -2519,7 +2259,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return series;
   }
 
-  /** Multiply a power series with a scalar */
   @Override
   public ASTSeriesData times(IExpr b) {
     if (b instanceof ASTSeriesData) {
@@ -2548,7 +2287,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     int n1 = minExponent * scaleA;
     int n2 = b.minExponent * scaleB;
 
-    // Mathematical error bound for O(x^{t1}) * O(x^{n2}) and O(x^{t2}) * O(x^{n1})
     int newPower = Math.min(t1 + n2, t2 + n1);
     int minSize = n1 + n2;
 
@@ -2587,10 +2325,25 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   }
 
   public IAST toSeriesData() {
-    // list of coefficients
-    IASTAppendable coefficientList = F.mapRange(minExponent, exponentBound, i -> coefficient(i));
+    int capacity = exponentBound - minExponent;
+    IASTAppendable coefficientList = F.ListAlloc(capacity > 0 ? capacity : 4);
+
+    for (int i = minExponent; i < exponentBound; i++) {
+      IExpr coeff = coefficient(i);
+      // Recursively convert inner multivariate coefficients to pure AST nodes
+      if (coeff instanceof ASTSeriesData) {
+        coefficientList.append(((ASTSeriesData) coeff).toSeriesData());
+      } else {
+        coefficientList.append(coeff);
+      }
+    }
+
     return F.SeriesData(expansionVariable, expansionPoint, coefficientList, F.ZZ(minExponent),
         F.ZZ(truncateOrder), F.ZZ(puiseuxDenominator));
+  }
+
+  public int truncateOrder() {
+    return truncateOrder;
   }
 
   @Override

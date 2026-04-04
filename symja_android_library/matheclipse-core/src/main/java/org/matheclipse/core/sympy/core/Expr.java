@@ -17,6 +17,26 @@ import org.matheclipse.core.sympy.utilities.Iterables;
 import com.google.common.collect.Sets;
 
 public class Expr {
+  /**
+   * Helper for extractAdditively. * @return Pair(List of coefficients, sum of independent terms)
+   */
+  private static Pair _corem(IExpr eq, IExpr c) {
+    IASTAppendable co = F.ListAlloc();
+    IASTAppendable non = F.PlusAlloc();
+
+    IAST args = eq.makeAST(S.Plus);
+    for (int i = 1; i < args.size(); i++) {
+      IExpr term = args.get(i);
+      IExpr ci = coeff(term, c);
+      if (!ci.isZero()) {
+        co.append(ci);
+      } else {
+        non.append(term);
+      }
+    }
+    // ensure the independent terms are evaluated and flattened out of the list
+    return F.pair(co, F.eval(non.oneIdentity0()));
+  }
 
   /**
    * 
@@ -82,16 +102,6 @@ public class Expr {
     // }
     return F.pair(commutative, nonCommutative);
 
-  }
-
-  private static boolean asIndependentHas(IExpr e, IASTAppendable other, Set<IExpr> sym) {
-    boolean hasOther = e.has(x -> other.indexOf(x) >= 0, true);
-    if (sym.isEmpty()) {
-      return hasOther;
-    }
-    VariablesSet vs = new VariablesSet(e);
-    Set<IExpr> intersection = Sets.intersection(sym, vs.getVariablesSet());
-    return hasOther || e.has(intersection::contains, true);
   }
 
   public static Pair asIndependent(IExpr self, IAST deps) {
@@ -184,141 +194,14 @@ public class Expr {
     return F.pair(first, second);
   }
 
-
-  /**
-   * helper for extractAdditively
-   * 
-   * @param eq
-   * @param c
-   * @return
-   */
-  private static Pair _corem(IExpr eq, IExpr c) {
-    // return co, diff from co*c + diff
-    IASTAppendable co = F.PlusAlloc(16);
-    IASTAppendable non = F.PlusAlloc(16);
-    IAST plusAST = makeArgs(S.Plus, eq);
-    for (int j = 1; j < plusAST.size(); j++) {
-      IExpr i = plusAST.get(j);
-      IExpr ci = coeff(i, c);
-      if (ci.isZero()) {
-        non.append(i);
-      } else {
-        co.append(ci);
-      }
+  private static boolean asIndependentHas(IExpr e, IASTAppendable other, Set<IExpr> sym) {
+    boolean hasOther = e.has(x -> other.indexOf(x) >= 0, true);
+    if (sym.isEmpty()) {
+      return hasOther;
     }
-    return F.pair(F.eval(co), F.eval(non));
-  }
-
-  private static IAST makeArgs(IExpr head, IExpr eq) {
-    return eq.isAST(head) ? (IAST) eq : F.unaryAST1(head, eq);
-  }
-
-  /**
-   * Return self - c if it's possible to subtract c from self and make all matching coefficients
-   * move towards zero, else return {@link F#NIL}.
-   * 
-   * @param self
-   * @param c
-   * @return {@link F#NIL} if the extraction isn't possible
-   */
-  public static IExpr extractAdditively(IExpr self, IExpr c) {
-    // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/expr.py#L2332
-    if (self.isIndeterminate()) {
-      return F.NIL;
-    }
-    if (c.isZero()) {
-      return self;
-    } else if (c.equals(self)) {
-      return F.C0;
-    } else if (self.isZero()) {
-      return F.NIL;
-    }
-
-    if (self.isNumber()) {
-      if (!c.isNumber()) {
-        return F.NIL;
-      }
-      IExpr co = self;
-      IExpr diff = co.subtract(c);
-      if ((co.isPositive() && diff.isPositive() && S.Less.of(diff, co).isTrue()) //
-          || (co.isNegative() && diff.isNegative() && S.Greater.of(diff, co).isTrue())) {
-        return diff;
-      }
-      return F.NIL;
-    }
-
-    if (c.isNumber()) {
-      Pair p = self.asCoeffAdd();
-      IExpr co = p.first();
-      IExpr t = p.second();
-      IExpr xa = extractAdditively(co, c);
-      if (xa.isNIL()) {
-        return F.NIL;
-      }
-      return xa.plus(((IAST) t).oneIdentity0());
-    }
-
-    // handle the args[0].is_Number case separately
-    // since we will have trouble looking for the coeff of
-    // a number.
-    if (c.isASTSizeGE(S.Plus, 2) && c.first().isNumber()) {
-      // whole term as a term factor
-      IExpr co = coeff(self, c);
-      IExpr xa0 = extractAdditively(co, F.C1).orElse(F.C0).times(c);
-      if (xa0.isPresent() && !xa0.isZero()) {
-        IExpr diff = self.subtract(co.times(c));
-        return xa0.plus(extractAdditively(diff, c).orElse(diff));
-      }
-      // term-wise
-      Pair pc = c.asCoeffAdd();
-      IExpr h = pc.first();
-      IExpr t = pc.second();
-      Pair ps = self.asCoeffAdd();
-      IExpr sh = ps.first();
-      IExpr st = ps.second();
-      IExpr xa = extractAdditively(sh, h);
-      if (xa.isNIL()) {
-        return F.NIL;
-      }
-      IExpr xa2 = extractAdditively(st, t);
-      if (xa2.isNIL()) {
-        return F.NIL;
-      }
-      return xa.plus(xa2);
-    }
-
-    // whole term as a term factor
-    Pair p = _corem(self, c);
-    IExpr pco = p.first();
-    IExpr diff = p.second();
-    IExpr xa0 = extractAdditively(pco, F.C1).orElse(F.C0).times(c);
-    if (xa0.isPresent() && !xa0.isZero()) {
-      return xa0.plus(extractAdditively(diff, c).orElse(diff));
-    }
-    // term-wise
-    IAST plusAST = makeArgs(S.Plus, c);
-    IASTAppendable coeffs = F.PlusAlloc(plusAST.argSize());
-    for (int i = 1; i < plusAST.size(); i++) {
-      IExpr a = plusAST.get(i);
-      Pair pa = a.asCoeffMul();
-      IExpr ac = pa.first();
-      IExpr at = pa.second();
-      IExpr co = coeff(self, at);
-      if (co.isNIL()) {
-        return F.NIL;
-      }
-      Pair pc = co.asCoeffAdd();
-      IExpr coc = pc.first();
-      IExpr cot = pc.second();
-      IExpr xa = extractAdditively(coc, ac);
-      if (xa.isNIL()) {
-        return F.NIL;
-      }
-      self = self.subtract(co.times(at));
-      coeffs.append(cot.plus(xa).times(at));
-    }
-    coeffs.append(self);
-    return F.eval(coeffs);
+    VariablesSet vs = new VariablesSet(e);
+    Set<IExpr> intersection = Sets.intersection(sym, vs.getVariablesSet());
+    return hasOther || e.has(intersection::contains, true);
   }
 
   public static IExpr coeff(IExpr self, IExpr x) {
@@ -354,7 +237,7 @@ public class Expr {
 
     if (x0.isOne()) {
       IASTAppendable result = F.PlusAlloc(8);
-      IAST plusAST = makeArgs(S.Plus, self);
+      IAST plusAST = self.makeAST(S.Plus);
       for (int i = 1; i < plusAST.size(); i++) {
         IExpr a = plusAST.get(i);
         if (a.asCoeffMul().first().isOne()) {
@@ -370,7 +253,7 @@ public class Expr {
         if (c.isZero()) {
           return F.C0;
         }
-        IAST plusAST = makeArgs(S.Plus, c);
+        IAST plusAST = c.makeAST(S.Plus);
         if (!right) {
           return self.subtract(plusAST.mapExpr(a -> F.Times(a, x0)));
         }
@@ -431,33 +314,111 @@ public class Expr {
   }
 
   /**
-   * Removes the additive O(..) order symbol if there is one
+   * Return self - c if it's possible to subtract c from self and make all matching coefficients
+   * move towards zero, else return {@link F#NIL}.
    * 
    * @param self
-   * @return
+   * @param c
+   * @return {@link F#NIL} if the extraction isn't possible
    */
-  public static IExpr removeO(IExpr self) {
-    if (self.isPlus()) {
-      IAST selected = ((IAST) self).select(x -> !x.isAST(S.O, 2));
-      return selected;
+  public static IExpr extractAdditively(IExpr self, IExpr c) {
+    // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/expr.py#L2332
+    if (self.isIndeterminate()) {
+      return F.NIL;
     }
-    return self;
-  }
+    if (c.isZero()) {
+      return self;
+    } else if (c.equals(self)) {
+      return F.C0;
+    } else if (self.isZero()) {
+      return F.NIL;
+    }
 
-  /**
-   * Returns the additive O(..) order symbol if there is one, else {@link F#NIL}
-   * 
-   * @param self
-   * @return
-   */
-  public static IExpr getO(IExpr self) {
-    if (self.isPlus()) {
-      IAST selected = ((IAST) self).select(x -> x.isAST(S.O, 2));
-      if (selected.argSize() > 0) {
-        return selected;
+    if (self.isNumber()) {
+      if (!c.isNumber()) {
+        return F.NIL;
       }
+      IExpr co = self;
+      IExpr diff = co.subtract(c);
+      if ((co.isPositive() && diff.isPositive() && S.Less.of(diff, co).isTrue()) //
+          || (co.isNegative() && diff.isNegative() && S.Greater.of(diff, co).isTrue())) {
+        return diff;
+      }
+      return F.NIL;
     }
-    return F.NIL;
+
+    if (c.isNumber()) {
+      Pair p = self.asCoeffAdd();
+      IExpr co = p.first();
+      IExpr t = p.second();
+      IExpr xa = extractAdditively(co, c);
+      if (xa.isNIL()) {
+        return F.NIL;
+      }
+      return xa.plus(t.oneIdentity0());
+    }
+
+    // handle the args[0].is_Number case separately
+    // since we will have trouble looking for the coeff of
+    // a number.
+    if (c.isASTSizeGE(S.Plus, 2) && c.first().isNumber()) {
+      // whole term as a term factor
+      IExpr co = coeff(self, c);
+      IExpr xa0 = extractAdditively(co, F.C1).orElse(F.C0).times(c);
+      if (xa0.isPresent() && !xa0.isZero()) {
+        IExpr diff = self.subtract(co.times(c));
+        return xa0.plus(extractAdditively(diff, c).orElse(diff));
+      }
+      // term-wise
+      Pair pc = c.asCoeffAdd();
+      IExpr h = pc.first();
+      IExpr t = pc.second();
+      Pair ps = self.asCoeffAdd();
+      IExpr sh = ps.first();
+      IExpr st = ps.second();
+      IExpr xa = extractAdditively(sh, h);
+      if (xa.isNIL()) {
+        return F.NIL;
+      }
+      IExpr xa2 = extractAdditively(st, t);
+      if (xa2.isNIL()) {
+        return F.NIL;
+      }
+      return xa.plus(xa2);
+    }
+
+    // whole term as a term factor
+    Pair p = _corem(self, c);
+    IExpr pco = p.first();
+    IExpr diff = p.second();
+    IExpr xa0 = extractAdditively(pco, F.C1).orElse(F.C0).times(c);
+    if (xa0.isPresent() && !xa0.isZero()) {
+      return xa0.plus(extractAdditively(diff, c).orElse(diff));
+    }
+    // term-wise
+    IAST plusAST = c.makeAST(S.Plus);
+    IASTAppendable coeffs = F.PlusAlloc(plusAST.argSize());
+    for (int i = 1; i < plusAST.size(); i++) {
+      IExpr a = plusAST.get(i);
+      Pair pa = a.asCoeffMul();
+      IExpr ac = pa.first();
+      IExpr at = pa.second();
+      IExpr co = coeff(self, at);
+      if (co.isNIL()) {
+        return F.NIL;
+      }
+      Pair pc = co.asCoeffAdd();
+      IExpr coc = pc.first();
+      IExpr cot = pc.second();
+      IExpr xa = extractAdditively(coc, ac);
+      if (xa.isNIL()) {
+        return F.NIL;
+      }
+      self = self.subtract(co.times(at));
+      coeffs.append(cot.plus(xa).times(at));
+    }
+    coeffs.append(self);
+    return F.eval(coeffs);
   }
 
   /**
@@ -521,6 +482,36 @@ public class Expr {
       }
     }
     throw new UnsupportedOperationException("not sure of order of " + o);
+  }
+
+  /**
+   * Returns the additive O(..) order symbol if there is one, else {@link F#NIL}
+   * 
+   * @param self
+   * @return
+   */
+  public static IExpr getO(IExpr self) {
+    if (self.isPlus()) {
+      IAST selected = ((IAST) self).select(x -> x.isAST(S.O, 2));
+      if (selected.argSize() > 0) {
+        return selected;
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Removes the additive O(..) order symbol if there is one
+   * 
+   * @param self
+   * @return
+   */
+  public static IExpr removeO(IExpr self) {
+    if (self.isPlus()) {
+      IAST selected = ((IAST) self).select(x -> !x.isAST(S.O, 2));
+      return selected;
+    }
+    return self;
   }
 
 }

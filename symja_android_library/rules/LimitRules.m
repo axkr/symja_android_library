@@ -21,8 +21,12 @@
  Limit(((a_.+x_)/(b_.+x_))^(c_.+x_), x_Symbol->Infinity):=E^(a-b) /; FreeQ({a,b,c},x),
  Limit( HarmonicNumber(y_Symbol,s_Integer), x_Symbol->Infinity):=With({v=s/2},((2*Pi)^(2*v)*(-1)^(v+1)*BernoulliB(2*v))/(2*(2*v)!)) /; EvenQ(s)&&Positive(s),
  Limit(Tan(x_), x_Symbol->Pi/2):= Indeterminate,
+ Limit(Tan(x_), x_Symbol->Infinity):= Indeterminate,
+ Limit(Tan(x_), x_Symbol->-Infinity):= Indeterminate,
  Limit(Cot(x_), x_Symbol->0):= Indeterminate,
-
+ Limit(Cot(x_), x_Symbol->Infinity):= Indeterminate,
+ Limit(Cot(x_), x_Symbol->-Infinity):= Indeterminate,
+ 
  Limit(ArcCos(x_), x_Symbol->Infinity)=I*Infinity,  
  Limit(ArcCos(x_), x_Symbol->-Infinity)=(-I)*Infinity, 
  Limit(ArcCot(x_), x_Symbol->Infinity)=0,  
@@ -106,11 +110,10 @@
   
  Limit(Gamma(x_), x_Symbol->0, Direction->1)=-Infinity,  
  Limit(Gamma(x_), x_Symbol->0, Direction->-1)=Infinity,  
+ Limit(Gamma(x_), x_Symbol->Infinity)=Infinity,  
  Limit(Gamma(z_, x_), x_Symbol->Infinity)=0,  
  Limit(Gamma(z_, x_), x_Symbol->0):=Gamma(z),
  
- Limit(x_/Abs(x_), x_Symbol->0, Direction->1):= -1,
- Limit(x_/Abs(x_), x_Symbol->0, Direction->-1):= 1,
  Limit(Tan(x_), x_Symbol->Pi/2, Direction->1):= Infinity,
  Limit(Tan(x_), x_Symbol->Pi/2, Direction->-1):= -Infinity,
  Limit(Cot(x_), x_Symbol->0, Direction->1):= -Infinity,

@@ -309,8 +309,8 @@ public class AlgebraUtil {
         // (a+b)*(c+d)...
         EvalEngine engine = EvalEngine.get();
 
-        Optional<IExpr[]> temp =
-            fractionalPartsTimesPower(ast, false, false, false, evalParts, true, true);
+        Optional<IExpr[]> temp = fractionalPartsTimesPower(ast, false,
+            expandNegativePowers && distributePlus, false, evalParts, true, true);
         IExpr tempExpr;
         if (temp.isEmpty()) {
           return expandTimes(ast, engine);
@@ -364,16 +364,15 @@ public class AlgebraUtil {
             }
           }
         }
-        IExpr[] parts3 = temp.get();
-        IExpr powerAST = F.Power(parts3[1], F.CN1);
-        if (distributePlus && parts3[0].isPlus()) {
+        IExpr powerAST = F.Power(parts[1], F.CN1);
+        if (distributePlus && parts[0].isPlus()) {
           IAST mappedAST =
-              ((IAST) parts3[0]).mapThreadEvaled(EvalEngine.get(), F.Times(null, powerAST), 1);
+              ((IAST) parts[0]).mapThreadEvaled(EvalEngine.get(), F.Times(null, powerAST), 1);
           IExpr flattened = flattenOneIdentity(mappedAST, F.C0);
           return addExpanded(flattened);
         }
         if (evaled) {
-          return addExpanded(binaryFlatTimes(parts3[0], powerAST));
+          return addExpanded(binaryFlatTimes(parts[0], powerAST));
         }
         addExpanded(ast);
         return F.NIL;
@@ -2129,8 +2128,8 @@ public class AlgebraUtil {
    *         numerator and denominator parts. Otherwise return F.NIL
    */
   public static IExpr partsApart(IExpr[] parts, IExpr variable, EvalEngine engine) {
-    IExpr temp =
-        Algebra.partialFractionDecompositionRational(new PartialFractionGenerator(), parts, variable);
+    IExpr temp = Algebra.partialFractionDecompositionRational(new PartialFractionGenerator(), parts,
+        variable);
     if (temp.isPresent()) {
       return temp;
     }

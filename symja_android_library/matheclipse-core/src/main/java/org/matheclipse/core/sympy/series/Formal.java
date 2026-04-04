@@ -3,8 +3,6 @@ package org.matheclipse.core.sympy.series;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
-
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -204,7 +202,7 @@ public class Formal {
         i++;
         IExpr xp = _get_pow_x(t);
         if (xp.has(sym)) {
-          xp = xp.asCoeffAdd(sym).first();
+          xp = xp.asCoeffAdd().first();
         }
         if (xp.greater(F.ZZ(n)).isTrue()) {
           break;
@@ -260,7 +258,7 @@ public class Formal {
           IExpr t = plusArgs.get(i);
           IExpr pow_x = _get_pow_x(t);
           if (pow_x.has(sym)) {
-            pow_x = pow_x.asCoeffAdd(sym).first();
+            pow_x = pow_x.asCoeffAdd().first();
           }
           if (pt.isZero() && pow_x.lessThan(1).isTrue()) {
             ind = ind.plus(t);

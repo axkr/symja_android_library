@@ -971,13 +971,6 @@ public class Algebra {
   public static class Expand extends AbstractFunctionOptionEvaluator {
 
 
-
-    // private static class NumberPartition {
-    // IASTAppendable expandedResult;
-    // int m;
-    // int n;
-    // int[] parts;
-    //
     // /**
     // * Cached {@link S#Power} calculations for each part of the {@link S#Plus} AST.
     // * <p>

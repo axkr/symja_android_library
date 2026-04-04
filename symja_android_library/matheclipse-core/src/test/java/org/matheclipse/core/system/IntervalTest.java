@@ -54,13 +54,6 @@ public class IntervalTest extends ExprEvaluatorTestCase {
         "Interval({1/5,Infinity})");
     check("Solve(3*x+2==Interval({-2,5}),x)", //
         "{{x->Interval({-4/3,1})}}");
-    check("Limit(Sin(1/x)+1/2*Cos(x), x->Infinity)", //
-        "Indeterminate");
-    check("Limit(2*Sin(1/x)+1/2*Cos(x), x->0)", //
-        "Indeterminate");
-    check("Limit(Sin(1/x), x->0)", //
-        "Indeterminate");
-
     check("Interval(0.0``40)", //
         "Interval({0,0})");
     check("Interval(N(Pi,60))+Pi", //
@@ -498,9 +491,9 @@ public class IntervalTest extends ExprEvaluatorTestCase {
         "True");
 
     check("Limit(Sin(x),x->Infinity)", //
-        "Interval({-1,1})");
+        "Indeterminate");
     check("Limit(Sin(x),x->-Infinity)", //
-        "Interval({-1,1})");
+        "Indeterminate");
     check("Limit(Sin(1/x),x->0)", //
         "Indeterminate");
     check("Max(Interval({2,4}))", //
@@ -591,4 +584,306 @@ public class IntervalTest extends ExprEvaluatorTestCase {
         "IntervalUnion(Interval({1, 2}, {3, 4}, {5, 7}, {8, 8.5}), Interval({1.5, 3.5}, {4.1, 6}, {9, 10}))", //
         "Interval({1,4},{4.1,7},{8,8.5},{9,10})");
   }
+
+  @Test
+  public void testPlus() {
+    // Basic addition of two positive intervals
+    check("Interval({1,2})+Interval({3,4})", //
+        "Interval({4,6})");
+    // Addition with zero interval
+    check("Interval({0,0})+Interval({3,4})", //
+        "Interval({3,4})");
+    // Addition of two negative intervals
+    check("Interval({-4,-2})+Interval({-3,-1})", //
+        "Interval({-7,-3})");
+    // Addition with one negative and one positive interval
+    check("Interval({-3,-1})+Interval({2,4})", //
+        "Interval({-1,3})");
+    // Addition where both intervals straddle zero
+    check("Interval({-2,3})+Interval({-4,5})", //
+        "Interval({-6,8})");
+    // Addition with Infinity endpoints
+    check("Interval({1,Infinity})+Interval({2,3})", //
+        "Interval({3,Infinity})");
+    check("Interval({-Infinity,-1})+Interval({2,3})", //
+        "Interval({-Infinity,2})");
+    // Addition of two intervals with Infinity
+    check("Interval({1,Infinity})+Interval({1,Infinity})", //
+        "Interval({2,Infinity})");
+    // Addition with negative Infinity on both sides
+    check("Interval({-Infinity,Infinity})+Interval({1,2})", //
+        "Interval({-Infinity,Infinity})");
+    // Both negative Infinity
+    check("Interval({-Infinity,-1})+Interval({-Infinity,-2})", //
+        "Interval({-Infinity,-3})");
+    // Addition by scalar
+    check("3+Interval({2,5})", //
+        "Interval({5,8})");
+    check("-3+Interval({2,5})", //
+        "Interval({-1,2})");
+    check("0+Interval({2,5})", //
+        "Interval({2,5})");
+    // Scalar addition with negative interval
+    check("-1+Interval({-3,4})", //
+        "Interval({-4,3})");
+    // Multi-range interval addition
+    check("Interval({1,2},{5,6})+Interval({3,4})", //
+        "Interval({4,6},{8,10})");
+    // Multi-range plus multi-range
+    check("Interval({6,9},{12,14})+Interval({5,8},{11,13})", //
+        "Interval({11,22},{23,27})");
+    // Fractional scalar addition
+    check("3/4+Interval({5,8},{11,13})", //
+        "Interval({23/4,35/4},{47/4,55/4})");
+    // Addition with single-point interval
+    check("Interval({3,3})+Interval({7,7})", //
+        "Interval({10,10})");
+    // Addition with floating point intervals
+    check("Interval({1.5,6.0})+Interval({0.1,2.7})", //
+        "Interval({1.6,8.7})");
+    // Zero plus zero
+    check("Interval({0,0})+Interval({0,0})", //
+        "Interval({0,0})");
+    // Negative Infinity plus positive Infinity (full real line)
+    check("Interval({-Infinity,0})+Interval({0,Infinity})", //
+        "Interval({-Infinity,Infinity})");
+    // Very small interval addition
+    check("Interval({1/1000,1/999})+Interval({1/1000,1/999})", //
+        "Interval({1/500,2/999})");
+    // Addition with Pi
+    check("Interval({0,1})+Pi", //
+        "Interval({Pi,1+Pi})");
+    // Addition with E
+    check("Interval({-1,1})+E", //
+        "Interval({-1+E,1+E})");
+    // Subtraction as addition of negative
+    check("Interval({1,2})-Interval({3,4})", //
+        "Interval({-3,-1})");
+    // Subtraction straddling zero
+    check("Interval({-2,3})-Interval({-1,4})", //
+        "Interval({-6,4})");
+    // Subtraction with Infinity
+    check("Interval({1,Infinity})-Interval({1,Infinity})", //
+        "Interval({-Infinity,Infinity})");
+    // Addition identity: x + 0
+    check("Interval({-5,5})+0", //
+        "Interval({-5,5})");
+    // Overlapping multi-range result that merges
+    check("Interval({0,3},{4,7})+Interval({-1,1})", //
+        "Interval({-1,8})");
+    // Large values
+    check("Interval({10^10, 10^11})+Interval({10^10, 10^11})", //
+        "Interval({20000000000,200000000000})");
+  }
+
+  @Test
+  public void testPower() {
+    // === Even exponent cases ===
+    // Even power of interval straddling zero: min is 0
+    check("Interval({-2, 5})^2", //
+        "Interval({0,25})");
+    check("Interval({-7, 5})^2", //
+        "Interval({0,49})");
+    check("Interval({-10, -5})^2", //
+        "Interval({25,100})");
+    check("Interval({2, 5})^2", //
+        "Interval({4,25})");
+    // Even power of 4
+    check("Interval({-3, 2})^4", //
+        "Interval({0,81})");
+    check("Interval({2, 3})^4", //
+        "Interval({16,81})");
+    check("Interval({-3, -2})^4", //
+        "Interval({16,81})");
+
+    // === Odd exponent cases ===
+    check("Interval({-2, 5})^3", //
+        "Interval({-8,125})");
+    check("Interval({-3, -1})^3", //
+        "Interval({-27,-1})");
+    check("Interval({1, 4})^3", //
+        "Interval({1,64})");
+
+    // === Exponent 0 ===
+    check("Interval({2, 5})^0", //
+        "Interval({1,1})");
+    check("Interval({-3, 3})^0", //
+        "Interval({0,1})");
+
+    // === Exponent 1 ===
+    check("Interval({-2, 5})^1", //
+        "Interval({-2,5})");
+
+    // === Negative integer exponents ===
+    check("Interval({-2, 5})^(-1)", //
+        "Interval({-Infinity,-1/2},{1/5,Infinity})");
+    check("Interval({-2, 5})^(-2)", //
+        "Interval({1/25,Infinity})");
+    check("Interval({-2, 0})^(-1)", //
+        "Interval({-Infinity,-1/2})");
+    check("Interval({0, 0})^(-1)", //
+        "Interval({-Infinity,Infinity})");
+    check("Interval({2, 5})^(-1)", //
+        "Interval({1/5,1/2})");
+    check("Interval({-5, -2})^(-1)", //
+        "Interval({-1/2,-1/5})");
+    check("Interval({-2, 1})^(-1)", //
+        "Interval({-Infinity,-1/2},{1,Infinity})");
+    check("Interval({1, 4})^(-2)", //
+        "Interval({1/16,1})");
+    check("Interval({-4, -1})^(-2)", //
+        "Interval({1/16,1})");
+    check("Interval({-4, -1})^(-3)", //
+        "Interval({-1,-1/64})");
+
+    // === Fractional exponents ===
+    check("Interval({0.1,10.0})^(3/4)", //
+        "Interval({0.177828,5.62341})");
+    check("Interval({0.1,10.0})^(4/3)", //
+        "Interval({0.0464159,21.54435})");
+    check("Interval({0.1,10.0})^0.75", //
+        "Interval({0.177828,5.62341})");
+    check("Interval({0.1,10.0})^1.33333", //
+        "Interval({0.0464162,21.54418})");
+    check("Interval({1.0,2.0})^2", //
+        "Interval({1.0,4.0})");
+
+    // === Infinity endpoints ===
+    check("Interval({-Infinity,Infinity})^2", //
+        "Interval({0,Infinity})");
+    check("Interval({0,Infinity})^2", //
+        "Interval({0,Infinity})");
+    check("Interval({1,Infinity})^(-1)", //
+        "Interval({0,1})");
+    check("Interval({-Infinity,-1})^2", //
+        "Interval({1,Infinity})");
+    check("Interval({-Infinity,0})^2", //
+        "Interval({0,Infinity})");
+
+    // === Base with scalar exponent via Power ===
+    check("(1/2)^Interval({-3, 4},{42, 43})", //
+        "Interval({1/8796093022208,1/4398046511104},{1/16,8})");
+    check("E^Interval({3, 4},{42, 43})", //
+        "Interval({E^3,E^4},{E^42,E^43})");
+    check("(-Pi)^Interval({-3, 4},{42, 43})", //
+        "(-1)^Interval({-3,4},{42,43})*Interval({1/Pi^3,Pi^4},{Pi^42,Pi^43})");
+
+    // === Zero base edge cases ===
+    check("(0)^Interval({2,4},{42,43})", //
+        "Interval({0,0})");
+    check("(0)^Interval({2,4},{-42,43})", //
+        "Indeterminate");
+
+    // === Single point intervals ===
+    check("Interval({3,3})^2", //
+        "Interval({9,9})");
+    check("Interval({-1,-1})^2", //
+        "Interval({1,1})");
+    check("Interval({-1,-1})^3", //
+        "Interval({-1,-1})");
+    check("Interval({0,0})^2", //
+        "Interval({0,0})");
+
+    // === Multi-range intervals ===
+    check("Interval({-2,1},{3,5})^2", //
+        "Interval({0,4},{9,25})");
+    check("Interval({-3,-1},{2,4})^3", //
+        "Interval({-27,-1},{8,64})");
+
+    // === Sqrt as power 1/2 ===
+    check("Sqrt(Interval({1.0,2.0}))", //
+        "Interval({1.0,1.41421})");
+    check("Sqrt(Interval({4,9}))", //
+        "Interval({2,3})");
+    // Sqrt of interval containing negatives should not evaluate
+    check("Sqrt(Interval({-1,1}))", //
+        "Sqrt(Interval({-1,1}))");
+
+    // === Large exponent ===
+    check("Interval({-1,1})^100", //
+        "Interval({0,1})");
+    check("Interval({2,3})^10", //
+        "Interval({1024,59049})");
+  }
+
+
+  @Test
+  public void testTimes() {
+    // Basic multiplication of two positive intervals
+    check("Interval({1,2})*Interval({3,4})", //
+        "Interval({3,8})");
+    // Multiplication with zero-containing interval
+    check("Interval({0,2})*Interval({3,4})", //
+        "Interval({0,8})");
+    // Multiplication of two negative intervals
+    check("Interval({-4,-2})*Interval({-3,-1})", //
+        "Interval({2,12})");
+    // Multiplication with one negative and one positive interval
+    check("Interval({-3,-1})*Interval({2,4})", //
+        "Interval({-12,-2})");
+    // Multiplication where both intervals straddle zero
+    check("Interval({-2,3})*Interval({-4,5})", //
+        "Interval({-12,15})");
+    // Multiplication with interval containing exactly zero
+    check("Interval({0,0})*Interval({3,4})", //
+        "Interval({0,0})");
+    // Multiplication with Infinity endpoints
+    check("Interval({1,Infinity})*Interval({2,3})", //
+        "Interval({2,Infinity})");
+    check("Interval({-Infinity,-1})*Interval({2,3})", //
+        "Interval({-Infinity,-2})");
+    // Multiplication of two intervals with Infinity
+    check("Interval({1,Infinity})*Interval({1,Infinity})", //
+        "Interval({1,Infinity})");
+    // Multiplication with negative Infinity on both sides
+    check("Interval({-Infinity,Infinity})*Interval({1,2})", //
+        "Interval({-Infinity,Infinity})");
+    // Multiplication by scalar
+    check("3*Interval({2,5})", //
+        "Interval({6,15})");
+    check("-3*Interval({2,5})", //
+        "Interval({-15,-6})");
+    check("0*Interval({2,5})", //
+        "Interval({0,0})");
+    // Scalar multiplication flips interval when negative
+    check("-1*Interval({-3,4})", //
+        "Interval({-4,3})");
+    // Multi-range interval multiplication
+    check("Interval({1,2},{5,6})*Interval({3,4})", //
+        "Interval({3,8},{15,24})");
+    // Multi-range times multi-range
+    check("Interval({6,9},{12,14})*Interval({5,8},{11,13})", //
+        "Interval({30,117},{132,182})");
+    // Fractional scalar multiplication
+    check("3/4*Interval({5,8},{11,13})", //
+        "Interval({15/4,6},{33/4,39/4})");
+    // Multiplication with single-point interval
+    check("Interval({3,3})*Interval({7,7})", //
+        "Interval({21,21})");
+    // Multiplication with floating point intervals
+    check("Interval({1.5, 6}) * Interval({0.1, 2.7})", //
+        "Interval({0.15,16.2})");
+    // Zero times Infinity edge case (0 * Inf is indeterminate boundary)
+    check("Interval({0,1})*Interval({0,Infinity})", //
+        "Interval({0,Infinity})");
+    // Negative infinity times positive interval
+    check("Interval({-Infinity,0})*Interval({1,2})", //
+        "Interval({-Infinity,0})");
+    // Both intervals are {0,0}
+    check("Interval({0,0})*Interval({0,0})", //
+        "Interval({0,0})");
+    // Interval straddling zero times Infinity interval
+    check("Interval({-1,1})*Interval({1,Infinity})", //
+        "Interval({-Infinity,Infinity})");
+    // Multiplication associativity check
+    check("Interval({1,2})*(Interval({3,4})*Interval({5,6}))", //
+        "Interval({15,48})");
+    // Negative Infinity times negative interval
+    check("Interval({-Infinity,-1})*Interval({-3,-2})", //
+        "Interval({2,Infinity})");
+    // Very small interval multiplication
+    check("Interval({1/1000,1/999})*Interval({1/1000,1/999})", //
+        "Interval({1/1000000,1/998001})");
+  }
+
 }

@@ -6133,11 +6133,13 @@ public final class Arithmetic {
       if (otherArg.isQuantity()) {
         return ((IQuantity) otherArg).ofUnit(F.C0);
       }
-      if (otherArg.isDirectedInfinity()) {
-        IASTMutable messageAST =
-            swappedArgs ? F.Times(otherArg, zeroArg) : F.Times(zeroArg, otherArg);
-        // Indeterminate expression `1` encountered.
-        Errors.printMessage(S.Infinity, "indet", F.list(messageAST), EvalEngine.get());
+      if (otherArg.isDirectedInfinity() || otherArg.isIndeterminate()) {
+        if (otherArg.isDirectedInfinity()) {
+          IASTMutable messageAST =
+              swappedArgs ? F.Times(otherArg, zeroArg) : F.Times(zeroArg, otherArg);
+          // Indeterminate expression `1` encountered.
+          Errors.printMessage(S.Infinity, "indet", F.list(messageAST), EvalEngine.get());
+        }
         return S.Indeterminate;
       }
       if (zeroArg.isExactNumber() //

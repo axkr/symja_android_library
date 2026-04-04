@@ -6,8 +6,7 @@ public class DifferenceRootTest extends ExprEvaluatorTestCase {
   @Test
   public void testDifferenceRoot01() {
     // Fibonacci
-    check(
-        "DifferenceRoot(Function({y, n}, {y(n) == y(n - 1) + y(n - 2), y(1) == 1, y(2) == 1}))", //
+    check("DifferenceRoot(Function({y, n}, {y(n) == y(n - 1) + y(n - 2), y(1) == 1, y(2) == 1}))", //
         "DifferenceRoot[Function({y,n},{y(n)==y(-1+n)+y(-2+n),y(1)==1,y(2)==1})]");
     check(
         "DifferenceRoot(Function({y, n}, {y(n) == y(n - 1) + y(n - 2), y(1) == 1, y(2) == 1}))[10]", //
@@ -66,5 +65,57 @@ public class DifferenceRootTest extends ExprEvaluatorTestCase {
         "{{6,1},{-1,720}}");
   }
 
+  @Test
+  public void testDifferenceRoot09() {
+    check("DifferenceRoot(Function({y, n}, {y(n+1)-n*y(n)==n!,y(1) == 1}))", //
+        "DifferenceRoot[Function({y,n},{y(n+1)-n*y(n)==n!,y(1)==1})]");
+    check("DifferenceRoot(Function({y, n}, {y(n+1)-n*y(n)==n!,y(1) == 1}))[7]", //
+        "5040");
+  }
+
+  @Test
+  public void testDifferenceRoot10() {
+    check("f=DifferenceRoot(Function({y, n}, {y(n+1)-y(n)==n^2, y(0) == 0, y(1) == 1}))", //
+        "DifferenceRoot[Function({y,n},{(1+2*n+n^2)*y(n)+(-1-2*n-2*n^2)*y(1+n)+n^2*y(2+n)==0,y(0)==0,y(1)==\n" //
+            + "1,y(2)==2})]");
+    check("f[7]", //
+        "92");
+  }
+
+  @Test
+  public void testDifferenceRoot11() {
+    check("f=DifferenceRoot(Function({y,n},{-n*y(n)+(1+n)*y(1+n)==0, y(-1) == 0,y(1)==1}))", //
+        "DifferenceRoot[Function({y,n},{-n*y(n)+(1+n)*y(1+n)==0,y(-1)==0,y(1)==1})]");
+    check("f[7]", //
+        "1/7");
+  }
+
+  @Test
+  public void testDifferenceRoot12() {
+    check("DifferenceRoot(Function({y,n}, {y(n+1)-n^2*y(n)==0,y(1)==1}))[n]", //
+        "DifferenceRoot[Function({y,n},{y(n+1)-n^2*y(n)==0,y(1)==1})][n]");
+    check("DifferenceRoot(Function({y,n}, {y(n+1)-n^2*y(n)==0,y(1)==1}))[7]", //
+        "518400");
+  }
+
+  @Test
+  public void testDifferenceRoot13() {
+    check("f=DifferenceRoot(Function({y,n},{y(n+2)==a*y(n+1)-1/2*y(n),y(0)==0,y(1)==1}))", //
+        "DifferenceRoot[Function({y,n},{y(n+2)==a*y(n+1)-y(n)/2,y(0)==0,y(1)==1})]");
+    check("Table(f(n), {n, 1, 5})", //
+        "{1,a,-1/2+a^2,-a+a^3,1/4-3/2*a^2+a^4}");
+    check("Table[f[n], {n, 1, 5},{a,-1,1,1/2}]", //
+        "{{1,1,1,1,1},{-1,-1/2,0,1/2,1},{1/2,-1/4,-1/2,-1/4,1/2},{0,3/8,0,-3/8,0},{-1/4,-\n"//
+            + "1/16,1/4,-1/16,-1/4}}");
+  }
+
+  @Test
+  public void testDifferenceRoot14() {
+    check("DifferenceRoot(Function({y,n},{-n*y(n)+(2+n)*y(2+n)==0,y(0)==I*1/2*Pi,y(1)==1}))[0]", //
+        "I*1/2*Pi");
+    check("DifferenceRoot(Function({y,n},{-n*y(n)+(2+n)*y(2+n)==0,y(0)==I*1/2*Pi,y(1)==1}))[7]", //
+        "1/7");
+
+  }
 
 }

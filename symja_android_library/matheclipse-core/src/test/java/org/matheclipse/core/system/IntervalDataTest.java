@@ -497,6 +497,15 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testTimes() {
+    check("IntervalData({0,LessEqual,LessEqual,1})*IntervalData({-Infinity,Less,LessEqual,-1})",
+        "IntervalData({-Infinity,Less,LessEqual,0})");
+
+    check("IntervalData({0,LessEqual, LessEqual,1})*IntervalData({1,LessEqual, Less,Infinity})", //
+        "IntervalData({0,LessEqual,Less,Infinity})");
+    check(
+        "IntervalData({0,LessEqual, LessEqual,1})*(IntervalData({0,LessEqual, LessEqual,1})^(-1))", //
+        "IntervalData({0,LessEqual,Less,Infinity})");
+
     check("-1/2 * Interval( {2, 3 + 1/2})", //
         "Interval({-7/4,-1})");
     check("-1/2 * IntervalData( {2, Less, LessEqual, 3 + 1/2})", //
@@ -513,6 +522,88 @@ public class IntervalDataTest extends ExprEvaluatorTestCase {
     check("IntervalData({-1/2, Less, Less, 1/2})*IntervalData( {2, Less, Less, 3 +   1/2})", //
         "IntervalData({-7/4,Less,Less,7/4})");
 
+  }
+
+  @Test
+  public void testTimesEdgeCases() {
+    // Both intervals purely positive
+    check("IntervalData({2,LessEqual,LessEqual,3})*IntervalData({4,LessEqual,LessEqual,5})",
+        "IntervalData({8,LessEqual,LessEqual,15})");
+
+    // Both intervals purely negative
+    check("IntervalData({-5,LessEqual,LessEqual,-2})*IntervalData({-3,LessEqual,LessEqual,-1})",
+        "IntervalData({2,LessEqual,LessEqual,15})");
+
+    // One positive, one negative
+    check("IntervalData({2,LessEqual,LessEqual,3})*IntervalData({-5,LessEqual,LessEqual,-1})",
+        "IntervalData({-15,LessEqual,LessEqual,-2})");
+
+    // Interval containing zero on left boundary (closed)
+    check("IntervalData({0,LessEqual,LessEqual,3})*IntervalData({2,LessEqual,LessEqual,5})",
+        "IntervalData({0,LessEqual,LessEqual,15})");
+
+    // Interval containing zero on left boundary (open)
+    check("IntervalData({0,Less,LessEqual,3})*IntervalData({2,LessEqual,LessEqual,5})",
+        "IntervalData({0,Less,LessEqual,15})");
+
+    // Interval straddling zero
+    check("IntervalData({-2,LessEqual,LessEqual,3})*IntervalData({4,LessEqual,LessEqual,5})",
+        "IntervalData({-10,LessEqual,LessEqual,15})");
+
+    // Both intervals straddling zero
+    check("IntervalData({-2,LessEqual,LessEqual,3})*IntervalData({-4,LessEqual,LessEqual,5})",
+        "IntervalData({-12,LessEqual,LessEqual,15})");
+
+    // Multiplication with single point interval
+    check("IntervalData({3,LessEqual,LessEqual,3})*IntervalData({2,LessEqual,LessEqual,5})",
+        "IntervalData({6,LessEqual,LessEqual,15})");
+
+    // Multiplication with zero-width point at zero
+    check("IntervalData({0,LessEqual,LessEqual,0})*IntervalData({2,LessEqual,LessEqual,5})",
+        "IntervalData({0,LessEqual,LessEqual,0})");
+
+    // Zero point times interval straddling zero
+    check("IntervalData({0,LessEqual,LessEqual,0})*IntervalData({-3,LessEqual,LessEqual,5})",
+        "IntervalData({0,LessEqual,LessEqual,0})");
+
+    // Infinity on one side
+    check("IntervalData({1,LessEqual,Less,Infinity})*IntervalData({2,LessEqual,LessEqual,3})",
+        "IntervalData({2,LessEqual,Less,Infinity})");
+
+    // Negative infinity on one side
+    check("IntervalData({-Infinity,Less,LessEqual,-1})*IntervalData({2,LessEqual,LessEqual,3})",
+        "IntervalData({-Infinity,Less,LessEqual,-2})");
+
+    // Both open boundaries
+    check("IntervalData({1,Less,Less,3})*IntervalData({2,Less,Less,4})",
+        "IntervalData({2,Less,Less,12})");
+
+    // Mixed open/closed boundaries
+    check("IntervalData({1,Less,LessEqual,3})*IntervalData({2,LessEqual,Less,4})",
+        "IntervalData({2,Less,Less,12})");
+
+    // Zero times infinity edge case
+    check("IntervalData({0,LessEqual,LessEqual,1})*IntervalData({-Infinity,Less,LessEqual,-1})",
+        "IntervalData({-Infinity,Less,LessEqual,0})");
+
+    // Negative times negative infinity
+    check("IntervalData({-2,LessEqual,LessEqual,-1})*IntervalData({-Infinity,Less,LessEqual,-1})",
+        "IntervalData({1,LessEqual,Less,Infinity})");
+
+    // Multiple sub-intervals
+    check(
+        "IntervalData({1,LessEqual,LessEqual,2},{4,LessEqual,LessEqual,5})*IntervalData({3,LessEqual,LessEqual,3})",
+        "IntervalData({3,LessEqual,LessEqual,6},{12,LessEqual,LessEqual,15})");
+
+    // Both have multiple sub-intervals
+    check(
+        "IntervalData({1,LessEqual,LessEqual,2},{5,LessEqual,LessEqual,6})*IntervalData({1,LessEqual,LessEqual,1},{3,LessEqual,LessEqual,3})",
+        "IntervalData({1,LessEqual,LessEqual,2},{3,LessEqual,LessEqual,6},{15,LessEqual,LessEqual,\n" //
+            + "18})");
+
+    // Small open interval near zero times large interval
+    check("IntervalData({0,Less,Less,1})*IntervalData({0,Less,Less,1})",
+        "IntervalData({0,Less,Less,1})");
   }
 
 

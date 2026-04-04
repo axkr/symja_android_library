@@ -14,20 +14,72 @@ import org.matheclipse.core.system.ExprEvaluatorTestCase;
 public class TestExpr extends ExprEvaluatorTestCase {
 
   @Test
+  public void test_args_cnc() {
+    // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/tests/test_expr.py#L1561
+    ISymbol a = F.a;
+    ISymbol b = F.b;
+    ISymbol x = F.x;
+    ISymbol y = F.y;
+    assertEquals(argsCnc(F.CEmptyList).toString(), "{{},{}}");
+
+
+    // assert (x + a).args_cnc() == [[a + x], []]
+    assertEquals(argsCnc(F.Plus(a, x)).toString(), "{{a+x},{}}");
+    // assert (x * a).args_cnc() == [[a, x], []]
+    assertEquals(argsCnc(F.Times(a, x)).toString(), "{{a,x},{}}");
+
+    assertEquals(argsCnc(F.Times(x, y, F.NonCommutativeMultiply(a, b))).toString(), //
+        "{{x,y},{a,b}}");
+
+    assertEquals(argsCnc(F.Times(F.CNInfinity, x)).toString(), "{{-1,Infinity,x},{}}");
+
+    assertEquals(argsCnc(F.Times(F.CN1, x)).toString(), "{{-1,x},{}}");
+    assertEquals(argsCnc(F.Times(F.num(-2.0), x)).toString(), "{{-1,2.0,x},{}}");
+    assertEquals(argsCnc(F.Times(F.CNI, x)).toString(), "{{-1,I,x},{}}");
+    // A = symbols('A', commutative=False)
+    // assert (x + A).args_cnc() == \
+    // [[], [x + A]]
+    // assert (x + a).args_cnc() == \
+    // [[a + x], []]
+    // assert (x*a).args_cnc() == \
+    // [[a, x], []]
+    // assert (x*y*A*(A + 1)).args_cnc(cset=True) == \
+    // [{x, y}, [A, 1 + A]]
+    // assert Mul(x, x, evaluate=False).args_cnc(cset=True, warn=False) == \
+    // [{x}, []]
+    assertEquals(((IAST) argsCnc(F.Times(x, x)).first()).asSortedSet().toString(), "[x]");
+    assertEquals(argsCnc(F.Times(x, x)).second().toString(), "{}");
+
+    // assert Mul(x, x**2, evaluate=False).args_cnc(cset=True, warn=False) == \
+    // [{x, x**2}, []]
+    assertEquals(((IAST) argsCnc(F.Times(x, F.Power(x, 2))).first()).asSortedSet().toString(), //
+        "[x, x^2]");
+    assertEquals(argsCnc(F.Times(x, F.Power(x, 2))).second().toString(), //
+        "{}");
+    // raises(ValueError, lambda: Mul(x, x, evaluate=False).args_cnc(cset=True))
+    // assert Mul(x, y, x, evaluate=False).args_cnc() == \
+    // [[x, y, x], []]
+    // # always split -1 from leading number
+    // assert (-1.*x).args_cnc() == [[-1, 1.0, x], []]
+    assertEquals(argsCnc(F.Times(F.CND1, x)).toString(), //
+        "{{-1,1.0,x},{}}");
+  }
+
+  @Test
   public void test_as_coeff_add() {
     ISymbol x = F.x;
     ISymbol y = F.y;
-    assertEquals(F.C2.asCoeffAdd().toString(), "{2,Plus()}");
-    assertEquals(F.num(3.0).asCoeffAdd().toString(), "{0,Plus(3.0)}");
-    assertEquals(F.num(-3.0).asCoeffAdd().toString(), "{0,Plus(-3.0)}");
-    assertEquals(x.asCoeffAdd().toString(), "{0,Plus(x)}");
-    assertEquals(x.subtract(F.C1).asCoeffAdd().toString(), "{-1,Plus(x)}");
-    assertEquals(x.plus(F.C1).asCoeffAdd().toString(), "{1,Plus(x)}");
-    assertEquals(x.plus(F.C2).asCoeffAdd().toString(), "{2,Plus(x)}");
-    assertEquals(x.plus(y).asCoeffAdd(y).toString(), "{x,Plus(y)}");
-    assertEquals(F.C3.times(x).asCoeffAdd(y).toString(), "{3*x,Plus()}");
+    assertEquals(F.C2.as_coeff_add().toString(), "{2,{}}");
+    assertEquals(F.num(3.0).as_coeff_add().toString(), "{0,{3.0}}");
+    assertEquals(F.num(-3.0).as_coeff_add().toString(), "{0,{-3.0}}");
+    assertEquals(x.as_coeff_add().toString(), "{0,{x}}");
+    assertEquals(x.subtract(F.C1).as_coeff_add().toString(), "{-1,{x}}");
+    assertEquals(x.plus(F.C1).as_coeff_add().toString(), "{1,{x}}");
+    assertEquals(x.plus(F.C2).as_coeff_add().toString(), "{2,{x}}");
+    assertEquals(x.plus(y).as_coeff_add(y).toString(), "{x,{y}}");
+    assertEquals(F.C3.times(x).as_coeff_add(y).toString(), "{3*x,{}}");
     IExpr e2 = F.Power(F.Plus(x, y), F.C2);
-    assertEquals(e2.asCoeffAdd(y).toString(), "{0,Plus((x+y)^2)}");
+    assertEquals(e2.as_coeff_add(y).toString(), "{0,{(x+y)^2}}");
 
     // assert S(2).as_coeff_add() == (2, ())
     // assert S(3.0).as_coeff_add() == (0, (S(3.0),))
@@ -43,30 +95,82 @@ public class TestExpr extends ExprEvaluatorTestCase {
     // assert e.as_coeff_add(y) == (0, (e,))
   }
 
+  @Test
+  public void test_as_coeff_Add() {
+    ISymbol x = F.x;
+    ISymbol y = F.y;
+
+    // assert Integer(3).as_coeff_Add() == (Integer(3), Integer(0))
+    assertEquals(F.C3.asCoeffAdd().toString(), "{3,0}");
+    // assert Rational(3, 4).as_coeff_Add() == (Rational(3, 4), Integer(0))
+    assertEquals(F.C3D4.asCoeffAdd().toString(), "{3/4,0}");
+    // assert Float(5.0).as_coeff_Add() == (Float(5.0), Integer(0))
+    assertEquals(F.num(5.0).asCoeffAdd().toString(), "{5.0,0}");
+    // assert (Integer(3) + x).as_coeff_Add() == (Integer(3), x)
+    assertEquals(F.Plus(F.C3, x).asCoeffAdd().toString(), "{3,x}");
+    // assert (Rational(3, 4) + x).as_coeff_Add() == (Rational(3, 4), x)
+    assertEquals(F.Plus(F.C3D4, x).asCoeffAdd().toString(), "{3/4,x}");
+    // assert (Float(5.0) + x).as_coeff_Add() == (Float(5.0), x)
+    assertEquals(F.Plus(F.num(5.0), x).asCoeffAdd().toString(), "{5.0,x}");
+    // assert (Float(5.0) + x).as_coeff_Add(rational=True) == (0, Float(5.0) + x)
+    assertEquals(F.Plus(F.num(5.0), x).asCoeffAdd(true).toString(), "{0,5.0+x}");
+    //
+    // assert (Integer(3) + x + y).as_coeff_Add() == (Integer(3), x + y)
+    assertEquals(F.Plus(F.C3, x, y).asCoeffAdd().toString(), "{3,x+y}");
+    // assert (Rational(3, 4) + x + y).as_coeff_Add() == (Rational(3, 4), x + y)
+    assertEquals(F.Plus(F.C3D4, x, y).asCoeffAdd().toString(), "{3/4,x+y}");
+    // assert (Float(5.0) + x + y).as_coeff_Add() == (Float(5.0), x + y)
+    assertEquals(F.Plus(F.num(5.0), x, y).asCoeffAdd().toString(), "{5.0,x+y}");
+    //
+    // assert (x).as_coeff_Add() == (S.Zero, x)
+    assertEquals(x.asCoeffAdd().toString(), "{0,x}");
+    // assert (x*y).as_coeff_Add() == (S.Zero, x*y)
+    assertEquals(F.Times(x, y).asCoeffAdd().toString(), "{0,x*y}");
+  }
+
+  @Test
+  public void test_as_coeff_exponent() {
+    // https://github.com/sympy/sympy/blob/7158ec42de7d8b02ad8809fdbb87daa0da4ca121/sympy/core/tests/test_expr.py#L1268
+    ISymbol x = F.x;
+    ISymbol y = F.y;
+    assertEquals(x.asCoeffExponent(x).toString(), //
+        "{1,1}");
+    assertEquals(F.Times(F.C3, F.Power(x, F.C4)).asCoeffExponent(x).toString(), //
+        "{3,4}");
+    assertEquals(F.Times(F.C1, F.Power(x, F.C0)).asCoeffExponent(x).toString(), //
+        "{1,0}");
+    assertEquals(F.Times(F.C0, F.Power(x, F.C0)).asCoeffExponent(x).toString(), //
+        "{0,0}");
+    assertEquals(
+        F.Divide(F.Times(x, F.Log(F.C2)), F.Plus(F.Times(F.C2, x, F.C3), F.Times(S.Pi, x)))
+            .asCoeffExponent(x).toString(), //
+        "{Log(2)/(6+Pi),0}");
+
+  }
 
   @Test
   public void test_as_coeff_mul() {
     // https://github.com/sympy/sympy/blob/d01454493251159beaa925c32eaa9909f2f5f299/sympy/core/tests/test_expr.py#L1246
     ISymbol x = F.x;
     ISymbol y = F.y;
-    assertEquals(F.C2.asCoeffmul(null, true).toString(), "{2,{}}");
-    assertEquals(F.num(3.0).asCoeffmul(null, true).toString(), "{1,{3.0}}");
-    assertEquals(F.num(-3.0).asCoeffmul(null, true).toString(), "{-1,{3.0}}");
-    assertEquals(F.num(-3.0).asCoeffmul(null, false).toString(), "{-3.0,{}}");
-    assertEquals(x.asCoeffmul().toString(), "{1,{x}}");
-    assertEquals(x.negate().asCoeffmul().toString(), "{-1,{x}}");
-    assertEquals(F.C2.times(x).asCoeffmul().toString(), "{2,{x}}");
-    assertEquals(x.times(y).asCoeffmul(y).toString(), "{x,{y}}");
-    assertEquals(F.C3.plus(x).asCoeffmul().toString(), "{1,{3+x}}");
-    assertEquals(F.C3.plus(x).asCoeffmul(y).toString(), "{3+x,{}}");
-
+    assertEquals(F.C2.as_coeff_mul().toString(), "{2,{}}");
+    assertEquals(F.num(3.0).as_coeff_mul().toString(), "{1,{3.0}}");
+    assertEquals(F.num(-3.0).as_coeff_mul().toString(), "{-1,{3.0}}");
+    // assertEquals(F.num(-3.0).as_coeff_mul(false).toString(), "{-3.0,{}}");
+    assertEquals(x.as_coeff_mul().toString(), "{1,{x}}");
+    assertEquals(x.negate().as_coeff_mul().toString(), "{-1,{x}}");
+    assertEquals(F.C2.times(x).as_coeff_mul().toString(), "{2,{x}}");
+    assertEquals(x.times(y).as_coeff_mul(y).toString(), "{x,{y}}");
+    assertEquals(F.C3.plus(x).as_coeff_mul().toString(), "{1,{3+x}}");
+    assertEquals(F.C3.plus(x).as_coeff_mul(y).toString(), "{3+x,{}}");
     IAST e1 = F.Exp(F.Plus(x, y));
-    assertEquals(e1.asCoeffmul(y, false).toString(), "{1,{E^(x+y)}}");
+    assertEquals(e1.as_coeff_mul().toString(), "{1,{E^(x+y)}}");
     IExpr e2 = F.Power(F.C2, F.Plus(x, y));
-    assertEquals(e2.asCoeffmul(y, false).toString(), "{1,{2^(x+y)}}");
-    assertEquals(F.num(1.1).multiply(x).asCoeffmul(null, false).toString(), "{1.1,{x}}");
-    assertEquals(F.num(1.1).multiply(x).asCoeffmul(null, true).toString(), "{1,{1.1,x}}");
-    assertEquals(F.CNInfinity.multiply(x).asCoeffmul(null, true).toString(), "{-1,{Infinity,x}}");
+    assertEquals(e2.as_coeff_mul().toString(), "{1,{2^(x+y)}}");
+    assertEquals(F.num(1.1).multiply(x).as_coeff_mul(false).toString(), "{1.1,{x}}");
+    assertEquals(F.num(1.1).multiply(x).as_coeff_mul(true).toString(), "{1,{1.1,x}}");
+    assertEquals(F.num(1.1).multiply(x).as_coeff_mul().toString(), "{1,{1.1,x}}");
+    assertEquals(F.CNInfinity.multiply(x).as_coeff_mul().toString(), "{-1,{Infinity,x}}");
 
     // assert S(2).as_coeff_mul() == (2, ())
     // assert S(3.0).as_coeff_mul() == (1, (S(3.0),))
@@ -90,12 +194,15 @@ public class TestExpr extends ExprEvaluatorTestCase {
 
   @Test
   public void test_as_coeff_Mul() {
-    // non sympy test
-    assertEquals(F.Times(F.C1D3, S.Pi).asCoeffMul().toString(), "{1/3,Pi}");
-
     // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/tests/test_expr.py#L1658
     ISymbol x = F.x;
     ISymbol y = F.y;
+
+    // non sympy test
+    // assertEquals(F.Times(F.C1D3, S.Pi).asCoeffMul().toString(), "{1/3,Pi}");
+    assertEquals(F.Times(F.C3, x).asCoeffMul().toString(), "{3,x}");
+
+
     assertEquals(F.C3.asCoeffMul().toString(), "{3,1}");
     assertEquals(F.C3D4.asCoeffMul().toString(), "{3/4,1}");
     assertEquals(F.num(5.0).asCoeffMul().toString(), "{5.0,1}");
@@ -215,162 +322,6 @@ public class TestExpr extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void test_as_coeff_exponent() {
-    // https://github.com/sympy/sympy/blob/7158ec42de7d8b02ad8809fdbb87daa0da4ca121/sympy/core/tests/test_expr.py#L1268
-    ISymbol x = F.x;
-    ISymbol y = F.y;
-    assertEquals(x.asCoeffExponent(x).toString(), //
-        "{1,1}");
-    assertEquals(F.Times(F.C3, F.Power(x, F.C4)).asCoeffExponent(x).toString(), //
-        "{3,4}");
-    assertEquals(F.Times(F.C1, F.Power(x, F.C0)).asCoeffExponent(x).toString(), //
-        "{1,0}");
-    assertEquals(F.Times(F.C0, F.Power(x, F.C0)).asCoeffExponent(x).toString(), //
-        "{0,0}");
-    assertEquals(
-        F.Divide(F.Times(x, F.Log(F.C2)), F.Plus(F.Times(F.C2, x, F.C3), F.Times(S.Pi, x)))
-            .asCoeffExponent(x).toString(), //
-        "{Log(2)/(6+Pi),0}");
-
-  }
-
-  @Test
-  public void test_extractions() {
-    // https://github.com/sympy/sympy/blob/7158ec42de7d8b02ad8809fdbb87daa0da4ca121/sympy/core/tests/test_expr.py#L1268
-    ISymbol x = F.x;
-    ISymbol y = F.y;
-    assertEquals(Expr.extractAdditively(F.Plus(F.C3, x), F.Plus(F.CN3, y)).isPresent(), //
-        false);
-    // for base in (2, S.Exp1):
-    // assert Pow(base**x, 3, evaluate=False
-    // ).extract_multiplicatively(base**x) == base**(2*x)
-    // assert (base**(5*x)).extract_multiplicatively(
-    // base**(3*x)) == base**(2*x)
-    // assert ((x*y)**3).extract_multiplicatively(x**2 * y) == x*y**2
-    // assert ((x*y)**3).extract_multiplicatively(x**4 * y) is None
-    // assert (2*x).extract_multiplicatively(2) == x
-    // assert (2*x).extract_multiplicatively(3) is None
-    // assert (2*x).extract_multiplicatively(-1) is None
-    // assert (S.Half*x).extract_multiplicatively(3) == x/6
-    // assert (sqrt(x)).extract_multiplicatively(x) is None
-    // assert (sqrt(x)).extract_multiplicatively(1/x) is None
-    // assert x.extract_multiplicatively(-x) is None
-    // assert (-2 - 4*I).extract_multiplicatively(-2) == 1 + 2*I
-    // assert (-2 - 4*I).extract_multiplicatively(3) is None
-    // assert (-2*x - 4*y - 8).extract_multiplicatively(-2) == x + 2*y + 4
-    // assert (-2*x*y - 4*x**2*y).extract_multiplicatively(-2*y) == 2*x**2 + x
-    // assert (2*x*y + 4*x**2*y).extract_multiplicatively(2*y) == 2*x**2 + x
-    // assert (-4*y**2*x).extract_multiplicatively(-3*y) is None
-    // assert (2*x).extract_multiplicatively(1) == 2*x
-    // assert (-oo).extract_multiplicatively(5) is -oo
-    // assert (oo).extract_multiplicatively(5) is oo
-    //
-    // assert ((x*y)**3).extract_additively(1) is None
-    assertEquals(Expr.extractAdditively(F.Power(F.Times(x, y), F.C3), F.C1).isPresent(), //
-        false);
-    // assert (x + 1).extract_additively(x) == 1
-    assertEquals(Expr.extractAdditively(F.Plus(F.C1, x), x).toString(), //
-        "1");
-
-    // assert (x + 1).extract_additively(2*x) is None
-    assertEquals(Expr.extractAdditively(F.Plus(F.C1, x), F.Times(2, x)).isPresent(), //
-        false);
-
-    // assert (x + 1).extract_additively(-x) is None
-    // assert (-x + 1).extract_additively(2*x) is None
-    // assert (2*x + 3).extract_additively(x) == x + 3
-    assertEquals(Expr.extractAdditively(F.Plus(F.C3, F.Times(2, x)), x).toString(), //
-        "3+x");
-    // assert (2*x + 3).extract_additively(2) == 2*x + 1
-    // assert (2*x + 3).extract_additively(3) == 2*x
-    // assert (2*x + 3).extract_additively(-2) is None
-    // assert (2*x + 3).extract_additively(3*x) is None
-    // assert (2*x + 3).extract_additively(2*x) == 3
-    // assert x.extract_additively(0) == x
-    // assert S(2).extract_additively(x) is None
-    // assert S(2.).extract_additively(2) is S.Zero
-    // assert S(2*x + 3).extract_additively(x + 1) == x + 2
-    // assert S(2*x + 3).extract_additively(y + 1) is None
-    // assert S(2*x - 3).extract_additively(x + 1) is None
-    // assert S(2*x - 3).extract_additively(y + z) is None
-    // assert ((a + 1)*x*4 + y).extract_additively(x).expand() == \
-    // 4*a*x + 3*x + y
-    // assert ((a + 1)*x*4 + 3*y).extract_additively(x + 2*y).expand() == \
-    // 4*a*x + 3*x + y
-    // assert (y*(x + 1)).extract_additively(x + 1) is None
-    // assert ((y + 1)*(x + 1) + 3).extract_additively(x + 1) == \
-    // y*(x + 1) + 3
-    // assert ((x + y)*(x + 1) + x + y + 3).extract_additively(x + y) == \
-    // x*(x + y) + 3
-    // assert (x + y + 2*((x + y)*(x + 1)) + 3).extract_additively((x + y)*(x + 1)) == \
-    // x + y + (x + 1)*(x + y) + 3
-    // assert ((y + 1)*(x + 2*y + 1) + 3).extract_additively(y + 1) == \
-    // (x + 2*y)*(y + 1) + 3
-    // assert (-x - x*I).extract_additively(-x) == -I*x
-    // # extraction does not leave artificats, now
-    // assert (4*x*(y + 1) + y).extract_additively(x) == x*(4*y + 3) + y
-    //
-    // n = Symbol("n", integer=True)
-    // assert (Integer(-3)).could_extract_minus_sign() is True
-    // assert (-n*x + x).could_extract_minus_sign() != \
-    // (n*x - x).could_extract_minus_sign()
-    // assert (x - y).could_extract_minus_sign() != \
-    // (-x + y).could_extract_minus_sign()
-    // assert (1 - x - y).could_extract_minus_sign() is True
-    // assert (1 - x + y).could_extract_minus_sign() is False
-    // assert ((-x - x*y)/y).could_extract_minus_sign() is False
-    // assert ((x + x*y)/(-y)).could_extract_minus_sign() is True
-    // assert ((x + x*y)/y).could_extract_minus_sign() is False
-    // assert ((-x - y)/(x + y)).could_extract_minus_sign() is False
-    //
-    // class sign_invariant(Function, Expr):
-    // nargs = 1
-    // def __neg__(self):
-    // return self
-    // foo = sign_invariant(x)
-    // assert foo == -foo
-    // assert foo.could_extract_minus_sign() is False
-    // assert (x - y).could_extract_minus_sign() is False
-    // assert (-x + y).could_extract_minus_sign() is True
-    // assert (x - 1).could_extract_minus_sign() is False
-    // assert (1 - x).could_extract_minus_sign() is True
-    // assert (sqrt(2) - 1).could_extract_minus_sign() is True
-    // assert (1 - sqrt(2)).could_extract_minus_sign() is False
-    // # check that result is canonical
-    // eq = (3*x + 15*y).extract_multiplicatively(3)
-    // assert eq.args == eq.func(*eq.args).args
-
-  }
-
-  @Test
-  public void test_leadterm() {
-    // https://github.com/sympy/sympy/blob/7158ec42de7d8b02ad8809fdbb87daa0da4ca121/sympy/core/tests/test_expr.py#L1268
-    ISymbol x = F.x;
-    ISymbol y = F.y;
-
-    // assert (3 + 2*x**(log(3)/log(2) - 1)).leadterm(x) == (3, 0)
-    // assertEquals(
-    // F.Plus(F.C3,
-    // F.Times(F.C2, F.Power(F.x, F.Subtract(F.Divide(F.Log(3), F.Log(2)), F.C1))))
-    // .leadTerm(x).toString(), //
-    // "{2,Log(3)/Log(2)}");
-
-    // assert (1/x**2 + 1 + x + x**2).leadterm(x)[1] == -2
-    // assert (1/x + 1 + x + x**2).leadterm(x)[1] == -1
-    // assert (x**2 + 1/x).leadterm(x)[1] == -1
-    // assert (1 + x**2).leadterm(x)[1] == 0
-    // assert (x + 1).leadterm(x)[1] == 0
-    // assertEquals(F.Plus(x, F.C1).leadTerm(x).second().toString(), //
-    // "0");
-    // // assert (x + x**2).leadterm(x)[1] == 1
-    // assertEquals(F.Plus(x, F.Power(x, 2)).leadTerm(x).second().toString(), //
-    // "1");
-    // // // assert (x**2).leadterm(x)[1] == 2
-    assertEquals(F.Power(x, 2).leadTerm(x).second().toString(), //
-        "2");
-  }
-
-  @Test
   public void test_as_powers_dict() {
     ISymbol x = F.x;
     ISymbol y = F.y;
@@ -381,60 +332,6 @@ public class TestExpr extends ExprEvaluatorTestCase {
     assertEquals(F.Times(F.C2, F.C2).asPowersDict().toString(), "{2=2}");
     assertEquals(F.Times(x, y).asPowersDict().getValue(z).toString(), "0");
   }
-
-
-  @Test
-  public void test_args_cnc() {
-    // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/tests/test_expr.py#L1561
-    ISymbol a = F.a;
-    ISymbol b = F.b;
-    ISymbol x = F.x;
-    ISymbol y = F.y;
-    assertEquals(argsCnc(F.CEmptyList).toString(), "{{},{}}");
-
-
-    // assert (x + a).args_cnc() == [[a + x], []]
-    assertEquals(argsCnc(F.Plus(a, x)).toString(), "{{a+x},{}}");
-    // assert (x * a).args_cnc() == [[a, x], []]
-    assertEquals(argsCnc(F.Times(a, x)).toString(), "{{a,x},{}}");
-
-    assertEquals(argsCnc(F.Times(x, y, F.NonCommutativeMultiply(a, b))).toString(), //
-        "{{x,y},{a,b}}");
-
-    assertEquals(argsCnc(F.Times(F.CNInfinity, x)).toString(), "{{-1,Infinity,x},{}}");
-
-    assertEquals(argsCnc(F.Times(F.CN1, x)).toString(), "{{-1,x},{}}");
-    assertEquals(argsCnc(F.Times(F.num(-2.0), x)).toString(), "{{-1,2.0,x},{}}");
-    assertEquals(argsCnc(F.Times(F.CNI, x)).toString(), "{{-1,I,x},{}}");
-    // A = symbols('A', commutative=False)
-    // assert (x + A).args_cnc() == \
-    // [[], [x + A]]
-    // assert (x + a).args_cnc() == \
-    // [[a + x], []]
-    // assert (x*a).args_cnc() == \
-    // [[a, x], []]
-    // assert (x*y*A*(A + 1)).args_cnc(cset=True) == \
-    // [{x, y}, [A, 1 + A]]
-    // assert Mul(x, x, evaluate=False).args_cnc(cset=True, warn=False) == \
-    // [{x}, []]
-    assertEquals(((IAST) argsCnc(F.Times(x, x)).first()).asSortedSet().toString(), "[x]");
-    assertEquals(argsCnc(F.Times(x, x)).second().toString(), "{}");
-
-    // assert Mul(x, x**2, evaluate=False).args_cnc(cset=True, warn=False) == \
-    // [{x, x**2}, []]
-    assertEquals(((IAST) argsCnc(F.Times(x, F.Power(x, 2))).first()).asSortedSet().toString(), //
-        "[x, x^2]");
-    assertEquals(argsCnc(F.Times(x, F.Power(x, 2))).second().toString(), //
-        "{}");
-    // raises(ValueError, lambda: Mul(x, x, evaluate=False).args_cnc(cset=True))
-    // assert Mul(x, y, x, evaluate=False).args_cnc() == \
-    // [[x, y, x], []]
-    // # always split -1 from leading number
-    // assert (-1.*x).args_cnc() == [[-1, 1.0, x], []]
-    assertEquals(argsCnc(F.Times(F.CND1, x)).toString(), //
-        "{{-1,1.0,x},{}}");
-  }
-
 
   @Test
   public void test_coeff() {
@@ -590,5 +487,168 @@ public class TestExpr extends ExprEvaluatorTestCase {
     // assert (x*n*m*n + y*n*m*o + z*l).coeff(m, right=True) == x*n + y*o
     // assert (x*n*m*n + x*n*m*o + z*l).coeff(m, right=True) == n + o
     // assert (x*n*m*n + x*n*m*o + z*l).coeff(m) == x*n
+  }
+
+
+  @Test
+  public void test_extractions() {
+    // https://github.com/sympy/sympy/blob/7158ec42de7d8b02ad8809fdbb87daa0da4ca121/sympy/core/tests/test_expr.py#L1268
+    ISymbol x = F.x;
+    ISymbol y = F.y;
+    assertEquals(Expr.extractAdditively(F.Plus(F.C3, F.Times(2, x)), F.Plus(1, x)).toString(), //
+        "2+x");
+
+    // for base in (2, S.Exp1):
+    // assert Pow(base**x, 3, evaluate=False
+    // ).extract_multiplicatively(base**x) == base**(2*x)
+    // assert (base**(5*x)).extract_multiplicatively(
+    // base**(3*x)) == base**(2*x)
+    // assert ((x*y)**3).extract_multiplicatively(x**2 * y) == x*y**2
+    // assert ((x*y)**3).extract_multiplicatively(x**4 * y) is None
+    // assert (2*x).extract_multiplicatively(2) == x
+    // assert (2*x).extract_multiplicatively(3) is None
+    // assert (2*x).extract_multiplicatively(-1) is None
+    // assert (S.Half*x).extract_multiplicatively(3) == x/6
+    // assert (sqrt(x)).extract_multiplicatively(x) is None
+    // assert (sqrt(x)).extract_multiplicatively(1/x) is None
+    // assert x.extract_multiplicatively(-x) is None
+    // assert (-2 - 4*I).extract_multiplicatively(-2) == 1 + 2*I
+    // assert (-2 - 4*I).extract_multiplicatively(3) is None
+    // assert (-2*x - 4*y - 8).extract_multiplicatively(-2) == x + 2*y + 4
+    // assert (-2*x*y - 4*x**2*y).extract_multiplicatively(-2*y) == 2*x**2 + x
+    // assert (2*x*y + 4*x**2*y).extract_multiplicatively(2*y) == 2*x**2 + x
+    // assert (-4*y**2*x).extract_multiplicatively(-3*y) is None
+    // assert (2*x).extract_multiplicatively(1) == 2*x
+    // assert (-oo).extract_multiplicatively(5) is -oo
+    // assert (oo).extract_multiplicatively(5) is oo
+
+    assertEquals(Expr.extractAdditively(F.Plus(F.C3, x), F.Plus(F.CN3, y)).toString(), //
+        "NIL");
+    // assert ((x*y)**3).extract_additively(1) is None
+    assertEquals(Expr.extractAdditively(F.Power(F.Times(x, y), F.C3), F.C1).toString(), //
+        "NIL");
+    // assert (x + 1).extract_additively(x) == 1
+    assertEquals(Expr.extractAdditively(F.Plus(F.C1, x), x).toString(), //
+        "1");
+
+    // // assert (x + 1).extract_additively(2*x) is None
+    assertEquals(Expr.extractAdditively(F.Plus(F.C1, x), F.Times(2, x)).toString(), //
+        "NIL");
+    //
+    // // assert (x + 1).extract_additively(-x) is None
+    // // assert (-x + 1).extract_additively(2*x) is None
+    // // assert (2*x + 3).extract_additively(x) == x + 3
+    assertEquals(Expr.extractAdditively(F.Plus(F.C3, F.Times(2, x)), x).toString(), //
+        "3+x");
+    // assert (2*x + 3).extract_additively(2) == 2*x + 1
+    assertEquals(Expr.extractAdditively(F.Plus(F.C3, F.Times(2, x)), F.C2).toString(), //
+        "1+2*x");
+    // assert (2*x + 3).extract_additively(3) == 2*x
+    assertEquals(Expr.extractAdditively(F.Plus(F.C3, F.Times(2, x)), F.C3).toString(), //
+        "2*x");
+    // assert (2*x + 3).extract_additively(-2) is None
+    assertEquals(Expr.extractAdditively(F.Plus(F.C3, F.Times(2, x)), F.CN2).toString(), //
+        "NIL");
+    // assert (2*x + 3).extract_additively(3*x) is None
+    assertEquals(Expr.extractAdditively(F.Plus(F.C3, F.Times(2, x)), F.Times(3, x)).toString(), //
+        "NIL");
+    // assert (2*x + 3).extract_additively(2*x) == 3
+    assertEquals(Expr.extractAdditively(F.Plus(F.C3, F.Times(2, x)), F.Times(2, x)).toString(), //
+        "3");
+    // assert x.extract_additively(0) == x
+    assertEquals(Expr.extractAdditively(x, F.C0).toString(), //
+        "x");
+    // assert S(2).extract_additively(x) is None
+    assertEquals(Expr.extractAdditively(F.C2, x).toString(), //
+        "NIL");
+    // assert S(2.).extract_additively(2) is S.Zero
+    assertEquals(Expr.extractAdditively(F.C2, F.C2).toString(), //
+        "0");
+    // assert S(2*x + 3).extract_additively(x + 1) == x + 2
+    assertEquals(Expr.extractAdditively(F.Plus(F.C3, F.Times(2, x)), F.Plus(1, x)).toString(), //
+        "2+x");
+    // assert S(2*x + 3).extract_additively(y + 1) is None
+    assertEquals(Expr.extractAdditively(F.Plus(F.C3, F.Times(2, x)), F.Plus(1, y)).toString(), //
+        "NIL");
+    // assert S(2*x - 3).extract_additively(x + 1) is None
+    assertEquals(Expr.extractAdditively(F.Plus(F.CN3, F.Times(2, x)), F.Plus(1, x)).toString(), //
+        "NIL");
+    // assert S(2*x - 3).extract_additively(y + z) is None
+    // assert ((a + 1)*x*4 + y).extract_additively(x).expand() == \
+    // 4*a*x + 3*x + y
+    // assert ((a + 1)*x*4 + 3*y).extract_additively(x + 2*y).expand() == \
+    // 4*a*x + 3*x + y
+    // assert (y*(x + 1)).extract_additively(x + 1) is None
+    // assert ((y + 1)*(x + 1) + 3).extract_additively(x + 1) == \
+    // y*(x + 1) + 3
+    // assert ((x + y)*(x + 1) + x + y + 3).extract_additively(x + y) == \
+    // x*(x + y) + 3
+    // assert (x + y + 2*((x + y)*(x + 1)) + 3).extract_additively((x + y)*(x + 1)) == \
+    // x + y + (x + 1)*(x + y) + 3
+    // assert ((y + 1)*(x + 2*y + 1) + 3).extract_additively(y + 1) == \
+    // (x + 2*y)*(y + 1) + 3
+    // assert (-x - x*I).extract_additively(-x) == -I*x
+    // # extraction does not leave artificats, now
+    // assert (4*x*(y + 1) + y).extract_additively(x) == x*(4*y + 3) + y
+    //
+    // n = Symbol("n", integer=True)
+    // assert (Integer(-3)).could_extract_minus_sign() is True
+    // assert (-n*x + x).could_extract_minus_sign() != \
+    // (n*x - x).could_extract_minus_sign()
+    // assert (x - y).could_extract_minus_sign() != \
+    // (-x + y).could_extract_minus_sign()
+    // assert (1 - x - y).could_extract_minus_sign() is True
+    // assert (1 - x + y).could_extract_minus_sign() is False
+    // assert ((-x - x*y)/y).could_extract_minus_sign() is False
+    // assert ((x + x*y)/(-y)).could_extract_minus_sign() is True
+    // assert ((x + x*y)/y).could_extract_minus_sign() is False
+    // assert ((-x - y)/(x + y)).could_extract_minus_sign() is False
+    //
+    // class sign_invariant(Function, Expr):
+    // nargs = 1
+    // def __neg__(self):
+    // return self
+    // foo = sign_invariant(x)
+    // assert foo == -foo
+    // assert foo.could_extract_minus_sign() is False
+    // assert (x - y).could_extract_minus_sign() is False
+    // assert (-x + y).could_extract_minus_sign() is True
+    // assert (x - 1).could_extract_minus_sign() is False
+    // assert (1 - x).could_extract_minus_sign() is True
+    // assert (sqrt(2) - 1).could_extract_minus_sign() is True
+    // assert (1 - sqrt(2)).could_extract_minus_sign() is False
+    // # check that result is canonical
+    // eq = (3*x + 15*y).extract_multiplicatively(3)
+    // assert eq.args == eq.func(*eq.args).args
+
+  }
+
+
+  @Test
+  public void test_leadterm() {
+    // https://github.com/sympy/sympy/blob/7158ec42de7d8b02ad8809fdbb87daa0da4ca121/sympy/core/tests/test_expr.py#L1268
+    ISymbol x = F.x;
+    ISymbol y = F.y;
+
+    // assert (3 + 2*x**(log(3)/log(2) - 1)).leadterm(x) == (3, 0)
+    // assertEquals(
+    // F.Plus(F.C3,
+    // F.Times(F.C2, F.Power(F.x, F.Subtract(F.Divide(F.Log(3), F.Log(2)), F.C1))))
+    // .leadTerm(x).toString(), //
+    // "{2,Log(3)/Log(2)}");
+
+    // assert (1/x**2 + 1 + x + x**2).leadterm(x)[1] == -2
+    // assert (1/x + 1 + x + x**2).leadterm(x)[1] == -1
+    // assert (x**2 + 1/x).leadterm(x)[1] == -1
+    // assert (1 + x**2).leadterm(x)[1] == 0
+    // assert (x + 1).leadterm(x)[1] == 0
+    // assertEquals(F.Plus(x, F.C1).leadTerm(x).second().toString(), //
+    // "0");
+    // // assert (x + x**2).leadterm(x)[1] == 1
+    // assertEquals(F.Plus(x, F.Power(x, 2)).leadTerm(x).second().toString(), //
+    // "1");
+    // // // assert (x**2).leadterm(x)[1] == 2
+    assertEquals(F.Power(x, 2).leadTerm(x).second().toString(), //
+        "2");
   }
 }

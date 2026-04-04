@@ -2,6 +2,7 @@ package org.matheclipse.core.sympy.core;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Pair;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -9,8 +10,95 @@ import org.matheclipse.core.interfaces.IRational;
 
 public class Mul {
 
-  public Mul() {
+  public static Pair as_coeff_mul(IAST mulAST, boolean rational, IExpr... deps) {
+    if (deps.length > 0) {
+      IASTAppendable l1 = F.ListAlloc(mulAST.size());
+      IASTAppendable l2 = F.TimesAlloc(mulAST.size());
 
+      for (int i = 1; i < mulAST.size(); i++) {
+        IExpr arg = mulAST.get(i);
+        if (arg.has(deps)) {
+          l1.append(arg);
+        } else {
+          l2.append(arg);
+        }
+      }
+      // _new_rawargs(*l2) in SymPy is equivalent to Times(*l2)
+      return F.pair(l2.oneIdentity1(), l1);
+    }
+    IExpr first = mulAST.arg1();
+    if (first.isNumber()) {
+      // If it's a rational, always extract it
+      if (first.isRational()) {
+        return F.pair(first, mulAST.subList(2).apply(S.List));
+      }
+
+      // If not rational=True, extract any number (including Complex/Real)
+      if (!rational) {
+        return F.pair(first, mulAST.subList(2).apply(S.List));
+      }
+
+      // If rational=True but the number is negative, extract -1
+    }
+    if (first.isNegative() || first.isNegativeInfinity()) {
+      IASTAppendable rest = F.ListAlloc(mulAST.size());
+      rest.append(first.negate());
+      rest.appendAll(mulAST, 2, mulAST.size());
+      return F.pair(F.CN1, rest);
+    }
+
+    // Handle cases where the expression could extract a minus sign
+    // but isn't a explicit Times(Number, ...)
+    return F.pair(F.C1, mulAST.apply(S.List));
+  }
+
+  public static Pair as_coeff_mul(IAST mulAST, IExpr... deps) {
+    if (deps.length > 0) {
+      IASTAppendable l1 = F.ListAlloc(mulAST.size());
+      IASTAppendable l2 = F.ListAlloc(mulAST.size());
+      for (int i = 1; i < mulAST.size(); i++) {
+        IExpr arg = mulAST.get(i);
+        if (arg.has(deps)) {
+          l1.append(arg);
+        } else {
+          l2.append(arg);
+        }
+      }
+      return F.pair(F.Times(l2), l1);
+    }
+
+    IExpr first = mulAST.arg1();
+    if (first.isNumber()) {
+      if (first.isRational()) {
+        return F.pair(first, mulAST.subList(2));
+      } else if (first.isNegative()) {
+        IASTAppendable rest = F.ListAlloc(mulAST.size());
+        rest.append(first.negate());
+        rest.appendAll(mulAST, 2, mulAST.size());
+        return F.pair(F.CN1, rest);
+      }
+    }
+    return F.pair(F.C1, mulAST.apply(F.List));
+  }
+
+  public static Pair asCoeffMul(IAST mulAST, boolean rational) {
+    IExpr first = mulAST.arg1();
+    if (first.isNumber()) {
+      if (rational) {
+        if (first.isRational()) {
+          return F.pair(first, mulAST.subList(2).oneIdentity1());
+        }
+        // If rational=True and first is not rational, coefficient is 1
+        return F.pair(F.C1, mulAST);
+      }
+
+      // Default logic (rational=False)
+      return F.pair(first, mulAST.subList(2).oneIdentity1());
+    }
+    if (first.isNegativeInfinity()) {
+      return F.pair(F.CN1, mulAST.setAtCopy(1, F.CInfinity));
+    }
+    return F.pair(F.C1, mulAST);
   }
 
   public static IExpr keepCoeff(IExpr coeff, IExpr factors) {
@@ -100,4 +188,7 @@ public class Mul {
     }
   }
 
+  public Mul() {
+
+  }
 }

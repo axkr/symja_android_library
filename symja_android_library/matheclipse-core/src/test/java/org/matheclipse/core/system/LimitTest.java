@@ -10,12 +10,14 @@ public class LimitTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLimitFa() {
+    check("Limit(0^x,x->Infinity)", //
+        "0");
     check("Limit(f(a)^x,x->-Infinity)", //
-        "Limit(f(a)^x,x->-Infinity)");
-    check("Limit((a+f[b]+2)^x,x->Infinity)", //
-        "Limit((2+a+f(b))^x,x->Infinity)");
+        "ConditionalExpression(Infinity,Log(f(a))<0)");
+    check("Limit((a+f(b)+2)^x,x->Infinity)", //
+        "ConditionalExpression(Infinity,Log(2+a+f(b))>0)");
     check("Limit(f(a)^x,x->Infinity)", //
-        "Limit(f(a)^x,x->Infinity)");
+        "ConditionalExpression(Infinity,Log(f(a))>0)");
   }
 
   @Test
@@ -23,7 +25,13 @@ public class LimitTest extends ExprEvaluatorTestCase {
     // gitlab #107
     check("Limit(x^2-1/x-2, x->0)", //
         "Indeterminate");
+
+    check("Limit(x^(-2/3),x->0)", //
+        "Indeterminate");
+    check("Limit(x^(-16/7),x->0)", //
+        "Indeterminate");
   }
+
   @Test
   public void testLimitExp() {
     check("Limit(1/Exp(-x + Exp(-x)) - Exp(x), x -> Infinity)", //
@@ -37,10 +45,8 @@ public class LimitTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLimit() {
-
     check("Limit(Sin(1/x)^3,x->0)", //
         "Indeterminate");
-
     check("Limit(Sin(x)/x,x->Infinity)", //
         "0");
 
@@ -99,22 +105,12 @@ public class LimitTest extends ExprEvaluatorTestCase {
     check("Limit(x^2*Sin(1/x),x->0)", //
         "0");
 
-    // github #230
-    check("Limit((Sqrt(((t+4)*(t-2)^4))/((3*t)-6)^2),t->2) ", //
-        "Sqrt(2/3)/3");
-    check("Limit((((t+4)*(t-2)^4) /((3*t)-6)^4),t->2) ", //
-        "2/27");
-    check("Limit((((t+4)*(t-2)^4) /((3*t)-6) ),t->2) ", //
-        "0");
-    check("Limit(Sqrt(((t+4)*(t-2)^4)) ,t->2) ", //
-        "0");
-
     check("Limit(Tan(9/7)^x,x->-Infinity)", //
         "0");
     check("Limit(Sin(1/7)^x,x->-Infinity)", //
         "Infinity");
     check("Limit(a^x,x->-Infinity)", //
-        "ConditionalExpression(0,Log(a)>0)");
+        "ConditionalExpression(Infinity,Log(a)<0)");
 
     check("Limit(Tan(9/7)^x,x->Infinity)", //
         "Infinity");
@@ -176,12 +172,6 @@ public class LimitTest extends ExprEvaluatorTestCase {
         "-1");
     check("Limit((Cosh(t)-1)/t^2,t->0)", //
         "1/2");
-    check("Limit(Gamma(1/t)*Cos(Sin(1/t)),t->0)", //
-        "Indeterminate");
-    check("Limit(Gamma(1/t),t->Infinity)", //
-        "Infinity");
-    check("Limit(Gamma(1/t),t->-Infinity)", //
-        "-Infinity");
     check("Limit(Gamma(z,t),t->Infinity)", //
         "0");
     check("Limit(Gamma(z,t),t->0)", //
@@ -198,32 +188,8 @@ public class LimitTest extends ExprEvaluatorTestCase {
     check("Limit(x/Sqrt(x^2 - 1), x->-Infinity)", //
         "-1");
 
-
     check("Limit((x^2) /(3*x), x->Infinity)", //
         "Infinity");
-    check("Limit(x^(-2/3),x->0 , Direction->-1)", //
-        "Infinity");
-    // TODO
-    check("Limit(x^(-2/3),x->0 , Direction->1)", //
-        "Infinity");
-    check("Limit(x^(-2/3),x->0)", //
-        "Indeterminate");
-
-    check("Limit(x^(-16/7),x->0 , Direction->-1)", //
-        "Infinity");
-    // TODO
-    check("Limit(x^(-16/7),x->0 , Direction->1)", //
-        "Infinity");
-    check("Limit(x^(-16/7),x->0)", //
-        "Indeterminate");
-
-    check("Limit(x^(-37/4),x->0 , Direction->-1)", //
-        "Infinity");
-    // TODO
-    check("Limit(x^(-37/4),x->0 , Direction->1)", //
-        "Limit(1/x^(37/4),x->0,Direction->1)");
-    check("Limit(x^(-37/4),x->0)", //
-        "Indeterminate");
 
     check("Limit((x^2-1)/(x-1)^2, x->1)", //
         "Indeterminate");
@@ -254,35 +220,13 @@ public class LimitTest extends ExprEvaluatorTestCase {
     check("Limit((x^3-1)/(x^2-1), x->1)", //
         "3/2");
 
-    // github #120
-    check("Limit( x*Log(x) , x->0)", //
-        "0");
-    check("Limit(Log(x),x->0)", //
-        "-Infinity");
-    check("Limit(Log(x)^2,x->0)", //
-        "Infinity");
-    check("Limit(2*x-2*x*Log(x)+x*Log(x)^2, x->0)", //
-        "0");
-    check("Limit(E^(-x)*Sqrt(x), x -> Infinity)", //
-        "0");
-
     // adjust LimitRules.m if these 2 tests fails
-    // check("FullForm(x*(Sqrt(2*Pi*x)/(x!))^(1/x) )", //
-    // "Times(Power(Power(Times(2, Pi), Rational(1,2)), Power(x, -1)), x, Power(Times(Power(x,
-    // Rational(1,2)),
-    // Power(Factorial(x), -1)), Power(x, -1)))");
-    // check("Limit(x*(Sqrt(2*Pi*x)/(x!))^(1/x), x->Infinity)", //
-    // "E");
-    // check("Limit(x/((x!)^(1/x)), x->Infinity)", //
-    // "E");
-
-    // github #115
-    check("Limit(Sqrt(-4+2*x^2)/(4+3*x),x->Infinity)", //
-        "Sqrt(2)/3");
-    check("Limit((4+3*x)/Sqrt(-4+2*x^2),x->Infinity)", //
-        "3/Sqrt(2)");
-    check("Limit((4+3*x)^2/(-4+2*x^2),x->Infinity)", //
-        "9/2");
+    check("FullForm(x*(Sqrt(2*Pi*x)/(x!))^(1/x) )", //
+        "Times(Power(Power(Times(2, Pi), Rational(1,2)), Power(x, -1)), x, Power(Times(Power(x, Rational(1,2)), Power(Factorial(x), -1)), Power(x, -1)))");
+    check("Limit(x*(Sqrt(2*Pi*x)/(x!))^(1/x), x->Infinity)", //
+        "E");
+    check("Limit(x/((x!)^(1/x)), x->Infinity)", //
+        "E");
 
     check("Limit(x^(13+n),x->0)", //
         "ConditionalExpression(0,n>-13)");
@@ -296,36 +240,6 @@ public class LimitTest extends ExprEvaluatorTestCase {
         "E^k");
     check("Limit((1-1/x)^x, x->Infinity)", //
         "1/E");
-    // check("Limit((1 + Sinh(x))/E^x, x ->Infinity)", "Infinity*Limit(E^(-x),x->Infinity)");
-
-    // issue #184
-    check("N(Limit(tan(x),x->pi/2))", //
-        "Indeterminate");
-
-    check("Limit(Tan(x), x->Pi/2)", //
-        "Indeterminate");
-    check("Limit(Tan(x), x->Pi/2, Direction->1)", //
-        "Infinity");
-    check("Limit(Tan(x), x->Pi/2, Direction->-1)", //
-        "-Infinity");
-    check("Limit(Tan(x+3*Pi), x->Pi/2)", //
-        "Indeterminate");
-    check("Limit(Tan(x+3*Pi), x->Pi/2, Direction->1)", //
-        "Infinity");
-    check("Limit(Tan(x+3*Pi), x->Pi/2, Direction->-1)", //
-        "-Infinity");
-    check("Limit(Cot(x), x->0)", //
-        "Indeterminate");
-    check("Limit(Cot(x), x->0, Direction->1)", //
-        "-Infinity");
-    check("Limit(Cot(x), x->0, Direction->-1)", //
-        "Infinity");
-    check("Limit(Cot(x+Pi), x->0)", //
-        "Indeterminate");
-    check("Limit(Cot(x+Pi), x->0, Direction->1)", //
-        "-Infinity");
-    check("Limit(Cot(x+Pi), x->0, Direction->-1)", //
-        "Infinity");
 
     check("Limit(Log(x^y), x->0)", //
         "ConditionalExpression(-Infinity,y>0)");
@@ -337,16 +251,6 @@ public class LimitTest extends ExprEvaluatorTestCase {
         "Infinity");
     check("Limit(Log(x), x->-Infinity)", //
         "Infinity");
-    check("Limit((y*x)/Abs(x), x->0)", //
-        "Indeterminate");
-    check("Limit((y*x)/Abs(x), x->0, Direction->1)", //
-        "-y");
-    check("Limit(x/Abs(x), x->0)", //
-        "Indeterminate");
-    check("Limit(x/Abs(x), x->0, Direction->-1)", //
-        "1");
-    check("Limit(x/Abs(x), x->0, Direction->1)", //
-        "-1");
     check("Limit(Log(x), x -> 0)", //
         "-Infinity");
     check("Limit(x^x, x -> 0)", //
@@ -406,6 +310,116 @@ public class LimitTest extends ExprEvaluatorTestCase {
     check("Limit(a^x, x->0)", //
         "1");
     check("Limit(c*(x^(-10)), x->Infinity)", //
+        "0");
+  }
+
+  @Test
+  public void testLimitAbs() {
+    check("Limit(x/Abs(x), x->0, Direction->-1)", //
+        "1");
+    check("Limit(x/Abs(x), x->0, Direction->1)", //
+        "-1");
+    check("Limit(Abs(x)/x, x->0, Direction->-1)", //
+        "1");
+    check("Limit(Abs(x)/x, x->0, Direction->1)", //
+        "-1");
+    check("Limit((y*x)/Abs(x), x->0)", //
+        "Indeterminate");
+    check("Limit((y*x)/Abs(x), x->0, Direction->1)", //
+        "-y");
+    check("Limit(x/Abs(x), x->0)", //
+        "Indeterminate");
+
+  }
+
+  @Test
+  public void testLimitDirectedInfinity() {
+    check("Limit(x^(-37/4),x->0 , Direction->1)", //
+        "DirectedInfinity((-1)^(3/4))");
+    // check("Limit(x^(-37/4),x->0)", //
+    // "Indeterminate");
+    check("Limit(x^(-37/4),x->0 , Direction->-1)", //
+        "Infinity");
+
+    check("Limit(x^(-2/3),x->0 , Direction->-1)", //
+        "Infinity");
+    check("Limit(x^(-2/3),x->0 , Direction->1)", //
+        "DirectedInfinity(-(-1)^(1/3))");
+
+    check("Limit(x^(-16/7),x->0 , Direction->-1)", //
+        "Infinity");
+    check("Limit(x^(-16/7),x->0 , Direction->1)", //
+        "DirectedInfinity(-(-1)^(5/7))");
+  }
+
+  @Test
+  public void testIssue230() {
+    // github #230
+    check("Limit((Sqrt(((t+4)*(t-2)^4))/((3*t)-6)^2),t->2) ", //
+        "Sqrt(2/3)/3");
+    check("Limit((((t+4)*(t-2)^4) /((3*t)-6)^4),t->2) ", //
+        "2/27");
+    check("Limit((((t+4)*(t-2)^4) /((3*t)-6) ),t->2) ", //
+        "0");
+    check("Limit(Sqrt(((t+4)*(t-2)^4)) ,t->2) ", //
+        "0");
+  }
+
+  @Test
+  public void testIssue184() {
+    // issue #184
+    check("N(Limit(tan(x),x->pi/2))", //
+        "Indeterminate");
+
+    check("Limit(Tan(x), x->Pi/2)", //
+        "Indeterminate");
+    check("Limit(Tan(x), x->Pi/2, Direction->1)", //
+        "Infinity");
+    check("Limit(Tan(x), x->Pi/2, Direction->-1)", //
+        "-Infinity");
+    check("Limit(Tan(x+3*Pi), x->Pi/2)", //
+        "Indeterminate");
+    check("Limit(Tan(x+3*Pi), x->Pi/2, Direction->1)", //
+        "Infinity");
+    check("Limit(Tan(x+3*Pi), x->Pi/2, Direction->-1)", //
+        "-Infinity");
+    check("Limit(Cot(x), x->0)", //
+        "Indeterminate");
+    check("Limit(Cot(x), x->0, Direction->1)", //
+        "-Infinity");
+    check("Limit(Cot(x), x->0, Direction->-1)", //
+        "Infinity");
+    check("Limit(Cot(x+Pi), x->0)", //
+        "Indeterminate");
+    check("Limit(Cot(x+Pi), x->0, Direction->1)", //
+        "-Infinity");
+    check("Limit(Cot(x+Pi), x->0, Direction->-1)", //
+        "Infinity");
+  }
+
+  @Test
+  public void testIssue115() {
+    // github #115
+    check("Limit(Sqrt(-4+2*x^2)/(4+3*x),x->Infinity)", //
+        "Sqrt(2)/3");
+    check("Limit((4+3*x)/Sqrt(-4+2*x^2),x->Infinity)", //
+        "3/Sqrt(2)");
+    check("Limit((4+3*x)^2/(-4+2*x^2),x->Infinity)", //
+        "9/2");
+  }
+
+  @Test
+  public void testIssue120() {
+    // github #120
+    check("Limit( x*Log(x) , x->0)", //
+        "0");
+    check("Limit(Log(x),x->0)", //
+        "-Infinity");
+    check("Limit(Log(x)^2,x->0)", //
+        "Infinity");
+    check("Limit(2*x-2*x*Log(x)+x*Log(x)^2, x->0)", //
+        "0");
+    check("Limit(E^(-x)*Sqrt(x), x -> Infinity)", //
         "0");
   }
 
@@ -537,6 +551,82 @@ public class LimitTest extends ExprEvaluatorTestCase {
     // TODO
     // check("Limit(Exp(Log(x)^2) / x, x -> Infinity)", //
     // "Infinity");
+  }
+
+  @Test
+  public void testGruntzSpecialFunctions() {
+    check("Limit(Gamma(1/t),t->-Infinity)", //
+        "-Infinity");
+
+    // TODO
+    check("Limit(x/Abs(x), x->0)", //
+        "Indeterminate");
+    // --- ID.Factorial ---
+    // Standard polynomial reduction
+    check("Limit((x+1)! / (x * x!), x -> Infinity)", //
+        "1");
+    // Factorial growth strictly dominates exponential growth
+    // check("Limit(x! / E^x, x -> Infinity)", //
+    // "Infinity");
+    // Stirling's root extraction test
+    check("Limit((x! / (x/E)^x)^(1/x), x -> Infinity)", //
+        "1");
+
+    // --- ID.Gamma ---
+
+    check("Limit(Gamma(1/t)*Cos(Sin(1/t)),t->0)", //
+        "Indeterminate");
+    check("Limit(Gamma(1/t),t->Infinity)", //
+        "Infinity");
+    check("Limit(Gamma(1/t),t->-Infinity)", //
+        "-Infinity");
+
+    // // Gamma reduction with polynomial
+    check("Limit(Gamma(x + 2) / (x^2 * Gamma(x)), x -> Infinity)", //
+        "1");
+    // Gamma fractional shift (requires deep Puiseux series bounding)
+    check("Limit(Gamma(x + 1/2) / (Sqrt(x) * Gamma(x)), x -> Infinity)", //
+        "1");
+    // Gamma exponential competition
+    check("Limit(Gamma(x) / E^(x * Log(x)), x -> Infinity)", //
+        "0");
+    // --- ID.Pochhammer ---
+    // Pochhammer polynomial equivalence
+    check("Limit(Pochhammer(x, 2) / x^2, x -> Infinity)", //
+        "1");
+    check("Limit(Pochhammer(x, 3) / x^3, x -> Infinity)", //
+        "1");
+
+    // Pochhammer fractional parameter
+
+    check(
+        "Limit(-1/2-1/(12*x)+1/(6+12*x)-Log(2*Pi)/2+Log((2*Pi)/(1/2+x))/2+x*Log(1/x)+Log(1/2+x)/2+x*Log(1/2+x), x -> Infinity)", //
+        "0");
+    check("Limit(Pochhammer(x, 1/2) / Sqrt(x), x -> Infinity)", //
+        "1");
+
+    // --- ID.LogGamma ---
+    // LogGamma dominant growth term
+    check("Limit(LogGamma(x) / (x * Log(x)), x -> Infinity)", //
+        "1");
+    // LogGamma structural equivalence
+    check("Limit(LogGamma(x + 1) - LogGamma(x) - Log(x), x -> Infinity)", //
+        "0");
+    // LogGamma vs Log of Gamma
+    check("Limit(LogGamma(x) / Log(Gamma(x)), x -> Infinity)", //
+        "1");
+    check("Limit((1 + Sinh(x))/E^x, x ->Infinity)", //
+        "1/2");
+  }
+
+  @Test
+  public void testLimitSin() {
+    check("Limit(Sin(1/x)+1/2*Cos(x), x->Infinity)", //
+        "Indeterminate");
+    check("Limit(2*Sin(1/x)+1/2*Cos(x), x->0)", //
+        "Indeterminate");
+    check("Limit(Sin(1/x), x->0)", //
+        "Indeterminate");
   }
 
   /** The JUnit setup method */

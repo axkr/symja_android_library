@@ -52,6 +52,8 @@
     
   SeriesCoefficient(ArcCosh(x_),{x_Symbol, 0, n_?NotListQ}):=Piecewise({{(I*Pi)/2, n == 0}, {-((I*Pochhammer(1/2, (1/2)*(-1 + n)))/(n*((1/2)*(-1 + n))!)), n >= 1 && Mod(n, 2) == 1}}, 0)
     /; FreeQ(n,x),
+  SeriesCoefficient(ArcCoth(x_),{x_Symbol, 0, a_?NotListQ}):= Piecewise({{DifferenceRoot(Function({y,n},{-n*y(n)+(2+n)*y(2+n)==0,y(0)==I*1/2*Pi,y(1)==1}))[a],a>=0}},0)
+    /; FreeQ(a,x),
   SeriesCoefficient(ArcSinh(x_),{x_Symbol, 0, n_?NotListQ}):=Piecewise({{(I^(-1 + n)*Pochhammer(1/2, (1/2)*(-1 + n)))/(n*((1/2)*(-1 + n))!), Mod(n, 2) == 1 && n >= 0}}, 0)
     /; FreeQ(n,x),
   SeriesCoefficient(ArcTanh(x_),{x_Symbol, 0, n_?NotListQ}):=Piecewise({{1/n, Mod(n, 2) == 1 && n >= 0}}, 0)
@@ -114,12 +116,12 @@
   SeriesCoefficient(PolyLog(k_, x_),{x_Symbol, 0, n_?NotListQ}) := Piecewise({{n^(-k), n >= 1}}, 0)
     /; FreeQ(k,x) && FreeQ(n,x), 
     
-  SeriesCoefficient(ChebyshevT(k_, x_),{x_Symbol, 0, n_?NotListQ}) := Piecewise({{((-(1/2))^n*Sqrt(Pi)*Gamma(1/2 + n)*Pochhammer(-k, n)*Pochhammer(k, n))/(n!*Gamma((1/2)*(1 - k + n))*Gamma((1/2)*(1 + k + n))*Pochhammer(1/2, n)), n >= 0}}, 0)
-    /; FreeQ(k,x) && FreeQ(n,x),  
+  SeriesCoefficient(ChebyshevT(k_, x_),{x_Symbol, p_, a_?NotListQ}) := Piecewise({{DifferenceRoot(Function({y,n},{(-k^2+n^2)*y(n)+(1+n)*(1+2*n)*p*y(1+n)+(1+n)*(2+n)*(-1+p)*(1+p)*y(2+n)==0,y(0)==ChebyshevT(k,p),y(1)==k*ChebyshevT(-1+k,p)}))[a],a>=0}},0)
+    /; FreeQ(k,x) && FreeQ(a,x),  
+
+  SeriesCoefficient(ChebyshevU(k_, x_),{x_Symbol, p_, a_?NotListQ}) :=Piecewise({{DifferenceRoot(Function({y,n},{-(-n+k)*(2+n+k)*y(n)+(1+n)*(3+2*n)*p*y(1+n)+(1+n)*(2+n)*(-1+p)*(1+p)*y(2+n)==0,y(0)==ChebyshevU(k,p),y(1)==(-(1+k)*ChebyshevU(-1+k,p)+k*p*ChebyshevU(k,p))/(-1+p^2)}))[a],a>=0}},0)
+    /; FreeQ(k,x) && FreeQ(a,x),
     
-  SeriesCoefficient(ChebyshevU(k_, x_),{x_Symbol, 0, n_?NotListQ}) := Piecewise({{((-(1/2))^n*Sqrt(Pi)*Gamma(3/2 + n)*Pochhammer(-k, n)*Pochhammer(2 + k, n))/(n!*Gamma((1/2)*(1 - k + n))*Gamma((1/2)*(3 + k + n))*Pochhammer(3/2, n)), n >= 0}}, 0)
-    /; FreeQ(k,x) && FreeQ(n,x),
- 
   SeriesCoefficient(EllipticE(x_),{x_Symbol, 0, n_?NotListQ}) := Piecewise({{-((Gamma(-(1/2) + n)*Gamma(1/2 + n))/(4*Gamma(1+n)^2)), n >= 0}}, 0)
     /; FreeQ(n,x),
   SeriesCoefficient(EllipticK(x_),{x_Symbol, 0, n_?NotListQ}) := Piecewise({{Gamma(1/2+n)^2/(2*Gamma(1+n)^2), n >= 0}}, 0)

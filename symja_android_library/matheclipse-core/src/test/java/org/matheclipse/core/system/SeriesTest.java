@@ -61,6 +61,9 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testInverseSeries() {
+    check("InverseSeries(Sin(x), x)", //
+        "x+x^3/6+3/40*x^5+O(x)^6");
+
     check("Series(a1*x+a2*x^2+a3*x^3+a4*x^4+a5*x^5+a6*x^6+a7*x^7, {x, 0, 7})", //
         "a1*x+a2*x^2+a3*x^3+a4*x^4+a5*x^5+a6*x^6+a7*x^7+O(x)^8");
     check("InverseSeries(Series(a1*x+a2*x^2+a3*x^3+a4*x^4+a5*x^5+a6*x^6+a7*x^7, {x, 0, 3}))", //
@@ -154,6 +157,8 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSeries() {
+    check("Series(Log(x) * x, {x, 0, 3}) // InputForm", //
+        "SeriesData(x,0,{Log(x)},1,4,1)");
     check("Series(Sin(x)^2,{x,0,5})//InputForm", //
         "SeriesData(x,0,{1,0,-1/3},2,6,1)");
 
@@ -362,7 +367,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   @Test
   public void testSeriesData() {
     check("Series(Exp(x), {x,0,2}) // FullForm", //
-        "SeriesData(x, 0, List(1, 1, Rational(1,2)), 0, 3, 1)");
+        "SeriesData(x,0,List(1, 1, Rational(1,2)),0,3,1)");
 
     check(
         "s1=SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)*SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1) //InputForm", //
@@ -479,7 +484,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSeriesCoefficient() {
-    check("SeriesCoefficient(EllipticK(x),{x,2,3})", //
+    check("SeriesCoefficient(EllipticK(x),{x,2,3}) // Simplify", //
         "1/64*(-9*EllipticE(2)-5*EllipticK(2))");
 
     if (Config.EXPENSIVE_JUNIT_TESTS) {
@@ -510,7 +515,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
             + "1}},0)");
 
     check("SeriesCoefficient(1/x,{x,0,n})", //
-        "0");
+        "Piecewise({{1,n==-1}},0)");
     check("SeriesCoefficient(f(x),{x,a,7/3})", //
         "0");
     check("SeriesCoefficient(f(x),{x,0,4})", //
@@ -534,30 +539,10 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     check("SeriesCoefficient(x^x,{x,0,4})", //
         "Log(x)^4/24");
 
-    check("SeriesCoefficient(ChebyshevT(k, x), {x, 0, 2})", //
-        "((-1+k)*(1+k)*k^2*Pi)/(8*Gamma(1/2*(3-k))*Gamma(1/2*(3+k)))");
     // "1/2*k^2*Cos(1/2*(-2+k)*Pi)");
     check("SeriesCoefficient(d+4*x^e+7*x^f,{x, a, n})", //
         "Piecewise({{(4*a^e*Binomial(e,n)+7*a^f*Binomial(f,n))/a^n,n>0},{4*a^e+7*a^f+d,n==\n"
             + "0}},0)");
-    check("SeriesCoefficient(1/(3*x^2),{x,0,4})", //
-        "0");
-    check("SeriesCoefficient(1/(3*x^2),{x,a,4})", //
-        "5/3*1/a^6");
-    check("SeriesCoefficient(1/x^3,{x,0,-3})", //
-        "1");
-    check("SeriesCoefficient(1/x,{x,0,-1})", //
-        "1");
-    check("SeriesCoefficient(1/x,{x, a, n})", //
-        "Piecewise({{1/((-a)^n*a),n>=0}},0)");
-    check("SeriesCoefficient(1/x^5,{x, a, n})", //
-        "Piecewise({{((1+n)*(2+n)*(3+n)*(4+n))/(24*(-a)^n*a^5),n>=0}},0)");
-    check("SeriesCoefficient(1/x^2,{x, a, n})", //
-        "Piecewise({{(1+n)/((-a)^n*a^2),n>=0}},0)");
-    check("SeriesCoefficient(1/x^3,{x, a, n})", //
-        "Piecewise({{((1+n)*(2+n))/(2*(-a)^n*a^3),n>=0}},0)");
-    check("SeriesCoefficient(x^b,{x, a, n})", //
-        "Piecewise({{a^(b-n)*Binomial(b,n),n>0},{a^b,n==0}},0)");
 
     check("SeriesCoefficient(d+4*x^e+7*x^f+Sin(x),{x, a, 10})", //
         "(4*a^e*Binomial(e,10)+7*a^f*Binomial(f,10))/a^10-Sin(a)/3628800");
@@ -615,31 +600,58 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSeriesCoefficientArcCoth() {
-    // TODO fails currently due to 1/0 Division by Zero in the generic a_ rule
+
     // Should return the complex constant term: (I*Pi)/2
-    // check("SeriesCoefficient(ArcCoth(x), {x, 0, 0})", //
-    // "(I*Pi)/2");
-    //
-    // // Check an odd term to ensure the new base rule works for n > 0
-    // check("SeriesCoefficient(ArcCoth(x), {x, 0, 1})", //
-    // "1");
+    check("SeriesCoefficient(ArcCoth(x),{x,0,0})", //
+        "I*1/2*Pi");
+    check("SeriesCoefficient(ArcCoth(x),{x,0,3})", //
+        "1/3");
+    check("SeriesCoefficient(ArcCoth(x),{x,0,4})", //
+        "0");
+    check("SeriesCoefficient(ArcCoth(x),{x,0,5})", //
+        "1/5");
+    check("SeriesCoefficient(ArcCoth(x),{x,0,6})", //
+        "0");
   }
 
   @Test
   public void testSeriesCoefficientChebyshevU() {
-    // TODO fails currently because the formula is missing the (1 + k) multiplier
 
-    // // ChebyshevU(1, x) is mathematically `2x`. The x^1 coefficient must be 2.
-    // // The buggy rule currently evaluates this to 1.
-    // check("SeriesCoefficient(ChebyshevU(1, x), {x, 0, 1})", "2");
-    //
+    // ChebyshevU(1, x) is mathematically `2x`. The x^1 coefficient must be 2.
+    check("SeriesCoefficient(ChebyshevU(1, x), {x, 0, 1})", //
+        "2");
+
+    check("SeriesCoefficient(ChebyshevU(k, x), {x, xp, ord})", //
+        "Piecewise({{DifferenceRoot[Function({y,n},{-(k-n)*(2+k+n)*y(n)+(1+n)*(3+2*n)*xp*y(1+n)+(1+n)*(2+n)*(-1+xp)*(\n" //
+            + "1+xp)*y(2+n)==0,y(0)==ChebyshevU(k,xp),y(1)==(-(1+k)*ChebyshevU(-1+k,xp)+k*xp*ChebyshevU(k,xp))/(-\n" //
+            + "1+xp^2)})][ord],ord>=\n" //
+            + "0}},0)");
+    check("SeriesCoefficient(ChebyshevU(k, x), {x, 0, 1})", //
+        "(1+k)*Cos(1/2*(-1+k)*Pi)");
+
     // // ChebyshevU(2, x) is mathematically `4x^2 - 1`. The x^0 coefficient must be -1.
-    // // The buggy rule currently evaluates this to -1/3.
-    // check("SeriesCoefficient(ChebyshevU(2, x), {x, 0, 0})", "-1");
-    //
-    // // ChebyshevU(3, x) is mathematically `8x^3 - 4x`. The x^1 coefficient must be -4.
-    // // The buggy rule currently evaluates this to -1.
-    // check("SeriesCoefficient(ChebyshevU(3, x), {x, 0, 1})", "-4");
+    check("SeriesCoefficient(ChebyshevU(2, x), {x,0,0})", //
+        "-1");
+    check("SeriesCoefficient(-4*x+8*x^3, {x,0,1})", //
+        "-4");
+    check("SeriesCoefficient(ChebyshevU(3, x), {x,0,1})", //
+        "-4");
+  }
+
+  @Test
+  public void testSeriesCoefficientChebyshevT() {
+    check("SeriesCoefficient(ChebyshevT(k, x), {x, 0, 2})", //
+        "-1/2*k^2*Cos(1/2*k*Pi)");
+    check("SeriesCoefficient(ChebyshevT(k, x), {x, xp, ord})", //
+        "Piecewise({{DifferenceRoot[Function({y,n},{(-k^2+n^2)*y(n)+(1+n)*(1+2*n)*xp*y(1+n)+(1+n)*(2+n)*(-1+xp)*(1+xp)*y(\n" //
+            + "2+n)==0,y(0)==ChebyshevT(k,xp),y(1)==k*ChebyshevT(-1+k,xp)})][ord],ord>=\n" //
+            + "0}},0)");
+    check("SeriesCoefficient(ChebyshevT(2, x), {x,0,0})", //
+        "-1");
+    check("SeriesCoefficient(-3*x+4*x^3, {x,0,1})", //
+        "-3");
+    check("SeriesCoefficient(ChebyshevT(3, x), {x,0,1})", //
+        "-3");
   }
 
   @Test
@@ -930,4 +942,591 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "SeriesData(x,-Infinity,{-1},-1,0,1)");
   }
 
+  @Test
+  public void testSeriesCoefficientHypergeometricPFQ() {
+    check("SeriesCoefficient(HypergeometricPFQ({a, b}, {c}, x), {x, 0, n})", //
+        "Piecewise({{(Gamma(c)*Gamma(a+n)*Gamma(b+n))/(n!*Gamma(a)*Gamma(b)*Gamma(c+n)),n>=\n" //
+            + "0}},0)");
+
+    check("SeriesCoefficient(HypergeometricPFQ({a, b}, {c}, x), {x, 0, 3})", //
+        "(a*(1+a)*(2+a)*b*(1+b)*(2+b))/(6*c*(1+c)*(2+c))");
+
+    check("SeriesCoefficient(HypergeometricPFQ({a}, {b}, x), {x, 0, n})", //
+        "Piecewise({{(Gamma(b)*Gamma(a+n))/(n!*Gamma(a)*Gamma(b+n)),n>=0}},0)");
+
+    check("SeriesCoefficient(HypergeometricPFQ({}, {c}, x), {x, 0, n})", //
+        "SeriesCoefficient(x^(1/2-c/2)*BesselI(-1+c,2*Sqrt(x))*Gamma(c),{x,0,n})");
+  }
+
+  @Test
+  public void testResidue() {
+    // Partial fraction - fastpath)
+    check("Residue(1 / (x - 2), {x, 2})", //
+        "1");
+
+    // Pol 2.degree
+    check("Residue(1 / (x - 2)^2, {x, 2})", //
+        "0");
+
+    check("Residue(Cos(x) / x^3, {x, 0})", //
+        "-1/2");
+
+    check("Residue(x / (x^2 - 1), {x, Infinity})", //
+        "-1");
+
+    check("Residue(1 / x, {x, Infinity})", //
+        "-1");
+
+    check("Residue(Gamma(z)*Gamma(z-1)*Gamma(z-2), {z, 0})", //
+        "1/8*(-17+30*EulerGamma-18*EulerGamma^2-Pi^2)");
+    check("Residue(f(z)/z^5, {z, 0})", //
+        "Derivative(4)[f][0]/24");
+  }
+
+  @Test
+  public void testLagrangeBurmannInversion() {
+
+    // ArcSin(x) = x + x^3/6 + 3/40 x^5
+    check("SeriesCoefficient(InverseSeries(Series(Sin(x), {x, 0, 5})), {x, 0, 5})", //
+        "3/40");
+
+    check("SeriesCoefficient(InverseFunction(Sin)[x], {x, 0, 5})", //
+        "3/40");
+
+    check("InverseFunction(Exp(#)-1)[x]", //
+        "InverseFunction(-1+E^#1)[x]");
+    check("SeriesCoefficient(InverseFunction(Exp(x)-1)[x], {x, 0, 3})", //
+        "SeriesCoefficient(InverseFunction(-1+E^x)[x],{x,0,3})");
+  }
+
+  @Test
+  public void testSimplePoleAtOrigin() {
+    // 1/x expanded around x=0
+    check("SeriesCoefficient(1/x, {x, 0, n})", //
+        "Piecewise({{1,n==-1}},0)");
+
+    // n = -1 yields 1
+    check("SeriesCoefficient(1/x, {x, 0, -1})", //
+        "1");
+
+    // n = 0 yields 0
+    check("SeriesCoefficient(1/x, {x, 0, 0})", //
+        "0");
+
+    check("SeriesCoefficient(1/(3*x^2),{x,0,4})", //
+        "0");
+    check("SeriesCoefficient(1/(3*x^2),{x,a,4})", //
+        "5/3*1/a^6");
+    check("SeriesCoefficient(1/x^3,{x,0,-3})", //
+        "1");
+    check("SeriesCoefficient(1/x,{x,0,-1})", //
+        "1");
+    check("SeriesCoefficient(1/x,{x, a, n})", //
+        "Piecewise({{-1/(-a)^(1+n),n>=0}},0)");
+    check("SeriesCoefficient(1/x^5,{x, a, n})", //
+        "Piecewise({{(-24-50*n-35*n^2-10*n^3-n^4)/(24*(-a)^(5+n)),n>=0}},0)");
+    check("SeriesCoefficient(1/x^2,{x, a, n})", //
+        "Piecewise({{(1+n)/(-a)^(2+n),n>=0}},0)");
+    check("SeriesCoefficient(1/x^3,{x, a, n})", //
+        "Piecewise({{(-2-3*n-n^2)/(2*(-a)^(3+n)),n>=0}},0)");
+    check("SeriesCoefficient(x^b,{x, a, n})", //
+        "Piecewise({{a^(b-n)*Binomial(b,n),n>0},{a^b,n==0}},0)");
+  }
+
+  @Test
+  public void testGeometricSeries() {
+    // 1/(1-x) expanded around x=0
+    check("SeriesCoefficient(1/(1-x), {x, 0, n})", //
+        "Piecewise({{1,n>=0}},0)");
+
+    // Alternating geometric series 1/(1+x)
+    check("SeriesCoefficient(1/(1+x), {x, 0, n})", //
+        "Piecewise({{(-1)^n,n>=0}},0)");
+
+    // 1/(1-x) at n = 5
+    check("SeriesCoefficient(1/(1-x), {x, 0, 5})", //
+        "1");
+
+    // 1/(1+x) at n = 5
+    check("SeriesCoefficient(1/(1+x), {x, 0, 5})", //
+        "-1");
+  }
+
+  @Test
+  public void testShiftedPoles() {
+    // 1/(2-x) expanded around x=0
+    check("SeriesCoefficient(1/(2-x), {x, 0, n})", //
+        "Piecewise({{(1/2)^(1+n),n>=0}},0)");
+
+    // 1/(2-x) at n = 3
+    check("SeriesCoefficient(1/(2-x), {x, 0, 3})", //
+        "1/16");
+  }
+
+  @Test
+  public void testPartialFractionDecomposition() {
+    // Apart[x/((x-1)(x-2))] = 2/(x-2) - 1/(x-1) = 1/(1-x) - 1/(1-x/2)
+    // General coefficient: 1 - (1/2)^n
+    check("SeriesCoefficient(x/((x-1)*(x-2)), {x, 0, n}) ", //
+        "Piecewise({{1-(1/2)^n,n>=0}},0)");
+
+    // Evaluate directly for n = 5 -> 1 - (1/2)^5 = 31/32
+    check("SeriesCoefficient(x/((x-1)*(x-2)), {x, 0, 5})", //
+        "31/32");
+  }
+
+  @Test
+  public void testHigherPowerPoles() {
+    // 1/(1-x)^2 expanded around x=0
+    // General coefficient for 1/(1-x)^m is Binomial[m+n-1, n]
+    // Symja represents this natively via the Binomial limit: (-1)^n * Binomial[-2, n]
+    check("SeriesCoefficient(1/(1-x)^2, {x, 0, n})", //
+        "Piecewise({{1+n,n>=0}},0)");
+
+    // 1/(1-x)^2 at n = 5 (should be 5 + 1 = 6)
+    check("SeriesCoefficient(1/(1-x)^2, {x, 0, 5})", //
+        "6");
+
+    // 1/(1-x)^3 at n = 4 (should be Binomial[3+4-1, 4] = Binomial[6, 4] = 15)
+    check("SeriesCoefficient(1/(1-x)^3, {x, 0, 4})", //
+        "15");
+  }
+
+  @Test
+  public void testNonZeroExpansionPoints() {
+    // 1/x expanded around x=1
+    // 1/(1 + (x-1)) -> alternating geometric series (-1)^n
+    check("SeriesCoefficient(1/x, {x, 1, n})", //
+        "Piecewise({{(-1)^n,n>=0}},0)");
+
+    // 1/x at x=1 for n=3
+    check("SeriesCoefficient(1/x, {x, 1, 3})", //
+        "-1");
+
+    // 1/(x-2) expanded around x=1
+    // 1/((x-1) - 1) = -1 / (1 - (x-1)) -> general coefficient is -1
+    check("SeriesCoefficient(1/(x-2), {x, 1, n})", //
+        "Piecewise({{-1,n>=0}},0)");
+  }
+
+  @Test
+  public void testInfinityExpansionPoints() {
+    // Maps internally to x -> 1/x -> 1/(1 - 1/x) = -x / (1-x)
+    // For expansion around infinity, standard limits apply.
+    check("SeriesCoefficient(1/(1-x), {x, Infinity, -2})", //
+        "0");
+    check("SeriesCoefficient(1/(1-x), {x, Infinity, -3})", //
+        "0");
+  }
+
+  @Test
+  public void testExponentialComposition() {
+    // Exp[Sin[x]] expanded around x=0
+    // Taylor series: 1 + x + x^2/2 - x^4/8 - x^5/15 + O(x^6)
+    check("SeriesCoefficient(Exp(Sin(x)), {x, 0, 1})", //
+        "1");
+    check("SeriesCoefficient(Exp(Sin(x)), {x, 0, 2})", //
+        "1/2");
+    check("SeriesCoefficient(Exp(Sin(x)), {x, 0, 3})", //
+        "0");
+    check("SeriesCoefficient(Exp(Sin(x)), {x, 0, 4})", //
+        "-1/8");
+    check("SeriesCoefficient(Exp(Sin(x)), {x, 0, 5})", //
+        "-1/15");
+  }
+
+  @Test
+  public void testLogarithmicComposition() {
+    // Log[Cos[x]] expanded around x=0
+    // Taylor series: -x^2/2 - x^4/12 - x^6/45 + O(x^7)
+    check("SeriesCoefficient(Log(Cos(x)), {x, 0, 1})", //
+        "0");
+    check("SeriesCoefficient(Log(Cos(x)), {x, 0, 2})", //
+        "-1/2");
+    check("SeriesCoefficient(Log(Cos(x)), {x, 0, 3})", //
+        "0");
+    check("SeriesCoefficient(Log(Cos(x)), {x, 0, 4})", //
+        "-1/12");
+    check("SeriesCoefficient(Log(Cos(x)), {x, 0, 6})", //
+        "-1/45");
+  }
+
+  @Test
+  public void testTrigonometricComposition() {
+    // Sin[Sin[x]] expanded around x=0
+    // Taylor series: x - x^3/3 + x^5/10 - 8*x^7/315 + O(x^8)
+    check("SeriesCoefficient(Sin(Sin(x)), {x, 0, 1})", //
+        "1");
+    check("SeriesCoefficient(Sin(Sin(x)), {x, 0, 3})", //
+        "-1/3");
+    check("SeriesCoefficient(Sin(Sin(x)), {x, 0, 5})", //
+        "1/10");
+    check("SeriesCoefficient(Sin(Sin(x)), {x, 0, 7})", //
+        "-8/315");
+
+    // Sin[Exp[x]] expanded around x=0
+    check("SeriesCoefficient(Sin(Exp(x)), {x, 0, 1})", //
+        "Cos(1)");
+    check("SeriesCoefficient(Sin(Exp(x)), {x, 0, 2})", //
+        "Cos(1)/2-Sin(1)/2");
+  }
+
+  @Test
+  public void testShiftedExpansionPoint() {
+    // Exp[Sin[x]] expanded around x=Pi
+    // x -> Pi + y => Sin[Pi + y] = -Sin[y]
+    // Series becomes Exp[-Sin[y]] -> 1 - y + y^2/2 - y^4/8 + y^5/15 + ...
+    check("SeriesCoefficient(Exp(Sin(x)), {x, Pi, 1})", //
+        "-1");
+    check("SeriesCoefficient(Exp(Sin(x)), {x, Pi, 2})", //
+        "1/2");
+    check("SeriesCoefficient(Exp(Sin(x)), {x, Pi, 3})", //
+        "0");
+    check("SeriesCoefficient(Exp(Sin(x)), {x, Pi, 4})", //
+        "-1/8");
+    check("SeriesCoefficient(Exp(Sin(x)), {x, Pi, 5})", //
+        "1/15");
+  }
+
+  @Test
+  public void testNestedPolynomialComposition() {
+    // (x + x^2)^3 expanded around x=0
+    // (x + x^2)^3 = x^3 + 3x^4 + 3x^5 + x^6
+    // This implicitly tests if the Bell Polynomials safely handle finite degree boundaries.
+    check("SeriesCoefficient((x+x^2)^3, {x, 0, 3})", //
+        "1");
+    check("SeriesCoefficient((x+x^2)^3, {x, 0, 4})", //
+        "3");
+    check("SeriesCoefficient((x+x^2)^3, {x, 0, 5})", //
+        "3");
+    check("SeriesCoefficient((x+x^2)^3, {x, 0, 6})", //
+        "1");
+    check("SeriesCoefficient((x+x^2)^3, {x, 0, 7})", //
+        "0");
+  }
+
+  @Test
+  public void testBivariatePolynomialExpansion() {
+    // Series expands right-to-left. Normal flattens the nested SeriesData objects.
+    // (x+y)^3 expanded in x and then y should exactly reproduce the polynomial.
+    check("Series((x+y)^3, {x, 0, 3}, {y, 0, 3}) // InputForm", //
+        "SeriesData(x,0,{SeriesData(y,0,{1},3,4,1),SeriesData(y,0,{3},2,4,1),SeriesData(y,\n" //
+            + "0,{3},1,4,1),1},0,4,1)");
+    check("Normal(Series((x+y)^3, {x, 0, 3}, {y, 0, 3}))", //
+        "x^3+3*x^2*y+3*x*y^2+y^3");
+
+    // Exact truncation boundary testing
+    // (x+y)^3 expanded up to order 2 in both variables
+    // x^2 + 2xy + y^2 + (higher order terms are dropped)
+    check("Expand(Normal(Series((x+y)^3, {x, 0, 2}, {y, 0, 2})))", //
+        "3*x^2*y+3*x*y^2+y^3");
+  }
+
+  @Test
+  public void testBivariateExponential() {
+    // Exp[x+y] = Exp[x]*Exp[y]
+    // Extracting [x^1] gives Exp[y]. Expanded up to O(y^3) it is 1 + y + y^2/2
+    check("Normal(SeriesCoefficient(Series(Exp(x+y), {x, 0, 2}, {y, 0, 2}), {x, 0, 1}))",
+        "1+y+y^2/2");
+
+    // Extracting [x^2] gives Exp[y]/2 -> 1/2 + y/2 + y^2/4
+    check("Normal(SeriesCoefficient(Series(Exp(x+y), {x, 0, 2}, {y, 0, 2}), {x, 0, 2}))",
+        "1/2+y/2+y^2/4");
+
+    // Double extraction: [x^2 y^1] of Exp[x+y] is 1/2
+    check(
+        "SeriesCoefficient(SeriesCoefficient(Series(Exp(x+y), {x, 0, 2}, {y, 0, 2}), {x, 0, 2}), {y, 0, 1})",
+        "1/2");
+  }
+
+  @Test
+  public void testBivariateTrigonometric() {
+    // Cos[x*y] around {x,0}, {y,0}
+    // Maclaurin series: 1 - (x^2 * y^2)/2 + O(x^4 y^4)
+
+    // [x^0] coefficient is exactly 1
+    check("Normal(SeriesCoefficient(Series(Cos(x*y), {x, 0, 4}, {y, 0, 4}), {x, 0, 0}))", //
+        "1");
+
+    // [x^1] coefficient is 0
+    check("Normal(SeriesCoefficient(Series(Cos(x*y), {x, 0, 4}, {y, 0, 4}), {x, 0, 1}))", //
+        "0");
+
+    // [x^2] coefficient is -y^2/2
+    check("Normal(SeriesCoefficient(Series(Cos(x*y), {x, 0, 4}, {y, 0, 4}), {x, 0, 2}))", "-y^2/2");
+
+    // Double extraction: [x^2 y^2] of Cos[x*y] is -1/2
+    check(
+        "SeriesCoefficient(SeriesCoefficient(Series(Cos(x*y), {x, 0, 4}, {y, 0, 4}), {x, 0, 2}), {y, 0, 2})",
+        "-1/2");
+  }
+
+  @Test
+  public void testMultivariateLogarithm() {
+    // Log[1 + x + y] expanded up to O(2)
+    // Series gives: (y - y^2/2) + x*(1 - y) + x^2*(-1/2) + ...
+
+    // [x^0] coefficient is Log[1+y] -> y - y^2/2
+    check("Normal(SeriesCoefficient(Series(Log(1+x+y), {x, 0, 2}, {y, 0, 2}), {x, 0, 0}))",
+        "y-y^2/2");
+
+    // [x^1] coefficient is 1/(1+y) -> 1 - y + y^2
+    check("Normal(SeriesCoefficient(Series(Log(1+x+y), {x, 0, 2}, {y, 0, 2}), {x, 0, 1}))",
+        "1-y+y^2");
+
+    // [x^2] coefficient is -1/(2*(1+y)^2) -> -1/2 + y - 3/2*y^2
+    check("Normal(SeriesCoefficient(Series(Log(1+x+y), {x, 0, 2}, {y, 0, 2}), {x, 0, 2}))",
+        "-1/2+y-3/2*y^2");
+  }
+
+  @Test
+  public void testShiftedExpansionPoints() {
+    // Sin[x + y] expanded around x=Pi, y=Pi/2
+    // Sin[Pi + dx + Pi/2 + dy] = Sin[3Pi/2 + dx + dy] = -Cos[dx + dy]
+    // Series gives: -1 + (dx+dy)^2 / 2
+
+    // [x^0] coefficient is -Cos[dy] -> -1 + dy^2/2
+    check("Normal(SeriesCoefficient(Series(Sin(x+y), {x, Pi, 2}, {y, Pi/2, 2}), {x, Pi, 0}))",
+        "-1+(-Pi/2+y)^2/2");
+
+    // [x^1] coefficient is Sin[dy] -> dy
+    check("Normal(SeriesCoefficient(Series(Sin(x+y), {x, Pi, 2}, {y, Pi/2, 2}), {x, Pi, 1}))",
+        "-Pi/2+y");
+
+    // [x^2] coefficient is Cos[dy]/2 -> 1/2
+    check("Normal(SeriesCoefficient(Series(Sin(x+y), {x, Pi, 2}, {y, Pi/2, 2}), {x, Pi, 2}))",
+        "1/2-(-Pi/2+y)^2/4");
+  }
+
+  @Test
+  public void testInfinityMultivariate() {
+    // Expansion of rational functions at Infinity across multiple dimensions
+    // Series(x/(x+y), {x, Infinity, 2}, {y, 0, 2})
+    // y expands at 0 first. x expands at Infinity second.
+    // Internally maps to 1/(1 + y/x) -> 1 - y(1/x) + y^2(1/x)^2
+
+    // The leading term [x^0] at infinity (which maps internally to the constant term of 1/x) is 1
+    check(
+        "Normal(SeriesCoefficient(Series(x/(x+y), {x, Infinity, 2}, {y, 0, 2}), {x, Infinity, 0}))",
+        "1");
+
+    // The next term [x^(-1)] at infinity is -y
+    check(
+        "Normal(SeriesCoefficient(Series(x/(x+y), {x, Infinity, 2}, {y, 0, 2}), {x, Infinity, -1}))",
+        "0");
+
+    // The next term [x^(-2)] at infinity is y^2
+    check(
+        "Normal(SeriesCoefficient(Series(x/(x+y), {x, Infinity, 2}, {y, 0, 2}), {x, Infinity, -2}))",
+        "0");
+  }
+
+  @Test
+  public void testBivariatePolynomialsMulti() {
+    // (x+y)^3 = x^3 + 3x^2*y + 3x*y^2 + y^3
+
+    // Extracting [x^1] gives 3y^2. Extracting [y^2] from that gives 3.
+    check("SeriesCoefficient((x+y)^3, {x, 0, 1}, {y, 0, 2})", "3");
+
+    // Extracting [x^2] gives 3y. Extracting [y^1] from that gives 3.
+    check("SeriesCoefficient((x+y)^3, {x, 0, 2}, {y, 0, 1})", "3");
+
+    // Extracting [x^3] gives 1. Extracting [y^0] from that gives 1.
+    check("SeriesCoefficient((x+y)^3, {x, 0, 3}, {y, 0, 0})", "1");
+
+    // Extracting [x^1 y^1] should be 0 (no such term exists)
+    check("SeriesCoefficient((x+y)^3, {x, 0, 1}, {y, 0, 1})", "0");
+  }
+
+  @Test
+  public void testExponentialCompositionMulti() {
+    // Exp[x*y] = 1 + xy + (x^2 y^2)/2 + (x^3 y^3)/6 + ...
+
+    // [x^2 y^2] coefficient is 1/2
+    check("SeriesCoefficient(Exp(x*y), {x, 0, 2}, {y, 0, 2})", "1/2");
+
+    // [x^3 y^3] coefficient is 1/6
+    check("SeriesCoefficient(Exp(x*y), {x, 0, 3}, {y, 0, 3})", "1/6");
+
+    // [x^2 y^1] should be 0 because the powers are symmetrically tied
+    check("SeriesCoefficient(Exp(x*y), {x, 0, 2}, {y, 0, 1})", "0");
+
+    // Exp[x+y] = Exp[x]*Exp[y]
+    // [x^2] gives Exp[y]/2. [y^5] of Exp[y]/2 is 1 / (2 * 5!) = 1/240
+    check("SeriesCoefficient(Exp(x+y), {x, 0, 2}, {y, 0, 5})", "1/240");
+  }
+
+  @Test
+  public void testTrigonometricCompositionMulti() {
+    // Sin[x + y] = Sin[y] + Cos[y]*x - Sin[y]*x^2/2 - Cos[y]*x^3/6 + ...
+
+    // [x^1] gives Cos[y]. [y^0] of Cos[y] is 1
+    check("SeriesCoefficient(Sin(x+y), {x, 0, 1}, {y, 0, 0})", "1");
+
+    // [x^1] gives Cos[y]. [y^2] of Cos[y] is -1/2
+    check("SeriesCoefficient(Sin(x+y), {x, 0, 1}, {y, 0, 2})", "-1/2");
+
+    // [x^2] gives -Sin[y]/2. [y^1] of -Sin[y]/2 is -1/2
+    check("SeriesCoefficient(Sin(x+y), {x, 0, 2}, {y, 0, 1})", "-1/2");
+
+    // [x^2] gives -Sin[y]/2. [y^3] of -Sin[y]/2 is -1/2 * (-1/6) = 1/12
+    check("SeriesCoefficient(Sin(x+y), {x, 0, 2}, {y, 0, 3})", "1/12");
+  }
+
+  @Test
+  public void testLogarithmicRational() {
+    // Log[1 + x + y] expanded in x gives:
+    // Log[1+y] + x/(1+y) - x^2/(2(1+y)^2) + x^3/(3(1+y)^3) + ...
+
+    // [x^1] gives 1/(1+y) = 1 - y + y^2 - y^3...
+    // [y^1] is -1
+    check("SeriesCoefficient(Log(1+x+y), {x, 0, 1}, {y, 0, 1})", "-1");
+
+    // [x^1 y^2] is 1
+    check("SeriesCoefficient(Log(1+x+y), {x, 0, 1}, {y, 0, 2})", "1");
+
+    // [x^2] gives -1/(2*(1+y)^2).
+    // [y^1] is the linear term of -1/2 * (1 - 2y + ...) = 1
+    check("SeriesCoefficient(Log(1+x+y), {x, 0, 2}, {y, 0, 1})", "1");
+  }
+
+  @Test
+  public void testShiftedExpansionPointsMulti() {
+    // Expanded around x=1, y=2 for the function x * y
+    // Let x = 1+dx, y = 2+dy. Then x*y = (1+dx)(2+dy) = 2 + 2dx + dy + dx*dy
+
+    // [dx^1 dy^1] coefficient is exactly 1
+    check("SeriesCoefficient(x*y, {x, 1, 1}, {y, 2, 1})", "1");
+
+    // [dx^0 dy^1] coefficient is 1
+    check("SeriesCoefficient(x*y, {x, 1, 0}, {y, 2, 1})", "1");
+
+    // [dx^1 dy^0] coefficient is 2
+    check("SeriesCoefficient(x*y, {x, 1, 1}, {y, 2, 0})", "2");
+  }
+
+  @Test
+  public void testInfinityExpansionsMulti() {
+    // 1/(x*y) expanded around x=Infinity, y=Infinity
+    // Maps internally to x -> 1/x and y -> 1/y
+    // The power series represents x^(-1) y^(-1).
+
+    // [x^(-1) y^(-1)] is 0
+    check("SeriesCoefficient(1/(x*y), {x, Infinity, -1}, {y, Infinity, -1})", //
+        "0");
+
+    // [x^(-1) y^0] is 0
+    check("SeriesCoefficient(1/(x*y), {x, Infinity, -1}, {y, Infinity, 0})", //
+        "0");
+
+    // (x^2 + y) / (x^3 * y^2) = 1/(x*y^2) + 1/(x^3*y)
+    // [x^(-1) y^(-2)] is 0
+    check("SeriesCoefficient((x^2+y)/(x^3*y^2), {x, Infinity, -1}, {y, Infinity, -2})", //
+        "0");
+
+    // [x^(-3) y^(-1)] is 0
+    check("SeriesCoefficient((x^2+y)/(x^3*y^2), {x, Infinity, -3}, {y, Infinity, -1})", //
+        "0");
+
+    // 1/(x*y) is exactly (1/x)^1 * (1/y)^1
+    // Querying for n=1, m=1 gives exactly 1.
+    check("SeriesCoefficient(1/(x*y), {x, Infinity, 1}, {y, Infinity, 1})", //
+        "1");
+
+    // Querying for polynomial powers of x and y (which requires negative indices)
+    // x^2 * y^3 is (1/x)^(-2) * (1/y)^(-3)
+    check("SeriesCoefficient(x^2 * y^3, {x, Infinity, -2}, {y, Infinity, -3})", //
+        "1");
+
+    // Decomposed fractions: (x + 2*y) / (x*y) = 1/y + 2/x
+    // The coefficient for (1/x)^0 * (1/y)^1 is 1
+    check("SeriesCoefficient((x+2*y)/(x*y), {x, Infinity, 0}, {y, Infinity, 1})", //
+        "1");
+    // The coefficient for (1/x)^1 * (1/y)^0 is 2
+    check("SeriesCoefficient((x+2*y)/(x*y), {x, Infinity, 1}, {y, Infinity, 0})", //
+        "2");
+
+    // Higher order rational fractions: (x^2 + y) / (x^3 * y^2) = 1/(x*y^2) + 1/(x^3*y)
+    // Extracting (1/x)^1 * (1/y)^2 gives 1
+    check("SeriesCoefficient((x^2+y)/(x^3*y^2), {x, Infinity, 1}, {y, Infinity, 2})", //
+        "1");
+    // Extracting (1/x)^3 * (1/y)^1 gives 1
+    check("SeriesCoefficient((x^2+y)/(x^3*y^2), {x, Infinity, 3}, {y, Infinity, 1})", //
+        "1");
+
+    // Taylor expansion bounds at Infinity
+    // Sin[1/x] * Cos[1/y] = (1/x - 1/(6x^3) + ...) * (1 - 1/(2y^2) + ...)
+    // Coefficient of (1/x)^1 * (1/y)^0 is 1
+    check("SeriesCoefficient(Sin(1/x)*Cos(1/y), {x, Infinity, 1}, {y, Infinity, 0})", //
+        "1");
+    // Coefficient of (1/x)^1 * (1/y)^2 is -1/2
+    check("SeriesCoefficient(Sin(1/x)*Cos(1/y), {x, Infinity, 1}, {y, Infinity, 2})", //
+        "-1/2");
+  }
+
+  @Test
+  public void testFaaDiBrunoExponential() {
+    // Tests compositeSeriesCoefficient -> bellY via Exp(g(x))
+    // f(y) = Exp(y), f^{(k)}(0) = 1
+    // SeriesCoefficient calculates: (1/n!) * Sum[ BellY(n, k, {g', g'', ...}) ]
+    // This flawlessly verifies that bellY produces exact analytical expansions.
+
+    check("Expand(SeriesCoefficient(Exp(a*x), {x, 0, 3}))", //
+        "a^3/6");
+
+    check("Expand(SeriesCoefficient(Exp(a*x + b*x^2), {x, 0, 2}))", //
+        "a^2/2+b");
+
+    check("Expand(SeriesCoefficient(Exp(a*x + b*x^2 + c*x^3), {x, 0, 3}))", //
+        "a^3/6+a*b+c");
+
+    check("Expand(SeriesCoefficient(Exp(a*x + b*x^2 + c*x^3 + d*x^4), {x, 0, 4}))",
+        "a^4/24+1/2*a^2*b+b^2/2+a*c+d");
+  }
+
+  @Test
+  public void testFaaDiBrunoLogarithmic() {
+    // Tests compositeSeriesCoefficient -> bellY via Log(1 + g(x))
+    // f(y) = Log(1+y), f'(0)=1, f''(0)=-1, f'''(0)=2
+    // Verifies the outer derivative contractions against the Bell polynomials.
+
+    check("Expand(SeriesCoefficient(Log(1 + a*x + b*x^2), {x, 0, 2}))", //
+        "-a^2/2+b");
+
+    check("Expand(SeriesCoefficient(Log(1 + a*x + b*x^2 + c*x^3), {x, 0, 3}))", //
+        "a^3/3-a*b+c");
+  }
+
+  @Test
+  public void testFaaDiBrunoGenericFunction() {
+    // Evaluates Faà di Bruno's formula for an undefined function f(g(x)).
+    // This strictly verifies that the Bell polynomials are generated and grouped
+    // correctly by derivative order without any algebraic collapse.
+
+    // n = 1
+    check("SeriesCoefficient(f(g(x)), {x, 0, 1})", //
+        "f'(g(0))*g'(0)");
+
+    // n = 2
+    check("SeriesCoefficient(f(g(x)), {x, 0, 2})", //
+        "1/2*g'(0)^2*f''(g(0))+1/2*f'(g(0))*g''(0)");
+
+    // n = 3
+    check("SeriesCoefficient(f(g(x)), {x, 0, 3})",
+        "1/2*g'(0)*f''(g(0))*g''(0)+1/6*g'(0)^3*Derivative(3)[f][g(0)]+1/6*f'(g(0))*Derivative(\n" //
+            + "3)[g][0]");
+  }
+
+  @Test
+  public void testFaaDiBrunoTrigonometric() {
+    // Tests the combination of overlapping Bell polynomial terms
+    // For f(x) = Sin(x), the even derivatives evaluate to 0, which
+    // tests the skipping/filtering logic in the Faà di Bruno sum loop.
+
+    check("Expand(SeriesCoefficient(Sin(a*x + b*x^2), {x, 0, 3}))", //
+        "-a^3/6");
+
+    check("Expand(SeriesCoefficient(Cos(a*x + b*x^2), {x, 0, 4}))", //
+        "a^4/24-b^2/2");
+  }
 }

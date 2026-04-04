@@ -9,7 +9,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * Implementation of the {@code DifferenceQuotient} function. *
+ * Implementation of the {@code DifferenceQuotient} function.
  * <p>
  * DifferenceQuotient gives the slope of the secant line joining two nearby points on a curve.
  * DifferenceQuotient(f,{x,n,h}) is equivalent to DifferenceDelta(f,{x,n,h})/h^n.

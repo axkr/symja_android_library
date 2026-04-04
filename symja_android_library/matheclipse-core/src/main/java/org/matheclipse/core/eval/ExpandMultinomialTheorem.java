@@ -2,7 +2,6 @@ package org.matheclipse.core.eval;
 
 import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -26,50 +25,30 @@ public class ExpandMultinomialTheorem {
    * @return an {@link IASTAppendable} containing the expanded result
    */
   public static IASTAppendable expand(IAST plusAST, int exponent, int numberOfTerms) {
-    final IASTAppendable expandedResult = F.ast(S.Plus, numberOfTerms);
+    final IASTAppendable expandedResult = F.PlusAlloc(numberOfTerms);
     ExpandMultinomialTheorem part = new ExpandMultinomialTheorem(plusAST, exponent, expandedResult);
     part.partition();
     return expandedResult;
   }
+
   IASTAppendable expandedResult;
   int m;
   final int n;
-
   int[] parts;
 
-  /**
-   * Cached {@link S#Power} calculations for each part of the {@link S#Plus} AST.
-   * <p>
-   * If <code>x</code> is an argument of the {@link S#Plus} AST at position <code>i</code>, then the
-   * <code>cachedPowers[i - 1] = {x^1, x^2, x^3,....,x^n}</code> will be calculated and stored in
-   * the cache.
-   */
-  final IASTAppendable[] cachedPowers;
+  final IExpr[][] cachedPowers;
 
-  /**
-   * Constructor for expanding a multinomial expression of the form
-   * <code>(x1 + x2 + ... + xm)^n</code> into a sum of terms of the form
-   * <code>c*x1^k1*x2^k2*...*xm^km</code>, where <code>c</code> is a multinomial coefficient and
-   * <code>ki</code> are non-negative integers such that <code>k1 + k2 + ... + km =
-   * n</code>.
-   *
-   * @param plusAST the {@link S#Plus} AST to expand
-   * @param exponent the exponent <code>n</code>
-   * @param expandedResult the {@link IASTAppendable} to store the expanded result
-   */
   public ExpandMultinomialTheorem(IAST plusAST, int exponent, IASTAppendable expandedResult) {
     this.expandedResult = expandedResult;
     this.n = exponent;
     this.m = plusAST.argSize();
     this.parts = new int[m];
-    // cache all {@link S#Power} calculations for each part of the {@link S#Plus} AST:
-    this.cachedPowers = new IASTAppendable[m];
+
+    this.cachedPowers = new IExpr[m][exponent + 1];
     for (int i = 1; i < plusAST.size(); i++) {
       IExpr arg = plusAST.get(i);
-      cachedPowers[i - 1] = F.ListAlloc(exponent + 1);
-      for (int j = 0; j < exponent; j++) {
-        // x^1, x^2, x^3,....,x^n
-        this.cachedPowers[i - 1].append(arg.pow(j + 1));
+      for (int j = 1; j <= exponent; j++) {
+        this.cachedPowers[i - 1][j] = arg.pow(j);
       }
     }
   }
@@ -78,13 +57,15 @@ public class ExpandMultinomialTheorem {
     final KPermutationsIterable perm = new KPermutationsIterable(j, m, m);
     IInteger multinomial = AbstractIntegerSym.multinomial(j, n);
     TimesOp timesOp = new TimesOp(32);
+
     for (int[] indices : perm) {
       if (!multinomial.isOne()) {
         timesOp.appendRecursive(multinomial);
       }
       for (int k = 0; k < m; k++) {
-        if (indices[k] != 0) {
-          IExpr temp = cachedPowers[k].get(indices[k]);
+        int idx = indices[k];
+        if (idx != 0) {
+          IExpr temp = cachedPowers[k][idx];
           if (temp.equals(F.C1)) {
             // keep numeric 1.0 values here
             continue;
@@ -109,8 +90,7 @@ public class ExpandMultinomialTheorem {
     if (currentIndex >= m) {
       return;
     }
-    int old;
-    old = parts[currentIndex];
+    int old = parts[currentIndex];
     int min = Math.min(max, n);
 
     for (int i = min; i >= 1; i--) {

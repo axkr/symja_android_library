@@ -13,7 +13,7 @@ public class LimitRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 65, 25 };
+  final public static int[] SIZES = { 66, 27 };
 
   final public static IAST RULES = List(
     IInit(Limit, SIZES),
@@ -83,8 +83,20 @@ public class LimitRules {
     // Limit(Tan(x_),x_Symbol->Pi/2):=Indeterminate
     ISetDelayed(Limit(Tan(x_),Rule(x_Symbol,CPiHalf)),
       Indeterminate),
+    // Limit(Tan(x_),x_Symbol->Infinity):=Indeterminate
+    ISetDelayed(Limit(Tan(x_),Rule(x_Symbol,oo)),
+      Indeterminate),
+    // Limit(Tan(x_),x_Symbol->-Infinity):=Indeterminate
+    ISetDelayed(Limit(Tan(x_),Rule(x_Symbol,Noo)),
+      Indeterminate),
     // Limit(Cot(x_),x_Symbol->0):=Indeterminate
     ISetDelayed(Limit(Cot(x_),Rule(x_Symbol,C0)),
+      Indeterminate),
+    // Limit(Cot(x_),x_Symbol->Infinity):=Indeterminate
+    ISetDelayed(Limit(Cot(x_),Rule(x_Symbol,oo)),
+      Indeterminate),
+    // Limit(Cot(x_),x_Symbol->-Infinity):=Indeterminate
+    ISetDelayed(Limit(Cot(x_),Rule(x_Symbol,Noo)),
       Indeterminate),
     // Limit(ArcCos(x_),x_Symbol->Infinity)=I*Infinity
     ISet(Limit(ArcCos(x_),Rule(x_Symbol,oo)),
@@ -263,18 +275,15 @@ public class LimitRules {
     // Limit(Gamma(x_),x_Symbol->0,Direction->-1)=Infinity
     ISet(Limit(Gamma(x_),Rule(x_Symbol,C0),Rule(Direction,CN1)),
       oo),
+    // Limit(Gamma(x_),x_Symbol->Infinity)=Infinity
+    ISet(Limit(Gamma(x_),Rule(x_Symbol,oo)),
+      oo),
     // Limit(Gamma(z_,x_),x_Symbol->Infinity)=0
     ISet(Limit(Gamma(z_,x_),Rule(x_Symbol,oo)),
       C0),
     // Limit(Gamma(z_,x_),x_Symbol->0):=Gamma(z)
     ISetDelayed(Limit(Gamma(z_,x_),Rule(x_Symbol,C0)),
       Gamma(z)),
-    // Limit(x_/Abs(x_),x_Symbol->0,Direction->1):=-1
-    ISetDelayed(Limit(Times(Power(Abs(x_),CN1),x_),Rule(x_Symbol,C0),Rule(Direction,C1)),
-      CN1),
-    // Limit(x_/Abs(x_),x_Symbol->0,Direction->-1):=1
-    ISetDelayed(Limit(Times(Power(Abs(x_),CN1),x_),Rule(x_Symbol,C0),Rule(Direction,CN1)),
-      C1),
     // Limit(Tan(x_),x_Symbol->Pi/2,Direction->1):=Infinity
     ISetDelayed(Limit(Tan(x_),Rule(x_Symbol,CPiHalf),Rule(Direction,C1)),
       oo),

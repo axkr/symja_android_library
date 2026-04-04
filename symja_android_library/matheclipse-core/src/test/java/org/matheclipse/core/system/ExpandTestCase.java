@@ -130,7 +130,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testExpandPerformance003() {
     if (Config.EXPENSIVE_JUNIT_TESTS) {
-      // best time 8.8 s
+      // best time 6.6 s
       // ExpandAll((a+b+2*c+x+y+3*z)^24)
       IAST ast =
           F.binaryAST2(S.Power, Plus(a, b, F.Times(C2, c), x, y, F.Times(F.C3, z)), F.ZZ(24));
@@ -163,7 +163,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testExpandPerformance005() {
     if (Config.EXPENSIVE_JUNIT_TESTS) {
-      // best time 2.5 s
+      // best time 0.3 s
       String str =
           "k1 = -2*u2*u3*(2*u3*(2*u1 - 2*u2)* ((-u2)*u3*(-u2^2 + 3*u3^2)*(u3^2 - 3*(u1 - u2)^2) -  u3*(u1 - u2)*(-3*u2^2 + u3^2)*(3*u3^2 - (u1 - u2)^2))^2* (u2*(u1 - u2)^2 - Sqrt(3)*u3^3));\n"
               + "k2 = -(u2^2 - u3^2)*(2* u3*(2*u1 - 2*u2)*(-u2*u3*(-u2^2 + 3*u3^2)*(u3^2 - 3*(u1 - u2)^2) - u3*(u1 - u2)*(-3*u2^2 + u3^2)*(3*u3^2 - (u1 - u2)^2))^2*(u2*(u1 - u2)^2 - Sqrt(3)*u3^3 + u3^2*(2*u1 - 3*u2)));";
