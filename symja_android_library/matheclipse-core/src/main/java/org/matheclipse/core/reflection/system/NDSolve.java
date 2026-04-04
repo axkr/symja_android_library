@@ -5,7 +5,6 @@ import org.hipparchus.ode.ODEState;
 import org.hipparchus.ode.ODEStateAndDerivative;
 import org.hipparchus.ode.OrdinaryDifferentialEquation;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
@@ -72,9 +71,6 @@ public class NDSolve extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    if (!ToggleFeature.DSOLVE) {
-      return F.NIL;
-    }
     if (ast.arg3().isList()) {
       final IAST tRangeList = (IAST) ast.arg3();
       if (!(tRangeList.isAST2() || tRangeList.isAST3())) {
