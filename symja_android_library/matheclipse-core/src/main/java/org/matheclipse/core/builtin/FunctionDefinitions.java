@@ -37,6 +37,8 @@ public final class FunctionDefinitions {
       S.ConnectedGraphComponents
           .setEvaluator(new org.matheclipse.core.reflection.system.ConnectedGraphComponents());
       S.D.setEvaluator(new org.matheclipse.core.reflection.system.D());
+      S.DeBruijnSequence
+          .setEvaluator(new org.matheclipse.core.reflection.system.DeBruijnSequence());
       S.Derivative.setEvaluator(new org.matheclipse.core.reflection.system.Derivative());
       S.DifferenceDelta.setEvaluator(new org.matheclipse.core.reflection.system.DifferenceDelta());
       S.DifferenceQuotient
@@ -60,6 +62,10 @@ public final class FunctionDefinitions {
       S.FindRoot.setEvaluator(new org.matheclipse.core.reflection.system.FindRoot());
       S.FindSequenceFunction
           .setEvaluator(new org.matheclipse.core.reflection.system.FindSequenceFunction());
+      S.FiniteGroupCount
+          .setEvaluator(new org.matheclipse.core.reflection.system.FiniteGroupCount());
+      S.FiniteAbelianGroupCount
+          .setEvaluator(new org.matheclipse.core.reflection.system.FiniteAbelianGroupCount());
       S.FittedModel.setEvaluator(new org.matheclipse.core.reflection.system.FittedModel());
       S.Fourier.setEvaluator(new org.matheclipse.core.reflection.system.Fourier());
       S.FourierCosTransform
@@ -107,6 +113,7 @@ public final class FunctionDefinitions {
       S.LogBarnesG.setEvaluator(new org.matheclipse.core.reflection.system.LogBarnesG());
 
       S.MeijerG.setEvaluator(new org.matheclipse.core.reflection.system.MeijerG());
+      S.MeijerGReduce.setEvaluator(new org.matheclipse.core.reflection.system.MeijerGReduce());
       S.MinimalPolynomial
           .setEvaluator(new org.matheclipse.core.reflection.system.MinimalPolynomial());
       S.N.setEvaluator(new org.matheclipse.core.reflection.system.N());
@@ -147,6 +154,7 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.SymmetricPolynomial());
       S.SymmetricReduction
           .setEvaluator(new org.matheclipse.core.reflection.system.SymmetricReduction());
+      S.Symmetrize.setEvaluator(new org.matheclipse.core.reflection.system.Symmetrize());
       S.Taylor.setEvaluator(new org.matheclipse.core.reflection.system.Taylor());
       S.TreeForm.setEvaluator(new org.matheclipse.core.reflection.system.TreeForm());
       S.TreeGraph.setEvaluator(new org.matheclipse.core.reflection.system.TreeGraph());
