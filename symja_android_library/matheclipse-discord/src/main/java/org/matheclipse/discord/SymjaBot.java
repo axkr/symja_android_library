@@ -222,7 +222,7 @@ public class SymjaBot {
       mChannel //
           .ofType(GuildMessageChannel.class)
           .flatMap(ch -> ch.createMessage(MessageCreateSpec.builder() //
-              .addFile("file-name.png", inputStream).addEmbed(embed).build()))
+              .addFile("file-name.png","PNG image", inputStream).addEmbed(embed).build()))
           .block();
     } catch (IOException e) {
       e.printStackTrace();
