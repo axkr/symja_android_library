@@ -28,12 +28,6 @@ public class ToggleFeature {
   // public static boolean DEFER = true;
 
   /**
-   * If <code>true</code>, enable <code>org.matheclipse.core.reflection.system.DSolve</code>
-   * function.
-   */
-  public static boolean DSOLVE = true;
-
-  /**
    * If <code>true</code> calculate &quot;eigen&quot; functions {@link S#Eigensystem},
    * {@link S#Eigenvalues}, {@link S#Eigenvectors} symbolically. If <code>false</code> always
    * calculate numerically.

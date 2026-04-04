@@ -82,7 +82,8 @@ public final class N extends AbstractCoreFunctionEvaluator {
     final long oldDigitPrecision = engine.getNumericPrecision();
     try {
       long nDigitPrecision = oldDigitPrecision;
-      arg2 = engine.evaluateNonNumeric(arg2);
+      // arg2 = engine.evaluateNonNumeric(arg2);
+      arg2 = engine.evalN(F.Ceiling(arg2));
       nDigitPrecision = arg2.toIntDefault();
       if (nDigitPrecision <= 0) {
         // Requested precision `1` is smaller than `2`.

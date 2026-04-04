@@ -114,6 +114,7 @@ public class ConstantDefinitions {
       S.I.setEvaluator(new I());
       S.Infinity.setEvaluator(new Infinity());
       S.Khinchin.setEvaluator(new Khinchin());
+      S.MachinePrecision.setEvaluator(new MachinePrecision());
       S.Pi.setEvaluator(new Pi());
 
       S.Now.setEvaluator(new Now());
@@ -130,6 +131,29 @@ public class ConstantDefinitions {
   }
 
   private ConstantDefinitions() {}
+
+  private static class MachinePrecision extends AbstractSymbolEvaluator implements IRealConstant {
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.CONSTANT);
+    }
+
+    @Override
+    public IExpr numericEval(final ISymbol symbol, EvalEngine engine) {
+      return F.num(ParserConfig.MACHINE_PRECISION_DOUBLE);
+    }
+
+    @Override
+    public double evalReal() {
+      return ParserConfig.MACHINE_PRECISION_DOUBLE;
+    }
+
+    @Override
+    public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
+      return F.NIL;
+    }
+  }
 
   private static class NILEvaluator extends AbstractSymbolEvaluator {
     static final NILEvaluator CONST = new NILEvaluator();
@@ -383,7 +407,7 @@ public class ConstantDefinitions {
 
     @Override
     public IExpr evaluate(final ISymbol symbol, EvalEngine engine) {
-      return F.ZZ(ParserConfig.MACHINE_PRECISION);
+      return F.num(ParserConfig.MACHINE_PRECISION_DOUBLE);
     }
   }
 
