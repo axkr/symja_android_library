@@ -127,9 +127,14 @@ public class PerfectHashMap<T> implements Serializable {
   private void prepend(int spaces) {
     final int length = values.length;
 
-    values = Arrays.copyOf(values, length + spaces);
+    // Create a brand new array with the required extra capacity
+    T[] newValues = (T[]) new Object[length + spaces];
 
-    System.arraycopy(values, 0, values, spaces, length);
+    // Copy the old values into the new array, offset by 'spaces'
+    System.arraycopy(values, 0, newValues, spaces, length);
+
+    // Replace the old array reference
+    values = newValues;
   }
 
   /**

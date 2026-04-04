@@ -1,9 +1,22 @@
 package org.matheclipse.core.system;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map.Entry;
+import org.hipparchus.linear.FieldMatrix;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.data.SparseArrayExpr.SparseExprMatrix;
+import org.matheclipse.core.expression.data.SparseArrayExpr.SparseExprVector;
+import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.trie.Trie;
+import org.matheclipse.parser.trie.TrieBuilder;
+import org.matheclipse.parser.trie.TrieMatch;
+import org.matheclipse.parser.trie.TrieSequencerIntArray;
 
 /** Tests for SparseArray functions */
 public class SparseArrayTest extends ExprEvaluatorTestCase {
@@ -411,8 +424,12 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
     check(
         "s=SparseArray(Automatic, {5}, 0, {1, {{0, 5}, {{1}, {2}, {3}, {4}, {5}}},  {1, 2, 3, 4, 5}})", //
         "SparseArray(Number of elements: 5 Dimensions: {5} Default value: 0)");
-    check("SparseArray(s, {10}, 2)", //
-        "SparseArray(Number of elements: 9 Dimensions: {10} Default value: 2)");
+    check("s // Normal", //
+        "{1,2,3,4,5}");
+    check("t=SparseArray(s, {10}, 2)", //
+        "SparseArray(Number of elements: 4 Dimensions: {10} Default value: 2)");
+    check("t // Normal", //
+        "{1,2,3,4,5,2,2,2,2,2}");
     check("SparseArray(s, Automatic, 2)", //
         "SparseArray(Number of elements: 4 Dimensions: {5} Default value: 2)");
     check("SparseArray(s)", //
@@ -566,10 +583,30 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSparseArrayQ() {
+    check("s=SparseArray(SparseArray({1 -> a, 2 -> b}, {2}), {4}) ", //
+        "SparseArray(Number of elements: 2 Dimensions: {4} Default value: 0)");
+    check("SparseArrayQ(s)", //
+        "True");
+    check("s // Normal", //
+        "{a,b,0,0}");
+    check("s = SparseArray({{1, 1} -> 1, {2, 3} -> 4}, {5,5})", //
+        "SparseArray(Number of elements: 2 Dimensions: {5,5} Default value: 0)");
+    check("SparseArrayQ(s)", //
+        "True");
+    check("s // Normal", //
+        "{{1,0,0,0,0},\n" //
+            + " {0,0,4,0,0},\n" //
+            + " {0,0,0,0,0},\n" //
+            + " {0,0,0,0,0},\n" //
+            + " {0,0,0,0,0}}");
     check("s = SparseArray({{1, 1} -> 1, {2, 3} -> 4, {3, 1} -> -1})", //
         "SparseArray(Number of elements: 3 Dimensions: {3,3} Default value: 0)");
     check("SparseArrayQ(s)", //
         "True");
+    check("s // Normal", //
+        "{{1,0,0},\n" //
+            + " {0,0,4},\n" //
+            + " {-1,0,0}}");
   }
 
   @Test
@@ -601,6 +638,102 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
     check("s // Normal", //
         "{{11,1,19,2},\n" //
             + " {11,1,19,2}}");
+  }
+
+  @Test
+  public void testSparseMatrixVectorMultiplicationAPI() {
+    // Create 3x3 sparse matrix
+    SparseExprMatrix matrix = new SparseExprMatrix(3, 3, F.C0);
+    matrix.setEntry(0, 0, F.num(2));
+    matrix.setEntry(1, 1, F.num(3));
+    matrix.setEntry(2, 2, F.num(4));
+    matrix.setEntry(0, 2, F.num(5)); // M(0, 2) = 5
+
+    // Create 3x1 sparse vector
+    SparseExprVector vector = new SparseExprVector(3, F.C0);
+    vector.setEntry(0, F.a);
+    vector.setEntry(1, F.b);
+    vector.setEntry(2, F.c);
+
+    // Native API operation
+    SparseExprVector result = matrix.operate(vector);
+    assertEquals(result.toString(), //
+        "SparseArrayExpr$SparseExprVector{2.0*a+5.0*c,3.0*b,4.0*c}");
+    assertEquals(F.Plus(F.Times(F.num(2), F.a), F.Times(F.num(5), F.c)), result.getEntry(0));
+    assertEquals(F.Times(F.num(3), F.b), result.getEntry(1));
+    assertEquals(F.Times(F.num(4), F.c), result.getEntry(2));
+  }
+
+  @Test
+  public void testTrie() {
+    final Trie<int[], Number> resultTrie =
+        new TrieBuilder<int[], Number, ArrayList<Number>>(TrieSequencerIntArray.INSTANCE,
+            TrieMatch.EXACT, () -> new ArrayList<Number>(), (Number) null, false)//
+                .build();
+    resultTrie.putIfAbsent(new int[] {4, 1}, 1);
+    resultTrie.putIfAbsent(new int[] {3, 2}, 1);
+    resultTrie.putIfAbsent(new int[] {1, 3}, 1);
+    for (Entry<int[], Number> entry : resultTrie.entrySet()) {
+      System.out.println("Entry-ID" + entry + " Key: " + Arrays.toString(entry.getKey())
+          + " Value: "
+          + entry.getValue());
+    }
+  }
+
+  @Test
+  public void testSparseMatrixMatrixMultiplicationAPI() {
+    // Matrix A (2x3)
+    SparseExprMatrix matrixA = new SparseExprMatrix(2, 3, F.C0);
+    matrixA.setEntry(0, 0, F.num(1));
+    matrixA.setEntry(0, 2, F.num(2));
+    matrixA.setEntry(1, 1, F.num(3));
+
+    // Matrix B (3x2)
+    SparseExprMatrix matrixB = new SparseExprMatrix(3, 2, F.C0);
+    matrixB.setEntry(0, 1, F.x);
+    matrixB.setEntry(1, 0, F.y);
+    matrixB.setEntry(2, 1, F.z);
+
+    // Multiply A * B -> Result should be 2x2
+    FieldMatrix<IExpr> result = matrixA.multiply(matrixB);
+    assertEquals(result.toString(), //
+        "SparseArrayExpr$SparseExprMatrix{{0,x+2.0*z},{3.0*y,0}}");
+    assertEquals(2, result.getRowDimension());
+    assertEquals(2, result.getColumnDimension());
+
+    // Row 0
+    assertEquals(F.C0, result.getEntry(0, 0));
+    assertEquals(F.Plus(F.x, F.Times(F.num(2), F.z)), result.getEntry(0, 1));
+
+    // Row 1
+    assertEquals(F.Times(F.num(3), F.y), result.getEntry(1, 0));
+    assertEquals(F.C0, result.getEntry(1, 1));
+  }
+
+  @Test
+  public void testSparseDotProductEvaluation() {
+    // Ensure that Symja's Dot operator correctly evaluates the nested sparse array mechanics
+    // natively
+    String matrixDef = "SparseArray({{1, 1} -> 2, {2, 2} -> 3, {1, 3} -> 5}, {3, 3})";
+    String vectorDef = "SparseArray({1 -> a, 2 -> b, 3 -> c}, {3})";
+
+    // Dot[Matrix, Vector]
+    IExpr resultVec = evaluator.eval("Dot(" + matrixDef + ", " + vectorDef + ")");
+
+    assertEquals(resultVec.toString(), //
+        "SparseArray(Number of elements: 2 Dimensions: {3} Default value: 0)");
+    // Output should be evaluated back out to a SparseArray / List
+    IExpr expectedVec = evaluator.eval("{2*a + 5*c, 3*b, 0}");
+    assertEquals(expectedVec.normal(false), resultVec.normal(false));
+
+    // Dot[Matrix, Matrix]
+    String matrixBDef = "SparseArray({{1, 2} -> x, {2, 1} -> y, {3, 2} -> z}, {3, 2})";
+    IExpr resultMat = evaluator.eval("Dot(" + matrixDef + ", " + matrixBDef + ")");
+
+    assertEquals(resultMat.toString(), //
+        "SparseArray(Number of elements: 2 Dimensions: {3,2} Default value: 0)");
+    IExpr expectedMat = evaluator.eval("{{0, 2*x + 5*z}, {3*y, 0}, {0, 0}}");
+    assertEquals(expectedMat.normal(false), resultMat.normal(false));
   }
 
   /** The JUnit setup method */

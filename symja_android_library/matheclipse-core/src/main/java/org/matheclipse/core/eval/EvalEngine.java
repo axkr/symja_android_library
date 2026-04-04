@@ -304,6 +304,13 @@ public class EvalEngine implements Serializable {
       () -> new EvalEngine("ThreadLocal", Config.DEFAULT_RECURSION_LIMIT, System.out, true));
 
   /**
+   * The {@link FixedPrecisionApfloatHelper} instance for double precision calculations in the
+   * Apfloat library.
+   */
+  private final static FixedPrecisionApfloatHelper APFLOAT_HELPER_DOUBLE =
+      new FixedPrecisionApfloatHelper(ParserConfig.MACHINE_PRECISION + 1);
+
+  /**
    * Get the thread local evaluation engine instance
    *
    * @return the current {@link EvalEngine} for this thread.
@@ -400,6 +407,69 @@ public class EvalEngine implements Serializable {
     return argsAST.map(x -> x.isUnevaluated() ? //
         unevaluatedArg1(unevaluatedFunction, x.first()) : //
         x);
+  }
+
+  /**
+   * Remember which local variable names we use in the given <code>assignedValues</code> and <code>
+   * assignedRules</code>.
+   *
+   * @param variablesList initializer variables list from the <code>Block</code> function
+   * @param oldAssignedValues the variables mapped to their values (IExpr) before evaluating the
+   *        block
+   * @param oldAssignedRules the variables mapped to their rules (RulesData) before evaluating the
+   *        block
+   * @param engine the evaluation engine
+   */
+  private static void rememberBlockVariables(IAST variablesList, final ISymbol[] symbolList,
+      final IExpr[] oldAssignedValues, final RulesData[] oldAssignedRules,
+      final EvalEngine engine) {
+    ISymbol variableSymbol;
+    for (int i = 1; i < variablesList.size(); i++) {
+      if (variablesList.get(i).isSymbol()) {
+        variableSymbol = (ISymbol) variablesList.get(i);
+        if (variableSymbol.isBuiltInSymbol()) {
+          ISymbol substitute = ((IBuiltInSymbol) variableSymbol).mapToGlobal(engine);
+          if (substitute != null) {
+            variableSymbol = substitute;
+          }
+        }
+        symbolList[i] = variableSymbol;
+        oldAssignedValues[i] = variableSymbol.assignedValue();
+        oldAssignedRules[i] = variableSymbol.getRulesData();
+      } else if (variablesList.get(i).isAST(S.Set, 3)) {
+        final IAST setFun = (IAST) variablesList.get(i);
+        if (setFun.arg1().isSymbol()) {
+          variableSymbol = (ISymbol) setFun.arg1();
+          if (variableSymbol.isBuiltInSymbol()) {
+            ISymbol substitute = ((IBuiltInSymbol) variableSymbol).mapToGlobal(engine);
+            if (substitute != null) {
+              variableSymbol = substitute;
+            }
+          }
+          symbolList[i] = variableSymbol;
+          oldAssignedValues[i] = variableSymbol.assignedValue();
+          oldAssignedRules[i] = variableSymbol.getRulesData();
+        }
+      }
+    }
+
+    for (int i = 1; i < variablesList.size(); i++) {
+      if (variablesList.get(i).isSymbol()) {
+        variableSymbol = symbolList[i];
+        variableSymbol.clearValue();
+        variableSymbol.setRulesData(null);
+      } else {
+        if (variablesList.get(i).isAST(S.Set, 3)) {
+          final IAST setFun = (IAST) variablesList.get(i);
+          if (setFun.arg1().isSymbol()) {
+            variableSymbol = symbolList[i];
+            IExpr temp = engine.evaluate(setFun.arg2());
+            variableSymbol.assignValue(temp);
+            variableSymbol.setRulesData(null);
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -512,6 +582,7 @@ public class EvalEngine implements Serializable {
   private transient Cache<IAST, IExpr> globalASTCache;
   // CacheBuilder.newBuilder().maximumSize(500).build();
 
+
   private transient Cache<IExpr, Object> globalObjectCache;
   // CacheBuilder.newBuilder().maximumSize(500).build();
 
@@ -519,7 +590,6 @@ public class EvalEngine implements Serializable {
    * Cache for the Rubi integration rules evaluation
    */
   public transient Cache<IAST, IExpr> rubiASTCache = null;
-
 
   private transient Map<Object, IExpr> rememberMap = null;
 
@@ -604,13 +674,6 @@ public class EvalEngine implements Serializable {
    * the {@link S#N} function.
    */
   protected transient FixedPrecisionApfloatHelper fApfloatHelper;
-
-  /**
-   * The {@link FixedPrecisionApfloatHelper} instance for double precision calculations in the
-   * Apfloat library.
-   */
-  private final static FixedPrecisionApfloatHelper APFLOAT_HELPER_DOUBLE =
-      new FixedPrecisionApfloatHelper(ParserConfig.MACHINE_PRECISION + 1);
 
   /** The number of significant figures in the output expression */
   protected int fSignificantFigures;
@@ -849,20 +912,6 @@ public class EvalEngine implements Serializable {
     return false;
   }
 
-  /**
-   * Add a single information step to the currently defined trace stack. The <code>inputExpr</code>
-   * hasn't changed but an additional information was inserted.
-   *
-   * @param inputExpr the input expression
-   * @param listOfHints this hints will be used in the eval trace listener
-   * @see #setStepListener(IEvalStepListener)
-   */
-  public void addTraceInfoStep(IExpr inputExpr, IAST listOfHints) {
-    if (fTraceMode && fTraceStack != null && inputExpr.isPresent()) {
-      fTraceStack.add(inputExpr, inputExpr, getRecursionCounter(), -1, listOfHints);
-    }
-  }
-
   // public void cancel() {
   // fContextPath = null;
   // fErrorPrintStream = null;
@@ -882,6 +931,20 @@ public class EvalEngine implements Serializable {
   // fTraceMode = false;
   // fTraceStack = null;
   // }
+
+  /**
+   * Add a single information step to the currently defined trace stack. The <code>inputExpr</code>
+   * hasn't changed but an additional information was inserted.
+   *
+   * @param inputExpr the input expression
+   * @param listOfHints this hints will be used in the eval trace listener
+   * @see #setStepListener(IEvalStepListener)
+   */
+  public void addTraceInfoStep(IExpr inputExpr, IAST listOfHints) {
+    if (fTraceMode && fTraceStack != null && inputExpr.isPresent()) {
+      fTraceStack.add(inputExpr, inputExpr, getRecursionCounter(), -1, listOfHints);
+    }
+  }
 
   /**
    * Add a single step to the currently defined trace stack.
@@ -978,6 +1041,7 @@ public class EvalEngine implements Serializable {
     return packageContext;
   }
 
+
   /**
    * Begin ({@link S#BeginPackage}) the new package context <code>contextName</code>
    * 
@@ -991,7 +1055,6 @@ public class EvalEngine implements Serializable {
     ContextPath.PACKAGES.add(contextName);
     return packageContext;
   }
-
 
   /**
    * Check the number of arguments and print a message to error stream if necessary.
@@ -1643,34 +1706,6 @@ public class EvalEngine implements Serializable {
     return F.NIL;
   }
 
-  /**
-   * Evaluate an AST according to the attributes set in the header symbol. The evaluation steps are
-   * controlled by the header attributes.
-   *
-   * @param symbol the header symbol
-   * @param mutableAST the AST which should be evaluated. If <code>symbol</code> has attribute
-   *        {@link ISymbol#ORDERLESS} the mutableAST will be modified.
-   * @return <code>F.NIL</code> if no evaluation was possible
-   */
-  public IExpr evalAttributes(ISymbol symbol, IASTMutable mutableAST) {
-    final int astSize = mutableAST.size();
-    if (astSize == 2) {
-      return evalASTArg1(mutableAST);
-    }
-
-    IExpr result = mutableAST.head().evaluateHead(mutableAST, this);
-    if (result.isPresent()) {
-      return result;
-    }
-
-    if (astSize != 1) {
-      final int attributes = symbol.getAttributes();
-      return evalAttributes(mutableAST, astSize, symbol, attributes);
-    }
-
-    return F.NIL;
-  }
-
   public IExpr evalAttributes(IASTMutable mutableAST, final int astSize, ISymbol symbol,
       final int attributes) {
     IExpr returnResult = F.NIL;
@@ -1745,6 +1780,34 @@ public class EvalEngine implements Serializable {
       return temp;
     }
     return returnResult;
+  }
+
+  /**
+   * Evaluate an AST according to the attributes set in the header symbol. The evaluation steps are
+   * controlled by the header attributes.
+   *
+   * @param symbol the header symbol
+   * @param mutableAST the AST which should be evaluated. If <code>symbol</code> has attribute
+   *        {@link ISymbol#ORDERLESS} the mutableAST will be modified.
+   * @return <code>F.NIL</code> if no evaluation was possible
+   */
+  public IExpr evalAttributes(ISymbol symbol, IASTMutable mutableAST) {
+    final int astSize = mutableAST.size();
+    if (astSize == 2) {
+      return evalASTArg1(mutableAST);
+    }
+
+    IExpr result = mutableAST.head().evaluateHead(mutableAST, this);
+    if (result.isPresent()) {
+      return result;
+    }
+
+    if (astSize != 1) {
+      final int attributes = symbol.getAttributes();
+      return evalAttributes(mutableAST, astSize, symbol, attributes);
+    }
+
+    return F.NIL;
   }
 
   /**
@@ -3305,6 +3368,10 @@ public class EvalEngine implements Serializable {
     return globalASTCache.getIfPresent(key);
   }
 
+  public int getConstantCounter() {
+    return fConstantCounter;
+  }
+
   public final Context getContext() {
     return fContextPath.currentContext();
   }
@@ -3711,26 +3778,27 @@ public class EvalEngine implements Serializable {
           return true;
         }
       }
-    } else if (argument.isSparseArray() && refHeadType == S.SparseArray) {
-
+    } else if (argument.isSparseArray()) {
       ISparseArray sp = (ISparseArray) argument;
-      int[] dimensions = sp.getDimension();
-      if (dimensions.length > 0) {
-        if (refArgSize[0] < 0) {
-          refArgSize[0] = dimensions[0];
-        } else {
-          if (refArgSize[0] != dimensions[0]) {
-            // Objects of unequal length in `1` cannot be combined.
-            Errors.printMessage(S.Thread, "tdlen", F.list(errorAST), this);
-            // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
-            return true;
+      if (refHeadType == S.SparseArray || refHeadType == S.List) {
+        int[] dimensions = sp.getDimension();
+        if (dimensions.length > 0) {
+          if (refArgSize[0] < 0) {
+            refArgSize[0] = dimensions[0];
+          } else {
+            if (refArgSize[0] != dimensions[0]) {
+              // Objects of unequal length in `1` cannot be combined.
+              Errors.printMessage(S.Thread, "tdlen", F.list(errorAST), this);
+              // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
+              return true;
+            }
           }
+        } else {
+          // Objects of unequal length in `1` cannot be combined.
+          Errors.printMessage(S.Thread, "tdlen", F.list(errorAST), this);
+          // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
+          return true;
         }
-      } else {
-        // Objects of unequal length in `1` cannot be combined.
-        Errors.printMessage(S.Thread, "tdlen", F.list(errorAST), this);
-        // ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
-        return true;
       }
     } else {
       if (argument.isAssociation() && refHeadType == S.Association) {
@@ -4118,6 +4186,10 @@ public class EvalEngine implements Serializable {
     this.fAssumptions = assumptions;
   }
 
+  public void setConstantCounter(int counter) {
+    fConstantCounter = counter;
+  }
+
   public void setContext(Context context) {
     this.fContextPath.setCurrentContext(context);
   }
@@ -4350,14 +4422,14 @@ public class EvalEngine implements Serializable {
     fRecursionLimit = i;
   }
 
+  // public void stopRequest() {
+  // setStopRequested(true);
+  // }
+
   /** @param fRelaxedSyntax the fRelaxedSyntax to set */
   public void setRelaxedSyntax(boolean fRelaxedSyntax) {
     this.fRelaxedSyntax = fRelaxedSyntax;
   }
-
-  // public void stopRequest() {
-  // setStopRequested(true);
-  // }
 
   /**
    * Set the time in seconds then the current {@link S#TimeConstrained} operation should stop. For
@@ -4398,6 +4470,7 @@ public class EvalEngine implements Serializable {
     fStack = stack;
   }
 
+
   /**
    * Set the step listener for this evaluation engine. The method also calls <code>
    * setTraceMode(true)</code> to enable the trace mode. The caller is responsible for calling
@@ -4409,7 +4482,6 @@ public class EvalEngine implements Serializable {
     setTraceMode(true);
     fTraceStack = stepListener;
   }
-
 
   /**
    * Set the time in milliseconds then the current TimeConstrained operation should stop. <code>-1
@@ -4521,68 +4593,5 @@ public class EvalEngine implements Serializable {
     ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
 
     return F.NIL;
-  }
-
-  /**
-   * Remember which local variable names we use in the given <code>assignedValues</code> and <code>
-   * assignedRules</code>.
-   *
-   * @param variablesList initializer variables list from the <code>Block</code> function
-   * @param oldAssignedValues the variables mapped to their values (IExpr) before evaluating the
-   *        block
-   * @param oldAssignedRules the variables mapped to their rules (RulesData) before evaluating the
-   *        block
-   * @param engine the evaluation engine
-   */
-  private static void rememberBlockVariables(IAST variablesList, final ISymbol[] symbolList,
-      final IExpr[] oldAssignedValues, final RulesData[] oldAssignedRules,
-      final EvalEngine engine) {
-    ISymbol variableSymbol;
-    for (int i = 1; i < variablesList.size(); i++) {
-      if (variablesList.get(i).isSymbol()) {
-        variableSymbol = (ISymbol) variablesList.get(i);
-        if (variableSymbol.isBuiltInSymbol()) {
-          ISymbol substitute = ((IBuiltInSymbol) variableSymbol).mapToGlobal(engine);
-          if (substitute != null) {
-            variableSymbol = substitute;
-          }
-        }
-        symbolList[i] = variableSymbol;
-        oldAssignedValues[i] = variableSymbol.assignedValue();
-        oldAssignedRules[i] = variableSymbol.getRulesData();
-      } else if (variablesList.get(i).isAST(S.Set, 3)) {
-        final IAST setFun = (IAST) variablesList.get(i);
-        if (setFun.arg1().isSymbol()) {
-          variableSymbol = (ISymbol) setFun.arg1();
-          if (variableSymbol.isBuiltInSymbol()) {
-            ISymbol substitute = ((IBuiltInSymbol) variableSymbol).mapToGlobal(engine);
-            if (substitute != null) {
-              variableSymbol = substitute;
-            }
-          }
-          symbolList[i] = variableSymbol;
-          oldAssignedValues[i] = variableSymbol.assignedValue();
-          oldAssignedRules[i] = variableSymbol.getRulesData();
-        }
-      }
-    }
-
-    for (int i = 1; i < variablesList.size(); i++) {
-      if (variablesList.get(i).isSymbol()) {
-        variableSymbol = symbolList[i];
-        variableSymbol.clearValue();
-        variableSymbol.setRulesData(null);
-      } else {
-        if (variablesList.get(i).isAST(S.Set, 3)) {
-          final IAST setFun = (IAST) variablesList.get(i);
-          if (setFun.arg1().isSymbol()) {
-            variableSymbol = symbolList[i];
-            IExpr temp = engine.evaluate(setFun.arg2());
-            variableSymbol.assignValue(temp);
-            variableSymbol.setRulesData(null);
-          }
-        }
-      }
-    }
   }
 }

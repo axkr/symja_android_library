@@ -10,6 +10,8 @@ public class ParserConfig {
   /** Use <code>Num</code> objects for numeric calculations up to 16 digits precision. */
   public static final long MACHINE_PRECISION = 16L;
 
+  public static final double MACHINE_PRECISION_DOUBLE = 15.954589770191003;
+
   /**
    * If <code>true</code> the parser doesn't distinguish between lower- or uppercase symbols (i.e.
    * constants, function names,...), with the exception of symbols with only one character (i.e. the
