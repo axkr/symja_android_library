@@ -47,11 +47,11 @@ public final class GaussianInteger {
     /**
      * Primes of the prime factorization of the norm
      */
-    private BigInteger primes[];
+    private BigInteger[] primes;
     /**
      * Exponents of the prime factorization of the norm
      */
-    private int exponents[];
+    private int[] exponents;
 
     private BigInteger valA, valB;
 
@@ -83,12 +83,7 @@ public final class GaussianInteger {
           real = temp;
         }
         ComplexSym c = ComplexSym.valueOf(F.ZZ(real), F.ZZ(imag));
-        Integer value = complexMap.get(c);
-        if (value == null) {
-          complexMap.put(c, 1);
-        } else {
-          complexMap.put(c, value + 1);
-        }
+        complexMap.merge(c, 1, Integer::sum);
       }
     }
 
@@ -364,20 +359,24 @@ public final class GaussianInteger {
    */
   public static boolean isSquareFree(IBigNumber gaussianInteger, IInteger realPart,
       IInteger imaginaryPart) {
-    IAST factors =
-        factorize(gaussianInteger, realPart.toBigNumerator(), imaginaryPart.toBigNumerator());
-    if (!factors.isListOfLists()) {
-      return false;
+    if (realPart.isZero() && imaginaryPart.isZero()) {
+      return false; // 0 is divisible by the square of any prime, hence not square-free
     }
-    for (int i = 1; i < factors.size(); i++) {
-      IAST subList = factors.getAST(i);
-      if (!subList.isList2()) {
+
+    BigInteger re = realPart.toBigNumerator();
+    BigInteger im = imaginaryPart.toBigNumerator();
+
+    GaussianFactors g = new GaussianFactors();
+    // g.factorize natively factors the complex number and accumulates the Gaussian prime exponents
+    SortedMap<ComplexSym, Integer> complexMap = g.factorize(re, im);
+
+    // If any Gaussian prime has an exponent > 1, it is not square-free
+    for (Integer exponent : complexMap.values()) {
+      if (exponent > 1) {
         return false;
       }
-      if (subList.second().isInteger() && ((IInteger) subList.second()).isGE(F.C2)) {
-        return false;
-      }
     }
+
     return true;
   }
 
