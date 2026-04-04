@@ -2438,6 +2438,10 @@ public class F extends S {
     return new AST2(Cases, a0, a1);
   }
 
+  public static IAST Cases(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(Cases, a0, a1, a2);
+  }
+
   /**
    * Converts a given object into a MathEclipse IExpr expression
    *
@@ -3395,6 +3399,9 @@ public class F extends S {
     return function(DeleteCases, a);
   }
 
+  public static IAST DeleteDuplicates(final IExpr a0) {
+    return new AST1(DeleteDuplicates, a0);
+  }
 
   public static IAST Denominator(final IExpr expr) {
     return new AST1(Denominator, expr);
@@ -3995,6 +4002,9 @@ public class F extends S {
    * @see EvalEngine#evaluate(IExpr)
    */
   public static IExpr eval(IExpr a) {
+    if (a.isAtomicConstant()) {
+      return a;
+    }
     return EvalEngine.get().evaluate(a);
   }
 
@@ -5218,6 +5228,10 @@ public class F extends S {
 
   public static IAST HypergeometricU(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(HypergeometricU, a0, a1, a2);
+  }
+
+  public static IAST Inactive(final IExpr a0) {
+    return new AST1(Inactive, a0);
   }
 
   public static IAST Identity(final IExpr a0) {
@@ -8456,6 +8470,10 @@ public class F extends S {
     return new AST2(PDF, distribution, x);
   }
 
+  public static IAST Permutations(final IExpr a0) {
+    return new AST1(Permutations, a0);
+  }
+
   public static IAST Permute(final IAST list, final IAST permutation) {
     return new AST2(Permute, list, permutation);
   }
@@ -9271,6 +9289,10 @@ public class F extends S {
     return new AST2(RandomVariate, a0, a1);
   }
 
+  public static IAST Range(final int r) {
+    return new AST1(Range, F.ZZ(r));
+  }
+
   public static IAST Range(final IExpr a0) {
     return new AST1(Range, a0);
   }
@@ -9456,6 +9478,10 @@ public class F extends S {
 
   public static IAST Rest(final IExpr a0) {
     return new AST1(Rest, a0);
+  }
+
+  public static IAST Residue(final IExpr a0, final IExpr a1) {
+    return new AST2(Residue, a0, a1);
   }
 
   public static IAST Resultant(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -10973,6 +10999,14 @@ public class F extends S {
     return new AST1(SymmetricMatrixQ, a0);
   }
 
+  public static IAST Symmetrize(final IExpr a0) {
+    return new AST1(Symmetrize, a0);
+  }
+
+  public static IAST Symmetrize(final IExpr a0, final IExpr a1) {
+    return new AST2(Symmetrize, a0, a1);
+  }
+
   /**
    * See <a href=
    * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Table.md">Table</a>
@@ -11098,6 +11132,10 @@ public class F extends S {
       }
     }
     return ast(a, List);
+  }
+
+  public static IAST TensorProduct(final IExpr a0, final IExpr a1) {
+    return new AST2(TensorProduct, a0, a1);
   }
 
   public static IAST TensorRank(final IExpr a0) {

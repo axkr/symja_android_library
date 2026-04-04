@@ -2753,6 +2753,9 @@ public class S {
 
   public final static IBuiltInSymbol DawsonF = S.initFinalSymbol("DawsonF", ID.DawsonF);
 
+  public final static IBuiltInSymbol DeBruijnSequence =
+      S.initFinalSymbol("DeBruijnSequence", ID.DeBruijnSequence);
+
   /**
    * Decrement(x) - decrements `x` by `1`, returning the original value of `x`.
    * 
@@ -4238,6 +4241,11 @@ public class S {
   public final static IBuiltInSymbol FindVertexCover =
       S.initFinalSymbol("FindVertexCover", ID.FindVertexCover);
 
+  public final static IBuiltInSymbol FiniteGroupCount =
+      S.initFinalSymbol("FiniteGroupCount", ID.FiniteGroupCount);
+
+  public final static IBuiltInSymbol FiniteAbelianGroupCount =
+      S.initFinalSymbol("FiniteAbelianGroupCount", ID.FiniteAbelianGroupCount);
   /**
    * First(expr) - returns the first element in `expr`.
    * 
@@ -7201,6 +7209,9 @@ public class S {
   public final static IBuiltInSymbol MachineNumberQ =
       S.initFinalSymbol("MachineNumberQ", ID.MachineNumberQ);
 
+  public final static IBuiltInSymbol MachinePrecision =
+      S.initFinalSymbol("MachinePrecision", ID.MachinePrecision);
+
   /**
    * Magenta - RGB color value for the color magenta
    * 
@@ -7499,6 +7510,10 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol MeijerG = S.initFinalSymbol("MeijerG", ID.MeijerG);
+
+  public final static IBuiltInSymbol MeijerGReduce =
+      S.initFinalSymbol("MeijerGReduce", ID.MeijerGReduce);
+
 
   /**
    * MemberQ(list, pattern) - returns `True` if pattern matches any element of `list`, or `False`
@@ -11648,6 +11663,8 @@ public class S {
   public final static IBuiltInSymbol SymbolQ = S.initFinalSymbol("SymbolQ", ID.SymbolQ);
 
   public final static IBuiltInSymbol Symmetric = S.initFinalSymbol("Symmetric", ID.Symmetric);
+
+  public final static IBuiltInSymbol Symmetrize = S.initFinalSymbol("Symmetrize", ID.Symmetrize);
 
   /**
    * SymmetricMatrixQ(m) - returns `True` if `m` is a symmetric matrix.
