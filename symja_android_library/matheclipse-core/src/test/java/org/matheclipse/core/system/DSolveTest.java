@@ -31,16 +31,10 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(x)->1/(-x^2-C(1))}}");
 
     check("DSolve(D(f(x, y), x) == D(f(x, y), y), f, {x, y})", //
-        "DSolve(Derivative(1,0)[f][x,y]==Derivative(0,1)[f][x,y],f,{x,y})");
+        "{{f->Function({x,y},C(1)[x+y])}}");
 
-    // check("DSolve({y'(x)==y(x),y(0)==1},y(x), x)", "{{y(x)->E^x}}");
     check("DSolve({y'(x)==y(x)+2,y(0)==1},y(x), x)", //
         "{{y(x)->-2+3*E^x}}");
-
-    check("DSolve({y(0)==0,y'(x) + y(x) == a*Sin(x)}, y(x), x)", //
-        "{{y(x)->a/(2*E^x)-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
-    check("DSolve({y'(x) + y(x) == a*Sin(x),y(0)==0}, y(x), x)", //
-        "{{y(x)->a/(2*E^x)-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
 
     check("DSolve(y'(x) + y(x) == a*Sin(x), y(x), x)", //
         "{{y(x)->C(1)/E^x-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
@@ -234,6 +228,141 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve(25*y(x)+10*y'+y''(x)==0, y(x), x)", //
         "DSolve(25*y(x)+10*Derivative(1)[y]+y''(x)==0,y(x),x)");
   }
+
+  @Test
+  public void testDSolvePDE() {
+    // Basic Homogeneous PDE: u_x + u_y = 0
+    // Expected general solution: u(x,y) = C_1(y - x)
+    check("DSolve(D(u(x, y), x) + D(u(x, y), y) == 0, u(x,y), {x, y})", //
+        "{{u(x,y)->C(1)[-x+y]}}");
+
+    // Non-Homogeneous PDE: u_x + u_y = x
+    // Equation contains a loose term 'x'. General solution: u(x,y) = x^2/2 + C_1(y - x)
+    check("DSolve(D(u(x, y), x) + D(u(x, y), y) == x, u(x,y), {x, y})", //
+        "{{u(x,y)->x^2/2+C(1)[-x+y]}}");
+
+    // Quasilinear PDE with variable coefficients: x*u_x + y*u_y = 2*u
+    // General solution: u(x,y) = x^2 * C_1(y/x)
+    check("DSolve(x*D(u(x, y), x) + y*D(u(x, y), y) == 2*u(x,y), u(x,y), {x, y})", //
+        "{{u(x,y)->x^2*C(1)[y/x]}}");
+  }
+
+  @Test
+  public void testDSolveBoundaryWithCoefficient() {
+    // =====================================================================
+    // Tests for improved solveSingleBoundary that handles non-trivial
+    // boundary conditions (coefficients, fractions, combined terms).
+    // =====================================================================
+
+    // Boundary condition with integer coefficient: 2*y(0)==6 means y(0)=3
+    // General solution of y'(x)==y(x) is E^x*C(1); with C(1)=3 -> 3*E^x
+    check("DSolve({y'(x)==y(x), 2*y(0)==6}, y(x), x)", //
+        "{{y(x)->3*E^x}}");
+
+    // Boundary condition with fractional coefficient: y(0)/3==2 means y(0)=6
+    check("DSolve({y'(x)==y(x), y(0)/3==2}, y(x), x)", //
+        "{{y(x)->6*E^x}}");
+
+    // Combined same-point terms: 3*y(0)+2*y(0)==10 evaluates to 5*y(0)==10, y(0)=2
+    check("DSolve({y'(x)==y(x), 3*y(0)+2*y(0)==10}, y(x), x)", //
+        "{{y(x)->2*E^x}}");
+
+    // Coefficient form equivalent to known result: 2*y(0)==2 means y(0)=1
+    // Must match: DSolve({y'(x)==y(x)+2, y(0)==1}, y(x), x) == {{y(x)->-2+3*E^x}}
+    check("DSolve({y'(x)==y(x)+2, 2*y(0)==2}, y(x), x)", //
+        "{{y(x)->-2+3*E^x}}");
+
+    // Non-linear ODE with coefficient boundary condition: 3*y(0)==6 means y(0)=2
+    // Must match: DSolve({y'(x)==-3*y(x)^2, y(0)==2}, y(x), x) == {{y(x)->1/(1/2+3*x)}}
+    check("DSolve({y'(x)==-3*y(x)^2, 3*y(0)==6}, y(x), x)", //
+        "{{y(x)->1/(1/2+3*x)}}");
+  }
+
+  @Test
+  public void testDSolveMultipleBoundaryConditions() {
+    // ==========================================================================
+    // Tests for multiple boundary/initial conditions on higher-order ODEs.
+    // The general solution of y'' + y == 0 is C(1)*Cos(x) + C(2)*Sin(x).
+    // Two BCs are needed to fully determine both constants.
+    // ==========================================================================
+
+    // IVP: y(0)==1, y'(0)==0 → C(1)=1, C(2)=0 → Cos(x)
+    check("DSolve({y''(x) + y(x) == 0, y(0)==1, y'(0)==0}, y(x), x)", //
+        "{{y(x)->Cos(x)}}");
+
+    // IVP: y(0)==0, y'(0)==1 → C(1)=0, C(2)=1 → Sin(x)
+    check("DSolve({y''(x) + y(x) == 0, y(0)==0, y'(0)==1}, y(x), x)", //
+        "{{y(x)->Sin(x)}}");
+
+    // IVP with non-unit values: y(0)==2, y'(0)==3 → C(1)=2, C(2)=3
+    check("DSolve({y''(x) + y(x) == 0, y(0)==2, y'(0)==3}, y(x), x)", //
+        "{{y(x)->2*Cos(x)+3*Sin(x)}}");
+
+    // BCs can appear in any position among the equations
+    check("DSolve({y(0)==0, y''(x) + y(x) == 0, y'(0)==1}, y(x), x)", //
+        "{{y(x)->Sin(x)}}");
+
+    // Non-homogeneous 2nd-order: y'' + 4*y == 7 with two BCs
+    // General solution: 7/4 + C(1)*Cos(2x) + C(2)*Cos(x)*Sin(x)
+    // y(0)==7/4 → C(1)=0; y'(0)==2 → 2*C(2)=2 → C(2)=1
+    check("DSolve({y''(x) + 4*y(x) == 7, y(0)==7/4, y'(0)==2}, y(x), x)", //
+        "{{y(x)->7/4+Sin(2*x)}}");
+
+    // ==========================================================================
+    // Regression: single BC for first-order ODE still works via applyUnaryBCs
+    // ==========================================================================
+
+    check("DSolve({y'(x)==y(x)+2, y(0)==1}, y(x), x)", //
+        "{{y(x)->-2+3*E^x}}");
+
+    check("DSolve({y'(x)==y(x), 2*y(0)==6}, y(x), x)", //
+        "{{y(x)->3*E^x}}");
+
+    check("DSolve({y(0)==0, y'(x) + y(x) == a*Sin(x)}, y(x), x)", //
+        "{{y(x)->1/2*a*(E^(-x)-Cos(x)+Sin(x))}}");
+
+    check("DSolve({y'(x) == -3*y(x)^2, y(0)==2}, y(x), x)", //
+        "{{y(x)->1/(1/2+3*x)}}");
+  }
+
+  @Test
+  void testDegenerateNonODE() {
+    // No derivative present
+    check("DSolve(x + y(x) == 0, y(x), x)", //
+        "{{y(x)->-x}}");
+    check("DSolve(y(x)^2 - x == 0, y(x), x)", //
+        "{{y(x)->-Sqrt(x)},{y(x)->Sqrt(x)}}");
+  }
+
+  @Test
+  public void testDSolveSystemPDE() {
+    // Decoupled system of homogeneous PDEs
+    // u_x + u_y = 0 => u = C(1)[y - x]
+    // v_x - v_y = 0 => v = C(2)[x + y]
+    check(
+        "DSolve({D(u(x, y), x) + D(u(x, y), y) == 0, "
+            + "D(v(x, y), x) - D(v(x, y), y) == 0}, {u(x,y), v(x,y)}, {x, y})", //
+        "{{u(x,y)->C(1)[-x+y],v(x,y)->C(2)[x+y]}}");
+
+    // Same system with pure function output
+    check(
+        "DSolve({D(u(x, y), x) + D(u(x, y), y) == 0, "
+            + "D(v(x, y), x) - D(v(x, y), y) == 0}, {u, v}, {x, y})", //
+        "{{u->Function({x,y},C(1)[-x+y]),v->Function({x,y},C(2)[x+y])}}");
+
+    // Decoupled system with a non-homogeneous term in the first equation
+    check(
+        "DSolve({D(u(x, y), x) + D(u(x, y), y) == x, "
+            + "D(v(x, y), x) + D(v(x, y), y) == 0}, {u(x,y), v(x,y)}, {x, y})", //
+        "{{u(x,y)->x^2/2+C(1)[-x+y],v(x,y)->C(2)[-x+y]}}");
+
+    // Equations in reversed order relative to functions — matching should still work
+    check(
+        "DSolve({D(v(x, y), x) - D(v(x, y), y) == 0, "
+            + "D(u(x, y), x) + D(u(x, y), y) == 0}, {u(x,y), v(x,y)}, {x, y})", //
+        "{{u(x,y)->C(1)[-x+y],v(x,y)->C(2)[x+y]}}");
+  }
+
 
   /** The JUnit setup method */
   @Override
