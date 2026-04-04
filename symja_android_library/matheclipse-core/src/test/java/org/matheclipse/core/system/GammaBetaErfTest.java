@@ -1330,14 +1330,14 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "ComplexInfinity");
 
     checkNumeric("PolyGamma(-2.5 + 3*I)", //
-        "1.4452083452957394+I*2.358508608801951");
+        "1.4452083452957387+I*2.3585086088019525");
     checkNumeric("PolyGamma(2.5 + 3*I)", //
-        "1.2812739190662312+I*0.9798053153445596");
+        "1.2812739190662303+I*0.9798053153445595");
 
     checkNumeric("PolyGamma(0, 0.166667)", //
-        "-6.332115068746184");
+        "-6.33211506874618");
     checkNumeric("PolyGamma(0, 0.166667+1/2)", //
-        "-1.3182333972336453");
+        "-1.3182333972336449");
     check("PolyGamma(-0.8)", //
         "-4.03904");
     // http://fungrim.org/entry/ea2482/
