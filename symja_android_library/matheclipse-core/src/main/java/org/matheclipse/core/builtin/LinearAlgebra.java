@@ -18,6 +18,7 @@ import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
@@ -30,6 +31,7 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.BlockFieldMatrix;
 import org.hipparchus.linear.ComplexEigenDecomposition;
+import org.hipparchus.linear.ComplexSchurTransformer;
 // import org.hipparchus.linear.ComplexSchurTransformer;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.DependentVectorsHandler;
@@ -2232,12 +2234,11 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr matrixComplexEval(FieldMatrix<Complex> matrix, IAST ast) {
-      return F.NIL;
-      // // TODO https://github.com/Hipparchus-Math/hipparchus/issues/442
-      // Complex[] complexEigenvalues = ComplexSchurTransformer.getEigenvalues(matrix);
-      // // sort descending
-      // Arrays.sort(complexEigenvalues, (a, b) -> Double.compare(b.norm(), a.norm()));
-      // return Convert.complexValues2List(complexEigenvalues);
+      // TODO https://github.com/Hipparchus-Math/hipparchus/issues/442
+      Complex[] complexEigenvalues = ComplexSchurTransformer.getEigenvalues(matrix);
+      // sort descending
+      Arrays.sort(complexEigenvalues, (a, b) -> Double.compare(b.norm(), a.norm()));
+      return Convert.complexValues2List(complexEigenvalues);
     }
 
     @Override
@@ -4405,7 +4406,10 @@ public final class LinearAlgebra {
         if (arg1.isMatrix() != null) {
           IAST normal = (IAST) arg1.normal(false);
           Predicate<IExpr> zeroChecker = AbstractMatrix1Expr.optionZeroTest(ast, 2, engine);
-          return matrixRank(normal, zeroChecker);
+          IInteger rank = matrixRank(normal, zeroChecker);
+          if (rank != null) {
+            return rank;
+          }
         }
 
       } catch (final ClassCastException | IndexOutOfBoundsException e) {
@@ -6874,10 +6878,24 @@ public final class LinearAlgebra {
     return solver.getInverse();
   }
 
+  /**
+   * Return the rank of the given <code>matrix</code> or <code>null</code>
+   * 
+   * @param matrix the matrix for which the rank should be calculated
+   * @return
+   */
   public static IInteger matrixRank(IAST matrix) {
     return matrixRank(matrix, AbstractMatrix1Expr.POSSIBLE_ZEROQ_TEST);
   }
 
+  /**
+   * Return the rank of the given <code>matrix</code> or <code>null</code> if the rank could not be
+   * calculated.
+   * 
+   * @param matrix the matrix for which the rank should be calculated
+   * @param zeroChecker the predicate to check for zero elements
+   * @return the rank of the matrix or <code>null</code> if it could not be calculated
+   */
   public static IInteger matrixRank(IAST matrix, Predicate<IExpr> zeroChecker) {
     FieldMatrix<IExpr> m = Convert.list2Matrix(matrix);
     if (m == null) {
@@ -6885,6 +6903,7 @@ public final class LinearAlgebra {
       if (dim != null && dim[0] == 1 && dim[1] == 0) {
         return F.C0;
       }
+      return null;
     }
     return matrixRank(m, zeroChecker);
   }

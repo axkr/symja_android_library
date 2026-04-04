@@ -460,7 +460,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
           IExpr arg = pointList.get(i);
           IAST point = getPoint2D(arg);
           if (!point.isPresent() || isNonReal(point)) {
-            // Fix: If lastPoint was isolated, render it now before breaking
+            // If lastPoint was isolated, render it now before breaking
             if (!isConnected && lastPoint.isPresent()) {
               IExpr xLast = xFunction.apply(lastPoint.arg1());
               IExpr yLast = yFunction.apply(lastPoint.arg2());
@@ -622,7 +622,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
         }
 
         if (isNonReal(currentPointY)) {
-          // Fix: If lastPoint was isolated (valid but not connected to anything), draw it now
+          // If lastPoint was isolated (valid but not connected to anything), draw it now
           if (!isConnected && lastPoint.isPresent()) {
             addIndexedYPoint(pointPrimitives, graphicsExtraPrimitives, boundingbox, engine,
                 xFunction.apply(F.num(xPrevRaw)), yFunction.apply(lastPoint), lastArg);
@@ -985,7 +985,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       IASTAppendable out, IExpr globalStyle, double baseline) {
     CurveData srcCurve = curves.get(srcIndex);
     IExpr styleToUse = globalStyle;
-    if (styleToUse.isAutomatic() || styleToUse == null) {
+    if (styleToUse == null || styleToUse.isAutomatic()) {
       IExpr color = srcCurve.color != null ? srcCurve.color : S.Black;
       styleToUse = F.Directive(F.Opacity(0.2), color, F.EdgeForm(F.None));
     }

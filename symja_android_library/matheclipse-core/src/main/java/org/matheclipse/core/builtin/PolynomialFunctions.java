@@ -73,33 +73,367 @@ public class PolynomialFunctions {
   // public static final Logger LOGGER = LogManager.getLogger(PolynomialFunctions.class);
 
   /**
-   * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
-   * in static initializer</a>
+   *
+   *
+   * <pre>
+   * BellY(n, k, {x1, x2, ... , xN})
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * the second kind of Bell polynomials (incomplete Bell polynomials).
+   *
+   * </p>
+   *
+   * <p>
+   * See:<br>
+   *
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Bell_polynomials">Wikipedia - Bell polynomials</a>
+   * </ul>
+   *
+   * <pre>
+   * &gt;&gt; BellY(6, 2, {x1, x2, x3, x4, x5})
+   * 10*x3^2+15*x2*x4+6*x1*x5
+   * </pre>
    */
-  private static class Initializer {
+  private static final class BellY extends AbstractFunctionEvaluator {
 
-    private static void init() {
-      S.BellY.setEvaluator(new BellY());
-      S.ChebyshevT.setEvaluator(new ChebyshevT());
-      S.ChebyshevU.setEvaluator(new ChebyshevU());
-      S.Coefficient.setEvaluator(new Coefficient());
-      // TODO
-      // S.CoefficientArrays.setEvaluator(new CoefficientArrays());
-      S.CoefficientList.setEvaluator(new CoefficientList());
-      S.CoefficientRules.setEvaluator(new CoefficientRules());
-      S.Cyclotomic.setEvaluator(new Cyclotomic());
-      S.Discriminant.setEvaluator(new Discriminant());
-      S.Exponent.setEvaluator(new Exponent());
-      S.GroebnerBasis.setEvaluator(new GroebnerBasis());
-      S.HermiteH.setEvaluator(new HermiteH());
-      S.JacobiP.setEvaluator(new JacobiP());
-      S.LaguerreL.setEvaluator(new LaguerreL());
-      S.LegendreP.setEvaluator(new LegendreP());
-      S.LegendreQ.setEvaluator(new LegendreQ());
-      S.MonomialList.setEvaluator(new MonomialList());
-      S.Resultant.setEvaluator(new Resultant());
-      S.SphericalHarmonicY.setEvaluator(new SphericalHarmonicY());
-      S.ZernikeR.setEvaluator(new ZernikeR());
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      if (ast.isAST1()) {
+        // int[] dim = arg1.isMatrix(false);
+        // if (dim == null || dim.length != 2 || dim[0] != dim[1]) {
+        // return F.NIL;
+        // }
+        // final int size = dim[0];
+        // return bellYMatrix((IAST) arg1, size, ast, engine);
+        return F.NIL;
+      }
+      if (ast.isAST2()) {
+        return F.NIL;
+      }
+      if (arg1.isInteger() && ast.arg2().isInteger()) {
+        int n = arg1.toIntDefault();
+        int k = ast.arg2().toIntDefault();
+        if (n < 0 || k < 0) {
+          return F.NIL;
+        }
+
+        IExpr arg3 = ast.arg3();
+        int[] dim = arg3.isMatrix(false);
+        if (dim == null || dim.length != 2) {
+          IExpr listOfVariables = arg3.normal(false);
+          if (!listOfVariables.isList()) {
+            return F.NIL;
+          }
+
+          if (n == 0 && k == 0) {
+            return F.C1;
+          }
+          if (n == 0 || k == 0) {
+            return F.C0;
+          }
+          if (n < k) {
+            return F.C0;
+          }
+          if (n > Config.MAX_POLYNOMIAL_DEGREE) {
+            PolynomialDegreeLimitExceeded.throwIt(n);
+          }
+          int max = n - k + 2;
+          if (max >= 0) {
+            IExpr[][] cache = new IExpr[n + 1][k + 1];
+            return bellY(n, k, (IAST) listOfVariables, ast, engine, cache);
+          }
+          return F.NIL;
+        }
+
+
+        final int rowSize = dim[0];
+        final int colSize = dim[1];
+        if (n > Config.MAX_POLYNOMIAL_DEGREE) {
+          PolynomialDegreeLimitExceeded.throwIt(n);
+        }
+        return bellYMatrix(n, k, (IAST) arg3, rowSize, colSize, ast, engine);
+
+
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      super.setUp(newSymbol);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * ChebyshevT(n, x)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * returns the Chebyshev polynomial of the first kind <code>T_n(x)</code>.
+   *
+   * </p>
+   *
+   * <p>
+   * See:<br>
+   *
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Chebyshev_polynomials">Wikipedia - Chebyshev
+   * polynomials</a>
+   * </ul>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * &gt;&gt; ChebyshevT(8, x)
+   * 1-32*x^2+160*x^4-256*x^6+128*x^8
+   * </pre>
+   */
+  private static final class ChebyshevT extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() == 2) {
+        IExpr n = ast.arg1();
+        if (n.isIntegerResult()) {
+          return true;
+        }
+        IExpr z = ast.arg2();
+        return z.greaterEqual(F.CN1).isTrue();
+      }
+      return false;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      IExpr z = ast.arg2();
+
+      int degree = n.toIntDefault();
+      if (F.isPresent(degree)) {
+        if (degree < 0) {
+          degree *= -1;
+        }
+        if (degree > Config.MAX_POLYNOMIAL_DEGREE) {
+          PolynomialDegreeLimitExceeded.throwIt(degree);
+        }
+        return PolynomialsUtils.createChebyshevPolynomial(degree, ast.arg2());
+      }
+      if (n.isNumEqualRational(F.C1D2) || n.isNumEqualRational(F.CN1D2)) {
+        // (1/2, z) => Cos(ArcCos(z)/2)
+        // (-1/2, z) => Cos(ArcCos(z)/2)
+        return F.Cos(F.Times(F.C1D2, F.ArcCos(z)));
+      }
+      if (z.isZero()) {
+        // Cos(Pi*n*(1/2))
+        return F.Cos(F.Times(F.C1D2, S.Pi, n));
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        IExpr n = ast.arg1();
+        IExpr z = ast.arg2();
+        // Cos(n*ArcCos(z))
+        return F.Cos(F.Times(n, F.ArcCos(z)));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        IInexactNumber n = (IInexactNumber) ast.arg1();
+        IInexactNumber z = (IInexactNumber) ast.arg2();
+        return n.chebyshevT(z);
+        // (n, z) => Cos(n*ArcCos(z))
+        // return F.Cos.of(engine, F.Times(n, F.ArcCos(z)));
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
+  /**
+   *
+   *
+   * <pre>
+   * ChebyshevU(n, x)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * returns the Chebyshev polynomial of the second kind <code>U_n(x)</code>.
+   *
+   * </blockquote>
+   *
+   * <p>
+   * See:<br>
+   *
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Chebyshev_polynomials">Wikipedia - Chebyshev
+   * polynomials</a>
+   * </ul>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * &gt;&gt; ChebyshevU(8, x)
+   * 1-40*x^2+240*x^4-448*x^6+256*x^8
+   * </pre>
+   */
+  private static final class ChebyshevU extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      if (ast.argSize() == 2) {
+        IExpr n = ast.arg1();
+        if (n.isIntegerResult()) {
+          return true;
+        }
+        IExpr z = ast.arg2();
+        return z.greater(F.CN1).isTrue();
+      }
+      return false;
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      IExpr z = ast.arg2();
+
+      int degree = n.toIntDefault();
+      if (F.isPresent(degree)) {
+        if (degree < 0) {
+          if (degree == (-1)) {
+            return F.C0;
+          }
+          if (degree == (-2)) {
+            return F.CN1;
+          }
+          return F.NIL;
+        }
+        if (degree == 0) {
+          return F.C1;
+        }
+        final IExpr zDoubled = F.C2.times(z);
+        if (degree == 1) {
+          return zDoubled;
+        }
+        if (degree > Config.MAX_POLYNOMIAL_DEGREE) {
+          PolynomialDegreeLimitExceeded.throwIt(degree);
+        }
+
+        // (n, z) => Sum(((-1)^k*(n - k)!*(2*z)^(n - 2*k))/(k!*(n - 2*k)!), {k, 0, Floor(n/2)})
+        return F.sum(k -> F.Times(F.Power(-1, k), F.Power(zDoubled, F.Plus(F.Times(F.CN2, k), n)),
+            F.Power(F.Times(F.Factorial(k), F.Factorial(F.Plus(F.Times(F.CN2, k), n))), -1),
+            F.Factorial(F.Plus(F.Negate(k), n))), 0, degree / 2);
+      }
+
+      if (n.isNumEqualRational(F.CN1D2)) {
+        // (-1/2, z) => 1/(Sqrt(2)* Sqrt(1 + z))
+        return F.Times(F.C1DSqrt2, F.Power(F.Plus(F.C1, z), F.CN1D2));
+      }
+      if (n.isNumEqualRational(F.C1D2)) {
+        final IExpr zDoubled = F.C2.times(z);
+        // (1/2, z) => (1 + 2*z)/(Sqrt(2)* Sqrt(1 + z))
+        return F.Times(F.C1DSqrt2, F.Plus(F.C1, zDoubled), F.Power(F.Plus(F.C1, z), F.CN1D2));
+      }
+      if (z.isZero()) {
+        // Cos((Pi*n)/2)
+        return F.Cos(F.Times(F.C1D2, n, S.Pi));
+      }
+      if (z.isOne()) {
+        return F.Plus(F.C1, n);
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        IExpr n = ast.arg1();
+        IExpr z = ast.arg2();
+        if (z.isCos()) {
+          IExpr t = z.first();
+          // Csc(t) * Sin((1 + n) * t)
+          return F.Times(F.Csc(t), F.Sin(F.Times(F.Plus(F.C1, n), t)));
+        }
+        // Sin((1+n)*ArcCos(z))/(Sqrt(1-z)*Sqrt(1+z))
+        return F.Times(
+            F.Power(F.Times(F.Sqrt(F.Subtract(F.C1, z)), F.Sqrt(F.Plus(F.C1, z))), F.CN1),
+            F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(z))));
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 2) {
+        IInexactNumber n = (IInexactNumber) ast.arg1();
+        IInexactNumber z = (IInexactNumber) ast.arg2();
+        return n.chebyshevU(z);
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+      super.setUp(newSymbol);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 
@@ -132,17 +466,6 @@ public class PolynomialFunctions {
    * </pre>
    */
   private static class Coefficient extends AbstractFunctionEvaluator {
-    private boolean setExponent(IAST list, IExpr expr, long[] exponents, long value) {
-      for (int j = 1; j < list.size(); j++) {
-        if (list.get(j).equals(expr)) {
-          int ix = ExpVectorLong.indexVar(expr, list);
-          exponents[ix] = value;
-          return true;
-        }
-      }
-      return false;
-    }
-
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr cached = engine.getCache(ast);
@@ -228,6 +551,17 @@ public class PolynomialFunctions {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_3;
+    }
+
+    private boolean setExponent(IAST list, IExpr expr, long[] exponents, long value) {
+      for (int j = 1; j < list.size(); j++) {
+        if (list.get(j).equals(expr)) {
+          int ix = ExpVectorLong.indexVar(expr, list);
+          exponents[ix] = value;
+          return true;
+        }
+      }
+      return false;
     }
 
     @Override
@@ -443,6 +777,41 @@ public class PolynomialFunctions {
    * See <a href="http://en.wikipedia.org/wiki/Monomial">Wikipedia - Monomial<a/>
    */
   private static class CoefficientRules extends AbstractFunctionEvaluator {
+    /**
+     * Get exponent vectors and coefficients of monomials of a polynomial expression.
+     *
+     * @param polynomial
+     * @param variablesList
+     * @param termOrder the JAS term ordering
+     * @param option the &quot;Modulus&quot; option
+     * @return the list of monomials of the univariate polynomial.
+     */
+    private static IAST coefficientRulesModulus(IExpr polynomial, IAST variablesList,
+        final TermOrder termOrder, IExpr option) throws JASConversionException {
+      try {
+        // found "Modulus" option => use ModIntegerRing
+        ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
+        JASModInteger jas = new JASModInteger(variablesList, modIntegerRing);
+        GenPolynomial<ModLong> polyExpr = jas.expr2JAS(polynomial);
+        IASTAppendable resultList = F.ListAlloc(polyExpr.length());
+        for (Monomial<ModLong> monomial : polyExpr) {
+          ModLong coeff = monomial.coefficient();
+          ExpVector exp = monomial.exponent();
+          int len = exp.length();
+          IASTAppendable ruleList = F.ListAlloc(len);
+          for (int i = 0; i < len; i++) {
+            ruleList.append(exp.getVal(len - i - 1));
+          }
+          resultList.append(F.Rule(ruleList, F.ZZ(coeff.getVal())));
+        }
+        return resultList;
+      } catch (ArithmeticException ae) {
+        Errors.printMessage(S.CoefficientRules, ae);
+        // LOGGER.debug("CoefficientRules.coefficientRulesModulus() failed", ae);
+      }
+      return F.NIL;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, final EvalEngine engine) {
       IExpr arg1 = ast.arg1();
@@ -504,11 +873,6 @@ public class PolynomialFunctions {
       return F.list(F.Rule(ruleList, expr));
     }
 
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_4;
-    }
-
     /**
      * Get exponent vectors and coefficients of monomials of a polynomial expression.
      *
@@ -536,39 +900,9 @@ public class PolynomialFunctions {
     // return resultList;
     // }
 
-    /**
-     * Get exponent vectors and coefficients of monomials of a polynomial expression.
-     *
-     * @param polynomial
-     * @param variablesList
-     * @param termOrder the JAS term ordering
-     * @param option the &quot;Modulus&quot; option
-     * @return the list of monomials of the univariate polynomial.
-     */
-    private static IAST coefficientRulesModulus(IExpr polynomial, IAST variablesList,
-        final TermOrder termOrder, IExpr option) throws JASConversionException {
-      try {
-        // found "Modulus" option => use ModIntegerRing
-        ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
-        JASModInteger jas = new JASModInteger(variablesList, modIntegerRing);
-        GenPolynomial<ModLong> polyExpr = jas.expr2JAS(polynomial);
-        IASTAppendable resultList = F.ListAlloc(polyExpr.length());
-        for (Monomial<ModLong> monomial : polyExpr) {
-          ModLong coeff = monomial.coefficient();
-          ExpVector exp = monomial.exponent();
-          int len = exp.length();
-          IASTAppendable ruleList = F.ListAlloc(len);
-          for (int i = 0; i < len; i++) {
-            ruleList.append(exp.getVal(len - i - 1));
-          }
-          resultList.append(F.Rule(ruleList, F.ZZ(coeff.getVal())));
-        }
-        return resultList;
-      } catch (ArithmeticException ae) {
-        Errors.printMessage(S.CoefficientRules, ae);
-        // LOGGER.debug("CoefficientRules.coefficientRulesModulus() failed", ae);
-      }
-      return F.NIL;
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_4;
     }
   }
 
@@ -612,27 +946,6 @@ public class PolynomialFunctions {
    * </pre>
    */
   private static final class Cyclotomic extends AbstractFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int n = ast.arg1().toIntDefault(-1);
-      if (n >= 0) {
-        if (n / 100 > Config.MAX_POLYNOMIAL_DEGREE) {
-          PolynomialDegreeLimitExceeded.throwIt(n);
-        }
-        return cyclotomic(n, ast.arg2());
-      }
-      if (ast.arg1().isNumber()) {
-        // Non-negative machine-sized integer expected at position `2` in `1`.
-        Errors.printMessage(ast.topHead(), "intnm", F.list(F.C1, ast), engine);
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
 
     private static IExpr cyclotomic(int n, final IExpr x) {
       switch (n) {
@@ -678,6 +991,27 @@ public class PolynomialFunctions {
       // Product((1 - x^d)^MoebiusMu(n/d), {d, divisorList) // Together
       return F.Together(F.intIterator(S.Times, d -> F.Power(F.Plus(F.C1, F.Negate(F.Power(x, d))),
           F.MoebiusMu(F.Times(F.Power(d, -1), ni))), divisorList));
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      int n = ast.arg1().toIntDefault(-1);
+      if (n >= 0) {
+        if (n / 100 > Config.MAX_POLYNOMIAL_DEGREE) {
+          PolynomialDegreeLimitExceeded.throwIt(n);
+        }
+        return cyclotomic(n, ast.arg2());
+      }
+      if (ast.arg1().isNumber()) {
+        // Non-negative machine-sized integer expected at position `2` in `1`.
+        Errors.printMessage(ast.topHead(), "intnm", F.list(F.C1, ast), engine);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
     }
 
     @Override
@@ -872,11 +1206,6 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-
-    @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_2;
     }
@@ -885,7 +1214,14 @@ public class PolynomialFunctions {
     public void setUp(final ISymbol symbol) {
       symbol.setAttributes(ISymbol.LISTABLE);
     }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
   }
+
+
 
   /**
    *
@@ -910,6 +1246,49 @@ public class PolynomialFunctions {
    * </pre>
    */
   private static class Exponent extends AbstractFunctionEvaluator {
+
+    private static IExpr powerExponent(IAST powerAST, final IExpr form,
+        final IPatternMatcher matcher, EvalEngine engine) {
+      if (matcher.test(powerAST.base(), engine)) {
+        return powerAST.exponent();
+      }
+      if (matcher.isRuleWithoutPatterns() && form.isPower() && form.base().equals(powerAST.base())
+          && form.exponent().isRational()) {
+        return form.exponent().reciprocal().times(powerAST.exponent());
+      }
+      return F.C0;
+    }
+
+    private static void timesExponent(IAST timesAST, IExpr form, final IPatternMatcher matcher,
+        Set<IExpr> collector, EvalEngine engine) {
+      boolean evaled = false;
+      IExpr argi;
+      for (int i = 1; i < timesAST.size(); i++) {
+        argi = timesAST.get(i);
+        if (argi.isPower()) {
+          IExpr pEx = powerExponent((IAST) argi, form, matcher, engine);
+          if (!pEx.isZero()) {
+            collector.add(pEx);
+            evaled = true;
+            break;
+          }
+          // if (matcher.test(argi.base(), engine)) {
+          // collector.add(argi.exponent());
+          // evaled = true;
+          // break;
+          // }
+        } else if (argi.isSymbol()) {
+          if (matcher.test(argi, engine)) {
+            collector.add(F.C1);
+            evaled = true;
+            break;
+          }
+        }
+      }
+      if (!evaled) {
+        collector.add(F.C0);
+      }
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1013,787 +1392,9 @@ public class PolynomialFunctions {
       return ARGS_2_3;
     }
 
-    private static IExpr powerExponent(IAST powerAST, final IExpr form,
-        final IPatternMatcher matcher, EvalEngine engine) {
-      if (matcher.test(powerAST.base(), engine)) {
-        return powerAST.exponent();
-      }
-      if (matcher.isRuleWithoutPatterns() && form.isPower() && form.base().equals(powerAST.base())
-          && form.exponent().isRational()) {
-        return form.exponent().reciprocal().times(powerAST.exponent());
-      }
-      return F.C0;
-    }
-
-    private static void timesExponent(IAST timesAST, IExpr form, final IPatternMatcher matcher,
-        Set<IExpr> collector, EvalEngine engine) {
-      boolean evaled = false;
-      IExpr argi;
-      for (int i = 1; i < timesAST.size(); i++) {
-        argi = timesAST.get(i);
-        if (argi.isPower()) {
-          IExpr pEx = powerExponent((IAST) argi, form, matcher, engine);
-          if (!pEx.isZero()) {
-            collector.add(pEx);
-            evaled = true;
-            break;
-          }
-          // if (matcher.test(argi.base(), engine)) {
-          // collector.add(argi.exponent());
-          // evaled = true;
-          // break;
-          // }
-        } else if (argi.isSymbol()) {
-          if (matcher.test(argi, engine)) {
-            collector.add(F.C1);
-            evaled = true;
-            break;
-          }
-        }
-      }
-      if (!evaled) {
-        collector.add(F.C0);
-      }
-    }
-
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
-  }
-
-  /**
-   *
-   *
-   * <pre>
-   * Resultant(polynomial1, polynomial2, var)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * computes the resultant of the polynomials <code>polynomial1</code> and <code>polynomial2
-   * </code> with respect to the variable <code>var</code>.
-   *
-   * </p>
-   *
-   * <p>
-   * See:<br>
-   *
-   * <ul>
-   * <li><a href="https://en.wikipedia.org/wiki/Resultant">Wikipedia - Resultant</a>
-   * </ul>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; Resultant((x-y)^2-2 , y^3-5, y)
-   * 17-60*x+12*x^2-10*x^3-6*x^4+x^6
-   * </pre>
-   */
-  private static class Resultant extends AbstractFunctionOptionEvaluator {
-
-    @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
-        IAST originalAST) {
-      // TODO allow multinomials
-      IExpr arg1 = ast.arg1();
-      IExpr arg2 = ast.arg2();
-      if (arg1.isZero() || arg2.isZero()) {
-        return F.C0;
-      }
-      IExpr arg3 = Validate.checkIsVariable(ast, 3, engine);
-      if (arg3.isPresent() && options[0].isZero()) {
-        IExpr x = arg3;
-        IExpr a = F.evalExpandAll(arg1, engine);
-        IExpr b = F.evalExpandAll(arg2, engine);
-        ExprPolynomialRing ring = new ExprPolynomialRing(F.list(x));
-        try {
-          // check if a is a polynomial otherwise check ArithmeticException, ClassCastException
-          ring.create(a);
-        } catch (RuntimeException ex) {
-          Errors.rethrowsInterruptException(ex);
-          // Polynomial expected at position `1` in `2`.
-          return Errors.printMessage(ast.topHead(), "polynomial", F.list(ast.get(1), F.C1), engine);
-        }
-        try {
-          // check if b is a polynomial otherwise check ArithmeticException, ClassCastException
-          ring.create(b);
-          IExpr resultant = resultant(a, b, x, engine);
-          if (resultant.isPresent()) {
-            return F.Together(resultant);
-          }
-        } catch (RuntimeException ex) {
-          Errors.rethrowsInterruptException(ex);
-          // Polynomial expected at position `1` in `2`.
-          return Errors.printMessage(ast.topHead(), "polynomial", F.list(ast.get(2), F.C2), engine);
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_3;
-    }
-
-    private IExpr resultant(IExpr a, IExpr b, IExpr x, EvalEngine engine) {
-      IExpr aExp = S.Exponent.ofNIL(engine, a, x);
-      IExpr bExp = S.Exponent.ofNIL(engine, b, x);
-      if (aExp.isPresent() && bExp.isPresent()) {
-        // if (b.isFree(x)) {
-        // return F.Power(b, aExp);
-        // }
-        // IExpr abExp = aExp.times(bExp);
-        if (S.Less.ofQ(engine, aExp, bExp)) {
-          IExpr resultant = resultant(b, a, x, engine);
-          if (resultant.isNIL()) {
-            return F.NIL;
-          }
-          return resultant;
-        }
-
-        IExpr r = jasResultant(a, b, x, engine);
-        if (r.isPresent()) {
-          return r;
-        }
-      }
-      return F.NIL;
-    }
-
-    /** Use JAS to compute the resultant. */
-    private static IExpr jasResultant(IExpr a, IExpr b, IExpr x, EvalEngine engine) {
-      VariablesSet eVar = new VariablesSet();
-      eVar.addVarList(x);
-
-      try {
-        JASConvert<edu.jas.arith.BigInteger> jas = new JASConvert<edu.jas.arith.BigInteger>(
-            eVar.getVarList(), edu.jas.arith.BigInteger.ZERO);
-        GenPolynomial<edu.jas.arith.BigInteger> p1 = jas.expr2JAS(a, false);
-        if (p1 == null) {
-          return resultantExpr(a, b, eVar);
-        }
-        GenPolynomial<edu.jas.arith.BigInteger> p2 = jas.expr2JAS(b, false);
-        if (p2 == null) {
-          return resultantExpr(a, b, eVar);
-        }
-        GreatestCommonDivisorAbstract<edu.jas.arith.BigInteger> factory =
-            GCDFactory.getImplementation(edu.jas.arith.BigInteger.ZERO);
-        p1 = factory.resultant(p1, p2);
-        return jas.integerPoly2Expr(p1);
-      } catch (ClassCastException | JASConversionException e) {
-        return resultantExpr(a, b, eVar);
-      }
-    }
-
-    private static IExpr resultantExpr(IExpr a, IExpr b, VariablesSet eVar) {
-      try {
-        if (eVar.size() == 0) {
-          return F.NIL;
-        }
-        IAST vars = eVar.getVarList();
-        ExprPolynomialRing ring = new ExprPolynomialRing(vars);
-        ExprPolynomial pol1 = ring.create(a);
-        ExprPolynomial pol2 = ring.create(b);
-        List<IExpr> varList = eVar.getVarList().copyTo();
-        JASIExpr jas = new JASIExpr(varList, true);
-        GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
-        GenPolynomial<IExpr> p2 = jas.expr2IExprJAS(pol2);
-
-        GreatestCommonDivisor<IExpr> factory = GCDFactory.getImplementation(ExprRingFactory.CONST);
-        p1 = factory.resultant(p1, p2);
-        return jas.exprPoly2Expr(p1);
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
-        Errors.printMessage(S.Resultant, rex);
-        // LOGGER.debug("Resultant.jasResultant() failed", rex);
-      }
-      return F.NIL;
-    }
-
-    // public static IExpr resultant(IAST result, IAST resultListDiff) {
-    // // create sylvester matrix
-    // IAST sylvester = F.list();
-    // IAST row = F.list();
-    // IAST srow;
-    // final int n = resultListDiff.size() - 2;
-    // final int m = result.size() - 2;
-    // final int n2 = m + n;
-    //
-    // for (int i = result.argSize(); i > 0; i--) {
-    // row.add(result.get(i));
-    // }
-    // for (int i = 0; i < n; i++) {
-    // // for each row
-    // srow = F.list();
-    // int j = 0;
-    // while (j < n2) {
-    // if (j < i) {
-    // srow.add(F.C0);
-    // j++;
-    // } else if (i == j) {
-    // for (int j2 = 1; j2 < row.size(); j2++) {
-    // srow.add(row.get(j2));
-    // j++;
-    // }
-    // } else {
-    // srow.add(F.C0);
-    // j++;
-    // }
-    // }
-    // sylvester.add(srow);
-    // }
-    //
-    // row = F.list();
-    // for (int i = resultListDiff.argSize(); i > 0; i--) {
-    // row.add(resultListDiff.get(i));
-    // }
-    // for (int i = n; i < n2; i++) {
-    // // for each row
-    // srow = F.list();
-    // int j = 0;
-    // int k = n;
-    // while (j < n2) {
-    // if (k < i) {
-    // srow.add(F.C0);
-    // j++;
-    // k++;
-    // } else if (i == k) {
-    // for (int j2 = 1; j2 < row.size(); j2++) {
-    // srow.add(row.get(j2));
-    // j++;
-    // k++;
-    // }
-    // } else {
-    // srow.add(F.C0);
-    // j++;
-    // k++;
-    // }
-    // }
-    // sylvester.add(srow);
-    // }
-    //
-    // if (sylvester.isAST0()) {
-    // return null;
-    // }
-    // return F.eval(F.Det(sylvester));
-    // }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
-      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Modulus};
-      IExpr[] optionValues = new IExpr[] {F.C0};
-      setOptions(newSymbol, optionKeys, optionValues);
-    }
-  }
-
-
-
-  private static final class SphericalHarmonicY extends AbstractFunctionEvaluator
-      implements IMatch {
-    @Override
-    public IExpr match5(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return SphericalHarmonicYRules.match5(ast, engine);
-    }
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-
-      IExpr l = ast.arg1();
-      IExpr m = ast.arg2();
-      IExpr t = ast.arg3();
-      IExpr p = ast.arg4();
-
-      IExpr temp = integerArgsSphericalHarmonicY(l, m, t, p, engine);
-      if (temp.isPresent()) {
-        return temp;
-      }
-
-      return F.NIL;
-    }
-
-    @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
-      if (ast.argSize() == 4) {
-        IInexactNumber l = (IInexactNumber) ast.arg1();
-        IInexactNumber m = (IInexactNumber) ast.arg2();
-        IInexactNumber t = (IInexactNumber) ast.arg3();
-        IInexactNumber p = (IInexactNumber) ast.arg4();
-        IExpr temp = integerArgsSphericalHarmonicY(l, m, t, p, engine);
-        if (temp.isPresent()) {
-          return temp;
-        }
-        if (m.isZero()) {
-          // (Sqrt(1+2*l)*LegendreP(l,Cos(t)))/(2*Sqrt(Pi))
-          return F.Times(F.Sqrt(F.Plus(F.C1, F.Times(F.C2, l))),
-              F.Power(F.Times(F.C2, F.CSqrtPi), F.CN1), F.LegendreP(l, F.Cos(t)));
-        }
-        if (m.isOne()) {
-          // (-E^(I*p)*l*(1+l)*Sqrt(1+2*l)*Sqrt(Gamma(l))*Hypergeometric2F1(1-l,2+l,2,Sin(t/2)^2)*Sin(t))/(4*Sqrt(Pi)*Sqrt(Gamma(2+l)))
-          INumber v1 = F.C2.plus(l);
-          INumber v2 = F.C1.subtract(l);
-          IAST hypergeometric2f1 =
-              F.Hypergeometric2F1(v2, v1, F.C2, F.Sqr(F.Sin(F.Times(F.C1D2, t))));
-          IAST sphericalHarmonicY = F.Times(F.C1D4, F.Exp(F.Times(F.CI, p)), F.CN1.subtract(l), l,
-              F.Sqrt(F.Plus(F.C1, F.Times(F.C2, l))), F.Power(F.Pi, F.CN1D2), F.Sqrt(F.Gamma(l)),
-              F.Power(F.Gamma(v1), F.CN1D2), hypergeometric2f1, F.Sin(t));
-          return engine.evaluate(sphericalHarmonicY);
-        }
-
-        // (E^(I*m*p)*Sqrt(1+2*l)*Sqrt(Gamma(1+l-m))*Hypergeometric2F1(-l,1+l,1-m,Sin(t/2)^2)*Sin(t)^m)/((1-Cos(t))^m*2*Sqrt(Pi)*Gamma(1-m)*Sqrt(Gamma(1+l+m)))
-        INumber v1 = F.C1.subtract(m);
-        INumber v2 = m.negate();
-        IAST hypergeometric2f1 =
-            F.Hypergeometric2F1(l.negate(), F.C1.plus(l), v1, F.Sqr(F.Sin(F.Times(F.C1D2, t))));
-        IAST sphericalHarmonicY =
-            F.Times(F.C1D2, F.Exp(F.Times(F.CI, m, p)), F.Sqrt(F.Plus(F.C1, F.Times(F.C2, l))),
-                F.Power(F.Pi, F.CN1D2), F.Power(F.Subtract(F.C1, F.Cos(t)), v2),
-                F.Power(F.Gamma(F.Plus(F.C1, l, m)), F.CN1D2), F.Power(F.Gamma(v1), F.CN1),
-                F.Sqrt(F.Gamma(F.Plus(l, v1))), hypergeometric2f1, F.Power(F.Sin(t), m));
-        return engine.evaluate(sphericalHarmonicY);
-
-      }
-      return F.NIL;
-    }
-
-    /**
-     * Check if <code>l</code> and <code>m</code> are mathematical integers and call {@link S#Sum}
-     * formula for evaluation.
-     * 
-     * @param l
-     * @param m
-     * @param t
-     * @param p
-     * @return
-     */
-    private IExpr integerArgsSphericalHarmonicY(IExpr l, IExpr m, IExpr t, IExpr p,
-        EvalEngine engine) {
-      if (l.isMathematicalIntegerNegative()) {
-        l = l.negate().subtract(F.C1);
-      }
-
-      final IExpr ll = l;
-      final boolean conjugate;
-      if (m.isMathematicalIntegerNegative()) {
-        m = m.negate();
-        if (m.greater(ll).isTrue()) {
-          return F.C0;
-        }
-        conjugate = true;
-      } else {
-        conjugate = false;
-      }
-      if (ll.isMathematicalIntegerNonNegative() && m.isMathematicalIntegerNonNegative()) {
-        int n = ll.toIntDefault();
-        if (n >= 0) {
-          n /= 2;
-          if (m.lessEqual(ll).isTrue()) {
-            // ((-1)^m/2^(1-l)*E^(I*p*m)*Sqrt(((2*l+1)*(l-m)!)/(l+m)!)*(Sin(t)^2)^(m/2)*Sum(((-
-            // 1)^k*Gamma(-k+l+1/2))/(Cos(t)^(2*k-l)*2^(2*k)*k!*Gamma(-2*k+l-m+1)),{k,0,Floor(l/
-            // 2)}))/(Pi*Cos(t)^m)
-            IExpr plusSubexpr = ll.plus(m.negate()).plus(F.C1);
-            IExpr cosT = F.Cos(t);
-            IExpr sum = F.sum(
-                k -> F.Times(F.Power(cosT, F.Plus(F.Times(F.CN2, k), ll)), F.Power(-1, k),
-                    F.Gamma(F.Plus(k.negate(), ll, F.C1D2)),
-                    F.Power(F.Times(F.Power(F.C2, F.Times(F.C2, k)), F.Factorial(k),
-                        F.Gamma(F.Plus(F.Times(F.CN2, k), plusSubexpr))), F.CN1)), //
-                0, n);
-            IAST exp = conjugate ? F.Exp(F.Times(F.CNI, p, m)) : F.Exp(F.Times(F.CI, p, m));
-            IExpr condonShortlyPhase = engine.evaluate(F.Power(-1, m));
-            IAST sphericalHarmonicY = F.Times(condonShortlyPhase, F.Power(F.C2, F.Plus(F.CN1, ll)),
-                exp, F.Power(F.Times(F.Pi, F.Power(cosT, m)), F.CN1),
-                F.Sqrt(F.Times(F.Plus(F.Times(F.C2, ll), F.C1), F.Factorial(F.Subtract(ll, m)),
-                    F.Power(F.Factorial(F.Plus(ll, m)), F.CN1))),
-                F.Power(F.Sin(t), m), //
-                sum);
-            return engine.evaluate(sphericalHarmonicY);
-          }
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_4_4;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NUMERICFUNCTION | ISymbol.LISTABLE);
-      super.setUp(newSymbol);
-    }
-  }
-
-  /**
-   *
-   *
-   * <pre>
-   * ChebyshevT(n, x)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * returns the Chebyshev polynomial of the first kind <code>T_n(x)</code>.
-   *
-   * </p>
-   *
-   * <p>
-   * See:<br>
-   *
-   * <ul>
-   * <li><a href="https://en.wikipedia.org/wiki/Chebyshev_polynomials">Wikipedia - Chebyshev
-   * polynomials</a>
-   * </ul>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; ChebyshevT(8, x)
-   * 1-32*x^2+160*x^4-256*x^6+128*x^8
-   * </pre>
-   */
-  private static final class ChebyshevT extends AbstractFunctionEvaluator
-      implements IFunctionExpand {
-    @Override
-    public boolean evalIsReal(IAST ast) {
-      if (ast.argSize() == 2) {
-        IExpr n = ast.arg1();
-        if (n.isIntegerResult()) {
-          return true;
-        }
-        IExpr z = ast.arg2();
-        return z.greaterEqual(F.CN1).isTrue();
-      }
-      return false;
-    }
-
-    @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
-      if (ast.argSize() == 2) {
-        IExpr n = ast.arg1();
-        IExpr z = ast.arg2();
-        // Cos(n*ArcCos(z))
-        return F.Cos(F.Times(n, F.ArcCos(z)));
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr n = ast.arg1();
-      IExpr z = ast.arg2();
-
-      int degree = n.toIntDefault();
-      if (F.isPresent(degree)) {
-        if (degree < 0) {
-          degree *= -1;
-        }
-        if (degree > Config.MAX_POLYNOMIAL_DEGREE) {
-          PolynomialDegreeLimitExceeded.throwIt(degree);
-        }
-        return PolynomialsUtils.createChebyshevPolynomial(degree, ast.arg2());
-      }
-      if (n.isNumEqualRational(F.C1D2) || n.isNumEqualRational(F.CN1D2)) {
-        // (1/2, z) => Cos(ArcCos(z)/2)
-        // (-1/2, z) => Cos(ArcCos(z)/2)
-        return F.Cos(F.Times(F.C1D2, F.ArcCos(z)));
-      }
-      if (z.isZero()) {
-        // Cos(Pi*n*(1/2))
-        return F.Cos(F.Times(F.C1D2, S.Pi, n));
-      }
-
-      return F.NIL;
-    }
-
-    @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
-      if (ast.argSize() == 2) {
-        IInexactNumber n = (IInexactNumber) ast.arg1();
-        IInexactNumber z = (IInexactNumber) ast.arg2();
-        return n.chebyshevT(z);
-        // (n, z) => Cos(n*ArcCos(z))
-        // return F.Cos.of(engine, F.Times(n, F.ArcCos(z)));
-      }
-
-      return F.NIL;
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-      super.setUp(newSymbol);
-    }
-  }
-
-  /**
-   *
-   *
-   * <pre>
-   * ChebyshevU(n, x)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * returns the Chebyshev polynomial of the second kind <code>U_n(x)</code>.
-   *
-   * </blockquote>
-   *
-   * <p>
-   * See:<br>
-   *
-   * <ul>
-   * <li><a href="https://en.wikipedia.org/wiki/Chebyshev_polynomials">Wikipedia - Chebyshev
-   * polynomials</a>
-   * </ul>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; ChebyshevU(8, x)
-   * 1-40*x^2+240*x^4-448*x^6+256*x^8
-   * </pre>
-   */
-  private static final class ChebyshevU extends AbstractFunctionEvaluator
-      implements IFunctionExpand {
-
-    @Override
-    public boolean evalIsReal(IAST ast) {
-      if (ast.argSize() == 2) {
-        IExpr n = ast.arg1();
-        if (n.isIntegerResult()) {
-          return true;
-        }
-        IExpr z = ast.arg2();
-        return z.greater(F.CN1).isTrue();
-      }
-      return false;
-    }
-
-    @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
-      if (ast.argSize() == 2) {
-        IExpr n = ast.arg1();
-        IExpr z = ast.arg2();
-        if (z.isCos()) {
-          IExpr t = z.first();
-          // Csc(t) * Sin((1 + n) * t)
-          return F.Times(F.Csc(t), F.Sin(F.Times(F.Plus(F.C1, n), t)));
-        }
-        // Sin((1+n)*ArcCos(z))/(Sqrt(1-z)*Sqrt(1+z))
-        return F.Times(
-            F.Power(F.Times(F.Sqrt(F.Subtract(F.C1, z)), F.Sqrt(F.Plus(F.C1, z))), F.CN1),
-            F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(z))));
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr n = ast.arg1();
-      IExpr z = ast.arg2();
-
-      int degree = n.toIntDefault();
-      if (F.isPresent(degree)) {
-        if (degree < 0) {
-          if (degree == (-1)) {
-            return F.C0;
-          }
-          if (degree == (-2)) {
-            return F.CN1;
-          }
-          return F.NIL;
-        }
-        if (degree == 0) {
-          return F.C1;
-        }
-        final IExpr zDoubled = F.C2.times(z);
-        if (degree == 1) {
-          return zDoubled;
-        }
-        if (degree > Config.MAX_POLYNOMIAL_DEGREE) {
-          PolynomialDegreeLimitExceeded.throwIt(degree);
-        }
-
-        // (n, z) => Sum(((-1)^k*(n - k)!*(2*z)^(n - 2*k))/(k!*(n - 2*k)!), {k, 0, Floor(n/2)})
-        return F.sum(k -> F.Times(F.Power(-1, k), F.Power(zDoubled, F.Plus(F.Times(F.CN2, k), n)),
-            F.Power(F.Times(F.Factorial(k), F.Factorial(F.Plus(F.Times(F.CN2, k), n))), -1),
-            F.Factorial(F.Plus(F.Negate(k), n))), 0, degree / 2);
-      }
-
-      if (n.isNumEqualRational(F.CN1D2)) {
-        // (-1/2, z) => 1/(Sqrt(2)* Sqrt(1 + z))
-        return F.Times(F.C1DSqrt2, F.Power(F.Plus(F.C1, z), F.CN1D2));
-      }
-      if (n.isNumEqualRational(F.C1D2)) {
-        final IExpr zDoubled = F.C2.times(z);
-        // (1/2, z) => (1 + 2*z)/(Sqrt(2)* Sqrt(1 + z))
-        return F.Times(F.C1DSqrt2, F.Plus(F.C1, zDoubled), F.Power(F.Plus(F.C1, z), F.CN1D2));
-      }
-      if (z.isZero()) {
-        // Cos((Pi*n)/2)
-        return F.Cos(F.Times(F.C1D2, n, S.Pi));
-      }
-      if (z.isOne()) {
-        return F.Plus(F.C1, n);
-      }
-
-      return F.NIL;
-    }
-
-    @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
-      if (ast.argSize() == 2) {
-        IInexactNumber n = (IInexactNumber) ast.arg1();
-        IInexactNumber z = (IInexactNumber) ast.arg2();
-        return n.chebyshevU(z);
-      }
-
-      return F.NIL;
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-      super.setUp(newSymbol);
-    }
-  }
-
-  /**
-   *
-   *
-   * <pre>
-   * BellY(n, k, {x1, x2, ... , xN})
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * the second kind of Bell polynomials (incomplete Bell polynomials).
-   *
-   * </p>
-   *
-   * <p>
-   * See:<br>
-   *
-   * <ul>
-   * <li><a href="https://en.wikipedia.org/wiki/Bell_polynomials">Wikipedia - Bell polynomials</a>
-   * </ul>
-   *
-   * <pre>
-   * &gt;&gt; BellY(6, 2, {x1, x2, x3, x4, x5})
-   * 10*x3^2+15*x2*x4+6*x1*x5
-   * </pre>
-   */
-  private static final class BellY extends AbstractFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (ast.isAST1()) {
-        // int[] dim = arg1.isMatrix(false);
-        // if (dim == null || dim.length != 2 || dim[0] != dim[1]) {
-        // return F.NIL;
-        // }
-        // final int size = dim[0];
-        // return bellYMatrix((IAST) arg1, size, ast, engine);
-        return F.NIL;
-      }
-      if (ast.isAST2()) {
-        return F.NIL;
-      }
-      if (arg1.isInteger() && ast.arg2().isInteger()) {
-        int n = arg1.toIntDefault();
-        int k = ast.arg2().toIntDefault();
-        if (n < 0 || k < 0) {
-          return F.NIL;
-        }
-
-        IExpr arg3 = ast.arg3();
-        int[] dim = arg3.isMatrix(false);
-        if (dim == null || dim.length != 2) {
-          IExpr listOfVariables = arg3.normal(false);
-          if (!listOfVariables.isList()) {
-            return F.NIL;
-          }
-
-          if (n == 0 && k == 0) {
-            return F.C1;
-          }
-          if (n == 0 || k == 0) {
-            return F.C0;
-          }
-          if (n < k) {
-            return F.C0;
-          }
-          if (n > Config.MAX_POLYNOMIAL_DEGREE) {
-            PolynomialDegreeLimitExceeded.throwIt(n);
-          }
-          int max = n - k + 2;
-          if (max >= 0) {
-            return bellY(n, k, (IAST) listOfVariables, ast, engine);
-          }
-          return F.NIL;
-        }
-
-
-        final int rowSize = dim[0];
-        final int colSize = dim[1];
-        if (n > Config.MAX_POLYNOMIAL_DEGREE) {
-          PolynomialDegreeLimitExceeded.throwIt(n);
-        }
-        return bellYMatrix(n, k, (IAST) arg3, rowSize, colSize, ast, engine);
-
-
-      }
-
-      return F.NIL;
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_3;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      super.setUp(newSymbol);
     }
   }
 
@@ -1829,41 +1430,6 @@ public class PolynomialFunctions {
    * </pre>
    */
   private static final class GroebnerBasis extends AbstractFunctionOptionEvaluator {
-
-    /**
-     * Compute the Groebner basis for a list of polynomials.
-     *
-     * <p>
-     * See
-     *
-     * <ul>
-     * <li><a href="https://en.wikipedia.org/wiki/Gr%C3%B6bner_basis">EN-Wikipedia: Gröbner
-     * basis</a>
-     * <li><a href="https://de.wikipedia.org/wiki/Gr%C3%B6bnerbasis">DE-Wikipedia: Gröbner basis</a>
-     * </ul>
-     */
-    @Override
-    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
-        IAST originalAST) {
-
-      if (argSize >= 2) {
-
-        if (!ast.arg1().isList() || !ast.arg2().isList()) {
-          return F.NIL;
-        }
-
-        TermOrder termOrder = TermOrderByName.Lexicographic;
-        termOrder = JASIExpr.monomialOrder(options[0], termOrder);
-        IAST polys = (IAST) ast.arg1();
-        IAST vars = (IAST) ast.arg2();
-        if (vars.size() <= 1) {
-          return F.NIL;
-        }
-
-        return computeGroebnerBasis(polys, vars, termOrder);
-      }
-      return F.NIL;
-    }
 
     /**
      * @param listOfPolynomials a list of polynomials
@@ -1916,6 +1482,41 @@ public class PolynomialFunctions {
       });
     }
 
+    /**
+     * Compute the Groebner basis for a list of polynomials.
+     *
+     * <p>
+     * See
+     *
+     * <ul>
+     * <li><a href="https://en.wikipedia.org/wiki/Gr%C3%B6bner_basis">EN-Wikipedia: Gröbner
+     * basis</a>
+     * <li><a href="https://de.wikipedia.org/wiki/Gr%C3%B6bnerbasis">DE-Wikipedia: Gröbner basis</a>
+     * </ul>
+     */
+    @Override
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
+
+      if (argSize >= 2) {
+
+        if (!ast.arg1().isList() || !ast.arg2().isList()) {
+          return F.NIL;
+        }
+
+        TermOrder termOrder = TermOrderByName.Lexicographic;
+        termOrder = JASIExpr.monomialOrder(options[0], termOrder);
+        IAST polys = (IAST) ast.arg1();
+        IAST vars = (IAST) ast.arg2();
+        if (vars.size() <= 1) {
+          return F.NIL;
+        }
+
+        return computeGroebnerBasis(polys, vars, termOrder);
+      }
+      return F.NIL;
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_2_INFINITY;
@@ -1964,6 +1565,38 @@ public class PolynomialFunctions {
    */
   private static final class HermiteH extends AbstractFunctionEvaluator implements IFunctionExpand {
 
+    private static IExpr hermiteHZero(IExpr n) {
+      // https://functions.wolfram.com/Polynomials/HermiteH/03/01/01/0001/
+      // (2^n * Sqrt(Pi))/Gamma((1 - n)/2)
+      return F.Times(F.Power(F.C2, n), F.CSqrtPi,
+          F.Power(F.Gamma(F.Times(F.C1D2, F.Subtract(F.C1, n))), F.CN1));
+    }
+
+    @Override
+    public boolean evalIsReal(IAST ast) {
+      return (ast.argSize() == 2) && ast.arg1().isRealResult() && ast.arg2().isRealResult();
+    }
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr n = ast.arg1();
+      IExpr z = ast.arg2();
+      if (z.isZero()) {
+        return hermiteHZero(n);
+      }
+      int degree = n.toIntDefault();
+      if (degree >= 0) {
+        return PolynomialsUtils.createHermitePolynomial(degree, z);
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
     @Override
     public IExpr functionExpand(IAST ast, EvalEngine engine) {
       IExpr n = ast.arg1();
@@ -2005,33 +1638,6 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public boolean evalIsReal(IAST ast) {
-      return (ast.argSize() == 2) && ast.arg1().isRealResult() && ast.arg2().isRealResult();
-    }
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr n = ast.arg1();
-      IExpr z = ast.arg2();
-      if (z.isZero()) {
-        return hermiteHZero(n);
-      }
-      int degree = n.toIntDefault();
-      if (degree >= 0) {
-        return PolynomialsUtils.createHermitePolynomial(degree, z);
-      }
-
-      return F.NIL;
-    }
-
-    private static IExpr hermiteHZero(IExpr n) {
-      // https://functions.wolfram.com/Polynomials/HermiteH/03/01/01/0001/
-      // (2^n * Sqrt(Pi))/Gamma((1 - n)/2)
-      return F.Times(F.Power(F.C2, n), F.CSqrtPi,
-          F.Power(F.Gamma(F.Times(F.C1D2, F.Subtract(F.C1, n))), F.CN1));
-    }
-
-    @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.isAST2()) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
@@ -2059,21 +1665,47 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-
-    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.NUMERICFUNCTION | ISymbol.LISTABLE);
       super.setUp(newSymbol);
     }
 
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+
+  }
+
+  /**
+   * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
+   * in static initializer</a>
+   */
+  private static class Initializer {
+
+    private static void init() {
+      S.BellY.setEvaluator(new BellY());
+      S.ChebyshevT.setEvaluator(new ChebyshevT());
+      S.ChebyshevU.setEvaluator(new ChebyshevU());
+      S.Coefficient.setEvaluator(new Coefficient());
+      // TODO
+      // S.CoefficientArrays.setEvaluator(new CoefficientArrays());
+      S.CoefficientList.setEvaluator(new CoefficientList());
+      S.CoefficientRules.setEvaluator(new CoefficientRules());
+      S.Cyclotomic.setEvaluator(new Cyclotomic());
+      S.Discriminant.setEvaluator(new Discriminant());
+      S.Exponent.setEvaluator(new Exponent());
+      S.GroebnerBasis.setEvaluator(new GroebnerBasis());
+      S.HermiteH.setEvaluator(new HermiteH());
+      S.JacobiP.setEvaluator(new JacobiP());
+      S.LaguerreL.setEvaluator(new LaguerreL());
+      S.LegendreP.setEvaluator(new LegendreP());
+      S.LegendreQ.setEvaluator(new LegendreQ());
+      S.MonomialList.setEvaluator(new MonomialList());
+      S.Resultant.setEvaluator(new Resultant());
+      S.SphericalHarmonicY.setEvaluator(new SphericalHarmonicY());
+      S.ZernikeR.setEvaluator(new ZernikeR());
+    }
   }
 
   private static final class JacobiP extends AbstractFunctionEvaluator {
@@ -2103,30 +1735,20 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
-      if (ast.argSize() == 4) {
-        IInexactNumber n = (IInexactNumber) ast.arg1();
-        IInexactNumber a = (IInexactNumber) ast.arg2();
-        IInexactNumber b = (IInexactNumber) ast.arg3();
-        IInexactNumber z = (IInexactNumber) ast.arg4();
-        if (n.isMathematicalIntegerNonNegative()) {
-          return jacobiPSum(n, a, b, z, engine);
-        }
-        return n.jacobiP(a, b, z);
-        // INumber aNegate = a.negate();
-        // if (!aNegate.isMathematicalIntegerNonNegative()) {
-        // // https://functions.wolfram.com/Polynomials/JacobiP/26/01/02/0001/
-        // // Gamma(a+n+1)/(Gamma(n+1)*Gamma(a+1))*Hypergeometric2F1(-n,a+b+n+1,a+1,1/2*(1-z))
-        // IExpr v1 = F.Plus(a, F.C1);
-        // IAST jacobiP = F.Times(F.Power(F.Gamma(F.Plus(F.C1, n)), F.CN1),
-        // F.Power(F.Gamma(v1), F.CN1), F.Gamma(F.Plus(n, v1)), F.Hypergeometric2F1(F.Negate(n),
-        // F.Plus(b, n, v1), v1, F.Times(F.C1D2, F.Subtract(F.C1, z))));
-        // return engine.evaluate(jacobiP);
-        // }
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_4_4;
+    }
 
-      }
-
-      return F.NIL;
+    private IExpr jacobiP(int ni, IExpr a, IExpr b, IExpr z, final EvalEngine engine) {
+      // https://functions.wolfram.com/Polynomials/JacobiP/03/01/04/0008/
+      // Sum((Binomial(a+n,k)*Binomial(b+n,-k+n)*(z+1)^k)/(-1+z)^(k-n),{k,0,n})/2^n
+      IInteger n = F.ZZ(ni);
+      IExpr sum = F.sum(
+          k -> F.Times(F.Binomial(F.Plus(a, n), k), F.Binomial(F.Plus(b, n), F.Plus(k.negate(), n)),
+              F.Power(F.Plus(z, F.C1), k), F.Power(F.Plus(F.CN1, z), F.Subtract(n, k))), //
+          0, ni);
+      IAST jacobiP = F.Times(F.Power(F.Power(F.C2, n), F.CN1), sum);
+      return engine.evaluate(jacobiP);
     }
 
     private IExpr jacobiPSum(INumber n, IExpr a, IExpr b, IExpr z, final EvalEngine engine) {
@@ -2166,32 +1788,42 @@ public class PolynomialFunctions {
       return F.NIL;
     }
 
-    private IExpr jacobiP(int ni, IExpr a, IExpr b, IExpr z, final EvalEngine engine) {
-      // https://functions.wolfram.com/Polynomials/JacobiP/03/01/04/0008/
-      // Sum((Binomial(a+n,k)*Binomial(b+n,-k+n)*(z+1)^k)/(-1+z)^(k-n),{k,0,n})/2^n
-      IInteger n = F.ZZ(ni);
-      IExpr sum = F.sum(
-          k -> F.Times(F.Binomial(F.Plus(a, n), k), F.Binomial(F.Plus(b, n), F.Plus(k.negate(), n)),
-              F.Power(F.Plus(z, F.C1), k), F.Power(F.Plus(F.CN1, z), F.Subtract(n, k))), //
-          0, ni);
-      IAST jacobiP = F.Times(F.Power(F.Power(F.C2, n), F.CN1), sum);
-      return engine.evaluate(jacobiP);
-    }
-
     @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 4) {
+        IInexactNumber n = (IInexactNumber) ast.arg1();
+        IInexactNumber a = (IInexactNumber) ast.arg2();
+        IInexactNumber b = (IInexactNumber) ast.arg3();
+        IInexactNumber z = (IInexactNumber) ast.arg4();
+        if (n.isMathematicalIntegerNonNegative()) {
+          return jacobiPSum(n, a, b, z, engine);
+        }
+        return n.jacobiP(a, b, z);
+        // INumber aNegate = a.negate();
+        // if (!aNegate.isMathematicalIntegerNonNegative()) {
+        // // https://functions.wolfram.com/Polynomials/JacobiP/26/01/02/0001/
+        // // Gamma(a+n+1)/(Gamma(n+1)*Gamma(a+1))*Hypergeometric2F1(-n,a+b+n+1,a+1,1/2*(1-z))
+        // IExpr v1 = F.Plus(a, F.C1);
+        // IAST jacobiP = F.Times(F.Power(F.Gamma(F.Plus(F.C1, n)), F.CN1),
+        // F.Power(F.Gamma(v1), F.CN1), F.Gamma(F.Plus(n, v1)), F.Hypergeometric2F1(F.Negate(n),
+        // F.Plus(b, n, v1), v1, F.Times(F.C1D2, F.Subtract(F.C1, z))));
+        // return engine.evaluate(jacobiP);
+        // }
 
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_4_4;
+      }
+
+      return F.NIL;
     }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.NUMERICFUNCTION | ISymbol.LISTABLE);
       super.setUp(newSymbol);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 
@@ -2227,23 +1859,21 @@ public class PolynomialFunctions {
   private static final class LaguerreL extends AbstractFunctionEvaluator
       implements IFunctionExpand {
 
-    @Override
-    public boolean evalIsReal(IAST ast) {
-      return (ast.argSize() == 2) && ast.arg1().isRealResult() && ast.arg2().isRealResult();
+    /**
+     * Create a Laguerre polynomial of <code>degree >= 0</code> with variable <code>z
+     * </code>.
+     *
+     * @param nonNegativeDegree the <code>degree >= 0</code> of the Laguerre polynomial
+     * @param z the variable of the Laguerre polynomial
+     * @return the Laguerre polynomial <code>L_n(z)</code>
+     */
+    private static IAST laguerreL(int nonNegativeDegree, IExpr z) {
+      return PolynomialsUtils.createLaguerrePolynomial(nonNegativeDegree, z);
     }
 
     @Override
-    public IExpr functionExpand(IAST ast, EvalEngine engine) {
-      if (ast.isAST2()) {
-        IExpr n = ast.arg1();
-        IExpr z = ast.arg2();
-        if (n.isNumEqualRational(F.CN1D2)) {
-          // E^(z/2)*BesselI(0,z/2)
-          IExpr v1 = F.Times(F.C1D2, z);
-          return F.Times(F.Exp(v1), F.BesselI(F.C0, v1));
-        }
-      }
-      return F.NIL;
+    public boolean evalIsReal(IAST ast) {
+      return (ast.argSize() == 2) && ast.arg1().isRealResult() && ast.arg2().isRealResult();
     }
 
     @Override
@@ -2277,16 +1907,23 @@ public class PolynomialFunctions {
       return F.NIL;
     }
 
-    /**
-     * Create a Laguerre polynomial of <code>degree >= 0</code> with variable <code>z
-     * </code>.
-     *
-     * @param nonNegativeDegree the <code>degree >= 0</code> of the Laguerre polynomial
-     * @param z the variable of the Laguerre polynomial
-     * @return the Laguerre polynomial <code>L_n(z)</code>
-     */
-    private static IAST laguerreL(int nonNegativeDegree, IExpr z) {
-      return PolynomialsUtils.createLaguerrePolynomial(nonNegativeDegree, z);
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
+    @Override
+    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        IExpr n = ast.arg1();
+        IExpr z = ast.arg2();
+        if (n.isNumEqualRational(F.CN1D2)) {
+          // E^(z/2)*BesselI(0,z/2)
+          IExpr v1 = F.Times(F.C1D2, z);
+          return F.Times(F.Exp(v1), F.BesselI(F.C0, v1));
+        }
+      }
+      return F.NIL;
     }
 
     private IExpr laguerreLRecursive(IExpr n, int degree, IExpr l, IExpr z, EvalEngine engine) {
@@ -2393,19 +2030,14 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
-    }
-
-    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
   }
@@ -2441,6 +2073,46 @@ public class PolynomialFunctions {
    */
   private static final class LegendreP extends AbstractFunctionEvaluator
       implements IMatch, IFunctionExpand {
+    private static IExpr legendreP(IExpr n, final IExpr m, IExpr z, int type, EvalEngine engine) {
+      int ni = n.toIntDefault();
+      if (F.isPresent(ni)) {
+        int mi = m.toIntDefault();
+        if (F.isPresent(mi)) {
+          int miAbs = mi < 0 ? -mi : mi;
+          ni = ni < 0 ? -ni - 1 : ni;
+          if (miAbs > ni) {
+            return F.C0;
+          }
+
+          ISymbol dummyZ = F.Dummy("$z");
+          IExpr legendreP = legendreP(ni, dummyZ);
+          // (-1)^miAbs*(1-z^2)^(miAbs/2)*D(legendreP,{z,miAbs})
+          IExpr mAbs = F.ZZ(miAbs);
+          IExpr typeFactor = getTypeFactor(type, miAbs, dummyZ, engine);
+          IExpr diff = engine.evaluate(F.D(legendreP, F.list(dummyZ, mAbs)));
+          IExpr resultForPositiveM = engine.evaluate(F.Times(F.Power(-1, mAbs), typeFactor, diff));
+
+          resultForPositiveM = F.subst(resultForPositiveM, dummyZ, z);
+          // apply the identity for negative m if necessary
+          if (mi < 0) {
+            // (-1)^mAbs*(-mAbs+ni)!/(ni+mAbs)!*resultForPositiveM
+            IExpr nEff = F.ZZ(ni);
+            return F.Times(F.Power(-1, mAbs), F.Power(F.Factorial(F.Plus(nEff, mAbs)), F.CN1),
+                F.Factorial(F.Plus(F.Negate(mAbs), nEff)), resultForPositiveM);
+          }
+          return resultForPositiveM;
+        }
+      }
+      return F.NIL;
+    }
+
+    private static IExpr legendreP(int n, IExpr z) {
+      if (n > Config.MAX_POLYNOMIAL_DEGREE) {
+        PolynomialDegreeLimitExceeded.throwIt(n);
+      }
+      return PolynomialsUtils.createLegendrePolynomial(n, z);
+    }
+
     @Override
     public boolean evalIsReal(IAST ast) {
       if (ast.argSize() == 2) {
@@ -2464,12 +2136,6 @@ public class PolynomialFunctions {
         }
       }
       return false;
-    }
-
-    @Override
-    public IExpr match3(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return LegendrePRules.match3(ast, engine);
     }
 
     @Override
@@ -2542,45 +2208,35 @@ public class PolynomialFunctions {
       return F.NIL;
     }
 
-    private static IExpr legendreP(IExpr n, final IExpr m, IExpr z, int type, EvalEngine engine) {
-      int ni = n.toIntDefault();
-      if (F.isPresent(ni)) {
-        int mi = m.toIntDefault();
-        if (F.isPresent(mi)) {
-          int miAbs = mi < 0 ? -mi : mi;
-          ni = ni < 0 ? -ni - 1 : ni;
-          if (miAbs > ni) {
-            return F.C0;
-          }
 
-          ISymbol dummyZ = F.Dummy("$z");
-          IExpr legendreP = legendreP(ni, dummyZ);
-          // (-1)^miAbs*(1-z^2)^(miAbs/2)*D(legendreP,{z,miAbs})
-          IExpr mAbs = F.ZZ(miAbs);
-          IExpr typeFactor = getTypeFactor(type, miAbs, dummyZ, engine);
-          IExpr diff = engine.evaluate(F.D(legendreP, F.list(dummyZ, mAbs)));
-          IExpr resultForPositiveM = engine.evaluate(F.Times(F.Power(-1, mAbs), typeFactor, diff));
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_4;
+    }
 
-          resultForPositiveM = F.subst(resultForPositiveM, dummyZ, z);
-          // apply the identity for negative m if necessary
-          if (mi < 0) {
-            // (-1)^mAbs*(-mAbs+ni)!/(ni+mAbs)!*resultForPositiveM
-            IExpr nEff = F.ZZ(ni);
-            return F.Times(F.Power(-1, mAbs), F.Power(F.Factorial(F.Plus(nEff, mAbs)), F.CN1),
-                F.Factorial(F.Plus(F.Negate(mAbs), nEff)), resultForPositiveM);
-          }
-          return resultForPositiveM;
-        }
+    @Override
+    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+      if (ast.argSize() == 4 //
+          && ast.arg3().isNumEqualInteger(F.C2)) {
+        IExpr m = ast.arg1();
+        IExpr n = ast.arg2();
+        IExpr z = ast.arg4();
+        // ((1+z)^(m/2)*Hypergeometric2F1(-n,1+n,1-m,1/2*(1-z)))/((1-z)^(m/2)*Gamma(1-m))
+        IExpr v3 = F.Subtract(F.C1, z);
+        IExpr v2 = F.Times(F.C1D2, m);
+        IExpr v1 = F.Subtract(F.C1, m);
+        return F.Times(F.Power(v3, F.Times(F.CN1D2, m)), F.Power(F.Plus(F.C1, z), v2),
+            F.Power(F.Gamma(v1), F.CN1),
+            F.Hypergeometric2F1(F.Negate(n), F.Plus(F.C1, n), v1, F.Times(F.C1D2, v3)));
+
       }
       return F.NIL;
     }
 
-
-    private static IExpr legendreP(int n, IExpr z) {
-      if (n > Config.MAX_POLYNOMIAL_DEGREE) {
-        PolynomialDegreeLimitExceeded.throwIt(n);
-      }
-      return PolynomialsUtils.createLegendrePolynomial(n, z);
+    @Override
+    public IExpr match3(IAST ast, EvalEngine engine) {
+      return F.NIL;
+      // return LegendrePRules.match3(ast, engine);
     }
 
     @Override
@@ -2614,38 +2270,14 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_4;
-    }
-
-    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.NUMERICFUNCTION | ISymbol.LISTABLE);
       super.setUp(newSymbol);
     }
 
     @Override
-    public IExpr functionExpand(IAST ast, EvalEngine engine) {
-      if (ast.argSize() == 4 //
-          && ast.arg3().isNumEqualInteger(F.C2)) {
-        IExpr m = ast.arg1();
-        IExpr n = ast.arg2();
-        IExpr z = ast.arg4();
-        // ((1+z)^(m/2)*Hypergeometric2F1(-n,1+n,1-m,1/2*(1-z)))/((1-z)^(m/2)*Gamma(1-m))
-        IExpr v3 = F.Subtract(F.C1, z);
-        IExpr v2 = F.Times(F.C1D2, m);
-        IExpr v1 = F.Subtract(F.C1, m);
-        return F.Times(F.Power(v3, F.Times(F.CN1D2, m)), F.Power(F.Plus(F.C1, z), v2),
-            F.Power(F.Gamma(v1), F.CN1),
-            F.Hypergeometric2F1(F.Negate(n), F.Plus(F.C1, n), v1, F.Times(F.C1D2, v3)));
-
-      }
-      return F.NIL;
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 
@@ -2680,6 +2312,50 @@ public class PolynomialFunctions {
    */
   static final class LegendreQ extends AbstractFunctionEvaluator
       implements IMatch, IFunctionExpand {
+    private static IExpr legendreQ(IExpr n, final IExpr m, IExpr z, int type, EvalEngine engine) {
+      int ni = n.toIntDefault();
+      if (F.isPresent(ni)) {
+        int mi = m.toIntDefault();
+        if (F.isPresent(mi) && mi >= 0) {
+          if (mi == 0) {
+            return legendreQ(ni, z);
+          }
+          ISymbol dummyZ = F.Dummy("$z");
+          IExpr legendreQ = engine.evaluate(legendreQ(ni, dummyZ));
+          IInteger mAbs = F.ZZ(mi);
+          IExpr diff = engine.evaluate(F.D(legendreQ, F.list(dummyZ, mAbs)));
+          IExpr typeFactor = getTypeFactor(type, mi, dummyZ, engine);
+          IExpr result = F.Times(F.Power(-1, mAbs), typeFactor, diff);
+          result = F.subst(result, dummyZ, z);
+          return result;
+        }
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Legendre function of the 2nd kind for integer n and m==0 (Christoffels 2nd formula für m==0)
+     */
+    private static IExpr legendreQ(int ni, IExpr z) {
+      if (ni == 0) {
+        // -Log(1-z)/2+Log(1+z)/2
+        return F.Plus(F.Times(F.CN1D2, F.Log(F.Subtract(F.C1, z))),
+            F.Times(F.C1D2, F.Log(F.Plus(F.C1, z))));
+      }
+
+      // 1/2*(-Log(1-z)+Log(1+z))*LegendreP(n,z)-Sum((-1-4*k+2*n)/((2*k+1)*(-k+n))*LegendreP(-
+      // 1-2*k+n,z),{k,0,Floor(1/2*(-1+n))})
+      IInteger n = F.ZZ(ni);
+      int sumNi = (ni - 1) / 2;
+      // polynomial w_{n-1}(z)
+      IExpr w = F.sum(k -> F.Times(F.Plus(F.CN1, F.Times(F.CN4, k), F.Times(F.C2, n)),
+          F.Power(F.Times(F.Plus(F.Times(F.C2, k), F.C1), F.Plus(F.Negate(k), n)), F.CN1),
+          F.LegendreP(F.Plus(F.CN1, F.Times(F.CN2, k), n), z)), 0, sumNi);
+      return F.Subtract(F.Times(F.C1D2,
+          F.Plus(F.Negate(F.Log(F.Subtract(F.C1, z))), F.Log(F.Plus(F.C1, z))), F.LegendreP(n, z)),
+          w);
+    }
+
     @Override
     public boolean evalIsReal(IAST ast) {
       if (ast.argSize() == 2) {
@@ -2711,12 +2387,6 @@ public class PolynomialFunctions {
         }
       }
       return false;
-    }
-
-    @Override
-    public IExpr match3(IAST ast, EvalEngine engine) {
-      return F.NIL;
-      // return LegendreQRules.match3(ast, engine);
     }
 
     @Override
@@ -2784,80 +2454,6 @@ public class PolynomialFunctions {
       return F.NIL;
     }
 
-    /**
-     * Legendre function of the 2nd kind for integer n and m==0 (Christoffels 2nd formula für m==0)
-     */
-    private static IExpr legendreQ(int ni, IExpr z) {
-      if (ni == 0) {
-        // -Log(1-z)/2+Log(1+z)/2
-        return F.Plus(F.Times(F.CN1D2, F.Log(F.Subtract(F.C1, z))),
-            F.Times(F.C1D2, F.Log(F.Plus(F.C1, z))));
-      }
-
-      // 1/2*(-Log(1-z)+Log(1+z))*LegendreP(n,z)-Sum((-1-4*k+2*n)/((2*k+1)*(-k+n))*LegendreP(-
-      // 1-2*k+n,z),{k,0,Floor(1/2*(-1+n))})
-      IInteger n = F.ZZ(ni);
-      int sumNi = (ni - 1) / 2;
-      // polynomial w_{n-1}(z)
-      IExpr w = F.sum(k -> F.Times(F.Plus(F.CN1, F.Times(F.CN4, k), F.Times(F.C2, n)),
-          F.Power(F.Times(F.Plus(F.Times(F.C2, k), F.C1), F.Plus(F.Negate(k), n)), F.CN1),
-          F.LegendreP(F.Plus(F.CN1, F.Times(F.CN2, k), n), z)), 0, sumNi);
-      return F.Subtract(F.Times(F.C1D2,
-          F.Plus(F.Negate(F.Log(F.Subtract(F.C1, z))), F.Log(F.Plus(F.C1, z))), F.LegendreP(n, z)),
-          w);
-    }
-
-    private static IExpr legendreQ(IExpr n, final IExpr m, IExpr z, int type, EvalEngine engine) {
-      int ni = n.toIntDefault();
-      if (F.isPresent(ni)) {
-        int mi = m.toIntDefault();
-        if (F.isPresent(mi) && mi >= 0) {
-          if (mi == 0) {
-            return legendreQ(ni, z);
-          }
-          ISymbol dummyZ = F.Dummy("$z");
-          IExpr legendreQ = engine.evaluate(legendreQ(ni, dummyZ));
-          IInteger mAbs = F.ZZ(mi);
-          IExpr diff = engine.evaluate(F.D(legendreQ, F.list(dummyZ, mAbs)));
-          IExpr typeFactor = getTypeFactor(type, mi, dummyZ, engine);
-          IExpr result = F.Times(F.Power(-1, mAbs), typeFactor, diff);
-          result = F.subst(result, dummyZ, z);
-          return result;
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
-      if (ast.isAST2() || ast.isAST3()) {
-        final IInexactNumber n = (IInexactNumber) ast.arg1();
-        final IInexactNumber z;
-        IExpr temp = F.NIL;
-        if (ast.isAST2()) {
-          z = (IInexactNumber) ast.arg2();
-          temp = n.legendreQ(z);
-        } else {
-          final IInexactNumber m = (IInexactNumber) ast.arg2();
-          z = (IInexactNumber) ast.arg3();
-          if (m.isZero()) {
-            temp = n.legendreQ(z);
-          } else {
-            temp = n.legendreQ(m, z);
-          }
-        }
-        if (temp.isPresent()) {
-          return temp;
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-
     @Override
     public int[] expectedArgSize(IAST ast) {
       if (ast != null && ast.size() > 1) {
@@ -2867,12 +2463,6 @@ public class PolynomialFunctions {
         }
       }
       return ARGS_2_4;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NUMERICFUNCTION | ISymbol.LISTABLE);
-      super.setUp(newSymbol);
     }
 
     @Override
@@ -2902,8 +2492,49 @@ public class PolynomialFunctions {
       }
       return F.NIL;
     }
-  }
 
+    @Override
+    public IExpr match3(IAST ast, EvalEngine engine) {
+      return F.NIL;
+      // return LegendreQRules.match3(ast, engine);
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.isAST2() || ast.isAST3()) {
+        final IInexactNumber n = (IInexactNumber) ast.arg1();
+        final IInexactNumber z;
+        IExpr temp = F.NIL;
+        if (ast.isAST2()) {
+          z = (IInexactNumber) ast.arg2();
+          temp = n.legendreQ(z);
+        } else {
+          final IInexactNumber m = (IInexactNumber) ast.arg2();
+          z = (IInexactNumber) ast.arg3();
+          if (m.isZero()) {
+            temp = n.legendreQ(z);
+          } else {
+            temp = n.legendreQ(m, z);
+          }
+        }
+        if (temp.isPresent()) {
+          return temp;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.NUMERICFUNCTION | ISymbol.LISTABLE);
+      super.setUp(newSymbol);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
 
   /**
    *
@@ -2928,6 +2559,39 @@ public class PolynomialFunctions {
    * </ul>
    */
   private static final class MonomialList extends AbstractFunctionOptionEvaluator {
+    /**
+     * Get the monomial list of a univariate polynomial with coefficients reduced by a modulo value.
+     *
+     * @param polynomial a polynomial expression
+     * @param variablesList list of variables
+     * @param termOrder the JAS term ordering
+     * @param option the &quot;Modulus&quot; option
+     * @return the list of monomials of the univariate polynomial.
+     */
+    private static IAST monomialListModulus(IExpr polynomial, IAST variablesList,
+        final TermOrder termOrder, IExpr option) throws JASConversionException {
+      try {
+        // found "Modulus" option => use ModIntegerRing
+        ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
+        JASModInteger jas = new JASModInteger(variablesList, modIntegerRing);
+        GenPolynomial<ModLong> polyExpr = jas.expr2JAS(polynomial);
+        IASTAppendable list = F.ListAlloc(polyExpr.length());
+        for (Monomial<ModLong> monomial : polyExpr) {
+          ModLong coeff = monomial.coefficient();
+          ExpVector exp = monomial.exponent();
+          IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
+          jas.monomialToExpr(F.ZZ(coeff.getVal()), exp, monomTimes);
+          list.append(monomTimes);
+        }
+        return list;
+      } catch (ArithmeticException ae) {
+        // toInt() conversion failed
+        Errors.printMessage(S.MonomialList, ae);
+        // LOGGER.debug("MonomialList.monomialListModulus() failed", ae);
+      }
+      return F.NIL;
+    }
+
     /**
      * Get the list of monomials of a polynomial expression.
      *
@@ -2981,39 +2645,6 @@ public class PolynomialFunctions {
       return ARGS_1_3;
     }
 
-    /**
-     * Get the monomial list of a univariate polynomial with coefficients reduced by a modulo value.
-     *
-     * @param polynomial a polynomial expression
-     * @param variablesList list of variables
-     * @param termOrder the JAS term ordering
-     * @param option the &quot;Modulus&quot; option
-     * @return the list of monomials of the univariate polynomial.
-     */
-    private static IAST monomialListModulus(IExpr polynomial, IAST variablesList,
-        final TermOrder termOrder, IExpr option) throws JASConversionException {
-      try {
-        // found "Modulus" option => use ModIntegerRing
-        ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((IReal) option);
-        JASModInteger jas = new JASModInteger(variablesList, modIntegerRing);
-        GenPolynomial<ModLong> polyExpr = jas.expr2JAS(polynomial);
-        IASTAppendable list = F.ListAlloc(polyExpr.length());
-        for (Monomial<ModLong> monomial : polyExpr) {
-          ModLong coeff = monomial.coefficient();
-          ExpVector exp = monomial.exponent();
-          IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
-          jas.monomialToExpr(F.ZZ(coeff.getVal()), exp, monomTimes);
-          list.append(monomTimes);
-        }
-        return list;
-      } catch (ArithmeticException ae) {
-        // toInt() conversion failed
-        Errors.printMessage(S.MonomialList, ae);
-        // LOGGER.debug("MonomialList.monomialListModulus() failed", ae);
-      }
-      return F.NIL;
-    }
-
     @Override
     public void setUp(final ISymbol newSymbol) {
       IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Modulus};
@@ -3022,19 +2653,378 @@ public class PolynomialFunctions {
     }
   }
 
+  /**
+   *
+   *
+   * <pre>
+   * Resultant(polynomial1, polynomial2, var)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * computes the resultant of the polynomials <code>polynomial1</code> and <code>polynomial2
+   * </code> with respect to the variable <code>var</code>.
+   *
+   * </p>
+   *
+   * <p>
+   * See:<br>
+   *
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Resultant">Wikipedia - Resultant</a>
+   * </ul>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * &gt;&gt; Resultant((x-y)^2-2 , y^3-5, y)
+   * 17-60*x+12*x^2-10*x^3-6*x^4+x^6
+   * </pre>
+   */
+  private static class Resultant extends AbstractFunctionOptionEvaluator {
 
-  private static final class ZernikeR extends AbstractFunctionEvaluator implements IFunctionExpand {
+    /** Use JAS to compute the resultant. */
+    private static IExpr jasResultant(IExpr a, IExpr b, IExpr x, EvalEngine engine) {
+      VariablesSet eVar = new VariablesSet();
+      eVar.addVarList(x);
 
-    @Override
-    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
-      if (ast.argSize() == 3) {
-        IExpr n = ast.arg1();
-        IExpr m = ast.arg2();
-        IExpr r = ast.arg3();
-        return functionExpand(n, m, r);
+      try {
+        JASConvert<edu.jas.arith.BigInteger> jas = new JASConvert<edu.jas.arith.BigInteger>(
+            eVar.getVarList(), edu.jas.arith.BigInteger.ZERO);
+        GenPolynomial<edu.jas.arith.BigInteger> p1 = jas.expr2JAS(a, false);
+        if (p1 == null) {
+          return resultantExpr(a, b, eVar);
+        }
+        GenPolynomial<edu.jas.arith.BigInteger> p2 = jas.expr2JAS(b, false);
+        if (p2 == null) {
+          return resultantExpr(a, b, eVar);
+        }
+        GreatestCommonDivisorAbstract<edu.jas.arith.BigInteger> factory =
+            GCDFactory.getImplementation(edu.jas.arith.BigInteger.ZERO);
+        p1 = factory.resultant(p1, p2);
+        return jas.integerPoly2Expr(p1);
+      } catch (ClassCastException | JASConversionException e) {
+        return resultantExpr(a, b, eVar);
+      }
+    }
+
+    private static IExpr resultantExpr(IExpr a, IExpr b, VariablesSet eVar) {
+      try {
+        if (eVar.size() == 0) {
+          return F.NIL;
+        }
+        IAST vars = eVar.getVarList();
+        ExprPolynomialRing ring = new ExprPolynomialRing(vars);
+        ExprPolynomial pol1 = ring.create(a);
+        ExprPolynomial pol2 = ring.create(b);
+        List<IExpr> varList = eVar.getVarList().copyTo();
+        JASIExpr jas = new JASIExpr(varList, true);
+        GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
+        GenPolynomial<IExpr> p2 = jas.expr2IExprJAS(pol2);
+
+        GreatestCommonDivisor<IExpr> factory = GCDFactory.getImplementation(ExprRingFactory.CONST);
+        p1 = factory.resultant(p1, p2);
+        return jas.exprPoly2Expr(p1);
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        Errors.printMessage(S.Resultant, rex);
+        // LOGGER.debug("Resultant.jasResultant() failed", rex);
       }
       return F.NIL;
     }
+
+    @Override
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
+      // TODO allow multinomials
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      if (arg1.isZero() || arg2.isZero()) {
+        return F.C0;
+      }
+      IExpr arg3 = Validate.checkIsVariable(ast, 3, engine);
+      if (arg3.isPresent() && options[0].isZero()) {
+        IExpr x = arg3;
+        IExpr a = F.evalExpandAll(arg1, engine);
+        IExpr b = F.evalExpandAll(arg2, engine);
+        ExprPolynomialRing ring = new ExprPolynomialRing(F.list(x));
+        try {
+          // check if a is a polynomial otherwise check ArithmeticException, ClassCastException
+          ring.create(a);
+        } catch (RuntimeException ex) {
+          Errors.rethrowsInterruptException(ex);
+          // Polynomial expected at position `1` in `2`.
+          return Errors.printMessage(ast.topHead(), "polynomial", F.list(ast.get(1), F.C1), engine);
+        }
+        try {
+          // check if b is a polynomial otherwise check ArithmeticException, ClassCastException
+          ring.create(b);
+          IExpr resultant = resultant(a, b, x, engine);
+          if (resultant.isPresent()) {
+            return F.Together(resultant);
+          }
+        } catch (RuntimeException ex) {
+          Errors.rethrowsInterruptException(ex);
+          // Polynomial expected at position `1` in `2`.
+          return Errors.printMessage(ast.topHead(), "polynomial", F.list(ast.get(2), F.C2), engine);
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+
+    private IExpr resultant(IExpr a, IExpr b, IExpr x, EvalEngine engine) {
+      IExpr aExp = S.Exponent.ofNIL(engine, a, x);
+      IExpr bExp = S.Exponent.ofNIL(engine, b, x);
+      if (aExp.isPresent() && bExp.isPresent()) {
+        // if (b.isFree(x)) {
+        // return F.Power(b, aExp);
+        // }
+        // IExpr abExp = aExp.times(bExp);
+        if (S.Less.ofQ(engine, aExp, bExp)) {
+          IExpr resultant = resultant(b, a, x, engine);
+          if (resultant.isNIL()) {
+            return F.NIL;
+          }
+          return resultant;
+        }
+
+        IExpr r = jasResultant(a, b, x, engine);
+        if (r.isPresent()) {
+          return r;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Modulus};
+      IExpr[] optionValues = new IExpr[] {F.C0};
+      setOptions(newSymbol, optionKeys, optionValues);
+    }
+
+    // public static IExpr resultant(IAST result, IAST resultListDiff) {
+    // // create sylvester matrix
+    // IAST sylvester = F.list();
+    // IAST row = F.list();
+    // IAST srow;
+    // final int n = resultListDiff.size() - 2;
+    // final int m = result.size() - 2;
+    // final int n2 = m + n;
+    //
+    // for (int i = result.argSize(); i > 0; i--) {
+    // row.add(result.get(i));
+    // }
+    // for (int i = 0; i < n; i++) {
+    // // for each row
+    // srow = F.list();
+    // int j = 0;
+    // while (j < n2) {
+    // if (j < i) {
+    // srow.add(F.C0);
+    // j++;
+    // } else if (i == j) {
+    // for (int j2 = 1; j2 < row.size(); j2++) {
+    // srow.add(row.get(j2));
+    // j++;
+    // }
+    // } else {
+    // srow.add(F.C0);
+    // j++;
+    // }
+    // }
+    // sylvester.add(srow);
+    // }
+    //
+    // row = F.list();
+    // for (int i = resultListDiff.argSize(); i > 0; i--) {
+    // row.add(resultListDiff.get(i));
+    // }
+    // for (int i = n; i < n2; i++) {
+    // // for each row
+    // srow = F.list();
+    // int j = 0;
+    // int k = n;
+    // while (j < n2) {
+    // if (k < i) {
+    // srow.add(F.C0);
+    // j++;
+    // k++;
+    // } else if (i == k) {
+    // for (int j2 = 1; j2 < row.size(); j2++) {
+    // srow.add(row.get(j2));
+    // j++;
+    // k++;
+    // }
+    // } else {
+    // srow.add(F.C0);
+    // j++;
+    // k++;
+    // }
+    // }
+    // sylvester.add(srow);
+    // }
+    //
+    // if (sylvester.isAST0()) {
+    // return null;
+    // }
+    // return F.eval(F.Det(sylvester));
+    // }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
+
+  private static final class SphericalHarmonicY extends AbstractFunctionEvaluator
+      implements IMatch {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+      IExpr l = ast.arg1();
+      IExpr m = ast.arg2();
+      IExpr t = ast.arg3();
+      IExpr p = ast.arg4();
+
+      IExpr temp = integerArgsSphericalHarmonicY(l, m, t, p, engine);
+      if (temp.isPresent()) {
+        return temp;
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_4_4;
+    }
+
+    /**
+     * Check if <code>l</code> and <code>m</code> are mathematical integers and call {@link S#Sum}
+     * formula for evaluation.
+     * 
+     * @param l
+     * @param m
+     * @param t
+     * @param p
+     * @return
+     */
+    private IExpr integerArgsSphericalHarmonicY(IExpr l, IExpr m, IExpr t, IExpr p,
+        EvalEngine engine) {
+      if (l.isMathematicalIntegerNegative()) {
+        l = l.negate().subtract(F.C1);
+      }
+
+      final IExpr ll = l;
+      final boolean conjugate;
+      if (m.isMathematicalIntegerNegative()) {
+        m = m.negate();
+        if (m.greater(ll).isTrue()) {
+          return F.C0;
+        }
+        conjugate = true;
+      } else {
+        conjugate = false;
+      }
+      if (ll.isMathematicalIntegerNonNegative() && m.isMathematicalIntegerNonNegative()) {
+        int n = ll.toIntDefault();
+        if (n >= 0) {
+          n /= 2;
+          if (m.lessEqual(ll).isTrue()) {
+            // ((-1)^m/2^(1-l)*E^(I*p*m)*Sqrt(((2*l+1)*(l-m)!)/(l+m)!)*(Sin(t)^2)^(m/2)*Sum(((-
+            // 1)^k*Gamma(-k+l+1/2))/(Cos(t)^(2*k-l)*2^(2*k)*k!*Gamma(-2*k+l-m+1)),{k,0,Floor(l/
+            // 2)}))/(Pi*Cos(t)^m)
+            IExpr plusSubexpr = ll.plus(m.negate()).plus(F.C1);
+            IExpr cosT = F.Cos(t);
+            IExpr sum = F.sum(
+                k -> F.Times(F.Power(cosT, F.Plus(F.Times(F.CN2, k), ll)), F.Power(-1, k),
+                    F.Gamma(F.Plus(k.negate(), ll, F.C1D2)),
+                    F.Power(F.Times(F.Power(F.C2, F.Times(F.C2, k)), F.Factorial(k),
+                        F.Gamma(F.Plus(F.Times(F.CN2, k), plusSubexpr))), F.CN1)), //
+                0, n);
+            IAST exp = conjugate ? F.Exp(F.Times(F.CNI, p, m)) : F.Exp(F.Times(F.CI, p, m));
+            IExpr condonShortlyPhase = engine.evaluate(F.Power(-1, m));
+            IAST sphericalHarmonicY = F.Times(condonShortlyPhase, F.Power(F.C2, F.Plus(F.CN1, ll)),
+                exp, F.Power(F.Times(F.Pi, F.Power(cosT, m)), F.CN1),
+                F.Sqrt(F.Times(F.Plus(F.Times(F.C2, ll), F.C1), F.Factorial(F.Subtract(ll, m)),
+                    F.Power(F.Factorial(F.Plus(ll, m)), F.CN1))),
+                F.Power(F.Sin(t), m), //
+                sum);
+            return engine.evaluate(sphericalHarmonicY);
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr match5(IAST ast, EvalEngine engine) {
+      return F.NIL;
+      // return SphericalHarmonicYRules.match5(ast, engine);
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 4) {
+        IInexactNumber l = (IInexactNumber) ast.arg1();
+        IInexactNumber m = (IInexactNumber) ast.arg2();
+        IInexactNumber t = (IInexactNumber) ast.arg3();
+        IInexactNumber p = (IInexactNumber) ast.arg4();
+        IExpr temp = integerArgsSphericalHarmonicY(l, m, t, p, engine);
+        if (temp.isPresent()) {
+          return temp;
+        }
+        if (m.isZero()) {
+          // (Sqrt(1+2*l)*LegendreP(l,Cos(t)))/(2*Sqrt(Pi))
+          return F.Times(F.Sqrt(F.Plus(F.C1, F.Times(F.C2, l))),
+              F.Power(F.Times(F.C2, F.CSqrtPi), F.CN1), F.LegendreP(l, F.Cos(t)));
+        }
+        if (m.isOne()) {
+          // (-E^(I*p)*l*(1+l)*Sqrt(1+2*l)*Sqrt(Gamma(l))*Hypergeometric2F1(1-l,2+l,2,Sin(t/2)^2)*Sin(t))/(4*Sqrt(Pi)*Sqrt(Gamma(2+l)))
+          INumber v1 = F.C2.plus(l);
+          INumber v2 = F.C1.subtract(l);
+          IAST hypergeometric2f1 =
+              F.Hypergeometric2F1(v2, v1, F.C2, F.Sqr(F.Sin(F.Times(F.C1D2, t))));
+          IAST sphericalHarmonicY = F.Times(F.C1D4, F.Exp(F.Times(F.CI, p)), F.CN1.subtract(l), l,
+              F.Sqrt(F.Plus(F.C1, F.Times(F.C2, l))), F.Power(F.Pi, F.CN1D2), F.Sqrt(F.Gamma(l)),
+              F.Power(F.Gamma(v1), F.CN1D2), hypergeometric2f1, F.Sin(t));
+          return engine.evaluate(sphericalHarmonicY);
+        }
+
+        // (E^(I*m*p)*Sqrt(1+2*l)*Sqrt(Gamma(1+l-m))*Hypergeometric2F1(-l,1+l,1-m,Sin(t/2)^2)*Sin(t)^m)/((1-Cos(t))^m*2*Sqrt(Pi)*Gamma(1-m)*Sqrt(Gamma(1+l+m)))
+        INumber v1 = F.C1.subtract(m);
+        INumber v2 = m.negate();
+        IAST hypergeometric2f1 =
+            F.Hypergeometric2F1(l.negate(), F.C1.plus(l), v1, F.Sqr(F.Sin(F.Times(F.C1D2, t))));
+        IAST sphericalHarmonicY =
+            F.Times(F.C1D2, F.Exp(F.Times(F.CI, m, p)), F.Sqrt(F.Plus(F.C1, F.Times(F.C2, l))),
+                F.Power(F.Pi, F.CN1D2), F.Power(F.Subtract(F.C1, F.Cos(t)), v2),
+                F.Power(F.Gamma(F.Plus(F.C1, l, m)), F.CN1D2), F.Power(F.Gamma(v1), F.CN1),
+                F.Sqrt(F.Gamma(F.Plus(l, v1))), hypergeometric2f1, F.Power(F.Sin(t), m));
+        return engine.evaluate(sphericalHarmonicY);
+
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.NUMERICFUNCTION | ISymbol.LISTABLE);
+      super.setUp(newSymbol);
+    }
+  }
+
+
+  private static final class ZernikeR extends AbstractFunctionEvaluator implements IFunctionExpand {
 
     private static IExpr functionExpand(IExpr n, IExpr m, IExpr r) {
       // r^m*Cos(1/2*(-m+n)*Pi)*JacobiP(1/2*(-m+n),m,0,1-2*r^2)
@@ -3056,6 +3046,22 @@ public class PolynomialFunctions {
     }
 
     @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() == 3) {
+        IExpr n = ast.arg1();
+        IExpr m = ast.arg2();
+        IExpr r = ast.arg3();
+        return functionExpand(n, m, r);
+      }
+      return F.NIL;
+    }
+
+    @Override
     public IExpr numericFunction(IAST ast, final EvalEngine engine) {
       if (ast.argSize() == 3) {
         IInexactNumber n = (IInexactNumber) ast.arg1();
@@ -3067,21 +3073,167 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public int status() {
-      return ImplementationStatus.EXPERIMENTAL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_3;
-    }
-
-    @Override
     public void setUp(final ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
 
+    @Override
+    public int status() {
+      return ImplementationStatus.EXPERIMENTAL;
+    }
+
+  }
+
+  // Wrapper for standard evaluations to preserve the original signature
+  public static IExpr bellY(int n, int k, IAST symbols, IAST originalAST, EvalEngine engine) {
+    return bellY(n, k, symbols, originalAST, engine, new IExpr[n + 1][k + 1]);
+  }
+
+  /**
+   * Calculate the partial Bell polynomial recursively with a Dynamic Programming cache.
+   * 
+   * @param n
+   * @param k
+   * @param symbols
+   * @param originalAST
+   * @param engine
+   * @return
+   * 
+   */
+  public static IExpr bellY(int n, int k, IAST symbols, IAST originalAST, EvalEngine engine,
+      IExpr[][] cache) {
+    if (n == 0 && k == 0) {
+      return F.C1;
+    }
+    if (n == 0 || k == 0 || n < k) {
+      return F.C0;
+    }
+
+    // DP Cache hit
+    if (cache != null && cache[n][k] != null) {
+      return cache[n][k];
+    }
+
+    final int recursionLimit = engine.getRecursionLimit();
+    try {
+      if (recursionLimit > 0) {
+        int counter = engine.incRecursionCounter();
+        if (counter > recursionLimit) {
+          RecursionLimitExceeded.throwIt(counter, originalAST);
+        }
+      }
+
+      IExpr s = F.C0;
+      int max = n - k + 2;
+
+      int iterationLimit = engine.getIterationLimit();
+      if (iterationLimit >= 0 && iterationLimit <= max) {
+        IterationLimitExceeded.throwIt(max, originalAST);
+      }
+
+      for (int m = 1; m < max; m++) {
+        if ((m < symbols.size()) && !symbols.get(m).isZero()) {
+          IExpr subBell = bellY(n - m, k - 1, symbols, originalAST, engine, cache);
+
+          if (!subBell.isZero()) {
+            // Exact arbitrary-precision Binomial Coefficient
+            IExpr binom = engine.evaluate(F.Binomial(F.ZZ(n - 1), F.ZZ(m - 1)));
+            IExpr term = engine.evaluate(F.Expand(F.Times(binom, subBell, symbols.get(m))));
+            s = engine.evaluate(F.Plus(s, term));
+          }
+        }
+      }
+
+      // DP Cache save
+      if (cache != null) {
+        cache[n][k] = s;
+      }
+      return s;
+
+    } finally {
+      if (recursionLimit > 0) {
+        engine.decRecursionCounter();
+      }
+    }
+  }
+
+  /**
+   * Computes the generalized partial Bell polynomial for multidimensional (tensor) arguments.
+   * Instead of scalar multiplication, it utilizes symmetric tensor products.
+   */
+  private static IExpr bellYMatrix(int n, int k, IAST tensorList, EvalEngine engine,
+      IExpr[][] cache) {
+    if (n == 0 && k == 0) {
+      return F.C1; // Base case scalar multiplier
+    }
+    if (n == 0 || k == 0 || n < k) {
+      return F.C0;
+    }
+
+    // DP Cache hit
+    if (cache != null && cache[n][k] != null) {
+      return cache[n][k];
+    }
+
+    final int recursionLimit = engine.getRecursionLimit();
+    try {
+      if (recursionLimit > 0) {
+        int counter = engine.incRecursionCounter();
+        if (counter > recursionLimit) {
+          RecursionLimitExceeded.throwIt(counter, tensorList);
+        }
+      }
+
+      IExpr s = F.C0;
+      int max = n - k + 2;
+
+      for (int m = 1; m < max; m++) {
+        if ((m < tensorList.size()) && !tensorList.get(m).isZero()) {
+
+          IExpr subBell = bellYMatrix(n - m, k - 1, tensorList, engine, cache);
+
+          if (!subBell.isZero()) {
+            IExpr binom = engine.evaluate(F.Binomial(F.ZZ(n - 1), F.ZZ(m - 1)));
+            IExpr currentTensor = tensorList.get(m);
+            IExpr tensorProd;
+
+            // If the sub-tree is the base scalar 1, bypass the tensor product
+            if (subBell.isOne()) {
+              tensorProd = currentTensor;
+            } else {
+              // Tensor Product: X_m (x) B_{n-m, k-1}
+              tensorProd = engine.evaluate(F.TensorProduct(subBell, currentTensor));
+            }
+
+            // Symmetrize: The resulting tensor must be symmetric across all 'n' dimensions
+            IExpr symTensor = engine.evaluate(F.Symmetrize(tensorProd));
+
+            // Multiply by the binomial scalar and accumulate
+            IExpr term = engine.evaluate(F.Times(binom, symTensor));
+            s = engine.evaluate(F.Plus(s, term));
+          }
+        }
+      }
+
+      // DP Cache save
+      if (cache != null) {
+        cache[n][k] = s;
+      }
+      return s;
+
+    } finally {
+      if (recursionLimit > 0) {
+        engine.decRecursionCounter();
+      }
+    }
+  }
+
+  // Wrapper method to match the standard signature
+  private static IExpr bellYMatrix(int n, int k, IAST tensorList, int rowSize, int colSize,
+      IAST originalAST, EvalEngine engine) {
+    IExpr[][] cache = new IExpr[n + 1][k + 1];
+    return bellYMatrix(n, k, tensorList, engine, cache);
   }
 
   public static IAST computeBellY(IAST matrix, final int size, IAST originalAST,
@@ -3142,106 +3294,8 @@ public class PolynomialFunctions {
     return typeFactor;
   }
 
-  private static IExpr bellYMatrix(int n, int k, IAST matrix, int rowSize, int colSize,
-      IAST originalAST, EvalEngine engine) {
-    // Generalized partial Bell polynomial for a matrix argument.
-    // See:
-    // https://en.wikipedia.org/wiki/Bell_polynomials#Multivariate_Bell_polynomials
-    if (n < 0 || k < 0) {
-      return F.C0;
-    }
-    if (n == 0 && k == 0) {
-      return F.C1;
-    }
-    if (n == 0 || k == 0) {
-      return F.C0;
-    }
-    if (n < k) {
-      return F.C0;
-    }
-
-    IExpr result = F.C0;
-    IExpr partitionsExpr = engine.evaluate(F.IntegerPartitions(F.ZZ(n), F.ZZ(k)));
-    IAST partitions = (IAST) partitionsExpr;
-    for (int i = 1; i < partitions.size(); i++) {
-      IAST partition = (IAST) partitions.get(i);
-      IASTAppendable counts = ListFunctions.tally(partition);
-      IInteger term = F.ZZ(n).factorial();
-      IInteger den = F.ZZ(k).factorial();
-
-      IASTAppendable vars = F.ListAlloc(k);
-      for (int j = 1; j < counts.size(); j++) {
-        IAST countPair = (IAST) counts.get(j);
-        IInteger part = (IInteger) countPair.arg1();
-        IInteger count = (IInteger) countPair.arg2();
-        if (part.isPositive() && part.toIntDefault() == k) {
-          vars.append(false);
-        }
-        // den = den.multiply(count.factorial());
-        // if (part.isPositive() && part.toIntDefault() < matrix.size()) {
-        // IExpr matrixElement = matrix.get(part.toIntDefault());
-        // term = term.times(F.Power(matrixElement, count));
-        // }
-        // den = den.multiply(F.Power(F.Factorial(part), count));
-      }
-      result = result.plus(F.Divide(term, den));
-    }
-
-    return engine.evaluate(result);
-  }
-
-  /**
-   * Calculate the partial Bell polynomial recursively.
-   * 
-   * @param n
-   * @param k
-   * @param symbols
-   * @param originalAST
-   * @param engine
-   * @return
-   * 
-   */
-  public static IExpr bellY(int n, int k, IAST symbols, IAST originalAST, EvalEngine engine) {
-    final int recursionLimit = engine.getRecursionLimit();
-    try {
-      if (recursionLimit > 0) {
-        int counter = engine.incRecursionCounter();
-        if (counter > recursionLimit) {
-          RecursionLimitExceeded.throwIt(counter, originalAST);
-        }
-      }
-      if (n == 0 && k == 0) {
-        return F.C1;
-      }
-      if (n == 0 || k == 0) {
-        return F.C0;
-      }
-      IExpr s = F.C0;
-      int a = 1;
-      int max = n - k + 2;
-
-      int iterationLimit = engine.getIterationLimit();
-      if (iterationLimit >= 0 && iterationLimit <= max) {
-        IterationLimitExceeded.throwIt(max, originalAST);
-      }
-      for (int m = 1; m < max; m++) {
-        if ((m < symbols.size()) && !symbols.get(m).isZero()) {
-          IExpr bellY = bellY(n - m, k - 1, symbols, originalAST, engine);
-          if (bellY.isPlus()) {
-            bellY = bellY.mapThread(F.Times(a, F.Slot1, symbols.get(m)), 2);
-          } else {
-            bellY = F.Times(a, bellY, symbols.get(m));
-          }
-          s = s.plus(bellY);
-        }
-        a = a * (n - m) / m;
-      }
-      return s;
-    } finally {
-      if (recursionLimit > 0) {
-        engine.decRecursionCounter();
-      }
-    }
+  public static void initialize() {
+    Initializer.init();
   }
 
   /**
@@ -3298,10 +3352,6 @@ public class PolynomialFunctions {
     }
     resultList.appendArgs(rest);
     return resultList;
-  }
-
-  public static void initialize() {
-    Initializer.init();
   }
 
   private PolynomialFunctions() {}

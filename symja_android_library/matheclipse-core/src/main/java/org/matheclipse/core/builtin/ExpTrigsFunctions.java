@@ -4348,8 +4348,8 @@ public class ExpTrigsFunctions {
       // (k+1)*Pi
       IExpr max = S.Times.of(k.inc(), Pi);
       // (-1)^k * (z - Pi*k - Pi/2) + Pi/2
-      IAST result = F.Plus(
-          F.Times(F.Power(-1, k), F.Plus(z, F.Times(F.CN1, k, S.Pi), F.CNPiHalf)), F.CPiHalf);
+      IAST result = F.Plus(F.Times(F.Power(-1, k), F.Plus(z, F.Times(F.CN1, k, S.Pi), F.CNPiHalf)),
+          F.CPiHalf);
 
       // (k*Pi < Re(z) < (k + 1)*Pi
       if (S.Less.ofQ(min, zRe) && max.greater(zRe).isTrue()) { // S.Greater.ofQ(max, zRe)) {

@@ -221,7 +221,7 @@ public class Graph3D extends AbstractFunctionOptionEvaluator {
       return;
 
     // Initialize random positions if not present
-    Random rand = new Random(12345); // Fixed seed for reproducibility
+    Random rand = new Random(12345);
     for (IExpr v : vertices) {
       if (!coordinates.containsKey(v)) {
         coordinates.put(v, new Vector3D(rand.nextDouble() * 2.0 - 1.0,

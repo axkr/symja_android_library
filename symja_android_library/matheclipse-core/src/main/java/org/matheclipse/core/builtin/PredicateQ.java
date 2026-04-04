@@ -1074,15 +1074,16 @@ public class PredicateQ {
       }
       IExpr identityMatrix = F.NIL;
       int[] identityMatrixDims = null;
+      IExpr transposed = engine.evaluate(F.Transpose(arg1));
       if (dims[0] >= dims[1]) {
-        identityMatrix = S.Dot.of(engine, F.Transpose(arg1), arg1);
+        identityMatrix = S.Dot.of(engine, transposed, arg1);
         identityMatrixDims = identityMatrix.isMatrix();
         if (identityMatrixDims == null || identityMatrixDims[0] != dims[1]
             || identityMatrixDims[1] != dims[1]) {
           return S.False;
         }
       } else {
-        identityMatrix = S.Dot.of(engine, arg1, F.Transpose(arg1));
+        identityMatrix = S.Dot.of(engine, arg1, transposed);
         identityMatrixDims = identityMatrix.isMatrix();
         if (identityMatrixDims == null || identityMatrixDims[0] != dims[0]
             || identityMatrixDims[1] != dims[0]) {
@@ -1110,7 +1111,7 @@ public class PredicateQ {
         FieldMatrix<IExpr> matrix = Convert.list2Matrix(identityMatrix);
         if (matrix != null) {
           for (int i = 0; i < dims[0]; i++) {
-            for (int j = 1; j < dims[1]; j++) {
+            for (int j = 0; j < dims[1]; j++) {
               final IExpr expr = matrix.getEntry(i, j);
               if (i == j) {
                 if (!S.PossibleZeroQ.ofQ(engine, F.Plus(F.CN1, expr))) {

@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin.graphics3d;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
@@ -18,6 +20,18 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
 
+  private static class PlotData {
+    double x, y, z;
+    IExpr color;
+
+    public PlotData(double x, double y, double z, IExpr color) {
+      this.x = x;
+      this.y = y;
+      this.z = z;
+      this.color = color;
+    }
+  }
+
   public DiscretePlot3D() {}
 
   @Override
@@ -25,15 +39,15 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
       IAST originalAST) {
 
     // DiscretePlot3D[f, {i, ...}, {j, ...}]
-    if (argSize < 3) {
+    if (argSize < 2) {
       return F.NIL;
     }
 
     IExpr function = ast.arg1();
     IExpr iRange = ast.arg2();
-    IExpr jRange = ast.arg3();
+    IExpr jRange = argSize >= 3 ? ast.arg3() : null;
 
-    if (!iRange.isList() || !jRange.isList()) {
+    if (!iRange.isList()) {
       return F.NIL;
     }
 
@@ -43,9 +57,7 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
     boolean useThinLineStyle = false; // Default for Automatic/None
 
     IExpr extentOption = options[0]; // ExtentSize
-    if (extentOption.equals(S.None)) {
-      useThinLineStyle = true;
-    } else if (extentOption.equals(S.Automatic)) {
+    if (extentOption.isNone() || extentOption.equals(S.Automatic)) {
       useThinLineStyle = true;
     } else if (extentOption.equals(S.Full)) {
       extentX = 0.5;
@@ -68,17 +80,12 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
     IExpr scalingOption = options[4]; // ScalingFunctions
     boolean isLogZ = false;
 
-    if (scalingOption.isString()) {
-      if ("Log".equalsIgnoreCase(scalingOption.toString())) {
+    if (scalingOption.isString() && "Log".equalsIgnoreCase(scalingOption.toString())) {
+      isLogZ = true;
+    } else if (scalingOption.isList() && ((IAST) scalingOption).size() >= 4) {
+      IExpr zScale = ((IAST) scalingOption).get(3);
+      if (zScale.isString() && "Log".equalsIgnoreCase(zScale.toString())) {
         isLogZ = true;
-      }
-    } else if (scalingOption.isList()) {
-      IAST sList = (IAST) scalingOption;
-      if (sList.size() >= 4) {
-        IExpr zScale = sList.get(3);
-        if (zScale.isString() && "Log".equalsIgnoreCase(zScale.toString())) {
-          isLogZ = true;
-        }
       }
     }
 
@@ -104,9 +111,16 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
 
     try {
       List<INumber> iValues = parseIterator(iRange, engine);
-      List<INumber> jValues = parseIterator(jRange, engine);
       ISymbol iVar = (ISymbol) ((IAST) iRange).arg1();
-      ISymbol jVar = (ISymbol) ((IAST) jRange).arg1();
+
+      List<INumber> jValues = null;
+      ISymbol jVar = null;
+      if (jRange != null && jRange.isList()) {
+        jValues = parseIterator(jRange, engine);
+        jVar = (ISymbol) ((IAST) jRange).arg1();
+      }
+
+      boolean autoPlotRange = options[1].equals(S.Automatic);
 
       for (int funcIdx = 1; funcIdx < functions.size(); funcIdx++) {
         IExpr f = functions.get(funcIdx);
@@ -115,31 +129,92 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
         IExpr color = defaultColors[(funcIdx - 1) % defaultColors.length];
         primitives.append(color);
 
+        List<PlotData> data = new ArrayList<>();
+
+        // Generate data dynamically assigning iterators using Block to support HoldAll semantics
         for (INumber iv : iValues) {
-          for (INumber jv : jValues) {
-            IExpr val = F.subst(f, F.List(F.Rule(iVar, iv), F.Rule(jVar, jv)));
-            IExpr result = engine.evaluate(val);
+          IAST iSet = F.Set(iVar, iv);
 
-            if (result.isNumber()) {
-              double z = result.evalDouble();
+          if (jValues != null && jVar != null) {
+            for (INumber jv : jValues) {
+              IAST jSet = F.Set(jVar, jv);
+              IAST blockVars = F.List(iSet, jSet);
+              IExpr result = engine.evaluate(F.Block(blockVars, f));
+              result = engine.evalN(result); // safely evaluate symbolic constants
 
-              if (isLogZ && z <= 0)
-                continue;
-
-              if (useThinLineStyle) {
-                // Point + Thin Line
-                double thinW = 0.02;
-                IExpr pMin = F.List(iv.subtract(thinW), jv.subtract(thinW), F.num(zBase));
-                IExpr pMax = F.List(iv.add(thinW), jv.add(thinW), F.num(z));
-                primitives.append(F.Cuboid(pMin, pMax));
-                primitives.append(F.Point(F.List(iv, jv, F.num(z))));
-              } else {
-                // Full Bar
-                IExpr pMin = F.List(iv.subtract(extentX), jv.subtract(extentY), F.num(zBase));
-                IExpr pMax = F.List(iv.add(extentX), jv.add(extentY), F.num(z));
-                primitives.append(F.Cuboid(pMin, pMax));
+              if (result.isNumber()) {
+                double z = result.evalDouble();
+                data.add(new PlotData(iv.evalDouble(), jv.evalDouble(), z, color));
               }
             }
+          } else {
+            // 1D iterator creating 3D sequence
+            IAST blockVars = F.List(iSet);
+            IExpr result = engine.evaluate(F.Block(blockVars, f));
+            result = engine.evalN(result);
+
+            if (result.isList() && ((IAST) result).size() >= 4) {
+              double px = ((IAST) result).arg1().evalDouble();
+              double py = ((IAST) result).arg2().evalDouble();
+              double pz = ((IAST) result).arg3().evalDouble();
+              data.add(new PlotData(px, py, pz, color));
+            }
+          }
+        }
+
+        // Apply Automatic PlotRange Clamping (Interquartile Range for extreme outliers)
+        double minZ = Double.MAX_VALUE;
+        double maxZ = -Double.MAX_VALUE;
+
+        if (autoPlotRange && !data.isEmpty()) {
+          double[] zArr = new double[data.size()];
+          for (int i = 0; i < data.size(); i++) {
+            zArr[i] = data.get(i).z;
+          }
+          Arrays.sort(zArr);
+          minZ = zArr[0];
+          maxZ = zArr[zArr.length - 1];
+
+          if (zArr.length > 10) {
+            double q1 = zArr[(int) (zArr.length * 0.25)];
+            double q3 = zArr[(int) (zArr.length * 0.75)];
+            double iqr = q3 - q1;
+            double lower = q1 - 1.5 * iqr;
+            double upper = q3 + 1.5 * iqr;
+            if (lower > minZ)
+              minZ = lower;
+            if (upper < maxZ)
+              maxZ = upper;
+          }
+        }
+
+        // Construct graphics layout
+        for (PlotData pd : data) {
+          double z = pd.z;
+          if (autoPlotRange) {
+            if (z > maxZ)
+              z = maxZ;
+            if (z < minZ)
+              z = minZ;
+          }
+          if (isLogZ && z <= 0)
+            continue;
+
+          double x = pd.x;
+          double y = pd.y;
+
+          if (useThinLineStyle) {
+            // Point + Thin Line
+            double thinW = extentX * 0.1;
+            IExpr pMin = F.List(F.num(x - thinW), F.num(y - thinW), F.num(zBase));
+            IExpr pMax = F.List(F.num(x + thinW), F.num(y + thinW), F.num(z));
+            primitives.append(F.Cuboid(pMin, pMax));
+            primitives.append(F.Point(F.List(F.num(x), F.num(y), F.num(z))));
+          } else {
+            // Full Bar
+            IExpr pMin = F.List(F.num(x - extentX), F.num(y - extentY), F.num(zBase));
+            IExpr pMax = F.List(F.num(x + extentX), F.num(y + extentY), F.num(z));
+            primitives.append(F.Cuboid(pMin, pMax));
           }
         }
         graphicsList.append(primitives);
@@ -156,7 +231,8 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
     result.append(graphicsList);
     result.append(F.Rule(S.BoxRatios, F.List(F.num(1), F.num(1), F.num(0.5))));
     result.append(F.Rule(S.ScalingFunctions, options[4]));
-    result.append(F.Rule(S.Axes, options[5])); // Pass resolved Axes option
+    result.append(F.Rule(S.PlotRange, options[1])); // Handled safely now via clamps
+    result.append(F.Rule(S.Axes, options[5]));
 
     if (argSize > 3) {
       for (int k = 4; k < ast.size(); k++)
@@ -166,37 +242,60 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
     return result;
   }
 
-  private java.util.List<INumber> parseIterator(IExpr iter, EvalEngine engine) {
-    java.util.List<INumber> values = new java.util.ArrayList<>();
+  private List<INumber> parseIterator(IExpr iter, EvalEngine engine) {
+    List<INumber> values = new ArrayList<>();
     if (!iter.isList()) {
       return values;
     }
     IAST list = (IAST) iter;
+
     if (list.argSize() == 2) {
-      if (list.arg2().isList()) {
-        IAST valList = (IAST) list.arg2();
+      IExpr arg2 = engine.evaluate(list.arg2());
+      if (arg2.isList()) {
+        IAST valList = (IAST) arg2;
         for (int k = 1; k < valList.size(); k++) {
-          values.add(valList.get(k).evalNumber());
+          IExpr v = engine.evaluate(valList.get(k));
+          if (v instanceof INumber) {
+            values.add((INumber) v);
+          }
         }
       } else {
         IInteger v = F.C1;
-        INumber max = list.arg2().evalNumber();
-        while (v.lessThan(max).isTrue() || v.equals(max)) {
-          values.add(v);
-          v = v.inc();
+        if (arg2 instanceof INumber) {
+          INumber max = (INumber) arg2;
+          while (v.lessThan(max).isTrue() || v.equals(max)) {
+            values.add(v);
+            v = v.inc();
+          }
         }
       }
     } else if (list.argSize() >= 3) {
-      INumber min = list.arg2().evalNumber();
-      INumber max = list.arg3().evalNumber();
-      INumber step = F.C1;
-      if (list.argSize() >= 4) {
-        step = list.arg4().evalNumber();
-      }
-      INumber v = min;
-      while (v.lessThan(max).isTrue() || v.equals(max)) {
-        values.add(v);
-        v = v.plus(step);
+      IExpr arg2 = engine.evaluate(list.arg2());
+      IExpr arg3 = engine.evaluate(list.arg3());
+      if (arg2 instanceof INumber && arg3 instanceof INumber) {
+        INumber min = (INumber) arg2;
+        INumber max = (INumber) arg3;
+        INumber step = F.C1;
+
+        if (list.argSize() >= 4) {
+          IExpr arg4 = engine.evaluate(list.arg4());
+          if (arg4 instanceof INumber) {
+            step = (INumber) arg4;
+          }
+        }
+
+        INumber v = min;
+        if (step.isNegative()) {
+          while (max.lessThan(v).isTrue() || v.equals(max)) {
+            values.add(v);
+            v = v.plus(step);
+          }
+        } else {
+          while (v.lessThan(max).isTrue() || v.equals(max)) {
+            values.add(v);
+            v = v.plus(step);
+          }
+        }
       }
     }
     return values;
@@ -204,7 +303,7 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_3_INFINITY;
+    return ARGS_2_INFINITY;
   }
 
   @Override

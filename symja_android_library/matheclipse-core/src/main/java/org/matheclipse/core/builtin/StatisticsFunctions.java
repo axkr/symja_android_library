@@ -791,7 +791,7 @@ public class StatisticsFunctions {
           return F.NIL;
         }
         if (dim != null) {
-          return list.mapMatrixColumns(dim, x -> F.GeometricMean(x));
+          return list.mapMatrixColumns(dim, x -> F.GeometricMean(x)).normal(false);
         }
         if (arg1.isRealVector()) {
           double[] arg1DoubleArray = arg1.toDoubleVector();
@@ -833,7 +833,7 @@ public class StatisticsFunctions {
           return F.NIL;
         }
         if (dim != null) {
-          return list.mapMatrixColumns(dim, x -> F.HarmonicMean(x));
+          return list.mapMatrixColumns(dim, x -> F.HarmonicMean(x)).normal(false);
         }
 
         IASTAppendable result = F.PlusAlloc(8);
@@ -1740,7 +1740,8 @@ public class StatisticsFunctions {
             }
             return F.NIL;
           case 2:
-            return arg1.mapMatrixColumns(dimensions.toIntArray(), x -> F.MeanDeviation(x));
+            return arg1.mapMatrixColumns(dimensions.toIntArray(), x -> F.MeanDeviation(x))
+                .normal(false);
           default:
             return F.ArrayReduce(S.MeanDeviation, arg1, F.C1);
         }
@@ -1905,7 +1906,7 @@ public class StatisticsFunctions {
           return result.normal(false);
         }
         if (dimensions.size() == 2) {
-          return arg1.mapMatrixColumns(dimensions.toIntArray(), x -> F.Median(x));
+          return arg1.mapMatrixColumns(dimensions.toIntArray(), x -> F.Median(x)).normal(false);
         }
         if (dimensions.size() == 1) {
           IExpr normal = arg1.normal(false);
@@ -2479,7 +2480,7 @@ public class StatisticsFunctions {
         return F.NIL;
       }
       if (dim != null) {
-        return arg1.mapMatrixColumns(dim, (IExpr x) -> ast.setAtCopy(1, x));
+        return arg1.mapMatrixColumns(dim, (IExpr x) -> ast.setAtCopy(1, x)).normal(false);
       }
 
       int dimension = arg1.isVector();
@@ -3065,7 +3066,7 @@ public class StatisticsFunctions {
           // The argument `1` should have at least `2` elements.
           return Errors.printMessage(S.StandardDeviation, "shlen", F.List(list, F.C2));
         }
-        return arg1.mapMatrixColumns(dim, x -> F.StandardDeviation(x));
+        return arg1.mapMatrixColumns(dim, x -> F.StandardDeviation(x)).normal(false);
       } else if (arg1.isAssociation()) {
         IAssociation assoc = (IAssociation) arg1;
         int[] dim = assoc.isAssociationMatrix();
@@ -3121,7 +3122,7 @@ public class StatisticsFunctions {
         return F.NIL;
       }
       if (dim != null) {
-        IExpr temp = arg1.mapMatrixColumns(dim, v -> F.Standardize(v, f1, f2));
+        IExpr temp = arg1.mapMatrixColumns(dim, v -> F.Standardize(v, f1, f2)).normal(false);
         return temp.ifPresent(x -> F.Transpose(x));
       }
 
