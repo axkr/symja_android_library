@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
+import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -34,6 +35,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ISymbolicArray;
 import org.matheclipse.core.interfaces.ITensorAccess;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
+import org.matheclipse.parser.trie.Trie;
 import it.unimi.dsi.fastutil.ints.IntList;
 
 public class TensorFunctions {
@@ -406,7 +408,6 @@ public class TensorFunctions {
 
   }
 
-
   private static class LeviCivitaTensor extends AbstractEvaluator {
 
     @Override
@@ -415,32 +416,80 @@ public class TensorFunctions {
       int n = arg1.toIntDefault();
       if (n <= 0) {
         if (!arg1.isInteger()) {
-          return F.NIL;
+          return F.NIL; // Use F.NIL instead of null
         }
         // Positive machine-sized integer expected at position `2` in `1`.
         return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);
       }
 
-      double value = n;
-      double max = Math.pow(value, value);
-      if (Double.isNaN(max) || Double.isInfinite(max)) {
+      // Factorial growth is fast; prevent OutOfMemory errors for extremely large n
+      IInteger maxElements = AbstractIntegerSym.factorial(n);
+      if (maxElements.isGT(F.ZZ(Config.MAX_AST_SIZE))) {
         ASTElementLimitExceeded.throwIt(Config.MAX_AST_SIZE);
       }
-      if (Config.MAX_AST_SIZE < max) {
-        ASTElementLimitExceeded.throwIt((int) max);
+
+      // Prepare the Sparse Array components
+      final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
+      int[] dimension = new int[n];
+      for (int i = 0; i < n; i++) {
+        dimension[i] = n;
       }
 
-      IAST nCopies = F.constantArray(F.ZZ(n), n);
-      // TODO improve performance by directly transforming to sparse array
-      IExpr leviCivitaNormalForm =
-          S.Array.of(engine, F.Function(F.Signature(F.list(F.SlotSequence(1)))), nCopies);
+      // Generate permutations and populate the Trie using Heap's Algorithm
+      generateLeviCivitaTrie(n, trie);
+
+      SparseArrayExpr sparseArray = new SparseArrayExpr(trie, dimension, F.C0, false);
+
+      // Handle the optional dense list format request: LeviCivitaTensor(n, List)
       if (ast.isAST2() && ast.second().equals(S.List)) {
-        return leviCivitaNormalForm;
+        return sparseArray.normal(false);
       }
-      if (leviCivitaNormalForm.isList()) {
-        return SparseArrayExpr.newDenseList((IAST) leviCivitaNormalForm, F.C0);
+
+      return sparseArray;
+    }
+
+    /**
+     * Uses Heap's Algorithm to generate all permutations of 1..n, keeping track of the
+     * permutation's parity (sign) to populate the Levi-Civita sparse tensor.
+     */
+    private void generateLeviCivitaTrie(int n, Trie<int[], IExpr> trie) {
+      int[] elements = new int[n];
+      for (int i = 0; i < n; i++) {
+        elements[i] = i + 1; // 1-based indexing for the tensor coordinates
       }
-      return leviCivitaNormalForm;
+
+      int[] c = new int[n];
+      int sign = 1;
+
+      // Add the initial permutation (even parity)
+      trie.put(elements.clone(), F.C1);
+
+      int i = 0;
+      while (i < n) {
+        if (c[i] < i) {
+          if (i % 2 == 0) {
+            swap(elements, 0, i);
+          } else {
+            swap(elements, c[i], i);
+          }
+
+          // Every swap flips the sign of the permutation
+          sign = -sign;
+          trie.put(elements.clone(), sign == 1 ? F.C1 : F.CN1);
+
+          c[i] += 1;
+          i = 0;
+        } else {
+          c[i] = 0;
+          i += 1;
+        }
+      }
+    }
+
+    private void swap(int[] arr, int i, int j) {
+      int temp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = temp;
     }
 
     @Override
@@ -512,20 +561,35 @@ public class TensorFunctions {
      * @param dimensionLevel the current level of the <code>rootKernelDimensions</code>
      * @return
      */
+    /**
+     * Reverse `kernel` on all "nested" levels. * @param kernel
+     * 
+     * @param rootKernelDimensions the dimension of the root-kernel
+     * @param dimensionLevel the current level of the `rootKernelDimensions`
+     * @return the reversed kernel AST
+     */
     private static IAST nestedReverseRecursive(IAST kernel, IntList rootKernelDimensions,
         int dimensionLevel) {
+
+      int argSize = kernel.argSize(); //
+
+      // Pre-allocate the exact size to reduce garbage collection and resizing overhead
+      IASTAppendable reversedList = F.ast(kernel.head(), argSize);
+
       if (dimensionLevel == rootKernelDimensions.size() - 1) {
-        // stop recursion
-        return ListFunctions.reverse(kernel);
+        // Stop recursion: reverse the dense leaf list efficiently in a single pass
+        for (int i = argSize; i >= 1; i--) {
+          reversedList.append(kernel.get(i));
+        }
+      } else {
+        // Intermediate levels: reverse order and recurse downwards
+        for (int i = argSize; i >= 1; i--) {
+          IAST reversed = nestedReverseRecursive((IAST) kernel.get(i).normal(false),
+              rootKernelDimensions, dimensionLevel + 1);
+          reversedList.append(reversed);
+        }
       }
-      final int levelSize = rootKernelDimensions.getInt(dimensionLevel);
-      IASTAppendable reversedList = F.ListAlloc(levelSize);
-      for (int i = levelSize; i >= 1; i--) {
-        IAST reversed = nestedReverseRecursive((IAST) kernel.get(i).normal(false),
-            rootKernelDimensions, dimensionLevel + 1);
-        // append in reversed order
-        reversedList.append(reversed);
-      }
+
       return reversedList;
     }
 
@@ -726,9 +790,9 @@ public class TensorFunctions {
       }
 
       public Integer[] createIndexArray() {
-        int size = ast.size();
-        Integer[] indexes = new Integer[size - 1];
-        for (int i = 1; i < size; i++) {
+        final int argSize = ast.argSize();
+        Integer[] indexes = new Integer[argSize];
+        for (int i = 1; i <= argSize; i++) {
           indexes[i - 1] = i;
         }
         return indexes;
@@ -819,8 +883,9 @@ public class TensorFunctions {
       if (ast.size() > 2) {
         options = new OptionArgs(ast.topHead(), ast, ast.argSize(), engine);
       }
-      IExpr assumptionExpr = OptionArgs.determineAssumptions(ast, 2, options);
       try {
+        IExpr assumptionExpr = OptionArgs.determineAssumptions(ast, 2, options);
+
         Map<IExpr, IAST> tensorProperties = tensorProperties(oldAssumptions, assumptionExpr);
         if (tensorProperties != null) {
 
@@ -1149,7 +1214,7 @@ public class TensorFunctions {
           }
 
           // Handle Nested TensorProducts (Associativity)
-          // TensorProduct[a, TensorProduct[b, c]] -> TensorProduct[a, b, c]
+          // TensorProduct(a, TensorProduct(b, c)) -> TensorProduct(a, b, c)
           if (arg.isAST(S.TensorProduct)) {
             tensorParts.appendArgs((IAST) arg);
             flattened = true;
@@ -1215,25 +1280,26 @@ public class TensorFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+
+      // Bypass redundant evaluation cycle for scalar multipliers/addends
       if (arg1.isTimes2() || arg1.isPlus2()) {
         if (arg1.first().isNumber()) {
-          return ast.setAtCopy(1, arg1.second());
+          return engine.evaluate(F.TensorRank(arg1.second()));
         }
       }
+
       if (arg1 instanceof VectorSymbolExpr) {
         return F.C1;
       } else if (arg1 instanceof MatrixSymbolExpr) {
         return F.C2;
       } else if (arg1 instanceof ArraySymbolExpr) {
         ArraySymbolExpr arraySym = (ArraySymbolExpr) arg1;
-        // The dimensions are stored as an IAST list {d1, d2, ...}
-        // argSize() returns the number of elements in that list.
         return F.ZZ(arraySym.getDimensions().argSize());
       }
 
       if (arg1.isList()) {
         IAST list = (IAST) arg1;
-        IntList intList = LinearAlgebraUtil.dimensions((IAST) arg1, list.head());
+        IntList intList = LinearAlgebraUtil.dimensions(list, list.head());
         return F.ZZ(intList.size());
       } else if (arg1.isNumber()) {
         return F.C0;
@@ -1246,14 +1312,15 @@ public class TensorFunctions {
       }
 
       IAssumptions oldAssumptions = engine.getAssumptions();
-      OptionArgs options = null;
-      if (ast.size() > 2) {
-        options = new OptionArgs(ast.topHead(), ast, ast.argSize(), engine);
-      }
-      IExpr assumptionExpr = OptionArgs.determineAssumptions(ast, 2, options);
-      try {
 
+      try {
+        OptionArgs options = null;
+        if (ast.size() > 2) {
+          options = new OptionArgs(ast.topHead(), ast, ast.argSize(), engine);
+        }
+        IExpr assumptionExpr = OptionArgs.determineAssumptions(ast, 2, options);
         Map<IExpr, IAST> tensorProperties = tensorProperties(oldAssumptions, assumptionExpr);
+
         if (tensorProperties != null) {
           IAST tensorArg1 = tensorProperties.get(arg1);
           if (tensorArg1 != null) {
@@ -1273,6 +1340,7 @@ public class TensorFunctions {
       } finally {
         engine.setAssumptions(oldAssumptions);
       }
+
       return F.NIL;
     }
 

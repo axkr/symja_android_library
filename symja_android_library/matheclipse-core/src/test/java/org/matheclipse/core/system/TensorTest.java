@@ -43,10 +43,10 @@ public class TensorTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLeviCivitaTensor() {
-    if (Config.EXPENSIVE_JUNIT_TESTS) {
-      check("LeviCivitaTensor(7);", //
-          "");
-    }
+    // if (Config.EXPENSIVE_JUNIT_TESTS) {
+    check("LeviCivitaTensor(7)", //
+        "SparseArray(Number of elements: 5040 Dimensions: {7,7,7,7,7,7,7} Default value: 0)");
+    // }
     check("LeviCivitaTensor(1)//Normal", //
         "{1}");
     check("{x,y,z}.Normal(LeviCivitaTensor(3))  ", //
@@ -322,6 +322,13 @@ public class TensorTest extends ExprEvaluatorTestCase {
             + " {0,1,2},\n" //
             + " {0,0,1}})"); //
   }
+
+  @Test
+  public void testSymmetrize() {
+    check("Symmetrize({{a, b}, {c, d}})", //
+        "{{a,1/2*(b+c)},{1/2*(b+c),d}}");
+  }
+
 
   /** The JUnit setup method */
   @Override
