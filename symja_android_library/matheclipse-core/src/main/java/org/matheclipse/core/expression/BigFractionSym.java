@@ -473,7 +473,16 @@ public class BigFractionSym extends AbstractFractionSym {
    * @return Inverse of <code>this</code>.
    */
   @Override
-  public IFraction inverse() {
+  public IRational inverse() {
+    IFraction result = valueOf(fFraction.reciprocal());
+    if (result.denominator().isOne()) {
+      return result.numerator();
+    }
+    return result;
+  }
+
+  @Override
+  public IFraction inverseFraction() {
     return valueOf(fFraction.reciprocal());
   }
 

@@ -3,8 +3,6 @@ package org.matheclipse.core.interfaces;
 import java.math.BigInteger;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.Pair;
 import org.matheclipse.core.expression.UniformFlags;
 
 /** interface for "fractional" numbers */
@@ -45,8 +43,7 @@ public interface IFraction extends IRational {
    *
    * @return Inverse of <code>this</code>.
    */
-  @Override
-  public IFraction inverse();
+  public IFraction inverseFraction();
 
   public IFraction gcd(IFraction other);
 
@@ -129,9 +126,4 @@ public interface IFraction extends IRational {
     return UniformFlags.FRACTION | UniformFlags.NUMBER | UniformFlags.ATOM;
   }
 
-  @Override
-  default Pair asCoeffMul(boolean rational) {
-    // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/numbers.py#L2034
-    return F.pair(this, F.C1);
-  }
 }

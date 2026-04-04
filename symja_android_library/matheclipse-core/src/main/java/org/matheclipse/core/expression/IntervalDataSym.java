@@ -736,10 +736,11 @@ public class IntervalDataSym {
   }
 
   /**
+   * Compute the inverse of the absolute value of an interval, i.e.,
+   * <code>abs(x) in interval</code>.
    * 
-   *
-   * @param expr
-   * @return
+   * @param expr the interval expression
+   * @return the interval expression representing the inverse of the absolute value
    */
   public static IAST inverseAbs(IAST expr) {
     if (expr.isIntervalData()) {
@@ -1096,68 +1097,6 @@ public class IntervalDataSym {
     return F.NIL;
   }
 
-  private static IAST minMax(IExpr min1Min2, IExpr min1Max2, IExpr max1Min2, IExpr max1Max2,
-      IBuiltInSymbol[] symbols) {
-    int[] index = new int[] {0, 1};
-    IExpr min = min1Min2;
-    IExpr max = min1Max2;
-    if (min1Min2.greaterThan(min1Max2).isTrue()) {
-      index[0] = 1;
-      index[1] = 0;
-      min = min1Max2;
-      max = min1Min2;
-    }
-    if (max1Min2.greaterThan(max).isTrue()) {
-      index[1] = 2;
-      max = max1Min2;
-    } else if (max1Min2.lessThan(min).isTrue()) {
-      index[0] = 2;
-      min = max1Min2;
-    }
-    if (max1Max2.greaterThan(max).isTrue()) {
-      index[1] = 3;
-      max = max1Max2;
-    } else if (max1Max2.lessThan(min).isTrue()) {
-      index[0] = 3;
-      min = max1Max2;
-    }
-    IBuiltInSymbol left = S.LessEqual;
-    switch (index[0]) {
-      case 0:
-        left = precedence(symbols[0], symbols[1]);
-        break;
-      case 1:
-        left = precedence(symbols[0], symbols[3]);
-        break;
-      case 2:
-        left = precedence(symbols[1], symbols[2]);
-        break;
-      case 3:
-        left = precedence(symbols[1], symbols[3]);
-        break;
-      default:
-        break;
-    }
-    IBuiltInSymbol right = S.LessEqual;
-    switch (index[1]) {
-      case 0:
-        right = precedence(symbols[0], symbols[1]);
-        break;
-      case 1:
-        right = precedence(symbols[0], symbols[3]);
-        break;
-      case 2:
-        right = precedence(symbols[1], symbols[2]);
-        break;
-      case 3:
-        right = precedence(symbols[1], symbols[3]);
-        break;
-      default:
-        break;
-    }
-    return F.List(min, left, right, max);
-  }
-
   /**
    * Replaces the most common code. Determines the result depending on the fulfillment of
    * conditions.
@@ -1227,6 +1166,7 @@ public class IntervalDataSym {
     if (isNormalized(intervalList)) {
       return intervalList;
     }
+    // The expression `1` is not a valid interval.
     String str = Errors.getMessage("nvld", F.list(intervalList));
     throw new ArgumentTypeException(str);
   }
@@ -1366,11 +1306,13 @@ public class IntervalDataSym {
           IExpr arg1 = list.arg1();
           IBuiltInSymbol left = (IBuiltInSymbol) list.arg2();
           if (left != S.Less && left != S.LessEqual) {
+            // The expression `1` is not a valid interval.
             String str = Errors.getMessage("nvld", F.list(arg), engine);
             throw new ArgumentTypeException(str);
           }
           IBuiltInSymbol right = (IBuiltInSymbol) list.arg3();
           if (right != S.Less && right != S.LessEqual) {
+            // The expression `1` is not a valid interval.
             String str = Errors.getMessage("nvld", F.list(arg), engine);
             throw new ArgumentTypeException(str);
           }
@@ -1410,8 +1352,6 @@ public class IntervalDataSym {
               left = S.Less;
               right = S.Less;
               evaled = true;
-              // String str = Errors.getMessage("nvld", F.list(arg), engine);
-              // throw new ArgumentTypeException(str);
             } else {
               left = S.Less;
               evaled = true;
@@ -1429,6 +1369,7 @@ public class IntervalDataSym {
           }
           return F.NIL;
         } catch (ClassCastException cce) {
+          // The expression `1` is not a valid interval.
           String str = Errors.getMessage("nvld", F.list(arg), engine);
           throw new ArgumentTypeException(str);
         }
@@ -1528,17 +1469,6 @@ public class IntervalDataSym {
     return F.NIL;
   }
 
-  /**
-   * Calculate <code>Interval({lower, upper},...,...) ^ exponent</code>.
-   *
-   * <p>
-   * See: <a href= "https://en.wikipedia.org/wiki/Interval_arithmetic#Elementary_functions">Interval
-   * arithmetic - Elementary functions</a>
-   *
-   * @param baseInterval
-   * @param exponent
-   * @return
-   */
   public static IExpr power(final IAST baseInterval, IInteger exponent) {
     IAST interval = normalize(baseInterval);
     if (interval.isPresent()) {
@@ -1554,7 +1484,7 @@ public class IntervalDataSym {
         }
         return baseInterval;
       }
-      IASTAppendable result = F.IntervalDataAlloc(baseInterval.size());
+      IASTAppendable result = F.IntervalDataAlloc(baseInterval.argSize());
       for (int i = 1; i < interval.size(); i++) {
         IAST list = (IAST) interval.get(i);
         final IExpr min = list.arg1();
@@ -1583,7 +1513,6 @@ public class IntervalDataSym {
                   newMax = maxPower;
                 } else if (minPower.equals(maxPower)
                     || S.Equal.ofQ(EvalEngine.get(), minPower, maxPower)) {
-                  // Tie-breaker: If either side was strictly inclusive, the result is inclusive
                   newRelation =
                       (lessMin == S.LessEqual || lessMax == S.LessEqual) ? S.LessEqual : S.Less;
                   newMax = maxPower;
@@ -1601,24 +1530,13 @@ public class IntervalDataSym {
         }
       }
       if (negative) {
-        return F.Power(result, F.CN1);
+        return inverse(result);
       }
       return result;
     }
     return F.NIL;
   }
 
-  /**
-   * Calculate <code>Interval({lower, upper},...,...) ^ exponent</code>.
-   *
-   * <p>
-   * See: <a href= "https://en.wikipedia.org/wiki/Interval_arithmetic#Elementary_functions">Interval
-   * arithmetic - Elementary functions</a>
-   *
-   * @param baseInterval
-   * @param exponent
-   * @return
-   */
   public static IExpr power(final IAST baseInterval, IReal exponent) {
     IAST interval = normalize(baseInterval);
     if (interval.isPresent()) {
@@ -1634,7 +1552,7 @@ public class IntervalDataSym {
         }
         return baseInterval;
       }
-      IASTAppendable result = F.IntervalDataAlloc(baseInterval.size());
+      IASTAppendable result = F.IntervalDataAlloc(baseInterval.argSize());
       for (int i = 1; i < interval.size(); i++) {
         IAST list = (IAST) interval.get(i);
         final IExpr min = list.arg1();
@@ -1648,22 +1566,16 @@ public class IntervalDataSym {
         }
       }
       if (negative) {
-        return F.Power(result, F.CN1);
+        return inverse(result);
       }
       return result;
     }
     return F.NIL;
   }
 
-  /**
-   * Calculate <code>base ^ intervalExponent</code>.
-   *
-   * @param base
-   * @param intervalExponent
-   * @return <code>F.NIL</code> if no evauation is possible.
-   */
   public static IExpr power(IExpr base, final IAST intervalExponent) {
     IAST interval = normalize(intervalExponent);
+    EvalEngine engine = EvalEngine.get();
     if (interval.isPresent()) {
       if (base.isNegative()) {
         if (base.isMinusOne()) {
@@ -1671,7 +1583,7 @@ public class IntervalDataSym {
         }
         return F.Times(F.Power(-1, intervalExponent), F.Power(base.negate(), intervalExponent));
       }
-      IASTAppendable result = F.IntervalDataAlloc(intervalExponent.size());
+      IASTAppendable result = F.IntervalDataAlloc(intervalExponent.argSize());
       for (int i = 1; i < interval.size(); i++) {
         IAST list = (IAST) interval.get(i);
         IExpr min = list.arg1();
@@ -1683,7 +1595,12 @@ public class IntervalDataSym {
             return S.Indeterminate;
           }
         }
-        result.append(F.List(base.power(min), lessMin, lessMax, base.power(max)));
+        // If 0 < base < 1, the exponentiation function is strictly decreasing
+        if (engine.evalLess(base, F.C1) && engine.evalGreater(base, F.C0)) {
+          result.append(F.List(base.power(max), lessMax, lessMin, base.power(min)));
+        } else {
+          result.append(F.List(base.power(min), lessMin, lessMax, base.power(max)));
+        }
       }
       return result;
     }
@@ -1700,8 +1617,6 @@ public class IntervalDataSym {
 
   /**
    * The {@link S#Reals} domain is represented by <code>IntervalData({-oo, Less, Less, oo})</code>.
-   * 
-   * @return
    */
   public static IAST reals() {
     return F.IntervalData(//
@@ -1879,7 +1794,6 @@ public class IntervalDataSym {
    * @param rhsValue2
    * @param variable
    * @param engine
-   * @return
    */
   public static IAST simplifyRelationToInterval(IExpr lhs, IBuiltInSymbol relationalSymbol1,
       IExpr rhsValue1, IBuiltInSymbol relationalSymbol2, IExpr rhsValue2, IExpr variable,
@@ -1905,7 +1819,6 @@ public class IntervalDataSym {
    * @param rhsValue
    * @param variable
    * @param engine
-   * @return
    */
   public static IAST simplifyRelationToInterval(IExpr lhs, IBuiltInSymbol relationalSymbol,
       IExpr rhsValue, IExpr variable, EvalEngine engine) throws ArgumentTypeStopException {
@@ -2061,10 +1974,24 @@ public class IntervalDataSym {
     });
   }
 
+  /**
+   * Appends the given expression to the list, if it is not {@link S#Indeterminate} (NaN).
+   * 
+   * @param list the list to add the expression to
+   * @param expr the expression to append
+   */
+  private static void appendWithoutNaN(IASTAppendable list, IExpr expr) {
+    if (!expr.isIndeterminate()) {
+      list.append(expr);
+    }
+  }
+
   public static IExpr times(final IAST ast1, final IAST ast2) {
+
     IAST interval1 = normalize(ast1);
     IAST interval2 = normalize(ast2);
     if (interval1.isPresent() && interval2.isPresent()) {
+      final EvalEngine engine = EvalEngine.get();
       IASTAppendable result = F.IntervalDataAlloc(interval1.size() * interval2.size());
       for (int i = 1; i < interval1.size(); i++) {
         IAST list1 = (IAST) interval1.get(i);
@@ -2084,8 +2011,88 @@ public class IntervalDataSym {
           IExpr min1Max2 = min1.times(max2);
           IExpr max1Min2 = max1.times(min2);
           IExpr max1Max2 = max1.times(max2);
-          IAST list = minMax(min1Min2, min1Max2, max1Min2, max1Max2,
-              new IBuiltInSymbol[] {sMin1, sMax1, sMin2, sMax2});
+
+          // Collect all valid (non-Indeterminate) products and their boundary symbols
+          IASTAppendable validProducts = F.ListAlloc(4);
+          IASTAppendable validSymbols = F.ListAlloc(4);
+          IBuiltInSymbol[][] symbolPairs =
+              {{sMin1, sMin2}, {sMin1, sMax2}, {sMax1, sMin2}, {sMax1, sMax2}};
+          IExpr[] products = {min1Min2, min1Max2, max1Min2, max1Max2};
+
+          for (int k = 0; k < 4; k++) {
+            if (!products[k].isIndeterminate()) {
+              validProducts.append(products[k]);
+              validSymbols.append(F.List(symbolPairs[k][0], symbolPairs[k][1]));
+            }
+          }
+
+          if (validProducts.argSize() == 0) {
+            return F.NIL;
+          }
+
+          // Find min and max among valid products
+          IExpr minVal = validProducts.arg1();
+          IExpr maxVal = validProducts.arg1();
+          int minIdx = 0;
+          int maxIdx = 0;
+          for (int k = 1; k < validProducts.argSize(); k++) {
+            IExpr p = validProducts.get(k + 1);
+            if (engine.evalGreater(p, maxVal)) {
+              maxVal = p;
+              maxIdx = k;
+            }
+            if (engine.evalLess(p, minVal)) {
+              minVal = p;
+              minIdx = k;
+            }
+          }
+
+          IAST minSyms = (IAST) validSymbols.get(minIdx + 1);
+          IAST maxSyms = (IAST) validSymbols.get(maxIdx + 1);
+          IBuiltInSymbol left =
+              precedence((IBuiltInSymbol) minSyms.arg1(), (IBuiltInSymbol) minSyms.arg2());
+          IBuiltInSymbol right =
+              precedence((IBuiltInSymbol) maxSyms.arg1(), (IBuiltInSymbol) maxSyms.arg2());
+
+          // Handle boundary: 0 * Infinity -> the boundary is 0
+          if (min1.isZero() || min2.isZero()) {
+            if (minVal.isNegativeInfinity()) {
+              minVal = F.CNInfinity;
+              left = S.Less;
+            }
+          }
+          if (max1.isZero() || max2.isZero()) {
+            if (maxVal.isInfinity()) {
+              maxVal = F.CInfinity;
+              right = S.Less;
+            }
+          }
+          if (min1.isZero() || max2.isZero()) {
+            if (maxVal.isInfinity()) {
+              maxVal = F.CInfinity;
+              right = S.LessEqual;
+            }
+          }
+          if (max1.isZero() || min2.isZero()) {
+            if (minVal.isNegativeInfinity()) {
+              minVal = F.CNInfinity;
+              left = S.LessEqual;
+            }
+          }
+
+          // When one endpoint is zero and the other is open to infinity,
+          // the product boundary at zero should inherit the open boundary
+          if (minVal.isZero() && left == S.LessEqual) {
+            // Check if zero comes from 0 * finite or finite * 0
+            // The open/closed at zero depends on whether zero is a strict boundary
+            if ((min1.isZero() && sMin1 == S.LessEqual) || (min2.isZero() && sMin2 == S.LessEqual)
+                || (max1.isZero() && sMax1 == S.LessEqual)
+                || (max2.isZero() && sMax2 == S.LessEqual)) {
+              left = S.LessEqual;
+            }
+          }
+
+          IAST list = F.List(minVal, left, right, maxVal);
           result.append(list);
         }
       }
@@ -2352,5 +2359,40 @@ public class IntervalDataSym {
 
     IAST normalized = normalize(result, engine);
     return normalized.orElse(result);
+  }
+
+  /**
+   * Determine the sign of an interval. Return 1 if the interval is strictly positive, -1 if the
+   * interval is strictly negative, and Integer.MIN_VALUE if the interval straddles zero or if the
+   * sign is indeterminate.
+   * 
+   * @param intervalAST an interval represented as an AST, expected to be in the form of
+   *        {@link F#IntervalData(IExpr)}
+   * @param engine the evaluation engine used to evaluate the bounds of the interval
+   * @return 1 if the interval is strictly positive, -1 if the interval is strictly negative, and
+   *         Integer.MIN_VALUE if the interval straddles zero or if the sign is indeterminate.
+   */
+  public static int sign(IAST intervalAST, EvalEngine engine) {
+    boolean allPos = true;
+    boolean allNeg = true;
+    for (int i = 1; i <= intervalAST.argSize(); i++) {
+      IAST bounds = (IAST) intervalAST.get(i);
+      if (bounds.isAST(S.List, 5)) {
+        if (!engine.evaluate(F.Greater(bounds.arg1(), F.C0)).isTrue())
+          allPos = false;
+        if (!engine.evaluate(F.Less(bounds.arg4(), F.C0)).isTrue())
+          allNeg = false;
+      } else {
+        // wrong interval format
+        allPos = false;
+        allNeg = false;
+        break;
+      }
+    }
+    if (allPos)
+      return 1;
+    if (allNeg)
+      return -1;
+    return Integer.MIN_VALUE; // intervals that straddle 0 have an indeterminate sign
   }
 }

@@ -12,6 +12,16 @@ import org.matheclipse.core.expression.Pair;
 /** Implemented by all number interfaces */
 public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
 
+  public static IExpr binomialNumeric(final INumber n, final INumber k) {
+    INumber nPlus1 = n.plus(F.C1);
+    INumber nMinuskPlus1 = nPlus1.subtract(k);
+    INumber kPlus1 = k.plus(F.C1);
+    // (n,k) ==> Gamma(n+1)/(Gamma(k+1)*Gamma(n-k+1))
+    return F.Times(F.Gamma(nPlus1), F.Power(F.Gamma(kPlus1), -1),
+        F.Power(F.Gamma(nMinuskPlus1), -1));
+  }
+
+
   /**
    * Get the absolute value of this number.
    *
@@ -20,13 +30,14 @@ public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
   @Override
   public IExpr abs();
 
-
   /**
    * Get a {@link Apcomplex} number wrapped into an <code>ApcomplexNum</code> object.
    *
    * @return this number represented as an ApcomplexNum
    */
   public ApcomplexNum apcomplexNumValue();
+
+  // In INumber.java
 
   /**
    * Get a {@link Apcomplex} object.
@@ -36,35 +47,69 @@ public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
   public Apcomplex apcomplexValue();
 
   @Override
-  default Pair asCoeffAdd() {
-    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/numbers.py#L816
-    if (isInteger() || isFraction()) {
-      return F.pair(this, F.Plus());
+  default Pair asCoeffAdd(boolean rational) {
+    if (!rational) {
+      return F.pair(this, F.C0);
     }
-    return F.pair(F.C0, F.Plus(this));
+    if (this.isRational()) {
+      return F.pair(this, F.C0);
+    }
+    return F.pair(F.C0, this);
   }
 
   @Override
-  default Pair asCoeffmul(ISymbol deps, boolean rational) {
-    // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/numbers.py#L828
-    if (!rational || isRational()) {
-      return F.pair(this, F.CEmptyList);
-    } else if (isNegative()) {
-      return F.pair(F.CN1, F.List(negate()));
+  default Pair asCoeffMul() {
+    // Numbers are coefficients unless rational=true and they are not rational
+    // Implementation matches SymPy numbers.py: if self.is_Rational: return self, ()
+    if (this.isRational()) {
+      return F.pair(this, F.C1);
     }
-    return F.pair(F.C1, F.List(this));
+    // If negative, SymPy separates -1: return S.NegativeOne, (-self,)
+    if (this.isNegative()) {
+      return F.pair(F.CN1, this.negate());
+    }
+    return F.pair(this, F.C1);
   }
 
   @Override
   default Pair asCoeffMul(boolean rational) {
-    // https://github.com/sympy/sympy/blob/8f90e7f894b09a3edc54c44af601b838b15aa41b/sympy/core/numbers.py#L828
-    if (rational && !isRational()) {
-      return F.pair(F.C1, this);
+    if (!rational || this.isRational()) {
+      return F.pair(this, F.C1);
     }
-    if (isZero()) {
-      return F.pair(F.C1, this);
+    // If rational=true but this is a Real/Complex, try to extract the sign
+    if (this.isNegative()) {
+      return F.pair(F.CN1, this.negate());
     }
     return F.pair(this, F.C1);
+  }
+
+  @Override
+  default Pair as_coeff_add(IExpr... deps) {
+    if (!this.isRational()) {
+      return F.pair(F.C0, F.List(this));
+    }
+    if (this.isNegative()) {
+      return F.pair(this.negate(), F.List(F.CN1));
+    }
+    return F.pair(this, F.CEmptyList);
+  }
+
+  @Override
+  default Pair as_coeff_mul(boolean rational, IExpr... deps) {
+    if (rational) {
+      if (!this.isRational()) {
+        if (this.isNegative()) {
+          return F.pair(F.CN1, F.List(this.negate()));
+        }
+        return F.pair(F.C1, F.List(this));
+      }
+      return F.pair(this, F.List());
+    }
+    // If rational=true but this is a Real/Complex, try to extract the sign
+    if (this.isNegative()) {
+      return F.pair(F.CN1, F.List(this.negate()));
+    }
+    return F.pair(F.C1, F.List(this));
   }
 
   /**
@@ -103,10 +148,6 @@ public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
    */
   public ComplexNum complexNumValue();
 
-  default Complex complexValue() {
-    return complexNumValue().complexValue();
-  }
-
   /**
    * Gets the signum value of a complex number
    *
@@ -115,6 +156,10 @@ public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
    *         <code>real(this) &lt; 0 || ( real(this) == 0 &amp;&amp; imaginary(this) &lt; 0 )
    */
   public int complexSign();
+
+  default Complex complexValue() {
+    return complexNumValue().complexValue();
+  }
 
   @Override
   public INumber conjugate();
@@ -226,6 +271,9 @@ public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
   public INumber integerPart();
 
   @Override
+  public INumber inverse();
+
+  @Override
   default COMPARE_TERNARY isIrrational() {
     return COMPARE_TERNARY.FALSE;
   }
@@ -283,9 +331,6 @@ public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
   default INumber one() {
     return F.C1;
   }
-
-  @Override
-  public INumber inverse();
 
   @Override
   public INumber opposite();
@@ -404,6 +449,7 @@ public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
    */
   public IAST toPolarCoordinates();
 
+
   /**
    * Additive neutral element of this number.
    * 
@@ -422,16 +468,6 @@ public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
   @Override
   default INumber zero() {
     return F.C0;
-  }
-
-
-  public static IExpr binomialNumeric(final INumber n, final INumber k) {
-    INumber nPlus1 = n.plus(F.C1);
-    INumber nMinuskPlus1 = nPlus1.subtract(k);
-    INumber kPlus1 = k.plus(F.C1);
-    // (n,k) ==> Gamma(n+1)/(Gamma(k+1)*Gamma(n-k+1))
-    return F.Times(F.Gamma(nPlus1), F.Power(F.Gamma(kPlus1), -1),
-        F.Power(F.Gamma(nMinuskPlus1), -1));
   }
 
 }

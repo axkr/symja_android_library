@@ -451,10 +451,18 @@ public class FractionSym extends AbstractFractionSym {
    * @return Inverse of <code>this</code>.
    */
   @Override
-  public IFraction inverse() {
-    return valueOf(fDenominator, fNumerator);
+  public IRational inverse() {
+    IFraction result = valueOf(fDenominator, fNumerator);
+    if (result.denominator().isOne()) {
+      return result.numerator();
+    }
+    return result;
   }
 
+  @Override
+  public IFraction inverseFraction() {
+    return valueOf(fDenominator, fNumerator);
+  }
   /**
    * Check whether this rational corresponds to a (finite) rational value. This function can be used
    * to test for infinites and NaNs.

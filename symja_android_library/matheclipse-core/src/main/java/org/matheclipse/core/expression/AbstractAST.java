@@ -944,6 +944,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return false;
     }
 
+    public boolean isIndeterminateFree() {
+      return false;
+    }
+
     /** {@inheritDoc} */
     @Override
     public final boolean isTimes() {

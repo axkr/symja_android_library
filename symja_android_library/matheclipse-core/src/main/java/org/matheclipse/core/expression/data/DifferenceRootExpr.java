@@ -16,9 +16,6 @@ public class DifferenceRootExpr extends DataExpr<IExpr> {
 
   private static final long serialVersionUID = 1L;
 
-  /**
-   * @param function Function[{y, n}, {eq1, eq2, ...}]
-   */
   public DifferenceRootExpr(IExpr function) {
     super(S.DifferenceRoot, function);
   }
@@ -66,18 +63,21 @@ public class DifferenceRootExpr extends DataExpr<IExpr> {
     if (!vars.isList() || ((IAST) vars).size() != 3) {
       return F.NIL;
     }
-    ISymbol y = ((IAST) vars).get(1).isSymbol() ? (ISymbol) ((IAST) vars).get(1) : null;
-    ISymbol n = ((IAST) vars).get(2).isSymbol() ? (ISymbol) ((IAST) vars).get(2) : null;
 
-    if (y == null || n == null) {
+    // Only `y` needs to be strictly a symbol to parse initial bounds
+    ISymbol y = ((IAST) vars).get(1).isSymbol() ? (ISymbol) ((IAST) vars).get(1) : null;
+    IExpr n = ((IAST) vars).get(2);
+
+    if (y == null) {
       return F.NIL;
     }
 
     Map<Integer, IExpr> initialValues = new HashMap<>();
     IExpr[] recurrenceRef = new IExpr[1];
 
-    parseEquations(body, y, n, initialValues, recurrenceRef);
+    parseEquations(body, y, initialValues, recurrenceRef);
 
+    // If the index directly maps to an initial bound, return it WITHOUT symbolic verification
     if (initialValues.containsKey(k)) {
       return initialValues.get(k);
     }
@@ -86,10 +86,16 @@ public class DifferenceRootExpr extends DataExpr<IExpr> {
       return F.NIL;
     }
 
+    // If we need to iterate, `n` absolutely must be a valid un-substituted symbol
+    if (!n.isSymbol()) {
+      return F.NIL;
+    }
+    ISymbol nSym = (ISymbol) n;
+
     IExpr eq = recurrenceRef[0];
-    // Analyze shifts
+
     List<Integer> shifts = new ArrayList<>();
-    collectShifts(eq, y, n, shifts);
+    collectShifts(eq, y, nSym, shifts);
 
     if (shifts.isEmpty()) {
       return F.NIL;
@@ -102,7 +108,6 @@ public class DifferenceRootExpr extends DataExpr<IExpr> {
       minShift = Math.min(minShift, s);
     }
 
-    // Determine range
     int maxInitial = Integer.MIN_VALUE;
     int minInitial = Integer.MAX_VALUE;
     for (int key : initialValues.keySet()) {
@@ -115,44 +120,46 @@ public class DifferenceRootExpr extends DataExpr<IExpr> {
     }
 
     if (maxInitial == Integer.MIN_VALUE) {
-      // No initial values?
       return F.NIL;
     }
 
-    if (k > maxInitial) {
-      // headTerm = y[n + maxShift]
-      IExpr headTerm = (maxShift == 0) ? F.unary(y, n) : F.unary(y, F.Plus(n, F.ZZ(maxShift)));
+    ISymbol dY = F.Dummy("y");
+    ISymbol dN = F.Dummy("n");
 
-      // Solve for headTerm
-      IAST solveRes = (IAST) engine.evaluate(F.Solve(eq, headTerm));
+    IExpr safeEq = F.subst(eq, x -> {
+      if (x.equals(y))
+        return dY;
+      if (x.equals(nSym))
+        return dN;
+      return F.NIL;
+    });
+
+    if (k > maxInitial) {
+      IExpr headTerm = (maxShift == 0) ? F.unary(dY, dN) : F.unary(dY, F.Plus(dN, F.ZZ(maxShift)));
+
+      IAST solveRes = (IAST) engine.evaluate(F.Solve(safeEq, headTerm));
       if (solveRes.size() < 2 || !solveRes.arg1().isList()) {
         return F.NIL;
       }
-      // {{y[n] -> rhs}}
       IAST rules = (IAST) solveRes.arg1();
       if (rules.size() < 2 || !rules.arg1().isRuleAST()) {
         return F.NIL;
       }
       IExpr rhs = ((IAST) rules.arg1()).arg2();
 
-      // cache of solved n-substitutions
       for (int i = maxInitial + 1; i <= k; i++) {
-        final int currentN = i - maxShift; // n value for this step
+        final int currentN = i - maxShift;
 
-        // Substitute n -> i in rhs
         IExpr step = F.subst(rhs, x -> {
-          if (x.equals(n)) {
+          if (x.equals(dN))
             return F.ZZ(currentN);
-          }
           return F.NIL;
         });
 
-        // Evaluate indices like n-1 -> i-1
         step = engine.evaluate(step);
 
-        // Evaluate y[j] in step
         IExpr evaluatedStep = F.subst(step, x -> {
-          if (x.isAST(y, 2)) {
+          if (x.isAST(dY, 2)) {
             IExpr arg = ((IAST) x).arg1();
             if (arg.isInteger()) {
               int idx = arg.toIntDefault();
@@ -164,44 +171,35 @@ public class DifferenceRootExpr extends DataExpr<IExpr> {
           return F.NIL;
         });
 
-        // Evaluate to simplify (arithmetic)
         IExpr val = engine.evaluate(F.Expand(evaluatedStep));
         initialValues.put(i, val);
       }
     } else if (k < minInitial) {
-      // tailTerm = y[n + minShift]
-      IExpr tailTerm = (minShift == 0) ? F.unary(y, n) : F.unary(y, F.Plus(n, F.ZZ(minShift)));
+      IExpr tailTerm = (minShift == 0) ? F.unary(dY, dN) : F.unary(dY, F.Plus(dN, F.ZZ(minShift)));
 
-      // Solve for tailTerm
-      IAST solveRes = (IAST) engine.evaluate(F.Solve(eq, tailTerm));
+      IAST solveRes = (IAST) engine.evaluate(F.Solve(safeEq, tailTerm));
       if (solveRes.size() < 2 || !solveRes.arg1().isList()) {
         return F.NIL;
       }
-      // {{y[n] -> rhs}}
       IAST rules = (IAST) solveRes.arg1();
       if (rules.size() < 2 || !rules.arg1().isRuleAST()) {
         return F.NIL;
       }
       IExpr rhs = ((IAST) rules.arg1()).arg2();
 
-      // cache of solved n-substitutions
       for (int i = minInitial - 1; i >= k; i--) {
-        final int currentN = i - minShift; // n value for this step
+        final int currentN = i - minShift;
 
-        // Substitute n -> i in rhs
         IExpr step = F.subst(rhs, x -> {
-          if (x.equals(n)) {
+          if (x.equals(dN))
             return F.ZZ(currentN);
-          }
           return F.NIL;
         });
 
-        // Evaluate indices like n-1 -> i-1
         step = engine.evaluate(step);
 
-        // Evaluate y[j] in step
         IExpr evaluatedStep = F.subst(step, x -> {
-          if (x.isAST(y, 2)) {
+          if (x.isAST(dY, 2)) {
             IExpr arg = ((IAST) x).arg1();
             if (arg.isInteger()) {
               int idx = arg.toIntDefault();
@@ -213,31 +211,29 @@ public class DifferenceRootExpr extends DataExpr<IExpr> {
           return F.NIL;
         });
 
-        // Evaluate to simplify (arithmetic)
         IExpr val = engine.evaluate(F.Expand(evaluatedStep));
         initialValues.put(i, val);
       }
     } else {
-      // k is in range but not in map or something else
       return F.NIL;
     }
 
     return initialValues.get(k);
   }
 
-  private void parseEquations(IExpr body, ISymbol y, ISymbol n, Map<Integer, IExpr> initialValues,
+  private void parseEquations(IExpr body, ISymbol y, Map<Integer, IExpr> initialValues,
       IExpr[] recurrenceRef) {
     if (body.isList() || body.isAST(S.And)) {
       IAST list = (IAST) body;
       for (int i = 1; i < list.size(); i++) {
-        parseEquation(list.get(i), y, n, initialValues, recurrenceRef);
+        parseEquation(list.get(i), y, initialValues, recurrenceRef);
       }
     } else {
-      parseEquation(body, y, n, initialValues, recurrenceRef);
+      parseEquation(body, y, initialValues, recurrenceRef);
     }
   }
 
-  private void parseEquation(IExpr eq, ISymbol y, ISymbol n, Map<Integer, IExpr> initialValues,
+  private void parseEquation(IExpr eq, ISymbol y, Map<Integer, IExpr> initialValues,
       IExpr[] recurrenceRef) {
     if (eq.isAST(S.Equal, 3)) {
       IExpr lhs = ((IAST) eq).arg1();
@@ -259,7 +255,6 @@ public class DifferenceRootExpr extends DataExpr<IExpr> {
       if (arg.equals(n)) {
         shifts.add(0);
       } else if (arg.isAST(S.Plus, 3)) {
-        // Assuming n + int or int + n
         IExpr a1 = ((IAST) arg).arg1();
         IExpr a2 = ((IAST) arg).arg2();
         if (a1.equals(n) && a2.isInteger()) {

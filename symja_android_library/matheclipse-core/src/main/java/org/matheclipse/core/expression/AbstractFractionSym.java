@@ -1789,7 +1789,7 @@ public abstract class AbstractFractionSym implements IFraction {
     } else if (n == 1L) {
       return this;
     } else if (n == -1L) {
-      return inverse();
+      return inverseFraction();
     }
     long exp = n;
     if (n < 0) {
@@ -1821,7 +1821,7 @@ public abstract class AbstractFractionSym implements IFraction {
       result = result.mul(result);
     }
     if (n < 0) {
-      return result.inverse();
+      return result.inverseFraction();
     }
     return result;
   }

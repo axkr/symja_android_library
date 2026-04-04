@@ -32,7 +32,6 @@ import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.TimesOp;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IRealConstant;
 import org.matheclipse.core.eval.interfaces.IRewrite;
@@ -61,9 +60,10 @@ import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
+import org.matheclipse.core.sympy.core.Add;
+import org.matheclipse.core.sympy.core.Mul;
 import org.matheclipse.core.sympy.exception.ValueError;
 import org.matheclipse.core.sympy.simplify.Powsimp;
-import org.matheclipse.core.sympy.utilities.Iterables;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -605,6 +605,54 @@ public interface IExpr
     return -1;
   }
 
+  /**
+   * Ported from SymPy: Return (c, args) where self is written as an Add. c is a Rational added to
+   * any terms independent of deps.
+   */
+  default Pair as_coeff_add(IExpr... deps) {
+    if (deps.length > 0) {
+      if (!this.hasFree(deps)) {
+        return F.pair(this, F.CEmptyList);
+      }
+    }
+    if (isAST(S.Plus)) {
+      return Add.as_coeff_add((IAST) this, deps);
+    }
+    return F.pair(F.C0, F.List(this));
+  }
+
+  default Pair asCoeffMul() {
+    if (isAST(S.Times)) {
+      return Mul.asCoeffMul((IAST) this, false);
+    }
+    return F.pair(F.C1, this);
+  }
+
+  default Pair asCoeffMul(boolean rational) {
+    // Default behavior ignoring the rational flag for non-numbers
+    return asCoeffMul();
+  }
+
+  default Pair as_coeff_mul(IExpr... deps) {
+    return as_coeff_mul(true, deps);
+  }
+
+  default Pair as_coeff_mul(boolean rational, IExpr... deps) {
+    if (deps.length > 0) {
+      if (!this.has(deps)) {
+        return F.pair(this, F.CEmptyList);
+      }
+      if (isAST(S.Times)) {
+        return Mul.as_coeff_mul((IAST) this, rational, deps);
+      }
+      return F.pair(F.C1, F.List(this));
+    }
+    if (isAST(S.Times)) {
+      return Mul.as_coeff_mul((IAST) this, rational);
+    }
+    return F.pair(F.C1, F.List(this));
+  }
+
   default Pair asBaseExp() {
     // a -> b ^ e
     if (isPower()) {
@@ -640,60 +688,21 @@ public interface IExpr
   }
 
   /**
-   * Return the pair <code>{c, Plus(args)}</code> where this is written as an
-   * <code>Plus(...)</code>, <code>a</code>. <code>c</code> should be a Rational added to any terms
-   * of the <code>Plus(...)</code that are independent of deps. args should be a tuple of all other
-   * terms of ``a``; args is empty if self is a Number or if self is independent of deps (when
-   * given). This should be used when you do not know if self is an Add or not but you want to treat
-   * self as an Add or if you want to process the individual arguments of the tail of self as an
-   * Add.
-   * 
-   * @return
+   * Symja style version of as_coeff_add.
    */
   default Pair asCoeffAdd() {
-    if (isPlus()) {
-      Pair asCoeffAdd = first().asCoeffAdd();
-      IExpr coeff = asCoeffAdd.first();
-      if (!coeff.isZero()) {
-        IAST notrat = (IAST) asCoeffAdd.arg2();
-        IASTMutable list2 = ((IAST) this).removeAtCopy(1);
-        return F.pair(coeff, join(S.Plus, notrat, list2));
-      }
-      return F.pair(F.C0, this); // ((IAST) this).setAtCopy(0, S.Plus));
-    }
-    return F.pair(F.C0, F.Plus(this));
+    return asCoeffAdd(false);
   }
 
-  default Pair asCoeffAdd(Collection<IExpr> collection) {
-    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2076
-
-    if (!has(collection)) {
-      return F.pair(this, F.Plus());
+  /**
+   * @param rational if true, only rational numbers are considered coefficients.
+   * @return a pair of (IExpr, IAST)
+   */
+  default Pair asCoeffAdd(boolean rational) {
+    if (this.isAST(S.Plus)) {
+      return Add.asCoeffAdd((IAST) this, rational);
     }
-    if (isPlus()) {
-      IAST plusAST = (IAST) this;
-      IASTAppendable[] filter = plusAST.filter(arg -> arg.has(collection));
-      IASTAppendable l1 = filter[0];
-      IASTAppendable l2 = filter[1];
-      return F.pair(l2.oneIdentity0(), l1);
-    }
-    return F.pair(F.C0, F.Plus(this));
-  }
-
-  default Pair asCoeffAdd(IExpr x) {
-    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2076
-
-    if (!has(x)) {
-      return F.pair(this, F.Plus());
-    }
-    if (isPlus()) {
-      IAST plusAST = (IAST) this;
-      IASTAppendable[] filter = plusAST.filter(arg -> arg.has(x));
-      IASTAppendable l1 = filter[0];
-      IASTAppendable l2 = filter[1];
-      return F.pair(l2.oneIdentity0(), l1);
-    }
-    return F.pair(F.C0, F.Plus(this));
+    return F.pair(F.C0, this);
   }
 
   default IPair asCoeffExponent(ISymbol x) {
@@ -702,7 +711,7 @@ public interface IExpr
     EvalEngine engine = EvalEngine.get();
     IExpr s = F.Cancel.of(engine, this);
     s = F.Collect.of(engine, s, x);
-    Pair coeffMul = s.asCoeffmul(x, false);
+    Pair coeffMul = s.as_coeff_mul(x);
     IExpr c = coeffMul.first();
     IExpr p = coeffMul.second();
     if (p.isAST1()) {
@@ -716,118 +725,7 @@ public interface IExpr
     return F.pair(s, F.C0);
   }
 
-  default Pair asCoeffmul() {
-    return asCoeffmul(null, true);
-  }
 
-  default Pair asCoeffmul(boolean rational) {
-    return asCoeffmul(null, rational);
-  }
-
-  default Pair asCoeffmul(ISymbol deps) {
-    return asCoeffmul(deps, true);
-  }
-
-  /**
-   * Return the list <code>{c, args}</code> where this is written as a <code>Times(...)</code>
-   * <code>m</code>.
-   * 
-   * @param rational
-   * @return
-   */
-  default Pair asCoeffmul(ISymbol deps, boolean rational) {
-    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
-    if (isTimes()) {
-      if (deps != null) {
-        // l1, l2 = sift(self.args, lambda x: x.has(*deps), binary=True)
-        // return self._new_rawargs(*l2), tuple(l1)
-        IAST temp = Iterables.siftBinary((IAST) this, x -> x.has(deps));
-        IASTAppendable l1 = (IASTAppendable) temp.first();
-        IASTAppendable l2 = (IASTAppendable) temp.second();
-        return F.pair(l2.oneIdentity0(), l1);
-      }
-      IExpr arg1 = first();
-      if (arg1.isNumber()) {
-        if (!rational || arg1.isRational()) {
-          return F.pair(arg1, ((IAST) this).rest().setAtCopy(0, S.List));
-        }
-        if (arg1.isNegativeResult()) {
-          IASTAppendable list2 = ((IAST) this).copyAppendable();
-          list2.set(0, S.List);
-          IExpr a1Negate = arg1.negate();
-          if (a1Negate.isOne()) {
-            list2.set(1, a1Negate);
-          } else {
-            list2.remove(1);
-          }
-          return F.pair(F.CN1, list2);
-        }
-      }
-      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(this);
-      if (negExpr.isPresent()) {
-        if (negExpr.isTimes()) {
-          return F.pair(F.CN1, ((IAST) negExpr).setAtCopy(0, S.List));
-        }
-        return F.pair(F.CN1, F.List(negExpr));
-      }
-      return F.pair(F.C1, ((IAST) this).setAtCopy(0, S.List));
-    }
-    if (deps != null) {
-      if (!has(deps)) {
-        return F.pair(this, F.List());
-      }
-    }
-    return F.pair(F.C1, F.List(this));
-  }
-
-  /**
-   * Return the list <code>{c, args}</code> where this is written as a <code>Times(...)</code>
-   * <code>m</code>.
-   * 
-   * @return
-   */
-  default Pair asCoeffMul() {
-    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
-    return asCoeffMul(false);
-  }
-
-  /**
-   * Return the list <code>{c, args}</code> where this is written as a <code>Times(...)</code>
-   * <code>m</code>.
-   * 
-   * @param rational
-   * @return
-   */
-  default Pair asCoeffMul(boolean rational) {
-    // https://github.com/sympy/sympy/blob/b64cfcdb640975706c71f305d99a8453ea5e46d8/sympy/core/expr.py#L2010
-    if (isTimes()) {
-      IExpr arg1 = first();
-      if (arg1.isNumber()) {
-        if (!rational || arg1.isRational()) {
-          return F.pair(arg1, ((IAST) this).rest().oneIdentity1());
-        }
-        if (arg1.isNegativeResult()) {
-          IASTAppendable list2 = ((IAST) this).copyAppendable();
-          IExpr a1Negate = arg1.negate();
-          if (a1Negate.isOne()) {
-            list2.remove(1);
-          } else {
-            list2.set(1, a1Negate);
-          }
-          return F.pair(F.CN1, list2.oneIdentity1());
-        }
-      }
-      IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(this);
-      if (negExpr.isPresent()) {
-        if (negExpr.isTimes()) {
-          return F.pair(F.CN1, ((IAST) negExpr).oneIdentity1());
-        }
-        return F.pair(F.CN1, negExpr);
-      }
-      // return F.pair(F.C1, ((IAST) this).setAtCopy(0, S.List));
-    }
-    return F.pair(F.C1, this);
-  }
 
   @Override
   default IExpr asin() {
@@ -2130,6 +2028,15 @@ public interface IExpr
     return has(pattern, true);
   }
 
+  default boolean has(IExpr... collection) {
+    for (IExpr expr : collection) {
+      if (has(expr, true)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /**
    * Returns <code>true</code>, if <b>at least one of the elements</b> in the subexpressions or the
    * expression itself, match the given pattern.
@@ -2175,6 +2082,15 @@ public interface IExpr
 
   default boolean hasFree(IExpr pattern) {
     return has(pattern, true);
+  }
+
+  default boolean hasFree(IExpr... collection) {
+    for (IExpr expr : collection) {
+      if (hasFree(expr)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -2658,6 +2574,10 @@ public interface IExpr
    * element</b> at index position <code>0</code> and optional <b>argument elements</b> at the index
    * positions <code>1..(length-1)</code>. If this test gives <code>true</code> this expression is
    * not an <b>atomic expression</b>.
+   * <p>
+   * <b>Note:</b> If the arguments length <code>argLength</code> is shorter than the tested
+   * <code>IAST</code> length only the first <code>argLength</code> arguments are compared with
+   * {@link #equals(Object)}. A <code>null</code> value argument skips the equals test.
    *
    * @param header the header element at position 0, which should be tested
    * @param length the size the AST expression must have
@@ -3424,6 +3344,17 @@ public interface IExpr
   }
 
   /**
+   * Check if the expression is a {@link S#Graphics} or {@link S#GraphicsRow} or a list of
+   * {@link S#Graphics} AST's.
+   * 
+   * @return <code>true</code> if the expression is a graphics object
+   */
+  default boolean isGraphicsObject() {
+    return (this instanceof IAST) && (isAST(S.Graphics) || isAST(S.GraphicsColumn)
+        || isAST(S.GraphicsGrid) || isAST(S.GraphicsRow) || isListOf(S.Graphics));
+  }
+
+  /**
    * Compares this expression with the specified expression for order. Returns true if this
    * expression is canonical greater than the specified expression (&lt; relation).
    *
@@ -3589,10 +3520,10 @@ public interface IExpr
     return false;
   }
 
+
   default COMPARE_TERNARY isIrrational() {
     return COMPARE_TERNARY.UNDECIDABLE;
   }
-
 
   /**
    * Test if this expression is the function <code>Key(&lt;key&gt;)</code> by checking the head is
@@ -4161,10 +4092,10 @@ public interface IExpr
     return false;
   }
 
+
   default boolean isNotDefined() {
     return isIndeterminate() || isDirectedInfinity();
   }
-
 
   /**
    * Test if this expression is an {@link IAST} and contains at least 1 argument
@@ -4421,6 +4352,7 @@ public interface IExpr
     return false;
   }
 
+
   /**
    * @deprecated use {@link #isOneIdentityAST()} instead.
    */
@@ -4428,7 +4360,6 @@ public interface IExpr
   default boolean isOneIdentityAST1() {
     return isOneIdentityAST();
   }
-
 
   /**
    * Test if this expression is the <code>Optional</code> function <code>Optional[&lt;pattern&gt;]
@@ -4755,14 +4686,6 @@ public interface IExpr
     return false;
   }
 
-  default boolean isProbablePrime() {
-    return false;
-  }
-
-  default boolean isProbablePrimeResult() {
-    return isProbablePrime() || AbstractAssumptions.assumePrime(this).isTrue();
-  }
-
   /**
    * Return {@code true} if this expression unequals <code>F.NIL</code>, otherwise {@code false}.
    * This method is similar to <code>java.util.Optional#isPresent()</code>.
@@ -4772,6 +4695,14 @@ public interface IExpr
    */
   default boolean isPresent() {
     return true;
+  }
+
+  default boolean isProbablePrime() {
+    return false;
+  }
+
+  default boolean isProbablePrimeResult() {
+    return isProbablePrime() || AbstractAssumptions.assumePrime(this).isTrue();
   }
 
   /**
@@ -5117,7 +5048,17 @@ public interface IExpr
    * {@link S#ComplexInfinity}.
    */
   default boolean isSpecialsFree() {
-    Predicate<IExpr> predicate = x -> x.equals(S.DirectedInfinity) || x.equals(S.Indeterminate);
+    Predicate<IExpr> predicate = x -> x == S.DirectedInfinity || x == S.Indeterminate;
+    return isFree(predicate, true);
+  }
+
+  /**
+   * Returns <code>true</code> if <code>this</code> is {@link #isPresent()} and free of any special
+   * symbols/functions {@link S#Indeterminate}, {@link S#DirectedInfinity},
+   * {@link S#ComplexInfinity}.
+   */
+  default boolean isIndeterminateFree() {
+    Predicate<IExpr> predicate = x -> x == S.Indeterminate;
     return isFree(predicate, true);
   }
 
@@ -5553,6 +5494,8 @@ public interface IExpr
     return F.NIL;
   }
 
+
+
   /**
    * Evaluate {@link S#Less} directly if both arguments are real numbers, otherwise evaluate the
    * built-in <code>Less</code> function.
@@ -5571,8 +5514,6 @@ public interface IExpr
     return F.Less(this, a1)//
         .eval();
   }
-
-
 
   /**
    * Evaluate {@link S#LessEqual} directly if both arguments are real numbers, otherwise evaluate
@@ -6531,6 +6472,14 @@ public interface IExpr
     return F.NIL;
   }
 
+  default IExpr replaceAll(ISymbol x, IExpr y) {
+    return F.NIL;
+  }
+
+  default IExpr replaceAll(ISymbol[] x, IExpr[] y) {
+    return F.NIL;
+  }
+
   /**
    * Replace all (sub-) expressions with the given <code>java.util.Map</code>n. If no substitution
    * matches, the method returns <code>F.NIL</code>.
@@ -6607,6 +6556,7 @@ public interface IExpr
     return replaceRepeated(new VisitorReplaceAll(function), -1);
   }
 
+
   /**
    * Repeatedly replace all (sub-) expressions with the given rule set. If no substitution matches,
    * the method returns <code>this</code>.
@@ -6674,7 +6624,6 @@ public interface IExpr
     }
     return F.NIL;
   }
-
 
   default IExpr rewrite(int functionID) {
     return F.NIL;
@@ -6970,14 +6919,6 @@ public interface IExpr
       return this;
     }
     return subs(F.List(F.Rule(x, y)));
-  }
-
-  default IExpr replaceAll(ISymbol x, IExpr y) {
-    return F.NIL;
-  }
-
-  default IExpr replaceAll(ISymbol[] x, IExpr[] y) {
-    return F.NIL;
   }
 
   @Override
@@ -7460,6 +7401,7 @@ public interface IExpr
     return this;
   }
 
+
   /**
    * Replaces all instances of the <code>left-hand-side</code> of the rules in list with the
    * <code>right-hand-side</code> of the correponding rule or returns <code>this</code>.
@@ -7475,7 +7417,6 @@ public interface IExpr
   default IExpr xreplace(IAST listOfRules) {
     return replaceAll(listOfRules).orElse(this);
   }
-
 
   /**
    * Replaces all instances of <code>x</code> in an expression with an <code>y</code> expression or
@@ -7499,17 +7440,6 @@ public interface IExpr
 
   default IExpr zero() {
     return F.C0;
-  }
-
-  /**
-   * Check if the expression is a {@link S#Graphics} or {@link S#GraphicsRow} or a list of
-   * {@link S#Graphics} AST's.
-   * 
-   * @return <code>true</code> if the expression is a graphics object
-   */
-  default boolean isGraphicsObject() {
-    return (this instanceof IAST) && (isAST(S.Graphics) || isAST(S.GraphicsColumn)
-        || isAST(S.GraphicsGrid) || isAST(S.GraphicsRow) || isListOf(S.Graphics));
   }
 
 }
