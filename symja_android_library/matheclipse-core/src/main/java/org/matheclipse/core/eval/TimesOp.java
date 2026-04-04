@@ -174,9 +174,13 @@ public final class TimesOp {
           case ID.Times: {
             if (expr.size() > 1) {
               for (int i = 1; i < ast.size(); i++) {
-                appendRecursive(ast.get(i));
+                IExpr arg = ast.get(i);
+                if (arg.isDirectedInfinity() || arg.isComplexInfinity()) {
+                  evaled = false;
+                  return;
+                }
+                appendRecursive(arg);
               }
-
               return;
             }
           }
@@ -332,6 +336,5 @@ public final class TimesOp {
       return;
     }
     map.put(base, oldExponent);
-
   }
 }
