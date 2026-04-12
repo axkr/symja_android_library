@@ -828,6 +828,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return IInteger.super.egcd(that);
   }
 
+  @Override
   public IInteger[] extendedGCD(IInteger that) {
     BigInteger S = that.toBigNumerator();
     IInteger[] result = new IInteger[3];
@@ -1185,7 +1186,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     if (isZero()) {
       return 1;
     }
-    return integerLength(F.C10) + (isPositive() ? 0 : 1);
+    return integerLength(F.C10) + (isPositive() ? 0L : 1L);
   }
 
   @Override

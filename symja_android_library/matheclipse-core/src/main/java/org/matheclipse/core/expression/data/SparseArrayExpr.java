@@ -1790,6 +1790,20 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     return false;
   }
 
+  @Override
+  public boolean isZeroTensor() {
+    if (!fDefaultValue.isZero()) {
+      return false;
+    }
+    for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+      IExpr value = entry.getValue();
+      if (!value.isZero()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   /** {@inheritDoc} */
   @Override
   public IExpr first() {

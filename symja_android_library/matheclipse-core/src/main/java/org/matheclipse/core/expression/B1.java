@@ -25,7 +25,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public abstract class B1 extends AbstractAST implements Externalizable, RandomAccess {
-  static class Cos extends B1 {
+  public static class Cos extends B1 {
     public Cos() {
       super();
     }
@@ -50,7 +50,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static class Csc extends B1 {
+  public static class Csc extends B1 {
     public Csc() {
       super();
     }
@@ -75,7 +75,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static class Im extends B1 {
+  public static class Im extends B1 {
     public Im() {
       super();
     }
@@ -105,7 +105,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static class IntegerQ extends B1 {
+  public static class IntegerQ extends B1 {
     public IntegerQ() {
       super();
     }
@@ -139,7 +139,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static class Line extends B1 {
+  public static class Line extends B1 {
     public Line() {
       super();
     }
@@ -164,7 +164,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static class List extends B1 {
+  public static class List extends B1 {
     public List() {
       super();
     }
@@ -200,7 +200,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static class Log extends B1 {
+  public static class Log extends B1 {
     public Log() {
       super();
     }
@@ -225,7 +225,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static class Missing extends B1 {
+  public static class Missing extends B1 {
     public Missing() {
       super();
     }
@@ -250,7 +250,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static class Not extends B1 {
+  public static class Not extends B1 {
     public Not() {
       super();
     }
@@ -275,7 +275,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static class Point extends B1 {
+  public static class Point extends B1 {
     public Point() {
       super();
     }
@@ -300,7 +300,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static class Re extends B1 {
+  public static class Re extends B1 {
     public Re() {
       super();
     }
@@ -330,7 +330,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static class Return extends B1 {
+  public static class Return extends B1 {
     public Return() {
       super();
     }
@@ -362,7 +362,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
 
   }
 
-  static class Sin extends B1 {
+  public static class Sin extends B1 {
     public Sin() {
       super();
     }
@@ -387,7 +387,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static class Slot extends B1 {
+  public static class Slot extends B1 {
     public Slot() {
       super();
     }
@@ -418,7 +418,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static class Tan extends B1 {
+  public static class Tan extends B1 {
     public Tan() {
       super();
     }
@@ -443,7 +443,7 @@ public abstract class B1 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static class Throw extends B1 {
+  public static class Throw extends B1 {
     public Throw() {
       super();
     }

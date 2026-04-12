@@ -57,6 +57,7 @@ import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.statistics.IContinuousDistribution;
 import org.matheclipse.core.numbertheory.GaussianInteger;
+import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
@@ -5908,6 +5909,16 @@ public interface IExpr
    */
   default IASTMutable mapThread(final IAST replacement, int position) {
     return replacement.setAtCopy(position, this);
+  }
+
+  default IPatternMap match(final IExpr pattern) {
+    EvalEngine engine = EvalEngine.get();
+    IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
+    // IExpr arg1Evaled = engine.evaluate(arg1);
+    if (matcher.test(this, engine)) {
+      return matcher.getPatternMap();
+    }
+    return null;
   }
 
   /**

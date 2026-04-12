@@ -25,7 +25,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public abstract class B2 extends AbstractAST implements Externalizable, RandomAccess {
-  static final class And extends B2 {
+  public static final class And extends B2 {
     public And() {
       super();
     }
@@ -56,7 +56,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static final class B2Set extends B2 {
+  public static final class B2Set extends B2 {
     public B2Set() {
       super();
     }
@@ -81,7 +81,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static final class Condition extends B2 {
+  public static final class Condition extends B2 {
     public Condition() {
       super();
     }
@@ -116,7 +116,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
   }
 
-  static final class DirectedEdge extends B2 {
+  public static final class DirectedEdge extends B2 {
     public DirectedEdge() {
       super();
     }
@@ -197,7 +197,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static final class Equal extends B2 {
+  public static final class Equal extends B2 {
     public Equal() {
       super();
     }
@@ -222,7 +222,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static final class FreeQ extends B2 {
+  public static final class FreeQ extends B2 {
     public FreeQ() {
       super();
     }
@@ -253,7 +253,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static final class Greater extends B2 {
+  public static final class Greater extends B2 {
     public Greater() {
       super();
     }
@@ -278,7 +278,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static final class GreaterEqual extends B2 {
+  public static final class GreaterEqual extends B2 {
     public GreaterEqual() {
       super();
     }
@@ -303,7 +303,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static final class If extends B2 {
+  public static final class If extends B2 {
     public If() {
       super();
     }
@@ -334,7 +334,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static final class Integrate extends B2 {
+  public static final class Integrate extends B2 {
     public Integrate() {
       super();
     }
@@ -359,7 +359,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static final class Less extends B2 {
+  public static final class Less extends B2 {
     public Less() {
       super();
     }
@@ -384,7 +384,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static final class LessEqual extends B2 {
+  public static final class LessEqual extends B2 {
     public LessEqual() {
       super();
     }
@@ -409,7 +409,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static final class List extends B2 {
+  public static final class List extends B2 {
     public List() {
       super();
     }
@@ -451,7 +451,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
   }
 
-  static final class MemberQ extends B2 {
+  public static final class MemberQ extends B2 {
     public MemberQ() {
       super();
     }
@@ -476,7 +476,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static final class Or extends B2 {
+  public static final class Or extends B2 {
     public Or() {
       super();
     }
@@ -508,7 +508,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
   }
 
-  static final class Part extends B2 {
+  public static final class Part extends B2 {
     public Part() {
       super();
     }
@@ -533,7 +533,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static final class Plus extends B2 {
+  public static final class Plus extends B2 {
     public Plus() {
       super();
     }
@@ -604,7 +604,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static final class PolynomialQ extends B2 {
+  public static final class PolynomialQ extends B2 {
     public PolynomialQ() {
       super();
     }
@@ -629,7 +629,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static final class Power extends B2 {
+  public static final class Power extends B2 {
     public Power() {
       super();
     }
@@ -710,7 +710,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static final class Rule extends B2 {
+  public static final class Rule extends B2 {
     public Rule() {
       super();
     }
@@ -761,7 +761,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
 
   }
 
-  static final class RuleDelayed extends B2 {
+  public static final class RuleDelayed extends B2 {
     public RuleDelayed() {
       super();
     }
@@ -811,7 +811,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static final class SameQ extends B2 {
+  public static final class SameQ extends B2 {
     public SameQ() {
       super();
     }
@@ -903,7 +903,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static final class Times extends B2 {
+  public static final class Times extends B2 {
     public Times() {
       super();
     }
@@ -978,7 +978,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
     }
   }
 
-  static final class UndirectedEdge extends B2 {
+  public static final class UndirectedEdge extends B2 {
     public UndirectedEdge() {
       super();
     }
@@ -1004,7 +1004,7 @@ public abstract class B2 extends AbstractAST implements Externalizable, RandomAc
   }
 
 
-  static final class With extends B2 {
+  public static final class With extends B2 {
     public With() {
       super();
     }

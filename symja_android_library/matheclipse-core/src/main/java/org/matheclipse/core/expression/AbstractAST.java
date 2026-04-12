@@ -944,6 +944,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return false;
     }
 
+    @Override
     public boolean isIndeterminateFree() {
       return false;
     }
@@ -5254,6 +5255,15 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return length;
     }
     return -1;
+  }
+
+  @Override
+  public boolean isZeroTensor() {
+    final IntList dims = LinearAlgebraUtil.dimensions(this, S.List, Integer.MAX_VALUE, true);
+    if (dims == null) {
+      return false;
+    }
+    return forAllLeaves(x -> x.isZero());
   }
 
   /** {@inheritDoc} */

@@ -292,21 +292,33 @@ public class FittedModelExpr extends DataExpr<ExprOLSLinearRegression> implement
   }
 
   @Override
-  public IExpr normal(boolean nilIfUnevaluated) {
+  public IAST normal(boolean nilIfUnevaluated) {
     ExprOLSLinearRegression model = toData();
     int numberOfFunctions = basisFunctions.getDimension();
     IExpr[] coefficients = model.estimateRegressionParameters();
     IASTAppendable fittedFunction = F.PlusAlloc(numberOfFunctions);
     for (int j = 0; j < numberOfFunctions; j++) {
-      fittedFunction.append(F.Times(coefficients[j], basisFunctions.getEntry(j)));
+      if (coefficients[j].isZero()) {
+        continue; // skip zero coefficients to simplify the function
+      }
+      IExpr basisFunction = basisFunctions.getEntry(j);
+      if (coefficients[j].isOne()) {
+        fittedFunction.append(basisFunction);
+        continue; // skip multiplying by 1 to simplify the function
+      }
+      if (basisFunctions.getEntry(j).isOne()) {
+        fittedFunction.append(coefficients[j]);
+        continue; // skip multiplying by 1 to simplify the function
+      }
+      fittedFunction.append(F.Times(coefficients[j], basisFunction));
     }
-    // simplify function by evaluation (ex: 2.0*1 + 3.0*x -> 2.0 + 3.0*x)
-    return EvalEngine.get().evaluate(fittedFunction);
+    return fittedFunction;
   }
 
   @Override
   public String toString() {
-    return "FittedModel[" + normal(false) + "]";
+    IExpr normal = EvalEngine.get().evaluate(normal(false));
+    return "FittedModel[" + normal + "]";
   }
 
   @Override

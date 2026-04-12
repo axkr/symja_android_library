@@ -1,5 +1,6 @@
 package org.matheclipse.core.interfaces;
 
+import java.util.function.Predicate;
 import org.matheclipse.core.expression.F;
 
 public interface ITensorAccess extends IExpr {
@@ -12,6 +13,7 @@ public interface ITensorAccess extends IExpr {
    * @return the element at the specified location.
    * @throws IndexOutOfBoundsException if {@code location < 0 || >= size()}
    */
+  @Override
   public IExpr get(int position);
 
   /**
@@ -24,4 +26,10 @@ public interface ITensorAccess extends IExpr {
    */
   public IExpr getIndex(int... positions);
 
+  default boolean isZeroTensor() {
+    return false;
+  }
+
+  @Override
+  public boolean forAllLeaves(Predicate<? super IExpr> predicate);
 }
