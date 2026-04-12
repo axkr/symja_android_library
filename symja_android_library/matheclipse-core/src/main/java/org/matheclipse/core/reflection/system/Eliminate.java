@@ -68,22 +68,6 @@ import com.google.common.base.Suppliers;
  */
 public class Eliminate extends AbstractFunctionEvaluator implements EliminateRules {
 
-  /** Match <code>f(x) == y</code> expressions to determine the inverse function. */
-  private static com.google.common.base.Supplier<Matcher> INVERSE_MATCHER;
-
-  /** Match <code>Plus(....) == 0</code> expressions for a variable. */
-  private static com.google.common.base.Supplier<Matcher> ZERO_PLUS_MATCHER;
-
-  /** Get the matcher for <code>f(x) == y</code> expressions to determine the inverse function. */
-  private static Matcher inverseMatcher() {
-    return INVERSE_MATCHER.get();
-  }
-
-  /** Match <code>Plus(....) == 0</code> expressions for a variable. */
-  private static Matcher zeroPlusMatcher() {
-    return ZERO_PLUS_MATCHER.get();
-  }
-
   static class VariableCounterVisitor extends AbstractVisitorBoolean
       implements Comparable<VariableCounterVisitor> {
 
@@ -206,20 +190,13 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
     }
 
     @Override
-    public boolean visit(ISymbol symbol) {
+    public boolean visit(IComplex element) {
       fNodeCounter++;
-      if (symbol.equals(fVariable)) {
-        fVariableCounter++;
-        if (fMaxVariableDepth < fCurrentDepth) {
-          fMaxVariableDepth = fCurrentDepth;
-        }
-        return true;
-      }
       return false;
     }
 
     @Override
-    public boolean visit(IInteger element) {
+    public boolean visit(IComplexNum element) {
       fNodeCounter++;
       return false;
     }
@@ -231,19 +208,13 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
     }
 
     @Override
-    public boolean visit(IComplex element) {
+    public boolean visit(IInteger element) {
       fNodeCounter++;
       return false;
     }
 
     @Override
     public boolean visit(INum element) {
-      fNodeCounter++;
-      return false;
-    }
-
-    @Override
-    public boolean visit(IComplexNum element) {
       fNodeCounter++;
       return false;
     }
@@ -265,6 +236,47 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       fNodeCounter++;
       return false;
     }
+
+    @Override
+    public boolean visit(ISymbol symbol) {
+      fNodeCounter++;
+      if (symbol.equals(fVariable)) {
+        fVariableCounter++;
+        if (fMaxVariableDepth < fCurrentDepth) {
+          fMaxVariableDepth = fCurrentDepth;
+        }
+        return true;
+      }
+      return false;
+    }
+  }
+
+  /** Match <code>f(x) == y</code> expressions to determine the inverse function. */
+  private static com.google.common.base.Supplier<Matcher> INVERSE_MATCHER;
+
+  /** Match <code>Plus(....) == 0</code> expressions for a variable. */
+  private static com.google.common.base.Supplier<Matcher> ZERO_PLUS_MATCHER;
+
+  private static IAST applyRuleToAnalyzer(IExpr variable, IExpr variableValue,
+      IASTAppendable eliminatedResultEquations, ArrayList<VariableCounterVisitor> analyzerList,
+      EvalEngine engine) {
+    variableValue = engine.evalQuiet(variableValue);
+    IExpr expr;
+    IAST rule = F.Rule(variable, variableValue);
+    for (int j = 0; j < analyzerList.size(); j++) {
+      expr = analyzerList.get(j).getExpr();
+      IExpr temp = expr.replaceAll(rule);
+      if (temp.isPresent()) {
+        temp = F.expandAll(temp, true, true);
+        if (temp.isEqual() && temp.size() == 3) {
+          temp = F.Equal(F.Subtract.of(temp.first(), temp.second()), F.C0);
+        }
+        eliminatedResultEquations.append(temp);
+      } else {
+        eliminatedResultEquations.append(expr);
+      }
+    }
+    return rule;
   }
 
   /**
@@ -330,6 +342,171 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       return result;
     }
     return F.NIL;
+  }
+
+  /**
+   * Try to eliminate a variable using polynomial resultants when direct solving fails. If we have
+   * at least 2 polynomial equations containing the variable, compute the resultant of a pair to
+   * produce an equation free of the variable.
+   *
+   * @param analyzerList list of equation analyzers
+   * @param variable the variable to eliminate
+   * @param engine the evaluation engine
+   * @return the elimination result, or {@code null} if resultant elimination also fails
+   */
+  private static IAST[] eliminateByResultant(ArrayList<VariableCounterVisitor> analyzerList,
+      IExpr variable, EvalEngine engine) {
+    if (analyzerList.size() < 2) {
+      return null;
+    }
+    for (int i = 0; i < analyzerList.size(); i++) {
+      IAST eq1 = analyzerList.get(i).getExpr();
+      if (!eq1.isEqual()) {
+        continue;
+      }
+      IExpr poly1 = engine.evaluate(F.Subtract(eq1.arg1(), eq1.arg2()));
+      if (!poly1.isPolynomial(variable)) {
+        continue;
+      }
+      for (int j = i + 1; j < analyzerList.size(); j++) {
+        IAST eq2 = analyzerList.get(j).getExpr();
+        if (!eq2.isEqual()) {
+          continue;
+        }
+        IExpr poly2 = engine.evaluate(F.Subtract(eq2.arg1(), eq2.arg2()));
+        if (!poly2.isPolynomial(variable)) {
+          continue;
+        }
+        try {
+          // Compute resultant to eliminate the variable
+          IExpr resultant = engine.evaluate(F.ternaryAST3(S.Resultant, poly1, poly2, variable));
+          if (resultant.isPresent() && !resultant.isZero() && resultant.isFree(variable)) {
+            // Remove repeated factors (the resultant can introduce squares)
+            resultant = extractSquareFreeFactors(resultant, engine);
+
+            IAST[] result = new IAST[2];
+            IASTAppendable eliminatedEquations = F.ListAlloc(analyzerList.size());
+            eliminatedEquations.append(F.Equal(resultant, F.C0));
+            for (int k = 0; k < analyzerList.size(); k++) {
+              if (k != i && k != j) {
+                eliminatedEquations.append(analyzerList.get(k).getExpr());
+              }
+            }
+            result[0] = eliminatedEquations;
+            result[1] = F.NIL;
+            return result;
+          }
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          // continue trying other pairs
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Analyze the <code>Equal()</code> terms, if we find an expression which equals the given <code>
+   * variabe</code>
+   *
+   * @param analyzerList the list of <code>Equal()</code> terms with statistics of it's equations.
+   * @param variable the variable which should be eliminated.
+   * @param multipleValues if <code>true</code> multiple results are returned as list of values
+   * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>
+   *     variable</code> or the eliminated list of equations in index <code>[0]</code> and the last
+   *         rule which is used for variable elimination in index <code>[1]</code>.
+   */
+  protected static IAST[] eliminateOneVariable(ArrayList<VariableCounterVisitor> analyzerList,
+      IExpr variable, boolean multipleValues, EvalEngine engine) {
+    IASTAppendable eliminatedResultEquations = F.ListAlloc(analyzerList.size());
+    for (int i = 0; i < analyzerList.size(); i++) {
+      IExpr variableValues =
+          eliminateAnalyze(analyzerList.get(i).getExpr(), variable, multipleValues, engine);
+      if (variableValues.isPresent()) {
+        analyzerList.remove(i);
+        IAST[] result = new IAST[2];
+        if (variableValues.isList()) {
+          IAST listOfRules = ((IAST) variableValues).map(x -> {
+            return applyRuleToAnalyzer(variable, x, eliminatedResultEquations, analyzerList,
+                engine);
+          });
+          result[0] = eliminatedResultEquations;
+          result[1] = listOfRules;
+        } else if (variableValues.isEqual()) {
+          // It's a transformed equation, not a value for the variable.
+          eliminatedResultEquations.append(variableValues);
+          for (int j = 0; j < analyzerList.size(); j++) {
+            eliminatedResultEquations.append(analyzerList.get(j).getExpr());
+          }
+          result[0] = eliminatedResultEquations;
+          result[1] = F.NIL;
+        } else {
+          IAST rule = applyRuleToAnalyzer(variable, variableValues, eliminatedResultEquations,
+              analyzerList, engine);
+          result[0] = eliminatedResultEquations;
+          result[1] = rule;
+        }
+        return result;
+      }
+    }
+    // Fallback: try resultant-based elimination for polynomial equation pairs
+    return eliminateByResultant(analyzerList, variable, engine);
+  }
+
+  /**
+   * Eliminates one variable from the given list of equations.
+   * 
+   * @param ast
+   * @param variable
+   * @param multipleValues if <code>true</code> multiple results are returned as list of values
+   * @param engine
+   * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>
+   *     variable</code> or the eliminated list of equations in index <code>[0]</code> and the last
+   *         rule which is used for variable elimination in index <code>[1]</code>.
+   */
+  public static IAST[] eliminateOneVariable(IAST ast, IExpr variable, boolean multipleValues,
+      EvalEngine engine) {
+    IAST equalAST;
+    VariableCounterVisitor exprAnalyzer;
+    ArrayList<VariableCounterVisitor> analyzerList = new ArrayList<VariableCounterVisitor>();
+    for (int j = 1; j < ast.size(); j++) {
+      equalAST = ast.getAST(j);
+      exprAnalyzer = new VariableCounterVisitor(equalAST, variable);
+      equalAST.accept(exprAnalyzer);
+      analyzerList.add(exprAnalyzer);
+    }
+    Collections.sort(analyzerList);
+
+    return eliminateOneVariable(analyzerList, variable, multipleValues, engine);
+  }
+
+  /**
+   * Extract the square-free part from a factored expression. For example, {@code (a+b)^2*(c+d)}
+   * becomes {@code (a+b)*(c+d)}, removing exponent duplications introduced by resultant
+   * computation.
+   *
+   * @param expr the expression (typically a resultant)
+   * @param engine the evaluation engine
+   * @return the square-free part of the expression
+   */
+  private static IExpr extractSquareFreeFactors(IExpr expr, EvalEngine engine) {
+    IExpr factored = engine.evaluate(F.Factor(expr));
+    if (factored.isPower() && factored.exponent().isPositiveResult()) {
+      return factored.base();
+    }
+    if (factored.isTimes()) {
+      IASTAppendable uniqueProduct = F.TimesAlloc(factored.size());
+      for (int i = 1; i < ((IAST) factored).size(); i++) {
+        IExpr factor = ((IAST) factored).get(i);
+        if (factor.isPower() && factor.exponent().isPositiveResult()) {
+          uniqueProduct.append(factor.base());
+        } else {
+          uniqueProduct.append(factor);
+        }
+      }
+      return engine.evaluate(uniqueProduct);
+    }
+    return factored;
   }
 
   /**
@@ -399,6 +576,10 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             IAST elimZeroPlus = F.binaryAST2(elimzeroplus, ast, variable);
             IExpr result = zeroPlusMatcher().apply(elimZeroPlus);
             if (result.isPresent()) {
+              if (result.isEqual()) {
+                printIfunMessage(engine);
+                return result;
+              }
               return resultWithIfunMessage(result, variable, exprWithoutVariable, multipleValues,
                   engine);
             }
@@ -406,6 +587,10 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
           IAST elimInverse = F.binaryAST2(eliminv, ast, variable);
           IExpr result = inverseMatcher().apply(elimInverse);
           if (result.isPresent()) {
+            if (result.isEqual()) {
+              printIfunMessage(engine);
+              return result;
+            }
             return resultWithIfunMessage(result, variable, exprWithoutVariable, multipleValues,
                 engine);
           }
@@ -529,6 +714,81 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
     return F.NIL;
   }
 
+  /** Get the matcher for <code>f(x) == y</code> expressions to determine the inverse function. */
+  private static Matcher inverseMatcher() {
+    return INVERSE_MATCHER.get();
+  }
+
+  /**
+   * Convert a list of rules for one variable back to a list of values.
+   * 
+   * @param listOfRules
+   * @param multipleValues if <code>false</code> return only the first found value in the list
+   * @return
+   */
+  protected static IExpr listOfRulesToValues(IExpr listOfRules, IExpr variable,
+      boolean multipleValues) {
+    if (multipleValues) {
+      IASTAppendable solveValues = F.ListAlloc(listOfRules.size());
+      ((IAST) listOfRules).map(a -> {
+        if (a.isList1() //
+            && a.first().isRuleAST() && a.first().first().equals(variable)) {
+          solveValues.append(a.first().second());
+        }
+        return F.NIL;
+      });
+      if (solveValues.size() > 1) {
+        return solveValues;
+      }
+    } else {
+      if (listOfRules.first().isRuleAST() //
+          && listOfRules.first().equals(variable)) {
+        return listOfRules.first().second();
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Print message "Inverse functions are being used. Values may be lost for multivalued inverses."
+   *
+   * @param engine
+   */
+  private static void printIfunMessage(EvalEngine engine) {
+    Errors.printMessage(S.InverseFunction, "ifun", F.CEmptyList, engine);
+  }
+
+  private static IExpr resultAsAndEquations(IAST result) {
+    if (result.isList()) {
+      if (result.equals(F.CEmptyList)) {
+        return S.True;
+      }
+      return result.apply(S.And);
+    }
+    return result;
+  }
+
+  /**
+   * Print message "Inverse functions are being used. Values may be lost for multivalued inverses."
+   * and return the {@code result} by substituting {@code subExpr} with {@code replacementExpr}.
+   *
+   * @param result
+   * @param subExpr
+   * @param replacementExpr
+   * @param multipleValues if <code>true</code> multiple results are returned as lsit of values
+   * @param engine
+   * @return
+   */
+  private static IExpr resultWithIfunMessage(IExpr result, IExpr subExpr, IExpr replacementExpr,
+      boolean multipleValues, EvalEngine engine) {
+    printIfunMessage(engine);
+    IExpr expr = F.subst(result, subExpr, replacementExpr);
+    if (!multipleValues && expr.isList() && expr.size() > 1) {
+      return expr.first();
+    }
+    return expr;
+  }
+
   /**
    * <p>
    * Solve <code>a*E^(b*f(x))*f(x) == z </code> as
@@ -586,38 +846,6 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
   }
 
   /**
-   * Try to solve equations which contain trigonometric functions by using a
-   * {@link F#TrigToExp(IExpr)} transformation step, so that the equation contains
-   * <code>E^(...)</code> expressions.
-   * 
-   * @param plusAST
-   * @param variable
-   * @param multipleValues
-   * @param engine
-   * @return
-   */
-  private static IExpr tryTrigToExp(IAST plusAST, IExpr variable, boolean multipleValues,
-      EvalEngine engine) {
-    // System.out.println(plusAST.leafCount());
-    if (plusAST.leafCount() > Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
-      return F.NIL;
-    }
-    IExpr termsEqualZero = engine.evaluateNIL(F.TrigToExp(plusAST));
-    if (termsEqualZero.isPresent()) {
-      IASTMutable newList = F.unaryAST1(S.List, termsEqualZero);
-      Solve.SolveData solveData = new Solve.SolveData();
-      IExpr result =
-          solveData.solveRecursive(newList, F.CEmptyList, false, F.List(variable), engine);
-      if (result.isListOfLists()) {
-        // Inverse functions are being used. Values may be lost for multivalued inverses.
-        Errors.printMessage(S.Solve, "ifun", F.CEmptyList, engine);
-        return listOfRulesToValues(result, variable, multipleValues);
-      }
-    }
-    return F.NIL;
-  }
-
-  /**
    * <p>
    * Check if the <code>plusAST</code> has 2 arguments and try a {@link F#PowerExpand(IExpr)}
    * transformation step on the args.
@@ -653,7 +881,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             solveData.solveRecursive(newList, F.CEmptyList, false, F.List(variable), engine);
         if (result.isListOfLists()) {
           // Inverse functions are being used. Values may be lost for multivalued inverses.
-          Errors.printMessage(S.Solve, "ifun", F.CEmptyList, engine);
+          Errors.printMessage(S.InverseFunction, "ifun", F.CEmptyList, engine);
           return listOfRulesToValues(result, variable, multipleValues);
         }
       }
@@ -662,128 +890,43 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
   }
 
   /**
-   * Convert a list of rules for one variable back to a list of values.
+   * Try to solve equations which contain trigonometric functions by using a
+   * {@link F#TrigToExp(IExpr)} transformation step, so that the equation contains
+   * <code>E^(...)</code> expressions.
    * 
-   * @param listOfRules
-   * @param multipleValues if <code>false</code> return only the first found value in the list
+   * @param plusAST
+   * @param variable
+   * @param multipleValues
+   * @param engine
    * @return
    */
-  protected static IExpr listOfRulesToValues(IExpr listOfRules, IExpr variable,
-      boolean multipleValues) {
-    if (multipleValues) {
-      IASTAppendable solveValues = F.ListAlloc(listOfRules.size());
-      ((IAST) listOfRules).map(a -> {
-        if (a.isList1() //
-            && a.first().isRuleAST() && a.first().first().equals(variable)) {
-          solveValues.append(a.first().second());
-        }
-        return F.NIL;
-      });
-      if (solveValues.size() > 1) {
-        return solveValues;
-      }
-    } else {
-      if (listOfRules.first().isRuleAST() //
-          && listOfRules.first().equals(variable)) {
-        return listOfRules.first().second();
+  private static IExpr tryTrigToExp(IAST plusAST, IExpr variable, boolean multipleValues,
+      EvalEngine engine) {
+    // System.out.println(plusAST.leafCount());
+    if (plusAST.leafCount() > Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
+      return F.NIL;
+    }
+    IExpr termsEqualZero = engine.evaluateNIL(F.TrigToExp(plusAST));
+    if (termsEqualZero.isPresent()) {
+      IASTMutable newList = F.unaryAST1(S.List, termsEqualZero);
+      Solve.SolveData solveData = new Solve.SolveData();
+      IExpr result =
+          solveData.solveRecursive(newList, F.CEmptyList, false, F.List(variable), engine);
+      if (result.isListOfLists()) {
+        // Inverse functions are being used. Values may be lost for multivalued inverses.
+        Errors.printMessage(S.InverseFunction, "ifun", F.CEmptyList, engine);
+        return listOfRulesToValues(result, variable, multipleValues);
       }
     }
     return F.NIL;
   }
 
-  /**
-   * Print message "Inverse functions are being used. Values may be lost for multivalued inverses."
-   * and return the {@code result} by substituting {@code subExpr} with {@code replacementExpr}.
-   *
-   * @param result
-   * @param subExpr
-   * @param replacementExpr
-   * @param multipleValues if <code>true</code> multiple results are returned as lsit of values
-   * @param engine
-   * @return
-   */
-  private static IExpr resultWithIfunMessage(IExpr result, IExpr subExpr, IExpr replacementExpr,
-      boolean multipleValues, EvalEngine engine) {
-    printIfunMessage(engine);
-    IExpr expr = F.subst(result, subExpr, replacementExpr);
-    if (!multipleValues && expr.isList() && expr.size() > 1) {
-      return expr.first();
-    }
-    return expr;
-  }
-
-  /**
-   * Print message "Inverse functions are being used. Values may be lost for multivalued inverses."
-   *
-   * @param engine
-   */
-  private static void printIfunMessage(EvalEngine engine) {
-    Errors.printMessage(S.InverseFunction, "ifun", F.CEmptyList, engine);
+  /** Match <code>Plus(....) == 0</code> expressions for a variable. */
+  private static Matcher zeroPlusMatcher() {
+    return ZERO_PLUS_MATCHER.get();
   }
 
   public Eliminate() {}
-
-  /**
-   * Analyze the <code>Equal()</code> terms, if we find an expression which equals the given <code>
-   * variabe</code>
-   *
-   * @param analyzerList the list of <code>Equal()</code> terms with statistics of it's equations.
-   * @param variable the variable which should be eliminated.
-   * @param multipleValues if <code>true</code> multiple results are returned as list of values
-   * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>
-   *     variable</code> or the eliminated list of equations in index <code>[0]</code> and the last
-   *         rule which is used for variable elimination in index <code>[1]</code>.
-   */
-  protected static IAST[] eliminateOneVariable(ArrayList<VariableCounterVisitor> analyzerList,
-      IExpr variable, boolean multipleValues, EvalEngine engine) {
-    IASTAppendable eliminatedResultEquations = F.ListAlloc(analyzerList.size());
-    for (int i = 0; i < analyzerList.size(); i++) {
-      IExpr variableValues =
-          eliminateAnalyze(analyzerList.get(i).getExpr(), variable, multipleValues, engine);
-      if (variableValues.isPresent()) {
-        analyzerList.remove(i);
-        IAST[] result = new IAST[2];
-        if (variableValues.isList()) {
-          IAST listOfRules = ((IAST) variableValues).map(x -> {
-            return applyRuleToAnalyzer(variable, x, eliminatedResultEquations, analyzerList,
-                engine);
-          });
-          result[0] = eliminatedResultEquations;
-          result[1] = listOfRules;
-        } else {
-          IAST rule = applyRuleToAnalyzer(variable, variableValues, eliminatedResultEquations,
-              analyzerList, engine);
-
-          result[0] = eliminatedResultEquations;
-          result[1] = rule;
-        }
-        return result;
-      }
-    }
-    return null;
-  }
-
-  private static IAST applyRuleToAnalyzer(IExpr variable, IExpr variableValue,
-      IASTAppendable eliminatedResultEquations, ArrayList<VariableCounterVisitor> analyzerList,
-      EvalEngine engine) {
-    variableValue = engine.evalQuiet(variableValue);
-    IExpr expr;
-    IAST rule = F.Rule(variable, variableValue);
-    for (int j = 0; j < analyzerList.size(); j++) {
-      expr = analyzerList.get(j).getExpr();
-      IExpr temp = expr.replaceAll(rule);
-      if (temp.isPresent()) {
-        temp = F.expandAll(temp, true, true);
-        if (temp.isEqual() && temp.size() == 3) {
-          temp = F.Equal(F.Subtract.of(temp.first(), temp.second()), F.C0);
-        }
-        eliminatedResultEquations.append(temp);
-      } else {
-        eliminatedResultEquations.append(expr);
-      }
-    }
-    return rule;
-  }
 
   /** {@inheritDoc} */
   @Override
@@ -825,52 +968,14 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
     return IFunctionEvaluator.ARGS_2_2;
   }
 
-  private static IExpr resultAsAndEquations(IAST result) {
-    if (result.isList()) {
-      if (result.equals(F.CEmptyList)) {
-        return S.True;
-      }
-      return result.apply(S.And);
-    }
-    return result;
-  }
-
-  /**
-   * Eliminates one variable from the given list of equations.
-   * 
-   * @param ast
-   * @param variable
-   * @param multipleValues if <code>true</code> multiple results are returned as list of values
-   * @param engine
-   * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>
-   *     variable</code> or the eliminated list of equations in index <code>[0]</code> and the last
-   *         rule which is used for variable elimination in index <code>[1]</code>.
-   */
-  public static IAST[] eliminateOneVariable(IAST ast, IExpr variable, boolean multipleValues,
-      EvalEngine engine) {
-    IAST equalAST;
-    VariableCounterVisitor exprAnalyzer;
-    ArrayList<VariableCounterVisitor> analyzerList = new ArrayList<VariableCounterVisitor>();
-    for (int j = 1; j < ast.size(); j++) {
-      equalAST = ast.getAST(j);
-      exprAnalyzer = new VariableCounterVisitor(equalAST, variable);
-      equalAST.accept(exprAnalyzer);
-      analyzerList.add(exprAnalyzer);
-    }
-    Collections.sort(analyzerList);
-
-    return eliminateOneVariable(analyzerList, variable, multipleValues, engine);
-  }
-
-
-  @Override
-  public int status() {
-    return ImplementationStatus.PARTIAL_SUPPORT;
-  }
-
   @Override
   public void setUp(final ISymbol newSymbol) {
     INVERSE_MATCHER = Suppliers.memoize(EliminateRules::init1);
     ZERO_PLUS_MATCHER = Suppliers.memoize(EliminateRules::init2);
+  }
+
+  @Override
+  public int status() {
+    return ImplementationStatus.PARTIAL_SUPPORT;
   }
 }
