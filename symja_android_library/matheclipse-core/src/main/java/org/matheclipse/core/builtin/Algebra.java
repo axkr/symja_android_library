@@ -1439,7 +1439,7 @@ public class Algebra {
         resultList = F.ListAlloc(factorization.size());
         for (int i = 1; i < timesAST.size(); i++) {
           IExpr factor = timesAST.get(i);
-          IAST subList = RootsFunctions.rootsOfExprPolynomial(factor, varList, true);
+          IAST subList = RootsFunctions.rootsOfExprPolynomial(factor, varList, true, true);
           if (subList.isPresent()) {
             for (int j = 1; j < subList.size(); j++) {
               IAST solveFunction = F.Solve(
