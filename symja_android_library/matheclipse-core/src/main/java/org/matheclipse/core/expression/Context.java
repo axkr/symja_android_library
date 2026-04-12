@@ -25,6 +25,10 @@ public class Context implements Serializable {
 
   public static final Context DUMMY = new Context(DUMMY_CONTEXT_NAME, null);
 
+  public static final String FORMAL_CONTEXT_NAME = "FORMAL`";
+
+  public static final Context FORMAL = new Context(FORMAL_CONTEXT_NAME, null);
+
   // Global context should not be defined global, but per EvalEngine
   // public final static Context GLOBAL = new Context("Global`");
   public static final String SYSTEM_CONTEXT_NAME = "System`";

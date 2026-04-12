@@ -1033,6 +1033,9 @@ public class Symbol implements ISymbol, Serializable {
       case 3:
         fContext = Context.DUMMY;
         break;
+      case 4:
+        fContext = Context.FORMAL;
+        break;
       default:
         String contextName = stream.readUTF();
         fContext = EvalEngine.get().getContextPath().getContext(contextName);
@@ -1053,7 +1056,9 @@ public class Symbol implements ISymbol, Serializable {
   }
 
   public Object readResolve() {
-    return fContext == Context.DUMMY ? this : fContext.get(fSymbolName);
+    return fContext == Context.DUMMY ? this
+        : fContext == Context.FORMAL ? F.HIDDEN_SYMBOLS_MAP.get(fSymbolName)
+            : fContext.get(fSymbolName);
   }
 
   /** {@inheritDoc} */
@@ -1217,6 +1222,8 @@ public class Symbol implements ISymbol, Serializable {
       stream.writeInt(2);
     } else if (fContext.equals(Context.DUMMY)) {
       stream.writeInt(3);
+    } else if (fContext.equals(Context.FORMAL)) {
+      stream.writeInt(4);
     } else {
       stream.writeInt(0);
       stream.writeUTF(fContext.getContextName());

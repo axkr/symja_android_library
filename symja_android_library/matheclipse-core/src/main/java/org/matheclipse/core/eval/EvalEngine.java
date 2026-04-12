@@ -4133,8 +4133,6 @@ public class EvalEngine implements Serializable {
   /**
    * Reset the numeric mode flags and the recursion counter.
    *
-   * <p>
-   * <b>Note:</b> This method should be called before the parsing of a string expression.
    */
   private void reset() {
     initInstance();

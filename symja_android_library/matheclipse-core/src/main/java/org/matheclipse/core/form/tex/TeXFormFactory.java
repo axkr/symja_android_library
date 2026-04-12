@@ -1974,7 +1974,7 @@ public class TeXFormFactory {
 
   public void convertSymbol(final StringBuilder buf, final ISymbol sym) {
     Context context = sym.getContext();
-    if (context == Context.DUMMY) {
+    if (context == Context.DUMMY || context == Context.FORMAL) {
       buf.append(sym.getSymbolName());
       return;
     }

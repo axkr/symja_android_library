@@ -441,7 +441,7 @@ public abstract class DoubleFormFactory {
       }
     }
     Context context = symbol.getContext();
-    if (context == Context.DUMMY) {
+    if (context == Context.DUMMY || context == Context.FORMAL) {
       append(buf, symbol.getSymbolName());
       return;
     }

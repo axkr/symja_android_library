@@ -75,6 +75,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPattern;
+import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
@@ -11778,6 +11779,15 @@ public class F extends S {
 
   public static IAST WhittakerW(final IExpr a0, final IExpr a1, final IExpr a2) {
     return new AST3(WhittakerW, a0, a1, a2);
+  }
+
+  public static IPatternObject wild(final String symbolName, boolean test) {
+    return $p(Dummy(symbolName));
+  }
+
+  @Deprecated
+  public static IPatternObject wild(final String symbolName, boolean test, IExpr... excludes) {
+    return $p(Dummy(symbolName));
   }
 
   /**

@@ -493,7 +493,7 @@ public interface ISymbol extends IExpr {
       if (str != null) {
         return str;
       }
-    } else if (context == Context.DUMMY) {
+    } else if (context == Context.DUMMY || context == Context.FORMAL) {
       return symbolName;
     } else if (context == Context.RUBI) {
       return context.completeContextName() + symbolName;

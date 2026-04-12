@@ -358,7 +358,7 @@ public abstract class ComplexFormFactory {
       }
     }
     Context context = symbol.getContext();
-    if (context == Context.DUMMY) {
+    if (context == Context.DUMMY || context == Context.FORMAL) {
       append(buf, symbol.getSymbolName());
       return;
     }
