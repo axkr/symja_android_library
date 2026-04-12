@@ -454,6 +454,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Integrate(Log(x)*x^2,x)", //
         "-x^3/9+1/3*x^3*Log(x)");
     check("Integrate((x^2+1)*Log(x),x)", //
+        // "-x-x^3/9+x*Log(x)+1/3*x^3*Log(x)");
         "1/3*(-3*x-x^3/3)+1/3*(3*x+x^3)*Log(x)");
     check("Simplify(D(ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1),x))",
         "x/(1+x^3)");
@@ -466,16 +467,25 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "-x^2/4+1/2*x^2*Log(x)");
     check("D(-1/2*Log(x)*x^2+3/4*x^2+x*(x*Log(x)-x),x)", //
         "x*Log(x)");
-    check("integrate(x*Exp(-x^2),x)", "-1/(2*E^x^2)");
-    check("D(-Gamma(1,x^2)/2, x)", "x/E^x^2");
-    check("Simplify(x*E^(-x^2))", "x/E^x^2");
+    check("integrate(x*Exp(-x^2),x)", //
+        "-1/(2*E^x^2)");
+    check("D(-Gamma(1,x^2)/2, x)", //
+        "x/E^x^2");
+    check("Simplify(x*E^(-x^2))", //
+        "x/E^x^2");
 
-    check("Integrate(x^a,x)", "x^(1+a)/(1+a)");
-    check("Integrate(a^x,x)", "a^x/Log(a)");
-    check("Integrate(x^(-1),x)", "Log(x)");
-    check("Integrate(x^a,x)", "x^(1+a)/(1+a)");
-    check("Integrate(x^10,x)", "x^11/11");
-    check("Simplify(1/2*(2*x+2))", "1+x");
+    check("Integrate(x^a,x)", //
+        "x^(1+a)/(1+a)");
+    check("Integrate(a^x,x)", //
+        "a^x/Log(a)");
+    check("Integrate(x^(-1),x)", //
+        "Log(x)");
+    check("Integrate(x^a,x)", //
+        "x^(1+a)/(1+a)");
+    check("Integrate(x^10,x)", //
+        "x^11/11");
+    check("Simplify(1/2*(2*x+2))", //
+        "1+x");
     check("Simplify(1/2*(2*x+2)*(1/2)^(1/2))", //
         "(1+x)/Sqrt(2)");
     check("Simplify(Integrate((8*x+1)/(x^2+x+1)^2,x))", //

@@ -1,40 +1,19 @@
 package org.matheclipse.core.expression;
 
-import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.lang.reflect.Field;
 import java.util.Map.Entry;
 import java.util.Set;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.jgrapht.Graph;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.expression.data.BDDExpr;
-import org.matheclipse.core.expression.data.ByteArrayExpr;
-import org.matheclipse.core.expression.data.CompiledFunctionExpr;
-import org.matheclipse.core.expression.data.DateObjectExpr;
-import org.matheclipse.core.expression.data.DispatchExpr;
-import org.matheclipse.core.expression.data.ExprEdge;
-import org.matheclipse.core.expression.data.ExprWeightedEdge;
-import org.matheclipse.core.expression.data.FileExpr;
-import org.matheclipse.core.expression.data.FittedModelExpr;
-import org.matheclipse.core.expression.data.GeoPositionExpr;
-import org.matheclipse.core.expression.data.GraphExpr;
-import org.matheclipse.core.expression.data.InputStreamExpr;
-import org.matheclipse.core.expression.data.InterpolatingFunctionExpr;
-import org.matheclipse.core.expression.data.JavaClassExpr;
-import org.matheclipse.core.expression.data.JavaObjectExpr;
-import org.matheclipse.core.expression.data.LinearSolveFunctionExpr;
 import org.matheclipse.core.expression.data.NumericArrayExpr;
-import org.matheclipse.core.expression.data.OutputStreamExpr;
-import org.matheclipse.core.expression.data.SparseArrayExpr;
-import org.matheclipse.core.expression.data.TestReportObjectExpr;
-import org.matheclipse.core.expression.data.TestResultObjectExpr;
-import org.matheclipse.core.expression.data.TimeObjectExpr;
 import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.RulesData;
@@ -46,8 +25,8 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.esotericsoftware.kryo.serializers.FieldSerializer;
 
-@Deprecated // This class is not really usable at the moment. It is kept for future improvements.
 public class KryoUtil {
   /** The list of all the WXF tokens. */
   private static class WXF_CONSTANTS {
@@ -70,6 +49,7 @@ public class KryoUtil {
   }
 
   /** Serialize <code>length</code> into varint bytes and return them as a byte array. */
+  @Deprecated
   public static byte[] varintBytes(int length) {
     byte[] buf = new byte[9];
     if (length < 0) {
@@ -117,7 +97,105 @@ public class KryoUtil {
       return null;
     }
   }
+  /**
+   * Serializer for standard Symbols. Manages the transient Context field by serializing the context
+   * name and resolving it against the EvalEngine on deserialization.
+   */
+  public static class SymbolSerializer extends Serializer<Symbol> {
 
+    public SymbolSerializer() {
+      setImmutable(false);
+    }
+
+    @Override
+    public void write(Kryo kryo, Output output, Symbol object) {
+      output.writeString(object.getSymbolName());
+
+      Context context = object.getContext();
+      output.writeString(context != null ? context.getContextName() : null);
+
+      output.writeInt(object.getAttributes());
+
+      kryo.writeClassAndObject(output, object.getRulesData());
+    }
+
+    @Override
+    public Symbol read(Kryo kryo, Input input, Class<? extends Symbol> type) {
+      String symbolName = input.readString();
+      String contextName = input.readString();
+      int attributes = input.readInt();
+
+      Context context = null;
+      if (contextName != null) {
+        // Map directly to predefined static contexts
+        if (contextName.equals(Context.SYSTEM_CONTEXT_NAME)) {
+          context = Context.SYSTEM;
+        } else if (contextName.equals(Context.DUMMY_CONTEXT_NAME)) {
+          context = Context.DUMMY;
+        } else if (contextName.equals(Context.FORMAL_CONTEXT_NAME)) {
+          context = Context.FORMAL;
+          // } else if (contextName.equals(Context.GLOBAL_CONTEXT_NAME)) {
+          // context = Context.GLOBAL;
+        } else if (contextName.equals(Context.RUBI_STR)) {
+          context = Context.RUBI;
+        } else {
+          // Fallback to current engine's ContextPath
+          context = EvalEngine.get().getContextPath().getContext(contextName);
+          if (context == null) {
+            context = new Context(contextName);
+          }
+        }
+      }
+
+      Symbol symbol = null;
+      boolean isNew = false;
+
+      // EXACT IDENTITY LOOKUP
+      if (context != null) {
+        ISymbol existing = context.get(symbolName);
+        if (existing instanceof Symbol) {
+          // Symbol already exists in the system memory pool. Use it!
+          symbol = (Symbol) existing;
+        } else {
+          if (contextName.equals(Context.FORMAL_CONTEXT_NAME)) {
+            ISymbol formalSymbol = F.HIDDEN_SYMBOLS_MAP.get(symbolName);
+            if (formalSymbol instanceof Symbol) {
+              symbol = (Symbol) formalSymbol;
+            }
+          }
+          if (symbol == null) {
+            // Symbol does not exist. Create it...
+            symbol = new Symbol(symbolName, context);
+            // ...and IMMEDIATELY register it in the context so future
+            // references in this stream use this exact instance.
+            context.put(symbolName, symbol);
+            isNew = true;
+          }
+        }
+      } else {
+        symbol = new Symbol(symbolName, null);
+        isNew = true;
+      }
+
+      // CRITICAL: Register reference in Kryo to avoid cyclic reference overflow
+      kryo.reference(symbol);
+
+      // We MUST read the RulesData to advance the Kryo stream pointer,
+      // even if we are discarding it for an already-existing symbol.
+      RulesData rulesData = (RulesData) kryo.readClassAndObject(input);
+
+      // State Application
+      // Only overwrite attributes and rules if this was a brand new symbol.
+      // If it already existed, we respect its live state in the system.
+      if (isNew) {
+        symbol.setAttributes(attributes);
+        if (rulesData != null) {
+          symbol.setRulesData(rulesData);
+        }
+      }
+      return symbol;
+    }
+  }
   private static class BuiltInRubiSerializer extends Serializer<BuiltInRubi> {
 
     public BuiltInRubiSerializer() {
@@ -188,6 +266,119 @@ public class KryoUtil {
     }
   }
 
+  /**
+   * Serializer for expressions implementing IDataExpr. Uses the standard normal form if available,
+   * otherwise falls back to field serialization.
+   */
+  private static class DataExprSerializer<T extends IDataExpr<?>> extends Serializer<T> {
+    private final Serializer<T> fallbackSerializer;
+
+    public DataExprSerializer(Kryo kryo, Class<T> type) {
+      // Initialize default field serializer as fallback for when normal(false) is null
+      this.fallbackSerializer = new FieldSerializer<>(kryo, type);
+    }
+
+    @Override
+    public void write(Kryo kryo, Output output, T object) {
+      IAST ast = object.normal(false);
+      if (ast != null) {
+        output.writeBoolean(true);
+        kryo.writeClassAndObject(output, ast);
+      } else {
+        output.writeBoolean(false);
+        fallbackSerializer.write(kryo, output, object);
+      }
+    }
+
+    @Override
+    public T read(Kryo kryo, Input input, Class<? extends T> type) {
+      boolean hasNormalForm = input.readBoolean();
+      if (hasNormalForm) {
+        IAST ast = (IAST) kryo.readClassAndObject(input);
+        IExpr eval = EvalEngine.get().evaluate(ast);
+        if (type.isInstance(eval)) {
+          return type.cast(eval);
+        }
+        return null;
+      } else {
+        return fallbackSerializer.read(kryo, input, type);
+      }
+    }
+  }
+
+  /**
+   * Optimized serializer for RulesData. Serializes the raw IAST definitions instead of complex
+   * internal pattern matchers.
+   */
+  /**
+   * Exact-state serializer for RulesData. Uses reflection to directly serialize the internal
+   * collections, perfectly preserving the IPatternMatcher objects, their explicit priorities,
+   * pattern hashes, and list ordering.
+   */
+  public static class RulesDataSerializer extends Serializer<RulesData> {
+
+    private Field equalDownRulesField;
+    private Field patternDownRulesField;
+    private Field priorityDownRulesField;
+    private Field equalUpRulesField;
+    private Field simplePatternUpRulesField;
+
+    public RulesDataSerializer() {
+      setImmutable(false);
+      try {
+        // Gain access to the internal private collections
+        equalDownRulesField = RulesData.class.getDeclaredField("fEqualDownRules");
+        equalDownRulesField.setAccessible(true);
+
+        patternDownRulesField = RulesData.class.getDeclaredField("fPatternDownRules");
+        patternDownRulesField.setAccessible(true);
+
+        priorityDownRulesField = RulesData.class.getDeclaredField("fPriorityDownRules");
+        priorityDownRulesField.setAccessible(true);
+
+        equalUpRulesField = RulesData.class.getDeclaredField("fEqualUpRules");
+        equalUpRulesField.setAccessible(true);
+
+        simplePatternUpRulesField = RulesData.class.getDeclaredField("fSimplePatternUpRules");
+        simplePatternUpRulesField.setAccessible(true);
+      } catch (Exception e) {
+        System.err.println("Failed to initialize RulesData reflection fields: " + e.getMessage());
+      }
+    }
+
+    @Override
+    public void write(Kryo kryo, Output output, RulesData rulesData) {
+      try {
+        // Write the raw underlying collections directly.
+        // Kryo's default FieldSerializer will automatically traverse the PatternMatcher
+        // objects inside these lists and preserve all of their internal state.
+        kryo.writeClassAndObject(output, equalDownRulesField.get(rulesData));
+        kryo.writeClassAndObject(output, patternDownRulesField.get(rulesData));
+        kryo.writeClassAndObject(output, priorityDownRulesField.get(rulesData));
+        kryo.writeClassAndObject(output, equalUpRulesField.get(rulesData));
+        kryo.writeClassAndObject(output, simplePatternUpRulesField.get(rulesData));
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to serialize RulesData collections", e);
+      }
+    }
+
+    @Override
+    public RulesData read(Kryo kryo, Input input, Class<? extends RulesData> type) {
+      RulesData rulesData = new RulesData();
+      try {
+        // Restore the exact collections directly into the new RulesData instance
+        equalDownRulesField.set(rulesData, kryo.readClassAndObject(input));
+        patternDownRulesField.set(rulesData, kryo.readClassAndObject(input));
+        priorityDownRulesField.set(rulesData, kryo.readClassAndObject(input));
+        equalUpRulesField.set(rulesData, kryo.readClassAndObject(input));
+        simplePatternUpRulesField.set(rulesData, kryo.readClassAndObject(input));
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to deserialize RulesData collections", e);
+      }
+      return rulesData;
+    }
+  }
+
   private static class BuiltInDummySerializer extends Serializer<BuiltInDummy> {
     public BuiltInDummySerializer() {
       setImmutable(true);
@@ -208,8 +399,10 @@ public class KryoUtil {
     }
   }
 
+  @Deprecated
   public static class IASTSerializer extends Serializer<IAST> {
 
+    @Deprecated
     @Override
     public void write(Kryo kryo, Output stream, IAST ast) {
       if (ast instanceof ASTRealVector) {
@@ -271,6 +464,7 @@ public class KryoUtil {
       stream.write((byte) ((bits >> 56) & 0x00000000000000ff));
     }
 
+    @Deprecated
     @Override
     public IAST read(Kryo kryo, Input input, Class<? extends IAST> type) {
       if (IAST.class.isAssignableFrom(type)) {
@@ -290,6 +484,7 @@ public class KryoUtil {
     }
   }
 
+  @Deprecated
   static public void main(String[] args) throws Exception {
     // List<Class<?>> asList = Arrays.asList(B3.class.getDeclaredClasses());
     // for (int i = 0; i < asList.size(); i++) {
@@ -340,7 +535,8 @@ public class KryoUtil {
     kryo.register(java.util.TreeMap.class);
     kryo.register(org.matheclipse.core.eval.util.OpenIntToIExprHashMap.class);
     kryo.register(it.unimi.dsi.fastutil.ints.IntArrayList.class);
-    kryo.register(org.matheclipse.core.patternmatching.RulesData.class);
+    // kryo.register(org.matheclipse.core.patternmatching.RulesData.class);
+    kryo.register(org.matheclipse.core.patternmatching.RulesData.class, new RulesDataSerializer());
     kryo.register(org.matheclipse.core.patternmatching.PatternMatcherEquals.class);
     kryo.register(org.matheclipse.core.patternmatching.PatternMatcherAndEvaluator.class);
 
@@ -358,7 +554,7 @@ public class KryoUtil {
 
     // atoms
     kryo.register(IExpr.class);
-    kryo.register(Symbol.class);
+    kryo.register(Symbol.class, new SymbolSerializer());
     kryo.register(StringX.class);
 
     // patterns
@@ -437,31 +633,32 @@ public class KryoUtil {
     kryo.register(B3.Times.class);
 
     // data expressions
-    kryo.register(ByteArrayExpr.class);
-    kryo.register(CompiledFunctionExpr.class);
-    kryo.register(DateObjectExpr.class);
-    kryo.register(DispatchExpr.class);
-    kryo.register(ExprEdge.class);
-    kryo.register(ExprWeightedEdge.class);
-    kryo.register(FileExpr.class);
-    kryo.register(FittedModelExpr.class);
-    kryo.register(GeoPositionExpr.class);
-    kryo.register(Graph.class);
-    kryo.register(GraphExpr.class);
-    kryo.register(BufferedImage.class);
-    // kryo.register(ImageExpr.class);
-    kryo.register(InputStreamExpr.class);
-    kryo.register(InterpolatingFunctionExpr.class);
-    kryo.register(JavaClassExpr.class);
-    kryo.register(JavaObjectExpr.class);
-    kryo.register(LinearSolveFunctionExpr.class);
-    kryo.register(NumericArrayExpr.class);
-    kryo.register(OutputStreamExpr.class);
-    kryo.register(SparseArrayExpr.class);
-    kryo.register(TestReportObjectExpr.class);
-    kryo.register(TestResultObjectExpr.class);
-    kryo.register(TimeObjectExpr.class);
-    kryo.register(BDDExpr.class);
+    kryo.addDefaultSerializer(IDataExpr.class, DataExprSerializer.class);
+    // kryo.register(ByteArrayExpr.class);
+    // kryo.register(CompiledFunctionExpr.class);
+    // kryo.register(DateObjectExpr.class);
+    // kryo.register(DispatchExpr.class);
+    // kryo.register(ExprEdge.class);
+    // kryo.register(ExprWeightedEdge.class);
+    // kryo.register(FileExpr.class);
+    // kryo.register(FittedModelExpr.class);
+    // kryo.register(GeoPositionExpr.class);
+    // kryo.register(Graph.class);
+    // kryo.register(GraphExpr.class);
+    // kryo.register(BufferedImage.class);
+    // // kryo.register(ImageExpr.class);
+    // kryo.register(InputStreamExpr.class);
+    // kryo.register(InterpolatingFunctionExpr.class);
+    // kryo.register(JavaClassExpr.class);
+    // kryo.register(JavaObjectExpr.class);
+    // kryo.register(LinearSolveFunctionExpr.class);
+    // kryo.register(NumericArrayExpr.class);
+    // kryo.register(OutputStreamExpr.class);
+    // kryo.register(SparseArrayExpr.class);
+    // kryo.register(TestReportObjectExpr.class);
+    // kryo.register(TestResultObjectExpr.class);
+    // kryo.register(TimeObjectExpr.class);
+    // kryo.register(BDDExpr.class);
 
     kryo.register(BuiltInSymbol.class, new BuiltInSymbolSerializer());
     kryo.register(BuiltInRubi.class, new BuiltInRubiSerializer());

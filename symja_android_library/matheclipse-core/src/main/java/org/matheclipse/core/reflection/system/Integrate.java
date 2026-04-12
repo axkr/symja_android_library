@@ -7,6 +7,10 @@ import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.S.Integrate;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -33,6 +37,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalDataSym;
+import org.matheclipse.core.expression.KryoUtil;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.PowerTimesFunction;
 import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
@@ -45,6 +50,9 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.Matcher;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.reflection.system.rules.IntegratePowerTimesFunctionRules;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 import com.google.common.cache.CacheBuilder;
 import edu.jas.kern.PreemptingException;
 
@@ -131,6 +139,79 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   }
 
   public static class IntegrateInitializer implements Runnable {
+    /**
+     * Attempts to deserialize the Rubi rules from a classpath resource. * @param resourcePath The
+     * path to the resource (e.g., "/symja_rubi_rules.bin")
+     * 
+     * @return true if successful, false if the resource is missing, corrupted, or if the ID numbers
+     *         have changed.
+     */
+    public static boolean deserializeRubiRulesFromResource(String resourcePath) {
+      // Use the classloader to find the resource stream
+      try (InputStream stream = Integrate.class.getResourceAsStream(resourcePath)) {
+        if (stream == null) {
+          System.out.println("Rubi rules resource not found at: " + resourcePath);
+          return false;
+        }
+
+        try (Input input = new Input(stream)) {
+          Kryo kryo = KryoUtil.initKryo();
+
+          // 1. Verify the fingerprint
+          String savedFingerprint = input.readString();
+          if (!getSystemIdFingerprint().equals(savedFingerprint)) {
+            System.out.println("Symja ID numbers changed. Packaged Rubi resource cache is stale.");
+            return false;
+          }
+
+          // 2. Load the rules if the fingerprint matches
+          RulesData rulesData = (RulesData) kryo.readClassAndObject(input);
+          if (rulesData != null) {
+            S.Integrate.setRulesData(rulesData);
+            return true;
+          }
+        }
+      } catch (Exception e) {
+        System.err
+            .println("Failed to load or deserialize Rubi rules from resource: " + e.getMessage());
+      }
+      return false;
+    }
+
+    /**
+     * Orchestrator method to load rules. It tries the fast Kryo cache first. If the cache fails
+     * (due to an ID shift or missing file), it builds from a fresh system and immediately
+     * serializes the new state.
+     */
+    private static void loadOrRebuildRubiRules(File localCacheFile) {
+      UtilityFunctionCtors.getUtilityFunctionsRuleASTRubi45();
+
+      // Try to load from the JAR resource first (Fastest, read-only)
+      // Note: The leading "/" indicates the root of the classpath
+      // if (deserializeRubiRulesFromResource("/bin/symja_rubi_rules.bin")) {
+      // System.out.println("Successfully loaded Rubi rules from classpath resource.");
+      // return;
+      // }
+      //
+      // // If resource is missing or stale, try the local temp file cache
+      // if (deserializeRubiRules(localCacheFile)) {
+      // System.out.println("Successfully loaded Rubi rules from local cache file.");
+      // return;
+      // }
+
+      // If both fail, build from scratch and cache locally
+      // System.out.println("Initializing Rubi rules from a fresh system...");
+      try {
+        // Load the actual integration rules (via pre-compiled Java classes or parsing .m files)
+        // UtilityFunctionCtors.getUtilityFunctionsRuleASTRubi45();
+        getRuleASTStatic();
+      } catch (Exception e) {
+        System.err.println("Error during raw Rubi initialization: " + e.getMessage());
+      }
+
+      // Save to the local file system cache for the next run
+      // serializeRubiRules(localCacheFile);
+    }
 
     @Override
     public void run() {
@@ -141,33 +222,46 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         try {
           engine.getContextPath().add(org.matheclipse.core.expression.Context.RUBI);
 
-          /* Kryo DEL start */
-          UtilityFunctionCtors.getUtilityFunctionsRuleASTRubi45();
-          getRuleASTStatic();
-          /* Kryo DEL end */
-          /* Kryo INS start */
-          // Kryo kryo = KryoUtil.initKryo();
-          // try (
-          // InputStream resourceAsStream =
-          // Integrate.getClass().getResourceAsStream("/rubi_context.bin");
-          // Input input = new Input(resourceAsStream)) {
-          // // kryo sets Context.RUBI internally
-          // kryo.readClassAndObject(input);
-          // } catch (IOException e) {
-          // e.printStackTrace();
-          // }
-          // try (
-          // InputStream resourceAsStream =
-          // Integrate.getClass().getResourceAsStream("/integrate.bin");
-          // Input input = new Input(resourceAsStream)) {
-          // RulesData rulesData = (RulesData) kryo.readClassAndObject(input);
-          // S.Integrate.setRulesData(rulesData);
-          // } catch (IOException e) {
-          // e.printStackTrace();
-          // }
-          // } catch (ClassNotFoundException cnfex) {
-          // cnfex.printStackTrace();
-          /* Kryo INS end */
+          // Define the cache file location.
+          // Using the system temp directory is usually safe, or you can specify a local cache
+          // folder.
+          File cacheFile = new File(System.getProperty("java.io.tmpdir"), "symja_rubi_rules.bin");
+
+          // Call the Kryo orchestrator
+          loadOrRebuildRubiRules(cacheFile);
+
+          ISymbol[] rubiSymbols = {S.Derivative, S.D};
+          for (int i = 0; i < rubiSymbols.length; i++) {
+            INT_RUBI_FUNCTIONS.add(rubiSymbols[i]);
+          }
+
+          // /* Kryo DEL start */
+          // UtilityFunctionCtors.getUtilityFunctionsRuleASTRubi45();
+          // getRuleASTStatic();
+          // /* Kryo DEL end */
+          // /* Kryo INS start */
+          // // Kryo kryo = KryoUtil.initKryo();
+          // // try (
+          // // InputStream resourceAsStream =
+          // // Integrate.getClass().getResourceAsStream("/rubi_context.bin");
+          // // Input input = new Input(resourceAsStream)) {
+          // // // kryo sets Context.RUBI internally
+          // // kryo.readClassAndObject(input);
+          // // } catch (IOException e) {
+          // // e.printStackTrace();
+          // // }
+          // // try (
+          // // InputStream resourceAsStream =
+          // // Integrate.getClass().getResourceAsStream("/integrate.bin");
+          // // Input input = new Input(resourceAsStream)) {
+          // // RulesData rulesData = (RulesData) kryo.readClassAndObject(input);
+          // // S.Integrate.setRulesData(rulesData);
+          // // } catch (IOException e) {
+          // // e.printStackTrace();
+          // // }
+          // // } catch (ClassNotFoundException cnfex) {
+          // // cnfex.printStackTrace();
+          // /* Kryo INS end */
 
         } finally {
           engine.setContextPath(path);
@@ -211,10 +305,10 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       INTEGRATE_RULES_DATA = S.Integrate.createRulesData(new int[] {0, 7000});
       UtilityFunctionCtors.getRuleASTRubi45();
 
-      ISymbol[] rubiSymbols = {S.Derivative, S.D};
-      for (int i = 0; i < rubiSymbols.length; i++) {
-        INT_RUBI_FUNCTIONS.add(rubiSymbols[i]);
-      }
+      // ISymbol[] rubiSymbols = {S.Derivative, S.D};
+      // for (int i = 0; i < rubiSymbols.length; i++) {
+      // INT_RUBI_FUNCTIONS.add(rubiSymbols[i]);
+      // }
     }
   }
 
@@ -1052,6 +1146,66 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       restTimes.append(temp);
     }
   }
+
+  /**
+   * Generates a fingerprint based on the current number of built-in symbols. This ensures that if
+   * the ID class changes (shifting ordinals), we can dynamically detect it and invalidate the stale
+   * cache.
+   */
+  private static String getSystemIdFingerprint() {
+    return "RUBI_V1_ID_COUNT:" + ID.class.getDeclaredFields().length;
+  }
+
+  /**
+   * Serializes the current S.Integrate rules to a binary Kryo file.
+   */
+  public static void serializeRubiRules(File cacheFile) {
+    try (Output output = new Output(new FileOutputStream(cacheFile))) {
+      Kryo kryo = KryoUtil.initKryo();
+
+      // 1. Write the protective fingerprint first
+      output.writeString(getSystemIdFingerprint());
+
+      // 2. Serialize the current RulesData for Integrate
+      kryo.writeClassAndObject(output, S.Integrate.getRulesData());
+
+      System.out.println("Successfully serialized Rubi rules to: " + cacheFile.getAbsolutePath());
+    } catch (Exception e) {
+      System.err.println("Failed to serialize Rubi rules: " + e.getMessage());
+    }
+  }
+
+  /**
+   * Attempts to deserialize the Rubi rules from a binary file. * @return true if successful, false
+   * if the file is missing, corrupted, or if the ID numbers have changed.
+   */
+  public static boolean deserializeRubiRules(File cacheFile) {
+    if (!cacheFile.exists()) {
+      return false;
+    }
+
+    try (Input input = new Input(new FileInputStream(cacheFile))) {
+      Kryo kryo = KryoUtil.initKryo();
+
+      // 1. Verify the fingerprint
+      String savedFingerprint = input.readString();
+      if (!getSystemIdFingerprint().equals(savedFingerprint)) {
+        System.out.println("Symja ID numbers changed. Invalidating stale Rubi Kryo cache.");
+        return false;
+      }
+
+      // 2. Load the rules if the fingerprint matches
+      RulesData rulesData = (RulesData) kryo.readClassAndObject(input);
+      if (rulesData != null) {
+        S.Integrate.setRulesData(rulesData);
+        return true;
+      }
+    } catch (Exception e) {
+      System.err.println("Corrupted Rubi Kryo cache. Forcing rebuild...");
+    }
+    return false;
+  }
+
 
   @Override
   public int status() {
