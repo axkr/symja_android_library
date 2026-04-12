@@ -1456,41 +1456,91 @@ public final class NumberTheory {
    * DiracDelta(0)
    * </pre>
    */
-  private static class DiracDelta extends AbstractEvaluator {
+  private static class DiracDelta extends AbstractFunctionEvaluator {
+
+    public DiracDelta() {}
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int size = ast.size();
-      IASTAppendable result = F.NIL;
-      if (size > 1) {
-        for (int i = 1; i < size; i++) {
-          IExpr expr = ast.get(i);
-          IReal temp = expr.evalReal();
-          if (temp != null) {
-            if (temp.isZero()) {
-              return F.NIL;
+      if (ast.argSize() >= 1) {
+        IASTAppendable newArgs = F.ast(S.DiracDelta);
+        IExpr globalMultiplier = F.C1;
+        boolean changed = false;
+
+        // Loop through all arguments for multivariate DiracDelta
+        for (int i = 1; i <= ast.argSize(); i++) {
+          IExpr arg = ast.get(i);
+
+          // 1. DiracDelta(..., c, ...) -> 0 for non-zero REAL numbers
+          if (arg.isNumber()) {
+            IExpr im = engine.evaluate(F.Im(arg));
+            if (im.isZero()) {
+              if (!arg.isZero()) {
+                return F.C0; // If any argument evaluates to 0, the entire product is 0
+              }
             }
+            newArgs.append(arg);
+            continue;
+          }
+          if (arg.isNonZeroRealResult()) {
             return F.C0;
           }
-          if (expr.isNonZeroRealResult()) {
-            return F.C0;
-          }
-          IExpr negated = AbstractFunctionEvaluator.getNormalizedNegativeExpression(expr);
-          if (negated.isPresent()) {
-            if (result.isNIL()) {
-              result = F.ast(S.DiracDelta);
+          IExpr currentMultiplier = F.C1;
+          IExpr newArg = arg;
+
+          // 2. DiracDelta(a * x) -> 1/Abs(a) * DiracDelta(x)
+          if (arg.isTimes()) {
+            IAST times = (IAST) arg;
+            IExpr coeff = times.arg1();
+            if (coeff.isNumber()) {
+              IExpr im = engine.evaluate(F.Im(coeff));
+              if (im.isZero()) { // Only apply to reals
+                IExpr absA = engine.evaluate(F.Abs(coeff));
+                IExpr rest = times.removeAtCopy(1);
+                if (rest.isAST(S.Times, 2)) {
+                  rest = ((IAST) rest).arg1();
+                }
+                currentMultiplier = F.Divide(F.C1, absA);
+                newArg = rest;
+              }
             }
-            result.append(negated);
-          } else {
-            if (result.isPresent()) {
-              result.append(expr);
+          }
+          // 3. DiracDelta(a * x + b) -> 1/Abs(a) * DiracDelta(x + b/a)
+          else if (arg.isPlus()) {
+            IAST plus = (IAST) arg;
+            IExpr lastTerm = plus.last();
+
+            if (lastTerm.isTimes()) {
+              IExpr coeff = ((IAST) lastTerm).arg1();
+              if (coeff.isNumber() && !coeff.isOne()) {
+                IExpr im = engine.evaluate(F.Im(coeff));
+                if (im.isZero()) { // Only apply to reals
+                  IExpr absA = engine.evaluate(F.Abs(coeff));
+                  currentMultiplier = F.Divide(F.C1, absA);
+                  newArg = engine.evaluate(F.Expand(F.Divide(plus, coeff)));
+                }
+              }
             }
           }
+
+          // Accumulate scaling factors if this specific argument was modified
+          if (!currentMultiplier.isOne() || newArg != arg) {
+            changed = true;
+            globalMultiplier = engine.evaluate(F.Times(globalMultiplier, currentMultiplier));
+          }
+          newArgs.append(newArg);
+        }
+
+        // If any argument was transformed, return the scaled AST
+        if (changed) {
+          if (globalMultiplier.isOne()) {
+            return newArgs;
+          }
+          return engine.evaluate(F.Times(globalMultiplier, newArgs));
         }
       }
-      return result;
+      return F.NIL;
     }
-
 
     @Override
     public int status() {
@@ -6581,7 +6631,6 @@ public final class NumberTheory {
    *
    * @param n
    * @param k
-   * @return
    */
   public static IInteger risingFactorial(int n, int k) {
     if (k == 0) {
