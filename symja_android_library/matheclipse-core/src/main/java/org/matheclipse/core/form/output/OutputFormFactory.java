@@ -1356,14 +1356,14 @@ public class OutputFormFactory {
                 return;
               }
               break;
-            case ID.Quantity:
-              // if (head.equals(F.SeriesData) && (list.size() == 7)) {
-              if (list instanceof IQuantity) {
-                if (convertQuantityData(buf, (IQuantity) list, precedence)) {
-                  return;
-                }
-              }
-              break;
+            // case ID.Quantity:
+            // // if (head.equals(F.SeriesData) && (list.size() == 7)) {
+            // if (list instanceof IQuantity) {
+            // if (convertQuantityData(buf, (IQuantity) list, precedence)) {
+            // return;
+            // }
+            // }
+            // break;
             case ID.SeriesData:
               // if (head.equals(F.SeriesData) && (list.size() == 7)) {
               if (list instanceof ASTSeriesData) {
@@ -1538,6 +1538,8 @@ public class OutputFormFactory {
       convertSymbol(buf, (ISymbol) o);
     } else if (o instanceof IPatternObject) {
       convertPattern(buf, (IPatternObject) o);
+    } else if (o.isQuantity()) {
+      convertQuantityData(buf, (IQuantity) o, precedence);
     } else {
       // includes (o instanceof IStringX)
       convertString(buf, o.toString());
@@ -1884,9 +1886,21 @@ public class OutputFormFactory {
 
   public boolean convertQuantityData(final Appendable buf, final IQuantity quantity,
       final int precedence) throws IOException {
+    if (fInputForm) {
+      IExpr value = quantity.value();
+      String unitString = quantity.unitString();
+      buf.append("Quantity");
+      buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? '(' : '[');
+      convert(buf, value);
+      buf.append(",\"");
+      buf.append(unitString);
+      buf.append("\"");
+      buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ')' : ']');
+      return true;
+    }
     StringBuilder tempBuffer = new StringBuilder();
     if (Precedence.PLUS < precedence) {
-      append(tempBuffer, "(");
+      append(buf, "(");
     }
 
     try {
@@ -1896,9 +1910,8 @@ public class OutputFormFactory {
       return false;
     }
     if (Precedence.PLUS < precedence) {
-      append(tempBuffer, ")");
+      append(buf, ")");
     }
-    buf.append(tempBuffer);
     return true;
   }
 

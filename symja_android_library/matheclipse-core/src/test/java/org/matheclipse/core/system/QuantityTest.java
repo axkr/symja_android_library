@@ -38,6 +38,8 @@ public class QuantityTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testQuantity() {
+    check("1/Quantity(0,\"s\")^I", //
+        "1/(0[s])^I");
     check("Quantity(50, \"min\") + Quantity(1, \"s\")", //
         "3001[s]");
     check("Quantity(\"StandardAccelerationOfGravity\")", //
@@ -55,8 +57,6 @@ public class QuantityTest extends ExprEvaluatorTestCase {
     check("N(Quantity(2/3,\"m\"))", //
         "0.666667[m]");
 
-    check("1/Quantity(0,\"s\")^I", //
-        "1/0[s]^I");
     check("Quantity(50, \"s\") + Quantity(1, \"min\")", //
         "110[s]");
     check("Quantity(1, \"min\") + Quantity(50, \"s\")", //

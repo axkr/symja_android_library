@@ -141,4 +141,8 @@ public interface IQuantity extends IExpr, IAtomicConstant, IAtomicEvaluate, Comp
 
   /** @return value of quantity without unit */
   IExpr value();
+
+  default IExpr valueSI() {
+    return ((IQuantity) UnitSystem.SI().apply(this)).value();
+  }
 }
