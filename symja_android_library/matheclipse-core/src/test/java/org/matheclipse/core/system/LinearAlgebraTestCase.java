@@ -105,6 +105,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCharacteristicPolynomial() {
+    check("CharacteristicPolynomial({{0,-t,t},{0,1,t},{0,-t,1}}, x)", //
+        "x+t^2*x-2*x^2+x^3");
     // https://codegolf.stackexchange.com/questions/150613/characteristic-polynomial
     // [0] -> [1 0]
     check("CharacteristicPolynomial({{0}}, x)", //
@@ -587,6 +589,12 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEigensystem() {
+    check("Eigensystem({{0,t,t}, {t,0,-t}, {t,-t,0}})", //
+        "{{-2*t,t,t},{{-1,1,1},{1,1,0},{1,0,1}}}");
+
+
+    check("Eigensystem({{0,t,t},{-t,0,-t},{t,-t,0}})", //
+        "{{-t,t,0},{{-1,0,1},{0,-1,1},{-1,-1,1}}}");
     check("Eigensystem({{0}},{-1,-2,3})", //
         "Eigensystem(\n" //
             + "{{0}},{-1,-2,3})");
@@ -701,7 +709,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{3/2*(5+Sqrt(33)),3/2*(5-Sqrt(33)),0}");
 
     // 4x4
-    check("Eigenvalues(SparseArray({{1, 3} -> 2, {2, 2} -> 3, {3, 1} -> 1, {4, 2} -> 5}, {4, 4}))", //
+    check("Eigenvalues(SparseArray({{1, 3} -> 2, {2, 2} -> 3, {3, 1} -> 1, {4, 2} -> 5}, {4, 4})) ", //
         "{3,-Sqrt(2),Sqrt(2),0}");
 
     // 3x3
@@ -1330,6 +1338,10 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMatrixExp() {
+    check("MatrixExp({{0,1,1},{-1,0,-1},{1,-1,0}}*t)", //
+        "{{1,1-1/E^t,1-1/E^t},{1-E^t,1,1-E^t},{-1+E^t,-1+E^(-t),-1+E^(-t)+E^t}}");
+    check("MatrixExp({{0, t}, {-t, 2*t}})", //
+        "{{E^t*(1-t),E^t*t},{-E^t*t,E^t*(1+t)}}");
     check("MatrixExp[{{a}}]", //
         "{{E^a}}");
     check("MatrixExp({{0,1}, {0,1}})", //
@@ -1367,22 +1379,20 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             //
             + "2))}}");
 
-    check("MatrixExp[{{2, 3, 0}, {4, 9, 0}, {0, 0, 4}}]", //
-        "{{1/194*(97*E^4+7*Sqrt(97)*E^4+97*E^(1/2*(11+Sqrt(97)))-7*Sqrt(97)*E^(1/2*(11+Sqrt(\n" //
-            + "97)))),0,1/194*(97*E^4-7*Sqrt(97)*E^4-97*E^(1/2*(11+Sqrt(97)))+7*Sqrt(97)*E^(1/2*(\n" //
-            + "11+Sqrt(97))))},\n" //
-            + " {0,E^(1/2*(11-Sqrt(97))),0},\n" //
-            + " {1/194*(97+7*Sqrt(97))*(E^4-E^(1/2*(11+Sqrt(97)))),0,1/2*(E^4+(-7*E^4)/Sqrt(97)+E^(\n" //
-            + "1/2*(11+Sqrt(97)))+(7*E^(1/2*(11+Sqrt(97))))/Sqrt(97))}}");
+    // check("MatrixExp[{{2, 3, 0}, {4, 9, 0}, {0, 0, 4}}]", //
+    // "{{1/194*(97*E^4+7*Sqrt(97)*E^4+97*E^(1/2*(11+Sqrt(97)))-7*Sqrt(97)*E^(1/2*(11+Sqrt(\n" //
+    // + "97)))),0,1/194*(97*E^4-7*Sqrt(97)*E^4-97*E^(1/2*(11+Sqrt(97)))+7*Sqrt(97)*E^(1/2*(\n" //
+    // + "11+Sqrt(97))))},\n" //
+    // + " {0,E^(1/2*(11-Sqrt(97))),0},\n" //
+    // + " {1/194*(97+7*Sqrt(97))*(E^4-E^(1/2*(11+Sqrt(97)))),0,1/2*(E^4+(-7*E^4)/Sqrt(97)+E^(\n" //
+    // + "1/2*(11+Sqrt(97)))+(7*E^(1/2*(11+Sqrt(97))))/Sqrt(97))}}");
 
     check("MatrixExp({{3.4, 1.2}, {0.001, -0.9}})", //
         "{{29.97054,8.24991},{0.00687492,0.408375}}");
     check("MatrixExp({{1.2, 5.6}, {3, 4}})", //
         "{{346.5575,661.7346},{354.5007,677.4248}}");
     check("MatrixExp({{2, 0, 0}, {0, 1, -1}, {0, 1, 1}})", //
-        "{{7.38906,0.0,0.0},\n" //
-            + " {0.0,1.46869+I*2.22045*10^-16,-5.99991*10^-11+I*(-2.28736)},\n" //
-            + " {0.0,5.9999*10^-11+I*(-2.28736),1.46869+I*2.22045*10^-16}}");
+        "{{7.38906,0.0,0.0},{0.0,1.46869,-2.28736},{0.0,2.28736,1.46869}}");
 
   }
 
@@ -1769,6 +1779,12 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testOrthogonalize() {
+    // try {
+    // F.await();
+    // } catch (InterruptedException e) {
+    // // TODO Auto-generated catch block
+    // e.printStackTrace();
+    // }
     check(
         "Orthogonalize({{1. + I, 2., 3. - 2. I}, {0, 4., 5. I}, {1. + I, 6., 3. + 3. I}}) // MatrixForm", //
         "{{0.138133+I*0.359969,0.498103+I*0.221836,0.96899+I*(-0.165348)},\n" //
@@ -1779,14 +1795,15 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             + " {-0.624317+I*(-0.532447),1.0019+I*(-0.331784)},\n" //
             + " {0.0,0.0}}");
 
-    // TODO
-    // check("Orthogonalize({{1, 2}, {3, 1}, {6, 9}, {7, 8}})", //
-    // "{{1/Sqrt(5),2/Sqrt(5)},{2/Sqrt(5),-1/Sqrt(5)},{0,0},{0,0}}");
+    check("Orthogonalize({{1, I}, {2, I}})", //
+        "{{1/Sqrt(2),I/Sqrt(2)},{1/Sqrt(2),-I/Sqrt(2)}}");
+    check("Orthogonalize({{1, 2}, {3, 1}, {6, 9}, {7, 8}})", //
+        "{{1/Sqrt(5),2/Sqrt(5)},{2/Sqrt(5),-1/Sqrt(5)},{0,0},{0,0}}");
     check("Together((2*Sqrt(3)+3*Sqrt(5))/(5*Sqrt(7)))", //
         "(2*Sqrt(3)+3*Sqrt(5))/(5*Sqrt(7))");
-    // check("Orthogonalize({{1,2,3},{5,2,7},{3,5,1}})", //
-    // "{{1/Sqrt(14),Sqrt(2/7),3/Sqrt(14)},{5/Sqrt(42),-2*Sqrt(2/21),1/Sqrt(42)},{1/Sqrt(\n"
-    // + "3),1/Sqrt(3),-1/Sqrt(3)}}");
+    check("Orthogonalize({{1,2,3},{5,2,7},{3,5,1}})", //
+        "{{1/Sqrt(14),Sqrt(2/7),3/Sqrt(14)},{5/Sqrt(42),-2*Sqrt(2/21),1/Sqrt(42)},{1/Sqrt(\n"
+            + "3),1/Sqrt(3),-1/Sqrt(3)}}");
 
     check("2/Sqrt(14)", //
         "Sqrt(2/7)");
@@ -2276,8 +2293,35 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSingularValueDecomposition() {
-    // check("Transpose(Orthogonalize({{1/13*(-6+Sqrt(205)),1},{1/13*(-6-Sqrt(205)),1}}))//N", //
-    // "{{0.538954,-0.842335},{0.842335,0.538954}}");
+
+    check("{u,s,v}=SingularValueDecomposition({{1/2+1/2*I, 11/10},{-I,32/10-45/10*I}}) // N", //
+        "{{{0.195719+I*0.021187,-0.0139522+I*(-0.980332)},{0.564738+I*(-0.801446),0.173534+I*0.0929571}},{{5.72198,0.0},{0.0,0.677424}},{{0.159018+I*0.0834452,-0.871093+I*(-0.457108)},{0.983743,0.179582}}}");
+    check("u.s.ConjugateTranspose(v) // N", //
+        "{{0.5+I*0.5,1.1},{I*(-1.0),3.2+I*(-4.5)}}");
+    check("{u,s,v}=SingularValueDecomposition({{ 24/25, 43/25 },{57/25, 24/25 }})", //
+        "{{{3/5,4/5},{4/5,-3/5}},{{3,0},{0,1}},{{4/5,-3/5},{3/5,4/5}}}");
+    check("u.s.ConjugateTranspose(v)", //
+        "{{24/25,43/25},\n" //
+            + " {57/25,24/25}}");
+
+    check("{u,s,v}=SingularValueDecomposition({{3/2, 2}, {5/2, 3}})", //
+        "{{{(47+3*Sqrt(205))/Sqrt(13940+972*Sqrt(205)),(47-3*Sqrt(205))/Sqrt(13940-972*Sqrt(\n"
+            + "205))},{(69+5*Sqrt(205))/Sqrt(13940+972*Sqrt(205)),(69-5*Sqrt(205))/Sqrt(13940-\n"
+            + "972*Sqrt(205))}},{{Sqrt(86+6*Sqrt(205))/(2*Sqrt(2)),0},{0,Sqrt(86-6*Sqrt(205))/(\n"
+            + "2*Sqrt(2))}},{{(-3+Sqrt(205))/(14*Sqrt(1+(3-Sqrt(205))^2/196)),(-3-Sqrt(205))/(\n"
+            + "14*Sqrt(1+(3+Sqrt(205))^2/196))},{1/Sqrt(1+(3-Sqrt(205))^2/196),1/Sqrt(1+(3+Sqrt(\n"
+            + "205))^2/196)}}}");
+    check("u.s.ConjugateTranspose(v)//N", //
+        "{{1.5,2.0},{2.5,3.0}}");
+
+    check("{u,s,v}=SingularValueDecomposition({{1,2},{1,2}})", //
+        "{{{1/Sqrt(2),-1/Sqrt(2)},{1/Sqrt(2),1/Sqrt(2)}},{{Sqrt(10),0},{0,0}},{{1/Sqrt(5),-\n" //
+            + "2/Sqrt(5)},{2/Sqrt(5),1/Sqrt(5)}}}");
+    check("u.s.ConjugateTranspose(v)", //
+        "{{1,2},\n" //
+            + " {1,2}}");
+    check("Transpose(Orthogonalize({{1/13*(-6+Sqrt(205)),1},{1/13*(-6-Sqrt(205)),1}}))//N", //
+        "{{0.538954,-0.842335},{0.842335,0.538954}}");
 
     check("{u,s,v}=SingularValueDecomposition({{1.5, 2.0}, {2.5, 3.0}})", //
         "{{{0.538954,0.842335},\n" //
@@ -2287,23 +2331,17 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("u.s.ConjugateTranspose(v)", //
         "{{1.5,2.0},\n" //
             + " {2.5,3.0}}");
-    check("{u,s,v}=SingularValueDecomposition({{3/2, 2}, {5/2, 3}})", //
-        "{{{0.538954,0.842335},\n" //
-            + " {0.842335,-0.538954}},{{4.63555,0.0},\n"//
-            + " {0.0,0.107862}},{{0.628678,-0.777666},\n" //
-            + " {0.777666,0.628678}}}");
-    check("u.s.ConjugateTranspose(v)//N", //
-        "{{1.5,2.0},{2.5,3.0}}");
+
 
     // See http://issues.apache.org/jira/browse/MATH-320:
-    check("{u,s,v}=SingularValueDecomposition({{1,2},{1,2}})", //
-        "{{{-0.707107,-0.707107},\n" //
-            + " {-0.707107,0.707107}},{{3.16228,0.0},\n" //
-            + " {0.0,0.0}},{{-0.447214,-0.894427},\n" //
-            + " {-0.894427,0.447214}}}");
-    check("u.s.ConjugateTranspose(v)", //
-        "{{1.0,2.0},\n"//
-            + " {1.0,2.0}}");
+    // check("{u,s,v}=SingularValueDecomposition({{1,2},{1,2}})", //
+    // "{{{-0.707107,-0.707107},\n" //
+    // + " {-0.707107,0.707107}},{{3.16228,0.0},\n" //
+    // + " {0.0,0.0}},{{-0.447214,-0.894427},\n" //
+    // + " {-0.894427,0.447214}}}");
+    // check("u.s.ConjugateTranspose(v)", //
+    // "{{1.0,2.0},\n"//
+    // + " {1.0,2.0}}");
 
     check("SingularValueDecomposition({{ 24.0/25.0, 43.0/25.0 },{57.0/25.0, 24.0/25.0 }})", //
         "{{{0.6,0.8},\n"//

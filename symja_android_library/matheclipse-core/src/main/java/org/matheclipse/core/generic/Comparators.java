@@ -6,6 +6,7 @@ import java.util.function.BiPredicate;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -173,6 +174,51 @@ public final class Comparators {
     @Override
     public int compare(final IExpr o1, final IExpr o2) {
       return o2.compareTo(o1);
+    }
+  }
+
+  public static final class AbsExprReverseComparator implements Comparator<IExpr>, Serializable {
+
+    EvalEngine engine;
+
+    public AbsExprReverseComparator(EvalEngine engine) {
+      this.engine = engine;
+    }
+
+    /**
+     * Compares an expression with another expression for order. Returns a negative integer, zero,
+     * or a positive integer if this expression is canonical greater than, equal to, or less than
+     * the specified expression.
+     */
+    @Override
+    public int compare(final IExpr o1, final IExpr o2) {
+      IExpr abs2 = o2.abs();
+      IExpr abs1 = o1.abs();
+      try {
+        double evalf2 = abs2.evalf();
+        double evalf1 = abs1.evalf();
+        if (F.isEqual(evalf2, evalf1)) {
+          return o1.compareTo(o2);
+        }
+        return evalf2 < evalf1 ? -1 : 1;
+      } catch (ArgumentTypeException t) {
+        // ignore
+      }
+      if (abs2.isReal()) {
+        return -1;
+      }
+      if (abs1.isReal()) {
+        return 1;
+      }
+      boolean gt = engine.evalTrue(F.Greater(o2.abs(), o1.abs()));
+      if (gt) {
+        return 1;
+      }
+      boolean lt = engine.evalTrue(F.Less(o2.abs(), o1.abs()));
+      if (lt) {
+        return -1;
+      }
+      return o1.compareTo(o2);
     }
   }
 

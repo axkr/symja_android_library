@@ -89,6 +89,7 @@ public class Errors {
       "bldim", "The arguments `1` and `2` do not have compatible dimensions.", //
       "boxfmt", "`1` is not a box formatting type.", //
       "bdomv", "Warning: `1` is not a valid domain specification.", //
+      "bvfail", "For some branches of the general solution, unable to solve for the conditions", //
       "cas", "Warning contradictory assumption(s) `1` encountered.", //
       "cfn", "Numerical error encountered, proceeding with uncompiled evaluation.", //
       "coef", "The first argument `1` of `2` should be a non-empty list of positive integers.", //
@@ -104,6 +105,7 @@ public class Errors {
       "depth",
       "The array depth of the expression at position `1` of `2` must be at least equal to the specified rank `3`.", //
       "depthratios", "Requested ratios `1` exceeds the array depth `2`, of the input.", //
+      "deqn", "Equation or list of equations expected instead of `1` in the first argument `2`.", //
       "dimss", "`1` is not a valid dimension specification for `2`.", //
       "divz", "The argument `1` should be nonzero.", //
       "digit", "Digit at position `1` in `2` is too large to be used in base `3`.", //
@@ -188,6 +190,7 @@ public class Errors {
       "invrl", "The argument `1` is not a valid Association or a list of rules.", //
       "iopnf", "Value of option `1` should be a non-negative integer or Infinity.", //
       "ipnf", "Positive integer or Infinity expected at position `1` in `2`.", //
+      "iseqs", "Cannot take list `1` of sequence specifications at level `2` of `3`.", //
       "iterb", "Iterator does not have appropriate bounds.", //
       "itform", "Argument `1` at position `2` does not have the correct form for an iterator.", //
       "itlim", "Iteration limit of `1` exceeded for `2`.", //
@@ -308,6 +311,7 @@ public class Errors {
       "opttf", "Value of option `1` -> `2` should be True or False.", //
       "opttfa", "Value of option `1` -> `2` should be True, False or Automatic.", //
       "optx", "Unknown option `1` in `2`.", //
+      "overdet", "The system is overdetermined .", //
       "ovfl", "Overflow occurred in computation.", //
       "ovls", "Value of option `1` must be True, False or All.", //
       "padlevel",
@@ -407,6 +411,7 @@ public class Errors {
       "string", "String expected at position `1` in `2`.", //
       "strse", "String or list of strings expected at position `1` in `2`.", //
       "sym", "Argument `1` at position `2` is expected to be a symbol.", //
+      "symm0", "Symmetry specification `1` is only compatible with the zero tensor.", //
       "tag", "Rule for `1` can only be attached to `2`.", //
       "tagnf", "Tag `1` not found in `2`.", //
       "tagpos", "Tag `1` in `2` is to deep for an assigned rule to be found.", //
@@ -421,6 +426,7 @@ public class Errors {
       "tolnn", "Tolerance specification `1` must be a non-negative number.", //
       "tri", "`1` is not triangular.", //
       "udist", "The specification `1` is not a random distribution recognized by the system.", //
+      "underdet", "The system is underdetermined.", //
       "unkds",
       "Warning: the set of discontinuities may be incomplete due to missing domain and discontinuity information for some of the functions involved.", //
       "unkunit", "Unable to interpret unit specification `1`.", //
