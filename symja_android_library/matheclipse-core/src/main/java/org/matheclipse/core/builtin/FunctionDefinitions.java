@@ -28,6 +28,7 @@ public final class FunctionDefinitions {
       S.BoxWhiskerChart.setEvaluator(new org.matheclipse.core.builtin.graphics.BoxWhiskerChart());
       S.Beep.setEvaluator(new org.matheclipse.core.reflection.system.Beep());
       S.BezierFunction.setEvaluator(new org.matheclipse.core.reflection.system.BezierFunction());
+      S.BinLists.setEvaluator(new org.matheclipse.core.reflection.system.BinLists());
       S.ColorData.setEvaluator(new org.matheclipse.core.reflection.system.ColorData());
       S.ColorDataFunction
           .setEvaluator(new org.matheclipse.core.reflection.system.ColorDataFunction());

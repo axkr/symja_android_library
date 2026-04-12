@@ -4,9 +4,8 @@ import java.util.function.Function;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
-import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.util.OptionArgs;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Functors;
@@ -25,6 +24,8 @@ public class SequenceFunctions {
 
     private static void init() {
       S.SequenceCases.setEvaluator(new SequenceCases());
+      S.SequenceCount.setEvaluator(new SequenceCount());
+      S.SequencePosition.setEvaluator(new SequencePosition());
       S.SequenceReplace.setEvaluator(new SequenceReplace());
       S.SequenceSplit.setEvaluator(new SequenceSplit());
     }
@@ -32,35 +33,24 @@ public class SequenceFunctions {
 
 
 
-  private static final class SequenceCases extends AbstractCoreFunctionEvaluator {
-
+  private static final class SequenceCases extends AbstractFunctionOptionEvaluator {
     @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-
+    public IExpr evaluate(final IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
       try {
-        IExpr overlapsOption = S.False;
-        final OptionArgs options = OptionArgs.createOptionArgs(ast, engine);
-        if (options != null) {
-          IExpr option = options.getOption(S.Overlaps);
-          if (option.isPresent()) {
-            if (option == S.All) {
-              overlapsOption = S.All;
-            } else if (option.isFalse()) {
-              overlapsOption = S.False;
-            } else if (option.isTrue()) {
-              overlapsOption = S.True;
-            } else {
-              // Value of option `1` must be True, False or All.
-              return Errors.printMessage(ast.topHead(), "ovls",
-                  F.List(F.Rule(S.Overlaps, option)), engine);
-            }
-          }
-          ast = ast.most();
-          if (ast.argSize() < 2) {
-            // List or pattern matching a list expected at position `1` in `2`.
-            return Errors.printMessage(ast.topHead(), "lstpat", F.List(F.C2, ast), engine);
-          }
+        if (ast.arg2().isAST(S.Rule, 3, S.Overlaps)) {
+          // List or pattern matching a list expected at position `1` in `2`.
+          return Errors.printMessage(ast.topHead(), "lstpat", F.List(F.C2, ast), engine);
         }
+        IExpr overlapsOption = S.False;
+        if (options[0] == S.All || options[0].isFalse() || options[0].isTrue()) {
+          overlapsOption = options[0];
+        } else {
+          // Value of option `1` must be True, False or All.
+          return Errors.printMessage(ast.topHead(), "ovls", F.List(F.Rule(S.Overlaps, options[0])),
+              engine);
+        }
+
         final IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isList()) {
           final IExpr arg2 = engine.evalPattern(ast.arg2());
@@ -202,11 +192,166 @@ public class SequenceFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
-      setOptions(newSymbol, //
-          F.list(F.Rule(S.Overlaps, S.False)));
+      setOptions(newSymbol, S.Overlaps, S.False);
+    }
+
+  }
+
+  private static final class SequenceCount extends AbstractFunctionOptionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
+      try {
+        if (ast.arg2().isAST(S.Rule, 3, S.Overlaps)) {
+          // List or pattern matching a list expected at position `1` in `2`.
+          return Errors.printMessage(ast.topHead(), "lstpat", F.List(F.C2, ast), engine);
+        }
+        IExpr overlapsOption = S.False;
+        if (options[0] == S.All || options[0].isFalse() || options[0].isTrue()) {
+          overlapsOption = options[0];
+        } else {
+          // Value of option `1` must be True, False or All.
+          return Errors.printMessage(ast.topHead(), "ovls", F.List(F.Rule(S.Overlaps, options[0])),
+              engine);
+        }
+
+        final IExpr arg1 = engine.evaluate(ast.arg1());
+        if (arg1.isList()) {
+          final IExpr arg2 = engine.evalPattern(ast.arg2());
+          return sequenceCount((IAST) arg1, arg2, overlapsOption, engine);
+        }
+        // List expected at position `1` in `2`.
+        return Errors.printMessage(ast.topHead(), "list", F.List(F.C1, ast), engine);
+      } catch (final ValidateException ve) {
+        return Errors.printMessage(ast.topHead(), ve, engine);
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
+    public static IExpr sequenceCount(final IAST ast, final IExpr pattern, IExpr overlapsOption,
+        EvalEngine engine) {
+      int count = 0;
+      final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
+      int i = 1;
+
+      while (i < ast.size()) {
+        // Greedy match: iterate k downwards to match the longest possible sequences first
+        for (int k = ast.size(); k >= i + 1; k--) {
+          IASTAppendable subSequence = ast.subList(i, k);
+          if (matcher.test(subSequence)) {
+            count++;
+
+            if (overlapsOption != S.All) {
+              if (overlapsOption.isFalse()) {
+                // If no overlaps allowed, jump index to the end of the matching sequence
+                i = k - 1;
+              }
+              break;
+            }
+          }
+        }
+        i++;
+      }
+      return F.ZZ(count);
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.Overlaps, S.False);
     }
   }
+
+  private static final class SequencePosition extends AbstractFunctionOptionEvaluator {
+    @Override
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
+      try {
+        IExpr overlapsOption = S.True;
+        int maxMatches = Integer.MAX_VALUE;
+
+        if (ast.arg2().isAST(S.Rule, 3, S.Overlaps)) {
+          // List or pattern matching a list expected at position `1` in `2`.
+          return Errors.printMessage(ast.topHead(), "lstpat", F.List(F.C2, ast), engine);
+        }
+        if (options[0] == S.All || options[0].isFalse() || options[0].isTrue()) {
+          overlapsOption = options[0];
+        } else {
+          // Value of option `1` must be True, False or All.
+          return Errors.printMessage(ast.topHead(), "ovls", F.List(F.Rule(S.Overlaps, options[0])),
+              engine);
+        }
+
+        final IExpr arg1 = engine.evaluate(ast.arg1());
+        if (arg1.isList()) {
+          final IExpr arg2 = engine.evalPattern(ast.arg2());
+          if (argSize == 3) {
+            final IExpr arg3 = engine.evaluate(ast.arg3());
+            if (!arg3.isInfinity()) {
+              int maxN = arg3.toIntDefault();
+              if (maxN < 0 || !arg3.isInteger()) {
+                // Non-negative integer or Infinity expected at position `3` in `ast`.
+                return Errors.printMessage(ast.topHead(), "innf", F.List(F.C3, ast), engine);
+              }
+              maxMatches = maxN;
+            }
+          }
+          return sequencePosition((IAST) arg1, arg2, overlapsOption, maxMatches, engine);
+        }
+        // List expected at position `1` in `2`.
+        return Errors.printMessage(ast.topHead(), "list", F.List(F.C1, ast), engine);
+      } catch (final ValidateException ve) {
+        return Errors.printMessage(ast.topHead(), ve, engine);
+      }
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
+    public static IAST sequencePosition(final IAST ast, final IExpr pattern, IExpr overlapsOption,
+        int maxMatches, EvalEngine engine) {
+      IASTAppendable resultAST = F.ListAlloc();
+      if (maxMatches <= 0) {
+        return resultAST;
+      }
+
+      final IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
+      int i = 1;
+      while (i < ast.size()) {
+        for (int k = ast.size(); k >= i + 1; k--) {
+          IASTAppendable subSequence = ast.copyFrom(i, k);
+          if (matcher.test(subSequence)) {
+            resultAST.append(F.List(F.ZZ(i), F.ZZ(k - 1)));
+            if (resultAST.argSize() >= maxMatches) {
+              return resultAST;
+            }
+            if (overlapsOption != S.All) {
+              if (overlapsOption.isFalse()) {
+                i = k - 1;
+              }
+              break;
+            }
+          }
+        }
+        i++;
+      }
+      return resultAST;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, S.Overlaps, S.True);
+    }
+
+
+  }
+
 
   private static final class SequenceReplace extends AbstractFunctionEvaluator {
 
@@ -253,7 +398,7 @@ public class SequenceFunctions {
       for (int i = 1; i < listOfRules.size(); i++) {
         IExpr pattern = listOfRules.get(i);
         if (pattern.isRuleAST()) {
-          functions[i - 1] = Functors.rules((IAST) pattern, engine);
+          functions[i - 1] = Functors.rules(pattern, engine);
         } else {
           // (`1`) is neither a list of replacement rules nor a valid dispatch table and cannot be
           // used for replacing.
@@ -314,7 +459,6 @@ public class SequenceFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
     }
 
   }
@@ -365,7 +509,7 @@ public class SequenceFunctions {
       for (int i = 1; i < listOfPattern.size(); i++) {
         IExpr pattern = listOfPattern.get(i);
         if (pattern.isRuleAST()) {
-          functions[i - 1] = Functors.rules((IAST) pattern, engine);
+          functions[i - 1] = Functors.rules(pattern, engine);
         } else {
           matchers[i - 1] = engine.evalPatternMatcher(pattern);
         }
@@ -434,7 +578,6 @@ public class SequenceFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
     }
 
   }

@@ -9,13 +9,15 @@ public class SequenceTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSequenceCases() {
+    check("SequenceCases({a, b, x, x, a, c}, Overlaps->True)", //
+        "SequenceCases({a,b,x,x,a,c},Overlaps->True)");
+
     check("SequenceCases({a, b, c, d}, {__}, Overlaps -> All)", //
         "{{a,b,c,d},{a,b,c},{a,b},{a},{b,c,d},{b,c},{b},{c,d},{c},{d}}");
 
     check("SequenceCases({0,0,0,101},y__->True)", //
         "{True}");
-    check("SequenceCases({a, b, x, x, a, c}, Overlaps->True)", //
-        "SequenceCases({a,b,x,x,a,c},Overlaps->True)");
+
     check("SequenceCases({a, b, x, x, a, c}, {a, _})", //
         "{{a,b},{a,c}}");
 
@@ -51,6 +53,41 @@ public class SequenceTestCase extends ExprEvaluatorTestCase {
         "{f(b),f(c)}");
 
 
+  }
+
+  @Test
+  public void testSequenceCount() {
+    check("SequenceCount({a, b, a, b, a, b}, {a, b})", //
+        "3");
+    check("SequenceCount({1, 2, a, b, 3, c, d, 4, 5, 6, e, f, g, 7}, {__Symbol})", //
+        "3");
+    check("SequenceCount(Range(1000), {_?PrimeQ, _, _?PrimeQ})", //
+        "34");
+
+    check("SequenceCount(Range(10), list_ /; Length(list) == 6, Overlaps -> True)", //
+        "5");
+    check("SequenceCases(Range(10), list_ /; Length(list) == 6, Overlaps -> True)", //
+        "{{1,2,3,4,5,6},{2,3,4,5,6,7},{3,4,5,6,7,8},{4,5,6,7,8,9},{5,6,7,8,9,10}}");
+
+    check("SequenceCount({a, b, a, b, a, b, a, b}, {a, b, a, b},Overlaps -> True)", //
+        "3");
+    check("SequenceCount({a, b, a, b, a, b, a, b}, {a, b, a, b},Overlaps -> False)", //
+        "2");
+  }
+
+  @Test
+  public void testSequencePosition() {
+    check("SequencePosition({a, b, b, a, b, b, b}, {Repeated(b)})", //
+        "{{2,3},{3,3},{5,7},{6,7},{7,7}}");
+    check("SequencePosition({a, b, c, d}, {b, c})", //
+        "{{2,3}}");
+    check("SequencePosition({a, b, a, b, a, b}, {a, b})", //
+        "{{1,2},{3,4},{5,6}}");
+
+    check("SequencePosition(Range(10), list_ /; Length(list) == 6, Overlaps -> True)", //
+        "{{1,6},{2,7},{3,8},{4,9},{5,10}}");
+    check("SequencePosition(Range(10), list_ /; Length(list) == 6, Overlaps -> False)", //
+        "{{1,6}}");
   }
 
   @Test
