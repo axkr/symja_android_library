@@ -16,6 +16,12 @@
    /; FreeQ({a,s}, t),
  LaplaceTransform(DiracDelta(a_*t_), t_, s_) := 1/Abs(a)
    /; FreeQ({a,s}, t),
+ LaplaceTransform(a_*DiracDelta(t_), t_, s_) := a
+   /; FreeQ({a,s}, t),
+ LaplaceTransform(a_.*DiracDelta(b_.+t_), t_, s_) := a*E^(b*s)*HeavisideTheta(-b)
+   /; FreeQ({a,b,s}, t),
+  LaplaceTransform(a_.*HeavisideTheta(b_.+c_.*t_), t_, s_) := a*Which(Sign(c)==1,1/(E^(s*Max(0,-(b/c)))*s),Sign(c)==-1,0,True,0)
+   /; FreeQ({a,b,c,s}, t),
  LaplaceTransform(E^t_, t_, s_) := 1/(s-1)
    /; FreeQ(s, t),
  LaplaceTransform(Log(t_), t_, s_) := -(EulerGamma+Log(s))/s

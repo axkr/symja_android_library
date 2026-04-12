@@ -13,7 +13,7 @@ public class LaplaceTransformRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 13 };
+  final public static int[] SIZES = { 0, 14 };
 
   final public static IAST RULES = List(
     IInit(LaplaceTransform, SIZES),
@@ -41,6 +41,15 @@ public class LaplaceTransformRules {
     // LaplaceTransform(DiracDelta(a_*t_),t_,s_):=1/Abs(a)/;FreeQ({a,s},t)
     ISetDelayed(LaplaceTransform(DiracDelta(Times(a_,t_)),t_,s_),
       Condition(Power(Abs(a),CN1),FreeQ(list(a,s),t))),
+    // LaplaceTransform(DiracDelta(t_)*a_,t_,s_):=a/;FreeQ({a,s},t)
+    ISetDelayed(LaplaceTransform(Times(DiracDelta(t_),a_),t_,s_),
+      Condition(a,FreeQ(list(a,s),t))),
+    // LaplaceTransform(DiracDelta(b_.+t_)*a_.,t_,s_):=a*E^(b*s)*HeavisideTheta(-b)/;FreeQ({a,b,s},t)
+    ISetDelayed(LaplaceTransform(Times(DiracDelta(Plus(b_DEFAULT,t_)),a_DEFAULT),t_,s_),
+      Condition(Times(a,Exp(Times(b,s)),HeavisideTheta(Negate(b))),FreeQ(list(a,b,s),t))),
+    // LaplaceTransform(HeavisideTheta(b_.+c_.*t_)*a_.,t_,s_):=a*Which(Sign(c)==1,1/(E^(s*Max(0,-b/c))*s),Sign(c)==-1,0,True,0)/;FreeQ({a,b,c,s},t)
+    ISetDelayed(LaplaceTransform(Times(HeavisideTheta(Plus(b_DEFAULT,Times(c_DEFAULT,t_))),a_DEFAULT),t_,s_),
+      Condition(Times(a,Which(Equal(Sign(c),C1),Power(Times(Exp(Times(s,Max(C0,Times(CN1,b,Power(c,CN1))))),s),CN1),Equal(Sign(c),CN1),C0,True,C0)),FreeQ(List(a,b,c,s),t))),
     // LaplaceTransform(E^t_,t_,s_):=1/(-1+s)/;FreeQ(s,t)
     ISetDelayed(LaplaceTransform(Exp(t_),t_,s_),
       Condition(Power(Plus(CN1,s),CN1),FreeQ(s,t))),

@@ -53,7 +53,9 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
     IExpr a1 = ast.arg1();
     IExpr t = ast.arg2();
     IExpr s = ast.arg3();
-
+    if (t.equals(s)) {
+      return F.NIL;
+    }
     if (!t.isList() && !s.isList() && !t.equals(s)) {
       if (s instanceof INum && t.isSymbol()) {
         double sDouble = s.evalf();

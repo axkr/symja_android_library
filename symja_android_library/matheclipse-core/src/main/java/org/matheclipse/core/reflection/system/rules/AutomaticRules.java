@@ -47,7 +47,6 @@ public class AutomaticRules {
     rules = HypergeometricPFQRules.RULES;
     rules = HypergeometricURules.RULES;
     rules = InterquartileRangeRules.RULES;
-    rules = InverseLaplaceTransformRules.RULES;
     rules = InverseZTransformRules.RULES;
     rules = JacobiSCRules.RULES;
     rules = KleinInvariantJRules.RULES;
