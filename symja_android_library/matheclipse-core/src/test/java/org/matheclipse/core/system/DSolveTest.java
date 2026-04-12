@@ -69,6 +69,12 @@ public class DSolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testDSolveSystem001() {
+    check("tst(0)=1;DSolve({a *(f'(x))^2+f'''(x)==0,f'(0)==0,tst(0)==0},f(x),x)", //
+        "DSolve({a*f'(x)^2+Derivative(3)[f][x]==0,f'(0)==0,False},f(x),x)");
+    // DSolve: For some branches of the general solution, unable to solve for the conditions
+    check("DSolve({a *(f'(x))^2+f'''(x)==0,f'(0)==0},f(x),x)", //
+        "DSolve({a*f'(x)^2+Derivative(3)[f][x]==0,f'(0)==0},f(x),x)");
+
     // Simple harmonic oscillator
     check("DSolve({x'(t)==y(t), y'(t)==-x(t)}, {x(t), y(t)}, t)", //
         "{{x(t)->C(1)*Cos(t)+C(2)*Sin(t),y(t)->C(2)*Cos(t)-C(1)*Sin(t)}}");
@@ -94,13 +100,13 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("Solve[{y''(x)+4  == 0}, y''(x)]", // )
         "{{y''(x)->-4}}");
     check("DSolve({y''(x)+4*y(x) == 7}, y(x), x)", //
-        "{{y(x)->7/4+C(1)*Cos(2*x)+C(2)*Cos(x)*Sin(x)}}");
+        "{{y(x)->7/4+C(1)*Cos(2*x)+C(2)*Sin(2*x)}}");
   }
 
   @Test
   public void testDSolveSystemEqns() {
     check("DSolve({y'(x)-3*z(x) == Sin(x), y(x) + z(x) == 1/5, y(Pi/2) == 1/2}, {y, z}, x)", //
-        "{{y->Function({x},1/10*(2-Cos(x)+3*Sin(x))),z->Function({x},1/10*(Cos(x)-3*Sin(x)))}}");
+        "{{y->Function({x},1/5-Cos(x)/10+3/10*Sin(x)),z->Function({x},Cos(x)/10-3/10*Sin(x))}}");
   }
 
   @Test
@@ -210,7 +216,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // Exact equation becomes: 1/y + (1 - x/y^2)*y' = 0
     // Result implicit: x/y + y = C_1 => y^2 - C_1*y + x = 0
     check("DSolve(y(x) + (y(x)^2 - x) * y'(x) == 0, y(x), x)", //
-        "{{y(x)->C(1)-Sqrt(-4*x+C(1)^2)/2},{y(x)->C(1)+Sqrt(-4*x+C(1)^2)/2}}");
+        "{{y(x)->C(1)/2-Sqrt(-4*x+C(1)^2)/2},{y(x)->C(1)/2+Sqrt(-4*x+C(1)^2)/2}}");
   }
 
   @Test
@@ -319,7 +325,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{y(x)->3*E^x}}");
 
     check("DSolve({y(0)==0, y'(x) + y(x) == a*Sin(x)}, y(x), x)", //
-        "{{y(x)->1/2*a*(E^(-x)-Cos(x)+Sin(x))}}");
+        "{{y(x)->a/(2*E^x)-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
 
     check("DSolve({y'(x) == -3*y(x)^2, y(0)==2}, y(x), x)", //
         "{{y(x)->1/(1/2+3*x)}}");
@@ -363,6 +369,105 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         "{{u(x,y)->C(1)[-x+y],v(x,y)->C(2)[x+y]}}");
   }
 
+  @Test
+  public void testDSolveEulerCauchy() {
+    // Second Order Homogeneous with repeated roots
+    // Characteristic equation: r^2 - 2r + 1 = 0 -> r = 1
+    // The second linearly independent solution is x*Log(x)
+    check("DSolve(x^2*y''(x) - x*y'(x) + y(x) == 0, y(x), x)", //
+        "{{y(x)->x*C(1)+x*C(2)*Log(x)}}");
+
+    // Second Order Homogeneous with distinct roots
+    // Characteristic equation: r^2 - 4r + 3 = 0 -> r = 1, 3
+    check("DSolve(x^2*y''(x) - 3*x*y'(x) + 3*y(x) == 0, y(x), x)", //
+        "{{y(x)->x*C(1)+x^3*C(2)}}");
+
+    // Non-Homogeneous Euler-Cauchy
+    // x^2*y'' - 2*y = x transforms to u'' - u' - 2u = e^t
+    // Particular solution is -(1/2)x
+    check("DSolve(x^2*y''(x) - 2*y(x) == x, y(x), x)", //
+        "{{y(x)->-x/2+C(1)/x+x^2*C(2)}}");
+  }
+
+  @Test
+  public void testDSolveReductionOfOrder() {
+    // Missing dependent variable y(x): x*y'' - y' = 0
+    // Substitute y' = v -> x*v' - v = 0 -> v = C_1*x -> y = C_2 + x^2/2 * C_1
+    // (Note: the constant absorption absorbs the 1/2 multiplier)
+    check("DSolve(x*y''(x) - y'(x) == 0, y(x), x)", //
+        "{{y(x)->1/2*x^2*C(1)+C(2)}}");
+
+    // Missing independent variable x: y*y'' + (y')^2 == 0
+    // Substitute y' = v(y) -> y*v*v' + v^2 = 0 -> v = C_1/y
+    // Backsubstitute: y' = C_1/y -> y^2/2 = C_1*x + C_2
+    check("DSolve(y(x)*y''(x) + y'(x)^2 == 0, y(x), x)", //
+        "{{y(x)->Sqrt(2*x*C(1)-C(2))}}");
+  }
+
+  @Test
+  public void testDSolveSpecialFunctions() {
+    // 1. Standard Airy's Equation: y'' - x*y = 0
+    // Maps directly to AiryAi and AiryBi functions
+    check("DSolve(y''(x) - x*y(x) == 0, y(x), x)", //
+        "{{y(x)->AiryAi(x)*C(1)+AiryBi(x)*C(2)}}");
+
+    // 2. Generalized Airy's Equation: y'' + x*y = 0
+    // Tests the correct fractional power mapping for q = -1 -> (-1)^(1/3)
+    check("DSolve(y''(x) + x*y(x) == 0, y(x), x)", //
+        "{{y(x)->AiryAi((-1)^(1/3)*x)*C(1)+AiryBi((-1)^(1/3)*x)*C(2)}}");
+
+    // 3. Standard Bessel's Equation: x^2 y'' + x y' + (x^2 - a^2) y = 0
+    // General symbolic parameter 'a'
+    check("DSolve(x^2*y''(x) + x*y'(x) + (x^2 - a^2)*y(x) == 0, y(x), x)", //
+        "{{y(x)->BesselJ(a,x)*C(1)+BesselY(a,x)*C(2)}}");
+
+    // 4. Generalized Bessel's Equation: x^2 y'' + x y' + (4x^2 - 9) y = 0
+    // Tests constant extraction: a^2 = 4 (a=2) and nu^2 = 9 (nu=3)
+    check("DSolve(x^2*y''(x) + x*y'(x) + (4*x^2 - 9)*y(x) == 0, y(x), x)", //
+        "{{y(x)->BesselJ(3,2*x)*C(1)+BesselY(3,2*x)*C(2)}}");
+  }
+
+  @Test
+  public void testDSolveInvalidInput() {
+    // DSolve: The function Derivative(2)[y] appears with no arguments.
+    check("DSolve(y'' - x*y(x) == 0, y(x), x)", //
+        "DSolve(-x*y(x)+Derivative(2)[y]==0,y(x),x)");
+
+    // DSolve: DSolve: The function Derivative(2)[y] appears with no arguments.
+    check("DSolve(y''() - x*y(x) == 0, y(x), x)", //
+        "DSolve(-x*y(x)+Derivative(2)[y][]==0,y(x),x)");
+  }
+
+  @Test
+  public void testDSolveThreeUnknowns() {
+    check("DSolve(y'(x)+5*y(x)==1,y,x)", //
+        "{{y->Function({x},1/5+C(1)/E^(5*x))}}");
+    check("DSolve({x'(t)==y(t)+z(t),y'(t)+z(t)-x(t)==0,z'(t)+y(t)==x(t)},{x,y,z},t)", //
+        "{{x->Function({t},C(1)/(3*E^(2*t))+2/3*E^t*C(1)-C(2)/(3*E^(2*t))+1/3*E^t*C(2)-C(\n" //
+            + "3)/(3*E^(2*t))+1/3*E^t*C(3)),y->Function({t},-C(1)/(3*E^(2*t))+1/3*E^t*C(1)+C(2)/(\n" //
+            + "3*E^(2*t))+2/3*E^t*C(2)+C(3)/(3*E^(2*t))-1/3*E^t*C(3)),z->Function({t},-C(1)/(3*E^(\n" //
+            + "2*t))+1/3*E^t*C(1)+C(2)/(3*E^(2*t))-1/3*E^t*C(2)+C(3)/(3*E^(2*t))+2/3*E^t*C(3))}}");
+  }
+
+  // TODO
+  @Test
+  public void testDSolveLaplace() {
+    // Second-order ODE with Dirac Delta impulse
+    // The Laplace transform beautifully manages point-mass excitations mapping them to delayed sine
+    // waves.
+    check("DSolve({y''(t) + y(t) == DiracDelta(t - Pi), y(0)==0, y'(0)==0}, y(t), t)", //
+        "{{y(t)->-HeavisideTheta(-Pi+t)*Sin(t)}}");
+
+    // First-order ODE with Heaviside step function
+    // Tests that Laplace effectively catches 1st order linear equations where standard solvers
+    // might struggle.
+    check("DSolve({y'(t) + y(t) == HeavisideTheta(t - 1), y(0)==0}, y(t), t)", //
+        // TODO Integrate must handle HeavisideTheta
+        // "{{y(t)->Integrate(E^t*HeavisideTheta(-1+t),t)/E^t}}");
+        "{{y(t)->HeavisideTheta(-1+t)-E^(1-t)*HeavisideTheta(-1+t)}}");
+
+
+  }
 
   /** The JUnit setup method */
   @Override
