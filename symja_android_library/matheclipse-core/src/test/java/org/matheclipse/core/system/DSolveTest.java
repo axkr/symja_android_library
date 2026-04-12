@@ -449,7 +449,6 @@ public class DSolveTest extends ExprEvaluatorTestCase {
             + "2*t))+1/3*E^t*C(1)+C(2)/(3*E^(2*t))-1/3*E^t*C(2)+C(3)/(3*E^(2*t))+2/3*E^t*C(3))}}");
   }
 
-  // TODO
   @Test
   public void testDSolveLaplace() {
     // Second-order ODE with Dirac Delta impulse
