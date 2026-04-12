@@ -270,6 +270,7 @@ public final class ListFunctions {
       S.Take.setEvaluator(new Take());
       S.TakeLargest.setEvaluator(new TakeLargest());
       S.TakeLargestBy.setEvaluator(new TakeLargestBy());
+      S.TakeList.setEvaluator(new TakeList());
       S.TakeSmallest.setEvaluator(new TakeSmallest());
       S.TakeSmallestBy.setEvaluator(new TakeSmallestBy());
       S.TakeWhile.setEvaluator(new TakeWhile());
@@ -7805,6 +7806,210 @@ public final class ListFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  private static final class TakeList extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST1()) {
+        return ast.arg1();
+      }
+      if (ast.argSize() > 1) {
+        IExpr result = ast.arg1();
+        for (int i = 2; i < ast.size(); i++) {
+          result = mapProcess(result, ast.get(i), i - 2, i - 2, engine);
+          if (result.isNIL()) {
+            return F.NIL;
+          }
+        }
+        return result;
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Maps the sequence partition process over `expr` at the required `mapLevel`.
+     */
+    private static IExpr mapProcess(IExpr expr, IExpr seq, int depth, int mapLevel,
+        EvalEngine engine) {
+      if (mapLevel == 0) {
+        return process(expr, seq, depth, engine);
+      }
+      if (expr.isASTOrAssociation()) {
+        IAST ast = (IAST) expr;
+        IASTAppendable res = ast.copyHead();
+        if (ast.isAssociation()) {
+          for (int i = 1; i < ast.size(); i++) {
+            IAST rule = ((IAssociation) ast).getRule(i);
+            IExpr mapped = mapProcess(rule.second(), seq, depth, mapLevel - 1, engine);
+            if (mapped.isNIL())
+              return F.NIL;
+            res.append(F.Rule(rule.first(), mapped));
+          }
+        } else {
+          for (int i = 1; i < ast.size(); i++) {
+            IExpr mapped = mapProcess(ast.get(i), seq, depth, mapLevel - 1, engine);
+            if (mapped.isNIL())
+              return F.NIL;
+            res.append(mapped);
+          }
+        }
+        return res;
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Applies `seq` partitioning to the inner elements at `depth` and transposes the newly
+     * generated chunks to the outside of the current evaluation block.
+     */
+    private static IExpr process(IExpr expr, IExpr seq, int depth, EvalEngine engine) {
+      if (depth == 0) {
+        return splitList1D(expr, seq, engine);
+      }
+      if (!expr.isASTOrAssociation() && !expr.isSparseArray()) {
+        return F.NIL;
+      }
+
+      IAST ast;
+      if (expr.isSparseArray()) {
+        ast = ((ISparseArray) expr).normal(false);
+      } else {
+        ast = (IAST) expr;
+      }
+
+      List<IAST> mapped = new ArrayList<>();
+      int L = -1;
+
+      if (ast.isAssociation()) {
+        for (int i = 1; i < ast.size(); i++) {
+          IAST rule = ((IAssociation) ast).getRule(i);
+          IExpr processed = process(rule.second(), seq, depth - 1, engine);
+          if (processed.isNIL())
+            return F.NIL;
+          IAST processedAST = (IAST) processed;
+          if (L == -1)
+            L = processedAST.argSize();
+          mapped.add(processedAST);
+        }
+      } else {
+        for (int i = 1; i < ast.size(); i++) {
+          IExpr processed = process(ast.get(i), seq, depth - 1, engine);
+          if (processed.isNIL())
+            return F.NIL;
+          IAST processedAST = (IAST) processed;
+          if (L == -1)
+            L = processedAST.argSize();
+          mapped.add(processedAST);
+        }
+      }
+
+      if (L == -1) {
+        if (!seq.isList())
+          return F.NIL;
+        L = ((IAST) seq).argSize();
+      }
+
+      // Transpose dimensions: pull the generated chunk dimension (L) to the outside
+      IASTAppendable result = F.ListAlloc(L);
+      for (int c = 1; c <= L; c++) {
+        IASTAppendable col = ast.copyHead();
+        if (ast.isAssociation()) {
+          for (int r = 0; r < mapped.size(); r++) {
+            IExpr key = ((IAssociation) ast).getKey(r + 1);
+            col.append(F.Rule(key, mapped.get(r).get(c)));
+          }
+        } else {
+          for (int r = 0; r < mapped.size(); r++) {
+            col.append(mapped.get(r).get(c));
+          }
+        }
+        result.append(col);
+      }
+      return result;
+    }
+
+    private static void copyElements(IAST source, IASTAppendable dest, int start, int end) {
+      if (source.isAssociation() && dest.isAssociation()) {
+        IAssociation assocSource = (IAssociation) source;
+        IAssociation assocDest = (IAssociation) dest;
+        for (int j = start; j < end; j++) {
+          assocDest.appendRule(assocSource.getRule(j));
+        }
+      } else {
+        for (int j = start; j < end; j++) {
+          dest.append(source.getRule(j));
+        }
+      }
+    }
+
+    private static IExpr splitList1D(IExpr listExpr, IExpr seqsExpr, EvalEngine engine) {
+      if (!listExpr.isASTOrAssociation() && !listExpr.isSparseArray()) {
+        return F.NIL;
+      }
+      IAST list;
+      if (listExpr.isSparseArray()) {
+        list = ((ISparseArray) listExpr).normal(false);
+      } else {
+        list = (IAST) listExpr;
+      }
+
+      if (!seqsExpr.isList()) {
+        return F.NIL;
+      }
+      IAST seqs = (IAST) seqsExpr;
+      IASTAppendable result = F.ListAlloc(seqs.size());
+      IAST currentList = list;
+
+      for (int i = 1; i < seqs.size(); i++) {
+        IExpr spec = seqs.get(i);
+        IASTAppendable taken = currentList.copyHead();
+        IASTAppendable remainder = currentList.copyHead();
+
+        if (spec.isInteger()) {
+          int n = spec.toIntDefault();
+          if (n >= 0) {
+            if (n > currentList.argSize()) {
+              // Cannot take list `1` of sequence specifications at level `2` of `3`.
+              return Errors.printMessage(S.TakeList, "iseqs", F.list(seqs, F.C1, currentList),
+                  EvalEngine.get());
+            }
+            copyElements(currentList, taken, 1, n + 1);
+            copyElements(currentList, remainder, n + 1, currentList.size());
+          } else {
+            int nAbs = -n;
+            if (nAbs > currentList.argSize()) {
+              // Cannot take list `1` of sequence specifications at level `2` of `3`.
+              return Errors.printMessage(S.TakeList, "iseqs", F.list(seqs, F.C1, currentList),
+                  EvalEngine.get());
+            }
+            int split = currentList.size() - nAbs;
+            copyElements(currentList, taken, split, currentList.size());
+            copyElements(currentList, remainder, 1, split);
+          }
+        } else if (spec == S.All) {
+          copyElements(currentList, taken, 1, currentList.size());
+        } else if (spec.isAST(S.UpTo, 2)) {
+          int k = spec.first().toIntDefault();
+          if (k < 0) {
+            return F.NIL;
+          }
+          int n = Math.min(k, currentList.argSize());
+          copyElements(currentList, taken, 1, n + 1);
+          copyElements(currentList, remainder, n + 1, currentList.size());
+        } else {
+          return F.NIL;
+        }
+        result.append(taken);
+        currentList = remainder;
+      }
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
+    }
+  }
 
   private static final class TakeSmallest extends AbstractEvaluator {
 
