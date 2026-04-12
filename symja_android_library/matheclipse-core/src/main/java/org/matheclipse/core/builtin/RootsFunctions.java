@@ -581,7 +581,7 @@ public class RootsFunctions {
   }
 
   public static IASTMutable rootsOfExprPolynomial(final IExpr expr, IAST varList,
-      boolean rootsOfQuartic) {
+      boolean createSet, boolean rootsOfQuartic) {
     IASTMutable result = F.NIL;
     try {
       // try to generate a common expression polynomial
@@ -601,7 +601,7 @@ public class RootsFunctions {
       if (!rootsOfQuartic && ePoly.degree(0) > 2) {
         return F.NIL;
       }
-      result = rootsOfQuarticPolynomial(ePoly);
+      result = rootsOfQuarticPolynomial(ePoly, createSet);
       if (result.isPresent()) {
         if (expr.isNumericMode()) {
           for (int i = 1; i < result.size(); i++) {
@@ -651,7 +651,8 @@ public class RootsFunctions {
    * @param polynomial the polynomial
    * @return <code>F.NIL</code> if no evaluation was possible.
    */
-  private static IASTAppendable rootsOfQuarticPolynomial(ExprPolynomial polynomial) {
+  private static IASTAppendable rootsOfQuarticPolynomial(ExprPolynomial polynomial,
+      boolean createSet) {
     long varDegree = polynomial.degree(0);
 
     if (polynomial.isConstant()) {
@@ -687,7 +688,7 @@ public class RootsFunctions {
           return F.NIL;
         }
       }
-      IASTAppendable result = QuarticSolver.quarticSolve(a, b, c, d, e);
+      IASTAppendable result = QuarticSolver.quarticSolve(a, b, c, d, e, createSet, true);
       if (result.isPresent()) {
         return (IASTAppendable) QuarticSolver.sortASTArguments(result);
       }
@@ -952,7 +953,7 @@ public class RootsFunctions {
       JASConvert<BigRational> jas = new JASConvert<BigRational>(variables, BigRational.ZERO);
       GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numericSolutions);
       if (polyRat == null) {
-        result = rootsOfExprPolynomial(expr, variables, true);
+        result = rootsOfExprPolynomial(expr, variables, createSet, true);
         if (result.isPresent()) {
           return rootsOfVariableEndProcessing(result, variables, denominator, createSet, sort,
               engine);
@@ -960,7 +961,7 @@ public class RootsFunctions {
         return F.NIL;
       }
       // if (polyRat.degree(0) <= 2) {
-      result = rootsOfExprPolynomial(expr, variables, false);
+      result = rootsOfExprPolynomial(expr, variables, createSet, false);
       if (result.isPresent()) {
         return result;
       }
@@ -986,7 +987,7 @@ public class RootsFunctions {
         } else {
           polyRat = jas.expr2JAS(temp, numericSolutions);
           if (polyRat == null) {
-            result = rootsOfExprPolynomial(expr, variables, true);
+            result = rootsOfExprPolynomial(expr, variables, true, true);
             if (result.isPresent()) {
               return rootsOfVariableEndProcessing(result, variables, denominator, createSet, sort,
                   engine);
@@ -1025,7 +1026,7 @@ public class RootsFunctions {
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
       // JAS or "findRoots" may throw RuntimeExceptions
-      result = rootsOfExprPolynomial(expr, variables, true);
+      result = rootsOfExprPolynomial(expr, variables, true, true);
     }
     if (result.isPresent()) {
       return rootsOfVariableEndProcessing(result, variables, denominator, createSet, sort, engine);
