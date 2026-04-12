@@ -329,6 +329,35 @@ public class TensorTest extends ExprEvaluatorTestCase {
         "{{a,1/2*(b+c)},{1/2*(b+c),d}}");
   }
 
+  @Test
+  public void testSymmetrizeTwoArgument() {
+    // Symmetrizing a matrix with specific symmetric and antisymmetric bounds
+    check("Symmetrize({{a, b}, {c, d}}, Symmetric({1, 2}))", "{{a,1/2*(b+c)},{1/2*(b+c),d}}");
+
+    // Antisymmetrizing causes the diagonal to collapse to 0
+    check("Symmetrize({{a, b}, {c, d}}, Antisymmetric({1, 2}))", "{{0,1/2*(b-c)},{1/2*(-b+c),0}}");
+  }
+
+  @Test
+  public void testSymmetrize3DTensorPartial() {
+    // Only swap the 1st and 3rd axes of a 2x2x2 tensor
+    String tensor3D = "{{{a, b}, {c, d}}, {{e, f}, {g, h}}}";
+
+    check("Symmetrize(" + tensor3D + ", Symmetric({1, 3}))",
+        "{{{a,1/2*(b+e)},{c,1/2*(d+g)}},{{1/2*(b+e),f},{1/2*(d+g),h}}}");
+
+    check("Symmetrize(" + tensor3D + ", Antisymmetric({1, 3}))",
+        "{{{0,1/2*(b-e)},{0,1/2*(d-g)}},{{1/2*(-b+e),0},{1/2*(-d+g),0}}}");
+  }
+
+  @Test
+  public void testSymmetrizeMultipleFolds() {
+    // prints Symmetrize: Symmetry specification {Symmetric({1,2}),Antisymmetric({1,2})} is only
+    // compatible with the zero tensor.
+    check("Symmetrize({{a, b}, {c, d}}, {Symmetric({1, 2}), Antisymmetric({1, 2})})",
+        "{{0,0},{0,0}}");
+  }
+
 
   /** The JUnit setup method */
   @Override

@@ -247,10 +247,9 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
     check("Hypergeometric2F1(2/3,3/7,10, 1)", //
         "(362880*Gamma(187/21))/(Gamma(28/3)*Gamma(67/7))");
 
-    // message Plus: m^2 and m are incompatible units
+    // message Expand: m^2 and m are incompatible units
     check("Hypergeometric2F1(-5,Quantity(1.2,\"m\"),c,1)", //
-        "Expand((-1.2[m]+c)*(1+-1.2[m]+c)*(2+-1.2[m]+c)*(3+-1.2[m]+c)*(4+-1.2[m]+c))/(c*(\n" //
-            + "1+c)*(2+c)*(3+c)*(4+c))");
+        "Expand((-1.2[m]+c)*(1+-1.2[m]+c)*(2+-1.2[m]+c)*(3+-1.2[m]+c)*(4+-1.2[m]+c))/(c*(1+c)*(2+c)*(3+c)*(4+c))");
 
     // check("Hypergeometric2F1(1317624576693539401,0.333,-3/2,-0.5)", //
     // "Hypergeometric2F1(0.333,1.31762*10^18,-1.5,-0.5)");

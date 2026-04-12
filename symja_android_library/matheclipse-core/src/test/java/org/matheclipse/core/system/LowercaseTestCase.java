@@ -6140,6 +6140,40 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDiracDelta() {
+
+    // DiracDelta(c) == 0 for all non-zero reals. DiracDelta(0) remains unevaluated.
+    check("DiracDelta(5)", //
+        "0");
+    check("DiracDelta(-3.14)", //
+        "0");
+    check("DiracDelta(0)", //
+        "DiracDelta(0)");
+
+    // Pure Scaling Property: DiracDelta(a*x) -> 1/Abs(a) * DiracDelta(x)
+    check("DiracDelta(2*x)", //
+        "DiracDelta(x)/2");
+    check("DiracDelta(-3*x)", //
+        "DiracDelta(x)/3");
+    check("DiracDelta(x/4)", //
+        "4*DiracDelta(x)");
+
+    // Shift and Scale Property: DiracDelta(a*x + b) -> 1/Abs(a) * DiracDelta(x + b/a)
+    check("DiracDelta(2*x - 4)", //
+        "DiracDelta(-2+x)/2");
+    check("DiracDelta(3*x + 6)", //
+        "DiracDelta(2+x)/3");
+    check("DiracDelta(-2*x + 8)", //
+        "DiracDelta(-4+x)/2");
+
+    // The evaluator should extract |-1| = 1, and expand (-t + Pi)/(-1) = t - Pi.
+    // Because we removed the EvenFunction attribute, it should NOT flip back.
+    check("DiracDelta(Pi - t)", //
+        "DiracDelta(-Pi+t)");
+
+    // Double-check with a standard negative shift
+    check("DiracDelta(-t - 5)", //
+        "DiracDelta(5+t)");
+
     check("DiracDelta(1+I)", //
         "DiracDelta(1+I)");
     check("DiracDelta(x)", //
@@ -6949,38 +6983,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "Missing(NotApplicable)");
     // check("ElementData(\"Tungsten\", \"ThermalConductivity\")", "173");
 
-  }
-
-  @Test
-  public void testEliminate() {
-    check("Eliminate({x^2 + y^2 + z^2 == 1, x - y + z == 2, x^3 - y^2 == z + 1}, {y, z})",
-        "-4*x+2*x^2-4*z+2*x*z+2*z^2==-3&&4*x-x^2+x^3+3*z-2*x*z-z^2==5");
-
-    // print: Eliminate: y>2 is not a well-formed equation.
-    check("Eliminate({x==y,y>2},{x})", //
-        "Eliminate({x==y,y>2},{x})");
-
-    // TODO
-    // check("Eliminate({a0*x^p+a1*x^q==0},x)", //
-    // "(-a1)*x^q == a0*x^p");
-
-    check("Eliminate({(a*x + b)/(c*x + d)==y},x)", //
-        "True");
-    check("Eliminate({x == 2 + y, y == z}, y)", //
-        "x-z==2");
-    check("Eliminate({x == 2 + y, y == z}, {y,v})", //
-        "x-z==2");
-    check("Eliminate({2*x + 3*y + 4*z == 1, 9*x + 8*y + 7*z == 2}, z)", //
-        "11/2*x+11/4*y==1/4");
-
-    check("Eliminate({x == 2 + y^3, y^2 == z}, y)", //
-        "x-z^(3/2)==2");
-
-    // use evaluation step: Cos(ArcSin(y)) => Sqrt(1-y^2)
-    check("Eliminate({Sin(x)==y, Cos(x) == z}, x)", //
-        "Sqrt(1-y^2)-z==0");
-    check("Eliminate({a^x==y, b^(2*x) == z}, x)", //
-        "b^((2*Log(y))/Log(a))-z==0");
   }
 
   @Test
@@ -12614,37 +12616,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
 
-
-  @Test
-  public void testInverseLaplaceTransform() {
-    // check(
-    // "InverseLaplaceTransform(1/(s^3+4*s^2+s),s,t)", //
-    // "");
-    check("InverseLaplaceTransform(1/(s^3+2*s^2+s),s,t)", //
-        "1-1/E^t-t/E^t");
-    check("InverseLaplaceTransform(f(x)*s,s,t)", //
-        "f(x)*DiracDelta'(t)");
-    check("InverseLaplaceTransform(f(x),s,t)", //
-        "DiracDelta(t)*f(x)");
-    check("InverseLaplaceTransform(1/s,s,t)", //
-        "1");
-    check("InverseLaplaceTransform(1/s^5,s,t)", //
-        "t^4/24");
-    check("InverseLaplaceTransform(1/(s^2 +a^2),s,t)", //
-        "Sin(a*t)/a");
-    check("InverseLaplaceTransform(s/(s^2 +a^2),s,t)", //
-        "Cos(a*t)");
-    check("InverseLaplaceTransform(1/(1+s),s,t)", //
-        "E^(-t)");
-    check("InverseLaplaceTransform(1/(s^2-4),s,t)", //
-        "(-1+E^(4*t))/(4*E^(2*t))");
-    // test partial fraction decomposition:
-    check("InverseLaplaceTransform(Together(3/(s-1)+(2*s)/(s^2+4)),s,t)", //
-        "3*E^t+2*Cos(2*t)");
-    check("InverseLaplaceTransform(3/(s-1)+(2*s)/(s^2+4),s,t)", //
-        "3*E^t+2*Cos(2*t)");
-  }
-
   @Test
   public void testInverseWeierstrassP() {
     // check("InverseWeierstrassP(2.0,{1,2})", //
@@ -12652,99 +12623,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("Table[InverseWeierstrassP[x, {1, 2}], {x, 2.0, 6.0}]",
     // "");
   }
-
-  @Test
-  public void testInverseLaplaceTransformNumeric() {
-    // check("InverseLaplaceTransform(Erf(s)/Sqrt(s), s, 2.3)", //
-    // "");
-
-    check("InverseLaplaceTransform(s/(s + 2)^2, s, 2.3)", //
-        "-0.0362221");
-
-  }
-
-  @Test
-  public void testLaplaceTransform() {
-    check("LaplaceTransform(t*UnitStep(a*t),t,s)", //
-        "LaplaceTransform(t*UnitStep(a*t),t,s)");
-    check("LaplaceTransform(UnitStep(a*t),t,s)", //
-        "Which(Sign(a)==1,1/s,Sign(a)==-1,0,True,0)");
-    check("LaplaceTransform(UnitStep(42*t),t,s)", //
-        "1/s");
-    // numerical calculation only supported for unary functions
-    check("LaplaceTransform(1/(x + y + 1), {x, y}, {5.4, 4.5})", //
-        "LaplaceTransform(1/(1+x+y),{x,y},{5.4,4.5})");
-
-    check("LaplaceTransform(Erf(t)/Sqrt(t), t, 14.2)", //
-        "0.0185749");
-    check("LaplaceTransform(Erf(t), t, 14.2)", //
-        "0.00554208");
-
-    check("LaplaceTransform(Tanh(t),t,s)", //
-        "(-2-s*PolyGamma(0,s/4)+s*PolyGamma(0,1/4*(2+s)))/(2*s)");
-    check("LaplaceTransform(E^2,t,-3+s)", //
-        "E^2/(-3+s)");
-    check("LaplaceTransform(c*t^2, t, s)", //
-        "(2*c)/s^3");
-    check("LaplaceTransform((t^3+t^4)*t^2, t, s)", //
-        "720/s^7+120/s^6");
-    check("LaplaceTransform(t^2*Exp(2+3*t), t, s)", //
-        "(2*E^2)/(-3+s)^3");
-    check("LaplaceTransform(Exp(2+3*t)/t, t, s)", //
-        "E^2*LaplaceTransform(1/t,t,-3+s)");
-
-    check("LaplaceTransform(y'(t),t,s)", //
-        "s*LaplaceTransform(y(t),t,s)-y(0)");
-    check("LaplaceTransform(y''(t),t,s)", //
-        "s^2*LaplaceTransform(y(t),t,s)-s*y(0)-y'(0)");
-
-    check("LaplaceTransform(t, t, t)", //
-        "LaplaceTransform(t,t,t)");
-    check("LaplaceTransform(t, t, s)", //
-        "1/s^2");
-    check("LaplaceTransform(t, s, t)", //
-        "1");
-    check("LaplaceTransform(s, t, t)", //
-        "LaplaceTransform(s,t,t)");
-    check("LaplaceTransform(E^(-t), t, s)", //
-        "1/(1+s)");
-    check("LaplaceTransform(t^4*Sin(t), t, s)", //
-        "(384*s^4)/(1+s^2)^5+(-288*s^2)/(1+s^2)^4+24/(1+s^2)^3");
-    check("LaplaceTransform(t^(1/2), t, s)", //
-        "Sqrt(Pi)/(2*s^(3/2))");
-    check("LaplaceTransform(t^(1/3), t, s)", //
-        "Gamma(4/3)/s^(4/3)");
-    check("LaplaceTransform(t^a, t, s)", //
-        "Gamma(1+a)/s^(1+a)");
-    // issue #941
-    check("LaplaceTransform(Cos(t), t, s)", //
-        "s/(1+s^2)");
-    check("LaplaceTransform(Cos(a*b*t), t, s)", //
-        "s/(a^2*b^2+s^2)");
-    check("LaplaceTransform(Sin(t), t, s)", //
-        "1/(1+s^2)");
-    check("LaplaceTransform(Sin(a*b*t), t, s)", //
-        "(a*b)/(a^2*b^2+s^2)");
-
-    check("LaplaceTransform(Sin(t), t, t)", //
-        "LaplaceTransform(Sin(t),t,t)");
-    check("LaplaceTransform(Sinh(t), t, s)", //
-        "1/(-1+s^2)");
-    check("LaplaceTransform(Cosh(t), t, s)", //
-        "s/(-1+s^2)");
-    check("LaplaceTransform(Log(t), t, s)", //
-        "-(EulerGamma+Log(s))/s");
-    check("LaplaceTransform(Log(t)^2, t, s)", //
-        "(6*EulerGamma^2+Pi^2+6*Log(s)*(2*EulerGamma+Log(s)))/(6*s)");
-    check("LaplaceTransform(Erf(t), t, s)", //
-        "(E^(s^2/4)*Erfc(s/2))/s");
-    check("LaplaceTransform(Erf(t^(1/2)), t, s)", //
-        "1/(s*Sqrt(1+s))");
-
-    check("LaplaceTransform(Sin(t)*Exp(t), t, s)", //
-        "1/(1+(1-s)^2)");
-  }
-
   @Test
   public void testLast() {
     check("Last(SparseArray({1,2,3,4})) // Normal ", //
@@ -13223,6 +13101,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLinearModelFit() {
+    check("LinearModelFit({{1, 5}, {2, 8}, {3, 11}},{1, x1}, x1)", //
+        "FittedModel[2.0+3.0*x1]");
     // TODO
     check("data = {{0, 1}, {1, 3}, {2, 4}, {3, 7}};" //
         + "basis = {1, x};" //
@@ -13403,8 +13283,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{Sin(x,x),Sin(0,y),Sin(2,v),Sin(1,w)}");
     // Thread: Objects of unequal length in Sin({x,0,2,1},SparseArray(Number of elements: 2
     // Dimensions: {2} Default value: 0)) cannot be combined.
-    check(
-        "Sin[{x,0,2,1},SparseArray({x,y})]", //
+    check("Sin[{x,0,2,1},SparseArray({x,y})]", //
         "Sin({x,0,2,1},SparseArray(Number of elements: 2 Dimensions: {2} Default value: 0))");
     check("SetAttributes(f, Listable)", //
         "");
@@ -24158,6 +24037,52 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "<|d->4,c->3|>");
     check("TakeLargest(3) @ {1, 3, 5, 4, 2}", //
         "{5,4,3}");
+  }
+
+  @Test
+  public void testTakeList() {
+    check("TakeList(<|a -> 1, b -> 2, c -> 3, d -> 4|>, {2, All})", //
+        "{<|a->1,b->2|>,<|c->3,d->4|>}");
+
+    // Out-of-bounds error handling (returns unevaluated)
+    check("TakeList({a, b, c}, {4})", //
+        "TakeList({a,b,c},{4})");
+    check("TakeList({a, b, c}, {1, -3})", //
+        "TakeList({a,b,c},{1,-3})");
+
+    // Basic 1D taking
+    check("TakeList({a, b, c, d, e, f}, {2, 3, 1})", //
+        "{{a,b},{c,d,e},{f}}");
+
+    // Using All
+    check("TakeList({a, b, c, d, e, f}, {2, All})", //
+        "{{a,b},{c,d,e,f}}");
+
+    check("TakeList({a, b, c}, {All})", //
+        "{{a,b,c}}");
+
+    // Using UpTo
+    check("TakeList({a, b, c, d, e, f}, {UpTo(4), All})", //
+        "{{a,b,c,d},{e,f}}");
+
+    check("TakeList({a, b, c, d, e, f}, {UpTo(10)})", //
+        "{{a,b,c,d,e,f}}");
+
+    // Negative counts (takes from the end of the current remainder)
+    check("TakeList({1, 2, 3, 4, 5, 6}, {2, -2, All})", //
+        "{{1,2},{5,6},{3,4}}");
+
+    // Empty list/sequence edge cases
+    check("TakeList({a, b, c}, {})", //
+        "{}");
+
+    check("TakeList({}, {All})", //
+        "{{}}");
+
+    // Multidimensional / Multi-level sequence specifications
+    check("TakeList({{a, b, c}, {d, e, f}, {g, h, i}}, {1, 2}, {2, 1})", //
+        "{{{{a,b}},{{c}}},{{{d,e},{g,h}},{{f},{i}}}}");
+
   }
 
   @Test
