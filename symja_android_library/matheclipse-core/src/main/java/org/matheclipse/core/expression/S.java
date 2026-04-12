@@ -36,7 +36,7 @@ public class S {
   static final Map<IExpr, Short> GLOBAL_IDS_MAP =
       new IdentityHashMap<>((EXPRID_MAX_BUILTIN_LENGTH + 1000) * 4 / 3 + 1);
 
-  static final Map<String, ISymbol> HIDDEN_SYMBOLS_MAP =
+  public static final Map<String, ISymbol> HIDDEN_SYMBOLS_MAP =
       Config.TRIE_STRING2SYMBOL_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
 
   public static IBuiltInSymbol symbol(int id) {
@@ -412,6 +412,9 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Alphabet = S.initFinalSymbol("Alphabet", ID.Alphabet);
+
+  public final static IBuiltInSymbol AlphabeticOrder =
+      S.initFinalSymbol("AlphabeticOrder", ID.AlphabeticOrder);
 
   /**
    * Alternatives(p1, p2, ..., p_i) - is a pattern that matches any of the patterns `p1, p2,....,
@@ -1202,6 +1205,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol BinCounts = S.initFinalSymbol("BinCounts", ID.BinCounts);
+
+  public final static IBuiltInSymbol BinLists = S.initFinalSymbol("BinLists", ID.BinLists);
 
   /**
    * Binomial(n, k) - returns the binomial coefficient of the 2 integers `n` and `k`
@@ -7431,6 +7436,8 @@ public class S {
    */
   public final static IBuiltInSymbol MaxFilter = S.initFinalSymbol("MaxFilter", ID.MaxFilter);
 
+  public final static IBuiltInSymbol MaximalBy = S.initFinalSymbol("MaximalBy", ID.MaximalBy);
+
   /**
    * Maximize(unary-function, variable) - returns the maximum of the unary function for the given
    * `variable`.
@@ -7617,6 +7624,8 @@ public class S {
 
   public final static IBuiltInSymbol MinimalPolynomial =
       S.initFinalSymbol("MinimalPolynomial", ID.MinimalPolynomial);
+
+  public final static IBuiltInSymbol MinimalBy = S.initFinalSymbol("MinimalBy", ID.MinimalBy);
 
   /**
    * Minimize(unary-function, variable) - returns the minimum of the unary function for the given
@@ -10510,6 +10519,9 @@ public class S {
    */
   public final static IBuiltInSymbol Sequence = S.initFinalSymbol("Sequence", ID.Sequence);
 
+  public final static IBuiltInSymbol SequenceCount =
+      S.initFinalSymbol("SequenceCount", ID.SequenceCount);
+
   public final static IBuiltInSymbol SequenceCases =
       S.initFinalSymbol("SequenceCases", ID.SequenceCases);
 
@@ -10523,6 +10535,9 @@ public class S {
    */
   public final static IBuiltInSymbol SequenceHold =
       S.initFinalSymbol("SequenceHold", ID.SequenceHold);
+
+  public final static IBuiltInSymbol SequencePosition =
+      S.initFinalSymbol("SequencePosition", ID.SequencePosition);
 
   public final static IBuiltInSymbol SequenceReplace =
       S.initFinalSymbol("SequenceReplace", ID.SequenceReplace);
@@ -11785,6 +11800,9 @@ public class S {
    */
   public final static IBuiltInSymbol TakeLargestBy =
       S.initFinalSymbol("TakeLargestBy", ID.TakeLargestBy);
+
+
+  public final static IBuiltInSymbol TakeList = S.initFinalSymbol("TakeList", ID.TakeList);
 
   /**
    * TakeSmallest({e_1, e_2, ..., e_i}, n) - returns the `n` smallest real values from the list
@@ -13245,7 +13263,7 @@ public class S {
    * @return
    */
   public static ISymbol initFinalHiddenSymbol(final String symbolName) {
-    final ISymbol symbol = new Symbol(symbolName, org.matheclipse.core.expression.Context.DUMMY);
+    final ISymbol symbol = new Symbol(symbolName, org.matheclipse.core.expression.Context.FORMAL);
     // TODO make this a real protected symbol
     // symbol.setAttributes(ISymbol.PROTECTED);
     HIDDEN_SYMBOLS_MAP.put(symbolName, symbol);
