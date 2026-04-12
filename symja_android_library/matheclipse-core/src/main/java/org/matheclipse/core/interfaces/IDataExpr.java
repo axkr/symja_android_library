@@ -11,4 +11,9 @@ public interface IDataExpr<T> extends IExpr {
   default IExpr eval(EvalEngine engine) {
     return evaluate(engine).orElse(this);
   }
+
+  @Override
+  default IAST normal(boolean nilIfUnevaluated) {
+    return null;
+  }
 }
