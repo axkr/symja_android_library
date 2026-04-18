@@ -8,13 +8,20 @@ public class ZTransformTest extends ExprEvaluatorTestCase {
   @Test
   public void testInverseZTransform001() {
     check("InverseZTransform(f(z)+ g(z)+h(z),z,n)", //
-        "InverseZTransform(f(z),n,z)+InverseZTransform(g(z),n,z)+InverseZTransform(h(z),n,z)");
+        "InverseZTransform(f(z),z,n)+InverseZTransform(g(z),z,n)+InverseZTransform(h(z),z,n)");
     check("InverseZTransform(z/(z + f(a)), z, n)", //
         "(-f(a))^n");
     check("InverseZTransform(42, z, n)", //
-        "42*DiscreteDelta(z)");
+        "42*DiscreteDelta(n)");
   }
 
+  @Test
+  public void testInverseZTransform002() {
+    check("InverseZTransform(zsys/(-2+2*zsys),zsys,n)+InverseZTransform(zsys/(2+2*zsys),zsys,n)", //
+        "1/2+(-1)^n/2");
+    check("InverseZTransform(zsys/(-2+2*zsys),zsys,n)-InverseZTransform(zsys/(2+2*zsys),zsys,n)", //
+        "1/2-(-1)^n/2");
+  }
 
   @Test
   public void testZTransform001() {
@@ -90,4 +97,31 @@ public class ZTransformTest extends ExprEvaluatorTestCase {
             + "1)+z*((z*(-2*z+2*Cos(1))*Sin(1))/(1+z^2-2*z*Cos(1))^2+Sin(1)/(1+z^2-2*z*Cos(1)))-z*((\n"
             + "2*z*(-2*z+2*Cos(1))*Sin(1))/(1+z^2-2*z*Cos(1))^2+(2*Sin(1))/(1+z^2-2*z*Cos(1)))");
   }
+
+  @Test
+  public void testZTransform003() {
+    check("ZTransform(a+b+c,n,z)", //
+        "((a+b+c)*z)/(-1+z)");
+  }
+
+  // ==========================================================
+  // Transform Boundary Limit Tests
+  // ==========================================================
+
+  @Test
+  public void testZTransformFractionalShift() {
+    // Verifies that ZTransform securely returns unevaluated when encountering
+    // sequence functions evaluated at non-integer shifts.
+    check("ZTransform(Sqrt(n)*a(Sqrt(n)), n, z)",//
+        "ZTransform(Sqrt(n)*a(Sqrt(n)),n,z)");
+    
+  }
+
+  @Test
+  public void testEGFTransformFractionalShift() {
+    // Verifies that EGF securely returns unevaluated for fractional indices.
+    check("ExponentialGeneratingFunction(Sqrt(n)*a(Sqrt(n)), n, x)",
+        "ExponentialGeneratingFunction(Sqrt(n)*a(Sqrt(n)),n,x)");
+  }
+
 }
