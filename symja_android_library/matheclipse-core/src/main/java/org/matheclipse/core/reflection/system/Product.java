@@ -230,10 +230,21 @@ public class Product extends ListFunctions.Table implements ProductRules {
             }
           }
           if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
-            if (iterator.getUpperLimit().isSymbol() && iterator.getStep().isOne()) {
+            if (iterator.getStep().isOne()) {
               final ISymbol var = iterator.getVariable();
               final IExpr from = iterator.getLowerLimit();
-              final ISymbol to = (ISymbol) iterator.getUpperLimit();
+              final IExpr to = iterator.getUpperLimit();
+
+              // Divert to the Hypergeometric Symbolic Product Engine
+              IExpr symProd = tryClosedFormReduction(arg1, var, from, to, engine);
+              if (symProd.isPresent()) {
+                if (preevaledProduct.isAST2()) {
+                  return symProd;
+                }
+                IASTAppendable result = preevaledProduct.removeAtClone(preevaledProduct.argSize());
+                result.set(1, symProd);
+                return result;
+              }
               if (arg1.isPower()) {
                 IExpr base = arg1.base();
                 if (base.isFree(var)) {
@@ -313,6 +324,91 @@ public class Product extends ListFunctions.Table implements ProductRules {
         // }
       }
     }
+    return F.NIL;
+  }
+
+  /**
+   * Hypergeometric Term Recognition (Pochhammer Mapping & Exponential Products)
+   * 
+   * @param pK the product term with iterator k (e.g. k^2 + 3k + 2 or 2^k)
+   * @param k the iterator variable
+   * @param lower the lower bound of the product
+   * @param upper the upper bound of the product
+   * @param engine the evaluation engine
+   * @return the reduced form of the product or F.NIL if not reducible
+   */
+  public static IExpr tryClosedFormReduction(IExpr pK, IExpr k, IExpr lower, IExpr upper,
+      EvalEngine engine) {
+    if (pK.isFree(k)) {
+      IExpr count = engine.evaluate(F.Simplify(F.Plus(F.Subtract(upper, lower), F.C1)));
+      return engine.evaluate(F.Power(pK, count));
+    }
+
+    // 1. Intercept Exponential Products -> Product(base^expr) = base^Sum(expr)
+    if (pK.isPower()) {
+      IExpr base = pK.base();
+      IExpr exponent = pK.exponent();
+      if (!exponent.isFree(k)) {
+        IExpr sum = engine.evaluate(F.Sum(exponent, F.List(k, lower, upper)));
+        if (sum.isPresent() && !sum.isAST(S.Sum)) {
+          return engine.evaluate(F.Power(base, sum));
+        }
+      }
+    }
+
+    // 2. Intercept already-factored terms (e.g. (k + 1/2) * (k + 3/2))
+    if (pK.isTimes()) {
+      IASTAppendable res = F.TimesAlloc();
+      for (IExpr arg : (IAST) pK) {
+        IExpr termProd = tryClosedFormReduction(arg, k, lower, upper, engine);
+        if (!termProd.isPresent()) {
+          return F.NIL;
+        }
+        res.append(termProd);
+      }
+      return engine.evaluate(res);
+    }
+
+    // 3. Strict Linear Coefficient Extraction
+    IExpr A = engine.evaluate(F.Coefficient(pK, k));
+    IExpr B = engine.evaluate(F.Expand(F.Subtract(pK, F.Times(A, k))));
+    IExpr check = engine.evaluate(F.ExpandAll(F.Subtract(pK, F.Plus(F.Times(A, k), B))));
+
+    // A and B must strictly be free of the iterator K!
+    if (check.isZero() && !A.isZero() && A.isFree(k) && B.isFree(k)) {
+      IExpr root = engine.evaluate(F.Divide(B, A));
+      IExpr count = engine.evaluate(F.Simplify(F.Plus(F.Subtract(upper, lower), F.C1)));
+      IExpr startVal = engine.evaluate(F.Simplify(F.Plus(lower, root)));
+
+      IExpr poch;
+      if (startVal.isInteger() && startVal.greaterThan(F.C0).isTrue()) {
+        IExpr m = startVal;
+        IExpr num = F.Pochhammer(F.C1, F.Subtract(F.Plus(count, m), F.C1));
+        IExpr den = engine.evaluate(F.Pochhammer(F.C1, F.Subtract(m, F.C1)));
+        poch = engine.evaluate(F.Divide(num, den));
+      } else {
+        poch = F.Pochhammer(startVal, count);
+      }
+
+      if (A.isOne())
+        return poch;
+      return engine.evaluate(F.Times(F.Power(A, count), poch));
+    }
+
+    // 4. Try factoring generic polynomials (e.g. k^2 + 3k + 2 -> (k+1)*(k+2))
+    IExpr factored = engine.evaluate(F.Factor(pK));
+    if (!factored.equals(pK) && factored.isTimes()) {
+      IASTAppendable res = F.TimesAlloc(factored.argSize());
+      for (IExpr arg : (IAST) factored) {
+        IExpr termProd = tryClosedFormReduction(arg, k, lower, upper, engine);
+        if (!termProd.isPresent()) {
+          return F.NIL;
+        }
+        res.append(termProd);
+      }
+      return engine.evaluate(res);
+    }
+
     return F.NIL;
   }
 

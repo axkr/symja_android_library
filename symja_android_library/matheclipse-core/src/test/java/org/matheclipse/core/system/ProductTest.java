@@ -6,10 +6,12 @@ public class ProductTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testProduct001() {
-
     // Config.MAX_BIT_LENGTH = Integer.MAX_VALUE;
     // check("AbsoluteTiming(Product(i,{i,1,10^6});)", //
     // "");
+    // prints RecursionLimitExeceeded
+    check("Product(f(x), {x, x, x+1})", //
+        "Product(f(x),{x,x,x+1})");
 
     // message Product: Argument {} at position 2 does not have the correct form for an iterator.
     check("Product(-3/2,\"\",{-1/2,-2,3},-1+I,{0,0,0,0})", //
@@ -23,11 +25,6 @@ public class ProductTest extends ExprEvaluatorTestCase {
         "1");
     check("Product(f(x), {k,3, 1/2})", //
         "1");
-
-    // prints RecursionLimitExeceeded
-    check("Product(f(x), {x, x, x+1})", //
-        "Product(f(x),{x,x,x+1})");
-
     check("Product(f(x), {x, x, x})", //
         "f(x)");
     check("Product(f(x), {x, a, a+1})", //
@@ -245,5 +242,66 @@ public class ProductTest extends ExprEvaluatorTestCase {
         "{Cos(x),Cos(2*x),Cos(4*x)}");
     check("Product(Cos(2^k*x), {k, 0, 2})", //
         "Cos(x)*Cos(2*x)*Cos(4*x)");
+  }
+
+  @Test
+  public void testSymbolicProduct015() {
+    // Linear scaling with fractional bounds
+    // Product(k + 1/2, {k, 1, n}) -> Pochhammer(3/2, n)
+    check("Product(k + 1/2, {k, 1, n})", //
+        "Pochhammer(3/2,n)");
+
+    // Linear scaling with A != 1
+    // Product(3*k + 2, {k, 1, n}) -> 3^n * Pochhammer(5/3, n)
+    check("Product(3*k + 2, {k, 1, n})", //
+        "3^n*Pochhammer(5/3,n)");
+
+    // Negative coefficients
+    // Product(1 - 2*k, {k, 1, n}) -> (-2)^n * Pochhammer(1/2, n)
+    check("Product(1 - 2*k, {k, 1, n})", //
+        "(-2)^n*Pochhammer(1/2,n)");
+  }
+
+  @Test
+  public void testSymbolicProduct016() {
+    // Integer shifts mapping to canonical factorials (Pochhammer(1, ...))
+    // Product(k + 2, {k, 1, n}) -> Pochhammer(1, n + 2) / Pochhammer(1, 2)
+    // Note: Pochhammer(1, 2) evaluates to 2! = 2
+    check("Product(k + 2, {k, 1, n})", //
+        "Pochhammer(1,2+n)/2");
+
+    // Product(k + 3, {k, 1, n}) -> Pochhammer(1, n + 3) / Pochhammer(1, 3) -> / 6
+    check("Product(k + 3, {k, 1, n})", //
+        "Pochhammer(1,3+n)/6");
+  }
+
+  @Test
+  public void testSymbolicProduct017() {
+    // Intercepting Exponential Products (Product(base^expr) -> base^Sum(expr))
+
+    // Product(E^(2^k), {k, 1, m-1}) -> E^(-2 + 2^m)
+    check("Product(E^(2^k), {k, 1, m-1})", //
+        "E^(-2+2^m)");
+
+    // Product(E^(3*k), {k, 1, n}) -> E^(3/2*n*(1+n))
+    check("Product(E^(3*k), {k, 1, n})", //
+        "E^(3/2*n*(1+n))");
+
+    // Product(2^(k^2), {k, 1, n}) -> 2^(1/6*n*(1+n)*(1+2*n))
+    check("Product(2^(k^2), {k, 1, n})", //
+        "2^(n/6+n^2/2+n^3/3)");
+  }
+
+  @Test
+  public void testSymbolicProduct018() {
+    // Factored polynomials and powers
+    // Product((2*k + 3)^2, {k, 1, n}) -> (2^n * Pochhammer(5/2, n))^2 -> 4^n * Pochhammer(5/2, n)^2
+    check("Product((2*k + 3)^2, {k, 1, n})", //
+        "2^(2*n)*Pochhammer(5/2,n)^2");
+
+    // Product((k + 1/2) * (k + 3/2), {k, 1, n})
+    // Resolves independently and multiplies: Pochhammer(3/2, n) * Pochhammer(5/2, n)
+    check("Product((k + 1/2) * (k + 3/2), {k, 1, n})", //
+        "Pochhammer(3/2,n)*Pochhammer(5/2,n)");
   }
 }
