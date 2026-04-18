@@ -899,6 +899,9 @@ public class S {
 
   public final static IBuiltInSymbol Assumptions = S.initFinalSymbol("Assumptions", ID.Assumptions);
 
+  public final static IBuiltInSymbol AsymptoticDSolveValue =
+      S.initFinalSymbol("AsymptoticDSolveValue", ID.AsymptoticDSolveValue);
+
   /**
    * AtomQ(x) - is true if `x` is an atom (an object such as a number or string, which cannot be
    * divided into subexpressions using 'Part').
@@ -3830,6 +3833,9 @@ public class S {
   public final static IBuiltInSymbol ExponentialDistribution =
       S.initFinalSymbol("ExponentialDistribution", ID.ExponentialDistribution);
 
+  public final static IBuiltInSymbol ExponentialGeneratingFunction =
+      S.initFinalSymbol("ExponentialGeneratingFunction", ID.ExponentialGeneratingFunction);
+
   /**
    * Export("path-to-filename", expression, "WXF") - if the file system is enabled, export the
    * `expression` in WXF format to the "path-to-filename" file.
@@ -4768,6 +4774,13 @@ public class S {
 
   public final static IBuiltInSymbol GenerateConditions =
       S.initFinalSymbol("GenerateConditions", ID.GenerateConditions);
+
+
+  public final static IBuiltInSymbol GeneratedParameters =
+      S.initFinalSymbol("GeneratedParameters", ID.GeneratedParameters);
+
+  public final static IBuiltInSymbol GeneratingFunction =
+      S.initFinalSymbol("GeneratingFunction", ID.GeneratingFunction);
 
   public final static IBuiltInSymbol GeodesyData = S.initFinalSymbol("GeodesyData", ID.GeodesyData);
 
