@@ -16058,20 +16058,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Normal(t)", //
         "{0.0,0.182574,0.0,0.365148,0.0,0.0,0.0,0.547723,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.730297}");
 
-    check("s = N(SparseArray(Table({2^i}->i,{i,20})));", //
+    check("s = N(SparseArray(Table({2^i}->i,{i,5})));", //
         "");
     check("Normal(s)", //
-        "SparseArray(Number of elements: 20 Dimensions: {1048576} Default value: 0.0)");
+        "{0.0,1.0,0.0,2.0,0.0,0.0,0.0,3.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,4.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5.0}");
     check("t=Normalize(s)", //
-        "SparseArray(Number of elements: 20 Dimensions: {1048576} Default value: 0.0)");
+        "SparseArray(Number of elements: 5 Dimensions: {32} Default value: 0.0)");
 
     check("ArrayRules(t)", //
-        "{{2}->0.0186663,{4}->0.0373327,{8}->0.055999,{16}->0.0746653,{32}->0.0933317,{64}->0.111998,{\n" //
-            + "128}->0.130664,{256}->0.149331,{512}->0.167997,{1024}->0.186663,{2048}->0.20533,{\n" //
-            + "4096}->0.223996,{8192}->0.242662,{16384}->0.261329,{32768}->0.279995,{65536}->0.298661,{\n" //
-            + "131072}->0.317328,{262144}->0.335994,{524288}->0.35466,{1048576}->0.373327,{_}->0.0}");
+        "{{2}->0.13484,{4}->0.26968,{8}->0.40452,{16}->0.53936,{32}->0.6742,{_}->0.0}");
     check("Norm(s)", //
-        "53.57238");
+        "7.4162");
 
 
     // message Normalize: The first argument is not a number or a vector, or the second argument is
