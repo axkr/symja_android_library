@@ -4587,181 +4587,15 @@ public final class ListFunctions {
    * {{0,0,0},{0,1,2},{1,2,3}}
    * </pre>
    */
-  private static final class PadLeft extends AbstractFunctionEvaluator {
-
+  public static class PadLeft extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (!ast.arg1().isAST()) {
-        // Nonatomic expression expected at position `1` in `2`.
-        return Errors.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
-      }
-      IAST list = (IAST) ast.arg1();
-
-      if (ast.isAST1()) {
-        if (list.isListOfLists()) {
-          int maxSize = -1;
-          for (int i = 1; i < list.size(); i++) {
-            IAST subList = (IAST) list.get(i);
-            if (subList.size() > maxSize) {
-              maxSize = subList.size();
-            }
-          }
-          if (maxSize > 0) {
-            final int mSize = maxSize - 1;
-            return F.mapRange(1, list.size(), i -> padLeftAtom(list.getAST(i), mSize, F.C0));
-          }
-        }
-        return ast.arg1();
-      }
-
-      if (ast.argSize() > 1 && ast.arg2().isList()) {
-        int[] levels = Validate.checkListOfInts(ast, ast.arg2(), true, false, engine);
-        if (levels != null && levels.length > 0) {
-          int listLevel = list.depth(false) - 1;
-          if (levels.length > listLevel) {
-            // The padding specification `1` involves `2` levels, the list `3` has only `4`
-            // level.
-            return Errors.printMessage(ast.topHead(), "levelpad",
-                F.List(ast.arg2(), F.ZZ(levels.length), list, F.ZZ(listLevel)), engine);
-          }
-
-          IExpr defaultValue = F.C0;
-          if (ast.argSize() > 2) {
-            defaultValue = ast.arg3();
-          }
-          IASTAppendable result = list.copyHead(levels[0]);
-          if (padLeftASTList(list, list.head(), (IAST) ast.arg1(), defaultValue, levels, 1,
-              levels[0], result)) {
-            return result;
-          }
-        }
-        return F.NIL;
-      }
-
-      int n = Validate.checkIntType(ast, 2);
-      if (ast.size() > 3) {
-        if (ast.arg3().isList()) {
-          IAST arg3 = (IAST) ast.arg3();
-          return padLeftAST(list, n, arg3);
-        } else {
-          return padLeftAtom(list, n, ast.arg3());
-        }
-      }
-      return padLeftAtom(list, n, F.C0);
+      return padEvaluate(ast, engine, true);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_3;
-    }
-
-    public static IExpr padLeftAtom(IAST ast, int n, IExpr atom) {
-      int length = n - ast.size() + 1;
-      if (length > 0) {
-        long intialCapacity = (long) length + (long) ast.argSize();
-        if (Config.MAX_AST_SIZE < intialCapacity) {
-          ASTElementLimitExceeded.throwIt(intialCapacity);
-        }
-        IASTAppendable result = ast.copyHead((int) intialCapacity);
-        result.appendArgs(0, length, i -> atom);
-        result.appendArgs(ast);
-        return result;
-      }
-      if (n > 0 && n < ast.size()) {
-        return ast.removeFromStart(ast.size() - n);
-      }
-      return ast;
-    }
-
-    public static IAST padLeftAST(IAST ast, int n, IAST arg2) {
-      int length = n - ast.size() + 1;
-      if (length > 0) {
-        long intialCapacity = (long) length + (long) ast.argSize();
-        if (Config.MAX_AST_SIZE < intialCapacity) {
-          ASTElementLimitExceeded.throwIt(intialCapacity);
-        }
-        IASTAppendable result = ast.copyHead((int) intialCapacity);
-        if (arg2.size() < 2) {
-          return ast;
-        }
-        int j = 1;
-        if ((arg2.argSize()) < n) {
-          int temp = n % (arg2.argSize());
-          j = arg2.size() - temp;
-        }
-        for (int i = 0; i < length; i++) {
-          if (j < arg2.size()) {
-            result.append(arg2.get(j++));
-          } else {
-            j = 1;
-            result.append(arg2.get(j++));
-          }
-        }
-        result.appendArgs(ast);
-        return result;
-      }
-      return ast;
-    }
-
-    private static boolean padLeftASTList(IAST originalAST, IExpr mainHead, IAST list, IExpr x,
-        int[] levels, int position, int length, IASTAppendable result) {
-      if (position >= levels.length) {
-        int padSize = length;
-        if (list.isPresent()) {
-          if (length > list.argSize()) {
-            padSize = length - list.argSize();
-          } else {
-            padSize = 0;
-          }
-        }
-
-        for (int i = 0; i < padSize; i++) {
-          result.append(x);
-        }
-        int j = 1;
-        if (list.isPresent() && list.argSize() > length) {
-          j = list.size() - length;
-        }
-        for (int i = padSize; i < length; i++) {
-          result.append(list.get(j++));
-        }
-        return true;
-      }
-      int subLength = levels[position];
-      position++;
-      IAST subList;
-
-      int padSize = length;
-      if (list.isPresent() && length > list.argSize()) {
-        padSize = length - list.size();
-      }
-      int j = 1;
-      for (int i = 0; i < length; i++) {
-        IASTAppendable subResult;
-        if (i > padSize) {
-          if (list.isPresent() && list.get(j).isASTOrAssociation()) {
-            subList = (IAST) list.get(j++);
-          } else {
-            // The padding specification `1` involves `2` levels; the list `3` has only `4` level.
-            throw new ArgumentTypeException(Errors.getMessage("padlevel",
-                F.List(F.List(levels), F.ZZ(levels.length), originalAST, F.ZZ(position - 1)),
-                EvalEngine.get()));
-          }
-        } else {
-          subList = F.NIL;
-        }
-        if (subList.isPresent()) {
-          subResult = subList.copyHead(subLength);
-        } else {
-          subResult = F.ast(mainHead, subLength);
-        }
-        if (!padLeftASTList(originalAST, mainHead, subList, x, levels, position, subLength,
-            subResult)) {
-          return false;
-        }
-        result.append(subResult);
-      }
-      return true;
+      return ARGS_1_4;
     }
   }
 
@@ -4817,163 +4651,15 @@ public final class ListFunctions {
    * {{0,0,0},{1,2,0},{1,2,3}}
    * </pre>
    */
-  private static final class PadRight extends AbstractFunctionEvaluator {
-
+  public static class PadRight extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isAtom()) {
-        // Nonatomic expression expected at position `1` in `2`.
-        return Errors.printMessage(ast.topHead(), "normal", F.list(F.C1, ast), engine);
-      }
-      IAST list = (IAST) ast.arg1();
-
-      if (ast.isAST1()) {
-        if (list.isListOfLists()) {
-          int maxSize = -1;
-          for (int i = 1; i < list.size(); i++) {
-            IAST subList = (IAST) list.get(i);
-            if (subList.size() > maxSize) {
-              maxSize = subList.size();
-            }
-          }
-          if (maxSize > 0) {
-            final int mSize = maxSize - 1;
-            return F.mapRange(1, list.size(), i -> padRightAtom(list.getAST(i), mSize, F.C0));
-          }
-        }
-        return ast.arg1();
-      }
-
-      if (ast.argSize() > 1 && ast.arg2().isList()) {
-        int[] levels = Validate.checkListOfInts(ast, ast.arg2(), true, false, engine);
-        if (levels != null && levels.length > 0) {
-          int listLevel = list.depth(false) - 1;
-          if (levels.length > listLevel) {
-            // The padding specification `1` involves `2` levels, the list `3` has only `4`
-            // level.
-            return Errors.printMessage(ast.topHead(), "levelpad",
-                F.List(ast.arg2(), F.ZZ(levels.length), list, F.ZZ(listLevel)), engine);
-          }
-
-          IExpr defaultValue = F.C0;
-          if (ast.argSize() > 2) {
-            defaultValue = ast.arg3();
-          }
-          IASTAppendable result = list.copyHead(levels[0]);
-          if (padRightASTList(list, list.head(), (IAST) ast.arg1(), defaultValue, levels, 1,
-              levels[0], result)) {
-            return result;
-          }
-        }
-        return F.NIL;
-      }
-
-      int n = Validate.checkIntType(ast, 2);
-
-      if (ast.size() > 3) {
-        if (ast.arg3().isList()) {
-          IAST arg3 = (IAST) ast.arg3();
-          return padRightAST(list, n, arg3);
-        }
-        return padRightAtom(list, n, ast.arg3());
-      }
-      return padRightAtom(list, n, F.C0);
+      return padEvaluate(ast, engine, false);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_3;
-    }
-
-    public static IExpr padRightAtom(IAST ast, int n, IExpr atom) {
-      int length = n - ast.size() + 1;
-      if (length > 0) {
-        long intialCapacity = (long) length + (long) ast.argSize();
-        if (Config.MAX_AST_SIZE < intialCapacity) {
-          ASTElementLimitExceeded.throwIt(intialCapacity);
-        }
-        IASTAppendable result = ast.copyHead((int) intialCapacity);
-        result.appendArgs(ast);
-        return result.appendArgs(0, length, i -> atom);
-      }
-      if (n > 0 && n < ast.size()) {
-        return ast.removeFromEnd(n + 1);
-      }
-      return ast;
-    }
-
-    public static IAST padRightAST(IAST ast, int n, IAST arg2) {
-      int length = n - ast.size() + 1;
-      if (length > 0) {
-        long intialCapacity = (long) length + (long) ast.argSize();
-        if (Config.MAX_AST_SIZE < intialCapacity) {
-          ASTElementLimitExceeded.throwIt(intialCapacity);
-        }
-        IASTAppendable result = ast.copyHead((int) intialCapacity);
-        result.appendArgs(ast);
-        if (arg2.size() < 2) {
-          return ast;
-        }
-        int j = 1;
-        for (int i = 0; i < length; i++) {
-          if (j < arg2.size()) {
-            result.append(arg2.get(j++));
-          } else {
-            j = 1;
-            result.append(arg2.get(j++));
-          }
-        }
-        return result;
-      }
-      return ast;
-    }
-
-    private static boolean padRightASTList(IAST originalAST, IExpr mainHead, IAST list, IExpr x,
-        int[] levels, int position, int length, IASTAppendable result) {
-      if (position >= levels.length) {
-        if (list.isPresent()) {
-          int astLength = list.argSize() > length ? length : list.argSize();
-          if (astLength > 0) {
-            for (int i = 0; i < astLength; i++) {
-              result.append(list.get(i + 1));
-            }
-          }
-          length -= astLength;
-        }
-        for (int i = 0; i < length; i++) {
-          result.append(x);
-        }
-        return true;
-      }
-      int subLength = levels[position];
-      position++;
-      IAST subList;
-      for (int i = 0; i < length; i++) {
-        IASTAppendable subResult;
-        if (i < list.argSize()) {
-          if (list.isPresent() && list.get(i + 1).isASTOrAssociation()) {
-            subList = (IAST) list.get(i + 1);
-          } else {
-            // The padding specification `1` involves `2` levels; the list `3` has only `4` level.
-            throw new ArgumentTypeException(Errors.getMessage("padlevel",
-                F.List(F.List(levels), F.ZZ(levels.length), originalAST, F.ZZ(position - 1)),
-                EvalEngine.get()));
-          }
-        } else {
-          subList = F.NIL;
-        }
-        if (subList.isPresent()) {
-          subResult = subList.copyHead(subLength);
-        } else {
-          subResult = F.ast(mainHead, subLength);
-        }
-        if (!padRightASTList(originalAST, mainHead, subList, x, levels, position, subLength,
-            subResult)) {
-          return false;
-        }
-        result.append(subResult);
-      }
-      return true;
+      return ARGS_1_4;
     }
   }
 
@@ -7967,6 +7653,9 @@ public final class ListFunctions {
 
         if (spec.isInteger()) {
           int n = spec.toIntDefault();
+          if (!F.isPresent(n)) {
+            return F.NIL;
+          }
           if (n >= 0) {
             if (n > currentList.argSize()) {
               // Cannot take list `1` of sequence specifications at level `2` of `3`.
@@ -8533,6 +8222,210 @@ public final class ListFunctions {
   private static IAST cleanList(IAST list) {
     return list.select(
         x -> !(x.isIndeterminate() || x.equals(S.Null) || x.equals(S.None) || x.isAST(S.Missing)));
+  }
+
+  private static int determinePaddingLevel(IExpr expr) {
+    if (expr.isAST()) {
+      IAST ast = (IAST) expr;
+      // Empty lists can be recursively padded to any depth, returning "infinite" levels
+      if (ast.isEmpty()) {
+        return Integer.MAX_VALUE;
+      }
+      int minLevel = Integer.MAX_VALUE;
+      // Find the minimum depth across all sub-elements in this AST
+      for (int i = 1; i < ast.size(); i++) {
+        minLevel = Math.min(minLevel, determinePaddingLevel(ast.get(i)));
+      }
+      if (minLevel == Integer.MAX_VALUE) {
+        return Integer.MAX_VALUE;
+      }
+      return 1 + minLevel;
+    }
+    // Scalars (non-AST expressions) have a base level of 0
+    return 0;
+  }
+
+  private static void determineMaxDimensions(IExpr expr, int depth,
+      java.util.List<Integer> maxDims) {
+    if (expr.isAST()) {
+      IAST ast = (IAST) expr;
+      int size = ast.argSize();
+      if (depth >= maxDims.size()) {
+        maxDims.add(size);
+      } else {
+        maxDims.set(depth, Math.max(maxDims.get(depth), size));
+      }
+      // Recurse into sub-elements to find nested maximums
+      for (int i = 1; i <= size; i++) {
+        determineMaxDimensions(ast.get(i), depth + 1, maxDims);
+      }
+    }
+  }
+
+  private static IExpr padEvaluate(final IAST ast, EvalEngine engine, boolean isLeft) {
+    IExpr list = ast.arg1();
+    if (!list.isAST()) {
+      // Nonatomic expression expected at position `1` in `2`.
+      return Errors.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
+    }
+    IExpr nExpr = ast.argSize() >= 2 ? ast.arg2() : F.NIL;
+    IExpr padding = ast.argSize() >= 3 ? ast.arg3() : F.C0;
+    IExpr marginExpr = ast.argSize() >= 4 ? ast.arg4() : F.C0;
+
+    // 1. Parse target dimensions
+    int[] dims;
+    boolean explicitDims = true;
+
+    if (nExpr.isNIL() || nExpr.equals(S.Automatic)) {
+      java.util.List<Integer> maxDimsList = new java.util.ArrayList<>();
+      determineMaxDimensions(list, 0, maxDimsList);
+      dims = new int[maxDimsList.size()];
+      for (int i = 0; i < maxDimsList.size(); i++) {
+        dims[i] = maxDimsList.get(i);
+      }
+      explicitDims = false;
+    } else if (nExpr.isInteger()) {
+      int n = nExpr.toIntDefault();
+      if (n < 0)
+        return F.NIL;
+      dims = new int[] {n};
+    } else if (nExpr.isList()) {
+      IAST nList = (IAST) nExpr;
+      dims = new int[nList.argSize()];
+      for (int i = 0; i < nList.argSize(); i++) {
+        IExpr dimExpr = nList.get(i + 1);
+        if (!dimExpr.isInteger())
+          return F.NIL;
+        dims[i] = dimExpr.toIntDefault();
+      }
+    } else {
+      return F.NIL;
+    }
+
+    // 2. Validate expression level depth
+    if (explicitDims) {
+      int exprLevel = determinePaddingLevel(list);
+      int effectiveLevel = Math.max(1, exprLevel);
+      if (dims.length > effectiveLevel) {
+        // The padding specification `1` involves `2` levels, the list `3` has only `4` level.
+        Errors.printMessage(ast.topHead(), "levelpad",
+            F.List(nExpr, F.ZZ(dims.length), list, F.ZZ(exprLevel)), engine);
+        return F.NIL;
+      }
+    }
+
+    // 3. Parse margins
+    int[] margins = new int[dims.length];
+    if (marginExpr.isInteger()) {
+      int m = marginExpr.toIntDefault();
+      for (int i = 0; i < dims.length; i++) {
+        margins[i] = m;
+      }
+    } else if (marginExpr.isList()) {
+      IAST mList = (IAST) marginExpr;
+      for (int i = 0; i < Math.min(dims.length, mList.argSize()); i++) {
+        IExpr mExpr = mList.get(i + 1);
+        if (!mExpr.isInteger())
+          return F.NIL;
+        margins[i] = mExpr.toIntDefault();
+      }
+    } else if (!marginExpr.equals(F.C0)) {
+      return F.NIL;
+    }
+
+    // 4. Extract cyclic padding elements
+    IExpr[] padElements;
+    if (padding.isList()) {
+      IAST padList = (IAST) padding;
+      if (padList.isEmptyList()) {
+        padElements = new IExpr[] {F.C0};
+      } else {
+        padElements = new IExpr[padList.argSize()];
+        for (int i = 0; i < padList.argSize(); i++) {
+          padElements[i] = padList.get(i + 1);
+        }
+      }
+    } else {
+      padElements = new IExpr[] {padding};
+    }
+
+    // Determine the root default head
+    IExpr rootHead = list.isAST() ? list.head() : S.List;
+
+    // NOTE: The mutable padIndex array has been completely removed
+    return padRecursive(list, dims, margins, padElements, 0, isLeft, rootHead);
+  }
+
+  private static IExpr padRecursive(IExpr list, int[] dims, int[] margins, IExpr[] padElements,
+      int depth, boolean isLeft, IExpr defaultHead) {
+    if (depth >= dims.length) {
+      return list;
+    }
+
+    int targetSize = dims[depth];
+    int margin = margins[depth];
+
+    int origSize;
+    IAST origAST;
+    IExpr head;
+
+    if (list.isAST()) {
+      origAST = (IAST) list;
+      origSize = origAST.argSize();
+      head = origAST.head();
+    } else {
+      IASTAppendable tempAST = F.ast(defaultHead, 2);
+      tempAST.append(list);
+      origAST = tempAST;
+      origSize = 1;
+      head = defaultHead;
+    }
+
+    IASTAppendable result = F.ast(head, targetSize + 1);
+
+    for (int resultIndex = 0; resultIndex < targetSize; resultIndex++) {
+      int origIndex;
+
+      if (isLeft) {
+        origIndex = resultIndex - (targetSize - origSize - margin);
+      } else {
+        origIndex = resultIndex - margin;
+      }
+
+      if (origIndex >= 0 && origIndex < origSize) {
+        IExpr origElement = origAST.get(origIndex + 1);
+        result
+            .append(padRecursive(origElement, dims, margins, padElements, depth + 1, isLeft, head));
+      } else {
+        // Mathematically calculate the correct cyclic element index based on distance to the
+        // original list bounds
+        int cyclicIndex;
+        if (origIndex < 0) {
+          // For PadLeft: alignment shifts backwards resulting in continuous leftward cyclic
+          // placement
+          cyclicIndex = Math.floorMod(origIndex, padElements.length);
+        } else {
+          // For PadRight: alignment starts from 0 exactly at the boundary going right
+          cyclicIndex = (origIndex - origSize) % padElements.length;
+        }
+
+        result.append(buildPadding(dims, padElements, cyclicIndex, depth + 1, head));
+      }
+    }
+    return result;
+  }
+
+  private static IExpr buildPadding(int[] dims, IExpr[] padElements, int startIndex, int depth,
+      IExpr defaultHead) {
+    if (depth >= dims.length) {
+      return padElements[startIndex % padElements.length];
+    }
+    IASTAppendable result = F.ast(defaultHead, dims[depth] + 1);
+    for (int i = 0; i < dims[depth]; i++) {
+      // Smoothly distribute the cyclic alignment across deeper tensor shells
+      result.append(buildPadding(dims, padElements, startIndex + i, depth + 1, defaultHead));
+    }
+    return result;
   }
 
   /**
