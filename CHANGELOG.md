@@ -4,6 +4,8 @@ Noteworthy changes are documented in this file.
 
 ## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.1.1...HEAD)
 
+- Internal improvements, bug fixes and performance improvements.
+
 ## [v3.1.1](https://github.com/axkr/symja_android_library/compare/v3.0.0...v3.1.1) - 2026-02-26
 
 - Java 11 required
