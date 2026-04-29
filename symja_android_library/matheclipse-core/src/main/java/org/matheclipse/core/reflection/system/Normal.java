@@ -37,7 +37,18 @@ public final class Normal extends AbstractFunctionEvaluator {
       heads = ast.arg2().makeList();
     }
     final IExpr arg1 = ast.arg1();
-    return F.subst(arg1, normal(heads));
+    IExpr normal = F.NIL;
+    if (heads.isAST0()) {
+      normal = arg1.normal(true);
+    } else {
+      if (heads.exists(y -> y.equals(arg1.head()))) {
+        normal = arg1.normal(true);
+      }
+    }
+    if (normal.isPresent()) {
+      return normal;
+    }
+    return arg1;
   }
 
   private Function<IExpr, IExpr> normal(final IAST heads) {
