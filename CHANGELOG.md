@@ -2,7 +2,9 @@
 
 Noteworthy changes are documented in this file.
 
-## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.1.1...HEAD)
+## [Unreleased](https://github.com/axkr/symja_android_library/compare/v3.2.0...HEAD)
+
+## [v3.2.0](https://github.com/axkr/symja_android_library/compare/v3.1.1...v3.2.0) - 2026-04-30
 
 - Internal improvements, bug fixes and performance improvements.
 
