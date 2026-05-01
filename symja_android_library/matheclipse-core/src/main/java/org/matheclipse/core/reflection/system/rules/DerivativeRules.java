@@ -13,7 +13,7 @@ public class DerivativeRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 152, 0 };
+  final public static int[] SIZES = { 164, 0 };
 
   final public static IAST RULES = List(
     IInit(Derivative, SIZES),
@@ -499,6 +499,42 @@ public class DerivativeRules {
       Function(Times(Power(Slot1,CN1),Plus(LerchPhi(C1,Plus(CN1,Slot2),Slot(C3)),Times(CN1,LerchPhi(Slot1,Slot2,Slot(C3)),Slot(C3))))), true),
     // Derivative(0,0,1)[LerchPhi]=-LerchPhi(#1,1+#2,#3)*#2&
     ISet($(Derivative(C0,C0,C1),LerchPhi),
-      Function(Times(CN1,LerchPhi(Slot1,Plus(C1,Slot2),Slot(C3)),Slot2)), true)
+      Function(Times(CN1,LerchPhi(Slot1,Plus(C1,Slot2),Slot(C3)),Slot2)), true),
+    // Derivative(1,0,0)[LaplaceTransform]=1/#3&
+    ISet($(Derivative(C1,C0,C0),LaplaceTransform),
+      Function(Power(Slot(C3),CN1)), true),
+    // Derivative(0,1,0)[LaplaceTransform]=0&
+    ISet($(Derivative(C0,C1,C0),LaplaceTransform),
+      Function(C0), true),
+    // Derivative(0,0,1)[LaplaceTransform]=-#1/#3^2&
+    ISet($(Derivative(C0,C0,C1),LaplaceTransform),
+      Function(Times(CN1,Slot1,Power(Slot(C3),CN2))), true),
+    // Derivative(1,0,0)[InverseLaplaceTransform]=DiracDelta(#3)&
+    ISet($(Derivative(C1,C0,C0),InverseLaplaceTransform),
+      Function(DiracDelta(Slot(C3))), true),
+    // Derivative(0,1,0)[InverseLaplaceTransform]=0&
+    ISet($(Derivative(C0,C1,C0),InverseLaplaceTransform),
+      Function(C0), true),
+    // Derivative(0,0,1)[InverseLaplaceTransform]=#1*DiracDelta'(#3)&
+    ISet($(Derivative(C0,C0,C1),InverseLaplaceTransform),
+      Function(Times(Slot1,$($(Derivative(C1),DiracDelta),Slot(C3)))), true),
+    // Derivative(1,0,0)[InverseZTransform]=DiscreteDelta(#3)&
+    ISet($(Derivative(C1,C0,C0),InverseZTransform),
+      Function(DiscreteDelta(Slot(C3))), true),
+    // Derivative(0,1,0)[InverseZTransform]=0&
+    ISet($(Derivative(C0,C1,C0),InverseZTransform),
+      Function(C0), true),
+    // Derivative(0,0,1)[InverseZTransform]=0&
+    ISet($(Derivative(C0,C0,C1),InverseZTransform),
+      Function(C0), true),
+    // Derivative(1,0,0)[ZTransform]=#3/(-1+#3)&
+    ISet($(Derivative(C1,C0,C0),ZTransform),
+      Function(Times(Power(Plus(CN1,Slot(C3)),CN1),Slot(C3))), true),
+    // Derivative(0,1,0)[ZTransform]=0&
+    ISet($(Derivative(C0,C1,C0),ZTransform),
+      Function(C0), true),
+    // Derivative(0,0,1)[ZTransform]=#1/(-1+#3)+(-#1*#3)/(-1+#3)^2&
+    ISet($(Derivative(C0,C0,C1),ZTransform),
+      Function(Plus(Times(Slot1,Power(Plus(CN1,Slot(C3)),CN1)),Times(CN1,Slot1,Power(Plus(CN1,Slot(C3)),CN2),Slot(C3)))), true)
   );
 }

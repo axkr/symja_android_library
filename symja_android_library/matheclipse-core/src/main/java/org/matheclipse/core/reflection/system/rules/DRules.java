@@ -13,7 +13,7 @@ public class DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 84 };
+  final public static int[] SIZES = { 0, 88 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -271,6 +271,18 @@ public class DRules {
       Condition(Plus(Times(a,b,Power(d,CN1),AppellF1(Plus(C1,a),Plus(C1,b),c,Plus(C1,d),f,g),D(f,x)),Times(a,c,Power(d,CN1),AppellF1(Plus(C1,a),b,Plus(C1,c),Plus(C1,d),f,g),D(g,x))),FreeQ(List(a,b,c,d),x))),
     // D(UnitStep(f_),x_?NotListQ):=Piecewise({{Indeterminate,f==0}},0)*D(f,x)
     ISetDelayed(D(UnitStep(f_),PatternTest(x_,NotListQ)),
-      Times(Piecewise(list(list(Indeterminate,Equal(f,C0))),C0),D(f,x)))
+      Times(Piecewise(list(list(Indeterminate,Equal(f,C0))),C0),D(f,x))),
+    // D(InverseLaplaceTransform(f_,g_,h_),x_?NotListQ):=DiracDelta(h)*D(f,x)+f*DiracDelta'(h)*D(h,x)/;FreeQ({f},g)
+    ISetDelayed(D(InverseLaplaceTransform(f_,g_,h_),PatternTest(x_,NotListQ)),
+      Condition(Plus(Times(DiracDelta(h),D(f,x)),Times(f,$($(Derivative(C1),DiracDelta),h),D(h,x))),FreeQ(list(f),g))),
+    // D(LaplaceTransform(f_,g_,h_),x_?NotListQ):=D(f,x)/h-f*D(h,x)/h^2/;FreeQ({f},g)
+    ISetDelayed(D(LaplaceTransform(f_,g_,h_),PatternTest(x_,NotListQ)),
+      Condition(Plus(Times(Power(h,CN1),D(f,x)),Times(CN1,f,Power(h,CN2),D(h,x))),FreeQ(list(f),g))),
+    // D(InverseZTransform(f_,g_,h_),x_?NotListQ):=DiscreteDelta(h)*D(f,x)/;FreeQ({f},g)
+    ISetDelayed(D(InverseZTransform(f_,g_,h_),PatternTest(x_,NotListQ)),
+      Condition(Times(DiscreteDelta(h),D(f,x)),FreeQ(list(f),g))),
+    // D(ZTransform(f_,g_,h_),x_?NotListQ):=(h*D(f,x))/(-1+h)+(f*D(h,x))/(-1+h)+(-f*h*D(h,x))/(-1+h)^2/;FreeQ({f},g)
+    ISetDelayed(D(ZTransform(f_,g_,h_),PatternTest(x_,NotListQ)),
+      Condition(Plus(Times(Power(Plus(CN1,h),CN1),h,D(f,x)),Times(f,Power(Plus(CN1,h),CN1),D(h,x)),Times(CN1,f,Power(Plus(CN1,h),CN2),h,D(h,x))),FreeQ(list(f),g)))
   );
 }

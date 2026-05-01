@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.BinaryBindIth1st;
@@ -16,6 +17,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IArraySymbol;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
@@ -225,6 +227,15 @@ public class D extends AbstractFunctionEvaluator {
    */
   private static IExpr getDerivativeArgN(IExpr x, final IAST ast, final IExpr head,
       EvalEngine engine) {
+    if (head instanceof IBuiltInSymbol) {
+      int id = ((IBuiltInSymbol) head).ordinal();
+      if (id == ID.LaplaceTransform //
+          || id == ID.InverseLaplaceTransform //
+          || id == ID.ZTransform //
+          || id == ID.InverseZTransform) {
+        return F.NIL;
+      }
+    }
     IAST[] deriv = ast.isDerivative();
     int size = ast.size();
     if (deriv != null) {

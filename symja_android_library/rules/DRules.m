@@ -160,5 +160,14 @@
   D(AppellF1(a_,b_,c_,d_,f_,g_),x_?NotListQ) :=  (a*b*AppellF1(1+a,1+b,c,1+d,f,g)*D(f,x))/d+(a*c*AppellF1(1+a,b,1+c,1+d,f,g)*D(g,x))/d
     /; FreeQ({a,b,c,d},x),
     
-  D(UnitStep(f_),x_?NotListQ) :=  Piecewise({{Indeterminate, f == 0}}, 0)*D(f,x)
+  D(UnitStep(f_),x_?NotListQ) :=  Piecewise({{Indeterminate, f == 0}}, 0)*D(f,x),
+   
+  D(InverseLaplaceTransform(f_,g_,h_),x_?NotListQ) := DiracDelta(h)*D(f,x) + f*Derivative(1)[DiracDelta][h]*D(h,x) 
+    /; FreeQ({f},g),
+  D(LaplaceTransform(f_,g_,h_),x_?NotListQ) := D(f,x)/h-f*D(h,x)/h^2  
+    /; FreeQ({f},g),
+  D(InverseZTransform(f_,g_,h_),x_?NotListQ) := DiscreteDelta(h)*D(f,x)
+    /; FreeQ({f},g),
+  D(ZTransform(f_,g_,h_),x_?NotListQ) := (h*D(f,x))/(-1+h)+(f*D(h,x))/(-1+h)+(-f*h*D(h,x))/(-1+h)^2
+    /; FreeQ({f},g)
 }

@@ -190,6 +190,19 @@ Derivative(1)[Zeta][0] = (-1/2)*Log(2*Pi),
 Derivative(1)[Zeta][-1] = 1/12-Log(Glaisher),
 
 Derivative(1,0,0)[LerchPhi] = (LerchPhi(1,-1+#2,#3)-LerchPhi(#,#2,#3)*#3)/# &,
-Derivative(0,0,1)[LerchPhi] = (-LerchPhi(#, 1 + #2, #3))*#2 &  
+Derivative(0,0,1)[LerchPhi] = (-LerchPhi(#, 1 + #2, #3))*#2 &,
+
+Derivative(1,0,0)[LaplaceTransform] = 1/#3 &,
+Derivative(0,1,0)[LaplaceTransform] = 0 &,
+Derivative(0,0,1)[LaplaceTransform] = -#/#3^2 &, 
+Derivative(1,0,0)[InverseLaplaceTransform] = DiracDelta(#3) &,
+Derivative(0,1,0)[InverseLaplaceTransform] = 0 &,
+Derivative(0,0,1)[InverseLaplaceTransform] = #1*DiracDelta'(#3) &,
+Derivative(1,0,0)[InverseZTransform] = DiscreteDelta(#3) &,
+Derivative(0,1,0)[InverseZTransform] = 0 &,
+Derivative(0,0,1)[InverseZTransform] = 0 &,
+Derivative(1,0,0)[ZTransform] = #3/(-1+#3) &,
+Derivative(0,1,0)[ZTransform] = 0 &,
+Derivative(0,0,1)[ZTransform] = #1/(-1+#3)+(-#1*#3)/(-1+#3)^2&
 
 }
