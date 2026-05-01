@@ -3308,7 +3308,8 @@ public final class NumberTheory {
         }
         IExpr result = continuedFractionList.get(size--);
         for (int i = size; i >= 1; i--) {
-          result = F.Plus(continuedFractionList.get(i), F.Power(result, F.CN1));
+          result = engine
+              .evaluate(F.Together(F.Plus(continuedFractionList.get(i), F.Power(result, F.CN1))));
         }
         return result;
       } catch (ValidateException ve) {
