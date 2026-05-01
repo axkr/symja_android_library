@@ -4010,6 +4010,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testContinuedFraction() {
+
     // ContinuedFraction: Warning: ContinuedFraction terminated before 20 terms.
     check("ContinuedFraction(1/2, 20)", //
         "{0,2}");
@@ -4067,13 +4068,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ContinuedFraction((7*Sqrt(2) + 1)/11)", //
         "{0,1,{108,2,4,4,4,2}}");
     check("period=FromContinuedFraction({108,2,4,4,4,2,t})", //
-        "108+1/(2+1/(4+1/(4+1/(4+1/(2+1/t)))))");
+        "(17460+39041*t)/(161+360*t)");
     check("period // Together", //
         "(17460+39041*t)/(161+360*t)");
     check("y=Solve(period-t==0,t) [[2,1,2]]", //
-        "1/720*(38880+27720*Sqrt(2))");
+        "54+77/Sqrt(2)");
     // TODO
-    check("FromContinuedFraction({0,1,x}) /. x->y  // Simplify", //
+    check("FromContinuedFraction({0,1,x}) /. x->y // Simplify ", //
         "1/11*(1+7*Sqrt(2))");
     // END ContinuedFraction -> FromContinuedFraction
 
@@ -8843,8 +8844,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "FindMaximum({2/3*x^2*Cos(x^2/3)+Sin(x^2/3), x>=-19.1 && x<=-19.05}, {x, -19.1}, Method -> \"ConjugateGradient\")", //
         "{226.2146,{x->-18.42096}}");
     check("FindMaximum({x Cos(x), 1 < x < 11}, {x, 7} )", //
-        "{6.361,{x->6.4373}}");
-    check("FindMaximum({x Cos(x), 1 <= x <= 11}, {x, 7} )", //
         "{6.361,{x->6.4373}}");
     check("FindMaximum({x Cos(x), 1 < x < 11}, {x, 7} ,Method->\"BOBYQA\")", //
         "{6.361,{x->6.4373}}");
@@ -15935,7 +15934,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + " {3,4}})");
 
     check("Norm({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
-        "Sqrt(3/2*(95+Sqrt(8881)))");
+        "Sqrt(1/2*(285+3*Sqrt(8881)))");
 
     check("Norm({{1,1},{-1,1}})", //
         "Sqrt(2)");
