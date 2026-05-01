@@ -589,6 +589,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEigensystem() {
+    check("Eigensystem({{E,0,0},{0,4*E,-4*E},{0,4*E,4*E}})", //
+        "{{(4-I*4)*E,(4+I*4)*E,E},{{0,-I,1},{0,I,1},{1,0,0}}}");
+
     check("Eigensystem({{0,t,t}, {t,0,-t}, {t,-t,0}})", //
         "{{-2*t,t,t},{{-1,1,1},{1,1,0},{1,0,1}}}");
 
@@ -634,6 +637,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEigenvalues() {
+    check("Eigenvalues({{-2,-2,4}, {-1,-3,7}, {2,4,6}})", //
+        "{1+Sqrt(61),1-Sqrt(61),-1}");
+
     // check("Eigenvalues("//
     // + "{{5.42,3.26+I*0.643,-0.467+I*(-0.193)}," //
     // + " {3.26+I*(-0.643),3.82,1.04+I*(-2.35)}," //
@@ -686,8 +692,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
     check("Eigenvalues({{1,1,1},{2,2,2},{3,3,3}})", //
         "{6,0,0}");
-    check("Eigenvalues({{-2,-2,4}, {-1,-3,7}, {2,4,6}})", //
-        "{1+Sqrt(61),1-Sqrt(61),-1}");
+
     check("Eigenvalues({{0,1,-1},{1,1,0},{-1,0,1}})", //
         "{2,-1,1}");
     check("Eigenvalues({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}})", //
@@ -706,7 +711,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Roots(CharacteristicPolynomial(m,x)==0, x)", //
         "x==0||x==3/2*(5-Sqrt(33))||x==3/2*(5+Sqrt(33))");
     check("EigenValues(m)", //
-        "{3/2*(5+Sqrt(33)),3/2*(5-Sqrt(33)),0}");
+        "{1/2*(15+3*Sqrt(33)),1/2*(15-3*Sqrt(33)),0}");
 
     // 4x4
     check("Eigenvalues(SparseArray({{1, 3} -> 2, {2, 2} -> 3, {3, 1} -> 1, {4, 2} -> 5}, {4, 4})) ", //
@@ -734,7 +739,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Eigenvalues({{a,b}, {c,d}})", //
         "{1/2*(a+d-Sqrt(a^2+4*b*c-2*a*d+d^2)),1/2*(a+d+Sqrt(a^2+4*b*c-2*a*d+d^2))}");
     check("Eigenvalues({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
-        "{3/2*(5+Sqrt(33)),3/2*(5-Sqrt(33)),0}");
+        "{1/2*(15+3*Sqrt(33)),1/2*(15-3*Sqrt(33)),0}");
     check("Eigenvalues({{0.0,1.0,-1.0},{1.0,1.0,0.0},{-1.0,0.0,1.0}})", //
         "{2.0,-1.0,1.0}");
   }
@@ -1064,6 +1069,12 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testInverse() {
+    check(
+        "Inverse({{-0.677003+I*0.612372,-0.677003+I*(-0.612372),0.0}, {0.0,0.0,-1.0}, {I*(-0.408248),I*0.408248,0.0}})", //
+        "{{-0.738549,0.0,-1.10782+I*1.22475},\n" //
+            + " {-0.738549,0.0,-1.10782+I*(-1.22475)},\n" //
+        + " {0,-1,0}}");
+
     // message Inverse: Matrix {{0,1},{0,0}} is singular.
     check("Inverse({{0, 1.0}, {0, 0}})", //
         "Inverse(\n" //
@@ -1338,8 +1349,28 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMatrixExp() {
+
+    check("m = SparseArray({{1, 3} -> 1, {2, 2} -> 2, {3, 1} -> 3}, {3, 3});", //
+        "");
+    check("m2=Normal(N(m))", //
+        "{{0.0,0.0,1.0},\n" //
+            + " {0.0,2.0,0.0},\n" //
+            + " {3.0,0.0,0.0}}");
+    check("MatrixExp(m2)  ", //
+        "{{2.91458,0.0,1.58059},\n"//
+            + " {0.0,7.38906,0.0},\n"//
+            + " {4.74176,0.0,2.91458}}");
+    check("MatrixExp(m) ", //
+        "{{(1+E^(2*Sqrt(3)))/(2*E^Sqrt(3)),0,(-1+E^(2*Sqrt(3)))/(2*Sqrt(3)*E^Sqrt(3))},\n" //
+            + " {0,E^2,0},\n" //
+            + " {(Sqrt(3)*(-1+E^(2*Sqrt(3))))/(2*E^Sqrt(3)),0,(1+E^(2*Sqrt(3)))/(2*E^Sqrt(3))}}");
+
+
+
     check("MatrixExp({{0,1,1},{-1,0,-1},{1,-1,0}}*t)", //
-        "{{1,1-1/E^t,1-1/E^t},{1-E^t,1,1-E^t},{-1+E^t,-1+E^(-t),-1+E^(-t)+E^t}}");
+        "{{1,1-1/E^t,1-1/E^t},\n"//
+            + " {1-E^t,1,1-E^t},\n"//
+            + " {-1+E^t,-1+E^(-t),-1+E^(-t)+E^t}}");
     check("MatrixExp({{0, t}, {-t, 2*t}})", //
         "{{E^t*(1-t),E^t*t},{-E^t*t,E^t*(1+t)}}");
     check("MatrixExp[{{a}}]", //
@@ -1392,8 +1423,44 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("MatrixExp({{1.2, 5.6}, {3, 4}})", //
         "{{346.5575,661.7346},{354.5007,677.4248}}");
     check("MatrixExp({{2, 0, 0}, {0, 1, -1}, {0, 1, 1}})", //
-        "{{7.38906,0.0,0.0},{0.0,1.46869,-2.28736},{0.0,2.28736,1.46869}}");
+        "{{E^2,0,0},\n" //
+            + " {0,1/2*(E^(1-I)+E^(1+I)),-I*1/2*E^(1-I)+I*1/2*E^(1+I)},\n" //
+            + " {0,I*1/2*E^(1-I)-I*1/2*E^(1+I),1/2*(E^(1-I)+E^(1+I))}}");
 
+  }
+
+  @Test
+  public void testMatrixLog() {
+    check("MatrixLog({{3.4, 1.2}, {0.001, -0.9}})", //
+        "{{1.22377+I*0.00020385,0.37081+I*(-0.87661)},\n"//
+            + " {0.000309008+I*(-0.000730508),-0.104964+I*3.14139}}");
+    check("m = {{E,0,0},{0,4*E,-4*E},{0,4*E,4*E}};", //
+        "");
+    check("MatrixLog(m)", //
+        "{{1,0,0},\n"//
+            + " {0,1/2*(2+Log(4-I*4)+Log(4+I*4)),-I*1/2*Log(4-I*4)+I*1/2*Log(4+I*4)},\n" //
+            + " {0,I*1/2*Log(4-I*4)-I*1/2*Log(4+I*4),1/2*(2+Log(4-I*4)+Log(4+I*4))}}");
+    check("MatrixLog(m) // N", //
+        "{{1.0,0.0,0.0},{0.0,2.73287,-0.785398},{0.0,0.785398,2.73287}}");
+
+    check("MatrixLog({{1, 2}, {3, 4}})//N", //
+        "{{-0.35044+I*2.39112,0.929351+I*(-1.09376)},{1.39403+I*(-1.64064),1.04359+I*0.750475}}");
+
+    check("MatrixLog({{0, 0, 1}, {0, 2, 0}, {-1, 0, 0}})", //
+        "{{0,0,Pi/2},\n" //
+            + " {0,Log(2),0},\n" //
+            + " {-Pi/2,0,0}}");
+    check("m = {{0, 0, 1}, {0, 2, 0}, {-1, 0, 0}}; \n" //
+        + "mm = MatrixExp[MatrixLog[m]];\n" //
+        + "m == mm", //
+        "True");
+
+    check("MatrixLog({{6, 0, 10}, {0, 20, 0}, {-2, 0, 0}})//N", //
+        "{{2.25359,0.0,2.51907},{0.0,2.99573,0.0},{-0.503815,0.0,0.742144}}");
+    check("MatrixLog(N({{6, 0, 10}, {0, 20, 0}, {-2, 0, 0}}))", //
+        "{{2.25359+I*2.22045*10^-16,0.0,2.51907+I*4.44089*10^-16},\n" //
+            + " {0.0,2.99573,0.0},\n" //
+            + " {-0.503815,0.0,0.742144+I*2.22045*10^-16}}");
   }
 
   @Test
@@ -1706,6 +1773,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNullSpace() {
+    check("NullSpace({{0,0,0}, {0,3*E,-4*E}, {0,4*E,3*E}})", //
+        "{{1,0,0}}");
     // TODO improve Zero tests
     // see https://docs.sympy.org/latest/tutorials/intro-tutorial/matrices.html#zero-testing
     check("NullSpace({{-2*Cosh(q/3),Exp(-q),1},{Exp(q),-2*Cosh(q/3),1},{1,1,-2*Cosh(q/3)}})", //

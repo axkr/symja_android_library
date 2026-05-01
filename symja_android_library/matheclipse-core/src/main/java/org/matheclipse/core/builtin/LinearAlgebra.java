@@ -120,7 +120,18 @@ public final class LinearAlgebra {
       return inverse.scalarMultiply(det);
     }
 
-    public static RealMatrix adjugateMatrix(RealMatrix matrix) {
+    @Override
+    public int[] checkMatrixDimensions(IExpr arg1) {
+      return Convert.checkNonEmptySquareMatrix(S.Adjugate, arg1);
+    }
+
+    @Override
+    public FieldMatrix<IExpr> matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
+      return adjugateMatrix(matrix, zeroChecker);
+    }
+
+    @Override
+    public RealMatrix realMatrixEval(RealMatrix matrix) {
       final org.hipparchus.linear.LUDecomposition lu =
           new org.hipparchus.linear.LUDecomposition(matrix);
       DecompositionSolver solver = lu.getSolver();
@@ -136,18 +147,19 @@ public final class LinearAlgebra {
     }
 
     @Override
-    public int[] checkMatrixDimensions(IExpr arg1) {
-      return Convert.checkNonEmptySquareMatrix(S.Adjugate, arg1);
-    }
+    public FieldMatrix<Complex> complexMatrixEval(FieldMatrix<Complex> matrix) {
+      final FieldLUDecomposition<Complex> lu = new FieldLUDecomposition<>(matrix);
+      FieldDecompositionSolver<Complex> solver = lu.getSolver();
 
-    @Override
-    public FieldMatrix<IExpr> matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
-      return adjugateMatrix(matrix, zeroChecker);
-    }
-
-    @Override
-    public RealMatrix realMatrixEval(RealMatrix matrix) {
-      return adjugateMatrix(matrix);
+      if (!solver.isNonSingular()) {
+        // Matrix `1` is singular.
+        Errors.printMessage(S.Adjugate, "sing", F.list(Convert.complexMatrix2List(matrix, false)),
+            EvalEngine.get());
+        return null;
+      }
+      FieldMatrix<Complex> inverse = solver.getInverse();
+      Complex det = lu.getDeterminant();
+      return inverse.scalarMultiply(det);
     }
 
     @Override
@@ -2122,57 +2134,53 @@ public final class LinearAlgebra {
     }
 
     private void getResultOfNullspace(IExpr minusOneFactor, int rank) {
-      // search free columns
-      boolean[] columns = new boolean[nullSpaceCache.getColumnDimension()];
-      int numberOfFreeColumns = 0;
+      int numCols = nullSpaceCache.getColumnDimension();
+
+      // Step 1: Find the pivot column for each non-zero row by scanning left-to-right
+      int[] pivotCol = new int[rank];
+      java.util.Arrays.fill(pivotCol, -1);
       for (int i = 0; i < rank; i++) {
-        if (!columns[i]) {
-          for (int k = i; k < rowReducedMatrix.getColumnDimension(); k++) {
-            if (isZero(rowReducedMatrix.getEntry(i, k))) {
-              columns[k] = true;
-              // free column
-              int offset = 0;
-              for (int j = 0; j < rank; j++) {
-                if (columns[j]) {
-                  offset++;
-                }
-                nullSpaceCache.setEntry(numberOfFreeColumns, j + offset,
-                    rowReducedMatrix.getEntry(j, i));
-              }
-              numberOfFreeColumns++;
-            } else {
-              break;
+        for (int k = 0; k < numCols; k++) {
+          if (!isZero(rowReducedMatrix.getEntry(i, k))) {
+            pivotCol[i] = k;
+            break;
+          }
+        }
+      }
+
+      // Step 2: Mark which columns are pivot columns
+      boolean[] isPivotCol = new boolean[numCols];
+      for (int i = 0; i < rank; i++) {
+        if (pivotCol[i] >= 0) {
+          isPivotCol[pivotCol[i]] = true;
+        }
+      }
+
+      // Step 3: For each free column, build one null space vector.
+      // The null space vector for free column f has:
+      // x_f = 1 (set after the -1 multiply)
+      // x_{pivotCol[i]} = RREF[i][f] (to be negated by minusOneFactor)
+      int row = 0;
+      for (int freeCol = 0; freeCol < numCols; freeCol++) {
+        if (!isPivotCol[freeCol]) {
+          for (int i = 0; i < rank; i++) {
+            if (pivotCol[i] >= 0) {
+              nullSpaceCache.setEntry(row, pivotCol[i], rowReducedMatrix.getEntry(i, freeCol));
             }
           }
+          row++;
         }
       }
 
-      // Let's take the rest of the 'free part' of the reduced row echelon
-      // form
-      int start = rank + numberOfFreeColumns;
-      int row = numberOfFreeColumns;
-      for (int i = start; i < nullSpaceCache.getColumnDimension(); i++) {
-        int offset = 0;
-        for (int j = 0; j < rank; j++) {
-          if (columns[j]) {
-            offset++;
-          }
-          nullSpaceCache.setEntry(row, j + offset, rowReducedMatrix.getEntry(j, i));
-        }
-        row++;
-      }
-      for (int i = start; i < nullSpaceCache.getColumnDimension(); i++) {
-        columns[i] = true;
-      }
-
-      // multiply matrix with scalar -1
+      // Step 4: Multiply the pivot-column entries by minusOneFactor (typically -1)
       nullSpaceCache = nullSpaceCache.scalarMultiply(minusOneFactor);
 
-      // append the 'one element' (typically as identity matrix)
+      // Step 5: Set the free-variable positions to 1
       row = 0;
-      for (int i = 0; i < columns.length; i++) {
-        if (columns[i]) {
-          nullSpaceCache.setEntry(row++, i, F.C1);
+      for (int freeCol = 0; freeCol < numCols; freeCol++) {
+        if (!isPivotCol[freeCol]) {
+          nullSpaceCache.setEntry(row, freeCol, F.C1);
+          row++;
         }
       }
     }
@@ -3209,6 +3217,20 @@ public final class LinearAlgebra {
       }
       return solver.getInverse();
     }
+
+    @Override
+    public FieldMatrix<Complex> complexMatrixEval(FieldMatrix<Complex> matrix) {
+      final FieldLUDecomposition<Complex> lu = new FieldLUDecomposition<>(matrix);
+      FieldDecompositionSolver<Complex> solver = lu.getSolver();
+      if (!solver.isNonSingular()) {
+        // Matrix `1` is singular.
+        Errors.printMessage(S.Inverse, "sing", F.list(Convert.complexMatrix2List(matrix)),
+            EvalEngine.get());
+        return null;
+      }
+      return solver.getInverse();
+    }
+
   }
 
 
@@ -3842,40 +3864,87 @@ public final class LinearAlgebra {
   }
 
 
-  /**
-   * <pre>
-   * MatrixExp(matrix)
-   * </pre>
-   *
-   * <blockquote>
-   * <p>
-   * evaluates the matrix exponential.
-   * </p>
-   * </blockquote>
-   *
-   * <pre>
-   * MatrixExp(matrix, v)
-   * </pre>
-   *
-   * <blockquote>
-   * <p>
-   * evaluates the matrix exponential applied to the vector v.
-   * </p>
-   * </blockquote>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; MatrixExp({{0,1},{0,1}})
-   * {{1,-1+E},{0,E}}
-   * </pre>
-   */
   public static class MatrixExp extends AbstractFunctionEvaluator {
+
+
+    /**
+     * Applies a scalar function f to each eigenvalue and reconstructs the matrix via
+     * diagonalization: result = P * diag(f(λ₁),...,f(λₙ)) * P⁻¹
+     *
+     * @param matX the matrix expression (symbolic or numeric)
+     * @param n the dimension
+     * @param scalarFn the scalar function to apply to each eigenvalue
+     * @param engine the evaluation engine
+     * @return the result matrix, or F.NIL if diagonalization fails
+     */
+    protected static IExpr applyScalarFunctionViaEigensystem(IExpr matX, int n,
+        java.util.function.Function<IExpr, IExpr> scalarFn, EvalEngine engine) {
+
+      IExpr eigenSys = engine.evaluate(F.Eigensystem(matX));
+      if (eigenSys.isList2()) {
+        IAST eigenValues = (IAST) eigenSys.first();
+        IAST eigenVectors = (IAST) eigenSys.second();
+
+        // Eigensystem returns eigenvectors as rows; P needs them as columns
+        IExpr P = engine.evaluate(F.Transpose(eigenVectors));
+        IExpr Pinv = engine.evaluate(F.Inverse(P));
+
+        if (Pinv.isMatrix() != null && !Pinv.has(S.Indeterminate) && !Pinv.isDirectedInfinity()) {
+          IASTAppendable fD = F.ListAlloc(n);
+          for (int i = 1; i <= n; i++) {
+            IASTAppendable row = F.ListAlloc(n);
+            IExpr expLogFunction = scalarFn.apply(eigenValues.get(i));
+            for (int j = 1; j <= n; j++) {
+              row.append(i == j ? expLogFunction : F.C0);
+            }
+            fD.append(row);
+          }
+          IExpr result = engine.evaluate(F.Dot(P, F.Dot(fD, Pinv)));
+          if (result.isList()) {
+            return result;
+          }
+        }
+      }
+      return F.NIL;
+    }
+
+    private IExpr computeMatrixExp(ITensorAccess matrix, int n, EvalEngine engine) {
+      if (n == 1) {
+        IExpr a = ((IAST) matrix.get(1)).get(1);
+        return F.List(F.List(F.Exp(a)));
+      }
+      if (n == 2) {
+        IExpr a = ((IAST) matrix.get(1)).get(1);
+        IExpr b = ((IAST) matrix.get(1)).get(2);
+        IExpr c = ((IAST) matrix.get(2)).get(1);
+        IExpr d = ((IAST) matrix.get(2)).get(2);
+        return computeMatrix2x2(a, b, c, d, engine);
+      }
+      if (!engine.isNumericMode() && !matrix.isNumericArgument()) {
+        return applyScalarFunctionViaEigensystem(matrix.normal(false), n,
+            lambda -> engine.evaluate(F.Exp(lambda)), engine);
+      }
+      // Numeric/fallback diagonalization path — now delegates to shared helper
+      boolean oldNumericMode = engine.isNumericMode();
+      try {
+        engine.setNumericMode(true);
+        return applyScalarFunctionViaEigensystem(matrix.normal(false), n,
+            lambda -> engine.evaluate(F.Exp(lambda)), engine);
+      } finally {
+        engine.setNumericMode(oldNumericMode);
+      }
+    }
 
     private IExpr computeMatrix2x2(IExpr a, IExpr b, IExpr c, IExpr d, EvalEngine engine) {
       if (b.isPossibleZero(true)) {
         if (a.isPossibleZero(true) && d.isPossibleZero(true)) {
+          // b=0, a=0, d=0 → e^A = {{1,0},{c,1}}
           return F.List(F.List(F.C1, F.C0), F.List(c, F.C1));
+        }
+        // b=0, a==d → limit of c*(e^a-e^d)/(a-d) = c*e^a ***
+        if (engine.evaluate(F.Subtract(a, d)).isPossibleZero(true)) {
+          IExpr expA = engine.evaluate(F.Exp(a));
+          return F.list(F.list(expA, F.C0), F.list(engine.evaluate(F.Times(c, expA)), expA));
         }
         // {{E^a,0},{(c*(E^a-E^d))/(a-d),E^d}}
         IExpr v2 = F.Exp(a);
@@ -3885,7 +3954,13 @@ public final class LinearAlgebra {
       }
       if (c.isPossibleZero(true)) {
         if (a.isPossibleZero(true) && d.isPossibleZero(true)) {
+          // c=0, a=0, d=0 → e^A = {{1,b},{0,1}}
           return F.List(F.List(F.C1, b), F.List(F.C0, F.C1));
+        }
+        // c=0, a==d → limit of b*(e^a-e^d)/(a-d) = b*e^a ***
+        if (engine.evaluate(F.Subtract(a, d)).isPossibleZero(true)) {
+          IExpr expA = engine.evaluate(F.Exp(a));
+          return F.list(F.list(expA, engine.evaluate(F.Times(b, expA))), F.list(F.C0, expA));
         }
         // {{E^a,(b*(E^a-E^d))/(a-d)},{0,E^d}}
         IExpr v2 = F.Exp(a);
@@ -3988,52 +4063,6 @@ public final class LinearAlgebra {
       }
     }
 
-    private IExpr computeMatrixExp(IAST matrix, int n, EvalEngine engine) {
-      // Fast, exact algebraic path for 2x2 matrices using Sylvester's formula
-      if (n == 1) {
-        IExpr a = ((IAST) matrix.get(1)).get(1);
-        return F.List(F.List(F.Exp(a)));
-      }
-      if (n == 2) {
-        IExpr a = ((IAST) matrix.get(1)).get(1);
-        IExpr b = ((IAST) matrix.get(1)).get(2);
-        IExpr c = ((IAST) matrix.get(2)).get(1);
-        IExpr d = ((IAST) matrix.get(2)).get(2);
-        return computeMatrix2x2(a, b, c, d, engine);
-      }
-
-      IExpr matrixExpSymbolic = matrixExpSymbolic(matrix, n, engine);
-      if (matrixExpSymbolic.isPresent()) {
-        return matrixExpSymbolic;
-      }
-      // Try Diagonalization
-      IExpr eigensystem = engine.evaluate(F.Eigensystem(matrix));
-      if (eigensystem.isList() && ((IAST) eigensystem).argSize() == 2) {
-        IAST vals = (IAST) ((IAST) eigensystem).arg1();
-        IAST vecs = (IAST) ((IAST) eigensystem).arg2();
-
-        IExpr vecsInv = engine.evaluate(F.Inverse(vecs));
-        if (vecsInv.isList() && !vecsInv.has(S.Indeterminate) && !vecsInv.isDirectedInfinity()) {
-          IASTAppendable expD = F.ListAlloc(n);
-          for (int i = 1; i <= n; i++) {
-            IASTAppendable row = F.ListAlloc(n);
-            for (int j = 1; j <= n; j++) {
-              if (i == j) {
-                row.append(engine.evaluate(F.Exp(vals.get(i))));
-              } else {
-                row.append(F.C0);
-              }
-            }
-            expD.append(row);
-          }
-          IExpr result = engine.evaluate(F.Dot(vecs, F.Dot(expD, vecsInv)));
-          return result;
-        }
-      }
-
-      return F.NIL;
-    }
-
     /**
      * Computes the matrix exponential for a 2x2 matrix of the form {{0, b}, {c, 0}} specifically
      * for the case where b * c < 0 (resulting in real Sin/Cos terms).
@@ -4059,23 +4088,18 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.argSize() >= 1 && ast.argSize() <= 2) {
-        IExpr arg1 = ast.arg1();
-        if (arg1.isList()) {
-          IAST matrix = (IAST) arg1;
-          int[] dim = matrix.isMatrix();
-          if (dim != null && dim[0] == dim[1]) {
-            int n = dim[0];
-            IExpr v = ast.argSize() == 2 ? ast.arg2() : null;
+      IExpr arg1 = ast.arg1();
+      int[] dim = arg1.isMatrix();
+      if (dim != null && dim[0] == dim[1]) {
+        int n = dim[0];
+        IExpr v = ast.argSize() == 2 ? ast.arg2() : null;
 
-            IExpr expMat = computeMatrixExp(matrix, n, engine);
-            if (expMat.isPresent()) {
-              if (v != null) {
-                return engine.evaluate(F.Dot(expMat, v));
-              }
-              return expMat;
-            }
+        IExpr expMat = computeMatrixExp((ITensorAccess) arg1, n, engine);
+        if (expMat.isPresent()) {
+          if (v != null) {
+            return engine.evaluate(F.Dot(expMat, v));
           }
+          return expMat;
         }
       }
       return F.NIL;
@@ -4084,44 +4108,6 @@ public final class LinearAlgebra {
     @Override
     public int[] expectedArgSize(IAST ast) {
       return IFunctionEvaluator.ARGS_1_2;
-    }
-
-    /**
-     * Computes the matrix exponential for diagonalizable matrices of any size using Eigensystem
-     * decomposition (e^A = P * e^D * P^-1).
-     */
-    private IExpr matrixExpSymbolic(IExpr matX, int n, EvalEngine engine) {
-      IExpr eigenSys = engine.evaluate(F.Eigensystem(matX));
-      if (eigenSys.isList() && ((IAST) eigenSys).argSize() == 2) {
-        IAST evals = (IAST) ((IAST) eigenSys).arg1();
-        IAST evecs = (IAST) ((IAST) eigenSys).arg2();
-
-        // Form the transformation matrix P (eigenvectors as columns)
-        IExpr P = engine.evaluate(F.Transpose(evecs));
-        IExpr invP = engine.evaluate(F.Inverse(P));
-
-        // If P is invertible, the matrix is safely diagonalizable
-        if (invP.isList()) {
-          IASTAppendable expD = F.ListAlloc(n);
-          for (int i = 1; i <= n; i++) {
-            IASTAppendable row = F.ListAlloc(n);
-            for (int j = 1; j <= n; j++) {
-              if (i == j) {
-                row.append(F.Exp(evals.get(i)));
-              } else {
-                row.append(F.C0);
-              }
-            }
-            expD.append(row);
-          }
-
-          IExpr result = engine.evaluate(F.Simplify(F.Dot(P, F.Dot(expD, invP))));
-          if (result.isList()) {
-            return result;
-          }
-        }
-      }
-      return F.NIL;
     }
 
   }
@@ -4154,28 +4140,132 @@ public final class LinearAlgebra {
   }
 
 
-  private static class MatrixLog extends AbstractFunctionEvaluator {
+  private static class MatrixLog extends MatrixExp {
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      int[] dim = arg1.isMatrix();
+      if (dim == null || dim[0] != dim[1] || dim[0] == 0) {
+        return F.NIL;
+      }
+      int n = dim[0];
 
-      int[] dim = ast.arg1().isMatrix();
-      if (dim != null && dim[0] == dim[1] && dim[0] > 0) {
-        RealMatrix matrix = ast.arg1().toRealMatrix();
-        if (matrix != null) {
-          // TODO
-          // FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(ast.arg2());
-          // return Convert.matrix2Expr(fieldMatrix);
+      // --- 1x1 case ---
+      if (n == 1) {
+        IExpr a = ((IAST) ((IAST) arg1).get(1)).get(1);
+        return F.List(F.List(engine.evaluate(F.Log(a))));
+      }
+
+      // --- 2x2 closed-form symbolic case ---
+      if (n == 2 && !engine.isNumericMode() && !arg1.isNumericArgument(true)) {
+        IExpr result2x2 = computeMatrixLog2x2(arg1, engine);
+        if (result2x2.isPresent()) {
+          return result2x2;
         }
       }
 
-      return F.NIL;
+      // --- Symbolic diagonalization: Log(A) = P * Log(D) * P^-1 ---
+      if (!engine.isNumericMode() && !arg1.isNumericArgument(true)) {
+        IExpr matX = arg1.normal(false);
+        return applyScalarFunctionViaEigensystem(matX, n, lambda -> F.Log(lambda), engine);
+      }
+
+      // --- Numeric diagonalization: Log(A) = P * Log(D) * P^-1 ---
+      boolean oldNumericMode = engine.isNumericMode();
+      try {
+        engine.setNumericMode(true);
+        IExpr matX = arg1 instanceof ITensorAccess ? arg1.normal(false) : arg1;
+        return applyScalarFunctionViaEigensystem(matX, n,
+            lambda -> engine.evaluate(F.Log(lambda)), engine);
+      } finally {
+        engine.setNumericMode(oldNumericMode);
+      }
+    }
+
+    /**
+     * Closed-form 2x2 matrix logarithm using the analytic formula:
+     * 
+     * <pre>
+     *   Log(A) = (Log(λ₁) - Log(λ₂))/(λ₁ - λ₂) * A
+     *            + (λ₁*Log(λ₂) - λ₂*Log(λ₁))/(λ₁ - λ₂) * I
+     * </pre>
+     * 
+     * For the repeated-eigenvalue case (λ₁ == λ₂ == λ, A diagonalizable):
+     * 
+     * <pre>
+     *   Log(A) = Log(λ)*I + (A - λI)/λ     [when (A-λI)^2 = 0]
+     * </pre>
+     */
+    private IExpr computeMatrixLog2x2(IExpr arg1, EvalEngine engine) {
+      IAST mat = (IAST) arg1;
+      IExpr a = ((IAST) mat.get(1)).get(1);
+      IExpr b = ((IAST) mat.get(1)).get(2);
+      IExpr c = ((IAST) mat.get(2)).get(1);
+      IExpr d = ((IAST) mat.get(2)).get(2);
+
+      IExpr tr = engine.evaluate(F.Plus(a, d));
+      IExpr det = engine.evaluate(F.Subtract(F.Times(a, d), F.Times(b, c)));
+
+      // Eigenvalues: λ = (tr ± sqrt(tr²-4det)) / 2
+      IExpr disc = engine.evaluate(F.Subtract(F.Sqr(tr), F.Times(F.C4, det)));
+
+      if (disc.isPossibleZero(true)) {
+        // Repeated eigenvalue λ = tr/2
+        // Log(A) = Log(λ)*I + (A - λI)/λ (valid when (A-λI)^2 = 0, i.e. nilpotent part)
+        IExpr lambda = engine.evaluate(F.Divide(tr, F.C2));
+        IExpr logLam = engine.evaluate(F.Log(lambda));
+        IExpr invLam = engine.evaluate(F.Power(lambda, F.CN1));
+        // Log(A) = [[logLam + (a-λ)/λ, b/λ],
+        // [c/λ, logLam + (d-λ)/λ]]
+        IExpr r11 = engine.evaluate(F.Plus(logLam, F.Times(F.Subtract(a, lambda), invLam)));
+        IExpr r12 = engine.evaluate(F.Times(b, invLam));
+        IExpr r21 = engine.evaluate(F.Times(c, invLam));
+        IExpr r22 = engine.evaluate(F.Plus(logLam, F.Times(F.Subtract(d, lambda), invLam)));
+        return F.list(F.list(r11, r12), F.list(r21, r22));
+      }
+
+      // Distinct eigenvalues: λ₁, λ₂
+      IExpr sqrtDisc = engine.evaluate(F.Sqrt(disc));
+      IExpr lambda1 = engine.evaluate(F.Divide(F.Plus(tr, sqrtDisc), F.C2));
+      IExpr lambda2 = engine.evaluate(F.Divide(F.Subtract(tr, sqrtDisc), F.C2));
+      IExpr diffL = engine.evaluate(F.Subtract(lambda1, lambda2));
+
+      if (diffL.isPossibleZero(true)) {
+        return F.NIL; // shouldn't happen after disc != 0, but guard anyway
+      }
+
+      IExpr logL1 = engine.evaluate(F.Log(lambda1));
+      IExpr logL2 = engine.evaluate(F.Log(lambda2));
+      IExpr diffLog = engine.evaluate(F.Subtract(logL1, logL2));
+
+      // scalar coefficients of Sylvester's formula:
+      // Log(A) = alpha * A + beta * I
+      // alpha = (Log(λ₁) - Log(λ₂)) / (λ₁ - λ₂)
+      // beta = (λ₁*Log(λ₂) - λ₂*Log(λ₁)) / (λ₁ - λ₂)
+      IExpr alpha = engine.evaluate(F.Divide(diffLog, diffL));
+      IExpr beta = engine
+          .evaluate(F.Divide(F.Subtract(F.Times(lambda1, logL2), F.Times(lambda2, logL1)), diffL));
+
+      IExpr r11 = engine.evaluate(F.Plus(F.Times(alpha, a), beta));
+      IExpr r12 = engine.evaluate(F.Times(alpha, b));
+      IExpr r21 = engine.evaluate(F.Times(alpha, c));
+      IExpr r22 = engine.evaluate(F.Plus(F.Times(alpha, d), beta));
+
+      return F.list(F.list(r11, r12), F.list(r21, r22));
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
   }
+
 
 
   /**
@@ -5312,6 +5402,14 @@ public final class LinearAlgebra {
       DecompositionSolver solver = lu.getSolver();
       return solver.getInverse();
     }
+
+    @Override
+    public FieldMatrix<Complex> complexMatrixEval(FieldMatrix<Complex> matrix) {
+      final FieldLUDecomposition<Complex> lu = new FieldLUDecomposition<>(matrix);
+      FieldDecompositionSolver<Complex> solver = lu.getSolver();
+      return solver.getInverse();
+    }
+
   }
 
 
@@ -6885,8 +6983,11 @@ public final class LinearAlgebra {
       // 1. Calculate the Characteristic Polynomial and extract roots
       IExpr characteristicPolynomial = characteristicPolynomial(n, matrix, x);
       if (characteristicPolynomial.isPolynomial(x)) {
-        IExpr eigenValues =
-            RootsFunctions.roots(characteristicPolynomial, false, F.List(x), false, true, engine);
+        // IExpr eigenValues =
+        // RootsFunctions.roots(characteristicPolynomial, false, F.List(x), false, true, engine);
+
+        // Factor first to avoid Cardano/cubic formula for factorable polynomials
+        IExpr eigenValues = rootsFromFactoredCharPoly(characteristicPolynomial, x, engine);
 
         if (eigenValues.isList()) {
           IAST roots = (IAST) eigenValues;
@@ -6988,6 +7089,64 @@ public final class LinearAlgebra {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Extracts roots of a characteristic polynomial by first attempting to Factor it. For each factor
+   * f^k, roots of f are repeated k times. Falls back to direct root-finding if factoring does not
+   * help.
+   *
+   * @param charPoly the characteristic polynomial (in variable x)
+   * @param x the variable
+   * @param engine the evaluation engine
+   * @return a flat list of all roots, or F.NIL if root-finding failed
+   */
+  private static IExpr rootsFromFactoredCharPoly(IExpr charPoly, ISymbol x, EvalEngine engine) {
+    // Try to factor the characteristic polynomial w.r.t. x
+    IExpr factored = engine.evaluate(F.Factor(charPoly));
+
+    // If Factor returned a Times product, process each factor separately
+    if (factored.isTimes()) {
+      IASTAppendable allRoots = F.ListAlloc();
+      IAST factors = (IAST) factored;
+      for (int i = 1; i <= factors.argSize(); i++) {
+        IExpr factor = factors.get(i);
+        int multiplicity = 1;
+
+        // Unwrap Power(f, k) — e.g. (x-2)^3
+        if (factor.isPower() && factor.exponent().isInteger()) {
+          int exp = factor.exponent().toIntDefault(1);
+          if (exp > 0) {
+            multiplicity = exp;
+            factor = factor.base();
+          }
+        }
+
+        // Skip pure numeric/constant factors (leading coefficients)
+        if (!factor.isPolynomial(x) || !factor.has(x, false)) {
+          continue;
+        }
+
+        IExpr factorRoots = RootsFunctions.roots(factor, false, F.List(x), false, true, engine);
+        if (!factorRoots.isList()) {
+          // This factor's roots couldn't be found — fall back to full polynomial
+          return RootsFunctions.roots(charPoly, false, F.List(x), false, true, engine);
+        }
+        IAST rootList = (IAST) factorRoots;
+        // Repeat roots according to the power of the factor
+        for (int rep = 0; rep < multiplicity; rep++) {
+          for (int j = 1; j <= rootList.argSize(); j++) {
+            allRoots.append(rootList.get(j));
+          }
+        }
+      }
+      if (allRoots.argSize() > 0) {
+        return allRoots;
+      }
+    }
+
+    // Factor didn't split the polynomial (or returned same expression) — direct roots
+    return RootsFunctions.roots(charPoly, false, F.List(x), false, true, engine);
   }
 
   public static void initialize() {

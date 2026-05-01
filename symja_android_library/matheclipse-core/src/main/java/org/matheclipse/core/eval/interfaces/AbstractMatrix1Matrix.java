@@ -3,6 +3,7 @@ package org.matheclipse.core.eval.interfaces;
 import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
@@ -82,6 +83,16 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
           if (matrix != null) {
             return Convert.realMatrix2List(matrix);
           }
+        } else {
+          FieldMatrix<Complex> complexMatrix = Convert.list2ComplexMatrix(ast.arg1());
+          if (complexMatrix == null) {
+            return F.NIL;
+          }
+          complexMatrix = complexMatrixEval(complexMatrix);
+          if (complexMatrix != null) {
+            return Convert.complexMatrix2List(complexMatrix);
+          }
+          return F.NIL;
         }
       }
       return F.NIL;
@@ -122,4 +133,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
    * @return
    */
   public abstract RealMatrix realMatrixEval(RealMatrix matrix);
+
+  public abstract FieldMatrix<Complex> complexMatrixEval(FieldMatrix<Complex> matrix);
+
 }

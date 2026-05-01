@@ -8,6 +8,7 @@ MatrixExp(matrix)
  
 See
 * [Wikipedia - Matrix exponential](https://en.wikipedia.org/wiki/Matrix_exponential)
+* [Wikipedia - Logarithm of a matrix](https://en.wikipedia.org/wiki/Logarithm_of_a_matrix)
 
 ### Examples
 

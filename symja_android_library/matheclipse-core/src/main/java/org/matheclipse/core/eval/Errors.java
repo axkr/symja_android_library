@@ -61,6 +61,7 @@ public class Errors {
   private static final String[] MESSAGES = { //
       "accg", "Value of option `1` is not Automatic or a machine-sized integer.", //
       "affind", "`1` should be a list of `2` or more affinely independent points.", //
+      "aord", "Approximation order specification `1` should be a positive integer.", //
       "argillegal", "Illegal arguments: \"`1`\" in `2`", //
       "argb", "`1` called with `2` arguments; between `3` and `4` arguments are expected.", //
       "argct", "`1` called with `2` arguments. `3`", //
@@ -130,6 +131,7 @@ public class Errors {
       "Constraints in `1` are not all equality or inequality constraints. Constraints with Unequal(!=) are not supported.", //
       "eqgele",
       "Constraints in `1` are not all 'equality' or 'less equal' or 'greater equal' linear constraints. Constraints with Unequal(!=) are not supported.", //
+      "eqn", "`1` is not an equation.", //
       "error", "`1`", // without terminating '.'
       "exact", "Argument `1` is not an exact number.", //
       "exdims", "The dimensions cannot be determined from the position `1`.", //
@@ -449,7 +451,9 @@ public class Errors {
       "zzdivzero", "Division by zero `1`.", //
       "zzmaxast", "Maximum AST limit `1` exceeded.", //
       "zznotimpl", "Function `1` not implemented.", //
-      "zzonlyimpl", "Function `1` only implemented for `2` list arguments.", //
+      "zznotimpl2", "Function `1` not implemented for `2`.", //
+      "zzonlyimpl",
+      "Function `1` only implemented for `2` list arguments.", //
       "zzprime", "Maximum Prime limit `1` exceeded.", //
       "zzregex", "Regex expression `1` error message: `2`.", //
       "zzapfloatcld", "Complete loss of accurate digits (apfloat).", //
