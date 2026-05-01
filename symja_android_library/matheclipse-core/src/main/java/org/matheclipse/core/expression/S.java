@@ -168,6 +168,9 @@ public class S {
   public final static IBuiltInSymbol $PathnameSeparator =
       S.initFinalSymbol("$PathnameSeparator", ID.$PathnameSeparator);
 
+  public final static IBuiltInSymbol $PerformanceGoal =
+      S.initFinalSymbol("$PerformanceGoal", ID.$PerformanceGoal);
+
   public final static IBuiltInSymbol $PrePrint = S.initFinalSymbol("$PrePrint", ID.$PrePrint);
 
   public final static IBuiltInSymbol $PreRead = S.initFinalSymbol("$PreRead", ID.$PreRead);
@@ -899,8 +902,14 @@ public class S {
 
   public final static IBuiltInSymbol Assumptions = S.initFinalSymbol("Assumptions", ID.Assumptions);
 
+  public final static IBuiltInSymbol AsymptoticSolve =
+      S.initFinalSymbol("AsymptoticSolve", ID.AsymptoticSolve);
+
   public final static IBuiltInSymbol AsymptoticDSolveValue =
       S.initFinalSymbol("AsymptoticDSolveValue", ID.AsymptoticDSolveValue);
+
+  public final static IBuiltInSymbol AsymptoticRSolveValue =
+      S.initFinalSymbol("AsymptoticRSolveValue", ID.AsymptoticRSolveValue);
 
   /**
    * AtomQ(x) - is true if `x` is an atom (an object such as a number or string, which cannot be
@@ -2301,6 +2310,8 @@ public class S {
    */
   public final static IBuiltInSymbol Constant = S.initFinalSymbol("Constant", ID.Constant);
 
+  public final static IBuiltInSymbol Constants = S.initFinalSymbol("Constants", ID.Constants);
+
   /**
    * ConstantArray(expr, n) - returns a list of `n` copies of `expr`.
    * 
@@ -3335,6 +3346,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol DSolve = S.initFinalSymbol("DSolve", ID.DSolve);
+
+  public final static IBuiltInSymbol DSolveValue = S.initFinalSymbol("DSolveValue", ID.DSolveValue);
 
   public final static IBuiltInSymbol Dt = S.initFinalSymbol("Dt", ID.Dt);
 
@@ -8791,6 +8804,9 @@ public class S {
   public final static IBuiltInSymbol PerfectNumberQ =
       S.initFinalSymbol("PerfectNumberQ", ID.PerfectNumberQ);
 
+  public final static IBuiltInSymbol PerformanceGoal =
+      S.initFinalSymbol("PerformanceGoal", ID.PerformanceGoal);
+
   /**
    * Perimeter(geometric-form) - returns the perimeter of the `geometric-form`.
    * 
@@ -10587,6 +10603,9 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol SeriesData = S.initFinalSymbol("SeriesData", ID.SeriesData);
+
+  public final static IBuiltInSymbol SeriesTermGoal =
+      S.initFinalSymbol("SeriesTermGoal", ID.SeriesTermGoal);
 
   /**
    * Set(expr, value) - evaluates `value` and assigns it to `expr`.
