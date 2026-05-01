@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Deque;
+import java.util.List;
 import java.util.Map;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
@@ -20,7 +21,6 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetEvaluator;
 import org.matheclipse.core.eval.interfaces.ISetValueEvaluator;
-import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.BuiltinUsage;
 import org.matheclipse.core.expression.ContextPath;
@@ -223,20 +223,42 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IASTMutable mutable = ast.copyAST();
+      java.util.List<ISymbol> toClear = new java.util.ArrayList<>();
+
+      // Pass 1: Validate and collect all symbols
       for (int i = 1; i < ast.size(); i++) {
-        IExpr x = Validate.checkIdentifierHoldPattern(ast.get(i), ast, engine);
-        if (x.isNIL()) {
-          return F.NIL;
+        IExpr arg = ast.get(i);
+        if (arg instanceof IStringX) {
+          List<ISymbol> matchedSymbols = getMatchedSymbols(arg.toString(), engine);
+          for (int j = 0; j < matchedSymbols.size(); j++) {
+            ISymbol sym = matchedSymbols.get(j);
+            if (sym.hasProtectedAttribute()) {
+              // Symbol `1` is Protected. Interrupt and return.
+              Errors.printMessage(ast.topHead(), "wrsym", F.list(sym), engine);
+              return S.Null;
+            }
+          }
+          toClear.addAll(matchedSymbols);
+        } else {
+          IExpr x = Validate.checkIdentifierHoldPattern(arg, ast, engine);
+          if (x.isNIL()) {
+            return F.NIL;
+          }
+          if (((ISymbol) x).hasProtectedAttribute()) {
+            // Symbol `1` is Protected. Interrupt and return.
+            Errors.printMessage(ast.topHead(), "wrsym", F.list(x), engine);
+            return S.Null;
+          }
+          toClear.add((ISymbol) x);
         }
-        if (((ISymbol) x).hasProtectedAttribute()) {
-          // Symbol `1` is Protected.
-          Errors.printMessage(ast.topHead(), "wrsym", F.list(x), engine);
-          return S.Null;
-        }
-        mutable.set(i, x);
       }
-      Lambda.forEach(ast, x -> x.isSymbol(), x -> ((ISymbol) x).clear(engine));
+
+      // Pass 2: Execute the clear action
+      for (ISymbol x : toClear) {
+        if (!x.hasProtectedAttribute()) {
+          x.clear(engine);
+        }
+      }
       return S.Null;
     }
 
@@ -264,21 +286,42 @@ public final class PatternMatching {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IASTMutable mutable = ast.copyAST();
+      java.util.List<ISymbol> toClear = new java.util.ArrayList<>();
+
+      // Pass 1: Validate and collect all symbols
       for (int i = 1; i < ast.size(); i++) {
-        IExpr x = Validate.checkIdentifierHoldPattern(ast.get(i), ast, engine);
-        if (x.isNIL()) {
-          return F.NIL;
+        IExpr arg = ast.get(i);
+        if (arg instanceof IStringX) {
+          List<ISymbol> matchedSymbols = getMatchedSymbols(arg.toString(), engine);
+          for (int j = 0; j < matchedSymbols.size(); j++) {
+            ISymbol sym = matchedSymbols.get(j);
+            if (sym.hasProtectedAttribute()) {
+              // Symbol `1` is Protected. Interrupt and return.
+              Errors.printMessage(ast.topHead(), "wrsym", F.list(sym), engine);
+              return S.Null;
+            }
+          }
+          toClear.addAll(matchedSymbols);
+        } else {
+          IExpr x = Validate.checkIdentifierHoldPattern(arg, ast, engine);
+          if (x.isNIL()) {
+            return F.NIL;
+          }
+          if (((ISymbol) x).hasProtectedAttribute()) {
+            // Symbol `1` is Protected. Interrupt and return.
+            Errors.printMessage(ast.topHead(), "wrsym", F.list(x), engine);
+            return S.Null;
+          }
+          toClear.add((ISymbol) x);
         }
-        if (((ISymbol) x).hasProtectedAttribute()) {
-          // Symbol `1` is Protected.
-          Errors.printMessage(ast.topHead(), "wrsym", F.list(x), engine);
-          return S.Null;
-        }
-        mutable.set(i, x);
       }
 
-      Lambda.forEach(mutable, x -> x.isSymbol(), x -> ((ISymbol) x).clearAll(engine));
+      // Pass 2: Execute the clearAll action
+      for (ISymbol x : toClear) {
+        if (!x.hasProtectedAttribute()) {
+          x.clearAll(engine);
+        }
+      }
       return S.Null;
     }
 
@@ -287,7 +330,6 @@ public final class PatternMatching {
       newSymbol.setAttributes(ISymbol.HOLDALL);
     }
   }
-
   /**
    *
    *
@@ -974,6 +1016,7 @@ public final class PatternMatching {
   /** @deprecated use {@link HoldPattern} */
   @Deprecated
   private static final class Literal extends HoldPattern {
+    @Deprecated
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.size() == 2) {
@@ -3055,6 +3098,63 @@ public final class PatternMatching {
       }
     }
     return null;
+  }
+
+  private static java.util.List<ISymbol> getMatchedSymbols(String patternStr, EvalEngine engine) {
+    java.util.List<ISymbol> result = new java.util.ArrayList<>();
+    int lastTick = patternStr.lastIndexOf('`');
+    org.matheclipse.core.expression.Context context;
+    String symbolPattern;
+
+    // Determine the context and the symbol pattern
+    if (lastTick >= 0) {
+      String contextName = patternStr.substring(0, lastTick + 1);
+      symbolPattern = patternStr.substring(lastTick + 1);
+      if (contextName.equals("`")) {
+        context = engine.getContext();
+      } else {
+        context = engine.getContextPath().getContextMap().get(contextName);
+      }
+      if (context == null) {
+        return result; // Context not found, matches nothing
+      }
+    } else {
+      context = engine.getContext();
+      symbolPattern = patternStr;
+    }
+
+    if (context == org.matheclipse.core.expression.Context.DUMMY //
+        || context == org.matheclipse.core.expression.Context.FORMAL //
+        || context == org.matheclipse.core.expression.Context.SYSTEM//
+        || context == org.matheclipse.core.expression.Context.RUBI) {
+      // Predefined contexts do not contain user-defined symbols
+      return result;
+    }
+
+    // Convert MMA pattern string to Java Regex
+    StringBuilder regex = new StringBuilder("^");
+    for (int i = 0; i < symbolPattern.length(); i++) {
+      char c = symbolPattern.charAt(i);
+      if (c == '*') {
+        regex.append(".*"); // zero or more characters
+      } else if (c == '@') {
+        regex.append("[^A-Z]+"); // one or more characters, excluding uppercase letters
+      } else if ("[](){}.+?$^|\\".indexOf(c) != -1) {
+        regex.append("\\").append(c); // escape regex meta-characters
+      } else {
+        regex.append(c);
+      }
+    }
+    regex.append("$");
+    java.util.regex.Pattern p = java.util.regex.Pattern.compile(regex.toString());
+
+    // Iterate context symbols and collect matches
+    for (Map.Entry<String, ISymbol> entry : context.entrySet()) {
+      if (p.matcher(entry.getKey()).matches()) {
+        result.add(entry.getValue());
+      }
+    }
+    return result;
   }
 
   private static ISymbol getReferenceExpression(IExpr leftHandSide) {

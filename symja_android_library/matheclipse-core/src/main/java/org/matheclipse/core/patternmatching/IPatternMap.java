@@ -3,9 +3,12 @@ package org.matheclipse.core.patternmatching;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.matheclipse.core.basic.RuleConfig;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -81,7 +84,7 @@ import org.matheclipse.core.visit.VisitorReplaceAllWithPatternFlags;
  * @see org.matheclipse.core.patternmatching.PatternMatcher
  * @see org.matheclipse.core.expression.Pattern
  */
-public interface IPatternMap {
+public interface IPatternMap extends Map<ISymbol, IExpr> {
   /**
    * The default priority when associating a new rule to a symbol. Lower values have higher
    * priorities.
@@ -124,6 +127,11 @@ public interface IPatternMap {
 
     @Override
     public IExpr getValue(int index) {
+      return null;
+    }
+
+    @Override
+    public final IExpr getSymbolValue(ISymbol symbol) {
       return null;
     }
 
@@ -218,6 +226,7 @@ public interface IPatternMap {
     public boolean setOptionsPattern(EvalEngine engine, ISymbol lhsHead) {
       return false;
     }
+
   }
 
   /**
@@ -290,6 +299,11 @@ public interface IPatternMap {
       if (sym == null) {
         sym = pattern;
       }
+      return (sym == fSymbol1) ? fValue1 : null;
+    }
+
+    @Override
+    public final IExpr getSymbolValue(ISymbol sym) {
       return (sym == fSymbol1) ? fValue1 : null;
     }
 
@@ -551,6 +565,17 @@ public interface IPatternMap {
       if (sym == null) {
         sym = pattern;
       }
+      if (sym == fSymbol1) {
+        return fValue1;
+      }
+      if (sym == fSymbol2) {
+        return fValue2;
+      }
+      return null;
+    }
+
+    @Override
+    public final IExpr getSymbolValue(ISymbol sym) {
       if (sym == fSymbol1) {
         return fValue1;
       }
@@ -886,6 +911,20 @@ public interface IPatternMap {
       if (sym == null) {
         sym = pattern;
       }
+      if (sym == fSymbol1) {
+        return fValue1;
+      }
+      if (sym == fSymbol2) {
+        return fValue2;
+      }
+      if (sym == fSymbol3) {
+        return fValue3;
+      }
+      return null;
+    }
+
+    @Override
+    public final IExpr getSymbolValue(ISymbol sym) {
       if (sym == fSymbol1) {
         return fValue1;
       }
@@ -1284,6 +1323,23 @@ public interface IPatternMap {
       if (sym == null) {
         sym = pattern;
       }
+      if (sym == fSymbol1) {
+        return fValue1;
+      }
+      if (sym == fSymbol2) {
+        return fValue2;
+      }
+      if (sym == fSymbol3) {
+        return fValue3;
+      }
+      if (sym == fSymbol4) {
+        return fValue4;
+      }
+      return null;
+    }
+
+    @Override
+    public final IExpr getSymbolValue(ISymbol sym) {
       if (sym == fSymbol1) {
         return fValue1;
       }
@@ -1746,6 +1802,26 @@ public interface IPatternMap {
       if (sym == null) {
         sym = pattern;
       }
+      if (sym == fSymbol1) {
+        return fValue1;
+      }
+      if (sym == fSymbol2) {
+        return fValue2;
+      }
+      if (sym == fSymbol3) {
+        return fValue3;
+      }
+      if (sym == fSymbol4) {
+        return fValue4;
+      }
+      if (sym == fSymbol5) {
+        return fValue5;
+      }
+      return null;
+    }
+
+    @Override
+    public final IExpr getSymbolValue(ISymbol sym) {
       if (sym == fSymbol1) {
         return fValue1;
       }
@@ -2277,6 +2353,29 @@ public interface IPatternMap {
       if (sym == null) {
         sym = pattern;
       }
+      if (sym == fSymbol1) {
+        return fValue1;
+      }
+      if (sym == fSymbol2) {
+        return fValue2;
+      }
+      if (sym == fSymbol3) {
+        return fValue3;
+      }
+      if (sym == fSymbol4) {
+        return fValue4;
+      }
+      if (sym == fSymbol5) {
+        return fValue5;
+      }
+      if (sym == fSymbol6) {
+        return fValue6;
+      }
+      return null;
+    }
+
+    @Override
+    public final IExpr getSymbolValue(ISymbol sym) {
       if (sym == fSymbol1) {
         return fValue1;
       }
@@ -2862,7 +2961,8 @@ public interface IPatternMap {
      * @param symbol the symbol
      * @return <code>null</code> if no matched expression exists
      */
-    private final IExpr getSymbolValue(ISymbol symbol) {
+    @Override
+    public final IExpr getSymbolValue(ISymbol symbol) {
       int indx = indexOf(symbol);
       return indx >= 0 ? fSymbolsOrPatternValues[indx] : null;
     }
@@ -3533,6 +3633,8 @@ public interface IPatternMap {
    */
   public IExpr getValue(int index);
 
+  public IExpr getSymbolValue(ISymbol symbol);
+
   /**
    * Return the matched value for the given pattern object
    *
@@ -3622,6 +3724,7 @@ public interface IPatternMap {
    *
    * @return the number of symbols used in this map.
    */
+  @Override
   public int size();
 
   public IExpr substitute(IExpr symbolOrPatternObject);
@@ -3873,5 +3976,60 @@ public interface IPatternMap {
   public static void setPatternFlags(IAST lhsPatternAST) {
     // set for example IAST.CONTAINS_DEFAULT_PATTERN after substituting a pattern in lhsPatternAST
     lhsPatternAST.isFreeOfPatterns();
+  }
+
+  @Override
+  default boolean isEmpty() {
+    return size() == 0;
+  }
+
+  @Override
+  default boolean containsKey(Object key) {
+    return get(key) != null;
+  }
+
+  @Override
+  default boolean containsValue(Object value) {
+    throw new UnsupportedOperationException("containsValue is not supported in IPatternMap");
+  }
+
+  @Override
+  default IExpr get(Object key) {
+    return getSymbolValue((ISymbol) key);
+  }
+
+  @Override
+  default IExpr put(ISymbol key, IExpr value) {
+    throw new UnsupportedOperationException("containsValue is not supported in IPatternMap");
+  }
+
+  @Override
+  default IExpr remove(Object key) {
+    throw new UnsupportedOperationException("remove is not supported in IPatternMap");
+  }
+
+  @Override
+  default void putAll(Map<? extends ISymbol, ? extends IExpr> m) {
+    throw new UnsupportedOperationException("putAll is not supported in IPatternMap");
+  }
+
+  @Override
+  default void clear() {
+    initPattern();
+  }
+
+  @Override
+  default Set<ISymbol> keySet() {
+    throw new UnsupportedOperationException("keySet is not supported in IPatternMap");
+  }
+
+  @Override
+  default Collection<IExpr> values() {
+    throw new UnsupportedOperationException("values is not supported in IPatternMap");
+  }
+
+  @Override
+  default Set<Entry<ISymbol, IExpr>> entrySet() {
+    throw new UnsupportedOperationException("entrySet is not supported in IPatternMap");
   }
 }
