@@ -2185,18 +2185,6 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     return (fDimension.length == 2) ? fDimension : null;
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public boolean isNumericArgument(boolean allowList) {
-    if (allowList) {
-      if (isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG)) {
-        return true;
-      }
-      return exists(x -> x.isNumericArgument(true));
-    }
-    return false;
-  }
-
   @Override
   public boolean isSparseArray() {
     return true;

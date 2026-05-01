@@ -28,6 +28,8 @@ import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.internal.BackingStorageException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.ApcomplexField;
+import org.matheclipse.core.convert.ApfloatField;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.AbortException;
@@ -1305,7 +1307,7 @@ public class EvalEngine implements Serializable {
    * @param isNumericFunction if <code>true</code> the <code>NumericFunction</code> attribute is set
    *        for the <code>ast</code>'s head
    */
-  public void evalArg(final IASTMutable[] result0, final IAST ast, final IExpr arg, final int i,
+  public IASTMutable evalArg(IASTMutable result0, final IAST ast, final IExpr arg, final int i,
       final boolean isNumericFunction) {
     final IExpr evaledArg;
     if (isNumericFunction) {
@@ -1320,22 +1322,22 @@ public class EvalEngine implements Serializable {
       }
     }
     if (evaledArg.isPresent()) {
-      if (result0[0].isNIL()) {
-        result0[0] = ast.copy();
+      if (result0.isNIL()) {
+        result0 = ast.copy();
         if (isNumericFunction && evaledArg.isNumericArgument(true)) {
-          result0[0].addEvalFlags(
+          result0.addEvalFlags(
               (ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR) | IAST.CONTAINS_NUMERIC_ARG);
         } else {
-          result0[0].addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+          result0.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
         }
       }
-      result0[0].set(i, evaledArg);
+      result0.set(i, evaledArg);
     } else {
       if (isNumericFunction && arg.isNumericArgument(false)) {
         ast.addEvalFlags(ast.getEvalFlags() | IAST.CONTAINS_NUMERIC_ARG);
       }
     }
-
+    return result0;
   }
 
   /**
@@ -1376,17 +1378,18 @@ public class EvalEngine implements Serializable {
         }
       }
 
-      IASTMutable[] rlist = new IASTMutable[1];
-      rlist[0] = F.NIL;
+      // IASTMutable[] rlist = new IASTMutable[1];
+      // rlist[0] = F.NIL;
+      IASTMutable rlist = F.NIL;
       IExpr x = ast.arg1();
       if ((ISymbol.HOLDFIRST & attributes) == ISymbol.NOATTRIBUTE) {
         // the HoldFirst attribute is disabled
         try {
           if (!x.isAST(S.Unevaluated)) {
             selectNumericMode(attributes, ISymbol.NHOLDFIRST, localNumericMode);
-            evalArg(rlist, ast, x, 1, isNumericFunction);
-            if (astSize == 2 && rlist[0].isPresent()) {
-              return rlist[0];
+            rlist = evalArg(rlist, ast, x, 1, isNumericFunction);
+            if (astSize == 2 && rlist.isPresent()) {
+              return rlist;
             }
           }
         } finally {
@@ -1400,9 +1403,9 @@ public class EvalEngine implements Serializable {
           try {
             if (x.isAST(S.Evaluate)) {
               selectNumericMode(attributes, ISymbol.NHOLDFIRST, localNumericMode);
-              evalArg(rlist, ast, x, 1, isNumericFunction);
-              if (astSize == 2 && rlist[0].isPresent()) {
-                return rlist[0];
+              rlist = evalArg(rlist, ast, x, 1, isNumericFunction);
+              if (astSize == 2 && rlist.isPresent()) {
+                return rlist;
               }
             }
           } finally {
@@ -1419,12 +1422,13 @@ public class EvalEngine implements Serializable {
           numericMode = fNumericMode;
           try {
             final boolean nMode = localNumericMode;
-            ast.forEach2((arg, i) -> {
+            for (int i = 2; i < ast.size(); i++) {
+              IExpr arg = ast.get(i);
               if (!arg.isUnevaluated()) {
                 selectNumericMode(attributes, ISymbol.NHOLDREST, nMode);
-                evalArg(rlist, ast, arg, i, isNumericFunction);
+                rlist = evalArg(rlist, ast, arg, i, isNumericFunction);
               }
-            });
+            }
           } finally {
             if ((ISymbol.NHOLDREST & attributes) == ISymbol.NHOLDREST) {
               fNumericMode = numericMode;
@@ -1436,11 +1440,12 @@ public class EvalEngine implements Serializable {
             numericMode = fNumericMode;
             try {
               selectNumericMode(attributes, ISymbol.NHOLDREST, localNumericMode);
-              ast.forEach2((arg, i) -> {
+              for (int i = 2; i < ast.size(); i++) {
+                IExpr arg = ast.get(i);
                 if (arg.isAST(S.Evaluate)) {
-                  evalArg(rlist, ast, arg, i, isNumericFunction);
+                  rlist = evalArg(rlist, ast, arg, i, isNumericFunction);
                 }
-              });
+              }
             } finally {
               if ((ISymbol.NHOLDREST & attributes) == ISymbol.NHOLDREST) {
                 fNumericMode = numericMode;
@@ -1451,7 +1456,7 @@ public class EvalEngine implements Serializable {
       }
       if (isNumericFunction //
           && !isNumericArgument //
-          && rlist[0].isNIL() //
+          && rlist.isNIL() //
           && ast.isNumericArgument(true)) {
         // one of the arguments is a numeric value
         if (ast.isPower() && ast.base() == S.E) {
@@ -1459,7 +1464,7 @@ public class EvalEngine implements Serializable {
         }
         return evalArgs(ast, attributes, isNumericFunction);
       }
-      return rlist[0];
+      return rlist;
     }
     return F.NIL;
   }
@@ -1982,6 +1987,95 @@ public class EvalEngine implements Serializable {
 
   public final Complex[] evalComplexVector(final IExpr expr) {
     return expr.toComplexVector();
+  }
+
+  /**
+   * Evaluates <code>expr</code> numerically and return the result as a {@link ApfloatField} value.
+   *
+   * @param expr
+   * @throws ArgumentTypeException
+   */
+  public final ApfloatField evalApfloat(final IExpr expr) throws ArgumentTypeException {
+    return evalApfloat(expr, null);
+  }
+
+  public final ApfloatField evalApfloat(IExpr expr, final Function<IExpr, IExpr> function)
+      throws ArgumentTypeException {
+    if (expr.isReal()) {
+      return ApfloatField.valueOf(((IReal) expr).apfloatValue());
+    }
+    boolean quietMode = fQuietMode;
+    try {
+      fQuietMode = true;
+      if (function != null) {
+        expr = expr.accept(new VisitorReplaceEvalf(function)).orElse(expr);
+      }
+      IExpr result = evalN(expr);
+      if (result.isReal()) {
+        return ApfloatField.valueOf(((IReal) result).apfloatValue());
+      }
+      if (result.isQuantity()) {
+        return ApfloatField.valueOf(result.evalReal().apfloatValue());
+      }
+      if (result.isAST(S.Labeled, 3, 4)) {
+        return evalApfloat(result.first(), function);
+      }
+    } finally {
+      fQuietMode = quietMode;
+    }
+    throw new ArgumentTypeException("conversion into a Apfloat numeric value is not possible!");
+  }
+
+  /**
+   * Evaluates <code>expr</code> numerically and return the result as a {@link ApfloatField} value.
+   *
+   * @param expr
+   * @throws ArgumentTypeException
+   */
+  public final ApcomplexField evalApcomplex(final IExpr expr) throws ArgumentTypeException {
+    return evalApcomplex(expr, null);
+  }
+
+  /**
+   * Evaluates <code>expr</code> numerically and return the result as a Java <code>
+   * org.hipparchus.complex.Complex</code> value.
+   *
+   * @param expr
+   * @param function maybe <code>null</code>; returns a substitution value for some expressions
+   * @throws ArgumentTypeException
+   */
+  public final ApcomplexField evalApcomplex(IExpr expr, final Function<IExpr, IExpr> function)
+      throws ArgumentTypeException {
+    if (expr.isReal()) {
+      return ApcomplexField.valueOf(((IReal) expr).apfloatValue());
+    }
+    if (expr.isNumber()) {
+      return ApcomplexField.valueOf(((INumber) expr).apcomplexValue());
+    }
+    boolean quietMode = fQuietMode;
+    try {
+      fQuietMode = true;
+      if (function != null) {
+        expr = expr.accept(new VisitorReplaceEvalf(function)).orElse(expr);
+      }
+      IExpr result = evalN(expr);
+      if (result.isReal()) {
+        return ApcomplexField.valueOf(((IReal) result).apfloatValue());
+      }
+      if (result.isQuantity()) {
+        return ApcomplexField.valueOf(result.evalReal().apfloatValue());
+      }
+      if (result.isNumber()) {
+        return ApcomplexField.valueOf(((INumber) result).apcomplexValue());
+      }
+      if (result.isAST(S.Labeled, 3, 4)) {
+        return evalApcomplex(result.first(), function);
+      }
+    } finally {
+      fQuietMode = quietMode;
+    }
+    throw new ArgumentTypeException(
+        "conversion into a Apcomplex numeric value is not possible!");
   }
 
   /**
@@ -2618,15 +2712,16 @@ public class EvalEngine implements Serializable {
     }
     final boolean localNumericMode = fNumericMode;
     final boolean argNumericMode = isNumericArg(ast);
-    IASTMutable[] rlist = new IASTMutable[] {F.NIL};
-    ast.forEach((arg, i) -> {
+    IASTMutable rlist = F.NIL;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
       if (!arg.isUnevaluated()) {
         fNumericMode = localNumericMode;
-        evalArg(rlist, ast, arg, i, argNumericMode);
+        rlist = evalArg(rlist, ast, arg, i, argNumericMode);
       }
-    });
-    if (rlist[0].isPresent()) {
-      return rlist[0];
+    }
+    if (rlist.isPresent()) {
+      return rlist;
     }
     return ast.extractConditionalExpression(false);
   }
@@ -3956,10 +4051,7 @@ public class EvalEngine implements Serializable {
    * @return
    */
   private IExpr numericFunction(final IBuiltInSymbol symbol, final IAST ast) {
-    final IFunctionEvaluator evaluator = symbol.getEvaluator();
-    // if (evaluator instanceof IFunctionEvaluator) {
-    // evaluate a built-in function.
-    final IFunctionEvaluator functionEvaluator = evaluator;
+    final IFunctionEvaluator functionEvaluator = symbol.getEvaluator();
     try {
       return functionEvaluator.numericFunction(ast, this);
     } catch (ValidateException ve) {
@@ -3974,8 +4066,6 @@ public class EvalEngine implements Serializable {
     } catch (BackingStorageException | SymjaMathException ve) {
       return Errors.printMessage(ast.topHead(), ve, this);
     }
-    // }
-    // return F.NIL;
   }
 
   public Iterator<IdentityHashMap<ISymbol, IASTAppendable>> optionsStackIterator() {

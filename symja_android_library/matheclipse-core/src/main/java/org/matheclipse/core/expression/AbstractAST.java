@@ -2197,15 +2197,16 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
    * @return
    */
   public IExpr evalEvaluate(EvalEngine engine) {
-    IASTMutable[] rlist = new IASTMutable[] {F.NIL};
+    IASTMutable rlist = F.NIL;
     if (!isHoldAllCompleteAST()) {
-      forEach((x, i) -> {
+      for (int i = 0; i < size(); i++) {
+        IExpr x = get(i);
         if (x.isAST(S.Evaluate)) {
-          engine.evalArg(rlist, this, x, i, false);
+          rlist = engine.evalArg(rlist, this, x, i, false);
         }
-      });
+      }
     }
-    return rlist[0];
+    return rlist;
   }
 
   /** {@inheritDoc} */
@@ -5587,6 +5588,10 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     if (result.isPresent()) {
       while (i < size) {
         temp = function.apply(get(i));
+        // if (temp == null) {
+        // System.out.println("function returned null for argument " + get(i) + " at position " +
+        // i);
+        // }
         if (temp.isPresent()) {
           result.set(i, temp);
         }

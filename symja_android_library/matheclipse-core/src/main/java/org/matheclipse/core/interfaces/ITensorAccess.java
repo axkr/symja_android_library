@@ -31,5 +31,16 @@ public interface ITensorAccess extends IExpr {
   }
 
   @Override
+  default boolean isNumericArgument(boolean allowList) {
+    if (allowList) {
+      if (isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG)) {
+        return true;
+      }
+      return exists(x -> x.isNumericArgument(true));
+    }
+    return false;
+  }
+
+  @Override
   public boolean forAllLeaves(Predicate<? super IExpr> predicate);
 }
