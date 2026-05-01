@@ -1,12 +1,29 @@
-package org.matheclipse.core.system;
+package org.matheclipse.core.reflection.system;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
 /** Tests for DSolve */
 public class DSolveTest extends ExprEvaluatorTestCase {
+
+  @Test
+  public void testDSolve001() {
+    check("DSolve(y''(x) == 0, y(x), x)", //
+        "{{y(x)->C(1)+x*C(2)}}");
+    check("DSolve(y''(x) == y(x), y(x), x)", //
+        "{{y(x)->C(1)/E^x+E^x*C(2)}}");
+    check("DSolve(y''(x) == y(x), y, x)", //
+        "{{y->Function({x},C(1)/E^x+E^x*C(2))}}");
+    check("DSolve(D(f(x, y), x)/f(x, y) + 3*D(f(x, y), y) / f(x, y) == 2, f, {x, y})", //
+        "{{f->Function({x,y},E^(2*x)*C(1)[-3*x+y])}}");
+    check("DSolve(D(f(x, y), x)*x + D(f(x, y), y)*y == 2, f(x, y), {x, y})", //
+        "{{f(x,y)->2*Log(x)+C(1)[y/x]}}");
+    check("DSolve(D(y(x, t), t) + 2*D(y(x, t), x) == 0, y(x, t), {x, t})", //
+        "{{y(x,t)->C(1)[1/2*(2*t-x)]}}");
+  }
 
   @Test
   public void testDSolve002() {
@@ -464,8 +481,70 @@ public class DSolveTest extends ExprEvaluatorTestCase {
         // TODO Integrate must handle HeavisideTheta
         // "{{y(t)->Integrate(E^t*HeavisideTheta(-1+t),t)/E^t}}");
         "{{y(t)->HeavisideTheta(-1+t)-E^(1-t)*HeavisideTheta(-1+t)}}");
+  }
+
+  @Test
+  public void testDSolveValue001() {
+    // Basic First-Order ODE
+    // DSolve returns {{y(x) -> E^x * C(1)}}, DSolveValue strips the rules and returns the value
+    check("DSolveValue(y'(x) == y(x), y(x), x)", //
+        "E^x*C(1)");
+
+    // Initial Value Problem (IVP)
+    check("DSolveValue({y'(x) == y(x), y(0) == 3}, y(x), x)", //
+        "3*E^x");
+  }
+
+  @Test
+  public void testDSolveValue002() {
+    // Evaluating a derivative expression
+    check("DSolveValue({y'(x) == 2*y(x), y(0) == 5}, D(y(x), x), x)", //
+        "10*E^(2*x)");
+
+    // Second-Order ODE
+    check("DSolveValue(y''(x) + y(x) == 0, y(x), x)", //
+        "C(1)*Cos(x)+C(2)*Sin(x)");
+
+    // Evaluating an arbitrary expression (not just the bare function)
+    // Here, we ask for y(x)^2. It should solve for y(x) = 3*E^x, then substitute it into y(x)^2
+    check("DSolveValue({y'(x) == y(x), y(0) == 3}, y(x)^2, x)", //
+        "9*E^(2*x)");
 
 
+  }
+
+  @Test
+  public void testDSolveValue003() {
+    // System of ODEs
+    // Should return a list of values corresponding to {x(t), y(t)}
+    check("DSolveValue({x'(t) == y(t), y'(t) == -x(t)}, {x(t), y(t)}, t)", //
+        "{C(1)*Cos(t)+C(2)*Sin(t),C(2)*Cos(t)-C(1)*Sin(t)}");
+
+    // System of ODEs with target expression arithmetic
+    check("DSolveValue({x'(t) == y(t), y'(t) == -x(t)}, x(t) + y(t), t)", //
+        "C(1)*Cos(t)+C(2)*Cos(t)-C(1)*Sin(t)+C(2)*Sin(t)");
+  }
+
+  @Test
+  public void testDSolveValue004() {
+    // System of ODEs
+    // Should return a list of values corresponding to {x(t), y(t)}
+    check("DSolveValue({y'(x)==y(x)+2},y(x), x)", //
+        "-2+E^x*C(1)");
+
+    // System of ODEs with target expression arithmetic
+    check("DSolveValue({y'(x)==y(x)+2,y(0)==1},y(x), x)", //
+        "-2+3*E^x");
+  }
+
+  @Test
+  public void testDSolveWithExpIntegral() {
+    check("DSolve({y'(x) + y(x) == 1/x^2}, y(x), x)", //
+        "{{y(x)->-1/x+C(1)/E^x+ExpIntegralEi(x)/E^x}}");
+
+    // Standard Bernoulli integration factor fallback
+    check("DSolve({x*y'(x) - y(x) == E^x}, y(x), x)", //
+        "{{y(x)->-E^x+x*C(1)+x*ExpIntegralEi(x)}}");
   }
 
   /** The JUnit setup method */

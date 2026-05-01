@@ -397,7 +397,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check("Solve(x+Sqrt(x+a) == y, x)", //
         "{{x->1/2*(1+2*y-Sqrt(1+4*a+4*y))},{x->1/2*(1+2*y+Sqrt(1+4*a+4*y))}}");
     check("Solve(-2+Sqrt(-2*x+x^2+3) == 0, x)", //
-        "{{x->1/2*(2-2*Sqrt(2))},{x->1/2*(2+2*Sqrt(2))}}");
+        "{{x->1-Sqrt(2)},{x->1+Sqrt(2)}}");
   }
 
   @Test
@@ -1587,6 +1587,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testIssue685() {
+    // "choco solver" with lcg enabled takes forever
+    // https://github.com/chocoteam/choco-solver/issues/1176
     check("Solve({a*b + c == 2020, a + b*c == 2021},{a,b,c},Integers)", //
         "{{a->673,b->2,c->674},{a->2021,b->0,c->2020}}");
   }

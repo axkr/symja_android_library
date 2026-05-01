@@ -766,8 +766,18 @@ public class QuarticSolver {
         } else {
           IExpr discriminant = quadraticDiscriminant(a, b, c);
           discriminant = discriminant.sqrt();
-          result.append(Times(Plus(b.negate(), discriminant), Power(a.times(F.C2), -1L)));
-          result.append(Times(Plus(b.negate(), discriminant.negate()), Power(a.times(F.C2), -1L)));
+          IExpr power = a.times(F.C2).inverse();
+          IExpr t2 = F.NIL;
+          if (power.isNumber() && b.isNumber()) {
+            t2 = power.times(b.negate());
+          }
+          if (t2.isInteger()) {
+            result.append(Plus(t2, Times(power, discriminant)));
+            result.append(Plus(t2, Times(power, discriminant.negate())));
+          } else {
+            result.append(Times(Plus(b.negate(), discriminant), power));
+            result.append(Times(Plus(b.negate(), discriminant.negate()), power));
+          }
         }
         if (createSet) {
           return createSet(result);
