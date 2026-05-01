@@ -482,6 +482,13 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         if (temp.isPresent()) {
           return temp;
         }
+        // ====================================================================
+        // Exponential Integral Engine: Integrates b * e^(kx) / x^m forms natively
+        // ====================================================================
+        IExpr tempExp = integrateExpIntegral(fx, x, engine);
+        if (tempExp.isPresent()) {
+          return tempExp;
+        }
         result = integrateByRubiRules(fx, x, ast, engine);
         if (result.isPresent()) {
           return F.subst(result, f -> {
@@ -507,6 +514,73 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     } finally {
       engine.setAssumptions(oldAssumptions);
       engine.setNumericMode(oldNumericMode);
+    }
+  }
+
+  // ====================================================================================
+  // Natively integrates b * e^(kx) / x^m terms into ExpIntegralEi functions via recurrence
+  // ====================================================================================
+  private static IExpr integrateExpIntegral(IAST function, final IExpr xVar, EvalEngine engine) {
+    IASTAppendable bTimes = F.TimesAlloc();
+    IExpr n = F.C0;
+    IExpr k = F.C0;
+
+    IAST factors = function.isTimes() ? function : F.Times(function);
+
+    for (int i = 1; i <= factors.argSize(); i++) {
+      IExpr arg = factors.get(i);
+      if (arg.isFree(xVar)) {
+        bTimes.append(arg);
+      } else if (arg.equals(xVar)) {
+        n = engine.evaluate(F.Plus(n, F.C1));
+      } else if (arg.isPower() && arg.first().equals(xVar) && arg.second().isFree(xVar)) {
+        n = engine.evaluate(F.Plus(n, arg.second()));
+      } else if (arg.isExp()) {
+        IExpr expArg = arg.second();
+        IExpr kCoeff = engine.evaluate(F.Coefficient(expArg, xVar));
+        IExpr rem = engine.evaluate(F.ExpandAll(F.Subtract(expArg, F.Times(kCoeff, xVar))));
+        if (rem.isZero()) {
+          k = engine.evaluate(F.Plus(k, kCoeff));
+        } else if (rem.isFree(xVar)) {
+          k = engine.evaluate(F.Plus(k, kCoeff));
+          bTimes.append(F.Power(S.E, rem));
+        } else {
+          return F.NIL;
+        }
+      } else {
+        return F.NIL;
+      }
+    }
+
+    if (!n.isInteger() || n.toIntDefault() >= 0) {
+      return F.NIL;
+    }
+    if (k.isZero()) {
+      return F.NIL;
+    }
+
+    IExpr b = bTimes.argSize() == 0 ? F.C1
+        : (bTimes.argSize() == 1 ? bTimes.arg1() : engine.evaluate(bTimes));
+    int m = -n.toIntDefault();
+
+    if (m == 1) {
+      return engine.evaluate(F.Times(b, F.ExpIntegralEi(F.Times(k, xVar))));
+    } else {
+      // Loop to apply integration by parts:
+      // Integral(E^(kx)/x^m) = -E^(kx)/((m-1) x^(m-1)) + k/(m-1) Integral(E^(kx)/x^(m-1))
+      IASTAppendable plus = F.PlusAlloc();
+      IExpr currentCoeff = b;
+
+      for (int i = m; i > 1; i--) {
+        IExpr termCoeff = engine.evaluate(F.Divide(currentCoeff, F.ZZ(1 - i)));
+        IExpr term = F.Times(termCoeff, F.Exp(F.Times(k, xVar)), F.Power(xVar, F.ZZ(1 - i)));
+        plus.append(term);
+
+        currentCoeff = engine.evaluate(F.Divide(F.Times(currentCoeff, k), F.ZZ(i - 1)));
+      }
+
+      plus.append(F.Times(currentCoeff, F.ExpIntegralEi(F.Times(k, xVar))));
+      return engine.evaluate(plus);
     }
   }
 
