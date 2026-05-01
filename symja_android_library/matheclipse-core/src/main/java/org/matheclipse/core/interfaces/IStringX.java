@@ -455,10 +455,8 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
       int ordinal = ((IBuiltInSymbol) partOfRegex).ordinal();
       switch (ordinal) {
         case ID.NumberString:
-          // better suitable for StringSplit?
-          return "[0-9]{1,13}(\\.[0-9]+)?";
-        // mathics:
-        // return "[-|+]?(\\d+(\\.\\d*)?|\\.\\d+)?";
+          return "[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)";
+        // mathics: "[-|+]?(\\d+(\\.\\d*)?|\\.\\d+)?";
         case ID.Whitespace:
           return "(?u)\\s+";
         case ID.DigitCharacter:
@@ -468,7 +466,7 @@ public interface IStringX extends IExpr, IAtomicConstant, IAtomicEvaluate {
         case ID.WordCharacter:
           return "(?u)[^\\W_]";
         case ID.StartOfLine:
-          return "\\R";
+          return "(?m:^)"; // enforce a multiline zero-width start-of-line anchor
         case ID.EndOfLine:
           return "$";
         case ID.StartOfString:
