@@ -308,6 +308,33 @@ public class VectorAnalysisTest extends ExprEvaluatorTestCase {
             + "(Csc(t)*((-c*Cos(t)*Cot(t))/r+(-c*Sin(t))/r))/r}");
   }
 
+  @Test
+  public void testLaplacianConstant() {
+    // The Laplacian of a constant should evaluate to 0
+    check("Laplacian(5, {x, y})", //
+        "0");
+
+    // The Laplacian of an independent variable should evaluate to 0
+    check("Laplacian(a, {x, y, z})", //
+        "0");
+  }
+
+  @Test
+  public void testLaplacianCartesianOptimization() {
+    // Ensures that variables not present in the function are correctly pruned
+    // without breaking the summation
+    check("Laplacian(x^2 + 5, {x, y, z})", //
+        "2");
+  }
+
+  @Test
+  public void testCurlSphericalScalar() {
+    // Ensures that the Spherical evaluation path for Curl doesn't throw or map incorrectly
+    // due to the old Metric.CYLINDRICAL misassignment.
+    check("Curl(r*Cos(p), {r, t, p}, \"Spherical\")", //
+        "{{0,-Csc(t)*Sin(p),0},{Csc(t)*Sin(p),0,Cos(p)},{0,-Cos(p),0}}");
+  }
+
   /** The JUnit setup method */
   @Override
   public void setUp() {

@@ -174,7 +174,7 @@ public class VectorAnalysisFunctions {
 
           }
           if (metricStr.equalsIgnoreCase("spherical")) {
-            metric = Metric.CYLINDRICAL;
+            metric = Metric.SPHERICAL;
             if (numberOfVars != 3) {
               // `1` does not define a metric in `2` dimensions.
               return Errors.printMessage(S.Curl, "bdmtrc",
@@ -191,7 +191,6 @@ public class VectorAnalysisFunctions {
                     F.Times(F.CN1, F.Power(x, F.CN1), F.D(f, y))),
                 F.list(F.Times(F.CN1, F.Power(x, F.CN1), F.Csc(y), F.D(f, z)), F.C0, F.D(f, x)),
                 F.list(F.Times(F.Power(x, F.CN1), F.D(f, y)), F.Negate(F.D(f, x)), F.C0)));
-
 
           }
 
@@ -883,95 +882,118 @@ public class VectorAnalysisFunctions {
       final IExpr arg1 = ast.arg1();
       final IExpr arg2 = ast.arg2();
 
-      if (arg1.isAST() && arg2.isList()) {
+      if (arg2.isList()) {
         final IAST variables = (IAST) arg2;
         if (variables.isEmpty()) {
           return F.NIL;
         }
-
-        final IAST fun = (IAST) arg1;
         Metric metric = Metric.CARTESIAN;
         if (ast.isAST3()) {
           final String metricStr = ast.arg3().toString();
-          final int numberOfVars = variables.argSize();
           if (metricStr.equalsIgnoreCase("polar")) {
             metric = Metric.POLAR;
-            if (arg1.isList()) {
-              if (arg1.argSize() != 2) {
-                // There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.
-                return Errors.printMessage(S.Laplacian, "ndimv",
-                    F.List(F.C2, S.Laplacian, F.ZZ(arg1.argSize()), arg1), engine);
+          } else if (metricStr.equalsIgnoreCase("cylindrical")) {
+            metric = Metric.CYLINDRICAL;
+          } else if (metricStr.equalsIgnoreCase("spherical")) {
+            metric = Metric.SPHERICAL;
+          } else if (metricStr.equalsIgnoreCase("cartesian")) {
+            metric = Metric.CARTESIAN;
+          } else {
+            return F.NIL;
+          }
+        }
+
+        if (metric == Metric.CARTESIAN) {
+          VariablesSet variablesSet = new VariablesSet(arg1);
+          IASTAppendable newVariableList = F.ListAlloc(variables.size());
+          for (int i = 1; i < variables.size(); i++) {
+            if (variablesSet.contains(variables.get(i))) {
+              newVariableList.append(variables.get(i));
+            }
+          }
+          if (newVariableList.isEmpty()) {
+            // The Laplacian of a constant evaluates to 0
+            return F.C0;
+          }
+        }
+
+        if (arg1.isAST()) {
+          final IAST fun = (IAST) arg1;
+          final int numberOfVars = variables.argSize();
+          switch (metric) {
+            case CARTESIAN:
+              if (arg1.isList()) {
+                return arg1.mapThread(ast, 1);
+              }
+              return laplacianCartesian(fun, variables);
+            case POLAR:
+              if (arg1.isList()) {
+                if (arg1.argSize() != 2) {
+                  // There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.
+                  return Errors.printMessage(S.Laplacian, "ndimv",
+                      F.List(F.C2, S.Laplacian, F.ZZ(arg1.argSize()), arg1), engine);
+                }
+                if (numberOfVars != 2) {
+                  // `1` does not define a metric in `2` dimensions.
+                  return Errors.printMessage(S.Laplacian, "bdmtrc",
+                      F.List(F.stringx("Polar"), F.ZZ(numberOfVars)), engine);
+                }
+                return laplacianPolarVector(fun, variables, engine);
               }
               if (numberOfVars != 2) {
-                // `1` does not define a metric in `2` dimensions.
+                // `1` does not define a metric in `1` dimensions.
                 return Errors.printMessage(S.Laplacian, "bdmtrc",
                     F.List(F.stringx("Polar"), F.ZZ(numberOfVars)), engine);
               }
-              return laplacianPolarVector(fun, variables, engine);
-            }
-            if (numberOfVars != 2) {
-              // `1` does not define a metric in `1` dimensions.
-              return Errors.printMessage(S.Laplacian, "bdmtrc",
-                  F.List(F.stringx("Polar"), F.ZZ(numberOfVars)), engine);
-            }
-            return laplacianPolar(fun, variables);
-          } else if (metricStr.equalsIgnoreCase("cylindrical")) {
-            metric = Metric.CYLINDRICAL;
-            if (arg1.isList()) {
-              if (arg1.argSize() != 3) {
-                // // There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.
-                return Errors.printMessage(S.Laplacian, "ndimv",
-                    F.List(F.C3, S.Laplacian, F.ZZ(arg1.argSize()), arg1), engine);
+              return laplacianPolar(fun, variables);
+            case CYLINDRICAL:
+              if (arg1.isList()) {
+                if (arg1.argSize() != 3) {
+                  // // There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.
+                  return Errors.printMessage(S.Laplacian, "ndimv",
+                      F.List(F.C3, S.Laplacian, F.ZZ(arg1.argSize()), arg1), engine);
+                }
+                if (numberOfVars != 3) {
+                  // `1` does not define a metric in `2` dimensions.
+                  return Errors.printMessage(S.Laplacian, "bdmtrc",
+                      F.List(F.stringx("Cylindrical"), F.ZZ(numberOfVars)), engine);
+                }
+                IAST vector = fun;
+                return laplacianCylindricalVector(vector, variables, engine);
               }
               if (numberOfVars != 3) {
                 // `1` does not define a metric in `2` dimensions.
                 return Errors.printMessage(S.Laplacian, "bdmtrc",
                     F.List(F.stringx("Cylindrical"), F.ZZ(numberOfVars)), engine);
               }
-              IAST vector = fun;
-              return laplacianCylindricalVector(vector, variables, engine);
-            }
-            if (numberOfVars != 3) {
-              // `1` does not define a metric in `2` dimensions.
-              return Errors.printMessage(S.Laplacian, "bdmtrc",
-                  F.List(F.stringx("Cylindrical"), F.ZZ(numberOfVars)), engine);
-            }
-            return laplacianCylindrical(fun, variables);
-          } else if (metricStr.equalsIgnoreCase("spherical")) {
-            metric = Metric.SPHERICAL;
-            if (arg1.isList()) {
+              return laplacianCylindrical(fun, variables);
+            case SPHERICAL:
+              if (arg1.isList()) {
+                if (arg1.argSize() != 3) {
+                  // There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.
+                  return Errors.printMessage(S.Laplacian, "ndimv",
+                      F.List(F.C3, S.Laplacian, F.ZZ(arg1.argSize()), arg1), engine);
+                }
+                if (numberOfVars != 3) {
+                  // `1` does not define a metric in `2` dimensions.
+                  return Errors.printMessage(S.Laplacian, "bdmtrc",
+                      F.List(F.stringx("Spherical"), F.ZZ(numberOfVars)), engine);
+                }
+                IAST vector = fun;
+                // if (vector.isFree(variables)) {
+                return laplacianSphericalVector(vector, variables, engine);
+              }
               if (arg1.argSize() != 3) {
                 // There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.
                 return Errors.printMessage(S.Laplacian, "ndimv",
                     F.List(F.C3, S.Laplacian, F.ZZ(arg1.argSize()), arg1), engine);
               }
-              if (numberOfVars != 3) {
-                // `1` does not define a metric in `2` dimensions.
-                return Errors.printMessage(S.Laplacian, "bdmtrc",
-                    F.List(F.stringx("Spherical"), F.ZZ(numberOfVars)), engine);
-              }
-              IAST vector = fun;
-              // if (vector.isFree(variables)) {
-              return laplacianSphericalVector(vector, variables, engine);
-            }
-            if (arg1.argSize() != 3) {
-              // There is no `1`-dimensional `2` for the `3`-dimensional vector `4`.
-              return Errors.printMessage(S.Laplacian, "ndimv",
-                  F.List(F.C3, S.Laplacian, F.ZZ(arg1.argSize()), arg1), engine);
-            }
-            return laplacianSpherical(fun, variables);
-          } else if (metricStr.equalsIgnoreCase("cartesian")) {
-            metric = Metric.CARTESIAN;
-          } else {
-            metric = Metric.UNDEFINED;
+              return laplacianSpherical(fun, variables);
+            default:
+              break;
           }
-        }
 
-        if (metric == Metric.CARTESIAN) {
-          if (arg1.isList()) {
-            return arg1.mapThread(ast, 1);
-          }
-          return laplacianCartesian(fun, variables);
+
         }
       }
       return F.NIL;
@@ -1177,7 +1199,6 @@ public class VectorAnalysisFunctions {
           newVariableList.append(variables.get(i));
         }
       }
-
       if (newVariableList.size() <= 1) {
         return F.NIL;
       }
