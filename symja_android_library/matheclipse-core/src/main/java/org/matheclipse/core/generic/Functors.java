@@ -144,6 +144,38 @@ public class Functors {
   private static class SubsFunctor implements Function<IExpr, IExpr> {
     private final IAST listOfRules;
 
+    // reentrancy guard key (identity-based) to detect repeated processing of same (rules, expr)
+    private static final class ActiveKey {
+      final IAST rules;
+      final IExpr expr;
+
+      ActiveKey(IAST rules, IExpr expr) {
+        this.rules = rules;
+        this.expr = expr;
+      }
+
+      @Override
+      public boolean equals(final Object o) {
+        if (this == o)
+          return true;
+        if (!(o instanceof ActiveKey))
+          return false;
+        final ActiveKey k = (ActiveKey) o;
+        // use identity to detect exact same objects being processed
+        return this.rules == k.rules && this.expr == k.expr;
+      }
+
+      @Override
+      public int hashCode() {
+        // identity-based hash
+        return System.identityHashCode(rules) * 31 + System.identityHashCode(expr);
+      }
+    }
+
+    // Thread-local set of currently active (rules,expr) mappings on this thread
+    private static final ThreadLocal<java.util.Set<ActiveKey>> sActiveMappings =
+        ThreadLocal.withInitial(java.util.HashSet::new);
+
     public SubsFunctor(IAST rulesList) {
       this.listOfRules = rulesList;
     }
@@ -295,31 +327,45 @@ public class Functors {
     }
 
     private IExpr mapArgumentsToRule(final IExpr arg, IExpr[] resultArg) {
-      if (resultArg[0].isAST()) {
-        boolean evaled = true;
-        while (evaled && resultArg[0].isAST()) {
-          IAST list = (IAST) resultArg[0];
-          evaled = false;
-          for (int j = 1; j < listOfRules.size(); j++) {
-            IAST rule = (IAST) listOfRules.get(j);
-            SubsFunctor functor = new SubsFunctor(rule.makeList());
-            for (int i = 1; i < list.size(); i++) {
-              IExpr temp = functor.apply(list.get(i));
-              if (temp.isPresent() && !temp.equals(list.get(i))) {
-                evaled = true;
-                IASTMutable copy = list.setAtCopy(i, temp);
-                resultArg[0] = EvalEngine.get().evaluate(copy);
+      // Reentrancy guard: if we're already processing this rules-list for this expression,
+      // avoid re-entering and return the best known result to break cycles.
+      final ActiveKey key = new ActiveKey(this.listOfRules, arg);
+      final java.util.Set<ActiveKey> active = sActiveMappings.get();
+      if (active.contains(key)) {
+        // Already processing the same (rules,expr) on this thread — avoid recursion.
+        return (resultArg[0] != arg) ? resultArg[0] : F.NIL;
+      }
+      active.add(key);
+      try {
+        if (resultArg[0].isAST()) {
+          boolean evaled = true;
+          while (evaled && resultArg[0].isAST()) {
+            IAST list = (IAST) resultArg[0];
+            evaled = false;
+            for (int j = 1; j < listOfRules.size(); j++) {
+              IAST rule = (IAST) listOfRules.get(j);
+              SubsFunctor functor = new SubsFunctor(rule.makeList());
+              for (int i = 1; i < list.size(); i++) {
+                IExpr temp = functor.apply(list.get(i));
+                if (temp.isPresent() && !temp.equals(list.get(i))) {
+                  evaled = true;
+                  IASTMutable copy = list.setAtCopy(i, temp);
+                  resultArg[0] = EvalEngine.get().evaluate(copy);
+                  break;
+                }
+              }
+              if (evaled) {
                 break;
               }
             }
-            if (evaled) {
-              break;
-            }
           }
         }
+        return (resultArg[0] != arg) ? resultArg[0] : F.NIL;
+      } finally {
+        active.remove(key);
       }
-      return (resultArg[0] != arg) ? resultArg[0] : F.NIL;
     }
+
 
     private boolean subsTimes(IAST times, IAST timesLHS, IExpr rhs, IExpr[] resultArg) {
       if (times.size() >= timesLHS.size() && timesLHS.size() > 1) {

@@ -121,7 +121,6 @@ public class BinLists extends AbstractFunctionEvaluator {
         }
         int idx = (int) Math.floor((d - xMin) / dx);
         if (idx >= capacity) {
-          // Wolfram Language includes upper boundary mapping to the final bin
           if (d <= xMax && idx == capacity) {
             return capacity - 1;
           }
@@ -215,10 +214,10 @@ public class BinLists extends AbstractFunctionEvaluator {
 
       spec.dx = dx;
 
-      // Wolfram start criteria: Ceiling[Min[data] - dx, dx]
+      // MMA start criteria: Ceiling[Min[data] - dx, dx]
       spec.xMin = Math.ceil((colMin - dx) / dx) * dx;
 
-      // Wolfram end criteria: Floor[Max[data] + dx, dx]
+      // MMA end criteria: Floor[Max[data] + dx, dx]
       spec.xMax = Math.floor((colMax + dx) / dx) * dx;
 
       spec.capacity = (int) Math.round((spec.xMax - spec.xMin) / dx);

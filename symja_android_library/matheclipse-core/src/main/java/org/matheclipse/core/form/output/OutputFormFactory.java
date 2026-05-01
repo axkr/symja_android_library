@@ -1898,7 +1898,6 @@ public class OutputFormFactory {
       buf.append(ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS ? ')' : ']');
       return true;
     }
-    StringBuilder tempBuffer = new StringBuilder();
     if (Precedence.PLUS < precedence) {
       append(buf, "(");
     }

@@ -483,6 +483,6 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     // Ensures the FullSimplify class properly inherits the trig pass
     check("FullSimplify(Sin(x)^2 + Cos(x)^2 + Tan(y)*Cos(y))", //
         "1+Sin(y)");
-
   }
+
 }

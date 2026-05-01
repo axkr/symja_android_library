@@ -602,11 +602,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
      * exponential functions, preventing L'Hopital ratio limits from falsely evaluating to 0.
      */
     private static IExpr getLog(IExpr expr, EvalEngine engine) {
-      if (expr.isPower() && expr.base().equals(S.E)) {
+      if (expr.isExp()) {
         return expr.exponent();
-      }
-      if (expr.isAST(S.Exp, 2)) {
-        return expr.first();
       }
       return engine.evaluate(F.PowerExpand(F.Log(expr)));
     }
@@ -1035,9 +1032,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           if (limitResult.isZero()) {
             // Symbolic Fast-Paths to prevent numeric underflow of extreme exponentials (e.g.
             // E^-10000)
-            if (expr.isPower() && expr.base().equals(S.E))
-              return 1;
-            if (expr.isAST(S.Exp, 2))
+            if (expr.isExp())
               return 1;
 
             if (expr.isTimes()) {
@@ -1073,9 +1068,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
             // Leading Term fallback heuristic
             IExpr lt = ASTSeriesData.leadingTerm(expr, x, F.CInfinity, engine);
             if (lt.isPresent() && !lt.isNIL()) {
-              if (lt.isPower() && lt.base().equals(S.E))
-                return 1;
-              if (lt.isAST(S.Exp, 2))
+              if (lt.isExp())
                 return 1;
 
               sample = engine.evalQuiet(F.subst(lt, x, F.ZZ(10000)));

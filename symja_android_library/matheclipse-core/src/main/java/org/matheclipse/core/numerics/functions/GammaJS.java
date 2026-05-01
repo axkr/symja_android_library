@@ -132,7 +132,6 @@ public class GammaJS extends JS {
   // ret = 1.0 - regGammaP(a, x, epsilon, maxIterations);
   // } else if (x > 0) {
   // // create continued fraction analog to A&S 6.5.31 / 26.4.10 ?
-  // // this implementation is due to Wolfram research
   // // http://functions.wolfram.com/GammaBetaErf/GammaRegularized/10/0003/
   // final double ea = Math.exp(-x + (a * log(x)) - GammaJS.logGamma(a));
   // final double err = epsilon;

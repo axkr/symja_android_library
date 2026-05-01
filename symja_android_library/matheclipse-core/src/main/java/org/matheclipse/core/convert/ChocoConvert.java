@@ -161,7 +161,8 @@ public class ChocoConvert {
     final Predicate<IExpr> isPrime =
         (domain == S.Primes) ? Predicates.isTrue(EvalEngine.get(), S.PrimeQ) : null;
     // Create a constraint network
-    Model model = new Model(); // Settings.init().setLCG(true)
+    // Model model = new Model( SettingsBuilder.init().setLCG(true).build() );
+    Model model = new Model();
     for (int i = 1; i < variables.size(); i++) {
       IExpr expr = variables.get(i);
       if (expr instanceof ISymbol) {
@@ -574,13 +575,17 @@ public class ChocoConvert {
         expr.toString() + " is no int variable found for Solve(..., Integers)");
   }
 
-  private static CReExpression relationalExpression(Model net, IAST temp,
+  private static CReExpression relationalExpression(Model net, IExpr temp,
       Map<ISymbol, RealVar> map) {
+    if (!temp.isAST()) {
+      throw new ArgumentTypeException(
+          temp.toString() + " is no relational expression found for Solve(..., Integers)");
+    }
     CArExpression lhs;
     CArExpression rhs;
     if (temp.isAST2()) {
-      lhs = realExpression(net, temp.arg1(), map);
-      rhs = realExpression(net, temp.arg2(), map);
+      lhs = realExpression(net, temp.first(), map);
+      rhs = realExpression(net, temp.second(), map);
       if (temp.isEqual()) {
         return lhs.eq(rhs);
         // } else if (temp.isAST(S.Unequal, 3)) {

@@ -302,6 +302,12 @@ public class SpecialFunctions {
             return F.CComplexInfinity;
           }
         }
+        if (z.isOne()) {
+          IExpr res = beta(a, b);
+          if (res.isPresent()) {
+            return F.Beta(a, b);
+          }
+        }
 
         // if (engine.isDoubleMode()) {
         // double aDouble = Double.NaN;
