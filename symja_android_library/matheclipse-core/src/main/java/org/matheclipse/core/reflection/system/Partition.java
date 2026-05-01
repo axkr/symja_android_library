@@ -4,28 +4,11 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
-/**
- * <p>
- * Implement the Partition function.
- * </p>
- * * *
- * 
- * <pre>
- * Partition(list, n)
- * Partition(list, n, d)
- * Partition(list, n, d, {kL, kR})
- * Partition(list, n, d, {kL, kR}, padding)
- * </pre>
- * 
- * * *
- * <p>
- * Supports <code>UpTo[n]</code> and multi-dimensional partitioning.
- * </p>
- */
 public class Partition extends AbstractFunctionEvaluator {
 
   public Partition() {}
@@ -40,7 +23,7 @@ public class Partition extends AbstractFunctionEvaluator {
     }
     IAST list = (IAST) listExpr;
 
-    // --- 1. Parse 'n' (Partition Sizes) ---
+    // Parse 'n' (Partition Sizes) ---
     IExpr nExpr = ast.arg2();
     IAST nList = null;
     boolean isUpTo = false;
@@ -66,7 +49,7 @@ public class Partition extends AbstractFunctionEvaluator {
       }
     }
 
-    // --- 2. Parse 'd' (Offsets) ---
+    // Parse 'd' (Offsets) ---
     IAST dList = null;
     if (ast.argSize() >= 3) {
       IExpr dExpr = ast.arg3();
@@ -86,7 +69,7 @@ public class Partition extends AbstractFunctionEvaluator {
       }
     }
 
-    // --- 3. Parse Alignment {kL, kR} ---
+    // Parse Alignment {kL, kR} ---
     IAST kList = null;
     if (ast.argSize() >= 4) {
       IExpr kExpr = ast.arg4();
@@ -108,7 +91,7 @@ public class Partition extends AbstractFunctionEvaluator {
       kList = F.List(F.List(F.C1, F.C1));
     }
 
-    // --- 4. Parse Padding ---
+    // Parse Padding ---
     IExpr pad = F.NIL; // NIL implies cyclic list padding (default)
     if (ast.argSize() >= 5) {
       pad = ast.arg5();
@@ -117,7 +100,6 @@ public class Partition extends AbstractFunctionEvaluator {
       pad = F.List();
     }
 
-    // --- EXECUTE ---
     try {
       return partitionRec(list, nList, 1, dList, kList, pad, engine);
     } catch (RuntimeException e) {
@@ -129,9 +111,9 @@ public class Partition extends AbstractFunctionEvaluator {
   }
 
   /**
-   * Recursive partition implementation for multi-dimensional support.
+   * Recursive partition implementation for multi-dimensional support. * @param list The current
+   * level list.
    * 
-   * @param list The current level list.
    * @param nList The full list of partition sizes {n1, n2...}.
    * @param level The current depth level (1-based).
    * @param dList The full specification of offsets.
@@ -188,9 +170,21 @@ public class Partition extends AbstractFunctionEvaluator {
       // Use F.ast(list.head()) to maintain the head (e.g., List or f)
       IASTAppendable nextLevelResult = F.ast(list.head(), partitions.size());
       for (IExpr sub : partitions) {
-        if (sub.isList()) {
-          nextLevelResult
-              .append(partitionRec((IAST) sub, nList, level + 1, dList, kList, pad, engine));
+        if (sub.isAST()) {
+          // We must map partitionRec across the elements inside this block (the rows),
+          // rather than trying to partition the block's array structure directly.
+          IAST subAST = (IAST) sub;
+          IASTAppendable mappedSub = F.ast(subAST.head(), subAST.size());
+          for (int i = 1; i <= subAST.argSize(); i++) {
+            IExpr row = subAST.get(i);
+            if (row.isAST()) {
+              mappedSub
+                  .append(partitionRec((IAST) row, nList, level + 1, dList, kList, pad, engine));
+            } else {
+              mappedSub.append(row);
+            }
+          }
+          nextLevelResult.append(mappedSub);
         } else {
           nextLevelResult.append(sub);
         }
@@ -298,6 +292,11 @@ public class Partition extends AbstractFunctionEvaluator {
     }
 
     return result;
+  }
+
+  @Override
+  public int status() {
+    return ImplementationStatus.PARTIAL_SUPPORT;
   }
 
   @Override
