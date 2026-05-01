@@ -20,6 +20,11 @@ public final class FunctionDefinitions {
       S.AdjacencyGraph.setEvaluator(new org.matheclipse.core.reflection.system.AdjacencyGraph());
       S.ArrayPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ArrayPlot());
       S.ArraySymbol.setEvaluator(new org.matheclipse.core.reflection.system.ArraySymbol());
+      S.AsymptoticDSolveValue
+          .setEvaluator(new org.matheclipse.core.reflection.system.AsymptoticDSolveValue());
+      S.AsymptoticRSolveValue
+          .setEvaluator(new org.matheclipse.core.reflection.system.AsymptoticRSolveValue());
+      S.AsymptoticSolve.setEvaluator(new org.matheclipse.core.reflection.system.AsymptoticSolve());
       S.BarnesG.setEvaluator(new org.matheclipse.core.reflection.system.BarnesG());
       S.DawsonF.setEvaluator(new org.matheclipse.core.reflection.system.DawsonF());
       S.MatrixSymbol.setEvaluator(new org.matheclipse.core.reflection.system.MatrixSymbol());
@@ -38,6 +43,7 @@ public final class FunctionDefinitions {
       S.ConnectedGraphComponents
           .setEvaluator(new org.matheclipse.core.reflection.system.ConnectedGraphComponents());
       S.D.setEvaluator(new org.matheclipse.core.reflection.system.D());
+      S.Dt.setEvaluator(new org.matheclipse.core.reflection.system.Dt());
       S.DeBruijnSequence
           .setEvaluator(new org.matheclipse.core.reflection.system.DeBruijnSequence());
       S.Derivative.setEvaluator(new org.matheclipse.core.reflection.system.Derivative());
@@ -49,9 +55,12 @@ public final class FunctionDefinitions {
       S.DiscreteRatio.setEvaluator(new org.matheclipse.core.reflection.system.DiscreteRatio());
       S.DiscreteShift.setEvaluator(new org.matheclipse.core.reflection.system.DiscreteShift());
       S.DSolve.setEvaluator(new org.matheclipse.core.reflection.system.DSolve());
+      S.DSolveValue.setEvaluator(new org.matheclipse.core.reflection.system.DSolveValue());
       S.EasterSunday.setEvaluator(new org.matheclipse.core.reflection.system.EasterSunday());
       S.ElementData.setEvaluator(new org.matheclipse.core.data.ElementData());
       S.Eliminate.setEvaluator(new org.matheclipse.core.reflection.system.Eliminate());
+      S.ExponentialGeneratingFunction
+          .setEvaluator(new org.matheclipse.core.reflection.system.ExponentialGeneratingFunction());
       S.ExportString.setEvaluator(new org.matheclipse.core.reflection.system.ExportString());
       S.ExpToTrig.setEvaluator(new org.matheclipse.core.reflection.system.ExpToTrig());
       S.FindFormula.setEvaluator(new org.matheclipse.core.reflection.system.FindFormula());
@@ -77,9 +86,10 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.FourierDSTMatrix());
       S.FourierSinTransform
           .setEvaluator(new org.matheclipse.core.reflection.system.FourierSinTransform());
-
       S.FrobeniusSolve.setEvaluator(new org.matheclipse.core.reflection.system.FrobeniusSolve());
       S.FunctionExpand.setEvaluator(new org.matheclipse.core.reflection.system.FunctionExpand());
+      S.GeneratingFunction
+          .setEvaluator(new org.matheclipse.core.reflection.system.GeneratingFunction());
       S.Groupings.setEvaluator(new org.matheclipse.core.reflection.system.Groupings());
       S.HeavisideLambda.setEvaluator(new org.matheclipse.core.reflection.system.HeavisideLambda());
       S.HeavisidePi.setEvaluator(new org.matheclipse.core.reflection.system.HeavisidePi());
@@ -112,9 +122,10 @@ public final class FunctionDefinitions {
       S.LinearProgramming
           .setEvaluator(new org.matheclipse.core.reflection.system.LinearProgramming());
       S.LogBarnesG.setEvaluator(new org.matheclipse.core.reflection.system.LogBarnesG());
-
+      S.MaximalBy.setEvaluator(new org.matheclipse.core.reflection.system.MaximalBy());
       S.MeijerG.setEvaluator(new org.matheclipse.core.reflection.system.MeijerG());
       S.MeijerGReduce.setEvaluator(new org.matheclipse.core.reflection.system.MeijerGReduce());
+      S.MinimalBy.setEvaluator(new org.matheclipse.core.reflection.system.MinimalBy());
       S.MinimalPolynomial
           .setEvaluator(new org.matheclipse.core.reflection.system.MinimalPolynomial());
       S.N.setEvaluator(new org.matheclipse.core.reflection.system.N());
@@ -144,6 +155,8 @@ public final class FunctionDefinitions {
       S.Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
       S.Ratios.setEvaluator(new org.matheclipse.core.reflection.system.Ratios());
       S.Reduce.setEvaluator(new org.matheclipse.core.reflection.system.Reduce());
+      S.RSolve.setEvaluator(new org.matheclipse.core.reflection.system.RSolve());
+      S.RSolveValue.setEvaluator(new org.matheclipse.core.reflection.system.RSolveValue());
       S.Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
       S.SpectrogramArray
           .setEvaluator(new org.matheclipse.core.reflection.system.SpectrogramArray());
