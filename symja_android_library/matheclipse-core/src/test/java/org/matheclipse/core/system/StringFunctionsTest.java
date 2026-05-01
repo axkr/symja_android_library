@@ -295,6 +295,9 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testStringCases() {
+
+    check("StringCases(\"A\\nB\", StartOfLine ~~ \"B\") // InputForm", //
+        "{\"B\"}");
     check("StringCases(\"AaBBccDDeefG\", CharacterRange(\"A\", \"Z\") ..)", //
         "{A,BB,DD,G}");
     check("StringCases(\"a#ä_123\", WordCharacter)", //
@@ -419,6 +422,11 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testStringMatchQ() {
+    check("StringMatchQ(\"Q\", Except(\"a\"))", //
+        "True");
+    check("StringMatchQ(\"\\\\\", Except(\"a\"))", //
+        "True");
+
     // message: StringMatchQ: String or list of strings expected at position 1 in
     // StringMatchQ(1/2,y___).
     check("StringMatchQ(1/2,y___)", //
@@ -456,6 +464,35 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "{False,True,False}");
     check("StringMatchQ(\"abaababbat\", ___ ~~ \"t\" ~~ EndOfString)", //
         "True");
+  }
+
+  @Test
+  public void testStringMatchQNumberString() {
+    check("StringMatchQ(\"-1.23e-4\", NumberString)", //
+        "False");
+    check("StringMatchQ(\".5\", NumberString)", //
+        "True");
+    check("StringMatchQ(\"+42\", NumberString)", //
+        "True");
+    
+    check("StringMatchQ(\"123.4\", NumberString)", //
+        "True");
+    check("StringMatchQ(\"123.4567890123456789\", NumberString)", //
+        "True");
+    check("StringMatchQ(\"123.45678901234567890`\", NumberString)", //
+        "False");
+    check("StringMatchQ(\"123.456`200\", NumberString)", //
+        "False");
+    check("StringMatchQ(\"123.456``200\", NumberString)", //
+        "False");
+    check("StringMatchQ(\"1.234*^6\", NumberString)", //
+        "False");
+    check("StringMatchQ(\"1.234`200*^6\", NumberString)", //
+        "False");
+    check("StringMatchQ(\"2^^101.111`200\", NumberString)", //
+        "False");
+    check("StringMatchQ(\"2^^101.111`200*^6\", NumberString)", //
+        "False");
   }
 
   @Test
@@ -592,8 +629,8 @@ public class StringFunctionsTest extends ExprEvaluatorTestCase {
         "StringSplit(test,,)");
     check("StringSplit(\"a, ,c,d,\", \",\") // InputForm", //
         "{\"a\",\" \",\"c\",\"d\"}");
-    check("StringSplit(\"abc\\ndef\\nhij\",StartOfLine)", //
-        "{abc,def,hij}");
+    check("StringSplit(\"abc\\ndef\\nhij\",StartOfLine) // InputForm", //
+        "{\"abc\n\",\"def\n\",\"hij\"}");
     check("StringSplit(\"13  a22    bbb\", WhitespaceCharacter) // InputForm", //
         "{\"13\",\"\",\"a22\",\"\",\"\",\"\",\"bbb\"}");
     check("StringSplit(\"13 a22 bbb\", WhitespaceCharacter) // InputForm", //
