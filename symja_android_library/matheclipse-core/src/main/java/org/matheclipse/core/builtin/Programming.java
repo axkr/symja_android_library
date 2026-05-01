@@ -1269,7 +1269,9 @@ public final class Programming {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       final IExpr temp = engine.evaluate(ast.arg1());
-
+      if (temp.isUndefined()) {
+        return F.NIL;
+      }
       if (temp.isFalse()) {
         if (ast.size() >= 4) {
           return engine.evaluate(ast.arg3());
@@ -1578,11 +1580,11 @@ public final class Programming {
    * (1+(1+x)^2)^2
    * </pre>
    */
-  private static final class Nest extends AbstractCoreFunctionEvaluator {
+  private static final class Nest extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg3 = engine.evaluate(ast.arg3());
+      IExpr arg3 = ast.arg3();
       if (arg3.isInteger()) {
         int n = arg3.toIntDefault();
         if (n < 0) {
@@ -1605,7 +1607,7 @@ public final class Programming {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.HOLDALL);
+      // newSymbol.setAttributes(ISymbol.HOLDALL);
     }
   }
 
@@ -3851,6 +3853,8 @@ public final class Programming {
         if (p1 < ast.size()) {
           if (result.isASTOrAssociation()) {
             return part((IAST) result, ast, p1, engine);
+          } else if (result.isSparseArray()) {
+            return sparsePart((ISparseArray) result, ast, p1, engine);
           } else {
             // Part specification `1` is longer than depth of object.
             return Errors.printMessage(S.Part, "partd", F.list(result), engine);
@@ -3984,7 +3988,7 @@ public final class Programming {
   public static IExpr sparsePart(final ISparseArray arg1, final IAST ast, int pos,
       EvalEngine engine) {
     if (ast.forAll(x -> (x.isInteger() && x.isPositive()) || x.equals(S.All), 2)) {
-      return arg1.getPart(ast, 2);
+      return arg1.getPart(ast, pos);
     }
     // TODO implement more combinations for SparseArray
 

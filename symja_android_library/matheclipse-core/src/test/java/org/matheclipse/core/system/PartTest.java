@@ -372,4 +372,17 @@ public class PartTest extends ExprEvaluatorTestCase {
     check("{{a, b, c}, {d, e, f}}[[1, 2]]", //
         "b");
   }
+
+  @Test
+  public void testNestedSparseArrayPartExtraction() {
+    // Setup: A list where the second element is a SparseArray.
+    // A[[2, 1]] should correctly index into the SparseArray without throwing "partd"
+    check("A = {x, SparseArray({1 -> 10, 2 -> 20}, 2)}; A[[2, 1]]", //
+        "10");
+
+    // Ensure multi-level extraction still works cleanly
+    check("A = {x, {y, SparseArray({1 -> 10}, 1)}}; A[[2, 2, 1]]", //
+        "10");
+  }
+
 }
