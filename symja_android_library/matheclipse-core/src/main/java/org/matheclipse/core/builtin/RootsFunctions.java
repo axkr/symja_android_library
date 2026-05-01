@@ -3,8 +3,6 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.evalExpandAll;
 import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hipparchus.analysis.solvers.LaguerreSolver;
 import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.core.basic.Config;
@@ -48,8 +46,6 @@ import edu.jas.ufd.SquarefreeFactory;
 import jakarta.annotation.Nonnull;
 
 public class RootsFunctions {
-  private static final Logger LOGGER = LogManager.getLogger(RootsFunctions.class);
-
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -82,7 +78,6 @@ public class RootsFunctions {
      * @param arg
      * @param numeric if <code>true</code> create a numerically evaluated result. Otherwise return a
      *        symbolic result.
-     * @return
      */
     public static IAST croots(final IExpr arg, boolean numeric, EvalEngine engine) {
 
@@ -236,117 +231,6 @@ public class RootsFunctions {
       return ARGS_1_2;
     }
 
-    /**
-     * @param coefficients
-     * @return <code>F.NIL</code> if the result couldn't be evaluated
-     */
-    private static IAST rootsUp2Degree3(double[] coefficients) {
-      if (coefficients.length == 0) {
-        return F.NIL;
-      }
-      if (coefficients.length == 1) {
-        return quadratic(0.0, 0.0, coefficients[0]);
-      }
-      if (coefficients.length == 2) {
-        return quadratic(0.0, coefficients[1], coefficients[0]);
-      }
-      if (coefficients.length == 3) {
-        return quadratic(coefficients[2], coefficients[1], coefficients[0]);
-      }
-      IAST result = F.NIL;
-      if (coefficients.length == 4) {
-        result = cubic(coefficients[3], coefficients[2], coefficients[1], coefficients[0]);
-      }
-      return result;
-    }
-
-    private static IAST quadratic(double a, double b, double c) {
-      IASTAppendable result = F.ListAlloc(2);
-      double discriminant = (b * b - (4 * a * c));
-      if (F.isZero(discriminant)) {
-        double bothEqual = ((-b / (2.0 * a)));
-        result.append(bothEqual);
-        result.append(bothEqual);
-      } else if (discriminant < 0.0) {
-        // two complex roots
-        double imaginaryPart = Math.sqrt(-discriminant) / (2 * a);
-        double realPart = (-b / (2.0 * a));
-        result.append(F.complex(realPart, imaginaryPart));
-        result.append(F.complex(realPart, -imaginaryPart));
-      } else {
-        // two real roots
-        double real1 = ((-b + Math.sqrt(discriminant)) / (2.0 * a));
-        double real2 = ((-b - Math.sqrt(discriminant)) / (2.0 * a));
-        result.append(real1);
-        result.append(real2);
-      }
-      return result;
-    }
-
-    /**
-     * See <a href= "http://stackoverflow.com/questions/13328676/c-solving-cubic-equations" > http
-     * ://stackoverflow.com/questions/13328676/c-solving-cubic-equations</a>
-     *
-     * @param a
-     * @param b
-     * @param c
-     * @param d
-     */
-    private static IAST cubic(double a, double b, double c, double d) {
-      if (F.isZero(a)) {
-        return F.NIL;
-      }
-      if (F.isZero(d)) {
-        return F.NIL;
-      }
-      IASTAppendable result = F.ListAlloc(3);
-      b /= a;
-      c /= a;
-      d /= a;
-
-      double q = (3.0 * c - (b * b)) / 9.0;
-      double r = -(27.0 * d) + b * (9.0 * c - 2.0 * (b * b));
-      r /= 54.0;
-      double discriminant = q * q * q + r * r;
-
-      double term1 = (b / 3.0);
-      if (discriminant > 0) {
-        // one root real, two are complex
-        double s = r + Math.sqrt(discriminant);
-        s = ((s < 0) ? -Math.pow(-s, (1.0 / 3.0)) : Math.pow(s, (1.0 / 3.0)));
-        double t = r - Math.sqrt(discriminant);
-        t = ((t < 0) ? -Math.pow(-t, (1.0 / 3.0)) : Math.pow(t, (1.0 / 3.0)));
-        result.append(-term1 + s + t);
-        term1 += (s + t) / 2.0;
-        double realPart = -term1;
-        term1 = Math.sqrt(3.0) * (-t + s) / 2;
-        result.append(F.complex(realPart, term1));
-        result.append(F.complex(realPart, -term1));
-        return result;
-      }
-
-      // The remaining options are all real
-      double r13;
-      if (F.isZero(discriminant)) {
-        // All roots real, at least two are equal.
-        r13 = ((r < 0) ? -Math.pow(-r, (1.0 / 3.0)) : Math.pow(r, (1.0 / 3.0)));
-        result.append(-term1 + 2.0 * r13);
-        result.append(-(r13 + term1));
-        result.append(-(r13 + term1));
-        return result;
-      }
-
-      // Only option left is that all roots are real and unequal (to get here,
-      // q < 0)
-      q = -q;
-      double dum1 = q * q * q;
-      dum1 = Math.acos(r / Math.sqrt(dum1));
-      r13 = 2.0 * Math.sqrt(q);
-      result.append(-term1 + r13 * Math.cos(dum1 / 3.0));
-      result.append(-term1 + r13 * Math.cos((dum1 + 2.0 * Math.PI) / 3.0));
-      result.append(-term1 + r13 * Math.cos((dum1 + 4.0 * Math.PI) / 3.0));
-      return result;
-    }
   }
 
   /**
@@ -393,10 +277,8 @@ public class RootsFunctions {
           arg1 = engine.evaluate(F.Subtract(equalAST.arg1(), equalAST.arg2()));
         }
       } else {
-        LOGGER.log(engine.getLogLevel(),
-            "{}: Equal() expression expected at position 1 instead of {}", ast.topHead(),
-            ast.arg1());
-        return F.NIL;
+        // `1` is not an equation.
+        return Errors.printMessage(S.Roots, "eqn", F.List(arg1));
       }
       VariablesSet eVar = null;
       if (ast.arg2().isList()) {
@@ -408,9 +290,9 @@ public class RootsFunctions {
       if (!eVar.isSize(1)) {
         // factorization only possible for univariate polynomials
 
-        LOGGER.log(engine.getLogLevel(),
-            "{}: factorization only possible for univariate polynomials at position 2 instead of {}",
-            ast.topHead(), ast.arg2());
+        // LOGGER.log(engine.getLogLevel(),
+        // "{}: factorization only possible for univariate polynomials at position 2 instead of {}",
+        // ast.topHead(), ast.arg2());
         return F.NIL;
       }
       IAST variables = eVar.getVarList();
@@ -431,8 +313,8 @@ public class RootsFunctions {
   public static IAST complexRoots(final IExpr arg1, IAST variables, EvalEngine engine) {
     if (variables.size() != 2) {
       // factor only possible for univariate polynomials
-      LOGGER.log(engine.getLogLevel(),
-          "NRoots: factorization only possible for univariate polynomials");
+      // LOGGER.log(engine.getLogLevel(),
+      // "NRoots: factorization only possible for univariate polynomials");
       return F.NIL;
     }
     IExpr expr = evalExpandAll(arg1, engine);
@@ -475,8 +357,8 @@ public class RootsFunctions {
         EvalAttributes.sort(list);
         return list;
       } catch (org.hipparchus.exception.MathRuntimeException mrex) {
-        LOGGER.debug("RootsFunctions.roots() failed", mrex);
-        return F.NIL;
+        // LOGGER.debug("RootsFunctions.roots() failed", mrex);
+        return Errors.printMessage(S.NRoots, mrex, engine);
       }
     }
     IExpr denom = F.C1;
@@ -580,8 +462,8 @@ public class RootsFunctions {
     return findRoots(coefficients);
   }
 
-  public static IASTMutable rootsOfExprPolynomial(final IExpr expr, IAST varList,
-      boolean createSet, boolean rootsOfQuartic) {
+  public static IASTMutable rootsOfExprPolynomial(final IExpr expr, IAST varList, boolean createSet,
+      boolean rootsOfQuartic) {
     IASTMutable result = F.NIL;
     try {
       // try to generate a common expression polynomial
@@ -612,7 +494,7 @@ public class RootsFunctions {
         return result;
       }
     } catch (JASConversionException e2) {
-      LOGGER.debug("RootsFunctions.rootsOfExprPolynomial() failed", e2);
+      // LOGGER.debug("RootsFunctions.rootsOfExprPolynomial() failed", e2);
     }
     return F.NIL;
   }
@@ -640,7 +522,7 @@ public class RootsFunctions {
       result = QuarticSolver.sortASTArguments(result);
       return result;
     } catch (JASConversionException e2) {
-      LOGGER.debug("RootsFunctions.rootsOfQuadraticExprPolynomial() failed", e2);
+      // LOGGER.debug("RootsFunctions.rootsOfQuadraticExprPolynomial() failed", e2);
     }
     return result;
   }
@@ -694,50 +576,6 @@ public class RootsFunctions {
       }
     }
 
-    return F.NIL;
-  }
-
-  /**
-   * Solve polynomials of the form <code>a * x^n + b == 0</code>.
-   *
-   * @param n
-   * @param polynomial
-   * @return
-   */
-  private static IASTAppendable nthComplexRoot(int n, ExprPolynomial polynomial) {
-    IExpr coefficientN = C0;
-    IExpr coefficient0 = C0;
-    for (ExprMonomial monomial : polynomial) {
-      IExpr coefficient = monomial.coefficient();
-      long lExp = monomial.exponent().getVal(0);
-      if (lExp == n) {
-        coefficientN = coefficient;
-      } else if (lExp == 0) {
-        coefficient0 = coefficient;
-      } else {
-        return F.NIL;
-      }
-    }
-    if (coefficientN.isZero() || coefficient0.isZero()) {
-      return F.NIL;
-    }
-
-    EvalEngine engine = EvalEngine.get();
-    IExpr a = engine.evaluate(F.Divide(F.Negate(coefficient0), coefficientN));
-    if (a.isNumber()) {
-      // z = r*(Cos(θ)+I*Sin(θ))
-      IAST z = ((INumber) a).toPolarCoordinates();
-      IExpr r = z.arg1();
-      IExpr theta = z.arg2();
-
-      IRational fraction = F.QQ(1, n);
-      IExpr f1 = F.Power(r, fraction);
-      return F.mapRange(0, n, k -> {
-        IAST argCosSin = F.Times(fraction, F.Plus(theta, F.Times(F.ZZ(k + k), S.Pi)));
-        IAST f2 = F.Plus(F.Cos(argCosSin), F.Times(F.CI, F.Sin(argCosSin)));
-        return F.Times(f1, f2);
-      });
-    }
     return F.NIL;
   }
 
