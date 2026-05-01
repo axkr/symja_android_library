@@ -3,7 +3,6 @@ package org.matheclipse.core.builtin;
 import java.util.Locale;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
@@ -124,11 +123,14 @@ public class AssumptionFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      final IExpr arg1 = ast.arg1();
+      if (arg1.isUndefined()) {
+        return S.Undefined;
+      }
       final IExpr arg2 = ast.arg2();
 
       if (arg2.isSymbol()) {
         final ISymbol domain = (ISymbol) arg2;
-        final IExpr arg1 = ast.arg1();
         if (arg1.isAST()) {
           IAST arg1AST = (IAST) arg1;
           if (arg1.isList() || arg1.isAST(S.Alternatives)) {
@@ -227,13 +229,16 @@ public class AssumptionFunctions {
     }
   }
 
-  private static class NotElement extends AbstractCoreFunctionEvaluator {
+  private static class NotElement extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr arg2 = engine.evaluate(ast.arg2());
+      final IExpr arg1 = ast.arg1();
+      if (arg1.isUndefined()) {
+        return S.Undefined;
+      }
+      final IExpr arg2 = ast.arg2();
       if (arg2.isSymbol()) {
-        final IExpr arg1 = engine.evaluate(ast.arg1());
         if (arg1.isAST(S.Alternatives)) {
           boolean[] evaled = new boolean[] {false};
           IAST alternatives = (IAST) arg1;

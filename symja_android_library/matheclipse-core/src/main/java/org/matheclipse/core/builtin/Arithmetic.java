@@ -1966,27 +1966,6 @@ public final class Arithmetic {
       return F.NIL;
     }
 
-    // public IExpr e1ApfloatArg(Apfloat arg1) {
-    // FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
-    // try {
-    // return F.num(h.digamma(arg1.add(Apfloat.ONE)).add(ApfloatMath.euler(arg1.precision())));
-    // } catch (Exception ce) {
-    // //
-    // }
-    // return F.NIL;
-    // }
-    //
-    // public IExpr e1ApcomplexArg(Apcomplex arg1) {
-    // FixedPrecisionApcomplexHelper h = EvalEngine.getApfloat();
-    // try {
-    // return F
-    // .complexNum(h.digamma(arg1.add(Apfloat.ONE)).add(ApfloatMath.euler(arg1.precision())));
-    // } catch (Exception ce) {
-    // //
-    // }
-    // return F.NIL;
-    // }
-
     /**
      * 
      * @param n
@@ -2203,6 +2182,9 @@ public final class Arithmetic {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isUniform(UniformFlags.REAL)) {
+        return F.C0;
+      }
       IExpr expr = ast.arg1();
       if (expr.isDirectedInfinity()) {
         IAST directedInfininty = (IAST) expr;
@@ -5215,6 +5197,9 @@ public final class Arithmetic {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      if (ast.isUniform(UniformFlags.REAL)) {
+        return arg1;
+      }
       return evalRe(arg1, engine);
     }
 

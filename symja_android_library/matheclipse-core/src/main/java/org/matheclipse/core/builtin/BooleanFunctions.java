@@ -710,7 +710,13 @@ public final class BooleanFunctions {
       for (int i = 1; i < flattenedAST.size(); i++) {
         temp = flattenedAST.get(i);
         if (temp.isBuiltInSymbol()) {
+          if (temp.isUndefined()) {
+            return S.Undefined;
+          }
           if (temp.isFalse()) {
+            if (flattenedAST.exists(x -> x.isUndefined(), i + 1)) {
+              return S.Undefined;
+            }
             return S.False;
           } else if (temp.isTrue()) {
             continue;
@@ -720,6 +726,9 @@ public final class BooleanFunctions {
         temp = engine.evaluateNIL(temp);
         if (temp.isPresent()) {
           if (temp.isFalse()) {
+            if (flattenedAST.exists(x -> x.isUndefined(), i + 1)) {
+              return S.Undefined;
+            }
             return S.False;
           } else if (temp.isTrue()) {
             continue;
@@ -2296,7 +2305,7 @@ public final class BooleanFunctions {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
       if (ast.size() <= 2) {
-        if (ast.isAST1() && ast.arg1().equals(S.Undefined)) {
+        if (ast.isAST1() && ast.arg1().isUndefined()) {
           return S.Undefined;
         }
         return S.True;
@@ -2317,7 +2326,7 @@ public final class BooleanFunctions {
       if (astEvaled.isAST2()) {
         IExpr arg1 = astEvaled.arg1();
         IExpr arg2 = astEvaled.arg2();
-        if (arg1.equals(S.Undefined) || arg2.equals(S.Undefined)) {
+        if (arg1.isUndefined() || arg2.isUndefined()) {
           return S.Undefined;
         }
         IExpr result = simplifyCompare(arg1, arg2);
@@ -2351,7 +2360,7 @@ public final class BooleanFunctions {
       IReal lastReal = null;
       for (int i = 1; i < astEvaled.argSize(); i++) {
         final IExpr arg = astEvaled.get(i);
-        if (arg.equals(S.Undefined)) {
+        if (arg.isUndefined()) {
           return S.Undefined;
         }
         IExpr.COMPARE_TERNARY ternaryCompare = prepareCompare(arg, astEvaled.get(i + 1), engine);
@@ -4003,6 +4012,9 @@ public final class BooleanFunctions {
       if (o.isFalse()) {
         return S.True;
       }
+      if (o.isUndefined()) {
+        return S.Undefined;
+      }
       if (o.isAST()) {
         IAST temp = (IAST) o;
         if (o.isNot()) {
@@ -4099,7 +4111,13 @@ public final class BooleanFunctions {
 
       for (int i = 1; i < flattenedAST.size(); i++) {
         IExpr arg = flattenedAST.get(i);
+        if (arg.isUndefined()) {
+          return S.Undefined;
+        }
         if (arg.isTrue()) {
+          if (flattenedAST.exists(x -> x.isUndefined(), i + 1)) {
+            return S.Undefined;
+          }
           return S.True;
         }
         if (arg.isFalse()) {
@@ -4111,6 +4129,9 @@ public final class BooleanFunctions {
         arg = engine.evaluateNIL(arg);
         if (arg.isPresent()) {
           if (arg.isTrue()) {
+            if (flattenedAST.exists(x -> x.isUndefined(), i + 1)) {
+              return S.Undefined;
+            }
             return S.True;
           }
           if (arg.isFalse()) {
