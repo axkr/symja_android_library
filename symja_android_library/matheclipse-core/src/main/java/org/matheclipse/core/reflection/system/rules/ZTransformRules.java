@@ -13,22 +13,10 @@ public class ZTransformRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 15 };
+  final public static int[] SIZES = { 0, 11 };
 
   final public static IAST RULES = List(
     IInit(ZTransform, SIZES),
-    // ZTransform(a_^n_*f_,n_?NotListQ,z_?NotListQ):=ZTransform(f,n,z/a)/;FreeQ(a,n)&&FreeQ(a,z)
-    ISetDelayed(ZTransform(Times(Power(a_,n_),f_),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
-      Condition(ZTransform(f,n,Times(Power(a,CN1),z)),And(FreeQ(a,n),FreeQ(a,z)))),
-    // ZTransform(f_*n_,n_?NotListQ,z_?NotListQ):=-z*D(ZTransform(f,n,z),z)
-    ISetDelayed(ZTransform(Times(f_,n_),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
-      Times(CN1,z,D(ZTransform(f,n,z),z))),
-    // ZTransform(f_*n_^2,n_?NotListQ,z_?NotListQ):=z*D(ZTransform(f,n,z),z)+z^2*D(ZTransform(f,n,z),{z,2})
-    ISetDelayed(ZTransform(Times(f_,Sqr(n_)),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
-      Plus(Times(z,D(ZTransform(f,n,z),z)),Times(Sqr(z),D(ZTransform(f,n,z),list(z,C2))))),
-    // ZTransform(f_*n_^3,n_?NotListQ,z_?NotListQ):=-z*D(ZTransform(f,n,z),z)-3*z^2*D(ZTransform(f,n,z),{z,2})-z^3*D(ZTransform(f,n,z),{z,3})
-    ISetDelayed(ZTransform(Times(f_,Power(n_,C3)),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
-      Plus(Times(CN1,z,D(ZTransform(f,n,z),z)),Times(CN3,Sqr(z),D(ZTransform(f,n,z),list(z,C2))),Times(CN1,Power(z,C3),D(ZTransform(f,n,z),list(z,C3))))),
     // ZTransform(a_^n_,n_?NotListQ,z_?NotListQ):=z/(-a+z)/;FreeQ(a,n)&&FreeQ(a,z)
     ISetDelayed(ZTransform(Power(a_,n_),PatternTest(n_,NotListQ),PatternTest(z_,NotListQ)),
       Condition(Times(z,Power(Plus(Negate(a),z),CN1)),And(FreeQ(a,n),FreeQ(a,z)))),

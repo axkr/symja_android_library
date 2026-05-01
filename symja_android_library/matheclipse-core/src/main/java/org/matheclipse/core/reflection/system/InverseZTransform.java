@@ -42,6 +42,73 @@ public class InverseZTransform extends AbstractFunctionEvaluator {
         return fx.mapThread(F.InverseZTransform(F.Slot1, z, n), 1);
       }
 
+      // ========================================================================
+      // Table Rules: Exponential Fractions E^(a / z^p)
+      // Z^-1{ z^m * E^(a/z) } = a^(n+m) / Gamma(n+m+1)
+      // Z^-1{ z^m * E^(a/z^2) } = a^((n+m)/2) * (1 + (-1)^(n+m)) / (2 * Gamma((n+m)/2 + 1))
+      // ========================================================================
+      IExpr mPow = F.C0;
+      IExpr expTerm = fx;
+      IExpr coeffTerm = F.C1;
+
+      if (fx.isTimes()) {
+        IASTAppendable rest = F.TimesAlloc();
+        for (IExpr arg : (IAST) fx) {
+          if (arg.isPower() && arg.first().equals(z) && arg.second().isInteger()) {
+            mPow = arg.second();
+          } else if (arg.isExp()) {
+            expTerm = arg;
+          } else {
+            rest.append(arg);
+          }
+        }
+        if (rest.argSize() > 0) {
+          coeffTerm = rest.argSize() == 1 ? rest.arg1() : rest;
+        }
+      }
+
+      if (expTerm.isPower() && expTerm.first().equals(S.E)) {
+        IExpr exponent = expTerm.second();
+        IExpr aParam = F.C1;
+        IExpr pPow = F.C0;
+
+        if (exponent.isTimes()) {
+          IASTAppendable aRest = F.TimesAlloc();
+          for (IExpr arg : (IAST) exponent) {
+            if (arg.isPower() && arg.first().equals(z) && arg.second().isInteger()) {
+              pPow = arg.second();
+            } else if (arg.equals(z)) {
+              pPow = F.C1;
+            } else {
+              aRest.append(arg);
+            }
+          }
+          aParam = aRest.argSize() == 1 ? aRest.arg1() : aRest;
+        } else if (exponent.isPower() && exponent.first().equals(z)
+            && exponent.second().isInteger()) {
+          pPow = exponent.second();
+        } else if (exponent.equals(z)) {
+          pPow = F.C1;
+        }
+
+        if (pPow.isInteger() && pPow.isNegative()) {
+          int p = -pPow.toIntDefault(); // p is positive denominator power
+          IExpr nPlusM = engine.evaluate(F.Plus(n, mPow));
+
+          if (p == 1) {
+            IExpr num = engine.evaluate(F.Power(aParam, nPlusM));
+            IExpr den = F.Gamma(F.Plus(nPlusM, F.C1));
+            return engine.evaluate(F.Times(coeffTerm, F.Divide(num, den)));
+          } else if (p == 2) {
+            IExpr halfNPlusM = engine.evaluate(F.Divide(nPlusM, F.C2));
+            IExpr num1 = engine.evaluate(F.Power(aParam, halfNPlusM));
+            IExpr num2 = engine.evaluate(F.Plus(F.C1, F.Power(F.CN1, nPlusM)));
+            IExpr den = F.Times(F.C2, F.Gamma(F.Plus(halfNPlusM, F.C1)));
+            return engine.evaluate(F.Times(coeffTerm, F.Divide(F.Times(num1, num2), den)));
+          }
+        }
+      }
+
       if (fx.isTimes()) {
         IAST function = (IAST) fx;
         IASTAppendable constantArgs = F.TimesAlloc();
@@ -73,9 +140,7 @@ public class InverseZTransform extends AbstractFunctionEvaluator {
       // ========================================================================
       if (!fx.isFree(z)) {
         IAST apart = F.Apart(F.Divide(fx, z), z);
-        System.out.println("Attempting partial fraction expansion for: " + apart);
         IExpr fxOverZ = engine.evaluate(apart);
-        System.out.println("fx/z after Apart: " + fxOverZ);
 
         // If Apart successfully broke the expression into a Sum
         if (fxOverZ.isPlus()) {
@@ -106,4 +171,5 @@ public class InverseZTransform extends AbstractFunctionEvaluator {
   public int[] expectedArgSize(IAST ast) {
     return IFunctionEvaluator.ARGS_3_3;
   }
+
 }

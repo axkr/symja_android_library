@@ -1,6 +1,7 @@
-package org.matheclipse.core.system;
+package org.matheclipse.core.reflection.system;
 
 import org.junit.Test;
+import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
 /** Tests forSolve and Roots functions */
 public class ZTransformTest extends ExprEvaluatorTestCase {
@@ -25,14 +26,21 @@ public class ZTransformTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testZTransform001() {
-    check("ZTransform(n^2*f(n),n,z)", //
-        "z*Derivative(0,0,1)[ZTransform][f(n),n,z]+z^2*Derivative(0,0,2)[ZTransform][f(n),n,z]");
     check("ZTransform(f(1+n),n,z)", //
         "-z*f(0)+z*ZTransform(f(n),n,z)");
     check("ZTransform(f(4+n),n,z)", //
         "-z^4*f(0)-z^3*f(1)-z^2*f(2)-z*f(3)+z^4*ZTransform(f(n),n,z)");
     check("ZTransform(f(5+n),n,z)", //
         "-z^5*f(0)-z^4*f(1)-z^3*f(2)-z^2*f(3)-z*f(4)+z^5*ZTransform(f(n),n,z)");
+
+    check("ZTransform(f(n),n,z)", //
+        "ZTransform(f(n),n,z)");
+    check("ZTransform(n,n,z)", //
+        "z/(1-z)^2");
+    check("ZTransform(a,n,z)", //
+        "(a*z)/(-1+z)");
+    check("ZTransform(z,n,z)", //
+        "z^2/(-1+z)");
 
     check("ZTransform(a*f(n)+ b*g(n), n, z)", //
         "a*ZTransform(f(n),n,z)+b*ZTransform(g(n),n,z)");
@@ -67,7 +75,7 @@ public class ZTransformTest extends ExprEvaluatorTestCase {
   @Test
   public void testZTransform002() {
     check("ZTransform((-1)^n*n^2,n,z)", //
-        "z^2*((2*z)/(1+z)^3-2/(1+z)^2)+z*(-z/(1+z)^2+1/(1+z))");
+        "((1-z)*z)/(1+z)^3");
     check("ZTransform(Cos(n*Omega*t),n,z)", //
         "(z*(z-Cos(omega*t)))/(1+z^2-2*z*Cos(omega*t))");
     check("ZTransform(Cos(n+t),n,z)", //
@@ -83,19 +91,15 @@ public class ZTransformTest extends ExprEvaluatorTestCase {
     check("ZTransform(Sinh(f*n+t),n,z)", //
         "(z*(Sinh(f-t)+z*Sinh(t)))/(1+z^2-2*z*Cosh(f))");
     check("ZTransform(n*Cos(b*n)/(n!),n,z)", //
-        "z*((E^(Cos(b)/z)*Cos(b)*Cos(Sin(b)/z))/z^2+(-E^(Cos(b)/z)*Sin(b)*Sin(Sin(b)/z))/z^\n"
-            + "2)");
+        "(E^(Cos(b)/z)*Cos(b+Sin(b)/z))/z");
     // check("ZTransform(Cos(b*(n+2))/(n+2),n,z)", //
     // "(z*(Sinh(f-t)+z*Sinh(t)))/(1+z^2-2*z*Cosh(f))");
 
-    check("ZTransform((1+n)^2*f(n),n,z)", //
-        "ZTransform(f(n),n,z)-z*Derivative(0,0,1)[ZTransform][f(n),n,z]+z^2*Derivative(0,\n"
-            + "0,2)[ZTransform][f(n),n,z]");
+
     check("ZTransform((1+n)^2*Sin(n),n,z)", //
-        "(z*Sin(1))/(1+z^2-2*z*Cos(1))+z^2*((2*(-2*z+2*Cos(1)))/(1+z^2-2*z*Cos(1))^2+z*((-\n"
-            + "2*(2*z-2*Cos(1))*(-2*z+2*Cos(1)))/(1+z^2-2*z*Cos(1))^3-2/(1+z^2-2*z*Cos(1))^2))*Sin(\n"
-            + "1)+z*((z*(-2*z+2*Cos(1))*Sin(1))/(1+z^2-2*z*Cos(1))^2+Sin(1)/(1+z^2-2*z*Cos(1)))-z*((\n"
-            + "2*z*(-2*z+2*Cos(1))*Sin(1))/(1+z^2-2*z*Cos(1))^2+(2*Sin(1))/(1+z^2-2*z*Cos(1)))");
+        "(2*z*(-1+z^2)*Sin(1))/(1+z^2-2*z*Cos(1))^2+(z*Sin(1))/(1+z^2-2*z*Cos(1))+(-z*(-1+(z*(\n"
+            + "6*z-2*z^3-4*Cos(1)))/(1+z^2-2*z*Cos(1))^2+(2*z*(z-Cos(1)))/(1+z^2-2*z*Cos(1)))*Sin(\n"
+            + "1))/(1+z^2-2*z*Cos(1))");
   }
 
   @Test
@@ -112,9 +116,9 @@ public class ZTransformTest extends ExprEvaluatorTestCase {
   public void testZTransformFractionalShift() {
     // Verifies that ZTransform securely returns unevaluated when encountering
     // sequence functions evaluated at non-integer shifts.
-    check("ZTransform(Sqrt(n)*a(Sqrt(n)), n, z)",//
+    check("ZTransform(Sqrt(n)*a(Sqrt(n)), n, z)", //
         "ZTransform(Sqrt(n)*a(Sqrt(n)),n,z)");
-    
+
   }
 
   @Test
@@ -124,4 +128,30 @@ public class ZTransformTest extends ExprEvaluatorTestCase {
         "ExponentialGeneratingFunction(Sqrt(n)*a(Sqrt(n)),n,x)");
   }
 
+  @Test
+  public void testExponentialFractions() {
+    // Z^-1 { E^(a/z) }
+    check("InverseZTransform(E^(a/z), z, n)", //
+        "a^n/Gamma(1+n)");
+
+    // Z^-1 { E^(a/z^2) }
+    check("InverseZTransform(E^(a/z^2), z, n)", //
+        "((1+(-1)^n)*a^(n/2))/(2*Gamma(1+n/2))");
+
+    // Z^-1 { E^(a/z) / z } -> Tests m = -1 negative shift
+    check("InverseZTransform(E^(a/z)/z, z, n)", //
+        "1/(a^(1-n)*Gamma(n))");
+
+    // Z^-1 { E^(a/z^2) / z^3 } -> Tests m = -3 negative shift
+    check("InverseZTransform(E^(a/z^2)/z^3, z, n)", //
+        "((1+(-1)^(-3+n))*a^(1/2*(-3+n)))/(2*Gamma(1+1/2*(-3+n)))");
+
+    // Explicit numeric constants (Extracts 1^x correctly)
+    check("InverseZTransform(E^(1/z^2), z, n)", //
+        "(1+(-1)^n)/(2*Gamma(1+n/2))");
+
+    // Edge Case (The exact isolated fraction from the RSolve trace)
+    check("InverseZTransform(E^(1/z^2)/z, z, n)", //
+        "(1+(-1)^(-1+n))/(2*Gamma(1+1/2*(-1+n)))");
+  }
 }

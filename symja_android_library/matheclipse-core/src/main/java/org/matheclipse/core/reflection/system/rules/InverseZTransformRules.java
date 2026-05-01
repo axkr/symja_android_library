@@ -13,7 +13,7 @@ public class InverseZTransformRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 2 };
+  final public static int[] SIZES = { 0, 6 };
 
   final public static IAST RULES = List(
     IInit(InverseZTransform, SIZES),
@@ -22,6 +22,18 @@ public class InverseZTransformRules {
       Condition(Power(Negate(a),n),And(FreeQ(a,n),FreeQ(a,z)))),
     // InverseZTransform(z_/(a_+z_)^p_Integer,z_?NotListQ,n_?NotListQ):=Binomial(n,-1+p)/(-a)^(-1+p-n)/;p>1&&FreeQ({a,p},n)&&FreeQ({a,p},z)
     ISetDelayed(InverseZTransform(Times(z_,Power(Plus(a_,z_),Negate($p(p, Integer)))),PatternTest(z_,NotListQ),PatternTest(n_,NotListQ)),
-      Condition(Times(Power(Negate(a),Plus(Negate(Plus(CN1,p)),n)),Binomial(n,Plus(CN1,p))),And(Greater(p,C1),FreeQ(list(a,p),n),FreeQ(list(a,p),z))))
+      Condition(Times(Power(Negate(a),Plus(Negate(Plus(CN1,p)),n)),Binomial(n,Plus(CN1,p))),And(Greater(p,C1),FreeQ(list(a,p),n),FreeQ(list(a,p),z)))),
+    // InverseZTransform(E^(a_./z_),z_?NotListQ,n_?NotListQ):=a^n/Gamma(n+1)/;FreeQ(a,z)&&FreeQ(a,n)
+    ISetDelayed(InverseZTransform(Exp(Times(a_DEFAULT,Power(z_,CN1))),PatternTest(z_,NotListQ),PatternTest(n_,NotListQ)),
+      Condition(Times(Power(a,n),Power(Gamma(Plus(n,C1)),CN1)),And(FreeQ(a,z),FreeQ(a,n)))),
+    // InverseZTransform(E^(a_./z_^2),z_?NotListQ,n_?NotListQ):=((1+(-1)^n)*a^(n/2))/(2*Gamma(1+n/2))/;FreeQ(a,z)&&FreeQ(a,n)
+    ISetDelayed(InverseZTransform(Exp(Times(a_DEFAULT,Power(z_,CN2))),PatternTest(z_,NotListQ),PatternTest(n_,NotListQ)),
+      Condition(Times(Plus(C1,Power(-1,n)),Power(a,Times(C1D2,n)),Power(Times(C2,Gamma(Plus(C1,Times(C1D2,n)))),CN1)),And(FreeQ(a,z),FreeQ(a,n)))),
+    // InverseZTransform(E^(a_./z_)*z_^m_Integer,z_?NotListQ,n_?NotListQ):=a^(n+m)/Gamma(n+m+1)/;FreeQ(a,z)&&FreeQ(a,n)&&m<0
+    ISetDelayed(InverseZTransform(Times(Exp(Times(a_DEFAULT,Power(z_,CN1))),Power(z_,$p(m, Integer))),PatternTest(z_,NotListQ),PatternTest(n_,NotListQ)),
+      Condition(Times(Power(a,Plus(n,m)),Power(Gamma(Plus(n,m,C1)),CN1)),And(FreeQ(a,z),FreeQ(a,n),Less(m,C0)))),
+    // InverseZTransform(E^(a_./z_^2)*z_^m_Integer,z_?NotListQ,n_?NotListQ):=((1+(-1)^(n+m))*a^(1/2*(n+m)))/(2*Gamma(1+1/2*(n+m)))/;FreeQ(a,z)&&FreeQ(a,n)&&m<0
+    ISetDelayed(InverseZTransform(Times(Exp(Times(a_DEFAULT,Power(z_,CN2))),Power(z_,$p(m, Integer))),PatternTest(z_,NotListQ),PatternTest(n_,NotListQ)),
+      Condition(Times(Plus(C1,Power(-1,Plus(n,m))),Power(a,Times(C1D2,Plus(n,m))),Power(Times(C2,Gamma(Plus(C1,Times(C1D2,Plus(n,m))))),CN1)),And(FreeQ(a,z),FreeQ(a,n),Less(m,C0))))
   );
 }

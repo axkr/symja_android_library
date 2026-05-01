@@ -1,14 +1,5 @@
 {
- (* see http://www.reduce-algebra.com/docs/ztrans.pdf *)
-  ZTransform(a_^n_*f_,n_?NotListQ,z_?NotListQ):= ZTransform(f,n,z/a)
-    /; FreeQ(a,n)&&FreeQ(a,z),
-  ZTransform(n_*f_,n_?NotListQ,z_?NotListQ):= (-1)*z*D(ZTransform(f,n,z),z),
-  ZTransform(n_^2*f_,n_?NotListQ,z_?NotListQ):= z*D(ZTransform(f,n,z),z)+z^2*D(ZTransform(f,n,z),{z,2}),
-  ZTransform(n_^3*f_,n_?NotListQ,z_?NotListQ):= -z*D(ZTransform(f,n,z),z)-3*z^2*D(ZTransform(f,n,z),{z,2})-z^3*D(ZTransform(f,n,z),{z,3}),
- (* ZTransform(n_^k_Integer*f_,n_?NotListQ,z_?NotListQ):=(-1)*z*D(ZTransform(n^(k-1)*f,n,z),z)
-    /; k>0,  
-  *)
-  
+ 
   ZTransform(a_^n_ ,n_?NotListQ,z_?NotListQ):=z/(z-a)
     /; FreeQ(a,n)&&FreeQ(a,z),
   ZTransform(a_^(f_*n_) ,n_?NotListQ,z_?NotListQ):=z/(z-a^f)
