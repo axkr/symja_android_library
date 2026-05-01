@@ -50,7 +50,7 @@ public class ApfloatNum implements INum {
 
   public static final Apint TWO = new Apint(2);
 
-  static Apfloat apfloatRint(Apfloat fApfloat) {
+  public static Apfloat apfloatRint(Apfloat fApfloat) {
     if (fApfloat.scale() > 0) {
       return ApfloatMath.roundToPrecision(fApfloat, fApfloat.scale(), Config.ROUNDING_MODE);
     }

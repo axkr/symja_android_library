@@ -47,6 +47,196 @@ import org.matheclipse.parser.client.ast.ASTNode;
 /** Conversions between an IExpr object and misc other object class types */
 public class Convert {
 
+  /**
+   * Converts an {@link ApcomplexField} {@link FieldMatrix} to the list expression representation.
+   *
+   * @param matrix
+   * @return {@code F.NIL} if no conversion was possible
+   */
+  public static IASTAppendable apcomplexMatrix2List(final FieldMatrix<ApcomplexField> matrix) {
+    return apcomplexMatrix2List(matrix, true);
+  }
+
+
+  /**
+   * Converts an {@link ApcomplexField} {@link FieldMatrix} to the list expression representation.
+   *
+   * @param matrix
+   * @param matrixFormat if {@code true} the IS_MATRIX flag is set on the result
+   * @return {@code F.NIL} if no conversion was possible
+   */
+  public static IASTAppendable apcomplexMatrix2List(final FieldMatrix<ApcomplexField> matrix,
+      boolean matrixFormat) {
+    if (matrix == null) {
+      return F.NIL;
+    }
+    final int rowSize = matrix.getRowDimension();
+    final int colSize = matrix.getColumnDimension();
+
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> {
+      return matrix.getEntry(i, j).getApcomplexNum();
+    }));
+    if (matrixFormat) {
+      // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
+      // isMatrix() must be used!
+      out.isMatrix(true);
+    }
+    return out;
+  }
+
+  /**
+   * Converts an array of {@link ApcomplexField} values to an {@link IAST} list.
+   *
+   * @param vector the array of values
+   * @return {@code F.NIL} if {@code vector} is {@code null}
+   */
+  public static IASTAppendable apcomplexValues2List(final ApcomplexField[] vector) {
+    return apcomplexValues2List(vector, true);
+  }
+
+  /**
+   * Converts an array of {@link ApcomplexField} values to an {@link IAST} list.
+   *
+   * @param vector the array of values
+   * @param vectorFormat if {@code true} the IS_VECTOR flag is set on the result
+   * @return {@code F.NIL} if {@code vector} is {@code null}
+   */
+  public static IASTAppendable apcomplexValues2List(final ApcomplexField[] vector,
+      boolean vectorFormat) {
+    if (vector == null) {
+      return F.NIL;
+    }
+    final int rowSize = vector.length;
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> {
+      return vector[i].getApcomplexNum();
+    });
+    if (vectorFormat) {
+      out.addEvalFlags(IAST.IS_VECTOR);
+    }
+    return out;
+  }
+
+  /**
+   * Converts an {@link ApcomplexField} {@link FieldVector} to an {@link IAST} list.
+   *
+   * @param vector
+   * @return {@code F.NIL} if no conversion was possible
+   */
+  public static IASTAppendable apcomplexVector2List(final FieldVector<ApcomplexField> vector) {
+    return apcomplexVector2List(vector, true);
+  }
+
+  /**
+   * Converts an {@link ApcomplexField} {@link FieldVector} to an {@link IAST} list.
+   *
+   * @param vector
+   * @param vectorFormat if {@code true} the IS_VECTOR flag is set on the result
+   * @return {@code F.NIL} if no conversion was possible
+   */
+  public static IASTAppendable apcomplexVector2List(final FieldVector<ApcomplexField> vector,
+      boolean vectorFormat) {
+    if (vector == null) {
+      return F.NIL;
+    }
+    final int rowSize = vector.getDimension();
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> {
+      return vector.getEntry(i).getApcomplexNum();
+    });
+    if (vectorFormat) {
+      out.addEvalFlags(IAST.IS_VECTOR);
+    }
+    return out;
+  }
+
+  /**
+   * Converts a complex FieldMatrix to the list expression representation.
+   *
+   * @param matrix
+   * @return <code>F.NIL</code> if no conversion was possible
+   */
+  public static IASTAppendable apfloatMatrix2List(final FieldMatrix<ApfloatField> matrix) {
+    return apfloatMatrix2List(matrix, true);
+  }
+
+  public static IASTAppendable apfloatMatrix2List(final FieldMatrix<ApfloatField> matrix,
+      boolean matrixFormat) {
+    if (matrix == null) {
+      return F.NIL;
+    }
+    final int rowSize = matrix.getRowDimension();
+    final int colSize = matrix.getColumnDimension();
+
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> F.mapRange(0, colSize, j -> {
+      return matrix.getEntry(i, j).getApfloatNum();
+    }));
+    if (matrixFormat) {
+      // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
+      // isMatrix() must be used!
+      out.isMatrix(true);
+    }
+    return out;
+  }
+
+  /**
+   * Convert an array of {@link Complex} values to an {@link IAST} list.
+   * 
+   */
+  public static IASTAppendable apfloatValues2List(final ApfloatField[] vector) {
+    return apfloatValues2List(vector, true);
+  }
+
+  /**
+   * Convert an array of {@link Complex} values to an {@link IAST} list.
+   * 
+   * @param vectorFormat set flag for isVector() method
+   */
+  public static IASTAppendable apfloatValues2List(final ApfloatField[] vector,
+      boolean vectorFormat) {
+    if (vector == null) {
+      return F.NIL;
+    }
+    final int rowSize = vector.length;
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> {
+      return vector[i].getApfloatNum();
+    });
+    if (vectorFormat) {
+      out.addEvalFlags(IAST.IS_VECTOR);
+    }
+    return out;
+  }
+
+  /**
+   * Convert a {@link FieldVector} to an {@link IAST} list.
+   *
+   * @return <code>F.NIL</code> if no conversion was possible
+   */
+  public static IASTAppendable apfloatVector2List(final FieldVector<ApfloatField> vector) {
+    return apfloatVector2List(vector, true);
+  }
+
+  /**
+   * Convert a {@link FieldVector} to an {@link IAST} list.
+   *
+   * @param vectorFormat set flag for isVector() method
+   * @return <code>F.NIL</code> if no conversion was possible
+   */
+  public static IASTAppendable apfloatVector2List(final FieldVector<ApfloatField> vector,
+      boolean vectorFormat) {
+    if (vector == null) {
+      return F.NIL;
+    }
+    final int rowSize = vector.getDimension();
+    final IASTAppendable out = F.mapRange(0, rowSize, i -> {
+      ApfloatField cmp = vector.getEntry(i);
+      return F.num(cmp.getApfloat());
+
+    });
+    if (vectorFormat) {
+      out.addEvalFlags(IAST.IS_VECTOR);
+    }
+    return out;
+  }
+
   public static IASTAppendable assoc2List(final IAssociation vector) {
     if (vector == null) {
       return F.NIL;
@@ -57,7 +247,6 @@ public class Convert {
     }
     return F.mapRange(1, rowSize + 1, i -> vector.get(i));
   }
-
 
   public static FieldMatrix<IExpr> augmentedFieldMatrix(final FieldMatrix<IExpr> listMatrix,
       final FieldVector<IExpr> listVector) throws ClassCastException, IndexOutOfBoundsException {
@@ -127,6 +316,7 @@ public class Convert {
     return complexMatrix2List(matrix, true);
   }
 
+
   public static IASTAppendable complexMatrix2List(final FieldMatrix<Complex> matrix,
       boolean matrixFormat) {
     if (matrix == null) {
@@ -153,7 +343,6 @@ public class Convert {
   /**
    * Convert an array of {@link Complex} values to an {@link IAST} list.
    * 
-   * @return
    */
   public static IASTAppendable complexValues2List(final Complex[] vector) {
     return complexValues2List(vector, true);
@@ -163,7 +352,6 @@ public class Convert {
    * Convert an array of {@link Complex} values to an {@link IAST} list.
    * 
    * @param vectorFormat set flag for isVector() method
-   * @return
    */
   public static IASTAppendable complexValues2List(final Complex[] vector, boolean vectorFormat) {
     if (vector == null) {
@@ -225,7 +413,7 @@ public class Convert {
     CSVFormat csvFormat = Builder.create()//
         .setDelimiter(',') //
         .setQuote('"') //
-        .build();
+        .get();
     // CSVFormat.RFC4180.withDelimiter(',');
     Iterable<CSVRecord> records = csvFormat.parse(reader);
     IASTAppendable rowList = F.ListAlloc(256);
@@ -240,7 +428,6 @@ public class Convert {
     }
     return rowList;
   }
-
 
   public static IAST fromCSV(String fileName) throws IOException {
     FileReader reader = new FileReader(fileName);
@@ -263,6 +450,174 @@ public class Convert {
         builder.append(delimiter);
       }
     }
+  }
+
+  /**
+   * Returns a {@code FieldMatrix<ApcomplexField>} if possible.
+   *
+   * @param expr
+   * @return {@code null} if the conversion isn't possible.
+   * @throws ClassCastException
+   * @throws IndexOutOfBoundsException
+   */
+  public static FieldMatrix<ApcomplexField> list2ApcomplexMatrix(IExpr expr)
+      throws ClassCastException, IndexOutOfBoundsException {
+    if (expr == null) {
+      return null;
+    }
+    int[] dim = expr.isMatrix();
+    if (dim == null || dim[0] == 0 || dim[1] == 0) {
+      return null;
+    }
+    if (expr.isSparseArray()) {
+      expr = ((ISparseArray) expr).normal(false);
+    }
+    if (expr.isList()) {
+      try {
+        IAST list = (IAST) expr;
+        IAST currInRow = (IAST) list.arg1();
+        if (currInRow.isAST0()) {
+          // special case 0-Matrix
+          ApcomplexField[][] array = new ApcomplexField[0][0];
+          return new Array2DRowFieldMatrix<ApcomplexField>(array, false);
+        }
+        final int rowSize = expr.argSize();
+        final int colSize = currInRow.argSize();
+
+        EvalEngine engine = EvalEngine.get();
+        final ApcomplexField[][] elements = new ApcomplexField[rowSize][colSize];
+        for (int i = 1; i < rowSize + 1; i++) {
+          currInRow = (IAST) list.get(i);
+          if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
+            return null;
+          }
+          for (int j = 1; j < colSize + 1; j++) {
+            elements[i - 1][j - 1] = engine.evalApcomplex(currInRow.get(j));
+          }
+        }
+        return new Array2DRowFieldMatrix<ApcomplexField>(elements, false);
+      } catch (ValidateException vex) {
+        // pass
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns a {@code FieldVector<ApcomplexField>} if possible.
+   *
+   * @param expr
+   * @return {@code null} if the conversion isn't possible.
+   * @throws ClassCastException
+   */
+  public static FieldVector<ApcomplexField> list2ApcomplexVector(IExpr expr)
+      throws ClassCastException {
+    if (expr == null) {
+      return null;
+    }
+    int dim = expr.isVector();
+    if (dim <= 0) {
+      return null;
+    }
+    if (expr.isSparseArray()) {
+      expr = ((ISparseArray) expr).normal(false);
+    }
+    if (expr.isList()) {
+      try {
+        final int rowSize = expr.argSize();
+        IAST list = (IAST) expr;
+        EvalEngine engine = EvalEngine.get();
+        final ApcomplexField[] elements = new ApcomplexField[rowSize];
+        for (int i = 0; i < rowSize; i++) {
+          elements[i] = engine.evalApcomplex(list.get(i + 1));
+        }
+        return new ArrayFieldVector<ApcomplexField>(elements, false);
+      } catch (ValidateException vex) {
+        // pass
+      }
+    }
+    return null;
+  }
+
+
+
+  /**
+   * Returns a <code>FieldMatrix<ApfloatField></code> if possible.
+   *
+   * @param expr
+   * @return <code>null</code> if the conversion isn't possible.
+   * @throws ClassCastException
+   * @throws IndexOutOfBoundsException
+   */
+  public static FieldMatrix<ApfloatField> list2ApfloatMatrix(IExpr expr)
+      throws ClassCastException, IndexOutOfBoundsException {
+    if (expr == null) {
+      return null;
+    }
+    int[] dim = expr.isMatrix();
+    if (dim == null || dim[0] == 0 || dim[1] == 0) {
+      return null;
+    }
+    if (expr.isSparseArray()) {
+      expr = ((ISparseArray) expr).normal(false);
+    }
+    if (expr.isList()) {
+      try {
+        IAST list = (IAST) expr;
+        IAST currInRow = (IAST) list.arg1();
+        if (currInRow.isAST0()) {
+          // special case 0-Matrix
+          ApfloatField[][] array = new ApfloatField[0][0];
+          return new Array2DRowFieldMatrix<ApfloatField>(array, false);
+        }
+        final int rowSize = expr.argSize();
+        final int colSize = currInRow.argSize();
+
+        EvalEngine engine = EvalEngine.get();
+        final ApfloatField[][] elements = new ApfloatField[rowSize][colSize];
+        for (int i = 1; i < rowSize + 1; i++) {
+          currInRow = (IAST) list.get(i);
+          if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
+            return null;
+          }
+          for (int j = 1; j < colSize + 1; j++) {
+            elements[i - 1][j - 1] = engine.evalApfloat(currInRow.get(j));
+          }
+        }
+        return new Array2DRowFieldMatrix<ApfloatField>(elements, false);
+      } catch (ValidateException vex) {
+        // pass
+      }
+    }
+    return null;
+  }
+
+  public static FieldVector<ApfloatField> list2ApfloatVector(IExpr expr) throws ClassCastException {
+    if (expr == null) {
+      return null;
+    }
+    int dim = expr.isVector();
+    if (dim <= 0) {
+      return null;
+    }
+    if (expr.isSparseArray()) {
+      expr = ((ISparseArray) expr).normal(false);
+    }
+    if (expr.isList()) {
+      try {
+        final int rowSize = expr.argSize();
+        IAST list = (IAST) expr;
+        EvalEngine engine = EvalEngine.get();
+        final ApfloatField[] elements = new ApfloatField[rowSize];
+        for (int i = 0; i < rowSize; i++) {
+          elements[i] = engine.evalApfloat(list.get(i + 1));
+        }
+        return new ArrayFieldVector<ApfloatField>(elements, false);
+      } catch (ValidateException vex) {
+        // pass
+      }
+    }
+    return null;
   }
 
   private static IExpr[][] list2Array(final IExpr expr, boolean ifNumericReturnNull)
@@ -541,7 +896,6 @@ public class Convert {
    *
    * @param listMatrix
    * @param listVector
-   * @return
    * @throws ClassCastException
    * @throws IndexOutOfBoundsException
    */
@@ -919,7 +1273,6 @@ public class Convert {
    *
    * @param coefficients the coefficients of the polynomial function
    * @param variable the name of the polynomial functions variable
-   * @return
    */
   public static IExpr polynomialFunction2Expr(double[] coefficients, IExpr variable) {
     if (coefficients[0] == 0.0) {
@@ -942,7 +1295,6 @@ public class Convert {
    *
    * @param pf the polynomial function
    * @param sym the name of the polynomial functions variable
-   * @return
    */
   public static IExpr polynomialFunction2Expr(final PolynomialFunction pf, ISymbol sym) {
     double[] coefficients = pf.getCoefficients();
@@ -1277,4 +1629,5 @@ public class Convert {
   }
 
   private Convert() {}
+
 }
