@@ -18,6 +18,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Tensors;
@@ -114,29 +115,30 @@ public final class RandomFunctions {
       }
       if (argSize == 1) {
         IExpr arg1 = ast.arg1();
-        if (arg1 == S.Integer) {
-          return S.RandomInteger.evaluate(F.RandomInteger(), engine);
-        }
-        if (arg1 == S.Real) {
-          return S.RandomReal.evaluate(F.RandomReal(), engine);
-        }
-        if (arg1 == S.Complex) {
-          return S.RandomReal.evaluate(F.RandomComplex(), engine);
+        if (arg1.isBuiltInSymbol()) {
+          switch (((IBuiltInSymbol) arg1).ordinal()) {
+            case ID.Integer:
+              return S.RandomInteger.evaluate(F.RandomInteger(), engine);
+            case ID.Real:
+              return S.RandomReal.evaluate(F.RandomReal(), engine);
+            case ID.Complex:
+              return S.RandomReal.evaluate(F.RandomComplex(), engine);
+          }
         }
         return F.NIL;
       }
       if (argSize == 2) {
         IExpr arg1 = ast.arg1();
         IExpr arg2 = ast.arg2();
-
-        if (arg1 == S.Integer) {
-          return S.RandomInteger.evaluate(F.RandomInteger(arg2), engine);
-        }
-        if (arg1 == S.Real) {
-          return S.RandomReal.evaluate(F.RandomReal(arg2), engine);
-        }
-        if (arg1 == S.Complex) {
-          return S.RandomReal.evaluate(F.RandomComplex(arg2), engine);
+        if (arg1.isBuiltInSymbol()) {
+          switch (((IBuiltInSymbol) arg1).ordinal()) {
+            case ID.Integer:
+              return S.RandomInteger.evaluate(F.RandomInteger(arg2), engine);
+            case ID.Real:
+              return S.RandomReal.evaluate(F.RandomReal(arg2), engine);
+            case ID.Complex:
+              return S.RandomReal.evaluate(F.RandomComplex(arg2), engine);
+          }
         }
       }
       return F.NIL;
@@ -224,7 +226,7 @@ public final class RandomFunctions {
         double[] itemWeights = weights.toDoubleVector();
         if (itemWeights != null) {
           EnumeratedDistributionSampler sampler = new EnumeratedDistributionSampler(itemWeights);
-          if (ast.size() == 2) {
+          if (ast.isAST1()) {
             int[] chosen = sampler.sample(1);
             return items.get(chosen[0] + 1);
           }
@@ -257,7 +259,7 @@ public final class RandomFunctions {
           return F.NIL;
         }
         int randomIndex = random.nextInt(listSize);
-        if (ast.size() == 2) {
+        if (ast.isAST1()) {
           return list.get(randomIndex + 1);
         }
         if (ast.isAST2()) {
@@ -327,8 +329,8 @@ public final class RandomFunctions {
               double temp = minIm;
               minIm = maxIm;
               maxIm = temp;
-              if (minIm == maxIm && minRe == maxRe) {
-                F.complexNum(minRe, minIm);
+              if (F.isEqual(minIm, maxIm) && F.isEqual(minRe, maxRe)) {
+                return F.complexNum(minRe, minIm);
               }
             }
             Random tlr = engine.getRandom();
@@ -668,32 +670,6 @@ public final class RandomFunctions {
             } finally {
               engine.setNumericPrecision(oldPrecision);
             }
-          } else {
-            // IExpr arg1 = ast.arg1();
-            // if (ast.isAST1()) {
-            // return randomApfloat(arg1, workingPrecision, engine);
-            // } else if (ast.isAST2()) {
-            // if (ast.arg2().isList()) {
-            // if (ast.arg2().argSize() == 1) {
-            // int n = ast.arg2().first().toIntDefault();
-            // if (n <= 0) {
-            // return F.NIL;
-            // }
-            // return randomASTRealVector(arg1, n, engine);
-            // }
-            // IAST list = (IAST) ast.arg2();
-            // int[] dimension = Validate.checkListOfInts(ast, list, 1, Integer.MAX_VALUE, engine);
-            // if (dimension == null) {
-            // return F.NIL;
-            // }
-            // return Tensors.build(() -> randomApfloat(arg1, workingPrecision, engine),
-            // dimension);
-            // }
-            // int n = ast.arg2().toIntDefault();
-            // if (n > 0) {
-            // return randomASTRealVector(arg1, n, engine);
-            // }
-            // }
           }
           return F.NIL;
         }
@@ -768,52 +744,6 @@ public final class RandomFunctions {
       }
     }
 
-    // private static IExpr randomApfloat(IExpr arg1, int workingPrecision, EvalEngine engine) {
-    // if (arg1.isList2()) {
-    // IReal min = arg1.first().evalReal();
-    // IReal max = arg1.second().evalReal();
-    // if (min == null || max == null) {
-    // return F.NIL;
-    // }
-    // if (min.isGE(max)) {
-    // IReal temp = min;
-    // min = max;
-    // max = temp;
-    // if (min == max) {
-    // return min;
-    // }
-    // }
-    //
-    // long oldPrecision = engine.getNumericPrecision();
-    // try {
-    // FixedPrecisionApfloatHelper apfloat = engine.setNumericPrecision(workingPrecision);
-    // Apfloat random = apfloat.random();
-    // return F.num(random);
-    // } finally {
-    // engine.setNumericPrecision(oldPrecision);
-    // }
-    //
-    // Random tlr = engine.getRandom();
-    // return F.num(boundedNextDouble(tlr, min, max));
-    // } else {
-    // boolean isNegative = false;
-    // IReal max = arg1.evalReal();
-    // if (max.isNegative()) {
-    // isNegative = true;
-    // max = max.abs();
-    // }
-    // if (max.isZero()) {
-    // return F.CD0;
-    // }
-    // Random tlr = engine.getRandom();
-    // double nextDouble = boundedNextDouble(tlr, max);
-    // if (isNegative) {
-    // nextDouble *= -1;
-    // }
-    // return F.num(nextDouble);
-    // }
-    // }
-
     @Override
     public int[] expectedArgSize(IAST ast) {
       return ARGS_0_2;
@@ -863,7 +793,6 @@ public final class RandomFunctions {
         }
         for (int i = 0; i < array.length; i++) {
           if (F.isZero(max)) {
-            array[i] *= 0.0;
             continue;
           }
           array[i] = boundedNextDouble(tlr, max);
