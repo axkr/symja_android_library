@@ -721,58 +721,54 @@ public class SeriesFunctions {
 
       if (ast.isAST2()) {
         if (ast.arg1() instanceof ASTSeriesData) {
-          ASTSeriesData series = (ASTSeriesData) ast.arg1();
-
-          // Case 1: SeriesCoefficient(series, n)
-          if (ast.arg2().isInteger()) {
-            int n = ast.arg2().toIntDefault();
-            if (n >= 0) {
-              int order = series.truncateOrder();
-              if (order > n) {
-                return series.coefficient(n);
-              } else {
-                return S.Indeterminate;
-              }
-            }
-            return F.NIL;
+          IExpr arg1 = ast.arg1();
+          IExpr arg2 = ast.arg2();
+          ASTSeriesData seriesData = (ASTSeriesData) arg1;
+          IExpr list = seriesData.arg3();
+          IExpr nminExpr = seriesData.arg4();
+          IExpr nmaxExpr = seriesData.arg5();
+          IExpr denExpr = seriesData.arg6();
+          IExpr nExpr = arg2;
+          if (arg2.isList3()) {
+            nExpr = ((IAST) arg2).arg3();
           }
+          // if (list.isList() && nminExpr.isInteger() && nmaxExpr.isInteger()
+          // && denExpr.isInteger()) {
+          IAST listAST = (IAST) list;
 
-          // Case 2: SeriesCoefficient(series, {x, x0, n})
-          if (ast.arg2().isList3()) {
-            IAST list = (IAST) ast.arg2();
-            IExpr x = list.arg1();
-            IExpr x0 = list.arg2();
-            IExpr nExpr = list.arg3();
+          // Evaluate index: k = n * den - nmin
+          IExpr kExpr = engine.evaluate(F.Subtract(F.Times(nExpr, denExpr), nminExpr));
 
-            // Extract the coefficient if the variable and expansion point match
-            if (series.expansionVariable().equals(x) && series.expansionPoint().equals(x0)) {
-              if (nExpr.isInteger()) {
-                int n = nExpr.toIntDefault();
-                int order = series.truncateOrder();
-                if (order > n) {
-                  return series.coefficient(n);
-                } else {
-                  return S.Indeterminate;
-                }
-              }
+          if (kExpr.isInteger()) {
+            int k = kExpr.toIntDefault();
+
+            // If the exponent is below the series minimum
+            if (k < 0) {
+              return F.C0;
             }
-            return F.NIL;
-          }
-        }
-        if (ast.arg1() instanceof ASTSeriesData && ast.arg2().isInteger()) {
-          ASTSeriesData series = (ASTSeriesData) ast.arg1();
-          int n = ast.arg2().toIntDefault();
-          if (n >= 0) {
-            int order = series.truncateOrder();
-            if (order > n) {
-              return series.coefficient(n);
-            } else {
+
+            int nmax = nmaxExpr.toIntDefault();
+            int nmin = nminExpr.toIntDefault();
+
+            // If the exponent falls into the Big-O term (unknown/indeterminate)
+            if (k >= nmax - nmin) {
               return S.Indeterminate;
             }
+
+            // Return the exact coefficient
+            if (k < listAST.argSize()) {
+              return listAST.get(k + 1);
+            } else {
+              // Implied 0 if the list is shorter than nmax - nmin
+              return F.C0;
+            }
+          } else if (kExpr.isRational()) {
+            // If k is a fraction, the requested power simply does not exist in this series
+            return F.C0;
           }
           return F.NIL;
         }
-        if (ast.arg2().isList3() && !(ast.arg1() instanceof ASTSeriesData)) {
+        if (ast.arg2().isList3()) {
           IExpr matched = matcher1().apply(ast);
           if (matched.isPresent()) {
             return matched;
@@ -853,7 +849,7 @@ public class SeriesFunctions {
       } else if (function.isAST1() && function.head().isAST(S.InverseFunction)) {
         // SeriesCoefficient(InverseFunction(f)[x], {x, 0, n})
         IExpr fExpr = function.head().first();
-        // Restrict to valid mathematical function heads to match Mathematica
+        // Restrict to valid mathematical function heads to match MMA
         if (fExpr.isSymbol() || fExpr.isAST(S.Function)) {
           IExpr f = engine.evaluate(F.unaryAST1(fExpr, x));
           IExpr lbCoeff = ASTSeriesData.lagrangeBurmannCoefficient(f, x, x0, n, engine);
@@ -1197,7 +1193,6 @@ public class SeriesFunctions {
 
       if (degree == 0) {
         return function.subs(x, x0);
-        // F.ReplaceAll(function, F.Rule(x, x0));
       }
       IExpr derivedFunction = S.D.of(engine, function, F.list(x, n));
       IExpr substituted = derivedFunction.subs(x, x0);

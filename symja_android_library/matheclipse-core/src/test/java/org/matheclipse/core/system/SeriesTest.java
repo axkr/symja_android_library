@@ -484,6 +484,12 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSeriesCoefficient() {
+    check("SeriesCoefficient(SeriesData(x, c, Table(i^2, {i, 10}), 7, 17, 3), 14/3)", //
+        "64");
+    check("SeriesCoefficient(SeriesData(x, c, Table(i^2, {i, 10}), 7, 17, 3), 6/3)", //
+        "0");
+    check("SeriesCoefficient(SeriesData(x, c, Table(i^2, {i, 10}), 7, 17, 3), 17/3)", //
+        "Indeterminate");
     check("SeriesCoefficient(EllipticK(x),{x,2,3}) // Simplify", //
         "1/64*(-9*EllipticE(2)-5*EllipticK(2))");
 
