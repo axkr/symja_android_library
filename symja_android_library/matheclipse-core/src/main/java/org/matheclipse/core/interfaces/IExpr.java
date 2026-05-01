@@ -52,14 +52,15 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.Pair;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.UniformFlags;
+import org.matheclipse.core.expression.WildPattern;
 import org.matheclipse.core.form.output.WolframFormFactory;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.statistics.IContinuousDistribution;
 import org.matheclipse.core.numbertheory.GaussianInteger;
-import org.matheclipse.core.patternmatching.IPatternMap;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
+import org.matheclipse.core.patternmatching.WildMatcher;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.sympy.core.Add;
 import org.matheclipse.core.sympy.core.Mul;
@@ -152,7 +153,7 @@ import edu.jas.structure.GcdRingElem;
  * <li><b>Evaluation:</b> Methods like {@link #eval(EvalEngine)} and {@link #evalf()} trigger the
  * simplification or numerical approximation of the expression.</li>
  * 
- * <li><b>Pattern Matching & Inspection:</b> Methods like {@link #match(IExpr)},
+ * <li><b>Pattern Matching & Inspection:</b> Methods like {@link #matchWild(IExpr)},
  * {@link #isFree(IExpr)},
  * 
  * and {@link #isAST(IExpr)} allow inspecting the structure and determining if an expression matches
@@ -204,7 +205,8 @@ import edu.jas.structure.GcdRingElem;
  * @see org.matheclipse.core.interfaces.INumber
  */
 public interface IExpr
-    extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializable, CalculusFieldElement<IExpr> {
+    extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializable,
+    CalculusFieldElement<IExpr> {
 
   /**
    * A three-state &quot;boolean&quot; value. If a comparison can not be evaluated to <code>S.True
@@ -5911,14 +5913,62 @@ public interface IExpr
     return replacement.setAtCopy(position, this);
   }
 
-  default IPatternMap match(final IExpr pattern) {
-    EvalEngine engine = EvalEngine.get();
+  /**
+   * A pattern match method that uses an {@link IPatternMatcher} to match <code>this</code> against
+   * a given <code>pattern</code>. If the match is successful, a map with the matched pattern
+   * variables as keys and the corresponding matched pattern objects as values is returned. If the
+   * match fails, <code>null</code> is returned.
+   *
+   * @param pattern the pattern to match against this expression
+   * @param engine the evaluation engine to use for pattern matching
+   * @return a map with the matched pattern variables as keys and the corresponding matched pattern
+   *         objects as values, or <code>null</code> if the match fails.
+   */
+  default Map<ISymbol, IExpr> match(final IExpr pattern, EvalEngine engine) {
     IPatternMatcher matcher = engine.evalPatternMatcher(pattern);
-    // IExpr arg1Evaled = engine.evaluate(arg1);
     if (matcher.test(this, engine)) {
       return matcher.getPatternMap();
     }
     return null;
+  }
+
+  /**
+   * A pattern match method that uses {@link WildMatcher} a SymPy-like wildcard matcher with
+   * semantics including support for commutative matching and exclusion constraints. This is
+   * designed to be used with {@link WildPattern} objects that can carry exclusion conditions. The
+   * matcher recursively traverses the pattern and expression trees, handling literal matches,
+   * wildcard matches, and commutative structures like {@link S#Plus} and {@link S#Times}. It builds
+   * a replacement dictionary that maps pattern wildcards to matched subexpressions.
+   * 
+   * @param wildPattern a pattern which can contain {@link WildPattern} objects. The pattern is
+   *        matched against <code>this</code> and if the match is successful a map with the matched
+   *        pattern variables as keys and the corresponding matched pattern objects as values is
+   *        returned. If the match fails <code>null</code> is returned.
+   * @param engine
+   * @return a map with the matched pattern variables as keys and the corresponding matched pattern
+   *         objects as values, or <code>null</code> if the match fails.
+   */
+  default Map<IExpr, IExpr> matchWild(final IExpr wildPattern, EvalEngine engine) {
+    WildMatcher wildMatcher = new WildMatcher(wildPattern);
+    return wildMatcher.match(wildPattern, this, engine);
+  }
+
+
+  /**
+   * A pattern match method that uses {@link WildMatcher} a SymPy-like wildcard matcher with
+   * semantics including support for commutative matching and exclusion constraints. This is
+   * designed to be used with {@link WildPattern} objects that can carry exclusion conditions. The
+   * matcher recursively traverses the pattern and expression trees, handling literal matches,
+   * wildcard matches, and commutative structures like {@link S#Plus} and {@link S#Times}. It builds
+   * a replacement dictionary that maps pattern wildcards to matched subexpressions.
+   * 
+   * @param wildPattern a pattern which can contain {@link WildPattern} objects. The pattern is
+   *        matched against <code>this</code> and if the match is successful a map with the matched
+   *        pattern variables as keys and the corresponding matched pattern objects as values is
+   *        returned. If the match fails <code>null</code> is returned.
+   */
+  default Map<IExpr, IExpr> matchWild(final IExpr wildPattern) {
+    return matchWild(wildPattern, EvalEngine.get());
   }
 
   /**

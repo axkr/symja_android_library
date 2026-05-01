@@ -40,6 +40,8 @@ import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.AndroidLoggerFix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.convert.ApfloatField;
+import org.matheclipse.core.convert.ApfloatFieldImpl;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
@@ -819,6 +821,8 @@ public class F extends S {
   public static final IAST Slot6;
 
   public static final Field<IExpr> EXPR_FIELD = new ExprField();
+
+  public static final Field<ApfloatField> APFLOAT_FIELD = ApfloatFieldImpl.getInstance();
 
   /** Constant integer &quot;-1&quot; */
   public static final IInteger CN1 = AbstractIntegerSym.valueOf(-1);
@@ -7888,6 +7892,10 @@ public class F extends S {
     return new AST2(NormalDistribution, a0, a1);
   }
 
+  public static IAST Normal(final IExpr a) {
+    return new AST1(Normal, a);
+  }
+
   public static IAST Normalize(final IExpr a) {
     return new AST1(Normalize, a);
   }
@@ -9568,6 +9576,15 @@ public class F extends S {
     return new AST1(RowReduce, m);
   }
 
+
+  public static IAST RSolve(final IAST eqn, IExpr f, IExpr x) {
+    return new AST3(RSolve, eqn, f, x);
+  }
+
+  public static IAST RSolve(final IExpr a0, final IExpr a1, IExpr x) {
+    return new AST3(RSolve, a0, a1, x);
+  }
+
   /**
    * Represents a rule replacing <code>lhs</code> with <code>rhs</code>.
    *
@@ -10036,7 +10053,7 @@ public class F extends S {
     return new AST2(Solve, a0, a1);
   }
 
-  public static IAST Solve(final IExpr a0, final IExpr a1, IAST options) {
+  public static IAST Solve(final IExpr a0, final IExpr a1, IExpr options) {
     return new AST3(Solve, a0, a1, options);
   }
 
@@ -11781,13 +11798,13 @@ public class F extends S {
     return new AST3(WhittakerW, a0, a1, a2);
   }
 
-  public static IPatternObject wild(final String symbolName, boolean test) {
-    return $p(Dummy(symbolName));
+  public static IPatternObject wild(final String symbolName, IExpr... excludes) {
+    return new WildPattern(F.Dummy(symbolName), false, excludes);
   }
 
-  @Deprecated
-  public static IPatternObject wild(final String symbolName, boolean test, IExpr... excludes) {
-    return $p(Dummy(symbolName));
+  // Overload for no exclusions
+  public static IPatternObject wild(final String symbolName) {
+    return new WildPattern(F.Dummy(symbolName), false);
   }
 
   /**
