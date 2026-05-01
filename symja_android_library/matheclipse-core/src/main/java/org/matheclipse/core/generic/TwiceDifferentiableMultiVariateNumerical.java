@@ -1,13 +1,15 @@
 package org.matheclipse.core.generic;
 
 import java.util.function.Function;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalStateException;
+import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.nonlinear.vector.constrained.TwiceDifferentiableFunction;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -25,6 +27,8 @@ public final class TwiceDifferentiableMultiVariateNumerical extends TwiceDiffere
   final IAST fVariableList;
   final EvalEngine fEngine;
   final Object2IntOpenHashMap<IExpr> fVariableIndex;
+  private int evaluationCount = 0;
+  private int maxEval = Integer.MAX_VALUE;
 
   /**
    * Create a multivariate twice differentiable vectorial function.
@@ -38,6 +42,7 @@ public final class TwiceDifferentiableMultiVariateNumerical extends TwiceDiffere
       boolean useAbsReal) {
     this(function, variablesList, useAbsReal, EvalEngine.get());
   }
+
 
   /**
    * Create a multivariate twice differentiable vectorial function.
@@ -142,8 +147,15 @@ public final class TwiceDifferentiableMultiVariateNumerical extends TwiceDiffere
     return new Array2DRowRealMatrix(result, false);
   }
 
+  public void setMaxEval(int max) {
+    this.maxEval = max;
+  }
+
   @Override
   public double value(RealVector v) {
+    if (++evaluationCount > maxEval) {
+      throw new MathIllegalStateException(LocalizedCoreFormats.MAX_COUNT_EXCEEDED, maxEval);
+    }
     try {
       Function<IExpr, IExpr> function = x -> {
         int i = fVariableIndex.getInt(x);
@@ -153,7 +165,7 @@ public final class TwiceDifferentiableMultiVariateNumerical extends TwiceDiffere
         return F.NIL;
       };
       return fFunction.evalf(function);
-    } catch (RuntimeException rex) {
+    } catch (MathRuntimeException | ArgumentTypeException rex) {
       Errors.rethrowsInterruptException(rex);
       return Double.NaN;
     }
