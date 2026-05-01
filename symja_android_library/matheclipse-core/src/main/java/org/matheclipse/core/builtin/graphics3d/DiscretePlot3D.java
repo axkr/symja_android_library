@@ -45,10 +45,16 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
 
     IExpr function = ast.arg1();
     IExpr iRange = ast.arg2();
-    IExpr jRange = argSize >= 3 ? ast.arg3() : null;
+    IExpr jRange = argSize >= 3 ? ast.arg3() : F.NIL;
 
-    if (!iRange.isList()) {
-      return F.NIL;
+    if (!iRange.isList() || iRange.argSize() < 2 || !iRange.first().isSymbol()) {
+      // Range specification `1` is not of the form {x, xmin, xmax}.
+      return Errors.printMessage(S.DiscretePlot3D, "pllim", F.list(iRange), engine);
+    }
+    if (jRange.isPresent()
+        && (!jRange.isList() || jRange.argSize() < 2 || !jRange.first().isSymbol())) {
+      // Range specification `1` is not of the form {x, xmin, xmax}.
+      return Errors.printMessage(S.DiscretePlot3D, "pllim", F.list(jRange), engine);
     }
 
     // Parse Options
@@ -63,16 +69,16 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
       extentX = 0.5;
       extentY = 0.5;
     } else if (extentOption.isNumber()) {
-      double val = extentOption.evalDouble();
+      double val = extentOption.evalf();
       extentX = val / 2.0;
       extentY = val / 2.0;
     } else if (extentOption.isList() && ((IAST) extentOption).size() >= 3) {
       IExpr ex = ((IAST) extentOption).get(1);
       if (ex.isNumber())
-        extentX = ex.evalDouble() / 2.0;
+        extentX = ex.evalf() / 2.0;
       IExpr ey = ((IAST) extentOption).get(2);
       if (ey.isNumber())
-        extentY = ey.evalDouble() / 2.0;
+        extentY = ey.evalf() / 2.0;
     }
 
     // Scaling Logic
@@ -115,7 +121,7 @@ public class DiscretePlot3D extends AbstractFunctionOptionEvaluator {
 
       List<INumber> jValues = null;
       ISymbol jVar = null;
-      if (jRange != null && jRange.isList()) {
+      if (jRange.isList()) {
         jValues = parseIterator(jRange, engine);
         jVar = (ISymbol) ((IAST) jRange).arg1();
       }

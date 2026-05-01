@@ -37,6 +37,7 @@ public class Plot extends ListPlot {
     if (argSize < 2 || !ast.arg2().isList3() || !ast.arg2().first().isSymbol()) {
       // Range specification `1` is not of the form {x, xmin, xmax}.
       IExpr arg2 = argSize >= 2 ? ast.arg2() : F.CEmptyString;
+      // Range specification `1` is not of the form {x, xmin, xmax}.
       return Errors.printMessage(S.Plot, "pllim", F.list(arg2), engine);
     }
 

@@ -895,7 +895,7 @@ public class SVGGraphics3D {
         }
         RenderState faceState = state.clone();
         faceState.color = calculateLighting(state.color, pts);
-        // Default cuboids have visible wireframes in Mathematica, so we do not set hideEdges = true
+        // Default cuboids have visible wireframes in MMA, so we do not set hideEdges = true
         renderables.add(new RenderablePolygon(pts, faceState));
       }
     }

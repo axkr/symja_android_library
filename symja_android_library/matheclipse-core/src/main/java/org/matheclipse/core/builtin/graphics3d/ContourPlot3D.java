@@ -36,12 +36,15 @@ public class ContourPlot3D extends AbstractFunctionOptionEvaluator {
     IExpr zRange = ast.arg4();
 
     if (!xRange.isList3() || !xRange.first().isSymbol()) {
+      // Range specification `1` is not of the form {x, xmin, xmax}.
       return Errors.printMessage(S.ContourPlot3D, "pllim", F.list(xRange), engine);
     }
     if (!yRange.isList3() || !yRange.first().isSymbol()) {
+      // Range specification `1` is not of the form {x, xmin, xmax}.
       return Errors.printMessage(S.ContourPlot3D, "pllim", F.list(yRange), engine);
     }
     if (!zRange.isList3() || !zRange.first().isSymbol()) {
+      // Range specification `1` is not of the form {x, xmin, xmax}.
       return Errors.printMessage(S.ContourPlot3D, "pllim", F.list(zRange), engine);
     }
 

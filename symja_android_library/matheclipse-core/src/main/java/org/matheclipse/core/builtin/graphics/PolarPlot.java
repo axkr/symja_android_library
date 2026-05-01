@@ -29,6 +29,7 @@ public class PolarPlot extends Plot {
     if (argSize < 2 || !ast.arg2().isList3() || !ast.arg2().first().isSymbol()) {
       // Range specification `1` is not of the form {x, xmin, xmax}.
       IExpr arg2 = argSize >= 2 ? ast.arg2() : F.CEmptyString;
+      // Range specification `1` is not of the form {x, xmin, xmax}.
       return Errors.printMessage(S.PolarPlot, "pllim", F.list(arg2), engine);
     }
     if (options[0].isTrue()) {

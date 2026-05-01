@@ -74,10 +74,12 @@ public class ParametricPlot3D extends AbstractFunctionOptionEvaluator {
 
     if (isSurface) {
       if (!ast.arg2().isList3() || !ast.arg2().first().isSymbol()) {
-        return Errors.printMessage(S.Plot, "pllim", F.list(ast.arg2()), engine);
+        // Range specification `1` is not of the form {x, xmin, xmax}.
+        return Errors.printMessage(S.ParametricPlot3D, "pllim", F.list(ast.arg2()), engine);
       }
       if (!ast.arg3().isList3() || !ast.arg3().first().isSymbol()) {
-        return Errors.printMessage(S.Plot, "pllim", F.list(ast.arg3()), engine);
+        // Range specification `1` is not of the form {x, xmin, xmax}.
+        return Errors.printMessage(S.ParametricPlot3D, "pllim", F.list(ast.arg3()), engine);
       }
 
       IAST uRange = (IAST) ast.arg2();

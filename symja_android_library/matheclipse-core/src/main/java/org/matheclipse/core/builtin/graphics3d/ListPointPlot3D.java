@@ -140,7 +140,7 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
               yMin = ((IAST) yr).get(1).evalf();
               yMax = ((IAST) yr).get(2).evalf();
             } catch (RuntimeException rex) {
-              Errors.printMessage(S.ListPlot3D, rex);
+              Errors.printMessage(S.ListPointPlot3D, rex);
               return F.NIL;
             } // Fallback to defaults
           }
@@ -183,7 +183,7 @@ public class ListPointPlot3D extends AbstractFunctionOptionEvaluator {
               pointCounter++;
               pointIndices.append(F.ZZ(pointCounter));
             } catch (RuntimeException rex) {
-              Errors.printMessage(S.ListPlot3D, rex);
+              Errors.printMessage(S.ListPointPlot3D, rex);
               return F.NIL;
             }
           }

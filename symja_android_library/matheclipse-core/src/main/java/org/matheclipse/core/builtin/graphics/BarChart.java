@@ -136,7 +136,7 @@ public class BarChart extends ListPlot {
           color = chartStyle;
         } else {
           // Default BarChart color (often a specific yellow/orange or blue)
-          // Mathematica 12+ uses a gradient or distinct palette.
+          // MMA 12+ uses a gradient or distinct palette.
           // Let's use a nice default similar to Histogram but maybe distinct.
           color = F.RGBColor(0.6, 0.6, 0.9); // Periwinkle blueish
         }

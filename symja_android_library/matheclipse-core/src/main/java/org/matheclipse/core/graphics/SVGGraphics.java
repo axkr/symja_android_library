@@ -324,10 +324,10 @@ public class SVGGraphics {
           // ImageScaled[{x,y}] - 0..1 relative to image size
           IAST is = (IAST) oposExpr.first();
           double rx = getDouble(is.arg1(), 0.5);
-          double ry = getDouble(is.arg2(), 0.5); // Mathematica 0,0 is bottom-left?
+          double ry = getDouble(is.arg2(), 0.5); // MMA 0,0 is bottom-left?
           // In ImageScaled, {0,0} is bottom-left usually.
           // In SVG, 0,0 is top-left.
-          // Let's assume standard Mathematica coords for ImageScaled: 0,0 bottom-left, 1,1
+          // Let's assume standard MMA coords for ImageScaled: 0,0 bottom-left, 1,1
           // top-right.
 
           alignX = rx * w;
