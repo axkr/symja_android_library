@@ -554,6 +554,12 @@ public class VariablesSet {
     return list;
   }
 
+  /**
+   * Transform the set of variables into an <code>String[]</code> array of variable ordered by their
+   * string representation.
+   * 
+   * @return the ordered list of variables as strings
+   */
   public String[] getVarListAsString() {
     String[] result = new String[fVariablesSet.size()];
     final Iterator<IExpr> iter = fVariablesSet.iterator();

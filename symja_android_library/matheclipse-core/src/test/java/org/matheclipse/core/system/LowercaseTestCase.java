@@ -15939,7 +15939,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Norm({{1,1},{-1,1}})", //
         "Sqrt(2)");
     check("Norm({{2,3/2},{3,5}})", //
-        "Sqrt(1/2*(161/4+3/4*Sqrt(2665)))");
+        "Sqrt(161+3*Sqrt(2665))/(2*Sqrt(2))");
     check("Sqrt(1/2*(161/4+3/4*Sqrt(2665))) // N", //
         "6.28362");
 
@@ -16076,8 +16076,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Normalize({{1,2},{4,5}})");
     // set the name of the norm to get a result
     check("Normalize({{1, 2}, {4, 5}}, Norm)", //
-        "{{1/Sqrt(1/2*(46+4*Sqrt(130))),2/Sqrt(1/2*(46+4*Sqrt(130)))},{4/Sqrt(1/2*(46+4*Sqrt(\n" //
-            + "130))),5/Sqrt(1/2*(46+4*Sqrt(130)))}}");
+        "{{1/Sqrt(23+2*Sqrt(130)),2/Sqrt(23+2*Sqrt(130))},{4/Sqrt(23+2*Sqrt(130)),5/Sqrt(\n" //
+        + "23+2*Sqrt(130))}}");
     check(
         "{{1/Sqrt(1/2*(46+4*Sqrt(130))),2/Sqrt(1/2*(46+4*Sqrt(130)))},{4/Sqrt(1/2*(46+4*Sqrt(130))),5/Sqrt(1/2*(46+4*Sqrt(130)))}} //N", //
         "{{0.147758,0.295516},{0.591031,0.738789}}");

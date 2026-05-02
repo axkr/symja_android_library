@@ -1,21 +1,13 @@
 package org.matheclipse.core.builtin;
 
 import static org.matheclipse.core.expression.F.ArcCos;
-import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.C4;
-import static org.matheclipse.core.expression.F.CN2;
 import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.Dot;
 import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Norm;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Sqr;
-import static org.matheclipse.core.expression.F.Sqrt;
-import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -1551,34 +1543,12 @@ public final class LinearAlgebra {
               // Eigenvalues({{a}})
               return List(((IAST) arg1).getPart(1, 1));
             }
-            if (dim[0] == 2 && dim[1] == 2) {
-              matrix = Convert.list2Matrix(arg1);
-              if (matrix != null) {
-                // Eigenvalues({{a, b}, {c, d}}) =>
-                // {
-                // 1/2*(a + d - Sqrt(a^2 + 4*b*c - 2*a*d + d^2)),
-                // 1/2*(a + d + Sqrt(a^2 + 4*b*c - 2*a*d + d^2))
-                // }
-                IExpr sqrtExpr = Sqrt(Plus(Sqr(matrix.getEntry(0, 0)),
-                    Times(C4, matrix.getEntry(0, 1), matrix.getEntry(1, 0)),
-                    Times(CN2, matrix.getEntry(0, 0), matrix.getEntry(1, 1)),
-                    Sqr(matrix.getEntry(1, 1))));
-                IASTMutable eigenValues = F.binaryAST2(S.List,
-                    Times(C1D2,
-                        Plus(Negate(sqrtExpr), matrix.getEntry(0, 0), matrix.getEntry(1, 1))),
-                    Times(C1D2, Plus(sqrtExpr, matrix.getEntry(0, 0), matrix.getEntry(1, 1))));
-                IAST sortFunction = sortValuesIfNumeric(eigenValues, engine);
-                if (sortFunction.isPresent()) {
-                  return engine.evaluate(sortFunction);
-                }
-              }
-            } else {
-              if (ToggleFeature.EIGENSYSTEM_SYMBOLIC) {
-                if (!engine.isNumericMode() && !arg1.isNumericArgument(true)) {
-                  IAST temp = eigensystemSymbolic(ast, arg1, maxValues, true, engine);
-                  if (temp.isList1()) {
-                    return temp.first();
-                  }
+
+            if (ToggleFeature.EIGENSYSTEM_SYMBOLIC) {
+              if (!engine.isNumericMode() && !arg1.isNumericArgument(true)) {
+                IAST temp = eigensystemSymbolic(ast, arg1, maxValues, true, engine);
+                if (temp.isList1()) {
+                  return temp.first();
                 }
               }
             }
@@ -1851,7 +1821,6 @@ public final class LinearAlgebra {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       if (ast.size() == 2) {
-        FieldMatrix<IExpr> matrix;
         try {
           IExpr arg1 = ast.arg1();
           int[] dim = ast.arg1().isMatrix();
@@ -1860,66 +1829,24 @@ public final class LinearAlgebra {
               // Eigenvectors({{a}})
               return C1;
             }
-            if (dim[0] == 2 && dim[1] == 2) {
-              RealMatrix realMatrix = ast.arg1().toRealMatrix();
-              if (realMatrix == null) {
-                matrix = Convert.list2Matrix(ast.arg1());
-                if (matrix != null) {
-                  IAST result2X2 = F.NIL;
-                  if (matrix.getEntry(1, 0).isZero()) {
-                    if (matrix.getEntry(0, 0).equals(matrix.getEntry(1, 1))) {
-                      // Eigenvectors({{a, b}, {0, a}})
-                      result2X2 = List(List(C1, C0), List(C0, C0));
-                    } else {
-                      // Eigenvectors({{a, b}, {0, d}})
-                      result2X2 = List(List(C1, C0), List(Divide(Negate(matrix.getEntry(0, 1)),
-                          Subtract(matrix.getEntry(0, 0), matrix.getEntry(1, 1))), C1));
-                    }
-                  } else {
-                    // Eigenvectors({{a, b}, {c, d}}) =>
-                    // {
-                    // { - (1/(2*c)) * (-a + d + Sqrt(a^2 + 4*b*c - 2*a*d + d^2)), 1},
-                    // { - (1/(2*c)) * (-a + d - Sqrt(a^2 + 4*b*c - 2*a*d + d^2)), 1}
-                    // }
-                    IExpr a = matrix.getEntry(0, 0);
-                    IExpr b = matrix.getEntry(0, 1);
-                    IExpr c = matrix.getEntry(1, 0);
-                    IExpr d = matrix.getEntry(1, 1);
-                    // Sqrt(a^2+4*b*c-2*a*d+d^2)
-                    IExpr sqrtExpr = F.Sqrt(
-                        F.Plus(F.Sqr(a), F.Times(F.C4, b, c), F.Times(F.CN2, a, d), F.Sqr(d)));
-                    result2X2 = List(
-                        List(F.Times(F.Power(F.Times(F.C2, c), F.CN1),
-                            F.Plus(a, F.Negate(d), F.Negate(sqrtExpr))), C1),
-                        List(F.Times(F.Power(F.Times(F.C2, c), F.CN1),
-                            F.Plus(a, F.Negate(d), sqrtExpr)), C1));
+            if (ToggleFeature.EIGENSYSTEM_SYMBOLIC) {
+              if (!engine.isNumericMode() && !arg1.isNumericArgument(true)
+                  && !arg1.isSparseArray()) {
+                IExpr numberOfEigenvalues = ast.argSize() > 1 ? ast.arg2() : F.NIL;
+                int maxValues = -1;
+                if (numberOfEigenvalues.isPresent()) {
+                  int n = numberOfEigenvalues.toIntDefault();
+                  if (F.isNotPresent(n)) {
+                    // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at
+                    // position `2` in
+                    // `1`.
+                    return Errors.printMessage(S.Eigenvalues, "seqs", F.List(ast, F.C2), engine);
                   }
-
-                  if (result2X2.isPresent()) {
-                    return result2X2;
-                  }
+                  maxValues = n;
                 }
-              }
-            } else {
-              if (ToggleFeature.EIGENSYSTEM_SYMBOLIC) {
-                if (!engine.isNumericMode() && !arg1.isNumericArgument(true)
-                    && !arg1.isSparseArray()) {
-                  IExpr numberOfEigenvalues = ast.argSize() > 1 ? ast.arg2() : F.NIL;
-                  int maxValues = -1;
-                  if (numberOfEigenvalues.isPresent()) {
-                    int n = numberOfEigenvalues.toIntDefault();
-                    if (F.isNotPresent(n)) {
-                      // Sequence specification (+n,-n,{+n},{-n},{m,n}) or {m,n,s} expected at
-                      // position `2` in
-                      // `1`.
-                      return Errors.printMessage(S.Eigenvalues, "seqs", F.List(ast, F.C2), engine);
-                    }
-                    maxValues = n;
-                  }
-                  IAST temp = eigensystemSymbolic(ast, arg1, maxValues, false, engine);
-                  if (temp.isList2()) {
-                    return temp.second();
-                  }
+                IAST temp = eigensystemSymbolic(ast, arg1, maxValues, false, engine);
+                if (temp.isList2()) {
+                  return temp.second();
                 }
               }
             }
@@ -4176,8 +4103,8 @@ public final class LinearAlgebra {
       try {
         engine.setNumericMode(true);
         IExpr matX = arg1 instanceof ITensorAccess ? arg1.normal(false) : arg1;
-        return applyScalarFunctionViaEigensystem(matX, n,
-            lambda -> engine.evaluate(F.Log(lambda)), engine);
+        return applyScalarFunctionViaEigensystem(matX, n, lambda -> engine.evaluate(F.Log(lambda)),
+            engine);
       } finally {
         engine.setNumericMode(oldNumericMode);
       }
@@ -7101,8 +7028,30 @@ public final class LinearAlgebra {
    * @return a flat list of all roots, or F.NIL if root-finding failed
    */
   private static IExpr rootsFromFactoredCharPoly(IExpr charPoly, ISymbol x, EvalEngine engine) {
-    // Try to factor the characteristic polynomial w.r.t. x
     IExpr factored = engine.evaluate(F.Factor(charPoly));
+
+    // Handle case where factored IS itself a Power: e.g. (a-x)^2
+    if (factored.isPower() && factored.exponent().isInteger()) {
+      int exp = factored.exponent().toIntDefault(1);
+      if (exp > 0) {
+        IExpr base = factored.base();
+        if (base.isPolynomial(x) && base.has(x, false)) {
+          IExpr baseRoots = RootsFunctions.roots(base, false, F.List(x), false, true, engine);
+          if (baseRoots.isList()) {
+            IASTAppendable allRoots = F.ListAlloc();
+            IAST rootList = (IAST) baseRoots;
+            for (int rep = 0; rep < exp; rep++) {
+              for (int j = 1; j <= rootList.argSize(); j++) {
+                allRoots.append(rootList.get(j));
+              }
+            }
+            if (allRoots.argSize() > 0) {
+              return allRoots;
+            }
+          }
+        }
+      }
+    }
 
     // If Factor returned a Times product, process each factor separately
     if (factored.isTimes()) {

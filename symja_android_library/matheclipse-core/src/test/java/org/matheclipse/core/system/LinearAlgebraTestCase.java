@@ -650,10 +650,11 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Eigenvalues({{1,0,0,0,0},{3,1,0,0,0},{6,3,2,0,0},{10,6,3,2,0},{15,10,6,3,2}})", //
         "{2,2,2,1,1}");
     check("mat = Array(a, {2,2}); Eigenvalues(mat.ConjugateTranspose(mat))[[1]] // FullSimplify", //
-        "1/2*(Abs(a(1,1))^2+Abs(a(1,2))^2+Abs(a(2,1))^2+Abs(a(2,2))^2-Sqrt((Abs(a(1,1))^2+Abs(a(\n" //
-            + "1,2))^2)^2-2*(Abs(a(1,1))^2+Abs(a(1,2))^2)*(Abs(a(2,1))^2+Abs(a(2,2))^2)+(Abs(a(\n" //
-            + "2,1))^2+Abs(a(2,2))^2)^2+4*(a(2,1)*Conjugate(a(1,1))+a(2,2)*Conjugate(a(1,2)))*(a(\n" //
-            + "1,1)*Conjugate(a(2,1))+a(1,2)*Conjugate(a(2,2)))))");
+        "1/2*(Abs(a(1,1))^2+Abs(a(1,2))^2+Abs(a(2,1))^2+Abs(a(2,2))^2-Sqrt(Abs(a(1,1))^4+\n" //
+            + "2*Abs(a(1,1))^2*Abs(a(1,2))^2+Abs(a(1,2))^4+2*Abs(a(1,1))^2*Abs(a(2,1))^2-2*Abs(a(\n" //
+            + "1,2))^2*Abs(a(2,1))^2+Abs(a(2,1))^4-2*Abs(a(1,1))^2*Abs(a(2,2))^2+2*Abs(a(1,2))^\n" //
+            + "2*Abs(a(2,2))^2+2*Abs(a(2,1))^2*Abs(a(2,2))^2+Abs(a(2,2))^4+4*a(1,1)*a(2,2)*Conjugate(a(\n" //
+            + "1,2))*Conjugate(a(2,1))+4*a(1,2)*a(2,1)*Conjugate(a(1,1))*Conjugate(a(2,2))))");
 
     check("Eigenvalues({{1, 0, 0}, {-2, 1, 0}, {0, 1, 1}})", //
         "{1,1,1}");
@@ -735,7 +736,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Eigenvalues({{a, b}, {0, a}})", //
         "{a,a}");
     check("Eigenvalues({{a, b}, {0, d}})", //
-        "{1/2*(a+d-Sqrt(a^2-2*a*d+d^2)),1/2*(a+d+Sqrt(a^2-2*a*d+d^2))}");
+        "{a,d}");
     check("Eigenvalues({{a,b}, {c,d}})", //
         "{1/2*(a+d-Sqrt(a^2+4*b*c-2*a*d+d^2)),1/2*(a+d+Sqrt(a^2+4*b*c-2*a*d+d^2))}");
     check("Eigenvalues({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
@@ -756,7 +757,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     }
 
     check("Eigenvectors({{Pi, 1/3}, {I, 5}})", //
-        "{{-I*1/2*(-5+Pi-Sqrt(25+I*4/3-10*Pi+Pi^2)),1},{-I*1/2*(-5+Pi+Sqrt(25+I*4/3-10*Pi+Pi^\n"
+        "{{I*1/2*(5-Pi-Sqrt(25+I*4/3-10*Pi+Pi^2)),1},{I*1/2*(5-Pi+Sqrt(25+I*4/3-10*Pi+Pi^\n" //
             + "2)),1}}");
 
     check("Eigenvectors(SparseArray({{1.0, 2.0, 3}, {4, 5, 6}, {7, 8, 9}}))", //
@@ -805,15 +806,15 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Eigenvectors({{a, b}, {0, d}})", //
         "{{1,0},{-b/(a-d),1}}");
     check("Eigenvectors({{a, b}, {c, d}})", //
-        "{{(a-d-Sqrt(a^2+4*b*c-2*a*d+d^2))/(2*c),1},{(a-d+Sqrt(a^2+4*b*c-2*a*d+d^2))/(2*c),\n" + //
-            "1}}");
+        "{{(-2*b)/(a-d+Sqrt(a^2+4*b*c-2*a*d+d^2)),1},{(-2*b)/(a-d-Sqrt(a^2+4*b*c-2*a*d+d^\n" //
+            + "2)),1}}");
 
   }
 
   @Test
   public void testEigenvectorsIssue718() {
     check("Eigenvectors({{-1,-5},{0,4}})", //
-        "{{-0.707107,0.707107},{1.0,0.0}}");
+        "{{-1,1},{1,0}}");
     check("{Normalize[{-1,1}],Normalize[{1,0}] }", //
         "{{-1/Sqrt(2),1/Sqrt(2)},{1,0}}");
     check("Eigenvectors({{-2,-2,4}, {-1,-3,7}, {2, 4, 6.00001}})", //
@@ -1100,7 +1101,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Inverse({{}})", //
         "Inverse({{}})");
     check("Inverse({{a,b,c}, {d,e,f}, {x,y,z}})", //
-        "{{(f*y-e*z)/(c*e*x-b*f*x-c*d*y+a*f*y+b*d*z-a*e*z),(-c*y+b*z)/(c*e*x-b*f*x-c*d*y+a*f*y+b*d*z-a*e*z),(c*e-b*f)/(c*e*x-b*f*x-c*d*y+a*f*y+b*d*z-a*e*z)},\n"
+        "{{(f*y-e*z)/(c*e*x-b*f*x-c*d*y+a*f*y+b*d*z-a*e*z),(-c*y+b*z)/(c*e*x-b*f*x-c*d*y+a*f*y+b*d*z-a*e*z),(c*e-b*f)/(c*e*x-b*f*x-c*d*y+a*f*y+b*d*z-a*e*z)},\n"//
             + " {(f*x-d*z)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z),(-c*x+a*z)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z),(c*d-a*f)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z)},\n"
             + " {(-e*x+d*y)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z),(b*x-a*y)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z),(-b*d+a*e)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z)}}");
     check("Inverse({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}})", //
