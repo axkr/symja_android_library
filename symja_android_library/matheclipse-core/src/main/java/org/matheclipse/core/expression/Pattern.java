@@ -156,8 +156,7 @@ public class Pattern extends Blank {
   @Override
   public int compareTo(final IExpr expr) {
     if (expr instanceof Pattern) {
-      Pattern pat = ((Pattern) expr);
-      int cp = fSymbol.compareTo(pat.fSymbol);
+      int cp = fSymbol.compareTo(((Pattern) expr).fSymbol);
       if (cp != 0) {
         return cp;
       }

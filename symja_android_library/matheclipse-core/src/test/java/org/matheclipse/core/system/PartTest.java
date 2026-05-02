@@ -131,8 +131,7 @@ public class PartTest extends ExprEvaluatorTestCase {
     check("sp=SparseArray[{{0, a}, {b, 0}}]", //
         "SparseArray(Number of elements: 2 Dimensions: {2,2} Default value: 0)");
     check("sp//Normal", //
-        "{{0,a},\n" //
-            + " {b,0}}");
+        "{{0,a},{b,0}}");
     check("sps=sp[[2]]", //
         "SparseArray(Number of elements: 1 Dimensions: {2} Default value: 0)");
     check("sps//Normal", //

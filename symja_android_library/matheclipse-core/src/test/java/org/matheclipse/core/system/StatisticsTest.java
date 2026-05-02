@@ -263,9 +263,7 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
         "ArrayReduce(f, SparseArray({{1, 1} -> 1, {2, 2} -> 2, {3, 3} -> 3, {1, 3} -> 4}),1)//Normal", //
         "{f({1,0,0}),f({0,2,0}),f({4,0,3})}"); //
     check("SparseArray({{1, 1} -> 1, {2, 2} -> 2, {3, 3} -> 3, {1, 3} -> 4}) // Normal", //
-        "{{1,0,4},\n" //
-            + " {0,2,0},\n" //
-            + " {0,0,3}}"); //
+        "{{1,0,4},{0,2,0},{0,0,3}}"); //
     check("Median(SparseArray({{1, 1} -> 1, {2, 2} -> 2, {3, 3} -> 3, {1, 3} -> 4}))", //
         "{0,0,3}");
 

@@ -233,7 +233,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("ConjugateTranspose(SparseArray({{1,2+I,3},{4,5-I,6},{7,8,9}}))", //
         "SparseArray(Number of elements: 9 Dimensions: {3,3} Default value: 0)");
     check("ConjugateTranspose(SparseArray({{1,2+I,3},{4,5-I,6},{7,8,9}})) // Normal", //
-        "{{1,4,7},\n" + " {2-I,5+I,8},\n" + " {3,6,9}}");
+        "{{1,4,7},{2-I,5+I,8},{3,6,9}}");
     check("ConjugateTranspose({{1,2+I,3},{4,5-I,6},{7,8,9}})", //
         "{{1,4,7},{2-I,5+I,8},{3,6,9}}");
     check("ConjugateTranspose(N({{1,2+I,3},{4,5-I,6},{7,8,9}}))", //
@@ -1354,9 +1354,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("m = SparseArray({{1, 3} -> 1, {2, 2} -> 2, {3, 1} -> 3}, {3, 3});", //
         "");
     check("m2=Normal(N(m))", //
-        "{{0.0,0.0,1.0},\n" //
-            + " {0.0,2.0,0.0},\n" //
-            + " {3.0,0.0,0.0}}");
+        "{{0.0,0.0,1.0},{0.0,2.0,0.0},{3.0,0.0,0.0}}");
     check("MatrixExp(m2)  ", //
         "{{2.91458,0.0,1.58059},\n"//
             + " {0.0,7.38906,0.0},\n"//
@@ -2647,8 +2645,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Transpose({{},{},{}})", //
         "{}");
     check("Transpose(SparseArray({{1, 2, 3}, {4, 5, 6}})) // Normal", //
-        "{{1,4},\n" //
-            + " {2,5},\n" + " {3,6}}");
+        "{{1,4},{2,5},{3,6}}");
     check("Transpose(SparseArray({{1, 2, 3}, {4, 5, 6}}))", //
         "SparseArray(Number of elements: 6 Dimensions: {3,2} Default value: 0)");
     check("Transpose({{1, 2, 3}, {4, 5, 6}}, {2,1})", //

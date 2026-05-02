@@ -159,10 +159,7 @@ public class Blank implements IPattern {
         if (blank.fHeadTest == null) {
           return 1;
         }
-        int result = fHeadTest.compareTo(blank.fHeadTest);
-        if (result != 0) {
-          return result;
-        }
+        return fHeadTest.compareTo(blank.fHeadTest);
       }
       return 0;
     }

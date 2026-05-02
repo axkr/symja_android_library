@@ -2318,9 +2318,9 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     if (dimension.length > 0) {
       IASTMutable result = Tensors.build(index -> getIndex(index), dimension);
       if (fDimension.length == 1) {
-        result.addEvalFlags(IAST.IS_VECTOR);
+        // result.addEvalFlags(IAST.IS_VECTOR);
       } else if (fDimension.length == 2) {
-        result.addEvalFlags(IAST.IS_MATRIX);
+        // result.addEvalFlags(IAST.IS_MATRIX);
       }
       return result;
     }
