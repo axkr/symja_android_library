@@ -66,6 +66,7 @@ import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.reflection.system.Solve.SolveData;
+import org.matheclipse.core.reflection.system.TrigExpand;
 import org.matheclipse.core.visit.VisitorExpr;
 import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
@@ -970,80 +971,6 @@ public class Algebra {
    */
   public static class Expand extends AbstractFunctionOptionEvaluator {
 
-
-    // /**
-    // * Cached {@link S#Power} calculations for each part of the {@link S#Plus} AST.
-    // * <p>
-    // * If <code>x</code> is an argument of the {@link S#Plus} AST at position <code>i</code>, then
-    // * the <code>cachedPowers[i - 1] = {x^1, x^2, x^3,....,x^n}</code> will be calculated and
-    // * stored in the cache.
-    // */
-    // final IASTAppendable[] cachedPowers;
-    //
-    // public NumberPartition(IAST plusAST, int n, IASTAppendable expandedResult) {
-    // this.expandedResult = expandedResult;
-    // this.n = n;
-    // this.m = plusAST.argSize();
-    // this.parts = new int[m];
-    // // cache all {@link S#Power} calculations for each part of the {@link S#Plus} AST:
-    // this.cachedPowers = new IASTAppendable[m];
-    // for (int i = 1; i < plusAST.size(); i++) {
-    // IExpr arg = plusAST.get(i);
-    // cachedPowers[i - 1] = F.ListAlloc(n + 1);
-    // for (int j = 0; j < n; j++) {
-    // // x^1, x^2, x^3,....,x^n
-    // this.cachedPowers[i - 1].append(arg.pow(j + 1));
-    // }
-    // }
-    // }
-    //
-    // private void addFactor(int[] j) {
-    // final KPermutationsIterable perm = new KPermutationsIterable(j, m, m);
-    // IInteger multinomial = NumberTheory.multinomial(j, n);
-    // IExpr temp;
-    // TimesOp timesOp = new TimesOp(32);
-    // for (int[] indices : perm) {
-    // if (!multinomial.isOne()) {
-    // timesOp.append(multinomial);
-    // }
-    // for (int k = 0; k < m; k++) {
-    // if (indices[k] != 0) {
-    // temp = cachedPowers[k].get(indices[k]);
-    // if (temp.equals(F.C1)) {// keep numeric 1.0 values here
-    // continue;
-    // }
-    // timesOp.append(temp);
-    // }
-    // }
-    // expandedResult.append(timesOp.getProduct());
-    // timesOp.clear();
-    // }
-    // }
-    //
-    // public void partition() {
-    // partition(n, n, 0);
-    // }
-    //
-    // private void partition(int n, int max, int currentIndex) {
-    // if (n == 0) {
-    // addFactor(parts);
-    // return;
-    // }
-    // if (currentIndex >= m) {
-    // return;
-    // }
-    // int old;
-    // old = parts[currentIndex];
-    // int min = Math.min(max, n);
-    //
-    // for (int i = min; i >= 1; i--) {
-    // parts[currentIndex] = i;
-    // partition(n - i, i, currentIndex + 1);
-    // }
-    // parts[currentIndex] = old;
-    // }
-    // }
-
     @Override
     public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
@@ -1055,14 +982,25 @@ public class Algebra {
       if (arg1.isAST()) {
         IAST ast1 = (IAST) arg1;
         Predicate<IExpr> matcher = null;
-        if (ast.size() > 2) {
+        if (ast.size() > 2 && !ast.arg2().isRule()) {
           matcher = Predicates.toFreeQ(ast.arg2());
         }
-        return AlgebraUtil.expand(ast1, matcher, false, true, true).orElse(ast1);
+        IExpr result = AlgebraUtil.expand(ast1, matcher, false, true, true).orElse(ast1);
+        // Apply TrigExpand if Trig->True
+        if (options[0].isTrue()) {
+          result = TrigExpand.trigExpand(result, engine);
+        }
+        // Apply modular reduction if Modulus->p (p != 0)
+        IExpr modulus = options[1];
+        if (modulus.isInteger() && !modulus.isZero()) {
+          result = expandModReduce(result, (IInteger) modulus, engine);
+        }
+        return result;
       }
-
       return ast.arg1();
     }
+
+
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -1135,14 +1073,29 @@ public class Algebra {
         return tempAST;
       }
       Predicate<IExpr> matcher = null;
-      if (ast.size() > 2) {
+      if (ast.size() > 2 && !ast.arg2().isRule()) {
         matcher = Predicates.toFreeQ(ast.arg2());
       }
+      IExpr result;
       if (arg1.isAST()) {
-        return AlgebraUtil.expandAll((IAST) arg1, matcher, true, true, false, engine).orElse(arg1);
+        result =
+            AlgebraUtil.expandAll((IAST) arg1, matcher, true, true, false, engine).orElse(arg1);
+      } else {
+        result = arg1;
       }
-      return arg1;
+      // Apply TrigExpand if Trig->True
+      if (options[0].isTrue()) {
+        result = TrigExpand.trigExpand(result, engine);
+      }
+      // Apply modular reduction if Modulus->p (p != 0)
+      IExpr modulus = options[1];
+      if (modulus.isInteger() && !modulus.isZero()) {
+        result = expandModReduce(result, (IInteger) modulus, engine);
+      }
+      return result;
+
     }
+
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -3528,6 +3481,93 @@ public class Algebra {
     VariablesSet eVar = new VariablesSet(arg1);
     return AlgebraUtil.factor(F.Factor(arg1), arg1, eVar, false, false, true, engine);
   }
+
+  /**
+   * Reduces the integer coefficients of an already-expanded polynomial expression modulo
+   * {@code modulus}.
+   *
+   * <p>
+   * First attempts a lossless round-trip through {@link JASModInteger} (polynomial ring over Z/pZ).
+   * Falls back to a simple tree walk that replaces every {@link IInteger} leaf {@code n} with
+   * {@code n mod modulus} when JAS conversion is not possible (e.g. non-polynomial expressions).
+   *
+   * @param expr the expanded expression whose coefficients are to be reduced
+   * @param modulus a positive integer modulus (must be &gt; 0)
+   * @param engine the evaluation engine used for simplification after substitution
+   * @return the expression with all integer coefficients reduced modulo {@code modulus}
+   */
+  /**
+   * Reduces integer coefficients of an already-expanded expression modulo {@code modulus}.
+   *
+   * <p>
+   * First tries a lossless round-trip through {@link JASModInteger} for pure polynomial
+   * expressions. Falls back to {@link #reduceCoefficients} when JAS conversion fails (e.g. the
+   * expression contains function calls like {@code Sin}, {@code Cos}).
+   *
+   * @param expr the expanded expression whose coefficients are to be reduced
+   * @param modulus a positive integer modulus (&gt; 0)
+   * @param engine the evaluation engine used for simplification
+   * @return the expression with all integer coefficients reduced modulo {@code modulus}
+   */
+  private static IExpr expandModReduce(IExpr expr, IInteger modulus, EvalEngine engine) {
+    VariablesSet varSet = new VariablesSet(expr);
+    IAST varList = varSet.getVarList();
+    if (varList.argSize() > 0) {
+      try {
+        ModLongRing modRing = JASModInteger.option2ModLongRing(modulus);
+        JASModInteger jas = new JASModInteger(varList, modRing);
+        GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
+        return jas.modLongPoly2Expr(poly);
+      } catch (JASConversionException | ArithmeticException e) {
+        // fall through to structural reduction
+      }
+    }
+    return reduceCoefficients(expr, modulus, engine);
+  }
+
+  /**
+   * Recursively reduces integer leaves modulo {@code modulus} throughout the expression tree, with
+   * one critical exception: the <em>exponent</em> position of a {@code Power[base, exp]} node is
+   * never touched — only the base is recursed into.
+   *
+   * <p>
+   * This prevents {@code a^2} from becoming {@code a^(2 mod 2)} = {@code a^0} = {@code 1}.
+   */
+  private static IExpr reduceCoefficients(IExpr expr, IInteger modulus, EvalEngine engine) {
+    if (expr.isInteger()) {
+      return ((IInteger) expr).mod(modulus);
+    }
+    if (!expr.isAST()) {
+      return expr; // Symbol or other atom — nothing to reduce
+    }
+    IAST ast = (IAST) expr;
+    // Power[base, exponent]: recurse into BASE only, never the exponent
+    if (ast.isPower()) {
+      IExpr base = ast.base();
+      IExpr reducedBase = reduceCoefficients(base, modulus, engine);
+      if (reducedBase == base) {
+        return expr;
+      }
+      return engine.evaluate(F.Power(reducedBase, ast.exponent()));
+    }
+    // Plus, Times, Sin, Cos, etc.: recurse into every child
+    IASTMutable copy = F.NIL;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr child = ast.get(i);
+      IExpr reduced = reduceCoefficients(child, modulus, engine);
+      if (reduced != child) {
+        if (copy.isNIL()) {
+          copy = ast.copy();
+        }
+        copy.set(i, reduced);
+      }
+    }
+    if (copy.isNIL()) {
+      return expr;
+    }
+    return engine.evaluate(copy);
+  }
+
 
   private static IAST factorModulus(IExpr expr, IAST varList, boolean factorSquareFree,
       IExpr option) throws JASConversionException {

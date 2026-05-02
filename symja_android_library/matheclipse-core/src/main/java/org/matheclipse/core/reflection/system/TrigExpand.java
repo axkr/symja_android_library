@@ -312,28 +312,25 @@ public class TrigExpand extends AbstractEvaluator {
     return flattened;
   }
 
-  public TrigExpand() {}
 
   /**
-   * Expands the argument of sine and cosine functions.
+   * Apply trig angle-addition identities to an already algebraically expanded expression.
    *
    * <p>
-   * <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities" >List of trigonometric
-   * identities</a>
+   * The caller is responsible for performing algebraic expansion (e.g. via {@link F#evalExpandAll}
+   * or {@link AlgebraUtil#expand}) <em>before</em> calling this method. The internal fixpoint loop
+   * still calls {@code evalExpandAll} on each intermediate result to flatten products that arise
+   * from the angle-addition rewrites themselves.
+   *
+   * @param expr an algebraically pre-expanded expression
+   * @param engine the evaluation engine
+   * @return the trig-expanded result, or {@code expr} unchanged when no identity applies
    */
-  @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IExpr temp = CompareUtil.threadListLogicEquationOperators(ast.arg1(), ast, 1);
-    if (temp.isPresent()) {
-      return temp;
-    }
-
-    IExpr arg1 = ast.arg1();
-    IExpr result = evalExpandAll(arg1, engine);
-    result = F.subst(result, x -> rewriteCircularHyperbolic(x));
-    temp = result.accept(TRIG_EXPAND_VISITOR);
+  public static IExpr trigExpand(IExpr expr, EvalEngine engine) {
+    IExpr result = F.subst(expr, x -> rewriteCircularHyperbolic(x));
+    IExpr temp = result.accept(TRIG_EXPAND_VISITOR);
     if (temp.isNIL()) {
-      return arg1;
+      return expr;
     }
     do {
       result = evalExpandAll(temp, engine);
@@ -342,6 +339,31 @@ public class TrigExpand extends AbstractEvaluator {
     } while (temp.isPresent());
     return result;
   }
+
+
+  public TrigExpand() {}
+
+  /**
+   * Expands the argument of sine and cosine functions.
+   *
+   * <p>
+   * <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities">List of trigonometric
+   * identities</a>
+   */
+  @Override
+  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    IExpr temp = CompareUtil.threadListLogicEquationOperators(ast.arg1(), ast, 1);
+    if (temp.isPresent()) {
+      return temp;
+    }
+    IExpr arg1 = ast.arg1();
+    // TrigExpand(expr) is defined as ExpandAll first, then apply trig identities.
+    IExpr expanded = evalExpandAll(arg1, engine);
+    IExpr result = trigExpand(expanded, engine);
+    // if trigExpand made no change (returned expr unchanged), return original arg1
+    return result == expanded ? arg1 : result;
+  }
+
 
   @Override
   public int[] expectedArgSize(IAST ast) {
