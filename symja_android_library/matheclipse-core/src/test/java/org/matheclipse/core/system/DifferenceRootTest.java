@@ -118,4 +118,14 @@ public class DifferenceRootTest extends ExprEvaluatorTestCase {
 
   }
 
+  @Test
+  public void testDifferenceRootCatalan() {
+    check("dr=DifferenceRoot(Function({y,n},{(-4*n-2)*y(n)+(n+2)*y(n+1)==0,y(0)==1}))", //
+        "DifferenceRoot[Function({y,n},{(-2-4*n)*y(n)+(n+2)*y(n+1)==0,y(0)==1})]");
+    check("dr(10)", //
+        "16796");
+    check("CatalanNumber(10)", //
+        "16796");
+  }
+
 }

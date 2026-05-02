@@ -287,6 +287,7 @@ Functions in alphabetical order:
 * &#x1F504; [Diff](functions/Diff.md)
 * &#x2611; [DifferenceDelta](functions/DifferenceDelta.md)
 * &#x2611; [DifferenceQuotient](functions/DifferenceQuotient.md)
+* &#x1F9EA; [DifferenceRoot](functions/DifferenceRoot.md)
 * [DigitCharacter](functions/DigitCharacter.md)
 * &#x2705; [DigitCount](functions/DigitCount.md)
 * &#x2705; [DigitQ](functions/DigitQ.md)
