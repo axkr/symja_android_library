@@ -3910,14 +3910,14 @@ public final class LinearAlgebra {
 
     private IExpr computeMatrixExp(ITensorAccess matrix, int n, EvalEngine engine) {
       if (n == 1) {
-        IExpr a = ((IAST) matrix.get(1)).get(1);
+        IExpr a = matrix.getIndex(1, 1);
         return F.List(F.List(F.Exp(a)));
       }
       if (n == 2) {
-        IExpr a = ((IAST) matrix.get(1)).get(1);
-        IExpr b = ((IAST) matrix.get(1)).get(2);
-        IExpr c = ((IAST) matrix.get(2)).get(1);
-        IExpr d = ((IAST) matrix.get(2)).get(2);
+        IExpr a = matrix.getIndex(1, 1);
+        IExpr b = matrix.getIndex(1, 2);
+        IExpr c = matrix.getIndex(2, 1);
+        IExpr d = matrix.getIndex(2, 2);
         return computeMatrix2x2(a, b, c, d, engine);
       }
       if (!engine.isNumericMode() && !matrix.isNumericArgument()) {
@@ -4153,13 +4153,13 @@ public final class LinearAlgebra {
 
       // --- 1x1 case ---
       if (n == 1) {
-        IExpr a = ((IAST) ((IAST) arg1).get(1)).get(1);
+        IExpr a = ((ITensorAccess) arg1).getIndex(1, 1);
         return F.List(F.List(engine.evaluate(F.Log(a))));
       }
 
       // --- 2x2 closed-form symbolic case ---
       if (n == 2 && !engine.isNumericMode() && !arg1.isNumericArgument(true)) {
-        IExpr result2x2 = computeMatrixLog2x2(arg1, engine);
+        IExpr result2x2 = computeMatrixLog2x2((ITensorAccess) arg1, engine);
         if (result2x2.isPresent()) {
           return result2x2;
         }
@@ -4197,12 +4197,11 @@ public final class LinearAlgebra {
      *   Log(A) = Log(λ)*I + (A - λI)/λ     [when (A-λI)^2 = 0]
      * </pre>
      */
-    private IExpr computeMatrixLog2x2(IExpr arg1, EvalEngine engine) {
-      IAST mat = (IAST) arg1;
-      IExpr a = ((IAST) mat.get(1)).get(1);
-      IExpr b = ((IAST) mat.get(1)).get(2);
-      IExpr c = ((IAST) mat.get(2)).get(1);
-      IExpr d = ((IAST) mat.get(2)).get(2);
+    private IExpr computeMatrixLog2x2(ITensorAccess mat, EvalEngine engine) {
+      IExpr a = mat.getIndex(1, 1);
+      IExpr b = mat.getIndex(1, 2);
+      IExpr c = mat.getIndex(2, 1);
+      IExpr d = mat.getIndex(2, 2);
 
       IExpr tr = engine.evaluate(F.Plus(a, d));
       IExpr det = engine.evaluate(F.Subtract(F.Times(a, d), F.Times(b, c)));
