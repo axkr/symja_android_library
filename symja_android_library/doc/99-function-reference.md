@@ -189,6 +189,7 @@ Functions in alphabetical order:
 * &#x2611; [Close](functions/Close.md)
 * &#x2611; [ClosenessCentrality](functions/ClosenessCentrality.md)
 * &#x2705; [Coefficient](functions/Coefficient.md)
+* [CoefficientArrays](functions/CoefficientArrays.md)
 * &#x2705; [CoefficientList](functions/CoefficientList.md)
 * &#x2705; [CoefficientRules](functions/CoefficientRules.md)
 * &#x2611; [Cofactor](functions/Cofactor.md)

@@ -29,6 +29,7 @@ import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -42,7 +43,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.polynomials.PolynomialsUtils;
-import org.matheclipse.core.polynomials.longexponent.ExpVectorLong;
+import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
@@ -553,16 +554,16 @@ public class PolynomialFunctions {
       return ARGS_2_3;
     }
 
-    private boolean setExponent(IAST list, IExpr expr, long[] exponents, long value) {
-      for (int j = 1; j < list.size(); j++) {
-        if (list.get(j).equals(expr)) {
-          int ix = ExpVectorLong.indexVar(expr, list);
-          exponents[ix] = value;
-          return true;
-        }
-      }
-      return false;
-    }
+    // private boolean setExponent(IAST list, IExpr expr, long[] exponents, long value) {
+    // for (int j = 1; j < list.size(); j++) {
+    // if (list.get(j).equals(expr)) {
+    // int ix = ExpVectorLong.indexVar(expr, list);
+    // exponents[ix] = value;
+    // return true;
+    // }
+    // }
+    // return false;
+    // }
 
     @Override
     public void setUp(final ISymbol newSymbol) {
@@ -570,67 +571,266 @@ public class PolynomialFunctions {
     }
   }
 
-  /**
-   * TODO currently not implemented
-   *
-   * @deprecated
-   */
-  @Deprecated
-  private static class CoefficientArrays extends AbstractFunctionEvaluator {
+  private static final class CoefficientArrays extends AbstractFunctionOptionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
+      IExpr arg1 = ast.arg1();
+
+      // Handle lhs==rhs equations: treat as lhs-rhs
+      // We process a list of polynomials (or a single one)
+      boolean singlePoly = !arg1.isList();
+      IAST polyList;
+      if (singlePoly) {
+        // Wrap single polynomial in a list for uniform processing
+        if (arg1.isEqual()) {
+          // lhs == rhs => lhs - rhs
+          arg1 = engine.evaluate(F.Subtract(arg1.first(), arg1.second()));
+        }
+        polyList = F.list(arg1);
+      } else {
+        // Map over list elements, converting equations to lhs-rhs
+        IASTAppendable converted = F.ListAlloc(((IAST) arg1).argSize());
+        for (int i = 1; i < ((IAST) arg1).size(); i++) {
+          IExpr p = ((IAST) arg1).get(i);
+          if (p.isEqual()) {
+            p = engine.evaluate(F.Subtract(p.first(), p.second()));
+          }
+          converted.append(p);
+        }
+        polyList = converted;
+      }
+
+      // Determine variable list
+      IAST varList;
+      if (argSize >= 2 && ast.arg2().isList()) {
+        varList = (IAST) ast.arg2();
+      } else if (argSize >= 2) {
+        varList = F.list(ast.arg2());
+      } else {
+        // CoefficientArrays[polys] => use Variables[polys]
+        varList = (IAST) engine.evaluate(F.Variables(arg1));
+        if (!varList.isList()) {
+          varList = F.List();
+        }
+      }
+
+      int numVars = varList.argSize();
+      int numPolys = polyList.argSize();
+
+      // Expand all polynomials
+      IASTAppendable expandedPolys = F.ListAlloc(numPolys);
+      int maxDegree = 0;
+      for (int i = 1; i <= numPolys; i++) {
+        IExpr expanded = F.evalExpandAll(polyList.get(i), engine);
+        expandedPolys.append(expanded);
+        // Determine max total degree across all polys
+        if (numVars > 0) {
+          try {
+            ExprPolynomialRing ring =
+                new ExprPolynomialRing(varList, new ExprTermOrder(ExprTermOrder.IGRLEX));
+            ExprPolynomial poly = ring.create(expanded, false, true, true);
+            int deg = (int) poly.totalDegree();
+            if (deg > maxDegree) {
+              maxDegree = deg;
+            }
+          } catch (JASConversionException rex) {
+            return Errors.printMessage(S.CoefficientArrays, "poly", F.List(ast.arg1()), engine);
+          }
+        }
+      }
+
+      // Build result list: {m0, m1, ..., m_maxDegree}
+      // m0: constant terms (1D sparse array of length numPolys, or scalar if single poly)
+      // mk (k>=1): k-rank sparse array of shape [numPolys, numVars, numVars, ..., numVars]
+      // (numVars repeated k times), or [numVars,...] if single poly
+      //
+      // For a non-symmetric (default) layout:
+      // mk[polyIndex, v1, v2, ..., vk] = coefficient of x_{v1}*x_{v2}*...*x_{vk}
+      // where variables are assigned in the order given (only strictly ordered indices,
+      // i.e. v1 <= v2 <= ... <= vk in the variable ordering).
+
+      IASTAppendable result = F.ListAlloc(maxDegree + 1);
+
+      // m0: constant terms
+      {
+        if (singlePoly) {
+          // scalar constant term
+          IExpr constTerm = getConstantTerm(expandedPolys.get(1), varList, engine);
+          result.append(constTerm);
+        } else {
+          // 1-D sparse array of length numPolys
+          IASTAppendable rules = F.ListAlloc(numPolys + 1);
+          for (int i = 1; i <= numPolys; i++) {
+            IExpr constTerm = getConstantTerm(expandedPolys.get(i), varList, engine);
+            if (!constTerm.isZero()) {
+              rules.append(F.Rule(F.list(F.ZZ(i)), constTerm));
+            }
+          }
+          rules.append(F.Rule(F.list(F.$b()), F.C0));
+          SparseArrayExpr m0 = SparseArrayExpr.newArrayRules(rules, new int[] {numPolys}, 0, F.C0);
+          result.append(m0 != null ? m0 : F.sparseArray(rules));
+        }
+      }
+
+      // mk for k = 1 .. maxDegree
+      for (int k = 1; k <= maxDegree; k++) {
+        // Dimension of mk:
+        // if singlePoly: [numVars^k] (rank k)
+        // else: [numPolys, numVars, numVars, ..., numVars] (rank k+1 but listed here as
+        // outer poly dim plus k var dims)
+        // We store it as a sparse array using 1-based integer keys.
+
+        // Rules: {polyRow?, var1, var2, ..., vark} -> coeff
+        IASTAppendable rules = F.ListAlloc(16);
+
+        for (int pi = 1; pi <= numPolys; pi++) {
+          IExpr poly = expandedPolys.get(pi);
+          // Extract all monomials of total degree k
+          try {
+            ExprPolynomialRing ring =
+                new ExprPolynomialRing(varList, new ExprTermOrder(ExprTermOrder.IGRLEX));
+            ExprPolynomial exprPoly = ring.create(poly, false, true, true);
+
+            for (ExprMonomial entry : exprPoly) {
+              org.matheclipse.core.polynomials.longexponent.ExpVectorLong exp = entry.exponent();
+              IExpr coeff = entry.coefficient();
+              if (coeff.isZero()) {
+                continue;
+              }
+              long totalDeg = exp.totalDeg();
+              if (totalDeg != k) {
+                continue;
+              }
+              // Build the variable index sequence for this monomial (1-based)
+              // For non-symmetric: place the exponents in ascending order of variable index
+              int[] varIndices = buildOrderedVarIndices(exp, numVars, k);
+              if (varIndices == null) {
+                continue;
+              }
+              // Build the rule key
+              int[] key;
+              if (singlePoly) {
+                key = varIndices; // just the var positions, length k
+              } else {
+                key = new int[k + 1];
+                key[0] = pi; // polynomial row (1-based)
+                System.arraycopy(varIndices, 0, key, 1, k);
+              }
+              IASTAppendable keyList = F.ListAlloc(key.length);
+              for (int idx : key) {
+                keyList.append(F.ZZ(idx));
+              }
+              rules.append(F.Rule(keyList, coeff));
+            }
+          } catch (JASConversionException rex) {
+            return Errors.printMessage(S.CoefficientArrays, "poly", F.List(ast.arg1()), engine);
+          }
+        }
+
+        // Build the dimension array for this rank
+        int[] dim;
+        if (singlePoly) {
+          dim = new int[k];
+          java.util.Arrays.fill(dim, numVars);
+        } else {
+          dim = new int[k + 1];
+          dim[0] = numPolys;
+          java.util.Arrays.fill(dim, 1, k + 1, numVars);
+        }
+
+        // Add default rule
+        IASTAppendable blankKey = F.ListAlloc(dim.length);
+        for (int i = 0; i < dim.length; i++) {
+          blankKey.append(F.$b());
+        }
+        rules.append(F.Rule(blankKey, F.C0));
+
+        SparseArrayExpr mk = SparseArrayExpr.newArrayRules(rules, dim, 0, F.C0);
+        result.append(mk != null ? mk : F.sparseArray(rules));
+      }
+
+      return result;
+    }
 
     /**
-     * TODO currently not implemented
-     *
-     * @deprecated
+     * Returns the constant term of {@code poly} with respect to {@code vars} (i.e. the value at all
+     * variables = 0).
      */
-    @Deprecated
-    @Override
-    public IExpr evaluate(final IAST ast, final EvalEngine engine) {
-
-      IExpr expr = F.evalExpandAll(ast.arg1(), engine);
-      VariablesSet eVar;
-      IAST symbolList;
-
-      if (ast.isAST1()) {
-        // extract all variables from the polynomial expression
-        eVar = new VariablesSet(ast.arg1());
-        symbolList = eVar.getVarList();
-      } else {
-        symbolList = Validate.checkIsVariableOrVariableList(ast, 2, ast.topHead(), engine);
-        if (symbolList.isNIL()) {
-          return F.NIL;
-        }
-        List<IExpr> varList = new ArrayList<IExpr>(symbolList.argSize());
-        symbolList.forEach(x -> varList.add(x));
-      }
-      TermOrder termOrder = TermOrderByName.Lexicographic;
-
-      if (ast.size() > 3) {
-        if (ast.arg3().isSymbol()) {
-          termOrder = JASIExpr.monomialOrder(ast.arg3(), termOrder);
-        }
-      }
-
+    private static IExpr getConstantTerm(IExpr poly, IAST vars, EvalEngine engine) {
       try {
         ExprPolynomialRing ring =
-            new ExprPolynomialRing(symbolList, new ExprTermOrder(termOrder.getEvord()));
-        ExprPolynomial poly = ring.create(expr, false, true, true);
-        return poly.coefficientArrays((int) poly.degree());
+            new ExprPolynomialRing(vars, new ExprTermOrder(ExprTermOrder.IGRLEX));
+        ExprPolynomial exprPoly = ring.create(poly, false, true, true);
+        IExpr coeff = exprPoly.constantCoefficient();
+        return coeff != null ? coeff : F.C0;
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        Errors.printMessage(S.CoefficientArrays, rex, engine);
-        // LOGGER.debug("CoefficientArrays.evaluate() failed", rex);
       }
-
-      return F.list(F.Rule(F.mapRange(1, symbolList.size(), i -> F.C0), expr));
+      // Fallback: substitute all variables with 0
+      IExpr result = poly;
+      for (int i = 1; i < vars.size(); i++) {
+        result = F.subst(result, vars.get(i), F.C0);
+      }
+      return engine.evaluate(result);
     }
 
-    @Deprecated
+    /**
+     * Builds the 1-based variable index sequence for a monomial of total degree {@code k} in the
+     * non-symmetric (default) layout.
+     *
+     * <p>
+     * For a monomial {@code x_{i1}^{e1} * x_{i2}^{e2} * ...} with total degree k, the sequence is
+     * the ordered list of variable positions (ascending), where each variable index is repeated
+     * according to its exponent.
+     *
+     * <p>
+     * Example: {@code x1^2 * x3} with vars = {x1, x2, x3} → [1, 1, 3]
+     *
+     * @param exp the exponent vector (length = numVars, stored in reverse JAS order)
+     * @param numVars number of variables
+     * @param k total degree
+     * @return int[] of length k with 1-based variable indices in ascending order, or {@code null}
+     *         if the total degree doesn't match
+     */
+    private static int[] buildOrderedVarIndices(
+        org.matheclipse.core.polynomials.longexponent.ExpVectorLong exp, int numVars, int k) {
+      int[] indices = new int[k];
+      int pos = 0;
+      // ExpVectorLong stores variables in reverse order: index (numVars-1-i) corresponds to
+      // variable i+1 in 1-based numbering (standard JAS/ExprPolynomialRing convention)
+      for (int i = 0; i < numVars; i++) {
+        // The i-th variable (1-based: i+1) has exponent at position (numVars - 1 - i)
+        long e = exp.getVal(numVars - 1 - i);
+        for (long j = 0; j < e; j++) {
+          if (pos >= k) {
+            return null; // shouldn't happen if totalDeg == k
+          }
+          indices[pos++] = i + 1; // 1-based variable index
+        }
+      }
+      return pos == k ? indices : null;
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_4;
+      return ARGS_1_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Symmetric};
+      IExpr[] optionValues = new IExpr[] {S.False};
+      setOptions(newSymbol, optionKeys, optionValues);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
+
 
   /**
    * <pre>
@@ -1688,8 +1888,7 @@ public class PolynomialFunctions {
       S.ChebyshevT.setEvaluator(new ChebyshevT());
       S.ChebyshevU.setEvaluator(new ChebyshevU());
       S.Coefficient.setEvaluator(new Coefficient());
-      // TODO
-      // S.CoefficientArrays.setEvaluator(new CoefficientArrays());
+      S.CoefficientArrays.setEvaluator(new CoefficientArrays());
       S.CoefficientList.setEvaluator(new CoefficientList());
       S.CoefficientRules.setEvaluator(new CoefficientRules());
       S.Cyclotomic.setEvaluator(new Cyclotomic());
