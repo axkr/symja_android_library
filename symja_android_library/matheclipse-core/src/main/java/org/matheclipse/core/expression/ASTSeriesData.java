@@ -23,6 +23,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
@@ -1102,6 +1103,52 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
     return series;
   }
+
+  /**
+   * Multiply this Puiseux series by (expansionVariable)^(p/q), producing a new SeriesData with
+   * adjusted exponent indices and Puiseux denominator.
+   *
+   * @param p numerator of the rational exponent
+   * @param q denominator of the rational exponent (must be > 0)
+   * @return the product as a new ASTSeriesData, or null if not applicable
+   */
+  private ASTSeriesData timesPuiseux(int p, int q) {
+    int newDen = ArithmeticUtils.lcm(puiseuxDenominator, q);
+    int scaleDen = newDen / puiseuxDenominator;
+    int scaleQ = newDen / q;
+    int shift = p * scaleQ;
+
+    int newMin;
+    int newTruncate;
+    if (scaleDen > 1) {
+      // Mathematica convention: last original coefficient maps to the new truncation
+      // boundary and is dropped.
+      newMin = minExponent * scaleDen + shift;
+      newTruncate = (truncateOrder - 1) * scaleDen + shift;
+    } else {
+      // Integer multiple of the current denominator: no precision loss.
+      newMin = minExponent * scaleDen + shift;
+      newTruncate = truncateOrder * scaleDen + shift;
+    }
+
+    if (newTruncate <= newMin) {
+      return null; // degenerate — caller falls back to unevaluated
+    }
+
+    ASTSeriesData result =
+        new ASTSeriesData(expansionVariable, expansionPoint, newMin, newTruncate, newDen);
+    for (int k = minExponent; k < exponentBound; k++) {
+      int newK = k * scaleDen + shift;
+      if (newK < newTruncate) {
+        IExpr c = coefficient(k);
+        if (c != null && !c.isZero()) {
+          result.setCoeff(newK, c);
+        }
+      }
+    }
+    return result;
+  }
+
 
   OpenIntToIExprHashMap<IExpr> coefficientMap;
   private int truncateOrder;
@@ -2267,6 +2314,43 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     if (b.isOne()) {
       return this;
     }
+
+    // Handle multiplication by (expansionVariable)^(p/q) when expanded around 0
+    if (expansionPoint.isZero()) {
+      if (b.isPower()) {
+        IExpr base = b.base();
+        IExpr exponent = b.exponent();
+        if (base.equals(expansionVariable)) {
+          if (exponent.isFraction()) {
+            IFraction frac = (IFraction) exponent;
+            int p = frac.toBigNumerator().intValueExact(); // may throw for huge p
+            int q = frac.toBigDenominator().intValueExact();
+            if (q > 0) {
+              ASTSeriesData result = timesPuiseux(p, q);
+              if (result != null) {
+                return result;
+              }
+            }
+          } else if (exponent.isInteger()) {
+            int n = exponent.toIntDefault();
+            if (n != Config.INVALID_INT) {
+              ASTSeriesData result = timesPuiseux(n, 1);
+              if (result != null) {
+                return result;
+              }
+            }
+          }
+        }
+      } else if (b.isSymbol() && b.equals(expansionVariable)) {
+        // b = x ≡ x^1
+        ASTSeriesData result = timesPuiseux(1, 1);
+        if (result != null) {
+          return result;
+        }
+      }
+    }
+
+    // General case: multiply every coefficient by b (b is a scalar w.r.t. the variable)
     ASTSeriesData series = copy();
     for (int i = minExponent; i < exponentBound; i++) {
       series.setCoeff(i, this.coefficient(i).times(b));

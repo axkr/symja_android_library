@@ -6466,6 +6466,11 @@ public final class Arithmetic {
               }
             }
             break;
+          case ID.SeriesData:
+            if (arg1 instanceof ASTSeriesData) {
+              return ((ASTSeriesData) arg1).times(arg2);
+            }
+            break;
           default:
         }
       }

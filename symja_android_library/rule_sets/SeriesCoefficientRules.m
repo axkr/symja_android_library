@@ -125,6 +125,11 @@
   SeriesCoefficient(EllipticE(x_),{x_Symbol, 0, n_?NotListQ}) := Piecewise({{-((Gamma(-(1/2) + n)*Gamma(1/2 + n))/(4*Gamma(1+n)^2)), n >= 0}}, 0)
     /; FreeQ(n,x),
   SeriesCoefficient(EllipticK(x_),{x_Symbol, 0, n_?NotListQ}) := Piecewise({{Gamma(1/2+n)^2/(2*Gamma(1+n)^2), n >= 0}}, 0)
-    /; FreeQ(n,x)
+    /; FreeQ(n,x),
+    
+  SeriesCoefficient(LucasL(x_),{x_Symbol, 0, n_?NotListQ}):=Piecewise({{((I*Pi-ArcCsch(2))^n+2*ArcCsch(2)^n+(-1)^n*(I*Pi+ArcCsch(2))^n)/(2*n!),n>=0}},0)
+    /; FreeQ(n,x),
+  SeriesCoefficient(LucasL(m_,x_),{x_Symbol, 0, n_?NotListQ}):= Piecewise({{DifferenceRoot(Function({y,n},{-(-1-n+m)*(1+n+m)*y(n)+4*(1+n)*(2+n)*y(2+n)==0,y(0)==2*Cos(1/2*m*Pi)^2,y(1)==m*Sin(1/2*m*Pi)^2}))[n],n>=0}},0)
+    /; FreeQ(m,x) && FreeQ(n,x)
 }
 } 

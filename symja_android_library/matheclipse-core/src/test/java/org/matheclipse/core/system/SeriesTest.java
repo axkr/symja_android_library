@@ -366,8 +366,11 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSeriesData() {
-    check("Series(Exp(x), {x,0,2}) // FullForm", //
-        "SeriesData(x,0,List(1, 1, Rational(1,2)),0,3,1)");
+    check("Series(Exp(x),{x,0,2})*x^(1/3) // InputForm", //
+        "SeriesData(x,0,{1,0,0,1},1,7,3)");
+
+    check("Series(Exp(x), {x,0,2}) // InputForm", //
+        "SeriesData(x,0,{1,1,1/2},0,3,1)");
 
     check(
         "s1=SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)*SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1) //InputForm", //
