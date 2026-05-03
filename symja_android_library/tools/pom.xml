@@ -46,6 +46,12 @@
 			<artifactId>rewrite-java</artifactId>
 			<version>8.81.1</version>
 			<scope>runtime</scope>
-		</dependency> 
+		</dependency>
+		<dependency>
+			<groupId>org.xhtmlrenderer</groupId>
+			<artifactId>flying-saucer-pdf</artifactId>
+			<version>10.2.0</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 </project>
