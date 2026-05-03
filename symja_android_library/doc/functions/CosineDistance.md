@@ -3,6 +3,7 @@
 ```
 CosineDistance(u, v)
 ```
+
 > returns the cosine distance between `u` and `v`.
   
 ### Examples
