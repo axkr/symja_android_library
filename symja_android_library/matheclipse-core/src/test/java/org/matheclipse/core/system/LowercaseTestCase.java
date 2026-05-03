@@ -24155,6 +24155,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTimes() {
+
+    // (-1 + 2*Pi*I) * Infinity → DirectedInfinity[(-1 + 2*I*Pi)/Sqrt[1 + 4*Pi^2]]
+    check("(-1 + 2*Pi*I)*Infinity", //
+        "DirectedInfinity((-1+I*2*Pi)/Sqrt(1+4*Pi^2))");
+    // Purely imaginary: I * Infinity → DirectedInfinity[I] (existing)
+    check("I*Infinity // FullForm", //
+        "DirectedInfinity(Complex(0,1))");
+    // (1 + I) * Infinity
+    check("(1+I)*Infinity", //
+        "DirectedInfinity((1+I)/Sqrt(2))");
+    // Negative infinity
+    check("(-1 + 2*Pi*I)*(-Infinity)", //
+        "DirectedInfinity((1-I*2*Pi)/Sqrt(1+4*Pi^2))");
+
     check("((1+Infinity)*(2+Infinity))/Infinity^2", //
         "Indeterminate");
     check("0.0*Sin(#)", //

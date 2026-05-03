@@ -1249,6 +1249,54 @@ public final class Arithmetic {
       return inf;
     }
 
+    /**
+     * Fold {@code DirectedInfinity[a1] * a2} when {@code a2} is a symbolic expression whose real
+     * and imaginary parts are both real-valued and free of nested {@code Re}/{@code Im} calls.
+     *
+     * <p>
+     * Computes {@code z = a1*a2}, evaluates {@code Re(z)} and {@code Im(z)} symbolically, and
+     * returns {@code DirectedInfinity[ z / Sqrt[Re(z)^2 + Im(z)^2] ]}.
+     *
+     * @param inf a {@code DirectedInfinity[a1]} AST (must satisfy {@code isAST1()})
+     * @param a2 the symbolic factor to fold in
+     * @return the normalised {@code DirectedInfinity} or {@link F#NIL}
+     */
+    public static IExpr timesInfSymbolic(IAST inf, IExpr a2) {
+      if (!inf.isAST1()) {
+        return F.NIL;
+      }
+      final EvalEngine engine = EvalEngine.get();
+      final IExpr a1 = inf.arg1();
+
+      // Compute product z = a1 * a2
+      final IExpr z = engine.evaluate(F.Times(a1, a2));
+      if (z.isZero()) {
+        return S.Indeterminate;
+      }
+      // Numeric product: hand off to the existing numeric path
+      if (z.isNumber()) {
+        return timesInf(F.DirectedInfinity(F.C1), z);
+      }
+
+      // Symbolic Re/Im splitter: only proceed when both parts are determinably real and free of
+      // nested Re/Im.
+      final IExpr re = engine.evaluate(F.Re(z));
+      final IExpr im = engine.evaluate(F.Im(z));
+      if (re.isRealResult() && im.isRealResult() && re.isFree(S.Re) && re.isFree(S.Im)
+          && im.isFree(S.Re) && im.isFree(S.Im)) {
+
+        final IExpr absSquared = engine.evaluate(F.Plus(F.Sqr(re), F.Sqr(im)));
+        if (absSquared.isZero()) {
+          return S.Indeterminate;
+        }
+        // Normalise: z / Sqrt( Re(z)^2 + Im(z)^2 )
+        final IExpr normalised = engine.evaluate(F.Divide(z, F.Sqrt(absSquared)));
+        return F.DirectedInfinity(normalised);
+      }
+      return F.NIL;
+    }
+
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
@@ -6092,12 +6140,15 @@ public final class Arithmetic {
       }
       if (inf.isAST1()) {
         if (o1.isNumber()) {
-          if (inf.isAST1()) {
-            return DirectedInfinity.timesInf(inf, o1);
-          }
+          return DirectedInfinity.timesInf(inf, o1);
         }
         if (o1.isDirectedInfinity() && o1.isAST1()) {
           return F.eval(F.DirectedInfinity(F.Times(inf.first(), o1.first())));
+        }
+        // symbolic complex factor whose Re/Im parts are real-valued
+        IExpr temp = DirectedInfinity.timesInfSymbolic(inf, o1);
+        if (temp.isPresent()) {
+          return temp;
         }
       }
       return F.NIL;
