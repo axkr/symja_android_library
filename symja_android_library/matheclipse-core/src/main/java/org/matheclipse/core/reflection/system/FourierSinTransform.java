@@ -19,8 +19,14 @@ public class FourierSinTransform extends AbstractFunctionEvaluator {
     IExpr expr = ast.arg1();
     IExpr t = ast.arg2();
     IExpr omega = ast.arg3();
-    IExpr assumptions = F.Rule(S.Assumptions, F.Greater(omega, F.C0));
 
+    // Try lookup table before falling back to integration
+    IExpr result = lookupFST(expr, t, omega, engine);
+    if (result.isPresent()) {
+      return result;
+    }
+
+    IExpr assumptions = F.Rule(S.Assumptions, F.Greater(omega, F.C0));
     IAST integral = //
         F.Times(F.Sqrt(F.Divide(F.C2, S.Pi)), //
             F.Integrate(F.Times(expr, F.Sin(F.Times(omega, t))), //
@@ -33,6 +39,36 @@ public class FourierSinTransform extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  /**
+   * Lookup table for known Fourier sine transform pairs. Checked before falling back to symbolic
+   * integration. Convention: FST[f] = Sqrt(2/Pi) * Integrate(f(t) * Sin(w*t), {t, 0, Infinity})
+   *
+   * <p>
+   * Supported patterns:
+   *
+   * <ul>
+   * <li>FST[c * Cos(a*t) / t] = c * Sqrt(Pi/2) * HeavisideTheta(w - a)
+   * </ul>
+   */
+  private IExpr lookupFST(IExpr f, IExpr t, IExpr omega, EvalEngine engine) {
+    // FST(c * Cos(a*t) / t) = c * Sqrt(Pi/2)*(1 + Sign(w-omega)) / 2
+    //
+    // Derivation: Sin(wt)*Cos(at) = (Sin((w+a)t) + Sin((w-a)t))/2
+    // ∫₀^∞ Cos(at)*Sin(wt)/t dt = (1/2)*[π/2*Sign(w+a) + π/2*Sign(w-a)]
+    // For a>0,w>0: Sign(w+a)=1, so = (π/4)*(1+Sign(w-a)) = (π/2)*(1 + Sign(w-a)) / 2
+    // Multiplied by Sqrt(2/Pi): Sqrt(Pi/2)*(1 + Sign(w-a)) / 2
+    IExpr[] match = FourierCosTransform.matchConstTimesTrigOverT(f, t, S.Cos);
+    if (match != null) {
+      IExpr c = match[0];
+      IExpr a = match[1];
+      // return engine.evaluate(F.Times(c, F.Sqrt(F.Divide(S.Pi, F.C2)), F.C1D2,
+      // F.Plus(F.C1, F.Sign(F.Subtract(a, omega)))));
+      return engine.evaluate(
+          F.Times(c, F.Sqrt(F.Divide(S.Pi, F.C2)), F.C1D2,
+              F.Plus(F.C1, F.Sign(F.Subtract(omega, a)))));
+    }
+    return F.NIL;
+  }
 
   @Override
   public int status() {
