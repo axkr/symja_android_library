@@ -95,10 +95,10 @@ public class FourierTest extends ExprEvaluatorTestCase {
   public void testFourierCosTransform() {
     check("FourierCosTransform(Exp(-t^2),t,w)", //
         "1/(Sqrt(2)*E^(w^2/4))");
+    check("FourierCosTransform(1/Sqrt(t),t,w)", //
+        "1/Sqrt(w)");
 
     // TODO
-    check("FourierCosTransform(1/Sqrt(t),t,w)", //
-        "FourierCosTransform(1/Sqrt(t),t,w)");
     check("FourierCosTransform(Sin(t)/t,t,w)", //
         "FourierCosTransform(Sin(t)/t,t,w)");
   }
