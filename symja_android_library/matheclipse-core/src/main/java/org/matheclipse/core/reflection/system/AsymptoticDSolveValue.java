@@ -25,7 +25,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </blockquote>
  */
 public class AsymptoticDSolveValue extends AbstractFunctionOptionEvaluator {
-  private final static boolean DEBUG = true;
+  private final static boolean DEBUG = false;
 
   public AsymptoticDSolveValue() {}
 
