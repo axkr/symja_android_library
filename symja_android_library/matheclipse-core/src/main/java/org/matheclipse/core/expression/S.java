@@ -10234,6 +10234,7 @@ public class S {
 
   public final static IBuiltInSymbol RootReduce = S.initFinalSymbol("RootReduce", ID.RootReduce);
 
+
   /**
    * Roots(polynomial-equation, var) - determine the roots of a univariate polynomial equation with
    * respect to the variable `var`.
@@ -10243,6 +10244,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Roots = S.initFinalSymbol("Roots", ID.Roots);
+
+  public final static IBuiltInSymbol RootSum = S.initFinalSymbol("RootSum", ID.RootSum);
 
   /**
    * RotateLeft(list) - rotates the items of `list` by one item to the left.

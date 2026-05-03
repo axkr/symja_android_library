@@ -9548,6 +9548,10 @@ public class F extends S {
     return new AST2(Roots, a0, a1);
   }
 
+  public static IAST RootSum(final IExpr f, final IExpr form) {
+    return new AST2(S.RootSum, f, form);
+  }
+
   public static IAST RotateLeft(final IAST list, final IExpr n) {
     return new AST2(RotateLeft, list, n);
   }

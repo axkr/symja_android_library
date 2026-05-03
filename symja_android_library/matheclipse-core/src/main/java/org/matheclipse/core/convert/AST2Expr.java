@@ -316,7 +316,7 @@ public class AST2Expr {
       "RightTeeVector", "RightTriangle", "RightTriangleBar", "RightTriangleEqual",
       "RightUpDownVector", "RightUpTeeVector", "RightUpVector", "RightUpVectorBar", "RightVector",
       "RightVectorBar", "RogersTanimotoDissimilarity", "RomanNumeral", "Root", "RootIntervals",
-      "RootMeanSquare", "RootOf", "RootReduce", "Roots", "RotateLeft", "RotateRight",
+      "RootMeanSquare", "RootOf", "RootReduce", "Roots", "RootSum", "RotateLeft", "RotateRight",
       "RotationMatrix", "RotationTransform", "Round", "RoundImplies", "Row", "RowBox", "RowReduce",
       "RSolve", "RSolveValue", "Rule", "RuleDelayed", "RussellRaoDissimilarity", "SameObjectQ",
       "SameQ", "SASTriangle", "SatisfiabilityCount", "SatisfiabilityInstances", "SatisfiableQ",
