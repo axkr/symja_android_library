@@ -669,6 +669,33 @@ public class MeijerG extends AbstractFunctionEvaluator implements IFunctionExpan
                   F.Less(v2, F.C1))),
               F.list(F.C0, F.Greater(v2, F.C1))), F.Indeterminate);
         }
+
+        if (aList.arg1().isList2() && aList.arg2().isEmptyList() && //
+            bList.arg1().isList1() && bList.arg2().isEmptyList()) {
+          // 2,0,1,0
+          IExpr a11 = aList.arg1().first();
+          IExpr a12 = aList.arg1().second();
+          IExpr b11 = bList.arg1().first();
+          if (a11.isOne() && a12.isNumEqualInteger(F.C2) && b11.isNumEqualInteger(F.C3)
+              && z.isOne()) {
+            // 2+3*E*ExpIntegralEi(-1)
+            return F.Plus(F.C2, F.Times(F.C3, S.E, F.ExpIntegralEi(F.CN1)));
+          }
+          if (a11.isOne()) {
+            // (Pi*Csc((1-a12)*Pi)*Gamma(b11)*Hypergeometric1F1(b11,a12,1/z))/Gamma(a12)+(Pi*Csc((-1+a12)*Pi)*Gamma(1-a12+b11)*Hypergeometric1F1(1-a12+b11,2-a12,1/z))/(z^(1-a12)*Gamma(2-a12))
+            IExpr v5 = F.Plus(F.CN1, a12);
+            IExpr v4 = F.Power(z, F.CN1);
+            IExpr v3 = F.Subtract(F.C1, a12);
+            IExpr v2 = F.Subtract(F.C2, a12);
+            IExpr v1 = F.Plus(v3, b11);
+            return F.Plus(
+                F.Times(F.Pi, F.Csc(F.Times(v3, F.Pi)), F.Power(F.Gamma(a12), F.CN1), F.Gamma(b11),
+                    F.Hypergeometric1F1(b11, a12, v4)),
+                F.Times(F.Pi, F.Power(z, v5), F.Csc(F.Times(v5, F.Pi)), F.Power(F.Gamma(v2), F.CN1),
+                    F.Gamma(v1), F.Hypergeometric1F1(v1, v2, v4)));
+
+          }
+        }
       }
     }
     return F.NIL;

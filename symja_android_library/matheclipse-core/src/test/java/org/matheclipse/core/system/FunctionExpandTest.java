@@ -384,6 +384,11 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testFunctionExpandMeijerG() {
+    check("MeijerG({{1, 2}, {}}, {{3}, {}}, 1) // FunctionExpand", //
+        "2+3*E*ExpIntegralEi(-1)");
+    check("MeijerG({{1, a}, {}}, {{b}, {}}, 1) // FunctionExpand", //
+        "(Pi*Csc((1-a)*Pi)*Gamma(b)*Hypergeometric1F1(b,a,1))/Gamma(a)+(Pi*Csc((-1+a)*Pi)*Gamma(\n" //
+            + "1-a+b)*Hypergeometric1F1(1-a+b,2-a,1))/Gamma(2-a)");
     check("FunctionExpand(MeijerG({{},{a2}},{{b1},{}},z))", //
         "Piecewise({{z^b1/((1-z)^(1-a2+b1)*Gamma(a2-b1)),(z==1&&-Re(a2)+Re(b1)<-1)||Abs(z)<\n"
             + "1},{0,Abs(z)>1}},Indeterminate)");
