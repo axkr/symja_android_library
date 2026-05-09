@@ -354,7 +354,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
 
       boolean evaled = false;
       IExpr result;
-      if (argSize < 2 || holdallAST.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+      if (argSize < 2) { // || holdallAST.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
         return F.NIL;
       }
       if (engine.isNumericMode()) {
@@ -494,11 +494,11 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           return F.subst(result, f -> {
             if (f.isAST(UtilityFunctionCtors.Unintegrable, 3)) {
               IAST integrate = F.Integrate(f.first(), f.second());
-              integrate.addEvalFlags(IAST.BUILT_IN_EVALED);
+              // integrate.addEvalFlags(IAST.BUILT_IN_EVALED);
               return integrate;
             } else if (f.isAST(F.$rubi("CannotIntegrate"), 3)) {
               IAST integrate = F.Integrate(f.first(), f.second());
-              integrate.addEvalFlags(IAST.BUILT_IN_EVALED);
+              // integrate.addEvalFlags(IAST.BUILT_IN_EVALED);
               return integrate;
             }
             return F.NIL;
@@ -509,6 +509,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         if (result.isPresent()) {
           return result;
         }
+
+        // // RootSum fallback for 1/p(x), irreducible degree >= 5 ---
+        // IExpr rootSumResult = integrateOneOverPoly(fx, x, engine);
+        // if (rootSumResult.isPresent()) {
+        // return rootSumResult;
+        // }
       }
       return evaled ? ast : F.NIL;
     } finally {
@@ -583,6 +589,80 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return engine.evaluate(plus);
     }
   }
+
+  // /**
+  // * Try to integrate {@code 1/p(x)} where {@code p} is a univariate polynomial in {@code x} of
+  // * degree ≥ 5 that appears irreducible over Q (no rational roots detected). Returns a
+  // * {@code RootSum} antiderivative:
+  // *
+  // * <pre>
+  // * RootSum[(#^n + ...)&, (Log[x - #1] / p'(#1))&]
+  // * </pre>
+  // *
+  // * @param function the integrand expression
+  // * @param x the integration variable
+  // * @param engine the evaluation engine
+  // * @return the {@code RootSum} antiderivative, or {@link F#NIL} if not applicable
+  // */
+  // private static IExpr integrateOneOverPoly(final IExpr function, final IExpr x,
+  // EvalEngine engine) {
+  // // Match Power[poly, -1] i.e. poly^(-1)
+  // if (!function.isPower()) {
+  // return F.NIL;
+  // }
+  // IExpr base = function.base();
+  // IExpr exponent = function.exponent();
+  // if (!exponent.isMinusOne()) {
+  // return F.NIL;
+  // }
+  // // base must be a polynomial in x
+  // IExpr poly = base;
+  //
+  // // Determine degree
+  // IExpr degExpr = engine.evaluate(F.Exponent(poly, x));
+  // if (!degExpr.isInteger()) {
+  // return F.NIL;
+  // }
+  // int deg = degExpr.toIntDefault();
+  // if (deg < 5) {
+  // // Degrees ≤ 4 have closed-form radical solutions;
+  // // leave for Rubi / standard partial fraction rules
+  // return F.NIL;
+  // }
+  //
+  // // Check that poly is actually a polynomial in x (no x in denominators, etc.)
+  // IExpr polyExpanded = engine.evaluate(F.ExpandAll(poly));
+  // IExpr coeffList = engine.evaluate(F.CoefficientList(polyExpanded, x));
+  // if (!coeffList.isList()) {
+  // return F.NIL;
+  // }
+  //
+  // // Quick rational-root screen: check if Factor splits off a linear factor
+  // IExpr factored = engine.evaluate(F.Factor(polyExpanded));
+  // // If factored differs from polyExpanded and contains a degree-1 factor, bail out
+  // // to let partial fractions handle it
+  // if (!factored.equals(polyExpanded)) {
+  // // Contains factorable parts → partial fractions already handle this
+  // return F.NIL;
+  // }
+  //
+  // // Build p'(x)
+  // IExpr dpoly = engine.evaluate(F.D(polyExpanded, x));
+  //
+  // // Build Function bodies by replacing x → Slot1 (#1)
+  // IExpr polyInSlot = engine.evaluate(F.ReplaceAll(polyExpanded, F.Rule(x, F.Slot1)));
+  // IExpr dpolyInSlot = engine.evaluate(F.ReplaceAll(dpoly, F.Rule(x, F.Slot1)));
+  //
+  // // polyFn = (polyInSlot)& i.e. Function[polyInSlot]
+  // IExpr polyFn = F.Function(polyInSlot);
+  //
+  // // formBody = Log[x - #1] / p'(#1)
+  // IExpr logArg = F.Subtract(x, F.Slot1);
+  // IExpr formBody = F.Divide(F.Log(logArg), dpolyInSlot);
+  // IExpr formFn = F.Function(formBody);
+  //
+  // return F.RootSum(polyFn, formFn);
+  // }
 
   /**
    * Integrates the given <code>function</code>, by analyzing, if its a multiplication with a
@@ -1063,20 +1143,20 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * @param symbol
    * @return
    */
-  private static IExpr integratePolynomialByParts(final IAST arg1, IExpr symbol,
-      EvalEngine engine) {
-    IASTAppendable fTimes = F.TimesAlloc(arg1.size());
-    IASTAppendable gTimes = F.TimesAlloc(arg1.size());
-    collectPolynomialTerms(arg1, symbol, gTimes, fTimes);
-    IExpr g = gTimes.oneIdentity1();
-    IExpr f = fTimes.oneIdentity1();
-    // conflicts with Rubi 4.5 integration rules
-    // only call integrateByParts for simple Times() expressions
-    if (f.isOne() || g.isOne()) {
-      return F.NIL;
-    }
-    return integrateByParts(f, g, symbol, engine);
-  }
+  // private static IExpr integratePolynomialByParts(final IAST arg1, IExpr symbol,
+  // EvalEngine engine) {
+  // IASTAppendable fTimes = F.TimesAlloc(arg1.size());
+  // IASTAppendable gTimes = F.TimesAlloc(arg1.size());
+  // collectPolynomialTerms(arg1, symbol, gTimes, fTimes);
+  // IExpr g = gTimes.oneIdentity1();
+  // IExpr f = fTimes.oneIdentity1();
+  // // conflicts with Rubi 4.5 integration rules
+  // // only call integrateByParts for simple Times() expressions
+  // if (f.isOne() || g.isOne()) {
+  // return F.NIL;
+  // }
+  // return integrateByParts(f, g, symbol, engine);
+  // }
 
   /**
    * Use the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - Symbolic Integration Rules</a> to
