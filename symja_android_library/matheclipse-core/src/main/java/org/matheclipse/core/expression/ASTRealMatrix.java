@@ -485,6 +485,7 @@ public final class ASTRealMatrix extends AbstractAST
   @Override
   public IExpr set(int location, IExpr object) {
     hashValue = 0;
+    fEvalEpoch = 0L;
     if (object instanceof ASTRealVector) {
       IExpr value = new ASTRealVector(matrix.getRowVector(location - 1), false);
       matrix.setRowVector(location - 1, ((ASTRealVector) object).vector);

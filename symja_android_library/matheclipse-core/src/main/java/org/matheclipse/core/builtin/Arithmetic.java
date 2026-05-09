@@ -2978,9 +2978,9 @@ public final class Arithmetic {
           return F.C0;
         }
       }
-      if (engine.isSymbolicMode(S.Plus.getAttributes())) {
-        ast.builtinEvaled();
-      }
+      // if (engine.isSymbolicMode(S.Plus.getAttributes())) {
+      // ast.builtinEvaled();
+      // }
       return F.NIL;
     }
 
@@ -3348,6 +3348,8 @@ public final class Arithmetic {
   public /* public for steps module */ static class Power extends AbstractFunctionEvaluator
       implements IRewrite, INumeric, IFunctionExpand {
 
+    private static final int POWER_EVALED = IAST.BUILT_IN_EVALED;
+
     public static IExpr binaryOperator(IAST ast, final IExpr base, final IExpr exponent,
         EvalEngine engine) {
       try {
@@ -3566,7 +3568,8 @@ public final class Arithmetic {
       }
 
       if (engine.isSymbolicMode(S.Power.getAttributes())) {
-        ast.builtinEvaled();
+        ast.setEvalFlags(POWER_EVALED);
+        // ast.builtinEvaled();
       }
       return F.NIL;
     }
@@ -4847,6 +4850,9 @@ public final class Arithmetic {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isEvalFlagOn(POWER_EVALED)) {
+        return F.NIL;
+      }
       final int size = ast.size();
       if (ast.head() == S.Power) {
         switch (size) {
@@ -6785,9 +6791,9 @@ public final class Arithmetic {
         return distributeLeadingFactor(F.NIL, argsRemovedTimes);
       }
 
-      if (engine.isSymbolicMode(S.Times.getAttributes())) {
-        ast.builtinEvaled();
-      }
+      // if (engine.isSymbolicMode(S.Times.getAttributes())) {
+      // ast.builtinEvaled();
+      // }
       return F.NIL;
     }
 
@@ -7057,7 +7063,6 @@ public final class Arithmetic {
    * @param x
    * @param min
    * @param max
-   * @return
    */
   public static IExpr clip(IExpr x, IReal min, IReal max) {
     return clip(x, min, max, min, max);

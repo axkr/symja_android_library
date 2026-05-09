@@ -644,43 +644,47 @@ public class Assumptions extends AbstractAssumptions {
   @Override
   public IAssumptions addAssumption(IExpr expr) {
     if (expr.isAST()) {
-      IAST ast = (IAST) expr;
-      if (ast.isAST(S.Element, 3)) {
-        if (addElement(ast, this)) {
-          return this;
+      try {
+        IAST ast = (IAST) expr;
+        if (ast.isAST(S.Element, 3)) {
+          if (addElement(ast, this)) {
+            return this;
+          }
+        } else if (ast.isAST(S.Greater, 3, 4)) {
+          if (addGreater(ast, true, this)) {
+            return this;
+          }
+        } else if (ast.isAST(S.GreaterEqual, 3, 4)) {
+          if (addGreaterEqual(ast, true, this)) {
+            return this;
+          }
+        } else if (ast.isAST(S.Less, 3, 4)) {
+          if (addLess(ast, true, this)) {
+            return this;
+          }
+        } else if (ast.isAST(S.LessEqual, 3, 4)) {
+          if (addLessEqual(ast, true, this)) {
+            return this;
+          }
+        } else if (ast.isEqual()) {
+          if (addEqual(ast, true, this)) {
+            return this;
+          }
+        } else if (ast.isAST(S.Unequal, 3)) {
+          if (addUnequal(ast, this)) {
+            return this;
+          }
+        } else if (ast.isSameHeadSizeGE(S.And, 2) || ast.isSameHeadSizeGE(S.List, 2)) {
+          return addList(ast, true, this);
+        } else if (ast.isSameHeadSizeGE(S.Or, 2)) {
+          return addList(ast, false, this);
+        } else if (ast.isAST(S.Distributed, 3)) {
+          if (addDistribution(ast, this)) {
+            return this;
+          }
         }
-      } else if (ast.isAST(S.Greater, 3, 4)) {
-        if (addGreater(ast, true, this)) {
-          return this;
-        }
-      } else if (ast.isAST(S.GreaterEqual, 3, 4)) {
-        if (addGreaterEqual(ast, true, this)) {
-          return this;
-        }
-      } else if (ast.isAST(S.Less, 3, 4)) {
-        if (addLess(ast, true, this)) {
-          return this;
-        }
-      } else if (ast.isAST(S.LessEqual, 3, 4)) {
-        if (addLessEqual(ast, true, this)) {
-          return this;
-        }
-      } else if (ast.isEqual()) {
-        if (addEqual(ast, true, this)) {
-          return this;
-        }
-      } else if (ast.isAST(S.Unequal, 3)) {
-        if (addUnequal(ast, this)) {
-          return this;
-        }
-      } else if (ast.isSameHeadSizeGE(S.And, 2) || ast.isSameHeadSizeGE(S.List, 2)) {
-        return addList(ast, true, this);
-      } else if (ast.isSameHeadSizeGE(S.Or, 2)) {
-        return addList(ast, false, this);
-      } else if (ast.isAST(S.Distributed, 3)) {
-        if (addDistribution(ast, this)) {
-          return this;
-        }
+      } finally {
+        EvalEngine.incEpoch();
       }
     }
     return this;

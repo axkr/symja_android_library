@@ -85,6 +85,8 @@ import org.matheclipse.parser.client.ParserConfig;
  * @see org.matheclipse.core.expression.S
  */
 public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
+
+
   private static class DummyEvaluator extends AbstractSymbolEvaluator implements ISymbolEvaluator {
 
     /**
@@ -122,13 +124,13 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
     }
 
     @Override
-    public int status() {
-      return ImplementationStatus.FULL_SUPPORT;
+    public int[] expectedArgSize(IAST ast) {
+      return IFunctionEvaluator.ARGS_1_1;
     }
 
     @Override
-    public int[] expectedArgSize(IAST ast) {
-      return IFunctionEvaluator.ARGS_1_1;
+    public int status() {
+      return ImplementationStatus.FULL_SUPPORT;
     }
   }
 
@@ -170,6 +172,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   @Override
   public final void assignValue(final IExpr value, boolean setDelayed) {
     if (isDollarSymbol()) {
+      EvalEngine.incEpoch();
       EvalEngine.get().setDollarValue(this, value);
     } else {
       super.assignValue(value, setDelayed);

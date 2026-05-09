@@ -59,9 +59,9 @@ import it.unimi.dsi.fastutil.ints.IntList;
 public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
   public static final int[] FIBONACCI_45 = {0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377,
-  610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025, 121393, 196418, 317811,
-  514229, 832040, 1346269, 2178309, 3524578, 5702887, 9227465, 14930352, 24157817, 39088169,
-  63245986, 102334155, 165580141, 267914296, 433494437, 701408733, 1134903170};
+      610, 987, 1597, 2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025, 121393, 196418, 317811,
+      514229, 832040, 1346269, 2178309, 3524578, 5702887, 9227465, 14930352, 24157817, 39088169,
+      63245986, 102334155, 165580141, 267914296, 433494437, 701408733, 1134903170};
 
   /**
    * Integer logarithm of <code>arg</code> for base <code>b</code>. Gives Log <sub>b</sub>(arg) or
@@ -179,7 +179,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     return binomial;
   }
 
-  public static org.matheclipse.core.interfaces.IInteger catalanNumber(org.matheclipse.core.interfaces.IInteger n) {
+  public static org.matheclipse.core.interfaces.IInteger catalanNumber(
+      org.matheclipse.core.interfaces.IInteger n) {
     if (n.equals(F.CN1)) {
       return F.CN1;
     }
@@ -255,18 +256,18 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
     if (iterationLimit >= 0 && iterationLimit < absN) {
       IterationLimitExceeded.throwIt(absN, F.Factorial(F.ZZ(n)));
     }
-  
+
     BigInteger result;
     if (absN <= 20) {
       result = BigInteger.valueOf(LongMath.factorial(absN));
     } else {
       result = BigIntegerMath.factorial(absN);
     }
-  
+
     if (n < 0 && n % 2 != 0) {
       result = result.negate();
     }
-  
+
     return valueOf(result);
   }
 
@@ -315,7 +316,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       }
       return F.ZZ(result);
     }
-  
+
     BigInteger a = BigInteger.ONE;
     BigInteger b = BigInteger.ZERO;
     BigInteger c = BigInteger.ONE;
@@ -330,13 +331,13 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
         }
         a = a.multiply(b).add(d);
       }
-  
+
       d = c.multiply(c);
       c = b.multiply(c).shiftLeft(1).add(d);
       b = b.multiply(b).add(d);
       temp >>= 1;
     }
-  
+
     if (iArg < 0 && ((iArg & 0x00000001) == 0x00000000)) { // even
       return F.ZZ(result.negate());
     }
@@ -438,7 +439,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
    * @param kArray the non-negative coefficients
    * @param n the sum of the non-negative coefficients
    */
-  public static org.matheclipse.core.interfaces.IInteger multinomial(final int[] kArray, final int n) {
+  public static org.matheclipse.core.interfaces.IInteger multinomial(final int[] kArray,
+      final int n) {
     org.matheclipse.core.interfaces.IInteger pPlus = F.C1;
     org.matheclipse.core.interfaces.IRational pNeg = F.C1;
     int nNeg = 0;
@@ -462,7 +464,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
         return F.C0;
       }
       int kFactor = -1 - n;
-      org.matheclipse.core.interfaces.IRational p = pPlus.multiply(pNeg).multiply(factorial(kFactor));
+      org.matheclipse.core.interfaces.IRational p =
+          pPlus.multiply(pNeg).multiply(factorial(kFactor));
       if ((kFactor & 1) == 1) {
         p = p.negate();
       }
@@ -481,7 +484,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
    * @param kArray non-negative coefficients
    * @return
    */
-  public static org.matheclipse.core.interfaces.IInteger multinomial(org.matheclipse.core.interfaces.IInteger[] kArray) {
+  public static org.matheclipse.core.interfaces.IInteger multinomial(
+      org.matheclipse.core.interfaces.IInteger[] kArray) {
     if (kArray == null || kArray.length == 0) {
       return F.C1;
     }
@@ -1310,6 +1314,16 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   @Override
   public final IInteger powerRational(final long exponent) throws ArithmeticException {
     if (exponent < 0L) {
+      // if (this.isMinusOne()) {
+      // if ((exponent & 1L) == 1L) { // isOdd(exponent) ?
+      // return F.CN1;
+      // } else {
+      // return F.C1;
+      // }
+      // }
+      // if (this.isOne()) {
+      // return F.C1;
+      // }
       throw new ArithmeticException("Negative exponent");
     }
     if (exponent == 0L) {

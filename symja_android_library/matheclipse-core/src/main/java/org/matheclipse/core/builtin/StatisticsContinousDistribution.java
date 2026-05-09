@@ -777,7 +777,7 @@ public class StatisticsContinousDistribution {
           }
         }
       }
-      ast.builtinEvaled();
+      // ast.builtinEvaled();
       return F.NIL;
     }
 

@@ -37,6 +37,11 @@ import org.matheclipse.core.interfaces.ISymbol;
  *
  */
 public class IntervalDataSym {
+  /**
+   * The evaluation flag for normalized intervals. Normalized intervals are sorted and overlapping
+   * intervals are merged.
+   */
+  private static final int INTERVAL_DATA_NORMALIZED = IAST.BUILT_IN_EVALED;
 
   /**
    * IExprProcessor interface method boolean process (IExpr min, IExpr max, IASTAppendable result,
@@ -1275,11 +1280,13 @@ public class IntervalDataSym {
       result.set(j, list1);
     }
     if (evaled) {
-      result.builtinEvaled();
+      result.setEvalFlags(INTERVAL_DATA_NORMALIZED);
+      // result.builtinEvaled();
       return result;
     }
     if (intervalList instanceof IASTMutable) {
-      intervalList.builtinEvaled();
+      intervalList.setEvalFlags(INTERVAL_DATA_NORMALIZED);
+      // intervalList.builtinEvaled();
       if (EvalAttributes.sort((IASTMutable) intervalList, INTERVAL_COMPARATOR)) {
         return intervalList;
       }

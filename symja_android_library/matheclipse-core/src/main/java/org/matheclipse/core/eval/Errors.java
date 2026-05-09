@@ -250,6 +250,7 @@ public class Errors {
       "nalph", "The alphabet `1` is not known or not available.", //
       "nas", "The argument `1` is not a string.", //
       "natt", "The `1` is not attained at any point satisfying the constraints.", //
+      "near1", "`1` is neither a list of real points nor a valid list of rules.", //
       "needsjdk",
       "For compiling functions, Symja needs to be executed on a Java Development Kit with javax.tools.JavaCompiler installed.", //
       "nconvss",

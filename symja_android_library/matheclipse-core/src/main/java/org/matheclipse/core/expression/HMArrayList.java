@@ -1075,7 +1075,7 @@ public abstract class HMArrayList extends AbstractAST
    */
   @Override
   public IExpr remove(int location) {
-    if (Config.FUZZ_TESTING && isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+    if (Config.FUZZ_TESTING) { // && isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
       throw new NullPointerException("Index: " + location);
     }
     hashValue = 0;
@@ -1179,7 +1179,7 @@ public abstract class HMArrayList extends AbstractAST
    */
   @Override
   public IExpr set(int location, IExpr expr) {
-    if (Config.FUZZ_TESTING && isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+    if (Config.FUZZ_TESTING) {// && isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
       throw new NullPointerException("Index: " + location + ", Size: " + (lastIndex - firstIndex));
     }
     hashValue = 0;

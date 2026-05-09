@@ -106,7 +106,6 @@ import it.unimi.dsi.fastutil.ints.IntList;
  * @see org.matheclipse.core.interfaces.ISymbol
  */
 public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
-
   /**
    * The enumeration for the properties (keys) of the map possibly associated with this <code>IAST
    * </code> object.
@@ -433,13 +432,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    */
   public SortedSet<IExpr> asSortedSet(Comparator<? super IExpr> comparator);
 
-  /**
-   * Call <code>setEvalFlags(IAST.BUILT_IN_EVALED)</code>
-   */
-  public default void builtinEvaled() {
-    setEvalFlags(IAST.BUILT_IN_EVALED);
-  }
-
   /** Set the cached hash value to zero. */
   public void clearHashCache();
 
@@ -452,6 +444,13 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @return <code>true</code>, if the binary predicate gives true in each step
    */
   public boolean compareAdjacent(BiPredicate<IExpr, IExpr> predicate);
+
+  /**
+   * Call <code>setEvalFlags(IAST.BUILT_IN_EVALED)</code>
+   */
+  // public default void builtinEvaled() {
+  // setEvalFlags(IAST.BUILT_IN_EVALED);
+  // }
 
   /**
    * Tests whether this {@code List} contains the specified object.
@@ -577,8 +576,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
     return subList(startPosition, endPosition);
   }
 
-
-
   /**
    * <p>
    * Create a copy of this <code>AST</code>, which only contains the head element of the list (i.e.
@@ -605,6 +602,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @return a copy of this <code>IAST</code> instance, which only contains the head.
    */
   public IASTAppendable copyHead(final int intialCapacity);
+
+
 
   /**
    * Copy the arguments of this AST to a list.
@@ -1147,7 +1146,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @return <code>this</code> instance
    */
   default IAST functionEvaled() {
-    addEvalFlags(IAST.BUILT_IN_EVALED);
+    // addEvalFlags(IAST.BUILT_IN_EVALED);
     return this;
   }
 
@@ -1190,6 +1189,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
     }
     return -1;
   }
+
+  public long getEvalEpoch();
 
   /**
    * Get the evaluation flags for this list.
@@ -1400,7 +1401,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    */
   public boolean hasTrigonometricFunction();
 
-
   @Override
   default <T> T headInstanceOf(Class<T> interfaceClass) {
     IExpr head = head();
@@ -1412,6 +1412,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
     }
     return null;
   }
+
 
   @Override
   default boolean isASTOrAssociation() {
@@ -1513,16 +1514,6 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
 
   /**
    * Returns <code>true</code> if all elements in this IAST from index <code>1</code> to
-   * <code>argSize()</code> have the same uniform Java class {@link UniformFlags}
-   * 
-   * @return
-   */
-  default boolean isUniform(int typeMask) {
-    return false;
-  }
-
-  /**
-   * Returns <code>true</code> if all elements in this IAST from index <code>1</code> to
    * <code>argSize()</code> have any uniform Java class {@link UniformFlags}.
    * <p>
    * <b>Note</b>: if isUniform returns <code>true</code> the arguments contain no {@link S#List}
@@ -1531,6 +1522,16 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @return
    */
   default boolean isUniform() {
+    return false;
+  }
+
+  /**
+   * Returns <code>true</code> if all elements in this IAST from index <code>1</code> to
+   * <code>argSize()</code> have the same uniform Java class {@link UniformFlags}
+   * 
+   * @return
+   */
+  default boolean isUniform(int typeMask) {
     return false;
   }
 
@@ -2105,6 +2106,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
     result.set(i, expr);
     return result;
   }
+
+  public void setEvalEpoch(long epoch);
 
   /**
    * Set the evaluation flags for this list (i.e. replace all existing flags).

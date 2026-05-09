@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.function.DoubleFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import org.hipparchus.special.elliptic.jacobi.Theta;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -219,10 +218,9 @@ public interface ISymbol extends IExpr {
   public static final int SETDELAYED_FLAG_ASSIGNED_VALUE = 0x10000002;
 
   /**
-   * Get the attrbutes of this <code>symbol</code> as symbolic constants in a list.
+   * Get the attributes of this <code>symbol</code> as symbolic constants in a list.
    *
-   * @param symbol
-   * @return
+   * @param symbol the symbol to get the attributes for
    */
   static IAST attributesList(ISymbol symbol) {
 
@@ -413,8 +411,7 @@ public interface ISymbol extends IExpr {
   /**
    * Does the attributes flag set contains the {@link ISymbol#HOLDALLCOMPLETE} bit set?
    *
-   * @param attributes
-   * @return
+   * @param attributes the attributes to check for {@link ISymbol#HOLDALLCOMPLETE}
    */
   public static boolean hasHoldAllCompleteAttribute(int attributes) {
     return (attributes & HOLDALLCOMPLETE) == HOLDALLCOMPLETE;
@@ -423,8 +420,7 @@ public interface ISymbol extends IExpr {
   /**
    * Does the attributes flag set contains the {@link ISymbol#LISTABLE} bit set?
    *
-   * @param attributes
-   * @return
+   * @param attributes the attributes to check for {@link ISymbol#LISTABLE}
    */
   public static boolean hasListableAttribute(int attributes) {
     return (attributes & LISTABLE) == LISTABLE;
@@ -673,9 +669,9 @@ public interface ISymbol extends IExpr {
   }
 
   /**
-   * Get the Attributes of this symbol (i.e. LISTABLE, FLAT, ORDERLESS,...)
+   * Get the Attributes of this symbol (i.e. {@link ISymbol#LISTABLE} LISTABLE,
+   * {@link ISymbol#FLAT}, {@link ISymbol#ORDERLESS},...)
    *
-   * @return
    * @see IBuiltInSymbol#FLAT
    */
   public int getAttributes();
@@ -683,14 +679,14 @@ public interface ISymbol extends IExpr {
   /**
    * Get the context this symbol is assigned to.
    *
-   * @return
+   * @return the context of this symbol
    */
   public Context getContext();
 
   /**
    * Get the full symbol name string with the context prefix included.
    *
-   * @return
+   * @return the full symbol name string with the context prefix included.
    */
   default String getContextSymbolName() {
     return getContext().getContextName() + getSymbolName();
@@ -727,7 +723,7 @@ public interface ISymbol extends IExpr {
   /**
    * Get the pure symbol name string without the context prefix.
    *
-   * @return
+   * @return the pure symbol name string without the context prefix.
    */
   public String getSymbolName();
 
@@ -749,20 +745,19 @@ public interface ISymbol extends IExpr {
   /**
    * Does this symbols attribute set contains the {@link ISymbol#HOLDALLCOMPLETE} attribute?
    *
-   * @return
    */
   boolean hasHoldAllCompleteAttribute();
 
   /**
-   * Does this symbols attribute set contains the <code>Listable</code> attribute?
+   * Does this symbols attribute set contains the <code>{@link #LISTABLE}</code> attribute?
    *
-   * @return <code>true</code> if this symbols attribute set contains {@link Theta} <code>Listable
-   *     </code> attribute.
+   * @return <code>true</code> if this symbols attribute set contains
+   *         <code>{@link #LISTABLE}</code> attribute.
    */
   boolean hasListableAttribute();
 
   /**
-   * Does this symbol have the <code>ISymbol.NUMERICFUNCTION</code> attribute set?
+   * Does this symbol have the <code>{@link #NUMERICFUNCTION}</code> attribute set?
    * 
    */
   default boolean hasNumericFunctionAttribute() {
@@ -770,27 +765,27 @@ public interface ISymbol extends IExpr {
   }
 
   /**
-   * Does this symbols attribute set contains the <code>OneIdentity</code> attribute?
+   * Does this symbols attribute set contains the <code>{@link #ONEIDENTITY}</code> attribute?
    *
-   * @return <code>true</code> if this symbols attribute set contains the <code>OneIdentity</code>
-   *         attribute.
+   * @return <code>true</code> if this symbols attribute set contains the
+   *         <code>{@link #ONEIDENTITY}</code> attribute.
    */
   boolean hasOneIdentityAttribute();
 
   /**
-   * Does this symbols attribute set contains the <code>Orderless</code> attribute?
+   * Does this symbols attribute set contains the <code>{@link #ORDERLESS}</code> attribute?
    *
-   * @return <code>true</code> if this symbols attribute set contains the <code>Orderless</code>
-   *         attribute.
+   * @return <code>true</code> if this symbols attribute set contains the
+   *         <code>{@link #ORDERLESS}</code> attribute.
    */
   boolean hasOrderlessAttribute();
 
   /**
-   * Does this symbols attribute set contains the <code>Flat</code> and <code>Orderless</code>
-   * attribute?
+   * Does this symbols attribute set contains the <code>{@link #FLAT}</code> and
+   * <code>{@link #ORDERLESS}</code> attribute?
    *
-   * @return <code>true</code> if this symbols attribute set contains the <code>Flat</code> and the
-   *         <code>Orderless</code> attribute.
+   * @return <code>true</code> if this symbols attribute set contains the
+   *         <code>{@link #FLAT}</code> and the <code>{@link #ORDERLESS}</code> attribute.
    */
   boolean hasOrderlessFlatAttribute();
 
@@ -812,6 +807,9 @@ public interface ISymbol extends IExpr {
     return true;
   }
 
+  /**
+   * Does this symbol have the {@link ISymbol#CONSTANT} attribute set?
+   */
   @Override
   default boolean isConstantAttribute() {
     return (getAttributes() & CONSTANT) == CONSTANT;
@@ -820,34 +818,31 @@ public interface ISymbol extends IExpr {
   /**
    * Gives <code>true</code> if this symbol is in the <code>context</code>.
    *
-   * @return
    */
   default boolean isContext(final Context context) {
     return context == getContext();
   }
 
   /**
-   * 
-   * @return <code>true</code> if this is of type {@link IBuiltInSymbol} and the symbol name starts
-   *         with a '$'; <code>false</code> otherwise.
+   * Returns <code>true</code> if this is of type {@link IBuiltInSymbol} and the symbol name starts
+   * with a '$'; <code>false</code> otherwise.
    */
   default boolean isDollarSymbol() {
     return false;
   }
 
   /**
-   * Gives <code>true</code> if the system is in server mode and cannot be modified
+   * Returns <code>true</code> if the system is in server mode and cannot be modified
    *
-   * @return
    */
   public boolean isLocked();
 
   /**
-   * Gives <code>true</code> if the system is in server mode and cannot be modified
+   * Returns <code>true</code> if the system is in server mode and cannot be modified
    *
-   * @return
    */
   public boolean isLocked(boolean packageMode);
+
 
   @Override
   default boolean isNumericFunction(boolean allowList) {
@@ -855,7 +850,7 @@ public interface ISymbol extends IExpr {
   }
 
   /**
-   * Does this symbol have the {@link ISymbol#NUMERICFUNCTION} attribute set?
+   * Does this symbol has the {@link ISymbol#NUMERICFUNCTION} attribute set?
    * 
    * @deprecated use {@link #hasNumericFunctionAttribute()} instead
    */
@@ -865,7 +860,7 @@ public interface ISymbol extends IExpr {
   }
 
   /**
-   * Does this symbol have the {@link ISymbol#ONEIDENTITY} attribute set?
+   * Does this symbol has the {@link ISymbol#ONEIDENTITY} attribute set?
    * 
    * @deprecated use {@link #hasOneIdentityAttribute()} instead
    */
@@ -875,7 +870,7 @@ public interface ISymbol extends IExpr {
   }
 
   /**
-   * Does this symbol have the {@link ISymbol#PROTECTED} attribute set?
+   * Does this symbol has the {@link ISymbol#PROTECTED} attribute set?
    * 
    * @deprecated use {@link #hasProtectedAttribute()} instead
    */
@@ -885,19 +880,21 @@ public interface ISymbol extends IExpr {
   }
 
   /**
-   * Tests if this symbols name equals the given string
+   * Tests if this symbols name equals the given string. The names are compared without the context
+   * string.
    *
-   * @param symbolName
-   * @return
+   * @param symbolName the symbol name to compare
+   * @return <code>true</code> if the symbol name equals the given string, <code>false</code>
+   *         otherwise
    */
   @Override
   public boolean isString(String symbolName);
 
   /**
-   * Returns <code>true</code>, if this symbol is in the set of defined <code>ids</code>.
+   * Returns <code>true</code>, if this symbol is in the set of defined
+   * {@link org.matheclipse.core.expression.ID}s.
    *
    * @param ids the symbol ordinal number
-   * @return
    * @see org.matheclipse.core.expression.ID
    */
   default boolean isSymbolID(int... ids) {
@@ -910,7 +907,6 @@ public interface ISymbol extends IExpr {
    * </code> setting.
    *
    * @param name the symbol name
-   * @return
    */
   public boolean isSymbolName(String name);
 
@@ -938,9 +934,6 @@ public interface ISymbol extends IExpr {
    * @param function applys the function to a <code>double</code> value, resulting in an object of
    *        type {@code IExpr}.
    * @return the resulting expression from the function or <code>F.NIL</code>.
-   * @see org.matheclipse.core.reflection.system.Abs
-   * @see org.matheclipse.core.reflection.system.Ceiling
-   * @see org.matheclipse.core.reflection.system.Floor
    */
   default IExpr mapConstantDouble(DoubleFunction<IExpr> function) {
     return F.NIL;
@@ -952,7 +945,6 @@ public interface ISymbol extends IExpr {
    * values.
    *
    * @param args
-   * @return
    */
   default IExpr of(boolean... args) {
     IExpr[] array = new IExpr[args.length];
@@ -1017,7 +1009,6 @@ public interface ISymbol extends IExpr {
    * values.
    *
    * @param args the string arguments of the function
-   * @return
    */
   default IExpr of(String... args) {
     IExpr[] array = new IExpr[args.length];
@@ -1043,8 +1034,7 @@ public interface ISymbol extends IExpr {
    * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>,
    * The <code>args</code> are converted from Java double to {@link INum} values.
    *
-   * @param args
-   * @return
+   * @param args the double arguments of the function
    */
   default double ofN(double... args) throws ArgumentTypeException {
     IExpr[] array = new IExpr[args.length];
@@ -1070,7 +1060,6 @@ public interface ISymbol extends IExpr {
    * {@link Object2Expr#convert(Object, boolean, boolean)}.
    *
    * @param args the objects which should be used as arguments
-   * @return
    */
   default IExpr ofObject(Object... args) {
     IExpr[] array = new IExpr[args.length];
@@ -1100,10 +1089,10 @@ public interface ISymbol extends IExpr {
   public boolean ofQ(IExpr... args);
 
   /**
-   * Get the ordinal number of this built-in symbol in the enumeration of built-in symbols. If this
-   * is no built-in symbol return <code>-1</code> (ID.UNKNOWN)
+   * Return the ordinal number ({@link org.matheclipse.core.expression.ID}) of this built-in symbol
+   * in the enumeration of built-in symbols. If this is no built-in symbol return
+   * {@link org.matheclipse.core.expression.ID#UNKNOWN} (value <code>-1</code>)
    *
-   * @return
    */
   default int ordinal() {
     return ID.UNKNOWN;
@@ -1186,8 +1175,7 @@ public interface ISymbol extends IExpr {
    * <p>
    * Deprecated: don't use dynamically called methods.
    *
-   * @param pmEvaluator
-   * @return
+   * @param pmEvaluator the pattern matcher and invoker which should be associated with this symbol
    */
   @Deprecated
   public void putDownRule(final PatternMatcherAndInvoker pmEvaluator);
@@ -1249,12 +1237,11 @@ public interface ISymbol extends IExpr {
       EvalEngine engine);
 
   /**
-   * Apply the ast to the currently assigned value of the symbol and reassign the result value to
-   * the symbol. Used for functions like AppendTo, Decrement, Increment,...
+   * Apply the <code>ast</code> to the currently assigned value of the symbol and reassign the
+   * result value to the symbol. Used for functions like AppendTo, Decrement, Increment,...
    *
-   * @param ast
-   * @param ast the ast which should be evaluated by replacing the first argument with the current
-   *        value of the symbol
+   * @param ast the <code>ast</code> which should be evaluated by replacing the first argument with
+   *        the current value of the symbol
    * @param functionSymbol if this method throws an exception the symbol will be displayed in the
    *        exceptions message
    * @param engine the evaluation engine

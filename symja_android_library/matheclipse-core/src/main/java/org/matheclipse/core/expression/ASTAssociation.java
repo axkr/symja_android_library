@@ -257,26 +257,26 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   /** {@inheritDoc} */
   @Override
   public IExpr evaluate(EvalEngine engine) {
-    if (isEvalFlagOff(IAST.BUILT_IN_EVALED)) {
-      IAssociation result = F.NIL;
-      for (int i = 1; i < size(); i++) {
-        IExpr arg = getRule(i);
-        if (arg.isRule()) {
-          // for Rules eval rhs / for RuleDelayed don't
-          IExpr temp = engine.evaluateNIL(arg.second());
-          if (temp.isPresent()) {
-            if (result.isNIL()) {
-              result = copy();
-            }
-            result.set(i, getRule(i).setAtCopy(2, temp));
+    // if (isEvalFlagOff(IAST.BUILT_IN_EVALED)) {
+    IAssociation result = F.NIL;
+    for (int i = 1; i < size(); i++) {
+      IExpr arg = getRule(i);
+      if (arg.isRule()) {
+        // for Rules eval rhs / for RuleDelayed don't
+        IExpr temp = engine.evaluateNIL(arg.second());
+        if (temp.isPresent()) {
+          if (result.isNIL()) {
+            result = copy();
           }
+          result.set(i, getRule(i).setAtCopy(2, temp));
         }
       }
+      // }
       if (result.isPresent()) {
-        result.builtinEvaled();
+        // result.builtinEvaled();
         return result;
       }
-      builtinEvaled();
+      // builtinEvaled();
     }
     return F.NIL;
   }

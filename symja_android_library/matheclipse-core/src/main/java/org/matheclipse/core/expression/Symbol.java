@@ -112,6 +112,7 @@ import org.matheclipse.parser.client.ParserConfig;
  */
 @NotThreadSafe
 public class Symbol implements ISymbol, Serializable {
+
   private static final long serialVersionUID = 6048546131696113624L;
 
   protected transient Context fContext;
@@ -170,6 +171,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public final void addAttributes(int attributes) {
     fAttributes |= attributes;
+    EvalEngine.incEpoch();
     if (isLocked()) {
       throw new RuleCreationError(this);
     }
@@ -180,6 +182,7 @@ public class Symbol implements ISymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final ISymbol addEvalFlags(int flags) {
+    EvalEngine.incEpoch();
     fEvalFlags |= flags;
     return this;
   }
@@ -209,6 +212,7 @@ public class Symbol implements ISymbol, Serializable {
     // }
     // }
     fValue = value;
+    EvalEngine.incEpoch();
     clearEvalFlags(DIRTY_FLAG_ASSIGNED_VALUE);
     if (setDelayed) {
       addEvalFlags(SETDELAYED_FLAG_ASSIGNED_VALUE);
@@ -244,6 +248,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public void clearAttributes(int attributes) {
     fAttributes &= (CLEAR_MASK ^ attributes);
+    EvalEngine.incEpoch();
     if (isLocked()) {
       throw new RuleCreationError(this);
     }
@@ -260,6 +265,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public void clearValue(IExpr resetValue) {
     fValue = resetValue;
+    EvalEngine.incEpoch();
     clearEvalFlags(DIRTY_FLAG_ASSIGNED_VALUE);
   }
 
@@ -447,14 +453,6 @@ public class Symbol implements ISymbol, Serializable {
           return (INumber) result;
         }
       }
-      // } else {
-      // IExpr temp = evalDownRule(EvalEngine.get(), this);
-      // if (temp.isPresent() && temp.isNumericFunction()) {
-      // IExpr result = F.evaln(this);
-      // if (result.isNumber()) {
-      // return (INumber) result;
-      // }
-      // }
     }
     return null;
   }
@@ -954,6 +952,7 @@ public class Symbol implements ISymbol, Serializable {
     if (fRulesData == null) {
       fRulesData = new RulesData();
     }
+    EvalEngine.incEpoch();
     return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
   }
 
@@ -970,6 +969,7 @@ public class Symbol implements ISymbol, Serializable {
     if (fRulesData == null) {
       fRulesData = new RulesData();
     }
+    EvalEngine.incEpoch();
     return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
   }
 
@@ -979,6 +979,7 @@ public class Symbol implements ISymbol, Serializable {
     if (fRulesData == null) {
       fRulesData = new RulesData();
     }
+    EvalEngine.incEpoch();
     fRulesData.insertMatcher(pmEvaluator);
   }
 
@@ -987,6 +988,7 @@ public class Symbol implements ISymbol, Serializable {
     if (fRulesData == null) {
       fRulesData = new RulesData();
     }
+    EvalEngine.incEpoch();
     fRulesData.getMessages().put(messageName, message);
   }
 
@@ -1013,6 +1015,7 @@ public class Symbol implements ISymbol, Serializable {
     if (fRulesData == null) {
       fRulesData = new RulesData();
     }
+    EvalEngine.incEpoch();
     return fRulesData.putUpRule(setSymbol, equalRule, leftHandSide, rightHandSide);
   }
 
@@ -1135,8 +1138,10 @@ public class Symbol implements ISymbol, Serializable {
     }
     if (leftHandSide.isSymbol()) {
       clearValue(null);
+      EvalEngine.incEpoch();
       return true;
     } else if (fRulesData != null) {
+      EvalEngine.incEpoch();
       return fRulesData.removeRule(setSymbol, equalRule, leftHandSide);
     }
     return false;
@@ -1146,6 +1151,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public void setAttributes(int attributes) {
     fAttributes = attributes;
+    EvalEngine.incEpoch();
     if (isLocked()) {
       throw new RuleCreationError(this);
     }
@@ -1173,6 +1179,7 @@ public class Symbol implements ISymbol, Serializable {
   @Override
   public void setRulesData(RulesData rd) {
     fRulesData = rd;
+    EvalEngine.incEpoch();
   }
 
   @Override

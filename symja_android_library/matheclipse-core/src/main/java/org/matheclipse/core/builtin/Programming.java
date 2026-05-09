@@ -2433,7 +2433,7 @@ public final class Programming {
       if (ast.isAST1()) {
         return ast.arg1();
       }
-      if (ast.size() < 3 || ast.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+      if (ast.size() < 3) { // || ast.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
         return F.NIL;
       }
 
@@ -2498,7 +2498,7 @@ public final class Programming {
     }
 
     public IExpr sparseEvaluate(final IAST ast, ISparseArray arg1, EvalEngine engine) {
-      ast.builtinEvaled();
+      // ast.builtinEvaled();
       if (ast.size() >= 3) {
         IASTMutable evaledAST = F.NIL;
         int astSize = ast.size();

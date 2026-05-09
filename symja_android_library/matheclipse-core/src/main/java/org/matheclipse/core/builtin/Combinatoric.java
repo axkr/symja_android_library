@@ -272,7 +272,8 @@ public final class Combinatoric {
       if (cycles.arg1().isList()) {
         IAST mainList = (IAST) cycles.arg1();
         if (mainList.isEmptyList()) {
-          cycles.builtinEvaled();
+          cycles.setEvalFlags(IAST.BUILT_IN_EVALED);
+          // cycles.builtinEvaled();
           return F.NIL;
         }
         if (!mainList.isListOfLists()) {
@@ -353,7 +354,8 @@ public final class Combinatoric {
 
         EvalAttributes.sort(result, Comparators.LEXICAL_COMPARATOR);
         IAST resultCycles = F.Cycles(result);
-        resultCycles.builtinEvaled();
+        resultCycles.setEvalFlags(IAST.BUILT_IN_EVALED);
+        // resultCycles.builtinEvaled();
         return resultCycles;
       }
       if (!quiet) {
@@ -371,7 +373,7 @@ public final class Combinatoric {
         }
         IExpr temp = canonicalizeCycles(ast, false, engine);
         if (temp.equals(ast)) {
-          ast.builtinEvaled();
+          ast.setEvalFlags(IAST.BUILT_IN_EVALED);
           return F.NIL;
         }
         return temp;

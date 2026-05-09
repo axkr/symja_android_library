@@ -121,13 +121,13 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   private IExpr fValue = null;
 
 
-  /** constructor for serialization */
-  protected BuiltInDummy() {}
-
   /**
    * The evaluation class of this built-in-function.
    */
   private transient IFunctionEvaluator fEvaluator;
+
+  /** constructor for serialization */
+  protected BuiltInDummy() {}
 
   public BuiltInDummy(final String symbolName) {
     super();
@@ -171,6 +171,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   @Override
   public final void addAttributes(final int attributes) {
     fAttributes |= attributes;
+    EvalEngine.incEpoch();
     if (isLocked()) {
       throw new RuleCreationError(this);
     }
@@ -213,6 +214,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
       return;
     }
     fValue = value;
+    EvalEngine.incEpoch();
     clearEvalFlags(DIRTY_FLAG_ASSIGNED_VALUE);
     if (setDelayed) {
       addEvalFlags(SETDELAYED_FLAG_ASSIGNED_VALUE);
@@ -246,6 +248,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   @Override
   public final void clearAttributes(final int attributes) {
     fAttributes &= (CLEAR_MASK ^ attributes);
+    EvalEngine.incEpoch();
     if (isLocked()) {
       throw new RuleCreationError(this);
     }
@@ -262,6 +265,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   @Override
   public void clearValue(IExpr resetValue) {
     fValue = null;
+    EvalEngine.incEpoch();
     clearEvalFlags(DIRTY_FLAG_ASSIGNED_VALUE);
   }
 
@@ -317,13 +321,6 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public IAST fullDefinition() {
-    IAST list = this.makeList();
-    return ISymbol.fullDefinitionList(list);
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public String definitionToString() {
     StringBuilder buf = new StringBuilder();
     IAST attributesList = ISymbol.attributesList(this);
@@ -348,12 +345,6 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
       }
     }
     return buf.toString();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public String fullDefinitionToString() {
-    return ISymbol.fullDefinitionListToString(this.makeList());
   }
 
   /** {@inheritDoc} */
@@ -383,16 +374,6 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   }
 
   /** {@inheritDoc} */
-  // @Override
-  // public final Complex evalComplex() {
-  // INumber number = evalNumber();
-  // if (number != null) {
-  // return number.complexNumValue().complexValue();
-  // }
-  // throw new ArgumentTypeException("conversion into a complex numeric value is not possible!");
-  // }
-
-  /** {@inheritDoc} */
   @Override
   public final IExpr evalDownRule(final EvalEngine engine, final IExpr expression) {
     if (fRulesData == null) {
@@ -411,6 +392,16 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     }
     return F.NIL;
   }
+
+  /** {@inheritDoc} */
+  // @Override
+  // public final Complex evalComplex() {
+  // INumber number = evalNumber();
+  // if (number != null) {
+  // return number.complexNumValue().complexValue();
+  // }
+  // throw new ArgumentTypeException("conversion into a complex numeric value is not possible!");
+  // }
 
   /** {@inheritDoc} */
   @Override
@@ -495,6 +486,19 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
+  public IAST fullDefinition() {
+    IAST list = this.makeList();
+    return ISymbol.fullDefinitionList(list);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public String fullDefinitionToString() {
+    return ISymbol.fullDefinitionListToString(this.makeList());
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public String fullFormString() {
     if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName);
@@ -570,6 +574,12 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     return ISymbol.hasFlatAttribute(fAttributes);
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public int hashCode() {
+    return (fSymbolName == null) ? 31 : fSymbolName.hashCode();
+  }
+
   @Override
   public final boolean hasHoldAllCompleteAttribute() {
     return ISymbol.hasHoldAllCompleteAttribute(fAttributes);
@@ -578,12 +588,6 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   @Override
   public final boolean hasListableAttribute() {
     return ISymbol.hasListableAttribute(fAttributes);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public int hashCode() {
-    return (fSymbolName == null) ? 31 : fSymbolName.hashCode();
   }
 
   @Override
@@ -599,6 +603,12 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   @Override
   public boolean hasOrderlessFlatAttribute() {
     return (fAttributes & FLATORDERLESS) == FLATORDERLESS;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean hasProtectedAttribute() {
+    return false;
   }
 
   /** {@inheritDoc} */
@@ -745,6 +755,18 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     return false;
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public boolean isNonNegative() {
+    if (isNumericFunction(true)) {
+      IExpr temp = F.evaln(this);
+      if (temp.isReal() && temp.isNonNegative()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   public boolean isNumericFunction(boolean allowList) {
     if (isConstantAttribute()) {
@@ -804,18 +826,6 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public boolean isNonNegative() {
-    if (isNumericFunction(true)) {
-      IExpr temp = F.evaln(this);
-      if (temp.isReal() && temp.isNonNegative()) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public boolean isPositive() {
     if (isNumericFunction(true)) {
       IExpr temp = F.evaln(this);
@@ -823,12 +833,6 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
         return true;
       }
     }
-    return false;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean hasProtectedAttribute() {
     return false;
   }
 
@@ -950,6 +954,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     if (fRulesData == null) {
       fRulesData = new RulesData();
     }
+    EvalEngine.incEpoch();
     return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
   }
 
@@ -967,6 +972,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     if (fRulesData == null) {
       fRulesData = new RulesData();
     }
+    EvalEngine.incEpoch();
     return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
   }
 
@@ -1088,8 +1094,10 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     }
     if (leftHandSide.isSymbol()) {
       clearValue(null);
+      EvalEngine.incEpoch();
       return true;
     } else if (fRulesData != null) {
+      EvalEngine.incEpoch();
       return fRulesData.removeRule(setSymbol, equalRule, leftHandSide);
     }
     return false;
@@ -1099,6 +1107,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   @Override
   public final void setAttributes(final int attributes) {
     fAttributes = attributes;
+    EvalEngine.incEpoch();
     if (isLocked()) {
       throw new RuleCreationError(this);
     }
@@ -1136,6 +1145,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   @Override
   public void setRulesData(RulesData rd) {
     fRulesData = rd;
+    EvalEngine.incEpoch();
   }
 
   @Override

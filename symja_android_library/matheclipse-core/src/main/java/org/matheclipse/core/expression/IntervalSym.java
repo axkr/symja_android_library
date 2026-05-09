@@ -17,6 +17,11 @@ import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class IntervalSym {
+  /**
+   * The evaluation flag for normalized intervals. Normalized intervals are sorted and overlapping
+   * intervals are merged.
+   */
+  private static final int INTERVAL_NORMALIZED = IAST.BUILT_IN_EVALED;
 
   /**
    * IExprProcessor interface method boolean process (IExpr min, IExpr max, IASTAppendable result,
@@ -677,11 +682,13 @@ public class IntervalSym {
         result.set(j, list1);
       }
       if (evaled) {
-        result.builtinEvaled();
+        result.setEvalFlags(INTERVAL_NORMALIZED);
+        // result.builtinEvaled();
         return result;
       }
       if (intervalList instanceof IASTMutable) {
-        intervalList.builtinEvaled();
+        intervalList.setEvalFlags(INTERVAL_NORMALIZED);
+        // intervalList.builtinEvaled();
         if (EvalAttributes.sort((IASTMutable) intervalList, INTERVAL_COMPARATOR)) {
           return intervalList;
         }
@@ -1122,10 +1129,11 @@ public class IntervalSym {
    * @param expr the expression to append
    */
   private static void appendWithoutNaN(IASTAppendable list, IExpr expr) {
-    if (!expr.isIndeterminate() ) {
+    if (!expr.isIndeterminate()) {
       list.append(expr);
-    }  
+    }
   }
+
   public static IExpr times(final IAST ast1, final IAST ast2) {
     IAST interval1 = normalize(ast1);
     IAST interval2 = normalize(ast2);

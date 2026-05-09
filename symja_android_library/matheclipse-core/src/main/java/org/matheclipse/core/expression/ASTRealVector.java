@@ -486,6 +486,7 @@ public final class ASTRealVector extends AbstractAST
   @Override
   public IExpr set(int location, IExpr object) {
     hashValue = 0;
+    fEvalEpoch = 0L;
     if (object instanceof Num) {
       double value = vector.getEntry(location - 1);
       vector.setEntry(location - 1, ((Num) object).reDoubleValue());
