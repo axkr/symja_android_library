@@ -34,6 +34,7 @@ public final class FunctionDefinitions {
       S.Beep.setEvaluator(new org.matheclipse.core.reflection.system.Beep());
       S.BezierFunction.setEvaluator(new org.matheclipse.core.reflection.system.BezierFunction());
       S.BinLists.setEvaluator(new org.matheclipse.core.reflection.system.BinLists());
+      S.CentralFeature.setEvaluator(new org.matheclipse.core.reflection.system.CentralFeature());
       S.ColorData.setEvaluator(new org.matheclipse.core.reflection.system.ColorData());
       S.ColorDataFunction
           .setEvaluator(new org.matheclipse.core.reflection.system.ColorDataFunction());
