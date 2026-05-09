@@ -516,13 +516,24 @@ public class D extends AbstractFunctionEvaluator {
     if (functionOfX instanceof ASTSeriesData) {
       ASTSeriesData series = ((ASTSeriesData) functionOfX);
       if (series.expansionVariable().equals(x)) {
-        final IExpr temp = ((ASTSeriesData) functionOfX).derive(x);
+        final IExpr temp = series.derive(x);
         if (temp != null) {
           return temp;
         }
         return F.NIL;
       }
-      return F.C0;
+      // x is not the expansion variable.
+      // If the entire series (coefficients + expansion point) is free of x, return 0.
+      if (series.isFree(x, true)) {
+        return F.C0;
+      }
+      // Otherwise differentiate through the series (chain rule on expansion point and/or
+      // coefficient differentiation).
+      final IExpr temp = series.derive(x);
+      if (temp != null) {
+        return temp;
+      }
+      return F.NIL;
     }
     if (functionOfX.isFree(x, true)) {
       return freeOfX(functionOfX, engine);
