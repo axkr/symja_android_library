@@ -6,6 +6,20 @@ import org.matheclipse.core.system.ExprEvaluatorTestCase;
 public class DTest extends ExprEvaluatorTestCase {
 
   @Test
+  public void testDSeries() {
+    check("Series(F(x,z),{x, g(y), 2}, {z, a, 2}) //InputForm", //
+        "SeriesData(x,g(y),{SeriesData(z,a,{F(g(y),a),Derivative(0,1)[F][g(y),a],Derivative(\n" //
+            + "0,2)[F][g(y),a]/2},0,3,1),SeriesData(z,a,{Derivative(1,0)[F][g(y),a],Derivative(\n" //
+            + "1,1)[F][g(y),a],Derivative(1,2)[F][g(y),a]/2},0,3,1),SeriesData(z,a,{Derivative(\n" //
+            + "2,0)[F][g(y),a]/2,Derivative(2,1)[F][g(y),a]/2,Derivative(2,2)[F][g(y),a]/4},0,3,\n" //
+            + "1)},0,3,1)");
+
+    check("D(Series(F(x,z),{x, g(y), 2}, {z, a, 2}), y)//InputForm", //
+        "SeriesData(x,g(y),{},2,2,1)");
+
+  }
+
+  @Test
   public void testDZTransform() {
     check("D(ZTransform(a, n, z), {z, 2})", //
         "a*(-2/(1-z)^2+(-2*z)/(1-z)^3)");

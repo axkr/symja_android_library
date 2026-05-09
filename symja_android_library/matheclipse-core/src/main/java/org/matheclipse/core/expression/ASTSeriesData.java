@@ -1121,8 +1121,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     int newMin;
     int newTruncate;
     if (scaleDen > 1) {
-      // Mathematica convention: last original coefficient maps to the new truncation
-      // boundary and is dropped.
+      // last original coefficient maps to the new truncation boundary and is dropped.
       newMin = minExponent * scaleDen + shift;
       newTruncate = (truncateOrder - 1) * scaleDen + shift;
     } else {
@@ -1448,27 +1447,93 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       }
       return new ASTSeriesData(x, expansionPoint, 0, 0, puiseuxDenominator);
     } else {
-      ASTSeriesData result = new ASTSeriesData(expansionVariable, expansionPoint, minExponent,
-          exponentBound, truncateOrder, puiseuxDenominator, new OpenIntToIExprHashMap<IExpr>());
-      boolean hasNonZero = false;
-      for (int i = minExponent; i < exponentBound; i++) {
-        IExpr coeff = this.coefficient(i);
-        if (coeff != null && !coeff.isZero()) {
-          IExpr dCoeff = engine.evaluate(F.D(coeff, x));
-          result.setCoeff(i, dCoeff);
-          if (!dCoeff.isZero()) {
-            hasNonZero = true;
+      // Check if the expansion point depends on x.
+      IExpr dx0 = expansionPoint.isFree(x, true) ? F.C0 : engine.evaluate(F.D(expansionPoint, x));
+
+      if (dx0.isZero()) {
+        // Expansion point is free of x — only differentiate the coefficients.
+        ASTSeriesData result = new ASTSeriesData(expansionVariable, expansionPoint, minExponent,
+            exponentBound, truncateOrder, puiseuxDenominator, new OpenIntToIExprHashMap<IExpr>());
+        boolean hasNonZero = false;
+        for (int i = minExponent; i < exponentBound; i++) {
+          IExpr coeff = this.coefficient(i);
+          if (coeff != null && !coeff.isZero()) {
+            IExpr dCoeff = engine.evaluate(F.D(coeff, x));
+            result.setCoeff(i, dCoeff);
+            if (!dCoeff.isZero()) {
+              hasNonZero = true;
+            }
           }
         }
+        if (!hasNonZero) {
+          ASTSeriesData zeroSeries = new ASTSeriesData(expansionVariable, expansionPoint, 0,
+              truncateOrder, puiseuxDenominator);
+          zeroSeries.setCoeff(0, F.C0);
+          return zeroSeries;
+        }
+        return result;
       }
-      if (!hasNonZero) {
-        ASTSeriesData zeroSeries = new ASTSeriesData(expansionVariable, expansionPoint, 0,
-            truncateOrder, puiseuxDenominator);
-        zeroSeries.setCoeff(0, F.C0);
-        return zeroSeries;
+
+      // Expansion point depends on x — apply the full chain rule:
+      // d/dx[ c_i * (t - x0(x))^(i/den) ]
+      // = D(c_i, x) * (t-x0)^(i/den)
+      // - c_i * (i/den) * D(x0,x) * (t-x0)^((i-den)/den)
+      //
+      // The shift-down (second) term reduces the effective truncation by one Puiseux
+      // step: we would need the coefficient c_{nmax} to complete the term at index
+      // nmax-1 in the output, but that coefficient is part of the O() remainder.
+      int newTrunc = truncateOrder - puiseuxDenominator;
+      int newMin = minExponent - puiseuxDenominator;
+
+      // Degenerate: no room left — return a pure O() remainder.
+      if (newTrunc <= newMin) {
+        return new ASTSeriesData(expansionVariable, expansionPoint, newTrunc, newTrunc,
+            puiseuxDenominator);
+      }
+
+      // Start with an empty series; setCoeff() will track minExponent/exponentBound.
+      ASTSeriesData result = new ASTSeriesData(expansionVariable, expansionPoint, newMin, newMin,
+          newTrunc, puiseuxDenominator, new OpenIntToIExprHashMap<IExpr>());
+
+      for (int i = minExponent; i < exponentBound; i++) {
+        IExpr coeff = this.coefficient(i);
+        if (coeff == null || coeff.isZero()) {
+          continue;
+        }
+
+        // Term 1: D(c_i, x) at index i — only if i is still within the new truncation.
+        if (i < newTrunc) {
+          IExpr dCoeff = engine.evaluate(F.D(coeff, x));
+          if (!isEffectivelyZero(dCoeff)) {
+            IExpr existing = result.coefficient(i);
+            IExpr combined =
+                isEffectivelyZero(existing) ? dCoeff : engine.evaluate(F.Plus(existing, dCoeff));
+            result.setCoeff(i, combined);
+          }
+        }
+
+        // Term 2: -c_i * (i/den) * D(x0,x) at shifted index i-den.
+        int shiftedIdx = i - puiseuxDenominator;
+        IExpr multiplier =
+            puiseuxDenominator == 1 ? F.ZZ(i) : F.QQ(i, puiseuxDenominator).normalize();
+        IExpr chainTerm = engine.evaluate(F.Times(F.CN1, coeff, multiplier, dx0));
+        if (!isEffectivelyZero(chainTerm)) {
+          IExpr existing = result.coefficient(shiftedIdx);
+          IExpr combined = isEffectivelyZero(existing) ? chainTerm
+              : engine.evaluate(F.Plus(existing, chainTerm));
+          result.setCoeff(shiftedIdx, combined);
+        }
+      }
+
+      // If all terms cancelled (e.g. Taylor series around x0(x)), return the canonical
+      // empty O() series at the new truncation
+      if (isEffectivelyZero(result)) {
+        return new ASTSeriesData(expansionVariable, expansionPoint, newTrunc, newTrunc,
+            puiseuxDenominator);
       }
       return result;
     }
+
   }
 
   /**
@@ -1744,6 +1809,22 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
   @Override
   public boolean isAST3() {
+    return false;
+  }
+
+  /**
+   * Returns {@code true} if {@code value} is the integer zero or is an {@link ASTSeriesData} whose
+   * coefficient map is entirely zero (i.e. a pure O() remainder). Used to guard {@link #setCoeff}
+   * and the chain-rule differentiation branch so that cancellations that collapse a nested series
+   * to an empty SeriesData are treated the same as exact zero.
+   */
+  private static boolean isEffectivelyZero(IExpr value) {
+    if (value.isZero()) {
+      return true;
+    }
+    if (value instanceof ASTSeriesData) {
+      return ((ASTSeriesData) value).isProbableZero();
+    }
     return false;
   }
 
@@ -2148,7 +2229,14 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   }
 
   public void setCoeff(int k, IExpr value) {
-    if (value.isZero() || k >= truncateOrder) {
+    if (k >= truncateOrder) {
+      return;
+    }
+    if (isEffectivelyZero(value)) {
+      // The new combined value cancelled to zero — remove any existing entry at k.
+      if (coefficientMap.containsKey(k)) {
+        setZero(k);
+      }
       return;
     }
     coefficientMap.put(k, value);
