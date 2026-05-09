@@ -782,10 +782,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{0,0,1},{0,0,0},{0,0,0}}");
     check("Eigenvectors({{1,0,0,0,0},{3,1,0,0,0},{6,3,2,0,0},{10,6,3,2,0},{15,10,6,3,2}})", //
         "{{0,0,0,0,1},{0,0,0,0,0},{0,0,0,0,0},{0,-1,3,-3,1},{0,0,0,0,0}}");
-    check("Eigenvectors({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}) // MatrixForm", //
-        "{{-1/2+3/2*Sqrt(3/11),1/4+3/4*Sqrt(3/11),1},\n" //
-            + " {-1/2-3/2*Sqrt(3/11),1/4-3/4*Sqrt(3/11),1},\n" //
-            + " {1,-2,1}}");
+    check("Eigenvectors({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
+        "{{-1/2+3/2*Sqrt(3/11),1/4+3/4*Sqrt(3/11),1},{-1/2-3/2*Sqrt(3/11),1/4-3/4*Sqrt(3/\n" //
+            + "11),1},{1,-2,1}}");
 
     check("Eigenvalues({{1.1, 2.2, 3.25}, {0.76, 4.6, 5}, {0.1, 0.1, 6.1}}) // MatrixForm", //
         "{6.60674,4.52536,0.667901}");
@@ -2051,6 +2050,12 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testQRDecomposition() {
+    check("QRDecomposition({{1, 2, 3}, {4, 5, 6}})", //
+        "{\n" //
+            + "{{-1/Sqrt(17),-4/Sqrt(17)},\n" //
+            + " {4/Sqrt(17),-1/Sqrt(17)}},\n" //
+            + "{{-Sqrt(17),-22/Sqrt(17),-27/Sqrt(17)},\n" //
+            + " {0,3/Sqrt(17),6/Sqrt(17)}}}");
     // check(
     // "N(QRDecomposition({{1, 2}, {3, 4}, {5, 6}}), 50)", //
     // "{\n" //
@@ -2107,12 +2112,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             + " {0,-175,70},\n" //
             + " {0,0,35}}}");
 
-    check("QRDecomposition({{1, 2, 3}, {4, 5, 6}})", //
-        "{\n" //
-            + "{{-1/Sqrt(17),-4/Sqrt(17)},\n" //
-            + " {4/Sqrt(17),-1/Sqrt(17)}},\n" //
-            + "{{-Sqrt(17),-22/Sqrt(17),-27/Sqrt(17)},\n" //
-            + " {0,3/Sqrt(17),6/Sqrt(17)}}}");
+
   }
 
   @Test

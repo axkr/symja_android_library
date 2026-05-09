@@ -5378,7 +5378,6 @@ public final class LinearAlgebra {
       boolean togetherMode = engine.isTogetherMode();
 
       try {
-        engine.setTogetherMode(true);
         final IExpr arg1 = ast.arg1();
         int[] dim = arg1.isMatrix();
         if (dim != null) {
@@ -5390,13 +5389,18 @@ public final class LinearAlgebra {
               engine.setTogetherMode(true);
               FieldQRDecomposition<IExpr> ed = new FieldQRDecomposition<IExpr>(matrix);
               FieldMatrix<IExpr> q = ed.getQ();
-              if (Convert.matrix2List(q) != null) {
-                q = q.transpose();
-                FieldMatrix<IExpr> r = ed.getR();
-                if (Convert.matrix2List(r) != null) {
-                  return F.list(Convert.matrix2List(q), Convert.matrix2List(r));
+              // IASTAppendable qMatrix = Convert.matrix2List(q);
+              // if (qMatrix != null) {
+              q = q.transpose();
+              FieldMatrix<IExpr> r = ed.getR();
+              IASTAppendable rMatrix = Convert.matrix2List(r);
+              if (rMatrix != null) {
+                IASTAppendable qMatrix = Convert.matrix2List(q);
+                if (qMatrix != null) {
+                  return F.list(qMatrix, rMatrix);
                 }
               }
+              // }
               return F.NIL;
             }
           }
@@ -5416,7 +5420,7 @@ public final class LinearAlgebra {
             }
           }
           final FieldMatrix<Complex> complexMatrix = Convert.list2ComplexMatrix(arg1);
-          if (complexMatrix != null) {
+          if (complexMatrix != null) { 
             FieldQRDecomposition<Complex> ed = new FieldQRDecomposition<Complex>(complexMatrix);
             FieldMatrix<Complex> q = ed.getQ();
             if (Convert.complexMatrix2List(q) != null) {

@@ -1723,7 +1723,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   /** {@inheritDoc} */
   @Override
   public IExpr evaluate(EvalEngine engine) {
-    if (isEvalFlagOff(IAST.BUILT_IN_EVALED)) {
+    // if (isEvalFlagOff(IAST.BUILT_IN_EVALED)) {
       boolean containsNumericArg = false;
       boolean evaled = false;
       IExpr newDefaultValue = fDefaultValue;
@@ -1761,18 +1761,20 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       if (evaled) {
         SparseArrayExpr result = new SparseArrayExpr(trie, fDimension, newDefaultValue, false);
         if (containsNumericArg) {
-          result.addEvalFlags(IAST.BUILT_IN_EVALED | IAST.CONTAINS_NUMERIC_ARG);
-        } else {
-          result.addEvalFlags(IAST.BUILT_IN_EVALED);
+          result.addEvalFlags(IAST.CONTAINS_NUMERIC_ARG);
+          // result.addEvalFlags(IAST.BUILT_IN_EVALED | IAST.CONTAINS_NUMERIC_ARG);
+          // } else {
+          // result.addEvalFlags(IAST.BUILT_IN_EVALED);
         }
         return result;
       }
       if (containsNumericArg) {
-        addEvalFlags(IAST.BUILT_IN_EVALED | IAST.CONTAINS_NUMERIC_ARG);
-      } else {
-        addEvalFlags(IAST.BUILT_IN_EVALED);
+        addEvalFlags(IAST.CONTAINS_NUMERIC_ARG);
+        // addEvalFlags(IAST.BUILT_IN_EVALED | IAST.CONTAINS_NUMERIC_ARG);
+        // } else {
+        // addEvalFlags(IAST.BUILT_IN_EVALED);
       }
-    }
+      // }
     return F.NIL;
   }
 
