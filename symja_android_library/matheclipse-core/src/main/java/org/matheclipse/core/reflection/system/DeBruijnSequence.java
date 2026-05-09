@@ -2,10 +2,15 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -24,13 +29,10 @@ public class DeBruijnSequence extends AbstractEvaluator {
     IExpr arg1 = ast.arg1();
     IExpr arg2 = ast.arg2();
 
-    if (!arg2.isInteger()) {
-      return F.NIL;
-    }
-
     int n = arg2.toIntDefault();
-    if (n < 1) {
-      return F.NIL;
+    if (!arg2.isInteger() || n < 1) {
+      // Positive machine-sized integer expected at position `2` in `1`.
+      return Errors.printMessage(S.DeBruijnSequence, "intpm", F.List(ast, F.C2), engine);
     }
 
     IExpr[] alphabet;
@@ -84,11 +86,17 @@ public class DeBruijnSequence extends AbstractEvaluator {
     if (k == 1) {
       return returnString ? F.stringx(String.valueOf(strAlphabet.charAt(0))) : F.List(alphabet[0]);
     }
+    long arraySize = (long) k * n;
+    if (Config.MAX_AST_SIZE < arraySize) {
+      ASTElementLimitExceeded.throwIt(arraySize);
+    }
+    if (engine.getRecursionLimit() < n) {
+      RecursionLimitExceeded.throwIt(n, ast);
+    }
 
     List<Integer> sequence = new ArrayList<>();
     // Array for Martin's algorithm
-    int[] a = new int[k * n + 1];
-
+    int[] a = new int[(int) arraySize + 1];
     db(1, 1, n, k, a, sequence);
 
     // Format the output according to the input type
