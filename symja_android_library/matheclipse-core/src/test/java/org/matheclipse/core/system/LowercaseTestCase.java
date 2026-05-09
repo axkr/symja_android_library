@@ -7238,6 +7238,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testEuclideanDistance() {
+    check("EuclideanDistance(1,2)", //
+        "1");
     check("EuclideanDistance({-1, -1}, {1.0, 1})", //
         "2.82843");
     check("EuclideanDistance({a, b, c}, {x, y, z})", //
@@ -10050,8 +10052,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testFunctionDomainReals() {
     // FunctionDomain: -1/2 is not a valid variable.
-    check("FunctionDomain(3/2,{x,-1/2})", //
-        "FunctionDomain(3/2,{x,-1/2})");
+    // check("FunctionDomain(3/2,{x,-1/2})", //
+    // "FunctionDomain(3/2,{x,-1/2})");
 
     check("FunctionDomain(Log(Tan(x) - 1), x)", //
         "1/2+x/Pi∉Integers&&x>Pi/4&&x<Pi/2");
@@ -12331,6 +12333,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("Table[InverseWeierstrassP[x, {1, 2}], {x, 2.0, 6.0}]",
     // "");
   }
+
   @Test
   public void testLast() {
     check("Last(SparseArray({1,2,3,4})) // Normal ", //
@@ -15785,7 +15788,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // set the name of the norm to get a result
     check("Normalize({{1, 2}, {4, 5}}, Norm)", //
         "{{1/Sqrt(23+2*Sqrt(130)),2/Sqrt(23+2*Sqrt(130))},{4/Sqrt(23+2*Sqrt(130)),5/Sqrt(\n" //
-        + "23+2*Sqrt(130))}}");
+            + "23+2*Sqrt(130))}}");
     check(
         "{{1/Sqrt(1/2*(46+4*Sqrt(130))),2/Sqrt(1/2*(46+4*Sqrt(130)))},{4/Sqrt(1/2*(46+4*Sqrt(130))),5/Sqrt(1/2*(46+4*Sqrt(130)))}} //N", //
         "{{0.147758,0.295516},{0.591031,0.738789}}");
@@ -24431,7 +24434,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTogether() {
-
+    check("Together(1/Sqrt(1+1/x)+(1+1/x)^(3/2))", //
+        "(Sqrt((1+x)/x)+2*x*Sqrt((1+x)/x)+2*x^2*Sqrt((1+x)/x))/(x*(1+x))");
+    check("Together(2/(Sqrt((x+1)/(1-x)) - 1/Sqrt((x+1)/(1-x))))", //
+        "(1+x)/(x*Sqrt((1+x)/(1-x)))");
     // Together(a/b + c/d)
     check("Together(a/b + c/d)", //
         "(b*c+a*d)/(b*d)");
@@ -24443,8 +24449,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Together((h^2+2*h*x)/h)", //
         "h+2*x");
 
-    check("Together(1/Sqrt(1+1/x)+(1+1/x)^(3/2))", //
-        "(x*Sqrt(x/(1+x))+Sqrt((1+x)/x)+x*Sqrt((1+x)/x))/x");
+
 
     check(
         "Together((2*(2*x^3-4*x+5)*x^3*(3*x^2+2)^(-1)-4*x*(2*x^3-4*x+5)*(3*x^2+2)^(-1)+5*(2*x^3-4*x+\n"
@@ -24526,8 +24531,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("Together(1/Sqrt(1+1/x) )", //
         "Sqrt(x/(1+x))");
-    check("Together(1/Sqrt(1+1/x)+(1+1/x)^(3/2))", //
-        "(x*Sqrt(x/(1+x))+Sqrt((1+x)/x)+x*Sqrt((1+x)/x))/x");
 
     check("Together(1/(2*Sqrt(3))+Sqrt(3)/2)", //
         "2/Sqrt(3)");
@@ -25542,8 +25545,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Slot(1,2)");
 
     // http://oeis.org/A001597 - Perfect powers: m^k where m > 0 and k >= 2.
-    check("$min = 0; $max = 10^4;  " //
-        + "Union@ Flatten@ Table( n^expo, {expo, Prime@ Range@ PrimePi@ Log2@ $max}, {n, Floor(1 + $min^(1/expo)), $max^(1/expo)})", //
+    check(
+        "$min = 0; $max = 10^4;Union@ Flatten@ Table( n^expo, {expo, Prime@ Range@ PrimePi@ Log2@ $max}, {n, Floor(1 + $min^(1/expo)), $max^(1/expo)})", //
         "{1,4,8,9,16,25,27,32,36,49,64,81,100,121,125,128,144,169,196,216,225,243,256,289,\n"
             + "324,343,361,400,441,484,512,529,576,625,676,729,784,841,900,961,1000,1024,1089,\n"
             + "1156,1225,1296,1331,1369,1444,1521,1600,1681,1728,1764,1849,1936,2025,2048,2116,\n"

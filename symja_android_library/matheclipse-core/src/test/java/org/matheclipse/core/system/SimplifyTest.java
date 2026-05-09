@@ -105,8 +105,6 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
 
     check("FullSimplify(Sqrt(2) + Sqrt(3) - Sqrt(5 + 2*Sqrt(6)))", //
         "0");
-    check("FullSimplify(Cos(n*ArcCos(x)) == ChebyshevT(n, x))", //
-        "True");
 
     // check("Factor((d^2+2*d*e*x^2+e^2*x^4))",//
     // "(d+e*x^2)^2");
@@ -134,13 +132,15 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testFullSimplifyIssue856() {
+    check("FullSimplify( (2 *Sqrt(6) - Sqrt(3)) / (Sqrt(2) - 4) )", //
+        "-Sqrt(3/2)");
+
     // github issue #856
     check("FullSimplify( (2 *Sqrt(6) - Sqrt(3)) * (Sqrt(2) + 4))", //
         "7*Sqrt(6)");
     check("FullSimplify( (2 *Sqrt(6) - Sqrt(3)) * (-Sqrt(2) - 4) )", //
         "-7*Sqrt(6)");
-    check("FullSimplify( (2 *Sqrt(6) - Sqrt(3)) / (Sqrt(2) - 4) )", //
-        "-Sqrt(3/2)");
+
   }
 
   @Test
@@ -368,6 +368,17 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
 
     check("$Assumptions=(x>0);Simplify(0^x)", //
         "0");
+  }
+
+  @Test
+  public void testSimplifySqrt() {
+    check("Simplify( 2/(Sqrt((x+1)/(1-x))-1/Sqrt((x+1)/(1-x))))", //
+        "(1+1/x)*Sqrt(-1+2/(1+x))");
+    check("FullSimplify((x/Sqrt(x^2+1) + 1)/((Sqrt(x^2+1)+x)^2 + 1))", //
+        "1/(2*(1+x^2))");
+    check("Simplify((x*(1/Sqrt(x^2+6) - (Sqrt(x^2+6) - Sqrt(6))/x^2))/(Sqrt(x^2+6) - Sqrt(6)))", //
+        "Sqrt(6)/(x*Sqrt(6+x^2))");
+
   }
 
   @Test

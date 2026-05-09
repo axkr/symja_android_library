@@ -629,6 +629,29 @@ public class LimitTest extends ExprEvaluatorTestCase {
         "Indeterminate");
   }
 
+  // @Test
+  // public void testLimitSinIntegral() {
+  // check("Limit(SinIntegral(t*(1+w)), t->Infinity)", //
+  // "ConditionalExpression(Pi/2,w>-1)");
+  //
+  // // When coefficient is positive constant: plain Pi/2
+  // check("Limit(SinIntegral(3*t), t->Infinity)", //
+  // "Pi/2");
+  //
+  // // When coefficient is negative constant: -Pi/2
+  // check("Limit(SinIntegral(-2*t), t->Infinity)", //
+  // "-Pi/2");
+  //
+  // // At t -> -Infinity with positive coefficient: -Pi/2
+  // check("Limit(SinIntegral(t), t->-Infinity)", //
+  // "-Pi/2");
+  //
+  // check("Limit(CosIntegral(t), t->Infinity)", //
+  // "0");
+  // check("Limit(CosIntegral(t), t->-Infinity)", //
+  // "I*Pi");
+  // }
+
   /** The JUnit setup method */
   @Override
   public void setUp() {
