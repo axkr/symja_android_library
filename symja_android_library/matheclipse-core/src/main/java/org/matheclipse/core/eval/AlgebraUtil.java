@@ -2529,6 +2529,11 @@ public class AlgebraUtil {
       return F.NIL;
     }
 
+    IExpr mergedRoots = tryMergeFractionalRoots(plusAST, engine);
+    if (mergedRoots.isPresent()) {
+      return mergedRoots;
+    }
+
     if (plusAST.isFree(
         x -> x.isInexactNumber()
             || (x.isAST() && (!x.isPlusTimesPower() || (x.isPower() && !x.exponent().isInteger()))),
@@ -2775,6 +2780,82 @@ public class AlgebraUtil {
       }
     }
     return result;
+  }
+
+  /**
+   * Proactively find and merge fractional roots like c1*X^p + c2*Y^p where X * Y == 1. Rewrites to:
+   * (c1 * X^(2p) + c2) / X^p
+   */
+  private static IExpr tryMergeFractionalRoots(IAST plusAST, EvalEngine engine) {
+    int size = plusAST.argSize();
+    if (size < 2)
+      return F.NIL;
+
+    for (int i = 1; i <= size; i++) {
+      for (int j = i + 1; j <= size; j++) {
+        IExpr arg1 = plusAST.get(i);
+        IExpr arg2 = plusAST.get(j);
+
+        IExpr[] part1 = extractFractionalPower(arg1);
+        if (part1 == null)
+          continue;
+
+        IExpr[] part2 = extractFractionalPower(arg2);
+        if (part2 == null)
+          continue;
+
+        IExpr c1 = part1[0];
+        IExpr x = part1[1];
+        IExpr p = part1[2];
+
+        IExpr c2 = part2[0];
+        IExpr y = part2[1];
+        IExpr q = part2[2];
+
+        // Ensure the fractional powers match
+        if (!p.equals(q))
+          continue;
+
+        // Check if X and Y are reciprocals (X * Y == 1)
+        IExpr product = engine.evaluate(F.Cancel(F.Times(x, y)));
+        if (product.isOne()) {
+          // Merge: (c1 * X^(2p) + c2) / X^p
+          IExpr x2p = engine.evaluate(F.Power(x, F.Times(F.C2, p)));
+          IExpr mergedNumerator = engine.evaluate(F.Plus(F.Times(c1, x2p), c2));
+          IExpr mergedDenominator = engine.evaluate(F.Power(x, p));
+
+          IExpr mergedTerm = F.Times(mergedNumerator, F.Power(mergedDenominator, F.CN1));
+
+          // Replace the two terms in the Plus AST
+          IASTAppendable newPlus = plusAST.removePositionsAtCopy(new int[] {i, j}, 2);
+          newPlus.append(engine.evaluate(mergedTerm));
+
+          // Return the evaluated AST, triggering further Together passes if needed
+          return engine.evaluate(S.Together.of(engine, newPlus.oneIdentity0()));
+        }
+      }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Helper to extract coefficient, base, and exponent from a fractional power term. Returns
+   * [coefficient, base, exponent] or null.
+   */
+  private static IExpr[] extractFractionalPower(IExpr expr) {
+    if (expr.isPower() && expr.exponent().isFraction()) {
+      return new IExpr[] {F.C1, expr.base(), expr.exponent()};
+    }
+    if (expr.isTimes()) {
+      IAST times = (IAST) expr;
+      int powerIndex = times.indexOf(x -> x.isPower() && x.exponent().isFraction());
+      if (powerIndex > 0) {
+        IExpr power = times.get(powerIndex);
+        IExpr coeff = times.removeAtCopy(powerIndex).oneIdentity1();
+        return new IExpr[] {coeff, power.base(), power.exponent()};
+      }
+    }
+    return null;
   }
 
   private AlgebraUtil() {
