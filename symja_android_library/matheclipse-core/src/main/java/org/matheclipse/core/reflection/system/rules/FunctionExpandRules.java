@@ -276,12 +276,18 @@ public class FunctionExpandRules {
     // SphericalHarmonicY(l_,m_,t_,p_):=(E^(I*m*p)*Sqrt(1+2*l)*Sqrt(Gamma(1+l-m))*Hypergeometric2F1(-l,1+l,1-m,Sin(t/2)^2)*Sin(t)^m)/((1-Cos(t))^m*2*Sqrt(Pi)*Gamma(1-m)*Sqrt(Gamma(1+l+m)))
     SetDelayed(SphericalHarmonicY(l_,m_,t_,p_),
       Times(Exp(Times(CI,m,p)),Sqrt(Plus(C1,Times(C2,l))),Sqrt(Gamma(Plus(C1,l,Negate(m)))),Power(Times(Power(Subtract(C1,Cos(t)),m),C2,CSqrtPi,Gamma(Subtract(C1,m)),Sqrt(Gamma(Plus(C1,l,m)))),CN1),Hypergeometric2F1(Negate(l),Plus(C1,l),Subtract(C1,m),Sqr(Sin(Times(C1D2,t)))),Power(Sin(t),m))),
+    // WhittakerM(0,m_,z_):=4^m*Sqrt(z)*BesselI(m,z/2)*Gamma(1+m)
+    SetDelayed(WhittakerM(C0,m_,z_),
+      Times(Power(C4,m),Sqrt(z),BesselI(m,Times(C1D2,z)),Gamma(Plus(C1,m)))),
     // WhittakerM(k_,0,z_):=(Sqrt(z)*LaguerreL(-1/2+k,z))/E^(z/2)
     SetDelayed(WhittakerM(k_,C0,z_),
       Times(Power(Exp(Times(C1D2,z)),CN1),Sqrt(z),LaguerreL(Plus(CN1D2,k),z))),
     // WhittakerM(k_,m_,z_):=(z^(1/2+m)*Hypergeometric1F1(1/2-k+m,1+2*m,z))/E^(z/2)
     SetDelayed(WhittakerM(k_,m_,z_),
       Times(Power(Exp(Times(C1D2,z)),CN1),Power(z,Plus(C1D2,m)),Hypergeometric1F1(Plus(C1D2,Negate(k),m),Plus(C1,Times(C2,m)),z))),
+    // WhittakerW(0,m_,z_):=(Sqrt(z)*BesselK(m,z/2))/Sqrt(Pi)
+    SetDelayed(WhittakerW(C0,m_,z_),
+      Times(Power(Pi,CN1D2),Sqrt(z),BesselK(m,Times(C1D2,z)))),
     // WhittakerW(k_,0,z_):=(Sqrt(z)*HypergeometricU(1/2-k,1,z))/E^(z/2)
     SetDelayed(WhittakerW(k_,C0,z_),
       Times(Power(Exp(Times(C1D2,z)),CN1),Sqrt(z),HypergeometricU(Subtract(C1D2,k),C1,z))),
