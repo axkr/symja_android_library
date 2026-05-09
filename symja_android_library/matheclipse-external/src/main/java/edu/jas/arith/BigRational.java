@@ -1177,13 +1177,13 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
      * @param i1
      * @return
      */
-    private static BigInteger lcm(final BigInteger i0, final BigInteger i1) {
+    public static BigInteger lcm(final BigInteger i0, final BigInteger i1) {
       if (i0.signum()==0 && i1.signum()==0) {
         return BigInteger.ZERO;
       }
       BigInteger a = i0.abs();
       BigInteger b = i1.abs();
-      BigInteger gcd = i0.gcd(b);
+      BigInteger gcd = a.gcd(b);
       BigInteger lcm = (a.multiply(b)).divide(gcd);
       return lcm;
     }

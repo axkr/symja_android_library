@@ -7,7 +7,6 @@ package edu.jas.ufd;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModInt;
@@ -249,7 +248,7 @@ public class GCDFactory {
       }
       GreatestCommonDivisorAbstract<BigRational> ufd;
       if (rationalGCD) {
-        ufd = new GreatestCommonDivisorRational<BigRational>();
+        ufd = new GreatestCommonDivisorRational();
       } else {
         ufd = new GreatestCommonDivisorPrimitive<BigRational>();
       }
