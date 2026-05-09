@@ -477,6 +477,11 @@ public class ClusteringFunctions {
       plusAST.appendArgs(size, i -> F.Sqr(F.Abs(F.Subtract(vect1.get(i), vect2.get(i)))));
       return F.Sqrt(plusAST);
     }
+
+    @Override
+    public IExpr scalarDistance(INumber arg1, INumber arg2, EvalEngine engine) {
+      return arg1.subtract(arg2).abs();
+    }
   }
 
   private static class FindClusters extends AbstractEvaluator {
