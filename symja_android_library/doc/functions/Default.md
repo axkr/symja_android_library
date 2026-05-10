@@ -6,10 +6,11 @@ Default(symbol)
 
 > `Default` returns the default value associated with the `symbol` for a pattern default `_.` expression.
  
- ```ition)
+```
+Default(symbol, position)
 ```
 
-> `Default` returns the default value associated with the `symbol` for a pattern default `_.` expression at position `pos`.
+> `Default` returns the default value associated with the `symbol` for a pattern default `_.` expression at `position`.
 
 ### Examples
 

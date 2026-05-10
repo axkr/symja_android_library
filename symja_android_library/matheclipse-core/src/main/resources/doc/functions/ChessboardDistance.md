@@ -9,7 +9,7 @@ ChessboardDistance(u, v)
 
 See:  
 * [Wikipedia - Chebyshev distance](https://en.wikipedia.org/wiki/Chebyshev_distance)
-
+* [Wikipedia - Metric_space](https://en.wikipedia.org/wiki/Metric_space)
 
 ### Examples
 

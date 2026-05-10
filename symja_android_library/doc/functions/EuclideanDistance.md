@@ -7,6 +7,7 @@ EuclideanDistance(u, v)
 
 See
 * [Wikipedia - Euclidean distance](https://en.wikipedia.org/wiki/Euclidean_distance)
+* [Wikipedia - Metric_space](https://en.wikipedia.org/wiki/Metric_space)
 
 ### Examples
 
