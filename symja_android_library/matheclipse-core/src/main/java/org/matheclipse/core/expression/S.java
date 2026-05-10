@@ -2814,6 +2814,10 @@ public class S {
   public final static IBuiltInSymbol DefaultValue =
       S.initFinalSymbol("DefaultValue", ID.DefaultValue);
 
+  public final static IBuiltInSymbol DefaultValues =
+      S.initFinalSymbol("DefaultValues", ID.DefaultValues);
+
+
   /**
    * Defer(expr) - `Defer` doesn't evaluate `expr` and didn't appear in the output
    * 
