@@ -268,6 +268,9 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     // General solution: u(x,y) = x^2 * C_1(y/x)
     check("DSolve(x*D(u(x, y), x) + y*D(u(x, y), y) == 2*u(x,y), u(x,y), {x, y})", //
         "{{u(x,y)->x^2*C(1)[y/x]}}");
+
+    check("DSolve(D(y(x, t), t) + 2 D(y(x, t), x) == 0, y(x, t), {x, t})", //
+        "{{y(x,t)->C(1)[1/2*(2*t-x)]}}");
   }
 
   @Test
