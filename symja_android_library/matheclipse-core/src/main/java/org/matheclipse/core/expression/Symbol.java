@@ -1173,7 +1173,7 @@ public class Symbol implements ISymbol, Serializable {
     if (fRulesData == null) {
       fRulesData = new RulesData();
     }
-    fRulesData.putfDefaultValues(pos, expr);
+    fRulesData.putDefaultValues(pos, expr);
   }
 
   @Override

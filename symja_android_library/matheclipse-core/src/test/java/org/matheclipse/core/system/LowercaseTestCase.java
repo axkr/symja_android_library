@@ -6700,6 +6700,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDefaultValues() {
+    check("Default(tst)=42", //
+        "42");
+    check("DefaultValues(tst)", //
+        "{HoldPattern(Default(tst)):>42}");
+    check("Default(xx1)=1;Default(xx2)=3;Default(xx3)=5;", //
+        "");
+    check("DefaultValues /@ Names(\"xx*\")", //
+        "{{HoldPattern(Default(xx1)):>1},{HoldPattern(Default(xx3)):>5},{HoldPattern(Default(xx2)):>\n" //
+            + "3}}");
+  }
+
+  @Test
   public void testDownValues() {
     check("f(1)=3", //
         "3");

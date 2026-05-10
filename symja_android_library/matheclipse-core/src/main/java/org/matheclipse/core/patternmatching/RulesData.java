@@ -401,6 +401,36 @@ public final class RulesData implements Serializable {
   }
 
   /**
+   * Give the <code>DefaultValues()</code> of a symbol as a list of <code>RuleDelayed</code>
+   * (delayed rules) with the left-hand-side wrapped in a <code>HoldPattern()</code> expression.
+   *
+   * @param symbol the symbol whose default values are requested
+   * @return a list of <code>RuleDelayed(HoldPattern(Default(symbol[, n])), value)</code> rules, or
+   *         {@link F#NIL} if no defaults are defined
+   */
+  public IAST defaultValues(ISymbol symbol) {
+    if (fDefaultValues == null || fDefaultValues.size() == 0) {
+      return F.NIL;
+    }
+    IASTAppendable result = F.ListAlloc(fDefaultValues.size());
+    OpenIntToIExprHashMap<IExpr>.Iterator iter = fDefaultValues.iterator();
+    while (iter.hasNext()) {
+      iter.advance();
+      int key = iter.key();
+      IExpr value = iter.value();
+      if (key == DEFAULT_VALUE_INDEX) {
+        // General default: Default(symbol) :> value
+        result.append(F.RuleDelayed(F.HoldPattern(F.unary(S.Default, symbol)), value));
+      } else {
+        // Positional default: Default(symbol, n) :> value
+        result.append(F.RuleDelayed(F.HoldPattern(F.binary(S.Default, symbol, F.ZZ(key))), value));
+      }
+    }
+    return result;
+  }
+
+
+  /**
    * Give the <code>DownValues()</code> of a symbol as a list of <code>RuleDelayed</code> (delayed
    * rules) with the left-hand-side wrapped in a <code>HoldPattern()</code> expression.
    *
@@ -918,10 +948,10 @@ public final class RulesData implements Serializable {
   }
 
   public void putfDefaultValues(IExpr expr) {
-    putfDefaultValues(DEFAULT_VALUE_INDEX, expr);
+    putDefaultValues(DEFAULT_VALUE_INDEX, expr);
   }
 
-  public void putfDefaultValues(int pos, IExpr expr) {
+  public void putDefaultValues(int pos, IExpr expr) {
     if (this.fDefaultValues == null) {
       this.fDefaultValues = new OpenIntToIExprHashMap<IExpr>();
     }

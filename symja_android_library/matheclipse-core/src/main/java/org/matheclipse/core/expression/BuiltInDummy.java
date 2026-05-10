@@ -1129,7 +1129,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     if (fRulesData == null) {
       fRulesData = new RulesData();
     }
-    fRulesData.putfDefaultValues(pos, expr);
+    fRulesData.putDefaultValues(pos, expr);
   }
 
   @Override

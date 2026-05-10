@@ -386,7 +386,7 @@ public class IOFunctions {
           ignoreCase = true;
         }
       }
-      return Documentation.getNamesByPattern(arg1, ignoreCase, ast, engine);
+      return Documentation.getContextNamesByPattern(arg1, ignoreCase, ast, engine);
     }
 
     @Override

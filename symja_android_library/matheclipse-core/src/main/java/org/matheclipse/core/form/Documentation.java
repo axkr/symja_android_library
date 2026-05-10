@@ -260,7 +260,7 @@ public class Documentation {
   }
 
   /**
-   * Returns a list of {@link IStringX} of the defined symbol names.
+   * Returns a list of {@link IStringX} of the defined symbol names in context System`
    * 
    * @param pattern
    * @param ignoreCase
@@ -284,6 +284,44 @@ public class Documentation {
     }
 
     return Documentation.getNamesByPattern(regexPattern, engine);
+  }
+
+  /**
+   * Returns a list of {@link IStringX} of the defined symbol names in all available contexts on the
+   * context path.
+   * 
+   * @param pattern
+   * @param ignoreCase
+   * @param ast
+   * @param engine
+   */
+  public static IAST getContextNamesByPattern(IExpr pattern, boolean ignoreCase, final IAST ast,
+      EvalEngine engine) {
+    if (pattern.isString()) {
+      String patternStr = pattern.toString();
+      int indx = pattern.toString().indexOf("`");
+      if (indx < 0) {
+        IASTAppendable result = F.ListAlloc();
+        IAST pathAsStrings = engine.getContextPath().pathAsStrings();
+        IStringX str;
+        for (int i = 1; i < pathAsStrings.size(); i++) {
+          String context = pathAsStrings.get(i).toString();
+          str = F.$str(context + patternStr);
+          Map<ISymbol, String> groups = new HashMap<ISymbol, String>();
+          java.util.regex.Pattern regexPattern =
+              IStringX.toRegexPattern(str, true, ignoreCase, ast, groups, engine);
+          if (regexPattern == null) {
+            return F.NIL;
+          }
+          IAST subList = getNamesByPattern(regexPattern, engine);
+          if (subList.argSize() > 0) {
+            result.appendArgs(subList);
+          }
+        }
+        return result;
+      }
+    }
+    return getNamesByPattern(pattern, ignoreCase, ast, engine);
   }
 
   /**

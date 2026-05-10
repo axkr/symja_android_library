@@ -83,6 +83,7 @@ public final class PatternMatching {
         S.Blank.setEvaluator(Blank.CONST);
         S.BlankSequence.setEvaluator(BlankSequence.CONST);
         S.BlankNullSequence.setEvaluator(BlankNullSequence.CONST);
+        S.DefaultValues.setEvaluator(new DefaultValues());
         S.DownValues.setEvaluator(new DownValues());
         S.Pattern.setEvaluator(Pattern.CONST);
         S.PatternTest.setEvaluator(new PatternTest());
@@ -591,6 +592,43 @@ public final class PatternMatching {
     }
 
   }
+
+  private static final class DefaultValues extends AbstractCoreFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr arg1 = ast.arg1();
+      ISymbol symbol = null;
+      if (arg1.isString()) {
+        symbol = F.symbol(arg1.toString());
+      } else {
+        arg1 = Validate.checkSymbolType(ast, 1, engine);
+        if (arg1.isPresent()) {
+          symbol = (ISymbol) arg1;
+        }
+      }
+      if (symbol != null) {
+        RulesData rulesData = symbol.getRulesData();
+        if (rulesData == null) {
+          return F.CEmptyList;
+        }
+        return rulesData.defaultValues(symbol);
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDALL);
+    }
+  }
+
 
   /**
    *
