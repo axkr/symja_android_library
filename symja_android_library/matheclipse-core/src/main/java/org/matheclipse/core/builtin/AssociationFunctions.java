@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -47,6 +48,7 @@ public class AssociationFunctions {
       S.KeySelect.setEvaluator(new KeySelect());
       S.KeySort.setEvaluator(new KeySort());
       S.KeyTake.setEvaluator(new KeyTake());
+      S.KeyValueMap.setEvaluator(new KeyValueMap());
       S.LetterCounts.setEvaluator(new LetterCounts());
       S.Lookup.setEvaluator(new Lookup());
       S.Merge.setEvaluator(new Merge());
@@ -1082,32 +1084,42 @@ public class AssociationFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isList()) {
-        IAssociation result = F.assoc();
-        if (mergeListRecursive((IAST) arg1, ast.arg2(), result, engine)) {
+        Map<IExpr, IASTAppendable> map = new LinkedHashMap<>();
+        if (collectMergeRules((IAST) arg1, map, engine)) {
+          IAssociation result = F.assoc();
+          IExpr head = ast.arg2();
+          for (Map.Entry<IExpr, IASTAppendable> entry : map.entrySet()) {
+            result.appendRule(
+                F.Rule(entry.getKey(), engine.evaluate(F.unaryAST1(head, entry.getValue()))));
+          }
           return result;
         }
         return F.NIL;
       }
-      return Errors.printMessage(S.Merge, "list1", F.List(arg1), engine);
+      // The argument `1` is not a valid list of Associations or rules or list of rules.
+      return Errors.printMessage(S.Merge, "list1", F.list(arg1), engine);
     }
 
-    private static boolean mergeListRecursive(final IAST list, final IExpr head,
-        IAssociation result, EvalEngine engine) {
+    private static boolean collectMergeRules(final IAST list, Map<IExpr, IASTAppendable> map,
+        EvalEngine engine) {
       for (int i = 1; i < list.size(); i++) {
         IExpr temp = list.get(i);
         if (temp.isRuleAST()) {
-          result.mergeRule((IAST) temp, head, engine);
+          IAST rule = (IAST) temp;
+          map.computeIfAbsent(rule.arg1(), k -> F.ListAlloc()).append(rule.arg2());
         } else if (temp.isAssociation()) {
           IAssociation assoc = (IAssociation) temp;
           for (int j = 1; j < assoc.size(); j++) {
-            result.mergeRule(assoc.getRule(j), head, engine);
+            IAST rule = assoc.getRule(j);
+            map.computeIfAbsent(rule.arg1(), k -> F.ListAlloc()).append(rule.arg2());
           }
         } else if (temp.isList()) {
-          if (!mergeListRecursive((IAST) temp, head, result, engine)) {
+          if (!collectMergeRules((IAST) temp, map, engine)) {
             return false;
           }
         } else {
-          Errors.printMessage(S.Merge, "list1", F.List(temp), engine);
+          // The argument `1` is not a valid list of Associations or rules or list of rules.
+          Errors.printMessage(S.Merge, "list1", F.list(temp), engine);
           return false;
         }
       }
@@ -1230,7 +1242,31 @@ public class AssociationFunctions {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+  private static class KeyValueMap extends AbstractEvaluator {
 
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return keyValueMap(ast.arg1(), engine.evaluate(ast.arg2()), engine);
+    }
+
+    private static IExpr keyValueMap(IExpr f, IExpr arg2, EvalEngine engine) {
+      if (arg2.isAssociation()) {
+        IAssociation assoc = (IAssociation) arg2;
+        IASTAppendable result = F.ListAlloc(assoc.argSize());
+        for (int i = 1; i < assoc.size(); i++) {
+          IAST rule = assoc.getRule(i);
+          result.append(F.binaryAST2(f, rule.arg1(), rule.arg2()));
+        }
+        return result;
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2_2;
+    }
+  }
   private static class Summary extends AbstractEvaluator {
 
     @Override

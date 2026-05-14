@@ -450,7 +450,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "{<|a->1|>,<|c->3|>}");
     check("KeyDrop({a, d})[<|a -> 1, b -> 2, c -> 3, d -> 4|>]", //
         "<|b->2,c->3|>");
-    
+
     check("productInfo = <|\n" //
         + "  \"Name\" -> \"Widget X\",\n" //
         + "  \"Price\" -> 19.99,\n" //
@@ -458,7 +458,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         + "  \"SupplierID\" -> \"SUP123\"\n" //
         + "|>;", //
         "");
-    
+
     check("KeyDrop(productInfo, {\"SupplierID\", \"InStock\"})", //
         "<|Name->Widget X,Price->19.99|>");
   }
@@ -506,6 +506,13 @@ public class AssociationTest extends ExprEvaluatorTestCase {
         "<|a->1,b->2|>");
   }
 
+  @Test
+  public void testKeyValueMap() {
+    check("KeyValueMap(f)[<|a -> 1, b -> 2, c -> 3|>]", //
+        "{f(a,1),f(b,2),f(c,3)}");
+    check("KeyValueMap(List, <|a -> 1, b -> 2|>)", //
+        "{{a,1},{b,2}}");
+  }
   @Test
   public void testLookup() {
     check("rmatRowNames=<|\"A\"->1,\"B\"->2,\"C\"->3,\"D\"->4|>", //
@@ -562,7 +569,9 @@ public class AssociationTest extends ExprEvaluatorTestCase {
     check("Merge({<||>}, f)", //
         "<||>");
     check("Merge({a -> x, a -> y, b -> z}, f)", //
-        "<|a->f({x,y}),b->{z}|>");
+        "<|a->f({x,y}),b->f({z})|>");
+    check("Merge({<|a -> 1|>, <|a -> 2, b -> 3|>}, Total)", //
+        "<|a->3,b->3|>");
     check("Merge({}, f)", //
         "<||>");
 
