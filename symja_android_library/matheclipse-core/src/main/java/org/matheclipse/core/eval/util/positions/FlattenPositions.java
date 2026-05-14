@@ -102,17 +102,25 @@ public class FlattenPositions {
         insertedPositions.add(sizeOfFlattenedElement);
         return subResult;
       } else {
-        IExpr arg = ast.get(p);
-        if (arg.isASTOrAssociation()) {
-          // subResult = getAppendableAST(ast);
-          level++;
-          IExpr temp = mapAtRecursive((IAST) arg);
-          if (temp.isPresent()) {
+        // translate original position p to the current index in the Appendable,
+        // accounting for elements that were previously flattened/inserted.
+        int newP = getInsertPosition(insertedPositions, p);
+        if (newP == -1) {
+          // position already used/expanded
+          return subResult;
+        }
+        if (newP >= 1 && newP < subResult.size()) {
+          IExpr arg = subResult.get(newP);
+          if (arg.isASTOrAssociation()) {
+            level++;
+            IExpr temp = mapAtRecursive((IAST) arg);
+            if (temp.isPresent()) {
+              level--;
+              subResult.set(newP, temp);
+              return subResult;
+            }
             level--;
-            subResult.set(p, temp);
-            return subResult;
           }
-          level--;
         }
       }
     }
