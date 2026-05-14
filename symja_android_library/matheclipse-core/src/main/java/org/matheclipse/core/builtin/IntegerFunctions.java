@@ -479,9 +479,8 @@ public class IntegerFunctions {
           return F.NIL;
         }
         IInteger value = (IInteger) ast.arg1();
-        BigInteger big = value.toBigNumerator();
         if (power2_K >= 0) {
-          return big.testBit(power2_K) ? F.C1 : F.C0;
+          return value.isBitSet(power2_K) ? F.C1 : F.C0;
         }
       }
       return F.NIL;

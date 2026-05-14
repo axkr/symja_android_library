@@ -140,12 +140,16 @@ public class Iterator {
         if (sub.isReal()) {
           return !sub.isNegative();
         }
-        IExpr together = evalEngine.evaluate(F.Together(sub));
-        if (together.isReal()) {
-          return !together.isNegative();
-        }
+        double d;
         try {
-          double d = sub.evalf();
+          d = sub.evalf();
+          return !(d < 0.0);
+        } catch (ValidateException ve) {
+          // fall through
+        }
+        IExpr together = evalEngine.evaluate(F.Together(sub));
+        try {
+          d = together.evalf();
           return !(d < 0.0);
         } catch (ValidateException ve) {
           // return false;
@@ -1395,8 +1399,7 @@ public class Iterator {
             return new QuantityIterator(variable, (IQuantity) lowerLimit, (IQuantity) upperLimit,
                 (IQuantity) step);
           } else if (lowerLimit.isReal() && upperLimit.isReal() && step.isReal()) {
-            return new RealIterator(variable, (IReal) lowerLimit, (IReal) upperLimit,
-                (IReal) step);
+            return new RealIterator(variable, (IReal) lowerLimit, (IReal) upperLimit, (IReal) step);
           }
 
           break;
@@ -1452,19 +1455,20 @@ public class Iterator {
 
     boolean localNumericMode = evalEngine.isNumericMode();
     try {
-      if (list.hasNumericArgument()) {
-        evalEngine.setNumericMode(true);
-      }
+
       fNumericMode = evalEngine.isNumericMode();
       switch (list.size()) {
         case 2:
+          // if (list.hasNumericArgument()) {
+          // evalEngine.setNumericMode(true);
+          // }
           lowerLimit = F.C1;
           upperLimit = evalEngine.evalWithoutNumericReset(list.arg1());
           step = F.C1;
           variable = symbol;
-          if (upperLimit instanceof INum) {
-            return new DoubleIterator(variable, 1.0, ((INum) upperLimit).doubleValue(), 1.0);
-          }
+          // if (upperLimit instanceof INum) {
+          // return new DoubleIterator(variable, 1.0, ((INum) upperLimit).doubleValue(), 1.0);
+          // }
           if (upperLimit.isInteger()) {
             try {
               int iUpperLimit = ((IInteger) upperLimit).toInt();
@@ -1531,6 +1535,9 @@ public class Iterator {
           }
           break;
         case 4:
+          if (list.hasNumericArgument()) {
+            evalEngine.setNumericMode(true);
+          }
           lowerLimit = evalEngine.evalWithoutNumericReset(list.arg1());
           upperLimit = evalEngine.evalWithoutNumericReset(list.arg2());
           step = evalEngine.evalWithoutNumericReset(list.arg3());
@@ -1560,8 +1567,7 @@ public class Iterator {
             return new QuantityIterator(symbol, (IQuantity) lowerLimit, (IQuantity) upperLimit,
                 (IQuantity) step);
           } else if (lowerLimit.isReal() && upperLimit.isReal() && step.isReal()) {
-            return new RealIterator(variable, (IReal) lowerLimit, (IReal) upperLimit,
-                (IReal) step);
+            return new RealIterator(variable, (IReal) lowerLimit, (IReal) upperLimit, (IReal) step);
           }
           break;
         default:

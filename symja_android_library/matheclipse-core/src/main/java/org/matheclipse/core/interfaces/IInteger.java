@@ -50,6 +50,18 @@ public interface IInteger extends IRational {
   @Override
   public IInteger add(int val);
 
+
+  /**
+   * Return <code>true</code> if the bit at the specified position is set, <code>false</code>
+   * otherwise.
+   * 
+   * @param position the index of the bit to test, where 0 is the least significant bit.
+   */
+  default boolean isBitSet(int position) {
+    BigInteger big = toBigNumerator();
+    return big.testBit(position);
+  }
+
   /**
    * Returns the number of bits in the minimal two's-complement representation of this IInteger,
    * <i>excluding</i> a sign bit. For positive IIntegers, this is equivalent to the number of bits
@@ -236,6 +248,7 @@ public interface IInteger extends IRational {
    * @return {@code true} if this IInteger is probably prime, {@code false} if it's definitely
    *         composite.
    */
+  @Override
   public boolean isProbablePrime();
 
   /**
