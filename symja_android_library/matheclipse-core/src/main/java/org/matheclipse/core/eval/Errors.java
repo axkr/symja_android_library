@@ -299,8 +299,10 @@ public class Errors {
       "nps", "The triangle side `1`should be a positive number.", //
       "nquan",
       "The Quantile specification `1` should be a number or a list of numbers between `2` and `3`.",
-      "nrnum", "The Function value `1` is not a real number at `2`=`3`.", "nsmet",
-      "The system cannot be solved with the methods available to `1`.", //
+      "nrnum", "The Function value `1` is not a real number at `2`=`3`.", //
+      "nsmet", "The system cannot be solved with the methods available to `1`.", //
+      "nspecnl",
+      "Rule specification `1` should be an integer, a List, a pure Boolean function, a String or an Association.", //
       "nsolc", "There are no points which satisfy the constraints.", //
       "nupr", "`1` is not a univariate polynomial with rational number coefficients.", //
       "nvarl", "`1` is not list of variables.", //
@@ -453,8 +455,7 @@ public class Errors {
       "zzmaxast", "Maximum AST limit `1` exceeded.", //
       "zznotimpl", "Function `1` not implemented.", //
       "zznotimpl2", "Function `1` not implemented for `2`.", //
-      "zzonlyimpl",
-      "Function `1` only implemented for `2` list arguments.", //
+      "zzonlyimpl", "Function `1` only implemented for `2` list arguments.", //
       "zzprime", "Maximum Prime limit `1` exceeded.", //
       "zzregex", "Regex expression `1` error message: `2`.", //
       "zzapfloatcld", "Complete loss of accurate digits (apfloat).", //
