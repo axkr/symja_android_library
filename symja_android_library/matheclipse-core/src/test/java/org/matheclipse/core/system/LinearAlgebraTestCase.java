@@ -102,6 +102,19 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "True");
   }
 
+  @Test
+  public void testBoxMatrix() {
+    check("BoxMatrix({1, 1}, {5, All})", //
+        "{{0,0,0},{1,1,1},{1,1,1},{1,1,1},{0,0,0}}");
+    check("BoxMatrix(0)", //
+        "{{1}}");
+    check("BoxMatrix(1,5)//MatrixForm", //
+        "{{0,0,0,0,0},\n" //
+            + " {0,1,1,1,0},\n" //
+            + " {0,1,1,1,0},\n" //
+            + " {0,1,1,1,0},\n" //
+            + " {0,0,0,0,0}}");
+  }
 
   @Test
   public void testCharacteristicPolynomial() {
@@ -1073,7 +1086,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "Inverse({{-0.677003+I*0.612372,-0.677003+I*(-0.612372),0.0}, {0.0,0.0,-1.0}, {I*(-0.408248),I*0.408248,0.0}})", //
         "{{-0.738549,0.0,-1.10782+I*1.22475},\n" //
             + " {-0.738549,0.0,-1.10782+I*(-1.22475)},\n" //
-        + " {0,-1,0}}");
+            + " {0,-1,0}}");
 
     // message Inverse: Matrix {{0,1},{0,0}} is singular.
     check("Inverse({{0, 1.0}, {0, 0}})", //
@@ -1975,12 +1988,32 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testOuterSparseArray() {
+    check("Outer(f, {{0, a}, {b, 0}}, {c, d})", //
+        "{{{f(0,c),f(0,d)},{f(a,c),f(a,d)}},{{f(b,c),f(b,d)},{f(0,c),f(0,d)}}}");
+    check("Outer(f, SparseArray({{1, 2} -> a, {2, 1} -> b}), {c, d})", //
+        "{{{f(0,c),f(0,d)},{f(a,c),f(a,d)}},{{f(b,c),f(b,d)},{f(0,c),f(0,d)}}}");
+
+    check("sa=Outer(Times, SparseArray({{1, 2} -> a, {2, 1} -> b}), {c, d})", //
+        "SparseArray(Number of elements: 4 Dimensions: {2,2,2} Default value: 0)");
+    check("sa // Normal", //
+        "{{{0,0},{a*c,a*d}},{{b*c,b*d},{0,0}}}");
+
     check("(s1=SparseArray(Table(2^i -> i, {i, 3}))) // MatrixForm", //
         "{0,1,0,2,0,0,0,3}");
     check("(s2=SparseArray({1} -> 1, {4})) // MatrixForm", //
         "{1,0,0,0}");
-    // check("Outer(Times,s1,s2) // MatrixForm", //
-    // "");
+
+    check("sa=Outer(Times,s1,s2)", //
+        "SparseArray(Number of elements: 3 Dimensions: {8,4} Default value: 0)");
+    check("sa // MatrixForm", //
+        "{{0,0,0,0},\n" //
+            + " {1,0,0,0},\n" //
+            + " {0,0,0,0},\n" //
+            + " {2,0,0,0},\n" //
+            + " {0,0,0,0},\n" //
+            + " {0,0,0,0},\n" //
+            + " {0,0,0,0},\n" //
+            + " {3,0,0,0}}");
   }
 
   @Test

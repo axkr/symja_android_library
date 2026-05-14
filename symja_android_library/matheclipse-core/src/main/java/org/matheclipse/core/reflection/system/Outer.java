@@ -1,14 +1,18 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.trie.Trie;
+import org.matheclipse.parser.trie.TrieNode;
 
 /**
  *
@@ -95,13 +99,14 @@ public class Outer extends AbstractFunctionEvaluator {
       if (expr.isAST() && head.equals(expr.head())) {
         IAST list = (IAST) expr;
         int size = list.size();
-        return F.mapRange(head, 1, size, i -> outer(astPosition, list.get(i), current));
+        return F.mapRange(head, 1, size,
+            i -> outer(astPosition, list.get(i).normal(false), current));
       }
 
       if (ast.size() > astPosition) {
         try {
           current.append(expr);
-          return outer(astPosition + 1, ast.get(astPosition), current);
+          return outer(astPosition + 1, ast.get(astPosition).normal(false), current);
         } finally {
           current.remove(current.argSize());
         }
@@ -114,49 +119,12 @@ public class Outer extends AbstractFunctionEvaluator {
     }
   }
 
-  // private static class OuterSparseArrayAlgorithm {
-  // final IAST ast;
-  // final IExpr f;
-  // final IExpr head;
-  //
-  // public OuterSparseArrayAlgorithm(final IAST ast, final IExpr head) {
-  // this.ast = ast;
-  // this.f = ast.arg1();
-  // this.head = head;
-  // }
-  //
-  // private ISparseArray outer(int astPosition, IExpr expr, ISparseArray current) {
-  //
-  // if (expr.isSparseArray()) {
-  // ISparseArray sparseArray = (ISparseArray) expr;
-  // int size = sparseArray.size();
-  // return F.mapRange(head, 1, size, i -> outer(astPosition, sparseArray.get(i), current));
-  // } else {
-  // return null;
-  // }
-  //
-  //
-  // if (ast.size() > astPosition) {
-  // try {
-  // current.append(expr);
-  // return outer(astPosition + 1, ast.get(astPosition), current);
-  // } finally {
-  // current.remove(current.argSize());
-  // }
-  // } else {
-  // IASTAppendable result = F.ast(f);
-  // result.appendArgs(current);
-  // result.append(expr);
-  // return result;
-  // }
-  // }
-  // }
-
   public Outer() {}
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     IExpr head = null;
+    IExpr f = ast.arg1();
     IExpr arg2 = ast.arg2();
     if (arg2.isAST()) {
       head = arg2.head();
@@ -166,25 +134,94 @@ public class Outer extends AbstractFunctionEvaluator {
       return F.NIL;
     }
     for (int i = 3; i < ast.size(); i++) {
-      IExpr list = ast.get(i);
-      if (!head.equals(list.head())) {
-        return F.NIL;
+      IExpr arg = ast.get(i);
+      if (arg.isSparseArray()) {
+        head = S.SparseArray;
       }
     }
-    if (head != S.SparseArray) {
-      OuterAlgorithm algorithm = new OuterAlgorithm(ast, head);
-      return algorithm.outer(3, ast.arg2(), F.ListAlloc(ast.argSize()));
+    if (head != S.SparseArray || f != S.Times) {
+      OuterAlgorithm algorithm = new OuterAlgorithm(ast, head == S.SparseArray ? S.List : head);
+      return algorithm.outer(3, arg2.normal(false), F.ListAlloc(ast.argSize()));
+    } else {
+      // At least one argument is a SparseArray — handle sparse outer product
+      // Only support f=Times with default value 0 for now
+
+      // Collect all arguments as SparseArrayExpr (converting dense lists if needed)
+      int argCount = ast.argSize(); // number of tensor arguments (ast args 2..end)
+      SparseArrayExpr[] sparseArgs = new SparseArrayExpr[argCount - 1];
+      for (int i = 2; i <= argCount; i++) {
+        IExpr arg = ast.get(i);
+        if (arg instanceof SparseArrayExpr) {
+          sparseArgs[i - 2] = (SparseArrayExpr) arg;
+        } else if (arg.isList()) {
+          sparseArgs[i - 2] = SparseArrayExpr.newDenseList((IAST) arg, F.C0);
+          if (sparseArgs[i - 2] == null)
+            return F.NIL;
+        } else {
+          return F.NIL;
+        }
+      }
+
+      // Compute result dimension = concatenation of all argument dimensions
+      int totalDimLen = 0;
+      for (SparseArrayExpr sa : sparseArgs)
+        totalDimLen += sa.getDimension().length;
+      int[] resultDim = new int[totalDimLen];
+      int offset = 0;
+      for (SparseArrayExpr sa : sparseArgs) {
+        System.arraycopy(sa.getDimension(), 0, resultDim, offset, sa.getDimension().length);
+        offset += sa.getDimension().length;
+      }
+
+      // Compute default value: f(d1, d2, ...)
+      IExpr[] defaults = new IExpr[argCount - 1];
+      for (int i = 0; i < argCount - 1; i++) {
+        defaults[i] = sparseArgs[i].getDefaultValue();
+      }
+      IExpr resultDefault = engine.evaluate(F.ast(defaults, f));
+
+      // Build result trie by iterating over non-default entries of each sparse array
+      // For Times with default=0, we only need non-zero × non-zero pairs
+      // General approach: iterate Cartesian product of each array's nodeSet()
+      final Trie<int[], IExpr> resultTrie = Config.TRIE_INT2EXPR_BUILDER.build();
+
+      // Recursive Cartesian iteration
+      outerSparse(f, sparseArgs, 0, new int[0], F.NIL, resultDefault, resultTrie, engine);
+
+      return new SparseArrayExpr(resultTrie, resultDim, resultDefault, false);
     }
-    // OuterSparseArrayAlgorithm algorithm = new OuterSparseArrayAlgorithm(ast, head);
-    // final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
-    // ISparseArray resultTensor =
-    // new SparseArrayExpr(trie, resultDimensions, function.apply(getDefaultValue()), false);
-    // ISparseArray result = algorithm.outer(3, ast.arg2(), resultTensor);
-    // if (result != null) {
-    // return result;
-    // }
-    return F.NIL;
   }
+
+  private static void outerSparse(IExpr f, SparseArrayExpr[] args, int argIdx, int[] keyPrefix,
+      IExpr valuePrefix, IExpr resultDefault, Trie<int[], IExpr> resultTrie, EvalEngine engine) {
+
+    SparseArrayExpr current = args[argIdx];
+    boolean isLast = (argIdx == args.length - 1);
+
+    for (TrieNode<int[], IExpr> entry : current.toData().nodeSet()) {
+      int[] key = entry.getKey();
+      IExpr val = entry.getValue();
+
+      // Combined value so far
+      IExpr combinedVal =
+          valuePrefix.isNIL() ? val : engine.evaluate(F.binaryAST2(f, valuePrefix, val));
+
+      // Combined key so far
+      int[] combinedKey = new int[keyPrefix.length + key.length];
+      System.arraycopy(keyPrefix, 0, combinedKey, 0, keyPrefix.length);
+      System.arraycopy(key, 0, combinedKey, keyPrefix.length, key.length);
+
+      if (isLast) {
+        if (!combinedVal.equals(resultDefault)) {
+          resultTrie.put(combinedKey, combinedVal);
+        }
+      } else {
+        outerSparse(f, args, argIdx + 1, combinedKey, combinedVal, resultDefault, resultTrie,
+            engine);
+      }
+    }
+  }
+
 
   @Override
   public int status() {
