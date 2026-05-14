@@ -5292,6 +5292,9 @@ public final class ListFunctions {
         if (F.isPresent(size)) {
           return IAST.range(size + 1);
         }
+        if (ast.arg1().isReal()) {
+          return evaluateTable(ast, F.List(), engine);
+        }
         // `1`.
         return Errors.printMessage(S.Range, "error",
             F.List("argument " + ast.arg1() + " is greater than Javas Integer.MAX_VALUE-3."));

@@ -9349,6 +9349,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFlattenAt() {
+    check("FlattenAt({{1, {2, 3}}, {4, {5, 6}}}, {{1}, {2, 2}})", //
+        "{1,{2,3},{4,5,6}}");
     check("FlattenAt({a, {{}, {c}}, d, {e}}, {{2,1},{2,1}})", //
         "{a,{{c}},d,{e}}");
     check("FlattenAt({a, {{}, {c}}, d, {e}}, {{2,1},{4}})", //
@@ -19991,8 +19993,15 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRange() {
+    check("Range(1,1.25,0.1)", //
+        "{1.0,1.1,1.2}");
+    check("Range(-1, 3.5)", //
+        "{-1,0,1,2,3}");
+    check("Range(2.7)", //
+        "{1,2}");
 
-
+    check("Range(a, b, (b - a)/Pi)", //
+        "{a,a+(-a+b)/Pi,a+(2*(-a+b))/Pi,a+(3*(-a+b))/Pi}");
     check("Range(0,10,Pi)", //
         "{0,Pi,2*Pi,3*Pi}");
 
