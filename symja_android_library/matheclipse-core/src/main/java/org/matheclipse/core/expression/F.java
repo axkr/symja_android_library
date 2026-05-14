@@ -2554,6 +2554,10 @@ public class F extends S {
     return new AST2(Cell, contents, style);
   }
 
+  public static IAST CellularAutomaton(final IExpr rule, final IExpr init) {
+    return new AST2(CellularAutomaton, rule, init);
+  }
+
   public static IAST CentralMoment(final IExpr a0, final int r) {
     return new AST2(CentralMoment, a0, F.ZZ(r));
   }

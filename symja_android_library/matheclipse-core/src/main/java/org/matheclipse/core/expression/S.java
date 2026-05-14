@@ -1506,6 +1506,8 @@ public class S {
 
   public final static IBuiltInSymbol Boxed = S.initFinalSymbol("Boxed", ID.Boxed);
 
+  public final static IBuiltInSymbol BoxMatrix = S.initFinalSymbol("BoxMatrix", ID.BoxMatrix);
+
   public final static IBuiltInSymbol BoxRatios = S.initFinalSymbol("BoxRatios", ID.BoxRatios);
 
   /**
@@ -1764,6 +1766,9 @@ public class S {
   public final static IBuiltInSymbol Ceiling = S.initFinalSymbol("Ceiling", ID.Ceiling);
 
   public final static IBuiltInSymbol Cell = S.initFinalSymbol("Cell", ID.Cell);
+
+  public final static IBuiltInSymbol CellularAutomaton =
+      S.initFinalSymbol("CellularAutomaton", ID.CellularAutomaton);
 
   public final static IBuiltInSymbol Center = S.initFinalSymbol("Center", ID.Center);
 
@@ -6455,6 +6460,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol KeyTake = S.initFinalSymbol("KeyTake", ID.KeyTake);
+
+  public final static IBuiltInSymbol KeyValueMap = S.initFinalSymbol("KeyValueMap", ID.KeyValueMap);
 
   /**
    * KeyValuePattern( {rule-pattern1, rule-pattern1,...}) - `KeyValuePattern` is a pattern-matching
