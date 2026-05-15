@@ -19265,6 +19265,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPrimeZetaP() {
+    check("Table(PrimeZetaP(s),{s,{2,3,4,5,6}})//N", //
+        "{0.452247,0.174763,0.0769931,0.035755,0.0170701}");
     checkNumeric("PrimeZetaP(0.53)", //
         "-1.280363770429509+I*3.141592653589793");
     // checkNumeric("Zeta(1.45+I*3.0)", //
