@@ -9388,6 +9388,8 @@ public class S {
 
   public final static IBuiltInSymbol Primes = S.initFinalSymbol("Primes", ID.Primes);
 
+  public final static IBuiltInSymbol PrimeZetaP = S.initFinalSymbol("PrimeZetaP", ID.PrimeZetaP);
+
   public final static IBuiltInSymbol PrimitiveRoot =
       S.initFinalSymbol("PrimitiveRoot", ID.PrimitiveRoot);
 

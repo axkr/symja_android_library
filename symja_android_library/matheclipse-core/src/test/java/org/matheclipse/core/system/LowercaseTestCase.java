@@ -12549,6 +12549,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("LerchPhi(2, 3, -1.5)", //
     // "");
 
+    checkNumeric("LerchPhi(0.5,1,2)", //
+        "0.7725887222397805");
+    check("LerchPhi(49., 0, 2)", //
+        "-0.0208333");
     check("LerchPhi(-1,1,0)", //
         "-Log(2)");
     check("LerchPhi(-1,2,1/2)", //
@@ -19257,6 +19261,28 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97}");
     check("PrimeQ(Range(20))", //
         "{False,True,True,False,True,False,True,False,False,False,True,False,True,False,False,False,True,False,True,False}");
+  }
+
+  @Test
+  public void testPrimeZetaP() {
+    checkNumeric("PrimeZetaP(0.53)", //
+        "-1.280363770429509+I*3.141592653589793");
+    // checkNumeric("Zeta(1.45+I*3.0)", //
+    // "0.7112059008737832+I*(-0.11813048070895764)");
+    // TODO very slow, wrong result
+    // checkNumeric("PrimeZetaP(I + .1)", //
+    // "-0.15684047987361313+I*(-1.1290859034163128)");
+
+    checkNumeric("PrimeZetaP({2.5, 5.2,1.2})", //
+        "{0.27368073799323395,0.030786640332830656,1.519768312818275}");
+
+
+    checkNumeric("PrimeZetaP(2.5 + I)", //
+        "0.15584060772486752+I*(-0.19748358459794205)");
+    check("Table(PrimeZetaP(s), {s, {1/5, 1/3, 1/2, 1}})", //
+        "{ComplexInfinity,ComplexInfinity,ComplexInfinity,ComplexInfinity}");
+    checkNumeric("PrimeZetaP(12.)", //
+        "2.460264700345445E-4");
   }
 
   @Test

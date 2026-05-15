@@ -1974,8 +1974,8 @@ public class EvalEngine implements Serializable {
     } finally {
       fQuietMode = quietMode;
     }
-    throw new ArgumentTypeException(
-        "conversion into a machine-size Complex numeric value is not possible!");
+    throw new ArgumentTypeException("Expression \"" + Errors.shorten(expr)
+        + "\" cannot be converted to a machine-sized Complex numeric value!");
   }
 
   public final Complex[][] evalComplexMatrix(final IExpr expr) {

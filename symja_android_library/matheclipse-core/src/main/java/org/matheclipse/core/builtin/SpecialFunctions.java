@@ -1598,6 +1598,10 @@ public class SpecialFunctions {
       IExpr z = ast.arg1();
       IExpr s = ast.arg2();
       IExpr a = ast.arg3();
+      return evaluateSymbolic(z, s, a, engine);
+    }
+
+    private static IExpr evaluateSymbolic(IExpr z, IExpr s, IExpr a, EvalEngine engine) {
       if (s.isZero()) {
         // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/LerchPhi/03/01/02/01/0007/
         return F.Power(F.Subtract(F.C1, z), F.CN1);
@@ -1644,7 +1648,6 @@ public class SpecialFunctions {
           return F.Times(F.QQ(1L, 6L), F.Sqr(F.Pi));
         }
 
-
         if (a.isOne()) {
           IExpr re = s.re();
           if (re.isReal() && ((IReal) re).isGT(F.C1)) {
@@ -1665,7 +1668,6 @@ public class SpecialFunctions {
           // (1+I)*PolyLog(2,1/2-I/2)
           return F.Times(F.Plus(F.C1, F.CI), F.PolyLog(F.C2, F.CC(1, 2, -1, 2)));
         }
-
       }
 
       int n = a.toIntDefault();
@@ -1687,8 +1689,69 @@ public class SpecialFunctions {
         }
       }
 
-
       return F.NIL;
+    }
+
+    @Override
+    public IExpr numericFunction(IAST ast, final EvalEngine engine) {
+      if (ast.argSize() == 3) {
+        try {
+          double z = ast.arg1().evalf();
+          double s = ast.arg2().evalf();
+          double a = ast.arg3().evalf();
+
+          // The series expansion only converges for |z| < 1 or (z == 1 and s > 1)
+          if (Math.abs(z) < 1.0 || (Math.abs(z - 1.0) < 1e-14 && s > 1.0)) {
+            return F.num(lerchPhiNumeric(z, s, a));
+          }
+        } catch (ValidateException ve) {
+          // Fallback if inputs cannot be evaluated to machine-precision doubles
+        }
+      }
+      return F.NIL;
+    }
+    /**
+     * Compute LerchPhi numerically via series: Sum(z^k / (k+a)^s)
+     */
+    private double lerchPhiNumeric(double z, double s, double a) {
+      // For z = 1, this is the Hurwitz zeta: Sum(1/(k+a)^s)
+      // Use Euler-Maclaurin to add tail correction for better convergence
+      int nTerms = Math.abs(z - 1.0) < 1e-14 ? 200 : 1000;
+      double sum = 0.0;
+      double zPow = 1.0; // z^k
+
+      for (int k = 0; k < nTerms; k++) {
+        double denom = Math.pow(k + a, s);
+        if (Math.abs(denom) > 1e-300) {
+          double term = zPow / denom;
+          sum += term;
+          if (Math.abs(term) < 1e-15 * Math.abs(sum) && k > 5) {
+            return sum;
+          }
+        }
+        zPow *= z;
+        if (Math.abs(zPow) < 1e-300) {
+          return sum;
+        }
+      }
+
+      // For z=1 (Hurwitz zeta), add Euler-Maclaurin tail to extend the partial sum:
+      // Sum(f(k), {k, N, Infinity}) ~ Integrate(f(t), {t, N, Infinity}) + f(N)/2 - f'(N)/12 +
+      // f'''(N)/720 - ...
+      // with f(t) = 1/(t+a)^s.
+      if (Math.abs(z - 1.0) < 1e-14 && s > 1.0) {
+        double n = nTerms;
+        double na = n + a;
+        double tail = Math.pow(na, 1.0 - s) / (s - 1.0);
+        double f_n = 1.0 / Math.pow(na, s);
+        // -f'(N)/12 = s / (12 (N+a)^(s+1))
+        double em2 = s / (12.0 * Math.pow(na, s + 1.0));
+        // f'''(N)/720 = -s(s+1)(s+2) / (720 (N+a)^(s+3))
+        double em3 = -s * (s + 1.0) * (s + 2.0) / (720.0 * Math.pow(na, s + 3.0));
+        sum += tail + f_n / 2.0 + em2 + em3;
+      }
+
+      return sum;
     }
 
     @Override

@@ -156,6 +156,7 @@ public final class FunctionDefinitions {
       S.PolynomialReduce
           .setEvaluator(new org.matheclipse.core.reflection.system.PolynomialReduce());
       S.PowerRange.setEvaluator(new org.matheclipse.core.reflection.system.PowerRange());
+      S.PrimeZetaP.setEvaluator(new org.matheclipse.core.reflection.system.PrimeZetaP());
       S.Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
       S.Ratios.setEvaluator(new org.matheclipse.core.reflection.system.Ratios());
       S.Reduce.setEvaluator(new org.matheclipse.core.reflection.system.Reduce());
