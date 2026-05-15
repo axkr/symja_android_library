@@ -410,6 +410,11 @@ public final class ASTRealMatrix extends AbstractAST
     return new int[] {matrix.getRowDimension(), matrix.getColumnDimension()};
   }
 
+  @Override
+  public boolean isNumericConstant() {
+    return true;
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean isNumericFunction(boolean allowList) {

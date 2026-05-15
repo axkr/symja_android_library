@@ -585,6 +585,7 @@ public class EvalEngine implements Serializable {
   private transient Cache<IAST, IExpr> globalASTCache;
   // CacheBuilder.newBuilder().maximumSize(500).build();
 
+  private transient static Cache<IAST, INumber> doublePrecisionCache;
 
   private transient Cache<IExpr, Object> globalObjectCache;
   // CacheBuilder.newBuilder().maximumSize(500).build();
@@ -2112,6 +2113,18 @@ public class EvalEngine implements Serializable {
     if (expr.isNegativeInfinity()) {
       return Double.NEGATIVE_INFINITY;
     }
+    if (expr.isComplexNumeric()) {
+      // fast path
+      IComplexNum cc = (IComplexNum) expr;
+      if (F.isZero(cc.getImaginaryPart())) {
+        return cc.getRealPart();
+      }
+      if (Double.isNaN(defaultValue)) {
+        throw new ArgumentTypeException("Expression \"" + Errors.shorten(expr)
+            + "\" cannot be converted to a machine-sized double numeric value!");
+      }
+      return defaultValue;
+    }
     boolean quietMode = fQuietMode;
     try {
       fQuietMode = true;
@@ -2389,15 +2402,13 @@ public class EvalEngine implements Serializable {
     if (expr.isReal()) {
       result = expr.toIntDefault();
     }
-    if (expr.isNumericFunction(true)) {
-      IExpr numericResult = evalNumericFunction(expr, false);
-      if (numericResult.isReal()) {
-        result = numericResult.toIntDefault();
-      }
+    IExpr numericResult = evalNumericFunctionNIL(expr);
+    if (numericResult.isReal()) {
+      result = numericResult.toIntDefault();
     } else {
       IExpr temp = evaluateNIL(expr);
       if (temp.isNumericFunction(true)) {
-        IExpr numericResult = evalNumericFunction(temp, false);
+        numericResult = evalNumericFunctionNIL(temp);
         if (numericResult.isReal()) {
           result = numericResult.toIntDefault();
         }
@@ -2739,20 +2750,60 @@ public class EvalEngine implements Serializable {
     return ast.extractConditionalExpression(false);
   }
 
+  /**
+   * Evaluate an expression in numeric mode. If evaluation is not possible return the input object.
+   * 
+   * @param expr the expression to be evaluated
+   * @return the numerically evaluated expression or the input object if evaluation is not possible
+   */
   public final IExpr evalNumericFunction(final IExpr expr) {
     return evalNumericFunction(expr, true);
   }
 
+  /**
+   * Evaluate an expression in numeric mode. If evaluation is not possible return
+   * <code>F.NIL</code>.
+   * 
+   * @param expr the expression to be evaluated
+   * @return the numerically evaluated expression or <code>F.NIL</code> if evaluation is not
+   *         possible
+   */
+  public final IExpr evalNumericFunctionNIL(final IExpr expr) {
+    if (expr.isNumericFunction(true)) {
+      return evalNumericFunction(expr, false);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Evaluate an expression in numeric mode. If evaluation is not possible return the input object.
+   * 
+   * @param expr the expression to be evaluated
+   * @param checkNumericFunction whether to check if the expression is a numeric function
+   * @return the numerically evaluated expression or the input object if evaluation is not possible
+   */
   public final IExpr evalNumericFunction(final IExpr expr, boolean checkNumericFunction) {
     if (!checkNumericFunction || expr.isNumericFunction(true)) {
       final boolean oldNumericMode = isNumericMode();
       final long oldDigitPrecision = getNumericPrecision();
+      if (oldDigitPrecision <= ParserConfig.MACHINE_PRECISION - 1 && expr.isAST()) {
+        INumber cache = doublePrecisionCache.getIfPresent(expr);
+        if (cache != null//
+            && (((IAST) expr).getEvalEpoch() >= SYSTEM_EPOCH.get() //
+                || expr.isNumericConstant())) {
+          return cache;
+        }
+      }
       final int oldSignificantFigures = getSignificantFigures();
       try {
         setNumericMode(true, oldDigitPrecision, oldSignificantFigures);
         IExpr temp = evalWithoutNumericReset(expr);
         if (temp.isListOrAssociation() || temp.isRuleAST()) {
           return ((IAST) temp).mapThread(arg -> evalNumericFunction(arg));
+        }
+        if (temp.isNumber() && expr.isAST()
+            && oldDigitPrecision <= ParserConfig.MACHINE_PRECISION - 1) {
+          doublePrecisionCache.put((IAST) expr, (INumber) temp);
         }
         return temp;
       } finally {
@@ -2761,6 +2812,7 @@ public class EvalEngine implements Serializable {
       }
     }
     return expr;
+
   }
 
   /**
@@ -3788,6 +3840,9 @@ public class EvalEngine implements Serializable {
     fContextPath = ContextPath.initialContext();
     f$Input = "";
     f$InputFileName = "";
+    globalASTCache.invalidateAll();
+    // doublePrecisionCache.invalidateAll();
+    globalObjectCache.invalidateAll();
     rememberMap = new IdentityHashMap<Object, IExpr>();
   }
 
@@ -3814,6 +3869,7 @@ public class EvalEngine implements Serializable {
     rubiASTCache = null;
     fOptionsStack = new OptionsStack();
     globalASTCache = CacheBuilder.newBuilder().maximumSize(500).build();
+    doublePrecisionCache = CacheBuilder.newBuilder().maximumSize(500).build();
     globalObjectCache = CacheBuilder.newBuilder().maximumSize(500).build();
   }
 

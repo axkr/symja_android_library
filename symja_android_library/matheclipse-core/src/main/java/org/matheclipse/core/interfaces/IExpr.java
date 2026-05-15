@@ -205,8 +205,7 @@ import edu.jas.structure.GcdRingElem;
  * @see org.matheclipse.core.interfaces.INumber
  */
 public interface IExpr
-    extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializable,
-    CalculusFieldElement<IExpr> {
+    extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializable, CalculusFieldElement<IExpr> {
 
   /**
    * A three-state &quot;boolean&quot; value. If a comparison can not be evaluated to <code>S.True
@@ -4227,6 +4226,16 @@ public interface IExpr
    * @see #isRealResult()
    */
   default boolean isNumericFunction(boolean allowList) {
+    return false;
+  }
+
+  /**
+   * Test if this expression is a numeric constant (i.e. a number or a symbolic function with
+   * attribute {@link ISymbol#NUMERICFUNCTION} and all arguments are also numeric constants).
+   * 
+   * @return <code>true</code>, if the given expression is a numeric constant.
+   */
+  default boolean isNumericConstant() {
     return false;
   }
 

@@ -786,6 +786,11 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     return false;
   }
 
+  @Override
+  public boolean isNumericConstant() {
+    return isConstantAttribute();
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean isPolynomial(IAST variables) {

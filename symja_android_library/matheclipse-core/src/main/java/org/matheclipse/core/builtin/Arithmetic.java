@@ -238,12 +238,11 @@ public final class Arithmetic {
       if (arg1.isNumber()) {
         return ((INumber) arg1).abs();
       }
-      if (arg1.isNumericFunction(true)) {
-        IExpr temp = engine.evalNumericFunction(arg1, false);
-        if (temp.isReal()) {
-          return arg1.copySign((IReal) temp);
-        }
+      IExpr temp = engine.evalNumericFunctionNIL(arg1);
+      if (temp.isReal()) {
+        return arg1.copySign((IReal) temp);
       }
+
       if (arg1.isNegativeResult()) {
         return F.Negate(arg1);
       }

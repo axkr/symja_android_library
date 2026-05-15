@@ -444,6 +444,11 @@ public final class ASTRealVector extends AbstractAST
     return true;
   }
 
+  @Override
+  public boolean isNumericConstant() {
+    return true;
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean isNumericFunction(boolean allowList) {

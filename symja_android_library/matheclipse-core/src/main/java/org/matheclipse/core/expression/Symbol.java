@@ -791,6 +791,11 @@ public class Symbol implements ISymbol, Serializable {
     return false;
   }
 
+  @Override
+  public boolean isNumericConstant() {
+    return isConstantAttribute();
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean isPolynomial(IAST variables) {

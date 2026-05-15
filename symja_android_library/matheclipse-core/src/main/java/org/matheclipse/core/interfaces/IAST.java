@@ -210,6 +210,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
 
   public static final int IS_NUMERIC_MASK = 0x03C00000;
 
+  public static final int IS_NUMERIC_CONSTANT = 0x40000000;
+  public static final int IS_NOT_NUMERIC_CONSTANT = 0x00020000;
   /**
    * This expression is an already sorted expression (i.e. sorted with the <code>Order()</code>
    * function)

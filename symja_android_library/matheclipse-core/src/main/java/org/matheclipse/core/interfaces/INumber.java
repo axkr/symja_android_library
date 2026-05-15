@@ -279,6 +279,11 @@ public interface INumber extends IExpr, IAtomicConstant, IAtomicEvaluate {
   }
 
   @Override
+  default boolean isNumericConstant() {
+    return true;
+  }
+
+  @Override
   default boolean isNumber() {
     return true;
   }
