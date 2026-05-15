@@ -2,8 +2,10 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -46,12 +48,11 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
 
       // Throw "nspecnl" if rule is not one of the allowed explicit types.
       if (!isValidRule(rule)) {
-        Errors.printMessage(ast.topHead(), "nspecnl", F.List(rule));
-        return F.NIL;
+        return Errors.printMessage(ast.topHead(), "nspecnl", F.List(rule));
       }
 
       // Operator form: CellularAutomaton(rule)
-      if (argSize == 1) {
+      if (argSize == 1 || ast.head() != S.CellularAutomaton) {
         if (ast.head().isAST(S.CellularAutomaton, 2)) {
           return F.CellularAutomaton(ast.head().first(), rule);
         }
@@ -241,21 +242,8 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
    * Helper that evaluates if a rule matches explicit rule constraint typings.
    */
   private boolean isValidRule(IExpr rule) {
-    if (rule.isInteger() || rule.isList() || rule instanceof IStringX
-        || rule.isAST(F.Association)) {
-      return true;
-    }
-    if (rule.isAST(F.Function)) {
-      return true;
-    }
-    if (rule.isBuiltInSymbol()) {
-      if (rule.equals(F.And) || rule.equals(F.Or) || rule.equals(F.Xor) || rule.equals(F.Not)
-          || rule.equals(F.Nand) || rule.equals(F.Nor) || rule.equals(F.Implies)
-          || rule.equals(F.Equivalent) || rule.equals(F.True) || rule.equals(F.False)) {
-        return true;
-      }
-    }
-    return false;
+    return (rule.isInteger() || rule.isList() || rule.isString() || rule.isAssociation()
+        || rule.isFunction() || rule.isBooleanFormula());
   }
 
   /**
@@ -268,17 +256,23 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
     if (k < 2 || r < 0 || s < 1)
       return F.NIL;
 
-    int numTransitions;
+    long numTransitions;
     if (isTotalistic) {
       numTransitions = s * (2 * r + 1) * (k - 1) + 1;
     } else {
       double numTransDouble = Math.pow(k, s * (2 * r + 1));
-      if (numTransDouble > 2000000)
+      if (numTransDouble > Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt((long) numTransDouble);
         return F.NIL;
+      }
       numTransitions = (int) numTransDouble;
     }
 
-    int[] ruleBits = new int[numTransitions];
+    if (numTransitions > Config.MAX_AST_SIZE) {
+      ASTElementLimitExceeded.throwIt(numTransitions);
+      return F.NIL;
+    }
+    int[] ruleBits = new int[(int) numTransitions];
 
     IInteger temp = ruleNum;
     IInteger ZZk = F.ZZ(k);
@@ -511,17 +505,23 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
     if (k < 2 || rY < 0 || rX < 0 || s < 1)
       return F.NIL;
 
-    int numTransitions;
+    long numTransitions;
     if (isTotalistic) {
       numTransitions = s * ((2 * rY + 1) * (2 * rX + 1)) * (k - 1) + 1;
     } else {
       double numTransDouble = Math.pow(k, s * (2 * rY + 1) * (2 * rX + 1));
-      if (numTransDouble > 2000000)
+      if (numTransDouble > Config.MAX_AST_SIZE) {
+        ASTElementLimitExceeded.throwIt((long) numTransDouble);
         return F.NIL;
-      numTransitions = (int) numTransDouble;
+      }
+      numTransitions = (long) numTransDouble;
     }
 
-    int[] ruleBits = new int[numTransitions];
+    if (numTransitions > Config.MAX_AST_SIZE) {
+      ASTElementLimitExceeded.throwIt(numTransitions);
+      return F.NIL;
+    }
+    int[] ruleBits = new int[(int) numTransitions];
 
     IInteger temp = ruleNum;
     IInteger ZZk = F.ZZ(k);

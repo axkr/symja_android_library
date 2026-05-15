@@ -26,6 +26,8 @@ public class CellularAutomatonTest extends ExprEvaluatorTestCase {
             + " {1,1,0,0,1,0,0,0,0,1,0,1,1,1,1,0,1,1,0,0,1}}");
     check("CellularAutomaton(30, {0, 0, 0, 1, 0, 0, 0}, 2)", //
         "{{0,0,0,1,0,0,0},{0,0,1,1,1,0,0},{0,1,1,0,0,1,0}}");
+    check("CellularAutomaton(\"Rule30\", {0, 0, 0, 1, 0, 0, 0}, 2)", //
+        "{{0,0,0,1,0,0,0},{0,0,1,1,1,0,0},{0,1,1,0,0,1,0}}");
 
   }
 
@@ -160,4 +162,46 @@ public class CellularAutomatonTest extends ExprEvaluatorTestCase {
     check("CellularAutomaton({14, {2, 1}, {1, 1}})[{{{1}}, 0}]", //
         "{{{1,1,1},{1,1,1},{1,1,1}},{{0}}}");
   }
+
+  @Test
+  public void testEvaluateGeneral2D_FunctionList_ZeroSteps() {
+    // Rule {0, {}, {1, 1}}: the empty k-spec {} causes validRule=false in the routing,
+    // so baseRule stays null while is2D=true → evaluateGeneral2D is invoked as fallback.
+    // Inside evaluateGeneral2D, rule.get(2)={} is an empty list → isGeneralFunList=true.
+    // With 0 steps, no computation occurs and the initial 2D matrix is returned unchanged.
+    check("CellularAutomaton({0, {}, {1, 1}}, {{1, 0}, {0, 1}}, 0)", //
+        "{{{1,0},{0,1}}}");
+  }
+
+  @Test
+  public void testEvaluateGeneral2D_FunctionList_OneStep() {
+    // Same routing trick as above. With 1 step the function 0 is applied to each
+    // 3×3 cyclic neighborhood, producing symbolic output 0[neighborhood, t].
+    // For a 1×1 grid all 9 cyclic neighbours resolve to the same single cell.
+    check("CellularAutomaton({0, {}, {1, 1}}, {{1}}, 1)", //
+        "{{{1}},{{0[{{1,1,1},{1,1,1},{1,1,1}},1]}}}");
+  }
+
+  @Test
+  public void testEvaluateGeneral2D_FunctionList_NonSquareGrid_ZeroSteps() {
+    // Verify that a non-square 2×3 initial grid is preserved correctly
+    // when evaluateGeneral2D is called with zero steps.
+    check("CellularAutomaton({0, {}, {1, 1}}, {{1, 0, 1}, {0, 1, 0}}, 1)", //
+        "{{{1,0,1},{0,1,0}},{{0[{{0,0,1},{1,1,0},{0,0,1}},1],0[{{0,1,0},{1,0,1},{0,1,0}},\n" //
+            + "1],0[{{1,0,0},{0,1,1},{1,0,0}},1]},{0[{{1,1,0},{0,0,1},{1,1,0}},1],0[{{1,0,1},{0,\n" //
+            + "1,0},{1,0,1}},1],0[{{0,1,1},{1,0,0},{0,1,1}},1]}}}");
+  }
+
+  @Test
+  public void testEvaluateGeneral2D_InvalidRule_ReturnsNIL() {
+    // A rule of form {n, 2, {3, 3}} causes evaluateInteger2D to return NIL
+    // (numTransitions = 2^49 > Config#MAX_AST_SIZE), falling through to evaluateGeneral2D.
+    // evaluateGeneral2D also returns NIL here (neither isExplicitRule nor isGeneralFunList),
+    // so the expression stays unevaluated.
+
+    // message: CellularAutomaton: Maximum AST dimension NNNN exceeded
+    check("CellularAutomaton({0, 2, {3, 3}}, {{1, 0}, {0, 1}}, 1)", //
+        "CellularAutomaton({0,2,{3,3}},{{1,0},{0,1}},1)");
+  }
+
 }
