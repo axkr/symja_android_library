@@ -3,7 +3,6 @@ package org.matheclipse.core.polynomials;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Function;
 import org.matheclipse.core.convert.VariablesSet;
@@ -20,7 +19,6 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * Forward and backward substitutions of expressions for polynomials. See <a href=
@@ -28,34 +26,59 @@ import com.google.common.collect.ImmutableMap;
  * Homogenization</a>
  */
 public class PolynomialHomogenization {
+  class TanhSechTransform implements Function<IExpr, IExpr> {
+    @Override
+    public IExpr apply(IExpr x) {
+      // Rewrite Sech(u)^(2*n) -> (1 - Tanh(u)^2)^n
+      // Rewrite Csch(u)^(2*n) -> (Coth(u)^2 - 1)^n
+      if (x.isPower()) {
+        IExpr base = x.base();
+        IExpr exp = x.exponent();
+        if (base.isAST1() && base.head().equals(S.Sech)) {
+          int exponent = exp.toIntDefault();
+          if (F.isPresent(exponent) && exponent > 0 && (exponent % 2) == 0) {
+            IExpr arg = base.first();
+            IExpr oneMinusTanh2 = F.Plus(F.C1, F.Negate(F.Power(F.Tanh(arg), F.C2)));
+            if (exponent == 2) {
+              return oneMinusTanh2;
+            }
+            return F.Power(oneMinusTanh2, F.ZZ(exponent / 2));
+          }
+        } else if (base.isAST1() && base.head().equals(S.Csch)) {
+          int exponent = exp.toIntDefault();
+          if (F.isPresent(exponent) && exponent > 0 && (exponent % 2) == 0) {
+            IExpr arg = base.first();
+            IExpr coth2MinusOne = F.Plus(F.Power(F.Coth(arg), F.C2), F.CN1);
+            if (exponent == 2) {
+              return coth2MinusOne;
+            }
+            return F.Power(coth2MinusOne, F.ZZ(exponent / 2));
+          }
+        }
+      }
+      return F.NIL;
+    }
+  }
 
-  private class CosSinTransform implements Function<IExpr, IExpr> {
+  class CosSinTransform {
     private static final int DECISION = 0;
     private static final int SIN_ODD = 1;
     private static final int SIN_EVEN = 2;
     private static final int COS_ODD = 3;
     private static final int COS_EVEN = 4;
 
-    Map<IExpr, int[]> statsMap;
+    private final Map<IExpr, int[]> statsMap;
 
     public CosSinTransform() {
-      statsMap = toMap(originalVariables.toSet());
+      statsMap = new HashMap<>();
     }
 
-    private Map<IExpr, int[]> toMap(Set<IExpr> set) {
-      ImmutableMap.Builder<IExpr, int[]> builder = ImmutableMap.builder();
-      // Map<IExpr, int[]> map = new HashMap<IExpr, int[]>();
-      set.forEach(t -> {
-        int[] statsArray = new int[5];
-        builder.put(t, statsArray);
-        // map.put(t, statsArray);
-      });
-      return builder.build();
+    private int[] getStats(IExpr arg) {
+      return statsMap.computeIfAbsent(arg, k -> new int[5]);
     }
 
     /**
-     * If decision is <code>1</code> rewrite to <code>Sin</code> expressio. If decision is
-     * <code>-1</code> rewrite to <code>Cos</code> expression.
+     * If decision is 1 rewrite to Sin expression. If decision is -1 rewrite to Cos expression.
      */
     private void decideTransform() {
       statsMap.forEach((x, a) -> {
@@ -69,82 +92,81 @@ public class PolynomialHomogenization {
     }
 
     private void determineStatsRecursive(IExpr expr) {
+      if (expr.isPower()) {
+        int exponent = expr.exponent().toIntDefault();
+        if (F.isPresent(exponent)) {
+          IExpr base = expr.base();
+          if (base.isCos() || base.isSin()) {
+            addStatistics((IAST) base, exponent);
+            // Skip power base recursion to prevent duplicate odd/even counting
+            // over the same trig node. Recurse directly into arguments.
+            determineStatsRecursive(((IAST) base).arg1());
+            determineStatsRecursive(expr.exponent());
+            return;
+          }
+        }
+      }
+
+      if (expr.isCos() || expr.isSin()) {
+        addStatistics((IAST) expr, 1);
+        determineStatsRecursive(((IAST) expr).arg1());
+        return;
+      }
+
       if (expr.isAST()) {
-        if (expr.isPower()) {
-          int exponent = expr.exponent().toIntDefault();
-          if (F.isPresent(exponent)) {
-            IExpr base = expr.base();
-            if (base.isAST1()) {
-              addStatistics((IAST) base, exponent);
-            }
-          }
-        } else if (expr.isCos() || expr.isSin()) {
-          addStatistics((IAST) expr, 1);
-        } else {
-          IAST ast = (IAST) expr;
-          for (int i = 1; i < ast.size(); i++) {
-            determineStatsRecursive(ast.get(i));
-          }
+        IAST ast = (IAST) expr;
+        for (int i = 1; i <= ast.argSize(); i++) {
+          determineStatsRecursive(ast.get(i));
         }
       }
     }
 
     /**
-     * Add statistics entry for <code>base ^ exponent</code>
+     * Add statistics entry for base ^ exponent * @param base
      * 
-     * @param base
      * @param exponent
      */
     private void addStatistics(IAST base, int exponent) {
-      int[] stats = statsMap.get(base.arg1());
-      if (stats != null) {
+      if (base.isCos()) {
+        int[] stats = getStats(base.arg1());
         if ((exponent % 2) == 0) {
-          // even exponent number
-          if (base.isCos()) {
-            stats[COS_EVEN]++;
-          } else if (base.isSin()) {
-            stats[SIN_EVEN]++;
-          }
+          stats[COS_EVEN]++;
         } else {
-          // odd exponent number
-          if (base.isCos()) {
-            stats[COS_ODD]++;
-          } else if (base.isSin()) {
-            stats[SIN_ODD]++;
-          }
+          stats[COS_ODD]++;
+        }
+      } else if (base.isSin()) {
+        int[] stats = getStats(base.arg1());
+        if ((exponent % 2) == 0) {
+          stats[SIN_EVEN]++;
+        } else {
+          stats[SIN_ODD]++;
         }
       }
     }
 
     private IExpr rewriteEvenCosSinFunctions(IExpr x) {
       if (x.isPowerInteger() && x.base().isAST1()) {
-        int[] array = statsMap.get(x.base().first());
+        IAST baseAST = (IAST) x.base();
+        int[] array = statsMap.get(baseAST.arg1());
         if (array != null) {
           boolean rewriteToSin = array[DECISION] > 0;
-          if (rewriteToSin && x.base().isCos()) {
-            // rewrite to Sin expression
-            int exponent = x.exponent().toIntDefault();
-            if (F.isPresent(exponent) && (exponent % 2) == 0) {
-              IAST cosAST = (IAST) x.base();
-              IExpr cosArg = cosAST.arg1();
+          int exponent = x.exponent().toIntDefault();
+          if (F.isPresent(exponent) && (exponent % 2) == 0) {
+            if (rewriteToSin && baseAST.isCos()) {
+              IExpr cosArg = baseAST.arg1();
+              IExpr oneMinusSin2 = F.Plus(F.C1, F.Negate(F.Power(F.Sin(cosArg), F.C2)));
               if (exponent > 2) {
-                return F.Power(F.Plus(F.C1, F.Negate(F.Power(F.Sin(cosArg), F.C2))),
-                    F.ZZ(exponent / 2));
+                return F.Power(oneMinusSin2, F.ZZ(exponent / 2));
               }
-              return F.Plus(F.C1, F.Negate(F.Power(F.Sin(cosArg), F.C2)));
+              return oneMinusSin2;
             }
-          }
-          if (!rewriteToSin && x.base().isSin()) {
-            // rewrite to Cos expression
-            int exponent = x.exponent().toIntDefault();
-            if (F.isPresent(exponent) && (exponent % 2) == 0) {
-              IAST sinAST = (IAST) x.base();
-              IExpr sinArg = sinAST.arg1();
+            if (!rewriteToSin && baseAST.isSin()) {
+              IExpr sinArg = baseAST.arg1();
+              IExpr oneMinusCos2 = F.Plus(F.C1, F.Negate(F.Power(F.Cos(sinArg), F.C2)));
               if (exponent > 2) {
-                return F.Power(F.Plus(F.C1, F.Negate(F.Power(F.Cos(sinArg), F.C2))),
-                    F.ZZ(exponent / 2));
+                return F.Power(oneMinusCos2, F.ZZ(exponent / 2));
               }
-              return F.Plus(F.C1, F.Negate(F.Power(F.Cos(sinArg), F.C2)));
+              return oneMinusCos2;
             }
           }
         }
@@ -152,20 +174,15 @@ public class PolynomialHomogenization {
       return F.NIL;
     }
 
-    @Override
-    public IExpr apply(IExpr x) {
-      if (x.isTrigFunction()) {
-        IExpr trigExpand = F.TrigExpand.of(x);
-        if (!trigExpand.equals(x)) {
-          determineStatsRecursive(trigExpand);
-          decideTransform();
-          IExpr subst = F.subst(trigExpand, f -> rewriteEvenCosSinFunctions(f));
-          return subst;
-        }
+    public IExpr applyGlobal(IExpr x) {
+      IExpr trigExpand = F.TrigExpand.of(x);
+      if (trigExpand.isNIL()) {
+        trigExpand = x;
       }
-      return F.NIL;
+      determineStatsRecursive(trigExpand);
+      decideTransform();
+      return F.subst(trigExpand, f -> rewriteEvenCosSinFunctions(f));
     }
-
   }
 
   /**
@@ -203,11 +220,10 @@ public class PolynomialHomogenization {
   public PolynomialHomogenization(VariablesSet variablesSet, EvalEngine engine) {
     this.engine = engine;
     this.originalVariables = variablesSet;
-
   }
 
   /**
-   * Lazy initialization for map <code>symbol -> list-of-least-common-multiple-factors</code>.
+   * Lazy initialization for map symbol -> list-of-least-common-multiple-factors.
    *
    * @return
    */
@@ -219,7 +235,7 @@ public class PolynomialHomogenization {
   }
 
   /**
-   * Lazy initialization for map <code>symbol -> least-common-multiple-factors</code>.
+   * Lazy initialization for map symbol -> least-common-multiple-factors.
    *
    * @return
    */
@@ -231,7 +247,7 @@ public class PolynomialHomogenization {
   }
 
   /**
-   * Determine the <code>least-common-multiple-factor </code> associated with a symbol.
+   * Determine the least-common-multiple-factor associated with a symbol.
    *
    * @param x
    * @return
@@ -249,8 +265,8 @@ public class PolynomialHomogenization {
 
   /**
    * Forward substitution - transforming the expression into a polynomial expression by introducing
-   * &quot;substitution variables&quot;. After transforming the polynomial expression may be
-   * solvable by a polynomial factorization.
+   * substitution variables. After transforming the polynomial expression may be solvable by a
+   * polynomial factorization.
    *
    * @param expression
    * @return the polynomial expression
@@ -259,12 +275,19 @@ public class PolynomialHomogenization {
     IExpr expr;
     if (expression.isFree(x -> x.isTrigFunction(), false)) {
       expr = F.subst(expression, PolynomialHomogenization::unifyIntegerPowers);
+      // Normalize Log(v)/Log(c) -> Log(c,v) so Log-based homogenization works
+      // even when Symja auto-evaluates Log(c,v) to Log(v)/Log(c) beforehand.
+      expr = F.subst(expr, this::normalizeLogBase);
     } else {
-      if (expression.isFree(x -> x.isCos() || x.isSin(), false)) {
-        // expr = F.eval(F.TrigToExp(expression));
+      if (expression.isFree(x -> x.isCos() || x.isSin() || x.isAST(S.Sech, 2) || x.isAST(S.Csch, 2),
+          false)) {
         expr = expression;
+      } else if (!expression.isFree(x -> x.isCos() || x.isSin(), false)) {
+        CosSinTransform transform = new CosSinTransform();
+        expr = transform.applyGlobal(expression);
+        expr = F.evalExpandAll(expr, engine);
       } else {
-        expr = F.subst(expression, new CosSinTransform());
+        expr = F.subst(expression, new TanhSechTransform());
         expr = F.evalExpandAll(expr, engine);
       }
     }
@@ -288,10 +311,9 @@ public class PolynomialHomogenization {
   }
 
   /**
-   * Unify powers in two steps like <code>3^(2+2*x)</code> to <code>3^2 * 3^(2*x)</code>. Merge
-   * powers like <code>2^(2*x)*3^(2*x)</code> to <code>6^(2*x)</code>
+   * Unify powers in two steps like 3^(2+2*x) to 3^2 * 3^(2*x). Merge powers like 2^(2*x)*3^(2*x) to
+   * 6^(2*x) * @param x
    * 
-   * @param x
    * @return
    */
   private static IExpr unifyIntegerPowers(IExpr x) {
@@ -300,7 +322,7 @@ public class PolynomialHomogenization {
       boolean evaled = false;
       // first step
       IASTAppendable times = F.TimesAlloc(timesAST.argSize());
-      for (int i = 1; i < timesAST.size(); i++) {
+      for (int i = 1; i <= timesAST.argSize(); i++) {
         IExpr arg = timesAST.get(i);
         if (arg.isPower() && arg.base().isInteger()) {
           IInteger base = (IInteger) arg.base();
@@ -322,7 +344,7 @@ public class PolynomialHomogenization {
       // second step
       Map<IExpr, IInteger> exponentMap = new TreeMap<IExpr, IInteger>();
       IASTAppendable timesMapped = F.TimesAlloc(times.argSize());
-      for (int i = 1; i < times.size(); i++) {
+      for (int i = 1; i <= times.argSize(); i++) {
         IExpr arg = times.get(i);
         if (arg.isPower() && arg.base().isInteger() && arg.base().isPositive()) {
           evaled = true;
@@ -353,8 +375,8 @@ public class PolynomialHomogenization {
 
   /**
    * Forward substitution - transforming the numerator and denominator expression into polynomial
-   * expressions by introducing &quot;substitution variables&quot;. After transforming the
-   * polynomial expression may be solvable by a polynomial factorization.
+   * expressions by introducing substitution variables. After transforming the polynomial expression
+   * may be solvable by a polynomial factorization.
    *
    * @param numerator
    * @param denominator
@@ -389,7 +411,7 @@ public class PolynomialHomogenization {
     if (expression instanceof IAST) {
       final IAST ast = (IAST) expression;
       if (ast.isPlus() || ast.isTimes()) {
-        for (int i = 1; i < ast.size(); i++) {
+        for (int i = 1; i <= ast.argSize(); i++) {
           determineLCM(ast.get(i));
         }
         return;
@@ -410,18 +432,13 @@ public class PolynomialHomogenization {
             }
             lcm = denominator;
           }
-          // if (base.isTimes()) {
-          //
-          // }
           replaceExpressionLCM(base, lcm);
           return;
         }
         if (exp.isTimes()) {
           determineTimes(ast, base, (IAST) exp);
-          // ((IAST) exp).forEach(x -> determineLCM(F.Power(base, x)));
           return;
-        } else if (exp.isPlus()) { // && base.isExactNumber()) {
-          // ex: 4^(2*x+3)
+        } else if (exp.isPlus()) {
           IAST plusAST = (IAST) exp;
           if (plusAST.first().isInteger()) {
             determineLCM(S.Power.of(base, plusAST.first()));
@@ -470,8 +487,8 @@ public class PolynomialHomogenization {
 
   /**
    * Forward substitution - transforming the expression into a polynomial expression by introducing
-   * &quot;substitution variables&quot;. After transforming the polynomial expression may be
-   * solvable by a polynomial factorization.
+   * substitution variables. After transforming the polynomial expression may be solvable by a
+   * polynomial factorization.
    *
    * @param expression
    * @return
@@ -483,13 +500,13 @@ public class PolynomialHomogenization {
     if (expression instanceof IAST) {
       final IAST ast = (IAST) expression;
       if (ast.isPlus() || ast.isTimes()) {
-        IASTAppendable newAST = F.ast(ast.head(), ast.size());
+        IASTAppendable newAST = F.ast(ast.head(), ast.argSize() + 1);
         IExpr temp = replaceForwardRecursive(ast.arg1());
         if (temp.isNIL()) {
           return F.NIL;
         }
         newAST.append(temp);
-        for (int i = 2; i < ast.size(); i++) {
+        for (int i = 2; i <= ast.argSize(); i++) {
           temp = replaceForwardRecursive(ast.get(i));
           if (temp.isNIL()) {
             return F.NIL;
@@ -514,8 +531,7 @@ public class PolynomialHomogenization {
 
         if (exp.isTimes()) {
           return replaceTimes(ast, base, exp);
-        } else if (exp.isPlus()) { // && base.isExactNumber()) {
-          // ex: 4^(2*x+3)
+        } else if (exp.isPlus()) {
           IAST plusAST = (IAST) exp;
           if (plusAST.first().isInteger()) {
             IExpr coefficient = S.Power.of(base, plusAST.first());
@@ -637,7 +653,7 @@ public class PolynomialHomogenization {
 
   /**
    * Backward substitution - transforming the expression back by replacing the introduced
-   * &quot;substitution variables&quot;.
+   * substitution variables.
    *
    * @param expression
    * @return
@@ -662,9 +678,9 @@ public class PolynomialHomogenization {
 
   /**
    * Backward substitution - transforming the symbol back by reading the denominator LCM and
-   * returning <code>factor ^ denominatorLCM</code>
+   * returning factor ^ denominatorLCM * @param symbol this symbol must be replaced by another
+   * symbol and associated denominator LCM
    * 
-   * @param symbol this symbol must be replaced by another symbol and associated denominator LCM
    * @param resultValue
    * @return
    */
@@ -700,7 +716,7 @@ public class PolynomialHomogenization {
 
   /**
    * Variables (ISymbols) which are substituted from the original polynomial (backward substitution)
-   * returned in a <code>IdentityHashMap</code>.
+   * returned in a IdentityHashMap.
    */
   public java.util.Map<ISymbol, IExpr> substitutedVariables() {
     return substitutedVariables;
@@ -715,8 +731,7 @@ public class PolynomialHomogenization {
   }
 
   /**
-   * Return a list of rules containing the backward substitutions, of the &quot;dummy
-   * variables&quot;
+   * Return a list of rules containing the backward substitutions, of the dummy variables
    *
    * @return
    */
@@ -737,4 +752,79 @@ public class PolynomialHomogenization {
     }
     return list;
   }
+
+  /**
+   * Normalize change-of-base log forms within a Times expression:
+   * <ul>
+   * <li>{@code Log(v) * Log(c)^(-1)  ->  Log(c, v)} (i.e. log_c(v))</li>
+   * <li>{@code Log(c) * Log(v)^(-1)  ->  Log(c, v)^(-1)} (i.e. 1/log_c(v))</li>
+   * </ul>
+   * where {@code c} is a numeric constant and {@code v} depends on the variables.
+   *
+   * @param expr a node from the expression tree
+   * @return the rewritten node, or {@link F#NIL} if no rewrite applied
+   */
+  private IExpr normalizeLogBase(IExpr expr) {
+    if (!expr.isTimes()) {
+      return F.NIL;
+    }
+    final IAST timesAST = (IAST) expr;
+    int varLogIdx = -1;
+    int constLogInvIdx = -1;
+    int constLogIdx = -1;
+    int varLogInvIdx = -1;
+
+    for (int i = 1; i <= timesAST.argSize(); i++) {
+      IExpr arg = timesAST.get(i);
+      if (arg.isAST(S.Log, 2)) {
+        IExpr logArg = arg.first();
+        if (logArg.isNumericFunction()) {
+          if (constLogIdx < 0)
+            constLogIdx = i;
+        } else {
+          if (varLogIdx < 0)
+            varLogIdx = i;
+        }
+      }
+      else if (arg.isPower() && arg.exponent().isMinusOne() && arg.base().isAST(S.Log, 2)) {
+        IExpr logArg = arg.base().first();
+        if (logArg.isNumericFunction()) {
+          if (constLogInvIdx < 0)
+            constLogInvIdx = i;
+        } else {
+          if (varLogInvIdx < 0)
+            varLogInvIdx = i;
+        }
+      }
+    }
+
+    if (varLogIdx >= 0 && constLogInvIdx >= 0) {
+      final IExpr varExpr = timesAST.get(varLogIdx).first();
+      final IExpr constExpr = timesAST.get(constLogInvIdx).base().first();
+      IASTAppendable newTimes = F.TimesAlloc(timesAST.argSize() - 1);
+      for (int i = 1; i <= timesAST.argSize(); i++) {
+        if (i != varLogIdx && i != constLogInvIdx) {
+          newTimes.append(timesAST.get(i));
+        }
+      }
+      newTimes.append(F.Log(constExpr, varExpr));
+      return newTimes.oneIdentity1();
+    }
+
+    if (constLogIdx >= 0 && varLogInvIdx >= 0) {
+      final IExpr constExpr = timesAST.get(constLogIdx).first();
+      final IExpr varExpr = timesAST.get(varLogInvIdx).base().first();
+      IASTAppendable newTimes = F.TimesAlloc(timesAST.argSize() - 1);
+      for (int i = 1; i <= timesAST.argSize(); i++) {
+        if (i != constLogIdx && i != varLogInvIdx) {
+          newTimes.append(timesAST.get(i));
+        }
+      }
+      newTimes.append(F.Power(F.Log(constExpr, varExpr), F.CN1));
+      return newTimes.oneIdentity1();
+    }
+
+    return F.NIL;
+  }
+
 }

@@ -431,6 +431,16 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
           F.Times(F.Subtract(lhs.arg1(), F.Times(F.CN1, rhs)), F.Subtract(lhs.arg1(), rhs))));
     } else if (lhs.isAST1()) {
       return rewriteInverseFunction(F.C1, lhs, rhs);
+    } else if (lhs.isAST(S.Log, 3)) {
+      // Log(base, var) = rhs → var - base^rhs = 0
+      // e.g. Log(2, x) = 2*I → x - 2^(2*I) = 0
+      IExpr base = lhs.arg1();
+      IExpr var = lhs.arg2();
+      if (base.isFree(Predicates.in(fListOfVariables), true)
+          && !var.isFree(Predicates.in(fListOfVariables), true)) {
+        Errors.printIfunMessage(S.InverseFunction);
+        return fEngine.evaluate(F.Subtract(var, F.Power(base, rhs)));
+      }
     } else if (lhs.isPower() && lhs.base().isSymbol() && lhs.exponent().isNumber()) {
       int position = fListOfVariables.indexOf(lhs.base());
       if (position > 0) {
@@ -460,9 +470,9 @@ public class ExprAnalyzer implements Comparable<ExprAnalyzer> {
   private IExpr rewriteInverseFunction(IExpr numericPart, IAST functionToInvert, IExpr rhs) {
     IExpr arg1 = functionToInvert.arg1();
     if (fGenerateConditions) {
-      if (functionToInvert.isFunctionID(ID.ArcCos, ID.ArcCot, ID.ArcSin, ID.ArcTan, ID.Cos,
-          ID.Cosh, ID.Cot, ID.Coth, ID.Csc, ID.Csch, ID.Log, ID.Sec, ID.Sech, ID.Sin, ID.Sinh,
-          ID.Tan, ID.Tanh)) {
+      if (functionToInvert.isFunctionID(ID.ArcCos, ID.ArcCot, ID.ArcSin, ID.ArcTan, ID.Cos, ID.Cosh,
+          ID.Cot, ID.Coth, ID.Csc, ID.Csch, ID.Log, ID.Sec, ID.Sech, ID.Sin, ID.Sinh, ID.Tan,
+          ID.Tanh)) {
         // return dummy placeholder function
         return fEngine
             .evaluate(F.Subtract(arg1, $InverseFunction((IBuiltInSymbol) functionToInvert.head(),

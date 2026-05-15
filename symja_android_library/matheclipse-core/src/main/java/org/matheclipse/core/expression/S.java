@@ -13288,7 +13288,7 @@ public class S {
    * @param ordinal
    * @return
    */
-  /* package private */ static IBuiltInSymbol initFinalSymbol(final String symbolName,
+  public static IBuiltInSymbol initFinalSymbol(final String symbolName,
       int ordinal) {
     final String str;
     if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {

@@ -313,18 +313,12 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSolve7cX4_2ab004() {
-    // TODO
-    // check(
-    // "Solve(-7*c*x^4-2*a*b==0, x)", //
-    //
-    // "{{x->((2/7)^(1/4)*a^(1/4)*b^(1/4))/(-c)^(1/4)},{x->(-(2/7)^(1/4)*a^(1/4)*b^(1/4))/(-c)^(\r\n"
-    // +
-    // "1/4)},{x->(-I*(2/7)^(1/4)*a^(1/4)*b^(1/4))/(-c)^(1/4)},{x->(I*(2/7)^(1/4)*a^(1/4)*b^(\r\n"
-    // + "1/4))/(-c)^(1/4)}}");
-    // check(
-    // "Solve(-7*c*x^4-2*a*b==0, x)// N", //
-    //
-    // "{{x->(0.516973+I*0.516973)*a^0.25*b^0.25},{x->(-0.516973+I*(-0.516973))*a^0.25*b^0.25},{x->(-0.516973+I*0.516973)*a^0.25*b^0.25},{x->(0.516973+I*(-0.516973))*a^0.25*b^0.25}}");
+    check("Solve(-7*c*x^4-2*a*b==0, x)", //
+        "{{x->((-2/7)^(1/4)*a^(1/4)*b^(1/4))/c^(1/4)},{x->(-(-2/7)^(1/4)*a^(1/4)*b^(1/4))/c^(\n" //
+            + "1/4)},{x->((-1)^(3/4)*(2/7)^(1/4)*a^(1/4)*b^(1/4))/c^(1/4)},{x->(-(-1)^(3/4)*(2/\n" //
+            + "7)^(1/4)*a^(1/4)*b^(1/4))/c^(1/4)}}");
+    check("Solve(-7*c*x^4-2*a*b==0, x)// N", //
+        "{{x->((0.516973+I*0.516973)*a^0.25*b^0.25)/c^0.25},{x->((-0.516973+I*(-0.516973))*a^0.25*b^0.25)/c^0.25},{x->((-0.516973+I*0.516973)*a^0.25*b^0.25)/c^0.25},{x->((0.516973+I*(-0.516973))*a^0.25*b^0.25)/c^0.25}}");
   }
 
   @Test
@@ -403,9 +397,12 @@ public class SolveTest extends ExprEvaluatorTestCase {
   @Test
   public void testSolveInequality() {
     // TODO github #210
-    // check(
-    // "Solve({x==y,y>2},x)", //
-    // "{{x->ConditionalExpression(y,y>2)}} ");
+    check("Solve({x==y,y>2},x)", //
+        "{{x->ConditionalExpression(y,y>2)}}");
+    check("Solve({x!=y,y>2},x)", //
+        "Solve({x!=y,y>2},x)");
+    check("Solve({x<y,y>2},x)", //
+        "Solve({x<y,y>2},x)");
   }
 
   @Test
@@ -1492,7 +1489,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSolveHO3() {
-    // TODO return unevaluated expr
+    // return unevaluated expr
     // https: //
     // www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
     check("Solve(4^(1+2*x)/5^(2-x)-6^(1-x)==-42,x)", //
@@ -1503,19 +1500,37 @@ public class SolveTest extends ExprEvaluatorTestCase {
   @Test
   public void testSolveHO4() {
     // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
-
-    // TODO check result
     check(
         "Solve(Cos(x)+ Cos(x)^3 + Cos(x)^5 - 3*Cos(x)*Sin(x)^2 - 10*Cos(x)^3*Sin(x)^2 + 5*Cos(x)*Sin(x)^4 ==0,x)", //
-        "{{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"
-            + "8+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/2+2*Pi*C(1),C(1)∈Integers)}}");
+        "{{x->ConditionalExpression(-5/6*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-\n"
+            + "2/3*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-Pi/2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-Pi/\n"
+            + "3+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-Pi/6+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"
+            + "6+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/3+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n"
+            + "2+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(2/3*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(\n"
+            + "5/6*Pi+2*Pi*C(1),C(1)∈Integers)}}");
+  }
+
+  @Test
+  public void testTanhSechHomogenization() {
+    // If the TanhSechTransform homogenization triggers correctly:
+    // 1. Substitutes Sech(x)^2 -> 1-Tanh(x)^2
+    // 2. 4*(1 - Tanh(x)^2)^2 - 17*(1 - Tanh(x)^2) + 4 == 0
+    // 3. Expands to: 4*Tanh(x)^4 + 9*Tanh(x)^2 - 9 == 0
+    // 4. Roots for Tanh(x)^2 are 3/4 and -3
+    // 5. Tanh(x) evaluates to +/- Sqrt(3)/2 (along with the complex roots)
+    check("Solve(4*Sech(x)^4 - 17*Sech(x)^2 + 4 == 0, x)", //
+        "{{x->ConditionalExpression(-I*2/3*Pi+I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-\n" //
+            + "I*1/3*Pi+I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(I*1/3*Pi+I*2*Pi*C(\n" //
+            + "1),C(1)∈Integers)},{x->ConditionalExpression(I*2/3*Pi+I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-ArcCosh(-\n" //
+            + "2)+I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(ArcCosh(-2)+I*2*Pi*C(1),C(\n" //
+            + "1)∈Integers)},{x->ConditionalExpression(-ArcCosh(2)+I*2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(ArcCosh(\n" //
+            + "2)+I*2*Pi*C(1),C(1)∈Integers)}}");
   }
 
   @Test
   public void testSolveHO5() {
     // https://www.research.ed.ac.uk/portal/files/413486/Solving_Symbolic_Equations_%20with_PRESS.pdf
 
-    // TODO check result
     check(
         "Solve(1/(E^(I*x)*2) + E^(I*x)/2 + 1/2/E^(3*I*x) + (1/2)*E^(3*I*x) + 1/2/E^(5*I*x) + (1/2)*E^(5*I*x) ==0,x)", //
         "{{x->ConditionalExpression(-5/6*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(-\n"
@@ -1782,6 +1797,8 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->0},{x->-Log(9)/Log(6)}}");
     check("Solve( 10*(-6)^x + 1 == 0, x)", //
         "{{x->(I*Pi-Log(10))/(I*Pi+Log(6))}}");
+    check("Solve(Log(2, x)+4*Log(x, 2)==0,x)", //
+        "{{x->1/2^(I*2)},{x->2^(I*2)}}");
   }
 
   @Test
@@ -1877,10 +1894,10 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // \end{array}, k \in \mathbb{Z}\right.\right.
     // \end{aligned}
     check(
-        "Solve[ 2sin(x)^(2)+3*sin(x) * cos(x)-5cos(x)^(2) == 0, x, GenerateConditions -> True] "
-            + "// ExpToTrig // FullSimplify",
-        "{{x->ConditionalExpression(Pi*(-3/4+2*C(1)),C(1)∈Integers)},"
-            + "{x->ConditionalExpression(-ArcTan(\n5/2)+2*Pi*C(1),C(1)∈Integers)}}");
+        "Solve(2sin(x)^(2)+3*sin(x) * cos(x)-5cos(x)^(2) == 0, x, GenerateConditions -> True)// ExpToTrig // FullSimplify",
+        "{{x->ConditionalExpression(Pi*(-3/4+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Pi*(\n" //
+            + "1/4+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(-ArcTan(5/2)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi-ArcTan(\n" //
+            + "5/2)+2*Pi*C(1),C(1)∈Integers)}}");
 
     // \begin{aligned}
     // &\Leftrightarrow\left(3 \sin 3 x-4 \sin ^3 3 x\right)-\sqrt{3} \cos 9 x=1\\
@@ -1926,12 +1943,14 @@ public class SolveTest extends ExprEvaluatorTestCase {
     checkSolveLatex("9 \\sin x+6 \\cos x-3 \\sin 2 x+\\cos 2 x=8",
         "Cos(2*x)+6*Cos(x)+9*Sin(x)-3*Sin(2*x)==8",
         "{{x->ConditionalExpression(Pi*(1/2+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(-ArcTan(\n" //
-            + "3)+2*Pi*C(1),C(1)∈Integers)}}");
+            + "3)+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi-ArcTan(3)+2*Pi*C(1),C(\n" //
+            + "1)∈Integers)}}");
 
     checkSolveLatex("\\sin 2 x-\\cos 2 x=3 \\sin x+\\cos x-2",
         "-Cos(2*x)+Sin(2*x)==-2+Cos(x)+3*Sin(x)",
-        "{{x->ConditionalExpression(Pi*(-1/4+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Pi*(\n"
-            + "1/6+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Pi*(5/6+2*C(1)),C(1)∈Integers)}}");
+        "{{x->ConditionalExpression(Pi*(-1/4+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Pi*(\n" //
+            + "1/6+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Pi*(3/4+2*C(1)),C(1)∈Integers)},{x->ConditionalExpression(Pi*(\n" //
+            + "5/6+2*C(1)),C(1)∈Integers)}}");
 
     // TODO: wrong parsed input
     // checkSolveLatex("1+\\cot 2 x=\\frac{1-\\cos 2 x}{\\sin ^2 2 x}",
@@ -2202,7 +2221,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
     check(
         "NSolve({v1x==(((m1-m2)*u1*Cos(a1-Abs(a1-a2))+2*m2*u2*Cos(a2-Abs(a1-a2)))*Cos(Abs(a1-a2)))/(m1+m2)+u2*Cos(Abs(a1-a2))*Sin(a2-Abs(a1-a2)),v1y==u1*Cos(Abs(a1-a2))*Sin(a1-Abs(a1-a2))+(((m1-m2)*u1*Cos(a1-Abs(a1-a2))+\n" //
             + "2*m2*u2*Cos(a2-Abs(a1-a2)))*Sin(Abs(a1-a2)))/(m1+m2),v2x==((2*m1*u1*Cos(a1-Abs(a1-a2))+(-m1+m2)*u2*Cos(a2-Abs(a1-a2)))*Cos(Abs(a1-a2)))/(m1+m2)+u2*Cos(Abs(a1-a2))*Sin(a2-Abs(a1-a2)),v2y==u2*Cos(Abs(a1-a2))*Sin(a2-Abs(a1-a2))+((\n" //
-            + "2*m1*u1*Cos(a1-Abs(a1-a2))+(-m1+m2)*u2*Cos(a2-Abs(a1-a2)))*Sin(Abs(a1-a2)))/(m1+m2),Tan(b1)==v1y/v1x,Tan(b2)==v2y/v2x,v1==Sqrt(v1x^\r\n"
+            + "2*m1*u1*Cos(a1-Abs(a1-a2))+(-m1+m2)*u2*Cos(a2-Abs(a1-a2)))*Sin(Abs(a1-a2)))/(m1+m2),Tan(b1)==v1y/v1x,Tan(b2)==v2y/v2x,v1==Sqrt(v1x^\n" //
             + "2+v1y^2),v2==Sqrt(v2x^2+v2y^2),m1==1,m2==2,a1==Pi,a2==0,u1==3,u2==4},{m1,m2,v1x,v1y,v2x,v2y,v1,v2,a1,a2,b1,b2,u1,u2})", //
         "{{a1->3.14159,a2->0.0,b1->0.0,b2->0.0,m1->1.0,m2->2.0,u1->3.0,u2->4.0,v1->-6.33333,v1x->6.33333,v1y->0.0,v2->-0.666667,v2x->-0.666667,v2y->0.0},{a1->3.14159,a2->0.0,b1->0.0,b2->0.0,m1->1.0,m2->2.0,u1->3.0,u2->4.0,v1->-6.33333,v1x->6.33333,v1y->0.0,v2->0.666667,v2x->-0.666667,v2y->0.0},{a1->3.14159,a2->0.0,b1->0.0,b2->0.0,m1->1.0,m2->2.0,u1->3.0,u2->4.0,v1->6.33333,v1x->6.33333,v1y->0.0,v2->-0.666667,v2x->-0.666667,v2y->0.0},{a1->3.14159,a2->0.0,b1->0.0,b2->0.0,m1->1.0,m2->2.0,u1->3.0,u2->4.0,v1->6.33333,v1x->6.33333,v1y->0.0,v2->0.666667,v2x->-0.666667,v2y->0.0}}");
   }
@@ -2221,7 +2240,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->-y},{x->-I*y},{x->I*y},{x->y}}");
     // TODO
     check("Solve(Power(x^(-4), -1/4) - Power(y^(-1/4), -1/4)==0,x)", //
-        "{{x->y^(1/16)}}");
+        "{{x->-y^(1/16)},{x->y^(1/16)}}");
   }
 
   @Test

@@ -680,8 +680,36 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
               printIfunMessage(engine);
             }
             IExpr value = engine.evaluate(F.Power(exprWithoutVariable, reversedPower));
-            return extractVariableRecursive(base, value, predicate, variable, multipleValues,
+            IExpr res1 = extractVariableRecursive(base, value, predicate, variable, multipleValues,
                 engine);
+            // For even integer exponent with multipleValues, also consider the negative root:
+            // f(x)^(2k) = rhs has two families: f(x) = +rhs^(1/(2k)) and f(x) = -rhs^(1/(2k))
+            if (multipleValues && exponent.isInteger() && exponent.isEvenResult()) {
+              IExpr negValue = engine.evaluate(F.Negate(value));
+              if (!negValue.equals(value)) {
+                IExpr res2 = extractVariableRecursive(base, negValue, predicate, variable,
+                    multipleValues, engine);
+                if (res2.isPresent()) {
+                  if (res1.isPresent()) {
+                    // Merge both result lists
+                    IASTAppendable merged = F.ListAlloc();
+                    if (res1.isList()) {
+                      merged.appendArgs((IAST) res1);
+                    } else {
+                      merged.append(res1);
+                    }
+                    if (res2.isList()) {
+                      merged.appendArgs((IAST) res2);
+                    } else {
+                      merged.append(res2);
+                    }
+                    return merged;
+                  }
+                  return res2;
+                }
+              }
+            }
+            return res1;
           } else if (base.isFree(predicate, true)) {
             if (base.isE()) {
               if (exponent.isRealResult()) {

@@ -188,8 +188,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
      * @param variables the list of variables
      * @param resultList the list of result values as rules assigned to each variable
      * @param maximumNumberOfResults the maximum number of results in <code>resultList</code>:
-     *        <code>0
-     *     </code> gives all results.
+     *        <code>0</code> gives all results.
      * @param matrix
      * @param vector
      * @param engine
@@ -954,6 +953,37 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           IASTAppendable resultList = F.ListAlloc();
           IASTAppendable singleList = F.ListAlloc();
           if (filterSingleSolutionRecursive(list, 1, singleList, resultList, engine)) {
+            if (lists[1].argSize() > 0) {
+              IExpr condition;
+              if (lists[1].argSize() == 1) {
+                condition = lists[1].arg1();
+              } else {
+                IASTAppendable andAST = F.ast(S.And);
+                andAST.appendArgs(lists[1]);
+                condition = andAST;
+              }
+
+              IASTAppendable newResultList = F.ListAlloc(resultList.argSize());
+              for (int j = 1; j < resultList.size(); j++) {
+                IAST solList = (IAST) resultList.get(j);
+                IASTAppendable wrappedList = F.ListAlloc(solList.argSize());
+                for (int i = 1; i < solList.size(); i++) {
+                  IAST rule = (IAST) solList.get(i);
+                  IExpr value = rule.arg2();
+                  if (!value.isConditionalExpression()) {
+                    wrappedList
+                        .append(F.Rule(rule.arg1(), F.ConditionalExpression(value, condition)));
+                  } else {
+                    IAST condExpr = (IAST) value;
+                    IExpr newCond = F.And(condExpr.arg2(), condition);
+                    wrappedList.append(
+                        F.Rule(rule.arg1(), F.ConditionalExpression(condExpr.arg1(), newCond)));
+                  }
+                }
+                newResultList.append(wrappedList);
+              }
+              return newResultList;
+            }
             return resultList;
           }
         }
@@ -1259,7 +1289,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
               }
               IAST subResult = (IAST) res;
               for (int k = 1; k < subResult.size(); k++) {
-                subSolutionSet.add(solveNumeric(subResult.get(i), numericFlag, engine));
+                subSolutionSet.add(solveNumeric(subResult.get(k), numericFlag, engine));
               }
             }
           }
