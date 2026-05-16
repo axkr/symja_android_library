@@ -2872,7 +2872,6 @@ public final class LinearAlgebra {
       S.LUDecomposition.setEvaluator(new LUDecomposition());
       S.MatrixMinimalPolynomial.setEvaluator(new MatrixMinimalPolynomial());
       S.MatrixExp.setEvaluator(new MatrixExp());
-      S.MatrixFunction.setEvaluator(new MatrixFunction());
       S.MatrixLog.setEvaluator(new MatrixLog());
       S.MatrixPower.setEvaluator(new MatrixPower());
       S.MatrixRank.setEvaluator(new MatrixRank());
@@ -4038,34 +4037,6 @@ public final class LinearAlgebra {
     }
 
   }
-
-
-  private static class MatrixFunction extends AbstractEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int[] dimensions = ast.arg2().isMatrix();
-      if (dimensions != null) {
-        if (dimensions[0] == 0 || dimensions[1] == 0) {
-          return ast.arg2();
-        }
-        // TODO
-        // final IExpr function = ast.arg1();
-        // FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(ast.arg2());
-        // return Convert.matrix2Expr(fieldMatrix);
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {}
-  }
-
 
   private static class MatrixLog extends MatrixExp {
 
@@ -6652,7 +6623,7 @@ public final class LinearAlgebra {
         // }
         // };
         final IndexTableGenerator generator = new IndexTableGenerator(indexArray, S.List, //
-            indx -> Power(lst.get(indx[0] + 1), F.ZZ(indx[1])));
+            indx -> F.Power(lst.get(indx[0] + 1), F.ZZ(indx[1])));
         final IAST matrix = (IAST) generator.table();
         // because the rows can contain sub lists the IAST.IS_MATRIX flag cannot be set directly.
         // isMatrix()

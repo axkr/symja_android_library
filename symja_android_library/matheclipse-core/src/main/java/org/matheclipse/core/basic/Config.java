@@ -331,8 +331,10 @@ public class Config {
    */
   public static double SPECIAL_FUNCTIONS_TOLERANCE = 1.0e-10;
 
+  public static double DEFAULT_EQUALS_TOLERANCE = 1.0e-14;
+
   /**
-   * Return {@link True} for {@link Apfloat} integers in <code>Element(apfloat, Integers)</code>
+   * Return {@link S#True} for {@link Apfloat} integers in <code>Element(apfloat, Integers)</code>
    */
   public static boolean ACCEPT_NUMERIC_INTEGER_IN_INTEGERS_DOMAIN = false;
 

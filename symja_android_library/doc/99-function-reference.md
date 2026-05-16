@@ -699,6 +699,7 @@ Functions in alphabetical order:
 * [MatrixD](functions/MatrixD.md)
 * &#x2705; [MatrixExp](functions/MatrixExp.md)
 * [MatrixForm](functions/MatrixForm.md)
+* &#x2705; [MatrixFunction](functions/MatrixFunction.md)
 * &#x2611; [MatrixLog](functions/MatrixLog.md)
 * &#x2705; [MatrixMinimalPolynomial](functions/MatrixMinimalPolynomial.md)
 * &#x1F9EA; [MatrixPlot](functions/MatrixPlot.md)

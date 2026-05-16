@@ -1352,7 +1352,7 @@ public interface IExpr
 
     IExpr difference = engine.evaluate(F.Subtract(arg1, arg2));
     if (difference.isNumber()) {
-      if (difference.isZero()) {
+      if (((INumber) difference).isZero(Config.DEFAULT_EQUALS_TOLERANCE)) {// Config.SPECIAL_FUNCTIONS_TOLERANCE))
         return IExpr.COMPARE_TERNARY.TRUE;
       }
       return IExpr.COMPARE_TERNARY.FALSE;
