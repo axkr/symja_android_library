@@ -130,7 +130,7 @@ public class MD2PDF {
         targetLocation.mkdirs();
       }
 
-      File outputPdf = new File(targetLocation, "SymjaDocumentation.pdf");
+      File outputPdf = new File(targetLocation, "Symja-latest.pdf");
       try (OutputStream os = new FileOutputStream(outputPdf)) {
         ITextRenderer textRenderer = new ITextRenderer();
 
@@ -281,7 +281,7 @@ public class MD2PDF {
     File sourceLocation =
         new File(userHome + "\\git\\symja_android_library\\symja_android_library\\doc\\functions");
     File targetLocation =
-        new File(userHome + "\\git\\symja_android_library\\symja_android_library\\pdf");
+        new File(userHome + "\\git\\symja_android_library\\");
 
     generatePDF(sourceLocationDocs, sourceLocation, targetLocation);
   }
