@@ -601,6 +601,7 @@ Functions in alphabetical order:
 * &#x2615; [JavaObjectQ](functions/JavaObjectQ.md)
 * [JavaShow](functions/JavaShow.md)
 * &#x2705; [Join](functions/Join.md)
+* [JordanDecomposition](functions/JordanDecomposition.md)
 * &#x2611; [JSForm](functions/JSForm.md)
 * &#x1F9EA; [KaryTree](functions/KaryTree.md)
 * &#x2705; [Key](functions/Key.md)

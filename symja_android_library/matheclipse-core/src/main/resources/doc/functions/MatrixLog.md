@@ -17,3 +17,6 @@ See
 {{1.22377+I*0.00020385,0.37081+I*(-0.87661)},
  {0.000309008+I*(-0.000730508),-0.104964+I*3.14139}}
 ```
+
+### Related terms 
+[JordanDecomposition](JordanDecomposition.md), [MatrixExp](MatrixExp.md), [MatrixFunction](MatrixFunction.md),  [SchurDecomposition](SchurDecomposition.md)

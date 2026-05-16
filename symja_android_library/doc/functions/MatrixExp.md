@@ -17,17 +17,7 @@ See
 {{29.97054,8.24991}, 
  {0.00687492,0.408375}}
 ```
- 
 
+### Related terms 
+[JordanDecomposition](JordanDecomposition.md), [MatrixFunction](MatrixFunction.md), [MatrixLog](MatrixLog.md), [SchurDecomposition](SchurDecomposition.md)
 
-
-
-
-
-### Implementation status
-
-* &#x2705; - full supported
-
-### Github
-
-* [Implementation of MatrixExp](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/LinearAlgebra.java#L3888) 

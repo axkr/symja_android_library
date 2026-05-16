@@ -6450,6 +6450,10 @@ public class F extends S {
     return new AST2(Join, a0, a1);
   }
 
+  public static IAST JordanDecomposition(final IExpr a0) {
+    return new AST1(JordanDecomposition, a0);
+  }
+  
   /**
    * Create JavaScript form data in the given format.
    *
@@ -7525,20 +7529,28 @@ public class F extends S {
     return matrix;
   }
 
-  public static IAST MatrixExp(final IExpr a0) {
-    return new AST1(MatrixExp, a0);
+  public static IAST MatrixExp(final IExpr matrix) {
+    return new AST1(MatrixExp, matrix);
   }
 
   public static IAST MatrixForm(final IExpr a0) {
     return new AST1(MatrixForm, a0);
   }
 
-  public static IAST MatrixLog(final IExpr a0) {
-    return new AST1(MatrixLog, a0);
+  public static IAST MatrixFunction(final IExpr f, final IExpr matrix) {
+    return new AST2(MatrixFunction, f, matrix);
+  }
+
+  public static IAST MatrixLog(final IExpr matrix) {
+    return new AST1(MatrixLog, matrix);
   }
 
   public static IAST MatrixPower(final IExpr matrix, final IExpr n) {
     return new AST2(MatrixPower, matrix, n);
+  }
+
+  public static IAST MatrixRank(final IExpr a0) {
+    return new AST1(MatrixRank, a0);
   }
 
   public static IASTAppendable Max() {

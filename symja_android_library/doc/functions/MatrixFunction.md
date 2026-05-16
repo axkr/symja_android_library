@@ -21,3 +21,6 @@ An example from Wikipedia:
 >> N(mf)
 {{2.81144,0.407999},{0.271999,2.81144}}
 ```
+
+### Related terms 
+[JordanDecomposition](JordanDecomposition.md), [MatrixExp](MatrixExp.md), [MatrixLog](MatrixLog.md), [SchurDecomposition](SchurDecomposition.md)

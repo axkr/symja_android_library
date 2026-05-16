@@ -115,7 +115,8 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.InverseLaplaceTransform());
       S.InverseZTransform
           .setEvaluator(new org.matheclipse.core.reflection.system.InverseZTransform());
-
+      S.JordanDecomposition
+          .setEvaluator(new org.matheclipse.core.reflection.system.JordanDecomposition());
       S.KaryTree.setEvaluator(new org.matheclipse.core.reflection.system.KaryTree());
 
       S.LaplaceTransform
@@ -126,7 +127,9 @@ public final class FunctionDefinitions {
       S.LinearProgramming
           .setEvaluator(new org.matheclipse.core.reflection.system.LinearProgramming());
       S.LogBarnesG.setEvaluator(new org.matheclipse.core.reflection.system.LogBarnesG());
+      S.MatrixExp.setEvaluator(new org.matheclipse.core.reflection.system.MatrixExp());
       S.MatrixFunction.setEvaluator(new org.matheclipse.core.reflection.system.MatrixFunction());
+      S.MatrixLog.setEvaluator(new org.matheclipse.core.reflection.system.MatrixLog());
       S.MaximalBy.setEvaluator(new org.matheclipse.core.reflection.system.MaximalBy());
       S.MeijerG.setEvaluator(new org.matheclipse.core.reflection.system.MeijerG());
       S.MeijerGReduce.setEvaluator(new org.matheclipse.core.reflection.system.MeijerGReduce());
