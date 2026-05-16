@@ -13,8 +13,9 @@
  */
 package org.matheclipse.parser.client;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
-import java.util.Stack;
 import org.matheclipse.parser.client.operator.Operator;
 
 public abstract class Scanner {
@@ -135,7 +136,7 @@ public abstract class Scanner {
    *         brackets are unbalanced.
    */
   public static String balanceCode(CharSequence sourceCode) {
-    Stack<Character> openBracketStack = new Stack<Character>();
+    Deque<Character> openBracketStack = new ArrayDeque<Character>();
 
     for (int j = 0; j < sourceCode.length(); j++) {
       char ch = sourceCode.charAt(j);
@@ -227,7 +228,7 @@ public abstract class Scanner {
    * @return
    */
   public static int isBalancedCode(CharSequence sourceCode) {
-    Stack<Character> openBracketStack = new Stack<Character>();
+    Deque<Character> openBracketStack = new ArrayDeque<Character>();
 
     int length = sourceCode.length();
     for (int j = 0; j < length; j++) {
@@ -474,12 +475,6 @@ public abstract class Scanner {
       getChar();
     }
     int contextIndex = -1;
-    while (Characters.isSymjaIdentifierPart(fCurrentChar)) {
-      if (fCurrentChar == '`') {
-        contextIndex = fCurrentPosition - 1;
-      }
-      getChar();
-    }
     while (Characters.isSymjaIdentifierPart(fCurrentChar)) {
       if (fCurrentChar == '`') {
         contextIndex = fCurrentPosition - 1;
