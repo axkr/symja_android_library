@@ -904,6 +904,11 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     return engine.evaluate(F.ast(convertedArgs, this));
   }
 
+  @Override
+  public IExpr funEval(EvalEngine engine, IExpr... args) {
+    return engine.evaluate(F.ast(args, this));
+  }
+
   /** {@inheritDoc} */
   @Override
   public IExpr of1(EvalEngine engine, IExpr arg, IExpr... parts) {

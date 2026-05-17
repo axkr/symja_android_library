@@ -75,6 +75,29 @@ import org.matheclipse.core.expression.S;
  */
 public interface IBuiltInSymbol extends ISymbol {
 
+  public default IExpr evaluate(IAST ast, EvalEngine engine) {
+    return this.getEvaluator().evaluate(ast, engine);
+  }
+
+  /**
+   * Evaluate the built-in function directly with the given arguments, bypassing the re-evaluation
+   * of the arguments.
+   * 
+   * @param engine the evaluation engine
+   * @param args the arguments which aren't reevaluated in this method
+   */
+  public IExpr funEval(EvalEngine engine, IExpr... args);
+
+  /**
+   * Evaluate the built-in function directly with the given arguments, bypassing the re-evaluation
+   * of the arguments.
+   * 
+   * @param args the arguments which aren't reevaluated in this method
+   */
+  default IExpr funEval(IExpr... args) {
+    return funEval(EvalEngine.get(), args);
+  }
+
   /**
    * Get the current evaluator for this symbol
    *
@@ -83,8 +106,8 @@ public interface IBuiltInSymbol extends ISymbol {
    */
   public IFunctionEvaluator getEvaluator();
 
-  public default IExpr evaluate(IAST ast, EvalEngine engine) {
-    return this.getEvaluator().evaluate(ast, engine);
+  public default ISymbol mapToGlobal(EvalEngine engine) {
+    return null;
   }
 
   /** Set the current evaluator which is associated to this symbol */
@@ -92,8 +115,4 @@ public interface IBuiltInSymbol extends ISymbol {
 
   /** Define a predicate as the current evaluator which is associated to this symbol */
   public void setPredicateQ(Predicate<IExpr> predicate);
-
-  public default ISymbol mapToGlobal(EvalEngine engine) {
-    return null;
-  }
 }

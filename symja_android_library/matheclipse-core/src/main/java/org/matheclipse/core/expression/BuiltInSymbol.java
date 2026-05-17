@@ -463,7 +463,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
       // evaluate a core function (without no rule definitions)
       final ICoreFunctionEvaluator coreFunction = (ICoreFunctionEvaluator) getEvaluator();
       IAST ast = F.ast(args, this);
-      return coreFunction.evaluate(ast, engine);
+      return coreFunction.evaluate(ast, engine).orElse(ast);
     }
 
     return super.of(engine, args);
@@ -477,10 +477,21 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
       // evaluate a core function (without no rule definitions)
       final ICoreFunctionEvaluator coreFunction = (ICoreFunctionEvaluator) getEvaluator();
       IAST ast = F.ast(convertedArgs, this);
-      return coreFunction.evaluate(ast, engine);
+      return coreFunction.evaluate(ast, engine).orElse(ast);
     }
 
     return super.of(engine, convertedArgs);
+  }
+
+  @Override
+  public IExpr funEval(EvalEngine engine, IExpr... args) {
+    if (fEvaluator instanceof IFunctionEvaluator) {
+      // evaluate a core function (without no rule definitions)
+      final IFunctionEvaluator function = getEvaluator();
+      final IAST ast = F.ast(args, this);
+      return function.evaluate(ast, engine).orElse(ast);
+    }
+    return engine.evaluate(F.ast(args, this));
   }
 
   /** {@inheritDoc} */
