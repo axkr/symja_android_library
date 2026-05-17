@@ -42,6 +42,140 @@ public class TensorTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testHodgeDualRankGreater1() {
+    // --- rank-2 tensor, n=2 (2D) → scalar (dualRank = 2-2 = 0) ---
+    // HodgeDual({{a,b},{c,d}}) = (1/2!) * Sum_{i,j} M[i,j]*ε[i,j]
+    // = (1/2)*(b*ε[1,2] + c*ε[2,1]) = (1/2)*(b - c)
+    check("HodgeDual({{a, b}, {c, d}})", //
+        "1/2*(b-c)");
+
+    // Antisymmetric 2×2 matrix: off-diagonal = ±1
+    check("HodgeDual({{0, 1}, {-1, 0}})", //
+        "1");
+
+    // --- rank-2 tensor, n=3 (3D) → vector (dualRank = 3-2 = 1) ---
+    // HodgeDual[M][k] = (1/2) * Sum_{i,j} M[i,j]*ε[i,j,k]
+    // For M = HodgeDual[{1,0,0}] = {{0,0,0},{0,0,1},{0,-1,0}},
+    // the double dual should recover {1,0,0}:
+    check("Normal@HodgeDual({{0,0,0},{0,0,1},{0,-1,0}})", //
+        "{1,0,0}");
+
+    // Double dual in 3D: HodgeDual[HodgeDual[v]] == v for a rank-1 vector
+    check("Normal@HodgeDual(Normal@HodgeDual({a, b, c}))", //
+        "{a,b,c}");
+
+    // Fully antisymmetric rank-2 tensor in 3D: M = {{0,c,-b},{-c,0,a},{b,-a,0}}
+    // HodgeDual recovers {a, b, c}
+    check("Normal@HodgeDual({{0,c,-b},{-c,0,a},{b,-a,0}})", //
+        "{a,b,c}");
+
+    // --- rank-2 tensor, n=4 (4D) → rank-2 tensor (dualRank = 4-2 = 2) ---
+    // Use a simple rank-2 antisymmetric tensor with one non-zero pair: M[1,2]=1, M[2,1]=-1
+    // HodgeDual[M][j1,j2] = (1/2)*Sum_{i1,i2} M[i1,i2]*ε[i1,i2,j1,j2]
+    // non-zero contributions: M[1,2]*ε[1,2,j1,j2] + M[2,1]*ε[2,1,j1,j2]
+    // = (1/2)*(ε[1,2,j1,j2] - ε[2,1,j1,j2]) = ε[1,2,j1,j2]
+    // Only non-zero for (j1,j2) = (3,4) → ε[1,2,3,4]=1 and (4,3) → ε[1,2,4,3]=-1
+    check("Normal@HodgeDual({{0,1,0,0},{-1,0,0,0},{0,0,0,0},{0,0,0,0}})", //
+        "{{0,0,0,0},{0,0,0,0},{0,0,0,1},{0,0,-1,0}}");
+
+    // --- HodgeDual[tensor, dim] (2-argument form) ---
+    // All slots have dimension 3 → same as 1-argument form
+    check("Normal@HodgeDual({a, b, c}, 3)", //
+        "{{0,c,-b},{-c,0,a},{b,-a,0}}");
+
+    // Rank-2 tensor in 2D with explicit dim=2 → same as 1-argument form
+    check("HodgeDual({{a, b}, {c, d}}, 2)", //
+        "1/2*(b-c)");
+
+    // --- HodgeDual(tensor, dim, slots) (3-argument form) ---
+    // Dualize only slot 1 of {a,b,c} (dim=3, rank being dualized=1) → same as rank-1 result
+    check("Normal@HodgeDual({a, b, c}, 3, {1})", //
+        "{{0,c,-b},{-c,0,a},{b,-a,0}}");
+
+    // Dualize both slots of a 3×3 matrix with dim=3 → same as 1-argument form (rank-2 dual)
+    check("Normal@HodgeDual({{0,c,-b},{-c,0,a},{b,-a,0}}, 3, {1,2})", //
+        "{a,b,c}");
+
+    // Rank-2 tensor in 2D with explicit slots {1,2} → scalar
+    check("HodgeDual({{a, b}, {c, d}}, 2, {1, 2})", //
+        "1/2*(b-c)");
+  }
+
+  @Test
+  public void testHodgeDualSpectatorSlots() {
+    // -----------------------------------------------------------------------
+    // buildSpectatorResult for-loop is exercised whenever there is at least
+    // one spectator slot (a dimension that does NOT equal the dualized dim).
+    // -----------------------------------------------------------------------
+
+    // --- Shape {2, 3}: row index (dim=2) is spectator, column (dim=3) is contracted ---
+    // HodgeDual[M, 3] with M of shape {2,3}:
+    // r=1, dualRank=2, spectatorDims={2} → for-loop iterates k=0,1 (2 spectator entries)
+    //
+    // For each spectator row s: HodgeDual of that row is computed as usual.
+    // Row {a,b,c} → {{0,c,-b},{-c,0,a},{b,-a,0}}
+    // Row {d,e,f} → {{0,f,-e},{-f,0,d},{e,-d,0}}
+    // Result shape {3,3,2}: result[j0][j1][s] = HodgeDual_row_s[j0][j1]
+    check("Normal@HodgeDual({{a,b,c},{d,e,f}}, 3)", //
+        "{{{0,0},{c,f},{-b,-e}},{{-c,-f},{0,0},{a,d}},{{b,e},{-a,-d},{0,0}}}");
+
+    // Same case with explicit numeric values so the for-loop output is easier to trace
+    // Row {1,2,3} → HodgeDual = {{0,3,-2},{-3,0,1},{2,-1,0}}
+    // Row {4,5,6} → HodgeDual = {{0,6,-5},{-6,0,4},{5,-4,0}}
+    check("Normal@HodgeDual({{1,2,3},{4,5,6}}, 3)", //
+        "{{{0,0},{3,6},{-2,-5}},{{-3,-6},{0,0},{1,4}},{{2,5},{-1,-4},{0,0}}}");
+
+    // --- 3-argument form: explicit slot {2} selects column index (1-based) ---
+    // Should give identical result to the 2-argument form above
+    check("Normal@HodgeDual({{a,b,c},{d,e,f}}, 3, {2})", //
+        "{{{0,0},{c,f},{-b,-e}},{{-c,-f},{0,0},{a,d}},{{b,e},{-a,-d},{0,0}}}");
+
+    // --- Shape {3, 2}: row index (dim=3) is spectator, column (dim=2) is contracted ---
+    // HodgeDual[M, 2] with M of shape {3,2}:
+    // r=1, dualRank=1, spectatorDims={3} → for-loop iterates k=0,1,2 (3 spectator entries)
+    //
+    // For spectator row s={a,b}: HodgeDual[{a,b}][j] = sum_i {a,b}[i]*ε2[i,j]
+    // ε2 = {{0,1},{-1,0}}: result[j,s] = -b (j=1), a (j=2)
+    // Rows: {a,b} → {-b, a}; {c,d} → {-d, c}; {e,f} → {-f, e}
+    // Result shape {2,3}: result[j][s] where j=dual index, s=spectator row
+    check("Normal@HodgeDual({{a,b},{c,d},{e,f}}, 2)", //
+        "{{-b,-d,-f},{a,c,e}}");
+
+    // Same with explicit slot {2}
+    check("Normal@HodgeDual({{a,b},{c,d},{e,f}}, 2, {2})", //
+        "{{-b,-d,-f},{a,c,e}}");
+
+    // --- Two spectator dimensions: shape {2,3,2}, contract only middle slot (dim=3) ---
+    // HodgeDual[T, 3, {2}]:
+    // r=1, dualRank=2, spectatorDims={2,2}
+    // for-loop in buildSpectatorResult runs twice (once for each spectator dimension)
+    //
+    // T[s0, i, s1] where s0∈{1,2}, i∈{1,2,3}, s1∈{1,2}
+    // Use T = Array[t, {2, 3, 2}] so T[s0,i,s1] = t[s0,i,s1]
+    // Result[j0, j1, s0, s1] = sum_i T[s0,i,s1] * epsilon[i, j0, j1]
+    // = HodgeDual(T[s0, :, s1])[j0, j1]
+    //
+    // For a concrete example: T[1,:,1]={1,0,0}, T[1,:,2]={0,1,0},
+    // T[2,:,1]={0,0,1}, T[2,:,2]={1,1,1}
+    // Using Array form for simplicity — just verify shape & a few entries
+    check(
+        "m3 = {{{1,0},{0,1},{0,0}},{{0,0},{0,1},{1,0}}}; res = Normal@HodgeDual(m3, 3, {2}); Dimensions(res)", //
+        "{3,3,2,2}");
+
+    // Verify one specific entry: result[1,2,1,1]
+    // = sum_i m3[1,i,1] * epsilon[i,1,2]
+    // m3[1,:,1] = {1,0,0} → HodgeDual[{1,0,0}][1,2] = ε[1,1,2]=0 + 0 + 0 = 0
+    // Actually HodgeDual[{1,0,0}][j0,j1] = ε[1,j0,j1]
+    // [1,2]: ε[1,1,2]=0; [1,3]: ε[1,1,3]=0; [2,1]: ε[1,2,1]=-1; [3,1]: ε[1,3,1]=0;
+    // [2,3]: ε[1,2,3]=1; [3,2]: ε[1,3,2]=-1 → result[2,3,1,1]=1
+    check("m3 = {{{1,0},{0,1},{0,0}},{{0,0},{0,1},{1,0}}}; Normal@HodgeDual(m3, 3, {2})[[2,3,1,1]]", //
+        "1");
+    check("m3 = {{{1,0},{0,1},{0,0}},{{0,0},{0,1},{1,0}}}; Normal@HodgeDual(m3, 3, {2})", //
+        "{{{{0,0},{0,0}},{{0,0},{1,0}},{{0,-1},{0,-1}}},{{{0,0},{-1,0}},{{0,0},{0,0}},{{1,\n" //
+            + "0},{0,0}}},{{{0,1},{0,1}},{{-1,0},{0,0}},{{0,0},{0,0}}}}");
+  }
+
+  @Test
   public void testLeviCivitaTensor() {
     // if (Config.EXPENSIVE_JUNIT_TESTS) {
     check("LeviCivitaTensor(7)", //

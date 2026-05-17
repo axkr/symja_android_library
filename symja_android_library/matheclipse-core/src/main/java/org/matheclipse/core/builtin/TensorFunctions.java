@@ -304,24 +304,271 @@ public class TensorFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr tensor = ast.arg1();
-      if (tensor.isList()) {
-        final IntList dims = LinearAlgebraUtil.dimensions((IAST) tensor);
-        final int dimsSize = dims.size();
-        if (dimsSize > 0) {
-          IInteger d = F.ZZ(dims.getInt(dimsSize - 1));
-          int rank = S.TensorRank.of(engine, tensor).toIntDefault();
-          if (rank == 1) {
+      // Normalize to a dense nested list
+      IExpr tensorExpr = ast.arg1().normal(false);
+      if (!tensorExpr.isList()) {
+        return F.NIL;
+      }
+      IAST tensor = (IAST) tensorExpr;
 
-            // TODO implement for more cases
-            IExpr dotProduct = engine.evaluate(F.Dot(tensor, F.LeviCivitaTensor(d)));
+      final IntList dims = LinearAlgebraUtil.dimensions(tensor);
+      final int totalRank = dims.size();
+      if (totalRank == 0) {
+        return F.NIL;
+      }
 
-            // IExpr nested = engine.evaluate(F.Nest(S.Total, dotProduct, rank));
-            return dotProduct; // F.Divide(dotProduct, F.Factorial(rank));
+      if (ast.isAST1()) {
+        // HodgeDual[tensor] — all slots must have the same dimension
+        int n = dims.getInt(0);
+        for (int i = 1; i < totalRank; i++) {
+          if (dims.getInt(i) != n) {
+            // Tensor dimensions are not all equal
+            return F.NIL;
           }
         }
+        int[] contractedSlots = new int[totalRank];
+        for (int i = 0; i < totalRank; i++) {
+          contractedSlots[i] = i;
+        }
+        return hodgeDualSlots(tensor, contractedSlots, new int[0], dims, n, engine);
+
+      } else if (ast.isAST2()) {
+        // HodgeDual[tensor, dim] — dualize all slots with dimension == dim
+        int dim = ast.arg2().toIntDefault();
+        if (dim <= 0) {
+          return F.NIL;
+        }
+        int[] contractedSlots = findMatchingSlots(dims, dim);
+        if (contractedSlots.length == 0) {
+          // No slots with the given dimension; return tensor unchanged
+          return tensor;
+        }
+        int[] spectatorSlots = findNonMatchingSlots(dims, dim);
+        return hodgeDualSlots(tensor, contractedSlots, spectatorSlots, dims, dim, engine);
+
+      } else { // isAST3
+        // HodgeDual[tensor, dim, slots] — dualize only the given slots
+        int dim = ast.arg2().toIntDefault();
+        if (dim <= 0) {
+          return F.NIL;
+        }
+        IExpr slotsExpr = ast.arg3();
+        if (!slotsExpr.isList()) {
+          return F.NIL;
+        }
+        IAST slotsList = (IAST) slotsExpr;
+        int r = slotsList.argSize();
+        int[] contractedSlots = new int[r];
+        boolean[] isContracted = new boolean[totalRank];
+        for (int i = 0; i < r; i++) {
+          int s = slotsList.get(i + 1).toIntDefault() - 1; // convert to 0-based
+          if (s < 0 || s >= totalRank || dims.getInt(s) != dim) {
+            return F.NIL;
+          }
+          contractedSlots[i] = s;
+          isContracted[s] = true;
+        }
+        int spectatorCount = totalRank - r;
+        int[] spectatorSlots = new int[spectatorCount];
+        int j = 0;
+        for (int i = 0; i < totalRank; i++) {
+          if (!isContracted[i]) {
+            spectatorSlots[j++] = i;
+          }
+        }
+        return hodgeDualSlots(tensor, contractedSlots, spectatorSlots, dims, dim, engine);
       }
-      return F.NIL;
+    }
+
+    /**
+     * Core computation: contract the given {@code contractedSlots} (0-based) using the Levi-Civita
+     * tensor of the given {@code dim}. Spectator slots remain as the trailing indices of the
+     * result.
+     */
+    private static IExpr hodgeDualSlots(IAST tensor, int[] contractedSlots, int[] spectatorSlots,
+        IntList dims, int dim, EvalEngine engine) {
+      int r = contractedSlots.length;
+      int dualRank = dim - r;
+      if (dualRank < 0) {
+        return F.NIL;
+      }
+
+      // Build Levi-Civita tensor as a dense nested list
+      IExpr lct = engine.evaluate(F.LeviCivitaTensor(F.ZZ(dim), S.List));
+      if (!lct.isList()) {
+        return F.NIL;
+      }
+      IAST leviCivita = (IAST) lct;
+
+      int[] spectatorDims = new int[spectatorSlots.length];
+      for (int i = 0; i < spectatorSlots.length; i++) {
+        spectatorDims[i] = dims.getInt(spectatorSlots[i]);
+      }
+
+      int[] freeIdx = new int[dualRank];
+      int[] spectIdx = new int[spectatorSlots.length];
+      int[] contrIdx = new int[r];
+
+      IExpr result = buildHodgeDualResult(tensor, leviCivita, contractedSlots, spectatorSlots,
+          spectatorDims, dim, r, dualRank, freeIdx, 0, spectIdx, contrIdx, engine);
+      if (result.isNIL()) {
+        return F.NIL;
+      }
+
+      // Divide by r! to compensate for antisymmetrization
+      if (r > 1) {
+        result = engine.evaluate(F.Divide(result, F.Factorial(F.ZZ(r))));
+      }
+      return result;
+    }
+
+    /**
+     * Recursively build the result tensor. Outer indices are the {@code dualRank} new "free" (Hodge
+     * dual) indices; inner indices are the spectator indices.
+     */
+    private static IExpr buildHodgeDualResult(IAST tensor, IAST lct, int[] contractedSlots,
+        int[] spectatorSlots, int[] spectatorDims, int dim, int r, int dualRank, int[] freeIdx,
+        int freeLevel, int[] spectIdx, int[] contrIdx, EvalEngine engine) {
+
+      if (freeLevel < dualRank) {
+        IASTAppendable list = F.ListAlloc(dim);
+        for (int j = 0; j < dim; j++) {
+          freeIdx[freeLevel] = j;
+          IExpr elem = buildHodgeDualResult(tensor, lct, contractedSlots, spectatorSlots,
+              spectatorDims, dim, r, dualRank, freeIdx, freeLevel + 1, spectIdx, contrIdx, engine);
+          if (elem.isNIL()) {
+            return F.NIL;
+          }
+          list.append(elem);
+        }
+        return list;
+      }
+
+      // All free indices are fixed; now iterate spectator indices
+      return buildSpectatorResult(tensor, lct, contractedSlots, spectatorSlots, spectatorDims, dim,
+          r, dualRank, freeIdx, spectIdx, 0, contrIdx, engine);
+    }
+
+    private static IExpr buildSpectatorResult(IAST tensor, IAST lct, int[] contractedSlots,
+        int[] spectatorSlots, int[] spectatorDims, int dim, int r, int dualRank, int[] freeIdx,
+        int[] spectIdx, int spectLevel, int[] contrIdx, EvalEngine engine) {
+
+      if (spectLevel == spectatorDims.length) {
+        // Leaf: compute the contraction over all contracted index combinations
+        return computeContraction(tensor, lct, contractedSlots, spectatorSlots, spectIdx, dim, r,
+            dualRank, freeIdx, contrIdx, 0, engine);
+      }
+      IASTAppendable list = F.ListAlloc(spectatorDims[spectLevel]);
+      for (int k = 0; k < spectatorDims[spectLevel]; k++) {
+        spectIdx[spectLevel] = k;
+        IExpr elem = buildSpectatorResult(tensor, lct, contractedSlots, spectatorSlots,
+            spectatorDims, dim, r, dualRank, freeIdx, spectIdx, spectLevel + 1, contrIdx, engine);
+        if (elem.isNIL()) {
+          return F.NIL;
+        }
+        list.append(elem);
+      }
+      return list;
+    }
+
+    /**
+     * Recursively sum over the contracted indices, accumulating
+     * {@code T[contractedIdx..., spectIdx...] * ε[contractedIdx..., freeIdx...]}.
+     */
+    private static IExpr computeContraction(IAST tensor, IAST lct, int[] contractedSlots,
+        int[] spectatorSlots, int[] spectIdx, int dim, int r, int dualRank, int[] freeIdx,
+        int[] contrIdx, int contrLevel, EvalEngine engine) {
+
+      if (contrLevel == r) {
+        // Look up ε[contrIdx..., freeIdx...]
+        int[] lctIdx = new int[r + dualRank]; // equals dim
+        System.arraycopy(contrIdx, 0, lctIdx, 0, r);
+        System.arraycopy(freeIdx, 0, lctIdx, r, dualRank);
+        IExpr lctVal = getNestedElement(lct, lctIdx);
+        if (lctVal.isZero()) {
+          return F.C0;
+        }
+
+        // Look up T[...] with the contracted and spectator indices mapped back to
+        // their original positions in the tensor
+        int totalRank = contractedSlots.length + spectatorSlots.length;
+        int[] tensorIdx = new int[totalRank];
+        for (int k = 0; k < contractedSlots.length; k++) {
+          tensorIdx[contractedSlots[k]] = contrIdx[k];
+        }
+        for (int k = 0; k < spectatorSlots.length; k++) {
+          tensorIdx[spectatorSlots[k]] = spectIdx[k];
+        }
+        IExpr tVal = getNestedElement(tensor, tensorIdx);
+        if (tVal.isZero()) {
+          return F.C0;
+        }
+        return engine.evaluate(F.Times(tVal, lctVal));
+      }
+
+      IASTAppendable plus = F.PlusAlloc(dim);
+      boolean allZero = true;
+      for (int i = 0; i < dim; i++) {
+        contrIdx[contrLevel] = i;
+        IExpr term = computeContraction(tensor, lct, contractedSlots, spectatorSlots, spectIdx, dim,
+            r, dualRank, freeIdx, contrIdx, contrLevel + 1, engine);
+        if (!term.isZero()) {
+          plus.append(term);
+          allZero = false;
+        }
+      }
+      return allZero ? F.C0 : engine.evaluate(plus.oneIdentity0());
+    }
+
+    /**
+     * Navigate a nested IAST list using a 0-based multi-index array. Returns {@link F#C0} if any
+     * level is not a list or the index is out of range.
+     */
+    private static IExpr getNestedElement(IAST tensor, int[] indices) {
+      IExpr current = tensor;
+      for (int idx : indices) {
+        if (!current.isList()) {
+          return F.C0;
+        }
+        int astIdx = idx + 1; // IAST is 1-based
+        if (astIdx >= ((IAST) current).size()) {
+          return F.C0;
+        }
+        current = ((IAST) current).get(astIdx);
+      }
+      return current;
+    }
+
+    /** Collect the 0-based positions of all slots whose dimension equals {@code dim}. */
+    private static int[] findMatchingSlots(IntList dims, int dim) {
+      int count = 0;
+      for (int i = 0; i < dims.size(); i++) {
+        if (dims.getInt(i) == dim)
+          count++;
+      }
+      int[] slots = new int[count];
+      int j = 0;
+      for (int i = 0; i < dims.size(); i++) {
+        if (dims.getInt(i) == dim)
+          slots[j++] = i;
+      }
+      return slots;
+    }
+
+    /** Collect the 0-based positions of all slots whose dimension does NOT equal {@code dim}. */
+    private static int[] findNonMatchingSlots(IntList dims, int dim) {
+      int count = 0;
+      for (int i = 0; i < dims.size(); i++) {
+        if (dims.getInt(i) != dim)
+          count++;
+      }
+      int[] slots = new int[count];
+      int j = 0;
+      for (int i = 0; i < dims.size(); i++) {
+        if (dims.getInt(i) != dim)
+          slots[j++] = i;
+      }
+      return slots;
     }
 
     @Override
@@ -331,10 +578,9 @@ public class TensorFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return new int[] {1, 3};
     }
   }
-
 
   private static class KroneckerProduct extends TensorProduct {
 
@@ -416,7 +662,7 @@ public class TensorFunctions {
       int n = arg1.toIntDefault();
       if (n <= 0) {
         if (!arg1.isInteger()) {
-          return F.NIL; // Use F.NIL instead of null
+          return F.NIL;
         }
         // Positive machine-sized integer expected at position `2` in `1`.
         return Errors.printMessage(ast.topHead(), "intpm", F.list(ast, F.C1), engine);

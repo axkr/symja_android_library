@@ -509,6 +509,7 @@ Functions in alphabetical order:
 * [HexidecimalCharacter](functions/HexidecimalCharacter.md)
 * &#x2705; [HilbertMatrix](functions/HilbertMatrix.md)
 * &#x1F9EA; [Histogram](functions/Histogram.md)
+* &#x2611; [HodgeDual](functions/HodgeDual.md)
 * &#x2705; [Hold](functions/Hold.md)
 * [HoldAll](functions/HoldAll.md)
 * [HoldAllComplete](functions/HoldAllComplete.md)
