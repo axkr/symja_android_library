@@ -391,13 +391,13 @@ public class Characters {
    * @return
    */
   public static String substituteCharacters(String str) {
-    StringBuilder buf = null;
-    char currentChar;
     int currentPosition = str.indexOf('\\');
     if (currentPosition < 0) {
       return str;
     }
     final int strLength = str.length();
+    StringBuilder buf = null;
+    char currentChar;
     while (currentPosition < strLength) {
       currentChar = str.charAt(currentPosition++);
       if (currentChar == '\\') {
@@ -589,9 +589,9 @@ public class Characters {
    * character.
    *
    * <p>
-   * A character may be part of a Symja identifier if any of the followingare true: • it is a letter
-   * • it is a currency symbol (such as '$') • it is a digit • it is a numeric letter (such as a
-   * Roman numeral character) • it is a combining mark • it is a non-spacing mark • <code>
+   * A character may be part of a Symja identifier if any of the following are true: • it is a
+   * letter • it is a currency symbol (such as '$') • it is a digit • it is a numeric letter (such
+   * as a Roman numeral character) • it is a combining mark • it is a non-spacing mark • <code>
    * Character#isIdentifierIgnorable</code> returns true for the character
    *
    * @param ch the character to be tested.
