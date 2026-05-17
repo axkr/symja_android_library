@@ -31,7 +31,7 @@ public class HomogenizationJUnit extends ExprEvaluatorTestCase {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST()) {
         VariablesSet eVar = new VariablesSet(arg1);
-        PolynomialHomogenization substitutions = new PolynomialHomogenization(eVar, engine);
+        PolynomialHomogenization substitutions = new PolynomialHomogenization(engine);
         IExpr temp = substitutions.replaceForward(arg1);
         IASTAppendable list = substitutions.listOfBackwardSubstitutions();
 
@@ -111,7 +111,7 @@ public class HomogenizationJUnit extends ExprEvaluatorTestCase {
   public void testSechTransform() {
     EvalEngine engine = new EvalEngine();
     VariablesSet vars = new VariablesSet(F.x);
-    PolynomialHomogenization polyHomogenization = new PolynomialHomogenization(vars, engine);
+    PolynomialHomogenization polyHomogenization = new PolynomialHomogenization(engine);
     PolynomialHomogenization.TanhSechTransform transform =
         polyHomogenization.new TanhSechTransform();
 
@@ -130,7 +130,7 @@ public class HomogenizationJUnit extends ExprEvaluatorTestCase {
   public void testCschTransform() {
     EvalEngine engine = new EvalEngine();
     VariablesSet vars = new VariablesSet(F.x);
-    PolynomialHomogenization polyHomogenization = new PolynomialHomogenization(vars, engine);
+    PolynomialHomogenization polyHomogenization = new PolynomialHomogenization(engine);
     PolynomialHomogenization.TanhSechTransform transform =
         polyHomogenization.new TanhSechTransform();
 
@@ -149,7 +149,7 @@ public class HomogenizationJUnit extends ExprEvaluatorTestCase {
   public void testNoTransform() {
     EvalEngine engine = new EvalEngine();
     VariablesSet vars = new VariablesSet(F.x);
-    PolynomialHomogenization polyHomogenization = new PolynomialHomogenization(vars, engine);
+    PolynomialHomogenization polyHomogenization = new PolynomialHomogenization(engine);
     PolynomialHomogenization.TanhSechTransform transform =
         polyHomogenization.new TanhSechTransform();
 

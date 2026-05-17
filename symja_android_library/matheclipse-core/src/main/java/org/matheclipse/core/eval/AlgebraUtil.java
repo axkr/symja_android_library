@@ -978,7 +978,7 @@ public class AlgebraUtil {
       }
 
       IAST vars = eVar.getVarList();
-      PolynomialHomogenization substitutions = new PolynomialHomogenization(eVar, EvalEngine.get());
+      PolynomialHomogenization substitutions = new PolynomialHomogenization(EvalEngine.get());
       IExpr[] subst = substitutions.replaceForward(numerator, denominator);
       IExpr numeratorPolynomial = subst[0];
       IExpr denominatorPolynomial = subst[1];
@@ -1609,7 +1609,7 @@ public class AlgebraUtil {
   public static IExpr factorWithPolynomialHomogenization(IAST expr, VariablesSet eVar,
       EvalEngine engine) {
     boolean gaussianIntegers = !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
-    PolynomialHomogenization substitutions = new PolynomialHomogenization(eVar, engine);
+    PolynomialHomogenization substitutions = new PolynomialHomogenization(engine);
     IExpr subsPolynomial = substitutions.replaceForward(expr);
     // System.out.println(subsPolynomial.toString());
     // System.out.println(substitutions.substitutedVariables());

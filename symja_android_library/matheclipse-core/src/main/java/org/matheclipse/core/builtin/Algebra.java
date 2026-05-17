@@ -1311,7 +1311,7 @@ public class Algebra {
       originalVarList.append(variable);
       VariablesSet variablesSet = new VariablesSet();
       variablesSet.add(variable);
-      PolynomialHomogenization substitutions = new PolynomialHomogenization(variablesSet, engine);
+      PolynomialHomogenization substitutions = new PolynomialHomogenization(engine);
       IExpr subsPolynomial = substitutions.replaceForward(expr);
       Set<ISymbol> varSet = substitutions.substitutedVariablesSet();
       // List<IExpr> arrayList = new ArrayList<IExpr>(1);
