@@ -269,7 +269,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       if (temp.isPresent()) {
         temp = F.expandAll(temp, true, true);
         if (temp.isEqual() && temp.size() == 3) {
-          temp = F.Equal(F.Subtract.of(temp.first(), temp.second()), F.C0);
+          temp = F.Equal(F.Subtract.of(engine, temp.first(), temp.second()), F.C0);
         }
         eliminatedResultEquations.append(temp);
       } else {
@@ -600,7 +600,8 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
           // a + b + c....
           if (exprWithoutVariable.isNumericFunction() //
               && ast.isPolynomial(variable) && ast.isNumericFunction(variable)) {
-            IAST temp = RootsFunctions.rootsOfVariable(F.Subtract.of(ast, exprWithoutVariable),
+            IAST temp =
+                RootsFunctions.rootsOfVariable(F.Subtract.of(engine, ast, exprWithoutVariable),
                 F.C1, F.list(variable), engine.isNumericMode(), engine);
             if (temp.isList() && temp.size() > 1) {
               if (!multipleValues || temp.size() == 2) {

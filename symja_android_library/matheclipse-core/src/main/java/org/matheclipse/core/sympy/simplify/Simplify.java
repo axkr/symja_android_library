@@ -71,7 +71,7 @@ public class Simplify {
 
       // Log(a) + Log(b^-1) -> Log(a/b)
       // Note: Use Together to simplify (1/2+z)/z into (1 + 1/(2z))
-      IExpr mergedLog = F.Log(F.Together.of(combinedArgs));
+      IExpr mergedLog = F.Log.of(F.Together(combinedArgs));
       remainingTerms.append(F.Times(coeff, mergedLog));
     }
 

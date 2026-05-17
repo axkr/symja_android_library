@@ -1076,14 +1076,14 @@ public class PredicateQ {
       int[] identityMatrixDims = null;
       IExpr transposed = engine.evaluate(F.Transpose(arg1));
       if (dims[0] >= dims[1]) {
-        identityMatrix = S.Dot.of(engine, transposed, arg1);
+        identityMatrix = S.Dot.funEval(engine, transposed, arg1);
         identityMatrixDims = identityMatrix.isMatrix();
         if (identityMatrixDims == null || identityMatrixDims[0] != dims[1]
             || identityMatrixDims[1] != dims[1]) {
           return S.False;
         }
       } else {
-        identityMatrix = S.Dot.of(engine, arg1, transposed);
+        identityMatrix = S.Dot.funEval(engine, arg1, transposed);
         identityMatrixDims = identityMatrix.isMatrix();
         if (identityMatrixDims == null || identityMatrixDims[0] != dims[0]
             || identityMatrixDims[1] != dims[0]) {

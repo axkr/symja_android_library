@@ -2027,7 +2027,7 @@ public class ManipulateFunction {
 
   private static IExpr redirectToManipulate(final IAST ast, EvalEngine engine) {
     if (Config.USE_MANIPULATE_JS) {
-      IExpr temp = S.Manipulate.of(engine, ast);
+      IExpr temp = S.Manipulate.funEval(engine, ast);
       if (temp.headID() == ID.JSFormData) {
         return temp;
       }

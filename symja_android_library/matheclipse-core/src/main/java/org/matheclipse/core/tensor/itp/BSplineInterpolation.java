@@ -45,9 +45,10 @@ public class BSplineInterpolation extends AbstractInterpolation implements Seria
     // }
     // return matrix;
 
-    IAST domain1 = (IAST) S.Range.of(EvalEngine.get(), 0, n - 1);
-    IAST domain2 = (IAST) S.Range.of(EvalEngine.get(), 0, n - 1);
-    IAST result = (IAST) S.Transpose.of(EvalEngine.get(), domain2 //
+    EvalEngine engine = EvalEngine.get();
+    IAST domain1 = (IAST) S.Range.of(engine, 0, n - 1);
+    IAST domain2 = (IAST) S.Range.of(engine, 0, n - 1);
+    IAST result = (IAST) S.Transpose.of(engine, domain2 //
         .map(index -> {
           IASTAppendable unitVector = F.mapRange(1, n + 1, x -> F.C0);
           unitVector.set(index.toIntDefault() + 1, F.C1);

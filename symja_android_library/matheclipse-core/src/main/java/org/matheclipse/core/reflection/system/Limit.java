@@ -351,7 +351,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       if (!mrvResult.isPresent() || !mrvResult.isAST()) {
         return F.NIL;
       }
-      mrvResult = S.DeleteDuplicates.of(mrvResult);
+      mrvResult = S.DeleteDuplicates.of(engine, mrvResult);
       if (DEBUG) {
         System.out.println("MRV " + expr + " mrvResult: " + mrvResult);
       }

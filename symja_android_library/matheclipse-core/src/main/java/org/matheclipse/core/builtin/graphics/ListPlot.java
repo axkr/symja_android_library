@@ -161,7 +161,8 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
   }
 
   @Override
-  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options, final EvalEngine engine,
+  public IExpr evaluate(IAST ast, final int argSize, final IExpr[] options,
+      final EvalEngine engine,
       IAST originalAST) {
     IExpr arg1 = ast.arg1();
     if (!checkList(engine, arg1)) {
@@ -171,7 +172,7 @@ public class ListPlot extends AbstractFunctionOptionEvaluator {
       return evaluateECharts(ast, argSize, options, engine, originalAST);
     }
     if (options[GraphicsOptions.X_JSFORM].isTrue()) {
-      IExpr temp = S.Manipulate.of(engine, ast);
+      IExpr temp = S.Manipulate.funEval(engine, ast);
       if (temp.headID() == ID.JSFormData) {
         return temp;
       }

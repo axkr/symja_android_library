@@ -121,8 +121,8 @@ public class EllipticIntegrals {
 
     private static IExpr carlsonRC(EvalEngine engine, IExpr x, IExpr y) {
       if (x.equals(y)) {
-        IExpr reCondition = S.LessEqual.of(engine, F.Re(x), F.C0);
-        IExpr imCondition = S.Equal.of(engine, F.Im(x), F.C0);
+        final IExpr reCondition = S.LessEqual.of(engine, F.Re(x), F.C0);
+        final IExpr imCondition = S.Equal.of(engine, F.Im(x), F.C0);
         if (reCondition.isTrue() && imCondition.isTrue()) {
           return F.CComplexInfinity;
         }

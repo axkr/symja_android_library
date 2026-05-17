@@ -1734,7 +1734,7 @@ public class StatisticsFunctions {
               IAST vector = (IAST) arg1;
               int size = vector.size();
               IASTAppendable sum = F.PlusAlloc(size);
-              final IExpr mean = S.Mean.of(engine, F.Negate(vector));
+              final IExpr mean = S.Mean.funEval(engine, vector.negate());
               vector.forEach(x -> sum.append(F.Abs(F.Plus(x, mean))));
               return F.Times(F.Power(F.ZZ(size - 1), -1), sum);
             }
@@ -2814,8 +2814,8 @@ public class StatisticsFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr x = ast.arg1();
       if (ast.size() == 2 && x.isList()) {
-        IExpr min = S.Min.of(engine, x);
-        IExpr max = S.Max.of(engine, x);
+        IExpr min = S.Min.funEval(engine, x);
+        IExpr max = S.Max.funEval(engine, x);
         return rescale(x, min, max, engine);
       }
       if (ast.size() >= 3) {

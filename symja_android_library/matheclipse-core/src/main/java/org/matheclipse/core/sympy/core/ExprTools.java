@@ -2,8 +2,9 @@ package org.matheclipse.core.sympy.core;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.TreeMap;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.DefaultDict;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Pair;
@@ -293,13 +294,13 @@ public class ExprTools {
         return new Factors(F.C0);
       }
       TreeMap<IExpr, IExpr> factors = (TreeMap<IExpr, IExpr>) dict.clone();
-
+      final EvalEngine engine = EvalEngine.get();
       for (Map.Entry<IExpr, IExpr> entry : other.dict.entrySet()) {
         IExpr factor = entry.getKey();
         IExpr exp = entry.getValue();
         IExpr value = factors.get(factor);
         if (value != null) {
-          exp = F.Max.of(exp, value);
+          exp = F.Max.of(engine, exp, value);
         }
         factors.put(factor, exp);
       }

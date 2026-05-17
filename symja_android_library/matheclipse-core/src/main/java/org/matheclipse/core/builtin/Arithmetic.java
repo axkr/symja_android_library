@@ -2242,7 +2242,7 @@ public final class Arithmetic {
           if (directedInfininty.isInfinity()) {
             return F.C0;
           }
-          IExpr im = S.Im.of(engine, directedInfininty.arg1());
+          IExpr im = S.Im.funEval(engine, directedInfininty.arg1());
           if (im.isNumber()) {
             if (im.isZero()) {
               return F.C0;
@@ -4222,8 +4222,8 @@ public final class Arithmetic {
               IRational t2 = rat.multiply(F.C4).normalize();
               if (t1.isInteger() || t2.isInteger()) {
                 // Cos(- I*times) + I*Sin(- I*times)
-                return S.Plus.of(F.Cos(F.Times(F.CNI, times)),
-                    F.Times(F.CI, F.Sin(F.Times(F.CNI, times))));
+                IExpr v1 = F.CNI.times(times);
+                return S.Plus.of(F.Cos(v1), F.Times(F.CI, F.Sin(v1)));
               }
             }
           }

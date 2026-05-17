@@ -42,7 +42,7 @@ public class Plot extends ListPlot {
     }
 
     if (options[0].isTrue()) {
-      IExpr temp = S.Manipulate.of(engine, ast);
+      IExpr temp = S.Manipulate.funEval(engine, ast);
       if (temp.headID() == ID.JSFormData) {
         return temp;
       }

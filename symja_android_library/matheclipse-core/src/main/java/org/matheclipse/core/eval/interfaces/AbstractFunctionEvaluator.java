@@ -564,7 +564,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
   }
 
   public static IExpr imaginaryPart(final IExpr expr, boolean unequalsZero) {
-    IExpr imPart = S.Im.of(expr);
+    IExpr imPart = expr.im();
     if (unequalsZero) {
       if (imPart.isZero()) {
         return F.NIL;
@@ -711,7 +711,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
       IASTMutable result = F.binaryAST2(S.List, plusAST, F.C0);
       IExpr m1 = F.Times(k.mod(F.C1D2), S.Pi);
       IExpr m2 = S.Subtract.of(engine, F.Times(k, S.Pi), m1);
-      result.set(1, S.Subtract.of(plusAST, m2));
+      result.set(1, S.Subtract.of(engine, plusAST, m2));
       result.set(2, m2);
       return result;
     }
@@ -733,7 +733,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
       if (arg.isTimes()) {
         IExpr peeled = peelOfTimes((IAST) arg, S.Pi);
         if (peeled.isPresent()) {
-          IExpr x = S.Times.of(F.CNI, peeled);
+          IExpr x = S.Times.of(engine, F.CNI, peeled);
           if (x.isRational() || x.isIntegerResult()) {
             return F.list(x, arg);
           }
@@ -832,7 +832,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
   }
 
   public static IExpr realPart(final IExpr expr, boolean unequalsZero) {
-    IExpr rePart = S.Re.of(expr);
+    IExpr rePart = expr.re();
     if (unequalsZero) {
       if (rePart.isZero()) {
         return F.NIL;

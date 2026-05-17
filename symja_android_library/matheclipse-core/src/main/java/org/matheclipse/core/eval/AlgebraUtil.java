@@ -2133,7 +2133,7 @@ public class AlgebraUtil {
     if (temp.isPresent()) {
       return temp;
     }
-    temp = S.Factor.of(parts[1]);
+    temp = S.Factor.of(engine, parts[1]);
     if (temp.isTimes()) {
       // The iterative method no longer requires a 'count' recursion tracker.
       return Algebra.partialFractionDecomposition(parts[0], temp, variable, engine);
@@ -2831,7 +2831,7 @@ public class AlgebraUtil {
           newPlus.append(engine.evaluate(mergedTerm));
 
           // Return the evaluated AST, triggering further Together passes if needed
-          return engine.evaluate(S.Together.of(engine, newPlus.oneIdentity0()));
+          return S.Together.of(engine, newPlus.oneIdentity0());
         }
       }
     }

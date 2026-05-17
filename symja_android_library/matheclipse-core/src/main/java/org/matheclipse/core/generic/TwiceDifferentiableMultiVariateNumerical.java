@@ -56,7 +56,7 @@ public final class TwiceDifferentiableMultiVariateNumerical extends TwiceDiffere
   public TwiceDifferentiableMultiVariateNumerical(final IExpr function, final IAST variablesList,
       boolean useAbsReal, final EvalEngine engine) {
     if (useAbsReal) {
-      fFunction = F.subst(function, x -> x == S.Abs, S.RealAbs);
+      fFunction = F.substAbs(function);
     } else {
       fFunction = function;
     }

@@ -6649,6 +6649,10 @@ public class F extends S {
     return new AST1(LeviCivitaTensor, d);
   }
 
+  public static IAST LeviCivitaTensor(final IExpr a0, final IExpr a1) {
+    return new AST2(LeviCivitaTensor, a0, a1);
+  }
+
   public static IAST Limit(final IExpr f, final IExpr rule) {
     return new AST2(Limit, f, rule);
   }

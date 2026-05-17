@@ -254,14 +254,15 @@ public class Util {
   static IExpr lcim(IAST numbers) {
     IExpr result = F.NIL;
     if (numbers.forAll(x -> x.isIrrational() == COMPARE_TERNARY.TRUE)) {
-      IAST factorized_nums = numbers.map(num -> S.Factor.of(num));
+      final EvalEngine engine = EvalEngine.get();
+      IAST factorized_nums = numbers.map(num -> S.Factor.of(engine, num));
       IAST factors_num = factorized_nums.map(num -> num.asCoeffMul());
       if (factors_num.argSize() > 0) {
         IExpr term = factors_num.getPart(1, 2);
         if (factors_num.forAll(x -> x.second().equals(term))) {
           IExpr common_term = term;
           IAST coeffs = factors_num.map(x -> x.first());
-          result = EvalEngine.get().evaluate(F.Times(coeffs.apply(S.PolynomialLCM), common_term));
+          result = F.Times.of(engine, coeffs.apply(S.PolynomialLCM), common_term);
         }
       }
     } else if (numbers.forAll(x -> x.isRational())) {

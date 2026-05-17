@@ -340,8 +340,8 @@ public class Expr {
       }
       IExpr co = self;
       IExpr diff = co.subtract(c);
-      if ((co.isPositive() && diff.isPositive() && S.Less.of(diff, co).isTrue()) //
-          || (co.isNegative() && diff.isNegative() && S.Greater.of(diff, co).isTrue())) {
+      if ((co.isPositive() && diff.isPositive() && S.Less.ofQ(diff, co)) //
+          || (co.isNegative() && diff.isNegative() && S.Greater.ofQ(diff, co))) {
         return diff;
       }
       return F.NIL;

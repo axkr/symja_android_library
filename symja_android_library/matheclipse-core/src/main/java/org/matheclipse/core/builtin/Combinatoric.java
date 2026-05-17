@@ -551,7 +551,7 @@ public final class Combinatoric {
         if (ast1.size() == 1) {
           return F.Cycles(F.CEmptyList);
         }
-        IExpr ordering = S.Ordering.of(engine, ast1);
+        IExpr ordering = S.Ordering.funEval(engine, ast1);
         if (ordering.isList()) {
           return CombinatoricUtil.permutationCycles((IAST) ordering);
         }

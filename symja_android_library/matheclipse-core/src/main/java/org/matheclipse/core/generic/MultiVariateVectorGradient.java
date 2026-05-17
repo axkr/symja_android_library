@@ -2,7 +2,6 @@ package org.matheclipse.core.generic;
 
 import java.util.function.Function;
 import org.hipparchus.analysis.MultivariateVectorFunction;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -54,7 +53,7 @@ public final class MultiVariateVectorGradient implements MultivariateVectorFunct
     }
     fEngine = engine;
     if (useAbsReal) {
-      fFunction = F.subst(function, x -> x == S.Abs, S.RealAbs);
+      fFunction = F.substAbs(function);
     } else {
       fFunction = function;
     }

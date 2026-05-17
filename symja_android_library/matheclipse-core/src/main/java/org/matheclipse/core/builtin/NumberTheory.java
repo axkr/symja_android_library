@@ -1366,20 +1366,20 @@ public final class NumberTheory {
      */
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      int size = ast.size();
-      if (size >= 3) {
-        IExpr expr;
-        for (int i = 1; i < size - 1; i++) {
-          expr = ast.get(i);
-          for (int j = i + 1; j < size; j++) {
-            if (!S.GCD.of(engine, expr, ast.get(j)).isOne()) {
-              return S.False;
-            }
+      final int size = ast.size();
+      if (size < 3) {
+        return S.False;
+      }
+      IExpr expr;
+      for (int i = 1; i < size - 1; i++) {
+        expr = ast.get(i);
+        for (int j = i + 1; j < size; j++) {
+          if (!S.GCD.funEval(engine, expr, ast.get(j)).isOne()) {
+            return S.False;
           }
         }
-        return S.True;
       }
-      return S.False;
+      return S.True;
     }
 
 
@@ -3268,13 +3268,13 @@ public final class NumberTheory {
      */
     private static IExpr radSimplify(IExpr expr, EvalEngine engine) {
       expr = S.Together.of(engine, expr);
-      IExpr numerator = S.Numerator.of(engine, expr);
+      IExpr numerator = S.Numerator.funEval(engine, expr);
       IExpr denominator = S.Expand.of(engine, F.Denominator(expr));
       if (!denominator.isFree(x -> x.isSqrt(), false)) {
         if (denominator.isPlus2()) {
           IASTMutable plus = ((IAST) denominator).setAtCopy(2, denominator.second().negate());
-          IExpr squared = S.Expand.of(plus.times(denominator));
-          IExpr newNumerator = S.Expand.of(plus.times(numerator));
+          IExpr squared = S.Expand.funEval(plus.times(denominator));
+          IExpr newNumerator = S.Expand.funEval(plus.times(numerator));
           expr = F.Times(newNumerator, F.Power(squared, F.CN1));
         } else if (denominator.isTimes() || denominator.isSqrt()) {
           IAST timesAST = ((IAST) denominator);

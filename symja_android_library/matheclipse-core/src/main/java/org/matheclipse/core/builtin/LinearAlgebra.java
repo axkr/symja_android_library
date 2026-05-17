@@ -3239,8 +3239,8 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isMatrix() != null && ast.arg2().isVector() >= 0) {
-        IAST matrix = (IAST) ast.arg1().normal(false);
-        IAST vector = (IAST) ast.arg2().normal(false);
+        final IAST matrix = (IAST) ast.arg1().normal(false);
+        final IAST vector = (IAST) ast.arg2().normal(false);
         if (matrix.isList() && vector.isList()) {
           try {
             if (matrix.isNumericMode() || vector.isNumericMode()) {
@@ -3269,8 +3269,8 @@ public final class LinearAlgebra {
             return Errors.printMessage(ast.topHead(), e, engine);
           }
           try {
-            IAST matrixTransposed = (IAST) S.ConjugateTranspose.of(engine, matrix);
-            return F.Expand(F.LinearSolve(F.ConjugateTranspose(F.Dot(matrixTransposed, matrix)),
+            IAST matrixTransposed = (IAST) S.ConjugateTranspose.funEval(engine, matrix);
+            return F.Expand.of(F.LinearSolve(F.ConjugateTranspose(F.Dot(matrixTransposed, matrix)),
                 F.Dot(matrixTransposed, vector)));
           } catch (final ClassCastException | IndexOutOfBoundsException e) {
             return Errors.printMessage(ast.topHead(), e, engine);

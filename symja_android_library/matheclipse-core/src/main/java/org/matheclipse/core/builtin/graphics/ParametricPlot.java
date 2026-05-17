@@ -38,7 +38,7 @@ public class ParametricPlot extends Plot {
       return Errors.printMessage(S.ParametricPlot, "pllim", F.list(arg2), engine);
     }
     if (options[0].isTrue()) {
-      IExpr temp = S.Manipulate.of(engine, ast);
+      IExpr temp = S.Manipulate.funEval(engine, ast);
       if (temp.headID() == ID.JSFormData) {
         return temp;
       }

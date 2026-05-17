@@ -1533,7 +1533,7 @@ public class Pods {
       }
     }
 
-    IAST range = (IAST) S.Range.of(F.C2, F.C9);
+    IAST range = (IAST) S.Range.funEval(F.C2, F.C9);
     inExpr = F.Mod(n, range);
     podOut = engine.evaluate(inExpr);
     // StringBuilder tableForm = new StringBuilder();

@@ -17,7 +17,6 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.ZZ;
-import static org.matheclipse.core.expression.S.Times;
 import java.util.Set;
 import java.util.TreeSet;
 import org.matheclipse.core.basic.Config;
@@ -755,13 +754,15 @@ public class QuarticSolver {
           if (negExpr.isPresent()) {
             IExpr numerator = surdSqrt(S.Numerator.of(negExpr));
             IExpr denominator = surdSqrt(S.Denominator.of(negExpr));
-            result.append(Times.of(F.CNI, F.Divide(numerator, denominator)));
-            result.append(Times.of(F.CI, F.Divide(numerator, denominator)));
+            IExpr numeratorDenominator = S.Divide.of(numerator, denominator);
+            result.append(F.CNI.times(numeratorDenominator));
+            result.append(F.CI.times(numeratorDenominator));
           } else {
             IExpr numerator = surdSqrt(S.Numerator.of(rhs));
             IExpr denominator = surdSqrt(S.Denominator.of(rhs));
-            result.append(Times.of(F.CN1, F.Divide(numerator, denominator)));
-            result.append(S.Divide.of(numerator, denominator));
+            IExpr numeratorDenominator = S.Divide.of(numerator, denominator);
+            result.append(F.CN1.times(numeratorDenominator));
+            result.append(numeratorDenominator);
           }
         } else {
           IExpr discriminant = quadraticDiscriminant(a, b, c);

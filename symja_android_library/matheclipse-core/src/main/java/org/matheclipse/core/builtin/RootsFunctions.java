@@ -404,10 +404,10 @@ public class RootsFunctions {
       expr = AlgebraUtil.together((IAST) expr, engine);
 
       // split expr into numerator and denominator
-      denom = S.Denominator.of(engine, expr);
+      denom = S.Denominator.funEval(engine, expr);
       if (!denom.isOne()) {
         // search roots for the numerator expression
-        expr = S.Numerator.of(engine, expr);
+        expr = S.Numerator.funEval(engine, expr);
       }
     }
     IAST result =

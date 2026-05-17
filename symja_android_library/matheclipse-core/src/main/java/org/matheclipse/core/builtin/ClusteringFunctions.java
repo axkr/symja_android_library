@@ -28,6 +28,7 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IDistance;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -317,8 +318,9 @@ public class ClusteringFunctions {
           factorV1.append(v1Arg);
           factorV2.append(v2Arg);
         }
-        IExpr timesV1 = S.Times.of(engine, F.QQ(-1, v1Length), factorV1);
-        IExpr timesV2 = S.Times.of(engine, F.QQ(-1, v1Length), factorV2);
+        final IFraction v3 = F.QQ(-1, v1Length);
+        IExpr timesV1 = S.Times.of(engine, v3, factorV1);
+        IExpr timesV2 = S.Times.of(engine, v3, factorV2);
 
         IASTAppendable plusNumerator = F.PlusAlloc(v1Length);
         IASTAppendable plusV1 = F.PlusAlloc(v1Length);

@@ -8566,9 +8566,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check(
         "FindMaximum({2/3*x^2*Cos(x^2/3)+Sin(x^2/3), x>=-19.1 && x<=-19.05}, {x, -19.1}, Method -> \"ConjugateGradient\")", //
         "{226.2146,{x->-18.42096}}");
-    check("FindMaximum({x Cos(x), 1 < x < 11}, {x, 7} )", //
+    check("FindMaximum({x*Cos(x), 1 < x < 11}, {x, 7} )", //
         "{6.361,{x->6.4373}}");
-    check("FindMaximum({x Cos(x), 1 < x < 11}, {x, 7} ,Method->\"BOBYQA\")", //
+    check("FindMaximum({x*Cos(x), 1 < x < 11}, {x, 7} ,Method->\"BOBYQA\")", //
         "{6.361,{x->6.4373}}");
 
 

@@ -2689,17 +2689,8 @@ public class Algebra {
       IExpr arg2 = ast.arg2();
 
       try {
-        // IExpr denom1 = S.Denominator.of(engine, arg1);
-        // IExpr denom2 = S.Denominator.of(engine, arg2);
-        // if (!denom1.isOne() || !denom2.isOne()) {
-        // IExpr numer1 = S.Numerator.of(engine, arg1);
-        // IExpr numer2 = S.Numerator.of(engine, arg2);
-        // arg1 = F.ExpandAll.of(engine, F.Times(numer1, denom2));
-        // arg2 = F.ExpandAll.of(engine, F.Times(denom1, numer2));
-        // } else {
         arg1 = F.ExpandAll.of(engine, arg1);
         arg2 = F.ExpandAll.of(engine, arg2);
-        // }
 
         if (arg1.isZero() || arg2.isZero()) {
           return F.NIL;
@@ -2866,17 +2857,9 @@ public class Algebra {
       }
 
       try {
-        // IExpr denom1 = S.Denominator.of(engine, arg1);
-        // IExpr denom2 = S.Denominator.of(engine, arg2);
-        // if (!denom1.isOne() || !denom2.isOne()) {
-        // IExpr numer1 = S.Numerator.of(engine, arg1);
-        // IExpr numer2 = S.Numerator.of(engine, arg2);
-        // arg1 = F.ExpandAll.of(engine,numer1);// F.Times(numer1, denom2));
-        // arg2 = F.ExpandAll.of(engine,numer2);// F.Times(denom1, numer2));
-        // } else {
         arg1 = F.ExpandAll.of(engine, arg1);
         arg2 = F.ExpandAll.of(engine, arg2);
-        // }
+
         if (arg2.isZero()) {
           return F.NIL;
         }

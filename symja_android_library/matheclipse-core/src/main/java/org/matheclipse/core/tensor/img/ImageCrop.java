@@ -6,6 +6,7 @@ import java.util.OptionalInt;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -52,7 +53,8 @@ public class ImageCrop implements TensorUnaryOperator {
     image = F.ListAlloc(image.stream().skip(d0lo).limit(d0hi - d0lo + 1));
     int dim1 = image.first().argSize();// .dimension1(image);
     IAST boole = tensorMap(image, entry -> F.booleInteger(predicate.test(entry)), 2);
-    IAST vectorX = tensorMap(boole, x -> S.Total.of(x), 0);
+    final EvalEngine engine = EvalEngine.get();
+    IAST vectorX = tensorMap(boole, x -> S.Total.of(engine, x), 0);
     int fdim0 = image.argSize();
     IInteger dimS0 = F.ZZ(fdim0);
     OptionalInt d1min1 = IntStream.range(0, dim1) //

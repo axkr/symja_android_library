@@ -2627,9 +2627,9 @@ public final class StringFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
       if (ast.isAST1()) {
-        IExpr head = ast.head();
+        final IExpr head = ast.head();
         if (head.isAST(S.StringTemplate, 2)) {
-          return S.TemplateApply.of(engine, head, ast.arg1());
+          return S.TemplateApply.funEval(engine, head, ast.arg1());
         }
       }
       return F.NIL;

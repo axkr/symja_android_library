@@ -524,7 +524,7 @@ public final class OutputFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       try {
-        IExpr arg1 = engine.evaluate(ast.arg1());
+        final IExpr arg1 = engine.evaluate(ast.arg1());
         boolean floatJava = false;
         boolean complexJava = false;
         boolean strictJava = false;
@@ -547,7 +547,7 @@ public final class OutputFunctions {
           }
         }
         if (floatJava) {
-          IExpr optimized = S.OptimizeExpression.of(engine, arg1);
+          IExpr optimized = S.OptimizeExpression.funEval(engine, arg1);
           if (optimized.isList2() && optimized.second().isListOfRules()
               && !optimized.second().isEmptyList()) {
             IExpr newExpr = optimized.first();

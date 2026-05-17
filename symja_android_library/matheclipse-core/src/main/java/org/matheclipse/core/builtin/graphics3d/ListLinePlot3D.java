@@ -188,20 +188,22 @@ public class ListLinePlot3D extends AbstractEvaluator {
     }
 
     // ListLinePlot3D size is 2.5 × 2.5 × 1 independently from its coordinates
-    IAST deltaXYZ = F.List((maxX - minX) / 2.5, (maxY - minY) / 2.5, maxZ - minZ);
+    final IExpr deltaXYZ =
+        engine.evaluate(F.List((maxX - minX) / 2.5, (maxY - minY) / 2.5, maxZ - minZ));
 
     // the color number with which the line will be printed
     int lineColorNumber = 1;
 
     IASTAppendable lineList = F.ListAlloc(coordinates.size() * 2);
-
+    final IExpr function =
+        engine.evaluate(F.Function(F.Divide(F.Slot1, deltaXYZ)));
     for (int i = 1; i <= coordinates.argSize(); i++) {
       final IAST color = GraphicsOptions.plotStyleColorExpr(lineColorNumber++, plotStyle);
 
       lineList.append(color);
       // (# / deltaXYZ)& /@ line
       lineList.append(
-          F.Line(S.Map.of(engine, F.Function(F.Divide(F.Slot1, deltaXYZ)), coordinates.get(i))));
+          F.Line(S.Map.of(engine, function, coordinates.get(i))));
     }
 
     return lineList;

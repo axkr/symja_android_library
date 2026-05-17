@@ -780,7 +780,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       for (int i = 1; i < termsEqualZeroList.size(); i++) {
         IExpr equationTerm = termsEqualZeroList.get(i);
         if (equationTerm.isPlus()) {
-          IExpr eq = S.Equal.of(equationTerm, F.C0);
+          IExpr eq = S.Equal.of(engine, equationTerm, F.C0);
           if (eq.isEqual()) {
             IExpr arg1 = eq.first();
             if (arg1.isPlus2()) {

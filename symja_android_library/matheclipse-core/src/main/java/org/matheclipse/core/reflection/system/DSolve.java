@@ -422,7 +422,7 @@ public class DSolve extends AbstractFunctionEvaluator {
    */
   private IExpr absorbConstants(IExpr expr, IAST cVector, boolean aggressiveStrip,
       EvalEngine engine) {
-    IExpr expanded = engine.evaluate(S.ExpandAll.of(engine, expr));
+    IExpr expanded = S.ExpandAll.of(engine, expr);
     IAST terms;
     if (expanded.isPlus()) {
       terms = (IAST) expanded;
@@ -836,7 +836,7 @@ public class DSolve extends AbstractFunctionEvaluator {
     }
     IExpr prev = getEulerCauchyOperator(k - 1, uFunc, tVar, engine);
     IExpr dPrev = engine.evaluate(F.D(prev, tVar));
-    return engine.evaluate(S.Subtract.of(engine, dPrev, F.Times(F.ZZ(k - 1), prev)));
+    return S.Subtract.of(engine, dPrev, F.Times(F.ZZ(k - 1), prev));
   }
 
   private int getHighestDerivativeOrder(EvalEngine engine, IExpr lhs, IExpr yFunction, IExpr xVar) {

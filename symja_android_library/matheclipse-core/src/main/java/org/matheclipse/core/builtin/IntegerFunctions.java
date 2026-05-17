@@ -666,7 +666,7 @@ public class IntegerFunctions {
       IExpr result = F.NIL;
       int radix = 10;
       if (ast.isAST1()) {
-        result = S.IntegerDigits.of(engine, ast.arg1());
+        result = S.IntegerDigits.funEval(engine, ast.arg1());
       } else if (ast.size() >= 3) {
         if (ast.isAST3() && ast.arg3().isList()) {
           return ast.arg3().mapThread(ast, 3);
@@ -676,7 +676,7 @@ public class IntegerFunctions {
         if (radix <= 0) {
           return F.NIL;
         }
-        result = S.IntegerDigits.of(engine, ast.arg1(), ast.arg2());
+        result = S.IntegerDigits.funEval(engine, ast.arg1(), ast.arg2());
       }
       if (result.isList()) {
         IAST list = (IAST) result;
@@ -1110,7 +1110,7 @@ public class IntegerFunctions {
       }
       if (arg1.isQuantity()) {
         IQuantity quantity = (IQuantity) arg1;
-        IExpr fractionalPart = S.FractionalPart.of(quantity.value());
+        IExpr fractionalPart = S.FractionalPart.funEval(engine, quantity.value());
         return quantity.ofUnit(fractionalPart);
       }
       IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
@@ -1390,7 +1390,7 @@ public class IntegerFunctions {
         }
         if (arg1.isQuantity()) {
           IQuantity quantity = (IQuantity) arg1;
-          IExpr fractionalPart = S.IntegerPart.of(quantity.value());
+          IExpr fractionalPart = S.IntegerPart.funEval(engine, quantity.value());
           return quantity.ofUnit(fractionalPart);
         }
 
@@ -1549,8 +1549,8 @@ public class IntegerFunctions {
             || n.isComplexNumeric() || d.isComplexNumeric()) {
           // https://mathematica.stackexchange.com/a/114373/21734
           IExpr subExpr = engine.evaluate(F.Divide(F.Subtract(m, d), n));
-          IExpr re = S.Round.of(subExpr.re());
-          IExpr im = S.Round.of(subExpr.im());
+          IExpr re = S.Round.funEval(engine, subExpr.re());
+          IExpr im = S.Round.funEval(engine, subExpr.im());
           return F.Plus(m, F.Times(F.CN1, n, re), F.Times(F.CI, im));
         }
       }
@@ -2008,8 +2008,8 @@ public class IntegerFunctions {
             || n.isComplexNumeric() || d.isComplexNumeric()) {
           // https://mathematica.stackexchange.com/a/114373/21734
           IExpr subExpr = engine.evaluate(F.Divide(F.Subtract(m, d), n));
-          IExpr re = S.Round.of(engine, subExpr.re());
-          IExpr im = S.Round.of(engine, subExpr.im());
+          IExpr re = S.Round.funEval(engine, subExpr.re());
+          IExpr im = S.Round.funEval(engine, subExpr.im());
           return F.Plus(re, F.Times(F.CI, im));
         }
         // Floor((-d+m)/n)
@@ -2365,7 +2365,7 @@ public class IntegerFunctions {
       IExpr n = S.Divide.ofNIL(engine, expr, k);
       if (n.isPresent()) {
         if (n.isRealResult() || n.isComplex() || n.isComplexNumeric()) {
-          n = S.Round.of(engine, n);
+          n = S.Round.ofNIL(engine, n);
           if (n.isPresent()) {
             return F.Times(n, k);
           }
