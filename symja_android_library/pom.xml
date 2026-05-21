@@ -295,7 +295,7 @@
 			<dependency>
 				<groupId>org.logicng</groupId>
 				<artifactId>logicng</artifactId>
-				<version>2.6.0</version>
+				<version>2.6.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.owasp.encoder</groupId>
@@ -310,7 +310,7 @@
 			<dependency>
 				<groupId>org.choco-solver</groupId>
 				<artifactId>choco-solver</artifactId>
-				<version>6.0.0</version>
+				<version>6.0.1</version>
 				<exclusions>
 					<exclusion>
 						<groupId>org.knowm.xchart</groupId>
