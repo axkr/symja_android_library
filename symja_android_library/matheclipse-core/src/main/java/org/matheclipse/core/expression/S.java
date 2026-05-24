@@ -12222,6 +12222,8 @@ public class S {
   public final static IBuiltInSymbol ToIntervalData =
       S.initFinalSymbol("ToIntervalData", ID.ToIntervalData);
 
+  public final static IBuiltInSymbol Tolerance = S.initFinalSymbol("Tolerance", ID.Tolerance);
+
   /**
    * ToLowerCase(string) - converts `string` into a string of corresponding lowercase character
    * codes.

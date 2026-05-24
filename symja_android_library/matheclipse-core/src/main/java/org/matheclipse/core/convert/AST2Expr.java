@@ -98,9 +98,9 @@ public class AST2Expr {
       "SplineWeights", "StaticsVisible", "StartOfLine", "StartOfString", "Strict", "String",
       "Symbol", "TableAlignments", "TableDepth", "TableDirections", "TableHeadings", "TableSpacing",
       "TargetFunctions", "TestID", "Thick", "Thin", "Ticks", "Tiny", "TicksStyle", "Today",
-      "TooLarge", "Top", "Transparent", "Trig", "True", "Unknown", "UseTypeChecking", "Variable",
-      "Vectors", "VertexLabels", "VertexShapeFunction", "VertexSize", "VertexStyle", "ViewPoint",
-      "White", "Whitespace", "WhitespaceCharacter", "WignerD", "Word", "WordCharacter",
+      "Tolerance", "TooLarge", "Top", "Transparent", "Trig", "True", "Unknown", "UseTypeChecking",
+      "Variable", "Vectors", "VertexLabels", "VertexShapeFunction", "VertexSize", "VertexStyle",
+      "ViewPoint", "White", "Whitespace", "WhitespaceCharacter", "WignerD", "Word", "WordCharacter",
       "WordSeparators", "WorkingPrecision", "Yellow", "ZeroSymmetric", "ZeroTest"};
 
   public static final String[] FUNCTION_STRINGS = {"AASTriangle", "Abort", "Abs", "AbsArg",
