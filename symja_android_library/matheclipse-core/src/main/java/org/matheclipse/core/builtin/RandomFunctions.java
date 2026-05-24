@@ -457,7 +457,7 @@ public final class RandomFunctions {
           IExpr arg2 = ast.arg2();
           if (arg2.isList()) {
             // n1 x n2 x n3 ... array
-            int[] dimension = Validate.checkListOfInts(ast, arg2, 1, Integer.MAX_VALUE, engine);
+            int[] dimension = Validate.checkListOfInts(ast, arg2, 0, Integer.MAX_VALUE, engine);
             if (dimension == null) {
               return F.NIL;
             }
