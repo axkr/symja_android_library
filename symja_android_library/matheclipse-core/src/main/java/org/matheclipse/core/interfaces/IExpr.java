@@ -5274,10 +5274,11 @@ public interface IExpr
   /**
    * Returns <code>true</code>, if this symbol or ast expression is bound to a value (i.e. the
    * evaluation returns an <i>assigned</i> value).
-   *
+   * 
+   * @param method TODO
    * @return
    */
-  default boolean isValue() {
+  default boolean isValue(int method) {
     return false;
   }
 

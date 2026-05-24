@@ -865,8 +865,18 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
   /** {@inheritDoc} */
   @Override
-  public final boolean isValue() {
-    return evaluate(EvalEngine.get()).isPresent();
+  public final boolean isValue(int method) {
+    if ((method & ISymbol.TRIAL_EVALUATION) == ISymbol.TRIAL_EVALUATION) {
+      if (hasAssignedSymbolValue()) {
+        return true;
+      }
+    }
+    if ((method & ISymbol.SYMBOL_DEFINITION_PRESENT) == ISymbol.SYMBOL_DEFINITION_PRESENT) {
+      if ((fRulesData != null && fRulesData.isDefinitionsPresent())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /** {@inheritDoc} */

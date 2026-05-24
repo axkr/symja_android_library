@@ -7,6 +7,7 @@ import org.hipparchus.linear.FieldVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.CompareUtil;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
@@ -20,6 +21,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IPredicate;
@@ -1761,7 +1763,7 @@ public class PredicateQ {
    * False
    * </pre>
    */
-  private static final class ValueQ extends AbstractCoreFunctionEvaluator
+  private static final class ValueQ extends AbstractFunctionOptionEvaluator
       implements Predicate<IExpr>, IPredicate {
 
     /**
@@ -1769,9 +1771,43 @@ public class PredicateQ {
      * otherwise
      */
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // don't eval first argument
-      return F.booleSymbol(ast.arg1().isValue());
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
+      if (options[0] != S.Automatic) {
+        if (options[0].isString("SymbolDefinitionsPresent")) {
+          if (ast.arg1().isSymbol()) {
+            return F.booleSymbol(ast.arg1().isValue(ISymbol.SYMBOL_DEFINITION_PRESENT));
+          }
+          if (ast.arg1().isAST()) {
+            IAST arg1AST = (IAST) ast.arg1();
+            if (!arg1AST.isFree(x -> x.isSymbol() && x.isValue(ISymbol.SYMBOL_DEFINITION_PRESENT),
+                true)) {
+              return S.True;
+            }
+          }
+          return S.False;
+        } else if (options[0].isString("TrialEvaluation")) {
+          return F.booleSymbol(ast.arg1().isValue(ISymbol.TRIAL_EVALUATION));
+        } else if (options[0].isString("OwnValuesPresent")) {
+          if (ast.arg1().isSymbol()) {
+            return F.booleSymbol(ast.arg1().isValue(ISymbol.OWN_VALUES_PRESENT));
+          }
+          if (ast.arg1().isAST()) {
+            IAST arg1AST = (IAST) ast.arg1();
+            if (!arg1AST.isFree(x -> x.isSymbol() && x.isValue(ISymbol.OWN_VALUES_PRESENT), true)) {
+              return S.True;
+            }
+          }
+          return S.False;
+        } else {
+          // Value of option `1` is not Automatic, SymbolDefinitionsPresent, OwnValuesPresent or
+          // TrialEvaluation.
+          return Errors.printMessage(S.ValueQ, "bdmtd", F.List(F.Rule(S.Method, options[0])),
+              engine);
+        }
+      }
+      // don't eval first argument; symbol has attribute HoldAll
+      return F.booleSymbol(test(ast.arg1()));
     }
 
     @Override
@@ -1781,8 +1817,28 @@ public class PredicateQ {
 
     @Override
     public boolean test(final IExpr expr) {
-      return expr.isValue();
+      if (expr.isSymbol()) {
+        return expr.isValue(ISymbol.OWN_VALUES_PRESENT);
+      }
+      if (expr.isAST()) {
+        IAST arg1AST = (IAST) expr;
+        if (!arg1AST.isFree(
+            x -> x.isSymbol()
+                && x.isValue(ISymbol.OWN_VALUES_PRESENT | ISymbol.SYMBOL_DEFINITION_PRESENT),
+            true)) {
+          return true;
+        }
+      }
+      return false;
     }
+
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.HOLDALL);
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.Method}, new IExpr[] {S.Automatic});
+    }
+
   }
 
   /**

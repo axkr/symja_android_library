@@ -5220,17 +5220,32 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
 
   /** {@inheritDoc} */
   @Override
-  public final boolean isValue() {
-    EvalEngine engine = EvalEngine.get();
-    ISymbol symbol = topHead();
-    IExpr result = engine.evalAttributes(symbol, this);
-    if (result.isPresent()) {
-      if (result.isAST(symbol)) {
-        return engine.evalRules(symbol, (IAST) result).isPresent();
+  public final boolean isValue(int method) {
+    if ((method & ISymbol.SYMBOL_DEFINITION_PRESENT) == ISymbol.SYMBOL_DEFINITION_PRESENT) {
+      ISymbol symbol = topHead();
+      if (symbol.isValue(ISymbol.SYMBOL_DEFINITION_PRESENT)) {
+        return true;
       }
-      return false;
     }
-    return engine.evalRules(symbol, this).isPresent();
+    if ((method & ISymbol.OWN_VALUES_PRESENT) == ISymbol.OWN_VALUES_PRESENT) {
+      ISymbol symbol = topHead();
+      if (symbol.isValue(ISymbol.OWN_VALUES_PRESENT)) {
+        return true;
+      }
+    }
+    if ((method & ISymbol.TRIAL_EVALUATION) == ISymbol.TRIAL_EVALUATION) {
+      EvalEngine engine = EvalEngine.get();
+      ISymbol symbol = topHead();
+      IExpr result = engine.evalAttributes(symbol, this);
+      if (result.isPresent()) {
+        if (result.isAST(symbol)) {
+          return engine.evalRules(symbol, (IAST) result).isPresent();
+        }
+      } else if (engine.evalRules(symbol, this).isPresent()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /** {@inheritDoc} */

@@ -217,6 +217,13 @@ public interface ISymbol extends IExpr {
   /** ISymbol flag to indicate that the symbols value is defined by SetDelayed */
   public static final int SETDELAYED_FLAG_ASSIGNED_VALUE = 0x10000002;
 
+
+  public static final int SYMBOL_DEFINITION_PRESENT = 0x00000001;
+
+  public static final int TRIAL_EVALUATION = 0x00000002;
+
+  public static final int OWN_VALUES_PRESENT = 0x00000004;
+
   /**
    * Get the attributes of this <code>symbol</code> as symbolic constants in a list.
    *
