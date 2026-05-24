@@ -857,6 +857,13 @@ public final class RulesData implements Serializable {
     return pmEvaluator;
   }
 
+  public final boolean isDefinitionsPresent() {
+      return (fEqualDownRules != null && fEqualDownRules.size() > 0) //
+          || (fPatternDownRules != null && fPatternDownRules.size() > 0) //
+          || (fEqualUpRules != null && fEqualUpRules.size() > 0) //
+          || (fSimplePatternUpRules != null && fSimplePatternUpRules.size() > 0);
+  }
+
   /**
    * Insert a new (or replace an old equivalent) pattern matching rule in the rules data structure.
    *
