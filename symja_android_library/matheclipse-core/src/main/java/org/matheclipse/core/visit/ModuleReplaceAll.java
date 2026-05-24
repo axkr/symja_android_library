@@ -21,7 +21,7 @@ public class ModuleReplaceAll extends VisitorExpr {
   final Map<ISymbol, ? extends IExpr> fModuleVariables;
   final int fOffset;
   final EvalEngine fEngine;
-  final String moduleCounter;
+  private final String moduleCounter;
 
   public ModuleReplaceAll(Map<ISymbol, ? extends IExpr> moduleVariables, EvalEngine engine,
       String moduleCounter) {
@@ -51,7 +51,7 @@ public class ModuleReplaceAll extends VisitorExpr {
     ISymbol symbol = element.getSymbol();
     if (symbol != null) {
       IExpr expr = apply(symbol);
-      if (expr.isSymbol()) {
+      if (expr.isPresent() && expr.isSymbol()) {
         return F.$p((ISymbol) expr, element.getHeadTest(), element.isPatternDefault());
       }
     }
@@ -80,7 +80,7 @@ public class ModuleReplaceAll extends VisitorExpr {
     } else if (ast.isModule()) {
       return visitNestedScope(ast, false).orElse(ast);
     }
-    return visitASTModule(ast);
+    return visitAST(ast, this, fOffset);
   }
 
   /**
@@ -115,15 +115,28 @@ public class ModuleReplaceAll extends VisitorExpr {
         visitor = new ModuleReplaceAll(variables, fEngine, moduleCounter);
       }
     }
+    return visitAST(ast, visitor, fOffset);
+  }
 
-    IExpr temp;
-    int i = fOffset;
-    while (i < ast.size()) {
-      temp = ast.get(i).accept(visitor);
+  /**
+   * Traverse the children of <code>ast</code> starting at <code>startIndex</code>, applying
+   * <code>visitor</code> to each child. Returns a modified copy of <code>ast</code> if any child
+   * was substituted, or {@link F#NIL} if no substitution occurred.
+   *
+   * @param ast the AST whose children are visited
+   * @param visitor the visitor to apply to each child
+   * @param startIndex the index to start traversal from (typically {@link #fOffset})
+   * @return a modified copy of <code>ast</code>, or <code>F.NIL</code> if unchanged
+   */
+  private static IAST visitAST(IAST ast, ModuleReplaceAll visitor, int startIndex) {
+    final int size = ast.size();
+    int i = startIndex;
+    while (i < size) {
+      IExpr temp = ast.get(i).accept(visitor);
       if (temp.isPresent()) {
-        // something was evaluated - return a new IAST:
+        // something was substituted — copy the AST and continue
         IASTMutable result = ast.setAtCopy(i++, temp);
-        while (i < ast.size()) {
+        while (i < size) {
           temp = ast.get(i).accept(visitor);
           if (temp.isPresent()) {
             result.set(i, temp);
@@ -158,7 +171,6 @@ public class ModuleReplaceAll extends VisitorExpr {
         }
       }
     }
-
     return variables;
   }
 
@@ -180,27 +192,5 @@ public class ModuleReplaceAll extends VisitorExpr {
       }
     }
     return variables;
-  }
-
-  private IExpr visitASTModule(IAST ast) {
-    IExpr temp;
-    int i = fOffset;
-    final int size = ast.size();
-    while (i < size) {
-      temp = ast.get(i).accept(this);
-      if (temp.isPresent()) {
-        // something was evaluated - return a new IAST:
-        IASTMutable result = ast.setAtCopy(i++, temp);
-        ast.forEach(i, size, (x, j) -> {
-          IExpr t = x.accept(this);
-          if (t.isPresent()) {
-            result.set(j, t);
-          }
-        });
-        return result;
-      }
-      i++;
-    }
-    return F.NIL;
   }
 }
