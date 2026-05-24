@@ -23,6 +23,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.annotation.concurrent.NotThreadSafe;
 import org.apache.logging.log4j.Level;
+import org.apfloat.Apfloat;
 import org.apfloat.ApfloatInterruptedException;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.internal.BackingStorageException;
@@ -1015,6 +1016,35 @@ public class EvalEngine implements Serializable {
    */
   public FixedPrecisionApfloatHelper apfloatHelper() {
     return fApfloatHelper;
+  }
+
+  /**
+   * Compute the default &quot;is zero&quot; tolerance for {@link Apfloat} / {@link org.apfloat.Apcomplex}
+   * values at the given working precision.
+   *
+   * <p>
+   * The returned epsilon is {@code 10^-(precision - Config.APFLOAT_ZERO_GUARD_DIGITS)}, clamped so
+   * that the exponent is at least {@code 1} (i.e. epsilon is at most {@code 0.1}) for very low
+   * precisions. The result is computed statelessly &ndash; no caching is performed.
+   *
+   * @param precision the Apfloat working precision (number of significant digits)
+   * @return the default tolerance used by {@link F#isZero(Apfloat)} and
+   *         {@link F#isZero(org.apfloat.Apcomplex)}
+   */
+  public static Apfloat defaultApfloatZeroEpsilon(long precision) {
+    long exponent = Math.max(1L, precision - Config.APFLOAT_ZERO_GUARD_DIGITS);
+    return new Apfloat("1e-" + exponent, precision);
+  }
+
+  /**
+   * Compute the default &quot;is zero&quot; tolerance for {@link Apfloat} / {@link org.apfloat.Apcomplex}
+   * values using the working precision of this engine's {@link #apfloatHelper()}.
+   *
+   * @return the default tolerance at {@code apfloatHelper().precision()}
+   * @see #defaultApfloatZeroEpsilon(long)
+   */
+  public Apfloat defaultApfloatZeroEpsilon() {
+    return defaultApfloatZeroEpsilon(apfloatHelper().precision());
   }
 
   /**
