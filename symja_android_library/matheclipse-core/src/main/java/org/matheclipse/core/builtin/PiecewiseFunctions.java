@@ -518,13 +518,14 @@ public class PiecewiseFunctions {
    */
   private static final class Piecewise extends AbstractFunctionEvaluator {
 
-    private static IASTAppendable appendPiecewise(IASTAppendable list, IExpr function,
-        IExpr predicate, int matrixSize) {
-      if (list.isNIL()) {
-        list = F.ListAlloc(matrixSize);
+    private static boolean appendPiecewise(IASTAppendable list, IExpr function, IExpr predicate) {
+      if (list.argSize() > 0 && list.get(list.argSize()).first().equals(function)) {
+        IExpr previousPredicate = list.get(list.argSize()).second();
+        list.set(list.argSize(), F.list(function, F.Or(previousPredicate, predicate)));
+        return false;
       }
       list.append(F.list(function, predicate));
-      return list;
+      return true;
     }
 
     private static IASTAppendable createPiecewise(IASTAppendable piecewiseAST, IAST resultList) {
@@ -589,7 +590,10 @@ public class PiecewiseFunctions {
           evaluated = true;
           if (condition.isTrue()) {
             if (noBoolean) {
-              result = appendPiecewise(result, row.arg1(), S.True, matrixSize);
+              if (result.isNIL()) {
+                result = F.ListAlloc(matrixSize);
+              }
+              appendPiecewise(result, row.arg1(), S.True);
               return createPiecewise(piecewiseAST, result);
             }
             return row.arg1();
@@ -608,7 +612,12 @@ public class PiecewiseFunctions {
           continue;
         }
 
-        result = appendPiecewise(result, rowArg1, condition.orElse(row.arg2()), matrixSize);
+        if (result.isNIL()) {
+          result = F.ListAlloc(matrixSize);
+        }
+        if (!appendPiecewise(result, rowArg1, condition.orElse(row.arg2()))) {
+          evaluated = true;
+        }
         piecewiseAST = createPiecewise(piecewiseAST, result);
         noBoolean = true;
         continue;
