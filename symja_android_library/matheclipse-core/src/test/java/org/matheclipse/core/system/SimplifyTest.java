@@ -17,6 +17,11 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     // TODO
     // check("FullSimplify(a*b*c/Abs(b))", //
     // "a*c*Sign(b)");
+
+
+    check("Power(2+Sqrt(5), -1/3) // FullSimplify", //
+        "1/2*(-1+Sqrt(5))");
+
     check("FullSimplify(Mod(Mod(a, c) + Mod(b*q, c) + f(x), c))", //
         "Mod(a+b*q+f(x),c)");
 

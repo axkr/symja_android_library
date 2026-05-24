@@ -1,6 +1,5 @@
 package org.matheclipse.core.eval;
 
-import static org.matheclipse.core.expression.F.Log;
 import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.S.x;
 import java.util.List;
@@ -1340,7 +1339,55 @@ public class SimplifyUtil extends VisitorExpr {
         return powerSimplified;
       }
     }
-    if (powerAST.base().isPlus() && powerAST.base().size() == 3) {
+    if (powerAST.base().isPlus2()) {
+
+      if (fFullSimplify && powerAST.exponent().isFraction()) {
+        IFraction expFrac = (IFraction) powerAST.exponent();
+        if (expFrac.isNegative()) {
+          IAST plus1 = (IAST) powerAST.base();
+          IAST plus2 = plus1.setAtCopy(2, plus1.arg2().negate());
+          IExpr product = eval(F.Expand(F.Times(plus1, plus2)));
+          if (product.isRational() && !product.isZero()) {
+            // (plus1)^(-p/q) = (plus2 / product)^(p/q)
+            // = (plus2)^(p/q) * product^(-p/q)
+            IFraction posExp = expFrac.negate();
+            // Only handle 1/3 for now
+            if (posExp.equals(F.C1D3)) {
+              // plus2 = arg1 + arg2, where we expect arg1 = rational a, arg2 = b*Sqrt(c)
+              IExpr arg1 = plus2.arg1(); // rational a
+              IExpr arg2 = plus2.arg2(); // b*Sqrt(c) or -b*Sqrt(c)
+
+              // Extract b and c from arg2
+              IExpr b, c;
+              if (arg2.isSqrt()) { // Sqrt(c)
+                b = F.C1;
+                c = arg2.first();
+              } else if (arg2.isTimes() && arg2.last().isSqrt()) { // b*Sqrt(c)
+                b = ((IAST) arg2).removeAtCopy(arg2.argSize()).oneIdentity1(); // all factors except
+                                                                               // last
+                c = arg2.last().first();
+              } else {
+                b = F.NIL;
+                c = F.NIL;
+              }
+
+              if (b.isPresent() && c.isPresent() && arg1.isRational()) {
+                IExpr denested = denestCubeRootPlusSqrt(arg1, b, c, fEngine);
+                if (denested.isPresent()) {
+                  // result = denested * product^(-1/3)
+                  // use real cube root here
+                  IExpr powerSimplified = eval(F.Times(denested, F.CubeRoot(product)));
+                  if (powerSimplified.isPresent()
+                      && sResult.checkLessPlusTimesPower(powerSimplified)) {
+                    return powerSimplified;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
       if (powerAST.isPowerReciprocal()) {
         // example 1/(5+Sqrt(17)) => 1/8*(5-Sqrt(17))
         IAST plus1 = (IAST) powerAST.base();
@@ -1413,6 +1460,35 @@ public class SimplifyUtil extends VisitorExpr {
     }
     return F.NIL;
   }
+
+  // Solve: u^3 + 15*u*v^2 = -2 AND 3*u^2*v + 5*v^3 = 1
+  // Try denominators 1,2,3,4... for u = p/d, v = q/d
+  private static IExpr denestCubeRootPlusSqrt(IExpr a, IExpr b, IExpr c, EvalEngine engine) {
+    // (a + b*Sqrt(c))^(1/3) = u + v*Sqrt(c)?
+    // u^3 + 3*u*v^2*c = a
+    // 3*u^2*v + v^3*c = b
+    // Try rational u,v with small denominators
+    for (int den = 1; den <= 12; den++) {
+      for (int pn = -den * 4; pn <= den * 4; pn++) {
+        for (int qn = -den * 4; qn <= den * 4; qn++) {
+          IRational u = F.QQ(pn, den).normalize();
+          IRational v = F.QQ(qn, den).normalize();
+          // Check: u^3 + 3*u*v^2*c == a and 3*u^2*v + v^3*c == b
+          IExpr rationalPart =
+              engine.evaluate(F.Plus(F.Power(u, 3), F.Times(F.C3, u, F.Power(v, 2), c)));
+          if (rationalPart.equals(a)) {
+            IExpr irrationalPart =
+                engine.evaluate(F.Plus(F.Times(F.C3, F.Power(u, 2), v), F.Times(F.Power(v, 3), c)));
+            if (irrationalPart.equals(b)) {
+              return F.Times(F.QQ(1, den), F.Plus(pn, F.Times(qn, F.Sqrt(c))));
+            }
+          }
+        }
+      }
+    }
+    return F.NIL;
+  }
+
 
   private IExpr visitTimes(IASTMutable timesAST, SimplifiedResult sResult) {
     final IExpr denominator = eval(F.Denominator(timesAST));
