@@ -6230,10 +6230,84 @@ public class F extends S {
         || (Double.isNaN(a) && Double.isNaN(b));
   }
 
+  /**
+   * Returns {@code true} if the Euclidean distance between the complex numbers {@code x} and
+   * {@code y} is less than or equal to {@code tolerance}, i.e. {@code |x - y| <= tolerance}.
+   *
+   * <p>
+   * NaN / infinity special cases fall back to {@link org.hipparchus.complex.Complex#equals(Object)}
+   * so that values equal to themselves remain fuzzily equal.
+   */
   public static final boolean isFuzzyEquals(org.hipparchus.complex.Complex x,
       org.hipparchus.complex.Complex y, double tolerance) {
-    return isFuzzyEquals(x.getReal(), y.getReal(), tolerance) //
-        && isFuzzyEquals(x.getImaginary(), y.getImaginary(), tolerance);
+    double dr = x.getReal() - y.getReal();
+    double di = x.getImaginary() - y.getImaginary();
+    if (dr * dr + di * di <= tolerance * tolerance) {
+      return true;
+    }
+    return x.equals(y);
+  }
+
+  /**
+   * Returns {@code true} if the Euclidean distance between the real Apfloat numbers {@code x} and
+   * {@code y} is less than or equal to {@code tolerance}, i.e. {@code |x - y| <= tolerance}.
+   *
+   * @param x first value
+   * @param y second value
+   * @param tolerance the (non-negative) tolerance
+   */
+  public static boolean isFuzzyEquals(Apfloat x, Apfloat y, Apfloat tolerance) {
+    return isZero(x.subtract(y), tolerance);
+  }
+
+  public static boolean isFuzzyEquals(Apfloat x, Apfloat y, double tolerance) {
+    return isFuzzyEquals(x, y, new Apfloat(tolerance, x.precision()));
+  }
+
+  /**
+   * Returns {@code true} if the Euclidean distance between the real Apfloat numbers {@code x} and
+   * {@code y} is less than or equal to the default Apfloat zero tolerance derived from the current
+   * {@link EvalEngine}'s working precision (see
+   * {@link EvalEngine#defaultApfloatZeroEpsilon(long)}).
+   *
+   * <p>
+   * Because the default tolerance depends on the current engine configuration, the result of this
+   * method may vary between engines with different precisions.
+   */
+  public static boolean isFuzzyEquals(Apfloat x, Apfloat y) {
+    Apfloat diff = x.subtract(y);
+    return isZero(diff, EvalEngine.defaultApfloatZeroEpsilon(diff.precision()));
+  }
+
+  /**
+   * Returns {@code true} if the Euclidean distance between the complex Apfloat numbers {@code x}
+   * and {@code y} is less than or equal to {@code tolerance}, i.e. {@code |x - y| <= tolerance}.
+   *
+   * <p>
+   * Implemented via {@code re*re + im*im <= tolerance*tolerance} on the difference, to avoid an
+   * Apfloat square root.
+   */
+  public static boolean isFuzzyEquals(Apcomplex x, Apcomplex y, Apfloat tolerance) {
+    return isZero(x.subtract(y), tolerance);
+  }
+
+  public static boolean isFuzzyEquals(Apcomplex x, Apcomplex y, double tolerance) {
+    return isFuzzyEquals(x, y, new Apfloat(tolerance, x.precision()));
+  }
+
+  /**
+   * Returns {@code true} if the Euclidean distance between the complex Apfloat numbers {@code x}
+   * and {@code y} is less than or equal to the default Apfloat zero tolerance derived from the
+   * current {@link EvalEngine}'s working precision (see
+   * {@link EvalEngine#defaultApfloatZeroEpsilon(long)}).
+   *
+   * <p>
+   * Because the default tolerance depends on the current engine configuration, the result of this
+   * method may vary between engines with different precisions.
+   */
+  public static boolean isFuzzyEquals(Apcomplex x, Apcomplex y) {
+    Apcomplex diff = x.subtract(y);
+    return isZero(diff, EvalEngine.defaultApfloatZeroEpsilon(diff.precision()));
   }
 
   /**
@@ -6329,24 +6403,77 @@ public class F extends S {
     return systemInitialized;
   }
 
+  /**
+   * Test if the Euclidean distance of the complex number <code>x</code> to <code>0</code> is less
+   * than or equal to <code>epsilon</code>, i.e. {@code |x| <= epsilon}.
+   *
+   * <p>
+   * Implemented as {@code re*re + im*im <= epsilon*epsilon} to avoid an Apfloat square root.
+   *
+   * @param x the complex value to test
+   * @param epsilon the (non-negative) tolerance
+   */
   public static boolean isZero(Apcomplex x, Apfloat epsilon) {
-    Apfloat epsNegate = epsilon.negate();
-    return x.real().compareTo(epsNegate) > 0 && x.real().compareTo(epsilon) < 0 //
-        && x.imag().compareTo(epsNegate) > 0 && x.imag().compareTo(epsilon) < 0;
+    if (x.isZero()) {
+      return true;
+    }
+    Apfloat re = x.real();
+    Apfloat im = x.imag();
+    return re.multiply(re).add(im.multiply(im)).compareTo(epsilon.multiply(epsilon)) <= 0;
   }
 
   public static boolean isZero(Apcomplex x, double epsilon) {
-    Apfloat eps = new Apfloat(epsilon, x.precision());
-    return isZero(x, eps);
+    return isZero(x, new Apfloat(epsilon, x.precision()));
   }
 
+  /**
+   * Test if the Euclidean distance of the complex number <code>x</code> to <code>0</code> is less
+   * than or equal to the default Apfloat zero tolerance derived from the current
+   * {@link EvalEngine}'s working precision (see
+   * {@link EvalEngine#defaultApfloatZeroEpsilon(long)}).
+   *
+   * <p>
+   * Because the default tolerance depends on the current engine configuration, the result of this
+   * method may vary between engines with different precisions.
+   *
+   * @param x the complex value to test
+   */
+  public static boolean isZero(Apcomplex x) {
+    return isZero(x, EvalEngine.defaultApfloatZeroEpsilon(x.precision()));
+  }
+
+  /**
+   * Test if the absolute value of the real number <code>x</code> is less than or equal to
+   * <code>epsilon</code>, i.e. {@code |x| <= epsilon} (Euclidean distance to <code>0</code>).
+   *
+   * @param x the real value to test
+   * @param epsilon the (non-negative) tolerance
+   */
   public static boolean isZero(Apfloat x, Apfloat epsilon) {
-    return x.compareTo(epsilon.negate()) > 0 && x.compareTo(epsilon) < 0;
+    if (x.isZero()) {
+      return true;
+    }
+    Apfloat abs = x.signum() < 0 ? x.negate() : x;
+    return abs.compareTo(epsilon) <= 0;
   }
 
   public static boolean isZero(Apfloat x, double epsilon) {
-    Apfloat eps = new Apfloat(epsilon, x.precision());
-    return x.compareTo(eps.negate()) > 0 && x.compareTo(eps) < 0;
+    return isZero(x, new Apfloat(epsilon, x.precision()));
+  }
+
+  /**
+   * Test if the absolute value of the real number <code>x</code> is less than or equal to the
+   * default Apfloat zero tolerance derived from the current {@link EvalEngine}'s working precision
+   * (see {@link EvalEngine#defaultApfloatZeroEpsilon(long)}).
+   *
+   * <p>
+   * Because the default tolerance depends on the current engine configuration, the result of this
+   * method may vary between engines with different precisions.
+   *
+   * @param x the real value to test
+   */
+  public static boolean isZero(Apfloat x) {
+    return isZero(x, EvalEngine.defaultApfloatZeroEpsilon(x.precision()));
   }
 
   /**
@@ -7648,6 +7775,10 @@ public class F extends S {
     return quaternary(Min, a0, a1, a2, a3);
   }
 
+  public static IAST MinimalPolynomial(final IExpr a0) {
+    return new AST1(MinimalPolynomial, a0);
+  }
+
   public static IAST Minimize(final IExpr a0, final IExpr a1) {
     return new AST2(Minimize, a0, a1);
   }
@@ -8015,6 +8146,10 @@ public class F extends S {
    */
   public static INum num(String numberStr, long precision) {
     return num(new Apfloat(numberStr, precision));
+  }
+
+  public static INum num(String numberStr, double precision) {
+    return num(new Apfloat(numberStr, (long) precision));
   }
 
   /**

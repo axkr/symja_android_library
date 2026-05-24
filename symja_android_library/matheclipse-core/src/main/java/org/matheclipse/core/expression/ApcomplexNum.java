@@ -1247,13 +1247,12 @@ public class ApcomplexNum implements IComplexNum {
 
   @Override
   public boolean isZero() {
-    return fApcomplex.isZero();
+    return F.isZero(fApcomplex);
   }
 
   @Override
   public boolean isZero(double tolerance) {
-    return F.isZero(fApcomplex.real(), tolerance) && //
-        F.isZero(fApcomplex.imag(), tolerance);
+    return F.isZero(fApcomplex, tolerance);
   }
 
   @Override

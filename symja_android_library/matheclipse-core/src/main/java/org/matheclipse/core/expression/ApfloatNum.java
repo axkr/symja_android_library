@@ -1512,7 +1512,7 @@ public class ApfloatNum implements INum {
   /** {@inheritDoc} */
   @Override
   public boolean isZero() {
-    return fApfloat.isZero();
+    return F.isZero(fApfloat);
   }
 
   @Override

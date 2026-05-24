@@ -313,6 +313,16 @@ public class Config {
   public static double MACHINE_EPSILON = Math.nextUp(1.0) - 1.0;
 
   /**
+   * Number of guard digits subtracted from the working Apfloat precision when computing the default
+   * &quot;is zero&quot; tolerance for {@link org.apfloat.Apfloat} and {@link org.apfloat.Apcomplex}
+   * values (see
+   * {@code EvalEngine#defaultApfloatZeroEpsilon(long)}).
+   * <p>
+   * A larger value yields a looser (more permissive) tolerance.
+   */
+  public static int APFLOAT_ZERO_GUARD_DIGITS = 5;
+
+  /**
    * Replace <code>double</code> values in root algorithms by 0 if they are below this tolerance.
    * Assume <code>double</code> values in <code>PossibleZeroQ</code> to be 0 if they are below this
    * tolerance.
