@@ -237,6 +237,9 @@ public class SumTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSum007() {
+    check("Subfactorial(-1) // N", //
+        "-0.697175+I*(-1.15573)");
+
     check("Sum(2^(-i), {i, 1, Infinity})", //
         "1");
     check("Sum((-3)^(-i), {i, 1, Infinity})", //
@@ -247,9 +250,9 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(i^2 - i + 10 ,{i,1,10})", //
         "430");
     check("Sum(i!,{i,3,n})", //
-        "6*Subfactorial(-4)-(-1)^n*Gamma(2+n)*Subfactorial(-2-n)");
+        "-4-Subfactorial(-1)-(-1)^n*Gamma(2+n)*Subfactorial(-2-n)");
     check("Sum(i!,{i,1,n})", //
-        "Subfactorial(-2)-(-1)^n*Gamma(2+n)*Subfactorial(-2-n)");
+        "-1-Subfactorial(-1)-(-1)^n*Gamma(2+n)*Subfactorial(-2-n)");
 
     check("Sum(g(i),{i,10,2})", //
         "0");
@@ -596,5 +599,21 @@ public class SumTest extends ExprEvaluatorTestCase {
     // "");
     checkNumeric("NSum(1/E^(k^2), {k,-Infinity,Infinity})", //
         "1.7726372048266525");
+  }
+
+  @Test
+  public void testSumFactorial() {
+    // 1!+1!+2!+6!
+    check("Sum(k!, {k, 0, 7/2})", //
+        "10");
+    check("Sum(k!, {k, 0, 5})", //
+        "154");
+    check("Sum(k!, {k, 0, 10, 2})", //
+        "3669867");
+    check("Sum(k!, {k, 3, 6})", //
+        "870");
+
+    check("Length(IntegerDigits(Sum(k!, {k, 0, 400})))", //
+        "869");
   }
 }

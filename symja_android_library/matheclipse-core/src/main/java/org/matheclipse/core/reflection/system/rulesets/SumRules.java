@@ -116,9 +116,9 @@ matcher.caseOf(Sum(Binomial(n_,i_),list(i_Symbol,C0,n_)),
     // Sum(i_*Binomial(n_,i_),{i_Symbol,0,n_}):=n/2^(1-n)/;FreeQ(n,i)
 matcher.caseOf(Sum(Times(i_,Binomial(n_,i_)),list(i_Symbol,C0,n_)),
       Condition(Times(n,Power(C2,Plus(CN1,n))),FreeQ(n,i)));
-    // Sum(i_!,{i_Symbol,0,n_}):=-Subfactorial(-1)-(-1)^n*Gamma(2+n)*Subfactorial(-2-n)/;FreeQ(n,i)&&SpecialsFreeQ(n)
-matcher.caseOf(Sum(Factorial(i_),list(i_Symbol,C0,n_)),
-      Condition(Plus(Negate(Subfactorial(CN1)),Times(CN1,Power(-1,n),Gamma(Plus(C2,n)),Subfactorial(Subtract(CN2,n)))),And(FreeQ(n,i),SpecialsFreeQ(n))));
+    // Sum(i_!,{i_Symbol,0,n_?(!ExactNumberQ(#1)&&SpecialsFreeQ(#1)&)}):=-Subfactorial(-1)-(-1)^n*Gamma(2+n)*Subfactorial(-2-n)/;FreeQ(n,i)
+matcher.caseOf(Sum(Factorial(i_),list(i_Symbol,C0,PatternTest(n_,Function(And(Not(ExactNumberQ(Slot1)),SpecialsFreeQ(Slot1)))))),
+      Condition(Plus(Negate(Subfactorial(CN1)),Times(CN1,Power(-1,n),Gamma(Plus(C2,n)),Subfactorial(Subtract(CN2,n)))),FreeQ(n,i)));
     // Sum(Cos(i_*c_.),{i_Symbol,0,n_}):=Csc(c/2)*Cos(1/2*c*n)*Sin(1/2*c*(1+n))/;FreeQ({c,n},i)&&SpecialsFreeQ(n)
 matcher.caseOf(Sum(Cos(Times(i_,c_DEFAULT)),list(i_Symbol,C0,n_)),
       Condition(Times(Csc(Times(C1D2,c)),Cos(Times(C1D2,c,n)),Sin(Times(C1D2,c,Plus(C1,n)))),And(FreeQ(list(c,n),i),SpecialsFreeQ(n))));

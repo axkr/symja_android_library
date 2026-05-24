@@ -87,8 +87,8 @@ Sum(Binomial(n_, i_), {i_Symbol,0,n_}) := 2^n
 Sum(i_*Binomial(n_, i_), {i_Symbol,0,n_}) := n*2^(n-1)
   /; FreeQ(n,i),
 
-Sum(i_!, {i_Symbol,0,n_}):= -Subfactorial(-1)-(-1)^n*Gamma(2+n)*Subfactorial(-2-n)
-  /; FreeQ(n,i) && SpecialsFreeQ(n),
+Sum(i_!, {i_Symbol,0,n_?(!ExactNumberQ(#)&&SpecialsFreeQ(#)&)}):= -Subfactorial(-1)-(-1)^n*Gamma(2+n)*Subfactorial(-2-n)
+  /; FreeQ(n,i),
   
 Sum(Cos(i_*c_.), {i_Symbol,0,n_}) := Csc(c/2)*Cos((c*n)/2)*Sin((1/2)*c*(1 + n))
   /; FreeQ({c,n},i) && SpecialsFreeQ(n),
