@@ -37,6 +37,17 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testParserApfloatValue() {
+    EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
+    ExprParser parser = new ExprParser(engine, true);
+    IExpr expr = parser.parse("4.60421677720057651458449514482636628606`20.6008566975056");
+    IExpr result = engine.evaluate(expr);
+    // TODO Apfloat only knows "long" type precision, so the result is not exactly the same as the
+    // input
+    assertEquals(result.toString(), "4.6042167772005765145`20");
+  }
+
+  @Test
   public void testParserPatternTest() {
     EvalEngine engine = new EvalEngine("", 256, 256, System.out, System.err, true);
     ExprParser parser = new ExprParser(engine, true);

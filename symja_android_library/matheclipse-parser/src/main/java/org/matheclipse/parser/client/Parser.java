@@ -718,19 +718,35 @@ public class Parser extends Scanner {
             }
           } else if (isValidPosition() && fInputString[fCurrentPosition] == '`') {
             fCurrentPosition += 2;
-            long precision = getJavaLong();
-            if (precision < ParserConfig.MACHINE_PRECISION) {
-              precision = ParserConfig.MACHINE_PRECISION;
+            String precisionStr = getJavaDoubleString();
+            double doublePrecision = 0;
+            try {
+              doublePrecision = Double.parseDouble(precisionStr);
+            } catch (final NumberFormatException e) {
+              throwSyntaxError("Number format error (not a double type): " + precisionStr,
+                  precisionStr.length());
             }
-            return fFactory.createDouble(numberStr);
+            if (doublePrecision < ParserConfig.MACHINE_PRECISION) {
+              doublePrecision = ParserConfig.MACHINE_PRECISION_DOUBLE;
+              precisionStr = "" + ParserConfig.MACHINE_PRECISION;
+            }
+            return fFactory.createDouble(numberStr + "`" + precisionStr);
           } else {
             if (isValidPosition() && Character.isDigit(fInputString[fCurrentPosition])) {
               fCurrentPosition++;
-              long precision = getJavaLong();
-              if (precision < ParserConfig.MACHINE_PRECISION) {
-                precision = ParserConfig.MACHINE_PRECISION;
+              String precisionStr = getJavaDoubleString();
+              double doublePrecision = 0;
+              try {
+                doublePrecision = Double.parseDouble(precisionStr);
+              } catch (final NumberFormatException e) {
+                throwSyntaxError("Number format error (not a double type): " + precisionStr,
+                    precisionStr.length());
               }
-              return fFactory.createDouble(numberStr);
+              if (doublePrecision < ParserConfig.MACHINE_PRECISION) {
+                doublePrecision = ParserConfig.MACHINE_PRECISION_DOUBLE;
+                precisionStr = "" + ParserConfig.MACHINE_PRECISION;
+              }
+              return fFactory.createDouble(numberStr + "`" + precisionStr);
             } else {
               getNextToken();
               return fFactory.createDouble(numberStr);

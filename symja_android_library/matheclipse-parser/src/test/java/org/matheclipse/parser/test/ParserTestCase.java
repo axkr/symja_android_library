@@ -601,8 +601,12 @@ class ParserTestCase {
 
   @Test
   void testParser69() {
-    ASTNode obj = PARSE_UNRELAXED.parse("2/3 + Pi + 5.5`30");
-    assertEquals("Plus(2/3, Pi, 5.5)", obj.toString());
+    ASTNode obj =
+        PARSE_UNRELAXED.parse("4.60421677720057651458449514482636628606`20.6008566975056");
+    assertEquals("4.60421677720057651458449514482636628606`20.6008566975056", obj.toString());
+
+    obj = PARSE_UNRELAXED.parse("2/3 + Pi + 5.5`30");
+    assertEquals("Plus(2/3, Pi, 5.5`30)", obj.toString());
   }
 
   @Test

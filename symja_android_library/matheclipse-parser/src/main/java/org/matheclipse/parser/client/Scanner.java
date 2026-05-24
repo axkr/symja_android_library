@@ -543,6 +543,34 @@ public abstract class Scanner {
     return longValue;
   }
 
+  protected String getJavaDoubleString() throws SyntaxError {
+    int startPosition = fCurrentPosition - 1;
+    getChar();
+    boolean decimalPoint = false;
+    while (Character.isDigit(fCurrentChar) || fCurrentChar == '.') {
+      if (fCurrentChar == '.') {
+        if (decimalPoint) {
+          break;
+        }
+        decimalPoint = true;
+      }
+      getChar();
+    }
+    int endPosition = fCurrentPosition--;
+
+    String number = new String(fInputString, startPosition, (--endPosition) - startPosition);
+    getNextToken();
+    return number;
+    // double doubleValue = 0;
+    // try {
+    // doubleValue = Double.parseDouble(number);
+    // } catch (final NumberFormatException e) {
+    // throwSyntaxError("Number format error (not a double type): " + number, number.length());
+    //// }
+    // getNextToken();
+    // return doubleValue;
+  }
+
   /**
    * Parse a Java <code>string</code> from the digits <code>0,1,2,3,4,5,6,7,8,9</code>.
    *

@@ -890,19 +890,45 @@ public class ExprParser extends Scanner {
             }
           } else if (isValidPosition() && fInputString[fCurrentPosition] == '`') {
             fCurrentPosition += 2;
-            long precision = getJavaLong();
-            if (precision < ParserConfig.MACHINE_PRECISION) {
-              precision = ParserConfig.MACHINE_PRECISION;
+            String precisionStr = getJavaDoubleString();
+            double doublePrecision = 0;
+            try {
+              doublePrecision = Double.parseDouble(precisionStr);
+            } catch (final NumberFormatException e) {
+              throwSyntaxError("Number format error (not a double type): " + precisionStr,
+                  precisionStr.length());
             }
-            return F.num(numberStr, precision);
+            if (doublePrecision < ParserConfig.MACHINE_PRECISION) {
+              doublePrecision = ParserConfig.MACHINE_PRECISION_DOUBLE;
+              precisionStr = "" + ParserConfig.MACHINE_PRECISION;
+            }
+            return F.num(numberStr, doublePrecision);
+            // long precision = getJavaLong();
+            // if (precision < ParserConfig.MACHINE_PRECISION) {
+            // precision = ParserConfig.MACHINE_PRECISION;
+            // }
+            // return F.num(numberStr, precision);
           } else {
             if (isValidPosition() && Character.isDigit(fInputString[fCurrentPosition])) {
               fCurrentPosition++;
-              long precision = getJavaLong();
-              if (precision < ParserConfig.MACHINE_PRECISION) {
-                precision = ParserConfig.MACHINE_PRECISION;
+              String precisionStr = getJavaDoubleString();
+              double doublePrecision = 0;
+              try {
+                doublePrecision = Double.parseDouble(precisionStr);
+              } catch (final NumberFormatException e) {
+                throwSyntaxError("Number format error (not a double type): " + precisionStr,
+                    precisionStr.length());
               }
-              return F.num(numberStr, precision);
+              if (doublePrecision < ParserConfig.MACHINE_PRECISION) {
+                doublePrecision = ParserConfig.MACHINE_PRECISION_DOUBLE;
+                precisionStr = "" + ParserConfig.MACHINE_PRECISION;
+              }
+              return F.num(numberStr, doublePrecision);
+              // long precision = getJavaLong();
+              // if (precision < ParserConfig.MACHINE_PRECISION) {
+              // precision = ParserConfig.MACHINE_PRECISION;
+              // }
+              // return F.num(numberStr, precision);
             } else {
               getNextToken();
               return F.num(numberStr);
