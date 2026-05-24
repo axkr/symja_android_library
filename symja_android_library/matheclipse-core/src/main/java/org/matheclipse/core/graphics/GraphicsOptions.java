@@ -614,7 +614,7 @@ public class GraphicsOptions {
     }
   }
 
-  public boolean graphicsExtent2D(ObjectNode objectNode, IAST plotRange) {
+  public boolean graphicsExtent2D(ObjectNode objectNode, IExpr plotRange) {
     if (plotRange.isList2()) {
       IExpr arg1 = plotRange.first();
       IExpr arg2 = plotRange.second();

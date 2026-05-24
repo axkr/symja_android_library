@@ -367,7 +367,7 @@ public class GraphicsUtil {
         IExpr option = options.getOption(S.PlotRange);
         int[] matrix = option.isMatrix();
         if (matrix != null && matrix[0] == 2 && matrix[1] == 2) {
-          if (graphicsOptions.graphicsExtent2D(objectNode, (IAST) option)) {
+          if (graphicsOptions.graphicsExtent2D(objectNode, option)) {
             json.set("extent", objectNode);
           }
         } else {
@@ -380,7 +380,7 @@ public class GraphicsUtil {
         }
 
         if (plotRange.isPresent()
-            && graphicsOptions.graphicsExtent2D(objectNode, (IAST) plotRange)) {
+            && graphicsOptions.graphicsExtent2D(objectNode, plotRange)) {
           json.set("extent", objectNode);
         }
 

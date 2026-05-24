@@ -5,6 +5,7 @@ import org.hipparchus.ode.ODEState;
 import org.hipparchus.ode.ODEStateAndDerivative;
 import org.hipparchus.ode.OrdinaryDifferentialEquation;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.LimitException;
@@ -125,7 +126,8 @@ public class NDSolve extends AbstractFunctionEvaluator {
 
         if (listOfVariables.isList()) {
           AbstractIntegrator abstractIntegrator =
-              new DormandPrince853Integrator(1.0e-8, 100.0, 1.0e-10, 1.0e-10);
+              new DormandPrince853Integrator(1.0e-8, 100.0, Config.SPECIAL_FUNCTIONS_TOLERANCE,
+                  Config.SPECIAL_FUNCTIONS_TOLERANCE);
           // AbstractIntegrator abstractIntegrator = new ClassicalRungeKuttaIntegrator(1.0);
           double[] primaryState = new double[numberOfVariables];
           for (int j = 0; j < numberOfVariables; j++) {

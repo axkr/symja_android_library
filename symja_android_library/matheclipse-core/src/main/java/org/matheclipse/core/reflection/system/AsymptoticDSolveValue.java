@@ -222,6 +222,5 @@ public class AsymptoticDSolveValue extends AbstractFunctionOptionEvaluator {
     setOptions(newSymbol, //
         new IBuiltInSymbol[] {S.Assumptions, S.GenerateConditions, S.GeneratedParameters}, //
         new IExpr[] {S.$Assumptions, S.Automatic, S.None});
-    super.setUp(newSymbol);
   }
 }

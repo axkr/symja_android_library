@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.graphics;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -239,7 +240,7 @@ public class ListContourPlot extends ContourPlot {
 
         for (int k = 0; k < n; k++) {
           double d2 = (cx - x[k]) * (cx - x[k]) + (cy - y[k]) * (cy - y[k]);
-          if (d2 < 1.0e-10) {
+          if (d2 < Config.DEFAULT_CHOP_DELTA) {
             gd.zGrid[i][j] = z[k];
             exact = true;
             break;
