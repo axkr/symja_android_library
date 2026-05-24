@@ -82,6 +82,8 @@ public class Errors {
       "base", "Requested base `1` in `2` should be between 2 and `3`.", //
       "bbrac",
       "`1` is only applicable for univariate real functions and requires two real starting values that bracket the root.", //
+      "bdmtd",
+      "Value of option `1` is not Automatic, SymbolDefinitionsPresent, OwnValuesPresent or TrialEvaluation.", //
       "bdmtrc", "`1` does not define a metric in `2` dimensions.", //
       "bdpt", "Evaluation point `1` is not a valid set of polar or hyperspherical coordinates.", //
       "bset",
@@ -296,6 +298,7 @@ public class Errors {
       "A character unicode, which should be a non-negative integer less than 1114112, is expected at position `2` in `1`.", //
       "noval", "Symbol `1` in part assignment does not have an immediate value.", //
       "npa", "The angle `1` should be a positive number less than `2`.", //
+      "npoly", "`1` is not a polynomial in `2`.", //
       "nps", "The triangle side `1`should be a positive number.", //
       "nquan",
       "The Quantile specification `1` should be a number or a list of numbers between `2` and `3`.",
@@ -368,6 +371,7 @@ public class Errors {
       "The second argument of Norm, `1`, should be a symbol, Infinity, or a number greater equal 1 for p-norms, or \"Frobenius\" for matrix norms.",
       "range", "Range specification in `1` does not have appropriate bounds.", //
       "rapp", "Root approximation `1` is not a number.", //
+      "invrt", "`1` is not equal to a root of `2`.", //
       "rbase", "Base `1` is not a real number greater than 1.", //
       "rank", "The rank `1` is not an integer between `2` and  `3`.", //
       "rankl", "The list `1` of dimensions `3` must have length `2`.", //

@@ -5701,39 +5701,6 @@ public final class NumberTheory {
     }
   }
 
-  private static class RootReduce extends AbstractFunctionEvaluator {
-
-    /** {@inheritDoc} */
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (arg1.isPowerReciprocal()) {
-        IExpr base = arg1.base();
-        if (base.isPlus() && base.size() == 3) {
-          IExpr p1 = base.first();
-          IExpr p2 = base.second();
-          if (base.size() == 3 //
-              && (p1.isRational() || p1.isFactorSqrtExpr()) && p2.isFactorSqrtExpr()) {
-            IRational denominator = (IRational) F.Subtract.of(F.Sqr(p1), F.Sqr(p2));
-            IAST numerator = F.Subtract(p1, p2);
-            return F.Divide(numerator, denominator);
-          }
-        }
-      }
-
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
-  }
   /**
    *
    *
@@ -6614,7 +6581,6 @@ public final class NumberTheory {
       S.QuadraticIrrationalQ.setEvaluator(new QuadraticIrrationalQ());
       S.RamseyNumber.setEvaluator(new RamseyNumber());
       S.Rationalize.setEvaluator(new Rationalize());
-      S.RootReduce.setEvaluator(new RootReduce());
       S.SquareFreeQ.setEvaluator(new SquareFreeQ());
       S.SquaresR.setEvaluator(new SquaresR());
       S.StirlingS1.setEvaluator(new StirlingS1());

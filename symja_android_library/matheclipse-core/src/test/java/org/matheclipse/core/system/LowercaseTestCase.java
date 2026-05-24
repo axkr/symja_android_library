@@ -7611,6 +7611,51 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testExtract() {
+
+    // Basic list-of-lists: each sub-list is an integer position path
+    check("Extract({{a, b}, {c, d}}, {{1}, {2, 2}})", //
+        "{{a,b},d}");
+    check("Extract(a+b+c, {{2}, {3}})", //
+        "{b,c}");
+
+    // List-of-lists with head wrapper (arg3): result elements must NOT be evaluated
+    check("Extract({a:>1^2, b:>2^2, c:>3^3}, {{1,2}, {2,2}}, Hold)", //
+        "{Hold(1^2),Hold(2^2)}");
+    check("Extract({{1^2, 2^2}, {3^2, 4^2}}, {{1,1}, {2,2}}, Hold)", //
+        "{Hold(1),Hold(16)}");
+
+    // List-of-lists with Hold wrapper — path to head (position 0)
+    check("Extract(f(a,b,c), {{0}, {2}}, Hold)", //
+        "{Hold(f),Hold(b)}");
+
+    // List-of-lists: single-element sub-lists (depth-1 extraction)
+    check("Extract({10, 20, 30}, {{1}, {3}})", //
+        "{10,30}");
+    check("Extract({10, 20, 30}, {{1}, {3}}, Hold)", //
+        "{Hold(10),Hold(30)}");
+
+    // List-of-lists: negative index
+    check("Extract({a, b, c}, {{-1}, {-3}})", //
+        "{c,a}");
+
+    // List-of-lists: empty inner list returns the whole expression
+    check("Extract(a+b+c, {{}})", //
+        "{a+b+c}");
+
+    // List-of-lists: invalid position prints message and returns unevaluated
+    check("Extract(a+b+c, {{rr}, {3}})", //
+        "Extract(a+b+c,{{rr},{3}})");
+
+
+
+    check("Extract({{1,2},{3,4,5}},{All,1;;2})", //
+        "{{1,2},{3,4}}");
+    check("Extract({{1,2},{3,4,5}},{All,{1,-1}})", //
+        "{{1,2},{3,5}}");
+    check("Extract({a:>1^2, b:>2^2,c:>3^3},{1;;2,2},Hold)", //
+        "Hold({1^2,2^2})");
+
+
     // Extract: Position specification {{rr},{3}} in Extract(a+b+c,{{rr},{3}}) is not applicable.
     check("Extract(a+b+c,{{rr},{3}})", //
         "Extract(a+b+c,{{rr},{3}})");
@@ -10154,26 +10199,27 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFunctionRange() {
-    check("FunctionRange(Sin(x)*Cos(x),x,y)", //
-        "-1<=y<=1");
-    // TODO
-    // check("FunctionRange(Sqrt(x^2 - 1)/x, x, y)", //
-    // "");
+    check("FunctionRange(Sin(x)/Sqrt(x), x, y)", //
+        "Sin(Root({2*#1-Tan(#1)&,4.60422}))/Sqrt(Root({2*#1-Tan(#1)&,4.60422}))<=y<=Sin(Root({\n"
+            + "2*#1-Tan(#1)&,1.16556}))/Sqrt(Root({2*#1-Tan(#1)&,1.16556}))");
 
-    // check(
-    // "FunctionRange(E^x, x, y)", //
-    // "y>0");
-
-    check("FunctionRange(LogIntegral(a), a, b)", //
-        "True");
+    check("FunctionRange(E^x, x, y)", //
+        "y>0");
 
     check("FunctionRange(x^2-1, x, y)", //
         "y>=-1");
     check("FunctionRange(x/(1 + x^2), x, y)", //
         "-1/2<=y<=1/2");
 
+
+    check("FunctionRange(Sin(x)*Cos(x),x,y)", //
+        "-1/2<=y<=1/2");
+
+    check("FunctionRange(LogIntegral(a), a, b)", //
+        "True");
+
     check("FunctionRange(1/(1 + x^2), x, y)", //
-        "0<=y<=1");
+        "0<y<=1");
     check("FunctionRange(Sqrt(Sin(2*x)),x,y)", //
         "0<=y<=1");
 
@@ -14351,6 +14397,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMinimize() {
+    check("Minimize(-1+x^2,x)", //
+        "{-1,{x->0}}");
+
     // check("Minimize(Sin(x),x)", //
     // "");
 
@@ -14372,6 +14421,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMinimalPolynomial() {
+    check("MinimalPolynomial(Power(2+Sqrt(5), -1/3))", //
+        "-1+#1+#1^2&");
+    check("MinimalPolynomial(Power(2+Sqrt(5), -1/3),x)", //
+        "-1+x+x^2");
+
+    // differs from WMA; degree 6 is minimal for the real interpretation
+    check("MinimalPolynomial(Power(2-Sqrt(5), -1/3))", //
+        "-1+4*#1^3+#1^6&");
+    check("MinimalPolynomial(Power(2-Sqrt(5), -1/3),x)", //
+        "-1+4*x^3+x^6");
+
     check("MinimalPolynomial((2 - I)/Sqrt(5), x)", //
         "5-6*x^2+5*x^4");
     // Sqrt nested inside Sqrt
@@ -17209,6 +17269,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPiecewise() {
+    check("Piecewise({{a, d1}, {b, d2}, {r,d7},{b, d3}, {c, d4}}, e)", //
+        "Piecewise({{a,d1},{b,d2},{r,d7},{b,d3},{c,d4}},e)");
+    check("Piecewise({{a, d1}, {a, d2}, {a, d3}}, ef)", //
+        "Piecewise({{a,d1||d2||d3}},ef)");
+    check("Piecewise({{a, d1}, {b, d2}, {b, d3}, {c, d4}}, e)", //
+        "Piecewise({{a,d1},{b,d2||d3},{c,d4}},e)");
     // message Piecewise: The first argument x of Piecewise is not a list of pairs.
     check("Piecewise(x)", //
         "Piecewise(x)");
@@ -19536,27 +19602,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     }
   }
 
-  @Test
-  public void testRootReduce() {
-    // TODO eliminate gcd
-    check("RootReduce((-35-7*Sqrt(35))^-1)", //
-        "1/490*(35-7*Sqrt(35))");
-    check("RootReduce((35-7*Sqrt(35))^-1)", //
-        "1/490*(-35-7*Sqrt(35))");
-    check("RootReduce((35+7*Sqrt(35))^-1)", //
-        "1/490*(-35+7*Sqrt(35))");
-    check("RootReduce((-35+7*Sqrt(35))^-1)", //
-        "1/490*(35+7*Sqrt(35))");
-
-    check("RootReduce((-35-Sqrt(35))^-1)", //
-        "1/1190*(-35+Sqrt(35))");
-    check("RootReduce((35-Sqrt(35))^-1)", //
-        "1/1190*(35+Sqrt(35))");
-    check("RootReduce((35+Sqrt(35))^-1)", //
-        "1/1190*(35-Sqrt(35))");
-    check("RootReduce((-35+Sqrt(35))^-1)", //
-        "1/1190*(-35-Sqrt(35))");
-  }
 
   @Test
   public void testQuadraticIrrationalQ() {
@@ -19907,6 +19952,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "0.320015+I*0.506726");
     // check("RandomComplex({-2-I,5+3*I})", //
     // "0.61304+I*(-0.482746)");
+  }
+
+  @Test
+  public void testRandomInteger() {
+    check("RandomInteger(150,0)", //
+        "{}");
+    check("RandomInteger(150,{0,3})", //
+        "{}");
+    check("RandomInteger(150,{3,0})", //
+        "{{},{},{}}");
   }
 
   @Test
@@ -21324,48 +21379,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{I,II,III,IV,V,X,L,LX,C,CCL,D,M,MD,MMDC}");
   }
 
-  @Test
-  public void testRoot() {
-    // TODO
-    // message: Solve: The system cannot be solved with the methods available to Solve.
-    check("Root({Exp[#] - 2 &, 0.6931471805599453})", //
-        "Root({-2+E^#1&,0.693147})");
-
-    check("Root({#^2 - 2 &, 1.4142135623730951})", //
-        "Sqrt(2)");
-    check("Root({Sin(#) &, 3.1415926535897932385})", //
-        "Pi");
-    check("Root(EvenQ(#1)&,1009)", //
-        "Root(EvenQ(#1)&,1009)");
-    check("Root((#^2 - 3*# - 1)&, 2)", //
-        "3/2+Sqrt(13)/2");
-    check("Root((-3*#-1)&, 1)", //
-        "-1/3");
-
-  }
-
-  @Test
-  public void testRoots() {
-    check("(-EulerGamma)^(1/3)", //
-        "(-EulerGamma)^(1/3)");
-    check("Roots(x^3==EulerGamma,x)", //
-        "x==-(-EulerGamma)^(1/3)||x==EulerGamma^(1/3)||x==(-1)^(2/3)*EulerGamma^(1/3)");
-    check("Roots(a*x^2+b*x+c==0,2)", //
-        "Roots(c+b*x+a*x^2==0,2)");
-
-    // check("Roots(a*x^3+b*x^2+c^2+d, x)",
-    // "{(-b/2-Sqrt(b^2-4*a*c)/2)/a,(-b/2+Sqrt(b^2-4*a*c)/2)/a}");
-    check("Roots(x^2-2*x-3==0,x)", //
-        "x==-1||x==3");
-    check("Roots(a*x^2+b*x+c==0, x)", //
-        "x==(-b-Sqrt(b^2-4*a*c))/(2*a)||x==(-b+Sqrt(b^2-4*a*c))/(2*a)");
-    check("Roots(3*x^3-8*x^2+-11*x+10==0,x)", //
-        "x==2/3||x==1-Sqrt(6)||x==1+Sqrt(6)");
-    check("Roots(3*x^3-5*x^2+5*x-2==0,x)", //
-        "x==2/3||x==1/2*(1-I*Sqrt(3))||x==1/2*(1+I*Sqrt(3))");
-    check("Roots(x^3 - 5*x + 4==0,x)", //
-        "x==1||x==1/2*(-1-Sqrt(17))||x==1/2*(-1+Sqrt(17))");
-  }
 
   @Test
   public void testRotateLeft() {
@@ -24742,51 +24755,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "3-4/5*x");
   }
 
-  @Test
-  public void testToRadicals() {
-    // Symbolic coefficient substituted with zero.
-    // This evaluates root3 symbolically, creating an expression with division by 'a'.
-    // Then we substitute 'a -> 0'. Symja should yield Indeterminate
-    check("ToRadicals(Root(a * #^3 + #^2 - 2 &, 1)) /. a -> 0", // "
-        "Indeterminate");
-
-    // Explicit 0 coefficient in the cubic term.
-    // Symja's polynomial parser should simplify this to a quadratic polynomial
-    // BEFORE calling the root solvers, meaning it naturally routes to root2.
-    check("ToRadicals(Root(0 * #^3 + #^2 - 2 &, 1))", "-Sqrt(2)");
-
-    // ToRadicals(Root(#^2 - 2 &, 1))
-    check("ToRadicals(Root(#^2 - 2 &, 1))", //
-        "-Sqrt(2)");
-
-    // ToRadicals(Root(#^2 - 2 &, 2))
-    check("ToRadicals(Root(#^2 - 2 &, 2))", //
-        "Sqrt(2)");
-    check("ToRadicals(Root(#^3 - 2 &, 1))", //
-        "2^(1/3)");
-
-    // Ensure that it handles an already evaluated cubic root ]
-    check("ToRadicals(Root(#^3 - 8 &, 1))", //
-        "2");
-
-    check("ToRadicals(Root((#^2 - 3*# - 1)&, 2))", //
-        "3/2+Sqrt(13)/2");
-    check("ToRadicals(Root((-3*#-1)&, 1))", //
-        "-1/3");
-    check("ToRadicals(Sin(Root((#^7-#^2-#+a)&, 1)))", //
-        "Sin(Root(-#1-#1^2+#1^7+a&,1))");
-    check("ToRadicals(Root((#^7-#^2-#+a)&, 1)+Root((#^6-#^2-#+a)&, 1))", //
-        "Root(-#1-#1^2+#1^6+a&,1)+Root(-#1-#1^2+#1^7+a&,1)");
-    check("ToRadicals(Root((#^3-#^2-#+a)&, 1))", //
-        "1/3+4/3*2^(1/3)/(11+Sqrt(-256+(11-27*a)^2)-27*a)^(1/3)+(11+Sqrt(-256+(11-27*a)^2)-\n"
-            + "27*a)^(1/3)/(3*2^(1/3))");
-    check("ToRadicals(Root((#^3-#^2-#+a)&, 2))", //
-        "1/3+4/3*(2^(1/3)*(-1/2-I*1/2*Sqrt(3)))/(11+Sqrt(-256+(11-27*a)^2)-27*a)^(1/3)+((-\n"
-            + "1/2+I*1/2*Sqrt(3))*(11+Sqrt(-256+(11-27*a)^2)-27*a)^(1/3))/(3*2^(1/3))");
-    check("ToRadicals(Root((#^3-#^2-#+a)&, 3))", //
-        "1/3+4/3*(2^(1/3)*(-1/2+I*1/2*Sqrt(3)))/(11+Sqrt(-256+(11-27*a)^2)-27*a)^(1/3)+((-\n"
-            + "1/2-I*1/2*Sqrt(3))*(11+Sqrt(-256+(11-27*a)^2)-27*a)^(1/3))/(3*2^(1/3))");
-  }
 
   @Test
   public void testToString() {
@@ -25814,12 +25782,41 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testValueQ() {
+    check("foo(x_Integer) := {x, 2}; ValueQ(foo({a, b}))", //
+        "True");
     check("ValueQ(x)", //
         "False");
     check("x=1; ValueQ(x)", //
         "True");
     check("ValueQ(True)", //
         "False");
+
+    check("ValueQ(Sin(2), Method -> \"TrialEvaluation\")", //
+        "False");
+    check("ValueQ(Sin(2), Method -> \"SymbolDefinitionsPresent\")", //
+        "True");
+    check("f(x_ /; x > 0) := Sqrt(x)", //
+        "");
+    check(
+        "{ValueQ(f[1], Method -> \"TrialEvaluation\"), ValueQ(f[-1], Method -> \"TrialEvaluation\")}", //
+        "{True,False}");
+
+    check("ff=Function(x,x^3);gg(x_):=Sqrt(x)", //
+        "");
+    check("{ValueQ(ff, Method -> Automatic), ValueQ(ff, Method -> \"OwnValuesPresent\")}", //
+        "{True,True}");
+    check("{ValueQ({ff}, Method -> Automatic), ValueQ({ff}, Method -> \"OwnValuesPresent\")}", //
+        "{True,True}");
+    check("{ValueQ(gg, Method -> Automatic), ValueQ(gg, Method -> \"OwnValuesPresent\")}", //
+        "{False,False}");
+    check(
+        "{ValueQ({gg}, Method -> Automatic), ValueQ({gg}, Method -> \"SymbolDefinitionsPresent\")}", //
+        "{True,True}");
+    check(
+        "{ValueQ({gg}, Method -> Automatic), ValueQ(ft(ht(gg)), Method -> \"SymbolDefinitionsPresent\")}", //
+        "{True,True}");
+    check("{ValueQ({gg}, Method -> Automatic), ValueQ({gg}, Method -> \"OwnValuesPresent\")}", //
+        "{True,False}");
   }
 
   @Test

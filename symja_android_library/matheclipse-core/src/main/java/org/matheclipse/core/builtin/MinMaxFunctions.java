@@ -1,8 +1,6 @@
 package org.matheclipse.core.builtin;
 
-import static org.matheclipse.core.expression.S.Power;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -45,20 +43,15 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.MultiVariateNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.patternmatching.Matcher;
 import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
-import org.matheclipse.core.reflection.system.rules.FunctionRangeRules;
 import org.matheclipse.core.sympy.calculus.Util;
-import org.matheclipse.core.visit.VisitorExpr;
-import com.google.common.base.Suppliers;
 
 /**
  * The MinMaxFunctions class is a part of the symbolic math library and is used for mathematical
@@ -965,232 +958,6 @@ public class MinMaxFunctions {
   }
 
 
-  private static final class FunctionRange extends AbstractFunctionEvaluator {
-    private static final class FunctionRangeRealsVisitor extends VisitorExpr {
-      final EvalEngine engine;
-
-      public FunctionRangeRealsVisitor(EvalEngine engine) {
-        super();
-        this.engine = engine;
-      }
-
-      // @Override
-      // public IExpr visit2(IExpr head, IExpr arg1) {
-      // boolean evaled = false;
-      // IExpr x = arg1;
-      // IExpr result = arg1.accept(this);
-      // if (result.isPresent()) {
-      // evaled = true;
-      // x = result;
-      // }
-      // if (evaled) {
-      // return F.unaryAST1(head, x);
-      // }
-      // return F.NIL;
-      // }
-
-      /** {@inheritDoc} */
-      @Override
-      public IExpr visit3(IExpr head, IExpr arg1, IExpr arg2) {
-        boolean evaled = false;
-        IExpr x1 = arg1;
-        IExpr result = arg1.accept(this);
-        if (result.isPresent()) {
-          evaled = true;
-          x1 = result;
-        }
-        IExpr x2 = arg2;
-        result = arg2.accept(this);
-        if (result.isPresent()) {
-          evaled = true;
-          x2 = result;
-        }
-        if (head.equals(Power)) {
-          if (x1.isInterval1()) {
-            IAST interval = (IAST) x1;
-            IExpr l = interval.lower();
-            IExpr u = interval.upper();
-            if (x2.isMinusOne()) {
-              if (l.greaterEqual(F.C1).isTrue()) {
-                // if (S.GreaterEqual.ofQ(engine, l, F.C1)) {
-                // [>= 1, u]
-                return F.Interval(F.Power(u, x2), F.Power(l, x2));
-              }
-            }
-            if (l.isNegativeResult() && u.isPositiveResult()) {
-              if (x2.isPositiveResult()) {
-                return F.Interval(F.C0, F.Power(u, x2));
-              }
-              if (x2.isEvenResult()
-                  || (x2.isFraction() && ((IFraction) x2).denominator().isEven())) {
-                return F.Interval(F.C0, F.Power(u, x2));
-              }
-            }
-          }
-        }
-        if (evaled) {
-          return F.binaryAST2(head, x1, x2);
-        }
-        return F.NIL;
-      }
-    }
-
-    private static class Initializer {
-
-      private static Matcher init() {
-        Matcher MATCHER = new Matcher();
-        IAST list = FunctionRangeRules.RULES;
-
-        for (int i = 1; i < list.size(); i++) {
-          IExpr arg = list.get(i);
-          if (arg.isAST(S.SetDelayed, 3)) {
-            MATCHER.caseOf(arg.first(), arg.second());
-          } else if (arg.isAST(S.Set, 3)) {
-            MATCHER.caseOf(arg.first(), arg.second());
-          }
-        }
-        return MATCHER;
-      }
-    }
-
-    private static com.google.common.base.Supplier<Matcher> LAZY_MATCHER;
-
-
-    public static IExpr callMatcher(final IAST ast, IExpr arg1, EvalEngine engine) {
-      IExpr temp = getMatcher().replaceAll(ast);
-      if (temp.isPresent()) {
-        engine.putCache(ast, temp);
-      }
-      return temp;
-    }
-
-    private static Matcher getMatcher() {
-      return LAZY_MATCHER.get();
-    }
-
-    private IExpr convertInterval(IExpr result, ISymbol y) {
-      IAST list = (IAST) result.first();
-      return convertMinMaxList(list, y);
-    }
-
-    private IExpr convertMinMaxList(IAST list, ISymbol y) {
-      if (list.arg1().isRealResult()) {
-        if (list.arg2().isInfinity()) {
-          return F.GreaterEqual(y, list.arg1());
-        } else if (list.arg2().isRealResult()) {
-          return F.LessEqual(list.arg1(), y, list.arg2());
-        }
-      } else if (list.arg2().isRealResult()) {
-        if (list.arg1().isNegativeInfinity()) {
-          if (!list.arg2().isInfinity()) {
-            return F.LessEqual(y, list.arg2());
-          }
-        }
-      }
-      return F.NIL;
-    }
-
-    // public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    // IExpr function = ast.arg1();
-    // IExpr xExpr = ast.arg2();
-    // IExpr yExpr = ast.arg3();
-    // IBuiltInSymbol domain = S.Reals;
-    // try {
-    // if (xExpr.isSymbol() && yExpr.isSymbol()) {
-    // IAST constrained_interval = IntervalDataSym.reals();
-    // if (function.isAST()) {
-    // IAST f = (IAST) function;
-    // for (int i = 1; i < f.size(); i++) {
-    // IExpr arg = f.get(i);
-    // if (arg.isPower()) {
-    //
-    // } else if (arg.isLog()) {
-    //
-    // }
-    // }
-    // }
-    // }
-    // } catch (RuntimeException rex) {
-    // rex.printStackTrace();
-    // LOGGER.debug("FunctionRange.evaluate() failed", rex);
-    // }
-    // return F.NIL;
-    // }
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr function = ast.arg1();
-      IExpr xExpr = ast.arg2();
-      IExpr yExpr = ast.arg3();
-      IBuiltInSymbol domain = S.Reals;
-      try {
-        if (xExpr.isSymbol() && yExpr.isSymbol()) {
-          IExpr match = callMatcher(ast, function, engine);
-          if (match.isPresent()) {
-            return match;
-          }
-          boolean evaled = true;
-          ISymbol x = (ISymbol) xExpr;
-          ISymbol y = (ISymbol) yExpr;
-          IExpr min = engine.evalQuiet(F.Minimize(function, xExpr));
-          IExpr max = engine.evalQuiet(F.Maximize(function, xExpr));
-          IASTMutable minMaxList = F.binaryAST2(S.List, F.CNInfinity, F.CInfinity);
-          if (min.isList2()) {
-            minMaxList.set(1, min.first());
-          } else {
-            evaled = false;
-          }
-          if (max.isList2()) {
-            minMaxList.set(2, max.first());
-          } else {
-            evaled = false;
-          }
-          if (evaled) {
-            return convertMinMaxList(minMaxList, y);
-          }
-          IExpr f = F.subst(function, x, F.Interval(F.CNInfinity, F.CInfinity));
-          IExpr result = engine.evaluate(f);
-          if (result.isInterval1()) {
-            return convertInterval(result, y);
-          } else if (domain.equals(S.Reals)) {
-            IExpr temp = result;
-            while (temp.isPresent()) {
-              temp = temp.accept(new FunctionRangeRealsVisitor(engine));
-              if (temp.isPresent()) {
-                result = engine.evaluate(temp);
-                temp = result;
-              }
-            }
-            if (result.isInterval1()) {
-              return convertInterval(result, y);
-            }
-          }
-        }
-
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
-        // rex.printStackTrace();
-        LOGGER.debug("FunctionRange.evaluate() failed", rex);
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_3;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      // Initializer.init();
-      LAZY_MATCHER = Suppliers.memoize(Initializer::init);
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-  }
-
   private static class FunctionSingularities extends AbstractFunctionEvaluator {
 
     public FunctionSingularities() {}
@@ -1455,7 +1222,6 @@ public class MinMaxFunctions {
       S.FunctionDiscontinuities.setEvaluator(new FunctionDiscontinuities());
       S.FunctionDomain.setEvaluator(new FunctionDomain());
       S.FunctionPeriod.setEvaluator(new FunctionPeriod());
-      S.FunctionRange.setEvaluator(new FunctionRange());
       S.FunctionSingularities.setEvaluator(new FunctionSingularities());
       S.Maximize.setEvaluator(new Maximize());
       S.Minimize.setEvaluator(new Minimize());
@@ -1986,15 +1752,6 @@ public class MinMaxFunctions {
 
   private static final Logger LOGGER = LogManager.getLogger(MinMaxFunctions.class);
 
-  private static double[][] boundaries(int dim, double lower, double upper) {
-    double[][] boundaries = new double[2][dim];
-    for (int i = 0; i < dim; i++)
-      boundaries[0][i] = lower;
-    for (int i = 0; i < dim; i++)
-      boundaries[1][i] = upper;
-    return boundaries;
-  }
-
   public static void initialize() {
     Initializer.init();
   }
@@ -2321,39 +2078,6 @@ public class MinMaxFunctions {
       LOGGER.debug("MinMaxFunctions.minimizeExprPolynomial() failed", e2);
     }
     return result;
-  }
-
-  // static final int DIM = 2;
-  // static final int LAMBDA = 4 + (int) (3. * Math.log(DIM));
-  //
-  // public static void main(String[] args) {
-  //
-  // final MultivariateFunction func = new MultiVariateNumerical(F.Plus(F.Sinc(F.x), F.Sinc(F.y)),
-  // //
-  // F.List(F.x, F.y));
-  //
-  // int dim = 2;
-  // final double[] minPoint = new double[dim];
-  // for (int i = 0; i < dim; i++) {
-  // minPoint[i] = 0;
-  // }
-  //
-  // double[] init = new double[dim];
-  //
-  // // Initial is minimum.
-  // for (int i = 0; i < dim; i++) {
-  // init[i] = minPoint[i];
-  // }
-  // optimizePowell(func, //
-  // null,
-  // // minPoint,
-  // init, GoalType.MINIMIZE, 1e-9, 1e-9, 1e-9);
-  // }
-
-  private static double[] point(int n, double value) {
-    double[] ds = new double[n];
-    Arrays.fill(ds, value);
-    return ds;
   }
 
   private MinMaxFunctions() {}

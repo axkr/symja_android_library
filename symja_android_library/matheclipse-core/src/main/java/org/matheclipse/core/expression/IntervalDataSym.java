@@ -201,10 +201,16 @@ public class IntervalDataSym {
           result.append(F.binaryAST2(minLess == S.Less ? S.Greater : S.GreaterEqual, x, min));
           continue;
         }
-        // let's write the variable on the left-hand-side for normalization
-        result.append(//
-            F.And(F.binaryAST2(minLess == S.Less ? S.Greater : S.GreaterEqual, x, min), //
-                F.binaryAST2(maxLess, x, max)));
+        // Both bounds finite: emit a ternary chained inequality
+        // min <(=) x <(=) max so the printed form matches the
+        // "a<=x<=b" / "a<x<b" / "Inequality(...)" style used by IntervalSym.
+        if (minLess == maxLess) {
+          // homogeneous chain: Less(min, x, max) or LessEqual(min, x, max)
+          result.append(F.ternaryAST3(minLess, min, x, max));
+        } else {
+          // mixed open/closed boundary: use Inequality(min, op1, x, op2, max)
+          result.append(F.Inequality(min, minLess, x, maxLess, max));
+        }
       }
       return result;
     }

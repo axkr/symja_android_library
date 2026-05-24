@@ -1,7 +1,6 @@
 package org.matheclipse.core.builtin;
 
 import static org.matheclipse.core.expression.F.Arg;
-import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.Divide;
@@ -34,7 +33,6 @@ import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.SimplifyUtil;
-import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.LimitException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -61,11 +59,10 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.polynomials.IPartialFractionGenerator;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.polynomials.QuarticSolver;
-import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
-import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.reflection.system.Solve.SolveData;
+import org.matheclipse.core.reflection.system.ToRadicals;
 import org.matheclipse.core.reflection.system.TrigExpand;
 import org.matheclipse.core.visit.VisitorExpr;
 import edu.jas.arith.BigInteger;
@@ -1859,11 +1856,8 @@ public class Algebra {
       S.PolynomialQuotient.setEvaluator(new PolynomialQuotient());
       S.PolynomialQuotientRemainder.setEvaluator(new PolynomialQuotientRemainder());
       S.PolynomialRemainder.setEvaluator(new PolynomialRemainder());
-
       S.PowerExpand.setEvaluator(new PowerExpand());
-      S.Root.setEvaluator(new Root());
       S.Together.setEvaluator(new Together());
-      S.ToRadicals.setEvaluator(new ToRadicals());
       S.Variables.setEvaluator(new Variables());
     }
   }
@@ -3247,20 +3241,6 @@ public class Algebra {
 
   }
 
-  private static class Root extends AbstractFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(IAST ast, EvalEngine engine) {
-      return rootToRadicals(ast, engine);
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
-    }
-  }
-
-
   /**
    *
    *
@@ -3337,57 +3317,6 @@ public class Algebra {
     }
   }
 
-
-  private static class ToRadicals extends AbstractFunctionEvaluator {
-
-
-
-    private static class ToRadicalsVisitor extends VisitorExpr {
-      IAST replacement;
-
-      private ToRadicalsVisitor(IAST replacement) {
-        this.replacement = replacement;
-      }
-
-      // D[a_+b_+c_,x_] -> D[a,x]+D[b,x]+D[c,x]
-      // return listArg1.mapThread(F.D(F.Null, x), 1);
-      @Override
-      public IExpr visit(IASTMutable ast) {
-        if (!ast.isAST(S.Root)) {
-          return ast.mapThread(replacement, 1);
-        }
-        return F.NIL;
-      }
-    }
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.size() >= 2) {
-        IExpr arg1 = ast.arg1();
-        IExpr temp = CompareUtil.threadListLogicEquationOperators(arg1, ast, 1);
-        if (temp.isPresent()) {
-          return temp;
-        }
-        if (arg1.isAST()) {
-          ToRadicalsVisitor visitor = new ToRadicalsVisitor(ast);
-          temp = arg1.accept(visitor);
-          if (temp.isPresent()) {
-            return temp;
-          }
-          temp = rootToRadicals((IAST) arg1, engine);
-          if (temp.isPresent()) {
-            return temp;
-          }
-        }
-        return arg1;
-      }
-      return F.NIL;
-    }
-
-
-  }
-
-
   /**
    *
    *
@@ -3436,9 +3365,7 @@ public class Algebra {
 
   }
 
-
   private static final Logger LOGGER = LogManager.getLogger(Algebra.class);
-
 
   private final static int MODULUS_OPTION = 0;
 
@@ -3942,7 +3869,7 @@ public class Algebra {
    * @param nthRoot <code>1 <= nthRoot <= 3</code> otherwise return F.NIL;
    * @return
    */
-  private static IAST root1(IExpr a, IExpr b, int nthRoot) {
+  public static IAST root1(IExpr a, IExpr b, int nthRoot) {
     if (nthRoot != 1) {
       return F.NIL;
     }
@@ -3958,7 +3885,7 @@ public class Algebra {
    * @param nthRoot <code>1 <= nthRoot <= 3</code> otherwise return F.NIL;
    * @return
    */
-  private static IAST root2(IExpr a, IExpr b, IExpr c, int nthRoot) {
+  public static IAST root2(IExpr a, IExpr b, IExpr c, int nthRoot) {
     if (nthRoot < 1 || nthRoot > 3) {
       return F.NIL;
     }
@@ -3979,7 +3906,7 @@ public class Algebra {
    * @param nthRoot 1 <= nthRoot <= 3 otherwise return F.NIL;
    * @return IAST result or F.NIL
    */
-  private static IAST root3(IExpr a, IExpr b, IExpr c, IExpr d, int nthRoot) {
+  public static IAST root3(IExpr a, IExpr b, IExpr c, IExpr d, int nthRoot) {
     if (nthRoot < 1 || nthRoot > 3) {
       return F.NIL;
     }
@@ -4017,7 +3944,7 @@ public class Algebra {
    * @param nthRoot 1 <= nthRoot <= 4 otherwise return F.NIL;
    * @return IAST result or F.NIL
    */
-  private static IAST root4(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e, int nthRoot) {
+  public static IAST root4(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e, int nthRoot) {
     if (nthRoot < 1 || nthRoot > 4) {
       return F.NIL;
     }
@@ -4075,139 +4002,6 @@ public class Algebra {
         Times(eps2, Plus(F.C1, Negate(F.UnitStep(Plus(F.CN3, k)))), Power(F.CN1, k)),
         Times(eps3, Plus(F.CN1, F.UnitStep(Plus(C2, Negate(k)))), Power(F.CN1, Plus(F.C1, k))),
         Times(F.CN1D4, d, Power(e, -1)));
-  }
-
-  private static IExpr rootNearFloatNumber(EvalEngine engine, IExpr f, IExpr c) {
-    double targetC = 0.0;
-    try {
-      targetC = c.evalf();
-    } catch (ArgumentTypeException e) {
-      // Root approximation `1` is not a number.
-      return Errors.printMessage(S.Root, "rapp", F.List(c));
-    }
-
-    // Represents the root of the general equation f(x) == 0 near x = c
-    ISymbol x = F.Dummy("x");
-    IAST eq = F.Equal(F.unaryAST1(f, x), F.C0);
-
-    try {
-      // Attempt to find exact symbolic solutions using Solve(eq, x)
-      double cmin = targetC - Config.DEFAULT_CHOP_DELTA;
-      double cmax = targetC + Config.DEFAULT_CHOP_DELTA;
-      IAST solve = F.Solve(F.List(eq, F.LessEqual(x, F.Rationalize(F.num(cmax), F.C0)),
-          F.GreaterEqual(x, F.Rationalize(F.num(cmin), F.C0))), x);
-      IExpr solveResult = engine.evaluate(solve);
-
-      if (solveResult.isList()) {
-        IAST list = (IAST) solveResult;
-        IExpr bestExactRoot = F.NIL;
-        double minDiff = Double.MAX_VALUE;
-
-        // Iterate through the solutions to find the one closest to 'c'
-        for (int i = 1; i <= list.argSize(); i++) {
-          IExpr ruleList = list.get(i);
-          if (ruleList.isList1() && ruleList.first().isRuleAST()) {
-            IExpr exactVal = ruleList.first().second();
-            try {
-              double val = exactVal.evalf();
-              double diff = Math.abs(val - targetC);
-
-              // Define a reasonable threshold for "near" x = c, e.g., 1e-6
-              if (diff < minDiff && diff < 1e-6) {
-                minDiff = diff;
-                bestExactRoot = exactVal;
-              }
-            } catch (ArgumentTypeException e) {
-              // Skip if the exact value cannot be evaluated to a double
-              continue;
-            }
-          }
-        }
-
-        if (bestExactRoot.isPresent()) {
-          return bestExactRoot;
-        }
-      }
-
-    } catch (ArgumentTypeException e) {
-    }
-    // If no exact root is found close enough to 'c', leave the Root object unevaluated
-    return F.NIL;
-  }
-
-  private static IExpr rootToRadicals(final IAST ast, EvalEngine engine) {
-    if (ast.isAST1() && ast.arg1().isList2()) {
-      IExpr f = ast.arg1().first();
-      IExpr c = ast.arg1().second();
-
-      return rootNearFloatNumber(engine, f, c);
-    }
-
-    if (ast.size() == 3 && ast.arg2().isInteger()) {
-      IExpr expr = ast.arg1();
-      if (expr.isFunction()) {
-        expr = expr.first();
-        try {
-          int k = ast.arg2().toIntDefault();
-          if (k < 0) {
-            return F.NIL;
-          }
-          final IAST variables = F.list(F.Slot1);
-          ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables);
-          ExprPolynomial polynomial = ring.create(expr, false, true, false);
-
-          final long varDegree = polynomial.degree(0);
-          if (polynomial.isConstant()) {
-            return F.CEmptyList;
-          }
-          IExpr a;
-          IExpr b;
-          IExpr c;
-          IExpr d;
-          IExpr e;
-          if (varDegree >= 1 && varDegree <= 4) {
-            a = C0;
-            b = C0;
-            c = C0;
-            d = C0;
-            e = C0;
-            for (ExprMonomial monomial : polynomial) {
-              final IExpr coeff = monomial.coefficient();
-              long lExp = monomial.exponent().getVal(0);
-              if (lExp == 4) {
-                e = coeff;
-              } else if (lExp == 3) {
-                d = coeff;
-              } else if (lExp == 2) {
-                c = coeff;
-              } else if (lExp == 1) {
-                b = coeff;
-              } else if (lExp == 0) {
-                a = coeff;
-              } else {
-                throw new ArithmeticException("Root::Unexpected exponent value: " + lExp);
-              }
-            }
-            IAST result = F.NIL;
-            if (varDegree == 1) {
-              result = root1(a, b, k);
-            } else if (varDegree == 2) {
-              result = root2(a, b, c, k);
-            } else if (varDegree == 3) {
-              result = root3(a, b, c, d, k);
-            } else {
-              result = root4(a, b, c, d, e, k);
-            }
-            if (result.isPresent()) {
-              return engine.evaluate(result);
-            }
-          }
-        } catch (JASConversionException e2) {
-          LOGGER.debug("ToRadicals.rootToRadicals() failed", e2);
-        }
-      }
-    }
-    return F.NIL;
   }
 
   /**

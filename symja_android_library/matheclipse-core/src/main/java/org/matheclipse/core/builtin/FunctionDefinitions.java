@@ -67,6 +67,7 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.ExponentialGeneratingFunction());
       S.ExportString.setEvaluator(new org.matheclipse.core.reflection.system.ExportString());
       S.ExpToTrig.setEvaluator(new org.matheclipse.core.reflection.system.ExpToTrig());
+      S.Extract.setEvaluator(new org.matheclipse.core.reflection.system.Extract());
       S.FindFormula.setEvaluator(new org.matheclipse.core.reflection.system.FindFormula());
       S.FindGeneratingFunction
           .setEvaluator(new org.matheclipse.core.reflection.system.FindGeneratingFunction());
@@ -92,6 +93,7 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.FourierSinTransform());
       S.FrobeniusSolve.setEvaluator(new org.matheclipse.core.reflection.system.FrobeniusSolve());
       S.FunctionExpand.setEvaluator(new org.matheclipse.core.reflection.system.FunctionExpand());
+      S.FunctionRange.setEvaluator(new org.matheclipse.core.reflection.system.FunctionRange());
       S.GeneratingFunction
           .setEvaluator(new org.matheclipse.core.reflection.system.GeneratingFunction());
       S.Groupings.setEvaluator(new org.matheclipse.core.reflection.system.Groupings());
@@ -153,6 +155,7 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.OptimizeExpression());
       S.Out.setEvaluator(new org.matheclipse.core.reflection.system.Out());
       S.Outer.setEvaluator(new org.matheclipse.core.reflection.system.Outer());
+      S.Part.setEvaluator(new org.matheclipse.core.reflection.system.Part());
       S.Partition.setEvaluator(new org.matheclipse.core.reflection.system.Partition());
       S.PeriodogramArray
           .setEvaluator(new org.matheclipse.core.reflection.system.PeriodogramArray());
@@ -164,6 +167,8 @@ public final class FunctionDefinitions {
       S.Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
       S.Ratios.setEvaluator(new org.matheclipse.core.reflection.system.Ratios());
       S.Reduce.setEvaluator(new org.matheclipse.core.reflection.system.Reduce());
+      S.Root.setEvaluator(new org.matheclipse.core.reflection.system.Root());
+      S.RootReduce.setEvaluator(new org.matheclipse.core.reflection.system.RootReduce());
       S.RSolve.setEvaluator(new org.matheclipse.core.reflection.system.RSolve());
       S.RSolveValue.setEvaluator(new org.matheclipse.core.reflection.system.RSolveValue());
       S.Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
@@ -194,7 +199,7 @@ public final class FunctionDefinitions {
       S.TensorContract.setEvaluator(new org.matheclipse.core.reflection.system.TensorContract());
       S.TensorProduct.setEvaluator(new org.matheclipse.core.reflection.system.TensorProduct());
       S.TensorTranspose.setEvaluator(new org.matheclipse.core.reflection.system.TensorTranspose());
-
+      S.ToRadicals.setEvaluator(new org.matheclipse.core.reflection.system.ToRadicals());
       // Graphics
       S.ComplexPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ComplexPlot());
       S.ContourPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ContourPlot());

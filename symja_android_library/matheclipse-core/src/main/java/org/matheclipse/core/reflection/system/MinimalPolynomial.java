@@ -24,12 +24,37 @@ public class MinimalPolynomial extends AbstractFunctionEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     IExpr s = ast.arg1();
-    IExpr x = ast.arg2();
 
-    if (!x.isSymbol()) {
+    // 1-argument form: return a pure function -1+#1+#1^2&
+    final IExpr x;
+    final boolean pureFunction = ast.isAST1();
+    if (pureFunction) {
+      x = F.$s("$mpVar"); // internal dummy variable
+    } else {
+      x = ast.arg2();
+      if (!x.isSymbol()) {
+        return F.NIL;
+      }
+    }
+
+    IExpr poly = computeMinimalPolynomial(s, (ISymbol) x, engine);
+    if (poly.isNIL()) {
       return F.NIL;
     }
 
+    if (pureFunction) {
+      // Replace $mpVar with Slot[1] (#1) and wrap in Function
+      IExpr body = poly.replaceAll(F.Rule(x, F.Slot1));
+      if (!body.isPresent()) {
+        body = poly;
+      }
+      return F.Function(engine.evaluate(body));
+    }
+    return poly;
+  }
+
+
+  private IExpr computeMinimalPolynomial(IExpr s, ISymbol x, EvalEngine engine) {
     if (s.isRational()) {
       return normalizePolynomial(F.Subtract(x, s), x, engine);
     }
@@ -39,26 +64,21 @@ public class MinimalPolynomial extends AbstractFunctionEvaluator {
     Map<IExpr, ISymbol> radicalCache = new HashMap<>();
     int[] counter = new int[] {1};
 
-    // Extract radicals, complex units, and negative exponents into pure polynomials
     IExpr modifiedS = extractRadicals(s, equations, variables, engine, radicalCache, counter);
 
     if (variables.argSize() == 0) {
       return normalizePolynomial(F.Subtract(x, modifiedS), x, engine);
     }
 
-    // The main mapping equation (guaranteed to be a polynomial now)
     equations.append(engine.evaluate(F.Subtract(x, modifiedS)));
     variables.append(x);
 
-    // Compute the Groebner basis to eliminate the dummy variables
     IExpr gb = engine.evaluate(F.GroebnerBasis(equations, variables));
 
     if (gb.isList()) {
       IAST gbList = (IAST) gb;
       for (int i = 1; i <= gbList.argSize(); i++) {
         IExpr poly = gbList.get(i);
-
-        // Find the elimination ideal generator (the polynomial free of our generated variables)
         boolean onlyX = true;
         for (int j = 1; j < variables.argSize(); j++) {
           if (!poly.isFree(variables.get(j), true)) {
@@ -67,11 +87,20 @@ public class MinimalPolynomial extends AbstractFunctionEvaluator {
           }
         }
         if (onlyX) {
+          IExpr factored = engine.evaluate(F.Factor(poly));
+          if (factored.isTimes()) {
+            IExpr sNumeric = engine.evaluate(F.N(s));
+            for (IExpr factor : (IAST) factored) {
+              IExpr val = engine.evaluate(F.ReplaceAll(factor, F.Rule(x, sNumeric)));
+              if (val.isPossibleZero(true)) {
+                return normalizePolynomial(factor, x, engine);
+              }
+            }
+          }
           return normalizePolynomial(poly, x, engine);
         }
       }
     }
-
     return F.NIL;
   }
 
@@ -223,7 +252,7 @@ public class MinimalPolynomial extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_2_2;
+    return ARGS_1_2;
   }
 
   @Override
