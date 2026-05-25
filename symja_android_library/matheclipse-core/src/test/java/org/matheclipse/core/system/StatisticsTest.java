@@ -75,6 +75,10 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testBinLists() {
+
+    check("BinLists({{}},-1+Sqrt(2))", //
+        "BinLists({{}},-1+Sqrt(2))");
+
     // TODO use same unit for all quantities
     check("BinLists({Quantity(1000, \"g\"), Quantity(1, \"KG\")})", //
         "{{},{1000[g],1[KG]}}");
