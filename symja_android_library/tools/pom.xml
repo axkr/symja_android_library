@@ -48,11 +48,5 @@
 			<artifactId>flying-saucer-pdf</artifactId>
 			<version>9.13.3</version>
 		</dependency>
-		<dependency>
-			<groupId>org.openrewrite</groupId>
-			<artifactId>rewrite-java</artifactId>
-			<version>8.81.1</version>
-			<scope>runtime</scope>
-		</dependency>
 	</dependencies>
 </project>
