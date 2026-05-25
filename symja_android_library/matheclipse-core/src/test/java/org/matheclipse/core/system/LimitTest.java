@@ -40,10 +40,6 @@ public class LimitTest extends ExprEvaluatorTestCase {
   @Test
   public void testLimitRationalCancel() {
     assertEquals(S.Indeterminate.isNumericFunction(true), false);
-
-    // check("Limit((-a^2+x+x^2+a)/(-a+x),x->a)", //
-    // "");
-
     // 0/0 form with symbolic constant must cancel: (x^2-a^2)/(x-a) -> x+a -> 2*a
     check("Limit((-a^2+x^2)/(-a+x),x->a)", //
         "2*a");
