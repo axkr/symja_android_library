@@ -1,6 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
@@ -28,15 +30,22 @@ public class FourierCosTransform extends AbstractFunctionEvaluator {
       return result;
     }
 
-    IExpr assumptions = F.Rule(S.Assumptions, F.Greater(omega, F.C0));
-    IAST integral = //
-        F.Times(F.Sqrt(F.Divide(F.C2, S.Pi)), //
-            F.Integrate(F.Times(f, F.Cos(F.Times(omega, t))), //
-                F.List(t, F.C0, F.CInfinity), //
-                assumptions));
-    IExpr FF = engine.evaluate(integral);
-    if (FF.isFree(x -> x == S.Integrate, true)) {
-      return FF;
+    try {
+      IExpr assumptions = F.Rule(S.Assumptions, F.Greater(omega, F.C0));
+      IAST integral = //
+          F.Times(F.Sqrt(F.Divide(F.C2, S.Pi)), //
+              F.Integrate(F.Times(f, F.Cos(F.Times(omega, t))), //
+                  F.List(t, F.C0, F.CInfinity), //
+                  assumptions));
+      IExpr FF = engine.evaluate(integral);
+      if (FF.isFree(x -> x == S.Integrate, true)) {
+        return FF;
+      }
+    } catch (ArgumentTypeException e) {
+      if (Config.SHOW_STACKTRACE) {
+        e.printStackTrace();
+      }
+      // Integration failed, return unevaluated
     }
     return F.NIL;
   }
@@ -62,9 +71,8 @@ public class FourierCosTransform extends AbstractFunctionEvaluator {
     if (match != null) {
       IExpr c = match[0];
       IExpr a = match[1];
-      return engine.evaluate(
-          F.Times(c, F.Sqrt(F.Divide(S.Pi, F.C2)), F.C1D2,
-              F.Plus(F.C1, F.Sign(F.Subtract(a, omega)))));
+      return engine.evaluate(F.Times(c, F.Sqrt(F.Divide(S.Pi, F.C2)), F.C1D2,
+          F.Plus(F.C1, F.Sign(F.Subtract(a, omega)))));
     }
     return F.NIL;
   }
