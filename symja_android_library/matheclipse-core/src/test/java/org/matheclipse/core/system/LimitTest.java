@@ -1,9 +1,11 @@
 package org.matheclipse.core.system;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.S;
 
 /** Tests for DSolve */
 public class LimitTest extends ExprEvaluatorTestCase {
@@ -22,6 +24,9 @@ public class LimitTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLimitIndeterminate() {
+    check("Limit((-a^2+x+x^2+a)/(-a+x),x->a)", //
+        "Indeterminate");
+
     // gitlab #107
     check("Limit(x^2-1/x-2, x->0)", //
         "Indeterminate");
@@ -30,6 +35,22 @@ public class LimitTest extends ExprEvaluatorTestCase {
         "Indeterminate");
     check("Limit(x^(-16/7),x->0)", //
         "Indeterminate");
+  }
+
+  @Test
+  public void testLimitRationalCancel() {
+    assertEquals(S.Indeterminate.isNumericFunction(true), false);
+
+    // check("Limit((-a^2+x+x^2+a)/(-a+x),x->a)", //
+    // "");
+
+    // 0/0 form with symbolic constant must cancel: (x^2-a^2)/(x-a) -> x+a -> 2*a
+    check("Limit((-a^2+x^2)/(-a+x),x->a)", //
+        "2*a");
+    check("Limit((x^2-a^2)/(x-a),x->a)", //
+        "2*a");
+    check("Limit((x^3-a^3)/(x-a),x->a)", //
+        "3*a^2");
   }
 
   @Test
@@ -666,4 +687,5 @@ public class LimitTest extends ExprEvaluatorTestCase {
     // super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
   }
+
 }

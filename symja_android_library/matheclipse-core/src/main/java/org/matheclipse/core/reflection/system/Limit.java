@@ -1387,7 +1387,11 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       if (!limitValue.isNumericFunction(true) && limitValue.isFree(S.DirectedInfinity)
           && limitValue.isFree(data.variable())) {
         // example Limit(E^(3*x), x->a) ==> E^(3*a)
-        return expression.replaceAll(data.rule()).orElse(expression);
+        IExpr temp = expression.replaceAll(data.rule()).orElse(expression);
+        IExpr evalTemp = engine.evalQuiet(temp);
+        if (evalTemp.isFree(S.DirectedInfinity) && evalTemp.isIndeterminateFree()) {
+          return evalTemp;
+        }
       }
       final IAST ast = (IAST) expression;
       if (ast.isPlus()) {
@@ -1508,6 +1512,9 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     if (limitAbove.equals(limitBelow)) {
       if (!limitAbove.isFree(x -> x.isInterval() || x.isIntervalData(), true)) {
         return S.Indeterminate;
+      }
+      if (limitAbove.equals(S.ComplexInfinity)) {
+        return F.NIL;
       }
       // COMPLEX PRINCIPAL BRANCH PHASE CHECK
       // If the limit diverges, Symja's real-valued auto-evaluator may have dropped
@@ -2695,6 +2702,24 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         if (rewritten.isPresent()) {
           // Compute the limit on the rewritten expression (without Abs)
           arg1 = rewritten;
+        }
+      }
+
+      // Top-level algebraic simplification: cancel a rational expression like
+      // (x^2-a^2)/(x-a) -> x+a so that 0/0 forms at a finite (possibly symbolic)
+      // limit point are reduced to a polynomial whose limit can be taken by
+      // direct substitution. This runs exactly once per top-level Limit call.
+      if (arg1.isTimes() && arg1.leafCount() < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT
+          && !arg1.isFree(rule.arg1())) {
+        boolean hasDenominator = ((IAST) arg1).exists(x -> x.isPower()
+            && x.exponent().isInteger() && x.exponent().isNegative()
+            && !x.base().isFree(rule.arg1()));
+        if (hasDenominator) {
+          IExpr cancelled = engine.evalQuiet(F.Cancel(arg1));
+          if (cancelled.isPresent() && !cancelled.isIndeterminate()
+              && cancelled.leafCount() < arg1.leafCount()) {
+            arg1 = cancelled;
+          }
         }
       }
 
