@@ -2,7 +2,7 @@ package org.matheclipse.core.system;
 
 import static org.junit.Assert.assertEquals;
 import org.apfloat.Apint;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -653,13 +653,6 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Eigenvalues({{-2,-2,4}, {-1,-3,7}, {2,4,6}})", //
         "{1+Sqrt(61),1-Sqrt(61),-1}");
 
-    // check("Eigenvalues("//
-    // + "{{5.42,3.26+I*0.643,-0.467+I*(-0.193)}," //
-    // + " {3.26+I*(-0.643),3.82,1.04+I*(-2.35)}," //
-    // + " {-0.467+I*0.193,1.04+I*2.35,4.88}})", //
-    // "{8.76846+I*4.60561*10^-16,5.16361,0.187924}");
-
-
     check("Eigenvalues({{1,0,0,0,0},{3,1,0,0,0},{6,3,2,0,0},{10,6,3,2,0},{15,10,6,3,2}})", //
         "{2,2,2,1,1}");
     check("mat = Array(a, {2,2}); Eigenvalues(mat.ConjugateTranspose(mat))[[1]] // FullSimplify", //
@@ -756,6 +749,33 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{1/2*(15+3*Sqrt(33)),1/2*(15-3*Sqrt(33)),0}");
     check("Eigenvalues({{0.0,1.0,-1.0},{1.0,1.0,0.0},{-1.0,0.0,1.0}})", //
         "{2.0,-1.0,1.0}");
+  }
+
+  @Test
+  public void testEigenvaluesComplexMatrix() {
+    // Routes through LinearAlgebra.Eigenvalues#matrixComplexEval(FieldMatrix<Complex>, IAST)
+
+    check("Eigenvalues("//
+        + "{{5.42,3.26+I*0.643,-0.467+I*(-0.193)}," //
+        + " {3.26+I*(-0.643),3.82,1.04+I*(-2.35)}," //
+        + " {-0.467+I*0.193,1.04+I*2.35,4.88}})", //
+        "{8.76846+I*4.60561*10^-16,5.16361,0.187924}");
+
+    // Diagonal complex matrix: eigenvalues are exactly the diagonal entries.
+    // Norms: |2-I|=Sqrt(5)~2.236 > |1+I|=Sqrt(2)~1.414 -> sorted descending by norm.
+    check("Eigenvalues({{1.0 + I, 0.0}, {0.0, 2.0 - I}})", //
+        "{2.0+I*(-1.0),1.0+I*1.0}");
+
+    // Upper-triangular complex matrix: eigenvalues are the diagonal entries.
+    // Norms: |2+3*I|=Sqrt(13) > |1+I|=Sqrt(2)
+    check("Eigenvalues({{1.0 + I, 5.0}, {0.0, 2.0 + 3*I}})", //
+        "{2.0+I*3.0,1.0+I*1.0}");
+
+    // Hermitian complex matrix: eigenvalues are real.
+    // Characteristic polynomial: lambda^2 - 5*lambda + 4 = 0 -> lambda in {4, 1}.
+    // complexValues2List emits real-valued Complex entries as plain doubles.
+    check("Eigenvalues({{2.0, 1.0 + I}, {1.0 - I, 3.0}})", //
+        "{4.0,1.0}");
   }
 
   @Test

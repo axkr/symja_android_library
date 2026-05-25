@@ -9,6 +9,7 @@ import static org.matheclipse.core.expression.F.Norm;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -20,6 +21,7 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.BlockFieldMatrix;
 import org.hipparchus.linear.ComplexEigenDecomposition;
+import org.hipparchus.linear.ComplexSchurTransformer;
 // import org.hipparchus.linear.ComplexSchurTransformer;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.DependentVectorsHandler;
@@ -1576,12 +1578,11 @@ public final class LinearAlgebra {
 
     @Override
     public IExpr matrixComplexEval(FieldMatrix<Complex> matrix, IAST ast) {
-      return F.NIL;
-      // // TODO https://github.com/Hipparchus-Math/hipparchus/issues/442
-      // Complex[] complexEigenvalues = ComplexSchurTransformer.getEigenvalues(matrix);
-      // // sort descending
-      // Arrays.sort(complexEigenvalues, (a, b) -> Double.compare(b.norm(), a.norm()));
-      // return Convert.complexValues2List(complexEigenvalues);
+      // TODO https://github.com/Hipparchus-Math/hipparchus/issues/442
+      Complex[] complexEigenvalues = ComplexSchurTransformer.getEigenvalues(matrix);
+      // sort descending
+      Arrays.sort(complexEigenvalues, (a, b) -> Double.compare(b.norm(), a.norm()));
+      return Convert.complexValues2List(complexEigenvalues);
     }
 
     @Override

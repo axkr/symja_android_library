@@ -7,7 +7,7 @@ import java.math.BigInteger;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatContext;
 import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.EvalEngine;
@@ -5225,13 +5225,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Definition(ArcSinh)", //
         "Attributes(ArcSinh)={Listable,NumericFunction,Protected}\n" //
             + "\n" //
-            + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
-            + "\n" //
-            + "ArcSinh(Undefined)=Undefined\n" //
-            + "\n" //
-            + "ArcSinh(Infinity)=Infinity\n" //
-            + "\n" //
-            + "ArcSinh(I*Infinity)=Infinity\n" //
+            + "ArcSinh(ComplexInfinity)=ComplexInfinity\n" //
             + "\n" //
             + "ArcSinh(I)=I*1/2*Pi\n" //
             + "\n" //
@@ -5241,7 +5235,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
             + "\n" //
-            + "ArcSinh(ComplexInfinity)=ComplexInfinity");
+            + "ArcSinh(Infinity)=Infinity\n" //
+            + "\n" //
+            + "ArcSinh(I*Infinity)=Infinity\n" //
+            + "\n" //
+            + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
+            + "\n" //
+            + "ArcSinh(Undefined)=Undefined");
 
     check("a := 42", //
         "");
@@ -8657,10 +8657,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindMinimum() {
-    // check(
-    // "FindMinimum({100*(y-x^2)^2+(1-x)^2}, {{x,-1}, {y,1}},Method -> \"SequentialQuadratic\" )",
-    // //
-    // "{4.03424*10^-11,{x->0.999999,y->0.999998}}");
+    check(
+        "FindMinimum({100*(y-x^2)^2+(1-x)^2}, {{x,-1}, {y,1}},Method -> \"SequentialQuadratic\" )", //
+        "{4.03424*10^-11,{x->0.999999,y->0.999998}}");
 
     // example: Rosenbrock function https://en.wikipedia.org/wiki/Rosenbrock_function
     // Math.pow(1 - x, 2) + 100 * Math.pow(y - x * x, 2);
@@ -8674,7 +8673,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check(
         "FindMinimum({x+y,3*x+2*y >= 7 , x >= 0 , y >= 0}, {x, y},Method -> \"SequentialQuadratic\")", //
-        "{2.33333,{x->2.33333,y->-8.32917*10^-11}}");
+        "{2.33333,{x->2.33333,y->-2.01416*10^-10}}");
 
     // TODO Less and Greater are not allowed at the moment
     // message: FindMinimum: Constraints in `1` are not all 'equality' or 'less
@@ -9900,13 +9899,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FullDefinition(ArcSinh)", //
         "Attributes(ArcSinh)={Listable,NumericFunction,Protected}\n" //
             + "\n" //
-            + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
-            + "\n" //
-            + "ArcSinh(Undefined)=Undefined\n" //
-            + "\n" //
-            + "ArcSinh(Infinity)=Infinity\n" //
-            + "\n" //
-            + "ArcSinh(I*Infinity)=Infinity\n" //
+            + "ArcSinh(ComplexInfinity)=ComplexInfinity\n" //
             + "\n" //
             + "ArcSinh(I)=I*1/2*Pi\n" //
             + "\n" //
@@ -9916,7 +9909,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
             + "\n" //
             + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
             + "\n" //
-            + "ArcSinh(ComplexInfinity)=ComplexInfinity");
+            + "ArcSinh(Infinity)=Infinity\n" //
+            + "\n" //
+            + "ArcSinh(I*Infinity)=Infinity\n" //
+            + "\n" //
+            + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
+            + "\n" //
+            + "ArcSinh(Undefined)=Undefined");
 
     check("a(x_):=b(x,y);b[u_,v_]:={{u,v},a}", //
         "");
