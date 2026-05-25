@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -333,13 +334,22 @@ public class BinLists extends AbstractFunctionEvaluator {
       }
       return list;
     } else {
+      if (dim >= specs.length) {
+        // The dimension `1` of the first argument is not the same as the number of binning
+        // specifications `2`.
+        return Errors.printMessage(S.BinLists, "dims", F.List(F.ZZ(dim), F.ZZ(specs.length + 1)));
+      }
       IASTAppendable list = F.ListAlloc(specs[dim].capacity);
       int multiplier = 1;
       for (int d = specs.length - 1; d > dim; d--) {
         multiplier *= specs[d].capacity;
       }
       for (int i = 0; i < specs[dim].capacity; i++) {
-        list.append(buildNestedList(flatBins, specs, dim + 1, flatOffset + i * multiplier));
+        IAST nestedList = buildNestedList(flatBins, specs, dim + 1, flatOffset + i * multiplier);
+        if (nestedList.isNIL()) {
+          return F.NIL;
+        }
+        list.append(nestedList);
       }
       return list;
     }

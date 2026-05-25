@@ -110,6 +110,8 @@ public class Errors {
       "depthratios", "Requested ratios `1` exceeds the array depth `2`, of the input.", //
       "deqn", "Equation or list of equations expected instead of `1` in the first argument `2`.", //
       "dimss", "`1` is not a valid dimension specification for `2`.", //
+      "dims",
+      "The dimension `1` of the first argument is not the same as the number of binning specifications `2`.", //
       "divz", "The argument `1` should be nonzero.", //
       "digit", "Digit at position `1` in `2` is too large to be used in base `3`.", //
       "dmval",
@@ -307,6 +309,7 @@ public class Errors {
       "nspecnl",
       "Rule specification `1` should be an integer, a List, a pure Boolean function, a String or an Association.", //
       "nsolc", "There are no points which satisfy the constraints.", //
+      "nunipf", "`1` is not a univariate pure function.", //
       "nupr", "`1` is not a univariate polynomial with rational number coefficients.", //
       "nvarl", "`1` is not list of variables.", //
       "nvld", "The expression `1` is not a valid interval.", //
