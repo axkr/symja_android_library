@@ -42,7 +42,6 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     int argSize = ast.argSize();
-
     if (argSize >= 1 && argSize <= 3) {
       IExpr rule = ast.arg1();
 
@@ -136,7 +135,9 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
         isOperatorForm = true;
       }
 
-      if (init.isAST()) {
+      if (!init.isList()) {
+        return F.NIL;
+      } else {
         int stepsToGenerate = Math.max(0, tEnd);
         IExpr result = F.NIL;
 
@@ -209,6 +210,10 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
         }
 
         if (baseRule != null) {
+          if (baseRule.isNegative()) {
+            // The specified rule number `1` should be non-negative.
+            return Errors.printMessage(S.CellularAutomaton, "rneg", F.List(baseRule));
+          }
           if (is2D) {
             result = evaluateInteger2D(baseRule, k, rY, rX, s, isTotalistic, (IAST) init,
                 stepsToGenerate, tStart, tEnd, dt, returnSingleStep, isOperatorForm);

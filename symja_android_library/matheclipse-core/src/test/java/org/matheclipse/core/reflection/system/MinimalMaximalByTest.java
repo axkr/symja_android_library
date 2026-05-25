@@ -7,6 +7,8 @@ public class MinimalMaximalByTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testMinimalBy01() {
+    check("MinimalBy(<|a->0,b:>1|>,-1+Sqrt(2),0.0,Graph({},{}))", //
+        "<||>");
     check("MinimalBy(<|\"a\" -> {4, 1}, \"b\" -> {2, 3}, \"b\" -> {4, 2}, \"d\" -> {1, 1}|>, Last)", //
         "<|a->{4,1},d->{1,1}|>");
 

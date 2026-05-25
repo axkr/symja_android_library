@@ -388,6 +388,7 @@ public class Errors {
       "reppoint", "`1` contains repeated integers.", //
       "reps",
       "(`1`) is neither a list of replacement rules nor a valid dispatch table and cannot be used for replacing.", //
+      "rneg", "The specified rule number `1` should be non-negative.", //
       "root", "Unable to determine the appropriate root for the periodic continued fraction.", //
       "root2", "The equation `1` has no integer solutions.", //
       "rrlim", "Exiting after `1` scanned `2` times.", //
