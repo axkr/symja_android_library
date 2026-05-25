@@ -43,6 +43,12 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
     append(S.Association);
   }
 
+  public ASTAssociation(int capacity) {
+    super(capacity, false);
+    keyToIndexMap = StaticImports.mutableMap();
+    append(S.Association);
+  }
+
   /**
    * Create an association from a list of rules.
    *
@@ -198,7 +204,7 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   }
 
   @Override
-  public IASTAppendable copyAppendable(int additionalCapacity) {
+  public IAssociation copyAppendable(int additionalCapacity) {
     return copy();
   }
 
@@ -209,25 +215,25 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
 
   /** {@inheritDoc} */
   @Override
-  public IASTAppendable copyHead() {
-    return F.ast(S.Association, size());
+  public IAssociation copyHead() {
+    return new ASTAssociation(size());
   }
 
   /** {@inheritDoc} */
   @Override
-  public IASTAppendable copyHead(final int intialCapacity) {
-    return F.ast(S.Association, intialCapacity);
+  public IAssociation copyHead(final int intialCapacity) {
+    return new ASTAssociation(intialCapacity);
   }
 
   /** {@inheritDoc} */
   @Override
-  public IASTAppendable copyUntil(int index) {
+  public IAssociation copyUntil(int index) {
     return copyUntil(index, index);
   }
 
   /** {@inheritDoc} */
   @Override
-  public final IASTAppendable copyUntil(final int intialCapacity, int index) {
+  public final IAssociation copyUntil(final int intialCapacity, int index) {
     ASTAssociation result = new ASTAssociation();
     result.appendRules(this.normal(false), 1, index);
     return result;
