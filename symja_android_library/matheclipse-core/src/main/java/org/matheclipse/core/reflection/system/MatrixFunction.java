@@ -1,8 +1,10 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -24,6 +26,10 @@ public class MatrixFunction extends AbstractFunctionEvaluator {
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
     IExpr f = ast.arg1();
+    if (!f.isFunction() && !f.isSymbol()) {
+      // `1` is not a univariate pure function.
+      return Errors.printMessage(S.MatrixFunction, "nunipf", F.List(f));
+    }
     IExpr m = ast.arg2();
 
     // MatrixFunction works only on square matrices

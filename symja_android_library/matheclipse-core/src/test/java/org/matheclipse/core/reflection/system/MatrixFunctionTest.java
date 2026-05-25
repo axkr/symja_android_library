@@ -55,6 +55,8 @@ public class MatrixFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testMatrixFunction001() {
+    check("MatrixFunction({-3/2}, {{0,0}, {0,0}})", //
+        "MatrixFunction({-3/2},{{0,0},{0,0}})");
     check("MatrixFunction(x |-> x^5 + 2 x^2 + 1, {{a, 0}, {1, b}})", //
         "{{1+2*a^2+a^5,0},\n"//
             + " {2*a+a^4+2*b+a^3*b+a^2*b^2+a*b^3+b^4,1+2*b^2+b^5}}");
