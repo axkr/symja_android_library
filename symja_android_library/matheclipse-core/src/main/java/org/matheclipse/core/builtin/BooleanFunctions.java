@@ -112,6 +112,7 @@ public final class BooleanFunctions {
       S.Boole.setEvaluator(new Boole());
       S.BooleanConvert.setEvaluator(new BooleanConvert());
       S.BooleanFunction.setEvaluator(new BooleanFunction());
+      S.BooleanCountingFunction.setEvaluator(new BooleanCountingFunction());
       S.BooleanMaxterms.setEvaluator(new BooleanMaxterms());
       S.BooleanMinimize.setEvaluator(new BooleanMinimize());
       S.BooleanMinterms.setEvaluator(new BooleanMinterms());
@@ -1283,6 +1284,253 @@ public final class BooleanFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       // newSymbol.setAttributes(ISymbol.HOLDALL);
+    }
+  }
+
+  private static class BooleanCountingFunction extends AbstractFunctionEvaluator {
+
+    /** <code>spec</code> is a non-negative integer <code>k</code> (at most <code>k</code> true). */
+    private static final int SPEC_AT_MOST = 0;
+    /** <code>spec</code> is <code>{k}</code> (exactly <code>k</code> true). */
+    private static final int SPEC_EXACT = 1;
+    /** <code>spec</code> is <code>{kmin,kmax}</code> or <code>{kmin,kmax,step}</code>. */
+    private static final int SPEC_MULTI = 2;
+
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      IExpr spec = ast.arg1();
+      IExpr arg2 = ast.arg2();
+
+      IExpr formArg = null;
+      if (ast.argSize() == 3) {
+        IExpr arg3 = ast.arg3();
+        if (!arg3.isString()) {
+          return F.NIL;
+        }
+        formArg = arg3;
+      }
+
+      // resolve the variables (explicit list or slot form)
+      final boolean slotForm;
+      final IAST variableList;
+      final int n;
+      if (arg2.isList()) {
+        slotForm = false;
+        variableList = (IAST) arg2;
+        n = variableList.argSize();
+      } else {
+        slotForm = true;
+        n = arg2.toIntDefault();
+        IASTAppendable slots = F.ListAlloc(n > 0 ? n : 1);
+        for (int i = 1; i <= n; i++) {
+          slots.append(F.Slot(i));
+        }
+        variableList = slots;
+      }
+      if (n <= 0 || n > Config.MAX_BOOLEAN_COUNTING_FUNCTION_VARIABLES) {
+        return F.NIL;
+      }
+
+      // parse the counting specification
+      int kind;
+      int kValue = -1;
+      boolean[] allowedCount = null;
+      if (spec.isInteger() && !spec.isNegative()) {
+        kind = SPEC_AT_MOST;
+        kValue = spec.toIntDefault();
+        if (kValue < 0) {
+          // integer too large for an int -> at most n is always true
+          kValue = n;
+        }
+      } else if (spec.isList()) {
+        IAST list = (IAST) spec;
+        if (list.argSize() == 1) {
+          kind = SPEC_EXACT;
+          kValue = list.arg1().toIntDefault();
+        } else if (list.argSize() == 2 || list.argSize() == 3) {
+          kind = SPEC_MULTI;
+          int kmin = list.arg1().toIntDefault();
+          int kmax = list.arg2().toIntDefault();
+          int step = list.argSize() == 3 ? list.arg3().toIntDefault() : 1;
+          if (kmin == Integer.MIN_VALUE || kmax == Integer.MIN_VALUE
+              || step == Integer.MIN_VALUE || step <= 0) {
+            return F.NIL;
+          }
+          allowedCount = new boolean[n + 1];
+          for (int c = kmin; c <= kmax; c += step) {
+            if (c >= 0 && c <= n) {
+              allowedCount[c] = true;
+            }
+          }
+        } else {
+          return F.NIL;
+        }
+      } else {
+        return F.NIL;
+      }
+
+      // create the LogicNG variables (slot variables are named "#i")
+      FormulaFactory factory = new FormulaFactory();
+      Variable[] variables = new Variable[n];
+      for (int i = 0; i < n; i++) {
+        String name = slotForm ? ("#" + (i + 1)) : variableList.get(i + 1).toString();
+        variables[i] = factory.variable(name);
+      }
+
+      // build the LogicNG formula
+      final Formula formula;
+      switch (kind) {
+        case SPEC_EXACT:
+          formula = exactlyFormula(kValue, variables, factory);
+          break;
+        case SPEC_AT_MOST:
+          formula = atMostFormula(kValue, variables, factory);
+          break;
+        default:
+          formula = countingFormula(allowedCount, variables, factory);
+          break;
+      }
+
+      // slot form without an explicit output form -> return a BDD (pure boolean function)
+      if (slotForm && formArg == null) {
+        return BDDExpr.newInstance(formula.bdd(), true);
+      }
+
+      LogicFormula lf = new LogicFormula(variables);
+      // For the "exactly k" and "at most k" patterns emit the sum-of-minterms / sum-of-negated-
+      // subsets form directly. For mixed spec sets lift the full minterm DNF through the
+      // Quine-McCluskey based BooleanMinimize to produce a smaller, logically equivalent DNF.
+      IExpr result =
+          (kind == SPEC_MULTI) ? lf.factorSimplifyDNF(formula) : lf.booleanFunction2Expr(formula);
+
+      if (formArg == null) {
+        return result;
+      }
+      IExpr converted = booleanConvert(F.BooleanConvert(result, formArg), engine);
+      if (!converted.isPresent()) {
+        return F.NIL;
+      }
+      return slotForm ? F.Function(converted) : converted;
+    }
+
+    /**
+     * Build the "exactly <code>k</code> true" formula as a lex-ordered sum of minterms. Each minterm
+     * lists all <code>n</code> variables, positive if selected and negated otherwise.
+     */
+    private static Formula exactlyFormula(int k, Variable[] variables, FormulaFactory factory) {
+      final int n = variables.length;
+      if (k < 0 || k > n) {
+        return factory.falsum();
+      }
+      boolean[] selected = new boolean[n];
+      List<Formula> orFormula = new ArrayList<Formula>();
+      for (int[] subset : combinations(n, k)) {
+        Arrays.fill(selected, false);
+        for (int idx : subset) {
+          selected[idx] = true;
+        }
+        Formula[] andFormula = new Formula[n];
+        for (int j = 0; j < n; j++) {
+          andFormula[j] = selected[j] ? variables[j] : factory.not(variables[j]);
+        }
+        orFormula.add(factory.and(andFormula));
+      }
+      return factory.or(orFormula);
+    }
+
+    /**
+     * Build the "at most <code>k</code> true" formula as a lex-ordered sum of negated subsets. Each
+     * term forces a distinct subset of <code>n-k</code> variables to <code>False</code> (i.e. at
+     * least <code>n-k</code> variables are <code>False</code>).
+     */
+    private static Formula atMostFormula(int k, Variable[] variables, FormulaFactory factory) {
+      final int n = variables.length;
+      if (k < 0) {
+        return factory.falsum();
+      }
+      if (k >= n) {
+        return factory.verum();
+      }
+      final int m = n - k;
+      List<Formula> orFormula = new ArrayList<Formula>();
+      for (int[] subset : combinations(n, m)) {
+        Formula[] andFormula = new Formula[m];
+        for (int t = 0; t < m; t++) {
+          andFormula[t] = factory.not(variables[subset[t]]);
+        }
+        orFormula.add(factory.and(andFormula));
+      }
+      return factory.or(orFormula);
+    }
+
+    /**
+     * Build the full minterm DNF over all assignments whose number of <code>True</code> variables is
+     * an allowed count.
+     */
+    private static Formula countingFormula(boolean[] allowedCount, Variable[] variables,
+        FormulaFactory factory) {
+      final int n = variables.length;
+      List<Formula> orFormula = new ArrayList<Formula>();
+      final long total = 1L << n;
+      for (long state = 0; state < total; state++) {
+        int count = Long.bitCount(state);
+        if (count <= n && allowedCount[count]) {
+          Formula[] andFormula = new Formula[n];
+          long shiftCounter = state;
+          for (int j = n - 1; j >= 0; j--) {
+            andFormula[j] =
+                ((shiftCounter & 1L) == 1L) ? variables[j] : factory.not(variables[j]);
+            shiftCounter >>>= 1;
+          }
+          orFormula.add(factory.and(andFormula));
+        }
+      }
+      return factory.or(orFormula);
+    }
+
+    /**
+     * Generate all <code>k</code>-element subsets of <code>{0, ..., n-1}</code> in lexicographic
+     * order.
+     *
+     * @param n the size of the base set
+     * @param k the subset size
+     * @return a list of index arrays in lexicographic order (empty if <code>k</code> is out of
+     *         range)
+     */
+    private static List<int[]> combinations(int n, int k) {
+      List<int[]> result = new ArrayList<int[]>();
+      if (k < 0 || k > n) {
+        return result;
+      }
+      int[] c = new int[k];
+      for (int i = 0; i < k; i++) {
+        c[i] = i;
+      }
+      while (true) {
+        result.add(c.clone());
+        int i = k - 1;
+        while (i >= 0 && c[i] == n - k + i) {
+          i--;
+        }
+        if (i < 0) {
+          break;
+        }
+        c[i]++;
+        for (int j = i + 1; j < k; j++) {
+          c[j] = c[j - 1] + 1;
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      super.setUp(newSymbol);
     }
   }
 

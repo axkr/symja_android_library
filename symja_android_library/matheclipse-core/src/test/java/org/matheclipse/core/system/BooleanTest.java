@@ -212,6 +212,43 @@ public class BooleanTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testBooleanCountingFunction() {
+    // exactly k true (spec == {k}) -> sum of minterms
+    check("BooleanCountingFunction({2}, {a, b, c})", //
+        "(a&&b&&!c)||(a&&!b&&c)||(!a&&b&&c)");
+    // at most k true (spec == k) -> sum of negated subsets
+    check("BooleanCountingFunction(1, {a, b, c})", //
+        "(!a&&!b)||(!a&&!c)||(!b&&!c)");
+    // k >= number of variables -> always True
+    check("BooleanCountingFunction(3, {a, b, c})", //
+        "True");
+    // exactly 0 true -> all variables False
+    check("BooleanCountingFunction({0}, {a, b, c})", //
+        "!a&&!b&&!c");
+    // between kmin and kmax inclusive -> C(4,2)+C(4,3) = 10 satisfying assignments
+    check(
+        "Count(BooleanTable(BooleanCountingFunction({2, 3}, {a, b, c, d}), {a, b, c, d}), True)", //
+        "10");
+
+    // mixed spec is lifted through Quine-McCluskey -> a smaller (six-term) DNF than
+    // WMA's seven-term Espresso-style cover, but logically equivalent
+    check("BooleanCountingFunction({2, 3}, {a, b, c, d})", //
+        "(a&&b&&!c)||(a&&!b&&c)||(a&&!b&&d)||(!a&&b&&d)||(!a&&c&&d)||(b&&c&&!d)");
+    check("Length(BooleanCountingFunction({2, 3}, {a, b, c, d}))", //
+        "6");
+    // kmin, kmin+step, ... <= kmax: counts 0, 2, 4 of 4 -> 1+6+1 = 8 assignments
+    check(
+        "Count(BooleanTable(BooleanCountingFunction({0, 4, 2}, {a, b, c, d}), {a, b, c, d}), True)", //
+        "8");
+    // slot form returns a BooleanFunction (BDD); exactly 1 of 3 -> 3 assignments
+    check("Count(BooleanTable(BooleanCountingFunction({1}, 3), {a, b, c}), True)", //
+        "3");
+    // explicit output form as third argument (CNF); exactly 2 of 3 -> still 3 assignments
+    check("Count(BooleanTable(BooleanCountingFunction({2}, {a, b, c}, \"CNF\"), {a, b, c}), True)", //
+        "3");
+  }
+
+  @Test
   public void testBooleanFunction001() {
 
     // test with wrong var name lenght()==0
