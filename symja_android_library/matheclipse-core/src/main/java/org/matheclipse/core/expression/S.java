@@ -1429,6 +1429,9 @@ public class S {
   public final static IBuiltInSymbol BooleanFunction =
       S.initFinalSymbol("BooleanFunction", ID.BooleanFunction);
 
+  public final static IBuiltInSymbol BooleanCountingFunction =
+      S.initFinalSymbol("BooleanCountingFunction", ID.BooleanCountingFunction);
+
   /**
    * BooleaMaxterms({{b1,b2,...}}, {v1,v2,...}) - create the conjunction of the variables
    * `{v1,v2,...}`.
@@ -6181,6 +6184,8 @@ public class S {
   public final static IBuiltInSymbol InverseZTransform =
       S.initFinalSymbol("InverseZTransform", ID.InverseZTransform);
 
+  public final static IBuiltInSymbol IrreduciblePolynomialQ =
+      S.initFinalSymbol("IrreduciblePolynomialQ", ID.IrreduciblePolynomialQ);
   /**
    * IsomorphicGraphQ(graph1, graph2) - returns `True` if an isomorphism exists between `graph1` and
    * `graph2`. Return `False`in all other cases.
@@ -9160,6 +9165,8 @@ public class S {
   public final static IBuiltInSymbol PolynomialLCM =
       S.initFinalSymbol("PolynomialLCM", ID.PolynomialLCM);
 
+  public final static IBuiltInSymbol PolynomialMod =
+      S.initFinalSymbol("PolynomialMod", ID.PolynomialMod);
   /**
    * PolynomialQ(p, x) - return `True` if `p` is a polynomial for the variable `x`. Return `False`
    * in all other cases.
@@ -9389,6 +9396,9 @@ public class S {
   public final static IBuiltInSymbol Primes = S.initFinalSymbol("Primes", ID.Primes);
 
   public final static IBuiltInSymbol PrimeZetaP = S.initFinalSymbol("PrimeZetaP", ID.PrimeZetaP);
+
+  public final static IBuiltInSymbol PrimitivePolynomialQ =
+      S.initFinalSymbol("PrimitivePolynomialQ", ID.PrimitivePolynomialQ);
 
   public final static IBuiltInSymbol PrimitiveRoot =
       S.initFinalSymbol("PrimitiveRoot", ID.PrimitiveRoot);
@@ -10678,6 +10688,9 @@ public class S {
   public final static IBuiltInSymbol ShearingTransform =
       S.initFinalSymbol("ShearingTransform", ID.ShearingTransform);
 
+  public final static IBuiltInSymbol ShiftRegisterSequence =
+      S.initFinalSymbol("ShiftRegisterSequence", ID.ShiftRegisterSequence);
+
   public final static IBuiltInSymbol Short = S.initFinalSymbol("Short", ID.Short);
 
   public final static IBuiltInSymbol ShortDownArrow =
@@ -11513,6 +11526,9 @@ public class S {
    */
   public final static IBuiltInSymbol Subfactorial =
       S.initFinalSymbol("Subfactorial", ID.Subfactorial);
+
+  public final static IBuiltInSymbol Subresultants =
+      S.initFinalSymbol("Subresultants", ID.Subresultants);
 
   public final static IBuiltInSymbol Subscript = S.initFinalSymbol("Subscript", ID.Subscript);
 
@@ -13292,8 +13308,7 @@ public class S {
    * @param ordinal
    * @return
    */
-  public static IBuiltInSymbol initFinalSymbol(final String symbolName,
-      int ordinal) {
+  public static IBuiltInSymbol initFinalSymbol(final String symbolName, int ordinal) {
     final String str;
     if (ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS) {
       str = (symbolName.length() == 1) ? symbolName : symbolName.toLowerCase(Locale.US);
