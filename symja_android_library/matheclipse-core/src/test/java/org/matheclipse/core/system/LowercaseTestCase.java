@@ -5222,26 +5222,26 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   @Ignore("Definition based on HashMap, which will change it's order if new symbols are defined")
   public void testDefinition() {
-    check("Definition(ArcSinh)", //
-        "Attributes(ArcSinh)={Listable,NumericFunction,Protected}\n" //
-            + "\n" //
-            + "ArcSinh(ComplexInfinity)=ComplexInfinity\n" //
-            + "\n" //
-            + "ArcSinh(I)=I*1/2*Pi\n" //
-            + "\n" //
-            + "ArcSinh(0)=0\n" //
-            + "\n" //
-            + "ArcSinh(I*1/2)=I*1/6*Pi\n" //
-            + "\n" //
-            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
-            + "\n" //
-            + "ArcSinh(Infinity)=Infinity\n" //
-            + "\n" //
-            + "ArcSinh(I*Infinity)=Infinity\n" //
-            + "\n" //
-            + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
-            + "\n" //
-            + "ArcSinh(Undefined)=Undefined");
+    // check("Definition(ArcSinh)", //
+    // "Attributes(ArcSinh)={Listable,NumericFunction,Protected}\n" //
+    // + "\n" //
+    // + "ArcSinh(ComplexInfinity)=ComplexInfinity\n" //
+    // + "\n" //
+    // + "ArcSinh(I)=I*1/2*Pi\n" //
+    // + "\n" //
+    // + "ArcSinh(0)=0\n" //
+    // + "\n" //
+    // + "ArcSinh(I*1/2)=I*1/6*Pi\n" //
+    // + "\n" //
+    // + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
+    // + "\n" //
+    // + "ArcSinh(Infinity)=Infinity\n" //
+    // + "\n" //
+    // + "ArcSinh(I*Infinity)=Infinity\n" //
+    // + "\n" //
+    // + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
+    // + "\n" //
+    // + "ArcSinh(Undefined)=Undefined");
 
     check("a := 42", //
         "");
@@ -9730,6 +9730,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFrobeniusSolve() {
+    check("FrobeniusSolve({2, 3, 4}, 10, All)", //
+        "{{0,2,1},{1,0,2},{2,2,0},{3,0,1},{5,0,0}}");
     // iter limit
     check("FrobeniusSolve({1,5,10,25},1317624576693539401)", //
         "Hold(FrobeniusSolve({1,5,10,25},1317624576693539401))");
@@ -9896,26 +9898,26 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   @Ignore("Definition based on HashMap, which will change it's order if new symbols are defined")
   public void testFullDefinition() {
-    check("FullDefinition(ArcSinh)", //
-        "Attributes(ArcSinh)={Listable,NumericFunction,Protected}\n" //
-            + "\n" //
-            + "ArcSinh(ComplexInfinity)=ComplexInfinity\n" //
-            + "\n" //
-            + "ArcSinh(I)=I*1/2*Pi\n" //
-            + "\n" //
-            + "ArcSinh(0)=0\n" //
-            + "\n" //
-            + "ArcSinh(I*1/2)=I*1/6*Pi\n" //
-            + "\n" //
-            + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
-            + "\n" //
-            + "ArcSinh(Infinity)=Infinity\n" //
-            + "\n" //
-            + "ArcSinh(I*Infinity)=Infinity\n" //
-            + "\n" //
-            + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
-            + "\n" //
-            + "ArcSinh(Undefined)=Undefined");
+    // check("FullDefinition(ArcSinh)", //
+    // "Attributes(ArcSinh)={Listable,NumericFunction,Protected}\n" //
+    // + "\n" //
+    // + "ArcSinh(ComplexInfinity)=ComplexInfinity\n" //
+    // + "\n" //
+    // + "ArcSinh(I)=I*1/2*Pi\n" //
+    // + "\n" //
+    // + "ArcSinh(0)=0\n" //
+    // + "\n" //
+    // + "ArcSinh(I*1/2)=I*1/6*Pi\n" //
+    // + "\n" //
+    // + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
+    // + "\n" //
+    // + "ArcSinh(Infinity)=Infinity\n" //
+    // + "\n" //
+    // + "ArcSinh(I*Infinity)=Infinity\n" //
+    // + "\n" //
+    // + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
+    // + "\n" //
+    // + "ArcSinh(Undefined)=Undefined");
 
     check("a(x_):=b(x,y);b[u_,v_]:={{u,v},a}", //
         "");
@@ -10306,6 +10308,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testGCD() {
+    check("GCD(Rational(10^50, 3), Rational(10^60, 7))", //
+        "100000000000000000000000000000000000000000000000000/21");
     // Long.MIN_VALUE = -9223372036854775808
     check("-9223372036854775808/2", //
         "-4611686018427387904");
@@ -18866,6 +18870,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPowerMod() {
+    check("PowerMod(100, 1/2, 17 * 19 * 23)", //
+        "10");
     // gaussian integer tests
     check("PowerMod(2+I,3,3+2*I)", //
         "I");
@@ -19354,10 +19360,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPrimitiveRoot() {
+    check("PrimitiveRoot({9, 7, 19})", //
+        "{2,3,2}");
     check("PrimitiveRoot(12)", //
         "PrimitiveRoot(12)");
-    // check("Select(Range(100), PrimitiveRoot(#) != {} &)", //
-    // "");
+    check("PrimitiveRoot(43)", //
+        "3");
+    check("PrimitiveRoot(10)", //
+        "3");
+    check("PrimitiveRoot(10,1)", //
+        "3");
+    check("PrimitiveRoot(10,4)", //
+        "7");
   }
 
   @Test

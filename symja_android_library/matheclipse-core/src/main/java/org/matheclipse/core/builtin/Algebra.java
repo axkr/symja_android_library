@@ -62,7 +62,6 @@ import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.reflection.system.Solve.SolveData;
-import org.matheclipse.core.reflection.system.ToRadicals;
 import org.matheclipse.core.reflection.system.TrigExpand;
 import org.matheclipse.core.visit.VisitorExpr;
 import edu.jas.arith.BigInteger;
@@ -1273,7 +1272,6 @@ public class Algebra {
      * @param expr
      * @param varList
      * @param factorSquareFree
-     * @return
      * @throws JASConversionException
      */
     public static IExpr factorWithOption(final IAST ast, IExpr expr, IAST varList,
@@ -1853,6 +1851,7 @@ public class Algebra {
       S.PolynomialGCD.setEvaluator(new PolynomialGCD());
       S.PolynomialLCM.setEvaluator(new PolynomialLCM());
       S.PolynomialQ.setEvaluator(new PolynomialQ());
+      S.PolynomialMod.setEvaluator(new PolynomialMod());
       S.PolynomialQuotient.setEvaluator(new PolynomialQuotient());
       S.PolynomialQuotientRemainder.setEvaluator(new PolynomialQuotientRemainder());
       S.PolynomialRemainder.setEvaluator(new PolynomialRemainder());
@@ -2536,6 +2535,306 @@ public class Algebra {
     }
   }
 
+  private static class PolynomialMod extends AbstractFunctionOptionEvaluator {
+
+    private static IExpr applyModRecursively(IExpr expr, IInteger m, EvalEngine engine) {
+      if (expr.isInteger()) {
+        return ((IInteger) expr).mod(m);
+      }
+      if (expr.isRational()) {
+        IExpr modded = engine.evaluate(F.Mod(expr, m));
+        if (modded.isAST(S.Mod)) {
+          return F.NIL;
+        }
+        return modded;
+      }
+      if (expr.isPlus()) {
+        IAST plus = (IAST) expr;
+        IASTAppendable result = F.PlusAlloc(plus.argSize());
+        for (int i = 1; i <= plus.argSize(); i++) {
+          IExpr reduced = applyModRecursively(plus.get(i), m, engine);
+          if (!reduced.isPresent()) {
+            return F.NIL;
+          }
+          if (!reduced.isZero()) {
+            result.append(reduced);
+          }
+        }
+        return engine.evaluate(result);
+      }
+      if (expr.isTimes()) {
+        IAST times = (IAST) expr;
+        IASTAppendable result = F.TimesAlloc(times.argSize());
+        for (int i = 1; i <= times.argSize(); i++) {
+          IExpr factor = times.get(i);
+          if (factor.isNumber()) {
+            IExpr reduced = applyModRecursively(factor, m, engine);
+            if (!reduced.isPresent()) {
+              return F.NIL;
+            }
+            if (reduced.isZero()) {
+              return F.C0;
+            }
+            result.append(reduced);
+          } else {
+            result.append(factor);
+          }
+        }
+        return engine.evaluate(result);
+      }
+      // Power, Symbol, etc.: nothing to reduce.
+      return expr;
+    }
+
+
+    /**
+     * Reduce all coefficients of <code>expr</code> modulo the positive integer <code>m</code>.
+     * First tries a JAS-based conversion (efficient and exact); falls back to a recursive walk of
+     * <code>Plus</code>/<code>Times</code>/<code>Power</code> applying {@code Mod} to numeric
+     * leaves.
+     */
+    private static IExpr polynomialModInteger(IExpr expr, IInteger m, EvalEngine engine) {
+      VariablesSet variablesSet = new VariablesSet(expr);
+      IAST vars = variablesSet.getVarList();
+      if (vars.argSize() == 0) {
+        // Constant expression: just take Mod[expr, m]
+        if (expr.isInteger()) {
+          return ((IInteger) expr).mod(m);
+        }
+        IExpr modded = engine.evaluate(F.Mod(expr, m));
+        if (modded.isAST(S.Mod)) {
+          return F.NIL;
+        }
+        return modded;
+      }
+      try {
+        ModLongRing modIntegerRing = JASModInteger.option2ModLongRing(m);
+        JASModInteger jas = new JASModInteger(vars, modIntegerRing);
+        GenPolynomial<ModLong> p = jas.expr2JAS(expr);
+        if (p != null) {
+          return jas.modLongPoly2Expr(p);
+        }
+      } catch (JASConversionException e) {
+        LOGGER.debug("PolynomialMod.polynomialModInteger() JAS conversion failed", e);
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        LOGGER.debug("PolynomialMod.polynomialModInteger() failed", rex);
+      }
+      // Fallback: walk the (already expanded) expression and apply Mod to numeric leaves.
+      return applyModRecursively(expr, m, engine);
+    }
+
+    /**
+     * Pseudo-remainder over the integers: iteratively subtract <code>q * x^k * m</code> from
+     * <code>poly</code> as long as the leading coefficient of <code>m</code> exactly divides the
+     * leading coefficient of the current polynomial. As soon as the division is not exact in
+     * <code>Z</code>, the current polynomial is returned unchanged (no divisions are performed).
+     */
+    private static IExpr polynomialModIntegerDomain(IExpr poly, IExpr m, IExpr var,
+        EvalEngine engine) {
+      IExpr current = poly;
+      // Safety bound: each iteration strictly decreases the degree of `current`.
+      for (int iter = 0; iter < 1024; iter++) {
+        if (current.isZero()) {
+          return F.C0;
+        }
+        IExpr dpExpr = engine.evaluate(F.Exponent(current, var));
+        IExpr dmExpr = engine.evaluate(F.Exponent(m, var));
+        if (!dpExpr.isInteger() || !dmExpr.isInteger()) {
+          return F.NIL;
+        }
+        IInteger dp = (IInteger) dpExpr;
+        IInteger dm = (IInteger) dmExpr;
+        if (dp.compareTo(dm) < 0) {
+          return current;
+        }
+        IExpr lcPexpr = engine.evaluate(F.Coefficient(current, var, dp));
+        IExpr lcMexpr = engine.evaluate(F.Coefficient(m, var, dm));
+        if (!lcPexpr.isInteger() || !lcMexpr.isInteger()) {
+          return F.NIL;
+        }
+        IInteger lcP = (IInteger) lcPexpr;
+        IInteger lcM = (IInteger) lcMexpr;
+        if (lcM.isZero()) {
+          return F.NIL;
+        }
+        java.math.BigInteger[] dr = lcP.toBigNumerator().divideAndRemainder(lcM.toBigNumerator());
+        if (dr[1].signum() != 0) {
+          // Leading coefficient of m does not exactly divide the current leading coefficient ->
+          // no reduction performed at this term; return as-is (Mathematica's "no divisions"
+          // semantics for CoefficientDomain -> Integers).
+          return current;
+        }
+        IInteger q = F.ZZ(dr[0]);
+        IInteger shift = dp.subtract(dm);
+        IExpr subtract = engine.evaluate(F.Expand(F.Times(q, F.Power(var, shift), m)));
+        current = engine.evaluate(F.Expand(F.Subtract(current, subtract)));
+      }
+      // Safety net: too many iterations -> bail out unevaluated.
+      return F.NIL;
+    }
+
+    /**
+     * Compute the polynomial remainder of <code>poly</code> divided by <code>m</code> over
+     * <code>GF(p)</code>. Both <code>poly</code> and <code>m</code> are first reduced modulo
+     * <code>p</code>; <code>m</code> is made monic by multiplying with the modular inverse of its
+     * leading coefficient (which exists because <code>p</code> is prime and the leading coefficient
+     * is non-zero mod <code>p</code>); the standard polynomial remainder is then computed and
+     * reduced mod <code>p</code> a final time.
+     */
+    private static IExpr polynomialModPrime(IExpr poly, IExpr m, IExpr var, IInteger p,
+        EvalEngine engine) {
+      IExpr polyMod = polynomialModInteger(poly, p, engine);
+      IExpr mMod = polynomialModInteger(m, p, engine);
+      if (!polyMod.isPresent() || !mMod.isPresent() || mMod.isZero()) {
+        return F.NIL;
+      }
+      IExpr degExpr = engine.evaluate(F.Exponent(mMod, var));
+      if (!degExpr.isInteger()) {
+        return F.NIL;
+      }
+      IExpr lc =
+          polynomialModInteger(engine.evaluate(F.Coefficient(mMod, var, degExpr)), p, engine);
+      if (!lc.isInteger() || lc.isZero()) {
+        return F.NIL;
+      }
+      IInteger lcInt = (IInteger) lc;
+      if (!lcInt.isOne()) {
+        IExpr lcInv = engine.evaluate(F.PowerMod(lcInt, F.CN1, p));
+        if (!lcInv.isInteger()) {
+          return F.NIL;
+        }
+        mMod = polynomialModInteger(engine.evaluate(F.Expand(F.Times(lcInv, mMod))), p, engine);
+        if (!mMod.isPresent()) {
+          return F.NIL;
+        }
+      }
+      Optional<IExpr[]> qr = PolynomialQuotientRemainder.quotientRemainder(polyMod, mMod, var);
+      if (!qr.isPresent()) {
+        return F.NIL;
+      }
+      return polynomialModInteger(qr.get()[1], p, engine);
+    }
+
+    @Override
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
+      IExpr poly = ast.arg1();
+      IExpr m = ast.arg2();
+      // modulus to assume for integers
+      IExpr modulus = options[0];
+      // domain of the coefficients (e.g. Integers, Rationals, etc.)
+      IExpr coefficientDomain = options[1];
+      // true - do trig transformations
+      IExpr trig = options[2];
+
+      // PolynomialMod[poly, {m1, m2, ...}] -> apply sequentially.
+      if (m.isList()) {
+        IAST mList = (IAST) m;
+        IExpr result = poly;
+        for (int i = 1; i <= mList.argSize(); i++) {
+          IExpr next = engine.evaluate(F.binaryAST2(S.PolynomialMod, result, mList.get(i)));
+          if (!next.isPresent()) {
+            return F.NIL;
+          }
+          result = next;
+        }
+        return result;
+      }
+
+      IExpr expanded = F.evalExpandAll(poly, engine);
+      if (!expanded.isPresent()) {
+        expanded = poly;
+      }
+
+      // Resolve options.
+      boolean useModulus = modulus.isInteger() && !modulus.isZero();
+      IInteger pOption = useModulus ? ((IInteger) modulus).abs() : null;
+      if (useModulus && pOption.isOne()) {
+        return F.C0;
+      }
+      boolean integerDomain = coefficientDomain.equals(S.Integers);
+
+      // Integer modulus (second argument): reduce all numeric coefficients modulo m.
+      if (m.isInteger()) {
+        IInteger mInt = (IInteger) m;
+        if (mInt.isZero()) {
+          // No integer modulus on the second arg: if Modulus option is set, apply it.
+          if (useModulus) {
+            return polynomialModInteger(expanded, pOption, engine);
+          }
+          return expanded;
+        }
+        IInteger mAbs = mInt.abs();
+        if (mAbs.isOne()) {
+          return F.C0;
+        }
+        return polynomialModInteger(expanded, mAbs, engine);
+      }
+
+      // Polynomial modulus: subtract polynomial multiples of m using polynomial division.
+      if (m.isPolynomialStruct()) {
+        VariablesSet vs = new VariablesSet();
+        vs.addVarList(expanded);
+        vs.addVarList(m);
+        IAST vars = vs.getVarList();
+        if (vars.argSize() == 1) {
+          IExpr var = vars.arg1();
+          try {
+            IExpr expandedM = F.evalExpandAll(m, engine);
+            if (!expandedM.isPresent()) {
+              expandedM = m;
+            }
+            if (expandedM.isZero()) {
+              return useModulus ? polynomialModInteger(expanded, pOption, engine) : expanded;
+            }
+
+            if (useModulus) {
+              // Reduce poly and m modulo the prime p, make m monic via the modular inverse of
+              // its leading coefficient, then take the polynomial remainder over GF(p).
+              return polynomialModPrime(expanded, expandedM, var, pOption, engine);
+            }
+            if (integerDomain) {
+              // Pseudo-remainder using only exact integer divisions: stop as soon as the
+              // leading coefficient of m does not exactly divide the leading coefficient of the
+              // current polynomial.
+              return polynomialModIntegerDomain(expanded, expandedM, var, engine);
+            }
+
+            // Default (rational coefficient domain): full polynomial remainder over Q.
+            Optional<IExpr[]> qr =
+                PolynomialQuotientRemainder.quotientRemainder(expanded, expandedM, var);
+            if (qr.isPresent()) {
+              return qr.get()[1];
+            }
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+            LOGGER.debug("PolynomialMod.evaluate() failed", rex);
+          }
+        }
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_2_2;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Modulus, S.CoefficientDomain, S.Trig};
+      IExpr[] optionValues = new IExpr[] {F.C0, S.Rationals, S.False};
+      setOptions(newSymbol, optionKeys, optionValues);
+    }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
   /**
    *
    *
@@ -2632,6 +2931,7 @@ public class Algebra {
       return firstArg.isPolynomial(secondArg.makeList());
     }
   }
+
 
   /**
    *
@@ -3387,11 +3687,6 @@ public class Algebra {
     return true;
   }
 
-  public static IExpr factor(IExpr arg1, EvalEngine engine) {
-    VariablesSet eVar = new VariablesSet(arg1);
-    return AlgebraUtil.factor(F.Factor(arg1), arg1, eVar, false, false, true, engine);
-  }
-
   /**
    * Reduces the integer coefficients of an already-expanded polynomial expression modulo
    * {@code modulus}.
@@ -3435,49 +3730,10 @@ public class Algebra {
     return reduceCoefficients(expr, modulus, engine);
   }
 
-  /**
-   * Recursively reduces integer leaves modulo {@code modulus} throughout the expression tree, with
-   * one critical exception: the <em>exponent</em> position of a {@code Power[base, exp]} node is
-   * never touched — only the base is recursed into.
-   *
-   * <p>
-   * This prevents {@code a^2} from becoming {@code a^(2 mod 2)} = {@code a^0} = {@code 1}.
-   */
-  private static IExpr reduceCoefficients(IExpr expr, IInteger modulus, EvalEngine engine) {
-    if (expr.isInteger()) {
-      return ((IInteger) expr).mod(modulus);
-    }
-    if (!expr.isAST()) {
-      return expr; // Symbol or other atom — nothing to reduce
-    }
-    IAST ast = (IAST) expr;
-    // Power[base, exponent]: recurse into BASE only, never the exponent
-    if (ast.isPower()) {
-      IExpr base = ast.base();
-      IExpr reducedBase = reduceCoefficients(base, modulus, engine);
-      if (reducedBase == base) {
-        return expr;
-      }
-      return engine.evaluate(F.Power(reducedBase, ast.exponent()));
-    }
-    // Plus, Times, Sin, Cos, etc.: recurse into every child
-    IASTMutable copy = F.NIL;
-    for (int i = 1; i < ast.size(); i++) {
-      IExpr child = ast.get(i);
-      IExpr reduced = reduceCoefficients(child, modulus, engine);
-      if (reduced != child) {
-        if (copy.isNIL()) {
-          copy = ast.copy();
-        }
-        copy.set(i, reduced);
-      }
-    }
-    if (copy.isNIL()) {
-      return expr;
-    }
-    return engine.evaluate(copy);
+  public static IExpr factor(IExpr arg1, EvalEngine engine) {
+    VariablesSet eVar = new VariablesSet(arg1);
+    return AlgebraUtil.factor(F.Factor(arg1), arg1, eVar, false, false, true, engine);
   }
-
 
   private static IAST factorModulus(IExpr expr, IAST varList, boolean factorSquareFree,
       IExpr option) throws JASConversionException {
@@ -3494,6 +3750,7 @@ public class Algebra {
     }
     return F.NIL;
   }
+
 
   /**
    * @param jas
@@ -3590,8 +3847,6 @@ public class Algebra {
     return false;
   }
 
-
-
   /**
    * Create an iterative partial fraction decomposition of the expression numerator / Times( ... )
    * for the given variable. * Example: Apart(1 / ((x - 1) * (x - 2)))
@@ -3671,6 +3926,7 @@ public class Algebra {
   }
 
 
+
   /**
    * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition
    * of the numerator and denominator parts.
@@ -3735,6 +3991,7 @@ public class Algebra {
     }
     return F.NIL;
   }
+
 
   /**
    * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition
@@ -3862,12 +4119,54 @@ public class Algebra {
   }
 
   /**
+   * Recursively reduces integer leaves modulo {@code modulus} throughout the expression tree, with
+   * one critical exception: the <em>exponent</em> position of a {@code Power[base, exp]} node is
+   * never touched — only the base is recursed into.
+   *
+   * <p>
+   * This prevents {@code a^2} from becoming {@code a^(2 mod 2)} = {@code a^0} = {@code 1}.
+   */
+  private static IExpr reduceCoefficients(IExpr expr, IInteger modulus, EvalEngine engine) {
+    if (expr.isInteger()) {
+      return ((IInteger) expr).mod(modulus);
+    }
+    if (!expr.isAST()) {
+      return expr; // Symbol or other atom — nothing to reduce
+    }
+    IAST ast = (IAST) expr;
+    // Power[base, exponent]: recurse into BASE only, never the exponent
+    if (ast.isPower()) {
+      IExpr base = ast.base();
+      IExpr reducedBase = reduceCoefficients(base, modulus, engine);
+      if (reducedBase == base) {
+        return expr;
+      }
+      return engine.evaluate(F.Power(reducedBase, ast.exponent()));
+    }
+    // Plus, Times, Sin, Cos, etc.: recurse into every child
+    IASTMutable copy = F.NIL;
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr child = ast.get(i);
+      IExpr reduced = reduceCoefficients(child, modulus, engine);
+      if (reduced != child) {
+        if (copy.isNIL()) {
+          copy = ast.copy();
+        }
+        copy.set(i, reduced);
+      }
+    }
+    if (copy.isNIL()) {
+      return expr;
+    }
+    return engine.evaluate(copy);
+  }
+
+  /**
    * Root of a polynomial: <code>a + b*Slot1</code>.
    *
    * @param a coefficient a of the polynomial
    * @param b coefficient b of the polynomial
    * @param nthRoot <code>1 <= nthRoot <= 3</code> otherwise return F.NIL;
-   * @return
    */
   public static IAST root1(IExpr a, IExpr b, int nthRoot) {
     if (nthRoot != 1) {
@@ -3883,7 +4182,6 @@ public class Algebra {
    * @param b coefficient b of the polynomial
    * @param c coefficient c of the polynomial
    * @param nthRoot <code>1 <= nthRoot <= 3</code> otherwise return F.NIL;
-   * @return
    */
   public static IAST root2(IExpr a, IExpr b, IExpr c, int nthRoot) {
     if (nthRoot < 1 || nthRoot > 3) {

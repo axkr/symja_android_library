@@ -6276,7 +6276,14 @@ public class F extends S {
    */
   public static boolean isFuzzyEquals(Apfloat x, Apfloat y) {
     Apfloat diff = x.subtract(y);
-    return isZero(diff, EvalEngine.defaultApfloatZeroEpsilon(diff.precision()));
+    if (diff.isZero()) {
+      return true;
+    }
+    // if (diff.compareTo(Apfloat.ONE) < 0) {
+    // return isZero(diff, EvalEngine.defaultApfloatZeroEpsilon(diff.precision()));
+    // }
+    long precision = Math.min(x.precision(), y.precision());
+    return x.equalDigits(y) >= precision - Config.APFLOAT_ZERO_GUARD_DIGITS;
   }
 
   /**
@@ -6419,7 +6426,9 @@ public class F extends S {
     }
     Apfloat re = x.real();
     Apfloat im = x.imag();
-    return re.multiply(re).add(im.multiply(im)).compareTo(epsilon.multiply(epsilon)) <= 0;
+    Apfloat sqrRePlusSqrIm = re.multiply(re).add(im.multiply(im));
+    Apfloat sqrEpsilon = epsilon.multiply(epsilon);
+    return sqrRePlusSqrIm.compareTo(sqrEpsilon) <= 0;
   }
 
   public static boolean isZero(Apcomplex x, double epsilon) {
@@ -6580,7 +6589,7 @@ public class F extends S {
   public static IAST JordanDecomposition(final IExpr a0) {
     return new AST1(JordanDecomposition, a0);
   }
-  
+
   /**
    * Create JavaScript form data in the given format.
    *

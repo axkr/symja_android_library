@@ -164,7 +164,12 @@ public class JASModInteger {
               throw new ArithmeticException(
                   "JASConvert:expr2Poly - invalid exponent: " + ast.exponent().toString());
             }
-            ExpVector e = ExpVector.create(fVariables.argSize(), i, exponent);
+            // JAS stores variables in reverse order in the ExpVector: position 0 corresponds to
+            // the last variable in the user list. Map the user-facing index i to the JAS-internal
+            // position so the write round-trips correctly with monomialToExpr (which uses
+            // leer.varIndex(i) to reverse the position back to a user index).
+            int jasIndex = fVariables.argSize() - 1 - i;
+            ExpVector e = ExpVector.create(fVariables.argSize(), jasIndex, exponent);
             return fPolyFactory.valueOf(e);
           }
         }
@@ -172,7 +177,8 @@ public class JASModInteger {
     } else if (exprPoly instanceof ISymbol) {
       for (int i = 0; i < fVariables.argSize(); i++) {
         if (fVariables.get(i + 1).equals(exprPoly)) {
-          ExpVector e = ExpVector.create(fVariables.argSize(), i, 1L);
+          int jasIndex = fVariables.argSize() - 1 - i;
+          ExpVector e = ExpVector.create(fVariables.argSize(), jasIndex, 1L);
           return fPolyFactory.getONE().multiply(e);
         }
       }
@@ -226,7 +232,8 @@ public class JASModInteger {
               throw new ArithmeticException(
                   "JASConvert:expr2Poly - invalid exponent: " + ast.exponent().toString());
             }
-            ExpVector e = ExpVector.create(fVariables.argSize(), i, exponent);
+            int jasIndex = fVariables.argSize() - 1 - i;
+            ExpVector e = ExpVector.create(fVariables.argSize(), jasIndex, exponent);
             return fPolyFactory.getONE().multiply(e);
           }
         }
@@ -234,7 +241,8 @@ public class JASModInteger {
     } else if (exprPoly instanceof ISymbol) {
       for (int i = 0; i < fVariables.argSize(); i++) {
         if (fVariables.get(i + 1).equals(exprPoly)) {
-          ExpVector e = ExpVector.create(fVariables.argSize(), i, 1L);
+          int jasIndex = fVariables.argSize() - 1 - i;
+          ExpVector e = ExpVector.create(fVariables.argSize(), jasIndex, 1L);
           return fPolyFactory.getONE().multiply(e);
         }
       }
@@ -250,7 +258,8 @@ public class JASModInteger {
     } else {
       for (int i = 0; i < fVariables.argSize(); i++) {
         if (fVariables.get(i + 1).equals(exprPoly)) {
-          ExpVector e = ExpVector.create(fVariables.argSize(), i, 1L);
+          int jasIndex = fVariables.argSize() - 1 - i;
+          ExpVector e = ExpVector.create(fVariables.argSize(), jasIndex, 1L);
           return fPolyFactory.getONE().multiply(e);
         }
       }

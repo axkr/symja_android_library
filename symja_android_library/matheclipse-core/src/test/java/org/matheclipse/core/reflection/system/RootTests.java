@@ -8,7 +8,7 @@ public class RootTests extends ExprEvaluatorTestCase {
   @Test
   public void testRoot() {
     // Numeric-mode auto-evaluation: c is an inexact number, so Root[{f, c}] refines
-    // c via FindRoot and returns a numeric value (matches Mathematica's behavior on
+    // c via FindRoot and returns a numeric value (matches WMA's behavior on
     // 4.60421677720057651458449514482636628606`20.6008566975056).
     check("Root({2*#1-Tan(#1) & , 4.60421677720057651458449514482636628606`20.6008566975056})", //
         "Root({2*#1-Tan(#1)&,4.6042167772005765145})");
@@ -30,8 +30,7 @@ public class RootTests extends ExprEvaluatorTestCase {
     check("Root((-3*#-1)&, 1)", //
         "-1/3");
 
-    // 3-argument form Root[f, k, 0] (Mathematica's canonical input form): equivalent to
-    // Root[f, k] in Symja (only the real-first ordering is implemented).
+    // 3-argument form Root[f, k, 0] (only the real-first ordering is implemented).
     check("Root((#^2 - 3*# - 1)&, 1, 0)", //
         "3/2-Sqrt(13)/2");
     check("Root((#^2 - 3*# - 1)&, 2, 0)", //
@@ -40,7 +39,7 @@ public class RootTests extends ExprEvaluatorTestCase {
     check("ToRadicals(Root(#^3 - 2 &, 1, 0))", //
         "2^(1/3)");
 
-    // 3-argument form with n=1 (Mathematica's alternate ordering): Symja currently only
+    // 3-argument form with n=1 (alternate ordering): Symja currently only
     // implements the real-first ordering, so Root[f, k, 1] is treated equivalently to
     // Root[f, k, 0] (both auto-evaluate for quadratics, and ToRadicals expands them).
     check("Root((#^2 - 2)&, 2, 1)", //
@@ -48,7 +47,7 @@ public class RootTests extends ExprEvaluatorTestCase {
     check("ToRadicals(Root(#^3 - 2 &, 1, 1))", //
         "2^(1/3)");
 
-    // Invalid third argument (n not in {0,1}): Mathematica normalizes n to 0, so
+    // Invalid third argument (n not in {0,1}): normalizes n to 0, so
     // Root[#^3 - 2 &, 1, 2] is rewritten as Root[#^3 - 2 &, 1, 0] and stays unevaluated
     // (cubic is not auto-expanded — use ToRadicals to get the radical form).
     check("Root(#^3 - 2 &, 1, 2)", //
@@ -115,9 +114,9 @@ public class RootTests extends ExprEvaluatorTestCase {
     check("RootReduce(Sqrt(3))", //
         "Sqrt(3)");
 
-    // Cube root: 2^(1/3) has minimal poly x^3 - 2. Real roots are indexed first (Mathematica
-    // convention), so the real cube root 2^(1/3) is k=1. RootReduce now emits the 3-argument
-    // form Root[f, k, 0] to match Mathematica's InputForm.
+    // Cube root: 2^(1/3) has minimal poly x^3 - 2. Real roots are indexed first, so the real cube
+    // root 2^(1/3) is k=1. RootReduce now emits the 3-argument
+    // form Root[f, k, 0] to match InputForm.
     check("RootReduce(2^(1/3)) // InputForm", //
         "Root(-2 + #1^3&,1,0)");
     // Rational: degree-1 minimal poly, returned as rational directly
@@ -194,6 +193,39 @@ public class RootTests extends ExprEvaluatorTestCase {
   }
 
   /**
+   * Quintic (and higher-degree) binomials are solvable in radicals via the {@code Solve} fallback.
+   * The k-indexing follows convention (real roots first, then complex roots by ascending real part
+   * and ascending imaginary part).
+   */
+  @Test
+  public void testToRadicalsQuintic() {
+    // Root[#^5 - 2 &, k] for k = 1..5. The real root is k=1; k=3 matches WMA's
+    // (-1)^(4/5)*2^(1/5).
+    check("ToRadicals(Root(#^5 - 2 &, 1))", //
+        "2^(1/5)");
+    check("ToRadicals(Root(#^5 - 2 &, 2))", //
+        "-(-2)^(1/5)");
+    check("ToRadicals(Root(#^5 - 2 &, 3))", //
+        "(-1)^(4/5)*2^(1/5)");
+    check("ToRadicals(Root(#^5 - 2 &, 4))", //
+        "-(-1)^(3/5)*2^(1/5)");
+    check("ToRadicals(Root(#^5 - 2 &, 5))", //
+        "(-1)^(2/5)*2^(1/5)");
+
+    // Non-solvable quintic: Solve cannot return explicit radicals, so the Root stays unevaluated.
+    check("ToRadicals(Root(#^5 - # - 1 &, 1))", //
+        "Root(-1-#1+#1^5&,1)");
+  }
+
+  @Test
+  public void testToRadicalsRelational() {
+    check("ToRadicals[Root[Function[#^2 - 2], 2] < 3] ", // "
+        "True");
+    check("ToRadicals[Root[Function[#^2 - 2], 2] > 3] ", // "
+        "False");
+  }
+
+  /**
    * Tests for the symbolic-numerical {@code Root[{f, c}]} placeholder used for transcendental
    * equations whose roots have no closed-form algebraic representation (e.g. {@code 2 x - Tan[x]}).
    */
@@ -222,8 +254,8 @@ public class RootTests extends ExprEvaluatorTestCase {
     // style precision check: an inexact c that is *not* close enough to a
     // true root produces a "Root::invrt" message and the expression stays unevaluated.
     // For 2 x - Tan[x] the true root is ≈ 4.6042167..., so:
-    //   |4.60421 - 4.6042167|  ≈ 6.7e-6 → just outside the 1e-5 relative tolerance → rejected
-    //   |4.604216 - 4.6042167| ≈ 7e-7  → comfortably inside → accepted (auto-numeric)
+    // |4.60421 - 4.6042167| ≈ 6.7e-6 → just outside the 1e-5 relative tolerance → rejected
+    // |4.604216 - 4.6042167| ≈ 7e-7 → comfortably inside → accepted (auto-numeric)
     check("Root({2*#1-Tan(#1)&,4.60421})", //
         "Root({2*#1-Tan(#1)&,4.60421})");
     check("Root({2*#1-Tan(#1)&,4.604216})", //

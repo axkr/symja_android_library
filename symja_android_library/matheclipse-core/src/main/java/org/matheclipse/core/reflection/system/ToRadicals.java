@@ -32,7 +32,7 @@ public class ToRadicals extends AbstractFunctionEvaluator {
     }
     // Walk the expression tree and replace any Root[f, k]/Root[f, k, n] subexpressions.
     // If no Root is present (or none can be expanded), return arg1 unchanged so that
-    // ToRadicals acts as identity for non-Root inputs (matches Mathematica behavior).
+    // ToRadicals acts as identity for non-Root inputs.
     IExpr result = arg1.replaceAll(x -> {
       if (x.isAST(S.Root, 3) || x.isAST(S.Root, 4)) {
         IExpr radical = ToRadicals.rootToRadicals((IAST) x, engine, 4);
@@ -180,7 +180,7 @@ public class ToRadicals extends AbstractFunctionEvaluator {
             }
 
             // Compute all radical roots (degree many), then sort numerically to
-            // align with NRoots / Mathematica's k-indexing (Re ascending, Im ascending).
+            // align with NRoots / k-indexing (Re ascending, Im ascending).
             int degree = (int) varDegree;
             IExpr[] radicalRoots = new IExpr[degree];
             boolean allPresent = true;
@@ -206,58 +206,25 @@ public class ToRadicals extends AbstractFunctionEvaluator {
               return F.NIL;
             }
 
-            // Sort by (real-first, then Re asc, then Im asc) to match Mathematica's k-indexing:
-            // 1. real roots first, ordered by ascending value
-            // 2. complex roots ordered by ascending Re, then ascending Im
-            // If any coefficient is symbolic (evalf throws), keep the natural order returned by
-            // the Cardano/Ferrari formulas, which preserves the existing k-indexing for symbolic
-            // cubics/quartics.
-            int degreeI = degree;
-            double[] reVals = new double[degreeI];
-            double[] imVals = new double[degreeI];
-            boolean canSort = true;
-            for (int i = 0; i < degreeI; i++) {
-              try {
-                reVals[i] = radicalRoots[i].re().evalf();
-                imVals[i] = radicalRoots[i].im().evalf();
-                if (Double.isNaN(reVals[i]) || Double.isNaN(imVals[i])) {
-                  canSort = false;
-                  break;
-                }
-              } catch (RuntimeException ex) {
-                canSort = false;
-                break;
-              }
-            }
-            if (canSort) {
-              Integer[] order = new Integer[degreeI];
-              for (int i = 0; i < degreeI; i++) {
-                order[i] = i;
-              }
-              final double imTol = 1e-10;
-              final double reTol = 1e-10;
-              java.util.Arrays.sort(order, (xi, yi) -> {
-                boolean xReal = Math.abs(imVals[xi]) < imTol;
-                boolean yReal = Math.abs(imVals[yi]) < imTol;
-                if (xReal && !yReal) {
-                  return -1;
-                }
-                if (!xReal && yReal) {
-                  return 1;
-                }
-                if (Math.abs(reVals[xi] - reVals[yi]) > reTol) {
-                  return Double.compare(reVals[xi], reVals[yi]);
-                }
-                return Double.compare(imVals[xi], imVals[yi]);
-              });
-              IExpr[] sorted = new IExpr[degreeI];
-              for (int i = 0; i < degreeI; i++) {
-                sorted[i] = radicalRoots[order[i]];
-              }
-              radicalRoots = sorted;
-            }
+            // Sort by (real-first, then Re asc, then Im asc) to match k-indexing.
+            radicalRoots = sortRootsByMmaOrder(radicalRoots);
 
             if (k < 1 || k > degree) {
+              return F.NIL;
+            }
+            return radicalRoots[k - 1];
+          } else if (varDegree > maxDegree && maxDegree >= 4) {
+            // Degree exceeds the Cardano/Ferrari formulas (degree 1..4). For solvable
+            // polynomials (e.g. binomials like #^5 - 2) fall back to Solve, which can return
+            // exact radical solutions. This branch is gated to ToRadicals callers (maxDegree>=4);
+            // plain Root auto-evaluation (maxDegree==2) never reaches here.
+            IExpr[] radicalRoots = solveToRadicals(expr, (int) varDegree, engine);
+            if (radicalRoots == null) {
+              return F.NIL;
+            }
+            // Sort by (real-first, then Re asc, then Im asc) to match k-indexing.
+            radicalRoots = sortRootsByMmaOrder(radicalRoots);
+            if (k < 1 || k > radicalRoots.length) {
               return F.NIL;
             }
             return radicalRoots[k - 1];
@@ -268,5 +235,98 @@ public class ToRadicals extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Sort the given radical roots by {@code Root} k-indexing convention:
+   * <ol>
+   * <li>real roots first, ordered by ascending value</li>
+   * <li>complex roots ordered by ascending real part, then ascending imaginary part</li>
+   * </ol>
+   * If any root cannot be evaluated to a numeric value (e.g. symbolic coefficients), the original
+   * order is returned unchanged so that the natural Cardano/Ferrari k-indexing is preserved.
+   *
+   * @param roots the radical roots to sort
+   * @return a new sorted array, or the original array if numeric sorting is not possible
+   */
+  private static IExpr[] sortRootsByMmaOrder(IExpr[] roots) {
+    final int n = roots.length;
+    final double[] reVals = new double[n];
+    final double[] imVals = new double[n];
+    for (int i = 0; i < n; i++) {
+      try {
+        reVals[i] = roots[i].re().evalf();
+        imVals[i] = roots[i].im().evalf();
+        if (Double.isNaN(reVals[i]) || Double.isNaN(imVals[i])) {
+          return roots;
+        }
+      } catch (RuntimeException ex) {
+        return roots;
+      }
+    }
+    Integer[] order = new Integer[n];
+    for (int i = 0; i < n; i++) {
+      order[i] = i;
+    }
+    final double imTol = 1e-10;
+    final double reTol = 1e-10;
+    java.util.Arrays.sort(order, (xi, yi) -> {
+      boolean xReal = Math.abs(imVals[xi]) < imTol;
+      boolean yReal = Math.abs(imVals[yi]) < imTol;
+      if (xReal && !yReal) {
+        return -1;
+      }
+      if (!xReal && yReal) {
+        return 1;
+      }
+      if (Math.abs(reVals[xi] - reVals[yi]) > reTol) {
+        return Double.compare(reVals[xi], reVals[yi]);
+      }
+      return Double.compare(imVals[xi], imVals[yi]);
+    });
+    IExpr[] sorted = new IExpr[n];
+    for (int i = 0; i < n; i++) {
+      sorted[i] = roots[order[i]];
+    }
+    return sorted;
+  }
+
+  /**
+   * Fall back to {@code Solve} to obtain the radical solutions of {@code body == 0} for polynomials
+   * whose degree exceeds the closed-form Cardano/Ferrari formulas (degree 1..4). This handles
+   * solvable polynomials such as binomials (e.g. {@code #^5 - 2}).
+   *
+   * @param body the polynomial expression in {@link F#Slot1} (the body of the pure function)
+   * @param degree the polynomial degree (expected number of solutions)
+   * @param engine the evaluation engine
+   * @return an array of {@code degree} exact radical solutions, or {@code null} if {@code Solve}
+   *         could not return exactly {@code degree} explicit radical solutions
+   */
+  private static IExpr[] solveToRadicals(IExpr body, int degree, EvalEngine engine) {
+    ISymbol x = F.Dummy("x");
+    IExpr eqBody = body.replaceAll(F.Rule(F.Slot1, x)).orElse(body);
+    IExpr solveResult = engine.evaluate(F.Solve(F.Equal(eqBody, C0), x));
+    if (!solveResult.isListOfRules(false) && !solveResult.isList()) {
+      return null;
+    }
+    IAST list = (IAST) solveResult;
+    if (list.argSize() != degree) {
+      return null;
+    }
+    IExpr[] solutions = new IExpr[degree];
+    for (int i = 1; i <= degree; i++) {
+      IExpr ruleList = list.get(i);
+      if (!ruleList.isList1() || !ruleList.first().isRuleAST()) {
+        return null;
+      }
+      IExpr value = ruleList.first().second();
+      // Reject solutions that are not exact radical forms: still contain Root, reference the
+      // solve variable (unsolved), or are inexact (numeric-only) results.
+      if (!value.isFree(S.Root) || !value.isFree(x) || value.isInexactNumber()) {
+        return null;
+      }
+      solutions[i - 1] = engine.evaluate(value);
+    }
+    return solutions;
   }
 }

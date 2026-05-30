@@ -174,6 +174,7 @@ public class Errors {
       "ins", "Cannot insert at position `1` in `2`.", //
       "insuff", "Cannot take `1` elements from a list of length `2`.", //
       "int", "Integer expected at position `2` in `1`.", //
+      "intg", "Integer greater than `1` expected at position `2` in `3`.", //
       "intjava", "Java int value greater equal `1` expected instead of `2`.", //
       "intlevel", "Level specification value greater equal `1` expected instead of `2`.", //
       "intnn", "Non-negative integer expected.", //

@@ -137,6 +137,9 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testBinomial() {
+    check("Binomial(1+I,7)", //
+        "-1/18-I*5/252");
+
     // issue #946
     // message Binomial: BigInteger bit length `1` exceeded.
     check("Binomial(12!, 9!)", //

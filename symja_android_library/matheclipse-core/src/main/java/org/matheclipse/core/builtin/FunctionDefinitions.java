@@ -117,6 +117,8 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.InverseLaplaceTransform());
       S.InverseZTransform
           .setEvaluator(new org.matheclipse.core.reflection.system.InverseZTransform());
+      S.IrreduciblePolynomialQ
+          .setEvaluator(new org.matheclipse.core.reflection.system.IrreduciblePolynomialQ());
       S.JordanDecomposition
           .setEvaluator(new org.matheclipse.core.reflection.system.JordanDecomposition());
       S.KaryTree.setEvaluator(new org.matheclipse.core.reflection.system.KaryTree());
@@ -164,6 +166,8 @@ public final class FunctionDefinitions {
           .setEvaluator(new org.matheclipse.core.reflection.system.PolynomialReduce());
       S.PowerRange.setEvaluator(new org.matheclipse.core.reflection.system.PowerRange());
       S.PrimeZetaP.setEvaluator(new org.matheclipse.core.reflection.system.PrimeZetaP());
+      S.PrimitivePolynomialQ
+          .setEvaluator(new org.matheclipse.core.reflection.system.PrimitivePolynomialQ());
       S.Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
       S.Ratios.setEvaluator(new org.matheclipse.core.reflection.system.Ratios());
       S.Reduce.setEvaluator(new org.matheclipse.core.reflection.system.Reduce());
@@ -196,6 +200,8 @@ public final class FunctionDefinitions {
 
       S.Hash.setEvaluator(new org.matheclipse.core.reflection.system.Hash());
       S.FileHash.setEvaluator(new org.matheclipse.core.reflection.system.FileHash());
+      S.ShiftRegisterSequence
+          .setEvaluator(new org.matheclipse.core.reflection.system.ShiftRegisterSequence());
       S.TensorContract.setEvaluator(new org.matheclipse.core.reflection.system.TensorContract());
       S.TensorProduct.setEvaluator(new org.matheclipse.core.reflection.system.TensorProduct());
       S.TensorTranspose.setEvaluator(new org.matheclipse.core.reflection.system.TensorTranspose());
