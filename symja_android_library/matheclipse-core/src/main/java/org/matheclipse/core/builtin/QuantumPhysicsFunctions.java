@@ -81,10 +81,67 @@ public class QuantumPhysicsFunctions {
         IExpr m1 = arg1.second();
         IExpr m2 = arg2.second();
         IExpr m3 = arg3.second();
+
+        // When exactly one of the projections m1, m2, m3 is a bare symbol, the
+        // selection rule m1 + m2 + m3 == 0 forces its value. Solve for that
+        // projection, substitute it back so the regular selection-rule machinery
+        // runs on a fully concrete input, and report the constraint via Piecewise.
+        IExpr symbolicResult = evaluateSymbolicProjection(j1, j2, j3, m1, m2, m3, ast);
+        if (symbolicResult.isPresent()) {
+          return symbolicResult;
+        }
+
         return Wigner.threeJSymbol(j1, j2, j3, m1, m2, m3, //
             S.ThreeJSymbol, ast);
       }
       return F.NIL;
+    }
+
+    /**
+     * If exactly one of the magnetic quantum numbers {@code m1}, {@code m2}, {@code m3} is a bare
+     * symbol (and the other two are real numbers), force its value from the selection rule
+     * {@code m1 + m2 + m3 == 0}, recompute the symbol on the now-concrete input and wrap the result
+     * in a {@code Piecewise} expression that is only valid for the forced value.
+     *
+     * @return the {@code Piecewise} (or {@code 0}) result, or {@link F#NIL} if the pattern does not
+     *         apply
+     */
+    private static IExpr evaluateSymbolicProjection(IExpr j1, IExpr j2, IExpr j3, IExpr m1, IExpr m2,
+        IExpr m3, IAST ast) {
+      // exactly one symbolic projection, the other two must be concrete real numbers
+      IExpr var;
+      IExpr forced;
+      if (m1.isSymbol() && m2.isReal() && m3.isReal()) {
+        var = m1;
+        // m1 == -(m2 + m3)
+        forced = m2.plus(m3).negate();
+        m1 = forced;
+      } else if (m2.isSymbol() && m1.isReal() && m3.isReal()) {
+        var = m2;
+        // m2 == -(m1 + m3)
+        forced = m1.plus(m3).negate();
+        m2 = forced;
+      } else if (m3.isSymbol() && m1.isReal() && m2.isReal()) {
+        var = m3;
+        // m3 == -(m1 + m2)
+        forced = m1.plus(m2).negate();
+        m3 = forced;
+      } else {
+        return F.NIL;
+      }
+
+      // run the existing selection-rule machinery on the fully concrete input
+      IExpr value = Wigner.threeJSymbol(j1, j2, j3, m1, m2, m3, //
+          S.ThreeJSymbol, ast);
+      if (!value.isPresent()) {
+        return F.NIL;
+      }
+      if (value.isZero()) {
+        // the forced value already violates |m_i| <= j_i etc. -> identically 0
+        return F.C0;
+      }
+      // value is only valid when var == forced, otherwise the symbol vanishes
+      return F.Piecewise(F.list(F.list(value, F.Equal(var, forced))), F.C0);
     }
 
     @Override

@@ -70,6 +70,16 @@ public class QuantumPhysiscsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testThreeJSymbol() {
+    check("ThreeJSymbol({1, m}, {1, 0}, {1, 5})", //
+        "0");
+    check("ThreeJSymbol({1, m}, {1, 0}, {2, 1})", //
+        "Piecewise({{-1/Sqrt(10),m==-1}},0)");
+    check("ThreeJSymbol({1, m}, {1, 1}, {2, 1})", //
+        "0");
+    check("ThreeJSymbol({1, m}, {1, 0}, {1, 1})", //
+        "Piecewise({{1/Sqrt(6),m==-1}},0)");
+    check("ThreeJSymbol({5, 0}, {4, m}, {1, 0})", //
+        "Piecewise({{-Sqrt(5/11)/3,m==0}},0)");
     check("ThreeJSymbol({2, 1}, {2, 4}, {4, 2})", //
         "0");
 
