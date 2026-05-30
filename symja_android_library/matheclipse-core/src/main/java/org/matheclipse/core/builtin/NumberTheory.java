@@ -516,7 +516,8 @@ public final class NumberTheory {
           return F.NIL;
         }
         IInteger ki = (IInteger) k;
-        if (ki.compareInt(6) < 0 && ki.compareInt(1) > 0 && !n.isNumber()) {
+        if (ki.compareInt(1) > 0 //
+            && (n.isNumber() || ki.compareInt(6) < 0)) {
           return binomialPolynomial(n, ki.intValue());
         }
       }
@@ -570,6 +571,7 @@ public final class NumberTheory {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }
   }
+
 
   /**
    *
@@ -634,6 +636,7 @@ public final class NumberTheory {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
+
 
   /**
    *
@@ -721,6 +724,7 @@ public final class NumberTheory {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
     }
   }
+
 
   /**
    *
@@ -952,6 +956,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    *
    *
@@ -1033,6 +1038,7 @@ public final class NumberTheory {
       newSymbol.setAttributes(ISymbol.NHOLDREST);
     }
   }
+
 
   /**
    *
@@ -1318,6 +1324,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    *
    *
@@ -1394,6 +1401,7 @@ public final class NumberTheory {
     }
   }
 
+
   private static class DedekindNumber extends AbstractTrigArg1 {
 
     @Override
@@ -1425,6 +1433,7 @@ public final class NumberTheory {
       return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
+
 
   /**
    *
@@ -1553,6 +1562,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    *
    *
@@ -1641,6 +1651,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    *
    *
@@ -1705,6 +1716,7 @@ public final class NumberTheory {
     }
   }
 
+
   private static class DivisorSum extends AbstractFunctionEvaluator {
 
     @Override
@@ -1764,6 +1776,7 @@ public final class NumberTheory {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
+
 
   /**
    *
@@ -1859,6 +1872,7 @@ public final class NumberTheory {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
+
 
   /**
    *
@@ -2036,6 +2050,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    *
    *
@@ -2111,6 +2126,7 @@ public final class NumberTheory {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
+
 
   /**
    *
@@ -2323,6 +2339,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    *
    *
@@ -2439,6 +2456,7 @@ public final class NumberTheory {
     }
 
   }
+
 
   /**
    * <pre>
@@ -2693,6 +2711,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    *
    *
@@ -2812,6 +2831,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    *
    *
@@ -2908,6 +2928,7 @@ public final class NumberTheory {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
+
 
   /**
    *
@@ -3074,6 +3095,7 @@ public final class NumberTheory {
     }
   }
 
+
   private static class FindLinearRecurrence extends AbstractFunctionEvaluator {
 
     @Override
@@ -3102,6 +3124,8 @@ public final class NumberTheory {
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
+
+
   /**
    *
    *
@@ -3172,6 +3196,7 @@ public final class NumberTheory {
       // newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
+
 
   /**
    *
@@ -3386,6 +3411,7 @@ public final class NumberTheory {
     }
   }
 
+
   private static class Hyperfactorial extends AbstractEvaluator {
 
     private static IExpr hyperfactorial(int n) {
@@ -3474,6 +3500,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    *
    *
@@ -3519,6 +3546,7 @@ public final class NumberTheory {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
+
 
   private static class KroneckerSymbol extends AbstractFunctionEvaluator {
 
@@ -3591,6 +3619,7 @@ public final class NumberTheory {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
+
 
   private static class LinearRecurrence extends AbstractFunctionEvaluator {
 
@@ -3739,6 +3768,7 @@ public final class NumberTheory {
     public void setUp(final ISymbol newSymbol) {}
   }
 
+
   private static class LiouvilleLambda extends AbstractFunctionEvaluator {
 
     @Override
@@ -3786,6 +3816,7 @@ public final class NumberTheory {
       return ARGS_1_1;
     }
   }
+
 
   /**
    * Lucas number. See: <a href= "https://en.wikipedia.org/wiki/Lucas_number">Wikipedia: Lucas
@@ -3924,6 +3955,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    *
    *
@@ -4050,6 +4082,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    * <pre>
    * <code>MersennePrimeExponentQ(n)
@@ -4122,6 +4155,7 @@ public final class NumberTheory {
       return ARGS_1_1;
     }
   }
+
 
   /**
    * <pre>
@@ -4262,6 +4296,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    *
    *
@@ -4394,6 +4429,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    *
    *
@@ -4462,6 +4498,7 @@ public final class NumberTheory {
       return ARGS_2_2;
     }
   }
+
 
   /**
    *
@@ -4553,6 +4590,7 @@ public final class NumberTheory {
       return ImplementationStatus.FULL_SUPPORT;
     }
   }
+
 
   /**
    *
@@ -4703,6 +4741,7 @@ public final class NumberTheory {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
+
 
   /**
    *
@@ -4873,6 +4912,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    * <pre>
    * <code>PerfectNumber(n)
@@ -4944,6 +4984,7 @@ public final class NumberTheory {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
+
 
   /**
    * <pre>
@@ -5021,6 +5062,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    *
    *
@@ -5084,6 +5126,7 @@ public final class NumberTheory {
       super.setUp(newSymbol);
     }
   }
+
 
   /**
    * <pre>
@@ -5187,6 +5230,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    *
    *
@@ -5267,6 +5311,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    *
    *
@@ -5323,20 +5368,121 @@ public final class NumberTheory {
     }
   }
 
+
+  /**
+   *
+   *
+   * <pre>
+   * PrimitiveRoot(n)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * returns the smallest primitive root of <code>n</code>.
+   *
+   * </blockquote>
+   *
+   * <pre>
+   * PrimitiveRoot(n, k)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * returns the smallest primitive root of <code>n</code> that is greater than <code>k</code>.
+   *
+   * </blockquote>
+   *
+   * <p>
+   * A primitive root exists if and only if <code>n</code> is 1, 2, 4, p^k, or 2*p^k for an odd
+   * prime <code>p</code>. Returns <code>$Failed</code> if no primitive root exists for
+   * <code>n</code>.
+   *
+   * <p>
+   * See:
+   * <ul>
+   * <li><a href="https://en.wikipedia.org/wiki/Primitive_root_modulo_n">Wikipedia - Primitive root
+   * modulo n</a></li>
+   * <li><a href="https://reference.wolfram.com/language/ref/PrimitiveRoot.html">Wolfram -
+   * PrimitiveRoot</a></li>
+   * </ul>
+   *
+   * <h3>Examples</h3>
+   *
+   * <pre>
+   * &gt;&gt; PrimitiveRoot(7)
+   * 3
+   *
+   * &gt;&gt; PrimitiveRoot(37)
+   * 2
+   *
+   * &gt;&gt; PrimitiveRoot(37, 5)
+   * 13
+   *
+   * &gt;&gt; PrimitiveRoot(8)
+   * $Failed
+   * </pre>
+   */
   private static class PrimitiveRoot extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      // TODO
       IExpr arg1 = ast.arg1();
       if (arg1.isInteger()) {
         try {
-          IInteger ii = (IInteger) arg1;
-          if (ii.isEven() && !ii.equals(F.C2) && !ii.equals(F.C4)) {
-            if (ii.quotient(F.C2).isEven()) {
+          IInteger n = (IInteger) arg1;
+          // n must be > 1
+          if (!n.isPositive() || n.isOne()) {
+            // Integer greater than `1` expected at position `2` in `3`
+            return Errors.printMessage(S.PrimitiveRoot, "intg", F.list(F.C1, F.C1, ast), engine);
+          }
+          // Determine start of search (1-arg or 2-arg form)
+          IInteger startValue = F.C1;
+          if (ast.isAST2()) {
+            IExpr arg2 = ast.arg2();
+            if (!arg2.isInteger() || ((IInteger) arg2).isNegative()) {
               return F.NIL;
             }
+            startValue = ((IInteger) arg2).add(F.C1);
           }
+          BigInteger nBig = n.toBigNumerator();
+          BigInteger phiBig = Primality.eulerPhi(nBig);
+          BigInteger lambdaBig = Primality.charmichaelLambda(nBig);
+          // n has primitive roots iff CarmichaelLambda(n) == EulerPhi(n)
+          if (!lambdaBig.equals(phiBig)) {
+            return F.NIL;
+          }
+          // Compute distinct prime factors of phi(n) once
+          SortedMap<BigInteger, Integer> phiFactors =
+              Config.PRIME_FACTORS.factorInteger(phiBig);
+          BigInteger[] primeFactorsOfPhi =
+              phiFactors.keySet().toArray(new BigInteger[0]);
+          // Iterate candidates from startValue up to n-1
+          IInteger m = startValue;
+          int iterationLimit = engine.getIterationLimit();
+          int loopCounter = 0;
+          while (m.compareTo(n) < 0) {
+            if (iterationLimit >= 0 && ++loopCounter > iterationLimit) {
+              IterationLimitExceeded.throwIt(loopCounter, ast);
+            }
+            if (m.gcd(n).isOne()) {
+              BigInteger mBig = m.toBigNumerator();
+              boolean isPrimitiveRoot = true;
+              for (BigInteger p : primeFactorsOfPhi) {
+                BigInteger exp = phiBig.divide(p);
+                if (mBig.modPow(exp, nBig).equals(BigInteger.ONE)) {
+                  isPrimitiveRoot = false;
+                  break;
+                }
+              }
+              if (isPrimitiveRoot) {
+                return m;
+              }
+            }
+            m = m.add(F.C1);
+          }
+          return F.NIL;
         } catch (LimitException le) {
           throw le;
         } catch (RuntimeException rex) {
@@ -5355,7 +5501,7 @@ public final class NumberTheory {
 
     @Override
     public int status() {
-      return ImplementationStatus.EXPERIMENTAL;
+      return ImplementationStatus.PARTIAL_SUPPORT;
     }
 
     @Override
@@ -5363,6 +5509,7 @@ public final class NumberTheory {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
+
 
   /**
    *
@@ -5430,6 +5577,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    * <pre>
    * <code>QuadraticIrrationalQ(expr)
@@ -5493,6 +5641,7 @@ public final class NumberTheory {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
+
 
   /**
    * <pre>
@@ -5586,6 +5735,7 @@ public final class NumberTheory {
       return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
+
 
   /**
    *
@@ -5700,6 +5850,7 @@ public final class NumberTheory {
       // newSymbol.setAttributes(ISymbol.HOLDALL);
     }
   }
+
 
   /**
    *
@@ -5872,6 +6023,7 @@ public final class NumberTheory {
       return false; // no evaluation
     }
   }
+
 
   /**
    * <pre>
@@ -6059,6 +6211,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    * <pre>
    * <code>PowersRepresentations(intNumber, k, exponent)
@@ -6183,6 +6336,7 @@ public final class NumberTheory {
     // }
   }
 
+
   /**
    *
    *
@@ -6304,6 +6458,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    *
    *
@@ -6395,6 +6550,7 @@ public final class NumberTheory {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
+
 
   /**
    *
@@ -6519,6 +6675,7 @@ public final class NumberTheory {
     }
   }
 
+
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
    * in static initializer</a>
@@ -6587,6 +6744,7 @@ public final class NumberTheory {
       S.StirlingS2.setEvaluator(new StirlingS2());
       S.Subfactorial.setEvaluator(new Subfactorial());
     }
+
   }
 
   public static boolean check(IExpr n, IExpr k, IExpr delta, EvalEngine engine) {
