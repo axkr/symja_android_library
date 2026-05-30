@@ -6530,7 +6530,13 @@ public final class Arithmetic {
             break;
           case ID.SeriesData:
             if (arg1 instanceof ASTSeriesData) {
-              return ((ASTSeriesData) arg1).times(arg2);
+              ASTSeriesData sd = (ASTSeriesData) arg1;
+              if (!sd.isScalarTimesFactor(arg2)) {
+                // keep an explicit symbolic product for variable-dependent factors such as a
+                // branch discriminator (-1)^Floor[...Arg[x-x0]...]
+                return F.NIL;
+              }
+              return sd.times(arg2);
             }
             break;
           default:
@@ -6607,7 +6613,13 @@ public final class Arithmetic {
             break;
           case ID.SeriesData:
             if (arg2 instanceof ASTSeriesData) {
-              return ((ASTSeriesData) arg2).times(arg1);
+              ASTSeriesData sd = (ASTSeriesData) arg2;
+              if (!sd.isScalarTimesFactor(arg1)) {
+                // keep an explicit symbolic product for variable-dependent factors such as a
+                // branch discriminator (-1)^Floor[...Arg[x-x0]...]
+                return F.NIL;
+              }
+              return sd.times(arg1);
             }
             break;
           default:

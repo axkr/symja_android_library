@@ -480,6 +480,17 @@ public class SeriesFunctions {
               direction = 1;
             }
 
+            // Expand the eight Arc* heads at their branch points (returns a composite IExpr for the
+            // logarithmic / complex branches).
+            if (!isInfinity && currentExpr.isAST()) {
+              IExpr arcSeries =
+                  ASTSeriesData.arcBranchSeries((IAST) currentExpr, x, x0, n, engine);
+              if (arcSeries.isPresent()) {
+                currentExpr = arcSeries;
+                continue;
+              }
+            }
+
             IExpr seriesX0 = x0;
             IExpr seriesFunction = currentExpr;
 

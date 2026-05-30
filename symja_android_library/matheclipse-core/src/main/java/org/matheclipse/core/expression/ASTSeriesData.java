@@ -950,6 +950,331 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return result;
   }
 
+  /**
+   * Integer power with non-negative exponent for small values.
+   */
+  private static int ipow(int base, int exp) {
+    int r = 1;
+    for (int i = 0; i < exp; i++) {
+      r *= base;
+    }
+    return r;
+  }
+
+  /**
+   * The magnitude coefficient of the Puiseux branch-point expansion of the inverse trigonometric
+   * functions:
+   * <code>b_k = (2k)! / ((2k+1) * 8^k * (k!)^2)</code>.
+   */
+  private static IExpr arcBMagnitude(int k, EvalEngine engine) {
+    return engine.evaluate(F.Divide(F.Factorial(F.ZZ(2L * k)),
+        F.Times(F.ZZ(2L * k + 1), F.Power(F.ZZ(8), F.ZZ(k)), F.Sqr(F.Factorial(F.ZZ(k))))));
+  }
+
+  /**
+   * Expand the eight inverse (hyperbolic) trigonometric functions at their algebraic/logarithmic
+   * branch points, mirroring the output of Mathematica's <code>Series</code>.
+   *
+   * <p>
+   * Family A (<code>ArcSin</code>/<code>ArcCos</code> at &plusmn;1, <code>ArcSinh</code> at
+   * &plusmn;I, <code>ArcCosh</code> at &plusmn;1) emits a Puiseux series with denominator 2. Family
+   * B (<code>ArcTan</code>/<code>ArcCot</code> at &plusmn;I, <code>ArcTanh</code>/<code>ArcCoth</code>
+   * at &plusmn;1) emits a <code>Log[x-x0]</code> term plus a regular series. The branch
+   * discriminator <code>(-1)^Floor[(Pi/2 - Arg[x-x0])/(2 Pi)]</code> (or the equivalent
+   * <code>Sqrt</code>-ratio / <code>Pi*Floor[...]</code> form) is kept symbolic to match the
+   * different analytic sheets.
+   *
+   * @param function the unary <code>Arc*</code> expression
+   * @param x the expansion variable
+   * @param x0 the expansion point (must coincide with a branch point of the head)
+   * @param n the requested truncation order
+   * @param engine the evaluation engine
+   * @return the branch expansion as an {@link IExpr}, or {@link F#NIL} if not applicable
+   */
+  public static IExpr arcBranchSeries(final IAST function, IExpr x, IExpr x0, final int n,
+      EvalEngine engine) {
+    if (n < 0 || !function.isAST1()) {
+      return F.NIL;
+    }
+    IExpr headExpr = function.head();
+    if (!(headExpr instanceof IBuiltInSymbol)) {
+      return F.NIL;
+    }
+    IExpr arg = function.arg1();
+    if (arg.isFree(x)) {
+      return F.NIL;
+    }
+    // Only support arguments that are linear in x with slope 1 (i.e. arg == x + const), so the
+    // local variable (arg - u0) coincides with the SeriesData basis (x - x0).
+    IExpr[] lin = arg.linear(x);
+    if (lin == null || !lin[1].isOne()) {
+      return F.NIL;
+    }
+    IExpr u0 = engine.evaluate(F.subst(arg, x, x0));
+    int id = ((IBuiltInSymbol) headExpr).ordinal();
+    switch (id) {
+      case ID.ArcSin:
+      case ID.ArcCos:
+        if (u0.isOne() || u0.isMinusOne()) {
+          return arcSinCosBranch(id == ID.ArcSin, arg, x, x0, u0.isOne() ? 1 : -1, n, engine);
+        }
+        return F.NIL;
+      case ID.ArcCosh:
+        if (u0.isOne() || u0.isMinusOne()) {
+          return arcCoshBranch(arg, x, x0, u0.isOne() ? 1 : -1, n, engine);
+        }
+        return F.NIL;
+      case ID.ArcSinh:
+        if (u0.equals(F.CI) || u0.equals(F.CNI)) {
+          return arcSinhBranch(arg, x, x0, u0.equals(F.CI) ? 1 : -1, n, engine);
+        }
+        return F.NIL;
+      case ID.ArcTanh:
+      case ID.ArcCoth:
+        if (u0.isOne() || u0.isMinusOne()) {
+          return arcTanhCothBranch(id == ID.ArcTanh, arg, x, x0, u0.isOne() ? 1 : -1, n, engine);
+        }
+        return F.NIL;
+      case ID.ArcTan:
+      case ID.ArcCot:
+        if (u0.equals(F.CI) || u0.equals(F.CNI)) {
+          return arcTanCotBranch(id == ID.ArcTan, arg, x, x0, u0.equals(F.CI) ? 1 : -1, n, engine);
+        }
+        return F.NIL;
+      default:
+        return F.NIL;
+    }
+  }
+
+  /**
+   * Family A branch expansion of <code>ArcSin</code>/<code>ArcCos</code> at <code>s = &plusmn;1</code>.
+   */
+  private static IExpr arcSinCosBranch(boolean isSin, IExpr arg, IExpr x, IExpr x0, int s, int n,
+      EvalEngine engine) {
+    final int den = 2;
+    final int truncate = 2 * n + 1;
+    IExpr basisSqrt = F.Sqrt(F.Subtract(x, x0)); // Sqrt[x - x0]
+    IExpr discNum = F.Sqrt(F.Subtract(F.C1, F.Times(F.ZZ(s), arg))); // Sqrt[1 - s*arg]
+    IExpr ratio = F.Times(discNum, F.Power(basisSqrt, F.CN1));
+    IExpr sqrt2 = F.Sqrt(F.C2);
+
+    IASTAppendable list = F.ListAlloc(truncate);
+    IExpr c0;
+    if (isSin) {
+      c0 = engine.evaluate(F.Times(F.ZZ(s), F.C1D2, S.Pi)); // s*Pi/2
+    } else {
+      c0 = engine.evaluate(F.Times(F.QQ(1 - s, 2), S.Pi)); // (1-s)/2 * Pi
+    }
+    list.append(c0);
+    for (int idx = 1; idx <= 2 * n - 1; idx++) {
+      if ((idx & 1) == 0) {
+        list.append(F.C0);
+        continue;
+      }
+      int k = (idx - 1) / 2;
+      IExpr bk = arcBMagnitude(k, engine);
+      int signFactor = ipow(-s, k + 1); // (-s)^(k+1)
+      if (!isSin) {
+        signFactor = -signFactor;
+      }
+      IExpr coeff = engine.evaluate(F.Times(F.ZZ(signFactor), sqrt2, bk, ratio));
+      list.append(coeff);
+    }
+    return new ASTSeriesData(x, x0, list, 0, truncate, den);
+  }
+
+  /**
+   * Family A branch expansion of <code>ArcCosh</code> at the real branch points <code>&plusmn;1</code>.
+   * At <code>+1</code> the function is real on the basis side, giving a clean Puiseux series. At
+   * <code>-1</code> the reduction <code>ArcCosh[x] = I*ArcCos[x]</code> is used (the constant factor
+   * <code>I</code> is folded into the coefficients).
+   */
+  private static IExpr arcCoshBranch(IExpr arg, IExpr x, IExpr x0, int s, int n, EvalEngine engine) {
+    if (s == -1) {
+      // ArcCosh[x] = I*ArcCos[x] in a neighbourhood of -1
+      IExpr arcCos = arcSinCosBranch(false, arg, x, x0, -1, n, engine);
+      return F.Times(F.CI, arcCos);
+    }
+    final int den = 2;
+    final int truncate = 2 * n + 1;
+    IExpr invSqrt2 = F.Power(F.C2, F.CN1D2); // 1/Sqrt[2]
+    IASTAppendable list = F.ListAlloc(truncate);
+    for (int idx = 1; idx <= 2 * n - 1; idx++) {
+      if ((idx & 1) == 0) {
+        list.append(F.C0);
+        continue;
+      }
+      int k = (idx - 1) / 2;
+      IExpr bk = arcBMagnitude(k, engine);
+      IExpr rational = engine.evaluate(F.Times(F.C2, bk, F.ZZ(ipow(-1, k))));
+      IExpr coeff = engine.evaluate(F.Times(rational, invSqrt2));
+      list.append(coeff);
+    }
+    return new ASTSeriesData(x, x0, list, 1, truncate, den);
+  }
+
+  /**
+   * Family A branch expansion of <code>ArcSinh</code> at the complex branch points
+   * <code>sigma*I</code> using the reduction <code>ArcSinh[x] = -I*ArcSin[I*x]</code>. The branch
+   * discriminator <code>(-1)^Floor[(Pi/2 - Arg[x-x0])/(2 Pi)]</code> stays symbolic.
+   */
+  private static IExpr arcSinhBranch(IExpr arg, IExpr x, IExpr x0, int sigma, int n,
+      EvalEngine engine) {
+    final int den = 2;
+    final int truncate = 2 * n + 1;
+    // sigma=+1 (x0=I):  leadFactor = 1+I, unit = I
+    // sigma=-1 (x0=-I): leadFactor = -1+I, unit = -I
+    IExpr unit = (sigma == 1) ? F.CI : F.CNI;
+    IExpr leadFactor = (sigma == 1) ? F.Plus(F.C1, F.CI) : F.Plus(F.CN1, F.CI);
+    IASTAppendable list = F.ListAlloc(truncate);
+    for (int idx = 1; idx <= 2 * n - 1; idx++) {
+      if ((idx & 1) == 0) {
+        list.append(F.C0);
+        continue;
+      }
+      int k = (idx - 1) / 2;
+      IExpr bk = arcBMagnitude(k, engine);
+      IExpr coeff = engine.evaluate(F.Times(leadFactor, bk, F.Power(unit, F.ZZ(k))));
+      list.append(coeff);
+    }
+    ASTSeriesData series = new ASTSeriesData(x, x0, list, 1, truncate, den);
+    IExpr disc = F.Power(F.CN1, F.Floor(F.Divide(
+        F.Subtract(F.Times(F.C1D2, S.Pi), F.Arg(F.Subtract(x, x0))), F.Times(F.C2, S.Pi))));
+    // inner constant: sigma=+1 -> -Pi/2 ; sigma=-1 -> +Pi/2
+    IExpr innerConst = F.Times(F.ZZ(-sigma), F.C1D2, S.Pi);
+    return F.Times(F.CNI, F.Plus(innerConst, F.Times(disc, series)));
+  }
+
+  /**
+   * The regular Taylor coefficient of the inverse-hyperbolic-tangent family at a real branch point:
+   * <code>1/(k*2^(k+1))</code>, optionally with the alternating sign <code>(-1)^(k-1)</code>.
+   */
+  private static IExpr arcLogCoeff(int k, boolean alternating, EvalEngine engine) {
+    IExpr mag = F.Divide(F.C1, F.Times(F.ZZ(k), F.Power(F.C2, F.ZZ(k + 1))));
+    if (alternating) {
+      mag = F.Times(F.ZZ(ipow(-1, k - 1)), mag);
+    }
+    return engine.evaluate(mag);
+  }
+
+  /**
+   * Family B branch expansion of <code>ArcTanh</code>/<code>ArcCoth</code> at the real branch points
+   * <code>&plusmn;1</code>.
+   *
+   * <p>
+   * <code>ArcTanh@-1</code> and <code>ArcCoth@1</code> are real on the basis side and give a clean
+   * <code>Log[x-x0]</code> term plus a regular series. <code>ArcTanh@1</code> and
+   * <code>ArcCoth@-1</code> need the logarithmic sheet resolved and are wrapped as
+   * <code>-I*(... Pi*Floor[...] ... + SeriesData[...])</code>; the precise <code>Floor</code>
+   * arguments follow Mathematica.
+   */
+  private static IExpr arcTanhCothBranch(boolean isTanh, IExpr arg, IExpr x, IExpr x0, int s, int n,
+      EvalEngine engine) {
+    IExpr w = F.Subtract(x, x0); // x - x0
+    boolean wrapper = (isTanh && s == 1) || (!isTanh && s == -1);
+    // the regular log term Log(1+x)/Log(1-x) alternates only when expanded as Log(2+u), i.e. at +1
+    boolean alternating = (s == 1);
+
+    if (!wrapper) {
+      // ----- clean real form: ArcTanh@-1 / ArcCoth@1 -----
+      // singular Log sign: ArcTanh@-1 -> +1/2*Log(w); ArcCoth@1 -> -1/2*Log(w)
+      int singLogSign = isTanh ? 1 : -1;
+      // regular constant: ArcTanh@-1 -> -1/2*Log2 ; ArcCoth@1 -> +1/2*Log2
+      int regConstSign = isTanh ? -1 : 1;
+      IExpr c0 = F.Times(F.C1D2, F.Plus(F.Times(F.ZZ(regConstSign), F.Log(F.C2)),
+          F.Times(F.ZZ(singLogSign), F.Log(w))));
+      IASTAppendable list = F.ListAlloc(n + 1);
+      list.append(c0);
+      for (int k = 1; k <= n; k++) {
+        list.append(arcLogCoeff(k, alternating, engine));
+      }
+      return new ASTSeriesData(x, x0, list, 0, n + 1, 1);
+    }
+
+    IASTAppendable list = F.ListAlloc(n + 1);
+    if (isTanh) {
+      // ----- ArcTanh@1 : -I*(Pi*Floor[-1/2*Arg[x-1]/Pi] + SeriesData[...]) -----
+      // c0 = (Pi + I*Log[2] - I*Log[w])/2
+      IExpr c0 = F.Times(F.C1D2,
+          F.Plus(S.Pi, F.Times(F.CI, F.Log(F.C2)), F.Times(F.CNI, F.Log(w))));
+      list.append(c0);
+      for (int k = 1; k <= n; k++) {
+        list.append(engine.evaluate(F.Times(F.CI, arcLogCoeff(k, alternating, engine))));
+      }
+      ASTSeriesData series = new ASTSeriesData(x, x0, list, 0, n + 1, 1);
+      IExpr piFloor = F.Times(S.Pi, F.Floor(F.Times(F.CN1D2, F.Arg(w), F.Power(S.Pi, F.CN1))));
+      return F.Times(F.CNI, F.Plus(piFloor, series));
+    }
+
+    // ----- ArcCoth@-1 : -I*( -(Pi*Floor[(Pi - Arg[1/x] - Arg[w])/(2 Pi)])
+    // - Pi*Floor[Arg[(1+x)/x]/(2 Pi)] + SeriesData[...] ) -----
+    // c0 = (-Pi - I*Log[2] + I*Log[w])/2
+    IExpr c0 = F.Times(F.C1D2,
+        F.Plus(F.Negate(S.Pi), F.Times(F.CNI, F.Log(F.C2)), F.Times(F.CI, F.Log(w))));
+    list.append(c0);
+    for (int k = 1; k <= n; k++) {
+      // non-alternating magnitude B_k, times I
+      list.append(engine.evaluate(F.Times(F.CI, arcLogCoeff(k, false, engine))));
+    }
+    ASTSeriesData series = new ASTSeriesData(x, x0, list, 0, n + 1, 1);
+    IExpr floor1Arg = F.Divide(
+        F.Plus(S.Pi, F.Negate(F.Arg(F.Power(x, F.CN1))), F.Negate(F.Arg(w))), F.Times(F.C2, S.Pi));
+    IExpr floor1 = F.Negate(F.Times(S.Pi, F.Floor(floor1Arg)));
+    IExpr floor2 = F.Times(F.CN1, S.Pi,
+        F.Floor(F.Divide(F.Arg(F.Divide(F.Plus(F.C1, x), x)), F.Times(F.C2, S.Pi))));
+    return F.Times(F.CNI, F.Plus(floor1, floor2, series));
+  }
+
+  /**
+   * Family B branch expansion of <code>ArcTan</code>/<code>ArcCot</code> at the complex branch
+   * points <code>&plusmn;I</code> using the reductions <code>ArcTan[x] = -I*ArcTanh[I*x]</code> and
+   * <code>ArcCot[x] = -I*ArcCoth[I*x]</code>. The singular term is <code>Log[x-x0]</code> and the
+   * logarithmic sheet is captured by an additive <code>Pi*Floor[...]</code> term (no outer
+   * <code>-I</code>), matching Mathematica.
+   *
+   * <p>
+   * Confidence: the <code>+I</code> branch points are derived from the Mathematica reference; the
+   * <code>-I</code> branch points reuse the same template and should be cross-checked.
+   */
+  private static IExpr arcTanCotBranch(boolean isTan, IExpr arg, IExpr x, IExpr x0, int sigma, int n,
+      EvalEngine engine) {
+    IExpr w = F.Subtract(x, x0); // x - sigma*I
+    IASTAppendable list = F.ListAlloc(n + 1);
+    if (isTan) {
+      // ----- ArcTan@(sigma*I) : Pi*Floor[(Pi/2 - Arg[w])/(2 Pi)] + SeriesData[...] -----
+      // c0 = (Pi + 2*I*Log[2] - 2*I*Log[w])/4
+      IExpr c0 = F.Times(F.C1D4, F.Plus(S.Pi, F.Times(F.ZZ(2), F.CI, F.Log(F.C2)),
+          F.Times(F.ZZ(-2), F.CI, F.Log(w))));
+      list.append(c0);
+      for (int k = 1; k <= n; k++) {
+        IExpr mag = F.Divide(F.C1, F.Times(F.ZZ(k), F.Power(F.C2, F.ZZ(k + 1))));
+        // c_k = -I^(k+1)/(k*2^(k+1))
+        list.append(engine.evaluate(F.Times(F.CN1, F.Power(F.CI, F.ZZ(k + 1)), mag)));
+      }
+      ASTSeriesData series = new ASTSeriesData(x, x0, list, 0, n + 1, 1);
+      IExpr piFloor = F.Times(S.Pi, F.Floor(
+          F.Divide(F.Subtract(F.Times(F.C1D2, S.Pi), F.Arg(w)), F.Times(F.C2, S.Pi))));
+      return F.Plus(piFloor, series);
+    }
+
+    // ----- ArcCot@(sigma*I) :
+    // -(Pi*Floor[(Pi - Arg[1/x] - Arg[w])/(2 Pi)]) + SeriesData[...] -----
+    // c0 = (Pi - 2*I*Log[2] + 2*I*Log[w])/4
+    IExpr c0 = F.Times(F.C1D4, F.Plus(S.Pi, F.Times(F.ZZ(-2), F.CI, F.Log(F.C2)),
+        F.Times(F.ZZ(2), F.CI, F.Log(w))));
+    list.append(c0);
+    for (int k = 1; k <= n; k++) {
+      IExpr mag = F.Divide(F.C1, F.Times(F.ZZ(k), F.Power(F.C2, F.ZZ(k + 1))));
+      // c_k = +I^(k+1)/(k*2^(k+1))
+      list.append(engine.evaluate(F.Times(F.Power(F.CI, F.ZZ(k + 1)), mag)));
+    }
+    ASTSeriesData series = new ASTSeriesData(x, x0, list, 0, n + 1, 1);
+    IExpr floorArg = F.Divide(
+        F.Plus(S.Pi, F.Negate(F.Arg(F.Power(x, F.CN1))), F.Negate(F.Arg(w))), F.Times(F.C2, S.Pi));
+    IExpr floorTerm = F.Negate(F.Times(S.Pi, F.Floor(floorArg)));
+    return F.Plus(floorTerm, series);
+  }
+
   public static ASTSeriesData simpleSeries(final IExpr function, IExpr x, IExpr x0, final int n,
       final int denominator, EvalEngine engine) {
     return simpleSeries(function, x, x0, n, denominator, 0, engine);
@@ -2394,6 +2719,35 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return series;
   }
 
+  /**
+   * Determines whether multiplying this series by the factor {@code b} can be folded into the
+   * coefficients (i.e. {@code b} acts as a scalar w.r.t. the expansion variable, or is a
+   * <code>x^rational</code> Puiseux shift around 0). Factors that depend on the expansion variable
+   * in any other way (e.g. a branch discriminator <code>(-1)^Floor[...Arg[x-x0]...]</code>) must be
+   * kept as an explicit symbolic product instead.
+   *
+   * @param b the multiplicative factor
+   * @return {@code true} if the factor may be distributed into the coefficients
+   */
+  public boolean isScalarTimesFactor(IExpr b) {
+    if (b instanceof ASTSeriesData) {
+      // series * series is handled by timesPS
+      return true;
+    }
+    if (b.isFree(expansionVariable, true)) {
+      return true;
+    }
+    if (expansionPoint.isZero()) {
+      if (b.equals(expansionVariable)) {
+        return true;
+      }
+      if (b.isPower() && b.base().equals(expansionVariable) && b.exponent().isRational()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   public ASTSeriesData times(IExpr b) {
     if (b instanceof ASTSeriesData) {
@@ -2402,8 +2756,6 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     if (b.isOne()) {
       return this;
     }
-
-    // Handle multiplication by (expansionVariable)^(p/q) when expanded around 0
     if (expansionPoint.isZero()) {
       if (b.isPower()) {
         IExpr base = b.base();

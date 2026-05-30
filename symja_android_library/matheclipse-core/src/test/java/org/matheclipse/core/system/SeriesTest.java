@@ -1,6 +1,6 @@
 package org.matheclipse.core.system;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 
 public class SeriesTest extends ExprEvaluatorTestCase {
@@ -129,6 +129,33 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "Sqrt(x)-x^(3/2)/6+x^(5/2)/120-x^(7/2)/5040+x^(9/2)/362880");
   }
 
+  @Test
+  public void testSeriesArc() { 
+    check("Series(ArcTan(x),  {x, I, 3})  // InputForm", //
+        "Pi*Floor((Pi/2 - Arg( - I + x))/(2*Pi)) + SeriesData(x,I,{1/4*(Pi+I*2*Log(2)+(-2)*I*Log(-I+x)),1/4,I*1/16,-1/48},0,4,1)");
+    check("Series(ArcCot(x),  {x, I, 3})  // InputForm", //
+        "-Pi*Floor((Pi - Arg(1/x) - Arg( - I + x))/(2*Pi)) + SeriesData(x,I,{1/4*(Pi+(-2)*I*Log(2)+I*2*Log(-I+x)),-1/4,-I*1/16,1/48},0,4,1)");
+    check("Series(ArcCoth(x), {x, -1, 3}) // InputForm", //
+        " - I*(-Pi*Floor((Pi - Arg(1/x) - Arg(1 + x))/(2*Pi)) - Pi*Floor(Arg((1 + x)/x)/(2*Pi)) + SeriesData(x,-1,{1/2*(-Pi-I*Log(2)+I*Log(1+x)),I*1/4,I*1/16,I*1/48},0,4,1))");
+
+    check("Series(ArcSin(x), {x, 1, 1})//InputForm", //
+        "SeriesData(x,1,{Pi/2,(-Sqrt(2)*Sqrt(1-x))/Sqrt(-1+x)},0,3,2)");
+    check("Series(ArcSin(x), {x, -1, 1})//InputForm", //
+        "SeriesData(x,-1,{-Pi/2,Sqrt(2)},0,3,2)");
+    check("Series(ArcCos(x), {x, -1, 1})//InputForm", //
+        "SeriesData(x,-1,{Pi,-Sqrt(2)},0,3,2)");
+
+    check("Series(ArcSinh(x), {x, I, 3})//InputForm", //
+        " - I*((-1)^Floor((Pi/2 - Arg( - I + x))/(2*Pi))*SeriesData(x,I,{1+I,0,-1/12+I*1/12,0,-3/160-I*3/160},1,7,2) - Pi/2)");
+
+    check("Series(ArcTanh(x), {x, 1, 3})//InputForm", //
+        " - I*(-Pi*Ceiling(Arg(-1 + x)/(2*Pi)) + SeriesData(x,1,{1/2*(Pi+I*Log(2)-I*Log(-1+x)),I*1/4,-I*1/16,I*1/48},0,4,1))");
+
+    check("Series(ArcCosh(x+1), {x, 0, 5})//InputForm", //
+        "SeriesData(x,0,{Sqrt(2),0,-1/(6*Sqrt(2)),0,3/80*1/Sqrt(2),0,-5/448*1/Sqrt(2),0,\n"
+            + "35/9216*1/Sqrt(2)},1,11,2)");
+  }
+  
   @Test
   public void testSeriesTaylor() {
     // issue #545
@@ -275,7 +302,8 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     check("s2=SeriesData(x, 0, {1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800}, 3, 11, 1)", //
         "x^3+x^4+2*x^5+6*x^6+24*x^7+120*x^8+720*x^9+5040*x^10+O(x)^11");
     // SeriesData[x, 0, {1, 2, 4, 10, 34, 154, 874}, 5, 12, 1]
-    check("s1*s2", "x^5+2*x^6+4*x^7+10*x^8+34*x^9+154*x^10+874*x^11+O(x)^12");
+    check("s1*s2 // InputForm", //
+        "SeriesData(x,0,{1,2,4,10,34,154,874},5,12,1)");
     check("s1+s2", //
         "x^2+2*x^3+2*x^4+3*x^5+7*x^6+25*x^7+121*x^8+O(x)^9");
 
