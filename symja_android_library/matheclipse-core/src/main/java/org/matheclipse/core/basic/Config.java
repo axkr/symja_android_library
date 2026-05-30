@@ -107,6 +107,13 @@ public class Config {
   public static int MAX_GRAPH_VERTICES_SIZE = 100;
 
   /**
+   * Maximum number of variables allowed for generating the minterm DNF in
+   * {@link S#BooleanCountingFunction}. The minterm enumeration is exponential (<code>2^n</code>), so
+   * this guards against excessive memory/CPU usage.
+   */
+  public static int MAX_BOOLEAN_COUNTING_FUNCTION_VARIABLES = 16;
+
+  /**
    * Maximum memory block size for the {@link ApfloatContext}
    */
   public static final long MAX_APFLOAT_MEMORY_BLOCKSIZE = 1_000_000;
