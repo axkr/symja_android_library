@@ -1015,6 +1015,18 @@ public class StatisticsDiscreteDistributions {
 
     @Override
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
+      if (dist.isAST2()) {
+        IExpr m0 = dist.arg1();
+        IExpr lambda = dist.arg2();
+        if (lambda.isList1() && k.isList1()) {
+          IExpr m1 = lambda.first();
+          IExpr x = k.first();
+          // Piecewise({{GammaRegularized(1+Floor(x),m0+m1),Floor(x)>=0}},0)
+          IExpr v1 = F.Floor(x);
+          return F.Piecewise(F.list(F.list(F.GammaRegularized(F.Plus(F.C1, v1), F.Plus(m0, m1)),
+              F.GreaterEqual(v1, F.C0))), F.C0);
+        }
+      }
       return F.NIL;
     }
 
@@ -1056,7 +1068,7 @@ public class StatisticsDiscreteDistributions {
 
     @Override
     public IExpr inverseCDF(IAST dist, IExpr x, EvalEngine engine) {
-      return null;
+      return F.NIL;
     }
 
     @Override
@@ -1080,35 +1092,33 @@ public class StatisticsDiscreteDistributions {
     @Override
     public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
       if (dist.isAST2()) {
-        IExpr theta = dist.arg1();
+        IExpr m0 = dist.arg1();
         IExpr lambda = dist.arg2();
-        if (lambda.isList() && k.isList() && lambda.argSize() == k.argSize()) {
-          // PDF(x1...xn) = Exp[-(theta + Sum(lambda))] * // Sum[ (theta^i/i!) * Product[
-          // lambda_j^(xj-i)/(xj-i)!, {j} ], {i, 0, Min(x)} ]
-
-          IExpr i = F.Dummy("i");
-          IExpr minK = F.Min(k);
-
-          // theta^i / i!
-          IExpr term1 = F.Power(theta, i);
-          IExpr term2 = F.Factorial(i).inverse();
-
-          // Product over j: lambda_j^(kj - i) / (kj - i)!
-          IASTAppendable productTerms = F.TimesAlloc(lambda.argSize());
-          for (int j = 1; j <= lambda.argSize(); j++) {
-            IExpr lj = lambda.get(j);
-            IExpr kj = k.get(j);
-            IExpr diff = F.Subtract(kj, i);
-            productTerms.append(F.Times(F.Power(lj, diff), F.Factorial(diff).inverse()));
-          }
-
-          IExpr sumBody = F.Times(term1, term2, productTerms);
-          IExpr sum = F.Sum(sumBody, F.List(i, F.C0, minK));
-
-          IExpr totalLambda = F.Total(lambda);
-          IExpr expTerm = F.Exp(F.Negate(F.Plus(theta, totalLambda)));
-
-          return F.Times(expTerm, sum);
+        if (lambda.isList1() && k.isList1()) {
+          IExpr m1 = lambda.first();
+          IExpr x = k.first();
+          // Piecewise({{(m0+m1)^x/(E^(m0+m1)*x!),x>=0}},0)
+          return F.Piecewise(
+              F.list(F.list(F.Times(F.Exp(F.Subtract(F.Negate(m0), m1)), F.Power(F.Plus(m0, m1), x),
+                  F.Power(F.Factorial(x), F.CN1)), F.GreaterEqual(x, F.C0))),
+              F.C0);
+        }
+        if (lambda.isList2() && k.isList2()) {
+          IExpr m1 = lambda.first();
+          IExpr m2 = lambda.second();
+          IExpr x = k.first();
+          IExpr y = k.second();
+          // Piecewise({{((-m0)^x*HypergeometricU(-x,1-x+y,(-m1*m2)/m0))/(E^(m0+m1+m2)*m2^(x-y)*x!*y!),x>=
+          // 0&&y>=0}},0)
+          IExpr v2 = F.Negate(m0);
+          IExpr v1 = F.Negate(x);
+          return F.Piecewise(F.list(F.list(
+              F.Times(F.Exp(F.Plus(v2, F.Negate(m1), F.Negate(m2))), F.Power(v2, x),
+                  F.Power(m2, F.Plus(v1, y)),
+                  F.Power(F.Times(F.Factorial(x), F.Factorial(y)), F.CN1),
+                  F.HypergeometricU(v1, F.Plus(F.C1, v1, y),
+                      F.Times(F.CN1, F.Power(m0, F.CN1), m1, m2))),
+              F.And(F.GreaterEqual(x, F.C0), F.GreaterEqual(y, F.C0)))), F.C0);
         }
       }
       return F.NIL;

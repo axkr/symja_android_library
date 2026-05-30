@@ -742,6 +742,11 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "{{m+m1,m,m},\n" //
             + " {m,m+m2,m},\n" //
         + " {m,m,m+m3}}");
+    check("PDF(MultivariatePoissonDistribution(m, {m1,m2}), {x, y})", //
+        "Piecewise({{((-m)^x*HypergeometricU(-x,1-x+y,(-m1*m2)/m))/(E^(m+m1+m2)*m2^(x-y)*x!*y!),x>=\n"
+            + "0&&y>=0}},0)");
+    check("CDF(MultivariatePoissonDistribution(m, {m1,m2}), {x, y})", //
+        "CDF(MultivariatePoissonDistribution(m,{m1,m2}),{x,y})");
   }
 
   @Test
