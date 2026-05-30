@@ -90,7 +90,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("AntihermitianMatrixQ({{I, 3 + 4*I}, {3 + 4*I, 0}})", //
         "False");
     check(
-        "AntihermitianMatrixQ(({{I, a, b},  {-Conjugate[a], 0, c}, {-Conjugate[b],-Conjugate[c],-I} }))", //
+        "AntihermitianMatrixQ(({{I, a, b},  {-Conjugate(a), 0, c}, {-Conjugate(b),-Conjugate(c),-I} }))", //
         "True");
   }
 
@@ -847,7 +847,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   public void testEigenvectorsIssue718() {
     check("Eigenvectors({{-1,-5},{0,4}})", //
         "{{-1,1},{1,0}}");
-    check("{Normalize[{-1,1}],Normalize[{1,0}] }", //
+    check("{Normalize({-1,1}),Normalize({1,0}) }", //
         "{{-1/Sqrt(2),1/Sqrt(2)},{1,0}}");
     check("Eigenvectors({{-2,-2,4}, {-1,-3,7}, {2, 4, 6.00001}})", //
         "{{0.223932,0.482825,0.846602},{0.580105,0.74736,-0.323932},{0.894427,-0.447214,-7.22845*10^-18}}");
@@ -1133,7 +1133,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Inverse({{}})", //
         "Inverse({{}})");
     check("Inverse({{a,b,c}, {d,e,f}, {x,y,z}})", //
-        "{{(f*y-e*z)/(c*e*x-b*f*x-c*d*y+a*f*y+b*d*z-a*e*z),(-c*y+b*z)/(c*e*x-b*f*x-c*d*y+a*f*y+b*d*z-a*e*z),(c*e-b*f)/(c*e*x-b*f*x-c*d*y+a*f*y+b*d*z-a*e*z)},\n"//
+        "{{(-f*y+e*z)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z),(c*y-b*z)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z),(-c*e+b*f)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z)},\n"
             + " {(f*x-d*z)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z),(-c*x+a*z)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z),(c*d-a*f)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z)},\n"
             + " {(-e*x+d*y)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z),(b*x-a*y)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z),(-b*d+a*e)/(-c*e*x+b*f*x+c*d*y-a*f*y-b*d*z+a*e*z)}}");
     check("Inverse({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}})", //
@@ -1168,7 +1168,6 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testLeastSquares() {
-    // LeastSquares[{{3.2, 2.2, 1.2}, {2.1, 7.1, 8.5}, {9.5, 6.7, 3.7}}, {7, 8, 9}]
     check("LeastSquares({{3.2, 2.2, 1.2}, {2.1, 7.1, 8.5}, {9.5, 6.7, 3.7}}, {7, 8, 9})", //
         "{73.94988,-174.3795,128.3294}");
     // {-1577780898195/827587904419-11087326045520/827587904419*I,
@@ -1258,17 +1257,17 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   public void testLinearSolveFunction001() {
     check("lsf=LinearSolve({{1, 2}, {3, 4}})", //
         "LinearSolveFunction(Matrix dimensions: {2,2})");
-    check("lsf[{5, 6}]", //
+    check("lsf({5, 6})", //
         "{-4,9/2}");
-    check("lsf[{{5, 6}, {7, 8}}]", //
+    check("lsf({{5, 6}, {7, 8}})", //
         "{{-3,-4},\n" //
             + " {4,5}}");
-    check("lsf[{{5,6,7}, {8,9,10}}]", //
+    check("lsf({{5,6,7}, {8,9,10}})", //
         "{{-2,-3,-4},\n" //
             + " {7/2,9/2,11/2}}");
     // error: LinearSolveFunction: Coefficient matrix and target vector or matrix do not have the
     // same dimensions.
-    check("lsf[{{5, 6}, {7, 8},{9,10}}]", //
+    check("lsf({{5, 6}, {7, 8},{9,10}})", //
         "LinearSolveFunction(Matrix dimensions: {2,2})[\n" //
             + "{{5,6},\n" + " {7,8},\n" + " {9,10}}]");
   }
@@ -1277,7 +1276,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   public void testLinearSolveFunction002() {
     check("lsf=LinearSolve(HilbertMatrix(6));", //
         "");
-    check("lsf[{1,1,1,1,1,1}]", //
+    check("lsf({1,1,1,1,1,1})", //
         "{-6,210,-1680,5040,-6300,2772}");
   }
 
@@ -1285,7 +1284,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   public void testLinearSolveFunction003() {
     check("lsf=LinearSolve(N(HilbertMatrix(6)));", //
         "");
-    check("lsf[{1,1,1,1,1,1}]", //
+    check("lsf({1,1,1,1,1,1})", //
         "{-6.0,210.0,-1680.0,5040.0,-6300.0,2772.0}");
   }
 
@@ -1293,7 +1292,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   public void testLinearSolveFunction004() {
     check("lsf=LinearSolve(N(HilbertMatrix(6),30));", //
         "");
-    check("lsf[{1,1,1,1,1,1}]", //
+    check("lsf({1,1,1,1,1,1})", //
         "{-5.99999999999999999999999999332,209.999999999999999999999999809,-1679.9999999999999999999999987," //
             + "5039.99999999999999999999999662,-6299.99999999999999999999999627,2771.99999999999999999999999853}");
   }
@@ -1554,7 +1553,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             + " {-72,-252,-288,-108},\n" //
             + " {-24,-84,-96,-36}}");
 
-    check("Subsets[{a, b, c}, {2}]", //
+    check("Subsets({a, b, c}, {2})", //
         "{{a,b},{a,c},{b,c}}");
 
     check("Minors({{a}})", //
@@ -1856,9 +1855,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "True");
     check("OrthogonalMatrixQ(1/Sqrt(3)*{{2, -I}, {I, 2}})", //
         "True");
-    check("OrthogonalMatrixQ({{Cos[a], -Sin[a]}, {Sin[a], Cos[a]}})", //
+    check("OrthogonalMatrixQ({{Cos(a), -Sin(a)}, {Sin(a), Cos(a)}})", //
         "True");
-    check("OrthogonalMatrixQ({{1,0,0},{0,Cos[a], -Sin[a]}, {0,Sin[a], Cos[a]}})", //
+    check("OrthogonalMatrixQ({{1,0,0},{0,Cos(a), -Sin(a)}, {0,Sin(a), Cos(a)}})", //
         "True");
     check("OrthogonalMatrixQ({{a, b}, {c, d}}/Sqrt(a^2 + b^2))", //
         "False");
@@ -2826,7 +2825,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "True");
     check("isVecQ(Det({{{1,0,0},{0,1,0}, {0,0,1}},{a,b,c},{d,e,f}}))", //
         "False");
-    check("fromCartesian[pt_?isVecQ, coordsys:_f] := {pt,coordsys};", //
+    check("fromCartesian(pt_?isVecQ, coordsys:_f) := {pt,coordsys};", //
         "");
     check("fromCartesian( {d,e,f} ,g(x))", //
         "fromcartesian({d,e,f},g(x))");

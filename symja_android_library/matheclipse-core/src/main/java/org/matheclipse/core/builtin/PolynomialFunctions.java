@@ -1902,6 +1902,7 @@ public class PolynomialFunctions {
       S.LegendreQ.setEvaluator(new LegendreQ());
       S.MonomialList.setEvaluator(new MonomialList());
       S.Resultant.setEvaluator(new Resultant());
+      S.Subresultants.setEvaluator(new Subresultants());
       S.SphericalHarmonicY.setEvaluator(new SphericalHarmonicY());
       S.ZernikeR.setEvaluator(new ZernikeR());
     }
@@ -3076,6 +3077,170 @@ public class PolynomialFunctions {
     // }
     // return F.eval(F.Det(sylvester));
     // }
+
+    @Override
+    public int status() {
+      return ImplementationStatus.PARTIAL_SUPPORT;
+    }
+  }
+
+  private static class Subresultants extends AbstractFunctionOptionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.arg2();
+      IExpr x = Validate.checkIsVariable(ast, 3, engine);
+      if (x.isNIL()) {
+        return F.NIL;
+      }
+      IExpr a = F.evalExpandAll(arg1, engine);
+      IExpr b = F.evalExpandAll(arg2, engine);
+      ExprPolynomialRing ring = new ExprPolynomialRing(F.list(x));
+      try {
+        // check if a is a polynomial otherwise check ArithmeticException, ClassCastException
+        ring.create(a);
+      } catch (RuntimeException ex) {
+        Errors.rethrowsInterruptException(ex);
+        // Polynomial expected at position `1` in `2`.
+        return Errors.printMessage(ast.topHead(), "polynomial", F.list(ast.get(1), F.C1), engine);
+      }
+      try {
+        // check if b is a polynomial otherwise check ArithmeticException, ClassCastException
+        ring.create(b);
+      } catch (RuntimeException ex) {
+        Errors.rethrowsInterruptException(ex);
+        // Polynomial expected at position `1` in `2`.
+        return Errors.printMessage(ast.topHead(), "polynomial", F.list(ast.get(2), F.C2), engine);
+      }
+      IExpr modulus = options[0];
+      IExpr result = subresultantList(a, b, x, modulus, engine);
+      return result;
+    }
+
+    /**
+     * Compute the list of principal subresultant coefficients of <code>a</code> and <code>b</code>
+     * with respect to the variable <code>x</code>. The returned list has the length
+     * <code>Min(Exponent(a,x), Exponent(b,x)) + 1</code> and starts with the resultant of
+     * <code>a</code> and <code>b</code>.
+     *
+     * @param a a polynomial in <code>x</code>
+     * @param b a polynomial in <code>x</code>
+     * @param x the variable
+     * @param modulus the &quot;Modulus&quot; option value (<code>0</code> means no modular
+     *        reduction)
+     * @param engine the evaluation engine
+     * @return the list of principal subresultant coefficients or {@link F#NIL}
+     */
+    private static IExpr subresultantList(IExpr a, IExpr b, IExpr x, IExpr modulus,
+        EvalEngine engine) {
+      IExpr clA = engine.evaluate(F.CoefficientList(a, x));
+      IExpr clB = engine.evaluate(F.CoefficientList(b, x));
+      if (!clA.isList() || !clB.isList()) {
+        return F.NIL;
+      }
+      // coefficient lists are ordered: constant term first ... leading coefficient last
+      int m = clA.argSize() - 1;
+      int n = clB.argSize() - 1;
+      if (m < 0 || n < 0) {
+        return F.NIL;
+      }
+      // ensure m >= n (mirrors the ordering used by Resultant)
+      if (m < n) {
+        IExpr tmp = clA;
+        clA = clB;
+        clB = tmp;
+        int t = m;
+        m = n;
+        n = t;
+      }
+      IAST acList = (IAST) clA;
+      IAST bcList = (IAST) clB;
+      // ac[i] = coefficient of x^i in the first (higher degree) polynomial
+      IExpr[] ac = new IExpr[m + 1];
+      for (int i = 0; i <= m; i++) {
+        ac[i] = acList.get(i + 1);
+      }
+      IExpr[] bc = new IExpr[n + 1];
+      for (int i = 0; i <= n; i++) {
+        bc[i] = bcList.get(i + 1);
+      }
+
+      final int min = n;
+      final int N = m + n;
+      // build the Sylvester matrix of the two polynomials (columns: x^(N-1) ... x^0)
+      IExpr[][] sylvester = null;
+      if (N > 0) {
+        sylvester = new IExpr[N][N];
+        for (int r = 0; r < N; r++) {
+          for (int c = 0; c < N; c++) {
+            sylvester[r][c] = F.C0;
+          }
+        }
+        // n shifted rows of the first polynomial (leading coefficient first)
+        for (int r = 0; r < n; r++) {
+          for (int k = 0; k <= m; k++) {
+            sylvester[r][r + k] = ac[m - k];
+          }
+        }
+        // m shifted rows of the second polynomial
+        for (int r = 0; r < m; r++) {
+          for (int k = 0; k <= n; k++) {
+            sylvester[n + r][r + k] = bc[n - k];
+          }
+        }
+      }
+
+      final boolean useMod = modulus.isInteger() && !modulus.isZero();
+      IASTAppendable result = F.ListAlloc(min + 1);
+      for (int j = 0; j <= min; j++) {
+        int size = N - 2 * j;
+        if (size <= 0) {
+          // 0x0 determinant by convention
+          result.append(
+              useMod ? engine.evaluate(F.binaryAST2(S.PolynomialMod, F.C1, modulus)) : F.C1);
+          continue;
+        }
+        // rows: the top (n-j) shift-rows of the first polynomial and the top (m-j) shift-rows of
+        // the second polynomial; columns: the leftmost (highest degree) columns 0 ... size-1
+        IASTAppendable matrix = F.ListAlloc(size);
+        for (int r = 0; r < n - j; r++) {
+          IASTAppendable row = F.ListAlloc(size);
+          for (int c = 0; c < size; c++) {
+            row.append(sylvester[r][c]);
+          }
+          matrix.append(row);
+        }
+        for (int r = 0; r < m - j; r++) {
+          IASTAppendable row = F.ListAlloc(size);
+          for (int c = 0; c < size; c++) {
+            row.append(sylvester[n + r][c]);
+          }
+          matrix.append(row);
+        }
+        // the fraction-free determinant returns an already simplified polynomial; Expand
+        // normalizes it
+        IExpr det = engine.evaluate(F.Expand(F.Det(matrix)));
+        if (useMod) {
+          det = engine.evaluate(F.binaryAST2(S.PolynomialMod, det, modulus));
+        }
+        result.append(det);
+      }
+      return result;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_3_3;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Modulus};
+      IExpr[] optionValues = new IExpr[] {F.C0};
+      setOptions(newSymbol, optionKeys, optionValues);
+    }
 
     @Override
     public int status() {

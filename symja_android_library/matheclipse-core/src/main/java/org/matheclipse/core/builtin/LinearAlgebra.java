@@ -94,6 +94,10 @@ public final class LinearAlgebra {
 
     public static FieldMatrix<IExpr> adjugateMatrix(FieldMatrix<IExpr> matrix,
         Predicate<IExpr> zeroChecker) {
+      if (isSymbolicMatrix(matrix)) {
+        // fraction-free cofactor based adjugate; also works for singular matrices
+        return bareissAdjugate(matrix, zeroChecker, EvalEngine.get());
+      }
       // @since version 1.9
       // final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix,
       // zeroChecker);
@@ -6434,9 +6438,186 @@ public final class LinearAlgebra {
     if (matrix.getRowDimension() == 3 && matrix.getColumnDimension() == 3) {
       return determinant3x3(matrix);
     }
+    if (isSymbolicMatrix(matrix)) {
+      // For matrices with symbolic (e.g. polynomial) entries the LU based elimination divides by
+      // the pivots and produces nested rational expressions which would need a (potentially
+      // expensive) `Together` to be collapsed afterwards. The fraction-free Bareiss algorithm only
+      // uses exact divisions and therefore returns an already simplified polynomial result.
+      return bareissDeterminant(matrix, zeroChecker, EvalEngine.get());
+    }
     final FieldLUDecomposition<IExpr> lu =
         new FieldLUDecomposition<IExpr>(matrix, zeroChecker, false);
     return F.evalExpand(lu.getDeterminant());
+  }
+
+  /**
+   * Returns <code>true</code> if at least one entry of the matrix is not a number (i.e. the matrix
+   * has symbolic entries).
+   *
+   * @param matrix the square matrix to inspect
+   * @return <code>true</code> if the matrix contains at least one symbolic entry
+   */
+  private static boolean isSymbolicMatrix(final FieldMatrix<IExpr> matrix) {
+    final int rows = matrix.getRowDimension();
+    final int cols = matrix.getColumnDimension();
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < cols; j++) {
+        if (!matrix.getEntry(i, j).isNumber()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Compute the determinant of a square matrix with the fraction-free Bareiss algorithm. Every
+   * division in the elimination is exact (guaranteed by the Bareiss identity), so the intermediate
+   * entries - and the final result - stay polynomial for matrices with polynomial entries. This
+   * avoids both the coefficient/fraction blow-up and the nested rational expressions produced by LU
+   * based elimination, and removes the need for a <code>Together</code> post-processing step.
+   *
+   * <p>
+   * See: <a href="https://en.wikipedia.org/wiki/Bareiss_algorithm">Wikipedia - Bareiss algorithm</a>
+   *
+   * @param matrix a square matrix
+   * @param zeroChecker predicate to detect (pivot) zeros
+   * @param engine the evaluation engine
+   * @return the determinant expression
+   */
+  private static IExpr bareissDeterminant(final FieldMatrix<IExpr> matrix,
+      Predicate<IExpr> zeroChecker, EvalEngine engine) {
+    final int n = matrix.getRowDimension();
+    // work on a mutable copy of the entries
+    final IExpr[][] m = new IExpr[n][n];
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < n; j++) {
+        m[i][j] = matrix.getEntry(i, j);
+      }
+    }
+    IExpr previousPivot = F.C1;
+    int sign = 1;
+    for (int k = 0; k < n - 1; k++) {
+      if (zeroChecker.test(m[k][k])) {
+        // the pivot is zero: search for a non-zero pivot in the same column below row k
+        int swapRow = -1;
+        for (int i = k + 1; i < n; i++) {
+          if (!zeroChecker.test(m[i][k])) {
+            swapRow = i;
+            break;
+          }
+        }
+        if (swapRow < 0) {
+          // the whole column below the pivot is zero => singular matrix
+          return F.C0;
+        }
+        final IExpr[] tmp = m[k];
+        m[k] = m[swapRow];
+        m[swapRow] = tmp;
+        sign = -sign;
+      }
+      final IExpr pivot = m[k][k];
+      for (int i = k + 1; i < n; i++) {
+        for (int j = k + 1; j < n; j++) {
+          // numerator = m[i][j]*pivot - m[i][k]*m[k][j]; divided exactly by the previous pivot
+          IExpr numerator = engine
+              .evaluate(F.Expand(F.Subtract(F.Times(m[i][j], pivot), F.Times(m[i][k], m[k][j]))));
+          m[i][j] = exactDivide(numerator, previousPivot, engine);
+        }
+        m[i][k] = F.C0;
+      }
+      previousPivot = pivot;
+    }
+    IExpr det = m[n - 1][n - 1];
+    if (sign < 0) {
+      det = det.negate();
+    }
+    return engine.evaluate(F.Expand(det));
+  }
+
+  /**
+   * Divide <code>numerator</code> exactly by <code>denominator</code> for use inside the Bareiss
+   * elimination. Division by a constant keeps a polynomial polynomial; for a symbolic denominator
+   * <code>Cancel</code> reduces the (exact) quotient to a polynomial.
+   *
+   * @param numerator the dividend
+   * @param denominator the divisor (a previous Bareiss pivot, which divides the numerator exactly)
+   * @param engine the evaluation engine
+   * @return the exact quotient
+   */
+  private static IExpr exactDivide(IExpr numerator, IExpr denominator, EvalEngine engine) {
+    if (numerator.isZero()) {
+      return F.C0;
+    }
+    if (denominator.isOne()) {
+      return numerator;
+    }
+    if (denominator.isNumber()) {
+      return engine.evaluate(F.Expand(numerator.times(denominator.inverse())));
+    }
+    return engine.evaluate(F.Expand(S.Cancel.of(engine, F.Divide(numerator, denominator))));
+  }
+
+  /**
+   * Compute the adjugate (classical adjoint) of a square matrix fraction-free, by computing every
+   * cofactor as a Bareiss determinant of the corresponding minor. Because each minor determinant is
+   * evaluated with the fraction-free Bareiss algorithm, the result stays polynomial for matrices
+   * with polynomial entries and no <code>Together</code>/<code>Cancel</code> post-processing of a
+   * rational inverse is required. Unlike the LU based variant this also works for singular matrices.
+   *
+   * @param matrix a square matrix
+   * @param zeroChecker predicate to detect (pivot) zeros
+   * @param engine the evaluation engine
+   * @return the adjugate matrix
+   */
+  private static FieldMatrix<IExpr> bareissAdjugate(final FieldMatrix<IExpr> matrix,
+      Predicate<IExpr> zeroChecker, EvalEngine engine) {
+    final int n = matrix.getRowDimension();
+    final FieldMatrix<IExpr> adjugate = matrix.copy();
+    if (n == 1) {
+      adjugate.setEntry(0, 0, F.C1);
+      return adjugate;
+    }
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < n; j++) {
+        // cofactor C[i][j] = (-1)^(i+j) * det(minor removing row i and column j)
+        final FieldMatrix<IExpr> minor = removeRowColumn(matrix, i, j);
+        IExpr minorDet = determinant(minor, zeroChecker);
+        IExpr cofactor = ((i + j) & 1) == 0 ? minorDet : minorDet.negate();
+        // the adjugate is the transpose of the cofactor matrix
+        adjugate.setEntry(j, i, engine.evaluate(F.Expand(cofactor)));
+      }
+    }
+    return adjugate;
+  }
+
+  /**
+   * Return a copy of <code>matrix</code> with the given <code>row</code> and <code>column</code>
+   * removed.
+   *
+   * @param matrix the source matrix
+   * @param row the (0-based) row index to remove
+   * @param column the (0-based) column index to remove
+   * @return the <code>(n-1) x (n-1)</code> sub-matrix
+   */
+  private static FieldMatrix<IExpr> removeRowColumn(final FieldMatrix<IExpr> matrix, int row,
+      int column) {
+    final int n = matrix.getRowDimension();
+    final int[] selectedRows = new int[n - 1];
+    final int[] selectedColumns = new int[n - 1];
+    int r = 0;
+    for (int i = 0; i < n; i++) {
+      if (i != row) {
+        selectedRows[r++] = i;
+      }
+    }
+    int c = 0;
+    for (int j = 0; j < n; j++) {
+      if (j != column) {
+        selectedColumns[c++] = j;
+      }
+    }
+    return matrix.getSubMatrix(selectedRows, selectedColumns);
   }
 
   /**
@@ -6701,6 +6882,26 @@ public final class LinearAlgebra {
 
   public static FieldMatrix<IExpr> inverseMatrix(FieldMatrix<IExpr> matrix,
       Predicate<IExpr> zeroChecker) {
+    if (isSymbolicMatrix(matrix)) {
+      // fraction-free inverse: Inverse = adjugate / determinant (a single division per entry with a
+      // consistent denominator, instead of the per-pivot divisions of the LU based inverse)
+      final EvalEngine engine = EvalEngine.get();
+      final IExpr det = determinant(matrix, zeroChecker);
+      if (det.isZero()) {
+        // Matrix `1` is singular.
+        Errors.printMessage(S.Inverse, "sing", F.list(Convert.matrix2List(matrix, false)), engine);
+        return null;
+      }
+      final FieldMatrix<IExpr> adjugate = bareissAdjugate(matrix, zeroChecker, engine);
+      final int n = matrix.getRowDimension();
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+          adjugate.setEntry(i, j,
+              engine.evaluate(F.Together(F.Divide(adjugate.getEntry(i, j), det))));
+        }
+      }
+      return adjugate;
+    }
     // @since version 1.9
     // final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix,
     // zeroChecker);
