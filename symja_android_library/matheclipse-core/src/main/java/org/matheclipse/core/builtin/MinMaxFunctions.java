@@ -5,8 +5,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hipparchus.analysis.MultivariateFunction;
 import org.hipparchus.optim.InitialGuess;
 import org.hipparchus.optim.MaxEval;
@@ -29,7 +27,6 @@ import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
-import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -47,10 +44,8 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
-import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
-import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
-import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
+import org.matheclipse.core.reflection.system.Maximize;
+import org.matheclipse.core.reflection.system.Minimize;
 import org.matheclipse.core.sympy.calculus.Util;
 
 /**
@@ -96,7 +91,7 @@ public class MinMaxFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr x = ast.arg2();
       if (x.isSymbol() || (x.isAST() && !x.isList())) {
-        IExpr result = maximize(ast.topHead(), ast.arg1(), x, engine);
+        IExpr result = Maximize.maximize(ast.topHead(), ast.arg1(), x, engine);
         if (result.isList() && result.last().isList()) {
           IAST subList = (IAST) result.last();
           if (subList.last().isRule()) {
@@ -154,7 +149,7 @@ public class MinMaxFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr x = ast.arg2();
       if (x.isSymbol() || (x.isAST() && !x.isList())) {
-        IExpr result = minimize(ast.topHead(), ast.arg1(), x, engine);
+        IExpr result = Minimize.minimize(ast.topHead(), ast.arg1(), x, engine);
         if (result.isList() && result.last().isList()) {
           IAST subList = (IAST) result.last();
           if (subList.last().isRule()) {
@@ -1223,8 +1218,6 @@ public class MinMaxFunctions {
       S.FunctionDomain.setEvaluator(new FunctionDomain());
       S.FunctionPeriod.setEvaluator(new FunctionPeriod());
       S.FunctionSingularities.setEvaluator(new FunctionSingularities());
-      S.Maximize.setEvaluator(new Maximize());
-      S.Minimize.setEvaluator(new Minimize());
       S.NMaximize.setEvaluator(new NMaximize());
       S.NMinimize.setEvaluator(new NMinimize());
 
@@ -1232,149 +1225,6 @@ public class MinMaxFunctions {
       S.NArgMin.setEvaluator(new NArgMin());
       S.NMaxValue.setEvaluator(new NMaxValue());
       S.NMinValue.setEvaluator(new NMinValue());
-    }
-  }
-
-
-  /**
-   *
-   *
-   * <pre>
-   * <code>Maximize(unary-function, variable)
-   * </code>
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * returns the maximum of the unary function for the given <code>variable</code>.
-   *
-   * </blockquote>
-   *
-   * <p>
-   * See
-   *
-   * <ul>
-   * <li><a href="https://en.wikipedia.org/wiki/Derivative_test">Wikipedia - Derivative test</a>
-   * </ul>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * <code>&gt;&gt; Maximize(-x^4-7*x^3+2*x^2 - 42,x)
-   * {-42-7*(-21/8-Sqrt(505)/8)^3+2*(21/8+Sqrt(505)/8)^2-(21/8+Sqrt(505)/8)^4,{x-&gt;-21/8-Sqrt(505)/8}}
-   * </code>
-   * </pre>
-   *
-   * <p>
-   * Print a message if no maximum can be found
-   *
-   * <pre>
-   * <code>&gt;&gt; Maximize(x^4+7*x^3-2*x^2 + 42, x)
-   * {Infinity,{x-&gt;-Infinity}}
-   * </code>
-   * </pre>
-   *
-   * <h3>Related terms</h3>
-   *
-   * <p>
-   * <a href="Minimize.md">Minimize</a>
-   */
-  private static final class Maximize extends AbstractFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr function = ast.arg1();
-      IExpr x = ast.arg2();
-      if (x.isList()) {
-        if (x.isList1()) {
-          x = x.first();
-        } else {
-          // `1` currently not supported in `2`.
-          return Errors.printMessage(S.Maximize, "unsupported",
-              F.List("Multiple variables", "Maximize"), engine);
-        }
-      }
-      ISymbol head = ast.topHead();
-      if (x.isSymbol() || (x.isAST() && !x.isList())) {
-        return maximize(head, function, x, engine);
-      }
-
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-  }
-
-
-  /**
-   *
-   *
-   * <pre>
-   * <code>Minimize(unary-function, variable)
-   * </code>
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * returns the minimum of the unary function for the given <code>variable</code>.
-   *
-   * </blockquote>
-   *
-   * <p>
-   * See:
-   *
-   * <ul>
-   * <li><a href="https://en.wikipedia.org/wiki/Derivative_test">Wikipedia - Derivative test</a>
-   * </ul>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * <code>&gt;&gt; Minimize(x^4+7*x^3-2*x^2 + 42, x)
-   * {42+7*(-21/8-Sqrt(505)/8)^3-2*(21/8+Sqrt(505)/8)^2+(21/8+Sqrt(505)/8)^4,{x-&gt;-21/8-Sqrt(505)/8}}
-   * </code>
-   * </pre>
-   *
-   * <h3>Related terms</h3>
-   *
-   * <p>
-   * <a href="Maximize.md">Maximize</a>
-   */
-  private static final class Minimize extends AbstractFunctionEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr function = ast.arg1();
-      IExpr x = ast.arg2();
-      if (x.isList()) {
-        if (x.isList1()) {
-          x = x.first();
-        } else {
-          // `1` currently not supported in `2`.
-          return Errors.printMessage(S.Minimize, "unsupported",
-              F.List("Multiple variables", "Minimize"), engine);
-        }
-      }
-      ISymbol head = ast.topHead();
-      if (x.isSymbol() || (x.isAST() && !x.isList())) {
-        return minimize(head, function, x, engine);
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
     }
   }
 
@@ -1750,334 +1600,8 @@ public class MinMaxFunctions {
   }
 
 
-  private static final Logger LOGGER = LogManager.getLogger(MinMaxFunctions.class);
-
   public static void initialize() {
     Initializer.init();
-  }
-
-  private static IExpr maximize(ISymbol head, IExpr function, IExpr x, EvalEngine engine) {
-    try {
-      IExpr temp = maximizeExprPolynomial(function, F.list(x));
-      if (temp.isPresent()) {
-        return temp;
-      }
-
-      IExpr yNInf = S.Limit.funEval(function, F.Rule(x, F.CNInfinity));
-      if (yNInf.isInfinity()) {
-        LOGGER.log(engine.getLogLevel(), "{}: the maximum cannot be found.", head);
-        return F.list(F.CInfinity, F.list(F.Rule(x, F.CNInfinity)));
-      }
-      IExpr yInf = S.Limit.funEval(function, F.Rule(x, F.CInfinity));
-      if (yInf.isInfinity()) {
-        LOGGER.log(engine.getLogLevel(), "{}: the maximum cannot be found.", head);
-        return F.list(F.CInfinity, F.list(F.Rule(x, F.CInfinity)));
-      }
-
-      IExpr first_derivative = S.D.of(engine, function, x);
-      IExpr second_derivative = S.D.funEval(engine, first_derivative, x);
-      IExpr candidates = S.Solve.of(engine, F.Equal(first_derivative, F.C0), x, S.Reals);
-      if (candidates.isFree(S.Solve)) {
-        IExpr maxCandidate = F.NIL;
-        IExpr maxValue = F.CNInfinity;
-        if (candidates.isListOfLists()) {
-          for (int i = 1; i < candidates.size(); i++) {
-            IExpr candidate = ((IAST) candidates).get(i).first().second();
-            IExpr value = engine.evaluate(F.xreplace(second_derivative, x, candidate));
-            if (value.isNegative()) {
-              IExpr functionValue = engine.evaluate(F.xreplace(function, x, candidate));
-              if (functionValue.greater(maxValue).isTrue()) {
-                // if (S.Greater.ofQ(functionValue, maxValue)) {
-                maxValue = functionValue;
-                maxCandidate = candidate;
-              }
-            }
-          }
-          if (maxCandidate.isPresent()) {
-            return F.list(maxValue, F.list(F.Rule(x, maxCandidate)));
-          }
-        }
-        return F.CEmptyList;
-      }
-    } catch (RuntimeException rex) {
-      Errors.rethrowsInterruptException(rex);
-      LOGGER.log(engine.getLogLevel(), head, rex);
-    }
-    return F.NIL;
-  }
-
-  private static IAST maximizeCubicPolynomial(ExprPolynomial polynomial, IExpr x) {
-    long varDegree = polynomial.degree(0);
-    IExpr a;
-    IExpr b;
-    IExpr c;
-    IExpr d;
-    IExpr e;
-    if (varDegree <= 3) {
-      // solve cubic or quadratic maximize:
-      a = F.C0;
-      b = F.C0;
-      c = F.C0;
-      d = F.C0;
-      e = F.C0;
-      for (ExprMonomial monomial : polynomial) {
-        IExpr coeff = monomial.coefficient();
-        long lExp = monomial.exponent().getVal(0);
-        if (lExp == 4) {
-          a = coeff;
-        } else if (lExp == 3) {
-          b = coeff;
-        } else if (lExp == 2) {
-          c = coeff;
-        } else if (lExp == 1) {
-          d = coeff;
-        } else if (lExp == 0) {
-          e = coeff;
-        } else {
-          throw new ArithmeticException("Maximize::Unexpected exponent value: " + lExp);
-        }
-      }
-      if (a.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-        if (b.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-          // quadratic
-          if (c.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-            if (d.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-              // The `1` is not attained at any point satisfying the constraints.
-              return Errors.printMessage(S.Maximize, "natt", F.List("maximum"));
-            } else {
-              // linear
-              return F.list(F.Piecewise(F.list(F.list(e, F.Equal(d, F.C0))), F.CInfinity), F.list(
-                  F.Rule(x, F.Piecewise(F.list(F.list(F.C0, F.Equal(d, F.C0))), S.Indeterminate))));
-            }
-          } else {
-            return F
-                .List(
-                    F.Piecewise(
-                        F.list(F.list(e, F.And(F.Equal(d, 0), F.LessEqual(c, 0))),
-                            F.list(
-                                F.Times(F.C1D4, F.Power(c, -1),
-                                    F.Plus(F.Times(-1, F.Power(d, 2)), F.Times(4, c, e))),
-                                F.Or(F.And(F.Greater(d, 0), F.Less(c, 0)),
-                                    F.And(F.Less(d, 0), F.Less(c, 0))))),
-                        F.CInfinity),
-                    F.list(F.Rule(x,
-                        F.Piecewise(
-                            F.list(
-                                F.list(F.Times(F.CN1D2, F.Power(c, -1), d),
-                                    F.Or(F.And(F.Greater(d, 0), F.Less(c, 0)),
-                                        F.And(F.Less(d, 0), F.Less(c, 0)))),
-                                F.list(F.C0, F.And(F.Equal(d, 0), F.LessEqual(c, 0)))),
-                            S.Indeterminate))));
-          }
-        } else {
-          // cubic
-          return F.list(
-              F.Piecewise(
-                  F.list(
-                      F.list(e,
-                          F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
-                              F.And(F.Equal(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)))),
-                      F.list(
-                          F.Times(F.C1D4, F.Power(c, F.CN1),
-                              F.Plus(F.Negate(F.Sqr(d)), F.Times(F.C4, c, e))),
-                          F.Or(F.And(F.Greater(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)),
-                              F.And(F.Less(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0))))),
-                  F.oo),
-              F.list(F.Rule(x,
-                  F.Piecewise(
-                      F.list(
-                          F.list(F.Times(F.CN1D2, F.Power(c, F.CN1), d),
-                              F.Or(F.And(F.Greater(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)),
-                                  F.And(F.Less(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0)))),
-                          F.list(F.C0,
-                              F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
-                                  F.And(F.Equal(d, F.C0), F.Less(c, F.C0), F.Equal(b, F.C0))))),
-                      F.Indeterminate))));
-        }
-      }
-    }
-
-    return F.NIL;
-  }
-
-  private static IAST maximizeExprPolynomial(final IExpr expr, IAST varList) {
-    IAST result = F.NIL;
-    try {
-      // try to generate a common expression polynomial
-      ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, varList);
-      ExprPolynomial ePoly = ring.create(expr, false, false, false);
-      ePoly = ePoly.multiplyByMinimumNegativeExponents();
-      result = maximizeCubicPolynomial(ePoly, varList.arg1());
-
-      // result = QuarticSolver.sortASTArguments(result);
-      return result;
-    } catch (ArithmeticException | JASConversionException e2) {
-      LOGGER.debug("MinMaxFunctions.maximizeExprPolynomial() failed", e2);
-    }
-    return result;
-  }
-
-  private static final IExpr minimize(ISymbol head, IExpr function, IExpr x, EvalEngine engine) {
-    try {
-      IExpr temp = minimizeExprPolynomial(function, F.list(x));
-      if (temp.isPresent()) {
-        return temp;
-      }
-
-      IExpr yNInf = S.Limit.funEval(function, F.Rule(x, F.CNInfinity));
-      if (yNInf.isNegativeInfinity()) {
-        LOGGER.log(engine.getLogLevel(), "{}: the maximum cannot be found.", head);
-        return F.list(F.CNInfinity, F.list(F.Rule(x, F.CNInfinity)));
-      }
-      IExpr yInf = S.Limit.funEval(function, F.Rule(x, F.CInfinity));
-      if (yInf.isNegativeInfinity()) {
-        LOGGER.log(engine.getLogLevel(), "{}: the maximum cannot be found.", head);
-        return F.list(F.CNInfinity, F.list(F.Rule(x, F.CInfinity)));
-      }
-
-      IExpr first_derivative = S.D.of(engine, function, x);
-      IExpr second_derivative = S.D.funEval(engine, first_derivative, x);
-      IExpr candidates = S.Solve.of(engine, F.Equal(first_derivative, F.C0), x, S.Reals);
-      if (candidates.isFree(S.Solve)) {
-        IExpr minCandidate = F.NIL;
-        IExpr minValue = F.CInfinity;
-        if (candidates.isListOfLists()) {
-          for (int i = 1; i < candidates.size(); i++) {
-            IExpr candidate = ((IAST) candidates).get(i).first().second();
-            IExpr value = engine.evaluate(F.xreplace(second_derivative, x, candidate));
-            if (value.isPositiveResult()) {
-              IExpr functionValue = engine.evaluate(F.xreplace(function, x, candidate));
-              if (S.Less.ofQ(functionValue, minValue)) {
-                minValue = functionValue;
-                minCandidate = candidate;
-              }
-            }
-          }
-          if (minCandidate.isPresent()) {
-            return F.list(minValue, F.list(F.Rule(x, minCandidate)));
-          }
-        }
-        return F.CEmptyList;
-      }
-    } catch (RuntimeException rex) {
-      Errors.rethrowsInterruptException(rex);
-      LOGGER.log(engine.getLogLevel(), head, rex);
-    }
-    return F.NIL;
-  }
-
-  private static IAST minimizeCubicPolynomial(ExprPolynomial polynomial, IExpr x) {
-    long varDegree = polynomial.degree(0);
-    IExpr a;
-    IExpr b;
-    IExpr c;
-    IExpr d;
-    IExpr e;
-    if (varDegree <= 3) {
-      // solve cubic or quadratic minimize:
-      a = F.C0;
-      b = F.C0;
-      c = F.C0;
-      d = F.C0;
-      e = F.C0;
-      for (ExprMonomial monomial : polynomial) {
-        IExpr coeff = monomial.coefficient();
-        long lExp = monomial.exponent().getVal(0);
-        if (lExp == 4) {
-          a = coeff;
-        } else if (lExp == 3) {
-          b = coeff;
-        } else if (lExp == 2) {
-          c = coeff;
-        } else if (lExp == 1) {
-          d = coeff;
-        } else if (lExp == 0) {
-          e = coeff;
-        } else {
-          throw new ArithmeticException("Minimize::Unexpected exponent value: " + lExp);
-        }
-      }
-      if (a.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-        if (b.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-          // quadratic
-          if (c.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-            if (d.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
-              // The `1` is not attained at any point satisfying the constraints.
-              return Errors.printMessage(S.Minimize, "natt", F.List("minimum"));
-            } else {
-              // linear
-              return F.list(F.Piecewise(F.list(F.list(e, F.Equal(d, F.C0))), F.CNInfinity), F.list(
-                  F.Rule(x, F.Piecewise(F.list(F.list(F.C0, F.Equal(d, F.C0))), S.Indeterminate))));
-            }
-          } else {
-            return F
-                .List(
-                    F.Piecewise(
-                        F.list(
-                            F.list(e, F.And(F.Equal(d, 0),
-                                F.GreaterEqual(c, 0))),
-                            F.list(
-                                F.Times(
-                                    F.C1D4, F.Power(c, -1), F.Plus(F.Times(-1, F.Power(d, 2)),
-                                        F.Times(4, c, e))),
-                                F.Or(F.And(F.Greater(d, 0), F.Greater(c, 0)),
-                                    F.And(F.Less(d, 0), F.Greater(c, 0))))),
-                        F.CNInfinity),
-                    F.list(F.Rule(x,
-                        F.Piecewise(
-                            F.list(
-                                F.list(F.Times(F.CN1D2, F.Power(c, -1), d),
-                                    F.Or(F.And(F.Greater(d, 0), F.Greater(c, 0)),
-                                        F.And(F.Less(d, 0), F.Greater(c, 0)))),
-                                F.list(F.C0, F.And(F.Equal(d, 0), F.GreaterEqual(c, 0)))),
-                            S.Indeterminate))));
-          }
-        } else {
-          // cubic
-          return F.list(
-              F.Piecewise(
-                  F.list(
-                      F.list(e,
-                          F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
-                              F.And(F.Equal(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)))),
-                      F.list(
-                          F.Times(F.C1D4, F.Power(c, F.CN1),
-                              F.Plus(F.Negate(F.Sqr(d)), F.Times(F.C4, c, e))),
-                          F.Or(F.And(F.Greater(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)),
-                              F.And(F.Less(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0))))),
-                  F.Noo),
-              F.list(F.Rule(x,
-                  F.Piecewise(
-                      F.list(
-                          F.list(F.Times(F.CN1D2, F.Power(c, F.CN1), d),
-                              F.Or(F.And(F.Greater(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)),
-                                  F.And(F.Less(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0)))),
-                          F.list(F.C0,
-                              F.Or(F.And(F.Equal(d, F.C0), F.Equal(c, F.C0), F.Equal(b, F.C0)),
-                                  F.And(F.Equal(d, F.C0), F.Greater(c, F.C0), F.Equal(b, F.C0))))),
-                      F.Indeterminate))));
-        }
-      }
-    }
-
-    return F.NIL;
-  }
-
-  private static IAST minimizeExprPolynomial(final IExpr expr, IAST varList) {
-    IAST result = F.NIL;
-    try {
-      // try to generate a common expression polynomial
-      ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, varList);
-      ExprPolynomial ePoly = ring.create(expr, false, false, false);
-      ePoly = ePoly.multiplyByMinimumNegativeExponents();
-      result = minimizeCubicPolynomial(ePoly, varList.arg1());
-
-      // result = QuarticSolver.sortASTArguments(result);
-      return result;
-    } catch (ArithmeticException | JASConversionException e2) {
-      LOGGER.debug("MinMaxFunctions.minimizeExprPolynomial() failed", e2);
-    }
-    return result;
   }
 
   private MinMaxFunctions() {}

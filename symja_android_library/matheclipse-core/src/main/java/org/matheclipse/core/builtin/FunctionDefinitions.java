@@ -135,6 +135,9 @@ public final class FunctionDefinitions {
       S.MatrixFunction.setEvaluator(new org.matheclipse.core.reflection.system.MatrixFunction());
       S.MatrixLog.setEvaluator(new org.matheclipse.core.reflection.system.MatrixLog());
       S.MaximalBy.setEvaluator(new org.matheclipse.core.reflection.system.MaximalBy());
+      S.Maximize.setEvaluator(new org.matheclipse.core.reflection.system.Maximize());
+      S.Minimize.setEvaluator(new org.matheclipse.core.reflection.system.Minimize());
+
       S.MeijerG.setEvaluator(new org.matheclipse.core.reflection.system.MeijerG());
       S.MeijerGReduce.setEvaluator(new org.matheclipse.core.reflection.system.MeijerGReduce());
       S.MinimalBy.setEvaluator(new org.matheclipse.core.reflection.system.MinimalBy());
@@ -200,12 +203,17 @@ public final class FunctionDefinitions {
 
       S.Hash.setEvaluator(new org.matheclipse.core.reflection.system.Hash());
       S.FileHash.setEvaluator(new org.matheclipse.core.reflection.system.FileHash());
+//      S.RiemannSiegelTheta
+//          .setEvaluator(new org.matheclipse.core.reflection.system.RiemannSiegelTheta());
       S.ShiftRegisterSequence
           .setEvaluator(new org.matheclipse.core.reflection.system.ShiftRegisterSequence());
       S.TensorContract.setEvaluator(new org.matheclipse.core.reflection.system.TensorContract());
       S.TensorProduct.setEvaluator(new org.matheclipse.core.reflection.system.TensorProduct());
       S.TensorTranspose.setEvaluator(new org.matheclipse.core.reflection.system.TensorTranspose());
       S.ToRadicals.setEvaluator(new org.matheclipse.core.reflection.system.ToRadicals());
+//      S.Zeta.setEvaluator(new org.matheclipse.core.reflection.system.Zeta());
+//      S.ZetaZero.setEvaluator(new org.matheclipse.core.reflection.system.ZetaZero());
+
       // Graphics
       S.ComplexPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ComplexPlot());
       S.ContourPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ContourPlot());

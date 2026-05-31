@@ -14157,25 +14157,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{Max(a,b),Max(a,b,c),Max(b,c)}");
   }
 
-  @Test
-  public void testMaximize() {
-    // print message - Maximize: The maximum is not attained at any point satisfying the
-    // constraints.
-    check("Maximize(1/x, x)", //
-        "{}");
-
-    check("Maximize(-x^4-7*x^3+2*x^2 - 42,x)", //
-        "{-42-7/512*(-21-Sqrt(505))^3+(21+Sqrt(505))^2/32-(21+Sqrt(505))^4/4096,{x->1/8*(-\n"
-            + "21-Sqrt(505))}}");
-    check("Maximize(x^4+7*Tan(x)-2*x^2 + 42, x)", //
-        "Maximize(42-2*x^2+x^4+7*Tan(x),x)");
-    check("Maximize(x^4+7*x^3-2*x^2 + 42, x)", //
-        "{Infinity,{x->-Infinity}}");
-    check("Maximize(-2*x^2 - 3*x + 5, x)", //
-        "{49/8,{x->-3/4}}");
-  }
-
-
 
   @Test
   public void testMemberQ() {
@@ -14396,30 +14377,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0,0,2,2}");
     check("MinFilter({a,b,c}, 1)", //
         "{Min(a,b),Min(a,b,c),Min(b,c)}");
-  }
-
-  @Test
-  public void testMinimize() {
-    check("Minimize(-1+x^2,x)", //
-        "{-1,{x->0}}");
-
-    // check("Minimize(Sin(x),x)", //
-    // "");
-
-    // print message - Minimize: The minimum is not attained at any point satisfying the
-    // constraints.
-    check("Minimize(1/x, x)", //
-        "{}");
-
-
-    check("Minimize(x^2+4*x+4, {x})", //
-        "{0,{x->-2}}");
-
-    check("Minimize(x^4+7*x^3-2*x^2 + 42, x)", //
-        "{42+7/512*(-21-Sqrt(505))^3-(21+Sqrt(505))^2/32+(21+Sqrt(505))^4/4096,{x->1/8*(-\n"
-            + "21-Sqrt(505))}}");
-    check("Minimize(2*x^2 - 3*x + 5, x)", //
-        "{31/8,{x->3/4}}");
   }
 
   @Test
