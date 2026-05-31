@@ -312,20 +312,28 @@ public class Maximize extends AbstractFunctionEvaluator {
   }
 
   /**
-   * Compute the symbolic extrema of an objective subject to a single smooth constraint using the
-   * Lagrange / KKT conditions. The constraint may be an equality (<code>g == c</code>) or an
-   * inequality (<code>g &lt;= c</code> / <code>g &gt;= c</code>).
+   * Compute the symbolic extrema of an objective subject to one or more smooth constraints using
+   * the Lagrange / KKT conditions. Each constraint may be an equality (<code>g == c</code>) or an
+   * inequality (<code>g &lt;= c</code> / <code>g &gt;= c</code>); multiple constraints can be
+   * passed as an {@link S#And} or a {@link S#List} (e.g.
+   * <code>{f, g1 &lt;= a &amp;&amp; g2 == b}</code> or <code>{f, {g1 &lt;= a, g2 == b}}</code>).
    *
    * <p>
-   * Candidate points are collected from the interior stationary points (for inequality constraints)
-   * and from the boundary by solving <code>Grad(f) == lambda*Grad(g)</code> together with
-   * <code>g == c</code>. The objective is evaluated at every feasible candidate and the global
-   * minimum / maximum is returned. This works for the global optimum whenever the feasible region is
-   * compact (e.g. a disk / ellipsoid).
+   * Every inequality constraint is either <em>active</em> (the optimum lies on its boundary
+   * <code>g == 0</code>) or <em>inactive</em> (the optimum lies strictly inside the feasible
+   * region); equality constraints are always active. For each active set the KKT stationarity
+   * condition requires <code>Grad(f)</code> to lie in the span of the active constraint gradients,
+   * i.e. the matrix <code>[Grad(f); Grad(g_1); ...; Grad(g_k)]</code> has rank
+   * <code>&lt;= k</code>. This is enforced by requiring all <code>(k+1)x(k+1)</code> minors to
+   * vanish together with <code>g_i == 0</code> for the active constraints; this keeps the system in
+   * the original variables (no Lagrange multipliers needed). The objective is evaluated at every
+   * feasible candidate and the global minimum / maximum is returned. This works for the global
+   * optimum whenever the feasible region is compact (e.g. a disk / ellipsoid / polytope).
    *
    * @param head the calling symbol ({@code Maximize} or {@code Minimize}) used for messages
    * @param objective the objective function
-   * @param constraint the single equality or inequality constraint
+   * @param constraint a single equality / inequality constraint or an {@code And}/{@code List} of
+   *        them
    * @param varList the list of variables
    * @param isMax <code>true</code> for a maximum, <code>false</code> for a minimum
    * @param engine the evaluation engine
@@ -340,61 +348,85 @@ public class Maximize extends AbstractFunctionEvaluator {
         vars[i] = varList.get(i + 1);
       }
 
-      // parse the constraint into a boundary expression gExpr (gExpr == 0 on the boundary)
-      IExpr gExpr;
-      boolean allowInterior;
-      int interiorSign; // -1: feasible where gExpr < 0 ; +1: gExpr > 0 ; 0: equality (no interior)
-      if (constraint.isAST(S.Equal, 3)) {
-        gExpr = engine.evaluate(F.Subtract(constraint.first(), constraint.second()));
-        allowInterior = false;
-        interiorSign = 0;
-      } else if (constraint.isAST(S.LessEqual, 3)) {
-        gExpr = engine.evaluate(F.Subtract(constraint.first(), constraint.second()));
-        allowInterior = true;
-        interiorSign = -1;
-      } else if (constraint.isAST(S.GreaterEqual, 3)) {
-        gExpr = engine.evaluate(F.Subtract(constraint.first(), constraint.second()));
-        allowInterior = true;
-        interiorSign = 1;
-      } else {
+      // parse the constraint(s) into equality boundary expressions (eq == 0) and inequality
+      // boundary expressions (with the feasible-interior sign)
+      List<IExpr> conjuncts = new ArrayList<>();
+      flattenConstraints(constraint, conjuncts);
+      if (conjuncts.isEmpty()) {
         return F.NIL;
+      }
+      List<IExpr> equalities = new ArrayList<>();
+      List<IExpr> inequalities = new ArrayList<>();
+      List<Integer> inequalitySigns = new ArrayList<>(); // -1: feasible g<=0 ; +1: feasible g>=0
+      for (IExpr c : conjuncts) {
+        if (!parseComparator(c, engine, equalities, inequalities, inequalitySigns)) {
+          return F.NIL;
+        }
+      }
+
+      int m = inequalities.size();
+      if (m > 16) {
+        // too many inequality constraints for active-set enumeration
+        return F.NIL;
+      }
+
+      // precompute the gradient of the objective
+      IExpr[] df = new IExpr[n];
+      for (int i = 0; i < n; i++) {
+        df[i] = S.D.of(engine, objective, vars[i]);
       }
 
       List<IExpr> candidateValues = new ArrayList<>();
       List<IAST> candidateRules = new ArrayList<>();
 
-      // interior stationary points (only for inequality constraints)
-      if (allowInterior) {
-        IASTAppendable equations = F.ListAlloc(n);
-        for (int i = 0; i < n; i++) {
-          equations.append(F.Equal(S.D.of(engine, objective, vars[i]), F.C0));
+      // enumerate every active set of inequality constraints (equality constraints are always
+      // active). For each active set enforce the KKT stationarity condition via vanishing minors
+      // and solve together with the active boundary equations.
+      for (int mask = 0; mask < (1 << m); mask++) {
+        List<IExpr> activeG = new ArrayList<>(equalities);
+        for (int i = 0; i < m; i++) {
+          if ((mask & (1 << i)) != 0) {
+            activeG.add(inequalities.get(i));
+          }
+        }
+        int k = activeG.size();
+
+        IASTAppendable equations = F.ListAlloc();
+        // stationarity: all (k+1)x(k+1) minors of [Grad(f); Grad(g_i...)] vanish
+        if (k + 1 <= n) {
+          IExpr[][] matrixRows = new IExpr[k + 1][n];
+          matrixRows[0] = df;
+          for (int r = 0; r < k; r++) {
+            IExpr[] dg = new IExpr[n];
+            for (int i = 0; i < n; i++) {
+              dg[i] = S.D.of(engine, activeG.get(r), vars[i]);
+            }
+            matrixRows[r + 1] = dg;
+          }
+          for (int[] cols : combinations(n, k + 1)) {
+            IASTAppendable matrix = F.ListAlloc(k + 1);
+            for (int r = 0; r <= k; r++) {
+              IASTAppendable row = F.ListAlloc(k + 1);
+              for (int col : cols) {
+                row.append(matrixRows[r][col]);
+              }
+              matrix.append(row);
+            }
+            IExpr det = S.Det.of(engine, matrix);
+            equations.append(F.Equal(det, F.C0));
+          }
+        }
+        // active constraint boundary equations
+        for (IExpr g : activeG) {
+          equations.append(F.Equal(g, F.C0));
+        }
+        if (equations.isEmpty()) {
+          continue;
         }
         IExpr solution = S.Solve.of(engine, equations, varList, S.Reals);
-        collectCandidates(solution, vars, objective, gExpr, interiorSign, true, candidateValues,
-            candidateRules, engine);
+        collectCandidatesMulti(solution, vars, objective, equalities, inequalities, inequalitySigns,
+            candidateValues, candidateRules, engine);
       }
-
-      // boundary points: Grad(f) parallel to Grad(g) on g == 0.
-      // Instead of introducing a Lagrange multiplier we require that all 2x2 minors of the
-      // Jacobian [Grad(f); Grad(g)] vanish; this keeps the system in the original variables and is
-      // much more reliably solvable.
-      IExpr[] df = new IExpr[n];
-      IExpr[] dg = new IExpr[n];
-      for (int i = 0; i < n; i++) {
-        df[i] = S.D.of(engine, objective, vars[i]);
-        dg[i] = S.D.of(engine, gExpr, vars[i]);
-      }
-      IASTAppendable equations = F.ListAlloc(n);
-      for (int i = 0; i < n; i++) {
-        for (int j = i + 1; j < n; j++) {
-          equations
-              .append(F.Equal(F.Subtract(F.Times(df[i], dg[j]), F.Times(df[j], dg[i])), F.C0));
-        }
-      }
-      equations.append(F.Equal(gExpr, F.C0));
-      IExpr solution = S.Solve.of(engine, equations, varList, S.Reals);
-      collectCandidates(solution, vars, objective, gExpr, interiorSign, false, candidateValues,
-          candidateRules, engine);
 
       if (candidateValues.isEmpty()) {
         return F.NIL;
@@ -428,8 +460,151 @@ public class Maximize extends AbstractFunctionEvaluator {
   }
 
   /**
+   * Parse a single comparator constraint into equality / inequality boundary expressions, expanding
+   * chained relations into their consecutive binary pairs. A chained relation
+   * <code>a_1 OP a_2 OP ... OP a_p</code> (e.g. <code>Greater(10, x, 20)</code> meaning
+   * <code>10 &gt; x &gt; 20</code>) is equivalent to the conjunction of the binary relations
+   * <code>OP(a_i, a_{i+1})</code>. Supports {@link S#Equal}, {@link S#Less}, {@link S#LessEqual},
+   * {@link S#Greater} and {@link S#GreaterEqual}.
+   *
+   * @param c the comparator constraint
+   * @param engine the evaluation engine
+   * @param equalities collector for equality boundary expressions (<code>g == 0</code>)
+   * @param inequalities collector for inequality boundary expressions
+   * @param inequalitySigns collector for the feasible-interior sign of each inequality
+   *        (<code>-1</code> for feasible <code>g &lt;= 0</code>, <code>+1</code> for feasible
+   *        <code>g &gt;= 0</code>)
+   * @return <code>true</code> if the constraint was a supported comparator, <code>false</code>
+   *         otherwise
+   */
+  private static boolean parseComparator(IExpr c, EvalEngine engine, List<IExpr> equalities,
+      List<IExpr> inequalities, List<Integer> inequalitySigns) {
+    boolean equality = false;
+    int sign;
+    if (c.isAST(S.Equal)) {
+      equality = true;
+      sign = 0;
+    } else if (c.isAST(S.LessEqual) || c.isAST(S.Less)) {
+      sign = -1;
+    } else if (c.isAST(S.GreaterEqual) || c.isAST(S.Greater)) {
+      sign = 1;
+    } else {
+      return false;
+    }
+    // need at least two arguments (a binary relation); chained relations have more
+    if (c.size() < 3) {
+      return false;
+    }
+    IAST relation = (IAST) c;
+    // a_1 OP a_2 OP ... OP a_p == AND of consecutive binary relations OP(a_i, a_{i+1})
+    for (int i = 1; i < relation.size() - 1; i++) {
+      IExpr g = engine.evaluate(F.Subtract(relation.get(i), relation.get(i + 1)));
+      if (equality) {
+        equalities.add(g);
+      } else {
+        inequalities.add(g);
+        inequalitySigns.add(sign);
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Recursively flatten a constraint expression into its individual conjuncts. {@link S#And} and
+   * {@link S#List} nodes are descended into; everything else is added as a single conjunct.
+   *
+   * @param constraint the constraint expression
+   * @param conjuncts the collector for the individual constraints
+   */
+  private static void flattenConstraints(IExpr constraint, List<IExpr> conjuncts) {
+    if (constraint.isAST(S.And) || constraint.isList()) {
+      IAST ast = (IAST) constraint;
+      for (int i = 1; i < ast.size(); i++) {
+        flattenConstraints(ast.get(i), conjuncts);
+      }
+    } else {
+      conjuncts.add(constraint);
+    }
+  }
+
+  /**
+   * Collect fully determined, feasible candidate points from a {@code Solve} result, evaluating the
+   * objective at each point. A candidate is feasible if it satisfies every equality and inequality
+   * constraint.
+   */
+  private static void collectCandidatesMulti(IExpr solution, IExpr[] vars, IExpr objective,
+      List<IExpr> equalities, List<IExpr> inequalities, List<Integer> inequalitySigns,
+      List<IExpr> values, List<IAST> rulesList, EvalEngine engine) {
+    if (!solution.isListOfLists()) {
+      return;
+    }
+    IAST solutions = (IAST) solution;
+    for (int s = 1; s < solutions.size(); s++) {
+      IAST solutionRules = (IAST) solutions.get(s);
+      IAST ordered = orderedVarRules(solutionRules, vars);
+      if (!ordered.isPresent()) {
+        continue;
+      }
+      // every variable must be determined to a value free of the variables
+      boolean determined = true;
+      for (int i = 1; i < ordered.size(); i++) {
+        IExpr value = ((IAST) ordered.get(i)).second();
+        if (!isFreeOfAll(value, vars)) {
+          determined = false;
+          break;
+        }
+      }
+      if (!determined) {
+        continue;
+      }
+      if (!isFeasibleAllConstraints(ordered, equalities, inequalities, inequalitySigns, engine)) {
+        continue;
+      }
+      IExpr functionValue = engine.evaluate(applyRules(objective, ordered));
+      if (!isFreeOfAll(functionValue, vars)) {
+        continue;
+      }
+      values.add(functionValue);
+      rulesList.add(ordered);
+    }
+  }
+
+  /**
+   * Test whether the point given by the ordered rule list satisfies every equality constraint
+   * (<code>g == 0</code>) and inequality constraint (feasible where <code>g &lt;= 0</code> or
+   * <code>g &gt;= 0</code> depending on its sign). A candidate is rejected only if a constraint is
+   * provably violated.
+   */
+  private static boolean isFeasibleAllConstraints(IAST ordered, List<IExpr> equalities,
+      List<IExpr> inequalities, List<Integer> inequalitySigns, EvalEngine engine) {
+    for (IExpr g : equalities) {
+      IExpr v = engine.evaluate(applyRules(g, ordered));
+      if (!v.isPossibleZero(false, Config.SPECIAL_FUNCTIONS_TOLERANCE)) {
+        return false;
+      }
+    }
+    for (int i = 0; i < inequalities.size(); i++) {
+      IExpr v = engine.evaluate(applyRules(inequalities.get(i), ordered));
+      if (inequalitySigns.get(i) < 0) {
+        // feasible where v <= 0 -> reject if provably positive
+        if (v.isPositiveResult()) {
+          return false;
+        }
+      } else {
+        // feasible where v >= 0 -> reject if provably negative
+        if (v.isNegativeResult()) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+
+  /**
    * Collect feasible candidate points from a {@code Solve} result, evaluating the objective at each
-   * point. Interior candidates must satisfy the strict inequality given by <code>interiorSign</code>.
+   * point. Interior candidates must satisfy the strict inequality given by
+   * <code>interiorSign</code>.
    */
   private static void collectCandidates(IExpr solution, IExpr[] vars, IExpr objective, IExpr gExpr,
       int interiorSign, boolean interior, List<IExpr> values, List<IAST> rulesList,
