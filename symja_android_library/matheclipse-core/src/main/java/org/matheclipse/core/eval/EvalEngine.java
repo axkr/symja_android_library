@@ -670,6 +670,14 @@ public class EvalEngine implements Serializable {
 
   transient int fConstantCounter;
 
+  /**
+   * Reentrancy depth counter for the symbolic optimizers ({@code Minimize}/{@code Maximize}).
+   * Functions like {@code Solve}, {@code Reduce} and {@code FindInstance} may delegate to the
+   * optimizers; because the optimizers themselves call {@code Solve} internally, this counter is
+   * used to prevent infinite/deep mutual recursion (see {@link #incOptimizeExpressionDepth()}).
+   */
+  transient int fOptimizeExpressionDepth = 0;
+
   transient String f$Input = null;
 
   transient String f$InputFileName = null;
@@ -3563,6 +3571,38 @@ public class EvalEngine implements Serializable {
 
   public int getConstantCounter() {
     return fConstantCounter;
+  }
+
+  /**
+   * Increment the reentrancy depth counter for the symbolic optimizers
+   * ({@code Minimize}/{@code Maximize}) and return the new depth. Callers (like {@code Solve},
+   * {@code Reduce}, {@code FindInstance}) that delegate to the optimizers should guard the call so
+   * they don't re-enter while an optimizer is already running on the stack.
+   *
+   * @return the new (incremented) optimizer reentrancy depth
+   */
+  public int incOptimizeExpressionDepth() {
+    return ++fOptimizeExpressionDepth;
+  }
+
+  /**
+   * Decrement the reentrancy depth counter for the symbolic optimizers
+   * ({@code Minimize}/{@code Maximize}).
+   *
+   * @return the new (decremented) optimizer reentrancy depth
+   */
+  public int decOptimizeExpressionDepth() {
+    return --fOptimizeExpressionDepth;
+  }
+
+  /**
+   * Get the current reentrancy depth of the symbolic optimizers
+   * ({@code Minimize}/{@code Maximize}).
+   *
+   * @return the current optimizer reentrancy depth (<code>0</code> if no optimizer is running)
+   */
+  public int getOptimizeExpressionDepth() {
+    return fOptimizeExpressionDepth;
   }
 
   public final Context getContext() {
