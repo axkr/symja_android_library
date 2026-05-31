@@ -53,6 +53,7 @@ import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.IFunctionExpand;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -69,6 +70,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -89,6 +91,7 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModInteger;
 import edu.jas.arith.ModIntegerRing;
+import edu.jas.poly.ComplexRing;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.Monomial;
 import edu.jas.ufd.FactorAbstract;
@@ -5454,10 +5457,8 @@ public final class NumberTheory {
             return F.NIL;
           }
           // Compute distinct prime factors of phi(n) once
-          SortedMap<BigInteger, Integer> phiFactors =
-              Config.PRIME_FACTORS.factorInteger(phiBig);
-          BigInteger[] primeFactorsOfPhi =
-              phiFactors.keySet().toArray(new BigInteger[0]);
+          SortedMap<BigInteger, Integer> phiFactors = Config.PRIME_FACTORS.factorInteger(phiBig);
+          BigInteger[] primeFactorsOfPhi = phiFactors.keySet().toArray(new BigInteger[0]);
           // Iterate candidates from startValue up to n-1
           IInteger m = startValue;
           int iterationLimit = engine.getIterationLimit();
@@ -5877,13 +5878,16 @@ public final class NumberTheory {
    * True
    * </pre>
    */
-  private static final class SquareFreeQ extends AbstractFunctionEvaluator {
+  private static final class SquareFreeQ extends AbstractFunctionOptionEvaluator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
+      IExpr modulus = options[0];
+      IExpr gaussianIntegers = options[1];
       final VariablesSet eVar;
       boolean hasOption = ast.isAST2() ? true : false;
-      if (ast.isAST2() && ast.arg2().isFree(x -> x.isRuleAST(), false)) {
+      if (argSize == 2) {
         eVar = new VariablesSet(ast.arg2());
         final VariablesSet exprVariables = new VariablesSet(ast.arg1());
         if (eVar.size() != exprVariables.size()) {
@@ -5902,11 +5906,17 @@ public final class NumberTheory {
         eVar = new VariablesSet(ast.arg1());
       }
       if (eVar.isSize(0)) {
+        // no variable path
         IExpr arg1 = ast.arg1();
         if (arg1.isZero()) {
           return S.False;
         }
         if (arg1.isExactNumber()) {
+          if (!modulus.isZero()) {
+            // Inappropriate parameter: `1`.
+            return Errors.printMessage(S.SquareFreeQ, "par",
+                F.List(F.Rule(S.Modulus, modulus)), engine);
+          }
           if (arg1.isInteger()) {
             return F.booleSymbol(Primality.isSquareFree(((IInteger) arg1).toBigNumerator()));
           }
@@ -5915,6 +5925,11 @@ public final class NumberTheory {
                 && Primality.isSquareFree(((IFraction) arg1).toBigDenominator()));
           }
           if (arg1.isComplex()) {
+            if (gaussianIntegers == S.False) {
+              // Inappropriate parameter: `1`.
+              return Errors.printMessage(S.SquareFreeQ, "par",
+                  F.List(F.Rule(S.GaussianIntegers, S.False)), engine);
+            }
             IRational re = ((IComplex) arg1).re();
             if (re.isInteger()) {
               IRational im = ((IComplex) arg1).im();
@@ -5927,9 +5942,10 @@ public final class NumberTheory {
           }
           return S.False;
         }
-        if (arg1.isAtom()) {
-          return S.False;
-        }
+        // if (arg1.isAtom()) {
+        // return S.False;
+        // }
+        return F.False;
       }
       if (!eVar.isSize(1)) {
         // `1` currently not supported in `2`.
@@ -5942,7 +5958,7 @@ public final class NumberTheory {
         IAST varList = eVar.getVarList();
 
         if (hasOption) {
-          return F.booleSymbol(isSquarefreeWithOption(ast, expr, varList, engine));
+          return isSquarefreeWithOption(ast, expr, varList, options, engine);
         }
         return F.booleSymbol(isSquarefree(expr, varList));
       } catch (RuntimeException rex) {
@@ -5958,70 +5974,68 @@ public final class NumberTheory {
       return ARGS_1_2;
     }
 
-    public static boolean isSquarefree(IExpr expr, IAST varList) throws JASConversionException {
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, //
+          new IBuiltInSymbol[] {S.Modulus, S.GaussianIntegers}, //
+          new IExpr[] {F.C0, S.Automatic});
+    }
+
+    private static boolean isSquarefree(IExpr expr, IAST varList) throws JASConversionException {
       JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
       GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
       if (poly == null) {
-        throw JASConversionException.FAILED;
+        return false;
       }
       FactorAbstract<BigRational> factorAbstract = FactorFactory.getImplementation(BigRational.ONE);
       return factorAbstract.isSquarefree(poly);
     }
 
-    public static boolean isSquarefreeWithOption(final IAST lst, IExpr expr, IAST varList,
+    private static IExpr isSquarefreeWithOption(final IAST lst, IExpr expr, IAST varList,
+        IExpr[] options,
         final EvalEngine engine) throws JASConversionException {
-      final OptionArgs options = new OptionArgs(lst.topHead(), lst, 2, engine);
-      IExpr option = options.getOption(S.Modulus);
-      if (option.isReal()) {
 
+      IExpr modulus = options[0];
+      IExpr gaussianIntegers = options[1];
+      if (modulus.isInteger() && !modulus.isZero()) {
         // found "Modulus" option => use ModIntegerRing
-        ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((IReal) option);
+        ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((IInteger) modulus);
         JASConvert<ModInteger> jas = new JASConvert<ModInteger>(varList, modIntegerRing);
         GenPolynomial<ModInteger> poly = jas.expr2JAS(expr, false);
         if (poly == null) {
-          throw JASConversionException.FAILED;
+          return S.False;
         }
         FactorAbstract<ModInteger> factorAbstract = FactorFactory.getImplementation(modIntegerRing);
-        return factorAbstract.isSquarefree(poly);
+        return F.booleSymbol(factorAbstract.isSquarefree(poly));
       }
-      // option = options.getOption("GaussianIntegers");
-      // if (option.equals(S.True)) {
-      // try {
-      // ComplexRing<edu.jas.arith.BigInteger> fac = new
-      // ComplexRing<edu.jas.arith.BigInteger>(edu.jas.arith.BigInteger.ONE);
-      //
-      // JASConvert<edu.jas.structure.Complex<edu.jas.arith.BigInteger>> jas =
-      // new JASConvert<edu.jas.structure.Complex<edu.jas.arith.BigInteger>>(
-      // varList, fac);
-      // GenPolynomial<edu.jas.structure.Complex<edu.jas.arith.BigInteger>>
-      // poly = jas.expr2Poly(expr);
-      // FactorAbstract<edu.jas.structure.Complex<edu.jas.arith.BigInteger>>
-      // factorAbstract = FactorFactory
-      // .getImplementation(fac);
-      // SortedMap<GenPolynomial<edu.jas.structure.Complex<edu.jas.arith.BigInteger>>,
-      // Long> map = factorAbstract.factors(poly);
-      // IAST result = F.Times();
-      // for
-      // (SortedMap.Entry<GenPolynomial<edu.jas.structure.Complex<edu.jas.arith.BigInteger>>,
-      // Long> entry : map.entrySet()) {
-      // GenPolynomial<edu.jas.structure.Complex<edu.jas.arith.BigInteger>>
-      // singleFactor = entry.getKey();
-      // // GenPolynomial<edu.jas.arith.BigComplex> integerCoefficientPoly
-      // // = (GenPolynomial<edu.jas.arith.BigComplex>) jas
-      // // .factorTerms(singleFactor)[2];
-      // // Long val = entry.getValue();
-      // // result.add(F.Power(jas.integerPoly2Expr(integerCoefficientPoly),
-      // // F.integer(val)));
-      // }
-      // return result;
-      // } catch (ArithmeticException ae) {
-      // // toInt() conversion failed
-      // LOGGER.debug("SquareFreeQ.isSquarefreeWithOption() failed", ae);
-      // return null; // no evaluation
-      // }
-      // }
-      return false; // no evaluation
+      if (gaussianIntegers == S.True) {
+        // found "GaussianIntegers->True" option => factor over the Gaussian integers (complex
+        // numbers with rational real and imaginary parts)
+        ComplexRing<BigRational> complexRing = new ComplexRing<BigRational>(BigRational.ONE);
+        JASConvert<edu.jas.poly.Complex<BigRational>> jas =
+            new JASConvert<edu.jas.poly.Complex<BigRational>>(varList, complexRing);
+        GenPolynomial<edu.jas.poly.Complex<BigRational>> poly = jas.expr2JAS(expr, false);
+        if (poly == null) {
+          return S.False;
+        }
+        FactorAbstract<edu.jas.poly.Complex<BigRational>> factorAbstract =
+            FactorFactory.getImplementation(complexRing);
+        return F.booleSymbol(factorAbstract.isSquarefree(poly));
+      }
+      // GaussianIntegers->Automatic or GaussianIntegers->False:
+      // use the squarefree test over the rational numbers
+      try {
+        return F.booleSymbol(isSquarefree(expr, varList));
+      } catch (JASConversionException jce) {
+        if (gaussianIntegers == S.False) {
+          // Inappropriate parameter: `1`.
+          return Errors.printMessage(S.SquareFreeQ, "par",
+              F.List(F.Rule(S.GaussianIntegers, S.False)), engine);
+        } 
+      }
+      return S.False;
     }
+
   }
 
 

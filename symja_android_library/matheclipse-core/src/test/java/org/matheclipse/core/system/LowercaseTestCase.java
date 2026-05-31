@@ -22721,6 +22721,26 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSquareFreeQ() {
+    check("SquareFreeQ(Sin(x))", //
+        "False");
+    check("SquareFreeQ(Sqrt(2))", //
+        "False");
+
+    // message SquareFreeQ: Inappropriate parameter: GaussianIntegers->False.
+    check("SquareFreeQ(3+2*I, GaussianIntegers -> False)", //
+        "SquareFreeQ(3+I*2,GaussianIntegers->False)");
+    // SquareFreeQ: Inappropriate parameter: Modulus->7.
+    check("SquareFreeQ(10, Modulus -> 7)", //
+        "SquareFreeQ(10,Modulus->7)");
+    check("SquareFreeQ(x^2 + 1, Modulus -> 2)", //
+        "False");
+
+
+    check("SquareFreeQ(5, GaussianIntegers -> True)", //
+        "True");
+
+    check("SquareFreeQ(3+2*I, GaussianIntegers -> Automatic)", //
+        "True");
     check("SquareFreeQ(-45+28*I)", //
         "False");
     check("SquareFreeQ(6+7*I)", //
@@ -22762,8 +22782,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("SquareFreeQ(x^2+1)", //
         "True");
     check("SquareFreeQ(9 + 6*x + x^2)", //
-        "False");
-    check("SquareFreeQ(x^2 + 1, Modulus -> 2)", //
         "False");
     check("SquareFreeQ(6+6*x+x^2)", //
         "True");
