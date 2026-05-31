@@ -11,6 +11,22 @@ public class ReduceTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testReduceInequalityByExtrema() {
+    // globally decided via Minimize/Maximize: min(x^2+1) == 1 > 0
+    check("Reduce(x^2 + 1 > 0, x)", //
+        "x∈Reals");
+    check("Reduce(x^2 + 1 >= 0, x)", //
+        "x∈Reals");
+    check("Reduce(x^2 + 1 < 0, x)", //
+        "False");
+    check("Reduce(x^2 + 1 <= 0, x)", //
+        "False");
+    // max(-x^2 - 1) == -1 < 0
+    check("Reduce(-x^2 - 1 < 0, x)", //
+        "x∈Reals");
+  }
+
+  @Test
   public void testReduce002() {
     check("Reduce(x > 1 && x < 5 || x >= 5 && x < 8)", //
         "x>1&&x<8");

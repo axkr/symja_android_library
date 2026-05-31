@@ -75,6 +75,23 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
         "{-9,{x->0,y->-2}}");
   }
 
+  @Test
+  public void testLagrangeMultipleConstraints() {
+    // intersection of two constraints: minimize x+y on the unit disk above the line y >= x
+    check("Maximize({x + y, x^2 + y^2 <= 1 && y >= x}, {x, y})", //
+        "{Sqrt(2),{x->1/Sqrt(2),y->1/Sqrt(2)}}");
+    // box-type polytope via several linear inequalities (nonlinear objective)
+    check("Maximize({x*y, x + y <= 4 && x >= 0 && y >= 0}, {x, y})", //
+        "{4,{x->2,y->2}}");
+  }
+
+  @Test
+  public void testLagrangeChainedRelation() {
+    // chained bound 1 <= x <= 3 written as a ternary relation, plus a second variable bound
+    check("Maximize({x + y, 1 <= x <= 3 && 0 <= y <= 2}, {x, y})", //
+        "{5,{x->3,y->2}}");
+  }
+
   /**
    * Feature #6: exact (rational) linear programming. A linear objective with linear inequality /
    * equality constraints returns the exact rational optimum at a vertex of the polytope.

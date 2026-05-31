@@ -852,48 +852,70 @@ public final class Validate {
    */
   public static IASTAppendable checkEquationsAndInequations(final IAST ast, int position) {
     IExpr expr = ast.get(position);
-    IAST eqns = null;
     IASTAppendable termsEqualZeroList;
     if (expr.isList() || expr.isAnd()) {
-
-      // a list of equations or inequations or a boolean AND expression of equations
-      eqns = (IAST) expr;
+      // a list or a boolean And() expression of equations / inequations
+      IAST eqns = (IAST) expr;
       termsEqualZeroList = F.ListAlloc(eqns.size());
       for (int i = 1; i < eqns.size(); i++) {
-        IExpr arg = eqns.get(i);
-        if (arg.isOr()) {
-          termsEqualZeroList.append(arg);
-        } else if (arg.isAST2()) {
-          IAST eq = (IAST) arg;
-          checkEquationAndInequation(eq, termsEqualZeroList);
-        } else {
-          if (arg.size() > 3 //
-              && arg.isAST(S.Less) //
-              || arg.isAST(S.LessEqual) //
-              || arg.isAST(S.Greater) //
-              || arg.isAST(S.GreaterEqual)) {
-            // split n-ary function in binary functions
-            IAST function = (IAST) arg;
-            IBuiltInSymbol head = (IBuiltInSymbol) function.head();
-            IExpr lastArg = function.arg1();
-            for (int j = 2; j < function.size(); j++) {
-              IExpr fj = function.get(j);
-              termsEqualZeroList.append(F.binaryAST2(head, lastArg, fj));
-              lastArg = fj;
-            }
-            continue;
-          }
-          // not an equation or inequation
-          throw new ArgumentTypeException(
-              "binary equation or inequation expression expected at position " + i);
-        }
+        addEquationOrInequation(eqns.get(i), termsEqualZeroList);
       }
     } else {
       termsEqualZeroList = F.ListAlloc();
-      checkEquationAndInequation(expr, termsEqualZeroList);
+      addEquationOrInequation(expr, termsEqualZeroList);
     }
     return termsEqualZeroList;
   }
+
+  /**
+   * Append a single equation / inequation argument to <code>termsEqualZeroList</code>. Nested
+   * <code>And(...)</code> expressions (conjunctions) are flattened recursively,
+   * <code>Or(...)</code> expressions (disjunctions) are kept as a single boolean term, and n-ary
+   * (chained) relations like <code>Less(a, b, c)</code> are split into their consecutive binary
+   * relations.
+   *
+   * @param arg the equation / inequation / boolean combination
+   * @param termsEqualZeroList the collector for the resulting equations / inequations
+   */
+  private static void addEquationOrInequation(IExpr arg, IASTAppendable termsEqualZeroList) {
+    if (arg.isAnd()) {
+      // flatten a conjunction of equations / inequations
+      IAST and = (IAST) arg;
+      for (int j = 1; j < and.size(); j++) {
+        addEquationOrInequation(and.get(j), termsEqualZeroList);
+      }
+      return;
+    }
+    if (arg.isOr()) {
+      // keep a disjunction as a single boolean constraint
+      termsEqualZeroList.append(arg);
+      return;
+    }
+    if (arg.size() > 3 //
+        && (arg.isAST(S.Less) //
+            || arg.isAST(S.LessEqual) //
+            || arg.isAST(S.Greater) //
+            || arg.isAST(S.GreaterEqual))) {
+      // split an n-ary (chained) relation into its consecutive binary relations
+      IAST function = (IAST) arg;
+      IBuiltInSymbol head = (IBuiltInSymbol) function.head();
+      IExpr lastArg = function.arg1();
+      for (int j = 2; j < function.size(); j++) {
+        IExpr fj = function.get(j);
+        termsEqualZeroList.append(F.binaryAST2(head, lastArg, fj));
+        lastArg = fj;
+      }
+      return;
+    }
+    if (arg.isAST2() || arg.isTrue() || arg.isFalse()) {
+      checkEquationAndInequation(arg, termsEqualZeroList);
+      return;
+    }
+    // not an equation or inequation
+    throw new ArgumentTypeException(
+        "binary equation or inequation expression expected instead of " + arg.toString());
+  }
+
 
   private static void checkEquationAndInequation(IExpr eq, IASTAppendable termsEqualZeroList) {
     if (eq.isEqual()) {

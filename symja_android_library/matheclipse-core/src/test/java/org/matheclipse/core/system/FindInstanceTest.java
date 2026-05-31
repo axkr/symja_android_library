@@ -119,4 +119,17 @@ public class FindInstanceTest extends ExprEvaluatorTestCase {
     check("FindInstance({a*x + y == 7, b*x - y == 1}, {x, y})", //
         "{{x->-8/(-a-b),y->(a-7*b)/(-a-b)}}");
   }
+
+  @Test
+  public void testFindInstanceRealConstrained() {
+    // compact ellipsoid / disk region: a feasible boundary point is derived from Maximize/Minimize
+    check("FindInstance({x^2 + y^2 <= 1}, {x, y}, Reals)", //
+        "{{x->1,y->0}}");
+    check("FindInstance(9*x^2 + 4*y^2 <= 36, {x, y}, Reals)", //
+        "{{x->2,y->0}}");
+
+    // bounded linear polytope with an equality and inequalities -> a feasible vertex
+    check("FindInstance({x + y == 10, x >= 0, y >= 0, x <= 7}, {x, y}, Reals)", //
+        "{{x->7,y->3}}");
+  }
 }

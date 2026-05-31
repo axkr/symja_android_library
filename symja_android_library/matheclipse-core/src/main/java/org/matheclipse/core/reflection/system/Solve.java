@@ -181,6 +181,101 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     }
 
     /**
+     * Test whether the solution <code>list</code> is parametric with respect to the active
+     * constraints, i.e. some solved value still depends on a constraint variable that itself isn't
+     * solved (a free parameter).
+     */
+    private boolean isParametricSolution(IAST list, IAST inequationsList,
+        IAST intervalInequations) {
+      Set<IExpr> solvedVars = new TreeSet<>();
+      for (int i = 1; i < list.size(); i++) {
+        solvedVars.add(((IAST) list.get(i)).first());
+      }
+      Set<IExpr> constraintVars = new TreeSet<>(intervalDataMap.keySet());
+      if (inequationsList != null && inequationsList.isPresent()) {
+        addVariables(inequationsList, constraintVars);
+      }
+      if (intervalInequations != null && intervalInequations.isPresent()) {
+        addVariables(intervalInequations, constraintVars);
+      }
+      if (constraintVars.isEmpty()) {
+        return false;
+      }
+      for (int i = 1; i < list.size(); i++) {
+        IExpr value = ((IAST) list.get(i)).second();
+        for (IExpr cv : constraintVars) {
+          if (!solvedVars.contains(cv) && !value.isFree(cv)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    private static void addVariables(IAST expr, Set<IExpr> collector) {
+      IAST varList = new VariablesSet(expr).getVarList();
+      for (int i = 1; i < varList.size(); i++) {
+        collector.add(varList.get(i));
+      }
+    }
+
+    /**
+     * Build a {@link S#ConditionalExpression} solution for a constrained parametric solution. All
+     * constraints (reconstructed from the interval-data map with
+     * {@link IntervalDataSym#intervalToOr(IAST, IExpr)} and the remaining inequations) are
+     * substituted with the solution rules, projected onto the single free variable using
+     * {@link S#Reduce}, and attached as the condition of every solved value.
+     *
+     * @return a "list of solution lists" like <code>{{x -> ConditionalExpression(.., ..)}}</code>,
+     *         {@link F#CEmptyList} if the constraints are unsatisfiable, or {@link F#NIL} if no
+     *         constrained condition could be derived
+     */
+    private IExpr conditionalParametricSolution(IAST list, IAST inequationsList,
+        IAST intervalInequations, EvalEngine engine) {
+      IASTAppendable conditions = F.ListAlloc();
+      for (Map.Entry<IExpr, IAST> entry : intervalDataMap.entrySet()) {
+        IExpr logic = IntervalDataSym.intervalToOr(entry.getValue(), entry.getKey());
+        if (logic.isPresent()) {
+          conditions.append(logic);
+        }
+      }
+      if (inequationsList != null && inequationsList.isPresent()) {
+        conditions.appendArgs(inequationsList);
+      }
+      if (intervalInequations != null && intervalInequations.isPresent()) {
+        conditions.appendArgs(intervalInequations);
+      }
+      if (conditions.isEmpty()) {
+        return F.NIL;
+      }
+      IExpr condition = conditions.argSize() == 1 //
+          ? conditions.arg1() //
+          : conditions.setAtCopy(0, S.And);
+      condition = engine.evaluate(F.subst(condition, list));
+
+      IAST freeVars = new VariablesSet(condition).getVarList();
+      if (freeVars.argSize() == 1) {
+        IExpr reduced = engine.evaluate(F.Reduce(condition, freeVars.arg1()));
+        if (reduced.isPresent() && reduced.isFree(S.Reduce)) {
+          condition = reduced;
+        }
+      }
+      if (condition.isFalse()) {
+        return F.CEmptyList;
+      }
+      IASTAppendable wrapped = F.ListAlloc(list.argSize());
+      for (int i = 1; i < list.size(); i++) {
+        IAST rule = (IAST) list.get(i);
+        if (condition.isTrue()) {
+          wrapped.append(rule);
+        } else {
+          wrapped.append(F.Rule(rule.first(), F.ConditionalExpression(rule.second(), condition)));
+        }
+      }
+      return F.list(wrapped);
+    }
+
+    /**
      * Recursively solve the list of analyzers.
      *
      * @param analyzerList list of analyzers, which determine, if an expression has linear,
@@ -452,13 +547,32 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         for (IExpr variable : exprAnalyzer.getVariableSet()) {
 
           // heuristic to find roots: find maximum/minimum and search for roots around these values.
-          Set<IExpr> solutionSet = new TreeSet<>(comparator);
-          IExpr maximum = engine.evaluate(F.NMaximize(originalExpr, variable));
-          findRootsFromExtremum(maximum, originalExpr, variable, solutionSet, engine);
-          IExpr minimum = engine.evaluate(F.NMinimize(originalExpr, variable));
-          findRootsFromExtremum(minimum, originalExpr, variable, solutionSet, engine);
-          if (!solutionSet.isEmpty()) {
-            return F.ListAlloc(solutionSet);
+          // Guard against deep mutual recursion: the (N)Maximize/(N)Minimize optimizers may call
+          // Solve again, which would re-enter this heuristic. Only run it at optimizer reentrancy
+          // depth 0 (see EvalEngine#incOptimizeExpressionDepth()).
+          if (engine.getOptimizeExpressionDepth() == 0) {
+            engine.incOptimizeExpressionDepth();
+            try {
+              Set<IExpr> solutionSet = new TreeSet<>(comparator);
+              // prefer the exact symbolic optimizers Maximize/Minimize (they may yield exact
+              // roots),
+              // fall back to the numeric NMaximize/NMinimize only if nothing was found.
+              IExpr maximum = engine.evaluate(F.Maximize(originalExpr, variable));
+              findRootsFromExtremum(maximum, originalExpr, variable, solutionSet, engine);
+              IExpr minimum = engine.evaluate(F.Minimize(originalExpr, variable));
+              findRootsFromExtremum(minimum, originalExpr, variable, solutionSet, engine);
+              if (solutionSet.isEmpty()) {
+                maximum = engine.evaluate(F.NMaximize(originalExpr, variable));
+                findRootsFromExtremum(maximum, originalExpr, variable, solutionSet, engine);
+                minimum = engine.evaluate(F.NMinimize(originalExpr, variable));
+                findRootsFromExtremum(minimum, originalExpr, variable, solutionSet, engine);
+              }
+              if (!solutionSet.isEmpty()) {
+                return F.ListAlloc(solutionSet);
+              }
+            } finally {
+              engine.decOptimizeExpressionDepth();
+            }
           }
 
           IExpr temp = engine.evaluate( //
@@ -476,9 +590,33 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         Set<IExpr> solutionSet, EvalEngine engine) {
       if (valueList.isList2() && valueList.second().isList1()
           && valueList.second().first().isRule()) {
+        IExpr extremumValue = valueList.first();
         IAST rule = (IAST) valueList.second().first();
-        if (rule.second().isReal()) {
-          IReal value = (IReal) rule.second();
+        IExpr location = rule.second();
+        if (location.isIndeterminate() || location.isDirectedInfinity()
+            || !location.isFree(variable)) {
+          return;
+        }
+
+        // exact tangent root: if the extremum value is exactly 0, the (exact, symbolic) extremum
+        // location is itself an exact root of "originalExpr == 0".
+        if (extremumValue.isZero()) {
+          solutionSet.add(F.Rule(variable, location));
+          return;
+        }
+
+        // otherwise use a real (possibly numerically evaluated) extremum location as a seed for
+        // FindRoot. Symbolic locations such as Pi/2 are evaluated to a number first.
+        IReal value = null;
+        if (location.isReal()) {
+          value = (IReal) location;
+        } else {
+          IExpr num = engine.evalN(location);
+          if (num.isReal()) {
+            value = (IReal) num;
+          }
+        }
+        if (value != null) {
           IExpr list1Root = engine.evaluate( //
               F.FindRoot(originalExpr, //
                   F.List(variable, value.add(Config.DEFAULT_ROOTS_CHOP_DELTA))));
@@ -921,6 +1059,19 @@ public class Solve extends AbstractFunctionOptionEvaluator {
 
     private IExpr filterSingleSolution(IAST list, IAST inequationsList, IAST intervalInequations,
         final boolean[] isNumeric, EvalEngine engine) {
+
+      // Constrained parametric solutions: if a solved value still depends on a free (unsolved)
+      // constraint variable, project every constraint onto the free variable(s) with Reduce and
+      // return a ConditionalExpression, e.g.
+      // Solve({x + y == 4, 1 <= x <= 3 && 0 <= y <= 2}, {x, y})
+      // -> {{x -> ConditionalExpression(4 - y, 1 <= y <= 2)}}
+      if (isParametricSolution(list, inequationsList, intervalInequations)) {
+        IExpr conditional =
+            conditionalParametricSolution(list, inequationsList, intervalInequations, engine);
+        if (conditional.isPresent()) {
+          return conditional;
+        }
+      }
 
       // Merge the inequalities so that Conditional checks can still be processed properly.
       IASTAppendable fullInequationsList = inequationsList.copyAppendable();
@@ -1626,3 +1777,5 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     setOptions(newSymbol, optionKeys, optionValues);
   }
 }
+
+

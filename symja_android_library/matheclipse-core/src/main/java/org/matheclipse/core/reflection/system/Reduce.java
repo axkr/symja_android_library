@@ -593,6 +593,16 @@ public class Reduce extends AbstractEvaluator {
       Map<IExpr, IExpr> domainMap = new VariablesSet(expr).toMap(domain);
       setInequalityDomainsRecursive(expr, domainMap);
 
+      if (domain == S.Reals || domain == S.Complexes) {
+        // try to decide a single univariate (polynomial) inequality globally with the help of the
+        // symbolic optimizers Minimize/Maximize (e.g. x^2 + 1 > 0 is always True). Inequalities are
+        // inherently real-valued, so this is applied independent of the requested domain.
+        IExpr decided = decideInequalityByExtrema(ast.arg1(), variable, engine);
+        if (decided.isPresent()) {
+          return decided;
+        }
+      }
+
       IExpr logicalExpand = S.LogicalExpand.of(engine, expr);
       if (logicalExpand.isTrue() || logicalExpand.isFalse()) {
         return logicalExpand;
@@ -637,6 +647,111 @@ public class Reduce extends AbstractEvaluator {
       rex.printStackTrace();
     }
     return F.NIL;
+  }
+
+  /**
+   * Try to globally decide a single univariate inequality <code>lhs OP rhs</code> in
+   * <code>variable</code> over the reals using the symbolic optimizers
+   * {@link S#Minimize}/{@link S#Maximize}. For example <code>x^2 + 1 &gt; 0</code> holds for every
+   * real <code>x</code> (because <code>Minimize(x^2+1) == 1 &gt; 0</code>), so the solution set is
+   * <code>Element(x, Reals)</code>.
+   *
+   * <p>
+   * To avoid deep mutual recursion (the optimizers internally call {@code Solve}, which can call
+   * {@code Reduce} again) the delegation only happens at optimizer reentrancy depth <code>0</code>,
+   * guarded by {@link EvalEngine#incOptimizeExpressionDepth()}.
+   *
+   * @param arg1 the first argument of {@code Reduce}
+   * @param variable the (single) variable
+   * @param engine the evaluation engine
+   * @return an <code>Element(variable, Reals)</code> AST if the inequality holds for every real
+   *         value, {@link S#False} if it holds for no value, {@link F#NIL} otherwise
+   */
+  private static IExpr decideInequalityByExtrema(IExpr arg1, IExpr variable, EvalEngine engine) {
+    if (engine.getOptimizeExpressionDepth() != 0) {
+      return F.NIL;
+    }
+    int headID = arg1.headID();
+    if (headID != ID.Less && headID != ID.LessEqual && headID != ID.Greater
+        && headID != ID.GreaterEqual) {
+      return F.NIL;
+    }
+    IAST comparator = (IAST) arg1;
+    if (comparator.argSize() != 2) {
+      return F.NIL;
+    }
+    IExpr f = engine.evaluate(F.Subtract(comparator.arg1(), comparator.arg2()));
+    if (f.isFree(variable) || !f.isPolynomial(variable)) {
+      return F.NIL;
+    }
+
+    engine.incOptimizeExpressionDepth();
+    try {
+      IExpr minValue = extremumValue(S.Minimize.of(engine, f, variable));
+      IExpr maxValue = extremumValue(S.Maximize.of(engine, f, variable));
+      switch (headID) {
+        case ID.Greater: // f > 0
+          if (minValue.isPresent() && minValue.isPositiveResult()) {
+            return F.Element(variable, S.Reals);
+          }
+          if (maxValue.isPresent() && maxValue.isNegativeResult()) {
+            return S.False;
+          }
+          break;
+        case ID.GreaterEqual: // f >= 0
+          if (minValue.isPresent() && !minValue.isNegativeResult()) {
+            return F.Element(variable, S.Reals);
+          }
+          if (maxValue.isPresent() && maxValue.isNegativeResult()) {
+            return S.False;
+          }
+          break;
+        case ID.Less: // f < 0
+          if (maxValue.isPresent() && maxValue.isNegativeResult()) {
+            return F.Element(variable, S.Reals);
+          }
+          if (minValue.isPresent() && minValue.isPositiveResult()) {
+            return S.False;
+          }
+          break;
+        case ID.LessEqual: // f <= 0
+          if (maxValue.isPresent() && !maxValue.isPositiveResult()) {
+            return F.Element(variable, S.Reals);
+          }
+          if (minValue.isPresent() && minValue.isPositiveResult()) {
+            return S.False;
+          }
+          break;
+        default:
+          break;
+      }
+    } finally {
+      engine.decOptimizeExpressionDepth();
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Extract the (finite) extremum value from a {@code Minimize}/{@code Maximize} result
+   * <code>{value, {var -> p}}</code>. Returns {@link F#NIL} if the value is infinite / indeterminate
+   * or the result isn't a determined extremum.
+   *
+   * @param result the optimizer result
+   * @return the extremum value or {@link F#NIL}
+   */
+  private static IExpr extremumValue(IExpr result) {
+    if (!result.isList2()) {
+      return F.NIL;
+    }
+    IExpr value = ((IAST) result).first();
+    if (!value.isFree(S.Minimize) || !value.isFree(S.Maximize)) {
+      return F.NIL;
+    }
+    if (value.isIndeterminate() || value.isInfinity() || value.isNegativeInfinity()
+        || value.isDirectedInfinity() || value.isAST(S.Piecewise)) {
+      return F.NIL;
+    }
+    return value;
   }
 
   /**

@@ -2561,6 +2561,13 @@ public class SolveTest extends ExprEvaluatorTestCase {
             + "8258413328561117/18014398509481984))}}");
   }
 
+  @Test
+  public void testSolveConstraints() {
+    check("Solve({x + y==4, 1 <= x <= 3 && 0 <= y <= 2}, {x, y})", //
+        "{{x->ConditionalExpression(4-y,y>=1&&y<=2)}}");
+  }
+
+
   /** The JUnit setup method */
   @Override
   public void setUp() {
