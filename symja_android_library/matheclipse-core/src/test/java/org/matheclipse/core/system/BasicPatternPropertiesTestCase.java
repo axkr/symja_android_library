@@ -1,9 +1,8 @@
 package org.matheclipse.core.system;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
@@ -11,9 +10,6 @@ import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
-import static org.junit.Assert.assertEquals;
-
-@RunWith(JUnit4.class)
 public class BasicPatternPropertiesTestCase {
   private Parser fParser;
 
@@ -79,7 +75,7 @@ public class BasicPatternPropertiesTestCase {
   }
 
   /** The JUnit setup method */
-  @Before
+  @BeforeEach
   public void setUp() {
     try {
       // setup the evaluation engine (and bind to current thread)

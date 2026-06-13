@@ -1,6 +1,7 @@
 package org.matheclipse.nlp.system;
 
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -10,10 +11,7 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
@@ -22,12 +20,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.nlp.NLPInit;
-import junit.framework.TestCase;
-
-import static org.junit.Assert.assertEquals;
 
 /** Tests system.reflection classes */
-@RunWith(JUnit4.class)
 public abstract class AbstractTestCase {
   protected ScriptEngine fScriptEngine;
   protected ScriptEngine fNumericScriptEngine;
@@ -166,7 +160,7 @@ public abstract class AbstractTestCase {
   }
 
   /** The JUnit setup method */
-  @Before
+  @BeforeEach
   public void setUp() {
     try {
       synchronized (fScriptManager) {

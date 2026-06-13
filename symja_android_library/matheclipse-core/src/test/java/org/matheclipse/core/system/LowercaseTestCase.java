@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatContext;
-import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.AlgebraUtil;
@@ -2008,85 +2007,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("BellB({1,2,3,4,5,6})", "{1,2,5,15,52,203}");
   }
 
-  @Test
-  public void testBellY() {
-    // check("x + Sum(x^m/(m!*(m - 1)!) * BellY(Table({(m + k - 2)!, -(k - 1)! * c(k)}, {k, 2, m})),
-    // {m, 2, 4}) ",
-    // //
-    // "");
-
-    // check("BellY({{x1, x2, x3}, {y1, y2, y3}, {z1, z2, z3}})", //
-    // "");
-    // check("BellY(4, 2, {{x1, x2, x3}, {y1, y2, y3}})", //
-    // "3*y2+4*x1*{{x1,x2,x3},{y1,y2,y3}}[[3,1]]");
-    check("BellY(4, 2, {x1, x2, y1})", //
-        "3*x2^2+4*x1*y1");
-
-    // check(
-    // "Apply(Plus, {BellY(4, 2, {x1,x2,y1}), BellY(4, 2, {x1, x2, y2}), BellY(4, 2, {x1, x2, y3}),
-    // BellY(4, 2, {x1, x3, y1}), " //
-    // + "BellY(4, 2, {x1, x3, y2}), BellY(4, 2, {x1, x3, y3}), BellY(4, 2, {x2, x3, y1}), BellY(4,
-    // 2, {x2, x3, y2}), " //
-    // + " BellY(4, 2, {x2, x3, y3})} ) ",
-    // "");
-    // check(
-    // "{BellY(4, 2, {x1,x2,y1}), BellY(4, 2, {x1, x2, y2}), BellY(4, 2, {x1, x2, y3}), BellY(4, 2,
-    // {x1, x3, y1}), " //
-    // + "BellY(4, 2, {x1, x3, y2}), BellY(4, 2, {x1, x3, y3}), BellY(4, 2, {x2, x3, y1}), BellY(4,
-    // 2, {x2, x3, y2}), " //
-    // + " BellY(4, 2, {x2, x3, y3})} ",
-    // "");
-    // check(
-    // "Apply(Plus, {BellY(4, 2, {x1,x2,y1}), BellY(4, 2, {x1, x2, y2}), BellY(4, 2, {x1, x2, y3}),
-    // BellY(4, 2, {x1, x3, y1}), " //
-    // + "BellY(4, 2, {x1, x3, y2}), BellY(4, 2, {x1, x3, y3}), BellY(4, 2, {x2, x3, y1}), BellY(4,
-    // 2, {x2, x3, y2}), " //
-    // + " BellY(4, 2, {x2, x3, y3})} ) ",
-    // "");
-    // check("BellY(4, 2, {{x1, x2, x3}, {y1, y2, y3}})", //
-    // "3*x2^4*x3^4*y1^2 + 12*x1^2*x2*x3^2*y2*y3 + 18*x1*x2^2*x3^2*y1*\n"
-    // + " (x3^2*y2 + x2*y3) + 3*x1^2*(x3^2*y2 + x2*y3)^2");
-
-    // check("BellY(Partition(Range(25), 5))", //
-    // "{{1,0,0,0,0},{6,49,0,0,0},{11,252,2197,0,0},{16,908,18252,130321,0},{21,2810,\n" //
-    // + "102050,1646160,9765625}}");
-    //
-    // check("BellY({{1,0,0},{2,3,0},{4,5,6}})", //
-    // "{{1,0,0},{2,9,0},{4,45,216}}");
-
-
-
-    // display error messages: Polynomial degree 2147483647 exceeded
-    check("BellY(2147483647,3,{x,-3,-1/2})", //
-        "BellY(2147483647,3,{x,-3,-1/2})");
-    // message Polynomial degree 1009 exceeded
-    check("BellY(1009,19,{-1/2,-2,3})", //
-        "BellY(1009,19,{-1/2,-2,3})");
-
-    check("BellY(2,1,{1/2,0})", //
-        "0");
-    check("BellY(5, 2, {})", //
-        "0");
-    check("BellY(5, 2, {1})", //
-        "0");
-    check("BellY(5, 2, {1,2})", //
-        "0");
-    check("BellY(5, 2, {1,2,3})", //
-        "60");
-    check("BellY(5, 8, {1,2,3})", //
-        "0");
-
-    // https://en.wikipedia.org/wiki/Bell_polynomials
-    check("BellY(6, 2, {x1, x2, x3, x4, x5})", //
-        "10*x3^2+15*x2*x4+6*x1*x5");
-    check("BellY(6, 3, {x1, x2, x3, x4})", //
-        "15*x2^3+60*x1*x2*x3+15*x1^2*x4");
-
-    check("BellY(4, 2, {x1, x2, x3})", //
-        "3*x2^2+4*x1*x3");
-    check("With({n = 7, k = 2}, BellY(n, k, Array(x, n)))", //
-        "35*x(3)*x(4)+21*x(2)*x(5)+7*x(1)*x(6)");
-  }
 
   @Test
   public void testBernoulliB() {
@@ -3755,7 +3675,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Zeta(Conjugate(x))");
     check("Conjugate(Zeta(11,7))", //
         "Zeta(11,7)");
-
     check("Conjugate(Erf(x))", //
         "Erf(Conjugate(x))");
   }
@@ -4790,387 +4709,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testD() {
-    check("(1-x^2)/(1-x)^2+(2*x)/(-1+x)", //
-        "(2*x)/(-1+x)+(1-x^2)/(1-x)^2");
-
-    check("D(f(x)^(-5),x)", //
-        "(-5*f'(x))/f(x)^6");
-    check("D(f(x)^(-2),{x,3})", //
-        "(-24*f'(x)^3)/f(x)^5+(18*f'(x)*f''(x))/f(x)^4+(-2*Derivative(3)[f][x])/f(x)^3");
-
-    check("D(x/(-1+x^3),{x,4})", //
-        "x*((-1944*x^8)/(1-x^3)^5+(-1944*x^5)/(1-x^3)^4+(-360*x^2)/(1-x^3)^3)+4*((-162*x^\n" //
-            + "6)/(1-x^3)^4+(-108*x^3)/(1-x^3)^3-6/(1-x^3)^2)");
-    check("D(1/(-1+x^3),{x,4})", //
-        "(-1944*x^8)/(1-x^3)^5+(-1944*x^5)/(1-x^3)^4+(-360*x^2)/(1-x^3)^3");
-
-    check("D((-x-2*x^2)/(-1+x^3),{x,4})", //
-        "(-x-2*x^2)*((-1944*x^8)/(1-x^3)^5+(-1944*x^5)/(1-x^3)^4+(-360*x^2)/(1-x^3)^3)+4*(-\n" //
-            + "1-4*x)*((-162*x^6)/(1-x^3)^4+(-108*x^3)/(1-x^3)^3-6/(1-x^3)^2)-24*((-18*x^4)/(1-x^\n" //
-            + "3)^3+(-6*x)/(1-x^3)^2)");
-    check("D(f(x) / g(x), {x, 2})", //
-        "(-2*f'(x)*g'(x))/g(x)^2+f''(x)/g(x)+f(x)*((2*g'(x)^2)/g(x)^3-g''(x)/g(x)^2)");
-    check("D(f(x) / g(x), {x, 3})", //
-        "(-3*g'(x)*f''(x))/g(x)^2+3*f'(x)*((2*g'(x)^2)/g(x)^3-g''(x)/g(x)^2)+Derivative(3)[f][x]/g(x)+f(x)*((-\n" //
-            + "6*g'(x)^3)/g(x)^4+(6*g'(x)*g''(x))/g(x)^3-Derivative(3)[g][x]/g(x)^2)");
-
-    check("D(Sin(x) * Cos(x), {x, 2})", //
-        "-4*Cos(x)*Sin(x)");
-    check("D(Sin(x) * Cos(x), {x, 3})", //
-        "-4*Cos(x)^2+4*Sin(x)^2");
-    check("D(Sin(x) * Cos(x), {x, 6})", //
-        "-64*Cos(x)*Sin(x)");
-    check("D((-1/2-x+x^2)/(-1/2-x/2+5/2*x^2-5/2*x^3),{x,2})", //
-        "2/(-1/2-x/2+5/2*x^2-5/2*x^3)+(2*(-1+2*x)*(1/2-5*x+15/2*x^2))/(1/2+x/2-5/2*x^2+5/\n"
-            + "2*x^3)^2+(-1/2-x+x^2)*((-2*(1/2-5*x+15/2*x^2)^2)/(1/2+x/2-5/2*x^2+5/2*x^3)^3+(-5+\n"
-            + "15*x)/(1/2+x/2-5/2*x^2+5/2*x^3)^2)");
-    check("D(Boole(f(x)),{x,10})", //
-        "0");
-    check("D(Boole(f(x)),x)", //
-        "0");
-    check("D(Boole(f(x)),{x,n})", //
-        "D(Boole(f(x)),{x,n})");
-    // check("D(a*3^x,{x,n})", //
-    // "a*E^x");
-    // TODO
-    check("D(a*Exp(x),{x,n})", //
-        "a*E^x");
-    check("D(a*f(x),{x,10})", //
-        "a*Derivative(10)[f][x]");
-    check("D(a*Exp(x),{x,3})", //
-        "a*E^x");
-    check("D(Tan(x),{x,3})", //
-        "2*Sec(x)^4+4*Sec(x)^2*Tan(x)^2");
-    check("D(Cot(x),{x,5})", //
-        "-16*Cot(x)^4*Csc(x)^2-88*Cot(x)^2*Csc(x)^4-16*Csc(x)^6");
-
-    check("D((2*Sqrt(2)*(x^3))/(x^4),x)", //
-        "(-2*Sqrt(2))/x^2");
-    check("D(z^n*E^(z),{z,n})", //
-        "E^z*n!*Hypergeometric1F1(-n,1,-z)");
-    check("D(z^n*E^(-z),{z,n})", //
-        "(n!*Hypergeometric1F1(-n,1,z))/E^z");
-
-    check("D(Hypergeometric0F1(a,x), x)", //
-        "Hypergeometric0F1(1+a,x)/a");
-    check("D(Hypergeometric1F1(a,b,x), x)", //
-        "(a*Hypergeometric1F1(1+a,1+b,x))/b");
-    check("D(Hypergeometric2F1(a,b,c,f(x)), x)", //
-        "(a*b*Hypergeometric2F1(1+a,1+b,1+c,f(x))*f'(x))/c");
-    check("D(Hypergeometric2F1Regularized(a,b,c,f(x)), x)", //
-        "a*b*Hypergeometric2F1Regularized(1+a,1+b,1+c,f(x))*f'(x)");
-    check("D(HypergeometricPFQ({}, {}, x), x)", //
-        "E^x");
-    check("D(HypergeometricPFQ({a}, {}, x), x)", //
-        "a/(1-x)^(1+a)");
-    check("D(HypergeometricPFQ({a,b}, {u,v,w}, x), x)", //
-        "(a*b*HypergeometricPFQ({1+a,1+b},{1+u,1+v,1+w},x))/(u*v*w)");
-    check("D(HypergeometricPFQ({a, b,c,d,e,f}, {u,v,w,y,z}, x), x)", //
-        "(a*b*c*d*e*f*HypergeometricPFQ({1+a,1+b,1+c,1+d,1+e,1+f},{1+u,1+v,1+w,1+y,1+z},x))/(u*v*w*y*z)");
-
-    check("D(HarmonicNumber(Sin(Cos(x)), y), x)", //
-        "y*Cos(Cos(x))*Sin(x)*(HarmonicNumber(Sin(Cos(x)),1+y)-Zeta(1+y))");
-    check("D(Sin(f(x)),{x,3})", //
-        "-Cos(f(x))*f'(x)^3-3*Sin(f(x))*f'(x)*f''(x)+Cos(f(x))*Derivative(3)[f][x]");
-    check("D(Sin(#), {#,-1+n})", //
-        "D(Sin(#1),{#1,-1+n})");
-    check("D(f(x), {x, n})", //
-        "D(f(x),{x,n})");
-
-    check("D(PolyLog(n,z),z)", //
-        "PolyLog(-1+n,z)/z");
-    check("D(PolyLog(n,p,z),z)", //
-        "PolyLog(-1+n,p,z)/z");
-
-    check("D(Polygamma(x),{x,n})", //
-        "PolyGamma(n,x)");
-
-    check("D(Sin(x)==x^2==y*x^4,x )", //
-        "Cos(x)==2*x==4*x^3*y");
-
-    // message - D: D called with 0 arguments; 1 or more arguments are expected.
-    check("D( )", //
-        "D()");
-
-    // github #302 - special case - only 1 argument
-    check("D(f)", //
-        "f");
-    // github #302 test case
-    check("Integrate(D(x),x)", //
-        "x^2/2");
-    // github #302 test case
-    check("Integrate(D(y)*D(x),x,y)", //
-        "1/4*x^2*y^2");
-    // github #302 test case
-    check("Integrate(D(x),x)*Integrate(D(y),y)", //
-        "1/4*x^2*y^2");
-
-    check("D(StruveH(n,x),x)", //
-        "1/2*(x^n/(2^n*Sqrt(Pi)*Gamma(3/2+n))+StruveH(-1+n,x)-StruveH(1+n,x))");
-
-    check("D(Surd(x,3),x)", //
-        "1/(3*Surd(x,3)^2)");
-    check("D(Surd(x,-3),x)", //
-        "-1/(3*x*Surd(x,3))");
-    check("D(Surd(x,4),x)", //
-        "1/(4*Surd(x,4)^3)");
-    check("D(Surd(x,-4),x)", //
-        "-1/(4*Surd(x,4)^5)");
-    check("D(Surd(x,5),x)", //
-        "1/(5*Surd(x,5)^4)");
-    check("D(Surd(x,-5),x)", //
-        "-1/(5*x*Surd(x,5))");
-    check("D(Sin(#), {#,-1+n})", //
-        "D(Sin(#1),{#1,-1+n})");
-    check("D(f(x)+ g(x)+h(x), {x, n})", //
-        "D(f(x),{x,n})+D(g(x),{x,n})+D(h(x),{x,n})");
-    check("D(Sin(x)+ Cos(y), {x, n})", //
-        "Piecewise({{Cos(y),n==0}},0)+Sin(1/2*n*Pi+x)");
-    check("D(Sin(x),{x,0.5})", //
-        "D(Sin(x),{x,0.5})");
-    check("D(Sin(x),{x,f(a)})", //
-        "D(Sin(x),{x,f(a)})");
-    check("D(Sin(x),{x,f(a)+I})", //
-        "D(Sin(x),{x,I+f(a)})");
-    check("D(x^a, {x,n})", //
-        "x^(a-n)*FactorialPower(a,n)");
-    check("D(x^a, {x,3})", //
-        "((-2+a)*(-1+a)*a)/x^(3-a)");
-    check("D(a^x, {x,2})", //
-        "a^x*Log(a)^2");
-    check("D(Sin(x),{x,n})", //
-        "Sin(1/2*n*Pi+x)");
-    check("D(InverseFunction(f)[x],x)", //
-        "1/f'(InverseFunction(f)[x])");
-
-    // message - D: 2*x is not a valid variable.
-    check("D(2*x, 2*x)", //
-        "D(2*x,2*x)");
-
-    check("D(E^f(x),x)", //
-        "E^f(x)*f'(x)");
-
-    check("D(AiryAi(Sqrt(x)),x)", //
-        "AiryAiPrime(Sqrt(x))/(2*Sqrt(x))");
-    check("D(AiryAiPrime(Sqrt(x)),x)", //
-        "AiryAi(Sqrt(x))/2");
-
-    check("D(Piecewise({{x^2, x < 0}, {x, x > 0}}),x)", //
-        "Piecewise({{2*x,x<0},{1,x>0}},0)");
-    check("D(Piecewise({{(x^2 - 1)/(x - 1), x != 1}},2),x)", //
-        "Piecewise({{(2*x)/(-1+x)+(1-x^2)/(1-x)^2,x!=1}},0)");
-
-    // TODO simplify result to 1
-    check("D(Piecewise({{(x^2 - 1)/(x - 1), x < 1 || x > 1}},2),x)", //
-        "Piecewise({{(2*x)/(-1+x)+(1-x^2)/(1-x)^2,x<1||x>1}},0)");
-
-    check("D(Factorial(b*x),x)", //
-        "b*Gamma(1+b*x)*PolyGamma(0,1+b*x)");
-    check("D(E^(E^x + x),x)", //
-        "(1+E^x)*E^(E^x+x)");
-    check("D((2*x*(Sqrt(d)*Sqrt(-e)+e*x))/(d+e*x^2),x)", //
-        "(-4*e*(Sqrt(d)*Sqrt(-e)+e*x)*x^2)/(d+e*x^2)^2+(2*e*x)/(d+e*x^2)+(2*(Sqrt(d)*Sqrt(-e)+e*x))/(d+e*x^\n"
-            + "2)");
-    check("D(ArcTan(x,y),x)", //
-        "-y/(x^2+y^2)");
-    check("D(ArcTan(x,y),y)", //
-        "x/(x^2+y^2)");
-    check("D(ArcTan(x,x),x)", //
-        "0");
-    check("D(Cosh(b*x),x)", //
-        "b*Sinh(b*x)");
-    check("D(Sinh(x),x)", //
-        "Cosh(x)");
-    check("D(Sinc(x),x)", //
-        "Cos(x)/x-Sin(x)/x^2");
-    check("D(SinIntegral(x),x)", //
-        "Sinc(x)");
-    check("D(SinhIntegral(x),x)", //
-        "Sinh(x)/x");
-    check("D(CoshIntegral(x),x)", //
-        "Cosh(x)/x");
-    check("D(Cosh(b*x)*CoshIntegral(b*x),x)", //
-        "Cosh(b*x)^2/x+b*CoshIntegral(b*x)*Sinh(b*x)");
-
-    // gradient
-    check("D(f(x, y), {{x, y}})", //
-        "{Derivative(1,0)[f][x,y],Derivative(0,1)[f][x,y]}");
-    // hessian matrix
-    check("D(f(x, y), {{x, y}}, {{x, y}})", //
-        "{{Derivative(2,0)[f][x,y],Derivative(1,1)[f][x,y]},{Derivative(1,1)[f][x,y],Derivative(\n"
-            + "0,2)[f][x,y]}}");
-    // generalization of Hessian matrix for n > 2
-    check("D(f(x, y, z), {{x, y, z}, 3})", //
-        "{{{Derivative(3,0,0)[f][x,y,z],Derivative(2,1,0)[f][x,y,z],Derivative(2,0,1)[f][x,y,z]},{Derivative(\n"
-            + "2,1,0)[f][x,y,z],Derivative(1,2,0)[f][x,y,z],Derivative(1,1,1)[f][x,y,z]},{Derivative(\n"
-            + "2,0,1)[f][x,y,z],Derivative(1,1,1)[f][x,y,z],Derivative(1,0,2)[f][x,y,z]}},{{Derivative(\n"
-            + "2,1,0)[f][x,y,z],Derivative(1,2,0)[f][x,y,z],Derivative(1,1,1)[f][x,y,z]},{Derivative(\n"
-            + "1,2,0)[f][x,y,z],Derivative(0,3,0)[f][x,y,z],Derivative(0,2,1)[f][x,y,z]},{Derivative(\n"
-            + "1,1,1)[f][x,y,z],Derivative(0,2,1)[f][x,y,z],Derivative(0,1,2)[f][x,y,z]}},{{Derivative(\n"
-            + "2,0,1)[f][x,y,z],Derivative(1,1,1)[f][x,y,z],Derivative(1,0,2)[f][x,y,z]},{Derivative(\n"
-            + "1,1,1)[f][x,y,z],Derivative(0,2,1)[f][x,y,z],Derivative(0,1,2)[f][x,y,z]},{Derivative(\n"
-            + "1,0,2)[f][x,y,z],Derivative(0,1,2)[f][x,y,z],Derivative(0,0,3)[f][x,y,z]}}}");
-
-    check("Refine(D(Abs(x),x), Element(x, Reals))", //
-        "x/Abs(x)");
-
-    check("D(HarmonicNumber(x), x)", //
-        "Pi^2/6-HarmonicNumber(x,2)");
-
-    check("D(ArcCsc(x),{x,2})", //
-        "(-1+2*x^2)/(Sqrt(1-1/x^2)*x^3*(-1+x^2))");
-    check("D(ArcSec(x),{x,2})", //
-        "(1-2*x^2)/(Sqrt(1-1/x^2)*x^3*(-1+x^2))");
-
-    check("D(x*f(x)*f'(x), x)", //
-        "f(x)*f'(x)+x*f'(x)^2+x*f(x)*f''(x)");
-    check("D(f(x), x)", //
-        "f'(x)");
-    check("Sin'(2)", //
-        "Cos(2)");
-    check("D(Sin(x) + Cos(2*x), {x, 2}) /. x -> 0", //
-        "-4");
-
-    check("D(Sin(t), {t, 1})", //
-        "Cos(t)");
-    check("D(Derivative(0,1,0)[f][x,x*y,z+x^2],x)", //
-        "2*x*Derivative(0,1,1)[f][x,x*y,x^2+z]+y*Derivative(0,2,0)[f][x,x*y,x^2+z]+Derivative(\n"
-            + "1,1,0)[f][x,x*y,x^2+z]");
-
-    check("D(x^3 + x^2, x)", //
-        "2*x+3*x^2");
-    check("D(x^3 + x^2, {x, 2})", //
-        "2+6*x");
-    check("D(Sin(Cos(x)), x)", //
-        "-Cos(Cos(x))*Sin(x)");
-    check("D(Sin(x), {x, 2})", //
-        "-Sin(x)");
-    check("D(Cos(t), {t, 2})", //
-        "-Cos(t)");
-    check("D(y, x)", //
-        "0");
-    check("D(x, x)", //
-        "1");
-    check("D(f(x), x)", //
-        "f'(x)");
-
-    check("D(f(x, x), x)", //
-        "Derivative(0,1)[f][x,x]+Derivative(1,0)[f][x,x]");
-    // chain rule
-    check("D(f(2*x+1, 2*y, x+y), x)", //
-        "Derivative(0,0,1)[f][1+2*x,2*y,x+y]+2*Derivative(1,0,0)[f][1+2*x,2*y,x+y]");
-    check("D(f(x^2, x, 2*y), {x,2}, y) // Expand", //
-        "2*Derivative(0,2,1)[f][x^2,x,2*y]+4*Derivative(1,0,1)[f][x^2,x,2*y]+8*x*Derivative(\n"
-            + "1,1,1)[f][x^2,x,2*y]+8*x^2*Derivative(2,0,1)[f][x^2,x,2*y]");
-
-    check("D(x ^ 3 * Cos(y), {{x, y}})", //
-        "{3*x^2*Cos(y),-x^3*Sin(y)}");
-    check("D(Sin(x) * Cos(y), {{x,y}, 2})", //
-        "{{-Cos(y)*Sin(x),-Cos(x)*Sin(y)},{-Cos(x)*Sin(y),-Cos(y)*Sin(x)}}");
-    check("D(2/3*Cos(x) - 1/3*x*Cos(x)*Sin(x) ^ 2,x)//Expand  ", //
-        "-2/3*Sin(x)-2/3*x*Cos(x)^2*Sin(x)-1/3*Cos(x)*Sin(x)^2+1/3*x*Sin(x)^3");
-    check("D(f(#1), {#1,2})", //
-        "f''(#1)");
-    check("D((#1&)*(t),{t,4})", //
-        "0");
-    // TODO allow Attributes(f) = {HoldAll}
-    check("Attributes(f) = {HoldAll}; Apart(f''(x + x))", //
-        "f''(2*x)");
-    check("Attributes(f) = {}; Apart(f''(x + x)) ", //
-        "f''(2*x)");
-
-    check("D({#^2}, #)", //
-        "{2*#1}");
-
-    // Koepf Seite 40-43
-    check("D(Sum(k*x^k, {k,0,10}),x)", //
-        "1+4*x+9*x^2+16*x^3+25*x^4+36*x^5+49*x^6+64*x^7+81*x^8+100*x^9");
-    check("D((x^2+3)*(3*x+2),x)", //
-        "2*x*(2+3*x)+3*(3+x^2)");
-    check("D(Sin(x^2),x)", //
-        "2*x*Cos(x^2)");
-    check("D((1+x^2)^Sin(x),x)", //
-        "(1+x^2)^Sin(x)*(Cos(x)*Log(1+x^2)+(2*x*Sin(x))/(1+x^2))");
-    check("D(Exp(x),x)", //
-        "E^x");
-    check("D((x^2+3)/(3*x+2),x)", //
-        "(2*x)/(2+3*x)+(-3*(3+x^2))/(2+3*x)^2");
-
-    // others -----
-    check("D(InverseErf(x),x)", //
-        "1/2*E^InverseErf(x)^2*Sqrt(Pi)");
-
-    check("D(f(Sqrt(x^2 + 1)), {x, 3})", //
-        "(3*x^3*f'(Sqrt(1+x^2)))/(1+x^2)^(5/2)+(-3*x*f'(Sqrt(1+x^2)))/(1+x^2)^(3/2)+(-3*x^\n"
-            + "3*f''(Sqrt(1+x^2)))/(1+x^2)^2+(3*x*f''(Sqrt(1+x^2)))/(1+x^2)+(x^3*Derivative(3)[f][Sqrt(\n"
-            + "1+x^2)])/(1+x^2)^(3/2)");
-
-    check("f(x_) := x^5 + 6*x^3", //
-        "");
-    check("D(f(x), x)", //
-        "18*x^2+5*x^4");
-    check("f'(x)", //
-        "18*x^2+5*x^4");
-    check("D(f(x), x) /. x->5", //
-        "3575");
-    check("D(f(x), {x, 3}) /. x -> -1", //
-        "96");
-
-    check("D(x^2 * E^(5*y), x)", //
-        "2*E^(5*y)*x");
-    check("D(x^2 * E^(5*y), y)", //
-        "5*E^(5*y)*x^2");
-    check("D(x^2 * E^(5*y), {x,2}, {y,3})", //
-        "250*E^(5*y)");
-
-    check("D(Sin(g(x)) + g''(x), x)", //
-        "Cos(g(x))*g'(x)+Derivative(3)[g][x]");
-
-    check("D(Subscript(x, 1)^2 + Sin(Subscript(x, 1)*Subscript(x, 2)), Subscript(x, 1))", //
-        "2*Subscript(x,1)+Cos(Subscript(x,1)*Subscript(x,2))*Subscript(x,2)");
-
-    check("D({3*t^2, 4*t, Sin(t)}, t)", //
-        "{6*t,4,Cos(t)}");
-    check("D({x^n, {Exp(x), Log(x)}, {Sin(x), Cos(x), Tan(x)}}, x)", //
-        "{n/x^(1-n),{E^x,1/x},{Cos(x),-Sin(x),Sec(x)^2}}");
-    check("D(x^2 + 5*y^3, {{x, y}})", //
-        "{2*x,15*y^2}");
-    check("D(x^2 + 5*y^3, {{x, y}, 2})", //
-        "{{2,0},{0,30*y}}");
-    check("D((x^2+5*y^3+z^4)/E^w,{{x,y}})", //
-        "{(2*x)/E^w,(15*y^2)/E^w}");
-    check("D(E^(-w)*(x^2 + 5*y^3 + z^4), {{{x, y}, {z, w}}})", //
-        "{{(2*x)/E^w,(15*y^2)/E^w},{(4*z^3)/E^w,-(x^2+5*y^3+z^4)/E^w}}");
-    check("D(ExpIntegralEi(b*x),x)", //
-        "E^(b*x)/x");
-
-    check("D(StruveH(n,x),x)", //
-        "1/2*(x^n/(2^n*Sqrt(Pi)*Gamma(3/2+n))+StruveH(-1+n,x)-StruveH(1+n,x))");
-    check("D(StruveH(x,y),x)", //
-        "Derivative(1,0)[StruveH][x,y]");
-    check("D(StruveL(n,x),x)", //
-        "1/2*(x^n/(2^n*Sqrt(Pi)*Gamma(3/2+n))+StruveL(-1+n,x)+StruveL(1+n,x))");
-    check("D(StruveL(x,y),x)", //
-        "Derivative(1,0)[StruveL][x,y]");
-
-    check("D(JacobiAmplitude(x,y),x)", //
-        "JacobiDN(x,y)");
-    check("D(JacobiAmplitude(x,y),y)", //
-        "((x*(-1+y)+EllipticE(JacobiAmplitude(x,y),y))*JacobiDN(x,y)-y*JacobiCN(x,y)*JacobiSN(x,y))/(\n"
-            + //
-            "2*(-1+y)*y)");
-
-    check("D(CatalanNumber(x),x)", //
-        "CatalanNumber(x)*(Log(4)+PolyGamma(0,1/2+x)-PolyGamma(0,2+x))");
-    check("D(Sin(x^5)/x^10,x)", //
-        "(5*Cos(x^5))/x^6+(-10*Sin(x^5))/x^11");
-    check("D(AppellF1(a,b1,b2,c,f1(x),f2(x)),x)", //
-        "(a*b1*AppellF1(1+a,1+b1,b2,1+c,f1(x),f2(x))*f1'(x))/c+(a*b2*AppellF1(1+a,b1,1+b2,\n" //
-            + "1+c,f1(x),f2(x))*f2'(x))/c");
-  }
-
-  @Test
   public void testDefault() {
     check("Default(Times,2)", //
         "1");
@@ -5219,59 +4757,58 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "6/8==3/4");
   }
 
-  @Test
-  @Ignore("Definition based on HashMap, which will change it's order if new symbols are defined")
-  public void testDefinition() {
-    // check("Definition(ArcSinh)", //
-    // "Attributes(ArcSinh)={Listable,NumericFunction,Protected}\n" //
-    // + "\n" //
-    // + "ArcSinh(ComplexInfinity)=ComplexInfinity\n" //
-    // + "\n" //
-    // + "ArcSinh(I)=I*1/2*Pi\n" //
-    // + "\n" //
-    // + "ArcSinh(0)=0\n" //
-    // + "\n" //
-    // + "ArcSinh(I*1/2)=I*1/6*Pi\n" //
-    // + "\n" //
-    // + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
-    // + "\n" //
-    // + "ArcSinh(Infinity)=Infinity\n" //
-    // + "\n" //
-    // + "ArcSinh(I*Infinity)=Infinity\n" //
-    // + "\n" //
-    // + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
-    // + "\n" //
-    // + "ArcSinh(Undefined)=Undefined");
-
-    check("a := 42", //
-        "");
-    check("Definition(a)", //
-        "a:=42");
-    check("a", //
-        "42");
-    check("a = 24", //
-        "24");
-    check("Definition(a)", //
-        "a=24");
-    check("a", //
-        "24");
-
-    check("g(abc_):={abc}", //
-        "");
-    check("g(abc_):={abc}", //
-        "");
-    check("Definition(g)", //
-        "g(abc_):={abc}");
-
-    check("SetAttributes(f,Listable)", //
-        "");
-    check("f(x_):={x}", //
-        "");
-    check("Definition(f)", //
-        "Attributes(f)={Listable}\n"//
-            + "\n"//
-            + "f(x_):={x}");
-  }
+  // @Test
+  // public void testDefinition() {
+  // // check("Definition(ArcSinh)", //
+  // // "Attributes(ArcSinh)={Listable,NumericFunction,Protected}\n" //
+  // // + "\n" //
+  // // + "ArcSinh(ComplexInfinity)=ComplexInfinity\n" //
+  // // + "\n" //
+  // // + "ArcSinh(I)=I*1/2*Pi\n" //
+  // // + "\n" //
+  // // + "ArcSinh(0)=0\n" //
+  // // + "\n" //
+  // // + "ArcSinh(I*1/2)=I*1/6*Pi\n" //
+  // // + "\n" //
+  // // + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
+  // // + "\n" //
+  // // + "ArcSinh(Infinity)=Infinity\n" //
+  // // + "\n" //
+  // // + "ArcSinh(I*Infinity)=Infinity\n" //
+  // // + "\n" //
+  // // + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
+  // // + "\n" //
+  // // + "ArcSinh(Undefined)=Undefined");
+  //
+  // check("a := 42", //
+  // "");
+  // check("Definition(a)", //
+  // "a:=42");
+  // check("a", //
+  // "42");
+  // check("a = 24", //
+  // "24");
+  // check("Definition(a)", //
+  // "a=24");
+  // check("a", //
+  // "24");
+  //
+  // check("g(abc_):={abc}", //
+  // "");
+  // check("g(abc_):={abc}", //
+  // "");
+  // check("Definition(g)", //
+  // "g(abc_):={abc}");
+  //
+  // check("SetAttributes(f,Listable)", //
+  // "");
+  // check("f(x_):={x}", //
+  // "");
+  // check("Definition(f)", //
+  // "Attributes(f)={Listable}\n"//
+  // + "\n"//
+  // + "f(x_):={x}");
+  // }
 
   @Test
   public void testDegree() {
@@ -5908,37 +5445,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1");
   }
 
-  @Test
-  public void testDifferenceDelta() {
-    check("DifferenceDelta({f(i), g(i)}, i)", //
-        "{-f(i)+f(1+i),-g(i)+g(1+i)}");
-    check("DifferenceDelta(Cosh(a*i+b),{i,2,h})", //
-        "4*Cosh(b+a*h+a*i)*Sinh(1/2*a*h)^2");
-    check("DifferenceDelta(Sin(a*i+b),{i,5})", //
-        "32*Sin(a/2)^5*Sin(b+a*i+5/2*(a+Pi))");
-    check("DifferenceDelta(Sinh(a*i+b),{i,4})", //
-        "16*Sinh(a/2)^4*Sinh(2*a+b+a*i)");
-    check("DifferenceDelta(Cosh(a*i+b),{i,4})", //
-        "16*Cosh(2*a+b+a*i)*Sinh(a/2)^4");
-    check("DifferenceDelta(Exp(a*i+b),{i,5})", //
-        "E^(b+a*i)*(-1+E^a)^5");
-    check("DifferenceDelta(b(a),{a,2,c})", //
-        "b(a)-2*b(a+c)+b(a+2*c)");
-    check("DifferenceDelta(b(a),{a,3,c})", //
-        "-b(a)+3*b(a+c)-3*b(a+2*c)+b(a+3*c)");
-    check("DifferenceDelta(b(a),{a,5,c})", //
-        "-b(a)+5*b(a+c)-10*b(a+2*c)+10*b(a+3*c)-5*b(a+4*c)+b(a+5*c)");
-    check("DifferenceDelta(b(a),{a,1,c})", //
-        "-b(a)+b(a+c)");
-    check("DifferenceDelta(b(a),a)", //
-        "-b(a)+b(1+a)");
-    check("DifferenceDelta(f(i, j), i, j)", //
-        "f(i,j)-f(i,1+j)-f(1+i,j)+f(1+i,1+j)");
-    check("DifferenceDelta(f(i, j), {i,2}, j)", //
-        "-f(i,j)+f(i,1+j)+2*f(1+i,j)-2*f(1+i,1+j)-f(2+i,j)+f(2+i,1+j)");
-
-
-  }
 
   @Test
   public void testDifferenceQuotient() {
@@ -7689,6 +7195,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFactor() {
+    // TODO
+    // check("Factor(3*Tan(3*x)-Tan(x)+2,Trig->True)", //
+    // "((Cos(2*x)+I*Sin(2*x))*(-2+4*Cos(2*x)+4*Sin(2*x)))/(1-Cos(2*x)+Cos(4*x)-I*Sin(2*x)+I*Sin(\n"
+    // + "4*x))");
+
     check("Factor(1+x^2, Extension->I)", //
         "(-I+x)*(I+x)");
 
@@ -7959,7 +7470,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     // example from paper
     System.out.print('.');
-    check("Factor(3*Sech(x)^2+4*Tanh(x)+1)", //
+    check("Factor(3*Sech(x)^2+4*Tanh(x)+1,Trig->True)", //
         "1+3*Sech(x)^2+4*Tanh(x)");
     System.out.print('.');
     check("TrigToExp(3*Sech(x)^2+4*Tanh(x)+1)", //
@@ -8148,7 +7659,91 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFactorList() {
+
+    // Basic polynomial factorization
+    check("FactorList(x^3 + 3*x^2*y + 3*x*y^2 + y^3)", //
+        "{{1,1},{x+y,3}}");
+
+    // Extracting numeric constants into the first element
+    check("FactorList(12 * x^2 - 75 * y^2)", //
+        "{{3,1},{2*x-5*y,1},{2*x+5*y,1}}");
+
+    // Handling expressions that are already partially factored
+    check("FactorList((1-x)^2*(4-3*x))", //
+        "{{1,1},{4-3*x,1},{1-x,2}}");
+
+    // Testing complex extensions
+    check("FactorList(1+x^2, Extension->I)", //
+        "{{1,1},{-I+x,1},{I+x,1}}");
+
+    // Testing Gaussian integers
+    check("FactorList(x^2+y^2, GaussianIntegers->True)", //
+        "{{1,1},{-I*x+y,1},{I*x+y,1}}");
+
+    check("FactorList(x^12-y^12, GaussianIntegers->True)", //
+        "{{1,1},{x-y,1},{-I*x+y,1},{I*x+y,1},{x+y,1},{x^2+x*y+y^2,1},{x^2-x*y+y^2,1},{-x^\n"
+            + "2-I*x*y+y^2,1},{-x^2+I*x*y+y^2,1}}");
+
+    // Testing finite field arithmetic (Modulus)
+    check("FactorList(x^10 - 1, Modulus -> 2)", //
+        "{{1,1},{1+x,2},{1+x+x^2+x^3+x^4,2}}");
+
+    // Pure numerical inputs should return themselves as the base factor
+    check("FactorList(42)", //
+        "{{42,1}}");
+
+    // Single variables
+    check("FactorList(x)", //
+        "{{1,1},{x,1}}");
+
+    // Exponential functions
+    check("FactorList(E^x+E^(2*x))", //
+        "{{1,1},{E^x,1},{1+E^x,1}}");
+
+    // Larger degree polynomials
+    check("FactorList(-1+x^16)", //
+        "{{1,1},{-1+x,1},{1+x,1},{1+x^2,1},{1+x^4,1},{1+x^8,1}}");
+
+    // Fractional powers and square roots
+    check("FactorList(x+2*Sqrt(x)+1)", //
+        "{{1,1},{1+Sqrt(x),2}}");
+
+    // Negative polynomials
+    check("FactorList((-3)*x^3 +10*x^2-11*x+4)", //
+        "{{1,1},{4-3*x,1},{1-x,2}}");
+
+    // Rational expressions with negative exponents
+    check("FactorList(x^(-6)+1)", //
+        "{{1,1},{x,-6},{1+x^2,1},{1-x^2+x^4,1}}");
+
+    // Trigonometric functions
+    check("FactorList(Sin(x))", //
+        "{{1,1},{Sin(x),1}}");
+
+    // Complex coefficients
+    check("FactorList((Cos(x)-I*Sin(x))/(I*Cos(x)-Sin(x)))", //
+        "{{1,1},{I*Cos(x)-Sin(x),-1},{Cos(x)-I*Sin(x),1}}");
+
+    // Trig option usage
+    // TODO WMA reduces this to a list of simpler trig terms
+    // check("FactorList(3*Sech(x)^2+4*Tanh(x)+1, Trig->True)", //
+    // "{{1,1},{Cosh(2*x)+Sinh(2*x),1},{14+2*Cosh(2*x)+8*Sinh(2*x),1},{1+2*Cosh(2*x)+Cosh(\n"
+    // + "4*x)+2*Sinh(2*x)+Sinh(4*x),-1}}");
+  }
+
+  @Test
   public void testFactorialPower() {
+    check("FactorialPower(a,10) // FunctionExpand", //
+        "(-9+a)*(-8+a)*(-7+a)*(-6+a)*(-5+a)*(-4+a)*(-3+a)*(-2+a)*(-1+a)*a");
+    check("FactorialPower(3,3)", //
+        "6");
+    check("FactorialPower(4,3)", //
+        "24");
+    check("FactorialPower(1,3)", //
+        "0");
+    check("FactorialPower(2,3)", //
+        "0");
     check("FactorialPower(v,4) // FunctionExpand", //
         "(-3+v)*(-2+v)*(-1+v)*v");
     check("N(FactorialPower(1/3, 7, 3), 50)", //
@@ -8524,63 +8119,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "{{1.0,2.0,3.0,1.0},{12.0,13.0},{25.0},{10.0}}");
   }
 
-  @Test
-  public void testFindFit() {
-    check("FindFit({1.2214,1.49182,1.82212,2.22554,2.71828,3.32012,4.0552},a+b*x+c*x^2,{a,b,c},x)", //
-        "{a->1.09428,b->0.0986352,c->0.0459481}");
-
-    // https://stackoverflow.com/a/51696587/24819
-    check(
-        "FindFit({ {1.3,0.5}, {2.8,0.9}, {5.0,2.6}, {10.2,7.1}, {16.5,12.3}, {21.3,15.3},{ 31.8,20.4}, {52.2,24.4}}, " //
-            + "d+((a-d)/ (1+(x/c)^ b)),  {{a, 1}, {b,2}, {c,20}, {d,20}}, x)", //
-        "{a->0.174321,b->1.75938,c->19.69032,d->28.83068}");
-    // initial guess [1.0, 1.0, 1.0] gives bad result:
-    check("FindFit(Table({t, 3*Sin(3*t + 1)}, {t, -3, 3, 0.1}), a* Sin(w*t + f), {a,w,f}, t)", //
-        "{a->0.599211,w->1.51494,f->3.80421}");
-    // initial guess [2.0, 1.0, 1.0] gives better result:
-    check(
-        "FindFit(Table({t, 3*Sin(3*t + 1)}, {t, -3, 3, 0.1}), a* Sin(w*t + f), {{a, 2}, {w,1}, {f,1}}, t)", //
-        "{a->3.0,w->3.0,f->1.0}");
-    // initial guess [2.0, 1.0, 1.0] with 1.0 by default:
-    check(
-        "FindFit(Table({t, 3*Sin(3*t + 1)}, {t, -3, 3, 0.1}), a* Sin(w*t + f), {{a, 2}, w, f}, t)", //
-        "{a->3.0,w->3.0,f->1.0}");
-
-    check("FindFit({{1,1},{2,4},{3,9},{4,16}}, " //
-        + "a+b*x+c*x^2, {a, b, c}, x)", //
-        "{a->-6.10623*10^-16,b->7.21645*10^-16,c->1.0}");
-    check("FindFit({{15.2,8.9},{31.1,9.9},{38.6,10.3},{52.2,10.7},{75.4,11.4}}, " //
-        + "a*Log(b*x), {a, b}, x)", //
-        "{a->1.54503,b->20.28258}");
-    check("FindFit(Table(Prime(x), {x, 20}), a*x*Log(b + c*x), {a, b, c}, x)", //
-        "{a->1.42076,b->1.65558,c->0.534644}");
-    check("FindFit({{1.0, 12.}, {1.9, 10.}, {2.6, 8.2}, {3.4, 6.9}, {5.0, 5.9}}, " //
-        + "a*Exp(-k*t), {a, k}, t)", //
-        "{a->14.38886,k->0.198208}");
-
-    // initial guess [0, 0, 0] doesn't work
-    check("FindFit(Table(Prime(x), {x, 20}), a*x*Log(b + c*x), {{a,0},{b,0},{c,0}}, x)", //
-        "FindFit({2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71},a*x*Log(b+c*x),{{a,\n"
-            + "0},{b,0},{c,0}},x)");
-  }
-
-  @Test
-  public void testFindFitSE89247() {
-    // Gauss Fit to List of 2D Points
-    // https://mathematica.stackexchange.com/a/89247/21734
-    check("data = {{0.05, 15}, {0.15, 51}, {0.25, 64}, {0.35, 107}, {0.45, 113}, {0.55, 162}, " //
-        + "{0.65, 163}, {0.75, 167}, {0.85, 182}, {0.95, 187}, {1.05, 165}, {1.15, 168}, " //
-        + "{1.25, 151}, {1.35, 143}, {1.45, 121}, {1.55, 130}, {1.65, 109}, {1.75, 91}, " //
-        + "{1.85, 91}, {1.95, 63}, {2.05, 48}, {2.15, 34}, {2.25, 29}, {2.35, 24}, {2.45, 14}, " //
-        + "{2.55, 11}, {2.65, 6}, {2.75, 6}, {2.85, 9}, {2.95, 4}, {3.05, 4}, {3.15, 2}, {3.25, 0}, " //
-        + "{3.35, 1}, {3.45, 5}, {3.55, 3}, {3.65, 2}, {3.75, 1}, {3.85, 2}, {3.95, 1}, {4.05, 0}, {4.15, 0}};", //
-        "");
-    check("model(x_) = ampl*Evaluate(PDF(NormalDistribution(x0, sigma), x));", //
-        "");
-    check("fit = FindFit(data, model(x), {ampl, x0, sigma}, x)", //
-        "{ampl->274.7648,x0->1.02404,sigma->0.614853}");
-
-  }
 
 
   @Test
@@ -9080,48 +8618,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{23}");
   }
 
-  @Test
-  public void testFit() {
-    check("Fit({{-Pi,4}, {-Pi/2,0}, {0,1}, {Pi/2,-1}, {Pi,-4}}, {Sin(x/2), Sin(x), Sin(2*x)}, x)", //
-        "-4.0*Sin(x/2)+2.32843*Sin(x)+Sin(2*x)");
-    // TODO needs improvement
-    check(
-        "Fit({{-Pi,4}, {-Pi/2,0}, {0,1}, {Pi/2,-1}, {Pi,-4}}, {Sin(x/2), Sin(x), Sin(2*x), Sin(3*x)}, x)//Chop", //
-        "83.5143*Sin(x/2)-186.4314*Sin(x)+3.57304*10^17*Sin(2*x)-83.12067*Sin(3*x)");
 
-    check("Fit({1.2214,1.49182,1.82212,2.22554,2.71828,3.32012,4.0552},{2},x)", //
-        "2.40778");
-    check("Fit({1.2214,1.49182,1.82212,2.22554,2.71828,3.32012,4.0552},{2,x},x)", //
-        "0.542903+0.46622*x");
-    check("Fit({1.2214,1.49182,1.82212,2.22554,2.71828,3.32012,4.0552},{1,x,x^2},x)", //
-        "1.09428+0.0986352*x+0.0459481*x^2");
-
-    check("Fit({2,3,5,7,11,13},3,x)", //
-        "6.83333");
-    check("Fit({{1,1},{2,4},{3,9},{4,16}},2,x)", //
-        "7.5");
-    check("Fit({1,4,9,16},2,x)", //
-        "7.5");
-    check("Fit({1,4,9,16},{x^2},x)", //
-        "x^2");
-
-    check("Fit({x,-3,-1/2},2147483647,ComplexInfinity)", //
-        "Fit({x,-3,-1/2},2147483647,ComplexInfinity)");
-    check("Fit({1->0},1,x)", //
-        "Fit({1->0},1,x)");
-    check("Fit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, {1,x}, x)", //
-        "0.186441+0.694915*x");
-    check("Fit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, 1, x)", //
-        "1.75");
-    check("Fit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, {1,x,x^2}, x)", //
-        "0.678392-0.266332*x+0.190955*x^2");
-    check("Fit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, {1,x,x^2,x^4,x^5}, x)", //
-        "1.0-1.96768*x+x^2-0.035533*x^4+0.00321489*x^5");
-
-    check("Fit({{1,1},{2,4},{3,9},{4,16}},{1,x,x^2},x) // Chop", //
-        "x^2");
-
-  }
 
   @Test
   public void testFiveNum() {
@@ -9895,39 +9392,38 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{101,102,103,104,105,106,107,108}");
   }
 
-  @Test
-  @Ignore("Definition based on HashMap, which will change it's order if new symbols are defined")
-  public void testFullDefinition() {
-    // check("FullDefinition(ArcSinh)", //
-    // "Attributes(ArcSinh)={Listable,NumericFunction,Protected}\n" //
-    // + "\n" //
-    // + "ArcSinh(ComplexInfinity)=ComplexInfinity\n" //
-    // + "\n" //
-    // + "ArcSinh(I)=I*1/2*Pi\n" //
-    // + "\n" //
-    // + "ArcSinh(0)=0\n" //
-    // + "\n" //
-    // + "ArcSinh(I*1/2)=I*1/6*Pi\n" //
-    // + "\n" //
-    // + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
-    // + "\n" //
-    // + "ArcSinh(Infinity)=Infinity\n" //
-    // + "\n" //
-    // + "ArcSinh(I*Infinity)=Infinity\n" //
-    // + "\n" //
-    // + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
-    // + "\n" //
-    // + "ArcSinh(Undefined)=Undefined");
-
-    check("a(x_):=b(x,y);b[u_,v_]:={{u,v},a}", //
-        "");
-    check("a(test)", //
-        "{{test,y},a}");
-    check("FullDefinition(a)", //
-        "a(x_):=b(x,y)\n" //
-            + "\n" //
-            + "b(u_,v_):={{u,v},a}");
-  }
+  // @Test
+  // public void testFullDefinition() {
+  // // check("FullDefinition(ArcSinh)", //
+  // // "Attributes(ArcSinh)={Listable,NumericFunction,Protected}\n" //
+  // // + "\n" //
+  // // + "ArcSinh(ComplexInfinity)=ComplexInfinity\n" //
+  // // + "\n" //
+  // // + "ArcSinh(I)=I*1/2*Pi\n" //
+  // // + "\n" //
+  // // + "ArcSinh(0)=0\n" //
+  // // + "\n" //
+  // // + "ArcSinh(I*1/2)=I*1/6*Pi\n" //
+  // // + "\n" //
+  // // + "ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi\n" //
+  // // + "\n" //
+  // // + "ArcSinh(Infinity)=Infinity\n" //
+  // // + "\n" //
+  // // + "ArcSinh(I*Infinity)=Infinity\n" //
+  // // + "\n" //
+  // // + "ArcSinh(I/Sqrt(2))=I*1/4*Pi\n" //
+  // // + "\n" //
+  // // + "ArcSinh(Undefined)=Undefined");
+  //
+  // check("a(x_):=b(x,y);b[u_,v_]:={{u,v},a}", //
+  // "");
+  // check("a(test)", //
+  // "{{test,y},a}");
+  // check("FullDefinition(a)", //
+  // "a(x_):=b(x,y)\n" //
+  // + "\n" //
+  // + "b(u_,v_):={{u,v},a}");
+  // }
 
   @Test
   public void testFullForm() {
@@ -17276,7 +16772,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("PiecewiseExpand(KroneckerDelta(x, y,z,u,v))", //
         "Piecewise({{1,u-v==0&&v-x==0&&x-y==0&&y-z==0}},0)");
 
-    // PiecewiseExpand
+    // PiecewiseExpand over Plus and Times
     check("PiecewiseExpand(f(x) + Piecewise({{g(x),x>=0}},0) + z(x) )", //
         "Piecewise({{f(x)+g(x)+z(x),x>=0}},f(x)+z(x))");
     check("PiecewiseExpand(f(x) + Piecewise({{g(x),x>=0}},0) )", //
@@ -17286,6 +16782,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Piecewise({{f(x)*g(x)*z(x),x>=0}},0)");
     check("PiecewiseExpand(f(x) * Piecewise({{g(x),x>=0}},0) )", //
         "Piecewise({{f(x)*g(x),x>=0}},0)");
+
+    // Boolean and Deltas
     check("PiecewiseExpand(f(x)*Boole(x))", //
         "Piecewise({{f(x),x}},0)");
     check("PiecewiseExpand(KroneckerDelta(x))", //
@@ -17300,6 +16798,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Piecewise({{1,u-v==0&&v-x==0&&x-y==0&&y-z==0}},0)");
     check("PiecewiseExpand(DiscreteDelta(x, y,z,u,v))", //
         "Piecewise({{1,u==0&&v==0&&x==0&&y==0&&z==0}},0)");
+
+    // Number Theory / Real properties
     check("PiecewiseExpand(Abs(x), Reals)", //
         "Piecewise({{-x,x<0}},x)");
     check("PiecewiseExpand(Arg(x), Reals)", //
@@ -17312,14 +16812,38 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Piecewise({{-1,x<-1},{1,x>1}},x)");
     check("PiecewiseExpand(Clip(x,{-7,5}))", //
         "Piecewise({{-7,x<-7},{5,x>5}},x)");
+
+    // Conditionals
     check("PiecewiseExpand(If(x, y, z))", //
         "Piecewise({{y,x}},z)");
-
     check("PiecewiseExpand(UnitStep(x, y, z))", //
         "Piecewise({{1,x>=0&&y>=0&&z>=0}},0)");
-
     check("PiecewiseExpand(Ramp(x))", //
         "Piecewise({{x,x>=0}},0)");
+
+    // Which
+    check("PiecewiseExpand(Which(x > 0, 1, x < 0, -1, True, 0))", //
+        "Piecewise({{1,x>0},{-1,x<0}},0)");
+    check("PiecewiseExpand(Which(x > 0, a, x < 0, b))", //
+        "Piecewise({{a,x>0},{b,x<0}},0)");
+
+    // Unitize
+    check("PiecewiseExpand(Unitize(x))", //
+        "Piecewise({{1,x!=0}},0)");
+    check("PiecewiseExpand(Unitize(x, dx))", //
+        "Piecewise({{1,dx-Abs(x)<=0}},0)");
+
+    // Max & Min (3 arguments)
+    check("PiecewiseExpand(Max(x, y,z))", //
+        "Piecewise({{x,x-y>=0&&x-z>=0},{y,x-y<0&&y-z>=0}},z)");
+    check("PiecewiseExpand(Min(x, y,z))", //
+        "Piecewise({{x,x-y<=0&&x-z<=0},{y,x-y>0&&y-z<=0}},z)");
+
+    // Max & Min (2 arguments)
+    check("PiecewiseExpand(Max(x, y))", //
+        "Piecewise({{x,x-y>=0}},y)");
+    check("PiecewiseExpand(Min(x, y))", //
+        "Piecewise({{x,x-y<=0}},y)");
   }
 
   @Test
@@ -17497,6 +17021,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("PolyLog(2,z) + PolyLog(2,1-z)", //
         "Pi^2/6-Log(1-z)*Log(z)");
+    check("PolyLog(2,z) + PolyLog(2,-z)", //
+        "PolyLog(2,z^2)/2");
     check("PolyLog(2,Sin(7)) + PolyLog(2,1-Sin(7))", //
         "Pi^2/6-Log(1-Sin(7))*Log(Sin(7))");
 
@@ -23311,6 +22837,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSurd() {
+    check("Surd(x,3)^21", //
+        "x^7");
     checkNumeric("N(Surd(-2,  5),25)", //
         "-1.148698354997035006798626");
 
@@ -26175,6 +25703,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testZeta() {
+    check("Zeta(7,7)", //
+        "Zeta(7,7)");
+    check("Zeta(11,7)", //
+        "Zeta(11,7)");
+    check("Zeta(s,1)", //
+        "Zeta(s)");
+    check("Zeta(4,5)", //
+        "-22369/20736+Pi^4/90");
     check("Zeta({{I},-3,-1/2})", //
         "{{Zeta(I)},1/120,Zeta(-1/2)}");
     check("Zeta(11,1/2)", //

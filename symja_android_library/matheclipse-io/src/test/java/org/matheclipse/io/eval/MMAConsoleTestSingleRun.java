@@ -1,16 +1,11 @@
 package org.matheclipse.io.eval;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.parser.client.ParserConfig;
-import junit.framework.TestCase;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Test <code>org.matheclipse.core.eval.MMAConsole</code> app.
@@ -19,7 +14,6 @@ import static org.junit.Assert.assertEquals;
  * Configure <code>org.matheclipse.parser.client.ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
  * </code> in the sources for running Symja in MMA mode, before running this test!
  */
-@RunWith(JUnit4.class)
 public class MMAConsoleTestSingleRun  {
   MMAConsole console;
 
@@ -47,7 +41,7 @@ public class MMAConsoleTestSingleRun  {
   }
 
   /** The JUnit setup method */
-  @Before
+  @BeforeEach
   public void setUp() {
     try {
       console = new MMAConsole();

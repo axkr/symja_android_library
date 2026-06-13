@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
 public class MinimalMaximalByTest extends ExprEvaluatorTestCase {

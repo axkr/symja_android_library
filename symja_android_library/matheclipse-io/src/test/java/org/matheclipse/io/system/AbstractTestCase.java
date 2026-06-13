@@ -1,6 +1,6 @@
 package org.matheclipse.io.system;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -10,10 +10,7 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
@@ -25,7 +22,6 @@ import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
 import org.matheclipse.io.IOInit;
 
 /** Tests system.reflection classes */
-@RunWith(JUnit4.class)
 public abstract class AbstractTestCase {
   protected ScriptEngine fScriptEngine;
   protected ScriptEngine fNumericScriptEngine;
@@ -164,7 +160,7 @@ public abstract class AbstractTestCase {
   }
 
   /** The JUnit setup method */
-  @Before
+  @BeforeEach
   public void setUp() {
     try {
       synchronized (fScriptManager) {
@@ -200,8 +196,4 @@ public abstract class AbstractTestCase {
     }
   }
 
-  @After
-  public void tearDown() throws Exception {
-
-  }
 }

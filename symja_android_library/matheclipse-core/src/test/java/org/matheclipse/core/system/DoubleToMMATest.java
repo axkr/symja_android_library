@@ -1,17 +1,12 @@
 package org.matheclipse.core.system;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.form.DoubleToMMA;
-import junit.framework.TestCase;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Convert a Java <code>double</code> value into a string similar to the Mathematica output format.
  */
-@RunWith(JUnit4.class)
 public class DoubleToMMATest {
 
   @Test

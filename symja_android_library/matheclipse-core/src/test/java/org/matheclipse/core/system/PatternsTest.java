@@ -1,8 +1,8 @@
 package org.matheclipse.core.system;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.matheclipse.core.expression.F.CN1D2;
 import static org.matheclipse.core.expression.F.Integrate;
 import static org.matheclipse.core.expression.F.Plus;
@@ -19,7 +19,7 @@ import static org.matheclipse.core.expression.F.x_Symbol;
 import static org.matheclipse.core.expression.S.a;
 import static org.matheclipse.core.expression.S.f;
 import static org.matheclipse.core.expression.S.x;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -154,7 +154,7 @@ public class PatternsTest extends ExprEvaluatorTestCase {
     check("Options(Plus)", //
         "{}");
     check("Options(Factor)", //
-        "{Extension->None,GaussianIntegers->False,Modulus->0}");
+        "{Extension->None,GaussianIntegers->False,Modulus->0,Trig->False}");
   }
 
   @Test

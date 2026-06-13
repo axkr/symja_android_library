@@ -1,6 +1,6 @@
 package org.matheclipse.nlp.system;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * <a href="https://unicode-org.github.io/icu/userguide/icu4j/">ICU4J</a> related tests.

@@ -1,21 +1,19 @@
 package org.matheclipse.io.eval;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import junit.framework.TestCase;
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /** Test <code>org.matheclipse.core.eval.Console</code> app. */
 public class ConsoleTestCase  {
   Console console;
 
   /** The JUnit setup method */
-  @Before
+  @BeforeEach
   public void setUp() {
     try {
       console = new Console();

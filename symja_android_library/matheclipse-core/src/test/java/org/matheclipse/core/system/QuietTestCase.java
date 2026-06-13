@@ -3,7 +3,7 @@ package org.matheclipse.core.system;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.PrintStream;
 import java.io.StringWriter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.WriterOutputStream;
 import org.matheclipse.core.expression.F;

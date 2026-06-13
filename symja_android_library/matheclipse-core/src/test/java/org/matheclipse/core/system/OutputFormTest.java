@@ -1,12 +1,11 @@
 package org.matheclipse.core.system;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
-
-import static org.junit.Assert.assertEquals;
 
 public class OutputFormTest extends ExprEvaluatorTestCase {
 

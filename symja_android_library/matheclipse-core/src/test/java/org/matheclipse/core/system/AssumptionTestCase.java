@@ -1,14 +1,11 @@
 package org.matheclipse.core.system;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.matheclipse.core.expression.F.Abs;
 import static org.matheclipse.core.expression.F.Floor;
 import static org.matheclipse.core.expression.S.x;
 import static org.matheclipse.core.expression.S.y;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalUtilities;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
@@ -20,13 +17,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ParserConfig;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
-@RunWith(JUnit4.class)
 public class AssumptionTestCase {
-
-  @After
-  public void tearDown() throws Exception {
-    // System.out.println(EvalEngine.STATISTICS.toString());
-  }
 
   /** Assumption which implements <code>x > 0</code> or <code>y is integer number</code> */
   public class XGreaterZeroOrYInteger extends AbstractAssumptions {

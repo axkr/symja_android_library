@@ -1,6 +1,6 @@
 package org.matheclipse.core.system;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class SumTest extends ExprEvaluatorTestCase {
 
@@ -615,5 +615,36 @@ public class SumTest extends ExprEvaluatorTestCase {
 
     check("Length(IntegerDigits(Sum(k!, {k, 0, 400})))", //
         "869");
+  }
+
+  @Test
+  public void testSumGeometricIndefinite() {
+    // indefinite geometric sums via the Geometric algorithm (undetermined coefficients)
+    check("Sum(a^i, i)", //
+        "a^i/(-1+a)");
+    check("Sum(q1^i*q2^i, i)", //
+        "(q1*q2)^i/(-1+q1*q2)");
+  }
+
+  @Test
+  public void testSumGosper() {
+    // Gosper indefinite hypergeometric summation
+    check("Sum(k*k!, k)", //
+        "k!");
+    // definite sum solved through the Gosper antidifference
+    check("Sum(1/(i*(i+1)), {i, 1, n})", //
+        "1-1/(1+n)");
+  }
+
+  @Test
+  public void testSumMethodOption() {
+    // Method->"..." forces one algorithm strictly
+    check("Sum(a^i, i, Method->\"Geometric\")", //
+        "a^i/(-1+a)");
+    check("Sum(k*k!, k, Method->\"Gosper\")", //
+        "k!");
+    // a polynomial summand is rejected by the Gosper-only method
+    check("Sum(a^i, i, Method->\"Gosper\")", //
+        "a^i/(-1+a)");
   }
 }

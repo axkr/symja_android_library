@@ -1,26 +1,20 @@
 package org.matheclipse.io.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.io.expression.ASTDataset;
-import junit.framework.TestCase;
 import tech.tablesaw.api.Table;
 
-import static org.junit.Assert.assertEquals;
-
-@RunWith(JUnit4.class)
 public class SerializableDataSetTest {
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     // wait for initializing of Integrate() rules:
     F.await();

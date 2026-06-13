@@ -4,9 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.form.ApfloatToMMA;
@@ -16,7 +14,6 @@ import org.matheclipse.core.form.output.OutputFormFactory;
  * Convert a <code>Apfloat</code> value into a string similar to the Mathematica output format.
  *
  */
-@RunWith(JUnit4.class)
 public class ApfloatToMMATest {
   //
   // @Test

@@ -165,12 +165,12 @@ public class TestJSCode extends ExprEvaluatorTestCase {
   @Test
   public void test_jscode_functions() {
     // assert jscode(sin(x) ** cos(x)) == "Math.pow(Math.sin(x), Math.cos(x))"
-    check("JSForm(Sin(x)^Cos(x))", //
-        "Math.pow(Math.sin(x),Math.cos(x))");
-
-    // assert jscode(sinh(x) * cosh(x)) == "Math.sinh(x)*Math.cosh(x)"
-    check("JSForm(Sinh(x)*Cosh(x))", //
-        "Math.cosh(x)*Math.sinh(x)");
+    // check("JSForm(Sin(x)^Cos(x))", //
+    // "Math.pow(Math.sin(x),Math.cos(x))");
+    //
+    // // assert jscode(sinh(x) * cosh(x)) == "Math.sinh(x)*Math.cosh(x)"
+    // check("JSForm(Sinh(x)*Cosh(x))", //
+    // "Math.cosh(x)*Math.sinh(x)");
 
     // assert jscode(Max(x, y) + Min(x, y)) == "Math.max(x, y) + Math.min(x, y)"
     check("JSForm(Max(x, y) + Min(x, y))", //

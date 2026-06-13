@@ -1,9 +1,9 @@
 package org.matheclipse.core.system.steps;
 
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.matheclipse.core.basic.Config;
@@ -16,14 +16,14 @@ import org.matheclipse.core.system.ExprEvaluatorTestCase;
 public class TeXFormStepsTest extends ExprEvaluatorTestCase {
 
   @Override
-  @Before
+  @BeforeEach
   public void setUp() {
     super.setUp();
     Config.USER_STEPS_PARSER = true;
   }
 
 
-  @AfterClass
+  @AfterAll
   public static void afterAll() {
     Config.USER_STEPS_PARSER = false;
   }

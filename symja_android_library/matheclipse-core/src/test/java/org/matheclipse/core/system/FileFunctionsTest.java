@@ -1,6 +1,6 @@
 package org.matheclipse.core.system;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;

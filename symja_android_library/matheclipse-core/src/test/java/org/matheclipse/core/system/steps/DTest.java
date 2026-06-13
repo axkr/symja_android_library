@@ -1,8 +1,8 @@
 package org.matheclipse.core.system.steps;
 
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
@@ -14,7 +14,7 @@ public class DTest extends ExprEvaluatorTestCase {
   }
 
   @Override
-  @Before
+  @BeforeEach
   public void setUp() {
     super.setUp();
     ToggleFeature.SHOW_STEPS = true;
@@ -22,7 +22,7 @@ public class DTest extends ExprEvaluatorTestCase {
     Config.USER_STEPS_PARSER = true;
   }
 
-  @AfterClass
+  @AfterAll
   public static void afterAll() {
     ToggleFeature.SHOW_STEPS = false;
     Config.TRACE_REWRITE_RULE = false;

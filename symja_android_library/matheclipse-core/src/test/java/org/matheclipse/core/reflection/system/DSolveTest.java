@@ -72,7 +72,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
     check("DSolve(y'(x) == 3*y(x), y(x), x)", //
         "{{y(x)->E^(3*x)*C(1)}}");
     check("DSolve(y'(x) + 2*y(x)/(1-x^2) == 0, y(x), x)", //
-        "{{y(x)->C(1)/E^(2*ArcTanh(x))}}");
+        "{{y(x)->C(1)/(1+x)+(-x*C(1))/(1+x)}}");
     check("DSolve(y'(x) == -y(x), y(x), x)", //
         "{{y(x)->C(1)/E^x}}");
     check("DSolve(y'(x) == y(x)+a*Cos(x), y(x), x)", //
@@ -135,7 +135,7 @@ public class DSolveTest extends ExprEvaluatorTestCase {
 
     // Full Riccati Equation with different constants: y'(x) = y(x)^2 - 1
     check("DSolve(y'(x) == y(x)^2 - 1, y(x), x)", //
-        "{{y(x)->-Tanh(x+C(1))}}");
+        "{{y(x)->-E^x/(E^x+C(1)/E^x)+C(1)/(E^x*(E^x+C(1)/E^x))}}");
   }
 
   @Test

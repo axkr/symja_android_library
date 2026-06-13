@@ -1,13 +1,11 @@
 package org.matheclipse.core.system;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 
-import static org.junit.Assert.*;
-
-@RunWith(JUnit4.class)
 public class OpenFixedSizeMapTest {
 
   @Test

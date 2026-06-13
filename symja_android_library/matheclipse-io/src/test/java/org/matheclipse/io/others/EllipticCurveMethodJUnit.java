@@ -1,15 +1,12 @@
 package org.matheclipse.io.others;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.math.BigInteger;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.numbertheory.IPrimality;
 import org.matheclipse.core.numbertheory.SortedMultiset;
 import org.matheclipse.core.numbertheory.SortedMultiset_BottomUp;
 import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
-import junit.framework.TestCase;
-
-import static org.junit.Assert.assertEquals;
 
 public class EllipticCurveMethodJUnit {
   private static IPrimality PRIME_FACTORS = new BigIntegerPrimality();

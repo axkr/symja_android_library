@@ -1,13 +1,11 @@
 package org.matheclipse.core.system;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import javax.script.ScriptEngine;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -21,7 +19,6 @@ import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
-@RunWith(JUnit4.class)
 public class PatternMatchingTestCase {
 
   protected static boolean DEBUG = true;
@@ -178,7 +175,7 @@ public class PatternMatchingTestCase {
   }
 
   /** The JUnit setup method */
-  @Before
+  @BeforeEach
   public void setUp() {
     try {
       // setup the evaluation engine (and bind to current thread)

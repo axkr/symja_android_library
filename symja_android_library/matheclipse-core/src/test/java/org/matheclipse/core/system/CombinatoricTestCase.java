@@ -278,6 +278,94 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testPermutationProduct() {
+
+    // 1. Base cases: No arguments (returns identity) and single argument (returns itself)
+    check("PermutationProduct()", //
+        "Cycles({})");
+    check("PermutationProduct(Cycles({{1, 2}}))", //
+        "Cycles({{1,2}})");
+
+    // 2. Product of standard permutations (disjoint vs non-disjoint)
+    // (1 2) * (2 3) = (1 3 2)
+    check("PermutationProduct(Cycles({{1, 2}}), Cycles({{2, 3}}))", //
+        "Cycles({{1,3,2}})");
+    // (1 2 3) * (1 2) = (2 3)
+    check("PermutationProduct(Cycles({{1, 2, 3}}), Cycles({{1, 2}}))", //
+        "Cycles({{2,3}})");
+
+    // 3. Left-to-right multi-argument verification
+    // (1 2) * (2 3) * (3 4) = (1 4 3 2)
+    check("PermutationProduct(Cycles({{1, 2}}), Cycles({{2, 3}}), Cycles({{3, 4}}))", //
+        "Cycles({{1,4,3,2}})");
+
+    // 4. Mixing vector/list permutation notation with Cycles notation
+    // {2, 3, 1} is equivalent to Cycles({{1, 2, 3}})
+    check("PermutationProduct({2, 3, 1}, Cycles({{1, 2}}))", //
+        "Cycles({{2,3}})");
+    check("PermutationProduct({2, 3, 1}, {2, 3, 1})", //
+        "{3,1,2}");
+    check("PermutationProduct(Cycles({{1, 2}}), {2, 3, 1})", //
+        "Cycles({{1,3}})");
+
+    // 5. Handling products that result in the identity permutation
+    // (1 2) * (1 2) = Cycles({})
+    check("PermutationProduct(Cycles({{1, 2}}), Cycles({{1, 2}}))", //
+        "Cycles({})");
+
+    // 6. Invalid non-permutation inputs should fall back to unevaluated (F.NIL)
+    check("PermutationProduct(Cycles({{1, 2}}), x)", //
+        "PermutationProduct(Cycles({{1,2}}),x)");
+    check("PermutationProduct({1, 2, 2}, Cycles({{1, 2}}))", //
+        "PermutationProduct({1,2,2},Cycles({{1,2}}))");
+
+    // 7. Multi-argument evaluation with pure Cycles (3+ arguments)
+    // (1 2) * (2 3) * (3 4) = (1 4 3 2)
+    check("PermutationProduct(Cycles({{1, 2}}), Cycles({{2, 3}}), Cycles({{3, 4}}))",
+        "Cycles({{1,4,3,2}})");
+
+    // (1 2) * (1 3) * (1 4) * (1 5) = (1 5 4 3 2)
+    check(
+        "PermutationProduct(Cycles({{1, 2}}), Cycles({{1, 3}}), Cycles({{1, 4}}), Cycles({{1, 5}}))",
+        "Cycles({{1,2,3,4,5}})");
+
+    // 8. Multi-argument evaluation with pure List representations (3+ arguments)
+    // {2, 1, 3} * {1, 3, 2} * {3, 2, 1} left-to-right:
+    // 1 -> 2 -> 3 -> 1
+    // 2 -> 1 -> 1 -> 3
+    // 3 -> 3 -> 2 -> 2
+    // Resulting mapping array: {1, 3, 2}
+    check("PermutationProduct({2, 1, 3}, {1, 3, 2}, {3, 2, 1})", "{1,3,2}");
+
+    // Four consecutive identical shifted lists: {2, 3, 4, 1}^4 should return the identity list {1,
+    // 2, 3, 4}
+    check("PermutationProduct({2, 3, 4, 1}, {2, 3, 4, 1}, {2, 3, 4, 1}, {2, 3, 4, 1})",
+        "{1,2,3,4}");
+
+    // 9. Multi-argument mixed evaluation (Cycles and Lists combined)
+    // Since it contains at least one Cycles expression, the entire result drops back to a canonical
+    // Cycles expression.
+    // {2, 3, 1} * Cycles({{1, 2}}) * {3, 1, 2}
+    // Equivalent to: Cycles({{1, 2, 3}}) * Cycles({{1, 2}}) * Cycles({{1, 3, 2}})
+    // Composition tracking:
+    // 1 -> 2 -> 1 -> 3
+    // 2 -> 3 -> 3 -> 2
+    // 3 -> 1 -> 2 -> 1
+    // Resulting cycle: Cycles({{1, 3}})
+    check("PermutationProduct({2, 3, 1}, Cycles({{1, 2}}), {3, 1, 2})", "Cycles({{1,3}})");
+
+    // 10. Multi-argument overlapping supports with high dimension element scaling
+    // Blending small subsets with isolated higher integers up to 10
+    check("PermutationProduct(Cycles({{1, 5}}), {2, 3, 1}, Cycles({{5, 10}}))",
+        "Cycles({{1,10,5,2,3}})");
+
+    // 11. Multi-argument evaluation where invalid types trigger fallback failure mid-chain
+    check("PermutationProduct(Cycles({{1, 2}}), Cycles({{2, 3}}), invalidSymbol, Cycles({{3, 4}}))",
+        "PermutationProduct(Cycles({{1,3,2}}),invalidsymbol,Cycles({{3,4}}))");
+
+  }
+
+  @Test
   public void testPermutationReplace() {
     check("PermutationReplace({1, b, 3, 4, 5}, Cycles({{1, 5,8}, {2, 7}}))", //
         "{5,b,3,4,8}");

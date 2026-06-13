@@ -1,6 +1,6 @@
 package org.matheclipse.core.system;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class SimplifyTest extends ExprEvaluatorTestCase {
 
@@ -501,4 +501,12 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         "1+Sin(y)");
   }
 
+  // @Test
+  // public void testSimplifyTrig() {
+  // TODO
+  // check(
+  // "Simplify(-(Sech(x/2)^2/(2*(1 + Tanh(x/2))^2)) + Sech(x/2)^2/(2*(1 - Tanh(x/2)^2)) +
+  // (Sech(x/2)^2 + Sech(x/2)^2*Tanh(x/2))/(1 + 2*Tanh(x/2) + Tanh(x/2)^2)^2)", //
+  // "Cosh(x)*(Cosh(x)-Sinh(x))");
+  // }
 }

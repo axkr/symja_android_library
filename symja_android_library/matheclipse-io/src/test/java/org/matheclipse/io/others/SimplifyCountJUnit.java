@@ -1,10 +1,9 @@
 package org.matheclipse.io.others;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.io.system.AbstractTestCase;
-
-import static org.junit.Assert.assertEquals;
 
 public class SimplifyCountJUnit extends AbstractTestCase {
 

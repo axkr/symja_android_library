@@ -1,6 +1,6 @@
 package org.matheclipse.io.others;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.io.system.AbstractTestCase;
 

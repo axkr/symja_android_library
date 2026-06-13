@@ -1,16 +1,11 @@
 package org.matheclipse.io.others;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalHistory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.parser.client.ParserConfig;
-import junit.framework.TestCase;
 
-import static org.junit.Assert.assertEquals;
-
-@RunWith(JUnit4.class)
 public class LastCalculationsHistoryJUnit {
 
   @Test

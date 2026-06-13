@@ -1,10 +1,10 @@
 package org.matheclipse.core.expression;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import java.math.BigInteger;
 import java.util.Optional;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.numbertheory.GaussianInteger;
@@ -189,25 +189,29 @@ public class ComplexSymTest {
     assertEquals(expected2[1], result[3]);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testIntegerPartDivisionGaussian8() {
+    try {
+      ComplexSym c1 = ComplexSym.valueOf(BigInteger.valueOf(-1), BigInteger.valueOf(-1));
+      ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(0));
+      ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(0));
+      ComplexSym c4 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(0));
 
-    ComplexSym c1 = ComplexSym.valueOf(BigInteger.valueOf(-1), BigInteger.valueOf(-1));
-    ComplexSym c2 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(0));
-    ComplexSym c3 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(0));
-    ComplexSym c4 = ComplexSym.valueOf(BigInteger.valueOf(0), BigInteger.valueOf(0));
+      IInteger[] parm1 = c1.gaussianIntegers().get();
+      IInteger[] parm2 = c2.gaussianIntegers().get();
+      IInteger[] expected = c3.gaussianIntegers().get();
+      IInteger[] expected2 = c4.gaussianIntegers().get();
 
-    IInteger[] parm1 = c1.gaussianIntegers().get();
-    IInteger[] parm2 = c2.gaussianIntegers().get();
-    IInteger[] expected = c3.gaussianIntegers().get();
-    IInteger[] expected2 = c4.gaussianIntegers().get();
+      IInteger[] result = GaussianInteger.quotientRemainder(parm1, parm2);
 
-    IInteger[] result = GaussianInteger.quotientRemainder(parm1, parm2);
+      assertEquals(expected[0], result[0]);
+      assertEquals(expected[1], result[1]);
+      assertEquals(expected2[0], result[2]);
+      assertEquals(expected2[1], result[3]);
+      fail("IllegalArgumentException expected");
+    } catch (IllegalArgumentException ex) {
 
-    assertEquals(expected[0], result[0]);
-    assertEquals(expected[1], result[1]);
-    assertEquals(expected2[0], result[2]);
-    assertEquals(expected2[1], result[3]);
+    }
   }
 
   @Test

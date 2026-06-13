@@ -1,17 +1,15 @@
 package org.matheclipse.core.system;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import org.apfloat.Apfloat;
-import org.hamcrest.core.IsInstanceOf;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -23,7 +21,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 
-@RunWith(JUnit4.class)
 public class NumberTest {
 
   @Test
@@ -119,7 +116,7 @@ public class NumberTest {
     String input = "(102/100)^181";
     ExprEvaluator exprEvaluator = new ExprEvaluator();
     IExpr result = exprEvaluator.eval(input);
-    IsInstanceOf.instanceOf(BigFractionSym.class);
+    assertInstanceOf(BigFractionSym.class, result);
     assertEquals(result.evalf(), 36.027247984128934, 1E-8);
     assertEquals(((BigFractionSym) result).complexNumValue().getRealPart(), 36.027247984128934, 1E-8);
   }

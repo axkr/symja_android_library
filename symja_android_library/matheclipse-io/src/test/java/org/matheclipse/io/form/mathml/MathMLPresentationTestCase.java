@@ -1,16 +1,14 @@
 package org.matheclipse.io.form.mathml;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.StringWriter;
 import org.apfloat.Apcomplex;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
-import junit.framework.TestCase;
-
-import static org.junit.Assert.assertEquals;
 
 /** Tests MathML presentation function */
 public class MathMLPresentationTestCase  {
@@ -484,9 +482,9 @@ public class MathMLPresentationTestCase  {
   public void check(IExpr expr, String strResult) {
     StringWriter stw = new StringWriter();
     mathUtil.toMathML(expr, stw);
-    assertEquals(stw.toString(), "<?xml version=\"1.0\"?>\n"
+    assertEquals("<?xml version=\"1.0\"?>\n"
         + "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
-        + "<math mode=\"display\">\n" + strResult + "</math>");
+        + "<math mode=\"display\">\n" + strResult + "</math>", stw.toString());
   }
 
   @Test
@@ -497,7 +495,7 @@ public class MathMLPresentationTestCase  {
   }
 
   /** The JUnit setup method */
-  @Before
+  @BeforeEach
   public void setUp() {
     try {
       // F.initSymbols();

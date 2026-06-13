@@ -1,14 +1,49 @@
 package org.matheclipse.core.system;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
+
+  /**
+   * Bounded transcendental objectives of the linear-trigonometric form a*Sin(x) + b*Cos(x) + c are
+   * globally optimized via the amplitude R = Sqrt(a^2 + b^2).
+   */
+  @Test
+  public void testBoundedTranscendental() {
+
+    check("Maximize(3*Sin(x) + 4*Cos(x), x)", //
+        "{5,{x->ArcTan(3/4)}}");
+    // vertical shift is preserved
+    check("Maximize(Sin(x) + 10, x)", //
+        "{11,{x->Pi/2}}");
+
+    check("Maximize(Sin(x), x)", //
+        "{1,{x->Pi/2}}");
+    check("Minimize(Sin(x), x)", //
+        "{-1,{x->-Pi/2}}");
+    check("Maximize(Cos(x), x)", //
+        "{1,{x->0}}");
+    check("Minimize(Cos(x), x)", //
+        "{-1,{x->Pi}}");
+
+    // linear combination: amplitude Sqrt(3^2 + 4^2) = 5
+    check("Maximize(3*Sin(x) + 4*Cos(x), x)", //
+        "{5,{x->ArcTan(3/4)}}");
+
+
+  }
+
+
+  @Test
+  public void testConstrainedQuadratic() {
+    check("Maximize({x^2, 1<=x<=3},x)", //
+        "{9,{x->3}}");
+  }
+
   /**
    * Feature #1: unconstrained multivariate quadratic. If the Hessian is positive (negative)
    * definite, there is a unique minimizer (maximizer) {@code x* = -1/2*Inverse(Q).b}.
    *
-   * <p>
-   * NOTE: not yet implemented - expected results are the target closed forms.
    */
   @Test
   public void testUnconstrainedQuadratic() {
@@ -90,6 +125,59 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
     // chained bound 1 <= x <= 3 written as a ternary relation, plus a second variable bound
     check("Maximize({x + y, 1 <= x <= 3 && 0 <= y <= 2}, {x, y})", //
         "{5,{x->3,y->2}}");
+  }
+
+  /**
+   * Univariate constrained optimization {@code Maximize/Minimize({f, cons}, x)} for a single
+   * variable. The feasible region (a real interval) is derived from the constraint and the global
+   * optimum is taken over the interior stationary points and the (closed) boundary
+   */
+  @Test
+  public void testUnivariateConstrained() {
+    // optimum on the boundary: x^2 is increasing on [1, 3]
+    check("Minimize({x^2, 1 <= x <= 3}, x)", //
+        "{1,{x->1}}");
+    check("Maximize({x^2, 1 <= x <= 3}, x)", //
+        "{9,{x->3}}");
+
+    // interior stationary point: -x^2 + 4*x has its maximum at x == 2 inside [0, 10]
+    check("Maximize({-x^2 + 4*x, 0 <= x <= 10}, x)", //
+        "{4,{x->2}}");
+    // its minimum on the same interval is attained at the boundary x == 10
+    check("Minimize({-x^2 + 4*x, 0 <= x <= 10}, x)", //
+        "{-60,{x->10}}");
+
+    // half-bounded feasible region: the minimum is attained at the left boundary x == 1
+    check("Minimize({x^2, x >= 1}, x)", //
+        "{1,{x->1}}");
+    // ... but x^2 grows without bound towards +Infinity
+    check("Maximize({x^2, x >= 1}, x)", //
+        "{Infinity,{x->Infinity}}");
+  }
+
+  /**
+   * Integer-domain optimization {@code Maximize/Minimize(f, x, Integers)}: the optimum is taken
+   * over the integer points of the feasible region.
+   */
+  @Test
+  public void testIntegerDomain() {
+    // bounded interval, integer optima on the boundary
+    check("Maximize({x^2, 1 <= x <= 3}, x, Integers)", //
+        "{9,{x->3}}");
+    check("Minimize({x^2, 1 <= x <= 3}, x, Integers)", //
+        "{1,{x->1}}");
+
+    // interior integer optimum of a concave quadratic
+    check("Maximize({-x^2 + 4*x, 0 <= x <= 10}, x, Integers)", //
+        "{4,{x->2}}");
+
+    // non-integer real argmax (5/2) rounds to the best integer neighbor (value 6 at x==2)
+    check("Maximize({-x^2 + 5*x, 0 <= x <= 10}, x, Integers)", //
+        "{6,{x->2}}");
+
+    // unbounded integer objective
+    check("Maximize({x^2, x >= 1}, x, Integers)", //
+        "{Infinity,{x->Infinity}}");
   }
 
   /**

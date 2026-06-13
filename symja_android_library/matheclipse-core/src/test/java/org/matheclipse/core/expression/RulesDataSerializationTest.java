@@ -1,11 +1,12 @@
 package org.matheclipse.core.expression;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -18,7 +19,7 @@ public class RulesDataSerializationTest {
 
   private static Kryo kryo;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpClass() throws Exception {
     // Initialize Symja's core system and Kryo
     F.initSymja();
@@ -55,22 +56,21 @@ public class RulesDataSerializationTest {
     engine.evaluate(F.Set(F.unary(f, F.C1), F.ZZ(100)));
 
     RulesData originalRules = f.getRulesData();
-    Assert.assertNotNull("Original RulesData should not be null", originalRules);
+    assertNotNull(originalRules, "Original RulesData should not be null");
 
     // Serialize and Deserialize
     byte[] serializedData = serializeRules(originalRules);
     RulesData deserializedRules = deserializeRules(serializedData);
 
-    Assert.assertNotNull("Deserialized RulesData should not be null", deserializedRules);
+    assertNotNull(deserializedRules, "Deserialized RulesData should not be null");
 
     // Verify structural equivalence using definition()
     List<IAST> originalDefs = originalRules.definition();
     List<IAST> deserializedDefs = deserializedRules.definition();
 
-    Assert.assertEquals("Definitions size should match", originalDefs.size(),
-        deserializedDefs.size());
-    Assert.assertEquals("Constant rule AST should match exactly", originalDefs.get(0),
-        deserializedDefs.get(0));
+    assertEquals(originalDefs.size(), deserializedDefs.size(), "Definitions size should match");
+    assertEquals(originalDefs.get(0), deserializedDefs.get(0),
+        "Constant rule AST should match exactly");
   }
 
   @Test
@@ -88,10 +88,9 @@ public class RulesDataSerializationTest {
     List<IAST> originalDefs = originalRules.definition();
     List<IAST> deserializedDefs = deserializedRules.definition();
 
-    Assert.assertEquals("Definitions size should match", originalDefs.size(),
-        deserializedDefs.size());
-    Assert.assertEquals("Pattern rule AST should match exactly", originalDefs.get(0),
-        deserializedDefs.get(0));
+    assertEquals(originalDefs.size(), deserializedDefs.size(), "Definitions size should match");
+    assertEquals(originalDefs.get(0), deserializedDefs.get(0),
+        "Pattern rule AST should match exactly");
   }
 
   @Test
@@ -110,10 +109,8 @@ public class RulesDataSerializationTest {
     List<IAST> originalDefs = originalRules.definition();
     List<IAST> deserializedDefs = deserializedRules.definition();
 
-    Assert.assertEquals("Definitions size should match", originalDefs.size(),
-        deserializedDefs.size());
-    Assert.assertEquals("UpRule AST should match exactly", originalDefs.get(0),
-        deserializedDefs.get(0));
+    assertEquals(originalDefs.size(), deserializedDefs.size(), "Definitions size should match");
+    assertEquals(originalDefs.get(0), deserializedDefs.get(0), "UpRule AST should match exactly");
   }
 
   @Test
@@ -138,9 +135,9 @@ public class RulesDataSerializationTest {
 
     // Evaluate using the new symbol and ensure the pattern matcher works
     // fOrig[0] should evaluate to 1 (Constant Rule)
-    Assert.assertEquals(F.C1, engine.evaluate(F.unary(fOrig, F.C0)));
+    assertEquals(F.C1, engine.evaluate(F.unary(fOrig, F.C0)));
 
     // fOrig[5] should evaluate to 50 (Pattern Rule)
-    Assert.assertEquals(F.ZZ(50), engine.evaluate(F.unary(fOrig, F.ZZ(5))));
+    assertEquals(F.ZZ(50), engine.evaluate(F.unary(fOrig, F.ZZ(5))));
   }
 }

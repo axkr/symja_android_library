@@ -1,15 +1,15 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.junit.Assert.assertEquals;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.ExprEvaluator;
 
 public class DtTest {
 
   private ExprEvaluator util;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     util = new ExprEvaluator();
     // Clear any previous definitions to ensure a clean state

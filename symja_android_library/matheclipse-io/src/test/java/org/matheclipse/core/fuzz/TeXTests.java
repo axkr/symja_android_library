@@ -1,15 +1,13 @@
 package org.matheclipse.core.fuzz;
 
+import static org.junit.jupiter.api.Assertions.fail;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -27,11 +25,7 @@ import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.math.MathException;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.Precedence;
-import junit.framework.TestCase;
 
-import static org.junit.Assert.fail;
-
-@RunWith(JUnit4.class)
 public class TeXTests {
 
   private static List<ASTNode> parseFileToList() {
@@ -193,7 +187,7 @@ public class TeXTests {
     // return result;
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     // Config.FUZZ_TESTING = true;
     Config.UNPROTECT_ALLOWED = false;

@@ -1,5 +1,6 @@
 package org.matheclipse.core.sympy.simplify;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.Dummy;
@@ -9,9 +10,8 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.ZZ;
 import static org.matheclipse.core.expression.S.Together;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -20,7 +20,7 @@ public class LogCombineTest {
 
   private EvalEngine engine;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     engine = new EvalEngine();
   }
@@ -37,7 +37,7 @@ public class LogCombineTest {
     // Using force=true to combine symbols without explicit positive assumptions
     IExpr result = org.matheclipse.core.sympy.simplify.Simplify.logCombine(expr, true);
 
-    Assert.assertEquals(Log(Times(x, y)), result);
+    assertEquals(Log(Times(x, y)), result);
   }
 
   /**
@@ -52,7 +52,8 @@ public class LogCombineTest {
 
     IExpr result = org.matheclipse.core.sympy.simplify.Simplify.logCombine(expr, true);
 
-    Assert.assertEquals(Times(z, Log(Times(a, b))), result);
+
+    assertEquals(Times(z, Log(Times(a, b))), result);
   }
 
   /**
@@ -74,7 +75,7 @@ public class LogCombineTest {
     IExpr expectedArg = Together.of(Times(Plus(C1D2, z), Power(z, CN1)));
     IExpr expected = Times(Power(z, CN1), Log(expectedArg));
 
-    Assert.assertEquals(expected, result);
+    assertEquals(expected, result);
   }
 
   /**
@@ -89,7 +90,7 @@ public class LogCombineTest {
 
     IExpr result = org.matheclipse.core.sympy.simplify.Simplify.logCombine(expr, true);
 
-    Assert.assertEquals(Plus(constant, Log(Times(x, y))), result);
+    assertEquals(Plus(constant, Log(Times(x, y))), result);
   }
 
   /**
@@ -103,6 +104,6 @@ public class LogCombineTest {
 
     IExpr result = org.matheclipse.core.sympy.simplify.Simplify.logCombine(expr, true);
 
-    Assert.assertEquals(Log(Times(x, Power(y, CN1))), result);
+    assertEquals(Log(Times(x, Power(y, CN1))), result);
   }
 }

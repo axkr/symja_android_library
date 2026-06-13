@@ -1,6 +1,6 @@
 package org.matheclipse.io.test;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 
 public class SemanticImportTestCase extends AbstractTestCase {

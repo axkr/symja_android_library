@@ -1,9 +1,9 @@
 package org.matheclipse.core.system;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.expression.F;
 import com.google.common.math.DoubleMath;
 

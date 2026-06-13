@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
 public class ShiftRegisterSequenceTest extends ExprEvaluatorTestCase {
@@ -12,7 +12,7 @@ public class ShiftRegisterSequenceTest extends ExprEvaluatorTestCase {
     check("ShiftRegisterSequence(3)", //
         "{0,0,1,0,1,1,1}");
 
-    // {n, T} spec converts Wolfram-style taps T_W = {1, 3} (polynomial 1 + x + x^3) to internal
+    // {n, T} spec converts WMA-style taps T_W = {1, 3} (polynomial 1 + x + x^3) to internal
     // T_my = {1, 2}, with default initial state {0, 0, 1} (single 1 at the last position).
     check("ShiftRegisterSequence({3, {1, 3}}, 5)", //
         "{0,1,1,1,0}");
@@ -23,7 +23,7 @@ public class ShiftRegisterSequenceTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testShiftRegisterSequence002() {
-    // Explicit initial state with {n, T} spec dispatches to a Galois LFSR that matches Wolfram:
+    // Explicit initial state with {n, T} spec dispatches to a Galois LFSR that matches WMA:
     // mask positions = T_W, shift right, XOR mask after non-zero output.
     check("ShiftRegisterSequence({3, {1, 3}}, {1, 1, 1}, 5)", //
         "{1,0,1,0,0}");

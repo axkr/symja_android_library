@@ -1,11 +1,9 @@
 package org.matheclipse.io.others;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.PackageUtil;
@@ -15,11 +13,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.ast.ASTNode;
-import junit.framework.TestCase;
 
-import static org.junit.Assert.assertEquals;
-
-@RunWith(JUnit4.class)
 public class GetTestSingleRunJUnit {
 
   private static final String VECTOR_ANALYSIS = "(* ::Package:: *)\n" + "\n"
@@ -181,7 +175,7 @@ public class GetTestSingleRunJUnit {
       + "Attributes[JacobianMatrix] = {ReadProtected, Protected};\n" + "\n" + "\n"
       + "EndPackage[]\n" + "";
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS = false;
     // wait for initializing of Integrate() rules:

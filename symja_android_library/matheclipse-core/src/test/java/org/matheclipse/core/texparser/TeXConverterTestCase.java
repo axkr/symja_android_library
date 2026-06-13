@@ -1,10 +1,8 @@
 package org.matheclipse.core.texparser;
 
-import static org.junit.Assert.assertEquals;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
@@ -12,7 +10,6 @@ import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IExpr;
 
 /** Tests LaTeX import (parsing) function */
-@RunWith(JUnit4.class)
 public class TeXConverterTestCase  {
 
   TeXParser texConverter;
@@ -545,7 +542,7 @@ public class TeXConverterTestCase  {
   }
 
   /** The JUnit setup method */
-  @Before
+  @BeforeEach
   public void setUp() {
     try {
       // F.initSymbols();

@@ -1,8 +1,9 @@
 package org.matheclipse.io.others;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -10,8 +11,6 @@ import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.io.system.AbstractTestCase;
-
-import static org.junit.Assert.assertEquals;
 
 public class ApfloatJUnit extends AbstractTestCase {
 

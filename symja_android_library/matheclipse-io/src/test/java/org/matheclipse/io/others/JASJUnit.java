@@ -1,7 +1,7 @@
 package org.matheclipse.io.others;
 
 import java.util.SortedMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import edu.jas.arith.BigRational;
 import edu.jas.poly.Complex;
 import edu.jas.poly.ComplexRing;

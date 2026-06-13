@@ -3,9 +3,7 @@ package org.matheclipse.api;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.matheclipse.api.TestPods.assertEqualsWithFloatLSFDelta;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.api.client.JSONQueryResult;
 import org.matheclipse.core.eval.EvalEngine;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -475,47 +473,47 @@ public class TestPodsStrict {
             "}"); //
   }
 
-  @Ignore
-  public void testRationalPlus() {
-    ObjectNode messageJSON = TestPods.createJUnitResult("1/2+3/4", formatsTEX);
-
-    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
-    assertEquals(queryResult.isError(), false);
-
-    final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
-
-    assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 5,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"1/2+3/4\",\n"
-            + "        \"sinput\" : \"1/2 + 3/4\",\n"
-            + "        \"latex\" : \"\\\\frac{1}{2}+\\\\frac{3}{4}\"\n" + "      } ]\n"
-            + "    }, {\n" + "      \"title\" : \"Exact result\",\n"
-            + "      \"scanner\" : \"Rational\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"5/4\",\n" + "        \"sinput\" : \"1/2 + 3/4\",\n"
-            + "        \"latex\" : \"\\\\frac{5}{4}\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Decimal form\",\n" + "      \"scanner\" : \"Numeric\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"1.25\",\n"
-            + "        \"sinput\" : \"N(1/2 + 3/4)\",\n" + "        \"latex\" : \"1.25\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Mixed fraction\",\n"
-            + "      \"scanner\" : \"Rational\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"1 1/4\",\n"
-            + "        \"sinput\" : \"{IntegerPart(5/4),FractionalPart(5/4)}\",\n"
-            + "        \"latex\" : \"\\\\{1,\\\\frac{1}{4}\\\\}\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Continued fraction\",\n"
-            + "      \"scanner\" : \"ContinuedFraction\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"[1; 4]\",\n"
-            + "        \"sinput\" : \"ContinuedFraction(5/4)\",\n"
-            + "        \"latex\" : \"\\\\{1,4\\\\}\"\n" + "      } ]\n" + "    } ]\n" + "  }\n"
-            + "}"); //
-  }
+  // @Test
+  // public void testRationalPlus() {
+  // ObjectNode messageJSON = TestPods.createJUnitResult("1/2+3/4", formatsTEX);
+  //
+  // JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+  // assertEquals(queryResult.isError(), false);
+  //
+  // final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  //
+  // assertEquals(jsonStr, //
+  // "{\n" + " \"queryresult\" : {\n" + " \"success\" : \"true\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numpods\" : 5,\n"
+  // + " \"version\" : \"0.1\",\n" + " \"pods\" : [ {\n"
+  // + " \"title\" : \"Input\",\n" + " \"scanner\" : \"Identity\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n" + " \"plaintext\" : \"1/2+3/4\",\n"
+  // + " \"sinput\" : \"1/2 + 3/4\",\n"
+  // + " \"latex\" : \"\\\\frac{1}{2}+\\\\frac{3}{4}\"\n" + " } ]\n"
+  // + " }, {\n" + " \"title\" : \"Exact result\",\n"
+  // + " \"scanner\" : \"Rational\",\n" + " \"error\" : \"false\",\n"
+  // + " \"numsubpods\" : 1,\n" + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"5/4\",\n" + " \"sinput\" : \"1/2 + 3/4\",\n"
+  // + " \"latex\" : \"\\\\frac{5}{4}\"\n" + " } ]\n" + " }, {\n"
+  // + " \"title\" : \"Decimal form\",\n" + " \"scanner\" : \"Numeric\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n" + " \"plaintext\" : \"1.25\",\n"
+  // + " \"sinput\" : \"N(1/2 + 3/4)\",\n" + " \"latex\" : \"1.25\"\n"
+  // + " } ]\n" + " }, {\n" + " \"title\" : \"Mixed fraction\",\n"
+  // + " \"scanner\" : \"Rational\",\n" + " \"error\" : \"false\",\n"
+  // + " \"numsubpods\" : 1,\n" + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"1 1/4\",\n"
+  // + " \"sinput\" : \"{IntegerPart(5/4),FractionalPart(5/4)}\",\n"
+  // + " \"latex\" : \"\\\\{1,\\\\frac{1}{4}\\\\}\"\n" + " } ]\n" + " }, {\n"
+  // + " \"title\" : \"Continued fraction\",\n"
+  // + " \"scanner\" : \"ContinuedFraction\",\n" + " \"error\" : \"false\",\n"
+  // + " \"numsubpods\" : 1,\n" + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"[1; 4]\",\n"
+  // + " \"sinput\" : \"ContinuedFraction(5/4)\",\n"
+  // + " \"latex\" : \"\\\\{1,4\\\\}\"\n" + " } ]\n" + " } ]\n" + " }\n"
+  // + "}"); //
+  // }
 
   @Test
   public void testPlotSin() {
@@ -676,31 +674,31 @@ public class TestPodsStrict {
     // + " } ]\n" + " } ]\n" + " }\n" + "}"); //
   }
 
-  @Ignore
-  public void testSin() {
-    String s = System.getProperty("os.name");
-    ObjectNode messageJSON = Pods.createResult("Sin(Pi+1/2) // N", formatsTEX, true, null);
-
-    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
-    assertEquals(queryResult.isError(), false);
-
-    final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
-    assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"N(Sin(Pi+1/2))\",\n"
-            + "        \"sinput\" : \"N(Sin(Pi + 1/2))\",\n"
-            + "        \"latex\" : \"N(\\\\sin (\\\\pi+\\\\frac{1}{2}))\"\n" + "      } ]\n"
-            + "    }, {\n" + "      \"title\" : \"Evaluated result\",\n"
-            + "      \"scanner\" : \"Expression\",\n" + "      \"error\" : \"true\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"-0.479426\",\n"
-            + "        \"sinput\" : \"N(Sin(Pi + 1/2))\",\n" + "        \"latex\" : \"-0.479426\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
-  }
+  // @Test
+  // public void testSin() {
+  // String s = System.getProperty("os.name");
+  // ObjectNode messageJSON = Pods.createResult("Sin(Pi+1/2) // N", formatsTEX, true, null);
+  //
+  // JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+  // assertEquals(queryResult.isError(), false);
+  //
+  // final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  // assertEquals(jsonStr, //
+  // "{\n" + " \"queryresult\" : {\n" + " \"success\" : \"true\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numpods\" : 2,\n"
+  // + " \"version\" : \"0.1\",\n" + " \"pods\" : [ {\n"
+  // + " \"title\" : \"Input\",\n" + " \"scanner\" : \"Identity\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n" + " \"plaintext\" : \"N(Sin(Pi+1/2))\",\n"
+  // + " \"sinput\" : \"N(Sin(Pi + 1/2))\",\n"
+  // + " \"latex\" : \"N(\\\\sin (\\\\pi+\\\\frac{1}{2}))\"\n" + " } ]\n"
+  // + " }, {\n" + " \"title\" : \"Evaluated result\",\n"
+  // + " \"scanner\" : \"Expression\",\n" + " \"error\" : \"true\",\n"
+  // + " \"numsubpods\" : 1,\n" + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"-0.479426\",\n"
+  // + " \"sinput\" : \"N(Sin(Pi + 1/2))\",\n" + " \"latex\" : \"-0.479426\"\n"
+  // + " } ]\n" + " } ]\n" + " }\n" + "}"); //
+  // }
 
   @Test
   public void testPolynomialQuotientRemainder() {
@@ -809,35 +807,66 @@ public class TestPodsStrict {
     // + "}"); //
   }
 
-  @Ignore
-  public void testSinXY() {
-    ObjectNode messageJSON = TestPods.createJUnitResult("Sin(x*y)", formatsTEX);
-
-    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
-    assertEquals(queryResult.isError(), false);
-
-    final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
-    assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 3,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"Sin(x*y)\",\n"
-            + "        \"sinput\" : \"Sin(x*y)\",\n" + "        \"latex\" : \"\\\\sin (x\\\\,y)\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"3D plot\",\n"
-            + "      \"scanner\" : \"Plot\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"sinput\" : \"Plot3D(Sin(x*y),{x,-3.5`,3.5`},{y,-3.5`,3.5`})\",\n"
-            + "        \"mathcell\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n  &quot;-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN&quot;\\n  &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;MathCell&lt;/title&gt;\\n&lt;/head&gt;\\n\\n&lt;body style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.10/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.10.2/build/mathcell.js&quot;&gt;&lt;/script&gt;\\n&lt;script src=&quot;https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML&quot;&gt;&lt;/script&gt;\\n\\n&lt;div class=&quot;mathcell&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0; flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar parent = document.currentScript.parentNode;\\nvar id = generateId();\\nparent.id = id;\\nMathCell( id, [  ] );\\n\\nparent.update = function( id ) {\\n\\n\\nfunction z1(x,y) { return [ x, y, sin(mul(x,y)) ]; }\\n\\nvar p1 = parametric( z1, [-3.5, 3.5], [-3.5, 3.5], { colormap: 'hot' } );\\n\\n  var config = { type: 'threejs' };\\n  var data = [p1];\\nevaluate( id, data, config );\\n\\n}\\nparent.update( id );\\n\\n&lt;/script&gt;\\n&lt;form method='post' action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check' style='margin-top: auto;'&gt;\\n&lt;button type='submit' style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html' style='display:none;'&gt;&lt;div class=&quot;mathcell&quot; style=&quot;width:600px; height:400px;&quot;&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var parent = document.currentScript.parentNode;\\nvar id = generateId();\\nparent.id = id;\\nMathCell( id, [  ] );\\n\\nparent.update = function( id ) {\\n\\n\\nfunction z1(x,y) { return [ x, y, sin(mul(x,y)) ]; }\\n\\nvar p1 = parametric( z1, [-3.5, 3.5], [-3.5, 3.5], { colormap: 'hot' } );\\n\\n  var config = { type: 'threejs' };\\n  var data = [p1];\\nevaluate( id, data, config );\\n\\n}\\nparent.update( id );\\n&lt;/textarea&gt;\\n&lt;textarea name='resources' style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.10/build/math.js,https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.10.2/build/mathcell.js,https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\" style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Alternate form\",\n"
-            + "      \"scanner\" : \"Simplification\",\n" + "      \"error\" : \"false\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"(I*1/2)/E^(I*x*y)-I*1/2*E^(I*x*y)\",\n"
-            + "        \"sinput\" : \"TrigToExp(Sin(x*y))\",\n"
-            + "        \"latex\" : \"\\\\frac{\\\\frac{1}{2}\\\\,i }{{e}^{i \\\\cdot x\\\\cdot y}} + \\\\left( \\\\frac{-1}{2}\\\\,i \\\\right) \\\\cdot {e}^{i \\\\cdot x\\\\cdot y}\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
-  }
+  // @Test
+  // public void testSinXY() {
+  // ObjectNode messageJSON = TestPods.createJUnitResult("Sin(x*y)", formatsTEX);
+  //
+  // JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+  // assertEquals(queryResult.isError(), false);
+  //
+  // final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  // assertEquals(jsonStr, //
+  // "{\n" + " \"queryresult\" : {\n" + " \"success\" : \"true\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numpods\" : 3,\n"
+  // + " \"version\" : \"0.1\",\n" + " \"pods\" : [ {\n"
+  // + " \"title\" : \"Input\",\n" + " \"scanner\" : \"Identity\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n" + " \"plaintext\" : \"Sin(x*y)\",\n"
+  // + " \"sinput\" : \"Sin(x*y)\",\n" + " \"latex\" : \"\\\\sin (x\\\\,y)\"\n"
+  // + " } ]\n" + " }, {\n" + " \"title\" : \"3D plot\",\n"
+  // + " \"scanner\" : \"Plot\",\n" + " \"error\" : \"false\",\n"
+  // + " \"numsubpods\" : 1,\n" + " \"subpods\" : [ {\n"
+  // + " \"sinput\" : \"Plot3D(Sin(x*y),{x,-3.5`,3.5`},{y,-3.5`,3.5`})\",\n"
+  // + " \"mathcell\" : \"<iframe srcdoc=\\\"&lt;?xml version=&quot;1.0&quot;
+  // encoding=&quot;UTF-8&quot;?&gt;\\n\\n&lt;!DOCTYPE html PUBLIC\\n &quot;-//W3C//DTD XHTML 1.1
+  // plus MathML 2.0 plus SVG 1.1//EN&quot;\\n
+  // &quot;http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd&quot;&gt;\\n\\n&lt;html
+  // xmlns=&quot;http://www.w3.org/1999/xhtml&quot; style=&quot;width: 100%; height: 100%; margin:
+  // 0; padding: 0&quot;&gt;\\n&lt;head&gt;\\n&lt;meta
+  // charset=&quot;utf-8&quot;&gt;\\n&lt;title&gt;MathCell&lt;/title&gt;\\n&lt;/head&gt;\\n\\n&lt;body
+  // style=&quot;width: 100%; height: 100%; margin: 0; padding: 0&quot;&gt;\\n&lt;script
+  // src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.10/build/math.js&quot;&gt;&lt;/script&gt;\\n&lt;script
+  // src=&quot;https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.10.2/build/mathcell.js&quot;&gt;&lt;/script&gt;\\n&lt;script
+  // src=&quot;https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML&quot;&gt;&lt;/script&gt;\\n\\n&lt;div
+  // class=&quot;mathcell&quot; style=&quot;display: flex; width: 100%; height: 100%; margin: 0;
+  // flex-direction: column; overflow: hidden&quot;&gt;\\n&lt;script&gt;\\nvar parent =
+  // document.currentScript.parentNode;\\nvar id = generateId();\\nparent.id = id;\\nMathCell( id, [
+  // ] );\\n\\nparent.update = function( id ) {\\n\\n\\nfunction z1(x,y) { return [ x, y,
+  // sin(mul(x,y)) ]; }\\n\\nvar p1 = parametric( z1, [-3.5, 3.5], [-3.5, 3.5], { colormap: 'hot' }
+  // );\\n\\n var config = { type: 'threejs' };\\n var data = [p1];\\nevaluate( id, data, config
+  // );\\n\\n}\\nparent.update( id );\\n\\n&lt;/script&gt;\\n&lt;form method='post'
+  // action='https://jsfiddle.net/api/post/mootools/1.3/dependencies/more/' target='check'
+  // style='margin-top: auto;'&gt;\\n&lt;button type='submit'
+  // style='background-color:lightblue;'&gt;JSFiddle&lt;/button&gt;\\n&lt;textarea name='html'
+  // style='display:none;'&gt;&lt;div class=&quot;mathcell&quot; style=&quot;width:600px;
+  // height:400px;&quot;&gt;&lt;/textarea&gt;\\n&lt;textarea name='js' style='display:none;'&gt;var
+  // parent = document.currentScript.parentNode;\\nvar id = generateId();\\nparent.id =
+  // id;\\nMathCell( id, [ ] );\\n\\nparent.update = function( id ) {\\n\\n\\nfunction z1(x,y) {
+  // return [ x, y, sin(mul(x,y)) ]; }\\n\\nvar p1 = parametric( z1, [-3.5, 3.5], [-3.5, 3.5], {
+  // colormap: 'hot' } );\\n\\n var config = { type: 'threejs' };\\n var data = [p1];\\nevaluate(
+  // id, data, config );\\n\\n}\\nparent.update( id );\\n&lt;/textarea&gt;\\n&lt;textarea
+  // name='resources'
+  // style='display:none;'&gt;https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.10/build/math.js,https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.10.2/build/mathcell.js,https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML&lt;/textarea&gt;\\n&lt;/form&gt;\\n&lt;/div&gt;\\n&lt;/body&gt;\\n&lt;/html&gt;\\\"
+  // style=\\\"display: block; width: 100%; height: 100%; border: none;\\\" ></iframe>\"\n"
+  // + " } ]\n" + " }, {\n" + " \"title\" : \"Alternate form\",\n"
+  // + " \"scanner\" : \"Simplification\",\n" + " \"error\" : \"false\",\n"
+  // + " \"numsubpods\" : 1,\n" + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"(I*1/2)/E^(I*x*y)-I*1/2*E^(I*x*y)\",\n"
+  // + " \"sinput\" : \"TrigToExp(Sin(x*y))\",\n"
+  // + " \"latex\" : \"\\\\frac{\\\\frac{1}{2}\\\\,i }{{e}^{i \\\\cdot x\\\\cdot y}} + \\\\left(
+  // \\\\frac{-1}{2}\\\\,i \\\\right) \\\\cdot {e}^{i \\\\cdot x\\\\cdot y}\"\n"
+  // + " } ]\n" + " } ]\n" + " }\n" + "}"); //
+  // }
 
   @Test
   public void testColor001() {
@@ -969,109 +998,109 @@ public class TestPodsStrict {
     // + "}"); //
   }
 
-  @Ignore
-  public void testSolve001() {
-    ObjectNode messageJSON = Pods.createResult("3+x==10", formatsTEX, //
-        true, null);
+  // @Test
+  // public void testSolve001() {
+  // ObjectNode messageJSON = Pods.createResult("3+x==10", formatsTEX, //
+  // true, null);
+  //
+  // JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+  // assertEquals(queryResult.isError(), false);
+  //
+  // final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  //
+  // assertEquals(jsonStr, //
+  // "{\n" + " \"queryresult\" : {\n" + " \"success\" : \"true\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numpods\" : 2,\n"
+  // + " \"version\" : \"0.1\",\n" + " \"pods\" : [ {\n"
+  // + " \"title\" : \"Input\",\n" + " \"scanner\" : \"Identity\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n" + " \"plaintext\" : \"3+x==10\",\n"
+  // + " \"sinput\" : \"3 + x==10\",\n" + " \"latex\" : \"3+x == 10\"\n"
+  // + " } ]\n" + " }, {\n" + " \"title\" : \"Evaluated result\",\n"
+  // + " \"scanner\" : \"Expression\",\n" + " \"error\" : \"true\",\n"
+  // + " \"numsubpods\" : 1,\n" + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"x==7\",\n" + " \"sinput\" : \"3 + x==10\",\n"
+  // + " \"latex\" : \"x == 7\"\n" + " } ]\n" + " } ]\n" + " }\n" + "}"); //
+  // }
 
-    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
-    assertEquals(queryResult.isError(), false);
+  // @Test
+  // public void testSolve002() {
+  // ObjectNode messageJSON = Pods.createResult("x^2+1==0", formatsTEX, //
+  // true, null);
+  //
+  // JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+  // assertEquals(queryResult.isError(), false);
+  //
+  // final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  //
+  // assertEquals(jsonStr, //
+  // "{\n" + " \"queryresult\" : {\n" + " \"success\" : \"true\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numpods\" : 2,\n"
+  // + " \"version\" : \"0.1\",\n" + " \"pods\" : [ {\n"
+  // + " \"title\" : \"Input\",\n" + " \"scanner\" : \"Identity\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n" + " \"plaintext\" : \"1+x^2==0\",\n"
+  // + " \"sinput\" : \"1 + x^2==0\",\n" + " \"latex\" : \"1+{x}^{2} == 0\"\n"
+  // + " } ]\n" + " }, {\n" + " \"title\" : \"Evaluated result\",\n"
+  // + " \"scanner\" : \"Expression\",\n" + " \"error\" : \"true\",\n"
+  // + " \"numsubpods\" : 1,\n" + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"x^2==-1\",\n" + " \"sinput\" : \"1 + x^2==0\",\n"
+  // + " \"latex\" : \"{x}^{2} == -1\"\n" + " } ]\n" + " } ]\n" + " }\n"
+  // + "}"); //
+  // }
 
-    final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  // @Test
+  // public void testSolve003() {
+  // ObjectNode messageJSON = Pods.createResult("Solve(x+3==10,x)", formatsTEX, //
+  // true, null);
+  //
+  // JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+  // assertEquals(queryResult.isError(), false);
+  //
+  // final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  //
+  // assertEquals(jsonStr, //
+  // "{\n" + " \"queryresult\" : {\n" + " \"success\" : \"true\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numpods\" : 2,\n"
+  // + " \"version\" : \"0.1\",\n" + " \"pods\" : [ {\n"
+  // + " \"title\" : \"Input\",\n" + " \"scanner\" : \"Identity\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n" + " \"plaintext\" : \"Solve(3+x==10,x)\",\n"
+  // + " \"sinput\" : \"Solve(3 + x==10,x)\",\n"
+  // + " \"latex\" : \"\\\\text{Solve}(3+x == 10,x)\"\n" + " } ]\n"
+  // + " }, {\n" + " \"title\" : \"Evaluated result\",\n"
+  // + " \"scanner\" : \"Expression\",\n" + " \"error\" : \"true\",\n"
+  // + " \"numsubpods\" : 1,\n" + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"{{x-&gt;7}}\",\n"
+  // + " \"sinput\" : \"Solve(3 + x==10,x)\",\n"
+  // + " \"latex\" : \"\\\\{\\\\{x\\\\to 7\\\\}\\\\}\"\n" + " } ]\n"
+  // + " } ]\n" + " }\n" + "}"); //
+  // }
 
-    assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"3+x==10\",\n"
-            + "        \"sinput\" : \"3 + x==10\",\n" + "        \"latex\" : \"3+x == 10\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Evaluated result\",\n"
-            + "      \"scanner\" : \"Expression\",\n" + "      \"error\" : \"true\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"x==7\",\n" + "        \"sinput\" : \"3 + x==10\",\n"
-            + "        \"latex\" : \"x == 7\"\n" + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
-  }
-
-  @Ignore
-  public void testSolve002() {
-    ObjectNode messageJSON = Pods.createResult("x^2+1==0", formatsTEX, //
-        true, null);
-
-    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
-    assertEquals(queryResult.isError(), false);
-
-    final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
-
-    assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"1+x^2==0\",\n"
-            + "        \"sinput\" : \"1 + x^2==0\",\n" + "        \"latex\" : \"1+{x}^{2} == 0\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Evaluated result\",\n"
-            + "      \"scanner\" : \"Expression\",\n" + "      \"error\" : \"true\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"x^2==-1\",\n" + "        \"sinput\" : \"1 + x^2==0\",\n"
-            + "        \"latex\" : \"{x}^{2} == -1\"\n" + "      } ]\n" + "    } ]\n" + "  }\n"
-            + "}"); //
-  }
-
-  @Ignore
-  public void testSolve003() {
-    ObjectNode messageJSON = Pods.createResult("Solve(x+3==10,x)", formatsTEX, //
-        true, null);
-
-    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
-    assertEquals(queryResult.isError(), false);
-
-    final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
-
-    assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"Solve(3+x==10,x)\",\n"
-            + "        \"sinput\" : \"Solve(3 + x==10,x)\",\n"
-            + "        \"latex\" : \"\\\\text{Solve}(3+x == 10,x)\"\n" + "      } ]\n"
-            + "    }, {\n" + "      \"title\" : \"Evaluated result\",\n"
-            + "      \"scanner\" : \"Expression\",\n" + "      \"error\" : \"true\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"{{x-&gt;7}}\",\n"
-            + "        \"sinput\" : \"Solve(3 + x==10,x)\",\n"
-            + "        \"latex\" : \"\\\\{\\\\{x\\\\to 7\\\\}\\\\}\"\n" + "      } ]\n"
-            + "    } ]\n" + "  }\n" + "}"); //
-  }
-
-  @Ignore
-  public void testInteger4294967295() {
-    ObjectNode messageJSON = Pods.createResult("2^32-1", formatsTEX, //
-        true, null);
-
-    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
-    assertEquals(queryResult.isError(), false);
-
-    final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
-
-    assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"-1+2^32\",\n"
-            + "        \"sinput\" : \"-1 + 2^32\",\n" + "        \"latex\" : \"-1+{2}^{32}\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Evaluated result\",\n"
-            + "      \"scanner\" : \"Expression\",\n" + "      \"error\" : \"true\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"4294967295\",\n" + "        \"sinput\" : \"-1 + 2^32\",\n"
-            + "        \"latex\" : \"4294967295\"\n" + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
-  }
+  // @Test
+  // public void testInteger4294967295() {
+  // ObjectNode messageJSON = Pods.createResult("2^32-1", formatsTEX, //
+  // true, null);
+  //
+  // JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+  // assertEquals(queryResult.isError(), false);
+  //
+  // final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  //
+  // assertEquals(jsonStr, //
+  // "{\n" + " \"queryresult\" : {\n" + " \"success\" : \"true\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numpods\" : 2,\n"
+  // + " \"version\" : \"0.1\",\n" + " \"pods\" : [ {\n"
+  // + " \"title\" : \"Input\",\n" + " \"scanner\" : \"Identity\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n" + " \"plaintext\" : \"-1+2^32\",\n"
+  // + " \"sinput\" : \"-1 + 2^32\",\n" + " \"latex\" : \"-1+{2}^{32}\"\n"
+  // + " } ]\n" + " }, {\n" + " \"title\" : \"Evaluated result\",\n"
+  // + " \"scanner\" : \"Expression\",\n" + " \"error\" : \"true\",\n"
+  // + " \"numsubpods\" : 1,\n" + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"4294967295\",\n" + " \"sinput\" : \"-1 + 2^32\",\n"
+  // + " \"latex\" : \"4294967295\"\n" + " } ]\n" + " } ]\n" + " }\n" + "}"); //
+  // }
 
   @Test
   public void testNormalDistribution() {
@@ -1127,87 +1156,88 @@ public class TestPodsStrict {
             + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
   }
 
-  @Ignore
-  public void testLogic002() {
-    ObjectNode messageJSON = Pods.createResult("a&b|c", formatsTEX, //
-        true, null);
+  // @Test
+  // public void testLogic002() {
+  // ObjectNode messageJSON = Pods.createResult("a&b|c", formatsTEX, //
+  // true, null);
+  //
+  // JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+  // assertEquals(queryResult.isError(), false);
+  //
+  // final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  //
+  // assertEquals(jsonStr, //
+  // "{\n" + " \"queryresult\" : {\n" + " \"success\" : \"true\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numpods\" : 2,\n"
+  // + " \"version\" : \"0.1\",\n" + " \"pods\" : [ {\n"
+  // + " \"title\" : \"Input\",\n" + " \"scanner\" : \"Identity\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n" + " \"plaintext\" : \"b*(a&amp;)|c\",\n"
+  // + " \"sinput\" : \"b*(a&amp;)|c\",\n"
+  // + " \"latex\" : \"b\\\\,a\\\\&\\\\text{|}c\"\n" + " } ]\n" + " }, {\n"
+  // + " \"title\" : \"Evaluated result\",\n" + " \"scanner\" : \"Expression\",\n"
+  // + " \"error\" : \"true\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n" + " \"plaintext\" : \"b*(a&amp;)|c\",\n"
+  // + " \"sinput\" : \"b*(a&amp;)|c\",\n"
+  // + " \"latex\" : \"b\\\\,a\\\\&\\\\text{|}c\"\n" + " } ]\n" + " } ]\n"
+  // + " }\n" + "}"); //
+  // }
 
-    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
-    assertEquals(queryResult.isError(), false);
+  // @Test
+  // public void testTimes() {
+  // ObjectNode messageJSON = Pods.createResult("10*11*12", formatsTEX, //
+  // true, null);
+  //
+  // JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+  // assertEquals(queryResult.isError(), false);
+  //
+  // final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  //
+  // assertEquals(jsonStr, //
+  // "{\n" + " \"queryresult\" : {\n" + " \"success\" : \"true\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numpods\" : 2,\n"
+  // + " \"version\" : \"0.1\",\n" + " \"pods\" : [ {\n"
+  // + " \"title\" : \"Input\",\n" + " \"scanner\" : \"Identity\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n" + " \"plaintext\" : \"10*11*12\",\n"
+  // + " \"sinput\" : \"10*11*12\",\n"
+  // + " \"latex\" : \"10\\\\cdot 11\\\\cdot 12\"\n" + " } ]\n" + " }, {\n"
+  // + " \"title\" : \"Evaluated result\",\n" + " \"scanner\" : \"Expression\",\n"
+  // + " \"error\" : \"true\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n" + " \"plaintext\" : \"1320\",\n"
+  // + " \"sinput\" : \"10*11*12\",\n" + " \"latex\" : \"1320\"\n"
+  // + " } ]\n" + " } ]\n" + " }\n" + "}"); //
+  // }
 
-    final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
-
-    assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"b*(a&amp;)|c\",\n"
-            + "        \"sinput\" : \"b*(a&amp;)|c\",\n"
-            + "        \"latex\" : \"b\\\\,a\\\\&\\\\text{|}c\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Evaluated result\",\n" + "      \"scanner\" : \"Expression\",\n"
-            + "      \"error\" : \"true\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"b*(a&amp;)|c\",\n"
-            + "        \"sinput\" : \"b*(a&amp;)|c\",\n"
-            + "        \"latex\" : \"b\\\\,a\\\\&\\\\text{|}c\"\n" + "      } ]\n" + "    } ]\n"
-            + "  }\n" + "}"); //
-  }
-
-  @Ignore
-  public void testTimes() {
-    ObjectNode messageJSON = Pods.createResult("10*11*12", formatsTEX, //
-        true, null);
-
-    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
-    assertEquals(queryResult.isError(), false);
-
-    final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
-
-    assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"10*11*12\",\n"
-            + "        \"sinput\" : \"10*11*12\",\n"
-            + "        \"latex\" : \"10\\\\cdot 11\\\\cdot 12\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Evaluated result\",\n" + "      \"scanner\" : \"Expression\",\n"
-            + "      \"error\" : \"true\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"1320\",\n"
-            + "        \"sinput\" : \"10*11*12\",\n" + "        \"latex\" : \"1320\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
-  }
-
-  @Ignore
-  public void testSimplify() {
-    ObjectNode messageJSON = Pods.createResult("FullSimplify(Sqrt(9-4*Sqrt(5)))", formatsTEX, //
-        true, null);
-
-    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
-    assertEquals(queryResult.isError(), false);
-
-    final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
-
-    assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"FullSimplify(Sqrt(9-4*Sqrt(5)))\",\n"
-            + "        \"sinput\" : \"FullSimplify(Sqrt(9 - 4*Sqrt(5)))\",\n"
-            + "        \"latex\" : \"\\\\text{FullSimplify}(\\\\sqrt{\\\\left( 9 - 4\\\\cdot \\\\sqrt{5}\\\\right) })\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Evaluated result\",\n"
-            + "      \"scanner\" : \"Expression\",\n" + "      \"error\" : \"true\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"-2+Sqrt(5)\",\n"
-            + "        \"sinput\" : \"FullSimplify(Sqrt(9 - 4*Sqrt(5)))\",\n"
-            + "        \"latex\" : \"-2+\\\\sqrt{5}\"\n" + "      } ]\n" + "    } ]\n" + "  }\n"
-            + "}"); //
-  }
+  // @Test
+  // public void testSimplify() {
+  // ObjectNode messageJSON = Pods.createResult("FullSimplify(Sqrt(9-4*Sqrt(5)))", formatsTEX, //
+  // true, null);
+  //
+  // JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+  // assertEquals(queryResult.isError(), false);
+  //
+  // final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  //
+  // assertEquals(jsonStr, //
+  // "{\n" + " \"queryresult\" : {\n" + " \"success\" : \"true\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numpods\" : 2,\n"
+  // + " \"version\" : \"0.1\",\n" + " \"pods\" : [ {\n"
+  // + " \"title\" : \"Input\",\n" + " \"scanner\" : \"Identity\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"FullSimplify(Sqrt(9-4*Sqrt(5)))\",\n"
+  // + " \"sinput\" : \"FullSimplify(Sqrt(9 - 4*Sqrt(5)))\",\n"
+  // + " \"latex\" : \"\\\\text{FullSimplify}(\\\\sqrt{\\\\left( 9 - 4\\\\cdot \\\\sqrt{5}\\\\right)
+  // })\"\n"
+  // + " } ]\n" + " }, {\n" + " \"title\" : \"Evaluated result\",\n"
+  // + " \"scanner\" : \"Expression\",\n" + " \"error\" : \"true\",\n"
+  // + " \"numsubpods\" : 1,\n" + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"-2+Sqrt(5)\",\n"
+  // + " \"sinput\" : \"FullSimplify(Sqrt(9 - 4*Sqrt(5)))\",\n"
+  // + " \"latex\" : \"-2+\\\\sqrt{5}\"\n" + " } ]\n" + " } ]\n" + " }\n"
+  // + "}"); //
+  // }
 
   @Test
   public void testIntegrate001() {
@@ -1236,125 +1266,150 @@ public class TestPodsStrict {
             + "}"); //
   }
 
-  @Ignore
-  public void testIntegrate002() {
-    ObjectNode messageJSON = Pods.createResult("integrate(Tan(x)*Cos(x)*Pi,x)", formatsTEX, //
-        true, null);
+  // @Test
+  // public void testIntegrate002() {
+  // ObjectNode messageJSON = Pods.createResult("integrate(Tan(x)*Cos(x)*Pi,x)", formatsTEX, //
+  // true, null);
+  //
+  // JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+  // assertEquals(queryResult.isError(), false);
+  //
+  // final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  //
+  // assertEquals(jsonStr, //
+  // "{\n" + " \"queryresult\" : {\n" + " \"success\" : \"true\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numpods\" : 2,\n"
+  // + " \"version\" : \"0.1\",\n" + " \"pods\" : [ {\n"
+  // + " \"title\" : \"Input\",\n" + " \"scanner\" : \"Identity\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"Integrate(Pi*Cos(x)*Tan(x),x)\",\n"
+  // + " \"sinput\" : \"Integrate(Pi*Cos(x)*Tan(x),x)\",\n"
+  // + " \"latex\" : \"\\\\int \\\\pi\\\\,\\\\cos (x)\\\\,\\\\tan (x)\\\\,\\\\mathrm{d}x\"\n"
+  // + " } ]\n" + " }, {\n" + " \"title\" : \"Evaluated result\",\n"
+  // + " \"scanner\" : \"Expression\",\n" + " \"error\" : \"true\",\n"
+  // + " \"numsubpods\" : 1,\n" + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"-Pi*Cos(x)\",\n"
+  // + " \"sinput\" : \"Integrate(Pi*Cos(x)*Tan(x),x)\",\n"
+  // + " \"latex\" : \" - \\\\pi\\\\,\\\\cos (x)\"\n" + " } ]\n" + " } ]\n"
+  // + " }\n" + "}"); //
+  // }
 
-    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
-    assertEquals(queryResult.isError(), false);
+  // @Test
+  // public void testDerivative001() {
+  // ObjectNode messageJSON = Pods.createResult("D(tan(x^3),x)", formatsTEX, //
+  // true, null);
+  // final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  //
+  // JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+  // assertEquals(queryResult.isError(), false);
+  //
+  // assertEquals(jsonStr, //
+  // "{\n" + " \"queryresult\" : {\n" + " \"success\" : \"true\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numpods\" : 2,\n"
+  // + " \"version\" : \"0.1\",\n" + " \"pods\" : [ {\n"
+  // + " \"title\" : \"Input\",\n" + " \"scanner\" : \"Identity\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n" + " \"plaintext\" : \"D(Tan(x^3),x)\",\n"
+  // + " \"sinput\" : \"D(Tan(x^3),x)\",\n"
+  // + " \"latex\" : \"\\\\frac{\\\\partial \\\\tan ({x}^{3})}{\\\\partial x}\"\n"
+  // + " } ]\n" + " }, {\n" + " \"title\" : \"Evaluated result\",\n"
+  // + " \"scanner\" : \"Expression\",\n" + " \"error\" : \"true\",\n"
+  // + " \"numsubpods\" : 1,\n" + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"3*x^2*Sec(x^3)^2\",\n"
+  // + " \"sinput\" : \"D(Tan(x^3),x)\",\n"
+  // + " \"latex\" : \"3\\\\cdot {x}^{2}\\\\cdot {\\\\sec ({x}^{3})}^{2}\"\n"
+  // + " } ]\n" + " } ]\n" + " }\n" + "}"); //
+  // }
 
-    final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  // @Test
+  // public void testListPlot001() {
+  // EvalEngine.resetModuleCounter4JUnit();
+  //
+  // ObjectNode messageJSON = Pods.createResult("ListPlot({3,Sin(1),Pi,3/4,42,1.2})", formatsTEX, //
+  // true, null);
+  //
+  // JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+  // assertEquals(queryResult.isError(), false);
+  //
+  // final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  //
+  // assertEquals(jsonStr, //
+  // "{\n" + " \"queryresult\" : {\n" + " \"success\" : \"true\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numpods\" : 2,\n"
+  // + " \"version\" : \"0.1\",\n" + " \"pods\" : [ {\n"
+  // + " \"title\" : \"Input\",\n" + " \"scanner\" : \"Identity\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"ListPlot({3,Sin(1),Pi,3/4,42,1.2})\",\n"
+  // + " \"sinput\" : \"ListPlot({3,Sin(1),Pi,3/4,42,1.2`})\",\n"
+  // + " \"latex\" : \"\\\\text{ListPlot}(\\\\{3,\\\\sin (1),\\\\pi,\\\\frac{3}{4},42,1.2\\\\})\"\n"
+  // + " } ]\n" + " }, {\n" + " \"title\" : \"Evaluated result\",\n"
+  // + " \"scanner\" : \"Expression\",\n" + " \"error\" : \"true\",\n"
+  // + " \"numsubpods\" : 1,\n" + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"JSFormData(var board = JXG.JSXGraph.initBoard('jxgbox',
+  // {axis:true,boundingbox:[-0.9,44.6125,7.9,-1.8624999999999998]});\\nboard.suspendUpdate();\\n\\nboard.create('point',
+  // [function() {return 1;},function() {return 3;}], {color:'#5e81b5' ,name:'', face:'o', size: 2 }
+  // );\\nboard.create('point', [function() {return 2;},function() {return (0.8414709848078965);}],
+  // {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return
+  // 3;},function() {return Math.PI;}], {color:'#5e81b5' ,name:'', face:'o', size: 2 }
+  // );\\nboard.create('point', [function() {return 4;},function() {return 3/4;}], {color:'#5e81b5'
+  // ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 5;},function()
+  // {return 42;}], {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point',
+  // [function() {return 6;},function() {return 1.2;}], {color:'#5e81b5' ,name:'', face:'o', size: 2
+  // } );\\n\\n\\nboard.unsuspendUpdate();\\n,jsxgraph)\",\n"
+  // + " \"sinput\" : \"ListPlot({3,Sin(1),Pi,3/4,42,1.2`})\",\n"
+  // + " \"latex\" : \"\\\\text{JSFormData}(\\\\textnormal{var board =
+  // JXG.JSXGraph.initBoard('jxgbox',
+  // \\\\{axis:true,boundingbox:[-0.9,44.6125,7.9,-1.8624999999999998]\\\\});\\nboard.suspendUpdate();\\n\\nboard.create('point',
+  // [function() \\\\{return 1;\\\\},function() \\\\{return 3;\\\\}], \\\\{color:'\\\\#5e81b5'
+  // ,name:'', face:'o', size: 2 \\\\} );\\nboard.create('point', [function() \\\\{return
+  // 2;\\\\},function() \\\\{return (0.8414709848078965);\\\\}], \\\\{color:'\\\\#5e81b5' ,name:'',
+  // face:'o', size: 2 \\\\} );\\nboard.create('point', [function() \\\\{return 3;\\\\},function()
+  // \\\\{return Math.PI;\\\\}], \\\\{color:'\\\\#5e81b5' ,name:'', face:'o', size: 2 \\\\}
+  // );\\nboard.create('point', [function() \\\\{return 4;\\\\},function() \\\\{return 3/4;\\\\}],
+  // \\\\{color:'\\\\#5e81b5' ,name:'', face:'o', size: 2 \\\\} );\\nboard.create('point',
+  // [function() \\\\{return 5;\\\\},function() \\\\{return 42;\\\\}], \\\\{color:'\\\\#5e81b5'
+  // ,name:'', face:'o', size: 2 \\\\} );\\nboard.create('point', [function() \\\\{return
+  // 6;\\\\},function() \\\\{return 1.2;\\\\}], \\\\{color:'\\\\#5e81b5' ,name:'', face:'o', size: 2
+  // \\\\} );\\n\\n\\nboard.unsuspendUpdate();\\n},\\\\textnormal{jsxgraph})\"\n"
+  // + " } ]\n" + " } ]\n" + " }\n" + "}"); //
+  // }
 
-    assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"Integrate(Pi*Cos(x)*Tan(x),x)\",\n"
-            + "        \"sinput\" : \"Integrate(Pi*Cos(x)*Tan(x),x)\",\n"
-            + "        \"latex\" : \"\\\\int  \\\\pi\\\\,\\\\cos (x)\\\\,\\\\tan (x)\\\\,\\\\mathrm{d}x\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Evaluated result\",\n"
-            + "      \"scanner\" : \"Expression\",\n" + "      \"error\" : \"true\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"-Pi*Cos(x)\",\n"
-            + "        \"sinput\" : \"Integrate(Pi*Cos(x)*Tan(x),x)\",\n"
-            + "        \"latex\" : \" - \\\\pi\\\\,\\\\cos (x)\"\n" + "      } ]\n" + "    } ]\n"
-            + "  }\n" + "}"); //
-  }
-
-  @Ignore
-  public void testDerivative001() {
-    ObjectNode messageJSON = Pods.createResult("D(tan(x^3),x)", formatsTEX, //
-        true, null);
-    final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
-
-    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
-    assertEquals(queryResult.isError(), false);
-
-    assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"D(Tan(x^3),x)\",\n"
-            + "        \"sinput\" : \"D(Tan(x^3),x)\",\n"
-            + "        \"latex\" : \"\\\\frac{\\\\partial \\\\tan ({x}^{3})}{\\\\partial x}\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Evaluated result\",\n"
-            + "      \"scanner\" : \"Expression\",\n" + "      \"error\" : \"true\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"3*x^2*Sec(x^3)^2\",\n"
-            + "        \"sinput\" : \"D(Tan(x^3),x)\",\n"
-            + "        \"latex\" : \"3\\\\cdot {x}^{2}\\\\cdot {\\\\sec ({x}^{3})}^{2}\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
-  }
-
-  @Ignore
-  @Test
-  public void testListPlot001() {
-    EvalEngine.resetModuleCounter4JUnit();
-
-    ObjectNode messageJSON = Pods.createResult("ListPlot({3,Sin(1),Pi,3/4,42,1.2})", formatsTEX, //
-        true, null);
-
-    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
-    assertEquals(queryResult.isError(), false);
-
-    final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
-
-    assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"ListPlot({3,Sin(1),Pi,3/4,42,1.2})\",\n"
-            + "        \"sinput\" : \"ListPlot({3,Sin(1),Pi,3/4,42,1.2`})\",\n"
-            + "        \"latex\" : \"\\\\text{ListPlot}(\\\\{3,\\\\sin (1),\\\\pi,\\\\frac{3}{4},42,1.2\\\\})\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Evaluated result\",\n"
-            + "      \"scanner\" : \"Expression\",\n" + "      \"error\" : \"true\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"JSFormData(var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.9,44.6125,7.9,-1.8624999999999998]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 3;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return (0.8414709848078965);}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return Math.PI;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 4;},function() {return 3/4;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 5;},function() {return 42;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 6;},function() {return 1.2;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n,jsxgraph)\",\n"
-            + "        \"sinput\" : \"ListPlot({3,Sin(1),Pi,3/4,42,1.2`})\",\n"
-            + "        \"latex\" : \"\\\\text{JSFormData}(\\\\textnormal{var board = JXG.JSXGraph.initBoard('jxgbox', \\\\{axis:true,boundingbox:[-0.9,44.6125,7.9,-1.8624999999999998]\\\\});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() \\\\{return 1;\\\\},function() \\\\{return 3;\\\\}],  \\\\{color:'\\\\#5e81b5' ,name:'', face:'o', size: 2 \\\\} );\\nboard.create('point', [function() \\\\{return 2;\\\\},function() \\\\{return (0.8414709848078965);\\\\}],  \\\\{color:'\\\\#5e81b5' ,name:'', face:'o', size: 2 \\\\} );\\nboard.create('point', [function() \\\\{return 3;\\\\},function() \\\\{return Math.PI;\\\\}],  \\\\{color:'\\\\#5e81b5' ,name:'', face:'o', size: 2 \\\\} );\\nboard.create('point', [function() \\\\{return 4;\\\\},function() \\\\{return 3/4;\\\\}],  \\\\{color:'\\\\#5e81b5' ,name:'', face:'o', size: 2 \\\\} );\\nboard.create('point', [function() \\\\{return 5;\\\\},function() \\\\{return 42;\\\\}],  \\\\{color:'\\\\#5e81b5' ,name:'', face:'o', size: 2 \\\\} );\\nboard.create('point', [function() \\\\{return 6;\\\\},function() \\\\{return 1.2;\\\\}],  \\\\{color:'\\\\#5e81b5' ,name:'', face:'o', size: 2 \\\\} );\\n\\n\\nboard.unsuspendUpdate();\\n},\\\\textnormal{jsxgraph})\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
-  }
-
-  @Ignore
-  public void testListPlot002() {
-    EvalEngine.resetModuleCounter4JUnit();
-
-    ObjectNode messageJSON =
-        Pods.createResult("Table({Sin(t*0.33), Cos(t*1.1)}, {t, 100})", formatsTEX, //
-            true, null);
-
-    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
-    assertEquals(queryResult.isError(), false);
-
-    final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
-
-    assertEqualsWithFloatLSFDelta(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"Table({Sin(t*0.33),Cos(t*1.1)},{t,100})\",\n"
-            + "        \"sinput\" : \"Table({Sin(t*0.33`),Cos(t*1.1`)},{t,100})\",\n"
-            + "        \"latex\" : \"\\\\text{Table}(\\\\{\\\\sin (t\\\\cdot 0.33),\\\\cos (t\\\\cdot 1.1)\\\\},\\\\{t,100\\\\})\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Evaluated result\",\n"
-            + "      \"scanner\" : \"Expression\",\n" + "      \"error\" : \"true\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"{{0.32404302839486837,0.4535961214255773},{0.6131168519734338,-0.5885011172553458},{0.8360259786005205,-0.9874797699088649},{0.9687151001182652,-0.30733286997841935},{0.9968650284539189,0.70866977429126},{0.9174379552818098,0.9502325919585293},{0.7390052780594708,0.15337386203786346},{0.48082261498864826,-0.811093014061656},{0.17075182895114532,-0.8891911526253609},{-0.15774569414324865,0.004425697988050785},{-0.4692200412887275,0.8932061115093233},{-0.7300583608392995,0.8058839576404497},{-0.9121122039130803,-0.16211443649971827},{-0.9957351730622453,-0.9529529168871809},{-0.9719030694018208,-0.7023970575027135},{-0.8431877418564167,0.31574375491924334},{-0.6234795452786853,0.9888373426941465},{-0.3364883584585042,0.5813218118144357},{-0.013184925133521251,-0.46146670441591253},{0.3115413635133787,-0.9999608263946371},{0.602647568421973,-0.44569000044433316},{0.8287188723898359,0.5956343152752115},{0.965358719901792,0.9860448308379632},{0.9978215790530743,0.2988979063644682},{0.9226042102393402,-0.7148869687796675},{0.7478237193548898,-0.9474378189567576},{0.49234159776988917,-0.14462127116171977},{0.183728278586583,0.8162385236075724},{-0.14471213527691454,0.8851065280947882},{-0.4575358937753214,-0.013276747223059479},{-0.7209845231142057,-0.897151090185845},{-0.9066278820139979,-0.8006117624589936},{-0.9944322093031953,0.17084230974765666},{-0.9749220735246146,0.9555985806128415},{-0.8502029170863663,0.6960693098638897},{-0.6337338467854989,-0.3241299022175636},{-0.34887519008606005,-0.990117442831766},{-0.026367558070356484,-0.5740969614310336},{0.2989855372260583,0.4693011327771151},{0.5920735147072245,0.9998433086476912},{0.8212676935633646,0.43774896089470705},{0.9618345122584528,-0.6027208470078607},{0.9986046585635748,-0.9845326379049143},{0.9276100706332453,-0.2904395249332599},{0.756512151641241,0.7210481538680871},{0.5037749870595187,0.9445688168445349},{0.19667278709629893,0.1358573496123707},{-0.13165341823383273,-0.8213200831418752},{-0.4457722037352182,-0.8809525579365433},{-0.711785342369123,0.022126756261962838},{-0.900985943032865,0.901025779576851},{-0.9929563636967662,0.7952768415790757},{-0.9777715876333635,-0.17955679797714888},{-0.857070284703512,-0.9581693758551366},{-0.6438779737855393,-0.6896870271361613},{-0.36120136982925244,0.3324906548421391},{-0.03954560701231674,0.9913199700294487},{0.2863777323608796,0.5668271321520202},{0.5813965291263834,-0.47709879270357103},{0.8136737375071054,-0.99964745596635},{0.9581430898710656,-0.42977362493499033},{0.9992141308471991,0.6097601572433005},{0.9324546661956634,0.9829433095858163},{0.7650690644362526,0.281958388375392},{0.515120795165023,-0.7271528468448446},{0.20958310407999373,-0.9416258104001715},{-0.11857181326943754,-0.1270827840186229},{-0.433931016283655,0.8263372945385548},{-0.7024624178798466,0.876729567602604},{-0.8951873678196818,-0.03097503173121646},{-0.9913078928184317,-0.9048298761112383},{-0.9804511163405908,-0.7898796129768653},{-0.8637886508173204,0.18825721843235974},{-0.6539101627242901,0.9606651011994307},{-0.3734647547841147,0.6832507093535931},{-0.052716780958143236,-0.3408253577513085},{0.2737201407822824,-0.9924448300725429},{0.5706184678713274,-0.5595128935482332},{0.805938324428851,0.48485907327037797},{0.954285094492698,0.9993732836951247},{0.9996498899473084,0.4217646174105228},{0.9371371546945932,-0.6167516944712085},{0.7734929701222879,-0.9812769704001121},{0.5263770496198482,-0.27345516116425417},{0.2224569850815534,0.7332005694242952},{-0.1054695946182271,0.9386090302000182},{-0.42201439000878305,0.118298261843216},{-0.6930173704349996,-0.8312897647130846},{-0.889233164455629,-0.8724378879524822},{-0.9894870832545356,0.039820880393153096},{-0.9829601938107485,0.9085630817486479},{-0.8703568474411396,0.784420499510169},{-0.6638286695076421,-0.19694288945960042},{-0.38566321296353945,-0.9630855611126041},{-0.0658787901017895,-0.6767608607837051},{0.26101496301011606,0.3491333579443536},{0.5597412047059207,0.9934919348314017},{0.7980627991286724,0.5521548186698774},{0.9502611968351016,-0.4925813664811991},{0.9999118601072672,-0.9990208133146474}}\",\n"
-            + "        \"sinput\" : \"Table({Sin(t*0.33`),Cos(t*1.1`)},{t,100})\",\n"
-            + "        \"latex\" : \"\\\\{\\\\{0.324043,0.453596\\\\},\\\\{0.613117,-0.588501\\\\},\\\\{0.836026,-0.98748\\\\},\\\\{0.968715,-0.307333\\\\},\\\\{0.996865,0.70867\\\\},\\\\{0.917438,0.950233\\\\},\\\\{0.739005,0.153374\\\\},\\\\{0.480823,-0.811093\\\\},\\\\{0.170752,-0.889191\\\\},\\\\{-0.157746,0.0044257\\\\},\\\\{-0.46922,0.893206\\\\},\\\\{-0.730058,0.805884\\\\},\\\\{-0.912112,-0.162114\\\\},\\\\{-0.995735,-0.952953\\\\},\\\\{-0.971903,-0.702397\\\\},\\\\{-0.843188,0.315744\\\\},\\\\{-0.62348,0.988837\\\\},\\\\{-0.336488,0.581322\\\\},\\\\{-0.0131849,-0.461467\\\\},\\\\{0.311541,-0.999961\\\\},\\\\{0.602648,-0.44569\\\\},\\\\{0.828719,0.595634\\\\},\\\\{0.965359,0.986045\\\\},\\\\{0.997822,0.298898\\\\},\\\\{0.922604,-0.714887\\\\},\\\\{0.747824,-0.947438\\\\},\\\\{0.492342,-0.144621\\\\},\\\\{0.183728,0.816239\\\\},\\\\{-0.144712,0.885107\\\\},\\\\{-0.457536,-0.0132767\\\\},\\\\{-0.720985,-0.897151\\\\},\\\\{-0.906628,-0.800612\\\\},\\\\{-0.994432,0.170842\\\\},\\\\{-0.974922,0.955599\\\\},\\\\{-0.850203,0.696069\\\\},\\\\{-0.633734,-0.32413\\\\},\\\\{-0.348875,-0.990117\\\\},\\\\{-0.0263676,-0.574097\\\\},\\\\{0.298986,0.469301\\\\},\\\\{0.592074,0.999843\\\\},\\\\{0.821268,0.437749\\\\},\\\\{0.961835,-0.602721\\\\},\\\\{0.998605,-0.984533\\\\},\\\\{0.92761,-0.29044\\\\},\\\\{0.756512,0.721048\\\\},\\\\{0.503775,0.944569\\\\},\\\\{0.196673,0.135857\\\\},\\\\{-0.131653,-0.82132\\\\},\\\\{-0.445772,-0.880953\\\\},\\\\{-0.711785,0.0221268\\\\},\\\\{-0.900986,0.901026\\\\},\\\\{-0.992956,0.795277\\\\},\\\\{-0.977772,-0.179557\\\\},\\\\{-0.85707,-0.958169\\\\},\\\\{-0.643878,-0.689687\\\\},\\\\{-0.361201,0.332491\\\\},\\\\{-0.0395456,0.99132\\\\},\\\\{0.286378,0.566827\\\\},\\\\{0.581397,-0.477099\\\\},\\\\{0.813674,-0.999647\\\\},\\\\{0.958143,-0.429774\\\\},\\\\{0.999214,0.60976\\\\},\\\\{0.932455,0.982943\\\\},\\\\{0.765069,0.281958\\\\},\\\\{0.515121,-0.727153\\\\},\\\\{0.209583,-0.941626\\\\},\\\\{-0.118572,-0.127083\\\\},\\\\{-0.433931,0.826337\\\\},\\\\{-0.702462,0.87673\\\\},\\\\{-0.895187,-0.030975\\\\},\\\\{-0.991308,-0.90483\\\\},\\\\{-0.980451,-0.78988\\\\},\\\\{-0.863789,0.188257\\\\},\\\\{-0.65391,0.960665\\\\},\\\\{-0.373465,0.683251\\\\},\\\\{-0.0527168,-0.340825\\\\},\\\\{0.27372,-0.992445\\\\},\\\\{0.570618,-0.559513\\\\},\\\\{0.805938,0.484859\\\\},\\\\{0.954285,0.999373\\\\},\\\\{0.99965,0.421765\\\\},\\\\{0.937137,-0.616752\\\\},\\\\{0.773493,-0.981277\\\\},\\\\{0.526377,-0.273455\\\\},\\\\{0.222457,0.733201\\\\},\\\\{-0.10547,0.938609\\\\},\\\\{-0.422014,0.118298\\\\},\\\\{-0.693017,-0.83129\\\\},\\\\{-0.889233,-0.872438\\\\},\\\\{-0.989487,0.0398209\\\\},\\\\{-0.98296,0.908563\\\\},\\\\{-0.870357,0.78442\\\\},\\\\{-0.663829,-0.196943\\\\},\\\\{-0.385663,-0.963086\\\\},\\\\{-0.0658788,-0.676761\\\\},\\\\{0.261015,0.349133\\\\},\\\\{0.559741,0.993492\\\\},\\\\{0.798063,0.552155\\\\},\\\\{0.950261,-0.492581\\\\},\\\\{0.999912,-0.999021\\\\}\\\\}\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
-  }
+  // @Test
+  // public void testListPlot002() {
+  // EvalEngine.resetModuleCounter4JUnit();
+  //
+  // ObjectNode messageJSON =
+  // Pods.createResult("Table({Sin(t*0.33), Cos(t*1.1)}, {t, 100})", formatsTEX, //
+  // true, null);
+  //
+  // JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+  // assertEquals(queryResult.isError(), false);
+  //
+  // final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  //
+  // assertEqualsWithFloatLSFDelta(jsonStr, //
+  // "{\n" + " \"queryresult\" : {\n" + " \"success\" : \"true\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numpods\" : 2,\n"
+  // + " \"version\" : \"0.1\",\n" + " \"pods\" : [ {\n"
+  // + " \"title\" : \"Input\",\n" + " \"scanner\" : \"Identity\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"Table({Sin(t*0.33),Cos(t*1.1)},{t,100})\",\n"
+  // + " \"sinput\" : \"Table({Sin(t*0.33`),Cos(t*1.1`)},{t,100})\",\n"
+  // + " \"latex\" : \"\\\\text{Table}(\\\\{\\\\sin (t\\\\cdot 0.33),\\\\cos (t\\\\cdot
+  // 1.1)\\\\},\\\\{t,100\\\\})\"\n"
+  // + " } ]\n" + " }, {\n" + " \"title\" : \"Evaluated result\",\n"
+  // + " \"scanner\" : \"Expression\",\n" + " \"error\" : \"true\",\n"
+  // + " \"numsubpods\" : 1,\n" + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" :
+  // \"{{0.32404302839486837,0.4535961214255773},{0.6131168519734338,-0.5885011172553458},{0.8360259786005205,-0.9874797699088649},{0.9687151001182652,-0.30733286997841935},{0.9968650284539189,0.70866977429126},{0.9174379552818098,0.9502325919585293},{0.7390052780594708,0.15337386203786346},{0.48082261498864826,-0.811093014061656},{0.17075182895114532,-0.8891911526253609},{-0.15774569414324865,0.004425697988050785},{-0.4692200412887275,0.8932061115093233},{-0.7300583608392995,0.8058839576404497},{-0.9121122039130803,-0.16211443649971827},{-0.9957351730622453,-0.9529529168871809},{-0.9719030694018208,-0.7023970575027135},{-0.8431877418564167,0.31574375491924334},{-0.6234795452786853,0.9888373426941465},{-0.3364883584585042,0.5813218118144357},{-0.013184925133521251,-0.46146670441591253},{0.3115413635133787,-0.9999608263946371},{0.602647568421973,-0.44569000044433316},{0.8287188723898359,0.5956343152752115},{0.965358719901792,0.9860448308379632},{0.9978215790530743,0.2988979063644682},{0.9226042102393402,-0.7148869687796675},{0.7478237193548898,-0.9474378189567576},{0.49234159776988917,-0.14462127116171977},{0.183728278586583,0.8162385236075724},{-0.14471213527691454,0.8851065280947882},{-0.4575358937753214,-0.013276747223059479},{-0.7209845231142057,-0.897151090185845},{-0.9066278820139979,-0.8006117624589936},{-0.9944322093031953,0.17084230974765666},{-0.9749220735246146,0.9555985806128415},{-0.8502029170863663,0.6960693098638897},{-0.6337338467854989,-0.3241299022175636},{-0.34887519008606005,-0.990117442831766},{-0.026367558070356484,-0.5740969614310336},{0.2989855372260583,0.4693011327771151},{0.5920735147072245,0.9998433086476912},{0.8212676935633646,0.43774896089470705},{0.9618345122584528,-0.6027208470078607},{0.9986046585635748,-0.9845326379049143},{0.9276100706332453,-0.2904395249332599},{0.756512151641241,0.7210481538680871},{0.5037749870595187,0.9445688168445349},{0.19667278709629893,0.1358573496123707},{-0.13165341823383273,-0.8213200831418752},{-0.4457722037352182,-0.8809525579365433},{-0.711785342369123,0.022126756261962838},{-0.900985943032865,0.901025779576851},{-0.9929563636967662,0.7952768415790757},{-0.9777715876333635,-0.17955679797714888},{-0.857070284703512,-0.9581693758551366},{-0.6438779737855393,-0.6896870271361613},{-0.36120136982925244,0.3324906548421391},{-0.03954560701231674,0.9913199700294487},{0.2863777323608796,0.5668271321520202},{0.5813965291263834,-0.47709879270357103},{0.8136737375071054,-0.99964745596635},{0.9581430898710656,-0.42977362493499033},{0.9992141308471991,0.6097601572433005},{0.9324546661956634,0.9829433095858163},{0.7650690644362526,0.281958388375392},{0.515120795165023,-0.7271528468448446},{0.20958310407999373,-0.9416258104001715},{-0.11857181326943754,-0.1270827840186229},{-0.433931016283655,0.8263372945385548},{-0.7024624178798466,0.876729567602604},{-0.8951873678196818,-0.03097503173121646},{-0.9913078928184317,-0.9048298761112383},{-0.9804511163405908,-0.7898796129768653},{-0.8637886508173204,0.18825721843235974},{-0.6539101627242901,0.9606651011994307},{-0.3734647547841147,0.6832507093535931},{-0.052716780958143236,-0.3408253577513085},{0.2737201407822824,-0.9924448300725429},{0.5706184678713274,-0.5595128935482332},{0.805938324428851,0.48485907327037797},{0.954285094492698,0.9993732836951247},{0.9996498899473084,0.4217646174105228},{0.9371371546945932,-0.6167516944712085},{0.7734929701222879,-0.9812769704001121},{0.5263770496198482,-0.27345516116425417},{0.2224569850815534,0.7332005694242952},{-0.1054695946182271,0.9386090302000182},{-0.42201439000878305,0.118298261843216},{-0.6930173704349996,-0.8312897647130846},{-0.889233164455629,-0.8724378879524822},{-0.9894870832545356,0.039820880393153096},{-0.9829601938107485,0.9085630817486479},{-0.8703568474411396,0.784420499510169},{-0.6638286695076421,-0.19694288945960042},{-0.38566321296353945,-0.9630855611126041},{-0.0658787901017895,-0.6767608607837051},{0.26101496301011606,0.3491333579443536},{0.5597412047059207,0.9934919348314017},{0.7980627991286724,0.5521548186698774},{0.9502611968351016,-0.4925813664811991},{0.9999118601072672,-0.9990208133146474}}\",\n"
+  // + " \"sinput\" : \"Table({Sin(t*0.33`),Cos(t*1.1`)},{t,100})\",\n"
+  // + " \"latex\" :
+  // \"\\\\{\\\\{0.324043,0.453596\\\\},\\\\{0.613117,-0.588501\\\\},\\\\{0.836026,-0.98748\\\\},\\\\{0.968715,-0.307333\\\\},\\\\{0.996865,0.70867\\\\},\\\\{0.917438,0.950233\\\\},\\\\{0.739005,0.153374\\\\},\\\\{0.480823,-0.811093\\\\},\\\\{0.170752,-0.889191\\\\},\\\\{-0.157746,0.0044257\\\\},\\\\{-0.46922,0.893206\\\\},\\\\{-0.730058,0.805884\\\\},\\\\{-0.912112,-0.162114\\\\},\\\\{-0.995735,-0.952953\\\\},\\\\{-0.971903,-0.702397\\\\},\\\\{-0.843188,0.315744\\\\},\\\\{-0.62348,0.988837\\\\},\\\\{-0.336488,0.581322\\\\},\\\\{-0.0131849,-0.461467\\\\},\\\\{0.311541,-0.999961\\\\},\\\\{0.602648,-0.44569\\\\},\\\\{0.828719,0.595634\\\\},\\\\{0.965359,0.986045\\\\},\\\\{0.997822,0.298898\\\\},\\\\{0.922604,-0.714887\\\\},\\\\{0.747824,-0.947438\\\\},\\\\{0.492342,-0.144621\\\\},\\\\{0.183728,0.816239\\\\},\\\\{-0.144712,0.885107\\\\},\\\\{-0.457536,-0.0132767\\\\},\\\\{-0.720985,-0.897151\\\\},\\\\{-0.906628,-0.800612\\\\},\\\\{-0.994432,0.170842\\\\},\\\\{-0.974922,0.955599\\\\},\\\\{-0.850203,0.696069\\\\},\\\\{-0.633734,-0.32413\\\\},\\\\{-0.348875,-0.990117\\\\},\\\\{-0.0263676,-0.574097\\\\},\\\\{0.298986,0.469301\\\\},\\\\{0.592074,0.999843\\\\},\\\\{0.821268,0.437749\\\\},\\\\{0.961835,-0.602721\\\\},\\\\{0.998605,-0.984533\\\\},\\\\{0.92761,-0.29044\\\\},\\\\{0.756512,0.721048\\\\},\\\\{0.503775,0.944569\\\\},\\\\{0.196673,0.135857\\\\},\\\\{-0.131653,-0.82132\\\\},\\\\{-0.445772,-0.880953\\\\},\\\\{-0.711785,0.0221268\\\\},\\\\{-0.900986,0.901026\\\\},\\\\{-0.992956,0.795277\\\\},\\\\{-0.977772,-0.179557\\\\},\\\\{-0.85707,-0.958169\\\\},\\\\{-0.643878,-0.689687\\\\},\\\\{-0.361201,0.332491\\\\},\\\\{-0.0395456,0.99132\\\\},\\\\{0.286378,0.566827\\\\},\\\\{0.581397,-0.477099\\\\},\\\\{0.813674,-0.999647\\\\},\\\\{0.958143,-0.429774\\\\},\\\\{0.999214,0.60976\\\\},\\\\{0.932455,0.982943\\\\},\\\\{0.765069,0.281958\\\\},\\\\{0.515121,-0.727153\\\\},\\\\{0.209583,-0.941626\\\\},\\\\{-0.118572,-0.127083\\\\},\\\\{-0.433931,0.826337\\\\},\\\\{-0.702462,0.87673\\\\},\\\\{-0.895187,-0.030975\\\\},\\\\{-0.991308,-0.90483\\\\},\\\\{-0.980451,-0.78988\\\\},\\\\{-0.863789,0.188257\\\\},\\\\{-0.65391,0.960665\\\\},\\\\{-0.373465,0.683251\\\\},\\\\{-0.0527168,-0.340825\\\\},\\\\{0.27372,-0.992445\\\\},\\\\{0.570618,-0.559513\\\\},\\\\{0.805938,0.484859\\\\},\\\\{0.954285,0.999373\\\\},\\\\{0.99965,0.421765\\\\},\\\\{0.937137,-0.616752\\\\},\\\\{0.773493,-0.981277\\\\},\\\\{0.526377,-0.273455\\\\},\\\\{0.222457,0.733201\\\\},\\\\{-0.10547,0.938609\\\\},\\\\{-0.422014,0.118298\\\\},\\\\{-0.693017,-0.83129\\\\},\\\\{-0.889233,-0.872438\\\\},\\\\{-0.989487,0.0398209\\\\},\\\\{-0.98296,0.908563\\\\},\\\\{-0.870357,0.78442\\\\},\\\\{-0.663829,-0.196943\\\\},\\\\{-0.385663,-0.963086\\\\},\\\\{-0.0658788,-0.676761\\\\},\\\\{0.261015,0.349133\\\\},\\\\{0.559741,0.993492\\\\},\\\\{0.798063,0.552155\\\\},\\\\{0.950261,-0.492581\\\\},\\\\{0.999912,-0.999021\\\\}\\\\}\"\n"
+  // + " } ]\n" + " } ]\n" + " }\n" + "}"); //
+  // }
 
   @Test
   public void testListPlot004() {
@@ -1399,36 +1454,54 @@ public class TestPodsStrict {
     // + " } ]\n" + " } ]\n" + " }\n" + "}"); //
   }
 
-  @Ignore
-  @Test
-  public void testListPlot005() {
-    EvalEngine.resetModuleCounter4JUnit();
-
-    ObjectNode messageJSON = Pods.createResult("ListPlot({1, 2, 3, 4, 5})", formatsTEX, //
-        true, null);
-
-    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
-    assertEquals(queryResult.isError(), false);
-
-    final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
-
-    assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"ListPlot({1,2,3,4,5})\",\n"
-            + "        \"sinput\" : \"ListPlot({1,2,3,4,5})\",\n"
-            + "        \"latex\" : \"\\\\text{ListPlot}(\\\\{1,2,3,4,5\\\\})\"\n" + "      } ]\n"
-            + "    }, {\n" + "      \"title\" : \"Evaluated result\",\n"
-            + "      \"scanner\" : \"Expression\",\n" + "      \"error\" : \"true\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"JSFormData(var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-0.85,5.75,6.85,0.25]});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() {return 1;},function() {return 1;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 2;},function() {return 2;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function() {return 3;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 4;},function() {return 4;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 5;},function() {return 5;}],  {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n,jsxgraph)\",\n"
-            + "        \"sinput\" : \"ListPlot({1,2,3,4,5})\",\n"
-            + "        \"latex\" : \"\\\\text{JSFormData}(\\\\textnormal{var board = JXG.JSXGraph.initBoard('jxgbox', \\\\{axis:true,boundingbox:[-0.85,5.75,6.85,0.25]\\\\});\\nboard.suspendUpdate();\\n\\nboard.create('point', [function() \\\\{return 1;\\\\},function() \\\\{return 1;\\\\}],  \\\\{color:'\\\\#5e81b5' ,name:'', face:'o', size: 2 \\\\} );\\nboard.create('point', [function() \\\\{return 2;\\\\},function() \\\\{return 2;\\\\}],  \\\\{color:'\\\\#5e81b5' ,name:'', face:'o', size: 2 \\\\} );\\nboard.create('point', [function() \\\\{return 3;\\\\},function() \\\\{return 3;\\\\}],  \\\\{color:'\\\\#5e81b5' ,name:'', face:'o', size: 2 \\\\} );\\nboard.create('point', [function() \\\\{return 4;\\\\},function() \\\\{return 4;\\\\}],  \\\\{color:'\\\\#5e81b5' ,name:'', face:'o', size: 2 \\\\} );\\nboard.create('point', [function() \\\\{return 5;\\\\},function() \\\\{return 5;\\\\}],  \\\\{color:'\\\\#5e81b5' ,name:'', face:'o', size: 2 \\\\} );\\n\\n\\nboard.unsuspendUpdate();\\n},\\\\textnormal{jsxgraph})\"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
-  }
+  // @Test
+  // public void testListPlot005() {
+  // EvalEngine.resetModuleCounter4JUnit();
+  //
+  // ObjectNode messageJSON = Pods.createResult("ListPlot({1, 2, 3, 4, 5})", formatsTEX, //
+  // true, null);
+  //
+  // JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+  // assertEquals(queryResult.isError(), false);
+  //
+  // final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  //
+  // assertEquals(jsonStr, //
+  // "{\n" + " \"queryresult\" : {\n" + " \"success\" : \"true\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numpods\" : 2,\n"
+  // + " \"version\" : \"0.1\",\n" + " \"pods\" : [ {\n"
+  // + " \"title\" : \"Input\",\n" + " \"scanner\" : \"Identity\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n" + " \"plaintext\" : \"ListPlot({1,2,3,4,5})\",\n"
+  // + " \"sinput\" : \"ListPlot({1,2,3,4,5})\",\n"
+  // + " \"latex\" : \"\\\\text{ListPlot}(\\\\{1,2,3,4,5\\\\})\"\n" + " } ]\n"
+  // + " }, {\n" + " \"title\" : \"Evaluated result\",\n"
+  // + " \"scanner\" : \"Expression\",\n" + " \"error\" : \"true\",\n"
+  // + " \"numsubpods\" : 1,\n" + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"JSFormData(var board = JXG.JSXGraph.initBoard('jxgbox',
+  // {axis:true,boundingbox:[-0.85,5.75,6.85,0.25]});\\nboard.suspendUpdate();\\n\\nboard.create('point',
+  // [function() {return 1;},function() {return 1;}], {color:'#5e81b5' ,name:'', face:'o', size: 2 }
+  // );\\nboard.create('point', [function() {return 2;},function() {return 2;}], {color:'#5e81b5'
+  // ,name:'', face:'o', size: 2 } );\\nboard.create('point', [function() {return 3;},function()
+  // {return 3;}], {color:'#5e81b5' ,name:'', face:'o', size: 2 } );\\nboard.create('point',
+  // [function() {return 4;},function() {return 4;}], {color:'#5e81b5' ,name:'', face:'o', size: 2 }
+  // );\\nboard.create('point', [function() {return 5;},function() {return 5;}], {color:'#5e81b5'
+  // ,name:'', face:'o', size: 2 } );\\n\\n\\nboard.unsuspendUpdate();\\n,jsxgraph)\",\n"
+  // + " \"sinput\" : \"ListPlot({1,2,3,4,5})\",\n"
+  // + " \"latex\" : \"\\\\text{JSFormData}(\\\\textnormal{var board =
+  // JXG.JSXGraph.initBoard('jxgbox',
+  // \\\\{axis:true,boundingbox:[-0.85,5.75,6.85,0.25]\\\\});\\nboard.suspendUpdate();\\n\\nboard.create('point',
+  // [function() \\\\{return 1;\\\\},function() \\\\{return 1;\\\\}], \\\\{color:'\\\\#5e81b5'
+  // ,name:'', face:'o', size: 2 \\\\} );\\nboard.create('point', [function() \\\\{return
+  // 2;\\\\},function() \\\\{return 2;\\\\}], \\\\{color:'\\\\#5e81b5' ,name:'', face:'o', size: 2
+  // \\\\} );\\nboard.create('point', [function() \\\\{return 3;\\\\},function() \\\\{return
+  // 3;\\\\}], \\\\{color:'\\\\#5e81b5' ,name:'', face:'o', size: 2 \\\\} );\\nboard.create('point',
+  // [function() \\\\{return 4;\\\\},function() \\\\{return 4;\\\\}], \\\\{color:'\\\\#5e81b5'
+  // ,name:'', face:'o', size: 2 \\\\} );\\nboard.create('point', [function() \\\\{return
+  // 5;\\\\},function() \\\\{return 5;\\\\}], \\\\{color:'\\\\#5e81b5' ,name:'', face:'o', size: 2
+  // \\\\} );\\n\\n\\nboard.unsuspendUpdate();\\n},\\\\textnormal{jsxgraph})\"\n"
+  // + " } ]\n" + " } ]\n" + " }\n" + "}"); //
+  // }
 
   @Test
   public void testListPlot003() {
@@ -1509,61 +1582,62 @@ public class TestPodsStrict {
   }
 
   //
-  @Ignore
-  public void testHornerForm() {
-    ObjectNode messageJSON = Pods.createResult("HornerForm(x^2+x^3+2*x^14)", formatsTEX, //
-        true, null);
-    final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  // @Test
+  // public void testHornerForm() {
+  // ObjectNode messageJSON = Pods.createResult("HornerForm(x^2+x^3+2*x^14)", formatsTEX, //
+  // true, null);
+  // final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  //
+  // JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+  // assertEquals(queryResult.isError(), false);
+  //
+  // assertEquals(jsonStr, //
+  // "{\n" + " \"queryresult\" : {\n" + " \"success\" : \"true\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numpods\" : 2,\n"
+  // + " \"version\" : \"0.1\",\n" + " \"pods\" : [ {\n"
+  // + " \"title\" : \"Input\",\n" + " \"scanner\" : \"Identity\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"HornerForm(x^2+x^3+2*x^14)\",\n"
+  // + " \"sinput\" : \"HornerForm(x^2 + x^3 + 2*x^14)\",\n"
+  // + " \"latex\" : \"\\\\text{HornerForm}({x}^{2}+{x}^{3} + 2\\\\cdot {x}^{14})\"\n"
+  // + " } ]\n" + " }, {\n" + " \"title\" : \"Evaluated result\",\n"
+  // + " \"scanner\" : \"Expression\",\n" + " \"error\" : \"true\",\n"
+  // + " \"numsubpods\" : 1,\n" + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"x^2*(1+x*(1+2*x^11))\",\n"
+  // + " \"sinput\" : \"HornerForm(x^2 + x^3 + 2*x^14)\",\n"
+  // + " \"latex\" : \"{x}^{2}\\\\,\\\\left( 1 + x\\\\,\\\\left( 1 + 2\\\\cdot {x}^{11}\\\\right)
+  // \\\\right) \"\n"
+  // + " } ]\n" + " } ]\n" + " }\n" + "}"); //
+  // }
 
-    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
-    assertEquals(queryResult.isError(), false);
-
-    assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"HornerForm(x^2+x^3+2*x^14)\",\n"
-            + "        \"sinput\" : \"HornerForm(x^2 + x^3 + 2*x^14)\",\n"
-            + "        \"latex\" : \"\\\\text{HornerForm}({x}^{2}+{x}^{3} + 2\\\\cdot {x}^{14})\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Evaluated result\",\n"
-            + "      \"scanner\" : \"Expression\",\n" + "      \"error\" : \"true\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"x^2*(1+x*(1+2*x^11))\",\n"
-            + "        \"sinput\" : \"HornerForm(x^2 + x^3 + 2*x^14)\",\n"
-            + "        \"latex\" : \"{x}^{2}\\\\,\\\\left( 1 + x\\\\,\\\\left( 1 + 2\\\\cdot {x}^{11}\\\\right) \\\\right) \"\n"
-            + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
-  }
-
-  @Ignore
-  public void testETimesPi001() {
-    ObjectNode messageJSON = Pods.createResult( //
-        "E*Pi", //
-        formatsTEX, //
-        true, null);
-
-    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
-    assertEquals(queryResult.isError(), false);
-
-    final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
-
-    assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"E*Pi\",\n"
-            + "        \"sinput\" : \"E*Pi\",\n" + "        \"latex\" : \"e\\\\,\\\\pi\"\n"
-            + "      } ]\n" + "    }, {\n" + "      \"title\" : \"Evaluated result\",\n"
-            + "      \"scanner\" : \"Expression\",\n" + "      \"error\" : \"true\",\n"
-            + "      \"numsubpods\" : 1,\n" + "      \"subpods\" : [ {\n"
-            + "        \"plaintext\" : \"E*Pi\",\n" + "        \"sinput\" : \"E*Pi\",\n"
-            + "        \"latex\" : \"e\\\\,\\\\pi\"\n" + "      } ]\n" + "    } ]\n" + "  }\n"
-            + "}"); //
-  }
+  // @Test
+  // public void testETimesPi001() {
+  // ObjectNode messageJSON = Pods.createResult( //
+  // "E*Pi", //
+  // formatsTEX, //
+  // true, null);
+  //
+  // JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+  // assertEquals(queryResult.isError(), false);
+  //
+  // final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  //
+  // assertEquals(jsonStr, //
+  // "{\n" + " \"queryresult\" : {\n" + " \"success\" : \"true\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numpods\" : 2,\n"
+  // + " \"version\" : \"0.1\",\n" + " \"pods\" : [ {\n"
+  // + " \"title\" : \"Input\",\n" + " \"scanner\" : \"Identity\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n" + " \"plaintext\" : \"E*Pi\",\n"
+  // + " \"sinput\" : \"E*Pi\",\n" + " \"latex\" : \"e\\\\,\\\\pi\"\n"
+  // + " } ]\n" + " }, {\n" + " \"title\" : \"Evaluated result\",\n"
+  // + " \"scanner\" : \"Expression\",\n" + " \"error\" : \"true\",\n"
+  // + " \"numsubpods\" : 1,\n" + " \"subpods\" : [ {\n"
+  // + " \"plaintext\" : \"E*Pi\",\n" + " \"sinput\" : \"E*Pi\",\n"
+  // + " \"latex\" : \"e\\\\,\\\\pi\"\n" + " } ]\n" + " } ]\n" + " }\n"
+  // + "}"); //
+  // }
 
   @Test
   public void testCoshIntegral001() {
@@ -1592,30 +1666,30 @@ public class TestPodsStrict {
             + "      } ]\n" + "    } ]\n" + "  }\n" + "}"); //
   }
 
-  @Ignore
-  public void testPolynomial001() {
-    ObjectNode messageJSON = Pods.createResult("-x^2 + 4*x + 4", formatsTEX, //
-        true, null);
-
-    JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
-    assertEquals(queryResult.isError(), false);
-
-    final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
-
-    assertEquals(jsonStr, //
-        "{\n" + "  \"queryresult\" : {\n" + "    \"success\" : \"true\",\n"
-            + "    \"error\" : \"false\",\n" + "    \"numpods\" : 2,\n"
-            + "    \"version\" : \"0.1\",\n" + "    \"pods\" : [ {\n"
-            + "      \"title\" : \"Input\",\n" + "      \"scanner\" : \"Identity\",\n"
-            + "      \"error\" : \"false\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"4+4*x-x^2\",\n"
-            + "        \"sinput\" : \"4 + 4*x - x^2\",\n"
-            + "        \"latex\" : \"4 + 4\\\\cdot x - {x}^{2}\"\n" + "      } ]\n" + "    }, {\n"
-            + "      \"title\" : \"Evaluated result\",\n" + "      \"scanner\" : \"Expression\",\n"
-            + "      \"error\" : \"true\",\n" + "      \"numsubpods\" : 1,\n"
-            + "      \"subpods\" : [ {\n" + "        \"plaintext\" : \"4+4*x-x^2\",\n"
-            + "        \"sinput\" : \"4 + 4*x - x^2\",\n"
-            + "        \"latex\" : \"4 + 4\\\\cdot x - {x}^{2}\"\n" + "      } ]\n" + "    } ]\n"
-            + "  }\n" + "}"); //
-  }
+  // @Test
+  // public void testPolynomial001() {
+  // ObjectNode messageJSON = Pods.createResult("-x^2 + 4*x + 4", formatsTEX, //
+  // true, null);
+  //
+  // JSONQueryResult queryResult = JSONQueryResult.queryResult(messageJSON);
+  // assertEquals(queryResult.isError(), false);
+  //
+  // final String jsonStr = TestPods.toPrettyStringNormalizingNewline(messageJSON);
+  //
+  // assertEquals(jsonStr, //
+  // "{\n" + " \"queryresult\" : {\n" + " \"success\" : \"true\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numpods\" : 2,\n"
+  // + " \"version\" : \"0.1\",\n" + " \"pods\" : [ {\n"
+  // + " \"title\" : \"Input\",\n" + " \"scanner\" : \"Identity\",\n"
+  // + " \"error\" : \"false\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n" + " \"plaintext\" : \"4+4*x-x^2\",\n"
+  // + " \"sinput\" : \"4 + 4*x - x^2\",\n"
+  // + " \"latex\" : \"4 + 4\\\\cdot x - {x}^{2}\"\n" + " } ]\n" + " }, {\n"
+  // + " \"title\" : \"Evaluated result\",\n" + " \"scanner\" : \"Expression\",\n"
+  // + " \"error\" : \"true\",\n" + " \"numsubpods\" : 1,\n"
+  // + " \"subpods\" : [ {\n" + " \"plaintext\" : \"4+4*x-x^2\",\n"
+  // + " \"sinput\" : \"4 + 4*x - x^2\",\n"
+  // + " \"latex\" : \"4 + 4\\\\cdot x - {x}^{2}\"\n" + " } ]\n" + " } ]\n"
+  // + " }\n" + "}"); //
+  // }
 }

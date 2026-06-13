@@ -1,7 +1,7 @@
 package org.matheclipse.core.system;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.D;
@@ -12,10 +12,8 @@ import java.io.PrintStream;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import org.hipparchus.complex.Complex;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.eval.util.WriterOutputStream;
@@ -32,10 +30,9 @@ import org.matheclipse.core.polynomials.longexponent.ExprTermOrderByName;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
-@RunWith(JUnit4.class)
 public class ExprEvaluatorTest {
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     // wait for initializing of Integrate() rules:
     F.await();

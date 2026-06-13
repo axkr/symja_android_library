@@ -1,17 +1,13 @@
 package org.matheclipse.core.system;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.ASCIIPrettyPrinter3;
 import org.matheclipse.core.interfaces.IExpr;
 
-import static org.junit.Assert.assertEquals;
-
-@RunWith(JUnit4.class)
 public class ASCIIPrintTest {
 
   private void check(IExpr expr, String str1, String str2, String str3) {
@@ -161,7 +157,7 @@ public class ASCIIPrintTest {
     check(expr, s1, s2, s3);
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     // wait for initializing of Integrate() rules:
     F.await();

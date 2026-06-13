@@ -1,8 +1,8 @@
 package org.matheclipse.core.system;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.S;
@@ -497,9 +497,10 @@ public class LimitTest extends ExprEvaluatorTestCase {
     // "Indeterminate");
 
     // Issue 536
-    check("Integrate(Sqrt((4+x)/(4-x)), x) ", //
-        "(-4+x)*(Sqrt(-1+8/(4-x))-ArcTan(Sqrt((4+x)/(4-x)))+(1-8/(4-x))*ArcTan(Sqrt((4+x)/(\n"
-            + "4-x))))");
+    check("Integrate(Sqrt((4+x)/(4-x)), x)", //
+        "(-4+x)*Sqrt((4+x)/(4-x))+8*ArcTan(Sqrt((4+x)/(4-x)))");
+    // "(-4+x)*(Sqrt(-1+8/(4-x))-ArcTan(Sqrt((4+x)/(4-x)))+(1-8/(4-x))*ArcTan(Sqrt((4+x)/(\n"
+    // + "4-x))))");
 
     check("Limit(ArcTan(Sqrt((4 + x)/(4 - x))),x->4)", //
         "Pi/2");

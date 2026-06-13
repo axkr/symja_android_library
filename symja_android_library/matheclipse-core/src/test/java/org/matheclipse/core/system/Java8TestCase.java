@@ -1,7 +1,7 @@
 package org.matheclipse.core.system;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.matheclipse.core.expression.F.C10;
 import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.S.a;
@@ -12,8 +12,7 @@ import static org.matheclipse.core.expression.S.e;
 import java.util.Comparator;
 import java.util.IntSummaryStatistics;
 import java.util.stream.Collectors;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;

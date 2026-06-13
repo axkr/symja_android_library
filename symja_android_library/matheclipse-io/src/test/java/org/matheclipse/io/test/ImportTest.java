@@ -1,14 +1,12 @@
 // code by jph
 package org.matheclipse.io.test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import java.io.File;
 import java.util.Arrays;
 import javax.imageio.ImageIO;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.expression.F;
@@ -19,7 +17,6 @@ import org.matheclipse.io.builtin.Import;
 import org.matheclipse.io.tensor.io.ImageFormat;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
-@RunWith(JUnit4.class)
 public class ImportTest {
   // @Test
   // public void testCsv() throws Exception {

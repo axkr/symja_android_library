@@ -1,6 +1,6 @@
 package org.matheclipse.io.system;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.matheclipse.core.expression.F.$s;
 import static org.matheclipse.core.expression.F.AtomQ;
 import static org.matheclipse.core.expression.F.C0;
@@ -59,8 +59,8 @@ import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Subst;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SubstAux;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.TrigSimplifyAux;
 import javax.script.ScriptException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -73,7 +73,7 @@ import org.matheclipse.core.interfaces.IExpr;
 public class RubiIntegrationTest extends AbstractTestCase {
   /** The JUnit setup method */
   @Override
-  @Before
+  @BeforeEach
   public void setUp() {
     super.setUp();
     try {
@@ -599,7 +599,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
     check("Cos(x)*tan(x)", "Sin(x)");
     check("csc(x)*tan(x)", "Sec(x)");
     check("int(Sin(x)*tan(x),x)", //
-        "ArcTanh(Sin(x))-Sin(x)");
+        "-Log(1-Sin(x))/2+Log(1+Sin(x))/2-Sin(x)");
 
     check("Integrate(Sin(a + b*x)^3,x)", //
         "-Cos(a+b*x)/b+Cos(a+b*x)^3/(3*b)");

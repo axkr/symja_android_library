@@ -1,6 +1,7 @@
 package org.matheclipse.io.others;
 
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.io.system.AbstractTestCase;
@@ -160,9 +161,8 @@ public class ExportImportFunctionsJUnit extends AbstractTestCase {
     EvalEngine.get().setIterationLimit(50000);
   }
 
-  @Override
+  @AfterEach
   public void tearDown() throws Exception {
-    super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
   }
 }

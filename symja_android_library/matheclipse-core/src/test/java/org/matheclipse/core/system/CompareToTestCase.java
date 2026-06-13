@@ -1,6 +1,6 @@
 package org.matheclipse.core.system;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.matheclipse.core.expression.F.ArcCos;
 import static org.matheclipse.core.expression.F.ArcSin;
 import static org.matheclipse.core.expression.F.ArcTan;
@@ -17,7 +17,7 @@ import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.eval;
 import static org.matheclipse.core.expression.S.x;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
@@ -224,7 +224,7 @@ public class CompareToTestCase extends ExprEvaluatorTestCase {
     EvalEngine engine = EvalEngine.get();
     IExpr left = engine.evaluate(i.multiply(two));
     IExpr right = engine.evaluate(two.multiply(i));
-    assertEquals(left + "/" + right, 0, left.compareTo(right));
+    assertEquals(0, left.compareTo(right), left + "/" + right);
   }
 
   @Test
@@ -235,6 +235,6 @@ public class CompareToTestCase extends ExprEvaluatorTestCase {
     IInteger two = F.ZZ(2);
     IExpr left = i.multiply(two);
     IExpr right = two.multiply(i);
-    assertEquals(left + "/" + right, 0, left.compareTo(right));
+    assertEquals(0, left.compareTo(right), left + "/" + right);
   }
 }

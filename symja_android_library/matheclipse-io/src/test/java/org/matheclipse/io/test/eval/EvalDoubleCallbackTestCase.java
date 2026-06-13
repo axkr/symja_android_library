@@ -1,9 +1,9 @@
 package org.matheclipse.io.test.eval;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.ArrayList;
 import java.util.HashSet;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.CoreCallbackFunction;
 import org.matheclipse.parser.client.ParserConfig;
 import org.matheclipse.parser.client.eval.BooleanVariable;
@@ -11,9 +11,6 @@ import org.matheclipse.parser.client.eval.DoubleEvaluator;
 import org.matheclipse.parser.client.eval.DoubleVariable;
 import org.matheclipse.parser.client.eval.IDoubleValue;
 import org.matheclipse.parser.client.math.MathException;
-import junit.framework.TestCase;
-
-import static org.junit.Assert.assertEquals;
 
 /** Tests evaluation in <code>double</code> expression mode */
 public class EvalDoubleCallbackTestCase {
