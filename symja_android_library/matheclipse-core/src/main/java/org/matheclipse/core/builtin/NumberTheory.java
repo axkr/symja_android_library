@@ -2488,7 +2488,15 @@ public final class NumberTheory {
    * </code>
    * </pre>
    */
-  private static class FactorialPower extends AbstractEvaluator {
+  private static class FactorialPower extends AbstractEvaluator implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(final IAST ast, EvalEngine engine) {
+      if (ast.isAST2() && ast.arg2().isInteger() && ast.arg2().isNonNegativeResult()) {
+        return factorialPower2(ast.arg1(), ast.arg2(), engine);
+      }
+      return F.NIL;
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2503,7 +2511,6 @@ public final class NumberTheory {
             if (v.isZero()) {
               return F.C1;
             }
-            return v;
           }
         }
       }
@@ -2523,66 +2530,68 @@ public final class NumberTheory {
       }
 
       if (ast.isAST2()) {
-        IExpr result = F.C1;
-
-        // x*(x-1)*(x-(n-1))
-        if (engine.evalLess(n, F.C0)) {
-          return F.NIL;
-        } else if (n.isZero()) {
-          return F.C1;
-        } else if (n.isOne()) {
-          return v;
-        } else {
-          if (engine.isDoubleMode()) {
-            if (!v.isMathematicalIntegerNegative()) {
-              Complex cx = v.evalfc();
-              Complex cn = n.evalfc();
-              cx = cx.add(1.0);
-              cn = cx.subtract(cn);
-              if (!(cn.isMathematicalInteger() && cn.getReal() < 0.0)) {
-                // Gamma(1+x)/Gamma(1-n+x)
-                return F.Divide(F.Gamma(F.complexNum(cx)), F.Gamma(F.complexNum(cn)));
-              }
-            }
-            double real = Double.NaN;
-            try {
-              real = v.evalf();
-            } catch (ArgumentTypeException ate) {
-              Complex temp = v.evalfc();
-              if (temp == null) {
-                return F.NIL;
-              }
-              real = temp.getReal();
-            }
-            if (Double.isNaN(real)) {
-              return F.NIL;
-            }
-            long iterationLimit = EvalEngine.get().getIterationLimit();
-            long k = 0L;
-            double dN = n.evalf();
-            double i = real - dN + 1;
-            while (real >= i) {
-              result = result.multiply(v);
-              v = v.dec();
-              real--;
-              if (k++ > iterationLimit && iterationLimit > 0) {
-                IterationLimitExceeded.throwIt(k, S.FactorialPower);
-              }
-            }
-            return result;
-          } else if (v.isExactNumber() && n.isRational()) {
-            IRational real = (IRational) ((INumber) v).re();
-            IRational dN = (IRational) n;
-            IRational i = real.subtract(dN).inc();
-            while (real.isGE(i)) {
-              result = result.multiply(v);
-              v = v.dec();
-              real = real.dec();
-            }
-            return result;
-          }
-        }
-        return F.NIL;
+        return factorialPower2(v, n, engine);
+        //
+        // IExpr result = F.C1;
+        //
+        // // x*(x-1)*(x-(n-1))
+        // if (engine.evalLess(n, F.C0)) {
+        // return F.NIL;
+        // } else if (n.isZero()) {
+        // return F.C1;
+        // } else if (n.isOne()) {
+        // return v;
+        // } else {
+        // if (engine.isDoubleMode()) {
+        // if (!v.isMathematicalIntegerNegative()) {
+        // Complex cx = v.evalfc();
+        // Complex cn = n.evalfc();
+        // cx = cx.add(1.0);
+        // cn = cx.subtract(cn);
+        // if (!(cn.isMathematicalInteger() && cn.getReal() < 0.0)) {
+        // // Gamma(1+x)/Gamma(1-n+x)
+        // return F.Divide(F.Gamma(F.complexNum(cx)), F.Gamma(F.complexNum(cn)));
+        // }
+        // }
+        // double real = Double.NaN;
+        // try {
+        // real = v.evalf();
+        // } catch (ArgumentTypeException ate) {
+        // Complex temp = v.evalfc();
+        // if (temp == null) {
+        // return F.NIL;
+        // }
+        // real = temp.getReal();
+        // }
+        // if (Double.isNaN(real)) {
+        // return F.NIL;
+        // }
+        // long iterationLimit = EvalEngine.get().getIterationLimit();
+        // long k = 0L;
+        // double dN = n.evalf();
+        // double i = real - dN + 1;
+        // while (real >= i) {
+        // result = result.multiply(v);
+        // v = v.dec();
+        // real--;
+        // if (k++ > iterationLimit && iterationLimit > 0) {
+        // IterationLimitExceeded.throwIt(k, S.FactorialPower);
+        // }
+        // }
+        // return result;
+        // } else if (v.isExactNumber() && n.isRational()) {
+        // IRational real = (IRational) ((INumber) v).re();
+        // IRational dN = (IRational) n;
+        // IRational i = real.subtract(dN).inc();
+        // while (real.isGE(i)) {
+        // result = result.multiply(v);
+        // v = v.dec();
+        // real = real.dec();
+        // }
+        // return result;
+        // }
+        // }
+        // return F.NIL;
       }
 
       if (ast.isAST3()) {
@@ -5914,8 +5923,8 @@ public final class NumberTheory {
         if (arg1.isExactNumber()) {
           if (!modulus.isZero()) {
             // Inappropriate parameter: `1`.
-            return Errors.printMessage(S.SquareFreeQ, "par",
-                F.List(F.Rule(S.Modulus, modulus)), engine);
+            return Errors.printMessage(S.SquareFreeQ, "par", F.List(F.Rule(S.Modulus, modulus)),
+                engine);
           }
           if (arg1.isInteger()) {
             return F.booleSymbol(Primality.isSquareFree(((IInteger) arg1).toBigNumerator()));
@@ -5992,8 +6001,7 @@ public final class NumberTheory {
     }
 
     private static IExpr isSquarefreeWithOption(final IAST lst, IExpr expr, IAST varList,
-        IExpr[] options,
-        final EvalEngine engine) throws JASConversionException {
+        IExpr[] options, final EvalEngine engine) throws JASConversionException {
 
       IExpr modulus = options[0];
       IExpr gaussianIntegers = options[1];
@@ -6031,7 +6039,7 @@ public final class NumberTheory {
           // Inappropriate parameter: `1`.
           return Errors.printMessage(S.SquareFreeQ, "par",
               F.List(F.Rule(S.GaussianIntegers, S.False)), engine);
-        } 
+        }
       }
       return S.False;
     }
@@ -7107,6 +7115,69 @@ public final class NumberTheory {
       aex.printStackTrace();
     }
 
+    return F.NIL;
+  }
+
+
+  public static IExpr factorialPower2(IExpr v, IExpr n, EvalEngine engine) {
+    IExpr result = F.C1;
+    // x*(x-1)*(x-(n-1))
+    if (engine.evalLess(n, F.C0)) {
+      return F.NIL;
+    } else if (n.isZero()) {
+      return F.C1;
+    } else if (n.isOne()) {
+      return v;
+    } else {
+      if (engine.isDoubleMode()) {
+        if (!v.isMathematicalIntegerNegative()) {
+          Complex cx = v.evalfc();
+          Complex cn = n.evalfc();
+          cx = cx.add(1.0);
+          cn = cx.subtract(cn);
+          if (!(cn.isMathematicalInteger() && cn.getReal() < 0.0)) {
+            // Gamma(1+x)/Gamma(1-n+x)
+            return F.Divide(F.Gamma(F.complexNum(cx)), F.Gamma(F.complexNum(cn)));
+          }
+        }
+        double real = Double.NaN;
+        try {
+          real = v.evalf();
+        } catch (ArgumentTypeException ate) {
+          Complex temp = v.evalfc();
+          if (temp == null) {
+            return F.NIL;
+          }
+          real = temp.getReal();
+        }
+        if (Double.isNaN(real)) {
+          return F.NIL;
+        }
+        long iterationLimit = EvalEngine.get().getIterationLimit();
+        long k = 0L;
+        double dN = n.evalf();
+        double i = real - dN + 1;
+        while (real >= i) {
+          result = result.multiply(v);
+          v = v.dec();
+          real--;
+          if (k++ > iterationLimit && iterationLimit > 0) {
+            IterationLimitExceeded.throwIt(k, S.FactorialPower);
+          }
+        }
+        return result;
+      } else if (v.isExactNumber() && n.isRational()) {
+        IRational real = (IRational) ((INumber) v).re();
+        IRational dN = (IRational) n;
+        IRational i = real.subtract(dN).inc();
+        while (real.isGE(i)) {
+          result = result.multiply(v);
+          v = v.dec();
+          real = real.dec();
+        }
+        return result;
+      }
+    }
     return F.NIL;
   }
 }
