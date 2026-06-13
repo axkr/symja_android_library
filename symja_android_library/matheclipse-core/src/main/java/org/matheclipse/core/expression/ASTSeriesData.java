@@ -30,6 +30,7 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
+import org.matheclipse.core.reflection.system.BellY;
 import jakarta.annotation.Nullable;
 
 public class ASTSeriesData extends AbstractAST implements Externalizable {
@@ -293,11 +294,18 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         ASTSeriesData fSeries = ASTSeriesData.seriesDataRecursive(f, x, F.C0, nInt + 1, engine);
 
         if (fSeries != null) {
-          // Clean encapsulation: Shift the series mathematically by -puiseuxDenominator
+          // CLOSED-FORM: combinatorial coefficient via partial Bell polynomials (BellY)
+          if (fSeries.puiseuxDenominator() == 1) {
+            IExpr bellYCoeff = fSeries.computeBellYLagrangeCoefficient(nInt, engine);
+            if (bellYCoeff.isPresent()) {
+              return bellYCoeff;
+            }
+          }
+
           ASTSeriesData fDivX = fSeries.shift(-fSeries.puiseuxDenominator());
 
           // Evaluate (f(x)/x)^(-n)
-          IExpr innerSeriesExpr = fDivX.powerSeries(F.QQ(-nInt, 1), engine);
+          IExpr innerSeriesExpr = fDivX.powerSeries(F.ZZ(-nInt), engine);
 
           if (innerSeriesExpr instanceof ASTSeriesData) {
             ASTSeriesData innerSeries = (ASTSeriesData) innerSeriesExpr;
@@ -963,8 +971,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
   /**
    * The magnitude coefficient of the Puiseux branch-point expansion of the inverse trigonometric
-   * functions:
-   * <code>b_k = (2k)! / ((2k+1) * 8^k * (k!)^2)</code>.
+   * functions: <code>b_k = (2k)! / ((2k+1) * 8^k * (k!)^2)</code>.
    */
   private static IExpr arcBMagnitude(int k, EvalEngine engine) {
     return engine.evaluate(F.Divide(F.Factorial(F.ZZ(2L * k)),
@@ -973,16 +980,16 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
   /**
    * Expand the eight inverse (hyperbolic) trigonometric functions at their algebraic/logarithmic
-   * branch points, mirroring the output of Mathematica's <code>Series</code>.
+   * branch points, mirroring the output of WMA's <code>Series</code>.
    *
    * <p>
    * Family A (<code>ArcSin</code>/<code>ArcCos</code> at &plusmn;1, <code>ArcSinh</code> at
    * &plusmn;I, <code>ArcCosh</code> at &plusmn;1) emits a Puiseux series with denominator 2. Family
-   * B (<code>ArcTan</code>/<code>ArcCot</code> at &plusmn;I, <code>ArcTanh</code>/<code>ArcCoth</code>
-   * at &plusmn;1) emits a <code>Log[x-x0]</code> term plus a regular series. The branch
-   * discriminator <code>(-1)^Floor[(Pi/2 - Arg[x-x0])/(2 Pi)]</code> (or the equivalent
-   * <code>Sqrt</code>-ratio / <code>Pi*Floor[...]</code> form) is kept symbolic to match the
-   * different analytic sheets.
+   * B (<code>ArcTan</code>/<code>ArcCot</code> at &plusmn;I,
+   * <code>ArcTanh</code>/<code>ArcCoth</code> at &plusmn;1) emits a <code>Log[x-x0]</code> term
+   * plus a regular series. The branch discriminator
+   * <code>(-1)^Floor[(Pi/2 - Arg[x-x0])/(2 Pi)]</code> (or the equivalent <code>Sqrt</code>-ratio /
+   * <code>Pi*Floor[...]</code> form) is kept symbolic to match the different analytic sheets.
    *
    * @param function the unary <code>Arc*</code> expression
    * @param x the expansion variable
@@ -1047,7 +1054,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   }
 
   /**
-   * Family A branch expansion of <code>ArcSin</code>/<code>ArcCos</code> at <code>s = &plusmn;1</code>.
+   * Family A branch expansion of <code>ArcSin</code>/<code>ArcCos</code> at
+   * <code>s = &plusmn;1</code>.
    */
   private static IExpr arcSinCosBranch(boolean isSin, IExpr arg, IExpr x, IExpr x0, int s, int n,
       EvalEngine engine) {
@@ -1084,12 +1092,13 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   }
 
   /**
-   * Family A branch expansion of <code>ArcCosh</code> at the real branch points <code>&plusmn;1</code>.
-   * At <code>+1</code> the function is real on the basis side, giving a clean Puiseux series. At
-   * <code>-1</code> the reduction <code>ArcCosh[x] = I*ArcCos[x]</code> is used (the constant factor
-   * <code>I</code> is folded into the coefficients).
+   * Family A branch expansion of <code>ArcCosh</code> at the real branch points
+   * <code>&plusmn;1</code>. At <code>+1</code> the function is real on the basis side, giving a
+   * clean Puiseux series. At <code>-1</code> the reduction <code>ArcCosh[x] = I*ArcCos[x]</code> is
+   * used (the constant factor <code>I</code> is folded into the coefficients).
    */
-  private static IExpr arcCoshBranch(IExpr arg, IExpr x, IExpr x0, int s, int n, EvalEngine engine) {
+  private static IExpr arcCoshBranch(IExpr arg, IExpr x, IExpr x0, int s, int n,
+      EvalEngine engine) {
     if (s == -1) {
       // ArcCosh[x] = I*ArcCos[x] in a neighbourhood of -1
       IExpr arcCos = arcSinCosBranch(false, arg, x, x0, -1, n, engine);
@@ -1122,7 +1131,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       EvalEngine engine) {
     final int den = 2;
     final int truncate = 2 * n + 1;
-    // sigma=+1 (x0=I):  leadFactor = 1+I, unit = I
+    // sigma=+1 (x0=I): leadFactor = 1+I, unit = I
     // sigma=-1 (x0=-I): leadFactor = -1+I, unit = -I
     IExpr unit = (sigma == 1) ? F.CI : F.CNI;
     IExpr leadFactor = (sigma == 1) ? F.Plus(F.C1, F.CI) : F.Plus(F.CN1, F.CI);
@@ -1138,8 +1147,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       list.append(coeff);
     }
     ASTSeriesData series = new ASTSeriesData(x, x0, list, 1, truncate, den);
-    IExpr disc = F.Power(F.CN1, F.Floor(F.Divide(
-        F.Subtract(F.Times(F.C1D2, S.Pi), F.Arg(F.Subtract(x, x0))), F.Times(F.C2, S.Pi))));
+    IExpr disc = F.Power(F.CN1, F.Floor(F
+        .Divide(F.Subtract(F.Times(F.C1D2, S.Pi), F.Arg(F.Subtract(x, x0))), F.Times(F.C2, S.Pi))));
     // inner constant: sigma=+1 -> -Pi/2 ; sigma=-1 -> +Pi/2
     IExpr innerConst = F.Times(F.ZZ(-sigma), F.C1D2, S.Pi);
     return F.Times(F.CNI, F.Plus(innerConst, F.Times(disc, series)));
@@ -1158,15 +1167,15 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   }
 
   /**
-   * Family B branch expansion of <code>ArcTanh</code>/<code>ArcCoth</code> at the real branch points
-   * <code>&plusmn;1</code>.
+   * Family B branch expansion of <code>ArcTanh</code>/<code>ArcCoth</code> at the real branch
+   * points <code>&plusmn;1</code>.
    *
    * <p>
    * <code>ArcTanh@-1</code> and <code>ArcCoth@1</code> are real on the basis side and give a clean
    * <code>Log[x-x0]</code> term plus a regular series. <code>ArcTanh@1</code> and
    * <code>ArcCoth@-1</code> need the logarithmic sheet resolved and are wrapped as
    * <code>-I*(... Pi*Floor[...] ... + SeriesData[...])</code>; the precise <code>Floor</code>
-   * arguments follow Mathematica.
+   * arguments follow WMA.
    */
   private static IExpr arcTanhCothBranch(boolean isTanh, IExpr arg, IExpr x, IExpr x0, int s, int n,
       EvalEngine engine) {
@@ -1181,8 +1190,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       int singLogSign = isTanh ? 1 : -1;
       // regular constant: ArcTanh@-1 -> -1/2*Log2 ; ArcCoth@1 -> +1/2*Log2
       int regConstSign = isTanh ? -1 : 1;
-      IExpr c0 = F.Times(F.C1D2, F.Plus(F.Times(F.ZZ(regConstSign), F.Log(F.C2)),
-          F.Times(F.ZZ(singLogSign), F.Log(w))));
+      IExpr c0 = F.Times(F.C1D2,
+          F.Plus(F.Times(F.ZZ(regConstSign), F.Log(F.C2)), F.Times(F.ZZ(singLogSign), F.Log(w))));
       IASTAppendable list = F.ListAlloc(n + 1);
       list.append(c0);
       for (int k = 1; k <= n; k++) {
@@ -1195,8 +1204,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     if (isTanh) {
       // ----- ArcTanh@1 : -I*(Pi*Floor[-1/2*Arg[x-1]/Pi] + SeriesData[...]) -----
       // c0 = (Pi + I*Log[2] - I*Log[w])/2
-      IExpr c0 = F.Times(F.C1D2,
-          F.Plus(S.Pi, F.Times(F.CI, F.Log(F.C2)), F.Times(F.CNI, F.Log(w))));
+      IExpr c0 =
+          F.Times(F.C1D2, F.Plus(S.Pi, F.Times(F.CI, F.Log(F.C2)), F.Times(F.CNI, F.Log(w))));
       list.append(c0);
       for (int k = 1; k <= n; k++) {
         list.append(engine.evaluate(F.Times(F.CI, arcLogCoeff(k, alternating, engine))));
@@ -1217,8 +1226,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       list.append(engine.evaluate(F.Times(F.CI, arcLogCoeff(k, false, engine))));
     }
     ASTSeriesData series = new ASTSeriesData(x, x0, list, 0, n + 1, 1);
-    IExpr floor1Arg = F.Divide(
-        F.Plus(S.Pi, F.Negate(F.Arg(F.Power(x, F.CN1))), F.Negate(F.Arg(w))), F.Times(F.C2, S.Pi));
+    IExpr floor1Arg = F.Divide(F.Plus(S.Pi, F.Negate(F.Arg(F.Power(x, F.CN1))), F.Negate(F.Arg(w))),
+        F.Times(F.C2, S.Pi));
     IExpr floor1 = F.Negate(F.Times(S.Pi, F.Floor(floor1Arg)));
     IExpr floor2 = F.Times(F.CN1, S.Pi,
         F.Floor(F.Divide(F.Arg(F.Divide(F.Plus(F.C1, x), x)), F.Times(F.C2, S.Pi))));
@@ -1230,21 +1239,21 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
    * points <code>&plusmn;I</code> using the reductions <code>ArcTan[x] = -I*ArcTanh[I*x]</code> and
    * <code>ArcCot[x] = -I*ArcCoth[I*x]</code>. The singular term is <code>Log[x-x0]</code> and the
    * logarithmic sheet is captured by an additive <code>Pi*Floor[...]</code> term (no outer
-   * <code>-I</code>), matching Mathematica.
+   * <code>-I</code>), matching WMA.
    *
    * <p>
-   * Confidence: the <code>+I</code> branch points are derived from the Mathematica reference; the
+   * Confidence: the <code>+I</code> branch points are derived from the WMA reference; the
    * <code>-I</code> branch points reuse the same template and should be cross-checked.
    */
-  private static IExpr arcTanCotBranch(boolean isTan, IExpr arg, IExpr x, IExpr x0, int sigma, int n,
-      EvalEngine engine) {
+  private static IExpr arcTanCotBranch(boolean isTan, IExpr arg, IExpr x, IExpr x0, int sigma,
+      int n, EvalEngine engine) {
     IExpr w = F.Subtract(x, x0); // x - sigma*I
     IASTAppendable list = F.ListAlloc(n + 1);
     if (isTan) {
       // ----- ArcTan@(sigma*I) : Pi*Floor[(Pi/2 - Arg[w])/(2 Pi)] + SeriesData[...] -----
       // c0 = (Pi + 2*I*Log[2] - 2*I*Log[w])/4
-      IExpr c0 = F.Times(F.C1D4, F.Plus(S.Pi, F.Times(F.ZZ(2), F.CI, F.Log(F.C2)),
-          F.Times(F.ZZ(-2), F.CI, F.Log(w))));
+      IExpr c0 = F.Times(F.C1D4,
+          F.Plus(S.Pi, F.Times(F.ZZ(2), F.CI, F.Log(F.C2)), F.Times(F.ZZ(-2), F.CI, F.Log(w))));
       list.append(c0);
       for (int k = 1; k <= n; k++) {
         IExpr mag = F.Divide(F.C1, F.Times(F.ZZ(k), F.Power(F.C2, F.ZZ(k + 1))));
@@ -1252,16 +1261,16 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         list.append(engine.evaluate(F.Times(F.CN1, F.Power(F.CI, F.ZZ(k + 1)), mag)));
       }
       ASTSeriesData series = new ASTSeriesData(x, x0, list, 0, n + 1, 1);
-      IExpr piFloor = F.Times(S.Pi, F.Floor(
-          F.Divide(F.Subtract(F.Times(F.C1D2, S.Pi), F.Arg(w)), F.Times(F.C2, S.Pi))));
+      IExpr piFloor = F.Times(S.Pi,
+          F.Floor(F.Divide(F.Subtract(F.Times(F.C1D2, S.Pi), F.Arg(w)), F.Times(F.C2, S.Pi))));
       return F.Plus(piFloor, series);
     }
 
     // ----- ArcCot@(sigma*I) :
     // -(Pi*Floor[(Pi - Arg[1/x] - Arg[w])/(2 Pi)]) + SeriesData[...] -----
     // c0 = (Pi - 2*I*Log[2] + 2*I*Log[w])/4
-    IExpr c0 = F.Times(F.C1D4, F.Plus(S.Pi, F.Times(F.ZZ(-2), F.CI, F.Log(F.C2)),
-        F.Times(F.ZZ(2), F.CI, F.Log(w))));
+    IExpr c0 = F.Times(F.C1D4,
+        F.Plus(S.Pi, F.Times(F.ZZ(-2), F.CI, F.Log(F.C2)), F.Times(F.ZZ(2), F.CI, F.Log(w))));
     list.append(c0);
     for (int k = 1; k <= n; k++) {
       IExpr mag = F.Divide(F.C1, F.Times(F.ZZ(k), F.Power(F.C2, F.ZZ(k + 1))));
@@ -1269,8 +1278,8 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       list.append(engine.evaluate(F.Times(F.Power(F.CI, F.ZZ(k + 1)), mag)));
     }
     ASTSeriesData series = new ASTSeriesData(x, x0, list, 0, n + 1, 1);
-    IExpr floorArg = F.Divide(
-        F.Plus(S.Pi, F.Negate(F.Arg(F.Power(x, F.CN1))), F.Negate(F.Arg(w))), F.Times(F.C2, S.Pi));
+    IExpr floorArg = F.Divide(F.Plus(S.Pi, F.Negate(F.Arg(F.Power(x, F.CN1))), F.Negate(F.Arg(w))),
+        F.Times(F.C2, S.Pi));
     IExpr floorTerm = F.Negate(F.Times(S.Pi, F.Floor(floorArg)));
     return F.Plus(floorTerm, series);
   }
@@ -1678,6 +1687,58 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         }
       }
     }
+
+    return series;
+  }
+
+  /**
+   * Compose this (outer) series with the given inner {@code series2}, mirroring WMA
+   * {@code ComposeSeries} truncation semantics.
+   *
+   * <p>
+   * This differs from {@link #compose(ASTSeriesData)} only in the truncation order: when the inner
+   * series has a leading exponent {@code v > 1}, the substitution {@code y -> g} stretches the
+   * outer remainder {@code O(y^outerTruncate)} to a lower effective order than straightforward
+   * arithmetic keeps. WMA truncates the composed series at order {@code outerTruncate + (v - 1)} in
+   * the inner series' (integer) exponent units. For {@code v == 1} the result is left unchanged.
+   *
+   * <p>
+   * This is intended for the user-facing {@code ComposeSeries} built-in only, where the outer
+   * series carries a fixed, user-supplied truncation order. The internal composition path used
+   * while expanding {@code Series(f(g(x)), ...)} must keep the full precision and therefore calls
+   * {@link #compose(ASTSeriesData)} directly.
+   */
+  public ASTSeriesData composeCapped(ASTSeriesData series2) {
+    ASTSeriesData series = compose(series2);
+    if (series == null) {
+      return null;
+    }
+    // Only the pure integer power series case is handled; Puiseux series keep the (more precise)
+    // straightforward truncation.
+    if (puiseuxDenominator != 1 || series2.puiseuxDenominator != 1
+        || series.puiseuxDenominator != 1) {
+      return series;
+    }
+    ASTSeriesData x0Term = expansionPoint.isZero() ? series2 : series2.subtract(expansionPoint);
+    int v = x0Term.minExponent;
+    while (v < x0Term.truncateOrder && x0Term.coefficient(v).isZero()) {
+      v++;
+    }
+    if (v > 1) {
+      int newTruncate = truncateOrder + (v - 1);
+      if (newTruncate < series.truncateOrder) {
+        int newMin = Math.min(series.minExponent, newTruncate);
+        ASTSeriesData capped = new ASTSeriesData(series.expansionVariable, series.expansionPoint,
+            newMin, newTruncate, series.puiseuxDenominator);
+        for (int i = series.minExponent; i < newTruncate; i++) {
+          IExpr c = series.coefficient(i);
+          if (c != null && !c.isZero()) {
+            capped.setCoeff(i, c);
+          }
+        }
+        return capped;
+      }
+    }
     return series;
   }
 
@@ -1688,43 +1749,71 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     return lagrangeCoefficient;
   }
 
-  private IExpr computeLagrangeCoefficient(int n, ASTSeriesData fDivXAST, EvalEngine engine) {
-    switch (n) {
-      case 1:
-        return getCoeffSafe(1).inverse();
-      case 2: {
-        IExpr a1 = getCoeffSafe(1);
-        IExpr a2 = getCoeffSafe(2);
-        return engine.evaluate(F.Divide(a2.negate(), F.Power(a1, F.C3)));
+  /**
+   * Calculate the <code>n</code>-th coefficient <code>b_n</code> of the compositional inverse
+   * (series reversion) <code>f^(-1)(x)</code> in closed form using the partial Bell polynomials
+   * ({@link BellY}).
+   *
+   * <p>
+   * With <code>f(x) = Sum_{i&gt;=1} a_i x^i</code> (<code>a_1 != 0</code>) the Lagrange-Bürmann
+   * inversion theorem gives <code>b_n = (1/n) [x^(n-1)] (x/f(x))^n</code>. Writing
+   * <code>x/f(x) = (1/a_1) (1 + Sum_{j&gt;=1} d_j x^j)^(-1)</code> with
+   * <code>d_j = a_{j+1}/a_1</code> and expanding <code>(1 + h(x))^(-n)</code> with Faà di Bruno's
+   * formula yields the closed form:
+   *
+   * <pre>
+   * b_n = 1 / (n * a_1^n * (n-1)!)
+   *       * Sum_{k=1..n-1} (-1)^k * (n+k-1)!/(n-1)! * BellY(n-1, k, {1!*d_1, 2!*d_2, ...})
+   * </pre>
+   *
+   * @param n the (positive) coefficient index
+   * @param engine the evaluation engine
+   * @return the closed-form coefficient or {@link F#NIL} if it can't be computed
+   */
+  private IExpr computeBellYLagrangeCoefficient(int n, EvalEngine engine) {
+    IExpr a1 = getCoeffSafe(1);
+    if (a1.isZero()) {
+      return F.NIL;
+    }
+    if (n == 1) {
+      return engine.evaluate(a1.inverse());
+    }
+
+    final IExpr a1Inverse = engine.evaluate(a1.inverse());
+    final int m = n - 1;
+    IASTAppendable sum = F.PlusAlloc(m);
+    for (int k = 1; k <= m; k++) {
+      final int varsSize = m - k + 1;
+      IASTAppendable vars = F.ListAlloc(varsSize);
+      for (int j = 1; j <= varsSize; j++) {
+        // j! * d_j = j! * a_{j+1} / a_1
+        IExpr dj = engine.evaluate(F.Times(F.Factorial(F.ZZ(j)), getCoeffSafe(j + 1), a1Inverse));
+        vars.append(dj);
       }
-      case 3: {
-        IExpr a1 = getCoeffSafe(1);
-        IExpr a2 = getCoeffSafe(2);
-        IExpr a3 = getCoeffSafe(3);
-        IExpr numerator = F.Plus(F.Times(F.C2, F.Sqr(a2)), F.Times(F.CN1, a1, a3));
-        return engine.evaluate(F.Divide(numerator, F.Power(a1, F.C5)));
-      }
-      case 4: {
-        IExpr a1 = getCoeffSafe(1);
-        IExpr a2 = getCoeffSafe(2);
-        IExpr a3 = getCoeffSafe(3);
-        IExpr a4 = getCoeffSafe(4);
-        IExpr numerator = F.Plus(F.Times(F.CN5, F.Power(a2, F.C3)), F.Times(F.C5, a1, a2, a3),
-            F.Times(F.CN1, F.Sqr(a1), a4));
-        return engine.evaluate(F.Divide(numerator, F.Power(a1, F.C7)));
-      }
-      case 5: {
-        IExpr a1 = getCoeffSafe(1);
-        IExpr a2 = getCoeffSafe(2);
-        IExpr a3 = getCoeffSafe(3);
-        IExpr a4 = getCoeffSafe(4);
-        IExpr a5 = getCoeffSafe(5);
-        IExpr numerator = F.Plus(F.Times(F.ZZ(14L), F.Power(a2, F.C4)),
-            F.Times(F.ZZ(-21L), a1, F.Sqr(a2), a3), F.Times(F.C3, F.Sqr(a1), F.Sqr(a3)),
-            F.Times(F.C6, F.Sqr(a1), a2, a4), F.Times(F.CN1, F.Power(a1, F.C3), a5));
-        return engine.evaluate(F.Divide(numerator, F.Power(a1, F.C9)));
+      IExpr bell = BellY.bellY(m, k, vars, F.NIL, engine);
+      if (!bell.isZero()) {
+        // F^(k)(0) = (-1)^k * (n+k-1)! / (n-1)! for F(u) = (1+u)^(-n)
+        IExpr fDerivative = F.Times(F.Power(F.CN1, F.ZZ(k)),
+            F.Divide(F.Factorial(F.ZZ(n + k - 1)), F.Factorial(F.ZZ(n - 1))));
+        sum.append(F.Times(fDerivative, bell));
       }
     }
+
+    IExpr prefactor =
+        F.Power(F.Times(F.ZZ(n), F.Power(a1, F.ZZ(n)), F.Factorial(F.ZZ(n - 1))), F.CN1);
+    return engine.evaluate(F.Together(F.ExpandAll(F.Times(prefactor, sum))));
+  }
+
+  private IExpr computeLagrangeCoefficient(int n, ASTSeriesData fDivXAST, EvalEngine engine) {
+    if (n == 1) {
+      return getCoeffSafe(1).inverse();
+    }
+    // Closed-form combinatorial coefficient via partial Bell polynomials (BellY).
+    IExpr bellYCoefficient = computeBellYLagrangeCoefficient(n, engine);
+    if (bellYCoefficient.isPresent()) {
+      return bellYCoefficient;
+    }
+    // Fallback: generic (f(x)/x)^(-n) power-series based computation.
     return computeGeneralLagrangeCoefficient(n, fDivXAST, engine);
   }
 
@@ -2253,12 +2342,13 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
   @Override
   public ASTSeriesData plus(IExpr b) {
-    if (b instanceof ASTSeriesData) {
-      return plusPS((ASTSeriesData) b);
+    ASTSeriesData result = plusExpr(b);
+    if (result != null) {
+      return result;
     }
-    if (b.isZero()) {
-      return this;
-    }
+    // Fallback: the expression depends on the expansion variable but could not be expanded into a
+    // series (e.g. a non-polynomial term). Keep the legacy behavior of folding it into the constant
+    // coefficient.
     IExpr value = F.eval(coefficient(0).plus(b));
     ASTSeriesData series = copy();
     if (value.isZero()) {
@@ -2267,6 +2357,41 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
       series.setCoeff(0, value);
     }
     return series;
+  }
+
+  /**
+   * Add the expression {@code b} to this series. In contrast to {@link #plus(IExpr)}, expressions
+   * which depend on the expansion variable (for example a polynomial term like <code>x</code> or
+   * <code>x^2</code>) are expanded into a series and added coefficient-wise, so the terms are
+   * folded into the corresponding powers of the series instead of the constant coefficient.
+   *
+   * @param b the expression to add
+   * @return the resulting series or {@code null} if {@code b} depends on the expansion variable but
+   *         cannot be expanded into a series.
+   */
+  public ASTSeriesData plusExpr(IExpr b) {
+    if (b instanceof ASTSeriesData) {
+      return plusPS((ASTSeriesData) b);
+    }
+    if (b.isZero()) {
+      return this;
+    }
+    if (b.isFree(expansionVariable)) {
+      IExpr value = F.eval(coefficient(0).plus(b));
+      ASTSeriesData series = copy();
+      if (value.isZero()) {
+        series.setZero(0);
+      } else {
+        series.setCoeff(0, value);
+      }
+      return series;
+    }
+    ASTSeriesData bSeries =
+        seriesDataRecursive(b, expansionVariable, expansionPoint, truncateOrder, EvalEngine.get());
+    if (bSeries == null) {
+      return null;
+    }
+    return plusPS(bSeries);
   }
 
   public ASTSeriesData plusPS(ASTSeriesData that) {
@@ -2373,7 +2498,11 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         continue;
       }
       int newIndex = newNMin + k * b;
-      result.setCoeff(newIndex, engine.evaluate(F.Times(cMinPower, c[k])));
+      // Expand() distributes the leading factor `cMinPower` over the inner sum so that equal-base
+      // powers cancel (e.g. f(0)^2 * (.../f(0)^2)), yielding fully simplified coefficients instead
+      // of an unexpanded product such as
+      // 1/2*f(0)^2*((2*f'(0)^2)/f(0)^2+(2*f''(0))/f(0)).
+      result.setCoeff(newIndex, engine.evaluate(F.Expand(F.Times(cMinPower, c[k]))));
     }
 
     return result;
@@ -2675,6 +2804,13 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     }
     if (b.isZero()) {
       return this;
+    }
+    if (!b.isFree(expansionVariable)) {
+      ASTSeriesData bSeries = seriesDataRecursive(b, expansionVariable, expansionPoint,
+          truncateOrder, EvalEngine.get());
+      if (bSeries != null) {
+        return subtractPS(bSeries);
+      }
     }
     IExpr value = F.eval(coefficient(0).subtract(b));
     ASTSeriesData series = copy();

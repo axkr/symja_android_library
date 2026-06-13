@@ -173,6 +173,25 @@ public final class PlusOp {
       }
       return F.C0;
     }
+    if (numberValue instanceof ASTSeriesData && !plusMap.isEmpty()) {
+      // Fold the remaining symbolic terms (e.g. a polynomial term like `x` which depends on the
+      // expansion variable) into the series coefficients instead of keeping them as a separate
+      // Plus() term.
+      ASTSeriesData series = (ASTSeriesData) numberValue;
+      Iterator<Entry<IExpr, IExpr>> iterator = plusMap.entrySet().iterator();
+      while (iterator.hasNext()) {
+        Entry<IExpr, IExpr> entry = iterator.next();
+        final IExpr key = entry.getKey();
+        final IExpr value = entry.getValue();
+        IExpr term = value.isOne() ? key : F.eval(F.Times(value, key));
+        ASTSeriesData merged = series.plusExpr(term);
+        if (merged != null) {
+          series = merged;
+          iterator.remove();
+        }
+      }
+      numberValue = series;
+    }
     IASTAppendable result = F.PlusAlloc(plusMap.size() + 1);
     if (numberValue.isPresent() && !numberValue.isZero()) {
       if (numberValue.isComplexInfinity()) {
