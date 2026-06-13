@@ -1,8 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.junit.Assert.assertEquals;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -10,7 +10,7 @@ public class RSolveTest {
 
   private ExprEvaluator util;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     // Initialize the standard Symja expression evaluator
     util = new ExprEvaluator(false, (short) 100);

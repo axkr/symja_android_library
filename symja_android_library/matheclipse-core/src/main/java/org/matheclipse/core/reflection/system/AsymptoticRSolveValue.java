@@ -123,11 +123,15 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
         if (seriesRes.isPresent() && !seriesRes.isAST(S.Series)) {
           IExpr normalPoly = engine.evaluate(seriesRes.normal(false));
 
-          // Rejects "exact" solutions that are effectively unresolved summations or products
-          if (normalPoly.isFreeAST(S.Sum) && normalPoly.isFreeAST(S.Product)) {
+          // Rejects "exact" solutions that are effectively unresolved summations or products, or
+          // that diverged to ComplexInfinity/Indeterminate (e.g. a telescoping Sum evaluated at a
+          // pole of the lower bound). Such results fall through to the algebraic fallback below.
+          if (normalPoly.isFreeAST(S.Sum)//
+              && normalPoly.isFreeAST(S.Product) //
+              && normalPoly.isSpecialsFree()) {
             // Collect arbitrary constants to match canonical grouping: (1+2/n+...)*C(1)
             IExpr cPattern = F.unaryAST1(S.C, F.$b());
-            return engine.evaluate(F.Collect(normalPoly, cPattern));
+            return S.Collect.of(engine, normalPoly, cPattern);
           }
         }
       }
