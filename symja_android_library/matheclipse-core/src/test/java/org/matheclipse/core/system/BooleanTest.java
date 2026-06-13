@@ -226,8 +226,7 @@ public class BooleanTest extends ExprEvaluatorTestCase {
     check("BooleanCountingFunction({0}, {a, b, c})", //
         "!a&&!b&&!c");
     // between kmin and kmax inclusive -> C(4,2)+C(4,3) = 10 satisfying assignments
-    check(
-        "Count(BooleanTable(BooleanCountingFunction({2, 3}, {a, b, c, d}), {a, b, c, d}), True)", //
+    check("Count(BooleanTable(BooleanCountingFunction({2, 3}, {a, b, c, d}), {a, b, c, d}), True)", //
         "10");
 
     // mixed spec is lifted through Quine-McCluskey -> a smaller (six-term) DNF than
@@ -948,15 +947,21 @@ public class BooleanTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLogicalExpand() {
-    // TODO
-    // check("LogicalExpand(r && s && q || r || s)", //
-    // " r || s");
-    // check("LogicalExpand(x == a && y == b || x == a || y == b)", //
-    // "");
+
+    check(
+        "LogicalExpand((x==1||x==-1||x==(-1)^(1/3)||x==-(-1)^(1/3)||x==(-1)^(2/3)||x==-(-1)^(2/3))&&x<0)", //
+        "(x==-1&&x<0)||(x==1&&x<0)||(x==-(-1)^(1/3)&&x<0)||(x==(-1)^(1/3)&&x<0)||(x==-(-1)^(\n"
+            + "2/3)&&x<0)||(x==(-1)^(2/3)&&x<0)");
+    check("LogicalExpand(Series(f(x)^2, {x, 0, 2}) == 2 + x)", //
+        "f(0)^2==2&&f(0)*f'(0)==1/2&&f'(0)^2+f(0)*f''(0)==0");
+    check("LogicalExpand(r && s && q || r || s)", //
+        "r||s");
+    check("LogicalExpand(x == a && y == b || x == a || y == b)", //
+        "x==a||y==b");
     check("e1=Implies(Xor(a, b, c), (a || b) && c)", //
         "Xor(a,b,c)⇒(a||b)&&c");
     check("e2=LogicalExpand(Implies(Xor(a, b, c), (a || b) && c))", //
-        "(a&&b&&!c)||(a&&!b&&c)||(a&&c)||(!a&&b&&c)||(!a&&!b&&!c)||(b&&c)");
+        "(a&&b)||(a&&c)||(b&&c)||(!a&&!b&&!c)");
     check("Table(e1 == e2, {a, {True, False}}, {b, {True, False}}, {c, {True, False}})", //
         "{{{True,True},{True,True}},{{True,True},{True,True}}}");
 
@@ -969,15 +974,11 @@ public class BooleanTest extends ExprEvaluatorTestCase {
     check("LogicalExpand(a && b && ! a)", //
         "False");
     check("LogicalExpand(Xor(p, q, r))", //
-        "(p&&q&&r)||(r&&!p&&!q)||(q&&!p&&!r)||(p&&!q&&!r)");
+        "(p&&q&&r)||(p&&!q&&!r)||(!p&&q&&!r)||(!p&&!q&&r)");
     check("LogicalExpand(Xor(p, q, r, s))", //
-        "(q&&r&&s&&!p)||(p&&r&&s&&!q)||(p&&q&&s&&!r)||(s&&!p&&!q&&!r)||(p&&q&&r&&!s)||(r&&!p&&!q&&!s)||(q&&!p&&!r&&!s)||(p&&!q&&!r&&!s)");
+        "(p&&q&&r&&!s)||(p&&q&&!r&&s)||(p&&!q&&r&&s)||(p&&!q&&!r&&!s)||(!p&&q&&r&&s)||(!p&&q&&!r&&!s)||(!p&&!q&&r&&!s)||(!p&&!q&&!r&&s)");
     check("LogicalExpand(Xor(p, q, r, s, t))", //
-        "(p&&q&&r&&s&&t)||(r&&s&&t&&!p&&!q)||(q&&s&&t&&!p&&!r)||(p&&s&&t&&!q&&!r)||(q&&r&&t&&!p&&!s)||"
-            + //
-            "(p&&r&&t&&!q&&!s)||(p&&q&&t&&!r&&!s)||(t&&!p&&!q&&!r&&!s)||(q&&r&&s&&!p&&!t)||" + //
-            "(p&&r&&s&&!q&&!t)||(p&&q&&s&&!r&&!t)||(s&&!p&&!q&&!r&&!t)||(p&&q&&r&&!s&&!t)||" + //
-            "(r&&!p&&!q&&!s&&!t)||(q&&!p&&!r&&!s&&!t)||(p&&!q&&!r&&!s&&!t)");
+        "(p&&q&&r&&s&&t)||(p&&q&&r&&!s&&!t)||(p&&q&&!r&&s&&!t)||(p&&q&&!r&&!s&&t)||(p&&!q&&r&&s&&!t)||(p&&!q&&r&&!s&&t)||(p&&!q&&!r&&s&&t)||(p&&!q&&!r&&!s&&!t)||(!p&&q&&r&&s&&!t)||(!p&&q&&r&&!s&&t)||(!p&&q&&!r&&s&&t)||(!p&&q&&!r&&!s&&!t)||(!p&&!q&&r&&s&&t)||(!p&&!q&&r&&!s&&!t)||(!p&&!q&&!r&&s&&!t)||(!p&&!q&&!r&&!s&&t)");
   }
 
   @Test
