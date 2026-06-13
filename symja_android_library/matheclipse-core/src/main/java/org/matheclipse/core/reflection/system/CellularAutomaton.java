@@ -45,200 +45,202 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
     if (argSize >= 1 && argSize <= 3) {
       IExpr rule = ast.arg1();
 
-      // Throw "nspecnl" if rule is not one of the allowed explicit types.
-      if (!isValidRule(rule)) {
-        return Errors.printMessage(ast.topHead(), "nspecnl", F.List(rule));
-      }
-
-      // Operator form: CellularAutomaton(rule)
-      if (argSize == 1 || ast.head() != S.CellularAutomaton) {
-        if (ast.head().isAST(S.CellularAutomaton, 2)) {
-          return F.CellularAutomaton(ast.head().first(), rule);
+      try {
+        // Throw "nspecnl" if rule is not one of the allowed explicit types.
+        if (!isValidRule(rule)) {
+          return Errors.printMessage(ast.topHead(), "nspecnl", F.List(rule));
         }
-        return F.NIL;
-      }
 
-      IExpr init = ast.arg2();
+        // Operator form: CellularAutomaton(rule)
+        if (argSize == 1 || ast.head() != S.CellularAutomaton) {
+          if (ast.head().isAST(S.CellularAutomaton, 2)) {
+            return F.CellularAutomaton(ast.head().first(), rule);
+          }
+          return F.NIL;
+        }
 
-      // Resolve Named Rules (e.g., "Rule30" -> 30)
-      if (rule instanceof IStringX) {
-        String ruleName = rule.toString();
-        if (ruleName.startsWith("Rule")) {
-          try {
-            int num = Integer.parseInt(ruleName.substring(4));
-            rule = F.ZZ(num);
-          } catch (NumberFormatException e) {
-            // Keep rule as is if parsing fails
+        IExpr init = ast.arg2();
+
+        // Resolve Named Rules (e.g., "Rule30" -> 30)
+        if (rule instanceof IStringX) {
+          String ruleName = rule.toString();
+          if (ruleName.startsWith("Rule")) {
+            try {
+              int num = Integer.parseInt(ruleName.substring(4));
+              rule = F.ZZ(num);
+            } catch (NumberFormatException e) {
+              // Keep rule as is if parsing fails
+            }
           }
         }
-      }
 
-      int tStart = 0;
-      int tEnd = -1;
-      int dt = 1;
-      boolean returnSingleStep = false;
-      boolean isOperatorForm = false;
+        int tStart = 0;
+        int tEnd = -1;
+        int dt = 1;
+        boolean returnSingleStep = false;
+        boolean isOperatorForm = false;
 
-      IExpr tSpec = (argSize >= 3) ? ast.arg3() : F.C1;
+        IExpr tSpec = (argSize >= 3) ? ast.arg3() : F.C1;
 
-      if (argSize == 3) {
-        if (tSpec.isInteger()) {
-          tStart = 0;
-          tEnd = tSpec.toIntDefault(-1);
-        } else if (tSpec.isList()) {
-          IAST tList = (IAST) tSpec;
-          if (tList.argSize() >= 1) {
-            IExpr tTime = tList.arg1();
+        if (argSize == 3) {
+          if (tSpec.isInteger()) {
+            tStart = 0;
+            tEnd = tSpec.toIntDefault(-1);
+          } else if (tSpec.isList()) {
+            IAST tList = (IAST) tSpec;
+            if (tList.argSize() >= 1) {
+              IExpr tTime = tList.arg1();
 
-            if (tTime.isInteger()) {
-              tStart = 0;
-              tEnd = tTime.toIntDefault(-1);
-            } else if (tTime.isList()) {
-              IAST tTimeList = (IAST) tTime;
-              int tTimeSize = tTimeList.argSize();
+              if (tTime.isInteger()) {
+                tStart = 0;
+                tEnd = tTime.toIntDefault(-1);
+              } else if (tTime.isList()) {
+                IAST tTimeList = (IAST) tTime;
+                int tTimeSize = tTimeList.argSize();
 
-              if (tTimeSize == 1) {
-                IExpr inner = tTimeList.arg1();
-                if (inner.isInteger()) {
-                  // {{t}} -> tspec = {t} (Returns sequence of just step t)
-                  tStart = inner.toIntDefault(-1);
-                  tEnd = tStart;
-                } else if (inner.isList() && ((IAST) inner).argSize() == 1
-                    && ((IAST) inner).arg1().isInteger()) {
-                  // {{{t}}} -> tspec = {{t}} (Returns step t alone unwrapped)
-                  tStart = ((IAST) inner).arg1().toIntDefault(-1);
-                  tEnd = tStart;
-                  returnSingleStep = true;
-                }
-              } else if (tTimeSize == 2) {
-                if (tTimeList.arg1().isInteger() && tTimeList.arg2().isInteger()) {
-                  // {{-1, 4}} -> tspec = {-1, 4}
-                  tStart = tTimeList.arg1().toIntDefault(0);
-                  tEnd = tTimeList.arg2().toIntDefault(-1);
-                }
-              } else if (tTimeSize == 3) {
-                if (tTimeList.arg1().isInteger() && tTimeList.arg2().isInteger()
-                    && tTimeList.arg3().isInteger()) {
-                  // {{-1, 4, 2}} -> tspec = {-1, 4, 2}
-                  tStart = tTimeList.arg1().toIntDefault(0);
-                  tEnd = tTimeList.arg2().toIntDefault(-1);
-                  dt = tTimeList.arg3().toIntDefault(1);
+                if (tTimeSize == 1) {
+                  IExpr inner = tTimeList.arg1();
+                  if (inner.isInteger()) {
+                    // {{t}} -> tspec = {t} (Returns sequence of just step t)
+                    tStart = inner.toIntDefault(-1);
+                    tEnd = tStart;
+                  } else if (inner.isList() && ((IAST) inner).argSize() == 1
+                      && ((IAST) inner).arg1().isInteger()) {
+                    // {{{t}}} -> tspec = {{t}} (Returns step t alone unwrapped)
+                    tStart = ((IAST) inner).arg1().toIntDefault(-1);
+                    tEnd = tStart;
+                    returnSingleStep = true;
+                  }
+                } else if (tTimeSize == 2) {
+                  if (tTimeList.arg1().isInteger() && tTimeList.arg2().isInteger()) {
+                    // {{-1, 4}} -> tspec = {-1, 4}
+                    tStart = tTimeList.arg1().toIntDefault(0);
+                    tEnd = tTimeList.arg2().toIntDefault(-1);
+                  }
+                } else if (tTimeSize == 3) {
+                  if (tTimeList.arg1().isInteger() && tTimeList.arg2().isInteger()
+                      && tTimeList.arg3().isInteger()) {
+                    // {{-1, 4, 2}} -> tspec = {-1, 4, 2}
+                    tStart = tTimeList.arg1().toIntDefault(0);
+                    tEnd = tTimeList.arg2().toIntDefault(-1);
+                    dt = tTimeList.arg3().toIntDefault(1);
+                  }
                 }
               }
             }
           }
+        } else if (argSize == 2) {
+          tStart = 1;
+          tEnd = 1;
+          returnSingleStep = true;
+          isOperatorForm = true;
         }
-      } else if (argSize == 2) {
-        tStart = 1;
-        tEnd = 1;
-        returnSingleStep = true;
-        isOperatorForm = true;
-      }
 
-      if (!init.isList()) {
-        return F.NIL;
-      } else {
-        int stepsToGenerate = Math.max(0, tEnd);
-        IExpr result = F.NIL;
+        if (!init.isList()) {
+          return F.NIL;
+        } else {
+          int stepsToGenerate = Math.max(0, tEnd);
+          IExpr result = F.NIL;
 
-        // Try Core Implementation: 1D and 2D Integer Rule CA fast-path
-        IInteger baseRule = null;
-        int k = 2;
-        int r = 1;
-        int rY = 1;
-        int rX = 1;
-        int s = 1;
-        boolean isTotalistic = false;
-        boolean is2D = false;
+          // Try Core Implementation: 1D and 2D Integer Rule CA fast-path
+          IInteger baseRule = null;
+          int k = 2;
+          int r = 1;
+          int rY = 1;
+          int rX = 1;
+          int s = 1;
+          boolean isTotalistic = false;
+          boolean is2D = false;
 
-        if (rule.isInteger()) {
-          baseRule = (IInteger) rule;
-        } else if (rule.isList()) {
-          IAST ruleList = (IAST) rule;
-          int rSize = ruleList.argSize();
-          if (rSize >= 1 && ruleList.arg1().isInteger()) {
-            boolean validRule = true;
-            if (rSize >= 2) {
-              IExpr kSpec = ruleList.arg2();
-              if (kSpec.isInteger()) {
-                k = kSpec.toIntDefault(2);
-              } else if (kSpec.isList() && ((IAST) kSpec).argSize() == 2) {
-                IAST kList = (IAST) kSpec;
-                // Totalistic rule check: {k, 1}
-                if (kList.arg1().isInteger() && kList.arg2().isInteger()
-                    && kList.arg2().toIntDefault(0) == 1) {
-                  k = kList.arg1().toIntDefault(2);
-                  isTotalistic = true;
+          if (rule.isInteger()) {
+            baseRule = (IInteger) rule;
+          } else if (rule.isList()) {
+            IAST ruleList = (IAST) rule;
+            int rSize = ruleList.argSize();
+            if (rSize >= 1 && ruleList.arg1().isInteger()) {
+              boolean validRule = true;
+              if (rSize >= 2) {
+                IExpr kSpec = ruleList.arg2();
+                if (kSpec.isInteger()) {
+                  k = kSpec.toIntDefault(2);
+                } else if (kSpec.isList() && ((IAST) kSpec).argSize() == 2) {
+                  IAST kList = (IAST) kSpec;
+                  // Totalistic rule check: {k, 1}
+                  if (kList.arg1().isInteger() && kList.arg2().isInteger()
+                      && kList.arg2().toIntDefault(0) == 1) {
+                    k = kList.arg1().toIntDefault(2);
+                    isTotalistic = true;
+                  } else {
+                    validRule = false;
+                  }
                 } else {
                   validRule = false;
                 }
-              } else {
-                validRule = false;
               }
-            }
-            if (rSize >= 3) {
-              IExpr rspec = ruleList.arg3();
-              if (rspec.isInteger()) {
-                r = rspec.toIntDefault(1);
-              } else if (rspec.isList()) {
-                int rspecSize = rspec.argSize();
-                if (rspecSize == 1 && ((IAST) rspec).arg1().isInteger()) {
-                  r = ((IAST) rspec).arg1().toIntDefault(1);
-                } else if (rspecSize == 2 && ((IAST) rspec).arg1().isInteger()
-                    && ((IAST) rspec).arg2().isInteger()) {
-                  rY = ((IAST) rspec).arg1().toIntDefault(1);
-                  rX = ((IAST) rspec).arg2().toIntDefault(1);
-                  is2D = true;
+              if (rSize >= 3) {
+                IExpr rspec = ruleList.arg3();
+                if (rspec.isInteger()) {
+                  r = rspec.toIntDefault(1);
+                } else if (rspec.isList()) {
+                  int rspecSize = rspec.argSize();
+                  if (rspecSize == 1 && ((IAST) rspec).arg1().isInteger()) {
+                    r = ((IAST) rspec).arg1().toIntDefault(1);
+                  } else if (rspecSize == 2 && ((IAST) rspec).arg1().isInteger()
+                      && ((IAST) rspec).arg2().isInteger()) {
+                    rY = ((IAST) rspec).arg1().toIntDefault(1);
+                    rX = ((IAST) rspec).arg2().toIntDefault(1);
+                    is2D = true;
+                  } else {
+                    validRule = false; // Possibly complex offset
+                  }
                 } else {
-                  validRule = false; // Possibly complex offset
+                  validRule = false;
                 }
-              } else {
-                validRule = false;
+              }
+              if (rSize >= 4 && ruleList.arg4().isInteger()) {
+                s = ruleList.arg4().toIntDefault(1);
+              }
+              if (validRule) {
+                baseRule = (IInteger) ruleList.arg1();
+              }
+              if (argSize == 2 && s > 1) {
+                tStart = 2 - s; // e.g. s=2 → tStart=0, so hIdx=s-1+0=1 (last initial)
+                returnSingleStep = false; // result is a multi-row list, not unwrapped
               }
             }
-            if (rSize >= 4 && ruleList.arg4().isInteger()) {
-              s = ruleList.arg4().toIntDefault(1);
-            }
-            if (validRule) {
-              baseRule = (IInteger) ruleList.arg1();
-            }
-            if (argSize == 2 && s > 1) {
-              tStart = 2 - s; // e.g. s=2 → tStart=0, so hIdx=s-1+0=1 (last initial)
-              returnSingleStep = false; // result is a multi-row list, not unwrapped
-            }
           }
-        }
 
-        if (baseRule != null) {
-          if (baseRule.isNegative()) {
-            // The specified rule number `1` should be non-negative.
-            return Errors.printMessage(S.CellularAutomaton, "rneg", F.List(baseRule));
+          if (baseRule != null) {
+            if (baseRule.isNegative()) {
+              // The specified rule number `1` should be non-negative.
+              return Errors.printMessage(S.CellularAutomaton, "rneg", F.List(baseRule));
+            }
+            if (is2D) {
+              result = evaluateInteger2D(baseRule, k, rY, rX, s, isTotalistic, (IAST) init,
+                  stepsToGenerate, tStart, tEnd, dt, returnSingleStep, isOperatorForm);
+            } else {
+              result = evaluateInteger1D(baseRule, k, r, s, isTotalistic, (IAST) init,
+                  stepsToGenerate, tStart, tEnd, dt, returnSingleStep, isOperatorForm);
+            }
           }
-          if (is2D) {
-            result = evaluateInteger2D(baseRule, k, rY, rX, s, isTotalistic, (IAST) init,
-                stepsToGenerate, tStart, tEnd, dt, returnSingleStep, isOperatorForm);
-          } else {
-            result = evaluateInteger1D(baseRule, k, r, s, isTotalistic, (IAST) init,
-                stepsToGenerate, tStart, tEnd, dt, returnSingleStep, isOperatorForm);
-          }
-        }
 
-        // Fallback to General CA (Explicit rules, functions, or symbolic states)
-        if (!result.isPresent()) {
-          if (is2D) {
-            result = evaluateGeneral2D(rule, (IAST) init, stepsToGenerate, tStart, tEnd, dt,
-                returnSingleStep, isOperatorForm, rY, rX, engine);
-          } else {
-            result = evaluateGeneral1D(rule, (IAST) init, stepsToGenerate, tStart, tEnd, dt,
-                returnSingleStep, isOperatorForm, engine);
+          // Fallback to General CA (Explicit rules, functions, or symbolic states)
+          if (!result.isPresent()) {
+            if (is2D) {
+              result = evaluateGeneral2D(rule, (IAST) init, stepsToGenerate, tStart, tEnd, dt,
+                  returnSingleStep, isOperatorForm, rY, rX, engine);
+            } else {
+              result = evaluateGeneral1D(rule, (IAST) init, stepsToGenerate, tStart, tEnd, dt,
+                  returnSingleStep, isOperatorForm, engine);
+            }
+          }
+
+          if (result.isPresent()) {
+            return result;
           }
         }
-
-        if (result.isPresent()) {
-          return result;
-        }
+      } catch (RuntimeException e) {
       }
-      return F.NIL;
     }
     return F.NIL;
   }
@@ -485,7 +487,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
 
     if (isOperatorForm && resultList.argSize() == 1) {
       if (!isCyclic) {
-        // For infinite-padding init, return {{cells}, {bg}} like Mathematica
+        // For infinite-padding init, return {{cells}, {bg}} like WMA
         int hIdx = s - 1 + tStart; // tStart==tEnd==1 in single-step mode
         int bg = bgHistory.get(hIdx);
         IASTAppendable pair = F.ListAlloc(2);
