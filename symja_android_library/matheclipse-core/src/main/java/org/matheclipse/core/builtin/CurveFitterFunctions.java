@@ -13,7 +13,7 @@ import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.FittedModelExpr;
@@ -21,6 +21,7 @@ import org.matheclipse.core.generic.SumCurveFitter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -97,7 +98,7 @@ public class CurveFitterFunctions {
    * {a-&gt;3.0,w-&gt;3.0,f-&gt;1.0}
    * </pre>
    */
-  private static class FindFit extends AbstractFunctionEvaluator {
+  private static class FindFit extends AbstractFunctionOptionEvaluator {
 
     private static class FindFitParametricFunction implements ParametricUnivariateFunction {
       final EvalEngine engine;
@@ -177,8 +178,9 @@ public class CurveFitterFunctions {
     }
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      return numericEval(ast, engine);
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
+      return numericEval(ast, argSize, options, engine, originalAST);
     }
 
     @Override
@@ -225,8 +227,9 @@ public class CurveFitterFunctions {
       return initialGuess;
     }
 
-    @Override
-    public IExpr numericEval(final IAST ast, EvalEngine engine) {
+    public IExpr numericEval(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
+      IExpr workingPrecision = options[0];
       if (ast.arg1().isList() && ast.arg3().isList() && ast.arg4().isVariable()) {
         IAST data = (IAST) ast.arg1();
         IExpr function = ast.arg2();
@@ -260,13 +263,18 @@ public class CurveFitterFunctions {
       }
       return F.NIL;
     }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.WorkingPrecision}, new IExpr[] {S.Automatic});
+    }
   }
 
   /**
    *
    *
    * <pre>
-   * Fit(list - of - data - points, degree, variable)
+   * Fit(list - of - data - points, functions, variable)
    * </pre>
    *
    * <blockquote>
@@ -275,6 +283,30 @@ public class CurveFitterFunctions {
    * solve a least squares problem using the Levenberg-Marquardt algorithm.
    *
    * </blockquote>
+   *
+   * <pre>
+   * Fit({m, v})
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * find a fit (coefficient) vector <code>a</code> that minimizes <code>Norm(m.a - v)</code> for the
+   * design matrix <code>m</code> and the response vector <code>v</code> and return the best fit
+   * expression.
+   *
+   * </blockquote>
+   *
+   * <p>
+   * The option <code>WorkingPrecision</code> controls the arithmetic used to solve the least squares
+   * problem:
+   *
+   * <ul>
+   * <li><code>WorkingPrecision-&gt;Automatic</code> uses machine (double) precision (default)
+   * <li><code>WorkingPrecision-&gt;Infinity</code> uses exact/symbolic arithmetic
+   * <li><code>WorkingPrecision-&gt;n</code> uses <code>n</code>-digit <code>Apfloat</code> arbitrary
+   * precision arithmetic
+   * </ul>
    *
    * <p>
    * See:<br>
@@ -293,10 +325,43 @@ public class CurveFitterFunctions {
    */
   private static class Fit extends FindFit {
 
+    /** {@link S#WorkingPrecision} sentinel: use machine (double) precision. */
+    private static final int DOUBLE_PRECISION = -2;
+
+    /** {@link S#WorkingPrecision} sentinel: use exact/symbolic arithmetic. */
+    private static final int EXACT_PRECISION = -1;
+
     @Override
-    public IExpr numericEval(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList() && ast.arg3().isVariable()) {
+    public IExpr numericEval(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
+      IExpr workingPrecision = options[0];
+      int precision = workingPrecisionValue(workingPrecision);
+
+      // Fit({m, v}) signature
+      if (argSize == 1) {
+        IExpr arg1 = ast.arg1();
+        if (arg1.isList2()) {
+          IExpr m = arg1.first();
+          IExpr v = arg1.second();
+          IExpr model = FittedModelExpr.linearModelFit(m, v);
+          if (model instanceof FittedModelExpr) {
+            // return the best fit (coefficient) vector
+            return F.List(((FittedModelExpr) model).toData().estimateRegressionParameters());
+          }
+          return model;
+        }
+        return F.NIL;
+      }
+
+      if (argSize == 3 && ast.arg1().isList() && ast.arg3().isVariable()) {
         IAST termList = ast.arg2().makeList();
+        IAST data = (IAST) ast.arg1();
+
+        // exact (Infinity) or Apfloat (n digits) arbitrary precision linear least squares
+        if (precision != DOUBLE_PRECISION) {
+          return symbolicFit(data, termList, ast.arg3(), precision, engine);
+        }
+
         IASTAppendable vars = F.ListAlloc(termList.size());
         IASTAppendable plusExpr = F.PlusAlloc(termList.size());
         ISymbol dummy = F.Dummy();
@@ -317,7 +382,6 @@ public class CurveFitterFunctions {
           AbstractCurveFitter fitter =
               SumCurveFitter.create(new FindFit.FindFitParametricFunction(function,
                   (IAST) gradientList, vars, ast.arg3(), engine), initialGuess, Integer.MAX_VALUE);
-          IAST data = (IAST) ast.arg1();
           WeightedObservedPoints obs = new WeightedObservedPoints();
           if (addWeightedObservedPoints(data, obs)) {
             try {
@@ -347,9 +411,142 @@ public class CurveFitterFunctions {
       return F.NIL;
     }
 
+    /**
+     * Solve the linear least squares problem with exact (<code>Infinity</code>) or
+     * <code>Apfloat</code> (<code>precision</code> digits) arithmetic.
+     *
+     * <p>
+     * The coefficients are computed by solving the normal equations
+     * <code>(X^T.X).a == X^T.y</code> with {@link S#LinearSolve}. Solving the normal equations
+     * directly keeps exact rational (or <code>Apfloat</code>) entries and avoids the square roots
+     * introduced by a QR decomposition, so e.g. an exact fit reduces to a simplified expression.
+     *
+     * @param data the list of data points (a matrix of <code>{x, y}</code> pairs or a vector of
+     *        y-values)
+     * @param termList the basis functions in the given <code>variable</code>
+     * @param variable the model variable
+     * @param precision {@link #EXACT_PRECISION} for exact arithmetic or the number of
+     *        <code>Apfloat</code> digits
+     * @param engine the evaluation engine
+     * @return the best fit expression or {@link F#NIL}
+     */
+    private static IExpr symbolicFit(IAST data, IAST termList, IExpr variable, int precision,
+        EvalEngine engine) {
+      try {
+        IAST dataMatrix = buildDataMatrix(data);
+        if (dataMatrix.isPresent()) {
+          final int numberOfPoints = dataMatrix.argSize();
+          final int numberOfTerms = termList.argSize();
+
+          // build the design matrix X and the response vector y.
+          // The basis functions are evaluated with the exact x-data first (so e.g. integer powers
+          // stay exact) and only the resulting numeric entries are converted to the requested
+          // working precision. This avoids raising an Apfloat base to a symbolic exponent.
+          IASTAppendable designMatrix = F.ListAlloc(numberOfPoints);
+          IASTAppendable responseVector = F.ListAlloc(numberOfPoints);
+          for (int i = 1; i <= numberOfPoints; i++) {
+            IAST row = (IAST) dataMatrix.get(i);
+            IExpr xValue = row.arg1();
+            responseVector.append(toPrecision(row.arg2(), precision, engine));
+            IASTAppendable designRow = F.ListAlloc(numberOfTerms);
+            for (int j = 1; j <= numberOfTerms; j++) {
+              IExpr basisValue =
+                  engine.evaluate(F.subst(termList.get(j), F.Rule(variable, xValue)));
+              designRow.append(toPrecision(basisValue, precision, engine));
+            }
+            designMatrix.append(designRow);
+          }
+
+          // solve the normal equations (X^T.X).a == X^T.y
+          IExpr transposed = S.Transpose.of(engine, designMatrix);
+          IExpr xtx = S.Dot.of(engine, transposed, designMatrix);
+          IExpr xty = S.Dot.of(engine, transposed, responseVector);
+          IExpr coefficients = S.LinearSolve.of(engine, xtx, xty);
+          if (coefficients.isList() && coefficients.argSize() == numberOfTerms) {
+            final IAST coeffs = (IAST) coefficients;
+            IExpr fit = F.mapRange(S.Plus, 1, numberOfTerms + 1,
+                j -> F.Times(coeffs.get(j), termList.get(j)));
+            return engine.evaluate(fit);
+          }
+        }
+      } catch (ValidateException ve) {
+        return Errors.printMessage(S.Fit, ve, engine);
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        return Errors.printMessage(S.Fit, rex, engine);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Build a matrix of exact <code>{x, y}</code> rows from the data.
+     *
+     * @param data the list of data points (a matrix of <code>{x, y}</code> pairs or a vector of
+     *        y-values)
+     * @return the matrix as a nested list or {@link F#NIL} if the data couldn't be interpreted
+     */
+    private static IAST buildDataMatrix(IAST data) {
+      int[] isMatrix = data.isMatrix();
+      if (isMatrix != null && isMatrix[1] == 2) {
+        IASTAppendable result = F.ListAlloc(data.size());
+        for (int i = 1; i < data.size(); i++) {
+          IAST row = (IAST) data.get(i);
+          result.append(F.List(row.arg1(), row.arg2()));
+        }
+        return result;
+      }
+      int rowSize = data.isVector();
+      if (rowSize < 0) {
+        return F.NIL;
+      }
+      IASTAppendable result = F.ListAlloc(data.size());
+      for (int i = 1; i < data.size(); i++) {
+        result.append(F.List(F.ZZ(i), data.get(i)));
+      }
+      return result;
+    }
+
+    /**
+     * Convert a value to the requested working precision.
+     *
+     * @param value the value to convert
+     * @param precision {@link #EXACT_PRECISION} for exact arithmetic or the number of
+     *        <code>Apfloat</code> digits
+     * @param engine the evaluation engine
+     * @return the converted value
+     */
+    private static IExpr toPrecision(IExpr value, int precision, EvalEngine engine) {
+      if (precision > 0) {
+        return S.N.of(engine, value, F.ZZ(precision));
+      }
+      return engine.evaluate(value);
+    }
+
+    /**
+     * Determine the requested working precision.
+     *
+     * @param workingPrecision the value of the {@link S#WorkingPrecision} option
+     * @return {@link #DOUBLE_PRECISION} for {@link S#Automatic} (or invalid values),
+     *         {@link #EXACT_PRECISION} for {@link S#Infinity}, otherwise the requested number of
+     *         <code>Apfloat</code> digits
+     */
+    private static int workingPrecisionValue(IExpr workingPrecision) {
+      if (workingPrecision == S.Automatic) {
+        return DOUBLE_PRECISION;
+      }
+      if (workingPrecision.isInfinity()) {
+        return EXACT_PRECISION;
+      }
+      int n = workingPrecision.toIntDefault();
+      if (n > 0) {
+        return n;
+      }
+      return DOUBLE_PRECISION;
+    }
+
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_3_3;
+      return ARGS_1_3;
     }
   }
 
