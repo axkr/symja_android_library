@@ -167,6 +167,18 @@ matcher.caseOf(SeriesCoefficient(LucasL(x_),list(x_Symbol,C0,PatternTest(n_,NotL
     // SeriesCoefficient(LucasL(m_,x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{DifferenceRoot(Function({y,n},{-(-1-n+m)*(1+n+m)*y(n)+4*(1+n)*(2+n)*y(2+n)==0,y(0)==2*Cos(1/2*m*Pi)^2,y(1)==m*Sin(1/2*m*Pi)^2}))[n],n>=0}},0)/;FreeQ(m,x)&&FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(LucasL(m_,x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
       Condition(Piecewise(list(list($(DifferenceRoot(Function(list(y,n),list(Equal(Plus(Times(CN1,Plus(CN1,Negate(n),m),Plus(C1,n,m),$(y,n)),Times(C4,Plus(C1,n),Plus(C2,n),$(y,Plus(C2,n)))),C0),Equal($(y,C0),Times(C2,Sqr(Cos(Times(C1D2,m,Pi))))),Equal($(y,C1),Times(m,Sqr(Sin(Times(C1D2,m,Pi)))))))),n),GreaterEqual(n,C0))),C0),And(FreeQ(m,x),FreeQ(n,x))));
+    // SeriesCoefficient(Zeta(x_),{x_Symbol,1,n_?NotListQ}):=Piecewise({{1,n==-1},{((-1)^n*StieltjesGamma(n))/n!,n>=0}},0)/;FreeQ(n,x)
+matcher.caseOf(SeriesCoefficient(Zeta(x_),list(x_Symbol,C1,PatternTest(n_,NotListQ))),
+      Condition(Piecewise(list(list(C1,Equal(n,CN1)),list(Times(Power(-1,n),Power(Factorial(n),CN1),StieltjesGamma(n)),GreaterEqual(n,C0))),C0),FreeQ(n,x)));
+    // SeriesCoefficient(Sec(x_),{x_Symbol,Pi*a_.,n_?NotListQ}):=Piecewise({{(-1)^(a+1/2),n==-1},{((-1)*I*2*(-1)^(a+1/2)*I^n*(-1+2^n)*BernoulliB(1+n))/(1+n)!,n>=0&&Mod(n,2)==1}},0)/;FreeQ(n,x)&&IntegerQ(a+1/2)
+matcher.caseOf(SeriesCoefficient(Sec(x_),list(x_Symbol,Times(Pi,a_DEFAULT),PatternTest(n_,NotListQ))),
+      Condition(Piecewise(list(list(Power(-1,Plus(a,C1D2)),Equal(n,CN1)),list(Times(CN1,CI,C2,Power(-1,Plus(a,C1D2)),Power(CI,n),Plus(CN1,Power(C2,n)),BernoulliB(Plus(C1,n)),Power(Factorial(Plus(C1,n)),CN1)),And(GreaterEqual(n,C0),Equal(Mod(n,C2),C1)))),C0),And(FreeQ(n,x),IntegerQ(Plus(a,C1D2)))));
+    // SeriesCoefficient(Cot(x_),{x_Symbol,Pi*a_.,n_?NotListQ}):=Piecewise({{1,n==-1},{((-1)*I*(-1+(-1)^n)*(2*I)^n*BernoulliB(1+n))/(1+n)!,n>=0}},0)/;FreeQ(n,x)&&IntegerQ(a)
+matcher.caseOf(SeriesCoefficient(Cot(x_),list(x_Symbol,Times(Pi,a_DEFAULT),PatternTest(n_,NotListQ))),
+      Condition(Piecewise(list(list(C1,Equal(n,CN1)),list(Times(CN1,CI,Plus(CN1,Power(-1,n)),Power(Times(C2,CI),n),BernoulliB(Plus(C1,n)),Power(Factorial(Plus(C1,n)),CN1)),GreaterEqual(n,C0))),C0),And(FreeQ(n,x),IntegerQ(a))));
+    // SeriesCoefficient(Csc(x_),{x_Symbol,Pi*a_.,n_?NotListQ}):=Piecewise({{(-1)^a,n==-1},{((-1)*I*2*(-1)^a*I^n*(-1+2^n)*BernoulliB(1+n))/(1+n)!,n>=0&&Mod(n,2)==1}},0)/;FreeQ(n,x)&&IntegerQ(a)
+matcher.caseOf(SeriesCoefficient(Csc(x_),list(x_Symbol,Times(Pi,a_DEFAULT),PatternTest(n_,NotListQ))),
+      Condition(Piecewise(list(list(Power(-1,a),Equal(n,CN1)),list(Times(CN1,CI,C2,Power(-1,a),Power(CI,n),Plus(CN1,Power(C2,n)),BernoulliB(Plus(C1,n)),Power(Factorial(Plus(C1,n)),CN1)),And(GreaterEqual(n,C0),Equal(Mod(n,C2),C1)))),C0),And(FreeQ(n,x),IntegerQ(a))));
 return matcher;
 }
 }

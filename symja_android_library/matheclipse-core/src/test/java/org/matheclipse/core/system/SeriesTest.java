@@ -7,6 +7,8 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testComposeSeries() {
+    check("ComposeSeries(Series(1/(1-y), {y, 0, 2}), Series(x^2, {x, 0, 5})) // InputForm", //
+        "SeriesData(x,0,{1,0,1},0,4,1)");
     check("ComposeSeries(Series(Exp(x), {x, 0, 10}), Series(Sin(x), {x, 0, 10}))", //
         "1+x+x^2/2-x^4/8-x^5/15-x^6/240+x^7/90+31/5760*x^8+x^9/5670-2951/3628800*x^10+O(x)^\n"
             + "11");
@@ -130,7 +132,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testSeriesArc() { 
+  public void testSeriesArc() {
     check("Series(ArcTan(x),  {x, I, 3})  // InputForm", //
         "Pi*Floor((Pi/2 - Arg( - I + x))/(2*Pi)) + SeriesData(x,I,{1/4*(Pi+I*2*Log(2)+(-2)*I*Log(-I+x)),1/4,I*1/16,-1/48},0,4,1)");
     check("Series(ArcCot(x),  {x, I, 3})  // InputForm", //
@@ -155,7 +157,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "SeriesData(x,0,{Sqrt(2),0,-1/(6*Sqrt(2)),0,3/80*1/Sqrt(2),0,-5/448*1/Sqrt(2),0,\n"
             + "35/9216*1/Sqrt(2)},1,11,2)");
   }
-  
+
   @Test
   public void testSeriesTaylor() {
     // issue #545
@@ -280,8 +282,8 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
     check("s1^2+s2^2 // InputForm", //
         "SeriesData(x,0,{1},0,11,1)");
-    check("Series(Sin(x^5)/x^10,{x,0,15})", //
-        "1/x^5-x^5/6+x^15/120+O(x)^16");
+    check("Series(Sin(x^5)/x^10,{x,0,15})// InputForm", //
+        "SeriesData(x,0,{1,0,0,0,0,0,0,0,0,0,-1/6,0,0,0,0,0,0,0,0,0,1/120},-5,16,1)");
     check("Series(E^x,{x,0,5})", //
         "1+x+x^2/2+x^3/6+x^4/24+x^5/120+O(x)^6");
 
@@ -366,6 +368,13 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     check("Series[(1/w)*Log[(a^w+b^w)/2],w->0]", //
         "1/2*(Log(a)+Log(b))+O(w)^1");
   }
+
+  @Test
+  public void testSeriesPlus() {
+    check("Series(f(x)^2, {x, 0, 2}) - 2 - x // InputForm", //
+        "SeriesData(x,0,{-2+f(0)^2,-1+2*f(0)*f'(0),f'(0)^2+f(0)*f''(0)},0,3,1)");
+  }
+
 
   @Test
   public void testSeriesMrv() {
@@ -692,6 +701,22 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testPoleSeriesCoefficients() {
+    // Rule: Sec(x) simple pole at Pi/2 (Sec(Pi/2+t) = -Csc(t))
+    check("Series(Sec(x), {x, Pi/2, 5}) // InputForm", //
+        "SeriesData(x,Pi/2,{-1,0,-1/6,0,-7/360,0,-31/15120},-1,6,1)");
+
+    // Shift rule: Cot(x) at Pi (same coefficients as Cot at 0)
+    check("Series(Cot(x), {x, Pi, 5}) // InputForm", //
+        "SeriesData(x,Pi,{1,0,-1/3,0,-1/45,0,-2/945},-1,6,1)");
+
+    // Shift rule: Csc(x) at Pi (= -Csc at 0)
+    check("Series(Csc(x), {x, Pi, 5}) // InputForm", //
+        "SeriesData(x,Pi,{-1,0,-1/6,0,-7/360,0,-31/15120},-1,6,1)");
+  }
+
+
+  @Test
   public void testDivisionByZero() {
     // message: General: -1 is not a valid variable.
     check("Series(1/0,{-1,-2,3})", //
@@ -734,19 +759,10 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   @Test
   public void testGammaSinSeries() {
     check("Series(Gamma(Sin(z) - z)^3, {z,0,1}) // InputForm", //
-        "SeriesData(z,0,{-216,0,-162/5,-108*EulerGamma,-432/175,-54/5*EulerGamma,-36*(87/\n" //
-            + "28000+EulerGamma^2/2+3*(17/126000+1/12*(EulerGamma^2+Pi^2/6))),-387/700*EulerGamma,-\n" //
-            + "27*(11/91875+EulerGamma^2/30+4*(563/388080000+1/120*(-EulerGamma^2-Pi^2/6)+1/240*(EulerGamma^\n" //
-            + "2+Pi^2/6))+2/5*(17/126000+1/12*(EulerGamma^2+Pi^2/6))),-24*(37/112000*EulerGamma+\n" //
-            + "1/12*EulerGamma*(87/28000+EulerGamma^2/2+3*(17/126000+1/12*(EulerGamma^2+Pi^2/6)))+\n" //
-            + "5/4*EulerGamma*(17/126000+1/12*(EulerGamma^2+Pi^2/6))+9/2*(EulerGamma/60480+6*(-EulerGamma/\n" //
-            + "362880+1/1296*(EulerGamma^3+1/2*EulerGamma*Pi^2-PolyGamma(2,1))))),108/5*(-43/\n" //
-            + "50400*EulerGamma^2+11/8400*(-87/28000-EulerGamma^2/2-3*(17/126000+1/12*(EulerGamma^\n" //
-            + "2+Pi^2/6)))+1/80*(11/91875+EulerGamma^2/30+4*(563/388080000+1/120*(-EulerGamma^2-Pi^\n" //
-            + "2/6)+1/240*(EulerGamma^2+Pi^2/6))+2/5*(17/126000+1/12*(EulerGamma^2+Pi^2/6)))+2/\n" //
-            + "75*(-17/126000+1/12*(-EulerGamma^2-Pi^2/6))-5*(127/50450400000+1/2400*(-EulerGamma^\n" //
-            + "2-Pi^2/6)+13/25200*(EulerGamma^2+Pi^2/6))+11/20*(-563/388080000+1/240*(-EulerGamma^\n" //
-            + "2-Pi^2/6)+1/120*(EulerGamma^2+Pi^2/6)))},-9,2,1)");
+        "SeriesData(z,0,{-216,0,-162/5,-108*EulerGamma,-432/175,-54/5*EulerGamma,-177/\n" //
+            + "1400-27*EulerGamma^2-3/2*Pi^2,-387/700*EulerGamma,-10449/2156000-27/20*EulerGamma^\n" //
+            + "2-3/40*Pi^2,-19/1000*EulerGamma-9/2*EulerGamma^3-3/4*EulerGamma*Pi^2+PolyGamma(2,\n" //
+            + "1)/2,-409469/2802800000-99/2800*EulerGamma^2-11/5600*Pi^2},-9,2,1)");
 
     check("Series(Gamma(Sin(x) - x)^3, x -> 0) // InputForm", //
         "SeriesData(x,0,{-216},-9,-7,1)");
@@ -1034,6 +1050,46 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "InverseFunction(-1+E^#1)[x]");
     check("SeriesCoefficient(InverseFunction(Exp(x)-1)[x], {x, 0, 3})", //
         "SeriesCoefficient(InverseFunction(-1+E^x)[x],{x,0,3})");
+  }
+
+  @Test
+  public void testBellYLagrangeInversion() {
+    // Series reversion coefficients are computed in closed form via the partial Bell polynomials
+    // (BellY) implementation. These tests specifically target that code path.
+
+    // Symbolic generic reversion: closed-form BellY coefficients for n = 2..6.
+    // n=6 was previously computed by the generic power-series fallback; it must produce the same
+    // canonical form via the BellY closed form.
+    check("InverseSeries(Series(a1*x+a2*x^2+a3*x^3+a4*x^4+a5*x^5+a6*x^6, {x, 0, 6}))", //
+        "x/a1+(-a2*x^2)/a1^3+((2*a2^2-a1*a3)*x^3)/a1^5+((-5*a2^3+5*a1*a2*a3-a1^2*a4)*x^4)/a1^\n" //
+            + "7+((14*a2^4-21*a1*a2^2*a3+3*a1^2*a3^2+6*a1^2*a2*a4-a1^3*a5)*x^5)/a1^9+((-42*a2^5+\n" //
+            + "84*a1*a2^3*a3-28*a1^2*a2*a3^2-28*a1^2*a2^2*a4+7*a1^3*a3*a4+7*a1^3*a2*a5-a1^4*a6)*x^\n" //
+            + "6)/a1^11+O(x)^7");
+
+    // Numeric reversions exercising orders n = 7 and n = 9 (beyond the former hardcoded cases).
+    // ArcTan(x) is the reversion of Tan(x).
+    check("InverseSeries(Series(Tan(x), {x, 0, 9}))", //
+        "x-x^3/3+x^5/5-x^7/7+x^9/9+O(x)^10");
+    // ArcSinh(x) is the reversion of Sinh(x).
+    check("InverseSeries(Series(Sinh(x), {x, 0, 7})) // InputForm", //
+        "SeriesData(x,0,{1,0,-1/6,0,3/40,0,-5/112},1,8,1)");
+    // ArcSin(x) is the reversion of Sin(x).
+    check("InverseSeries(Series(Sin(x), {x, 0, 9}))", //
+        "x+x^3/6+3/40*x^5+5/112*x^7+35/1152*x^9+O(x)^10");
+
+    // SeriesCoefficient Lagrange-Bürmann fast-path (BellY) for an unevaluated InverseFunction.
+    check("SeriesCoefficient(InverseFunction(Sin)[x], {x, 0, 1})", //
+        "1");
+    check("SeriesCoefficient(InverseFunction(Sin)[x], {x, 0, 3})", //
+        "1/6");
+    check("SeriesCoefficient(InverseFunction(Sin)[x], {x, 0, 5})", //
+        "3/40");
+    check("SeriesCoefficient(InverseFunction(Sin)[x], {x, 0, 7})", //
+        "5/112");
+
+    // SeriesCoefficient of an evaluated InverseSeries (n = 7).
+    check("SeriesCoefficient(InverseSeries(Series(Tan(x), {x, 0, 7})), {x, 0, 7})", //
+        "-1/7");
   }
 
   @Test
@@ -1565,5 +1621,14 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
     check("Expand(SeriesCoefficient(Cos(a*x + b*x^2), {x, 0, 4}))", //
         "a^4/24-b^2/2");
+  }
+
+  @Test
+  public void testSeriesZeta() {
+    check("Series(f(x), {x, 1, 3}) // InputForm", //
+        "SeriesData(x,1,{f(1),f'(1),f''(1)/2,Derivative(3)[f][1]/6},0,4,1)");
+    check("Series(Zeta(x), {x, 1, 4}) // InputForm", //
+        "SeriesData(x,1,{1,EulerGamma,-StieltjesGamma(1),StieltjesGamma(2)/2,-StieltjesGamma(\n"
+            + "3)/6,StieltjesGamma(4)/24},-1,5,1)");
   }
 }

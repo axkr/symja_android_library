@@ -228,7 +228,7 @@ public class SeriesFunctions {
           for (int i = 2; i < ast.size(); i++) {
             if (ast.get(i) instanceof ASTSeriesData) {
               ASTSeriesData s2 = (ASTSeriesData) ast.get(i);
-              result = result.compose(s2);
+              result = result.composeCapped(s2);
               if (result == null) {
                 return F.NIL;
               }
@@ -1183,7 +1183,7 @@ public class SeriesFunctions {
           // Directly invoke the recursive BellY with persistent cache.
           // Because BellY ignores indices > (n - k + 1) internally, we can safely
           // pass the entire gDerivs list without manually truncating it!
-          IExpr bellY = org.matheclipse.core.builtin.PolynomialFunctions.bellY(nInt, k, gDerivs,
+          IExpr bellY = org.matheclipse.core.reflection.system.BellY.bellY(nInt, k, gDerivs,
               (IAST) function, engine, bellCache);
 
           sum.append(F.Times(fDerivAtG0, bellY));

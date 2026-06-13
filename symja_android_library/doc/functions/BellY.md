@@ -8,6 +8,7 @@ BellY(n, k, {x1, x2, ... , xN})
 
 See:  
 * [Wikipedia - Bell polynomials](https://en.wikipedia.org/wiki/Bell_polynomials)
+* [Wikipedia - Faà di Bruno's formula](https://en.wikipedia.org/wiki/Fa%C3%A0_di_Bruno%27s_formula)
 
 ## Examples
 
