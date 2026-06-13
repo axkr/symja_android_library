@@ -45,6 +45,12 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.junit.vintage</groupId>
+			<artifactId>junit-vintage-engine</artifactId>
+			<version>6.1.0</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
