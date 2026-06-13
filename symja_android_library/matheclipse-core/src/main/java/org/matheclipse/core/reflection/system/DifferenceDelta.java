@@ -55,7 +55,10 @@ public class DifferenceDelta extends AbstractCoreFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IExpr arg1 = ast.arg1();
+    // Evaluate the first argument first, so that e.g. an indefinite Sum collapses to its closed
+    // form before the forward difference shifts the variable. Otherwise the variable shift would
+    // also rewrite the bound iterator of a held Sum(f, i).
+    IExpr arg1 = engine.evaluate(ast.arg1());
     IExpr arg2 = ast.arg2();
     if (arg1.isList()) {
       // thread elementwise over list in arg1
@@ -169,6 +172,16 @@ public class DifferenceDelta extends AbstractCoreFunctionEvaluator {
               IExpr inner = F.Plus(arg, F.Times(nExpr, a, h, F.C1D2));
               return F.Times(coeff, (n % 2 == 0) ? F.Cosh(inner) : F.Sinh(inner));
             }
+            case ID.Factorial: {
+              // first forward difference: Factorial(arg + a*h) - Factorial(arg)
+              //   = Factorial(arg) * (Pochhammer(arg + 1, a*h) - 1)
+              // (e.g. DifferenceDelta(k!, k) -> k*k!)
+              if (n == 1) {
+                return F.Times(f,
+                    F.Subtract(F.Pochhammer(F.Plus(arg, F.C1), F.Times(a, h)), F.C1));
+              }
+              break;
+            }
           }
         }
       }
@@ -184,6 +197,32 @@ public class DifferenceDelta extends AbstractCoreFunctionEvaluator {
           // base^(c + a*x) * (base^(a*h) - 1)^n -> f * (base^(a*h) - 1)^n
           return F.Times(f, F.Power(F.Subtract(F.Power(base, F.Times(a, h)), F.C1), nExpr));
         }
+      }
+    } else if (f.isTimes()) {
+      // const * base^(c + a*x) with all remaining factors free of x:
+      // delta = f * (base^(a*h) - 1)^n
+      // (e.g. the antidifference a^i/(-1+a) of a geometric sum differences back to a^i)
+      IExpr base = F.NIL;
+      IExpr a = F.NIL;
+      boolean valid = true;
+      for (IExpr factor : (IAST) f) {
+        if (factor.isFree(x, true)) {
+          continue;
+        }
+        if (base.isNIL() && factor.isPower() && factor.base().isFree(x, true)) {
+          IExpr[] linear = factor.exponent().linear(x);
+          if (linear != null && !linear[1].isZero()) {
+            base = factor.base();
+            a = linear[1];
+            continue;
+          }
+        }
+        valid = false;
+        break;
+      }
+      if (valid && base.isPresent()) {
+        IExpr nExpr = F.ZZ(n);
+        return F.Times(f, F.Power(F.Subtract(F.Power(base, F.Times(a, h)), F.C1), nExpr));
       }
     }
     return F.NIL;
