@@ -1,8 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Combinatoric;
-import org.matheclipse.core.builtin.Combinatoric.KSubsetsList;
+import org.matheclipse.core.eval.CombinatoricUtil;
+import org.matheclipse.core.eval.CombinatoricUtil.KSubsetsList;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
@@ -49,7 +49,7 @@ public class SymmetricPolynomial extends AbstractFunctionEvaluator {
         }
         IASTAppendable sumResult = F.PlusAlloc(sumArgSize);
 
-        final KSubsetsList iter = Combinatoric.subsets(vars, k, F.ast(S.Times), 1);
+        final CombinatoricUtil.KSubsetsList iter = CombinatoricUtil.subsets(vars, k, F.ast(S.Times), 1);
         for (IAST part : iter) {
           if (part == null) {
             break;

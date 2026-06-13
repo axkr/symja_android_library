@@ -184,8 +184,8 @@ public class Reduce extends AbstractEvaluator {
         }
 
         IAST newIntervalData = IntervalDataSym.relationToIntervalSet(headID, rhs);
-        IAST intersection = IntervalDataSym.intersection(intervalData, newIntervalData,
-            EvalEngine.get());
+        IAST intersection =
+            IntervalDataSym.intersection(intervalData, newIntervalData, EvalEngine.get());
         if (intersection.isPresent()) {
           if (intersection.isAST0()) {
             return S.False;
@@ -344,6 +344,7 @@ public class Reduce extends AbstractEvaluator {
       }
       IASTAppendable orResult = F.ast(S.Or, orAST.argSize());
       boolean orEvaled = false;
+      boolean cdEvaled = false;
       for (int i = 1; i < orAST.size(); i++) {
         final IExpr arg = orAST.get(i);
         if (arg.isAST(S.And)) {
@@ -359,6 +360,7 @@ public class Reduce extends AbstractEvaluator {
                   return F.NIL;
                 }
               }
+              cdEvaled = true;
               continue;
             }
             orEvaled = true;
@@ -373,6 +375,15 @@ public class Reduce extends AbstractEvaluator {
             temp = S.Simplify.of(arg);
           }
           if (temp.isAST2() && temp.first().equals(variable)) {
+            IExpr rhs = temp.second();
+            if (!(domainMap.get(variable) == S.Reals && isComplexNonReal(rhs))
+                && !rhs.isRealResult()) {
+              // a complex (non-real) value cannot be merged into a real interval; keep the
+              // term unchanged in the Or result
+              orEvaled = true;
+              orResult.append(arg);
+              continue;
+            }
             VariableInterval comparatorCD =
                 new VariableInterval(F.CNInfinity, S.Less, variable, S.Less, F.CInfinity);
             temp = comparatorCD.reduceAnd(temp.headID(), temp.first(), temp.second());
@@ -395,6 +406,7 @@ public class Reduce extends AbstractEvaluator {
                   return F.NIL;
                 }
               }
+              cdEvaled = true;
             }
             if (arg.isEqual()) {
               orEvaled = true;
@@ -404,6 +416,22 @@ public class Reduce extends AbstractEvaluator {
         }
       }
       if (orEvaled) {
+        if (cdEvaled && cd.intervalData.argSize() > 0) {
+          // don't lose the interval data accumulated from other Or terms, but avoid
+          // duplicating equalities which were already appended to the Or result
+          IExpr intervalExpr = EvalEngine.get().evaluate(cd.toExpr());
+          if (intervalExpr.isOr()) {
+            IAST intervalOr = (IAST) intervalExpr;
+            for (int j = 1; j < intervalOr.size(); j++) {
+              IExpr term = intervalOr.get(j);
+              if (!orResult.contains(term)) {
+                orResult.append(term);
+              }
+            }
+          } else if (!intervalExpr.isFalse() && !orResult.contains(intervalExpr)) {
+            orResult.append(intervalExpr);
+          }
+        }
         return orResult;
       }
 
@@ -550,6 +578,99 @@ public class Reduce extends AbstractEvaluator {
     }
   }
 
+  /**
+   * Test if the expression evaluates numerically to a complex number with non-zero imaginary part.
+   * Such values cannot be represented in a real {@link S#IntervalData} set.
+   *
+   * @param expr the expression to test
+   * @return <code>true</code> if the value is complex and not real
+   */
+  private static boolean isComplexNonReal(IExpr expr) {
+    try {
+      Complex c = expr.evalfc();
+      return c != null && !F.isZero(c.getImaginary());
+    } catch (ArgumentTypeException ate) {
+      // not numerically evaluable - assume symbolic/real handling as before
+      return false;
+    }
+  }
+
+  /**
+   * Generate a case analysis for a univariate polynomial equation with parametric (symbolic)
+   * coefficients. For example <code>a*x^2+b*x+c==0</code> is reduced to
+   * <code>(a!=0&&(x==(-b-Sqrt(b^2-4*a*c))/(2*a)||x==(-b+Sqrt(b^2-4*a*c))/(2*a)))
+   * ||(a==0&&b!=0&&x==-c/b)||(a==0&&b==0&&c==0)</code>.
+   *
+   * @return the case analysis or {@link F#NIL} if the leading coefficient cannot vanish
+   *         symbolically (then the standard reduction applies)
+   */
+  private static IExpr reduceParametricPolynomialEquation(IAST equation, IExpr variable,
+      EvalEngine engine) {
+    IExpr f = engine.evaluate(F.ExpandAll(F.Subtract(equation.arg1(), equation.arg2())));
+    if (f.isFree(variable) || !f.isPolynomial(variable)) {
+      return F.NIL;
+    }
+    IExpr temp = S.CoefficientList.ofNIL(engine, f, variable);
+    if (!temp.isList() || ((IAST) temp).argSize() < 3) {
+      // degree < 2 needs no case analysis here
+      return F.NIL;
+    }
+    IAST coefficientList = (IAST) temp;
+    int degree = coefficientList.argSize() - 1;
+    IExpr leading = coefficientList.get(degree + 1);
+    if (leading.isNumericFunction()) {
+      // leading coefficient cannot vanish symbolically - no case analysis necessary
+      return F.NIL;
+    }
+    return parametricCases(coefficientList, degree, variable, engine);
+  }
+
+  /**
+   * Recursively build <code>(c_k!=0 && roots) || (c_k==0 && lower degree cases)</code> for the
+   * polynomial given by <code>coefficientList</code> truncated at <code>degree</code>.
+   */
+  private static IExpr parametricCases(IAST coefficientList, int degree, IExpr variable,
+      EvalEngine engine) {
+    IExpr ck = coefficientList.get(degree + 1);
+    if (degree == 0) {
+      return F.Equal(ck, F.C0);
+    }
+    if (ck.isZero()) {
+      // this coefficient vanishes identically - skip to the lower degree
+      return parametricCases(coefficientList, degree - 1, variable, engine);
+    }
+    IASTAppendable poly = F.PlusAlloc(degree + 1);
+    for (int i = 0; i <= degree; i++) {
+      poly.append(F.Times(coefficientList.get(i + 1), F.Power(variable, F.ZZ(i))));
+    }
+    IExpr roots = S.Roots.ofNIL(engine, F.Equal(engine.evaluate(poly), F.C0), variable);
+    if (roots.isNIL() || !roots.isFree(S.Roots)) {
+      return F.NIL;
+    }
+    if (ck.isNumericFunction()) {
+      // non-zero numeric leading coefficient - no further case analysis
+      return roots;
+    }
+    IExpr lowerCases = parametricCases(coefficientList, degree - 1, variable, engine);
+    if (lowerCases.isNIL()) {
+      return F.NIL;
+    }
+    IASTAppendable result = F.OrAlloc(degree + 1);
+    result.append(F.And(F.Unequal(ck, F.C0), roots));
+    IExpr zeroCondition = F.Equal(ck, F.C0);
+    if (lowerCases.isOr()) {
+      // distribute the zero condition over the lower degree cases
+      IAST orCases = (IAST) lowerCases;
+      for (int j = 1; j < orCases.size(); j++) {
+        result.append(F.And(zeroCondition, orCases.get(j)));
+      }
+    } else {
+      result.append(F.And(zeroCondition, lowerCases));
+    }
+    return result;
+  }
+
+
   public Reduce() {}
 
   @Override
@@ -582,6 +703,14 @@ public class Reduce extends AbstractEvaluator {
     try {
       IExpr expr = ast.arg1();
 
+      if (expr.isEqual() && domain == S.Complexes) {
+        // case analysis for univariate polynomial equations with parametric coefficients,
+        // e.g. a*x^2+b*x+c==0 for variable x with parameters a,b,c
+        IExpr parametric = reduceParametricPolynomialEquation((IAST) expr, variable, engine);
+        if (parametric.isPresent()) {
+          return parametric;
+        }
+      }
 
       if (ast.arg1().isList()) {
         expr = ((IAST) expr).setAtCopy(0, S.And);
@@ -731,10 +860,30 @@ public class Reduce extends AbstractEvaluator {
     return F.NIL;
   }
 
+  /** Remove syntactically duplicate arguments from an {@link S#Or} expression. */
+  private static IExpr dedupOr(IExpr expr) {
+    if (expr.isOr()) {
+      IAST or = (IAST) expr;
+      IASTAppendable result = F.OrAlloc(or.argSize());
+      boolean evaled = false;
+      for (int i = 1; i < or.size(); i++) {
+        if (result.contains(or.get(i))) {
+          evaled = true;
+          continue;
+        }
+        result.append(or.get(i));
+      }
+      if (evaled) {
+        return result.isAST1() ? result.arg1() : result;
+      }
+    }
+    return expr;
+  }
+
   /**
    * Extract the (finite) extremum value from a {@code Minimize}/{@code Maximize} result
-   * <code>{value, {var -> p}}</code>. Returns {@link F#NIL} if the value is infinite / indeterminate
-   * or the result isn't a determined extremum.
+   * <code>{value, {var -> p}}</code>. Returns {@link F#NIL} if the value is infinite /
+   * indeterminate or the result isn't a determined extremum.
    *
    * @param result the optimizer result
    * @return the extremum value or {@link F#NIL}

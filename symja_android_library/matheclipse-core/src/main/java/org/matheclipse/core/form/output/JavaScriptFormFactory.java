@@ -500,10 +500,12 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
         convertLogisticSigmoid(function, buf);
         return;
       }
-      IAST piecewiseExpand = PiecewiseUtil.piecewiseExpand(function, S.Reals);
-      int[] dim = piecewiseExpand.isPiecewise();
-      if (dim != null && convertPiecewise(dim, piecewiseExpand, buf)) {
-        return;
+      if (!(function.isAST(S.Min, 3) || function.isAST(S.Max, 3))) {
+        IExpr piecewiseExpand = PiecewiseUtil.piecewiseExpand(function, S.Reals);
+        int[] dim = piecewiseExpand.isPiecewise();
+        if (dim != null && convertPiecewise(dim, (IAST) piecewiseExpand, buf)) {
+          return;
+        }
       }
     } else {
       if (function.isPower()) {
@@ -539,9 +541,9 @@ public class JavaScriptFormFactory extends DoubleFormFactory {
         buf.append("))))");
         return;
       }
-      IAST piecewiseExpand = PiecewiseUtil.piecewiseExpand(function, S.Reals);
+      IExpr piecewiseExpand = PiecewiseUtil.piecewiseExpand(function, S.Reals);
       int[] dim = piecewiseExpand.isPiecewise();
-      if (dim != null && convertPiecewise(dim, piecewiseExpand, buf)) {
+      if (dim != null && convertPiecewise(dim, (IAST) piecewiseExpand, buf)) {
         return;
       }
     }

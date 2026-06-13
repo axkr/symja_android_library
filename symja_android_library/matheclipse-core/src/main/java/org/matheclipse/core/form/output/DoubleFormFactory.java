@@ -859,8 +859,7 @@ public abstract class DoubleFormFactory {
   }
 
   public void convert(final StringBuilder buf, final IExpr o) {
-    IExpr expr = EvalEngine.get().evaluate(F.PiecewiseExpand(o));
-    convertInternal(buf, expr, Integer.MIN_VALUE, false, true);
+    convertInternal(buf, o, Integer.MIN_VALUE, false, true);
   }
 
   public void convertExpr(final StringBuilder buf, final IExpr expr) {
@@ -1283,8 +1282,13 @@ public abstract class DoubleFormFactory {
         return;
       }
     }
-    convertInternal(buf, head);
-    convertArgs(buf, head, function);
+    IExpr expr = S.PiecewiseExpand.of(function);
+    if (function != expr) {
+      convertInternal(buf, expr, Integer.MIN_VALUE, false, true);
+    } else {
+      convertInternal(buf, head);
+      convertArgs(buf, head, function);
+    }
   }
 
   public void convertArgs(final StringBuilder buf, IExpr head, final IAST function) {

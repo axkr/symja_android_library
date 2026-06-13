@@ -280,6 +280,36 @@ public class ReduceVariableEqual {
     if (exprWithVariable.isAST()) {
       IAST ast = (IAST) exprWithVariable;
       if (ast.isAST1()) {
+        // IExpr head = ast.head();
+        //
+        // // Dispatch to internal $InverseFunction for multi-valued periodic functions
+        // if (head.isBuiltInSymbol()) {
+        // switch (((IBuiltInSymbol) head).ordinal()) {
+        // case ID.ArcCos:
+        // case ID.ArcCot:
+        // case ID.ArcSin:
+        // case ID.ArcTan:
+        // case ID.Cos:
+        // case ID.Cosh:
+        // case ID.Cot:
+        // case ID.Coth:
+        // case ID.Csc:
+        // case ID.Csch:
+        // case ID.Log:
+        // case ID.Sec:
+        // case ID.Sech:
+        // case ID.Sin:
+        // case ID.Sinh:
+        // case ID.Tan:
+        // case ID.Tanh:
+        // Errors.printMessage("ifun", F.List());
+        // IExpr inverseAST =
+        // F.binaryAST2(ExprAnalyzer.$InverseFunction, head, exprWithoutVariable);
+        // return extractVariableRecursive(ast.arg1(), inverseAST, predicate, variable,
+        // multipleValues);
+        // }
+        // }
+
         IASTAppendable inverseFunction = InverseFunction.getUnaryInverseFunction(ast, true);
         if (inverseFunction.isPresent()) {
           if (exprWithVariable.isAbs()) {

@@ -271,7 +271,7 @@ public class FunctionRange extends AbstractFunctionEvaluator {
         // Minimize/Maximize, IntervalData and Interval paths below tend to either fail or
         // return a degenerate result (e.g. 0<=y<=0 from the asymptotic limit at infinity, or
         // from naive interval arithmetic Sin[Reals]/Sqrt[Reals] -> {0}). Try the numerical
-        // critical-point fallback first so the Mathematica-style Root[{f, c}] inequality is
+        // critical-point fallback first so the WMA-style Root[{f, c}] inequality is
         // returned when possible. Polynomial / rational inputs skip this branch and use the
         // existing exact paths unchanged.
         if (containsTranscendental(function)) {
@@ -340,8 +340,7 @@ public class FunctionRange extends AbstractFunctionEvaluator {
           }
           // Final fallback: numerically locate critical points of f'(x)==0 over a bounded
           // real range and wrap them as Root[{eq &, c}] placeholders so the resulting
-          // Inequality keeps a symbolic form (matches Mathematica's Root-based output for
-          // transcendental functions such as Sin[x]/Sqrt[x]).
+          // Inequality keeps a symbolic form.
           IExpr critRange = numericalCriticalPointRange(function, x, y, engine);
           if (critRange.isPresent()) {
             return critRange;
@@ -391,7 +390,7 @@ public class FunctionRange extends AbstractFunctionEvaluator {
         return F.NIL;
       }
       // Build a canonical, short form for the Root[{body &, c}] body so the printed
-      // representation matches Mathematica (e.g. 2 x Cos[x] - Sin[x] -> 2 x - Tan[x]).
+      // representation matches WMA (e.g. 2 x Cos[x] - Sin[x] -> 2 x - Tan[x]).
       // The original eqExpr is still used for sampling / FindRoot below so the root
       // locations stay exact.
       IExpr eqExprForRoot = canonicalizeRootBody(eqExpr, x, engine);

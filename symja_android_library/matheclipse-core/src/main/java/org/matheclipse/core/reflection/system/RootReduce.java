@@ -83,7 +83,7 @@ public class RootReduce extends AbstractFunctionEvaluator {
       }
       IAST rootsList = (IAST) nrootsResult;
 
-      // Step 4b: reorder roots to match Mathematica's k-indexing used by Root[f, k, 0]:
+      // Step 4b: reorder roots to match WMA's k-indexing used by Root[f, k, 0]:
       //   real roots first (ascending), then complex roots (Re ascending, Im ascending).
       // This must agree with the sort in ToRadicals.rootToRadicals so that the resulting
       // Root[..., k, 0] expands back to the same algebraic number.
@@ -133,7 +133,7 @@ public class RootReduce extends AbstractFunctionEvaluator {
       }
 
       // Step 6: find the root index k (1-based) whose numeric value is closest to arg1,
-      // using the sorted ordering so k matches Mathematica's Root[f, k, 0] convention.
+      // using the sorted ordering so k matches WMA's Root[f, k, 0] convention.
       double re1 = numericArg1.re().evalf();
       double im1 = numericArg1.im().evalf();
       double minDist = Double.MAX_VALUE;
@@ -155,7 +155,7 @@ public class RootReduce extends AbstractFunctionEvaluator {
       }
 
       // Step 7: build and return Root[minPoly_pure_function, k, 0]. The trailing 0 marks
-      // Mathematica's "real-first" ordering convention; quadratic Root expressions will
+      // WMA's "real-first" ordering convention; quadratic Root expressions will
       // auto-evaluate via Root.evaluate to their radical form.
       return F.ternaryAST3(S.Root, minPoly, F.ZZ(bestK), F.C0);
 

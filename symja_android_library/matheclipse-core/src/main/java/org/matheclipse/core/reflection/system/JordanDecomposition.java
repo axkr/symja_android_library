@@ -131,7 +131,7 @@ public class JordanDecomposition extends AbstractFunctionEvaluator {
       rootCounts.put(root, rootCounts.getOrDefault(root, 0) + 1);
     }
 
-    // Sort eigenvalues in canonical order (matching Mathematica)
+    // Sort eigenvalues in canonical order
     List<IExpr> sortedRoots = new ArrayList<>(rootCounts.keySet());
     sortedRoots.sort(IExpr::compareTo);
 
@@ -221,7 +221,7 @@ public class JordanDecomposition extends AbstractFunctionEvaluator {
       rootCounts.put(root, rootCounts.getOrDefault(root, 0) + 1);
     }
 
-    // Sort eigenvalues in canonical order (matching Mathematica)
+    // Sort eigenvalues in canonical order
     List<IExpr> sortedRoots = new ArrayList<>(rootCounts.keySet());
     sortedRoots.sort(IExpr::compareTo);
 

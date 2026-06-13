@@ -20,8 +20,11 @@ public final class FunctionDefinitions {
       S.AdjacencyGraph.setEvaluator(new org.matheclipse.core.reflection.system.AdjacencyGraph());
       S.ArrayPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ArrayPlot());
       S.ArraySymbol.setEvaluator(new org.matheclipse.core.reflection.system.ArraySymbol());
+      S.Asymptotic.setEvaluator(new org.matheclipse.core.reflection.system.Asymptotic());
       S.AsymptoticDSolveValue
           .setEvaluator(new org.matheclipse.core.reflection.system.AsymptoticDSolveValue());
+      S.AsymptoticIntegrate
+          .setEvaluator(new org.matheclipse.core.reflection.system.AsymptoticIntegrate());
       S.AsymptoticRSolveValue
           .setEvaluator(new org.matheclipse.core.reflection.system.AsymptoticRSolveValue());
       S.AsymptoticSolve.setEvaluator(new org.matheclipse.core.reflection.system.AsymptoticSolve());
@@ -32,6 +35,7 @@ public final class FunctionDefinitions {
       S.BarChart.setEvaluator(new org.matheclipse.core.builtin.graphics.BarChart());
       S.BoxWhiskerChart.setEvaluator(new org.matheclipse.core.builtin.graphics.BoxWhiskerChart());
       S.Beep.setEvaluator(new org.matheclipse.core.reflection.system.Beep());
+      S.BellY.setEvaluator(new org.matheclipse.core.reflection.system.BellY());
       S.BezierFunction.setEvaluator(new org.matheclipse.core.reflection.system.BezierFunction());
       S.BinLists.setEvaluator(new org.matheclipse.core.reflection.system.BinLists());
       S.BoxMatrix.setEvaluator(new org.matheclipse.core.reflection.system.BoxMatrix());
@@ -68,6 +72,7 @@ public final class FunctionDefinitions {
       S.ExportString.setEvaluator(new org.matheclipse.core.reflection.system.ExportString());
       S.ExpToTrig.setEvaluator(new org.matheclipse.core.reflection.system.ExpToTrig());
       S.Extract.setEvaluator(new org.matheclipse.core.reflection.system.Extract());
+      S.FactorList.setEvaluator(new org.matheclipse.core.reflection.system.FactorList());
       S.FindFormula.setEvaluator(new org.matheclipse.core.reflection.system.FindFormula());
       S.FindGeneratingFunction
           .setEvaluator(new org.matheclipse.core.reflection.system.FindGeneratingFunction());
@@ -131,6 +136,7 @@ public final class FunctionDefinitions {
       S.LinearProgramming
           .setEvaluator(new org.matheclipse.core.reflection.system.LinearProgramming());
       S.LogBarnesG.setEvaluator(new org.matheclipse.core.reflection.system.LogBarnesG());
+      S.LogicalExpand.setEvaluator(new org.matheclipse.core.reflection.system.LogicalExpand());
       S.MatrixExp.setEvaluator(new org.matheclipse.core.reflection.system.MatrixExp());
       S.MatrixFunction.setEvaluator(new org.matheclipse.core.reflection.system.MatrixFunction());
       S.MatrixLog.setEvaluator(new org.matheclipse.core.reflection.system.MatrixLog());
@@ -164,6 +170,9 @@ public final class FunctionDefinitions {
       S.Partition.setEvaluator(new org.matheclipse.core.reflection.system.Partition());
       S.PeriodogramArray
           .setEvaluator(new org.matheclipse.core.reflection.system.PeriodogramArray());
+      S.PermutationProduct
+          .setEvaluator(new org.matheclipse.core.reflection.system.PermutationProduct());
+      S.PiecewiseExpand.setEvaluator(new org.matheclipse.core.reflection.system.PiecewiseExpand());
 
       S.PolynomialReduce
           .setEvaluator(new org.matheclipse.core.reflection.system.PolynomialReduce());
@@ -172,6 +181,7 @@ public final class FunctionDefinitions {
       S.PrimitivePolynomialQ
           .setEvaluator(new org.matheclipse.core.reflection.system.PrimitivePolynomialQ());
       S.Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
+      S.RangeSpace.setEvaluator(new org.matheclipse.core.reflection.system.RangeSpace());
       S.Ratios.setEvaluator(new org.matheclipse.core.reflection.system.Ratios());
       S.Reduce.setEvaluator(new org.matheclipse.core.reflection.system.Reduce());
       S.Root.setEvaluator(new org.matheclipse.core.reflection.system.Root());
@@ -179,6 +189,7 @@ public final class FunctionDefinitions {
       S.RSolve.setEvaluator(new org.matheclipse.core.reflection.system.RSolve());
       S.RSolveValue.setEvaluator(new org.matheclipse.core.reflection.system.RSolveValue());
       S.Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
+      S.SolveAlways.setEvaluator(new org.matheclipse.core.reflection.system.SolveAlways());
       S.SpectrogramArray
           .setEvaluator(new org.matheclipse.core.reflection.system.SpectrogramArray());
       S.SudokuSolve.setEvaluator(new org.matheclipse.core.reflection.system.SudokuSolve());
@@ -203,16 +214,16 @@ public final class FunctionDefinitions {
 
       S.Hash.setEvaluator(new org.matheclipse.core.reflection.system.Hash());
       S.FileHash.setEvaluator(new org.matheclipse.core.reflection.system.FileHash());
-//      S.RiemannSiegelTheta
-//          .setEvaluator(new org.matheclipse.core.reflection.system.RiemannSiegelTheta());
+      S.RiemannSiegelTheta
+          .setEvaluator(new org.matheclipse.core.reflection.system.RiemannSiegelTheta());
       S.ShiftRegisterSequence
           .setEvaluator(new org.matheclipse.core.reflection.system.ShiftRegisterSequence());
       S.TensorContract.setEvaluator(new org.matheclipse.core.reflection.system.TensorContract());
       S.TensorProduct.setEvaluator(new org.matheclipse.core.reflection.system.TensorProduct());
       S.TensorTranspose.setEvaluator(new org.matheclipse.core.reflection.system.TensorTranspose());
       S.ToRadicals.setEvaluator(new org.matheclipse.core.reflection.system.ToRadicals());
-//      S.Zeta.setEvaluator(new org.matheclipse.core.reflection.system.Zeta());
-//      S.ZetaZero.setEvaluator(new org.matheclipse.core.reflection.system.ZetaZero());
+      S.Zeta.setEvaluator(new org.matheclipse.core.reflection.system.Zeta());
+      S.ZetaZero.setEvaluator(new org.matheclipse.core.reflection.system.ZetaZero());
 
       // Graphics
       S.ComplexPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ComplexPlot());

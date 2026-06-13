@@ -9,7 +9,6 @@ import java.util.Set;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.combinatoric.KPartitionsIterable;
 import org.matheclipse.core.combinatoric.KPartitionsList;
-import org.matheclipse.core.combinatoric.KSubsetsIterable;
 import org.matheclipse.core.eval.CombinatoricUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -258,112 +257,7 @@ public final class Combinatoric {
    */
   private static final class Cycles extends AbstractFunctionEvaluator {
 
-    /**
-     * The <code>cycles</code> expression is canonicalized by dropping empty and singleton cycles,
-     * rotating each cycle so that the smallest position is at index 1.
-     *
-     * @param cycles <code>S.Cycles({{...}, ...})</code> expression
-     * @param quiet if <code>true</code> suppress the output of error messages
-     * @param engine
-     * @return the canonicalized expression or otherwise <code>F.NIL</code>, if the <code>cycles
-     *     </code> is no valid <code>Cycles</code> expression.
-     */
-    private static IAST canonicalizeCycles(final IAST cycles, boolean quiet, EvalEngine engine) {
-      if (cycles.arg1().isList()) {
-        IAST mainList = (IAST) cycles.arg1();
-        if (mainList.isEmptyList()) {
-          cycles.setEvalFlags(IAST.BUILT_IN_EVALED);
-          // cycles.builtinEvaled();
-          return F.NIL;
-        }
-        if (!mainList.isListOfLists()) {
-          // normalize for possible SparseArray expressions
-          IExpr temp = mainList.normal(false);
-          if (!temp.isListOfLists()) {
-            if (!quiet && temp.isAST()) {
-              IAST list = (IAST) temp;
-              for (int i = 0; i < list.size(); i++) {
-                if (list.get(i).isNumber()) {
-                  // `1` is expected to contain a list of lists of integers.
-                  return Errors.printMessage(S.Cycles, "intpoint", F.list(cycles), engine);
-                }
-              }
-            }
-            return F.NIL;
-          }
-          mainList = (IAST) temp;
-        }
 
-        IASTAppendable result = F.ListAlloc(mainList.argSize());
-        Set<IExpr> set = new HashSet<IExpr>();
-        for (int j = 1; j < mainList.size(); j++) {
-          IAST list = (IAST) mainList.get(j);
-          for (int i = 1; i < list.size(); i++) {
-            IExpr arg = list.get(i);
-            if (arg.isInteger()) {
-              if (!arg.isPositive()) {
-                if (!quiet) {
-                  // `1` contains integers that are not positive.
-                  Errors.printMessage(S.Cycles, "pospoint", F.list(cycles), engine);
-                }
-                return F.NIL;
-              }
-              if (set.contains(arg)) {
-                if (!quiet) {
-                  // `1` contains repeated integers.
-                  Errors.printMessage(S.Cycles, "reppoint", F.list(cycles), engine);
-                }
-                return F.NIL;
-              }
-              set.add(arg);
-            } else {
-              if (arg.isNumber()) {
-                if (!quiet) {
-                  // `1` is expected to contain a list of lists of integers.
-                  Errors.printMessage(S.Cycles, "intpoint", F.list(cycles), engine);
-                }
-                return F.NIL;
-              }
-
-              // symbolic args => return unevaluated
-              return F.NIL;
-            }
-          }
-
-          if (list.size() > 2) {
-            // drop empty and singleton cycles
-
-            // rotate cycle by rotateLeftPositions so that the smallest position is at index 1
-            int rotateLeftPositions = 0;
-            IInteger value = (IInteger) list.get(1);
-            for (int i = 1; i < list.size(); i++) {
-              IInteger arg = (IInteger) list.get(i);
-              if (value.isGT(arg)) {
-                value = arg;
-                rotateLeftPositions = i - 1;
-              }
-            }
-            if (rotateLeftPositions > 0) {
-              IASTAppendable newList = F.ListAlloc(list.size());
-              result.append(list.rotateLeft(newList, rotateLeftPositions));
-            } else {
-              result.append(list);
-            }
-          }
-        }
-
-        EvalAttributes.sort(result, Comparators.LEXICAL_COMPARATOR);
-        IAST resultCycles = F.Cycles(result);
-        resultCycles.setEvalFlags(IAST.BUILT_IN_EVALED);
-        // resultCycles.builtinEvaled();
-        return resultCycles;
-      }
-      if (!quiet) {
-        // `1` is expected to contain a list of lists of integers.
-        Errors.printMessage(S.Cycles, "intpoint", F.list(cycles), engine);
-      }
-      return F.NIL;
-    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -371,7 +265,7 @@ public final class Combinatoric {
         if (ast.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
           return F.NIL;
         }
-        IExpr temp = canonicalizeCycles(ast, false, engine);
+        IExpr temp = CombinatoricUtil.canonicalizeCycles(ast, false, engine);
         if (temp.equals(ast)) {
           ast.setEvalFlags(IAST.BUILT_IN_EVALED);
           return F.NIL;
@@ -1226,70 +1120,6 @@ public final class Combinatoric {
     }
   }
 
-
-  /**
-   * Iterate over the lists of all k-combinations from a given list
-   *
-   * <p>
-   * See <a href="http://en.wikipedia.org/wiki/Combination">Combination</a>
-   */
-  public static final class KSubsetsList implements Iterable<IAST> {
-
-    private class KSubsetsIterator implements Iterator<IAST> {
-
-      private final Iterator<int[]> fIterable;
-
-      private KSubsetsIterator() {
-        this.fIterable = new KSubsetsIterable(fList.size() - fOffset, fK).iterator();
-      }
-
-      @Override
-      public boolean hasNext() {
-        return fIterable.hasNext();
-      }
-
-      /**
-       * Get the index array for the next partition.
-       *
-       * @return <code>null</code> if no further index array could be generated
-       */
-      @Override
-      public IAST next() {
-        int j[] = fIterable.next();
-        if (j == null) {
-          return null;
-        }
-
-        IASTAppendable temp = fResultList.copyAppendable();
-        return temp.appendArgs(0, fK, i -> {
-          if (j.length > i && fList.size() > (j[i] + fOffset)) {
-            return fList.get(j[i] + fOffset);
-          }
-          return F.NIL;
-        });
-      }
-    }
-    private final IAST fList;
-    private final IAST fResultList;
-
-    private final int fOffset;
-
-    private final int fK;
-
-    private KSubsetsList(final IAST list, final int k, IAST resultList, final int offset) {
-      fList = list;
-      fK = k;
-      fResultList = resultList;
-      fOffset = offset;
-    }
-
-    @Override
-    public Iterator<IAST> iterator() {
-      return new KSubsetsIterator();
-    }
-  }
-
-
   /**
    *
    *
@@ -1405,7 +1235,7 @@ public final class Combinatoric {
         if (cycles.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
           return cycles;
         }
-        return checkCycles(cycles, false, engine);
+        return CombinatoricUtil.checkCycles(cycles, false, engine);
       }
 
       IExpr head = S.Cycles;
@@ -1468,7 +1298,7 @@ public final class Combinatoric {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST(S.Cycles, 2)) {
-        IAST cycles = checkCycles((IAST) arg1, true, engine);
+        IAST cycles = CombinatoricUtil.checkCycles((IAST) arg1, true, engine);
         return cycles.isPresent() ? S.True : S.False;
       }
       return S.False;
@@ -1520,26 +1350,6 @@ public final class Combinatoric {
    */
   private static final class PermutationList extends AbstractFunctionEvaluator {
 
-    /**
-     * Determine the permutations list length from the Cycles first argument.
-     *
-     * @param cyclesMainList first arg of Cycles
-     * @return
-     */
-    private static int determineLengthFromCycles(IAST cyclesMainList) {
-      int permutationsListLength = -1;
-      for (int j = 1; j < cyclesMainList.size(); j++) {
-        IAST list = (IAST) cyclesMainList.get(j);
-        for (int i = 1; i < list.size(); i++) {
-          int position = list.get(i).toIntDefault();
-          if (position > permutationsListLength) {
-            permutationsListLength = position;
-          }
-        }
-      }
-      return permutationsListLength;
-    }
-
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
@@ -1548,14 +1358,14 @@ public final class Combinatoric {
         if (arg1.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
           cycles = (IAST) arg1;
         } else {
-          cycles = checkCycles((IAST) arg1, false, engine);
+          cycles = CombinatoricUtil.checkCycles((IAST) arg1, false, engine);
         }
         if (cycles.isPresent()) {
           IAST cyclesList = (IAST) cycles.arg1();
           if (cyclesList.isEmptyList()) {
             return F.CEmptyList;
           }
-          int permutationsListLength = determineLengthFromCycles(cyclesList);
+          int permutationsListLength = CombinatoricUtil.determineLengthFromCycles(cyclesList);
           if (permutationsListLength < 1) {
             return F.NIL;
           }
@@ -1573,7 +1383,7 @@ public final class Combinatoric {
             }
           }
           IASTAppendable range = F.mapRange(1, permutationsListLength + 1, i -> F.ZZ(i));
-          return permutationReplace(range, cyclesList);
+          return CombinatoricUtil.permutationReplace(range, cyclesList);
         }
       }
       return F.NIL;
@@ -1678,9 +1488,9 @@ public final class Combinatoric {
    * <a href="PermutationListQ.md">PermutationListQ</a>, <a href="Permutations.md">Permutations</a>,
    * <a href="Permute.md">Permute</a>
    */
-  private static final class PermutationReplace extends AbstractFunctionEvaluator {
+  public static final class PermutationReplace extends AbstractFunctionEvaluator {
 
-    private static IInteger replaceSingleElement(IAST mainList, IInteger intArg1) {
+    public static IInteger replaceSingleElement(IAST mainList, IInteger intArg1) {
       IInteger result = intArg1;
       for (int j = 1; j < mainList.size(); j++) {
         IAST list = (IAST) mainList.get(j);
@@ -1712,7 +1522,7 @@ public final class Combinatoric {
         if (arg2.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
           cycles = (IAST) arg2;
         } else {
-          cycles = checkCycles((IAST) arg2, false, engine);
+          cycles = CombinatoricUtil.checkCycles((IAST) arg2, false, engine);
         }
         if (cycles.isPresent()) {
           IAST mainList = (IAST) cycles.arg1();
@@ -1724,7 +1534,7 @@ public final class Combinatoric {
             if (arg1.isListOfLists()) {
               return list1.mapThread(ast, 1);
             }
-            return permutationReplace(list1, mainList);
+            return CombinatoricUtil.permutationReplace(list1, mainList);
           }
 
           return F.NIL;
@@ -2026,7 +1836,7 @@ public final class Combinatoric {
           if (arg2.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
             cycles = (IAST) arg2;
           } else {
-            cycles = checkCycles((IAST) arg2, false, engine);
+            cycles = CombinatoricUtil.checkCycles((IAST) arg2, false, engine);
           }
           if (cycles.isPresent()) {
             IAST mainList = (IAST) cycles.arg1();
@@ -2480,7 +2290,7 @@ public final class Combinatoric {
           if (k > f.argSize()) {
             return F.CEmptyList;
           }
-          final KSubsetsList iter = subsets(f, k, F.ast(f.head()), 1);
+          final CombinatoricUtil.KSubsetsList iter = CombinatoricUtil.subsets(f, k, F.ast(f.head()), 1);
           for (IAST part : iter) {
             if (part == null) {
               break;
@@ -2821,48 +2631,8 @@ public final class Combinatoric {
     public void setUp(final ISymbol newSymbol) {}
   }
 
-
-  /**
-   * Check if cycles is a valid <code>Cycles({{...},{...},...})</code> , which contains disjoint
-   * permutation cycles represented by integer lists.
-   *
-   * @param cycles
-   * @param quiet if <code>true</code> suppress the output of error messages
-   * @param engine
-   * @return <code>F.NIL</code> if cycles is not a valid <code>Cycles({{...},{...},...})</code>
-   *         expression
-   */
-  public static IAST checkCycles(final IAST cycles, boolean quiet, EvalEngine engine) {
-    if (cycles.isAST(S.Cycles, 2)) {
-      return Cycles.canonicalizeCycles(cycles, quiet, engine);
-    }
-    return F.NIL;
-  }
-
-  public static KSubsetsList subsets(final IAST list, final int k, IAST resultList,
-      final int offset) {
-    return new KSubsetsList(list, k, resultList, offset);
-  }
-
   public static void initialize() {
     Initializer.init();
-  }
-
-  public static IExpr permutationReplace(IAST list1, IAST mainList) {
-    IASTMutable result = list1.copy();
-
-    boolean changed = false;
-    for (int i = 1; i < list1.size(); i++) {
-      IExpr arg = list1.get(i);
-      if (arg.isInteger()) {
-        IInteger element = PermutationReplace.replaceSingleElement(mainList, (IInteger) arg);
-        if (!element.equals(arg)) {
-          result.set(i, element);
-          changed = true;
-        }
-      }
-    }
-    return changed ? result : list1;
   }
 
   private Combinatoric() {}

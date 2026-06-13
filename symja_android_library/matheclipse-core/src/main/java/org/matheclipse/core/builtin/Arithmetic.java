@@ -2772,6 +2772,11 @@ public final class Arithmetic {
               F.Times(F.CN1, F.Log(F.Subtract(F.C1, x)), F.Log(x))), //
           F.Equal(F.Plus(F.CN1, y), F.Negate(x)));
 
+      // PolyLog(2,z) + PolyLog(2,-z) == (1/2)*PolyLog(2, z^2)
+      plusMatcher.definePatternHashRule(F.PolyLog(C2, x_), F.PolyLog(C2, y_), //
+          (F.Times(F.C1D2, F.PolyLog(F.C2, F.Sqr(x)))), //
+          F.Equal(F.Plus(x), F.Negate(y)));
+
       plusMatcher.definePatternHashRule(Power(Sin(x_), C2), Power(Cos(x_), C2), //
           C1);
       plusMatcher.definePatternHashRule(Power(F.Sech(x_), C2), Power(F.Tanh(x_), C2), //

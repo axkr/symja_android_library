@@ -41,7 +41,7 @@ public class GraphUtil {
     // 2. Compute Components using JGraphT
     if (jGraph.getType().isDirected()) {
       // For directed graphs, strongly connected components are computed.
-      // Wolfram specifies: "given in an order such that there are no edges from ci to ci+1".
+      // WMA specifies: "given in an order such that there are no edges from ci to ci+1".
       // This implies a Reverse Topological Sort (Sink components first).
       // KosarajuStrongConnectivityInspector returns components in Topological Order (Source to
       // Sink).

@@ -29,7 +29,7 @@ public class IrreduciblePolynomialQ extends AbstractFunctionOptionEvaluator {
     IAST variables = variablesSet.getVarList();
 
     // Constants are never irreducible polynomials (units / zero / non-unit integers all map to
-    // False, matching Wolfram behavior).
+    // False).
     if (variables.argSize() == 0) {
       return S.False;
     }
