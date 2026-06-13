@@ -4,28 +4,23 @@ import java.util.function.DoubleFunction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.PiecewiseUtil;
 import org.matheclipse.core.eval.exception.ArgumentTypeStopException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
-import org.matheclipse.core.eval.util.Assumptions;
-import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.visit.VisitorExpr;
 
 public class PiecewiseFunctions {
 
@@ -371,7 +366,6 @@ public class PiecewiseFunctions {
       S.DiscreteDelta.setEvaluator(new DiscreteDelta());
       S.KroneckerDelta.setEvaluator(new KroneckerDelta());
       S.Piecewise.setEvaluator(new Piecewise());
-      S.PiecewiseExpand.setEvaluator(new PiecewiseExpand());
       S.Ramp.setEvaluator(new Ramp());
       S.RealAbs.setEvaluator(new RealAbs());
       S.RealSign.setEvaluator(new RealSign());
@@ -646,71 +640,6 @@ public class PiecewiseFunctions {
       newSymbol.setAttributes(ISymbol.HOLDALL);
     }
   }
-  private static final class PiecewiseExpand extends AbstractFunctionEvaluator {
-    private static class PiecewiseExpandVisitor extends VisitorExpr {
-      // private final EvalEngine engine;
-      private final IBuiltInSymbol domain;
-
-      public PiecewiseExpandVisitor(IBuiltInSymbol domain) {
-        super();
-        // this.engine = engine;
-        this.domain = domain;
-      }
-
-      @Override
-      public IExpr visit(IASTMutable ast) {
-        IExpr expr = visitAST(ast).orElse(ast);
-        if (expr.isAST()) {
-          return PiecewiseUtil.piecewiseExpand((IAST) expr, domain)
-              .orElseGet(() -> visitAST((IAST) expr));
-        }
-        return F.NIL;
-      }
-    }
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (arg1.isAST()) {
-        IBuiltInSymbol domain = S.Complexes;
-        IAssumptions assumptions = null;
-        if (ast.isAST2()) {
-          IExpr arg2 = ast.arg2();
-          if (arg2.equals(S.Reals) || arg2.equals(S.Complexes)) {
-            domain = ((IBuiltInSymbol) arg2);
-          } else {
-            assumptions = Assumptions.getInstance(arg2);
-          }
-        } else if (ast.isAST3()) {
-          IExpr arg2 = ast.arg2();
-          IExpr arg3 = ast.arg3();
-          if (arg3.equals(S.Reals) || arg3.equals(S.Complexes)) {
-            domain = ((IBuiltInSymbol) arg3);
-          }
-          assumptions = Assumptions.getInstance(arg2);
-        }
-
-        PiecewiseExpandVisitor visitor = new PiecewiseExpandVisitor(domain);
-        IAssumptions oldAssumptions = engine.getAssumptions();
-        try {
-          if (assumptions != null) {
-            engine.setAssumptions(assumptions);
-          }
-          return arg1.accept(visitor).evaluateOrElse(engine, arg1);
-        } finally {
-          engine.setAssumptions(oldAssumptions);
-        }
-      }
-      return arg1;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_3;
-    }
-  }
-
-
   private static final class Ramp extends AbstractEvaluator {
 
     public Ramp() {}
