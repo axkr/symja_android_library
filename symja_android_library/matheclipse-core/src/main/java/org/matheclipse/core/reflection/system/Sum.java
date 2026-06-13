@@ -146,6 +146,16 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
   @Override
   public IExpr evaluate(IAST ast, EvalEngine engine) {
+    // Optional Method -> "Polynomial" | "Geometric" | "Gosper" as last argument forces one
+    // summation algorithm strictly.
+    String forcedMethod = null;
+    if (ast.argSize() >= 2 && ast.last().isRuleAST() && ast.last().first() == S.Method) {
+      forcedMethod = methodName(ast.last().second());
+      if (forcedMethod == null) {
+        return F.NIL;
+      }
+      ast = ast.removeAtCopy(ast.argSize());
+    }
     IExpr arg1 = ast.arg1();
     if (arg1.isAST()) {
       arg1 = F.expand(arg1, false, false, false);
@@ -154,10 +164,44 @@ public class Sum extends ListFunctions.Table implements SumRules {
       return arg1.mapThread(ast, 1);
     }
     IAST preevaledSum = engine.preevalForwardBackwardAST(ast, 1);
-    return evaluateSum(preevaledSum, engine);
+    return evaluateSum(preevaledSum, forcedMethod, engine);
+  }
+
+  /**
+   * Map a <code>Method-&gt;...</code> option value to one of the supported algorithm names
+   * <code>"Polynomial"</code>, <code>"Geometric"</code> or <code>"Gosper"</code>.
+   *
+   * @return the canonical method name or <code>null</code> if not recognized
+   */
+  private static String methodName(IExpr methodValue) {
+    String name = null;
+    if (methodValue.isString() || methodValue.isSymbol()) {
+      name = methodValue.toString();
+    }
+    if (name != null) {
+      if (name.equalsIgnoreCase("Polynomial")) {
+        return "Polynomial";
+      }
+      if (name.equalsIgnoreCase("Geometric")) {
+        return "Geometric";
+      }
+      if (name.equalsIgnoreCase("Gosper")) {
+        return "Gosper";
+      }
+    }
+    return null;
   }
 
   protected static IExpr evaluateSum(final IAST preevaledSum, EvalEngine engine) {
+    return evaluateSum(preevaledSum, null, engine);
+  }
+
+  protected static IExpr evaluateSum(final IAST preevaledSum, String forcedMethod,
+      EvalEngine engine) {
+    if (forcedMethod != null) {
+      // strictly use the requested algorithm and don't fall back to the heuristic rules
+      return forcedSummation(preevaledSum, forcedMethod, engine);
+    }
     if (preevaledSum.size() > 2) {
       try {
         IExpr lastArg = preevaledSum.last();
@@ -263,6 +307,11 @@ public class Sum extends ListFunctions.Table implements SumRules {
                 temp = definiteSumInfinity(arg1, iterator, (IAST) lastArg, engine);
               } else {
                 temp = definiteSum(arg1, iterator, (IAST) lastArg, engine);
+                if (temp.isNIL()) {
+                  // Polynomial -> Geometric -> Gosper algorithm cascade
+                  temp = summationByMethod(arg1, iterator.getVariable(),
+                      iterator.getLowerLimit(), iterator.getUpperLimit(), null, engine);
+                }
               }
               if (temp.isPresent()) {
                 if (preevaledSum.isAST2()) {
@@ -277,6 +326,10 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
         } else if (lastArg.isSymbol()) {
           temp = indefiniteSum(arg1, (ISymbol) lastArg);
+          if (temp.isNIL()) {
+            // Polynomial -> Geometric -> Gosper algorithm cascade for the indefinite sum
+            temp = summationByMethod(arg1, (ISymbol) lastArg, F.NIL, F.NIL, null, engine);
+          }
           if (temp.isPresent()) {
             if (preevaledSum.isAST2()) {
               return temp;
@@ -575,6 +628,525 @@ public class Sum extends ListFunctions.Table implements SumRules {
     IExpr term2 =
         F.Times(F.Divide(1, pInc1), F.Subtract(F.BernoulliB(pInc1, from), F.BernoulliB(pInc1)));
     return F.Subtract(term1, term2);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Indefinite/symbolic summation engine: Polynomial -> Geometric -> Gosper
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Strictly evaluate a single-iterator or indefinite <code>Sum</code> with a forced algorithm
+   * (<code>Method-&gt;"Polynomial" | "Geometric" | "Gosper"</code>).
+   */
+  private static IExpr forcedSummation(IAST sum, String method, EvalEngine engine) {
+    if (!sum.isAST2()) {
+      return F.NIL;
+    }
+    IExpr term = sum.arg1();
+    IExpr spec = sum.arg2();
+    if (spec.isSymbol() && spec.isVariable()) {
+      return summationByMethod(term, (ISymbol) spec, F.NIL, F.NIL, method, engine);
+    }
+    IAST list = spec.makeList();
+    if (list.isAST1() && list.arg1().isVariable()) {
+      return summationByMethod(term, (ISymbol) list.arg1(), F.NIL, F.NIL, method, engine);
+    }
+    if (list.size() >= 3 && list.arg1().isVariable()) {
+      ISymbol var = (ISymbol) list.arg1();
+      IExpr from;
+      IExpr to;
+      if (list.isAST2()) {
+        from = F.C1;
+        to = list.arg2();
+      } else if (list.isAST3()) {
+        from = list.arg2();
+        to = list.arg3();
+      } else {
+        return F.NIL;
+      }
+      if (to.isDirectedInfinity()) {
+        return F.NIL;
+      }
+      return summationByMethod(term, var, from, to, method, engine);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Compute an indefinite (<code>to.isNIL()</code>) or definite symbolic sum by computing the
+   * antidifference <code>T</code> of <code>term</code> (so that <code>T(var+1)-T(var) == term</code>
+   * ) via the cascade <code>Polynomial -&gt; Geometric -&gt; Gosper</code> and verifying it.
+   *
+   * @param term the summand
+   * @param var the summation variable
+   * @param from lower limit for the definite case (or <code>F.NIL</code>)
+   * @param to upper limit for the definite case (or <code>F.NIL</code> for the indefinite sum)
+   * @param forcedMethod one of <code>"Polynomial"</code>, <code>"Geometric"</code>,
+   *        <code>"Gosper"</code> or <code>null</code> to run the full cascade
+   * @return the closed form or <code>F.NIL</code>
+   */
+  private static IExpr summationByMethod(IExpr term, ISymbol var, IExpr from, IExpr to,
+      String forcedMethod, EvalEngine engine) {
+    if (term.isFree(var, true)) {
+      return F.NIL;
+    }
+    IExpr antidiff = F.NIL;
+    if (forcedMethod == null || forcedMethod.equals("Polynomial")) {
+      antidiff = polynomialAntidifference(term, var, engine);
+    }
+    if (antidiff.isNIL() && (forcedMethod == null || forcedMethod.equals("Geometric"))) {
+      antidiff = geometricAntidifference(term, var, engine);
+    }
+    if (antidiff.isNIL() && (forcedMethod == null || forcedMethod.equals("Gosper"))) {
+      antidiff = gosperAntidifference(term, var, engine);
+    }
+    if (antidiff.isNIL()) {
+      return F.NIL;
+    }
+    if (!verifyAntidifference(antidiff, term, var, engine)) {
+      return F.NIL;
+    }
+    if (to.isNIL()) {
+      return antidiff;
+    }
+    IExpr upper = F.xreplace(antidiff, var, F.Plus(to, F.C1));
+    IExpr lower = F.xreplace(antidiff, var, from);
+    return engine.evaluate(F.Subtract(upper, lower));
+  }
+
+  /**
+   * Check that <code>antidiff(var+1) - antidiff(var) == term</code>, i.e. that
+   * {@code DifferenceDelta} of the antidifference returns the summand (left inverse property). A
+   * symbolic <code>Simplify</code> is tried first; if that does not close to zero (e.g.
+   * <code>(q1*q2)^i</code> vs. <code>q1^i*q2^i</code>) the identity is confirmed by numeric sampling.
+   */
+  private static boolean verifyAntidifference(IExpr antidiff, IExpr term, ISymbol var,
+      EvalEngine engine) {
+    try {
+      IExpr shifted = F.xreplace(antidiff, var, F.Plus(var, F.C1));
+      IExpr residual = F.Subtract(F.Subtract(shifted, antidiff), term);
+      if (engine.evaluate(F.Simplify(residual)).isZero()) {
+        return true;
+      }
+      return numericallyZero(residual, var, engine);
+    } catch (RuntimeException rex) {
+      return false;
+    }
+  }
+
+  /**
+   * Confirm that <code>residual</code> vanishes by evaluating it at several integer points for
+   * <code>var</code> with the remaining free symbols set to distinct primes.
+   */
+  private static boolean numericallyZero(IExpr residual, ISymbol var, EvalEngine engine) {
+    IAST variables = new VariablesSet(residual).getVarList();
+    int[] primes = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29};
+    int[] varPoints = {5, 6, 7};
+    int verified = 0;
+    for (int varValue : varPoints) {
+      IASTAppendable rules = F.ListAlloc(variables.size());
+      rules.append(F.Rule(var, F.ZZ(varValue)));
+      int p = 0;
+      boolean ok = true;
+      for (IExpr v : variables) {
+        if (v.equals(var)) {
+          continue;
+        }
+        if (p >= primes.length) {
+          ok = false;
+          break;
+        }
+        rules.append(F.Rule(v, F.ZZ(primes[p++])));
+      }
+      if (!ok) {
+        continue;
+      }
+      IExpr value = engine.evaluate(F.ReplaceAll(residual, rules));
+      if (!value.isNumber()) {
+        value = engine.evaluate(F.Chop(F.N(value)));
+      }
+      if (value.isNumber()) {
+        if (value.isZero()) {
+          verified++;
+        } else {
+          return false;
+        }
+      }
+    }
+    return verified > 0;
+  }
+
+  /**
+   * Polynomial antidifference using Newton forward differences in the falling-factorial basis (no
+   * Bernoulli numbers). For a polynomial <code>p(var)</code> of degree <code>d</code> the
+   * antidifference is <code>Sum_{m=0..d} (Delta^m p)(0)/(m+1) * FactorialPower(var, m+1)</code>.
+   */
+  private static IExpr polynomialAntidifference(IExpr term, ISymbol var, EvalEngine engine) {
+    if (!engine.evalTrue(F.PolynomialQ(term, var))) {
+      return F.NIL;
+    }
+    int d = degreeOf(term, var, engine);
+    if (d < 0) {
+      return F.NIL;
+    }
+    IASTAppendable result = F.PlusAlloc(d + 2);
+    for (int m = 0; m <= d; m++) {
+      // forward difference Delta^m p at 0 : Sum_{j=0..m} (-1)^(m-j) Binomial(m,j) p(j)
+      IASTAppendable cm = F.PlusAlloc(m + 1);
+      for (int j = 0; j <= m; j++) {
+        IExpr pj = F.xreplace(term, var, F.ZZ(j));
+        cm.append(F.Times(F.Power(F.CN1, F.ZZ(m - j)), F.Binomial(F.ZZ(m), F.ZZ(j)), pj));
+      }
+      IExpr cmValue = engine.evaluate(cm);
+      if (cmValue.isZero()) {
+        continue;
+      }
+      result.append(F.Times(F.Times(cmValue, F.Power(F.ZZ(m + 1), F.CN1)),
+          F.FactorialPower(var, F.ZZ(m + 1))));
+    }
+    return engine.evaluate(result);
+  }
+
+  /**
+   * Antidifference of <code>p(var) * r^var</code> with polynomial <code>p</code> and <code>r</code>
+   * free of <code>var</code> (the bases of several <code>r^var</code> factors are combined). The
+   * antidifference <code>q(var) r^var</code> is found from <code>r*q(var+1) - q(var) == p(var)</code>
+   * by undetermined coefficients.
+   */
+  private static IExpr geometricAntidifference(IExpr term, ISymbol var, EvalEngine engine) {
+    try {
+      IAST factors = term.isTimes() ? (IAST) term : F.Times(term);
+      IExpr rho = F.C1;
+      IASTAppendable polyFactors = F.TimesAlloc(factors.size());
+      for (IExpr f : factors) {
+        if (f.isPower()) {
+          IExpr base = f.base();
+          IExpr expo = f.exponent();
+          if (base.isFree(var, true)) {
+            IExpr[] lin = expo.linear(var);
+            if (lin != null && !lin[1].isZero()) {
+              rho = F.Times(rho, F.Power(base, lin[1]));
+              polyFactors.append(F.Power(base, lin[0]));
+              continue;
+            }
+          }
+        }
+        if (f.isFree(var, true)) {
+          polyFactors.append(f);
+          continue;
+        }
+        if (engine.evalTrue(F.PolynomialQ(f, var))) {
+          polyFactors.append(f);
+          continue;
+        }
+        return F.NIL;
+      }
+      rho = engine.evaluate(rho);
+      if (rho.isOne()) {
+        // pure polynomial -> handled by the Polynomial method
+        return F.NIL;
+      }
+      IExpr p = engine.evaluate(polyFactors);
+      if (!engine.evalTrue(F.PolynomialQ(p, var))) {
+        return F.NIL;
+      }
+      int d = degreeOf(p, var, engine);
+      if (d < 0) {
+        return F.NIL;
+      }
+      ISymbol[] coeff = new ISymbol[d + 1];
+      IASTAppendable q = F.PlusAlloc(d + 1);
+      IASTAppendable unknowns = F.ListAlloc(d + 1);
+      for (int j = 0; j <= d; j++) {
+        coeff[j] = F.Dummy("geo$" + j);
+        q.append(F.Times(coeff[j], F.Power(var, F.ZZ(j))));
+        unknowns.append(coeff[j]);
+      }
+      IExpr qVar = q;
+      IExpr qShift = F.xreplace(qVar, var, F.Plus(var, F.C1));
+      IExpr equation = F.Subtract(F.Subtract(F.Times(rho, qShift), qVar), p);
+      IExpr solution = solveForUnknowns(equation, var, unknowns, engine);
+      if (solution.isNIL()) {
+        return F.NIL;
+      }
+      IExpr qSolved = substituteAndZero(qVar, solution, coeff, engine);
+      return engine.evaluate(F.Times(qSolved, F.Power(rho, var)));
+    } catch (RuntimeException rex) {
+      return F.NIL;
+    }
+  }
+
+  /**
+   * Gosper's algorithm for indefinite summation of a hypergeometric term: term-ratio rationality
+   * test, Gosper&ndash;Petkov&scaron;ek normal form via dispersion (resultant) and gcd peeling, and
+   * the degree-bounded key equation solved by undetermined coefficients. Returns
+   * <code>T = (b(var-1)/c(var)) * x(var) * term</code> with <code>T(var+1)-T(var) == term</code>.
+   */
+  private static IExpr gosperAntidifference(IExpr term, ISymbol var, EvalEngine engine) {
+    try {
+      if (term.isZero()) {
+        return F.C0;
+      }
+      // term-ratio test: compute t(var+1)/t(var) deterministically per factor so that
+      // factorial/polynomial-power ratios reduce exactly to rational functions of var
+      IExpr[] ratioND = hypergeometricRatio(term, var, engine);
+      if (ratioND == null) {
+        return F.NIL;
+      }
+      // Gosper-Petkovsek normal form: ratio = (a(var)/b(var)) * c(var+1)/c(var)
+      IExpr a = ratioND[0];
+      IExpr b = ratioND[1];
+      IExpr c = F.C1;
+      ISymbol h = F.Dummy("gosH");
+      IExpr bShiftH = F.xreplace(b, var, F.Plus(var, h));
+      IExpr resultant = engine.evaluate(F.Resultant(a, bShiftH, var));
+      for (int j : nonNegativeIntegerRoots(resultant, h, engine)) {
+        while (true) {
+          IExpr bShiftJ = F.xreplace(b, var, F.Plus(var, F.ZZ(j)));
+          IExpr g = engine.evaluate(F.PolynomialGCD(a, bShiftJ));
+          if (degreeOf(g, var, engine) <= 0) {
+            break;
+          }
+          a = engine.evaluate(F.PolynomialQuotient(a, g, var));
+          IExpr gShiftMinusJ = F.xreplace(g, var, F.Subtract(var, F.ZZ(j)));
+          b = engine.evaluate(F.PolynomialQuotient(b, gShiftMinusJ, var));
+          IASTAppendable prod = F.TimesAlloc(j + 1);
+          prod.append(c);
+          for (int i = 1; i <= j; i++) {
+            prod.append(F.xreplace(g, var, F.Subtract(var, F.ZZ(i))));
+          }
+          c = engine.evaluate(prod);
+        }
+      }
+      // key equation: a(var) x(var+1) - b(var-1) x(var) = c(var)
+      IExpr bShiftM1 = engine.evaluate(F.xreplace(b, var, F.Subtract(var, F.C1)));
+      int maxDeg = Math.max(Math.max(degreeOf(a, var, engine), degreeOf(b, var, engine)),
+          degreeOf(c, var, engine)) + 2;
+      if (maxDeg > 24) {
+        maxDeg = 24;
+      }
+      for (int n = 0; n <= maxDeg; n++) {
+        ISymbol[] coeff = new ISymbol[n + 1];
+        IASTAppendable xpoly = F.PlusAlloc(n + 1);
+        IASTAppendable unknowns = F.ListAlloc(n + 1);
+        for (int j = 0; j <= n; j++) {
+          coeff[j] = F.Dummy("gosX$" + j);
+          xpoly.append(F.Times(coeff[j], F.Power(var, F.ZZ(j))));
+          unknowns.append(coeff[j]);
+        }
+        IExpr xVar = xpoly;
+        IExpr xShift = F.xreplace(xVar, var, F.Plus(var, F.C1));
+        IExpr equation =
+            F.Subtract(F.Subtract(F.Times(a, xShift), F.Times(bShiftM1, xVar)), c);
+        IExpr solution = solveForUnknowns(equation, var, unknowns, engine);
+        if (solution.isNIL()) {
+          continue;
+        }
+        IExpr xSolved = substituteAndZero(xVar, solution, coeff, engine);
+        if (xSolved.isZero()) {
+          continue;
+        }
+        return engine.evaluate(
+            F.Together(F.Times(bShiftM1, xSolved, F.Power(c, F.CN1), term)));
+      }
+      return F.NIL;
+    } catch (RuntimeException rex) {
+      return F.NIL;
+    }
+  }
+
+  /**
+   * The term ratio <code>t(var+1)/t(var)</code> of a hypergeometric term as numerator/denominator
+   * polynomials <code>{num, den}</code> in <code>var</code>, or <code>null</code> if the term is not
+   * hypergeometric. The ratio is built factor-by-factor so that <code>Factorial</code> and
+   * polynomial-power factors reduce exactly to rational functions.
+   */
+  private static IExpr[] hypergeometricRatio(IExpr term, ISymbol var, EvalEngine engine) {
+    IAST factors = term.isTimes() ? (IAST) term : F.Times(term);
+    IExpr ratio = F.C1;
+    for (IExpr f : factors) {
+      IExpr factorRatio = factorRatio(f, var, engine);
+      if (factorRatio == null) {
+        return null;
+      }
+      ratio = F.Times(ratio, factorRatio);
+    }
+    ratio = engine.evaluate(F.Together(ratio));
+    IExpr num = engine.evaluate(F.Cancel(F.Numerator(ratio)));
+    IExpr den = engine.evaluate(F.Cancel(F.Denominator(ratio)));
+    if (den.isZero() || !engine.evalTrue(F.PolynomialQ(num, var))
+        || !engine.evalTrue(F.PolynomialQ(den, var))) {
+      return null;
+    }
+    return new IExpr[] {num, den};
+  }
+
+  /** The ratio <code>f(var+1)/f(var)</code> of a single factor, or <code>null</code>. */
+  private static IExpr factorRatio(IExpr f, ISymbol var, EvalEngine engine) {
+    if (f.isFree(var, true)) {
+      return F.C1;
+    }
+    if (f.isAST(S.Factorial, 2)) {
+      IExpr arg = f.first();
+      IExpr[] lin = arg.linear(var);
+      if (lin != null) {
+        int a = lin[1].toIntDefault();
+        if (a >= 1 && a <= 8) {
+          // (M+a)!/M! = (M+1)(M+2)...(M+a) with M = arg
+          IASTAppendable prod = F.TimesAlloc(a);
+          for (int i = 1; i <= a; i++) {
+            prod.append(F.Plus(arg, F.ZZ(i)));
+          }
+          return engine.evaluate(prod);
+        }
+      }
+      return null;
+    }
+    if (f.isPower()) {
+      IExpr base = f.base();
+      IExpr expo = f.exponent();
+      if (base.isFree(var, true)) {
+        IExpr[] lin = expo.linear(var);
+        if (lin != null && !lin[1].isZero()) {
+          return engine.evaluate(F.Power(base, lin[1]));
+        }
+        return null;
+      }
+      if (expo.isInteger() && engine.evalTrue(F.PolynomialQ(base, var))) {
+        IExpr baseShift = F.xreplace(base, var, F.Plus(var, F.C1));
+        return engine.evaluate(F.Power(F.Divide(baseShift, base), expo));
+      }
+      return null;
+    }
+    if (engine.evalTrue(F.PolynomialQ(f, var))) {
+      IExpr fShift = F.xreplace(f, var, F.Plus(var, F.C1));
+      return engine.evaluate(F.Divide(fShift, f));
+    }
+    // generic fallback for other hypergeometric factors
+    IExpr fShift = F.xreplace(f, var, F.Plus(var, F.C1));
+    IExpr r = engine.evaluate(F.Together(F.Simplify(F.Divide(fShift, f))));
+    IExpr rn = engine.evaluate(F.Cancel(F.Numerator(r)));
+    IExpr rd = engine.evaluate(F.Cancel(F.Denominator(r)));
+    if (engine.evalTrue(F.PolynomialQ(rn, var)) && engine.evalTrue(F.PolynomialQ(rd, var))) {
+      return r;
+    }
+    return null;
+  }
+
+  /**
+   * Solve the polynomial identity <code>equation(var) == 0</code> (which must hold for all
+   * <code>var</code>) for the given <code>unknowns</code>. The {@link SolveAlways} builtin is used
+   * first; if it solves for free parameters of the summand instead of the requested coefficients the
+   * method falls back to an explicit linear system on the coefficients of <code>var</code>. Returns
+   * the first solution (a list of rules) or <code>F.NIL</code>.
+   */
+  private static IExpr solveForUnknowns(IExpr equation, ISymbol var, IAST unknowns,
+      EvalEngine engine) {
+    IExpr expanded = engine.evaluate(F.Expand(equation));
+
+    // 1) SolveAlways(equation == 0, var): values of the parameters making the identity hold for all
+    // values of var.
+    IExpr solveAlways = engine.evaluate(solveAlways(F.Equal(expanded, F.C0), var));
+    if (solveAlways.isList() && solveAlways.size() >= 2 && solveAlways.first().isList()
+        && rulesCover(solveAlways.first(), unknowns)) {
+      return solveAlways.first();
+    }
+
+    // 2) Fallback: set every coefficient of var to zero and solve the linear system for the
+    // unknowns explicitly (keeps free summand parameters symbolic).
+    IExpr coefficients = engine.evaluate(F.CoefficientList(expanded, var));
+    if (!coefficients.isList()) {
+      return F.NIL;
+    }
+    IAST coeffList = (IAST) coefficients;
+    IASTAppendable equations = F.ListAlloc(coeffList.argSize());
+    for (IExpr cf : coeffList) {
+      equations.append(F.Equal(cf, F.C0));
+    }
+    IExpr solutions = engine.evaluate(F.Solve(equations, unknowns));
+    if (solutions.isList() && solutions.size() >= 2 && solutions.first().isList()) {
+      return solutions.first();
+    }
+    return F.NIL;
+  }
+
+  /** Build a <code>SolveAlways(equation, var)</code> expression. */
+  private static IExpr solveAlways(IExpr equation, ISymbol var) {
+    IASTAppendable ast = F.ast(S.SolveAlways);
+    ast.append(equation);
+    ast.append(var);
+    return ast;
+  }
+
+  /** Check that the solution <code>ruleList</code> contains a rule for every requested unknown. */
+  private static boolean rulesCover(IExpr ruleList, IAST unknowns) {
+    if (!ruleList.isList()) {
+      return false;
+    }
+    for (IExpr unknown : unknowns) {
+      boolean found = false;
+      for (IExpr rule : (IAST) ruleList) {
+        if (rule.isRuleAST() && rule.first().equals(unknown)) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Apply a solution rule list to <code>template</code>, then set any still unresolved
+   * <code>unknowns</code> to zero (the homogeneous freedom).
+   */
+  private static IExpr substituteAndZero(IExpr template, IExpr solution, ISymbol[] unknowns,
+      EvalEngine engine) {
+    IExpr substituted = engine.evaluate(F.ReplaceAll(template, solution));
+    IASTAppendable zeroRules = F.ListAlloc(unknowns.length);
+    for (ISymbol unknown : unknowns) {
+      zeroRules.append(F.Rule(unknown, F.C0));
+    }
+    return engine.evaluate(F.ReplaceAll(substituted, zeroRules));
+  }
+
+  /**
+   * The (integer) degree of <code>poly</code> in <code>var</code> or a negative number if it cannot
+   * be determined.
+   */
+  private static int degreeOf(IExpr poly, ISymbol var, EvalEngine engine) {
+    int d = engine.evaluate(F.Exponent(poly, var)).toIntDefault();
+    return d == Integer.MIN_VALUE ? -1 : d;
+  }
+
+  /**
+   * Non-negative integer roots <code>j</code> (descending, always including <code>0</code>) of the
+   * dispersion polynomial <code>poly(h)</code>.
+   */
+  private static int[] nonNegativeIntegerRoots(IExpr poly, ISymbol h, EvalEngine engine) {
+    java.util.TreeSet<Integer> roots = new java.util.TreeSet<>();
+    roots.add(0);
+    if (!poly.isZero() && !poly.isFree(h, true)) {
+      IExpr solutions = engine.evaluate(F.Solve(F.Equal(poly, F.C0), h));
+      if (solutions.isList()) {
+        for (IExpr s : (IAST) solutions) {
+          if (s.isList() && s.size() >= 2 && s.first().isRuleAST()) {
+            int value = engine.evaluate(s.first().second()).toIntDefault();
+            if (value != Integer.MIN_VALUE && value >= 0) {
+              roots.add(value);
+            }
+          }
+        }
+      }
+    }
+    int[] result = new int[roots.size()];
+    int index = 0;
+    for (Integer value : roots.descendingSet()) {
+      result[index++] = value;
+    }
+    return result;
   }
 
   /** Evaluate built-in rules and define Attributes for a function. */
