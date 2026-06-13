@@ -72,6 +72,14 @@ public class Minimize extends AbstractFunctionEvaluator {
       }
     }
     if (x.isSymbol() || (x.isAST() && !x.isList())) {
+      if (function.isList2()) {
+        // single variable with a constraint: optimize over the feasible real interval
+        IExpr result = Maximize.univariateConstrainedExtremum(head, function.first(),
+            function.second(), x, false, engine);
+        if (result.isPresent()) {
+          return result;
+        }
+      }
       return minimize(head, function, x, engine);
     }
     return F.NIL;
@@ -79,7 +87,7 @@ public class Minimize extends AbstractFunctionEvaluator {
 
   @Override
   public int[] expectedArgSize(IAST ast) {
-    return ARGS_2_2;
+    return ARGS_2_3;
   }
 
   @Override
@@ -202,6 +210,11 @@ public class Minimize extends AbstractFunctionEvaluator {
 
   public static final IExpr minimize(ISymbol head, IExpr function, IExpr x, EvalEngine engine) {
     try {
+      // bounded linear-trigonometric objective (a*Sin(x) + b*Cos(x) + c)
+      IExpr trig = Maximize.linearTrigExtremum(function, x, false, engine);
+      if (trig.isPresent()) {
+        return trig;
+      }
       IExpr temp = minimizeExprPolynomial(function, F.list(x));
       if (temp.isPresent()) {
         return temp;
