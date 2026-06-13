@@ -40,6 +40,7 @@ import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.KryoUtil;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.PowerTimesFunction;
+import org.matheclipse.core.integrate.RationalIntegration;
 import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -489,6 +490,20 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         if (tempExp.isPresent()) {
           return tempExp;
         }
+        if (Config.INTEGRATE_ALGORITHMS) {
+          /// Stage 1: native rational function integration
+          // (Horowitz-Ostrogradsky / Trager-style logarithmic part)
+          result = RationalIntegration.integrate(fx, x, engine);
+          if (result.isPresent()) {
+            return result;
+          }
+
+          // Stage 2: fast CRC-style integral table lookup
+          // result = IntegralTable.integrate(fx, x, engine);
+          // if (result.isPresent()) {
+          // return result;
+          // }
+        }
         result = integrateByRubiRules(fx, x, ast, engine);
         if (result.isPresent()) {
           return F.subst(result, f -> {
@@ -505,10 +520,31 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           });
         }
 
+        // if (Config.INTEGRATE_ALGORITHMS) {
+        // // Stage 3: substitution t = (a+b*x)^(1/n) for radicals of a linear function
+        // result = RadicalSubstitution.integrate(fx, x, engine);
+        // if (result.isPresent()) {
+        // return result;
+        // }
+        // // Stage 4: derivative-divides (Geddes) heuristic
+        // result = DerivativeDivides.integrate(fx, x, engine);
+        // if (result.isPresent()) {
+        // return result;
+        // }
+        // }
+
         result = callRestIntegrate(fx, x, engine);
         if (result.isPresent()) {
           return result;
         }
+
+        // if (Config.INTEGRATE_ALGORITHMS) {
+        // // Stage 5: heuristic Risch-Norman ("parallel Risch") as a last resort
+        // result = RischNorman.integrate(fx, x, engine);
+        // if (result.isPresent()) {
+        // return result;
+        // }
+        // }
 
         // // RootSum fallback for 1/p(x), irreducible degree >= 5 ---
         // IExpr rootSumResult = integrateOneOverPoly(fx, x, engine);
@@ -1061,7 +1097,17 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         return F.Divide(F.Subtract(F.Numerator(upperLimit), F.Numerator(lowerLimit)), bDenominator);
       }
     }
-    return F.Subtract(upperLimit, lowerLimit);
+    IExpr difference = engine.evaluate(F.Subtract(upperLimit, lowerLimit));
+    // distribute constant factors over sums
+    // 2*(2-2*Log(2)+Log(2)^2) -> 4-4*Log(2)+2*Log(2)^2
+    for (int i = 0; i < 3; i++) {
+      IExpr expanded = F.expand(difference, false, true, true);
+      if (expanded.equals(difference)) {
+        break;
+      }
+      difference = engine.evaluate(expanded);
+    }
+    return difference;
   }
 
   private static IExpr callRestIntegrate(IAST arg1, final IExpr x, final EvalEngine engine) {

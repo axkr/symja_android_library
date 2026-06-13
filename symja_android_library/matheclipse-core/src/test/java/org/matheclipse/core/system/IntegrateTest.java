@@ -1,7 +1,7 @@
 package org.matheclipse.core.system;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.BuiltinFunctionCalls;
 import org.matheclipse.core.expression.S;
@@ -9,7 +9,7 @@ import org.matheclipse.core.expression.S;
 public class IntegrateTest extends ExprEvaluatorTestCase {
   /** The JUnit setup method */
   @Override
-  @Before
+  @BeforeEach
   public void setUp() {
     super.setUp();
     try {
@@ -25,18 +25,20 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Integrate(1/(x^3+1), {x,0,1})", //
         "Pi/(3*Sqrt(3))+Log(2)/3");
     check("Integrate(1/(x^3+1), x)", //
-        "ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)+Log(1+x)/3-Log(1-x+x^2)/6");
+        "ArcTan((2*(-1/2+x))/Sqrt(3))/Sqrt(3)+Log(1+x)/3-Log(1-x+x^2)/6");
     check("Integrate(x^4+x^2+1, {x,1,3})", //
         "886/15");
     check("Integrate(a*x^2 + b*x + c, {x,-2,2})", //
         "16/3*a+4*c");
+    check("Integrate((4*x^2-7*x- 12)/((x+2)*(x-3)), x)", //
+        "4*x+3/5*Log(3-x)-18/5*Log(2+x)");
     check("Integrate((4*x^2-7*x- 12)/((x+2)*(x-3)), {x, -1, 2})", //
         "12-21/5*Log(4)");
     check("Integrate(1/((2 + x^2)*Sqrt(4 + 3*x^2)),x)", //
-        "ArcTanh(x/Sqrt(4+3*x^2))/2");
+        "Log(1+x/Sqrt(4+3*x^2))/4-Log(1-x/Sqrt(4+3*x^2))/4");
     // same as ArcCosh(Sqrt(3/2))
     check("Integrate(1/((2 + x^2)*Sqrt(4 + 3*x^2)), {x, -Infinity, Infinity})", //
-        "ArcTanh(1/Sqrt(3))");
+        "-Log(1-1/Sqrt(3))/2+Log(1+1/Sqrt(3))/2");
     check("Integrate((1 + x^3)*x^(1/3), {x, -1, 1})", //
         "51/52+27/52*(-1)^(1/3)");
     if (Config.PROFILE_MODE) {
@@ -71,8 +73,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Limit(x/Sqrt(1-x^2),x->1)", //
         "Indeterminate");
     check("Integrate(x*(1/2*Pi-ArcSin(x)),x)", //
-        "1/4*x^2*(Pi-2*ArcSin(x))+1/4*(-1+x^2)*(x/Sqrt(1-x^2)-ArcTan(x/Sqrt(1-x^2))+(-x^2*ArcTan(x/Sqrt(\n" //
-            + "1-x^2)))/(1-x^2))");
+        "-1/4*x*Sqrt(1-x^2)+1/4*x^2*(Pi-2*ArcSin(x))+ArcTan(x/Sqrt(1-x^2))/4");
   }
 
   @Test
@@ -155,7 +156,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "(x^(1+n)*ArcTanh(m*x))/(1+n)+(-m*x^(2+n)*Hypergeometric2F1(1,1/2*(2+n),1/2*(4+n),m^\n"
             + "2*x^2))/(2+3*n+n^2)");
     check("Integrate(x*ArcTanh(3*x),{x,0,1})", //
-        "1/6*(1/9*(9-3*ArcTanh(3))+3*ArcTanh(3))");
+        "1/6+4/9*ArcTanh(3)");
   }
 
   @Test
@@ -271,6 +272,8 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     // "1/3)+b^(1/3))+3*b*Log(a-a^(2/3)*b^(1/3)-a^(1/3)*b^(2/3)+b)");
 
     // see github #120
+    check("Integrate(Ln(x)^2, x)", //
+        "2*x-2*x*Log(x)+x*Log(x)^2");
     check("Integrate(Ln(x)^2, {x,0,2})", //
         "4-4*Log(2)+2*Log(2)^2");
     checkNumeric("Integrate(Ln(x)^2, {x,0,2}) // N", //
@@ -281,7 +284,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     // see github #116
     // should give (2*ArcTan((1 + 2*x)/Sqrt(3)))/Sqrt(3)
     check(" Integrate(1/(x^2+x+1),x) ", //
-        "(2*ArcTan((1+2*x)/Sqrt(3)))/Sqrt(3)");
+        "(2*ArcTan((2*(1/2+x))/Sqrt(3)))/Sqrt(3)");
 
     // see github #109
     check("Int(1/Sqrt(9*x^4+1),{x,0,999})//N", //
@@ -434,7 +437,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   @Test
   public void testSystem171a() {
     check("Integrate(1/(x^5+x-7),x)", //
-        "Integrate(1/(-7+x+x^5),x)");
+        "RootSum(#1^5+#1-7&,Log(x-#1)/(5*#1^4+1)&)");
 
     check("Rubi`PolyQ(x/(2*Sqrt(2)),x,1)", //
         "True");
@@ -460,7 +463,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "x/(1+x^3)");
 
     check("Integrate(x/(x^3+1),x)", //
-        "ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)-Log(1+x)/3+Log(1-x+x^2)/6");
+        "ArcTan((2*(-1/2+x))/Sqrt(3))/Sqrt(3)-Log(1+x)/3+Log(1-x+x^2)/6");
     // check("Simplify(D(ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1),x))",
     // "x*(x^3+1)^(-1)");
     check("Integrate(x*Log(x),x)", //
@@ -494,7 +497,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("Apart(1/(x^3+1))", //
         "1/(3*(1+x))+(2-x)/(3*(1-x+x^2))");
     check("Integrate(1/(x^5+x-7),x)", //
-        "Integrate(1/(-7+x+x^5),x)");
+        "RootSum(#1^5+#1-7&,Log(x-#1)/(5*#1^4+1)&)");
     check("Integrate(1/(x-2),x)", //
         "Log(2-x)");
     check("Integrate((x-2)^(-2),x)", //
@@ -516,7 +519,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     // check("Simplify(Integrate(1/3*(2-x)*(x^2-x+1)^(-1),x))",
     // "ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)-1/6*Log(x^2-x+1)");
     check("Integrate(1/3*(2-x)*(x^2-x+1)^(-1)+1/3*(x+1)^(-1),x)", //
-        "ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)+Log(1+x)/3-Log(1-x+x^2)/6");
+        "ArcTan((2*(-1/2+x))/Sqrt(3))/Sqrt(3)+Log(1+x)/3-Log(1-x+x^2)/6");
     check("Integrate(E^x*(2-x^2),x)", //
         "2*E^x*x-E^x*x^2");
     check("D(2*E^x-Gamma(3,-x),x)", //

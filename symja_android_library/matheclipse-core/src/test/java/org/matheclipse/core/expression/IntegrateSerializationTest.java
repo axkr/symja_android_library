@@ -1,10 +1,14 @@
 package org.matheclipse.core.expression;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.io.FileOutputStream;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.reflection.system.Integrate;
@@ -12,7 +16,7 @@ import com.esotericsoftware.kryo.io.Output;
 
 public class IntegrateSerializationTest {
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpClass() {
     // Ensure Symja's core is initialized before any tests run
     F.initSymja();
@@ -37,27 +41,27 @@ public class IntegrateSerializationTest {
     tempCache.deleteOnExit();
 
     // 1. Force raw initialization to guarantee RulesData is populated
-    Assert.assertNotNull("RulesData must exist after raw init", S.Integrate.getRulesData());
+    assertNotNull(S.Integrate.getRulesData(), "RulesData must exist after raw init");
 
     // 2. Serialize the rules to the temp file
     Integrate.serializeRubiRules(tempCache);
-    Assert.assertTrue("Cache file should be created and non-empty", tempCache.length() > 0);
+    assertTrue(tempCache.length() > 0, "Cache file should be created and non-empty");
 
     // 3. Sabotage the memory: Clear the rules from the system
     S.Integrate.setRulesData(null);
-    Assert.assertNull("RulesData should be null after clearing", S.Integrate.getRulesData());
+    assertNull(S.Integrate.getRulesData(), "RulesData should be null after clearing");
 
     // 4. Restore the rules via Kryo Deserialization
     boolean success = Integrate.deserializeRubiRules(tempCache);
-    Assert.assertTrue("Deserialization from valid cache should succeed", success);
-    Assert.assertNotNull("RulesData should be fully restored", S.Integrate.getRulesData());
+    assertTrue(success, "Deserialization from valid cache should succeed");
+    assertNotNull(S.Integrate.getRulesData(), "RulesData should be fully restored");
 
     // 5. Functional Proof: Evaluate a basic integral to ensure the pattern matcher works
     EvalEngine engine = new EvalEngine(false);
     IExpr result = engine.evaluate(F.Integrate(F.Sin(F.x), F.x));
 
     // The integral of Sin(x) is -Cos(x)
-    Assert.assertEquals(F.Negate(F.Cos(F.x)).toString(), result.toString());
+    assertEquals(F.Negate(F.Cos(F.x)).toString(), result.toString());
   }
 
   @Test
@@ -75,8 +79,8 @@ public class IntegrateSerializationTest {
     boolean success = Integrate.deserializeRubiRules(tempCache);
 
     // The method should detect the shift and aggressively reject the cache
-    Assert.assertFalse(
-        "Deserialization should fail and reject the file due to mismatched fingerprint", success);
+    assertFalse(success,
+        "Deserialization should fail and reject the file due to mismatched fingerprint");
   }
 
   @Test
@@ -85,7 +89,7 @@ public class IntegrateSerializationTest {
 
     // Attempting to read a non-existent file should gracefully return false, not throw an exception
     boolean success = Integrate.deserializeRubiRules(missingFile);
-    Assert.assertFalse("Deserialization should fail gracefully if file is missing", success);
+    assertFalse(success, "Deserialization should fail gracefully if file is missing");
   }
 
 }
