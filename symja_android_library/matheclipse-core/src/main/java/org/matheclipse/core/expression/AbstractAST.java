@@ -5190,6 +5190,15 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return false;
   }
 
+  @Override
+  public boolean isTrigToExpFunction() {
+    if (size() == 2) {
+      return isFunctionID(ID.Cos, ID.Cosh, ID.Cot, ID.Coth, ID.Csc, ID.Csch, ID.Sec, ID.Sech,
+          ID.Sin, ID.Sinh, ID.Tan, ID.Tanh);
+    }
+    return false;
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean isUnderflow() {

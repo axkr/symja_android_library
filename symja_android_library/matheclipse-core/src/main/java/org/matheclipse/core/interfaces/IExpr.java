@@ -5217,9 +5217,17 @@ public interface IExpr
    * <b> Note</b>: ArcTan(x,y) can have 2 arguments and is considered as a trigonometric function.
    * All other detected function types have 1 argument.
    *
-   * @return
    */
   default boolean isTrigFunction() {
+    return false;
+  }
+
+  /**
+   * Test if this expression is a trigonometric function which will be transformed by
+   * {@link S#TrigToExp} to an exponential function.
+   * 
+   */
+  default boolean isTrigToExpFunction() {
     return false;
   }
 
