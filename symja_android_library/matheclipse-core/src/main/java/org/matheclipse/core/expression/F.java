@@ -1600,6 +1600,10 @@ public class F extends S {
     return new B2.And(expr1, expr2);
   }
 
+  public static IASTAppendable AndAlloc(int initialCapacity) {
+    return ast(And, initialCapacity);
+  }
+
   /**
    * <code>expr1 && expr2 && expr3</code> evaluates each expression in turn, returning
    * {@link S#False} as soon as an expression evaluates to {@link S#False}. If all expressions
@@ -2084,6 +2088,23 @@ public class F extends S {
     return AST.newInstance(initialCapacity, head, true);
   }
 
+  public static IAST AsymptoticDSolveValue(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(AsymptoticDSolveValue, a0, a1, a2);
+  }
+
+  public static IAST AsymptoticIntegrate(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(AsymptoticIntegrate, a0, a1, a2);
+  }
+
+  public static IAST AsymptoticRSolveValue(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(AsymptoticRSolveValue, a0, a1, a2);
+  }
+
+  public static IAST AsymptoticSolve(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(AsymptoticSolve, a0, a1, a2);
+  }
+
+
   /**
    *
    *
@@ -2562,6 +2583,10 @@ public class F extends S {
     return new AST2(CentralMoment, a0, F.ZZ(r));
   }
 
+  public static IAST CentralMoment(final IExpr a0, final IExpr r) {
+    return new AST2(CentralMoment, a0, r);
+  }
+
   /**
    * CharacteristicPolynomial(matrix, var) - computes the characteristic polynomial of a `matrix`
    * for the variable `var`.
@@ -2723,6 +2748,10 @@ public class F extends S {
 
   public static IAST CoefficientList(final IExpr a0, final IExpr a1) {
     return new AST2(CoefficientList, a0, a1);
+  }
+
+  public static IAST CoefficientRules(final IExpr a0, final IExpr a1) {
+    return new AST2(CoefficientRules, a0, a1);
   }
 
   public static IAST Collect(final IExpr a0, final IExpr a1) {
@@ -4434,6 +4463,10 @@ public class F extends S {
 
   public static IAST FactorialMoment(final IExpr a0, final int r) {
     return new AST2(FactorialMoment, a0, F.ZZ(r));
+  }
+
+  public static IAST FactorialMoment(final IExpr a0, final IExpr r) {
+    return new AST2(FactorialMoment, a0, r);
   }
 
   public static IAST FactorialPower(final IExpr x, final IExpr n) {
@@ -7888,6 +7921,10 @@ public class F extends S {
     return new AST2(Moment, a0, F.ZZ(r));
   }
 
+  public static IAST Moment(final IExpr a0, final IExpr r) {
+    return new AST2(Moment, a0, r);
+  }
+
   public static IAST Most(final IExpr a0) {
     return new AST1(Most, a0);
   }
@@ -8001,14 +8038,6 @@ public class F extends S {
    */
   public static IAST newInstance(final int intialArgumentsCapacity, final IExpr head) {
     return AST.newInstance(intialArgumentsCapacity, head, false);
-  }
-
-  public static IAST NewLimit(final IExpr f, final IExpr rule) {
-    return new AST2(NewLimit, f, rule);
-  }
-
-  public static IAST NewLimit(final IExpr f, final IExpr rule, final IExpr direction) {
-    return new AST3(NewLimit, f, rule, direction);
   }
 
   public static IAST NIntegrate(final IExpr f, final IExpr x) {
@@ -8407,6 +8436,10 @@ public class F extends S {
 
   public static IAST Or(final IExpr... expr) {
     return function(Or, expr);
+  }
+
+  public static IASTAppendable OrAlloc(int initialCapacity) {
+    return ast(Or, initialCapacity);
   }
 
   /**
@@ -10131,6 +10164,10 @@ public class F extends S {
 
   public static IAST Sinc(final IExpr z) {
     return new AST1(Sinc, z);
+  }
+
+  public static IAST SingularValueDecomposition(final IExpr matrix) {
+    return new AST1(SingularValueDecomposition, matrix);
   }
 
   public static IAST SingularValueList(final IExpr matrix) {

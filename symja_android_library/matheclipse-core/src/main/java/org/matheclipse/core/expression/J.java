@@ -10662,17 +10662,6 @@ public class J extends S {
   }
 
 
-  public static IAST newLimit(final Object a1, final Object a2) {
-    return new AST2(NewLimit, Object2Expr.convert(a1), Object2Expr.convert(a2));
-  }
-
-
-  public static IAST newLimit(final Object a1, final Object a2, final Object a3) {
-    return new AST3(NewLimit, Object2Expr.convert(a1), Object2Expr.convert(a2),
-        Object2Expr.convert(a3));
-  }
-
-
   /**
    * NextPrime(n) - gives the next prime after `n`.
    * 

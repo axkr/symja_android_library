@@ -902,8 +902,14 @@ public class S {
 
   public final static IBuiltInSymbol Assumptions = S.initFinalSymbol("Assumptions", ID.Assumptions);
 
+  public final static IBuiltInSymbol Asymptotic =
+      S.initFinalSymbol("Asymptotic", ID.Asymptotic);
+
   public final static IBuiltInSymbol AsymptoticSolve =
       S.initFinalSymbol("AsymptoticSolve", ID.AsymptoticSolve);
+
+  public final static IBuiltInSymbol AsymptoticIntegrate =
+      S.initFinalSymbol("AsymptoticIntegrate", ID.AsymptoticIntegrate);
 
   public final static IBuiltInSymbol AsymptoticDSolveValue =
       S.initFinalSymbol("AsymptoticDSolveValue", ID.AsymptoticDSolveValue);
@@ -3938,6 +3944,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Factorial2 = S.initFinalSymbol("Factorial2", ID.Factorial2);
+
+  public final static IBuiltInSymbol FactorList = S.initFinalSymbol("FactorList", ID.FactorList);
 
   public final static IBuiltInSymbol FactorialMoment =
       S.initFinalSymbol("FactorialMoment", ID.FactorialMoment);
@@ -7985,8 +7993,6 @@ public class S {
   public final static IBuiltInSymbol NestWhileList =
       S.initFinalSymbol("NestWhileList", ID.NestWhileList);
 
-  public final static IBuiltInSymbol NewLimit = S.initFinalSymbol("NewLimit", ID.NewLimit);
-
   /**
    * NExpectation(pure-function, data-set) - returns the expected value of the `pure-function` for
    * the given `data-set` numerically.
@@ -8882,6 +8888,9 @@ public class S {
   public final static IBuiltInSymbol PermutationListQ =
       S.initFinalSymbol("PermutationListQ", ID.PermutationListQ);
 
+  public final static IBuiltInSymbol PermutationProduct =
+      S.initFinalSymbol("PermutationProduct", ID.PermutationProduct);
+
   /**
    * PermutationReplace(list-or-integer, Cycles({{...},{...}, ...})) - replace the arguments of the
    * first expression with the corresponding element from the `Cycles({{...},{...}, ...})`
@@ -9754,6 +9763,8 @@ public class S {
    */
   public final static IBuiltInSymbol Range = S.initFinalSymbol("Range", ID.Range);
 
+  public final static IBuiltInSymbol RangeSpace = S.initFinalSymbol("RangeSpace", ID.RangeSpace);
+
   /**
    * RankedMax({e_1, e_2, ..., e_i}, n) - returns the n-th largest real value in the list `{e_1,
    * e_2, ..., e_i}`.
@@ -10143,6 +10154,10 @@ public class S {
    */
   public final static IBuiltInSymbol RiccatiSolve =
       S.initFinalSymbol("RiccatiSolve", ID.RiccatiSolve);
+
+
+  public final static IBuiltInSymbol RiemannSiegelTheta =
+      S.initFinalSymbol("RiemannSiegelTheta", ID.RiemannSiegelTheta);
 
   /**
    * Riffle(list1, list2) - insert elements of `list2` between the elements of `list1`.
@@ -10876,6 +10891,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Solve = S.initFinalSymbol("Solve", ID.Solve);
+
+  public final static IBuiltInSymbol SolveAlways = S.initFinalSymbol("SolveAlways", ID.SolveAlways);
 
   /**
    * Sort(list) - sorts `list` (or the leaves of any other expression) according to canonical
@@ -13182,6 +13199,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Zeta = S.initFinalSymbol("Zeta", ID.Zeta);
+
+  public final static IBuiltInSymbol ZetaZero = S.initFinalSymbol("ZetaZero", ID.ZetaZero);
 
   /**
    * ZTransform(x,n,z) - returns the Z-Transform of `x`.
