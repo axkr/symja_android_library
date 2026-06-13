@@ -1295,7 +1295,7 @@ public class AlgebraUtil {
   }
 
   public static IExpr factor(IAST ast, IExpr arg1, VariablesSet eVar, boolean squareFree,
-      boolean withHomogenization, boolean togetherMode, EvalEngine engine) {
+      boolean withHomogenization, boolean togetherMode, boolean trig, EvalEngine engine) {
     IExpr expr = arg1;
     if (!arg1.isTimes() && !arg1.isPower()) {
       if (togetherMode) {
@@ -1306,9 +1306,9 @@ public class AlgebraUtil {
         if (!fractionParts[1].isOne()) {
           try {
             IExpr numerator = factorExpr(F.Factor(fractionParts[0]), fractionParts[0], eVar,
-                squareFree, withHomogenization, engine);
+                squareFree, withHomogenization, trig, engine);
             IExpr denominator = factorExpr(F.Factor(fractionParts[1]), fractionParts[1], eVar,
-                squareFree, withHomogenization, engine);
+                squareFree, withHomogenization, trig, engine);
             if (numerator.isPresent() && denominator.isPresent()) {
               IExpr temp = engine.evaluate(F.Divide(numerator, denominator));
               engine.putCache(ast, temp);
@@ -1323,7 +1323,7 @@ public class AlgebraUtil {
       }
     }
     try {
-      IExpr temp = factorExpr(ast, expr, eVar, squareFree, withHomogenization, engine);
+      IExpr temp = factorExpr(ast, expr, eVar, squareFree, withHomogenization, trig, engine);
       engine.putCache(ast, temp);
       if (temp.isPresent()) {
         return temp;
@@ -1334,7 +1334,7 @@ public class AlgebraUtil {
   }
 
   public static IExpr factor(IAST expr, VariablesSet eVar, boolean squareFree,
-      boolean withHomogenization, EvalEngine engine) throws JASConversionException {
+      boolean withHomogenization, boolean trig, EvalEngine engine) throws JASConversionException {
     if (expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT) {
       return expr;
     }
@@ -1348,7 +1348,7 @@ public class AlgebraUtil {
       GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, false);
       if (polyRat == null) {
         if (!squareFree && withHomogenization) {
-          return factorWithPolynomialHomogenization(expr, eVar, engine);
+          return factorWithPolynomialHomogenization(expr, eVar, trig, engine);
         }
         return F.NIL;
       }
@@ -1358,7 +1358,7 @@ public class AlgebraUtil {
       objects = jas.factorTerms(polyRat);
     } catch (JASConversionException e) {
       if (!squareFree && withHomogenization) {
-        return factorWithPolynomialHomogenization(expr, eVar, engine);
+        return factorWithPolynomialHomogenization(expr, eVar, trig, engine);
       }
       return F.NIL;
     }
@@ -1516,7 +1516,7 @@ public class AlgebraUtil {
   }
 
   public static IExpr factorExpr(final IAST ast, IExpr expr, VariablesSet eVar, boolean squareFree,
-      boolean withHomogenization, EvalEngine engine) {
+      boolean withHomogenization, boolean trig, EvalEngine engine) {
     if (expr.isAST()) {
       IExpr temp;
       // if (expr.isPower()&&expr.base().isPlus()) {
@@ -1525,7 +1525,7 @@ public class AlgebraUtil {
       // } else
       if (expr.isPower()) {
         IExpr p =
-            factorExpr((IAST) expr, expr.base(), eVar, squareFree, withHomogenization, engine);
+            factorExpr((IAST) expr, expr.base(), eVar, squareFree, withHomogenization, trig, engine);
         if (p.isPresent() && !p.equals(expr.base())) {
           return F.Power(p, expr.exponent());
         }
@@ -1533,10 +1533,10 @@ public class AlgebraUtil {
       } else if (expr.isTimes()) {
         temp = ((IAST) expr).map(x -> {
           if (x.isPlus()) {
-            return factorExpr(ast, x, eVar, squareFree, withHomogenization, engine);
+            return factorExpr(ast, x, eVar, squareFree, withHomogenization, trig, engine);
           }
           if (x.isPower() && x.base().isPlus()) {
-            IExpr p = factorExpr(ast, x.base(), eVar, squareFree, withHomogenization, engine);
+            IExpr p = factorExpr(ast, x.base(), eVar, squareFree, withHomogenization, trig, engine);
             if (p.isPresent() && !p.equals(x.base())) {
               return F.Power(p, x.exponent());
             }
@@ -1545,7 +1545,7 @@ public class AlgebraUtil {
         }, 1);
         return temp;
       } else {
-        return factor((IAST) expr, eVar, squareFree, withHomogenization, engine);
+        return factor((IAST) expr, eVar, squareFree, withHomogenization, trig, engine);
       }
     }
     return expr;
@@ -1607,10 +1607,11 @@ public class AlgebraUtil {
   }
 
   public static IExpr factorWithPolynomialHomogenization(IAST expr, VariablesSet eVar,
-      EvalEngine engine) {
+      boolean trig, EvalEngine engine) {
     boolean gaussianIntegers = !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
     PolynomialHomogenization substitutions = new PolynomialHomogenization(engine);
-    IExpr subsPolynomial = substitutions.replaceForward(expr);
+    IExpr subsPolynomial =
+        trig ? substitutions.replaceForward(expr) : substitutions.replaceForward(expr);
     // System.out.println(subsPolynomial.toString());
     // System.out.println(substitutions.substitutedVariables());
     if (substitutions.size() == 0) {
@@ -1623,7 +1624,8 @@ public class AlgebraUtil {
       IExpr factorization =
           factorComplex(subsPolynomial, eVar.getVarList(), S.Times, gaussianIntegers, engine);
       if (factorization.isPresent()) {
-        return substitutions.replaceBackward(factorization);
+        return trig ? substitutions.replaceBackward(factorization)
+            : substitutions.replaceBackward(factorization);
       }
     }
     return expr;
@@ -2593,7 +2595,7 @@ public class AlgebraUtil {
                 IExpr finalDenominator =
                     engine.evaluate(F.PolynomialQuotient(commonDenominator, gcd, variable));
                 IExpr factored = factor(F.Factor(finalDenominator), finalDenominator, eVar, false,
-                    true, true, engine);
+                    true, true, true, engine);
                 if (finalNumerator.isNegative()) {
                   return F.Divide(finalNumerator.negate(), factored.negate());
                 }

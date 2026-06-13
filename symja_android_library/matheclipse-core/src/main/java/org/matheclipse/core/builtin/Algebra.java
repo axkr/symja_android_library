@@ -1322,16 +1322,16 @@ public class Algebra {
         if (newVariables.size() == 1) {
           IAST resultList = QuarticSolver.solve(subsPolynomial, newVariables.firstVariable());
           if (resultList.size() > 0) {
-            return solveEquationList(resultList, originalVarList, substitutions, varSet, engine);
+            return solveEquationListTrig(resultList, originalVarList, substitutions, varSet, engine);
           }
           resultList = RootsFunctions.findRoots(subsPolynomial, newVariables.getVarList());
           if (resultList.size() > 0) {
-            return solveEquationList(resultList, originalVarList, substitutions, varSet, engine);
+            return solveEquationListTrig(resultList, originalVarList, substitutions, varSet, engine);
           }
         }
         return F.NIL;
       }
-      return solveEquationRecursive(factorization, originalVarList, substitutions, varSet,
+      return solveEquationTrigRecursive(factorization, originalVarList, substitutions, varSet,
           solveData, engine);
 
     }
@@ -1353,7 +1353,7 @@ public class Algebra {
       return F.NIL;
     }
 
-    private static IAST solveEquationList(IExpr factorization, IASTAppendable originalVarList,
+    private static IAST solveEquationListTrig(IExpr factorization, IASTAppendable originalVarList,
         PolynomialHomogenization substitutions, Set<ISymbol> varSet, EvalEngine engine) {
       if (factorization.isList() && factorization.size() > 1 && varSet.size() == 1) {
         IASTAppendable resultList = F.NIL;
@@ -1376,7 +1376,7 @@ public class Algebra {
       return F.NIL;
     }
 
-    private static IAST solveEquationRecursive(IExpr factorization, IASTAppendable originalVarList,
+    private static IAST solveEquationTrigRecursive(IExpr factorization, IASTAppendable originalVarList,
         PolynomialHomogenization substitutions, Set<ISymbol> varSet, SolveData solveData,
         EvalEngine engine) {
       IASTAppendable resultList = F.NIL;
@@ -1391,7 +1391,8 @@ public class Algebra {
           if (subList.isPresent()) {
             for (int j = 1; j < subList.size(); j++) {
               IAST solveFunction = F.Solve(
-                  F.Equal(F.Subtract(substitutions.replaceBackward(varList.arg1()), subList.get(j)),
+                  F.Equal(
+                      F.Subtract(substitutions.replaceBackward(varList.arg1()), subList.get(j)),
                       F.C0), //
                   originalVarList.arg1(), //
                   F.Rule(S.GenerateConditions,
@@ -1429,8 +1430,12 @@ public class Algebra {
         return arg1;
       }
       VariablesSet eVar = new VariablesSet(arg1);
-      if (options[MODULUS_OPTION].isZero() && options[1].equals(S.None) && options[2].isFalse()) {
-        return AlgebraUtil.factor(ast, arg1, eVar, false, true, true, engine);
+      IExpr modulus = options[0];
+      IExpr extension = options[1];
+      IExpr gaussianIntegers = options[2];
+      boolean trig = options[3].isTrue();
+      if (options[MODULUS_OPTION].isZero() && extension.equals(S.None) && gaussianIntegers.isFalse()) {
+        return AlgebraUtil.factor(ast, arg1, eVar, false, true, true, trig, engine);
       }
 
       try {
@@ -1439,7 +1444,7 @@ public class Algebra {
           return temp;
         }
 
-        temp = AlgebraUtil.factorExpr(ast, arg1, eVar, false, true, engine);
+        temp = AlgebraUtil.factorExpr(ast, arg1, eVar, false, true, trig, engine);
         engine.putCache(ast, temp);
         if (temp.isPresent()) {
           return temp;
@@ -1460,8 +1465,8 @@ public class Algebra {
       newSymbol.setAttributes(ISymbol.LISTABLE);
 
       IBuiltInSymbol[] optionKeys =
-          new IBuiltInSymbol[] {S.Modulus, S.Extension, S.GaussianIntegers};
-      IExpr[] optionValues = new IExpr[] {F.C0, S.None, S.False};
+          new IBuiltInSymbol[] {S.Modulus, S.Extension, S.GaussianIntegers, S.Trig};
+      IExpr[] optionValues = new IExpr[] {F.C0, S.None, S.False, S.False};
       setOptions(newSymbol, optionKeys, optionValues);
     }
   }
@@ -1508,7 +1513,7 @@ public class Algebra {
 
         if (options[MODULUS_OPTION].isZero() && options[1].equals(S.None) && options[2].isFalse()) {
           if (expr.isAST()) {
-            IExpr temp = AlgebraUtil.factorExpr((IAST) expr, (IAST) expr, eVar, true, true, engine);
+            IExpr temp = AlgebraUtil.factorExpr((IAST) expr, (IAST) expr, eVar, true, true, false, engine);
             engine.putCache(ast, temp);
             if (temp.isPresent()) {
               return temp;
@@ -2661,8 +2666,7 @@ public class Algebra {
         java.math.BigInteger[] dr = lcP.toBigNumerator().divideAndRemainder(lcM.toBigNumerator());
         if (dr[1].signum() != 0) {
           // Leading coefficient of m does not exactly divide the current leading coefficient ->
-          // no reduction performed at this term; return as-is (Mathematica's "no divisions"
-          // semantics for CoefficientDomain -> Integers).
+          // no reduction performed at this term; return as-is
           return current;
         }
         IInteger q = F.ZZ(dr[0]);
@@ -3732,7 +3736,7 @@ public class Algebra {
 
   public static IExpr factor(IExpr arg1, EvalEngine engine) {
     VariablesSet eVar = new VariablesSet(arg1);
-    return AlgebraUtil.factor(F.Factor(arg1), arg1, eVar, false, false, true, engine);
+    return AlgebraUtil.factor(F.Factor(arg1), arg1, eVar, false, false, true, false, engine);
   }
 
   private static IAST factorModulus(IExpr expr, IAST varList, boolean factorSquareFree,
