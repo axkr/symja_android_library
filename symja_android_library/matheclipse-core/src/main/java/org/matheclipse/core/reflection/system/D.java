@@ -427,6 +427,18 @@ public class D extends AbstractFunctionEvaluator {
               return result;
               // }
             }
+            if (n >= 2 && fx.isAST1() && fx.head().isSymbol() && !fx.first().isFree(x, true)) {
+              IExpr head = fx.head();
+              if (head.equals(S.Boole)) {
+                return F.C0;
+              }
+              IExpr gx = fx.first();
+              IExpr faaDiBrunoResult = faaDiBrunoChainRule(head, gx, x, n, ast, engine);
+              if (!faaDiBrunoResult.isNIL()) {
+                return faaDiBrunoResult;
+              }
+            }
+
             IExpr temp = fx;
             for (int i = 0; i < n; i++) {
               temp = S.D.ofNIL(engine, temp, x);
@@ -657,6 +669,51 @@ public class D extends AbstractFunctionEvaluator {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Computes the n-th derivative of a composite function f(g(x)) using Faà di Bruno's formula via
+   * BellY partial polynomials.
+   * 
+   * @param head the outer function symbol or expression (f)
+   * @param gx the inner function expression (g(x))
+   * @param x the variable of differentiation
+   * @param n the order of differentiation
+   * @param ast the original AST for error tracking
+   * @param engine the evaluation engine
+   * @return the n-th derivative expression, or F.NIL if not applicable
+   */
+  private static IExpr faaDiBrunoChainRule(final IExpr head, final IExpr gx, final IExpr x, int n,
+      final IAST ast, EvalEngine engine) {
+    // We need the derivatives of g(x) from order 1 up to n for the BellY variables
+    int varsSize = n;
+    IASTAppendable gDerivatives = F.ListAlloc(varsSize);
+
+    for (int m = 1; m <= n; m++) {
+      IExpr gDeriv = engine.evaluate(F.D(gx, F.list(x, F.ZZ(m))));
+      if (gDeriv.isZero() && m == 1) {
+        return F.C0; // If g'(x) is 0, higher derivatives of the composition are 0
+      }
+      gDerivatives.append(gDeriv);
+    }
+
+    IASTAppendable sum = F.PlusAlloc(n);
+    IExpr[][] cache = new IExpr[n + 1][n + 1];
+
+    for (int k = 1; k <= n; k++) {
+      // Component 1: The k-th derivative of the outer function evaluated at g(x) -> f^(k)(g(x))
+      IAST fDerivativeHead = Derivative.createDerivative(k, head, gx);
+
+      // Component 2: BellY(n, k, {g'(x), g''(x), ..., g^(n-k+1)(x)})
+      // We pass the list of variables directly to the BellY implementation
+      IExpr bellPoly = BellY.bellY(n, k, gDerivatives, ast, engine, cache, false);
+
+      if (!bellPoly.isZero()) {
+        sum.append(F.Times(fDerivativeHead, bellPoly));
+      }
+    }
+
+    return engine.evaluate(sum);
   }
 
   private static IExpr freeOfX(final IExpr functionOfX, EvalEngine engine) {
