@@ -493,4 +493,53 @@ public class ZetaJS extends JS {
     //
     // return new Complex(s);
   }
+
+  // ===========================================================================
+  // ZetaZero support
+  //
+  // The k-th nontrivial zero of the Riemann zeta function lies on the critical
+  // line 1/2 + I*t_k. The imaginary part t_k is computed as a root of the
+  // real-valued Riemann-Siegel Z function
+  // Z(t) = Re( exp(I*theta(t)) * zeta(1/2 + I*t) )
+  // with theta(t) = Im( logGamma(1/4 + I*t/2) ) - (t/2)*log(Pi).
+  // ===========================================================================
+
+  public static final int ZZ_MAX_WIDEN = 10;
+  public static final int ZZ_SCAN_SEGMENTS = 16;
+
+  /**
+   * Principal branch of the Lambert W function for {@code x >= -1/e} (double precision). Used only
+   * to compute an initial guess for the position of a zeta zero.
+   */
+  private static double lambertW(double x) {
+    final double minX = -1.0 / Math.E;
+    if (x < minX) {
+      x = minX;
+    }
+    double w = (x < 10.0) ? Math.log1p(x) : (Math.log(x) - Math.log(Math.log(x)));
+    for (int i = 0; i < 80; i++) {
+      double ew = Math.exp(w);
+      double f = w * ew - x;
+      double denom = ew * (w + 1.0) - (w + 2.0) * f / (2.0 * w + 2.0);
+      double dw = f / denom;
+      w -= dw;
+      if (Math.abs(dw) <= 1e-15 * (1.0 + Math.abs(w))) {
+        break;
+      }
+    }
+    return w;
+  }
+
+  /**
+   * Asymptotic estimate (double precision) of the imaginary part of the {@code index}-th nontrivial
+   * zeta zero, derived from the Riemann-von Mangoldt counting function.
+   */
+  public static double zetaZeroEstimate(int index) {
+    double a = index - 11.0 / 8.0;
+    double t = 2.0 * Math.PI * a / lambertW(a / Math.E);
+    if (Double.isNaN(t) || t < 1.0) {
+      t = 14.134725;
+    }
+    return t;
+  }
 }
