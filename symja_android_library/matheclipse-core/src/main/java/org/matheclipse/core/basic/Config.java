@@ -364,6 +364,43 @@ public class Config {
   /** Define the Rubi time limit for the <code>TimeConstrained()</code> function. */
   public static int INTEGRATE_RUBI_TIMELIMIT = 8;
 
+  /**
+   * Master flag which enables the fast algorithmic integration cascade (integral table,
+   * derivative-divides, rational function integration, radical substitution, Risch-Norman) which is
+   * tried before the Rubi rules in <code>Integrate()</code>.
+   */
+  public static boolean INTEGRATE_ALGORITHMS = true;
+
+  /** Enable the CRC-style integral table lookup stage in <code>Integrate()</code>. */
+  public static boolean INTEGRATE_ALGORITHM_TABLE = true;
+
+  /** Enable the derivative-divides (Geddes) heuristic stage in <code>Integrate()</code>. */
+  public static boolean INTEGRATE_ALGORITHM_DERIVATIVE_DIVIDES = true;
+
+  /**
+   * Enable the rational function integration stage (Hermite/Horowitz-Ostrogradsky reduction plus
+   * Lazard-Rioboo-Trager logarithmic part) in <code>Integrate()</code>.
+   */
+  public static boolean INTEGRATE_ALGORITHM_RATIONAL = true;
+
+  /** Enable the radical substitution stage in <code>Integrate()</code>. */
+  public static boolean INTEGRATE_ALGORITHM_RADICAL_SUBSTITUTION = true;
+
+  /** Enable the Risch-Norman (parallel Risch) stage in <code>Integrate()</code>. */
+  public static boolean INTEGRATE_ALGORITHM_RISCH_NORMAN = true;
+
+  /** Time limit in milliseconds for the rational integration stage. */
+  public static long INTEGRATE_RATIONAL_TIMELIMIT_MILLIS = 1000L;
+
+  /** Time limit in milliseconds for the radical substitution stage. */
+  public static long INTEGRATE_RADICAL_TIMELIMIT_MILLIS = 1000L;
+
+  /** Time limit in milliseconds for the Risch-Norman stage. */
+  public static long INTEGRATE_RISCH_NORMAN_TIMELIMIT_MILLIS = 2000L;
+
+  /** Maximum recursion depth for the derivative-divides heuristic. */
+  public static int INTEGRATE_DERIVATIVE_DIVIDES_RECURSION_LIMIT = 3;
+
   /** Define the recursion limit for <code>Limit#lHospitalesRule()</code> method. */
   public static int LIMIT_LHOSPITAL_RECURSION_LIMIT = 20;
 
