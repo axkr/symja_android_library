@@ -7,9 +7,9 @@ Det(matrix)
 > computes the determinant of the `matrix`.
 
 See:
-* [Wikipedia: Determinant](https://en.wikipedia.org/wiki/Determinant)
-* [Youtube - The determinant | Essence of linear algebra, chapter 6](https://youtu.be/Ip3X9LOh2dk)
-* [Youtube - Cramer's rule, explained geometrically | Essence of linear algebra, chapter 12](https://youtu.be/jBsC34PxzoM)
+* [Wikipedia - Determinant](https://en.wikipedia.org/wiki/Determinant)
+* [Wikipedia - Row echelon form](https://en.wikipedia.org/wiki/Row_echelon_form)
+* [Wikipedia - Bareiss algorithm](https://en.wikipedia.org/wiki/Bareiss_algorithm)
 
 ### Examples
 

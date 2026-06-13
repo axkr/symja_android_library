@@ -1,6 +1,6 @@
 ## Adjugate
 
-``` 
+```
 Adjugate(matrix)
 ```
 
@@ -8,6 +8,7 @@ Adjugate(matrix)
 
 See:
 * [Wikipedia - Adjugate matrix](https://en.wikipedia.org/wiki/Adjugate_matrix)
+* [Wikipedia - Bareiss algorithm](https://en.wikipedia.org/wiki/Bareiss_algorithm)
 
 ### Examples
 
