@@ -36,7 +36,6 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
    * Check if <code>arg1</code> is a matrix.
    *
    * @param arg1
-   * @return
    */
   public int[] checkMatrixDimensions(IExpr arg1) {
     return arg1.isMatrix(false);
@@ -81,7 +80,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
    *
    * @param matrix the matrix which contains symbolic values
    * @param zeroChecker test if a calculation is <code>0</code>.
-   * @param ast TODO
+   * @param ast the original AST (used to extract parameters/options)
    * @return <code>F.NIL</code> if the evaluation isn't possible
    */
   public abstract IExpr matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker,
@@ -153,7 +152,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
       IExpr zeroTestOption, IExpr toleranceOption) {
     // Explicit ZeroTest -> always wins
     if (zeroTestOption.isPresent() && !zeroTestOption.equals(S.Automatic)) {
-      return Predicates.isTrue(engine, zeroTestOption);
+      return Predicates.isZeroTest(engine, zeroTestOption);
     }
     // Determine effective numeric tolerance
     double tolerance = Config.SPECIAL_FUNCTIONS_TOLERANCE;
@@ -182,8 +181,8 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
    * Evaluate the numeric matrix for this algorithm.
    *
    * @param matrix the matrix which contains numeric values
-   * @param engine TODO
-   * @param ast TODO
+   * @param engine the evaluation engine
+   * @param ast the original AST (used to extract parameters/options)
    * @return <code>F.NIL</code> if the evaluation isn't possible
    */
   public abstract IExpr realMatrixEval(RealMatrix matrix, EvalEngine engine, IAST ast);

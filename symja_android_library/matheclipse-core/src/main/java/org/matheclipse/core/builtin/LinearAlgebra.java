@@ -5151,35 +5151,11 @@ public final class LinearAlgebra {
    * <ul>
    * <li><a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row echelon form</a>
    * </ul>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; RowReduce({{1,1,0,1,5},{1,0,0,2,2},{0,0,1,4,-1},{0,0,0,0,0}})
-   * {{1,0,0,2,2},
-   *  {0,1,0,-1,3},
-   *  {0,0,1,4,-1},
-   *  {0,0,0,0,0}}
-   *
-   * &gt;&gt; RowReduce({{1, 0, a}, {1, 1, b}})
-   * {{1,0,a},
-   *  {0,1,-a+b}}
-   *
-   * &gt;&gt; RowReduce({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})
-   * {{1,0,-1},
-   *  {0,1,2},
-   *  {0,0,0}}
-   * </pre>
-   *
-   * <p>
-   * Argument {{1, 0}, {0}} at position 1 is not a non-empty rectangular matrix.<br>
-   *
-   * <pre>
-   * &gt;&gt; RowReduce({{1, 0}, {0}})
-   * RowReduce({{1, 0}, {0}})
-   * </pre>
    */
-  private static class RowReduce extends AbstractFunctionOptionEvaluator {
+  public static class RowReduce extends AbstractFunctionOptionEvaluator {
+
+    public RowReduce() {}
+
     @Override
     public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
         IAST originalAST) {
@@ -5191,9 +5167,26 @@ public final class LinearAlgebra {
         if (dims != null) {
           matrix = Convert.list2Matrix(ast.arg1());
           if (matrix != null) {
-            Predicate<IExpr> zeroChecker =
-                AbstractMatrix1Expr.optionZeroTest(ast, engine, options[0], options[1]);
+            IExpr method = options[0];
+            IExpr modulus = options[1];
+            IExpr tolerance = options[2];
+            IExpr zeroTest = options[3];
 
+            // Tolerance and ZeroTest are factored into the zeroChecker
+            Predicate<IExpr> zeroChecker =
+                AbstractMatrix1Expr.optionZeroTest(ast, engine, zeroTest, tolerance);
+
+            // Path 1: Modular Arithmetic
+            if (modulus.isPresent() && !modulus.isZero()) {
+              return rowReduceModulus(matrix, modulus, zeroChecker, engine);
+            }
+
+            // Path 2: Division-Free (Fraction-Free) algorithm
+            if (method.isString("DivisionFreeRowReduction")) {
+              return divisionFreeRowReduction(matrix, zeroChecker, engine);
+            }
+
+            // Path 3: Standard ("OneStepRowReduction" / Default)
             FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix, zeroChecker);
             FieldMatrix<IExpr> result = fmw.getRowReducedMatrix();
 
@@ -5213,7 +5206,6 @@ public final class LinearAlgebra {
               }
             }
             return Convert.matrix2List(result);
-
           }
         }
       } catch (final ClassCastException | IndexOutOfBoundsException e) {
@@ -5224,6 +5216,169 @@ public final class LinearAlgebra {
       return F.NIL;
     }
 
+    /**
+     * Solves the Row Reduction exclusively under a given Modulus.
+     */
+    private IASTAppendable rowReduceModulus(FieldMatrix<IExpr> matrix, IExpr modulus,
+        Predicate<IExpr> zeroChecker, EvalEngine engine) {
+      int rows = matrix.getRowDimension();
+      int cols = matrix.getColumnDimension();
+      IExpr[][] m = new IExpr[rows][cols];
+
+      for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+          m[i][j] = engine.evaluate(F.Mod(matrix.getEntry(i, j), modulus));
+        }
+      }
+
+      int pivotRow = 0;
+      for (int j = 0; j < cols && pivotRow < rows; j++) {
+        int swapRow = -1;
+        for (int i = pivotRow; i < rows; i++) {
+          if (!zeroChecker.test(m[i][j])) {
+            swapRow = i;
+            break;
+          }
+        }
+        if (swapRow != -1) {
+          if (swapRow != pivotRow) {
+            IExpr[] temp = m[pivotRow];
+            m[pivotRow] = m[swapRow];
+            m[swapRow] = temp;
+          }
+
+          IExpr pivot = m[pivotRow][j];
+          IExpr pivotInv = engine.evaluate(F.PowerMod(pivot, F.CN1, modulus));
+
+          for (int k = j; k < cols; k++) {
+            m[pivotRow][k] = engine.evaluate(F.Mod(F.Times(m[pivotRow][k], pivotInv), modulus));
+          }
+
+          for (int i = 0; i < rows; i++) {
+            if (i != pivotRow) {
+              IExpr factor = m[i][j];
+              if (!zeroChecker.test(factor)) {
+                for (int k = j; k < cols; k++) {
+                  IExpr sub = F.Subtract(m[i][k], F.Times(factor, m[pivotRow][k]));
+                  m[i][k] = engine.evaluate(F.Mod(sub, modulus));
+                }
+              }
+            }
+          }
+          pivotRow++;
+        }
+      }
+
+      IASTAppendable result = F.ListAlloc(rows);
+      for (int i = 0; i < rows; i++) {
+        IASTAppendable rowList = F.ListAlloc(cols);
+        for (int j = 0; j < cols; j++) {
+          rowList.append(m[i][j]);
+        }
+        result.append(rowList);
+      }
+      return result;
+    }
+
+    /**
+     * Executes the Bareiss-Jordan Algorithm. Uses exact divisions over the ring to keep elements
+     * (especially symbolics and polynomials) fraction-free during the elimination process.
+     */
+    private IASTAppendable divisionFreeRowReduction(FieldMatrix<IExpr> matrix,
+        Predicate<IExpr> zeroChecker, EvalEngine engine) {
+      int rows = matrix.getRowDimension();
+      int cols = matrix.getColumnDimension();
+      IExpr[][] m = new IExpr[rows][cols];
+
+      for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+          m[i][j] = matrix.getEntry(i, j);
+        }
+      }
+
+      int pivotRow = 0;
+      IExpr previousPivot = F.C1;
+      for (int j = 0; j < cols && pivotRow < rows; j++) {
+        int swapRow = -1;
+        for (int i = pivotRow; i < rows; i++) {
+          if (!zeroChecker.test(m[i][j])) {
+            swapRow = i;
+            break;
+          }
+        }
+        if (swapRow != -1) {
+          if (swapRow != pivotRow) {
+            IExpr[] temp = m[pivotRow];
+            m[pivotRow] = m[swapRow];
+            m[swapRow] = temp;
+
+            // To preserve the exact division identities across sign-flipping permutations,
+            // we negate the swapped row.
+            for (int k = j; k < cols; k++) {
+              m[pivotRow][k] = m[pivotRow][k].negate();
+            }
+          }
+
+          IExpr pivot = m[pivotRow][j];
+          for (int i = 0; i < rows; i++) {
+            if (i != pivotRow) {
+              for (int k = j + 1; k < cols; k++) {
+                IExpr numerator = engine.evaluate(F
+                    .Expand(F.Subtract(F.Times(m[i][k], pivot), F.Times(m[i][j], m[pivotRow][k]))));
+                if (previousPivot.isOne()) {
+                  m[i][k] = numerator;
+                } else {
+                  if (previousPivot.isNumber()) {
+                    m[i][k] =
+                        engine.evaluate(F.Expand(F.Times(numerator, previousPivot.inverse())));
+                  } else {
+                    m[i][k] = engine.evaluate(
+                        F.Expand(S.Cancel.of(engine, F.Divide(numerator, previousPivot))));
+                  }
+                }
+              }
+              m[i][j] = F.C0;
+            }
+          }
+          previousPivot = pivot;
+          pivotRow++;
+        }
+      }
+
+      // Normalize down to Reduced Row Echelon Form (so the final Pivots equal exactly 1)
+      for (int i = 0; i < pivotRow; i++) {
+        IExpr pivot = F.C0;
+        int pivotCol = -1;
+        for (int j = 0; j < cols; j++) {
+          if (!zeroChecker.test(m[i][j])) {
+            pivot = m[i][j];
+            pivotCol = j;
+            break;
+          }
+        }
+        if (pivotCol != -1) {
+          for (int j = pivotCol; j < cols; j++) {
+            if (m[i][j].equals(pivot)) {
+              m[i][j] = F.C1;
+            } else if (!zeroChecker.test(m[i][j])) {
+              m[i][j] = engine.evaluate(S.Together.of(engine, F.Divide(m[i][j], pivot)));
+            } else {
+              m[i][j] = F.C0;
+            }
+          }
+        }
+      }
+
+      IASTAppendable result = F.ListAlloc(rows);
+      for (int i = 0; i < rows; i++) {
+        IASTAppendable rowList = F.ListAlloc(cols);
+        for (int j = 0; j < cols; j++) {
+          rowList.append(m[i][j]);
+        }
+        result.append(rowList);
+      }
+      return result;
+    }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
@@ -5232,8 +5387,8 @@ public final class LinearAlgebra {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      setOptions(newSymbol, new IBuiltInSymbol[] {S.ZeroTest, S.Tolerance},
-          new IExpr[] {S.Automatic, S.Automatic});
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.Method, S.Modulus, S.Tolerance, S.ZeroTest},
+          new IExpr[] {S.Automatic, F.C0, S.Automatic, S.Automatic});
     }
 
   }
@@ -6471,14 +6626,17 @@ public final class LinearAlgebra {
   }
 
   /**
-   * Compute the determinant of a square matrix with the fraction-free Bareiss algorithm. Every
-   * division in the elimination is exact (guaranteed by the Bareiss identity), so the intermediate
-   * entries - and the final result - stay polynomial for matrices with polynomial entries. This
-   * avoids both the coefficient/fraction blow-up and the nested rational expressions produced by LU
-   * based elimination, and removes the need for a <code>Together</code> post-processing step.
+   * Compute the determinant of a square matrix with the
+   * <a href="https://en.wikipedia.org/wiki/Bareiss_algorithm">fraction-free Bareiss algorithm</a>.
+   * Every division in the elimination is exact (guaranteed by the Bareiss identity), so the
+   * intermediate entries - and the final result - stay polynomial for matrices with polynomial
+   * entries. This avoids both the coefficient/fraction blow-up and the nested rational expressions
+   * produced by LU based elimination, and removes the need for a <code>Together</code>
+   * post-processing step.
    *
    * <p>
-   * See: <a href="https://en.wikipedia.org/wiki/Bareiss_algorithm">Wikipedia - Bareiss algorithm</a>
+   * See: <a href="https://en.wikipedia.org/wiki/Bareiss_algorithm">Wikipedia - Bareiss
+   * algorithm</a>
    *
    * @param matrix a square matrix
    * @param zeroChecker predicate to detect (pivot) zeros
@@ -6561,9 +6719,10 @@ public final class LinearAlgebra {
   /**
    * Compute the adjugate (classical adjoint) of a square matrix fraction-free, by computing every
    * cofactor as a Bareiss determinant of the corresponding minor. Because each minor determinant is
-   * evaluated with the fraction-free Bareiss algorithm, the result stays polynomial for matrices
-   * with polynomial entries and no <code>Together</code>/<code>Cancel</code> post-processing of a
-   * rational inverse is required. Unlike the LU based variant this also works for singular matrices.
+   * evaluated with the <a href="https://en.wikipedia.org/wiki/Bareiss_algorithm">fraction-free
+   * Bareiss algorithm</a>, the result stays polynomial for matrices with polynomial entries and no
+   * <code>Together</code>/<code>Cancel</code> post-processing of a rational inverse is required.
+   * Unlike the LU based variant this also works for singular matrices.
    *
    * @param matrix a square matrix
    * @param zeroChecker predicate to detect (pivot) zeros

@@ -255,6 +255,16 @@ public class Predicates {
     return x -> engine.evalTrue(head, x);
   }
 
+  public static Predicate<IExpr> isZeroTest(final EvalEngine engine, final IExpr head) {
+    if (head.isBuiltInSymbol()) {
+      IEvaluator eval = ((IBuiltInSymbol) head).getEvaluator();
+      if (eval instanceof Predicate<?>) {
+        return (Predicate<IExpr>) eval;
+      }
+    }
+    return x -> x.isExactNumber() ? x.isZero() : engine.evalTrue(head, x);
+  }
+
   /** @return a <code>java.util.function.Predicate</code> predicate of one argument. */
   public static Predicate<IExpr> isUnaryVariableOrPattern() {
     return new Predicate<IExpr>() {
