@@ -1301,39 +1301,54 @@ public class Algebra {
       if (expr.leafCount() > Config.MAX_FACTOR_LEAFCOUNT) {
         return expr;
       }
-      boolean gaussianIntegers = !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
+      boolean originalHasComplex = !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
       IASTAppendable originalVarList = F.ListAlloc(2);
       originalVarList.append(variable);
       VariablesSet variablesSet = new VariablesSet();
       variablesSet.add(variable);
-      PolynomialHomogenization substitutions = new PolynomialHomogenization(engine);
+      PolynomialHomogenization substitutions = new PolynomialHomogenization(engine, false);
       IExpr subsPolynomial = substitutions.replaceForward(expr);
+
+      // Verify if substitution introduced complex numbers
+      boolean gaussianIntegers = originalHasComplex;
+      if (!gaussianIntegers) {
+        gaussianIntegers =
+            !subsPolynomial.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
+      }
+
       Set<ISymbol> varSet = substitutions.substitutedVariablesSet();
-      // List<IExpr> arrayList = new ArrayList<IExpr>(1);
-      // arrayList.add(variable);
-      // arrayList.addAll(varSet);
       IASTAppendable varList = F.ListAlloc(2);
       varList.append(variable);
       varList.appendAll(varSet);
+
+      if (subsPolynomial.isAST()) {
+        // Apply Together to handle negative exponents created by TrigToExp
+        IExpr[] fractionParts =
+            AlgebraUtil.numeratorDenominator((IAST) subsPolynomial, true, engine);
+        subsPolynomial = fractionParts[0]; // For solving, the roots are determined by the numerator
+      }
+
       IExpr factorization =
           AlgebraUtil.factorComplex(subsPolynomial, varList, S.Times, gaussianIntegers, engine);
+
       if (factorization.isNIL() || factorization.size() == 2) {
         VariablesSet newVariables = new VariablesSet(subsPolynomial);
         if (newVariables.size() == 1) {
           IAST resultList = QuarticSolver.solve(subsPolynomial, newVariables.firstVariable());
           if (resultList.size() > 0) {
-            return solveEquationListTrig(resultList, originalVarList, substitutions, varSet, engine);
+            return solveEquationListTrig(resultList, originalVarList, substitutions, varSet,
+                engine);
           }
           resultList = RootsFunctions.findRoots(subsPolynomial, newVariables.getVarList());
           if (resultList.size() > 0) {
-            return solveEquationListTrig(resultList, originalVarList, substitutions, varSet, engine);
+            return solveEquationListTrig(resultList, originalVarList, substitutions, varSet,
+                engine);
           }
         }
         return F.NIL;
       }
       return solveEquationTrigRecursive(factorization, originalVarList, substitutions, varSet,
           solveData, engine);
-
     }
 
     private static IExpr getVariableValue(IExpr possibleList1, IExpr variable) {
@@ -1376,9 +1391,9 @@ public class Algebra {
       return F.NIL;
     }
 
-    private static IAST solveEquationTrigRecursive(IExpr factorization, IASTAppendable originalVarList,
-        PolynomialHomogenization substitutions, Set<ISymbol> varSet, SolveData solveData,
-        EvalEngine engine) {
+    private static IAST solveEquationTrigRecursive(IExpr factorization,
+        IASTAppendable originalVarList, PolynomialHomogenization substitutions, Set<ISymbol> varSet,
+        SolveData solveData, EvalEngine engine) {
       IASTAppendable resultList = F.NIL;
       if (factorization.isTimes() && factorization.size() > 1 && varSet.size() == 1) {
         // System.out.println(factorization);
@@ -1391,8 +1406,7 @@ public class Algebra {
           if (subList.isPresent()) {
             for (int j = 1; j < subList.size(); j++) {
               IAST solveFunction = F.Solve(
-                  F.Equal(
-                      F.Subtract(substitutions.replaceBackward(varList.arg1()), subList.get(j)),
+                  F.Equal(F.Subtract(substitutions.replaceBackward(varList.arg1()), subList.get(j)),
                       F.C0), //
                   originalVarList.arg1(), //
                   F.Rule(S.GenerateConditions,
@@ -1434,7 +1448,8 @@ public class Algebra {
       IExpr extension = options[1];
       IExpr gaussianIntegers = options[2];
       boolean trig = options[3].isTrue();
-      if (options[MODULUS_OPTION].isZero() && extension.equals(S.None) && gaussianIntegers.isFalse()) {
+      if (options[MODULUS_OPTION].isZero() && extension.equals(S.None)
+          && gaussianIntegers.isFalse()) {
         return AlgebraUtil.factor(ast, arg1, eVar, false, true, true, trig, engine);
       }
 
@@ -1513,7 +1528,8 @@ public class Algebra {
 
         if (options[MODULUS_OPTION].isZero() && options[1].equals(S.None) && options[2].isFalse()) {
           if (expr.isAST()) {
-            IExpr temp = AlgebraUtil.factorExpr((IAST) expr, (IAST) expr, eVar, true, true, false, engine);
+            IExpr temp =
+                AlgebraUtil.factorExpr((IAST) expr, (IAST) expr, eVar, true, true, false, engine);
             engine.putCache(ast, temp);
             if (temp.isPresent()) {
               return temp;

@@ -1606,30 +1606,125 @@ public class AlgebraUtil {
     return F.NIL;
   }
 
-  public static IExpr factorWithPolynomialHomogenization(IAST expr, VariablesSet eVar,
-      boolean trig, EvalEngine engine) {
-    boolean gaussianIntegers = !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
-    PolynomialHomogenization substitutions = new PolynomialHomogenization(engine);
-    IExpr subsPolynomial =
-        trig ? substitutions.replaceForward(expr) : substitutions.replaceForward(expr);
-    // System.out.println(subsPolynomial.toString());
-    // System.out.println(substitutions.substitutedVariables());
-    if (substitutions.size() == 0) {
-      return factorComplex(expr, eVar.getVarList(), S.Times, gaussianIntegers, engine);
+  private static IExpr distributeLaurentDenominator(IExpr numeratorFact, IExpr denominatorFact,
+      Set<ISymbol> varSet, EvalEngine engine) {
+    IASTAppendable newFactors = F.TimesAlloc(numeratorFact.isTimes() ? numeratorFact.argSize() : 2);
+    Map<ISymbol, IExpr> totalPowers = new HashMap<>();
+    for (ISymbol v : varSet) {
+      totalPowers.put(v, F.C0);
     }
-    if (subsPolynomial.isAST()) {
-      // System.out.println(subsPolynomial);
-      Set<ISymbol> varSet = substitutions.substitutedVariablesSet();
-      eVar.addAll(varSet);
-      IExpr factorization =
-          factorComplex(subsPolynomial, eVar.getVarList(), S.Times, gaussianIntegers, engine);
-      if (factorization.isPresent()) {
-        return trig ? substitutions.replaceBackward(factorization)
-            : substitutions.replaceBackward(factorization);
+
+    if (numeratorFact.isTimes()) {
+      for (int i = 1; i <= numeratorFact.argSize(); i++) {
+        IExpr factor = numeratorFact.get(i);
+        IExpr base = factor.isPower() ? factor.base() : factor;
+        IExpr exp = factor.isPower() ? factor.exponent() : F.C1;
+
+        IExpr newBase = base;
+        for (ISymbol v : varSet) {
+          IExpr degree = engine.evaluate(F.Exponent(newBase, v));
+          if (degree.isInteger() && !degree.isZero()) {
+            IExpr halfDegree = engine.evaluate(F.Times(degree, F.C1D2));
+            newBase = engine.evaluate(F.Expand(F.Times(newBase, F.Power(v, halfDegree.negate()))));
+            totalPowers.put(v,
+                engine.evaluate(F.Plus(totalPowers.get(v), F.Times(halfDegree, exp))));
+          }
+        }
+        newFactors.append(engine.evaluate(F.Power(newBase, exp)));
+      }
+    } else {
+      IExpr factor = numeratorFact;
+      IExpr base = factor.isPower() ? factor.base() : factor;
+      IExpr exp = factor.isPower() ? factor.exponent() : F.C1;
+
+      IExpr newBase = base;
+      for (ISymbol v : varSet) {
+        IExpr degree = engine.evaluate(F.Exponent(newBase, v));
+        if (degree.isInteger() && !degree.isZero()) {
+          IExpr halfDegree = engine.evaluate(F.Times(degree, F.C1D2));
+          newBase = engine.evaluate(F.Expand(F.Times(newBase, F.Power(v, halfDegree.negate()))));
+          totalPowers.put(v, engine.evaluate(F.Plus(totalPowers.get(v), F.Times(halfDegree, exp))));
+        }
+      }
+      newFactors.append(engine.evaluate(F.Power(newBase, exp)));
+    }
+
+    IExpr newDenominator = denominatorFact;
+    for (ISymbol v : varSet) {
+      IExpr tp = totalPowers.get(v);
+      if (!tp.isZero()) {
+        newDenominator =
+            engine.evaluate(F.Expand(F.Times(newDenominator, F.Power(v, tp.negate()))));
       }
     }
+    return engine.evaluate(F.Divide(newFactors.oneIdentity1(), newDenominator));
+  }
+
+  public static IExpr factorWithPolynomialHomogenization(IAST expr, VariablesSet eVar,
+      boolean trig, EvalEngine engine) {
+    boolean originalHasComplex = !expr.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
+    PolynomialHomogenization substitutions = new PolynomialHomogenization(engine, trig);
+    IExpr subsPolynomial = substitutions.replaceForward(expr);
+
+    // Update gaussianIntegers based on the homogenized polynomial to support TrigToExp complex
+    // numbers
+    boolean gaussianIntegers = originalHasComplex;
+    if (!gaussianIntegers) {
+      gaussianIntegers = !subsPolynomial.isFree(x -> x.isComplex() || x.isComplexNumeric(), false);
+    }
+
+    IExpr factorization = F.NIL;
+
+    if (subsPolynomial.isAST()) {
+      Set<ISymbol> varSet = substitutions.substitutedVariablesSet();
+      eVar.addAll(varSet);
+
+      // Support Laurent polynomials (negative exponents) by converting them to a rational
+      // expression first
+      IExpr[] fractionParts = numeratorDenominator((IAST) subsPolynomial, true, engine);
+
+      if (!fractionParts[1].isOne()) {
+        IExpr numeratorFact =
+            factorComplex(fractionParts[0], eVar.getVarList(), S.Times, gaussianIntegers, engine);
+        if (numeratorFact.isPresent()) {
+          IExpr denominatorFact =
+              factorComplex(fractionParts[1], eVar.getVarList(), S.Times, gaussianIntegers, engine);
+          IExpr denom = denominatorFact.isPresent() ? denominatorFact : fractionParts[1];
+
+          if (trig && !varSet.isEmpty()) {
+            factorization = distributeLaurentDenominator(numeratorFact, denom, varSet, engine);
+          } else {
+            factorization = engine.evaluate(F.Divide(numeratorFact, denom));
+          }
+        }
+      } else {
+        IExpr numeratorFact =
+            factorComplex(fractionParts[0], eVar.getVarList(), S.Times, gaussianIntegers, engine);
+        if (trig && !varSet.isEmpty() && numeratorFact.isPresent()) {
+          factorization = distributeLaurentDenominator(numeratorFact, F.C1, varSet, engine);
+        } else {
+          factorization = numeratorFact.isPresent() ? numeratorFact : fractionParts[0];
+        }
+      }
+    } else {
+      factorization =
+          factorComplex(subsPolynomial, eVar.getVarList(), S.Times, gaussianIntegers, engine);
+    }
+
+    if (factorization.isPresent()) {
+      IExpr result = substitutions.replaceBackward(factorization);
+      // Safety net: avoid generating complex numbers in the final result if they weren't present
+      // originally
+      // if (!originalHasComplex
+      // && !result.isFree(x -> x.isComplex() || x.isComplexNumeric(), false)) {
+      // return expr;
+      // }
+      return result;
+    }
+
     return expr;
   }
+
 
   /**
    * Determine common factors in a <code>Plus(...)</code> expression. Index <code>[0]</code>
