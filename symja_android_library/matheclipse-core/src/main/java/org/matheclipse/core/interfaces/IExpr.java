@@ -2811,6 +2811,15 @@ public interface IExpr
   }
 
   /**
+   * Test if this expression is a built-in function (i.e. <code>this instanceof IAST</code> and
+   * <code>head() instanceof IBuiltInSymbol</code>) and the number of arguments are allowed for this
+   * function.
+   */
+  default boolean isValidBuiltInFunction() {
+    return false;
+  }
+
+  /**
    * Test if this expression is a symbol (instanceof {@link BuiltInSymbol}, {@link BuiltInDummy},
    * {@link IBuiltInSymbol})
    */

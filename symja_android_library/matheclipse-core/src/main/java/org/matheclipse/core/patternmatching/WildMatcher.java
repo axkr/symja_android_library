@@ -179,11 +179,10 @@ public class WildMatcher extends PatternMatcher implements Externalizable {
     if (pat.isAST()) {
       IAST patAST = (IAST) pat;
       IExpr head = patAST.head();
-
       // 3a. Same-head matching
       if (expr.isAST() && head.equals(expr.head())) {
         IAST exprAST = (IAST) expr;
-        if (head.isBuiltInSymbol()) {
+        if (patAST.isValidBuiltInFunction()) {
           switch (((IBuiltInSymbol) head).ordinal()) {
             case ID.Plus:
             case ID.Times:

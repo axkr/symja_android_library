@@ -642,6 +642,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return false;
     }
 
+    @Override
+    public boolean isValidBuiltInFunction() {
+      return false;
+    }
+
     /** {@inheritDoc} */
     @Override
     public boolean isComparatorFunction() {
@@ -3491,10 +3496,27 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return head() instanceof IBuiltInSymbol;
   }
 
+
   /** {@inheritDoc} */
   @Override
   public boolean isComparatorFunction() {
     return head().isComparatorFunctionSymbol() && size() > 2;
+  }
+
+  @Override
+  public boolean isValidBuiltInFunction() {
+    if (!(head() instanceof IBuiltInSymbol)) {
+      return false;
+    }
+    IBuiltInSymbol head = (IBuiltInSymbol) head();
+    int[] expectedArgSize = head.getEvaluator().expectedArgSize(this);
+    if (expectedArgSize != null) {
+      int argSize = argSize();
+      if (argSize < expectedArgSize[0] || argSize > expectedArgSize[1]) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /** {@inheritDoc} */

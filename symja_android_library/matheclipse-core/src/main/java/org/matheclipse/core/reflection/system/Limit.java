@@ -690,17 +690,18 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
 
       if (expr.isAST()) {
         IAST ast = (IAST) expr;
-        IExpr head = ast.head();
-
-        // Do not traverse into scoping constructs or limits to avoid recursive evaluation traps
-        if (head.equals(S.Limit) || head.equals(S.Derivative) || head.equals(S.Integrate)
-            || head.equals(S.Sum) || head.equals(S.Product) || head.equals(S.O)) {
-          return F.NIL;
-        }
-
-        if (head.isBuiltInSymbol()) {
+        if (ast.isValidBuiltInFunction()) {
+          IExpr head = ast.head();
           switch (((IBuiltInSymbol) head).ordinal()) {
-
+            case ID.Derivative:
+            case ID.Integrate:
+            case ID.Limit:
+            case ID.Sum:
+            case ID.O:
+            case ID.Product:
+              // Do not traverse into scoping constructs or limits to avoid recursive evaluation
+              // traps
+              return F.NIL;
             case ID.Plus:
             case ID.Times: {
               IExpr currentMrv = F.NIL;
@@ -849,30 +850,27 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         // Match Log(Gamma(...)), Log(Factorial(...)), Log(Pochhammer(...))
         if (head.equals(S.Log) && ast.arg1().isAST()) {
           IAST innerAst = (IAST) ast.arg1();
-          IExpr innerHead = innerAst.head();
-          if (innerHead.isBuiltInSymbol()) {
-            switch (((IBuiltInSymbol) innerHead).ordinal()) {
-              case ID.Factorial: {
-                // Log(x!) -> Log(Gamma(x+1))
-                IExpr arg = replaceLogStirling(innerAst.arg1(), x, engine);
-                return replaceLogStirling(engine.evaluate(F.Log(F.Gamma(F.Plus(arg, F.C1)))), x,
-                    engine);
-              }
-              case ID.Pochhammer: {
-                // Log(Pochhammer(a, b)) -> Log(Gamma(a+b)) - Log(Gamma(a))
-                IExpr a = replaceLogStirling(innerAst.arg1(), x, engine);
-                IExpr b = replaceLogStirling(innerAst.arg2(), x, engine);
-                return engine.evaluate(
-                    F.Subtract(replaceLogStirling(F.Log(F.Gamma(F.Plus(a, b))), x, engine),
-                        replaceLogStirling(F.Log(F.Gamma(a)), x, engine)));
-              }
-              case ID.Gamma: {
-                // Log(Gamma(z)) ~ z*Log(z) - z + (1/2)*Log(2*Pi/z) + 1/(12*z)
-                IExpr arg = replaceLogStirling(innerAst.arg1(), x, engine);
-                return engine.evaluate(F.Plus(F.Times(arg, F.Log(arg)), F.Negate(arg),
-                    F.Times(F.C1D2, F.Log(F.Divide(F.Times(F.C2, S.Pi), arg))),
-                    F.Divide(F.C1, F.Times(F.ZZ(12), arg))));
-              }
+          switch (innerAst.validHeadID()) {
+            case ID.Factorial: {
+              // Log(x!) -> Log(Gamma(x+1))
+              IExpr arg = replaceLogStirling(innerAst.arg1(), x, engine);
+              return replaceLogStirling(engine.evaluate(F.Log(F.Gamma(F.Plus(arg, F.C1)))), x,
+                  engine);
+            }
+            case ID.Pochhammer: {
+              // Log(Pochhammer(a, b)) -> Log(Gamma(a+b)) - Log(Gamma(a))
+              IExpr a = replaceLogStirling(innerAst.arg1(), x, engine);
+              IExpr b = replaceLogStirling(innerAst.arg2(), x, engine);
+              return engine
+                  .evaluate(F.Subtract(replaceLogStirling(F.Log(F.Gamma(F.Plus(a, b))), x, engine),
+                      replaceLogStirling(F.Log(F.Gamma(a)), x, engine)));
+            }
+            case ID.Gamma: {
+              // Log(Gamma(z)) ~ z*Log(z) - z + (1/2)*Log(2*Pi/z) + 1/(12*z)
+              IExpr arg = replaceLogStirling(innerAst.arg1(), x, engine);
+              return engine.evaluate(F.Plus(F.Times(arg, F.Log(arg)), F.Negate(arg),
+                  F.Times(F.C1D2, F.Log(F.Divide(F.Times(F.C2, S.Pi), arg))),
+                  F.Divide(F.C1, F.Times(F.ZZ(12), arg))));
             }
           }
         } else if (head.equals(S.LogGamma)) {
@@ -2362,41 +2360,38 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     }
     if (expr.isAST()) {
       IAST ast = (IAST) expr;
-      IExpr head = ast.head();
-      if (head.isBuiltInSymbol()) {
-        switch (((IBuiltInSymbol) head).ordinal()) {
-          case ID.Factorial: {
-            // x! -> Gamma(x+1)
-            IExpr arg = replaceStirling(ast.arg1(), x, engine);
-            return replaceStirling(engine.evaluate(F.Gamma(F.Plus(arg, F.C1))), x, engine);
-          }
-          case ID.Pochhammer: {
-            // Pochhammer(a, b) -> Gamma(a+b)/Gamma(a)
-            IExpr a = replaceStirling(ast.arg1(), x, engine);
-            IExpr b = replaceStirling(ast.arg2(), x, engine);
-            return replaceStirling(engine.evaluate(F.Divide(F.Gamma(F.Plus(a, b)), F.Gamma(a))), x,
-                engine);
-          }
-          case ID.Gamma: {
-            // Stirling's Approximation maps Gamma growth strictly to Exp and Log
-            // Gamma(z) ~ Sqrt(2*Pi/z) * Exp(z*Log(z) - z + 1/(12*z))
-            IExpr arg = replaceStirling(ast.arg1(), x, engine);
-            return engine.evaluate(F.Times(F.Power(F.Divide(F.Times(F.C2, S.Pi), arg), F.C1D2),
-                F.Exp(F.Plus(F.Times(arg, F.Log(arg)), F.Negate(arg),
-                    F.Divide(F.C1, F.Times(F.ZZ(12), arg))))));
-          }
-          case ID.LogGamma: {
-            // LogGamma(z) ~ z*Log(z) - z + (1/2)*Log(2*Pi/z) + 1/(12*z)
-            IExpr arg = replaceStirling(ast.arg1(), x, engine);
-            return engine.evaluate(F.Plus(F.Times(arg, F.Log(arg)), F.Negate(arg),
-                F.Times(F.C1D2, F.Log(F.Divide(F.Times(F.C2, S.Pi), arg))),
-                F.Divide(F.C1, F.Times(F.ZZ(12), arg))));
-          }
-          default:
-            break;
+      switch (ast.validHeadID()) {
+        case ID.Factorial: {
+          // x! -> Gamma(x+1)
+          IExpr arg = replaceStirling(ast.arg1(), x, engine);
+          return replaceStirling(engine.evaluate(F.Gamma(F.Plus(arg, F.C1))), x, engine);
         }
+        case ID.Pochhammer: {
+          // Pochhammer(a, b) -> Gamma(a+b)/Gamma(a)
+          IExpr a = replaceStirling(ast.arg1(), x, engine);
+          IExpr b = replaceStirling(ast.arg2(), x, engine);
+          return replaceStirling(engine.evaluate(F.Divide(F.Gamma(F.Plus(a, b)), F.Gamma(a))), x,
+              engine);
+        }
+        case ID.Gamma: {
+          // Stirling's Approximation maps Gamma growth strictly to Exp and Log
+          // Gamma(z) ~ Sqrt(2*Pi/z) * Exp(z*Log(z) - z + 1/(12*z))
+          IExpr arg = replaceStirling(ast.arg1(), x, engine);
+          return engine.evaluate(F.Times(F.Power(F.Divide(F.Times(F.C2, S.Pi), arg), F.C1D2),
+              F.Exp(F.Plus(F.Times(arg, F.Log(arg)), F.Negate(arg),
+                  F.Divide(F.C1, F.Times(F.ZZ(12), arg))))));
+        }
+        case ID.LogGamma: {
+          // LogGamma(z) ~ z*Log(z) - z + (1/2)*Log(2*Pi/z) + 1/(12*z)
+          IExpr arg = replaceStirling(ast.arg1(), x, engine);
+          return engine.evaluate(F.Plus(F.Times(arg, F.Log(arg)), F.Negate(arg),
+              F.Times(F.C1D2, F.Log(F.Divide(F.Times(F.C2, S.Pi), arg))),
+              F.Divide(F.C1, F.Times(F.ZZ(12), arg))));
+        }
+        default:
+          break;
       }
-      IASTAppendable result = F.ast(head, ast.argSize());
+      IASTAppendable result = F.ast(ast.head(), ast.argSize());
       for (int i = 1; i <= ast.argSize(); i++) {
         result.append(replaceStirling(ast.get(i), x, engine));
       }
@@ -2711,9 +2706,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       // direct substitution. This runs exactly once per top-level Limit call.
       if (arg1.isTimes() && arg1.leafCount() < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT
           && !arg1.isFree(rule.arg1())) {
-        boolean hasDenominator = ((IAST) arg1).exists(x -> x.isPower()
-            && x.exponent().isInteger() && x.exponent().isNegative()
-            && !x.base().isFree(rule.arg1()));
+        boolean hasDenominator = ((IAST) arg1).exists(x -> x.isPower() && x.exponent().isInteger()
+            && x.exponent().isNegative() && !x.base().isFree(rule.arg1()));
         if (hasDenominator) {
           IExpr cancelled = engine.evalQuiet(F.Cancel(arg1));
           if (cancelled.isPresent() && !cancelled.isIndeterminate()

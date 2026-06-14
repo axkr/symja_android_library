@@ -61,7 +61,7 @@ public class LogicalExpand extends AbstractFunctionEvaluator {
         IAST formula = (IAST) x;
         IExpr head = formula.head();
 
-        if (head.isBuiltInSymbol()) {
+        if (formula.isValidBuiltInFunction()) {
           IExpr converted = formula;
           int ordinal = ((IBuiltInSymbol) head).ordinal();
           switch (ordinal) {

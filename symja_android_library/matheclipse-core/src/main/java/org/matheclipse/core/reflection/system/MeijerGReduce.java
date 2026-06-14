@@ -60,7 +60,7 @@ public class MeijerGReduce extends AbstractFunctionEvaluator {
 
     if (expr.isAST1()) {
       IExpr head = expr.head();
-      if (head.isBuiltInSymbol()) {
+      if (expr.isValidBuiltInFunction()) {
         IExpr arg = expr.first();
         IExpr[] linear = arg.linear(x);
 
@@ -68,7 +68,6 @@ public class MeijerGReduce extends AbstractFunctionEvaluator {
           IExpr aTimesX = arg;
           IAST emptyList = F.List();
           IAST aLists = F.List(emptyList, emptyList);
-
           switch (((IBuiltInSymbol) head).ordinal()) {
             case ID.Sin:
               // Sin(z) = Sqrt(Pi) * MeijerG({{}, {}}, {{1/2}, {0}}, z/2, 1/2)
