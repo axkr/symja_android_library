@@ -7047,6 +7047,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testExpToTrig() {
+    check("ExpToTrig(Log(2+x)-Log(2-x))", //
+        "2*ArcTanh(x/2)");
+    check("ExpToTrig(Log(1+I*x)-Log(1-I*x))", //
+        "I*2*ArcTan(x)");
     check("TrigToExp(Sin(x))", //
         "(I*1/2)/E^(I*x)-I*1/2*E^(I*x)");
     check("ExpToTrig((I*1/2)/E^(I*x))", //
@@ -7199,7 +7203,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("Factor(3*Tan(3*x)-Tan(x)+2,Trig->True)", //
     // "((Cos(2*x)+I*Sin(2*x))*(-2+4*Cos(2*x)+4*Sin(2*x)))/(1-Cos(2*x)+Cos(4*x)-I*Sin(2*x)+I*Sin(\n"
     // + "4*x))");
-
+    check("Factor(Cos(2*x)+3*Sin(x)-2,Trig->True)", //
+        "(1/Sqrt(Sin(x))-Sqrt(Sin(x)))*(-1/Sqrt(Sin(x))+2*Sqrt(Sin(x)))*Sin(x)");
     check("Factor(1+x^2, Extension->I)", //
         "(-I+x)*(I+x)");
 
@@ -7471,7 +7476,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // example from paper
     System.out.print('.');
     check("Factor(3*Sech(x)^2+4*Tanh(x)+1,Trig->True)", //
-        "1+3*Sech(x)^2+4*Tanh(x)");
+        "Sech(x)*Sqrt(Tanh(x))*(Cosh(x)/Sqrt(Tanh(x))+(3*Sech(x))/Sqrt(Tanh(x))+4*Cosh(x)*Sqrt(Tanh(x)))");
     System.out.print('.');
     check("TrigToExp(3*Sech(x)^2+4*Tanh(x)+1)", //
         "1+12/(E^(-x)+E^x)^2+4*(-1/(E^x*(E^(-x)+E^x))+E^x/(E^(-x)+E^x))");
@@ -24659,10 +24664,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testTrigFactor() {
     // TODO TrigFactor is experimental and working very slow at the moment
-    // check("TrigFactor(Cos(x)^3 + Sin(x)^3)", //
-    // "(Cos(x)+Sin(x))*(1-Cos(x)*Sin(x))");
-    // check("TrigFactor(Sin(x)^2 + Tan(x)^2)", //
-    // "");
+    check("TrigFactor(Cos(x)^3 + Sin(x)^3)", //
+        "(Cos(x)+Sin(x))*(1-Cos(x)*Sin(x))");
+    check("TrigFactor(Sin(x)^2 + Tan(x)^2)", //
+        "(2-Sin(x)^2)*Tan(x)^2");
   }
 
   @Test

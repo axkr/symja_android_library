@@ -9,7 +9,6 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -143,7 +142,7 @@ public class DifferenceDelta extends AbstractCoreFunctionEvaluator {
         if (linear != null) {
           IExpr a = linear[1];
           IExpr nExpr = F.ZZ(n);
-          switch (((IBuiltInSymbol) head).ordinal()) {
+          switch (f.validHeadID()) {
             case ID.Sin: {
               // 2^n * Sin[a*h/2]^n * Sin[c + a*x + n*(a*h + Pi)/2]
               IExpr coeff =

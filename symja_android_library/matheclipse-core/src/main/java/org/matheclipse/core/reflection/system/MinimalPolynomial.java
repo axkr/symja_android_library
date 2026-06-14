@@ -9,7 +9,6 @@ import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -149,99 +148,96 @@ public class MinimalPolynomial extends AbstractFunctionEvaluator {
 
     if (expr.isAST()) {
       IAST ast = (IAST) expr;
-      IExpr head = ast.head();
 
-      if (head.isBuiltInSymbol()) {
-        switch (((IBuiltInSymbol) head).ordinal()) {
-          case ID.Power: {
-            if (ast.arg2().isRational()) {
-              IRational exponent = (IRational) ast.arg2();
-              if (!exponent.isInteger()) {
-                IExpr base =
-                    extractRadicals(ast.arg1(), equations, variables, engine, cache, counter);
-                IInteger num = exponent.numerator();
-                IInteger den = exponent.denominator();
+      switch (ast.headID()) {
+        case ID.Power: {
+          if (ast.arg2().isRational()) {
+            IRational exponent = (IRational) ast.arg2();
+            if (!exponent.isInteger()) {
+              IExpr base =
+                  extractRadicals(ast.arg1(), equations, variables, engine, cache, counter);
+              IInteger num = exponent.numerator();
+              IInteger den = exponent.denominator();
 
-                // Cache key representing base^(1/den)
-                IExpr key = F.Power(base, F.QQ(F.C1, den));
-                ISymbol var = cache.get(key);
+              // Cache key representing base^(1/den)
+              IExpr key = F.Power(base, F.QQ(F.C1, den));
+              ISymbol var = cache.get(key);
 
-                if (var == null) {
-                  var = F.$s("r" + counter[0]++);
-                  cache.put(key, var);
-                  variables.append(var);
+              if (var == null) {
+                var = F.$s("r" + counter[0]++);
+                cache.put(key, var);
+                variables.append(var);
 
-                  // Add relation: var^den - base == 0
-                  IExpr eq = engine.evaluate(F.Subtract(F.Power(var, den), base));
-                  equations.append(eq);
-                }
+                // Add relation: var^den - base == 0
+                IExpr eq = engine.evaluate(F.Subtract(F.Power(var, den), base));
+                equations.append(eq);
+              }
 
-                // Linearize negative fractional exponents (e.g. 1/Sqrt(5))
-                if (num.isNegativeResult()) {
-                  IExpr posNum = engine.evaluate(F.Times(F.CN1, num));
-                  IExpr invKey = F.Power(var, num);
-                  ISymbol invVar = cache.get(invKey);
-                  if (invVar == null) {
-                    invVar = F.$s("r" + counter[0]++);
-                    cache.put(invKey, invVar);
-                    variables.append(invVar);
-                    // Relation: invVar * var^posNum - 1 == 0
-                    equations.append(
-                        engine.evaluate(F.Subtract(F.Times(invVar, F.Power(var, posNum)), F.C1)));
-                  }
-                  return invVar;
-                } else {
-                  return F.Power(var, num);
-                }
-              } else if (exponent.isNegativeResult()) {
-                // Linearize negative integer exponents (e.g. base^(-2))
-                IExpr base =
-                    extractRadicals(ast.arg1(), equations, variables, engine, cache, counter);
-                IExpr posNum = engine.evaluate(F.Times(F.CN1, exponent));
-                IExpr invKey = F.Power(base, exponent);
+              // Linearize negative fractional exponents (e.g. 1/Sqrt(5))
+              if (num.isNegativeResult()) {
+                IExpr posNum = engine.evaluate(F.Times(F.CN1, num));
+                IExpr invKey = F.Power(var, num);
                 ISymbol invVar = cache.get(invKey);
                 if (invVar == null) {
                   invVar = F.$s("r" + counter[0]++);
                   cache.put(invKey, invVar);
                   variables.append(invVar);
-                  // Relation: invVar * base^posNum - 1 == 0
+                  // Relation: invVar * var^posNum - 1 == 0
                   equations.append(
-                      engine.evaluate(F.Subtract(F.Times(invVar, F.Power(base, posNum)), F.C1)));
+                      engine.evaluate(F.Subtract(F.Times(invVar, F.Power(var, posNum)), F.C1)));
                 }
                 return invVar;
+              } else {
+                return F.Power(var, num);
               }
+            } else if (exponent.isNegativeResult()) {
+              // Linearize negative integer exponents (e.g. base^(-2))
+              IExpr base =
+                  extractRadicals(ast.arg1(), equations, variables, engine, cache, counter);
+              IExpr posNum = engine.evaluate(F.Times(F.CN1, exponent));
+              IExpr invKey = F.Power(base, exponent);
+              ISymbol invVar = cache.get(invKey);
+              if (invVar == null) {
+                invVar = F.$s("r" + counter[0]++);
+                cache.put(invKey, invVar);
+                variables.append(invVar);
+                // Relation: invVar * base^posNum - 1 == 0
+                equations.append(
+                    engine.evaluate(F.Subtract(F.Times(invVar, F.Power(base, posNum)), F.C1)));
+              }
+              return invVar;
             }
+          }
 
-            IASTAppendable powerAlloc = F.ast(head, ast.argSize());
-            for (int i = 1; i <= ast.argSize(); i++) {
-              powerAlloc.append(
-                  extractRadicals(ast.get(i), equations, variables, engine, cache, counter));
-            }
-            return powerAlloc;
+          IASTAppendable powerAlloc = F.ast(ast.head(), ast.argSize());
+          for (int i = 1; i <= ast.argSize(); i++) {
+            powerAlloc
+                .append(extractRadicals(ast.get(i), equations, variables, engine, cache, counter));
           }
-          case ID.Plus: {
-            IASTAppendable plusAlloc = F.PlusAlloc(ast.argSize());
-            for (int i = 1; i <= ast.argSize(); i++) {
-              plusAlloc.append(
-                  extractRadicals(ast.get(i), equations, variables, engine, cache, counter));
-            }
-            return plusAlloc;
-          }
-          case ID.Times: {
-            IASTAppendable timesAlloc = F.TimesAlloc(ast.argSize());
-            for (int i = 1; i <= ast.argSize(); i++) {
-              timesAlloc.append(
-                  extractRadicals(ast.get(i), equations, variables, engine, cache, counter));
-            }
-            return timesAlloc;
-          }
-          default:
-            break;
+          return powerAlloc;
         }
+        case ID.Plus: {
+          IASTAppendable plusAlloc = F.PlusAlloc(ast.argSize());
+          for (int i = 1; i <= ast.argSize(); i++) {
+            plusAlloc
+                .append(extractRadicals(ast.get(i), equations, variables, engine, cache, counter));
+          }
+          return plusAlloc;
+        }
+        case ID.Times: {
+          IASTAppendable timesAlloc = F.TimesAlloc(ast.argSize());
+          for (int i = 1; i <= ast.argSize(); i++) {
+            timesAlloc
+                .append(extractRadicals(ast.get(i), equations, variables, engine, cache, counter));
+          }
+          return timesAlloc;
+        }
+        default:
+          break;
       }
 
       // Default AST handling
-      IASTAppendable newAST = F.ast(head, ast.argSize());
+      IASTAppendable newAST = F.ast(ast.head(), ast.argSize());
       for (int i = 1; i <= ast.argSize(); i++) {
         newAST.append(extractRadicals(ast.get(i), equations, variables, engine, cache, counter));
       }

@@ -1154,41 +1154,37 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
   private static IExpr tr3Step(IExpr expr) {
     if (expr.isAST1()) {
       IExpr arg1 = expr.first();
-      IExpr head = expr.head();
+      IBuiltInSymbol newHead = null;
+      switch (expr.validHeadID()) {
+        case ID.Cos:
+          newHead = S.Sin;
+          break;
+        case ID.Sin:
+          newHead = S.Cos;
+          break;
+        case ID.Cot:
+          newHead = S.Tan;
+          break;
+        case ID.Tan:
+          newHead = S.Cot;
+          break;
+        case ID.Csc:
+          newHead = S.Sec;
+          break;
+        case ID.Sec:
+          newHead = S.Csc;
+          break;
+      }
 
-      if (head.isBuiltInSymbol()) {
-        IBuiltInSymbol newHead = null;
-        switch (((IBuiltInSymbol) head).ordinal()) {
-          case ID.Cos:
-            newHead = S.Sin;
-            break;
-          case ID.Sin:
-            newHead = S.Cos;
-            break;
-          case ID.Cot:
-            newHead = S.Tan;
-            break;
-          case ID.Tan:
-            newHead = S.Cot;
-            break;
-          case ID.Csc:
-            newHead = S.Sec;
-            break;
-          case ID.Sec:
-            newHead = S.Csc;
-            break;
-        }
+      if (newHead != null) {
+        // Force evaluation so Symja can accurately determine positivity
+        // and output a minimal AST (e.g., Pi/11 instead of Pi/2 - 9/22*Pi)
+        IExpr sub1 = F.eval(F.Subtract(arg1, F.CPiQuarter));
+        IExpr sub2 = F.eval(F.Subtract(F.CPiHalf, arg1));
 
-        if (newHead != null) {
-          // Force evaluation so Symja can accurately determine positivity
-          // and output a minimal AST (e.g., Pi/11 instead of Pi/2 - 9/22*Pi)
-          IExpr sub1 = F.eval(F.Subtract(arg1, F.CPiQuarter));
-          IExpr sub2 = F.eval(F.Subtract(F.CPiHalf, arg1));
-
-          // Angle must be strictly between Pi/4 and Pi/2
-          if (sub1.isPositiveResult() && sub2.isPositiveResult()) {
-            return F.unaryAST1(newHead, sub2);
-          }
+        // Angle must be strictly between Pi/4 and Pi/2
+        if (sub1.isPositiveResult() && sub2.isPositiveResult()) {
+          return F.unaryAST1(newHead, sub2);
         }
       }
     }

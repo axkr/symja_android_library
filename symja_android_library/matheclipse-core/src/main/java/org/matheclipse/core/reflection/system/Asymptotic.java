@@ -108,19 +108,16 @@ public class Asymptotic extends AbstractFunctionOptionEvaluator {
     // Handles unevaluated equations (e.g., failed quintic algebraic curves)
     if (expr.isAST()) {
       IAST exprAST = (IAST) expr;
-      IExpr head = exprAST.head();
 
-      if (head.isBuiltInSymbol()) {
-        switch (((IBuiltInSymbol) head).ordinal()) {
-          case ID.DSolveValue:
-            return engine.evaluate(F.AsymptoticDSolveValue(exprAST.arg1(), exprAST.arg2(), spec));
-          case ID.RSolveValue:
-            return engine.evaluate(F.AsymptoticRSolveValue(exprAST.arg1(), exprAST.arg2(), spec));
-          case ID.Solve:
-            return engine.evaluate(F.AsymptoticSolve(exprAST.arg1(), exprAST.arg2(), spec));
-          case ID.Integrate:
-            return engine.evaluate(F.AsymptoticIntegrate(exprAST.arg1(), exprAST.arg2(), spec));
-        }
+      switch (exprAST.validHeadID()) {
+        case ID.DSolveValue:
+          return engine.evaluate(F.AsymptoticDSolveValue(exprAST.arg1(), exprAST.arg2(), spec));
+        case ID.RSolveValue:
+          return engine.evaluate(F.AsymptoticRSolveValue(exprAST.arg1(), exprAST.arg2(), spec));
+        case ID.Solve:
+          return engine.evaluate(F.AsymptoticSolve(exprAST.arg1(), exprAST.arg2(), spec));
+        case ID.Integrate:
+          return engine.evaluate(F.AsymptoticIntegrate(exprAST.arg1(), exprAST.arg2(), spec));
       }
 
       // 5. Structural Asymptotic Expansion using generalized BellY polynomials

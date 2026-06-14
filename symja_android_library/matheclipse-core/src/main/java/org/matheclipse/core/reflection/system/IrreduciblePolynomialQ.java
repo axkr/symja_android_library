@@ -181,9 +181,8 @@ public class IrreduciblePolynomialQ extends AbstractFunctionOptionEvaluator {
     if (factored.isAST()) {
       IAST astFactored = (IAST) factored;
       IExpr head = astFactored.head();
-
       if (head.isBuiltInSymbol()) {
-        switch (((IBuiltInSymbol) head).ordinal()) {
+        switch (astFactored.headID()) {
           case ID.Factor:
             // Factor could not evaluate the polynomial (e.g., unsupported extension)
             return F.NIL;

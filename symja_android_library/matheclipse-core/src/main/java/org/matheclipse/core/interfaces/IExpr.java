@@ -2118,6 +2118,12 @@ public interface IExpr
         ID.UNKNOWN;
   }
 
+  default int validHeadID() {
+    return isValidBuiltInFunction() ? //
+        ((IBuiltInSymbol) head()).ordinal() : //
+        ID.UNKNOWN;
+  }
+
   /**
    * Test if <code>this</code> is an {@link IAST} and the <code>head</code> of this AST is a
    * {@link IBuiltInSymbol} those {@link IBuiltInSymbol#getEvaluator()} implements the interface

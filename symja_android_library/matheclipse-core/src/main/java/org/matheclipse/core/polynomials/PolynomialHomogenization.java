@@ -257,6 +257,11 @@ public class PolynomialHomogenization {
    */
   private java.util.Map<ISymbol, IInteger> symbolDenominatorLCM = null;
 
+  /**
+   * If <code>true</code> - the forward substitution phase should also factor trigonometric
+   * functions to increase the chance of successful polynomial factorization.
+   */
+  private boolean isFactorTrigOption = false;
 
   /**
    * Expressions which are substituted with variables(ISymbol) from the original polynomial (forward
@@ -274,7 +279,13 @@ public class PolynomialHomogenization {
    * @param engine the evaluation engine
    */
   public PolynomialHomogenization(EvalEngine engine) {
+    this(engine, true);
+  }
+
+
+  public PolynomialHomogenization(EvalEngine engine, boolean isFactorTrigOption) {
     this.engine = engine;
+    this.isFactorTrigOption = isFactorTrigOption;
   }
 
   /**
@@ -500,9 +511,9 @@ public class PolynomialHomogenization {
    * <li>New dummy symbols are added to {@link #substitutedExpr} and {@link #substitutedVariables}
    * (via {@link #replaceExpressionLCM}).</li>
    * <li>For each base whose LCM denominator is {@literal >} 1, a pending {@code LCM(...)} AST is
-   * accumulated in {@link #symbolLCMAccumulators}. The caller ({@link #replaceForward(IExpr)}) evaluates
-   * that AST and stores the final integer in {@link #symbolDenominatorLCM} before invoking
-   * {@link #replaceForwardRecursive(IExpr)}.</li>
+   * accumulated in {@link #symbolLCMAccumulators}. The caller ({@link #replaceForward(IExpr)})
+   * evaluates that AST and stores the final integer in {@link #symbolDenominatorLCM} before
+   * invoking {@link #replaceForwardRecursive(IExpr)}.</li>
    * </ul>
    *
    * <h3>Example</h3> Given {@code x^(1/2) + x^(3/2)}:

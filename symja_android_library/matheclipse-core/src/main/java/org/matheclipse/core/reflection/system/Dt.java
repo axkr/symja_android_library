@@ -8,7 +8,6 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -95,75 +94,72 @@ public class Dt extends AbstractFunctionOptionEvaluator {
 
     if (f.isAST()) {
       IAST ast = (IAST) f;
-      IExpr head = ast.head();
+      switch (ast.headID()) {
+        case ID.Plus:
+          return ast.mapThread(buildDt(F.Slot1, x, constants), 1);
 
-      if (head.isBuiltInSymbol()) {
-        switch (((IBuiltInSymbol) head).ordinal()) {
-          case ID.Plus:
-            return ast.mapThread(buildDt(F.Slot1, x, constants), 1);
-
-          case ID.Times: {
-            IASTAppendable plus = F.PlusAlloc(ast.argSize());
-            for (int i = 1; i <= ast.argSize(); i++) {
-              IASTAppendable times = F.TimesAlloc(ast.argSize());
-              for (int j = 1; j <= ast.argSize(); j++) {
-                times.append(
-                    i == j ? engine.evaluate(buildDt(ast.get(j), x, constants)) : ast.get(j));
-              }
-              plus.append(times);
+        case ID.Times: {
+          IASTAppendable plus = F.PlusAlloc(ast.argSize());
+          for (int i = 1; i <= ast.argSize(); i++) {
+            IASTAppendable times = F.TimesAlloc(ast.argSize());
+            for (int j = 1; j <= ast.argSize(); j++) {
+              times
+                  .append(i == j ? engine.evaluate(buildDt(ast.get(j), x, constants)) : ast.get(j));
             }
-            return engine.evaluate(plus);
+            plus.append(times);
           }
+          return engine.evaluate(plus);
+        }
 
-          case ID.Power: {
-            IExpr a = ast.base();
-            IExpr b = ast.exponent();
-            IExpr dtA = engine.evaluate(buildDt(a, x, constants));
-            IExpr dtB = engine.evaluate(buildDt(b, x, constants));
-            IExpr term1 = F.Times(dtB, F.Log(a));
-            IExpr term2 = F.Times(b, dtA, F.Power(a, F.CN1));
-            return engine.evaluate(F.Times(ast, F.Plus(term1, term2)));
-          }
+        case ID.Power: {
+          IExpr a = ast.base();
+          IExpr b = ast.exponent();
+          IExpr dtA = engine.evaluate(buildDt(a, x, constants));
+          IExpr dtB = engine.evaluate(buildDt(b, x, constants));
+          IExpr term1 = F.Times(dtB, F.Log(a));
+          IExpr term2 = F.Times(b, dtA, F.Power(a, F.CN1));
+          return engine.evaluate(F.Times(ast, F.Plus(term1, term2)));
+        }
 
-          case ID.Dt: {
-            // Dt(Dt(y, x), x) collapses to Dt(y, {x, 2}).
-            IAST dtAst = (IAST) f;
-            if (dtAst.argSize() >= 2) {
-              IExpr dtX = dtAst.arg2();
-              if (dtX.isList() && dtX.isAST2()) {
-                IAST list = (IAST) dtX;
-                if (list.arg1().equals(x) && list.arg2().isInteger()) {
-                  int n = list.arg2().toIntDefault();
-                  IASTAppendable newDt = F.ast(S.Dt);
-                  newDt.append(dtAst.arg1());
-                  newDt.append(F.List(x, F.ZZ(n + 1)));
-                  for (int j = 3; j <= dtAst.argSize(); j++) {
-                    newDt.append(dtAst.get(j));
-                  }
-                  return newDt;
-                } else if (!list.arg1().equals(x)) {
-                  return F.C0;
+        case ID.Dt: {
+          // Dt(Dt(y, x), x) collapses to Dt(y, {x, 2}).
+          IAST dtAst = (IAST) f;
+          if (dtAst.argSize() >= 2) {
+            IExpr dtX = dtAst.arg2();
+            if (dtX.isList() && dtX.isAST2()) {
+              IAST list = (IAST) dtX;
+              if (list.arg1().equals(x) && list.arg2().isInteger()) {
+                int n = list.arg2().toIntDefault();
+                IASTAppendable newDt = F.ast(S.Dt);
+                newDt.append(dtAst.arg1());
+                newDt.append(F.List(x, F.ZZ(n + 1)));
+                for (int j = 3; j <= dtAst.argSize(); j++) {
+                  newDt.append(dtAst.get(j));
                 }
-              } else if (!dtX.isList()) {
-                if (dtX.equals(x)) {
-                  IASTAppendable newDt = F.ast(S.Dt);
-                  newDt.append(dtAst.arg1());
-                  newDt.append(F.List(x, F.ZZ(2)));
-                  for (int j = 3; j <= dtAst.argSize(); j++) {
-                    newDt.append(dtAst.get(j));
-                  }
-                  return newDt;
-                } else {
-                  return F.C0;
+                return newDt;
+              } else if (!list.arg1().equals(x)) {
+                return F.C0;
+              }
+            } else if (!dtX.isList()) {
+              if (dtX.equals(x)) {
+                IASTAppendable newDt = F.ast(S.Dt);
+                newDt.append(dtAst.arg1());
+                newDt.append(F.List(x, F.ZZ(2)));
+                for (int j = 3; j <= dtAst.argSize(); j++) {
+                  newDt.append(dtAst.get(j));
                 }
+                return newDt;
+              } else {
+                return F.C0;
               }
             }
-            return F.NIL;
           }
+          return F.NIL;
         }
       }
 
       // General Chain Rule calculation
+      IExpr head = ast.head();
       int argSize = ast.argSize();
       IASTAppendable plus = F.PlusAlloc(argSize);
       for (int i = 1; i <= argSize; i++) {
@@ -193,42 +189,39 @@ public class Dt extends AbstractFunctionOptionEvaluator {
 
     if (f.isAST()) {
       IAST ast = (IAST) f;
-      IExpr head = ast.head();
+      switch (ast.headID()) {
+        case ID.Plus:
+          return ast.mapThread(buildDt(F.Slot1, F.NIL, constants), 1);
 
-      if (head.isBuiltInSymbol()) {
-        switch (((IBuiltInSymbol) head).ordinal()) {
-          case ID.Plus:
-            return ast.mapThread(buildDt(F.Slot1, F.NIL, constants), 1);
-
-          case ID.Times: {
-            IASTAppendable plus = F.PlusAlloc(ast.argSize());
-            for (int i = 1; i <= ast.argSize(); i++) {
-              IASTAppendable times = F.TimesAlloc(ast.argSize());
-              for (int j = 1; j <= ast.argSize(); j++) {
-                times.append(
-                    i == j ? engine.evaluate(buildDt(ast.get(j), F.NIL, constants)) : ast.get(j));
-              }
-              plus.append(times);
+        case ID.Times: {
+          IASTAppendable plus = F.PlusAlloc(ast.argSize());
+          for (int i = 1; i <= ast.argSize(); i++) {
+            IASTAppendable times = F.TimesAlloc(ast.argSize());
+            for (int j = 1; j <= ast.argSize(); j++) {
+              times.append(
+                  i == j ? engine.evaluate(buildDt(ast.get(j), F.NIL, constants)) : ast.get(j));
             }
-            return engine.evaluate(plus);
+            plus.append(times);
           }
+          return engine.evaluate(plus);
+        }
 
-          case ID.Power: {
-            IExpr a = ast.base();
-            IExpr b = ast.exponent();
-            IExpr dtA = engine.evaluate(buildDt(a, F.NIL, constants));
-            IExpr dtB = engine.evaluate(buildDt(b, F.NIL, constants));
-            IExpr term1 = F.Times(dtB, F.Log(a));
-            IExpr term2 = F.Times(b, dtA, F.Power(a, F.CN1));
-            return engine.evaluate(F.Times(ast, F.Plus(term1, term2)));
-          }
+        case ID.Power: {
+          IExpr a = ast.base();
+          IExpr b = ast.exponent();
+          IExpr dtA = engine.evaluate(buildDt(a, F.NIL, constants));
+          IExpr dtB = engine.evaluate(buildDt(b, F.NIL, constants));
+          IExpr term1 = F.Times(dtB, F.Log(a));
+          IExpr term2 = F.Times(b, dtA, F.Power(a, F.CN1));
+          return engine.evaluate(F.Times(ast, F.Plus(term1, term2)));
+        }
 
-          case ID.Dt: {
-            return F.NIL; // Keeps nested differentials safely unevaluated.
-          }
+        case ID.Dt: {
+          return F.NIL; // Keeps nested differentials safely unevaluated.
         }
       }
 
+      IExpr head = ast.head();
       int argSize = ast.argSize();
       IASTAppendable plus = F.PlusAlloc(argSize);
       for (int i = 1; i <= argSize; i++) {

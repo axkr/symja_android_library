@@ -1861,7 +1861,12 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // x=\frac{5 \pi}{6}+k 2 \pi
     // \end{array}\right.\right.
     // \end{aligned}
-    check("Solve[ cos(2*x)+3 sin(x)-2==0, x, GenerateConditions -> True]",
+
+    // TODO
+    // check("Factor(Cos(2*x)+3*Sin(x)-2,Trig->True)",
+    // "(1-Sin(x))*(-1+2*Sin(x))");
+
+    check("Solve(cos(2*x)+3*sin(x)-2==0, x, GenerateConditions -> True)",
         "{{x->ConditionalExpression(Pi/6+2*Pi*C(1),C(1)∈Integers)},"
             + "{x->ConditionalExpression(Pi/\n2+2*Pi*C(1),C(1)∈Integers)},"
             + "{x->ConditionalExpression(5/6*Pi+2*Pi*C(1),C(1)∈Integers)}}");
