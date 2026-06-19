@@ -15,7 +15,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: Set up Java for deployment
       uses: ./.github/actions/setup-java-for-deployment
