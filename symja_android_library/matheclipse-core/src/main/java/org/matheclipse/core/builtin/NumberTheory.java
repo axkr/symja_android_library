@@ -15,9 +15,11 @@ import static org.matheclipse.core.expression.F.Times;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -1591,12 +1593,6 @@ public final class NumberTheory {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList()) {
-        // thread over first list
-        IAST list = (IAST) ast.arg1();
-        return list.mapThreadEvaled(engine, F.ListAlloc(list.size()), ast, 1);
-      }
-
       IExpr result = engine.evaluate(F.Divide(ast.arg1(), ast.arg2()));
       if (result.isNumber()) {
         if (result.isComplex()) {
@@ -1610,6 +1606,17 @@ public final class NumberTheory {
           return isRealDivisible((IReal) result);
         }
         return S.False;
+      }
+      if (result.isNumericFunction()) {
+        try {
+          Complex evalfc = result.evalfc();
+          Num re = F.num(evalfc.getReal());
+          Num im = F.num(evalfc.getImaginary());
+          return (isRealDivisible(re).isTrue() && isRealDivisible(im).isTrue()) //
+              ? S.True
+              : S.False;
+        } catch (ArgumentTypeException e) {
+        }
       }
       return F.NIL;
     }
@@ -4487,27 +4494,64 @@ public final class NumberTheory {
             return F.NIL;
           }
 
-          if (!k.gcd(n).isOne()) {
-            return F.NIL;
+          if (ast.isAST2()) {
+            if (!k.gcd(n).isOne()) {
+              // not coprime
+              return F.NIL;
+            }
+            return F.ZZ(Primality.multiplicativeOrder(k.toBigNumerator(), n.toBigNumerator()));
+          } else if (ast.isAST3()) {
+            IExpr arg3 = ast.arg3();
+            if (arg3.isList()) {
+              IAST residues = (IAST) arg3;
+              Set<IInteger> targets = new HashSet<>();
+
+              // Normalize the target residues into [0, n)
+              for (int i = 1; i <= residues.argSize(); i++) {
+                IExpr ri = residues.get(i);
+                if (!ri.isInteger()) {
+                  return F.NIL;
+                }
+                targets.add(((IInteger) ri).mod(n));
+              }
+
+              if (!targets.isEmpty()) {
+                IInteger kMod = k.mod(n);
+                IInteger power = kMod;
+                Set<IInteger> seen = new HashSet<>();
+                IInteger m = F.C1;
+
+                while (true) {
+                  if (targets.contains(power)) {
+                    return m;
+                  }
+                  if (!seen.add(power)) {
+                    // Cycled without reaching a residue: no solution.
+                    break;
+                  }
+
+                  power = power.multiply(kMod).mod(n);
+                  m = m.add(F.C1);
+                }
+              }
+            }
           }
-
-          return F.ZZ(Primality.multiplicativeOrder(k.toBigNumerator(), n.toBigNumerator()));
         } catch (ArithmeticException ae) {
-
+          // fall through to return F.NIL
         }
       }
       return F.NIL;
     }
 
-
     @Override
     public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
+      // Upgraded to full support since 3-argument form is now implemented
+      return ImplementationStatus.FULL_SUPPORT;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_2_3;
     }
   }
 
@@ -4572,19 +4616,27 @@ public final class NumberTheory {
           return Errors.printMessage(S.NextPrime, "intnn", F.CEmptyList, engine);
         }
         final int n = ast.arg2().toIntDefault();
-        if (n < 0) {
-          // Positive integer (less equal 2147483647) expected at position `2` in `1`.
-          return Errors.printMessage(S.NextPrime, "intpm", F.list(ast, F.C2), engine);
+
+        // Safely calculate the absolute value of n to check the iteration limit
+        int absN = Math.abs(n);
+        if (absN < 0) {
+          absN = Integer.MAX_VALUE; // Fallback for Integer.MIN_VALUE overflow
         }
 
         int iterationLimit = EvalEngine.get().getIterationLimit();
-        if (iterationLimit >= 0 && iterationLimit <= n) {
-          IterationLimitExceeded.throwIt(n, ast);
+        if (iterationLimit >= 0 && iterationLimit <= absN) {
+          IterationLimitExceeded.throwIt(absN, ast);
         }
 
         BigInteger temp = primeBase;
-        for (int i = 0; i < n; i++) {
-          temp = temp.nextProbablePrime();
+        if (n > 0) {
+          for (int i = 0; i < n; i++) {
+            temp = temp.nextProbablePrime();
+          }
+        } else if (n < 0) {
+          for (int i = 0; i > n; i--) {
+            temp = previousProbablePrime(temp);
+          }
         }
         return F.ZZ(temp);
       }
@@ -4596,10 +4648,33 @@ public final class NumberTheory {
       return ARGS_1_2;
     }
 
-
     @Override
     public int status() {
       return ImplementationStatus.FULL_SUPPORT;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+    }
+
+    /**
+     * Find the previous probable prime.
+     *
+     * @param n the starting BigInteger
+     * @return the previous probable prime
+     */
+    private static BigInteger previousProbablePrime(BigInteger n) {
+      BigInteger temp = n.subtract(BigInteger.ONE);
+      while (true) {
+        // Use the absolute value since negative prime numbers (like -2, -3) are mathematically
+        // valid
+        // and BigInteger.isProbablePrime() requires positive numbers for correct certainty checks.
+        if (temp.abs().isProbablePrime(100)) {
+          return temp;
+        }
+        temp = temp.subtract(BigInteger.ONE);
+      }
     }
   }
 
