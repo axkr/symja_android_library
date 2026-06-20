@@ -269,6 +269,7 @@ public class Errors {
       "nil", "unexpected NIL expression encountered.", //
       "ninv", "`1` is not invertible modulo `2`.", //
       "nmet", "Unable to find the domain with the available methods.", //
+      "nmod", "`1` is not valid modulo `2`.", //
       "nmtx", "The first two levels of `1` cannot be transposed.", //
       "nnumeq",
       "`1` is expected to be a polynomial equation in the variable `2` with numeric coefficients.", //

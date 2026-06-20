@@ -2317,6 +2317,16 @@ public class F extends S {
     return new AST2(BinomialDistribution, a0, a1);
   }
 
+  public static IAST BinormalDistribution(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(BinormalDistribution, a0, a1, a2);
+  }
+
+  public static IAST BinormalDistribution(final IExpr a0, final IExpr a1, final IExpr a2,
+      final IExpr a3, final IExpr a4) {
+    return quinary(BinormalDistribution, a0, a1, a2, a1, a2);
+  }
+
+
   public static IAST BlankSequence() {
     return new AST0(BlankSequence);
   }
@@ -4366,6 +4376,10 @@ public class F extends S {
 
   public static IAST ExpandNumerator(final IExpr expr) {
     return new AST1(ExpandNumerator, expr);
+  }
+
+  public static IAST Expectation(final IExpr a0, final IExpr a1) {
+    return new AST2(Expectation, a0, a1);
   }
 
   public static IAST ExpIntegralE(final IExpr a0, final IExpr a1) {
@@ -7664,6 +7678,10 @@ public class F extends S {
     return new AST2(MapThread, f, expr);
   }
 
+  public static IAST MarginalDistribution(final IExpr a0, final IExpr a1) {
+    return new AST2(MarginalDistribution, a0, a1);
+  }
+
   public static IAST MatchQ(final IExpr expr, final IExpr form) {
     return new AST2(MatchQ, expr, form);
   }
@@ -7931,6 +7949,22 @@ public class F extends S {
 
   public static IAST Multinomial(final IExpr... a) {
     return function(Multinomial, a);
+  }
+
+  public static IAST MultinormalDistribution(final IExpr a0) {
+    return new AST1(MultinormalDistribution, a0);
+  }
+
+  public static IAST MultinormalDistribution(final IExpr a0, final IExpr a1) {
+    return new AST2(MultinormalDistribution, a0, a1);
+  }
+
+  public static IAST MultivariateTDistribution(final IExpr a0, final IExpr a1) {
+    return new AST2(MultivariateTDistribution, a0, a1);
+  }
+
+  public static IAST MultivariateTDistribution(final IExpr a0, final IExpr a1, final IExpr a2) {
+    return new AST3(MultivariateTDistribution, a0, a1, a2);
   }
 
   public static IAST MultiplicativeOrder(final IExpr a0, final IExpr a1) {

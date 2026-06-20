@@ -957,6 +957,8 @@ public class S {
 
   public final static IBuiltInSymbol Ball = S.initFinalSymbol("Ball", ID.Ball);
 
+  public final static IBuiltInSymbol Band = S.initFinalSymbol("Band", ID.Band);
+
   /**
    * BarChart(list-of-values, options) - plot a bar chart for a `list-of-values` with option
    * `BarOrigin->Bottom` or `BarOrigin->Bottom`
@@ -2634,6 +2636,8 @@ public class S {
    */
   public final static IBuiltInSymbol Cross = S.initFinalSymbol("Cross", ID.Cross);
 
+  public final static IBuiltInSymbol CrossMatrix = S.initFinalSymbol("CrossMatrix", ID.CrossMatrix);
+
   /**
    * Csc(z) - returns the cosecant of `z`.
    * 
@@ -3015,6 +3019,9 @@ public class S {
   public final static IBuiltInSymbol DialogReturn =
       S.initFinalSymbol("DialogReturn", ID.DialogReturn);
 
+  public final static IBuiltInSymbol DiamondMatrix =
+      S.initFinalSymbol("DiamondMatrix", ID.DiamondMatrix);
+
   /**
    * DiceDissimilarity(u, v) - returns the Dice dissimilarity between the two boolean 1-D lists `u`
    * and `v`, which is defined as `(c_tf + c_ft) / (2 * c_tt + c_ft + c_tf)`, where n is `len(u)`
@@ -3208,6 +3215,8 @@ public class S {
   public final static IBuiltInSymbol DisjointQ = S.initFinalSymbol("DisjointQ", ID.DisjointQ);
 
   public final static IBuiltInSymbol Disk = S.initFinalSymbol("Disk", ID.Disk);
+
+  public final static IBuiltInSymbol DiskMatrix = S.initFinalSymbol("DiskMatrix", ID.DiskMatrix);
 
   /**
    * Dispatch({rule1, rule2, ...}) - create a dispatch map for a list of rules.
@@ -7366,6 +7375,9 @@ public class S {
    */
   public final static IBuiltInSymbol MapThread = S.initFinalSymbol("MapThread", ID.MapThread);
 
+  public final static IBuiltInSymbol MarginalDistribution =
+      S.initFinalSymbol("MarginalDistribution", ID.MarginalDistribution);
+
   /**
    * MatchingDissimilarity(u, v) - returns the Matching dissimilarity between the two boolean 1-D
    * lists `u` and `v`, which is defined as `(c_tf + c_ft) / n`, where `n` is `len(u)` and `c_ij` is
@@ -7828,6 +7840,9 @@ public class S {
 
   public final static IBuiltInSymbol MultivariatePoissonDistribution =
       S.initFinalSymbol("MultivariatePoissonDistribution", ID.MultivariatePoissonDistribution);
+
+  public final static IBuiltInSymbol MultivariateTDistribution =
+      S.initFinalSymbol("MultivariateTDistribution", ID.MultivariateTDistribution);
 
   /**
    * N(expr) - gives the numerical value of `expr`.
@@ -8844,6 +8859,9 @@ public class S {
   public final static IBuiltInSymbol PeriodogramArray =
       S.initFinalSymbol("PeriodogramArray", ID.PeriodogramArray);
 
+  public final static IBuiltInSymbol Permanent =
+      S.initFinalSymbol("Permanent", ID.Permanent);
+
   /**
    * PermutationCycles(permutation-list) - generate a `Cycles({{...},{...}, ...})` expression from
    * the `permutation-list`.
@@ -9522,6 +9540,9 @@ public class S {
   public final static IBuiltInSymbol PutAppend = S.initFinalSymbol("PutAppend", ID.PutAppend);
 
   public final static IBuiltInSymbol Pyramid = S.initFinalSymbol("Pyramid", ID.Pyramid);
+
+  public final static IBuiltInSymbol QPochhammer =
+      S.initFinalSymbol("QPochhammer", ID.QPochhammer);
 
   /**
    * QRDecomposition(A) - computes the QR decomposition of the matrix `A`. The QR decomposition is a
@@ -10962,6 +10983,8 @@ public class S {
   public final static IBuiltInSymbol SparseArrayQ =
       S.initFinalSymbol("SparseArrayQ", ID.SparseArrayQ);
 
+  public final static IBuiltInSymbol SpearmanRho =
+      S.initFinalSymbol("SpearmanRho", ID.SpearmanRho);
   /**
    * SpecialsFreeQ(expr) - returns `True` if `expr` does not contain the symbols `DirectedInfinity`
    * or `Indeterminate`.
