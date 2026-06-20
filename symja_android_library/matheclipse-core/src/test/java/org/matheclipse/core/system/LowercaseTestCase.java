@@ -6062,6 +6062,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDivisible() {
+    check("Divisible[{1, 2, 3, 4, 5, 6}, 2]", //
+        "{False,True,False,True,False,True}");
+    check("Divisible({10, 15, 20}, {2, 5, 3})", //
+        "{True,True,False}");
+    check("Divisible(Sqrt(5), Sqrt(2))", //
+        "False");
     check("Divisible(2*Pi, Pi/2)", //
         "True");
     check("Divisible(42,7)", //
@@ -11127,7 +11133,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("InterquartileRange(GumbelDistribution(x,y))", //
         "y*Log(Log(4)/Log(4/3))");
     check("InterquartileRange(LogNormalDistribution(x,y))", //
-        "-E^(x-Sqrt(2)*y*InverseErfc(1/2))+E^(x-Sqrt(2)*y*InverseErfc(3/2))");
+        "E^(x+Sqrt(2)*y*InverseErfc(1/2))-E^(x-Sqrt(2)*y*InverseErfc(1/2))");
     check("InterquartileRange(NakagamiDistribution(x,y))", //
         "-Sqrt((y*InverseGammaRegularized(x,0,1/4))/x)+Sqrt((y*InverseGammaRegularized(x,\n"
             + "0,3/4))/x)");
@@ -12098,7 +12104,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // TODO numeric function
     // check("LerchPhi(2, 3, -1.5)", //
     // "");
-
+    checkNumeric("LerchPhi(z,-2,a)", //
+        "(a^2+z+2*a*z-2*a^2*z+z^2-2*a*z^2+a^2*z^2)/(1-3*z+3*z^2-z^3)");
+    checkNumeric("LerchPhi(1/3,-1,2)", //
+        "15/4");
     checkNumeric("LerchPhi(0.5,1,2)", //
         "0.7725887222397805");
     check("LerchPhi(49., 0, 2)", //
@@ -14265,6 +14274,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMultiplicativeOrder() {
+    check("MultiplicativeOrder(2,7, {1, -1})", //
+        "3");
+    check("MultiplicativeOrder(7,11,{1,3,9})", //
+        "4");
+    check("MultiplicativeOrder(3,10, {1, -1})", //
+        "2");
+    check("MultiplicativeOrder(2, 7, {3})", //
+        "MultiplicativeOrder(2,7,{3})");
+    check("MultiplicativeOrder(6,9,{1})", //
+        "MultiplicativeOrder(6,9,{1})");
     // https://oeis.org/A023394
     check("Select(Prime(Range(500)), IntegerQ(Log(2, MultiplicativeOrder(2, # )))&) ", //
         "{3,5,17,257,641}");
@@ -15052,6 +15071,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testNextPrime() {
+    check("NextPrime(50,-1)", //
+        "47");
+    check("NextPrime(50,-3)", //
+        "41");
+    check("NextPrime(50,-55)", //
+        "-173");
+    check("NextPrime({10,20})", //
+        "{11,23}");
+    check("NextPrime(50, {3,2})", //
+        "{61,59}");
     // print: iteration limit
     check("NextPrime(13,2147483647)", //
         "Hold(NextPrime(13,2147483647))");
@@ -15059,10 +15088,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // print NextPrime: Non-negative integer expected.
     check("NextPrime(-10000)", //
         "NextPrime(-10000)");
-    // NextPrime: Positive integer (less equal 2147483647) expected at position 2 in
-    // NextPrime(10000,-3).
     check("NextPrime(10000, -3)", //
-        "NextPrime(10000,-3)");
+        "9949");
 
     check("NextPrime(10000)", //
         "10007");
@@ -16730,6 +16757,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPiecewise() {
+    check("Piecewise({{{10,20},3>1}},Indeterminate)", //
+        "{10,20}");
     check("Piecewise({{a, d1}, {b, d2}, {r,d7},{b, d3}, {c, d4}}, e)", //
         "Piecewise({{a,d1},{b,d2},{r,d7},{b,d3},{c,d4}},e)");
     check("Piecewise({{a, d1}, {a, d2}, {a, d3}}, ef)", //
@@ -18773,6 +18802,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPrimeQ() {
+    check("PrimeQ(1+2*I)", //
+        "True");
+    check("PrimeQ(5*I)", //
+        "False");
+    check("PrimeQ(7*I)", //
+        "True");
+
     check("PrimeQ({1,2,4})", //
         "{False,True,False}");
     check("PrimeQ(<|a->1,b->2,c->4|>)", //
@@ -18781,8 +18817,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // https://en.wikipedia.org/wiki/Gaussian_integer#Gaussian_primes
     check("PrimeQ(-3*I, GaussianIntegers->True)", //
         "True");
+    // internally switches to GaussianIntegers->True, because of complex number arg
     check("PrimeQ(-3*I, GaussianIntegers->False)", //
-        "False");
+        "True");
     check("PrimeQ(3*I, GaussianIntegers->True)", //
         "True");
     check("PrimeQ(-3, GaussianIntegers->True)", //
@@ -19122,6 +19159,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testQuantile() {
+    check("Quantile(NormalDistribution())[1/2]", //
+        "0");
+    check("Quantile(NormalDistribution(n,m))[1/2]", //
+        "n");
     check("Quantile(Range(100), .99)", //
         "99");
     check("Quantile({3,5},{1/4,1/2,3/4},{{1/2,0},{0,1}})", //
@@ -19177,6 +19218,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testQuartiles() {
+    check("Quartiles(NormalDistribution(m,s))", //
+        "{m-Sqrt(2)*s*InverseErfc(1/2),m,m+Sqrt(2)*s*InverseErfc(1/2)}");
     check("Quartiles({{{3, 7}, {2, 1}}, {{5, 19}, {12, 4}}})", //
         "{{{3,4,5},{7,13,19}},{{2,7,12},{1,5/2,4}}}");
 
@@ -22968,6 +23011,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testSurvivalFunction() {
+    check("SurvivalFunction(ExponentialDistribution(1))[2]", //
+        "1/E^2");
+
     check("SurvivalFunction(GeometricDistribution(1/3), x)", //
         "1-Piecewise({{1-(2/3)^(1+Floor(x)),x>=0}},0)");
     check("SurvivalFunction(NormalDistribution(), {0.2, 0.3})", //
@@ -23644,6 +23690,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a+d+g,b+e+g,c+f+g}");
     check("Thread(f({a, b, c}, h, {x, y, z}))", //
         "{f(a,h,x),f(b,h,y),f(c,h,z)}");
+
+    check("Thread(g({1, 2}, {3, 4}, {5, 6}), List, -2)", //
+        "{g({1,2},3,5),g({1,2},4,6)}");
+    check("Thread(g({1, 2}, {3, 4}, {5, 6}), List, {2})", //
+        "{g({1,2},3,{5,6}),g({1,2},4,{5,6})}");
+    check("Thread(f({a, b}, {c, d}, {e, g}), List, {2, 3})", //
+        "{f({a,b},c,e),f({a,b},d,g)}");
+    check("Thread(f({a, b}, {c, d, e}))", //
+        "f({a,b},{c,d,e})");
+    check("Thread(f(a, b, c), List)", //
+        "f(a,b,c)");
   }
 
   @Test

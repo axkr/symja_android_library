@@ -19,26 +19,6 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-/**
- * <pre>
- * SolveAlways(eqns, vars)
- * </pre>
- * 
- * * <blockquote>
- * <p>
- * gives the values of parameters that make the equations eqns valid for all values of the variables
- * vars.
- * </p>
- * </blockquote> *
- * <h3>Details</h3>
- * <ul>
- * <li>Equations are given in the form <code>lhs==rhs</code>.</li>
- * <li>SolveAlways produces relations between parameters that appear in <code>eqns</code>, but are
- * not in the list of variables <code>vars</code>.</li>
- * <li><code>SolveAlways(eqns,vars)</code> is equivalent to
- * <code>Solve(!Eliminate(!eqns,vars))</code>.</li>
- * </ul>
- */
 public class SolveAlways extends AbstractFunctionOptionEvaluator {
   private static final Logger LOGGER = LogManager.getLogger(SolveAlways.class);
 

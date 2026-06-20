@@ -2457,9 +2457,9 @@ public class ManipulateFunction {
 
     final UnaryNumerical f1;
     if (yFunction.isList() && yFunction.isAST1()) {
-      f1 = new UnaryNumerical(yFunction.first(), xVariable, engine);
+      f1 = new UnaryNumerical(yFunction.first(), xVariable, Double.NaN, engine);
     } else {
-      f1 = new UnaryNumerical(yFunction, xVariable, engine);
+      f1 = new UnaryNumerical(yFunction, xVariable, Double.NaN, engine);
     }
     final double data[][] = new double[2][N + 1];
     double x = xMin;
@@ -2478,8 +2478,8 @@ public class ManipulateFunction {
       final double timeMax, final IExpr xFunction, final IExpr yFunction, Dimensions2D plotRange,
       final EvalEngine engine) {
     final double step = (timeMax - timeMin) / N;
-    final UnaryNumerical f1Unary = new UnaryNumerical(xFunction, timeVariable, engine);
-    final UnaryNumerical f2Unary = new UnaryNumerical(yFunction, timeVariable, engine);
+    final UnaryNumerical f1Unary = new UnaryNumerical(xFunction, timeVariable, Double.NaN, engine);
+    final UnaryNumerical f2Unary = new UnaryNumerical(yFunction, timeVariable, Double.NaN, engine);
     final double data[][] = new double[2][N + 1];
     double t = timeMin;
 
@@ -2499,7 +2499,7 @@ public class ManipulateFunction {
     final double step = (xMax - xMin) / N;
     double y;
 
-    final UnaryNumerical f1 = new UnaryNumerical(yFunction, xVariable, engine);
+    final UnaryNumerical f1 = new UnaryNumerical(yFunction, xVariable, Double.NaN, engine);
     final double data[][] = new double[2][N + 1];
     double x = xMin;
 

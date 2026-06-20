@@ -335,6 +335,69 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testCrossMatrix() {
+    // Signature 1: CrossMatrix(r) - scalar radius
+    check("CrossMatrix(0)", //
+        "{{1}}");
+
+    // For r=1, DiamondMatrix and CrossMatrix yield the same structure
+    check("CrossMatrix(1)", //
+        "{{0,1,0},{1,1,1},{0,1,0}}");
+
+    // The distinction from Diamond/Disk shapes becomes clear at radius >= 2
+    check("CrossMatrix(2)", //
+        "{{0,0,1,0,0},{0,0,1,0,0},{1,1,1,1,1},{0,0,1,0,0},{0,0,1,0,0}}");
+
+    // Signature 2: CrossMatrix(r, w) - scalar radius and scalar width
+    check("CrossMatrix(1, 5)", //
+        "{{0,0,0,0,0},{0,0,1,0,0},{0,1,1,1,0},{0,0,1,0,0},{0,0,0,0,0}}");
+
+    check("CrossMatrix(All, 3)", //
+        "{{0,1,0},{1,1,1},{0,1,0}}");
+
+    // Fractional approximation checks. Unlike Diamond/Disk where 1.5 filled the 3x3 array
+    // due to intersecting geometry areas, the Cross strictly prohibits corner deviation.
+    check("CrossMatrix(1.5, 3)", //
+        "{{0,1,0},{1,1,1},{0,1,0}}");
+
+    // Signature 3: CrossMatrix({r1, r2, ...}, ...) - lists for radii and widths
+    // 1D Array
+    check("CrossMatrix({1})", //
+        "{1,1,1}");
+
+    check("CrossMatrix({1}, {5})", //
+        "{0,1,1,1,0}");
+
+    // 2D Array with mixed radius sizes
+    check("CrossMatrix({1, 0})", //
+        "{{1},{1},{1}}");
+
+    check("CrossMatrix({1, 2})", //
+        "{{0,0,1,0,0},{1,1,1,1,1},{0,0,1,0,0}}");
+
+    // 2D Array with explicit All constraints
+    check("CrossMatrix({1, All}, {3, 5})", //
+        "{{0,0,1,0,0},{1,1,1,1,1},{0,0,1,0,0}}");
+
+    // 3D Array
+    check("CrossMatrix({1, 1, 1})", //
+        "{{{0,0,0},{0,1,0},{0,0,0}},{{0,1,0},{1,1,1},{0,1,0}},{{0,0,0},{0,1,0},{0,0,0}}}");
+
+    // Edge cases and error handling validation
+    check("CrossMatrix(-1)", // Negative radius
+        "CrossMatrix(-1)");
+
+    check("CrossMatrix(1, -5)", // Negative width
+        "CrossMatrix(1,-5)");
+
+    check("CrossMatrix(All)", // Missing width for All
+        "CrossMatrix(All)");
+
+    check("CrossMatrix({1, 2}, {3})", // Dimension mismatch
+        "CrossMatrix({1,2},{3})");
+  }
+
+  @Test
   public void testDesignMatrix() {
     check("DesignMatrix({{1,1},{2,2*Sqrt(2)},{3,3*Sqrt(3)},{4,8},{5,5*Sqrt(5)}}, {x, x^2}, x)", //
         "{{1,1,1},{1,2,4},{1,3,9},{1,4,16},{1,5,25}}");
@@ -440,6 +503,132 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "True");
     check("DiagonalMatrixQ(DiagonalMatrix({1, 2, 3}))", //
         "True");
+  }
+
+  @Test
+  public void testDiamondMatrix() {
+    // Signature 1: DiamondMatrix(r) - scalar radius
+    check("DiamondMatrix(0)", //
+        "{{1}}");
+
+    check("DiamondMatrix(1)", //
+        "{{0,1,0},{1,1,1},{0,1,0}}");
+
+    check("DiamondMatrix(2)", //
+        "{{0,0,1,0,0},{0,1,1,1,0},{1,1,1,1,1},{0,1,1,1,0},{0,0,1,0,0}}");
+
+    // Signature 2: DiamondMatrix(r, w) - scalar radius and scalar width
+    check("DiamondMatrix(1, 5)", //
+        "{{0,0,0,0,0},{0,0,1,0,0},{0,1,1,1,0},{0,0,1,0,0},{0,0,0,0,0}}");
+
+    check("DiamondMatrix(All, 3)", //
+        "{{0,1,0},{1,1,1},{0,1,0}}");
+
+    check("DiamondMatrix(1.5, 3)", //
+        "{{1,1,1},{1,1,1},{1,1,1}}");
+
+    // Signature 3: DiamondMatrix({r1, r2, ...}, ...) - lists for radii and widths
+    // 1D Array
+    check("DiamondMatrix({1})", //
+        "{1,1,1}");
+
+    check("DiamondMatrix({1}, {5})", //
+        "{0,1,1,1,0}");
+
+    // 2D Array with mixed radius sizes
+    check("DiamondMatrix({1, 0})", //
+        "{{1},{1},{1}}");
+
+    check("DiamondMatrix({1, 2})", //
+        "{{0,0,1,0,0},{1,1,1,1,1},{0,0,1,0,0}}");
+
+    // 2D Array with explicit All constraints
+    check("DiamondMatrix({1, All}, {3, 5})", //
+        "{{0,0,1,0,0},{1,1,1,1,1},{0,0,1,0,0}}");
+
+    // 3D Array
+    check("DiamondMatrix({1, 1, 1})", //
+        "{{{0,0,0},{0,1,0},{0,0,0}},{{0,1,0},{1,1,1},{0,1,0}},{{0,0,0},{0,1,0},{0,0,0}}}");
+
+    // Edge cases and error handling
+    check("DiamondMatrix(-1)", // Negative radius
+        "DiamondMatrix(-1)");
+
+    check("DiamondMatrix(1, -5)", // Negative width
+        "DiamondMatrix(1,-5)");
+
+    check("DiamondMatrix(All)", // Missing width for All
+        "DiamondMatrix(All)");
+
+    check("DiamondMatrix({1, 2}, {3})", // Dimension mismatch
+        "DiamondMatrix({1,2},{3})");
+  }
+
+  @Test
+  public void testDiskMatrix() {
+    // Signature 1: DiskMatrix(r) - scalar radius
+    check("DiskMatrix(0)", //
+        "{{1}}");
+
+    check("DiskMatrix(1)", //
+        "{{0,1,0},{1,1,1},{0,1,0}}");
+
+    check("DiskMatrix(2)", //
+        "{{0,0,1,0,0},{0,1,1,1,0},{1,1,1,1,1},{0,1,1,1,0},{0,0,1,0,0}}");
+
+    check("DiskMatrix(3)", //
+        "{{0,0,0,1,0,0,0},{0,1,1,1,1,1,0},{0,1,1,1,1,1,0},{1,1,1,1,1,1,1},{0,1,1,1,1,1,0},{\n"
+            + "0,1,1,1,1,1,0},{0,0,0,1,0,0,0}}");
+
+    // Signature 2: DiskMatrix(r, w) - scalar radius and scalar width
+    check("DiskMatrix(1, 5)", //
+        "{{0,0,0,0,0},{0,0,1,0,0},{0,1,1,1,0},{0,0,1,0,0},{0,0,0,0,0}}");
+
+    check("DiskMatrix(All, 3)", //
+        "{{0,1,0},{1,1,1},{0,1,0}}");
+
+    // The L2 Euclidean norm naturally accounts for fraction-filled regions
+    // unlike L1 bounds, handling standard Mathematica fraction evaluation:
+    check("DiskMatrix(1.5, 3)", //
+        "{{1,1,1},{1,1,1},{1,1,1}}");
+
+    // Signature 3: DiskMatrix({r1, r2, ...}, ...) - lists for radii and widths
+    // 1D Array
+    check("DiskMatrix({1})", //
+        "{1,1,1}");
+
+    check("DiskMatrix({1}, {5})", //
+        "{0,1,1,1,0}");
+
+    // 2D Array with mixed radius sizes (zero width defaults essentially acts as an exact intercept
+    // projection constraint)
+    check("DiskMatrix({1, 0})", //
+        "{{1},{1},{1}}");
+
+    // Ellipsoid constraints with x radius 1, y radius 2
+    check("DiskMatrix({1, 2})", //
+        "{{0,0,1,0,0},{1,1,1,1,1},{0,0,1,0,0}}");
+
+    // 2D Array with explicit All constraints (inherits from matrix constraints resolving to {1, 2})
+    check("DiskMatrix({1, All}, {3, 5})", //
+        "{{0,0,1,0,0},{1,1,1,1,1},{0,0,1,0,0}}");
+
+    // 3D Array volume creation
+    check("DiskMatrix({1, 1, 1})", //
+        "{{{0,0,0},{0,1,0},{0,0,0}},{{0,1,0},{1,1,1},{0,1,0}},{{0,0,0},{0,1,0},{0,0,0}}}");
+
+    // Edge cases and error handling validation
+    check("DiskMatrix(-1)", // Negative radius
+        "DiskMatrix(-1)");
+
+    check("DiskMatrix(1, -5)", // Negative width
+        "DiskMatrix(1,-5)");
+
+    check("DiskMatrix(All)", // Missing width for All
+        "DiskMatrix(All)");
+
+    check("DiskMatrix({1, 2}, {3})", // Dimension mismatch
+        "DiskMatrix({1,2},{3})");
   }
 
   @Test
@@ -1935,6 +2124,82 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testPermanent() {
+    check("Permanent(HilbertMatrix(5))", //
+        "32104903/470400000");
+    check("Permanent(N(HilbertMatrix(5)))", //
+        "0.0682502");
+    check("Permanent(N(HilbertMatrix(5),40))", //
+        "0.06825021896258503401360544217687074829931");
+    // 2x2 numeric matrix: 1*4 + 2*3 = 10
+    check("Permanent({{1, 2}, {3, 4}})", //
+        "10");
+
+    // 3x3 numeric matrix
+    check("Permanent({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
+        "450");
+
+    // 2x2 symbolic matrix
+    check("Permanent({{a, b}, {c, d}})", //
+        "b*c+a*d");
+
+    // 3x3 symbolic matrix
+    check("Permanent({{a, b, c}, {d, e, f}, {g, h, i}})", //
+        "c*e*g+b*f*g+c*d*h+a*f*h+b*d*i+a*e*i");
+
+    // Permanent of an Identity matrix is always 1
+    check("Permanent(IdentityMatrix(4))", //
+        "1");
+    check("Permanent(IdentityMatrix(10))", //
+        "1");
+
+    // Permanent of a matrix of ones (n x n) is n!
+    // For 4x4, 4! = 24
+    check("Permanent(Table(1, {4}, {4}))", //
+        "24");
+
+    // 10 Mod 3 = 1
+    check("Permanent({{1, 2}, {3, 4}}, Modulus -> 3)", //
+        "1");
+    check("Permanent({{a11, a12}, {a21, a22}})", //
+        "a12*a21+a11*a22");
+    // 450 Mod 7 = 2
+    check("Permanent({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, Modulus -> 7)", //
+        "2");
+
+    // message: Permanent: {{a,b},{c,d}} is not valid modulo 2.
+    check("Permanent({{a, b}, {c, d}}, Modulus -> 2)", //
+        "Permanent({{a,b},{c,d}},Modulus->2)");
+
+    // 1x1 matrix
+    check("Permanent({{a}})", //
+        "a");
+    check("Permanent({{42}})", //
+        "42");
+
+    // Empty matrix (0x0). The determinant/permanent of an empty matrix is 0.
+    check("Permanent({})", //
+        "0");
+
+    // Non-square matrix should remain unevaluated (returns F.NIL internally)
+    check("Permanent({{1, 2}, {3, 4}, {5, 6}})", //
+        "Permanent({{1,2},{3,4},{5,6}})");
+
+    // Invalid argument (not a matrix)
+    check("Permanent(123)", "Permanent(123)");
+
+    // 1D list instead of a matrix
+    check("Permanent({1, 2, 3})", //
+        "Permanent({1,2,3})");
+    // Verifies that supplying a Method option doesn't break evaluation
+    check("Permanent({{1, 2}, {3, 4}}, Method -> \"Ryser\")", //
+        "10");
+    check("Permanent({{1, 2}, {3, 4}}, Method -> Automatic)", //
+        "10");
+
+  }
+
+  @Test
   public void testPauliMatrix() {
     check("PauliMatrix({0,1,2,3,4})", //
         "{{{1,0},{0,1}},{{0,1},{1,0}},{{0,-I},{I,0}},{{1,0},{0,-1}},{{1,0},{0,1}}}");
@@ -2068,6 +2333,10 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testRescale() {
+    check("Rescale(x, {a, a})", //
+        "Indeterminate");
+    check("Rescale(a, {b, a})", //
+        "1");
     check("Rescale({-.7, .5, 1.2, 5.6, 1.8})", //
         "{0.0,0.190476,0.301587,1.0,0.396825}");
     check("Rescale({2.5, 3.5, 4.5, 6.5}, {0, 10})", //
@@ -2077,15 +2346,15 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Rescale(1 + 0.5 I, {0, 1 + I})", //
         "0.75+I*(-0.25)");
     check("Rescale({a,b})", //
-        "{a/(Max(a,b)-Min(a,b))-Min(a,b)/(Max(a,b)-Min(a,b)),b/(Max(a,b)-Min(a,b))-Min(a,b)/(Max(a,b)-Min(a,b))}");
+        "{(a-Min(a,b))/(Max(a,b)-Min(a,b)),(b-Min(a,b))/(Max(a,b)-Min(a,b))}");
     check("Rescale(x,{xmin, xmax})", //
-        "x/(xmax-xmin)-xmin/(xmax-xmin)");
+        "(x-xmin)/(xmax-xmin)");
     check("Rescale(x,{xmin, xmax},{ymin, ymax})", //
         "(x*(ymax-ymin))/(xmax-xmin)+(-xmin*ymax+xmax*ymin)/(xmax-xmin)");
     check("Rescale(2.5,{-10,10})", //
         "0.625");
     check("Rescale(2.5,{10,10})", //
-        "Indeterminate");
+        "ComplexInfinity");
     // celsius to fahrenheit in steps of 10 degrees from -40 to 100 degree
     check("Table({x, Rescale(x, {-40, 100}, {-40, 212})}, " //
         + "{x, -40, 100, 10})", //

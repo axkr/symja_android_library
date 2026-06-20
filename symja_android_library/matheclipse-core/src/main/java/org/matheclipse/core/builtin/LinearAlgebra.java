@@ -779,30 +779,6 @@ public final class LinearAlgebra {
     }
   }
 
-  /**
-   *
-   *
-   * <pre>
-   * DesignMatrix(m, f, x)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * returns the design matrix.
-   *
-   * </blockquote>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, x, x)
-   * {{1,2},{1,3},{1,5},{1,7}}
-   *
-   * &gt;&gt; DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, f(x), x)
-   * {{1,f(2)},{1,f(3)},{1,f(5)},{1,f(7)}}
-   * </pre>
-   */
   private static class DesignMatrix extends AbstractEvaluator {
 
     @Override

@@ -3430,8 +3430,7 @@ public final class Arithmetic {
         }
         if (exponent.isIntervalData()) {
           if (base.isRealResult()) {
-            return org.matheclipse.core.expression.IntervalDataSym.power(base,
-                (IAST) exponent);
+            return org.matheclipse.core.expression.IntervalDataSym.power(base, (IAST) exponent);
           }
         }
 

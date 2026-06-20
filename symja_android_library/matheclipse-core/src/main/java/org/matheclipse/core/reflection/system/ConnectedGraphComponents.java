@@ -8,31 +8,6 @@ import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
-/**
- * <p>
- * ConnectedGraphComponents(g)
- * </p>
- *
- * <p>
- * Gives the connected components of the graph g.
- * </p>
- *
- * <p>
- * ConnectedGraphComponents(g, {v1, v2, ...})
- * </p>
- *
- * <p>
- * Gives the connected components that include at least one of the vertices v1, v2, ...
- * </p>
- *
- * <p>
- * ConnectedGraphComponents(g, patt)
- * </p>
- *
- * <p>
- * Gives the connected components that include a vertex that matches the pattern patt.
- * </p>
- */
 public class ConnectedGraphComponents extends AbstractFunctionEvaluator {
 
   public ConnectedGraphComponents() {}

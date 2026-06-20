@@ -645,6 +645,18 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSeriesCoefficientDLMF() {
+    check("SeriesCoefficient(BesselK(4,x), {x, 0, 3})", //
+        "0");
+    check("SeriesCoefficient(BesselK(4,x), {x, 0, 4})", //
+        "1/768*(25/12-2*EulerGamma+2*Log(2)-2*Log(x))");
+
+    check("SeriesCoefficient(BesselJ(42,x), {x, Infinity, n})", //
+        "Piecewise({{-1/((I*1/2)^n*(1/2*(-42-n))!*Gamma(1/2*(44-n))),Mod(-42-n,2)==0&&n<=-\n"
+            + "42}},0)");
+  }
+
+  @Test
   public void testSeriesCoefficientArcCoth() {
 
     // Should return the complex constant term: (I*Pi)/2
