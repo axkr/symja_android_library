@@ -533,8 +533,7 @@ public class PiecewiseFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      int[] dim = arg1.isMatrix(false);
-      if (dim == null || dim[0] <= 0 || dim[1] != 2 || !arg1.isAST()) {
+      if (!arg1.isList(x -> x.isList2())) {
         if (arg1.isEmptyList()) {
           if (ast.isAST2()) {
             return ast.arg2();
@@ -543,7 +542,7 @@ public class PiecewiseFunctions {
         }
         // The first argument `1` of `2` is not a list of pairs.
         return Errors.printMessage(ast.topHead(), "pairs", F.list(arg1, ast.topHead()), engine);
-      }
+      } 
       IAST matrix = (IAST) arg1;
       IExpr defaultValue = F.C0;
       if (ast.isAST1()) {
