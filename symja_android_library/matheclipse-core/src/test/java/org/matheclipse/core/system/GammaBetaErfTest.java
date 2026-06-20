@@ -808,6 +808,8 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testGammaRegularized() {
+    check("GammaRegularized(3,7)", //
+        "65/2*1/E^7");
     checkNumeric("GammaRegularized({0,Sequence(),1,2},-Sqrt(2),Interval(a))", //
         "{0,Interval({E^Sqrt(2)-1/E^a,E^Sqrt(2)-1/E^a}),GammaRegularized(2,-Sqrt(2),Interval({a,a}))}");
     check("N(GammaRegularized(5, 3,{2,3,5,7}), 50)", //
@@ -1028,6 +1030,8 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testInverseErfc() {
+    check("InverseErfc(3/2)", //
+        "-InverseErfc(1/2)");
     check("N(InverseErfc(33/100), 50)", //
         "0.68880252811655645040250472890525783544948992349371");
     check("InverseErfc(0.330000000000000000000000)", //
@@ -1379,6 +1383,21 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "PolyGamma(n,x)");
   }
 
+  @Test
+  public void testQPochhammer() {
+    check("QPochhammer(0)", //
+        "1");
+    check("QPochhammer(1)", //
+        "0");
+    check("QPochhammer((1 + I)/2, (1 - I)/2, 10)", //
+        "95264271/268435456-I*25488603/268435456");
+
+    check("FunctionExpand(QPochhammer(a, q, 7))", //
+        "(1-a)*(1-a*q)*(1-a*q^2)*(1-a*q^3)*(1-a*q^4)*(1-a*q^5)*(1-a*q^6)");
+    check("FunctionExpand(QPochhammer(a, q, -7))", //
+        "1/((1-a/q^7)*(1-a/q^6)*(1-a/q^5)*(1-a/q^4)*(1-a/q^3)*(1-a/q^2)*(1-a/q))");
+
+  }
 
   @Test
   public void testSinIntegral() {

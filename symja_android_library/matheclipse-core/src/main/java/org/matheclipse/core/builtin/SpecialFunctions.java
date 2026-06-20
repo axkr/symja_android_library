@@ -984,7 +984,27 @@ public class SpecialFunctions {
     }
   }
 
-  private static class GammaRegularized extends AbstractFunctionEvaluator {
+  private static class GammaRegularized extends AbstractFunctionEvaluator
+      implements IFunctionExpand {
+
+    @Override
+    public IExpr functionExpand(IAST ast, EvalEngine engine) {
+      if (ast.isAST2()) {
+        IExpr a = ast.arg1();
+        IExpr z = ast.arg2();
+        // Gamma(a,z )/Gamma(a)
+        return F.Times(F.Power(F.Gamma(a), F.CN1), F.Gamma(a, z));
+      }
+      if (ast.isAST3()) {
+        IExpr a = ast.arg1();
+        IExpr z1 = ast.arg2();
+        IExpr z2 = ast.arg3();
+        // Gamma(a,z1)/Gamma(a)-Gamma(a,z2)/Gamma(a)
+        IExpr v1 = F.Power(F.Gamma(a), F.CN1);
+        return F.Plus(F.Times(v1, F.Gamma(a, z1)), F.Times(F.CN1, v1, F.Gamma(a, z2)));
+      }
+      return F.NIL;
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1037,6 +1057,13 @@ public class SpecialFunctions {
           // Gamma(a,z1)/Gamma(a)
           return F.Times(F.Power(F.Gamma(a), F.CN1), F.Gamma(a, z1));
         }
+      } else if (a.isInteger()) {
+        // https://functions.wolfram.com/GammaBetaErf/GammaRegularized/03/01/02/0007/
+        int n = a.toIntDefault();
+        if (n > 0) {
+          IExpr sum = F.sum(k -> F.Times(F.Power(z1, k), F.Power(F.Factorial(k), F.CN1)), 0, n - 1);
+          return F.Times(F.Power(S.E, F.Negate(z1)), sum);
+        }
       }
       return F.NIL;
     }
@@ -1079,6 +1106,7 @@ public class SpecialFunctions {
       newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
+
   }
 
   private static class HypergeometricPFQRegularized extends AbstractFunctionEvaluator {
@@ -1420,9 +1448,9 @@ public class SpecialFunctions {
 
     @Override
     public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
-      if (arg1.isList()) {
-        return ((IAST) arg1).mapThread(x -> F.InverseErfc(x));
-      }
+      // if (arg1.isList()) {
+      // return ((IAST) arg1).mapThread(x -> F.InverseErfc(x));
+      // }
       if (arg1.isReal()) {
         IReal z = (IReal) arg1;
         if (z.isZero()) {
@@ -1434,9 +1462,13 @@ public class SpecialFunctions {
         if (z.equals(F.C2)) {
           return F.CNInfinity;
         }
-        // if (z.isLessThan(F.C2) && z.isGreaterThan(F.C1)) {
-        // return F.InverseErfc(F.Subtract(F.C1, z));
-        // }
+        if (z.isReal()) {
+          INumber number = z;
+          if (number.less(F.C2).isTrue() && number.greater(F.C1).isTrue()) {
+            // InverseErfc(x) = -InverseErfc(2 - x)
+            return F.Negate(F.InverseErfc(F.Subtract(F.C2, z)));
+          }
+        }
       }
       return F.NIL;
     }
@@ -1457,7 +1489,7 @@ public class SpecialFunctions {
 
     @Override
     public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+      newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
       super.setUp(newSymbol);
     }
   }
@@ -1603,7 +1635,7 @@ public class SpecialFunctions {
 
       if (z.isZero()) {
         if (s.isOne() && a.isZero()) {
-          // LerchPhi(0,1,0)
+          // LerchPhi(0, 1, 0)
           return F.C0;
         }
         // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/LerchPhi/03/01/03/01/0002/
@@ -1612,12 +1644,12 @@ public class SpecialFunctions {
       }
       if (z.isMinusOne()) {
         if (s.isOne() && a.isZero()) {
-          // LerchPhi(-1,1,0)
+          // LerchPhi(-1, 1, 0)
           // -Log(2)
           return F.Negate(F.Log(F.C2));
         }
         if (s.isNumEqualInteger(F.C2) && a.isRationalValue(F.C1D2)) {
-          // LerchPhi(-1,2,1/2)
+          // LerchPhi(-1, 2, 1/2)
           // 4*Catalan
           return F.Times(F.C4, F.Catalan);
         }
@@ -1627,7 +1659,7 @@ public class SpecialFunctions {
           return F.Times(F.Subtract(F.C1, F.Power(F.C2, F.Subtract(F.C1, s))), F.Zeta(s));
         }
         // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/LerchPhi/03/01/03/01/0001/
-        // Zeta(s,a/2)/2^s-Zeta(s,1/2*(1+a))/2^s
+        // Zeta(s, a/2)/2^s - Zeta(s, 1/2*(1+a))/2^s
         return F.Plus(F.Times(F.Power(F.Power(F.C2, s), F.CN1), F.Zeta(s, F.Times(F.C1D2, a))),
             F.Times(F.CN1, F.Power(F.Power(F.C2, s), F.CN1),
                 F.Zeta(s, F.Times(F.C1D2, F.Plus(F.C1, a)))));
@@ -1653,14 +1685,36 @@ public class SpecialFunctions {
         if (s.isOne() && a.isZero()) {
           // LerchPhi(2, 1, 0)
           // -I*Pi
-          F.Times(F.CNI, F.Pi);
+          return F.Times(F.CNI, F.Pi);
         }
       } else if (z.equals(F.CC(1, 2, -1, 2))) {
         if (s.isNumEqualInteger(F.C2) && a.isOne()) {
           // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/LerchPhi/03/02/01/0003/
           // LerchPhi(1/2-1/2*I, 2, 1)
-          // (1+I)*PolyLog(2,1/2-I/2)
+          // (1+I)*PolyLog(2, 1/2-I/2)
           return F.Times(F.Plus(F.C1, F.CI), F.PolyLog(F.C2, F.CC(1, 2, -1, 2)));
+        }
+      }
+
+      if (s.isInteger() && ((IInteger) s).isNegative()) {
+        try {
+          int n = -((IInteger) s).toInt();
+          // LerchPhi(z, -n, a) = (z d/dz + a)^n (1/(1-z))
+          ISymbol x = F.Dummy("x");
+          // Base case n=0: 1 / (1 - x)
+          IExpr expr = F.Power(F.Subtract(F.C1, x), F.CN1);
+          for (int i = 0; i < n; i++) {
+            // Apply operator recursively: x * D(expr, x) + a * expr
+            IExpr derivative = engine.evaluate(F.D(expr, x));
+            IExpr step = F.Plus(F.Times(x, derivative), F.Times(a, expr));
+
+            // Wrap in Together to maintain a single rational fraction at each step
+            expr = engine.evaluate(F.Together(step));
+          }
+          // Substitute the dummy variable with the original evaluation target
+          return engine.evaluate(F.subst(expr, F.Rule(x, z)));
+        } catch (ArithmeticException e) {
+          // Fall back if the integer is too large to handle iteratively
         }
       }
 
@@ -1670,13 +1724,13 @@ public class SpecialFunctions {
         if (n <= 0) {
           n = -n;
           // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/LerchPhi/03/01/01/01/0002/
-          // z^n*(PolyLog(s,z)+Sum(1/(z^k*k^s),{k,1,n}))
+          // z^n*(PolyLog(s, z)+Sum(1/(z^k*k^s), {k, 1, n}))
           return F.Times(F.Power(z, n), //
               F.Plus(polyLog, //
                   F.sum(k -> F.Power(F.Times(F.Power(z, k), F.Power(k, s)), F.CN1), 1, n)));
         } else {
           // https://functions.wolfram.com/ZetaFunctionsandPolylogarithms/LerchPhi/03/01/01/01/0009/
-          // (PolyLog(s,z)-Sum(z^k/k^s,{k,1,-1+n}))/z^n
+          // (PolyLog(s, z)-Sum(z^k/k^s, {k, 1, -1+n}))/z^n
           return F.Times(F.Power(z, -n), //
               F.Subtract(polyLog, //
                   F.sum(k -> F.Times(F.Power(F.Power(k, s), F.CN1), F.Power(z, k)), 1, n - 1)));
@@ -1704,6 +1758,7 @@ public class SpecialFunctions {
       }
       return F.NIL;
     }
+
     /**
      * Compute LerchPhi numerically via series: Sum(z^k / (k+a)^s)
      */
