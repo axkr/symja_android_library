@@ -19,6 +19,8 @@ public final class FunctionDefinitions {
       S.Activate.setEvaluator(new org.matheclipse.core.reflection.system.Activate());
       S.AdjacencyGraph.setEvaluator(new org.matheclipse.core.reflection.system.AdjacencyGraph());
       S.ArrayPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ArrayPlot());
+      S.AlgebraicIntegerQ
+          .setEvaluator(new org.matheclipse.core.reflection.system.AlgebraicIntegerQ());
       S.ArraySymbol.setEvaluator(new org.matheclipse.core.reflection.system.ArraySymbol());
       S.Asymptotic.setEvaluator(new org.matheclipse.core.reflection.system.Asymptotic());
       S.AsymptoticDSolveValue

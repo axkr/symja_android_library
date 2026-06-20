@@ -42,6 +42,79 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testAlgebraicIntegerQ() {
+    // Basic integers
+    check("AlgebraicIntegerQ(0)", //
+        "True");
+    check("AlgebraicIntegerQ(42)", //
+        "True");
+    check("AlgebraicIntegerQ(-10^10)", //
+        "True");
+
+    // Rationals
+    check("AlgebraicIntegerQ(1/2)", //
+        "False");
+    check("AlgebraicIntegerQ(-5/3)", //
+        "False");
+
+    // Complex numbers (Gaussian integers)
+    check("AlgebraicIntegerQ(I)", //
+        "True");
+    check("AlgebraicIntegerQ(2 + 3*I)", //
+        "True");
+    check("AlgebraicIntegerQ(1/2 + I)", //
+        "False");
+    check("AlgebraicIntegerQ(1 + I/3)", //
+        "False");
+
+    // Inexact numbers
+    check("AlgebraicIntegerQ(2.0)", //
+        "False");
+    check("AlgebraicIntegerQ(1.5)", //
+        "False");
+    check("AlgebraicIntegerQ(1.5 + I)", //
+        "False");
+
+    // Radicals (Algebraic integers)
+    // Minimal polynomial: x^2 - 2
+    check("AlgebraicIntegerQ(Sqrt(2))", //
+        "True");
+    check("AlgebraicIntegerQ(Sqrt(2) + Sqrt(3))", //
+        "True");
+    check("AlgebraicIntegerQ(2^(1/3))", //
+        "True");
+
+    // Golden ratio: (1 + Sqrt(5))/2 -> Minimal polynomial: x^2 - x - 1
+    check("AlgebraicIntegerQ((1 + Sqrt(5))/2)", //
+        "True");
+
+    // 3rd root of unity: (-1 + I*Sqrt(3))/2 -> Minimal polynomial: x^2 + x + 1
+    check("AlgebraicIntegerQ((-1 + I*Sqrt(3))/2)", //
+        "True");
+
+    // Radicals (Algebraic numbers, but NOT algebraic integers)
+    // Minimal polynomial for Sqrt(2)/2 is 2*x^2 - 1
+    check("AlgebraicIntegerQ(Sqrt(2)/2)", //
+        "False");
+    check("AlgebraicIntegerQ((1 + Sqrt(2))/3)", //
+        "False");
+
+    // Transcendental / Symbolic / Unevaluated
+    check("AlgebraicIntegerQ(x)", //
+        "AlgebraicIntegerQ(x)");
+    check("AlgebraicIntegerQ(Pi)", //
+        "False");
+    check("AlgebraicIntegerQ(E)", //
+        "False");
+
+    // Invalid argument counts
+    check("AlgebraicIntegerQ()", //
+        "AlgebraicIntegerQ()");
+    check("AlgebraicIntegerQ(1, 2)", //
+        "AlgebraicIntegerQ(1,2)");
+  }
+
+  @Test
   public void testAnglePath() {
     // avoid index out of bounds exception
     check("AnglePath(RandomReal({-1, 1}, {100}));", //

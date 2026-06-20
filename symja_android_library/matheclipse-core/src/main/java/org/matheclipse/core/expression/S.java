@@ -376,6 +376,9 @@ public class S {
    */
   public final static IBuiltInSymbol AiryBiPrime = S.initFinalSymbol("AiryBiPrime", ID.AiryBiPrime);
 
+  public final static IBuiltInSymbol AlgebraicIntegerQ =
+      S.initFinalSymbol("AlgebraicIntegerQ", ID.AlgebraicIntegerQ);
+
   public final static IBuiltInSymbol AlgebraicNumber =
       S.initFinalSymbol("AlgebraicNumber", ID.AlgebraicNumber);
 
@@ -902,8 +905,7 @@ public class S {
 
   public final static IBuiltInSymbol Assumptions = S.initFinalSymbol("Assumptions", ID.Assumptions);
 
-  public final static IBuiltInSymbol Asymptotic =
-      S.initFinalSymbol("Asymptotic", ID.Asymptotic);
+  public final static IBuiltInSymbol Asymptotic = S.initFinalSymbol("Asymptotic", ID.Asymptotic);
 
   public final static IBuiltInSymbol AsymptoticSolve =
       S.initFinalSymbol("AsymptoticSolve", ID.AsymptoticSolve);
@@ -8859,8 +8861,7 @@ public class S {
   public final static IBuiltInSymbol PeriodogramArray =
       S.initFinalSymbol("PeriodogramArray", ID.PeriodogramArray);
 
-  public final static IBuiltInSymbol Permanent =
-      S.initFinalSymbol("Permanent", ID.Permanent);
+  public final static IBuiltInSymbol Permanent = S.initFinalSymbol("Permanent", ID.Permanent);
 
   /**
    * PermutationCycles(permutation-list) - generate a `Cycles({{...},{...}, ...})` expression from
@@ -9541,8 +9542,7 @@ public class S {
 
   public final static IBuiltInSymbol Pyramid = S.initFinalSymbol("Pyramid", ID.Pyramid);
 
-  public final static IBuiltInSymbol QPochhammer =
-      S.initFinalSymbol("QPochhammer", ID.QPochhammer);
+  public final static IBuiltInSymbol QPochhammer = S.initFinalSymbol("QPochhammer", ID.QPochhammer);
 
   /**
    * QRDecomposition(A) - computes the QR decomposition of the matrix `A`. The QR decomposition is a
@@ -10983,8 +10983,7 @@ public class S {
   public final static IBuiltInSymbol SparseArrayQ =
       S.initFinalSymbol("SparseArrayQ", ID.SparseArrayQ);
 
-  public final static IBuiltInSymbol SpearmanRho =
-      S.initFinalSymbol("SpearmanRho", ID.SpearmanRho);
+  public final static IBuiltInSymbol SpearmanRho = S.initFinalSymbol("SpearmanRho", ID.SpearmanRho);
   /**
    * SpecialsFreeQ(expr) - returns `True` if `expr` does not contain the symbols `DirectedInfinity`
    * or `Indeterminate`.
