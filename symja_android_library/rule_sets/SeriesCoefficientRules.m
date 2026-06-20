@@ -141,7 +141,17 @@
     /; FreeQ(n,x) && IntegerQ(a),
 
   SeriesCoefficient(Csc(x_),{x_Symbol, a_.*Pi, n_?NotListQ}):=Piecewise({{(-1)^a, n == -1}, {-(((-1)^a*2*I*I^n*(-1 + 2^n)*BernoulliB(1 + n))/(1 + n)!), n >= 0 && Mod(n, 2) == 1}}, 0)
-    /; FreeQ(n,x) && IntegerQ(a)
+    /; FreeQ(n,x) && IntegerQ(a),
+
+  (* Logarithmic series of BesselK at x = 0 for integer order p (DLMF 10.31.1) 
+     Decomposed into finite principal part (k < p) and main logarithmic part (k >= p) *)
+  SeriesCoefficient(BesselK(p_, x_), {x_Symbol, 0, n_?NotListQ}) := Piecewise({
+    {((-1)^((n + Abs(p))/2)*((Abs(p) - n - 2)/2)!*2^(-n - 1))/((n + Abs(p))/2)!, Mod(n + Abs(p), 2) == 0 && n >= -Abs(p) && n < Abs(p)},
+    {((-1)^Abs(p)*(-2*EulerGamma + 2*Log(2) - 2*Log(x) + HarmonicNumber((n - Abs(p))/2) + HarmonicNumber((n + Abs(p))/2))) / (2^(n + 1)*((n - Abs(p))/2)!*((n + Abs(p))/2)!), Mod(n - Abs(p), 2) == 0 && n >= Abs(p)}}, 0)
+    /; FreeQ(p, x) && FreeQ(n, x) && IntegerQ(p)&&p>=0,
+
+  SeriesCoefficient(BesselJ(p_, x_), {x_Symbol, Infinity, n_?NotListQ}) := Piecewise({{I^(-p)/((I/2)^n * ((-n - p)/2)! * Gamma((p - n + 2)/2)), Mod(-n - p, 2) == 0 && n <= -p}}, 0)
+    /; FreeQ(p, x) && FreeQ(n, x) && IntegerQ(p)&&p>=0
 
 }
 } 

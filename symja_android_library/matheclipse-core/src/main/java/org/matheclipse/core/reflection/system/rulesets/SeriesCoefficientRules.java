@@ -179,6 +179,12 @@ matcher.caseOf(SeriesCoefficient(Cot(x_),list(x_Symbol,Times(Pi,a_DEFAULT),Patte
     // SeriesCoefficient(Csc(x_),{x_Symbol,Pi*a_.,n_?NotListQ}):=Piecewise({{(-1)^a,n==-1},{((-1)*I*2*(-1)^a*I^n*(-1+2^n)*BernoulliB(1+n))/(1+n)!,n>=0&&Mod(n,2)==1}},0)/;FreeQ(n,x)&&IntegerQ(a)
 matcher.caseOf(SeriesCoefficient(Csc(x_),list(x_Symbol,Times(Pi,a_DEFAULT),PatternTest(n_,NotListQ))),
       Condition(Piecewise(list(list(Power(-1,a),Equal(n,CN1)),list(Times(CN1,CI,C2,Power(-1,a),Power(CI,n),Plus(CN1,Power(C2,n)),BernoulliB(Plus(C1,n)),Power(Factorial(Plus(C1,n)),CN1)),And(GreaterEqual(n,C0),Equal(Mod(n,C2),C1)))),C0),And(FreeQ(n,x),IntegerQ(a))));
+    // SeriesCoefficient(BesselK(p_,x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{((-1)^(1/2*(n+Abs(p)))*(1/2*(-2-n+Abs(p)))!)/(2^(1+n)*(1/2*(n+Abs(p)))!),Mod(n+Abs(p),2)==0&&n>=-Abs(p)&&n<Abs(p)},{((-1)^Abs(p)*(-2*EulerGamma+2*Log(2)-2*Log(x)+HarmonicNumber(1/2*(n-Abs(p)))+HarmonicNumber(1/2*(n+Abs(p)))))/(2^(n+1)*(1/2*(n-Abs(p)))!*(1/2*(n+Abs(p)))!),Mod(n-Abs(p),2)==0&&n>=Abs(p)}},0)/;FreeQ(p,x)&&FreeQ(n,x)&&IntegerQ(p)&&p>=0
+matcher.caseOf(SeriesCoefficient(BesselK(p_,x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
+      Condition(Piecewise(list(list(Times(Power(-1,Times(C1D2,Plus(n,Abs(p)))),Power(C2,Subtract(CN1,n)),Factorial(Times(C1D2,Plus(CN2,Negate(n),Abs(p)))),Power(Factorial(Times(C1D2,Plus(n,Abs(p)))),CN1)),And(Equal(Mod(Plus(n,Abs(p)),C2),C0),GreaterEqual(n,Negate(Abs(p))),Less(n,Abs(p)))),list(Times(Power(-1,Abs(p)),Power(Times(Power(C2,Plus(n,C1)),Factorial(Times(C1D2,Subtract(n,Abs(p)))),Factorial(Times(C1D2,Plus(n,Abs(p))))),CN1),Plus(Times(CN2,EulerGamma),Times(C2,Log(C2)),Times(CN2,Log(x)),HarmonicNumber(Times(C1D2,Subtract(n,Abs(p)))),HarmonicNumber(Times(C1D2,Plus(n,Abs(p)))))),And(Equal(Mod(Subtract(n,Abs(p)),C2),C0),GreaterEqual(n,Abs(p))))),C0),And(FreeQ(p,x),FreeQ(n,x),IntegerQ(p),GreaterEqual(p,C0))));
+    // SeriesCoefficient(BesselJ(p_,x_),{x_Symbol,Infinity,n_?NotListQ}):=Piecewise({{1/(I^p*(I*1/2)^n*(1/2*(-n-p))!*Gamma(1/2*(-n+p+2))),Mod(-n-p,2)==0&&n<=-p}},0)/;FreeQ(p,x)&&FreeQ(n,x)&&IntegerQ(p)&&p>=0
+matcher.caseOf(SeriesCoefficient(BesselJ(p_,x_),list(x_Symbol,oo,PatternTest(n_,NotListQ))),
+      Condition(Piecewise(list(list(Times(Power(CI,Negate(p)),Power(Times(Power(Times(CI,C1D2),n),Factorial(Times(C1D2,Subtract(Negate(n),p))),Gamma(Times(C1D2,Plus(Negate(n),p,C2)))),CN1)),And(Equal(Mod(Subtract(Negate(n),p),C2),C0),LessEqual(n,Negate(p))))),C0),And(FreeQ(p,x),FreeQ(n,x),IntegerQ(p),GreaterEqual(p,C0))));
 return matcher;
 }
 }
