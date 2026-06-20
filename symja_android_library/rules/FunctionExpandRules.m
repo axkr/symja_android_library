@@ -40,9 +40,6 @@
    /; UnsameQ(h,0),
   
  Gamma(a_.Integer+z_)*Gamma(b_.Integer+z_)^(-1)*x_. := If(b<a, x*Product((z+i), {i,b,a-1}), x*Product((z+i), {i,a,b-1})^(-1)),
-
- GammaRegularized(a_, z_) := Gamma(a,z) / Gamma(a),
- GammaRegularized(a_, y_, z_) :=  Gamma(a,y)/Gamma(a)-Gamma(a,z)/Gamma(a),
  
  Gudermannian(z_) := Piecewise({{(1/2)*(Pi - 4*ArcCot(E^z)), Re(z)>0||(Re(z)==0&&Im(z)>=0 )}}, (1/2)*(-Pi + 4*ArcTan(E^z))), 
 

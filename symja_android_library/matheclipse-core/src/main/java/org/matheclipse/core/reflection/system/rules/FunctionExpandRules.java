@@ -93,12 +93,6 @@ public class FunctionExpandRules {
     // (Gamma(a_.Integer+z_)*x_.)/Gamma(b_.Integer+z_):=If(b<a,x*Product(z+i,{i,b,-1+a}),x/Product(z+i,{i,a,-1+b}))
     SetDelayed(Times(Gamma(Plus($p(a, Integer,true),z_)),Power(Gamma(Plus($p(b, Integer,true),z_)),CN1),x_DEFAULT),
       If(Less(b,a),Times(x,Product(Plus(z,i),list(i,b,Plus(CN1,a)))),Times(x,Power(Product(Plus(z,i),list(i,a,Plus(CN1,b))),CN1)))),
-    // GammaRegularized(a_,z_):=Gamma(a,z)/Gamma(a)
-    SetDelayed(GammaRegularized(a_,z_),
-      Times(Power(Gamma(a),CN1),Gamma(a,z))),
-    // GammaRegularized(a_,y_,z_):=Gamma(a,y)/Gamma(a)-Gamma(a,z)/Gamma(a)
-    SetDelayed(GammaRegularized(a_,y_,z_),
-      Plus(Times(Power(Gamma(a),CN1),Gamma(a,y)),Times(CN1,Power(Gamma(a),CN1),Gamma(a,z)))),
     // Gudermannian(z_):=Piecewise({{1/2*(Pi-4*ArcCot(E^z)),Re(z)>0||(Re(z)==0&&Im(z)>=0)}},1/2*(-Pi+4*ArcTan(E^z)))
     SetDelayed(Gudermannian(z_),
       Piecewise(list(list(Times(C1D2,Plus(Pi,Times(CN4,ArcCot(Exp(z))))),Or(Greater(Re(z),C0),And(Equal(Re(z),C0),GreaterEqual(Im(z),C0))))),Times(C1D2,Plus(CNPi,Times(C4,ArcTan(Exp(z))))))),
