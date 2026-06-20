@@ -2112,12 +2112,11 @@ public class StructureFunctions {
     }
   }
 
-
   /**
    *
    *
    * <pre>
-   * Thread(f(args)
+   * Thread(f(args))
    * </pre>
    *
    * <blockquote>
@@ -2136,6 +2135,18 @@ public class StructureFunctions {
    * <p>
    * threads over any parts with head <code>h</code>.
    *
+   * </blockquote> *
+   * 
+   * <pre>
+   * Thread(f(args), h, n)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * threads <code>f</code> over any parts with head <code>h</code> that appear in the sequence
+   * specified by <code>n</code>.
+   *
    * </blockquote>
    *
    * <h3>Examples</h3>
@@ -2149,14 +2160,10 @@ public class StructureFunctions {
    *
    * &gt;&gt; Thread(f(a + b + c), Plus)
    * f(a)+f(b)+f(c)
-   * </pre>
-   *
-   * <p>
-   * Functions with attribute <code>Listable</code> are automatically threaded over lists:
-   *
-   * <pre>
-   * &gt;&gt; {a, b, c} + {d, e, f} + g
-   * {a+d+g,b+e+g,c+f+g}
+   * * &gt;&gt; Thread(g({1, 2}, {3, 4}, {5, 6}), List, 2)
+   * {g(1, 3, {5, 6}), g(2, 4, {5, 6})}
+   * * &gt;&gt; Thread(f({a, b}, {c, d}, {e, g}), List, {2, 3})
+   * {f({a, b}, c, e), f({a, b}, d, g)}
    * </pre>
    */
   private static final class Thread extends AbstractFunctionEvaluator {
@@ -2166,60 +2173,120 @@ public class StructureFunctions {
       if (!(ast.arg1().isAST())) {
         return F.NIL;
       }
-      // LevelSpec level = null;
-      // if (functionList.isAST3()) {
-      // level = new LevelSpecification(functionList.arg3());
-      // } else {
-      // level = new LevelSpec(1);
-      // }
       IExpr head = S.List;
-      if (ast.isAST2()) {
+      if (ast.argSize() >= 2) {
         head = ast.arg2();
       }
+      IExpr seqSpec = null;
+      if (ast.argSize() == 3) {
+        seqSpec = ast.arg3();
+      }
+
       final IAST list = (IAST) ast.arg1();
       if (list.size() > 1) {
-        return threadList(list, head, list.head()).orElse(list);
+        return threadList(list, head, list.head(), seqSpec).orElse(list);
       }
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
 
     /**
-     * Thread through all lists in the arguments of the IAST [i.e. the list header has the attribute
-     * ISymbol.LISTABLE] example: Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}
+     * Thread through all lists in the arguments of the IAST. example: Thread(g({1, 2}, {3, 4}, {5,
+     * 6}), List, 2) ==> {g(1, 3, {5, 6}), g(2, 4, {5, 6})}
      *
-     * @param list
-     * @param head the head over which
+     * @param list the arguments
+     * @param head the head over which to thread
      * @param mapHead the arguments head (typically <code>ast.head()</code>)
+     * @param seqSpec the sequence specification (e.g. n, {n}, {m,n})
      * @return
      */
-    public static IAST threadList(final IAST list, IExpr head, IExpr mapHead) {
+    public static IExpr threadList(final IAST list, IExpr head, IExpr mapHead, IExpr seqSpec) {
+      int argSize = list.argSize();
+      boolean[] mask = new boolean[list.size()];
+
+      // Build the thread mask based on the sequence specification
+      if (seqSpec == null) {
+        for (int i = 1; i <= argSize; i++) {
+          mask[i] = true;
+        }
+      } else {
+        if (seqSpec.isInteger()) {
+          int n = seqSpec.toIntDefault();
+          if (n > 0) {
+            for (int i = 1; i <= Math.min(n, argSize); i++)
+              mask[i] = true;
+          } else if (n < 0) {
+            for (int i = Math.max(1, argSize + n + 1); i <= argSize; i++)
+              mask[i] = true;
+          }
+        } else if (seqSpec.isList()) {
+          IAST seqList = (IAST) seqSpec;
+          if (seqList.isAST1() && seqList.arg1().isInteger()) {
+            int n = seqList.arg1().toIntDefault();
+            if (n < 0)
+              n = argSize + n + 1;
+            if (n >= 1 && n <= argSize)
+              mask[n] = true;
+          } else if (seqList.isAST2() && seqList.arg1().isInteger() && seqList.arg2().isInteger()) {
+            int m = seqList.arg1().toIntDefault();
+            int n = seqList.arg2().toIntDefault();
+            if (m < 0)
+              m = argSize + m + 1;
+            if (n < 0)
+              n = argSize + n + 1;
+            for (int i = Math.max(1, m); i <= Math.min(n, argSize); i++) {
+              mask[i] = true;
+            }
+          }
+        } else {
+          // Unrecognized sequence spec
+          return F.NIL;
+        }
+      }
 
       int listLength = -1;
-
-      for (int i = 1; i < list.size(); i++) {
-        if ((list.get(i).isAST()) && (list.get(i).head().equals(head))) {
+      for (int i = 1; i <= argSize; i++) {
+        if (mask[i] && list.get(i).isAST() && list.get(i).head().equals(head)) {
+          int len = ((IAST) list.get(i)).argSize();
           if (listLength == -1) {
-            listLength = ((IAST) list.get(i)).argSize();
-          } else {
-            if (listLength != ((IAST) list.get(i)).argSize()) {
-              // Objects of unequal length in `1` cannot be combined.
-              Errors.printMessage(S.Thread, "tdlen", F.list(list), EvalEngine.get());
-              listLength = -1;
-              return F.NIL;
-              // for loop
-            }
+            listLength = len;
+          } else if (listLength != len) {
+            // Objects of unequal length in `1` cannot be combined.
+            Errors.printMessage(S.Thread, "tdlen", F.list(list), EvalEngine.get());
+            return F.NIL;
           }
         }
       }
+
       if (listLength == -1) {
-        return list;
+        // No modifications necessary
+        return F.NIL;
       }
-      return EvalAttributes.threadList(list, head, mapHead, listLength);
+
+      IASTAppendable result;
+      if (head.equals(S.List)) {
+        result = F.ListAlloc(listLength);
+      } else {
+        result = F.ast(head, listLength);
+      }
+
+      for (int j = 1; j <= listLength; j++) {
+        IASTAppendable mapAST = F.ast(mapHead, argSize);
+        for (int i = 1; i <= argSize; i++) {
+          if (mask[i] && list.get(i).isAST() && list.get(i).head().equals(head)) {
+            mapAST.append(((IAST) list.get(i)).get(j));
+          } else {
+            mapAST.append(list.get(i));
+          }
+        }
+        result.append(mapAST);
+      }
+
+      return result;
     }
   }
 
