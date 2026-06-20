@@ -86,6 +86,33 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
           && ast.arg1().isSymbol()) {
         return F.NIL;
       }
+
+      // Prevent Sqrt(x^2) -> Abs(x) canonicalization loops by explicitly rewriting Abs(z)^exp
+      // Abs(z)^exp -> (Re(z)^2 + Im(z)^2)^(exp/2)
+      if (ast.isPower() && ast.base().isAbs()) {
+        IExpr z = ast.base().first();
+        IExpr exp = ast.exponent();
+
+        IExpr ceZ = z.accept(this);
+        if (!ceZ.isPresent()) {
+          ceZ = z;
+        } else {
+          ceZ = fEngine.evaluate(ceZ);
+        }
+
+        IExpr ceExp = exp.accept(this);
+        if (!ceExp.isPresent()) {
+          ceExp = exp;
+        } else {
+          ceExp = fEngine.evaluate(ceExp);
+        }
+
+        IExpr x = S.Re.of(fEngine, ceZ);
+        IExpr y = S.Im.of(fEngine, ceZ);
+
+        return F.Power(F.Plus(F.Sqr(x), F.Sqr(y)), F.Times(F.C1D2, ceExp));
+      }
+
       IExpr result = F.NIL;
       IExpr expr = super.visit(ast);
       if (expr.isNIL()) {
@@ -389,6 +416,9 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
                 F.Times(F.CN1D4, F.Log(F.Plus(F.Sqr(F.Plus(F.C1, v1)), v2))),
                 F.Times(F.C1D4, F.Log(F.Plus(v2, F.Sqr(F.Plus(F.C1, x))))));
           }
+          case ID.Conjugate:
+            // Conjugate(x + I*y) -> x - I*y
+            return F.Subtract(x, F.Times(F.CI, y));
           case ID.Cos: {
             // Cos(x)*Cosh(y)-I*Sin(x)*Sinh(y)
             return Plus(Times(Cos(x), Cosh(y)), Times(F.CNI, Sin(x), Sinh(y)));
@@ -425,6 +455,9 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
             return F.Plus(F.Times(F.CC(0L, 1L, 2L, 1L), v1, F.Cosh(x), F.Sin(y)),
                 F.Times(F.CN2, v1, F.Cos(y), F.Sinh(x)));
           }
+          case ID.Im:
+            // Im(x + I*y) -> y
+            return y;
           case ID.Log:
             // I*Arg(x + I*y) + (1/2)*Log(x^2 + y^2)
             final IExpr logPart;
@@ -455,6 +488,9 @@ public class ComplexExpand extends AbstractFunctionOptionEvaluator {
             // I*Im(ProductLog(x + I*y)) + Re(ProductLog(x + I*y))
             IExpr productLog = F.ProductLog(F.Plus(x, F.Times(F.CI, y)));
             return Plus(Times(F.CI, F.Im(productLog)), F.Re(productLog));
+          case ID.Re:
+            // Re(x + I*y) -> x
+            return x;
           case ID.Sin:
             // Cosh(y)*Sin(x)+I*Sinh(y)*Cos(x)
             return Plus(Times(Cosh(y), Sin(x)), Times(CI, Sinh(y), Cos(x)));

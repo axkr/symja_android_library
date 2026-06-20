@@ -187,4 +187,13 @@ public class ComplexExpandTest extends ExprEvaluatorTestCase {
         "-Arg(1-I/(x+I*y))/2+Arg(1+I/(x+I*y))/2+Arg(x+Sqrt(1+(x-I*y)^2)-I*y)");
   }
 
+  @Test
+  public void testComplexExpandAbs() {
+    check("ComplexExpand(Conjugate(Abs(x)^2))", //
+        "x^2");
+    check("ComplexExpand(Re(Abs(x)^2))", //
+        "x^2");
+    check("ComplexExpand(Im(Abs(x)^2))", //
+        "0");
+  }
 }
