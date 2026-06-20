@@ -13610,6 +13610,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + "<mfrac><mrow><mo>&#x2202;</mo><mrow><mrow><mi>sin</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mo>&#0183;</mo><mrow><mi>cos</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow></mrow></mrow><mrow><mo>&#x2202;</mo><mi>x</mi></mrow></mfrac></math>");
   }
 
+
   @Test
   public void testMax() {
 
@@ -13619,6 +13620,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-Infinity");
     check("Max(Interval({1,2}))", //
         "2");
+    check("Max(Interval({1,2}, {5, 8}))", //
+        "8");
+    check("Max(IntervalData({1, Less, LessEqual, 5}))", //
+        "5");
+    check("Max(IntervalData({0, Less, Less, 2}, {5, Less, Less, 9}))", //
+        "9");
     check("Refine(Max(Infinity,x,y), x>0&&y>0)", //
         "Infinity");
     check("Refine(Max(Infinity,x,y), x>0)", //
@@ -13810,6 +13817,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Infinity");
     check("Min(Interval({1,2}))", //
         "1");
+    check("Min(Interval({1,2}, {5, 8}))", //
+        "1");
+    check("Min(IntervalData({1, Less, LessEqual, 5}))", //
+        "1");
+    check("Min(IntervalData({0, Less, Less, 2}, {5, Less, Less, 9}))", //
+        "0");
 
     check("Refine(Min(-Infinity,x,y), x>0&&y>0)", //
         "-Infinity");
@@ -13834,8 +13847,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Refine(Infinity<x, x>0)", //
         "False");
 
-    // check("Min(5, x, -3, y, 40)", //
-    // "Min(-3,x,y)");
     check("Min(4, -8, 1)", //
         "-8");
     check("Min({1,2},3,{-3,3.5,-Infinity},{{1/2}})", //
@@ -13870,6 +13881,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Max(3,a,b)");
     check("MinMax({{1, 2}, {a, b}, {3, 2}})", //
         "{Min(1,a,b),Max(3,a,b)}");
+
+    check("MinMax(Interval({1, 5}))", //
+        "{1,5}");
+    check("MinMax(Interval({1, 2}, {5, 8}))", //
+        "{1,8}");
+    check("MinMax(IntervalData({1, Less, LessEqual, 5}))", //
+        "{1,5}");
+    check("MinMax(IntervalData({0, Less, Less, 2}, {5, Less, Less, 9}))", //
+        "{0,9}");
+    check("MinMax(Interval({1, 5}), 1)", //
+        "{0,6}");
+    check("MinMax(IntervalData({1, Less, LessEqual, 5}), {0, 1})", //
+        "{1,6}");
 
     check("MinMax({ })", //
         "{Infinity,-Infinity}");

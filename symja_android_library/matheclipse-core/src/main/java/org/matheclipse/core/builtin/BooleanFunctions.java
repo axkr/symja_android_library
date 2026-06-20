@@ -46,6 +46,7 @@ import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.BDDExpr;
@@ -2532,6 +2533,14 @@ public final class BooleanFunctions {
         if (ast.arg1().isInterval()) {
           return IntervalSym.max((IAST) ast.arg1());
         }
+        if (ast.arg1().isIntervalData()) {
+          try {
+            IAST intervalData = IntervalDataSym.normalize((IAST) ast.arg1());
+            return F.eval(F.mapFunction(S.Max, intervalData, list -> ((IAST) list).arg4()));
+          } catch (ArgumentTypeException e) {
+            return F.NIL;
+          }
+        }
 
         int allocSize = F.allocLevel1(ast, x -> x.isList());
         IASTAppendable result = F.ast(S.Max, allocSize);
@@ -2638,6 +2647,15 @@ public final class BooleanFunctions {
         if (ast.arg1().isInterval()) {
           return IntervalSym.min((IAST) ast.arg1());
         }
+        if (ast.arg1().isIntervalData()) {
+          try {
+            IAST intervalData = IntervalDataSym.normalize((IAST) ast.arg1());
+            return F.eval(F.mapFunction(S.Min, intervalData, list -> ((IAST) list).arg1()));
+          } catch (ArgumentTypeException e) {
+            return F.NIL;
+          }
+        }
+
         int allocSize = F.allocLevel1(ast, x -> x.isList());
         IASTAppendable result = F.ast(S.Min, allocSize);
         evaled = flattenListRecursive(ast, result, engine) || evaled;
@@ -2751,12 +2769,12 @@ public final class BooleanFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (ast.isAST1()) {
-        if (arg1.isList() || arg1.isAssociation()) {
+        if (arg1.isList() || arg1.isAssociation() || arg1.isInterval() || arg1.isIntervalData()) {
           return F.list(F.Min(arg1), F.Max(arg1));
         }
       } else if (ast.isAST2()) {
         IExpr arg2 = ast.arg2();
-        if (arg1.isList() || arg1.isAssociation()) {
+        if (arg1.isList() || arg1.isAssociation() || arg1.isInterval() || arg1.isIntervalData()) {
           if (arg2.isList()) {
             if (arg2.size() == 3 && arg2.first().isNumericFunction(true)
                 && arg2.second().isNumericFunction(true)) {
