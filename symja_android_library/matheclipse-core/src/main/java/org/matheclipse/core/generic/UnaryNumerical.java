@@ -27,6 +27,7 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
   final ISymbol fVariable;
   final ISymbol fDummyVariable;
   final EvalEngine fEngine;
+  final double fDefaultValue;
 
   UnaryNumerical fFirstDerivative = null;
 
@@ -39,9 +40,10 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
    * 
    * @param unaryFunction the unary function
    * @param variable the functions variable name
+   * @param defaultValue TODO
    */
-  public UnaryNumerical(final IExpr unaryFunction, final ISymbol variable) {
-    this(unaryFunction, variable, false, true, EvalEngine.get());
+  public UnaryNumerical(final IExpr unaryFunction, final ISymbol variable, double defaultValue) {
+    this(unaryFunction, variable, false, true, defaultValue, EvalEngine.get());
   }
 
   /**
@@ -54,11 +56,12 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
    * 
    * @param unaryFunction the unary function
    * @param variable the functions variable name
+   * @param defaultValue TODO
    * @param engine the evaluation engine
    */
   public UnaryNumerical(final IExpr unaryFunction, final ISymbol variable,
-      final EvalEngine engine) {
-    this(unaryFunction, variable, false, true, engine);
+      double defaultValue, final EvalEngine engine) {
+    this(unaryFunction, variable, false, true, defaultValue, engine);
   }
 
   /**
@@ -72,11 +75,12 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
    * @param variable the functions variable name
    * @param useAbsReal substitute {@link S#Abs} with {@link S#AbsReal} function, because of assuming
    *        real input values
+   * @param defaultValue TODO
    * @param engine the evaluation engine
    */
   public UnaryNumerical(final IExpr unaryFunction, final ISymbol variable, boolean useAbsReal,
-      final EvalEngine engine) {
-    this(unaryFunction, variable, false, useAbsReal, engine);
+      double defaultValue, final EvalEngine engine) {
+    this(unaryFunction, variable, false, useAbsReal, defaultValue, engine);
   }
 
   /**
@@ -92,15 +96,17 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
    *        {@code unaryFunction} directly in the constructor.
    * @param useAbsReal substitute {@link S#Abs} with {@link S#AbsReal} function, because of assuming
    *        real input values
+   * @param defaultValue TODO
    * @param engine the evaluation engine
    */
   public UnaryNumerical(final IExpr unaryFunction, final ISymbol variable, boolean firstDerivative,
-      boolean useAbsReal, final EvalEngine engine) {
+      boolean useAbsReal, double defaultValue, final EvalEngine engine) {
     if (!variable.isVariable() || variable.isBuiltInSymbol()) {
       // Cannot assign to raw object `1`.
       throw new ArgumentTypeException(
           Errors.getMessage("setraw", F.list(variable), EvalEngine.get()));
     }
+    fDefaultValue = defaultValue;
     fVariable = variable;
     IExpr function;
     if (useAbsReal) {
@@ -111,7 +117,7 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
     fEngine = engine;
     if (firstDerivative) {
       IExpr temp = engine.evaluate(F.D(function, fVariable));
-      fFirstDerivative = new UnaryNumerical(temp, fVariable, false, useAbsReal, engine);
+      fFirstDerivative = new UnaryNumerical(temp, fVariable, false, useAbsReal, defaultValue, engine);
     }
     fDummyVariable = F.Dummy("$" + fVariable.toString());
     fUnaryFunction = F.subst(unaryFunction, x -> x.equals(variable) ? fDummyVariable : F.NIL);
@@ -211,7 +217,7 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
     }
     final IAST ast = F.D(fUnaryFunction, fVariable);
     IExpr expr = fEngine.evaluate(ast);
-    fFirstDerivative = new UnaryNumerical(expr, fVariable, false, true, fEngine);
+    fFirstDerivative = new UnaryNumerical(expr, fVariable, false, true, Double.NaN, fEngine);
     return fFirstDerivative;
   }
 
@@ -252,7 +258,8 @@ public final class UnaryNumerical implements UnaryOperator<IExpr>, UnivariateDif
     if (fUnaryFunction.isAST(S.Labeled, 3) || fUnaryFunction.isAST(S.Style, 3)) {
       return fUnaryFunction.first().evalf();
     }
-    return fUnaryFunction.evalf();
+    return EvalEngine.get().evalDouble(fUnaryFunction, null, fDefaultValue);
+    // return fUnaryFunction.evalf();
   }
 
   public static double[] vectorValue(UnivariateFunction function, double[] t) {

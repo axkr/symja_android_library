@@ -158,7 +158,7 @@ public class Plot extends ListPlot {
     final double step = (xMax - xMin) / N;
     double y;
 
-    final UnaryNumerical hun = new UnaryNumerical(function, xVar, engine);
+    final UnaryNumerical hun = new UnaryNumerical(function, xVar, Double.NaN, engine);
     final double data[][] = new double[N + 1][2];
     double x = xMin;
 

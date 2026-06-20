@@ -258,7 +258,7 @@ public class FindRoot extends AbstractFunctionOptionEvaluator {
           IAST equalAST = (IAST) function;
           function = F.Plus(equalAST.arg1(), F.Negate(equalAST.arg2()));
         }
-        UnivariateDifferentiableFunction f = new UnaryNumerical(function, xVar, true, true, engine);
+        UnivariateDifferentiableFunction f = new UnaryNumerical(function, xVar, true, true, Double.NaN, engine);
         BaseAbstractUnivariateSolver<UnivariateFunction> solver = null;
         if (method.equalsIgnoreCase("Brent")) {
           solver = new BracketingNthOrderBrentSolver(accuracy, 5);

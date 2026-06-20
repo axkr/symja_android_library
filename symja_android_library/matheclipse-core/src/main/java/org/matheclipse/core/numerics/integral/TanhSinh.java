@@ -54,9 +54,44 @@ public final class TanhSinh extends Quadrature {
   @Override
   final QuadratureResult properIntegral(final DoubleUnaryOperator f, final double a,
       final double b) {
+    if (Double.isInfinite(a) || Double.isInfinite(b)) {
+      if (a == Double.NEGATIVE_INFINITY && b == Double.POSITIVE_INFINITY) {
+        // Map (-Infinity, Infinity) to (-1, 1) using x = t / (1 - t^2)
+        DoubleUnaryOperator mappedF = t -> {
+          // Guard against endpoint evaluation to prevent division by zero / NaN
+          if (t >= 1.0 || t <= -1.0)
+            return 0.0;
+          double t2 = t * t;
+          double x = t / (1.0 - t2);
+          return f.applyAsDouble(x) * (1.0 + t2) / ((1.0 - t2) * (1.0 - t2));
+        };
+        return tanhsinh(mappedF, -1.0, 1.0);
+      } else if (b == Double.POSITIVE_INFINITY) {
+        // Map [a, Infinity) to [0, 1] using x = a + t / (1 - t)
+        DoubleUnaryOperator mappedF = t -> {
+          if (t >= 1.0)
+            return 0.0;
+          double diff = 1.0 - t;
+          double x = a + t / diff;
+          return f.applyAsDouble(x) / (diff * diff);
+        };
+        return tanhsinh(mappedF, 0.0, 1.0);
+      } else if (a == Double.NEGATIVE_INFINITY) {
+        // Map (-Infinity, b] to [0, 1] using x = b - t / (1 - t)
+        DoubleUnaryOperator mappedF = t -> {
+          if (t >= 1.0)
+            return 0.0;
+          double diff = 1.0 - t;
+          double x = b - t / diff;
+          return f.applyAsDouble(x) / (diff * diff);
+        };
+        return tanhsinh(mappedF, 0.0, 1.0);
+      }
+    }
+
+    // Default to standard evaluation for finite bounds
     return tanhsinh(f, a, b);
   }
-
   @Override
   public final String getName() {
     return "TanhSinh";

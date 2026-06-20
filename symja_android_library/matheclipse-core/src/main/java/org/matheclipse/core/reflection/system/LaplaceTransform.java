@@ -65,7 +65,7 @@ public class LaplaceTransform extends AbstractFunctionEvaluator {
         if (value instanceof UnaryNumerical) {
           unaryNumerical = (UnaryNumerical) value;
         } else {
-          unaryNumerical = new UnaryNumerical(a1, (ISymbol) t, engine);
+          unaryNumerical = new UnaryNumerical(a1, (ISymbol) t, Double.NaN, engine);
           engine.putObjectCache(cacheKey, unaryNumerical);
         }
         return F.num(laplaceTransform(unaryNumerical, sDouble));

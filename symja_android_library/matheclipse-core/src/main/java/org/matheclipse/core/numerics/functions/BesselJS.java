@@ -147,7 +147,7 @@ public class BesselJS extends JS {
           new FiniteDifferencesDifferentiator(15, 0.01);
       ISymbol nSymbol = F.Dummy("n");
       UnivariateDifferentiableFunction f = differentiator.differentiate(
-          new UnaryNumerical(F.BesselJ(nSymbol, F.num(x)), nSymbol, EvalEngine.get()));
+          new UnaryNumerical(F.BesselJ(nSymbol, F.num(x)), nSymbol, Double.NaN, EvalEngine.get()));
       DSFactory factory = new DSFactory(1, 1);
       double d1 = f.value(factory.variable(0, n)).getPartialDerivative(1);
       double d2 = f.value(factory.variable(0, -n)).getPartialDerivative(1);
@@ -304,7 +304,7 @@ public class BesselJS extends JS {
           new FiniteDifferencesDifferentiator(15, 0.01);
       ISymbol nSymbol = F.Dummy("n");
       UnivariateDifferentiableFunction f = differentiator.differentiate(
-          new UnaryNumerical(F.BesselI(nSymbol, F.num(x)), nSymbol, EvalEngine.get()));
+          new UnaryNumerical(F.BesselI(nSymbol, F.num(x)), nSymbol, Double.NaN, EvalEngine.get()));
       DSFactory factory = new DSFactory(1, 1);
       double d1 = f.value(factory.variable(0, n)).getPartialDerivative(1);
       double d2 = f.value(factory.variable(0, -n)).getPartialDerivative(1);

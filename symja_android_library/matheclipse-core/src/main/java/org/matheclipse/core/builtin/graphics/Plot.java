@@ -142,7 +142,7 @@ public class Plot extends ListPlot {
     for (int i = 1; i < size; i++) {
       IExpr function = list.get(i);
       double[][] data = null;
-      final UnaryNumerical hun = new UnaryNumerical(function, x, engine);
+      final UnaryNumerical hun = new UnaryNumerical(function, x, Double.NaN, engine);
       data = org.matheclipse.core.sympy.plotting.Plot.computePlot(hun, data, xMinD, xMaxD, scale);
       if (data != null) {
         dataList.add(data);

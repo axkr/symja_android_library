@@ -104,7 +104,7 @@ public class PolarPlot extends Plot {
       IExpr function = list.get(i);
       double[][] data = null;
       // Use standard Plot sampler to get theta vs radius
-      final UnaryNumerical hun = new UnaryNumerical(function, theta, engine);
+      final UnaryNumerical hun = new UnaryNumerical(function, theta, Double.NaN, engine);
       data =
           org.matheclipse.core.sympy.plotting.Plot.computePlot(hun, data, tMinD, tMaxD, "Linear");
 

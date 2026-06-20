@@ -149,7 +149,7 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
     ISymbol xVar = (ISymbol) variable;
     // final EvalEngine engine = EvalEngine.get();
     IExpr tempFunction = F.eval(function);
-    UnaryNumerical f = new UnaryNumerical(tempFunction, xVar, engine);
+    UnaryNumerical f = new UnaryNumerical(tempFunction, xVar, 0.0, engine);
 
     UnivariateIntegrator integrator;
     if ("Simpson".equalsIgnoreCase(method)) {
@@ -318,7 +318,19 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
             result = Precision.round(result, precisionGoal);
             return Num.valueOf(result);
           } catch (MathIllegalArgumentException | MathIllegalStateException miae) {
-            // especially max iterations exceeded
+            // CAS "Symbolic Processing" fallback for oscillatory/infinite integrals
+            // when maximal count is exceeded.
+            IExpr symbolic = engine.evaluate(F.Integrate(function, list));
+
+            // Ensure the integral was actually solved symbolically
+            if (symbolic.isPresent() && symbolic.isFree(S.Integrate)) {
+              IExpr numeric = engine.evaluate(F.N(symbolic));
+              if (numeric.isNumber()) {
+                double val = numeric.evalf();
+                val = Precision.round(val, precisionGoal);
+                return Num.valueOf(val);
+              }
+            }
             return Errors.printMessage(ast.topHead(), miae, engine);
           } catch (MathRuntimeException mre) {
             return Errors.printMessage(ast.topHead(), mre, engine);
@@ -363,7 +375,7 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
     }
     ISymbol xVar = (ISymbol) variable;
     IExpr tempFunction = F.eval(function);
-    UnaryNumerical f = new UnaryNumerical(tempFunction, xVar, engine);
+    UnaryNumerical f = new UnaryNumerical(tempFunction, xVar, Double.NaN, engine);
 
     if (maxPoints > 0) {
       maxPoints = maxPoints / 4;

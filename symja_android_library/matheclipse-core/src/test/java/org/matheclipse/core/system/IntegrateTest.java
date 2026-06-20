@@ -366,9 +366,9 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     checkNumeric("NIntegrate(Exp(-x^2),{x,-Infinity,Infinity})", //
         "1.772453850905516");
 
-    // TOTO integrable singularity at x==0
+    // integrable singularity at x==0
     checkNumeric("NIntegrate(1/Sqrt(x),{x,0,1}, Method->GaussKronrod)", //
-        "NIntegrate(1/Sqrt(x),{x,0,1},Method->gausskronrod)");
+        "2.0");
     checkNumeric("NIntegrate(1/Sqrt(x),{x,0,1}, Method->LegendreGauss )", //
         "1.9913364016175945");
     checkNumeric("NIntegrate(Cos(200*x),{x,0,1}, Method->GaussKronrod)", //
@@ -418,6 +418,23 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "1.0E-16");
     checkNumeric("NIntegrate(1/Sin(Sqrt(x)), {x, 0, 1}, PrecisionGoal->10)", //
         "2.1195255867");
+  }
+
+  @Test
+  public void testNIntegrateOscillatory() {
+    // check("Limit(Erfi((-1)^(1/4)*x),x->Infinity)", //
+    // "I");
+    check("Limit(Erfi((-1)^(1/4)*x),x->-Infinity)", //
+        "-I");
+    check("Limit(Erfi((-1)^(1/4)*x),x->Infinity)", //
+        "I");
+    check("Integrate(Exp(I*x^2), {x, -Infinity, Infinity})", //
+        "(-1)^(1/4)*Sqrt(Pi)");
+
+    check("NIntegrate(Cos(x^2),{x,-Infinity,Infinity})", //
+        "1.25331");
+    check("NIntegrate(Cos(x^2),{x,0,Infinity})", //
+        "0.626657");
   }
 
   @Test
@@ -574,10 +591,10 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
 
     checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Trapezoid)", //
         "-0.0208333271245165");
+    // fallback to symbolic integration
     checkNumeric(
         "NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Simpson, MaxIterations->10)", //
-        "NIntegrate((-1+x)*(-0.5+x)*(0.5+x)*x*(1+x),{x,0,1},Method->simpson,MaxIterations->\n"
-            + "10)");
+        "-0.0208333333333333");
     checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Simpson)", //
         "-0.0208333320915699");
 
@@ -652,7 +669,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
     check("NIntegrate(1/x, {x,0,1},Method->\"LegendreGauss\")", //
         "10.37476");
     check("N(Integrate(1/x, {x,0,1}))", //
-        "Integrate(1/x,{x,0,1})");
+        "Hold(N(Integrate(1/x,{x,0,1})))");
 
     // message - Integrate: Integral of 1/x does not converge on {x,0,1}.
     check("Integrate(1/x, {x,0,1})", //
