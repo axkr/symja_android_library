@@ -705,6 +705,62 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
     assertEquals(expectedMat.normal(false), resultMat.normal(false));
   }
 
+  @Test
+  public void testSparseArrayBand() {
+    // Basic scalar band on the main diagonal
+    check("s = SparseArray(Band({1, 1}) -> 1, {3, 3})", //
+        "SparseArray(Number of elements: 3 Dimensions: {3,3} Default value: 0)");
+    check("s // Normal", //
+        "{{1,0,0},{0,1,0},{0,0,1}}");
+
+    // Repeating sequence band
+    check("s = SparseArray(Band({1, 1}) -> {1, 2, 3}, {4, 4})", //
+        "SparseArray(Number of elements: 3 Dimensions: {4,4} Default value: 0)");
+    check("s // Normal", //
+        "{{1,0,0,0},{0,2,0,0},{0,0,3,0},{0,0,0,0}}");
+
+    // Band with a custom step size
+    check("s = SparseArray(Band({1, 1}, Automatic, {1, 2}) -> 1, {3, 5})", //
+        "SparseArray(Number of elements: 3 Dimensions: {3,5} Default value: 0)");
+    check("s // Normal", //
+        "{{1,0,0,0,0},{0,0,1,0,0},{0,0,0,0,1}}");
+
+    // Band with an explicit end boundary
+    check("s = SparseArray(Band({1, 1}, {2, 2}) -> 5, {4, 4})", //
+        "SparseArray(Number of elements: 2 Dimensions: {4,4} Default value: 0)");
+    check("s // Normal", //
+        "{{5,0,0,0},{0,5,0,0},{0,0,0,0},{0,0,0,0}}");
+
+    // Band starting with a positional offset
+    check("s = SparseArray(Band({1, 2}) -> 7, {3, 4})", //
+        "SparseArray(Number of elements: 3 Dimensions: {3,4} Default value: 0)");
+    check("s // Normal", //
+        "{{0,7,0,0},{0,0,7,0},{0,0,0,7}}");
+
+    // 1-Dimensional band
+    check("s = SparseArray(Band({2}) -> {x, y}, {5})", //
+        "SparseArray(Number of elements: 2 Dimensions: {5} Default value: 0)");
+    check("s // Normal", //
+        "{0,x,y,0,0}");
+
+    // Combining Band with explicit positional rules
+    check("s = SparseArray({Band({1, 1}) -> 1, {1, 3} -> 8}, {3, 3})", //
+        "SparseArray(Number of elements: 4 Dimensions: {3,3} Default value: 0)");
+    check("s // Normal", //
+        "{{1,0,8},{0,1,0},{0,0,1}}");
+
+    // Without explicit dimensions (Automatic extraction)
+    check("s = SparseArray(Band({1, 1}, {3, 3}) -> x)", //
+        "SparseArray(Number of elements: 3 Dimensions: {3,3} Default value: 0)");
+    check("s // Normal", //
+        "{{x,0,0},{0,x,0},{0,0,x}}");
+
+    check("s=SparseArray({Band({1, 1}) -> x, Band({2, 1}) -> y}, {5,5})", //
+        "SparseArray(Number of elements: 9 Dimensions: {5,5} Default value: 0)");
+    check("s // Normal", //
+        "{{x,0,0,0,0},{y,x,0,0,0},{0,y,x,0,0},{0,0,y,x,0},{0,0,0,y,x}}");
+  }
+
   /** The JUnit setup method */
   @Override
   public void setUp() {

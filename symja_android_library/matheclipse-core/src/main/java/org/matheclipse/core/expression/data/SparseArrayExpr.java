@@ -1247,150 +1247,179 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     return null;
   }
 
+  /**
+   * Creates a sparse array Trie by processing a list of rules.
+   *
+   * @param arrayRulesList the AST list of rules (e.g., {{1, 1} -> 1, {2, 2} -> 2})
+   * @param trie the Trie structure to populate
+   * @param dimension the initial dimension array, or null if it needs to be inferred
+   * @param defaultDimension a fallback scalar dimension if `dimension` is null (e.g., 5 for a 5x5
+   *        matrix)
+   * @param defaultValue an array of size 1 containing the default value, updated if a Blank pattern
+   *        is found
+   * @param engine the EvalEngine for evaluation and messaging
+   * @return the determined dimension array, or null if initialization failed.
+   */
   private static int[] createTrie(IAST arrayRulesList, final Trie<int[], IExpr> trie,
       int[] dimension, int defaultDimension, IExpr[] defaultValue, EvalEngine engine) {
     boolean determineDimension = defaultDimension < 0 || dimension == null;
 
-    int[] positions = null;
+    if (!arrayRulesList.isNonEmptyList()) {
+      return dimension;
+    }
+
     int depth = 1;
     if (dimension != null) {
       depth = dimension.length;
     }
-    if (arrayRulesList.isNonEmptyList()) {
-      IExpr arg1 = arrayRulesList.arg1();
-      IAST rule1 = (IAST) arg1;
-      if (rule1.arg1().isList()) {
-        IAST positionList = (IAST) rule1.arg1();
-        if (dimension == null) {
-          depth = positionList.argSize();
+
+    IAST rule1 = (IAST) arrayRulesList.arg1();
+    IExpr lhs1 = rule1.arg1();
+
+    // 1. Initialize dimensions if they are missing
+    if (dimension == null) {
+      if (lhs1.isList()) {
+        depth = ((IAST) lhs1).argSize();
+        dimension = new int[depth];
+      } else if (lhs1.isAST(S.Band, 1, 4)) {
+        if (((IAST) lhs1).arg1().isList()) {
+          depth = ((IAST) ((IAST) lhs1).arg1()).argSize();
           dimension = new int[depth];
         } else {
-          if (dimension.length != positionList.argSize()) {
-            // `1` is not a valid dimension specification for `2`.
-            Errors.printMessage(S.SparseArray, "dimss", F.list(F.ZZ(dimension.length), rule1),
-                engine);
-            return null;
-          }
-          depth = dimension.length;
+          return null;
         }
-        positions = checkPositions(arrayRulesList, positionList, engine);
-        if (positions == null) {
-          if (!checkPatternPositions(trie, positionList, rule1.arg2(), dimension, defaultValue,
-              arrayRulesList, engine)) {
-            return null;
-          }
-        }
-      } else {
-        int n = rule1.arg1().toIntDefault();
-        if (n > 0) {
-          if (dimension == null) {
-            depth = 1;
-            dimension = new int[depth];
-          } else {
-            if (dimension.length != 1) {
-              // `1` is not a valid dimension specification for `2`.
-              Errors.printMessage(S.SparseArray, "dimss", F.list(F.ZZ(dimension.length), rule1),
-                  engine);
-              return null;
-            }
-            depth = 1;
-          }
-          positions = new int[1];
-          positions[0] = n;
-        } else {
-          if (rule1.arg1().isBlank()) {
-            // pattern matching
-            if (defaultValue[0].isNIL()) {
-              defaultValue[0] = rule1.arg2();
-            } else if (!defaultValue[0].equals(rule1.arg2())) {
-              // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
-              Errors.printMessage(S.SparseArray, "posr",
-                  F.list(arrayRulesList, rule1.arg1(), F.ZZ(depth)), engine);
-              return null;
-            }
-          } else if (!patternPositionsList(trie, rule1.arg1(), rule1.arg2(), dimension,
-              arrayRulesList, engine)) {
-            return null;
-          }
-        }
+      } else if (lhs1.toIntDefault() > 0) {
+        depth = 1;
+        dimension = new int[depth];
       }
-
-      if (positions != null) {
-        if (defaultDimension > 0) {
-          for (int i = 0; i < depth; i++) {
-            dimension[i] = defaultDimension;
-          }
-        } else {
-          if (determineDimension) {
-            for (int i = 0; i < depth; i++) {
-              if (positions[i] > dimension[i]) {
-                dimension[i] = positions[i];
-              }
-            }
-          }
-        }
-        trie.put(positions, rule1.arg2());
+    } else {
+      // Validate provided dimensions against the first rule
+      if (lhs1.isList() && dimension.length != ((IAST) lhs1).argSize()) {
+        Errors.printMessage(S.SparseArray, "dimss", F.list(F.ZZ(dimension.length), rule1), engine);
+        return null;
+      } else if (lhs1.toIntDefault() > 0 && dimension.length != 1) {
+        Errors.printMessage(S.SparseArray, "dimss", F.list(F.ZZ(dimension.length), rule1), engine);
+        return null;
       }
     }
+
+    // 2. Process the first rule
+    if (!processSingleRule(rule1, trie, dimension, depth, determineDimension, defaultDimension,
+        defaultValue, arrayRulesList, true, engine)) {
+      return null;
+    }
+
+    // 3. Process the remaining rules
     for (int j = 2; j < arrayRulesList.size(); j++) {
       IExpr arg = arrayRulesList.get(j);
       if (arg.isRuleAST()) {
-        IAST rule = (IAST) arg;
-        if (rule.arg1().isList()) {
-          IAST positionList = (IAST) rule.arg1();
-          positions = checkPositions(arrayRulesList, positionList, engine);
-          if (positions == null) {
-            if (!checkPatternPositions(trie, positionList, rule.arg2(), dimension, defaultValue,
-                arrayRulesList, engine)) {
-              return null;
-            }
-          } else {
-            if (positions.length != depth) {
-              // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
-              Errors.printMessage(S.SparseArray, "posr",
-                  F.list(arrayRulesList, rule.arg1(), F.ZZ(depth)), engine);
-              return null;
-            }
-            if (determineDimension) {
-              for (int i = 0; i < depth; i++) {
-                if (positions[i] > dimension[i]) {
-                  dimension[i] = positions[i];
-                }
-              }
-            }
-            trie.putIfAbsent(positions, rule.arg2());
-          }
-        } else {
-          int n = rule.arg1().toIntDefault();
-          if (n > 0) {
-            positions = new int[1];
-            positions[0] = n;
-            if (determineDimension) {
-              if (n > dimension[0]) {
-                dimension[0] = n;
-              }
-            }
-            trie.putIfAbsent(positions, rule.arg2());
-          } else {
-            if (rule.arg1().isBlank()) {
-              // pattern matching
-              if (defaultValue[0].isNIL()) {
-                defaultValue[0] = rule.arg2();
-              } else if (!defaultValue[0].equals(rule.arg2())) {
-                // The left hand side of `2` in `1` doesn't match an int-array of depth `3`.
-                Errors.printMessage(S.SparseArray, "posr",
-                    F.list(arrayRulesList, rule.arg1(), F.ZZ(depth)), engine);
-                return null;
-              }
-            } else if (!patternPositionsList(trie, rule.arg1(), rule.arg2(), dimension,
-                arrayRulesList, engine)) {
-              return null;
-            }
-          }
+        if (!processSingleRule((IAST) arg, trie, dimension, depth, determineDimension,
+            defaultDimension, defaultValue, arrayRulesList, false, engine)) {
+          return null;
         }
       }
     }
     return dimension;
+  }
+
+  /**
+   * Process a single rule from the sparse array rules list.
+   *
+   * @param rule the rule AST (LHS -> RHS)
+   * @param trie the internal trie structure
+   * @param dimension the dimension array of the sparse array
+   * @param depth the expected depth of the positions
+   * @param determineDimension flag to update dimensions dynamically based on positions
+   * @param defaultDimension the default scalar dimension
+   * @param defaultValue array holding the default value (modified if a Blank pattern matches)
+   * @param arrayRulesList the complete rules list for error reporting
+   * @param isFirstRule flag indicating if this is the first rule
+   * @param engine the evaluation engine
+   * @return <code>true</code> if the rule was processed successfully, false otherwise
+   */
+  private static boolean processSingleRule(IAST rule, Trie<int[], IExpr> trie, int[] dimension,
+      int depth, boolean determineDimension, int defaultDimension, IExpr[] defaultValue,
+      IAST arrayRulesList, boolean isFirstRule, EvalEngine engine) {
+    IExpr lhs = rule.arg1();
+    IExpr rhs = rule.arg2();
+
+    if (lhs.isList()) {
+      IAST positionList = (IAST) lhs;
+      int[] positions = checkPositions(arrayRulesList, positionList, engine);
+
+      if (positions == null) {
+        return checkPatternPositions(trie, positionList, rhs, dimension, defaultValue,
+            arrayRulesList, engine);
+      }
+
+      if (!isFirstRule && positions.length != depth) {
+        Errors.printMessage(S.SparseArray, "posr", F.list(arrayRulesList, lhs, F.ZZ(depth)),
+            engine);
+        return false;
+      }
+
+      updateDimensionsAndInsert(trie, positions, rhs, dimension, depth, determineDimension,
+          defaultDimension, isFirstRule);
+      return true;
+
+    } else if (lhs.isAST(S.Band, 1, 4)) {
+      return processBandRule(trie, (IAST) lhs, rhs, dimension, determineDimension);
+    } else {
+      int n = lhs.toIntDefault();
+      if (n > 0) {
+        int[] positions = new int[] {n};
+        updateDimensionsAndInsert(trie, positions, rhs, dimension, depth, determineDimension,
+            defaultDimension, isFirstRule);
+        return true;
+      }
+
+      if (lhs.isBlank()) {
+        if (defaultValue[0].isNIL()) {
+          defaultValue[0] = rhs;
+        } else if (!defaultValue[0].equals(rhs)) {
+          Errors.printMessage(S.SparseArray, "posr", F.list(arrayRulesList, lhs, F.ZZ(depth)),
+              engine);
+          return false;
+        }
+        return true;
+      }
+
+      return patternPositionsList(trie, lhs, rhs, dimension, arrayRulesList, engine);
+    }
+  }
+
+  /**
+   * Helper method to handle dimension updates and insert the value into the trie.
+   *
+   * @param trie the Trie to populate
+   * @param positions the integer positions for the entry
+   * @param rhs the value to insert
+   * @param dimension the dimension array to optionally update
+   * @param depth the length of the dimensions array
+   * @param determineDimension <code>true</code> if dimensions can be dynamically expanded
+   * @param defaultDimension a scalar to set dimensions to (if it is the first rule and > 0)
+   * @param isFirstRule <code>true</code> if this is the first rule being evaluated
+   */
+  private static void updateDimensionsAndInsert(Trie<int[], IExpr> trie, int[] positions, IExpr rhs,
+      int[] dimension, int depth, boolean determineDimension, int defaultDimension,
+      boolean isFirstRule) {
+    if (isFirstRule && defaultDimension > 0 && dimension != null) {
+      for (int i = 0; i < depth; i++) {
+        dimension[i] = defaultDimension;
+      }
+    } else if (determineDimension && dimension != null) {
+      for (int i = 0; i < depth; i++) {
+        if (positions[i] > dimension[i]) {
+          dimension[i] = positions[i];
+        }
+      }
+    }
+
+    if (isFirstRule) {
+      trie.put(positions, rhs);
+    } else {
+      trie.putIfAbsent(positions, rhs);
+    }
   }
 
   /**
@@ -1724,57 +1753,57 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   @Override
   public IExpr evaluate(EvalEngine engine) {
     // if (isEvalFlagOff(IAST.BUILT_IN_EVALED)) {
-      boolean containsNumericArg = false;
-      boolean evaled = false;
-      IExpr newDefaultValue = fDefaultValue;
-      IExpr temp = engine.evaluateNIL(fDefaultValue);
+    boolean containsNumericArg = false;
+    boolean evaled = false;
+    IExpr newDefaultValue = fDefaultValue;
+    IExpr temp = engine.evaluateNIL(fDefaultValue);
+    if (temp.isPresent()) {
+      evaled = true;
+      if (temp.isNumericArgument(true)) {
+        containsNumericArg = true;
+      }
+      newDefaultValue = temp;
+    } else if (fDefaultValue.isNumericArgument(true)) {
+      containsNumericArg = true;
+    }
+    final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
+    for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
+      IExpr value = entry.getValue();
+      temp = engine.evaluateNIL(value);
       if (temp.isPresent()) {
         evaled = true;
         if (temp.isNumericArgument(true)) {
           containsNumericArg = true;
         }
-        newDefaultValue = temp;
-      } else if (fDefaultValue.isNumericArgument(true)) {
-        containsNumericArg = true;
-      }
-      final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
-      for (TrieNode<int[], IExpr> entry : fData.nodeSet()) {
-        IExpr value = entry.getValue();
-        temp = engine.evaluateNIL(value);
-        if (temp.isPresent()) {
-          evaled = true;
-          if (temp.isNumericArgument(true)) {
-            containsNumericArg = true;
-          }
-          if (!temp.equals(newDefaultValue)) {
-            trie.put(entry.getKey(), temp);
-          }
-        } else {
-          if (value.isNumericArgument(true)) {
-            containsNumericArg = true;
-          }
-          if (!value.equals(newDefaultValue)) {
-            trie.put(entry.getKey(), value);
-          }
+        if (!temp.equals(newDefaultValue)) {
+          trie.put(entry.getKey(), temp);
+        }
+      } else {
+        if (value.isNumericArgument(true)) {
+          containsNumericArg = true;
+        }
+        if (!value.equals(newDefaultValue)) {
+          trie.put(entry.getKey(), value);
         }
       }
-      if (evaled) {
-        SparseArrayExpr result = new SparseArrayExpr(trie, fDimension, newDefaultValue, false);
-        if (containsNumericArg) {
-          result.addEvalFlags(IAST.CONTAINS_NUMERIC_ARG);
-          // result.addEvalFlags(IAST.BUILT_IN_EVALED | IAST.CONTAINS_NUMERIC_ARG);
-          // } else {
-          // result.addEvalFlags(IAST.BUILT_IN_EVALED);
-        }
-        return result;
-      }
+    }
+    if (evaled) {
+      SparseArrayExpr result = new SparseArrayExpr(trie, fDimension, newDefaultValue, false);
       if (containsNumericArg) {
-        addEvalFlags(IAST.CONTAINS_NUMERIC_ARG);
-        // addEvalFlags(IAST.BUILT_IN_EVALED | IAST.CONTAINS_NUMERIC_ARG);
+        result.addEvalFlags(IAST.CONTAINS_NUMERIC_ARG);
+        // result.addEvalFlags(IAST.BUILT_IN_EVALED | IAST.CONTAINS_NUMERIC_ARG);
         // } else {
-        // addEvalFlags(IAST.BUILT_IN_EVALED);
+        // result.addEvalFlags(IAST.BUILT_IN_EVALED);
       }
-      // }
+      return result;
+    }
+    if (containsNumericArg) {
+      addEvalFlags(IAST.CONTAINS_NUMERIC_ARG);
+      // addEvalFlags(IAST.BUILT_IN_EVALED | IAST.CONTAINS_NUMERIC_ARG);
+      // } else {
+      // addEvalFlags(IAST.BUILT_IN_EVALED);
+    }
+    // }
     return F.NIL;
   }
 
@@ -2327,6 +2356,165 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
       return result;
     }
     return F.headAST0(S.List);
+  }
+
+  /**
+   * Process a Band(...) rule for sparse arrays.
+   *
+   * @param trie the internal trie structure
+   * @param band the Band AST
+   * @param rhs the right hand side value or list of values
+   * @param dimension the current dimensions array
+   * @param determineDimension whether to update dimensions dynamically
+   * @return true if successful
+   */
+  private static boolean processBandRule(final Trie<int[], IExpr> trie, IAST band, IExpr rhs,
+      int[] dimension, boolean determineDimension) {
+    int argSize = band.argSize();
+    if (argSize < 1 || argSize > 3) {
+      return false;
+    }
+
+    IExpr arg1 = band.arg1();
+    if (!arg1.isList()) {
+      return false;
+    }
+    IAST startAst = (IAST) arg1;
+    int depth = startAst.argSize();
+    if (dimension != null && dimension.length != depth) {
+      return false;
+    }
+
+    int[] start = new int[depth];
+    for (int i = 1; i <= depth; i++) {
+      int val = startAst.get(i).toIntDefault(Integer.MIN_VALUE);
+      if (val <= 0)
+        return false;
+      start[i - 1] = val;
+    }
+
+    int[] end = new int[depth];
+    boolean[] endAutomatic = new boolean[depth];
+    if (argSize >= 2) {
+      IExpr arg2 = band.arg2();
+      if (arg2.isList() && ((IAST) arg2).argSize() == depth) {
+        IAST endAst = (IAST) arg2;
+        for (int i = 1; i <= depth; i++) {
+          IExpr ei = endAst.get(i);
+          if (ei.equals(S.Automatic)) {
+            endAutomatic[i - 1] = true;
+            end[i - 1] =
+                (dimension != null && dimension[i - 1] > 0) ? dimension[i - 1] : Integer.MAX_VALUE;
+          } else {
+            int val = ei.toIntDefault(Integer.MIN_VALUE);
+            if (val < 0) {
+              endAutomatic[i - 1] = true;
+              end[i - 1] = (dimension != null && dimension[i - 1] > 0) ? dimension[i - 1]
+                  : Integer.MAX_VALUE;
+            } else {
+              end[i - 1] = val;
+            }
+          }
+        }
+      } else if (arg2.equals(S.Automatic)) {
+        for (int i = 0; i < depth; i++) {
+          endAutomatic[i] = true;
+          end[i] = (dimension != null && dimension[i] > 0) ? dimension[i] : Integer.MAX_VALUE;
+        }
+      } else {
+        return false;
+      }
+    } else {
+      for (int i = 0; i < depth; i++) {
+        endAutomatic[i] = true;
+        end[i] = (dimension != null && dimension[i] > 0) ? dimension[i] : Integer.MAX_VALUE;
+      }
+    }
+
+    int[] step = new int[depth];
+    if (argSize == 3) {
+      IExpr arg3 = band.arg3();
+      if (arg3.isList() && ((IAST) arg3).argSize() == depth) {
+        IAST stepAst = (IAST) arg3;
+        for (int i = 1; i <= depth; i++) {
+          int val = stepAst.get(i).toIntDefault(Integer.MIN_VALUE);
+          if (val == Integer.MIN_VALUE || val == 0)
+            return false;
+          step[i - 1] = val;
+        }
+      } else {
+        return false;
+      }
+    } else {
+      for (int i = 0; i < depth; i++) {
+        step[i] = 1;
+      }
+    }
+
+    boolean rhsIsList = rhs.isList();
+    IAST rhsList = rhsIsList ? (IAST) rhs : null;
+    int rhsSize = rhsIsList ? rhsList.argSize() : 1;
+    int rhsIndex = 1;
+
+    boolean allAuto = true;
+    for (boolean b : endAutomatic) {
+      if (!b) {
+        allAuto = false;
+        break;
+      }
+    }
+
+    // Prevent infinite loops when array edge is unknown and RHS is a repeating scalar
+    if (allAuto && dimension == null && !rhsIsList) {
+      return false;
+    }
+
+    int[] current = new int[depth];
+    System.arraycopy(start, 0, current, 0, depth);
+
+    while (true) {
+      boolean outOfBounds = false;
+      for (int i = 0; i < depth; i++) {
+        if (step[i] > 0 && current[i] > end[i]) {
+          outOfBounds = true;
+          break;
+        }
+        if (step[i] < 0 && current[i] < end[i]) {
+          outOfBounds = true;
+          break;
+        }
+      }
+
+      if (allAuto && rhsIsList && rhsIndex > rhsSize) {
+        break;
+      }
+
+      if (outOfBounds)
+        break;
+
+      IExpr val;
+      if (rhsIsList) {
+        int idx = (rhsIndex - 1) % rhsSize + 1;
+        val = rhsList.get(idx);
+      } else {
+        val = rhs;
+      }
+
+      trie.put(current.clone(), val);
+      if (determineDimension && dimension != null) {
+        for (int i = 0; i < depth; i++) {
+          if (current[i] > dimension[i]) {
+            dimension[i] = current[i];
+          }
+        }
+      }
+
+      for (int i = 0; i < depth; i++) {
+        current[i] += step[i];
+      }
+      rhsIndex++;
+    }
+    return true;
   }
 
   @Override
