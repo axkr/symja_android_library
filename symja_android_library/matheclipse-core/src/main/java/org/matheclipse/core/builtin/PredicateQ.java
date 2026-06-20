@@ -1371,10 +1371,21 @@ public class PredicateQ {
    * True
    * </pre>
    */
-  private static final class PrimeQ extends AbstractCorePredicateEvaluator
+  private static final class PrimeQ extends AbstractFunctionOptionEvaluator
       implements Predicate<IInteger>, IPredicate {
-
+    /** {@inheritDoc} */
     @Override
+
+    public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
+      boolean gaussianIntegers = options[0].isTrue();
+      IExpr arg1 = ast.arg1();
+      if (arg1.isComplex() && !gaussianIntegers) {
+        gaussianIntegers = true;
+      }
+      return F.booleSymbol(evalArg1Boole(arg1, engine, gaussianIntegers));
+    }
+
     public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
       if (!arg1.isInteger()) {
         return false;
@@ -1386,10 +1397,8 @@ public class PredicateQ {
      * Eval <a href="https://en.wikipedia.org/wiki/Gaussian_integer#Gaussian_primes">Gaussian
      * primes</a> if option <code>GaussianIntegers->True</code> is set.
      */
-    @Override
-    public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine, OptionArgs options) {
-      IExpr option = options.getOption(S.GaussianIntegers);
-      if (!option.isTrue()) {
+    public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine, boolean gaussianIntegers) {
+      if (!gaussianIntegers) {
         return evalArg1Boole(arg1, engine);
       }
       Optional<IInteger[]> reImParts = arg1.gaussianIntegers();
@@ -1414,14 +1423,21 @@ public class PredicateQ {
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
-
-    @Override
     public boolean test(final IInteger obj) {
       return obj.isProbablePrime();
     }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+      setOptions(newSymbol, S.GaussianIntegers, S.False);
+    }
+
   }
 
   private static final class RealValuedNumberQ extends AbstractFunctionEvaluator
