@@ -2462,131 +2462,137 @@ public class StatisticsFunctions {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-
-      final IntList dimensions =
-          LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
-      if (dimensions.size() > 0) {
-        // Rectangular array of real numbers is expected at position `1` in `2`.
-        if (!arg1.forAllLeaves(x -> x.isRealResult())) {
-          return Errors.printMessage(S.Quantile, "rectn", F.List(F.C1, ast), engine);
-        }
-        if (dimensions.size() > 2) {
-          return F.ArrayReduce(F.Function(ast.setAtCopy(1, F.Slot1)), arg1, F.C1);
-        }
-      }
-
-      int[] dim = arg1.isMatrix();
-      if (dim == null && arg1.isListOfLists()) {
-        return F.NIL;
-      }
-      if (dim != null) {
-        return arg1.mapMatrixColumns(dim, (IExpr x) -> ast.setAtCopy(1, x)).normal(false);
-      }
-
-      int dimension = arg1.isVector();
-      if (dimension >= 0 || arg1.isList()) {
-        IExpr normal = arg1.normal(false);
-        if (normal.isList()) {
-          IAST list = (IAST) normal;
-          IExpr a = F.C0;
-          IExpr b = F.C0;
-          IExpr c = F.C1;
-          IExpr d = F.C0;
-          if (ast.size() == 4) {
-            IExpr arg3 = ast.arg3();
-            int[] dimParameters = arg3.isMatrix();
-            if (dimParameters == null || dimParameters[0] != 2 || dimParameters[1] != 2) {
-              return F.NIL;
-            }
-            a = arg3.first().first();
-            b = arg3.first().second();
-            c = arg3.second().first();
-            d = arg3.second().second();
+      if (ast.argSize() > 1) {
+        final IntList dimensions =
+            LinearAlgebraUtil.dimensions(arg1, S.List, Integer.MAX_VALUE, false);
+        if (dimensions.size() > 0) {
+          // Rectangular array of real numbers is expected at position `1` in `2`.
+          if (!arg1.forAllLeaves(x -> x.isRealResult())) {
+            return Errors.printMessage(S.Quantile, "rectn", F.List(F.C1, ast), engine);
           }
+          if (dimensions.size() > 2) {
+            return F.ArrayReduce(F.Function(ast.setAtCopy(1, F.Slot1)), arg1, F.C1);
+          }
+        }
 
-          int dim1 = list.argSize();
-          try {
-            if (dim1 == 0) {
-              // Argument `1` should be a non-empty list.
-              return Errors.printMessage(ast.topHead(), "empt", F.list(list), engine);
+        int[] dim = arg1.isMatrix();
+        if (dim == null && arg1.isListOfLists()) {
+          return F.NIL;
+        }
+        if (dim != null) {
+          return arg1.mapMatrixColumns(dim, (IExpr x) -> ast.setAtCopy(1, x)).normal(false);
+        }
+
+        int dimension = arg1.isVector();
+        if (dimension >= 0 || arg1.isList()) {
+          IExpr normal = arg1.normal(false);
+          if (normal.isList()) {
+            IAST list = (IAST) normal;
+            IExpr a = F.C0;
+            IExpr b = F.C0;
+            IExpr c = F.C1;
+            IExpr d = F.C0;
+            if (ast.size() == 4) {
+              IExpr arg3 = ast.arg3();
+              int[] dimParameters = arg3.isMatrix();
+              if (dimParameters == null || dimParameters[0] != 2 || dimParameters[1] != 2) {
+                return F.NIL;
+              }
+              a = arg3.first().first();
+              b = arg3.first().second();
+              c = arg3.second().first();
+              d = arg3.second().second();
             }
-            if (dim1 > 0 && ast.size() >= 3) {
 
-              final IAST s = EvalAttributes.copySortLess(list);
-              final IInteger length = F.ZZ(s.argSize());
+            int dim1 = list.argSize();
+            try {
+              if (dim1 == 0) {
+                // Argument `1` should be a non-empty list.
+                return Errors.printMessage(ast.topHead(), "empt", F.list(list), engine);
+              }
+              if (dim1 > 0 && ast.size() >= 3) {
 
-              IExpr q = ast.arg2();
-              int dim2 = q.isVector();
-              if (dim2 >= 0 && q.isList()) {
-                final IAST vector = ((IAST) q);
-                if (vector.exists(x -> x.isReal() && !((IReal) x).isRange(F.C0, F.C1))) {
-                  // The Quantile specification `1` should be a number or a list of numbers between
-                  // `2` and `3`.
-                  return Errors.printMessage(ast.topHead(), "nquan", F.list(q, F.C0, F.C1), engine);
-                }
-                return vector.mapThread(ast, 2);
-              } else {
-                if (q.isReal()) {
-                  IReal qi = (IReal) q;
-                  if (!qi.isRange(F.C0, F.C1)) {
+                final IAST s = EvalAttributes.copySortLess(list);
+                final IInteger length = F.ZZ(s.argSize());
+
+                IExpr q = ast.arg2();
+                int dim2 = q.isVector();
+                if (dim2 >= 0 && q.isList()) {
+                  final IAST vector = ((IAST) q);
+                  if (vector.exists(x -> x.isReal() && !((IReal) x).isRange(F.C0, F.C1))) {
                     // The Quantile specification `1` should be a number or a list of numbers
                     // between `2` and `3`.
-                    return Errors.printMessage(ast.topHead(), "nquan", F.list(qi, F.C0, F.C1),
+                    return Errors.printMessage(ast.topHead(), "nquan", F.list(q, F.C0, F.C1),
                         engine);
                   }
-                  // x = a + (length + b) * q
-                  IExpr x = q.isZero() ? a : S.Plus.of(engine, a, F.Times(F.Plus(length, b), q));
-                  if (x.isNumIntValue()) {
-                    int index = x.toIntDefault();
-                    if (F.isPresent(index)) {
-                      if (index < 1) {
-                        index = 1;
-                      } else if (index > s.argSize()) {
-                        index = s.argSize();
-                      }
-                      return s.get(index);
+                  return vector.mapThread(ast, 2);
+                } else {
+                  if (q.isReal()) {
+                    IReal qi = (IReal) q;
+                    if (!qi.isRange(F.C0, F.C1)) {
+                      // The Quantile specification `1` should be a number or a list of numbers
+                      // between `2` and `3`.
+                      return Errors.printMessage(ast.topHead(), "nquan", F.list(qi, F.C0, F.C1),
+                          engine);
                     }
-                  }
-                  if (x.isReal()) {
-                    IReal xi = (IReal) x;
-                    int xFloor = xi.floorFraction().toIntDefault();
-                    int xCeiling = xi.ceilFraction().toIntDefault();
-                    if (F.isPresent(xFloor) && F.isPresent(xCeiling)) {
-                      if (xFloor < 1) {
-                        xFloor = 1;
+                    // x = a + (length + b) * q
+                    IExpr x = q.isZero() ? a : S.Plus.of(engine, a, F.Times(F.Plus(length, b), q));
+                    if (x.isNumIntValue()) {
+                      int index = x.toIntDefault();
+                      if (F.isPresent(index)) {
+                        if (index < 1) {
+                          index = 1;
+                        } else if (index > s.argSize()) {
+                          index = s.argSize();
+                        }
+                        return s.get(index);
                       }
-                      if (xFloor > s.argSize()) {
-                        xFloor = s.argSize();
+                    }
+                    if (x.isReal()) {
+                      IReal xi = (IReal) x;
+                      int xFloor = xi.floorFraction().toIntDefault();
+                      int xCeiling = xi.ceilFraction().toIntDefault();
+                      if (F.isPresent(xFloor) && F.isPresent(xCeiling)) {
+                        if (xFloor < 1) {
+                          xFloor = 1;
+                        }
+                        if (xFloor > s.argSize()) {
+                          xFloor = s.argSize();
+                        }
+                        if (xCeiling < 1) {
+                          xCeiling = 1;
+                        }
+                        if (xCeiling > s.argSize()) {
+                          xCeiling = s.argSize();
+                        }
+                        // factor = c + d * FractionalPart(x);
+                        IExpr factor = d.isZero() || xi.isZero() ? c
+                            : S.Plus.of(engine, c, F.Times(d, xi.fractionalPart()));
+                        // s[[Floor(x)]]+(s[[Ceiling(x)]]-s[[Floor(x)]]) * (c + d *
+                        // FractionalPart(x))
+                        return F.Plus(s.get(xFloor), //
+                            F.Times(F.Subtract(s.get(xCeiling), s.get(xFloor)), factor));
                       }
-                      if (xCeiling < 1) {
-                        xCeiling = 1;
-                      }
-                      if (xCeiling > s.argSize()) {
-                        xCeiling = s.argSize();
-                      }
-                      // factor = c + d * FractionalPart(x);
-                      IExpr factor = d.isZero() || xi.isZero() ? c
-                          : S.Plus.of(engine, c, F.Times(d, xi.fractionalPart()));
-                      // s[[Floor(x)]]+(s[[Ceiling(x)]]-s[[Floor(x)]]) * (c + d *
-                      // FractionalPart(x))
-                      return F.Plus(s.get(xFloor), //
-                          F.Times(F.Subtract(s.get(xCeiling), s.get(xFloor)), factor));
                     }
                   }
                 }
               }
+            } catch (ArithmeticException ae) {
+              return Errors.printMessage(S.Quantile, ae, engine);
             }
-          } catch (ArithmeticException ae) {
-            return Errors.printMessage(S.Quantile, ae, engine);
           }
         }
-      } else if (arg1.isDistribution() && ast.size() >= 3) {
-        IExpr function = engine.evaluate(F.Quantile(arg1));
-        if (function.isFunction()) {
+      }
+
+      if (arg1.isDistribution()) {
+        if (ast.argSize() == 1) {
+          return F.Function(F.InverseCDF(arg1, F.Slot1));
+        }
+        if (ast.argSize() >= 2) {
           if (ast.arg2().isList()) {
-            return ((IAST) ast.arg2()).map(x -> F.unaryAST1(function, x), 1);
+            return ast.arg2().mapThread(ast, 2);
           }
-          return F.unaryAST1(function, ast.arg2());
+          return F.InverseCDF(arg1, ast.arg2());
         }
       }
       return F.NIL;
@@ -2594,7 +2600,7 @@ public class StatisticsFunctions {
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_3;
+      return ARGS_1_3;
     }
 
     @Override
@@ -2625,7 +2631,12 @@ public class StatisticsFunctions {
         }
       }
 
-      if ((arg1.isNonEmptyList()) || arg1.isDistribution()) {
+      // FIX: Handle distributions separately without empirical interpolation parameters
+      if (arg1.isDistribution()) {
+        return engine.evaluate(F.Quantile(arg1, Q));
+      }
+
+      if (arg1.isNonEmptyList()) {
         IAST list = (IAST) arg1;
         if (ast.size() == 3) {
           IExpr arg2 = ast.arg2();
@@ -2636,7 +2647,6 @@ public class StatisticsFunctions {
           return engine.evaluate(F.Quantile(list, Q, arg2));
         }
         return engine.evaluate(F.Quantile(list, Q, PARAMETER));
-        // System.out.println("Quartiles: " + temp);
       }
       return F.NIL;
     }
@@ -2851,14 +2861,21 @@ public class StatisticsFunctions {
     }
 
     private static IExpr rescale(IExpr x, IExpr min, IExpr max, EvalEngine engine) {
-      IExpr inverseDifference = engine.evaluate(F.Power(F.Subtract(max, min), -1));
-      return engine
-          .evaluate(F.Plus(F.Times(F.CN1, inverseDifference, min), F.Times(inverseDifference, x)));
+      IExpr difference = engine.evaluate(F.Subtract(max, min));
+      IExpr inverseDifference = engine.evaluate(F.Power(difference, -1));
+      if (difference.isZero()) {
+        if (max.isNumber() && min.isNumber()) {
+          return F.CComplexInfinity;
+        }
+        return S.Indeterminate;
+      }
+      return F.Times(F.Subtract(x, min), inverseDifference);
     }
 
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
+
 
   private static final class RootMeanSquare extends AbstractEvaluator {
 
@@ -2913,6 +2930,8 @@ public class StatisticsFunctions {
       return ARGS_1_1;
     }
   }
+
+
   /**
    *
    *
@@ -3150,14 +3169,14 @@ public class StatisticsFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isAST1() && ast.first().isAST()) {
         IAST dist = (IAST) ast.arg1();
-        if (isDistribution(dist)) {
-          return F.Expand(F.Subtract(F.C1, F.CDF(dist)));
+        if (dist.isDistribution()) {
+          return F.Function(F.Expand(F.Subtract(F.C1, F.CDF(dist, F.Slot1))));
         }
         return F.NIL;
       }
       if (ast.isAST2() && ast.first().isAST()) {
         IAST dist = (IAST) ast.arg1();
-        if (isDistribution(dist)) {
+        if (dist.isDistribution()) {
           if (ast.arg2().isList()) {
             return ast.arg2().mapThread(ast, 2);
           }
@@ -3168,24 +3187,6 @@ public class StatisticsFunctions {
       return F.NIL;
     }
 
-    /**
-     * Check if <code>dist</code> is a distribution AST.
-     *
-     * @param dist
-     * @return <code>F.NIL</code> if <code>dist</code> is not a distribution.
-     */
-    private static boolean isDistribution(IAST dist) {
-      if (dist.head().isSymbol()) {
-        ISymbol head = (ISymbol) dist.head();
-        if (head instanceof IBuiltInSymbol) {
-          IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
-          if (evaluator instanceof IDistribution) {
-            return true;
-          }
-        }
-      }
-      return false;
-    }
   }
 
 
@@ -3427,6 +3428,7 @@ public class StatisticsFunctions {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
+
   }
 
 

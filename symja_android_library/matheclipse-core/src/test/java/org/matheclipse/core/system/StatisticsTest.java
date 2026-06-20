@@ -403,6 +403,110 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSpearmanRho() {
+    // Perfect positive correlation
+    check("SpearmanRho({1, 2, 3, 4, 5}, {1, 2, 3, 4, 5})", //
+        "1.0");
+
+    // Perfect negative correlation
+    check("SpearmanRho({1, 2, 3, 4, 5}, {5, 4, 3, 2, 1})", "-1.0");
+
+    // Known partial correlation
+    check("SpearmanRho({10, 20, 30, 40, 50}, {10, 30, 20, 40, 50})", //
+        "0.9");
+
+    // Test with ties in the dataset
+    checkNumeric("SpearmanRho({1, 2, 2, 4}, {1, 2, 3, 4})", //
+        "0.9486832980505138");
+
+    // 2x2 matrix correlation (columns against columns)
+    // Column 1: {1, 3, 5}, Column 2: {2, 4, 6}
+    check("SpearmanRho({{1, 2}, {3, 4}, {5, 6}})", //
+        "{{1.0,1.0},\n" //
+            + " {1.0,1.0}}");
+
+    // Matrix with inverse correlation
+    check("SpearmanRho({{1, 6}, {3, 4}, {5, 2}})", //
+        "{{1.0,-1.0},\n" //
+            + " {-1.0,1.0}}");
+
+    // Unequal length vectors should remain unevaluated
+    check("SpearmanRho({1, 2, 3}, {1, 2})", //
+        "SpearmanRho({1,2,3},{1,2})");
+
+    // Scalar inputs should remain unevaluated
+    check("SpearmanRho(1, 2)", //
+        "SpearmanRho(1,2)");
+
+    // 1D list input should remain unevaluated (requires matrix or two vectors)
+    check("SpearmanRho({1, 2, 3})", //
+        "SpearmanRho({1,2,3})");
+  }
+
+  @Test
+  public void testSpearmanRhoDistribution() {
+
+    // 1-argument BinormalDistribution
+    check("SpearmanRho(BinormalDistribution(0))", //
+        "{{1,0},{0,1}}");
+    check("SpearmanRho(BinormalDistribution(1))", //
+        "{{1,1},{1,1}}");
+
+    // Partial correlation: 6/Pi * ArcSin( (1/2) / 2 ) = 6/Pi * ArcSin(1/4)
+    check("SpearmanRho(BinormalDistribution(1/2))", //
+        "{{1,(6*ArcSin(1/4))/Pi},{(6*ArcSin(1/4))/Pi,1}}");
+
+    // 2-argument BinormalDistribution (sigma, rho)
+    check("SpearmanRho(BinormalDistribution({s1, s2}, rho))", //
+        "{{1,(6*ArcSin(rho/2))/Pi},{(6*ArcSin(rho/2))/Pi,1}}");
+
+    // 3-argument BinormalDistribution (mu, sigma, rho)
+    check("SpearmanRho(BinormalDistribution({m1, m2}, {s1, s2}, 1/2))", //
+        "{{1,(6*ArcSin(1/4))/Pi},{(6*ArcSin(1/4))/Pi,1}}");
+
+    // Uncorrelated 2x2 identity covariance
+    check("SpearmanRho(MultinormalDistribution({{1, 0}, {0, 1}}))", //
+        "{{1,0},{0,1}}");
+
+    // Partial correlation: cov=1, var1=4, var2=9
+    // r_ij = 1 / Sqrt(4 * 9) = 1/6
+    // val = 6/Pi * ArcSin((1/6) / 2) = 6/Pi * ArcSin(1/12)
+    check("SpearmanRho(MultinormalDistribution({{4, 1}, {1, 9}}))", //
+        "{{1,(6*ArcSin(1/12))/Pi},{(6*ArcSin(1/12))/Pi,1}}");
+
+    // Test with Mean vector included: MultinormalDistribution(Mu, Sigma)
+    check("SpearmanRho(MultinormalDistribution({10, 20}, {{4, 1}, {1, 9}}))", //
+        "{{1,(6*ArcSin(1/12))/Pi},{(6*ArcSin(1/12))/Pi,1}}");
+
+    // 3x3 completely independent matrix
+    check("SpearmanRho(MultinormalDistribution({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}))", //
+        "{{1,0,0},{0,1,0},{0,0,1}}");
+
+
+    // Binormal
+    check("SpearmanRho(BinormalDistribution(1/2), 1, 1)", //
+        "1");
+    check("SpearmanRho(BinormalDistribution(1/2), 1, 2)", //
+        "(6*ArcSin(1/4))/Pi");
+    check("SpearmanRho(BinormalDistribution(1/2), 2, 1)", //
+        "(6*ArcSin(1/4))/Pi");
+
+    // Multinormal
+    check("SpearmanRho(MultinormalDistribution({{4, 1}, {1, 9}}), 1, 2)", //
+        "(6*ArcSin(1/12))/Pi");
+    check("SpearmanRho(MultinormalDistribution({mu1, mu2}, {{4, 1}, {1, 9}}), 2, 1)",
+        "(6*ArcSin(1/12))/Pi");
+
+    // Distributions without implemented SpearmanRho matrices should fall back to F.NIL
+    check("SpearmanRho(NormalDistribution(0, 1))", //
+        "SpearmanRho(NormalDistribution(0,1))");
+    check("SpearmanRho(PoissonDistribution(5))", //
+        "SpearmanRho(PoissonDistribution(5))");
+    check("SpearmanRho(CauchyDistribution(0, 1), 1, 2)", //
+        "SpearmanRho(CauchyDistribution(0,1),1,2)");
+  }
+
+  @Test
   public void testStandardDeviation() {
     // 2,2,2 tensor
     check("StandardDeviation({{{a,b},{c,d}},{{e,f},{g,h}}})", //
