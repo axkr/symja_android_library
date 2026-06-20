@@ -7,6 +7,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
@@ -1424,6 +1425,15 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         }
         if (!indeterminate && !hasNIL) {
           temp = engine.evalQuiet(copy);
+
+          // Intercept unevaluated special functions with DirectedInfinity arguments
+          if (temp.isAST()) {
+            IExpr specialLimit = directedInfinityLimit((IAST) temp);
+            if (specialLimit.isPresent()) {
+              return specialLimit;
+            }
+          }
+
           if (temp.isPresent() && !temp.isIndeterminate()) {
             return temp;
           }
@@ -2456,6 +2466,73 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       return F.DirectedInfinity(engine.evaluate(F.Power(F.CN1, exponent)));
     }
     return F.CInfinity;
+  }
+
+  /**
+   * Evaluates limits for special functions when their arguments evaluate to DirectedInfinity.
+   * * @param ast the unevaluated AST containing the DirectedInfinity
+   * 
+   * @return the resolved limit, or F.NIL if not applicable
+   */
+  private static IExpr directedInfinityLimit(IAST ast) {
+    if (ast.arg1().isDirectedInfinity() && ast.isAST1()) {
+      IExpr head = ast.head();
+      IExpr z = ((IAST) ast.arg1()).arg1();
+
+      if (z.isValidBuiltInFunction() && z.isNumericFunction()) {
+        switch (((IBuiltInSymbol) head).ordinal()) {
+          case ID.Erf:
+            try {
+              double re = z.re().evalf();
+              double im = z.im().evalf();
+
+              if (Math.abs(re) >= Math.abs(im)) {
+                if (re > 0) {
+                  return F.C1;
+                } else if (re < 0) {
+                  return F.CN1;
+                }
+              }
+            } catch (ArgumentTypeException ate) {
+              // evalf can fail for some symbolic expressions
+            }
+            break;
+          case ID.Erfc:
+            try {
+              double re = z.re().evalf();
+              double im = z.im().evalf();
+
+              if (Math.abs(re) >= Math.abs(im)) {
+                if (re > 0) {
+                  return F.C0;
+                } else if (re < 0) {
+                  return F.C2;
+                }
+              }
+            } catch (ArgumentTypeException ate) {
+              // evalf can fail for some symbolic expressions
+            }
+            break;
+          case ID.Erfi:
+            try {
+              double re = z.re().evalf();
+              double im = z.im().evalf();
+
+              if (Math.abs(im) >= Math.abs(re)) {
+                if (im > 0) {
+                  return F.CI;
+                } else if (im < 0) {
+                  return F.CNI;
+                }
+              }
+            } catch (ArgumentTypeException ate) {
+              // evalf can fail for some symbolic expressions
+            }
+            break;
+        }
+      }
+    }
+    return F.NIL;
   }
 
 
