@@ -767,6 +767,9 @@ public class ApcomplexNum implements IComplexNum {
         && engine.isNumericMode()) {
       return valueOf(EvalEngine.getApfloat().valueOf(fApcomplex));
     }
+    if (fApcomplex.imag().signum() == 0) {
+      return ApfloatNum.valueOf(fApcomplex.real());
+    }
     return F.NIL;
   }
 
