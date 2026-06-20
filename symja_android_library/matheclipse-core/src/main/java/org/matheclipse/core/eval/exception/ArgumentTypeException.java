@@ -10,13 +10,16 @@ public class ArgumentTypeException extends ValidateException {
 
   private static final long serialVersionUID = 4017342168597803850L;
 
+  private final String fMessageShortcut;
   private final String fMessage;
 
   public ArgumentTypeException(String message) {
+    fMessageShortcut = "";
     fMessage = message;
   }
 
   public ArgumentTypeException(String messageShortcut, final IAST listOfArgs) {
+    fMessageShortcut = messageShortcut;
     String message = Errors.getMessage(messageShortcut, listOfArgs);
     fMessage = message;
   }
@@ -26,6 +29,10 @@ public class ArgumentTypeException extends ValidateException {
     return fMessage;
   }
 
+  public String getShortCut() {
+    return fMessageShortcut;
+  }
+  
   public static void throwNIL() {
     // unexpected NIL expression encountered.
     String str = Errors.getMessage("nil", F.CEmptyList);
