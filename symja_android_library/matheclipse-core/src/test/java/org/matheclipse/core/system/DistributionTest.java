@@ -412,7 +412,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     check("Quantile(NormalDistribution(m, s), q)", //
         "ConditionalExpression(m-Sqrt(2)*s*InverseErfc(2*q),0<=q<=1)");
     check("Quantile(NormalDistribution(2, 3), {1/4, 1/2, 3/4})", //
-        "{2-3*Sqrt(2)*InverseErfc(1/2),2,2-3*Sqrt(2)*InverseErfc(3/2)}");
+        "{2-3*Sqrt(2)*InverseErfc(1/2),2,2+3*Sqrt(2)*InverseErfc(1/2)}");
   }
 
   @Test
@@ -466,7 +466,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
     check("Mean(LogNormalDistribution(m,d))", //
         "E^(d^2/2+m)");
     check("Quantile(LogNormalDistribution(m,d), {1/4, 1/2, 3/4})", //
-        "{E^(m-Sqrt(2)*d*InverseErfc(1/2)),E^m,E^(m-Sqrt(2)*d*InverseErfc(3/2))}");
+        "{E^(m-Sqrt(2)*d*InverseErfc(1/2)),E^m,E^(m+Sqrt(2)*d*InverseErfc(1/2))}");
   }
 
   @Test
@@ -730,6 +730,172 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "m");
     check("Variance(PoissonDistribution(m))", //
         "m");
+  }
+
+  @Test
+  public void testMarginalDistribution() {
+    // 1-argument BinormalDistribution(rho) -> NormalDistribution(0, 1)
+    check("MarginalDistribution(BinormalDistribution(1/2), 1)", //
+        "NormalDistribution(0,1)");
+    check("MarginalDistribution(BinormalDistribution(1/2), 2)", //
+        "NormalDistribution(0,1)");
+
+    // 3-argument BinormalDistribution(sigma1, sigma2, rho)
+    check("MarginalDistribution(BinormalDistribution(2, 3, 1/2), 1)", "NormalDistribution(0,2)");
+    check("MarginalDistribution(BinormalDistribution(2, 3, 1/2), 2)", "NormalDistribution(0,3)");
+
+    // 5-argument BinormalDistribution(mu1, mu2, sigma1, sigma2, rho)
+    check("MarginalDistribution(BinormalDistribution(10, 20, 2, 3, 1/2), 1)",
+        "MarginalDistribution(BinormalDistribution(10,20,2,3,1/2),1)");
+
+    // Index swapping
+    check("MarginalDistribution(BinormalDistribution(10, 20, 2, 3, 1/2), {2, 1})",
+        "MarginalDistribution(BinormalDistribution(10,20,2,3,1/2),{2,1})");
+
+    // Note: The covariance matrix diagonal represents Variance.
+    // MarginalDistribution extracts Sqrt(Variance) for the 1D NormalDistribution scale.
+
+    // 1D Marginal from 2D (Sigma only)
+    // Variance = 4 -> stddev = 2
+    check("MarginalDistribution(MultinormalDistribution({{4, 1}, {1, 9}}), 1)",
+        "NormalDistribution(0,2)");
+    // Variance = 9 -> stddev = 3
+    check("MarginalDistribution(MultinormalDistribution({{4, 1}, {1, 9}}), 2)",
+        "NormalDistribution(0,3)");
+
+    // 1D Marginal from 3D (Mu, Sigma)
+    check(
+        "MarginalDistribution(MultinormalDistribution({10, 20, 30}, {{4, 1, 0}, {1, 9, 0}, {0, 0, 16}}), 2)",
+        "NormalDistribution(20,3)");
+
+    // 2D Joint Marginal from 3D
+    check(
+        "MarginalDistribution(MultinormalDistribution({10, 20, 30}, {{4, 1, 0}, {1, 9, 0}, {0, 0, 16}}), {1, 3})",
+        "MultinormalDistribution({10,30},{{4,0},{0,16}})");
+
+    // When degrees of freedom (nu) == 1, it should collapse into a CauchyDistribution
+
+    // Standard Multivariate Cauchy mapping (nu = 1) -> CauchyDistribution()
+    check("MarginalDistribution(MultivariateTDistribution({{1, 0}, {0, 1}}, 1), 1)",
+        "CauchyDistribution()");
+
+    // Located Multivariate Cauchy mapping (nu = 1) -> CauchyDistribution(mu, sigma)
+    check("MarginalDistribution(MultivariateTDistribution({10, 20}, {{4, 0}, {0, 9}}, 1), 2)",
+        "CauchyDistribution(20,3)");
+
+    // When degrees of freedom (nu) > 1, it should collapse into a StudentTDistribution
+    // nu = 5
+    check("MarginalDistribution(MultivariateTDistribution({10, 20}, {{4, 0}, {0, 9}}, 5), 1)",
+        "StudentTDistribution(10,2,5)");
+
+    // 2D Joint Marginal from 3D MultivariateT
+    check(
+        "MarginalDistribution(MultivariateTDistribution({10, 20, 30}, {{4, 1, 0}, {1, 9, 0}, {0, 0, 16}}, 5), {1, 3})",
+        "MultivariateTDistribution({10,30},{{4,0},{0,16}},5)");
+
+    // Asking for the 1st marginal of a 1D distribution should yield the distribution itself
+
+    check("MarginalDistribution(CauchyDistribution(5, 2), 1)", //
+        "CauchyDistribution(5,2)");
+    check("MarginalDistribution(CauchyDistribution(), 1)", //
+        "CauchyDistribution()");
+    check("MarginalDistribution(StudentTDistribution(10, 2, 5), 1)", //
+        "StudentTDistribution(10,2,5)");
+    check("MarginalDistribution(NormalDistribution(0, 1), 1)", //
+        "NormalDistribution(0,1)");
+    check("MarginalDistribution(PoissonDistribution(5), 1)", //
+        "PoissonDistribution(5)");
+
+    // Mean of the 2nd marginal
+    check("Mean(MarginalDistribution(MultinormalDistribution({10, 20}, {{4, 1}, {1, 9}}), 2))",
+        "20");
+
+    // Variance of the 2nd marginal (Extracted NormalDistribution(20, 3) -> var is 3^2 = 9)
+    check("Variance(MarginalDistribution(MultinormalDistribution({10, 20}, {{4, 1}, {1, 9}}), 2))",
+        "9");
+
+    // CDF evaluation of the marginal
+    // CDF(NormalDistribution(0, 1), 0) = 1/2
+    check("CDF(MarginalDistribution(BinormalDistribution(1/2), 1), 0)", "1/2");
+
+    // Median of a collapsed CauchyDistribution
+    check(
+        "Median(MarginalDistribution(MultivariateTDistribution({10, 20}, {{4, 0}, {0, 9}}, 1), 1))",
+        "10");
+
+    // Out of bounds index
+    check("MarginalDistribution(BinormalDistribution(1/2), 3)",
+        "MarginalDistribution(BinormalDistribution(1/2),3)");
+
+    // Negative index
+    check("MarginalDistribution(BinormalDistribution(1/2), -1)",
+        "MarginalDistribution(BinormalDistribution(1/2),-1)");
+  }
+
+  @Test
+  public void testMultivariateTDistribution() {
+    // Evaluate PDF at the origin {0, 0} for nu = 1 (Equivalent to Bivariate Cauchy)
+    // Gamma(1.5) / (Gamma(0.5) * Pi * 1) * (1 + 0)^(-1.5) = 1 / (2*Pi)
+    check("PDF(MultivariateTDistribution({0, 0}, {{1, 0}, {0, 1}}, 1), {0, 0})", //
+        "1/(2*Pi)");
+
+    // Evaluate PDF for nu = 2, p = 2, at {0, 0}
+    // Gamma(2) / (Gamma(1) * 2*Pi * 1) = 1 / (2*Pi)
+    check("PDF(MultivariateTDistribution({0, 0}, {{1, 0}, {0, 1}}, 2), {0, 0})", //
+        "1/(2*Pi)");
+
+    // Evaluate PDF at origin for 2-argument signature: MultivariateTDistribution(Sigma, nu)
+    check("PDF(MultivariateTDistribution({{1, 0}, {0, 1}}, 1), {0, 0})", "1/(2*Pi)");
+
+    // Mean: defined for nu > 1
+    // nu = 3 > 1 -> Should evaluate exactly to {10, 20}
+    check("Mean(MultivariateTDistribution({10, 20}, {{1, 0}, {0, 1}}, 3))", //
+        "{10,20}");
+
+    // Covariance: defined for nu > 2, scales Sigma by nu/(nu-2)
+    // nu = 4 -> scale is 4/2 = 2. So Covariance is 2 * IdentityMatrix
+    check("Covariance(MultivariateTDistribution({{1, 0}, {0, 1}}, 4))", //
+        "{{2,0},{0,2}}");
+
+    // Variance: Diagonal of covariance matrix
+    check("Variance(MultivariateTDistribution({{1, 0}, {0, 1}}, 4))", "{2,2}");
+
+    // Skewness: defined for nu > 3, always 0 vector
+    check("Skewness(MultivariateTDistribution({5, 5}, {{1, 0}, {0, 1}}, 4))", "{0,0}");
+
+    // Kurtosis: defined for nu > 4, 3 + 6/(nu-4)
+    // nu = 5 -> 3 + 6/1 = 9
+    check("Kurtosis(MultivariateTDistribution({0, 0}, {{1, 0}, {0, 1}}, 5))", "{9,9}");
+
+    // nu = 6 -> 3 + 6/2 = 6
+    check("Kurtosis(MultivariateTDistribution({0, 0}, {{1, 0}, {0, 1}}, 6))", "{6,6}");
+
+    // When evaluated with an unknown nu, it should fallback to the Piecewise definition
+
+    // Mean -> Piecewise({{{0, 0}, nu > 1}}, Indeterminate)
+    check("Mean(MultivariateTDistribution({{1, 0}, {0, 1}}, nu))",
+        "Piecewise({{{0,0},nu>1}},Indeterminate)");
+
+    // Covariance -> Piecewise({{{nu/(-2+nu), 0}, {0, nu/(-2+nu)}}, nu > 2}, Indeterminate)
+    check("Covariance(MultivariateTDistribution({{1, 0}, {0, 1}}, nu))",
+        "Piecewise({{{{nu/(-2+nu),0},{0,nu/(-2+nu)}},nu>2}},Indeterminate)");
+
+    // Since RandomVariate output is stochastic, we evaluate its structural dimensions
+    // Generate 5 independent samples of a 3-dimensional t-distribution
+    check(
+        "Dimensions(RandomVariate(MultivariateTDistribution({0, 0, 0}, {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}, 3), 5))",
+        "{5,3}");
+
+    // Generate 10 independent samples of a 2-dimensional t-distribution (2-arg constructor)
+    check("Dimensions(RandomVariate(MultivariateTDistribution({{1, 0.5}, {0.5, 1}}, 4), 10))",
+        "{10,2}");
+
+    // Unsupported 1-arg signature
+    check("MultivariateTDistribution(1)", "MultivariateTDistribution(1)");
+
+    // Unevaluated when Sigma is not a square matrix
+    check("Mean(MultivariateTDistribution({1, 2}, {1, 2}, 3))",
+        "Mean(MultivariateTDistribution({1,2},{1,2},3))");
   }
 
   @Test

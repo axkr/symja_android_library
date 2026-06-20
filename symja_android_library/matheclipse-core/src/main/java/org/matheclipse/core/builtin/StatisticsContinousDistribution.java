@@ -2039,7 +2039,19 @@ public class StatisticsContinousDistribution {
 
     @Override
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
-      if (dist.isAST2()) {
+      if (dist.isAST0()) {
+        if (!engine.isArbitraryMode() && k.isNumericArgument(true)) {
+          try {
+            return F.num(1.0 - Math.exp(-Math.exp(k.evalf())));
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+          }
+        }
+        IExpr function =
+            // [$ (1 - E^(-E^#)) & $]
+            F.Function(F.Subtract(F.C1, F.Exp(F.Negate(F.Exp(F.Slot1))))); // $$;
+        return callFunction(function, k);
+      } else if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         if (!engine.isArbitraryMode() && //
@@ -2047,10 +2059,6 @@ public class StatisticsContinousDistribution {
           try {
             final double z = (k.evalf() - n.evalf()) / m.evalf();
             return F.num(1.0 - Math.exp(-Math.exp(z)));
-            // return F.num(1.0-new
-            // org.hipparchus.distribution.continuous.GumbelDistribution(n.evalDouble(),
-            // m.evalDouble()) //
-            // .cumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             Errors.rethrowsInterruptException(rex);
             //
@@ -2072,8 +2080,38 @@ public class StatisticsContinousDistribution {
     }
 
     @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_0_2;
+    }
+
+    @Override
     public IExpr inverseCDF(IAST dist, IExpr k, EvalEngine engine) {
-      if (dist.isAST2()) {
+      if (dist.isAST0()) {
+        if (!engine.isArbitraryMode() && k.isNumericArgument(true)) {
+          try {
+            double p = k.evalf();
+            MathUtils.checkRangeInclusive(p, 0, 1);
+            if (F.isZero(p)) {
+              return F.CNInfinity;
+            } else if (F.isEqual(p, 1.0)) {
+              return F.CInfinity;
+            }
+            return F.num(Math.log(-Math.log(1.0 - p)));
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+          }
+        }
+        IExpr function =
+            // [$ ( ConditionalExpression(Piecewise({{Log(-Log(1 - #)), 0 < # < 1}, {-Infinity, # <=
+            // 0}}, Infinity), 0 <= # <= 1)& ) $]
+            F.Function(F.ConditionalExpression(
+                F.Piecewise(F.list(
+                    F.list(F.Log(F.Negate(F.Log(F.Subtract(F.C1, F.Slot1)))),
+                        F.Less(F.C0, F.Slot1, F.C1)),
+                    F.list(F.Negate(F.oo), F.LessEqual(F.Slot1, F.C0))), F.oo),
+                F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
+        return callFunction(function, k);
+      } else if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         if (!engine.isArbitraryMode() && //
@@ -2087,10 +2125,6 @@ public class StatisticsContinousDistribution {
               return F.CInfinity;
             }
             return F.num(n.evalf() + m.evalf() * Math.log(-Math.log(1.0 - p)));
-            // return F.num(new
-            // org.hipparchus.distribution.continuous.GumbelDistribution(n.evalDouble(),
-            // m.evalDouble()) //
-            // .inverseCumulativeProbability(k.evalDouble()));
           } catch (RuntimeException rex) {
             Errors.rethrowsInterruptException(rex);
             //
@@ -2098,8 +2132,7 @@ public class StatisticsContinousDistribution {
         }
         IExpr function =
             // [$ ( ConditionalExpression(Piecewise({{n + m*Log(-Log(1 - #)), 0 < # < 1},
-            // {-Infinity, # <=
-            // 0}}, Infinity), 0 <= # <= 1)& ) $]
+            // {-Infinity, # <= 0}}, Infinity), 0 <= # <= 1)& ) $]
             F.Function(
                 F.ConditionalExpression(
                     F.Piecewise(F.list(
@@ -2146,7 +2179,20 @@ public class StatisticsContinousDistribution {
 
     @Override
     public IExpr pdf(IAST dist, IExpr k, EvalEngine engine) {
-      if (dist.isAST2()) {
+      if (dist.isAST0()) {
+        if (!engine.isArbitraryMode() && k.isNumericArgument(true)) {
+          try {
+            double z = k.evalf();
+            return F.num(Math.exp(-Math.exp(z) + z));
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+          }
+        }
+        IExpr function =
+            // [$ (E^(-E^# + #)) & $]
+            F.Function(F.Exp(F.Plus(F.Negate(F.Exp(F.Slot1)), F.Slot1))); // $$;
+        return callFunction(function, k);
+      } else if (dist.isAST2()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
         IExpr function =
@@ -2164,15 +2210,15 @@ public class StatisticsContinousDistribution {
 
     @Override
     public IExpr randomVariate(Random random, IAST dist, int size) {
-      if (dist.isAST2()) {
+      if (dist.isAST0()) {
+        RandomDataGenerator rdg = new RandomDataGenerator();
+        double[] vector = rdg.nextDeviates(
+            new org.hipparchus.distribution.continuous.GumbelDistribution(0.0, 1.0), size);
+        return new ASTRealVector(vector, false);
+      } else if (dist.isAST2()) {
         // see exception handling in RandonmVariate() function
         double n = dist.arg1().evalf();
         double m = dist.arg2().evalf();
-        // avoid result -Infinity when reference is close to 1.0
-        // double reference = random.nextDouble();
-        // double uniform = reference == NEXTDOWNONE ? NEXTDOWNONE : Math.nextUp(reference);
-        // uniform = Math.log(-Math.log(uniform));
-        // return m.add(n.times(F.num(uniform)));
         RandomDataGenerator rdg = new RandomDataGenerator();
         double[] vector = rdg.nextDeviates(
             new org.hipparchus.distribution.continuous.GumbelDistribution(n, m), size);
@@ -2186,7 +2232,7 @@ public class StatisticsContinousDistribution {
 
     @Override
     public IExpr skewness(IAST dist) {
-      if (dist.isAST2()) {
+      if (dist.isAST0() || dist.isAST2()) {
         return
         // [$ -((12*Sqrt(6)*Zeta(3))/Pi^3) $]
         F.Times(F.CN1, F.ZZ(12L), F.CSqrt6, F.Power(F.Pi, F.CN3), F.Zeta(F.C3)); // $$;
@@ -2196,7 +2242,10 @@ public class StatisticsContinousDistribution {
 
     @Override
     public IExpr variance(IAST dist) {
-      if (dist.isAST2()) {
+      if (dist.isAST0()) {
+        // (Pi^2)/6
+        return F.Times(F.QQ(1, 6), F.Sqr(S.Pi));
+      } else if (dist.isAST2()) {
         IExpr m = dist.arg2();
         // (m^2*Pi^2)/6
         return F.Times(F.QQ(1, 6), F.Sqr(m), F.Sqr(S.Pi));
@@ -3841,7 +3890,7 @@ public class StatisticsContinousDistribution {
 
 
   private static final class StudentTDistribution extends AbstractEvaluator
-      implements ICDF, IContinuousDistribution, IPDF, IStatistics {
+      implements ICDF, IContinuousDistribution, IPDF, IStatistics, IRandomVariate {
 
     @Override
     public IExpr cdf(IAST dist, IExpr k, EvalEngine engine) {
@@ -3872,6 +3921,30 @@ public class StatisticsContinousDistribution {
                             F.Times(F.Power(F.Plus(F.Sqr(F.Slot1), n), F.CN1), F.Sqr(F.Slot1)),
                             F.C1D2, F.Times(F.C1D2, n)))))); // $$;
         return callFunction(function, k);
+      } else if (dist.isAST3()) {
+        IExpr m = dist.arg1();
+        IExpr s = dist.arg2();
+        IExpr v = dist.arg3();
+        if (!engine.isArbitraryMode() && //
+            (m.isNumericArgument(true) || s.isNumericArgument(true) || v.isNumericArgument(true)
+                || k.isNumericArgument(true))) {
+          try {
+            return F.num(new org.hipparchus.distribution.continuous.TDistribution(v.evalf()) //
+                .cumulativeProbability((k.evalf() - m.evalf()) / s.evalf()));
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+          }
+        }
+        IExpr z = F.Times(F.Subtract(F.Slot1, m), F.Power(s, F.CN1));
+        IExpr zSq = F.Sqr(z);
+        IExpr frac1 = F.Times(v, F.Power(F.Plus(zSq, v), F.CN1));
+        IExpr frac2 = F.Times(zSq, F.Power(F.Plus(zSq, v), F.CN1));
+
+        IExpr function = F.Function(F.Piecewise(
+            F.list(F.list(F.Times(F.C1D2, F.BetaRegularized(frac1, F.Times(F.C1D2, v), F.C1D2)),
+                F.LessEqual(z, F.C0))),
+            F.Times(F.C1D2, F.Plus(F.C1, F.BetaRegularized(frac2, F.C1D2, F.Times(F.C1D2, v))))));
+        return callFunction(function, k);
       }
       return F.NIL;
     }
@@ -3880,6 +3953,11 @@ public class StatisticsContinousDistribution {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // 1 or 3 args
       return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_3;
     }
 
     @Override
@@ -3902,9 +3980,7 @@ public class StatisticsContinousDistribution {
             // n/2, 1/2)), 0 < # < 1/2}, {0, # == 1/2}, {Sqrt(n)*Sqrt(-1 +
             // 1/InverseBetaRegularized(2*(1 -
             // #), n/2, 1/2)), 1/2 < # < 1}, {-Infinity, # <= 0}}, Infinity), 0 <= # <= 1)& ) $]
-            F.Function(
-                F.ConditionalExpression(
-                    F.Piecewise(F.List(
+            F.Function(F.ConditionalExpression(F.Piecewise(F.List(
                         F.list(
                             F.Times(F.CN1, F.Sqrt(n),
                                 F.Sqrt(
@@ -3922,8 +3998,43 @@ public class StatisticsContinousDistribution {
                                         F.Times(F.C2, F.Subtract(F.C1, F.Slot1)),
                                         F.Times(F.C1D2, n), F.C1D2), F.CN1)))),
                             F.Less(F.C1D2, F.Slot1, F.C1)),
-                        F.list(F.Negate(F.oo), F.LessEqual(F.Slot1, F.C0))), F.oo),
-                    F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
+                F.list(F.Negate(F.oo), F.LessEqual(F.Slot1, F.C0))), F.oo),
+                F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
+        return callFunction(function, k);
+      } else if (dist.isAST3()) {
+        IExpr m = dist.arg1();
+        IExpr s = dist.arg2();
+        IExpr v = dist.arg3();
+        if (!engine.isArbitraryMode() && //
+            (m.isNumericArgument(true) || s.isNumericArgument(true) || v.isNumericArgument(true)
+                || k.isNumericArgument(true))) {
+          try {
+            return F.num(m.evalf()
+                + s.evalf() * new org.hipparchus.distribution.continuous.TDistribution(v.evalf()) //
+                    .inverseCumulativeProbability(k.evalf()));
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+          }
+        }
+        IExpr function = F.Function(F.ConditionalExpression(
+                F.Piecewise(F.List(
+                    F.list(F.Plus(m,
+                        F.Times(F.CN1, s, F.Sqrt(v), F.Sqrt(F.Plus(F.CN1,
+                            F.Power(F.InverseBetaRegularized(F.Times(F.C2, F.Slot1),
+                                F.Times(F.C1D2, v), F.C1D2), F.CN1))))),
+                        F.Less(F.C0, F.Slot1, F.C1D2)),
+                    F.list(m, F.Equal(F.Slot1,
+                        F.C1D2)),
+                    F.list(
+                        F.Plus(m,
+                            F.Times(s, F.Sqrt(v),
+                                F.Sqrt(F.Plus(F.CN1,
+                                    F.Power(F.InverseBetaRegularized(
+                                        F.Times(F.C2, F.Subtract(F.C1, F.Slot1)),
+                                        F.Times(F.C1D2, v), F.C1D2), F.CN1))))),
+                        F.Less(F.C1D2, F.Slot1, F.C1)),
+                    F.list(F.Negate(F.oo), F.LessEqual(F.Slot1, F.C0))), F.oo),
+                F.LessEqual(F.C0, F.Slot1, F.C1)));
         return callFunction(function, k);
       }
       return F.NIL;
@@ -3931,7 +4042,6 @@ public class StatisticsContinousDistribution {
 
     @Override
     public IExpr mean(IAST dist) {
-
       if (dist.isAST1()) {
         IExpr arg1 = dist.arg1();
         if (EvalEngine.get().isDoubleMode() || arg1.isNumericArgument(true)) {
@@ -3954,12 +4064,10 @@ public class StatisticsContinousDistribution {
       if (dist.isAST1()) {
         return F.C0;
       }
-
       if (dist.isAST3()) {
         // (m,s,v) -> m
         return dist.arg1();
       }
-
       return F.NIL;
     }
 
@@ -3985,6 +4093,50 @@ public class StatisticsContinousDistribution {
                     F.Times(F.C1D2, F.Plus(F.C1, n))),
                 F.Power(F.Times(F.Sqrt(n), F.Beta(F.Times(F.C1D2, n), F.C1D2)), F.CN1))); // $$;
         return callFunction(function, k);
+      } else if (dist.isAST3()) {
+        IExpr m = dist.arg1();
+        IExpr s = dist.arg2();
+        IExpr v = dist.arg3();
+        if (!engine.isArbitraryMode() && //
+            (m.isNumericArgument(true) || s.isNumericArgument(true) || v.isNumericArgument(true)
+                || k.isNumericArgument(true))) {
+          try {
+            return F.num((1.0 / s.evalf())
+                * new org.hipparchus.distribution.continuous.TDistribution(v.evalf()) //
+                    .density((k.evalf() - m.evalf()) / s.evalf()));
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+          }
+        }
+        IExpr z = F.Times(F.Subtract(F.Slot1, m), F.Power(s, F.CN1));
+        IExpr function = F.Function(F.Times(F.Power(s, F.CN1),
+            F.Power(F.Times(v, F.Power(F.Plus(F.Sqr(z), v), F.CN1)),
+                F.Times(F.C1D2, F.Plus(F.C1, v))),
+            F.Power(F.Times(F.Sqrt(v), F.Beta(F.Times(F.C1D2, v), F.C1D2)), F.CN1)));
+        return callFunction(function, k);
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public IExpr randomVariate(Random random, IAST dist, int size) {
+      if (dist.isAST1()) {
+        double n = dist.arg1().evalf();
+        RandomDataGenerator rdg = new RandomDataGenerator();
+        double[] vector =
+            rdg.nextDeviates(new org.hipparchus.distribution.continuous.TDistribution(n), size);
+        return new ASTRealVector(vector, false);
+      } else if (dist.isAST3()) {
+        double m = dist.arg1().evalf();
+        double s = dist.arg2().evalf();
+        double v = dist.arg3().evalf();
+        RandomDataGenerator rdg = new RandomDataGenerator();
+        double[] vector =
+            rdg.nextDeviates(new org.hipparchus.distribution.continuous.TDistribution(v), size);
+        for (int i = 0; i < vector.length; i++) {
+          vector[i] = m + s * vector[i];
+        }
+        return new ASTRealVector(vector, false);
       }
       return F.NIL;
     }
@@ -3996,8 +4148,10 @@ public class StatisticsContinousDistribution {
     public IExpr skewness(IAST dist) {
       if (dist.isAST1()) {
         IExpr n = dist.arg1();
-        // Piecewise({{0, n > 3}}, Indeterminate)
         return F.Piecewise(F.list(F.list(F.C0, F.Greater(n, F.C3))), S.Indeterminate);
+      } else if (dist.isAST3()) {
+        IExpr v = dist.arg3();
+        return F.Piecewise(F.list(F.list(F.C0, F.Greater(v, F.C3))), S.Indeterminate);
       }
       return F.NIL;
     }
@@ -4011,6 +4165,18 @@ public class StatisticsContinousDistribution {
               .getNumericalVariance());
         }
         return F.Piecewise(F.list(F.list(F.Divide(n, F.Plus(F.CN2, n)), F.Greater(n, F.C2))),
+            S.Indeterminate);
+      } else if (dist.isAST3()) {
+        IExpr s = dist.arg2();
+        IExpr v = dist.arg3();
+        if (EvalEngine.get().isDoubleMode()
+            || (s.isNumericArgument(true) && v.isNumericArgument(true))) {
+          return F.num(s.evalf() * s.evalf()
+              * new org.hipparchus.distribution.continuous.TDistribution(v.evalf())
+                  .getNumericalVariance());
+        }
+        return F.Piecewise(
+            F.list(F.list(F.Times(F.Sqr(s), F.Divide(v, F.Plus(F.CN2, v))), F.Greater(v, F.C2))),
             S.Indeterminate);
       }
       return F.NIL;
@@ -4287,6 +4453,33 @@ public class StatisticsContinousDistribution {
                 F.Subtract(F.C1, F.Exp(F.Negate(F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), n)))),
                 F.Greater(F.Slot1, F.C0))), F.C0)); // $$;
         return callFunction(function, k);
+      } else if (dist.isAST3()) {
+        IExpr n = dist.arg1();
+        IExpr scale = dist.arg2();
+        IExpr loc = dist.arg3();
+        //
+        if (!engine.isArbitraryMode() && //
+            (n.isNumericArgument(true) || scale.isNumericArgument(true)
+                || loc.isNumericArgument(true) || k.isNumericArgument(true))) {
+          try {
+            // Shift x by the location parameter before calculating CDF
+            return F.num(new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalf(),
+                scale.evalf()) //
+                    .cumulativeProbability(k.evalf() - loc.evalf()));
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+            //
+          }
+        }
+        IExpr function =
+            // [$ Piecewise({{1 - E^(-((# - loc)/scale)^n),# > loc}}, 0) & $]
+            F.Function(F.Piecewise(F.list(F.list(
+                        F.Subtract(F.C1,
+                            F.Exp(F.Negate(F.Power(
+                                F.Times(F.Power(scale, F.CN1), F.Subtract(F.Slot1, loc)), n)))),
+                        F.Greater(F.Slot1, loc))),
+                F.C0)); // $$;
+        return callFunction(function, k);
       }
       return F.NIL;
     }
@@ -4333,6 +4526,38 @@ public class StatisticsContinousDistribution {
                             F.list(F.C0, F.LessEqual(F.Slot1, F.C0))),
                         F.oo),
                     F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
+        return callFunction(function, k);
+      } else if (dist.isAST3()) {
+        IExpr n = dist.arg1();
+        IExpr scale = dist.arg2();
+        IExpr loc = dist.arg3();
+        if (!engine.isArbitraryMode() && //
+            (n.isNumericArgument(true) || scale.isNumericArgument(true)
+                || loc.isNumericArgument(true) || k.isNumericArgument(true))) {
+          try {
+            // Shift InverseCDF result by the location parameter
+            return F.num(loc.evalf()
+                + new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalf(),
+                    scale.evalf()) //
+                        .inverseCumulativeProbability(k.evalf()));
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+            //
+          }
+        }
+        IExpr function =
+            // [$ ( ConditionalExpression(Piecewise({{loc + scale*(-Log(1 - #))^(1/n), 0 < # < 1},
+            // {loc,
+            // # <= 0}}, Infinity), 0 <= # <= 1)& ) $]
+            F.Function(F.ConditionalExpression(
+                F.Piecewise(F.list(
+                    F.list(F.Plus(loc,
+                        F.Times(scale,
+                            F.Power(F.Negate(F.Log(F.Subtract(F.C1, F.Slot1))),
+                                F.Power(n, F.CN1)))),
+                        F.Less(F.C0, F.Slot1, F.C1)),
+                    F.list(loc, F.LessEqual(F.Slot1, F.C0))), F.oo),
+                F.LessEqual(F.C0, F.Slot1, F.C1))); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -4392,18 +4617,47 @@ public class StatisticsContinousDistribution {
         }
         IExpr function =
             // [$ Piecewise({{((#/m)^(-1 + n)*n)/(E^(#/m)^n*m), # > 0}}, 0) & $]
-            F.Function(
-                F.Piecewise(
+            F.Function(F.Piecewise(
                     F.list(
-                        F.list(
-                            F.Times(
-                                F.Power(
-                                    F.Times(F.Exp(F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), n)),
-                                        m),
-                                    F.CN1),
-                                n, F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), F.Plus(F.CN1, n))),
-                            F.Greater(F.Slot1, F.C0))),
-                    F.C0)); // $$;
+                    F.list(F.Times(
+                        F.Power(F.Times(F.Exp(F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), n)), m),
+                            F.CN1),
+                        n, F.Power(F.Times(F.Power(m, F.CN1), F.Slot1), F.Plus(F.CN1, n))),
+                        F.Greater(F.Slot1, F.C0))),
+                F.C0)); // $$;
+        return callFunction(function, k);
+      } else if (dist.isAST3()) {
+        IExpr n = dist.arg1();
+        IExpr scale = dist.arg2();
+        IExpr loc = dist.arg3();
+        //
+        if (!engine.isArbitraryMode() && //
+            (n.isNumericArgument(true) || scale.isNumericArgument(true)
+                || loc.isNumericArgument(true) || k.isNumericArgument(true))) {
+          try {
+            return F.num(new org.hipparchus.distribution.continuous.WeibullDistribution(n.evalf(),
+                scale.evalf()) //
+                    .density(k.evalf() - loc.evalf()));
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+            //
+          }
+        }
+        IExpr function =
+            // [$ Piecewise({{(((# - loc)/scale)^(-1 + n)*n)/(E^((# - loc)/scale)^n*scale), # >
+            // loc}},
+            // 0) & $]
+            F.Function(F.Piecewise(
+                    F.list(
+                    F.list(F.Times(
+                            F.Power(F.Times(
+                                F.Exp(F.Power(
+                                    F.Times(F.Power(scale, F.CN1), F.Subtract(F.Slot1, loc)), n)),
+                                scale), F.CN1),
+                            n, F.Power(F.Times(F.Power(scale, F.CN1), F.Subtract(F.Slot1, loc)),
+                                F.Plus(F.CN1, n))),
+                        F.Greater(F.Slot1, loc))),
+                F.C0)); // $$;
         return callFunction(function, k);
       }
       return F.NIL;
@@ -4414,10 +4668,21 @@ public class StatisticsContinousDistribution {
       if (dist.isAST2()) {
         double n = dist.arg1().evalf();
         double m = dist.arg2().evalf();
-        // see exception handling in RandonmVariate() function
         RandomDataGenerator rdg = new RandomDataGenerator();
         double[] vector = rdg.nextDeviates(
             new org.hipparchus.distribution.continuous.WeibullDistribution(n, m), size);
+        return new ASTRealVector(vector, false);
+      } else if (dist.isAST3()) {
+        double n = dist.arg1().evalf();
+        double scale = dist.arg2().evalf();
+        double loc = dist.arg3().evalf();
+        RandomDataGenerator rdg = new RandomDataGenerator();
+        double[] vector = rdg.nextDeviates(
+            new org.hipparchus.distribution.continuous.WeibullDistribution(n, scale), size);
+        // Shift values by location
+        for (int i = 0; i < vector.length; i++) {
+          vector[i] += loc;
+        }
         return new ASTRealVector(vector, false);
       }
       return F.NIL;
@@ -4428,10 +4693,9 @@ public class StatisticsContinousDistribution {
 
     @Override
     public IExpr skewness(IAST dist) {
-      if (dist.isAST2()) {
+      if (dist.isAST2() || dist.isAST3()) {
         IExpr n = dist.arg1();
-        // IExpr m = dist.arg2();
-        //
+        // Shift does not affect Skewness
         return
         // [$ (2*Gamma(1+1/n)^3 - 3*Gamma(1+1/n)*Gamma(1+2/n) + Gamma(1+3/n))/ (-Gamma(1+1/n)^2 +
         // Gamma(1+2/n))^(3/2) $]
@@ -4448,16 +4712,16 @@ public class StatisticsContinousDistribution {
 
     @Override
     public IExpr variance(IAST dist) {
-      if (dist.isAST2()) {
+      if (dist.isAST2() || dist.isAST3()) {
         IExpr n = dist.arg1();
         IExpr m = dist.arg2();
+        // Shift does not affect Variance
         // m^2*(-Gamma(1 + 1/n)^2 + Gamma(1 + 2/n))
         return F.Times(F.Sqr(m), F.Plus(F.Negate(F.Sqr(F.Gamma(F.Plus(F.C1, F.Power(n, -1))))),
             F.Gamma(F.Plus(F.C1, F.Times(F.C2, F.Power(n, -1))))));
       }
       return F.NIL;
     }
-
   }
 
 
