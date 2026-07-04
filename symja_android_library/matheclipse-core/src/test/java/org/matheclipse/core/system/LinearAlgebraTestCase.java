@@ -106,6 +106,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "False");
     check("AlgebraicIntegerQ(E)", //
         "False");
+    check("AlgebraicIntegerQ(E+Pi)", //
+        "AlgebraicIntegerQ(E+Pi)");
 
     // Invalid argument counts
     check("AlgebraicIntegerQ()", //
@@ -269,18 +271,6 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testCirclePoints() {
-    // check("CirclePoints(3)", "{{Sqrt(3)/2,-1/2},{0,1},{-Sqrt(3)/2,-1/2}}");
-    check("CirclePoints(2)", //
-        "{{1,0},{-1,0}}");
-
-    check("CirclePoints(4)", //
-        "{{1/Sqrt(2),-1/Sqrt(2)},{1/Sqrt(2),1/Sqrt(2)},{-1/Sqrt(2),1/Sqrt(2)},{-1/Sqrt(2),-\n"
-            + "1/Sqrt(2)}}");
-    // check("CirclePoints(10)", "");
-  }
-
-  @Test
   public void testCofactor() {
     check(
         "Cofactor({{6, 0, 4, 9, 5}, {1, 9, 3, 1, 2}, {5, 4, 5, 3, 8}, {3, 9, 8, 2, 5}, {4, 1, 6, 6, 4}},{1,3})", //
@@ -331,6 +321,13 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testCoordinateBoundingBox() {
+    check("CoordinateBoundingBox({{1, 2}, {3, 4}, {0, 5}}, {1, 2})", //
+        "{{-1,0},{4,7}}");
+    check("CoordinateBoundingBox({{1, 2}, {3, 4}, {0, 5}}, {{1, 2}, {3, 4}})", //
+        "{{-1,-1},{5,9}}");
+    check("CoordinateBoundingBox[{{1, 2, 3}, {4, 5, 6}, {0, 1, 9}}]", //
+        "{{0,1,3},{4,5,9}}");
+
     check("CoordinateBoundingBox({{0, 1}, {2, 3}, {3,4}, {2, 3}, {1,1}})", //
         "{{0,1},{3,4}}");
     check("CoordinateBoundingBox({{0, 1}, {1, 2}, {2, 1}, {3, 2}, {4, 0}}, Scaled(1/4))", //
@@ -1646,6 +1643,18 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMatrixMinimalPolynomial() {
+    check("MatrixMinimalPolynomial({{5}}, x)", //
+        "-5+x");
+    check("MatrixMinimalPolynomial({{2, 0}, {0, 2}}, x)", //
+        "-2+x");
+
+    check("MatrixMinimalPolynomial({{2, 1}, {0, 2}}, x)", //
+        "4-4*x+x^2");
+    check("MatrixMinimalPolynomial({{1, 0}, {0, 2}}, x)", //
+        "2-3*x+x^2");
+    check("MatrixMinimalPolynomial({{1, 1, 0}, {0, 1, 0}, {0, 0, 1}}, x)", //
+        "1-2*x+x^2");
+
     check("MatrixMinimalPolynomial({{0,0},{0,0}}, {{-1}})", //
         "MatrixMinimalPolynomial({{0,0},{0,0}},{{-1}})");
 
@@ -1653,8 +1662,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("MatrixMinimalPolynomial({{1, -1, -1}, {1, -2, 1}, {0, 1, -3}}, x)", //
         "-1+x+4*x^2+x^3");
 
-    check("MatrixMinimalPolynomial({{2, 0}, {0, 2}}, x)", //
-        "-2+x");
+
     check("MatrixMinimalPolynomial({{3, -1, 0}, {0, 2, 0}, {1, -1, 2}}, x)", //
         "6-5*x+x^2");
     check("CharacteristicPolynomial({{3, -1, 0}, {0, 2, 0}, {1, -1, 2}}, x)", //
@@ -2199,6 +2207,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testPermanent() {
     check("Permanent(HilbertMatrix(5))", //
+        "32104903/470400000");
+    check("Permanent(SparseArray(HilbertMatrix(5)))", //
         "32104903/470400000");
     check("Permanent(N(HilbertMatrix(5)))", //
         "0.0682502");

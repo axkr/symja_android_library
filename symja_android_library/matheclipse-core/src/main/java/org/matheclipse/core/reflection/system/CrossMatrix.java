@@ -142,14 +142,18 @@ public class CrossMatrix extends AbstractFunctionEvaluator {
       }
     }
 
-    // Determine the center coordinate for each dimension
-    double[] cArr = new double[dims];
-    for (int i = 0; i < dims; i++) {
-      cArr[i] = (wArr[i] - 1) / 2.0;
-    }
+    try {
+      // Determine the center coordinate for each dimension
+      double[] cArr = new double[dims];
+      for (int i = 0; i < dims; i++) {
+        cArr[i] = (wArr[i] - 1) / 2.0;
+      }
 
-    int[] indices = new int[dims];
-    return buildCross(0, indices, wArr, rArr, cArr);
+      int[] indices = new int[dims];
+      return buildCross(0, indices, wArr, rArr, cArr);
+    } catch (ArrayIndexOutOfBoundsException aieoobe) {
+      return F.NIL; // Handle any unexpected dimension issues gracefully
+    }
   }
 
   /**

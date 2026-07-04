@@ -1,8 +1,6 @@
 package org.matheclipse.core.eval.interfaces;
 
 import java.util.function.Predicate;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.FieldMatrix;
@@ -19,7 +17,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger(AbstractMatrix1Expr.class);
 
   public final static PossibleZeroQTest POSSIBLE_ZEROQ_TEST = new PossibleZeroQTest();
 
@@ -63,9 +60,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
       throw le;
     } catch (final MathRuntimeException mre) {
       // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
-      LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
     } catch (final RuntimeException e) {
-      LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
     }
     return F.NIL;
   }
@@ -128,9 +123,7 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
         throw le;
       } catch (final MathRuntimeException mre) {
         // org.hipparchus.exception.MathIllegalArgumentException: inconsistent dimensions: 0 != 3
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), mre);
       } catch (final RuntimeException e) {
-        LOGGER.error("AbstractMatrix1Expr.numericEval() failed", e);
       }
     }
     return F.NIL;

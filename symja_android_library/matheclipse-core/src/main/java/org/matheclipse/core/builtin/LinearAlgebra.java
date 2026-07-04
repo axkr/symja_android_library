@@ -6465,9 +6465,6 @@ public final class LinearAlgebra {
 
   }
 
-
-  // private static final Logger LOGGER = LogManager.getLosgger(LinearAlgebra.class);
-
   public static IExpr characteristicPolynomial(int n, IAST matrix, IExpr variable) {
     // see: https://en.wikipedia.org/wiki/Faddeev%E2%80%93LeVerrier_algorithm
     GenMatrix<IExpr> genMatrix = JASConvert.list2GenMatrix(matrix, true);

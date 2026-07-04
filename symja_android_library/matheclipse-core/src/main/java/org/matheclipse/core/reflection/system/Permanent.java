@@ -10,6 +10,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.ITensorAccess;
 
 /**
  * The Permanent function. *
@@ -72,13 +73,13 @@ public class Permanent extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
-    IAST matrixAST = (IAST) matrix;
+    ITensorAccess matrixTensor = (ITensorAccess) matrix;
 
     // Validate integer requirement for Modulus
     if (modulus.isPresent() && !modulus.equals(S.None) && !modulus.equals(S.Automatic)) {
       boolean allIntegers = true;
       for (int i = 1; i <= n; i++) {
-        IAST row = (IAST) matrixAST.get(i);
+        IAST row = (IAST) matrixTensor.get(i);
         for (int j = 1; j <= n; j++) {
           if (!row.get(j).isInteger()) {
             allIntegers = false;
@@ -106,7 +107,7 @@ public class Permanent extends AbstractFunctionOptionEvaluator {
       IASTAppendable prodAlloc = F.TimesAlloc(n);
 
       for (int i = 1; i <= n; i++) {
-        IAST row = (IAST) matrixAST.get(i);
+        ITensorAccess row = (ITensorAccess) matrixTensor.get(i);
         IASTAppendable rowSum = F.PlusAlloc(c);
 
         for (int j = 0; j < n; j++) {
