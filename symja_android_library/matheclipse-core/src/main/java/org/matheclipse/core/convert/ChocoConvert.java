@@ -1,10 +1,14 @@
 package org.matheclipse.core.convert;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.IntBinaryOperator;
+import java.util.function.IntUnaryOperator;
 import java.util.function.Predicate;
 import org.chocosolver.solver.Model;
 import org.chocosolver.solver.Solution;
@@ -36,56 +40,221 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
 /**
  * Convert <code>IExpr</code> expressions from and to
  * <a href="https://github.com/chocoteam/choco-solver">Choco solver</a>
  */
 public class ChocoConvert {
-  private static class IExprPropagator extends Propagator<IntVar> {
-    private final IntVar[] vars;
-    private final Predicate<IExpr[]> predicate;
 
-    public IExprPropagator(IntVar[] vars, Predicate<IExpr[]> predicate) {
-      super(vars, PropagatorPriority.VERY_SLOW, false);
-      this.vars = vars;
-      this.predicate = predicate;
+  /**
+   * Call the <code>unaryFunction::applyAsInt</code> and cache the results for each input value.
+   */
+  private static class CachedFunctionPropagator extends Propagator<IntVar> {
+    private final IntVar x;
+    private final IntVar y;
+    private final IntUnaryOperator unaryFunction;
+    private final Int2IntOpenHashMap cache;
+
+    public CachedFunctionPropagator(IntVar x, IntVar y, IntUnaryOperator unaryFunction) {
+      super(new IntVar[] {x, y}, PropagatorPriority.VERY_SLOW, false);
+      this.x = x;
+      this.y = y;
+      this.unaryFunction = unaryFunction;
+      this.cache = new Int2IntOpenHashMap();
+    }
+
+    private int evaluateCached(int val) {
+      return cache.computeIfAbsent(val, unaryFunction::applyAsInt);
     }
 
     @Override
     public void propagate(int evtmask) throws ContradictionException {
-      for (int i = 0; i < vars.length; i++) {
-        for (int value = vars[i].getLB(); value <= vars[i].getUB(); value =
-            vars[i].nextValue(value)) {
-          IExpr[] exprs = new IExpr[vars.length];
-          for (int j = 0; j < vars.length; j++) {
-            exprs[j] = F.ZZ(vars[j].getValue());
+      int ubX = x.getUB();
+      int minY = Integer.MAX_VALUE;
+      int maxY = Integer.MIN_VALUE;
+
+      // 1. Forward Check: Prune X based on the domain of Y
+      for (int valX = x.getLB(); valX <= ubX; valX = x.nextValue(valX)) {
+        try {
+          int fVal = evaluateCached(valX);
+          if (!y.contains(fVal)) {
+            x.removeValue(valX, this);
+          } else {
+            if (fVal < minY)
+              minY = fVal;
+            if (fVal > maxY)
+              maxY = fVal;
           }
-          if (!predicate.test(exprs)) {
-            vars[i].removeValue(value, this);
+        } catch (Exception e) {
+          // Function is undefined for this input, prune it immediately
+          x.removeValue(valX, this);
+        }
+      }
+
+      // 2. Update Y's bounds
+      if (minY <= maxY) {
+        y.updateLowerBound(minY, this);
+        y.updateUpperBound(maxY, this);
+      }
+
+      // 3. Arc Consistency: Prune Y values that have no supporting X value
+      int ubY = y.getUB();
+      for (int valY = y.getLB(); valY <= ubY; valY = y.nextValue(valY)) {
+        boolean supported = false;
+        ubX = x.getUB();
+        for (int valX = x.getLB(); valX <= ubX; valX = x.nextValue(valX)) {
+          try {
+            if (evaluateCached(valX) == valY) {
+              supported = true;
+              break;
+            }
+          } catch (Exception e) {
+            // Undefined inputs cannot support this Y value, skip
           }
+        }
+        if (!supported) {
+          y.removeValue(valY, this);
         }
       }
     }
 
     @Override
     public ESat isEntailed() {
-      IExpr[] exprs = new IExpr[vars.length];
-      for (int i = 0; i < vars.length; i++) {
-        exprs[i] = F.ZZ(vars[i].getValue());
+      boolean allValid = true;
+      boolean anyValid = false;
+      int ubX = x.getUB();
+
+      for (int valX = x.getLB(); valX <= ubX; valX = x.nextValue(valX)) {
+        try {
+          int fVal = evaluateCached(valX);
+          if (y.contains(fVal)) {
+            anyValid = true;
+          } else {
+            allValid = false;
+          }
+        } catch (Exception e) {
+          allValid = false;
+        }
       }
-      return predicate.test(exprs) ? ESat.TRUE : ESat.FALSE;
+
+      if (!anyValid)
+        return ESat.FALSE;
+      if (allValid && x.isInstantiated() && y.isInstantiated())
+        return ESat.TRUE;
+      return ESat.UNDEFINED;
+    }
+  }
+
+  /**
+   * Call the <code>binaryFunction::applyAsInt</code> and cache the results for each pair of input
+   * values.
+   */
+  private static class CachedBinaryFunctionPropagator extends Propagator<IntVar> {
+
+    private final IntVar x1;
+    private final IntVar x2;
+    private final IntVar y;
+    private final IntBinaryOperator binaryFunction;
+
+    // Using Long as the key to pack two 32-bit ints, avoiding object creation overhead
+    private final Map<Long, Integer> cache;
+
+    public CachedBinaryFunctionPropagator(IntVar x1, IntVar x2, IntVar y,
+        IntBinaryOperator binaryFunction) {
+      // QUADRATIC priority is suitable since we iterate over D * D (Domain 1 * Domain 2)
+      super(new IntVar[] {x1, x2, y}, PropagatorPriority.QUADRATIC, false);
+      this.x1 = x1;
+      this.x2 = x2;
+      this.y = y;
+      this.binaryFunction = binaryFunction;
+      this.cache = new HashMap<>();
+    }
+
+    /**
+     * Packs two integers into a single long for fast cache lookups.
+     */
+    private int evaluateCached(int val1, int val2) {
+      long key = (((long) val1) << 32) | (val2 & 0xffffffffL);
+      return cache.computeIfAbsent(key, k -> binaryFunction.applyAsInt(val1, val2));
     }
 
     @Override
-    public void propagate(int idxVarInProp, int mask) throws ContradictionException {
-      propagate(mask);
+    public void propagate(int evtmask) throws ContradictionException {
+      Set<Integer> supportedX1 = new HashSet<>();
+      Set<Integer> supportedX2 = new HashSet<>();
+      Set<Integer> supportedY = new HashSet<>();
+
+      // 1. Explore Cartesian product (x1 * x2)
+      int ub1 = x1.getUB();
+      for (int val1 = x1.getLB(); val1 <= ub1; val1 = x1.nextValue(val1)) {
+        int ub2 = x2.getUB();
+        for (int val2 = x2.getLB(); val2 <= ub2; val2 = x2.nextValue(val2)) {
+          try {
+            int fVal = evaluateCached(val1, val2);
+
+            // If the calculated value is a valid assignment for Y, the tuple is supported
+            if (y.contains(fVal)) {
+              supportedX1.add(val1);
+              supportedX2.add(val2);
+              supportedY.add(fVal);
+            }
+          } catch (RuntimeException e) {
+            // Function is undefined for this pair, skip it
+          }
+        }
+      }
+
+      // 2. If no valid tuples were found, the constraints cannot be satisfied
+      if (supportedY.isEmpty()) {
+        fails(); // throws ContradictionException
+      }
+
+      // 3. Prune the Output Variable (Y)
+      int ubY = y.getUB();
+      for (int valY = y.getLB(); valY <= ubY; valY = y.nextValue(valY)) {
+        if (!supportedY.contains(valY)) {
+          y.removeValue(valY, this);
+        }
+      }
+
+      // 4. Prune Input Variable 1 (x1)
+      ub1 = x1.getUB();
+      for (int val1 = x1.getLB(); val1 <= ub1; val1 = x1.nextValue(val1)) {
+        if (!supportedX1.contains(val1)) {
+          x1.removeValue(val1, this);
+        }
+      }
+
+      // 5. Prune Input Variable 2 (x2)
+      int ub2 = x2.getUB();
+      for (int val2 = x2.getLB(); val2 <= ub2; val2 = x2.nextValue(val2)) {
+        if (!supportedX2.contains(val2)) {
+          x2.removeValue(val2, this);
+        }
+      }
+    }
+
+    @Override
+    public ESat isEntailed() {
+      if (isCompletelyInstantiated()) {
+        try {
+          int fVal = evaluateCached(x1.getValue(), x2.getValue());
+          return fVal == y.getValue() ? ESat.TRUE : ESat.FALSE;
+        } catch (Exception e) {
+          return ESat.FALSE;
+        }
+      }
+      return ESat.UNDEFINED;
     }
   }
+
   private static class PredicatePropagator extends Propagator<IntVar> {
     private final IntVar var;
     private final Predicate<Integer> predicate;
@@ -397,6 +566,54 @@ public class ChocoConvert {
         return integerExpression(net, ast.arg1(), map).abs();
         // } else if (ast.isAST(F.Sign, 2)) {
         // return integerVariable(net, ast.arg1()).sign();
+      } else if (ast.isAST1()) {
+        IExpr head = ast.head();
+        if (head instanceof IBuiltInSymbol) {
+          Object evaluator = ((IBuiltInSymbol) head).getEvaluator();
+
+          // Check for the standard IntUnaryOperator interface
+          if (evaluator instanceof java.util.function.IntUnaryOperator) {
+            java.util.function.IntUnaryOperator intFunction =
+                (java.util.function.IntUnaryOperator) evaluator;
+
+            ArExpression argExpr = integerExpression(net, ast.arg1(), map);
+            IntVar x = argExpr.intVar();
+            IntVar y =
+                net.intVar(head.toString() + "_" + x.getName(), CHOCO_MIN_VALUE, CHOCO_MAX_VALUE);
+
+            // Post our custom lazy-caching propagator
+            net.post(new org.chocosolver.solver.constraints.Constraint("CachedFunctionConstraint",
+                new CachedFunctionPropagator(x, y, intFunction)));
+
+            return y;
+          }
+        }
+      } else if (ast.isAST2()) {
+        IExpr head = ast.head();
+        if (head instanceof IBuiltInSymbol) {
+          Object evaluator = ((IBuiltInSymbol) head).getEvaluator();
+
+          // Check for the standard IntBinaryOperator interface
+          if (evaluator instanceof java.util.function.IntBinaryOperator) {
+            java.util.function.IntBinaryOperator intFunction =
+                (java.util.function.IntBinaryOperator) evaluator;
+
+            ArExpression argExpr1 = integerExpression(net, ast.arg1(), map);
+            ArExpression argExpr2 = integerExpression(net, ast.arg2(), map);
+
+            IntVar x1 = argExpr1.intVar();
+            IntVar x2 = argExpr2.intVar();
+            IntVar y = net.intVar(head.toString() + "_" + x1.getName() + "_" + x2.getName(),
+                CHOCO_MIN_VALUE, CHOCO_MAX_VALUE);
+
+            // Post the binary lazy-caching propagator
+            net.post(
+                new org.chocosolver.solver.constraints.Constraint("CachedBinaryFunctionConstraint",
+                    new CachedBinaryFunctionPropagator(x1, x2, y, intFunction)));
+
+            return y;
+          }
+        }
       }
     }
     throw new ArgumentTypeException(
