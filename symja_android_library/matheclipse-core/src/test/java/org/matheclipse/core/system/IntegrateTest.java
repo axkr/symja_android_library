@@ -48,6 +48,9 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testIntegrateSurd() {
+    check("Integrate(Surd(x,-5), x)", //
+        "5/4*x/Surd(x,5)");
+
     check("Integrate(Surd(x,-1), x)", //
         "Log(x)");
     check("Integrate(CubeRoot(x), x)", //

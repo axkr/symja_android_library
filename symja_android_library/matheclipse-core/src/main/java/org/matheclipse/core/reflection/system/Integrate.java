@@ -16,8 +16,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.ApfloatInterruptedException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.AlgebraUtil;
@@ -40,6 +38,7 @@ import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.KryoUtil;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.PowerTimesFunction;
+import org.matheclipse.core.integrate.RadicalSubstitution;
 import org.matheclipse.core.integrate.RationalIntegration;
 import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
@@ -99,7 +98,6 @@ import edu.jas.kern.PreemptingException;
  */
 public class Integrate extends AbstractFunctionOptionEvaluator {
 
-  private static final Logger LOGGER = LogManager.getLogger(Integrate.class);
 
   private static Thread INIT_THREAD = null;
 
@@ -432,11 +430,10 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       }
       if (arg1 instanceof ASTSeriesData) {
         ASTSeriesData series = ((ASTSeriesData) arg1);
-        if (series.expansionVariable().equals(x)) {
-          final IExpr temp = ((ASTSeriesData) arg1).integrate(x);
-          if (temp != null) {
-            return temp;
-          }
+        // if (series.expansionVariable().equals(x)) {
+        final ASTSeriesData temp = series.integrate(x);
+        if (temp != null) {
+          return temp;
         }
         return F.NIL;
       }
@@ -503,6 +500,17 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // if (result.isPresent()) {
           // return result;
           // }
+          // Stage 3: substitution t = (a+b*x)^(1/n) for radicals of a linear function
+          result = RadicalSubstitution.integrate(fx, x, engine);
+          if (result.isPresent()) {
+            return result;
+          }
+          // Stage 4: derivative-divides (Geddes) heuristic
+          // result = DerivativeDivides.integrate(fx, x, engine);
+          // if (result.isPresent()) {
+          // return result;
+          // }
+
         }
         result = integrateByRubiRules(fx, x, ast, engine);
         if (result.isPresent()) {
@@ -1263,16 +1271,17 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           } catch (RuntimeException rex) {
             Errors.rethrowsInterruptException(rex);
             engine.setRecursionLimit(limit);
-            LOGGER.log(engine.getLogLevel(),
-                "Integrate Rubi recursion limit {} RuntimeException: {}",
-                Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT, ast, rex);
-            return F.NIL;
+            return Errors.printMessage(S.Integrate, rex, engine);
+            // LOGGER.log(engine.getLogLevel(),
+            // "Integrate Rubi recursion limit {} RuntimeException: {}",
+            // Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT, ast, rex);
+            // return F.NIL;
           }
 
         } catch (AbortException ae) {
-          LOGGER.debug("Integrate.integrateByRubiRules() aborted", ae);
+          // LOGGER.debug("Integrate.integrateByRubiRules() aborted", ae);
         } catch (final FailedException fe) {
-          LOGGER.debug("Integrate.integrateByRubiRules() failed", fe);
+          // LOGGER.debug("Integrate.integrateByRubiRules() failed", fe);
         } finally {
           engine.setRecursionLimit(limit);
           if (newCache) {
