@@ -707,7 +707,6 @@ public class QuarticSolver {
    *        {@link #cubicSolve(IExpr, IExpr, IExpr, IExpr, IExpr)}
    * @param solution2 possible second solution from
    *        {@link #cubicSolve(IExpr, IExpr, IExpr, IExpr, IExpr)}
-   * @return
    */
   public static IASTAppendable quadraticSolve(IExpr a, IExpr b, IExpr c, IExpr solution1,
       IExpr solution2) {
@@ -726,8 +725,7 @@ public class QuarticSolver {
    * @param solution2 possible second solution from
    *        {@link #cubicSolve(IExpr, IExpr, IExpr, IExpr, IExpr)}
    * @param createSet delete duplicate values in the result
-   * @param sortResult sort the result values
-   * @return
+   * @param sort sort the result values
    */
   public static IASTAppendable quadraticSolve(IExpr a, IExpr b, IExpr c, IExpr solution1,
       IExpr solution2, boolean createSet, boolean sort) {

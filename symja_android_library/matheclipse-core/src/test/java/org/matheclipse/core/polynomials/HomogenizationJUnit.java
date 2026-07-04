@@ -1,7 +1,6 @@
 package org.matheclipse.core.polynomials;
 
 import org.junit.jupiter.api.Test;
-import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -29,7 +28,7 @@ public class HomogenizationJUnit extends ExprEvaluatorTestCase {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       if (arg1.isAST()) {
-        VariablesSet eVar = new VariablesSet(arg1);
+        // VariablesSet eVar = new VariablesSet(arg1);
         PolynomialHomogenization substitutions = new PolynomialHomogenization(engine);
         IExpr temp = substitutions.replaceForward(arg1);
         IASTAppendable list = substitutions.listOfBackwardSubstitutions();
@@ -144,25 +143,25 @@ public class HomogenizationJUnit extends ExprEvaluatorTestCase {
   // assertEquals(expected2, transform.apply(expr2));
   // }
 
-//  @Test
-//  public void testNoTransform() {
-//    EvalEngine engine = new EvalEngine();
-//    VariablesSet vars = new VariablesSet(F.x);
-//    PolynomialHomogenization polyHomogenization = new PolynomialHomogenization(engine);
-//    PolynomialHomogenization.TanhSechTransform transform =
-//        polyHomogenization.new TanhSechTransform();
-//
-//    // Test: Sech(x)^3 -> NIL (odd exponent, transform should not apply)
-//    IExpr expr1 = F.Power(F.Sech(F.x), F.C3);
-//    assertEquals(F.NIL, transform.apply(expr1));
-//
-//    // Test: Csch(x)^1 -> NIL (odd exponent, transform should not apply)
-//    IExpr expr2 = F.Power(F.Csch(F.x), F.C1);
-//    assertEquals(F.NIL, transform.apply(expr2));
-//
-//    // Test: x^2 -> NIL (not a supported hyperbolic base)
-//    IExpr expr3 = F.Power(F.x, F.C2);
-//    assertEquals(F.NIL, transform.apply(expr3));
-// }
+  // @Test
+  // public void testNoTransform() {
+  // EvalEngine engine = new EvalEngine();
+  // VariablesSet vars = new VariablesSet(F.x);
+  // PolynomialHomogenization polyHomogenization = new PolynomialHomogenization(engine);
+  // PolynomialHomogenization.TanhSechTransform transform =
+  // polyHomogenization.new TanhSechTransform();
+  //
+  // // Test: Sech(x)^3 -> NIL (odd exponent, transform should not apply)
+  // IExpr expr1 = F.Power(F.Sech(F.x), F.C3);
+  // assertEquals(F.NIL, transform.apply(expr1));
+  //
+  // // Test: Csch(x)^1 -> NIL (odd exponent, transform should not apply)
+  // IExpr expr2 = F.Power(F.Csch(F.x), F.C1);
+  // assertEquals(F.NIL, transform.apply(expr2));
+  //
+  // // Test: x^2 -> NIL (not a supported hyperbolic base)
+  // IExpr expr3 = F.Power(F.x, F.C2);
+  // assertEquals(F.NIL, transform.apply(expr3));
+  // }
 
 }

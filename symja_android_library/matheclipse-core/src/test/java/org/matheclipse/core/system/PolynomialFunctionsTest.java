@@ -334,7 +334,8 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLegendreP() {
-
+    check("LegendreP(9, 7,3, z)", //
+        "((1-z)^7*(1+z)^(7/2)*(2027025/2-34459425/2*z^2))/(-1+z)^(7/2)");
     check("LegendreP(Pi,0)", //
         "Sqrt(Pi)/(Gamma(1/2-Pi/2)*Gamma(1+Pi/2))");
     check("LegendreP(-(1/2), 1 - 2*z)", //
@@ -409,9 +410,10 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testLegendreQ() {
-    // TODO
-    // check("LegendreQ(1,1,3,z)", //
-    // "");
+    check("LegendreQ[3,2,3, z]// FunctionExpand", //
+        "((1-z)^2*(1+z)*(-5+1/2*(-3/2*z+5/2*z^3)*(1/(1-z)^2-1/(1+z)^2)+(-3/2+15/2*z^2)*(-\n"
+            + "1/(-1+z)+1/(1+z))+15/2*z*(-Log(-1+z)+Log(1+z))))/(-1+z)");
+
     check("LegendreQ(3,2,2,z)", //
         "(1-z)*(1+z)*(-5+1/2*(-3/2*z+5/2*z^3)*(1/(1-z)^2-1/(1+z)^2)+(-3/2+15/2*z^2)*(1/(1-z)+1/(\n" //
             + "1+z))+15/2*z*(-Log(1-z)+Log(1+z)))");
@@ -424,7 +426,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     check("LegendreQ(n, 0)//FunctionExpand", //
         "(-Pi^(3/2)*Tan(1/2*n*Pi))/(n*Gamma(1/2-n/2)*Gamma(n/2))");
     check("LegendreQ(0,x)", //
-        "-Log(1-x)/2+Log(1+x)/2");
+        "1/2*(-Log(1-x)+Log(1+x))");
     check("LegendreQ(1,z)", //
         "-1+1/2*z*(-Log(1-z)+Log(1+z))");
     check("LegendreQ(2,z)", //

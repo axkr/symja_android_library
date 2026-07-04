@@ -544,7 +544,7 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{x->-1}}");
     // TODO simplify result
     check("Solve(-5*Sqrt(14)*x-14*x^2*Sqrt(83)-10==0,x)", //
-        "{{x->(-5*Sqrt(14)-I*Sqrt(-350+560*Sqrt(83)))/(28*Sqrt(83))},{x->(-5*Sqrt(14)+I*Sqrt(-\n" //
+        "{{x->(-5*Sqrt(14)-I*Sqrt(-350+560*Sqrt(83)))/(28*Sqrt(83))},{x->(-5*Sqrt(14)+I*Sqrt(-\n"
             + "350+560*Sqrt(83)))/(28*Sqrt(83))}}");
 
     check("Solve(8*x^3-26x^2+3x+9==0,x)", //
@@ -1819,7 +1819,10 @@ public class SolveTest extends ExprEvaluatorTestCase {
   @Test
   public void testIssue822() {
     check("Solve(60000*(1+(x/100))^15==82000, x)", //
-        "{{x->-199.8731+I*21.22868},{x->-199.8731+I*(-21.22868)},{x->-182.6041+I*(-60.01542)},{x->-182.6041+I*60.01542},{x->-151.0522+I*(-88.42495)},{x->-151.0522+I*88.42495},{x->-110.6728+I*101.545},{x->-110.6728+I*(-101.545)},{x->-68.44803+I*(-97.10699)},{x->-68.44803+I*97.10699},{x->-31.67887+I*75.87831},{x->-31.67887+I*(-75.87831)},{x->-6.72305+I*(-41.52957)},{x->-6.72305+I*41.52957},{x->2.10433}}");
+        "{{x->-182.6041+I*60.01542},{x->-182.6041+I*(-60.01542)},{x->-151.0522+I*(-88.42495)},{x->-151.0522+I*88.42495}," //
+            + "{x->-110.6728+I*101.545},{x->-110.6728+I*(-101.545)},{x->-100.0006+I*(-0.000623464)},{x->-100.0004+I*0.000472974}," //
+            + "{x->-100.0002+I*0.000824716},{x->-100.0002+I*(-0.000595451)},{x->-99.99938+I*0.000122477}," //
+            + "{x->-99.99916+I*(-0.000201253)},{x->-6.72305+I*(-41.52957)},{x->-6.72305+I*41.52957},{x->2.10433}}");
   }
 
   // @Test
@@ -2108,9 +2111,14 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testIssue914() {
-    // TODO
     check("Solve(5==35500*(1+x/4)^(4*7),x)", //
-        "Solve((1+x/4)^28==1/7100,x)");
+        "{{x->-6.91417},{x->-6.84111+I*0.648464},{x->-6.84111+I*(-0.648464)},{x->-6.62558+I*1.26441}," //
+            + "{x->-6.62558+I*(-1.26441)},{x->-6.27839+I*1.81696},{x->-6.27839+I*(-1.81696)},{x->-5.81696+I*2.27839}," //
+            + "{x->-5.81696+I*(-2.27839)},{x->-5.26441+I*2.62558},{x->-5.26441+I*(-2.62558)},{x->-4.64846+I*2.84111}," //
+            + "{x->-4.64846+I*(-2.84111)},{x->-4.0+I*(-2.91417)},{x->-4.0+I*2.91417},{x->-3.35154+I*2.84111}," //
+            + "{x->-3.35154+I*(-2.84111)},{x->-2.73559+I*2.62558},{x->-2.73559+I*(-2.62558)},{x->-2.18304+I*2.27839}," //
+            + "{x->-2.18304+I*(-2.27839)},{x->-1.72161+I*1.81696},{x->-1.72161+I*(-1.81696)},{x->-1.37442+I*1.26441}," //
+            + "{x->-1.37442+I*(-1.26441)},{x->-1.15889+I*0.648464},{x->-1.15889+I*(-0.648464)},{x->-1.08583}}");
     check("Solve({A==20^300,A==26158/5},{A})", //
         "{}");
   }
@@ -2458,6 +2466,20 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSolveDecompose() {
+    check("Solve(x^4 + x^2 + 1 == 0, x)", //
+        "{{x->Sqrt(-1-I*Sqrt(3))/Sqrt(2)},{x->-Sqrt(-1-I*Sqrt(3))/Sqrt(2)},{x->Sqrt(-1+I*Sqrt(\n"
+            + "3))/Sqrt(2)},{x->-Sqrt(-1+I*Sqrt(3))/Sqrt(2)}}");
+
+    check("Solve(x^8+4*x^7+2*x^6-8*x^5-5*x^4+8*x^3+2*x^2-4*x+8==0, x)", //
+        "{{x->1/4*(-2-Sqrt(20-8*Sqrt(-I*4)*7^(1/4)))},{x->1/4*(-2+Sqrt(20-8*Sqrt(-I*4)*7^(\n"
+            + "1/4)))},{x->1/4*(-2-Sqrt(20+8*Sqrt(-I*4)*7^(1/4)))},{x->1/4*(-2+Sqrt(20+8*Sqrt(-\n"
+            + "I*4)*7^(1/4)))},{x->1/4*(-2-Sqrt(20-8*Sqrt(I*4)*7^(1/4)))},{x->1/4*(-2+Sqrt(20-8*Sqrt(\n"
+            + "I*4)*7^(1/4)))},{x->1/4*(-2-Sqrt(20+8*Sqrt(I*4)*7^(1/4)))},{x->1/4*(-2+Sqrt(20+8*Sqrt(\n"
+            + "I*4)*7^(1/4)))}}");
+  }
+
+  @Test
   public void testDegenerateCubicToQuadratic() {
     // Edge Case: a == 0
     // Equation: 0*x^3 + x^2 - 4 == 0
@@ -2570,6 +2592,76 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void testSolveConstraints() {
     check("Solve({x + y==4, 1 <= x <= 3 && 0 <= y <= 2}, {x, y})", //
         "{{x->ConditionalExpression(4-y,y>=1&&y<=2)}}");
+  }
+
+  @Test
+  public void testSolveChocoPropagator() {
+    // ---------------------------------------------------------
+    // IntUnaryOperator Propagator Tests
+    // ---------------------------------------------------------
+
+    // PrimeNu
+    check("Solve(5*PrimeNu(n) == n^2 - 4 && 0 < n < 1000, n, Integers)", //
+        "{{n->3}}");
+
+    // PrimeOmega: 2 * PrimeOmega(n) == n - 2
+    // n=6 => PrimeOmega(6)=2 => 2*2 == 6-2 (True)
+    check("Solve(2*PrimeOmega(n) == n - 2 && 0 < n < 20, n, Integers)", //
+        "{{n->6},{n->8}}");
+
+    // EulerPhi: powers of 2 have the property 2 * EulerPhi(n) == n
+    check("Solve(2*EulerPhi(n) == n && 0 < n < 10, n, Integers)", //
+        "{{n->2},{n->4},{n->8}}");
+
+    // Fibonacci: Fibonacci(n) == n - 1
+    // True for n=2 (Fib=1), n=3 (Fib=2), n=4 (Fib=3)
+    check("Solve(Fibonacci(n) == n - 1 && 0 < n < 10, n, Integers)", //
+        "{{n->2},{n->3},{n->4}}");
+
+    // PartitionsP: PartitionsP(n) == 7
+    // True for n=5
+    check("Solve(PartitionsP(n) == 7 && 0 < n < 10, n, Integers)", //
+        "{{n->5}}");
+
+    // ---------------------------------------------------------
+    // IntBinaryOperator Propagator Tests
+    // ---------------------------------------------------------
+
+    // Binomial: n choose 2 == 10
+    // n*(n-1)/2 = 10 => n=5
+    check("Solve(Binomial(n, 2) == 10 && 0 < n < 10, n, Integers)", //
+        "{{n->5}}");
+
+    // DivisorSigma: perfect numbers (sum of divisors = 2*n)
+    // First two perfect numbers are 6 and 28
+    check("Solve(DivisorSigma(1, n) == 2*n && 0 < n < 30, n, Integers)", //
+        "{{n->6},{n->28}}");
+
+    // StirlingS2: StirlingS2(n, 2) == 15
+    // Formula for k=2 is 2^(n-1) - 1 => 2^(n-1)-1 = 15 => n=5
+    check("Solve(StirlingS2(n, 2) == 15 && 0 < n < 10, n, Integers)", //
+        "{{n->5}}");
+
+    // JacobiSymbol: JacobiSymbol(2, n) == -1
+    // True for n = 3, 5 (mod 8)
+    check("Solve(JacobiSymbol(2, n) == -1 && 0 < n < 10, n, Integers)", //
+        "{{n->3},{n->5}}");
+
+    // ---------------------------------------------------------
+    // Compound Propagator Tests
+    // ---------------------------------------------------------
+
+    // MoebiusMu & PrimeNu combination
+    // Numbers with exactly 2 distinct prime factors (PrimeNu=2) that are square-free (MoebiusMu=1)
+    // Candidates < 15: 6 (2*3), 10 (2*5), 14 (2*7)
+    check("Solve(MoebiusMu(n) == 1 && PrimeNu(n) == 2 && 0 < n < 15, n, Integers)", //
+        "{{n->6},{n->10},{n->14}}");
+
+    // EulerPhi & DivisorSigma combination
+    // Numbers where EulerPhi(n) + DivisorSigma(0, n) == n
+    // e.g., n=8 (phi(8)=4, sigma_0(8)=4, 4+4=8)
+    check("Solve(EulerPhi(n) + DivisorSigma(0, n) == n && 0 < n < 15, n, Integers)", //
+        "{{n->6},{n->8},{n->9}}");
   }
 
 

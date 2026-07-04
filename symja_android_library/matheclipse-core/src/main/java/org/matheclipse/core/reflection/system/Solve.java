@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.chocosolver.solver.constraints.extension.hybrid.HybridTuples;
 import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
@@ -102,7 +100,6 @@ import org.matheclipse.core.polynomials.QuarticSolver;
  * <a href="NRoots.md">NRoots</a>
  */
 public class Solve extends AbstractFunctionOptionEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger(Solve.class);
 
   /** Check an expression, if it's an allowed object. */
   protected static final class IsWrongSolveExpression implements Predicate<IExpr> {
@@ -168,9 +165,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     }
 
     /**
-     * Get the value for the option {@link S#GenerateConditions}
-     * 
-     * @return
+     * Get the value for the option {@link S#GenerateConditions} * @return
      */
     protected IExpr generateConditions() {
       return options[0];
@@ -269,7 +264,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         if (condition.isTrue()) {
           wrapped.append(rule);
         } else {
-          wrapped.append(F.Rule(rule.first(), F.ConditionalExpression(rule.second(), condition)));
+          wrapped.append(F.Rule(rule.arg1(), F.ConditionalExpression(rule.arg2(), condition)));
         }
       }
       return F.list(wrapped);
@@ -324,6 +319,20 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     private IAST solveOneVariableEquation(ExprAnalyzer exprAnalyzer, boolean numericFlag,
         EvalEngine engine) {
       IAST listOfRules = F.NIL;
+
+      // 1. Intercept high-degree polynomials or nested transcendental functions via Decompose
+      if (exprAnalyzer.getVariableSet().size() == 1) {
+        IExpr variable = exprAnalyzer.getVariableSet().iterator().next();
+        IAST decompRules =
+            solveViaDecomposition(exprAnalyzer.getNumerator(), variable, numericFlag, engine);
+
+        // If decomposition was non-trivial and succeeded, return immediately
+        if (decompRules.isPresent()) {
+          return decompRules;
+        }
+      }
+
+      // 2. Fallback to standard linear/polynomial or numeric root finding
       if (exprAnalyzer.isLinearOrPolynomial()) {
         listOfRules = rootsOfUnivariatePolynomial(exprAnalyzer, engine);
         if (listOfRules.isPresent()) {
@@ -337,6 +346,89 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         }
       }
       return listOfRules;
+    }
+
+    /**
+     * Solves a univariate equation f(x) == 0 by decomposing it into p1(p2(...(x))) == 0.
+     * Iteratively solves from the outermost layer to the innermost layer.
+     */
+    private IAST solveViaDecomposition(IExpr equationLHS, IExpr x, boolean numericFlag,
+        EvalEngine engine) {
+      // Guard against deep mutual recursion (Solve -> Decompose -> NSolve -> Solve...)
+      if (engine.getOptimizeExpressionDepth() > 3) {
+        return F.NIL;
+      }
+
+      try {
+        engine.incOptimizeExpressionDepth();
+
+        // 1. Attempt to decompose the left-hand side
+        IExpr decompEval = engine.evaluate(F.Decompose(equationLHS, x));
+        if (!decompEval.isList()) {
+          return F.NIL;
+        }
+
+        IAST decomposed = (IAST) decompEval;
+        // If decomposition failed or is trivial (only 1 layer), fallback
+        if (decomposed.argSize() <= 1) {
+          return F.NIL;
+        }
+
+        // 2. Initialize target roots for the outermost polynomial (starts with f(x) = 0)
+        IASTAppendable roots = F.ListAlloc(1);
+        roots.append(F.C0);
+
+        // 3. Process from outer (index 1) to inner (end of list)
+        for (int i = 1; i < decomposed.size(); i++) {
+          IExpr layer = decomposed.get(i);
+          ISymbol dummyY = F.Dummy("y");
+
+          // Sub-in the dummy variable so the solver doesn't collide with the target variable x
+          IExpr layerEq = F.subst(layer, x, dummyY);
+          IASTAppendable nextRoots = F.ListAlloc();
+
+          // For each known root from the previous layer, solve: layerEq == previousRoot
+          for (int j = 1; j < roots.size(); j++) {
+            IExpr targetValue = roots.get(j);
+            IExpr subEquation = F.Equal(layerEq, targetValue);
+
+            // Invoke the internal solver on the reduced-degree/simplified equation layer
+            IExpr solver = numericFlag ? F.Solve(subEquation, F.List(dummyY))
+                : F.Solve(subEquation, F.List(dummyY));
+            IExpr subSolutionsEval = engine.evaluate(solver);
+
+            // Extract the roots from the rules (e.g. {{y -> r1}, {y -> r2}})
+            if (subSolutionsEval.isListOfLists()) {
+              IAST subSolutions = (IAST) subSolutionsEval;
+              for (int k = 1; k < subSolutions.size(); k++) {
+                IAST ruleList = (IAST) subSolutions.get(k);
+                if (ruleList.argSize() >= 1 && ruleList.arg1().isRule()) {
+                  nextRoots.append(ruleList.arg1().second());
+                }
+              }
+            }
+          }
+
+          // If no roots were found at this layer, the equation has no solution on this branch
+          if (nextRoots.isEmpty()) {
+            return F.NIL;
+          }
+          // Push found roots down to act as targets for the next inner layer
+          roots = nextRoots;
+        }
+
+        // 4. Format as a flat list of rules: {x -> r1, x -> r2, ...}
+        // This explicitly matches the return contract expected by solveOneVariableEquation.
+        IASTAppendable finalRules = F.ListAlloc(roots.size());
+        for (int i = 1; i < roots.size(); i++) {
+          finalRules.append(F.Rule(x, roots.get(i)));
+        }
+
+        return QuarticSolver.sortASTArguments(finalRules);
+
+      } finally {
+        engine.decOptimizeExpressionDepth();
+      }
     }
 
     private void appendLinearEquation(ExprAnalyzer exprAnalyzer, IASTAppendable matrix,
@@ -420,9 +512,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
 
     /**
      * Substitute possible dummy {@link Solve#$InverseFunction(IBuiltInSymbol, IExpr)} objects in
-     * the <code>listOfRules</code> with the inverse functions.
+     * the <code>listOfRules</code> with the inverse functions. * @param listOfRules
      * 
-     * @param listOfRules
      * @param engine
      * @return
      */
@@ -483,9 +574,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     /**
      * For all analyzers in <code>analyzerList</code> from position to the last element substitute
      * the variables by the rules in <code>kListOfSolveRules</code> and create a new (sub-)analyzer
-     * list.
+     * list. * @param analyzerList
      * 
-     * @param analyzerList
      * @param analyzerListStartPosition
      * @param substitutionRule
      * @param variablesList
@@ -873,9 +963,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     /**
      * Substitute all (sub-) expressions <code>constantSymbol</code> in <code>expr</code> with
      * <code>numericValue</code>. If the substitution result is no number, the method returns
-     * {@link F#NIL}
+     * {@link F#NIL} * @param expr
      * 
-     * @param expr
      * @param constantSymbol
      * @param numericValue
      * @param lastRuleUsedForVariableElimination
@@ -911,7 +1000,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           termsEqualZeroList = list;
         }
       } catch (JASConversionException e) {
-        LOGGER.debug("Solve.solveEquations() failed", e);
+        // LOGGER.debug("Solve.solveEquations() failed", e);
       }
 
       // rewrite some special expressions
@@ -955,8 +1044,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       for (int i = start; i < termsEqualZeroList.size(); i++) {
         IExpr expr = termsEqualZeroList.get(i);
         if (expr.has(IS_WRONG_SOLVE_EXPRESSION, true)) {
-          LOGGER.log(engine.getLogLevel(), "Solve: the system contains the wrong object: {}",
-              IS_WRONG_SOLVE_EXPRESSION.getWrongExpr());
+          // LOGGER.log(engine.getLogLevel(), "Solve: the system contains the wrong object: {}",
+          // IS_WRONG_SOLVE_EXPRESSION.getWrongExpr());
           throw new NoEvalException();
         }
         exprAnalyzer = new ExprAnalyzer(expr, variables, isGenerateConditions(), engine);
@@ -1007,9 +1096,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     }
 
     /**
-     * Solve a linear equation <code>matrix.x == vector</code>.
+     * Solve a linear equation <code>matrix.x == vector</code>. * @param matrix
      * 
-     * @param matrix
      * @param vector
      * @param variables
      * @param inequationsList a list of inequations; maybe {@link F#NIL}
@@ -1288,11 +1376,11 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         }
         return resultList;
       } catch (LimitException le) {
-        LOGGER.debug("Solve.solveTimesEquationsRecursively() failed", le);
+        // LOGGER.debug("Solve.solveTimesEquationsRecursively() failed", le);
         throw le;
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        LOGGER.debug("Solve.solveTimesEquationsRecursively() failed", rex);
+        // LOGGER.debug("Solve.solveTimesEquationsRecursively() failed", rex);
         if (Config.SHOW_STACKTRACE) {
           rex.printStackTrace();
         }
@@ -1303,9 +1391,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     /**
      * After finding a possible solution, the process of cross-checking involves substituting the
      * values of the variables into each equation in the system and checking to see if both sides of
-     * each equation are equal.
+     * each equation are equal. * @param termsEqualZero terms which should be equal to
+     * <code>0</code>
      * 
-     * @param termsEqualZero terms which should be equal to <code>0</code>
      * @param subSolutionSet a set of rules which should solve the terms
      * @param engine
      * @return
@@ -1319,9 +1407,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     /**
      * After finding a possible solution, the process of cross-checking involves substituting the
      * values of the variables into each equation in the system and checking to see if both sides of
-     * each equation are equal.
+     * each equation are equal. * @param termsEqualZero terms which should be equal to
+     * <code>0</code>
      * 
-     * @param termsEqualZero terms which should be equal to <code>0</code>
      * @param engine
      * @param result list of result values which should be cross checked
      * @return
@@ -1382,9 +1470,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
     /**
      * Analyze the <code>Time(..., ...)</code> expression in the given list of equations. If the
      * expression is of the form <code>Times(..., ...) == 0</code>, set each factor equal to
-     * <code>0</code> and solve the resulting equations recursively.
+     * <code>0</code> and solve the resulting equations recursively. * @param times the
+     * <code>Times(..., ...)</code> expression
      * 
-     * @param times the <code>Times(..., ...)</code> expression
      * @param termsEqualZeroList the list of expressions, which should equal <code>0</code>
      * @param inequationsList a list of inequality constraints
      * @param numericFlag if <code>true</code>, try to find a numeric solution
@@ -1556,10 +1644,10 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       } catch (ValidateException ve) {
         return Errors.printMessage(S.Solve, ve, engine);
       } catch (LimitException e) {
-        LOGGER.log(engine.getLogLevel(), S.Solve, e);
+        // LOGGER.log(engine.getLogLevel(), S.Solve, e);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        LOGGER.debug("Solve.of() failed() failed", rex);
+        // LOGGER.debug("Solve.of() failed() failed", rex);
       }
       return F.NIL;
     }
@@ -1709,7 +1797,6 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           }
         } else {
           // call cream solver
-          LOGGER.debug("Cream solver");
           CreamConvert converter = new CreamConvert();
           IAST resultList = converter.integerSolve(equationsAndInequations, equationVariables,
               userDefinedVariables, maximumNumberOfResults, engine);
@@ -1719,11 +1806,9 @@ public class Solve extends AbstractFunctionOptionEvaluator {
           }
         }
       } catch (LimitException le) {
-        LOGGER.debug("Solve.of() failed", le);
         throw le;
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        LOGGER.log(engine.getLogLevel(), "Integers solution not found", rex);
         return F.NIL;
       }
     }

@@ -70,8 +70,6 @@ import edu.jas.ufd.GreatestCommonDivisorAbstract;
 
 public class PolynomialFunctions {
 
-  // public static final Logger LOGGER = LogManager.getLogger(PolynomialFunctions.class);
-
   /**
    *
    *
@@ -1272,13 +1270,13 @@ public class PolynomialFunctions {
           IASTAppendable rules = F.mapList(result, (arg, i) -> F.Rule(vars[i - 1], arg));
           switch ((int) n) {
             case 2:
-              return QUADRATIC.replaceAll(rules);
+              return F.subst(QUADRATIC, rules);
             case 3:
-              return CUBIC.replaceAll(rules);
+              return F.subst(CUBIC, rules);
             case 4:
-              return QUARTIC.replaceAll(rules);
+              return F.subst(QUARTIC, rules);
             case 5:
-              return QUINTIC.replaceAll(rules);
+              return F.subst(QUINTIC, rules);
           }
         }
         IExpr fN = poly.leadingBaseCoefficient(); // coefficient(n);
@@ -2266,26 +2264,10 @@ public class PolynomialFunctions {
       final IExpr arg2 = ast.arg2();
       if (F.isPresent(degree)) {
         degree = degree < 0 ? -degree - 1 : degree;
-
         if (argSize == 4) {
           IExpr arg3 = ast.arg3();
           IExpr z = ast.arg4();
-          if (ast.arg3().isOne()) {
-            return legendreP(ast.arg1(), arg2, z, 1, engine);
-          }
-          if (ast.arg3().isNumEqualInteger(F.C2)) {
-            return legendreP(ast.arg1(), arg2, z, 2, engine);
-          }
-          if (ast.arg3().isNumEqualInteger(F.C3)) {
-            // TODO
-            // return legendreP(ast.arg1(), arg2, z, 3, engine);
-            return F.NIL;
-          }
-          if (arg3.isNumber()) {
-            // Legendre type `1` is expected to be 1, 2, 3.
-            return Errors.printMessage(S.LegendreP, "ltype", F.List());
-          }
-          return F.NIL;
+          return legendreP4(arg1, arg2, arg3, z, engine);
         }
         if (argSize == 2) {
           return legendreP(degree, arg2);
@@ -2294,6 +2276,23 @@ public class PolynomialFunctions {
           IExpr arg3 = ast.arg3();
           return legendreP(arg1, arg2, arg3, 1, engine);
         }
+      }
+      return F.NIL;
+    }
+
+    private IExpr legendreP4(IExpr arg1, final IExpr arg2, IExpr arg3, IExpr z, EvalEngine engine) {
+      if (arg3.isOne()) {
+        return legendreP(arg1, arg2, z, 1, engine);
+      }
+      if (arg3.isNumEqualInteger(F.C2)) {
+        return legendreP(arg1, arg2, z, 2, engine);
+      }
+      if (arg3.isNumEqualInteger(F.C3)) {
+        return legendreP(arg1, arg2, z, 3, engine);
+      }
+      if (arg3.isNumber()) {
+        // Legendre type `1` is expected to be 1, 2, 3.
+        return Errors.printMessage(S.LegendreP, "ltype", F.List());
       }
       return F.NIL;
     }
@@ -2408,10 +2407,11 @@ public class PolynomialFunctions {
         int mi = m.toIntDefault();
         if (F.isPresent(mi) && mi >= 0) {
           if (mi == 0) {
-            return legendreQ(ni, z);
+            return legendreQ(ni, z, type);
           }
           ISymbol dummyZ = F.Dummy("$z");
-          IExpr legendreQ = engine.evaluate(legendreQ(ni, dummyZ));
+          // Pass the type down to ensure the correct Log terms are differentiated
+          IExpr legendreQ = engine.evaluate(legendreQ(ni, dummyZ, type));
           IInteger mAbs = F.ZZ(mi);
           IExpr diff = engine.evaluate(F.D(legendreQ, F.list(dummyZ, mAbs)));
           IExpr typeFactor = getTypeFactor(type, mi, dummyZ, engine);
@@ -2426,11 +2426,26 @@ public class PolynomialFunctions {
     /**
      * Legendre function of the 2nd kind for integer n and m==0 (Christoffels 2nd formula für m==0)
      */
+    /**
+     * Legendre function of the 2nd kind for integer n and m==0 (Christoffels 2nd formula für m==0)
+     */
     private static IExpr legendreQ(int ni, IExpr z) {
+      // Default to Type 2 if not specified to preserve backward compatibility for 2-arg calls
+      return legendreQ(ni, z, 2);
+    }
+
+    private static IExpr legendreQ(int ni, IExpr z, int type) {
+      IExpr logTerm;
+      if (type == 3) {
+        // Type 3: Log(z+1) - Log(z-1)
+        logTerm = F.Subtract(F.Log(F.Plus(F.C1, z)), F.Log(F.Plus(F.CN1, z)));
+      } else {
+        // Type 2: Log(1+z) - Log(1-z)
+        logTerm = F.Subtract(F.Log(F.Plus(F.C1, z)), F.Log(F.Subtract(F.C1, z)));
+      }
+
       if (ni == 0) {
-        // -Log(1-z)/2+Log(1+z)/2
-        return F.Plus(F.Times(F.CN1D2, F.Log(F.Subtract(F.C1, z))),
-            F.Times(F.C1D2, F.Log(F.Plus(F.C1, z))));
+        return F.Times(F.C1D2, logTerm);
       }
 
       // 1/2*(-Log(1-z)+Log(1+z))*LegendreP(n,z)-Sum((-1-4*k+2*n)/((2*k+1)*(-k+n))*LegendreP(-
@@ -2441,9 +2456,7 @@ public class PolynomialFunctions {
       IExpr w = F.sum(k -> F.Times(F.Plus(F.CN1, F.Times(F.CN4, k), F.Times(F.C2, n)),
           F.Power(F.Times(F.Plus(F.Times(F.C2, k), F.C1), F.Plus(F.Negate(k), n)), F.CN1),
           F.LegendreP(F.Plus(F.CN1, F.Times(F.CN2, k), n), z)), 0, sumNi);
-      return F.Subtract(F.Times(F.C1D2,
-          F.Plus(F.Negate(F.Log(F.Subtract(F.C1, z))), F.Log(F.Plus(F.C1, z))), F.LegendreP(n, z)),
-          w);
+      return F.Subtract(F.Times(F.C1D2, logTerm, F.LegendreP(n, z)), w);
     }
 
     @Override
@@ -2521,25 +2534,27 @@ public class PolynomialFunctions {
         IExpr m = ast.arg2();
         IExpr arg3 = ast.arg3();
         IExpr z = ast.arg4();
-        int ni = n.toIntDefault();
-        if (ni >= 0) {
-          if (ast.arg3().isOne()) {
-            return legendreQ(n, m, z, 1, engine);
-          }
-          if (ast.arg3().isNumEqualInteger(F.C2)) {
-            return legendreQ(n, m, z, 2, engine);
-          }
-          if (ast.arg3().isNumEqualInteger(F.C3)) {
-            // TODO
-            // return legendreQ(n, m, z, 3, engine);
-            return F.NIL;
-          }
-          if (arg3.isNumber()) {
-            // Legendre type `1` is expected to be 1, 2, 3.
-            return Errors.printMessage(S.LegendreQ, "ltype", F.List());
-          }
+        return legendreQ4(n, m, arg3, z, engine);
+      }
+      return F.NIL;
+    }
+
+    private IExpr legendreQ4(IExpr n, IExpr m, IExpr arg3, IExpr z, EvalEngine engine) {
+      int ni = n.toIntDefault();
+      if (ni >= 0) {
+        if (arg3.isOne()) {
+          return legendreQ(n, m, z, 1, engine);
         }
-        return F.NIL;
+        if (arg3.isNumEqualInteger(F.C2)) {
+          return legendreQ(n, m, z, 2, engine);
+        }
+        // if (arg3.isNumEqualInteger(F.C3)) {
+        // return legendreQ(n, m, z, 3, engine);
+        // }
+        if (arg3.isNumber()) {
+          // Legendre type `1` is expected to be 1, 2, 3.
+          return Errors.printMessage(S.LegendreQ, "ltype", F.List());
+        }
       }
       return F.NIL;
     }
@@ -2565,12 +2580,18 @@ public class PolynomialFunctions {
             F.CN1, F.Power(F.Pi, F.QQ(3L, 2L)), F.Power(F.Times(l,
                 F.Gamma(F.Plus(F.C1D2, F.Times(F.CN1D2, l))), F.Gamma(F.Times(F.C1D2, l))), F.CN1),
             F.Tan(F.Times(F.C1D2, l, F.Pi)));
-
       }
 
       if (argSize == 3) {
         IExpr l = ast.arg1();
         IExpr m = ast.arg2();
+
+        // The analytical expansion uses Csc(m*Pi) and Cot(m*Pi), which are ComplexInfinity for
+        // integer m.
+        if (m.isInteger()) {
+          return F.NIL;
+        }
+
         IExpr z = ast.arg3();
         // (-Pi*Csc(m*Pi)*Gamma(1+l+m)*LegendreP(l,-m,z))/(2*Gamma(1+l-m))+1/2*Pi*Cot(m*Pi)*LegendreP(l,m,z)
         return F.Plus(
@@ -2578,7 +2599,33 @@ public class PolynomialFunctions {
                 F.Power(F.Times(F.C2, F.Gamma(F.Plus(F.C1, l, F.Negate(m)))), F.CN1),
                 F.Gamma(F.Plus(F.C1, l, m)), F.LegendreP(l, F.Negate(m), z)),
             F.Times(F.C1D2, F.Pi, F.Cot(F.Times(m, F.Pi)), F.LegendreP(l, m, z)));
+      }
 
+      if (argSize == 4) {
+        IExpr l = ast.arg1();
+        IExpr m = ast.arg2();
+        IExpr t = ast.arg3();
+        IExpr z = ast.arg4();
+        if (t.isNumEqualInteger(F.C3)) {
+          return legendreQ(l, m, z, 3, engine);
+        }
+        // The analytical expansion uses Csc(m*Pi), which is ComplexInfinity for integer m.
+        // if (m.isInteger()) {
+        // return F.NIL;
+        // }
+        //
+        // IExpr t = ast.arg3();
+        // IExpr z = ast.arg4();
+        //
+        // if (t.isNumEqualInteger(F.C3)) {
+        // // 1/2 * E^(I*m*Pi) * Pi * Csc(m*Pi) * (LegendreP(l, m, 3, z) - (Gamma(1+l+m) *
+        // // LegendreP(l, -m, 3, z)) / Gamma(1+l-m))
+        // return F.Times(F.C1D2, F.Exp(F.Times(F.CI, m, F.Pi)), F.Pi, F.Csc(F.Times(m, F.Pi)),
+        // F.Subtract(F.LegendreP(l, m, F.C3, z),
+        // F.Times(F.Gamma(F.Plus(F.C1, l, m)),
+        // F.Power(F.Gamma(F.Plus(F.C1, l, F.Negate(m))), F.CN1),
+        // F.LegendreP(l, F.Negate(m), F.C3, z))));
+        // }
       }
       return F.NIL;
     }
@@ -3348,6 +3395,15 @@ public class PolynomialFunctions {
    * @param engine the evaluation engine
    * @return the type factor
    */
+  /**
+   * Get the type factor for the associated Legendre polynomial.
+   *
+   * @param type the type (1, 2, or 3)
+   * @param m the absolute value of m
+   * @param z the variable
+   * @param engine the evaluation engine
+   * @return the type factor
+   */
   private static IExpr getTypeFactor(int type, int m, ISymbol z, EvalEngine engine) {
     IAST oneMinusSqrZ = F.Subtract(F.C1, F.Sqr(z));
     IAST onePlusZ = F.Plus(F.C1, z);
@@ -3363,8 +3419,10 @@ public class PolynomialFunctions {
         break;
       case 3:
         IAST minusOnePlusZ = F.Plus(F.CN1, z);
+        // Type 3 incorporates (1-z)^m to match the branch cut definition
         typeFactor = engine.evaluate( //
-            F.Times(F.Power(onePlusZ, mHalf), //
+            F.Times(F.Power(oneSubtractZ, F.ZZ(m)), //
+                F.Power(onePlusZ, mHalf), //
                 F.Power(minusOnePlusZ, mimusMHalf))//
         );
         break;
