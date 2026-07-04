@@ -1,8 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.eval.Errors;
@@ -16,7 +13,6 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -140,9 +136,9 @@ public class Product extends ListFunctions.Table implements ProductRules {
     if (preevaledProduct.size() > 2) {
       final IExpr lastArg = preevaledProduct.last();
       final IAST list = lastArg.makeList();
+
       if (list.isAST1()) {
         // indefinite product case
-
         IExpr variable = list.arg1();
         if (variable.isVariable()) {
           IExpr arg = preevaledProduct.arg1();
@@ -163,15 +159,18 @@ public class Product extends ListFunctions.Table implements ProductRules {
           lastList = F.List(list.arg1(), F.C1, list.arg2());
           productForm = productForm.setAtCopy(productForm.argSize(), lastList);
         }
-        if (preevaledProduct.argSize() > 2) {
-          IAST reducedProductForm = F.Product(preevaledProduct.arg1(), lastList);
-          IExpr reducedResult = matcher1().apply(reducedProductForm);
-          if (reducedResult.isPresent()) {
-            IASTMutable result = productForm.removeAtCopy(productForm.argSize());
+
+        if (productForm.argSize() > 2) {
+          // Multiple iterators: Evaluate the innermost product recursively.
+          IAST reducedProductForm = F.Product(productForm.arg1(), lastList);
+          IExpr reducedResult = engine.evaluate(reducedProductForm);
+          if (reducedResult.isPresent() && !reducedResult.equals(reducedProductForm)) {
+            IASTAppendable result = productForm.removeAtClone(productForm.argSize());
             result.set(1, reducedResult);
             return result;
           }
         } else {
+          // Single iterator: apply pattern matcher rules if any
           IExpr result = matcher1().apply(productForm);
           if (result.isPresent()) {
             return result;
@@ -179,6 +178,65 @@ public class Product extends ListFunctions.Table implements ProductRules {
         }
       }
 
+      IExpr argN = lastArg;
+      IIterator<IExpr> iterator = null;
+
+      // === 1. SYMBOLIC REDUCTION INTERCEPT ===
+      // Executed before evaluateTableThrow to prevent dummy variable shadowing
+      // when limits contain the iterator variable symbolically.
+      if (preevaledProduct.size() >= 3 && argN.isList()) {
+        if (arg1.isZero()) {
+          return F.C0;
+        }
+
+        try {
+          iterator = Iterator.create((IAST) argN, preevaledProduct.argSize(), engine);
+        } catch (final ValidateException ve) {
+          return Errors.printMessage(S.Product, ve, engine);
+        }
+
+        if (iterator != null && iterator.isValidVariable()) {
+          if (iterator.getUpperLimit().isInfinity()) {
+            if (arg1.isOne()) {
+              return F.C1;
+            }
+            if (arg1.isPositiveResult() && arg1.isIntegerResult()) {
+              return F.CInfinity;
+            }
+          }
+
+          if (!iterator.isNumericFunction() && iterator.getStep().isOne()) {
+            final ISymbol var = iterator.getVariable();
+            final IExpr from = iterator.getLowerLimit();
+            final IExpr to = iterator.getUpperLimit();
+
+            // Divert to the Hypergeometric Symbolic Product Engine
+            IExpr symProd = tryClosedFormReduction(arg1, var, from, to, engine);
+            if (symProd.isPresent()) {
+              if (preevaledProduct.isAST2()) {
+                return symProd;
+              }
+              IASTAppendable result = preevaledProduct.removeAtClone(preevaledProduct.argSize());
+              result.set(1, symProd);
+              return result;
+            }
+
+            // Universal evaluation for terms free of the iterator
+            if (arg1.isFree(var)) {
+              IExpr count = engine.evaluate(F.Simplify(F.Plus(F.Subtract(to, from), F.C1)));
+              IExpr evalPower = F.Power(arg1, count);
+              if (preevaledProduct.isAST2()) {
+                return engine.evaluate(evalPower);
+              }
+              IASTAppendable result = preevaledProduct.removeAtClone(preevaledProduct.argSize());
+              result.set(1, engine.evaluate(evalPower));
+              return result;
+            }
+          }
+        }
+      }
+
+      // === 2. NUMERICAL UNROLLING FALLBACK ===
       try {
         IExpr temp = evaluateTableThrow(preevaledProduct, Times(), Times(), engine);
         if (temp.isPresent()) {
@@ -186,118 +244,19 @@ public class Product extends ListFunctions.Table implements ProductRules {
         }
       } catch (final ValidateException ve) {
         return Errors.printMessage(S.Product, ve, engine);
+      } catch (RecursionLimitExceeded rle) {
+        int recursionLimit = engine.getRecursionLimit();
+        Errors.printMessage(S.Product, "reclim2",
+            F.list(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), preevaledProduct),
+            engine);
+        return F.NIL;
       }
-      if (arg1.isPower()) {
-        IExpr exponent = arg1.exponent();
-        boolean flag = true;
-        // Prod( i^a, {i,from,to},... )
-        for (int i = 2; i < preevaledProduct.size(); i++) {
-          IIterator<IExpr> iterator;
-          if (preevaledProduct.get(i).isList()) {
-            iterator = Iterator.create((IAST) preevaledProduct.get(i), i, engine);
-          } else {
-            iterator = Iterator.create(F.list(preevaledProduct.get(i)), i, engine);
-          }
-          if (iterator.isValidVariable() && exponent.isFree(iterator.getVariable())) {
-            continue;
-          }
-          flag = false;
-          break;
-        }
-        if (flag) {
-          IASTMutable prod = preevaledProduct.copy();
-          prod.set(1, arg1.base());
-          return F.Power(prod, exponent);
-        }
-      }
-      IExpr argN = lastArg;
-      if (preevaledProduct.size() >= 3 && argN.isList()) {
+
+      // === 3. FINAL MANUAL LOOP EVALUATION ===
+      if (iterator != null) {
         try {
-          if (arg1.isZero()) {
-            // Product(0, {k, n, m})
-            return F.C0;
-          }
-          IIterator<IExpr> iterator =
-              Iterator.create((IAST) argN, preevaledProduct.argSize(), engine);
-          if (iterator.isValidVariable() && iterator.getUpperLimit().isInfinity()) {
-            if (arg1.isOne()) {
-              // Product(1, {k, a, Infinity})
-              return F.C1;
-            }
-            if (arg1.isPositiveResult() && arg1.isIntegerResult()) {
-              // Product(n, {k, a, Infinity}) ;n is positive integer
-              return F.CInfinity;
-            }
-          }
-          if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
-            if (iterator.getStep().isOne()) {
-              final ISymbol var = iterator.getVariable();
-              final IExpr from = iterator.getLowerLimit();
-              final IExpr to = iterator.getUpperLimit();
-
-              // Divert to the Hypergeometric Symbolic Product Engine
-              IExpr symProd = tryClosedFormReduction(arg1, var, from, to, engine);
-              if (symProd.isPresent()) {
-                if (preevaledProduct.isAST2()) {
-                  return symProd;
-                }
-                IASTAppendable result = preevaledProduct.removeAtClone(preevaledProduct.argSize());
-                result.set(1, symProd);
-                return result;
-              }
-              if (arg1.isPower()) {
-                IExpr base = arg1.base();
-                if (base.isFree(var)) {
-                  if (iterator.getLowerLimit().isOne()) {
-                    IExpr exponent = arg1.exponent();
-                    if (exponent.equals(var)) {
-                      // Prod( a^i, ..., {i,from,to} )
-                      if (preevaledProduct.isAST2()) {
-                        return F.Power(base, Times(C1D2, to, Plus(C1, to)));
-                      }
-                      IASTAppendable result =
-                          preevaledProduct.removeAtClone(preevaledProduct.argSize());
-                      // result.remove(ast.argSize());
-                      result.set(1, F.Power(base, Times(C1D2, to, Plus(C1, to))));
-                      return result;
-                    }
-                  }
-                }
-              }
-
-              if (arg1.isFree(var)) {
-
-                if (preevaledProduct.isAST2()) {
-                  if (from.isOne()) {
-                    return F.Power(preevaledProduct.arg1(), to);
-                  }
-                  if (from.isZero()) {
-                    return F.Power(preevaledProduct.arg1(), Plus(to, C1));
-                  }
-                  if (from.isSymbol()) {
-                    // 2^(1-from+to)
-                    return F.Power(arg1, F.Plus(F.C1, from.negate(), to));
-                  }
-                } else {
-                  IASTAppendable result =
-                      preevaledProduct.removeAtClone(preevaledProduct.argSize());
-                  // result.remove(ast.argSize());
-                  if (from.isOne()) {
-                    result.set(1, F.Power(preevaledProduct.arg1(), to));
-                    return result;
-                  }
-                  if (from.isZero()) {
-                    result.set(1, F.Power(preevaledProduct.arg1(), Plus(to, C1)));
-                    return result;
-                  }
-                  if (from.isSymbol()) {
-                    // 2^(1-from+to)
-                    result.set(1, F.Power(arg1, F.Plus(F.C1, from.negate(), to)));
-                    return result;
-                  }
-                }
-              }
-            }
+          if (preevaledProduct.argSize() > 2) {
+            return F.NIL;
           }
           IAST resultList = Times();
           IExpr temp = evaluateLast(preevaledProduct.arg1(), iterator, resultList, F.C1);
@@ -308,29 +267,21 @@ public class Product extends ListFunctions.Table implements ProductRules {
         } catch (final ValidateException ve) {
           return Errors.printMessage(S.Product, ve, engine);
         } catch (RecursionLimitExceeded rle) {
-          // Recursion depth of `1` exceeded during evaluation of `2`.
           int recursionLimit = engine.getRecursionLimit();
           Errors.printMessage(S.Product, "reclim2",
               F.list(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), preevaledProduct),
               engine);
           return F.NIL;
         }
-        // if (preevaledProduct.isAST2()) {
-        // return F.NIL;
-        // } else {
-        // IASTAppendable result = preevaledProduct.removeAtClone(preevaledProduct.argSize());
-        // result.set(1, temp);
-        // return result;
-        // }
       }
     }
     return F.NIL;
   }
 
   /**
-   * Hypergeometric Term Recognition (Pochhammer Mapping & Exponential Products)
+   * Hypergeometric Term Recognition (Pochhammer Mapping & Exponential Products) * @param pK the
+   * product term with iterator k (e.g. k^2 + 3k + 2 or 2^k)
    * 
-   * @param pK the product term with iterator k (e.g. k^2 + 3k + 2 or 2^k)
    * @param k the iterator variable
    * @param lower the lower bound of the product
    * @param upper the upper bound of the product
@@ -344,14 +295,21 @@ public class Product extends ListFunctions.Table implements ProductRules {
       return engine.evaluate(F.Power(pK, count));
     }
 
-    // 1. Intercept Exponential Products -> Product(base^expr) = base^Sum(expr)
+    // 1. Intercept Exponential Products & Constant Powers
     if (pK.isPower()) {
       IExpr base = pK.base();
       IExpr exponent = pK.exponent();
       if (!exponent.isFree(k)) {
+        // Exponential product: base^f(k) -> base^Sum(f(k))
         IExpr sum = engine.evaluate(F.Sum(exponent, F.List(k, lower, upper)));
         if (sum.isPresent() && !sum.isAST(S.Sum)) {
           return engine.evaluate(F.Power(base, sum));
+        }
+      } else {
+        // Constant power: f(k)^p -> Product(f(k))^p
+        IExpr baseProd = tryClosedFormReduction(base, k, lower, upper, engine);
+        if (baseProd.isPresent()) {
+          return engine.evaluate(F.Power(baseProd, exponent));
         }
       }
     }
@@ -380,18 +338,34 @@ public class Product extends ListFunctions.Table implements ProductRules {
       IExpr count = engine.evaluate(F.Simplify(F.Plus(F.Subtract(upper, lower), F.C1)));
       IExpr startVal = engine.evaluate(F.Simplify(F.Plus(lower, root)));
 
+      // If the very first term in the sequence evaluates to 0, the entire product is trivially 0.
+      if (startVal.isZero()) {
+        return F.C0;
+      }
+
       IExpr poch;
-      if (startVal.isInteger() && startVal.greaterThan(F.C0).isTrue()) {
+      if (startVal.isOne()) {
+        // Pochhammer(1, count) is strictly Factorial(count)
+        poch = F.Factorial(count);
+      } else if (startVal.isInteger() && startVal.greaterThan(F.C0).isTrue()) {
         IExpr m = startVal;
-        IExpr num = F.Pochhammer(F.C1, F.Subtract(F.Plus(count, m), F.C1));
-        IExpr den = engine.evaluate(F.Pochhammer(F.C1, F.Subtract(m, F.C1)));
+        // Pochhammer(m, count) mapped to (count + m - 1)! / (m - 1)!
+        IExpr num = F.Factorial(F.Subtract(F.Plus(count, m), F.C1));
+        IExpr den = engine.evaluate(F.Factorial(F.Subtract(m, F.C1)));
+        poch = engine.evaluate(F.Divide(num, den));
+      } else if (startVal.isNumber() && !startVal.isInteger()) {
+        // Return Gamma ratio for numeric fractional or complex shifts
+        IExpr num = F.Gamma(F.Plus(startVal, count));
+        IExpr den = F.Gamma(startVal);
         poch = engine.evaluate(F.Divide(num, den));
       } else {
+        // Keep Pochhammer for symbolic shift or non-positive integers
         poch = F.Pochhammer(startVal, count);
       }
 
-      if (A.isOne())
+      if (A.isOne()) {
         return poch;
+      }
       return engine.evaluate(F.Times(F.Power(A, count), poch));
     }
 
