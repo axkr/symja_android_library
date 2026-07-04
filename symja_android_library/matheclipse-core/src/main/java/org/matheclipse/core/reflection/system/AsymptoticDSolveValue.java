@@ -34,7 +34,7 @@ public class AsymptoticDSolveValue extends AbstractFunctionOptionEvaluator {
       IAST originalAST) {
 
     // 1. Parse arguments and series specification
-    IAST eqns = ast.arg1().isList() ? (IAST) ast.arg1() : F.List(ast.arg1());
+    IAST eqns = ast.arg1().makeList();
     IExpr yFunc = ast.arg2();
 
     if (!yFunc.isAST1()) {

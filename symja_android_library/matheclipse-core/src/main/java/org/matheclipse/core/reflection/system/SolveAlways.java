@@ -1,7 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -20,7 +18,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class SolveAlways extends AbstractFunctionOptionEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger(SolveAlways.class);
 
   public SolveAlways() {}
 
@@ -98,9 +95,8 @@ public class SolveAlways extends AbstractFunctionOptionEvaluator {
     } catch (ValidateException ve) {
       return Errors.printMessage(ast.topHead(), ve, engine);
     } catch (RuntimeException rex) {
-      LOGGER.debug("SolveAlways.evaluate() failed", rex);
+      return Errors.printMessage(ast.topHead(), rex, engine);
     }
-    return F.NIL;
   }
 
   /**

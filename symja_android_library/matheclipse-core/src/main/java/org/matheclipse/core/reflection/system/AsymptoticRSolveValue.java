@@ -34,7 +34,7 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
       IAST originalAST) {
 
     // 1. Parse arguments and series specification
-    IAST eqns = ast.arg1().isList() ? (IAST) ast.arg1() : F.List(ast.arg1());
+    IAST eqns = ast.arg1().makeList();
     IExpr yFunc = ast.arg2();
 
     // Check if the target is a valid single function application (e.g. a(n))
@@ -131,7 +131,7 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
               && normalPoly.isSpecialsFree()) {
             // Collect arbitrary constants to match canonical grouping: (1+2/n+...)*C(1)
             IExpr cPattern = F.unaryAST1(S.C, F.$b());
-            return S.Collect.of(engine, normalPoly, cPattern);
+            return S.Collect.funEval(engine, normalPoly, cPattern);
           }
         }
       }

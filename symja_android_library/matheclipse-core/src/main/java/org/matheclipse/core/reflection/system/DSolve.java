@@ -2201,7 +2201,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 
         if (temp.isPresent()) {
           // Wrap in a list if it's a single root to uniformize processing
-          IAST roots = temp.isList() ? (IAST) temp : F.list(temp);
+          IAST roots = temp.makeList();
           IASTAppendable resultList = F.ListAlloc();
 
           for (int r = 1; r <= roots.argSize(); r++) {

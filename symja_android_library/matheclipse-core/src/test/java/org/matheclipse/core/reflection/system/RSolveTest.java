@@ -144,12 +144,14 @@ public class RSolveTest {
     // The symbolic product evaluator should intercept (K + 1/2) and map it
     // strictly to the ratio of Gamma functions: Gamma(n + 1/2) / Gamma(1/2).
     check("RSolve(a(n+1) == (n + 1/2)*a(n), a(n), n)", //
-        "{{a(n)->C(1)*Pochhammer(3/2,-1+n)}}");
+        // "{{a(n)->C(1)*Pochhammer(3/2,-1+n)}}");
+        "{{a(n)->C(1)*Gamma(1/2+n)}}");
 
     // a(n+1) == 3*(n + 2) * a(n)
     // Tests A != 1 scaling factor: A^n * Gamma(...)
     check("RSolve(a(n+1) == 3*(n + 2)*a(n), a(n), n)", //
-        "{{a(n)->3^(1+n)*C(1)*Pochhammer(1,1+n)}}");
+        // "{{a(n)->3^(1+n)*C(1)*Pochhammer(1,1+n)}}");
+        "{{a(n)->(C(1)*(1+n)!)/(2*3^(1-n))}}");
   }
 
   // Systems of Recurrence Equations
@@ -254,10 +256,12 @@ public class RSolveTest {
 
     // Verifies fractional Pochhammer index mapping and fraction absorption
     check("RSolve(a(n+1) == 3*(n + 2)*a(n), a(n), n)", //
-        "{{a(n)->3^(1+n)*C(1)*Pochhammer(1,1+n)}}");
+        // "{{a(n)->3^(1+n)*C(1)*Pochhammer(1,1+n)}}");
+        "{{a(n)->(C(1)*(1+n)!)/(2*3^(1-n))}}");
 
     check("RSolve(a(n+1) == (n + 1/2)*a(n), a(n), n)", //
-        "{{a(n)->C(1)*Pochhammer(3/2,-1+n)}}");
+        // "{{a(n)->C(1)*Pochhammer(3/2,-1+n)}}");
+        "{{a(n)->C(1)*Gamma(1/2+n)}}");
   }
 
   @Test

@@ -32,11 +32,11 @@ public class AsymptoticSolve extends AbstractFunctionOptionEvaluator {
   public IExpr evaluate(IAST ast, int argSize, IExpr[] options, EvalEngine engine,
       IAST originalAST) {
 
-    // 1. Parse equations
-    IAST eqns = ast.arg1().isList() ? (IAST) ast.arg1() : F.List(ast.arg1());
+    // Parse equations
+    IAST eqns = ast.arg1().makeList();
 
-    // 2. Parse target variables and optional base points (y -> b)
-    IAST yList = ast.arg2().isList() ? (IAST) ast.arg2() : F.List(ast.arg2());
+    // Parse target variables and optional base points (y -> b)
+    IAST yList = ast.arg2().makeList();
     IASTAppendable yVars = F.ListAlloc(yList.argSize());
     IASTAppendable yBases = F.ListAlloc(yList.argSize());
 
@@ -50,13 +50,13 @@ public class AsymptoticSolve extends AbstractFunctionOptionEvaluator {
       }
     }
 
-    // 3. Parse domain specification (e.g. Reals)
+    // Parse domain specification (e.g. Reals)
     IExpr domain = S.Complexes;
     if (argSize >= 4 && ast.arg4().isSymbol()) {
       domain = ast.arg4();
     }
 
-    // 4. Parse expansion points and series order
+    // Parse expansion points and series order
     IASTAppendable xSpecs = F.ListAlloc();
     int order = 3; // Default SeriesTermGoal fallback if not supplied
     if (options != null && options.length > 5 && options[5].isInteger()) {
