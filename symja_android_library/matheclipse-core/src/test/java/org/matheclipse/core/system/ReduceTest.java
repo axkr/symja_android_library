@@ -110,8 +110,10 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "x==1");
     check("Reduce(x^6-1==0&&x>0,x)", //
         "x==1");
-    // check("Reduce(x^6-1==0,x,Reals)", //
-    // "x==-1||x==1");
+    check("Reduce(x^6-1==0,x,Reals)", //
+        "x==-1||x==1");
+    check("Reduce(x^6-1==0,x,Complexes)", //
+        "x==-1||x==1||x==-(-1)^(1/3)||x==(-1)^(1/3)||x==-(-1)^(2/3)||x==(-1)^(2/3)");
     check("Reduce(x==1&&x>0,x)", //
         "x==1");
 
@@ -160,6 +162,70 @@ public class ReduceTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testReduceIntegersEquation() {
+    check("Reduce(x^2 == 4, x, Integers)", //
+        "x==-2||x==2");
+    // no integer root
+    check("Reduce(x^2 == 3, x, Integers)", //
+        "False");
+    // equation combined with an inequality constraint
+    check("Reduce(x^2 == 4 && x > 0, x, Integers)", //
+        "x==2");
+  }
+
+  @Test
+  public void testReduceIntegersInterval() {
+    check("Reduce(x > 0 && x < 4, x, Integers)", //
+        "x==1||x==2||x==3");
+  }
+
+  @Test
+  public void testReducePrimes() {
+    check("Reduce(x > 1 && x < 10, x, Primes)", //
+        "x==2||x==3||x==5||x==7");
+  }
+
+  @Test
+  public void testReduceLinearDiophantine() {
+    check("Reduce(2*x + 3*y == 1, {x, y}, Integers)", //
+        "C(1)∈Integers&&x==-1+3*C(1)&&y==1-2*C(1)");
+  }
+
+  @Test
+  public void testReduceElementInput() {
+    check("Reduce(x > 0 && x < 4 && Element(x, Integers))", //
+        "x==1||x==2||x==3");
+  }
+
+  @Test
+  public void testReduceBooleans() {
+    check("Reduce(p || ! p, {p}, Booleans)", //
+        "True");
+    check("Reduce(p && ! p, {p}, Booleans)", //
+        "False");
+    check("Reduce(p && q, {p, q}, Booleans)", //
+        "p&&q");
+  }
+
+  @Test
+  public void testReduceForAll() {
+    check("Reduce(ForAll(x, x^2 + 1 > 0))", //
+        "True");
+  }
+
+  @Test
+  public void testReduceExists() {
+    check("Reduce(Exists(x, x^2 == 4))", //
+        "True");
+  }
+
+  @Test
+  public void testReduceMultivariateSystem() {
+    check("Reduce({x + y == 1, x - y == 3}, {x, y})", //
+        "x==2&&y==-1");
+  }
+
+  @Test
   public void testReduceAndOr() {
     check("{a = x > 1 && x < 5, b = x > 5 && x < 8}", //
         "{x>1&&x<5,x>5&&x<8}");
@@ -169,9 +235,15 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     check("{a = x > 1 && x < 5, b = x >= 5 && x < 8}", //
         "{x>1&&x<5,x>=5&&x<8}");
     check("Reduce(a||b)", //
-        "x>1&&x<8");
-
-
-
+        "x>1&&x<8"); 
+  }
+  
+  @Test
+  public void testPeriodicFunctions() {
+    check("Reduce(Sin(a*x)+b==0, x)", //
+        "(a==0&&b==0)||(C(1)∈Integers&&a!=0&&(x==(-ArcSin(b)+2*Pi*C(1))/a||x==(Pi+ArcSin(b)+\n"
+            + "2*Pi*C(1))/a))");
+    check("Reduce(Tan(a*x)+b==0, x)", //
+        "(a==0&&b==0)||(C(1)∈Integers&&a!=0&&x==(-ArcTan(b)+Pi*C(1))/a)");
   }
 }
