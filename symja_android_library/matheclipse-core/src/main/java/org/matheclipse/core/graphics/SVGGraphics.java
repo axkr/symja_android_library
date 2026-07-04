@@ -1456,12 +1456,25 @@ public class SVGGraphics {
           break;
         case ID.GraphicsGroup:
         case ID.Annotation:
-        case ID.Tooltip:
         case ID.Mouseover:
         case ID.StatusArea:
         case ID.Legended:
           if (ast.argSize() >= 1) {
             processElement(ast.arg1(), state, parent);
+          }
+          break;
+        case ID.Tooltip:
+          // Implement active SVG properties tooltip rendering via standard HTML <title>
+          if (ast.argSize() >= 1) {
+            if (ast.argSize() >= 2) {
+              ContainerTag<?> g = tag("g");
+              processElement(ast.arg1(), state, g);
+              String tooltipText = ast.arg2().toString().replace("\"", "");
+              g.with(tag("title").withText(tooltipText));
+              parent.with(g);
+            } else {
+              processElement(ast.arg1(), state, parent);
+            }
           }
           break;
         case ID.Line:
@@ -1570,6 +1583,7 @@ public class SVGGraphics {
       }
     }
   }
+
   private void processStyle(IAST ast, GraphicState state, ContainerTag<?> parent) {
     GraphicState styleState = state.clone();
     for (int i = 2; i <= ast.argSize(); i++) {
@@ -1745,10 +1759,14 @@ public class SVGGraphics {
                 .attr("height", fmt(rectH)).attr("fill", fill).attr("stroke", stroke));
       }
 
-      parent.with(tag("text").attr("x", fmt(sx)).attr("y", fmt(sy))
-          .attr("fill", colorToCss(textState.strokeColor)).attr("font-family", textState.fontFamily)
-          .attr("font-size", fmt(textState.fontSize)).attr("text-anchor", "middle")
-          .attr("transform", String.format(Locale.US, "translate(%.2f, %.2f)", shiftX, shiftY))
+      parent.with(tag("text")//
+          .attr("x", fmt(sx))//
+          .attr("y", fmt(sy))//
+          .attr("fill", colorToCss(textState.strokeColor)) //
+          .attr("fill-opacity", fmt(textState.opacity)) //
+          .attr("font-family", textState.fontFamily).attr("font-size", fmt(textState.fontSize))//
+          .attr("text-anchor", "middle") //
+          .attr("transform", String.format(Locale.US, "translate(%.2f, %.2f)", shiftX, shiftY)) //
           .withText(txt));
     }
   }
