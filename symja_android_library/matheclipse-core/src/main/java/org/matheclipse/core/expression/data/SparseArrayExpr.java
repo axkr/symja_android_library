@@ -2181,6 +2181,11 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
   }
 
   @Override
+  public boolean hasNumericArgument() {
+    return exists(x -> x.isNumericArgument());
+  }
+
+  @Override
   public int hashCode() {
     return (fData == null) ? 541 : 541 + fData.size() + fDefaultValue.hashCode();
   }
@@ -2645,6 +2650,11 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     }
     throw new IndexOutOfBoundsException(
         "Indeces: " + Arrays.toString(positions) + ", Size: " + fDimension[0]);
+  }
+
+  @Override
+  public int argSize() {
+    return fDimension[0];
   }
 
   @Override
