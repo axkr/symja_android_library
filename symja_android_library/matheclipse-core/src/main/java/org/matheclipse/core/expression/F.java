@@ -2355,6 +2355,9 @@ public class F extends S {
     return new AST2(BooleanConvert, a0, a1);
   }
 
+  public static IASTAppendable BooleanFunction(final IExpr a0) {
+    return unary(BooleanFunction, a0);
+  }
   public static IAST BooleanMinimize(final IExpr a) {
     return new AST1(BooleanMinimize, a);
   }
@@ -2726,6 +2729,10 @@ public class F extends S {
 
   public static IAST Circle(final IAST centerPoint, IExpr radius) {
     return new AST2(Circle, centerPoint, radius);
+  }
+
+  public static final IAST Circle(final IExpr arg1, final IExpr arg2, final IExpr arg3) {
+    return new AST3(S.Circle, arg1, arg2, arg3);
   }
 
   public static IAST Clear(final IExpr... a) {
@@ -3195,6 +3202,10 @@ public class F extends S {
     return new AST1(CoordinateBoundingBox, a0);
   }
 
+  public static IAST CoordinateBoundingBox(final IExpr a0, final IExpr a1) {
+    return new AST2(CoordinateBoundingBox, a0, a1);
+  }
+
   public static IAST CoordinateBounds(final IExpr a0) {
     return new AST1(CoordinateBounds, a0);
   }
@@ -3429,6 +3440,10 @@ public class F extends S {
 
   public static IAST DawsonF(final IExpr a0) {
     return new AST1(DawsonF, a0);
+  }
+
+  public static IAST Decompose(final IExpr poly1, final IExpr poly2) {
+    return new AST2(Decompose, poly1, poly2);
   }
 
   public static IAST Decrement(final IExpr a) {
@@ -3969,6 +3984,23 @@ public class F extends S {
   public static IAST Equal(final IExpr... a) {
     return function(Equal, a);
   }
+
+  public static IAST Entity(final IExpr a0, final IExpr a1) {
+    return new AST2(Entity, a0, a1);
+  }
+
+  public static IAST EntityClass(final IExpr n, final IExpr m) {
+    return new AST2(EntityClass, n, m);
+  }
+
+  public static IAST EntityList(final IExpr m) {
+    return new AST1(EntityList, m);
+  }
+
+  public static IAST EntityProperty(final IExpr n, final IExpr m) {
+    return new AST2(EntityProperty, n, m);
+  }
+
 
   /**
    * Yields {@link S#True} if <code>lhs</code> and <code>rhs</code> are known to be equal, or
@@ -6711,6 +6743,10 @@ public class F extends S {
     return new AST3(LegendreP, a0, a1, a2);
   }
 
+  public static IAST LegendreP(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+    return quaternary(LegendreP, a0, a1, a2, a3);
+  }
+
   public static IAST LegendreQ(final IExpr a0, final IExpr a1) {
     return new AST2(LegendreQ, a0, a1);
   }
@@ -6834,6 +6870,10 @@ public class F extends S {
 
   public static IAST LeviCivitaTensor(final IExpr a0, final IExpr a1) {
     return new AST2(LeviCivitaTensor, a0, a1);
+  }
+
+  public static IAST Lighter(final IExpr a0, final IExpr a1) {
+    return new AST2(Lighter, a0, a1);
   }
 
   public static IAST Limit(final IExpr f, final IExpr rule) {
@@ -8996,6 +9036,10 @@ public class F extends S {
     return new AST2(PolynomialGCD, poly1, poly2);
   }
 
+  public static IAST PolynomialMod(final IExpr poly1, final IExpr poly2) {
+    return new AST2(PolynomialMod, poly1, poly2);
+  }
+
   /**
    * Return {@link S#True} if <code>expr</code> is a polynomial for the <code>variable</code>.
    * Return {@link S#False} in all other cases.
@@ -9639,6 +9683,18 @@ public class F extends S {
 
   public static IAST Refine(final IExpr a0, final IExpr a1) {
     return new AST2(Refine, a0, a1);
+  }
+
+  public static IAST RegionMember(final IExpr a0, final IExpr a1) {
+    return new AST2(RegionMember, a0, a1);
+  }
+
+  public static IAST RegionNearest(final IExpr a0, final IExpr a1) {
+    return new AST2(RegionNearest, a0, a1);
+  }
+
+  public static IAST RegionNearestFunction(final IExpr a0) {
+    return new AST1(RegionNearestFunction, a0);
   }
 
   public static IAST RegularExpression(final IExpr a0) {

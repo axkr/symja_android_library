@@ -43,6 +43,33 @@ public class S {
     return BUILT_IN_SYMBOLS[id];
   }
 
+  public final static IBuiltInSymbol AlignmentPoint =
+      S.initFinalSymbol("AlignmentPoint", ID.AlignmentPoint);
+  public final static IBuiltInSymbol BaselinePosition =
+      S.initFinalSymbol("BaselinePosition", ID.BaselinePosition);
+
+  public final static IBuiltInSymbol ContentSelectable =
+      S.initFinalSymbol("ContentSelectable", ID.ContentSelectable);
+  public final static IBuiltInSymbol CoordinatesToolOptions =
+      S.initFinalSymbol("CoordinatesToolOptions", ID.CoordinatesToolOptions);
+  public final static IBuiltInSymbol FormatType = S.initFinalSymbol("FormatType", ID.FormatType);
+  public final static IBuiltInSymbol FrameLabel = S.initFinalSymbol("FrameLabel", ID.FrameLabel);
+  public final static IBuiltInSymbol FrameTicksStyle =
+      S.initFinalSymbol("FrameTicksStyle", ID.FrameTicksStyle);
+  public final static IBuiltInSymbol ImageMargins =
+      S.initFinalSymbol("ImageMargins", ID.ImageMargins);
+  public final static IBuiltInSymbol ImagePadding =
+      S.initFinalSymbol("ImagePadding", ID.ImagePadding);
+  public final static IBuiltInSymbol LabelStyle = S.initFinalSymbol("LabelStyle", ID.LabelStyle);
+
+  public final static IBuiltInSymbol PlotRangeClipping =
+      S.initFinalSymbol("PlotRangeClipping", ID.PlotRangeClipping);
+  public final static IBuiltInSymbol PlotRegion = S.initFinalSymbol("PlotRegion", ID.PlotRegion);
+  public final static IBuiltInSymbol PreserveImageOptions =
+      S.initFinalSymbol("PreserveImageOptions", ID.PreserveImageOptions);
+  public final static IBuiltInSymbol RotateLabel = S.initFinalSymbol("RotateLabel", ID.RotateLabel);
+
+
   public final static IBuiltInSymbol $Aborted = S.initFinalSymbol("$Aborted", ID.$Aborted);
 
   /**
@@ -488,6 +515,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol AnnuityDue = S.initFinalSymbol("AnnuityDue", ID.AnnuityDue);
+
+  public final static IBuiltInSymbol Annulus = S.initFinalSymbol("Annulus", ID.Annulus);
 
   /**
    * AntihermitianMatrixQ(m) - returns `True` if `m` is a anti hermitian matrix.
@@ -1516,6 +1545,9 @@ public class S {
       S.initFinalSymbol("BooleanVariables", ID.BooleanVariables);
 
   public final static IBuiltInSymbol Bottom = S.initFinalSymbol("Bottom", ID.Bottom);
+
+  public final static IBuiltInSymbol BoundingRegion =
+      S.initFinalSymbol("BoundingRegion", ID.BoundingRegion);
 
   public final static IBuiltInSymbol Boxed = S.initFinalSymbol("Boxed", ID.Boxed);
 
@@ -2807,6 +2839,8 @@ public class S {
    */
   public final static IBuiltInSymbol Decrement = S.initFinalSymbol("Decrement", ID.Decrement);
 
+  public final static IBuiltInSymbol Decompose = S.initFinalSymbol("Decompose", ID.Decompose);
+
   /**
    * DedekindNumber(n) - returns the `n`th Dedekind number. Currently `0 <= n <= 9` can be computed,
    * otherwise the function returns unevaluated.
@@ -3072,6 +3106,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol DigitCount = S.initFinalSymbol("DigitCount", ID.DigitCount);
+
+  public final static IBuiltInSymbol DigitSum = S.initFinalSymbol("DigitSum", ID.DigitSum);
 
   /**
    * DigitQ(str) - returns `True` if `str` is a string which contains only digits.
@@ -3619,6 +3655,13 @@ public class S {
       S.initFinalSymbol("EndTestSection", ID.EndTestSection);
 
   public final static IBuiltInSymbol Entity = S.initFinalSymbol("Entity", ID.Entity);
+
+  public final static IBuiltInSymbol EntityClass = S.initFinalSymbol("EntityClass", ID.EntityClass);
+
+  public final static IBuiltInSymbol EntityList = S.initFinalSymbol("EntityList", ID.EntityList);
+
+  public final static IBuiltInSymbol EntityProperty =
+      S.initFinalSymbol("EntityProperty", ID.EntityProperty);
 
   /**
    * Entropy(list) - return the base `E` (Shannon) information entropy of the elements in `list`.
@@ -4255,6 +4298,9 @@ public class S {
    */
   public final static IBuiltInSymbol FindSequenceFunction =
       S.initFinalSymbol("FindSequenceFunction", ID.FindSequenceFunction);
+
+  public final static IBuiltInSymbol FindShortestCurve =
+      S.initFinalSymbol("FindShortestCurve", ID.FindShortestCurve);
 
   /**
    * FindShortestPath(graph, source, destination) - find a shortest path in the `graph` from
@@ -4990,6 +5036,9 @@ public class S {
   public final static IBuiltInSymbol GraphDisjointUnion =
       S.initFinalSymbol("GraphDisjointUnion", ID.GraphDisjointUnion);
 
+  public final static IBuiltInSymbol GraphDistance =
+      S.initFinalSymbol("GraphDistance", ID.GraphDistance);
+
   public final static IBuiltInSymbol GraphLayout = S.initFinalSymbol("GraphLayout", ID.GraphLayout);
 
   public final static IBuiltInSymbol Graphics = S.initFinalSymbol("Graphics", ID.Graphics);
@@ -5188,6 +5237,8 @@ public class S {
    */
   public final static IBuiltInSymbol GumbelDistribution =
       S.initFinalSymbol("GumbelDistribution", ID.GumbelDistribution);
+
+  public final static IBuiltInSymbol HalfLine = S.initFinalSymbol("HalfLine", ID.HalfLine);
 
   public final static IBuiltInSymbol HalfNormalDistribution =
       S.initFinalSymbol("HalfNormalDistribution", ID.HalfNormalDistribution);
@@ -5706,6 +5757,9 @@ public class S {
 
   public final static IBuiltInSymbol Inactive = S.initFinalSymbol("Inactive", ID.Inactive);
 
+  public final static IBuiltInSymbol IncidenceMatrix =
+      S.initFinalSymbol("IncidenceMatrix", ID.IncidenceMatrix);
+
   /**
    * Increment(x) - increments `x` by `1`, returning the original value of `x`.
    * 
@@ -5740,6 +5794,9 @@ public class S {
    */
   public final static IBuiltInSymbol InexactNumberQ =
       S.initFinalSymbol("InexactNumberQ", ID.InexactNumberQ);
+
+  public final static IBuiltInSymbol InfiniteLine =
+      S.initFinalSymbol("InfiniteLine", ID.InfiniteLine);
 
   /**
    * Infinity - represents an infinite real quantity.
@@ -7804,7 +7861,11 @@ public class S {
 
   public final static IBuiltInSymbol Mouseover = S.initFinalSymbol("Mouseover", ID.Mouseover);
 
-  public final static IBuiltInSymbol MrvLimit = S.initFinalSymbol("MrvLimit", ID.MrvLimit);
+  public final static IBuiltInSymbol MovingAverage =
+      S.initFinalSymbol("MovingAverage", ID.MovingAverage);
+
+  public final static IBuiltInSymbol MovingMedian =
+      S.initFinalSymbol("MovingMedian", ID.MovingMedian);
 
   /**
    * Multinomial(n1, n2, ...) - gives the multinomial coefficient `(n1+n2+...)!/(n1! n2! ...)`.
@@ -8676,7 +8737,12 @@ public class S {
    */
   public final static IBuiltInSymbol PadRight = S.initFinalSymbol("PadRight", ID.PadRight);
 
+  public final static IBuiltInSymbol Parallelepiped =
+      S.initFinalSymbol("Parallelepiped", ID.Parallelepiped);
+
   public final static IBuiltInSymbol ParallelMap = S.initFinalSymbol("ParallelMap", ID.ParallelMap);
+
+
 
   public final static IBuiltInSymbol Parallelogram =
       S.initFinalSymbol("Parallelogram", ID.Parallelogram);
@@ -8857,6 +8923,9 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Perimeter = S.initFinalSymbol("Perimeter", ID.Perimeter);
+
+  public final static IBuiltInSymbol PeriodicTablePlot =
+      S.initFinalSymbol("PeriodicTablePlot", ID.PeriodicTablePlot);
 
   public final static IBuiltInSymbol PeriodogramArray =
       S.initFinalSymbol("PeriodogramArray", ID.PeriodogramArray);
@@ -9384,6 +9453,8 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Prime = S.initFinalSymbol("Prime", ID.Prime);
+
+  public final static IBuiltInSymbol PrimeNu = S.initFinalSymbol("PrimeNu", ID.PrimeNu);
 
   /**
    * PrimeOmega(n) - returns the sum of the exponents of the prime factorization of `n`.
@@ -9971,6 +10042,38 @@ public class S {
    */
   public final static IBuiltInSymbol Refine = S.initFinalSymbol("Refine", ID.Refine);
 
+  public final static IBuiltInSymbol Region = S.initFinalSymbol("Region", ID.Region);
+
+  public final static IBuiltInSymbol RegionBounds =
+      S.initFinalSymbol("RegionBounds", ID.RegionBounds);
+
+  public final static IBuiltInSymbol RegionCentroid =
+      S.initFinalSymbol("RegionCentroid", ID.RegionCentroid);
+
+  public final static IBuiltInSymbol RegionDistance =
+      S.initFinalSymbol("RegionDistance", ID.RegionDistance);
+
+  public final static IBuiltInSymbol RegionDimension =
+      S.initFinalSymbol("RegionDimension", ID.RegionDimension);
+
+  public final static IBuiltInSymbol RegionEmbeddingDimension =
+      S.initFinalSymbol("RegionEmbeddingDimension", ID.RegionEmbeddingDimension);
+
+  public final static IBuiltInSymbol RegionMeasure =
+      S.initFinalSymbol("RegionMeasure", ID.RegionMeasure);
+
+  public final static IBuiltInSymbol RegionMember =
+      S.initFinalSymbol("RegionMember", ID.RegionMember);
+
+  public final static IBuiltInSymbol RegionNearest =
+      S.initFinalSymbol("RegionNearest", ID.RegionNearest);
+
+  public final static IBuiltInSymbol RegionNearestFunction =
+      S.initFinalSymbol("RegionNearestFunction", ID.RegionNearestFunction);
+  
+  public final static IBuiltInSymbol RegionWithin =
+      S.initFinalSymbol("RegionWithin", ID.RegionWithin);
+
   /**
    * RegularExpression("regex") - represents the regular expression specified by the string
    * `“regex”`.
@@ -9981,6 +10084,9 @@ public class S {
    */
   public final static IBuiltInSymbol RegularExpression =
       S.initFinalSymbol("RegularExpression", ID.RegularExpression);
+
+  public final static IBuiltInSymbol RegularPolygon =
+      S.initFinalSymbol("RegularPolygon", ID.RegularPolygon);
 
   /**
    * ReIm(z) - returns a list of the real and imaginary component of the complex number `z`.
@@ -10734,6 +10840,9 @@ public class S {
 
   public final static IBuiltInSymbol Shortest = S.initFinalSymbol("Shortest", ID.Shortest);
 
+  public final static IBuiltInSymbol ShortestCurveDistance =
+      S.initFinalSymbol("ShortestCurveDistance", ID.ShortestCurveDistance);
+
   public final static IBuiltInSymbol ShortLeftArrow =
       S.initFinalSymbol("ShortLeftArrow", ID.ShortLeftArrow);
 
@@ -10766,6 +10875,9 @@ public class S {
   public final static IBuiltInSymbol Signature = S.initFinalSymbol("Signature", ID.Signature);
 
   public final static IBuiltInSymbol SignCmp = S.initFinalSymbol("SignCmp", ID.SignCmp);
+
+  public final static IBuiltInSymbol SignedRegionDistance =
+      S.initFinalSymbol("SignedRegionDistance", ID.SignedRegionDistance);
 
   public final static IBuiltInSymbol Simplex = S.initFinalSymbol("Simplex", ID.Simplex);
 
@@ -12437,6 +12549,9 @@ public class S {
   public final static IBuiltInSymbol TreePlot = S.initFinalSymbol("TreePlot", ID.TreePlot);
 
   public final static IBuiltInSymbol Triangle = S.initFinalSymbol("Triangle", ID.Triangle);
+
+  public final static IBuiltInSymbol TriangleCenter =
+      S.initFinalSymbol("TriangleCenter", ID.TriangleCenter);
 
   public final static IBuiltInSymbol Trig = S.initFinalSymbol("Trig", ID.Trig);
 
