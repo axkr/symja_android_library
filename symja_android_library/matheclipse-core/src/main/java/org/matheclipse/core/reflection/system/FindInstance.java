@@ -165,7 +165,7 @@ public class FindInstance extends Solve {
         return F.NIL;
       }
     }
-    IAST conditions = arg1.isList() ? (IAST) arg1 : F.List(arg1);
+    IAST conditions = arg1.makeList();
     if (conditions.argSize() < 1) {
       return F.NIL;
     }

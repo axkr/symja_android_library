@@ -43,6 +43,7 @@ public class Zeta extends AbstractArg12 {
   public IExpr e1ApfloatArg(Apfloat arg1) {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     try {
+      // Zeta(a): delegates directly to HurwitzZeta(s, 1)) (in apfloat zeta(a) is hurwitzZeta(a,1))
       return F.num(h.zeta(arg1));
     } catch (Exception ce) {
       Errors.rethrowsInterruptException(ce);
@@ -55,6 +56,7 @@ public class Zeta extends AbstractArg12 {
   public IExpr e1ApcomplexArg(Apcomplex arg1) {
     FixedPrecisionApcomplexHelper h = EvalEngine.getApfloat();
     try {
+      // Zeta(a): delegates directly to HurwitzZeta(s, 1)) (in apfloat zeta(a) is hurwitzZeta(a,1))
       return F.complexNum(h.zeta(arg1));
     } catch (Exception ce) {
       Errors.rethrowsInterruptException(ce);
@@ -90,6 +92,8 @@ public class Zeta extends AbstractArg12 {
   public IExpr e2ApfloatArg(ApfloatNum a1, ApfloatNum a2) {
     FixedPrecisionApfloatHelper h = EvalEngine.getApfloat();
     try {
+      // Zeta(s, a): delegates directly to HurwitzZeta(s, a)) (in apfloat zeta(a,s) is hurwitz
+      // zeta(a,s)
       return F.num(h.zeta(a1.apfloatValue(), a2.apfloatValue()));
     } catch (Exception ce) {
       Errors.rethrowsInterruptException(ce);
@@ -101,6 +105,8 @@ public class Zeta extends AbstractArg12 {
   public IExpr e2ApcomplexArg(ApcomplexNum a1, ApcomplexNum a2) {
     FixedPrecisionApcomplexHelper h = EvalEngine.getApfloat();
     try {
+      // Zeta(s, a): delegates directly to HurwitzZeta(s, a)) (in apfloat zeta(a,s) is hurwitz
+      // zeta(a,s)
       return F.complexNum(h.zeta(a1.apcomplexValue(), a2.apcomplexValue()));
     } catch (Exception ce) {
       Errors.rethrowsInterruptException(ce);
@@ -220,7 +226,66 @@ public class Zeta extends AbstractArg12 {
           Errors.rethrowsInterruptException(rex);
           Errors.printMessage(S.Zeta, rex, engine);
         }
+      } else if (a.re().isNegative()) {
+        try {
+          double sDouble = Double.NaN;
+          double aDouble = Double.NaN;
+          try {
+            sDouble = s.evalf();
+            aDouble = a.evalf();
+          } catch (ValidateException ve) {
+          }
+          Complex sc = s.evalfc();
+          Complex ac = a.evalfc();
+          double aReal = ac.getReal();
+
+          if (!Double.isNaN(aReal)) {
+            // WMA's definition for Zeta[s, a] when Re(a) <= 0:
+            // Zeta[s, a] = Zeta[s, a + m] + Sum[((a + k)^2)^(-s/2), {k, 0, m - 1}]
+            // where any term with a + k == 0 is excluded.
+            int m = (int) Math.floor(-aReal) + 1;
+            if (m > 0 && m <= engine.getIterationLimit()) {
+              Complex sum = Complex.ZERO;
+              // Equivalent to -s/2
+              Complex negSHalf = sc.divide(new Complex(-2.0));
+
+              for (int k = 0; k < m; k++) {
+                Complex ak = ac.add(k);
+                // Exclude term where k + a == 0
+                if (ak.getReal() == 0.0 && ak.getImaginary() == 0.0) {
+                  continue;
+                }
+                // ((a + k)^2)^(-s/2)
+                Complex term = ak.multiply(ak).pow(negSHalf);
+                sum = sum.add(term);
+              }
+
+              Complex z = ZetaJS.hurwitzZeta(sc, ac.add(m));
+              Complex result = z.add(sum);
+
+              // Fallback to complex result if any inputs were complex
+              if (Double.isNaN(sDouble) || Double.isNaN(aDouble)) {
+                return F.complexNum(result);
+              } else {
+                if (F.isZero(result.getImaginary())) {
+                  return F.num(result.getReal());
+                }
+                return F.complexNum(result);
+              }
+            }
+          }
+        } catch (ValidateException ve) {
+          return Errors.printMessage(S.Zeta, ve, engine);
+        } catch (ThrowException te) {
+          Errors.printMessage(S.Zeta, te, engine);
+          return te.getValue();
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          Errors.printMessage(S.Zeta, rex, engine);
+        }
+
       }
+      return F.NIL;
     }
     if (engine.isArbitraryMode()) {
       if (a.re().isPositive()) {

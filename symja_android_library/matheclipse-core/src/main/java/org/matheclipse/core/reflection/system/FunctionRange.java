@@ -248,7 +248,6 @@ public class FunctionRange extends AbstractFunctionEvaluator {
   // }
   // } catch (RuntimeException rex) {
   // rex.printStackTrace();
-  // LOGGER.debug("FunctionRange.evaluate() failed", rex);
   // }
   // return F.NIL;
   // }

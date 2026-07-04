@@ -1,11 +1,10 @@
 package org.matheclipse.core.reflection.system;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.Base64;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.convert.ExpressionJSONConvert;
 import org.matheclipse.core.convert.JSONConvert;
@@ -15,6 +14,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -26,7 +26,6 @@ import org.matheclipse.parser.client.ast.ASTNode;
 
 /** Import some data from a given string. */
 public class ImportString extends AbstractEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger(ImportString.class);
 
   public ImportString() {}
 
@@ -82,10 +81,12 @@ public class ImportString extends AbstractEvaluator {
       }
 
     } catch (SyntaxError se) {
-      LOGGER.log(engine.getLogLevel(), "ImportString: syntax error!", se);
-    } catch (Exception ex) {
-      Errors.rethrowsInterruptException(ex);
-      LOGGER.log(engine.getLogLevel(), "ImportString", ex);
+      Errors.printMessage(S.ImportString, se , engine);
+    } catch (IOException jpe) {
+      Errors.printMessage(S.ImportString, jpe, engine);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      Errors.printMessage(S.ImportString, rex, engine);
     }
     return F.NIL;
   }

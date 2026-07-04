@@ -28,7 +28,8 @@ public class BezierFunction extends AbstractEvaluator {
     } else if (head == S.BezierFunction && ast.isAST1()) {
       final IExpr arg1 = ast.arg1();
       final int[] dim = arg1.isMatrix(false);
-      if (dim != null && dim[0] > 1 && dim[1] > 1 && arg1.isListOfLists()) {
+      // Allow matrices of any positive dimensions (e.g., 3x1 for 1D points)
+      if (dim != null && dim[0] > 0 && dim[1] > 0 && arg1.isListOfLists()) {
         IAST list = (IAST) arg1;
         double[][] matrix = list.toDoubleMatrix(false);
         if (matrix != null) {
@@ -36,8 +37,14 @@ public class BezierFunction extends AbstractEvaluator {
         }
       }
       // `1` should be a rectangular array of machine-sized real numbers of any depth, whose
-      // dimensions are greater than 1.
+      // dimensions are greater than 0.
       return Errors.printMessage(S.BezierFunction, "invcpts", F.List(arg1), engine);
+    } else if (ast.argSize() == 7) {
+      // Handle InputForm - internal 7-argument structure of BezierFunctionExpr
+      BezierFunctionExpr expr = BezierFunctionExpr.newInstance(ast);
+      if (expr != null) {
+        return expr;
+      }
     }
     return F.NIL;
   }

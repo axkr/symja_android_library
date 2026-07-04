@@ -14,8 +14,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 import javax.imageio.ImageIO;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.nio.Attribute;
@@ -32,6 +30,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.WL;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.interfaces.IAST;
@@ -43,7 +42,6 @@ import org.matheclipse.core.tensor.img.ImageFormat;
 
 /** Export some data from file system. */
 public class Export extends AbstractEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger(Export.class);
 
   public Export() {}
 
@@ -130,12 +128,12 @@ public class Export extends AbstractEvaluator {
           return arg1;
         }
       } catch (FileNotFoundException ex) {
-        LOGGER.log(engine.getLogLevel(), "Export: file {}", arg1, ex);
+        Errors.printMessage(S.Export, ex, engine);
       } catch (IOException ioe) {
-        LOGGER.log(engine.getLogLevel(), "Export: file {} not found!", arg1, ioe);
-      } catch (Exception ex) {
-        Errors.rethrowsInterruptException(ex);
-        LOGGER.log(engine.getLogLevel(), "Export: file {}", arg1, ex);
+        Errors.printMessage(S.Export, ioe, engine);
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        Errors.printMessage(S.Export, rex, engine);
       }
     }
     return F.NIL;

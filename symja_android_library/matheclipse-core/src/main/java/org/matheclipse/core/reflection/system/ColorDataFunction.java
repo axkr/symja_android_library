@@ -9,7 +9,6 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.tensor.img.ColorDataGradients;
 import org.matheclipse.core.tensor.img.ColorDataIndexed;
 import org.matheclipse.core.tensor.img.ColorDataLists;
@@ -86,7 +85,7 @@ public class ColorDataFunction extends AbstractFunctionEvaluator {
     IExpr param = applicationAst.arg1();
 
     if (param.isString()) {
-      String prop = param instanceof IStringX ? param.toString() : param.toString();
+      String prop = param.toString();
       if (prop.startsWith("\"") && prop.endsWith("\"")) {
         prop = prop.substring(1, prop.length() - 1);
       }

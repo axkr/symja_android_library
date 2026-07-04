@@ -222,14 +222,10 @@ public class Minimize extends AbstractFunctionEvaluator {
 
       IExpr yNInf = S.Limit.funEval(function, F.Rule(x, F.CNInfinity));
       if (yNInf.isNegativeInfinity()) {
-        // MinMaxFunctions.LOGGER.log(engine.getLogLevel(), "{}: the maximum cannot be found.",
-        // head);
         return F.list(F.CNInfinity, F.list(F.Rule(x, F.CNInfinity)));
       }
       IExpr yInf = S.Limit.funEval(function, F.Rule(x, F.CInfinity));
       if (yInf.isNegativeInfinity()) {
-        // MinMaxFunctions.LOGGER.log(engine.getLogLevel(), "{}: the maximum cannot be found.",
-        // head);
         return F.list(F.CNInfinity, F.list(F.Rule(x, F.CInfinity)));
       }
 

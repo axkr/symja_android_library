@@ -13,13 +13,6 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-/**
- * <code>RiemannSiegelTheta(t)</code> gives the Riemann-Siegel theta function
- * <code>Im(logGamma(1/4 + I*t/2)) - (t/2)*log(Pi)</code> for real <code>t</code>.
- *
- * <p>
- * See <a href="https://reference.wolfram.com/language/ref/RiemannSiegelTheta.html">RiemannSiegelTheta</a>.
- */
 public class RiemannSiegelTheta extends AbstractArg1 {
 
   public RiemannSiegelTheta() {}

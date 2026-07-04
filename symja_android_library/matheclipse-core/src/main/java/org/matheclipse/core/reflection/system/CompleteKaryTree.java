@@ -117,16 +117,7 @@ public class CompleteKaryTree extends AbstractFunctionOptionEvaluator {
           break;
         }
         IExpr v = F.ZZ(currentChild);
-
-        // Edge u -> v
-        if (directed) {
-          graph.addEdge(u, v);
-        } else {
-          // For undirected, order doesn't strictly matter for JGraphT logic
-          // but convention is often smaller -> larger for internal storage or arbitrary
-          graph.addEdge(u, v);
-        }
-
+        graph.addEdge(u, v);
         currentChild++;
       }
     }

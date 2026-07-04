@@ -33,10 +33,7 @@ public class AlgebraicIntegerQ extends AbstractFunctionEvaluator {
       IComplex c = (IComplex) arg1;
       // For complex numbers with rational parts (a + bi), it is an algebraic integer
       // if and only if both real and imaginary parts are integers (Gaussian integers).
-      if (c.re().isInteger() && c.im().isInteger()) {
-        return S.True;
-      }
-      return S.False;
+      return F.booleSymbol(c.re().isInteger() && c.im().isInteger());
     }
 
     // Algebraic integers are exact. If the expression contains any inexact numbers,
@@ -66,7 +63,21 @@ public class AlgebraicIntegerQ extends AbstractFunctionEvaluator {
     if (coeffs.isList()) {
       IAST list = (IAST) coeffs;
 
-      // An algebraic integer's minimal polynomial must only have integer coefficients
+      // An algebraic integer's minimal polynomial must only have rational coefficients.
+      // If the minimal polynomial returned has non-rational coefficients, it means
+      // MinimalPolynomial couldn't find a polynomial over Q, so we return NIL.
+      for (int i = 1; i <= list.argSize(); i++) {
+        if (!list.get(i).isRational()) {
+          // If we know the original expression is a strict transcendental, we confidently return
+          // False.
+          if (isKnownTranscendental(arg1)) {
+            return S.False;
+          }
+          return F.NIL;
+        }
+      }
+
+      // If all coefficients are rational, they MUST be integers for it to be an algebraic integer.
       for (int i = 1; i <= list.argSize(); i++) {
         if (!list.get(i).isInteger()) {
           return S.False;
@@ -84,6 +95,41 @@ public class AlgebraicIntegerQ extends AbstractFunctionEvaluator {
     }
 
     return F.NIL;
+  }
+
+  /**
+   * Recursively checks if an expression is explicitly transcendental (e.g., Pi, E, EulerGamma) or a
+   * simple exact arithmetic combination of exactly one such constant. This prevents false positives
+   * where sums like E + Pi fail to find a minimal polynomial but we cannot strictly prove they are
+   * transcendental.
+   */
+  private boolean isKnownTranscendental(IExpr expr) {
+    if (expr.equals(S.Pi) || expr.equals(S.E) || expr.equals(S.EulerGamma)
+        || expr.equals(S.Catalan)) {
+      return true;
+    }
+    if (expr.isAST()) {
+      IAST ast = (IAST) expr;
+      if (ast.isPlus() || ast.isTimes()) {
+        int transCount = 0;
+        for (int i = 1; i <= ast.argSize(); i++) {
+          IExpr arg = ast.get(i);
+          if (isKnownTranscendental(arg)) {
+            transCount++;
+          } else if (!arg.isExactNumber()) {
+            // If it's not an exact number (e.g. Integer, Fraction, Complex), we fallback to unknown
+            return false;
+          }
+        }
+        return transCount == 1; // exactly one transcendental term, rest are exact numbers
+      }
+      if (ast.isPower()) {
+        if (ast.arg2().isRational() && !ast.arg2().isZero()) {
+          return isKnownTranscendental(ast.arg1());
+        }
+      }
+    }
+    return false;
   }
 
   @Override

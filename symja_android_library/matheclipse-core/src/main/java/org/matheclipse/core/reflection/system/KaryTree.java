@@ -88,13 +88,7 @@ public class KaryTree extends CompleteKaryTree {
           break;
         }
         IExpr v = F.ZZ(currentChild);
-
-        if (directed) {
-          graph.addEdge(u, v);
-        } else {
-          graph.addEdge(u, v);
-        }
-
+        graph.addEdge(u, v);
         currentChild++;
       }
     }

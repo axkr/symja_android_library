@@ -16,14 +16,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numerics.functions.ZetaJS;
 
-/**
- * <code>ZetaZero(k)</code> represents the <code>k</code>-th zero of the Riemann zeta function on
- * the critical line. <code>ZetaZero(k, t)</code> represents the <code>k</code>-th zero with
- * imaginary part greater than <code>t</code>.
- *
- * <p>
- * See <a href="https://reference.wolfram.com/language/ref/ZetaZero.html">ZetaZero</a>.
- */
 public class ZetaZero extends AbstractFunctionEvaluator {
 
   @Override
