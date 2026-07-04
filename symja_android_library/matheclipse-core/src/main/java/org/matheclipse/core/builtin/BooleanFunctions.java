@@ -50,6 +50,7 @@ import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.IntervalSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.BDDExpr;
+import org.matheclipse.core.expression.data.BDDParser;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -159,7 +160,7 @@ public final class BooleanFunctions {
     }
   }
 
-  private static final class LogicFormula {
+  public static final class LogicFormula {
 
     /**
      * Create a map which assigns the position of each variable name in the given <code>vars</code>
@@ -861,6 +862,7 @@ public final class BooleanFunctions {
   }
 
   private static class BooleanFunction extends AbstractFunctionEvaluator {
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.head() == S.BooleanFunction && (ast.argSize() < 1 || ast.argSize() > 4)) {
@@ -871,34 +873,62 @@ public final class BooleanFunctions {
         BDDExpr bddExpr = (BDDExpr) ast.head();
         BDD bdd = bddExpr.toData();
         List<Variable> variableOrder = bdd.getVariableOrder();
-        if (ast.argSize() != 0 && ast.argSize() <= variableOrder.size()) {
-          FormulaFactory factory = bdd.underlyingKernel().factory();
-          List<Literal> literals = new ArrayList<Literal>(variableOrder.size());
-          for (int i = 0; i < ast.argSize(); i++) {
-            Variable variable = variableOrder.get(i);
-            final String name = variable.name();
-            IExpr expr = ast.get(i + 1);
-            if (expr.isTrue()) {
-              literals.add(factory.literal(name, true));
-            } else if (expr.isFalse()) {
-              literals.add(factory.literal(name, false));
-            } else {
-              return F.NIL;
-            }
-          }
-          BDD restrictedBDD = bdd.restrict(literals);
-          if (restrictedBDD.isContradiction()) {
-            return S.False;
-          }
-          if (restrictedBDD.isTautology()) {
-            return S.True;
-          }
-          return BDDExpr.newInstance(restrictedBDD, bddExpr.isPureBooleanFunction());
+        if (ast.argSize() != 0 && ast.argSize() != variableOrder.size()) {
+          return Errors.printMessage(S.BooleanFunction, "argrx",
+              F.List(bddExpr, F.ZZ(ast.argSize()), F.ZZ(variableOrder.size())), engine);
         }
-        return F.NIL;
+        FormulaFactory factory = bdd.underlyingKernel().factory();
+        List<Literal> literals = new ArrayList<Literal>(variableOrder.size());
+        for (int i = 0; i < ast.argSize(); i++) {
+          Variable variable = variableOrder.get(i);
+          final String name = variable.name();
+          IExpr expr = ast.get(i + 1);
+          if (expr.isTrue()) {
+            literals.add(factory.literal(name, true));
+          } else if (expr.isFalse()) {
+            literals.add(factory.literal(name, false));
+          } else {
+            return F.NIL;
+          }
+        }
+        BDD restrictedBDD = bdd.restrict(literals);
+        if (restrictedBDD.isContradiction()) {
+          return S.False;
+        }
+        if (restrictedBDD.isTautology()) {
+          return S.True;
+        }
+        return BDDExpr.newInstance(restrictedBDD, bddExpr.isPureBooleanFunction());
+
       }
       if (ast.head() == S.BooleanFunction && (ast.isAST1() || ast.isAST2())) {
         IExpr arg1 = ast.arg1();
+
+        // --- Parse: BooleanFunction("BDD" -> {-3, 0, 1, -2, 1, 3, -1, 2, 1, -1}) ---
+        if (arg1.isRule()) {
+          IAST rule = (IAST) arg1;
+          if (rule.arg1().isString() && rule.arg1().toString().equals("BDD")
+              && rule.arg2().isList()) {
+            BDDExpr bddExpr = null;
+            IAST list = (IAST) rule.arg2();
+            int[] intVector = list.toIntVector();
+            if (intVector != null && intVector.length >= 1) {
+              BDD bdd = BDDParser.parseBDD(intVector, new FormulaFactory());
+              if (bdd != null) {
+                bddExpr = BDDExpr.newInstance(bdd, true);
+                if (ast.isAST2() && ast.arg2().isList()) {
+                  IAST variableList = (IAST) ast.arg2();
+                  return booleanConvert(variableList.apply(bddExpr), false,
+                      variableList.apply(bddExpr), engine);
+                }
+                return bddExpr;
+              }
+            }
+          }
+          return F.NIL;
+        }
+        // ---------------------------------------------------------------------------
+
         if (arg1.isListOfRules(false) && arg1.argSize() > 0) {
           IAST listOfRule = (IAST) arg1;
           IAST rule = (IAST) listOfRule.arg1();
@@ -1079,8 +1109,8 @@ public final class BooleanFunctions {
           int kmin = list.arg1().toIntDefault();
           int kmax = list.arg2().toIntDefault();
           int step = list.argSize() == 3 ? list.arg3().toIntDefault() : 1;
-          if (kmin == Integer.MIN_VALUE || kmax == Integer.MIN_VALUE
-              || step == Integer.MIN_VALUE || step <= 0) {
+          if (kmin == Integer.MIN_VALUE || kmax == Integer.MIN_VALUE || step == Integer.MIN_VALUE
+              || step <= 0) {
             return F.NIL;
           }
           allowedCount = new boolean[n + 1];
@@ -1186,8 +1216,7 @@ public final class BooleanFunctions {
           Formula[] andFormula = new Formula[n];
           long shiftCounter = state;
           for (int j = n - 1; j >= 0; j--) {
-            andFormula[j] =
-                ((shiftCounter & 1L) == 1L) ? variables[j] : factory.not(variables[j]);
+            andFormula[j] = ((shiftCounter & 1L) == 1L) ? variables[j] : factory.not(variables[j]);
             shiftCounter >>>= 1;
           }
           orFormula.add(factory.and(andFormula));
@@ -1233,31 +1262,6 @@ public final class BooleanFunctions {
     }
   }
 
-  private static class BooleanMaxterms extends BooleanMinterms {
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IBuiltInSymbol symbol = S.Or;
-      if (ast.arg1().isListOfLists() && ast.arg1().argSize() == 1) {
-        IExpr booleVector = ast.arg1().first();
-        return minMaxterms(symbol, ast.arg2(), booleVector);
-      }
-      int k = ast.arg1().toIntDefault();
-      if (k > 0) {
-        int n = ast.arg2().toIntDefault();
-        if (n > 0) {
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {}
-  }
 
   private static class BooleanMinimize extends AbstractFunctionEvaluator {
     @Override
@@ -1296,49 +1300,185 @@ public final class BooleanFunctions {
   private static class BooleanMinterms extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IBuiltInSymbol symbol = S.And;
-      if (ast.arg1().isListOfLists() && ast.arg1().argSize() == 1) {
-        IExpr booleVector = ast.arg1().first();
-        return minMaxterms(symbol, ast.arg2(), booleVector);
-      }
-      int k = ast.arg1().toIntDefault();
-      if (k > 0) {
-        int n = ast.arg2().toIntDefault();
-        if (n > 0) {
-        }
-      }
-      return F.NIL;
-    }
-
-    protected IExpr minMaxterms(IBuiltInSymbol termSymbol, final IExpr arg2, IExpr booleVector) {
-      int v1 = booleVector.isVector();
-      if (v1 > 0) {
-        boolean[] booleanVector = booleVector.toBooleanVector();
-        if (booleanVector == null) {
-          booleanVector = booleVector.toBooleValueVector();
-        }
-        if (booleanVector != null) {
-          IASTAppendable andAST = F.ast(termSymbol, booleanVector.length);
-          int v2 = arg2.isVector();
-          if (v2 == v1 && arg2.isList()) {
-            IAST variables = (IAST) arg2;
-            for (int i = 0; i < booleanVector.length; i++) {
-              if (booleanVector[i] == true) {
-                andAST.append(variables.get(i + 1));
-              } else {
-                andAST.append(F.Not(variables.get(i + 1)));
-              }
-            }
-            return andAST;
-          }
-        }
-      }
-      return F.NIL;
+      return minMaxtermsEval(ast, engine, true);
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_2_2;
+      return ARGS_1_2;
+    }
+
+    /**
+     * Evaluates the boolean minterms or maxterms for valid signatures and simplifies the resulting
+     * Disjunctive/Conjunctive Normal Form. Invalid specifications print a "bspec" message and
+     * return F.NIL.
+     *
+     * @param ast the AST passed to the evaluation
+     * @param engine the evaluation engine
+     * @param isMinterm true if computing minterms, false for maxterms
+     * @return the evaluated expression or F.NIL if evaluation is not possible
+     */
+    protected static IExpr minMaxtermsEval(final IAST ast, EvalEngine engine, boolean isMinterm) {
+      IExpr arg1 = ast.arg1();
+      IExpr arg2 = ast.argSize() > 1 ? ast.arg2() : null;
+
+      IAST vars = null;
+      int n = -1;
+      boolean returnFunction = false;
+
+      if (arg2 != null) {
+        // Check if arg2 is the number of variables (n) or a list of variables ({a1, a2, ...})
+        if (arg2.isInteger()) {
+          n = arg2.toIntDefault();
+          if (n < 0 || n > 62) {
+            return F.NIL;
+          }
+          returnFunction = true;
+          IASTAppendable varsAppendable = F.ListAlloc(n);
+          for (int i = 1; i <= n; i++) {
+            varsAppendable.append(F.Slot(i));
+          }
+          vars = varsAppendable;
+        } else if (arg2.isList()) {
+          vars = (IAST) arg2;
+          n = vars.argSize();
+          if (n > 62) {
+            return F.NIL;
+          }
+        } else {
+          return F.NIL;
+        }
+      } else {
+        // Single argument signature: BooleanMinterms(matrix)
+        if (arg1.isListOfLists() && arg1.size() > 1) {
+          IAST firstRow = (IAST) ((IAST) arg1).arg1();
+          n = firstRow.argSize();
+          if (n > 62) {
+            return F.NIL;
+          }
+          returnFunction = true;
+          IASTAppendable varsAppendable = F.ListAlloc(n);
+          for (int i = 1; i <= n; i++) {
+            varsAppendable.append(F.Slot(i));
+          }
+          vars = varsAppendable;
+        } else {
+          return Errors.printMessage(ast.topHead(), "bspec", F.List(ast), engine);
+        }
+      }
+
+      List<Long> kValues = new ArrayList<>();
+
+      // Matrix of truth values (e.g., {{1, 1}, {0, 1}})
+      if (arg1.isListOfLists()) {
+        IAST matrix = (IAST) arg1;
+        for (int i = 1; i <= matrix.argSize(); i++) {
+          IExpr rowExpr = matrix.get(i);
+          if (rowExpr.isList()) {
+            IAST row = (IAST) rowExpr;
+            if (row.argSize() != n) {
+              return Errors.printMessage(ast.topHead(), "bspec", F.List(ast), engine);
+            }
+            long k = 0L;
+            for (int j = 1; j <= row.argSize(); j++) {
+              k <<= 1;
+              if (row.get(j).isTrue() || row.get(j).equals(F.C1)) {
+                k |= 1L;
+              } else if (!row.get(j).isFalse() && !row.get(j).equals(F.C0)) {
+                return Errors.printMessage(ast.topHead(), "bspec", F.List(ast), engine);
+              }
+            }
+            kValues.add(k);
+          } else {
+            return Errors.printMessage(ast.topHead(), "bspec", F.List(ast), engine);
+          }
+        }
+      } else if (arg1.isInteger()) {
+        // Single integer k
+        long k = arg1.toLongDefault();
+        if (k < 0L || (n < 62 && k >= (1L << n))) {
+          return F.NIL;
+        }
+        kValues.add(k);
+      } else if (arg1.isList()) {
+        // List of integers {k1, k2, ...}
+        IAST kList = (IAST) arg1;
+        for (int i = 1; i <= kList.argSize(); i++) {
+          IExpr kExpr = kList.get(i);
+          if (kExpr.isInteger()) {
+            long k = kExpr.toLongDefault();
+            if (k < 0L || (n < 62 && k >= (1L << n))) {
+              return F.NIL;
+            }
+            kValues.add(k);
+          } else {
+            return Errors.printMessage(ast.topHead(), "bspec", F.List(ast), engine);
+          }
+        }
+      } else {
+        // Invalid specification (e.g. Boolean Formula)
+        return Errors.printMessage(ast.topHead(), "bspec", F.List(ast), engine);
+      }
+
+      // Build logic formula trees utilizing LogicNG
+      FormulaFactory factory = new FormulaFactory();
+      Variable[] variables = new Variable[n];
+      for (int i = 0; i < n; i++) {
+        variables[i] = factory.variable(vars.get(i + 1).toString());
+      }
+
+      List<Formula> outerFormulas = new ArrayList<>();
+      for (long k : kValues) {
+        Formula[] innerFormulas = new Formula[n];
+        for (int i = 1; i <= n; i++) {
+          boolean bit = ((k >> (n - i)) & 1L) == 1L;
+          Variable var = variables[i - 1];
+          innerFormulas[i - 1] = bit ? var : factory.not(var);
+        }
+        if (isMinterm) {
+          outerFormulas.add(factory.and(innerFormulas));
+        } else {
+          outerFormulas.add(factory.or(innerFormulas));
+        }
+      }
+
+      Formula resultFormula;
+      if (isMinterm) {
+        resultFormula = factory.or(outerFormulas);
+      } else {
+        resultFormula = factory.and(outerFormulas);
+      }
+
+      // Return a Compiled BDD BooleanFunction object directly if requested
+      if (returnFunction) {
+        return BDDExpr.newInstance(resultFormula.bdd(), true);
+      }
+
+      // Process minimization
+      LogicFormula lf = new LogicFormula(variables);
+      IExpr result;
+      if (isMinterm) {
+        result = lf.factorSimplifyDNF(resultFormula);
+      } else {
+        result = lf.factorSimplifyCNF(resultFormula);
+      }
+
+      return result;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {}
+  }
+
+  private static class BooleanMaxterms extends BooleanMinterms {
+    @Override
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      return minMaxtermsEval(ast, engine, false);
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
     }
 
     @Override
@@ -3545,22 +3685,60 @@ public final class BooleanFunctions {
     }
   }
 
-  private static class Xnor extends Xor implements IBooleanFormula {
+  private static class Xnor extends AbstractFunctionEvaluator implements IBooleanFormula {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.isEmpty()) {
         return S.True;
       }
-      IExpr result = ast.arg1();
-      if (ast.size() == 2) {
-        return F.Not(result);
+      if (ast.isAST1()) {
+        return S.Not.of(engine, ast.arg1());
       }
-      IExpr temp = super.evaluate(ast.setAtCopy(0, S.Xor), engine);
-      if (temp.isPresent()) {
-        if (temp.isAST() && temp.head() == S.Xor) {
-          return ((IAST) temp).setAtCopy(0, S.Xnor);
+
+      int size = ast.size();
+      IASTAppendable xnor = F.ast(S.Xnor, ast.argSize());
+      boolean evaled = false;
+      boolean invert = false;
+
+      IExpr last = null;
+      for (int i = 1; i < size; i++) {
+        final IExpr arg = ast.get(i);
+        if (arg.isTrue()) {
+          invert = !invert;
+          evaled = true;
+        } else if (arg.isFalse()) {
+          evaled = true; // False does not alter parity for Xnor
+        } else {
+          // Cancel identical adjacent arguments (works due to ORDERLESS attribute)
+          if (last != null && arg.equals(last)) {
+            xnor.remove(xnor.size() - 1);
+            if (xnor.size() > 1) {
+              last = xnor.get(xnor.size() - 1);
+            } else {
+              last = null;
+            }
+            evaled = true;
+          } else {
+            xnor.append(arg);
+            last = arg;
+          }
         }
-        return F.Not(temp);
+      }
+
+      if (evaled) {
+        IExpr result;
+        if (xnor.isAST0()) {
+          result = S.True;
+        } else if (xnor.isAST1()) {
+          result = S.Not.of(engine, xnor.arg1());
+        } else {
+          result = xnor;
+        }
+
+        if (invert) {
+          return S.Not.of(engine, result);
+        }
+        return result;
       }
       return F.NIL;
     }
@@ -3577,52 +3755,54 @@ public final class BooleanFunctions {
       if (ast.isEmpty()) {
         return S.False;
       }
-      if (ast.size() == 2) {
+      if (ast.isAST1()) {
         return ast.arg1();
       }
 
-      IExpr result = ast.arg1();
       int size = ast.size();
-      IASTAppendable xor = F.ast(S.Xor, size - 1);
+      IASTAppendable xor = F.ast(S.Xor, ast.argSize());
       boolean evaled = false;
-      for (int i = 2; i < size; i++) {
+      boolean invert = false;
+
+      IExpr last = null;
+      for (int i = 1; i < size; i++) {
         final IExpr arg = ast.get(i);
         if (arg.isTrue()) {
-          if (result.isTrue()) {
-            result = S.False;
-          } else if (result.isFalse()) {
-            result = S.True;
-          } else {
-            result = S.Not.of(engine, result);
-          }
+          invert = !invert;
           evaled = true;
         } else if (arg.isFalse()) {
-          if (result.isTrue()) {
-            result = S.True;
-          } else if (result.isFalse()) {
-            result = S.False;
-          }
           evaled = true;
         } else {
-          if (arg.equals(result)) {
-            result = S.False;
+          // Cancel identical adjacent arguments (works due to ORDERLESS attribute)
+          if (last != null && arg.equals(last)) {
+            xor.remove(xor.size() - 1);
+            if (xor.size() > 1) {
+              last = xor.get(xor.size() - 1);
+            } else {
+              last = null;
+            }
             evaled = true;
           } else {
-            if (result.isTrue()) {
-              result = S.Not.of(engine, arg);
-              evaled = true;
-            } else if (result.isFalse()) {
-              result = arg;
-              evaled = true;
-            } else {
-              xor.append(arg);
-            }
+            xor.append(arg);
+            last = arg;
           }
         }
       }
+
       if (evaled) {
-        xor.append(result);
-        return xor;
+        IExpr result;
+        if (xor.isAST0()) {
+          result = S.False;
+        } else if (xor.isAST1()) {
+          result = xor.arg1();
+        } else {
+          result = xor;
+        }
+
+        if (invert) {
+          return S.Not.of(engine, result);
+        }
+        return result;
       }
       return F.NIL;
     }
@@ -3632,6 +3812,7 @@ public final class BooleanFunctions {
       newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.ONEIDENTITY | ISymbol.FLAT);
     }
   }
+
 
   private static IExpr quantityEquals(IQuantity q1, IQuantity q2) {
     try {
