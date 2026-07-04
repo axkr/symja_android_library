@@ -455,8 +455,8 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     }
 
     if (hasAssignedSymbolValue()) {
-      IExpr rightHandSide= assignedValue();
-      if(rightHandSide.isNIL()) {
+      IExpr rightHandSide = assignedValue();
+      if (rightHandSide.isNIL()) {
         return F.NIL;
       }
       return ISymbol.evalAssignedValue(rightHandSide, engine);
@@ -919,6 +919,17 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
     return engine.evaluate(F.ast(args, this));
   }
 
+  @Override
+  public IExpr funSEval(EvalEngine engine, IExpr... args) {
+    boolean oldNumericMode = engine.isNumericMode();
+    try {
+      engine.setNumericMode(false);
+      return funEval(engine, args);
+    } finally {
+      engine.setNumericMode(oldNumericMode);
+    }
+  }
+
   /** {@inheritDoc} */
   @Override
   public IExpr of1(EvalEngine engine, IExpr arg, IExpr... parts) {
@@ -963,8 +974,7 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
   /** {@inheritDoc} */
   @Override
   public final IPatternMatcher putDownRule(final int setSymbol, final boolean equalRule,
-      final IAST leftHandSide, final IExpr rightHandSide, final int priority,
-      boolean packageMode) {
+      final IAST leftHandSide, final IExpr rightHandSide, final int priority, boolean packageMode) {
     if (!packageMode) {
       if (isLocked(packageMode)) {
         throw new RuleCreationError(leftHandSide);

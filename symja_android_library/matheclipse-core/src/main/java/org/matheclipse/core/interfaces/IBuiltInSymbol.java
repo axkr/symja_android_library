@@ -81,12 +81,21 @@ public interface IBuiltInSymbol extends ISymbol {
 
   /**
    * Evaluate the built-in function directly with the given arguments, bypassing the re-evaluation
-   * of the arguments.
+   * of the arguments
    * 
    * @param engine the evaluation engine
    * @param args the arguments which aren't reevaluated in this method
    */
   public IExpr funEval(EvalEngine engine, IExpr... args);
+
+  /**
+   * Evaluate the built-in function symbolically with the given arguments, bypassing the
+   * re-evaluation of the arguments and temporarily disabling the engine's numeric mode.
+   * 
+   * @param engine the evaluation engine
+   * @param args the arguments which aren't reevaluated in this method
+   */
+  public IExpr funSEval(EvalEngine engine, IExpr... args);
 
   /**
    * Evaluate the built-in function directly with the given arguments, bypassing the re-evaluation

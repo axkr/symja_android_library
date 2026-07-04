@@ -484,14 +484,26 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
   }
 
   @Override
-  public IExpr funEval(EvalEngine engine, IExpr... args) {
-    if (fEvaluator instanceof IFunctionEvaluator) {
-      // evaluate a core function (without no rule definitions)
-      final IFunctionEvaluator function = getEvaluator();
-      final IAST ast = F.ast(args, this);
-      return function.evaluate(ast, engine).orElse(ast);
+  final public IExpr funEval(EvalEngine engine, IExpr... args) {
+    // evaluate a core function (without using rule definitions)
+    final IFunctionEvaluator function = getEvaluator();
+    final IAST ast = F.ast(args, this);
+    IExpr temp = function.evaluate(ast, engine).orElse(ast);
+    if (temp.isPresent()) {
+      return engine.evaluate(temp);
     }
-    return engine.evaluate(F.ast(args, this));
+    return F.NIL;
+  }
+
+  @Override
+  final public IExpr funSEval(EvalEngine engine, IExpr... args) {
+    boolean oldNumericMode = engine.isNumericMode();
+    try {
+      engine.setNumericMode(false);
+      return funEval(engine, args);
+    } finally {
+      engine.setNumericMode(oldNumericMode);
+    }
   }
 
   /** {@inheritDoc} */
