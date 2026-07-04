@@ -6,6 +6,11 @@ PrimePi(x)
 
 > gives the number of primes less than or equal to `x`.
 
+```
+PrimePi(x, Method -> "...")
+```
+
+> uses the method to do the calculation. Methods are `Sieve`, `LucyHedgehog` and `Meissel`. The default `Method->Automatic` selects the algorithm according to the size of `x`.
 
 See
 * [Wikipedia - Prime-counting function](https://en.wikipedia.org/wiki/Prime-counting_function)
