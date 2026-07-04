@@ -372,6 +372,9 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
       return BigInteger.ZERO;
     }
     if (a.equals(IInteger.BI_TWO)) {
+      if (!b.testBit(0)) { // b is even
+        return BigInteger.ZERO;
+      }
       return BigIntegerSym.jacobiSymbolF(b);
     }
     if (!NumberUtil.isOdd(a)) {
@@ -400,6 +403,9 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
   }
 
   public static long jacobiSymbolF(long val) {
+    if ((val & 1L) == 0L) { // val is even
+      return 0L;
+    }
     long a = val % 8;
     if (a == 1L) {
       return 1L;
@@ -1140,6 +1146,9 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
   @Override
   public IInteger jacobiSymbolF() {
+    if (isEven()) { // b is even
+      return F.C0;
+    }
     IInteger a = mod(F.C8);
     if (a.isOne()) {
       return F.C1;

@@ -32,6 +32,38 @@ public class JacobiTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testJacobiEpsilon() {
+    // Parity transformation: JacobiEpsilon(-z, m) = -JacobiEpsilon(z, m)
+    check("JacobiEpsilon(-z, m)", //
+        "-JacobiEpsilon(z,m)");
+
+    // Special cases for m
+    check("JacobiEpsilon(z, 0)", //
+        "z");
+    check("JacobiEpsilon(z, 1)", //
+        "Tanh(z)");
+
+    // Special cases for z
+    check("JacobiEpsilon(0, m)", //
+        "0");
+
+    // Threading over lists (Listable attribute behavior)
+    check("JacobiEpsilon({a,b}, m)", //
+        "{JacobiEpsilon(a,m),JacobiEpsilon(b,m)}");
+
+    // numerical table tests generated via the identity:
+    // JacobiEpsilon(z, m) == EllipticE(JacobiAmplitude(z, m), m)
+    check("Table(JacobiEpsilon(x, 1/3), {x,-10.0, 10, 1/4})", //
+        "{-8.18538,-7.95619,-7.74534,-7.55265,-7.37451,-7.20523,-7.03816,-6.86645,-6.68369,-6.48478,-6.2672,-6.03223," //
+            + "-5.78556,-5.5363,-5.29434,-5.06736,-4.85895,-4.66839,-4.49173,-4.32312,-4.15584,-3.98305,-3.79845,-3.59722," //
+            + "-3.37724,-3.14035,-2.89279,-2.64393,-2.40354,-2.17885,-1.97286,-1.78436,-1.60909,-1.44104,-1.27343,-1.09945," //
+            + "-0.91294,-0.709342,-0.486986,-0.248292,0.0,0.248292,0.486986,0.709342,0.91294,1.09945,1.27343,1.44104," //
+            + "1.60909,1.78436,1.97286,2.17885,2.40354,2.64393,2.89279,3.14035,3.37724,3.59722,3.79845,3.98305,4.15584," //
+            + "4.32312,4.49173,4.66839,4.85895,5.06736,5.29434,5.5363,5.78556,6.03223,6.2672,6.48478,6.68369,6.86645," //
+            + "7.03816,7.20523,7.37451,7.55265,7.74534,7.95619,8.18538}");
+  }
+
+  @Test
   public void testInverseJacobiCD() {
     check("InverseJacobiCD(0.3,0.5)", //
         "1.54702");
