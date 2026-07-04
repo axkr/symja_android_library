@@ -741,7 +741,6 @@ public class FileFunctions {
         String str = Files.readString(file, Charset.defaultCharset());
         return Get.loadPackage(engine, str);
       } catch (IOException e) {
-        // LOGGER.debug("Get.getFile() failed", e);
         // Cannot open `1`.
         return Errors.printMessage(S.Get, "noopen", F.list(ast.arg1()), engine);
       } finally {
@@ -762,7 +761,6 @@ public class FileFunctions {
         String str = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         return loadPackage(engine, str);
       } catch (IOException e) {
-        // LOGGER.debug("FileFunctions.Get.getURL() failed", e);
         // Cannot open `1`.
         return Errors.printMessage(S.Get, "noopen", F.list(ast.arg1()), engine);
       } finally {
@@ -1010,7 +1008,6 @@ public class FileFunctions {
           if (!OutputFormFactory.get().convert(buf, temp)) {
             Errors.printMessage(S.Put, "error",
                 F.List("File " + fileName + " ERROR-IN_OUTPUTFORM."));
-            // LOGGER.log(engine.getLogLevel(), "Put: file {} ERROR-IN_OUTPUTFORM", fileName);
             return F.NIL;
           }
           buf.append('\n');

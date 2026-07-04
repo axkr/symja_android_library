@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.ApfloatInterruptedException;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.TimeoutException;
@@ -39,7 +37,6 @@ import io.pebbletemplates.pebble.template.PebbleTemplate;
 import io.pebbletemplates.pebble.template.PebbleTemplateImpl;
 
 public class Errors {
-  private static final Logger LOGGER = LogManager.getLogger(Errors.class);
 
   private static PebbleEngine PEBBLE_ENGINE = new PebbleEngine.Builder().build();
 
@@ -75,7 +72,7 @@ public class Errors {
       "argtu", "`1` called with 1 argument; `2` or `3` arguments are expected.", //
       "argtype",
       "Arguments `1` and `2` of `3` should be either non-negative integers or one-character strings.", //
-      "arg1", "The first argument `1` is expected to be a vector, matrix or a distribution.", //
+      "arg1", "The first argument `1` is expected to be `2`.", //
       "arg2", "Cannot divide sides of an equation or inequality by 0.", //
       "asm", "The sum of angles `1` and `2` should be less than `3`.", //
       "attnf", "`1` is not a known attribute.", //
@@ -92,6 +89,7 @@ public class Errors {
       "bldim", "The arguments `1` and `2` do not have compatible dimensions.", //
       "boxfmt", "`1` is not a box formatting type.", //
       "bdomv", "Warning: `1` is not a valid domain specification.", //
+      "bspec", "`1` is not a valid `2` specification.", //
       "bvfail", "For some branches of the general solution, unable to solve for the conditions", //
       "cas", "Warning contradictory assumption(s) `1` encountered.", //
       "cfn", "Numerical error encountered, proceeding with uncompiled evaluation.", //
@@ -688,7 +686,7 @@ public class Errors {
 
         engine.putObjectCache(cacheKey, ERRORS_INSTANCE);
       } catch (IOException e) {
-        LOGGER.error("IOFunctions.printMessage() failed", e);
+        // LOGGER.error("IOFunctions.printMessage() failed", e);
       }
     }
     return F.NIL;
@@ -712,7 +710,7 @@ public class Errors {
 
   public static void logMessage(String symbol, String str, EvalEngine engine) {
     if (engine.isQuietMode()) {
-      LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, str);
+      // LOGGER.log(engine.getLogLevel(), "{}: {}", symbol, str);
     } else {
       engine.getErrorPrintStream().append(symbol + ": " + str + "\n");
     }
@@ -928,7 +926,7 @@ public class Errors {
       templateApply(templateStr, writer, context);
       return writer.toString();
     } catch (IOException e) {
-      LOGGER.error("IOFunctions.templateRender()", e);
+      // LOGGER.error("IOFunctions.templateRender()", e);
     }
     return templateStr;
   }
@@ -951,7 +949,7 @@ public class Errors {
       templateApply(templateStr, writer, context);
       return writer.toString();
     } catch (IOException e) {
-      LOGGER.error("IOFunctions.templateRender() failed", e);
+      // LOGGER.error("IOFunctions.templateRender() failed", e);
     }
     return templateStr;
   }

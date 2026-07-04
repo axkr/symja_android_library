@@ -1,8 +1,6 @@
 package org.matheclipse.core.eval;
 
 import java.util.concurrent.Callable;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.ApfloatInterruptedException;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
@@ -15,7 +13,6 @@ import org.matheclipse.parser.client.math.MathException;
 import edu.jas.kern.PreemptingException;
 
 public class EvalControlledCallable implements Callable<IExpr> {
-  private static final Logger LOGGER = LogManager.getLogger(EvalControlledCallable.class);
 
   protected final EvalEngine fEngine;
   private IExpr fExpr;
@@ -65,7 +62,7 @@ public class EvalControlledCallable implements Callable<IExpr> {
         | org.matheclipse.core.eval.exception.TimeoutException e) {
       return S.$Aborted;
     } catch (final SyntaxError se) {
-      LOGGER.error("EvalControlledCallable.call() failed", se);
+      // LOGGER.error("EvalControlledCallable.call() failed", se);
     } catch (final RuntimeException re) {
       Throwable me = re.getCause();
       if (me instanceof MathException) {
@@ -73,11 +70,11 @@ public class EvalControlledCallable implements Callable<IExpr> {
       } else {
         Validate.printException(buf, re);
       }
-      LOGGER.error(buf);
+      // LOGGER.error(buf);
     } catch (final Exception | OutOfMemoryError | StackOverflowError e) {
-      LOGGER.debug("EvalControlledCallable.call() failed", e);
+      // LOGGER.debug("EvalControlledCallable.call() failed", e);
       Validate.printException(buf, e);
-      LOGGER.error(buf);
+      // LOGGER.error(buf);
     }
     return S.$Aborted;
   }

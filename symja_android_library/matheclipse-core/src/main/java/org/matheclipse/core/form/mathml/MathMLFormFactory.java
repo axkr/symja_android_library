@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
@@ -59,7 +57,6 @@ import org.matheclipse.parser.trie.TrieMatch;
 
 /** Generates MathML presentation output */
 public class MathMLFormFactory extends AbstractMathMLFormFactory {
-  private static final Logger LOGGER = LogManager.getLogger(MathMLFormFactory.class);
 
   private final class Abs extends AbstractConverter {
 
@@ -1194,7 +1191,6 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
       return true;
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
-      LOGGER.debug("OutputFormFactory.toString() failed", rex);
     } catch (OutOfMemoryError oome) {
     }
     return false;
@@ -1753,7 +1749,6 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
             fRelaxedSyntax);
         return buf.toString();
       } catch (IOException ioex) {
-        LOGGER.error("MathMLFormFactory.convertDoubleToFormattedString() failed", ioex);
       }
     }
     return Double.toString(dValue);
@@ -2296,7 +2291,6 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
     } catch (Exception ex) {
       Errors.rethrowsInterruptException(ex);
-      LOGGER.debug("MathMLFormFactory.convertSeriesData() failed", ex);
       return false;
     }
     if (Precedence.PLUS < precedence) {

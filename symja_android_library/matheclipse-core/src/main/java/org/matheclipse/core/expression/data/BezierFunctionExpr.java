@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.tensor.itp.BinaryAverage;
 import org.matheclipse.core.tensor.itp.LinearBinaryAverage;
@@ -36,6 +37,29 @@ public class BezierFunctionExpr extends DataExpr<IAST> implements Externalizable
   public static BezierFunctionExpr newInstance(BinaryAverage binaryAverage, IAST sequence,
       double[][] points) {
     return new BezierFunctionExpr(binaryAverage, sequence, points);
+  }
+
+  /**
+   * Factory method to create a new {@link BezierFunctionExpr} from the internal 7-argument
+   * structure.
+   *
+   * @param ast the 7-argument IAST representing the evaluated BezierFunction
+   * @return a new {@link BezierFunctionExpr} instance, or null if the structure is invalid
+   */
+  public static BezierFunctionExpr newInstance(IAST ast) {
+    if (ast.argSize() == 7) {
+      IExpr arg4 = ast.arg4();
+      // arg4 contains {pointsMatrix, weights}
+      if (arg4.isList() && arg4.argSize() >= 1 && arg4.first().isListOfLists()) {
+        IAST list = (IAST) arg4.first();
+        double[][] matrix = list.toDoubleMatrix(false);
+        if (matrix != null) {
+          // Keep the extracted list as the internal fData representation
+          return new BezierFunctionExpr(LinearBinaryAverage.INSTANCE, list, matrix);
+        }
+      }
+    }
+    return null;
   }
 
   /**
@@ -149,6 +173,46 @@ public class BezierFunctionExpr extends DataExpr<IAST> implements Externalizable
       }
     }
     return pts;
+  }
+
+  @Override
+  public IASTAppendable fullForm() {
+    if (points == null || points.length == 0) {
+      return F.ast(S.BezierFunction);
+    }
+
+    IASTAppendable result = F.ast(S.BezierFunction, 8); // Head + 7 arguments
+
+    // 1. Dimension
+    result.append(F.C1);
+
+    // 2. Domain
+    result.append(F.List(F.List(F.CD0, F.CD1)));
+
+    // 3. Degree
+    result.append(F.List(F.ZZ(points.length - 1)));
+
+    // 4. Control Points and Weights
+    IASTAppendable pointsList = F.ListAlloc(points.length);
+    for (int i = 0; i < points.length; i++) {
+      IASTAppendable pt = F.ListAlloc(points[i].length);
+      for (int j = 0; j < points[i].length; j++) {
+        pt.append(F.num(points[i][j])); // Machine-precision real numbers
+      }
+      pointsList.append(pt);
+    }
+    result.append(F.List(pointsList, F.CEmptyList));
+
+    // 5. Flags
+    result.append(F.List(F.C0));
+
+    // 6. Precision
+    result.append(S.MachinePrecision);
+
+    // 7. Evaluation State
+    result.append(F.stringx("Unevaluated"));
+
+    return result;
   }
 
   /**

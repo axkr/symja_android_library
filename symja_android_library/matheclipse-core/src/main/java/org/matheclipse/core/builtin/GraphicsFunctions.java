@@ -671,7 +671,6 @@ public class GraphicsFunctions {
       S.Tetrahedron.setEvaluator(new Tetrahedron());
       S.Text.setEvaluator(new Text());
       S.Tube.setEvaluator(new Tube());
-      S.Volume.setEvaluator(new Volume());
       S.GraphicsComplex.setEvaluator(new GraphicsComplex());
       S.GraphicsJSON.setEvaluator(new GraphicsJSON());
       S.Graphics3DJSON.setEvaluator(new Graphics3DJSON());
@@ -1338,67 +1337,6 @@ public class GraphicsFunctions {
         }
       }
       return false;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {}
-  }
-
-  private static class Volume extends AbstractEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isAST()) {
-        IAST graphic = (IAST) ast.arg1();
-        if (graphic.isAST(S.Ball, 2, 3) && graphic.first().isList3()) {
-          IExpr radius = F.C1;
-          if (graphic.size() == 3) {
-            radius = graphic.second();
-          }
-          return F.Times(F.C3D4, S.Pi, F.Power(radius, F.C3));
-        } else if (graphic.isAST(S.Cylinder, 2, 3) && graphic.first().isList(new int[] {2, 3})) {
-          IExpr r = F.C1;
-          if (graphic.size() == 3) {
-            r = graphic.second();
-          }
-          IAST l1 = (IAST) graphic.first().first();
-          IExpr a = l1.arg1();
-          IExpr b = l1.arg2();
-          IExpr c = l1.arg3();
-          IAST l2 = (IAST) graphic.first().second();
-          IExpr d = l2.arg1();
-          IExpr e = l2.arg2();
-          IExpr f = l2.arg3();
-          // Sqrt((a-d)^2+(b-e)^2+(c-f)^2)*Pi*r^2
-          return F.Times(F.Sqrt(F.Plus(//
-              F.Power(F.Subtract(a, d), F.C2), //
-              F.Power(F.Subtract(b, e), F.C2), //
-              F.Power(F.Subtract(c, f), F.C2))), //
-              F.Pi, F.Sqr(r));
-
-
-        } else if (graphic.isAST(S.Cuboid, 3) && graphic.first().isList3()
-            && graphic.second().isList3()) {
-          IAST v1 = (IAST) graphic.first();
-          IAST v2 = (IAST) graphic.second();
-          // Abs((-a + x)*(-b + y)*(-c + z))
-          return F.Abs(F.Times( //
-              F.Plus(v1.arg1().negate(), v2.arg1()), F.Plus(v1.arg2().negate(), v2.arg2()),
-              F.Plus(v1.arg3().negate(), v2.arg3())));
-        } else if (graphic.isAST(S.Ellipsoid, 3) && graphic.first().isList3()
-            && graphic.second().isList3()) {
-          // IAST v1 = (IAST) graphic.first();
-          IAST v2 = (IAST) graphic.second();
-          return F.Times(F.QQ(4, 3), S.Pi, v2.arg1(), v2.arg2(), v2.arg3());
-        }
-      }
-
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
     }
 
     @Override

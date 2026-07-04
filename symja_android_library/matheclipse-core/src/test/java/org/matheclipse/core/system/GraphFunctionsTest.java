@@ -321,6 +321,48 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testIncidenceMatrix() {
+    check("IncidenceMatrix(Graph({1 -> 2, 2 -> 3})) // InputForm", //
+        "SparseArray(Automatic,{3,2},0,{1,{{0,1,3,4},{{1},{1},{2},{2}}},{-1,1,-1,1}})");
+
+    // Directed Graph
+    check("IncidenceMatrix(Graph({1 -> 2, 2 -> 3})) // Normal", //
+        "{{-1,0},{1,-1},{0,1}}");
+
+    // Undirected Graph
+    check("IncidenceMatrix(Graph({1 <-> 2, 2 <-> 3})) // Normal", //
+        "{{1,0},{1,1},{0,1}}");
+
+    // Directed Graph with isolated/extra vertices
+    check("IncidenceMatrix(Graph({1, 2, 3, 4}, {1 -> 2, 1 -> 3, 2 -> 3, 4 -> 2})) // Normal", //
+        "{{-1,-1,0,0},{1,0,-1,1},{0,1,1,0},{0,0,0,-1}}");
+
+    // Undirected cycle
+    check(
+        "IncidenceMatrix(Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1})) // Normal", //
+        "{{1,0,1},{1,1,0},{0,1,1}}");
+
+    // Directed cycle
+    check(
+        "IncidenceMatrix(Graph({1 \\[DirectedEdge] 2, 2 \\[DirectedEdge] 3, 3 \\[DirectedEdge] 1})) // Normal", //
+        "{{-1,0,1},{1,-1,0},{0,1,-1}}");
+
+    // Undirected graph with a self-loop (self-loops get an incidence of 2)
+    check("IncidenceMatrix(Graph({1, 2}, {1 <-> 2, 2 <-> 2})) // Normal", //
+        "{{1,0},{1,2}}");
+
+    // Directed graph with a self-loop (self-loops cancel out to 0, which is dropped from
+    // SparseArray)
+    check("IncidenceMatrix(Graph({1, 2}, {1 -> 2, 2 -> 2})) // Normal", //
+        "{{-1,0},{1,0}}");
+
+    // Standard un-normalized output check (testing the SparseArray structure directly)
+    check("IncidenceMatrix(Graph({1 -> 2, 2 -> 3})) // FullForm", //
+        "SparseArray(Automatic, List(3, 2), 0, List(1, List(List(0, 1, 3, 4), List(List(1), List(1), List(2), List(2))), List(-1, 1, -1, 1)))");
+
+  }
+
+  @Test
   public void testIndexGraph() {
     check("IndexGraph({1 -> 3, 2 -> 1, 3 -> 6, 4 -> 6, 1 -> 5, 5 -> 4,  6 -> 1}, 10)", //
         "Graph({10,11,12,13,14,15},{10->11,12->10,11->13,14->13,10->15,15->14,13->10})");
@@ -354,6 +396,8 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testGraph() {
+    check("Graph({1,2,3},{1<->2,2<->3,3<->1}) // InputForm", //
+        "Graph({1,2,3},{1<->2,2<->3,3<->1})");
 
     check("Graph({1 \\[UndirectedEdge] 2, 2 \\[UndirectedEdge] 3, 3 \\[UndirectedEdge] 1})", //
         "Graph({1,2,3},{1<->2,2<->3,3<->1})");
@@ -381,6 +425,37 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
             + "{1<->2,1<->3,1<->4,2<->5,2<->6,5<->7,5<->8,7<->9,7<->\n" + //
             "10,9<->3,9<->11,3<->12,4<->13,4<->14,6<->15,6<->16,8<->13,8<->17,10<->16,10<->18,11<->17,11<->14,12<->15,12<->18,15<->17,13<->18,16<->\n"
             + "14})");
+  }
+
+  @Test
+  public void testGraphDistance() {
+    // 3-argument signature: Distance between s and t
+    check("GraphDistance({1 -> 2, 2 -> 3, 3 -> 4}, 1, 4)", //
+        "3");
+
+    // Distance to itself should be 0
+    check("GraphDistance({1 -> 2, 2 -> 3, 3 -> 4}, 1, 1)", //
+        "0");
+
+    // Distance to an unreachable vertex should be Infinity
+    check("GraphDistance({1 -> 2, 3 -> 4}, 1, 4)", //
+        "Infinity");
+
+    // 2-argument signature: Distance from s to all vertices
+    check("GraphDistance({1 -> 2, 2 -> 3, 3 -> 4}, 1)", //
+        "{0,1,2,3}");
+
+    // Shortest path taking weights into account
+    check("GraphDistance(Graph({1 <-> 2, 2 <-> 3, 1 <-> 3}, EdgeWeight -> {2.0, 3.0, 4.0}), 1, 3)", //
+        "4.0");
+
+    // Tests for the Method option integration
+    check("GraphDistance({1 -> 2, 2 -> 3, 3 -> 4}, 1, 4, Method -> \"Dijkstra\")", //
+        "3");
+    check("GraphDistance({1 -> 2, 2 -> 3, 3 -> 4}, 1, 4, Method -> \"BellmanFord\")", //
+        "3");
+    check("GraphDistance({1 -> 2, 2 -> 3, 3 -> 4}, 1, 4, Method -> \"UnitWeight\")", //
+        "3");
   }
 
   @Test

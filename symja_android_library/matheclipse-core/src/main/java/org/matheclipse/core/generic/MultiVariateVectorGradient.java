@@ -57,7 +57,7 @@ public final class MultiVariateVectorGradient implements MultivariateVectorFunct
     } else {
       fFunction = function;
     }
-    IExpr gradientList = S.Grad.of(engine, fFunction, fVariableList);
+    IExpr gradientList = S.Grad.funEval(engine, fFunction, fVariableList);
     if (gradientList.isList() && gradientList.size() == variablesList.size()) {
       fGradientFunctions = (IAST) gradientList;
     } else {

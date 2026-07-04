@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.exception.AbortException;
@@ -35,7 +33,6 @@ import uk.ac.ed.ph.snuggletex.SnuggleSession;
 
 /* package private */
 class TeXSegmentParser {
-  private static final Logger LOGGER = LogManager.getLogger(TeXSegmentParser.class);
 
   /**
    * Because the {@link TeXParser} uses the default slots, use this "dummy slot" inside this class.
@@ -269,7 +266,6 @@ class TeXSegmentParser {
       }
       unicodeString = unicodeStringBuilder.toString();
     } catch (final UnsupportedEncodingException e) {
-      LOGGER.error("TeXParser.toUnicodeString() failed", e);
     }
     return unicodeString;
   }
@@ -405,9 +401,9 @@ class TeXSegmentParser {
         String name = op.getNodeName();
         if (name.equals("mo")) {
           String text = op.getTextContent();
-          if (SHOW_UNICODE) {
-            LOGGER.info("mo: {} - {}", () -> text, () -> toUnicodeString(text, "UTF-8"));
-          }
+          // if (SHOW_UNICODE) {
+          // LOGGER.info("mo: {} - {}", () -> text, () -> toUnicodeString(text, "UTF-8"));
+          // }
           // issue #712 start
           if (text.equals("|")) {
             IExpr sequence = convertArgs(list, 1, list.getLength() - 1);
@@ -807,9 +803,9 @@ class TeXSegmentParser {
           }
         }
       }
-      if (SHOW_UNICODE) {
-        LOGGER.info("mi: {} - {}", () -> text, () -> toUnicodeString(text, "UTF-8"));
-      }
+      // if (SHOW_UNICODE) {
+      // LOGGER.info("mi: {} - {}", () -> text, () -> toUnicodeString(text, "UTF-8"));
+      // }
       IExpr x = UNICODE_OPERATOR_MAP.get(text);
       if (x != null) {
         return x;
@@ -831,7 +827,6 @@ class TeXSegmentParser {
       return F.ZZ(text, 10);
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
-      LOGGER.debug("TeXParser.mn() failed", rex);
     }
     throw new AbortException();
   }
@@ -839,9 +834,9 @@ class TeXSegmentParser {
   private IExpr mo(Node node) {
     String text = node.getTextContent();
     if (text.length() == 1) {
-      if (SHOW_UNICODE) {
-        LOGGER.info("mo: {} - {}", () -> text, () -> toUnicodeString(text, "UTF-8"));
-      }
+      // if (SHOW_UNICODE) {
+      // LOGGER.info("mo: {} - {}", () -> text, () -> toUnicodeString(text, "UTF-8"));
+      // }
       IExpr x = UNICODE_OPERATOR_MAP.get(text);
       if (x != null) {
         return x;
@@ -1224,9 +1219,9 @@ class TeXSegmentParser {
         return temp;
       }
       List<InputError> errors = session.getErrors();
-      for (int i = 0; i < errors.size(); i++) {
-        LOGGER.warn(errors.get(i));
-      }
+      // for (int i = 0; i < errors.size(); i++) {
+      // LOGGER.warn(errors.get(i));
+      // }
     } catch (Exception e) {
       Errors.rethrowsInterruptException(e);
       if (Config.SHOW_STACKTRACE) {

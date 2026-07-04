@@ -8087,38 +8087,41 @@ public final class ListFunctions {
   private static IExpr padEvaluate(final IAST ast, EvalEngine engine, boolean isLeft) {
     IExpr list = ast.arg1();
     if (!list.isAST()) {
-      // Nonatomic expression expected at position `1` in `2`.
       return Errors.printMessage(ast.topHead(), "normal", F.List(F.C1, ast), engine);
     }
     IExpr nExpr = ast.argSize() >= 2 ? ast.arg2() : F.NIL;
     IExpr padding = ast.argSize() >= 3 ? ast.arg3() : F.C0;
     IExpr marginExpr = ast.argSize() >= 4 ? ast.arg4() : F.C0;
 
-    // 1. Parse target dimensions
     int[] dims;
+    boolean[] isLeftArr;
     boolean explicitDims = true;
 
     if (nExpr.isNIL() || nExpr.equals(S.Automatic)) {
       java.util.List<Integer> maxDimsList = new java.util.ArrayList<>();
       determineMaxDimensions(list, 0, maxDimsList);
       dims = new int[maxDimsList.size()];
+      isLeftArr = new boolean[maxDimsList.size()];
       for (int i = 0; i < maxDimsList.size(); i++) {
         dims[i] = maxDimsList.get(i);
+        isLeftArr[i] = isLeft;
       }
       explicitDims = false;
     } else if (nExpr.isInteger()) {
       int n = nExpr.toIntDefault();
-      if (n < 0)
-        return F.NIL;
-      dims = new int[] {n};
+      dims = new int[] {Math.abs(n)};
+      isLeftArr = new boolean[] {n < 0 ? !isLeft : isLeft};
     } else if (nExpr.isList()) {
       IAST nList = (IAST) nExpr;
       dims = new int[nList.argSize()];
+      isLeftArr = new boolean[nList.argSize()];
       for (int i = 0; i < nList.argSize(); i++) {
         IExpr dimExpr = nList.get(i + 1);
         if (!dimExpr.isInteger())
           return F.NIL;
-        dims[i] = dimExpr.toIntDefault();
+        int dimVal = dimExpr.toIntDefault();
+        dims[i] = Math.abs(dimVal);
+        isLeftArr[i] = dimVal < 0 ? !isLeft : isLeft;
       }
     } else {
       return F.NIL;
@@ -8129,7 +8132,6 @@ public final class ListFunctions {
       int exprLevel = determinePaddingLevel(list);
       int effectiveLevel = Math.max(1, exprLevel);
       if (dims.length > effectiveLevel) {
-        // The padding specification `1` involves `2` levels, the list `3` has only `4` level.
         Errors.printMessage(ast.topHead(), "levelpad",
             F.List(nExpr, F.ZZ(dims.length), list, F.ZZ(exprLevel)), engine);
         return F.NIL;
@@ -8171,21 +8173,20 @@ public final class ListFunctions {
       padElements = new IExpr[] {padding};
     }
 
-    // Determine the root default head
     IExpr rootHead = list.isAST() ? list.head() : S.List;
 
-    // NOTE: The mutable padIndex array has been completely removed
-    return padRecursive(list, dims, margins, padElements, 0, isLeft, rootHead);
+    return padRecursive(list, dims, margins, padElements, 0, isLeftArr, rootHead);
   }
 
   private static IExpr padRecursive(IExpr list, int[] dims, int[] margins, IExpr[] padElements,
-      int depth, boolean isLeft, IExpr defaultHead) {
+      int depth, boolean[] isLeftArr, IExpr defaultHead) {
     if (depth >= dims.length) {
       return list;
     }
 
     int targetSize = dims[depth];
     int margin = margins[depth];
+    boolean currentIsLeft = isLeftArr[depth];
 
     int origSize;
     IAST origAST;
@@ -8208,7 +8209,7 @@ public final class ListFunctions {
     for (int resultIndex = 0; resultIndex < targetSize; resultIndex++) {
       int origIndex;
 
-      if (isLeft) {
+      if (currentIsLeft) {
         origIndex = resultIndex - (targetSize - origSize - margin);
       } else {
         origIndex = resultIndex - margin;
@@ -8216,18 +8217,13 @@ public final class ListFunctions {
 
       if (origIndex >= 0 && origIndex < origSize) {
         IExpr origElement = origAST.get(origIndex + 1);
-        result
-            .append(padRecursive(origElement, dims, margins, padElements, depth + 1, isLeft, head));
+        result.append(
+            padRecursive(origElement, dims, margins, padElements, depth + 1, isLeftArr, head));
       } else {
-        // Mathematically calculate the correct cyclic element index based on distance to the
-        // original list bounds
         int cyclicIndex;
         if (origIndex < 0) {
-          // For PadLeft: alignment shifts backwards resulting in continuous leftward cyclic
-          // placement
           cyclicIndex = Math.floorMod(origIndex, padElements.length);
         } else {
-          // For PadRight: alignment starts from 0 exactly at the boundary going right
           cyclicIndex = (origIndex - origSize) % padElements.length;
         }
 

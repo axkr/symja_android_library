@@ -35,18 +35,6 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
     check("KPartitions({v,w,x,y,z},3)", //
         "{{{v},{w},{x,y,z}},{{v},{w,x},{y,z}},{{v},{w,x,y},{z}},{{v,w},{x},{y,z}},{{v,w},{x,y},{z}},{{v,w,x},{y},{z}}}");
 
-    check("IntegerPartitions(3)", //
-        "{{3},{2,1},{1,1,1}}");
-    check("IntegerPartitions(5)", //
-        "{{5},{4,1},{3,2},{3,1,1},{2,2,1},{2,1,1,1},{1,1,1,1,1}}");
-    check("IntegerPartitions(10)", //
-        "{{10},{9,1},{8,2},{8,1,1},{7,3},{7,2,1},{7,1,1,1},{6,4},{6,3,1},{6,2,2},{6,2,1,1},{\n"
-            + "6,1,1,1,1},{5,5},{5,4,1},{5,3,2},{5,3,1,1},{5,2,2,1},{5,2,1,1,1},{5,1,1,1,1,1},{\n"
-            + "4,4,2},{4,4,1,1},{4,3,3},{4,3,2,1},{4,3,1,1,1},{4,2,2,2},{4,2,2,1,1},{4,2,1,1,1,\n"
-            + "1},{4,1,1,1,1,1,1},{3,3,3,1},{3,3,2,2},{3,3,2,1,1},{3,3,1,1,1,1},{3,2,2,2,1},{3,\n"
-            + "2,2,1,1,1},{3,2,1,1,1,1,1},{3,1,1,1,1,1,1,1},{2,2,2,2,2},{2,2,2,2,1,1},{2,2,2,1,\n"
-            + "1,1,1},{2,2,1,1,1,1,1,1},{2,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1}}");
-
     check("Permutations({1,1,1})", //
         "{{1,1,1}}");
     check("Permutations({2,1,0})", //
@@ -102,9 +90,27 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testIntegerPartitions() {
-    // TODO
+    check("IntegerPartitions(8, {2, Infinity, 2})", //
+        "{{7,1},{6,2},{5,3},{5,1,1,1},{4,4},{4,2,1,1},{3,3,1,1},{3,2,2,1},{3,1,1,1,1,1},{\n"
+            + "2,2,2,2},{2,2,1,1,1,1},{1,1,1,1,1,1,1,1}}");
+    check("IntegerPartitions(5, {3, Infinity})", //
+        "{{3,1,1},{2,2,1},{2,1,1,1},{1,1,1,1,1}}");
+
+    check("IntegerPartitions(3)", //
+        "{{3},{2,1},{1,1,1}}");
+    check("IntegerPartitions(5)", //
+        "{{5},{4,1},{3,2},{3,1,1},{2,2,1},{2,1,1,1},{1,1,1,1,1}}");
+    check("IntegerPartitions(10)", //
+        "{{10},{9,1},{8,2},{8,1,1},{7,3},{7,2,1},{7,1,1,1},{6,4},{6,3,1},{6,2,2},{6,2,1,1},{\n"
+            + "6,1,1,1,1},{5,5},{5,4,1},{5,3,2},{5,3,1,1},{5,2,2,1},{5,2,1,1,1},{5,1,1,1,1,1},{\n"
+            + "4,4,2},{4,4,1,1},{4,3,3},{4,3,2,1},{4,3,1,1,1},{4,2,2,2},{4,2,2,1,1},{4,2,1,1,1,\n"
+            + "1},{4,1,1,1,1,1,1},{3,3,3,1},{3,3,2,2},{3,3,2,1,1},{3,3,1,1,1,1},{3,2,2,2,1},{3,\n"
+            + "2,2,1,1,1},{3,2,1,1,1,1,1},{3,1,1,1,1,1,1,1},{2,2,2,2,2},{2,2,2,2,1,1},{2,2,2,1,\n"
+            + "1,1,1},{2,2,1,1,1,1,1,1},{2,1,1,1,1,1,1,1,1},{1,1,1,1,1,1,1,1,1,1}}");
+
     check("IntegerPartitions(1,7,{-1,-2,3})", //
-        "IntegerPartitions(1,7,{-1,-2,3})");
+        "{{3,3,3,-2,-2,-2,-2},{3,3,-1,-1,-1,-1,-1},{3,3,-1,-1,-1,-2},{3,3,-1,-2,-2},{3,-1,-\n"
+            + "1},{3,-2}}");
 
     check("IntegerPartitions(8, All, {1, 2, 5})", //
         "{{5,2,1},{5,1,1,1},{2,2,2,2},{2,2,2,1,1},{2,2,1,1,1,1},{2,1,1,1,1,1,1},{1,1,1,1,\n" //
@@ -128,7 +134,7 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
     check("IntegerPartitions(2147483647)", //
         "IntegerPartitions(2147483647)");
 
-    // TODO improve performance
+    // $IterationLimit: Iteration limit of 500 exceeded for IntegerPartitions(1009,2).
     // check("IntegerPartitions(1009,2)", //
     // "{{1009}}");
     check("IntegerPartitions(1009,1)", //
@@ -381,10 +387,174 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPermutations() {
+    check("Permutations({\"A\",\"B\",\"C\",\"A\"})", //
+        "{{A,B,C,A},{A,B,A,C},{A,C,B,A},{A,C,A,B},{A,A,B,C},{A,A,C,B},{B,A,C,A},{B,A,A,C},{B,C,A,A},{C,A,B,A},{C,A,A,B},{C,B,A,A}}");
+    check("Permutations(Range(4), {4, 0, -2})", //
+        "{{1,2,3,4},{1,2,4,3},{1,3,2,4},{1,3,4,2},{1,4,2,3},{1,4,3,2},{2,1,3,4},{2,1,4,3},{\n" //
+            + "2,3,1,4},{2,3,4,1},{2,4,1,3},{2,4,3,1},{3,1,2,4},{3,1,4,2},{3,2,1,4},{3,2,4,1},{\n" //
+            + "3,4,1,2},{3,4,2,1},{4,1,2,3},{4,1,3,2},{4,2,1,3},{4,2,3,1},{4,3,1,2},{4,3,2,1},{\n" //
+            + "1,2},{1,3},{1,4},{2,1},{2,3},{2,4},{3,1},{3,2},{3,4},{4,1},{4,2},{4,3},{}}");
+    check("Permutations({1, 2, 1} )", //
+        "{{1,2,1},{1,1,2},{2,1,1}}");
+
+    check("Permutations(x^2,{3})", //
+        "{}");
+    check("Permutations(x^2,{2})", //
+        "{x^2,2^x}");
+    check("Permutations(x^2,{1})", //
+        "{x,2}");
+    check("Permutations(x^2,{0})", //
+        "{{}}");
+    check("Permutations(x^2,{-1})", //
+        "Permutations(x^2,{-1})");
+    check("Permutations({1, 2, 3}, 2)", //
+        "{{},{1},{2},{3},{1,2},{1,3},{2,1},{2,3},{3,1},{3,2}}");
+    check("Permutations({1, 2, 3}, {2})", //
+        "{{1,2},{1,3},{2,1},{2,3},{3,1},{3,2}}");
+    check("Permutations({a,b,c})", //
+        "{{a,b,c},{a,c,b},{b,a,c},{b,c,a},{c,a,b},{c,b,a}}");
+    check("Permutations({a,b,c}, {2})", //
+        "{{a,b},{a,c},{b,a},{b,c},{c,a},{c,b}}");
+
+    check("Permutations({a},{0})", //
+        "{{}}");
+    check("Permutations({a,b,c,d},{3})", //
+        "{{a,b,c},{a,b,d},{a,c,b},{a,c,d},{a,d,b},{a,d,c},{b,a,c},{b,a,d},{b,c,a},{b,c,d},{b,d,a},{b,d,c},{c,a,b},{c,a,d},{c,b,a},{c,b,d},{c,d,a},{c,d,b},{d,a,b},{d,a,c},{d,b,a},{d,b,c},{d,c,a},{d,c,b}}");
+    check("Permutations({a,a,b})", //
+        "{{a,a,b},{a,b,a},{b,a,a}}");
+    check("Permutations({a,a,b,b})", //
+        "{{a,a,b,b},{a,b,a,b},{a,b,b,a},{b,a,a,b},{b,a,b,a},{b,b,a,a}}");
+    check("Permutations({a,a,b,b},{3})", //
+        "{{a,a,b},{a,b,a},{a,b,b},{b,a,a},{b,a,b},{b,b,a}}");
     check("Permutations({x,0,0,0})", //
         "{{x,0,0,0},{0,x,0,0},{0,0,x,0},{0,0,0,x}}");
     check("Permutations({1,2,1})", //
         "{{1,2,1},{1,1,2},{2,1,1}}");
+  }
+
+  @Test
+  public void testSubsetQ() {
+    check("SubsetQ(f(b,a,b,c), f(c, c, c))", //
+        "True");
+    check("SubsetQ(f(b,a,b,c), f(a, b, d))", //
+        "False");
+
+    // same as ContainsAll
+    check("SubsetQ({b,a,b,c}, {a, b})", //
+        "True");
+    check("SubsetQ({b,a,b,c}, {c, c, c})", //
+        "True");
+    check("SubsetQ({b,a,b,c}, {a, b, d})", //
+        "False");
+    check("SubsetQ({b, a, d}, {a, b, c})", //
+        "False");
+    check("SubsetQ({ }, {a, b, c})", //
+        "False");
+    check("SubsetQ({ },{ })", //
+        "True");
+    check("SubsetQ({a, b, c},{ })", //
+        "True");
+
+    check("SubsetQ(1, {1,2,3})", //
+        "SubsetQ(1,{1,2,3})");
+    check("SubsetQ({1,2,3}, 4)", //
+        "SubsetQ({1,2,3},4)");
+
+    check("SubsetQ({1.0,2.0}, {1,2,3})", //
+        "False");
+    check("SubsetQ({1.0,2.0}, {1,2,3}, SameTest->Equal)", //
+        "False");
+
+    check("SubsetQ({1,2,3}, {1.0,2.0})", //
+        "False");
+    check("SubsetQ({1,2,3}, {1.0,2.0}, SameTest->Equal)", //
+        "True");
+  }
+
+  @Test
+  public void testSubsets() {
+    check("Subsets({1, 2, 3, 4}, {3})", //
+        "{{1,2,3},{1,2,4},{1,3,4},{2,3,4}}");
+    check("Subsets(f(a,b,c))", //
+        "{f(),f(a),f(b),f(c),f(a,b),f(a,c),f(b,c),f(a,b,c)}");
+    check("Subsets({a, b, c, d}, All, {15, 1, -2})", //
+        "{{b,c,d},{a,b,d},{c,d},{b,c},{a,c},{d},{b},{}}");
+
+    check("Subsets(Range(20), All, {69381})", //
+        "{{1,3,4,5,11,14,17}}");
+    check("Subsets({a, b, c, d, e}, {0, 5, 2})", //
+        "{{},{a,b},{a,c},{a,d},{a,e},{b,c},{b,d},{b,e},{c,d},{c,e},{d,e},{a,b,c,d},{a,b,c,e},{a,b,d,e},{a,c,d,e},{b,c,d,e}}");
+    // check(
+    // "Subsets({a,b,c})", //
+    // "{{},{a},{b},{c},{a,b},{a,c},{b,c},{a,b,c}}");
+
+    check("Subsets({},{2})", //
+        "{}");
+    check("Subsets(Infinity,All)", //
+        "{ComplexInfinity,Infinity}");
+    check("Subsets(Infinity,Infinity)", //
+        "{ComplexInfinity,Infinity}");
+    check("Subsets(Infinity,-Infinity)", //
+        "Subsets(Infinity,-Infinity)");
+
+    // https://oeis.org/A018900 - Sum of two distinct powers of 2
+    check("Union(Total/@Subsets(2^Range(0, 10), {2}))", //
+        "{3,5,6,9,10,12,17,18,20,24,33,34,36,40,48,65,66,68,72,80,96,129,130,132,136,144,\n"
+            + "160,192,257,258,260,264,272,288,320,384,513,514,516,520,528,544,576,640,768,1025,\n"
+            + "1026,1028,1032,1040,1056,1088,1152,1280,1536}");
+    check("Subsets()", //
+        "Subsets()");
+    check("Subsets({})", //
+        "{{}}");
+    check("Subsets({a,b,c})", //
+        "{{},{a},{b},{c},{a,b},{a,c},{b,c},{a,b,c}}");
+    check("Subsets({a,b,c},2)", //
+        "{{},{a},{b},{c},{a,b},{a,c},{b,c}}");
+    check("Subsets({a,b,c},{2})", //
+        "{{a,b},{a,c},{b,c}}");
+    check("Subsets({a,b,c,d},{2})", //
+        "{{a,b},{a,c},{a,d},{b,c},{b,d},{c,d}}");
+  }
+
+  @Test
+  public void testPartialSubsets() {
+    check("Subsets({a, b, c, d}, All, {1, 15, 2})", //
+        "{{},{b},{d},{a,c},{b,c},{c,d},{a,b,d},{b,c,d}}");
+    check("Subsets({a, b, c, d}, All, {15, 1, -2})", //
+        "{{b,c,d},{a,b,d},{c,d},{b,c},{a,c},{d},{b},{}}");
+    check("Subsets(f[a, b, c, d, e], {3},{3,8,3})", //
+        "{f(a,b,e),f(a,d,e)}");
+    check("Subsets({a, b, c, d, e}, {3},{-3,-8,-3})", //
+        "{{b,c,e},{a,c,e}}");
+    check("Subsets({a, b, c, d, e}, {3},{3,8,3})", //
+        "{{a,b,e},{a,d,e}}");
+    check("Subsets({a, b, c, d, e}, {3},{3,8})", //
+        "{{a,b,e},{a,c,d},{a,c,e},{a,d,e},{b,c,d},{b,c,e}}");
+
+
+
+    check("Subsets({a, b, c, d, e}, {3}, 3)", //
+        "{{a,b,c},{a,b,d},{a,b,e}}");
+    check("Subsets({a, b, c, d, e}, {3}, -4)", //
+        "{{b,c,d},{b,c,e},{b,d,e},{c,d,e}}");
+    check("Subsets({a, b, c, d, e}, {3}, {3})", //
+        "{{a,b,e}}");
+    check("Subsets({a, b, c, d, e}, {3},  {3,4})", //
+        "{{a,b,e},{a,c,d}}");
+    check("Subsets({a, b, c, d, e}, {3},  {-3,-4})", //
+        "{}");
+    check("Subsets({a, b, c, d, e}, {3},  {-4,-3})", //
+        "{{b,c,d},{b,c,e}}");
+    check("Subsets({a, b, c, d, e}, {3},  {-4,-1})", //
+        "{{b,c,d},{b,c,e},{b,d,e},{c,d,e}}");
+    check("Subsets({a, b, c, d, e}, {3},  {-4,1})", //
+        "{}");
+    check("Subsets({a, b, c, d, e}, {3}, {-4})", //
+        "{{b,c,d}}");
+    check("Subsets({a, b, c, d, e}, {3})", //
+        "{{a,b,c},{a,b,d},{a,b,e},{a,c,d},{a,c,e},{a,d,e},{b,c,d},{b,c,e},{b,d,e},{c,d,e}}");
+    check("Subsets(Range(10), All, {1024})", //
+        "{{1,2,3,4,5,6,7,8,9,10}}");
   }
 
   @Test

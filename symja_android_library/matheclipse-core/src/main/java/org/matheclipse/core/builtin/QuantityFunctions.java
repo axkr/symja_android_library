@@ -12,8 +12,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -31,7 +29,6 @@ import org.matheclipse.core.tensor.qty.IUnit;
 import org.matheclipse.core.tensor.qty.UnitSystem;
 
 public class QuantityFunctions {
-  private static final Logger LOGGER = LogManager.getLogger(QuantityFunctions.class);
 
   static final HashMap<String, Function<LocalDateTime, IExpr>> DATEVALUE_MAP =
       new HashMap<String, Function<LocalDateTime, IExpr>>();
@@ -119,7 +116,7 @@ public class QuantityFunctions {
         }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        return Errors.printMessage(S.DateObject, rex, engine);
       }
       return F.NIL;
     }
@@ -177,7 +174,7 @@ public class QuantityFunctions {
         }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        return Errors.printMessage(S.DateString, rex, engine);
       }
       return F.NIL;
     }
@@ -230,7 +227,7 @@ public class QuantityFunctions {
         }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        return Errors.printMessage(S.DateValue, rex, engine);
       }
       return F.NIL;
     }
@@ -281,7 +278,7 @@ public class QuantityFunctions {
         }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
+        return Errors.printMessage(S.TimeObject, rex, engine);
       }
       return F.NIL;
     }
@@ -368,7 +365,7 @@ public class QuantityFunctions {
         }
       } catch (RuntimeException e) {
         Errors.rethrowsInterruptException(e);
-        LOGGER.log(engine.getLogLevel(), "Quantity", e);
+        return Errors.printMessage(S.Quantity, e, engine);
       }
       return F.NIL;
     }
@@ -440,7 +437,7 @@ public class QuantityFunctions {
         }
       } catch (RuntimeException e) {
         Errors.rethrowsInterruptException(e);
-        LOGGER.log(engine.getLogLevel(), "QuantityMagnitude", e);
+        return Errors.printMessage(S.QuantityMagnitude, e, engine);
       }
       return F.NIL;
     }
@@ -526,7 +523,7 @@ public class QuantityFunctions {
         }
       } catch (RuntimeException e) {
         Errors.rethrowsInterruptException(e);
-        LOGGER.log(engine.getLogLevel(), "UnitConvert", e);
+        return Errors.printMessage(S.UnitConvert, e, engine);
       }
       return F.NIL;
     }

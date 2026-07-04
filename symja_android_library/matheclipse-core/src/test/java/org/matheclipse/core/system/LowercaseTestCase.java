@@ -5057,6 +5057,46 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testDecompose() {
+    check("f = x^8 + 4 x^7 + 2 x^6 - 8 x^5 - 5 x^4 + 8 x^3 + 2 x^2 - 4 x + 8;", "");
+    check("Decompose(f, x)", //
+        "{8+2*x+x^2,-2*x+x^2,x+x^2}");
+    check("Decompose(x^4 + 4 x^3 + 4 x^2 + 6 x + 24, x, Modulus -> 3)", //
+        "{x^2,2*x+x^2}");
+    check("Decompose(x^3 + 2 x^2 + 4 x + 7, x, Modulus -> 2)", //
+        "{1+x,x^3}");
+    check("Decompose(2*x+1, x)", //
+        "{1+2*x}");
+    check("Decompose(2*x^2+1, x)", //
+        "{1+2*x,x^2}");
+    check("Decompose(x^2+1, x)", //
+        "{1+x,x^2}");
+
+    check("Decompose(x^4 + x^2, x)", //
+        "{x+x^2,x^2}");
+    check("Decompose(x^4 + 2*x^2 + 1, x)", //
+        "{1+2*x+x^2,x^2}");
+    check("Decompose((x^2 + x)^4 + 1, x)", //
+        "{1+x,x^4,x+x^2}");
+    check("Decompose((x^2 + 1)^4 + 3, x)", //
+        "{4+2*x+x^2,2*x+x^2,x^2}");
+
+    check("Decompose((x+1)^2, x)", //
+        "{1+2*x+x^2}");
+
+    // x^2 + x + 1 is prime
+    check("Decompose(x^2 + x + 1, x)", //
+        "{1+x+x^2}");
+
+    // (x^3 + 1)^2
+    check("Decompose(x^6 + 2*x^3 + 1, x)", //
+        "{1+2*x+x^2,x^3}");
+
+    check("Decompose(Sin(x)^2 + Sin(x), x)", //
+        "{Sin(x)+Sin(x)^2}");
+  }
+
+  @Test
   public void testDecrement() {
     check("a = 5", //
         "5");
@@ -6086,6 +6126,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDivisors() {
+    check("Divisors(6 + 4*I)", //
+        "{1,1+I,1+I*5,2,3+I*2,6+I*4}");
+    check("Divisors(1+I)", //
+        "{1,1+I}");
+    check("Divisors(2+3*I)", //
+        "{1,2+I*3}");
+    check("Divisors(2,GaussianIntegers->True)", //
+        "{1,1+I,2}");
+    check("Divisors(5,GaussianIntegers->True)", //
+        "{1,1+I*2,2+I,5}");
+    check("Divisors(12, GaussianIntegers -> False)", //
+        "{1,2,3,4,6,12}");
     check("Length(Divisors(Factorial(18)))", //
         "14688");
     check("Divisors(5)", //
@@ -8207,7 +8259,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testFindMinimum() {
     check(
-        "FindMinimum({100*(y-x^2)^2+(1-x)^2}, {{x,-1}, {y,1}},Method -> \"SequentialQuadratic\" )", //
+        "FindMinimum({100*(y-x^2)^2+(1-x)^2}, {{x,-1}, {y,1}},Method -> \"SequentialQuadratic\" )",
+        //
         "{4.03424*10^-11,{x->0.999999,y->0.999998}}");
 
     // example: Rosenbrock function https://en.wikipedia.org/wiki/Rosenbrock_function
@@ -8228,7 +8281,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // message: FindMinimum: Constraints in `1` are not all 'equality' or 'less
     // equal' or 'greater equal' linear constraints. Constraints with Unequal(!=) are not supported.
     check(
-        "FindMinimum({x+y,3*x+2*y > 7 && x > 0 && y > 0}, {x, y},Method -> \"SequentialQuadratic\")", //
+        "FindMinimum({x+y,3*x+2*y > 7 && x > 0 && y > 0}, {x, y},Method -> \"SequentialQuadratic\")",
+        //
         "FindMinimum({x+y,3*x+2*y>7&&x>0&&y>0},{x,y},Method->SequentialQuadratic)");
 
     // check("FindMinimum({Sin(x)*Sin(2*y),x^2 + y^2 < 3}, {{x, 2}, {y, 2}})", //
@@ -11418,6 +11472,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testJacobiSymbol() {
+    check("JacobiSymbol(2,4)", //
+        "0");
     check("JacobiSymbol(12345, 331)", //
         "-1");
     check("JacobiSymbol(98, 331)", //
@@ -14186,6 +14242,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testMoebiusMu() {
+    check("MoebiusMu(1+I)", //
+        "-1");
+    check("MoebiusMu(5+6*I)", //
+        "-1");
+    check("MoebiusMu(1+3*I)", //
+        "1");
+    check("MoebiusMu(3+4*I)", //
+        "0");
     check("MoebiusMu(-30)", //
         "-1");
     check("FactorInteger(30)", //
@@ -14198,7 +14262,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("MoebiusMu({1000,10000})", //
         "{0,0}");
     check("MoebiusMu(-a)", //
-        "MoebiusMu(a)");
+        "MoebiusMu(-a)");
     check("MoebiusMu(47)", //
         "-1");
     check("MoebiusMu(51)", //
@@ -16191,6 +16255,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPadLeft() {
+    check("PadLeft({a,b,c}, -10)", //
+        "{a,b,c,0,0,0,0,0,0,0}");
     // check("PadLeft(IntervalData(),101,{x,1,-1,-1})", //
     // "");
     // TODO
@@ -16255,6 +16321,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPadRight() {
+    check("PadRight({a,b,c}, -10)", //
+        "{0,0,0,0,0,0,0,a,b,c}");
     check("PadRight(Slot(<|s1-><|a->0,b:>1|>,s2:><|a->0,b:>1|>|>),{1},{1,2,3,a}+1)", //
         "Slot(Association(s1->Association(a->0,b:>1),s2:>Association(a->0,b:>1)))");
     // check("PadRight(Slot(<|s1-><|a->0,b:>1|>,s2:><|a->0,b:>1|>|>),{1,11,1},{1,2,3,a}+1)", //
@@ -16649,48 +16717,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{{a,b}}");
     check("Cases({{a,b},{1,2,3},{{d,6},{d,10}}}, {x_,y_}/;!ListQ(x)&&!ListQ(y))", //
         "{{a,b}}");
-  }
-
-  @Test
-  public void testPermutations() {
-    // TODO
-    // check("Permutations({1, 2, 1} )", //
-    // "");
-
-    // TODO
-    // check(
-    // "\"ABCA\" // Characters // Permutations ", //
-    //
-    // "{{A,A,B,C},{A,A,C,B},{A,B,A,C},{A,B,C,A},{A,C,A,B},{A,C,B,A},{B,A,A,C},{B,A,C,A},{B,C,A,A},{C,A,A,B},{C,A,B,A},{C,B,A,A}}");
-    check("Permutations(x^2,{3})", //
-        "{}");
-    check("Permutations(x^2,{2})", //
-        "{x^2,2^x}");
-    check("Permutations(x^2,{1})", //
-        "{x,2}");
-    check("Permutations(x^2,{0})", //
-        "{{}}");
-    check("Permutations(x^2,{-1})", //
-        "Permutations(x^2,{-1})");
-    check("Permutations({1, 2, 3}, 2)", //
-        "{{},{1},{2},{3},{1,2},{1,3},{2,1},{2,3},{3,1},{3,2}}");
-    check("Permutations({1, 2, 3}, {2})", //
-        "{{1,2},{1,3},{2,1},{2,3},{3,1},{3,2}}");
-    check("Permutations({a,b,c})", //
-        "{{a,b,c},{a,c,b},{b,a,c},{b,c,a},{c,a,b},{c,b,a}}");
-    check("Permutations({a,b,c}, {2})", //
-        "{{a,b},{a,c},{b,a},{b,c},{c,a},{c,b}}");
-
-    check("Permutations({a},{0})", //
-        "{{}}");
-    check("Permutations({a,b,c,d},{3})", //
-        "{{a,b,c},{a,b,d},{a,c,b},{a,c,d},{a,d,b},{a,d,c},{b,a,c},{b,a,d},{b,c,a},{b,c,d},{b,d,a},{b,d,c},{c,a,b},{c,a,d},{c,b,a},{c,b,d},{c,d,a},{c,d,b},{d,a,b},{d,a,c},{d,b,a},{d,b,c},{d,c,a},{d,c,b}}");
-    check("Permutations({a,a,b})", //
-        "{{a,a,b},{a,b,a},{b,a,a}}");
-    check("Permutations({a,a,b,b})", //
-        "{{a,a,b,b},{a,b,a,b},{a,b,b,a},{b,a,a,b},{b,a,b,a},{b,b,a,a}}");
-    check("Permutations({a,a,b,b},{3})", //
-        "{{a,a,b},{a,b,a},{a,b,b},{b,a,a},{b,a,b},{b,b,a}}");
   }
 
   @Test
@@ -17714,11 +17740,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPossibleZeroQ() {
+    // same as in WMA but should be True
+    check("PossibleZeroQ(Gamma(x+1)-x*Gamma(x))", //
+        "False");
+
+    check("PossibleZeroQ(Gamma(x+1)-x*Gamma(x)+1)", //
+        "False");
     check("PossibleZeroQ((-Exp(q) - 2*Cosh(q/3))*(-2*Cosh(q/3) - Exp(-q)) - (4*Cosh(q/3)^2 - 1)^2)", //
         "True");
     check("PossibleZeroQ(-Cos(x)/(1-Cos(x))+Sin(x)^2/(1-Cos(x))^2-1/(1-Cos(x)))", //
         "True");
-    check("PossibleZeroQ((x + 1) (x - 1) - x^2 + 1)", //
+    check("PossibleZeroQ((x + 1)*(x - 1) - x^2 + 1)", //
         "True");
     check("PossibleZeroQ(Sqrt(x^2)-x,Assumptions -> Re(x)>0)", //
         "True");
@@ -18572,10 +18604,48 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testPrimeNu() {
+    // Standard integer factorization
+    check("PrimeNu(24)", //
+        "2");
+    check("PrimeNu(10)", //
+        "2");
+
+    // Gaussian integer factorization
+    // 10 = (1+I)^2 * I * (2+I) * (2-I) => 3 distinct prime factors
+    check("PrimeNu(10, GaussianIntegers->True)", //
+        "3");
+    check("PrimeNu(105, GaussianIntegers->True)", //
+        "4");
+
+    // 3+4*I = (2+I)^2 => 1 distinct prime factor
+    check("PrimeNu(3+4*I, GaussianIntegers->True)", //
+        "1");
+
+    check("PrimeNu(3+I)", //
+        "2");
+
+    // 2+I is already a prime => 1 distinct prime factor
+    check("PrimeNu(2+I, GaussianIntegers->True)", //
+        "1");
+  }
+
+  @Test
   public void testPrimePi() {
-    // iteration limit exceeded
+    // PrimePi: Function PrimePi not implemented for first argument exceeding 5*10^13.
+    check("PrimePi(10^14)", //
+        "PrimePi(100000000000000)");
+    check("PrimePi(10^7, Method->\"Bogus\")", //
+        "PrimePi(10000000,Method->Bogus)");
+    check("PrimePi(10^7, Method->\"LucyHedgehog\")", //
+        "664579");
+    check("PrimePi(10^7, Method->\"Meissel\")", //
+        "664579");
+
+    check("PrimePi(10^7)", //
+        "664579");
     check("PrimePi(2147483647)", //
-        "Hold(PrimePi(2147483647))");
+        "105097565");
 
     check("PrimePi(0)", //
         "0");
@@ -22589,6 +22659,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testStruveH() {
+    check("StruveH(5/2, z)", //
+        "(24*Sqrt(2)*Pi+4*Sqrt(2*Pi^2)*z^2+Sqrt(2*Pi^2)*z^4-24*Sqrt(2/Pi)*Pi^(3/2)*Cos(z)+\n" //
+            + "8*Sqrt(2/Pi)*Pi^(3/2)*z^2*Cos(z)-24*Sqrt(2/Pi)*Pi^(3/2)*z*Sin(z))/(8*Pi^(3/2)*z^(\n" //
+            + "5/2))");
+    check("StruveH(-7/2, z)", //
+        "(15*Sqrt(2/Pi)*z*Cos(z)-Sqrt(2/Pi)*z^3*Cos(z)-15*Sqrt(2/Pi)*Sin(z)+6*Sqrt(2/Pi)*z^\n"
+            + "2*Sin(z))/z^(7/2)");
     check("StruveH(7/3 + I, 4.5 - I)", //
         "2.35765+I*(-1.40054)");
     check("N(StruveH(7/3 + I, 9/2 - I), 50)", //
@@ -22639,6 +22716,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testStruveL() {
+    check("StruveL(3/2, z)", //
+        "(2*Sqrt(Pi)-Sqrt(Pi)*z^2-2*Sqrt(Pi)*Cosh(z)+2*Sqrt(Pi)*z*Sinh(z))/(Sqrt(2*Pi^2)*z^(\n"
+            + "3/2))");
+    check("StruveL(-3/2, z)", //
+        "(Sqrt(2/Pi)*z*Cosh(z)-Sqrt(2/Pi)*Sinh(z))/z^(3/2)");
+    check("StruveL(-5/2, z)", //
+        "(-3*Sqrt(2/Pi)*z*Cosh(z)+3*Sqrt(2/Pi)*Sinh(z)+Sqrt(2/Pi)*z^2*Sinh(z))/z^(5/2)");
     check("N(StruveL(7/3 + I, 9/2 - I), 50)", //
         "-0.977294788497826125470437322617021508896817658657+I*(-10.825882606764095233380115074057577420814740810573)");
     check("StruveL(7/3 + I, 4.5 - I)", //
@@ -22762,119 +22846,6 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // check("Subfactorial(10000)", "Subfactorial(10000)");
   }
 
-  @Test
-  public void testSubsetQ() {
-    check("SubsetQ(f(b,a,b,c), f(c, c, c))", //
-        "True");
-    check("SubsetQ(f(b,a,b,c), f(a, b, d))", //
-        "False");
-
-    // same as ContainsAll
-    check("SubsetQ({b,a,b,c}, {a, b})", //
-        "True");
-    check("SubsetQ({b,a,b,c}, {c, c, c})", //
-        "True");
-    check("SubsetQ({b,a,b,c}, {a, b, d})", //
-        "False");
-    check("SubsetQ({b, a, d}, {a, b, c})", //
-        "False");
-    check("SubsetQ({ }, {a, b, c})", //
-        "False");
-    check("SubsetQ({ },{ })", //
-        "True");
-    check("SubsetQ({a, b, c},{ })", //
-        "True");
-
-    check("SubsetQ(1, {1,2,3})", //
-        "SubsetQ(1,{1,2,3})");
-    check("SubsetQ({1,2,3}, 4)", //
-        "SubsetQ({1,2,3},4)");
-
-    check("SubsetQ({1.0,2.0}, {1,2,3})", //
-        "False");
-    check("SubsetQ({1.0,2.0}, {1,2,3}, SameTest->Equal)", //
-        "False");
-
-    check("SubsetQ({1,2,3}, {1.0,2.0})", //
-        "False");
-    check("SubsetQ({1,2,3}, {1.0,2.0}, SameTest->Equal)", //
-        "True");
-  }
-
-  @Test
-  public void testSubsets() {
-    // check(
-    // "Subsets({a,b,c})", //
-    // "{{},{a},{b},{c},{a,b},{a,c},{b,c},{a,b,c}}");
-
-    check("Subsets({},{2})", //
-        "{}");
-    check("Subsets(Infinity,All)", //
-        "{ComplexInfinity,Infinity}");
-    check("Subsets(Infinity,Infinity)", //
-        "{ComplexInfinity,Infinity}");
-    check("Subsets(Infinity,-Infinity)", //
-        "Subsets(Infinity,-Infinity)");
-
-    // https://oeis.org/A018900 - Sum of two distinct powers of 2
-    check("Union(Total/@Subsets(2^Range(0, 10), {2}))", //
-        "{3,5,6,9,10,12,17,18,20,24,33,34,36,40,48,65,66,68,72,80,96,129,130,132,136,144,\n"
-            + "160,192,257,258,260,264,272,288,320,384,513,514,516,520,528,544,576,640,768,1025,\n"
-            + "1026,1028,1032,1040,1056,1088,1152,1280,1536}");
-    check("Subsets()", //
-        "Subsets()");
-    check("Subsets({})", //
-        "{{}}");
-    check("Subsets({a,b,c})", //
-        "{{},{a},{b},{c},{a,b},{a,c},{b,c},{a,b,c}}");
-    check("Subsets({a,b,c},2)", //
-        "{{},{a},{b},{c},{a,b},{a,c},{b,c}}");
-    check("Subsets({a,b,c},{2})", //
-        "{{a,b},{a,c},{b,c}}");
-    check("Subsets({a,b,c,d},{2})", //
-        "{{a,b},{a,c},{a,d},{b,c},{b,d},{c,d}}");
-  }
-
-  @Test
-  public void testPartialSubsets() {
-    check("Subsets({a, b, c, d}, All, {1, 15, 2})", //
-        "{{},{b},{d},{a,c},{b,c},{c,d},{a,b,d},{b,c,d}}");
-    check("Subsets({a, b, c, d}, All, {15, 1, -2})", //
-        "{{b,c,d},{a,b,d},{c,d},{b,c},{a,c},{d},{b},{}}");
-    check("Subsets(f[a, b, c, d, e], {3},{3,8,3})", //
-        "{f(a,b,e),f(a,d,e)}");
-    check("Subsets({a, b, c, d, e}, {3},{-3,-8,-3})", //
-        "Subsets({a,b,c,d,e},{3},{-3,-8,-3})");
-    check("Subsets({a, b, c, d, e}, {3},{3,8,3})", //
-        "{{a,b,e},{a,d,e}}");
-    check("Subsets({a, b, c, d, e}, {3},{3,8})", //
-        "{{a,b,e},{a,c,d},{a,c,e},{a,d,e},{b,c,d},{b,c,e}}");
-
-
-
-    check("Subsets({a, b, c, d, e}, {3}, 3)", //
-        "{{a,b,c},{a,b,d},{a,b,e}}");
-    check("Subsets({a, b, c, d, e}, {3}, -4)", //
-        "{{b,c,d},{b,c,e},{b,d,e},{c,d,e}}");
-    check("Subsets({a, b, c, d, e}, {3}, {3})", //
-        "{{a,b,e}}");
-    check("Subsets({a, b, c, d, e}, {3},  {3,4})", //
-        "{{a,b,e},{a,c,d}}");
-    check("Subsets({a, b, c, d, e}, {3},  {-3,-4})", //
-        "{}");
-    check("Subsets({a, b, c, d, e}, {3},  {-4,-3})", //
-        "{{b,c,d},{b,c,e}}");
-    check("Subsets({a, b, c, d, e}, {3},  {-4,-1})", //
-        "{{b,c,d},{b,c,e},{b,d,e},{c,d,e}}");
-    check("Subsets({a, b, c, d, e}, {3},  {-4,1})", //
-        "{}");
-    check("Subsets({a, b, c, d, e}, {3}, {-4})", //
-        "{{b,c,d}}");
-    check("Subsets({a, b, c, d, e}, {3})", //
-        "{{a,b,c},{a,b,d},{a,b,e},{a,c,d},{a,c,e},{a,d,e},{b,c,d},{b,c,e},{b,d,e},{c,d,e}}");
-    check("Subsets(Range(10), All, {1024})", //
-        "{{1,2,3,4,5,6,7,8,9,10}}");
-  }
 
   @Test
   public void testSubtract() {
@@ -25789,6 +25760,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testZeta() {
+    check("N(HurwitzZeta(3, -3/2),30)", //
+        "0.118102025820863701501870834283");
+    check("N(Zeta(3, -3/2),30)", //
+        "0.118102025820863701501870834283");
+    check("Zeta(3, -1.5)", //
+        "16.71069");
     check("Zeta(7,7)", //
         "Zeta(7,7)");
     check("Zeta(11,7)", //
@@ -25809,7 +25786,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/12-Log(Glaisher)");
 
     checkNumeric("Zeta(3,-4.0)", //
-        "Zeta(3.0,-4.0)");
+        "2.379718940196631");
     checkNumeric("Zeta(2.2,3.1)", //
         "0.26067453797192913");
     check("Zeta(6)", //

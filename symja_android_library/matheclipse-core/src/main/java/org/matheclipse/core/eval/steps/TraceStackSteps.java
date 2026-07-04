@@ -105,10 +105,6 @@ public final class TraceStackSteps extends AbstractEvalStepListener {
   @Override
   public void tearDown(IExpr result, int recursionDepth, boolean commitTraceFrame,
       Object stackMarker) {
-    if (result == null) {
-      // LOGGER.error("Its recommend to specify the result for {}", this.fTraceList.getInput());
-    }
-
     if (stackMarker != null) {
       if (this.fTraceList.stackMarker != stackMarker) {
         throw new RuntimeException("System implementation error. "

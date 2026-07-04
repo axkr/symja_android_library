@@ -2008,8 +2008,8 @@ public class IntegerFunctions {
             || n.isComplexNumeric() || d.isComplexNumeric()) {
           // https://mathematica.stackexchange.com/a/114373/21734
           IExpr subExpr = engine.evaluate(F.Divide(F.Subtract(m, d), n));
-          IExpr re = S.Round.funEval(engine, subExpr.re());
-          IExpr im = S.Round.funEval(engine, subExpr.im());
+          IExpr re = S.Round.funSEval(engine, subExpr.re());
+          IExpr im = S.Round.funSEval(engine, subExpr.im());
           return F.Plus(re, F.Times(F.CI, im));
         }
         // Floor((-d+m)/n)

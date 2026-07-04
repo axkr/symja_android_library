@@ -2159,7 +2159,6 @@ public class EllipticIntegrals {
           return F.NIL;
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
-          // LOGGER.log(engine.getLogLevel(), ast.topHead(), rex);
         }
       }
       return F.NIL;

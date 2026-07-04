@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.hipparchus.linear.RealMatrix;
@@ -22,6 +20,7 @@ import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.Context;
+import org.matheclipse.core.expression.DataExpr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
@@ -56,7 +55,6 @@ import it.unimi.dsi.fastutil.ints.IntList;
 
 /** Converts an internal <code>IExpr</code> into a user readable string. */
 public class OutputFormFactory {
-  private static final Logger LOGGER = LogManager.getLogger(OutputFormFactory.class);
 
   /** The conversion wasn't called with an operator preceding the <code>IExpr</code> object. */
   public static final boolean NO_PLUS_CALL = false;
@@ -539,7 +537,6 @@ public class OutputFormFactory {
   // FormattingWriter.toMMA(num, stw, 15, false);
   // return stw.toString();
   // } catch (IOException e) {
-  // LOGGER.error("OutputFormFactory.convertApfloat() failed", e);
   // }
   // // String exponentStr = str.substring(index + 1);
   // // String result = str.substring(0, index);
@@ -1199,7 +1196,6 @@ public class OutputFormFactory {
     try {
       convert(buf, o, Integer.MIN_VALUE, false);
     } catch (IOException e) {
-      LOGGER.debug("OutputFormFactory.toString() failed", e);
     }
     return buf.toString();
   }
@@ -1210,7 +1206,6 @@ public class OutputFormFactory {
     try {
       convert(buf, o, Integer.MIN_VALUE, false);
     } catch (IOException e) {
-      LOGGER.debug("OutputFormFactory.toString() failed", e);
     }
     return buf.toString();
   }
@@ -1226,7 +1221,6 @@ public class OutputFormFactory {
       return true;
     } catch (IOException | RuntimeException | OutOfMemoryError rex) {
       // rex.printStackTrace();
-      LOGGER.debug("OutputFormFactory.convert() failed", rex);
     }
     return false;
   }
@@ -1244,7 +1238,6 @@ public class OutputFormFactory {
     } else if (o instanceof IComplex) {
       convertComplex(buf, (IComplex) o, precedence, caller);
     } else {
-      LOGGER.error("OutputFormFactory.convertNumber() failed");
     }
   }
 
@@ -1370,12 +1363,6 @@ public class OutputFormFactory {
                 if (convertSeriesData(buf, (ASTSeriesData) list, precedence)) {
                   return;
                 }
-              }
-              break;
-            case ID.SparseArray:
-              if (list.isSparseArray()) {
-                buf.append(list.toString());
-                return;
               }
               break;
             case ID.Parenthesis:
@@ -1542,6 +1529,14 @@ public class OutputFormFactory {
       convertQuantityData(buf, (IQuantity) o, precedence);
     } else {
       // includes (o instanceof IStringX)
+      if (fInputForm && (o instanceof DataExpr)) {
+        IAST fullForm = ((DataExpr) o).fullForm();
+        if (fullForm.isPresent()) {
+          convert(buf, fullForm);
+          return;
+        }
+      }
+
       convertString(buf, o.toString());
     }
   }
@@ -1714,7 +1709,6 @@ public class OutputFormFactory {
         }
         buf.append('}');
       } catch (IOException e) {
-        LOGGER.debug("OutputFormFactory.convertList() failed", e);
       }
       return;
     }
@@ -1744,7 +1738,6 @@ public class OutputFormFactory {
         }
         buf.append('}');
       } catch (IOException e) {
-        LOGGER.debug("OutputFormFactory.convertList() failed", e);
       }
       return;
     }

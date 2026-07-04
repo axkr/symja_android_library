@@ -115,9 +115,9 @@ public class ProductTest extends ExprEvaluatorTestCase {
     check("Product(c, {j, 2}, {i, 1, j})", //
         "c^3");
     check("Product(c, {i, 1, j}, {j, 2})", //
-        "c^(2*j)");
+        "(c^2)^j");
     check("Product(c, {i, 1, j}, {j, 1, 2})", //
-        "c^(2*j)");
+        "(c^2)^j");
     check("Product(c, {i, 1, n})", //
         "c^n");
     check("Product(c+n, {i, 1, n})", //
@@ -249,30 +249,27 @@ public class ProductTest extends ExprEvaluatorTestCase {
     // Linear scaling with fractional bounds
     // Product(k + 1/2, {k, 1, n}) -> Pochhammer(3/2, n)
     check("Product(k + 1/2, {k, 1, n})", //
-        "Pochhammer(3/2,n)");
+        "(2*Gamma(3/2+n))/Sqrt(Pi)");
 
     // Linear scaling with A != 1
     // Product(3*k + 2, {k, 1, n}) -> 3^n * Pochhammer(5/3, n)
     check("Product(3*k + 2, {k, 1, n})", //
-        "3^n*Pochhammer(5/3,n)");
+        "(3^n*Gamma(5/3+n))/Gamma(5/3)");
 
     // Negative coefficients
     // Product(1 - 2*k, {k, 1, n}) -> (-2)^n * Pochhammer(1/2, n)
     check("Product(1 - 2*k, {k, 1, n})", //
-        "(-2)^n*Pochhammer(1/2,n)");
+        "((-2)^n*Gamma(1/2+n))/Sqrt(Pi)");
   }
 
   @Test
   public void testSymbolicProduct016() {
-    // Integer shifts mapping to canonical factorials (Pochhammer(1, ...))
-    // Product(k + 2, {k, 1, n}) -> Pochhammer(1, n + 2) / Pochhammer(1, 2)
-    // Note: Pochhammer(1, 2) evaluates to 2! = 2
     check("Product(k + 2, {k, 1, n})", //
-        "Pochhammer(1,2+n)/2");
+        "(2+n)!/2");
 
     // Product(k + 3, {k, 1, n}) -> Pochhammer(1, n + 3) / Pochhammer(1, 3) -> / 6
     check("Product(k + 3, {k, 1, n})", //
-        "Pochhammer(1,3+n)/6");
+        "(3+n)!/6");
   }
 
   @Test
@@ -297,11 +294,11 @@ public class ProductTest extends ExprEvaluatorTestCase {
     // Factored polynomials and powers
     // Product((2*k + 3)^2, {k, 1, n}) -> (2^n * Pochhammer(5/2, n))^2 -> 4^n * Pochhammer(5/2, n)^2
     check("Product((2*k + 3)^2, {k, 1, n})", //
-        "2^(2*n)*Pochhammer(5/2,n)^2");
+        "(2^(4+2*n)*Gamma(5/2+n)^2)/(9*Pi)");
 
     // Product((k + 1/2) * (k + 3/2), {k, 1, n})
     // Resolves independently and multiplies: Pochhammer(3/2, n) * Pochhammer(5/2, n)
     check("Product((k + 1/2) * (k + 3/2), {k, 1, n})", //
-        "Pochhammer(3/2,n)*Pochhammer(5/2,n)");
+        "8/3*(Gamma(3/2+n)*Gamma(5/2+n))/Pi");
   }
 }

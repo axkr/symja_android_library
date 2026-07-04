@@ -503,15 +503,15 @@ public final class RandomFunctions {
 
       if (d > 0) {
         IAST randomVariate = F.RandomVariate(F.UniformDistribution(F.list(F.C0, F.C1)), F.ZZ(d));
+        final IExpr ordering = S.Ordering.of(engine, randomVariate);
         if (ast.isAST1()) {
           // one permutation
-          IExpr ordering = S.Ordering.of(engine, randomVariate);
           return F.Cycles(F.list(ordering));
         } else {
           int n = ast.arg2().toIntDefault();
           if (n > 0) {
             // a list of n permutations
-            return F.mapRange(0, n, i -> F.Cycles(F.list(S.Ordering.of(engine, randomVariate))));
+            return F.mapRange(0, n, i -> F.Cycles(F.list(ordering)));
 
           }
         }

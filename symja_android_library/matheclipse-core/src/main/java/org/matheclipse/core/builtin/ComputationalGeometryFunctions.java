@@ -10,7 +10,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
@@ -33,9 +32,6 @@ public class ComputationalGeometryFunctions {
       S.ASATriangle.setEvaluator(new ASATriangle());
       S.SASTriangle.setEvaluator(new SASTriangle());
       S.SSSTriangle.setEvaluator(new SSSTriangle());
-      S.ArcLength.setEvaluator(new ArcLength());
-      S.Area.setEvaluator(new Area());
-      S.Perimeter.setEvaluator(new Perimeter());
 
 
       S.ConvexHullMesh.setEvaluator(new ConvexHullMesh());
@@ -201,413 +197,13 @@ public class ComputationalGeometryFunctions {
 
   }
 
-  private static class ArcLength extends AbstractEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (arg1.isAST() && arg1.isBuiltInFunction()) {
-        IAST geoForm = (IAST) ast.arg1();
-        int headID = arg1.headID();
-        if (headID >= 0) {
-          switch (headID) {
-            case ID.Circle:
-              return circle(geoForm);
-            case ID.Disk:
-              return S.Undefined;
-            case ID.Line:
-              return line(geoForm);
-          }
-        }
-      }
-      return F.NIL;
-    }
-
-    private static IExpr circle(IAST geoForm) {
-      if (geoForm.argSize() >= 1 && geoForm.arg1().isList2()) {
-        IExpr r1 = F.C1;
-        IExpr r2 = F.C1;
-        IExpr t1 = F.C0;
-        IExpr t2 = F.C2Pi;
-        if (geoForm.argSize() == 1) {
-          // default values;
-        } else if (geoForm.argSize() >= 2) {
-          if (geoForm.arg2().isList2()) {
-            r1 = geoForm.arg2().first();
-            r2 = geoForm.arg2().second();
-          } else if (!geoForm.arg2().isList()) {
-            r1 = geoForm.arg2();
-            r2 = r1;
-          } else {
-            return F.NIL;
-          }
-        }
-        if (geoForm.argSize() == 3) {
-          if (geoForm.arg3().isList2()) {
-            t1 = geoForm.arg3().first();
-            t2 = geoForm.arg3().second();
-            return
-            // [$ r2*(-EllipticE(t1, 1 - r1^2/r2^2) + EllipticE(t2, 1 - r1^2/r2^2))*
-            // UnitStep(2*Pi - Abs(-t1 + t2)) + 4*r2*EllipticE(1 - r1^2/r2^2)*
-            // UnitStep(-2*Pi + Abs(-t1 + t2)) $]
-            F.Plus(
-                F.Times(r2, F.Plus(
-                    F.Negate(F.EllipticE(t1,
-                        F.Plus(F.C1, F.Times(F.CN1, F.Sqr(r1), F.Power(r2, F.CN2))))),
-                    F.EllipticE(t2, F.Plus(F.C1, F.Times(F.CN1, F.Sqr(r1), F.Power(r2, F.CN2))))),
-                    F.UnitStep(F.Subtract(F.C2Pi, F.Abs(F.Plus(F.Negate(t1), t2))))),
-                F.Times(F.C4, r2,
-                    F.EllipticE(F.Plus(F.C1, F.Times(F.CN1, F.Sqr(r1), F.Power(r2, F.CN2)))),
-                    F.UnitStep(F.Plus(F.CN2Pi, F.Abs(F.Plus(F.Negate(t1), t2)))))); // $$;
-          } else {
-            return F.NIL;
-          }
-        }
-        if (geoForm.argSize() > 3) {
-          return F.NIL;
-        }
-
-
-        // 4*r2*EllipticE(1-r1^2/r2^2)
-        return F.Times(F.C4, r2, F.EllipticE(F.Subtract(F.C1, F.Divide(F.Sqr(r1), F.Sqr(r2)))));
-      }
-      return F.NIL;
-    }
-
-    private static IExpr line(IAST geoForm) {
-      if (geoForm.isAST1() && geoForm.arg1().isListOfPoints(2)) {
-        IAST listOfPoints2D = (IAST) geoForm.arg1();
-        if (listOfPoints2D.argSize() > 1) {
-          IASTAppendable result = F.PlusAlloc(listOfPoints2D.argSize() - 1);
-          IAST currentPoint = (IAST) listOfPoints2D.get(1);
-          for (int i = 2; i < listOfPoints2D.size(); i++) {
-            IAST nextPoint = (IAST) listOfPoints2D.get(i);
-            IExpr a = currentPoint.arg1();
-            IExpr b = currentPoint.arg2();
-            IExpr c = nextPoint.arg1();
-            IExpr d = nextPoint.arg2();
-            // Sqrt((a-c)^2 + (b-d)^2)
-            result.append(F.Sqrt(F.Plus(F.Sqr(F.Subtract(a, c)), //
-                F.Sqr(F.Subtract(b, d)))));
-            currentPoint = nextPoint;
-          }
-          return result;
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
-  }
-  private static class Area extends AbstractEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (arg1.isAST() && arg1.isBuiltInFunction()) {
-        IAST geoForm = (IAST) ast.arg1();
-        int headID = arg1.headID();
-        if (headID >= 0) {
-          switch (headID) {
-            case ID.Circle:
-              return S.Undefined;
-            case ID.Disk:
-              return disk(geoForm);
-            case ID.Rectangle:
-              return rectangle(geoForm);
-            case ID.Triangle:
-              return triangle(geoForm);
-          }
-        }
-      }
-      return F.NIL;
-    }
-
-    private static IExpr disk(IAST geoForm) {
-
-      if (geoForm.argSize() >= 1 && geoForm.arg1().isList2()) {
-        IExpr t1 = F.C0;
-        IExpr t2 = F.C2Pi;
-        IExpr r1 = F.C1;
-        IExpr r2 = F.C1;
-        if (geoForm.argSize() >= 2) {
-          if (geoForm.arg2().isList2()) {
-            r1 = geoForm.arg2().first();
-            r2 = geoForm.arg2().second();
-          } else if (!geoForm.arg2().isList()) {
-            r1 = geoForm.arg2();
-            r2 = r1;
-          } else {
-            return F.NIL;
-          }
-        }
-
-        if (geoForm.argSize() == 3) {
-          if (geoForm.arg3().isList2()) {
-            t1 = geoForm.arg3().first();
-            t2 = geoForm.arg3().second();
-            return
-            // [$ (r1*r2*Min(Pi, Abs(-t1+t2)/2)) $]
-            F.Times(r1, r2, F.Min(F.Pi, F.Times(F.C1D2, F.Abs(F.Plus(F.Negate(t1), t2))))); // $$;
-          } else {
-            return F.NIL;
-          }
-
-        }
-        if (geoForm.argSize() > 3) {
-          return F.NIL;
-        }
-        return F.Times(F.Pi, r1, r2);
-      }
-      return F.NIL;
-    }
-
-    private static IExpr rectangle(IAST geoForm) {
-      IExpr a, b, c, d;
-      if (geoForm.argSize() >= 1 && geoForm.arg1().isList2()) {
-        a = geoForm.arg1().first();
-        b = geoForm.arg1().second();
-        if (geoForm.argSize() == 1) {
-          c = a.plus(F.C1);
-          d = b.plus(F.C1);
-        } else if (geoForm.argSize() == 2 && geoForm.arg2().isList2()) {
-          c = geoForm.arg2().first();
-          d = geoForm.arg2().second();
-        } else {
-          return F.NIL;
-        }
-        return F.Abs(F.Times(F.Plus(F.Negate(a), c), F.Plus(F.Negate(b), d)));
-      }
-      return F.NIL;
-    }
-
-    private static IExpr triangle(IAST geoForm) {
-      if (geoForm.argSize() >= 1 && geoForm.arg1().isList3()) {
-        IAST list3 = (IAST) geoForm.arg1();
-        if (geoForm.arg1().isListOfPoints(2)) {
-          IExpr a1 = list3.arg1().first();
-          IExpr a2 = list3.arg1().second();
-          IExpr b1 = list3.arg2().first();
-          IExpr b2 = list3.arg2().second();
-          IExpr c1 = list3.arg3().first();
-          IExpr c2 = list3.arg3().second();
-          // (1/2)*Abs((-a2)*b1+a1*b2 +a2*c1-b2*c1-a1*c2+b1*c2)
-          return F.Times(F.C1D2, F.Abs(F.Plus(F.Times(F.CN1, a2, b1), F.Times(a1, b2),
-              F.Times(a2, c1), F.Times(F.CN1, b2, c1), F.Times(F.CN1, a1, c2), F.Times(b1, c2))));
-        }
-        if (list3.isListOfPoints(3)) {
-          IAST l1 = (IAST) list3.arg1();
-          IAST l2 = (IAST) list3.arg2();
-          IAST l3 = (IAST) list3.arg3();
-          IExpr a = l1.arg1();
-          IExpr b = l1.arg2();
-          IExpr c = l1.arg3();
-          IExpr d = l2.arg1();
-          IExpr e = l2.arg2();
-          IExpr f = l2.arg3();
-          IExpr g = l3.arg1();
-          IExpr h = l3.arg2();
-          IExpr i = l3.arg3();
-          // Sqrt((e*g+b*d-a*e-b*g+a*h-d*h)^2+(f*g+c*d-a*f-c*g+a*i-d*i)^2+(f*h+c*e-b*f-c*h+b*i-e*i)^2)/2
-          return F.Times(F.C1D2,
-              F.Sqrt(F.Plus(
-                  F.Sqr(F.Plus(F.Times(e, g), F.Times(b, d), F.Times(F.CN1, a, e),
-                      F.Times(F.CN1, b, g), F.Times(a, h), F.Times(F.CN1, d, h))),
-                  F.Sqr(F.Plus(F.Times(f, g), F.Times(c, d), F.Times(F.CN1, a, f),
-                      F.Times(F.CN1, c, g), F.Times(a, i), F.Times(F.CN1, d, i))),
-                  F.Sqr(F.Plus(F.Times(f, h), F.Times(c, e), F.Times(F.CN1, b, f),
-                      F.Times(F.CN1, c, h), F.Times(b, i), F.Times(F.CN1, e, i))))));
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
-  }
-
-  private static class Perimeter extends AbstractEvaluator {
-
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (arg1.isAST() && arg1.isBuiltInFunction()) {
-        IAST geoForm = (IAST) ast.arg1();
-        int headID = arg1.headID();
-        if (headID >= 0) {
-          switch (headID) {
-            case ID.Circle:
-            case ID.Line:
-              return S.Undefined;
-            case ID.Disk:
-              return disk(geoForm);
-            case ID.Rectangle:
-              return rectangle(geoForm);
-            case ID.Triangle:
-              return triangle(geoForm);
-          }
-        }
-      }
-      return F.NIL;
-    }
-
-    private static IExpr disk(IAST geoForm) {
-      if (geoForm.argSize() >= 1 && geoForm.arg1().isList2()) {
-        IExpr t1 = F.C0;
-        IExpr t2 = F.C2Pi;
-        IExpr r1 = F.C1;
-        IExpr r2 = F.C1;
-        if (geoForm.argSize() >= 2) {
-          if (geoForm.arg2().isList2()) {
-            r1 = geoForm.arg2().first();
-            r2 = geoForm.arg2().second();
-          } else if (!geoForm.arg2().isList()) {
-            r1 = geoForm.arg2();
-            r2 = r1;
-          } else {
-            return F.NIL;
-          }
-        }
-
-        if (geoForm.argSize() == 3) {
-          if (geoForm.arg3().isList2()) {
-            t1 = geoForm.arg3().first();
-            t2 = geoForm.arg3().second();
-            return
-            // [$ (r2*(-EllipticE(t1, 1 - r1^2/r2^2) + EllipticE(t2, 1 - r1^2/r2^2)) +
-            // Sqrt(r1^2*Cos(t1)^2 + r2^2*Sin(t1)^2) +
-            // Sqrt(r1^2*Cos(t2)^2 + r2^2*Sin(t2)^2))*UnitStep(2*Pi - Abs(-t1 + t2)) +
-            // 4*r2*EllipticE(1 - r1^2/r2^2)*UnitStep(-2*Pi + Abs(-t1 + t2)) $]
-            F.Plus(
-                F.Times(
-                    F.Plus(
-                        F.Times(
-                            r2, F
-                                .Plus(
-                                    F.Negate(F.EllipticE(t1,
-                                        F.Plus(F.C1,
-                                            F.Times(F.CN1, F.Sqr(r1), F.Power(r2, F.CN2))))),
-                                    F.EllipticE(t2,
-                                        F.Plus(F.C1,
-                                            F.Times(F.CN1, F.Sqr(r1), F.Power(r2, F.CN2)))))),
-                        F.Sqrt(F.Plus(F.Times(F.Sqr(r1), F.Sqr(F.Cos(t1))),
-                            F.Times(F.Sqr(r2), F.Sqr(F.Sin(t1))))),
-                        F.Sqrt(F.Plus(F.Times(F.Sqr(r1), F.Sqr(F.Cos(t2))),
-                            F.Times(F.Sqr(r2), F.Sqr(F.Sin(t2)))))),
-                    F.UnitStep(F.Subtract(F.C2Pi, F.Abs(F.Plus(F.Negate(t1), t2))))),
-                F.Times(F.C4, r2,
-                    F.EllipticE(F.Plus(F.C1, F.Times(F.CN1, F.Sqr(r1), F.Power(r2, F.CN2)))),
-                    F.UnitStep(F.Plus(F.CN2Pi, F.Abs(F.Plus(F.Negate(t1), t2)))))); // $$;
-          } else {
-            return F.NIL;
-          }
-        }
-        if (geoForm.argSize() > 3) {
-          return F.NIL;
-        }
-
-        return F.Times(F.C4, r2, F.EllipticE(F.Subtract(F.C1, F.Divide(F.Sqr(r1), F.Sqr(r2)))));
-      }
-      return F.NIL;
-    }
-
-    private static IExpr rectangle(IAST geoForm) {
-      IExpr a, b, c, d;
-      if (geoForm.argSize() >= 1 && geoForm.arg1().isList2()) {
-        a = geoForm.arg1().first();
-        b = geoForm.arg1().second();
-        if (geoForm.argSize() == 1) {
-          c = a.plus(F.C1);
-          d = b.plus(F.C1);
-        } else if (geoForm.argSize() == 2 && geoForm.arg2().isList2()) {
-          c = geoForm.arg2().first();
-          d = geoForm.arg2().second();
-        } else {
-          return F.NIL;
-        }
-        return F.Times(F.C2, F.Plus(F.Abs(F.Plus(F.Negate(a), c)), F.Abs(F.Plus(F.Negate(b), d))));
-      }
-      return F.NIL;
-    }
-
-    private static IExpr triangle(IAST geoForm) {
-      if (geoForm.argSize() == 1 && geoForm.arg1().isList3()) {
-        IAST list3 = (IAST) geoForm.arg1();
-        if (list3.isListOfPoints(2)) {
-          IAST l1 = (IAST) list3.arg1();
-          IAST l2 = (IAST) list3.arg2();
-          IAST l3 = (IAST) list3.arg3();
-          IExpr a = l1.arg1();
-          IExpr b = l1.arg2();
-          IExpr c = l2.arg1();
-          IExpr d = l2.arg2();
-          IExpr e = l3.arg1();
-          IExpr f = l3.arg2();
-          // Sqrt((a-c)^2+(b-d)^2)+Sqrt((a-e)^2+(b-f)^2)+Sqrt((c-e)^2+(d-f)^2)
-          return F.Plus(F.Sqrt(F.Plus(F.Sqr(F.Subtract(a, c)), F.Sqr(F.Subtract(b, d)))),
-              F.Sqrt(F.Plus(F.Sqr(F.Subtract(a, e)), F.Sqr(F.Subtract(b, f)))),
-              F.Sqrt(F.Plus(F.Sqr(F.Subtract(c, e)), F.Sqr(F.Subtract(d, f)))));
-        }
-        if (list3.isListOfPoints(3)) {
-          IAST l1 = (IAST) list3.arg1();
-          IAST l2 = (IAST) list3.arg2();
-          IAST l3 = (IAST) list3.arg3();
-          IExpr a = l1.arg1();
-          IExpr b = l1.arg2();
-          IExpr c = l1.arg3();
-          IExpr d = l2.arg1();
-          IExpr e = l2.arg2();
-          IExpr f = l2.arg3();
-          IExpr g = l3.arg1();
-          IExpr h = l3.arg2();
-          IExpr i = l3.arg3();
-          // Sqrt((a-d)^2+(b-e)^2+(c-f)^2)+Sqrt((a-g)^2+(b-h)^2+(c-i)^2)+Sqrt((d-g)^2+(e-h)^2+(f-i)^2)
-          return F.Plus(
-              F.Sqrt(F.Plus(F.Sqr(F.Subtract(a, d)), F.Sqr(F.Subtract(b, e)),
-                  F.Sqr(F.Subtract(c, f)))),
-              F.Sqrt(F.Plus(F.Sqr(F.Subtract(a, g)), F.Sqr(F.Subtract(b, h)),
-                  F.Sqr(F.Subtract(c, i)))),
-              F.Sqrt(F.Plus(F.Sqr(F.Subtract(d, g)), F.Sqr(F.Subtract(e, h)),
-                  F.Sqr(F.Subtract(f, i)))));
-
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
-  }
   private static class ConvexHullMesh extends AbstractEvaluator {
     /**
      * Three points are a counter-clockwise turn (ccw) if <code>ccw > 0</code>, clockwise if
      * <code>ccw < 0</code>, and co-linear if <code>ccw = 0</code> because <code>ccw</code> is a
      * determinant that gives twice the signed area of the triangle formed by p1, p2 and p3. (from
-     * Wikipedia)
+     * Wikipedia) * @param p1
      * 
-     * @param p1
      * @param p2
      * @param p3
      * @return Det2D[p2 - p1, p3 - p1]
@@ -752,56 +348,97 @@ public class ComputationalGeometryFunctions {
         IAST listOfPoints = (IAST) ast.arg1();
         if (listOfPoints.argSize() > 0) {
           IAST points0 = (IAST) listOfPoints.arg1();
-          if (points0.argSize() > 0) {
-            IASTAppendable minList = F.ListAlloc(points0.size());
-            IASTAppendable maxList = F.ListAlloc(points0.size());
-            for (int i = 1; i < points0.size(); i++) {
-              minList.append(F.ast(S.Min, points0.argSize()));
-              maxList.append(F.ast(S.Max, points0.argSize()));
+          int dim = points0.argSize();
+          if (dim > 0) {
+            IASTAppendable minList = F.ListAlloc(dim);
+            IASTAppendable maxList = F.ListAlloc(dim);
+
+            for (int i = 1; i <= dim; i++) {
+              minList.append(F.ast(S.Min, listOfPoints.argSize()));
+              maxList.append(F.ast(S.Max, listOfPoints.argSize()));
             }
-            IAST result = F.List(minList, maxList);
-            for (int j = 1; j < points0.size(); j++) {
-              IASTAppendable minAppendable = (IASTAppendable) minList.get(j);
-              IASTAppendable maxAppendable = (IASTAppendable) maxList.get(j);
-              for (int i = 1; i < listOfPoints.size(); i++) {
-                IAST points = listOfPoints.getAST(i);
-                if (points.argSize() != points0.argSize()) {
-                  return F.NIL;
-                }
-                minAppendable.append(points.get(j));
-                maxAppendable.append(points.get(j));
+
+            for (int i = 1; i <= listOfPoints.argSize(); i++) {
+              IExpr ptExpr = listOfPoints.get(i);
+              if (!ptExpr.isList()) {
+                return F.NIL;
+              }
+              IAST pt = (IAST) ptExpr;
+              if (pt.argSize() != dim) {
+                return F.NIL;
+              }
+              for (int j = 1; j <= dim; j++) {
+                ((IASTAppendable) minList.get(j)).append(pt.get(j));
+                ((IASTAppendable) maxList.get(j)).append(pt.get(j));
               }
             }
 
-            // evaluate the Min and Max calculations inside referenced lists
-            minList.forEach((x, i) -> minList.set(i, engine.evaluate(x)));
-            maxList.forEach((x, i) -> maxList.set(i, engine.evaluate(x)));
+            // evaluate the Min and Max calculations
+            for (int j = 1; j <= dim; j++) {
+              minList.set(j, engine.evaluate(minList.get(j)));
+              maxList.set(j, engine.evaluate(maxList.get(j)));
+            }
 
-            IExpr pad = F.C0;
+            if (ast.isAST1()) {
+              return F.List(minList, maxList);
+            }
+
             if (ast.isAST2()) {
-              // pad the result
-              pad = ast.arg2();
-            }
-            if (pad.isZero()) {
-              return result;
-            }
-            if (pad.isAST(S.Scaled, 2)) {
-              IExpr scaled = pad.first();
-              for (int i = 1; i < minList.size(); i++) {
-                IExpr minPart = minList.get(i);
-                IExpr maxPart = maxList.get(i);
-                minList.set(i, F.Plus(minPart, F.Times(scaled, F.Subtract(minPart, maxPart))));
-                maxList.set(i, F.Plus(maxPart, F.Times(scaled, F.Subtract(maxPart, minPart))));
+              IExpr padArg = ast.arg2();
+              boolean isScaled = false;
+              if (padArg.isAST(S.Scaled, 2)) {
+                isScaled = true;
+                padArg = padArg.first();
               }
-            } else {
-              for (int i = 1; i < minList.size(); i++) {
-                IExpr minPart = minList.get(i);
-                IExpr maxPart = maxList.get(i);
-                minList.set(i, F.Subtract(minPart, pad));
-                maxList.set(i, F.Plus(maxPart, pad));
+
+              IASTAppendable finalMinList = F.ListAlloc(dim);
+              IASTAppendable finalMaxList = F.ListAlloc(dim);
+
+              for (int j = 1; j <= dim; j++) {
+                IExpr minPart = minList.get(j);
+                IExpr maxPart = maxList.get(j);
+                IExpr padMin = F.C0;
+                IExpr padMax = F.C0;
+
+                if (padArg.isList()) {
+                  IAST padList = (IAST) padArg;
+                  // Handle different padding lengths if provided as lists
+                  if (padList.argSize() != dim) {
+                    return F.NIL;
+                  }
+                  IExpr p = padList.get(j);
+                  if (p.isList2()) {
+                    padMin = ((IAST) p).arg1();
+                    padMax = ((IAST) p).arg2();
+                  } else {
+                    padMin = p;
+                    padMax = p;
+                  }
+                } else {
+                  padMin = padArg;
+                  padMax = padArg;
+                }
+
+                IExpr newMin;
+                IExpr newMax;
+
+                // Scale calculations identically to maintain formula AST matches in tests
+                if (isScaled) {
+                  IExpr diffMin = engine.evaluate(F.Subtract(minPart, maxPart));
+                  IExpr diffMax = engine.evaluate(F.Subtract(maxPart, minPart));
+                  newMin = engine.evaluate(F.Plus(minPart, F.Times(padMin, diffMin)));
+                  newMax = engine.evaluate(F.Plus(maxPart, F.Times(padMax, diffMax)));
+                } else {
+                  newMin = engine.evaluate(F.Subtract(minPart, padMin));
+                  newMax = engine.evaluate(F.Plus(maxPart, padMax));
+                }
+
+                finalMinList.append(newMin);
+                finalMaxList.append(newMax);
               }
+
+              return F.List(finalMinList, finalMaxList);
             }
-            return result;
           }
         }
       }
@@ -827,25 +464,19 @@ public class ComputationalGeometryFunctions {
       if (arg1.isListOfLists()) {
         IAST listOfPoints = (IAST) arg1;
         if (listOfPoints.argSize() > 0) {
-          IExpr temp = S.Transpose.ofNIL(engine, F.CoordinateBoundingBox(listOfPoints));
-          if (temp.isList()) {
-            if (ast.isAST2()) {
-              IAST list = (IAST) temp;
-              IExpr pad = ast.arg2();
-              if (pad.isNumber()) {
-                IASTAppendable result = F.ListAlloc(list.argSize());
-                for (int i = 1; i < list.size(); i++) {
-                  IExpr expr = list.get(i);
-                  if (expr.isList2()) {
-                    result.append(F.List(expr.first().subtract(pad), expr.second().plus(pad)));
-                  } else {
-                    return F.NIL;
-                  }
-                }
-                return result;
-              }
-            }
-            return temp;
+          // CoordinateBounds(pts, pad) behaves identically to Transpose(CoordinateBoundingBox(pts,
+          // pad))
+          IExpr bbox;
+          if (ast.isAST1()) {
+            bbox = F.CoordinateBoundingBox.funEval(engine, listOfPoints);
+          } else if (ast.isAST2()) {
+            bbox = F.CoordinateBoundingBox.funEval(engine, listOfPoints, ast.arg2());
+          } else {
+            return F.NIL;
+          }
+
+          if (bbox.isList()) {
+            return S.Transpose.funEval(engine, bbox);
           }
         }
       }

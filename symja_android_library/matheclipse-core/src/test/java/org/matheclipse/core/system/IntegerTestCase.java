@@ -189,8 +189,7 @@ public class IntegerTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testBitOr() {
-    check(
-        "BitOr(a,<|a->0,b:>1|>,{x,1,-1,-1},{{{}}})", //
+    check("BitOr(a,<|a->0,b:>1|>,{x,1,-1,-1},{{{}}})", //
         "BitOr(a,<|a->0,b:>1|>,{x,1,-1,-1},{{{}}})");
     check("Table(BitOr(n,3), {n,-10,10})", //
         "{-9,-9,-5,-5,-5,-5,-1,-1,-1,-1,3,3,3,3,7,7,7,7,11,11,11}");
@@ -246,5 +245,59 @@ public class IntegerTestCase extends ExprEvaluatorTestCase {
         "8664");
     check("BitXor(-2,-3)", //
         "3");
+  }
+
+  @Test
+  public void testDigitSumBase10() {
+    check("DigitSum(123)", //
+        "6");
+    // Absolute values are taken automatically for negative numbers
+    check("DigitSum(-123)", //
+        "6");
+    check("DigitSum(0)", //
+        "0");
+    check("DigitSum(987654321)", //
+        "45");
+  }
+
+  @Test
+  public void testDigitSumOtherBases() {
+    // Base 2: 123 = 1111011_2 -> 1+1+1+1+0+1+1 = 6
+    check("DigitSum(123, 2)", //
+        "6");
+
+    // Base 16: 255 = FF_16 -> 15 + 15 = 30
+    check("DigitSum(255, 16)", //
+        "30");
+
+    // Base 36: boundary for the fast string optimization
+    // 1295 = 35 * 36 + 35 -> ZZ_36 -> 35 + 35 = 70
+    check("DigitSum(1295, 36)", //
+        "70");
+
+    // Base > 36: falls back to the BigInteger arbitrary division loop
+    // 100 = 2 * 40 + 20 -> digits are 2 and 20 in base 40 -> sum = 22
+    check("DigitSum(100, 40)", //
+        "22");
+
+    check("DigitSum({1234, 0, 99})", //
+        "{10,0,18}");
+  }
+
+  @Test
+  public void testDigitSumEdgeCases() {
+    // Invalid bases should return unevaluated
+    check("DigitSum(123, 1)", //
+        "DigitSum(123,1)");
+    check("DigitSum(123, 0)", //
+        "DigitSum(123,0)");
+    check("DigitSum(123, -5)", //
+        "DigitSum(123,-5)");
+
+    // Non-integer inputs should return unevaluated
+    check("DigitSum(12.3)", //
+        "DigitSum(12.3)");
+    check("DigitSum(x)", //
+        "DigitSum(x)");
   }
 }

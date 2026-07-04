@@ -22,8 +22,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASModInteger;
@@ -403,7 +401,7 @@ public class Algebra {
         }
 
       } catch (JASConversionException jce) {
-        LOGGER.debug("Cancle failed", jce);
+        // LOGGER.debug("Cancel failed", jce);
       }
       return F.NIL;
     }
@@ -749,9 +747,9 @@ public class Algebra {
               engine);
         }
         return arg1;
-      } catch (Exception e) {
-        Errors.rethrowsInterruptException(e);
-        LOGGER.debug("Collect.evaluate() failed", e);
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        // LOGGER.debug("Collect.evaluate() failed", e);
       }
       return F.NIL;
     }
@@ -1232,7 +1230,7 @@ public class Algebra {
             }
             return numerator;
           } catch (JASConversionException e) {
-            LOGGER.debug("Factor.evaluate() JAS conversion failed", e);
+            // LOGGER.debug("Factor.evaluate() JAS conversion failed", e);
           }
 
         }
@@ -1465,7 +1463,7 @@ public class Algebra {
           return temp;
         }
       } catch (JASConversionException e) {
-        LOGGER.debug("Factor.evaluate() failed", e);
+        // LOGGER.debug("Factor.evaluate() failed", e);
       }
       return arg1;
     }
@@ -1544,8 +1542,7 @@ public class Algebra {
         return ast.arg1();
 
       } catch (JASConversionException jce) {
-        // toInt() conversion failed
-        LOGGER.debug("FactorSquareFree.evaluate() failed", jce);
+        // LOGGER.debug("FactorSquareFree.evaluate() failed", jce);
       }
       return ast.arg1();
     }
@@ -1638,7 +1635,7 @@ public class Algebra {
 
       } catch (JASConversionException jce) {
         // toInt() conversion failed
-        LOGGER.debug("FactorSquareFreeList.evaluate() failed", jce);
+        // LOGGER.debug("FactorSquareFreeList.evaluate() failed", jce);
       }
       return F.NIL;
     }
@@ -2018,7 +2015,7 @@ public class Algebra {
         }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        LOGGER.debug("PolynomialExtendedGCD.evaluate() failed", rex);
+        // LOGGER.debug("PolynomialExtendedGCD.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -2041,9 +2038,9 @@ public class Algebra {
           list.append(subList);
           return list;
         } catch (ArithmeticException aex) {
-          LOGGER.log(engine.getLogLevel(), S.PolynomialExtendedGCD, aex);
+          // LOGGER.log(engine.getLogLevel(), S.PolynomialExtendedGCD, aex);
         } catch (JASConversionException e) {
-          LOGGER.debug("PolynomialExtendedGCD.evaluate() failed", e);
+          // LOGGER.debug("PolynomialExtendedGCD.evaluate() failed", e);
         }
       }
       return F.NIL;
@@ -2237,7 +2234,7 @@ public class Algebra {
         return p1.getExpr();
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        LOGGER.debug("PolynomialGCD.evaluate() failed", rex);
+        // LOGGER.debug("PolynomialGCD.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -2319,7 +2316,7 @@ public class Algebra {
         }
         return Algebra.factorModulus(jas, modIntegerRing, poly, false);
       } catch (JASConversionException e) {
-        LOGGER.debug("PolynomialGCD.modulusGCD() failed", e);
+        // LOGGER.debug("PolynomialGCD.modulusGCD() failed", e);
       }
       return F.NIL;
     }
@@ -2636,10 +2633,10 @@ public class Algebra {
           return jas.modLongPoly2Expr(p);
         }
       } catch (JASConversionException e) {
-        LOGGER.debug("PolynomialMod.polynomialModInteger() JAS conversion failed", e);
+        // LOGGER.debug("PolynomialMod.polynomialModInteger() JAS conversion failed", e);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        LOGGER.debug("PolynomialMod.polynomialModInteger() failed", rex);
+        // LOGGER.debug("PolynomialMod.polynomialModInteger() failed", rex);
       }
       // Fallback: walk the (already expanded) expression and apply Mod to numeric leaves.
       return applyModRecursively(expr, m, engine);
@@ -2829,7 +2826,7 @@ public class Algebra {
             }
           } catch (RuntimeException rex) {
             Errors.rethrowsInterruptException(rex);
-            LOGGER.debug("PolynomialMod.evaluate() failed", rex);
+            // LOGGER.debug("PolynomialMod.evaluate() failed", rex);
           }
         }
       }
@@ -3037,7 +3034,7 @@ public class Algebra {
         }
       } catch (ArithmeticException aex) {
         // division by zero
-        LOGGER.log(engine.getLogLevel(), S.PolynomialQuotient, aex);
+        // LOGGER.log(engine.getLogLevel(), S.PolynomialQuotient, aex);
       }
       return F.NIL;
     }
@@ -3106,7 +3103,7 @@ public class Algebra {
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         // rex.printStackTrace();
-        LOGGER.debug("PolynomialQuotientRemainder.quotientRemainder() failed", rex);
+        // LOGGER.debug("PolynomialQuotientRemainder.quotientRemainder() failed", rex);
       }
       return Optional.empty();
     }
@@ -3201,10 +3198,10 @@ public class Algebra {
         return result;
       } catch (ArithmeticException aex) {
         // division by zero
-        LOGGER.log(engine.getLogLevel(), S.PolynomialQuotientRemainder, aex);
+        // LOGGER.log(engine.getLogLevel(), S.PolynomialQuotientRemainder, aex);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        LOGGER.debug("PolynomialQuotientRemainder.evaluate() failed", rex);
+        // LOGGER.debug("PolynomialQuotientRemainder.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -3231,7 +3228,7 @@ public class Algebra {
         result[1] = jas.modLongPoly2Expr(divRem[1]);
         return Optional.of(result);
       } catch (JASConversionException e) {
-        LOGGER.debug("PolynomialQuotientRemainder.quotientRemainderModInteger() failed", e);
+        // LOGGER.debug("PolynomialQuotientRemainder.quotientRemainderModInteger() failed", e);
       }
       return Optional.empty();
     }
@@ -3324,10 +3321,10 @@ public class Algebra {
 
       ArithmeticException aex) {
         // division by zero
-        LOGGER.log(engine.getLogLevel(), S.PolynomialRemainder, aex);
+        // LOGGER.log(engine.getLogLevel(), S.PolynomialRemainder, aex);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
-        LOGGER.debug("PolynomialRemainder.evaluate() failed", rex);
+        // LOGGER.debug("PolynomialRemainder.evaluate() failed", rex);
       }
       return F.NIL;
     }
@@ -3685,8 +3682,6 @@ public class Algebra {
 
   }
 
-  private static final Logger LOGGER = LogManager.getLogger(Algebra.class);
-
   private final static int MODULUS_OPTION = 0;
 
   private static boolean checkPolyStruct(final IAST ast, EvalEngine engine) {
@@ -3766,7 +3761,7 @@ public class Algebra {
       return factorModulus(jas, modIntegerRing, poly, factorSquareFree);
     } catch (ArithmeticException ae) {
       // toInt() conversion failed
-      LOGGER.debug("Algebra.factorModulus() failed", ae);
+      // LOGGER.debug("Algebra.factorModulus() failed", ae);
     }
     return F.NIL;
   }
@@ -4007,7 +4002,7 @@ public class Algebra {
     } catch (RuntimeException e) {
       Errors.rethrowsInterruptException(e);
       // JAS may throw JASConversionException and RuntimeExceptions
-      LOGGER.debug("Algebra.partialFractionDecompositionRational() failed", e);
+      // LOGGER.debug("Algebra.partialFractionDecompositionRational() failed", e);
     }
     return F.NIL;
   }
@@ -4046,7 +4041,7 @@ public class Algebra {
     } catch (RuntimeException e) {
       Errors.rethrowsInterruptException(e);
       // JAS may throw JASConversionException and RuntimeExceptions
-      LOGGER.debug("Algebra.polynomialTaylorSeries() failed", e);
+      // LOGGER.debug("Algebra.polynomialTaylorSeries() failed", e);
     }
     return F.NIL;
   }

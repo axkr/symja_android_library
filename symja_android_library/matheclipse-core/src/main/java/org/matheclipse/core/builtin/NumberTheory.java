@@ -23,6 +23,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.function.IntBinaryOperator;
+import java.util.function.IntUnaryOperator;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatArithmeticException;
@@ -33,6 +35,7 @@ import org.apfloat.FixedPrecisionApfloatHelper;
 import org.apfloat.NumericComputationException;
 import org.apfloat.internal.BackingStorageException;
 import org.hipparchus.complex.Complex;
+import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.CombinatoricsUtils;
@@ -435,7 +438,18 @@ public final class NumberTheory {
    * 10
    * </pre>
    */
-  private static class Binomial extends AbstractArg2 {
+  private static class Binomial extends AbstractArg2 implements IntBinaryOperator {
+    @Override
+    public int applyAsInt(int n, int k) {
+      if (n < 0 || k < 0 || k > n) {
+        throw new ArithmeticException("Binomial out of domain");
+      }
+      try {
+        return Math.toIntExact(org.hipparchus.util.CombinatoricsUtils.binomialCoefficient(n, k));
+      } catch (MathIllegalArgumentException | ArithmeticException e) {
+        throw new ArithmeticException("Binomial out of 32-bit int bounds");
+      }
+    }
 
     @Override
     public IExpr e2ApfloatArg(ApfloatNum a1, ApfloatNum a2) {
@@ -605,8 +619,14 @@ public final class NumberTheory {
    * 12
    * </pre>
    */
-  private static class CarmichaelLambda extends AbstractTrigArg1 {
-
+  private static class CarmichaelLambda extends AbstractTrigArg1 implements IntUnaryOperator {
+    @Override
+    public int applyAsInt(int arg) {
+      if (arg == 0) {
+        throw new ArithmeticException("CarmichaelLambda(0) is undefined");
+      }
+      return F.ZZ(arg).charmichaelLambda().toIntDefault();
+    }
 
     @Override
     public boolean evalIsReal(IAST ast) {
@@ -1662,71 +1682,6 @@ public final class NumberTheory {
   }
 
 
-  /**
-   *
-   *
-   * <pre>
-   * Divisors(n)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * returns all integers that divide the integer <code>n</code>.
-   *
-   * </blockquote>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; Divisors(990)
-   * {1,2,3,5,6,9,10,11,15,18,22,30,33,45,55,66,90,99,110,165,198,330,495,990}
-   * </pre>
-   *
-   * <pre>
-   * ```
-   * &gt;&gt; Divisors(341550071728321)
-   * {1,10670053,32010157,341550071728321}
-   * </pre>
-   *
-   * <pre>
-   * ```
-   * &gt;&gt; Divisors(2010)
-   * {1,2,3,5,6,10,15,30,67,134,201,335,402,670,1005,2010}
-   * </pre>
-   */
-  private static class Divisors extends AbstractTrigArg1 {
-
-    @Override
-    public boolean evalIsReal(IAST ast) {
-      return false;
-    }
-
-    @Override
-    public IExpr evaluateArg1(final IExpr arg1, EvalEngine engine) {
-      if (arg1.isInteger() && !arg1.isZero()) {
-        IInteger i = (IInteger) arg1;
-        if (i.isNegative()) {
-          i = i.negate();
-        }
-        return i.divisors();
-      }
-      return F.NIL;
-    }
-
-
-    @Override
-    public int status() {
-      return ImplementationStatus.FULL_SUPPORT;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
-  }
-
-
   private static class DivisorSum extends AbstractFunctionEvaluator {
 
     @Override
@@ -1817,7 +1772,32 @@ public final class NumberTheory {
    * 28
    * </pre>
    */
-  private static class DivisorSigma extends AbstractFunctionEvaluator {
+  private static class DivisorSigma extends AbstractFunctionEvaluator implements IntBinaryOperator {
+    @Override
+    public int applyAsInt(int k, int n) {
+      if (n <= 0)
+        throw new IllegalArgumentException("DivisorSigma n <= 0");
+      IAST list = F.ZZ(n).divisors();
+      if (list.isList()) {
+        int size = list.size();
+        if (k == 1) {
+          IInteger sum = F.C0;
+          for (int i = 1; i < size; i++) {
+            sum = sum.add(((IInteger) list.get(i)));
+          }
+          return sum.toInt();
+        }
+
+        long kl = k;
+
+        IInteger sum = F.C0;
+        for (int i = 1; i < size; i++) {
+          sum = sum.add(((IInteger) list.get(i)).powerRational(kl));
+        }
+        return sum.toInt();
+      }
+      throw new IllegalArgumentException("DivisorSigma undefined");
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2090,7 +2070,14 @@ public final class NumberTheory {
    * 4
    * </pre>
    */
-  private static class EulerPhi extends AbstractTrigArg1 {
+  private static class EulerPhi extends AbstractTrigArg1 implements IntUnaryOperator {
+    @Override
+    public int applyAsInt(int arg) {
+      if (arg == 0) {
+        return 0; // Standard definition handling or throw an exception
+      }
+      return F.ZZ(arg).eulerPhi().toIntDefault();
+    }
 
     @Override
     public boolean evalIsReal(IAST ast) {
@@ -2382,7 +2369,19 @@ public final class NumberTheory {
    * "Not(Factorial(a))"
    * </pre>
    */
-  private static class Factorial extends AbstractEvaluator implements IFunctionExpand, INumeric {
+  private static class Factorial extends AbstractEvaluator
+      implements IFunctionExpand, INumeric, IntUnaryOperator {
+    @Override
+    public int applyAsInt(int n) {
+      if (n < 0 || n > 12) {
+        throw new ArithmeticException("Factorial out of 32-bit int bounds");
+      }
+      int fact = 1;
+      for (int i = 2; i <= n; i++)
+        fact *= i;
+      return fact;
+    }
+
     @Override
     public IExpr numericFunction(IAST ast, EvalEngine engine) {
       if (ast.isAST1()) {
@@ -2979,7 +2978,16 @@ public final class NumberTheory {
    * 280571172992510140037611932413038677189525
    * </pre>
    */
-  private static class Fibonacci extends AbstractFunctionEvaluator implements IFunctionExpand {
+  private static class Fibonacci extends AbstractFunctionEvaluator
+      implements IFunctionExpand, IntUnaryOperator {
+    @Override
+    public int applyAsInt(int n) {
+      // 46th Fibonacci is 1,836,311,903. 47th exceeds Integer.MAX_VALUE
+      if (n < 0 || n > 46) {
+        throw new ArithmeticException("Fibonacci out of 32-bit int bounds");
+      }
+      return AbstractIntegerSym.fibonacci(n).toIntDefault();
+    }
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
@@ -3548,7 +3556,12 @@ public final class NumberTheory {
    * -1
    * </pre>
    */
-  private static class JacobiSymbol extends AbstractArg2 {
+  private static class JacobiSymbol extends AbstractArg2
+      implements java.util.function.IntBinaryOperator {
+    @Override
+    public int applyAsInt(int m, int n) {
+      return F.ZZ(m).jacobiSymbol(F.ZZ(n)).toIntDefault();
+    }
 
     @Override
     public IExpr e2IntArg(final IInteger i0, final IInteger i1) {
@@ -3788,7 +3801,20 @@ public final class NumberTheory {
   }
 
 
-  private static class LiouvilleLambda extends AbstractFunctionEvaluator {
+  private static class LiouvilleLambda extends AbstractFunctionEvaluator
+      implements IntUnaryOperator {
+    @Override
+    public int applyAsInt(int arg) {
+      if (arg <= 0) {
+        throw new IllegalArgumentException("LiouvilleLambda undefined for n <= 0");
+      }
+      if (arg == 1)
+        return 1;
+
+      int omega = Config.PRIME_FACTORS.factorInteger(BigInteger.valueOf(arg)).values().stream()
+          .mapToInt(Integer::intValue).sum();
+      return (omega % 2 == 0) ? 1 : -1;
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -4073,7 +4099,14 @@ public final class NumberTheory {
    * <li>☑ - partially implemented</li>
    * </ul>
    */
-  private static class MersennePrimeExponent extends AbstractTrigArg1 {
+  private static class MersennePrimeExponent extends AbstractTrigArg1 implements IntUnaryOperator {
+    @Override
+    public int applyAsInt(int n) {
+      if (n <= 0 || n > NumberTheory.MPE_52.length) {
+        throw new IllegalArgumentException("Out of domain");
+      }
+      return NumberTheory.MPE_52[n - 1];
+    }
 
     @Override
     public boolean evalIsReal(IAST ast) {
@@ -4201,7 +4234,23 @@ public final class NumberTheory {
    * </code>
    * </pre>
    */
-  private static class ModularInverse extends AbstractFunctionEvaluator {
+  private static class ModularInverse extends AbstractFunctionEvaluator
+      implements java.util.function.IntBinaryOperator {
+    @Override
+    public int applyAsInt(int k, int n) {
+      if (n == 0) {
+        throw new ArithmeticException("ModularInverse modulo 0 is undefined");
+      }
+      try {
+        BigInteger bn = BigInteger.valueOf(n);
+        if (n < 0) {
+          return BigInteger.valueOf(k).negate().modInverse(bn.negate()).negate().intValue();
+        }
+        return BigInteger.valueOf(k).modInverse(bn).intValue();
+      } catch (ArithmeticException e) {
+        throw new ArithmeticException("Not invertible");
+      }
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -4274,9 +4323,18 @@ public final class NumberTheory {
    * <pre>
    * &gt;&gt; MoebiusMu(30)
    * -1
+   * * &gt;&gt; MoebiusMu(3 + 4*I)
+   * -1
    * </pre>
    */
-  private static class MoebiusMu extends AbstractTrigArg1 {
+  private static class MoebiusMu extends AbstractTrigArg1 implements IntUnaryOperator {
+    @Override
+    public int applyAsInt(int arg) {
+      if (arg == 0) {
+        throw new ArithmeticException("MoebiusMu(0) is undefined");
+      }
+      return F.ZZ(arg).moebiusMu().toIntDefault();
+    }
 
     @Override
     public boolean evalIsReal(IAST ast) {
@@ -4291,18 +4349,50 @@ public final class NumberTheory {
         } catch (ArithmeticException e) {
           // integer to large?
         }
+      } else if (arg1.isComplex()) {
+        IComplex c = (IComplex) arg1;
+        IRational real = c.getRealPart();
+        IRational imaginary = c.getImaginaryPart();
+        if (real.isInteger() && imaginary.isInteger()) {
+          BigInteger re = ((IInteger) real).toBigNumerator();
+          BigInteger im = ((IInteger) imaginary).toBigNumerator();
+
+          IAST factors = GaussianInteger.factorize(c, re, im);
+          int primeCount = 0;
+          int argSize = factors.argSize();
+
+          for (int i = 1; i <= argSize; i++) {
+            IAST factorList = (IAST) factors.get(i);
+            IExpr primeOrUnit = factorList.arg1();
+            IExpr exponent = factorList.arg2();
+
+            // Skip Gaussian units: 1, -1, I, -I
+            if (primeOrUnit.equals(F.C1) || primeOrUnit.equals(F.CN1) || primeOrUnit.equals(F.CI)
+                || primeOrUnit.equals(F.CNI)) {
+              continue;
+            }
+
+            // MoebiusMu is 0 if it is divisible by a prime square
+            if (!exponent.isOne()) {
+              return F.C0;
+            }
+            primeCount++;
+          }
+
+          // (-1)^k where k is the number of distinct prime factors
+          return (primeCount % 2 == 0) ? F.C1 : F.CN1;
+        }
       } else {
         if (arg1.isProbablePrimeResult()) {
           return F.CN1;
         }
-        IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
-        if (negExpr.isPresent()) {
-          return F.MoebiusMu(negExpr);
-        }
+        // IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+        // if (negExpr.isPresent()) {
+        // return F.MoebiusMu(negExpr);
+        // }
       }
       return F.NIL;
     }
-
 
     @Override
     public int status() {
@@ -4314,7 +4404,6 @@ public final class NumberTheory {
       newSymbol.setAttributes(ISymbol.LISTABLE);
     }
   }
-
 
   /**
    *
@@ -4482,7 +4571,19 @@ public final class NumberTheory {
    * {3,5,17,257,641}
    * </pre>
    */
-  private static class MultiplicativeOrder extends AbstractFunctionEvaluator {
+  private static class MultiplicativeOrder extends AbstractFunctionEvaluator
+      implements IntBinaryOperator {
+    @Override
+    public int applyAsInt(int a, int n) {
+      if (n <= 0)
+        throw new IllegalArgumentException("n must be positive");
+      BigInteger bigA = BigInteger.valueOf(a);
+      BigInteger bigN = BigInteger.valueOf(n);
+      if (!bigA.gcd(bigN).equals(BigInteger.ONE)) {
+        throw new ArithmeticException("Not coprime");
+      }
+      return Primality.multiplicativeOrder(bigA, bigN).intValueExact();
+    }
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -4706,7 +4807,20 @@ public final class NumberTheory {
    * {{6},{5,1},{4,2},{4,1,1},{3,3},{3,2,1},{3,1,1,1},{2,2,2},{2,2,1,1},{2,1,1,1,1},{1,1,1,1,1,1}}
    * </pre>
    */
-  private static class PartitionsP extends AbstractFunctionEvaluator {
+  private static class PartitionsP extends AbstractFunctionEvaluator implements IntUnaryOperator {
+    @Override
+    public int applyAsInt(int n) {
+      if (n < 0)
+        throw new IllegalArgumentException("PartitionsP out of domain");
+      if (n == 0 || n == 1)
+        return 1;
+      // Evaluate via existing Symja engine cache
+      IExpr result = sumPartitionsP(EvalEngine.get(), F.ZZ(n));
+      if (result.isInteger()) {
+        return ((IInteger) result).toInt();
+      }
+      throw new ArithmeticException("PartitionsP out of 32-bit int bounds");
+    }
 
     private static class BigIntegerPartitionsP {
       /** The list of all partitions as a java.util.List. */
@@ -5173,7 +5287,14 @@ public final class NumberTheory {
    * 991
    * </pre>
    */
-  private static class Prime extends AbstractFunctionEvaluator {
+  private static class Prime extends AbstractFunctionEvaluator implements IntUnaryOperator {
+    @Override
+    public int applyAsInt(int n) {
+      if (n <= 0 || n > 103000000) {
+        throw new IllegalArgumentException("Prime(" + n + ") is out of domain");
+      }
+      return (int) Primality.prime(n);
+    }
 
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
@@ -5214,144 +5335,27 @@ public final class NumberTheory {
     }
   }
 
-
-  /**
-   * <pre>
-   * <code>PrimePi(x)
-   * </code>
-   * </pre>
-   * 
-   * <p>
-   * gives the number of primes less than or equal to <code>x</code>.
-   * </p>
-   * 
-   * <p>
-   * See
-   * </p>
-   * <ul>
-   * <li><a href="https://en.wikipedia.org/wiki/Prime-counting_function">Wikipedia - Prime-counting
-   * function</a></li>
-   * <li><a href=
-   * "https://en.wikipedia.org/wiki/On_the_Number_of_Primes_Less_Than_a_Given_Magnitude">Wikipedia -
-   * On the Number of Primes Less Than a Given Magnitude</a></li>
-   * <li><a href="http://fungrim.org/topic/Prime_numbers/">Fungrim - Prime numbers</a></li>
-   * </ul>
-   * <h3>Examples</h3>
-   * 
-   * <pre>
-   * <code>&gt;&gt; PrimePi(100)
-   * 25
-   * 
-   * &gt;&gt; PrimePi(-1)
-   * 0
-   * 
-   * &gt;&gt; PrimePi(3.5)
-   * 2
-   * 
-   * &gt;&gt; PrimePi(E)
-   * 1
-   * </code>
-   * </pre>
-   */
-  private static class PrimePi extends AbstractFunctionEvaluator {
+  private static class PrimeOmega extends AbstractFunctionEvaluator implements IntUnaryOperator {
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      IExpr arg1 = ast.arg1();
-      if (arg1.isNegative() || arg1.isOne() || arg1.isZero()) {
-        return F.C0;
+    public int applyAsInt(int arg) {
+      if (arg == 0) {
+        throw new ArithmeticException("PrimeOmega(0) is undefined");
+      }
+      if (arg == 1 || arg == -1) {
+        return 0;
       }
 
-      IExpr x = F.NIL;
-      if (arg1.isInteger()) {
-        x = arg1;
-      } else if (arg1.isReal() && arg1.isPositive()) {
-        x = engine.evaluate(((IReal) arg1).floorFraction());
-      } else {
-        IReal sn = arg1.evalReal();
-        if (sn != null) {
-          x = engine.evaluate(sn.floorFraction());
-        }
+      long absArg = Math.abs((long) arg);
+      SortedMap<BigInteger, Integer> map =
+          Config.PRIME_FACTORS.factorInteger(BigInteger.valueOf(absArg));
+
+      int sum = 0;
+      for (Integer exponent : map.values()) {
+        sum += exponent;
       }
-
-      if (x.isInteger() && x.isPositive()) {
-        // TODO improve performance by caching some values?
-
-        int maxK = x.toIntDefault();
-        if (maxK >= 0) {
-          int result = 0;
-          BigInteger max = BigInteger.valueOf(maxK);
-          BigInteger temp = BigInteger.ONE;
-          int iterationLimit = engine.getIterationLimit();
-          if (iterationLimit >= 0 && iterationLimit < (maxK / 100)) {
-            IterationLimitExceeded.throwIt(maxK, ast);
-          }
-          for (int i = 2; i <= maxK; i++) {
-            temp = temp.nextProbablePrime();
-            if (temp.compareTo(max) > 0) {
-              break;
-            }
-            result++;
-          }
-          return F.ZZ(result);
-        }
-      }
-
-      return F.NIL;
+      return sum;
     }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
-
-
-    @Override
-    public int status() {
-      return ImplementationStatus.PARTIAL_SUPPORT;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.LISTABLE);
-    }
-  }
-
-
-  /**
-   *
-   *
-   * <pre>
-   * PrimeOmega(n)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * returns the sum of the exponents of the prime factorization of <code>n</code>.
-   *
-   * </blockquote>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt;&gt; PrimeOmega(990)
-   * {{2,1},{3,2},{5,1},{11,1}}
-   * </pre>
-   *
-   * <pre>
-   * ```
-   * &gt;&gt;&gt; PrimeOmega(341550071728321)
-   * {{10670053,1},{32010157,1}}
-   * </pre>
-   *
-   * <pre>
-   * ```
-   * &gt;&gt; PrimeOmega(2010)
-   * {{2, 1}, {3, 1}, {5, 1}, {67, 1}}
-   * </pre>
-   */
-  private static class PrimeOmega extends AbstractFunctionEvaluator {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -5366,10 +5370,18 @@ public final class NumberTheory {
         return F.C0;
       }
       if (arg1.isInteger()) {
+        try {
+          int argInt = arg1.toIntDefault();
+          if (F.isPresent(argInt)) {
+            return F.ZZ(applyAsInt(argInt));
+          }
+        } catch (ArithmeticException e) {
+          // fallback if it exceeds int bounds
+        }
+
         if (arg1.isNegative()) {
           arg1 = arg1.negate();
         }
-        // SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
         SortedMap<BigInteger, Integer> map =
             Config.PRIME_FACTORS.factorInteger(((IInteger) arg1).toBigNumerator());
         BigInteger sum = BigInteger.ZERO;
@@ -5380,7 +5392,7 @@ public final class NumberTheory {
       } else {
         IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
         if (negExpr.isPresent()) {
-          return F.PrimeOmega(negExpr);
+          return F.unaryAST1(S.PrimeOmega, negExpr);
         }
       }
       return F.NIL;
@@ -5390,7 +5402,6 @@ public final class NumberTheory {
     public int[] expectedArgSize(IAST ast) {
       return ARGS_1_1;
     }
-
 
     @Override
     public int status() {
@@ -5455,62 +5466,6 @@ public final class NumberTheory {
     }
   }
 
-
-  /**
-   *
-   *
-   * <pre>
-   * PrimitiveRoot(n)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * returns the smallest primitive root of <code>n</code>.
-   *
-   * </blockquote>
-   *
-   * <pre>
-   * PrimitiveRoot(n, k)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * returns the smallest primitive root of <code>n</code> that is greater than <code>k</code>.
-   *
-   * </blockquote>
-   *
-   * <p>
-   * A primitive root exists if and only if <code>n</code> is 1, 2, 4, p^k, or 2*p^k for an odd
-   * prime <code>p</code>. Returns <code>$Failed</code> if no primitive root exists for
-   * <code>n</code>.
-   *
-   * <p>
-   * See:
-   * <ul>
-   * <li><a href="https://en.wikipedia.org/wiki/Primitive_root_modulo_n">Wikipedia - Primitive root
-   * modulo n</a></li>
-   * <li><a href="https://reference.wolfram.com/language/ref/PrimitiveRoot.html">Wolfram -
-   * PrimitiveRoot</a></li>
-   * </ul>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; PrimitiveRoot(7)
-   * 3
-   *
-   * &gt;&gt; PrimitiveRoot(37)
-   * 2
-   *
-   * &gt;&gt; PrimitiveRoot(37, 5)
-   * 13
-   *
-   * &gt;&gt; PrimitiveRoot(8)
-   * $Failed
-   * </pre>
-   */
   private static class PrimitiveRoot extends AbstractFunctionEvaluator {
 
     @Override
@@ -6151,7 +6106,15 @@ public final class NumberTheory {
    * </pre>
    */
 
-  private static class SquaresR extends AbstractFunctionEvaluator {
+  private static class SquaresR extends AbstractFunctionEvaluator
+      implements java.util.function.IntBinaryOperator {
+    @Override
+    public int applyAsInt(int d, int n) {
+      if (d <= 0 || n < 0) {
+        throw new IllegalArgumentException("SquaresR out of domain");
+      }
+      return squaresR(d, n);
+    }
 
     /**
      * TODO use Wikipedia formulas for small d
@@ -6585,7 +6548,13 @@ public final class NumberTheory {
    * 22827
    * </pre>
    */
-  private static class StirlingS2 extends AbstractFunctionEvaluator {
+  private static class StirlingS2 extends AbstractFunctionEvaluator implements IntBinaryOperator {
+    @Override
+    public int applyAsInt(int n, int k) {
+      if (n < 0 || k < 0 || k > n)
+        throw new ArithmeticException("Out of domain");
+      return stirlingS2(n, F.ZZ(k), k).toInt(); // Throws ArithmeticException if > MAX_VALUE
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -6792,7 +6761,6 @@ public final class NumberTheory {
       S.DedekindNumber.setEvaluator(new DedekindNumber());
       S.DiracDelta.setEvaluator(new DiracDelta());
       S.Divisible.setEvaluator(new Divisible());
-      S.Divisors.setEvaluator(new Divisors());
       S.DivisorSum.setEvaluator(new DivisorSum());
       S.DivisorSigma.setEvaluator(new DivisorSigma());
       S.EulerE.setEvaluator(new EulerE());
@@ -6827,7 +6795,6 @@ public final class NumberTheory {
       S.PerfectNumberQ.setEvaluator(new PerfectNumberQ());
       S.PowersRepresentations.setEvaluator(new PowersRepresentations());
       S.Prime.setEvaluator(new Prime());
-      S.PrimePi.setEvaluator(new PrimePi());
       S.PrimeOmega.setEvaluator(new PrimeOmega());
       S.PrimePowerQ.setEvaluator(new PrimePowerQ());
       S.PrimitiveRoot.setEvaluator(new PrimitiveRoot());

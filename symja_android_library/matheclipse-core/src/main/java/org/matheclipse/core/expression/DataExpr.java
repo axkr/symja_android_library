@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
@@ -87,9 +88,17 @@ public abstract class DataExpr<T> implements IDataExpr<T> {
     return IExpr.compareHierarchy(this, expr);
   }
 
+  public IAST fullForm() {
+    return F.NIL;
+  }
+
   /** {@inheritDoc} */
   @Override
   public String fullFormString() {
+    IAST result = fullForm();
+    if (result.isPresent()) {
+      return result.fullFormString();
+    }
     return fHead + "(" + fData.toString() + ")";
   }
 

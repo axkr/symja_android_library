@@ -104,7 +104,6 @@ public class ExpTrigsFunctions {
       S.ArcSinh.setEvaluator(new ArcSinh());
       S.ArcTan.setEvaluator(new ArcTan());
       S.ArcTanh.setEvaluator(new ArcTanh());
-      S.CirclePoints.setEvaluator(new CirclePoints());
       S.Cos.setEvaluator(new Cos());
       S.Cosh.setEvaluator(new Cosh());
       S.Cot.setEvaluator(new Cot());
@@ -1399,39 +1398,6 @@ public class ExpTrigsFunctions {
       F.Plus(F.Times(F.CN1D2, F.Log(F.Subtract(F.C1, arg1))),
           F.Times(F.C1D2, F.Log(F.Plus(F.C1, arg1)))); // $$;
     }
-  }
-
-  private static class CirclePoints extends AbstractFunctionEvaluator {
-    @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      final IExpr arg1 = ast.arg1();
-      if (arg1.isReal()) {
-        if (arg1.isNegative()) {
-          // Argument `1` should be a real non-negative number.
-          return Errors.printMessage(ast.topHead(), "noneg", F.list(arg1), engine);
-        }
-        int i = arg1.toIntDefault();
-        if (i > 0) {
-          // Pi/i - Pi/2
-          final IExpr start =
-              engine.evaluate(F.Plus(F.Times(F.QQ(1, i), S.Pi), F.Times(F.CN1D2, S.Pi)));
-          // (2/i)*Pi
-          final IExpr angle = engine.evaluate(F.Times(F.QQ(2, i), S.Pi));
-          return F.mapRange(0, i, j -> F.AngleVector(F.Plus(start, F.ZZ(j).times(angle))));
-        } else if (i == 0) {
-          return F.CEmptyList;
-        }
-      }
-      return F.NIL;
-    }
-
-    @Override
-    public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
-    }
-
-    @Override
-    public void setUp(final ISymbol newSymbol) {}
   }
 
   /**

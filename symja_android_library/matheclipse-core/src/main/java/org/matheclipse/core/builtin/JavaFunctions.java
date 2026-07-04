@@ -9,8 +9,6 @@ import java.lang.reflect.Parameter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.Errors;
@@ -27,7 +25,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class JavaFunctions {
-  private static final Logger LOGGER = LogManager.getLogger(JavaFunctions.class);
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -69,7 +66,7 @@ public class JavaFunctions {
           Config.URL_CLASS_LOADER = child;
         }
       } catch (MalformedURLException ex) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
+        return Errors.printMessage(S.AddToClassPath, ex, engine);
       }
       return F.NIL;
     }
@@ -224,8 +221,7 @@ public class JavaFunctions {
             }
             arg1 = JavaClassExpr.newInstance(arg1.toString(), Config.URL_CLASS_LOADER);
           } catch (StackOverflowError | ClassNotFoundException cnfex) {
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), cnfex);
-            return F.NIL;
+            return Errors.printMessage(S.JavaNew, cnfex, engine);
           }
         }
         if (arg1 instanceof JavaClassExpr) {
@@ -244,8 +240,7 @@ public class JavaFunctions {
             }
           } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
               | InvocationTargetException | SecurityException ex) {
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), ex);
-            return F.NIL;
+            return Errors.printMessage(S.JavaNew, ex, engine);
           }
         }
       }
@@ -352,7 +347,7 @@ public class JavaFunctions {
           }
 
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-          LOGGER.log(engine.getLogLevel(), S.JavaObject, ex);
+          return Errors.printMessage(S.JavaObject, ex, engine);
         }
       }
       return F.NIL;
@@ -498,8 +493,7 @@ public class JavaFunctions {
             }
             return jClazz;
           } catch (StackOverflowError | ClassNotFoundException cnfex) {
-            LOGGER.log(engine.getLogLevel(), ast.topHead(), cnfex);
-            return F.NIL;
+            return Errors.printMessage(S.LoadJavaClass, cnfex, engine);
           }
         }
         if (arg1 instanceof JavaClassExpr) {

@@ -387,6 +387,79 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testMovingAverage() {
+    // SparseArray
+    // Normal array is {1, 0, 3, 0}
+    check("MovingAverage(SparseArray({1 -> 1, 3 -> 3}, 4), 2)", //
+        "{1/2,3/2,3/2}");
+
+    // Basic runs
+    check("MovingAverage({1, 2, 3, 4, 5}, 3)", //
+        "{2,3,4}");
+    check("MovingAverage({1, 2, 3, 4}, 2)", //
+        "{3/2,5/2,7/2}");
+
+    // Primitive double arrays
+    check("MovingAverage({1.0, 2.0, 3.0, 4.0, 5.0}, 3)", //
+        "{2.0,3.0,4.0}");
+
+    // Symbolic expressions
+    check("MovingAverage({a, b, c, d}, 2)", //
+        "{1/2*(a+b),1/2*(b+c),1/2*(c+d)}");
+
+    // Weights
+    check("MovingAverage({1, 2, 3, 4}, {1, 2})", //
+        "{5/3,8/3,11/3}");
+    check("MovingAverage({1.0, 2.0, 3.0, 4.0}, {0.5, 0.5})", //
+        "{1.5,2.5,3.5}");
+    check("MovingAverage({1, 2, 3, 4}, {w1, w2})", //
+        "{(w1+2*w2)/(w1+w2),(2*w1+3*w2)/(w1+w2),(3*w1+4*w2)/(w1+w2)}");
+
+
+    // Edge cases (should remain unevaluated)
+    check("MovingAverage({1, 2, 3, 4, 5}, 10)", //
+        "MovingAverage({1,2,3,4,5},10)");
+    check("MovingAverage({1, 2, 3}, -1)", //
+        "MovingAverage({1,2,3},-1)");
+    check("MovingAverage({1, 2, 3, 4}, {1, 2, 3, 4, 5})", //
+        "MovingAverage({1,2,3,4},{1,2,3,4,5})");
+  }
+
+  @Test
+  public void testMovingMedian() {
+    // Basic integer runs (odd and even spans)
+    check("MovingMedian({1, 2, 3, 4, 5}, 3)", //
+        "{2,3,4}");
+    check("MovingMedian({1, 2, 3, 4, 5}, 2)", //
+        "{3/2,5/2,7/2,9/2}");
+
+    // Non-monotonic data
+    check("MovingMedian({3, 1, 4, 1, 5, 9, 2}, 3)", //
+        "{3,1,4,5,5}");
+
+    // Primitive double arrays
+    check("MovingMedian({1.5, 2.5, 3.5, 1.0, 5.0}, 3)", //
+        "{2.5,2.5,3.5}");
+
+    // message MovingMedian: The first argument {a,b,c} is expected to be a vector or matrix of real
+    // values.
+    check("MovingMedian({a, b, c}, 2)", //
+        "MovingMedian({a,b,c},2)");
+
+    // SparseArray
+    // Normal array is {1, 0, 3, 0}
+    // Windows: {1, 0, 3} -> median 1; {0, 3, 0} -> median 0
+    check("MovingMedian(SparseArray({1 -> 1, 3 -> 3}, 4), 3)", //
+        "{1,0}");
+
+    // Edge cases (should remain unevaluated)
+    check("MovingMedian({1, 2, 3}, 5)", //
+        "MovingMedian({1,2,3},5)");
+    check("MovingMedian({1, 2, 3}, -2)", //
+        "MovingMedian({1,2,3},-2)");
+  }
+
+  @Test
   public void testRootMeanSquare() {
     // check("RootMeanSquare(RandomReal(1, 10^4))", //
     // "");

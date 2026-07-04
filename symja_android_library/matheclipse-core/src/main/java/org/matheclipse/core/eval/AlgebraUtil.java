@@ -1383,8 +1383,6 @@ public class AlgebraUtil {
         } else {
           map = factorAbstract.factors(poly);
         }
-        // } catch (TimeExceededException texex) {
-        // LOGGER.debug("Factor.factor() time limit exceeded", texex);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         return expr;
@@ -1492,7 +1490,6 @@ public class AlgebraUtil {
       }
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
-      // LOGGER.debug("Algebra.factorComplex() failed", rex);
     }
     return expr;
   }

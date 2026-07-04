@@ -7,8 +7,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Locale;
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -29,7 +27,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  * to the <code>evaluate()</code>
  */
 public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
-  private static final Logger LOGGER = LogManager.getLogger(AbstractFunctionEvaluator.class);
 
   /**
    * Determine the options only from the last arguments of <code>ast</code>. Possibly additional
@@ -600,7 +597,6 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
       // BufferedInputStream(in));
       symbol.readRules(ois);
     } catch (IOException | ClassNotFoundException e) {
-      LOGGER.error("AbstractFunctionEvaluator.initSerializedRules() failed", e);
     } finally {
       engine.setPackageMode(oldPackageMode);
       engine.setTraceMode(oldTraceMode);
@@ -860,7 +856,6 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
           ObjectOutputStream oos = new ObjectOutputStream(out);) {
         newSymbol.writeRules(oos);
       } catch (IOException e) {
-        LOGGER.error("AbstractFunctionEvaluator.setUp() failed", e);
       }
     }
   }

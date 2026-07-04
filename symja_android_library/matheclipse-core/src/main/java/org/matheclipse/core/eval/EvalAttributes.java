@@ -449,27 +449,6 @@ public class EvalAttributes {
     if (ast.size() > 2) {
       if (!isSorted(ast, comparator)) {
         ast.sortInplace(comparator);
-        // final IExpr[] a = ast.toArray();
-        // int end = a.length;
-        // if (Config.FUZZ_TESTING) {
-        // try {
-        // Arrays.sort(a, 1, ast.size(), comparator);
-        // for (int j = 1; j < end; j++) {
-        // ast.set(j, a[j]);
-        // }
-        // } catch (java.lang.IllegalArgumentException iae) {
-        // // java.util.TimSort.mergeHi(TimSort.java:899) - Comparison method violates
-        // its general
-        // // contract!
-        // LOGGER.error(ast, iae);
-        // throw iae;
-        // }
-        // } else {
-        // Arrays.sort(a, 1, ast.size(), comparator);
-        // for (int j = 1; j < end; j++) {
-        // ast.set(j, a[j]);
-        // }
-        // }
         return true;
       }
     }

@@ -583,8 +583,10 @@ public class StatisticalMomentFunctions {
   private static boolean isVectorMatrixOrDistribution(ISymbol head, IAST list,
       IntArrayList dimensions, EvalEngine engine) {
     if (dimensions.size() == 0 || dimensions.contains(0)) {
-      // The first argument `1` is expected to be a vector, matrix or a distribution.
-      Errors.printMessage(S.Moment, "arg1", F.list(list), engine);
+      // The first argument `1` is expected to be `1`.
+      Errors.printMessage(S.Moment, "arg1",
+          F.List(list, F.stringx("a vector, matrix or a distribution")),
+          engine);
       return false;
     }
     return true;

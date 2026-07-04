@@ -986,30 +986,6 @@ public class StatisticsDiscreteDistributions {
     }
   }
 
-
-  /**
-   *
-   * <pre>
-   * MultivariatePoissonDistribution(theta, {lambda1, lambda2, ...})
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * returns a multivariate Poisson distribution where the components are X_i = Y_0 + Y_i, with Y_0
-   * ~ Poisson(theta) and Y_i ~ Poisson(lambda_i).
-   *
-   * </blockquote>
-   *
-   * <p>
-   * See:
-   *
-   * <ul>
-   * <li><a href=
-   * "https://reference.wolfram.com/language/ref/MultivariatePoissonDistribution.html">Wolfram -
-   * MultivariatePoissonDistribution</a>
-   * </ul>
-   */
   private static final class MultivariatePoissonDistribution extends AbstractEvaluator
       implements IDiscreteDistribution, ICDF, IPDF, IStatistics, IRandomVariate, ICovariance {
 

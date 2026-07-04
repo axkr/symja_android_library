@@ -482,6 +482,10 @@ public class BesselFunctionTest extends ExprEvaluatorTestCase {
       check("WeberE(1009,-0.8+I*1.2)", //
           "Indeterminate");
     }
+    check("WeberE(-3, a + b+c+d)", //
+        "6/((a+b+c+d)^2*Pi)-StruveH(-3,a+b+c+d)");
+    check("WeberE(3, a + b+c+d)", //
+        "(2/3+2/15*(a+b+c+d)^2)/Pi-StruveH(3,a+b+c+d)");
     check("WeberE(a, 0)", //
         "1/2*a*Pi*Sinc(1/2*a*Pi)^2");
     check("WeberE(1, 0)", //

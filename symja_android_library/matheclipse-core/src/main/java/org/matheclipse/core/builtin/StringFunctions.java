@@ -46,7 +46,6 @@ import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 
 public final class StringFunctions {
-  // private static final Logger LOGGER = LogManager.getLogger(StringFunctions.class);
 
   /**
    *
@@ -3163,9 +3162,6 @@ public final class StringFunctions {
         unicodeStringBuilder.append(hexValueString);
       }
       unicodeString = unicodeStringBuilder.toString();
-      // } catch (final UnsupportedEncodingException e) {
-      // LOGGER.error("ToUnicode.toUnicodeString() failed", e);
-      // }
       return unicodeString;
     }
 

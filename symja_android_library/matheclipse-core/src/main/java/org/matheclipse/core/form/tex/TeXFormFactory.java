@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
@@ -52,7 +50,6 @@ import org.matheclipse.parser.trie.TrieMatch;
  * usage.
  */
 public class TeXFormFactory {
-  private static final Logger LOGGER = LogManager.getLogger(TeXFormFactory.class);
 
   /** The conversion wasn't called with an operator preceding the <code>IExpr</code> object. */
   public static final boolean NO_PLUS_CALL = false;
@@ -1426,7 +1423,6 @@ public class TeXFormFactory {
       return true;
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
-      LOGGER.debug("TeXFormFactory.convert() failed", rex);
     } catch (OutOfMemoryError oome) {
     }
     return false;
@@ -1876,7 +1872,6 @@ public class TeXFormFactory {
         DoubleToMMA.doubleToMMA(buf, dValue, exponentFigures, significantFigures, true, true);
         return buf.toString();
       } catch (IOException ioex) {
-        LOGGER.error("TeXFormFactory.convertDoubleToFormattedString() failed", ioex);
       }
     }
     return Double.toString(dValue);

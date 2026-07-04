@@ -11,8 +11,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.function.Consumer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.Errors;
@@ -33,7 +31,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.ast.ASTNode;
 
 public class UnitTestingFunctions {
-  private static final Logger LOGGER = LogManager.getLogger(UnitTestingFunctions.class);
 
   /**
    * See <a href="https://pangin.pro/posts/computation-in-static-initializer">Beware of computation
@@ -81,7 +78,6 @@ public class UnitTestingFunctions {
             url = new URL(arg1);
             return getURL(url, ast, engine);
           } catch (MalformedURLException mue) {
-            LOGGER.debug("TestReport.evaluate() failed", mue);
             // Cannot open `1`.
             return Errors.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
           }
@@ -109,7 +105,6 @@ public class UnitTestingFunctions {
         String str = Files.readString(file.toPath(), Charset.defaultCharset());
         return runTests(engine, str);
       } catch (IOException e) {
-        LOGGER.debug("TestReport.getFile() failed", e);
         // Cannot open `1`.
         return Errors.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
       } finally {
@@ -124,7 +119,6 @@ public class UnitTestingFunctions {
         String str = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         return runTests(engine, str);
       } catch (IOException e) {
-        LOGGER.debug("TestReport.getURL() failed", e);
         // Cannot open `1`.
         return Errors.printMessage(ast.topHead(), "noopen", F.list(ast.arg1()), engine);
       } finally {
@@ -204,7 +198,6 @@ public class UnitTestingFunctions {
       option = options.getOption(S.TestID);
       if (option.isPresent()) {
         testID = engine.evaluate(option);
-        LOGGER.debug("\n\n>>>{}", testID);
       }
 
       IExpr input = ast.arg1();
@@ -215,7 +208,6 @@ public class UnitTestingFunctions {
 
       } catch (Exception ex) {
         Errors.rethrowsInterruptException(ex);
-        LOGGER.debug("VerificationTest.evaluate", ex);
         actualOutput = S.None;
       }
 
@@ -257,19 +249,16 @@ public class UnitTestingFunctions {
         return TestResultObjectExpr.newInstance(assoc);
       } catch (Exception ex) {
         Errors.rethrowsInterruptException(ex);
-        LOGGER.debug("VerificationTest.evaluate() failed", ex);
       }
       return F.NIL;
     }
 
     private static void failure(IAssociation assoc) {
       assoc.appendRule(F.Rule("Outcome", "Failure"));
-      LOGGER.debug(" - Failure");
     }
 
     private static void success(IAssociation assoc) {
       assoc.appendRule(F.Rule("Outcome", "Success"));
-      LOGGER.debug(" - Success");
     }
 
     @Override

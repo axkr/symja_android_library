@@ -33,20 +33,6 @@ public class GraphicsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testVolume() {
-    check("Volume(Cylinder({{0, 0, 0}, {1, 1, 1}}, 1/2))", //
-        "1/4*Sqrt(3)*Pi");
-    check("Volume(Ball({a,b,c}, r))", //
-        "3/4*Pi*r^3");
-    check("Volume(Cuboid({a,b,c}, {x,y,z}))", //
-        "Abs((-a+x)*(-b+y)*(-c+z))");
-    check("Volume(Ellipsoid({a,b,c}, {x,y,z}))", //
-        "4/3*Pi*x*y*z");
-    check("Volume(Ellipsoid({0,0,0}, {3,2,1}))", //
-        "8*Pi");
-  }
-
-  @Test
   public void testRGBColor() {
     check("Black", //
         "RGBColor(0.0,0.0,0.0)");

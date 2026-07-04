@@ -41,6 +41,8 @@ public interface ITensorAccess extends IExpr {
     return false;
   }
 
+  public boolean hasNumericArgument();
+
   @Override
   public boolean forAllLeaves(Predicate<? super IExpr> predicate);
 }

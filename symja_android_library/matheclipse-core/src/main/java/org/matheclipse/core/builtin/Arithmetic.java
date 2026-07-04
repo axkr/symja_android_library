@@ -43,8 +43,6 @@ import java.util.Optional;
 import java.util.function.DoubleFunction;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -404,7 +402,6 @@ public final class Arithmetic {
           return F.NIL;
         }
       } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
         return F.NIL;
       }
       // `1` is not a variable with a value, so its value cannot be changed.
@@ -649,7 +646,6 @@ public final class Arithmetic {
         return F.subst(expr, x -> chopNumber(x, delta));
       } catch (Exception e) {
         Errors.rethrowsInterruptException(e);
-        LOGGER.debug("Chop.evaluate() failed", e);
       }
 
       return expr;
@@ -800,7 +796,6 @@ public final class Arithmetic {
         }
       } catch (Exception e) {
         Errors.rethrowsInterruptException(e);
-        LOGGER.debug("Complex.evaluate() failed", e);
       }
 
       return F.NIL;
@@ -1130,7 +1125,6 @@ public final class Arithmetic {
           return Errors.printMessage(ast.topHead(), "rvalue", F.list(arg1), engine);
         }
       } catch (ValidateException ve) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
       }
       return F.NIL;
     }
@@ -1756,7 +1750,6 @@ public final class Arithmetic {
           // see GammaRules.m - Gamma(a_, x_, y_) := Gamma(a, x) - Gamma(a, y)
         }
       } catch (NumericComputationException | ValidateException e) {
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), e);
 
       }
       return F.NIL;
@@ -2126,7 +2119,6 @@ public final class Arithmetic {
         return harmonic(arg1, ast, engine);
       } catch (final ValidateException ve) {
         // int number validation
-        LOGGER.log(engine.getLogLevel(), ast.topHead(), ve);
         return F.NIL;
       }
     }
@@ -3432,7 +3424,108 @@ public final class Arithmetic {
           if (base.isRealResult()) {
             return org.matheclipse.core.expression.IntervalDataSym.power(base, (IAST) exponent);
           }
-        }
+        } else if (exponent instanceof ASTSeriesData) {
+          ASTSeriesData sd = (ASTSeriesData) exponent;
+          IExpr x = sd.expansionVariable();
+
+          if (base.isFree(x)) {
+            // Base is independent of x (e.g., c^SeriesData)
+            int actualMin = sd.minExponent();
+            while (actualMin < 0 && actualMin < sd.truncateOrder()
+                && sd.coefficient(actualMin).isZero()) {
+              actualMin++;
+              }
+            // Only proceed if it can be expanded as a power series without an essential singularity
+            if (actualMin >= 0) {
+              int n = sd.truncateOrder();
+              int k = 1;
+              while (k < sd.truncateOrder() && sd.coefficient(k).isZero()) {
+                k++;
+              }
+
+              if (k >= sd.truncateOrder()) {
+                // The series is constant
+                ASTSeriesData constSeries = new ASTSeriesData(x, sd.expansionPoint(), 0,
+                    sd.truncateOrder(), sd.puiseuxDenominator());
+                constSeries.setCoeff(0, engine.evaluate(F.Power(base, sd.coefficient(0))));
+                return constSeries;
+              }
+
+              if (k > 0) {
+                int den = sd.puiseuxDenominator();
+                int outerN = (n * den + k - 1) / k;
+                outerN = Math.max(outerN, 1) + 2;
+
+                IExpr y = F.Dummy("y");
+                IExpr u0 = sd.coefficient(0);
+                IExpr outerFunc = F.Power(base, y);
+
+                // Compute the Taylor series of outerFunc(y) around y = u0
+                ASTSeriesData outerSeries =
+                    ASTSeriesData.seriesDataRecursive(outerFunc, y, u0, outerN, 0, engine);
+                if (outerSeries != null) {
+                  // Compose the outer series with the exponent series
+                  ASTSeriesData res = outerSeries.compose(sd);
+                  if (res != null) {
+                    return res;
+                  }
+                  }
+                }
+              }
+            } else {
+              // Base depends on x (e.g., f(x)^SeriesData)
+              // Mathematically equivalent to Exp[ SeriesData * Log[base] ]
+              int n = sd.truncateOrder();
+              ASTSeriesData logSeries = ASTSeriesData.seriesDataRecursive(F.Log(base), x,
+                  sd.expansionPoint(), n, 0, engine);
+              if (logSeries != null) {
+                ASTSeriesData expArg = sd.timesPS(logSeries);
+                if (expArg != null) {
+                  int expArgMin = expArg.minExponent();
+                  while (expArgMin < 0 && expArgMin < expArg.truncateOrder()
+                      && expArg.coefficient(expArgMin).isZero()) {
+                    expArgMin++;
+                  }
+                  // Ensure there is no essential singularity before composing
+                  if (expArgMin >= 0) {
+                    int k = 1;
+                    while (k < expArg.truncateOrder() && expArg.coefficient(k).isZero()) {
+                      k++;
+                    }
+
+                    if (k >= expArg.truncateOrder()) {
+                      // The exponent evaluates to a constant
+                      ASTSeriesData constSeries = new ASTSeriesData(x, sd.expansionPoint(), 0,
+                          expArg.truncateOrder(), expArg.puiseuxDenominator());
+                      constSeries.setCoeff(0, engine.evaluate(F.Exp(expArg.coefficient(0))));
+                      return constSeries;
+                    }
+
+                    if (k > 0) {
+                      int expArgTruncate = expArg.truncateOrder();
+                      int den = expArg.puiseuxDenominator();
+                      int outerN = (expArgTruncate * den + k - 1) / k;
+                      outerN = Math.max(outerN, 1) + 2;
+
+                      IExpr y = F.Dummy("y");
+                      IExpr u0 = expArg.coefficient(0);
+
+                      // Compute the Taylor series of Exp(y) around y = u0
+                      ASTSeriesData outerSeries =
+                          ASTSeriesData.seriesDataRecursive(F.Exp(y), y, u0, outerN, 0, engine);
+                      if (outerSeries != null) {
+                        // Compose the Exp outer series with the combined exponent inner series
+                        ASTSeriesData res = outerSeries.compose(expArg);
+                        if (res != null) {
+                          return res;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
 
         if (exponent.isReal()) {
           if (exponent.isZero()) {
@@ -7050,8 +7143,6 @@ public final class Arithmetic {
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
-
-  private static final Logger LOGGER = LogManager.getLogger(Arithmetic.class);
 
   static final long[] HARMONIC_NUMERATOR = new long[] {1, 3, 11, 25, 137, 49, 363, 761, 7129, 7381,
       83711, 86021, 1145993, 1171733, 1195757, 2436559, 42142223, 14274301, 275295799, 55835135,

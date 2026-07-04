@@ -1544,10 +1544,6 @@ public class StructureFunctions {
         if (depth.isNegative()) {
           // Non-negative integer expected.
           return Errors.printMessage(ast.topHead(), "intnn", F.CEmptyList, engine);
-          // LOGGER.log(
-          // engine.getLogLevel(), "Non-negative integer expected at position 3 in
-          // Operate()");
-          // return F.NIL;
         }
 
         headDepth = depth.toIntDefault();

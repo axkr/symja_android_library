@@ -67,7 +67,7 @@ public final class TwiceDifferentiableMultiVariateNumerical extends TwiceDiffere
     }
     fEngine = engine;
 
-    IExpr gradientList = S.Grad.of(engine, fFunction, fVariableList);
+    IExpr gradientList = S.Grad.funEval(engine, fFunction, fVariableList);
     if (gradientList.isList() && gradientList.size() >= variablesList.size()) {
       fGradientFunctions = (IAST) gradientList;
     } else {
@@ -75,7 +75,7 @@ public final class TwiceDifferentiableMultiVariateNumerical extends TwiceDiffere
       throw new ArgumentTypeException(
           Errors.getMessage("setraw", F.list(gradientList), EvalEngine.get()));
     }
-    IExpr hessianMatrix = S.HessianMatrix.of(engine, fFunction, fVariableList);
+    IExpr hessianMatrix = S.HessianMatrix.funEval(engine, fFunction, fVariableList);
     int[] dimensions = hessianMatrix.isMatrix();
 
     if (dimensions != null) {

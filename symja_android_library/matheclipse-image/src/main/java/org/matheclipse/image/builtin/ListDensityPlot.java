@@ -57,13 +57,17 @@ public class ListDensityPlot extends ArrayPlot {
       // degree = 1;
       // }
       // }
-      RealMatrix realMatrix = arg1.toRealMatrix();
-      if (realMatrix != null) {
-        BufferedImage buffer =
-            listDensityPlot(new ASTRealMatrix(realMatrix, false), degree, engine);
-        if (buffer != null) {
-          return new ImageExpr(buffer, null);
+      try {
+        RealMatrix realMatrix = arg1.toRealMatrix();
+        if (realMatrix != null) {
+          BufferedImage buffer =
+              listDensityPlot(new ASTRealMatrix(realMatrix, false), degree, engine);
+          if (buffer != null) {
+            return new ImageExpr(buffer, null);
+          }
         }
+      } catch (IndexOutOfBoundsException eoobe) {
+        return Errors.printMessage(ast.topHead(), eoobe, engine);
       }
     }
     return F.NIL;

@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.parser.client.ParserConfig;
 
@@ -13,7 +11,6 @@ import org.matheclipse.parser.client.ParserConfig;
  * Convert a Java <code>double</code> value into a string similar to the Mathematica output format.
  */
 public class DoubleToMMA {
-  private static final Logger LOGGER = LogManager.getLogger(DoubleToMMA.class);
 
   private static final String HASH_STR = "##############################";
 
@@ -125,7 +122,6 @@ public class DoubleToMMA {
       doubleToMMA(buf, value, exponent, significantFigures, false,
           ParserConfig.PARSER_USE_LOWERCASE_SYMBOLS);
     } catch (IOException ioex) {
-      LOGGER.error("DoubleToMMA.doubleToMMA() failed", ioex);
     }
   }
 
@@ -144,7 +140,6 @@ public class DoubleToMMA {
     try {
       doubleToMMA(buf, value, exponent, significantFigures, false, relaxedSyntax);
     } catch (IOException ioex) {
-      LOGGER.error("DoubleToMMA.doubleToMMA() failed", ioex);
     }
   }
 
@@ -212,7 +207,6 @@ public class DoubleToMMA {
     try {
       doubleToScientific(buf, value, significantFigures, Integer.MIN_VALUE, false);
     } catch (IOException ioex) {
-      LOGGER.error("DoubleToMMA.doubleToScientific() failed", ioex);
     }
   }
 

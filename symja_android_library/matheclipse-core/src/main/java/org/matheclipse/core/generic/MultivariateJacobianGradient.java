@@ -7,7 +7,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFunction;
 import org.hipparchus.util.Pair;
-import org.matheclipse.core.basic.OperationSystem;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
@@ -50,7 +49,7 @@ public final class MultivariateJacobianGradient implements MultivariateJacobianF
     }
     fEngine = engine;
     fFunction = function;
-    IExpr gradientList = S.Grad.of(engine, function, fVariableList);
+    IExpr gradientList = S.Grad.funEval(engine, function, fVariableList);
     if (gradientList.isList() && gradientList.size() >= variablesList.size()) {
       fGradientFunctions = (IAST) gradientList;
     } else {
