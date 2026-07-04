@@ -1841,9 +1841,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   public ASTSeriesData derive(IExpr x) {
     EvalEngine engine = EvalEngine.get();
     if (this.expansionVariable.equals(x)) {
-      if (isProbableZero()) {
-        return this;
-      }
+      // Removed the isProbableZero() check
       if (truncateOrder - puiseuxDenominator >= minExponent - puiseuxDenominator) {
         ASTSeriesData series =
             new ASTSeriesData(x, expansionPoint, minExponent - puiseuxDenominator,
@@ -2141,25 +2139,41 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   public ASTSeriesData integrate(IExpr x) {
     EvalEngine engine = EvalEngine.get();
     if (this.expansionVariable.equals(x)) {
-      if (isProbableZero()) {
-        return this;
-      }
+      // pure O(...) terms shift their bounds
       ASTSeriesData series = new ASTSeriesData(x, expansionPoint, minExponent + puiseuxDenominator,
           minExponent + puiseuxDenominator, truncateOrder + puiseuxDenominator, puiseuxDenominator,
           new OpenIntToIExprHashMap<IExpr>());
+
       for (int i = minExponent; i < exponentBound; i++) {
-        if (i + puiseuxDenominator != 0) {
-          IExpr coeff = this.coefficient(i);
-          if (coeff != null && !coeff.isZero()) {
-            IExpr multiplier = puiseuxDenominator == 1 ? F.QQ(1, i + 1)
+        IExpr coeff = this.coefficient(i);
+        if (coeff != null && !coeff.isZero()) {
+          if (i + puiseuxDenominator != 0) {
+            IExpr multiplier = puiseuxDenominator == 1 ? F.QQ(1, i + puiseuxDenominator)
                 : F.QQ(puiseuxDenominator, i + puiseuxDenominator).normalize();
             series.setCoeff(i + puiseuxDenominator, engine.evaluate(F.Times(coeff, multiplier)));
+          } else {
+            // The 1/(x-x0) pole integrates to Log(x - x0)
+            IExpr logTerm =
+                expansionPoint.isZero() ? F.Log(x) : F.Log(F.Subtract(x, expansionPoint));
+            series.setCoeff(0, engine.evaluate(F.Times(coeff, logTerm)));
           }
         }
       }
       return series;
+    } else {
+      // Integrate the series coefficients with respect to another variable
+      ASTSeriesData resultSeries = new ASTSeriesData(expansionVariable(), expansionPoint(),
+          minExponent(), truncateOrder(), puiseuxDenominator());
+      for (int i = minExponent(); i < truncateOrder(); i++) {
+        IExpr coeff = coefficient(i);
+        if (coeff.isZero()) {
+          resultSeries.setCoeff(i, F.C0);
+        } else {
+          resultSeries.setCoeff(i, engine.evaluate(F.Integrate(coeff, x)));
+        }
+      }
+      return resultSeries;
     }
-    return null;
   }
 
   @Override
@@ -2608,11 +2622,11 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
     if (puiseuxDenominator == 1) {
       pSeries = gInv;
     } else {
-      IExpr pExpr = gInv.powerSeries(puiseuxDenominator);
-      if (!pExpr.isPresent() || !(pExpr instanceof ASTSeriesData)) {
+      ASTSeriesData pExpr = gInv.powerSeries(puiseuxDenominator);
+      if (!pExpr.isPresent()) {
         return F.NIL;
       }
-      pSeries = (ASTSeriesData) pExpr;
+      pSeries = pExpr;
     }
 
     IExpr newVar = variable;
@@ -3019,4 +3033,5 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   private Object writeReplace() {
     return optional();
   }
+
 }

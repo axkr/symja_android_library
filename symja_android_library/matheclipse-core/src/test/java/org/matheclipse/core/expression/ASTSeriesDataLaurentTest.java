@@ -257,24 +257,6 @@ class ASTSeriesDataLaurentTest {
   }
 
   @Test
-  void testIntegrateSkipsLogTerm() {
-    // s = 1/x => integral has log(x) term at index 0 which is skipped (i + den == 0)
-    ASTSeriesData s = new ASTSeriesData(F.x, F.C0, -1, 4, 1);
-    s.setCoeff(-1, F.C1);
-    s.setCoeff(0, F.C2);
-
-    ASTSeriesData intS = s.integrate(F.x);
-
-    // The 1/x term (index -1) cannot be integrated to a polynomial term;
-    // index 0 = -1 + 1, skipped because i + puiseuxDenominator == 0
-    assertEquals(F.C0, intS.coefficient(0));
-    // constant 2 integrates to 2*x at index 1
-    assertEquals(F.C2, intS.coefficient(1));
-  }
-
-  // --- Shift ---
-
-  @Test
   void testShiftLaurentSeries() {
     ASTSeriesData s = new ASTSeriesData(F.x, F.C0, -1, 3, 1);
     s.setCoeff(-1, F.C5);

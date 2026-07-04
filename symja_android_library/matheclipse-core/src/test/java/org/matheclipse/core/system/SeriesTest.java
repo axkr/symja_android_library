@@ -503,6 +503,11 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "4+18*x+48*x^2+100*x^3+180*x^4+294*x^5+448*x^6+648*x^7+900*x^8+O(x)^9");
     check("Integrate(SeriesData(x, 0, Table(i^2, {i, 10}), 0, 10, 1), x)", //
         "x+2*x^2+3*x^3+4*x^4+5*x^5+6*x^6+7*x^7+8*x^8+9*x^9+10*x^10+O(x)^11");
+
+    check("D(SeriesData(x, 0,{ -1}, 4, 1),x)// InputForm", //
+        "SeriesData(x,0,{},0,0,1)");
+    check("D(SeriesData(x, 0,{1,2}, -1, 4, 1),x)// InputForm", //
+        "SeriesData(x,0,{-1},-2,3,1)");
   }
 
   @Test
@@ -891,6 +896,34 @@ public class SeriesTest extends ExprEvaluatorTestCase {
             + "0))/a(0)^(1-n))*x^2+O(x)^3");
     check("Series(x^x, {x, 0, 4})", //
         "1+Log(x)*x+1/2*Log(x)^2*x^2+1/6*Log(x)^3*x^3+1/24*Log(x)^4*x^4+O(x)^5");
+  }
+
+  @Test
+  public void testPowerConstantSeries() {
+    check("3^Series(x, {x, 0, 3}) // InputForm", //
+        "SeriesData(x,0,{1,Log(3),Log(3)^2/2,Log(3)^3/6},0,4,1)");
+    check("f(x)^Series(x, {x, 0, 3}) // InputForm", //
+        "SeriesData(x,0,{1,Log(f(0)),Log(f(0))^2/2+f'(0)/f(0),Log(f(0))^3/6+(Log(f(0))*f'(\n"
+            + "0))/f(0)-f'(0)^2/(2*f(0)^2)+f''(0)/(2*f(0))},0,4,1)");
+  }
+
+  @Test
+  public void testSeriesIntegrate() {
+    check("Integrate(SeriesData(x, 0,{-1}, 4, 1),x)// InputForm", //
+        "SeriesData(x,0,{},2,2,1)");
+    check("Integrate(SeriesData(x,0,{1,2},-1,4,1),x)// InputForm", //
+        "SeriesData(x,0,{Log(x),2},0,5,1)");
+    check("Integrate(Series(Exp(x), {x, 0, 8}), x) // InputForm", //
+        "SeriesData(x,0,{1,1/2,1/6,1/24,1/120,1/720,1/5040,1/40320,1/362880},1,10,1)");
+    check("D(Integrate(Series(Exp(x), {x, 0, 8}), x),x) // InputForm", //
+        "SeriesData(x,0,{1,1,1/2,1/6,1/24,1/120,1/720,1/5040,1/40320},0,9,1)");
+    check("Integrate(Series(Exp(a*x), {x, 0, 3}), a) // InputForm", //
+        "SeriesData(x,0,{a,a^2/2,a^3/6,a^4/24},0,4,1)");
+    check("Integrate(Series(1/x^2 + 1, {x, 0, 3}), x) // InputForm", //
+        "SeriesData(x,0,{-1,0,1},-1,5,1)");
+    check("Integrate(Series(1/x+1, {x, 0, 3}), x) // InputForm", //
+        "SeriesData(x,0,{Log(x),1},0,5,1)");
+
   }
 
   @Test
