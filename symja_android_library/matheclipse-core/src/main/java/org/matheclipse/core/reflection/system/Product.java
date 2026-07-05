@@ -20,82 +20,6 @@ import org.matheclipse.core.patternmatching.Matcher;
 import org.matheclipse.core.reflection.system.rulesets.ProductRules;
 import com.google.common.base.Suppliers;
 
-/**
- *
- *
- * <pre>
- * Product(expr, {i, imin, imax})
- * </pre>
- *
- * <blockquote>
- *
- * <p>
- * evaluates the discrete product of <code>expr</code> with <code>i</code> ranging from <code>
- * imin</code> to <code>imax</code>.
- *
- * </blockquote>
- *
- * <pre>
- * Product(expr, {i, imin, imax, di})
- * </pre>
- *
- * <blockquote>
- *
- * <p>
- * <code>i</code> ranges from <code>imin</code> to <code>imax</code> in steps of <code>di</code>.
- *
- * </blockquote>
- *
- * <pre>
- * Product(expr, {i, imin, imax}, {j, jmin, jmax}, ...)
- * </pre>
- *
- * <blockquote>
- *
- * <blockquote>
- *
- * <p>
- * evaluates <code>expr</code> as a multiple sum, with <code>{i, ...}, {j, ...}, ...</code> being in
- * outermost-to-innermost order.
- *
- * </blockquote>
- *
- * </blockquote>
- *
- * <h3>Examples</h3>
- *
- * <pre>
- * &gt;&gt; Product(k, {k, 1, 10})
- * 3628800
- *
- * &gt;&gt; 10!
- * 3628800
- *
- * &gt;&gt; Product(x^k, {k, 2, 20, 2})
- * x^110
- *
- * &gt;&gt; Product(2 ^ i, {i, 1, n})
- * 2^(1/2*n*(1+n))
- * </pre>
- *
- * <p>
- * Symbolic products involving the factorial are evaluated:
- *
- * <pre>
- * &gt;&gt; Product(k, {k, 3, n})
- * n! / 2
- * </pre>
- *
- * <p>
- * Evaluate the <code>n</code>th primorial:
- *
- * <pre>
- * &gt;&gt; primorial(0) = 1;
- * &gt;&gt; primorial(n_Integer) := Product(Prime(k), {k, 1, n});
- * &gt;&gt; primorial(12)
- * 7420738134810
- * </pre>
- */
 public class Product extends ListFunctions.Table implements ProductRules {
 
   private static com.google.common.base.Supplier<Matcher> MATCHER1;
@@ -123,8 +47,11 @@ public class Product extends ListFunctions.Table implements ProductRules {
       }
     }
     if (arg1.isTimes()) {
-      // IASTMutable prod = ast.setAtCopy(1, null);
-      return arg1.mapThread(ast, 1);
+      IExpr resultTimes = engine.evaluate(arg1.mapThread(ast, 1));
+      if (resultTimes.isTimes()) {
+        return engine.evaluate(F.FullSimplify(resultTimes));
+      }
+      return resultTimes;
     }
     IAST preevaledProduct = engine.preevalForwardBackwardAST(ast, 1);
     arg1 = preevaledProduct.arg1();
@@ -133,7 +60,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 
   protected static IExpr evaluateProduct(final IAST preevaledProduct, IExpr arg1,
       boolean approximationMode, EvalEngine engine) {
-    if (preevaledProduct.size() > 2) {
+    if (preevaledProduct.argSize() >= 2) {
       final IExpr lastArg = preevaledProduct.last();
       final IAST list = lastArg.makeList();
 
@@ -184,7 +111,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
       // === 1. SYMBOLIC REDUCTION INTERCEPT ===
       // Executed before evaluateTableThrow to prevent dummy variable shadowing
       // when limits contain the iterator variable symbolically.
-      if (preevaledProduct.size() >= 3 && argN.isList()) {
+      if (preevaledProduct.argSize() >= 2 && argN.isList()) {
         if (arg1.isZero()) {
           return F.C0;
         }
@@ -213,6 +140,10 @@ public class Product extends ListFunctions.Table implements ProductRules {
             // Divert to the Hypergeometric Symbolic Product Engine
             IExpr symProd = tryClosedFormReduction(arg1, var, from, to, engine);
             if (symProd.isPresent()) {
+
+              // Simplify the result to ensure factorial ratios are reduced
+              symProd = engine.evaluate(F.Simplify(symProd));
+
               if (preevaledProduct.isAST2()) {
                 return symProd;
               }
@@ -316,7 +247,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 
     // 2. Intercept already-factored terms (e.g. (k + 1/2) * (k + 3/2))
     if (pK.isTimes()) {
-      IASTAppendable res = F.TimesAlloc();
+      IASTAppendable res = F.TimesAlloc(pK.argSize());
       for (IExpr arg : (IAST) pK) {
         IExpr termProd = tryClosedFormReduction(arg, k, lower, upper, engine);
         if (!termProd.isPresent()) {

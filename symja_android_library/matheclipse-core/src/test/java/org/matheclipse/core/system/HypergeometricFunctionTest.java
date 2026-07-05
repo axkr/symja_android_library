@@ -147,6 +147,19 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testHypergeometric2F1() {
+    check("Hypergeometric2F1(1, b, 2, z)", //
+        "-(-1+(1-z)^b+z)/((-1+b)*(1-z)^b*z)");
+    check("Hypergeometric2F1(1, 1, 5, z)", //
+        "(4*z*((1-z)^4/z^4+(-1+z)^3/(2*z^3)+(1-z)^2/(3*z^2)+(-(-1+z)^5*Log(1-z))/z^5))/(1-z)^\n"
+            + "2");
+    check("Hypergeometric2F1(1,1,2,z)", //
+        "-Log(1-z)/z");
+
+    check("Hypergeometric2F1(1,1,3/2,z)", //
+        "ArcSin(Sqrt(z))/(Sqrt(1-z)*Sqrt(z))");
+    check("Hypergeometric2F1(1,1,9/2,z)", //
+        "(7*(-1+z)^3*(z/(-1+z)+z^2/(3*(1-z)^2)+z^3/(5*(-1+z)^3)+(Sqrt(z)*ArcSin(Sqrt(z)))/Sqrt(\n"
+            + "1-z)))/z^4");
     check("Hypergeometric2F1(1/2,1/2,3/2,x^10)", //
         "ArcSin(x^5)/x^5");
 
@@ -295,8 +308,6 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
     check("Hypergeometric2F1(0.5,0.333,1,1.5708)", //
         "1.12923+I*(-0.568083)");
 
-    check("Hypergeometric2F1(1, b, 2, z)", //
-        "-(-1+(1-z)^b+z)/((-1+b)*(1-z)^b*z)");
     check("Hypergeometric2F1(a, b, a, z)", //
         "(1-z)^(-b)");
     check("Hypergeometric2F1(a, b, b-1, z)", //

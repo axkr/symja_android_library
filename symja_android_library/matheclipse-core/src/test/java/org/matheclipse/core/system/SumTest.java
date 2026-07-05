@@ -499,6 +499,21 @@ public class SumTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSumExponential() {
+    // Sum(E^k, {k, 1, Infinity})
+    check("Sum(E^k, {k, 1, Infinity})", //
+        "Sum(E^k,{k,1,Infinity})");
+
+    // Sum(x^k, {k, 0, n})
+    check("Sum(x^k, {k, 0, n})", //
+        "(-1+x^(1+n))/(-1+x)");
+
+    // Sum(1/2^k, {k, 1, Infinity})
+    check("Sum(1/2^k, {k, 1, Infinity})", //
+        "1");
+  }
+
+  @Test
   public void testSumPolyLogInifinity() {
     // https://www.johndcook.com/blog/2024/08/03/polylog/
     check("Sum(n^3/2^n,{n, 1, Infinity})", //
@@ -646,5 +661,55 @@ public class SumTest extends ExprEvaluatorTestCase {
     // a polynomial summand is rejected by the Gosper-only method
     check("Sum(a^i, i, Method->\"Gosper\")", //
         "a^i/(-1+a)");
+  }
+
+  @Test
+  public void testSumEulerHarmonicNumber() {
+    // Sum(HarmonicNumber(k)/k^2, {k, 1, Infinity})
+    check("Sum(HarmonicNumber(k)/k^2, {k, 1, Infinity})", //
+        "2*Zeta(3)");
+
+    // Sum(HarmonicNumber(k, 2)/k^3, {k, 1, Infinity})
+    check("Sum(HarmonicNumber(k, 2)/k^3, {k, 1, Infinity})", //
+        "1/2*Pi^2*Zeta(3)-9/2*Zeta(5)");
+
+    // Sum(HarmonicNumber(k)^2/k^2, {k, 1, Infinity})
+    check("Sum(HarmonicNumber(k)^2/k^2, {k, 1, Infinity})", //
+        "17/360*Pi^4");
+  }
+
+  @Test
+  public void testSumTrigonometric() {
+    // Sum(Sin(k)/k, {k, 1, Infinity})
+    check("Sum(Sin(k)/k, {k, 1, Infinity})", //
+        "1/2*(-1+Pi)");
+
+    // Sum(Cos(k)/k, {k, 1, Infinity})
+    check("Sum(Cos(k)/k, {k, 1, Infinity})", //
+        "-Log(2*Sin(1/2))");
+
+    // Sum(Sin(k)/k^2, {k, 1, Infinity})
+    check("Sum(Sin(k)/k^2, {k, 1, Infinity})", //
+        "Im(PolyLog(2,E^I))");
+  }
+
+
+  @Test
+  public void testSumHypergeometric() {
+    // Sum(z^k/(2*k)!, {k, 0, Infinity})
+    check("Sum(z^k/(2*k)!, {k, 0, Infinity})", //
+        "Cosh(Sqrt(z))");
+
+    // Sum(2^k/Binomial(2*k, k), {k, 1, Infinity})
+    check("Sum(2^k/Binomial(2*k, k), {k, 1, Infinity})", //
+        "1+Pi/2");
+
+    // Sum(1/Binomial(2*k, k), {k, 0, Infinity})
+    check("Sum(1/Binomial(2*k, k), {k, 0, Infinity})", //
+        "1/27*(36+2*Sqrt(3)*Pi)");
+
+    // Sum(x^k, {k, 0, Infinity})
+    check("Sum(x^k, {k, 0, Infinity})", //
+        "1/(1-x)");
   }
 }

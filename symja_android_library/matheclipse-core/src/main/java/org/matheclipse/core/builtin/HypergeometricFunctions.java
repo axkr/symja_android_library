@@ -24,6 +24,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -1426,6 +1427,73 @@ public class HypergeometricFunctions {
           return F.CComplexInfinity;
         }
       }
+
+      // Evaluation for Hypergeometric2F1(1, 1, n, z) where n > 0
+      if (a.isOne() && b.isOne() && c.isInteger()) {
+        int n = c.toIntDefault();
+        if (F.isPresent(n)) {
+          if (n == 1) {
+            // Hypergeometric2F1(1, 1, 1, z) = 1 / (1 - z)
+            return F.Power(F.Subtract(F.C1, z), F.CN1);
+          } else if (n >= 2) {
+            // Factor: (n - 1) * z / (-1 + z)^2
+            IExpr factor = F.Times(F.ZZ(n - 1), z, F.Power(F.Plus(F.CN1, z), F.CN2));
+
+            IASTAppendable plus = F.PlusAlloc();
+
+            // fraction = (-1 + z) / z
+            IExpr fraction = F.Times(F.Plus(F.CN1, z), F.Power(z, F.CN1));
+
+            // Summation: k=1 to n-2
+            for (int k = 1; k <= n - 2; k++) {
+              // (1 / k) * ((-1 + z) / z)^(n - k)
+              plus.append(F.Times(F.QQ(1, k), F.Power(fraction, F.ZZ(n - k))));
+            }
+
+            // Log term: - ((-1 + z) / z)^n * Log(1 - z)
+            IExpr logTerm = F.Times(F.CN1, F.Power(fraction, F.ZZ(n)), F.Log(F.Subtract(F.C1, z)));
+            plus.append(logTerm);
+
+            // Safely unwrap if the Plus AST only has 1 argument (i.e. n=2)
+            IExpr plusResult = plus.argSize() == 1 ? plus.arg1() : plus;
+
+            return F.Times(factor, plusResult);
+          }
+        }
+      } else if (a.isOne() && b.isOne() && c.isFraction() && c.isPositive()) {
+        // Evaluation for Hypergeometric2F1(1, 1, m + 1/2, z)
+
+        IFraction cFrac = (IFraction) c;
+        if (cFrac.denominator().equals(F.C2)) {
+          int m = cFrac.subtract(F.C1D2).toIntDefault();
+          if (F.isPresent(m) && m >= 1) {
+            // Factor: (2*m - 1) * (-1 + z)^(m - 1) * z^(-m)
+            IExpr factor = F.Times(F.ZZ(2 * m - 1), F.Power(F.Plus(F.CN1, z), F.ZZ(m - 1)),
+                F.Power(z, F.ZZ(-m)));
+
+            IASTAppendable plus = F.PlusAlloc();
+
+            // fraction = z / (-1 + z)
+            IExpr fraction = F.Times(z, F.Power(F.Plus(F.CN1, z), F.CN1));
+
+            // Summation: k=1 to m-1
+            for (int k = 1; k <= m - 1; k++) {
+              plus.append(F.Times(F.QQ(1, 2 * k - 1), F.Power(fraction, F.ZZ(k))));
+            }
+
+            // ArcSin term: (Sqrt(z) * ArcSin(Sqrt(z))) / Sqrt(1 - z)
+            IExpr arcSinTerm =
+                F.Times(F.Sqrt(z), F.ArcSin(F.Sqrt(z)), F.Power(F.Subtract(F.C1, z), F.CN1D2));
+            plus.append(arcSinTerm);
+
+            // Safely unwrap if the Plus AST only has 1 argument (i.e. m=1)
+            IExpr plusResult = plus.argSize() == 1 ? plus.arg1() : plus;
+
+            return F.Times(factor, plusResult);
+          }
+        }
+      }
+
       if (a.isInteger()) {
         if (a.isNegative() && z.isOne()) {
           IInteger n = (IInteger) a.negate();

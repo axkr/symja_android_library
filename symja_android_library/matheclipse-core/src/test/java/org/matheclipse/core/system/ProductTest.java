@@ -286,7 +286,7 @@ public class ProductTest extends ExprEvaluatorTestCase {
 
     // Product(2^(k^2), {k, 1, n}) -> 2^(1/6*n*(1+n)*(1+2*n))
     check("Product(2^(k^2), {k, 1, n})", //
-        "2^(n/6+n^2/2+n^3/3)");
+        "2^(1/6*n*(1+3*n+2*n^2))");
   }
 
   @Test
@@ -294,11 +294,61 @@ public class ProductTest extends ExprEvaluatorTestCase {
     // Factored polynomials and powers
     // Product((2*k + 3)^2, {k, 1, n}) -> (2^n * Pochhammer(5/2, n))^2 -> 4^n * Pochhammer(5/2, n)^2
     check("Product((2*k + 3)^2, {k, 1, n})", //
-        "(2^(4+2*n)*Gamma(5/2+n)^2)/(9*Pi)");
+        "(2^(2*(2+n))*Gamma(5/2+n)^2)/(9*Pi)");
 
     // Product((k + 1/2) * (k + 3/2), {k, 1, n})
     // Resolves independently and multiplies: Pochhammer(3/2, n) * Pochhammer(5/2, n)
     check("Product((k + 1/2) * (k + 3/2), {k, 1, n})", //
         "8/3*(Gamma(3/2+n)*Gamma(5/2+n))/Pi");
   }
+
+
+  @Test
+  public void testProductBasic() {
+    // Product(k, {k, 1, 5})
+    check("Product(k, {k, 1, 5})", //
+        "120");
+
+    // Product(x, {k, 1, n})
+    check("Product(x, {k, 1, n})", //
+        "x^n");
+
+    // Product(k, {k, 1, n})
+    check("Product(k, {k, 1, n})", //
+        "n!");
+  }
+
+  @Test
+  public void testProductTelescoping() {
+    // Product((k+1)/k, {k, 1, n})
+    check("Product((k+1)/k, {k, 1, n})", //
+        "1+n");
+
+    // Product(k/(k+1), {k, 1, n})
+    check("Product(k/(k+1), {k, 1, n})", //
+        "1/(1+n)");
+  }
+
+  @Test
+  public void testProductExponential() {
+    // Product(E^k, {k, 1, n})
+    check("Product(E^k, {k, 1, n})", //
+        "E^(1/2*n*(1+n))");
+
+    // Product(E^(1/k^2), {k, 1, Infinity})
+    check("Product(E^(1/k^2), {k, 1, Infinity})", //
+        "E^(Pi^2/6)");
+  }
+
+  @Test
+  public void testProductDouble() {
+    // Product(Product(x, {j, 1, m}), {k, 1, n})
+    check("Product(Product(x, {j, 1, m}), {k, 1, n})", //
+        "(x^m)^n");
+
+    // Product(j*k, {j, 1, 3}, {k, 1, 3})
+    check("Product(j*k, {j, 1, 3}, {k, 1, 3})", //
+        "46656");
+  }
+
 }

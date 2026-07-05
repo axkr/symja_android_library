@@ -13,7 +13,7 @@ public class Hypergeometric2F1Rules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 1, 96 };
+  final public static int[] SIZES = { 1, 97 };
 
   final public static IAST RULES = List(
     IInit(Hypergeometric2F1, SIZES),
@@ -296,15 +296,18 @@ public class Hypergeometric2F1Rules {
     // Hypergeometric2F1(1,7/2,11/2,a_.*z_.^n_.):=((-1)*3*(-105+70*a*z^n+14*a^2*z^(2*n)+6*a^3*z^(3*n)))/(z^(4*n)*10*a^4)+(63*(-1+a*z^n)*ArcTanh(Sqrt(a)*z^(n/2)))/(z^(1/2*9*n)*2*a^(9/2))
     ISetDelayed(Hypergeometric2F1(C1,QQ(7L,2L),QQ(11L,2L),Times(a_DEFAULT,Power(z_DEFAULT,n_DEFAULT))),
       Plus(Times(CN1,C3,Power(Times(Power(z,Times(C4,n)),C10,Power(a,C4)),CN1),Plus(ZZ(-105L),Times(ZZ(70L),a,Power(z,n)),Times(ZZ(14L),Sqr(a),Power(z,Times(C2,n))),Times(C6,Power(a,C3),Power(z,Times(C3,n))))),Times(ZZ(63L),Power(Times(Power(z,Times(C1D2,C9,n)),C2,Power(a,QQ(9L,2L))),CN1),Plus(CN1,Times(a,Power(z,n))),ArcTanh(Times(Sqrt(a),Power(z,Times(C1D2,n))))))),
-    // Hypergeometric2F1(1,1,2,z_):=-Log(1-z)/z
-    ISetDelayed(Hypergeometric2F1(C1,C1,C2,z_),
-      Times(CN1,Power(z,CN1),Log(Subtract(C1,z)))),
-    // Hypergeometric2F1(1,b_,2,z_):=-(-1+(1-z)^b+z)/((1-z)^b*(-1+b)*z)
-    ISetDelayed(Hypergeometric2F1(C1,b_,C2,z_),
+    // Hypergeometric2F1(1,1,1/2,z_):=-(1+(Sqrt(z)*ArcSin(Sqrt(z)))/Sqrt(1-z))/(-1+z)
+    ISetDelayed(Hypergeometric2F1(C1,C1,C1D2,z_),
+      Times(CN1,Power(Plus(CN1,z),CN1),Plus(C1,Times(Power(Subtract(C1,z),CN1D2),Sqrt(z),ArcSin(Sqrt(z)))))),
+    // Hypergeometric2F1(1,b_?(#1=!=1&),2,z_):=-(-1+(1-z)^b+z)/((1-z)^b*(-1+b)*z)
+    ISetDelayed(Hypergeometric2F1(C1,PatternTest(b_,Function(UnsameQ(Slot1,C1))),C2,z_),
       Times(CN1,Plus(CN1,Power(Subtract(C1,z),b),z),Power(Times(Power(Subtract(C1,z),b),Plus(CN1,b),z),CN1))),
     // Hypergeometric2F1(1,2,3/2,a_.*z_.^n_.):=1/(2*(1-a*z^n))+ArcSin(Sqrt(a)*z^(n/2))/(z^(n/2)*2*Sqrt(a)*(1-a*z^n)^(3/2))
     ISetDelayed(Hypergeometric2F1(C1,C2,QQ(3L,2L),Times(a_DEFAULT,Power(z_DEFAULT,n_DEFAULT))),
       Plus(Power(Times(C2,Plus(C1,Times(CN1,a,Power(z,n)))),CN1),Times(Power(Times(Power(z,Times(C1D2,n)),C2,Sqrt(a),Power(Plus(C1,Times(CN1,a,Power(z,n))),QQ(3L,2L))),CN1),ArcSin(Times(Sqrt(a),Power(z,Times(C1D2,n))))))),
+    // Hypergeometric2F1(1,2,5/2,z_):=(3*(-2*z+(2*Sqrt(z)*ArcSin(Sqrt(z)))/Sqrt(1-z)))/(4*z^2)
+    ISetDelayed(Hypergeometric2F1(C1,C2,QQ(5L,2L),z_),
+      Times(C3,Power(Times(C4,Sqr(z)),CN1),Plus(Times(CN2,z),Times(C2,Power(Subtract(C1,z),CN1D2),Sqrt(z),ArcSin(Sqrt(z)))))),
     // Hypergeometric2F1(3/2,2,5/2,a_.*z_^n_.):=((-1)*3*(Sqrt(a)*z^(n/2)-ArcTanh(Sqrt(a)*z^(n/2))+a*z^n*ArcTanh(Sqrt(a)*z^(n/2))))/(z^(1/2*3*n)*2*a^(3/2)*(-1+a*z^n))
     ISetDelayed(Hypergeometric2F1(QQ(3L,2L),C2,QQ(5L,2L),Times(a_DEFAULT,Power(z_,n_DEFAULT))),
       Times(CN1,C3,Power(Times(Power(z,Times(C1D2,C3,n)),C2,Power(a,QQ(3L,2L)),Plus(CN1,Times(a,Power(z,n)))),CN1),Plus(Times(Sqrt(a),Power(z,Times(C1D2,n))),Negate(ArcTanh(Times(Sqrt(a),Power(z,Times(C1D2,n))))),Times(a,Power(z,n),ArcTanh(Times(Sqrt(a),Power(z,Times(C1D2,n)))))))),

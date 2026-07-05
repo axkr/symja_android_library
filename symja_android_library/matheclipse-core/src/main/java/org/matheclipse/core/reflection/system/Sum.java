@@ -6,6 +6,8 @@ import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.convert.VariablesSet;
@@ -29,112 +31,230 @@ import org.matheclipse.core.patternmatching.Matcher;
 import org.matheclipse.core.reflection.system.rulesets.SumRules;
 import com.google.common.base.Suppliers;
 
-/**
- *
- *
- * <pre>
- * Sum(expr, {i, imin, imax})
- * </pre>
- *
- * <blockquote>
- *
- * <p>
- * evaluates the discrete sum of <code>expr</code> with <code>i</code> ranging from <code>imin
- * </code> to <code>imax</code>.
- *
- * </blockquote>
- *
- * <pre>
- * Sum(expr, {i, imin, imax, di})
- * </pre>
- *
- * <blockquote>
- *
- * <p>
- * <code>i</code> ranges from <code>imin</code> to <code>imax</code> in steps of <code>di</code>.
- *
- * </blockquote>
- *
- * <pre>
- * Sum(expr, {i, imin, imax}, {j, jmin, jmax}, ...)
- * </pre>
- *
- * <blockquote>
- *
- * <blockquote>
- *
- * <p>
- * evaluates <code>expr</code> as a multiple sum, with <code>{i, ...}, {j, ...}, ...</code> being in
- * outermost-to-innermost order.
- *
- * </blockquote>
- *
- * </blockquote>
- *
- * <h3>Examples</h3>
- *
- * <pre>
- * &gt;&gt; Sum(k, {k, 1, 10})
- * 55
- * </pre>
- *
- * <p>
- * Double sum:<br>
- *
- * <pre>
- * &gt;&gt; Sum(i * j, {i, 1, 10}, {j, 1, 10})
- * 3025
- * </pre>
- *
- * <p>
- * Symbolic sums are evaluated:
- *
- * <pre>
- * &gt;&gt; Sum(k, {k, 1, n})
- * 1/2*n*(1+n)
- *
- * &gt;&gt; Sum(k, {k, n, 2*n})
- * 3/2*n*(1+n)
- *
- * &gt;&gt; Sum(k, {k, I, I + 1})
- * 1+I*2
- *
- * &gt;&gt; Sum(1 / k ^ 2, {k, 1, n})
- * HarmonicNumber(n, 2)
- * </pre>
- *
- * <p>
- * Verify algebraic identities:<br>
- *
- * <pre>
- * &gt;&gt; Simplify(Sum(x ^ 2, {x, 1, y}) - y * (y + 1) * (2 * y + 1) / 6)
- * 0
- * </pre>
- *
- * <p>
- * Infinite sums:<br>
- *
- * <pre>
- * &gt;&gt; Sum(1 / 2 ^ i, {i, 1, Infinity})
- * 1
- *
- * &gt;&gt; Sum(1 / k ^ 2, {k, 1, Infinity})
- * Pi^2/6
- *
- * &gt;&gt; Sum(x^k*Sum(y^l,{l,0,4}),{k,0,4}))
- * 1+y+y^2+y^3+y^4+x*(1+y+y^2+y^3+y^4)+(1+y+y^2+y^3+y^4)*x^2+(1+y+y^2+y^3+y^4)*x^3+(1+y+y^2+y^3+y^4)*x^4
- *
- * &gt;&gt; Sum(2^(-i), {i, 1, Infinity})
- * 1
- *
- * &gt;&gt; Sum(i / Log(i), {i, 1, Infinity})
- * Sum(i/Log(i),{i,1,Infinity})
- *
- * &gt;&gt; Sum(Cos(Pi i), {i, 1, Infinity})
- * Sum(Cos(i*Pi),{i,1,Infinity})
- * </pre>
- */
 public class Sum extends ListFunctions.Table implements SumRules {
+
+  /**
+   * Closed-form evaluation of infinite sums of a hypergeometric term
+   * <code>Sum(term, {var, from, Infinity})</code>.
+   *
+   * <p>
+   * The summand is recognized as hypergeometric through its term ratio <code>t(var+1)/t(var)</code>
+   * (see {@link Sum#hypergeometricRatio}). After shifting the summation index to start at
+   * <code>0</code> the ratio is factored into
+   * <code>z * Product(var+a_i) / ((var+1) * Product(var+b_j))</code> to read off the upper
+   * parameters <code>a_i</code>, the lower parameters <code>b_j</code> and the argument
+   * <code>z</code> of a generalized hypergeometric function. The result is
+   * <code>t(from) * pFq(a; b; z)</code>, which is handed to the
+   * {@code Hypergeometric0F1/1F1/2F1/PFQ} evaluators for a closed form. A result is only returned
+   * if it is free of unevaluated hypergeometric/sum heads and passes a numeric check.
+   */
+  private final static class SumHypergeometric {
+
+    private SumHypergeometric() {}
+
+    /**
+     * Evaluate <code>Sum(term, {var, from, Infinity})</code> for a hypergeometric <code>term</code>
+     * and a non-negative integer <code>from</code>.
+     *
+     * @return the closed form or {@link F#NIL}
+     */
+    public static IExpr sumToInfinity(IExpr term, ISymbol var, IExpr from, EvalEngine engine) {
+      try {
+        if (!from.isInteger() || from.isNegative()) {
+          return F.NIL;
+        }
+        IExpr[] ratio = Sum.hypergeometricRatio(term, var, engine);
+        if (ratio == null) {
+          return F.NIL;
+        }
+        // shift the summation index to start at 0: ratio(from + var)
+        IExpr num = engine.evaluate(F.Expand(F.xreplace(ratio[0], var, F.Plus(from, var))));
+        IExpr den = engine.evaluate(F.Expand(F.xreplace(ratio[1], var, F.Plus(from, var))));
+        int degNum = degree(num, var, engine);
+        int degDen = degree(den, var, engine);
+        if (degNum < 0 || degDen < 0) {
+          return F.NIL;
+        }
+        IExpr lcNum = engine.evaluate(F.Coefficient(num, var, F.ZZ(degNum)));
+        IExpr lcDen = engine.evaluate(F.Coefficient(den, var, F.ZZ(degDen)));
+        if (lcDen.isZero()) {
+          return F.NIL;
+        }
+        IExpr z = engine.evaluate(F.Divide(lcNum, lcDen));
+
+        List<IExpr> upperRoots = roots(num, var, engine);
+        List<IExpr> lowerRoots = roots(den, var, engine);
+        if (upperRoots == null || lowerRoots == null) {
+          return F.NIL;
+        }
+
+        // upper parameters a_i = -root_i of the numerator
+        IASTAppendable aList = F.ListAlloc(upperRoots.size() + 1);
+        for (IExpr r : upperRoots) {
+          aList.append(engine.evaluate(F.Negate(r)));
+        }
+        // the (var+1) factor accounts for the 1/n! of the hypergeometric series
+        boolean removedFactorial = false;
+        IASTAppendable bList = F.ListAlloc(lowerRoots.size());
+        for (IExpr r : lowerRoots) {
+          if (!removedFactorial && engine.evaluate(F.Plus(r, F.C1)).isZero()) {
+            removedFactorial = true;
+            continue;
+          }
+          bList.append(engine.evaluate(F.Negate(r)));
+        }
+        if (!removedFactorial) {
+          // multiply numerator and denominator by (var+1): adds an upper parameter 1
+          aList.append(F.C1);
+        }
+
+        // --- CONVERGENCE CHECK ---
+        int p = aList.argSize();
+        int q = bList.argSize();
+        if (p == q + 1) {
+          IExpr absZ = engine.evaluate(F.Abs(z));
+          // Diverges strictly for |z| > 1
+          if (engine.evalTrue(F.Greater(absZ, F.C1))) {
+            Errors.printMessage(S.Sum, "div", F.List(), engine);
+            return F.NIL;
+          }
+          // Pure geometric series (p=1, q=0) also diverges strictly on the boundary |z| >= 1
+          if (p == 1 && q == 0 && engine.evalTrue(F.GreaterEqual(absZ, F.C1))) {
+            Errors.printMessage(S.Sum, "div", F.List(), engine);
+            return F.NIL;
+          }
+        } else if (p > q + 1) {
+          // Radius of convergence is 0
+          if (engine.evalTrue(F.Unequal(z, F.C0))) {
+            Errors.printMessage(S.Sum, "div", F.List(), engine);
+            return F.NIL;
+          }
+        }
+
+        IExpr hyper = buildHypergeometric(aList, bList, z, engine);
+        if (hyper.isNIL()) {
+          return F.NIL;
+        }
+        IExpr firstTerm = engine.evaluate(F.xreplace(term, var, from));
+        IExpr result = engine.evaluate(F.Times(firstTerm, hyper));
+        if (!isClosedForm(result)) {
+          return F.NIL;
+        }
+        if (!numericallyVerify(term, var, from, result, engine)) {
+          return F.NIL;
+        }
+        return result;
+      } catch (RuntimeException rex) {
+        return F.NIL;
+      }
+    }
+
+    /**
+     * Build the most specific generalized hypergeometric function for the given parameter lists.
+     */
+    private static IExpr buildHypergeometric(IAST aList, IAST bList, IExpr z, EvalEngine engine) {
+      int na = aList.argSize();
+      int nb = bList.argSize();
+      if (na == 0 && nb == 1) {
+        return engine.evaluate(F.Hypergeometric0F1(bList.arg1(), z));
+      }
+      if (na == 1 && nb == 0) {
+        // 1F0(a; ; z) = (1-z)^(-a)
+        return engine.evaluate(F.Power(F.Subtract(F.C1, z), F.Negate(aList.arg1())));
+      }
+      if (na == 1 && nb == 1) {
+        return engine.evaluate(F.Hypergeometric1F1(aList.arg1(), bList.arg1(), z));
+      }
+      if (na == 2 && nb == 1) {
+        return engine.evaluate(F.Hypergeometric2F1(aList.arg1(), aList.arg2(), bList.arg1(), z));
+      }
+      return engine.evaluate(F.HypergeometricPFQ(aList, bList, z));
+    }
+
+    /** A result counts as a closed form only if free of unevaluated sum/hypergeometric heads. */
+    private static boolean isClosedForm(IExpr result) {
+      return result.isPresent() //
+          && result.isFreeAST(S.Sum) //
+          && result.isFreeAST(S.HypergeometricPFQ) //
+          && result.isFreeAST(S.Hypergeometric0F1) //
+          && result.isFreeAST(S.Hypergeometric1F1) //
+          && result.isFreeAST(S.Hypergeometric2F1);
+    }
+
+    private static int degree(IExpr poly, ISymbol var, EvalEngine engine) {
+      int d = engine.evaluate(F.Exponent(poly, var)).toIntDefault();
+      return d == Integer.MIN_VALUE ? -1 : d;
+    }
+
+    /**
+     * The multiset of roots of <code>poly</code> in <code>var</code>, or <code>null</code> if the
+     * polynomial cannot be split completely into linear factors over the roots found by
+     * {@code Solve}.
+     */
+    private static List<IExpr> roots(IExpr poly, ISymbol var, EvalEngine engine) {
+      List<IExpr> result = new ArrayList<>();
+      int d = degree(poly, var, engine);
+      if (d <= 0) {
+        return result;
+      }
+      IExpr p = poly;
+      IExpr solutions = engine.evaluate(F.Solve(F.Equal(poly, F.C0), var));
+      if (!solutions.isList()) {
+        return null;
+      }
+      for (IExpr sol : (IAST) solutions) {
+        if (sol.isList() && sol.size() >= 2 && sol.first().isRuleAST()) {
+          IExpr root = engine.evaluate(sol.first().second());
+          IExpr factor = F.Subtract(var, root);
+          while (true) {
+            IExpr remainder = engine.evaluate(F.PolynomialRemainder(p, factor, var));
+            if (!remainder.isZero()) {
+              break;
+            }
+            result.add(root);
+            p = engine.evaluate(F.PolynomialQuotient(p, factor, var));
+          }
+        }
+      }
+      if (degree(p, var, engine) > 0) {
+        // could not fully factor -> not a nice hypergeometric term
+        return null;
+      }
+      return result;
+    }
+
+    /**
+     * Confirm <code>Sum(term, {var, from, from+N})</code> approaches <code>result</code>
+     * numerically (free parameters set to a small value that keeps the series convergent).
+     */
+    private static boolean numericallyVerify(IExpr term, ISymbol var, IExpr from, IExpr result,
+        EvalEngine engine) {
+      try {
+        IAST variables = new VariablesSet(term).getVarList();
+        IASTAppendable rules = F.ListAlloc(variables.size());
+        for (IExpr v : variables) {
+          if (v.equals(var)) {
+            continue;
+          }
+          rules.append(F.Rule(v, F.num(0.3)));
+        }
+        int fromInt = from.toIntDefault();
+        if (fromInt == Integer.MIN_VALUE) {
+          return false;
+        }
+        double partial = 0.0;
+        for (int k = fromInt; k <= fromInt + 120; k++) {
+          IExpr summand = engine.evaluate(F.N(F.ReplaceAll(F.xreplace(term, var, F.ZZ(k)), rules)));
+          partial += summand.evalf();
+        }
+        double closed = engine.evaluate(F.N(F.ReplaceAll(result, rules))).evalf();
+        return Math.abs(partial - closed) < 1.0e-6;
+      } catch (RuntimeException rex) {
+        return false;
+      }
+    }
+  }
+
 
   private static com.google.common.base.Supplier<Matcher> MATCHER1;
 
@@ -202,7 +322,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
       // strictly use the requested algorithm and don't fall back to the heuristic rules
       return forcedSummation(preevaledSum, forcedMethod, engine);
     }
-    if (preevaledSum.size() > 2) {
+    if (preevaledSum.argSize() >= 2) {
       try {
         IExpr lastArg = preevaledSum.last();
         final IAST list = lastArg.makeList();
@@ -238,7 +358,6 @@ public class Sum extends ListFunctions.Table implements SumRules {
           }
         }
 
-        // try {
         IExpr temp = evaluateTableThrow(preevaledSum, Plus(), Plus(), engine);
         if (temp.isPresent()) {
           return temp;
@@ -309,8 +428,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
                 temp = definiteSum(arg1, iterator, (IAST) lastArg, engine);
                 if (temp.isNIL()) {
                   // Polynomial -> Geometric -> Gosper algorithm cascade
-                  temp = summationByMethod(arg1, iterator.getVariable(),
-                      iterator.getLowerLimit(), iterator.getUpperLimit(), null, engine);
+                  temp = summationByMethod(arg1, iterator.getVariable(), iterator.getLowerLimit(),
+                      iterator.getUpperLimit(), null, engine);
                 }
               }
               if (temp.isPresent()) {
@@ -389,9 +508,9 @@ public class Sum extends ListFunctions.Table implements SumRules {
   }
 
   /**
-   * Evaluate the definite sum: <code>Sum[arg1, {var, from, to}]</code>
+   * Evaluate the definite sum: <code>Sum(arg1, {var, from, to})</code>
    *
-   * @param expr the first argument of the <code>Sum[]</code> function.
+   * @param expr the first argument of the <code>Sum()</code> function.
    * @param iterator the current iterator definition for which the Sum should be evaluated
    * @param list constructed as <code>{Symbol: var, Integer: from, Symbol: to}</code>
    * @param engine the evaluation engine
@@ -411,12 +530,11 @@ public class Sum extends ListFunctions.Table implements SumRules {
         return F.Times(Plus(to, C1), expr);
       }
       if (!F.C1.greater(from).isTrue() && !from.greater(to).isTrue()) {
-        // if (!S.Greater.ofQ(engine, C1, from) && !S.Greater.ofQ(engine, from, to)) {
         return F.Times(Plus(C1, F.Negate(from), to), expr);
       }
     } else {
       if (expr.isTimes()) {
-        // Sum[ Times[a,b,c,...], {var, from, to} ]
+        // Sum( Times(a,b,c,...), {var, from, to} )
         IASTAppendable filterCollector = F.TimesAlloc(16);
         IASTAppendable restCollector = F.TimesAlloc(16);
         ((IAST) expr).filter(filterCollector, restCollector, new Predicate<IExpr>() {
@@ -475,26 +593,6 @@ public class Sum extends ListFunctions.Table implements SumRules {
       } catch (RecursionLimitExceeded rle) {
         return Errors.printMessage(S.Sum, rle, engine);
       }
-      // try {
-      // iterator.setUp();
-      // if (iterator.hasNext()) {
-      // java.util.List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
-      // iterList.add(iterator);
-      // final TableGenerator generator = new TableGenerator(iterList, F.Plus(),
-      // new UnaryArrayFunction(engine, arg1), F.NIL);
-      // IExpr tableResult = generator.table();
-      // if (tableResult.isPresent()) {
-      // return tableResult;
-      // }
-      // }
-      // } catch (RecursionLimitExceeded rle) {
-      // engine.printMessage("Sum: Recursionlimit exceeded");
-      // return F.NIL;
-      // } catch (RuntimeException rex) {
-      //
-      // }finally {
-      // iterator.tearDown();
-      // }
     }
     if (from.isPositive()) {
       IExpr temp1 = engine.evalQuiet(F.Sum(expr, F.list(var, C0, from.minus(F.C1))));
@@ -509,9 +607,9 @@ public class Sum extends ListFunctions.Table implements SumRules {
   }
 
   /**
-   * Evaluate the definite sum: <code>Sum[arg1, {var, from, Infinity}]</code>
+   * Evaluate the definite sum: <code>Sum(arg1, {var, from, Infinity})</code>
    *
-   * @param expr the first argument of the <code>Sum[]</code> function.
+   * @param expr the first argument of the <code>Sum()</code> function.
    * @param iterator the current iterator definition for which the Sum should be evaluated
    * @param list constructed as <code>{Symbol: var, Integer: from, Symbol: to}</code>
    * @param engine the evaluation engine
@@ -541,16 +639,23 @@ public class Sum extends ListFunctions.Table implements SumRules {
           return F.NIL;
         }
         if (from.greater(F.C1).isTrue()) {
-          // if (S.Greater.ofQ(engine, from, C1)) {
           return F.Subtract(subSum, F.Sum(expr, F.list(var, C1, from.minus(F.C1))));
         }
+      }
+    }
+    // hypergeometric summand over [from, Infinity) -> HypergeometricPFQ closed form. Used as a last
+    // resort so that summands handled by the rules/reduction above keep their established form.
+    if (from.isInteger() && !from.isNegative()) {
+      IExpr hyper = SumHypergeometric.sumToInfinity(expr, var, from, engine);
+      if (hyper.isPresent()) {
+        return hyper;
       }
     }
     return F.NIL;
   }
 
   /**
-   * Evaluate the indefinite sum: <code>Sum[arg1, var]</code>
+   * Evaluate the indefinite sum: <code>Sum(arg1, var)</code>
    *
    * @param arg1
    * @param var
@@ -558,7 +663,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
    */
   private static IExpr indefiniteSum(IExpr arg1, final ISymbol var) {
     if (arg1.isTimes()) {
-      // Sum[ Times[a,b,c,...], var ]
+      // Sum( Times(a,b,c,...), var )
       IASTAppendable filterCollector = F.TimesAlloc(16);
       IASTAppendable restCollector = F.TimesAlloc(16);
       ((IAST) arg1).filter(filterCollector, restCollector, new Predicate<IExpr>() {
@@ -589,7 +694,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
    * <a href= "http://en.wikipedia.org/wiki/Summation#Some_summations_of_polynomial_expressions">
    * Wikipedia - Summation#Some_summations_of_polynomial_expressions</a>.
    *
-   * @param powAST an AST of the form <code>Power[var, i_Integer]</code>
+   * @param powAST an AST of the form <code>Power(var, i_Integer)</code>
    * @param var
    * @param from TODO
    * @param to
@@ -609,9 +714,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
    * {@code 0 <= from <= to}
    * <p>
    * See <a href= "https://en.wikipedia.org/wiki/Faulhaber%27s_formula"> Wikipedia - Faulhaber's
-   * formula</a>.
+   * formula</a>. * @param k the base of the power {@code k^p}
    * 
-   * @param k the base of the power {@code k^p}
    * @param p the exponent of the power {@code k^p}
    * @param from the from value (included) of the range {@code [from,to]}
    * @param to the to value (included) of the range {@code [from,to]}
@@ -674,8 +778,9 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
   /**
    * Compute an indefinite (<code>to.isNIL()</code>) or definite symbolic sum by computing the
-   * antidifference <code>T</code> of <code>term</code> (so that <code>T(var+1)-T(var) == term</code>
-   * ) via the cascade <code>Polynomial -&gt; Geometric -&gt; Gosper</code> and verifying it.
+   * antidifference <code>T</code> of <code>term</code> (so that
+   * <code>T(var+1)-T(var) == term</code> ) via the cascade
+   * <code>Polynomial -&gt; Geometric -&gt; Gosper</code> and verifying it.
    *
    * @param term the summand
    * @param var the summation variable
@@ -718,7 +823,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
    * Check that <code>antidiff(var+1) - antidiff(var) == term</code>, i.e. that
    * {@code DifferenceDelta} of the antidifference returns the summand (left inverse property). A
    * symbolic <code>Simplify</code> is tried first; if that does not close to zero (e.g.
-   * <code>(q1*q2)^i</code> vs. <code>q1^i*q2^i</code>) the identity is confirmed by numeric sampling.
+   * <code>(q1*q2)^i</code> vs. <code>q1^i*q2^i</code>) the identity is confirmed by numeric
+   * sampling.
    */
   private static boolean verifyAntidifference(IExpr antidiff, IExpr term, ISymbol var,
       EvalEngine engine) {
@@ -810,8 +916,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
   /**
    * Antidifference of <code>p(var) * r^var</code> with polynomial <code>p</code> and <code>r</code>
    * free of <code>var</code> (the bases of several <code>r^var</code> factors are combined). The
-   * antidifference <code>q(var) r^var</code> is found from <code>r*q(var+1) - q(var) == p(var)</code>
-   * by undetermined coefficients.
+   * antidifference <code>q(var) r^var</code> is found from
+   * <code>r*q(var+1) - q(var) == p(var)</code> by undetermined coefficients.
    */
   private static IExpr geometricAntidifference(IExpr term, ISymbol var, EvalEngine engine) {
     try {
@@ -936,8 +1042,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
         }
         IExpr xVar = xpoly;
         IExpr xShift = F.xreplace(xVar, var, F.Plus(var, F.C1));
-        IExpr equation =
-            F.Subtract(F.Subtract(F.Times(a, xShift), F.Times(bShiftM1, xVar)), c);
+        IExpr equation = F.Subtract(F.Subtract(F.Times(a, xShift), F.Times(bShiftM1, xVar)), c);
         IExpr solution = solveForUnknowns(equation, var, unknowns, engine);
         if (solution.isNIL()) {
           continue;
@@ -946,8 +1051,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
         if (xSolved.isZero()) {
           continue;
         }
-        return engine.evaluate(
-            F.Together(F.Times(bShiftM1, xSolved, F.Power(c, F.CN1), term)));
+        return engine.evaluate(F.Together(F.Times(bShiftM1, xSolved, F.Power(c, F.CN1), term)));
       }
       return F.NIL;
     } catch (RuntimeException rex) {
@@ -957,16 +1061,16 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
   /**
    * The term ratio <code>t(var+1)/t(var)</code> of a hypergeometric term as numerator/denominator
-   * polynomials <code>{num, den}</code> in <code>var</code>, or <code>null</code> if the term is not
-   * hypergeometric. The ratio is built factor-by-factor so that <code>Factorial</code> and
+   * polynomials <code>{num, den}</code> in <code>var</code>, or <code>null</code> if the term is
+   * not hypergeometric. The ratio is built factor-by-factor so that <code>Factorial</code> and
    * polynomial-power factors reduce exactly to rational functions.
    */
-  private static IExpr[] hypergeometricRatio(IExpr term, ISymbol var, EvalEngine engine) {
+  static IExpr[] hypergeometricRatio(IExpr term, ISymbol var, EvalEngine engine) {
     IAST factors = term.isTimes() ? (IAST) term : F.Times(term);
     IExpr ratio = F.C1;
     for (IExpr f : factors) {
       IExpr factorRatio = factorRatio(f, var, engine);
-      if (factorRatio == null) {
+      if (!factorRatio.isPresent()) {
         return null;
       }
       ratio = F.Times(ratio, factorRatio);
@@ -981,10 +1085,24 @@ public class Sum extends ListFunctions.Table implements SumRules {
     return new IExpr[] {num, den};
   }
 
-  /** The ratio <code>f(var+1)/f(var)</code> of a single factor, or <code>null</code>. */
+  /** The ratio <code>f(var+1)/f(var)</code> of a single factor, or {@link F#NIL}. */
   private static IExpr factorRatio(IExpr f, ISymbol var, EvalEngine engine) {
     if (f.isFree(var, true)) {
       return F.C1;
+    }
+    // Factorial/Gamma/Binomial factors (also raised to an integer power) reduce exactly to a
+    // rational function of var via the shift ratio of their arguments.
+    {
+      IExpr base = f;
+      IExpr expo = F.C1;
+      if (f.isPower() && f.exponent().isInteger()) {
+        base = f.base();
+        expo = f.exponent();
+      }
+      IExpr special = specialHeadRatio(base, var, engine);
+      if (special.isPresent()) {
+        return engine.evaluate(F.Power(special, expo));
+      }
     }
     if (f.isAST(S.Factorial, 2)) {
       IExpr arg = f.first();
@@ -1000,7 +1118,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
           return engine.evaluate(prod);
         }
       }
-      return null;
+      return F.NIL;
     }
     if (f.isPower()) {
       IExpr base = f.base();
@@ -1010,13 +1128,13 @@ public class Sum extends ListFunctions.Table implements SumRules {
         if (lin != null && !lin[1].isZero()) {
           return engine.evaluate(F.Power(base, lin[1]));
         }
-        return null;
+        return F.NIL;
       }
       if (expo.isInteger() && engine.evalTrue(F.PolynomialQ(base, var))) {
         IExpr baseShift = F.xreplace(base, var, F.Plus(var, F.C1));
         return engine.evaluate(F.Power(F.Divide(baseShift, base), expo));
       }
-      return null;
+      return F.NIL;
     }
     if (engine.evalTrue(F.PolynomialQ(f, var))) {
       IExpr fShift = F.xreplace(f, var, F.Plus(var, F.C1));
@@ -1030,15 +1148,94 @@ public class Sum extends ListFunctions.Table implements SumRules {
     if (engine.evalTrue(F.PolynomialQ(rn, var)) && engine.evalTrue(F.PolynomialQ(rd, var))) {
       return r;
     }
-    return null;
+    return F.NIL;
+  }
+
+  /**
+   * The shift ratio <code>g(var+1)/g(var)</code> as a rational function of <code>var</code> for the
+   * "hypergeometric" heads <code>Factorial</code>, <code>Gamma</code> and <code>Binomial</code>
+   * with arguments that are linear in <code>var</code> with an integer slope, or {@link F#NIL}
+   */
+  private static IExpr specialHeadRatio(IExpr base, ISymbol var, EvalEngine engine) {
+    if (base.isAST(S.Factorial, 2)) {
+      IExpr arg = base.first();
+      Integer s = shiftSlope(arg, var);
+      if (s == null) {
+        return F.NIL;
+      }
+      // arg! = Gamma(arg+1)
+      return gammaShiftRatio(F.Plus(arg, F.C1), s, engine);
+    }
+    if (base.isAST(S.Gamma, 2)) {
+      IExpr arg = base.first();
+      Integer s = shiftSlope(arg, var);
+      if (s == null) {
+        return F.NIL;
+      }
+      return gammaShiftRatio(arg, s, engine);
+    }
+    if (base.isAST(S.Binomial, 3)) {
+      IExpr n = base.first();
+      IExpr m = base.second();
+      Integer sn = shiftSlope(n, var);
+      Integer sm = shiftSlope(m, var);
+      if (sn == null || sm == null) {
+        return F.NIL;
+      }
+      // Binomial(n,m) = Gamma(n+1)/(Gamma(m+1)*Gamma(n-m+1))
+      IExpr g1 = gammaShiftRatio(F.Plus(n, F.C1), sn, engine);
+      IExpr g2 = gammaShiftRatio(F.Plus(m, F.C1), sm, engine);
+      IExpr g3 = gammaShiftRatio(F.Plus(F.Subtract(n, m), F.C1), sn - sm, engine);
+      return engine.evaluate(F.Times(g1, F.Power(g2, F.CN1), F.Power(g3, F.CN1)));
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The integer slope <code>c</code> of a linear argument <code>c*var + d</code>, or
+   * <code>null</code> if the argument is not linear with an integer slope in <code>var</code>.
+   */
+  private static Integer shiftSlope(IExpr arg, ISymbol var) {
+    IExpr[] lin = arg.linear(var);
+    if (lin == null) {
+      return null;
+    }
+    int s = lin[1].toIntDefault();
+    if (s == Integer.MIN_VALUE) {
+      return null;
+    }
+    return Integer.valueOf(s);
+  }
+
+  /**
+   * <code>Gamma(x+s)/Gamma(x)</code> expanded as a rational function using rising/falling
+   * factorials for the integer shift <code>s</code>.
+   */
+  private static IExpr gammaShiftRatio(IExpr x, int s, EvalEngine engine) {
+    if (s == 0) {
+      return F.C1;
+    }
+    IASTAppendable prod = F.TimesAlloc(Math.abs(s));
+    if (s > 0) {
+      // Gamma(x+s)/Gamma(x) = x*(x+1)*...*(x+s-1)
+      for (int i = 0; i < s; i++) {
+        prod.append(F.Plus(x, F.ZZ(i)));
+      }
+      return engine.evaluate(prod);
+    }
+    // Gamma(x+s)/Gamma(x) = 1/((x-1)*(x-2)*...*(x+s))
+    for (int i = 1; i <= -s; i++) {
+      prod.append(F.Plus(x, F.ZZ(-i)));
+    }
+    return engine.evaluate(F.Power(prod, F.CN1));
   }
 
   /**
    * Solve the polynomial identity <code>equation(var) == 0</code> (which must hold for all
    * <code>var</code>) for the given <code>unknowns</code>. The {@link SolveAlways} builtin is used
-   * first; if it solves for free parameters of the summand instead of the requested coefficients the
-   * method falls back to an explicit linear system on the coefficients of <code>var</code>. Returns
-   * the first solution (a list of rules) or <code>F.NIL</code>.
+   * first; if it solves for free parameters of the summand instead of the requested coefficients
+   * the method falls back to an explicit linear system on the coefficients of <code>var</code>.
+   * Returns the first solution (a list of rules) or <code>F.NIL</code>.
    */
   private static IExpr solveForUnknowns(IExpr equation, ISymbol var, IAST unknowns,
       EvalEngine engine) {
