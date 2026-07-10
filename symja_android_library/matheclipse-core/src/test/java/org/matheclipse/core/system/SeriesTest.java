@@ -1676,4 +1676,22 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "SeriesData(x,1,{1,EulerGamma,-StieltjesGamma(1),StieltjesGamma(2)/2,-StieltjesGamma(\n"
             + "3)/6,StieltjesGamma(4)/24},-1,5,1)");
   }
+
+  @Test
+  public void testSeriesIssue1414() {
+    check("SeriesCoefficient(Sin(x)/x, {x, 0, n})", //
+        "Piecewise({{(I*1/2*(-1+(-1)^(1+n))*I^(1+n))/(1+n)!,n>=-1}},0)");
+    check("SeriesCoefficient(Sinc(x), {x, 0, n})", //
+        "Piecewise({{((1+(-1)^n)*I^n)/(2*(1+n)!),n>=0}},0)");
+    check("SeriesCoefficient(Sin(x)/x, {x, 0, 2})", //
+        "-1/6");
+    check("SeriesCoefficient(Sinc(x), {x, Pi/2, n})", //
+        "Piecewise({{(I^n*HypergeometricPFQ({1,-n},{},(-I*2)/Pi)-I^n*HypergeometricPFQ({1,-n},{},(\n"
+            + "I*2)/Pi))/(Pi*n!),n>=0}},0)");
+    // check("SeriesCoefficient(Sin(x)/x, {x, Pi/2, n})", //
+    // "");
+
+  }
+
+
 }

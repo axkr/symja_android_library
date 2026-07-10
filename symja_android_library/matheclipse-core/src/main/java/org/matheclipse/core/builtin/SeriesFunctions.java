@@ -483,8 +483,7 @@ public class SeriesFunctions {
             // Expand the eight Arc* heads at their branch points (returns a composite IExpr for the
             // logarithmic / complex branches).
             if (!isInfinity && currentExpr.isAST()) {
-              IExpr arcSeries =
-                  ASTSeriesData.arcBranchSeries((IAST) currentExpr, x, x0, n, engine);
+              IExpr arcSeries = ASTSeriesData.arcBranchSeries((IAST) currentExpr, x, x0, n, engine);
               if (arcSeries.isPresent()) {
                 currentExpr = arcSeries;
                 continue;
@@ -826,6 +825,33 @@ public class SeriesFunctions {
       IExpr rationalCoeff = rationalSeriesCoefficient(function, x, x0, n, engine);
       if (rationalCoeff.isPresent()) {
         return rationalCoeff;
+      }
+
+      // Taylor Factor Shift (Handles Sin(x)/x, Cos(x)/x^2, x^5*Exp(x), etc.) ---
+      if (function.isTimes()) {
+        IAST times = (IAST) function;
+        IExpr varPart = x0.isZero() ? x : engine.evaluate(F.Subtract(x, x0));
+
+        IExpr extractedPower = F.C0;
+        IASTAppendable restTimes = F.TimesAlloc(times.argSize());
+
+        for (int i = 1; i <= times.argSize(); i++) {
+          IExpr arg = times.get(i);
+          if (arg.equals(varPart)) {
+            extractedPower = engine.evaluate(F.Plus(extractedPower, F.C1));
+          } else if (arg.isPower() && arg.base().equals(varPart) && arg.exponent().isInteger()) {
+            extractedPower = engine.evaluate(F.Plus(extractedPower, arg.exponent()));
+          } else {
+            restTimes.append(arg);
+          }
+        }
+
+        if (!extractedPower.isZero()) {
+          IExpr restFunction = engine.evaluate(restTimes.oneIdentity1());
+          // The coefficient of x^n in x^k * f(x) is the coefficient of x^(n-k) in f(x)
+          IExpr shiftedN = engine.evaluate(F.Subtract(n, extractedPower));
+          return engine.evaluate(F.SeriesCoefficient(restFunction, F.List(x, x0, shiftedN)));
+        }
       }
 
       if (n.isReal()) {

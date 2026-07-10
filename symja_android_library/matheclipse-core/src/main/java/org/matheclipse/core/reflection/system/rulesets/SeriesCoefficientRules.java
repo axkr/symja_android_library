@@ -35,6 +35,12 @@ matcher.caseOf(SeriesCoefficient(Sin(x_),list(x_Symbol,C0,PatternTest(n_,NotList
     // SeriesCoefficient(Sin(x_),{x_Symbol,Pi/2,n_?NotListQ}):=Piecewise({{((1+(-1)^n)*I^n)/(2*n!),n>=0}},0)/;FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(Sin(x_),list(x_Symbol,CPiHalf,PatternTest(n_,NotListQ))),
       Condition(Piecewise(list(list(Times(Plus(C1,Power(-1,n)),Power(CI,n),Power(Times(C2,Factorial(n)),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x)));
+    // SeriesCoefficient(Sinc(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{((1+(-1)^n)*I^n)/(2*(1+n)!),n>=0}},0)/;FreeQ(n,x)
+matcher.caseOf(SeriesCoefficient(Sinc(x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
+      Condition(Piecewise(list(list(Times(Plus(C1,Power(-1,n)),Power(CI,n),Power(Times(C2,Factorial(Plus(C1,n))),CN1)),GreaterEqual(n,C0))),C0),FreeQ(n,x)));
+    // SeriesCoefficient(Sinc(x_),{x_Symbol,Pi/2,n_?NotListQ}):=Piecewise({{(I^n*HypergeometricPFQ({1,-n},{},((-1)*I*2)/Pi)+-I^n*HypergeometricPFQ({1,-n},{},(I*2)/Pi))/(Pi*n!),n>=0}},0)/;FreeQ(n,x)
+matcher.caseOf(SeriesCoefficient(Sinc(x_),list(x_Symbol,CPiHalf,PatternTest(n_,NotListQ))),
+      Condition(Piecewise(list(list(Times(Power(Times(Pi,Factorial(n)),CN1),Plus(Times(Power(CI,n),HypergeometricPFQ(list(C1,Negate(n)),List(),Times(CN1,CI,C2,Power(Pi,CN1)))),Times(CN1,Power(CI,n),HypergeometricPFQ(list(C1,Negate(n)),List(),Times(CI,C2,Power(Pi,CN1)))))),GreaterEqual(n,C0))),C0),FreeQ(n,x)));
     // SeriesCoefficient(Tan(x_),{x_Symbol,0,n_?NotListQ}):=Piecewise({{((-1+(-1)^n)*I^(1+n)*2^n*(-1+2^(1+n))*BernoulliB(1+n))/(1+n)!,n>=1}},0)/;FreeQ(n,x)
 matcher.caseOf(SeriesCoefficient(Tan(x_),list(x_Symbol,C0,PatternTest(n_,NotListQ))),
       Condition(Piecewise(list(list(Times(Plus(CN1,Power(-1,n)),Power(CI,Plus(C1,n)),Power(C2,n),Plus(CN1,Power(C2,Plus(C1,n))),BernoulliB(Plus(C1,n)),Power(Factorial(Plus(C1,n)),CN1)),GreaterEqual(n,C1))),C0),FreeQ(n,x)));

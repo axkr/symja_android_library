@@ -22,6 +22,11 @@
    SeriesCoefficient(Sin(x_),{x_Symbol, Pi/2, n_?NotListQ}):=Piecewise({{(I^n*(1 + (-1)^n))/(2*n!), n >= 0}}, 0)
     /; FreeQ(n,x),
     
+  SeriesCoefficient(Sinc(x_), {x_Symbol, 0, n_?NotListQ}) := Piecewise({{(I^n*(1 + (-1)^n))/(2*(1 + n)!), n >= 0}}, 0) 
+    /; FreeQ(n, x),
+  SeriesCoefficient(Sinc(x_), {x_Symbol, Pi/2, n_?NotListQ}) := Piecewise({{(I^n*HypergeometricPFQ({1,-n},{},((-1)*I*2)/Pi)+-I^n*HypergeometricPFQ({1,-n},{},(I*2)/Pi))/(Pi*n!),n>=0}},0)
+    /; FreeQ(n, x),
+  
   SeriesCoefficient(Tan(x_),{x_Symbol, 0, n_?NotListQ}):=Piecewise({{(I^(1 + n)*2^n*(-1 + (-1)^n)*(-1 + 2^(1 + n))*BernoulliB(1 + n))/(1 + n)!, n >= 1}}, 0)
     /; FreeQ(n,x),
   SeriesCoefficient(Tan(x_),{x_Symbol, Pi/2, n_?NotListQ}):=Piecewise({{-1, n == -1}, {(I^(1 + n)*2^n*(-1 + (-1)^n)*BernoulliB(1 + n))/(1 + n)!, n >= 0}}, 0)
