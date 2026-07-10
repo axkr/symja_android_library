@@ -30,6 +30,8 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class Reduce extends AbstractEvaluator {
+  // Internal signal to indicate successful absorption into the variable interval
+  private static final ISymbol REDUCE_CONTINUE = F.Dummy("$Continue");
 
   static class ReduceComparison {
 
@@ -50,15 +52,8 @@ public class Reduce extends AbstractEvaluator {
 
       IAST intervalData;
 
-      // IExpr xMin;
-      // IExpr xMax;
-      // int minType; // 1 -> LT 2 -> LE
-      // int maxType; // 1 -> LT 2 -> LE
-
       /**
-       * Empty interval.
-       * 
-       * @param variable
+       * Empty interval. * @param variable
        */
       public VariableInterval(IExpr variable) {
         this.variable = variable;
@@ -73,10 +68,6 @@ public class Reduce extends AbstractEvaluator {
 
       public void set(VariableInterval cd) {
         this.intervalData = cd.intervalData.copy();
-        // this.xMin = cd.xMin;
-        // this.xMax = cd.xMax;
-        // this.minType = cd.minType;
-        // this.maxType = cd.maxType;
       }
 
       public boolean reduceOr(final VariableInterval cd) {
@@ -85,55 +76,6 @@ public class Reduce extends AbstractEvaluator {
           this.intervalData = intersection;
           return true;
         }
-        // if (S.Equal.ofQ(this.xMax, cd.xMin)) {
-        // // | this.xMin ?? this.xMax == cd.xMin ?? cd.xMax |
-        // if (this.maxType >= 2 || cd.minType >= 2) {
-        // this.xMax = cd.xMax;
-        // this.maxType = cd.maxType;
-        // return true;
-        // }
-        // } else if (S.Equal.ofQ(cd.xMax, this.xMin)) {
-        // // | cd.xMin ?? cd.xMax == this.xMin ?? this.xMax |
-        // if (this.maxType >= 2 || cd.minType >= 2) {
-        // this.xMin = cd.xMin;
-        // this.minType = cd.minType;
-        // return true;
-        // }
-        // } else if (S.GreaterEqual.ofQ(cd.xMin, this.xMin)) {
-        // // | this.xMin <= cd.xMin ... |
-        // if (S.LessEqual.ofQ(cd.xMax, this.xMax)) {
-        // // this interval includes cd interval
-        // // | this.xMin <= cd.xMin <--> cd.Max <= this.xMax |
-        // return true;
-        // }
-        // } else if (S.GreaterEqual.ofQ(this.xMin, cd.xMin)) {
-        // // | cd.xMin <= this.xMin ... |
-        // if (S.LessEqual.ofQ(this.xMax, cd.xMax)) {
-        // // cd interval includes this interval
-        // // | cd.xMin <= this.xMin <--> this.xMax <= cd.xMax |
-        // this.xMin = cd.xMin;
-        // this.xMax = cd.xMax;
-        // this.minType = cd.minType;
-        // this.maxType = cd.maxType;
-        // return true;
-        // }
-        // }
-        //
-        // if (S.Greater.ofQ(this.xMax, cd.xMin)) {
-        // if (S.Less.ofQ(this.xMax, cd.xMax)) {
-        // // | cd.xMin <= this.xMax <--> this.xMax <= cd.xMax |
-        // this.xMax = cd.xMax;
-        // this.maxType = cd.maxType;
-        // return true;
-        // }
-        // } else if (S.Greater.ofQ(this.xMin, cd.xMin)) {
-        // if (S.Less.ofQ(this.xMin, cd.xMax)) {
-        // // | cd.xMin <= this.xMin <--> this.xMin <= cd.xMax |
-        // this.xMin = cd.xMin;
-        // this.minType = cd.minType;
-        // return true;
-        // }
-        // }
         return false;
       }
 
@@ -141,35 +83,10 @@ public class Reduce extends AbstractEvaluator {
         return intervalData.argSize() == 4//
             && intervalData.arg1().isNegativeInfinity()//
             && intervalData.arg4().isInfinity();
-        // xMin == F.CNInfinity && xMax == F.CInfinity;
       }
 
       private IExpr toExpr() {
         return IntervalDataSym.intervalToOr(intervalData, variable);
-        // if (!xMin.equals(F.CNInfinity)) {
-        // if (xMax.equals(xMin)) {
-        // if (minType >= 2 && maxType >= 2) {
-        // return F.Equal(variable, xMin);
-        // }
-        // return F.False;
-        // }
-        // IAST gt = (minType >= 2) //
-        // ? F.GreaterEqual(variable, xMin)
-        // : F.Greater(variable, xMin);
-        // if (!xMax.equals(F.CInfinity)) {
-        // IAST lt = (maxType >= 2) //
-        // ? F.LessEqual(variable, xMax)
-        // : F.Less(variable, xMax);
-        // return F.And(gt, lt);
-        // }
-        // return gt;
-        // } else if (!xMax.equals(F.CInfinity)) {
-        // IAST lt = (maxType >= 2) //
-        // ? F.LessEqual(variable, xMax)
-        // : F.Less(variable, xMax);
-        // return lt;
-        // }
-        // return F.NIL;
       }
 
       @Override
@@ -199,111 +116,9 @@ public class Reduce extends AbstractEvaluator {
             return S.False;
           }
           this.intervalData = intersection;
-          return S.Continue;
+          return REDUCE_CONTINUE;
         }
         return F.NIL;
-
-        // final IExpr xMin = intervalData.arg1();
-        // final IBuiltInSymbol minType = (IBuiltInSymbol) intervalData.arg2();
-        // final IBuiltInSymbol maxType = (IBuiltInSymbol) intervalData.arg3();
-        // final IExpr xMax = intervalData.arg4();
-        //
-        // switch (headID) {
-        // case ID.Equal:
-        // if (S.GreaterEqual.ofQ(rhs, xMin) && S.LessEqual.ofQ(rhs, xMax)) {
-        // if (maxType == S.Less && S.Equal.ofQ(rhs, xMax)) {
-        // return S.False;
-        // }
-        // if (minType == S.Less && S.Equal.ofQ(rhs, xMin)) {
-        // return S.False;
-        // }
-        // xMax = rhs;
-        // xMin = rhs;
-        // minType = S.LessEqual;
-        // maxType = S.LessEqual;
-        // return S.Continue;
-        // } else {
-        // IExpr gt = S.Greater.of(rhs, xMax);
-        // if (gt.isTrue()) {
-        // return S.False;
-        // }
-        // IExpr lt = S.Less.of(rhs, xMin);
-        // if (lt.isTrue()) {
-        // return S.False;
-        // }
-        // if (gt.isFalse() && lt.isFalse()) {
-        // xMax = rhs;
-        // xMin = rhs;
-        // minType = S.LessEqual;
-        // maxType = S.LessEqual;
-        // return S.Continue;
-        // }
-        // }
-        // break;
-        // case ID.Less:
-        // if (S.Less.ofQ(rhs, xMax)) {
-        // if (minType == S.Less && S.LessEqual.ofQ(rhs, xMin)) {
-        // return S.False;
-        // } else if (S.Less.ofQ(rhs, xMin)) {
-        // return S.False;
-        // }
-        // xMax = rhs;
-        // maxType = S.Less;
-        // } else {
-        // if (S.LessEqual.ofQ(rhs, xMin)) {
-        // return S.False;
-        // }
-        // }
-        // return S.Continue;
-        // case ID.LessEqual:
-        // if (S.LessEqual.ofQ(rhs, xMax)) {
-        // if (minType == S.Less && S.LessEqual.ofQ(rhs, xMin)) {
-        // return S.False;
-        // } else if (S.Less.ofQ(rhs, xMin)) {
-        // return S.False;
-        // }
-        // xMax = rhs;
-        // maxType = S.LessEqual;
-        // } else {
-        // if (S.Less.ofQ(rhs, xMin)) {
-        // return S.False;
-        // }
-        // }
-        // return S.Continue;
-        // case ID.Greater:
-        // if (S.Greater.ofQ(rhs, xMin)) {
-        // if (maxType == S.Less && S.GreaterEqual.ofQ(rhs, xMax)) {
-        // return S.False;
-        // } else if (S.Greater.ofQ(rhs, xMax)) {
-        // return S.False;
-        // }
-        // xMin = rhs;
-        // minType = S.Less;
-        // } else {
-        // if (S.GreaterEqual.ofQ(rhs, xMax)) {
-        // return S.False;
-        // }
-        // }
-        // return S.Continue;
-        // case ID.GreaterEqual:
-        // if (S.GreaterEqual.ofQ(rhs, xMin)) {
-        // if (maxType == S.Less && S.GreaterEqual.ofQ(rhs, xMax)) {
-        // return S.False;
-        // } else if (S.Greater.ofQ(rhs, xMax)) {
-        // return S.False;
-        // }
-        // xMin = rhs;
-        // minType = 2;
-        // } else {
-        // if (S.Greater.ofQ(rhs, xMax)) {
-        // return S.False;
-        // }
-        // }
-        // return S.Continue;
-        // default:
-        // return F.NIL;
-        // }
-        // return F.NIL;
       }
     }
 
@@ -322,7 +137,7 @@ public class Reduce extends AbstractEvaluator {
             new VariableInterval(F.CNInfinity, S.Less, variable, S.Less, F.CInfinity);
         IExpr temp = reduceAnd((IAST) expr, cd);
         if (temp.isPresent()) {
-          if (temp == S.Continue) {
+          if (temp == REDUCE_CONTINUE) {
             return cd.toExpr();
           }
           return temp;
@@ -332,7 +147,7 @@ public class Reduce extends AbstractEvaluator {
         VariableInterval cd = new VariableInterval(variable);
         IExpr temp = reduceOr((IAST) expr, cd);
         if (temp.isPresent()) {
-          if (temp == S.Continue) {
+          if (temp == REDUCE_CONTINUE) {
             return cd.toExpr();
           }
           return temp;
@@ -360,7 +175,7 @@ public class Reduce extends AbstractEvaluator {
               new VariableInterval(F.CNInfinity, S.Less, variable, S.Less, F.CInfinity);
           IExpr temp = reduceAnd((IAST) arg, andCD);
           if (temp.isPresent()) {
-            if (temp == S.Continue) {
+            if (temp == REDUCE_CONTINUE) {
               if (cd.isInitial()) {
                 cd.set(andCD);
               } else {
@@ -395,7 +210,7 @@ public class Reduce extends AbstractEvaluator {
             VariableInterval comparatorCD =
                 new VariableInterval(F.CNInfinity, S.Less, variable, S.Less, F.CInfinity);
             temp = comparatorCD.reduceAnd(temp.headID(), temp.first(), temp.second());
-            if (temp != S.Continue) {
+            if (temp != REDUCE_CONTINUE) {
               if (temp.isTrue()) {
                 continue;
               }
@@ -443,7 +258,7 @@ public class Reduce extends AbstractEvaluator {
         return orResult;
       }
 
-      return S.Continue;
+      return REDUCE_CONTINUE;
     }
 
     /**
@@ -451,46 +266,65 @@ public class Reduce extends AbstractEvaluator {
      *
      * @param andExpr the {@link S#And} AST
      * @param variableInterval
-     * @return {@link S#Continue}, if all condition terms could be reduced (evaluated) in <code>
-     *     variableInterval
-     *     </code>, an {@link S#And} AST if some parts could be evaluated, {@link F#NIL} otherwise
+     * @return {@link #REDUCE_CONTINUE}, if all condition terms could be reduced (evaluated) in <code>
+     * variableInterval
+     * </code>, an {@link S#And} AST if some parts could be evaluated, {@link F#NIL} otherwise
      * @throws ArgumentTypeException
      */
     public IExpr reduceAnd(IAST andExpr, VariableInterval variableInterval)
         throws ArgumentTypeException {
-      IASTMutable andAST = andExpr.copy();
-      if (andAST.isAST0()) {
+      if (andExpr.isAST0()) {
         throw new ArgumentTypeException("And: size == 0");
-      }
-      if (andAST.isAST1()) {
-        return andAST.arg1();
       }
 
       boolean andEvaled = false;
       boolean variableInternalContinued = true;
-      IExpr lastArg = rewriteVariableValue(variableInterval, andAST.arg1());
+      boolean prePassChanged = false;
+
+      // Pre-pass: rewrite and perfectly flatten nested Ands generated from rewritten bounds
+      IASTAppendable flatAnd = F.ast(S.And, andExpr.argSize());
+      for (int i = 1; i < andExpr.size(); i++) {
+        IExpr rewritten = rewriteVariableValue(variableInterval, andExpr.get(i));
+        if (rewritten.isAnd()) {
+          flatAnd.appendArgs((IAST) rewritten);
+          prePassChanged = true;
+        } else {
+          if (!rewritten.equals(andExpr.get(i))) {
+            prePassChanged = true;
+          }
+          flatAnd.append(rewritten);
+        }
+      }
+
+      IASTMutable andAST = flatAnd;
+
+      if (andAST.isAST0()) {
+        return S.True;
+      }
+
+      IExpr lastArg = andAST.arg1();
       int lastIndex = 1;
       IExpr temp = F.NIL;
+
       if (lastArg.isAST2() && lastArg.first().equals(variableInterval.variable)) {
         temp = variableInterval.reduceAnd(lastArg.headID(), lastArg.first(), lastArg.second());
         if (temp.isPresent()) {
           if (temp.isFalse()) {
             return S.False;
           }
-          if (temp != S.Continue) {
+          if (temp != REDUCE_CONTINUE) {
             andAST.set(1, temp);
             andEvaled = true;
             lastArg = temp;
           }
         }
       }
-      if (temp != S.Continue) {
+      if (temp != REDUCE_CONTINUE) {
         variableInternalContinued = false;
       }
 
       for (int i = 2; i < andAST.size(); i++) {
-        // TODO check Simplify result
-        IExpr arg = rewriteVariableValue(variableInterval, andAST.get(i));
+        IExpr arg = andAST.get(i);
         IExpr reducedArg = F.NIL;
         if (arg.isAST2() && arg.first().equals(variableInterval.variable)) {
           reducedArg = variableInterval.reduceAnd(arg.headID(), arg.first(), arg.second());
@@ -498,26 +332,26 @@ public class Reduce extends AbstractEvaluator {
             if (reducedArg.isFalse()) {
               return S.False;
             }
-            if (reducedArg != S.Continue) {
+            if (reducedArg != REDUCE_CONTINUE) {
               andAST.set(i, reducedArg);
               andEvaled = true;
               arg = reducedArg;
             }
           }
-          if (reducedArg != S.Continue) {
+          if (reducedArg != REDUCE_CONTINUE) {
             variableInternalContinued = false;
           }
+
           IASTMutable orAST = F.NIL;
           boolean evaled = false;
           if (arg.isComparatorFunction() && lastArg.isAST(S.Or)) {
             orAST = ((IAST) lastArg).copy();
             evaled = mapOrReduced(arg, orAST);
-
           } else if (lastArg.isComparatorFunction() && arg.isAST(S.Or)) {
             orAST = ((IAST) arg).copy();
             evaled = mapOrReduced(lastArg, orAST);
           }
-          // TODO if 2 Or() expressions are involved, create a distributed And() expression
+
           if (evaled) {
             temp = EvalEngine.get().evaluate(orAST);
             andAST.set(lastIndex, S.True);
@@ -528,12 +362,20 @@ public class Reduce extends AbstractEvaluator {
           }
         }
       }
-      if (andEvaled) {
-        return andAST;
-      }
+
+      // If everything cleanly absorbed into the VariableInterval, signal CONTINUE
+      // so reduceAndOr will substitute the accumulated interval bounds.
       if (variableInternalContinued) {
-        return S.Continue;
+        return REDUCE_CONTINUE;
       }
+
+      // If some terms didn't absorb completely, but we modified elements (either in pre-pass or
+      // Or-distribution),
+      // return the modified AST.
+      if (andEvaled || prePassChanged) {
+        return andAST.isAST1() ? andAST.arg1() : andAST;
+      }
+
       return F.NIL;
     }
 
@@ -557,27 +399,213 @@ public class Reduce extends AbstractEvaluator {
           IAST rule = reduced[1];
           lastArg = F.Equal(variable, rule.second());
         }
+      } else if (lastArg.isAST2() && lastArg.isComparatorFunction()) {
+        EvalEngine engine = EvalEngine.get();
+        // Expand to polynomial form: diff = lhs - rhs
+        IExpr diff = engine.evaluate(F.ExpandAll(F.Subtract(lastArg.first(), lastArg.second())));
+
+        if (diff.isPolynomial(cd.variable)) {
+          IExpr coeffs = S.CoefficientList.ofNIL(engine, diff, cd.variable);
+
+          if (coeffs != null && coeffs.isList()) {
+            IAST coeffList = (IAST) coeffs;
+
+            if (coeffList.argSize() == 2) {
+              IExpr a0 = coeffList.arg1();
+              IExpr a1 = coeffList.arg2();
+
+              if (a1.isNumericFunction()) {
+                IExpr sign = engine.evaluate(F.Sign(a1));
+
+                if (sign.isOne() || sign.isMinusOne()) {
+                  IExpr root = engine.evaluate(F.Divide(F.Negate(a0), a1));
+                  IExpr head = lastArg.head();
+
+                  if (head.isBuiltInSymbol()) {
+                    IBuiltInSymbol sym = (IBuiltInSymbol) head;
+
+                    // Flip the comparator operator if divided by a negative coefficient
+                    if (sign.isMinusOne()) {
+                      switch (sym.ordinal()) {
+                        case ID.Less:
+                          sym = S.Greater;
+                          break;
+                        case ID.LessEqual:
+                          sym = S.GreaterEqual;
+                          break;
+                        case ID.Greater:
+                          sym = S.Less;
+                          break;
+                        case ID.GreaterEqual:
+                          sym = S.LessEqual;
+                          break;
+                      }
+                    }
+
+                    IASTAppendable result = F.ast(sym, 3);
+                    result.append(cd.variable);
+                    result.append(root);
+                    return result;
+                  }
+                }
+              }
+            } else if (coeffList.argSize() == 3) {
+              // Quadratic inequality logic: a2*x^2 + a1*x + a0 OP 0
+              IExpr a0 = coeffList.arg1();
+              IExpr a1 = coeffList.arg2();
+              IExpr a2 = coeffList.arg3();
+
+              if (a2.isNumericFunction() && a1.isNumericFunction() && a0.isNumericFunction()) {
+                IExpr delta = engine.evaluate(F.Subtract(F.Sqr(a1), F.Times(F.C4, a2, a0)));
+                IExpr isNegDelta = engine.evaluate(F.Less(delta, F.C0));
+
+                if (isNegDelta.isTrue()) {
+                  IExpr a2Sign = engine.evaluate(F.Sign(a2));
+                  boolean isPosPoly = a2Sign.isOne();
+                  IExpr head = lastArg.head();
+                  if (head == S.Less || head == S.LessEqual)
+                    return isPosPoly ? S.False : S.True;
+                  if (head == S.Greater || head == S.GreaterEqual)
+                    return isPosPoly ? S.True : S.False;
+                }
+
+                IExpr isPosDelta = engine.evaluate(F.Greater(delta, F.C0));
+                if (isPosDelta.isTrue()) {
+                  IExpr sqrtDelta = engine.evaluate(F.Sqrt(delta));
+                  IExpr r1 = engine
+                      .evaluate(F.Divide(F.Subtract(F.Negate(a1), sqrtDelta), F.Times(F.C2, a2)));
+                  IExpr r2 =
+                      engine.evaluate(F.Divide(F.Plus(F.Negate(a1), sqrtDelta), F.Times(F.C2, a2)));
+
+                  // Ensure r1 < r2
+                  IExpr r1LessR2 = engine.evaluate(F.Less(r1, r2));
+                  if (r1LessR2.isFalse()) {
+                    IExpr tmp = r1;
+                    r1 = r2;
+                    r2 = tmp;
+                  }
+
+                  IExpr a2Sign = engine.evaluate(F.Sign(a2));
+                  boolean isPosPoly = a2Sign.isOne();
+                  IExpr head = lastArg.head();
+
+                  if (isPosPoly) {
+                    if (head == S.Less)
+                      return F.And(F.Greater(cd.variable, r1), F.Less(cd.variable, r2));
+                    if (head == S.LessEqual)
+                      return F.And(F.GreaterEqual(cd.variable, r1), F.LessEqual(cd.variable, r2));
+                    if (head == S.Greater)
+                      return F.Or(F.Less(cd.variable, r1), F.Greater(cd.variable, r2));
+                    if (head == S.GreaterEqual)
+                      return F.Or(F.LessEqual(cd.variable, r1), F.GreaterEqual(cd.variable, r2));
+                  } else {
+                    if (head == S.Greater)
+                      return F.And(F.Greater(cd.variable, r1), F.Less(cd.variable, r2));
+                    if (head == S.GreaterEqual)
+                      return F.And(F.GreaterEqual(cd.variable, r1), F.LessEqual(cd.variable, r2));
+                    if (head == S.Less)
+                      return F.Or(F.Less(cd.variable, r1), F.Greater(cd.variable, r2));
+                    if (head == S.LessEqual)
+                      return F.Or(F.LessEqual(cd.variable, r1), F.GreaterEqual(cd.variable, r2));
+                  }
+                }
+
+                IExpr isZeroDelta = engine.evaluate(F.Equal(delta, F.C0));
+                if (isZeroDelta.isTrue()) {
+                  IExpr r = engine.evaluate(F.Divide(F.Negate(a1), F.Times(F.C2, a2)));
+                  IExpr a2Sign = engine.evaluate(F.Sign(a2));
+                  boolean isPosPoly = a2Sign.isOne();
+                  IExpr head = lastArg.head();
+
+                  if (isPosPoly) {
+                    if (head == S.Less)
+                      return S.False;
+                    if (head == S.LessEqual)
+                      return F.Equal(cd.variable, r);
+                    if (head == S.Greater)
+                      return F.Unequal(cd.variable, r);
+                    if (head == S.GreaterEqual)
+                      return S.True;
+                  } else {
+                    if (head == S.Greater)
+                      return S.False;
+                    if (head == S.GreaterEqual)
+                      return F.Equal(cd.variable, r);
+                    if (head == S.Less)
+                      return F.Unequal(cd.variable, r);
+                    if (head == S.LessEqual)
+                      return S.True;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // lastArg = S.Simplify.of(lastArg, cd.variable);
+
+        // Post-simplify fallback for symmetric even-power inequalities (e.g. x^4 < 16)
+        if (lastArg.isAST2() && lastArg.isComparatorFunction()) {
+          IExpr lhs = lastArg.first();
+          IExpr rhs = lastArg.second();
+
+          if (lhs.isPower() && lhs.first().equals(cd.variable)) {
+            IExpr exponent = lhs.second();
+            if (exponent.isInteger() && exponent.isEvenResult()
+                && ((IInteger) exponent).isPositiveResult()) {
+              IExpr root = engine.evaluate(F.Power(rhs, F.Divide(F.C1, exponent)));
+
+              IExpr isNeg = engine.evaluate(F.Less(rhs, F.C0));
+              if (isNeg.isTrue()) {
+                if (lastArg.isFunctionID(ID.Less, ID.LessEqual))
+                  return S.False;
+                if (lastArg.isFunctionID(ID.Greater, ID.GreaterEqual))
+                  return S.True;
+              }
+
+              IExpr isZero = engine.evaluate(F.Equal(rhs, F.C0));
+              if (isZero.isTrue()) {
+                if (lastArg.isFunctionID(ID.Less))
+                  return S.False;
+                if (lastArg.isFunctionID(ID.LessEqual))
+                  return F.Equal(cd.variable, F.C0);
+                if (lastArg.isFunctionID(ID.Greater))
+                  return F.Unequal(cd.variable, F.C0);
+                if (lastArg.isFunctionID(ID.GreaterEqual))
+                  return S.True;
+              }
+
+              IExpr isPos = engine.evaluate(F.Greater(rhs, F.C0));
+              if (isPos.isTrue()) {
+                if (lastArg.isFunctionID(ID.Less)) {
+                  return F.And(F.Greater(cd.variable, F.Negate(root)), F.Less(cd.variable, root));
+                }
+                if (lastArg.isFunctionID(ID.LessEqual)) {
+                  return F.And(F.GreaterEqual(cd.variable, F.Negate(root)),
+                      F.LessEqual(cd.variable, root));
+                }
+                if (lastArg.isFunctionID(ID.Greater)) {
+                  return F.Or(F.Less(cd.variable, F.Negate(root)), F.Greater(cd.variable, root));
+                }
+                if (lastArg.isFunctionID(ID.GreaterEqual)) {
+                  return F.Or(F.LessEqual(cd.variable, F.Negate(root)),
+                      F.GreaterEqual(cd.variable, root));
+                }
+              }
+            }
+          }
+        }
       } else {
-        lastArg = S.Simplify.of(lastArg, cd.variable);
+        // lastArg = S.Simplify.of(lastArg, cd.variable);
       }
       return lastArg;
     }
 
     private IExpr reduceAndBinary(IExpr arg, IExpr orArg) {
-      // VariableInterval cd = new VariableInterval(variable);
-      // IExpr reduced = cd.reduceComparator(arg, orArg);
-      // if (reduced.isPresent()) {
-      // if (reduced == S.Continue || reduced.isAST(S.And)) {
-      // return F.NIL;
-      // }
-      // return reduced;
-      // }
-      // return F.NIL;
-
       ReduceComparison rcAnd = new ReduceComparison(variable, domainMap);
       IExpr reduced = rcAnd.evaluate(F.And(arg, orArg));
       if (reduced.isPresent()) {
-        if (reduced == S.Continue || reduced.isAST(S.And)) {
+        if (reduced == REDUCE_CONTINUE || reduced.isAST(S.And)) {
           return F.NIL;
         }
         return reduced;
@@ -815,8 +843,8 @@ public class Reduce extends AbstractEvaluator {
 
     if (c1MayBeZero) {
       // degenerate case c1==0: the inner argument collapses to the constant c0
-      IExpr degenerateEquation = engine.evaluate(
-          F.Equal(F.Plus(F.Times(amplitude, F.unaryAST1(periodicHead, c0)), rest), F.C0));
+      IExpr degenerateEquation = engine
+          .evaluate(F.Equal(F.Plus(F.Times(amplitude, F.unaryAST1(periodicHead, c0)), rest), F.C0));
       IExpr degeneratePart;
       if (degenerateEquation.isTrue()) {
         degeneratePart = F.Equal(c1, F.C0);
@@ -1007,6 +1035,9 @@ public class Reduce extends AbstractEvaluator {
           expr = F.And(expr);
         }
       }
+
+      expr = expandComparators(expr);
+
       Map<IExpr, IExpr> domainMap = new VariablesSet(expr).toMap(domain);
       setInequalityDomainsRecursive(expr, domainMap);
 
@@ -1028,14 +1059,6 @@ public class Reduce extends AbstractEvaluator {
         logicalExpand = F.And(logicalExpand);
       }
 
-      // if (domain == S.Reals) {
-      // IExpr interval = IntervalDataSym.toIntervalData(logicalExpand, variable, engine);
-      // if (interval.isIntervalData()) {
-      // return IntervalDataSym.toLogic((IAST) interval, variable);
-      // }
-      // return F.NIL;
-      // }
-
       if (logicalExpand.isAST(S.And)) {
         IAST andAST = (IAST) logicalExpand;
         IASTMutable andResult = andAST.copy();
@@ -1053,6 +1076,11 @@ public class Reduce extends AbstractEvaluator {
         if (logicalExpand.isTrue() || logicalExpand.isFalse()) {
           return logicalExpand;
         }
+      }
+
+      // Re-wrap bare comparators in an And AST so ReduceComparison can process them
+      if (logicalExpand.isComparatorFunction()) {
+        logicalExpand = F.And(logicalExpand);
       }
 
       ReduceComparison rc = new ReduceComparison(variable, domainMap);
@@ -1109,8 +1137,8 @@ public class Reduce extends AbstractEvaluator {
   }
 
   /**
-   * Test whether a reduced solution set covers the whole domain (i.e. the quantified condition holds
-   * for every value of the bound variables).
+   * Test whether a reduced solution set covers the whole domain (i.e. the quantified condition
+   * holds for every value of the bound variables).
    */
   private static boolean isFullDomain(IExpr reduced, IAST vars) {
     if (reduced.isTrue()) {
@@ -1360,7 +1388,9 @@ public class Reduce extends AbstractEvaluator {
     return result.isAST1() ? result.arg1() : result;
   }
 
-  /** Smallest integer satisfying the lower bound, or {@link Integer#MIN_VALUE} if not determined. */
+  /**
+   * Smallest integer satisfying the lower bound, or {@link Integer#MIN_VALUE} if not determined.
+   */
   private static int ceilBound(IExpr value, boolean strict, EvalEngine engine) {
     if (!value.isReal()) {
       return Integer.MIN_VALUE;
@@ -1413,7 +1443,8 @@ public class Reduce extends AbstractEvaluator {
 
   /**
    * Solve a linear two-variable Diophantine equation <code>d*x + e*y + f == 0</code> and return the
-   * parametric solution family <code>Element(C[1], Integers) &amp;&amp; x == x0 + (e/g)*C[1] &amp;&amp;
+   * parametric solution family
+   * <code>Element(C[1], Integers) &amp;&amp; x == x0 + (e/g)*C[1] &amp;&amp;
    * y == y0 - (d/g)*C[1]</code>.
    *
    * @return the parametric solution, {@link S#False} if there is no integer solution, or
@@ -1459,8 +1490,8 @@ public class Reduce extends AbstractEvaluator {
   /**
    * Extended Euclidean algorithm.
    *
-   * @return an array <code>{r, s, t}</code> with <code>a*s + b*t == r</code> where <code>r</code> is
-   *         the (signed) gcd produced by the iteration
+   * @return an array <code>{r, s, t}</code> with <code>a*s + b*t == r</code> where <code>r</code>
+   *         is the (signed) gcd produced by the iteration
    */
   private static BigInteger[] extendedEuclid(BigInteger a, BigInteger b) {
     BigInteger prevR = a;
@@ -1509,7 +1540,7 @@ public class Reduce extends AbstractEvaluator {
           break;
         }
         IExpr value = rule.second();
-        if (domain == S.Primes
+        if (domain == S.Primes //
             && !(value.isInteger() && ((IInteger) value).isProbablePrime())) {
           ok = false;
           break;
@@ -1528,8 +1559,8 @@ public class Reduce extends AbstractEvaluator {
 
   /**
    * Reduce a multivariate equation system over {@link S#Reals}/{@link S#Complexes} by successively
-   * eliminating variables. Only fully determined equation systems are handled; anything else returns
-   * {@link F#NIL} so the caller can leave the expression unevaluated.
+   * eliminating variables. Only fully determined equation systems are handled; anything else
+   * returns {@link F#NIL} so the caller can leave the expression unevaluated.
    */
   private static IExpr reduceMultivariate(IExpr arg1, IAST vars, EvalEngine engine) {
     IAST equationList;
@@ -1710,21 +1741,38 @@ public class Reduce extends AbstractEvaluator {
     return F.NIL;
   }
 
-  /** Remove syntactically duplicate arguments from an {@link S#Or} expression. */
-  private static IExpr dedupOr(IExpr expr) {
-    if (expr.isOr()) {
-      IAST or = (IAST) expr;
-      IASTAppendable result = F.OrAlloc(or.argSize());
-      boolean evaled = false;
-      for (int i = 1; i < or.size(); i++) {
-        if (result.contains(or.get(i))) {
-          evaled = true;
-          continue;
+  /**
+   * Expands chained comparator functions (e.g., Less(a, b, c)) and Inequality ASTs into binary And
+   * expressions (e.g., And(Less(a, b), Less(b, c))) so they can be processed as AST2 elements by
+   * ReduceComparison.
+   */
+  private static IExpr expandComparators(IExpr expr) {
+    if (expr.isAST()) {
+      IAST ast = (IAST) expr;
+
+      // Handle chained comparators like Less(0, x, 2)
+      if (ast.isComparatorFunction() && ast.argSize() > 2) {
+        IASTAppendable andAST = F.AndAlloc(ast.argSize());
+        for (int i = 1; i < ast.size() - 1; i++) {
+          andAST.append(F.binaryAST2(ast.head(), ast.get(i), ast.get(i + 1)));
         }
-        result.append(or.get(i));
+        return andAST;
       }
-      if (evaled) {
-        return result.isAST1() ? result.arg1() : result;
+      // Handle mixed inequalities like Inequality(0, Less, x, LessEqual, 2)
+      else if (ast.isAST(S.Inequality)) {
+        IASTAppendable andAST = F.AndAlloc(ast.argSize() / 2);
+        for (int i = 1; i < ast.size() - 2; i += 2) {
+          andAST.append(F.binaryAST2(ast.get(i + 1), ast.get(i), ast.get(i + 2)));
+        }
+        return andAST;
+      }
+      // Recursively process logical wrappers
+      else if (ast.isFunctionID(ID.And, ID.Or, ID.Not, ID.List)) {
+        IASTAppendable result = F.ast(ast.head(), ast.argSize());
+        for (int i = 1; i < ast.size(); i++) {
+          result.append(expandComparators(ast.get(i)));
+        }
+        return result;
       }
     }
     return expr;
@@ -1758,8 +1806,8 @@ public class Reduce extends AbstractEvaluator {
    * {@link S#Less},{@link S#LessEqual},{@link S#Greater},{@link S#GreaterEqual} to {@link S#Reals}
    * if the variable is currently set to {@link S#Complexes}. The logical expressions with head
    * {@link S#And}, {@link S#Or}, {@link S#Not} call this method recursively for their arguments.
+   * * @param expr
    * 
-   * @param expr
    * @param domainMap
    */
   private static void setInequalityDomainsRecursive(IExpr expr, Map<IExpr, IExpr> domainMap) {

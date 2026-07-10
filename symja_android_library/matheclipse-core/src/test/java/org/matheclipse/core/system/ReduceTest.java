@@ -235,9 +235,9 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     check("{a = x > 1 && x < 5, b = x >= 5 && x < 8}", //
         "{x>1&&x<5,x>=5&&x<8}");
     check("Reduce(a||b)", //
-        "x>1&&x<8"); 
+        "x>1&&x<8");
   }
-  
+
   @Test
   public void testPeriodicFunctions() {
     check("Reduce(Sin(a*x)+b==0, x)", //
@@ -246,4 +246,26 @@ public class ReduceTest extends ExprEvaluatorTestCase {
     check("Reduce(Tan(a*x)+b==0, x)", //
         "(a==0&&b==0)||(C(1)∈Integers&&a!=0&&x==(-ArcTan(b)+Pi*C(1))/a)");
   }
+
+  @Test
+  public void testReduceIssue1413() {
+    // Implement Reduce for inequality
+    check("Reduce(3*x^2 - 3 < 0, x)", //
+        "x>-1&&x<1");
+    check("Reduce(3*x^4 - 3 < 0, x)", //
+        "x>-1&&x<1");
+    check("f := 2*(x - 1) < x + 3;", //
+        "");
+    check("Reduce(f,x)", //
+        "x<5");
+    check("Reduce(0 < x < 2&& 1 < x < 4, x)", //
+        "x>1&&x<2");
+    check("Reduce({0 < x < 2, 1 < x < 4}, x)", //
+        "x>1&&x<2");
+    // TODO
+    check("Reduce(x^3-2*x+1<0,x)", //
+        "-2*x+x^3<-1");
+  }
+
+
 }
