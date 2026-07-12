@@ -15,28 +15,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
 
-/**
- * CellularAutomaton function evaluation.
- *
- * <pre>
- * CellularAutomaton(rule, init, t)
- * </pre>
- * 
- * generates a list representing the evolution of the cellular automaton with the specified rule
- * from initial condition init for t steps.
- *
- * <pre>
- * CellularAutomaton(rule, init)
- * </pre>
- * 
- * gives the result of evolving init for one step.
- *
- * <pre>
- * CellularAutomaton(rule)
- * </pre>
- * 
- * is an operator form of CellularAutomaton that represents one step of evolution.
- */
 public class CellularAutomaton extends AbstractFunctionEvaluator {
 
   @Override
@@ -151,6 +129,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
           int s = 1;
           boolean isTotalistic = false;
           boolean is2D = false;
+          int[][] explicitWeights = null;
 
           if (rule.isInteger()) {
             baseRule = (IInteger) rule;
@@ -159,24 +138,7 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
             int rSize = ruleList.argSize();
             if (rSize >= 1 && ruleList.arg1().isInteger()) {
               boolean validRule = true;
-              if (rSize >= 2) {
-                IExpr kSpec = ruleList.arg2();
-                if (kSpec.isInteger()) {
-                  k = kSpec.toIntDefault(2);
-                } else if (kSpec.isList() && ((IAST) kSpec).argSize() == 2) {
-                  IAST kList = (IAST) kSpec;
-                  // Totalistic rule check: {k, 1}
-                  if (kList.arg1().isInteger() && kList.arg2().isInteger()
-                      && kList.arg2().toIntDefault(0) == 1) {
-                    k = kList.arg1().toIntDefault(2);
-                    isTotalistic = true;
-                  } else {
-                    validRule = false;
-                  }
-                } else {
-                  validRule = false;
-                }
-              }
+
               if (rSize >= 3) {
                 IExpr rspec = ruleList.arg3();
                 if (rspec.isInteger()) {
@@ -197,7 +159,107 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
                   validRule = false;
                 }
               }
-              if (rSize >= 4 && ruleList.arg4().isInteger()) {
+
+              if (validRule && rSize >= 2) {
+                IExpr kSpec = ruleList.arg2();
+                if (kSpec.isInteger()) {
+                  k = kSpec.toIntDefault(2);
+                } else if (kSpec.isList() && ((IAST) kSpec).argSize() == 2) {
+                  IAST kList = (IAST) kSpec;
+                  if (kList.arg1().isInteger()) {
+                    k = kList.arg1().toIntDefault(2);
+                    IExpr wspec = kList.arg2();
+
+                    if (wspec.isInteger()) {
+                      int w = wspec.toIntDefault(-1);
+                      if (w == 1) {
+                        isTotalistic = true;
+                      } else if (w >= 0) {
+                        if (is2D) {
+                          explicitWeights = new int[2 * rY + 1][2 * rX + 1];
+                          for (int i = 0; i < 2 * rY + 1; i++) {
+                            for (int j = 0; j < 2 * rX + 1; j++) {
+                              explicitWeights[i][j] = w;
+                            }
+                          }
+                        } else {
+                          explicitWeights = new int[1][2 * r + 1];
+                          for (int j = 0; j < 2 * r + 1; j++) {
+                            explicitWeights[0][j] = w;
+                          }
+                        }
+                      } else {
+                        validRule = false;
+                      }
+                    } else if (wspec.isList()) {
+                      IAST wList = (IAST) wspec;
+                      if (is2D) {
+                        boolean validWeights = wList.argSize() == 2 * rY + 1;
+                        if (validWeights) {
+                          for (int i = 1; i <= wList.argSize(); i++) {
+                            IExpr rowE = wList.get(i);
+                            if (!rowE.isList() || ((IAST) rowE).argSize() != 2 * rX + 1) {
+                              validWeights = false;
+                              break;
+                            } else {
+                              IAST rowAST = (IAST) rowE;
+                              for (int j = 1; j <= rowAST.argSize(); j++) {
+                                IExpr we = rowAST.get(j);
+                                if (!we.isInteger() || we.toIntDefault(-1) < 0) {
+                                  validWeights = false;
+                                  break;
+                                }
+                              }
+                            }
+                            if (!validWeights)
+                              break;
+                          }
+                        }
+                        if (!validWeights) {
+                          return Errors.printMessage(S.CellularAutomaton, "wtspec",
+                              F.List(F.List(F.C2, F.C2), ruleList, F.C1,
+                                  F.List(F.ZZ(2 * rY + 1), F.ZZ(2 * rX + 1))));
+                        }
+                        explicitWeights = new int[2 * rY + 1][2 * rX + 1];
+                        for (int i = 0; i < 2 * rY + 1; i++) {
+                          IAST rowAST = (IAST) wList.get(i + 1);
+                          for (int j = 0; j < 2 * rX + 1; j++) {
+                            explicitWeights[i][j] = rowAST.get(j + 1).toIntDefault(0);
+                          }
+                        }
+                      } else {
+                        // 1D check
+                        boolean validWeights = wList.argSize() == 2 * r + 1;
+                        if (validWeights) {
+                          for (int j = 1; j <= wList.argSize(); j++) {
+                            IExpr we = wList.get(j);
+                            if (!we.isInteger() || we.toIntDefault(-1) < 0) {
+                              validWeights = false;
+                              break;
+                            }
+                          }
+                        }
+                        if (!validWeights) {
+                          return Errors.printMessage(S.CellularAutomaton, "wtspec",
+                              F.List(F.List(F.C2, F.C2), ruleList, F.C1, F.List(F.ZZ(2 * r + 1))));
+                        }
+                        explicitWeights = new int[1][2 * r + 1];
+                        for (int j = 0; j < 2 * r + 1; j++) {
+                          explicitWeights[0][j] = wList.get(j + 1).toIntDefault(0);
+                        }
+                      }
+                    } else {
+                      validRule = false;
+                    }
+                  } else {
+                    validRule = false;
+                  }
+                } else {
+                  validRule = false;
+                }
+              }
+
+              if (validRule && rSize >= 4 && ruleList.arg4().isInteger()) {
                 s = ruleList.arg4().toIntDefault(1);
               }
               if (validRule) {
@@ -216,11 +278,11 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
               return Errors.printMessage(S.CellularAutomaton, "rneg", F.List(baseRule));
             }
             if (is2D) {
-              result = evaluateInteger2D(baseRule, k, rY, rX, s, isTotalistic, (IAST) init,
-                  stepsToGenerate, tStart, tEnd, dt, returnSingleStep, isOperatorForm);
+              result = evaluateInteger2D(baseRule, k, rY, rX, s, isTotalistic, explicitWeights,
+                  (IAST) init, stepsToGenerate, tStart, tEnd, dt, returnSingleStep, isOperatorForm);
             } else {
-              result = evaluateInteger1D(baseRule, k, r, s, isTotalistic, (IAST) init,
-                  stepsToGenerate, tStart, tEnd, dt, returnSingleStep, isOperatorForm);
+              result = evaluateInteger1D(baseRule, k, r, s, isTotalistic, explicitWeights,
+                  (IAST) init, stepsToGenerate, tStart, tEnd, dt, returnSingleStep, isOperatorForm);
             }
           }
 
@@ -258,21 +320,27 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
    * and flat cyclic lists and superimposed states with infinite backgrounds {{...}, bg}.
    */
   private IExpr evaluateInteger1D(IInteger ruleNum, int k, int r, int s, boolean isTotalistic,
-      IAST init, int steps, int tStart, int tEnd, int dt, boolean returnSingleStep,
-      boolean isOperatorForm) {
+      int[][] explicitWeights, IAST init, int steps, int tStart, int tEnd, int dt,
+      boolean returnSingleStep, boolean isOperatorForm) {
     if (k < 2 || r < 0 || s < 1)
       return F.NIL;
 
     long numTransitions;
-    if (isTotalistic) {
-      numTransitions = s * (2 * r + 1) * (k - 1) + 1;
+    if (explicitWeights != null) {
+      int weightTotal = 0;
+      for (int j = 0; j < 2 * r + 1; j++) {
+        weightTotal += explicitWeights[0][j];
+      }
+      numTransitions = (long) weightTotal * (k - 1) * s + 1;
+    } else if (isTotalistic) {
+      numTransitions = (long) s * (2 * r + 1) * (k - 1) + 1;
     } else {
       double numTransDouble = Math.pow(k, s * (2 * r + 1));
       if (numTransDouble > Config.MAX_AST_SIZE) {
         ASTElementLimitExceeded.throwIt((long) numTransDouble);
         return F.NIL;
       }
-      numTransitions = (int) numTransDouble;
+      numTransitions = (long) numTransDouble;
     }
 
     if (numTransitions > Config.MAX_AST_SIZE) {
@@ -418,7 +486,9 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
                 cellVal = state[idx];
               }
             }
-            if (isTotalistic) {
+            if (explicitWeights != null) {
+              v += explicitWeights[0][di + r] * cellVal;
+            } else if (isTotalistic) {
               v += cellVal;
             } else {
               v = v * k + cellVal;
@@ -433,10 +503,13 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
         int v = 0;
         for (int step = s; step >= 1; step--) {
           for (int di = -r; di <= r; di++) {
-            if (isTotalistic) {
-              v += bgHistory.get(bgHistory.size() - step);
+            int bgVal = bgHistory.get(bgHistory.size() - step);
+            if (explicitWeights != null) {
+              v += explicitWeights[0][di + r] * bgVal;
+            } else if (isTotalistic) {
+              v += bgVal;
             } else {
-              v = v * k + bgHistory.get(bgHistory.size() - step);
+              v = v * k + bgVal;
             }
           }
         }
@@ -507,14 +580,22 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
    * Evaluates k-color, range-r, order-s generalized integer cellular automata for 2D grids.
    */
   private IExpr evaluateInteger2D(IInteger ruleNum, int k, int rY, int rX, int s,
-      boolean isTotalistic, IAST init, int steps, int tStart, int tEnd, int dt,
-      boolean returnSingleStep, boolean isOperatorForm) {
+      boolean isTotalistic, int[][] explicitWeights, IAST init, int steps, int tStart, int tEnd,
+      int dt, boolean returnSingleStep, boolean isOperatorForm) {
     if (k < 2 || rY < 0 || rX < 0 || s < 1)
       return F.NIL;
 
     long numTransitions;
-    if (isTotalistic) {
-      numTransitions = s * ((2 * rY + 1) * (2 * rX + 1)) * (k - 1) + 1;
+    if (explicitWeights != null) {
+      int weightTotal = 0;
+      for (int i = 0; i < 2 * rY + 1; i++) {
+        for (int j = 0; j < 2 * rX + 1; j++) {
+          weightTotal += explicitWeights[i][j];
+        }
+      }
+      numTransitions = (long) weightTotal * (k - 1) * s + 1;
+    } else if (isTotalistic) {
+      numTransitions = (long) s * ((2 * rY + 1) * (2 * rX + 1)) * (k - 1) + 1;
     } else {
       double numTransDouble = Math.pow(k, s * (2 * rY + 1) * (2 * rX + 1));
       if (numTransDouble > Config.MAX_AST_SIZE) {
@@ -667,7 +748,9 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
                     cellVal = state[ny * gridX + nx];
                   }
                 }
-                if (isTotalistic) {
+                if (explicitWeights != null) {
+                  v += explicitWeights[dy + rY][dx + rX] * cellVal;
+                } else if (isTotalistic) {
                   v += cellVal;
                 } else {
                   v = v * k + cellVal;
@@ -686,7 +769,9 @@ public class CellularAutomaton extends AbstractFunctionEvaluator {
           int oldBg = bgHistory.get(bgHistory.size() - stepIdx);
           for (int dy = -rY; dy <= rY; dy++) {
             for (int dx = -rX; dx <= rX; dx++) {
-              if (isTotalistic) {
+              if (explicitWeights != null) {
+                v += explicitWeights[dy + rY][dx + rX] * oldBg;
+              } else if (isTotalistic) {
                 v += oldBg;
               } else {
                 v = v * k + oldBg;
