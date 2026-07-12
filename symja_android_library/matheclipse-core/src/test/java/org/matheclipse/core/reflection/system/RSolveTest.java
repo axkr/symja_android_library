@@ -400,4 +400,38 @@ public class RSolveTest {
     check("AsymptoticRSolveValue(a(n) == a(n - 1) + 1, a, {n, Infinity, 3})",
         "AsymptoticRSolveValue(a(n)==1+a(-1+n),a,{n,Infinity,3})");
   }
+
+  @Test
+  public void testRSolveBinetIntegration() {
+    // 1. Fibonacci recurrence: y(n) = y(n-1) + y(n-2)
+    // Closed form: (phi^n - psi^n) / sqrt(5)
+    // This tests if the binet utility correctly identifies the Fibonacci sequence
+    // when expressed as a recurrence.
+    check("RSolve({y(n) == y(n-1) + y(n-2), y(0) == 0, y(1) == 1}, y(n), n)", //
+        "{{y(n)->Fibonacci(n)}}");
+
+    // 2. Generic Order-2 Recurrence (The "Binet" test case)
+    // y(n) = 3*y(n-1) - 1*y(n-2)
+    // This triggers the generalizedBinet path in solveLinearConstantCoefficients
+    // instead of solving the quadratic roots.
+    check("RSolve({y(n) == 3*y(n-1) - y(n-2), y(0) == 0, y(1) == 1}, y(n), n)", //
+        "{{y(n)->-(1/2*(3-Sqrt(5)))^n/Sqrt(5)+(1/2*(3+Sqrt(5)))^n/Sqrt(5)}}");
+
+    // 3. Lucas sequence recurrence (Order-2)
+    // y(n) = y(n-1) + y(n-2), y(0)=2, y(1)=1
+    // This tests if the solver correctly handles non-standard initial conditions
+    // and merges them into the unified formula.
+    check("RSolve({y(n) == y(n-1) + y(n-2), y(0) == 2, y(1) == 1}, y(n), n)", //
+        "{{y(n)->LucasL(n)}}");
+  }
+
+  @Test
+  public void testRSolveHigherOrderFallbacks() {
+    // TODO output a better symbolic solution
+
+    // 4. Test that order-3 recurrences still fall back to the generic root solver
+    // and do not crash the Binet logic (Ensures safety of the Order-2 intercept).
+    check("RSolve({y(n) == y(n-1) + y(n-2) + y(n-3), y(0)==1, y(1)==1, y(2)==2}, y(n), n) // N", //
+        "{{y(n)->(0.19079+I*0.0187006)*(-0.419643+I*(-0.606291))^n+(0.19079+I*(-0.0187006))*(-0.419643+I*0.606291)^n+(0.61842)*1.83929^n}}");
+  }
 }

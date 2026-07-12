@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
@@ -284,6 +285,24 @@ public class RSolve extends AbstractFunctionEvaluator {
     return mapped.isPresent() ? mapped : root;
   }
 
+  /**
+   * Applies the boundary conditions to a candidate solution, acting as the single
+   * general-solution-first gateway. When there are no boundary conditions the candidate is returned
+   * unchanged; otherwise {@link #applyUnaryBCs} solves the arbitrary constants (or validates a
+   * constant-free candidate) and returns {@link F#NIL} if the conditions cannot be satisfied, so the
+   * caller can fall back to the next solver.
+   */
+  private IExpr acceptCandidate(IExpr candidate, IAST uFunction1Arg, IExpr nVar,
+      IAST boundaryConditions, boolean hasBCs, EvalEngine engine) {
+    if (candidate.isNIL()) {
+      return F.NIL;
+    }
+    if (!hasBCs) {
+      return candidate;
+    }
+    return applyUnaryBCs(candidate, uFunction1Arg, nVar, boundaryConditions, engine);
+  }
+
   private IExpr applyUnaryBCs(IExpr root, IAST uFunction1Arg, IExpr nVar, IAST boundaryConditions,
       EvalEngine engine) {
     if (root.isNIL() || boundaryConditions.argSize() == 0)
@@ -458,28 +477,38 @@ public class RSolve extends AbstractFunctionEvaluator {
       }
 
       if (isConstant && f_n.isZero()) {
-        root = solveLinearConstantCoefficients(coeffs, f_n, nVar, engine, startC);
+        if (hasBCs) {
+          // Try the explicit Binet closed form first; accept it only if it satisfies the boundary
+          // conditions (it is anchored at y(0)=0, y(1)=1).
+          IExpr binetRoot = solveConstantCoefficientsBinet(coeffs, nVar, engine);
+          root = acceptCandidate(binetRoot, uFunction1Arg, nVar, boundaryConditions, true, engine);
+          if (root.isNIL()) {
+            // Fall back to the general solution and solve the arbitrary constants from the BCs.
+            IExpr general = solveConstantCoefficientsGeneric(coeffs, nVar, engine, startC);
+            root = acceptCandidate(general, uFunction1Arg, nVar, boundaryConditions, true, engine);
+          }
+        } else {
+          // No boundary conditions: return the general solution with arbitrary constants C(k).
+          root = solveConstantCoefficientsGeneric(coeffs, nVar, engine, startC);
+        }
       }
 
       if (root.isNIL() && coeffs.size() == 2) {
-        root = solveFirstOrderLinear(coeffs, f_n, nVar, engine, startC);
+        IExpr candidate = solveFirstOrderLinear(coeffs, f_n, nVar, engine, startC);
+        root = acceptCandidate(candidate, uFunction1Arg, nVar, boundaryConditions, hasBCs, engine);
       }
 
       if (root.isNIL() && coeffs.size() == 3) {
-        root = solveReductionOfOrderDiscrete(coeffs, f_n, nVar, engine, startC);
+        IExpr candidate = solveReductionOfOrderDiscrete(coeffs, f_n, nVar, engine, startC);
+        root = acceptCandidate(candidate, uFunction1Arg, nVar, boundaryConditions, hasBCs, engine);
       }
 
       if (root.isPresent()) {
-        if (hasBCs) {
-          root = applyUnaryBCs(root, uFunction1Arg, nVar, boundaryConditions, engine);
+        root = applyFibonacciLucas(root, nVar, engine);
+        if (!hasBCs) {
+          root = absorbArbitraryConstants(root, nVar, engine);
         }
-        if (root.isPresent()) {
-          root = applyFibonacciLucas(root, nVar, engine);
-          if (!hasBCs) {
-            root = absorbArbitraryConstants(root, nVar, engine);
-          }
-          return formatResult(arg2, nVar, root);
-        }
+        return formatResult(arg2, nVar, root);
       }
 
       if (!hasBCs) {
@@ -841,9 +870,49 @@ public class RSolve extends AbstractFunctionEvaluator {
     }
   }
 
-  private IExpr solveLinearConstantCoefficients(Map<Integer, IExpr> coeffs, IExpr f_n, IExpr nVar,
+  /**
+   * Order-2 constant-coefficient closed form via the shared generalized Binet formula. Returns the
+   * specific solution anchored at {@code y(0)=0, y(1)=1} (no arbitrary constants), or {@link F#NIL}
+   * if the recurrence is not a homogeneous order-2 constant-coefficient equation.
+   */
+  private IExpr solveConstantCoefficientsBinet(Map<Integer, IExpr> coeffs, IExpr nVar,
+      EvalEngine engine) {
+    if (coeffs.size() != 3) {
+      return F.NIL;
+    }
+    int minShift = Collections.min(coeffs.keySet());
+    int maxShift = Collections.max(coeffs.keySet());
+    if (maxShift - minShift != 2) {
+      return F.NIL;
+    }
+
+    // Equation: c0*y(n) + c1*y(n+1) + c2*y(n+2) = 0
+    // Normalized: y(n+2) = -c1/c2 * y(n+1) - c0/c2 * y(n)
+    IExpr c0 = coeffs.get(minShift);
+    IExpr c1 = coeffs.get(minShift + 1);
+    IExpr c2 = coeffs.get(maxShift);
+
+    IExpr a = engine.evaluate(F.Negate(F.Divide(c1, c2)));
+    // generalizedBinet uses the convention y(n+2) = a*y(n+1) - b*y(n) (delta = a^2 - 4b),
+    // so pass b = c0/c2 (not negated) to match the normalized recurrence.
+    IExpr b = engine.evaluate(F.Divide(c0, c2));
+
+    // Use the shared Binet formula. Bypass the canonical Fibonacci/ChebyshevU identities here
+    // (useCanonicalForms=false) so the explicit Binet form is produced; RSolve canonicalizes
+    // special sequences (Fibonacci/LucasL) in a later applyFibonacciLucas pass.
+    return AlgebraUtil.generalizedBinet(a, b, nVar, engine, false);
+  }
+
+  /**
+   * General solution of a homogeneous linear constant-coefficient recurrence via the characteristic
+   * polynomial roots. Returns a combination of {@code C(startC + i) * n^m * root^n} terms carrying
+   * arbitrary constants.
+   */
+  private IExpr solveConstantCoefficientsGeneric(Map<Integer, IExpr> coeffs, IExpr nVar,
       EvalEngine engine, int startC) {
     int minShift = Collections.min(coeffs.keySet());
+
+    // Generic Solver Path ---
     IExpr xDummy = F.Dummy("x");
     IASTAppendable poly = F.PlusAlloc();
 
@@ -854,8 +923,9 @@ public class RSolve extends AbstractFunctionEvaluator {
     }
 
     IExpr rootsList = engine.evaluate(F.Solve(F.Equal(poly, F.C0), F.List(xDummy)));
-    if (!rootsList.isList())
+    if (!rootsList.isList()) {
       return F.NIL;
+    }
 
     IAST roots = (IAST) rootsList;
     Map<IExpr, Integer> rootMults = new HashMap<>();

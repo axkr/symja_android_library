@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -52,8 +53,8 @@ public class FindGeneratingFunction extends AbstractFunctionEvaluator {
         IExpr approximant =
             engine.evaluate(F.PadeApproximant(polynomial, F.List(x, F.C0, F.List(m, k))));
         if (approximant.isNumericFunction(x)) {
-          if (crossCheckPade2SeriesCoefficient(approximant, coefficientsList, x, MAX_SERIES_EQUAL_TERMS,
-              engine)) {
+          if (crossCheckPade2SeriesCoefficient(approximant, coefficientsList, x,
+              MAX_SERIES_EQUAL_TERMS, engine)) {
             return approximant;
           }
         }
@@ -70,21 +71,20 @@ public class FindGeneratingFunction extends AbstractFunctionEvaluator {
   /**
    * Cross-checks if the approximant series coefficients matching the given list of coefficients.
    * 
-   * @param approximant
+   * @param approximantNumericFunction
    * @param sequenceCoefficients
    * @param x
    * @param maxNumbers the maximum number of series coefficients to check
    * @param engine
    * @return
    */
-  private static boolean crossCheckPade2SeriesCoefficient(IExpr approximant,
+  private static boolean crossCheckPade2SeriesCoefficient(final IExpr approximantNumericFunction,
       IAST sequenceCoefficients, IExpr x, int maxNumbers, EvalEngine engine) {
-    // cross check if the approximant is a numeric function of x
     int length = Math.min(sequenceCoefficients.size(), maxNumbers);
     for (int i = 1; i < length; i++) {
       IExpr sequenceCoefficient = sequenceCoefficients.get(i);
       IExpr seriesCoefficient =
-          engine.evaluate(F.SeriesCoefficient(approximant, F.List(x, F.C0, F.ZZ(i - 1))));
+          S.SeriesCoefficient.funEval(engine, approximantNumericFunction, F.List(x, F.C0, F.ZZ(i - 1)));
       if (!sequenceCoefficient.equals(seriesCoefficient)) {
         return false;
       }

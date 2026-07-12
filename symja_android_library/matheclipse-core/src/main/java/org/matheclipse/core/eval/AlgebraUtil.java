@@ -2956,4 +2956,90 @@ public class AlgebraUtil {
     // private constructor to avoid instantiation
   }
 
+  /**
+   * Generates the optimal closed-form expression for the linear recurrence y_n = a * y_{n-1} - b *
+   * y_{n-2} with initial conditions y_0 = 0, y_1 = 1. (Note: For generating functions 1/(1 - ax +
+   * bx^2), pass n = n + 1).
+   *
+   * <p>
+   * By default the canonical sequence identities (Fibonacci, ChebyshevU) are used when they match.
+   */
+  public static IExpr generalizedBinet(IExpr a, IExpr b, IExpr n, EvalEngine engine) {
+    return generalizedBinet(a, b, n, engine, true);
+  }
+
+  /**
+   * Generates the optimal closed-form expression for the linear recurrence y_n = a * y_{n-1} - b *
+   * y_{n-2} with initial conditions y_0 = 0, y_1 = 1. (Note: For generating functions 1/(1 - ax +
+   * bx^2), pass n = n + 1).
+   *
+   * @param useCanonicalForms if {@code true} the canonical sequence identities (Fibonacci,
+   *        ChebyshevU) are returned when they match; if {@code false} the explicit universal Binet
+   *        formula is always returned (used by {@code RSolve}, which canonicalizes special sequences
+   *        in a later pass).
+   */
+  public static IExpr generalizedBinet(IExpr a, IExpr b, IExpr n, EvalEngine engine,
+      boolean useCanonicalForms) {
+    if (a == null || b == null || n == null) {
+      return F.NIL;
+    }
+
+    // 1. Canonical Sequence Identities
+    if (useCanonicalForms) {
+      if (b.equals(F.CN1) && a.isOne()) {
+        return F.Fibonacci(n);
+      }
+      if (b.isOne()) {
+        IExpr t = engine.evaluate(F.Times(a, F.C1D2));
+        return F.ChebyshevU(F.Subtract(n, F.C1), t);
+      }
+    }
+
+    // 2. Universal Binet Formula for Generic Roots
+    IExpr delta = engine.evaluate(F.Sqrt(F.Subtract(F.Sqr(a), F.Times(F.C4, b))));
+  
+    // r1 = a + delta, r2 = a - delta
+    IExpr r1 = engine.evaluate(F.Plus(a, delta));
+    IExpr r2 = engine.evaluate(F.Subtract(a, delta));
+  
+    // (r1^n - r2^n) / (2^n * delta)
+    IExpr term1 = engine.evaluate(F.Power(r1, n));
+    IExpr term2 = engine.evaluate(F.Power(r2, n));
+  
+    IExpr numBinet = engine.evaluate(F.Subtract(term1, term2));
+    IExpr denBinet = engine.evaluate(F.Times(F.Power(F.C2, n), delta));
+  
+    return engine.evaluate(F.Together(F.Divide(numBinet, denBinet)));
+  }
+
+  /**
+   * Builds a holonomic-sequence {@code DifferenceRoot} object with the recurrence and initial
+   * conditions embedded as equations:
+   *
+   * <pre>
+   * DifferenceRoot(Function({y, k}, {recurrence, y(0) == v0, y(1) == v1, ...}))[n]
+   * </pre>
+   *
+   * <p>
+   * This is the shared representation used by both {@code RSolve} and {@code SeriesCoefficient} so
+   * that both functions emit identical objects for non-closed-form linear recurrences.
+   *
+   * @param recurrence the recurrence equation expressed in terms of {@code y} and {@code k}
+   * @param y the sequence function symbol used in {@code recurrence}
+   * @param k the index symbol used in {@code recurrence}
+   * @param initialConditions the values {@code v0, v1, ...} for {@code y(0), y(1), ...}
+   * @param n the index at which the sequence is evaluated
+   * @return the {@code DifferenceRoot(...)[n]} expression
+   */
+  public static IExpr differenceRoot(IExpr recurrence, ISymbol y, ISymbol k,
+      List<IExpr> initialConditions, IExpr n) {
+    IASTAppendable equations = F.ListAlloc(initialConditions.size() + 1);
+    equations.append(recurrence);
+    for (int i = 0; i < initialConditions.size(); i++) {
+      equations.append(F.Equal(F.unaryAST1(y, F.ZZ(i)), initialConditions.get(i)));
+    }
+    IAST diffRootFunc = F.Function(F.List(y, k), equations);
+    return F.unaryAST1(F.DifferenceRoot(diffRootFunc), n);
+  }
+
 }

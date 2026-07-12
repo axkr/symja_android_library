@@ -1679,6 +1679,9 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSeriesIssue1414() {
+    check("SeriesCoefficient(Sin(x)/x, {x, Pi/2, 2})", //
+        "(8*Pi-Pi^3)/Pi^4");
+
     check("SeriesCoefficient(Sin(x)/x, {x, 0, n})", //
         "Piecewise({{(I*1/2*(-1+(-1)^(1+n))*I^(1+n))/(1+n)!,n>=-1}},0)");
     check("SeriesCoefficient(Sinc(x), {x, 0, n})", //
@@ -1688,10 +1691,62 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     check("SeriesCoefficient(Sinc(x), {x, Pi/2, n})", //
         "Piecewise({{(I^n*HypergeometricPFQ({1,-n},{},(-I*2)/Pi)-I^n*HypergeometricPFQ({1,-n},{},(\n"
             + "I*2)/Pi))/(Pi*n!),n>=0}},0)");
-    // check("SeriesCoefficient(Sin(x)/x, {x, Pi/2, n})", //
-    // "");
-
   }
 
+  @Test
+  public void testHolonomicSeriesCoefficient() {
+    // Basic Rational Function: 1/(1-x) = Sum x^n
+    // Recurrence: y(n) - y(n-1) = 0, y(0)=1
+    check("SeriesCoefficient(1/(1-x), {x, 0, n})", //
+        "Piecewise({{1,n>=0}},0)");
 
+    // Geometric Series: 1/(1-2*x) = Sum 2^n * x^n
+    // Recurrence: y(n) - 2*y(n-1) = 0, y(0)=1
+    check("SeriesCoefficient(1/(1-2*x), {x, 0, n})", //
+        "Piecewise({{2^n,n>=0}},0)");
+
+    // Fibonacci-like Rational Function: x/(1-x-x^2)
+    // The coefficients of this rational function are Fibonacci numbers.
+    // Recurrence: y(n) - y(n-1) - y(n-2) = 0
+    check("SeriesCoefficient(x/(1-x-x^2), {x, 0, n})", //
+        "Piecewise({{Fibonacci(n),n>=0}},0)");
+
+    // Verification of DifferenceRoot construction for symbolic n
+    check("SeriesCoefficient(1/(1-3*x+x^2), {x, 0, n})", //
+        "Piecewise({{ChebyshevU(n,3/2),n>=0}},0)");
+
+    // ChebyshevT Identity
+    // Generating function: (1 - a*x) / (1 - 2*a*x + x^2)
+    check("SeriesCoefficient((1-a*x)/(1-2*a*x+x^2), {x, 0, n})", //
+        "Piecewise({{ChebyshevT(n,a),n>=0}},0)");
+
+    // Generic Order-2 Recurrence with arbitrary symbolic coefficients
+    // 1 / (1 - a*x + b*x^2). 'Apart' cannot split this because the roots are symbolic.
+    // This forces the engine into the DifferenceRoot fallback.
+    check("SeriesCoefficient(1/(1 - a*x + b*x^2), {x, 0, n})", //
+        "Piecewise({{(-(a-Sqrt(a^2-4*b))^(1+n)+(a+Sqrt(a^2-4*b))^(1+n))/(2^(1+n)*Sqrt(a^2-\n"
+            + "4*b)),n>=0}},0)");
+
+    // Tribonacci Sequence (Order-3 Recurrence)
+    // 1 / (1 - x - x^2 - x^3). No named identity exists for this, so it must
+    // generate an explicit order-3 DifferenceRoot.
+    check("SeriesCoefficient(1/(1-x-x^2-x^3), {x, 0, n})", //
+        "DifferenceRoot[Function({y,n},{1*y(3+n)-y(2+n)-y(1+n)-y(0+n)==0,y(0)==1,y(1)==1,y(2)==2})][n]");
+
+    // Shifted Holonomic Function (x0 != 0)
+    // Tests that the engine correctly shifts x -> (x + x0) before calculating the recurrence.
+    // 1/(1 - 2*(x+1)) -> shifted around x0=1
+    check("SeriesCoefficient(1/(1 - 2*x), {x, 1, n})", //
+        "Piecewise({{-(-2)^n,n>=0}},0)");
+  }
+
+  @Test
+  public void testHolonomicShiftedExpansion() {
+    check("SeriesCoefficient(-1/(-1+x+x^2),{x,0,1})", //
+        "1");
+    // 5. Rational Function expanded around a point x0 != 0
+    // 1/(2-x) = 1/2 * 1/(1 - x/2) = Sum (1/2)^(n+1) * x^n
+    check("SeriesCoefficient(1/(2-x), {x, 0, n})", //
+        "Piecewise({{(1/2)^(1+n),n>=0}},0)");
+  }
 }
