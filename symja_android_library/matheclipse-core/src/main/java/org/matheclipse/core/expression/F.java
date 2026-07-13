@@ -2104,6 +2104,13 @@ public class F extends S {
     return new AST3(AsymptoticSolve, a0, a1, a2);
   }
 
+  public static IAST Atom(final IExpr a) {
+    return new AST1(Atom, a);
+  }
+
+  public static IAST Bond(final IExpr a0, final IExpr a1) {
+    return new AST2(Bond, a0, a1);
+  }
 
   /**
    *
@@ -7979,6 +7986,10 @@ public class F extends S {
     return new AST2(Moment, a0, F.ZZ(r));
   }
 
+  public static IAST Molecule(final IExpr a0, final IExpr a1) {
+    return new AST2(Molecule, a0, a1);
+  }
+
   public static IAST Moment(final IExpr a0, final IExpr r) {
     return new AST2(Moment, a0, r);
   }
@@ -11858,6 +11869,10 @@ public class F extends S {
 
   public static IAST Tuples(final IExpr x, final IExpr y) {
     return new AST2(Tuples, x, y);
+  }
+
+  public static IAST TwoWayRule(final IExpr lhs, final IExpr rhs) {
+    return new AST2(TwoWayRule, lhs, rhs);
   }
 
   /**
