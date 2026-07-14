@@ -970,8 +970,8 @@ public class SimplifyUtil extends VisitorExpr {
     return F.NIL;
   }
 
-  private IExpr tryExpandTransformation(IAST ast, IExpr test) {
-    long minCounter = fComplexityFunction.apply(ast);
+  private IExpr tryExpandTransformation(IExpr original, IExpr test) {
+    long minCounter = fComplexityFunction.apply(original);
     IExpr temp;
     long count;
 
@@ -979,11 +979,11 @@ public class SimplifyUtil extends VisitorExpr {
       temp = F.evalExpand(test);
       if (temp != test) {
         IExpr simplified = temp.accept(this);
-        if (simplified.isPresent()) {
-          count = fComplexityFunction.apply(simplified);
-          if (count < minCounter) {
-            return simplified;
-          }
+        // Fallback to temp if the visitor yields NIL (e.g., for atomic integers like 1)
+        IExpr result = simplified.isPresent() ? simplified : temp;
+        count = fComplexityFunction.apply(result);
+        if (count < minCounter) {
+          return result;
         }
       }
     } catch (RuntimeException rex) {
@@ -1406,9 +1406,7 @@ public class SimplifyUtil extends VisitorExpr {
           if (n < 0) {
             powerAST = F.Power(powerAST.base(), F.ZZ(-n));
           }
-          IExpr powerSimplified = tryExpandTransformation((IAST) powerAST.base(), powerAST);
-          // IExpr evalExpand = F.evalExpand(powerAST);
-          // IExpr powerSimplified = evalExpand.accept(this);
+          IExpr powerSimplified = tryExpandTransformation(powerAST, powerAST);
           if (powerSimplified.isPresent()) {
             if (n < 0) {
               return F.Power(powerSimplified, -1);

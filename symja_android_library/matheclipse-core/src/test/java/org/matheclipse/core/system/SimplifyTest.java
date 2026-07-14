@@ -509,4 +509,10 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
   // (Sech(x/2)^2 + Sech(x/2)^2*Tanh(x/2))/(1 + 2*Tanh(x/2) + Tanh(x/2)^2)^2)", //
   // "Cosh(x)*(Cosh(x)-Sinh(x))");
   // }
+
+  @Test
+  public void testSimplifyIssue1422() {
+    check("Simplify((1*Cos(120*Degree)+1*Sin(120*Degree)*I)^3)", //
+        "1");
+  }
 }
