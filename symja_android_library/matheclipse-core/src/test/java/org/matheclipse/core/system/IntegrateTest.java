@@ -80,6 +80,14 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testNIntegrateIssue1419() {
+    check("N(Integrate(x^x, {x, 0, 1}))", //
+        "0.783431");
+    check("NIntegrate(x^x, {x, 0, 1})", //
+        "0.783431");
+  }
+
+  @Test
   public void testIntegratePower() {
     check("Integrate((x+1)^3 ,x)", //
         "(1+x)^4/4");

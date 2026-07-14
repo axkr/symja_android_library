@@ -281,7 +281,6 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
         if (precisionGoal <= 0) {
           // Inappropriate parameter: `1`.
           return Errors.printMessage(ast.topHead(), "par", F.List(S.PrecisionGoal), engine);
-          // precisionGoal = 16;
         }
       }
 
@@ -299,7 +298,8 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
             method = "LegendreGauss";
           } else if (!function.isFree(a -> a == S.Abs || a == S.RealAbs, true)) {
             method = "LegendreGauss";
-          } else if (!function.isFree(a -> a.isPower() && a.exponent().isFree(x), false)) {
+          } else if (!function.isFree(a -> a.isPower(), false)) {
+            // Broadened heuristic: ensuring x^x and similar powers default to GaussKronrod
             method = "GaussKronrod";
           }
         }
@@ -318,6 +318,19 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
             result = Precision.round(result, precisionGoal);
             return Num.valueOf(result);
           } catch (MathIllegalArgumentException | MathIllegalStateException miae) {
+
+            // Retry with GaussKronrod for integrals with endpoint singularities
+            if (option[0].isAutomatic() && !method.equals("GaussKronrod")) {
+              try {
+                double result = integrateDouble(function, x, min, max, "GaussKronrod", maxPoints,
+                    maxIterations, list.rest(), engine);
+                result = Precision.round(result, precisionGoal);
+                return Num.valueOf(result);
+              } catch (MathIllegalArgumentException | MathIllegalStateException miae2) {
+                // Ignore and proceed to symbolic fallback
+              }
+            }
+
             // CAS "Symbolic Processing" fallback for oscillatory/infinite integrals
             // when maximal count is exceeded.
             IExpr symbolic = engine.evaluate(F.Integrate(function, list));
@@ -365,7 +378,6 @@ public class NIntegrate extends AbstractFunctionOptionEvaluator {
     }
     return F.NIL;
   }
-
   private static Complex integrateComplex(IExpr function, IExpr variable, Complex min, Complex max,
       int maxIterations, int maxPoints, EvalEngine engine) {
     if (!variable.isSymbol()) {
