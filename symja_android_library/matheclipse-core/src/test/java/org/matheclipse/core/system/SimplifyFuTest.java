@@ -318,11 +318,19 @@ public class SimplifyFuTest extends ExprEvaluatorTestCase {
   public void testTrigSimplifyTR56() {
     Function<IExpr, IExpr> h = x -> F.C1.subtract(x);
 
+    // only an even exponent can be halved, so an odd power stays untouched
     IExpr tr56 = TrigSimplifyFu.tr56(F.Power(F.Sin(F.x), F.C3), F.Sin, F.Cos, h, F.C4, false);
-    assertEquals("(1-Cos(x)^2)*Sin(x)^2", tr56.toString());
+    assertEquals("Sin(x)^3", tr56.toString());
 
     tr56 = TrigSimplifyFu.tr56(F.Power(F.Sin(F.x), F.C10), F.Sin, F.Cos, h, F.C4, false);
     assertEquals("Sin(x)^10", tr56.toString());
+
+    // fractional exponents have no integer half either
+    tr56 = TrigSimplifyFu.tr56(F.Sqrt(F.Sin(F.x)), F.Sin, F.Cos, h, F.C4, false);
+    assertEquals("Sqrt(Sin(x))", tr56.toString());
+
+    tr56 = TrigSimplifyFu.tr56(F.Power(F.Sin(F.x), F.QQ(3, 2)), F.Sin, F.Cos, h, F.C4, false);
+    assertEquals("Sin(x)^(3/2)", tr56.toString());
 
     tr56 = TrigSimplifyFu.tr56(F.Power(F.Sin(F.x), F.C6), F.Sin, F.Cos, h, F.C6, false);
     assertEquals("(1-Cos(x)^2)^3", tr56.toString());
