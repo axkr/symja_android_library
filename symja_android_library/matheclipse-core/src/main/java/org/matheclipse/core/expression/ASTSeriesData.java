@@ -2344,7 +2344,10 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
         if (expr instanceof ASTSeriesData) {
           expr = ((ASTSeriesData) expr).normal(false);
         } else if (expr.isAST()) {
-          expr = engine.evaluate(expr.normal(nilIfUnevaluated));
+          // pass `false` here: a coefficient with nothing to normalize (for example the symbolic
+          // Taylor coefficient `f'(0)`) would be returned as NIL for `nilIfUnevaluated == true` and
+          // NIL must not be passed to `engine.evaluate()`
+          expr = engine.evaluate(expr.normal(false));
         }
 
         result.append(F.Times(expr, pow));
