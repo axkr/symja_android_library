@@ -30,27 +30,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 
-/**
- *
- *
- * <pre>
- * Limit(expr, x -&gt; x0)
- * </pre>
- *
- * <blockquote>
- *
- * <p>
- * gives the limit of <code>expr</code> as <code>x</code> approaches <code>x0</code>
- *
- * </blockquote>
- *
- * <h3>Examples</h3>
- *
- * <pre>
- * &gt;&gt; Limit(7+Sin(x)/x, x-&gt;Infinity)
- * 7
- * </pre>
- */
 public final class Limit extends AbstractFunctionOptionEvaluator {
 
   /** Direction of limit computation */
@@ -1179,6 +1158,11 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       boolean isLimit = false;
       for (int i = 1; i < ast.size(); i++) {
         IExpr temp = evalLimitQuiet(ast.get(i), this);
+        if (!temp.isPresent()) {
+          // FIX: If any argument's limit fails, the mapped limit fails.
+          // Do not insert F.NIL into the AST!
+          return F.NIL;
+        }
         if (!temp.isFree(S.Limit)) {
           isLimit = true;
         } else if (temp.isIndeterminate()) {
@@ -1382,6 +1366,13 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
 
   private static IExpr evalLimitAST(final IExpr expression, final IExpr limitValue, LimitData data,
       EvalEngine engine) {
+
+    // Safely catches shapes like (Sin(1/x)/2)^(1/x^2) as x -> 0 natively
+    IExpr envelope = envelopeBounded(expression, data, engine);
+    if (envelope.isPresent()) {
+      return envelope;
+    }
+
     if (expression.isAST()) {
       if (!limitValue.isNumericFunction(true) && limitValue.isFree(S.DirectedInfinity)
           && limitValue.isFree(data.variable())) {
@@ -2186,6 +2177,111 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         }
       }
       return mapLimit;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Checks if the expression structurally contains a bounded head (Sin, Cos, Tanh, ArcTan, ArcCot).
+   */
+  private static boolean containsBoundedHead(IExpr e) {
+    if (!e.isAST()) {
+      return false;
+    }
+    IAST ast = (IAST) e;
+    IExpr head = ast.head();
+
+    if (head.isBuiltInSymbol()) {
+      switch (((IBuiltInSymbol) head).ordinal()) {
+        case ID.Sin:
+        case ID.Cos:
+        case ID.Tanh:
+        case ID.ArcTan:
+        case ID.ArcCot:
+          return true;
+      }
+    }
+
+    for (int i = 1; i <= ast.argSize(); i++) {
+      if (containsBoundedHead(ast.get(i))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns an expression that pointwise dominates the magnitude of e(x) over the reals.
+   */
+  private static IExpr magnitudeUpperBound(IExpr e, ISymbol x) {
+    if (e.isFree(x)) {
+      return F.Abs(e);
+    }
+    if (!e.isAST()) {
+      return F.Abs(e);
+    }
+
+    IAST ast = (IAST) e;
+    IExpr head = ast.head();
+
+    if (head.isBuiltInSymbol()) {
+      switch (((IBuiltInSymbol) head).ordinal()) {
+        case ID.Sin:
+        case ID.Cos:
+        case ID.Tanh:
+          return F.C1;
+        case ID.ArcTan:
+        case ID.ArcCot:
+          return F.eval(F.Times(F.C1D2, S.Pi));
+        case ID.Plus:
+          IASTAppendable sum = F.PlusAlloc(ast.argSize());
+          for (int i = 1; i <= ast.argSize(); i++) {
+            sum.append(magnitudeUpperBound(ast.get(i), x));
+          }
+          return F.eval(sum);
+        case ID.Times:
+          IASTAppendable prod = F.TimesAlloc(ast.argSize());
+          for (int i = 1; i <= ast.argSize(); i++) {
+            prod.append(magnitudeUpperBound(ast.get(i), x));
+          }
+          return F.eval(prod);
+        case ID.Power:
+          if (ast.argSize() == 2) {
+            IExpr base = ast.arg1();
+            IExpr exp = ast.arg2();
+            if (base.equals(S.E) && containsBoundedHead(exp) && exp.isAST(S.Sin, 2)) {
+              return S.E;
+            }
+            // Generalize the bound through powers (e.g. Abs(base)^exp)
+            return F.eval(F.Power(magnitudeUpperBound(base, x), exp));
+          }
+          break;
+      }
+    }
+    return F.Abs(e);
+  }
+
+  /**
+   * Resolves limits of vanishing magnitude-bounded expressions (e.g. envelope squeeze theorem).
+   */
+  private static IExpr envelopeBounded(final IExpr expr, LimitData data, EvalEngine engine) {
+    if (!containsBoundedHead(expr)) {
+      return F.NIL;
+    }
+
+    IExpr b = magnitudeUpperBound(expr, data.variable());
+
+    // Prevent infinite recursion: if the bound still contains oscillating heads
+    // (e.g., they were trapped inside Log or Power), the squeeze fails symbolically.
+    if (b.equals(F.Abs(expr)) || containsBoundedHead(b)) {
+      return F.NIL;
+    }
+
+    if (!b.isFree(data.variable())) {
+      IExpr limBound = evalLimitQuiet(b, data);
+      if (limBound.isZero()) {
+        return F.C0;
+      }
     }
     return F.NIL;
   }

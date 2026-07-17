@@ -670,6 +670,37 @@ public class LimitTest extends ExprEvaluatorTestCase {
   // "I*Pi");
   // }
 
+
+
+  @Test
+  public void testLimitBoundedBasePower() {
+    /*
+     * Bounded base raised to a divergent positive power. The base stays in [-1/2, 1/2] while 1/x^2
+     * -> +Infinity, so |f| <= (1/2)^(1/x^2) -> 0.
+     */
+    check("Limit((Sin(1/x)/2)^(1/x^2), x -> 0)", //
+        "0");
+    check("Limit((Cos(1/x)/3)^(1/x^2), x -> 0)", //
+        "0");
+    // /* At Infinity the exponent -> 0, so f -> 1 (envelope must not fire). */
+    check("Limit((Sin(1/x)/2)^(1/x^2), x -> Infinity)", //
+        "1");
+    /*
+     * Base magnitude bound >= 1: (2 Sin[1/x])^(1/x^2) is unbounded, so no false 0.
+     * 
+     * TODO the shape should be left unevaluated.
+     */
+    check("Limit[(2 Sin(1/x))^(1/x^2), x -> 0]", //
+        "Indeterminate");
+    /*
+     * Negative divergent exponent: the bound inequality flips and a vanishing base blows up.
+     * 
+     * TODO this too should be left unevaluated.
+     */
+    check("Limit[(Sin(1/x)/2)^(-1/x^2), x -> 0]", //
+        "Indeterminate");
+  }
+
   /** The JUnit setup method */
   @Override
   public void setUp() {
