@@ -59,8 +59,10 @@ public class RSolve extends AbstractFunctionEvaluator {
 
     // Identity: phi^n = 1/2 * L_n + Sqrt(5)/2 * F_n
     // Identity: psi^n = 1/2 * L_n - Sqrt(5)/2 * F_n
-    IExpr phiSub = F.Plus(F.Times(F.C1D2, lucasX), F.Times(F.C1D2, F.CSqrt5, fibX));
-    IExpr psiSub = F.Subtract(F.Times(F.C1D2, lucasX), F.Times(F.C1D2, F.CSqrt5, fibX));
+    IExpr phiSub =
+        engine.evaluate(F.Plus(F.Times(F.C1D2, lucasX), F.Times(F.C1D2, F.CSqrt5, fibX)));
+    IExpr psiSub =
+        engine.evaluate(F.Subtract(F.Times(F.C1D2, lucasX), F.Times(F.C1D2, F.CSqrt5, fibX)));
 
     // Precompute exact canonical golden ratio bases
     IExpr phi = engine.evaluate(F.Times(F.C1D2, F.Plus(F.C1, F.CSqrt5)));
@@ -289,8 +291,8 @@ public class RSolve extends AbstractFunctionEvaluator {
    * Applies the boundary conditions to a candidate solution, acting as the single
    * general-solution-first gateway. When there are no boundary conditions the candidate is returned
    * unchanged; otherwise {@link #applyUnaryBCs} solves the arbitrary constants (or validates a
-   * constant-free candidate) and returns {@link F#NIL} if the conditions cannot be satisfied, so the
-   * caller can fall back to the next solver.
+   * constant-free candidate) and returns {@link F#NIL} if the conditions cannot be satisfied, so
+   * the caller can fall back to the next solver.
    */
   private IExpr acceptCandidate(IExpr candidate, IAST uFunction1Arg, IExpr nVar,
       IAST boundaryConditions, boolean hasBCs, EvalEngine engine) {
@@ -366,9 +368,9 @@ public class RSolve extends AbstractFunctionEvaluator {
       return solveSystem((IAST) ast.arg1(), (IAST) ast.arg2(), ast.arg3(), engine);
     }
 
-    IAST arg1 = ast.arg1().makeList();
-    IExpr arg2 = ast.arg2();
-    IExpr nVar = ast.arg3();
+    final IAST arg1 = ast.arg1().makeList();
+    final IExpr arg2 = ast.arg2();
+    final IExpr nVar = ast.arg3();
 
     if (!nVar.isSymbol())
       return F.NIL;
@@ -412,7 +414,7 @@ public class RSolve extends AbstractFunctionEvaluator {
 
       if (!isNonLinear) {
         for (Map.Entry<Integer, IExpr> entry : shiftMap.entrySet()) {
-          IExpr c_k = engine.evaluate(F.Simplify(F.D(rest, entry.getValue())));
+          IExpr c_k = engine.evaluate(F.D(rest, entry.getValue()));
           coeffs.put(entry.getKey(), c_k);
           rest = engine.evaluate(F.Simplify(F.Subtract(rest, F.Times(c_k, entry.getValue()))));
         }
@@ -730,7 +732,7 @@ public class RSolve extends AbstractFunctionEvaluator {
           IExpr arg = ast.arg1();
           if (arg.isPower() && arg.first().equals(nVar)) {
             shiftPower[0] = arg.second();
-          } else if (arg.isAST(S.Sqrt, 1) && arg.first().equals(nVar)) {
+          } else if (arg.isSqrt() && arg.first().equals(nVar)) {
             shiftPower[0] = F.C1D2;
           }
         }
@@ -786,8 +788,7 @@ public class RSolve extends AbstractFunctionEvaluator {
         }
 
         IExpr mResub = engine.evaluate(F.Divide(F.Log(F.Log(nVar)), F.Log(b)));
-        IExpr finalAns = engine.evaluate(F.subst(dResult, mDummy, mResub));
-        return engine.evaluate(F.Simplify(finalAns));
+        return engine.evaluate(F.Simplify(F.subst(dResult, mDummy, mResub)));
       }
     }
     return F.NIL;
@@ -833,7 +834,7 @@ public class RSolve extends AbstractFunctionEvaluator {
 
     IExpr c0 = coeffs.get(min);
     IExpr c1 = coeffs.get(max);
-    IExpr shiftExpr = F.Subtract(F.Plus(nVar, F.C1), F.ZZ(max));
+    IExpr shiftExpr = engine.evaluate(F.Subtract(F.Plus(nVar, F.C1), F.ZZ(max)));
     IExpr c1_sh = engine.evaluate(F.subst(c1, nVar, shiftExpr));
     IExpr c0_sh = engine.evaluate(F.subst(c0, nVar, shiftExpr));
     IExpr f_sh = engine.evaluate(F.subst(f_n, nVar, shiftExpr));
@@ -968,7 +969,7 @@ public class RSolve extends AbstractFunctionEvaluator {
     IExpr c1 = coeffs.get(min + 1);
     IExpr c0 = coeffs.get(min);
 
-    IExpr shiftExpr = F.Subtract(F.Plus(nVar, F.C2), F.ZZ(max));
+    IExpr shiftExpr = engine.evaluate(F.Subtract(F.Plus(nVar, F.C2), F.ZZ(max)));
     IExpr P = engine.evaluate(F.subst(c2, nVar, shiftExpr));
     IExpr Q = engine.evaluate(F.subst(c1, nVar, shiftExpr));
     IExpr R = engine.evaluate(F.subst(c0, nVar, shiftExpr));
@@ -976,16 +977,18 @@ public class RSolve extends AbstractFunctionEvaluator {
 
     IExpr y1 = F.NIL;
 
-    if (engine.evaluate(F.Simplify(F.Plus(P, Q, R))).isZero()) {
+    if (engine.evaluate(F.PossibleZeroQ(F.Plus(P, Q, R))).isTrue()) {
       y1 = F.C1;
-    } else if (engine.evaluate(F.Simplify(F.Plus(P, F.Negate(Q), R))).isZero()) {
+    } else if (engine.evaluate(F.PossibleZeroQ(F.Plus(P, F.Negate(Q), R))).isTrue()) {
       y1 = engine.evaluate(F.Power(F.CN1, nVar));
-    } else if (engine.evaluate(F.Simplify(
+    } else if (engine.evaluate(F.PossibleZeroQ(
         F.Plus(F.Times(P, F.Plus(nVar, F.C2)), F.Times(Q, F.Plus(nVar, F.C1)), F.Times(R, nVar))))
-        .isZero()) {
+        .isTrue()) {
       y1 = nVar;
-    } else if (engine.evaluate(F.Simplify(F.Plus(F.Times(P, F.Plus(nVar, F.C2), F.Plus(nVar, F.C1)),
-        F.Times(Q, F.Plus(nVar, F.C1)), R))).isZero()) {
+    } else if (engine
+        .evaluate(F.PossibleZeroQ(F.Plus(F.Times(P, F.Plus(nVar, F.C2), F.Plus(nVar, F.C1)),
+            F.Times(Q, F.Plus(nVar, F.C1)), R)))
+        .isTrue()) {
       y1 = engine.evaluate(F.Factorial(nVar));
     } else {
       IExpr cDummy = F.Dummy("c");
@@ -1009,19 +1012,32 @@ public class RSolve extends AbstractFunctionEvaluator {
     IExpr y1_np1 = engine.evaluate(F.subst(y1, nVar, F.Plus(nVar, F.C1)));
     IExpr y1_np2 = engine.evaluate(F.subst(y1, nVar, F.Plus(nVar, F.C2)));
 
-    IExpr A_v = engine.evaluate(F.Simplify(F.Times(P, y1_np2)));
-    IExpr B_v = engine.evaluate(F.Simplify(F.Plus(A_v, F.Times(Q, y1_np1))));
+    IExpr A_v = F.Times(P, y1_np2);
+    IExpr B_v = F.Plus(A_v, F.Times(Q, y1_np1));
 
     IExpr ratio = engine.evaluate(F.Simplify(F.Divide(F.Negate(B_v), A_v)));
 
-    IExpr K = F.Dummy("K");
+    IExpr K = F.Dummy("$K");
     IExpr ratio_K = engine.evaluate(F.subst(ratio, nVar, K));
 
-    IExpr v_n = engine.evaluate(F.Product(ratio_K, F.List(K, F.C1, F.Subtract(nVar, F.C1))));
+    IExpr v_n;
+    IExpr sum_v;
 
-    IExpr j = F.Dummy("j");
-    IExpr v_j = engine.evaluate(F.subst(v_n, nVar, j));
-    IExpr sum_v = engine.evaluate(F.Sum(v_j, F.List(j, F.C1, F.Subtract(nVar, F.C1))));
+    // --- ExpIntegralE Identity Fast-Path ---
+    // Mathematically resolves the alternating factorial sum: Sum((-1)^(j-1) * Gamma(j))
+    if (engine.evaluate(F.PossibleZeroQ(F.Plus(ratio, nVar))).isTrue()) {
+      v_n = engine.evaluate(F.Times(F.Power(F.CN1, F.Subtract(nVar, F.C1)), F.Gamma(nVar)));
+
+      IExpr term1 = F.Times(S.E, F.ExpIntegralE(F.C1, F.C1));
+      IExpr term2 = F.Times(F.Power(F.CN1, nVar), S.E, F.ExpIntegralE(nVar, F.C1), F.Gamma(nVar));
+      sum_v = engine.evaluate(F.Plus(term1, term2));
+    } else {
+      v_n = engine.evaluate(F.Product(ratio_K, F.List(K, F.C1, F.Subtract(nVar, F.C1))));
+
+      IExpr j = F.Dummy("$j");
+      IExpr v_j = engine.evaluate(F.subst(v_n, nVar, j));
+      sum_v = engine.evaluate(F.Sum(v_j, F.List(j, F.C1, F.Subtract(nVar, F.C1))));
+    }
 
     IExpr y2 = engine.evaluate(F.Times(y1, sum_v));
 

@@ -81,7 +81,7 @@ public class SolveAlways extends AbstractFunctionOptionEvaluator {
       solveAST.append(parameters);
 
       // Append standard options requested for the Solve evaluation
-      for (int i = argSize; i <= originalAST.argSize(); i++) {
+      for (int i = argSize + 1; i <= originalAST.argSize(); i++) {
         solveAST.append(originalAST.get(i));
       }
 

@@ -241,7 +241,7 @@ public class RSolveTest {
     // Alternating Sign Heuristic: a(n+2) + (n-1)*a(n+1) - n*a(n) == 0
     // P = 1, Q = n-1, R = -n. P - Q + R = 0, so y1(n) = (-1)^n is a fundamental solution.
     check("RSolve(a(n+2) + (n-1)*a(n+1) - n*a(n) == 0, a(n), n)", //
-        "{{a(n)->C(1)+C(2)*Sum(Gamma(j)/(-1)^(1-j),{j,1,-1+n})}}");
+        "{{a(n)->C(2)+(-1)^n*E*C(1)*ExpIntegralE(n,1)*Gamma(n)}}");
   }
 
   // ====================================================================================
@@ -434,4 +434,5 @@ public class RSolveTest {
     check("RSolve({y(n) == y(n-1) + y(n-2) + y(n-3), y(0)==1, y(1)==1, y(2)==2}, y(n), n) // N", //
         "{{y(n)->(0.19079+I*0.0187006)*(-0.419643+I*(-0.606291))^n+(0.19079+I*(-0.0187006))*(-0.419643+I*0.606291)^n+(0.61842)*1.83929^n}}");
   }
+
 }

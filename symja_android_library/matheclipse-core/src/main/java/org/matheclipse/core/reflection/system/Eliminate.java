@@ -323,10 +323,12 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    * @param equalAST an <code>Equal()</code> expression.
    * @param variable the variable which should be eliminated.
    * @param multipleValues if <code>true</code> multiple results are returned as list of values
+   * @param periodicBranches if <code>true</code> the caller accepts periodic (multi-valued)
+   *        complex solution branches to be returned as <code>ConditionalExpression</code> results
    * @return <code>F.NIL</code> if we can't find an equation for the given <code>variable</code>.
    */
   private static IExpr eliminateAnalyze(IAST equalAST, IExpr variable, boolean multipleValues,
-      EvalEngine engine) {
+      EvalEngine engine, boolean periodicBranches) {
     if (equalAST.isEqual()) {
       IExpr arg1 = equalAST.arg1();
       IExpr arg2 = equalAST.arg2();
@@ -335,9 +337,13 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       boolean boolArg2 = arg2.isFree(predicate, true);
       IExpr result = F.NIL;
       if (!boolArg1 && boolArg2) {
-        result = extractVariableRecursive(arg1, arg2, predicate, variable, multipleValues, engine);
+        result = extractVariableRecursive(arg1, arg2, predicate, variable, multipleValues,
+            periodicBranches,
+            engine);
       } else if (boolArg1 && !boolArg2) {
-        result = extractVariableRecursive(arg2, arg1, predicate, variable, multipleValues, engine);
+        result = extractVariableRecursive(arg2, arg1, predicate, variable, multipleValues,
+            periodicBranches,
+            engine);
       }
       return result;
     }
@@ -412,16 +418,19 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    * @param analyzerList the list of <code>Equal()</code> terms with statistics of it's equations.
    * @param variable the variable which should be eliminated.
    * @param multipleValues if <code>true</code> multiple results are returned as list of values
+   * @param periodicBranches if <code>true</code> the caller accepts periodic (multi-valued)
+   *        complex solution branches to be returned as <code>ConditionalExpression</code> results
    * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>
    *     variable</code> or the eliminated list of equations in index <code>[0]</code> and the last
    *         rule which is used for variable elimination in index <code>[1]</code>.
    */
   protected static IAST[] eliminateOneVariable(ArrayList<VariableCounterVisitor> analyzerList,
-      IExpr variable, boolean multipleValues, EvalEngine engine) {
+      IExpr variable, boolean multipleValues, boolean periodicBranches, EvalEngine engine) {
     IASTAppendable eliminatedResultEquations = F.ListAlloc(analyzerList.size());
     for (int i = 0; i < analyzerList.size(); i++) {
       IExpr variableValues =
-          eliminateAnalyze(analyzerList.get(i).getExpr(), variable, multipleValues, engine);
+          eliminateAnalyze(analyzerList.get(i).getExpr(), variable, multipleValues, engine,
+              periodicBranches);
       if (variableValues.isPresent()) {
         analyzerList.remove(i);
         IAST[] result = new IAST[2];
@@ -459,13 +468,15 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
    * @param ast
    * @param variable
    * @param multipleValues if <code>true</code> multiple results are returned as list of values
+   * @param periodicBranches if <code>true</code> the caller accepts periodic (multi-valued)
+   *        complex solution branches to be returned as <code>ConditionalExpression</code> results
    * @param engine
    * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>
    *     variable</code> or the eliminated list of equations in index <code>[0]</code> and the last
    *         rule which is used for variable elimination in index <code>[1]</code>.
    */
   public static IAST[] eliminateOneVariable(IAST ast, IExpr variable, boolean multipleValues,
-      EvalEngine engine) {
+      boolean periodicBranches, EvalEngine engine) {
     IAST equalAST;
     VariableCounterVisitor exprAnalyzer;
     ArrayList<VariableCounterVisitor> analyzerList = new ArrayList<VariableCounterVisitor>();
@@ -477,7 +488,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
     }
     Collections.sort(analyzerList);
 
-    return eliminateOneVariable(analyzerList, variable, multipleValues, engine);
+    return eliminateOneVariable(analyzerList, variable, multipleValues, periodicBranches, engine);
   }
 
   /**
@@ -522,22 +533,28 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
     Predicate<IExpr> predicate = Predicates.in(variable);
     IExpr result = F.NIL;
     if (!expr.isFree(predicate, true)) {
-      result = extractVariableRecursive(expr, F.C0, predicate, variable, multipleValues, engine);
+      result =
+          extractVariableRecursive(expr, F.C0, predicate, variable, multipleValues, false, engine);
     }
     return result;
   }
 
   /**
-   * Extract a value for the given <code>variabe</code>.
+   * Extract a value for the given variable.
    *
-   * @param exprWithVariable expression which contains the given <code>variabe</code>.
-   * @param exprWithoutVariable expression which doesn't contain the given <code>variabe</code>.
+   * @param exprWithVariable expression which contains the given variable.
+   * @param exprWithoutVariable expression which doesn't contain the given variable.
+   * @param predicate the predicate to check for the variable
    * @param variable the variable which should be eliminated.
-   * @param multipleValues if <code>true</code> multiple results are returned as list of values
-   * @return <code>F.NIL</code> if we can't find an equation for the given variable <code>x</code>.
+   * @param multipleValues if true multiple results are returned as list of values
+   * @param periodicBranches if <code>true</code> the caller accepts periodic (multi-valued)
+   *        complex solution branches to be returned as <code>ConditionalExpression</code> results
+   * @param engine the evaluation engine
+   * @return F.NIL if we can't find an equation for the given variable.
    */
   private static IExpr extractVariableRecursive(IExpr exprWithVariable, IExpr exprWithoutVariable,
-      Predicate<IExpr> predicate, IExpr variable, boolean multipleValues, EvalEngine engine) {
+      Predicate<IExpr> predicate, IExpr variable, boolean multipleValues, boolean periodicBranches,
+      EvalEngine engine) {
     if (exprWithVariable.equals(variable)) {
       return exprWithoutVariable;
     }
@@ -554,14 +571,14 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
               // example: Abs(x-1) == 1
               inverseFunction.append(exprWithoutVariable);
               return extractVariableRecursive(ast.arg1(), inverseFunction, predicate, variable,
-                  multipleValues, engine);
+                  multipleValues, periodicBranches, engine);
             }
             return S.True;
           } else {
             // example: Sin(f(x)) == y -> f(x) == ArcSin(y)
             inverseFunction.append(exprWithoutVariable);
             return extractVariableRecursive(ast.arg1(), inverseFunction, predicate, variable,
-                multipleValues, engine);
+                multipleValues, periodicBranches, engine);
           }
         }
       } else {
@@ -602,7 +619,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
               && ast.isPolynomial(variable) && ast.isNumericFunction(variable)) {
             IAST temp =
                 RootsFunctions.rootsOfVariable(F.Subtract.of(engine, ast, exprWithoutVariable),
-                F.C1, F.list(variable), engine.isNumericMode(), engine);
+                    F.C1, F.list(variable), engine.isNumericMode(), engine);
             if (temp.isList() && temp.size() > 1) {
               if (!multipleValues || temp.size() == 2) {
                 return temp.first();
@@ -628,13 +645,13 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
               IExpr rhsWithoutVariable =
                   engine.evaluate(F.Divide(exprWithoutVariable, timesWithoutVariable));
               return extractVariableRecursive(timesWithVariable.oneIdentity1(), rhsWithoutVariable,
-                  predicate, variable, multipleValues, engine);
+                  predicate, variable, multipleValues, periodicBranches, engine);
             }
           } else {
             IExpr rhsWithoutVariable =
                 engine.evaluate(F.Subtract(exprWithoutVariable, plusWithoutVariable));
             IExpr res = extractVariableRecursive(plusWithVariable.oneIdentity0(),
-                rhsWithoutVariable, predicate, variable, multipleValues, engine);
+                rhsWithoutVariable, predicate, variable, multipleValues, periodicBranches, engine);
             if (res.isPresent()) {
               return res;
             }
@@ -665,12 +682,11 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
                 }
               }
             }
-            // no change for given expression
             return F.NIL;
           }
           IExpr value = engine.evaluate(F.Divide(exprWithoutVariable, timesWithoutVariable));
           return extractVariableRecursive(timesWithVariable.oneIdentity1(), value, predicate,
-              variable, multipleValues, engine);
+              variable, multipleValues, periodicBranches, engine);
         } else if (ast.isPower()) {
           IExpr base = ast.base();
           IExpr exponent = ast.exponent();
@@ -682,14 +698,13 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             }
             IExpr value = engine.evaluate(F.Power(exprWithoutVariable, reversedPower));
             IExpr res1 = extractVariableRecursive(base, value, predicate, variable, multipleValues,
-                engine);
-            // For even integer exponent with multipleValues, also consider the negative root:
-            // f(x)^(2k) = rhs has two families: f(x) = +rhs^(1/(2k)) and f(x) = -rhs^(1/(2k))
+                periodicBranches, engine);
+            // For even integer exponent with multipleValues, also consider the negative root
             if (multipleValues && exponent.isInteger() && exponent.isEvenResult()) {
               IExpr negValue = engine.evaluate(F.Negate(value));
               if (!negValue.equals(value)) {
                 IExpr res2 = extractVariableRecursive(base, negValue, predicate, variable,
-                    multipleValues, engine);
+                    multipleValues, periodicBranches, engine);
                 if (res2.isPresent()) {
                   if (res1.isPresent()) {
                     // Merge both result lists
@@ -712,30 +727,45 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
             }
             return res1;
           } else if (base.isFree(predicate, true)) {
+            // Decide between the single principal value and the full periodic family of complex
+            // solutions for `base ^ f(x) == exprWithoutVariable`.
+            final boolean principalOnly;
             if (base.isE()) {
-              if (exponent.isRealResult()) {
-                // E ^ f(x) /; Element(f(x), Reals)
-                return extractVariableRecursive(exponent, F.Log(exprWithoutVariable), predicate,
-                    variable, multipleValues, engine);
-              }
-              // E ^ f(x) /; Element(f(x), Complexes)
-              try {
-                IExpr c_n = F.C(engine.incConstantCounter());
-                // ConditionalExpression(2*I*Pi*c1 + Log(exprwovar), Element(c1, Integers))
-                final IExpr exprwovar = exprWithoutVariable;
-                IExpr expr =
-                    F.Plus(F.Times(F.C2, F.CI, S.Pi, c_n), engine.evaluate(F.Log(exprwovar)));
-                IExpr temp = F.ConditionalExpression(expr, F.Element(c_n, S.Integers));
-                return extractVariableRecursive(exponent, temp, predicate, variable, multipleValues,
-                    engine);
-              } finally {
-                engine.decConstantCounter();
-              }
+              // Classic behavior for base E: a real exponent has a unique principal value,
+              // otherwise return the periodic complex family.
+              principalOnly = exponent.isRealResult();
+            } else {
+              // For a numeric base `a != E` expand into the periodic family when the exponent is a
+              // genuine function of the variable. If the exponent is the bare variable itself
+              // (e.g. `a^x == c`) the principal value is the expected single solution.
+              principalOnly = exponent.isRealResult() //
+                  || !base.isNumericFunction() //
+                  || exponent.equals(variable);
             }
-            // a ^ f(x)
-            IExpr value = F.Divide(F.Log(exprWithoutVariable), F.Log(base));
-            return extractVariableRecursive(exponent, value, predicate, variable, multipleValues,
-                engine);
+            if (principalOnly) {
+              // base ^ f(x) == exprWithoutVariable  ->  f(x) == Log(exprWithoutVariable)/Log(base)
+              IExpr value = base.isE() ? F.Log(exprWithoutVariable)
+                  : F.Divide(F.Log(exprWithoutVariable), F.Log(base));
+              return extractVariableRecursive(exponent, value, predicate, variable, multipleValues,
+                  periodicBranches, engine);
+            }
+
+            // base ^ f(x) == exprWithoutVariable /; Element(f(x), Complexes)
+            // f(x) == (2*I*Pi*c_n + Log(exprWithoutVariable)) / Log(base)
+            try {
+              IExpr c_n = F.C(engine.incConstantCounter());
+              final IExpr exprwovar = exprWithoutVariable;
+              IExpr expr =
+                  F.Plus(F.Times(F.C2, F.CI, S.Pi, c_n), engine.evaluate(F.Log(exprwovar)));
+              if (!base.isE()) {
+                expr = F.Divide(expr, F.Log(base));
+              }
+              IExpr temp = F.ConditionalExpression(expr, F.Element(c_n, S.Integers));
+              return extractVariableRecursive(exponent, temp, predicate, variable, multipleValues,
+                  periodicBranches, engine);
+            } finally {
+              engine.decConstantCounter();
+            }
           }
         }
       }
@@ -978,7 +1008,7 @@ public class Eliminate extends AbstractFunctionEvaluator implements EliminateRul
       for (int i = 1; i < vars.size(); i++) {
         variable = (ISymbol) vars.get(i);
 
-        temp = eliminateOneVariable(result, variable, false, engine);
+        temp = eliminateOneVariable(result, variable, false, false, engine);
         if (temp != null) {
           result = temp[0];
         } else {

@@ -394,7 +394,7 @@ public class Reduce extends AbstractEvaluator {
     private IExpr rewriteVariableValue(VariableInterval cd, IExpr lastArg) {
       if (lastArg.isEqual()) {
         IAST[] reduced =
-            Eliminate.eliminateOneVariable(F.list(lastArg), cd.variable, false, EvalEngine.get());
+            Eliminate.eliminateOneVariable(F.list(lastArg), cd.variable, false, false, EvalEngine.get());
         if (reduced != null && reduced[0].isEmptyList() && reduced[1].isRule()) {
           IAST rule = reduced[1];
           lastArg = F.Equal(variable, rule.second());
@@ -1600,7 +1600,7 @@ public class Reduce extends AbstractEvaluator {
       return F.NIL;
     }
     IExpr firstVar = vars.arg1();
-    IAST[] eliminated = Eliminate.eliminateOneVariable(equations, firstVar, false, engine);
+    IAST[] eliminated = Eliminate.eliminateOneVariable(equations, firstVar, false, false, engine);
     if (eliminated == null || eliminated[1] == null || !eliminated[1].isRule()) {
       return F.NIL;
     }

@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -36,6 +37,7 @@ import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.ExprAnalyzer;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.S;
@@ -51,6 +53,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPair;
 import org.matheclipse.core.interfaces.IReal;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.polynomials.QuarticSolver;
 
 /**
@@ -793,13 +796,23 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         return solveNumeric(QuarticSolver.sortASTArguments(temp), numericFlag, engine);
       }
 
+      IExpr result = F.NIL;
       if (termsEqualZeroList.size() == 2 && variables.size() == 2 && inequationsList.isEmpty()) {
-        return solveTwoVariableSystem(termsEqualZeroList, numericFlag, variables.arg1(), engine);
+        result = solveTwoVariableSystem(termsEqualZeroList, numericFlag, variables.arg1(), engine);
+      } else if (termsEqualZeroList.size() > 2 && variables.size() >= 3) {
+        result = solveMultiVariableSystem(termsEqualZeroList, inequationsList, numericFlag,
+            variables, engine);
+      }
+      if (result.isPresent()) {
+        return result;
       }
 
-      if (termsEqualZeroList.size() > 2 && variables.size() >= 3) {
-        return solveMultiVariableSystem(termsEqualZeroList, inequationsList, numericFlag, variables,
-            engine);
+      // Fallback: kernel homogenization for systems in which every variable occurs only under a
+      // single invertible kernel - radicals (fractional powers), trigonometric or hyperbolic
+      // functions, or a mix of these. Runs last so it never disturbs the strategies above.
+      if (variables.argSize() >= 2) {
+        return solveViaKernelHomogenization(termsEqualZeroList, inequationsList, numericFlag,
+            variables, engine);
       }
       return F.NIL;
     }
@@ -814,7 +827,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
         IExpr variable = vars.get(i);
 
         IAST[] reduced = Eliminate.eliminateOneVariable(F.list(F.Equal(firstEquation, F.C0)),
-            variable, true, engine);
+            variable, true, false, engine);
         if (reduced != null) {
           final IAST variables = vars.splice(i);
           reducedEqualZeroList = reducedEqualZeroList.removeAtCopy(1);
@@ -859,10 +872,222 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
 
+    /**
+     * Solve a multi-variable system in which every solve variable occurs only under a single
+     * invertible kernel: a radical (fractional power of the variable), or a trigonometric /
+     * hyperbolic function of the bare variable, or a mix of these. Examples:
+     * <code>{3*Sqrt(x)+2*Sqrt(y)==16, 2*Sqrt(x)-3*Sqrt(y)==-11}</code>,
+     * <code>{3*Sin(x)+2*Sin(y)==7/2, 2*Sin(x)-3*Sin(y)==-2}</code>,
+     * <code>{3*Sqrt(x)+2*Sin(y)==7, 2*Sqrt(x)-2*Sin(y)==3}</code>.
+     *
+     * <p>
+     * Reuses {@link PolynomialHomogenization}: a single shared instance substitutes each kernel
+     * sub-expression with a fresh dummy variable (consistently across all equations), yielding a
+     * polynomial system in the dummies. That system is solved for the kernel <em>values</em>. Each
+     * kernel value then produces a decoupled equation <code>kernel(variable) == value</code> (via
+     * {@link PolynomialHomogenization#replaceBackward(IExpr)}); handing the decoupled system back to
+     * {@link S#Solve} lets the ordinary single-variable machinery invert every kernel - including
+     * the periodic {@code ConditionalExpression} branches of the trig/hyperbolic inverses and the
+     * cross-product across variables. Finally the candidates are cross-checked against the original
+     * equations, which discards branches inconsistent with the principal root (e.g. a negative
+     * square root).
+     *
+     * @param termsEqualZeroList the equations as expressions which should be <code>== 0</code>
+     * @param inequationsList inequality constraints; kernel homogenization is only attempted when
+     *        this is empty
+     * @param numericFlag if <code>true</code> evaluate the sub-solutions numerically
+     * @param variables the variables to solve for
+     * @param engine the evaluation engine
+     * @return a list-of-lists of solution rules, {@link F#CEmptyList} if the system is solvable but
+     *         has no consistent solution, or {@link F#NIL} to fall through to the other strategies
+     */
+    private IExpr solveViaKernelHomogenization(IASTMutable termsEqualZeroList, IAST inequationsList,
+        boolean numericFlag, IAST variables, EvalEngine engine) {
+      if (variables.argSize() < 2 || !inequationsList.isEmpty()) {
+        // need at least two variables; kernel homogenization ignores inequality constraints
+        return F.NIL;
+      }
+      // All variables must be plain symbols.
+      for (int i = 1; i < variables.size(); i++) {
+        if (!variables.get(i).isSymbol()) {
+          return F.NIL;
+        }
+      }
+      // Cheap structural pre-check (before any homogenization): every trigonometric / hyperbolic
+      // sub-expression that involves a solve variable must be a function of a *bare* solve variable
+      // (e.g. Sin(x), not Sin(2*x+1) or Sin(c0/z+..)). This restricts us to invertible kernels and
+      // prevents heavyweight / non-terminating trig homogenization on unrelated systems (e.g. the
+      // internal systems built by RSolve / AsymptoticRSolveValue).
+      for (int i = 1; i < termsEqualZeroList.size(); i++) {
+        if (hasNonKernelTrig(termsEqualZeroList.get(i), variables)) {
+          return F.NIL;
+        }
+      }
+      try {
+        // 1. Forward-substitute every equation with ONE shared instance so that identical kernels
+        // map to the same dummy variable across all equations.
+        PolynomialHomogenization homogenization = new PolynomialHomogenization(engine, false);
+        IASTAppendable polyTerms = F.ListAlloc(termsEqualZeroList.argSize());
+        for (int i = 1; i < termsEqualZeroList.size(); i++) {
+          IExpr poly = homogenization.replaceForward(termsEqualZeroList.get(i));
+          if (poly.isNIL() || !poly.isFree(v -> variables.contains(v), true)) {
+            // a solve variable survived un-substituted -> not a clean kernel system
+            return F.NIL;
+          }
+          polyTerms.append(poly);
+        }
+
+        // 2. Validate: a bijection between dummies and solve variables, where each kernel base is a
+        // fractional power of a bare variable (radical) or an invertible unary trig/hyperbolic
+        // function of a bare variable, and at least one kernel is non-trivial (so plain polynomial
+        // systems are not intercepted here).
+        Set<ISymbol> dummies = homogenization.substitutedVariablesSet();
+        if (dummies.size() != variables.argSize()) {
+          return F.NIL;
+        }
+        Map<ISymbol, IExpr> dummyToBase = homogenization.substitutedVariables();
+        IASTAppendable dummyVarList = F.ListAlloc(dummies.size());
+        Set<IExpr> underlyingVariables = new HashSet<IExpr>();
+        boolean hasNonTrivialKernel = false;
+        for (ISymbol dummy : dummies) {
+          IExpr base = dummyToBase.get(dummy);
+          IExpr underlying;
+          if (base != null && base.isSymbol() && variables.contains(base)) {
+            // radical / plain kernel: base is the variable itself, kernel = base^(1/LCM)
+            underlying = base;
+            if (!homogenization.getLCM(dummy).isOne()) {
+              hasNonTrivialKernel = true; // genuine fractional power
+            }
+          } else if (base != null && base.isAST1() && isInvertibleKernelHead(base.head())
+              && base.first().isSymbol() && variables.contains(base.first())) {
+            // trigonometric / hyperbolic kernel g(variable)
+            underlying = base.first();
+            hasNonTrivialKernel = true;
+          } else {
+            return F.NIL;
+          }
+          if (!underlyingVariables.add(underlying)) {
+            return F.NIL; // two kernels of the same variable (coupled) -> out of scope
+          }
+          dummyVarList.append(dummy);
+        }
+        if (!hasNonTrivialKernel || underlyingVariables.size() != variables.argSize()) {
+          return F.NIL;
+        }
+
+        // 3. Solve the polynomial system for the kernel dummies. This cannot re-enter this method
+        // because the dummy system contains neither radicals nor trig/hyperbolic kernels.
+        IAST kernelEquations = polyTerms.mapThread(F.Equal(F.Slot1, F.C0), 1);
+        IExpr kernelSolution = engine.evalQuiet(F.Solve(kernelEquations, dummyVarList));
+        if (!kernelSolution.isListOfLists()) {
+          return F.NIL;
+        }
+
+        // 4. For each kernel solution build the decoupled system {kernel(variable) == value} and
+        // let the ordinary solver invert it (inverse-function branches / periodic families and the
+        // cross-product across variables). The decoupled equations are single-variable, so this
+        // does not re-enter kernel homogenization either.
+        IASTAppendable results = F.ListAlloc();
+        Set<IExpr> seenSolutions = new HashSet<IExpr>();
+        boolean anyDecoupledPresent = false;
+        for (int i = 1; i < kernelSolution.size(); i++) {
+          IAST kernelRules = (IAST) kernelSolution.get(i);
+          IASTAppendable decoupled = F.ListAlloc(kernelRules.size());
+          boolean valid = true;
+          for (int j = 1; j < kernelRules.size(); j++) {
+            IExpr rule = kernelRules.get(j);
+            if (!rule.isRuleAST() || !rule.first().isSymbol()) {
+              valid = false;
+              break;
+            }
+            IExpr kernelExpr = homogenization.replaceBackward(rule.first());
+            if (kernelExpr.isNIL()) {
+              valid = false;
+              break;
+            }
+            decoupled.append(F.Equal(kernelExpr, rule.second()));
+          }
+          if (!valid || decoupled.argSize() != variables.argSize()) {
+            continue;
+          }
+          IExpr decoupledSolution = engine.evalQuiet(F.Solve(decoupled, variables));
+          if (decoupledSolution.isList()) {
+            anyDecoupledPresent = true;
+            if (decoupledSolution.isListOfLists()) {
+              IAST decoupledList = (IAST) decoupledSolution;
+              for (int k = 1; k < decoupledList.size(); k++) {
+                IExpr candidate = decoupledList.get(k);
+                // a degenerate branch (e.g. Sin(y)==1 -> two identical Pi/2 families) can produce
+                // duplicate solutions in the cross-product; keep only distinct ones
+                if (seenSolutions.add(candidate)) {
+                  results.append(candidate);
+                }
+              }
+            }
+          }
+        }
+
+        if (results.argSize() > 0) {
+          // Discard branches inconsistent with the original (principal-root) equations.
+          IASTMutable crossChecked = crossChecking(termsEqualZeroList, results, engine);
+          return solveNumeric(crossChecked, numericFlag, engine);
+        }
+        if (anyDecoupledPresent) {
+          // homogenized and solved, but no consistent (principal-branch) solution exists
+          return F.CEmptyList;
+        }
+        return F.NIL;
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+        return F.NIL;
+      }
+    }
+
+    /**
+     * Whether {@code term} contains a trigonometric / hyperbolic sub-expression that involves a
+     * solve variable but is <em>not</em> a function of a bare solve variable (e.g. {@code Sin(2*x)}
+     * or {@code Sin(c0/z+..)}). Used to restrict {@link #solveViaKernelHomogenization} to invertible
+     * kernels and to keep it away from heavyweight trig homogenization on unrelated systems.
+     */
+    private static boolean hasNonKernelTrig(IExpr term, IAST variables) {
+      return !term.isFree(sub -> sub.isAST1() //
+          && (sub.isTrigFunction() || sub.isHyperbolicFunction()) //
+          && !sub.first().isFree(v -> variables.contains(v), true) //
+          && !(sub.first().isSymbol() && variables.contains(sub.first())), true);
+    }
+
+    /**
+     * Whether {@code head} is a (forward) trigonometric or hyperbolic function that
+     * {@link #solveViaKernelHomogenization} knows how to invert. Inverse functions are intentionally
+     * excluded.
+     */
+    private static boolean isInvertibleKernelHead(IExpr head) {
+      if (head.isBuiltInSymbol()) {
+        switch (((IBuiltInSymbol) head).ordinal()) {
+          case ID.Sin:
+          case ID.Cos:
+          case ID.Tan:
+          case ID.Cot:
+          case ID.Sec:
+          case ID.Csc:
+          case ID.Sinh:
+          case ID.Cosh:
+          case ID.Tanh:
+          case ID.Coth:
+          case ID.Sech:
+          case ID.Csch:
+            return true;
+          default:
+            return false;
+        }
+      }
+      return false;
+    }
+
     private IExpr solveTwoVariableSystem(IASTMutable termsEqualZeroList, boolean numericFlag,
         IExpr firstVariable, EvalEngine engine) {
       IExpr res =
-          eliminateOneVariable(termsEqualZeroList, firstVariable, true, numericFlag, engine);
+          eliminateOneVariable(termsEqualZeroList, firstVariable, true, false, numericFlag, engine);
       if (res.isNIL()) {
         if (numericFlag) {
           IExpr termEqualZero = termsEqualZeroList.arg1();
@@ -902,12 +1127,14 @@ public class Solve extends AbstractFunctionOptionEvaluator {
      * @param termsEqualZeroList a list of expressions which equals zero.
      * @param variable the variable which should be eliminated in the term
      * @param multipleValues if <code>true</code> multiple results are returned as list of values
+     * @param periodicBranches if <code>true</code> the caller accepts periodic (multi-valued)
+     *        complex solution branches to be returned as <code>ConditionalExpression</code> results
      * @param numeric evaluate in numericMode
      * @param engine
      * @return
      */
     private static IAST eliminateOneVariable(IAST termsEqualZeroList, IExpr variable,
-        boolean multipleValues, boolean numeric, EvalEngine engine) {
+        boolean multipleValues, boolean periodicBranches, boolean numeric, EvalEngine engine) {
       if (!termsEqualZeroList.arg1().isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(),
           true)) {
         return F.NIL;
@@ -916,7 +1143,8 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       // because Eliminate() operates on equations.
       IAST equalsASTList = termsEqualZeroList.mapThread(F.Equal(F.Slot1, F.C0), 1);
       IAST[] tempAST =
-          Eliminate.eliminateOneVariable(equalsASTList, variable, multipleValues, engine);
+          Eliminate.eliminateOneVariable(equalsASTList, variable, multipleValues, periodicBranches,
+              engine);
       if (tempAST != null) {
         IAST lastRuleUsedForVariableElimination = tempAST[1];
         if (lastRuleUsedForVariableElimination != null) {
@@ -1514,7 +1742,7 @@ public class Solve extends AbstractFunctionOptionEvaluator {
             if (clonedEqualZeroList.size() == 2 && variables.size() == 2) {
               IExpr firstVariable = variables.arg1();
               IExpr res = eliminateOneVariable(clonedEqualZeroList, firstVariable, multipleValues,
-                  numericFlag, engine);
+                  true, numericFlag, engine);
               if (res.isNIL()) {
                 if (numericFlag) {
                   // find numerically with start value 0

@@ -22,6 +22,35 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{}}");
   }
 
+
+  @Test
+  public void testSolveBasics() {
+    check("Solve(x - 5 == 0, x)", //
+        "{{x->5}}");
+    check("Solve(x^2 + 3x - 10 == 0, x)", //
+        "{{x->-5},{x->2}}");
+    check("Solve(x^2 - 4 == 0, x)", //
+        "{{x->-2},{x->2}}");
+    check("Solve(2*x^2 - 8 == 0, x)", //
+        "{{x->-2},{x->2}}");
+    check("Solve(x^2 + 1 == 0, x)", //
+        "{{x->-I},{x->I}}");
+    check("Solve(x^2 - 5 == 0, x)", //
+        "{{x->-Sqrt(5)},{x->Sqrt(5)}}");
+    check("Solve(x == 0, x)", //
+        "{{x->0}}");
+    check("Solve(x == x, x)", //
+        "{{}}");
+    check("Solve(2 == 3, x)", //
+        "{}");
+    check("Solve(Sqrt(x) == 3, x)", //
+        "{{x->9}}");
+    check("Solve(Abs(x) == 3, x)", //
+        "{{x->-3},{x->3}}");
+    check("Solve(Log(x) == 2, x)", //
+        "{{x->E^2}}");
+  }
+
   @Test
   public void testSinX() {
     check("Solve(Sin(x)==b,x)", //
@@ -2173,11 +2202,13 @@ public class SolveTest extends ExprEvaluatorTestCase {
     // check("Solve(13000==534803/50*(1+6/125/360)^(360*m),m)", //
     // "");
     check("Solve(13000*50/534803==(1+6/125/360)^(360*m),m)", //
-        "{{m->Log(650000/534803)/(360*Log(7501/7500))}}");
+        "{{m->ConditionalExpression((I*1/180*Pi*C(1))/Log(7501/7500)+Log(650000/534803)/(\n"
+            + "360*Log(7501/7500)),C(1)∈Integers)}}");
 
     // message: Exponent ist out of bounds for function Factor.
     check("Solve(2^(1250000/x) == 500, x)", //
-        "{{x->(1250000*Log(2))/Log(500)}}");
+        "{{x->ConditionalExpression(1/((I*1/625000*Pi*C(1))/Log(2)+Log(500)/(1250000*Log(\n"
+            + "2))),C(1)∈Integers)}}");
   }
 
   @Test
@@ -2664,6 +2695,24 @@ public class SolveTest extends ExprEvaluatorTestCase {
         "{{n->6},{n->8},{n->9}}");
   }
 
+  @Test
+  public void testSolveIssue1418() {
+    check("Solve(1/4==(1/2)^(540/x), x)", //
+        "{{x->ConditionalExpression(1/(1/270+(I*1/270*Pi*C(1))/Log(2)),C(1)∈Integers)}}");
+  }
+
+  @Test
+  public void testRadicalSystem() {
+    // variables occur only under radicals -> homogenize to a linear system, solve, back-substitute
+    check("Solve({3*Sqrt(x)+2*Sqrt(y)==16, 2*Sqrt(x)-3*Sqrt(y)==-11},{x,y})", //
+        "{{x->4,y->25}}");
+    check("Solve({3*x^(1/2)+2*y^(1/2)==16, 2*x^(1/2)-3*y^(1/2)==-11},{x,y})", //
+        "{{x->4,y->25}}");
+    // cross-check must drop the principal-root-inconsistent branch (Sqrt(x)=-1 has no
+    // non-negative principal solution)
+    check("Solve({Sqrt(x)+Sqrt(y)==3, Sqrt(x)-Sqrt(y)==-5},{x,y})", //
+        "{}");
+  }
 
   /** The JUnit setup method */
   @Override
@@ -2678,5 +2727,84 @@ public class SolveTest extends ExprEvaluatorTestCase {
   public void tearDown() throws Exception {
     // super.tearDown();
     Config.SHORTEN_STRING_LENGTH = 80;
+  }
+
+  @Test
+  public void testTrigSystemPhase1() {
+    // kernel soln s=Sin(x)=1/2, t=Sin(y)=1 -> x=Pi/6 (& 5Pi/6), y=Pi/2
+    check("Solve({3*Sin(x)+2*Sin(y)==7/2, 2*Sin(x)-3*Sin(y)==-2},{x,y})", //
+        "{{y->Pi/2,x->Pi/6}}");
+    // kernel soln Cos(x)=1/2, Cos(y)=-1/2 -> x=Pi/3 (&-Pi/3), y=2Pi/3 (&-2Pi/3)
+    check("Solve({Cos(x)+Cos(y)==0, Cos(x)-Cos(y)==1},{x,y})", //
+        "{{y->2/3*Pi,x->Pi/3}}");
+    // kernel soln Tan(x)=1, Tan(y)=-1 -> x=Pi/4, y=-Pi/4 (period Pi, one family each)
+    check("Solve({Tan(x)+Tan(y)==0, 2*Tan(x)+Tan(y)==1},{x,y})", //
+        "{{y->ConditionalExpression(-Pi/4+Pi*C(1),C(1)∈Integers),x->ConditionalExpression(ArcTan(Cot(Pi*(\n" //
+            + "1/4+C(1)))),C(1)∈Integers)}}");
+    // mixed heads: Sin(x)=1/2, Cos(y)=1/2 -> x=Pi/6, y=Pi/3
+    check("Solve({2*Sin(x)+2*Cos(y)==2, 4*Sin(x)-2*Cos(y)==1},{x,y})", //
+        "{{y->ConditionalExpression(-Pi/3+2*Pi*C(1),C(1)∈Integers),x->ConditionalExpression(ArcSin(\n" //
+            + "1-Sin(Pi*(1/6+2*C(1)))),C(1)∈Integers)},{y->ConditionalExpression(Pi/3+2*Pi*C(1),C(\n" //
+            + "1)∈Integers),x->ConditionalExpression(ArcSin(1-Cos(Pi*(1/3+2*C(1)))),C(1)∈Integers)}}");
+    // three variables: Sin(x)=1/2, Sin(y)=1, Sin(z)=-1/2 -> x=Pi/6, y=Pi/2, z=-Pi/6
+    check(
+        "Solve({Sin(x)+Sin(y)+Sin(z)==1, Sin(x)-Sin(y)+Sin(z)==-1, Sin(x)+Sin(y)-Sin(z)==2},{x,y,z})", //
+        "{{x->ConditionalExpression(Pi/6+2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(Pi/\n" //
+            + "2+2*Pi*C(1),C(1)∈Integers),z->ConditionalExpression(-Pi/6+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/\n" //
+            + "6+2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(Pi/2+2*Pi*C(1),C(1)∈Integers),z->ConditionalExpression(\n" //
+            + "7/6*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(5/6*Pi+2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(Pi/\n" //
+            + "2+2*Pi*C(1),C(1)∈Integers),z->ConditionalExpression(-Pi/6+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(\n" //
+            + "5/6*Pi+2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(Pi/2+2*Pi*C(1),C(1)∈Integers),z->ConditionalExpression(\n" //
+            + "7/6*Pi+2*Pi*C(1),C(1)∈Integers)}}");
+    // nonlinear in the kernels (product): double root Sin(x)=Sin(y)=1/2 -> x,y = Pi/6 (& 5Pi/6)
+    check("Solve({Sin(x)*Sin(y)==1/4, Sin(x)+Sin(y)==1},{x,y})", //
+        "{{x->ConditionalExpression(Pi/6+2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(Pi/\n" //
+            + "6+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(Pi/6+2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(\n" //
+            + "5/6*Pi+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(5/6*Pi+2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(Pi/\n" //
+            + "6+2*Pi*C(1),C(1)∈Integers)},{x->ConditionalExpression(5/6*Pi+2*Pi*C(1),C(1)∈Integers),y->ConditionalExpression(\n" //
+            + "5/6*Pi+2*Pi*C(1),C(1)∈Integers)}}");
+  }
+
+  @Test
+  public void testHyperbolicSystemPhase1() {
+    // Sinh(x)=3/4 -> x=Log(2); Sinh(y)=4/3 -> y=Log(3) (ArcSinh[3/4]=Log2, ArcSinh[4/3]=Log3)
+    check("Solve({4*Sinh(x)+3*Sinh(y)==7, 4*Sinh(x)-3*Sinh(y)==-1},{x,y})", //
+        "{{y->ConditionalExpression(I*Pi-ArcSinh(4/3)+I*2*Pi*C(1),C(1)∈Integers),x->ConditionalExpression(-ArcSinh(\n" //
+            + "1/4*(1-3*Sinh(ArcSinh(4/3)-I*2*Pi*C(1)))),C(1)∈Integers)},{y->ConditionalExpression(ArcSinh(\n" //
+            + "4/3)+I*2*Pi*C(1),C(1)∈Integers),x->ConditionalExpression(-ArcSinh(1/4*(1-3*Sinh(ArcSinh(\n" //
+            + "4/3)+I*2*Pi*C(1)))),C(1)∈Integers)}}");
+    // Cosh(x)=5/4 -> x=+-Log(2); Cosh(y)=5/3 -> y=+-Log(3) (Cosh even -> +- branches)
+    check("Solve({4*Cosh(x)+4*Cosh(y)==17, 4*Cosh(x)-4*Cosh(y)==7},{x,y})", //
+        "{{y->ConditionalExpression(-ArcCosh(5/4)+I*2*Pi*C(1),C(1)∈Integers),x->ConditionalExpression(ArcCosh(\n" //
+            + "7/4+Cosh(ArcCosh(5/4)-I*2*Pi*C(1))),C(1)∈Integers)},{y->ConditionalExpression(ArcCosh(\n"
+            + "5/4)+I*2*Pi*C(1),C(1)∈Integers),x->ConditionalExpression(ArcCosh(7/4+Cosh(ArcCosh(\n"
+            + "5/4)+I*2*Pi*C(1))),C(1)∈Integers)}}");
+    // Tanh(x)=3/5 -> x=Log(2); Tanh(y)=4/5 -> y=Log(3) (ArcTanh[3/5]=Log2, ArcTanh[4/5]=Log3)
+    check("Solve({5*Tanh(x)+5*Tanh(y)==7, 5*Tanh(x)-5*Tanh(y)==-1},{x,y})", //
+        "{{y->ConditionalExpression(ArcTanh(4/5)+I*Pi*C(1),C(1)∈Integers),x->ConditionalExpression(-ArcTanh(\n"
+            + "1/5-Tanh(ArcTanh(4/5)+I*Pi*C(1))),C(1)∈Integers)}}");
+  }
+
+  @Test
+  public void testMixedRadicalTrigPhase2() {
+    // Sqrt(x)=2 -> x=4 (single); Sin(y)=1/2 -> y=Pi/6 family
+    check("Solve({3*Sqrt(x)+2*Sin(y)==7, 2*Sqrt(x)-2*Sin(y)==3},{x,y})", //
+        "{{x->4,y->ConditionalExpression(Pi/6+2*Pi*C(1),C(1)∈Integers)},{x->4,y->ConditionalExpression(\n" //
+            + "5/6*Pi+2*Pi*C(1),C(1)∈Integers)}}");
+    // Sqrt(x)=3 -> x=9; Cosh(y)=5/4 -> y=+-Log(2)
+    check("Solve({4*Sqrt(x)+4*Cosh(y)==17, 4*Sqrt(x)-4*Cosh(y)==7},{x,y})", //
+        "{{x->9,y->ConditionalExpression(-ArcCosh(5/4)+I*2*Pi*C(1),C(1)∈Integers)},{x->9,y->ConditionalExpression(ArcCosh(\n" //
+            + "5/4)+I*2*Pi*C(1),C(1)∈Integers)}}");
+    // 3-var mixed: Sqrt(x)=1 -> x=1, Sqrt(y)=2 -> y=4, Sin(z)=1 -> z=Pi/2
+    check(
+        "Solve({Sqrt(x)+Sqrt(y)+Sin(z)==4, Sqrt(x)-Sqrt(y)+Sin(z)==0,Sqrt(x)+Sqrt(y)-Sin(z)==2},{x,y,z})", //
+        "{{x->1,y->4,z->ConditionalExpression(Pi/2+2*Pi*C(1),C(1)∈Integers)}}");
+    // cube root mixed: x^(1/3)=2 -> x=8; Sin(y)=1/2 -> y=Pi/6 family
+    check("Solve({x^(1/3)+2*Sin(y)==3, x^(1/3)-2*Sin(y)==1},{x,y})", //
+        "{{x->8,y->ConditionalExpression(Pi/6+2*Pi*C(1),C(1)∈Integers)},{x->8,y->ConditionalExpression(\n" //
+            + "5/6*Pi+2*Pi*C(1),C(1)∈Integers)}}");
+    // x^(1/2) form (not Sqrt) + Tanh: Sqrt(x)=2 -> x=4; Tanh(y)=3/5 -> y=Log(2)
+    check("Solve({x^(1/2)+Tanh(y)==13/5, x^(1/2)-Tanh(y)==7/5},{x,y})", //
+        "{{x->4,y->ConditionalExpression(ArcTanh(3/5)+I*Pi*C(1),C(1)∈Integers)}}");
   }
 }
