@@ -63,6 +63,8 @@ public interface INum extends IReal, IInexactNumber {
     return multiply(F.num(val.reDoubleValue()));
   }
 
+  public INum numericValue();
+
   public INum pow(INum val);
 
   public long precision();
