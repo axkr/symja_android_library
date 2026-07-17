@@ -24,7 +24,7 @@ import j2html.tags.ContainerTag;
 import j2html.tags.DomContent;
 
 /**
- * Advanced 2D Graphics to SVG converter.
+ * 2D Graphics to SVG converter.
  */
 public class SVGGraphics {
 
@@ -84,11 +84,13 @@ public class SVGGraphics {
     Color background = null;
     double aspectRatio = Double.NaN;
     double[] imageSize = {360, 360};
+    boolean imageSizeAutomatic = false;
 
     // [0][0]=xMin, [0][1]=xMax, [1][0]=yMin, [1][1]=yMax. Double.NaN indicates "Automatic"
     double[][] plotRange = null;
     double plotRangePadding = 0.05;
     boolean plotRangeAutomatic = true; // Default to heuristic
+    boolean plotRangeClipping = false; // By default Graphics clipping is false
 
     // "None", "Log10", or "Log"
     String scalingX = "None";
@@ -96,29 +98,22 @@ public class SVGGraphics {
 
     IExpr prolog = null;
     IExpr epilog = null;
-
     IExpr gridLines = null;
 
-    // Legend support
+    // Legend and Label support
     IExpr plotLegends = null;
-    IExpr plotStyleRaw = null; // To access colors by index
+    IExpr plotStyleRaw = null;
+    IExpr ticks = S.Automatic;
     IExpr frameTicks = S.None;
+    IExpr plotLabel = null;
+    IExpr axesLabel = null;
+    IExpr frameLabel = null;
+
     boolean joined = false;
   }
 
-
-  /**
-   * Generates the root SVG Element (ContainerTag) for the given graphics expression. This allows
-   * valid modification of the SVG tag before rendering (e.g. adding x, y attributes).
-   * 
-   * @param graphicsExpr
-   * @return
-   */
   public ContainerTag buildSVGTag(IAST graphicsExpr) {
     if (graphicsExpr.isList() || graphicsExpr.isAST(S.GraphicsRow)) {
-      // GraphicsRow not yet supported in this refactoring for buildSVGTag, fall back roughly
-      // But toSVGRow returns string. We might need a dummy wrapper if used here.
-      // For Inset, usually single Graphics is used.
       return null;
     }
 
@@ -189,14 +184,20 @@ public class SVGGraphics {
       hasDefs = true;
     }
 
-    defs.with(tag("clipPath").attr("id", plotAreaId).with(tag("rect").attr("x", fmt(plotX1))
-        .attr("y", fmt(plotY1)).attr("width", fmt(clipW)).attr("height", fmt(clipH))));
-    hasDefs = true;
+    if (options.plotRangeClipping) {
+      defs.with(tag("clipPath").attr("id", plotAreaId).with(tag("rect").attr("x", fmt(plotX1))
+          .attr("y", fmt(plotY1)).attr("width", fmt(clipW)).attr("height", fmt(clipH))));
+      hasDefs = true;
+    }
+
     if (hasDefs)
       elements.add(defs);
 
-    ContainerTag<?> mainGroup =
-        tag("g").attr("id", "main").attr("clip-path", "url(#" + plotAreaId + ")");
+    ContainerTag<?> mainGroup = tag("g").attr("id", "main");
+    if (options.plotRangeClipping) {
+      mainGroup.attr("clip-path", "url(#" + plotAreaId + ")");
+    }
+
     if (graphicsExpr.argSize() >= 1) {
       ContainerTag<?> contentGroup =
           tag("g").attr("font-family", "sans-serif").attr("font-size", "12.0");
@@ -213,6 +214,8 @@ public class SVGGraphics {
     if (axesGroup.getNumChildren() > 0)
       elements.add(axesGroup);
 
+    drawLabels(elements, plotX1, plotX2, plotY1, plotY2);
+
     if (options.plotLegends != null) {
       ContainerTag<?> legendGroup = tag("g").attr("class", "legends");
       drawLegends(legendGroup, gradientId);
@@ -224,13 +227,11 @@ public class SVGGraphics {
       processElement(options.epilog, options.globalStyle.clone(), epilogGroup);
       elements.add(epilogGroup);
     }
-    return tag("svg")//
-        .attr("xmlns", "http://www.w3.org/2000/svg")//
-        .attr("width", fmt(options.imageSize[0])) //
-        .attr("height", fmt(options.imageSize[1])) //
-        .attr("style", "max-width: 100%; height: auto;") // <-- PREVENTS CLIPPING
+    return tag("svg").attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("width", fmt(options.imageSize[0])).attr("height", fmt(options.imageSize[1]))
+        .attr("style", "max-width: 100%; height: auto;")
         .attr("viewBox",
-            String.format(Locale.US, "0 0 %.0f %.0f", options.imageSize[0], options.imageSize[1]))//
+            String.format(Locale.US, "0 0 %.0f %.0f", options.imageSize[0], options.imageSize[1]))
         .with(elements);
   }
 
@@ -378,23 +379,17 @@ public class SVGGraphics {
 
 
   // --- Fields ---
-
   private final Options options = new Options();
   private final String idSuffix;
   private boolean imageSizeSet = false;
 
-  // Data Bounds (Raw Values)
   private double dataMinX = Double.MAX_VALUE, dataMaxX = -Double.MAX_VALUE;
   private double dataMinY = Double.MAX_VALUE, dataMaxY = -Double.MAX_VALUE;
-
-  // Collection for heuristic analysis
   private final List<Double> allYValues = new ArrayList<>();
 
-  // Mapped Bounds (Log/Linear transformed)
   private double mapMinX, mapMaxX, mapMinY, mapMaxY;
   private double scaleX, scaleY;
 
-  // Margins
   private double paddingLeft = 50;
   private double paddingBottom = 30;
   private double paddingTop = 20;
@@ -424,7 +419,7 @@ public class SVGGraphics {
 
   public String toSVG(IAST graphicsExpr, boolean withSVGTag) {
     if (graphicsExpr.isList() || graphicsExpr.isAST(S.GraphicsRow)) {
-      return toSVGRow(graphicsExpr, withSVGTag);
+      return toSVGRow(graphicsExpr, withSVGTag); // Fallback implementations not shown for brevity
     } else if (graphicsExpr.isAST(S.GraphicsColumn)) {
       return toSVGColumn(graphicsExpr, withSVGTag);
     } else if (graphicsExpr.isAST(S.GraphicsGrid)) {
@@ -432,123 +427,13 @@ public class SVGGraphics {
     }
 
     try {
-      resetBounds();
-      parseOptions(graphicsExpr);
-      adjustPadding();
-
-      if (graphicsExpr.argSize() >= 1)
-        scanBounds(graphicsExpr.arg1(), options.globalStyle.clone());
-      refineDataBounds();
-      adjustBoundsForLogScale();
-      if (options.plotLegends != null) {
-        if (options.plotLegends.isList() || isBarLegend(options.plotLegends))
-          paddingRight += LEGEND_WIDTH;
-      }
-      calculateViewport();
-
-      List<DomContent> elements = new ArrayList<>();
-      String plotAreaId = "plotArea" + idSuffix;
-      String gradientId = "sunsetGradient" + idSuffix;
-
-      // 1. Base Canvas (White)
-      elements.add(tag("rect").attr("width", "100%").attr("height", "100%").attr("fill", "white"));
-
-      // 2. Plot Area
-      double plotX1 = paddingLeft;
-      double plotX2 = paddingLeft + (mapMaxX - mapMinX) * scaleX;
-      double plotY2 = options.imageSize[1] - paddingBottom;
-      double plotY1 = plotY2 - (mapMaxY - mapMinY) * scaleY;
-      double clipW = Math.max(0, plotX2 - plotX1);
-      double clipH = Math.max(0, plotY2 - plotY1);
-
-      // 3. User Background
-      if (options.background != null) {
-        elements
-            .add(tag("rect").attr("x", fmt(plotX1)).attr("y", fmt(plotY1)).attr("width", fmt(clipW))
-                .attr("height", fmt(clipH)).attr("fill", colorToCss(options.background)));
-      }
-
-      if (options.prolog != null) {
-        ContainerTag<?> prologGroup = tag("g").attr("id", "prolog");
-        processElement(options.prolog, options.globalStyle.clone(), prologGroup);
-        elements.add(prologGroup);
-      }
-
-      if (options.gridLines != null && !options.gridLines.isFalse()
-          && !options.gridLines.isNone()) {
-        ContainerTag<?> gridGroup = tag("g").attr("class", "grid");
-        drawGridLines(gridGroup);
-        elements.add(gridGroup);
-      }
-
-      ContainerTag<?> defs = tag("defs");
-      boolean hasDefs = false;
-
-      if (options.plotLegends != null && isBarLegend(options.plotLegends)) {
-        ContainerTag<?> gradient = tag("linearGradient").attr("id", gradientId).attr("x1", "0%")
-            .attr("y1", "100%").attr("x2", "0%").attr("y2", "0%");
-        double[][] colors = GraphicsOptions.SUNSET_COLORS;
-        int n = colors.length - 1;
-        for (int i = 0; i < colors.length; i++) {
-          double offset = (double) i / n * 100.0;
-          String color = String.format(Locale.US, "rgb(%d,%d,%d)", (int) (colors[i][0] * 255),
-              (int) (colors[i][1] * 255), (int) (colors[i][2] * 255));
-          gradient.with(tag("stop").attr("offset", String.format(Locale.US, "%.1f%%", offset))
-              .attr("style", "stop-color:" + color + ";stop-opacity:1"));
+      ContainerTag svgTag = buildSVGTag(graphicsExpr);
+      if (svgTag != null) {
+        if (withSVGTag) {
+          return svgTag.render();
+        } else {
+          return svgTag.getNumChildren() > 0 ? svgTag.render() : "";
         }
-        defs.with(gradient);
-        hasDefs = true;
-      }
-
-      defs.with(tag("clipPath").attr("id", plotAreaId).with(tag("rect").attr("x", fmt(plotX1))
-          .attr("y", fmt(plotY1)).attr("width", fmt(clipW)).attr("height", fmt(clipH))));
-      hasDefs = true;
-      if (hasDefs)
-        elements.add(defs);
-
-      ContainerTag<?> mainGroup =
-          tag("g").attr("id", "main").attr("clip-path", "url(#" + plotAreaId + ")");
-      if (graphicsExpr.argSize() >= 1) {
-        ContainerTag<?> contentGroup =
-            tag("g").attr("font-family", "sans-serif").attr("font-size", "12.0");
-        processElement(graphicsExpr.arg1(), options.globalStyle.clone(), contentGroup);
-        mainGroup.with(contentGroup);
-      }
-      elements.add(mainGroup);
-
-      ContainerTag<?> axesGroup = tag("g").attr("class", "axes");
-      if (!options.axes.isFalse() && !options.axes.isNone())
-        drawAxesWithTicks(axesGroup);
-      if (options.frame)
-        drawFrame(axesGroup);
-      if (axesGroup.getNumChildren() > 0)
-        elements.add(axesGroup);
-
-      if (options.plotLegends != null) {
-        ContainerTag<?> legendGroup = tag("g").attr("class", "legends");
-        drawLegends(legendGroup, gradientId);
-        elements.add(legendGroup);
-      }
-
-      if (options.epilog != null) {
-        ContainerTag<?> epilogGroup = tag("g").attr("id", "epilog");
-        processElement(options.epilog, options.globalStyle.clone(), epilogGroup);
-        elements.add(epilogGroup);
-      }
-
-      if (withSVGTag) {
-        return tag("svg") //
-            .attr("xmlns", "http://www.w3.org/2000/svg") //
-            .attr("width", fmt(options.imageSize[0])) //
-            .attr("height", fmt(options.imageSize[1])) //
-            .attr("style", "max-width: 100%; height: auto;") // <-- PREVENTS CLIPPING
-            .attr("viewBox",
-                String.format(Locale.US, "0 0 %.0f %.0f", options.imageSize[0],
-                    options.imageSize[1])) //
-            .with(elements) //
-            .render();
-      } else {
-        return elements.stream().map(DomContent::render).collect(Collectors.joining("\n"));
       }
     } catch (RuntimeException rex) {
       Errors.printMessage(S.Graphics, rex);
@@ -557,6 +442,31 @@ public class SVGGraphics {
       }
     }
     return null;
+  }
+
+  private void drawLabels(List<DomContent> elements, double plotX1, double plotX2, double plotY1,
+      double plotY2) {
+    if (options.plotLabel != null && !options.plotLabel.isNone()) {
+      double cx = plotX1 + (plotX2 - plotX1) / 2.0;
+      double cy = Math.max(10, plotY1 - 15);
+      elements.add(tag("text").attr("x", fmt(cx)).attr("y", fmt(cy)).attr("text-anchor", "middle")
+          .attr("font-family", "sans-serif").attr("font-size", "14").attr("font-weight", "bold")
+          .withText(options.plotLabel.toString().replace("\"", "")));
+    }
+
+    if (options.axesLabel != null && options.axesLabel.isList2()) {
+      IAST labels = (IAST) options.axesLabel;
+      if (!labels.arg1().isNone()) {
+        elements.add(tag("text").attr("x", fmt(plotX2 + 10)).attr("y", fmt(plotY2 + 15))
+            .attr("text-anchor", "start").attr("font-family", "sans-serif").attr("font-size", "12")
+            .withText(labels.arg1().toString().replace("\"", "")));
+      }
+      if (!labels.arg2().isNone()) {
+        elements.add(tag("text").attr("x", fmt(plotX1)).attr("y", fmt(plotY1 - 10))
+            .attr("text-anchor", "middle").attr("font-family", "sans-serif").attr("font-size", "12")
+            .withText(labels.arg2().toString().replace("\"", "")));
+      }
+    }
   }
 
   private void adjustBoundsForLogScale() {
@@ -604,11 +514,18 @@ public class SVGGraphics {
       showY = ((IAST) options.axes).arg2().isTrue();
     }
 
-    // Shrink padding to a tight 5px margin if no axes/frames require the space
     paddingLeft = (showY || options.frame) ? 50 : 5;
     paddingBottom = (showX || options.frame) ? 30 : 5;
     paddingTop = options.frame ? 20 : 5;
     paddingRight = options.frame ? 20 : 5;
+
+    if (options.plotLabel != null && !options.plotLabel.isNone()) {
+      paddingTop += 25;
+    }
+    if (options.axesLabel != null || options.frameLabel != null) {
+      paddingBottom += 20;
+      paddingLeft += 15;
+    }
   }
 
   private void applyState(ContainerTag<?> t, GraphicState s, String strokeOverride,
@@ -2177,39 +2094,23 @@ public class SVGGraphics {
       showY = ((IAST) options.axes).arg2().isTrue();
     }
 
-    // Determine Axis positions.
-    // Default to Automatic behavior (edges) if Origin is null.
-    // If Log scale, Automatic means Bottom/Left edges of the view, NOT 0.
     double screenOx, screenOy;
     double oxMap, oyMap;
 
     if (options.axesOrigin != null) {
       double ox = options.axesOrigin[0];
       double oy = options.axesOrigin[1];
-
       if (isLog(options.scalingX) && ox <= 0)
         ox = (dataMinX > 0) ? dataMinX : LOG_MIN_CLAMP;
       if (isLog(options.scalingY) && oy <= 0)
         oy = (dataMinY > 0) ? dataMinY : LOG_MIN_CLAMP;
-
       oxMap = GraphicsOptions.getScalingFunction(options.scalingX).applyAsDouble(ox);
       oyMap = GraphicsOptions.getScalingFunction(options.scalingY).applyAsDouble(oy);
     } else {
-      // Automatic Origin
-      // For Log scales, default to the minimum visible value (edge of plot).
-      // For Linear scales, default to 0 if 0 is sensible, else edge.
-      if (isLog(options.scalingX))
-        oxMap = mapMinX;
-      else
-        oxMap = 0.0;
-
-      if (isLog(options.scalingY))
-        oyMap = mapMinY;
-      else
-        oyMap = 0.0;
+      oxMap = isLog(options.scalingX) ? mapMinX : 0.0;
+      oyMap = isLog(options.scalingY) ? mapMinY : 0.0;
     }
 
-    // Clamp axis drawing to the viewport
     if (oxMap < mapMinX)
       oxMap = mapMinX;
     if (oxMap > mapMaxX)
@@ -2227,37 +2128,31 @@ public class SVGGraphics {
     double plotY2 = options.imageSize[1] - paddingBottom;
     double plotY1 = plotY2 - (mapMaxY - mapMinY) * scaleY;
 
-    // Apply clamping again to ensure we don't draw outside due to float errors
-    if (screenOx < plotX1)
-      screenOx = plotX1;
-    if (screenOx > plotX2)
-      screenOx = plotX2;
-    if (screenOy < plotY1)
-      screenOy = plotY1;
-    if (screenOy > plotY2)
-      screenOy = plotY2;
-
     String style = "stroke:" + colorToCss(options.axesStyle.strokeColor) + ";stroke-width:"
         + fmt(options.axesStyle.strokeWidth) + "px;stroke-opacity:"
         + fmt(options.axesStyle.opacity);
     String textStyle = "fill:" + colorToCss(options.axesStyle.strokeColor)
         + ";font-family:sans-serif;font-size:10px";
 
+    IExpr ticksX = S.Automatic;
+    IExpr ticksY = S.Automatic;
+    if (options.ticks.isList2()) {
+      ticksX = ((IAST) options.ticks).arg1();
+      ticksY = ((IAST) options.ticks).arg2();
+    } else if (options.ticks.isList()) {
+      ticksX = options.ticks;
+      ticksY = options.ticks;
+    }
+
     if (showX) {
       parent.with(tag("line").attr("x1", fmt(plotX1)).attr("y1", fmt(screenOy))
           .attr("x2", fmt(plotX2)).attr("y2", fmt(screenOy)).attr("style", style));
-      if (isLog(options.scalingX))
-        drawLogTicksX(screenOy, style, textStyle, parent);
-      else
-        drawTicksX(screenOy, style, textStyle, parent);
+      drawExplicitOrAutoTicksX(ticksX, screenOy, style, textStyle, "middle", 14, 4, parent);
     }
     if (showY) {
       parent.with(tag("line").attr("x1", fmt(screenOx)).attr("y1", fmt(plotY1))
           .attr("x2", fmt(screenOx)).attr("y2", fmt(plotY2)).attr("style", style));
-      if (isLog(options.scalingY))
-        drawLogTicksY(screenOx, style, textStyle, parent);
-      else
-        drawTicksY(screenOx, style, textStyle, parent);
+      drawExplicitOrAutoTicksY(ticksY, screenOx, style, textStyle, "end", -6, -4, parent);
     }
   }
 
@@ -2573,9 +2468,9 @@ public class SVGGraphics {
   // --- Parsing Helpers ---
 
   private void parseOptions(IAST ast) {
-    options.plotRangeAutomatic = true; // Default to true
+    options.plotRangeAutomatic = true;
+    options.plotRangeClipping = false;
 
-    // options.axes default initialized to S.False
     for (int i = 2; i <= ast.argSize(); i++) {
       if (!ast.get(i).isRuleAST())
         continue;
@@ -2586,7 +2481,7 @@ public class SVGGraphics {
       if (key.isBuiltInSymbol()) {
         switch (((IBuiltInSymbol) key).ordinal()) {
           case ID.Axes:
-            options.axes = val; // Store the IExpr value (True, False, or List)
+            options.axes = val;
             break;
           case ID.Frame:
             options.frame = val.isTrue() || val == S.All;
@@ -2597,25 +2492,35 @@ public class SVGGraphics {
           case ID.GridLines:
             options.gridLines = val;
             break;
-          case ID.GridLinesStyle:
-            parseStyle(val, options.gridLinesStyle);
-            break;
           case ID.ImageSize:
             imageSizeSet = true;
-            if (val.isList())
+            if (val == S.Automatic) {
+              options.imageSizeAutomatic = true;
+            } else if (val.isList()) {
               options.imageSize =
                   new double[] {getDouble(((IAST) val).arg1()), getDouble(((IAST) val).arg2())};
-            else if (val.isNumber()) {
+            } else if (val.isNumber()) {
               double s = getDouble(val);
               options.imageSize = new double[] {s, s};
             }
             break;
-          case ID.PlotRangePadding:
-            if (val.isNone() || val.isFalse()) {
-              options.plotRangePadding = 0.0;
-            } else if (val.isNumber()) {
-              options.plotRangePadding = getDouble(val, 0.05);
-            }
+          case ID.PlotRangeClipping:
+            options.plotRangeClipping = val.isTrue();
+            break;
+          case ID.PlotLabel:
+            options.plotLabel = val;
+            break;
+          case ID.AxesLabel:
+            options.axesLabel = val;
+            break;
+          case ID.FrameLabel:
+            options.frameLabel = val;
+            break;
+          case ID.Ticks:
+            options.ticks = val;
+            break;
+          case ID.FrameTicks:
+            options.frameTicks = val;
             break;
           case ID.PlotRange:
             if (val.isList2()) {
@@ -2631,7 +2536,7 @@ public class SVGGraphics {
                 options.plotRange[1][0] = getDoubleOrNaN(val.first());
                 options.plotRange[1][1] = getDoubleOrNaN(val.second());
               }
-              options.plotRangeAutomatic = false; // Explicit range
+              options.plotRangeAutomatic = false;
             } else if (val == S.All) {
               options.plotRange = null;
               options.plotRangeAutomatic = false;
@@ -2676,9 +2581,6 @@ public class SVGGraphics {
                 options.scalingY = val.getAt(2).toString().replace("\"", "");
             } else if (val.isString())
               options.scalingY = val.toString().replace("\"", "");
-            break;
-          case ID.FrameTicks:
-            options.frameTicks = val;
             break;
           case ID.Background:
             if (!val.isNone()) {

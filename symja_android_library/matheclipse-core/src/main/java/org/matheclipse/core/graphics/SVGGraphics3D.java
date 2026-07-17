@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.ISymbol;
 import j2html.tags.DomContent;
 import j2html.tags.UnescapedText;
 
@@ -34,9 +35,6 @@ import j2html.tags.UnescapedText;
  */
 public class SVGGraphics3D {
 
-  /**
-   * Represents a point or vector in 3D space.
-   */
   private static class Vector3 {
     double x, y, z;
 
@@ -65,7 +63,6 @@ public class SVGGraphics3D {
     Vector3 cross(Vector3 v) {
       return new Vector3(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
     }
-
     Vector3 normalize() {
       double len = Math.sqrt(x * x + y * y + z * z);
       if (len == 0)
@@ -74,22 +71,32 @@ public class SVGGraphics3D {
     }
   }
 
-  /**
-   * A 4x4 matrix used for 3D view projection calculations.
-   */
+  private static class LightConfig {
+    String type;
+    Color color;
+    double intensity = 1.0;
+    Vector3 position;
+    Vector3 target;
+    double angle;
+    double distance;
+
+    public LightConfig(String type, Color color) {
+      this.type = type;
+      this.color = color;
+    }
+  }
+
   private static class Matrix4 {
     double[] val = new double[16];
 
     Matrix4() {
       identity();
     }
-
     void identity() {
       for (int i = 0; i < 16; i++)
         val[i] = 0;
       val[0] = val[5] = val[10] = val[15] = 1;
     }
-
     static Matrix4 lookAt(Vector3 eye, Vector3 center, Vector3 up) {
       Vector3 f = center.sub(eye).normalize();
       Vector3 s = f.cross(up).normalize();
@@ -110,7 +117,6 @@ public class SVGGraphics3D {
       m.val[14] = f.dot(eye);
       return m;
     }
-
     Vector3 project(Vector3 v) {
       double x = v.x * val[0] + v.y * val[4] + v.z * val[8] + val[12];
       double y = v.x * val[1] + v.y * val[5] + v.z * val[9] + val[13];
@@ -119,14 +125,9 @@ public class SVGGraphics3D {
     }
   }
 
-  /**
-   * Encapsulates the global transformation state for projecting coordinates according to
-   * {@code BoxRatios} and the camera {@code ViewPoint}.
-   */
   private static class ViewContext {
     Matrix4 viewMatrix;
     Vector3 dataScale;
-
     Vector3 project(Vector3 pRaw) {
       Vector3 scaled =
           new Vector3(pRaw.x * dataScale.x, pRaw.y * dataScale.y, pRaw.z * dataScale.z);
@@ -134,17 +135,12 @@ public class SVGGraphics3D {
     }
   }
 
-  /**
-   * Tracks the current styling directives (color, opacity, line thickness) as the AST is
-   * recursively traversed.
-   */
   private static class RenderState implements Cloneable {
     Color color = Color.BLACK;
     double opacity = 1.0;
     double thickness = 1.0;
     boolean dashed = false;
-    boolean hideEdges = false; // Used to hide wireframes on smooth solid bodies
-
+    boolean hideEdges = false;
     @Override
     public RenderState clone() {
       try {
@@ -307,21 +303,51 @@ public class SVGGraphics3D {
    * @return A valid HTML SVG string representation of the 3D scene.
    */
   public static String toSVG(IAST graphics3D) {
-
-    // 1. Parse Options
+    // Default Options
     Vector3 viewPoint = new Vector3(1.3, -2.4, 2);
     Vector3 viewVertical = new Vector3(0, 0, 1);
+    Vector3 viewCenterRel = new Vector3(0.5, 0.5, 0.5);
     double[] boxRatios = {1.0, 1.0, 1.0};
+    double[] imageSize = {500.0, 500.0};
+    boolean sphericalRegion = false;
+    double[][] plotRange = null;
+
+    // 1. Parse Core Options
+    IExpr isOpt = extractOption(graphics3D, "ImageSize");
+    if (isOpt != null) {
+      if (isOpt.isList() && ((IAST) isOpt).size() >= 2) {
+        imageSize[0] = getDouble(((IAST) isOpt).get(1), 500.0);
+        imageSize[1] = getDouble(((IAST) isOpt).get(2), 500.0);
+      } else if (isOpt.isNumber()) {
+        double s = getDouble(isOpt, 500.0);
+        imageSize[0] = s;
+        imageSize[1] = s;
+      }
+    }
+
+    IExpr prOpt = extractOption(graphics3D, "PlotRange");
+    if (prOpt != null && prOpt.isList() && ((IAST) prOpt).size() >= 3) {
+      plotRange = new double[3][2];
+      IAST prList = (IAST) prOpt;
+      for (int i = 1; i <= 3; i++) {
+        if (prList.get(i).isList()) {
+          plotRange[i - 1][0] = getDouble(((IAST) prList.get(i)).get(1), -Double.MAX_VALUE);
+          plotRange[i - 1][1] = getDouble(((IAST) prList.get(i)).get(2), Double.MAX_VALUE);
+        }
+      }
+    }
+
+    IExpr srOpt = extractOption(graphics3D, "SphericalRegion");
+    if (srOpt != null)
+      sphericalRegion = srOpt.isTrue();
 
     IExpr vpOpt = extractOption(graphics3D, "ViewPoint");
     if (vpOpt != null && vpOpt.isList())
       viewPoint = parseVector((IAST) vpOpt, viewPoint);
 
-    Vector3 viewCenterRel = new Vector3(0.5, 0.5, 0.5);
     IExpr vcOpt = extractOption(graphics3D, "ViewCenter");
-    if (vcOpt != null && vcOpt.isList()) {
+    if (vcOpt != null && vcOpt.isList())
       viewCenterRel = parseVector((IAST) vcOpt, viewCenterRel);
-    }
 
     IExpr vvOpt = extractOption(graphics3D, "ViewVertical");
     if (vvOpt != null && vvOpt.isList())
@@ -329,30 +355,45 @@ public class SVGGraphics3D {
 
     IExpr brOpt = extractOption(graphics3D, "BoxRatios");
     if (brOpt != null && brOpt.isList()) {
-      boxRatios[0] = getDouble(((IAST) brOpt).arg1(), 1.0);
-      boxRatios[1] = getDouble(((IAST) brOpt).arg2(), 1.0);
-      boxRatios[2] = getDouble(((IAST) brOpt).arg3(), 1.0);
+      boxRatios[0] = getDouble(((IAST) brOpt).get(1), 1.0);
+      boxRatios[1] = getDouble(((IAST) brOpt).get(2), 1.0);
+      boxRatios[2] = getDouble(((IAST) brOpt).get(3), 1.0);
     }
 
     boolean[] showAxes = {false, false, false};
     IExpr axesOpt = extractOption(graphics3D, "Axes");
     if (axesOpt != null) {
-      if (axesOpt.isTrue()) {
+      if (axesOpt.isTrue())
         showAxes[0] = showAxes[1] = showAxes[2] = true;
-      } else if (axesOpt.isList() && ((IAST) axesOpt).size() >= 4) {
+      else if (axesOpt.isList() && ((IAST) axesOpt).size() >= 4) {
         showAxes[0] = !((IAST) axesOpt).get(1).isFalse();
         showAxes[1] = !((IAST) axesOpt).get(2).isFalse();
         showAxes[2] = !((IAST) axesOpt).get(3).isFalse();
       }
     }
 
-    // 2. Scan Bounding Box
+    // 2. Parse Lighting
+    List<LightConfig> lights = new ArrayList<>();
+    parseLightingOption(graphics3D, lights);
+    if (lights.isEmpty())
+      addDefaultLighting(lights);
+
+    // 3. Scan Bounding Box
     List<Vector3> allPointsRaw = new ArrayList<>();
     collectPoints(graphics3D, allPointsRaw);
 
     Vector3 min = new Vector3(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
     Vector3 max = new Vector3(-Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE);
+
     for (Vector3 p : allPointsRaw) {
+      if (plotRange != null) {
+        if (p.x < plotRange[0][0] || p.x > plotRange[0][1])
+          continue;
+        if (p.y < plotRange[1][0] || p.y > plotRange[1][1])
+          continue;
+        if (p.z < plotRange[2][0] || p.z > plotRange[2][1])
+          continue;
+      }
       min.x = Math.min(min.x, p.x);
       min.y = Math.min(min.y, p.y);
       min.z = Math.min(min.z, p.z);
@@ -391,6 +432,10 @@ public class SVGGraphics3D {
         scaledMin.y + viewCenterRel.y * sBboxY, scaledMin.z + viewCenterRel.z * sBboxZ);
 
     double maxDim = Math.max(sBboxX, Math.max(sBboxY, sBboxZ));
+    if (sphericalRegion) {
+      maxDim = Math.sqrt(sBboxX * sBboxX + sBboxY * sBboxY + sBboxZ * sBboxZ);
+    }
+
     Vector3 eye = new Vector3(center.x + viewPoint.x * maxDim, center.y + viewPoint.y * maxDim,
         center.z + viewPoint.z * maxDim);
 
@@ -401,17 +446,15 @@ public class SVGGraphics3D {
     // 4. Collect Renderables
     List<Renderable> renderables = new ArrayList<>();
     RenderState state = new RenderState();
-
-    processExpr(graphics3D.arg1(), state, null, renderables, vCtx);
+    processExpr(graphics3D.arg1(), state, null, renderables, vCtx, lights);
 
     boolean boxed = true;
     IExpr boxedOpt = extractOption(graphics3D, "Boxed");
     if (boxedOpt != null && boxedOpt.isFalse())
       boxed = false;
 
-    if (boxed) {
+    if (boxed)
       createBox(min, max, vCtx, renderables);
-    }
 
     IExpr axesEdgeOpt = extractOption(graphics3D, "AxesEdge");
     createAxes(min, max, vCtx, renderables, showAxes, eye, axesEdgeOpt);
@@ -419,23 +462,19 @@ public class SVGGraphics3D {
     // 5. Sort via Painter's Algorithm
     Collections.sort(renderables);
 
-    // 6. Generate SVG in Pixel Coordinates
-    int width = 500;
-    int height = 500;
+    // 6. Generate SVG
     double padding = 25.0;
-
     java.util.Set<Vector3> uniquePoints =
         Collections.newSetFromMap(new java.util.IdentityHashMap<>());
     for (Renderable r : renderables) {
-      if (r instanceof RenderablePolygon) {
+      if (r instanceof RenderablePolygon)
         uniquePoints.addAll(((RenderablePolygon) r).points);
-      } else if (r instanceof RenderableLine) {
+      else if (r instanceof RenderableLine)
         uniquePoints.addAll(((RenderableLine) r).points);
-      } else if (r instanceof RenderablePoint) {
+      else if (r instanceof RenderablePoint)
         uniquePoints.add(((RenderablePoint) r).point);
-      } else if (r instanceof RenderableText) {
+      else if (r instanceof RenderableText)
         uniquePoints.add(((RenderableText) r).point);
-      }
     }
 
     double minX = Double.MAX_VALUE, maxX = -Double.MAX_VALUE;
@@ -462,34 +501,133 @@ public class SVGGraphics3D {
     if (rangeY == 0)
       rangeY = 1.0;
 
-    double scale = Math.min((width - 2 * padding) / rangeX, (height - 2 * padding) / rangeY);
+    double scale =
+        Math.min((imageSize[0] - 2 * padding) / rangeX, (imageSize[1] - 2 * padding) / rangeY);
 
     double contentWidth = rangeX * scale;
     double contentHeight = rangeY * scale;
-    double shiftX = padding + (width - 2 * padding - contentWidth) / 2.0;
-    double shiftY = padding + (height - 2 * padding - contentHeight) / 2.0;
+    double shiftX = padding + (imageSize[0] - 2 * padding - contentWidth) / 2.0;
+    double shiftY = padding + (imageSize[1] - 2 * padding - contentHeight) / 2.0;
 
     for (Vector3 p : uniquePoints) {
       p.x = (p.x - minX) * scale + shiftX;
-      p.y = height - ((p.y - minY) * scale + shiftY);
+      p.y = imageSize[1] - ((p.y - minY) * scale + shiftY);
     }
 
     List<DomContent> content = new ArrayList<>();
-    for (Renderable r : renderables) {
+    for (Renderable r : renderables)
       content.add(r.toSVG());
-    }
 
-    return tag("svg").with(content).attr("xmlns", "http://www.w3.org/2000/svg").attr("width", width)
-        .attr("height", height).attr("viewBox", "0 0 " + width + " " + height).render();
+    return tag("svg").with(content).attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("width", imageSize[0]).attr("height", imageSize[1])
+        .attr("viewBox", "0 0 " + imageSize[0] + " " + imageSize[1]).render();
   }
 
+  private static void parseLightingOption(IAST graphics, List<LightConfig> lights) {
+    for (int i = 1; i < graphics.size(); i++) {
+      IExpr arg = graphics.get(i);
+      if (arg.isRuleAST() && ((IAST) arg).arg1() == S.Lighting) {
+        IExpr value = ((IAST) arg).arg2();
+        if (value.isString()) {
+          if ("Neutral".equalsIgnoreCase(value.toString()))
+            addNeutralLighting(lights);
+          else
+            addDefaultLighting(lights);
+        } else if (value.isList()) {
+          IAST list = (IAST) value;
+          for (int j = 1; j < list.size(); j++) {
+            if (list.get(j).isAST()) {
+              IAST spec = (IAST) list.get(j);
+              ISymbol head = spec.topHead();
+              Color col = (spec.argSize() >= 1) ? parseRawColor(spec.arg1()) : Color.WHITE;
+              if (head.ordinal() == ID.AmbientLight)
+                lights.add(new LightConfig("AmbientLight", col));
+              else if (head.ordinal() == ID.DirectionalLight) {
+                LightConfig l = new LightConfig("DirectionalLight", col);
+                if (spec.argSize() >= 2)
+                  l.position = parseVector((IAST) spec.arg2(), new Vector3(1, 1, 1));
+                lights.add(l);
+              } else if (head.ordinal() == ID.PointLight) {
+                LightConfig l = new LightConfig("PointLight", col);
+                if (spec.argSize() >= 2)
+                  l.position = parseVector((IAST) spec.arg2(), new Vector3(0, 0, 0));
+                lights.add(l);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private static void addDefaultLighting(List<LightConfig> lights) {
+    lights.add(new LightConfig("AmbientLight", new Color(0x50, 0x50, 0x50)));
+    double[][] positions = {{10, 10, 10}, {-10, 10, 10}, {10, -10, 10}, {-10, -10, 10}};
+    for (double[] pos : positions) {
+      LightConfig l = new LightConfig("DirectionalLight", Color.WHITE);
+      l.intensity = 0.4;
+      l.position = new Vector3(pos[0], pos[1], pos[2]);
+      lights.add(l);
+    }
+  }
+
+  private static void addNeutralLighting(List<LightConfig> lights) {
+    lights.add(new LightConfig("AmbientLight", new Color(0x40, 0x40, 0x40)));
+    double[][] dirs = {{1, 1, 1}, {-1, -1, 1}, {-1, 1, 1}, {1, -1, 1}};
+    for (double[] d : dirs) {
+      LightConfig dl = new LightConfig("DirectionalLight", Color.WHITE);
+      dl.intensity = 0.5;
+      dl.position = new Vector3(d[0], d[1], d[2]);
+      lights.add(dl);
+    }
+  }
+
+  private static Color calculateLighting(Color baseColor, List<Vector3> points,
+      List<LightConfig> lights) {
+    if (points.size() < 3)
+      return baseColor;
+
+    Vector3 v0 = points.get(0);
+    Vector3 v1 = points.get(1);
+    Vector3 v2 = points.get(2);
+    Vector3 edge1 = v1.sub(v0);
+    Vector3 edge2 = v2.sub(v0);
+    Vector3 normal = edge1.cross(edge2).normalize();
+
+    double rOut = 0, gOut = 0, bOut = 0;
+
+    for (LightConfig light : lights) {
+      if (light.type.equals("AmbientLight")) {
+        rOut += (baseColor.getRed() / 255.0) * (light.color.getRed() / 255.0);
+        gOut += (baseColor.getGreen() / 255.0) * (light.color.getGreen() / 255.0);
+        bOut += (baseColor.getBlue() / 255.0) * (light.color.getBlue() / 255.0);
+      } else if (light.type.equals("DirectionalLight")) {
+        Vector3 lightDir = light.position.normalize();
+        double diffuse = Math.abs(normal.dot(lightDir)) * light.intensity;
+        rOut += (baseColor.getRed() / 255.0) * (light.color.getRed() / 255.0) * diffuse;
+        gOut += (baseColor.getGreen() / 255.0) * (light.color.getGreen() / 255.0) * diffuse;
+        bOut += (baseColor.getBlue() / 255.0) * (light.color.getBlue() / 255.0) * diffuse;
+      } else if (light.type.equals("PointLight")) {
+        Vector3 lightDir = light.position.sub(v0).normalize();
+        double diffuse = Math.max(0, normal.dot(lightDir)) * light.intensity;
+        rOut += (baseColor.getRed() / 255.0) * (light.color.getRed() / 255.0) * diffuse;
+        gOut += (baseColor.getGreen() / 255.0) * (light.color.getGreen() / 255.0) * diffuse;
+        bOut += (baseColor.getBlue() / 255.0) * (light.color.getBlue() / 255.0) * diffuse;
+      }
+    }
+
+    return new Color((int) Math.min(255, Math.max(0, rOut * 255)),
+        (int) Math.min(255, Math.max(0, gOut * 255)), (int) Math.min(255, Math.max(0, bOut * 255)));
+  }
+
+  // Update processExpr to pass `lights` down the chain to geometry creators.
   private static void processExpr(IExpr expr, RenderState state, ComplexContext context,
-      List<Renderable> renderables, ViewContext vCtx) {
+      List<Renderable> renderables, ViewContext vCtx, List<LightConfig> lights) {
     if (expr.isList()) {
       RenderState scopedState = state.clone();
       IAST list = (IAST) expr;
       for (int i = 1; i < list.size(); i++) {
-        processExpr(list.get(i), scopedState, context, renderables, vCtx);
+        processExpr(list.get(i), scopedState, context, renderables, vCtx, lights);
       }
       return;
     }
@@ -520,7 +658,7 @@ public class SVGGraphics3D {
             tfPts.add(vCtx.project(p));
           }
           ComplexContext newContext = new ComplexContext(rawPts, tfPts);
-          processExpr(ast.arg2(), state, newContext, renderables, vCtx);
+          processExpr(ast.arg2(), state, newContext, renderables, vCtx, lights);
         }
       }
     } else if (head.equals(S.Line)) {
@@ -582,7 +720,7 @@ public class SVGGraphics3D {
         }
       }
     } else if (head.equals(S.GraphicsGroup)) {
-      processExpr(ast.arg1(), state, context, renderables, vCtx);
+      processExpr(ast.arg1(), state, context, renderables, vCtx, lights);
     } else if (head.equals(S.RGBColor) || head.equals(S.Hue) || head.equals(S.GrayLevel)
         || head.equals(S.CMYKColor)) {
       state.color = parseColor(ast);
@@ -1035,38 +1173,6 @@ public class SVGGraphics3D {
     }
   }
 
-  private static Vector3 parseVector(IAST list, Vector3 def) {
-    if (list.size() >= 4) {
-      return new Vector3(getDouble(list.get(1), def.x), getDouble(list.get(2), def.y),
-          getDouble(list.get(3), def.z));
-    }
-    return def;
-  }
-
-  private static double getDouble(IExpr expr, double def) {
-    try {
-      if (expr instanceof INumber)
-        return ((INumber) expr).reDoubleValue();
-      return expr.evalf();
-    } catch (RuntimeException e) {
-      return def;
-    }
-  }
-
-  private static IExpr extractOption(IAST ast, String optionName) {
-    for (int i = 1; i < ast.size(); i++) {
-      IExpr arg = ast.get(i);
-      if (arg.isRuleAST() && ((IAST) arg).arg1().toString().equals(optionName)) {
-        return ((IAST) arg).arg2();
-      } else if (arg.isList()) {
-        IExpr res = extractOption((IAST) arg, optionName);
-        if (res != null)
-          return res;
-      }
-    }
-    return null;
-  }
-
   private static String colorToHex(Color c) {
     return String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
   }
@@ -1309,7 +1415,51 @@ public class SVGGraphics3D {
     return new Color(r, g, b);
   }
 
+  private static Color parseRawColor(IExpr expr) {
+    if (expr instanceof INumber) {
+      float g = (float) ((INumber) expr).reDoubleValue();
+      return new Color(clamp(g), clamp(g), clamp(g));
+    }
+    if (expr.isList()) {
+      IAST list = (IAST) expr;
+      if (list.size() >= 4)
+        return new Color(clamp(getDouble(list.get(1), 0)), clamp(getDouble(list.get(2), 0)),
+            clamp(getDouble(list.get(3), 0)));
+    }
+    return Color.WHITE;
+  }
   private static float clamp(double val) {
     return (float) Math.max(0.0, Math.min(1.0, val));
+  }
+
+  private static double getDouble(IExpr expr, double def) {
+    try {
+      if (expr instanceof INumber)
+        return ((INumber) expr).reDoubleValue();
+      return expr.evalf();
+    } catch (RuntimeException e) {
+      return def;
+    }
+  }
+
+  private static Vector3 parseVector(IAST list, Vector3 def) {
+    if (list.size() >= 4) {
+      return new Vector3(getDouble(list.get(1), def.x), getDouble(list.get(2), def.y),
+          getDouble(list.get(3), def.z));
+    }
+    return def;
+  }
+
+  private static IExpr extractOption(IAST ast, String optionName) {
+    for (int i = 1; i < ast.size(); i++) {
+      IExpr arg = ast.get(i);
+      if (arg.isRuleAST() && ((IAST) arg).arg1().toString().equals(optionName)) {
+        return ((IAST) arg).arg2();
+      } else if (arg.isList()) {
+        IExpr res = extractOption((IAST) arg, optionName);
+        if (res != null) return res;
+      }
+    }
+    return null;
   }
 }
