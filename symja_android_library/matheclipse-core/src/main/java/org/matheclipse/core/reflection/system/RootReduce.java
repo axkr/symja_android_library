@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.CompareUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -16,7 +17,11 @@ public class RootReduce extends AbstractFunctionEvaluator {
   /** {@inheritDoc} */
   @Override
   public IExpr evaluate(final IAST ast, EvalEngine engine) {
-    IExpr arg1 = ast.arg1();
+    final IExpr arg1 = ast.arg1();
+    IAST list = CompareUtil.threadListLogicEquationOperators(arg1, ast, 1);
+    if (list.isPresent()) {
+      return list;
+    }
 
     // Fast path: already a Root object – return as-is (accept 2- and 3-arg forms)
     if (arg1.isAST(S.Root, 3) || arg1.isAST(S.Root, 4)) {
@@ -36,7 +41,7 @@ public class RootReduce extends AbstractFunctionEvaluator {
         IExpr p1 = base.first();
         IExpr p2 = base.second();
         if ((p1.isRational() || p1.isFactorSqrtExpr()) && p2.isFactorSqrtExpr()) {
-          IRational denominator = (IRational) F.Subtract.of(F.Sqr(p1), F.Sqr(p2));
+          IRational denominator = (IRational) S.Subtract.of(engine, F.Sqr(p1), F.Sqr(p2));
           IAST numerator = F.Subtract(p1, p2);
           return F.Divide(numerator, denominator);
         }
@@ -53,7 +58,7 @@ public class RootReduce extends AbstractFunctionEvaluator {
       }
 
       // Step 1: compute the minimal polynomial as a pure Function of Slot(1)
-      IExpr minPoly = engine.evaluate(F.MinimalPolynomial(arg1));
+      IExpr minPoly = S.MinimalPolynomial.funEval(engine, arg1);
       if (minPoly.isNIL() || minPoly.equals(arg1)) {
         return F.NIL;
       }
@@ -71,20 +76,20 @@ public class RootReduce extends AbstractFunctionEvaluator {
       IExpr degree = engine.evaluate(F.Exponent(polyInX, x));
       if (F.C1.equals(degree)) {
         // Degree 1 → rational, solve directly: return -c0/c1
-        IExpr c1 = engine.evaluate(F.Coefficient(polyInX, x, F.C1));
-        IExpr c0 = engine.evaluate(F.Coefficient(polyInX, x, F.C0));
+        IExpr c1 = S.Coefficient.funEval(engine, polyInX, x, F.C1);
+        IExpr c0 = S.Coefficient.funEval(engine, polyInX, x, F.C0);
         return engine.evaluate(F.Divide(F.Negate(c0), c1));
       }
 
       // Step 4: compute numerical roots of the minimal polynomial
-      IExpr nrootsResult = engine.evaluate(F.NRoots(polyInX, x));
+      IExpr nrootsResult = S.NRoots.funEval(engine, polyInX, x);
       if (!nrootsResult.isList()) {
         return F.NIL;
       }
       IAST rootsList = (IAST) nrootsResult;
 
       // Step 4b: reorder roots to match WMA's k-indexing used by Root[f, k, 0]:
-      //   real roots first (ascending), then complex roots (Re ascending, Im ascending).
+      // real roots first (ascending), then complex roots (Re ascending, Im ascending).
       // This must agree with the sort in ToRadicals.rootToRadicals so that the resulting
       // Root[..., k, 0] expands back to the same algebraic number.
       final int nRoots = rootsList.argSize();
@@ -127,7 +132,7 @@ public class RootReduce extends AbstractFunctionEvaluator {
       }
 
       // Step 5: numerically evaluate the input expression
-      IExpr numericArg1 = engine.evaluate(F.N(arg1));
+      IExpr numericArg1 = S.N.funEval(engine, arg1);
       if (!numericArg1.isNumber()) {
         return F.NIL;
       }
@@ -172,7 +177,5 @@ public class RootReduce extends AbstractFunctionEvaluator {
   }
 
   @Override
-  public void setUp(final ISymbol newSymbol) {
-    newSymbol.setAttributes(ISymbol.LISTABLE);
-  }
+  public void setUp(final ISymbol newSymbol) {}
 }
