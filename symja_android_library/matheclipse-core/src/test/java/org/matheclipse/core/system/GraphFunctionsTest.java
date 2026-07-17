@@ -9,8 +9,11 @@ import org.matheclipse.core.eval.EvalEngine;
 public class GraphFunctionsTest extends ExprEvaluatorTestCase {
   @Test
   public void testAdjacencyGraph() {
-    check("AdjacencyGraph({{0,1,1,0},{0,0,1,0},{0,0,0,0},{0,1,0,0}})", //
-        "Graph({1,2,3,4},{1->2,1->3,2->3,4->2})");
+    check("AdjacencyGraph(SparseArray({{i_, j_} /; 0<Abs(i-j) <= 3 -> 1}, {6, 6}))// InputForm", //
+        "Graph({1,2,3,4,5,6},{Null,SparseArray(Automatic,{6,6},0,{1,{{0,3,7,12,17,21,24},{{2},{3},{4},{1},{3},{4},{5},{1},{2},{4},{5},{6},{1},{2},{3},{5},{6},{2},{3},{4},{6},{3},{4},{5}}},Pattern})})");
+    check("AdjacencyGraph({{0,1,1,0},{0,0,1,0},{0,0,0,0},{0,1,0,0}}) // InputForm", //
+        "Graph({1,2,3,4},{Null,SparseArray(Automatic,{4,4},0,{1,{{0,2,3,3,4},{{2},{3},{3},{2}}},Pattern})})");
+
   }
 
   @Test
@@ -244,12 +247,9 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
             + " UndirectedEdge(3,7), UndirectedEdge(6,4), UndirectedEdge(4,7), UndirectedEdge(4,5), UndirectedEdge(5,1)})", //
         "{3,4,1}");
 
-    // print: Graph must be undirected
-    // TODO implement for directed graphs
     check(
-        "FindVertexCover({DirectedEdge(2,1), DirectedEdge(1,3), DirectedEdge(3,6), DirectedEdge(6,1)," //
-            + " DirectedEdge(4,6), DirectedEdge(1,5), DirectedEdge(5,4) })", //
-        "FindVertexCover({2->1,1->3,3->6,6->1,4->6,1->5,5->4})");
+        "FindVertexCover({DirectedEdge(2,1), DirectedEdge(1,3), DirectedEdge(3,6), DirectedEdge(6,1),DirectedEdge(4,6), DirectedEdge(1,5), DirectedEdge(5,4) })", //
+        "{1,6,4}");
   }
 
   @Test
@@ -395,7 +395,15 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testGraphSparseArray() {
+    check(
+        "Graph({1,2,3,4,5,6}, {Null,SparseArray(Automatic, {6, 6}, 0,  {1, {{0, 3, 7, 12, 17, 21, 24}, {{2}, {3}, {4}, {1}, {3}, {4}, {5}, {1}, {2}, {4}, {5}, {6}, {1}, {2}, {3}, {5}, {6}, {2}, {3}, {4}, {6}, {3}, {4}, {5}}},Pattern})}) // InputForm", //
+        "Graph({1,2,3,4,5,6},{Null,SparseArray(Automatic,{6,6},0,{1,{{0,3,7,12,17,21,24},{{2},{3},{4},{1},{3},{4},{5},{1},{2},{4},{5},{6},{1},{2},{3},{5},{6},{2},{3},{4},{6},{3},{4},{5}}},Pattern})})");
+  }
+
+  @Test
   public void testGraph() {
+
     check("Graph({1,2,3},{1<->2,2<->3,3<->1}) // InputForm", //
         "Graph({1,2,3},{1<->2,2<->3,3<->1})");
 
@@ -822,6 +830,372 @@ public class GraphFunctionsTest extends ExprEvaluatorTestCase {
     check("WheelGraph(4) // AdjacencyMatrix // Normal", //
         "{{0,1,1,1},{1,0,1,1},{1,1,0,1},{1,1,1,0}}");
   }
+
+  @Test
+  public void testGraphQTruthTable() {
+    check("GraphQ(Graph({1,2},{1->2}))", "True");
+    check("GraphQ(Graph({1,2},{1<->2}))", "True");
+    check("GraphQ(Graph({1,2,3},{1->2,2->3}))", "True");
+    check("GraphQ(5)", "False");
+    check("GraphQ(foo)", "False");
+  }
+
+  // TODO
+  // @Test
+  // public void testGraphRejections() {
+  // check("GraphQ(Graph({1},{1->1}))", "False");
+  // check("GraphQ(Graph({1,2},{1->2,1->2}))", "False");
+  // check("GraphQ(Graph({1,2},{1<->2,2<->1}))", "False");
+  // check("GraphQ(Graph({1,2},{DirectedEdge(1,2,x)}))", "False");
+  // check("GraphQ(Graph({1,2},{1->3}))", "False");
+  // check("GraphQ(Graph({1,2},{1->2,2->1}))", "True");
+  // }
+
+  @Test
+  public void testQueryBuiltins() {
+    String g = "Graph({1,2,3,4},{1->2,2->3,3->4,4->1})";
+    check("VertexList(" + g + ")", "{1,2,3,4}");
+    check("VertexCount(" + g + ")", "4");
+    check("EdgeCount(" + g + ")", "4");
+    check("VertexDegree(" + g + ", 1)", "2");
+    check("VertexInDegree(" + g + ", 1)", "1");
+    check("VertexOutDegree(" + g + ", 1)", "1");
+    check("VertexDegree(" + g + ")", "{2,2,2,2}");
+    check("AdjacencyList(" + g + ", 1)", "{2}");
+    check("AdjacencyList(" + g + ")", "{{2},{3},{4},{1}}");
+    check("DirectedGraphQ(" + g + ")", "True");
+  }
+
+  @Test
+  public void testQueryUndirected() {
+    String g = "Graph({1,2,3},{1<->2,2<->3})";
+    check("VertexDegree(" + g + ")", "{1,2,1}");
+    check("AdjacencyList(" + g + ", 2)", "{1,3}");
+    check("DirectedGraphQ(" + g + ")", "False");
+    check("VertexInDegree(" + g + ", 2)", "2");
+    check("VertexOutDegree(" + g + ", 2)", "2");
+  }
+
+  @Test
+  public void testGraphMatrixViews() {
+    String dg = "Graph({1,2,3,4},{1->2,2->3,3->4,4->1})";
+    check("Tr(AdjacencyMatrix(" + dg + "))", "0");
+    check("Det(AdjacencyMatrix(" + dg + "))", "-1");
+    check("EdgeList(AdjacencyGraph(AdjacencyMatrix(" + dg + ")))", //
+        "{1->2,2->3,3->4,4->1}");
+    check("EdgeList(AdjacencyGraph(AdjacencyMatrix(Graph({1,2,3},{1<->2,2<->3}))))",
+        "{1<->2,2<->3}");
+    check("IncidenceMatrix(Graph({1,2,3},{1<->2,2<->3})) // Normal", "{{1,0},{1,1},{0,1}}");
+  }
+
+  @Test
+  public void testGenerators() {
+    check("VertexCount(CompleteGraph(5))", "5");
+    check("DirectedGraphQ(CompleteGraph(5))", "False");
+    check("VertexDegree(CompleteGraph(5))", "{4,4,4,4,4}");
+
+    check("EdgeCount(CycleGraph(5))", "5");
+    check("VertexDegree(CycleGraph(5))", "{2,2,2,2,2}");
+    check("EdgeList(CycleGraph(4))", "{1<->2,2<->3,3<->4,4<->1}");
+
+    check("EdgeCount(PathGraph({a,b,c,d}))", "3");
+    check("VertexDegree(PathGraph({a,b,c,d,e}))", "{1,2,2,2,1}");
+    check("EdgeList(PathGraph({a,b,c}))", "{a<->b,b<->c}");
+  }
+
+  // TODO
+  // @Test
+  // public void testGraphConnectivityAndComponents() {
+  // check("ConnectedComponents(Graph({1,2,3,4},{1->2,2->3,3->4,4->1}))", "{{1,2,3,4}}");
+  // check("ConnectedComponents(Graph({1,2,3,4},{1->2,3->4}))", "{{1,2},{3,4}}");
+  // check("WeaklyConnectedComponents(Graph({1,2,3},{1->2,2->3}))", "{{1,2,3}}");
+  // check("StronglyConnectedComponents(Graph({1,2,3},{1->2,2->3}))", "{{1},{2},{3}}");
+  // check("StronglyConnectedComponents(Graph({1,2,3},{1->2,2->3,3->1}))", "{{1,2,3}}");
+  //
+  // check("VertexConnectivity(PathGraph(4))", "1");
+  // check("VertexConnectivity(CycleGraph(5))", "2");
+  // check("VertexConnectivity(CompleteGraph(4))", "3");
+  // check("VertexConnectivity(Graph({1,2,3,4},{1<->2,3<->4}))", "0");
+  // }
+
+  @Test
+  public void testAcyclicGraph() {
+    check("TopologicalSort(Graph({1,2,3},{1->2,2->3,1->3}))", "{1,2,3}");
+    check("AcyclicGraphQ(Graph({1,2,3},{1->2,2->3,1->3}))", //
+        "True");
+    check("TopologicalSort(Graph({1,2,3},{1->2,2->3,3->1}))", "$Failed");
+    check("AcyclicGraphQ(Graph({1,2,3},{1->2,2->3,3->1}))", "False");
+    check("AcyclicGraphQ(Graph({1,2},{1->2,2->1}))", "False");
+    check("AcyclicGraphQ(PathGraph({a,b,c,d}))", //
+        "True");
+    check("TopologicalSort(PathGraph({a,b,c,d}))", //
+        "$Failed");
+    check("AcyclicGraphQ(Graph({1,2,3,4,5},{1<->2,2<->3,4<->5}))", "True");
+    check("AcyclicGraphQ(CycleGraph(4))", "False");
+
+  }
+
+  @Test
+  public void testGraphComplementAdvanced() {
+    // check("EdgeCount(GraphComplement(Graph({1,2,3},{1->2})))", //
+    // "5");
+
+    check("GraphComplement(Graph({1,2,3},{})) // InputForm", //
+        "Graph({1,2,3},{1->2,1->3,2->1,2->3,3->1,3->2})");
+
+    check("EdgeCount(GraphComplement(Graph({1,2,3},{})))", //
+        "3");
+    check("EdgeCount(GraphComplement(CompleteGraph(4)))", //
+        "0");
+    check("GraphComplement(CycleGraph(4)) // InputForm", //
+        "Graph({1,2,3,4},{1<->3,2<->4})");
+    check("EdgeCount(GraphComplement(CycleGraph(4)))", //
+        "2");
+    check("EdgeCount(GraphComplement(GraphComplement(CycleGraph(5))))", //
+        "5");
+    check("GraphComplement(Graph({1,2,3},{1->2}))", //
+        "Graph({1,2,3},{1->3,2->1,2->3,3->1,3->2})");
+    // TODO
+    // check("EdgeCount(GraphComplement(Graph({1,2,3},{1->2})))", //
+    // "5");
+    check("DirectedGraphQ(GraphComplement(Graph({1,2,3},{1->2})))", //
+        "True");
+  }
+
+  @Test
+  public void testKirchhoffMatrix() {
+    check("k=KirchhoffMatrix(PathGraph( {a,b,c}));", //
+        "");
+    check("k // InputForm", //
+        "SparseArray(Automatic,{3,3},0,{1,{{0,2,5,7},{{1},{2},{1},{2},{3},{2},{3}}},{1,-1,-1,2,-1,-1,1}})");
+    check("k // MatrixForm", //
+        "{{1,-1,0},\n"//
+            + " {-1,2,-1},\n"//
+            + " {0,-1,1}}");
+    check("k=KirchhoffMatrix(CycleGraph(3));", //
+        "");
+
+    check("k  // InputForm", //
+        "SparseArray(Automatic,{3,3},0,{1,{{0,3,6,9},{{1},{2},{3},{1},{2},{3},{1},{2},{3}}},{2,-1,-1,-1,2,-1,-1,-1,2}})");
+    check("k // MatrixForm", //
+        "{{2,-1,-1},\n"//
+            + " {-1,2,-1},\n" //
+            + " {-1,-1,2}}");
+
+    check("Total(KirchhoffMatrix(CycleGraph(4)))", //
+        "{0,0,0,0}");
+    check("Tr(KirchhoffMatrix(CycleGraph(4)))", //
+        "8");
+  }
+
+  // TODO
+  // @Test
+  // public void testEdgeConnectivity() {
+  // check("EdgeConnectivity(CompleteGraph(4))", "3");
+  // check("EdgeConnectivity(CycleGraph(5))", "2");
+  // check("EdgeConnectivity(PathGraph(4))", "1");
+  // check("EdgeConnectivity(Graph({0,1,2,3},{0<->1,0<->2,0<->3}))", "1");
+  // check("EdgeConnectivity(Graph({1,2,3},{1<->2}))", "0");
+  // check("EdgeConnectivity(Graph({1,2,3},{1->2,2->3,3->1}))", "1");
+  // check("EdgeConnectivity(Graph({1,2,3},{1->2,2->3}))", "0");
+  // }
+
+  // TODO
+  // @Test
+  // public void testLineGraphAdvanced() {
+  // check("VertexCount(LineGraph(PathGraph(3)))", "2");
+  // check("EdgeCount(LineGraph(PathGraph(3)))", "1");
+  // check("VertexList(LineGraph(PathGraph(3)))", "{1<->2,2<->3}");
+  // check("EdgeCount(LineGraph(CycleGraph(3)))", "3");
+  // check("EdgeCount(LineGraph(CycleGraph(5)))", "5");
+  // check("VertexCount(LineGraph(CompleteGraph(4)))", "6");
+  // check("EdgeCount(LineGraph(CompleteGraph(4)))", "12");
+  // check("EdgeCount(LineGraph(Graph({1,2,3},{1->2,2->3})))", "1");
+  // check("DirectedGraphQ(LineGraph(Graph({1,2,3},{1->2,2->3})))", "True");
+  // }
+
+  // TODO
+  // @Test
+  // public void testTransitiveClosureAndReduction() {
+  // check("EdgeList(TransitiveClosure(Graph({1,2,3},{1->2,2->3})))", "{1->2,1->3,2->3}");
+  // check("DirectedGraphQ(TransitiveClosure(Graph({1,2,3},{1->2,2->3})))", "True");
+  // check("EdgeCount(TransitiveClosure(Graph({1,2,3},{1->2,2->3,3->1})))", "6");
+  // check("EdgeList(TransitiveClosure(PathGraph(3)))", "{1<->2,1<->3,2<->3}");
+  // check("EdgeCount(TransitiveClosure(CycleGraph(4)))", "6");
+  //
+  // check("EdgeList(TransitiveReductionGraph(Graph({1,2,3},{1->2,2->3,1->3})))", "{1->2,2->3}");
+  // check("EdgeCount(TransitiveReductionGraph(Graph({1,2,3},{1->2,2->3})))", "2");
+  // check("EdgeCount(TransitiveReductionGraph(Graph({1,2,3,4},{1->2,2->3,3->4,1->4})))", "3");
+  // }
+
+  @Test
+  public void testClusteringCoefficients() {
+    // Teste Clustering-Koeffizienten (Lokal, Global, Mean)
+    check("LocalClusteringCoefficient(CompleteGraph(4))", "{1,1,1,1}");
+    check("LocalClusteringCoefficient(CycleGraph(5))", "{0,0,0,0,0}");
+    check("LocalClusteringCoefficient(Graph({1,2,3,4},{1<->2,2<->3,3<->1,3<->4}))", "{1,1,1/3,0}");
+
+    check("GlobalClusteringCoefficient(CompleteGraph(4))", "1");
+    check("GlobalClusteringCoefficient(CycleGraph(5))", "0");
+    check("GlobalClusteringCoefficient(Graph({1,2,3,4},{1<->2,2<->3,3<->1,3<->4}))", "3/5");
+
+    check("MeanClusteringCoefficient(CompleteGraph(4))", "1");
+    check("MeanClusteringCoefficient(Graph({1,2,3,4},{1<->2,2<->3,3<->1,3<->4}))", "7/12");
+  }
+
+  @Test
+  public void testGraphColoring() {
+    check("ChromaticPolynomial(Graph({1,2,3},{}), 2)", "8");
+    check("ChromaticPolynomial(CompleteGraph(3), 3)", "6");
+    check("ChromaticPolynomial(CompleteGraph(3), 2)", "0");
+    check("ChromaticPolynomial(CycleGraph(4), 3)", "18");
+    check("ChromaticPolynomial(CycleGraph(5), 2)", "0");
+
+    check("ChromaticNumber(Graph({1,2,3},{}))", "1");
+    check("ChromaticNumber(CompleteGraph(4))", "4");
+    check("ChromaticNumber(CycleGraph(4))", "2");
+    check("ChromaticNumber(CycleGraph(5))", "3");
+    check("ChromaticNumber(WheelGraph(6))", "4");
+
+    check("FindVertexColoring(CompleteGraph(3))", "{1,2,3}");
+    check("FindVertexColoring(CycleGraph(4))", "{1,2,1,2}");
+  }
+
+  // TODO
+  // @Test
+  // public void testCentralityMeasures() {
+  // check("DegreeCentrality(CycleGraph(4))", "{2,2,2,2}");
+  // check("DegreeCentrality(CompleteGraph(4))", "{3,3,3,3}");
+  // check("DegreeCentrality(StarGraph(5))", "{4,1,1,1,1}");
+  //
+  // check("PageRankCentrality(CycleGraph(4))", "{1/4,1/4,1/4,1/4}");
+  // check("PageRankCentrality(CompleteGraph(5))", "{1/5,1/5,1/5,1/5,1/5}");
+  // check("Total(PageRankCentrality(StarGraph(5)))", "1");
+  //
+  // check("KatzCentrality(CycleGraph(4), 0)", "{1,1,1,1}");
+  // check("KatzCentrality(Graph({1,2},{1<->2}), 1/10)", "{10/9,10/9}");
+  // }
+
+  @Test
+  public void testGraphOperations() {
+    check("VertexList(IndexGraph(Graph({x,y,z},{x<->z})))", "{1,2,3}");
+
+    check("CompleteGraphQ(Subgraph(CompleteGraph(4), {1,2,3}))", //
+        "True");
+    check("EdgeCount(Subgraph(CompleteGraph(4), {1,2,3}))", //
+        "3");
+
+    check("VertexList(VertexDelete(CompleteGraph(4), 1))", "{2,3,4}");
+    check("EdgeCount(EdgeDelete(CycleGraph(4), 1<->2))", "3");
+    check("VertexCount(EdgeAdd(Graph({1,2},{1<->2}), 2<->3))", "3");
+    check("VertexCount(VertexAdd(CompleteGraph(3), 4))", "4");
+
+    check("CompleteGraphQ(NeighborhoodGraph(CompleteGraph(4), 1))", "True");
+    check("EdgeCount(NeighborhoodGraph(CycleGraph(5), 1))", "2");
+
+    check("EdgeList(EdgeContract(Graph({1,2,3},{1<->2,2<->3,3<->1}), 1<->2))", //
+        "{1<->3}");
+    check("EdgeList(VertexContract(Graph({1,2,3},{1<->2,2<->3,3<->1}), {1,2}))", //
+        "{1<->3}");
+  }
+
+  // TODO
+  // @Test
+  // public void testSpecialGraphs() {
+  // check("VertexCount(TuranGraph(7,3))", "7");
+  // check("EdgeCount(TuranGraph(6,3))", "12");
+  //
+  // check("VertexCount(CompleteKaryTree(2))", "3");
+  // check("EdgeCount(CompleteKaryTree(3))", "6");
+  //
+  // check("EdgeCount(CirculantGraph(5,{1}))", "5");
+  // check("CompleteGraphQ(CirculantGraph(6,{1,2,3}))", "True");
+  //
+  // check("EdgeCount(LadderGraph(3))", "7");
+  // check("BipartiteGraphQ(LadderGraph(4))", "True");
+  //
+  // check("EdgeCount(CocktailPartyGraph(3))", "12");
+  // check("VertexCount(CocktailPartyGraph(3))", "6");
+  //
+  // check("VertexCount(KneserGraph(5,2))", "10");
+  // check("EdgeCount(KneserGraph(5,2))", "15");
+  //
+  // check("VertexCount(GeneralizedPetersenGraph(5,2))", "10");
+  // check("EdgeCount(GeneralizedPetersenGraph(5,2))", "15");
+  //
+  // check("VertexCount(FriendshipGraph(2))", "5");
+  // check("EdgeCount(FriendshipGraph(2))", "6");
+  //
+  // check("VertexCount(AntiprismGraph(3))", "6");
+  // check("EdgeCount(AntiprismGraph(3))", "12");
+  //
+  // check("VertexCount(PrismGraph(3))", "6");
+  // check("EdgeCount(PrismGraph(3))", "9");
+  //
+  // check("VertexCount(SunletGraph(3))", "6");
+  // check("EdgeCount(SunletGraph(3))", "6");
+  //
+  // check("VertexCount(HelmGraph(3))", "7");
+  // check("EdgeCount(HelmGraph(3))", "9");
+  //
+  // check("VertexCount(GearGraph(3))", "7");
+  // check("EdgeCount(GearGraph(3))", "9");
+  //
+  // check("VertexCount(DodecahedralGraph())", "20");
+  // check("EdgeCount(DodecahedralGraph())", "30");
+  //
+  // check("VertexCount(IcosahedralGraph())", "12");
+  // check("EdgeCount(IcosahedralGraph())", "30");
+  // }
+
+  // TODO
+  // @Test
+  // public void testAdvancedAlgorithms() {
+  // check("FindDominatingSet(StarGraph(5))", "{1}");
+  // check("Length(FindDominatingSet(PathGraph(4)))", "2");
+  //
+  // check("Length(FindEdgeCover(PathGraph(4)))", "2");
+  // check("Length(FindEdgeCover(StarGraph(5)))", "4");
+  //
+  // check("Length(FindIndependentEdgeSet(CompleteGraph(4)))", "2");
+  // check("Length(FindIndependentEdgeSet(CompleteGraph(6)))", "3");
+  //
+  // check("KCoreComponents(CompleteGraph(4), 3)", "{{1,2,3,4}}");
+  // check("KCoreComponents(CompleteGraph(4), 4)", "{}");
+  // check("VertexCoreness(CompleteGraph(4))", "{3,3,3,3}");
+  // check("Max(VertexCoreness(CompleteGraph(4)))", "3");
+  //
+  // check("IncidenceList(CycleGraph(4), 1)", "{1<->2,4<->1}");
+  // check("Length(IncidenceList(StarGraph(5), 1))", "4");
+  //
+  // check("VertexOutComponent(Graph({1,2,3},{1->2,2->3}), 1)", "{1,2,3}");
+  // check("VertexInComponent(Graph({1,2,3},{1->2,2->3}), 3)", "{1,2,3}");
+  // }
+
+  // TODO
+  // @Test
+  // public void testGraphPredicates() {
+  // check("TreeGraphQ(PathGraph(4))", "True");
+  // check("TreeGraphQ(CycleGraph(4))", "False");
+  //
+  // check("StronglyConnectedGraphQ(Graph({1,2,3},{1->2,2->3,3->1}))", "True");
+  // check("StronglyConnectedGraphQ(Graph({1,2,3},{1->2,2->3}))", "False");
+  //
+  // check("RegularGraphQ(CycleGraph(5))", "True");
+  // check("RegularGraphQ(PathGraph(4))", "False");
+  //
+  // check("CompleteGraphQ(CompleteGraph(4))", "True");
+  // check("CompleteGraphQ(CycleGraph(4))", "False");
+  //
+  // check("PathGraphQ(PathGraph(4))", "True");
+  // check("PathGraphQ(CycleGraph(4))", "False");
+  //
+  // check("EmptyGraphQ(Graph({1,2,3},{}))", "True");
+  // check("EmptyGraphQ(CycleGraph(3))", "False");
+  //
+  // check("MixedGraphQ(Graph({1,2,3},{1->2,2<->3}))", "True");
+  // check("MixedGraphQ(Graph({1,2,3},{1->2,2->3}))", "False");
+  // }
 
   /** The JUnit setup method */
   @Override

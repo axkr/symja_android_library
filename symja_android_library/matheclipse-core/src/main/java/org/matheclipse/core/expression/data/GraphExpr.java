@@ -50,22 +50,35 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
    * 
    * @param <T>
    * @param fullForm the IAST created from the {@link #fullForm()} method
-   * @return
+   * @return a Graph instance
    * @see #fullForm()
    */
   public static <T> Graph<IExpr, T> createGraph(IAST fullForm) {
     IAST vertices = (IAST) fullForm.arg1();
-    IAST edges = (IAST) fullForm.arg2();
+    IExpr edgesArg = fullForm.arg2();
+    IAST options = F.NIL;
+
+    if (fullForm.isAST3() && fullForm.arg3().isList()) {
+      options = (IAST) fullForm.arg3();
+    }
+
+    // Check if the input is in the SparseArray CSR format: {Null, SparseArray(...)}
+    if (edgesArg.isList()//
+        && edgesArg.isAST2() //
+        && edgesArg.first() == S.Null //
+        && (edgesArg.second() instanceof SparseArrayExpr)) {
+      return createGraph(vertices, (SparseArrayExpr) edgesArg.second(), options);
+    }
+
+    IAST edges = (IAST) edgesArg;
     IAST weights = F.NIL;
     boolean isWeighted = false;
-    if (fullForm.isAST3() && fullForm.arg3().isList()) {
-      IAST options = (IAST) fullForm.arg3();
-      if (options.size() > 0 && options.arg1().isRuleAST()) {
-        IAST rule = (IAST) options.arg1();
-        if (rule.isRule(S.EdgeWeight)) {
-          isWeighted = true;
-          weights = (IAST) rule.arg2();
-        }
+
+    if (options.isList() && options.argSize() > 0 && options.arg1().isRuleAST()) {
+      IAST rule = (IAST) options.arg1();
+      if (rule.isRule(S.EdgeWeight)) {
+        isWeighted = true;
+        weights = (IAST) rule.arg2();
       }
     }
 
@@ -73,6 +86,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
     if (edges.argSize() > 0 && edges.arg1().isAST(S.DirectedEdge)) {
       isDirected = true;
     }
+
     final Graph<IExpr, T> graph;
     if (isWeighted) {
       if (isDirected) {
@@ -94,25 +108,25 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
       }
     }
 
-    for (int i = 1; i < vertices.size(); i++) {
+    for (int i = 1; i <= vertices.argSize(); i++) {
       graph.addVertex(vertices.get(i));
     }
 
     if (isWeighted) {
       Graph<IExpr, ExprWeightedEdge> weightedGraph = (Graph<IExpr, ExprWeightedEdge>) graph;
-      for (int i = 1; i < edges.size(); i++) {
+      for (int i = 1; i <= edges.argSize(); i++) {
         IAST edgeAST = (IAST) edges.get(i);
         IExpr source = edgeAST.arg1();
         IExpr target = edgeAST.arg2();
         IExpr weight = weights.get(i);
         ExprWeightedEdge edge = weightedGraph.addEdge(source, target);
         if (edge != null) {
-          weightedGraph.setEdgeWeight(edge, F.eval(weight).evalDouble());
+          weightedGraph.setEdgeWeight(edge, F.eval(weight).evalf());
         }
       }
     } else {
       Graph<IExpr, ExprEdge> unweightedGraph = (Graph<IExpr, ExprEdge>) graph;
-      for (int i = 1; i < edges.size(); i++) {
+      for (int i = 1; i <= edges.argSize(); i++) {
         IAST edgeAST = (IAST) edges.get(i);
         IExpr source = edgeAST.arg1();
         IExpr target = edgeAST.arg2();
@@ -121,6 +135,70 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
     }
     return graph;
   }
+
+  /**
+   * Create a new JGraphT Graph instance from the SparseArray input format.
+   * 
+   * @param <T>
+   * @param vertices the list of graph vertices
+   * @param sparseArray the SparseArrayExpr representing the adjacency matrix
+   * @param options the graph options, or F.NIL
+   * @return a Graph instance
+   */
+  public static <T> Graph<IExpr, T> createGraph(IAST vertices, SparseArrayExpr sparseArray,
+      IAST options) {
+    boolean isWeighted = false;
+    if (options.isList() && options.argSize() > 0 && options.arg1().isRuleAST()) {
+      IAST rule = (IAST) options.arg1();
+      if (rule.isRule(S.EdgeWeight)) {
+        isWeighted = true;
+      }
+    }
+
+    // Default to directed when creating from an adjacency matrix.
+    final Graph<IExpr, T> graph;
+    if (isWeighted) {
+      graph =
+          (Graph<IExpr, T>) new org.jgrapht.graph.DefaultDirectedWeightedGraph<IExpr, ExprWeightedEdge>(
+              ExprWeightedEdge.class);
+    } else {
+      graph = (Graph<IExpr, T>) new org.jgrapht.graph.DefaultDirectedGraph<IExpr, ExprEdge>(
+          ExprEdge.class);
+    }
+    for (int i = 1; i <= vertices.argSize(); i++) {
+      graph.addVertex(vertices.get(i));
+    }
+
+    // Iterate directly over the non-default entries in the sparse array's Trie structure
+    org.matheclipse.parser.trie.Trie<int[], IExpr> trie = sparseArray.toData();
+    for (org.matheclipse.parser.trie.TrieNode<int[], IExpr> entry : trie.nodeSet()) {
+      int[] key = entry.getKey();
+
+      // The sparse array for an adjacency matrix is 2D
+      if (key.length >= 2) {
+        // Symja sparse arrays are 1-based, aligning perfectly with IAST 1-based indexing
+        int row = key[0];
+        int col = key[1];
+
+        IExpr source = vertices.get(row);
+        IExpr target = vertices.get(col);
+
+        if (isWeighted) {
+          Graph<IExpr, ExprWeightedEdge> weightedGraph = (Graph<IExpr, ExprWeightedEdge>) graph;
+          ExprWeightedEdge edge = weightedGraph.addEdge(source, target);
+          if (edge != null) {
+            weightedGraph.setEdgeWeight(edge, entry.getValue().evalf());
+          }
+        } else {
+          Graph<IExpr, ExprEdge> unweightedGraph = (Graph<IExpr, ExprEdge>) graph;
+          unweightedGraph.addEdge(source, target);
+        }
+      }
+    }
+
+    return graph;
+  }
+
 
   /**
    * Create an internal DataExpr Graph.
@@ -310,11 +388,41 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
   }
 
   /**
-   * Convert a graph into an IAST object with head {@link S.Graph}.
+   * Convert a graph into an {@link IAST} full form expression utilizing the SparseArray output
+   * format.
    *
    * @param graph
+   * @param sparseArrayFormat TODO
    */
-  public static IAST fullForm(AbstractBaseGraph<IExpr, ?> graph) {
+  public static IAST fullForm(AbstractBaseGraph<IExpr, ?> graph, boolean sparseArrayFormat) {
+    if (sparseArrayFormat) {
+
+      IASTAppendable vertexes = vertexToIExpr(graph);
+      SparseArrayExpr sparseArray;
+
+      if (graph.getType().isWeighted()) {
+        sparseArray = (SparseArrayExpr) weightedGraphToWeightedAdjacencyMatrix(
+            (Graph<IExpr, ExprWeightedEdge>) graph);
+      } else {
+        sparseArray = (SparseArrayExpr) graphToAdjacencyMatrix(graph);
+      }
+
+      IASTAppendable sparseAST = sparseArray.toCSRAST();
+
+      // use `Pattern` instead of an explicit list of `1`s for unweighted graph edges
+      if (!graph.getType().isWeighted()) {
+        IASTAppendable csrData = (IASTAppendable) sparseAST.arg4();
+        csrData.set(3, S.Pattern);
+      }
+
+      IAST edgesArg = F.List(S.Null, sparseAST);
+
+      IASTAppendable[] edgeData = edgesToIExpr(graph);
+      if (edgeData[1].isNIL()) {
+        return F.Graph(vertexes, edgesArg);
+      }
+      return F.Graph(vertexes, edgesArg, F.list(F.Rule(S.EdgeWeight, edgeData[1])));
+    }
     IASTAppendable vertexes = vertexToIExpr(graph);
     IASTAppendable[] edgeData = edgesToIExpr(graph);
     if (edgeData[1].isNIL()) {
@@ -373,7 +481,8 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
    * @param newIndex
    * @return <code>null</code> if the graph type is <code>null</code>.
    */
-  public static Graph<IExpr, ? extends IExprEdge> newInstance(Graph<IExpr, ?> graph, int newIndex) {
+  public static Graph<IExpr, ? extends IExprEdge> createGraph(Graph<IExpr, ?> graph,
+      int newIndex) {
     Graph<IExpr, ? extends IExprEdge> resultGraph;
     GraphType t = graph.getType();
     if (t == null) {
@@ -407,10 +516,14 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
    * Be cautious with this method, no new internal IExpr object is created
    *
    * @param value
-   * @return
    */
   public static <T> GraphExpr<T> newInstance(final Graph<IExpr, T> value) {
     return new GraphExpr<T>(value);
+  }
+
+  public static <T> GraphExpr<T> newInstance(final Graph<IExpr, T> value,
+      boolean sparseArrayFormat) {
+    return new GraphExpr<T>(value, sparseArrayFormat);
   }
 
   public static <T> GraphExpr<T> newInstance(final Graph<IExpr, T> value, IASTAppendable options) {
@@ -688,6 +801,7 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
   }
 
   IAST options = F.CEmptyList;
+  boolean sparseArrayFormat = false;
 
   /**
    * No-argument constructor required for {@link Externalizable} deserialization. Initializes the
@@ -698,7 +812,12 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
   }
 
   protected GraphExpr(final Graph<IExpr, T> graph) {
+    this(graph, false);
+  }
+
+  protected GraphExpr(final Graph<IExpr, T> graph, boolean sparseArrayFormat) {
     super(S.Graph, graph);
+    this.sparseArrayFormat = sparseArrayFormat;
   }
 
   protected GraphExpr(final Graph<IExpr, T> graph, IAST options) {
@@ -726,8 +845,9 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
    * Convert a graph into an {@link IAST} full form expression.
    * 
    */
+  @Override
   public IAST fullForm() {
-    return fullForm((AbstractBaseGraph<IExpr, ExprEdge>) toData());
+    return fullForm((AbstractBaseGraph<IExpr, ExprEdge>) toData(), sparseArrayFormat);
   }
 
   /**
@@ -816,9 +936,9 @@ public class GraphExpr<T> extends DataExpr<Graph<IExpr, T>> implements Externali
     if (fData instanceof AbstractBaseGraph) {
       AbstractBaseGraph<IExpr, ?> g = (AbstractBaseGraph<IExpr, ?>) fData;
       if (g.getType().isWeighted()) {
-        return fullForm(g).toString();
+        return fullForm(g, false).toString();
       }
-      return fullForm(g).toString();
+      return fullForm(g, false).toString();
     }
 
     return fHead + "[" + fData.toString() + "]";

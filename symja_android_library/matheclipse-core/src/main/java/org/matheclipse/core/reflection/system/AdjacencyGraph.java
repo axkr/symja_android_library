@@ -13,6 +13,7 @@ import org.matheclipse.core.expression.data.IExprEdge;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ITensorAccess;
 
 /**
  * Implements AdjacencyGraph.
@@ -23,22 +24,25 @@ public class AdjacencyGraph extends AbstractFunctionEvaluator {
 
   @Override
   public IExpr evaluate(final IAST ast, final EvalEngine engine) {
-    if (ast.argSize() < 1) {
-      return F.NIL;
-    }
-
     IExpr arg1 = ast.arg1();
     IExpr arg2 = null;
-    IAST matrix = null;
+    ITensorAccess matrix = null;
     IAST vertices = null;
 
-    if (arg1.isList() && ast.argSize() == 1) {
+    int[] dimension = ast.isAST2() ? ast.arg2().isMatrix() : arg1.isMatrix();
+    if (dimension == null || dimension[0] != dimension[1]) {
+      return F.NIL;
+    }
+    if (ast.isAST1()) {
       // Case: AdjacencyGraph(matrix)
-      matrix = (IAST) arg1;
-    } else if (ast.argSize() >= 2 && arg1.isList() && ast.arg2().isList()) {
+      matrix = (ITensorAccess) arg1;
+    } else if (ast.isAST2()) {
       // Case: AdjacencyGraph[{v1, ...}, matrix]
+      if (!arg1.isList()) {
+        return F.NIL;
+      }
       vertices = (IAST) arg1;
-      matrix = (IAST) ast.arg2();
+      matrix = (ITensorAccess) ast.arg2();
       arg2 = ast.arg2();
     } else {
       // Invalid arguments for this implementation
@@ -49,14 +53,6 @@ public class AdjacencyGraph extends AbstractFunctionEvaluator {
     int rows = matrix.argSize();
     if (rows == 0) {
       return F.Graph(F.List(), F.List()); // Empty graph
-    }
-
-    // Check if it's a square matrix
-    for (int i = 1; i <= rows; i++) {
-      if (!matrix.get(i).isList() || ((IAST) matrix.get(i)).size() - 1 != rows) {
-        // Not a square matrix
-        return F.NIL; // Or emit Message(AdjacencyGraph::matsq)
-      }
     }
 
     // Determine Vertices
@@ -100,10 +96,9 @@ public class AdjacencyGraph extends AbstractFunctionEvaluator {
       // If not specified, default is undirected if matrix is symmetric, else directed
       boolean isSymmetric = true;
       for (int i = 1; i <= rows; i++) {
-        IAST rowI = (IAST) matrix.get(i);
-        for (int j = i + 1; j <= rows; j++) {
-          IExpr valIJ = rowI.get(j);
-          IExpr valJI = ((IAST) matrix.get(j)).get(i);
+        for (int j = i + 1; j <= rows; j++) { 
+          IExpr valIJ = matrix.getIndex(i, j);
+          IExpr valJI = matrix.getIndex(j, i);
           if (!valIJ.equals(valJI)) {
             isSymmetric = false;
             break;
@@ -136,11 +131,11 @@ public class AdjacencyGraph extends AbstractFunctionEvaluator {
     // Add Edges based on Matrix
     // m[[i, j]] == 1 means edge i -> j
     for (int i = 1; i <= rows; i++) {
-      IAST row = (IAST) matrix.get(i);
+      // IAST row = (IAST) matrix.get(i);
       for (int j = 1; j <= rows; j++) {
-        IExpr cell = row.get(j);
+        // IExpr cell = row.get(j);
 
-        if (!cell.isZero()) {
+        if (!matrix.getIndex(i, j).isZero()) {
           IExpr source = vArray[i - 1];
           IExpr target = vArray[j - 1];
 
@@ -160,6 +155,12 @@ public class AdjacencyGraph extends AbstractFunctionEvaluator {
       }
     }
 
-    return GraphExpr.newInstance(graph);
+    return GraphExpr.newInstance(graph, true);
   }
+
+  @Override
+  public int[] expectedArgSize(IAST ast) {
+    return ARGS_1_2;
+  }
+
 }

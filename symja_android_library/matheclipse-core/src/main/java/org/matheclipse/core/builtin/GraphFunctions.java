@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +50,7 @@ import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.OptionArgs;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
@@ -58,6 +60,7 @@ import org.matheclipse.core.expression.data.ExprWeightedEdge;
 import org.matheclipse.core.expression.data.GeoPositionExpr;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.expression.data.IExprEdge;
+import org.matheclipse.core.expression.data.SparseArrayExpr;
 import org.matheclipse.core.graphics.GraphGraphics;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -377,7 +380,7 @@ public class GraphFunctions {
           }
           newIndex = intIndex;
         }
-        Graph<IExpr, ?> resultGraph = GraphExpr.newInstance(graph, newIndex);
+        Graph<IExpr, ?> resultGraph = GraphExpr.createGraph(graph, newIndex);
         if (resultGraph != null) {
           return GraphExpr.newInstance(resultGraph);
         }
@@ -405,14 +408,14 @@ public class GraphFunctions {
     @Override
     protected Graph<IExpr, ? extends IExprEdge> applyFunctionArg1(
         Graph<IExpr, ? extends IExprEdge> graph) {
-      return GraphExpr.newInstance(graph, 1);
+      return GraphExpr.createGraph(graph, 1);
     }
 
     @Override
     protected void setOperation(Graph<IExpr, ? extends IExprEdge> graph1,
         Graph<IExpr, ? extends IExprEdge> graph2, Graph<IExpr, ? extends IExprEdge> resultGraph) {
       Graph<IExpr, ? extends IExprEdge> g2 =
-          GraphExpr.newInstance(graph2, graph1.vertexSet().size() + 1);
+          GraphExpr.createGraph(graph2, graph1.vertexSet().size() + 1);
       super.setOperation(graph1, g2, resultGraph);
     }
 
@@ -500,6 +503,15 @@ public class GraphFunctions {
             return gex;
           }
         } else if (ast.size() >= 3 && ast.arg1().isList()) {
+          if (ast.isAST2() //
+              && ast.arg1().isList() //
+              && ast.arg2().isList2() //
+              && (ast.arg2().second() instanceof SparseArrayExpr)) {
+            Graph<IExpr, Object> graph =
+                GraphExpr.createGraph((IAST) ast.arg1(), (SparseArrayExpr) ast.arg2().second(),
+                F.CEmptyList);
+            return GraphExpr.newInstance(graph, true);
+          }
           IExpr edgeWeight = F.NIL;
           final OptionArgs options = new OptionArgs(S.Graph, ast, ast.argSize(), engine);
           IExpr option = options.getOption(S.EdgeWeight);
@@ -1225,20 +1237,49 @@ public class GraphFunctions {
     }
   }
 
-  private static class EdgeCount extends AbstractEvaluator {
+
+
+  private static class EdgeCount extends AbstractFunctionEvaluator {
 
     @Override
-    public IExpr evalCatched(final IAST ast, EvalEngine engine) {
-
-      if (ast.isAST1()) {
-        GraphExpr<?> gex = GraphExpr.newInstance(ast.arg1());
+    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.argSize() == 1) {
+        GraphExpr<?> gex = GraphFunctions.getGraphExpr(ast.arg1());
         if (gex == null) {
           return F.NIL;
         }
-        Graph<IExpr, ?> g = gex.toData();
-        return F.ZZ(g.edgeSet().size());
-      }
 
+        Graph<IExpr, ?> g = gex.toData();
+        GraphType type = g.getType();
+
+        if (type.isDirected()) {
+          // Count edges, but treat 1->2 and 2->1 as a single undirected pair
+          Set<Set<IExpr>> uniquePairs = new HashSet<>();
+          int directedOnlyCount = 0;
+
+          for (IExprEdge edge : (Set<IExprEdge>) g.edgeSet()) {
+            IExpr u = edge.lhs();
+            IExpr v = edge.rhs();
+
+            // Check if the reverse edge exists
+            if (g.containsEdge(v, u)) {
+              // Canonicalize as a pair to count 1->2 and 2->1 as 1
+              Set<IExpr> pair = new HashSet<IExpr>();
+              pair.add(u);
+              pair.add(v);
+              // System.out.println(pair);
+              uniquePairs.add(pair);
+            } else {
+              // No reverse edge, count as a single directed edge
+              directedOnlyCount++;
+            }
+          }
+          return F.ZZ(uniquePairs.size() + directedOnlyCount);
+        } else {
+          // Standard undirected case (normalize JGraphT internal directed representation)
+          return F.ZZ(g.edgeSet().size());
+        }
+      }
       return F.NIL;
     }
 
@@ -1252,6 +1293,7 @@ public class GraphFunctions {
       return ARGS_1_1;
     }
   }
+
   /**
    *
    *
@@ -2085,37 +2127,7 @@ public class GraphFunctions {
       return ARGS_3_3;
     }
   }
-  /**
-   *
-   *
-   * <pre>
-   * <code> FindVertexCover(graph)
-   * </code>
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * algorithm to find a vertex cover for a <code>graph</code>. A vertex cover is a set of vertices
-   * that touches all the edges in the graph.
-   *
-   * </blockquote>
-   *
-   * <p>
-   * See
-   *
-   * <ul>
-   * <li><a href="https://en.wikipedia.org/wiki/Vertex_cover">Wikipedia - Vertex cover</a>
-   * </ul>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * <code>&gt;&gt; FindVertexCover({1&lt;-&gt;2,1&lt;-&gt;3,2&lt;-&gt;3,3&lt;-&gt;4,3&lt;-&gt;5,3&lt;-&gt;6})
-   * {3,1}
-   * </code>
-   * </pre>
-   */
+
   private static class FindVertexCover extends AbstractEvaluator {
 
     @Override
@@ -2126,10 +2138,16 @@ public class GraphFunctions {
           if (gex == null) {
             return F.NIL;
           }
-          Graph<IExpr, ?> g = gex.toData();
-          // ChordalityInspector<IExpr, IExprEdge> inspector = new ChordalityInspector<IExpr,
-          // IExprEdge>(g);
-          VertexCoverAlgorithm<IExpr> greedy = new GreedyVCImpl<>(g);
+          final Graph<IExpr, ?> g = gex.toData();
+          Graph<IExpr, ?> processGraph = g;
+          if (g.getType().isDirected()) {
+            // JGraphT's GreedyVCImpl requires an undirected graph.
+            // If the graph is directed, we create a temporary undirected copy
+            // to compute the vertex cover.
+            processGraph = Graphs.undirectedGraph(g);
+          }
+
+          VertexCoverAlgorithm<IExpr> greedy = new GreedyVCImpl<>(processGraph);
           VertexCoverAlgorithm.VertexCover<IExpr> cover = greedy.getVertexCover();
           if (cover == null) {
             return F.List();
@@ -2139,7 +2157,7 @@ public class GraphFunctions {
           return result;
         }
       } catch (IllegalArgumentException iae) {
-        // Graph must be undirected
+        // Fallback catch if algorithm constraints are violated
         Errors.printMessage(S.FindVertexCover, iae, engine);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
