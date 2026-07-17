@@ -1977,6 +1977,11 @@ public class Num implements INum {
   }
 
   @Override
+  public INum numericValue() {
+    return this;
+  }
+
+  @Override
   public INum one() {
     return F.CD1;
   }

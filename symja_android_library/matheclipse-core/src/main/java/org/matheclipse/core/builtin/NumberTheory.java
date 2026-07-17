@@ -113,6 +113,12 @@ public final class NumberTheory {
       5832742205057L, 51724158235372L, 474869816156751L, 4506715738447323L, 44152005855084346L,
       445958869294805289L, 4638590332229999353L};
 
+  private static final long[] FACTORIAL2_34 = {1, 1, 2, 3, 8, 15, 48, 105, 384, 945, 3840, 10395,
+      46080, 135135, 645120, 2027025, 10321920, 34459425, 185794560, 654729075, 3715891200L,
+      13749310575L, 81749606400L, 316234143225L, 1961990553600L, 7905853580625L, 51011754393600L,
+      213458046676875L, 1428329123020800L, 6190283353629375L, 42849873690624000L,
+      191898783962510625L, 1371195958099968000L, 6332659870762850625L};
+
   /**
    *
    *
@@ -2813,19 +2819,37 @@ public final class NumberTheory {
 
     private static IExpr factorial2(long n) {
       if (n < 0) {
-        if ((n & 1) == 0) { // is even
-          // ComplexInfinity
+        if ((n & 1) == 0) {
+          // n is even and negative => ComplexInfinity
           return F.CComplexInfinity;
         }
-        // is odd
+        // n is odd and negative
+        if (n >= -35) {
+          if (n == -1) {
+            return F.C1;
+          }
+          long sign = (((-n + 1) % 4) == 0) ? -1 : 1;
+          return F.QQ(sign, FACTORIAL2_34[(int) (-n - 2L)]);
+        }
         BigInteger result = BigInteger.ONE;
         for (long i = -1; i > n; i -= 2) {
           result = result.multiply(BigInteger.valueOf(i));
         }
         return F.QQ(BigInteger.ONE, result);
       }
-      BigInteger result = BigInteger.ONE;
-      final int start = ((n & 1) == 0) ? 2 : 3;
+      if (n < 34) {
+        return AbstractIntegerSym.valueOf(FACTORIAL2_34[(int) n]);
+      }
+      BigInteger result;
+      final int start;
+      if ((n & 1) == 0) { // is even
+        start = 34;
+        result = BigInteger.valueOf(FACTORIAL2_34[32]);
+      } else {
+        start = 35;
+        result = BigInteger.valueOf(FACTORIAL2_34[33]);
+      }
+      // final int start = ((n & 1) == 0) ? 2 : 3;
       for (long i = start; i <= n; i += 2) {
         result = result.multiply(BigInteger.valueOf(i));
       }
@@ -5803,51 +5827,12 @@ public final class NumberTheory {
    */
   public static final class Rationalize extends AbstractCoreFunctionEvaluator {
 
-    // public static class RationalizeNumericsVisitor extends VisitorExpr {
-    // double epsilon;
-    // boolean useConvergenceMethod;
-    //
-    // public RationalizeNumericsVisitor(double epsilon, boolean useConvergenceMethod) {
-    // super();
-    // this.epsilon = epsilon;
-    // this.useConvergenceMethod = useConvergenceMethod;
-    // }
-    //
-    // @Override
-    // public IExpr visit(IASTMutable ast) {
-    // return super.visitAST(ast);
-    // }
-    //
-    // @Override
-    // public IExpr visit(IComplexNum element) {
-    // if (useConvergenceMethod) {
-    // IComplex complexConvergent =
-    // F.complexConvergent(element.getRealPart(), element.getImaginaryPart());
-    // if ((complexConvergent.getRealPart().isZero() && !element.re().isZero()) //
-    // || (complexConvergent.getImaginaryPart().isZero() && !element.im().isZero())) {
-    // return element;
-    // }
-    // return complexConvergent;
-    // }
-    // return F.complex(element.getRealPart(), element.getImaginaryPart(), epsilon);
-    // }
-    //
-    // @Override
-    // public IExpr visit(INum element) {
-    // if (useConvergenceMethod) {
-    // IFraction fractionConvergent = F.fractionConvergent(element.getRealPart());
-    // if (fractionConvergent.isZero() && !element.isZero()) {
-    // return element;
-    // }
-    // return fractionConvergent;
-    // }
-    // return F.fraction(element.getRealPart(), epsilon);
-    // }
-    // }
-
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = engine.evaluate(ast.arg1());
+      if (arg1 instanceof INum) {
+        arg1 = ((INum) arg1).numericValue();
+      }
       double epsilon = Config.DOUBLE_EPSILON;
       boolean useConvergenceMethod = true;
       try {

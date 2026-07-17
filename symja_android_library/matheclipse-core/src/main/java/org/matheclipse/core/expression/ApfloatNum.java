@@ -1823,6 +1823,11 @@ public class ApfloatNum implements INum {
   }
 
   @Override
+  public INum numericValue() {
+    return this;
+  }
+
+  @Override
   public ApfloatNum one() {
     return valueOf(Apfloat.ONE);
   }

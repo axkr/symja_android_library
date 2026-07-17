@@ -91,6 +91,17 @@ public final class NumStr extends Num {
   }
 
   @Override
+  public INum numericValue() {
+    if (fPrecision > ParserConfig.MACHINE_PRECISION) {
+      if (fExponent == 0) {
+        return ApfloatNum.valueOf(fFloatStr, fPrecision);
+      }
+      return ApfloatNum.valueOf(fFloatStr + "E" + fExponent, fPrecision);
+    }
+    return new Num(doubleValue());
+  }
+
+  @Override
   public Apfloat apfloatValue() {
     long precision = EvalEngine.getApfloat().precision();
     precision = (fPrecision > precision) ? fPrecision : precision;
@@ -145,6 +156,13 @@ public final class NumStr extends Num {
         return ApfloatNum.valueOf(fFloatStr, engine.getNumericPrecision());
       }
       return ApfloatNum.valueOf(fFloatStr + "E" + fExponent, engine.getNumericPrecision());
+      // } else {
+      // if (fPrecision > ParserConfig.MACHINE_PRECISION) {
+      // if (fExponent == 0) {
+      // return ApfloatNum.valueOf(fFloatStr, fPrecision);
+      // }
+      // return ApfloatNum.valueOf(fFloatStr + "E" + fExponent, fPrecision);
+      // }
     }
     return super.evaluate(engine);
   }

@@ -1031,17 +1031,32 @@ public class EvalEngine implements Serializable {
    * values at the given working precision.
    *
    * <p>
-   * The returned epsilon is {@code 10^-(precision - Config.APFLOAT_ZERO_GUARD_DIGITS)}, clamped so
-   * that the exponent is at least {@code 1} (i.e. epsilon is at most {@code 0.1}) for very low
-   * precisions. The result is computed statelessly &ndash; no caching is performed.
+   * The precision of an {@link Apfloat} counts <i>significant digits</i>; it says nothing about the
+   * magnitude of the value. The tolerance is therefore anchored at unit scale: it is one unit in the
+   * last place of a number of magnitude <code>1</code>, i.e. {@code 10^-precision}. Widening the
+   * tolerance beyond that would declare every value of small enough magnitude to be zero even when
+   * that value is known to full precision &ndash; a physical constant such as
+   * {@code 8.854187817`21*10^-12} is a perfectly well determined non-zero number, not numerical
+   * noise.
+   *
+   * <p>
+   * The exponent is floored at {@link ParserConfig#MACHINE_PRECISION} so that a low precision
+   * {@link Apfloat} never gets a more permissive tolerance than the corresponding <code>double</code>
+   * test, which uses the fixed {@link Config#DOUBLE_TOLERANCE}. Exact values (of
+   * {@link Apfloat#INFINITE} precision) get a tolerance of <code>0</code>, i.e. the test degenerates
+   * to an exact comparison against zero. The result is computed statelessly &ndash; no caching is
+   * performed.
    *
    * @param precision the Apfloat working precision (number of significant digits)
    * @return the default tolerance used by {@link F#isZero(Apfloat)} and
    *         {@link F#isZero(org.apfloat.Apcomplex)}
    */
   public static Apfloat defaultApfloatZeroEpsilon(long precision) {
-    long exponent = Math.max(1L, precision - Config.APFLOAT_ZERO_GUARD_DIGITS);
-    return new Apfloat("1e-" + exponent, precision);
+    if (precision >= Apfloat.INFINITE) {
+      return Apfloat.ZERO;
+    }
+    long digits = Math.max(precision, ParserConfig.MACHINE_PRECISION);
+    return new Apfloat("1e-" + digits, digits);
   }
 
   /**
@@ -1723,7 +1738,9 @@ public class EvalEngine implements Serializable {
           }
         }
       } catch (ValidateException ve) {
-        ve.printStackTrace();
+        if (Config.SHOW_STACKTRACE) {
+          ve.printStackTrace();
+        }
         return Errors.printMessage(ast.topHead(), ve, this);
       } catch (FlowControlException e) {
         throw e;
