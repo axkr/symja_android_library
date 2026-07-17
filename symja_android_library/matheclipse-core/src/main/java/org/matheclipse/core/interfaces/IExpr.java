@@ -1604,6 +1604,10 @@ public interface IExpr
     return false;
   }
 
+  default boolean existsValue(Predicate<? super IExpr> predicate) {
+    return false;
+  }
+
   @Override
   default IExpr exp() {
     return S.Exp.of(this);
@@ -1689,8 +1693,9 @@ public interface IExpr
   /**
    * <p>
    * If this expression is an {@link IAST}, check all elements by applying the
-   * <code>predicate</code> to each argument in this {@link IAST} and return <code>true</code> if
-   * <b>all</b> of the arguments starting from index <code>1</code> satisfy the predicate.
+   * <code>predicate</code> to each {@link IAST#getRule(int)} argument in this {@link IAST} and
+   * return <code>true</code> if <b>all</b> of the arguments starting from index <code>1</code>
+   * satisfy the predicate.
    * <p>
    * If this expression is an {@link ISparseArray}, check all elements and if necessary the default
    * element by applying the <code>predicate</code> to each leaf in this {@link ISparseArray} and
@@ -1701,6 +1706,25 @@ public interface IExpr
    *         <code>false</code> otherwise
    */
   default boolean forAll(Predicate<? super IExpr> predicate) {
+    return false;
+  }
+
+  /**
+   * <p>
+   * If this expression is an {@link IAST}, check all elements by applying the
+   * <code>predicate</code> to each {@link IAST#get(int)} argument in this {@link IAST} and return
+   * <code>true</code> if <b>all</b> of the arguments starting from index <code>1</code> satisfy the
+   * predicate.
+   * <p>
+   * If this expression is an {@link ISparseArray}, check all elements and if necessary the default
+   * element by applying the <code>predicate</code> to each leaf in this {@link ISparseArray} and
+   * return <code>true</code> if <b>all</b> of the leaves satisfy the predicate.
+   *
+   * @param predicate the predicate which filters each argument in this <code>AST</code>
+   * @return <code>true</code> if the predicate is true for <b>all</b> elements or
+   *         <code>false</code> otherwise
+   */
+  default boolean forAllValues(Predicate<? super IExpr> predicate) {
     return false;
   }
 

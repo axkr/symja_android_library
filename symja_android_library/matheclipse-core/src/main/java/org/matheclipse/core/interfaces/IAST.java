@@ -936,7 +936,8 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
   }
 
   /**
-   * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST
+   * Check all elements by applying the <code>predicate</code> to each {@link IAST#getRule(int)}
+   * argument in this <code>AST
    * </code> and return <code>true</code> if all of the arguments starting from index <code>
    * startOffset</code> satisfy the predicate.
    *
@@ -949,6 +950,36 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    *         otherwise
    */
   public boolean forAll(Predicate<? super IExpr> predicate, int startOffset);
+
+  /**
+   * Check all elements by applying the <code>predicate</code> to each {@link IAST#get(int)}
+   * argument in this <code>AST
+   * </code> and return <code>true</code> if all of the arguments starting from index <code>1</code>
+   * satisfy the predicate.
+   *
+   * @param predicate the predicate which filters each argument in this <code>AST</code>
+   * @return <code>true</code> if the predicate is true for all elements or <code>false</code>
+   *         otherwise
+   */
+  @Override
+  default boolean forAllValues(Predicate<? super IExpr> predicate) {
+    return forAllValues(predicate, 1);
+  }
+
+  /**
+   * Check all elements by applying the <code>predicate</code> to each {@link IAST#get(int)}
+   * argument in this <code>AST</code> and return <code>true</code> if all of the arguments starting
+   * from index <code>startOffset</code> satisfy the predicate.
+   *
+   * <p>
+   * <b>Note</b>: If this is an <code>IAssociation</code> the rule at the position will be returned.
+   *
+   * @param predicate the predicate which filters each argument in this <code>AST</code>
+   * @param startOffset start offset from which the element have to be tested
+   * @return <code>true</code> if the predicate is true for all elements or <code>false</code>
+   *         otherwise
+   */
+  public boolean forAllValues(Predicate<? super IExpr> predicate, int startOffset);
 
   /**
    * Check all {@link IAST} recursively, which don't have <code>head</code> as head element and
@@ -1376,6 +1407,7 @@ public interface IAST extends IExpr, Iterable<IExpr>, ITensorAccess, AnyMatrix {
    * @return <code>true</code> if one of the arguments gives <code>true</code> for the <code>
    *     isNumericArgument()</code> method
    */
+  @Override
   default boolean hasNumericArgument() {
     int size = size();
     for (int i = 1; i < size; i++) {

@@ -1198,6 +1198,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
       return null;
     }
 
+
     public IExpr replace(final Predicate<IExpr> predicate, final Function<IExpr, IExpr> function) {
       return F.NIL;
     }
@@ -1257,9 +1258,8 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     }
 
     @Override
-    public IAssociation reverse(IAssociation newAssoc) {
-      ArgumentTypeException.throwNIL();
-      return null;
+    public IAssociation reverse(IASTAppendable resultList) {
+      return F.NIL;
     }
 
     @Override
@@ -2259,6 +2259,9 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
             }
             return functionEvaluator.evaluate(ast, engine);
           } catch (ValidateException ve) {
+            if (Config.SHOW_STACKTRACE) {
+              ve.printStackTrace();
+            }
             return Errors.printMessage(topHead(), ve, engine);
           } catch (FlowControlException e) {
             throw e;
@@ -2330,6 +2333,27 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     final int size = size();
     for (int i = startOffset; i < size; i++) {
       if (predicate.test(get(i))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Override
+  public boolean existsValue(Predicate<? super IExpr> predicate) {
+    return existsValue(predicate, 0);
+  }
+
+  public boolean existsValue(Predicate<? super IExpr> predicate, int startOffset) {
+    if (startOffset == 0) {
+      if (predicate.test(get(0))) {
+        return true;
+      }
+      startOffset++;
+    }
+    final int size = size();
+    for (int i = startOffset; i < size; i++) {
+      if (predicate.test(getRule(i))) {
         return true;
       }
     }
@@ -2543,6 +2567,17 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     final int size = size();
     for (int i = startOffset; i < size; i++) {
       if (!predicate.test(getRule(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @Override
+  public boolean forAllValues(Predicate<? super IExpr> predicate, int startOffset) {
+    final int size = size();
+    for (int i = startOffset; i < size; i++) {
+      if (!predicate.test(get(i))) {
         return false;
       }
     }
@@ -4732,7 +4767,7 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
           return true;
         }
         IExpr exponent = exponent();
-        if (exponent.isRational() && exponent.isPositive()) {
+        if (exponent.isInteger() && exponent.isPositive()) {
           return base().isPolynomial(variables);
         }
         if (exponent.isNegative()) {

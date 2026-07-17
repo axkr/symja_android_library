@@ -21,11 +21,14 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.IVisitor;
+import org.matheclipse.core.visit.IVisitorBoolean;
 import org.organicdesign.fp.StaticImports;
 import org.organicdesign.fp.collections.MutMap;
 import org.organicdesign.fp.collections.RrbTree;
 import org.organicdesign.fp.collections.UnmodIterator;
+import org.organicdesign.fp.collections.UnmodListIterator;
 import org.organicdesign.fp.collections.UnmodMap.UnEntry;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
@@ -157,6 +160,15 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
         }
       }
     }
+  }
+
+  @Override
+  public IASTAppendable apply(final IExpr head) {
+    IASTAppendable result = F.ast(head, argSize());
+    for (int i = 1; i < size(); i++) {
+      result.append(get(i));
+    }
+    return result;
   }
 
   @Override
@@ -572,6 +584,39 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
     return true;
   }
 
+  @Override
+  public boolean isMember(IExpr pattern, boolean heads, IVisitorBoolean visitor) {
+    if (visitor != null) {
+      return super.isMember(pattern, heads, visitor);
+    }
+    Predicate<IExpr> predicate;
+    if (pattern.isSymbol() || pattern.isNumber() || pattern.isString()) {
+      predicate = x -> x.equals(pattern);
+    } else {
+      predicate = new PatternMatcher(pattern);
+    }
+    return existsValue(predicate, heads ? 0 : 1);
+  }
+
+  @Override
+  public boolean existsValue(Predicate<? super IExpr> predicate, int startOffset) {
+    final int size = size();
+    if (startOffset == 0) {
+      if (predicate.test(head())) {
+        return true;
+      }
+      startOffset++;
+    }
+    UnmodListIterator<IExpr> iter = rrbTree.listIterator(startOffset);
+    for (int i = startOffset; i < size; i++) {
+      IExpr rule = iter.next();
+      if (predicate.test(rule.second())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /** {@inheritDoc} */
   @Override
   public int[] isAssociationMatrix() {
@@ -893,6 +938,23 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
     return result;
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public IAST removeIf(Predicate<? super IExpr> predicate) {
+    IASTAppendable result = F.NIL;
+    for (int i = 1; i < size(); i++) {
+      final IAST rule = getRule(i);
+      if (predicate.test(rule.arg2())) {
+        continue;
+      }
+      if (result.isNIL()) {
+        result = copyHead(argSize());
+      }
+      result.appendRule(rule);
+    }
+    return result.orElse(this);
+  }
+
   @Override
   public IExpr removeRule(IExpr key) {
     int index = getRulePosition(key);
@@ -955,11 +1017,11 @@ public final class ASTAssociation extends ASTRRBTree implements IAssociation {
   }
 
   @Override
-  public IAssociation reverse(IAssociation newAssoc) {
+  public IAssociation reverse(IASTAppendable newAssoc) {
     for (int i = argSize(); i >= 1; i--) {
       newAssoc.appendRule(getRule(i));
     }
-    return newAssoc;
+    return (IAssociation) newAssoc;
   }
 
   @Override

@@ -169,13 +169,15 @@ public interface IAssociation extends IASTAppendable {
    */
   public IExpr removeRule(IExpr key);
 
+
   /**
    * Reverse the association. As a result the rules are listed in reverse order.
    * 
    * @param newAssoc
    * @return
    */
-  public IAssociation reverse(IAssociation newAssoc);
+  @Override
+  public IAssociation reverse(IASTAppendable newAssoc);
 
   /**
    * Return a new association sorted by the values of the association.
