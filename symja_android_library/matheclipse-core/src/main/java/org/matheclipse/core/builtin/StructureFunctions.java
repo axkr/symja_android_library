@@ -212,7 +212,7 @@ public class StructureFunctions {
         boolean includeHeads, EvalEngine engine) {
 
       java.util.function.Function<IExpr, IExpr> af =
-          x -> x.isAST() ? ((IAST) x).setAtCopy(0, f) : F.NIL;
+          x -> x.isASTOrAssociation() ? ((IAST) x).apply(f) : F.NIL;
       try {
         VisitorLevelSpecification level = null;
         if (lastIndex == 3) {
@@ -1998,7 +1998,7 @@ public class StructureFunctions {
                 // stop iterating and return fFalse
                 return null;
               }
-              return arg1.get(sortedIndex);
+              return arg1.getRule(sortedIndex);
             });
           } else {
             // Nonatomic expression expected at position `1` in `2`.
@@ -2353,17 +2353,13 @@ public class StructureFunctions {
   }
 
   public static IExpr apply(IExpr f, IExpr expr, VisitorLevelSpecification level) {
-    if (expr.isAST()) {
+    if (expr.isASTOrAssociation()) {
       return ((IAST) expr).acceptChecked(level).orElse(expr);
-    } // else {
-      // arg2 is an Atom to which the head f couldn't be applied
-      // if (evaledAST.size() >= 3) {
+    }
     if (f.isFunction()) {
       return F.unaryAST1(f, expr);
     }
     return expr;
-    // }
-    // }
   }
 
   public static void initialize() {
