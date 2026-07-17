@@ -1233,14 +1233,14 @@ public class TrigSimplifyFu extends AbstractFunctionEvaluator {
     }
 
     IExpr e;
-    if (exp.isInteger() && ((IInteger) exp).isOdd()) {
-      e = ((IInteger) exp).iquo(F.C2);
-      return F.unaryAST1(f, rv.base().first()).pow(2)
-          .times(h.apply(F.unaryAST1(g, rv.base().first()).pow(2)).pow(e));
-    } else if (exp.isNumEqualInteger(F.C4)) {
+    if (exp.isNumEqualInteger(F.C4)) {
       e = F.C2;
+    } else if (!exp.isInteger()) {
+      // h(g(x)^2)^(exp/2) only reproduces f(x)^exp for an even integer exp, so a fractional
+      // exponent (e.g. Sqrt(Sin(x))) has to be left untouched.
+      return F.NIL;
     } else if (!pow) {
-      if (exp.isInteger() && ((IInteger) exp).isOdd()) {
+      if (((IInteger) exp).isOdd()) {
         return F.NIL;
       }
       e = ((IInteger) exp).iquo(F.C2);
