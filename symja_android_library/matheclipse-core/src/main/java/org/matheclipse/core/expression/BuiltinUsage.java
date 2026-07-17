@@ -86,6 +86,7 @@ public class BuiltinUsage {
     USAGE[ID.BitXor] = "bitwise XOR of integer numbers";
     USAGE[ID.Break] = "exit a 'For', 'While', or 'Do' loop";
     USAGE[ID.ByteArray] = "array of bytes";
+    USAGE[ID.ByteArrayQ] = "test whether an expression is a ByteArray";
 
     USAGE[ID.C] = "n-th intertermined constant in the solution of a differential equation";
     USAGE[ID.Cancel] = "cancel common factors in rational expressions";
