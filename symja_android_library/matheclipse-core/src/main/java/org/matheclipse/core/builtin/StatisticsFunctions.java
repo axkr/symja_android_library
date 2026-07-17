@@ -1678,7 +1678,7 @@ public class StatisticsFunctions {
           }
           return F.num(StatUtils.mean(values));
         }
-        if (arg1.isList()) {
+        if (arg1.isListOrAssociation()) {
           final IAST list = (IAST) arg1;
           return F.Times(list.apply(S.Plus), F.Power(F.ZZ(list.argSize()), F.CN1));
         }
@@ -1913,15 +1913,7 @@ public class StatisticsFunctions {
           if (normal.isList()) {
             IAST list = (IAST) normal;
             if (list.size() > 1) {
-              final IAST sortedList = EvalAttributes.copySortLess(list);
-              int size = sortedList.size();
-              if ((size & 0x00000001) == 0x00000001) {
-                // odd number of elements
-                size = size / 2;
-                return F.Times(F.Plus(sortedList.get(size), sortedList.get(size + 1)), F.C1D2);
-              } else {
-                return sortedList.get(size / 2);
-              }
+              return medianList(list);
             }
           }
         }
@@ -1930,7 +1922,24 @@ public class StatisticsFunctions {
       if (arg1.isDistribution()) {
         return getDistribution(arg1).median((IAST) arg1);
       }
+      if (arg1.isAssociation()) {
+        final IAST list = ((IAST) arg1).apply(S.Plus);
+        if (list.size() > 1) {
+          return medianList(list);
+        }
+      }
       return F.NIL;
+    }
+
+    private static IExpr medianList(final IAST list) {
+      final IAST sortedList = EvalAttributes.copySortLess(list);
+      int size = sortedList.size();
+      if ((size & 0x00000001) == 0x00000001) {
+        // odd number of elements
+        size = size / 2;
+        return F.Times(F.Plus(sortedList.get(size), sortedList.get(size + 1)), F.C1D2);
+      }
+      return sortedList.get(size / 2);
     }
 
     /**
