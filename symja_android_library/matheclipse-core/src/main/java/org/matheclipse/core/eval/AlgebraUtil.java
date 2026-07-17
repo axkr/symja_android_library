@@ -969,8 +969,9 @@ public class AlgebraUtil {
    *        substitutions)
    * @param denominator a expression which could be converted to JAS polynomial (using
    *        substitutions)
-   * @return {@link Optional#empty()} if the expressions couldn't be converted to JAS polynomials or
-   *         gcd equals 1
+   * @return {@link Optional#empty()} if the expressions couldn't be converted to JAS polynomials,
+   *         gcd equals 1 or an argument is larger than
+   *         {@link Config#MAX_CANCEL_GCD_LEAFCOUNT}
    * @throws JASConversionException
    */
   public static Optional<IExpr[]> cancelGCD(final IExpr numerator, final IExpr denominator)
@@ -981,6 +982,13 @@ public class AlgebraUtil {
         if (result.isPresent()) {
           return result;
         }
+      }
+
+      // The polynomial GCD below can suffer unbounded intermediate coefficient swell and cannot be
+      // interrupted once it is running, so it is only attempted for arguments of a tractable size.
+      if (numerator.leafCount() > Config.MAX_CANCEL_GCD_LEAFCOUNT
+          || denominator.leafCount() > Config.MAX_CANCEL_GCD_LEAFCOUNT) {
+        return Optional.empty();
       }
 
       VariablesSet eVar = new VariablesSet(numerator);

@@ -124,6 +124,25 @@ public class Config {
   public static final int MAX_APFLOAT_PROCESSORS = 1;
 
   /**
+   * Maximum number for the leaf count of the numerator or denominator of a rational expression so
+   * that {@link S#Together} and {@link S#Cancel} will try to cancel a polynomial GCD.
+   *
+   * <p>
+   * The GCD is computed by the JAS subresultant PRS algorithm over a ring of arbitrary
+   * {@link IExpr} coefficients. That algorithm is prone to intermediate coefficient swell: on
+   * complex rational coefficients the intermediate numerators and denominators can grow without
+   * practical bound, so a GCD of a large input may not finish in any reasonable time. It cannot be
+   * cancelled either, because JAS only tests the interrupted-flag when it constructs a polynomial
+   * and a single coefficient operation on multi-thousand-digit numbers already runs for seconds, so
+   * neither {@link EvalEngine#setSeconds(long)} nor a thread interrupt bounds it.
+   *
+   * <p>
+   * Above this limit the GCD is skipped and the expression is left uncancelled, which is a correct
+   * (only less reduced) result. Has to be an int value greater 0.
+   */
+  public static final int MAX_CANCEL_GCD_LEAFCOUNT = 4000;
+
+  /**
    * Maximum number for the leaf count of an expression so that {@link S#PossibleZeroQ} > will try a
    * factoring. Has to be an int value greater 0.
    */
