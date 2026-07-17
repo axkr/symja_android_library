@@ -28,6 +28,7 @@ import org.matheclipse.core.interfaces.IAssociation;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.tensor.qty.IQuantity;
 import org.matheclipse.io.IOInit;
@@ -1057,35 +1058,36 @@ public class ExprEvaluatorTests {
         if (result.isAST()) {
           if (!result.isFree(x -> x == null || x.isNIL(), true)) {
             System.out.println(
-                "Corrupted AST: " + ast.toString() + "\n" + "       ===> " + result.toString());
+                "Corrupted AST: " + IStringX.inputForm(ast) + "\n" + "       ===> "
+                    + IStringX.inputForm(result));
             throw new NullPointerException();
           }
         }
       } catch (FlowControlException mex) {
         if (!quietMode) {
-          System.err.println(ast.toString());
+          System.err.println(IStringX.inputForm(ast));
           mex.printStackTrace();
           System.err.println();
         }
       } catch (SyntaxError se) {
 
-        System.err.println(ast.toString());
+        System.err.println(IStringX.inputForm(ast));
         se.printStackTrace();
         System.err.println();
 
         // fail();
       } catch (ValidateException ve) {
         System.err.println(ve.getMessage());
-        System.err.println(ast.toString());
+        System.err.println(IStringX.inputForm(ast));
         System.err.println();
         // fail();
       } catch (MathException mex) {
-        System.err.println(ast.toString());
+        System.err.println(IStringX.inputForm(ast));
         mex.printStackTrace();
         System.err.println();
         fail();
       } catch (RuntimeException rex) {
-        System.err.println(ast.toString());
+        System.err.println(IStringX.inputForm(ast));
         rex.printStackTrace();
         fail();
       } catch (Error rex) {
@@ -1095,7 +1097,7 @@ public class ExprEvaluatorTests {
           rex.printStackTrace();
           // fail();
         } else {
-          System.err.println(ast.toString());
+          System.err.println(IStringX.inputForm(ast));
           rex.printStackTrace();
           fail();
         }
