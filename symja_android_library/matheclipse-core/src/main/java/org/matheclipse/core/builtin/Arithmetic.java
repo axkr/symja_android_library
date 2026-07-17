@@ -4627,6 +4627,17 @@ public final class Arithmetic {
             rest.append(arg);
             continue;
           }
+          if (arg.isRational() && arg.isNegative()) {
+            // Only a positive factor can be taken out of a fractional power:
+            // (n*u)^e == n^e*u^e needs Arg(n)+Arg(u) to stay in (-Pi,Pi], which holds for every u
+            // when n>0, but not when n<0. So take out |n| and leave the sign with the other
+            // factors: Sqrt(-2*u) == Sqrt(2)*Sqrt(-u), not I*Sqrt(2)*Sqrt(u) which is off by a
+            // sign whenever Arg(u)>0.
+            result.append(F.Power(arg.negate(), exponent));
+            rest.append(F.CN1);
+            evaled = true;
+            continue;
+          }
           if (arg.isFraction()) {
             IInteger numerator = ((IFraction) arg).numerator();
             IExpr n = F.NIL;

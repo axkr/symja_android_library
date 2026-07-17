@@ -1245,6 +1245,14 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       engine = EvalEngine.get();
     }
 
+    // Limit[RootSum[f, g], x -> x0] with finite x0 and a root polynomial f free of x is the direct
+    // substitution RootSum[f, g /. x -> x0]; this is what Integrate uses to evaluate a RootSum
+    // antiderivative at the bounds of a definite integral.
+    IExpr rootSumLimit = limitRootSum(evaledExpr, data, engine);
+    if (rootSumLimit.isPresent()) {
+      return rootSumLimit;
+    }
+
     if (data.direction() == Direction.TWO_SIDED && !limitValue.isDirectedInfinity()) {
       return evalLimitTwoSided(evaledExpr, data, engine);
     }
@@ -1545,6 +1553,41 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       return limitAbove;
     }
     return S.Indeterminate;
+  }
+
+  /**
+   * <code>Limit[RootSum[f, g], x -> x0]</code> for a finite <code>x0</code> whose root polynomial
+   * <code>f</code> is free of the limit variable <code>x</code>: the roots do not move with
+   * <code>x</code>, so the summand <code>g</code> (typically <code>Log(x - #1)/...</code> from a
+   * differentiated-log antiderivative) is continuous in <code>x</code> unless <code>x0</code> is
+   * itself a root. The limit is therefore the direct substitution
+   * <code>RootSum[f, g /. x -> x0]</code>, independent of the approach direction.
+   *
+   * <p>
+   * If <code>x0</code> is a root, the substitution introduces a <code>Log(0)</code> term and the
+   * RootSum evaluates to <code>ComplexInfinity</code>; that case is declined ({@link F#NIL}) so the
+   * generic limit machinery can deal with the singular endpoint.
+   *
+   * @return the substituted RootSum, or {@link F#NIL} if this shortcut does not apply
+   */
+  private static IExpr limitRootSum(IExpr function, LimitData data, EvalEngine engine) {
+    if (!function.isAST(S.RootSum, 3)) {
+      return F.NIL;
+    }
+    if (data.limitValue().isDirectedInfinity()) {
+      return F.NIL; // only finite endpoints substitute directly
+    }
+    final ISymbol x = data.variable();
+    if (!function.first().isFree(x, true)) {
+      return F.NIL; // the roots depend on x -> not a plain substitution
+    }
+    IExpr substituted = engine.evalQuiet(function.replaceAll(data.rule()).orElse(function));
+    if (substituted.isPresent() && substituted.isFree(x, true) && substituted.isFree(S.Limit)
+        && substituted.isIndeterminateFree() && substituted.isFree(S.ComplexInfinity)
+        && substituted.isFree(S.DirectedInfinity)) {
+      return substituted;
+    }
+    return F.NIL;
   }
 
   private static IExpr evalReplaceAll(IExpr expression, LimitData data, EvalEngine engine) {

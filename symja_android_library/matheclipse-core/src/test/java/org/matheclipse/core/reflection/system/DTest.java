@@ -804,4 +804,20 @@ public class DTest extends ExprEvaluatorTestCase {
         "(a*b1*AppellF1(1+a,1+b1,b2,1+c,f1(x),f2(x))*f1'(x))/c+(a*b2*AppellF1(1+a,b1,1+b2,\n" //
             + "1+c,f1(x),f2(x))*f2'(x))/c");
   }
+
+  @Test
+  public void testDRootSum() {
+    // A definite integral whose antiderivative is a RootSum(...Log(x-#1)...) is evaluated at the
+    // bounds by substituting x->1 and x->3 into the summand (Limit of a RootSum), matching
+    // -RootSum(...,Log(1-#1)/...&) + RootSum(...,Log(3-#1)/...&).
+    check("rs=Integrate(1/(x^5 + 11 x + 1), {x, 1, 3})", //
+        "-RootSum(#1^5+11*#1+1&,Log(1-#1)/(5*#1^4+11)&)+RootSum(#1^5+11*#1+1&,Log(3-#1)/(\n"
+            + "5*#1^4+11)&)");
+    // The result is a constant (free of x), so its derivative is 0.
+    check("D(rs,x)", //
+        "0");
+    check(
+        "D(RootSum(#1^6-5*#1^4+5*#1^2+4&,((#1^4-3*#1^2+6)*Log(x-#1))/(6*#1^5-20*#1^3+10*#1)&) ,x)", //
+        "(6-3*x^2+x^4)/(4+5*x^2-5*x^4+x^6)");
+  }
 }

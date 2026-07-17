@@ -277,6 +277,7 @@ public final class FunctionDefinitions {
       S.RegionWithin.setEvaluator(new org.matheclipse.core.reflection.system.RegionWithin());
       S.Root.setEvaluator(new org.matheclipse.core.reflection.system.Root());
       S.RootReduce.setEvaluator(new org.matheclipse.core.reflection.system.RootReduce());
+      S.RootSum.setEvaluator(new org.matheclipse.core.reflection.system.RootSum());
       S.RSolve.setEvaluator(new org.matheclipse.core.reflection.system.RSolve());
       S.RSolveValue.setEvaluator(new org.matheclipse.core.reflection.system.RSolveValue());
 

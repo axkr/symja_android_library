@@ -510,7 +510,7 @@ public class D extends AbstractFunctionEvaluator {
   }
 
   /**
-   * Evaluate <code>D(functionO>fX, x)</code> for some general cases.
+   * Evaluate <code>D(functionOfX, x)</code> for some general cases.
    *
    * @param functionOfX the function of <code>x</code>
    * @param x derive w.r.t this variable
@@ -566,78 +566,105 @@ public class D extends AbstractFunctionEvaluator {
 
     if (functionOfX.isAST()) {
       final IAST function = (IAST) functionOfX;
-      if (function.isPlus()) {
-        // D(a_+b_+c_,x_) -> D(a,x)+D(b,x)+D(c,x)
-        IExpr plusResult = function.mapThread(F.D(F.Slot1, x), 1);
-        if (plusResult.isPolynomial(x)) {
-          return engine.addEvaluatedTraceStep(ast, plusResult, "PolynomialPowerRule");
+      IExpr head = function.head();
+
+      // Dispatch using a switch statement on the symbol's ordinal value
+      if (head.isBuiltInSymbol()) {
+        switch (((IBuiltInSymbol) head).ordinal()) {
+          case ID.Plus:
+            // D(a_+b_+c_,x_) -> D(a,x)+D(b,x)+D(c,x)
+            IExpr plusResult = function.mapThread(F.D(F.Slot1, x), 1);
+            if (plusResult.isPolynomial(x)) {
+              return engine.addEvaluatedTraceStep(ast, plusResult, "PolynomialPowerRule");
+            }
+            // Apply the sum/difference rule $(f \pm g)' = f' \pm g'$.
+            return engine.addEvaluatedTraceStep(ast, plusResult, "PlusRule");
+
+          case ID.Times:
+            if (function.argSize() > 4) {
+              // Apply Logarithmic Differentiation for products with 5 or more terms
+              // to prevent combinatorial AST explosion of the standard product rule.
+              IExpr logDeriv = logarithmicDerivative(function, x, engine);
+              return engine.addEvaluatedTraceStep(F.D(function, x), logDeriv, S.D,
+                  F.$str("LogarithmicDerivativeRule"));
+            }
+            IExpr result =
+                function.map(F.PlusAlloc(16), new BinaryBindIth1st(function, F.D(S.Null, x)));
+            return engine.addEvaluatedTraceStep(F.D(function, x), result, S.D, F.$str("MulRule"));
+
+          case ID.Power:
+            return power(function, x, engine);
+
+          case ID.Surd:
+            // Surd(f,g)
+            if (function.argSize() == 2) {
+              return surd(function, x, engine);
+            }
+            break;
+
+          case ID.Log:
+            if (function.argSize() == 2) {
+              if (function.isFreeAt(1, x)) {
+                // D(Log(i_FreeQ(x), x_), z_):= (x*Log(a))^(-1)*D(x,z);
+                IExpr res =
+                    F.Times(F.Power(F.Times(function.arg2(), F.Log(function.arg1())), F.CN1),
+                        F.D(function.arg2(), x));
+                return engine.addEvaluatedTraceStep(F.D(function, x), res, "LogRule");
+              }
+            }
+            break;
+
+          case ID.HypergeometricPFQ:
+            if (function.argSize() == 3 && function.first().isList()
+                && function.second().isList()) {
+              return hypergeometricPFQ(function, x);
+            }
+            break;
+
+          case ID.Integrate:
+            if (function.argSize() == 2 && function.second().isList3()
+                && function.second().getAt(3).equals(x)) {
+              // D(Integrate(f(t), {t, a, x}),x) -> f(x)
+              // https://en.wikipedia.org/wiki/Fundamental_theorem_of_calculus#First_part
+              IAST list = (IAST) function.second();
+              IExpr t = list.arg1();
+              if (t.isFree(x, true) && list.arg2().isFree(x, true) && list.arg2().isFree(t, true)) {
+                return F.subst(function.arg1(), arg -> arg.equals(t) ? x : F.NIL);
+              }
+            }
+            break;
+
+          case ID.Boole:
+            if (function.argSize() == 1) {
+              return F.C0;
+            }
+            break;
+
+          case ID.RootSum:
+            if (function.argSize() == 2) {
+              IExpr f = function.arg1();
+              IExpr form = function.arg2();
+              // Evaluate derivation of the form inside the RootSum if the polynomial f is free of x
+              if (f.isFree(x, true)) {
+                ISymbol r = F.Dummy("r");
+                IExpr formR = engine.evaluate(F.unaryAST1(form, r));
+                IExpr dFormR = engine.evaluate(F.D(formR, x));
+
+                // Safely construct a pure function trapping the dummy variable to prevent variable
+                // collision
+                IExpr newForm = F.Function(r, dFormR);
+                // Force evaluation of the new RootSum so we return the resultant-resolved Rational
+                // function
+                IExpr rootSumResult = engine.evaluate(F.binaryAST2(S.RootSum, f, newForm));
+                return engine.addEvaluatedTraceStep(ast, rootSumResult, "RootSumRule");
+              }
+            }
+            break;
         }
-        // Apply the sum/difference rule $(f \pm g)' = f' \pm g'$.
-        return engine.addEvaluatedTraceStep(ast, plusResult, "PlusRule");
-      } else if (function.isTimes()) {
-        if (function.argSize() > 4) {
-          // Apply Logarithmic Differentiation for products with 5 or more terms
-          // to prevent combinatorial AST explosion of the standard product rule.
-          IExpr logDeriv = logarithmicDerivative(function, x, engine);
-          return engine.addEvaluatedTraceStep(F.D(function, x), logDeriv, S.D,
-              F.$str("LogarithmicDerivativeRule"));
-        }
-        IExpr result =
-            function.map(F.PlusAlloc(16), new BinaryBindIth1st(function, F.D(S.Null, x)));
-        return engine.addEvaluatedTraceStep(F.D(function, x), result, S.D, F.$str("MulRule"));
-      } else if (function.isPower()) {
-        return power(function, x, engine);
-      } else if (function.isAST(S.Surd, 3)) {
-        // Surd(f,g)
-        return surd(function, x, engine);
-      } else if (function.isLog2()) {
-        if (function.isFreeAt(1, x)) {
-          // D(Log(i_FreeQ(x), x_), z_):= (x*Log(a))^(-1)*D(x,z);
-          IExpr result = F.Times(F.Power(F.Times(function.arg2(), F.Log(function.arg1())), F.CN1),
-              F.D(function.arg2(), x));
-          return engine.addEvaluatedTraceStep(F.D(function, x), result, "LogRule");
-        }
-      } else if (function.isAST(S.HypergeometricPFQ, 4)//
-          && function.first().isList()//
-          && function.second().isList()) {
-        return hypergeometricPFQ(function, x);
-        // } else if (header == F.LaplaceTransform && (listArg1.size()
-        // == 4)) {
-        // if (listArg1.arg3().equals(x) && listArg1.arg1().isFree(x,
-        // true)) {
-        // // D(LaplaceTransform(c,t,s), s) -> -c / s^2
-        // return F.Times(-1L, listArg1.arg2(), F.Power(x, -2L));
-        // } else if (listArg1.arg1().equals(x)) {
-        // // D(LaplaceTransform(c,t,s), c) -> 1/s
-        // return F.Power(x, -1L);
-        // } else if (listArg1.arg1().isFree(x, true) &&
-        // listArg1.arg2().isFree(x, true) && listArg1.arg3().isFree(x,
-        // true))
-        // {
-        // // D(LaplaceTransform(c,t,s), w) -> 0
-        // return F.C0;
-        // } else if (listArg1.arg2().equals(x)) {
-        // // D(LaplaceTransform(c,t,s), t) -> 0
-        // return F.C0;
-        // }
-      } else if (function.isAST(S.Integrate)) {
-        if (function.argSize() == 2 //
-            && function.second().isList3()//
-            && function.second().getAt(3).equals(x)) {
-          // D(Integrate(f(t), {t, a, x}),x) -> f(x)
-          // https://en.wikipedia.org/wiki/Fundamental_theorem_of_calculus#First_part
-          IAST list = (IAST) function.second();
-          IExpr t = list.arg1();
-          if (t.isFree(x, true) //
-              && list.arg2().isFree(x, true) //
-              && list.arg2().isFree(t, true)) {
-            return F.subst(function.arg1(), arg -> arg.equals(t) ? x : F.NIL);
-          }
-        }
-        return F.NIL;
-      } else if (function.isAST(S.Boole, 2)) {
-        return F.C0;
-      } else if (function.isAST1() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
+      }
+
+      // Fallback for AST1 and other derivatives
+      if (function.isAST1() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
         IAST[] derivStruct = function.isDerivativeAST1();
         if (derivStruct != null && derivStruct[2] != null) {
           IAST headAST = derivStruct[1];
