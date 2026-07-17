@@ -267,7 +267,7 @@ public class Iterator {
 
     EvalEngine evalEngine;
 
-    IAST maxCounterOrList;
+    IAST maxCounterOrListAssoc;
 
     /**
      * If <code>maxCounterOrList</code> is a list the <code>maxCounterOrListIndex</code> attribute
@@ -275,7 +275,7 @@ public class Iterator {
      */
     int maxCounterOrListIndex;
 
-    final IAST originalList;
+    final IAST originalListAssoc;
 
     final ISymbol variable;
 
@@ -296,7 +296,7 @@ public class Iterator {
         final EvalEngine engine) {
       this.variable = symbol;
       this.evalEngine = engine;
-      this.originalList = originalList;
+      this.originalListAssoc = originalList;
     }
 
     @Override
@@ -317,11 +317,11 @@ public class Iterator {
      */
     @Override
     public boolean hasNext() {
-      if (maxCounterOrList == null) { // || (illegalIterator)) {
+      if (maxCounterOrListAssoc == null) { // || (illegalIterator)) {
         throw NoEvalException.CONST;
       }
 
-      if (maxCounterOrListIndex <= maxCounterOrList.size()) {
+      if (maxCounterOrListIndex <= maxCounterOrListAssoc.size()) {
         return true;
       }
       return false;
@@ -353,12 +353,12 @@ public class Iterator {
         variable.assignValue(count, false);
       }
       final IExpr temp = count;
-      if (maxCounterOrList.isList()) {
-        if (maxCounterOrListIndex == maxCounterOrList.size()) {
+      if (maxCounterOrListAssoc.isListOrAssociation()) {
+        if (maxCounterOrListIndex == maxCounterOrListAssoc.size()) {
           maxCounterOrListIndex++;
           return temp;
         }
-        count = maxCounterOrList.get(maxCounterOrListIndex++);
+        count = maxCounterOrListAssoc.get(maxCounterOrListIndex++);
       }
       return temp;
     }
@@ -374,13 +374,13 @@ public class Iterator {
       if (variable != null) {
         variableValueBeforeIteration = variable.assignedValue();
       }
-      maxCounterOrList = originalList;
-      maxCounterOrList = originalList.map(x -> evalEngine.evalWithoutNumericReset(x));
+      maxCounterOrListAssoc = originalListAssoc;
+      maxCounterOrListAssoc = originalListAssoc.map(x -> evalEngine.evalWithoutNumericReset(x));
       // points to first element in maxCounterOrList if it's a list
       maxCounterOrListIndex = 1;
 
-      if (maxCounterOrListIndex < maxCounterOrList.size()) {
-        count = maxCounterOrList.get(maxCounterOrListIndex++);
+      if (maxCounterOrListIndex < maxCounterOrListAssoc.size()) {
+        count = maxCounterOrListAssoc.get(maxCounterOrListIndex++);
       } else {
         return false;
       }
@@ -1283,7 +1283,7 @@ public class Iterator {
             throw new ArgumentTypeException(
                 Errors.getMessage("itraw", F.list(list.arg1()), EvalEngine.get()));
           }
-          if (upperLimit.isList()) {
+          if (upperLimit.isListOrAssociation()) {
             return new ExprListIterator(variable, (IAST) upperLimit, evalEngine);
           }
           if (upperLimit instanceof INum) {
@@ -1494,7 +1494,7 @@ public class Iterator {
           upperLimit = evalEngine.evalWithoutNumericReset(list.arg2());
           step = F.C1;
           variable = symbol;
-          if (upperLimit.isList()) {
+          if (upperLimit.isListOrAssociation()) {
             if (variable != null) {
               if (!variable.isVariable() || variable.hasProtectedAttribute()) {
                 // Cannot assign to raw object `1`.
