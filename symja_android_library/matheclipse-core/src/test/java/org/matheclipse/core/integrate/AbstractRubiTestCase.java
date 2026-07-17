@@ -88,9 +88,16 @@ public abstract class AbstractRubiTestCase {
           // Form-independent correctness check: the antiderivative must differentiate back to the
           // integrand, i.e. D(result, x) - integrand == 0. This is what lets a native algorithm
           // stage produce a different-looking (but correct) antiderivative than Rubi/Mathematica.
+          //
+          // The two checks are OR-ed, so their order cannot change which results are accepted -
+          // only what it costs to decide. The numeric check runs in milliseconds, while the
+          // symbolic one calls Together/Simplify, which take tens of seconds on a big difference
+          // and can hang outright (JAS' subresultant GCD swells on complex-rational coefficients,
+          // and it never checks the engine deadline, so no timeout can stop it). So try the cheap
+          // one first and only fall back to the symbolic route when it cannot decide.
           IExpr difference = fEvaluator.eval(F.Subtract(F.D(result, F.symbol("x")), integral));
-          if (isZeroAntiderivativeCheck(difference)
-              || isFiniteDifferenceCorrect(result, integral, F.symbol("x"))) {
+          if (isFiniteDifferenceCorrect(result, integral, F.symbol("x"))
+              || isZeroAntiderivativeCheck(difference)) {
             return expectedResult;
           } else {
             System.out.println("D(result) - integrand not provably zero:\n" + difference + "\n");
