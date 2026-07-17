@@ -50,6 +50,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.GraphicsUtil;
 import org.matheclipse.core.eval.PackageUtil;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.BigIntegerLimitExceeded;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -2365,6 +2366,7 @@ public class F extends S {
   public static IASTAppendable BooleanFunction(final IExpr a0) {
     return unary(BooleanFunction, a0);
   }
+
   public static IAST BooleanMinimize(final IExpr a) {
     return new AST1(BooleanMinimize, a);
   }
@@ -4776,6 +4778,18 @@ public class F extends S {
   }
 
   /**
+   * Create the exact "fractional" number of the shortest decimal representation of a double number,
+   * i.e. of the decimal literal the double was created from. For example <code>1.25663706E-6</code>
+   * is converted to <code>62831853/50000000000000</code>.
+   *
+   * @param value the machine precision double value which should be converted to a fractional number
+   * @return
+   */
+  public static IFraction fractionDecimal(final double value) {
+    return AbstractFractionSym.valueOfDecimal(value);
+  }
+
+  /**
    * Create a "fractional" expression that exactly represents the given double number.
    * <p>
    * This methods returns an {@link IExpr} that, when being evaluated to a double value (using
@@ -5986,7 +6000,7 @@ public class F extends S {
       return F.C0;
     }
     IASTAppendable result = F.PlusAlloc(F.allocMin32(iMax - iMin + 2));
-    int numberOfLeaves = 0;
+    long numberOfLeaves = 0;
     EvalEngine engine = EvalEngine.get();
     INumber number = F.C0;
     // insert number as placeholder
@@ -8272,6 +8286,13 @@ public class F extends S {
   }
 
   public static INum num(String numberStr, double precision) {
+    if (precision > Config.MAX_PRECISION_APFLOAT) {
+      // illegal arguments: \"`1`\" in `2`
+      ArgumentTypeException.throwArg(
+          F.stringx("Precision " + precision + " gretare than " + Config.MAX_PRECISION_APFLOAT),
+          S.N);
+      return null;
+    }
     return num(new Apfloat(numberStr, (long) precision));
   }
 
