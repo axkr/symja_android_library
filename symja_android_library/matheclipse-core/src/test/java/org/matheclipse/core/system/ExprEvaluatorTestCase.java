@@ -313,6 +313,7 @@ public abstract class ExprEvaluatorTestCase {
       Config.MAX_MATRIX_DIMENSION_SIZE = 100;
       Config.MAX_BIT_LENGTH = 200000;
       Config.MAX_POLYNOMIAL_DEGREE = 150;
+      Config.MAX_PRECISION_APFLOAT = 512;
       Config.MAX_POLYNOMIAL_DEGREE_LAGUERRE_SOLVER = 500;
       Config.FILESYSTEM_ENABLED = false;
       Config.ROUNDING_MODE = RoundingMode.HALF_EVEN;

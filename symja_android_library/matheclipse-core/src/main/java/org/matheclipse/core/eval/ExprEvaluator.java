@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -508,18 +509,21 @@ public class ExprEvaluator {
           try {
             F.await();
             TimeLimiter timeLimiter = SimpleTimeLimiter.create(executorService);
-            return timeLimiter.callWithTimeout(work, timeoutDuration, timeUnit);
+            return interruptible //
+                ? timeLimiter.callWithTimeout(work, timeoutDuration, timeUnit)
+                : timeLimiter.callUninterruptiblyWithTimeout(work, timeoutDuration, timeUnit);
           } catch (PreemptingException | ApfloatInterruptedException
               | org.matheclipse.core.eval.exception.TimeoutException
               | java.util.concurrent.TimeoutException
               | com.google.common.util.concurrent.UncheckedTimeoutException e) {
             // LOGGER.debug("ExprEvaluator.evaluateWithTimeout() failed", e);
             return S.$Aborted;
-          } catch (Exception e) {
-            // LOGGER.debug("ExprEvaluator.evaluateWithTimeout() failed", e);
+          } catch (InterruptedException iex) {
             return S.Null;
-            // } finally {
-            // work.cancel();
+          } catch (ExecutionException eex) {
+            return S.Null;
+          } catch (RuntimeException rex) {
+            return S.Null;
           }
         }
       } finally {
