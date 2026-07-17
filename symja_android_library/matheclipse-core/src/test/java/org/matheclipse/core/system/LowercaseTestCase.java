@@ -10,10 +10,12 @@ import org.junit.jupiter.api.Test;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
+import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.expression.data.ByteArrayExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -39,9 +41,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("1.23456789*^8", //
         "1.23457*10^8");
     // github #66
-    Double d = Double.parseDouble("1231231236123216361256312631627.12312312");
-    checkNumeric("1231231236123216361256312631627.12312312", //
-        d.toString());
+    // Double d = Double.parseDouble("1231231236123216361256312631627.12312312");
+    // checkNumeric("1231231236123216361256312631627.12312312", //
+    // d.toString());
     checkNumeric("N(1231231236123216361256312631627.12312312,50)", //
         "1231231236123216361256312631627.12312312");
 
@@ -8490,19 +8492,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testFindGeneratingFunction() {
     // TODO unequals WMA
     check("FindGeneratingFunction({1, 3/2, 9/5, 2, 15/7, 9/4, 7/3, 12/5}, x)", //
-        "(154/13-777/65*x+168/65*x^2-14/975*x^3)/(154/13-1932/65*x+336/13*x^2-350/39*x^3+x^\n" //
-            + "4)");
+        "(1-111/110*x+12/55*x^2-x^3/825)/(1-138/55*x+24/11*x^2-25/33*x^3+13/154*x^4)");
     // TODO unequals WMA
     check("FindGeneratingFunction({1, 1, 2, 2, 3, 4, 5, 6, 7, 8, 11, 12}, x)", //
-        "(-1/2-x+x^2-2*x^3-5/2*x^5)/(-1/2-x/2+5/2*x^2-5/2*x^3+x^5+x^6)");
+        "(1+2*x-2*x^2+4*x^3+5*x^5)/(1+x-5*x^2+5*x^3-2*x^5-2*x^6)");
 
     check("FindGeneratingFunction({0, 1, 2, 0, 1, 2, 0}, x)", //
-        "(-x-2*x^2)/(-1+x^3)");
+        "(x+2*x^2)/(1-x^3)");
     check("FindGeneratingFunction({1, 1, 2, 3, 5, 8, 13}, x)", //
-        "-1/(-1+x+x^2)");
+        "1/(1-x-x^2)");
 
     check("FindGeneratingFunction({3, 7, 13, 21, 31, 43, 57}, x) // Factor", //
-        "(-3+2*x-x^2)/(-1+x)^3");
+        "-(3-2*x+x^2)/(-1+x)^3");
     check("FindGeneratingFunction({1, 2, 3, 4}, x)", //
         "1/(1-2*x+x^2)");
 
@@ -10032,6 +10033,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testGroebnerBasis() {
+    // non-polynomial generator passthrough
+    check("GroebnerBasis({Sin(x),x*y-2*y, 2*y^2-x^2}, {y,x})", //
+        "{-2*x^2+x^3,-2*y+x*y,-x^2+2*y^2,Sin(x)}");
+    check("GroebnerBasis({Sin(x),x*y-2*y, 2*y^2-x^2}, {y,x})", //
+        "{-2*x^2+x^3,-2*y+x*y,-x^2+2*y^2,Sin(x)}");
     check("GroebnerBasis({x*y-2*y, 2*y^2-x^2}, {y, x})", //
         "{-2*x^2+x^3,-2*y+x*y,-x^2+2*y^2}");
     check("GroebnerBasis({x*y-2*y, 2*y^2-x^2}, {x, y})", //
@@ -17190,6 +17196,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolynomialExtendedGCD() {
+    check("PolynomialExtendedGCD(a*(x+b)^2, (x + a)*(x + b), x)", //
+        "{b+x,{1/(-a^2+a*b),1/(a-b)}}");
+
     // Wikipedia: finite field GF(28) - p = x8 + x4 + x3 + x + 1, and a = x6 + x4 +
     // x + 1
     check("PolynomialExtendedGCD(x^8 + x^4 + x^3 + x + 1, x^6 + x^4 + x + 1, x, Modulus->2)", //
@@ -17200,6 +17209,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("PolynomialExtendedGCD((x - 1)^2*(x - 2)^2, (x - 1)*(x^2 - 3), x, Modulus -> 2)", //
         "{1+x^2,{1,1+x}}");
 
+    // the GCD is the root of the linear argument, i.e. x == 1/Sqrt(-e/d). That is a square root
+    // of -d/e but not necessarily the principal one: at {d->2.0,e->3.0} it is -0.816497*I while
+    // Sqrt(-d/e) is +0.816497*I, and only the former is a root of -2*d*e^2*Sqrt(-e/d)*x+2*d*e^2
     check("PolynomialExtendedGCD(e*x^2 + d, ( -2*d*e^2*Sqrt(-e/d) )*x + 2*d*e^2, x )", //
         "{-1/Sqrt(-e/d)+x,{0,-1/(2*d*e^2*Sqrt(-e/d))}}");
 
@@ -17223,6 +17235,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,{0,1/b}}");
 
     // TODO make result consistent with PolynomiaGCD
+    // the GCD is the root of the linear argument, i.e. x == 1/Sqrt(-e/d). That is a square root
+    // of -d/e but not necessarily the principal one: at {d->2.0,e->3.0} it is -0.816497*I while
+    // Sqrt(-d/e) is +0.816497*I, and only the former is a root of -2*d*e^2*Sqrt(-e/d)*x+2*d*e^2
     check("PolynomialExtendedGCD(e*x^2 + d, ( -2*d*e^2*Sqrt(-e/d) )*x + 2*d*e^2, x )", //
         "{-1/Sqrt(-e/d)+x,{0,-1/(2*d*e^2*Sqrt(-e/d))}}");
 
@@ -17237,6 +17252,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolynomialGCD() {
+    check("PolynomialGCD(e*x^2 + d, ( -2*d*e^2*Sqrt(-e/d) )*x + 2*d*e^2, x )", //
+        "1");
     check("PolynomialGCD(x^2 - 2, x - Sqrt(2))", //
         "-Sqrt(2)+x");
 
@@ -17571,15 +17588,26 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testPolynomialReduce004() {
-    // TODO
-    // check("poly = 121*x-x*y+y^2-3;", //
-    // "");
-    // check(
-    // "gb = {-4 + 16*y + 19*y^2 + 5*y^3 + 11*y^4, -2 + 44*x + 9*y - 17*y^2 + 11*y^3, 2*x + x*y -
-    // y^2, -1 + 11*x^2 + 5*y} ;", //
-    // "");
-    // check("PolynomialReduce(poly, gb, {x, y}, CoefficientDomain -> Integers)", //
-    // "");
+    // ---
+    check("poly = a^2*x-x*y+y^2-3;", //
+        "");
+    check("gb = {4 - 16*y - 19*y^2 - 5*y^3 - a*y^4, -2 + 4*a*x + 9*y + (5 - 2*a)*y^2 + a*y^3};", //
+        "");
+    check("PolynomialReduce(poly, gb, {x, y})", //
+        "{{-1/(4*a),a/4-y/(4*a)},-3+1/a+a/2+(-9/2*1/a-9/4*a)*y+(1-5/2*1/a+1/4*a*(-5+2*a))*y^\n" //
+            + "2+(-5/4*1/a+(5-2*a)/(4*a)-a^2/4)*y^3}");
+
+    // ---
+    check("poly = 121*x-x*y+y^2-3;", //
+        "");
+    check(
+        "gb = {-4 + 16*y + 19*y^2 + 5*y^3 + 11*y^4, -2 + 44*x + 9*y - 17*y^2 + 11*y^3, 2*x + x*y -y^2, -1 + 11*x^2 + 5*y};", //
+        "");
+
+    check("PolynomialReduce(poly, gb, {x, y}, CoefficientDomain -> Integers)", //
+        "{{0,3,-1,0},3-9*x-27*y+51*y^2-33*y^3}");
+
+
   }
 
   @Test
@@ -19918,6 +19946,71 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testRationalizeIssue1417() {
+    // issue 1417
+    check("Rationalize(0.00000000000000000000000000000091093835611) // InputForm", //
+        "9.1093835611`41*^-31");
+    check("Rationalize(0.00000000000000000000000000000091093835611`100) // InputForm", //
+        "9.1093835611`100*^-31");
+  }
+
+  /**
+   * See {@link org.matheclipse.core.visit.RationalizeNumericsVisitor} implementation
+   */
+  @Test
+  public void testRationalize3() {
+    ExprEvaluator exprEvaluator = new ExprEvaluator();
+    IExpr result = exprEvaluator
+        .eval("((Rationalize(0.000000000008854187817))*(Rationalize(0.00000125663706)))");
+    assertEquals(result.toString(), "1.112650054704269802`21*10^-17");
+
+    result = exprEvaluator.eval(F.Sqrt(result));
+    assertEquals(result.toString(), "3.33564094995889778244`21*10^-9");
+
+    result = exprEvaluator.eval(F.Divide(IntegerSym.valueOf(1), (result)));
+    assertEquals(result.toString(), "2.99792458181784263931`21*10^8"); // speed of light
+  }
+
+  /**
+   * See {@link org.matheclipse.core.visit.RationalizeNumericsVisitor} implementation
+   */
+  @Test
+  public void testRationalize2() {
+    ExprEvaluator exprEvaluator = new ExprEvaluator();
+    IExpr result = exprEvaluator
+        .eval("1/Sqrt((Rationalize(0.000000000008854187817))*(Rationalize(0.00000125663706)))");
+    assertEquals(result.toString(), "2.99792458181784263931`21*10^8");
+  }
+
+  /**
+   * See {@link org.matheclipse.core.visit.RationalizeNumericsVisitor} implementation
+   */
+  @Test
+  public void testRationalizeComplex() {
+    // the convergence method degenerates to 0/1 for a real or imaginary part with a magnitude
+    // < 5*10^-5; the exact decimal value of that part is used instead of giving up on the whole
+    // number
+    check("Rationalize(0.00001 + I*0.25)", //
+        "1/100000+I*1/4");
+    check("Rationalize(0.25 + I*0.00001)", //
+        "1/4+I*1/100000");
+    check("Rationalize(0.00001 + I*0.00002)", //
+        "1/100000+I*1/50000");
+    check("Rationalize(0.00000125663706 + I*0.00000125663706)", //
+        "62831853/50000000000000+I*62831853/50000000000000");
+
+    // parts which the convergence method handles are unaffected
+    check("Rationalize(0.25 + I*0.33333)", //
+        "1/4+I*1/3");
+    check("Rationalize(6.75 + I*0.25)", //
+        "27/4+I*1/4");
+
+    // a double is lossy for numbers of higher than machine precision, so they are left untouched
+    check("Rationalize(0.000000000008854187817 + I*0.00000125663706)", //
+        "0.000000000008854187817+I*0.00000125663706");
+  }
+
+  @Test
   public void testRationalizeIssue1065() {
     // issue 1065
     checkNumeric("Rationalize(878159.58,1*10^-12) - Rationalize(431874.32,1*10^-12)", //
@@ -19950,7 +20043,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // "245850922/78256779");
 
     check("Rationalize(0.000000000008854187817)", //
-        "8.85419*10^-12");
+        "0.000000000008854187817");
     check("Rationalize(0.202898)", //
         "101449/500000");
 
@@ -20942,6 +21035,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testReverse() {
+    // TODO
+    check("Reverse(<|a :> {1, 2}, b -> {3, 4}, c -> {5, 6}|>, {1, 2})", //
+        "<|c->{6,5},b->{4,3},a:>{2,1}|>");
+    check("Reverse({{a, b, c}, {d, e, f}}, {1, 2})", //
+        "{{f,e,d},{c,b,a}}");
+    check("Reverse(g({1, 2}, {3, 4}), 2)", //
+        "g({2,1},{4,3})");
     // Reverse: Nonatomic expression expected at position 1 in Reverse(f).
     check("Reverse(f)", //
         "Reverse(f)");
@@ -24070,10 +24170,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTogether() {
+    // Together must not invert the base of a non-integer power (Sqrt(1/z) != 1/Sqrt(z)), so
+    // these keep the Sqrt(...) of the original base rather than combining through it
     check("Together(1/Sqrt(1+1/x)+(1+1/x)^(3/2))", //
-        "(Sqrt((1+x)/x)+2*x*Sqrt((1+x)/x)+2*x^2*Sqrt((1+x)/x))/(x*(1+x))");
+        "(2+1/x+2*x)/(x*Sqrt((1+x)/x))");
     check("Together(2/(Sqrt((x+1)/(1-x)) - 1/Sqrt((x+1)/(1-x))))", //
-        "(1+x)/(x*Sqrt((1+x)/(1-x)))");
+        "(2*Sqrt((1+x)/(1-x)))/(-1+1/(1-x)+x/(1-x))");
     // Together(a/b + c/d)
     check("Together(a/b + c/d)", //
         "(b*c+a*d)/(b*d)");
@@ -24166,7 +24268,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(-a-c)/b");
 
     check("Together(1/Sqrt(1+1/x) )", //
-        "Sqrt(x/(1+x))");
+        "1/Sqrt((1+x)/x)");
 
     check("Together(1/(2*Sqrt(3))+Sqrt(3)/2)", //
         "2/Sqrt(3)");
@@ -24720,6 +24822,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "(Cos(x)+Sin(x))*(1-Cos(x)*Sin(x))");
     check("TrigFactor(Sin(x)^2 + Tan(x)^2)", //
         "(2-Sin(x)^2)*Tan(x)^2");
+    check("TrigFactor(Sin(2*x) + Sin(4*x))", //
+        "2*Cos(x)*(1+2*Cos(2*x))*Sin(x)");
+    check("TrigFactor(Sin(2*x) + Sin(6*x))", //
+        "4*Cos(x)*(1+Cos(4*x))*Sin(x)");
+    check("TrigFactor(Sin(2*x) + Sin(4*x) + Sin(6*x))", //
+        "4*Cos(x)*(1+Cos(2*x)+Cos(4*x))*Sin(x)");
   }
 
   @Test

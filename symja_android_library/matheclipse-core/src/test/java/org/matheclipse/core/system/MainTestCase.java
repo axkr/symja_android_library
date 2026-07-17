@@ -3221,6 +3221,27 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     assertEquals(result.get()[1].toString(), "4+6*x+8*x^2+3*x^3");
   }
 
+  /**
+   * The polynomial GCD is skipped above {@link Config#MAX_CANCEL_GCD_LEAFCOUNT}, because it can run
+   * unboundedly long on large inputs and cannot be interrupted once it is started.
+   */
+  @Test
+  public void testSystem400CancelGCDLeafCountLimit() {
+    EvalEngine engine = EvalEngine.get();
+    // (1+x)^3 is a common factor of numerator and denominator
+    IExpr smallNumerator = engine.evaluate(engine.parse("Expand((1+x)^3*(2+x))"));
+    IExpr smallDenominator = engine.evaluate(engine.parse("Expand((1+x)^3*(3+x))"));
+    Optional<IExpr[]> result = AlgebraUtil.cancelGCD(smallNumerator, smallDenominator);
+    assertEquals("2+x", result.get()[1].toString());
+    assertEquals("3+x", result.get()[2].toString());
+
+    // the same quotient, but with a numerator above the limit: no gcd is calculated
+    IExpr bigNumerator = engine.evaluate(engine.parse("Expand((1+x+y)^40*(2+x))"));
+    IExpr bigDenominator = engine.evaluate(engine.parse("Expand((1+x+y)^40*(3+x))"));
+    assertEquals(true, bigNumerator.leafCount() > Config.MAX_CANCEL_GCD_LEAFCOUNT);
+    assertEquals(false, AlgebraUtil.cancelGCD(bigNumerator, bigDenominator).isPresent());
+  }
+
   @Test
   public void testSystem401() {
     check("Expand((b^2*c^2-12)^(1/2))", //

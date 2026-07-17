@@ -585,10 +585,22 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testFactorial2() {
+    check("Factorial2(33)", //
+        "6332659870762850625");
+    check("Factorial2(34)", //
+        "46620662575398912000");
+    check("Factorial2(35)", //
+        "221643095476699771875");
     check("Factorial2(-9)", //
         "1/105");
     check("Factorial2(-10)", //
         "ComplexInfinity");
+    check("Factorial2(-33)", //
+        "1/191898783962510625");
+    check("Factorial2(-34)", //
+        "ComplexInfinity");
+    check("Factorial2(-35)", //
+        "-1/6332659870762850625");
     check("Factorial2(0)", //
         "1");
     check("Factorial2(x)", //
