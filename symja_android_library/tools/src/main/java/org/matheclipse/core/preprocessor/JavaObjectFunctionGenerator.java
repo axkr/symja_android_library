@@ -127,7 +127,9 @@ public class JavaObjectFunctionGenerator {
   private static void ast1(String arg, String lowerCaseArg) {
     System.out.println("");
     if (GENERATE_JAVADOC) {
-      BuiltinGenerator.createJavadocFromFunctionDoc(System.out, arg);
+      StringBuilder buf = new StringBuilder();
+      BuiltinGenerator.createJavadocFromFunctionDoc(buf, arg);
+      System.out.println(buf.toString());
     }
     System.out.println("    public static IAST " + lowerCaseArg + "(final Object a1) {");
     System.out.println("      return new AST1(" + arg + ", Object2Expr.convert(a1));");
@@ -137,7 +139,9 @@ public class JavaObjectFunctionGenerator {
   private static void ast2(String arg, String lowerCaseArg) {
     System.out.println("");
     if (GENERATE_JAVADOC) {
-      BuiltinGenerator.createJavadocFromFunctionDoc(System.out, arg);
+      StringBuilder buf = new StringBuilder();
+      BuiltinGenerator.createJavadocFromFunctionDoc(buf, arg);
+      System.out.println(buf.toString());
     }
     System.out
         .println("    public static IAST " + lowerCaseArg + "(final Object a1, final Object a2) {");
@@ -149,7 +153,9 @@ public class JavaObjectFunctionGenerator {
   private static void ast3(String arg, String lowerCaseArg) {
     System.out.println("");
     if (GENERATE_JAVADOC) {
-      BuiltinGenerator.createJavadocFromFunctionDoc(System.out, arg);
+      StringBuilder buf = new StringBuilder();
+      BuiltinGenerator.createJavadocFromFunctionDoc(buf, arg);
+      System.out.println(buf.toString());
     }
     System.out.println("    public static IAST " + lowerCaseArg
         + "(final Object a1, final Object a2, final Object a3) {");
