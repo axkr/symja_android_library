@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.matheclipse</groupId>
 	<artifactId>matheclipse</artifactId>
@@ -305,7 +307,7 @@
 			<dependency>
 				<groupId>com.squareup</groupId>
 				<artifactId>javapoet</artifactId>
-				<version>1.13.0</version> 
+				<version>1.13.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.choco-solver</groupId>
@@ -438,7 +440,7 @@
 			<artifactId>junit-jupiter-engine</artifactId>
 			<version>6.1.2</version>
 			<scope>test</scope>
-		</dependency> 
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -554,6 +556,10 @@
 							<include>**/*Tests.java</include>	-->
 							<include>**/*TestCase.java</include>
 						</includes>
+						<!-- Spawns 1 separate JVM process per available CPU
+						core -->
+						<forkCount>1C</forkCount>
+						<reuseForks>true</reuseForks>
 					</configuration>
 				</plugin>
 				<plugin>
