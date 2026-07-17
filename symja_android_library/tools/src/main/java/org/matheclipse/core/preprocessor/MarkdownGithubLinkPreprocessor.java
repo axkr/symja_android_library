@@ -4,13 +4,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.matheclipse.core.builtin.SourceCodeFunctions;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.ISymbol;
-import com.google.common.base.Charsets;
 import com.google.common.io.CharSink;
 import com.google.common.io.Files;
 
@@ -66,7 +66,7 @@ public class MarkdownGithubLinkPreprocessor {
                 String rulesURL = Documentation.rules(symbol);
                 try {
                   System.out.println(sourceFile.toString());
-                  List<String> result = Files.readLines(sourceFile, Charsets.UTF_8);
+                  List<String> result = Files.readLines(sourceFile, StandardCharsets.UTF_8);
                   int index = -1;
 
                   for (int j = 0; j < result.size(); j++) {
@@ -115,7 +115,7 @@ public class MarkdownGithubLinkPreprocessor {
 
                   // write target file
                   File targetFile = new File(targetLocation, functionName + ".md");
-                  CharSink sink = Files.asCharSink(targetFile, Charsets.UTF_8);
+                  CharSink sink = Files.asCharSink(targetFile, StandardCharsets.UTF_8);
                   sink.writeLines(result, "\n");
 
                 } catch (IOException e) {
