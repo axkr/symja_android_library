@@ -10,7 +10,7 @@ public class VectorTest extends ExprEvaluatorTestCase {
   @Test
   public void testVectorGreaterMatrix() {
 
-    check("m1 = RandomReal({.99, 2}, {4, 4});m2 = RandomReal({0, 1.01}, {4, 4});", //
+    check("m1 = RandomReal({.99, 2}, {4, 4});m2 = RandomReal({0, .98}, {4, 4});", //
         "");
     check("VectorGreater({m1, m2})", //
         "True");
@@ -37,7 +37,7 @@ public class VectorTest extends ExprEvaluatorTestCase {
   @Test
   public void testVectorGreaterEqualMatrix() {
 
-    check("m1 = RandomReal({.99, 2}, {4, 4});m2 = RandomReal({0, 1.01}, {4, 4});", //
+    check("m1 = RandomReal({.99, 2}, {4, 4});m2 = RandomReal({0, .98}, {4, 4});", //
         "");
     check("VectorGreaterEqual({m1, m2})", //
         "True");
