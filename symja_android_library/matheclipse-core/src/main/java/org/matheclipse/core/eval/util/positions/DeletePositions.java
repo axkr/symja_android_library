@@ -33,12 +33,7 @@ public class DeletePositions {
 
   /**
    * Map a function `f` over the elements of a list of positions
-   * <code>{{p11, p12, ...},{p21, p22, ...}}</code>. The function `f` is applied to the part of the
-   * expression at each position.
-   * 
-   * @param f function to apply
-   * @param ast
-   * @param listOfListsOfPositions
+   * <code>{{p11, p12, ...},{p21, p22, ...}}</code>.
    */
   public static IAST deleteListOfPositions(IAST ast, IAST listOfListsOfPositions) {
     DeletePositions deletePositions = new DeletePositions(x -> null, ast);
@@ -61,13 +56,7 @@ public class DeletePositions {
   }
 
   /**
-   * Map a function `f` over the elements of a list of positions <code>{p1, p1, ...}</code>. The
-   * function `f` is applied to the part of the expression at each position.
-   * 
-   * @param f function to apply
-   * @param ast
-   * @param listOfPositions list of positions
-   * @return
+   * Map a function `f` over the elements of a list of positions <code>{p1, p1, ...}</code>.
    */
   public static IAST deletePositions(IAST ast, IAST listOfPositions) {
     if (listOfPositions.isEmpty()) {
@@ -83,13 +72,23 @@ public class DeletePositions {
     // Note: `All` and `Span` cannot be used in Delete and Insert
     if (position.isString() || position.isKey()) {
       if (ast.isAssociation()) {
+        IAssociation assoc = (IAssociation) ast;
         IExpr key = position.isString() ? position : position.first();
-        IAST rule = ((IAssociation) ast).getRule(key);
-        if (rule.isPresent()) {
+        int index = -1;
+        // Find the index of the rule for this key
+        for (int i = 1; i < ast.size(); i++) {
+          if (ast.getRule(i).first().equals(key)) {
+            index = i;
+            break;
+          }
+        }
+
+        if (index > 0) {
+          IAST rule = assoc.getRule(index);
           if (level == positions.argSize()) {
             rule = rule.setAtCopy(2, F.NIL);
             IASTAppendable association = MapPositions.getAppendableAST(ast);
-            association.appendRule(rule);
+            association.set(index, rule); // FIX: Replace at index instead of appendRule()
             return association;
           } else {
             IExpr arg = rule.second();
@@ -99,7 +98,7 @@ public class DeletePositions {
               if (temp.isPresent()) {
                 rule = rule.setAtCopy(2, temp);
                 IASTAppendable association = MapPositions.getAppendableAST(ast);
-                association.appendRule(rule);
+                association.set(index, rule); // FIX: Replace at index instead of appendRule()
                 level--;
                 return association;
               }
@@ -167,9 +166,6 @@ public class DeletePositions {
 
   /**
    * Remove all {@link F#NIL} entries from the list.
-   *
-   * @param list the list in which NIL entries should be removed
-   * @return
    */
   private static IAST removeNILRecursive(IAST list) {
     if (list.isEvalFlagOn(IAST.IS_COPIED)) {
@@ -177,21 +173,21 @@ public class DeletePositions {
       list.setEvalFlags(evalFlags ^ IAST.IS_COPIED);
 
       if (list.isAssociation()) {
-        IAssociation result = (IAssociation) list;
+        IAssociation assoc = (IAssociation) list;
+        IAssociation result = F.assoc();
         for (int i = 1; i < list.size(); i++) {
-          IAST rule = (IAST) list.getRule(i);
+          IAST rule = assoc.getRule(i);
           IExpr rhs = rule.second();
-          if (rhs.isPresent()) {
+          if (rhs.isPresent()) { // only keep if RHS is not NIL
             if (rhs.isASTOrAssociation()) {
               IAST temp = removeNILRecursive((IAST) rhs);
               if (temp.isPresent()) {
-                result.appendRule(rule.setAtCopy(i, temp));
-              } else {
-                result.remove(i);
+                // FIX: Apply temp to position 2 of the rule (RHS), NOT position `i`
+                result.appendRule(rule.setAtCopy(2, temp));
               }
+            } else {
+              result.appendRule(rule);
             }
-          } else {
-            result.remove(i);
           }
         }
         return result;
@@ -215,5 +211,4 @@ public class DeletePositions {
     }
     return list;
   }
-
 }
