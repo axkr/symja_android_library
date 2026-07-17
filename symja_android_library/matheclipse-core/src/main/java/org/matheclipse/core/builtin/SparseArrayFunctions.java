@@ -200,7 +200,7 @@ public class SparseArrayFunctions {
               IAST list = (IAST) ast.arg4();
               int version = list.arg1().toIntDefault();
 
-              if (version == 1 && list.arg2().isList2() && list.arg3().isList()) {
+              if (version == 1 && list.arg2().isList2()) {
                 IAST second = (IAST) list.arg2();
                 int[] columnIndicesDimension = second.arg2().isMatrix(false);
 
@@ -212,7 +212,7 @@ public class SparseArrayFunctions {
                   }
 
                   IAST columnIndices = (IAST) second.arg2();
-                  IAST nonZeroValues = (IAST) list.arg3();
+                  IExpr nonZeroValues = list.arg3() == S.Pattern ? F.$b() : list.arg3();
                   ISparseArray result = SparseArrayExpr.newInputForm(dimension, defaultValue,
                       rowPointers, columnIndices, nonZeroValues);
                   if (result != null) {

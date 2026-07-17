@@ -1526,7 +1526,7 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
    * @return <code>null</code> if a new <code>SparseArrayExpr</code> cannot be created.
    */
   public static SparseArrayExpr newInputForm(int[] dimension, IExpr defaultValue, int[] rowPointers,
-      IAST columnIndiceMatrix, IAST nonZeroValues) {
+      IAST columnIndiceMatrix, IExpr nonZeroValues) {
     int first = 0;
     final Trie<int[], IExpr> trie = Config.TRIE_INT2EXPR_BUILDER.build();
     final int depth = dimension.length;
@@ -1556,7 +1556,11 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
           key[j] = p;
         }
       }
-      trie.put(key, nonZeroValues.get(i));
+      if (nonZeroValues.isList()) {
+        trie.put(key, nonZeroValues.get(i));
+      } else {
+        trie.put(key, nonZeroValues);
+      }
     }
     return new SparseArrayExpr(trie, dimension, defaultValue, false);
   }
@@ -1902,7 +1906,10 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     return forAll(predicate);
   }
 
-  public IASTAppendable fullForm() {
+  /**
+   * Converts the internal Trie representation to Compressed Sparse Row (CSR) AST format.
+   */
+  public IASTAppendable toCSRAST() {
     IAST dimensionList = F.ast(S.List, fDimension);
     IASTAppendable result = F.ast(S.SparseArray, 6);
     result.append(S.Automatic);
@@ -1955,6 +1962,12 @@ public class SparseArrayExpr extends DataExpr<Trie<int[], IExpr>>
     rowPointers.append(columnIndex);
     list1.append(nonZeroValues);
     return result;
+
+  }
+
+  @Override
+  public IASTAppendable fullForm() {
+    return toCSRAST();
   }
 
   /**
