@@ -148,9 +148,8 @@ public class PrimePi extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * Combinatorial approach for prime counting based on the Deleglise-Rivat algorithm. Structurally
-   * ported from Mathilda's count_dr. Utilizes RoaringBitmap to aggressively limit memory footprint,
-   * solving the JVM array limits.
+   * Combinatorial approach for prime counting based on the Deleglise-Rivat algorithm. Utilizes
+   * RoaringBitmap to aggressively limit memory footprint, solving the JVM array limits.
    *
    * @param n the upper bound (inclusive)
    * @param ast the original abstract syntax tree
