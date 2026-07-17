@@ -163,17 +163,20 @@ public class VisitorReplacePart extends AbstractVisitor {
         if (matcher == null) {
           continue;
         }
+
+        // 1. try to match the (positive) integer position
         IASTAppendable positionsToMatch = positions.copyAppendable();
         positionsToMatch.append(position);
-
         IASTAppendable temp = patternIndexRecursive(matcher, ast, positionsToMatch, i, result);
         if (temp.isPresent()) {
           result = temp;
           break;
         }
 
+        // 2. try to match the negative integer position
         IInteger negativePart = F.ZZUniqueReference(i - ast.size());
-        positionsToMatch.set(positionsToMatch.argSize(), negativePart);
+        positionsToMatch = positions.copyAppendable();
+        positionsToMatch.append(negativePart);
         temp = patternIndexRecursive(matcher, ast, positionsToMatch, i, result);
         if (temp.isPresent()) {
           IExpr ex = temp.replaceAll(x -> {
@@ -192,8 +195,23 @@ public class VisitorReplacePart extends AbstractVisitor {
         }
 
         if (ast.isAssociation() && i > 0) {
-          // for associations the key instead of the position can also match
-          positionsToMatch.set(positionsToMatch.argSize(), ast.getRule(i).first());
+          // for associations the key can also be used as position specification. Try both the
+          // `Key(...)` wrapped form (e.g. from Position(...)) and the bare key. This must be
+          // attempted at every nesting level to support nested key positions.
+          IExpr key = ast.getRule(i).first();
+
+          // 3a. try to match the `Key(...)` wrapped key
+          positionsToMatch = positions.copyAppendable();
+          positionsToMatch.append(F.Key(key));
+          temp = patternIndexRecursive(matcher, ast, positionsToMatch, i, result);
+          if (temp.isPresent()) {
+            result = temp;
+            break;
+          }
+
+          // 3b. try to match the bare key
+          positionsToMatch = positions.copyAppendable();
+          positionsToMatch.append(key);
           temp = patternIndexRecursive(matcher, ast, positionsToMatch, i, result);
           if (temp.isPresent()) {
             result = temp;
@@ -244,6 +262,14 @@ public class VisitorReplacePart extends AbstractVisitor {
       }
     } else {
       IExpr temp = matcher.eval(F.ZZ(position), engine);
+      if (temp.isNIL() && ast.isAssociation() && position > 0) {
+        // for associations the key can also be used as position specification
+        IExpr key = ast.getRule(position).first();
+        temp = matcher.eval(F.Key(key), engine);
+        if (temp.isNIL()) {
+          temp = matcher.eval(key, engine);
+        }
+      }
       if (temp.isPresent()) {
         if (result.isNIL()) {
           result = ast.copyAppendable();
