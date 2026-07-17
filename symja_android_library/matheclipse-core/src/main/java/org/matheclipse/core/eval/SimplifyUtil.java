@@ -458,6 +458,15 @@ public class SimplifyUtil extends VisitorExpr {
         IExpr temp = eval(F.FunctionExpand(expr));
         if (sResult.checkLessPlusTimesPower(temp)) {
           expr = temp;
+        } else if (!temp.equals(expr)) {
+          // FunctionExpand can return a larger intermediate expression which only collapses after
+          // the surrounding factors are expanded. Example: denesting Sqrt(3-Sqrt(5)) in
+          // Sqrt(3-Sqrt(5))*(3+Sqrt(5))*(-Sqrt(2)+Sqrt(10)) grows the expression, but expanding the
+          // denested product reduces it to 8.
+          IExpr transformed = tryTransformations(temp);
+          if (transformed.isPresent() && sResult.checkLessPlusTimesPower(transformed)) {
+            expr = transformed;
+          }
         }
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
