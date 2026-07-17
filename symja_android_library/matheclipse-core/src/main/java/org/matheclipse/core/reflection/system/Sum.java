@@ -20,6 +20,7 @@ import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.expression.data.DifferenceRootExpr;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -430,6 +431,12 @@ public class Sum extends ListFunctions.Table implements SumRules {
                   // Polynomial -> Geometric -> Gosper algorithm cascade
                   temp = summationByMethod(arg1, iterator.getVariable(), iterator.getLowerLimit(),
                       iterator.getUpperLimit(), null, engine);
+                }
+                if (temp.isNIL()) {
+                  // DIFFERENCE ROOT FALLBACK
+                  // Holonomic sequence encoding using DifferenceRoot
+                  temp = differenceRootFallback(arg1, iterator.getVariable(),
+                      iterator.getLowerLimit(), iterator.getUpperLimit(), engine);
                 }
               }
               if (temp.isPresent()) {
@@ -1083,6 +1090,66 @@ public class Sum extends ListFunctions.Table implements SumRules {
       return null;
     }
     return new IExpr[] {num, den};
+  }
+
+  /**
+   * Constructs a {@code DifferenceRoot} representation for sums of hypergeometric terms when
+   * symbolic upper limits prevent a closed-form Gosper/Geometric evaluation.
+   */
+  private static IExpr differenceRootFallback(IExpr term, ISymbol var, IExpr from, IExpr to,
+      EvalEngine engine) {
+    if (from.isInteger()) {
+
+      // Guard: Do not use DifferenceRoot for pure rational functions.
+      // Gosper's algorithm fully handles rational summations. Wrapping a failed
+      // rational sum into a DifferenceRoot sequence just creates unsimplifiable noise.
+      IExpr tog = engine.evaluate(F.Together(term));
+      IExpr num = engine.evaluate(F.Numerator(tog));
+      IExpr den = engine.evaluate(F.Denominator(tog));
+      if (engine.evalTrue(F.PolynomialQ(num, var)) && engine.evalTrue(F.PolynomialQ(den, var))) {
+        return F.NIL;
+      }
+
+      IExpr[] ratio = hypergeometricRatio(term, var, engine);
+      if (ratio != null) {
+        IExpr ratioNum = ratio[0];
+        IExpr ratioDen = ratio[1];
+
+        ISymbol y = F.y;
+        ISymbol k = F.n;
+
+        IExpr numK = F.subst(ratioNum, var, k);
+        IExpr denK = F.subst(ratioDen, var, k);
+
+        IExpr yK = F.unaryAST1(y, k);
+        IExpr yKp1 = F.unaryAST1(y, F.Plus(k, F.C1));
+        IExpr yKp2 = F.unaryAST1(y, F.Plus(k, F.C2));
+
+        IExpr term1 = F.Times(denK, yKp2);
+        IExpr term2 = F.Times(F.Plus(denK, numK), yKp1);
+        IExpr term3 = F.Times(numK, yK);
+
+        IExpr homoEq =
+            F.Equal(engine.evaluate(F.Expand(F.Plus(term1, F.Negate(term2), term3))), F.C0);
+
+        int a = from.toIntDefault();
+        if (a != Integer.MIN_VALUE) {
+          IExpr ic1 = F.Equal(F.unaryAST1(y, F.ZZ(a)), F.C0);
+          IExpr f_a = engine.evaluate(F.subst(term, var, F.ZZ(a)));
+          IExpr ic2 = F.Equal(F.unaryAST1(y, F.ZZ(a + 1)), f_a);
+
+          IAST fun = F.Function(F.List(y, k), F.List(homoEq, ic1, ic2));
+
+          IExpr dre = engine.evaluate(F.DifferenceRoot(fun));
+
+          if (dre instanceof DifferenceRootExpr) {
+            IExpr targetIndex = engine.evaluate(F.Plus(to, F.C1));
+            return F.unaryAST1(dre, targetIndex);
+          }
+        }
+      }
+    }
+    return F.NIL;
   }
 
   /** The ratio <code>f(var+1)/f(var)</code> of a single factor, or {@link F#NIL}. */

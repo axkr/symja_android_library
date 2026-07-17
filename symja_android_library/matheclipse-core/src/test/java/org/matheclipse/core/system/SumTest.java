@@ -291,8 +291,6 @@ public class SumTest extends ExprEvaluatorTestCase {
     check("Sum(f(i,1),{i,{a,b}})", //
         "f(a,1)+f(b,1)");
 
-    check("Sum(c/(i-j+1), {j,i+1,n}, {i,1,n})", //
-        "c*Sum(1/(1+i-j),{j,1+i,n},{i,1,n})");
     check("Sum(-(-c*j+c),{j,i+1,n})", //
         "c*(i-n)+1/2*c*(-i+n)*(1+i+n)");
 
@@ -711,5 +709,13 @@ public class SumTest extends ExprEvaluatorTestCase {
     // Sum(x^k, {k, 0, Infinity})
     check("Sum(x^k, {k, 0, Infinity})", //
         "1/(1-x)");
+  }
+
+  @Test
+  public void testDifferenceRoot() {
+    check("Sum(c/(i-j+1), {j,i+1,n}, {i,1,n})", //
+        "c*Sum(1/(1+i-j),{j,1+i,n},{i,1,n})");
+    check("Sum((-1)^(j-1)*Gamma(j),{j,1,n-1})", //
+        "DifferenceRoot[Function({y,n},{-n*y(n)-y(1+n)+n*y(1+n)+y(2+n)==0,y(1)==0,y(2)==1})][n]");
   }
 }
