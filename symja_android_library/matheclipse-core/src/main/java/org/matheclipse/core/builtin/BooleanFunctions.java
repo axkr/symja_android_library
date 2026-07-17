@@ -561,7 +561,7 @@ public final class BooleanFunctions {
   private static class AllTrue extends AbstractFunctionEvaluator {
     @Override
     public IExpr evaluate(IAST ast, EvalEngine engine) {
-      if (ast.arg1().isAST()) {
+      if (ast.arg1().isASTOrAssociation()) {
         IAST list = (IAST) ast.arg1();
         IExpr head = ast.arg2();
         return allTrue(list, head, engine);
@@ -577,7 +577,7 @@ public final class BooleanFunctions {
     public IExpr allTrue(IAST list, IExpr head, EvalEngine engine) {
       IASTAppendable logicalAnd = F.And();
 
-      if (!list.forAll(x -> {
+      if (!list.forAllValues(x -> {
         IExpr temp = engine.evaluate(F.unaryAST1(head, x));
         if (temp.isTrue()) {
           return true;
@@ -2825,7 +2825,7 @@ public final class BooleanFunctions {
             evaled = true;
             continue;
           }
-        } else if (arg.isList()) {
+        } else if (arg.isListOrAssociation()) {
           flattenListRecursive((IAST) arg, result, engine);
           evaled = true;
           continue;
