@@ -535,8 +535,14 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSimplifyIssue1425() {
-    // issue 1425
+    // #1425 follow up problem: this used to run forever, because functionExpand() ran the whole
+    // tryTransformations() pipeline on a grown FunctionExpand() result. Both sides are 0.908321.
+    check("Simplify(2*Cos(1/180*Pi*(60+3*Tan(1/180*Pi*(45-2*Sin(Pi/60))))))", //
+        "2*Cos(1/60*Pi*(20+Tan(Pi*(1/4-Sin(Pi/60)/90))))");
+
+    // issue #1425
     check("FullSimplify(Sqrt(3-Sqrt(5))*(3+Sqrt(5))*(-Sqrt(2)+Sqrt(10)))", //
         "8");
+
   }
 }

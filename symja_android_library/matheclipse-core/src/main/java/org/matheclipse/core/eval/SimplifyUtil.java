@@ -463,9 +463,12 @@ public class SimplifyUtil extends VisitorExpr {
           // the surrounding factors are expanded. Example: denesting Sqrt(3-Sqrt(5)) in
           // Sqrt(3-Sqrt(5))*(3+Sqrt(5))*(-Sqrt(2)+Sqrt(10)) grows the expression, but expanding the
           // denested product reduces it to 8.
-          IExpr transformed = tryTransformations(temp);
-          if (transformed.isPresent() && sResult.checkLessPlusTimesPower(transformed)) {
-            expr = transformed;
+          // Only expand: the full tryTransformations() pipeline would call Apart(), which for a
+          // variable-free Times re-enters simplifyStep() in fullSimplify mode and comes back here,
+          // recursing on an ever larger expression.
+          IExpr expanded = F.evalExpandAll(temp, fEngine);
+          if (sResult.checkLessPlusTimesPower(expanded)) {
+            expr = expanded;
           }
         }
       } catch (RuntimeException rex) {
