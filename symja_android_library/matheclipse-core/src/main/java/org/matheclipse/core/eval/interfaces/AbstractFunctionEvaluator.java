@@ -380,7 +380,9 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
               timesAppendable = timesAST.copyAppendable();
             }
             timesAppendable.set(i, F.Power(negativeExpr, arg.exponent()));
-            neg = neg.times(F.CN1.powerRational(exponent));
+            // (-1)^exponent is fixed by parity; powerRational() throws on a negative
+            // exponent, which a factor like (1-x)^(-1) reaches
+            neg = neg.times((exponent & 1L) == 1L ? F.CN1 : F.C1);
           }
         }
       }
