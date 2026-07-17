@@ -17,6 +17,12 @@ public class AssociationTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testAssociationApply() {
+    check("Apply(Plus,<|\"a\" -> 2, \"b\" -> 4, \"c\" -> 6|>)", //
+        "12");
+  }
+
+  @Test
   public void testAssociation001() {
     check("Head(<|a -> x, b -> y, c -> z|>)", //
         "Association");
@@ -513,6 +519,7 @@ public class AssociationTest extends ExprEvaluatorTestCase {
     check("KeyValueMap(List, <|a -> 1, b -> 2|>)", //
         "{{a,1},{b,2}}");
   }
+
   @Test
   public void testLookup() {
     check("rmatRowNames=<|\"A\"->1,\"B\"->2,\"C\"->3,\"D\"->4|>", //
@@ -779,6 +786,270 @@ public class AssociationTest extends ExprEvaluatorTestCase {
     // issue 728
     check("<|2025->10, 2026->11|> / <|2025->10, 2026->20|>", //
         "<|2025->1,2026->11/20|>");
+  }
+
+  @Test
+  public void testValues() {
+    // Values() gives the list of values of an association
+    check("Values(<|\"a\" -> 1, \"b\" -> 2|>)", //
+        "{1,2}");
+  }
+
+  @Test
+  public void testLookupExtended() {
+    // Lookup() using a default value
+    check("Lookup(<|\"a\" -> 1|>, \"z\", 0)", //
+        "0");
+    // Lookup() threading over a list of associations
+    check("Lookup({<|\"a\" -> 1, \"b\" -> 2|>, <|\"a\" -> 3|>}, \"a\", 0)", //
+        "{1,3}");
+  }
+
+  @Test
+  public void testKeyPresence() {
+    // KeyMemberQ() and KeyFreeQ() test presence of a key
+    check("KeyMemberQ(<|\"a\" -> 1|>, \"a\")", //
+        "True");
+    check("KeyFreeQ(<|\"a\" -> 1|>, \"b\")", //
+        "True");
+  }
+
+  @Test
+  public void testKeyUnion() {
+    // KeyUnion() pads every association to the union of all their keys
+    check("KeyUnion({<|\"a\" -> 1, \"b\" -> 2|>, <|\"b\" -> 3, \"c\" -> 4|>})", //
+        "{<|a->1,b->2,c->Missing(KeyAbsent,c)|>,<|a->Missing(KeyAbsent,a),b->3,c->4|>}");
+    check("KeyUnion({<|a -> 1, b -> 2, c -> 3|>, <|b -> y|>},#^2 &)", //
+        "{<|a->1,b->2,c->3|>,<|a->a^2,b->y,c->c^2|>}");
+    check("KeyUnion({<|a -> 1, b -> 2, c -> 3|>, <|b -> y|>},f)", //
+        "{<|a->1,b->2,c->3|>,<|a->f(a),b->y,c->f(c)|>}");
+  }
+
+  @Test
+  public void testGatherBy() {
+    // GatherBy() gathers elements into sublists based on a function
+    check("GatherBy({1, 2, 3, 4, 5, 6}, EvenQ)", //
+        "{{1,3,5},{2,4,6}}");
+  }
+
+  @Test
+  public void testDescriptiveStatistics() {
+    // Statistical functions reduce over an association's values
+    check("MinMax(<|\"a\" -> 3, \"b\" -> 1, \"c\" -> 9|>)", //
+        "{1,9}");
+    check("Mean(<|\"a\" -> 2, \"b\" -> 4, \"c\" -> 6|>)", //
+        "4");
+    check("Median(<|\"a\" -> 1, \"b\" -> 3, \"c\" -> 5|>)", //
+        "3");
+    check("Variance(<|\"a\" -> 2, \"b\" -> 4, \"c\" -> 6|>)", //
+        "4");
+    check("StandardDeviation(<|\"a\" -> 2, \"b\" -> 4, \"c\" -> 6|>)", //
+        "2");
+  }
+
+  @Test
+  public void testTallyCommonest() {
+    // Tally() and Commonest() act on values
+    check("Tally(<|\"a\" -> 1, \"b\" -> 1, \"c\" -> 2|>)", //
+        "{{1,2},{2,1}}");
+    check("Commonest(<|\"a\" -> 1, \"b\" -> 1, \"c\" -> 2|>)", //
+        "{1}");
+  }
+
+  @Test
+  public void testTakeWhile() {
+    // TakeWhile() and LengthWhile() act on the leading run of values
+    check("TakeWhile(<|\"a\" -> 1, \"b\" -> 2, \"c\" -> 5, \"d\" -> 1|>, # < 3 &)", //
+        "<|a->1,b->2|>");
+    check("TakeWhile({\"a\" -> 1, \"b\" -> 2, \"c\" -> 5, \"d\" -> 1}, # < 3 &)", //
+        "{}");
+    check("LengthWhile(<|\"a\" -> 1, \"b\" -> 2, \"c\" -> 5|>, # < 3 &)", //
+        "2");
+  }
+
+  @Test
+  public void testPatternOperations() {
+    // Pattern operations act on the values of an association
+    check("Cases(<|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3|>, x_ /; x > 1)", //
+        "{2,3}");
+    check("Count(<|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3|>, x_ /; x > 1)", //
+        "2");
+    check("DeleteCases(<|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3|>, x_ /; x > 1)", //
+        "<|a->1|>");
+  }
+
+  @Test
+  public void testExtremes() {
+    // Top-N and extremes by value
+    check("TakeLargest(<|\"a\" -> 3, \"b\" -> 9, \"c\" -> 1, \"d\" -> 6|>, 2)", //
+        "<|b->9,d->6|>");
+    check("MaximalBy(<|\"a\" -> 1, \"b\" -> 3, \"c\" -> 3|>, Identity)", //
+        "<|b->3,c->3|>");
+  }
+
+  @Test
+  public void testDeleteMissingDuplicates() {
+    // DeleteMissing() and DeleteDuplicates() operations
+    check("DeleteMissing(Lookup(<|\"a\" -> 1, \"b\" -> 2|>, {\"a\", \"z\", \"b\"}))", //
+        "{1,2}");
+    check("DeleteDuplicates(<|\"a\" -> 1, \"b\" -> 1, \"c\" -> 2, \"d\" -> 2, \"e\" -> 3|>)", //
+        "<|a->1,c->2,e->3|>");
+  }
+
+  @Test
+  public void testStructuralModification() {
+    // ReplacePart(), Delete() and MapAt() target specific keys or positions
+    check(
+        "ReplacePart(<|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3|>, {{Key(\"a\")} -> 10, {Key(\"c\")} -> 30})", //
+        "<|a->10,b->2,c->30|>");
+    check("Delete(<|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3|>, {\"b\"})", //
+        "<|a->1,c->3|>");
+    check("Delete(<|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3|>, {Key(\"b\")})", //
+        "<|a->1,c->3|>");
+    check("Delete(<|\"a\" -> <|\"x\" -> 5, \"y\" -> 6|>|>, {Key(\"a\"), Key(\"x\")})", //
+        "<|a-><|y->6|>|>");
+    check("MapAt(#^2 &, <|\"a\" -> 3, \"b\" -> 4|>, \"b\")", //
+        "<|a->3,b->16|>");
+    check("p = <|\"a\" -> 1, \"b\" -> 9|>; MapAt(-# &, p, First(Position(p, 9)))", //
+        "<|a->1,b->-9|>");
+  }
+
+  @Test
+  public void testReplacePartAssociation() {
+    // multiple key based positions using Key(...)
+    check(
+        "ReplacePart(<|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3|>, {{Key(\"a\")} -> 10, {Key(\"c\")} -> 30})", //
+        "<|a->10,b->2,c->30|>");
+    // single Key(...) position specification (not wrapped in a list)
+    check("ReplacePart(<|\"a\" -> 1, \"b\" -> 2|>, Key(\"b\") -> 20)", //
+        "<|a->1,b->20|>");
+    // bare string key as position specification
+    check("ReplacePart(<|\"a\" -> 1, \"b\" -> 2|>, {\"a\"} -> 99)", //
+        "<|a->99,b->2|>");
+    // symbol keys
+    check("ReplacePart(<|a -> 1, b -> 2, c -> 3|>, {Key(b)} -> 20)", //
+        "<|a->1,b->20,c->3|>");
+    // integer (positional) specification still works for associations
+    check("ReplacePart(<|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3|>, 2 -> 20)", //
+        "<|a->1,b->20,c->3|>");
+    // negative integer position
+    check("ReplacePart(<|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3|>, -1 -> 30)", //
+        "<|a->1,b->2,c->30|>");
+    // nested key positions into a nested association
+    check("ReplacePart(<|\"a\" -> <|\"x\" -> 5, \"y\" -> 6|>|>, {Key(\"a\"), Key(\"x\")} -> 50)", //
+        "<|a-><|x->50,y->6|>|>");
+    // nested key into a list value
+    check("ReplacePart(<|\"a\" -> {10, 20, 30}|>, {Key(\"a\"), 2} -> 99)", //
+        "<|a->{10,99,30}|>");
+    // absent key leaves the association unchanged
+    check("ReplacePart(<|\"a\" -> 1, \"b\" -> 2|>, {Key(\"z\")} -> 99)", //
+        "<|a->1,b->2|>");
+  }
+
+  @Test
+  public void testReplacePartList() {
+    // nested integer positions for lists still work
+    check("ReplacePart({{1, 2}, {3, 4}}, {2, 1} -> 99)", //
+        "{{1,2},{99,4}}");
+    check("ReplacePart({a, b, c, d}, {{1}, {3}} -> x)", //
+        "{x,b,x,d}");
+  }
+
+  @Test
+  public void testPosition() {
+    // Position() maps matches inside the values
+    check("Position(<|\"a\" -> 1, \"b\" -> 2, \"c\" -> 1|>, 1) // InputForm", //
+        "{{Key(\"a\")},{Key(\"c\")}}");
+    check("Position(<|\"a\" -> {1, 2}, \"b\" -> 3, \"c\" -> 1|>, 1) // InputForm", //
+        "{{Key(\"a\"),1},{Key(\"c\")}}");
+    check("Extract(<|\"a\" -> {10, 20}|>, {Key(\"a\"), 2})", //
+        "20");
+  }
+
+  @Test
+  public void testPredicates() {
+    // Predicate tests verify logic against the values
+    check("AllTrue(<|\"a\" -> 2, \"b\" -> 4|>, EvenQ)", //
+        "True");
+    check("AnyTrue({1, 3, 4}, EvenQ)", //
+        "True");
+    check("NoneTrue({1, 3, 5}, EvenQ)", //
+        "True");
+    check("MemberQ(<|\"a\" -> 1, \"b\" -> 2|>, 2)", //
+        "True");
+  }
+
+  @Test
+  public void testOrderingAndAggregation() {
+    // Ordering and aggregation computations acting on the values
+    check("Sort(<|\"a\" -> 3, \"b\" -> 1, \"c\" -> 2|>)", //
+        "<|b->1,c->2,a->3|>");
+    check("SortBy(<|\"a\" -> {9}, \"b\" -> {1}|>, First)", //
+        "<|b->{1},a->{9}|>");
+    check("Total(<|\"a\" -> 3, \"b\" -> 1, \"c\" -> 2|>)", //
+        "6");
+    check("Join(<|\"a\" -> 1, \"b\" -> 2|>, <|\"b\" -> 3, \"c\" -> 4|>)", //
+        "<|a->1,b->3,c->4|>");
+  }
+
+  @Test
+  public void testKeyOperations() {
+    // KeySortBy() sorts by function applied to each key
+    check("KeySortBy(<|\"bbb\" -> 1, \"a\" -> 2, \"cc\" -> 3|>, StringLength)", //
+        "<|a->2,cc->3,bbb->1|>");
+    check("KeyMap(f, <|1 -> 10, 2 -> 20|>)", //
+        "<|f(1)->10,f(2)->20|>");
+  }
+
+  @Test
+  public void testCountsByPositionIndex() {
+    // CountsBy() tallies elements, PositionIndex() maps distinct elements
+    check("CountsBy(Range(10), EvenQ)", //
+        "<|False->5,True->5|>");
+    check("PositionIndex({a, b, a, c, a, b})", //
+        "<|a->{1,3,5},b->{2,6},c->{4}|>");
+  }
+
+  @Test
+  public void testIteration() {
+    // Iterator-driven builtins walk an association's values
+    check("Table(v^2, {v, <|\"a\" -> 2, \"b\" -> 3|>})", //
+        "{4,9}");
+    check("Sum(v, {v, <|\"a\" -> 10, \"b\" -> 20|>})", //
+        "30");
+  }
+
+  @Test
+  public void testAppend() {
+    // Append() extends an association in place
+    check("Append(<|\"a\" -> 1, \"b\" -> 2|>, \"c\" -> 3)", //
+        "<|a->1,b->2,c->3|>");
+    check("Append(<|\"a\" -> 1|>, \"a\" -> 99)", //
+        "<|a->99|>");
+  }
+
+  @Test
+  public void testKeyValuePattern() {
+    // KeyValuePattern() evaluation and destructuring
+    check("MatchQ(<|\"a\" -> 1, \"b\" -> 2|>, KeyValuePattern({\"a\" -> _}))", //
+        "True");
+    check("Replace(<|\"a\" -> 5, \"b\" -> 2|>, KeyValuePattern({\"a\" -> v_}) :> v)", //
+        "5");
+    check("Cases({<|\"t\" -> 1|>, <|\"t\" -> 2|>, <|\"x\" -> 3|>}, KeyValuePattern({\"t\" -> _}))", //
+        "{<|t->1|>,<|t->2|>}");
+    check("Cases({<|\"p\" -> 3|>, <|\"p\" -> 9|>}, KeyValuePattern({\"p\" -> v_}) /; v > 5 :> v)", //
+        "{9}");
+  }
+
+  @Test
+  public void testStructuralExtractors() {
+    // First(), Last(), Rest(), Most(), Take(), Drop() implementations
+    check("First(<|\"a\" -> 10, \"b\" -> 20|>)", //
+        "10");
+    check("Rest(<|\"a\" -> 10, \"b\" -> 20, \"c\" -> 30|>)", //
+        "<|b->20,c->30|>");
+    check("Take(<|\"a\" -> 1, \"b\" -> 2, \"c\" -> 3|>, 2)", //
+        "<|a->1,b->2|>");
   }
 
   /** The JUnit setup method */

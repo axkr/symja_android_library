@@ -834,7 +834,7 @@ public class PredicateQ {
         final EvalEngine engine, IAST originalAST) {
       boolean includeHeads = option[0].isTrue();
       final IExpr arg1 = ast.arg1();
-      if (arg1.isAST()) {
+      if (arg1.isASTOrAssociation()) {
         final IExpr arg2 = ast.arg2();
         if (argSize == 2) {
           return F.booleSymbol(arg1.isMember(arg2, includeHeads, null));
