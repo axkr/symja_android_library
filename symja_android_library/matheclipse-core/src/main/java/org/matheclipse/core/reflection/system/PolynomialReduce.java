@@ -14,6 +14,10 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
+import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
+import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
+import org.matheclipse.core.polynomials.longexponent.ExprTermOrder;
 import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
 import edu.jas.poly.ExpVector;
@@ -44,42 +48,97 @@ public class PolynomialReduce extends AbstractFunctionOptionEvaluator {
 
       IExpr coefficientDomain = options[1];
       if (coefficientDomain == S.RationalFunctions) {
-        return polynomialReduceRationals(polynomialExpr, divisorsAST, variablesListExpr, termOrder);
+        IExpr result =
+            polynomialReduceRationals(polynomialExpr, divisorsAST, variablesListExpr, termOrder);
+        // Fallback to symbolic expression reduction if BigRational conversion fails[cite: 7]
+        if (result.isNIL()) {
+          result = polynomialReduceExpr(polynomialExpr, divisorsAST, variablesListExpr, termOrder);
+        }
+        return result;
       }
-      // TODO
-      // if (coefficientDomain == S.Integers) {
-      // return polynomialReduceIntegers(polynomialExpr, divisorsAST, variablesListExpr, termOrder);
-      // }
+      if (coefficientDomain == S.Integers) {
+        return polynomialReduceIntegers(polynomialExpr, divisorsAST, variablesListExpr, termOrder);
+      }
     } catch (RuntimeException rex) {
       return Errors.printMessage(S.PolynomialReduce, rex);
     }
     return F.NIL;
   }
 
+  private static IExpr polynomialReduceExpr(IExpr polynomialExpr, IAST divisorsAST,
+      IAST variablesListExpr, TermOrder termOrder) {
+
+    List<IExpr> varList = new ArrayList<>(variablesListExpr.argSize());
+    for (int i = 1; i < variablesListExpr.size(); i++) {
+      varList.add(variablesListExpr.get(i));
+    }
+
+    // Initialize JASIExpr using the field-configured ExprRingFactory[cite: 3, 6]
+    JASIExpr jas = new JASIExpr(varList, ExprRingFactory.CONST_FIELD, termOrder, false);
+    ExprPolynomialRing exprRing =
+        new ExprPolynomialRing(variablesListExpr, new ExprTermOrder(termOrder.getEvord()));
+    GenPolynomialRing<IExpr> ring = jas.getPolynomialRingFactory();
+
+    try {
+      ExprPolynomial exprPoly = exprRing.create(polynomialExpr, false, true, true);
+      GenPolynomial<IExpr> poly = jas.expr2IExprJAS(exprPoly);
+      if (poly == null) {
+        return F.NIL;
+      }
+
+      List<GenPolynomial<IExpr>> divisors = new ArrayList<>();
+      for (int i = 1; i < divisorsAST.size(); i++) {
+        ExprPolynomial divExprPoly = exprRing.create(divisorsAST.get(i), false, true, true);
+        GenPolynomial<IExpr> divPoly = jas.expr2IExprJAS(divExprPoly);
+        if (divPoly == null) {
+          return F.NIL;
+        }
+        divisors.add(divPoly);
+      }
+
+      ReductionResult<IExpr> result = multivariateDivision(poly, divisors, ring);
+
+      IASTAppendable quotientsList = F.ListAlloc(divisors.size());
+      for (GenPolynomial<IExpr> q : result.quotients) {
+        quotientsList.append(jas.exprPoly2Expr(q));
+      }
+
+      IExpr remainderExpr = jas.exprPoly2Expr(result.remainder);
+
+      // Evaluate the generated expressions to ensure F.Divide fractions are fully simplified
+      EvalEngine engine = EvalEngine.get();
+      return F.List(engine.evaluate(quotientsList), engine.evaluate(remainderExpr));
+
+    } catch (RuntimeException rex) {
+      return F.NIL;
+    }
+  }
+
   private static IExpr polynomialReduceRationals(IExpr polynomialExpr, IAST divisorsAST,
       IAST variablesListExpr, TermOrder termOrder) {
     JASConvert<BigRational> jas = new JASConvert<>(variablesListExpr, BigRational.ZERO, termOrder);
 
-    // Create ring and polynomials
     GenPolynomialRing<BigRational> ring = jas.getPolynomialRingFactory();
     GenPolynomial<BigRational> poly = jas.expr2JAS(polynomialExpr, false);
+    if (poly == null)
+      return F.NIL; // Guard against conversion failure
 
     List<GenPolynomial<BigRational>> divisors = new ArrayList<>();
     for (int i = 1; i < divisorsAST.size(); i++) {
-      divisors.add(jas.expr2JAS(divisorsAST.get(i), false));
+      GenPolynomial<BigRational> divPoly = jas.expr2JAS(divisorsAST.get(i), false);
+      if (divPoly == null)
+        return F.NIL;
+      divisors.add(divPoly);
     }
 
     ReductionResult<BigRational> result = multivariateDivision(poly, divisors, ring);
 
-    // Return format: {{q1, q2, ...}, remainder}
     IASTAppendable quotientsList = F.ListAlloc(divisors.size());
     for (GenPolynomial<BigRational> q : result.quotients) {
       quotientsList.append(jas.rationalPoly2Expr(q, false));
     }
 
     IExpr remainderExpr = jas.rationalPoly2Expr(result.remainder, false);
-
-    // Final list {{...}, r}
     return F.List(quotientsList, remainderExpr);
   }
 
@@ -121,8 +180,37 @@ public class PolynomialReduce extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * Computes the symmetric quotient for BigIntegers: rounds to nearest, halves round to even.
+   */
+  private static BigInteger getIntegerQuotient(BigInteger c, BigInteger cDiv) {
+    java.math.BigInteger jC = c.getVal();
+    java.math.BigInteger jCDiv = cDiv.getVal();
+
+    java.math.BigInteger[] qr = jC.divideAndRemainder(jCDiv);
+    java.math.BigInteger q = qr[0];
+    java.math.BigInteger r = qr[1];
+
+    java.math.BigInteger absR = r.abs();
+    java.math.BigInteger absDiv = jCDiv.abs();
+    java.math.BigInteger[] halfRem = absDiv.divideAndRemainder(java.math.BigInteger.valueOf(2));
+    java.math.BigInteger half = halfRem[0];
+    boolean isTie = halfRem[1].equals(java.math.BigInteger.ZERO) && absR.equals(half);
+
+    int cmp = absR.compareTo(half);
+    if (cmp > 0 || (isTie && q.testBit(0))) {
+      if (r.signum() == jCDiv.signum()) {
+        q = q.add(java.math.BigInteger.ONE);
+      } else {
+        q = q.subtract(java.math.BigInteger.ONE);
+      }
+    }
+    return new BigInteger(q);
+  }
+
+  /**
    * Algorithm: Multivariate Division P = q1*d1 + ... + qk*dk + r
    */
+  @SuppressWarnings("unchecked")
   private static <C extends edu.jas.structure.RingElem<C>> ReductionResult<C> multivariateDivision(
       GenPolynomial<C> P, List<GenPolynomial<C>> divisors, GenPolynomialRing<C> ring) {
 
@@ -166,36 +254,42 @@ public class PolynomialReduce extends AbstractFunctionOptionEvaluator {
 
           // Check if term is divisible (exponent difference not negative)
           if (e.multipleOf(eDiv)) {
-            // Division possible
             C cDiv = div.leadingBaseCoefficient();
+            C factorCoeff;
 
-            // ATTENTION: For integers (BigInteger), exact division may not always work.
-            // JAS "divide" throws an error or returns a remainder if not divisible in the ring.
-            // For a Field (Rational) it is trivial. For an Integer Ring it must be exact.
-            C factorCoeff = c.divide(cDiv);
+            // Compute pseudo-quotient for Integers, exact division for Fields[cite: 7]
+            if (c instanceof BigInteger) {
+              factorCoeff = (C) getIntegerQuotient((BigInteger) c, (BigInteger) cDiv);
+            } else {
+              factorCoeff = c.divide(cDiv);
+            }
 
-            // If we are in Z and there is a remainder for the coefficients,
-            // this term cannot be reduced (pseudo-division would be an alternative,
-            // but PolynomialReduce often expects Field behavior or an exact Ring).
-            // We assume here that the division works or we skip.
-            if (factorCoeff.multiply(cDiv).equals(c)) {
-              ExpVector factorExp = e.subtract(eDiv);
+            if (!factorCoeff.isZERO()) {
+              boolean valid = true;
 
-              // Term S = (LT(p)/LT(div))
-              GenPolynomial<C> S = ring.getONE().multiply(factorCoeff, factorExp);
+              // Only strictly validate equality if it is not an Integer (pseudo-division)
+              // and not an IExpr (structural equality mismatch)
+              if (!(c instanceof BigInteger) && !(c instanceof IExpr)) {
+                valid = factorCoeff.multiply(cDiv).equals(c);
+              }
 
-              // Update quotient i: qi = qi + S
-              quotients.set(i, quotients.get(i).sum(S));
+              if (valid) {
+                ExpVector factorExp = e.subtract(eDiv);
 
-              // Update polynomial: p = p - S * div
-              pCurr = pCurr.subtract(S.multiply(div));
+                // Term S = (LT(p)/LT(div))
+                GenPolynomial<C> S = ring.getONE().multiply(factorCoeff, factorExp);
 
-              divisionOccurred = true;
-              // A successful division occurred, so we are not stagnating.
-              // Reset the stagnation detection.
-              lastExp = null;
-              stagnationCount = 0;
-              break; // Restart the loop with the new pCurr
+                // Update quotient i: qi = qi + S
+                quotients.set(i, quotients.get(i).sum(S));
+
+                // Update polynomial: p = p - S * div
+                pCurr = pCurr.subtract(S.multiply(div));
+
+                divisionOccurred = true;
+                lastExp = null;
+                stagnationCount = 0;
+                break; // Restart the loop with the new pCurr
+              }
             }
           }
         }

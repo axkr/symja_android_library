@@ -61,6 +61,10 @@ public class JASIExpr {
     this(variable, ExprRingFactory.CONST, numericFunction);
   }
 
+  public JASIExpr(IExpr variable, boolean numericFunction, boolean isField) {
+    this(variable, isField ? ExprRingFactory.CONST_FIELD : ExprRingFactory.CONST, numericFunction);
+  }
+
   public JASIExpr(IExpr variable, RingFactory<IExpr> ringFactory) {
     this(variable, ringFactory, false);
   }
@@ -88,6 +92,18 @@ public class JASIExpr {
 
   public JASIExpr(final List<? extends IExpr> variablesList, boolean numericFunction) {
     this(variablesList, ExprRingFactory.CONST, TermOrderByName.INVLEX, numericFunction);
+  }
+
+  public JASIExpr(final List<? extends IExpr> variablesList, boolean numericFunction,
+      boolean isField) {
+    this(variablesList, isField ? ExprRingFactory.CONST_FIELD : ExprRingFactory.CONST,
+        TermOrderByName.INVLEX, numericFunction);
+  }
+
+  public JASIExpr(final List<? extends IExpr> variablesList, TermOrder termOrder,
+      boolean numericFunction, boolean isField) {
+    this(variablesList, isField ? ExprRingFactory.CONST_FIELD : ExprRingFactory.CONST, termOrder,
+        numericFunction);
   }
 
   public JASIExpr(final List<? extends IExpr> variablesList, RingFactory<IExpr> ringFactory) {

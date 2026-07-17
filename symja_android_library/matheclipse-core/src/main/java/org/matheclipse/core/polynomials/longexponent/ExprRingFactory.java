@@ -13,22 +13,39 @@ import org.matheclipse.core.interfaces.IExpr;
 import com.google.common.io.CharStreams;
 import edu.jas.structure.RingFactory;
 
-/** Singleton ring factory class. */
+/** Ring factory class for IExpr with configurable field properties. */
 public class ExprRingFactory implements RingFactory<IExpr> {
 
-  /** */
   private static final long serialVersionUID = -6146597389011632638L;
 
-  public static final ExprRingFactory CONST = new ExprRingFactory();
+  /** Default ring factory (not a field). */
+  public static final ExprRingFactory CONST = new ExprRingFactory(false);
 
-  private ExprRingFactory() {
-    super();
+  /** Ring factory configured to act as a field. */
+  public static final ExprRingFactory CONST_FIELD = new ExprRingFactory(true);
+
+  private final boolean isField;
+
+  /**
+   * Default constructor, creates a non-field ring factory.
+   */
+  public ExprRingFactory() {
+    this(false);
+  }
+
+  /**
+   * Constructor with explicit field configuration.
+   * 
+   * @param isField true if this factory should represent a field
+   */
+  public ExprRingFactory(boolean isField) {
+    this.isField = isField;
   }
 
   /** {@inheritDoc} */
   @Override
   public boolean isField() {
-    return false;
+    return this.isField;
   }
 
   /** {@inheritDoc} */
@@ -69,7 +86,6 @@ public class ExprRingFactory implements RingFactory<IExpr> {
   /** {@inheritDoc} */
   @Override
   public List<IExpr> generators() {
-    // TODO Auto-generated method stub
     return null;
   }
 
@@ -93,7 +109,6 @@ public class ExprRingFactory implements RingFactory<IExpr> {
       s = CharStreams.toString(r);
       return EvalEngine.get().parse(s);
     } catch (IOException e) {
-      // `1`.
       Errors.printMessage(S.List, "error", F.List("IOException in ExprRingFactory#parse()."));
     }
     return S.Undefined;
@@ -102,21 +117,19 @@ public class ExprRingFactory implements RingFactory<IExpr> {
   /** {@inheritDoc} */
   @Override
   public IExpr random(int n) {
-    // TODO Auto-generated method stub
     return null;
   }
 
   /** {@inheritDoc} */
   @Override
   public IExpr random(int n, Random random) {
-    // TODO Auto-generated method stub
     return null;
   }
 
   /** {@inheritDoc} */
   @Override
   public String toScript() {
-    return "ExprRingFactory";
+    return "ExprRingFactory(" + isField + ")";
   }
 
   /** {@inheritDoc} */

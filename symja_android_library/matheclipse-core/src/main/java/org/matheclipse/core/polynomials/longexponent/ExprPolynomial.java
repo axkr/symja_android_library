@@ -7,6 +7,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.SparseArrayExpr;
@@ -775,6 +776,11 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
         return ret;
       }
     }
+
+    // Grab active engine context for simplifying symbolic mappings
+    EvalEngine engine = EvalEngine.get();
+    Function<IExpr, IExpr> simplifyFn = coeff -> engine.evaluate(F.Cancel(F.Together(coeff)));
+
     ExprPolynomial[] qr;
     ExprPolynomial q = this;
     ExprPolynomial r = S;
@@ -784,14 +790,18 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
     ExprPolynomial d2 = ring.getOne().copy();
     ExprPolynomial x1;
     ExprPolynomial x2;
+
     while (!r.isZERO()) {
       qr = q.quotientRemainder(r);
       if (qr == null) {
         return null;
       }
       q = qr[0];
-      x1 = c1.subtract(q.multiply(d1));
-      x2 = c2.subtract(q.multiply(d2));
+
+      // Map coefficient simplification over generated intermediate cofactors to kill swell
+      x1 = c1.subtract(q.multiply(d1)).map(simplifyFn);
+      x2 = c2.subtract(q.multiply(d2)).map(simplifyFn);
+
       c1 = d1;
       c2 = d2;
       d1 = x1;
@@ -799,21 +809,22 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
       q = r;
       r = qr[1];
     }
-    // normalize ldcf(q) to 1, i.e. make monic
+
+    // Normalize leading base coefficient to 1, i.e. make monic
     IExpr g = q.leadingBaseCoefficient();
     if (g.isUnit()) {
-      IExpr h = g.inverse();
-      q = q.multiply(h);
-      c1 = c1.multiply(h);
-      c2 = c2.multiply(h);
+      IExpr h = engine.evaluate(F.Power(g, F.CN1)); // Simplified inverse
+
+      q = q.multiply(h).map(simplifyFn);
+      c1 = c1.multiply(h).map(simplifyFn);
+      c2 = c2.multiply(h).map(simplifyFn);
     }
-    // assert ( ((c1.multiply(this)).sum( c2.multiply(S)).equals(q) ));
+
     ret[0] = q;
     ret[1] = c1;
     ret[2] = c2;
     return ret;
   }
-
   /**
    * Comparison with any other object.
    *
