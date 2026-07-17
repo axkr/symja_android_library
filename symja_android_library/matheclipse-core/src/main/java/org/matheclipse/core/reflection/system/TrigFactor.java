@@ -90,7 +90,70 @@ public class TrigFactor extends AbstractFunctionEvaluator {
     IExpr postReduced = applyPostReduce(recombined, engine);
 
     // Final algebraic cleanup to cleanly group fractions and sub-expressions
-    return engine.evaluate(F.Factor(postReduced));
+    IExpr regrouped = engine.evaluate(F.Factor(postReduced));
+
+    // Stage 8: Condense the single-angle powers which Factor() introduced back into multiple angles
+    return condenseMultipleAngles(regrouped, engine);
+  }
+
+  /**
+   * <code>Factor()</code> rewrites multiple angles into powers of a single angle, for example
+   * <code>Sin(2*x)+Sin(4*x)</code> into <code>-2*Cos(x)*Sin(x)*(-1-2*Cos(x)^2+2*Sin(x)^2)</code>.
+   * Condense every factor of the factored product back into multiple angles, so that the result is
+   * <code>2*Cos(x)*(1+2*Cos(2*x))*Sin(x)</code>.
+   *
+   * @param expr the factored product
+   * @param engine the evaluation engine
+   * @return <code>expr</code> unchanged if no factor could be condensed
+   */
+  private IExpr condenseMultipleAngles(IExpr expr, EvalEngine engine) {
+    if (expr.isTimes()) {
+      IAST times = (IAST) expr;
+      IASTAppendable result = F.TimesAlloc(times.size());
+      boolean evaled = false;
+      for (int i = 1; i < times.size(); i++) {
+        IExpr factor = times.get(i);
+        IExpr condensed = condenseFactor(factor, engine);
+        if (condensed.isPresent()) {
+          // TrigReduce() can return a canonical negative factor like -1-2*Cos(2*x). Extract the
+          // minus sign into the product, to avoid printing -2*Cos(x)*Sin(x)*(-1-2*Cos(2*x))
+          IExpr negated = getNormalizedNegativeExpression(condensed);
+          if (negated.isPresent()) {
+            result.append(F.CN1);
+            condensed = negated;
+          }
+          result.append(condensed);
+          evaled = true;
+        } else {
+          result.append(factor);
+        }
+      }
+      return evaled ? engine.evaluate(result) : expr;
+    }
+
+    IExpr condensed = condenseFactor(expr, engine);
+    return condensed.orElse(expr);
+  }
+
+  /**
+   * Condense a single polynomial factor in <code>Sin(x)</code> and <code>Cos(x)</code> into multiple
+   * angles with <code>TrigReduce()</code>.
+   *
+   * @param factor a factor of the factored product
+   * @param engine the evaluation engine
+   * @return {@link F#NIL} if <code>factor</code> is no sum or if condensing it isn't a
+   *         simplification
+   */
+  private IExpr condenseFactor(IExpr factor, EvalEngine engine) {
+    if (factor.isPlus()) {
+      IExpr reduced = engine.evaluate(F.TrigReduce(factor));
+      if (reduced.leafCount() < factor.leafCount()) {
+        // pull the numeric content out of the condensed factor, because Factor() cannot be used
+        // here without expanding the multiple angles again
+        return engine.evaluate(F.FactorTerms(reduced));
+      }
+    }
+    return F.NIL;
   }
 
   // ==========================================
