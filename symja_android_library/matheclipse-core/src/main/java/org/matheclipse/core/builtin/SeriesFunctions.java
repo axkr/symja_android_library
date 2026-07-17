@@ -1,12 +1,10 @@
 package org.matheclipse.core.builtin;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.JASConvert;
-import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
@@ -29,15 +27,11 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.Matcher;
-import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
-import org.matheclipse.core.polynomials.longexponent.ExprRingFactory;
 import org.matheclipse.core.reflection.system.rulesets.SeriesCoefficientRules;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.Lists;
 import edu.jas.arith.BigRational;
 import edu.jas.poly.GenPolynomial;
-import edu.jas.poly.GenPolynomialRing;
 import edu.jas.ps.PolynomialTaylorFunction;
 import edu.jas.ps.TaylorFunction;
 import edu.jas.ps.UnivPowerSeriesRing;
@@ -75,105 +69,278 @@ public class SeriesFunctions {
         IExpr function = ast.arg1();
         IAST list = (IAST) ast.arg2();
         IExpr x = list.arg1();
+        // Add validation to ensure x is a valid variable
+        if (!x.isVariable()) {
+          // `1` is not a valid variable.
+          return Errors.printMessage(S.PadeApproximant, "ivar", F.List(x), engine);
+        }
         IExpr x0 = list.arg2();
+        IExpr orderArg = list.arg3();
 
-        if (list.arg3().isList2()) {
-          try {
-            IAST order = (IAST) list.arg3();
-            final int m = order.arg1().toIntDefault();
-            if (F.isNotPresent(m)) {
-              return F.NIL;
-            }
-            final int n = order.arg2().toIntDefault();
-            if (F.isNotPresent(n)) {
-              return F.NIL;
-            }
-            if (function.isTimes()) {
-              Optional<IExpr[]> numeratorDenominatorParts =
-                  AlgebraUtil.fractionalParts(function, false);
-              if (numeratorDenominatorParts.isPresent()) {
-                return quotientTaylorFunction(numeratorDenominatorParts.get(), x, x0, m, n);
-              }
-            }
+        int m = -1;
+        int n = -1;
 
-            return taylorFunction(function, x, x0, m, n);
-          } catch (ArithmeticException aex) {
-            Errors.printRuntimeException(S.PadeApproximant, aex, engine);
-          } catch (JASConversionException jce) {
-            // could not use JAS library here
-          }
+        if (orderArg.isList2()) {
+          m = ((IAST) orderArg).arg1().toIntDefault();
+          n = ((IAST) orderArg).arg2().toIntDefault();
+        } else if (orderArg.isInteger()) {
+          // If only a single order `m` is given, default to {m, m}
+          m = orderArg.toIntDefault();
+          n = m;
         }
 
+        if (F.isNotPresent(m) || F.isNotPresent(n) || m < 0 || n < 0) {
+          return F.NIL;
+        }
+
+        try {
+          // Exact fast path with rational arithmetic for polynomials and rational functions.
+          // Broaden fractional check beyond just `function.isTimes()`
+          Optional<IExpr[]> numeratorDenominatorParts =
+              AlgebraUtil.fractionalParts(function, false);
+
+          if (numeratorDenominatorParts.isPresent()) {
+            IExpr[] parts = numeratorDenominatorParts.get();
+            // Route to quotientTaylorFunction if a distinct denominator exists
+            if (!parts[1].isOne()) {
+              return quotientTaylorFunction(parts, x, x0, m, n, engine);
+            }
+          }
+
+          return taylorFunction(function, x, x0, m, n, engine);
+        } catch (JASConversionException | ArithmeticException ex) {
+          // `function` isn't a rational function with rational coefficients, or it has a pole at
+          // `x0`. Fall back to the series expansion, which also copes with symbolic coefficients.
+          return seriesPade(function, x, x0, m, n, engine).orElse(function);
+        }
       }
       return F.NIL;
     }
 
-    private static IExpr quotientTaylorFunction(IExpr[] numeratorDenominatorParts, IExpr x,
-        IExpr x0, final int m, final int n) {
-
-      UnivPowerSeriesRing<BigRational> fac = new UnivPowerSeriesRing<BigRational>(BigRational.ZERO);
-      JASConvert<BigRational> jas = new JASConvert<BigRational>(x.makeList(), BigRational.ZERO);
-      BigRational bf = null;
-      if (x0.isRational()) {
-        bf = ((IRational) x0).toBigRational();
-      }
-      if (bf == null) {
+    /**
+     * Compute the Pade approximant of order <code>{m, n}</code> from the series expansion of
+     * <code>function</code> at <code>x0</code>.
+     *
+     * <p>
+     * The Taylor coefficients are used as symbolic {@link IExpr} coefficients, so this also works
+     * for a function with unknown coefficients like <code>f(x)</code>, whose Taylor coefficients are
+     * the derivatives <code>f(x0), f'(x0), f''(x0)/2, ...</code>
+     *
+     * <p>
+     * If the series has a pole of order <code>p</code> at <code>x0</code>, the approximant of the
+     * regular function <code>(x-x0)^p*function</code> of order <code>{m, n-p}</code> is computed and
+     * the pole is factored back into the denominator. The numerator degree therefore stays
+     * <code>&lt;= m</code> and the denominator degree stays <code>&lt;= n</code>.
+     *
+     * @return {@link F#NIL} if no approximant could be computed
+     */
+    private static IExpr seriesPade(IExpr function, IExpr x, IExpr x0, int m, int n,
+        EvalEngine engine) {
+      IExpr seriesExpr = engine.evaluate(F.Series(function, F.List(x, x0, F.ZZ(m + n))));
+      if (!(seriesExpr instanceof ASTSeriesData)) {
         return F.NIL;
       }
-      GenPolynomial<BigRational> numerator = jas.expr2JAS(numeratorDenominatorParts[0], false);
-      if (numerator == null) {
+      ASTSeriesData series = (ASTSeriesData) seriesExpr;
+      if (series.puiseuxDenominator() != 1) {
+        // a Puiseux series has fractional exponents which a rational approximant can't represent
         return F.NIL;
       }
-      GenPolynomial<BigRational> denominator = jas.expr2JAS(numeratorDenominatorParts[1], false);
-      if (denominator == null) {
+      int poleOrder = series.minExponent() < 0 ? -series.minExponent() : 0;
+      if (n < poleOrder) {
+        // the requested denominator degree is too small to cover the pole
         return F.NIL;
       }
-      GenPolynomialRing<BigRational> pr = fac.polyRing();
-      QuotientRing<BigRational> qr = new QuotientRing<BigRational>(pr);
-      Quotient<BigRational> p = new Quotient<BigRational>(qr, numerator, denominator);
-      TaylorFunction<BigRational> TF = new QuotientTaylorFunction<BigRational>(p);
-      Quotient<BigRational> approximantOfPade =
-          PolyUfdUtil.<BigRational>approximantOfPade(fac, TF, bf, m, n);
-      IAST numeratorExpr = jas.rationalPoly2Expr(approximantOfPade.num, false);
-      IAST denominatorExpr = jas.rationalPoly2Expr(approximantOfPade.den, false);
-      return org.matheclipse.core.expression.F.Divide(numeratorExpr, denominatorExpr);
-    }
 
+      // Taylor coefficients a[k] of the regular function `(x-x0)^poleOrder * function`
+      final int denominatorDegree = n - poleOrder;
+      IExpr[] a = new IExpr[m + denominatorDegree + 1];
+      for (int k = 0; k < a.length; k++) {
+        a[k] = series.coefficient(k - poleOrder);
+      }
 
-    private static IExpr taylorFunction(IExpr function, IExpr x, IExpr bf, int m, int n) {
-      List<IExpr> varList = Lists.newArrayList(x);
-      IASTAppendable list = F.ListAlloc(varList);
-      if (bf.isRational()) {
-        try {
-          BigRational expansionPoint = ((IRational) bf).toBigRational();
-          JASConvert<BigRational> jas = new JASConvert<BigRational>(list, BigRational.ZERO);
-          GenPolynomial<BigRational> numerator = jas.expr2JAS(function, false);
-          if (numerator != null) {
-            TaylorFunction<BigRational> TF = new PolynomialTaylorFunction<BigRational>(numerator);
-            UnivPowerSeriesRing<BigRational> fac =
-                new UnivPowerSeriesRing<BigRational>(BigRational.ZERO);
-            Quotient<BigRational> approximantOfPade =
-                PolyUfdUtil.<BigRational>approximantOfPade(fac, TF, expansionPoint, m, n);
-            IExpr numeratorExpr = jas.rationalPoly2Expr(approximantOfPade.num, false);
-            IExpr denominatorExpr = jas.rationalPoly2Expr(approximantOfPade.den, false);
-            return org.matheclipse.core.expression.F.Divide(numeratorExpr, denominatorExpr);
-          }
-        } catch (JASConversionException jce) {
-          //
+      IExpr[] q = padeDenominatorCoefficients(a, m, denominatorDegree, engine);
+      if (q == null) {
+        return F.NIL;
+      }
+      IExpr t = x0.isZero() ? x : F.Subtract(x, x0);
+
+      // numerator: Sum(p[k]*t^k, {k, 0, m}) with p[k] = Sum(a[k-j]*q[j], {j, 0, Min(k, n)})
+      IASTAppendable numerator = F.PlusAlloc(m + 1);
+      for (int k = 0; k <= m; k++) {
+        int last = Math.min(k, denominatorDegree);
+        IASTAppendable p = F.PlusAlloc(last + 1);
+        for (int j = 0; j <= last; j++) {
+          p.append(F.Times(coefficient(a, k - j), q[j]));
         }
+        numerator.append(F.Times(engine.evaluate(p), F.Power(t, F.ZZ(k))));
       }
-      JASIExpr jas = new JASIExpr(varList, true);
-      ExprPolynomialRing ring = new ExprPolynomialRing(list);
-      ExprPolynomial poly = ring.create(function);
-      GenPolynomial<IExpr> numerator = jas.expr2IExprJAS(poly);
-      TaylorFunction<IExpr> TF = new PolynomialTaylorFunction<IExpr>(numerator);
-      UnivPowerSeriesRing<IExpr> fac = new UnivPowerSeriesRing<IExpr>(ExprRingFactory.CONST);
-      Quotient<IExpr> approximantOfPade = PolyUfdUtil.<IExpr>approximantOfPade(fac, TF, bf, m, n);
-      IExpr numeratorExpr = jas.exprPoly2Expr(approximantOfPade.num);
-      IExpr denominatorExpr = jas.exprPoly2Expr(approximantOfPade.den);
-      return org.matheclipse.core.expression.F.Divide(numeratorExpr, denominatorExpr);
+
+      // denominator: 1 + Sum(q[j]*t^j, {j, 1, n})
+      IASTAppendable denominator = F.PlusAlloc(denominatorDegree + 1);
+      for (int j = 0; j <= denominatorDegree; j++) {
+        denominator.append(F.Times(q[j], F.Power(t, F.ZZ(j))));
+      }
+
+      IExpr num = collectCoefficients(engine.evaluate(numerator), x, engine);
+      IExpr den = collectCoefficients(engine.evaluate(denominator), x, engine);
+      if (poleOrder > 0) {
+        den = F.Times(F.Power(t, F.ZZ(poleOrder)), den);
+      }
+      return F.Divide(num, den);
     }
 
+    /**
+     * Solve the linear system for the denominator coefficients of the Pade approximant, normalized
+     * to <code>q[0] == 1</code>:
+     *
+     * <pre>
+     * Sum(a[k-j]*q[j], {j, 0, n}) == 0   for k = m+1, ..., m+n
+     * </pre>
+     *
+     * @param a the Taylor coefficients <code>a[0], ..., a[m+n]</code>
+     * @param m degree of the approximant numerator
+     * @param n degree of the approximant denominator
+     * @return the coefficients <code>q[0], ..., q[n]</code> or <code>null</code> if the system has no
+     *         solution
+     */
+    private static IExpr[] padeDenominatorCoefficients(IExpr[] a, int m, int n, EvalEngine engine) {
+      IExpr[] q = new IExpr[n + 1];
+      q[0] = F.C1;
+      if (n == 0) {
+        return q;
+      }
+
+      IASTAppendable matrix = F.ListAlloc(n);
+      IASTAppendable vector = F.ListAlloc(n);
+      for (int i = 1; i <= n; i++) {
+        IASTAppendable row = F.ListAlloc(n);
+        for (int j = 1; j <= n; j++) {
+          row.append(coefficient(a, m + i - j));
+        }
+        matrix.append(row);
+        vector.append(engine.evaluate(F.Negate(coefficient(a, m + i))));
+      }
+
+      // a rank deficient system is solved for one particular solution, which reduces the order of
+      // the approximant; `LinearSolve` reports the deficiency in messages which aren't relevant here
+      final boolean quietMode = engine.isQuietMode();
+      IExpr solution;
+      try {
+        engine.setQuietMode(true);
+        solution = engine.evaluate(F.LinearSolve(matrix, vector));
+      } finally {
+        engine.setQuietMode(quietMode);
+      }
+      if (!solution.isList() || solution.argSize() != n) {
+        return null;
+      }
+
+      IAST solutionList = (IAST) solution;
+      for (int j = 1; j <= n; j++) {
+        q[j] = solutionList.get(j);
+      }
+      return q;
+    }
+
+    /**
+     * Return the Taylor coefficient <code>a[k]</code>, or <code>0</code> if <code>k</code> is outside
+     * the computed range.
+     */
+    private static IExpr coefficient(IExpr[] a, int k) {
+      return (k < 0 || k >= a.length) ? F.C0 : a[k];
+    }
+
+    /**
+     * Helper method to evaluate the denominator at the expansion point x0 and normalize the Pade
+     * approximant fraction.
+     */
+    private static IExpr normalizePade(IExpr num, IExpr den, IExpr x, IExpr x0, EvalEngine engine) {
+      IExpr constantFactor = engine.evaluate(F.ReplaceAll(den, F.Rule(x, x0)));
+      if (!constantFactor.isZero() && !constantFactor.isOne()) {
+        num = engine.evaluate(F.Expand(F.Divide(num, constantFactor)));
+        den = engine.evaluate(F.Expand(F.Divide(den, constantFactor)));
+      }
+      return F.Divide(collectCoefficients(num, x, engine), collectCoefficients(den, x, engine));
+    }
+
+    /**
+     * Collect <code>poly</code> in powers of <code>x</code> and apply <code>Together</code> to each
+     * coefficient.
+     *
+     * <p>
+     * The linear system which is solved for the Pade approximant divides by the series coefficients.
+     * For symbolic coefficients (for example the Taylor coefficients <code>f'(0), f''(0),...</code>
+     * of an unknown function <code>f</code>) that leaves the result as a sum of deeply nested
+     * fractions. Collecting the powers of <code>x</code> and combining each coefficient over a
+     * common denominator recovers the compact form. For purely numeric coefficients this is a no-op.
+     */
+    private static IExpr collectCoefficients(IExpr poly, IExpr x, EvalEngine engine) {
+      return engine.evaluate(F.ternaryAST3(S.Collect, poly, x, S.Together));
+    }
+
+    /**
+     * Pade approximant of the rational function
+     * <code>numeratorDenominatorParts[0]/numeratorDenominatorParts[1]</code>, computed with exact
+     * rational arithmetic.
+     *
+     * @throws JASConversionException if numerator and denominator aren't polynomials in
+     *         <code>x</code> with rational coefficients, or <code>x0</code> isn't a rational number
+     */
+    private static IExpr quotientTaylorFunction(IExpr[] numeratorDenominatorParts, IExpr x, IExpr x0,
+        final int m, final int n, EvalEngine engine) throws JASConversionException {
+      if (!x0.isRational()) {
+        throw JASConversionException.FAILED;
+      }
+      BigRational bf = ((IRational) x0).toBigRational();
+      UnivPowerSeriesRing<BigRational> fac = new UnivPowerSeriesRing<>(BigRational.ZERO);
+      JASConvert<BigRational> jas = new JASConvert<>(x.makeList(), BigRational.ZERO);
+
+      GenPolynomial<BigRational> numerator = jas.expr2JAS(numeratorDenominatorParts[0], false);
+      GenPolynomial<BigRational> denominator = jas.expr2JAS(numeratorDenominatorParts[1], false);
+      if (numerator == null || denominator == null) {
+        throw JASConversionException.FAILED;
+      }
+
+      QuotientRing<BigRational> qr = new QuotientRing<>(fac.polyRing());
+      TaylorFunction<BigRational> TF =
+          new QuotientTaylorFunction<>(new Quotient<>(qr, numerator, denominator));
+
+      Quotient<BigRational> approximant = PolyUfdUtil.approximantOfPade(fac, TF, bf, m, n);
+      IExpr numExpr = jas.rationalPoly2Expr(approximant.num, false);
+      IExpr denExpr = jas.rationalPoly2Expr(approximant.den, false);
+
+      return normalizePade(numExpr, denExpr, x, x0, engine);
+    }
+
+    /**
+     * Pade approximant of the polynomial <code>function</code>, computed with exact rational
+     * arithmetic.
+     *
+     * @throws JASConversionException if <code>function</code> isn't a polynomial in <code>x</code>
+     *         with rational coefficients, or <code>x0</code> isn't a rational number
+     */
+    private static IExpr taylorFunction(IExpr function, IExpr x, IExpr x0, int m, int n,
+        EvalEngine engine) throws JASConversionException {
+      if (!x0.isRational()) {
+        throw JASConversionException.FAILED;
+      }
+      BigRational expansionPoint = ((IRational) x0).toBigRational();
+      JASConvert<BigRational> jas = new JASConvert<>(x.makeList(), BigRational.ZERO);
+      GenPolynomial<BigRational> numerator = jas.expr2JAS(function, false);
+      if (numerator == null) {
+        throw JASConversionException.FAILED;
+      }
+
+      UnivPowerSeriesRing<BigRational> fac = new UnivPowerSeriesRing<>(BigRational.ZERO);
+      TaylorFunction<BigRational> TF = new PolynomialTaylorFunction<>(numerator);
+
+      Quotient<BigRational> approximant =
+          PolyUfdUtil.approximantOfPade(fac, TF, expansionPoint, m, n);
+      IExpr numExpr = jas.rationalPoly2Expr(approximant.num, false);
+      IExpr denExpr = jas.rationalPoly2Expr(approximant.den, false);
+
+      return normalizePade(numExpr, denExpr, x, x0, engine);
+    }
 
     @Override
     public int[] expectedArgSize(IAST ast) {

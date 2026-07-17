@@ -129,6 +129,11 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "1+x+x^2/2+x^3/6+x^4/24+x^5/120");
     check("Normal(SeriesData(x, 0,{1,0,-1/6,0,1/120,0,-1/5040,0,1/362880}, 1, 11, 2))", //
         "Sqrt(x)-x^(3/2)/6+x^(5/2)/120-x^(7/2)/5040+x^(9/2)/362880");
+    // symbolic Taylor coefficients like f'(0) must survive Normal()
+    check("Normal(Series(f(x), {x, 0, 3}))", //
+        "f(0)+x*f'(0)+1/2*x^2*f''(0)+1/6*x^3*Derivative(3)[f][0]");
+    check("Normal(Series(f(x)/x, {x, 0, 2}))", //
+        "f(0)/x+f'(0)+1/2*x*f''(0)+1/6*x^2*Derivative(3)[f][0]");
   }
 
   @Test
@@ -859,13 +864,38 @@ public class SeriesTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testPadeApproximant() {
+    // a symbolic function with a pole of order 1 at the expansion point: the {2,2} approximant of
+    // f(x)/x is the {2,1} approximant of f(x), divided by x
+    check("PadeApproximant(f(x)/x, {x, 0, 2})", //
+        "(f(0)+(x*(3*f'(0)*f''(0)-f(0)*Derivative(3)[f][0]))/(3*f''(0))+(x^2*(3*f''(0)^2-\n" //
+            + "2*f'(0)*Derivative(3)[f][0]))/(6*f''(0)))/(x*(1+(-x*Derivative(3)[f][0])/(3*f''(\n" //
+            + "0))))");
+    // a single order `n` is the diagonal approximant {n,n}
+    check("PadeApproximant(f(x)/x, {x, 0, {2, 2}})", //
+        "(f(0)+(x*(3*f'(0)*f''(0)-f(0)*Derivative(3)[f][0]))/(3*f''(0))+(x^2*(3*f''(0)^2-\n" //
+            + "2*f'(0)*Derivative(3)[f][0]))/(6*f''(0)))/(x*(1+(-x*Derivative(3)[f][0])/(3*f''(\n" //
+            + "0))))");
+    check("PadeApproximant(f(x), {x, 0, {2, 1}})", //
+        "(f(0)+(x*(3*f'(0)*f''(0)-f(0)*Derivative(3)[f][0]))/(3*f''(0))+(x^2*(3*f''(0)^2-\n" //
+            + "2*f'(0)*Derivative(3)[f][0]))/(6*f''(0)))/(1+(-x*Derivative(3)[f][0])/(3*f''(0)))");
+
+    check("PadeApproximant(Exp(x)/x, {x, 0, {2, 3}})", //
+        "(1+x/2+x^2/12)/(x*(1-x/2+x^2/12))");
+    check("PadeApproximant(Exp(x), {x, 0, {2, 3}})", //
+        "(1+2/5*x+x^2/20)/(1-3/5*x+3/20*x^2-x^3/60)");
+    check("PadeApproximant(Sin(x), {x, 0, {3,1}})", //
+        "x-x^3/6");
+    // rank-deficient Padé system
+    check("PadeApproximant(1/(1-x), {x, 0, {2, 2}})", //
+        "1/(1-x)");
+
     // message PadeApproximant: lbcf not invertible {{-1,-2,3}}
     check("PadeApproximant({{-1,-2,3}},{0,0,{0,0}})", //
         "PadeApproximant({{-1,-2,3}},{0,0,{0,0}})");
 
     // TODO https://github.com/kredel/java-algebra-system/issues/29
     check("PadeApproximant(((x^3 + 72*x^2 + 600*x + 720)/(12*x^2 + 240*x+720)),{x,0,{3,1}})", //
-        "(15/4+23/8*x+3/16*x^2-x^3/192)/(15/4+x)");
+        "(1+23/30*x+x^2/20-x^3/720)/(1+4/15*x)");
     check("PadeApproximant( x^3 + 72*x^2 + 600*x + 720 , {x, 0, {3,1}})", //
         "720+600*x+72*x^2+x^3");
     check("PadeApproximant(x, {x, 0, {3,1}})", //
@@ -874,9 +904,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "x^3");
     check("PadeApproximant(x*y^2, {x, 0, {3,1}})", //
         "x*y^2");
-    // TODO
-    check("PadeApproximant(Sin(x), {x, 0, {3,1}})", //
-        "PadeApproximant(Sin(x),{x,0,{3,1}})");
+
   }
 
   @Test
