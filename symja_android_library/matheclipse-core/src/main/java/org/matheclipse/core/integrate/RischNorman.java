@@ -19,8 +19,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Heuristic Risch-Norman ("parallel Risch") integration.
  *
  * <p>
- * The integrand is rewritten as a rational function of the integration variable <code>x</code>
- * and a set of transcendental kernels <code>&theta;<sub>j</sub></code> (<code>Exp</code>,
+ * The integrand is rewritten as a rational function of the integration variable <code>x</code> and
+ * a set of transcendental kernels <code>&theta;<sub>j</sub></code> (<code>Exp</code>,
  * <code>Log</code>, <code>Tan</code>, <code>Tanh</code>, <code>Sin/Cos</code>,
  * <code>Sinh/Cosh</code>) whose derivatives are again rational in <code>x</code> and the kernels.
  * An ansatz
@@ -30,12 +30,12 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </pre>
  *
  * with undetermined coefficients is differentiated and the resulting linear system for
- * <code>c_i, b_j</code> is solved. If the system is inconsistent the method fails fast and
- * returns {@link F#NIL} so that the caller can fall back to the Rubi rules.
+ * <code>c_i, b_j</code> is solved. If the system is inconsistent the method fails fast and returns
+ * {@link F#NIL} so that the caller can fall back to the Rubi rules.
  *
  * <p>
  * See: K. Geddes, L. Stefanus: "On the Risch-Norman integration method and its implementation in
- * MAPLE", and the Mathilda project's <code>RISCH_NORMAN_PLAN</code>.
+ * MAPLE".
  */
 public class RischNorman {
 
@@ -187,8 +187,7 @@ public class RischNorman {
     for (int i = 0; i < dummies.length; i++) {
       totalDerivative.append(F.Times(F.D(ansatz, dummies[i]), derivatives[i]));
     }
-    IExpr equation =
-        engine.evaluate(F.Together(F.Subtract(totalDerivative, substituted)));
+    IExpr equation = engine.evaluate(F.Together(F.Subtract(totalDerivative, substituted)));
     IExpr eqNumer = engine.evaluate(F.Expand(F.Numerator(equation)));
 
     if (System.currentTimeMillis() > deadline) {
@@ -371,8 +370,7 @@ public class RischNorman {
     if (ast.argSize() != 1 || ast.arg1().isFree(x, true)) {
       return false;
     }
-    return ast.head() == S.Log || ast.head() == S.Tan || ast.head() == S.Tanh
-        || ast.head() == S.Sin || ast.head() == S.Cos || ast.head() == S.Sinh
-        || ast.head() == S.Cosh;
+    return ast.head() == S.Log || ast.head() == S.Tan || ast.head() == S.Tanh || ast.head() == S.Sin
+        || ast.head() == S.Cos || ast.head() == S.Sinh || ast.head() == S.Cosh;
   }
 }

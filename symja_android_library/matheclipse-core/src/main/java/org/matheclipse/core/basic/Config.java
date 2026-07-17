@@ -108,8 +108,8 @@ public class Config {
 
   /**
    * Maximum number of variables allowed for generating the minterm DNF in
-   * {@link S#BooleanCountingFunction}. The minterm enumeration is exponential (<code>2^n</code>), so
-   * this guards against excessive memory/CPU usage.
+   * {@link S#BooleanCountingFunction}. The minterm enumeration is exponential (<code>2^n</code>),
+   * so this guards against excessive memory/CPU usage.
    */
   public static int MAX_BOOLEAN_COUNTING_FUNCTION_VARIABLES = 16;
 
@@ -320,10 +320,10 @@ public class Config {
   public static double MACHINE_EPSILON = Math.nextUp(1.0) - 1.0;
 
   /**
-   * Number of guard digits subtracted from the working Apfloat precision when computing the default
-   * &quot;is zero&quot; tolerance for {@link org.apfloat.Apfloat} and {@link org.apfloat.Apcomplex}
-   * values (see
-   * {@code EvalEngine#defaultApfloatZeroEpsilon(long)}).
+   * Number of trailing digits which are <b>not</b> required to agree when two
+   * {@link org.apfloat.Apfloat} values are compared for fuzzy equality (see
+   * {@code F#isFuzzyEquals(org.apfloat.Apfloat, org.apfloat.Apfloat)}). Two values count as equal
+   * if they agree in at least {@code precision - APFLOAT_ZERO_GUARD_DIGITS} significant digits.
    * <p>
    * A larger value yields a looser (more permissive) tolerance.
    */
@@ -365,17 +365,21 @@ public class Config {
   public static int INTEGRATE_RUBI_TIMELIMIT = 8;
 
   /**
-   * Master flag which enables the fast algorithmic integration cascade (integral table,
-   * derivative-divides, rational function integration, radical substitution, Risch-Norman) which is
-   * tried before the Rubi rules in <code>Integrate()</code>.
+   * Master flag which enables the fast algorithmic integration cascade (rational function
+   * integration, radical substitution, ...) which is tried before the Rubi rules in
+   * <code>Integrate()</code>.
+   *
+   * <p>
+   * Each stage additionally has its own <code>INTEGRATE_ALGORITHM_*</code> kill-switch (below). A
+   * stage participates in the <i>Automatic</i> cascade only when it is both enabled and explicitly
+   * wired into the cascade in <code>Integrate.java</code>. Stages that are ported and unit-tested
+   * but not yet trusted to change production output forms are intentionally left un-wired: their
+   * flag stays on so they remain reachable via <code>Integrate[f, x, Method -&gt; "..."]</code> and
+   * their direct tests, and they are wired into the cascade one at a time as each passes its
+   * differentiate-back corpus. Flags for stages that are not yet ported are placeholders and
+   * default to <code>false</code>.
    */
   public static boolean INTEGRATE_ALGORITHMS = true;
-
-  /** Enable the CRC-style integral table lookup stage in <code>Integrate()</code>. */
-  public static boolean INTEGRATE_ALGORITHM_TABLE = true;
-
-  /** Enable the derivative-divides (Geddes) heuristic stage in <code>Integrate()</code>. */
-  public static boolean INTEGRATE_ALGORITHM_DERIVATIVE_DIVIDES = true;
 
   /**
    * Enable the rational function integration stage (Hermite/Horowitz-Ostrogradsky reduction plus
@@ -383,11 +387,38 @@ public class Config {
    */
   public static boolean INTEGRATE_ALGORITHM_RATIONAL = true;
 
-  /** Enable the radical substitution stage in <code>Integrate()</code>. */
+  /** Enable the CRC-style integral table lookup stage in <code>Integrate()</code>. */
+  public static boolean INTEGRATE_ALGORITHM_TABLE = true;
+
+  /** Enable the linear radical substitution stage in <code>Integrate()</code>. */
   public static boolean INTEGRATE_ALGORITHM_RADICAL_SUBSTITUTION = true;
+
+  /** Enable the quadratic radical (Euler substitution) stage in <code>Integrate()</code>. */
+  public static boolean INTEGRATE_ALGORITHM_QUADRATIC_RADICALS = false;
+
+  /** Enable the linear-ratio radical substitution stage in <code>Integrate()</code>. */
+  public static boolean INTEGRATE_ALGORITHM_LINEAR_RATIO_RADICALS = false;
+
+  /** Enable the Chebyshev binomial-differential stage in <code>Integrate()</code>. */
+  public static boolean INTEGRATE_ALGORITHM_CHEBYCHEV = true;
+
+  /** Enable the Goursat pseudo-elliptic reduction stage in <code>Integrate()</code>. */
+  public static boolean INTEGRATE_ALGORITHM_GOURSAT = false;
+
+  /**
+   * Enable the Weierstrass/Jeffrey substitution stage for rational trig in
+   * <code>Integrate()</code>.
+   */
+  public static boolean INTEGRATE_ALGORITHM_WEIERSTRASS = true;
+
+  /** Enable the derivative-divides (Geddes) heuristic stage in <code>Integrate()</code>. */
+  public static boolean INTEGRATE_ALGORITHM_DERIVATIVE_DIVIDES = true;
 
   /** Enable the Risch-Norman (parallel Risch) stage in <code>Integrate()</code>. */
   public static boolean INTEGRATE_ALGORITHM_RISCH_NORMAN = true;
+
+  /** Enable the recursive transcendental Risch stage in <code>Integrate()</code> (long-term). */
+  public static boolean INTEGRATE_ALGORITHM_RISCH_TRANSCENDENTAL = true;
 
   /** Time limit in milliseconds for the rational integration stage. */
   public static long INTEGRATE_RATIONAL_TIMELIMIT_MILLIS = 1000L;
@@ -446,7 +477,7 @@ public class Config {
   public static final long MACHINE_PRECISION = ParserConfig.MACHINE_PRECISION;
 
   /** The maximum precision which could be requested from a user for numerical calculations. */
-  public static long MAX_PRECISION_APFLOAT = 512;
+  public static long MAX_PRECISION_APFLOAT = 256;
 
   /** The extended precision in {@link S#N} function if exact numbers extend double precision. */
   public static boolean USE_EXTENDED_PRECISION_IN_N = false;

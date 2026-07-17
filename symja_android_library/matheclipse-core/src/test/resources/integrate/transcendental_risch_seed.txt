@@ -1,0 +1,71 @@
+# Seed corpus for the transcendental-Risch recogniser (M4 start; Gaussian -> Erf family).
+#
+# Format: `integrand ; var` (`; var` optional, defaults to x). `#` lines are comments.
+# Author-chosen Gaussian integrands c*E^(a*x^2+b*x+c0).
+
+E^(-x^2) ; x
+E^(-2*x^2) ; x
+E^(-x^2 + x) ; x
+3*E^(-x^2) ; x
+E^(x^2) ; x
+# ExpIntegralEi family: c*E^(k*x + d)/x
+E^x/x ; x
+E^(2*x)/x ; x
+# LogIntegral family: c*x^a/Log(x)  (result li(x^(a+1)))
+1/Log(x) ; x
+x/Log(x) ; x
+# PolyLog family: c*Log(d + a*x)/x  (d != 0)
+Log(1 + x)/x ; x
+Log(2 + x)/x ; x
+# ExpIntegralEi recurrence: c*E^(k*x)/x^m, m >= 2
+E^x/x^2 ; x
+E^(2*x)/x^3 ; x
+# Si/Ci/Shi/Chi family: c*g(k*x)/x
+Sin(x)/x ; x
+Cos(x)/x ; x
+Sin(2*x)/x ; x
+Sinh(x)/x ; x
+Cosh(x)/x ; x
+# Fresnel family: c*Sin(a*x^2) / c*Cos(a*x^2)
+Sin(x^2) ; x
+Cos(x^2) ; x
+# P(x)/Log(x) sums -> sum of LogIntegral
+(x^2 + 3*x + 1)/Log(x) ; x
+(x + 1)/Log(x) ; x
+# PolyLog ladder: c*PolyLog(n, a*x)/x -> PolyLog(n+1, a*x)
+PolyLog(2, x)/x ; x
+PolyLog(3, 2*x)/x ; x
+# incomplete Gamma: c*x^s*E^(a*x + b)
+Sqrt(x)*E^(-x) ; x
+E^(-x)/Sqrt(x) ; x
+x^(3/2)*E^(-2*x) ; x
+# hyperexponential Risch (RDE q' + b'*q = P): P(x)*E^(b(x)), P and b polynomials
+(2*x^2 + 1)*E^(x^2) ; x
+x*E^(x^2) ; x
+(x^3 + 2*x)*E^(x^2) ; x
+x^2*E^(-x) ; x
+(x + 1)*E^(2*x) ; x
+# hyperexponential with rational R (rational RDE q' + b'*q = R): R(x)*E^(b(x))
+((x - 1)/x^2)*E^x ; x
+((x - 2)/(x - 1)^2)*E^x ; x
+((2*x^2 - 1)/x^2)*E^(x^2) ; x
+# rational exponent b (exercises the general rational-f RDE path): R(x)*E^(1/x)
+-E^(1/x)/x^2 ; x
+# primitive (log) monomial: polynomial in Log(u), via the differential tower
+Log(x) ; x
+x*Log(x) ; x
+Log(x)^2 ; x
+Log(x)^3 ; x
+x^2*Log(x)^2 ; x
+Log(x)/x ; x
+Log(x)^2/x ; x
+# hypertangent monomial: polynomial (constant coeffs) in Tan(u), u linear
+Tan(x)^2 ; x
+Tan(x)^3 ; x
+1 + Tan(x)^2 ; x
+Tan(x)^4 ; x
+Tan(2*x)^2 ; x
+# tower RDE recursion: polynomial in E^(g*x) via per-power RDEs (sums of exponentials)
+E^x + E^(2*x) ; x
+x*E^x + E^(2*x) ; x
+E^(2*x) + E^(3*x) ; x

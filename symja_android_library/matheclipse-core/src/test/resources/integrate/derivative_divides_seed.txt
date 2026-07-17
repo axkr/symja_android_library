@@ -1,0 +1,24 @@
+# Seed corpus for the derivative-divides (Geddes) u-substitution stage.
+#
+# Format: `integrand ; var` (`; var` optional, defaults to x). `#` lines are comments.
+#
+# Author-chosen composites of the shape c*f(u(x))*u'(x).
+# Each is the exact derivative of the closed form named in its comment, so Integrate must resolve
+# and differentiate back to the integrand.
+
+# d/dx E^Sin(x)
+Cos(x)*E^Sin(x) ; x
+# d/dx E^(x^2)
+2*x*E^(x^2) ; x
+# d/dx Sin(x^2)
+2*x*Cos(x^2) ; x
+# d/dx Log(Log(x))
+1/(x*Log(x)) ; x
+# d/dx (2/3)*(1 - Cos(x))^(3/2)
+Sin(x)*Sqrt(1 - Cos(x)) ; x
+# d/dx ArcTan(x)^2
+2*ArcTan(x)/(1 + x^2) ; x
+# d/dx Log(1 + Sin(x))
+Cos(x)/(1 + Sin(x)) ; x
+# d/dx Log(1 + E^x)
+E^x/(1 + E^x) ; x

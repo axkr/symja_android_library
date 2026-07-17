@@ -934,6 +934,18 @@ public class AlgebraUtil {
                 F.Power(F.Times(elements[2], denParts.arg2()), F.CN1));
           }
         }
+      } else if (numerator.isPlus() && (denominator.isTimes() || denominator.isPower())) {
+        // Cancel a common polynomial factor between a Plus numerator and a Times/Power
+        // denominator, e.g. Together(x*(1/x + 1/y)) -> (x^2 + x*y)/(x*y) -> (x + y)/y.
+        IAST numParts = numerator.partitionPlus(x -> isPolynomial(x), F.C0, F.C1, S.List);
+        if (numParts.arg1().isPlus()) {
+          Optional<IExpr[]> result = cancelGCD(numParts.arg1(), denominator);
+          if (result.isPresent()) {
+            IExpr[] elements = result.get();
+            return F.Times(elements[0], elements[1], numParts.arg2(),
+                F.Power(elements[2], F.CN1));
+          }
+        }
       }
     }
     return cancelResult;
@@ -2240,10 +2252,14 @@ public class AlgebraUtil {
     if (!engine.isNumericMode() && p.isPlus() && !engine.isTogetherMode()) {
       IAST plusAST = (IAST) p;
       // ((reduceConstantTerm /@ (List @@ plusAST)) // Transpose)[[1]]
-      IExpr cTerms = S.Transpose
-          .of(engine,
-              F.Map(F.Function(F.unaryAST1(reduceConstantTerm, F.Slot1)), F.Apply(S.List, plusAST)))
-          .first();
+      IExpr terms = engine.evaluate(
+          F.Map(F.Function(F.unaryAST1(reduceConstantTerm, F.Slot1)), F.Apply(S.List, plusAST)));
+      if (!terms.isList()) {
+        // evaluating plusAST collapsed it to a non-list (for example the terms cancelled to 0),
+        // so there is no matrix of {constant, term} pairs to transpose
+        return p;
+      }
+      IExpr cTerms = S.Transpose.of(engine, terms).first();
       if (cTerms.isList()) {
         // GCD @@ cTerms
         IExpr c = S.Apply.of(engine, S.GCD, cTerms);
@@ -2520,7 +2536,11 @@ public class AlgebraUtil {
         }
         if (!arg1.exponent().isMinusOne()) {
           if (arg1.base().isPlusTimesPower()) {
-            if (arg1.exponent().isNegative()) {
+            // b^n == (1/b)^(-n) needs integer n, or a b that's known to be positive: for
+            // fractional n the principal branches differ by Exp(-2*Pi*I*n) whenever b is a
+            // negative real, so e.g. 1/Sqrt(-e/d) must not be rewritten to Sqrt(-d/e).
+            if (arg1.exponent().isNegative()
+                && (arg1.exponent().isInteger() || arg1.base().isPositiveResult())) {
               return F.Power(togetherExpr(arg1.base().inverse(), engine), arg1.exponent().negate());
             }
             return F.Power(togetherExpr(arg1.base(), engine), arg1.exponent());
@@ -2859,7 +2879,11 @@ public class AlgebraUtil {
         if (result.isNIL()) {
           result = ast.copy();
         }
-        if (ast.arg2().isNegative() && temp.isTimes()) {
+        // (p/q)^n == (q/p)^(-n) needs integer n, or a p/q that's known to be positive: for
+        // fractional n the principal branches differ by Exp(-2*Pi*I*n) whenever p/q is a
+        // negative real, so e.g. 1/Sqrt(-e/d) must not be rewritten to Sqrt(-d/e).
+        if (ast.arg2().isNegative() && temp.isTimes()
+            && (ast.arg2().isInteger() || temp.isPositiveResult())) {
           Optional<IExpr[]> fractionalParts = fractionalPartsRational(temp, false, true);
           if (fractionalParts.isPresent()) {
             IExpr[] parts = fractionalParts.get();

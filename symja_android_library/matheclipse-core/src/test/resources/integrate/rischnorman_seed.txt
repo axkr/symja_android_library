@@ -1,0 +1,10 @@
+# Seed corpus for the Risch-Norman ("parallel Risch" / pmint) heuristic stage.
+#
+# Format: `integrand ; var` (`; var` optional, defaults to x). `#` lines are comments.
+# Author-chosen elementary transcendental integrands  
+
+x*E^x ; x
+E^x*Cos(x) ; x
+E^x*Sin(x) ; x
+Log(x) ; x
+x*Log(x) ; x

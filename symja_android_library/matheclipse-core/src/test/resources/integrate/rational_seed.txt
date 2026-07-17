@@ -1,0 +1,19 @@
+# Seed corpus for the rational-function integration stage.
+#
+# Format: `integrand ; var`  (the `; var` part is optional and defaults to x).
+# Lines starting with `#` are comments.
+#
+# These integrands are author-chosen derivatives of known elementary primitives. 
+# Because each is the exact derivative of a closed form,
+# Integrate[integrand, x] must resolve and differentiate back to the integrand
+# (Simplify[Together[D[Integrate[f,x],x] - f]] == 0). 
+
+x^2 ; x
+3*x^2 - 1 ; x
+1/x^2 ; x
+1/x ; x
+1/(1 + x^2) ; x
+(2*x)/(1 + x^2) ; x
+1/(x - 1) ; x
+1/(x^2 - 1) ; x
+x/(1 + x^2)^2 ; x

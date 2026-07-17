@@ -100,10 +100,35 @@ public class DerivativeDivides {
         continue;
       }
       // back-substitute t -> u(x)
-      IExpr result = F.subst(inner, t, u);
-      return engine.evaluate(result);
+      IExpr result = engine.evaluate(F.subst(inner, t, u));
+      if (verifyAntiderivative(result, integrand, x, engine)) {
+        return result;
+      }
+      // spurious / wrong-branch candidate: try the next inner function
     }
     return F.NIL;
+  }
+
+  /**
+   * Diff-back self-verification: {@code true} iff {@code D(result, x)} equals the integrand. Guards
+   * against wrong-branch or spurious substitutions so the stage never short-circuits the Rubi rules
+   * with an incorrect antiderivative.
+   */
+  private static boolean verifyAntiderivative(IExpr result, IExpr integrand, IExpr x,
+      EvalEngine engine) {
+    if (result.isNIL() || !result.isFreeAST(S.Integrate) || !result.isSpecialsFree()) {
+      return false;
+    }
+    try {
+      IExpr diff = engine.evaluate(F.Together(F.Subtract(F.D(result, x), integrand)));
+      if (diff.isZero()) {
+        return true;
+      }
+      return engine.evaluate(F.Simplify(diff)).isZero();
+    } catch (RuntimeException rex) {
+      org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
+      return false;
+    }
   }
 
   /**

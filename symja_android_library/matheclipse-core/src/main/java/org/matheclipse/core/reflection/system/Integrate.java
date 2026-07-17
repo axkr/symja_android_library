@@ -38,12 +38,19 @@ import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.KryoUtil;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.PowerTimesFunction;
+import org.matheclipse.core.integrate.ChebyshevIntegration;
+import org.matheclipse.core.integrate.DerivativeDivides;
+import org.matheclipse.core.integrate.IntegralTable;
 import org.matheclipse.core.integrate.RadicalSubstitution;
 import org.matheclipse.core.integrate.RationalIntegration;
+import org.matheclipse.core.integrate.RischNorman;
+import org.matheclipse.core.integrate.TranscendentalRisch;
+import org.matheclipse.core.integrate.WeierstrassIntegration;
 import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -350,6 +357,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           engine.setAssumptions(assumptions);
         }
       }
+      final String forcedMethod = parseIntegrateMethod(option);
 
       boolean evaled = false;
       IExpr result;
@@ -458,6 +466,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // issue #91
           return F.NIL;
         }
+        if (forcedMethod != null) {
+          // Integrate[f, x, Method -> "..."] forces a single native stage, bypassing the Automatic
+          // cascade and the Rubi rules (used mainly by the per-method test suites). A stage that does
+          // not apply returns F.NIL, leaving the integral unevaluated.
+          return integrateBySingleMethod(forcedMethod, fx, x, engine);
+        }
         int[] dim = fx.isPiecewise();
         if (dim != null) {
           return integratePiecewise(dim, fx, ast);
@@ -488,29 +502,28 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           return tempExp;
         }
         if (Config.INTEGRATE_ALGORITHMS) {
-          /// Stage 1: native rational function integration
-          // (Horowitz-Ostrogradsky / Trager-style logarithmic part)
+          // Fast, mostly correct-by-construction algorithm cascade, tried before the Rubi rules. Each
+          // stage self-gates on a Config.INTEGRATE_ALGORITHM_* kill-switch (default on). A ported
+          // stage takes part in this Automatic cascade only when it is *also* wired in here; stages
+          // that are unit-tested but not yet trusted to change production output forms are left
+          // un-wired (still reachable via the Method -> option and their direct tests).
+
+          // Stage: native rational function integration
+          // (Hermite/Horowitz-Ostrogradsky reduction + Lazard-Rioboo-Trager logarithmic part)
           result = RationalIntegration.integrate(fx, x, engine);
           if (result.isPresent()) {
             return result;
           }
-
-          // Stage 2: fast CRC-style integral table lookup
-          // result = IntegralTable.integrate(fx, x, engine);
-          // if (result.isPresent()) {
-          // return result;
-          // }
-          // Stage 3: substitution t = (a+b*x)^(1/n) for radicals of a linear function
+          // Stage: substitution t = (a+b*x)^(1/n) for radicals of a linear function
           result = RadicalSubstitution.integrate(fx, x, engine);
           if (result.isPresent()) {
             return result;
           }
-          // Stage 4: derivative-divides (Geddes) heuristic
-          // result = DerivativeDivides.integrate(fx, x, engine);
-          // if (result.isPresent()) {
-          // return result;
-          // }
-
+          // Stage: Chebyshev binomial differentials x^m (a+b*x^n)^p (correct-by-construction).
+          result = ChebyshevIntegration.integrate(fx, x, engine);
+          if (result.isPresent()) {
+            return result;
+          }
         }
         result = integrateByRubiRules(fx, x, ast, engine);
         if (result.isPresent()) {
@@ -528,31 +541,37 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           });
         }
 
-        // if (Config.INTEGRATE_ALGORITHMS) {
-        // // Stage 3: substitution t = (a+b*x)^(1/n) for radicals of a linear function
-        // result = RadicalSubstitution.integrate(fx, x, engine);
-        // if (result.isPresent()) {
-        // return result;
-        // }
-        // // Stage 4: derivative-divides (Geddes) heuristic
-        // result = DerivativeDivides.integrate(fx, x, engine);
-        // if (result.isPresent()) {
-        // return result;
-        // }
-        // }
-
         result = callRestIntegrate(fx, x, engine);
         if (result.isPresent()) {
           return result;
         }
 
-        // if (Config.INTEGRATE_ALGORITHMS) {
-        // // Stage 5: heuristic Risch-Norman ("parallel Risch") as a last resort
-        // result = RischNorman.integrate(fx, x, engine);
-        // if (result.isPresent()) {
-        // return result;
-        // }
-        // }
+        // Post-Rubi heuristic fallbacks: broad stages that would otherwise intercept simple integrals
+        // Rubi renders in a more canonical form, so they run only for integrands Rubi leaves
+        // unevaluated. Each self-verifies (D(result) == integrand). The deterministic, form-safe
+        // stages (rational, radical, Chebyshev) run before Rubi (above).
+        if (Config.INTEGRATE_ALGORITHMS) {
+          // Weierstrass t=Tan(x/2) substitution for rational trigonometric integrands.
+          result = WeierstrassIntegration.integrate(fx, x, engine);
+          if (result.isPresent()) {
+            return result;
+          }
+          // Derivative-divides (Geddes) u-substitution heuristic.
+          result = DerivativeDivides.integrate(fx, x, engine);
+          if (result.isPresent()) {
+            return result;
+          }
+          // Risch-Norman ("parallel Risch" / pmint) heuristic for transcendental integrands.
+          result = RischNorman.integrate(fx, x, engine);
+          if (result.isPresent()) {
+            return result;
+          }
+          // Transcendental Risch (RDE / differential-tower based) recogniser.
+          result = TranscendentalRisch.integrate(fx, x, engine);
+          if (result.isPresent()) {
+            return result;
+          }
+        }
 
         // // RootSum fallback for 1/p(x), irreducible degree >= 5 ---
         // IExpr rootSumResult = integrateOneOverPoly(fx, x, engine);
@@ -564,6 +583,62 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     } finally {
       engine.setAssumptions(oldAssumptions);
       engine.setNumericMode(oldNumericMode);
+    }
+  }
+
+  /**
+   * Parse the {@code Method} option (option[1]) of {@code Integrate[f, x, Method -> "..."]} into a
+   * canonical native-stage name, or {@code null} for {@code Automatic} (i.e. the normal cascade).
+   */
+  private static String parseIntegrateMethod(final IExpr[] option) {
+    if (option.length < 2) {
+      return null;
+    }
+    final IExpr methodOption = option[1];
+    if (methodOption == null || methodOption == S.Automatic || methodOption.isList()) {
+      return null;
+    }
+    String name = methodOption.toString();
+    if (name.length() > 1 && name.charAt(0) == '"' && name.charAt(name.length() - 1) == '"') {
+      name = name.substring(1, name.length() - 1);
+    }
+    return name;
+  }
+
+  /**
+   * Force a single native integration stage selected by the {@code Method} option value. Used by the
+   * {@code Integrate[f, x, Method -> "..."]} form and the per-method test suites. Returns the stage's
+   * antiderivative, or {@link F#NIL} if the named stage does not apply or is unknown (the caller then
+   * leaves the integral unevaluated rather than falling through to the Rubi rules).
+   *
+   * @param method canonical method name (never {@code "Automatic"})
+   */
+  private static IExpr integrateBySingleMethod(String method, IAST fx, IExpr x, EvalEngine engine) {
+    switch (method) {
+      case "Rational":
+      case "BronsteinRational":
+        return RationalIntegration.integrate(fx, x, engine);
+      case "Table":
+      case "CRCTable":
+        return IntegralTable.integrate(fx, x, engine);
+      case "RadicalSubstitution":
+      case "LinearRadicals":
+        return RadicalSubstitution.integrate(fx, x, engine);
+      case "Chebyshev":
+      case "Chebychev":
+        return ChebyshevIntegration.integrate(fx, x, engine);
+      case "DerivativeDivides":
+        return DerivativeDivides.integrate(fx, x, engine);
+      case "RischNorman":
+        return RischNorman.integrate(fx, x, engine);
+      case "Weierstrass":
+      case "Jeffrey":
+        return WeierstrassIntegration.integrate(fx, x, engine);
+      case "RischTranscendental":
+        return TranscendentalRisch.integrate(fx, x, engine);
+      default:
+        // Unknown or not-yet-ported method name: leave the integral unevaluated.
+        return F.NIL;
     }
   }
 
@@ -1429,7 +1504,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   @Override
   public void setUp(final ISymbol newSymbol) {
     newSymbol.setAttributes(ISymbol.HOLDALL);
-    setOptions(newSymbol, S.Assumptions, S.$Assumptions);
+    setOptions(newSymbol, new IBuiltInSymbol[] {S.Assumptions, S.Method},
+        new IExpr[] {S.$Assumptions, S.Automatic});
     super.setUp(newSymbol);
 
     if (!Config.JAS_NO_THREADS) {

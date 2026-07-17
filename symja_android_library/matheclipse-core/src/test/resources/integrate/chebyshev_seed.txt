@@ -1,0 +1,17 @@
+# Seed corpus for the Chebyshev binomial-differential stage x^m*(a+b*x^n)^p.
+#
+# Format: `integrand ; var` (`; var` optional, defaults to x). `#` lines are comments.
+#
+# Author-chosen binomial differentials, each satisfying one
+# of Chebyshev's three integer conditions so the integral is elementary.
+
+# case B: (m+1)/n integer
+x^3*(1 + x^2)^(1/2) ; x
+x*(1 + x^2)^(1/3) ; x
+x^5*(1 + x^3)^(1/2) ; x
+x*(1 + x^2)^(3/2) ; x
+# case A: p integer
+Sqrt(x)*(1 + x)^2 ; x
+# case C: (m+1)/n + p integer -- TODO not yet supported (see ChebyshevIntegration), falls to Rubi:
+#   1/(x^4*(1 + x^2)^(1/2)) ; x
+#   1/(x^6*(1 + x^2)^(1/2)) ; x
