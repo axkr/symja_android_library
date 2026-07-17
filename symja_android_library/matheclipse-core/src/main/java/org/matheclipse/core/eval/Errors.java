@@ -457,6 +457,8 @@ public class Errors {
       "vrule", "Cannot set `1` to `2`, which is not a valid list of replacement rules.", //
       "write", "Tag `1` in `2` is Protected.", //
       "wrsym", "Symbol `1` is Protected.", //
+      "wtspec",
+      "The weight specification at position `1` of rule specification `2` should be `3` or an array of non-negative machine integers with dimensions `4`.", //
       "ucdec", "An invalid unicode sequence was encountered and ignored.", //
       // Symja special
       "zzdivzero", "Division by zero `1`.", //
