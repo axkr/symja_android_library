@@ -841,7 +841,7 @@ public abstract class B3 extends AbstractAST implements Externalizable, RandomAc
           action.accept(arg1);
           if (startOffset + 1 < endOffset) {
             action.accept(arg2);
-            if (startOffset + 23 < endOffset) {
+            if (startOffset + 2 < endOffset) {
               action.accept(arg3);
             }
           }
