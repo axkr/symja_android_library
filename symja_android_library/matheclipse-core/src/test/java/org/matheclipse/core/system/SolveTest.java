@@ -2702,6 +2702,12 @@ public class SolveTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSolveIssue1426() {
+    check("Solve({3*Sqrt(x)+2*Sqrt(y)==16,2 Sqrt(x)-3*Sqrt(y)==-11},{x,y})", //
+        "{{x->4,y->25}}");
+  }
+
+  @Test
   public void testRadicalSystem() {
     // variables occur only under radicals -> homogenize to a linear system, solve, back-substitute
     check("Solve({3*Sqrt(x)+2*Sqrt(y)==16, 2*Sqrt(x)-3*Sqrt(y)==-11},{x,y})", //
