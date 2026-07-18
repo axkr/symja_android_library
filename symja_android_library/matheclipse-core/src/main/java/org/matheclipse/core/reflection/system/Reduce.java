@@ -1042,12 +1042,21 @@ public class Reduce extends AbstractEvaluator {
       setInequalityDomainsRecursive(expr, domainMap);
 
       if (domain == S.Reals || domain == S.Complexes) {
+        // Inequalities are inherently real-valued, so the following two reductions are applied
+        // independent of the requested domain.
+
         // try to decide a single univariate (polynomial) inequality globally with the help of the
-        // symbolic optimizers Minimize/Maximize (e.g. x^2 + 1 > 0 is always True). Inequalities are
-        // inherently real-valued, so this is applied independent of the requested domain.
+        // symbolic optimizers Minimize/Maximize (e.g. x^2 + 1 > 0 is always True).
         IExpr decided = decideInequalityByExtrema(arg1, variable, engine);
         if (decided.isPresent()) {
           return decided;
+        }
+
+        // solve a single univariate polynomial inequality by a sign analysis of the real roots,
+        // e.g. 4*x^3-4*x>0 reduces to the interval set (-1<x<0)||x>1
+        IExpr solved = reducePolynomialInequalityReals(arg1, variable, engine);
+        if (solved.isPresent()) {
+          return solved;
         }
       }
 
@@ -1739,6 +1748,193 @@ public class Reduce extends AbstractEvaluator {
       engine.decOptimizeExpressionDepth();
     }
     return F.NIL;
+  }
+
+  /**
+   * Reduce a single univariate polynomial inequality <code>lhs OP rhs</code> (with
+   * <code>OP</code> one of {@link S#Less}, {@link S#LessEqual}, {@link S#Greater},
+   * {@link S#GreaterEqual}) over the {@link S#Reals} by a sign analysis of the polynomial
+   * <code>f = lhs - rhs</code>. The sign of a real polynomial can only change at its real roots, so
+   * the real line is split at the distinct real roots and the sign of <code>f</code> is sampled in
+   * each open region. The satisfied regions (and, for the non-strict relations, the roots
+   * themselves) are merged into a maximal {@link S#IntervalData} set and returned as the
+   * corresponding {@link S#Or} of comparators. For example <code>4*x^3-4*x&gt;0</code> reduces to
+   * <code>(-1&lt;x&lt;0)||x&gt;1</code>.
+   *
+   * <p>
+   * Inequalities are inherently real-valued, so this reduction is applied independent of the
+   * requested domain ({@link S#Reals} as well as the default {@link S#Complexes}).
+   *
+   * @param arg1 the first argument of {@code Reduce}
+   * @param variable the (single) variable
+   * @param engine the evaluation engine
+   * @return the reduced solution set, {@link S#False} if it is empty,
+   *         {@code Element(variable, Reals)} if it is the whole real line, or {@link F#NIL} if the
+   *         real roots of <code>f</code> could not be determined numerically
+   */
+  private static IExpr reducePolynomialInequalityReals(IExpr arg1, IExpr variable,
+      EvalEngine engine) {
+    int headID = arg1.headID();
+    if (headID != ID.Less && headID != ID.LessEqual && headID != ID.Greater
+        && headID != ID.GreaterEqual) {
+      return F.NIL;
+    }
+    IAST comparator = (IAST) arg1;
+    if (comparator.argSize() != 2) {
+      return F.NIL;
+    }
+    // f(root) == 0 satisfies only the non-strict relations `<=` / `>=`
+    final boolean rootInSolution = headID == ID.LessEqual || headID == ID.GreaterEqual;
+    final boolean greaterDirection = headID == ID.Greater || headID == ID.GreaterEqual;
+
+    // rewrite `lhs OP rhs` as `f OP 0` with f = lhs - rhs
+    IExpr f = engine.evaluate(F.ExpandAll(F.Subtract(comparator.arg1(), comparator.arg2())));
+    if (f.isFree(variable) || !f.isPolynomial(variable)) {
+      return F.NIL;
+    }
+
+    // the sign of f can only change at its distinct real roots
+    IExpr solved = S.Solve.of(engine, F.Equal(f, F.C0), variable, S.Reals);
+    if (!solved.isList() || !solved.isFree(S.Solve)) {
+      return F.NIL;
+    }
+    IAST solutions = (IAST) solved;
+    List<IExpr> rootExacts = new ArrayList<IExpr>(solutions.argSize());
+    List<Double> rootValues = new ArrayList<Double>(solutions.argSize());
+    for (int i = 1; i < solutions.size(); i++) {
+      IExpr solution = solutions.get(i);
+      if (!solution.isList1() || !solution.first().isRule()
+          || !solution.first().first().equals(variable)) {
+        return F.NIL;
+      }
+      IExpr rootValue = engine.evaluate(solution.first().second());
+      double d;
+      try {
+        d = rootValue.evalDouble();
+      } catch (ArgumentTypeException aex) {
+        return F.NIL;
+      }
+      if (Double.isNaN(d) || Double.isInfinite(d)) {
+        return F.NIL;
+      }
+      insertSortedDistinct(rootExacts, rootValues, rootValue, d);
+    }
+
+    final int n = rootExacts.size();
+    // sign of f on each of the n+1 open regions between/around the roots
+    boolean[] regionInSolution = new boolean[n + 1];
+    for (int k = 0; k <= n; k++) {
+      final double sample;
+      if (n == 0) {
+        sample = 0.0;
+      } else if (k == 0) {
+        sample = rootValues.get(0) - 1.0;
+      } else if (k == n) {
+        sample = rootValues.get(n - 1) + 1.0;
+      } else {
+        sample = (rootValues.get(k - 1) + rootValues.get(k)) / 2.0;
+      }
+      int sign = polynomialSignAt(f, variable, sample, engine);
+      if (sign == 0) {
+        return F.NIL;
+      }
+      regionInSolution[k] = greaterDirection ? sign > 0 : sign < 0;
+    }
+
+    // merge the satisfied regions (and included roots) into maximal intervals. The atoms are
+    // traversed left to right: even index t == region t/2, odd index t == root (t-1)/2.
+    IASTAppendable intervalData = F.IntervalDataAlloc(n + 2);
+    boolean open = false;
+    IExpr min = F.NIL;
+    IExpr minType = S.Less;
+    IExpr max = F.NIL;
+    IExpr maxType = S.Less;
+    for (int t = 0; t <= 2 * n; t++) {
+      final boolean isRegion = (t & 1) == 0;
+      final int index = t / 2;
+      final boolean inSolution = isRegion ? regionInSolution[index] : rootInSolution;
+      final IExpr leftValue;
+      final IExpr rightValue;
+      final IBuiltInSymbol edgeType;
+      if (isRegion) {
+        leftValue = index == 0 ? F.CNInfinity : rootExacts.get(index - 1);
+        rightValue = index == n ? F.CInfinity : rootExacts.get(index);
+        edgeType = S.Less;
+      } else {
+        leftValue = rootExacts.get(index);
+        rightValue = leftValue;
+        edgeType = S.LessEqual;
+      }
+      if (inSolution) {
+        if (!open) {
+          open = true;
+          min = leftValue;
+          minType = edgeType;
+        }
+        max = rightValue;
+        maxType = edgeType;
+      } else if (open) {
+        intervalData.append(F.List(min, minType, maxType, max));
+        open = false;
+      }
+    }
+    if (open) {
+      intervalData.append(F.List(min, minType, maxType, max));
+    }
+
+    if (intervalData.isAST0()) {
+      return S.False;
+    }
+    if (intervalData.isAST1()) {
+      IAST only = (IAST) intervalData.arg1();
+      if (only.arg1().isNegativeInfinity() && only.arg4().isInfinity()) {
+        return F.Element(variable, S.Reals);
+      }
+    }
+    return engine.evaluate(IntervalDataSym.intervalToOr(intervalData, variable));
+  }
+
+  /**
+   * Insert <code>value</code>/<code>numericValue</code> into the parallel lists
+   * <code>exacts</code>/<code>values</code> keeping them sorted ascending by numeric value and
+   * skipping numeric duplicates.
+   */
+  private static void insertSortedDistinct(List<IExpr> exacts, List<Double> values, IExpr value,
+      double numericValue) {
+    int pos = 0;
+    while (pos < values.size() && values.get(pos).doubleValue() < numericValue) {
+      pos++;
+    }
+    if (pos < values.size() && values.get(pos).doubleValue() == numericValue) {
+      // duplicate real root - keep the first representation
+      return;
+    }
+    exacts.add(pos, value);
+    values.add(pos, Double.valueOf(numericValue));
+  }
+
+  /**
+   * Numerically evaluate the sign of the polynomial <code>f</code> at <code>variable == sample</code>
+   * .
+   *
+   * @return <code>1</code> / <code>-1</code> for a positive / negative value, <code>0</code> if the
+   *         value is zero or cannot be evaluated to a real number
+   */
+  private static int polynomialSignAt(IExpr f, IExpr variable, double sample, EvalEngine engine) {
+    IExpr value = engine.evaluate(F.subst(f, variable, F.num(sample)));
+    double d;
+    try {
+      d = value.evalDouble();
+    } catch (ArgumentTypeException aex) {
+      return 0;
+    }
+    if (d > 0.0) {
+      return 1;
+    }
+    if (d < 0.0) {
+      return -1;
+    }
+    return 0;
   }
 
   /**

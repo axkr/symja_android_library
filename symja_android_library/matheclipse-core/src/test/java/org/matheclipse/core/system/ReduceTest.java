@@ -262,10 +262,41 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "x>1&&x<2");
     check("Reduce({0 < x < 2, 1 < x < 4}, x)", //
         "x>1&&x<2");
-    // TODO
+    // cubic inequality reduces over the reals even in the default domain
     check("Reduce(x^3-2*x+1<0,x)", //
-        "-2*x+x^3<-1");
+        "x<1/2*(-1-Sqrt(5))||(x>1/2*(-1+Sqrt(5))&&x<1)");
   }
 
+  @Test
+  public void testReduceIssue1427() {
+    // Implement Reduce for cubic polynomial inequality.
+    // `(x>-1&&x<0)||x>1` is Symja's compact form of `-1 < x < 0 || x > 1`
+    check("Reduce(4*x^3-4*x>0,x,Reals)", //
+        "(x>-1&&x<0)||x>1");
+    // inequalities are real-valued, so the same reduction happens in the default domain
+    check("Reduce(4*x^3-4*x>0,x)", //
+        "(x>-1&&x<0)||x>1");
+  }
 
+  @Test
+  public void testReducePolynomialInequalityReals() {
+    // non-strict relation includes the roots
+    check("Reduce(4*x^3-4*x>=0,x,Reals)", //
+        "(x>=-1&&x<=0)||x>=1");
+    // opposite direction
+    check("Reduce(4*x^3-4*x<0,x,Reals)", //
+        "x<-1||(x>0&&x<1)");
+    // even multiplicity root: sign doesn't change, strict `>` excludes the touching point x==1
+    check("Reduce((x-1)^2*(x+2)>0,x,Reals)", //
+        "(x>-2&&x<1)||x>1");
+    // ... and the non-strict `>=` collapses to a single half-line
+    check("Reduce((x-1)^2*(x+2)>=0,x,Reals)", //
+        "x>=-2");
+    // irrational (exact) roots
+    check("Reduce(x^2-2>0,x,Reals)", //
+        "x<-Sqrt(2)||x>Sqrt(2)");
+    // higher degree (quintic) with five real roots
+    check("Reduce(x^5-5*x^3+4*x>0,x,Reals)", //
+        "(x>-2&&x<-1)||(x>0&&x<1)||x>2");
+  }
 }
