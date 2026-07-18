@@ -3070,7 +3070,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Transpose({{-1}},{2})", //
         "Transpose({{-1}},{2})");
     check("Transpose({{0,1,2},{0.7121489163040792,-0.4571283540266432 }})", //
-        "{{0,1,2},{0.712149,-0.457128}}ᵀ");
+        "{{0,1,2},{0.712149,-0.457128}}\uF3C7");
 
 
     check("Transpose({{},{},{}})", //
