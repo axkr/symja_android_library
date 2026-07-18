@@ -3,6 +3,8 @@ package org.matheclipse.core.system;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
 
@@ -90,5 +92,20 @@ public class ExprParserTestCase extends ExprEvaluatorTestCase {
     IExpr result = engine.evaluate(expr);
     assertEquals("∀a", //
         result.toString());
+  }
+
+  @Test
+  public void testTransposeToString() {
+    // Transpose(List(List(1, 2), List(3, 4), List(5, 6)))
+    IExpr parse = new ExprEvaluator().parse("Transpose(List(List(1, 2), List(3, 4), List(5, 6)))");
+    String s = parse.toString();
+
+    OutputFormFactory outputFormFactory = OutputFormFactory.get(true, false, 5, 5);
+    String text = outputFormFactory.toString(parse);
+    assertEquals(text, "{{1,2},{3,4},{5,6}}\uF3C7");
+
+    // now parse back
+    IExpr parseBack = new ExprEvaluator().parse(text);
+    assertEquals(parseBack.fullFormString(), "Transpose(List(List(1, 2), List(3, 4), List(5, 6)))");
   }
 }

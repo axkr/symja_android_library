@@ -324,7 +324,7 @@ public class ASTNodeFactory implements INodeParserFactory {
           "∍", // "SuchThat", 180, InfixExprOperator.RIGHT_ASSOCIATIVE),
           "∑", // "Sum", 325), //
           "∴", // "Therefore", 50, InfixExprOperator.RIGHT_ASSOCIATIVE),
-          "ᵀ", // "Transpose", 670),
+          "\uF3C7", // "Transpose", 670),
           "⊥", // UpTee
 
           "~" // Tilde
@@ -478,7 +478,7 @@ public class ASTNodeFactory implements INodeParserFactory {
           new InfixOperator("∍", "SuchThat", 180, InfixOperator.RIGHT_ASSOCIATIVE), //
           new PrefixOperator("∑", "Sum", 325), //
           new InfixOperator("∴", "Therefore", 50, InfixOperator.RIGHT_ASSOCIATIVE), //
-          new PostfixOperator("ᵀ", "Transpose", 670), //
+          new PostfixOperator("\uF3C7", "Transpose", 670), //
           new InfixOperator("⊥", "UpTee", 197, InfixOperator.LEFT_ASSOCIATIVE),
 
           new TildeOperator("~", "§TILDE§", Precedence.TILDE_OPERATOR, InfixOperator.NONE),

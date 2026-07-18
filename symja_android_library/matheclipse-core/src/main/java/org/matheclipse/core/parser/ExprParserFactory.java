@@ -363,7 +363,7 @@ public class ExprParserFactory implements IParserFactory {
       "∍", // "SuchThat", 180, InfixExprOperator.RIGHT_ASSOCIATIVE),
       "∑", // "Sum", 325), //
       "∴", // "Therefore", 50, InfixExprOperator.RIGHT_ASSOCIATIVE),
-      "ᵀ", // "Transpose", 670),
+      "\uF3C7", // "Transpose", 670),
       "⊥", // UpTee
 
       "~"};
@@ -604,7 +604,7 @@ public class ExprParserFactory implements IParserFactory {
           new InfixExprOperator("∍", "SuchThat", 180, InfixExprOperator.RIGHT_ASSOCIATIVE),
           new PrefixExprOperator("∑", "Sum", 325), //
           new InfixExprOperator("∴", "Therefore", 50, InfixExprOperator.RIGHT_ASSOCIATIVE),
-          new PostfixExprOperator("ᵀ", "Transpose", 670),
+          new PostfixExprOperator("\uF3C7", "Transpose", 670),
           new InfixExprOperator("⊥", "UpTee", 197, InfixExprOperator.LEFT_ASSOCIATIVE),
 
 
