@@ -701,6 +701,14 @@ public class LimitTest extends ExprEvaluatorTestCase {
         "Indeterminate");
   }
 
+
+  @Test
+  public void testLimitIssue1420() {
+    check(
+        "Limit(1/4*x^2*(Pi-2*ArcSin(x))+1/4*(-1+x^2)*(x/Sqrt(1-x^2)-ArcTan(x/Sqrt(1-x^2))+(-x^2*ArcTan(x/Sqrt(1-x^2)))/(1-x^2)), x -> 1)", //
+        "Indeterminate");
+  }
+
   /** The JUnit setup method */
   @Override
   public void setUp() {

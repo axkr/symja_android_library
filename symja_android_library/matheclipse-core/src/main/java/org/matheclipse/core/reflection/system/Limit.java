@@ -1227,6 +1227,12 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
 
   private final static boolean DEBUG = false;
 
+  /**
+   * Minimum leaf count of an expression before {@link #evalLimit} attempts an algebraic
+   * {@code Simplify} to escape a combinatorial blow-up of the limit heuristics / Gruntz algorithm
+   * (see issue #1420). Kept high enough that ordinary small limit expressions are unaffected.
+   */
+  private final static int LIMIT_SIMPLIFY_LEAFCOUNT = 30;
 
   /**
    * Evaluate the limit for the given limit data.
@@ -1332,6 +1338,19 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       IExpr temp = limitInfinityZero((IAST) evaledExpr, data, (IAST) limitValue);
       if (temp.isPresent()) {
         return temp;
+      }
+    }
+
+    // Large "0 * Infinity" style forms (e.g. issue #1420) can drive the naive limit heuristics
+    // and the Gruntz algorithm into a combinatorial explosion, while an algebraic Simplify
+    // reduces them to a form whose limit resolves directly. Once the cheap fast paths above
+    // have declined, retry on a simplified form when it is strictly smaller; the strict
+    // leaf-count decrease guarantees this recursion terminates.
+    if (evaledExpr.isAST() && evaledExpr.leafCount() > LIMIT_SIMPLIFY_LEAFCOUNT) {
+      IExpr simplified = engine.evalQuiet(F.Simplify(evaledExpr));
+      if (simplified.isPresent() && !simplified.equals(evaledExpr)
+          && simplified.leafCount() < evaledExpr.leafCount()) {
+        return evalLimit(simplified, data, engine);
       }
     }
 
@@ -2424,7 +2443,11 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       if (base.isTimes()) {
         IAST isFreeResult =
             base.partitionTimes(x -> x.isFree(data.variable(), true), F.C1, F.C1, S.List);
-        if (!isFreeResult.arg2().isOne()) {
+        // Only factor out a constant part when there genuinely is one (arg1 != 1) and a
+        // variable-dependent part remains (arg2 != 1). If the base is entirely
+        // variable-dependent, arg2 equals the whole base and recursing on
+        // Power(arg2, exponent) would loop forever (issue #1420).
+        if (!isFreeResult.arg1().isOne() && !isFreeResult.arg2().isOne()) {
           return F.Times(F.Power(isFreeResult.arg1(), exponent),
               data.limit(F.Power(isFreeResult.arg2(), exponent)));
         }
