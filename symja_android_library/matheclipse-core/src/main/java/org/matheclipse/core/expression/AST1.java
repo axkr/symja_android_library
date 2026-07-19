@@ -8,6 +8,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -40,6 +42,13 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class AST1 extends AST0 {
 
   private static final int SIZE = 2;
+
+  /**
+   * Depth of a nested chain of single-argument ASTs from which on {@link #equals(Object)} starts to
+   * consult the {@link EvalEngine#getRecursionLimit()}. Shallower comparisons (i.e. the vast
+   * majority) never touch the {@link EvalEngine}.
+   */
+  private static final int EQUALS_RECURSION_GUARD = 128;
 
   /** The first argument of this function. */
   protected IExpr arg1;
@@ -130,21 +139,61 @@ public class AST1 extends AST0 {
 
   @Override
   public boolean equals(final Object obj) {
-    if (obj == this) {
-      return true;
-    }
-    if (obj instanceof AbstractAST) {
-      final IAST list = (IAST) obj;
-      if (arg0 != list.head() && arg0 instanceof ISymbol) {
+    // Compare chains of nested single-argument ASTs (AST1) iteratively rather than
+    // recursively. A deeply nested expression such as f(f(f(...(x)...))) would otherwise
+    // consume one Java stack frame per nesting level and throw a raw StackOverflowError,
+    // bypassing the engine's recursion limit safeguard (see issue #1421). The loop honors the
+    // engine's recursion limit and raises RecursionLimitExceeded for an overly deep chain.
+    //
+    // The iteration must only step into a *genuine* AST1: AST2/AST3 extend AST1, so an
+    // "instanceof AST1" test would wrongly treat a two- or three-argument AST as
+    // single-argument. Anything whose runtime class is not exactly AST1 is therefore compared
+    // through its own equals() method instead (which is what the previous recursive
+    // implementation did via virtual dispatch of arg1.equals(...)).
+    AST1 lhs = this;
+    Object rhs = obj;
+    int depth = 0;
+    // Only consult the engine's recursion limit once a chain turns out to be suspiciously
+    // deep; until then the guard value bounds the loop without any EvalEngine lookup.
+    int recursionLimit = EQUALS_RECURSION_GUARD;
+    boolean recursionLimitResolved = false;
+    while (true) {
+      if (rhs == lhs) {
+        return true;
+      }
+      if (!(rhs instanceof AbstractAST)) {
+        return false;
+      }
+      final IAST list = (IAST) rhs;
+      if (lhs.arg0 != list.head() && lhs.arg0 instanceof ISymbol) {
         // compared with ISymbol object identity
         return false;
       }
       if (list.size() != SIZE) {
         return false;
       }
-      return arg1.equals(list.arg1()) && (arg0 instanceof ISymbol || arg0.equals(list.head()));
+      if (lhs.arg0 != list.head() && !(lhs.arg0 instanceof ISymbol)
+          && !lhs.arg0.equals(list.head())) {
+        return false;
+      }
+      final IExpr lhsArg1 = lhs.arg1;
+      if (lhsArg1.getClass() != AST1.class) {
+        return lhsArg1.equals(list.arg1());
+      }
+      if (++depth > recursionLimit) {
+        if (!recursionLimitResolved) {
+          final int limit = EvalEngine.get().getRecursionLimit();
+          recursionLimit = limit > 0 ? limit : Integer.MAX_VALUE;
+          recursionLimitResolved = true;
+        }
+        if (depth > recursionLimit) {
+          RecursionLimitExceeded.throwIt(recursionLimit, this);
+        }
+      }
+      // step down into the nested single-argument AST without recursing
+      lhs = (AST1) lhsArg1;
+      rhs = list.arg1();
     }
-    return false;
   }
 
   /** {@inheritDoc} */

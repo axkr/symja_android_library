@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -11,6 +12,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
@@ -8740,7 +8742,31 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testFixedPointListIssue1421() {
+    // FixedPointList(-1+I, {x,-2,3}) never reaches a fixed point; each step builds a deeper
+    // nested expression (-1+I)[(-1+I)[...]]. Comparing two consecutive results walks that whole
+    // chain in AST1.equals(). That comparison must not overflow the Java stack, but honor the
+    // engine's recursion limit and raise RecursionLimitExceeded instead (issue #1421).
+    int oldSize = Config.MAX_AST_SIZE;
+    EvalEngine engine = EvalEngine.get();
+    final int oldIterationLimit = engine.getIterationLimit();
+    try {
+      // Config.MAX_AST_SIZE = 10_000;
+      IExpr expr = engine.parse("$IterationLimit=1000;FixedPointList(-1+I,{x,-2,3})");
+      assertThrows(RecursionLimitExceeded.class, () -> engine.evaluate(expr));
+
+      // at the top level the RecursionLimitExceeded is caught and the input is returned held
+      check("$IterationLimit=100000;FixedPointList(-1+I,{x,-2,3})", //
+          "Hold($IterationLimit=100000;FixedPointList(-1+I,{x,-2,3}))");
+    } finally {
+      Config.MAX_AST_SIZE = oldSize;
+      engine.setIterationLimit(oldIterationLimit);
+    }
+  }
+
+  @Test
   public void testFixedPointList() {
+
     check("FixedPointList((# + 2/# )/2 &, 1`20, SameTest -> (Abs(#1 - #2) < 1*^-10 &))", //
         "{1,1.5,1.4166666666666666666,1.4142156862745098039,1.4142135623746899106,1.4142135623730950488}");
 
