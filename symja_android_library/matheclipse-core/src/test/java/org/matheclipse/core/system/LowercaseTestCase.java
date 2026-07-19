@@ -5517,8 +5517,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("dq = DifferenceQuotient(f(x), {x, h})", //
         "(-x*Sin(x)+(h+x)*Sin(h+x))/h");
 
-    // ported from the Woxi project (mod difference_quotient). The bare {x} form (no step)
-    // stays unevaluated; only the {x, h} step form evaluates.
+    // The bare {x} form (no step) stays unevaluated; only the {x, h} step form evaluates.
     check("DifferenceQuotient(x, x)", //
         "DifferenceQuotient(x,x)");
     check("DifferenceQuotient(x^2, x)", //
@@ -5669,8 +5668,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("DiscreteRatio(x^n * y^m, n, m)", //
         "1");
 
-    // ported from the Woxi project (mod discrete_ratio). The ratio is reduced to a single
-    // grouped fraction; (1+2*n+n^2)/n^2 == Wolfram's (1+n)^2/n^2.
+    // The ratio is reduced to a single grouped fraction; (1+2*n+n^2)/n^2 == Wolfram's (1+n)^2/n^2.
     check("DiscreteRatio(n^2, n)", //
         "(1+2*n+n^2)/n^2");
     // common polynomial factors cancel
@@ -5732,9 +5730,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("DiscreteShift(f(x), {x,2,h})", //
         "f(2*h+x)");
 
-    // ported from the Woxi project (mod discrete_shift). A top-level Plus result is expanded; a
-    // single power/product is kept; an integer shift combines rational summands over a common
-    // denominator; a symbolic shift stays unfolded.
+    // A top-level Plus result is expanded; a single power/product is kept; an integer shift
+    // combines rational summands over a common denominator; a symbolic shift stays unfolded.
     check("DiscreteShift(n^2 + 3*n + 1, n)", //
         "5+5*n+n^2");
     check("DiscreteShift(a*n^2 + b*n, n)", //
