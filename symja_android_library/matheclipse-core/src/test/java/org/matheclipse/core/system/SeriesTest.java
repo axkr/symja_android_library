@@ -655,6 +655,39 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSeriesCoefficientBinomialWoxi() {
+    // Finite binomial powers (a+b*x)^p with a symbolic index n now return a closed Binomial
+    // Piecewise instead of an opaque DifferenceRoot (matches Mathematica / WOXI).
+    check("SeriesCoefficient((1+x)^5, {x, 0, n})", //
+        "Piecewise({{Binomial(5,n),0<=n<=5}},0)");
+    check("SeriesCoefficient((1+2*x)^3, {x, 0, n})", //
+        "Piecewise({{2^n*Binomial(3,n),0<=n<=3}},0)");
+    check("SeriesCoefficient((x+2)^3, {x, 0, n})", //
+        "Piecewise({{2^(3-n)*Binomial(3,n),0<=n<=3}},0)");
+
+    // Fractional exponent: infinite series bounded by n>=0 (previously returned unevaluated).
+    check("SeriesCoefficient(Sqrt(1+x), {x, 0, n})", //
+        "Piecewise({{Binomial(1/2,n),n>=0}},0)");
+
+    // Symbolic exponent p (not known to be a non-negative integer) => n>=0.
+    check("SeriesCoefficient((1+x)^p, {x, 0, n})", //
+        "Piecewise({{Binomial(p,n),n>=0}},0)");
+    // Symbolic constant term in the base.
+    check("SeriesCoefficient((c+x)^3, {x, 0, n})", //
+        "Piecewise({{c^(3-n)*Binomial(3,n),0<=n<=3}},0)");
+
+    // A concrete index still returns the plain numeric coefficient (no Piecewise).
+    check("SeriesCoefficient((1+x)^5, {x, 0, 3})", //
+        "10");
+    check("SeriesCoefficient((1+x)^5, {x, 0, 7})", //
+        "0");
+
+    // Negative-integer exponents stay on the rational-function path (cleaner (-1)^n form).
+    check("SeriesCoefficient((1+x)^(-1), {x, 0, n})", //
+        "Piecewise({{(-1)^n,n>=0}},0)");
+  }
+
+  @Test
   public void testSeriesCoefficientDLMF() {
     check("SeriesCoefficient(BesselK(4,x), {x, 0, 3})", //
         "0");

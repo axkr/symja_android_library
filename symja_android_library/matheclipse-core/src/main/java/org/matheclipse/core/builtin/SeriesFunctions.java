@@ -1000,6 +1000,13 @@ public class SeriesFunctions {
         return rationalCoeff;
       }
 
+      // Binomial Power Fast-Path: (a + b*x)^p with a symbolic index yields a closed Binomial form
+      // (avoids the opaque DifferenceRoot the holonomic engine would otherwise emit).
+      IExpr binomialCoeff = binomialPowerSeriesCoefficient(function, x, x0, n, engine);
+      if (binomialCoeff.isPresent()) {
+        return binomialCoeff;
+      }
+
       IExpr temp = polynomialSeriesCoefficient(function, x, x0, n, ast, engine);
       if (temp.isPresent()) {
         return temp;
@@ -1177,6 +1184,52 @@ public class SeriesFunctions {
       }
 
       return taylorCoefficient(function, x, x0, n, engine);
+    }
+
+    /**
+     * Series coefficient of a binomial power <code>(a + b*x)^p</code> with a symbolic index
+     * <code>n</code>, expanded around <code>x==0</code>.
+     *
+     * <p>
+     * The coefficient of <code>x^n</code> in <code>(a + b*x)^p</code> is
+     * <code>b^n * a^(p-n) * Binomial(p, n)</code>. When <code>p</code> is a non-negative integer the
+     * expansion is finite, so the index is bounded by <code>0 &lt;= n &lt;= p</code>; otherwise the
+     * series runs for all <code>n &gt;= 0</code>. Returning this closed Binomial form is a
+     * readability improvement over the equivalent (but opaque) <code>DifferenceRoot</code> the
+     * holonomic engine would otherwise emit for a finite binomial power.
+     *
+     * @return a {@link S#Piecewise} expression, or {@link F#NIL} if <code>function</code> is not a
+     *         binomial power with a symbolic index expanded around zero
+     */
+    private static IExpr binomialPowerSeriesCoefficient(IExpr function, IExpr x, IExpr x0, IExpr n,
+        EvalEngine engine) {
+      if (n.isNumber() || !x0.isZero() || !function.isPower()) {
+        return F.NIL;
+      }
+      IExpr p = function.exponent();
+      if (!p.isFree(x)) {
+        return F.NIL;
+      }
+      // Negative integer exponents are rational functions handled by rationalSeriesCoefficient.
+      if (p.isInteger() && p.isNegative()) {
+        return F.NIL;
+      }
+      IExpr[] linear = function.base().linear(x);
+      if (linear == null) {
+        return F.NIL;
+      }
+      IExpr a = linear[0];
+      IExpr b = linear[1];
+      // a==0 would leave the messy 0^(p-n) factor; b==0 means the base is free of x.
+      if (a.isZero() || b.isZero()) {
+        return F.NIL;
+      }
+      IExpr coeff = engine
+          .evaluate(F.Times(F.Power(b, n), F.Power(a, F.Subtract(p, n)), F.Binomial(p, n)));
+      IExpr condition = p.isInteger() //
+          ? F.LessEqual(F.C0, n, p) //
+          : F.GreaterEqual(n, F.C0);
+      return F.Piecewise(F.list(F.list(coeff, condition)), F.C0);
     }
 
     /**
