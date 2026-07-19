@@ -306,7 +306,9 @@ public class ReduceVariableIntervalSet {
       }
       result = extractVariableRecursive(expr, intervalData, predicate, variable);
 
-      return engine.evaluate(result);
+      // extractVariableRecursive() returns F.NIL when the variable could not be isolated;
+      // guard against it here, because engine.evaluate(F.NIL) throws ArgumentTypeException.
+      return result.isNIL() ? F.NIL : engine.evaluate(result);
     }
     return result;
   }

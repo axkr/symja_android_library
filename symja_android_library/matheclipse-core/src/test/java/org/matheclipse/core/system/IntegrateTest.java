@@ -38,7 +38,7 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "Log(1+x/Sqrt(4+3*x^2))/4-Log(1-x/Sqrt(4+3*x^2))/4");
     // same as ArcCosh(Sqrt(3/2))
     check("Integrate(1/((2 + x^2)*Sqrt(4 + 3*x^2)), {x, -Infinity, Infinity})", //
-        "-Log(1-1/Sqrt(3))/2+Log(1+1/Sqrt(3))/2");
+        "1/4*(-2*Log(1-1/Sqrt(3))+2*Log(1+1/Sqrt(3)))");
     check("Integrate((1 + x^3)*x^(1/3), {x, -1, 1})", //
         "51/52+27/52*(-1)^(1/3)");
     if (Config.PROFILE_MODE) {

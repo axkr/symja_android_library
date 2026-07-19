@@ -471,26 +471,42 @@ public class IntervalDataSym {
             continue;
           }
         }
-        if (S.LessEqual.ofQ(engine, min1, min2)) {
-          if (S.Equal.ofQ(engine, min1, min2)) {
-            if (left2 == S.Less) {
+        // Narrow to the more restrictive lower bound max(min1, min2). -Infinity is the smallest
+        // possible bound and must be handled explicitly: for a symbolic min2 the comparator
+        // LessEqual(-Infinity, min2) does not evaluate to True, so the numeric branch below would
+        // wrongly keep -Infinity and return a too-wide interval.
+        if (min1.isNegativeInfinity()) {
+          min1 = min2;
+          left1 = left2;
+        } else if (!min2.isNegativeInfinity()) {
+          if (S.LessEqual.ofQ(engine, min1, min2)) {
+            if (S.Equal.ofQ(engine, min1, min2)) {
+              if (left2 == S.Less) {
+                min1 = min2;
+                left1 = left2;
+              }
+            } else {
               min1 = min2;
               left1 = left2;
             }
-          } else {
-            min1 = min2;
-            left1 = left2;
           }
         }
-        if (S.GreaterEqual.ofQ(engine, max1, max2)) {
-          if (S.Equal.ofQ(engine, max1, max2)) {
-            if (right2 == S.Less) {
+        // Narrow to the more restrictive upper bound min(max1, max2). +Infinity is the largest
+        // possible bound and is handled explicitly for the same reason.
+        if (max1.isInfinity()) {
+          max1 = max2;
+          right1 = right2;
+        } else if (!max2.isInfinity()) {
+          if (S.GreaterEqual.ofQ(engine, max1, max2)) {
+            if (S.Equal.ofQ(engine, max1, max2)) {
+              if (right2 == S.Less) {
+                max1 = max2;
+                right1 = right2;
+              }
+            } else {
               max1 = max2;
               right1 = right2;
             }
-          } else {
-            max1 = max2;
-            right1 = right2;
           }
         }
         result.append(F.List(min1, left1, right1, max1));
