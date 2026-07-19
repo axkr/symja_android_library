@@ -807,6 +807,11 @@ public class DTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testDRootSum() {
+    // #1^7/(8*#1^7) cancels to 1/8, so the summand is Log(x-#1)/8; its derivative telescopes
+    // over the roots of 1+#1^8 to the integrand x^7/(1+x^8).
+    check("D(RootSum(1+#1^8&,(Log(x-#1)*#1^7)/(8*#1^7)&),x)", //
+        "x^7/(1+x^8)");
+
     // A definite integral whose antiderivative is a RootSum(...Log(x-#1)...) is evaluated at the
     // bounds by substituting x->1 and x->3 into the summand (Limit of a RootSum), matching
     // -RootSum(...,Log(1-#1)/...&) + RootSum(...,Log(3-#1)/...&).
@@ -819,5 +824,6 @@ public class DTest extends ExprEvaluatorTestCase {
     check(
         "D(RootSum(#1^6-5*#1^4+5*#1^2+4&,((#1^4-3*#1^2+6)*Log(x-#1))/(6*#1^5-20*#1^3+10*#1)&) ,x)", //
         "(6-3*x^2+x^4)/(4+5*x^2-5*x^4+x^6)");
+
   }
 }

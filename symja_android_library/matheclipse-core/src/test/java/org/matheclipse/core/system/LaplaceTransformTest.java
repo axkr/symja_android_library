@@ -324,4 +324,93 @@ public class LaplaceTransformTest extends ExprEvaluatorTestCase {
         "(a*b)/s");
   }
 
+  @Test
+  public void testLaplaceTransformMonomials() {
+    // 1/s == s^(-1)
+    check("LaplaceTransform(1, t, s)", //
+        "1/s");
+    // 1/s^2 == s^(-2)
+    check("LaplaceTransform(t, t, s)", //
+        "1/s^2");
+    check("LaplaceTransform(t^2, t, s)", //
+        "2/s^3");
+    check("LaplaceTransform(t^3, t, s)", //
+        "6/s^4");
+    check("LaplaceTransform(5*t, t, s)", //
+        "5/s^2");
+  }
+
+  @Test
+  public void testLaplaceTransformTrig() {
+    // 1/(1+s^2) == (1 + s^2)^(-1)
+    check("LaplaceTransform(Sin(t), t, s)", //
+        "1/(1+s^2)");
+    check("LaplaceTransform(Cos(t), t, s)", //
+        "s/(1+s^2)");
+    check("LaplaceTransform(Sin(3*t), t, s)", //
+        "3/(9+s^2)");
+  }
+
+  @Test
+  public void testLaplaceTransformExponential() {
+    // 1/(a+s) == (a + s)^(-1)
+    check("LaplaceTransform(Exp(-a*t), t, s)", //
+        "1/(a+s)");
+    // 1/(-a+s) == (-a + s)^(-1)
+    check("LaplaceTransform(Exp(a*t), t, s)", //
+        "1/(-a+s)");
+  }
+
+  @Test
+  public void testLaplaceTransformLinearity() {
+    check("LaplaceTransform(3*t^2 + 2*Sin(t), t, s)", //
+        "6/s^3+2/(1+s^2)");
+  }
+
+  @Test
+  public void testLaplaceTransformUnevaluated() {
+    // Unknown functions should return unevaluated
+    check("LaplaceTransform(BesselJ(0, t), t, s)", //
+        "LaplaceTransform(BesselJ(0,t),t,s)");
+  }
+
+  @Test
+  public void testInverseLaplaceTransformMonomials() {
+    check("InverseLaplaceTransform(1/s, s, t)", //
+        "1");
+    check("InverseLaplaceTransform(1/s^2, s, t)", //
+        "t");
+    check("InverseLaplaceTransform(2/s^3, s, t)", //
+        "t^2");
+    check("InverseLaplaceTransform(6/s^4, s, t)", //
+        "t^3");
+  }
+
+  @Test
+  public void testInverseLaplaceTransformTrig() {
+    check("InverseLaplaceTransform(1/(s^2 + 1), s, t)", //
+        "Sin(t)");
+    check("InverseLaplaceTransform(s/(s^2 + 1), s, t)", //
+        "Cos(t)");
+    check("InverseLaplaceTransform(a/(s^2 + a^2), s, t)", //
+        "Sin(a*t)");
+    check("InverseLaplaceTransform(s/(s^2 + a^2), s, t)", //
+        "Cos(a*t)");
+  }
+
+  @Test
+  public void testInverseLaplaceTransformExponential() {
+    check("InverseLaplaceTransform(1/(s - a), s, t)", //
+        "E^(a*t)");
+    // E^(-a*t) == E^(-(a*t))
+    check("InverseLaplaceTransform(1/(s + a), s, t)", //
+        "E^(-a*t)");
+  }
+
+  @Test
+  public void testInverseLaplaceTransformUnevaluated() {
+    check("InverseLaplaceTransform(Log(s), s, t)", //
+        "InverseLaplaceTransform(Log(s),s,t)");
+  }
+
 }

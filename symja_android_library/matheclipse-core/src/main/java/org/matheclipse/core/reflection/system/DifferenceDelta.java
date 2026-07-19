@@ -98,7 +98,7 @@ public class DifferenceDelta extends AbstractCoreFunctionEvaluator {
                     F.xreplace(arg1, symbolX, F.Plus(F.Times(F.ZZ(i), stepH), symbolX));
                 result.append(F.Times(F.Power(F.CN1, n - i), F.Binomial(n, i), diffTerm));
               }
-              return result;
+              return normalizeDifference(result, symbolX, stepH, engine);
             }
           }
         } else {
@@ -118,11 +118,31 @@ public class DifferenceDelta extends AbstractCoreFunctionEvaluator {
       }
 
       IExpr f2 = F.xreplace(arg1, arg2, F.Plus(F.C1, arg2));
-      return F.Subtract(f2, arg1);
+      return normalizeDifference(F.Subtract(f2, arg1), arg2, F.C1, engine);
     }
     // All quantities that do not explicitly depend on the variables given are taken to have zero
     // partial difference.
     return F.C0;
+  }
+
+  /**
+   * Bring a raw forward-difference result into the canonical output form. A genuine polynomial or
+   * rational function of <code>x</code> is canonicalized: with a numeric step it is factored
+   * (matching wolframscript, e.g. <code>x^2 + x -&gt; 2*(1 + x)</code>, and rational summands combine
+   * over a common denominator), with a symbolic step it is only expanded. A difference of unknown
+   * functions such as <code>f(x + 1) - f(x)</code> is already in simplest form and is returned
+   * unchanged (Factor must not reorder it or fold it into an opaque product).
+   */
+  private static IExpr normalizeDifference(IExpr result, IExpr x, IExpr stepH, EvalEngine engine) {
+    IExpr together = engine.evaluate(F.Together(result));
+    boolean rational = engine.evaluate(F.PolynomialQ(F.Numerator(together), x)).isTrue()
+        && engine.evaluate(F.PolynomialQ(F.Denominator(together), x)).isTrue();
+    if (!rational) {
+      return result;
+    }
+    return stepH.isNumber() //
+        ? engine.evaluate(F.Factor(result))
+        : engine.evaluate(F.ExpandAll(result));
   }
 
   /**

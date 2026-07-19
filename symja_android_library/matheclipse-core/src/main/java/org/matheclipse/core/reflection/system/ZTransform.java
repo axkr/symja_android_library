@@ -42,8 +42,18 @@ public class ZTransform extends AbstractFunctionEvaluator {
     if (expr.equals(n)) {
       return F.Times(F.Power(F.Plus(F.CN1, z), F.CN2), z);
     }
+    if (expr.isAST(S.UnitStep, 2) && expr.first().equals(n)) {
+      // UnitStep(n) == 1 for n >= 0, so ZTransform(UnitStep(n), n, z) == ZTransform(1, n, z)
+      return engine.evaluate(F.Divide(z, F.Subtract(z, F.C1)));
+    }
     if (expr.isPlus()) {
-      return ((IAST) expr).mapThread(F.ZTransform(F.Slot1, n, z), 1);
+      IExpr mapped = ((IAST) expr).mapThread(F.ZTransform(F.Slot1, n, z), 1);
+      // For polynomial inputs in n, combine the partial results into a single
+      // rational function (matches Mathematica's ZTransform output).
+      if (engine.evaluate(F.PolynomialQ(expr, n)).isTrue()) {
+        return engine.evaluate(F.Together(mapped));
+      }
+      return mapped;
     }
 
     if (expr.isTimes()) {
@@ -52,9 +62,21 @@ public class ZTransform extends AbstractFunctionEvaluator {
         return temp;
       }
     } else if (expr.isPower()) {
-      // RESTORED: Expand polynomial powers
+      IExpr base = expr.base();
+      IExpr exponent = expr.exponent();
+      if (base.equals(n) && exponent.isInteger() && exponent.isPositive()) {
+        // ZTransform(n^k, n, z) = (-z * d/dz)^k ZTransform(1, n, z) for integer k > 0
+        int k = exponent.toIntDefault();
+        if (k > 0) {
+          return polynomialTransform(engine, k, F.C1, n, z);
+        }
+      }
+      // Expand polynomial powers with a compound base, e.g. (1 + n)^2
       if (!expr.isExpanded()) {
-        return engine.evaluate(F.ZTransform(engine.evaluate(F.ExpandAll(expr)), n, z));
+        IExpr expanded = engine.evaluate(F.ExpandAll(expr));
+        if (!expanded.equals(expr)) {
+          return engine.evaluate(F.ZTransform(expanded, n, z));
+        }
       }
     }
 
@@ -192,22 +214,7 @@ public class ZTransform extends AbstractFunctionEvaluator {
       } else {
         f_n = restNArgs;
       }
-
-      // Use a secure dummy variable for differentiation.
-      // If 'z' is a compound fractional expression like (1/s), D(..., 1/s) is invalid!
-      IExpr zSym = z.isSymbol() ? z : F.Dummy("zDummy");
-      IExpr result = engine.evaluate(F.ZTransform(f_n, n, zSym));
-
-      // Iteratively apply the (-z * D(..., z)) operator k times
-      for (int i = 0; i < kExponent; i++) {
-        result = engine.evaluate(F.Times(F.CN1, zSym, F.D(result, zSym)));
-      }
-
-      // Safely project the solved derivative result back onto the original compound variable
-      if (!zSym.equals(z)) {
-        result = engine.evaluate(F.subst(result, zSym, z));
-      }
-      return engine.evaluate(F.Simplify(result));
+      return polynomialTransform(engine, kExponent, f_n, n, z);
     }
 
     // Expand polynomials multiplied by functions (e.g., (1+n)^2 * f(n))
@@ -221,6 +228,38 @@ public class ZTransform extends AbstractFunctionEvaluator {
       return engine.evaluate(F.ZTransform(expanded, n, z));
     }
     return F.NIL;
+  }
+
+  /**
+   * Apply the polynomial-multiplication property
+   * <code>ZTransform(n^k * f(n), n, z) == (-z * d/dz)^k ZTransform(f(n), n, z)</code>.
+   *
+   * @param k a positive integer exponent
+   * @param f_n the remaining factor <code>f(n)</code> (or {@link F#C1})
+   */
+  private IExpr polynomialTransform(EvalEngine engine, int k, IExpr f_n, IExpr n, IExpr z) {
+    // Use a secure dummy variable for differentiation.
+    // If 'z' is a compound fractional expression like (1/s), D(..., 1/s) is invalid!
+    IExpr zSym = z.isSymbol() ? z : F.Dummy("zDummy");
+    IExpr result = engine.evaluate(F.ZTransform(f_n, n, zSym));
+
+    // Iteratively apply the (-z * D(..., z)) operator k times
+    for (int i = 0; i < k; i++) {
+      result = engine.evaluate(F.Times(F.CN1, zSym, F.D(result, zSym)));
+    }
+
+    // Safely project the solved derivative result back onto the original compound variable
+    if (!zSym.equals(z)) {
+      result = engine.evaluate(F.subst(result, zSym, z));
+    }
+    if (f_n.isOne()) {
+      // Pure power ZTransform(n^k, n, z) is a rational function of z. Together first so that
+      // higher-order derivatives (n^4, ...) collapse into a single fraction that Simplify alone
+      // would otherwise leave expanded. (Only for the pure-power case, to avoid reshuffling the
+      // symbolic D(ZTransform(f(n),...)) forms produced when f(n) is an unknown sequence.)
+      result = engine.evaluate(F.Together(result));
+    }
+    return engine.evaluate(F.Simplify(result));
   }
 
   @Override

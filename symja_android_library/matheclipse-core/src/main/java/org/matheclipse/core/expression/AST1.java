@@ -165,16 +165,18 @@ public class AST1 extends AST0 {
         return false;
       }
       final IAST list = (IAST) rhs;
-      if (lhs.arg0 != list.head() && lhs.arg0 instanceof ISymbol) {
-        // compared with ISymbol object identity
-        return false;
-      }
       if (list.size() != SIZE) {
         return false;
       }
-      if (lhs.arg0 != list.head() && !(lhs.arg0 instanceof ISymbol)
-          && !lhs.arg0.equals(list.head())) {
-        return false;
+      if (lhs.arg0 instanceof ISymbol) {
+        if (lhs.arg0 != list.head()) {
+          // compared with ISymbol object identity
+          return false;
+        }
+      } else {
+        if (!lhs.arg0.equals(list.head())) {
+          return false;
+        }
       }
       final IExpr lhsArg1 = lhs.arg1;
       if (lhsArg1.getClass() != AST1.class) {

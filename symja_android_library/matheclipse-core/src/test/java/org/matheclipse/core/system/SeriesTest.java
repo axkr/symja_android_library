@@ -62,7 +62,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testInverseSeries() {
+  public void testInverseSeries001() {
     check("InverseSeries(Sin(x), x)", //
         "x+x^3/6+3/40*x^5+O(x)^6");
 
@@ -655,6 +655,39 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSeriesCoefficientBinomial() {
+    // Finite binomial powers (a+b*x)^p with a symbolic index n now return a closed Binomial
+    // Piecewise instead of an opaque DifferenceRoot .
+    check("SeriesCoefficient((1+x)^5, {x, 0, n})", //
+        "Piecewise({{Binomial(5,n),0<=n<=5}},0)");
+    check("SeriesCoefficient((1+2*x)^3, {x, 0, n})", //
+        "Piecewise({{2^n*Binomial(3,n),0<=n<=3}},0)");
+    check("SeriesCoefficient((x+2)^3, {x, 0, n})", //
+        "Piecewise({{2^(3-n)*Binomial(3,n),0<=n<=3}},0)");
+
+    // Fractional exponent: infinite series bounded by n>=0 (previously returned unevaluated).
+    check("SeriesCoefficient(Sqrt(1+x), {x, 0, n})", //
+        "Piecewise({{Binomial(1/2,n),n>=0}},0)");
+
+    // Symbolic exponent p (not known to be a non-negative integer) => n>=0.
+    check("SeriesCoefficient((1+x)^p, {x, 0, n})", //
+        "Piecewise({{Binomial(p,n),n>=0}},0)");
+    // Symbolic constant term in the base.
+    check("SeriesCoefficient((c+x)^3, {x, 0, n})", //
+        "Piecewise({{c^(3-n)*Binomial(3,n),0<=n<=3}},0)");
+
+    // A concrete index still returns the plain numeric coefficient (no Piecewise).
+    check("SeriesCoefficient((1+x)^5, {x, 0, 3})", //
+        "10");
+    check("SeriesCoefficient((1+x)^5, {x, 0, 7})", //
+        "0");
+
+    // Negative-integer exponents stay on the rational-function path (cleaner (-1)^n form).
+    check("SeriesCoefficient((1+x)^(-1), {x, 0, n})", //
+        "Piecewise({{(-1)^n,n>=0}},0)");
+  }
+
+  @Test
   public void testSeriesCoefficientDLMF() {
     check("SeriesCoefficient(BesselK(4,x), {x, 0, 3})", //
         "0");
@@ -1085,7 +1118,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testResidue() {
+  public void testResidue001() {
     // Partial fraction - fastpath)
     check("Residue(1 / (x - 2), {x, 2})", //
         "1");
@@ -1776,5 +1809,147 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     // 1/(2-x) = 1/2 * 1/(1 - x/2) = Sum (1/2)^(n+1) * x^n
     check("SeriesCoefficient(1/(2-x), {x, 0, n})", //
         "Piecewise({{(1/2)^(1+n),n>=0}},0)");
+  }
+
+  // ==========================================================
+  // PadeApproximant: functions whose Series is flagged Puiseux (because of a Sqrt)
+  // but which still expand into integer powers of x. Previously these returned
+  // unevaluated; now the approximant is computed from the normal Taylor polynomial.
+  // ==========================================================
+  @Test
+  public void testPadeApproximantPuiseuxNormal() {
+    check("PadeApproximant(Sqrt(1+x), {x, 0, {1, 1}})", //
+        "(1+3/4*x)/(1+x/4)");
+    check("PadeApproximant(Sqrt(1+x), {x, 0, {2, 2}})", //
+        "(1+5/4*x+5/16*x^2)/(1+3/4*x+x^2/16)");
+    // single-order spec is the diagonal approximant
+    check("PadeApproximant(Sqrt(1+x), {x, 0, 1})", //
+        "(1+3/4*x)/(1+x/4)");
+    // Cos(Sqrt(x)) is likewise integer-power in x
+    check("PadeApproximant(Cos(Sqrt(x)), {x, 0, {1, 1}})", //
+        "(1-5/12*x)/(1+x/12)");
+  }
+
+  @Test
+  public void testResidue002() {
+    check("Residue(1/z, {z, 0})", "1");
+    check("Residue(1/(z - 2), {z, 2})", "1");
+    check("Residue(1/(z^2 - 1), {z, 1})", "1/2");
+    check("Residue(Sin(z)/z^2, {z, 0})", "1");
+    check("Residue(1/z^2, {z, 0})", "0");
+    check("Residue(Exp(z)/z^3, {z, 0})", "1/2");
+    check("Residue((z + 1)/(z - 1)^2, {z, 1})", "1");
+    check("Residue(z^2, {z, 0})", "0");
+    check("Residue(Cot(z), {z, 0})", "1");
+    // -I*1/2 == -I/2
+    check("Residue(1/(z^2 + 1), {z, I})", "-I*1/2");
+    check("Residue(1/(z - a), {z, a})", "1");
+    check("Residue(b/(z - a)^2, {z, a})", "0");
+    check("Residue(1/(z^4 - 1), {z, 1})", "1/4");
+    check("Residue(z/(z^2 + 1), {z, I})", "1/2");
+    check("Residue(Gamma(z), {z, 0})", "1");
+    check("Residue(Gamma(z), {z, -1})", "-1");
+    check("Residue(Zeta(z), {z, 1})", "1");
+    check("Residue(1/Sin(z), {z, Pi})", "-1");
+    check("Residue(Tan(z), {z, Pi/2})", "-1");
+    check("Residue(Sec(z), {z, Pi/2})", "-1");
+    check("Residue(1/Sin(z)^2, {z, 0})", "0");
+    check("Residue(f(z)/z, {z, 0})", "f(0)");
+  }
+
+  @Test
+  public void testInverseSeries002() {
+    // reversion of Sin gives the ArcSin series
+    check("InverseSeries(Series(Sin(x), {x, 0, 5}))", //
+        "x+x^3/6+3/40*x^5+O(x)^6");
+    // reversion of Exp[x]-1 gives Log[1+x]
+    check("InverseSeries(Series(Exp(x) - 1, {x, 0, 4}))", //
+        "x-x^2/2+x^3/3-x^4/4+O(x)^5");
+    // reversion of Tan gives ArcTan
+    check("InverseSeries(Series(Tan(x), {x, 0, 6}))", //
+        "x-x^3/3+x^5/5+O(x)^7");
+    // polynomial reversion (Catalan numbers)
+    check("InverseSeries(Series(x + x^2, {x, 0, 5}))", //
+        "x-x^2+2*x^3-5*x^4+14*x^5+O(x)^6");
+    check("InverseSeries(Series(2*x + 3*x^2, {x, 0, 4}))", //
+        "x/2-3/8*x^2+9/16*x^3-135/128*x^4+O(x)^5");
+    // two-argument form renames the variable
+    check("InverseSeries(Series(Sin(x), {x, 0, 5}), y)", //
+        "y+y^3/6+3/40*y^5+O(y)^6");
+    check("Normal(InverseSeries(Series(Sin(x), {x, 0, 5})))", //
+        "x+x^3/6+3/40*x^5");
+  }
+
+  @Test
+  public void testComposeSeries002() {
+    check("ComposeSeries(Series(Exp(x), {x, 0, 3}), Series(Sin(x), {x, 0, 3}))", //
+        "1+x+x^2/2+O(x)^4");
+    check("ComposeSeries(Series(Exp(y), {y, 0, 4}), Series(x + x^2, {x, 0, 4}))", //
+        "1+x+3/2*x^2+7/6*x^3+25/24*x^4+O(x)^5");
+    // inner nmin = 2 caps the result order
+    check("ComposeSeries(Series(1/(1-y), {y, 0, 2}), Series(x^2, {x, 0, 5}))", //
+        "1+x^2+O(x)^4");
+    // truncation capped by inner accuracy
+    check("ComposeSeries(Series(1/(1-y), {y, 0, 5}), Series(Sin(x), {x, 0, 2}))", //
+        "1+x+x^2+O(x)^3");
+    check("ComposeSeries(Series(Log(1+y), {y, 0, 4}), Series(x + x^3, {x, 0, 4}))", //
+        "x-x^2/2+4/3*x^3-5/4*x^4+O(x)^5");
+    // symbolic outer coefficients
+    check("ComposeSeries(Series(f(y), {y, 0, 3}), Series(x + x^2, {x, 0, 3}))", //
+        "f(0)+f'(0)*x+(f'(0)+f''(0)/2)*x^2+(f''(0)+Derivative(3)[f][0]/6)*x^3+O(x)^4");
+  }
+
+  @Test
+  public void testPadeApproximant002() {
+    check("PadeApproximant(Exp(x), {x, 0, {2, 2}})", //
+        "(1+x/2+x^2/12)/(1-x/2+x^2/12)");
+    check("PadeApproximant(Exp(x), {x, 0, {1, 1}})", //
+        "(1+x/2)/(1-x/2)");
+    // single-order spec is the diagonal approximant
+    check("PadeApproximant(Exp(x), {x, 0, 2})", //
+        "(1+x/2+x^2/12)/(1-x/2+x^2/12)");
+    check("PadeApproximant(Sin(x), {x, 0, 4})", //
+        "(x-31/294*x^3)/(1+3/49*x^2+11/5880*x^4)");
+    check("PadeApproximant(Exp(x), {x, 0, {3, 2}})", //
+        "(1+3/5*x+3/20*x^2+x^3/60)/(1-2/5*x+x^2/20)");
+    check("PadeApproximant(Cos(x), {x, 0, {2, 2}})", //
+        "(1-5/12*x^2)/(1+x^2/12)");
+    check("PadeApproximant(Log(1 + x), {x, 0, {2, 2}})", //
+        "(x+x^2/2)/(1+x+x^2/6)");
+    check("PadeApproximant(ArcTan(x), {x, 0, {3, 2}})", //
+        "(x+4/15*x^3)/(1+3/5*x^2)");
+    // zero denominator degree is the Taylor polynomial
+    check("PadeApproximant(Exp(x), {x, 0, {2, 0}})", //
+        "1+x+x^2/2");
+  }
+
+  @Test
+  public void testSeriesCoefficient002() {
+    check("SeriesCoefficient(1/(1-x), {x, 0, 5})", "1");
+    check("SeriesCoefficient(Exp(x), {x, 0, 3})", "1/6");
+    check("SeriesCoefficient(Sin(x), {x, 0, 5})", "1/120");
+    check("SeriesCoefficient(Log(1+x), {x, 0, 4})", "-1/4");
+    // Sin has no even-order terms
+    check("SeriesCoefficient(Sin(x), {x, 0, 4})", "0");
+    check("SeriesCoefficient(2*x, {x, 0, 2})", "0");
+    check("SeriesCoefficient(Exp(Sin(x)), {x, 0, 4})", "-1/8");
+    // query a computed SeriesData with the {x, x0, n} spec
+    check("SeriesCoefficient(Series(Exp(x), {x, 0, 10}), {x, 0, 5})", "1/120");
+    check("SeriesCoefficient(Series(Sin(x), {x, 0, 10}), {x, 0, 3})", "-1/6");
+    // symbolic index returns the general term as a Piecewise; 1/n! == n!^(-1)
+    check("SeriesCoefficient(Exp(x), {x, 0, n})", //
+        "Piecewise({{1/n!,n>=0}},0)");
+    check("SeriesCoefficient(1/(1 - x), {x, 0, n})", //
+        "Piecewise({{1,n>=0}},0)");
+    check("SeriesCoefficient(1/(1 - x)^2, {x, 0, n})", //
+        "Piecewise({{1+n,n>=0}},0)");
+    check("SeriesCoefficient(Cosh(x), {x, 0, n})", //
+        "Piecewise({{1/n!,Mod(n,2)==0&&n>=0}},0)");
+    // (-1)^(1+n)/n == -((-1)^n/n)
+    check("SeriesCoefficient(Log(1 + x), {x, 0, n})", //
+        "Piecewise({{(-1)^(1+n)/n,n>=1}},0)");
+    // an unrecognized symbolic-index form stays unevaluated
+    check("SeriesCoefficient(Exp(x^2), {x, 0, n})", //
+        "SeriesCoefficient(E^x^2,{x,0,n})");
   }
 }

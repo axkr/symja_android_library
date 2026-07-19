@@ -557,9 +557,10 @@
 							<include>**/*TestCase.java</include>
 						</includes>
 						<!-- Spawns 1 separate JVM process per available CPU
-						core -->
+						core 
 						<forkCount>1C</forkCount>
 						<reuseForks>true</reuseForks>
+						-->
 					</configuration>
 				</plugin>
 				<plugin>

@@ -53,7 +53,22 @@ public class RationalIntegration {
   private RationalIntegration() {}
 
   /**
-   * Integrate a rational function in <code>x</code>.
+   * Controls whether the logarithmic part may emit a {@link F#RootSum} antiderivative for an
+   * irreducible denominator factor of degree &gt;= 5.
+   */
+  public enum RootSumMode {
+    /**
+     * Irreducible factors of degree &gt;= 5 return {@link F#NIL} (defer to the Rubi rules), exactly
+     * like the degree 3/4 factors already do.
+     */
+    DEFER,
+    /** Irreducible factors of degree &gt;= 5 produce a {@link F#RootSum} antiderivative. */
+    EMIT
+  }
+
+  /**
+   * Integrate a rational function in <code>x</code>, emitting a {@link F#RootSum} antiderivative for
+   * irreducible denominator factors of degree &gt;= 5 (i.e. {@link RootSumMode#EMIT}).
    *
    * @param integrand the integrand
    * @param x the integration variable
@@ -61,6 +76,44 @@ public class RationalIntegration {
    * @return the antiderivative or {@link F#NIL}
    */
   public static IExpr integrate(IExpr integrand, IExpr x, EvalEngine engine) {
+    return integrate(integrand, x, engine, RootSumMode.EMIT);
+  }
+
+  /**
+   * Integrate a rational function in <code>x</code>.
+   *
+   * <p>
+   * In {@link RootSumMode#DEFER} mode, when the computed antiderivative is <em>essentially a bare
+   * {@link F#RootSum}</em> (a single top-level term containing a {@code RootSum}, with no additional
+   * closed-form {@code Log}/{@code ArcTan}/rational/polynomial terms), this returns {@link F#NIL} so
+   * the caller can hand the integrand to the Rubi rules first — those often have a far simpler
+   * closed form. A mixed antiderivative (e.g. {@code Log(x-1) + RootSum[...]}) is a {@code Plus} and
+   * is <em>not</em> deferred: it is a correct-by-construction closed form and deferring it would
+   * route the integrand into a fragile Rubi recursion. The RootSum is re-emitted by a post-Rubi
+   * fallback that calls this method with {@link RootSumMode#EMIT}.
+   *
+   * @param integrand the integrand
+   * @param x the integration variable
+   * @param engine the evaluation engine
+   * @param mode whether an antiderivative that is essentially a bare {@link F#RootSum} is emitted
+   *        ({@link RootSumMode#EMIT}) or deferred to the Rubi rules ({@link RootSumMode#DEFER})
+   * @return the antiderivative or {@link F#NIL}
+   */
+  public static IExpr integrate(IExpr integrand, IExpr x, EvalEngine engine, RootSumMode mode) {
+    IExpr result = integrateRationalFunction(integrand, x, engine);
+    if (mode == RootSumMode.DEFER && result.isPresent() && !result.isPlus()
+        && !result.isFree(F.RootSum)) {
+      // Antiderivative is essentially a bare RootSum: defer to the Rubi rules.
+      return F.NIL;
+    }
+    return result;
+  }
+
+  /**
+   * Compute the antiderivative of a rational function, always emitting a {@link F#RootSum} for
+   * irreducible denominator factors of degree &gt;= 5.
+   */
+  private static IExpr integrateRationalFunction(IExpr integrand, IExpr x, EvalEngine engine) {
     if (!Config.INTEGRATE_ALGORITHM_RATIONAL) {
       return F.NIL;
     }
