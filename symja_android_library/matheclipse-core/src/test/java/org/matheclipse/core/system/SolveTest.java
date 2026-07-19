@@ -2379,10 +2379,18 @@ public class SolveTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testSolveIssue1165() {
-    // TODO
-    // Solve: The system cannot be solved with the methods available to Solve.
-    check("Solve(t>=0&&t<=1,{t})", //
-        "Solve(t>=0&&t<=1,{t})");
+    // unsatisfiable interval intersection (1.3 < t <= 1.0 is empty) -> no solution
+    check("Solve(t>1.3&&t>=0.0&&t<=1.0,{t})", //
+        "{}");
+    // unsatisfiable with exact integer bounds
+    check("Solve(x>5&&x<2,{x})", //
+        "{}");
+    // unsatisfiable open boundary at the same point
+    check("Solve(x>7&&x<7,x)", //
+        "{}");
+    // satisfiable pure-inequality systems are intentionally left unevaluated
+    check("Solve({x<y,y>2},x)", //
+        "Solve({x<y,y>2},x)");
   }
 
   @Test

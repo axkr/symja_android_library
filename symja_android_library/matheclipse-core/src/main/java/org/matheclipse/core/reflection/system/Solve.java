@@ -733,9 +733,6 @@ public class Solve extends AbstractFunctionOptionEvaluator {
       if (ineq.isAST(S.Between, 3) && ineq.first().equals(var)) {
         return true;
       }
-      if (ineq.isOr()) {
-        System.out.println(ineq);
-      }
       if (ineq.isRelationalBinary() && !ineq.isAST(S.Equal) && !ineq.isAST(S.Unequal)) {
         boolean containsVar = false;
         boolean complexVar = false;
@@ -1839,6 +1836,25 @@ public class Solve extends AbstractFunctionOptionEvaluator {
                 engine, true);
             lists[1] = remainingInequations;
             inequationsList = remainingInequations;
+          }
+
+          // A pure-inequality system (no equations that could produce solution rules) is
+          // decided directly: it is unsatisfiable iff the IntervalData intersection collapsed to
+          // the empty set, or Reduce proves the whole condition False. In that case return the
+          // empty solution set {} (consistent with Solve(False, ...) -> {}), covering numeric and
+          // pure symbolic inequalities alike. Satisfiable pure-inequality systems are left
+          // unevaluated on purpose.
+          if (termsEqualZeroList.argSize() == 0
+              && (inequationsList.argSize() > 0 || !intervalDataMap.isEmpty())) {
+            for (IAST interval : intervalDataMap.values()) {
+              if (IntervalDataSym.isEmptySet(interval)) {
+                return F.CEmptyList;
+              }
+            }
+            IExpr reduced = engine.evaluate(F.Reduce(ast.arg1(), equationVariables));
+            if (reduced.isFalse()) {
+              return F.CEmptyList;
+            }
           }
 
           if (lists[1].argSize() > 0 && lists[1].isList()) {
