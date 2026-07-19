@@ -164,6 +164,11 @@ public class RootSum extends AbstractFunctionEvaluator {
    * <code>pMonic</code> are not coprime (i.e. a root of the denominator is a root of the polynomial).
    */
   private static IExpr modularInverse(IExpr b, IExpr pMonic, ISymbol r, EvalEngine engine) {
+    if (b.isFree(r)) {
+      // b is a unit (constant) with respect to r, so its inverse modulo pMonic is just 1/b.
+      // PolynomialExtendedGCD would return the degenerate cofactor s == 0 in this case.
+      return b.isZero() ? F.NIL : engine.evaluate(F.Power(b, F.CN1));
+    }
     IExpr extendedGCD = S.PolynomialExtendedGCD.of(engine, b, pMonic, r);
     if (!extendedGCD.isList() || extendedGCD.size() != 3) {
       return F.NIL;
