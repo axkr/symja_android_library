@@ -509,8 +509,13 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           // un-wired (still reachable via the Method -> option and their direct tests).
 
           // Stage: native rational function integration
-          // (Hermite/Horowitz-Ostrogradsky reduction + Lazard-Rioboo-Trager logarithmic part)
-          result = RationalIntegration.integrate(fx, x, engine);
+          // (Hermite/Horowitz-Ostrogradsky reduction + Lazard-Rioboo-Trager logarithmic part).
+          // RootSumMode.DEFER: when the antiderivative is essentially a bare RootSum, defer the
+          // integrand to the Rubi rules (which often have a far simpler closed form) and re-emit
+          // the RootSum only as a post-Rubi fallback (see below). Closed-form results, including a
+          // mixed Log(..)+RootSum(..), are still produced here.
+          result =
+              RationalIntegration.integrate(fx, x, engine, RationalIntegration.RootSumMode.DEFER);
           if (result.isPresent()) {
             return result;
           }
@@ -551,6 +556,15 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         // unevaluated. Each self-verifies (D(result) == integrand). The deterministic, form-safe
         // stages (rational, radical, Chebyshev) run before Rubi (above).
         if (Config.INTEGRATE_ALGORITHMS) {
+          // RootSum fallback for rational functions whose denominator has an irreducible factor of
+          // degree >= 5, deferred from the pre-Rubi rational stage (RootSumMode.DEFER above). Runs
+          // only now that Rubi left the integral unevaluated, so Rubi's simpler closed form (when it
+          // has one) always wins. Correct-by-construction (Trager), reuses the full general logic.
+          result =
+              RationalIntegration.integrate(fx, x, engine, RationalIntegration.RootSumMode.EMIT);
+          if (result.isPresent()) {
+            return result;
+          }
           // Weierstrass t=Tan(x/2) substitution for rational trigonometric integrands.
           result = WeierstrassIntegration.integrate(fx, x, engine);
           if (result.isPresent()) {
@@ -573,11 +587,6 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           }
         }
 
-        // // RootSum fallback for 1/p(x), irreducible degree >= 5 ---
-        // IExpr rootSumResult = integrateOneOverPoly(fx, x, engine);
-        // if (rootSumResult.isPresent()) {
-        // return rootSumResult;
-        // }
       }
       return evaled ? ast : F.NIL;
     } finally {
