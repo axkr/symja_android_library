@@ -64,7 +64,7 @@ public class DiscreteRatio extends AbstractFunctionEvaluator {
     // Together cancels common polynomial factors (e.g. DiscreteRatio(n^2 + n, n) -> (2 + n)/n)
     // while keeping a single grouped fraction (Cancel would rewrite (1 + n)^2/n^2 as (1 + 1/n)^2).
     // Only adopt the FunctionExpand result when it fully reduces (no Gamma/Factorial residue left,
-    // e.g. a scaled argument like (2 n)! that woxi/Symja cannot reduce further).
+    // e.g. a scaled argument like (2 n)! that Symja cannot reduce further).
     IExpr expanded = engine.evaluate(F.Together(F.FunctionExpand(result)));
     if (expanded.isFree(S.Gamma, true) && expanded.isFree(S.Factorial, true)) {
       return expanded;

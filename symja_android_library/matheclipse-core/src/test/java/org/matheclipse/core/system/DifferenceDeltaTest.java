@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 public class DifferenceDeltaTest extends ExprEvaluatorTestCase {
 
   @Test
-  public void testDifferenceDelta() {
+  public void testDifferenceDelta001() {
     check("DifferenceDelta({f(i), g(i)}, i)", //
         "{-f(i)+f(1+i),-g(i)+g(1+i)}");
     check("DifferenceDelta(Cosh(a*i+b),{i,2,h})", //
@@ -73,14 +73,13 @@ public class DifferenceDeltaTest extends ExprEvaluatorTestCase {
   }
 
   // ==========================================================
-  // Ported from the Woxi project (tests/interpreter_tests/calculus.rs, mod difference_delta).
   // The raw forward difference is now brought into canonical form: a numeric step is factored
   // (x^2 + x -> 2*(1 + x), and rational summands combine over a common denominator), a symbolic
   // step is expanded. Symja's form is sometimes cosmetically different but mathematically equal,
   // e.g. 1/((-1-n)*n) == -1/(n*(1+n)).
   // ==========================================================
   @Test
-  public void testDifferenceDeltaWoxi() {
+  public void testDifferenceDelta002() {
     check("DifferenceDelta(5, x)", "0");
     check("DifferenceDelta(x, x)", "1");
     check("DifferenceDelta(a*x + b, x)", "a");
