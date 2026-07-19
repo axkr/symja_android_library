@@ -5517,6 +5517,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("dq = DifferenceQuotient(f(x), {x, h})", //
         "(-x*Sin(x)+(h+x)*Sin(h+x))/h");
 
+    // ported from the Woxi project (mod difference_quotient). The bare {x} form (no step)
+    // stays unevaluated; only the {x, h} step form evaluates.
+    check("DifferenceQuotient(x, x)", //
+        "DifferenceQuotient(x,x)");
+    check("DifferenceQuotient(x^2, x)", //
+        "DifferenceQuotient(x^2,x)");
+    check("DifferenceQuotient(x^3, {x, h})", //
+        "h^2+3*h*x+3*x^2");
+    check("DifferenceQuotient(5, {x, h})", //
+        "0");
   }
 
   @Test
@@ -5658,6 +5668,40 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "4");
     check("DiscreteRatio(x^n * y^m, n, m)", //
         "1");
+
+    // ported from the Woxi project (mod discrete_ratio). The ratio is reduced to a single
+    // grouped fraction; (1+2*n+n^2)/n^2 == Wolfram's (1+n)^2/n^2.
+    check("DiscreteRatio(n^2, n)", //
+        "(1+2*n+n^2)/n^2");
+    // common polynomial factors cancel
+    check("DiscreteRatio(n^2 + n, n)", //
+        "(2+n)/n");
+    check("DiscreteRatio(f(n), n)", //
+        "f(1+n)/f(n)");
+    check("DiscreteRatio(a^n, n)", //
+        "a");
+    check("DiscreteRatio(2^n*3^n, n)", //
+        "6");
+    // higher order applies the operator repeatedly
+    check("DiscreteRatio(f(n), {n, 3})", //
+        "(f(1+n)^3*f(3+n))/(f(n)*f(2+n)^3)");
+    check("DiscreteRatio(f(n), {n, 0})", //
+        "f(n)");
+    // step in a three-element spec {var, order, step}
+    check("DiscreteRatio(f(n), {n, 1, 2})", //
+        "f(2+n)/f(n)");
+    check("DiscreteRatio(f(n), {n, 2, 3})", //
+        "(f(n)*f(6+n))/f(3+n)^2");
+    check("DiscreteRatio(f(n, m), n, m)", //
+        "(f(n,m)*f(1+n,1+m))/(f(n,1+m)*f(1+n,m))");
+    // factorial/Gamma/Pochhammer/Binomial ratios reduce
+    check("DiscreteRatio(Pochhammer(n, 3), n)", //
+        "(3+n)/n");
+    check("DiscreteRatio(Binomial(n, 2), n)", //
+        "(1+n)/(-1+n)");
+    // a symbolic order stays unevaluated
+    check("DiscreteRatio(f(n), {n, h})", //
+        "DiscreteRatio(f(n),{n,h})");
   }
 
   @Test
@@ -5687,6 +5731,29 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "f(h+x)");
     check("DiscreteShift(f(x), {x,2,h})", //
         "f(2*h+x)");
+
+    // ported from the Woxi project (mod discrete_shift). A top-level Plus result is expanded; a
+    // single power/product is kept; an integer shift combines rational summands over a common
+    // denominator; a symbolic shift stays unfolded.
+    check("DiscreteShift(n^2 + 3*n + 1, n)", //
+        "5+5*n+n^2");
+    check("DiscreteShift(a*n^2 + b*n, n)", //
+        "a+b+2*a*n+b*n+a*n^2");
+    check("DiscreteShift(2*n^2, n)", //
+        "2*(1+n)^2");
+    check("DiscreteShift({n, n^2}, n)", //
+        "{1+n,(1+n)^2}");
+    check("DiscreteShift(1/(2*n + 1), n)", //
+        "1/(3+2*n)");
+    check("DiscreteShift(1/(3*n - 2), n)", //
+        "1/(1+3*n)");
+    check("DiscreteShift(1/(2*n + 1), {n, 2})", //
+        "1/(5+2*n)");
+    check("DiscreteShift(1/(2*n + 1) + n, n)", //
+        "(4+5*n+2*n^2)/(3+2*n)");
+    // a symbolic shift is left unfolded
+    check("DiscreteShift(1/(2*n + 1), {n, k})", //
+        "1/(1+2*(k+n))");
   }
 
   @Test

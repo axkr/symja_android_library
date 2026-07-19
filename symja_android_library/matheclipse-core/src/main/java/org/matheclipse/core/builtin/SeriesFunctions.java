@@ -142,7 +142,17 @@ public class SeriesFunctions {
       }
       ASTSeriesData series = (ASTSeriesData) seriesExpr;
       if (series.puiseuxDenominator() != 1) {
-        // a Puiseux series has fractional exponents which a rational approximant can't represent
+        // The series is flagged Puiseux (e.g. because of a Sqrt), but functions such as
+        // Sqrt(1+x) or Cos(Sqrt(x)) still expand into integer powers of x. When the normal
+        // form is an ordinary polynomial in x, the rational approximant is well defined, so
+        // compute it from that truncated Taylor polynomial (whose coefficients are exactly the
+        // ones a Pade approximant of order {m, n} consumes).
+        IExpr normal = engine.evaluate(F.Normal(seriesExpr));
+        if (!normal.equals(function) && engine.evaluate(F.PolynomialQ(normal, x)).isTrue()) {
+          return engine.evaluate(
+              F.PadeApproximant(normal, F.List(x, x0, F.List(F.ZZ(m), F.ZZ(n)))));
+        }
+        // a genuine Puiseux series has fractional exponents a rational approximant can't represent
         return F.NIL;
       }
       int poleOrder = series.minExponent() < 0 ? -series.minExponent() : 0;

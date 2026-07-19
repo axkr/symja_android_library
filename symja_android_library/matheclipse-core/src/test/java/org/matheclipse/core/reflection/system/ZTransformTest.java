@@ -108,9 +108,189 @@ public class ZTransformTest extends ExprEvaluatorTestCase {
         "((a+b+c)*z)/(-1+z)");
   }
 
-  // ==========================================================
-  // Transform Boundary Limit Tests
-  // ==========================================================
+  @Test
+  public void testZTransform004() {
+    check("ZTransform(n^2 + n + 1, n, z)", //
+        "(z+z^3)/(-1+z)^3");
+  }
+
+  @Test
+  public void testZTransformMonomials() {
+    check("ZTransform(1, n, z)", //
+        "z/(-1+z)");
+    check("ZTransform(n, n, z)", //
+        "z/(1-z)^2");
+    check("ZTransform(n^2, n, z)", //
+        "(z*(1+z))/(-1+z)^3");
+    check("ZTransform(n^3, n, z)", //
+        "(z*(1+4*z+z^2))/(1-z)^4");
+    check("ZTransform(n^4, n, z)", //
+        "(z*(1+11*z+11*z^2+z^3))/(-1+z)^5");
+  }
+
+  @Test
+  public void testZTransformConstantMultiples() {
+    check("ZTransform(2, n, z)", //
+        "(2*z)/(-1+z)");
+    check("ZTransform(2*n, n, z)", //
+        "(2*z)/(1-z)^2");
+    check("ZTransform(2*n^2, n, z)", //
+        "(2*z*(1+z))/(-1+z)^3");
+    // Symbols free of n act as constants
+    check("ZTransform(x, n, z)", //
+        "(x*z)/(-1+z)");
+  }
+
+  @Test
+  public void testZTransformGeometric() {
+    check("ZTransform(a^n, n, z)", //
+        "z/(-a+z)");
+    check("ZTransform(2^n, n, z)", //
+        "z/(-2+z)");
+    // Rational base: z/(-1/3+z) == (3*z)/(-1+3*z)
+    check("ZTransform((1/3)^n, n, z)", //
+        "z/(-1/3+z)");
+  }
+
+  @Test
+  public void testZTransformPolynomialTimesGeometric() {
+    check("ZTransform(n*a^n, n, z)", //
+        "(a*z)/(-a+z)^2");
+    check("ZTransform(n*2^n, n, z)", //
+        "(2*z)/(2-z)^2");
+    check("ZTransform(n/3^n, n, z)", //
+        "(3*z)/(1-3*z)^2");
+    check("ZTransform(n^2*a^n, n, z)", //
+        "(a*z*(a+z))/(-a+z)^3");
+    check("ZTransform(n^2*2^n, n, z)", //
+        "(2*z*(2+z))/(-2+z)^3");
+    // The documentation example: (z*(2+4*z))/(-1+2*z)^3 == (2*z*(1+2*z))/(-1+2*z)^3
+    check("ZTransform(n^2/2^n, n, z)", //
+        "(z*(2+4*z))/(-1+2*z)^3");
+  }
+
+  @Test
+  public void testZTransformInverseFactorial() {
+    check("ZTransform(1/n!, n, z)", //
+        "E^(1/z)");
+    check("ZTransform(3^n/n!, n, z)", //
+        "E^(3/z)");
+  }
+
+  @Test
+  public void testZTransformTrig() {
+    check("ZTransform(Sin(n), n, z)", //
+        "(z*Sin(1))/(1+z^2-2*z*Cos(1))");
+    check("ZTransform(Cos(n), n, z)", //
+        "(z*(z-Cos(1)))/(1+z^2-2*z*Cos(1))");
+    check("ZTransform(Sin(a*n), n, z)", //
+        "(z*Sin(a))/(1+z^2-2*z*Cos(a))");
+    check("ZTransform(Cos(a*n), n, z)", //
+        "(z*(z-Cos(a)))/(1+z^2-2*z*Cos(a))");
+    check("ZTransform(Sin(2*n), n, z)", //
+        "(z*Sin(2))/(1+z^2-2*z*Cos(2))");
+    check("ZTransform(Sin(n/2), n, z)", //
+        "(z*Sin(1/2))/(1+z^2-2*z*Cos(1/2))");
+  }
+
+  @Test
+  public void testZTransformUnitStep() {
+    // UnitStep(n) == 1 for n >= 0, so its Z-transform is z/(z-1)
+    check("ZTransform(UnitStep(n), n, z)", //
+        "z/(-1+z)");
+  }
+
+  @Test
+  public void testZTransformUnsupported() {
+    // Sin(n^2) is not a linear a*n argument, so there is no closed form
+    check("ZTransform(Sin(n^2), n, z)", //
+        "ZTransform(Sin(n^2),n,z)");
+  }
+
+  @Test
+  public void testInverseZTransformGeometric() {
+    check("InverseZTransform(z/(z - a), z, n)", //
+        "a^n");
+    check("InverseZTransform(z/(z - 1), z, n)", //
+        "1");
+    check("InverseZTransform(z/(z - 2), z, n)", //
+        "2^n");
+    // (1/3)^n == 3^(-n)
+    check("InverseZTransform((3*z)/(-1 + 3*z), z, n)", //
+        "(1/3)^n");
+    // Sign-wrapped spelling of the same transform
+    check("InverseZTransform(-(z/(a - z)), z, n)", //
+        "a^n");
+  }
+
+  @Test
+  public void testInverseZTransformPolynomialSequences() {
+    check("InverseZTransform(z/(z - 1)^2, z, n)", //
+        "n");
+    check("InverseZTransform((z*(1 + z))/(-1 + z)^3, z, n)", //
+        "n^2");
+  }
+
+  @Test
+  public void testInverseZTransformBinomialSequences() {
+    // 1/2*(-1+n)*n == ((-1 + n)*n)/2
+    check("InverseZTransform(z/(z - 1)^3, z, n)", //
+        "1/2*(-1+n)*n");
+    check("InverseZTransform(z/(z - 1)^4, z, n)", //
+        "1/6*(-2+n)*(-1+n)*n");
+  }
+
+  @Test
+  public void testInverseZTransformPolynomialTimesGeometric() {
+    check("InverseZTransform((a*z)/(a - z)^2, z, n)", //
+        "a^n*n");
+    check("InverseZTransform((2*z)/(-2 + z)^2, z, n)", //
+        "2^n*n");
+    check("InverseZTransform((3*z)/(1 - 3*z)^2, z, n)", //
+        "n/3^n");
+    check("InverseZTransform((2*z*(2 + z))/(-2 + z)^3, z, n)", //
+        "2^n*n^2");
+    check("InverseZTransform(-((a*z*(a + z))/(a - z)^3), z, n)", //
+        "a^n*n^2");
+    check("InverseZTransform((2*z*(1 + 2*z))/(-1 + 2*z)^3, z, n)", //
+        "n^2/2^n");
+  }
+
+  @Test
+  public void testInverseZTransformExponentialForms() {
+    // Gamma(1+n) == n!
+    check("InverseZTransform(E^(1/z), z, n)", //
+        "1/Gamma(1+n)");
+    check("InverseZTransform(E^(3/z), z, n)", //
+        "3^n/Gamma(1+n)");
+  }
+
+  @Test
+  public void testInverseZTransformConstants() {
+    check("InverseZTransform((2*z)/(-1 + z), z, n)", //
+        "2");
+    check("InverseZTransform((x*z)/(-1 + z), z, n)", //
+        "x");
+    // z-free input is a DiscreteDelta impulse
+    check("InverseZTransform(1, z, n)", //
+        "DiscreteDelta(n)");
+    check("InverseZTransform(5, z, n)", //
+        "5*DiscreteDelta(n)");
+  }
+
+  @Test
+  public void testZTransformRoundTrip() {
+    check("InverseZTransform(ZTransform(n^2/2^n, n, z), z, n)", //
+        "n^2/2^n");
+    check("ZTransform(InverseZTransform(z/(z - 2), z, n), n, z)", //
+        "z/(-2+z)");
+  }
+
+  @Test
+  public void testInverseZTransformUnsupported() {
+    check("InverseZTransform(Sin(z), z, n)", //
+        "InverseZTransform(Sin(z),z,n)");
+  }
 
   @Test
   public void testZTransformFractionalShift() {
@@ -129,7 +309,7 @@ public class ZTransformTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testExponentialFractions() {
+  public void testInverseZTransformExponentialFractions() {
     // Z^-1 { E^(a/z) }
     check("InverseZTransform(E^(a/z), z, n)", //
         "a^n/Gamma(1+n)");

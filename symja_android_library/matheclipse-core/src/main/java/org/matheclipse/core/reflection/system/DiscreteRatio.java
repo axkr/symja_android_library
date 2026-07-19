@@ -4,6 +4,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -27,15 +28,21 @@ public class DiscreteRatio extends AbstractFunctionEvaluator {
 
       ISymbol variable = null;
       int order = 1;
+      IExpr step = F.C1;
 
-      // Parse argument: either "k" or "{k, order}"
+      // Parse argument: "k", "{k, order}" or "{k, order, step}"
       if (arg.isSymbol()) {
         variable = (ISymbol) arg;
       } else if (arg.isList()) {
         IAST list = (IAST) arg;
-        if (list.isAST2() && list.arg1().isSymbol()) {
+        if (list.size() >= 2 && list.arg1().isSymbol()) {
           variable = (ISymbol) list.arg1();
-          order = list.arg2().toIntDefault();
+          if (list.size() >= 3) {
+            order = list.arg2().toIntDefault();
+          }
+          if (list.size() >= 4) {
+            step = list.arg3();
+          }
         }
       }
 
@@ -46,38 +53,32 @@ public class DiscreteRatio extends AbstractFunctionEvaluator {
         continue;
       }
 
-      // Apply ratio logic 'order' times
+      // Apply the ratio operator R[g] = g(k + step) / g(k) 'order' times
       for (int k = 0; k < order; k++) {
-        result = computeSingleRatio(result, variable, engine);
-        // If result becomes exactly 0 or 1, we can often stop or optimize,
-        // but for safety we continue (e.g. 0/0 cases typically don't occur here structurally).
+        result = computeSingleRatio(result, variable, step, engine);
       }
     }
 
-    return result;
+    // Reduce to wolframscript's canonical single-fraction ratio form. FunctionExpand collapses
+    // factorial/Gamma/Pochhammer/Binomial ratios (e.g. DiscreteRatio(n!, n) -> 1 + n), and
+    // Together cancels common polynomial factors (e.g. DiscreteRatio(n^2 + n, n) -> (2 + n)/n)
+    // while keeping a single grouped fraction (Cancel would rewrite (1 + n)^2/n^2 as (1 + 1/n)^2).
+    // Only adopt the FunctionExpand result when it fully reduces (no Gamma/Factorial residue left,
+    // e.g. a scaled argument like (2 n)! that woxi/Symja cannot reduce further).
+    IExpr expanded = engine.evaluate(F.Together(F.FunctionExpand(result)));
+    if (expanded.isFree(S.Gamma, true) && expanded.isFree(S.Factorial, true)) {
+      return expanded;
+    }
+    return engine.evaluate(F.Together(result));
   }
 
   /**
-   * Calculates Simplify( f(k) / f(k-1) )
+   * Compute the single-step ratio <code>f(k + step) / f(k)</code>.
    */
-  private IExpr computeSingleRatio(IExpr expr, ISymbol variable, EvalEngine engine) {
-    // Calculate denominator: f(k-1)
-    // We use subst to substitute k -> 1+k
-    IExpr numerator = F.subst(expr, variable, F.Plus(F.C1, variable));
-
-    IExpr fraction = F.Divide(numerator, expr);
-
-    // Standard evaluate() is not enough to cancel terms like x^n / x^(n-1).
-    // F.Cancel divides out common factors from numerator and denominator.
-    // F.Simplify is more powerful but slower; usually Cancel is sufficient for Ratios.
-
-    // We try Cancel first, as it handles the polynomial/multiplicative cancellation best.
-    IExpr cancelled = engine.evaluate(F.FunctionExpand(fraction));
-
-    // Fallback: If Cancel didn't reduce it effectively (e.g. Gamma functions),
-    // Simplify or FunctionExpand might be needed.
-    // For now, Cancel is the standard approach for rational simplification.
-    return cancelled;
+  private static IExpr computeSingleRatio(IExpr expr, ISymbol variable, IExpr step,
+      EvalEngine engine) {
+    IExpr shifted = F.subst(expr, variable, F.Plus(variable, step));
+    return engine.evaluate(F.Divide(shifted, expr));
   }
 
   @Override

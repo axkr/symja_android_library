@@ -31,6 +31,7 @@ public class DiscreteShift extends AbstractFunctionEvaluator {
     // Use IASTAppendable to collect the transformation rules.
     // We allocate size based on ast.size() - 1 args.
     IASTAppendable rulesList = F.ListAlloc(ast.argSize());
+    boolean allIntegerShifts = true;
 
     for (int i = 2; i < ast.size(); i++) {
       IExpr arg = ast.get(i);
@@ -67,14 +68,34 @@ public class DiscreteShift extends AbstractFunctionEvaluator {
         return F.NIL;
       }
 
+      if (!engine.evaluate(shift).isInteger()) {
+        allIntegerShifts = false;
+      }
       // Create the rule: variable -> variable + shift
       // Example: k -> k + 1 or k -> k + m
       rulesList.append(F.Rule(variable, F.Plus(variable, shift)));
     }
 
-    // Apply all rules to the expression using F.subst
-    // This performs the structural shift without invoking Simplification logic
-    return F.subst(expression, rulesList);
+    // Apply all rules to the expression structurally.
+    IExpr result = engine.evaluate(F.subst(expression, rulesList));
+    // With an integer shift wolframscript combines rational summands over a common denominator, so
+    // DiscreteShift(1/(2 n + 1), n) becomes (3 + 2 n)^-1 rather than (1 + 2 (1 + n))^-1. A symbolic
+    // shift stays unfolded (e.g. (1 + 2 (k + n))^-1). A pure polynomial product such as
+    // (1 + m) (1 + n) has no denominator to combine and must not be expanded here.
+    boolean hasDenominator = !result.isFree(x -> x.isPower() && x.exponent().isNegative(), false);
+    if (allIntegerShifts && hasDenominator) {
+      IExpr together = engine.evaluate(F.Together(result));
+      IExpr denominator = engine.evaluate(F.Denominator(together));
+      // Together leaves a lone denominator such as 1 + 2 (1 + n) unexpanded, so expand it.
+      result = denominator.isOne() //
+          ? together
+          : engine.evaluate(F.Divide(F.Numerator(together), F.Expand(denominator)));
+    }
+    // wolframscript expands the result only when its top-level head is Plus.
+    if (result.isPlus()) {
+      result = engine.evaluate(F.Expand(result));
+    }
+    return result;
   }
 
   @Override

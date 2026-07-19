@@ -71,4 +71,40 @@ public class DifferenceDeltaTest extends ExprEvaluatorTestCase {
     check("DifferenceDelta(Sum(k*k!,k),k)", //
         "k*k!");
   }
+
+  // ==========================================================
+  // Ported from the Woxi project (tests/interpreter_tests/calculus.rs, mod difference_delta).
+  // The raw forward difference is now brought into canonical form: a numeric step is factored
+  // (x^2 + x -> 2*(1 + x), and rational summands combine over a common denominator), a symbolic
+  // step is expanded. Symja's form is sometimes cosmetically different but mathematically equal,
+  // e.g. 1/((-1-n)*n) == -1/(n*(1+n)).
+  // ==========================================================
+  @Test
+  public void testDifferenceDeltaWoxi() {
+    check("DifferenceDelta(5, x)", "0");
+    check("DifferenceDelta(x, x)", "1");
+    check("DifferenceDelta(a*x + b, x)", "a");
+    check("DifferenceDelta(x^2, x)", "1+2*x");
+    check("DifferenceDelta(x^3, x)", "1+3*x+3*x^2");
+    check("DifferenceDelta(f(x), x)", "-f(x)+f(1+x)");
+    // Wolfram simplifies this trig difference to 2*Sin[1/2]*Sin[(1+Pi)/2+x]
+    check("DifferenceDelta(Sin(x), x)", "2*Sin(1/2)*Sin(1/2*(1+Pi)+x)");
+    // second-order difference of x^2 is 2
+    check("DifferenceDelta(x^2, {x, 2})", "2");
+    // zeroth-order difference returns the expression itself
+    check("DifferenceDelta(x^2, {x, 0})", "x^2");
+    check("DifferenceDelta(x^2, {x, 1, h})", "h^2+2*h*x");
+    check("DifferenceDelta(y, x)", "0");
+    check("DifferenceDelta(2^x, x)", "2^x");
+    // rational summands combine over a common denominator
+    check("DifferenceDelta(1/(2*n + 1), n)", "-2/((1+2*n)*(3+2*n))");
+    // 1/((-1-n)*n) == -1/(n*(1+n))
+    check("DifferenceDelta(1/n, n)", "1/((-1-n)*n)");
+    // a numeric step factors the polynomial result
+    check("DifferenceDelta(x^2 + x, x)", "2*(1+x)");
+    check("DifferenceDelta(a*x^2, x)", "a*(1+2*x)");
+    check("DifferenceDelta(x^2, {x, 1, 2})", "4*(1+x)");
+    // a symbolic step stays expanded (not factored)
+    check("DifferenceDelta(x^2 + x, {x, 1, h})", "h+h^2+2*h*x");
+  }
 }
