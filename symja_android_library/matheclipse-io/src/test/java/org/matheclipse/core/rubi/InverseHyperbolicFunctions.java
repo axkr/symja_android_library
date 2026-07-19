@@ -262,7 +262,10 @@ public class InverseHyperbolicFunctions extends AbstractRubiTestCase {
   public void test0129() {
     check( //
         "Integrate[(a + b*ArcCosh[-1 + d*x^2])^(-3/2), x]", //
-        "-((Sqrt[d*x^2]*Sqrt[-2 + d*x^2])/(b*d*x*Sqrt[a + b*ArcCosh[-1 + d*x^2]])) + (Sqrt[Pi/2]*Cosh[ArcCosh[-1 + d*x^2]/2]*Erfi[Sqrt[a + b*ArcCosh[-1 + d*x^2]]/(Sqrt[2]*Sqrt[b])]*(Cosh[a/(2*b)] - Sinh[a/(2*b)]))/(b^(3/2)*d*x) + (Sqrt[Pi/2]*Cosh[ArcCosh[-1 + d*x^2]/2]*Erf[Sqrt[a + b*ArcCosh[-1 + d*x^2]]/(Sqrt[2]*Sqrt[b])]*(Cosh[a/(2*b)] + Sinh[a/(2*b)]))/(b^(3/2)*d*x)", //
+        "(-Sqrt[d*x^2]*Sqrt[-2+d*x^2])/(b*d*x*Sqrt[a+b*ArcCosh[-1+d*x^2]])+(E^(a/(2*b))*Sqrt[Pi/\n"
+            + "2]*Cosh[ArcCosh[-1+d*x^2]/2]*Erf[Sqrt[a+b*ArcCosh[-1+d*x^2]]/(Sqrt[2]*Sqrt[b])])/(b^(\n"
+            + "3/2)*d*x)+(Sqrt[Pi/2]*Cosh[ArcCosh[-1+d*x^2]/2]*Erfi[Sqrt[a+b*ArcCosh[-1+d*x^2]]/(Sqrt[\n"
+            + "2]*Sqrt[b])])/(b^(3/2)*d*E^(a/(2*b))*x)", //
         5886);
   }
 

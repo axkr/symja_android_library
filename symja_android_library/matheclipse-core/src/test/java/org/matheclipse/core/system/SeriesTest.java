@@ -62,7 +62,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testInverseSeries() {
+  public void testInverseSeries001() {
     check("InverseSeries(Sin(x), x)", //
         "x+x^3/6+3/40*x^5+O(x)^6");
 
@@ -655,9 +655,9 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testSeriesCoefficientBinomialWoxi() {
+  public void testSeriesCoefficientBinomial() {
     // Finite binomial powers (a+b*x)^p with a symbolic index n now return a closed Binomial
-    // Piecewise instead of an opaque DifferenceRoot (matches Mathematica / WOXI).
+    // Piecewise instead of an opaque DifferenceRoot .
     check("SeriesCoefficient((1+x)^5, {x, 0, n})", //
         "Piecewise({{Binomial(5,n),0<=n<=5}},0)");
     check("SeriesCoefficient((1+2*x)^3, {x, 0, n})", //
@@ -1118,7 +1118,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testResidue() {
+  public void testResidue001() {
     // Partial fraction - fastpath)
     check("Residue(1 / (x - 2), {x, 2})", //
         "1");
@@ -1815,7 +1815,6 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   // PadeApproximant: functions whose Series is flagged Puiseux (because of a Sqrt)
   // but which still expand into integer powers of x. Previously these returned
   // unevaluated; now the approximant is computed from the normal Taylor polynomial.
-  // (gap found via the Woxi test suite)
   // ==========================================================
   @Test
   public void testPadeApproximantPuiseuxNormal() {
@@ -1831,14 +1830,8 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "(1-5/12*x)/(1+x/12)");
   }
 
-  // ==========================================================
-  // Ported from the Woxi project (tests/interpreter_tests/calculus.rs). Symja's
-  // canonical output form sometimes differs cosmetically but is mathematically equal,
-  // e.g. -I*1/2 == -I/2, 1/n! == n!^(-1), (-1)^(1+n)/n == -((-1)^n/n).
-  // Series results print in Symja's normal series form rather than SeriesData[...].
-  // ==========================================================
   @Test
-  public void testResidueWoxi() {
+  public void testResidue002() {
     check("Residue(1/z, {z, 0})", "1");
     check("Residue(1/(z - 2), {z, 2})", "1");
     check("Residue(1/(z^2 - 1), {z, 1})", "1/2");
@@ -1865,7 +1858,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testInverseSeriesWoxi() {
+  public void testInverseSeries002() {
     // reversion of Sin gives the ArcSin series
     check("InverseSeries(Series(Sin(x), {x, 0, 5}))", //
         "x+x^3/6+3/40*x^5+O(x)^6");
@@ -1888,7 +1881,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testComposeSeriesWoxi() {
+  public void testComposeSeries002() {
     check("ComposeSeries(Series(Exp(x), {x, 0, 3}), Series(Sin(x), {x, 0, 3}))", //
         "1+x+x^2/2+O(x)^4");
     check("ComposeSeries(Series(Exp(y), {y, 0, 4}), Series(x + x^2, {x, 0, 4}))", //
@@ -1907,7 +1900,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testPadeApproximantWoxi() {
+  public void testPadeApproximant002() {
     check("PadeApproximant(Exp(x), {x, 0, {2, 2}})", //
         "(1+x/2+x^2/12)/(1-x/2+x^2/12)");
     check("PadeApproximant(Exp(x), {x, 0, {1, 1}})", //
@@ -1931,7 +1924,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testSeriesCoefficientWoxi() {
+  public void testSeriesCoefficient002() {
     check("SeriesCoefficient(1/(1-x), {x, 0, 5})", "1");
     check("SeriesCoefficient(Exp(x), {x, 0, 3})", "1/6");
     check("SeriesCoefficient(Sin(x), {x, 0, 5})", "1/120");

@@ -324,14 +324,8 @@ public class LaplaceTransformTest extends ExprEvaluatorTestCase {
         "(a*b)/s");
   }
 
-  // ==========================================================
-  // Ported from the Woxi project (laplace_transform module). Symja's canonical output
-  // form sometimes differs cosmetically from wolframscript / Woxi but is mathematically
-  // equal, e.g. 1/s == s^(-1), 1/(1+s^2) == (1 + s^2)^(-1), E^(-a*t) == E^(-(a*t)).
-  // ==========================================================
-
   @Test
-  public void testLaplaceTransformWoxiMonomials() {
+  public void testLaplaceTransformMonomials() {
     // 1/s == s^(-1)
     check("LaplaceTransform(1, t, s)", //
         "1/s");
@@ -347,7 +341,7 @@ public class LaplaceTransformTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testLaplaceTransformWoxiTrig() {
+  public void testLaplaceTransformTrig() {
     // 1/(1+s^2) == (1 + s^2)^(-1)
     check("LaplaceTransform(Sin(t), t, s)", //
         "1/(1+s^2)");
@@ -358,7 +352,7 @@ public class LaplaceTransformTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testLaplaceTransformWoxiExponential() {
+  public void testLaplaceTransformExponential() {
     // 1/(a+s) == (a + s)^(-1)
     check("LaplaceTransform(Exp(-a*t), t, s)", //
         "1/(a+s)");
@@ -368,24 +362,20 @@ public class LaplaceTransformTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testLaplaceTransformWoxiLinearity() {
+  public void testLaplaceTransformLinearity() {
     check("LaplaceTransform(3*t^2 + 2*Sin(t), t, s)", //
         "6/s^3+2/(1+s^2)");
   }
 
   @Test
-  public void testLaplaceTransformWoxiUnevaluated() {
+  public void testLaplaceTransformUnevaluated() {
     // Unknown functions should return unevaluated
     check("LaplaceTransform(BesselJ(0, t), t, s)", //
         "LaplaceTransform(BesselJ(0,t),t,s)");
   }
 
-  // ==========================================================
-  // InverseLaplaceTransform, ported from the Woxi project.
-  // ==========================================================
-
   @Test
-  public void testInverseLaplaceTransformWoxiMonomials() {
+  public void testInverseLaplaceTransformMonomials() {
     check("InverseLaplaceTransform(1/s, s, t)", //
         "1");
     check("InverseLaplaceTransform(1/s^2, s, t)", //
@@ -397,7 +387,7 @@ public class LaplaceTransformTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testInverseLaplaceTransformWoxiTrig() {
+  public void testInverseLaplaceTransformTrig() {
     check("InverseLaplaceTransform(1/(s^2 + 1), s, t)", //
         "Sin(t)");
     check("InverseLaplaceTransform(s/(s^2 + 1), s, t)", //
@@ -409,7 +399,7 @@ public class LaplaceTransformTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testInverseLaplaceTransformWoxiExponential() {
+  public void testInverseLaplaceTransformExponential() {
     check("InverseLaplaceTransform(1/(s - a), s, t)", //
         "E^(a*t)");
     // E^(-a*t) == E^(-(a*t))
@@ -418,7 +408,7 @@ public class LaplaceTransformTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  public void testInverseLaplaceTransformWoxiUnevaluated() {
+  public void testInverseLaplaceTransformUnevaluated() {
     check("InverseLaplaceTransform(Log(s), s, t)", //
         "InverseLaplaceTransform(Log(s),s,t)");
   }
