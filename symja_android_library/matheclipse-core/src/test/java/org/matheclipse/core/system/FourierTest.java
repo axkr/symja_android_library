@@ -108,7 +108,7 @@ public class FourierTest extends ExprEvaluatorTestCase {
     check("FourierSinTransform(Cos(t)/t,t,w)", //
         "1/2*Sqrt(Pi/2)*(1-Sign(1-w))");
     check("FourierSinTransform(t/(t^2+1),t,w)", //
-        "(Sqrt(2/Pi)*Pi)/(2*E^w)");
+        "Sqrt(2/Pi)*(1/2*Pi*Cosh(w)-1/2*Pi*Sinh(w))");
   }
 
   @Test
