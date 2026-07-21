@@ -1456,7 +1456,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
                   return mrv(arg, x, engine);
                 }
                 IExpr digamma = engine.evaluate(
-                    F.Plus(F.Log(arg), F.Negate(F.Divide(F.C1, F.Times(F.C2, arg)))));
+                    F.Plus(F.Log(arg), F.Negate(F.Divide(F.C1, F.Times(F.C2, digammaTailArg(arg, x, engine))))));
                 return mrv(digamma, x, engine);
               }
               IExpr currentMrvPG = F.NIL;
@@ -1559,7 +1559,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
             return F.PolyGamma(F.C0, arg);
           }
           return engine
-              .evaluate(F.Plus(F.Log(arg), F.Negate(F.Divide(F.C1, F.Times(F.C2, arg)))));
+              .evaluate(F.Plus(F.Log(arg), F.Negate(F.Divide(F.C1, F.Times(F.C2, digammaTailArg(arg, x, engine))))));
         }
 
         // Map across standard AST nodes
@@ -2519,10 +2519,55 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     ISymbol symbol = (ISymbol) rule.arg1();
     IExpr limit = rule.arg2();
     try {
+      // ExpIntegralEi(base + shift), shift -> 0 (Ei(x - E^(-E^x))): the difference
+      // Ei(base+shift) - Ei(base) is an unresolved oo - oo, resolved by the same order-2 Taylor
+      // as the Gamma differences (Ei'(x) = E^x/x), thesis #64. Ei is not in the Gamma
+      // special-function block below, so handle it here.
+      if ((limit.isInfinity() || limit.isNegativeInfinity()) && GAMMA_POLE_SHIFT_DEPTH.get() < 3
+          && function.has(g -> g.isAST(S.ExpIntegralEi, 2) && g.first().isPlus(), true)) {
+        function = expandGammaShifts(function, rule, direction, engine);
+      }
+
+      // ExpIntegralEi(g) with g -> 0 at a finite limit point: Ei has a logarithmic branch point at
+      // 0 (Ei(g) ~ EulerGamma + Log(g) + g + g^2/4), which Symja's Series does not provide, so
+      // e.g. E^(2*Ei(-x))/x^2 at x->0 never resolves. Substitute the near-0 series (an exact
+      // asymptotic equality that preserves the limit) and resolve the rewritten form via a direct
+      // depth-guarded evaluateLimit, adopting only a clean result (thesis #59).
+      if (!limit.isInfinity() && !limit.isNegativeInfinity() && GAMMA_POLE_SHIFT_DEPTH.get() < 3
+          && function.has(g -> g.isAST(S.ExpIntegralEi, 2) && !g.first().isFree(symbol, true),
+              true)) {
+        IExpr expanded = expandEiNearZero(function, rule, direction, engine);
+        if (expanded.isPresent() && !expanded.equals(function)) {
+          int eiDepth = GAMMA_POLE_SHIFT_DEPTH.get();
+          GAMMA_POLE_SHIFT_DEPTH.set(eiDepth + 1);
+          try {
+            IExpr eiResult = evaluateLimit(engine.evaluate(expanded), rule, direction, engine);
+            if (eiResult.isPresent() && eiResult.isFree(S.Limit) && eiResult.isIndeterminateFree()) {
+              return eiResult;
+            }
+          } catch (RuntimeException rex) {
+            Errors.rethrowsInterruptException(rex);
+            // ignore - continue with the unexpanded function
+          } finally {
+            GAMMA_POLE_SHIFT_DEPTH.set(eiDepth);
+          }
+        }
+      }
+
       if (function.has(
           x -> x.isFunctionID(ID.Factorial, ID.Gamma, ID.LogGamma, ID.Pochhammer, ID.PolyGamma),
           true)) {
         function = engine.evaluate(F.FunctionExpand(function));
+
+        // Gamma(base + shift) with a diverging base and a shift -> 0 (Gamma(x + 1/Gamma(x)),
+        // Gamma(x + E^(-x))): a difference Gamma(base+shift) - Gamma(base) is an unresolved
+        // oo - oo. Substitute the order-2 Taylor expansion in the shift so the leading
+        // Gamma'(base)*shift = Gamma(base)*PolyGamma(0,base)*shift term surfaces for the mrv
+        // machinery (thesis #70/#75/#76/#77). Shares the anti-ping-pong pole-shift budget.
+        if ((limit.isInfinity() || limit.isNegativeInfinity()) && GAMMA_POLE_SHIFT_DEPTH.get() < 3
+            && function.has(g -> g.isAST(S.Gamma, 2) && g.first().isPlus(), true)) {
+          function = expandGammaShifts(function, rule, direction, engine);
+        }
 
         // Shift Gamma arguments away from their poles using the exact recurrence
         // Gamma(z) = Gamma(z+m+1)/(z*(z+1)*...*(z+m)) whenever the argument's limit is a
@@ -2577,6 +2622,39 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
 
         // Apply Stirling's approximation exclusively for limits approaching Infinity
         if (limit.isInfinity()) {
+
+          // A nested divergent Gamma logarithm Log(Gamma(Gamma(x))) / LogGamma(Gamma(x)) ranks with
+          // its leading Stirling order Gamma(x)*Log(Gamma(x)), which already outranks E^x - but the
+          // full additive expansion leaves a Gamma difference that strands the mrv machinery, and
+          // the Exp(Limit(Log(...))) trick below only wraps another Log around it. Substitute the
+          // pure leading product and adopt the result exclusively when it is 0 or +-Infinity, where
+          // the dropped lower-order terms provably cannot change the ranking (thesis #50).
+          if (GAMMA_POLE_SHIFT_DEPTH.get() < 3 && function.has(sub -> {
+            IExpr g = sub.isLog() && sub.first().isAST(S.Gamma, 2) ? sub.first().first()
+                : sub.isAST(S.LogGamma, 2) ? sub.first() : F.NIL;
+            return g.isPresent() && isNestedGammaArg(g, symbol);
+          }, true)) {
+            IExpr leading = leadingLogGamma(function, symbol);
+            if (leading.isPresent() && !leading.equals(function)) {
+              int leadDepth = GAMMA_POLE_SHIFT_DEPTH.get();
+              GAMMA_POLE_SHIFT_DEPTH.set(leadDepth + 1);
+              try {
+                IExpr leadingResult =
+                    evaluateLimit(engine.evaluate(leading), rule, direction, engine);
+                if (leadingResult.isPresent() && leadingResult.isFree(S.Limit)
+                    && leadingResult.isIndeterminateFree()
+                    && (leadingResult.isInfinity() || leadingResult.isNegativeInfinity()
+                        || leadingResult.isZero())) {
+                  return leadingResult;
+                }
+              } catch (RuntimeException rex) {
+                Errors.rethrowsInterruptException(rex);
+                // ignore - continue with the unexpanded function
+              } finally {
+                GAMMA_POLE_SHIFT_DEPTH.set(leadDepth);
+              }
+            }
+          }
 
           // The Exp(Limit(Log(...))) Stirling trick only helps when at least one Gamma-family
           // argument actually diverges - otherwise replaceLogStirling substitutes nothing and
@@ -3742,6 +3820,105 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * Replace a nested divergent Gamma logarithm <code>Log(Gamma(g))</code> / <code>LogGamma(g)</code>
+   * by its leading Stirling order <code>g*Log(g)</code> (a single product term), for <code>g</code> a
+   * composite divergent argument - not the bare limit variable, whose <code>Log(Gamma(x))</code> the
+   * normal machinery already ranks. The dropped lower-order terms (<code>-g</code>,
+   * <code>(1/2)*Log(2*Pi/g)</code>, ...) are why the caller must only adopt a <code>0</code> /
+   * <code>+-Infinity</code> result: the full additive expansion
+   * <code>Gamma(x)*Log(Gamma(x)) - Gamma(x)</code> divided by <code>E^x</code> strands the mrv
+   * machinery on an <code>oo - oo</code>, while the pure leading product resolves (thesis #50,
+   * <code>Log(Gamma(Gamma(x)))/E^x -> Infinity</code>).
+   */
+  private static IExpr leadingLogGamma(IExpr function, ISymbol x) {
+    return F.subst(function, sub -> {
+      IExpr g = F.NIL;
+      if (sub.isLog() && sub.first().isAST(S.Gamma, 2)) {
+        g = sub.first().first();
+      } else if (sub.isAST(S.LogGamma, 2)) {
+        g = sub.first();
+      }
+      if (g.isPresent() && isNestedGammaArg(g, x)) {
+        return F.Times(g, F.Log(g));
+      }
+      return F.NIL;
+    });
+  }
+
+  /**
+   * True if <code>g</code> is a legal argument for the leading-order {@link #leadingLogGamma}
+   * rewrite: divergent and itself built from a Gamma-family function (e.g. <code>Gamma(x)</code>),
+   * so it grows super-polynomially. A merely affine divergent argument like <code>x + 1</code> is
+   * rejected: <code>LogGamma(x+1) - LogGamma(x) - Log(x) -> 0</code> depends on the very lower-order
+   * terms the leading-order rewrite discards, and expanding only one side of the difference would
+   * fabricate an Infinity. A Gamma-family argument is instead too large to cancel against anything
+   * but an identical copy (which the rewrite reproduces identically).
+   */
+  private static boolean isNestedGammaArg(IExpr g, ISymbol x) {
+    return !g.equals(x) && !g.isFree(x, true)
+        && g.has(t -> t.isFunctionID(ID.Gamma, ID.LogGamma, ID.Factorial, ID.Pochhammer), true)
+        && divergesAtInfinity(g, x);
+  }
+
+  /**
+   * The non-vanishing leading part of a digamma argument <code>z</code>, for the correction tail
+   * <code>1/(2z)</code> of <code>PolyGamma(0,z) ~ Log(z) - 1/(2z)</code>. Summands of <code>z</code>
+   * that vanish as <code>x -> Infinity</code> are dropped, so the tail uses <code>z</code>'s leading
+   * asymptotic. When <code>z</code> is itself a digamma expansion (<code>psi(psi(x))</code> recurses
+   * innermost-out to <code>z = Log(x) - 1/(2x)</code>), keeping the vanishing <code>-1/(2x)</code> in
+   * the <code>1/(2z)</code> denominator yields <code>1/(2*(Log(x) - 1/(2x)))</code>, whose
+   * second-order cancellation through two E-levels defeats the fixed-order Puiseux machinery and
+   * times out (thesis #71); the clean <code>1/(2*Log(x))</code> tail resolves. Sound because
+   * <code>1/(2z) -> 0</code> is already a correction and z's dropped part is negligible relative to
+   * its divergent leading term - it can never change a correctly-computed limit. The principal
+   * <code>Log(z)</code> term keeps the full <code>z</code>; it tolerates the messy argument.
+   */
+  private static IExpr digammaTailArg(IExpr z, ISymbol x, EvalEngine engine) {
+    if (!z.isPlus()) {
+      return z;
+    }
+    IAST plus = (IAST) z;
+    IASTAppendable kept = F.PlusAlloc(plus.argSize());
+    for (int i = 1; i < plus.size(); i++) {
+      IExpr term = plus.get(i);
+      if (divergesAtInfinity(term, x) || divergesAtInfinity(term.negate(), x)
+          || (term.isFree(x, true) && !term.isZero())) {
+        kept.append(term);
+      }
+    }
+    return kept.argSize() == 0 ? z : engine.evaluate(kept);
+  }
+
+  /**
+   * Substitute the near-0 series <code>ExpIntegralEi(g) ~ EulerGamma + Log(g) + g + g^2/4</code> for
+   * every <code>ExpIntegralEi(g)</code> whose argument <code>g -> 0</code> at the limit point. Ei
+   * has a logarithmic branch point at 0, so this is not a plain Taylor series and Symja's
+   * <code>Series</code>/<code>FunctionExpand</code> leave it unexpanded - yet the closed form is an
+   * exact asymptotic equality there, and the truncation error <code>O(g^3) -> 0</code> preserves the
+   * limit (thesis #59: <code>E^(2*Ei(-x))/x^2 -> E^(2*EulerGamma)</code> at <code>x->0</code>). Only
+   * arguments with limit exactly 0 are touched; any other Ei is left intact.
+   */
+  private static IExpr expandEiNearZero(IExpr function, IAST rule, Direction direction,
+      EvalEngine engine) {
+    final LimitData data =
+        new LimitData((ISymbol) rule.arg1(), rule.arg2(), rule, direction);
+    return F.subst(function, sub -> {
+      if (sub.isAST(S.ExpIntegralEi, 2) && !sub.first().isFree(data.variable(), true)) {
+        IExpr g = sub.first();
+        try {
+          if (evalLimitQuiet(g, data).isZero()) {
+            return F.Plus(S.EulerGamma, F.Log(g), g, F.Times(F.C1D4, F.Sqr(g)));
+          }
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          // leave this Ei unexpanded
+        }
+      }
+      return F.NIL;
+    });
+  }
+
+  /**
    * True if <code>expr -> +Infinity</code> as <code>x -> Infinity</code>. Stirling's approximation
    * of the Gamma family is only valid for a divergent (large positive) argument - substituting it
    * for e.g. <code>Gamma(1/7 + 1/x)</code> (argument limit 1/7) produces a wrong closed form.
@@ -3763,6 +3940,60 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       Errors.rethrowsInterruptException(rex);
       return false;
     }
+  }
+
+  /**
+   * Replaces each {@code f(base + shift)} subexpression - for {@code f} in
+   * {@code {Gamma, ExpIntegralEi}} - whose base diverges and whose shift tends to 0 with its
+   * order-2 Taylor series in the shift. A difference {@code f(base + shift) - f(base)} is
+   * otherwise an unresolved {@code oo - oo}; the expansion surfaces the leading
+   * {@code f'(base)*shift} term so the mrv machinery can rank it (thesis Gamma set #70/#75/#76/#77;
+   * ExpIntegralEi #64 with {@code Ei'(x) = E^x/x}). Order 2 also captures the second-order tail
+   * #75/#76 need. Only fires when the shift genuinely vanishes, so it never touches an ordinary
+   * {@code f(x)} or a diverging-argument call.
+   */
+  private static IExpr expandGammaShifts(IExpr function, IAST rule, Direction direction,
+      EvalEngine engine) {
+    ISymbol symbol = (ISymbol) rule.arg1();
+    IExpr limit = rule.arg2();
+    final LimitData data = new LimitData(symbol, limit, rule, direction);
+    IExpr expanded = F.subst(function, sub -> {
+      if (!(sub.isAST(S.Gamma, 2) || sub.isAST(S.ExpIntegralEi, 2)) || !sub.first().isPlus()) {
+        return F.NIL;
+      }
+      IAST arg = (IAST) sub.first();
+      IASTAppendable baseParts = F.PlusAlloc(arg.size());
+      IASTAppendable shiftParts = F.PlusAlloc(arg.size());
+      for (int i = 1; i < arg.size(); i++) {
+        IExpr term = arg.get(i);
+        IExpr tLim = evalLimitQuiet(term, data);
+        if (tLim.isPresent() && tLim.isZero()) {
+          shiftParts.append(term);
+        } else {
+          baseParts.append(term);
+        }
+      }
+      if (shiftParts.isEmpty() || baseParts.isEmpty()) {
+        return F.NIL; // no vanishing shift, or nothing left as base
+      }
+      IExpr base = baseParts.oneIdentity0();
+      IExpr shift = shiftParts.oneIdentity0();
+      // the base must diverge - the Taylor around an analytic point is only valid there
+      IExpr baseLim = evalLimitQuiet(base, data);
+      if (!(baseLim.isInfinity() || baseLim.isNegativeInfinity())) {
+        return F.NIL;
+      }
+      // order-2 Taylor of f(base + d) in d, then substitute d -> shift
+      ISymbol d = F.Dummy("gd");
+      IExpr series = engine.evalQuiet(
+          F.Normal(F.Series(F.unaryAST1(sub.head(), F.Plus(base, d)), F.List(d, F.C0, F.C2))));
+      if (series.isPresent() && series.isFree(S.Series) && series.isFree(S.O)
+          && series.isIndeterminateFree() && !series.equals(sub)) {
+        return engine.evaluate(F.subst(series, d, shift));
+      }
+      return F.NIL;
+    });
+    return expanded.isPresent() ? expanded : function;
   }
 
   private static IExpr replaceStirling(IExpr expr, ISymbol x, EvalEngine engine) {
@@ -3816,7 +4047,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
               return F.PolyGamma(F.C0, arg);
             }
             return engine.evaluate(
-                F.Plus(F.Log(arg), F.Negate(F.Divide(F.C1, F.Times(F.C2, arg)))));
+                F.Plus(F.Log(arg), F.Negate(F.Divide(F.C1, F.Times(F.C2, digammaTailArg(arg, x, engine))))));
           }
           break;
         }
@@ -4226,6 +4457,29 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
               && cancelled.leafCount() < arg1.leafCount()) {
             arg1 = cancelled;
           }
+        }
+      }
+
+      // E^(diverging Gamma-family) like E^Gamma(x)/Gamma(x): the heuristic Stirling
+      // preprocessing substitutes E^Gamma(x) -> E^(x*Log(x)-x+...) into a form whose
+      // Gamma-vs-poly-log ranking the machinery cannot do, while Gruntz ranks the raw E^Gamma(x)
+      // via its mrv set {E^Gamma(x)} in ~70ms (thesis #46). Route it to Gruntz FIRST, at the
+      // builtin boundary (once per user Limit, not on every recursive evaluateLimit - the
+      // nested has-scan there made the Gamma-difference cases O(n^2)). Adopt only a clean result.
+      ISymbol limitVar = (ISymbol) rule.arg1();
+      IExpr limitPoint = rule.arg2();
+      if ((limitPoint.isInfinity() || limitPoint.isNegativeInfinity())
+          && GruntzLimit.GRUNTZ_DEPTH.get() == 0 && !GruntzLimit.IN_GRUNTZ_SERIES.get()
+          && arg1.has(p -> p.isExp() && !p.exponent().isFree(limitVar, true)
+              && p.exponent().has(
+                  t -> t.isFunctionID(ID.Gamma, ID.LogGamma, ID.Factorial, ID.Pochhammer), true),
+              true)
+          && arg1.isNumericFunction(new VariablesSet(arg1))) {
+        IExpr gruntzFirst =
+            GruntzLimit.evaluateLimit(arg1, limitVar, limitPoint, direction, engine);
+        if (gruntzFirst.isPresent() && gruntzFirst.isFree(S.Limit)
+            && gruntzFirst.isIndeterminateFree() && !hasNestedDirectedInfinity(gruntzFirst)) {
+          return gruntzFirst;
         }
       }
 
