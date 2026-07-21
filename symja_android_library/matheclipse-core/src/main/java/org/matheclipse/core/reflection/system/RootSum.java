@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.Optional;
+import org.matheclipse.core.builtin.RootsFunctions;
 import org.matheclipse.core.eval.AlgebraUtil;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -9,6 +10,7 @@ import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -30,9 +32,9 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <code>Sum_i A(r_i)/B(r_i) = Sum_k c_k*p_k</code>, where <code>c_k</code> are the coefficients of
  * <code>A*B^-1 mod f</code> and <code>p_k = Sum_i r_i^k</code> are the Newton power sums of the
  * roots.
- * <li>The summand is <code>A(r)/(C(r)*(v - r))</code> with a single external variable <code>v</code>
- * and <code>A</code>, <code>C</code> free of <code>v</code>. This is exactly the shape produced by
- * differentiating a <code>Log(v - r)</code> antiderivative. Using
+ * <li>The summand is <code>A(r)/(C(r)*(v - r))</code> with a single external variable
+ * <code>v</code> and <code>A</code>, <code>C</code> free of <code>v</code>. This is exactly the
+ * shape produced by differentiating a <code>Log(v - r)</code> antiderivative. Using
  * <code>1/(v - r_i) == S(v, r_i)/f(v)</code> with <code>S(v, r) = (f(v) - f(r))/(v - r)</code>, the
  * external variable is kept out of the root arithmetic and only reappears in the final assembly.
  * </ul>
@@ -78,6 +80,19 @@ public class RootSum extends AbstractFunctionEvaluator {
       bx = F.C1;
     }
     if (!ax.isPolynomial(F.list(r)) || !bx.isPolynomial(F.list(r))) {
+      // Fallback for non-rational summands: explicitly sum over roots if degree <= 4
+      if (degree > 0 && degree <= 4) {
+        IASTMutable rootsAST = org.matheclipse.core.builtin.RootsFunctions.rootsOfExprPolynomial(px,
+            F.List(r), false, true);
+        if (rootsAST != null && rootsAST.isPresent() && rootsAST.isList()) {
+          IASTAppendable sum = F.PlusAlloc(rootsAST.size());
+          for (int i = 1; i < rootsAST.size(); i++) {
+            sum.append(engine.evaluate(F.unaryAST1(form, rootsAST.get(i))));
+          }
+          return engine.evaluate(F.FullSimplify(sum));
+        }
+      }
+      // Cannot reduce to a rational function and degree is too high for exact radicals
       return F.NIL;
     }
 
@@ -112,14 +127,65 @@ public class RootSum extends AbstractFunctionEvaluator {
       }
     }
 
-    // Keep the expression inert for forms we cannot reduce to a rational function; this lets
-    // Normal[...] and N[...] manipulate it later.
+    // Fallback for all parameter-dependent rational summands:
+    // Try the general trace over roots algorithm.
+    IExpr result = rootSumConstant(pMonic, ax, bx, r, powerSums, degree, engine);
+    if (result.isPresent()) {
+      return result;
+    }
+
+    // Keep the expression inert for forms we cannot reduce to a rational function;
     return F.NIL;
   }
 
+  @Override
+  public IExpr numericEval(final IAST ast, EvalEngine engine) {
+    // Ensure the expected number of arguments are present.
+    if (ast.argSize() != 2) {
+      return F.NIL;
+    }
+
+    IExpr f = ast.arg1();
+    IExpr form = ast.arg2();
+
+    // 1. Create a dummy variable for the polynomial to avoid naming collisions[cite: 1].
+    ISymbol r = F.Dummy("r");
+
+    // 2. Evaluate the pure function 'f' with the dummy variable 'r' to extract the polynomial[cite:
+    // 1].
+    IExpr px = engine.evaluate(F.ExpandAll(engine.evaluate(F.unaryAST1(f, r))));
+    // if (!px.isPolynomial(F.list(r))) {
+    // return F.NIL;
+    // }
+
+    // 3. Delegate to RootsFunctions to find the complex roots of the evaluated polynomial[cite: 3].
+    // RootsFunctions.complexRoots expects an IAST of variables (size 2, representing List[r])[cite:
+    // 3].
+    IAST variables = F.List(r);
+    IAST rootsList = RootsFunctions.complexRoots(px, variables, engine);
+
+    // 4. Verify that the root finding was successful and returned a list[cite: 3].
+    if (rootsList == null || !rootsList.isList()) {
+      return F.NIL;
+    }
+
+    // 5. Accumulate the sum of form(root) for each discovered numerical root[cite: 1].
+    IASTAppendable sum = F.PlusAlloc(rootsList.size());
+    for (int i = 1; i < rootsList.size(); i++) {
+      IExpr rootValue = rootsList.get(i);
+
+      // Apply the summand 'form' function to the current root value[cite: 1].
+      IExpr summand = engine.evaluate(F.unaryAST1(form, rootValue));
+      sum.append(summand);
+    }
+
+    // 6. Return the fully evaluated numerical sum[cite: 1].
+    return engine.evaluate(sum);
+  }
+
   /**
-   * Newton power sums <code>p_k = Sum_i r_i^k</code>, for <code>k = 0..degree-1</code>, of the roots
-   * of the monic polynomial <code>pMonic</code>.
+   * Newton power sums <code>p_k = Sum_i r_i^k</code>, for <code>k = 0..degree-1</code>, of the
+   * roots of the monic polynomial <code>pMonic</code>.
    */
   private static IExpr[] powerSums(IExpr pMonic, ISymbol r, int degree, EvalEngine engine) {
     // coefficient[j] is the coefficient of r^j, for j < degree (the coefficient of r^degree is 1).
@@ -161,23 +227,23 @@ public class RootSum extends AbstractFunctionEvaluator {
 
   /**
    * The modular inverse <code>b(r)^-1 mod pMonic(r)</code>, or {@link F#NIL} if <code>b</code> and
-   * <code>pMonic</code> are not coprime (i.e. a root of the denominator is a root of the polynomial).
+   * <code>pMonic</code> are not coprime (i.e. a root of the denominator is a root of the
+   * polynomial).
    */
   private static IExpr modularInverse(IExpr b, IExpr pMonic, ISymbol r, EvalEngine engine) {
     if (b.isFree(r)) {
-      // b is a unit (constant) with respect to r, so its inverse modulo pMonic is just 1/b.
-      // PolynomialExtendedGCD would return the degenerate cofactor s == 0 in this case.
-      return b.isZero() ? F.NIL : engine.evaluate(F.Power(b, F.CN1));
+      // b is a unit (constant) with respect to r.
+      return b.isZero() ? S.ComplexInfinity : engine.evaluate(F.Power(b, F.CN1));
     }
     IExpr extendedGCD = S.PolynomialExtendedGCD.of(engine, b, pMonic, r);
     if (!extendedGCD.isList() || extendedGCD.size() != 3) {
-      return F.NIL;
+      return F.NIL; // Evaluation failure
     }
     IExpr gcd = ((IAST) extendedGCD).arg1();
     IExpr cofactors = ((IAST) extendedGCD).arg2();
     if (!gcd.isFree(r) || gcd.isZero() || !cofactors.isList() || cofactors.size() < 2) {
       // A gcd depending on r has positive degree, so b is not invertible modulo pMonic.
-      return F.NIL;
+      return S.ComplexInfinity; // Pole indicator
     }
     IExpr s = ((IAST) cofactors).arg1(); // s*b + t*pMonic == gcd
     return engine.evaluate(F.Cancel(F.Divide(s, gcd)));
@@ -198,6 +264,10 @@ public class RootSum extends AbstractFunctionEvaluator {
     } else {
       IExpr inverse = modularInverse(bx, pMonic, r, engine);
       if (inverse.isNIL()) {
+        // PolynomialExtendedGCD failed to evaluate symbolically.
+        return F.NIL;
+      }
+      if (inverse.equals(S.ComplexInfinity)) {
         // A root of the denominator coincides with a root of the polynomial: pole.
         return S.ComplexInfinity;
       }
@@ -235,7 +305,8 @@ public class RootSum extends AbstractFunctionEvaluator {
     }
     IExpr aHat = engine.evaluate(F.PolynomialRemainder(F.Times(ax, cInverse), pMonic, r));
 
-    // S(v, r) = (pMonic(v) - pMonic(r))/(v - r); at a root r_i this gives 1/(v - r_i) == S/pMonic(v).
+    // S(v, r) = (pMonic(v) - pMonic(r))/(v - r); at a root r_i this gives 1/(v - r_i) ==
+    // S/pMonic(v).
     IExpr pv = engine.evaluate(F.subst(pMonic, e -> e.equals(r) ? v : F.NIL));
     IExpr sVR = engine.evaluate(F.Cancel(F.Divide(F.Subtract(pv, pMonic), F.Subtract(v, r))));
 
@@ -246,8 +317,8 @@ public class RootSum extends AbstractFunctionEvaluator {
       if (sm.isZero()) {
         continue;
       }
-      IExpr tm = traceOverRoots(engine.evaluate(F.Times(aHat, sm)), pMonic, r, powerSums, degree,
-          engine);
+      IExpr tm =
+          traceOverRoots(engine.evaluate(F.Times(aHat, sm)), pMonic, r, powerSums, degree, engine);
       if (!tm.isZero()) {
         numerator.append(F.Times(tm, F.Power(v, F.ZZ(m))));
       }

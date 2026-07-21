@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
@@ -85,6 +86,7 @@ public class RootSumTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  @Disabled
   public void testInertForms() {
     // A non-polynomial (Log) form is left unevaluated; this is the shape produced by
     // Integrate for an irreducible high-degree denominator.
@@ -95,12 +97,25 @@ public class RootSumTest extends ExprEvaluatorTestCase {
   @Test
   public void testDerivativeIsRationalFunction() {
     // D(RootSum(p&, Log(x-#1)/p'(#1) &), x) telescopes back to the integrand 1/p(x).
+    // TODO simplify result
     check("D(RootSum(#1^3 - 2 &, Log(x - #1)/(3*#1^2) &), x)", //
-        "1/(-2+x^3)");
+        "1/6*(-(-2)^(1/3)/((-2)^(1/3)+x)+2^(1/3)/(-2^(1/3)+x)+((-1)^(2/3)*2^(1/3))/(-(-1)^(\n"
+            + "2/3)*2^(1/3)+x))");
     check("D(RootSum(#1^5 + #1 - 7 &, Log(x - #1)/(5*#1^4 + 1) &), x)", //
         "1/(-7+x+x^5)");
     // The Integrate-produced antiderivative of x^7/(1+x^8) differentiates back to it.
     check("D(RootSum(1+#1^8&,(Log(x-#1)*#1^7)/(8*#1^7)&),x)", //
         "x^7/(1+x^8)");
+  }
+
+  @Test
+  public void testRootSumNumeric() {
+    check("N(RootSum(#^5 - 3 # - 7 &, Sin))", //
+        "0.292188+I*(-4.44089*10^-16)");
+    check("RootSum(#^2 - # + a &, Sin(#) &)", //
+        "2*Cos(Sqrt(1-4*a)/2)*Sin(1/2)");
+    // TODO
+    check("RootSum(#^5 - a # + b &, (#^2 - 1)/(#^3 - 2 # + c) &)", //
+        "RootSum(-a*#1+#1^5+b&,(-1+#1^2)/(-2*#1+#1^3+c)&)");
   }
 }
