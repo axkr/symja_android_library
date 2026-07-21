@@ -774,6 +774,8 @@ public class S {
    */
   public final static IBuiltInSymbol ArrayDepth = S.initFinalSymbol("ArrayDepth", ID.ArrayDepth);
 
+  public final static IBuiltInSymbol ArrayDot = S.initFinalSymbol("ArrayDot", ID.ArrayDot);
+
   public final static IBuiltInSymbol ArrayFlatten =
       S.initFinalSymbol("ArrayFlatten", ID.ArrayFlatten);
 
@@ -10284,6 +10286,10 @@ public class S {
   public final static IBuiltInSymbol Range = S.initFinalSymbol("Range", ID.Range);
 
   public final static IBuiltInSymbol RangeSpace = S.initFinalSymbol("RangeSpace", ID.RangeSpace);
+
+
+  public final static IBuiltInSymbol RankDecomposition =
+      S.initFinalSymbol("RankDecomposition", ID.RankDecomposition);
 
   /**
    * RankedMax({e_1, e_2, ..., e_i}, n) - returns the n-th largest real value in the list `{e_1,

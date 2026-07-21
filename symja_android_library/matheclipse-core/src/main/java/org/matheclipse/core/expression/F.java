@@ -11436,6 +11436,10 @@ public class F extends S {
     return new AST2(TemplateSlot, a0, a1);
   }
 
+  public static IAST TensorContract(final IExpr a0, final IExpr a1) {
+    return new AST2(TensorContract, a0, a1);
+  }
+
   public static IAST TensorDimensions(final IExpr a0) {
     return new AST1(TensorDimensions, a0);
   }
