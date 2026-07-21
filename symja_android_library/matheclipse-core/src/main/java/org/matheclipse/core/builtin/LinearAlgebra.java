@@ -5903,44 +5903,6 @@ public final class LinearAlgebra {
     }
   }
 
-
-  /**
-   *
-   *
-   * <pre>
-   * Tr(matrix)
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * computes the trace of the <code>matrix</code>.
-   *
-   * </blockquote>
-   *
-   * <p>
-   * See:<br>
-   *
-   * <ul>
-   * <li><a href="http://en.wikipedia.org/wiki/Trace_matrix">Wikipedia - Trace (linear
-   * algebra)</a><br>
-   * </ul>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * &gt;&gt; Tr({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})
-   * 15
-   * </pre>
-   *
-   * <p>
-   * Symbolic trace:
-   *
-   * <pre>
-   * &gt;&gt; Tr({{a, b, c}, {d, e, f}, {g, h, i}})
-   * a+e+i
-   * </pre>
-   */
   private static class Tr extends AbstractEvaluator {
 
     @Override
@@ -5960,30 +5922,29 @@ public final class LinearAlgebra {
           return F.NIL;
         }
 
+        int traceDepth = dimsSize;
         if (ast.isAST3()) {
           level = ast.arg3().toIntDefault();
-          if (F.isNotPresent(level)) {
+          if (F.isNotPresent(level) || level <= 0) {
             return F.NIL;
           }
-
-          // TODO calculate for level restrictions
-          return F.NIL;
+          traceDepth = Math.min(dimsSize, level);
         }
 
-        // determine the sum of elements with equal indices for tensors
+        // determine the sum of elements with equal indices for tensors up to traceDepth
         int minLength = Integer.MAX_VALUE;
-        for (int i = 0; i < dimsSize; i++) {
+        for (int i = 0; i < traceDepth; i++) {
           if (minLength > dimensions.getInt(i)) {
             minLength = dimensions.getInt(i);
           }
         }
+
         if (arg1.isSparseArray()) {
           final ISparseArray tensor = (ISparseArray) arg1;
-          // IExpr defaultValue = tensor.getDefaultValue();
-          int[] part = new int[dimsSize];
+          int[] part = new int[traceDepth];
           IASTMutable tr = F.astMutable(header, minLength++);
           for (int d = 1; d < minLength; d++) {
-            for (int i = 0; i < dimsSize; i++) {
+            for (int i = 0; i < traceDepth; i++) {
               part[i] = d;
             }
             tr.set(d, tensor.getIndex(part));
@@ -5993,10 +5954,10 @@ public final class LinearAlgebra {
         }
 
         final IAST tensor = (IAST) arg1.normal(false);
-        int[] part = new int[dimsSize];
+        int[] part = new int[traceDepth];
         IASTMutable tr = F.astMutable(header, minLength++);
         for (int d = 1; d < minLength; d++) {
-          for (int i = 0; i < dimsSize; i++) {
+          for (int i = 0; i < traceDepth; i++) {
             part[i] = d;
           }
           tr.set(d, tensor.getPart(part));
