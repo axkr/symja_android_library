@@ -2895,18 +2895,11 @@ public class Algebra {
       IAST variablesList = F.NIL;
       IExpr arg1 = ast.arg1();
       if (ast.isAST1()) {
-        variablesList = F.CEmptyList;
-        // mimic S.Variables
-        IAST temp = VariablesSet.getAlgebraicVariables(arg1);
-        if (temp.isList()) {
-          variablesList = temp;
-        } else {
-          return F.NIL;
-        }
-
-        if (variablesList.size() == 0) {
-          return S.True;
-        }
+        // `PolynomialQ(expr)` tests if `expr` is a polynomial in its "generalized variables":
+        // every maximal subexpression which isn't built from `Plus`, `Times` or a non-negative
+        // integer `Power` counts as a variable of its own. So `Sqrt(x)+6*Sin(x)` is a polynomial
+        // in the variables `Sqrt(x)` and `Sin(x)`.
+        return F.booleSymbol(isGeneralizedPolynomial(arg1));
       } else {
         variablesList = ast.arg2().makeList();
         Set<IExpr> fVariablesSet = new HashSet<IExpr>();
@@ -2936,6 +2929,39 @@ public class Algebra {
         return result;
       }
       return F.NIL;
+    }
+
+    /**
+     * Test if <code>expr</code> is a polynomial in its generalized variables, i.e. only
+     * <code>Plus</code>, <code>Times</code> and non-negative integer <code>Power</code> combine the
+     * variables. A negative exponent on a non-numeric base is the only structural disqualifier;
+     * rational number coefficients like <code>1/6</code> are allowed.
+     *
+     * @param expr
+     * @return
+     */
+    private static boolean isGeneralizedPolynomial(IExpr expr) {
+      if (expr.isNumber()) {
+        return true;
+      }
+      if (expr.isPlus() || expr.isTimes()) {
+        return ((IAST) expr).forAll(x -> isGeneralizedPolynomial(x));
+      }
+      if (expr.isPower()) {
+        IExpr base = expr.base();
+        IExpr exponent = expr.exponent();
+        if (exponent.isNegativeSigned()) {
+          // a negative exponent - numeric like `x^(-2)` or symbolic like `y^(-w)` - is a
+          // reciprocal, so only a numeric base (a rational coefficient like `1/6`) qualifies
+          return base.isNumber();
+        }
+        if (exponent.isInteger()) {
+          return isGeneralizedPolynomial(base);
+        }
+        // a fractional or symbolic exponent makes the whole power a generalized variable
+        return true;
+      }
+      return true;
     }
 
     @Override

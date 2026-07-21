@@ -541,7 +541,11 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
       restList.append(ast);
       return coefficientMap;
     }
-    return addCoefficient(coefficientMap, mainExponent, times.oneIdentity1());
+    // a Times completely free of x has no x-power factor: it is the coefficient of x^0.
+    // Passing the NIL sentinel into addCoefficient would silently DISCARD the term
+    // (observed as a dropped constant term in series expansions).
+    return addCoefficient(coefficientMap, mainExponent.isNIL() ? F.C0 : mainExponent,
+        times.oneIdentity1());
   }
 
   public static Map<IExpr, IExpr> createTimes(final IAST ast, IExpr x,
@@ -574,7 +578,10 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
       }
       restList.append(expr);
     }
-    return addCoefficient(coefficientMap, mainExponent, times.oneIdentity1());
+    // see createTimesSub: NIL exponent means "no x-power factor" = coefficient of x^0;
+    // the NIL sentinel would be silently discarded by addCoefficient
+    return addCoefficient(coefficientMap, mainExponent.isNIL() ? F.C0 : mainExponent,
+        times.oneIdentity1());
   }
 
   /**
@@ -590,14 +597,9 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
     if (exponent.isPresent()) {
       IExpr oldCoefficient = coefficientMap.get(exponent);
       if (oldCoefficient != null) {
-        if (oldCoefficient.isTimes()) {
-          ((IASTAppendable) oldCoefficient).append(coefficient);
-        } else {
-          IASTAppendable times = F.TimesAlloc(4);
-          times.append(oldCoefficient);
-          times.append(coefficient);
-          coefficientMap.put(exponent, times);
-        }
+        // contributions of a sum sharing the same exponent ADD - the previous Times-merge
+        // silently MULTIPLIED them (Log(2)/2 + Log(Pi)/2 became 1/4*Log(2)*Log(Pi))
+        coefficientMap.put(exponent, F.Plus(oldCoefficient, coefficient));
       } else {
         coefficientMap.put(exponent, coefficient);
       }
@@ -665,7 +667,7 @@ public final class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
         for (int i = 1; i < vars.size(); i++) {
           IExpr variable = vars.get(i);
           if (variable.equals(base)) {
-            if (exponent.isRational() && exponent.isNonNegativeResult()) {
+            if (exponent.isInteger() && exponent.isNonNegativeResult()) {
               return true;
             }
             return false;
