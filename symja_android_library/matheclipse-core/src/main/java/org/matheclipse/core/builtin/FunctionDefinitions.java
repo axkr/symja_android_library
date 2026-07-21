@@ -23,6 +23,7 @@ public final class FunctionDefinitions {
       S.ArrayPlot.setEvaluator(new org.matheclipse.core.builtin.graphics.ArrayPlot());
       S.ArcLength.setEvaluator(new org.matheclipse.core.reflection.system.ArcLength());
       S.Area.setEvaluator(new org.matheclipse.core.reflection.system.Area());
+      S.ArrayDot.setEvaluator(new org.matheclipse.core.reflection.system.ArrayDot());
       S.AlgebraicIntegerQ
           .setEvaluator(new org.matheclipse.core.reflection.system.AlgebraicIntegerQ());
       S.ArraySymbol.setEvaluator(new org.matheclipse.core.reflection.system.ArraySymbol());
@@ -260,6 +261,8 @@ public final class FunctionDefinitions {
 
       S.QPochhammer.setEvaluator(new org.matheclipse.core.reflection.system.QPochhammer());
 
+      S.RankDecomposition
+          .setEvaluator(new org.matheclipse.core.reflection.system.RankDecomposition());
       S.RangeSpace.setEvaluator(new org.matheclipse.core.reflection.system.RangeSpace());
       S.Ratios.setEvaluator(new org.matheclipse.core.reflection.system.Ratios());
       S.Reduce.setEvaluator(new org.matheclipse.core.reflection.system.Reduce());
