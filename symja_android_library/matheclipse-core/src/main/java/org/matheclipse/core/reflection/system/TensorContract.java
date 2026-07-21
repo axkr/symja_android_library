@@ -2,10 +2,12 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LinearAlgebraUtil;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.ArraySymbolExpr;
 import org.matheclipse.core.expression.data.MatrixSymbolExpr;
 import org.matheclipse.core.expression.data.VectorSymbolExpr;
@@ -14,12 +16,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-/**
- * Implementation of the TensorContract function.
- * <p>
- * Contracts specified slots of a tensor.
- * </p>
- */
 public class TensorContract extends AbstractEvaluator {
 
   public TensorContract() {}
@@ -42,7 +38,7 @@ public class TensorContract extends AbstractEvaluator {
 
     // Handle ArraySymbol
     if (tensor instanceof ArraySymbolExpr) {
-      return evaluateArraySymbol((ArraySymbolExpr) tensor, slots);
+      return evaluateArraySymbol(ast, (ArraySymbolExpr) tensor, slots, engine);
     }
 
     // 3. Handle VectorSymbol (Vectors cannot be contracted)
@@ -52,16 +48,17 @@ public class TensorContract extends AbstractEvaluator {
 
     // Handle Explicit Lists (Calculation)
     if (tensor.isList()) {
-      return contractList((IAST) tensor, slots, engine);
+      return contractList(ast, (IAST) tensor, slots, engine);
     }
 
     return F.NIL;
-    }
+  }
 
   /**
    * logic for ArraySymbolExpr. Checks validity and simplifies to Tr if applicable.
    */
-  private IExpr evaluateArraySymbol(ArraySymbolExpr array, IExpr slots) {
+  private IExpr evaluateArraySymbol(final IAST ast, ArraySymbolExpr array, IExpr slots,
+      EvalEngine engine) {
     // Dimensions are stored as an IAST: {d1, d2, ...}
     IAST dimensions = array.getDimensions();
     int rank = dimensions.argSize();
@@ -72,11 +69,19 @@ public class TensorContract extends AbstractEvaluator {
       return F.NIL; // Malformed slots
     }
 
-    // Validate indices against rank
+    // Validate indices against rank and positivity
     for (int[] pair : contractions) {
       int u = pair[0];
       int v = pair[1];
-      if (u < 1 || u > rank || v < 1 || v > rank || u == v) {
+
+      if (u <= 0) {
+        return Errors.printMessage(ast.topHead(), "pcontr", F.List(F.ZZ(u)), engine);
+      }
+      if (v <= 0) {
+        return Errors.printMessage(ast.topHead(), "pcontr", F.List(F.ZZ(v)), engine);
+      }
+
+      if (u > rank || v > rank || u == v) {
         // Invalid index for this symbol -> likely return NIL or error
         // returning NIL leaves it unevaluated, which is standard for symbolic errors
         return F.NIL;
@@ -101,11 +106,11 @@ public class TensorContract extends AbstractEvaluator {
   /**
    * Performs contraction on an explicit nested list.
    */
-  private IExpr contractList(IAST tensor, IExpr slots, EvalEngine engine) {
+  private IExpr contractList(final IAST ast, IAST tensor, IExpr slots, EvalEngine engine) {
     List<int[]> contractions = parseSlots(slots);
     if (contractions == null) {
       return F.NIL;
-        }
+    }
 
     IExpr currentTensor = tensor;
 
@@ -113,8 +118,15 @@ public class TensorContract extends AbstractEvaluator {
       int u = pair[0];
       int v = pair[1];
 
+      if (u <= 0) {
+        return Errors.printMessage(ast.topHead(), "pcontr", F.List(F.ZZ(u)), engine);
+      }
+      if (v <= 0) {
+        return Errors.printMessage(ast.topHead(), "pcontr", F.List(F.ZZ(v)), engine);
+      }
+
       int rank = getRank(currentTensor);
-      if (u < 1 || u > rank || v < 1 || v > rank || u == v) {
+      if (u > rank || v > rank || u == v) {
         return F.NIL;
       }
 
@@ -138,13 +150,19 @@ public class TensorContract extends AbstractEvaluator {
         return F.NIL;
       }
 
-      currentTensor = engine.evaluate(F.Tr(transposed));
+      // Construct Tr[transposed, Plus, 2] to trace exactly the two contracted dimensions.
+      IASTAppendable trAst = F.ast(S.Tr);
+      trAst.append(transposed);
+      trAst.append(S.Plus);
+      trAst.append(F.C2);
+
+      currentTensor = engine.evaluate(trAst);
 
       updateRemainingIndices(contractions, u, v);
     }
 
     return currentTensor;
-    }
+  }
 
   private void updateRemainingIndices(List<int[]> pairs, int removedU, int removedV) {
     for (int[] pair : pairs) {
@@ -157,61 +175,61 @@ public class TensorContract extends AbstractEvaluator {
         pair[1] -= 2;
       else if (pair[1] > removedU)
         pair[1] -= 1;
-        }
     }
+  }
 
-    private List<int[]> parseSlots(IExpr slots) {
-      List<int[]> list = new ArrayList<>();
-      if (!slots.isList())
-        return null;
+  private List<int[]> parseSlots(IExpr slots) {
+    List<int[]> list = new ArrayList<>();
+    if (!slots.isList())
+      return null;
 
-      IAST slotList = (IAST) slots;
+    IAST slotList = (IAST) slots;
 
-      // Case A: {1, 2}
-      if (slotList.argSize() == 2 && slotList.arg1().isInteger() && slotList.arg2().isInteger()) {
-        list.add(new int[] {slotList.arg1().toIntDefault(), slotList.arg2().toIntDefault()});
-        return list;
-      }
-
-      // Case B: {{1, 2}, {3, 4}}
-      for (IExpr arg : slotList) {
-        if (arg.isList()) {
-          IAST pair = (IAST) arg;
-          if (pair.argSize() == 2 && pair.arg1().isInteger() && pair.arg2().isInteger()) {
-            list.add(new int[] {pair.arg1().toIntDefault(), pair.arg2().toIntDefault()});
-          } else {
-            return null;
-          }
-        } else {
-          return null;
-        }
-      }
+    // Case A: {1, 2}
+    if (slotList.argSize() == 2 && slotList.arg1().isInteger() && slotList.arg2().isInteger()) {
+      list.add(new int[] {slotList.arg1().toIntDefault(), slotList.arg2().toIntDefault()});
       return list;
     }
 
-    private int getRank(IExpr tensor) {
-      if (tensor.isList()) {
-        return LinearAlgebraUtil.arrayDepth(tensor);
+    // Case B: {{1, 2}, {3, 4}}
+    for (IExpr arg : slotList) {
+      if (arg.isList()) {
+        IAST pair = (IAST) arg;
+        if (pair.argSize() == 2 && pair.arg1().isInteger() && pair.arg2().isInteger()) {
+          list.add(new int[] {pair.arg1().toIntDefault(), pair.arg2().toIntDefault()});
+        } else {
+          return null;
+        }
+      } else {
+        return null;
       }
-      return 0;
     }
+    return list;
+  }
 
-    private boolean isTraceContraction(IExpr slots) {
-      if (!slots.isList())
-        return false;
-      IAST slotList = (IAST) slots;
-      if (slotList.argSize() == 1 && slotList.arg1().isList()) {
-        IAST inner = (IAST) slotList.arg1();
-        return inner.argSize() == 2 && inner.arg1().isOne() && inner.arg2().toIntDefault() == 2;
-      }
-      if (slotList.argSize() == 2) {
-        return slotList.arg1().isOne() && slotList.arg2().toIntDefault() == 2;
-      }
+  private int getRank(IExpr tensor) {
+    if (tensor.isList()) {
+      return LinearAlgebraUtil.arrayDepth(tensor);
+    }
+    return 0;
+  }
+
+  private boolean isTraceContraction(IExpr slots) {
+    if (!slots.isList())
       return false;
+    IAST slotList = (IAST) slots;
+    if (slotList.argSize() == 1 && slotList.arg1().isList()) {
+      IAST inner = (IAST) slotList.arg1();
+      return inner.argSize() == 2 && inner.arg1().isOne() && inner.arg2().toIntDefault() == 2;
     }
+    if (slotList.argSize() == 2) {
+      return slotList.arg1().isOne() && slotList.arg2().toIntDefault() == 2;
+    }
+    return false;
+  }
 
-    @Override
-    public void setUp(final ISymbol newSymbol) {
-      newSymbol.setAttributes(ISymbol.PROTECTED);
-    }
+  @Override
+  public void setUp(final ISymbol newSymbol) {
+    newSymbol.setAttributes(ISymbol.PROTECTED);
+  }
 }
