@@ -1906,6 +1906,16 @@ public class SpecialFunctions {
             return F.C0;
           }
         }
+        if (arg2.isInfinity()) {
+          if (arg1.isZero()) {
+            // https://functions.wolfram.com/GammaBetaErf/PolyGamma2/03/02/0001/
+            return F.CInfinity;
+          }
+          if (arg1.isMathematicalIntegerNonNegative()) {
+            // PolyGamma(n, x) ~ (-1)^(n-1)*(n-1)!/x^n -> 0 for n >= 1
+            return F.C0;
+          }
+        }
         if (engine.isNumericMode()) {
           if (arg1.isZero()) {
             return arg2.digamma();
