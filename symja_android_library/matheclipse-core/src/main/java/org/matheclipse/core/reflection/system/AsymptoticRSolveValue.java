@@ -27,6 +27,9 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
   private final static boolean DEBUG = false;
 
+  /** Budget (seconds) for one bounded Series attempt; $Aborted counts as "cannot solve". */
+  private final static long SERIES_BUDGET_SECONDS = 10;
+
   public AsymptoticRSolveValue() {}
 
   @Override
@@ -117,10 +120,22 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
         exactSol = engine.evaluate(F.Simplify(exactSol));
 
         IAST seriesSpec = F.List(xVar, x0, F.ZZ(order));
-        IExpr seriesRes = engine.evaluate(F.Series(exactSol, seriesSpec));
+        // Time-boxed: Series of special sequences (Fibonacci, LucasL) or exponential growth
+        // at Infinity can grind through the series/limit machinery without terminating; a
+        // bounded attempt that ends in $Aborted is treated like a failed Series below.
+        // evalTimeConstrained sets the engine's deadline without restoring it, so save it.
+        final long savedSeconds = engine.getSeconds();
+        IExpr seriesRes;
+        try {
+          seriesRes =
+              engine.evalTimeConstrained(F.Series(exactSol, seriesSpec), SERIES_BUDGET_SECONDS);
+        } finally {
+          engine.setSeconds(savedSeconds);
+        }
 
         // Use a robust check: If Series evaluates successfully, it drops the S.Series head
-        if (seriesRes.isPresent() && !seriesRes.isAST(S.Series)) {
+        if (seriesRes.isPresent() && !seriesRes.equals(S.$Aborted)
+            && !seriesRes.isAST(S.Series)) {
           IExpr normalPoly = engine.evaluate(seriesRes.normal(false));
 
           // Rejects "exact" solutions that are effectively unresolved summations or products, or
@@ -133,6 +148,13 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
             IExpr cPattern = F.unaryAST1(S.C, F.$b());
             return S.Collect.funEval(engine, normalPoly, cPattern);
           }
+        } else if (exactSol.isFreeAST(S.Sum) && exactSol.isFreeAST(S.Product)
+            && exactSol.isSpecialsFree()) {
+          // Series of the exact solution failed - special sequences (Fibonacci, LucasL) and
+          // exponentially growing solutions have no asymptotic power series. The exact
+          // solution itself is the sharpest asymptotic answer, so return it directly.
+          IExpr cPattern = F.unaryAST1(S.C, F.$b());
+          return S.Collect.funEval(engine, exactSol, cPattern);
         }
       }
     }
@@ -183,19 +205,39 @@ public class AsymptoticRSolveValue extends AbstractFunctionOptionEvaluator {
         subbed = engine.evaluate(subbed);
 
         // NATIVE Infinity Expansion:
-        // Avoid mapping to 1/z early to prevent 1/infinity denominator collapse bugs
-        IExpr seriesN =
-            engine.evaluate(F.Series(subbed, F.List(xVar, S.Infinity, F.ZZ(seriesDegree))));
+        // Avoid mapping to 1/z early to prevent 1/infinity denominator collapse bugs.
+        // The Series attempt MUST be time-boxed: for non-linear recurrences like
+        // a(n-1)+Sin(n*a(n-2)) the substituted ansatz produces Sin(n*polynomial) whose
+        // asymptotic series does not exist, and the series/limit machinery grinds for
+        // minutes exploring it instead of failing. A bounded attempt that ends in $Aborted
+        // is treated exactly like an unevaluated Series: give up and return F.NIL.
+        // evalTimeConstrained sets the engine's deadline without restoring it, so save it.
+        final long oldSeconds = engine.getSeconds();
+        IExpr seriesN;
+        try {
+          seriesN = engine.evalTimeConstrained(
+              F.Series(subbed, F.List(xVar, S.Infinity, F.ZZ(seriesDegree))),
+              SERIES_BUDGET_SECONDS);
 
-        if (seriesN.isAST(S.Series)) {
-          // If Series initially fails, attempt a simplification first
-          subbed = engine.evaluate(F.Simplify(subbed));
-          seriesN = engine.evaluate(F.Series(subbed, F.List(xVar, S.Infinity, F.ZZ(seriesDegree))));
+          if (seriesN.isAST(S.Series)) {
+            // If Series initially fails, attempt a simplification first
+            IExpr simplified =
+                engine.evalTimeConstrained(F.Simplify(subbed), SERIES_BUDGET_SECONDS);
+            if (simplified.equals(S.$Aborted) || simplified.isNIL()) {
+              return F.NIL;
+            }
+            subbed = simplified;
+            seriesN = engine.evalTimeConstrained(
+                F.Series(subbed, F.List(xVar, S.Infinity, F.ZZ(seriesDegree))),
+                SERIES_BUDGET_SECONDS);
+          }
+        } finally {
+          engine.setSeconds(oldSeconds);
         }
 
-        // Catch unevaluated/failed Series expansions involving non-polynomial limits (e.g.
-        // Sin(n*C))
-        if (seriesN.isAST(S.Series)) {
+        // Catch unevaluated/failed/aborted Series expansions involving non-polynomial
+        // limits (e.g. Sin(n*C))
+        if (seriesN.isNIL() || seriesN.equals(S.$Aborted) || seriesN.isAST(S.Series)) {
           return F.NIL;
         }
 
