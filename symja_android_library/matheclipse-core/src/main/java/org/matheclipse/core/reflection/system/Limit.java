@@ -1990,6 +1990,14 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       ThreadLocal.withInitial(() -> 0);
 
   /**
+   * Recursion guard for the dominant-term rule {@link #dominantTermLimit}, which recurses through
+   * {@link #evaluateLimit} on the winning summand and {@link #evalLimitQuiet} on the pairwise
+   * ratios.
+   */
+  private static final ThreadLocal<Integer> DOMINANT_TERM_DEPTH =
+      ThreadLocal.withInitial(() -> 0);
+
+  /**
    * True while an {@link #lHospitalesRule} application holds the relative recursion budget -
    * nested applications must not extend the ceiling again (see the comment inside the method).
    */
@@ -2551,6 +2559,30 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           } finally {
             GAMMA_POLE_SHIFT_DEPTH.set(eiDepth);
           }
+        }
+      }
+
+      // Dominant-term rule for a sum of exponential towers at +-Infinity: the difference E^A - E^B
+      // of two towers can grind indefinitely in the mrv machinery even when E^A alone and the ratio
+      // E^B/E^A both resolve in under a second (thesis #80/8.3). When one summand strictly out-grows
+      // all others the sum's limit is that summand's limit; adopt only a clean result, so a
+      // same-order sum (genuine cancellation) falls through to the normal machinery unchanged.
+      if ((limit.isInfinity() || limit.isNegativeInfinity()) && DOMINANT_TERM_DEPTH.get() < 2
+          && function.isPlus() && function.argSize() >= 2
+          && ((IAST) function).count(t -> hasDivergentExpFactor(t, symbol)) >= 2) {
+        int domDepth = DOMINANT_TERM_DEPTH.get();
+        DOMINANT_TERM_DEPTH.set(domDepth + 1);
+        try {
+          IExpr dominant = dominantTermLimit((IAST) function, rule, direction, engine);
+          if (dominant.isPresent() && dominant.isFree(S.Limit)
+              && dominant.isIndeterminateFree()) {
+            return dominant;
+          }
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          // ignore - continue with the normal machinery
+        } finally {
+          DOMINANT_TERM_DEPTH.set(domDepth);
         }
       }
 
@@ -3916,6 +3948,55 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       }
       return F.NIL;
     });
+  }
+
+  /**
+   * True if <code>term</code> contains an exponential factor <code>E^(exponent)</code> whose
+   * exponent is not free of the limit variable - the tower signature whose difference grinds in the
+   * mrv machinery.
+   */
+  private static boolean hasDivergentExpFactor(IExpr term, ISymbol x) {
+    return term.has(p -> p.isPower() && p.base().equals(S.E) && !p.exponent().isFree(x, true), true);
+  }
+
+  /**
+   * Dominant-term rule for a sum at <code>+-Infinity</code>: if one summand <code>t_k</code>
+   * strictly out-grows every other (<code>Limit(t_j / t_k) == 0</code> for all <code>j != k</code>),
+   * then <code>Limit(Sum t_i) == Limit(t_k)</code>, since
+   * <code>Sum t_i = t_k*(1 + Sum_{j!=k} t_j/t_k) -> t_k*(1 + 0)</code>. Ranks via RATIO limits, which
+   * resolve for exponential towers, instead of the divergent difference the mrv machinery grinds on:
+   * <code>E^(E^(x-E^-x)/(1-1/x)) - E^(E^x)</code> times out as a Plus, yet the dominant tower alone
+   * and the ratio <code>E^(E^x)/E^(E^(...))</code> each resolve in under a second (thesis #80/8.3).
+   * Returns {@link F#NIL} when no summand strictly dominates - a same-order sum (genuine
+   * cancellation) is left to the normal machinery.
+   */
+  private static IExpr dominantTermLimit(IAST plus, IAST rule, Direction direction,
+      EvalEngine engine) {
+    final LimitData data = new LimitData((ISymbol) rule.arg1(), rule.arg2(), rule, direction);
+    final int n = plus.argSize();
+    for (int k = 1; k <= n; k++) {
+      IExpr tk = plus.get(k);
+      if (tk.isZero()) {
+        continue;
+      }
+      boolean dominates = true;
+      for (int j = 1; j <= n && dominates; j++) {
+        if (j == k) {
+          continue;
+        }
+        try {
+          IExpr ratioLimit = evalLimitQuiet(engine.evaluate(F.Divide(plus.get(j), tk)), data);
+          dominates = ratioLimit.isPresent() && ratioLimit.isZero();
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          dominates = false;
+        }
+      }
+      if (dominates) {
+        return evaluateLimit(tk, rule, direction, engine);
+      }
+    }
+    return F.NIL;
   }
 
   /**
