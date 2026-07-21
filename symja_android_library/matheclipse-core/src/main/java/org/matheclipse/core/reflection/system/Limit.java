@@ -1996,6 +1996,10 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   private static final ThreadLocal<Boolean> LHOSPITAL_BUDGET_ACTIVE =
       ThreadLocal.withInitial(() -> Boolean.FALSE);
 
+  /** One-shot guard for the Together retry of an Indeterminate finite-point difference limit. */
+  private static final ThreadLocal<Boolean> TOGETHER_LIMIT_RETRY =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
+
   /**
    * Evaluate the limit for the given limit data.
    *
@@ -2066,7 +2070,13 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     // unchanged; the one-shot HYPERBOLIC_EXP_RETRY guard keeps the single rewrite loop-proof.
     if (!HYPERBOLIC_EXP_RETRY.get() && (limitValue.isInfinity() || limitValue.isNegativeInfinity())
         && evaledExpr.has(
-            y -> y.isFunctionID(ID.Sinh, ID.Cosh, ID.Tanh, ID.Coth, ID.Sech, ID.Csch), true)) {
+            y -> y.isFunctionID(ID.Sinh, ID.Cosh, ID.Tanh, ID.Coth, ID.Sech, ID.Csch)
+                // only the oscillation cases (argument depends on the limit variable) need the
+                // exp rewrite; a hyperbolic CONSTANT like Sinh(1) (from e.g. 3*Sin(I)) must stay
+                // intact - TrigToExp would blow it into a (E-1/E) form the result never
+                // re-simplifies (issue #42: y*3*Sin(I)*x)
+                && !((IAST) y).arg1().isFree(data.variable(), true),
+            true)) {
       IExpr expForm = engine.evalQuiet(F.ExpandAll(F.TrigToExp(evaledExpr)));
       if (expForm.isPresent() && !expForm.equals(evaledExpr)) {
         HYPERBOLIC_EXP_RETRY.set(Boolean.TRUE);
@@ -2647,7 +2657,30 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         }
       }
       LimitData data = new LimitData(symbol, limit, rule, direction);
-      return evalLimit(function, data, engine);
+      IExpr result = evalLimit(function, data, engine);
+
+      // An oo - oo cancellation at a FINITE limit point - each term has a pole, so a
+      // term-by-term limit is Indeterminate - becomes a resolvable 0/0 once combined over a
+      // common denominator. Concrete-exponent forms auto-combine, but a symbolic exponent does
+      // not (thesis (n+1)*x^(n+1)/(x^(n+1)-1) - x/(x-1) at x->1 -> n/2). Retry once with
+      // Together and reduce the correct-but-unsimplified result.
+      if (result.isPresent() && result.isIndeterminate() && function.isPlus()
+          && limit.isNumericFunction() && !limit.isInfinity() && !limit.isNegativeInfinity()
+          && !limit.isDirectedInfinity() && !TOGETHER_LIMIT_RETRY.get()) {
+        IExpr combined = engine.evalQuiet(F.Together(function));
+        if (combined.isPresent() && !combined.equals(function)) {
+          TOGETHER_LIMIT_RETRY.set(Boolean.TRUE);
+          try {
+            IExpr retry = evalLimit(combined, data, engine);
+            if (retry.isPresent() && retry.isFree(S.Limit) && retry.isIndeterminateFree()) {
+              return engine.evaluate(F.Simplify(retry));
+            }
+          } finally {
+            TOGETHER_LIMIT_RETRY.set(Boolean.FALSE);
+          }
+        }
+      }
+      return result;
 
     } catch (RuntimeException rex) {
       Errors.rethrowsInterruptException(rex);
