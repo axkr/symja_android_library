@@ -306,6 +306,20 @@ public class MatrixFunctionTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testMatrixLog2x2Diagonal() {
+    // singular matrix (det == 0): Log is not analytic/defined at eigenvalue 0, so
+    // MatrixLog stays unevaluated and emits the `fnand` message.
+    check("MatrixLog({{a,0},{0,0}})", //
+        "MatrixLog(\n" //
+            + "{{a,0},\n" //
+            + " {0,0}})");
+    check("MatrixLog({{2,0},{0,3}})", //
+        "{{Log(2),0},{0,Log(3)}}");
+    check("MatrixLog({{1,1},{0,1}})", //
+        "{{0,1},{0,0}}");
+  }
+
+  @Test
   public void testMatrixLog() {
     check("MatrixLog({{3.4, 1.2}, {0.001, -0.9}})", //
         "{{1.22377+I*0.00020385,0.37081+I*(-0.87661)},\n"//

@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
@@ -29,6 +30,13 @@ public class MatrixLog extends MatrixExp {
     IExpr b = mat.getIndex(1, 2);
     IExpr c = mat.getIndex(2, 1);
     IExpr d = mat.getIndex(2, 2);
+
+    // Diagonal matrix: the logarithm is the element-wise logarithm of the diagonal.
+    if (b.isPossibleZero(true) && c.isPossibleZero(true)) {
+      IExpr logA = engine.evaluate(F.Log(a));
+      IExpr logD = engine.evaluate(F.Log(d));
+      return F.list(F.list(logA, F.C0), F.list(F.C0, logD));
+    }
 
     IExpr tr = engine.evaluate(F.Plus(a, d));
     IExpr det = engine.evaluate(F.Subtract(F.Times(a, d), F.Times(b, c)));
@@ -89,6 +97,16 @@ public class MatrixLog extends MatrixExp {
       return F.NIL;
     }
     int n = dim[0];
+
+    // MatrixLog requires an invertible matrix: Log is not analytic or defined at the
+    // eigenvalue 0, which a singular matrix (det == 0) always has. Match Mathematica by
+    // emitting the `fnand` message and leaving the expression unevaluated.
+    if (!engine.isNumericMode() && !arg1.isNumericArgument(true)) {
+      IExpr det = engine.evaluate(F.Det(arg1));
+      if (det.isZero()) {
+        return Errors.printMessage(S.MatrixLog, "fnand", F.List(S.Log, F.C0), engine);
+      }
+    }
 
     // --- 1x1 case ---
     if (n == 1) {

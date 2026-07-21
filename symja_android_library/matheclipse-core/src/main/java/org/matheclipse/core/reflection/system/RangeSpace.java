@@ -12,17 +12,6 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-/**
- * <pre>
- * RangeSpace(matrix)
- * </pre>
- * 
- * * <blockquote>
- * <p>
- * gives a minimal list of vectors that form a basis for the range space of the matrix.
- * </p>
- * </blockquote>
- */
 public class RangeSpace extends AbstractFunctionOptionEvaluator {
 
   public RangeSpace() {}

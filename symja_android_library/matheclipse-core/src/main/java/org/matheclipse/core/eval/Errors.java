@@ -142,6 +142,7 @@ public class Errors {
       "fdguess", "Form of start specification `1` supports only one start value for a variable.",
       "fdss", "Search specification `1` should be a list with 1 to 3 elements.", //
       "fftl", "Argument `1` is not a non-empty list or rectangular array of numeric quantities.", //
+      "fnand", "The function `1` is not analytic or defined at `2`.", //
       "fitc", "The number of coordinates (`1`) is not equal to the number of variables (`2`).", //
       "flpar", "Parameter specification `1` in `2` should be a symbol or a list of symbols.", //
       "fttype", "The transform type `1` should be 1, 2, 3 or 4.", //
@@ -334,6 +335,7 @@ public class Errors {
       "partw", "Part `1` of `2` does not exist.", //
       "patop", "Pattern `1` contains inappropriate optional object.", //
       "patvar", "First element in `1` is not a valid pattern name.", //
+      "pcontr", "Contraction level `1` must be positive. ", //
       "perm", "`1` is not a valid permutation.", //
       "perm2", "Entry `1` in `2` is out of bounds for a permutation of length `3`.", //
       "permlist", "Invalid permutation list `1`.", //
@@ -389,6 +391,7 @@ public class Errors {
       "reps",
       "(`1`) is neither a list of replacement rules nor a valid dispatch table and cannot be used for replacing.", //
       "rneg", "The specified rule number `1` should be non-negative.", //
+      "rnkz", "A rank decomposition does not exist for a rank 0 matrix.",
       "root", "Unable to determine the appropriate root for the periodic continued fraction.", //
       "root2", "The equation `1` has no integer solutions.", //
       "rrlim", "Exiting after `1` scanned `2` times.", //
