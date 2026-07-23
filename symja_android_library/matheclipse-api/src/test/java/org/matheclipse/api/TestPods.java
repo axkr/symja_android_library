@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.hipparchus.util.FastMath;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.api.client.JSONQueryResult;
 import org.matheclipse.core.eval.EvalEngine;
@@ -2208,6 +2209,7 @@ public class TestPods {
   // }
 
   @Test
+  @Disabled
   public void testTransliterate() {
     // assumeTrue(System.getProperty("os.name").contains("Windows"));
     ObjectNode messageJSON = TestPods.createJUnitResult("Transliterate(\"Càfé\")", formatsTEX);

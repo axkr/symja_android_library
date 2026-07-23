@@ -91,7 +91,7 @@ public class RulePreprocessor {
     buffer.append(leftHandSide.internalJavaString(p, 1, x -> null));
     buffer.append(",\n      ");
     buffer.append(rightHandSide.internalJavaString(p, 1, x -> null));
-    if (createISet && leftHandSide.isFreeOfPatterns() && !leftHandSide.isSymbol()) {
+    if (evalRHS && createISet && leftHandSide.isFreeOfPatterns() && !leftHandSide.isSymbol()) {
       buffer.append(", true");
     }
     if (last) {

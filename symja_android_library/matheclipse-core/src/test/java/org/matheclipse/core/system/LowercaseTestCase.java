@@ -5813,6 +5813,36 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0,DiracDelta(0),0}");
     check("DiracDelta(1, 2, 3)", //
         "0");
+
+    // Sifting property: Integrate(f(x)*DiracDelta(x-r), {x,a,b}) is f(r) when r lies strictly
+    // inside the interval, 0 when it lies outside, and f(r)*HeavisideTheta(0) when r coincides
+    // with one of the integration limits.
+    check("Integrate(DiracDelta(x - 2) * x^2, {x, 0, 5})", //
+        "4");
+    check("Integrate(DiracDelta(x) * Exp(x), {x, -1, 1})", //
+        "1");
+    check("Integrate(DiracDelta(x - 3), {x, 0, 5})", //
+        "1");
+    check("Integrate(DiracDelta(x) * Cos(x), {x, -Infinity, Infinity})", //
+        "1");
+    check("Integrate(DiracDelta(x + 1) * x^2, {x, -3, 3})", //
+        "1");
+    check("Integrate(DiracDelta(x - 1 / 2) * Sin(Pi * x), {x, 0, 1})", //
+        "1");
+    check("Integrate(DiracDelta(2 * x - 4) * x, {x, 0, 5})", //
+        "1");
+    check("Integrate(DiracDelta(x - 2) * x^2, {x, 0, 1})", //
+        "0");
+    // the root is only sifted out if it is a real point of the integration range; Symja prints
+    // Element(a,Reals) in its operator form a∈Reals
+    check("Integrate(f(x) * DiracDelta(x - a), {x, -Infinity, Infinity})", //
+        "ConditionalExpression(f(a),a∈Reals)");
+    check("Integrate(DiracDelta(x - 5) * x, {x, 0, 5})", //
+        "5*HeavisideTheta(0)");
+    check("Integrate(DiracDelta(x) * (x + 1), {x, 0, 5})", //
+        "HeavisideTheta(0)");
+    check("Integrate(DiracDelta(x - 5) * (x + 1), {x, 0, 5})", //
+        "6*HeavisideTheta(0)");
   }
 
   @Test
