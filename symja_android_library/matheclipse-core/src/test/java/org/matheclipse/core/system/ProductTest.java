@@ -351,4 +351,22 @@ public class ProductTest extends ExprEvaluatorTestCase {
         "46656");
   }
 
+  /**
+   * A list style iterator <code>{e, {2,1,1,1}}</code> has no lower/upper limit and no step, so the
+   * symbolic reduction must be skipped for it and the numerical unrolling used instead.
+   */
+  @Test
+  public void testProductList() {
+    check("Product(e+1,{e,{2,1,1,1}})", //
+        "24");
+    check("Product(e,{e,{2,1,1,1}})", //
+        "2");
+    check("Product(e^2,{e,{1,2,3}})", //
+        "36");
+    // term free of the iterator variable
+    check("Product(2,{e,{1,2,3}})", //
+        "8");
+    check("Product(e+1,{e,{}})", //
+        "1");
+  }
 }

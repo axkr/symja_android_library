@@ -122,7 +122,11 @@ public class Product extends ListFunctions.Table implements ProductRules {
           return Errors.printMessage(S.Product, ve, engine);
         }
 
-        if (iterator != null && iterator.isValidVariable()) {
+        // A list style iterator like {e, {2,1,1,1}} has no lower/upper limit and no step
+        // ({@link IIterator} returns null for those). The symbolic reduction below only applies to
+        // iterators with real limits; leave the list case to the numerical unrolling fallback.
+        if (iterator != null && iterator.isValidVariable() && iterator.getLowerLimit() != null
+            && iterator.getUpperLimit() != null && iterator.getStep() != null) {
           if (iterator.getUpperLimit().isInfinity()) {
             if (arg1.isOne()) {
               return F.C1;
