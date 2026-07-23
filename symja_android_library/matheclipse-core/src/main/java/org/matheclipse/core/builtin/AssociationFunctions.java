@@ -597,20 +597,6 @@ public class AssociationFunctions {
       return ARGS_1_2_1;
     }
 
-    private static IAST keyDrop(final IAssociation list1, final IAST list2) {
-      IAssociation assoc = list1;
-      final IAssociation result = assoc.copyAppendable();
-      final int size = list2.size();
-      boolean evaled = false;
-      for (int i = 1; i < size; i++) {
-        final IExpr rule = result.removeRule(list2.get(i));
-        if (rule.isPresent()) {
-          evaled = true;
-        }
-      }
-      return evaled ? result : assoc;
-    }
-
     @Override
     public void setUp(final ISymbol newSymbol) {}
   }
@@ -1360,6 +1346,21 @@ public class AssociationFunctions {
     }
 
   }
+
+  private static IAST keyDrop(final IAssociation list1, final IAST list2) {
+    IAssociation assoc = list1;
+    final IAssociation result = assoc.copyAppendable();
+    final int size = list2.size();
+    boolean evaled = false;
+    for (int i = 1; i < size; i++) {
+      final IExpr rule = result.removeRule(list2.get(i));
+      if (rule.isPresent()) {
+        evaled = true;
+      }
+    }
+    return evaled ? result : assoc;
+  }
+
 
   /**
    * If <code>head.isPresent()</code> map the <code>head</code> on each argument of list. Otherwise
