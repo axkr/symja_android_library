@@ -2005,6 +2005,14 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       ThreadLocal.withInitial(() -> Boolean.FALSE);
 
   /**
+   * One-shot guard for the one-sided rewrite of jump-discontinuous functions. The rewrite computes
+   * the limit of the step function's ARGUMENT, which re-enters {@link #evalLimit}; the flag keeps
+   * that sub-limit from starting another rewrite sweep.
+   */
+  private static final ThreadLocal<Boolean> STEP_FUNCTION_REWRITE =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+  /**
    * Evaluate the limit for the given limit data.
    *
    * @param expr
@@ -2031,6 +2039,16 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
 
     if (data.direction() == Direction.TWO_SIDED && !limitValue.isDirectedInfinity()) {
       return evalLimitTwoSided(evaledExpr, data, engine);
+    }
+
+    // Jump-discontinuous functions (Floor, Ceiling, Round, Sign, UnitStep, Mod, ...) are constant
+    // or continuous on each side of a jump, so a DIRECTIONAL limit is the value on the approached
+    // side - not the value AT the point, which is what the direct substitution further down
+    // returns. Replace every such sub-expression by its one-sided value up front; the TWO_SIDED
+    // case above then reports Indeterminate whenever the two sides disagree.
+    IExpr stepRewritten = stepFunctionRewrite(evaledExpr, data, engine);
+    if (stepRewritten.isPresent()) {
+      evaledExpr = stepRewritten;
     }
 
     // --- OSCILLATING SPECIAL FUNCTIONS AT NEGATIVE INFINITY ---
@@ -2329,8 +2347,14 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           }
 
           // a result like PolyGamma(0,...,Infinity) - DirectedInfinity stuck inside a
-          // function argument - is junk, not a limit value; decline and let fallbacks run
-          if (temp.isPresent() && !temp.isIndeterminate() && !hasNestedDirectedInfinity(temp)) {
+          // function argument - is junk, not a limit value; decline and let fallbacks run.
+          // ComplexInfinity is declined for the same reason as in limitNumericFunctionArgs:
+          // substituting the argument's limit is only valid where the function is CONTINUOUS,
+          // and ComplexInfinity is exactly the report that it has a pole there (Gamma(0),
+          // Zeta(1)). The one-sided limits at such a pole are +Infinity and -Infinity, which
+          // the fallbacks below resolve.
+          if (temp.isPresent() && !temp.isIndeterminate() && !temp.isComplexInfinity()
+              && !hasNestedDirectedInfinity(temp)) {
             return temp;
           }
         }
@@ -2459,6 +2483,233 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   }
 
   /**
+   * Replace every jump-discontinuous sub-expression of <code>expr</code> (see
+   * {@link #stepFunctionLimit(IAST, LimitData, EvalEngine)}) by its one-sided value for the
+   * direction of <code>data</code>.
+   *
+   * <p>
+   * Only a finite real limit point is handled: at <code>&plusmn;Infinity</code> the existing
+   * Abs/Sign substitutions and the Gruntz machinery keep precedence.
+   *
+   * @return {@link F#NIL} if nothing was rewritten
+   */
+  private static IExpr stepFunctionRewrite(IExpr expr, LimitData data, EvalEngine engine) {
+    if (STEP_FUNCTION_REWRITE.get() || !data.limitValue().isReal()) {
+      return F.NIL;
+    }
+    if (!expr.has(y -> y.isFunctionID(ID.Floor, ID.Ceiling, ID.Round, ID.Sign, ID.UnitStep,
+        ID.IntegerPart, ID.FractionalPart, ID.Mod, ID.Quotient), true)) {
+      return F.NIL;
+    }
+    STEP_FUNCTION_REWRITE.set(Boolean.TRUE);
+    try {
+      IExpr result = F.subst(expr, y -> {
+        if (y.isAST() && y.head().isBuiltInSymbol() && !y.isFree(data.variable(), true)) {
+          return stepFunctionLimit((IAST) y, data, engine);
+        }
+        return F.NIL;
+      });
+      if (result.isPresent() && !result.equals(expr)) {
+        return result;
+      }
+    } finally {
+      STEP_FUNCTION_REWRITE.set(Boolean.FALSE);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * The one-sided limit of a single jump-discontinuous function application <code>f(g(x))</code>.
+   *
+   * <p>
+   * The piecewise <b>constant</b> heads ({@link S#Floor}, {@link S#Ceiling}, {@link S#Round},
+   * {@link S#Sign}, {@link S#UnitStep}) are resolved to a constant by
+   * {@link #stepFunctionValue(IBuiltInSymbol, IExpr, LimitData, EvalEngine)}. The piecewise
+   * <b>linear</b> heads ({@link S#IntegerPart}, {@link S#FractionalPart}, {@link S#Mod},
+   * {@link S#Quotient}) are rewritten onto that constant - e.g. <code>Mod(g,m)</code> becomes
+   * <code>g - m*Floor(g/m)</code> with the <code>Floor</code> already evaluated - so the remaining
+   * expression is continuous and the normal machinery finishes it.
+   *
+   * @return {@link F#NIL} if the head isn't a supported step function or the one-sided value could
+   *         not be determined
+   */
+  private static IExpr stepFunctionLimit(IAST step, LimitData data, EvalEngine engine) {
+    IExpr head = step.head();
+    if (!head.isBuiltInSymbol()) {
+      return F.NIL;
+    }
+    IBuiltInSymbol symbol = (IBuiltInSymbol) head;
+    switch (symbol.ordinal()) {
+      case ID.Floor:
+      case ID.Ceiling:
+      case ID.Round:
+      case ID.Sign:
+      case ID.UnitStep:
+        if (step.isAST1()) {
+          return stepFunctionValue(symbol, step.arg1(), data, engine);
+        }
+        return F.NIL;
+      case ID.IntegerPart:
+      case ID.FractionalPart: {
+        if (!step.isAST1()) {
+          return F.NIL;
+        }
+        IExpr arg = step.arg1();
+        IExpr argLimit = stepArgumentLimit(arg, data, engine);
+        if (argLimit.isNIL() || !argLimit.isReal() || argLimit.isZero()) {
+          // at 0 the integer part flips between Floor and Ceiling - leave it alone
+          return F.NIL;
+        }
+        // IntegerPart truncates towards zero
+        IExpr integerPart = stepFunctionValue(argLimit.isPositive() ? S.Floor : S.Ceiling, arg,
+            data, engine);
+        if (integerPart.isNIL()) {
+          return F.NIL;
+        }
+        return symbol == S.IntegerPart ? integerPart
+            : engine.evaluate(F.Subtract(arg, integerPart));
+      }
+      case ID.Mod:
+      case ID.Quotient: {
+        if (step.size() != 3) {
+          return F.NIL;
+        }
+        IExpr arg = step.arg1();
+        IExpr modulus = step.arg2();
+        if (!modulus.isReal() || !modulus.isPositive()) {
+          return F.NIL;
+        }
+        IExpr quotient =
+            stepFunctionValue(S.Floor, F.Divide(arg, modulus), data, engine);
+        if (quotient.isNIL()) {
+          return F.NIL;
+        }
+        return symbol == S.Quotient ? quotient
+            : engine.evaluate(F.Subtract(arg, F.Times(modulus, quotient)));
+      }
+      default:
+        return F.NIL;
+    }
+  }
+
+  /**
+   * The one-sided limit of a piecewise constant <code>head(arg)</code>, where <code>head</code> is
+   * one of {@link S#Floor}, {@link S#Ceiling}, {@link S#Round}, {@link S#Sign},
+   * {@link S#UnitStep}.
+   *
+   * <p>
+   * Away from a jump the function is continuous, so the value at the limit of <code>arg</code> is
+   * the answer. At a jump the side from which <code>arg</code> approaches that value decides -
+   * note that this is <b>not</b> the direction of <code>x</code>: <code>Floor(x^2+1)</code> at
+   * <code>x-&gt;0</code> approaches <code>1</code> from above for both directions of <code>x</code>
+   * and is therefore continuous there.
+   *
+   * @return {@link F#NIL} if the limit of <code>arg</code> or the approach side is unknown
+   */
+  private static IExpr stepFunctionValue(IBuiltInSymbol head, IExpr arg, LimitData data,
+      EvalEngine engine) {
+    IExpr argLimit = stepArgumentLimit(arg, data, engine);
+    if (argLimit.isNIL() || !argLimit.isReal()) {
+      return F.NIL;
+    }
+    boolean atJump;
+    switch (head.ordinal()) {
+      case ID.Floor:
+      case ID.Ceiling:
+        atJump = argLimit.isInteger();
+        break;
+      case ID.Round:
+        // Round jumps at the half-integers
+        atJump = !argLimit.isInteger() && engine.evaluate(F.Times(F.C2, argLimit)).isInteger();
+        break;
+      default: // Sign, UnitStep
+        atJump = argLimit.isZero();
+        break;
+    }
+    if (!atJump) {
+      return engine.evaluate(F.unaryAST1(head, argLimit));
+    }
+    int side = approachSide(arg, argLimit, data, engine);
+    if (side == 0) {
+      return F.NIL;
+    }
+    switch (head.ordinal()) {
+      case ID.Floor:
+        return side > 0 ? argLimit : engine.evaluate(F.Subtract(argLimit, F.C1));
+      case ID.Ceiling:
+        return side > 0 ? engine.evaluate(F.Plus(argLimit, F.C1)) : argLimit;
+      case ID.Round:
+        return engine.evaluate(
+            side > 0 ? F.Plus(argLimit, F.C1D2) : F.Subtract(argLimit, F.C1D2));
+      case ID.Sign:
+        return side > 0 ? F.C1 : F.CN1;
+      default: // UnitStep
+        return side > 0 ? F.C1 : F.C0;
+    }
+  }
+
+  /**
+   * The limit of the argument of a step function, for the direction of <code>data</code>.
+   *
+   * @return {@link F#NIL} if the limit isn't a value free of the limit variable
+   */
+  private static IExpr stepArgumentLimit(IExpr arg, LimitData data, EvalEngine engine) {
+    ISymbol x = data.variable();
+    if (arg.equals(x)) {
+      return data.limitValue();
+    }
+    if (arg.isFree(x, true)) {
+      return engine.evalQuiet(arg);
+    }
+    IExpr argLimit = evalLimitQuiet(arg, data);
+    if (argLimit.isPresent() && argLimit.isFree(S.Limit, true) && argLimit.isFree(x, true)
+        && argLimit.isIndeterminateFree()) {
+      return engine.evalQuiet(argLimit);
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Determine whether <code>arg</code> approaches <code>argLimit</code> from above (<code>1</code>)
+   * or from below (<code>-1</code>) while <code>x</code> approaches the limit point in the
+   * direction of <code>data</code>.
+   *
+   * @return <code>0</code> if the side could not be determined
+   */
+  private static int approachSide(IExpr arg, IExpr argLimit, LimitData data, EvalEngine engine) {
+    ISymbol x = data.variable();
+    if (arg.equals(x)) {
+      return data.direction() == Direction.FROM_ABOVE ? 1 : -1;
+    }
+    int sign = signViaApproach(F.Subtract(arg, argLimit), x, data.limitValue(), data.direction(),
+        engine);
+    if (sign != 0) {
+      return sign;
+    }
+    // fall back to the sign of the first non-vanishing derivative at the limit point: for
+    // arg - argLimit ~ c*(x-x0)^k the side is sign(c) from above and sign(c)*(-1)^k from below
+    IExpr derivative = arg;
+    for (int k = 1; k <= 3; k++) {
+      derivative = engine.evalQuiet(F.D(derivative, x));
+      if (derivative.isNIL() || derivative.isIndeterminate()) {
+        break;
+      }
+      IExpr value = engine.evalQuiet(F.subst(derivative, x, data.limitValue()));
+      if (!value.isReal()) {
+        break;
+      }
+      if (!value.isZero()) {
+        int side = value.isNegative() ? -1 : 1;
+        if (data.direction() == Direction.FROM_BELOW && (k % 2 == 1)) {
+          side = -side;
+        }
+        return side;
+      }
+    }
+    return 0;
+  }
+
+  /**
    * <code>Limit[RootSum[f, g], x -> x0]</code> for a finite <code>x0</code> whose root polynomial
    * <code>f</code> is free of the limit variable <code>x</code>: the roots do not move with
    * <code>x</code>, so the summand <code>g</code> (typically <code>Log(x - #1)/...</code> from a
@@ -2506,6 +2757,14 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     IExpr result = expression.replaceAll(data.rule());
     if (result.isPresent()) {
       result = engine.evalQuiet(result);
+      if (result.isComplexInfinity()) {
+        // ComplexInfinity is what the substitution reports at a POLE - precisely the case in
+        // which the continuity assumption above does NOT hold. On the real line the one-sided
+        // limits at a simple pole are +Infinity and -Infinity, so the two-sided limit does not
+        // exist (Gamma(z) at 0, Zeta(z) at 1, like 1/z at 0). Leave it to the machinery below,
+        // which resolves the pole and compares the two sides.
+        return F.NIL;
+      }
       if (result.isNumericFunction(true) || result.isInfinity() || result.isNegativeInfinity()) {
         return IntervalSym.toAccumBoundsIndeterminate(result);
       }
@@ -2602,9 +2861,16 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         }
       }
 
-      if (function.has(
-          x -> x.isFunctionID(ID.Factorial, ID.Gamma, ID.LogGamma, ID.Pochhammer, ID.PolyGamma),
-          true)) {
+      // The one-argument HarmonicNumber joins this list because FunctionExpand rewrites it to
+      // EulerGamma + PolyGamma(0, n+1) - the form the whole Gamma pipeline below understands.
+      // Two conditions on that:
+      // - the rewrite must stay LOCAL to Limit; as an auto-evaluation it would also expand
+      //   HarmonicNumber(1/2), HarmonicNumber(Sqrt(2)), ... which have to stay unevaluated
+      // - the generalized HarmonicNumber(n, r) is excluded: it has no digamma form, and routing
+      //   it through the Gamma pipeline displaces the substitution that resolves
+      //   Limit(HarmonicNumber(m,5), m->Infinity) to Zeta(5)
+      if (function.has(x -> x.isFunctionID(ID.Factorial, ID.Gamma, ID.LogGamma, ID.Pochhammer,
+          ID.PolyGamma) || x.isAST(S.HarmonicNumber, 2), true)) {
         function = engine.evaluate(F.FunctionExpand(function));
 
         // Gamma(base + shift) with a diverging base and a shift -> 0 (Gamma(x + 1/Gamma(x)),
@@ -2813,7 +3079,110 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * 
+   * The accumulation range of a sum of bounded oscillations
+   * <code>c1*Sin(g1) + c2*Cos(g2) + ...</code> at <code>x -> +/-Infinity</code>, where every
+   * <code>gi</code> diverges.
+   *
+   * <p>
+   * Two cases, decided by whether the arguments oscillate at asymptotically <b>different</b> rates
+   * (<code>Limit(gi/gj)</code> is <code>0</code> or infinite) or at the <b>same</b> rate
+   * (<code>Limit(gi/gj)</code> is a finite non-zero constant):
+   *
+   * <ul>
+   * <li>different rates - the phases are asymptotically independent, so the sum comes arbitrarily
+   * close to every value of the interval-arithmetic sum of the summand ranges: the result is
+   * <code>Interval({-A, A})</code> with <code>A = Sum(|ci|)</code>. Note this is an
+   * <b>enclosure</b>, exactly as interval arithmetic gives it - <code>Sin(x)+Cos(x)+Sin(x^2)</code>
+   * yields <code>Interval({-3,3})</code> though its true closure is
+   * <code>+/-(Sqrt(2)+1)</code>.</li>
+   * <li>same rate - the summands stay phase-locked and the range depends on their relative phases,
+   * which this rule does not compute; the limit simply does not exist:
+   * {@link S#Indeterminate}.</li>
+   * </ul>
+   *
+   * @return {@link F#NIL} if the expression is not such a sum, or a growth comparison of the
+   *         arguments could not be decided
+   */
+  private static IExpr oscillatingEnvelope(IExpr expr, IAST rule, Direction direction,
+      EvalEngine engine) {
+    if (!expr.isPlus()) {
+      return F.NIL;
+    }
+    IExpr limitPoint = rule.arg2();
+    if (!limitPoint.isInfinity() && !limitPoint.isNegativeInfinity()) {
+      return F.NIL;
+    }
+    ISymbol x = (ISymbol) rule.arg1();
+    IAST plusAST = (IAST) expr;
+    java.util.List<IExpr> arguments = new java.util.ArrayList<IExpr>(plusAST.argSize());
+    IExpr amplitude = F.C0;
+    for (int i = 1; i < plusAST.size(); i++) {
+      IExpr term = plusAST.get(i);
+      IExpr coefficient = F.C1;
+      IExpr oscillation = F.NIL;
+      if (term.isSin() || term.isCos()) {
+        oscillation = term;
+      } else if (term.isTimes()) {
+        IAST timesAST = (IAST) term;
+        IASTAppendable rest = F.TimesAlloc(timesAST.argSize());
+        for (int j = 1; j < timesAST.size(); j++) {
+          IExpr factor = timesAST.get(j);
+          if ((factor.isSin() || factor.isCos()) && !factor.first().isFree(x, true)) {
+            if (oscillation.isPresent()) {
+              // a product of two oscillations has an amplitude this rule cannot read off
+              return F.NIL;
+            }
+            oscillation = factor;
+          } else {
+            rest.append(factor);
+          }
+        }
+        coefficient = engine.evaluate(rest.oneIdentity1());
+      }
+      if (oscillation.isNIL() || !coefficient.isFree(x, true) || !coefficient.isRealResult()) {
+        return F.NIL;
+      }
+      // a non-diverging argument means the summand converges - not an oscillation
+      IExpr argument = oscillation.first();
+      IExpr argumentLimit = evaluateLimit(argument, rule, direction, engine);
+      if (argumentLimit.isNIL()
+          || (!argumentLimit.isInfinity() && !argumentLimit.isNegativeInfinity())) {
+        return F.NIL;
+      }
+      arguments.add(argument);
+      amplitude = engine.evaluate(F.Plus(amplitude, F.Abs(coefficient)));
+    }
+    if (arguments.size() < 2) {
+      return F.NIL;
+    }
+
+    boolean independentRates = false;
+    for (int i = 1; i < arguments.size(); i++) {
+      IExpr ratio =
+          evaluateLimit(engine.evaluate(F.Divide(arguments.get(i), arguments.get(0))), rule,
+              direction, engine);
+      if (ratio.isNIL() || ratio.isIndeterminate()) {
+        return F.NIL; // growth comparison undecided - leave the limit to the normal machinery
+      }
+      if (ratio.isZero() || ratio.isInfinity() || ratio.isNegativeInfinity()
+          || ratio.isDirectedInfinity()) {
+        independentRates = true;
+      } else if (!ratio.isRealResult()) {
+        return F.NIL;
+      }
+    }
+    if (!independentRates) {
+      // phase-locked summands: the limit does not exist and this rule cannot narrow the range
+      return S.Indeterminate;
+    }
+    if (!amplitude.isRealResult()) {
+      return F.NIL;
+    }
+    return F.Interval(F.List(engine.evaluate(F.Negate(amplitude)), amplitude));
+  }
+
+  /**
+   *
    * @param function The original function being analyzed for oscillating special functions.
    * @param symbol The variable with respect to which the limit is being taken.
    * @param limitValue The value that the variable is approaching in the limit.
@@ -3249,6 +3618,106 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     return F.NIL;
   }
 
+  /**
+   * Rewrite a {@link S#Piecewise} condition so that evaluating it <b>at</b> the limit point answers
+   * the question "does this piece govern the neighbourhood on the given side?".
+   *
+   * <p>
+   * That is the substitution of the limit variable by <code>limit -/+ epsilon</code>, which for a
+   * comparison against the limit point is a fixed table - a boundary is either relaxed <b>into</b>
+   * the approached side or tightened <b>out</b> of it:
+   *
+   * <pre>
+   * FROM_BELOW:  x &lt; c  -&gt; x &lt;= c    x &gt;= c -&gt; x &gt; c
+   * FROM_ABOVE:  x &gt; c  -&gt; x &gt;= c    x &lt;= c -&gt; x &lt; c
+   * both:        x == c -&gt; False     x != c -&gt; True
+   * </pre>
+   *
+   * The remaining comparisons already evaluate correctly at the limit point and stay untouched.
+   * Without the tightening half a piece like <code>x &gt;= c</code> is counted for the from-BELOW
+   * limit too - it is True at <code>c</code> - although it is False everywhere strictly below
+   * <code>c</code>, and a Piecewise whose two branches meet at <code>c</code> comes back
+   * {@link S#Indeterminate} on both sides.
+   *
+   * <p>
+   * Comparisons nested in {@link S#And}/{@link S#Or}/{@link S#Not} are reached by the substitution;
+   * an {@link S#Inequality} is first unfolded into the conjunction it stands for.
+   */
+  private static IExpr boundaryCondition(IExpr condition, IExpr variable, IExpr limit,
+      Direction direction) {
+    return F.subst(condition, y -> {
+      if (y.isAST(S.Inequality) && y.size() >= 4) {
+        // Inequality(a, op1, b, op2, c) is the conjunction op1(a,b) && op2(b,c) - unfold it so
+        // every comparison passes through the table below
+        IAST inequality = (IAST) y;
+        IASTAppendable and = F.ast(S.And, inequality.size() / 2);
+        for (int i = 1; i + 2 < inequality.size(); i += 2) {
+          and.append(F.binaryAST2(inequality.get(i + 1), inequality.get(i), inequality.get(i + 2)));
+        }
+        return boundaryCondition(and, variable, limit, direction);
+      }
+      if (y.isAST2()) {
+        IAST comparison = (IAST) y;
+        IExpr head = comparison.head();
+        if (comparison.arg1().equals(limit) && comparison.arg2().equals(variable)) {
+          // c < x is x > c - flip the head to look the table entry up, but note that the
+          // ORIGINAL comparison is returned unchanged whenever the table has no entry
+          head = flipComparison(head);
+        } else if (!(comparison.arg1().equals(variable) && comparison.arg2().equals(limit))) {
+          return F.NIL;
+        }
+        return oneSidedComparison(head, variable, limit, direction);
+      }
+      return F.NIL;
+    });
+  }
+
+  /**
+   * The one-sided form of <code>head(variable, limit)</code> for the approach direction, or
+   * {@link F#NIL} if the comparison already evaluates correctly at the limit point (or isn't a
+   * comparison at all). See {@link #boundaryCondition(IExpr, IExpr, IExpr, Direction)}.
+   */
+  private static IExpr oneSidedComparison(IExpr head, IExpr variable, IExpr limit,
+      Direction direction) {
+    if (!head.isBuiltInSymbol()) {
+      return F.NIL;
+    }
+    switch (((IBuiltInSymbol) head).ordinal()) {
+      case ID.Equal:
+        // the limit point itself is never part of the punctured neighbourhood
+        return S.False;
+      case ID.Unequal:
+        return S.True;
+      case ID.Less:
+        return direction == Direction.FROM_BELOW ? F.LessEqual(variable, limit) : F.NIL;
+      case ID.GreaterEqual:
+        return direction == Direction.FROM_BELOW ? F.Greater(variable, limit) : F.NIL;
+      case ID.Greater:
+        return direction == Direction.FROM_ABOVE ? F.GreaterEqual(variable, limit) : F.NIL;
+      case ID.LessEqual:
+        return direction == Direction.FROM_ABOVE ? F.Less(variable, limit) : F.NIL;
+      default:
+        return F.NIL;
+    }
+  }
+
+  /** The comparison head with its arguments swapped: <code>c &lt; x</code> is <code>x &gt; c</code>. */
+  private static IExpr flipComparison(IExpr head) {
+    if (head == S.Less) {
+      return S.Greater;
+    }
+    if (head == S.LessEqual) {
+      return S.GreaterEqual;
+    }
+    if (head == S.Greater) {
+      return S.Less;
+    }
+    if (head == S.GreaterEqual) {
+      return S.LessEqual;
+    }
+    return head; // Equal and Unequal are symmetric
+  }
+
   private static IExpr piecewiseLimit(final IAST piecwiseAST, LimitData data, EvalEngine engine) {
     IExpr limit = data.limitValue();
     IExpr variable = data.variable();
@@ -3264,13 +3733,11 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           IExpr arg1Result = row.arg1();
           IExpr arg2Comparison = row.arg2();
 
-          IExpr tempComparison = arg2Comparison;
+          IExpr tempComparison;
           if (data.direction == Direction.FROM_BELOW //
               || data.direction == Direction.TWO_SIDED) {
-            if (arg2Comparison.isAST(S.Less, 3) && arg2Comparison.first().equals(variable)
-                && arg2Comparison.second().equals(limit)) {
-              tempComparison = ((IAST) arg2Comparison).setAtCopy(0, S.LessEqual);
-            }
+            tempComparison =
+                boundaryCondition(arg2Comparison, variable, limit, Direction.FROM_BELOW);
             IExpr temp = engine.evaluate(F.xreplace(tempComparison, variable, limit));
             if (temp.isTrue()) {
               temp = engine.evaluate(F.xreplace(arg1Result, variable, limit));
@@ -3283,13 +3750,10 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
             }
           }
 
-          tempComparison = arg2Comparison;
           if (data.direction == Direction.FROM_ABOVE //
               || data.direction == Direction.TWO_SIDED) {
-            if (arg2Comparison.isAST(S.Greater, 3) && arg2Comparison.first().equals(variable)
-                && arg2Comparison.second().equals(limit)) {
-              tempComparison = ((IAST) arg2Comparison).setAtCopy(0, S.GreaterEqual);
-            }
+            tempComparison =
+                boundaryCondition(arg2Comparison, variable, limit, Direction.FROM_ABOVE);
             IExpr temp = engine.evaluate(F.xreplace(tempComparison, variable, limit));
             if (temp.isTrue()) {
               temp = engine.evaluate(F.xreplace(arg1Result, variable, limit));
@@ -4269,16 +4733,20 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
               F.Divide(F.C1, F.Times(F.ZZ(12), arg))));
         }
         case ID.PolyGamma: {
-          // Digamma: PolyGamma(0, z) ~ Log(z) - 1/(2z) for a divergent argument free of
-          // nested PolyGamma (the arg was already recursed, so psi(psi(x)) arrives here
-          // with the inner level expanded; Log-bearing args are fine - see mrv PolyGamma)
+          // Digamma: PolyGamma(0, z) ~ Log(z) - 1/(2z) - 1/(12z^2) for a divergent argument free
+          // of nested PolyGamma (the arg was already recursed, so psi(psi(x)) arrives here
+          // with the inner level expanded; Log-bearing args are fine - see mrv PolyGamma).
+          // The second-order term is what a limit probing the 1/z^2 order needs: without it
+          // n^2*(psi(n+1) - Log(n) - 1/(2n)) collapses to a false 0 instead of -1/12.
           if (ast.argSize() == 2 && ast.arg1().isZero()) {
             IExpr arg = replaceStirling(ast.arg2(), x, engine);
             if (!divergesAtInfinity(arg, x) || !arg.isFree(t -> t.isAST(S.PolyGamma), true)) {
               return F.PolyGamma(F.C0, arg);
             }
-            return engine.evaluate(F.Plus(F.Log(arg),
-                F.Negate(F.Divide(F.C1, F.Times(F.C2, digammaTailArg(arg, x, engine))))));
+            IExpr tail = digammaTailArg(arg, x, engine);
+            return engine.evaluate(F.Plus(F.Log(arg), //
+                F.Negate(F.Divide(F.C1, F.Times(F.C2, tail))), //
+                F.Negate(F.Divide(F.C1, F.Times(F.ZZ(12), F.Sqr(tail))))));
           }
           break;
         }
@@ -4711,6 +5179,15 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
             && gruntzFirst.isIndeterminateFree() && !hasNestedDirectedInfinity(gruntzFirst)) {
           return gruntzFirst;
         }
+      }
+
+      // A sum of bounded oscillations has an accumulation RANGE, not a limit. It is resolved at
+      // the builtin boundary and returned directly: the answer is an Interval, and the
+      // toAccumBoundsIndeterminate() call below (rightly) collapses every Interval that reaches
+      // it to Indeterminate.
+      IExpr envelope = oscillatingEnvelope(arg1, rule, direction, engine);
+      if (envelope.isPresent()) {
+        return envelope;
       }
 
       IExpr temp = evaluateLimit(arg1, rule, direction, engine);
