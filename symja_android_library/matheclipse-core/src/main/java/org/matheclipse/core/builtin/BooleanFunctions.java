@@ -59,6 +59,7 @@ import org.matheclipse.core.interfaces.IBooleanFormula;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComparatorFunction;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPredicate;
@@ -1974,7 +1975,72 @@ public final class BooleanFunctions {
       return F.NIL;
     }
 
-    private static IExpr.COMPARE_TERNARY compareGreaterIntervalTernary(final IExpr lower0,
+    /**
+     * Lower/upper bound of an operand together with the information whether each bound belongs to
+     * the value range. A real number is treated as the degenerate closed interval
+     * <code>[x,x]</code>.
+     */
+    protected static final class Bounds {
+      final IExpr lower;
+      final IExpr upper;
+      final boolean lowerClosed;
+      final boolean upperClosed;
+
+      Bounds(IExpr lower, boolean lowerClosed, boolean upperClosed, IExpr upper) {
+        this.lower = lower;
+        this.lowerClosed = lowerClosed;
+        this.upperClosed = upperClosed;
+        this.upper = upper;
+      }
+    }
+
+    /**
+     * Extract the bounds of an <code>IntervalData</code> with a single sub-interval, or of a real
+     * number. Returns <code>null</code> if the expression has no such bounds.
+     */
+    protected static Bounds boundsOf(IExpr expr) {
+      if (expr.isIntervalData() && expr.size() == 2) {
+        IExpr sub = expr.first();
+        if (sub.isList4()) {
+          IAST subList = (IAST) sub;
+          return new Bounds(subList.arg1(), subList.arg2() == S.LessEqual,
+              subList.arg3() == S.LessEqual, subList.arg4());
+        }
+        return null;
+      }
+      if (expr.isReal()) {
+        return new Bounds(expr, true, true, expr);
+      }
+      return null;
+    }
+
+    /**
+     * Ternary comparison of two <code>IntervalData</code> bound pairs for the strict
+     * <code>Greater</code> relation, taking open/closed bounds into account. Unlike
+     * <code>Interval</code>, touching bounds can be decided when at least one of them is open:
+     * <code>(1,2) &gt; ...</code> excludes the touching value.
+     */
+    protected IExpr.COMPARE_TERNARY compareGreaterIntervalDataTernary(Bounds b0, Bounds b1) {
+      if (b0.lower.greaterThan(b1.upper).isTrue()) {
+        return IExpr.COMPARE_TERNARY.TRUE;
+      }
+      if (b0.lower.equals(b1.upper) && (!b0.lowerClosed || !b1.upperClosed)) {
+        // the intervals only touch and the touching value is excluded on at least one side
+        return IExpr.COMPARE_TERNARY.TRUE;
+      }
+      if (b0.upper.lessThan(b1.lower).isTrue() || b0.upper.equals(b1.lower)) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    }
+
+    /**
+     * Ternary comparison of two intervals for the strict <code>Greater</code> relation. The
+     * <code>GreaterEqual</code> / <code>LessEqual</code> subclasses override this with an inclusive
+     * variant so that touching intervals (e.g. <code>[1,2]</code> and <code>[2,3]</code>) compare
+     * as <code>True</code>.
+     */
+    protected IExpr.COMPARE_TERNARY compareGreaterIntervalTernary(final IExpr lower0,
         final IExpr upper0, final IExpr lower1, final IExpr upper1) {
       if (lower0.greaterThan(upper1).isTrue()) {
         return IExpr.COMPARE_TERNARY.TRUE;
@@ -1990,6 +2056,13 @@ public final class BooleanFunctions {
     public IExpr.COMPARE_TERNARY compareTernary(final IExpr a0, final IExpr a1) {
       if (a0.equals(a1) && a0.isRealResult() && a1.isRealResult()) {
         return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      if (a0.isIntervalData() || a1.isIntervalData()) {
+        Bounds b0 = boundsOf(a0);
+        Bounds b1 = boundsOf(a1);
+        if (b0 != null && b1 != null) {
+          return compareGreaterIntervalDataTernary(b0, b1);
+        }
       }
       if (a0.isReal()) {
         if (a1.isReal()) {
@@ -2328,6 +2401,34 @@ public final class BooleanFunctions {
       }
       return super.compareTernary(a0, a1);
     }
+
+    @Override
+    protected IExpr.COMPARE_TERNARY compareGreaterIntervalTernary(final IExpr lower0,
+        final IExpr upper0, final IExpr lower1, final IExpr upper1) {
+      // inclusive: lower0 >= upper1 makes the whole interval relation True (touching allowed)
+      if (lower0.greaterEqualThan(upper1).isTrue()) {
+        return IExpr.COMPARE_TERNARY.TRUE;
+      } else if (upper0.lessThan(lower1).isTrue()) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    }
+
+    @Override
+    protected IExpr.COMPARE_TERNARY compareGreaterIntervalDataTernary(Bounds b0, Bounds b1) {
+      // inclusive: touching bounds still satisfy ">=" for every pair of values
+      if (b0.lower.greaterEqualThan(b1.upper).isTrue()) {
+        return IExpr.COMPARE_TERNARY.TRUE;
+      }
+      if (b0.upper.lessThan(b1.lower).isTrue()) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      if (b0.upper.equals(b1.lower) && (!b0.upperClosed || !b1.lowerClosed)) {
+        // b0 lies strictly below b1, so ">=" never holds
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    }
   }
 
   private static final class Implies extends AbstractCoreFunctionEvaluator
@@ -2618,6 +2719,34 @@ public final class BooleanFunctions {
         return comp <= 0 ? IExpr.COMPARE_TERNARY.TRUE : IExpr.COMPARE_TERNARY.FALSE;
       }
       return super.compareTernary(a1, a0);
+    }
+
+    @Override
+    protected IExpr.COMPARE_TERNARY compareGreaterIntervalTernary(final IExpr lower0,
+        final IExpr upper0, final IExpr lower1, final IExpr upper1) {
+      // LessEqual delegates to Greater with swapped arguments; use the inclusive bound so that
+      // touching intervals (e.g. [1,2] <= [2,3]) compare as True.
+      if (lower0.greaterEqualThan(upper1).isTrue()) {
+        return IExpr.COMPARE_TERNARY.TRUE;
+      } else if (upper0.lessThan(lower1).isTrue()) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    }
+
+    @Override
+    protected IExpr.COMPARE_TERNARY compareGreaterIntervalDataTernary(Bounds b0, Bounds b1) {
+      // see GreaterEqual: LessEqual reaches this with swapped arguments
+      if (b0.lower.greaterEqualThan(b1.upper).isTrue()) {
+        return IExpr.COMPARE_TERNARY.TRUE;
+      }
+      if (b0.upper.lessThan(b1.lower).isTrue()) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      if (b0.upper.equals(b1.lower) && (!b0.upperClosed || !b1.lowerClosed)) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
     }
   }
 
@@ -2910,11 +3039,18 @@ public final class BooleanFunctions {
       IExpr arg1 = ast.arg1();
       if (ast.isAST1()) {
         if (arg1.isList() || arg1.isAssociation() || arg1.isInterval() || arg1.isIntervalData()) {
+          if ((arg1.isInterval() || arg1.isIntervalData()) && !isRealValuedInterval(arg1)) {
+            // symbolic interval endpoints are not orderable -> leave MinMax unevaluated
+            return F.NIL;
+          }
           return F.list(F.Min(arg1), F.Max(arg1));
         }
       } else if (ast.isAST2()) {
         IExpr arg2 = ast.arg2();
         if (arg1.isList() || arg1.isAssociation() || arg1.isInterval() || arg1.isIntervalData()) {
+          if ((arg1.isInterval() || arg1.isIntervalData()) && !isRealValuedInterval(arg1)) {
+            return F.NIL;
+          }
           if (arg2.isList()) {
             if (arg2.size() == 3 && arg2.first().isNumericFunction(true)
                 && arg2.second().isNumericFunction(true)) {
@@ -2932,6 +3068,32 @@ public final class BooleanFunctions {
       }
 
       return F.NIL;
+    }
+
+    /**
+     * Test whether every endpoint of an <code>Interval</code> or <code>IntervalData</code> is a
+     * real-valued (or infinite) bound, so that <code>Min</code> and <code>Max</code> can order
+     * them. Returns <code>false</code> for symbolic endpoints like <code>Interval({a,b})</code>.
+     */
+    private static boolean isRealValuedInterval(IExpr interval) {
+      IAST ast = (IAST) interval;
+      for (int i = 1; i < ast.size(); i++) {
+        IExpr sub = ast.get(i);
+        if (!sub.isList() || ((IAST) sub).size() < 3) {
+          return false;
+        }
+        IAST subList = (IAST) sub;
+        IExpr lo = subList.arg1();
+        IExpr hi = subList.last();
+        if (!isOrderableBound(lo) || !isOrderableBound(hi)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    private static boolean isOrderableBound(IExpr bound) {
+      return bound.isRealResult() || bound.isInfinity() || bound.isNegativeInfinity();
     }
 
     @Override
@@ -3002,6 +3164,27 @@ public final class BooleanFunctions {
       }
       if (arg1.isInfinity()) {
         return S.False;
+      }
+      if (arg1.isInterval()) {
+        COMPARE_TERNARY forAll = IntervalSym.forAll((IAST) arg1, x -> x.isNegativeResult(),
+            x -> x.isNonNegativeResult());
+        if (forAll == COMPARE_TERNARY.TRUE) {
+          return S.True;
+        }
+        if (forAll == COMPARE_TERNARY.FALSE) {
+          return S.False;
+        }
+      }
+      if (arg1.isIntervalData()) {
+        COMPARE_TERNARY forAll = IntervalDataSym.forAll((IAST) arg1, //
+            (x, closed) -> closed ? x.isNegativeResult() : (x.isNegativeResult() || x.isZero()), //
+            (x, closed) -> x.isNonNegativeResult());
+        if (forAll == COMPARE_TERNARY.TRUE) {
+          return S.True;
+        }
+        if (forAll == COMPARE_TERNARY.FALSE) {
+          return S.False;
+        }
       }
       return F.NIL;
     }
@@ -3076,6 +3259,27 @@ public final class BooleanFunctions {
       if (arg1.isInfinity()) {
         return S.True;
       }
+      if (arg1.isInterval()) {
+        COMPARE_TERNARY forAll = IntervalSym.forAll((IAST) arg1, x -> x.isNonNegativeResult(),
+            x -> x.isNegativeResult() || x.isZero());
+        if (forAll == COMPARE_TERNARY.TRUE) {
+          return S.True;
+        }
+        if (forAll == COMPARE_TERNARY.FALSE) {
+          return S.False;
+        }
+      }
+      if (arg1.isIntervalData()) {
+        COMPARE_TERNARY forAll = IntervalDataSym.forAll((IAST) arg1, //
+            (x, closed) -> x.isNonNegativeResult(), //
+            (x, closed) -> closed ? x.isNegativeResult() : (x.isNegativeResult() || x.isZero()));
+        if (forAll == COMPARE_TERNARY.TRUE) {
+          return S.True;
+        }
+        if (forAll == COMPARE_TERNARY.FALSE) {
+          return S.False;
+        }
+      }
       return F.NIL;
     }
 
@@ -3103,6 +3307,27 @@ public final class BooleanFunctions {
       final IReal realNumber = arg1.evalReal();
       if (realNumber != null) {
         return F.booleSymbol(realNumber.isNegative() || realNumber.isZero());
+      }
+      if (arg1.isInterval()) {
+        COMPARE_TERNARY forAll = IntervalSym.forAll((IAST) arg1,
+            x -> x.isNegativeResult() || x.isZero(), x -> x.isNonNegativeResult());
+        if (forAll == COMPARE_TERNARY.TRUE) {
+          return S.True;
+        }
+        if (forAll == COMPARE_TERNARY.FALSE) {
+          return S.False;
+        }
+      }
+      if (arg1.isIntervalData()) {
+        COMPARE_TERNARY forAll = IntervalDataSym.forAll((IAST) arg1, //
+            (x, closed) -> x.isNegativeResult() || x.isZero(), //
+            (x, closed) -> closed ? x.isPositiveResult() : x.isNonNegativeResult());
+        if (forAll == COMPARE_TERNARY.TRUE) {
+          return S.True;
+        }
+        if (forAll == COMPARE_TERNARY.FALSE) {
+          return S.False;
+        }
       }
       return F.NIL;
     }
@@ -3323,6 +3548,27 @@ public final class BooleanFunctions {
       }
       if (arg1.isInfinity()) {
         return S.True;
+      }
+      if (arg1.isInterval()) {
+        COMPARE_TERNARY forAll = IntervalSym.forAll((IAST) arg1, x -> x.isPositiveResult(),
+            x -> x.isNegativeResult() || x.isZero());
+        if (forAll == COMPARE_TERNARY.TRUE) {
+          return S.True;
+        }
+        if (forAll == COMPARE_TERNARY.FALSE) {
+          return S.False;
+        }
+      }
+      if (arg1.isIntervalData()) {
+        COMPARE_TERNARY forAll = IntervalDataSym.forAll((IAST) arg1, //
+            (x, closed) -> closed ? x.isPositiveResult() : x.isNonNegativeResult(), //
+            (x, closed) -> x.isNegativeResult() || x.isZero());
+        if (forAll == COMPARE_TERNARY.TRUE) {
+          return S.True;
+        }
+        if (forAll == COMPARE_TERNARY.FALSE) {
+          return S.False;
+        }
       }
       return F.NIL;
     }
