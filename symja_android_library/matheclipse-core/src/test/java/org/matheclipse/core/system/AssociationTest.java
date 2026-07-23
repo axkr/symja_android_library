@@ -444,7 +444,8 @@ public class AssociationTest extends ExprEvaluatorTestCase {
   public void testKeyDrop() {
     check("KeyDrop(<|a -> 1, b -> 2|>, a)", //
         "<|b->2|>");
-
+    check("assoc= <|a -> 1, b -> 2|>;KeyDropFrom(assoc, a)", //
+        "<|b->2|>");
     check("KeyDrop(<|a -> 1, b -> 2, c -> 3, d -> 4|>, {a, d})", //
         "<|b->2,c->3|>");
     check("KeyDrop({<|a -> 1, b -> 2|>, <|c -> 3, d -> 4|>}, {a, d})", //
