@@ -2560,7 +2560,8 @@ public class EvalEngine implements Serializable {
       }
     } else if (expr instanceof NILPointer || expr == null) {
       if (Config.FUZZ_TESTING) {
-        throw new NullPointerException();
+        throw new NullPointerException(
+            "fuzz testing: undefined (NIL or null) expression in EvalEngine#evalLoop()");
       }
       // `1`.
       Errors.printMessage(S.General, "error",
@@ -2622,7 +2623,7 @@ public class EvalEngine implements Serializable {
         }
       } catch (UnsupportedOperationException uoe) {
         if (Config.FUZZ_TESTING) {
-          throw new NullPointerException();
+          throw fuzzSignal(uoe);
         }
         // `1`.
         Errors.printMessage(result.topHead(), "error", F.List(uoe.getMessage()), this);
@@ -2710,7 +2711,7 @@ public class EvalEngine implements Serializable {
       }
     } catch (UnsupportedOperationException uoe) {
       if (Config.FUZZ_TESTING) {
-        throw new NullPointerException();
+        throw fuzzSignal(uoe);
       }
       // `1`.
       Errors.printMessage(S.General, uoe, this);
@@ -3263,7 +3264,7 @@ public class EvalEngine implements Serializable {
         Throwable cause = e.getCause();
         if (cause != null && !(cause instanceof FlowControlException)) {
           cause.printStackTrace();
-          throw new NullPointerException();
+          throw fuzzSignal(cause);
         }
       }
       // e.printStackTrace();
@@ -3284,7 +3285,7 @@ public class EvalEngine implements Serializable {
         e.printStackTrace();
         if (cause != null && !(cause instanceof FlowControlException)) {
           cause.printStackTrace();
-          throw new NullPointerException();
+          throw fuzzSignal(cause);
         }
       }
       // Appengine example: com.google.apphosting.api.DeadlineExceededException
@@ -3301,6 +3302,27 @@ public class EvalEngine implements Serializable {
 
   public IExpr evalTimeConstrained(final IExpr expr, long seconds) {
     return evalTimeConstrained(expr, F.NIL, seconds);
+  }
+
+  /**
+   * Create the {@link NullPointerException} which
+   * {@link #evalTimeConstrained(IExpr, IExpr, long)} raises in {@link Config#FUZZ_TESTING} mode to
+   * flag an exception that escaped the evaluation thread.
+   *
+   * <p>
+   * The evaluation runs in a worker thread, so the exception the fuzz harness finally catches is
+   * created on the calling thread and its stack trace only shows {@code evalTimeConstrained} and
+   * its callers &mdash; useless for analysing the actual defect. Chaining {@code cause} keeps the
+   * worker thread's stack trace reachable through {@link Throwable#getCause()}, which is where the
+   * real problem is described.
+   *
+   * @param cause the exception that was thrown inside the evaluation thread
+   */
+  private static NullPointerException fuzzSignal(Throwable cause) {
+    NullPointerException npe =
+        new NullPointerException("fuzz testing: " + cause.getClass().getName());
+    npe.initCause(cause);
+    return npe;
   }
 
   /**
