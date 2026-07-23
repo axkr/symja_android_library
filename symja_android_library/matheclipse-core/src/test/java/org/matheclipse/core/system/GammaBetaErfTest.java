@@ -886,6 +886,18 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
   public void testHarmonicNumber() {
     // check("Table(Print(r1,i1);HarmonicNumber(r1+I*i1), {r1,-1.0,1.0},{i1,-1.0,1.0} )", //
     // "");
+    check("HarmonicNumber(10)", //
+        "7381/2520");
+    // a non-integer argument stays unevaluated - the EulerGamma + PolyGamma(0,n+1) rewrite is
+    // local to Limit and must not leak into the auto-evaluation
+    check("HarmonicNumber(1 / 2)", //
+        "HarmonicNumber(1/2)");
+    check("HarmonicNumber(3 / 2)", //
+        "HarmonicNumber(3/2)");
+    check("HarmonicNumber(Sqrt(2))", //
+        "HarmonicNumber(Sqrt(2))");
+    checkNumeric("HarmonicNumber(3.0)", //
+        "1.8333333333333333");
     checkNumeric("HarmonicNumber(-1.0)", //
         "ComplexInfinity");
     checkNumeric("N(HarmonicNumber(-1),30)", //
