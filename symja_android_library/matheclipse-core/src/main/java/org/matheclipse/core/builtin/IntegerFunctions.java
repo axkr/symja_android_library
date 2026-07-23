@@ -637,6 +637,9 @@ public class IntegerFunctions {
       if (arg1.isInterval()) {
         return IntervalSym.mapSymbol(S.Ceiling, (IAST) arg1);
       }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.mapIntegerFunctionToInterval(S.Ceiling, (IAST) arg1, engine);
+      }
       if (arg1.isQuantity()) {
         return arg1.ceil();
       }
@@ -1040,6 +1043,9 @@ public class IntegerFunctions {
       if (arg1.isInterval()) {
         return IntervalSym.mapSymbol(S.Floor, (IAST) arg1);
       }
+      if (arg1.isIntervalData()) {
+        return IntervalDataSym.mapIntegerFunctionToInterval(S.Floor, (IAST) arg1, engine);
+      }
       if (arg1.isQuantity()) {
         return arg1.floor();
       }
@@ -1387,6 +1393,9 @@ public class IntegerFunctions {
         }
         if (arg1.isInterval()) {
           return IntervalSym.mapSymbol(S.IntegerPart, (IAST) arg1);
+        }
+        if (arg1.isIntervalData()) {
+          return IntervalDataSym.mapIntegerFunctionToInterval(S.IntegerPart, (IAST) arg1, engine);
         }
         if (arg1.isQuantity()) {
           IQuantity quantity = (IQuantity) arg1;
@@ -2353,6 +2362,9 @@ public class IntegerFunctions {
           }
           if (expr.isInterval()) {
             return IntervalSym.mapSymbol(S.Round, (IAST) expr);
+          }
+          if (expr.isIntervalData()) {
+            return IntervalDataSym.mapIntegerFunctionToInterval(S.Round, (IAST) expr, engine);
           }
         }
       } catch (ArithmeticException ae) {
