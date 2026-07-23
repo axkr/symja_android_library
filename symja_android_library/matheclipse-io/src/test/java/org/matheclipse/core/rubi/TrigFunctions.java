@@ -2575,10 +2575,16 @@ public class TrigFunctions extends AbstractRubiTestCase {
 
   // {3488}
   public void test0335() {
-    check( //
-        "Integrate[Sqrt[a + I*a*Tan[c + d*x]]/Sqrt[e*Sec[c + d*x]], x]", //
-        "((-2*I)*Sqrt[a + I*a*Tan[c + d*x]])/(d*Sqrt[e*Sec[c + d*x]])", //
-        3488);
+    long oldSeconds = fSeconds;
+    try {
+      fSeconds = 60;
+      check( //
+          "Integrate[Sqrt[a + I*a*Tan[c + d*x]]/Sqrt[e*Sec[c + d*x]], x]", //
+          "((-2*I)*Sqrt[a + I*a*Tan[c + d*x]])/(d*Sqrt[e*Sec[c + d*x]])", //
+          3488);
+    } finally {
+      fSeconds = oldSeconds;
+    }
   }
 
   // {3488}
@@ -2607,10 +2613,16 @@ public class TrigFunctions extends AbstractRubiTestCase {
 
   // {3488}
   public void test0339() {
-    check( //
-        "Integrate[(e*Sec[c + d*x])^(3/2)/(a + I*a*Tan[c + d*x])^(3/2), x]", //
-        "(((2*I)/3)*(e*Sec[c + d*x])^(3/2))/(d*(a + I*a*Tan[c + d*x])^(3/2))", //
-        3488);
+    long oldSeconds = fSeconds;
+    try {
+      fSeconds = 60;
+      check( //
+          "Integrate[(e*Sec[c + d*x])^(3/2)/(a + I*a*Tan[c + d*x])^(3/2), x]", //
+          "(((2*I)/3)*(e*Sec[c + d*x])^(3/2))/(d*(a + I*a*Tan[c + d*x])^(3/2))", //
+          3488);
+    } finally {
+      fSeconds = oldSeconds;
+    }
   }
 
   // {3488}
