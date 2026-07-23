@@ -133,8 +133,8 @@ public class ReduceTest extends ExprEvaluatorTestCase {
   @Test
   public void testReduceQuadratic() {
     check("Reduce(a*x^2 + b*x + c == 0, x)", //
-        "(a!=0&&(x==(-b-Sqrt(b^2-4*a*c))/(2*a)||x==(-b+Sqrt(b^2-4*a*c))/(2*a)))||(a==0&&b!=\n" //
-            + "0&&x==-c/b)||(a==0&&b==0&&c==0)");
+        "(a!=0&&(x==-b/(2*a)-Sqrt(b^2-4*a*c)/(2*a)||x==-b/(2*a)+Sqrt(b^2-4*a*c)/(2*a)))||(a==\n"
+            + "0&&b!=0&&x==-c/b)||(a==0&&b==0&&c==0)");
     // parametric quadratic equation with a positivity constraint: left unevaluated
     // (previously returned the incorrect "x>0", which silently dropped the equation)
     check("Reduce(a*x^2 + b*x + c == 0&&x>0, x)", //
@@ -265,7 +265,7 @@ public class ReduceTest extends ExprEvaluatorTestCase {
         "x>1&&x<2");
     // cubic inequality reduces over the reals even in the default domain
     check("Reduce(x^3-2*x+1<0,x)", //
-        "x<1/2*(-1-Sqrt(5))||(x>1/2*(-1+Sqrt(5))&&x<1)");
+        "x<-1/2-Sqrt(5)/2||(x>-1/2+Sqrt(5)/2&&x<1)");
   }
 
   @Test

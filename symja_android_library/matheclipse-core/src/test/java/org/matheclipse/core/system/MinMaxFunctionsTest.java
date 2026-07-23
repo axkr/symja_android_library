@@ -216,8 +216,8 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
         "{}");
 
     check("Maximize(-x^4-7*x^3+2*x^2 - 42,x)", //
-        "{-42-7/512*(-21-Sqrt(505))^3+(21+Sqrt(505))^2/32-(21+Sqrt(505))^4/4096,{x->1/8*(-\n"
-            + "21-Sqrt(505))}}");
+        "{-42-7*(-21/8-Sqrt(505)/8)^3+2*(21/8+Sqrt(505)/8)^2-(21/8+Sqrt(505)/8)^4,{x->-21/\n"
+            + "8-Sqrt(505)/8}}");
     check("Maximize(x^4+7*Tan(x)-2*x^2 + 42, x)", //
         "Maximize(42-2*x^2+x^4+7*Tan(x),x)");
     check("Maximize(x^4+7*x^3-2*x^2 + 42, x)", //
@@ -246,8 +246,8 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
         "{0,{x->-2}}");
 
     check("Minimize(x^4+7*x^3-2*x^2 + 42, x)", //
-        "{42+7/512*(-21-Sqrt(505))^3-(21+Sqrt(505))^2/32+(21+Sqrt(505))^4/4096,{x->1/8*(-\n"
-            + "21-Sqrt(505))}}");
+        "{42+7*(-21/8-Sqrt(505)/8)^3-2*(21/8+Sqrt(505)/8)^2+(21/8+Sqrt(505)/8)^4,{x->-21/\n"
+            + "8-Sqrt(505)/8}}");
     check("Minimize(2*x^2 - 3*x + 5, x)", //
         "{31/8,{x->3/4}}");
   }

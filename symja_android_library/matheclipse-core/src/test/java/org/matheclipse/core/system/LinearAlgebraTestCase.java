@@ -975,9 +975,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("m = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}", //
         "{{1,2,3},{4,5,6},{7,8,9}}");
     check("Roots(CharacteristicPolynomial(m,x)==0, x)", //
-        "x==0||x==3/2*(5-Sqrt(33))||x==3/2*(5+Sqrt(33))");
+        "x==0||x==15/2-3/2*Sqrt(33)||x==15/2+3/2*Sqrt(33)");
     check("EigenValues(m)", //
-        "{1/2*(15+3*Sqrt(33)),1/2*(15-3*Sqrt(33)),0}");
+        "{15/2+3/2*Sqrt(33),15/2-3/2*Sqrt(33),0}");
 
     // 4x4
     check("Eigenvalues(SparseArray({{1, 3} -> 2, {2, 2} -> 3, {3, 1} -> 1, {4, 2} -> 5}, {4, 4})) ", //
@@ -1003,9 +1003,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Eigenvalues({{a, b}, {0, d}})", //
         "{a,d}");
     check("Eigenvalues({{a,b}, {c,d}})", //
-        "{1/2*(a+d-Sqrt(a^2+4*b*c-2*a*d+d^2)),1/2*(a+d+Sqrt(a^2+4*b*c-2*a*d+d^2))}");
+        "{1/2*(a+d)-Sqrt(a^2+4*b*c-2*a*d+d^2)/2,1/2*(a+d)+Sqrt(a^2+4*b*c-2*a*d+d^2)/2}");
     check("Eigenvalues({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
-        "{1/2*(15+3*Sqrt(33)),1/2*(15-3*Sqrt(33)),0}");
+        "{15/2+3/2*Sqrt(33),15/2-3/2*Sqrt(33),0}");
     check("Eigenvalues({{0.0,1.0,-1.0},{1.0,1.0,0.0},{-1.0,0.0,1.0}})", //
         "{2.0,-1.0,1.0}");
   }
@@ -2796,7 +2796,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("{u,s,v}=SingularValueDecomposition({{1/2+1/2*I, 11/10},{-I,32/10-45/10*I}}) // N", //
         "{{{0.195719+I*0.021187,-0.0139522+I*(-0.980332)},{0.564738+I*(-0.801446),0.173534+I*0.0929571}},{{5.72198,0.0},{0.0,0.677424}},{{0.159018+I*0.0834452,-0.871093+I*(-0.457108)},{0.983743,0.179582}}}");
     check("u.s.ConjugateTranspose(v) // N", //
-        "{{0.5+I*0.5,1.1},{I*(-1.0),3.2+I*(-4.5)}}");
+        "{{0.5+I*0.5,1.1+I*(-5.27356*10^-16)},{-2.77556*10^-16+I*(-1.0),3.2+I*(-4.5)}}");
     check("{u,s,v}=SingularValueDecomposition({{ 24/25, 43/25 },{57/25, 24/25 }})", //
         "{{{3/5,4/5},{4/5,-3/5}},{{3,0},{0,1}},{{4/5,-3/5},{3/5,4/5}}}");
     check("u.s.ConjugateTranspose(v)", //
@@ -2804,12 +2804,12 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
             + " {57/25,24/25}}");
 
     check("{u,s,v}=SingularValueDecomposition({{3/2, 2}, {5/2, 3}})", //
-        "{{{(47+3*Sqrt(205))/Sqrt(13940+972*Sqrt(205)),(47-3*Sqrt(205))/Sqrt(13940-972*Sqrt(\n"
-            + "205))},{(69+5*Sqrt(205))/Sqrt(13940+972*Sqrt(205)),(69-5*Sqrt(205))/Sqrt(13940-\n"
-            + "972*Sqrt(205))}},{{Sqrt(86+6*Sqrt(205))/(2*Sqrt(2)),0},{0,Sqrt(86-6*Sqrt(205))/(\n"
-            + "2*Sqrt(2))}},{{(-3+Sqrt(205))/(14*Sqrt(1+(3-Sqrt(205))^2/196)),(-3-Sqrt(205))/(\n"
-            + "14*Sqrt(1+(3+Sqrt(205))^2/196))},{1/Sqrt(1+(3-Sqrt(205))^2/196),1/Sqrt(1+(3+Sqrt(\n"
-            + "205))^2/196)}}}");
+        "{{{(47+3*Sqrt(205))/(2*Sqrt(3485+243*Sqrt(205))),(47-3*Sqrt(205))/(2*Sqrt(3485-\n"
+            + "243*Sqrt(205)))},{(69+5*Sqrt(205))/(2*Sqrt(3485+243*Sqrt(205))),(69-5*Sqrt(205))/(\n"
+            + "2*Sqrt(3485-243*Sqrt(205)))}},{{Sqrt(43/4+3/4*Sqrt(205)),0},{0,Sqrt(43/4-3/4*Sqrt(\n"
+            + "205))}},{{(-3+Sqrt(205))/(14*Sqrt(1+(3-Sqrt(205))^2/196)),(-3-Sqrt(205))/(14*Sqrt(\n"
+            + "1+(3+Sqrt(205))^2/196))},{1/Sqrt(1+(3-Sqrt(205))^2/196),1/Sqrt(1+(3+Sqrt(205))^2/\n"
+            + "196)}}}");
     check("u.s.ConjugateTranspose(v)//N", //
         "{{1.5,2.0},{2.5,3.0}}");
 

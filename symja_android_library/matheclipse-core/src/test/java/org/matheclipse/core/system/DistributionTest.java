@@ -946,7 +946,7 @@ public class DistributionTest extends ExprEvaluatorTestCase {
         "1-1/E^(2*y)");
 
     check("Probability((x-1)^2<=3*x, Distributed(x,NormalDistribution()))", //
-        "1/2*(-Erf((5-Sqrt(21))/(2*Sqrt(2)))+Erf((5+Sqrt(21))/(2*Sqrt(2))))");
+        "1/2*(-Erf((5/2-Sqrt(21)/2)/Sqrt(2))+Erf((5/2+Sqrt(21)/2)/Sqrt(2)))");
 
     check("Probability(90<=x<=110, Distributed(x,NormalDistribution(100,15)))", //
         "Erf(Sqrt(2)/3)");

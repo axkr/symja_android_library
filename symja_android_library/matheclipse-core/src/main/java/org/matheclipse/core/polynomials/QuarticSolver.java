@@ -774,8 +774,10 @@ public class QuarticSolver {
             result.append(Plus(t2, Times(power, discriminant)));
             result.append(Plus(t2, Times(power, discriminant.negate())));
           } else {
-            result.append(Times(Plus(b.negate(), discriminant), power));
-            result.append(Times(Plus(b.negate(), discriminant.negate()), power));
+            result.append(Plus(Times(b.negate(), power), Times(discriminant, power)));
+            result.append(Plus(Times(b.negate(), power), Times(discriminant.negate(), power)));
+            // result.append(Times(Plus(b.negate(), discriminant), power));
+            // result.append(Times(Plus(b.negate(), discriminant.negate()), power));
           }
         }
         if (createSet) {
