@@ -3376,6 +3376,17 @@ public class S {
       S.initFinalSymbol("DiscreteDelta", ID.DiscreteDelta);
 
   /**
+   * DiscreteLimit(f, n -> Infinity) - computes the limit of the sequence `f` as the integer
+   * variable `n` tends to infinity.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/DiscreteLimit.md">DiscreteLimit
+   *      documentation</a>
+   */
+  public final static IBuiltInSymbol DiscreteLimit =
+      S.initFinalSymbol("DiscreteLimit", ID.DiscreteLimit);
+
+  /**
    * DiscretePlot( expr, {x, nmax} ) - plots `expr` with `x` ranging from `1` to `nmax`.
    * 
    * @see <a href=
@@ -8571,6 +8582,9 @@ public class S {
 
   public final static IBuiltInSymbol NonCommutativeMultiply =
       S.initFinalSymbol("NonCommutativeMultiply", ID.NonCommutativeMultiply);
+
+  public final static IBuiltInSymbol NonConstants =
+      S.initFinalSymbol("NonConstants", ID.NonConstants);
 
   /**
    * None - is a possible value for `Span` and `Quiet`.

@@ -1,12 +1,16 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.DLeibnitzRule;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ASTElementLimitExceeded;
 import org.matheclipse.core.eval.exception.ValidateException;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -77,6 +81,20 @@ import com.google.common.math.LongMath;
  * <p>
  * gives the vector derivative of <code>f</code> with respect to <code>x1</code>, <code>x2</code> ,
  * etc.
+ *
+ * </p>
+ *
+ * </blockquote>
+ *
+ * <pre>
+ * D(f, x, NonConstants -&gt; {u1, ...})
+ * </pre>
+ *
+ * <blockquote>
+ *
+ * <p>
+ * specifies that <code>ui</code> depends on <code>x</code> and therefore does not have zero partial
+ * derivative.
  *
  * </p>
  *
@@ -188,8 +206,16 @@ import com.google.common.math.LongMath;
  * &gt;&gt; D({#^2}, #)
  * {2*#1}
  * </pre>
+ *
+ * <p>
+ * With <code>NonConstants</code> the symbol <code>a</code> is assumed to depend on <code>x</code>:
+ *
+ * <pre>
+ * &gt;&gt; D(a*x^2, x, NonConstants -&gt; {a})
+ * 2*a*x+x^2*D(a,x,NonConstants-&gt;{a})
+ * </pre>
  */
-public class D extends AbstractFunctionEvaluator {
+public class D extends AbstractFunctionOptionEvaluator {
   private static final IStringX FUNCTION_RULE_STR = F.$str("FunctionRule");
 
   public D() {}
@@ -330,7 +356,41 @@ public class D extends AbstractFunctionEvaluator {
   }
 
   @Override
-  public IExpr evaluate(final IAST ast, EvalEngine engine) {
+  public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+      final EvalEngine engine, IAST originalAST) {
+    for (int i = 2; i <= argSize; i++) {
+      if (isOptionLike(ast.get(i))) {
+        // an unknown option was given - leave the expression unevaluated
+        return F.NIL;
+      }
+    }
+    if (argSize == ast.argSize()) {
+      // no option rules were stripped from the end of the arguments
+      return evaluateD(ast, engine);
+    }
+
+    IASTAppendable dAST = ast.copyUntil(argSize + 1);
+    dAST.addEvalFlags(ast.getEvalFlags() & IAST.IS_DERIVATIVE_EVALED);
+    IExpr nonConstants = options.length > 0 && options[0] != null ? options[0] : F.CEmptyList;
+    IAST nonConstantsList = normalizeNonConstants(nonConstants);
+    if (nonConstantsList.isEmpty()) {
+      return evaluateD(dAST, engine);
+    }
+    return nonConstantsD(dAST, nonConstantsList, ast, engine);
+  }
+
+  /**
+   * Test if <code>arg</code> is a rule or a list of rules and therefore can't be a valid
+   * differentiation variable specification.
+   *
+   * @param arg
+   * @return
+   */
+  private static boolean isOptionLike(IExpr arg) {
+    return arg.isRuleAST() || (arg.isListOfRules(true) && !arg.isEmptyList());
+  }
+
+  private static IExpr evaluateD(final IAST ast, EvalEngine engine) {
     if (ast.isAST1()) {
       return ast.arg1();
     }
@@ -918,6 +978,197 @@ public class D extends AbstractFunctionEvaluator {
     return F.NIL;
   }
 
+  /**
+   * Normalize the value of the {@link S#NonConstants} option to a list of expressions.
+   *
+   * @param nonConstants the option value
+   * @return an empty list if no &quot;non constant&quot; expressions were specified
+   */
+  private static IAST normalizeNonConstants(IExpr nonConstants) {
+    if (nonConstants.isList()) {
+      return (IAST) nonConstants;
+    }
+    if (nonConstants == S.None || nonConstants == S.Automatic || nonConstants.isFalse()) {
+      return F.CEmptyList;
+    }
+    return F.list(nonConstants);
+  }
+
+  /**
+   * Differentiate <code>dAST</code> under the assumption, that all expressions in
+   * <code>nonConstantsList</code> depend on the differentiation variables.
+   *
+   * <p>
+   * Every <code>ui</code> from <code>nonConstantsList</code> is temporarily replaced by
+   * <code>gi(x1, x2, ...)</code> for a fresh &quot;dummy&quot; symbol <code>gi</code> and the
+   * differentiation variables <code>x1, x2, ...</code>. That way the usual derivative rules can be
+   * used unchanged. In the result the generated <code>Derivative(...)[gi][x1, x2, ...]</code>
+   * expressions are mapped back to unevaluated <code>D(ui, ..., NonConstants-&gt;{...})</code>
+   * expressions.
+   *
+   * @param dAST the <code>D(f, x, ...)</code> expression without the option rules
+   * @param nonConstantsList the expressions which depend on the differentiation variables
+   * @param originalAST the original <code>D(...)</code> expression including the option rules
+   * @param engine the evaluation engine
+   * @return {@link F#NIL} if no evaluation was possible
+   */
+  private static IExpr nonConstantsD(final IAST dAST, final IAST nonConstantsList,
+      final IAST originalAST, EvalEngine engine) {
+    final IExpr fx = dAST.arg1();
+    Set<IExpr> variables = new LinkedHashSet<IExpr>();
+    for (int i = 2; i < dAST.size(); i++) {
+      collectVariables(dAST.get(i), variables);
+    }
+    if (variables.isEmpty()) {
+      return evaluateD(dAST, engine);
+    }
+
+    Map<IExpr, IExpr> forward = new HashMap<IExpr, IExpr>();
+    Map<IExpr, IExpr> backward = new HashMap<IExpr, IExpr>();
+    for (int i = 1; i < nonConstantsList.size(); i++) {
+      IExpr u = nonConstantsList.get(i);
+      if (variables.contains(u) || fx.isFree(u, true)) {
+        // a differentiation variable can't be a "non constant" expression and an expression which
+        // doesn't occur in `fx` doesn't have to be substituted
+        continue;
+      }
+      ISymbol dummy = F.Dummy();
+      IASTAppendable dummyFunction = F.ast(dummy, variables.size());
+      for (IExpr variable : variables) {
+        dummyFunction.append(variable);
+      }
+      forward.put(u, dummyFunction);
+      backward.put(dummy, u);
+    }
+    if (forward.isEmpty()) {
+      return evaluateD(dAST, engine);
+    }
+
+    IASTAppendable dCall = F.ast(S.D, dAST.size());
+    dCall.append(F.subst(fx, forward));
+    for (int i = 2; i < dAST.size(); i++) {
+      dCall.append(dAST.get(i));
+    }
+    IExpr result = engine.evaluate(dCall);
+    IExpr backSubstituted = backSubstitute(result, backward, nonConstantsList);
+    if (backSubstituted.isNIL() || backSubstituted.equals(originalAST)) {
+      return F.NIL;
+    }
+    return backSubstituted;
+  }
+
+  /**
+   * Replace the generated &quot;dummy functions&quot; in <code>expr</code> by the original
+   * expressions of the {@link S#NonConstants} option.
+   *
+   * @param expr
+   * @param backward maps a generated dummy symbol to the original expression
+   * @param nonConstantsList the value of the {@link S#NonConstants} option
+   * @return
+   */
+  private static IExpr backSubstitute(IExpr expr, final Map<IExpr, IExpr> backward,
+      final IAST nonConstantsList) {
+    return F.subst(expr, node -> {
+      IAST[] deriv = node.isDerivative();
+      if (deriv != null) {
+        if (deriv[2] != null) {
+          IExpr original = backward.get(deriv[1].arg1());
+          if (original != null) {
+            return derivativeAsD(deriv[0], deriv[2], original, nonConstantsList);
+          }
+        }
+        return F.NIL;
+      }
+      if (node.isAST(S.D) && node.size() > 2
+          && !node.isFree(x -> backward.containsKey(x), true)) {
+        // an unevaluated D(...) expression which still contains a dummy function
+        IASTAppendable dResult = F.ast(S.D, node.size() + 1);
+        boolean hasOption = false;
+        for (int i = 1; i < node.size(); i++) {
+          IExpr arg = node.get(i);
+          if (i > 1 && arg.isRuleAST() && arg.first().equals(S.NonConstants)) {
+            hasOption = true;
+            dResult.append(F.Rule(S.NonConstants, nonConstantsList));
+          } else {
+            dResult.append(backSubstitute(arg, backward, nonConstantsList));
+          }
+        }
+        if (!hasOption) {
+          dResult.append(F.Rule(S.NonConstants, nonConstantsList));
+        }
+        return dResult;
+      }
+      if (node.isAST() && backward.containsKey(node.head())) {
+        return backward.get(node.head());
+      }
+      IExpr original = backward.get(node);
+      return original == null ? F.NIL : original;
+    });
+  }
+
+  /**
+   * Map <code>Derivative(n1, n2, ...)[gi][x1, x2, ...]</code> back to an unevaluated
+   * <code>D(ui, ..., NonConstants-&gt;{...})</code> expression.
+   *
+   * @param orders the <code>Derivative(n1, n2, ...)</code> part
+   * @param args the arguments <code>x1, x2, ...</code> of the derivative
+   * @param original the original expression <code>ui</code> of the {@link S#NonConstants} option
+   * @param nonConstantsList the value of the {@link S#NonConstants} option
+   * @return
+   */
+  private static IExpr derivativeAsD(final IAST orders, final IAST args, final IExpr original,
+      final IAST nonConstantsList) {
+    IASTAppendable dResult = F.ast(S.D, args.size() + 1);
+    dResult.append(original);
+    for (int i = 1; i < args.size(); i++) {
+      IExpr n = orders.get(i);
+      if (n.isZero()) {
+        continue;
+      }
+      if (n.isOne()) {
+        dResult.append(args.get(i));
+      } else {
+        dResult.append(F.list(args.get(i), n));
+      }
+    }
+    if (dResult.argSize() == 1) {
+      // all derivative orders are 0
+      return original;
+    }
+    dResult.append(F.Rule(S.NonConstants, nonConstantsList));
+    return dResult;
+  }
+
+  /**
+   * Collect the differentiation variables of a single <code>D(f, spec)</code> variable
+   * specification <code>spec</code>.
+   *
+   * @param spec a variable, <code>{x, n}</code>, <code>{{x1, x2, ...}}</code> or
+   *        <code>{{x1, x2, ...}, n}</code>
+   * @param variables the resulting set of variables
+   */
+  private static void collectVariables(IExpr spec, Set<IExpr> variables) {
+    if (spec.isList()) {
+      IAST list = (IAST) spec;
+      if (list.isAST2()) {
+        // {x, n} or {{x1, x2, ...}, n}
+        collectAllVariables(list.arg1(), variables);
+      } else {
+        collectAllVariables(list, variables);
+      }
+    } else if (spec.isVariable()) {
+      variables.add(spec);
+    }
+  }
+
+  private static void collectAllVariables(IExpr expr, Set<IExpr> variables) {
+    if (expr.isList()) {
+      ((IAST) expr).forEach(x -> collectAllVariables(x, variables));
+    } else if (expr.isVariable()) {
+      variables.add(expr);
+    }
+  }
+
   @Override
   public int status() {
     return ImplementationStatus.PARTIAL_SUPPORT;
@@ -926,5 +1177,10 @@ public class D extends AbstractFunctionEvaluator {
   @Override
   public int[] expectedArgSize(IAST ast) {
     return ARGS_1_INFINITY;
+  }
+
+  @Override
+  public void setUp(final ISymbol newSymbol) {
+    setOptions(newSymbol, S.NonConstants, F.CEmptyList);
   }
 }

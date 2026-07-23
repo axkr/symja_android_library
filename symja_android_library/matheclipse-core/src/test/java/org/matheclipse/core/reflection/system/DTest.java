@@ -6,6 +6,38 @@ import org.matheclipse.core.system.ExprEvaluatorTestCase;
 public class DTest extends ExprEvaluatorTestCase {
 
   @Test
+  public void testDNonConstants() {
+    check("D(x^2, x, NonConstants -> {a})", //
+        "2*x");
+    check("D(x^3, x, NonConstants -> {a, b})", //
+        "3*x^2");
+    check("D(Sin(x), x, NonConstants -> {a})", //
+        "Cos(x)");
+    check("D(x^2, {x, 2}, NonConstants -> {a})", //
+        "2");
+    check("D(x^2 * y, x, NonConstants -> {a})", //
+        "2*x*y");
+    check("D(x^2, x, Assumptions -> x > 0)", //
+        "D(x^2,x,Assumptions->x>0)");
+    check("D(a * x^2, x, NonConstants -> {a})", //
+        "2*a*x+x^2*D(a,x,NonConstants->{a})");
+    check("D(a, x, NonConstants -> {a})", //
+        "D(a,x,NonConstants->{a})");
+
+    // no option - a is a constant
+    check("D(a*x^2, x)", //
+        "2*a*x");
+    check("D(x^2, x, NonConstants -> {})", //
+        "2*x");
+    // chain rule through a "non constant" expression
+    check("D(Sin(a*x), x, NonConstants -> {a})", //
+        "Cos(a*x)*(a+x*D(a,x,NonConstants->{a}))");
+    // the option must survive the reduction of D(f, x, y) to D(D(f, x), y)
+    check("D(a*x*y, x, y, NonConstants -> {a})", //
+        "a+x*D(a,x,NonConstants->{a})+y*D(a,y,NonConstants->{a})+x*y*D(a,x,y,NonConstants->{a})");
+  }
+
+  @Test
   public void testDSeries() {
     check("Series(F(x,z),{x, g(y), 2}, {z, a, 2}) //InputForm", //
         "SeriesData(x,g(y),{SeriesData(z,a,{F(g(y),a),Derivative(0,1)[F][g(y),a],Derivative(\n" //
