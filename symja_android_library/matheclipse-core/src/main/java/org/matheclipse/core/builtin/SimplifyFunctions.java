@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import java.util.function.Function;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.SimplifyUtil;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -194,6 +195,15 @@ public class SimplifyFunctions {
           arg1 = temp;
         }
 
+        if (arg1.isDirectedInfinity() && ((IAST) arg1).isAST1()) {
+          IExpr normalized =
+              normalizeDirectedInfinity((IAST) arg1, complexityFunction, minCounter, engine);
+          if (normalized.isPresent()) {
+            engine.putCache(ast, normalized);
+            return normalized;
+          }
+        }
+
         // run the standard algebraic simplify steps first
         temp = SimplifyUtil.simplifyStep(arg1, defaultResult, complexityFunction, minCounter,
             isFullSimplifyMode(), false, engine);
@@ -246,6 +256,38 @@ public class SimplifyFunctions {
 
     public boolean isFullSimplifyMode() {
       return false;
+    }
+
+    /**
+     * Normalize the direction of a <code>DirectedInfinity[dir]</code> expression by rewriting it as
+     * <code>DirectedInfinity[Sign[Factor[dir]]]</code>. <code>Factor</code> turns a symbolic
+     * <code>Plus</code> direction into a product over which <code>Sign</code> distributes, e.g.
+     * <code>DirectedInfinity((-I*3/2*y)/E + I*3/2*E*y)</code> becomes
+     * <code>DirectedInfinity(I*Sign(y))</code>.
+     *
+     * @param directedInfinity a <code>DirectedInfinity[dir]</code> AST (must satisfy
+     *        {@code isAST1()})
+     * @param complexityFunction the &ldquo;weight&rdquo; function used to gate the rewrite
+     * @param minCounter the complexity of the original expression
+     * @param engine the evaluation engine
+     * @return the simpler normalized <code>DirectedInfinity</code> or {@link F#NIL}
+     */
+    private static IExpr normalizeDirectedInfinity(IAST directedInfinity,
+        Function<IExpr, Long> complexityFunction, long minCounter, EvalEngine engine) {
+      IExpr dir = directedInfinity.arg1();
+      try {
+        IExpr normalizedDir = engine.evaluate(F.Sign(F.Factor(dir)));
+        if (normalizedDir.isPresent() && !normalizedDir.isAST(S.Sign)) {
+          IExpr candidate = engine.evaluate(F.DirectedInfinity(normalizedDir));
+          if (candidate.isDirectedInfinity()
+              && complexityFunction.apply(candidate) < minCounter) {
+            return candidate;
+          }
+        }
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+      }
+      return F.NIL;
     }
 
   }

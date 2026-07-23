@@ -442,7 +442,22 @@ public final class Arithmetic {
     }
   }
 
+  private static class KeyDropFrom extends AddTo {
+    @Override
+    protected ISymbol getArithmeticSymbol() {
+      return S.KeyDrop;
+      }
 
+    @Override
+    protected IASTMutable getAST(final IExpr value) {
+      return F.KeyDrop(null, value);
+    }
+
+    @Override
+    protected ISymbol getFunctionSymbol() {
+      return S.KeyDropFrom;
+    }
+  }
   /**
    *
    *
@@ -1333,6 +1348,19 @@ public final class Arithmetic {
                 if (!tmp.equals(arg1)) {
                   return F.DirectedInfinity(tmp);
                 }
+              }
+            }
+          } else if (arg1.isPlus()) {
+            // Normalize the direction of a symbolic Plus argument, e.g.
+            // DirectedInfinity((-I*3/2*y)/E + I*3/2*E*y) -> DirectedInfinity(I*Sign(y)).
+            // Only proceed when Factor turns the sum into a product/power, so that Sign
+            // distributes over the factors. A genuinely irreducible direction (e.g. a+I*b)
+            // leaves Factor returning a Plus and is left untouched.
+            IExpr factored = engine.evaluate(F.Factor(arg1));
+            if (factored.isTimes() || factored.isPower()) {
+              IExpr dir = engine.evaluate(F.Sign(factored));
+              if (dir.isPresent() && !dir.isAST(S.Sign) && !dir.equals(arg1)) {
+                return F.DirectedInfinity(dir);
               }
             }
           }
@@ -2435,6 +2463,7 @@ public final class Arithmetic {
       S.HarmonicNumber.setEvaluator(new HarmonicNumber());
       S.Im.setEvaluator(new Im());
       S.Increment.setEvaluator(new Increment());
+      S.KeyDropFrom.setEvaluator(new KeyDropFrom());
       S.LCM.setEvaluator(new LCM());
       S.MantissaExponent.setEvaluator(new MantissaExponent());
       S.Overflow.setEvaluator(new Overflow());
@@ -3392,6 +3421,9 @@ public final class Arithmetic {
             if (exponent.isReal()) {
               return IntervalSym.power((IAST) base, (IReal) exponent);
             }
+            if (exponent.isInterval()) {
+              return IntervalSym.power((IAST) base, (IAST) exponent);
+            }
             // } else if (base.isQuantity()) {
             // try {
             // IQuantity q = (IQuantity) base;
@@ -3405,6 +3437,9 @@ public final class Arithmetic {
             }
             if (exponent.isReal()) {
               return IntervalDataSym.power((IAST) base, (IReal) exponent);
+            }
+            if (exponent.isIntervalData()) {
+              return IntervalDataSym.power((IAST) base, (IAST) exponent);
             }
           } else if (base instanceof ASTSeriesData) {
             int exp = exponent.toIntDefault();
