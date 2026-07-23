@@ -410,6 +410,15 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       if (arg2.isList()) {
         IAST xList = (IAST) arg2;
         if (xList.isList3()) {
+          // Integrate(f(x)*DiracDelta(c1*x+c0), {x,a,b}) - the sifting property. Handled before the
+          // generic antiderivative route, which would evaluate HeavisideTheta at both limits and
+          // report a root sitting on the lower limit as 1-HeavisideTheta(0) instead of
+          // HeavisideTheta(0).
+          IExpr sifted =
+              integrateDiracDelta(arg1, xList.arg1(), xList.arg2(), xList.arg3(), engine);
+          if (sifted.isPresent()) {
+            return sifted;
+          }
           // Integrate(f(x), {x,a,b})
           IAST copy = holdallAST.setAtCopy(2, xList.arg1());
           IExpr temp = engine.evaluate(copy);
@@ -1089,6 +1098,89 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       if (result.isList()) {
         return (IAST) result;
       }
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Sifting property of {@link S#DiracDelta} for a definite integral
+   * <code>Integrate(f(x)*DiracDelta(c1*x+c0), {x, lower, upper})</code>.
+   *
+   * <p>
+   * With <code>r = -c0/c1</code> the single root of the delta argument, the integral is
+   * <code>f(r)/Abs(c1)</code> if <code>r</code> lies strictly inside the integration range,
+   * <code>0</code> if it lies outside, and <code>f(r)/Abs(c1)*HeavisideTheta(0)</code> if it
+   * coincides with one of the limits - only "half" of the spike is then covered and
+   * <code>HeavisideTheta(0)</code> is deliberately left unevaluated. Over the whole real line the
+   * spike is always covered, but a symbolic root must additionally be real, which is reported as a
+   * {@link S#ConditionalExpression}.
+   *
+   * <p>
+   * See: <a href="https://en.wikipedia.org/wiki/Dirac_delta_function">Wikipedia - Dirac delta
+   * function</a>
+   *
+   * @param integrand the (already evaluated) integrand
+   * @param x the integration variable
+   * @param lower the lower limit of integration
+   * @param upper the upper limit of integration
+   * @param engine the evaluation engine
+   * @return the value of the definite integral or {@link F#NIL} if this shape does not apply
+   */
+  private static IExpr integrateDiracDelta(IExpr integrand, IExpr x, IExpr lower, IExpr upper,
+      EvalEngine engine) {
+    if (integrand.isFreeAST(S.DiracDelta) || !x.isVariable()) {
+      return F.NIL;
+    }
+    IAST factors = integrand.isTimes() ? (IAST) integrand : F.Times(integrand);
+    IExpr deltaArgument = F.NIL;
+    IASTAppendable cofactor = F.TimesAlloc(factors.size());
+    for (int i = 1; i < factors.size(); i++) {
+      IExpr factor = factors.get(i);
+      if (deltaArgument.isNIL() && factor.isAST(S.DiracDelta, 2)) {
+        deltaArgument = factor.first();
+      } else {
+        cofactor.append(factor);
+      }
+    }
+    // a second delta in the same variable would be a product of distributions - not defined here
+    if (deltaArgument.isNIL() || !cofactor.isFreeAST(S.DiracDelta)) {
+      return F.NIL;
+    }
+    // the delta argument must be linear in x; DiracDelta itself already normalises Abs(c1) to 1
+    if (!engine.evaluate(F.PolynomialQ(deltaArgument, x)).isTrue()
+        || engine.evaluate(F.Exponent(deltaArgument, x)).toIntDefault(-1) != 1) {
+      return F.NIL;
+    }
+    IExpr slope = engine.evaluate(F.Coefficient(deltaArgument, x, F.C1));
+    if (slope.isZero()) {
+      return F.NIL;
+    }
+    IExpr constant = engine.evaluate(F.Coefficient(deltaArgument, x, F.C0));
+    IExpr root = engine.evaluate(F.Divide(constant.negate(), slope));
+    IExpr value =
+        engine.evaluate(F.Divide(F.ReplaceAll(cofactor, F.Rule(x, root)), F.Abs(slope)));
+    if (!value.isFree(x, true)) {
+      return F.NIL;
+    }
+    // reversed limits would need a sign flip; leave those to the generic route
+    if (!engine.evaluate(F.Less(lower, upper)).isTrue()) {
+      return F.NIL;
+    }
+    if (lower.isNegativeInfinity() && upper.isInfinity()) {
+      return root.isRealResult() ? value
+          : F.ConditionalExpression(value, F.Element(root, S.Reals));
+    }
+    if (engine.evaluate(F.Equal(root, lower)).isTrue()
+        || engine.evaluate(F.Equal(root, upper)).isTrue()) {
+      return engine.evaluate(F.Times(value, F.HeavisideTheta(F.C0)));
+    }
+    IExpr aboveLower = engine.evaluate(F.Less(lower, root));
+    IExpr belowUpper = engine.evaluate(F.Less(root, upper));
+    if (aboveLower.isTrue() && belowUpper.isTrue()) {
+      return value;
+    }
+    if (aboveLower.isFalse() || belowUpper.isFalse()) {
+      return F.C0;
     }
     return F.NIL;
   }
