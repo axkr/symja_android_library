@@ -70,9 +70,9 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     /**
      * True while {@link #evalGruntz} runs its own series expansion. ASTSeriesData.taylorSeries
      * computes coefficients through engine-level Limit calls; letting those re-enter the Gruntz
-     * algorithm builds a mutually recursive evalGruntz/taylorSeries tree whose combinatorial
-     * cost grinds for minutes (observed on GoldenRatio-power and Sin(n*poly) inputs). Inner
-     * coefficient limits may use the ordinary heuristics - just never a nested Gruntz run.
+     * algorithm builds a mutually recursive evalGruntz/taylorSeries tree whose combinatorial cost
+     * grinds for minutes (observed on GoldenRatio-power and Sin(n*poly) inputs). Inner coefficient
+     * limits may use the ordinary heuristics - just never a nested Gruntz run.
      */
     private static final ThreadLocal<Boolean> IN_GRUNTZ_SERIES =
         ThreadLocal.withInitial(() -> Boolean.FALSE);
@@ -90,16 +90,16 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         ThreadLocal.withInitial(() -> 0);
 
     /**
-     * Memoizes {@link #compareGrowth} within one top-level Gruntz run. The growth comparison of
-     * a pair (f, g) as x -> Infinity is a pure function of the pair, but mrv-set construction
-     * re-derives the same comparisons dozens of times and each heuristic ratio-limit costs
-     * seconds (observed: thesis 8.14's tower ratio recomputed 12+ times at ~1-4s each = the
-     * whole budget). Keyed on the printed form, NOT the IExpr: the mrv/rewrite passes mint a
-     * fresh {@code Dummy} variable each time, so structurally-identical terms are not
-     * {@code .equals()} - only their printed form is stable. That is sound because the
-     * comparison is intrinsic (always "as the variable -> +Infinity", direction-independent),
-     * so equal printed forms always mean equal growth comparisons. Cleared at the top of
-     * {@link #evaluateLimit} when GRUNTZ_DEPTH is 0 so it never grows unbounded across a session.
+     * Memoizes {@link #compareGrowth} within one top-level Gruntz run. The growth comparison of a
+     * pair (f, g) as x -> Infinity is a pure function of the pair, but mrv-set construction
+     * re-derives the same comparisons dozens of times and each heuristic ratio-limit costs seconds
+     * (observed: thesis 8.14's tower ratio recomputed 12+ times at ~1-4s each = the whole budget).
+     * Keyed on the printed form, NOT the IExpr: the mrv/rewrite passes mint a fresh {@code Dummy}
+     * variable each time, so structurally-identical terms are not {@code .equals()} - only their
+     * printed form is stable. That is sound because the comparison is intrinsic (always "as the
+     * variable -> +Infinity", direction-independent), so equal printed forms always mean equal
+     * growth comparisons. Cleared at the top of {@link #evaluateLimit} when GRUNTZ_DEPTH is 0 so it
+     * never grows unbounded across a session.
      */
     private static final ThreadLocal<Map<String, Integer>> COMPARE_GROWTH_CACHE =
         ThreadLocal.withInitial(HashMap::new);
@@ -107,8 +107,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     /**
      * Memoizes {@link #signInf} within one top-level Gruntz run, same rationale and printed-form
      * keying as {@link #COMPARE_GROWTH_CACHE}. Only definitive results (+1/0/-1) are cached, not
-     * the {@code Integer.MIN_VALUE} "unknown" a shallow sample-point attempt may return, so a
-     * later call at a depth that can resolve it is not poisoned.
+     * the {@code Integer.MIN_VALUE} "unknown" a shallow sample-point attempt may return, so a later
+     * call at a depth that can resolve it is not poisoned.
      */
     private static final ThreadLocal<Map<String, Integer>> SIGN_INF_CACHE =
         ThreadLocal.withInitial(HashMap::new);
@@ -121,9 +121,9 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
      * <p>
      * Kept at {@code 2} (the loop runs once - zero-coefficient skip only). Raising it turns on
      * SymPy-style adaptive order-raising for deeper cancellation, but that doubled
-     * SeriesTest/LimitTest with no case resolved while the tower differences that need it time
-     * out earlier in {@code compareGrowth}; re-enable (e.g. {@code 8}) once that bottleneck is
-     * fixed. See the comment in {@link #evalGruntz}.
+     * SeriesTest/LimitTest with no case resolved while the tower differences that need it time out
+     * earlier in {@code compareGrowth}; re-enable (e.g. {@code 8}) once that bottleneck is fixed.
+     * See the comment in {@link #evalGruntz}.
      */
     private static final int GRUNTZ_MAX_SERIES_ORDER = 2;
 
@@ -241,10 +241,10 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     }
 
     /**
-     * Splits {@code arg == w^k * rest} where {@code k >= 1} is the minimal integer w-degree
-     * over the additive terms of {@code arg} (so {@code rest}'s w-free part is nonzero).
-     * Returns {@code {k, rest}} or {@code null} when no positive uniform w-power factors out
-     * structurally (w buried inside Log/Exp/... bails conservatively).
+     * Splits {@code arg == w^k * rest} where {@code k >= 1} is the minimal integer w-degree over
+     * the additive terms of {@code arg} (so {@code rest}'s w-free part is nonzero). Returns
+     * {@code {k, rest}} or {@code null} when no positive uniform w-power factors out structurally
+     * (w buried inside Log/Exp/... bails conservatively).
      */
     private static IExpr[] splitWFactor(IExpr arg, IExpr w, EvalEngine engine) {
       int minDegree = Integer.MAX_VALUE;
@@ -272,9 +272,9 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     }
 
     /**
-     * Integer w-degree of a single multiplicative term: 0 when free of w, the summed power
-     * of direct {@code w}/{@code w^int} factors of a Times/Power, {@link Integer#MIN_VALUE}
-     * when w occurs any other way (unsupported).
+     * Integer w-degree of a single multiplicative term: 0 when free of w, the summed power of
+     * direct {@code w}/{@code w^int} factors of a Times/Power, {@link Integer#MIN_VALUE} when w
+     * occurs any other way (unsupported).
      */
     private static int wDegree(IExpr term, IExpr w) {
       if (term.isFree(w)) {
@@ -302,9 +302,9 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     }
 
     /**
-     * Cheap structural test for "eventually strictly positive as x -> +Infinity": sums and
-     * products of positive constants, x itself, and powers of such. Deliberately
-     * limit-free - a conservative false is always safe for callers.
+     * Cheap structural test for "eventually strictly positive as x -> +Infinity": sums and products
+     * of positive constants, x itself, and powers of such. Deliberately limit-free - a conservative
+     * false is always safe for callers.
      */
     private static boolean isStructurallyPositive(IExpr expr, ISymbol x) {
       if (expr.equals(x)) {
@@ -511,8 +511,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       if (expr.isExp()) {
         contExponent = expr.exponent();
       } else if (expr.isPower() && !expr.base().isFree(x) && !expr.exponent().isFree(x)
-          && expr.base().isFree(
-              t -> t.isFunctionID(ID.Sin, ID.Cos, ID.Tan, ID.Cot, ID.Sec, ID.Csc), true)
+          && expr.base().isFree(t -> t.isFunctionID(ID.Sin, ID.Cos, ID.Tan, ID.Cot, ID.Sec, ID.Csc),
+              true)
           && (expr.base().isLog() || isStructurallyPositive(expr.base(), x))) {
         // an eventually positive base makes b^c = E^(c*Log(b)) a valid rewrite
         // (mixed poly/exponential bases like ((x^7+x+1)/(2^x+x^2))^(-1/x) starve the
@@ -524,8 +524,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       if (contExponent.isPresent() && contExponent.has(t -> t.isLog() || t.isExp(), true)
           && !(contExponent.isPlus()
               && ((IAST) contExponent).exists(a -> a.has(t2 -> t2.isExp(), true)))) {
-        IExpr exponentLimit =
-            evalGruntz(engine.evaluate(contExponent), x, engine, depth + 1);
+        IExpr exponentLimit = evalGruntz(engine.evaluate(contExponent), x, engine, depth + 1);
         if (exponentLimit.isPresent()) {
           if (exponentLimit.isInfinity()) {
             return F.CInfinity;
@@ -702,7 +701,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       // at w=0 (finite valuation) is fine and keeps the Sin(1/x+E^(-x))-style cases working.
       boolean divergentTrigArg = rewritten.has(t -> {
         if (t.isFunctionID(ID.Sin, ID.Cos, ID.Tan, ID.Cot, ID.Sec, ID.Csc)
-            && !((IAST) t).isFree(wFinal, true)) {
+            && !t.isFree(wFinal, true)) {
           IExpr[] argLead = leadingWPower(t.first(), wFinal, engine);
           if (argLead == null) {
             return true; // cannot prove the argument converges - refuse
@@ -718,8 +717,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       if (divergentTrigArg) {
         return F.NIL;
       }
-      if (rewritten.has(
-          p -> p.isPower() && p.base().equals(wFinal) && !p.exponent().isRational(), true)) {
+      if (rewritten.has(p -> p.isPower() && p.base().equals(wFinal) && !p.exponent().isRational(),
+          true)) {
         IExpr[] lead = leadingWPower(rewritten, w, engine);
         if (lead == null) {
           // Unsupported shape - the series machinery would silently produce a wrong value
@@ -767,17 +766,17 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       // -1/(2*Log(x)) in the digamma towers). A single fixed-order expansion then reports a
       // zero leading coefficient at minExponent and the case split below returns a spurious
       // 0 / NIL. Two responses of increasing cost:
-      //   * skip leading zero coefficients inside the captured truncation - a pure scan of
-      //     terms already computed (SymPy gruntz's leadterm does the same). Always on, free.
-      //   * when the WHOLE truncation cancels (isOrder), re-expand at a higher order (the
-      //     "adaptive order" of SymPy's calculate_series). This is expensive - total
-      //     low-order cancellation is common among the deep mrv sub-limits AND among the many
-      //     depth-0 Limit calls that Series[] issues internally - and, measured, it doubles
-      //     SeriesTest/LimitTest for ZERO extra resolved cases: the hard tower differences
-      //     (#80/#89/#71/#70) that need it do not even reach here - they time out earlier in
-      //     compareGrowth's heuristic mrv comparison. So the order-raising is kept structural
-      //     but gated OFF (GRUNTZ_MAX_SERIES_ORDER == 2 => the loop runs once); raise the cap
-      //     to re-enable it once the compareGrowth bottleneck is addressed.
+      // * skip leading zero coefficients inside the captured truncation - a pure scan of
+      // terms already computed (SymPy gruntz's leadterm does the same). Always on, free.
+      // * when the WHOLE truncation cancels (isOrder), re-expand at a higher order (the
+      // "adaptive order" of SymPy's calculate_series). This is expensive - total
+      // low-order cancellation is common among the deep mrv sub-limits AND among the many
+      // depth-0 Limit calls that Series[] issues internally - and, measured, it doubles
+      // SeriesTest/LimitTest for ZERO extra resolved cases: the hard tower differences
+      // (#80/#89/#71/#70) that need it do not even reach here - they time out earlier in
+      // compareGrowth's heuristic mrv comparison. So the order-raising is kept structural
+      // but gated OFF (GRUNTZ_MAX_SERIES_ORDER == 2 => the loop runs once); raise the cap
+      // to re-enable it once the compareGrowth bottleneck is addressed.
       // Null means an unsupported shape, not an under-resolved one, so a higher order will not
       // help - stop.
       ASTSeriesData series = null;
@@ -874,8 +873,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       // Without this gate the algorithm recurses through series/limit cycles on the opaque
       // function and can abort with "unexpected NIL expression encountered".
       final ISymbol variable = x;
-      if (expr.has(e -> e.isAST() && !e.head().isBuiltInSymbol()
-          && !((IAST) e).isFree(variable, true), true)) {
+      if (expr.has(e -> e.isAST() && !e.head().isBuiltInSymbol() && !e.isFree(variable, true),
+          true)) {
         return F.NIL;
       }
 
@@ -1098,22 +1097,21 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
 
     /**
      * An exponential <code>E^f</code> whose exponent has an APPARENT <code>w</code>-pole (e.g.
-     * <code>E^(1/w - Log(1+w)/w^2)</code>) defeats seriesDataRecursive even when the singular
-     * parts cancel. Where the exponent's own series turns out regular (minExponent &gt;= 0),
-     * substitute its truncated normal form so the outer series composition succeeds.
+     * <code>E^(1/w - Log(1+w)/w^2)</code>) defeats seriesDataRecursive even when the singular parts
+     * cancel. Where the exponent's own series turns out regular (minExponent &gt;= 0), substitute
+     * its truncated normal form so the outer series composition succeeds.
      */
     private static IExpr preExpandExpExponents(IExpr rewritten, ISymbol w, EvalEngine engine) {
       final ISymbol wf = w;
       IExpr result = F.subst(rewritten, e -> {
         if (e.isExp()) {
           IExpr f = e.exponent();
-          if (f.has(p -> p.isPower() && p.base().equals(wf)
-              && p.exponent().isNegativeResult(), true)) {
+          if (f.has(p -> p.isPower() && p.base().equals(wf) && p.exponent().isNegativeResult(),
+              true)) {
             boolean oldInSeries = IN_GRUNTZ_SERIES.get();
             IN_GRUNTZ_SERIES.set(Boolean.TRUE);
             try {
-              ASTSeriesData fs =
-                  ASTSeriesData.seriesDataRecursive(f, wf, F.C0, 4, -1, engine);
+              ASTSeriesData fs = ASTSeriesData.seriesDataRecursive(f, wf, F.C0, 4, -1, engine);
               if (fs != null && fs.minExponent() >= 0) {
                 return F.Exp(engine.evaluate(fs.normal(false)));
               }
@@ -1455,8 +1453,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
                 if (!divergesAtInfinity(arg, x)) {
                   return mrv(arg, x, engine);
                 }
-                IExpr digamma = engine.evaluate(
-                    F.Plus(F.Log(arg), F.Negate(F.Divide(F.C1, F.Times(F.C2, digammaTailArg(arg, x, engine))))));
+                IExpr digamma = engine.evaluate(F.Plus(F.Log(arg),
+                    F.Negate(F.Divide(F.C1, F.Times(F.C2, digammaTailArg(arg, x, engine))))));
                 return mrv(digamma, x, engine);
               }
               IExpr currentMrvPG = F.NIL;
@@ -1554,12 +1552,11 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           // nested PolyGamma (the arg was already recursed, so psi(psi(x)) arrives here
           // with the inner level expanded; Log-bearing args are fine - see mrv PolyGamma)
           IExpr arg = replaceLogStirling(ast.arg2(), x, engine);
-          if (!divergesAtInfinity(arg, x)
-              || !arg.isFree(t -> t.isAST(S.PolyGamma), true)) {
+          if (!divergesAtInfinity(arg, x) || !arg.isFree(t -> t.isAST(S.PolyGamma), true)) {
             return F.PolyGamma(F.C0, arg);
           }
-          return engine
-              .evaluate(F.Plus(F.Log(arg), F.Negate(F.Divide(F.C1, F.Times(F.C2, digammaTailArg(arg, x, engine))))));
+          return engine.evaluate(F.Plus(F.Log(arg),
+              F.Negate(F.Divide(F.C1, F.Times(F.C2, digammaTailArg(arg, x, engine))))));
         }
 
         // Map across standard AST nodes
@@ -1651,8 +1648,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     }
 
     /**
-     * Determines the asymptotic sign of an expression as x -> Infinity, memoized within the
-     * current top-level Gruntz run (see {@link #SIGN_INF_CACHE}).
+     * Determines the asymptotic sign of an expression as x -> Infinity, memoized within the current
+     * top-level Gruntz run (see {@link #SIGN_INF_CACHE}).
      */
     public static int signInf(IExpr expr, ISymbol x, EvalEngine engine) {
       if (expr.isFree(x)) {
@@ -1973,8 +1970,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
 
   /**
    * Guards the hyperbolic-to-exponential retry in {@link #evalLimit} against re-entry: the
-   * rewritten form is fed back through {@code evalLimit}, and a later {@code Simplify} step could in
-   * principle turn it back into a hyperbolic function and loop. We only ever rewrite once per
+   * rewritten form is fed back through {@code evalLimit}, and a later {@code Simplify} step could
+   * in principle turn it back into a hyperbolic function and loop. We only ever rewrite once per
    * evaluation stack.
    */
   private static final ThreadLocal<Boolean> HYPERBOLIC_EXP_RETRY =
@@ -1994,12 +1991,11 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
    * {@link #evaluateLimit} on the winning summand and {@link #evalLimitQuiet} on the pairwise
    * ratios.
    */
-  private static final ThreadLocal<Integer> DOMINANT_TERM_DEPTH =
-      ThreadLocal.withInitial(() -> 0);
+  private static final ThreadLocal<Integer> DOMINANT_TERM_DEPTH = ThreadLocal.withInitial(() -> 0);
 
   /**
-   * True while an {@link #lHospitalesRule} application holds the relative recursion budget -
-   * nested applications must not extend the ceiling again (see the comment inside the method).
+   * True while an {@link #lHospitalesRule} application holds the relative recursion budget - nested
+   * applications must not extend the ceiling again (see the comment inside the method).
    */
   private static final ThreadLocal<Boolean> LHOSPITAL_BUDGET_ACTIVE =
       ThreadLocal.withInitial(() -> Boolean.FALSE);
@@ -2077,14 +2073,12 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     // result if it fully resolves, so cases the normal path already handles fall through
     // unchanged; the one-shot HYPERBOLIC_EXP_RETRY guard keeps the single rewrite loop-proof.
     if (!HYPERBOLIC_EXP_RETRY.get() && (limitValue.isInfinity() || limitValue.isNegativeInfinity())
-        && evaledExpr.has(
-            y -> y.isFunctionID(ID.Sinh, ID.Cosh, ID.Tanh, ID.Coth, ID.Sech, ID.Csch)
-                // only the oscillation cases (argument depends on the limit variable) need the
-                // exp rewrite; a hyperbolic CONSTANT like Sinh(1) (from e.g. 3*Sin(I)) must stay
-                // intact - TrigToExp would blow it into a (E-1/E) form the result never
-                // re-simplifies (issue #42: y*3*Sin(I)*x)
-                && !((IAST) y).arg1().isFree(data.variable(), true),
-            true)) {
+        && evaledExpr.has(y -> y.isFunctionID(ID.Sinh, ID.Cosh, ID.Tanh, ID.Coth, ID.Sech, ID.Csch)
+            // only the oscillation cases (argument depends on the limit variable) need the
+            // exp rewrite; a hyperbolic CONSTANT like Sinh(1) (from e.g. 3*Sin(I)) must stay
+            // intact - TrigToExp would blow it into a (E-1/E) form the result never
+            // re-simplifies (issue #42: y*3*Sin(I)*x)
+            && !((IAST) y).arg1().isFree(data.variable(), true), true)) {
       IExpr expForm = engine.evalQuiet(F.ExpandAll(F.TrigToExp(evaledExpr)));
       if (expForm.isPresent() && !expForm.equals(evaledExpr)) {
         HYPERBOLIC_EXP_RETRY.set(Boolean.TRUE);
@@ -2132,31 +2126,32 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
             && !p.base().isFree(symbol, true) && !p.exponent().isFree(symbol, true)
             // oscillatory bases like (Sin(1/x)/2)^(1/x^2) belong to the envelope
             // machinery; the Gruntz mrv/rewrite chain grinds on them
-            && p.base().isFree(
-                t -> t.isFunctionID(ID.Sin, ID.Cos, ID.Tan, ID.Cot, ID.Sec, ID.Csc), true),
+            && p.base().isFree(t -> t.isFunctionID(ID.Sin, ID.Cos, ID.Tan, ID.Cot, ID.Sec, ID.Csc),
+                true),
             true)
             // log-nests like Log(Log(x)+Log(Log(x))) (thesis 8.19/8.20) equally starve the
             // L'Hopital heuristics while Gruntz handles them via repeated moveup; Gamma-family
             // expressions are excluded - their Stirling preprocessing produces log-sums that
             // route better through the established Gamma pipeline
-            || (evaledExpr.has(t -> t.isLog() && t.first().isPlus()
-                && !t.first().isFree(symbol, true)
-                && ((IAST) t.first()).exists(a -> a.has(s -> s.isLog(), true)), true)
+            || (evaledExpr
+                .has(t -> t.isLog() && t.first().isPlus() && !t.first().isFree(symbol, true)
+                    && ((IAST) t.first()).exists(a -> a.has(s -> s.isLog(), true)), true)
                 && evaledExpr.isFree(t -> t.isFunctionID(ID.Gamma, ID.LogGamma, ID.Factorial,
                     ID.Pochhammer, ID.PolyGamma), true))
             // exponential towers E^f with a Log-bearing exponent (thesis 8.9's
             // Log(x)^2*E^(Sqrt(Log(x))*...)/Sqrt(x)) sit between power growth classes -
             // the heuristic Times path collapses them to Indeterminate via oo*oo*0
-            || (evaledExpr.has(p -> p.isExp() && !p.exponent().isFree(symbol, true)
-                && p.exponent().has(t -> t.isLog(), true)
-                && p.exponent().isFree(
-                    t -> t.isFunctionID(ID.Sin, ID.Cos, ID.Tan, ID.Cot, ID.Sec, ID.Csc), true),
+            || (evaledExpr.has(
+                p -> p.isExp() && !p.exponent().isFree(symbol, true)
+                    && p.exponent().has(t -> t.isLog(), true)
+                    && p.exponent().isFree(
+                        t -> t.isFunctionID(ID.Sin, ID.Cos, ID.Tan, ID.Cot, ID.Sec, ID.Csc), true),
                 true)
                 && evaledExpr.isFree(t -> t.isFunctionID(ID.Gamma, ID.LogGamma, ID.Factorial,
                     ID.Pochhammer, ID.PolyGamma), true)))
         && evaledExpr.isNumericFunction(new VariablesSet(evaledExpr))) {
-      IExpr gruntzFirst = GruntzLimit.evaluateLimit(evaledExpr, symbol, limitValue,
-          data.direction(), engine);
+      IExpr gruntzFirst =
+          GruntzLimit.evaluateLimit(evaledExpr, symbol, limitValue, data.direction(), engine);
       if (gruntzFirst.isPresent() && gruntzFirst.isFree(S.Limit)
           && gruntzFirst.isIndeterminateFree() && !hasNestedDirectedInfinity(gruntzFirst)) {
         return gruntzFirst;
@@ -2201,7 +2196,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     // AsymptoticRSolveValue ground for minutes here; the oscillation logic handles trig.
     if (evaledExpr.isAST() && evaledExpr.leafCount() > LIMIT_SIMPLIFY_LEAFCOUNT
         && !evaledExpr.has(t -> t.isFunctionID(ID.Sin, ID.Cos, ID.Tan, ID.Cot, ID.Sec, ID.Csc)
-            && !((IAST) t).isFree(symbol, true), true)) {
+            && !t.isFree(symbol, true), true)) {
       IExpr simplified = engine.evalQuiet(F.Simplify(evaledExpr));
       if (simplified.isPresent() && !simplified.equals(evaledExpr)
           && simplified.leafCount() < evaledExpr.leafCount()) {
@@ -2227,8 +2222,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       IExpr expandedExpr = engine.evalQuiet(F.ExpandAll(evaledExpr));
       if (expandedExpr.isPresent() && !expandedExpr.equals(evaledExpr)) {
         IExpr expTemp = evalLimitAST(expandedExpr, limitValue, data, engine);
-        if (expTemp.isPresent() && expTemp.isFree(S.Limit)
-            && !hasNestedDirectedInfinity(expTemp)) {
+        if (expTemp.isPresent() && expTemp.isFree(S.Limit) && !hasNestedDirectedInfinity(expTemp)) {
           return expTemp;
         }
       }
@@ -2254,21 +2248,19 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * A limit result is junk when a {@link S#DirectedInfinity} ended up nested inside the argument
-   * of a non-arithmetic function - e.g. the naive termwise sum
-   * <code>Infinity-Log(Infinity+a)</code> - rather than standing alone or inside a top-level
-   * sum/product. Such results must not be accepted as definitive; the Gruntz fallback usually
-   * resolves them properly. Structural containers (List, Interval, ConditionalExpression) that
-   * legitimately carry infinities are exempt.
+   * A limit result is junk when a {@link S#DirectedInfinity} ended up nested inside the argument of
+   * a non-arithmetic function - e.g. the naive termwise sum <code>Infinity-Log(Infinity+a)</code> -
+   * rather than standing alone or inside a top-level sum/product. Such results must not be accepted
+   * as definitive; the Gruntz fallback usually resolves them properly. Structural containers (List,
+   * Interval, ConditionalExpression) that legitimately carry infinities are exempt.
    */
   private static boolean hasNestedDirectedInfinity(IExpr result) {
     if (result.isFree(S.DirectedInfinity)) {
       return false;
     }
     return result.has(sub -> {
-      if (!sub.isAST() || sub.isPlus() || sub.isTimes() || sub.isDirectedInfinity()
-          || sub.isList() || sub.isInterval() || sub.isIntervalData()
-          || sub.isAST(S.ConditionalExpression)) {
+      if (!sub.isAST() || sub.isPlus() || sub.isTimes() || sub.isDirectedInfinity() || sub.isList()
+          || sub.isInterval() || sub.isIntervalData() || sub.isAST(S.ConditionalExpression)) {
         return false;
       }
       return ((IAST) sub).exists(arg -> !arg.isFree(S.DirectedInfinity));
@@ -2338,8 +2330,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
 
           // a result like PolyGamma(0,...,Infinity) - DirectedInfinity stuck inside a
           // function argument - is junk, not a limit value; decline and let fallbacks run
-          if (temp.isPresent() && !temp.isIndeterminate()
-              && !hasNestedDirectedInfinity(temp)) {
+          if (temp.isPresent() && !temp.isIndeterminate() && !hasNestedDirectedInfinity(temp)) {
             return temp;
           }
         }
@@ -2509,7 +2500,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     // must stay unevaluated, exactly as the substitution x->0 would wrongly suggest 0.
     final ISymbol variable = data.variable();
     if (expression.has(e -> e.isAST() && e.head().isSymbol() && !e.head().isBuiltInSymbol()
-        && !((IAST) e).isFree(variable, true), true)) {
+        && !e.isFree(variable, true), true)) {
       return F.NIL;
     }
     IExpr result = expression.replaceAll(data.rule());
@@ -2550,7 +2541,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           GAMMA_POLE_SHIFT_DEPTH.set(eiDepth + 1);
           try {
             IExpr eiResult = evaluateLimit(engine.evaluate(expanded), rule, direction, engine);
-            if (eiResult.isPresent() && eiResult.isFree(S.Limit) && eiResult.isIndeterminateFree()) {
+            if (eiResult.isPresent() && eiResult.isFree(S.Limit)
+                && eiResult.isIndeterminateFree()) {
               return eiResult;
             }
           } catch (RuntimeException rex) {
@@ -2564,7 +2556,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
 
       // Dominant-term rule for a sum of exponential towers at +-Infinity: the difference E^A - E^B
       // of two towers can grind indefinitely in the mrv machinery even when E^A alone and the ratio
-      // E^B/E^A both resolve in under a second (thesis #80/8.3). When one summand strictly out-grows
+      // E^B/E^A both resolve in under a second (thesis #80/8.3). When one summand strictly
+      // out-grows
       // all others the sum's limit is that summand's limit; adopt only a clean result, so a
       // same-order sum (genuine cancellation) falls through to the normal machinery unchanged.
       if ((limit.isInfinity() || limit.isNegativeInfinity()) && DOMINANT_TERM_DEPTH.get() < 2
@@ -2574,8 +2567,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
         DOMINANT_TERM_DEPTH.set(domDepth + 1);
         try {
           IExpr dominant = dominantTermLimit((IAST) function, rule, direction, engine);
-          if (dominant.isPresent() && dominant.isFree(S.Limit)
-              && dominant.isIndeterminateFree()) {
+          if (dominant.isPresent() && dominant.isFree(S.Limit) && dominant.isIndeterminateFree()) {
             return dominant;
           }
         } catch (RuntimeException rex) {
@@ -2583,6 +2575,30 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           // ignore - continue with the normal machinery
         } finally {
           DOMINANT_TERM_DEPTH.set(domDepth);
+        }
+      }
+
+      // E^(same-order tower difference): the engine stores E^(E^p)/E^(E^q) as E^(E^p - E^q), a
+      // single E^ of a Plus of two towers whose exponents differ by a vanishing amount - the mrv
+      // machinery grinds on it. Linearize E^p - E^q ~ E^q*(p-q) at the exponent level and adopt
+      // only
+      // a clean result (thesis 8.14).
+      if ((limit.isInfinity() || limit.isNegativeInfinity()) && DOMINANT_TERM_DEPTH.get() < 2
+          && function.isPower() && function.base().equals(S.E) && function.exponent().isPlus()
+          && function.exponent().argSize() == 2 && ((IAST) function.exponent()).count(
+              t -> t.has(p -> p.isPower() && !p.exponent().isFree(symbol, true), true)) >= 2) {
+        int towerDepth = DOMINANT_TERM_DEPTH.get();
+        DOMINANT_TERM_DEPTH.set(towerDepth + 1);
+        try {
+          IExpr reduced = reduceExpOfTowerDiff(function, rule, direction, engine);
+          if (reduced.isPresent() && reduced.isFree(S.Limit) && reduced.isIndeterminateFree()) {
+            return reduced;
+          }
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          // ignore - continue with the normal machinery
+        } finally {
+          DOMINANT_TERM_DEPTH.set(towerDepth);
         }
       }
 
@@ -2636,8 +2652,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           if (shifted.isPresent() && !shifted.equals(function)) {
             GAMMA_POLE_SHIFT_DEPTH.set(poleShiftDepth + 1);
             try {
-              IExpr shiftedResult =
-                  evalLimit(engine.evaluate(shifted), poleData, engine);
+              IExpr shiftedResult = evalLimit(engine.evaluate(shifted), poleData, engine);
               if (shiftedResult.isPresent() && shiftedResult.isFree(S.Limit)
                   && shiftedResult.isIndeterminateFree()
                   && !hasNestedDirectedInfinity(shiftedResult)) {
@@ -2674,9 +2689,8 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
                 IExpr leadingResult =
                     evaluateLimit(engine.evaluate(leading), rule, direction, engine);
                 if (leadingResult.isPresent() && leadingResult.isFree(S.Limit)
-                    && leadingResult.isIndeterminateFree()
-                    && (leadingResult.isInfinity() || leadingResult.isNegativeInfinity()
-                        || leadingResult.isZero())) {
+                    && leadingResult.isIndeterminateFree() && (leadingResult.isInfinity()
+                        || leadingResult.isNegativeInfinity() || leadingResult.isZero())) {
                   return leadingResult;
                 }
               } catch (RuntimeException rex) {
@@ -2694,8 +2708,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           // Limit(Gamma(1/x), x->Infinity)).
           final ISymbol stirlingSymbol = symbol;
           boolean stirlingApplies = function.has(sub -> {
-            if (sub.isAST(S.Gamma, 2) || sub.isAST(S.LogGamma, 2)
-                || sub.isAST(S.Factorial, 2)) {
+            if (sub.isAST(S.Gamma, 2) || sub.isAST(S.LogGamma, 2) || sub.isAST(S.Factorial, 2)) {
               return divergesAtInfinity(sub.first(), stirlingSymbol);
             }
             if (sub.isAST(S.Pochhammer, 3)) {
@@ -3389,8 +3402,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   /**
    * Formal additive expansion of a logarithm's argument: <code>Log(u*v^k) -> Log(u) +
    * k*Log(v)</code>, recursively. (PowerExpand does not reliably split quotient arguments like
-   * <code>Log(2*Pi/x)</code>, which the growth ranker needs in <code>c*x^a*Log(x)^b</code>
-   * form.)
+   * <code>Log(2*Pi/x)</code>, which the growth ranker needs in <code>c*x^a*Log(x)^b</code> form.)
    */
   private static IExpr logExpand(IExpr arg) {
     if (arg.isTimes()) {
@@ -3408,10 +3420,9 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
 
   /** Splits every composite-argument Log inside <code>expr</code> additively. */
   private static IExpr splitCompositeLogs(IExpr expr, EvalEngine engine) {
-    IExpr split = F.subst(expr,
-        e -> e.isLog() && (e.first().isTimes() || e.first().isPower()) //
-            ? logExpand(e.first())
-            : F.NIL);
+    IExpr split = F.subst(expr, e -> e.isLog() && (e.first().isTimes() || e.first().isPower()) //
+        ? logExpand(e.first())
+        : F.NIL);
     if (split.isPresent() && !split.equals(expr)) {
       // Expand distributes coefficients over the freshly created log-sums, e.g.
       // 1/2*(Log(2)+Log(Pi)-Log(x)) -> Log(2)/2+Log(Pi)/2-Log(x)/2 (plain evaluation
@@ -3463,8 +3474,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
     if (coefficient.isZero() || !coefficient.isFree(x)) {
       return F.NIL;
     }
-    if (coefficient.isPositiveResult()
-        || engine.evalQuiet(F.Greater(coefficient, F.C0)).isTrue()) {
+    if (coefficient.isPositiveResult() || engine.evalQuiet(F.Greater(coefficient, F.C0)).isTrue()) {
       return F.CInfinity;
     }
     if (coefficient.isNegativeResult() || engine.evalQuiet(F.Less(coefficient, F.C0)).isTrue()) {
@@ -3474,9 +3484,9 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * Decomposes a term into <code>{a, b, c}</code> with <code>term == c * x^a * Log(x)^b</code>
-   * and <code>c</code> free of <code>x</code>; <code>null</code> if the term is not of this
-   * shape. Exponents must be numerically evaluable.
+   * Decomposes a term into <code>{a, b, c}</code> with <code>term == c * x^a * Log(x)^b</code> and
+   * <code>c</code> free of <code>x</code>; <code>null</code> if the term is not of this shape.
+   * Exponents must be numerically evaluable.
    */
   private static Object[] xLogGrowthTerm(IExpr term, ISymbol x, EvalEngine engine) {
     if (term.isFree(x)) {
@@ -3852,12 +3862,12 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * Replace a nested divergent Gamma logarithm <code>Log(Gamma(g))</code> / <code>LogGamma(g)</code>
-   * by its leading Stirling order <code>g*Log(g)</code> (a single product term), for <code>g</code> a
-   * composite divergent argument - not the bare limit variable, whose <code>Log(Gamma(x))</code> the
-   * normal machinery already ranks. The dropped lower-order terms (<code>-g</code>,
-   * <code>(1/2)*Log(2*Pi/g)</code>, ...) are why the caller must only adopt a <code>0</code> /
-   * <code>+-Infinity</code> result: the full additive expansion
+   * Replace a nested divergent Gamma logarithm <code>Log(Gamma(g))</code> /
+   * <code>LogGamma(g)</code> by its leading Stirling order <code>g*Log(g)</code> (a single product
+   * term), for <code>g</code> a composite divergent argument - not the bare limit variable, whose
+   * <code>Log(Gamma(x))</code> the normal machinery already ranks. The dropped lower-order terms
+   * (<code>-g</code>, <code>(1/2)*Log(2*Pi/g)</code>, ...) are why the caller must only adopt a
+   * <code>0</code> / <code>+-Infinity</code> result: the full additive expansion
    * <code>Gamma(x)*Log(Gamma(x)) - Gamma(x)</code> divided by <code>E^x</code> strands the mrv
    * machinery on an <code>oo - oo</code>, while the pure leading product resolves (thesis #50,
    * <code>Log(Gamma(Gamma(x)))/E^x -> Infinity</code>).
@@ -3881,10 +3891,10 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
    * True if <code>g</code> is a legal argument for the leading-order {@link #leadingLogGamma}
    * rewrite: divergent and itself built from a Gamma-family function (e.g. <code>Gamma(x)</code>),
    * so it grows super-polynomially. A merely affine divergent argument like <code>x + 1</code> is
-   * rejected: <code>LogGamma(x+1) - LogGamma(x) - Log(x) -> 0</code> depends on the very lower-order
-   * terms the leading-order rewrite discards, and expanding only one side of the difference would
-   * fabricate an Infinity. A Gamma-family argument is instead too large to cancel against anything
-   * but an identical copy (which the rewrite reproduces identically).
+   * rejected: <code>LogGamma(x+1) - LogGamma(x) - Log(x) -> 0</code> depends on the very
+   * lower-order terms the leading-order rewrite discards, and expanding only one side of the
+   * difference would fabricate an Infinity. A Gamma-family argument is instead too large to cancel
+   * against anything but an identical copy (which the rewrite reproduces identically).
    */
   private static boolean isNestedGammaArg(IExpr g, ISymbol x) {
     return !g.equals(x) && !g.isFree(x, true)
@@ -3894,16 +3904,17 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
 
   /**
    * The non-vanishing leading part of a digamma argument <code>z</code>, for the correction tail
-   * <code>1/(2z)</code> of <code>PolyGamma(0,z) ~ Log(z) - 1/(2z)</code>. Summands of <code>z</code>
-   * that vanish as <code>x -> Infinity</code> are dropped, so the tail uses <code>z</code>'s leading
-   * asymptotic. When <code>z</code> is itself a digamma expansion (<code>psi(psi(x))</code> recurses
-   * innermost-out to <code>z = Log(x) - 1/(2x)</code>), keeping the vanishing <code>-1/(2x)</code> in
-   * the <code>1/(2z)</code> denominator yields <code>1/(2*(Log(x) - 1/(2x)))</code>, whose
-   * second-order cancellation through two E-levels defeats the fixed-order Puiseux machinery and
-   * times out (thesis #71); the clean <code>1/(2*Log(x))</code> tail resolves. Sound because
-   * <code>1/(2z) -> 0</code> is already a correction and z's dropped part is negligible relative to
-   * its divergent leading term - it can never change a correctly-computed limit. The principal
-   * <code>Log(z)</code> term keeps the full <code>z</code>; it tolerates the messy argument.
+   * <code>1/(2z)</code> of <code>PolyGamma(0,z) ~ Log(z) - 1/(2z)</code>. Summands of
+   * <code>z</code> that vanish as <code>x -> Infinity</code> are dropped, so the tail uses
+   * <code>z</code>'s leading asymptotic. When <code>z</code> is itself a digamma expansion
+   * (<code>psi(psi(x))</code> recurses innermost-out to <code>z = Log(x) - 1/(2x)</code>), keeping
+   * the vanishing <code>-1/(2x)</code> in the <code>1/(2z)</code> denominator yields
+   * <code>1/(2*(Log(x) - 1/(2x)))</code>, whose second-order cancellation through two E-levels
+   * defeats the fixed-order Puiseux machinery and times out (thesis #71); the clean
+   * <code>1/(2*Log(x))</code> tail resolves. Sound because <code>1/(2z) -> 0</code> is already a
+   * correction and z's dropped part is negligible relative to its divergent leading term - it can
+   * never change a correctly-computed limit. The principal <code>Log(z)</code> term keeps the full
+   * <code>z</code>; it tolerates the messy argument.
    */
   private static IExpr digammaTailArg(IExpr z, ISymbol x, EvalEngine engine) {
     if (!z.isPlus()) {
@@ -3922,18 +3933,17 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * Substitute the near-0 series <code>ExpIntegralEi(g) ~ EulerGamma + Log(g) + g + g^2/4</code> for
-   * every <code>ExpIntegralEi(g)</code> whose argument <code>g -> 0</code> at the limit point. Ei
-   * has a logarithmic branch point at 0, so this is not a plain Taylor series and Symja's
+   * Substitute the near-0 series <code>ExpIntegralEi(g) ~ EulerGamma + Log(g) + g + g^2/4</code>
+   * for every <code>ExpIntegralEi(g)</code> whose argument <code>g -> 0</code> at the limit point.
+   * Ei has a logarithmic branch point at 0, so this is not a plain Taylor series and Symja's
    * <code>Series</code>/<code>FunctionExpand</code> leave it unexpanded - yet the closed form is an
-   * exact asymptotic equality there, and the truncation error <code>O(g^3) -> 0</code> preserves the
-   * limit (thesis #59: <code>E^(2*Ei(-x))/x^2 -> E^(2*EulerGamma)</code> at <code>x->0</code>). Only
-   * arguments with limit exactly 0 are touched; any other Ei is left intact.
+   * exact asymptotic equality there, and the truncation error <code>O(g^3) -> 0</code> preserves
+   * the limit (thesis #59: <code>E^(2*Ei(-x))/x^2 -> E^(2*EulerGamma)</code> at <code>x->0</code>).
+   * Only arguments with limit exactly 0 are touched; any other Ei is left intact.
    */
   private static IExpr expandEiNearZero(IExpr function, IAST rule, Direction direction,
       EvalEngine engine) {
-    final LimitData data =
-        new LimitData((ISymbol) rule.arg1(), rule.arg2(), rule, direction);
+    final LimitData data = new LimitData((ISymbol) rule.arg1(), rule.arg2(), rule, direction);
     return F.subst(function, sub -> {
       if (sub.isAST(S.ExpIntegralEi, 2) && !sub.first().isFree(data.variable(), true)) {
         IExpr g = sub.first();
@@ -3956,28 +3966,41 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
    * mrv machinery.
    */
   private static boolean hasDivergentExpFactor(IExpr term, ISymbol x) {
-    return term.has(p -> p.isPower() && p.base().equals(S.E) && !p.exponent().isFree(x, true), true);
+    return term.has(p -> p.isPower() && p.base().equals(S.E) && !p.exponent().isFree(x, true),
+        true);
   }
 
   /**
    * Dominant-term rule for a sum at <code>+-Infinity</code>: if one summand <code>t_k</code>
-   * strictly out-grows every other (<code>Limit(t_j / t_k) == 0</code> for all <code>j != k</code>),
-   * then <code>Limit(Sum t_i) == Limit(t_k)</code>, since
-   * <code>Sum t_i = t_k*(1 + Sum_{j!=k} t_j/t_k) -> t_k*(1 + 0)</code>. Ranks via RATIO limits, which
-   * resolve for exponential towers, instead of the divergent difference the mrv machinery grinds on:
-   * <code>E^(E^(x-E^-x)/(1-1/x)) - E^(E^x)</code> times out as a Plus, yet the dominant tower alone
-   * and the ratio <code>E^(E^x)/E^(E^(...))</code> each resolve in under a second (thesis #80/8.3).
-   * Returns {@link F#NIL} when no summand strictly dominates - a same-order sum (genuine
-   * cancellation) is left to the normal machinery.
+   * strictly out-grows every other (<code>Limit(t_j / t_k) == 0</code> for all
+   * <code>j != k</code>), then <code>Limit(Sum t_i) == Limit(t_k)</code>, since
+   * <code>Sum t_i = t_k*(1 + Sum_{j!=k} t_j/t_k) -> t_k*(1 + 0)</code>. Ranks via RATIO limits,
+   * which resolve for exponential towers, instead of the divergent difference the mrv machinery
+   * grinds on: <code>E^(E^(x-E^-x)/(1-1/x)) - E^(E^x)</code> times out as a Plus, yet the dominant
+   * tower alone and the ratio <code>E^(E^x)/E^(E^(...))</code> each resolve in under a second
+   * (thesis #80/8.3). Returns {@link F#NIL} when no summand strictly dominates - a same-order sum
+   * (genuine cancellation) is left to the normal machinery.
    */
   private static IExpr dominantTermLimit(IAST plus, IAST rule, Direction direction,
       EvalEngine engine) {
-    final LimitData data = new LimitData((ISymbol) rule.arg1(), rule.arg2(), rule, direction);
+    final ISymbol symbol = (ISymbol) rule.arg1();
     final int n = plus.argSize();
+    // Classify every summand up front: a clean exponential yields its exponent; a summand with NO
+    // x-dependent exponential is sub-exponential (NIL exponent, poly-bounded). A "messy"
+    // exponential - an E^(...) buried in a denominator or Plus, e.g. -2*E^(2u)/(1+E^u) whose true
+    // order is E^u not E^(2u) - cannot be ranked by a bare exponent, so abort the whole rule rather
+    // than misjudge it (thesis 8.11 regression: that term cancels 2*E^u, leaving u -> +Infinity).
+    IExpr[] exps = new IExpr[n + 1];
+    for (int i = 1; i <= n; i++) {
+      exps[i] = divergentExpExponent(plus.get(i), symbol);
+      if (exps[i].isNIL() && hasDivergentExpFactor(plus.get(i), symbol)) {
+        return F.NIL;
+      }
+    }
     for (int k = 1; k <= n; k++) {
-      IExpr tk = plus.get(k);
-      if (tk.isZero()) {
-        continue;
+      IExpr pk = exps[k];
+      if (pk.isNIL()) {
+        continue; // only a clean exponential can strictly out-grow every other summand
       }
       boolean dominates = true;
       for (int j = 1; j <= n && dominates; j++) {
@@ -3985,18 +4008,146 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           continue;
         }
         try {
-          IExpr ratioLimit = evalLimitQuiet(engine.evaluate(F.Divide(plus.get(j), tk)), data);
-          dominates = ratioLimit.isPresent() && ratioLimit.isZero();
+          if (exps[j].isPresent()) {
+            // both exponential: E^pk >> E^pj iff pk - pj -> +Infinity. Rank via the EXPONENT
+            // difference, which resolves fast, not the ratio E^(pk-pj) whose exp-of-a-tower-
+            // difference re-enters the grinding mrv rewrite (thesis #80).
+            IExpr d =
+                evaluateLimit(engine.evaluate(F.Subtract(pk, exps[j])), rule, direction, engine);
+            dominates = d.isPresent() && d.isInfinity();
+          } else {
+            // exps[j] is sub-exponential (poly/log): E^pk beats it iff pk -> +Infinity
+            IExpr pkLimit = evaluateLimit(pk, rule, direction, engine);
+            dominates = pkLimit.isPresent() && pkLimit.isInfinity();
+          }
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
           dominates = false;
         }
       }
       if (dominates) {
-        return evaluateLimit(tk, rule, direction, engine);
+        return evaluateLimit(plus.get(k), rule, direction, engine);
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * The exponent <code>P</code> if <code>term</code> is a <em>clean</em> exponential
+   * <code>coeff * E^P</code> with an <code>x</code>-dependent <code>P</code> and a coefficient free
+   * of any other <code>x</code>-dependent exponential, else {@link F#NIL}. The cleanliness check is
+   * essential: <code>-2*E^(2u)/(1+E^u)</code> has a bare exponent <code>2u</code> but an
+   * <code>E^u</code> in its denominator drops its true order to <code>E^u</code>, so ranking it by
+   * <code>2u</code> is wrong (thesis 8.11). A polynomially-bounded coefficient (<code>x^5</code>)
+   * is fine - it does not change the exponential order.
+   */
+  private static IExpr divergentExpExponent(IExpr term, ISymbol x) {
+    if (term.isPower() && term.base().equals(S.E) && !term.exponent().isFree(x, true)) {
+      return term.exponent();
+    }
+    if (term.isTimes()) {
+      IAST times = (IAST) term;
+      IExpr exponent = F.NIL;
+      for (int i = 1; i < times.size(); i++) {
+        IExpr f = times.get(i);
+        if (f.isPower() && f.base().equals(S.E) && !f.exponent().isFree(x, true)) {
+          if (exponent.isPresent()) {
+            return F.NIL; // two E^(x-dependent) factors - not a single clean exponential
+          }
+          exponent = f.exponent();
+        } else if (hasDivergentExpFactor(f, x)) {
+          return F.NIL; // an x-dependent exponential hidden in another factor (denominator, ...)
+        }
+      }
+      return exponent;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Asymptotically expand <code>Log(polynomial)</code> at <code>x -> Infinity</code> by factoring
+   * the leading monomial:
+   * <code>Log(c*x^n + rest) = n*Log(x) + Log(c) + Log(1 + rest/(c*x^n))</code>, and replace the
+   * vanishing <code>Log(1 + u)</code> by its leading term <code>u = rest/(c*x^n) -> 0</code> so it
+   * reads as a clean vanishing power. Symja leaves <code>Log</code> of a sum unexpanded
+   * (<code>PowerExpand</code> and <code>Series</code>-at-Infinity are both no-ops) and returns
+   * Indeterminate for the resulting <code>Log(x^5+x) - 5*Log(x) = Log(1+x^-4)</code> times a
+   * divergent factor (a <code>0*Infinity</code>); emitting <code>x^-4</code> instead lets the
+   * same-order cancellation resolve (thesis 8.14). Only used inside {@link #reduceExpOfTowerDiff},
+   * where a leading-order tail is sufficient (the dropped <code>u^2/2</code> is lower order and
+   * cannot change the Infinity/0 verdict). Only <code>Log</code> of a polynomial <code>Plus</code>
+   * of degree &gt;= 1 is rewritten.
+   */
+  private static IExpr expandLogOfPolynomial(IExpr expr, ISymbol x, EvalEngine engine) {
+    return F.subst(expr, sub -> {
+      if (sub.isLog() && sub.first().isPlus() && sub.first().isPolynomial(x)) {
+        IExpr poly = sub.first();
+        try {
+          IExpr degree = engine.evaluate(F.Exponent(poly, x));
+          if (degree.isInteger() && degree.isPositive()) {
+            IExpr lead = engine.evaluate(F.Coefficient(poly, x, degree));
+            IExpr leadMonomial = F.Times(lead, F.Power(x, degree));
+            // u = rest/(c*x^n) = poly/(c*x^n) - 1 -> 0; Log(1+u) ~ u
+            IExpr u = engine.evaluate(F.Subtract(F.Divide(poly, leadMonomial), F.C1));
+            return engine.evaluate(F.Plus(F.Times(degree, F.Log(x)), F.Log(lead), u));
+          }
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+        }
+      }
+      return F.NIL;
+    });
+  }
+
+  /** -1 if <code>t</code> carries an explicit negative numeric sign, else +1. */
+  private static int termSign(IExpr t) {
+    if (t.isTimes() && ((IAST) t).arg1().isNegative()) {
+      return -1;
+    }
+    return t.isNegative() ? -1 : 1;
+  }
+
+  /**
+   * Reduce <code>E^(g)</code> where the exponent <code>g</code> is a same-order difference of two
+   * super-polynomially divergent tower terms, at <code>+-Infinity</code>. The engine stores
+   * <code>E^(E^p)/E^(E^q)</code> as <code>E^(E^p - E^q)</code> and <code>E^(a*Log(b))</code> as
+   * <code>b^a</code>, so thesis 8.14's body is
+   * <code>E^((x+x^5)^(2*Log(Log x)) - E^(10*Log(x)*Log(Log x)))</code> - a single <code>E^</code>
+   * of a same-order tower difference the mrv machinery grinds on. Rank the two summands by their
+   * log-magnitudes <code>l1=Log|t1|</code>, <code>l2=Log|t2|</code> (uniform across
+   * <code>b^a</code> and <code>E^p</code> forms, with <code>Log</code> of a polynomial expanded);
+   * when they are the same order (<code>l1-l2 -> 0</code>) linearize
+   * <code>E^l1 - E^l2 ~ E^l2*(l1-l2)</code>, turning <code>E^(g)</code> into the resolvable
+   * <code>E^(s1*E^l2*(l1-l2))</code>. Returns {@link F#NIL} unless the result is clean (the caller
+   * adopts only then).
+   */
+  private static IExpr reduceExpOfTowerDiff(IExpr function, IAST rule, Direction direction,
+      EvalEngine engine) {
+    final ISymbol x = (ISymbol) rule.arg1();
+    IAST g = (IAST) function.exponent();
+    IExpr t1 = g.arg1();
+    IExpr t2 = g.arg2();
+    int s1 = termSign(t1);
+    if (s1 == termSign(t2)) {
+      return F.NIL; // a sum, not a difference: no leading cancellation to linearize
+    }
+    IExpr m1 = s1 < 0 ? t1.negate() : t1;
+    IExpr m2 = s1 < 0 ? t2 : t2.negate();
+    IExpr l1 = expandLogOfPolynomial(engine.evaluate(F.PowerExpand(F.Log(m1))), x, engine);
+    IExpr l2 = expandLogOfPolynomial(engine.evaluate(F.PowerExpand(F.Log(m2))), x, engine);
+    if (!divergesAtInfinity(l1, x) || !divergesAtInfinity(l2, x)) {
+      return F.NIL; // not two super-polynomial towers
+    }
+    // Same order iff l1 - l2 -> 0. With the leading-order Log-tail (a vanishing power) this is a
+    // clean power-vs-log limit, not the 0*Infinity the heuristic returns Indeterminate for.
+    IExpr d = engine
+        .evaluate(evaluateLimit(engine.evaluate(F.Subtract(l1, l2)), rule, direction, engine));
+    if (!(d.isPresent() && d.isZero())) {
+      return F.NIL; // strict dominance / non-zero gap: no vanishing leading cancellation
+    }
+    // g = s1*(m1 - m2) = s1*(E^l1 - E^l2) ~ s1*E^l2*(l1 - l2)
+    IExpr reducedExponent = engine.evaluate(F.Times(F.ZZ(s1), F.Exp(l2), F.Subtract(l1, l2)));
+    return evaluateLimit(engine.evaluate(F.Exp(reducedExponent)), rule, direction, engine);
   }
 
   /**
@@ -4026,12 +4177,12 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
   /**
    * Replaces each {@code f(base + shift)} subexpression - for {@code f} in
    * {@code {Gamma, ExpIntegralEi}} - whose base diverges and whose shift tends to 0 with its
-   * order-2 Taylor series in the shift. A difference {@code f(base + shift) - f(base)} is
-   * otherwise an unresolved {@code oo - oo}; the expansion surfaces the leading
-   * {@code f'(base)*shift} term so the mrv machinery can rank it (thesis Gamma set #70/#75/#76/#77;
-   * ExpIntegralEi #64 with {@code Ei'(x) = E^x/x}). Order 2 also captures the second-order tail
-   * #75/#76 need. Only fires when the shift genuinely vanishes, so it never touches an ordinary
-   * {@code f(x)} or a diverging-argument call.
+   * order-2 Taylor series in the shift. A difference {@code f(base + shift) - f(base)} is otherwise
+   * an unresolved {@code oo - oo}; the expansion surfaces the leading {@code f'(base)*shift} term
+   * so the mrv machinery can rank it (thesis Gamma set #70/#75/#76/#77; ExpIntegralEi #64 with
+   * {@code Ei'(x) = E^x/x}). Order 2 also captures the second-order tail #75/#76 need. Only fires
+   * when the shift genuinely vanishes, so it never touches an ordinary {@code f(x)} or a
+   * diverging-argument call.
    */
   private static IExpr expandGammaShifts(IExpr function, IAST rule, Direction direction,
       EvalEngine engine) {
@@ -4123,12 +4274,11 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
           // with the inner level expanded; Log-bearing args are fine - see mrv PolyGamma)
           if (ast.argSize() == 2 && ast.arg1().isZero()) {
             IExpr arg = replaceStirling(ast.arg2(), x, engine);
-            if (!divergesAtInfinity(arg, x)
-                || !arg.isFree(t -> t.isAST(S.PolyGamma), true)) {
+            if (!divergesAtInfinity(arg, x) || !arg.isFree(t -> t.isAST(S.PolyGamma), true)) {
               return F.PolyGamma(F.C0, arg);
             }
-            return engine.evaluate(
-                F.Plus(F.Log(arg), F.Negate(F.Divide(F.C1, F.Times(F.C2, digammaTailArg(arg, x, engine))))));
+            return engine.evaluate(F.Plus(F.Log(arg),
+                F.Negate(F.Divide(F.C1, F.Times(F.C2, digammaTailArg(arg, x, engine))))));
           }
           break;
         }
@@ -4209,7 +4359,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
    * @return the resolved limit, or F.NIL if not applicable
    */
   private static IExpr directedInfinityLimit(IAST ast) {
-    if (ast.arg1().isDirectedInfinity() && ast.isAST1()) {
+    if (ast.isAST1() && ast.arg1().isDirectedInfinity()) {
       IExpr head = ast.head();
       IExpr z = ((IAST) ast.arg1()).arg1();
 
@@ -4551,8 +4701,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       IExpr limitPoint = rule.arg2();
       if ((limitPoint.isInfinity() || limitPoint.isNegativeInfinity())
           && GruntzLimit.GRUNTZ_DEPTH.get() == 0 && !GruntzLimit.IN_GRUNTZ_SERIES.get()
-          && arg1.has(p -> p.isExp() && !p.exponent().isFree(limitVar, true)
-              && p.exponent().has(
+          && arg1.has(p -> p.isExp() && !p.exponent().isFree(limitVar, true) && p.exponent().has(
                   t -> t.isFunctionID(ID.Gamma, ID.LogGamma, ID.Factorial, ID.Pochhammer), true),
               true)
           && arg1.isNumericFunction(new VariablesSet(arg1))) {
@@ -4602,8 +4751,7 @@ public final class Limit extends AbstractFunctionOptionEvaluator {
       // Limit unevaluated; the background worker path (EvalControlledCallable) already
       // recovers from StackOverflowError the same way.
       Errors.printMessage(S.Limit, "error",
-          F.List("StackOverflowError in Limit evaluation - expression stays unevaluated"),
-          engine);
+          F.List("StackOverflowError in Limit evaluation - expression stays unevaluated"), engine);
     } finally {
       engine.setNumericMode(numericMode);
       engine.setAssumptions(oldAssumptions);
