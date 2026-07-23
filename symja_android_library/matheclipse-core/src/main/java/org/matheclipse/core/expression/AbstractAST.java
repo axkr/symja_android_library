@@ -2092,13 +2092,71 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
     return true;
   }
 
+  /**
+   * Compare two interval bounds for equality by value, so that e.g. the machine number
+   * <code>2.0</code> and the integer <code>2</code> count as the same bound.
+   */
+  private static boolean isBoundEqual(IExpr bound1, IExpr bound2, EvalEngine engine) {
+    return bound1.equals(bound2)
+        || bound1.equalTernary(bound2, engine) == IExpr.COMPARE_TERNARY.TRUE;
+  }
+
   @Override
+
   public IExpr.COMPARE_TERNARY equalTernary(IExpr that, EvalEngine engine) {
     if (that.isIndeterminate()) {
       return IExpr.COMPARE_TERNARY.UNDECIDABLE;
     }
     if (this == that) {
       return IExpr.COMPARE_TERNARY.TRUE;
+    }
+
+    if (isInterval1() && that.isInterval1()) {
+      IExpr lower0 = lower();
+      IExpr upper0 = upper();
+      IExpr lower1 = that.lower();
+      IExpr upper1 = that.upper();
+      // disjoint intervals can never hold a common value -> definitely unequal
+      if (upper0.lessThan(lower1).isTrue() || upper1.lessThan(lower0).isTrue()) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      // identical interval bounds compare as equal
+      if (isBoundEqual(lower0, lower1, engine) && isBoundEqual(upper0, upper1, engine)) {
+        return IExpr.COMPARE_TERNARY.TRUE;
+      }
+      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    }
+
+    if (isIntervalData() && size() == 2 && that.isIntervalData() && that.size() == 2) {
+      IExpr sub0 = first();
+      IExpr sub1 = that.first();
+      if (sub0.isList4() && sub1.isList4()) {
+        IAST list0 = (IAST) sub0;
+        IAST list1 = (IAST) sub1;
+        IExpr lower0 = list0.arg1();
+        IExpr upper0 = list0.arg4();
+        IExpr lower1 = list1.arg1();
+        IExpr upper1 = list1.arg4();
+        // Disjoint intervals are definitely unequal. In contrast to Interval, bounds that merely
+        // touch are disjoint too when at least one of them is open (excludes the value).
+        if (upper0.lessThan(lower1).isTrue() || upper1.lessThan(lower0).isTrue()) {
+          return IExpr.COMPARE_TERNARY.FALSE;
+        }
+        if (isBoundEqual(upper0, lower1, engine)
+            && (list0.arg3() != S.LessEqual || list1.arg2() != S.LessEqual)) {
+          return IExpr.COMPARE_TERNARY.FALSE;
+        }
+        if (isBoundEqual(upper1, lower0, engine)
+            && (list1.arg3() != S.LessEqual || list0.arg2() != S.LessEqual)) {
+          return IExpr.COMPARE_TERNARY.FALSE;
+        }
+        // identical bounds (including their open/closed flags) compare as equal
+        if (isBoundEqual(lower0, lower1, engine) && isBoundEqual(upper0, upper1, engine)
+            && list0.arg2() == list1.arg2() && list0.arg3() == list1.arg3()) {
+          return IExpr.COMPARE_TERNARY.TRUE;
+        }
+        return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+      }
     }
 
     if (that.isAST()) {
