@@ -1016,6 +1016,36 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testPuiseuxTruncationOrder() {
+    // The O(...) term sits on the first exponent beyond the requested order which can actually
+    // occur, i.e. on the lattice `leadingExponent + Integers`. A single power x^(p/q) therefore
+    // truncates at n + p/q, not at n + 1/q.
+    check("Series(x^(2/3), {x, 0, 1}) // InputForm", //
+        "SeriesData(x,0,{1},2,5,3)");
+    check("Series(x^(3/4), {x, 0, 1}) // InputForm", //
+        "SeriesData(x,0,{1},3,7,4)");
+    check("Series(x^(5/6), {x, 0, 1}) // InputForm", //
+        "SeriesData(x,0,{1},5,11,6)");
+
+    // A sum unions the lattices of its summands, so the truncation is the smallest of their
+    // next-possible exponents: Min(1+1/3, 1+1/2) == 4/3 == 8/6
+    check("Series(x^(1/3) + x^(1/2), {x, 0, 1}) // InputForm", //
+        "SeriesData(x,0,{1,1},2,8,6)");
+    // Min(1+2/3, 1+1/2) == 3/2 == 9/6 - the numerator of the exponent matters, not only the
+    // denominator
+    check("Series(x^(2/3) + x^(1/2), {x, 0, 1}) // InputForm", //
+        "SeriesData(x,0,{1,1},3,9,6)");
+    check("Series(x^(1/3) + x^(1/2), {x, 0, 2}) // InputForm", //
+        "SeriesData(x,0,{1,1},2,14,6)");
+    check("Series(x^(1/2) + x^(1/4), {x, 0, 1}) // InputForm", //
+        "SeriesData(x,0,{1,1},1,5,4)");
+    check("Series(Exp(x)*x^(1/3) + x^(1/2), {x, 0, 2}) // InputForm", //
+        "SeriesData(x,0,{1,1,0,0,0,0,1},2,14,6)");
+    check("Series(Sin(x^(1/3))+Sin(x^(1/2)), {x, 0, 2}) // InputForm", //
+        "SeriesData(x,0,{1,1,0,0,-1/6,0,0,-1/6,1/120},2,14,6)");
+  }
+
+  @Test
   public void testInverseSeriesPuiseux() {
     // Test InverseSeries yielding a Puiseux series (Lagrange inversion with fractional roots)
 
@@ -1855,6 +1885,41 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     check("Residue(Sec(z), {z, Pi/2})", "-1");
     check("Residue(1/Sin(z)^2, {z, 0})", "0");
     check("Residue(f(z)/z, {z, 0})", "f(0)");
+  }
+
+  @Test
+  public void testResidue003() {
+    // essential singularities
+    check("Residue(Exp(1 / z), {z, 0})", "1");
+    check("Residue(Exp(2 / z), {z, 0})", "2");
+    check("Residue(z * Exp(1 / z), {z, 0})", "1/2");
+    check("Residue(Sin(1 / z), {z, 0})", "1");
+    check("Residue(Exp(1 / z^2), {z, 0})", "0");
+    check("Residue(Cos(1 / z) / z, {z, 0})", "1");
+    check("Residue(z^2 * Sin(1 / z), {z, 0})", "-1/6");
+    check("Residue(Exp(1 / z) + 1 / z, {z, 0})", "2");
+    check("Residue(Cosh(1 / z) * z, {z, 0})", "1/2");
+    // essential singularity at a point other than 0
+    check("Residue(Exp(1/(z - 3)), {z, 3})", "1");
+    // the expansion at Infinity must not be used if 0 isn't the only finite singularity
+    check("Residue(1/(z - 2), {z, 0})", "0");
+    check("Residue(Cos(z)/z^3, {z, 0})", "-1/2");
+  }
+
+  @Test
+  public void testResidue004() {
+    // Laurent coefficients of the Gamma pole at 0
+    check("Residue(Gamma(z) / z, {z, 0})", "-EulerGamma");
+    // == (6*EulerGamma^2+Pi^2)/12
+    check("Residue(Gamma(z) / z^2, {z, 0})", "1/12*(6*EulerGamma^2+Pi^2)");
+    // the Laurent expansion of Gamma at a negative integer isn't known - don't guess
+    check("Residue(Gamma(z) / (z + 1), {z, -1})", "Residue(Gamma(z)/(1+z),{z,-1})");
+
+    check("Residue(Zeta(z), {z, 1})", "1");
+    check("Residue(Zeta(z) / z, {z, 1})", "1");
+    check("Residue(2 * Zeta(z), {z, 1})", "2");
+    check("Residue(Zeta(z) / (z - 1), {z, 1})", "EulerGamma");
+    check("Residue(Zeta(z) / (z - 1)^2, {z, 1})", "-StieltjesGamma(1)");
   }
 
   @Test

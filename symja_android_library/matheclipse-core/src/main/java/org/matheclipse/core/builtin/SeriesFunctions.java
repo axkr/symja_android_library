@@ -545,8 +545,20 @@ public class SeriesFunctions {
 
         // Fast-Path: Try direct evaluation via our optimized SeriesCoefficient
         IExpr coeff = engine.evaluate(F.SeriesCoefficient(function, F.List(x, x0, F.CN1)));
-        if (coeff.isPresent() && !coeff.isAST(S.SeriesCoefficient)) {
-          return coeff;
+        if (coeff.isPresent() && coeff.isFree(S.SeriesCoefficient, true)) {
+          if (!coeff.isFree(f -> f.isIndeterminate() || f.isDirectedInfinity(), true)) {
+            // the -1 coefficient isn't determined - a residue is finite by definition, so don't
+            // guess with the series fallback either
+            return F.NIL;
+          }
+          return coeff.isNumber() ? coeff : engine.evaluate(F.Together(coeff));
+        }
+
+        // Essential singularity: if the function is analytic on the whole punctured plane, its
+        // Laurent series around x0 is the expansion at Infinity, which the Series() code handles.
+        IExpr essential = essentialSingularityResidue(function, x, x0, engine);
+        if (essential.isPresent()) {
+          return essential;
         }
 
         // Robust Fallback: Compute the Laurent series explicitly up to O((x-x0)^0)
@@ -558,6 +570,132 @@ public class SeriesFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * Compute the residue of a function with an essential singularity at <code>x0</code>.
+     *
+     * <p>
+     * If <code>function</code> is analytic in the whole punctured plane <code>0 &lt; |x-x0|</code>,
+     * its Laurent series around <code>x0</code> is unique and identical to the expansion at
+     * <code>Infinity</code>, which <code>Series()</code> computes. That expansion is indexed in
+     * <code>w == 1/(x-x0)</code>, so the residue is the coefficient of <code>w^1</code>.
+     *
+     * @return {@link F#NIL} if the function isn't recognized as analytic on the punctured plane or
+     *         no usable series could be computed
+     */
+    private static IExpr essentialSingularityResidue(IExpr function, IExpr x, IExpr x0,
+        EvalEngine engine) {
+      IExpr shifted = function;
+      if (!x0.isZero()) {
+        if (!x0.isFree(x) || x0.isDirectedInfinity()) {
+          return F.NIL;
+        }
+        shifted = engine.evaluate(F.subst(function, x, F.Plus(x0, x)));
+      }
+      if (!isAnalyticOnPuncturedPlane(shifted, x)) {
+        return F.NIL;
+      }
+
+      boolean quietMode = engine.isQuietMode();
+      try {
+        engine.setQuietMode(true);
+        for (int order : new int[] {4, 12}) {
+          IExpr series = engine.evaluate(F.Series(shifted, F.List(x, F.CInfinity, F.ZZ(order))));
+          if (series instanceof ASTSeriesData) {
+            ASTSeriesData seriesData = (ASTSeriesData) series;
+            if (seriesData.puiseuxDenominator() == 1 && seriesData.truncateOrder() >= 2) {
+              return engine.evaluate(F.Together(seriesData.coefficient(1)));
+            }
+          } else {
+            // the expansion at Infinity isn't a Laurent series at all - retrying won't help
+            break;
+          }
+        }
+      } finally {
+        engine.setQuietMode(quietMode);
+      }
+      return F.NIL;
+    }
+
+    /**
+     * Test if <code>expr</code> is analytic in the punctured plane <code>0 &lt; |x| &lt; Infinity
+     * </code>, i.e. if <code>x == 0</code> is its only singularity in the finite complex plane.
+     *
+     * <p>
+     * The test is deliberately conservative - it only accepts rational monomials in <code>x</code>
+     * and entire functions applied to such arguments.
+     */
+    private static boolean isAnalyticOnPuncturedPlane(IExpr expr, IExpr x) {
+      if (expr.isFree(x, true) || expr.equals(x)) {
+        return true;
+      }
+      if (expr.isPower()) {
+        IExpr base = expr.base();
+        IExpr exponent = expr.exponent();
+        if (base.isFree(x, true)) {
+          // b^f(x) == Exp(f(x)*Log(b)) is entire in f(x). This is the Exp() case, because
+          // Exp(f(x)) is represented as Power(E, f(x)).
+          return !base.isZero() && isAnalyticOnPuncturedPlane(exponent, x);
+        }
+        if (!exponent.isInteger()) {
+          return false;
+        }
+        if (exponent.isNegative()) {
+          // 1/f(x) introduces a pole at every zero of f(x) - only monomials c*x^n are safe
+          return isMonomial(base, x);
+        }
+        return isAnalyticOnPuncturedPlane(base, x);
+      }
+      if (expr.isPlus() || expr.isTimes()) {
+        IAST ast = (IAST) expr;
+        for (int i = 1; i < ast.size(); i++) {
+          if (!isAnalyticOnPuncturedPlane(ast.get(i), x)) {
+            return false;
+          }
+        }
+        return true;
+      }
+      if (expr.isAST1() && expr.head().isBuiltInSymbol()) {
+        switch (((IBuiltInSymbol) expr.head()).ordinal()) {
+          case ID.Sin:
+          case ID.Cos:
+          case ID.Sinh:
+          case ID.Cosh:
+          case ID.Erf:
+          case ID.Erfi:
+            return isAnalyticOnPuncturedPlane(expr.first(), x);
+          default:
+            return false;
+        }
+      }
+      return false;
+    }
+
+    /**
+     * Test if <code>expr</code> is of the form <code>c * x^n</code> with <code>c</code> free of
+     * <code>x</code> and integer <code>n</code>.
+     */
+    private static boolean isMonomial(IExpr expr, IExpr x) {
+      if (expr.isFree(x, true)) {
+        return true;
+      }
+      if (expr.equals(x)) {
+        return true;
+      }
+      if (expr.isPower()) {
+        return expr.base().equals(x) && expr.exponent().isInteger();
+      }
+      if (expr.isTimes()) {
+        IAST times = (IAST) expr;
+        for (int i = 1; i < times.size(); i++) {
+          if (!isMonomial(times.get(i), x)) {
+            return false;
+          }
+        }
+        return true;
+      }
+      return false;
     }
 
     @Override
@@ -628,7 +766,8 @@ public class SeriesFunctions {
               } else {
                 // Re-expanding in the same variable
                 if (outerSeries.expansionPoint().equals(x0)) {
-                  int targetTruncate = n * outerSeries.puiseuxDenominator() + 1;
+                  int targetTruncate =
+                      n * outerSeries.puiseuxDenominator() + outerSeries.truncationOffset();
                   if (targetTruncate >= outerSeries.truncateOrder()) {
                     continue; // Cannot increase precision of existing series
                   } else {

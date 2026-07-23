@@ -47,6 +47,52 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
   }
 
   /**
+   * Determine the index distance from the requested expansion order <code>n</code> to the
+   * <code>O(...)</code> term of <code>result</code>, measured in units of
+   * <code>1/puiseuxDenominator()</code>.
+   *
+   * <p>
+   * A series <code>x^a*(c0+c1*x+c2*x^2+...)</code> can only carry exponents on the lattice
+   * <code>a, a+1, a+2, ...</code> - the steps are integers, the offset <code>a</code> is not. All
+   * terms with exponent <code>&lt;= n</code> are kept, so the <code>O(...)</code> term sits on the
+   * first lattice point beyond <code>n</code>. With denominator <code>d</code> an integer step is
+   * <code>d</code> index units, so a term at index <code>i</code> puts that point at
+   * <code>n*d + (i mod d)</code>. A residue of <code>0</code> means a term sits at the expansion
+   * order itself and the next possible exponent is <code>n+1</code>, i.e. a distance of
+   * <code>d</code>.
+   *
+   * <p>
+   * Sums combine several such lattices, and the truncation is the smallest of their next points -
+   * hence the minimum over all occupied indices. For an ordinary Taylor series
+   * (<code>d == 1</code>) every residue is <code>0</code> and this degenerates to the familiar
+   * <code>n+1</code>.
+   */
+  public int truncationOffset() {
+    final int denominator = puiseuxDenominator();
+    if (denominator <= 1) {
+      return 1;
+    }
+    int offset = denominator;
+    for (int i = minExponent(); i < truncateOrder(); i++) {
+      IExpr coefficient = coefficient(i);
+      if (coefficient != null && !coefficient.isZero()) {
+        // floorMod - not %, the indices of a Laurent series are negative
+        int residue = Math.floorMod(i, denominator);
+        if (residue == 0) {
+          residue = denominator;
+        }
+        if (residue < offset) {
+          offset = residue;
+          if (offset == 1) {
+            break;
+          }
+        }
+      }
+    }
+    return offset;
+  }
+
+  /**
    * Returns the list of coefficients of a polynomial expression with respect to the variables in
    * <code>listOfVariables</code>.
    *
@@ -711,7 +757,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
             int pNMin = pSeries.minExponent();
             int pTruncate = pSeries.truncateOrder();
             int pDen = pSeries.puiseuxDenominator();
-            int targetTruncate = n * pDen + 1;
+            int targetTruncate = n * pDen + pSeries.truncationOffset();
 
             int actualMinExp = Integer.MAX_VALUE;
             for (int i = pNMin; i < pTruncate; i++) {
@@ -936,7 +982,7 @@ public class ASTSeriesData extends AbstractAST implements Externalizable {
 
     if (result != null) {
       int pDen = result.puiseuxDenominator();
-      int targetTruncate = n * pDen + 1;
+      int targetTruncate = n * pDen + result.truncationOffset();
 
       int actualMinExp = actualMinExponent(result);
       if (F.isPresent(actualMinExp)) {

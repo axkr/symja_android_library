@@ -139,6 +139,10 @@
   SeriesCoefficient(Zeta(x_),{x_Symbol, 1, n_?NotListQ}) := Piecewise({{1, n==-1}, {((-1)^n*StieltjesGamma(n))/n!, n>=0}}, 0)
     /; FreeQ(n,x),
 
+  (* Laurent expansion of the simple pole of Gamma at x = 0: Gamma(x) == Gamma(x+1)/x *)
+  SeriesCoefficient(Gamma(x_),{x_Symbol, 0, n_?NotListQ}) := Piecewise({{1, n==-1}, {Derivative(1+n)[Gamma][1]/(1+n)!, n>=0}}, 0)
+    /; FreeQ(n,x),
+
   SeriesCoefficient(Sec(x_),{x_Symbol, a_.*Pi, n_?NotListQ}):=Piecewise({{(-1)^(a+1/2), n == -1}, {-(((-1)^(a+1/2)*2*I*I^n*(-1 + 2^n)*BernoulliB(1 + n))/(1 + n)!), n >= 0 && Mod(n, 2) == 1}}, 0)
     /; FreeQ(n,x) && IntegerQ(a+1/2),
 
