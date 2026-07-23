@@ -415,7 +415,7 @@ public class RSolveTest {
     // This triggers the generalizedBinet path in solveLinearConstantCoefficients
     // instead of solving the quadratic roots.
     check("RSolve({y(n) == 3*y(n-1) - y(n-2), y(0) == 0, y(1) == 1}, y(n), n)", //
-        "{{y(n)->-(1/2*(3-Sqrt(5)))^n/Sqrt(5)+(1/2*(3+Sqrt(5)))^n/Sqrt(5)}}");
+        "{{y(n)->-(3/2-Sqrt(5)/2)^n/Sqrt(5)+(3/2+Sqrt(5)/2)^n/Sqrt(5)}}");
 
     // 3. Lucas sequence recurrence (Order-2)
     // y(n) = y(n-1) + y(n-2), y(0)=2, y(1)=1

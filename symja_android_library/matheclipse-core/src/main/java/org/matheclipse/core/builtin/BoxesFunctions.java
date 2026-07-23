@@ -96,7 +96,7 @@ public class BoxesFunctions {
     }
 
     private static IExpr standardFormRecursive(final IExpr expr, final int precedence) {
-      if (expr.isAST()) {
+      if (expr.isASTOrAssociation()) {
         IAST function = (IAST) expr;
         if (function.size() > 0) {
           if (function.isList()) {
@@ -104,7 +104,7 @@ public class BoxesFunctions {
             list.append("{");
             IASTAppendable argsList = F.ListAlloc(function.size());
             for (int i = 1; i < function.size(); i++) {
-              argsList.append(standardFormRecursive(function.get(i), precedence));
+              argsList.append(standardFormRecursive(function.getRule(i), precedence));
               if (i < function.argSize()) {
                 argsList.append(",");
               }
@@ -127,7 +127,7 @@ public class BoxesFunctions {
           list.append("[");
           IASTAppendable argsList = F.ListAlloc(function.size());
           for (int i = 1; i < function.size(); i++) {
-            argsList.append(standardFormRecursive(function.get(i), precedence));
+            argsList.append(standardFormRecursive(function.getRule(i), precedence));
             if (i < function.argSize()) {
               argsList.append(",");
             }

@@ -30,6 +30,9 @@ public class DiamondMatrix extends AbstractFunctionEvaluator {
       dims = ast.arg2().argSize();
     }
 
+    if (dims == 0) {
+      return F.NIL;
+    }
     double[] rArr = new double[dims];
     int[] wArr = new int[dims];
     boolean[] rIsAll = new boolean[dims];
