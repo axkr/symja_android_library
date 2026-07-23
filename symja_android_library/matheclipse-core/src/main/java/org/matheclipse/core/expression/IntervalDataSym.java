@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.util.Comparator;
 import java.util.Map;
+import java.util.function.BiPredicate;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.matheclipse.core.eval.Errors;
@@ -357,7 +358,15 @@ public class IntervalDataSym {
                 result.append(F.List(F.CNInfinity, S.Less, S.Less, F.CInfinity));
               }
             } else {
-              result.append(F.CRealsRange);
+              // dMin < 0 <= dMax: the interval crosses a single pole (Cot is decreasing, so the
+              // value can only "increase" across a pole). The image splits into two rays with the
+              // gap (Cot(min), Cot(max)); it only fills the whole line when Cot(min) >= Cot(max).
+              if (dMin < dMax) {
+                result.append(F.List(F.CNInfinity, S.Less, lessMin, F.Cot(min)));
+                result.append(F.List(F.Cot(max), lessMax, S.Less, F.CInfinity));
+              } else {
+                result.append(F.CRealsRange);
+              }
             }
           }
         }
@@ -370,7 +379,13 @@ public class IntervalDataSym {
     EvalEngine engine = EvalEngine.get();
     return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
       if (engine.evalGreaterEqual(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
-        result.append(F.List(F.Coth(max), lessMin, lessMax, F.Coth(min)));
+        // Coth is decreasing on (0, Infinity), so the bounds (and their open/closed flags) swap.
+        // Coth(0+) tends to +Infinity, which is always an open (Less) bound.
+        if (min.isZero()) {
+          result.append(F.List(F.Coth(max), lessMax, S.Less, F.CInfinity));
+        } else {
+          result.append(F.List(F.Coth(max), lessMax, lessMin, F.Coth(min)));
+        }
         return true;
       }
       return false;
@@ -383,7 +398,8 @@ public class IntervalDataSym {
       return false;
     }, (min, lessMin, lessMax, max, result, index) -> {
       if (engine.evalLess(min, F.C0) && engine.evalLess(max, F.C0)) {
-        result.append(F.List(F.Coth(min), lessMin, lessMax, F.Coth(max)));
+        // decreasing on (-Infinity, 0) as well: bounds swap
+        result.append(F.List(F.Coth(max), lessMax, lessMin, F.Coth(min)));
         return true;
       }
       return false;
@@ -402,20 +418,26 @@ public class IntervalDataSym {
     EvalEngine engine = EvalEngine.get();
     return mutableProcessorConditions(ast, (min, lessMin, lessMax, max, result, index) -> {
       if (engine.evalGreaterEqual(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
-        result.append(F.List(F.Csch(max), lessMin, lessMax, F.Csch(min)));
+        // Csch is decreasing on (0, Infinity): bounds swap, Csch(0+) tends to +Infinity
+        if (min.isZero()) {
+          result.append(F.List(F.Csch(max), lessMax, S.Less, F.CInfinity));
+        } else {
+          result.append(F.List(F.Csch(max), lessMax, lessMin, F.Csch(min)));
+        }
         return true;
       }
       return false;
     }, (min, lessMin, lessMax, max, result, index) -> {
       if (engine.evalLess(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
-        result.append(F.List(F.CNInfinity, S.Less, lessMax, F.Csch(min)));
-        result.append(F.List(F.Csch(max), lessMin, S.Less, F.CInfinity));
+        result.append(F.List(F.CNInfinity, S.Less, lessMin, F.Csch(min)));
+        result.append(F.List(F.Csch(max), lessMax, S.Less, F.CInfinity));
         return true;
       }
       return false;
     }, (min, lessMin, lessMax, max, result, index) -> {
       if (engine.evalLess(min, F.C0) && engine.evalLess(max, F.C0)) {
-        result.append(F.List(F.Csch(min), lessMin, lessMax, F.Csch(max)));
+        // decreasing on (-Infinity, 0) as well: bounds swap
+        result.append(F.List(F.Csch(max), lessMax, lessMin, F.Csch(min)));
         return true;
       }
       return false;
@@ -913,7 +935,8 @@ public class IntervalDataSym {
       IAST intervalList = (IAST) intervalData.get(i);
       if (intervalList.isList4()) {
         boolean isPositivePart = //
-            intervalList.arg1().isPositiveResult() //
+            (intervalList.arg1().isPositiveResult() //
+                || (intervalList.arg2() == S.Less && intervalList.arg1().isZero())) //
                 && intervalList.arg4().isPositiveResult();
         if (!isPositivePart) {
           return false;
@@ -921,6 +944,65 @@ public class IntervalDataSym {
       }
     }
     return true;
+  }
+
+  /**
+   * Test all sub-intervals of an <code>IntervalData</code> against a &ldquo;holds
+   * everywhere&rdquo; predicate and its negation, returning a ternary result.
+   *
+   * <p>
+   * Both predicates receive an interval bound together with a flag telling whether that bound is
+   * <i>closed</i> (i.e. <code>LessEqual</code>, the value belongs to the interval) or <i>open</i>
+   * (<code>Less</code>, the value is excluded). The openness matters for strict predicates:
+   * <code>IntervalData({0,Less,LessEqual,5})</code> is positive everywhere because zero is
+   * excluded, while <code>IntervalData({0,LessEqual,LessEqual,5})</code> is not.
+   *
+   * @param intervalData the interval to test
+   * @param predicate1 holds for a bound if the whole interval satisfies the tested property
+   * @param predicate2 holds for a bound if the whole interval satisfies the negated property
+   * @return {@link IExpr.COMPARE_TERNARY#TRUE} if every sub-interval satisfies
+   *         <code>predicate1</code>, {@link IExpr.COMPARE_TERNARY#FALSE} if a sub-interval
+   *         satisfies <code>predicate2</code> throughout, otherwise
+   *         {@link IExpr.COMPARE_TERNARY#UNDECIDABLE}
+   */
+  public static IExpr.COMPARE_TERNARY forAll(IAST intervalData,
+      BiPredicate<IExpr, Boolean> predicate1, BiPredicate<IExpr, Boolean> predicate2) {
+    if (intervalData.size() <= 1) {
+      return IExpr.COMPARE_TERNARY.FALSE;
+    }
+    for (int i = 1; i < intervalData.size(); i++) {
+      IExpr sub = intervalData.get(i);
+      if (!sub.isList4()) {
+        return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+      }
+      IAST intervalList = (IAST) sub;
+      IExpr min = intervalList.arg1();
+      IExpr max = intervalList.arg4();
+      Boolean lowerClosed = intervalList.arg2() == S.LessEqual;
+      Boolean upperClosed = intervalList.arg3() == S.LessEqual;
+
+      if (predicate1.test(min, lowerClosed) && predicate1.test(max, upperClosed)) {
+        // the whole sub-interval satisfies predicate1
+        continue;
+      }
+      if (predicate2.test(min, lowerClosed) && predicate2.test(max, upperClosed)) {
+        // the whole sub-interval satisfies predicate2 (the negation region)
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      // Mixed sub-interval. If the predicate2 endpoint is a *closed* zero boundary the interval
+      // only touches zero and never reaches the opposite sign region, so the answer is definitely
+      // FALSE. An open zero bound excludes zero and can never witness FALSE.
+      if (min.isZero() && lowerClosed && predicate2.test(min, lowerClosed)
+          && predicate1.test(max, upperClosed)) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      if (max.isZero() && upperClosed && predicate2.test(max, upperClosed)
+          && predicate1.test(min, lowerClosed)) {
+        return IExpr.COMPARE_TERNARY.FALSE;
+      }
+      return IExpr.COMPARE_TERNARY.UNDECIDABLE;
+    }
+    return IExpr.COMPARE_TERNARY.TRUE;
   }
 
   /**
@@ -1028,6 +1110,65 @@ public class IntervalDataSym {
       }
       return intersection(interval, F.IntervalData(F.List(F.CNInfinity, S.Less, S.LessEqual, F.C0)),
           EvalEngine.get());
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Map a monotonic integer valued function (<code>Floor</code>, <code>Ceiling</code>,
+   * <code>IntegerPart</code>, <code>Round</code>) over an <code>IntervalData</code>, returning the
+   * <code>IntervalData</code> of the resulting integers.
+   *
+   * <p>
+   * In contrast to {@link #mapIntegerFunction(ISymbol, IAST, EvalEngine)}, which only succeeds if
+   * the whole interval collapses onto a single integer, this maps each sub-interval onto the range
+   * <code>[f(min), f(max)]</code>. An open bound that sits exactly on an integer is nudged
+   * inwards, because that integer is not part of the interval: <code>Floor</code> of
+   * <code>[0,1)</code> is <code>0</code> while <code>Floor</code> of <code>[0,1]</code> is
+   * <code>[0,1]</code>. The image consists of integers, so both result bounds are closed (except
+   * for infinite bounds).
+   *
+   * @param integerFunctionSymbol the integer valued function to map
+   * @param intervalData the interval to map
+   * @param engine the evaluation engine
+   * @return <code>F.NIL</code> if no evaluation is possible.
+   */
+  public static IExpr mapIntegerFunctionToInterval(ISymbol integerFunctionSymbol,
+      final IAST intervalData, EvalEngine engine) {
+    IAST interval = normalize(intervalData);
+    if (interval.isPresent()) {
+      IASTAppendable result = F.IntervalDataAlloc(interval.argSize());
+      for (int i = 1; i < interval.size(); i++) {
+        IAST list = (IAST) interval.get(i);
+        IExpr min = list.arg1();
+        IExpr max = list.arg4();
+        if (!min.isRealResult() && !min.isNegativeInfinity() && !min.isInfinity()) {
+          return F.NIL;
+        }
+        if (!max.isRealResult() && !max.isInfinity() && !max.isNegativeInfinity()) {
+          return F.NIL;
+        }
+        // an open bound exactly on an integer excludes that integer
+        if (list.arg2() == S.Less && min.isInteger()) {
+          min = min.plus(F.QQ(1, 10));
+        }
+        if (list.arg3() == S.Less && max.isInteger()) {
+          max = max.subtract(F.QQ(1, 10));
+        }
+        IExpr mappedMin = engine.evaluate(F.unaryAST1(integerFunctionSymbol, min));
+        IExpr mappedMax = engine.evaluate(F.unaryAST1(integerFunctionSymbol, max));
+        boolean lowerClosed = mappedMin.isInteger();
+        boolean upperClosed = mappedMax.isInteger();
+        if (!lowerClosed && !mappedMin.isNegativeInfinity() && !mappedMin.isInfinity()) {
+          return F.NIL;
+        }
+        if (!upperClosed && !mappedMax.isInfinity() && !mappedMax.isNegativeInfinity()) {
+          return F.NIL;
+        }
+        result.append(F.List(mappedMin, lowerClosed ? S.LessEqual : S.Less,
+            upperClosed ? S.LessEqual : S.Less, mappedMax));
+      }
+      return result;
     }
     return F.NIL;
   }
@@ -1629,6 +1770,84 @@ public class IntervalDataSym {
           result.append(F.List(base.power(max), lessMax, lessMin, base.power(min)));
         } else {
           result.append(F.List(base.power(min), lessMin, lessMax, base.power(max)));
+        }
+      }
+      return result;
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Calculate <code>baseInterval ^ intervalExponent</code> for a non-negative base interval.
+   *
+   * <p>
+   * For a base sub-interval <code>[a,b]</code> with <code>0 &lt;= a &lt;= b</code> and an exponent
+   * sub-interval <code>[c,d]</code>, the result is the smallest interval enclosing the four corner
+   * values <code>a^c, a^d, b^c, b^d</code>. A corner is a closed bound only if both contributing
+   * bounds are closed; when several corners attain the same extremum a single closed one makes the
+   * resulting bound closed. If a base sub-interval can be negative the result is left unevaluated.
+   *
+   * @param baseInterval the base interval
+   * @param intervalExponent the exponent interval
+   * @return <code>F.NIL</code> if no evaluation is possible.
+   */
+  public static IExpr power(final IAST baseInterval, final IAST intervalExponent) {
+    IAST base = normalize(baseInterval);
+    IAST exponent = normalize(intervalExponent);
+    if (base.isPresent() && exponent.isPresent()) {
+      EvalEngine engine = EvalEngine.get();
+      IASTAppendable result =
+          F.IntervalDataAlloc(base.argSize() * exponent.argSize());
+      for (int i = 1; i < base.size(); i++) {
+        IAST baseList = (IAST) base.get(i);
+        IExpr a = baseList.arg1();
+        IExpr b = baseList.arg4();
+        if (!(engine.evalGreaterEqual(a, F.C0) && engine.evalGreaterEqual(b, F.C0))) {
+          // negative base part: x^y is not real-interval-monotonic, leave unevaluated
+          return F.NIL;
+        }
+        boolean aClosed = baseList.arg2() == S.LessEqual;
+        boolean bClosed = baseList.arg3() == S.LessEqual;
+        for (int j = 1; j < exponent.size(); j++) {
+          IAST expList = (IAST) exponent.get(j);
+          IExpr c = expList.arg1();
+          IExpr d = expList.arg4();
+          boolean cClosed = expList.arg2() == S.LessEqual;
+          boolean dClosed = expList.arg3() == S.LessEqual;
+
+          IExpr[] corners = new IExpr[] {engine.evaluate(F.Power(a, c)),
+              engine.evaluate(F.Power(a, d)), engine.evaluate(F.Power(b, c)),
+              engine.evaluate(F.Power(b, d))};
+          boolean[] closed = new boolean[] {aClosed && cClosed, aClosed && dClosed,
+              bClosed && cClosed, bClosed && dClosed};
+          for (IExpr corner : corners) {
+            if (!(corner.isRealResult() || corner.isInfinity() || corner.isNegativeInfinity())) {
+              // e.g. 0^(negative) -> ComplexInfinity: can't build a real interval
+              return F.NIL;
+            }
+          }
+          int minIndex = 0;
+          int maxIndex = 0;
+          for (int k = 1; k < corners.length; k++) {
+            if (engine.evalLess(corners[k], corners[minIndex])) {
+              minIndex = k;
+            }
+            if (engine.evalGreater(corners[k], corners[maxIndex])) {
+              maxIndex = k;
+            }
+          }
+          boolean lowerClosed = closed[minIndex];
+          boolean upperClosed = closed[maxIndex];
+          for (int k = 0; k < corners.length; k++) {
+            if (k != minIndex && corners[k].equals(corners[minIndex])) {
+              lowerClosed = lowerClosed || closed[k];
+            }
+            if (k != maxIndex && corners[k].equals(corners[maxIndex])) {
+              upperClosed = upperClosed || closed[k];
+            }
+          }
+          result.append(F.List(corners[minIndex], lowerClosed ? S.LessEqual : S.Less,
+              upperClosed ? S.LessEqual : S.Less, corners[maxIndex]));
         }
       }
       return result;

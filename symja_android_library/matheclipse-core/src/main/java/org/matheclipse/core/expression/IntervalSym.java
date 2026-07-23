@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import java.util.Comparator;
+import java.util.function.Predicate;
 import org.apfloat.Apfloat;
 import org.apfloat.FixedPrecisionApfloatHelper;
 import org.matheclipse.core.eval.Errors;
@@ -11,6 +12,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IReal;
@@ -333,7 +335,15 @@ public class IntervalSym {
                 result.append(F.list(F.CNInfinity, F.CInfinity));
               }
             } else {
-              result.append(F.list(F.CNInfinity, F.CInfinity));
+              // dMin < 0 <= dMax: the interval crosses a single pole (Cot is decreasing, so the
+              // value can only "increase" across a pole). The image splits into two rays with a
+              // gap (Cot(min), Cot(max)); it only fills the whole line when Cot(min) >= Cot(max).
+              if (dMin < dMax) {
+                result.append(F.list(F.CNInfinity, F.Cot(min)));
+                result.append(F.list(F.Cot(max), F.CInfinity));
+              } else {
+                result.append(F.list(F.CNInfinity, F.CInfinity));
+              }
             }
           }
         }
@@ -346,7 +356,8 @@ public class IntervalSym {
     EvalEngine engine = EvalEngine.get();
     return mutableProcessorConditions(ast, (min, max, result, index) -> {
       if (engine.evalGreaterEqual(min, F.C0) && engine.evalGreaterEqual(max, F.C0)) {
-        result.append(F.list(F.Coth(max), F.Coth(min)));
+        // Coth is decreasing on (0, Infinity) with a pole at 0: Coth(0+) -> +Infinity.
+        result.append(F.list(F.Coth(max), min.isZero() ? F.CInfinity : F.Coth(min)));
         return true;
       }
       return false;
@@ -934,6 +945,56 @@ public class IntervalSym {
     return F.NIL;
   }
 
+  /**
+   * Calculate <code>baseInterval ^ intervalExponent</code> for a non-negative base interval.
+   *
+   * <p>
+   * For a base sub-interval <code>[a,b]</code> with <code>0 &lt;= a &lt;= b</code> and an exponent
+   * sub-interval <code>[c,d]</code>, the result is the smallest interval enclosing the four corner
+   * values <code>a^c, a^d, b^c, b^d</code>. If any base sub-interval can be negative the result is
+   * left unevaluated ({@link F#NIL}).
+   *
+   * @param baseInterval the base interval
+   * @param intervalExponent the exponent interval
+   * @return <code>F.NIL</code> if no evaluation is possible.
+   */
+  public static IExpr power(final IAST baseInterval, final IAST intervalExponent) {
+    IAST base = normalize(baseInterval);
+    IAST exponent = normalize(intervalExponent);
+    if (base.isPresent() && exponent.isPresent()) {
+      EvalEngine engine = EvalEngine.get();
+      IASTAppendable result = F.IntervalAlloc(base.size() * exponent.size());
+      for (int i = 1; i < base.size(); i++) {
+        IAST baseList = (IAST) base.get(i);
+        IExpr a = baseList.arg1();
+        IExpr b = baseList.arg2();
+        if (!(engine.evalGreaterEqual(a, F.C0) && engine.evalGreaterEqual(b, F.C0))) {
+          // negative base part: x^y is not real-interval-monotonic, leave unevaluated
+          return F.NIL;
+        }
+        for (int j = 1; j < exponent.size(); j++) {
+          IAST expList = (IAST) exponent.get(j);
+          IExpr c = expList.arg1();
+          IExpr d = expList.arg2();
+          IExpr[] corners = new IExpr[] {engine.evaluate(F.Power(a, c)),
+              engine.evaluate(F.Power(a, d)), engine.evaluate(F.Power(b, c)),
+              engine.evaluate(F.Power(b, d))};
+          for (IExpr corner : corners) {
+            if (!(corner.isRealResult() || corner.isInfinity() || corner.isNegativeInfinity())) {
+              // e.g. 0^(negative) -> ComplexInfinity: can't build a real interval
+              return F.NIL;
+            }
+          }
+          IExpr min = engine.evaluate(F.Min(corners[0], corners[1], corners[2], corners[3]));
+          IExpr max = engine.evaluate(F.Max(corners[0], corners[1], corners[2], corners[3]));
+          result.append(F.list(min, max));
+        }
+      }
+      return result;
+    }
+    return F.NIL;
+  }
+
   public static IAST sec(final IAST ast) {
     IAST interval = cos(ast);
     if (interval.isPresent()) {
@@ -1261,5 +1322,43 @@ public class IntervalSym {
       }
     }
     return F.NIL;
+  }
+
+  public static COMPARE_TERNARY forAll(IAST interval, Predicate<IExpr> predicate1,
+      Predicate<IExpr> predicate2) {
+    if (interval.size() <= 1) {
+      return COMPARE_TERNARY.FALSE;
+    }
+    for (int i = 1; i < interval.size(); i++) {
+      IAST list = (IAST) interval.get(i);
+      IExpr min = list.arg1();
+      IExpr max = list.arg2();
+      boolean p1Min = predicate1.test(min);
+      boolean p1Max = predicate1.test(max);
+      if (p1Min && p1Max) {
+        // the whole sub-interval satisfies predicate1
+        continue;
+      }
+      boolean p2Min = predicate2.test(min);
+      boolean p2Max = predicate2.test(max);
+      if (p2Min && p2Max) {
+        // the whole sub-interval satisfies predicate2 (the negation region)
+        return COMPARE_TERNARY.FALSE;
+      }
+      // The sub-interval is mixed: one endpoint satisfies predicate1, the other predicate2.
+      // When the predicate2 endpoint is exactly the zero boundary (e.g. Positive(Interval({0,5}))
+      // where 0 is not positive but the rest of the interval is), the result is definitely FALSE:
+      // the interval never reaches into the opposite sign region, it only touches zero. A sub-
+      // interval that straddles zero with a non-zero part on the other side (e.g.
+      // Positive(Interval({-1,5}))) stays undecidable.
+      if (min.isZero() && p2Min && p1Max) {
+        return COMPARE_TERNARY.FALSE;
+      }
+      if (max.isZero() && p2Max && p1Min) {
+        return COMPARE_TERNARY.FALSE;
+      }
+      return COMPARE_TERNARY.UNDECIDABLE;
+    }
+    return COMPARE_TERNARY.TRUE;
   }
 }
