@@ -41,6 +41,7 @@ import org.matheclipse.core.generic.PowerTimesFunction;
 import org.matheclipse.core.integrate.ChebyshevIntegration;
 import org.matheclipse.core.integrate.DerivativeDivides;
 import org.matheclipse.core.integrate.IntegralTable;
+import org.matheclipse.core.integrate.ProductPowerIntegration;
 import org.matheclipse.core.integrate.RadicalSubstitution;
 import org.matheclipse.core.integrate.RationalIntegration;
 import org.matheclipse.core.integrate.RischNorman;
@@ -529,6 +530,16 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           if (result.isPresent()) {
             return result;
           }
+          // Stage: product of >= 2 polynomial powers with a compatible polynomial cofactor,
+          // Integrate(S*prod(P_i^m_i)) = poly*prod(P_i^(m_i+1)) via a perfect-derivative ansatz.
+          // Rubi leaves these unevaluated (its linearity split over the cofactor S produces
+          // unresolved pieces), and its own 40s grind on them would otherwise exhaust the test
+          // timeout, so this runs before the rules. Restricted to >= 2 power factors to avoid the
+          // single-power integrals Rubi already renders canonically. Diff-back self-verified.
+          result = ProductPowerIntegration.integrate(fx, x, engine, 2);
+          if (result.isPresent()) {
+            return result;
+          }
         }
         result = integrateByRubiRules(fx, x, ast, engine);
         if (result.isPresent()) {
@@ -645,6 +656,9 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         return WeierstrassIntegration.integrate(fx, x, engine);
       case "RischTranscendental":
         return TranscendentalRisch.integrate(fx, x, engine);
+      case "ProductPower":
+      case "ProductOfPowers":
+        return ProductPowerIntegration.integrate(fx, x, engine);
       default:
         // Unknown or not-yet-ported method name: leave the integral unevaluated.
         return F.NIL;

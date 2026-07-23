@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.integrate.DerivativeDivides;
 import org.matheclipse.core.integrate.IntegralTable;
+import org.matheclipse.core.integrate.ProductPowerIntegration;
 import org.matheclipse.core.integrate.RadicalSubstitution;
 import org.matheclipse.core.integrate.RationalIntegration;
 import org.matheclipse.core.interfaces.IExpr;
@@ -121,6 +122,32 @@ public class IntegrateAlgorithmsTest extends ExprEvaluatorTestCase {
     IExpr integrand = engine.parse("Cos(x)*E^Sin(x)");
     IExpr result = DerivativeDivides.integrate(integrand, x, engine);
     assertAntiderivative(result, integrand, x, engine);
+  }
+
+  @Test
+  public void testProductPowerStage() {
+    EvalEngine engine = evaluator.getEvalEngine();
+    IExpr x = engine.parse("x");
+
+    // single symbolic power factor: Integrate((a+b*x)^m) = (a+b*x)^(1+m)/(b*(1+m))
+    IExpr integrand = engine.parse("(a+b*x)^m");
+    IExpr result = ProductPowerIntegration.integrate(integrand, x, engine);
+    assertAntiderivative(result, integrand, x, engine);
+  }
+
+  @Test
+  public void testProductPowerMultiFactorEndToEnd() {
+    // Two symbolic power factors with a compatible polynomial cofactor. Rubi leaves this
+    // unevaluated (its linearity split over the cofactor produces unresolved pieces); the
+    // product-power ansatz recovers the closed form before the rules run. The diff-back cannot be
+    // simplified to zero here (Together does not know P^(1+m) = P*P^m), so assert the closed form.
+    assertTrue(Config.INTEGRATE_ALGORITHMS);
+    check(
+        "Integrate((a+b*x+c*x^2)^m*(d+e*x+f*x^2+g*x^3)^n*(a*d+(2*b*d+2*a*e+b*d*m+a*e*n)*x"
+            + "+(3*c*d+3*b*e+3*a*f+2*c*d*m+b*e*m+b*e*n+2*a*f*n)*x^2+(4*c*e+4*b*f+4*a*g+2*c*e*m"
+            + "+b*f*m+c*e*n+2*b*f*n+3*a*g*n)*x^3+(5*c*f+5*b*g+2*c*f*m+b*g*m+2*c*f*n+3*b*g*n)*x^4"
+            + "+c*g*(6+2*m+3*n)*x^5), x)", //
+        "x*(a+b*x+c*x^2)^(1+m)*(d+e*x+f*x^2+g*x^3)^(1+n)");
   }
 
   @Test
