@@ -395,7 +395,10 @@ public class Sum extends ListFunctions.Table implements SumRules {
             // Sum(0, {k, n, m})
             return F.C0;
           }
-          if (iterator.isValidVariable() && iterator.getUpperLimit().isInfinity()) {
+          // A list style iterator like {e, {2,1,1,1}} has no "upper limit" ({@link IIterator}
+          // returns null for it); such iterators are already handled by evaluateTableThrow above.
+          if (iterator.isValidVariable() && iterator.getUpperLimit() != null
+              && iterator.getUpperLimit().isInfinity()) {
             if (arg1.isPositiveResult() && arg1.isIntegerResult()) {
               // Sum(n, {k, a, Infinity}) ;n is positive integer
               return F.CInfinity;
@@ -421,7 +424,11 @@ public class Sum extends ListFunctions.Table implements SumRules {
             }
           }
 
-          if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
+          // The symbolic summation below needs real limits and a step. A list style iterator has
+          // none of them ({@link IIterator} returns null), so skip it here.
+          if (iterator.isValidVariable() && !iterator.isNumericFunction()
+              && iterator.getLowerLimit() != null && iterator.getUpperLimit() != null
+              && iterator.getStep() != null) {
             if (iterator.getStep().isOne()) {
               if (iterator.getUpperLimit().isDirectedInfinity()) {
                 temp = definiteSumInfinity(arg1, iterator, (IAST) lastArg, engine);
