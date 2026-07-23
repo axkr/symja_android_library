@@ -86,6 +86,7 @@ public final class FunctionDefinitions {
       S.DifferenceRoot.setEvaluator(new org.matheclipse.core.reflection.system.DifferenceRoot());
       S.DigitSum.setEvaluator(new org.matheclipse.core.reflection.system.DigitSum());
       S.DirectedGraphQ.setEvaluator(new org.matheclipse.core.reflection.system.DirectedGraphQ());
+      S.DiscreteLimit.setEvaluator(new org.matheclipse.core.reflection.system.DiscreteLimit());
       S.DiscretePlot.setEvaluator(new org.matheclipse.core.builtin.graphics.DiscretePlot());
       S.DiscreteRatio.setEvaluator(new org.matheclipse.core.reflection.system.DiscreteRatio());
       S.DiscreteShift.setEvaluator(new org.matheclipse.core.reflection.system.DiscreteShift());
