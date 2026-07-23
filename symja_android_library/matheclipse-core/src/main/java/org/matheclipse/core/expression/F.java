@@ -6712,6 +6712,10 @@ public class F extends S {
     return new AST1(Key, a0);
   }
 
+  public static IASTMutable KeyDrop(final IExpr a0, final IExpr a1) {
+    return new AST2(KeyDrop, a0, a1);
+  }
+
   public static IAST KleinInvariantJ(final IExpr a0) {
     return new AST1(KleinInvariantJ, a0);
   }

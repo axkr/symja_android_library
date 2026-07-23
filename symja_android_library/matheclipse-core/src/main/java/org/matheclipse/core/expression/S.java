@@ -6821,6 +6821,8 @@ public class S {
    */
   public final static IBuiltInSymbol KeyDrop = S.initFinalSymbol("KeyDrop", ID.KeyDrop);
 
+  public final static IBuiltInSymbol KeyDropFrom = S.initFinalSymbol("KeyDropFrom", ID.KeyDropFrom);
+
   public final static IBuiltInSymbol KeyExistsQ = S.initFinalSymbol("KeyExistsQ", ID.KeyExistsQ);
 
   public final static IBuiltInSymbol KeyFreeQ = S.initFinalSymbol("KeyFreeQ", ID.KeyFreeQ);
