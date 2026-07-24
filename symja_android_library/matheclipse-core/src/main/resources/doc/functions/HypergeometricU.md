@@ -2,7 +2,7 @@
 
 ```
 HypergeometricU(a, b, z)
-```	
+```
 
 > return the Tricomi confluent hypergeometric function `HypergeometricU` fu 
 
@@ -13,7 +13,7 @@ See:
 ### Examples
 
 ```
->> HypergeometricU[1,4,8]
+>> HypergeometricU(1, 4, 8)
 41/256
 
 >> HypergeometricU(0, b, z)

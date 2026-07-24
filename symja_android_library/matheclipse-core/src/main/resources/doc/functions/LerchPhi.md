@@ -12,7 +12,7 @@ See:
 ### Examples
 
 ```
->> LerchPhi(-1,1,0)", //
+>> LerchPhi(-1,1,0)
 -Log(2)
 ```
 

@@ -24,7 +24,7 @@ See
 3*n!
 
 >> FindSequenceFunction({6,18,54,162},n)
-2*3^n"); 
+2*3^n 
 
 >> FindSequenceFunction({7,9,11,13,15})
 5+2*#1&

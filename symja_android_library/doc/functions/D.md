@@ -20,6 +20,11 @@ D(f, {x,n})
 D(f, {{x1, x2, ...}})
 ```
 > gives the vector derivative of `f` with respect to `x1`, `x2`, etc.
+
+```
+D(f, x, NonConstants -> {u1, ...})
+```
+> specifies that `ui` depends on `x` and therefore does not have zero partial derivative.
 		
 **Note**: the upper case identifier `D` is different from the lower case identifier `d`.
   
@@ -67,6 +72,16 @@ Unknown variables are treated as constant:
 
 >> D(x + y, x)    
 1    
+```
+
+With `NonConstants` a symbol can be declared to depend on the differentiation variable:
+
+```
+>> D(a*x^2, x)    
+2*a*x    
+
+>> D(a*x^2, x, NonConstants -> {a})    
+2*a*x+x^2*D(a,x,NonConstants->{a})    
 ```
 
 Derivatives of unknown functions are represented using 'Derivative': 

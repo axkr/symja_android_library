@@ -36,7 +36,7 @@ The following properties are supported for `FittedModel`:
 
 ```     
 >> nlm("BestFit")
-1.7+1.6*a+2.9*b+0.3*a*b");
+1.7+1.6*a+2.9*b+0.3*a*b"
 
 >> nlm("BestFitParameters") 
 {1.7,1.6,2.9,0.3}");
