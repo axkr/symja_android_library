@@ -1532,7 +1532,7 @@ public final class NumberTheory {
           if (arg.isTimes()) {
             IAST times = (IAST) arg;
             IExpr coeff = times.arg1();
-            if (coeff.isNumber()) {
+            if (coeff.isNumericFunction()) {
               IExpr im = engine.evaluate(F.Im(coeff));
               if (im.isZero()) { // Only apply to reals
                 IExpr absA = engine.evaluate(F.Abs(coeff));
@@ -1552,7 +1552,7 @@ public final class NumberTheory {
 
             if (lastTerm.isTimes()) {
               IExpr coeff = ((IAST) lastTerm).arg1();
-              if (coeff.isNumber() && !coeff.isOne()) {
+              if (coeff.isNumericFunction() && !coeff.isOne()) {
                 IExpr im = engine.evaluate(F.Im(coeff));
                 if (im.isZero()) { // Only apply to reals
                   IExpr absA = engine.evaluate(F.Abs(coeff));
