@@ -108,6 +108,18 @@ public class RootSumTest extends ExprEvaluatorTestCase {
         "x^7/(1+x^8)");
   }
 
+  /**
+   * Regression: a Log summand over the solvable quartic {@code x^4+1} is expanded over its four
+   * {@code (-1)^(1/4)} roots and then {@code FullSimplify}'d; that FullSimplify recursed until the
+   * Java stack overflowed. The explicit sum is now returned even when the cosmetic simplify fails.
+   */
+  @Test
+  public void testSolvableQuarticLogSummand() {
+    check("RootSum(#^4+1 &, Log(x-#1)/(4*#1^3) &)", //
+        "-1/4*(-1)^(1/4)*Log(-(-1)^(1/4)+x)+1/4*(-1)^(1/4)*Log((-1)^(1/4)+x)-1/4*(-1)^(3/\n"
+            + "4)*Log(-(-1)^(3/4)+x)+1/4*(-1)^(3/4)*Log((-1)^(3/4)+x)");
+  }
+
   @Test
   public void testRootSumNumeric() {
     check("N(RootSum(#^5 - 3 # - 7 &, Sin))", //

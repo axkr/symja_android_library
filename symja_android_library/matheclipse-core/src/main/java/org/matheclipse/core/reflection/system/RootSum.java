@@ -89,7 +89,22 @@ public class RootSum extends AbstractFunctionEvaluator {
           for (int i = 1; i < rootsAST.size(); i++) {
             sum.append(engine.evaluate(F.unaryAST1(form, rootsAST.get(i))));
           }
-          return engine.evaluate(F.FullSimplify(sum));
+          IExpr summed = engine.evaluate(sum);
+          // FullSimplify is only cosmetic here - `summed` is already the complete explicit sum over
+          // the roots. On a sum of solvable radicals (e.g. the four (-1)^(1/4) roots of x^4+1) it
+          // can recurse until the Java stack overflows, so treat any failure as "leave it
+          // unsimplified" rather than letting it abort the whole evaluation.
+          try {
+            IExpr simplified = engine.evaluate(F.FullSimplify(summed));
+            if (simplified.isPresent()) {
+              return simplified;
+            }
+          } catch (StackOverflowError soe) {
+            // fall through to the un-simplified sum
+          } catch (RuntimeException rex) {
+            org.matheclipse.core.eval.Errors.rethrowsInterruptException(rex);
+          }
+          return summed;
         }
       }
       // Cannot reduce to a rational function and degree is too high for exact radicals
