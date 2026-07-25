@@ -6,7 +6,6 @@ import static org.matheclipse.core.expression.F.Log;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.S.Integrate;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -15,6 +14,10 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apfloat.ApfloatInterruptedException;
 import org.matheclipse.core.basic.Config;
@@ -41,10 +44,13 @@ import org.matheclipse.core.generic.PowerTimesFunction;
 import org.matheclipse.core.integrate.ChebyshevIntegration;
 import org.matheclipse.core.integrate.DerivativeDivides;
 import org.matheclipse.core.integrate.IntegralTable;
+import org.matheclipse.core.integrate.PrimitiveTowerIntegration;
 import org.matheclipse.core.integrate.ProductPowerIntegration;
+import org.matheclipse.core.integrate.RadicalCoefficients;
 import org.matheclipse.core.integrate.RadicalSubstitution;
 import org.matheclipse.core.integrate.RationalIntegration;
 import org.matheclipse.core.integrate.RischNorman;
+import org.matheclipse.core.integrate.SurdRationalization;
 import org.matheclipse.core.integrate.TranscendentalRisch;
 import org.matheclipse.core.integrate.WeierstrassIntegration;
 import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
@@ -65,7 +71,7 @@ import com.google.common.cache.CacheBuilder;
 import edu.jas.kern.PreemptingException;
 
 /**
- *
+ * 
  *
  * <pre>
  * Integrate(f, x)
@@ -331,8 +337,33 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
 
   public Integrate() {}
 
+  /** Nesting depth of {@link #evaluate}: 1 is the integral the user asked for. */
+  private static final ThreadLocal<Integer> EVAL_DEPTH = ThreadLocal.withInitial(() -> 0);
+
+  /** Lazily created daemon scheduler for the Rubi time budget. */
+  private static ScheduledExecutorService WATCHDOG_SCHEDULER = null;
+
   @Override
   public IExpr evaluate(IAST holdallAST, final int argSize, final IExpr[] option,
+      final EvalEngine engine, IAST originalAST) {
+    final int depth = EVAL_DEPTH.get();
+    EVAL_DEPTH.set(depth + 1);
+    try {
+      IExpr result = evaluateIntegrate(holdallAST, argSize, option, engine, originalAST);
+      if (depth > 0 || result.isNIL()) {
+        return result;
+      }
+      // Only for the integral the user asked for, and only once it is complete: the rules split an
+      // integral by linearity and hand the same transcendental back with coefficients written over
+      // different radical extensions, which Plus cannot add. Collect them and denest the sums.
+      IExpr x = holdallAST.arg2().isList() ? holdallAST.arg2().first() : holdallAST.arg2();
+      return RadicalCoefficients.collect(result, x, engine).orElse(result);
+    } finally {
+      EVAL_DEPTH.set(depth);
+    }
+  }
+
+  private IExpr evaluateIntegrate(IAST holdallAST, final int argSize, final IExpr[] option,
       final EvalEngine engine, IAST originalAST) {
     if (Config.JAS_NO_THREADS) {
       // Android changed: call static initializer in evaluate() method.
@@ -410,6 +441,16 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       if (arg2.isList()) {
         IAST xList = (IAST) arg2;
         if (xList.isList3()) {
+          // Integrate(c, {x,a,b}) for an infinite constant c is c*(b-a). The generic route cannot
+          // do this because the antiderivative c*x is not "specials free". Only a finite width
+          // gives a determinate value: a degenerate range is Infinity*0 == Indeterminate, while an
+          // unbounded one is left unevaluated rather than asserting Infinity*Infinity.
+          if (arg1.isDirectedInfinity() && arg1.isFree(xList.arg1(), true)) {
+            IExpr width = engine.evaluate(F.Subtract(xList.arg3(), xList.arg2()));
+            if (width.isReal()) {
+              return engine.evaluate(F.Times(arg1, width));
+            }
+          }
           // Integrate(f(x)*DiracDelta(c1*x+c0), {x,a,b}) - the sifting property. Handled before the
           // generic antiderivative route, which would evaluate HeavisideTheta at both limits and
           // report a root sitting on the lower limit as 1-HeavisideTheta(0) instead of
@@ -478,7 +519,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         }
         if (forcedMethod != null) {
           // Integrate[f, x, Method -> "..."] forces a single native stage, bypassing the Automatic
-          // cascade and the Rubi rules (used mainly by the per-method test suites). A stage that does
+          // cascade and the Rubi rules (used mainly by the per-method test suites). A stage that
+          // does
           // not apply returns F.NIL, leaving the integral unevaluated.
           return integrateBySingleMethod(forcedMethod, fx, x, engine);
         }
@@ -512,7 +554,8 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           return tempExp;
         }
         if (Config.INTEGRATE_ALGORITHMS) {
-          // Fast, mostly correct-by-construction algorithm cascade, tried before the Rubi rules. Each
+          // Fast, mostly correct-by-construction algorithm cascade, tried before the Rubi rules.
+          // Each
           // stage self-gates on a Config.INTEGRATE_ALGORITHM_* kill-switch (default on). A ported
           // stage takes part in this Automatic cascade only when it is *also* wired in here; stages
           // that are unit-tested but not yet trusted to change production output forms are left
@@ -550,7 +593,28 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
             return result;
           }
         }
-        result = integrateByRubiRules(fx, x, ast, engine);
+        if (Config.INTEGRATE_ALGORITHMS) {
+          // Primitive (Log) monomial with x mixed into a denominator of degree >= 2 in it: the
+          // rules have nothing for this shape and grind until the deadline, while partial
+          // fractions in the monomial plus the logarithmic-derivative test settle it. The stage
+          // gates on that shape itself and diff-back verifies.
+          result = PrimitiveTowerIntegration.integrate(fx, x, engine);
+          if (result.isPresent()) {
+            return result;
+          }
+        }
+        if (Config.INTEGRATE_ALGORITHMS && DerivativeDivides.hasExponentialTower(fx, x)) {
+          // An exponential tower like E^(1-x*E^(x^2)) has no Rubi rule, and the rules grind on it
+          // until the evaluation deadline - so the derivative-divides heuristic, which does solve
+          // these by substituting the inner function, runs before them instead of after. Only for
+          // this shape, so no integral the rules can render more canonically is intercepted; the
+          // stage diff-back verifies its result as always.
+          result = DerivativeDivides.integrate(fx, x, engine);
+          if (result.isPresent()) {
+            return result;
+          }
+        }
+        result = integrateByRubiRulesWithBudget(fx, x, ast, engine);
         if (result.isPresent()) {
           return F.subst(result, f -> {
             if (f.isAST(UtilityFunctionCtors.Unintegrable, 3)) {
@@ -571,40 +635,50 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
           return result;
         }
 
-        // Post-Rubi heuristic fallbacks: broad stages that would otherwise intercept simple integrals
+        // Post-Rubi heuristic fallbacks: broad stages that would otherwise intercept simple
+        // integrals
         // Rubi renders in a more canonical form, so they run only for integrands Rubi leaves
         // unevaluated. Each self-verifies (D(result) == integrand). The deterministic, form-safe
         // stages (rational, radical, Chebyshev) run before Rubi (above).
         if (Config.INTEGRATE_ALGORITHMS) {
           // RootSum fallback for rational functions whose denominator has an irreducible factor of
           // degree >= 5, deferred from the pre-Rubi rational stage (RootSumMode.DEFER above). Runs
-          // only now that Rubi left the integral unevaluated, so Rubi's simpler closed form (when it
+          // only now that Rubi left the integral unevaluated, so Rubi's simpler closed form (when
+          // it
           // has one) always wins. Correct-by-construction (Trager), reuses the full general logic.
           result =
               RationalIntegration.integrate(fx, x, engine, RationalIntegration.RootSumMode.EMIT);
           if (result.isPresent()) {
             return result;
           }
-          // Weierstrass t=Tan(x/2) substitution for rational trigonometric integrands.
-          result = WeierstrassIntegration.integrate(fx, x, engine);
+          // Conjugate rationalization of a denominator containing a single square root, e.g.
+          // x^2/(x^2+Sqrt(1-x^2)) -> x^2*(x^2-Sqrt(1-x^2))/(x^4+x^2-1). Post-Rubi because it only
+          // rewrites the integrand and re-enters Integrate: whenever Rubi has an answer for the
+          // original form, that (more canonical) form wins.
+          result = SurdRationalization.integrate(fx, x, engine);
           if (result.isPresent()) {
             return result;
           }
+          // Weierstrass t=Tan(x/2) substitution for rational trigonometric integrands.
+          // result = WeierstrassIntegration.integrate(fx, x, engine);
+          // if (result.isPresent()) {
+          // return result;
+          // }
           // Derivative-divides (Geddes) u-substitution heuristic.
           result = DerivativeDivides.integrate(fx, x, engine);
           if (result.isPresent()) {
             return result;
           }
           // Risch-Norman ("parallel Risch" / pmint) heuristic for transcendental integrands.
-          result = RischNorman.integrate(fx, x, engine);
-          if (result.isPresent()) {
-            return result;
-          }
+          // result = RischNorman.integrate(fx, x, engine);
+          // if (result.isPresent()) {
+          // return result;
+          // }
           // Transcendental Risch (RDE / differential-tower based) recogniser.
-          result = TranscendentalRisch.integrate(fx, x, engine);
-          if (result.isPresent()) {
-            return result;
-          }
+          // result = TranscendentalRisch.integrate(fx, x, engine);
+          // if (result.isPresent()) {
+          // return result;
+          // }
         }
 
       }
@@ -635,10 +709,10 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
   }
 
   /**
-   * Force a single native integration stage selected by the {@code Method} option value. Used by the
-   * {@code Integrate[f, x, Method -> "..."]} form and the per-method test suites. Returns the stage's
-   * antiderivative, or {@link F#NIL} if the named stage does not apply or is unknown (the caller then
-   * leaves the integral unevaluated rather than falling through to the Rubi rules).
+   * Force a single native integration stage selected by the {@code Method} option value. Used by
+   * the {@code Integrate[f, x, Method -> "..."]} form and the per-method test suites. Returns the
+   * stage's antiderivative, or {@link F#NIL} if the named stage does not apply or is unknown (the
+   * caller then leaves the integral unevaluated rather than falling through to the Rubi rules).
    *
    * @param method canonical method name (never {@code "Automatic"})
    */
@@ -665,6 +739,12 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
         return WeierstrassIntegration.integrate(fx, x, engine);
       case "RischTranscendental":
         return TranscendentalRisch.integrate(fx, x, engine);
+      case "PrimitiveTower":
+      case "RischPrimitive":
+        return PrimitiveTowerIntegration.integrate(fx, x, engine);
+      case "SurdRationalization":
+      case "ConjugateRationalization":
+        return SurdRationalization.integrate(fx, x, engine);
       case "ProductPower":
       case "ProductOfPowers":
         return ProductPowerIntegration.integrate(fx, x, engine);
@@ -1157,8 +1237,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
     }
     IExpr constant = engine.evaluate(F.Coefficient(deltaArgument, x, F.C0));
     IExpr root = engine.evaluate(F.Divide(constant.negate(), slope));
-    IExpr value =
-        engine.evaluate(F.Divide(F.ReplaceAll(cofactor, F.Rule(x, root)), F.Abs(slope)));
+    IExpr value = engine.evaluate(F.Divide(F.ReplaceAll(cofactor, F.Rule(x, root)), F.Abs(slope)));
     if (!value.isFree(x, true)) {
       return F.NIL;
     }
@@ -1167,8 +1246,7 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       return F.NIL;
     }
     if (lower.isNegativeInfinity() && upper.isInfinity()) {
-      return root.isRealResult() ? value
-          : F.ConditionalExpression(value, F.Element(root, S.Reals));
+      return root.isRealResult() ? value : F.ConditionalExpression(value, F.Element(root, S.Reals));
     }
     if (engine.evaluate(F.Equal(root, lower)).isTrue()
         || engine.evaluate(F.Equal(root, upper)).isTrue()) {
@@ -1409,6 +1487,91 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
    * @param ast
    * @return
    */
+  /**
+   * Run the Rubi rules under a time budget, see {@link Config#INTEGRATE_RUBI_TIMELIMIT_MILLIS}.
+   *
+   * <p>
+   * Without it a set of rules that cannot finish an integral keeps grinding until the caller's
+   * deadline, and the native stages behind them - which may well have an answer - never run at all
+   * ({@code Integrate(1/(1+x^5),x)} and the exponential towers are the examples). The budget turns
+   * "aborted after 60s" into "the rules gave up after their share, the other stages tried too".
+   *
+   * <p>
+   * The engine enforces time limits through the interrupt flag of the evaluating thread (its
+   * evaluation loop throws {@link TimeoutException} when it sees one), so a watchdog that
+   * interrupts <em>this</em> thread reuses exactly that mechanism and nothing has to move to
+   * another thread - which matters because {@link EvalEngine} is thread-local. Only an interrupt
+   * this method raised itself is swallowed; one from the outside stays an abort.
+   */
+  private static IExpr integrateByRubiRulesWithBudget(IAST arg1, IExpr x, IAST ast,
+      EvalEngine engine) {
+    long budgetMillis = rubiBudgetMillis(engine);
+    // one watchdog per user-level integral: nested Integrate calls are covered by the outer one
+    if (budgetMillis <= 0 || Config.JAS_NO_THREADS || EVAL_DEPTH.get() != 1) {
+      return integrateByRubiRules(arg1, x, ast, engine);
+    }
+    final Thread evaluationThread = Thread.currentThread();
+    final boolean[] finished = new boolean[] {false};
+    final boolean[] budgetExceeded = new boolean[] {false};
+    final Object lock = new Object();
+    ScheduledFuture<?> watchdog = watchdogScheduler().schedule(() -> {
+      synchronized (lock) {
+        if (!finished[0]) {
+          budgetExceeded[0] = true;
+          evaluationThread.interrupt();
+        }
+      }
+    }, budgetMillis, TimeUnit.MILLISECONDS);
+    try {
+      return integrateByRubiRules(arg1, x, ast, engine);
+    } catch (RuntimeException rex) {
+      synchronized (lock) {
+        if (!budgetExceeded[0]) {
+          throw rex; // not our interrupt - the caller's deadline or a real failure
+        }
+      }
+      return F.NIL;
+    } finally {
+      synchronized (lock) {
+        finished[0] = true;
+      }
+      watchdog.cancel(false);
+      if (budgetExceeded[0]) {
+        // clear the flag we raised, or the stages after this one abort immediately
+        Thread.interrupted();
+      }
+    }
+  }
+
+  /** The Rubi budget for this evaluation, or {@code <= 0} to run the rules unbounded. */
+  private static long rubiBudgetMillis(EvalEngine engine) {
+    long budgetMillis = Config.INTEGRATE_RUBI_TIMELIMIT_MILLIS;
+    if (budgetMillis <= 0) {
+      return 0;
+    }
+    double remainingSeconds = engine.getRemainingSeconds();
+    if (remainingSeconds >= 0.0) {
+      // leave the native stages a slice of whatever time the caller granted
+      long share = (long) (remainingSeconds * 1000.0 * Config.INTEGRATE_RUBI_TIMELIMIT_SHARE);
+      budgetMillis = Math.min(budgetMillis, share);
+    }
+    return budgetMillis;
+  }
+
+  private static synchronized ScheduledExecutorService watchdogScheduler() {
+    if (WATCHDOG_SCHEDULER == null) {
+      ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(1, runnable -> {
+        Thread thread = Config.THREAD_FACTORY.newThread(runnable);
+        thread.setDaemon(true);
+        thread.setName("symja-integrate-watchdog");
+        return thread;
+      });
+      scheduler.setRemoveOnCancelPolicy(true);
+      WATCHDOG_SCHEDULER = scheduler;
+    }
+    return WATCHDOG_SCHEDULER;
+  }
+
   private static IExpr integrateByRubiRules(IAST arg1, IExpr x, IAST ast, EvalEngine engine) {
     // EvalEngine engine = EvalEngine.get();
     if (arg1.isFreeAST(s -> s.isSymbol() && ((ISymbol) s).isContext(Context.RUBI))) {

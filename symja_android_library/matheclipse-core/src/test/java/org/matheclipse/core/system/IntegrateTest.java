@@ -41,6 +41,17 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "1/4*(-2*Log(1-1/Sqrt(3))+2*Log(1+1/Sqrt(3)))");
     check("Integrate((1 + x^3)*x^(1/3), {x, -1, 1})", //
         "51/52+27/52*(-1)^(1/3)");
+
+    // An infinite constant integrand gives c*(b-a): determinate only for a finite width. An
+    // unbounded range stays unevaluated, a degenerate one is Infinity*0 == Indeterminate.
+    check("Integrate(-Infinity, {x, 0, Infinity})", //
+        "Integrate(-Infinity,{x,0,Infinity})");
+    check("Integrate(Infinity, {x, 0, 1})", //
+        "Infinity");
+    check("Integrate(-Infinity, {x, 0, 1})", //
+        "-Infinity");
+    check("Integrate(-Infinity, {x, 0, 0})", //
+        "Indeterminate");
     if (Config.PROFILE_MODE) {
       BuiltinFunctionCalls.printStatistics();
     }
@@ -69,6 +80,130 @@ public class IntegrateTest extends ExprEvaluatorTestCase {
         "6/13");
     check("Integrate(x^a*CubeRoot(x)^p, x)", //
         "(x^(1+a)*Surd(x,3)^p)/(1+a+p/3)");
+  }
+
+  /**
+   * A denominator of the form <code>A(x) + B(x)*Sqrt(R(x))</code> is rationalized with its
+   * conjugate; the rules leave these unevaluated.
+   */
+  @Test
+  public void testIntegrateRationalizeSurdDenominator() {
+    check("Integrate(x^2/(x^2+Sqrt(1-x^2)), x)", //
+        "x+ArcSin(x)-1/5*Sqrt(5*(2+Sqrt(5)))*ArcTan((Sqrt(2)*x)/Sqrt(1+Sqrt(5)))-1/5*Sqrt(\n"
+            + "5*(2+Sqrt(5)))*ArcTan((Sqrt(1/2*(1+Sqrt(5)))*x)/Sqrt(1-x^2))-1/5*Sqrt(-10+5*Sqrt(\n"
+            + "5))*ArcTanh((Sqrt(2)*x)/Sqrt(-1+Sqrt(5)))+1/5*Sqrt(-10+5*Sqrt(5))*ArcTanh((Sqrt(\n"
+            + "1/2*(-1+Sqrt(5)))*x)/Sqrt(1-x^2))");
+    check("Integrate(x^2/(1-x^2+x^2*Sqrt(1-x^2)), x)", //
+        "ArcSin(x)-Sqrt(1/10*(1+Sqrt(5)))*ArcTan((Sqrt(2)*x)/Sqrt(1+Sqrt(5)))-1/10*Sqrt(\n"
+            + "10*(1+Sqrt(5)))*ArcTan((Sqrt(1/2*(1+Sqrt(5)))*x)/Sqrt(1-x^2))+Sqrt(1/10*(-1+Sqrt(\n"
+            + "5)))*ArcTanh((Sqrt(2)*x)/Sqrt(-1+Sqrt(5)))-1/10*Sqrt(-10+10*Sqrt(5))*ArcTanh((Sqrt(\n"
+            + "1/2*(-1+Sqrt(5)))*x)/Sqrt(1-x^2))");
+    check("Integrate(Log(x^2+Sqrt(1-x^2)), x)", //
+        "-2*x-ArcSin(x)+Sqrt(1/2*(1+Sqrt(5)))*ArcTan((Sqrt(2)*x)/Sqrt(1+Sqrt(5)))+Sqrt(1/\n"
+            + "2*(1+Sqrt(5)))*ArcTan((Sqrt(1/2*(1+Sqrt(5)))*x)/Sqrt(1-x^2))+Sqrt(1/2*(-1+Sqrt(5)))*ArcTanh((Sqrt(\n"
+            + "2)*x)/Sqrt(-1+Sqrt(5)))-Sqrt(1/2*(-1+Sqrt(5)))*ArcTanh((Sqrt(1/2*(-1+Sqrt(5)))*x)/Sqrt(\n"
+            + "1-x^2))+x*Log(x^2+Sqrt(1-x^2))");
+  }
+
+  /**
+   * Needs Rubi's {@code MonomialExponent[a_.*x_^n_., x_Symbol]} to match a bare {@code x}; while
+   * that pattern failed, the utility call leaked unevaluated into the antiderivative.
+   */
+  @Test
+  public void testIntegrateArcTanOverSqrt() {
+    check("Integrate(ArcTan(x)/(x^2*Sqrt(1-x^2)), x)", //
+        "(-Sqrt(1-x^2)*ArcTan(x))/x+Sqrt(2)*ArcTanh(Sqrt(1-x^2)/Sqrt(2))+Log(1-Sqrt(1-x^2))/\n"
+            + "2-Log(1+Sqrt(1-x^2))/2");
+  }
+
+  /**
+   * Derivative-divides with the inner function {@code u = x*E^(x^2)}: it is a sub-product of a flat
+   * {@code Times}, and its {@code E^(x^2)} sits merged inside {@code E^(1-x*E^(x^2)+2*x^2)}, so
+   * only the frozen-power rewrite finds it. An exponential tower also has no Rubi rule, so the
+   * stage runs before the rules here.
+   */
+  @Test
+  public void testIntegrateExponentialTower() {
+    check("Integrate((2*x^3+x)*(E^x^2)^2*E^(1-x*E^x^2)/(1-x*E^x^2)^2, x)", //
+        "E^(1-E^x^2*x)/(1-E^x^2*x)");
+    check("Integrate(E^(x+E^x), x)", //
+        "E^E^x");
+    check("Integrate(2*x*E^(x^2)*E^(E^(x^2)), x)", //
+        "E^E^x^2");
+    check("Integrate(E^(E^x), x)", //
+        "ExpIntegralEi(E^x)");
+  }
+
+  /**
+   * Primitive (Log) monomial: partial fractions in {@code t = Log(x)} plus the
+   * logarithmic-derivative test {@code c/(t-a) -> lambda*Log(t-a)}, which produces logarithms of
+   * tower elements like {@code Log(x+Log(x))} that no rewriting rule reaches.
+   */
+  @Test
+  public void testIntegratePrimitiveTower() {
+    check("Integrate((2*Log(x)^2-Log(x)-x^2)/(Log(x)^3-x^2*Log(x)), x)", //
+        "-Log(-x+Log(x))/2+Log(x+Log(x))/2+LogIntegral(x)");
+    check("Integrate((Log(x)^2+2*x*Log(x)+x^2+(x+1)*Sqrt(x+Log(x)))/(x*Log(x)^2+2*x^2*Log(x)+x^3), x)", //
+        "Log(x)-2/Sqrt(x+Log(x))");
+    // flatter Log integrands stay with the rules
+    check("Integrate(1/(x*Log(x)^2), x)", //
+        "-1/Log(x)");
+    check("Integrate((1+Log(x))/(x*Log(x)), x)", //
+        "Log(x)+Log(Log(x))");
+  }
+
+  /**
+   * Hermite reduction in the primitive monomial: a repeated pole {@code (x-Log(x))^k} in the tower
+   * variable {@code t=Log(x)} is not a simple pole and was ground on by the rules; the reduction
+   * peels off its rational part. {@code (1-Log(x))/(x-Log(x))^2} is elementary ({@code x/(x-Log(x))}
+   * up to a constant), and {@code Log(x)/(1+Log(x))^3} reduces to a rational part plus an
+   * {@code ExpIntegralEi} tail. The forms are written over the roots, so they are verified by
+   * differentiating back rather than by pinning them.
+   */
+  /**
+   * The structure-theorem step for rationally dependent logarithms: {@code Log(x^2) = 2*Log(x)}, so
+   * {@code Log(x)+Log(x^2) = 3*Log(x)} and the integral is {@code LogIntegral(x)/3}. Without
+   * collapsing the dependent monomials the integrand stayed unevaluated.
+   */
+  @Test
+  public void testIntegrateDependentLogs() {
+    check("Integrate(1/(Log(x)+Log(x^2)), x)", //
+        "LogIntegral(x)/3");
+    check("Integrate(1/(Log(x)+2*Log(x^3)), x)", //
+        "LogIntegral(x)/7");
+  }
+
+  @Test
+  public void testIntegratePrimitiveTowerHermite() {
+    check("FreeQ(Integrate((1-Log(x))/(x-Log(x))^2, x), Integrate)", //
+        "True");
+    check("Abs(N((D(Integrate((1-Log(x))/(x-Log(x))^2, x), x) - (1-Log(x))/(x-Log(x))^2) /. x->1.7)) < 10^(-10)", //
+        "True");
+    check("FreeQ(Integrate(Log(x)/(1+Log(x))^3, x), Integrate)", //
+        "True");
+    check("Abs(N((D(Integrate(Log(x)/(1+Log(x))^3, x), x) - Log(x)/(1+Log(x))^3) /. x->1.7)) < 10^(-10)", //
+        "True");
+  }
+
+  /**
+   * The native rational stage now covers irreducible denominator factors of degree 3 and 4 (via a
+   * RootSum over the factor's roots) instead of declining them; before, only degree 1/2 and the
+   * inert degree &gt;= 5 RootSum were handled. Exercised through the {@code Method -> "Rational"}
+   * form, which forces just this stage. The explicit-radical form is verified by differentiating
+   * back rather than by pinning it, since it is written over complex roots.
+   */
+  @Test
+  public void testIntegrateRationalDegree34() {
+    // x^6+1 = (x^2+1)(x^4-x^2+1): an irreducible degree-4 factor
+    check("FreeQ(Integrate(1/(1+x^6), x, Method->\"Rational\"), Integrate)", //
+        "True");
+    check("Abs(N((D(Integrate(1/(1+x^6), x, Method->\"Rational\"), x) - 1/(1+x^6)) /. x->0.6)) < 10^(-10)", //
+        "True");
+    // x^4+1: irreducible degree-4 factor alone
+    check("FreeQ(Integrate(1/(1+x^4), x, Method->\"Rational\"), Integrate)", //
+        "True");
+    check("Abs(N((D(Integrate(1/(1+x^4), x, Method->\"Rational\"), x) - 1/(1+x^4)) /. x->0.6)) < 10^(-10)", //
+        "True");
   }
 
   @Test

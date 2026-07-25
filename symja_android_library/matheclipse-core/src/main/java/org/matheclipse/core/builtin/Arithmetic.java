@@ -4655,6 +4655,14 @@ public final class Arithmetic {
       boolean evaled = false;
       EvalEngine engine = EvalEngine.get();
       HashMap<IFraction, IASTAppendable> exponent2Times = null;
+      // A factor whose own Arg() is nonzero (-1, +-I, a negative rational) is left in `rest` and
+      // raised as a whole below. A second such factor must then not be split off on its own: both
+      // splits contribute a phase and the two phases add up to a wrong one. E.g. Sqrt(-5*(2-Sqrt(5)))
+      // is Sqrt(5)*Sqrt(-1*(2-Sqrt(5))) == +Sqrt(5*(Sqrt(5)-2)), but splitting the negative sum too
+      // gives Sqrt(5)*I*I*Sqrt(Sqrt(5)-2), i.e. the negative of the correct (positive) root.
+      final boolean phaseInRest = baseTimes.exists(arg -> !arg.isPower() //
+          && (arg.isImaginaryUnit() || arg.isNegativeImaginaryUnit() //
+              || (arg.isRational() && arg.isNegative())));
       for (int j = 1; j < baseTimes.size(); j++) {
         IExpr arg = baseTimes.get(j);
         if (!arg.isPower()) {
@@ -4689,7 +4697,7 @@ public final class Arithmetic {
               evaled = true;
               continue;
             }
-          } else {
+          } else if (!phaseInRest) {
             IExpr temp = engine.evaluateNIL(F.Power(arg, exponent));
             if (temp.isPresent()) {
               if (temp.isTimes()) {

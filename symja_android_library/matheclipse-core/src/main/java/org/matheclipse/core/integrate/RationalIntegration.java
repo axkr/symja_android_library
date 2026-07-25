@@ -100,7 +100,13 @@ public class RationalIntegration {
    * @return the antiderivative or {@link F#NIL}
    */
   public static IExpr integrate(IExpr integrand, IExpr x, EvalEngine engine, RootSumMode mode) {
-    IExpr result = integrateRationalFunction(integrand, x, engine);
+    // A RootSum over a solvable cubic or quartic (only possible in EMIT mode) is expanded into
+    // explicit radicals and FullSimplified, which can take tens of seconds. Bound that work: an
+    // expansion that does not finish in time is dropped so the integral falls through rather than
+    // grinding. DEFER never emits a degree 3/4 RootSum, so it needs no budget.
+    long budgetMillis = mode == RootSumMode.EMIT ? Config.INTEGRATE_RATIONAL_TIMELIMIT_MILLIS : 0;
+    IExpr result = IntegrateTimeBudget.runWithin(
+        () -> integrateRationalFunction(integrand, x, engine, mode), budgetMillis);
     if (mode == RootSumMode.DEFER && result.isPresent() && !result.isPlus()
         && !result.isFree(F.RootSum)) {
       // Antiderivative is essentially a bare RootSum: defer to the Rubi rules.
@@ -110,10 +116,13 @@ public class RationalIntegration {
   }
 
   /**
-   * Compute the antiderivative of a rational function, always emitting a {@link F#RootSum} for
-   * irreducible denominator factors of degree &gt;= 5.
+   * Compute the antiderivative of a rational function. Irreducible denominator factors of degree
+   * &gt;= 5 always yield a {@link F#RootSum}; factors of degree 3 or 4 do so only in
+   * {@link RootSumMode#EMIT} (in {@link RootSumMode#DEFER} the whole integral is left to the Rubi
+   * rules, which have prettier radical forms for cubics and quartics).
    */
-  private static IExpr integrateRationalFunction(IExpr integrand, IExpr x, EvalEngine engine) {
+  private static IExpr integrateRationalFunction(IExpr integrand, IExpr x, EvalEngine engine,
+      RootSumMode mode) {
     if (!Config.INTEGRATE_ALGORITHM_RATIONAL) {
       return F.NIL;
     }
@@ -194,7 +203,7 @@ public class RationalIntegration {
 
       // logarithmic part with square-free denominator d2
       if (!a2.isZERO() && d2.degree() > 0) {
-        IExpr logPart = logarithmicPart(a2, d2, x, ring, ufd);
+        IExpr logPart = logarithmicPart(a2, d2, x, ring, ufd, mode);
         if (logPart.isNIL()) {
           return F.NIL;
         }
@@ -379,7 +388,8 @@ public class RationalIntegration {
    * square-free and <code>deg(a2) &lt; deg(d2)</code>.
    */
   private static IExpr logarithmicPart(GenPolynomial<BigRational> a2, GenPolynomial<BigRational> d2,
-      IExpr x, GenPolynomialRing<BigRational> ring, GreatestCommonDivisor<BigRational> ufd) {
+      IExpr x, GenPolynomialRing<BigRational> ring, GreatestCommonDivisor<BigRational> ufd,
+      RootSumMode mode) {
     // make monic
     BigRational lc = d2.leadingBaseCoefficient();
     if (!lc.isONE()) {
@@ -463,8 +473,13 @@ public class RationalIntegration {
             }
           }
         }
-      } else if (degF >= 5) {
-        // RootSum for irreducible factors of degree >= 3:
+      } else if (degF >= 5 || mode == RootSumMode.EMIT) {
+        // RootSum for irreducible factors of degree >= 3.
+        // Degree 3 and 4 factors are irreducible over the rationals but solvable in real radicals
+        // (e.g. x^4+1), and the Rubi rules render those far more nicely - so in DEFER mode (the
+        // pre-Rubi call) they fall through to the `else` below. In EMIT mode (the post-Rubi
+        // fallback, reached only once the rules have failed or been cut off by their time budget)
+        // the RootSum is the correct-by-construction answer we can still give.
         // Evaluate w(alpha) = ai(alpha) / (Gi(alpha) * fi'(alpha)) without expanding modInverse
         GenPolynomial<BigRational> fiDeriv = PolyUtil.<BigRational>baseDerivative(fi);
 
@@ -483,10 +498,7 @@ public class RationalIntegration {
         IExpr body = F.Times(wInSlot, F.Log(F.Subtract(x, F.Slot1)));
         plus.append(F.RootSum(F.Function(polyInSlot), F.Function(body)));
       } else {
-        // degF == 3 || degF == 4
-        // The factor is irreducible over the rationals, but can be factored over the reals
-        // using radicals (e.g. x^4+1). Return NIL to fall back to the Rubi rules engine,
-        // which contains elegant closed-form solutions for degree 3 and 4 denominators.
+        // degF == 3 || degF == 4 in DEFER mode: defer to the Rubi rules' radical closed forms.
         return F.NIL;
       }
     }

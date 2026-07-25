@@ -924,6 +924,11 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
       matched = matchAST(lhsPatternAST, lhsEvalExpr, engine, stackMatcher);
       if (!matched) {
         fPatternMap.resetPattern(patternValues);
+        // The CONTAINS_* pattern flags are computed lazily. A sub-pattern that was rebuilt while
+        // substituting an already bound variable (Power(y_,n_.) -> Power(x,n_.), once y is bound)
+        // carries none of them yet, so reading the flags raw would skip the default-value branch
+        // below and Power(x,n_.) would fail to match x. Compute them first.
+        lhsPatternAST.isFreeOfPatterns();
         if ((lhsPatternAST.getEvalFlags()
             & IAST.CONTAINS_DEFAULT_PATTERN) == IAST.CONTAINS_DEFAULT_PATTERN) {
           if (lhsEvalExpr.isASTOrAssociation() //

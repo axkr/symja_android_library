@@ -1036,6 +1036,13 @@ public class AlgebraUtil {
         return Optional.of(result);
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
+      } catch (AssertionError ae) {
+        // JAS asserts that the dividend of GenPolynomial.divide is in descending leading-exponent
+        // order and throws on some multivariate symbolic-coefficient polynomials (e.g. cancelling a
+        // Together sub-expression of 1/(1+x+x^5)). AssertionError is an Error, so the catch above
+        // does not cover it and it would abort the whole evaluation. Fall through to the
+        // Complex<BigRational> GCD path below, which rebuilds the polynomials in a different
+        // representation.
       }
       // List<IExpr> varList = eVar.getVarList().copyTo();
       ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(BigRational.ZERO);
@@ -1076,6 +1083,12 @@ public class AlgebraUtil {
       Errors.rethrowsInterruptException(e);
       if (Config.DEBUG) {
         e.printStackTrace();
+      }
+    } catch (AssertionError ae) {
+      // see above: a JAS ordering assertion in the Complex path too - give up on cancelling and
+      // let the caller keep the fraction un-cancelled rather than aborting the evaluation
+      if (Config.DEBUG) {
+        ae.printStackTrace();
       }
     }
     return Optional.empty();
