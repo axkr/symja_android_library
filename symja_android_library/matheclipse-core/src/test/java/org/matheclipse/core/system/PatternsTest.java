@@ -132,6 +132,21 @@ public class PatternsTest extends ExprEvaluatorTestCase {
         "True");
     check("MatchQ(a*(1+I*3), (f1_.)* Complex(0, j_))", //
         "False");
+
+    // x has to match a_.*y_^n_. with both default values filled (a->1, n->1). Sharing the pattern
+    // name y with another argument binds it first, so the sub-pattern is rebuilt as x^n_. - its
+    // pattern flags still have to be seen, or the default value of the exponent is never tried.
+    check("MatchQ({x, x}, {a_.*y_^n_., y_})", //
+        "True");
+    check("MatchQ({x, x}, {a_.*y_^n_., z_})", //
+        "True");
+    check("ReplaceAll({x, x}, {a_.*y_^n_., y_} :> {a, y, n})", //
+        "{1,x,1}");
+    check("ReplaceAll({2*x^3, x}, {a_.*y_^n_., y_} :> {a, y, n})", //
+        "{2,x,3}");
+    // this is Rubi's MonomialExponent[a_.*x_^n_., x_Symbol] applied to a bare x
+    check("mexp(a_.*y_^n_., y_Symbol) := n; mexp(x, x)", //
+        "1");
   }
 
   @Test

@@ -8607,6 +8607,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFindSequenceFunction() {
+    check("FindSequenceFunction({1 + a, 1 + a^2, 1 + a^3, 1 + a^4, 1 + a^5}, n)", //
+        "1+a^n");
+    check("FindSequenceFunction({2, 5/2, 10/3, 17/4, 26/5, 37/6, 50/7}, n)", //
+        "(1+n^2)/n");
+    // The sequence is Fibonacci(n)+1/n. Rather than guessing numerator and denominator
+    // independently (which would give an order-3 DifferenceRoot divided by n), find a single
+    // holonomic recurrence for the whole rational-valued sequence: the order-2 inhomogeneous
+    // DifferenceRoot that Mathematica returns. The coefficient 2*n+3*n^2+n^3 is n*(1+n)*(2+n); the
+    // inhomogeneous term is -(2+4*n+n^2); the initial values are the actual rational terms.
+    check(
+        "FindSequenceFunction({2, 3/2, 7/3, 13/4, 26/5, 49/6, 92/7, 169/8, 307/9, 551/10, 980/11, 1729/12, 3030/13, 5279/14, 9151/15, 15793/16, 27150/17, 46513/18}, n)", //
+        "DifferenceRoot[Function({y,n},{-2-4*n-n^2+(2*n+3*n^2+n^3)*y(n)+(2*n+3*n^2+n^3)*y(1+n)+(-2*n-3*n^\n" //
+            + "2-n^3)*y(2+n)==0,y(1)==2,y(2)==3/2})][n]");
     check("FindSequenceFunction({5,5,5,5,5},n)", //
         "5");
     check("FindSequenceFunction({1,2,3,4,5})", //
@@ -8681,7 +8694,30 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FindSequenceFunction({7,9,11,13,15})", //
         "5+2*#1&");
 
+    // Polynomial interpolation: the first ten Motzkin numbers have constant
+    // 8th differences {14,14}, so the degree-8 interpolating polynomial reproduces all ten terms
+    // and
+    // is returned as the simplest closed form.
+    check("FindSequenceFunction({1, 1, 2, 4, 9, 21, 51, 127, 323, 835}, n)", //
+        "1/2880*(66240-161184*n+160444*n^2-84384*n^3+26189*n^4-4956*n^5+566*n^6-36*n^7+n^\n" //
+            + "8)");
+    // M4: general holonomic / P-recursive guesser -> DifferenceRoot. 2^n+n is an order-3 C-finite
+    // sequence whose finite differences never stabilize (so no interpolating polynomial is found)
+    // and which RSolveValue cannot close, so it falls through to the holonomic DifferenceRoot; the
+    // 9th term is 2^9+9 = 521.
+    check("FindSequenceFunction({3, 6, 11, 20, 37, 70, 135, 264}, n) /. n->9", //
+        "521");
 
+    // M5: transformation layer.
+    // exponential de-scaling a(n)/2^n = n
+    check("FindSequenceFunction({2, 8, 24, 64, 160, 384, 896}, n)", //
+        "2^n*n");
+    // factorial de-scaling a(n)/n! = Fibonacci(n)
+    check("FindSequenceFunction({1, 2, 12, 72, 600, 5760, 65520, 846720}, n)", //
+        "n!*Fibonacci(n)");
+    // interleaved residue classes modulo 2: even index -> n, odd index -> 2^n
+    check("FindSequenceFunction({1, 2, 3, 8, 5, 32, 7, 128, 9, 512}, n)", //
+        "Piecewise({{n,Mod(-1+n,2)==0},{2^(-1+n),Mod(-1+n,2)==1}},0)");
   }
 
   @Test
@@ -22533,6 +22569,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
   public void testSqrt() {
     check("1/(Sqrt(2-x^2)*Sqrt(1+x^2))", //
         "1/(Sqrt(2-x^2)*Sqrt(1+x^2))");
+    // only a positive factor may be taken out of the root: with two negative factors the root of a
+    // positive number must not come out negative
+    check("Sqrt(-5*(2-Sqrt(5)))", //
+        "Sqrt(-10+5*Sqrt(5))");
+    check("N(Sqrt(-5*(2-Sqrt(5))))", //
+        "1.08643");
+    check("Sqrt(-4*(2-Sqrt(5)))", //
+        "2*Sqrt(-2+Sqrt(5))");
+    // one negative factor only: the root stays imaginary
+    check("Sqrt(-5*(2+Sqrt(5)))", //
+        "I*Sqrt(5*(2+Sqrt(5)))");
+    check("Sqrt(9*(2-Sqrt(5)))", //
+        "I*3*Sqrt(-2+Sqrt(5))");
     check("Sqrt({{{1,0},{2,3}},{{4,a},{1}}})", //
         "{{{1,0},{Sqrt(2),Sqrt(3)}},{{2,Sqrt(a)},{1}}}");
     check("Sqrt(-Sqrt(3))", //
