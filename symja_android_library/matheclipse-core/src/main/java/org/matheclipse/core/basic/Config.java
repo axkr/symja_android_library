@@ -433,14 +433,49 @@ public class Config {
   /** Enable the derivative-divides (Geddes) heuristic stage in <code>Integrate()</code>. */
   public static boolean INTEGRATE_ALGORITHM_DERIVATIVE_DIVIDES = true;
 
+  /**
+   * Enable the conjugate rationalization stage (clear a single square root out of the denominator)
+   * in <code>Integrate()</code>.
+   */
+  public static boolean INTEGRATE_ALGORITHM_SURD_RATIONALIZATION = true;
+
+  /**
+   * Enable the primitive-monomial (Log tower) Risch stage in <code>Integrate()</code>: partial
+   * fractions in the monomial plus the logarithmic-derivative test for its simple poles.
+   */
+  public static boolean INTEGRATE_ALGORITHM_PRIMITIVE_TOWER = true;
+
   /** Enable the Risch-Norman (parallel Risch) stage in <code>Integrate()</code>. */
   public static boolean INTEGRATE_ALGORITHM_RISCH_NORMAN = true;
 
   /** Enable the recursive transcendental Risch stage in <code>Integrate()</code> (long-term). */
   public static boolean INTEGRATE_ALGORITHM_RISCH_TRANSCENDENTAL = true;
 
-  /** Time limit in milliseconds for the rational integration stage. */
-  public static long INTEGRATE_RATIONAL_TIMELIMIT_MILLIS = 1000L;
+  /**
+   * Time budget in milliseconds for the Rubi rules inside <code>Integrate()</code>. When the rules
+   * exceed it, they are interrupted and the native post-Rubi stages get their turn instead of the
+   * whole evaluation running into the caller's deadline. <code>0</code> disables the budget (the
+   * rules then run until they finish or the evaluation is aborted).
+   *
+   * <p>
+   * When the evaluation has a deadline of its own, the budget is additionally capped at
+   * {@link #INTEGRATE_RUBI_TIMELIMIT_SHARE} of the remaining time, so the native stages always keep
+   * a slice. The budget is best-effort: it interrupts the evaluation thread, and code that does not
+   * check for interruption (notably JAS) only notices when control returns to the evaluation loop.
+   */
+  public static long INTEGRATE_RUBI_TIMELIMIT_MILLIS = 30000L;
+
+  /** Fraction of the remaining evaluation time the Rubi rules may use, see above. */
+  public static double INTEGRATE_RUBI_TIMELIMIT_SHARE = 0.75;
+
+  /**
+   * Time limit in milliseconds for the rational integration stage. It bounds the one part of the
+   * stage that can be slow: expanding a {@link org.matheclipse.core.integrate.RationalIntegration
+   * RootSum} over a solvable cubic or quartic into explicit radicals (only in EMIT mode). Everything
+   * else - degree 1/2 factors, the inert degree &gt;= 5 RootSum - returns in milliseconds and never
+   * approaches the limit. An expansion that overruns is dropped and the integral falls through.
+   */
+  public static long INTEGRATE_RATIONAL_TIMELIMIT_MILLIS = 3000L;
 
   /** Time limit in milliseconds for the radical substitution stage. */
   public static long INTEGRATE_RADICAL_TIMELIMIT_MILLIS = 1000L;
