@@ -2618,6 +2618,8 @@ public class S {
   public final static IBuiltInSymbol ConvexHullMesh =
       S.initFinalSymbol("ConvexHullMesh", ID.ConvexHullMesh);
 
+  public final static IBuiltInSymbol Convolve = S.initFinalSymbol("Convolve", ID.Convolve);
+
   /**
    * CoordinateBoundingBox({{x1,y1,...},{x2,y2,...},{x3,y3,...},...}) - calculate the bounding box
    * of the points `{{x1,y1,...},{x2,y2,...},{x3,y3,...},...}`.
@@ -12059,6 +12061,9 @@ public class S {
    */
   public final static IBuiltInSymbol StringSplit = S.initFinalSymbol("StringSplit", ID.StringSplit);
 
+  public final static IBuiltInSymbol StringStartsQ =
+      S.initFinalSymbol("StringStartsQ", ID.StringStartsQ);
+
   /**
    * StringTake("string", n) - gives the first `n` characters in `string`.
    * 
@@ -12178,6 +12183,9 @@ public class S {
 
   public final static IBuiltInSymbol SubscriptBox =
       S.initFinalSymbol("SubscriptBox", ID.SubscriptBox);
+
+  public final static IBuiltInSymbol Subsequences =
+      S.initFinalSymbol("Subsequences", ID.Subsequences);
 
   public final static IBuiltInSymbol Subset = S.initFinalSymbol("Subset", ID.Subset);
 
@@ -13261,6 +13269,8 @@ public class S {
    */
   public final static IBuiltInSymbol UnitaryMatrixQ =
       S.initFinalSymbol("UnitaryMatrixQ", ID.UnitaryMatrixQ);
+
+  public final static IBuiltInSymbol UnitBox = S.initFinalSymbol("UnitBox", ID.UnitBox);
 
   /**
    * UnitConvert(quantity) - convert the `quantity` to the base unit

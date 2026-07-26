@@ -370,6 +370,7 @@ public class PiecewiseFunctions {
       S.RealAbs.setEvaluator(new RealAbs());
       S.RealSign.setEvaluator(new RealSign());
       S.SawtoothWave.setEvaluator(new SawtoothWave());
+      S.UnitBox.setEvaluator(new UnitBox());
       S.Unitize.setEvaluator(new Unitize());
       S.UnitStep.setEvaluator(new UnitStep());
       S.UnitTriangle.setEvaluator(new UnitTriangle());
@@ -1059,6 +1060,50 @@ public class PiecewiseFunctions {
         }
       }
       return F.C1;
+    }
+
+    @Override
+    public void setUp(ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+    }
+  }
+
+  private static class UnitBox extends AbstractEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      // multiple arguments are treated as a Product
+      // UnitBox(x, y) becomes UnitBox(x) * UnitBox(y)
+      if (ast.size() > 2) {
+        IAST result = ast.mapThread(x -> F.unaryAST1(S.UnitBox, x));
+        return result.apply(S.Times);
+      }
+
+      // single argument UnitBox(x)
+      IExpr arg1 = ast.arg1();
+
+      // Numeric Evaluation for Reals (Doubles, Rationals, Integers)
+      // Definition: 1 for Abs(x) <= 1/2, 0 for Abs(x) > 1/2
+      if (arg1.isReal()) {
+        IExpr absArg = arg1.abs();
+
+        // If |x| > 1/2, the result is 0
+        if (absArg.greater(F.C1D2).isTrue()) {
+          return F.C0;
+        }
+
+        // If |x| <= 1/2, the result is 1
+        if (absArg.lessEqual(F.C1D2).isTrue()) {
+          return F.C1;
+        }
+      }
+
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_INFINITY;
     }
 
     @Override

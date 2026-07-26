@@ -33,6 +33,7 @@ import org.matheclipse.core.form.tex.TeXParser;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IAssociation;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPredicate;
@@ -574,35 +575,6 @@ public final class StringFunctions {
     }
   }
 
-  /**
-   *
-   *
-   * <pre>
-   * <code>FromCharacterCode({ch1, ch2, ...})
-   * </code>
-   * </pre>
-   *
-   * <blockquote>
-   *
-   * <p>
-   * converts the <code>ch1, ch2,...</code> character codes into a string of corresponding
-   * characters.
-   *
-   * </blockquote>
-   *
-   * <h3>Examples</h3>
-   *
-   * <pre>
-   * <code>&gt;&gt; FromCharacterCode({97,45,51})
-   * a-3
-   * </code>
-   * </pre>
-   *
-   * <h3>Related terms</h3>
-   *
-   * <p>
-   * <a href="ToCharacterCode.md">ToCharacterCode</a>
-   */
   private static class FromCharacterCode extends AbstractFunctionEvaluator {
 
     private static IExpr fromCharacterCode(final IAST charList, final IAST fromCharacterCodeAST,
@@ -614,8 +586,7 @@ public final class StringFunctions {
           int unicode = charList.get(i).toIntDefault();
           if (unicode < 0 || unicode >= 1114112) {
             // A character unicode, which should be a non-negative integer less than 1114112, is
-            // expected at
-            // position `2` in `1`.
+            // expected at position `2` in `1`.
             return Errors.printMessage(S.FromCharacterCode, "notunicode", F.list(charList, F.ZZ(i)),
                 engine);
           }
@@ -631,11 +602,20 @@ public final class StringFunctions {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
-      if (ast.arg1().isList()) {
-        final IAST list = (IAST) ast.arg1();
+      IExpr arg1 = ast.arg1();
+
+      if (arg1.isList()) {
+        final IAST list = (IAST) arg1;
+
+        // If the list contains sublists, map the function over the list
+        if (list.argSize() > 0 && list.arg1().isList()) {
+          return list.mapThread(ast, 1);
+        }
+
         return fromCharacterCode(list, ast, engine);
       }
-      if (ast.arg1().isInteger()) {
+
+      if (arg1.isInteger()) {
         return fromCharacterCode(ast, ast, engine);
       }
 
@@ -796,6 +776,7 @@ public final class StringFunctions {
       S.StringReverse.setEvaluator(new StringReverse());
       S.StringRiffle.setEvaluator(new StringRiffle());
       S.StringSplit.setEvaluator(new StringSplit());
+      S.StringStartsQ.setEvaluator(new StringStartsQ());
       S.StringTake.setEvaluator(new StringTake());
       S.StringTemplate.setEvaluator(new StringTemplate());
       S.StringToByteArray.setEvaluator(new StringToByteArray());
@@ -2460,6 +2441,54 @@ public final class StringFunctions {
     @Override
     public void setUp(final ISymbol newSymbol) {
       setOptions(newSymbol, S.IgnoreCase, S.False);
+    }
+  }
+
+  private static class StringStartsQ extends AbstractFunctionOptionEvaluator {
+
+    @Override
+    public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
+        final EvalEngine engine, IAST originalAST) {
+      if (argSize >= 2) {
+        boolean ignoreCase = options[0].isTrue();
+        IExpr arg1 = engine.evaluate(ast.arg1());
+
+        if (arg1.isList()) {
+          return arg1.mapThread(ast, 1);
+        }
+
+        if (arg1.isString() && !ast.arg2().isRuleAST()) {
+          IExpr arg2 = ast.arg2();
+
+          Map<ISymbol, String> groups = new HashMap<>();
+          java.util.regex.Pattern pattern =
+              IStringX.toRegexPattern(arg2, true, ignoreCase, ast, groups, engine);
+
+          if (pattern == null) {
+            return F.NIL;
+          }
+
+          String s1 = arg1.toString();
+          java.util.regex.Matcher matcher = pattern.matcher(s1);
+
+          // Matcher.lookingAt() tests if the beginning of the input sequence matches the pattern
+          if (matcher.lookingAt()) {
+            return S.True;
+          }
+          return S.False;
+        }
+      }
+      return F.NIL;
+    }
+
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_4_1;
+    }
+
+    @Override
+    public void setUp(final ISymbol newSymbol) {
+      setOptions(newSymbol, new IBuiltInSymbol[] {S.IgnoreCase}, new IExpr[] {S.False});
     }
   }
 

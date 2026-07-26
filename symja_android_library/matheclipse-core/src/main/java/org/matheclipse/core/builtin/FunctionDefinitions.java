@@ -70,6 +70,7 @@ public final class FunctionDefinitions {
       S.ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
       S.ConnectedGraphComponents
           .setEvaluator(new org.matheclipse.core.reflection.system.ConnectedGraphComponents());
+      S.Convolve.setEvaluator(new org.matheclipse.core.reflection.system.Convolve());
       S.CountsBy.setEvaluator(new org.matheclipse.core.reflection.system.CountsBy());
       S.CrossMatrix.setEvaluator(new org.matheclipse.core.reflection.system.CrossMatrix());
 

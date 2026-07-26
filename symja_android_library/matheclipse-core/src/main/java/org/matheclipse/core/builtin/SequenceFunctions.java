@@ -28,6 +28,7 @@ public class SequenceFunctions {
       S.SequencePosition.setEvaluator(new SequencePosition());
       S.SequenceReplace.setEvaluator(new SequenceReplace());
       S.SequenceSplit.setEvaluator(new SequenceSplit());
+      S.Subsequences.setEvaluator(new Subsequences());
     }
   }
 
@@ -458,8 +459,7 @@ public class SequenceFunctions {
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {
-    }
+    public void setUp(final ISymbol newSymbol) {}
 
   }
 
@@ -577,9 +577,92 @@ public class SequenceFunctions {
     }
 
     @Override
-    public void setUp(final ISymbol newSymbol) {
+    public void setUp(final ISymbol newSymbol) {}
+
+  }
+
+  private static class Subsequences extends AbstractFunctionEvaluator {
+
+    @Override
+    public IExpr evaluate(IAST ast, EvalEngine engine) {
+      if (ast.isAST1() || ast.isAST2()) {
+        IExpr arg1 = ast.arg1();
+        if (arg1.isAST()) {
+          IAST list = (IAST) arg1;
+          int size = list.argSize();
+          int min = 0;
+          int max = size;
+          int step = 1;
+
+          if (ast.isAST2()) {
+            IExpr arg2 = ast.arg2();
+            if (arg2.isList()) {
+              IAST list2 = (IAST) arg2;
+              if (list2.argSize() == 1) {
+                int val = list2.arg1().toIntDefault();
+                if (val < 0)
+                  return F.NIL;
+                min = val;
+                max = val;
+              } else if (list2.argSize() == 2) {
+                int val1 = list2.arg1().toIntDefault();
+                int val2 = list2.arg2().toIntDefault();
+                if (val1 < 0 || val2 < 0)
+                  return F.NIL;
+                min = val1;
+                max = val2;
+              } else if (list2.argSize() == 3) {
+                int val1 = list2.arg1().toIntDefault();
+                int val2 = list2.arg2().toIntDefault();
+                int val3 = list2.arg3().toIntDefault();
+                if (val1 < 0 || val2 < 0 || val3 < 1)
+                  return F.NIL;
+                min = val1;
+                max = val2;
+                step = val3;
+              } else {
+                return F.NIL;
+              }
+            } else if (arg2.isInteger()) {
+              int val = arg2.toIntDefault();
+              if (val < 0)
+                return F.NIL;
+              min = 0;
+              max = val;
+            } else if (arg2 == S.All) {
+              min = 0;
+              max = size;
+            } else {
+              return F.NIL;
+            }
+          }
+
+          if (max > size) {
+            max = size;
+          }
+
+          IASTAppendable result = F.ListAlloc();
+          for (int len = min; len <= max; len += step) {
+            if (len == 0) {
+              // exactly one empty subsequence (retaining the input's head)
+              result.append(list.copyFrom(1, 1));
+            } else {
+              // all contiguous windows of this length, left to right
+              for (int i = 1; i <= size - len + 1; i++) {
+                result.append(list.copyFrom(i, i + len));
+              }
+            }
+          }
+          return result;
+        }
+      }
+      return F.NIL;
     }
 
+    @Override
+    public int[] expectedArgSize(IAST ast) {
+      return ARGS_1_2;
+    }
   }
 
   public static void initialize() {
