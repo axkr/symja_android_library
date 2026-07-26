@@ -3676,7 +3676,6 @@ public final class NumberTheory {
     }
   }
 
-
   private static class LinearRecurrence extends AbstractFunctionEvaluator {
 
     @Override
@@ -3704,7 +3703,8 @@ public final class NumberTheory {
             }
             IAST result = linearRecurrence(list1, list2, n, ast, engine);
             if (result.isPresent()) {
-              return result.get(n);
+              // Wrap the single resulting element in a list
+              return F.List(result.get(n));
             }
           }
           return F.NIL;
@@ -3813,7 +3813,6 @@ public final class NumberTheory {
       }
       return F.NIL;
     }
-
 
     @Override
     public int status() {

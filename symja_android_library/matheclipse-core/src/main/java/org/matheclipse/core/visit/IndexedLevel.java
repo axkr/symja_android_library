@@ -110,9 +110,8 @@ public class IndexedLevel extends AbstractLevelVisitor {
           }
           result[0].set(0, temp);
         }
-        if (fCurrentDepth < minDepth[0]) {
-          minDepth[0] = fCurrentDepth;
-        }
+        // the head is visited to map/transform its parts, but its depth must not contribute to this
+        // expression's depth: negative levels ignore the head chain (like `Depth`).
       }
       ast.forEachRule((x, i) -> {
         newIndx[size] = F.ZZ(i);

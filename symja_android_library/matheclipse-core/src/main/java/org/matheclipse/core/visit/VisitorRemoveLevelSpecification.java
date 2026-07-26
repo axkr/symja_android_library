@@ -145,9 +145,8 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
         } else {
           ast.set(0, arg);
         }
-        if (fCurrentDepth < minDepth) {
-          minDepth = fCurrentDepth;
-        }
+        // the head is visited to test/remove its parts, but its depth must not contribute to this
+        // expression's depth: negative levels ignore the head chain (like `Depth`).
       }
       int i = 1;
       while (i < ast.size()) {

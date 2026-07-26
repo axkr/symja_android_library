@@ -303,9 +303,8 @@ public final class VisitorBooleanLevelSpecification extends AbstractVisitorBoole
       fCurrentLevel++;
       if (fIncludeHeads) {
         final boolean temp = ast.get(0).accept(this);
-        if (fCurrentDepth < minDepth[0]) {
-          minDepth[0] = fCurrentDepth;
-        }
+        // the head is visited to test its parts, but its depth must not contribute to this
+        // expression's depth: negative levels ignore the head chain (like `Depth`).
         if (temp) {
           return true;
         }

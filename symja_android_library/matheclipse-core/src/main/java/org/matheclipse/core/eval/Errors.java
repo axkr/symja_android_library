@@ -146,6 +146,8 @@ public class Errors {
       "fnand", "The function `1` is not analytic or defined at `2`.", //
       "fitc", "The number of coordinates (`1`) is not equal to the number of variables (`2`).", //
       "flpar", "Parameter specification `1` in `2` should be a symbol or a list of symbols.", //
+      "flrl",
+      "Level `1` specified in `2` exceeds the levels, `3`, which can be flattened together in `4`.", //
       "fttype", "The transform type `1` should be 1, 2, 3 or 4.", //
       "fpct", "To many parameters in `1` to be filled from `2`.", //
       "fnsym", "First argument in `1` is not a symbol or a string naming a symbol.", //

@@ -1129,7 +1129,8 @@ public final class ListFunctions {
    * <blockquote>
    *
    * <p>
-   * adds <code>n</code> times <code>0</code> on the left and right of the <code>list</code>.
+   * adds <code>n</code> times <code>0</code> on the left and right of the <code>list</code>. A
+   * negative <code>n</code> removes <code>n</code> elements from the left and right instead.
    *
    * </blockquote>
    *
@@ -1162,6 +1163,9 @@ public final class ListFunctions {
    * <pre>
    * &gt;&gt; ArrayPad({a, b, c}, 1, x)
    * {x,a,b,c,x}
+   *
+   * &gt;&gt; ArrayPad({1, 2, 3, 4, 5}, -1)
+   * {2,3,4}
    * </pre>
    */
   private static final class ArrayPad extends AbstractFunctionEvaluator {
@@ -1170,22 +1174,25 @@ public final class ListFunctions {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       if (ast.arg1().isAST()) {
         IAST arg1 = (IAST) ast.arg1();
-        int m = -1;
-        int n = -1;
+        int m = Config.INVALID_INT;
+        int n = Config.INVALID_INT;
         if (ast.arg2().isList2()) {
           IAST list = (IAST) ast.arg2();
-          m = list.arg1().toIntDefault(-1);
-          n = list.arg2().toIntDefault(-1);
+          m = list.arg1().toIntDefault();
+          n = list.arg2().toIntDefault();
         } else {
-          n = ast.arg2().toIntDefault(-1);
+          n = ast.arg2().toIntDefault();
           m = n;
         }
-        if (m > 0 && n > 0) {
+        // a positive amount pads that side, a negative amount trims that many elements from it,
+        // and 0 leaves the side unchanged
+        if (m != Config.INVALID_INT && n != Config.INVALID_INT) {
+          IExpr atom = ast.size() > 3 ? ast.arg3() : F.C0;
           int[] dim = arg1.isMatrix();
           if (dim != null) {
-            return arrayPadMatrixAtom(arg1, dim, m, n, ast.size() > 3 ? ast.arg3() : F.C0);
+            return arrayPadMatrixAtom(arg1, dim, m, n, atom);
           }
-          return arrayPadAtom(arg1, m, n, ast.size() > 3 ? ast.arg3() : F.C0);
+          return arrayPadAtom(arg1, m, n, atom);
         }
       }
       return F.NIL;
@@ -1197,35 +1204,62 @@ public final class ListFunctions {
     }
 
     private static IExpr arrayPadMatrixAtom(IAST matrix, int[] dim, int m, int n, IExpr atom) {
-      long columnDim = (long) dim[1] + (long) m + n;
+      final int mPad = Math.max(0, m);
+      final int nPad = Math.max(0, n);
+      final int mTrim = Math.max(0, -m);
+      final int nTrim = Math.max(0, -n);
+      // trimming must not remove more rows/columns than the matrix contains
+      if (mTrim + nTrim > dim[0] || mTrim + nTrim > dim[1]) {
+        return F.NIL;
+      }
+
+      final long columnDim = (long) dim[1] + m + n;
       if (Config.MAX_AST_SIZE < columnDim) {
         ASTElementLimitExceeded.throwIt(columnDim);
       }
-      long rowDim = dim[0] + m + n;
+      final long rowDim = (long) dim[0] + m + n;
       if (Config.MAX_AST_SIZE < rowDim) {
         ASTElementLimitExceeded.throwIt(rowDim);
       }
 
       IASTAppendable result = matrix.copyHead((int) rowDim);
-      // prepend m rows
-      result.appendArgs(0, m, i -> atom.constantArray(S.List, 0, (int) columnDim));
+      // prepend mPad padding rows
+      result.appendArgs(0, mPad, i -> atom.constantArray(S.List, 0, (int) columnDim));
 
-      result.appendArgs(1, dim[0] + 1, i -> arrayPadAtom(matrix.getAST(i), m, n, atom));
+      // pad/trim the columns of each retained row
+      result.appendArgs(1 + mTrim, (dim[0] + 1) - nTrim,
+          i -> arrayPadAtom(matrix.getAST(i), m, n, atom));
 
-      // append n rows
-      result.appendArgs(0, n, i -> atom.constantArray(S.List, 0, (int) columnDim));
+      // append nPad padding rows
+      result.appendArgs(0, nPad, i -> atom.constantArray(S.List, 0, (int) columnDim));
       return result;
     }
 
     private static IExpr arrayPadAtom(IAST ast, int m, int n, IExpr atom) {
-      long intialCapacity = (long) m + (long) n + ast.argSize();
+      final int argSize = ast.argSize();
+      final int mPad = Math.max(0, m);
+      final int nPad = Math.max(0, n);
+      final int mTrim = Math.max(0, -m);
+      final int nTrim = Math.max(0, -n);
+      final int keepStart = 1 + mTrim; // inclusive
+      final int keepEndExclusive = (argSize + 1) - nTrim; // exclusive
+      if (keepStart > keepEndExclusive) {
+        // trimming removes more elements than the list contains
+        return F.NIL;
+      }
+      final long keptSize = keepEndExclusive - keepStart;
+      long intialCapacity = (long) mPad + (long) nPad + keptSize;
       if (Config.MAX_AST_SIZE < intialCapacity) {
         ASTElementLimitExceeded.throwIt(intialCapacity);
       }
       IASTAppendable result = ast.copyHead((int) intialCapacity);
-      result.appendArgs(0, m, i -> atom);
-      result.appendArgs(ast);
-      result.appendArgs(0, n, i -> atom);
+      result.appendArgs(0, mPad, i -> atom);
+      if (mTrim == 0 && nTrim == 0) {
+        result.appendArgs(ast);
+      } else {
+        result.appendArgs(0, (int) keptSize, i -> ast.get(keepStart + i));
+      }
+      result.appendArgs(0, nPad, i -> atom);
       return result;
     }
   }
@@ -2121,11 +2155,12 @@ public final class ListFunctions {
           }
           if (arg2.isListOfLists()) {
             IAST listOfLists = ((IAST) arg2);
-            return DeletePositions.deleteListOfPositions(ast1, listOfLists);
+            return keepHeadDeletionSequence(
+                DeletePositions.deleteListOfPositions(ast1, listOfLists));
           } else if (arg2.isList()) {
             IExpr temp = DeletePositions.deletePositions(ast1, (IAST) arg2);
             if (temp.isPresent()) {
-              return temp;
+              return keepHeadDeletionSequence(temp);
             }
             return ast1;
           }
@@ -2140,6 +2175,19 @@ public final class ListFunctions {
         }
       }
       return F.NIL;
+    }
+
+    /**
+     * Deleting the head (position <code>0</code>) yields a bare <code>Sequence(...)</code>. Mark it
+     * with {@link IAST#BUILT_IN_EVALED} so the top-level {@code Sequence} evaluator keeps it as
+     * <code>Sequence(...)</code> instead of rewriting it to <code>Identity(...)</code>. As an
+     * argument of another expression the sequence still splices normally.
+     */
+    private static IExpr keepHeadDeletionSequence(IExpr result) {
+      if (result.isAST(S.Sequence)) {
+        ((IAST) result).addEvalFlags(IAST.BUILT_IN_EVALED);
+      }
+      return result;
     }
 
     @Override
@@ -7031,14 +7079,22 @@ public final class ListFunctions {
           }
         }
       } else {
+        if (start < 0) {
+          // Cannot take positions `1` through `2` in `3`.
+          String str = Errors.getMessage("take",
+              F.list(F.ZZ(sequ.getStartOffset()), F.ZZ(-1), list), EvalEngine.get());
+          throw new ArgumentTypeException(str);
+        }
+        final int endOffset = sequ.getEndOffset();
+        if (endOffset != Integer.MAX_VALUE && endOffset > size - 1) {
+          // requested end position exceeds the number of elements: Take does not silently truncate
+          // Cannot take positions `1` through `2` in `3`.
+          String str = Errors.getMessage("take", F.list(F.ZZ(start), F.ZZ(endOffset), list),
+              EvalEngine.get());
+          throw new ArgumentTypeException(str);
+        }
         if (start == 0) {
           return resultList;
-        }
-        if (end > list.size()) {
-          // Cannot take positions `1` through `2` in `3`.
-          String str =
-              Errors.getMessage("take", F.list(F.ZZ(start), F.ZZ(end - 1), list), EvalEngine.get());
-          throw new ArgumentTypeException(str);
         }
         for (int i = start; i < end; i += step) {
           IExpr arg = list.get(i);

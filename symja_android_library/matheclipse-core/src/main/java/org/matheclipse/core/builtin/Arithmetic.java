@@ -1173,31 +1173,48 @@ public final class Arithmetic {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
       int c = 1;
+
+      // Parse the second argument if it exists
       if (ast.isAST2()) {
         int n = ast.arg2().toIntDefault();
         if (n == Config.INVALID_INT) {
           return F.NIL;
         }
         if (n < 0) {
-          // Single or list of non-negative machine-sized integers expected at position `1` of `2`.
+          // Single or list of non-negative machine-sized integers expected at position 2 of 2.
           return Errors.printMessage(ast.topHead(), "ilsmn", F.list(F.C2, ast), engine);
         }
         c = n;
       }
-      if (ast.isAST1()) {
+
+      // Execute for both 1-argument and 2-argument forms
+      if (ast.isAST1() || ast.isAST2()) {
         if (arg1.isSparseArray()) {
           arg1 = arg1.normal(false);
         }
+
         if (arg1.isList()) {
-          if (arg1.size() <= 2) {
-            return F.CEmptyList;
+          if (c == 0) {
+            return arg1;
           }
-          return F.ListConvolve(F.list(F.ZZ(c), F.ZZ(-c)), arg1);
+
+          IExpr current = arg1;
+          // Apply the first-order difference 'c' times
+          for (int i = 0; i < c; i++) {
+            if (current.argSize() < 2) {
+              return F.CEmptyList;
+            }
+            // Use the standard {1, -1} kernel for a single difference step
+            current = engine.evaluate(F.ListConvolve(F.list(F.C1, F.CN1), current));
+          }
+          return current;
+
         } else if (arg1.isNumber()) {
-          // List or SparseArray or structured array expected at position `1` in `2`.
+          // List or SparseArray or structured array expected at position 1 in 2.
           return Errors.printMessage(ast.topHead(), "listrp", F.list(F.C1, ast), engine);
         }
       }
+
       return F.NIL;
     }
 

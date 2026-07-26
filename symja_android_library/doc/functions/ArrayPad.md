@@ -4,7 +4,7 @@
 ArrayPad(list, n)
 ```
 
-> adds `n` times `0` on the left and right of the `list`. 
+> adds `n` times `0` on the left and right of the `list`. A negative `n` removes `n` elements from the left and right instead. 
 
 
 ```
@@ -24,6 +24,9 @@ ArrayPad(list, {m, n}, x)
 ```
 >> ArrayPad({a, b, c}, 1, x)
 {x,a,b,c,x}
+
+>> ArrayPad({1, 2, 3, 4, 5}, -1)
+{2,3,4}
 ```
 
 
