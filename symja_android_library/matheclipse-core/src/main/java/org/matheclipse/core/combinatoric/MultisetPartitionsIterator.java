@@ -13,71 +13,7 @@ import org.matheclipse.core.patternmatching.FlatOrderlessStepVisitor;
  */
 public final class MultisetPartitionsIterator {
 
-/**
- * A stack implementation for {@link MultisetCombinationIterator}s.
- *
- */
-private final static class PartitioningStack<T> {
-  final private T[] array;
-  private int size;
-
-  public PartitioningStack(int capacity) {
-    this.array = (T[]) new Object[capacity];
-    this.size = 0;
-  }
-
-  public void push(T element) {
-    // if (size == array.length) {
-    // throw new IllegalStateException("Stack is full");
-    // }
-    array[size++] = element;
-  }
-
-  public T pop() {
-    // if (isEmpty()) {
-    // throw new NoSuchElementException("Stack is empty");
-    // }
-    T element = array[--size];
-    array[size] = null; // Avoid memory leaks
-    return element;
-  }
-
-  public T peek() {
-    // if (isEmpty()) {
-    // throw new NoSuchElementException("Stack is empty");
-    // }
-    return array[size - 1];
-  }
-
-  public boolean isEmpty() {
-    return size == 0;
-  }
-
-  public int size() {
-    return size;
-  }
-
-  // public T get(int index) {
-  // if (index < 0 || index >= size) {
-  // throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
-  // }
-  // return array[index];
-  // }
-  //
-  // public void set(int index, T element) {
-  // if (index < 0 || index > size) {
-  // throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
-  // }
-  // if (index == size) {
-  // push(element);
-  // } else {
-  // array[index] = element;
-  // }
-  // }
-}
-
-
-/** StopException will be thrown, if maximum number of Cases results are reached */
+  /** StopException will be thrown, if maximum number of Cases results are reached */
   public static class StopException extends FlowControlException {
     private static final long serialVersionUID = -8839477630696222675L;
 
@@ -93,6 +29,17 @@ private final static class PartitioningStack<T> {
   private RosenNumberPartitionIterator rosen;
   private int[] currentRosen;
   private final FlatOrderlessStepVisitor handler;
+
+  /**
+   * Reusable per-level scratch state, allocated once and reused across every Rosen composition and
+   * every DFS node so that {@link #multisetCombinationIterative()} performs no per-node array
+   * allocation. {@code levelBuffer[d]} holds the (sorted) remaining multiset when descending to
+   * level {@code d}, {@code levelLen[d]} its logical length, and {@code iters[d]} the combination
+   * iterator over it.
+   */
+  private final int[][] levelBuffer;
+  private final int[] levelLen;
+  private final MultisetCombinationIterator[] iters;
 
   /**
    * Partition an ordered multi-set and visit all steps of the algorithm with an
@@ -111,6 +58,18 @@ private final static class PartitioningStack<T> {
     this.result = new int[k][];
     this.rosen = new RosenNumberPartitionIterator(n, k);
     this.handler = visitor;
+
+    // Preallocate the reusable DFS scratch state once. levelBuffer[0] aliases the full multiset
+    // (read-only); levelBuffer[1..k] are filled in place while descending, replacing the fresh
+    // arrays that ArrayUtils.deleteSubset used to allocate at every node.
+    this.levelBuffer = new int[k + 1][];
+    this.levelBuffer[0] = mset;
+    for (int d = 1; d <= k; d++) {
+      this.levelBuffer[d] = new int[n];
+    }
+    this.levelLen = new int[k + 1];
+    this.levelLen[0] = n;
+    this.iters = new MultisetCombinationIterator[k];
   }
 
   public boolean execute() {
@@ -129,7 +88,7 @@ private final static class PartitioningStack<T> {
   }
 
   private boolean multisetCombinationIterative() {
-    int k = currentRosen.length;
+    final int k = currentRosen.length;
     if (k == 0) {
       if (n == 0) {
         if (Config.MAX_PATTERN_MATCHING_COMBINATIONS > 0
@@ -140,22 +99,25 @@ private final static class PartitioningStack<T> {
       }
       return false;
     }
-    PartitioningStack<MultisetCombinationIterator> iteratorStack = new PartitioningStack<>(k);
-    PartitioningStack<int[]> multisetStack = new PartitioningStack<>(k + 1);
-    multisetStack.push(this.multiset);
+
+    // levelBuffer/levelLen/iters are preallocated (see constructor) and reused here, so this DFS
+    // allocates no arrays per node. iters is cleared up front because an early-stopped previous run
+    // may have left stale iterators (a run that completes normally unwinds them all back to null).
+    for (int d = 0; d < k; d++) {
+      iters[d] = null;
+    }
 
     int i = 0;
     while (i >= 0) {
       if (i < k) {
         // Going forward
-        if (iteratorStack.size() <= i) {
-          int[] currentMultiset = multisetStack.peek();
-          MultisetCombinationIterator iter =
-              new MultisetCombinationIterator(currentMultiset, currentRosen[i]);
-          iteratorStack.push(iter);
+        MultisetCombinationIterator currentIter = iters[i];
+        if (currentIter == null) {
+          currentIter =
+              new MultisetCombinationIterator(levelBuffer[i], levelLen[i], currentRosen[i]);
+          iters[i] = currentIter;
         }
 
-        MultisetCombinationIterator currentIter = iteratorStack.peek();
         if (currentIter.hasNext()) {
           if (Config.MAX_PATTERN_MATCHING_COMBINATIONS > 0
               && ++iterationCounter > Config.MAX_PATTERN_MATCHING_COMBINATIONS) {
@@ -163,14 +125,13 @@ private final static class PartitioningStack<T> {
           }
           int[] currentSubset = currentIter.next();
           result[i] = currentSubset;
-          int[] parentMultiset = multisetStack.peek();
-          int[] remainingMultiset = ArrayUtils.deleteSubset(parentMultiset, currentSubset);
-          multisetStack.push(remainingMultiset);
+          // remaining multiset for the next level, written in place into the reused buffer
+          levelLen[i + 1] =
+              reduceInto(levelBuffer[i], levelLen[i], currentSubset, levelBuffer[i + 1]);
           i++;
         } else {
           // Backtrack
-          iteratorStack.pop();
-          multisetStack.pop();
+          iters[i] = null;
           i--;
         }
       } else { // i == k, found a partition
@@ -182,11 +143,36 @@ private final static class PartitioningStack<T> {
           return true; // Stop
         }
         // Backtrack from solution
-        multisetStack.pop();
         i--;
       }
     }
     return false; // Continue
+  }
+
+  /**
+   * Remove the (sorted) <code>subset</code> from the first <code>srcLen</code> entries of the
+   * (sorted) <code>src</code> multiset, writing the remaining elements into <code>dest</code> and
+   * returning how many were written. <code>subset</code> is a sub-multiset of <code>src</code>; the
+   * first matching occurrence of each value is removed (a two-pointer merge, since both are sorted
+   * ascending). Allocation-free replacement for {@code ArrayUtils.deleteSubset}: <code>dest</code>
+   * must have capacity at least <code>srcLen - subset.length</code> and must not alias
+   * <code>src</code>.
+   *
+   * @return the number of elements written into <code>dest</code>
+   */
+  private static int reduceInto(int[] src, int srcLen, int[] subset, int[] dest) {
+    final int subLen = subset.length;
+    int di = 0;
+    int si = 0;
+    for (int i = 0; i < srcLen; i++) {
+      final int v = src[i];
+      if (si < subLen && v == subset[si]) {
+        si++;
+      } else {
+        dest[di++] = v;
+      }
+    }
+    return di;
   }
 
   @Override

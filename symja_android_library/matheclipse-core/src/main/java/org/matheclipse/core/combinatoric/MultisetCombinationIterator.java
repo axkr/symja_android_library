@@ -64,8 +64,21 @@ public final class MultisetCombinationIterator implements Iterator<int[]> {
    * </code> array, that can contain duplicates (a multiset).
    */
   public MultisetCombinationIterator(int[] multiset, final int k) {
+    this(multiset, multiset.length, k);
+  }
+
+  /**
+   * Combinations of a multiset that use only the first <code>n</code> (sorted) entries of
+   * <code>multiset</code> as the source. This lets callers pass a reused, over-allocated buffer
+   * together with its logical length instead of a right-sized array.
+   *
+   * @param multiset a sorted <code>int[]</code> whose first <code>n</code> entries are the multiset
+   * @param n the number of leading entries of <code>multiset</code> to use as the source
+   * @param k the number of elements to choose
+   */
+  public MultisetCombinationIterator(int[] multiset, final int n, final int k) {
     this.multiset = multiset;
-    this.n = multiset.length;
+    this.n = n;
     this.k = k;
     if (k > n || k < 1) {
       throw new IllegalArgumentException("MultisetCombinationIterator: k " + k + " > " + n);

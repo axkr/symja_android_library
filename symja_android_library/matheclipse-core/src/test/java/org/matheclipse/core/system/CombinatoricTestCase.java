@@ -517,6 +517,28 @@ public class CombinatoricTestCase extends ExprEvaluatorTestCase {
   }
 
   @Test
+  public void testSubsequences() {
+    check("Subsequences({a, b, c})", //
+        "{{},{a},{b},{c},{a,b},{b,c},{a,b,c}}");
+    check("Subsequences({a, b, c}, {2})", //
+        "{{a,b},{b,c}}");
+    check("Subsequences({a, b, c, d}, {2, 3})", //
+        "{{a,b},{b,c},{c,d},{a,b,c},{b,c,d}}");
+    check("Subsequences({})", //
+        "{{}}");
+    check("Subsequences({a, b}, {0, 0})", //
+        "{{}}");
+    // {min, max, step} form
+    check("Subsequences({a, b, c, d, e}, {1, 5, 2})", //
+        "{{a},{b},{c},{d},{e},{a,b,c},{b,c,d},{c,d,e},{a,b,c,d,e}}");
+    check("Subsequences({a, b, c, d}, {0, 4, 2})", //
+        "{{},{a,b},{b,c},{c,d},{a,b,c,d}}");
+    // non-List head is retained (including the empty subsequence)
+    check("Subsequences(f(a, b, c))", //
+        "{f(),f(a),f(b),f(c),f(a,b),f(b,c),f(a,b,c)}");
+  }
+
+  @Test
   public void testPartialSubsets() {
     check("Subsets({a, b, c, d}, All, {1, 15, 2})", //
         "{{},{b},{d},{a,c},{b,c},{c,d},{a,b,d},{b,c,d}}");
