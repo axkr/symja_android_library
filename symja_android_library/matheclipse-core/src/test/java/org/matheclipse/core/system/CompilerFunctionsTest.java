@@ -54,10 +54,9 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
       // wrong input test
       check("f=Compile({x, _Real}, E^3-Cos(Pi^2/x));  ", //
           "");
-      // error: CompiledFunction: CompiledFunction(Arg count: 2 Types: {Real,Real} Variables:
-      // {x,_Real})[1.4567] called with 1 arguments; 2 arguments are expected.
+      // message "cfct": the number of arguments (1) does not match the argument template length (2)
       check("f(1.4567)", //
-          "CompiledFunction(Arg count: 2 Types: {Real,Real} Variables: {x,_Real} Attributes: {})[1.4567]");
+          "CompiledFunction({x,_Real})");
 
       check("f=Compile({x}, x^3+Cos(x^2)); ", //
           "");
@@ -92,9 +91,9 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
           "");
       check("cf(1,2)", //
           "0.14112");
-      // message: ... called with 1 arguments; 2 arguments are expected.
+      // message "cfct": the number of arguments (1) does not match the argument template length (2)
       check("cf(x+y)", //
-          "CompiledFunction(Arg count: 2 Types: {Real,Integer} Variables: {x,y} Attributes: {})[x+y]");
+          "CompiledFunction({x,y})");
     }
   }
 
@@ -500,5 +499,23 @@ public class CompilerFunctionsTest extends ExprEvaluatorTestCase {
       check("cf({-5,0,5})", //
           "{25.0,0.0,25.0}");
     }
+  }
+
+  @Test
+  public void testCfInteger() {
+    check("Compile({{n, _Integer}}, n^2 + 1)[5]", "26");
+    check("Compile({{a, _Integer}, {b, _Integer}}, a*b - b)[6, 7]", "35");
+  }
+
+  @Test
+  public void testCfSymbolicFallback() {
+    check("Compile({{x, _Real}}, x^2 + 1)[a]", "1+a^2");
+  }
+
+  @Test
+  public void testCfObjectWrongArity() {
+    // prints message "cfct" - The number of arguments 2 does not match the length 1 of the
+    // argument template
+    check("Compile({{x, _Real}}, x)[1.0, 2.0]", "CompiledFunction({x})");
   }
 }

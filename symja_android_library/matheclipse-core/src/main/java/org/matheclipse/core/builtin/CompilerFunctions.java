@@ -17,6 +17,7 @@ import org.matheclipse.core.compile.CompiledFunctionArg;
 import org.matheclipse.core.compile.VariableManager;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.exception.ValidateException;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionOptionEvaluator;
@@ -126,6 +127,14 @@ public class CompilerFunctions {
       if (head instanceof CompiledFunctionExpr) {
 
         CompiledFunctionExpr compiledFunction = (CompiledFunctionExpr) head;
+        IAST variables = compiledFunction.getVariables();
+        if (ast.argSize() != variables.argSize()) {
+          // The number of arguments `1` does not match the length `2` of the argument template.
+          Errors.printMessage(S.CompiledFunction, "cfct",
+              F.List(F.ZZ(ast.argSize()), F.ZZ(variables.argSize())), engine);
+          return F.unaryAST1(S.CompiledFunction, variables);
+        }
+
         int attributes = compiledFunction.getAttributes();
         if (attributes != ISymbol.NOATTRIBUTE) {
           IASTMutable copy = (ast instanceof IASTMutable) ? (IASTMutable) ast : ast.copy();
@@ -141,6 +150,11 @@ public class CompilerFunctions {
         IExpr result = F.NIL;
         try {
           result = compiledFunction.evaluate(ast, engine);
+        } catch (ArgumentTypeException atex) {
+          // a non-numeric (e.g. symbolic) argument was passed: fall back to uncompiled evaluation
+          Errors.printMessage(S.CompiledFunction, "cfn", F.CEmptyList, engine);
+          return engine
+              .evaluate(F.subst(compiledFunction.getExpr(), Functors.equalRules(variables, ast)));
         } catch (RuntimeException rex) {
           Errors.rethrowsInterruptException(rex);
           return Errors.printMessage(S.CompiledFunction, rex, engine);
@@ -149,7 +163,6 @@ public class CompilerFunctions {
           result = engine.evaluate(result);
           if (result.isIndeterminate()) {
             Errors.printMessage(S.CompiledFunction, "cfn", F.CEmptyList, engine);
-            IAST variables = compiledFunction.getVariables();
             IExpr expr = compiledFunction.getExpr();
             return F.subst(expr, Functors.equalRules(variables, ast));
           }
@@ -410,7 +423,45 @@ public class CompilerFunctions {
     VariableManager symbolicVars = new VariableManager(symbolicVariables);
 
     CompileAnalyzer analyzer = new CompileAnalyzer();
-    analyzer.analyze(expression);
+    // seed the analyzer with the declared argument types, so downstream type inference can
+    // propagate them (e.g. so that `a*b-b` on integer arguments infers an integer result)
+    boolean allIntegerScalarArgs = args.length > 0;
+    for (CompiledFunctionArg arg : args) {
+      CompileAnalyzer.VarType varType = CompileAnalyzer.VarType.UNKNOWN;
+      IExpr argType = arg.type();
+      if (argType.isBuiltInSymbol()) {
+        switch (((IBuiltInSymbol) argType).ordinal()) {
+          case ID.Integer:
+            varType = CompileAnalyzer.VarType.INTEGER;
+            break;
+          case ID.Real:
+            varType = CompileAnalyzer.VarType.REAL;
+            break;
+          case ID.Complex:
+            varType = CompileAnalyzer.VarType.COMPLEX;
+            break;
+          case ID.Booleans:
+            varType = CompileAnalyzer.VarType.BOOLEAN;
+            break;
+          default:
+            break;
+        }
+      }
+      if (arg.argument().isSymbol() && varType != CompileAnalyzer.VarType.UNKNOWN) {
+        analyzer.declareVariable((ISymbol) arg.argument(), varType);
+      }
+      if (varType != CompileAnalyzer.VarType.INTEGER
+          || arg.rank() != CompiledFunctionArg.Rank.SCALAR) {
+        allIntegerScalarArgs = false;
+      }
+    }
+    CompileAnalyzer.VarType resultType = analyzer.analyze(expression);
+
+    // an integer-typed pure numeric result (all integer scalar arguments) should be returned as an
+    // exact machine integer instead of a real, to match `Compile` semantics
+    boolean coerceToInteger = allIntegerScalarArgs && domain == S.Reals
+        && resultType == CompileAnalyzer.VarType.INTEGER
+        && expression.isNumericFunction(numericVars);
 
     CompileFactory cf = new CompileFactory(numericVars, symbolicVars, args, domain,
         analyzer.getNodeTypes(), classBuilder);
@@ -421,6 +472,8 @@ public class CompilerFunctions {
     String exprStr = expressionBuf.toString();
     if (exprStr.startsWith("throw ")) {
       evalMethod.addStatement("$L", exprStr);
+    } else if (coerceToInteger) {
+      evalMethod.addStatement("return $T.symjifyInteger($L)", CompiledFunctionExpr.class, exprStr);
     } else {
       evalMethod.addStatement("return $T.symjify($L)", F.class, exprStr);
     }

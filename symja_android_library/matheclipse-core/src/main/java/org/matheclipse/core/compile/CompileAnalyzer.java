@@ -89,6 +89,17 @@ public class CompileAnalyzer {
   }
 
   /**
+   * Seed the root scope with a variable's known type (e.g. a compiled function's declared argument
+   * type) so that downstream type inference can propagate it.
+   *
+   * @param sym the variable symbol
+   * @param type the known {@link VarType} of the variable
+   */
+  public void declareVariable(ISymbol sym, VarType type) {
+    currentScope.put(sym, type);
+  }
+
+  /**
    * Entry point for analyzing an expression.
    * 
    * @param expr the expression to analyze

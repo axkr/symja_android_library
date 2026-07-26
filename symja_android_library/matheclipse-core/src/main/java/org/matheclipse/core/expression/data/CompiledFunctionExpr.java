@@ -26,6 +26,23 @@ public class CompiledFunctionExpr implements IDataExpr<Class<?>> {
     return new CompiledFunctionExpr(variables, types, expr, clazz, runtimeAttributes);
   }
 
+  /**
+   * Wrap the <code>double</code> result of an integer-typed compiled function. If the computed value
+   * is a finite whole number within the exactly representable integer range, return an
+   * {@link org.matheclipse.core.interfaces.IInteger}; otherwise fall back to a real
+   * {@link org.matheclipse.core.interfaces.INum} value.
+   *
+   * @param value the computed <code>double</code> value
+   * @return an exact integer or a real number
+   */
+  public static IExpr symjifyInteger(double value) {
+    if (!Double.isNaN(value) && !Double.isInfinite(value) && value == Math.rint(value)
+        && Math.abs(value) < 9.007199254740992E15 /* 2^53 */) {
+      return F.ZZ((long) value);
+    }
+    return F.num(value);
+  }
+
   protected transient Class<?> compiledJavaClass = null;
   private IAST variables;
   private IAST types;

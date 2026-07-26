@@ -92,6 +92,8 @@ public class Errors {
       "bspec", "`1` is not a valid `2` specification.", //
       "bvfail", "For some branches of the general solution, unable to solve for the conditions", //
       "cas", "Warning contradictory assumption(s) `1` encountered.", //
+      "cfct",
+      "The number of arguments `1` does not match the length `2` of the argument template.", //
       "cfn", "Numerical error encountered, proceeding with uncompiled evaluation.", //
       "coef", "The first argument `1` of `2` should be a non-empty list of positive integers.", //
       "color", "`1` is not a valid color or gray-level specification.", //
