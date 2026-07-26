@@ -2323,8 +2323,8 @@ public final class Programming {
         try {
           java.util.List<IExpr> reapList = new ArrayList<IExpr>();
           engine.setReapList(reapList);
+          IExpr expr = engine.evaluate(ast.arg1());
           if (ast.isAST1()) {
-            IExpr expr = engine.evaluate(ast.arg1());
             if (reapList.isEmpty()) {
               return F.list(expr, F.CEmptyList);
             }
@@ -2333,47 +2333,40 @@ public final class Programming {
               result.append(reapList.get(i));
             }
             return F.list(expr, result);
-          } else if (ast.isAST2() || ast.isAST3()) {
-            IExpr expr = engine.evaluate(ast.arg1());
-            IExpr arg2 = ast.arg2();
-            IExpr head = null;
-            if (ast.isAST3()) {
-              head = engine.evaluate(ast.arg3());
-            }
-            IPatternMatcher[] matcher;
-            if (arg2.isList()) {
-              IAST matcherAST = (IAST) arg2;
-
-              matcher = new IPatternMatcher[matcherAST.argSize()];
-              for (int i = 1; i < matcherAST.size(); i++) {
-                matcher[i - 1] = engine.evalPatternMatcher(matcherAST.get(i));
-              }
-            } else {
-              matcher = new IPatternMatcher[] {engine.evalPatternMatcher(arg2)};
-            }
-            if (reapList.isEmpty()) {
-              return F.list(expr, F.CEmptyList);
-            }
-            IASTAppendable result = F.ListAlloc(reapList.size() / 2);
-            for (int i = 1; i < reapList.size(); i += 2) {
-              for (int j = 0; j < matcher.length; j++) {
-                if (matcher[j].test(reapList.get(i - 1))) {
-                  if (head == null) {
-                    result.append(reapList.get(i));
-                  } else {
-                    result.append(F.binaryAST2(head, reapList.get(i - 1), reapList.get(i)));
-                  }
-                  break;
-                }
-              }
-            }
-            return F.list(expr, result);
           }
+          // AST2 / AST3: second arg is a tag pattern (or list of patterns)
+          IExpr arg2 = ast.arg2();
+          IExpr head = ast.isAST3() ? engine.evaluate(ast.arg3()) : null;
+          if (arg2.isList()) {
+            IAST patternList = (IAST) arg2;
+            IASTAppendable outer = F.ListAlloc(patternList.argSize());
+            for (int p = 1; p < patternList.size(); p++) {
+              IPatternMatcher matcher = engine.evalPatternMatcher(patternList.get(p));
+              outer.append(reapGroup(matcher, head, reapList));
+            }
+            return F.list(expr, outer);
+          }
+          IPatternMatcher matcher = engine.evalPatternMatcher(arg2);
+          return F.list(expr, reapGroup(matcher, head, reapList));
         } finally {
           engine.setReapList(oldList);
         }
       }
       return engine.checkBuiltinArgsSize(ast, this);
+    }
+
+    /** Value-lists of all reaped tags matching {@code matcher}, in sow order. */
+    private static IASTAppendable reapGroup(IPatternMatcher matcher, IExpr head,
+        java.util.List<IExpr> reapList) {
+      IASTAppendable group = F.ListAlloc(reapList.size() / 2);
+      for (int i = 0; i < reapList.size(); i += 2) {
+        IExpr tag = reapList.get(i);
+        IExpr values = reapList.get(i + 1);
+        if (matcher.test(tag)) {
+          group.append(head == null ? values : F.binaryAST2(head, tag, values));
+        }
+      }
+      return group;
     }
 
     @Override
