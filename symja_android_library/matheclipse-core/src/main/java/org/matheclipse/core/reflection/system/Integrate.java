@@ -6,6 +6,7 @@ import static org.matheclipse.core.expression.F.Log;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.S.Integrate;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -441,6 +442,18 @@ public class Integrate extends AbstractFunctionOptionEvaluator {
       if (arg2.isList()) {
         IAST xList = (IAST) arg2;
         if (xList.isList3()) {
+          // Integrate(Derivative(n)[f][x], {x,a,b}) for an unknown function f stays unevaluated,
+          // the fundamental theorem of calculus value f(b)-f(a) needs f' to be integrable on [a,b],
+          // which cannot be assumed for an arbitrary f. (The indefinite
+          // Integrate(Derivative(n)[f][x], x) still evaluates to the antiderivative.) Sin'(x) and
+          // other known derivatives resolve to Cos(x) etc. before reaching here, so they are
+          // unaffected.
+          IAST[] derivative = arg1.isDerivative();
+          if (derivative != null && derivative[2] != null && derivative[2].isAST1()
+              && derivative[2].first().equals(xList.arg1()) //
+              && derivative[1].isAST1() && derivative[1].first().isSymbol()) {
+            return F.NIL;
+          }
           // Integrate(c, {x,a,b}) for an infinite constant c is c*(b-a). The generic route cannot
           // do this because the antiderivative c*x is not "specials free". Only a finite width
           // gives a determinate value: a degenerate range is Infinity*0 == Indeterminate, while an
