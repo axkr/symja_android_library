@@ -3364,6 +3364,9 @@ public class StatisticsContinousDistribution {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       // 0 or 2 args are allowed
+      if (ast.isAST0()) {
+        return F.NormalDistribution(F.C0, F.C1);
+      }
       if (ast.isAST1()) {
         // `1` called with 1 argument; `2` arguments are expected.
         return Errors.printMessage(ast.topHead(), "argr", F.List(S.NormalDistribution, F.C2),
@@ -4261,12 +4264,15 @@ public class StatisticsContinousDistribution {
 
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
+      if (ast.isAST0()) {
+        return F.UniformDistribution(F.List(F.C0, F.C1));
+      }
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_1;
+      return ARGS_0_1;
     }
 
     @Override

@@ -12,7 +12,7 @@ public class PiecewiseUtil {
 
   /**
    * Rewrite the function as <code>Piecewise()</code> function if possible. Rewrites functions:
-   * <code>Abs, Arg, BernsteinBasis, Boole, Clip, DiscreteDelta, If, KroneckerDelta, Max, Min, Ramp, Sign, Unitize, UnitStep, Which</code>
+   * <code>Abs, Arg, BernsteinBasis, Boole, Clip, DiscreteDelta, If, KroneckerDelta, Max, Min, Ramp, Sign, Unitize, UnitBox, UnitStep, UnitTriangle, Which</code>
    *
    * @param function the function to expand
    * @param domain if set to <code>F.Reals</code> a function like <code>Abs(x)</code> can be
@@ -199,6 +199,35 @@ public class PiecewiseUtil {
               andAST.append(F.GreaterEqual(function.get(i), F.C0));
             }
             return F.Piecewise(F.list(F.list(F.C1, andAST)), F.C0);
+          }
+          return F.NIL;
+        }
+        case ID.UnitBox: {
+          // 1 for Abs(xi) <= 1/2 for all i; 0 otherwise. Multiple arguments are a product, so the
+          // conditions are combined with And.
+          if (argSize >= 1) {
+            IASTAppendable andAST = F.ast(S.And, argSize);
+            for (int i = 1; i <= argSize; i++) {
+              andAST.append(F.LessEqual(F.CN1D2, function.get(i), F.C1D2));
+            }
+            IExpr cond = andAST.isAST1() ? andAST.arg1() : andAST;
+            return F.Piecewise(F.list(F.list(F.C1, cond)), F.C0);
+          }
+          return F.NIL;
+        }
+        case ID.UnitTriangle: {
+          // Product of (1 - Abs(xi)) where every Abs(xi) <= 1; 0 otherwise.
+          if (argSize >= 1) {
+            IASTAppendable andAST = F.ast(S.And, argSize);
+            IASTAppendable valueAST = F.ast(S.Times, argSize);
+            for (int i = 1; i <= argSize; i++) {
+              IExpr x = function.get(i);
+              andAST.append(F.LessEqual(F.CN1, x, F.C1));
+              valueAST.append(F.Subtract(F.C1, F.Abs(x)));
+            }
+            IExpr cond = andAST.isAST1() ? andAST.arg1() : andAST;
+            IExpr value = valueAST.isAST1() ? valueAST.arg1() : valueAST;
+            return F.Piecewise(F.list(F.list(value, cond)), F.C0);
           }
           return F.NIL;
         }

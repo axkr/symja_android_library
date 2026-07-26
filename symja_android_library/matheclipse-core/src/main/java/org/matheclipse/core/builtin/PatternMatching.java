@@ -1879,6 +1879,11 @@ public final class PatternMatching {
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       Deque<IExpr> stack = engine.getStack();
       if (stack.size() == 1 && ast.head() == S.Sequence) {
+        if (ast.isEvalFlagOn(IAST.BUILT_IN_EVALED)) {
+          // e.g. the result of a head deletion `Delete(list, 0)` should be kept as
+          // `Sequence(...)` instead of being rewritten to `Identity(...)`.
+          return F.NIL;
+        }
         return ast.setAtClone(0, S.Identity);
       }
 

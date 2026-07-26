@@ -1180,6 +1180,29 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{0,1,2,3,0}");
     check("ArrayPad({1, 2, 3}, 2, x)", //
         "{x,x,1,2,3,x,x}");
+    check("ArrayPad({1, 2, 3}, 2)", //
+        "{0,0,1,2,3,0,0}");
+    check("ArrayPad({1, 2, 3}, {1, 2})", //
+        "{0,1,2,3,0,0}");
+    check("ArrayPad({1, 2}, {1, 3}, x)", //
+        "{x,1,2,x,x,x}");
+    check("ArrayPad({{1, 2}, {3, 4}}, 1)", //
+        "{{0,0,0,0},{0,1,2,0},{0,3,4,0},{0,0,0,0}}");
+
+    // 0 leaves the list unchanged
+    check("ArrayPad({1, 2, 3}, 0)", //
+        "{1,2,3}");
+
+    // a negative amount trims elements from each side
+    check("ArrayPad({1, 2, 3, 4, 5}, -1)", //
+        "{2,3,4}");
+    check("ArrayPad({1, 2, 3, 4, 5}, {-2, -1})", //
+        "{3,4}");
+    check("ArrayPad({1, 2, 3, 4, 5}, {-1, 2})", //
+        "{2,3,4,5,0,0}");
+    // negative padding trims rows and columns of a matrix
+    check("ArrayPad({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, -1)", //
+        "{{5}}");
   }
 
   @Test
@@ -4847,6 +4870,19 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testDelete() {
+    check("Delete({a, b, c, d}, 2)", //
+        "{a,c,d}");
+    check("Delete({a, b, c, d}, -1)", //
+        "{a,b,c}");
+    check("Delete({a, b, c, d, e}, {{1}, {3}})", //
+        "{b,d,e}");
+    check("Delete({{a, b}, {c, d}}, {2, 1})", //
+        "{{a,b},{d}}");
+    check("Delete(f(a, b, c, d), 3)", //
+        "f(a,b,d)");
+    // Delete(list, 0) removes the head, yielding a Sequence(...)
+    check("Delete({a, b, c}, 0)", //
+        "Sequence(a,b,c)");
     // Delete: Part {3,4} of {1,0} does not exist.
     check("Delete({{1,2},{3,4}})[{1,0}]", //
         "Delete({{1,2},{3,4}})[{1,0}]");
@@ -4854,7 +4890,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{1,2,{3,4}}");
 
     check("Delete(<|a -> b, \"a\" -> c|>,0)", //
-        "Identity(b,c)");
+        "Sequence(b,c)");
     check("Delete(<|a -> b, \"a\" -> c|>, \"a\")", //
         "<|a->b|>");
 
@@ -4871,11 +4907,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{a,b,d}");
 
     check("Delete(a+b+c,0)", //
-        "Identity(a,b,c)");
+        "Sequence(a,b,c)");
     check("Delete({ }, 0)", //
-        "Identity()");
+        "Sequence()");
     check("Delete({1, 2}, 0)", //
-        "Identity(1,2)");
+        "Sequence(1,2)");
     // Delete: Part {5} of {a,b,c,d} does not exist.
     check("Delete({a, b, c, d}, 5)", //
         "Delete({a,b,c,d},5)");
@@ -4906,11 +4942,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Delete(f[a, b, u + v, c], {3, 0})", //
         "f(a,b,u,v,c)");
     check("Delete({a, b, c}, 0)", //
-        "Identity(a,b,c)");
+        "Sequence(a,b,c)");
     check("Delete(h(a, b), {})", //
         "h(a,b)");
     check("Delete(h(a, b), {{}})", //
-        "Identity()");
+        "Sequence()");
 
   }
 
@@ -8614,7 +8650,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // The sequence is Fibonacci(n)+1/n. Rather than guessing numerator and denominator
     // independently (which would give an order-3 DifferenceRoot divided by n), find a single
     // holonomic recurrence for the whole rational-valued sequence: the order-2 inhomogeneous
-    // DifferenceRoot that Mathematica returns. The coefficient 2*n+3*n^2+n^3 is n*(1+n)*(2+n); the
+    // DifferenceRoot. The coefficient 2*n+3*n^2+n^3 is n*(1+n)*(2+n); the
     // inhomogeneous term is -(2+4*n+n^2); the initial values are the actual rational terms.
     check(
         "FindSequenceFunction({2, 3/2, 7/3, 13/4, 26/5, 49/6, 92/7, 169/8, 307/9, 551/10, 980/11, 1729/12, 3030/13, 5279/14, 9151/15, 15793/16, 27150/17, 46513/18}, n)", //
@@ -9074,10 +9110,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Flatten(f(g(u, v), f(x, y)), -Infinity, f)", //
         "Flatten(f(g(u,v),f(x,y)),-Infinity,f)");
 
+    check("Flatten(f(a, f(b, f(c, d)), e), Infinity, f)", //
+        "f(a,b,c,d,e)");
+    check("Flatten({{a, b}, {c, d}}, {{2}, {1}})", //
+        "{{a,c},{b,d}}");
+    check("Flatten({{a, b}, {c, d}}, {{1, 2}})", //
+        "{a,b,c,d}");
+    check("Flatten({{1, 2, 3}, {4}, {6, 7}, {8, 9, 10}}, {{2}, {1}})", //
+        "{{1,4,6,8},{2,7,9},{3,10}}");
 
-
-    check("Flatten(RandomReal(1, {3, 5, 7}), {{2, 3}, {1}})", //
-        "Flatten(RandomReal(1,{3,5,7}),{{2,3},{1}})");
+    // a list specification with a non-deterministic array only allows to check the dimensions
+    check("Dimensions(Flatten(RandomReal(1, {3, 5, 7}), {{2, 3}, {1}}))", //
+        "{35,3}");
 
     check("Flatten(3.14)", //
         "Flatten(3.14)");
@@ -9102,12 +9146,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("m = {{{1, 2}, {3}}, {{4}, {5, 6}}}", //
         "{{{1,2},{3}},{{4},{5,6}}}");
-    // check("Flatten(m, {2})", "");
-    // check("Flatten(m, {{2}})", "");
-    // check("Flatten(m, {{2}, {1}})", "");
-    // check("Flatten(m, {{2}, {1}, {3}})", "");
-    // check("m = {{{1, 2}, {3}}, {{4}, {5, 6}}}", "");
-    // check("m = {{{1, 2}, {3}}, {{4}, {5, 6}}}", "");
+    check("Flatten(m, {2})", //
+        "{{{1,2},{4}},{{3},{5,6}}}");
+    check("Flatten(m, {{2}})", //
+        "{{{1,2},{4}},{{3},{5,6}}}");
+    check("Flatten(m, {{2}, {1}})", //
+        "{{{1,2},{4}},{{3},{5,6}}}");
+    check("Flatten(m, {{2}, {1}, {3}})", //
+        "{{{1,2},{4}},{{3},{5,6}}}");
   }
 
   @Test
@@ -9838,7 +9884,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1/2+x/Pi∉Integers&&x>Pi/4&&x<Pi/2");
 
     check("FunctionDomain((x^2+x+1)/(-7+x^2), x)", //
-        "x<-Sqrt(7)||(x>-Sqrt(7)&&x<Sqrt(7))||x>Sqrt(7)");
+        "x<-Sqrt(7)||-Sqrt(7)<x<Sqrt(7)||x>Sqrt(7)");
 
     // TODO print more than one solution for Tan(x)-1>0
     check("FunctionDomain(Log(Tan(x) - 1), x)", //
@@ -9853,13 +9899,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x>0");
 
     check("FunctionDomain(Sqrt(1-x)+Sqrt(1+x), x )", //
-        "x>=-1&&x<=1");
+        "-1<=x<=1");
 
     check("FunctionDomain(ArcCoth(2+3*x)*ArcSec(7+2/3*x), x)", //
-        "x<=-12||(x>=-9&&x<-1)||x>-1/3");
+        "x<=-12||-9<=x<-1||x>-1/3");
 
     check("FunctionDomain(ArcSin(2+3*x), x)", //
-        "x>=-1&&x<=-1/3");
+        "-1<=x<=-1/3");
     check("FunctionDomain(Sqrt(2+3*x), x)", //
         "x>=-2/3");
     check("FunctionDomain(Sqrt(-2-3*x), x)", //
@@ -9890,13 +9936,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x>1");
 
     check("FunctionDomain(ArcCos(x)*Log(x), x)", //
-        "x>0&&x<=1");
+        "0<x<=1");
     check("FunctionDomain(ArcSec(2+x), x)", //
         "x<=-3||x>=-1");
     check("FunctionDomain(Tan(3+x), x)", //
         "1/2+(3+x)/Pi∉Integers");
     check("FunctionDomain(x/(x^4 - 1), x)", //
-        "x<-1||(x>-1&&x<1)||x>1");
+        "x<-1||-1<x<1||x>1");
     check("FunctionDomain(x/(x^4 - 1)+Tan(2+x), x)", //
         "(x<-1||x>-1)&&(x<1||x>1)&&1/2+(2+x)/Pi∉Integers");
     // TODO
@@ -12517,9 +12563,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "{Plus,Power,a,2,Times,2,b}");
     check("Level(f(g(h))[x], {-1}, Heads -> True)", //
         "{f,g,h,x}");
-    // TODO
-    // check("Level(f(g(h))[x], {-2, -1}, Heads -> True)",
-    // "{f,g,h,g(h),x,f(g(h))[x]}");
+    check("Level(f(g(h))[x], {-2, -1}, Heads -> True)", //
+        "{f,g,h,g(h),x,f(g(h))[x]}");
 
     check("Level(a + f(x, y^n), {-1})", //
         "{a,x,y,n}");
@@ -12727,7 +12772,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("LinearRecurrence({1, 1}, {1, 1}, 10)", //
         "{1,1,2,3,5,8,13,21,34,55}");
     check("LinearRecurrence({1, 1}, {1, 1}, {8})", //
-        "21");
+        "{21}");
 
     check("LinearRecurrence({a,b}, {c,d}, 5)", //
         "{c,d,b*c+a*d,a*b*c+a^2*d+b*d,a^2*b*c+b^2*c+a^3*d+2*a*b*d}");
@@ -13936,6 +13981,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("MemberQ(a + b + c, a + c)", //
         "False");
     check("MemberQ(Table(Mod(2^i, 7), {i, 10}), 1)", //
+        "True");
+
+    // Heads->True with a depth-sensitive level: depth ignores the head chain, so f(g(h))[x] has
+    // depth 2 and is therefore found at level {-2}
+    check("MemberQ(f(g(h))[x], f(g(h))[x], {-2}, Heads -> True)", //
         "True");
   }
 
@@ -17066,6 +17116,10 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "Piecewise({{y,x}},z)");
     check("PiecewiseExpand(UnitStep(x, y, z))", //
         "Piecewise({{1,x>=0&&y>=0&&z>=0}},0)");
+    check("PiecewiseExpand(UnitBox(x))", //
+        "Piecewise({{1,-1/2<=x<=1/2}},0)");
+    check("PiecewiseExpand(UnitTriangle(x))", //
+        "Piecewise({{1-Abs(x),-1<=x<=1}},0)");
     check("PiecewiseExpand(Ramp(x))", //
         "Piecewise({{x,x>=0}},0)");
 
@@ -23562,6 +23616,17 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testTake() {
+    check("Take({1, 2, 3}, 5)", //
+        "Take({1,2,3},5)");
+    check("Take({1, 2}, -5)", //
+        "Take({1,2},-5)");
+    check("Take({1, 2, 3, 4, 5}, All)", //
+        "{1,2,3,4,5}");
+    check("Take({{{1, 3}, {5, 7}}}, All, {1})", //
+        "{{{1,3}}}");
+    check("Take({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, 2, {1, 2})", //
+        "{{1,2},{4,5}}");
+
     check("Take({a, b, c, d},0)", //
         "{}");
     check("Take(<|1 -> a, 2 -> b, 3 -> c|>,0)", //
@@ -25560,6 +25625,31 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
     check("UnitTriangle({-3, -1, 0, 1/3, 1})", //
         "{0,0,1,2/3,0}");
+  }
+
+  @Test
+  public void testUnitBox() {
+    check("UnitBox(1/4)", //
+        "1");
+    check("UnitBox(3/4)", //
+        "0");
+    // the boundary Abs(x)==1/2 evaluates to 1
+    check("UnitBox(1/2)", //
+        "1");
+    check("UnitBox(-1/2)", //
+        "1");
+    check("UnitBox(0.4)", //
+        "1");
+    check("UnitBox(0.6)", //
+        "0");
+    check("Table(UnitBox(x/4), {x, -3, 3})", //
+        "{0,1,1,1,1,1,0}");
+    // multiple arguments are treated as a product
+    check("UnitBox(-1/4, 0, 1)", //
+        "0");
+    // Listable threads over a list argument
+    check("UnitBox({-1, -1/4, 0, 1/2, 1})", //
+        "{0,1,1,1,0}");
   }
 
   @Test
