@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -507,7 +509,9 @@ public class StructureFunctions {
           return arg1AST;
         } else if (ast.isAST2()) {
           IExpr arg2 = engine.evaluate(ast.arg2());
-
+          if (arg2.isList()) {
+            return flattenIndexSpec(arg1AST, (IAST) arg2, arg1AST.topHead(), engine);
+          }
           int level = Validate.checkIntLevelType(arg2);
           if (level > 0) {
             IASTAppendable resultList = F.ast(arg1AST.topHead(), arg1AST.size());
@@ -518,7 +522,9 @@ public class StructureFunctions {
           return arg1AST;
         } else if (ast.isAST3() && ast.arg3().isSymbol()) {
           IExpr arg2 = engine.evaluate(ast.arg2());
-
+          if (arg2.isList()) {
+            return flattenIndexSpec(arg1AST, (IAST) arg2, (ISymbol) ast.arg3(), engine);
+          }
           int level = Validate.checkIntLevelType(arg2);
           if (level > 0) {
             IASTAppendable resultList = F.ast(arg1AST.topHead());
@@ -542,6 +548,256 @@ public class StructureFunctions {
     @Override
     public void setUp(ISymbol newSymbol) {
       newSymbol.setAttributes(ISymbol.HOLDALL);
+    }
+
+    /**
+     * Flatten with an index specification of the form
+     * <code>{{s11,s12,...},{s21,s22,...},...}</code> (or the shorthand <code>{i,j,...}</code> which
+     * is treated as a single group). Each new level <code>i</code> of the result is built by
+     * combining all original levels listed in the <code>i</code>-th group. Original levels which are
+     * not mentioned are appended as trailing single-level groups. Works for irregularly shaped
+     * (ragged) arrays.
+     *
+     * @param list the (nested) expression which should be flattened
+     * @param spec the non-empty index specification
+     * @param head the head which identifies the sublists to descend into and the head of the result
+     * @param engine the evaluation engine
+     * @return the flattened expression or {@link F#NIL} if the specification is invalid
+     */
+    private static IExpr flattenIndexSpec(IAST list, IAST spec, ISymbol head, EvalEngine engine) {
+      if (spec.isEmpty()) {
+        return F.NIL;
+      }
+      // parse the specification into groups of (positive integer) original levels
+      boolean allLists = true;
+      boolean allIntegers = true;
+      for (int i = 1; i < spec.size(); i++) {
+        IExpr element = spec.get(i);
+        if (!element.isList()) {
+          allLists = false;
+        }
+        if (!element.isInteger()) {
+          allIntegers = false;
+        }
+      }
+      int[][] groups;
+      if (allLists) {
+        groups = new int[spec.argSize()][];
+        for (int i = 1; i < spec.size(); i++) {
+          int[] group = toLevelArray((IAST) spec.get(i));
+          if (group == null) {
+            return F.NIL;
+          }
+          groups[i - 1] = group;
+        }
+      } else if (allIntegers) {
+        int[] group = toLevelArray(spec);
+        if (group == null) {
+          return F.NIL;
+        }
+        groups = new int[][] {group};
+      } else {
+        return F.NIL;
+      }
+
+      // determine the maximum referenced level and reject duplicated levels
+      int maxLevel = 0;
+      for (int[] group : groups) {
+        for (int level : group) {
+          if (level > maxLevel) {
+            maxLevel = level;
+          }
+        }
+      }
+      if (maxLevel == 0) {
+        return F.NIL;
+      }
+      boolean[] mentioned = new boolean[maxLevel + 1];
+      for (int[] group : groups) {
+        for (int level : group) {
+          if (mentioned[level]) {
+            // a level must not be used more than once
+            return F.NIL;
+          }
+          mentioned[level] = true;
+        }
+      }
+
+      int minDepth = minListDepth(list, head);
+      if (maxLevel > minDepth) {
+        int exceeding = maxLevel;
+        for (int level = 1; level <= maxLevel; level++) {
+          if (mentioned[level] && level > minDepth) {
+            exceeding = level;
+            break;
+          }
+        }
+        // Level `1` specified in `2` exceeds the levels, `3`, which can be flattened together in `4`.
+        return Errors.printMessage(S.Flatten, "flrl",
+            F.List(F.ZZ(exceeding), spec, F.ZZ(minDepth), list), engine);
+      }
+
+      // append the levels which are not mentioned as trailing single-level groups
+      int notMentioned = 0;
+      for (int level = 1; level <= maxLevel; level++) {
+        if (!mentioned[level]) {
+          notMentioned++;
+        }
+      }
+      int[][] allGroups = groups;
+      if (notMentioned > 0) {
+        allGroups = new int[groups.length + notMentioned][];
+        System.arraycopy(groups, 0, allGroups, 0, groups.length);
+        int index = groups.length;
+        for (int level = 1; level <= maxLevel; level++) {
+          if (!mentioned[level]) {
+            allGroups[index++] = new int[] {level};
+          }
+        }
+      }
+
+      // enumerate all existing position tuples (of length maxLevel) with their leaf elements
+      List<int[]> positions = new ArrayList<int[]>();
+      List<IExpr> leaves = new ArrayList<IExpr>();
+      collectPositions(list, head, 1, maxLevel, new int[maxLevel], positions, leaves);
+
+      // the permutation of original levels induced by the (completed) grouping
+      final int[] permutation = new int[maxLevel];
+      int p = 0;
+      for (int[] group : allGroups) {
+        for (int level : group) {
+          permutation[p++] = level;
+        }
+      }
+
+      // sort the record indices lexicographically by the permuted position tuple
+      Integer[] order = new Integer[positions.size()];
+      for (int i = 0; i < order.length; i++) {
+        order[i] = i;
+      }
+      Arrays.sort(order, (x, y) -> {
+        int[] px = positions.get(x);
+        int[] py = positions.get(y);
+        for (int i = 0; i < permutation.length; i++) {
+          int compare = Integer.compare(px[permutation[i] - 1], py[permutation[i] - 1]);
+          if (compare != 0) {
+            return compare;
+          }
+        }
+        return 0;
+      });
+
+      int[] groupLengths = new int[allGroups.length];
+      for (int i = 0; i < allGroups.length; i++) {
+        groupLengths[i] = allGroups[i].length;
+      }
+      return buildNested(order, 0, order.length, positions, leaves, permutation, groupLengths, 0, 0,
+          head);
+    }
+
+    /**
+     * Convert a list which is expected to contain positive integers into a Java <code>int[]</code>.
+     *
+     * @param list a list which is expected to contain positive integers only
+     * @return the positive integers as an array or <code>null</code> if the list contains an invalid
+     *         (non positive integer) element
+     */
+    private static int[] toLevelArray(IAST list) {
+      int[] result = new int[list.argSize()];
+      for (int i = 1; i < list.size(); i++) {
+        int value = list.get(i).toIntDefault();
+        if (F.isNotPresent(value) || value <= 0) {
+          return null;
+        }
+        result[i - 1] = value;
+      }
+      return result;
+    }
+
+    /**
+     * The number of nested <code>head</code>-headed levels which are present along <b>every</b> path
+     * of <code>expr</code> (i.e. the depth of the shallowest leaf). This is the maximum level number
+     * which can be flattened together.
+     */
+    private static int minListDepth(IExpr expr, ISymbol head) {
+      if (!expr.isAST(head)) {
+        return 0;
+      }
+      IAST ast = (IAST) expr;
+      if (ast.argSize() == 0) {
+        return 1;
+      }
+      int min = Integer.MAX_VALUE;
+      for (int i = 1; i < ast.size(); i++) {
+        int depth = minListDepth(ast.get(i), head);
+        if (depth < min) {
+          min = depth;
+        }
+      }
+      return 1 + min;
+    }
+
+    /**
+     * Recursively collect all existing position tuples of length <code>maxLevel</code> together with
+     * the leaf element found at each position.
+     */
+    private static void collectPositions(IAST node, ISymbol head, int level, int maxLevel,
+        int[] tuple, List<int[]> positions, List<IExpr> leaves) {
+      for (int i = 1; i < node.size(); i++) {
+        tuple[level - 1] = i;
+        IExpr element = node.get(i);
+        if (level == maxLevel) {
+          positions.add(tuple.clone());
+          leaves.add(element);
+        } else if (element.isAST(head)) {
+          collectPositions((IAST) element, head, level + 1, maxLevel, tuple, positions, leaves);
+        }
+      }
+    }
+
+    /**
+     * Build the nested result from the sorted records by grouping them level by level. Within the
+     * range <code>[from, to)</code> the records share the same key prefix for the groups before
+     * <code>groupIndex</code>.
+     */
+    private static IAST buildNested(Integer[] order, int from, int to, List<int[]> positions,
+        List<IExpr> leaves, int[] permutation, int[] groupLengths, int groupIndex, int keyStart,
+        ISymbol head) {
+      IASTAppendable result = F.ast(head, Math.max(1, to - from));
+      if (groupIndex == groupLengths.length - 1) {
+        // innermost level: every record contributes one leaf element
+        for (int i = from; i < to; i++) {
+          result.append(leaves.get(order[i]));
+        }
+        return result;
+      }
+      int length = groupLengths[groupIndex];
+      int i = from;
+      while (i < to) {
+        int j = i + 1;
+        while (j < to && sameKey(positions.get(order[i]), positions.get(order[j]), permutation,
+            keyStart, length)) {
+          j++;
+        }
+        result.append(buildNested(order, i, j, positions, leaves, permutation, groupLengths,
+            groupIndex + 1, keyStart + length, head));
+        i = j;
+      }
+      return result;
+    }
+
+    /**
+     * Compare two position tuples on the levels which belong to a single group (the
+     * <code>length</code> permutation entries starting at <code>keyStart</code>).
+     */
+    private static boolean sameKey(int[] a, int[] b, int[] permutation, int keyStart, int length) {
+      for (int i = keyStart; i < keyStart + length; i++) {
+        int level = permutation[i] - 1;
+        if (a[level] != b[level]) {
+          return false;
+        }
+      }
+      return true;
     }
   }
 
