@@ -8,19 +8,16 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ArgumentTypeException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.IntervalDataSym;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.patternmatching.Matcher;
-import org.matheclipse.core.reflection.system.rules.FunctionRangeRules;
 import org.matheclipse.core.visit.VisitorExpr;
-import com.google.common.base.Suppliers;
 
 public class FunctionRange extends AbstractFunctionEvaluator {
   private static final class FunctionRangeRealsVisitor extends VisitorExpr {
@@ -89,33 +86,38 @@ public class FunctionRange extends AbstractFunctionEvaluator {
     }
   }
 
-  private static class Initializer {
-
-    private static Matcher init() {
-      Matcher MATCHER = new Matcher();
-      IAST list = FunctionRangeRules.RULES;
-
-      for (int i = 1; i < list.size(); i++) {
-        IExpr arg = list.get(i);
-        if (arg.isAST(S.SetDelayed, 3)) {
-          MATCHER.caseOf(arg.first(), arg.second());
-        } else if (arg.isAST(S.Set, 3)) {
-          MATCHER.caseOf(arg.first(), arg.second());
-        }
-      }
-      return MATCHER;
+  /**
+   * Closed-form range for a known built-in function applied directly to the range variable, i.e.
+   * matching {@code FunctionRange(head(x), x, y)}. Returns {@link F#NIL} when {@code function} is not
+   * such a form or its head is not tabled here.
+   */
+  private static IExpr builtinRange(IExpr function, ISymbol x, ISymbol y) {
+    if (!function.isAST1() || !function.first().equals(x)) {
+      return F.NIL;
     }
-  }
-
-  private static com.google.common.base.Supplier<Matcher> LAZY_MATCHER;
-
-
-  public static IExpr callMatcher(final IAST ast, IExpr arg1, EvalEngine engine) {
-    IExpr temp = getMatcher().replaceAll(ast);
-    if (temp.isPresent()) {
-      engine.putCache(ast, temp);
+    IExpr head = function.head();
+    if (!head.isBuiltInSymbol()) {
+      return F.NIL;
     }
-    return temp;
+    switch (((IBuiltInSymbol) head).ordinal()) {
+      case ID.ExpIntegralEi:
+      case ID.Log:
+      case ID.LogIntegral:
+      case ID.Re:
+        // range is all real numbers
+        return S.True;
+      case ID.Im:
+        // Im(x) == 0 for real x
+        return F.Equal(y, F.C0);
+      case ID.Cosh:
+        // minimum Cosh(0) == 1 is attained -> 1 <= y
+        return F.LessEqual(F.C1, y);
+      case ID.Gamma:
+        // Gamma is real-valued on its real domain and never 0 -> y<0 || y>0
+        return F.Or(F.Less(y, F.C0), F.Greater(y, F.C0));
+      default:
+        return F.NIL;
+    }
   }
 
   /**
@@ -137,10 +139,6 @@ public class FunctionRange extends AbstractFunctionEvaluator {
       Errors.rethrowsInterruptException(rex);
     }
     return null;
-  }
-
-  private static Matcher getMatcher() {
-    return LAZY_MATCHER.get();
   }
 
   /** Evaluate {@code expr} with {@code x -> value} as a machine-precision double. */
@@ -209,21 +207,131 @@ public class FunctionRange extends AbstractFunctionEvaluator {
     return convertMinMaxList(list, y);
   }
 
+  /**
+   * Convert a two-element {@code {lower, upper}} bounds list (as produced by the
+   * {@code Interval}-visitor path, whose endpoints are closed by convention) into the normalized
+   * range relational. {@code -Infinity} / {@code Infinity} endpoints are treated as unbounded, so a
+   * full real line collapses to {@link S#True} instead of {@code y>=-Infinity}.
+   */
   private IExpr convertMinMaxList(IAST list, ISymbol y) {
-    if (list.arg1().isRealResult()) {
-      if (list.arg2().isInfinity()) {
-        return F.GreaterEqual(y, list.arg1());
-      } else if (list.arg2().isRealResult()) {
-        return F.LessEqual(list.arg1(), y, list.arg2());
-      }
-    } else if (list.arg2().isRealResult()) {
-      if (list.arg1().isNegativeInfinity()) {
-        if (!list.arg2().isInfinity()) {
-          return F.LessEqual(y, list.arg2());
-        }
-      }
+    Bound lo = closedEndpointBound(list.arg1(), true);
+    Bound hi = closedEndpointBound(list.arg2(), false);
+    if (!lo.known || !hi.known) {
+      return F.NIL;
     }
-    return F.NIL;
+    return buildRangeRelational(lo, hi, y);
+  }
+
+  /**
+   * One side (lower or upper) of a computed range: either a finite bound (attained -> closed, or an
+   * unattained limit -> open) or an unbounded side. {@link #known} is {@code false} when the side
+   * could not be determined.
+   */
+  private static final class Bound {
+    static final Bound UNKNOWN = new Bound(false, false, F.NIL, false);
+
+    final boolean known;
+    final boolean unbounded;
+    final IExpr value;
+    final boolean closed;
+
+    private Bound(boolean known, boolean unbounded, IExpr value, boolean closed) {
+      this.known = known;
+      this.unbounded = unbounded;
+      this.value = value;
+      this.closed = closed;
+    }
+
+    static Bound unbounded() {
+      return new Bound(true, true, F.NIL, false);
+    }
+
+    static Bound finite(IExpr value, boolean closed) {
+      return new Bound(true, false, value, closed);
+    }
+  }
+
+  /**
+   * Combine a lower and an upper {@link Bound} into the range relational for {@code y}:
+   * {@link S#True} for the whole real line, a single (possibly strict) inequality when one side is
+   * unbounded, and a chained inequality (or {@code Inequality[...]} for a mixed open/closed pair)
+   * when both sides are finite.
+   */
+  private static IExpr buildRangeRelational(Bound lo, Bound hi, ISymbol y) {
+    if (lo.unbounded && hi.unbounded) {
+      return S.True;
+    }
+    if (lo.unbounded) {
+      return hi.closed ? F.LessEqual(y, hi.value) : F.Less(y, hi.value);
+    }
+    if (hi.unbounded) {
+      return lo.closed ? F.GreaterEqual(y, lo.value) : F.Greater(y, lo.value);
+    }
+    if (lo.closed && hi.closed) {
+      return F.LessEqual(lo.value, y, hi.value);
+    }
+    if (!lo.closed && !hi.closed) {
+      return F.Less(lo.value, y, hi.value);
+    }
+    return F.Inequality(lo.value, lo.closed ? S.LessEqual : S.Less, y,
+        hi.closed ? S.LessEqual : S.Less, hi.value);
+  }
+
+  /**
+   * Interpret a {@code Minimize} ({@code isMin == true}) or {@code Maximize} result as a
+   * {@link Bound}. A finite real extremum value is a bound whose open/closed flag comes from the
+   * witness (a finite {@code {x -> value}} means attained -> closed; an asymptotic witness means an
+   * unattained limit -> open). {@code Minimize -> -Infinity} / {@code Maximize -> +Infinity} is
+   * unbounded. Empty {@code {}} lists and unevaluated results are {@link Bound#UNKNOWN}.
+   */
+  private static Bound interpretExtremum(IExpr minMax, boolean isMin) {
+    if (!minMax.isList2()) {
+      return Bound.UNKNOWN;
+    }
+    IExpr value = minMax.first();
+    if (isMin) {
+      if (value.isNegativeInfinity()) {
+        return Bound.unbounded();
+      }
+    } else if (value.isInfinity()) {
+      return Bound.unbounded();
+    }
+    if (isFiniteRealValue(value)) {
+      return Bound.finite(value, isFiniteExtremum(minMax));
+    }
+    return Bound.UNKNOWN;
+  }
+
+  /**
+   * Interpret one endpoint of a closed {@code {lower, upper}} bounds list as a {@link Bound}:
+   * {@code -Infinity} (lower) / {@code Infinity} (upper) is unbounded, a finite real value is a
+   * closed bound, everything else is {@link Bound#UNKNOWN}.
+   */
+  private static Bound closedEndpointBound(IExpr endpoint, boolean isLower) {
+    if (isLower) {
+      if (endpoint.isNegativeInfinity()) {
+        return Bound.unbounded();
+      }
+    } else if (endpoint.isInfinity()) {
+      return Bound.unbounded();
+    }
+    if (isFiniteRealValue(endpoint)) {
+      return Bound.finite(endpoint, true);
+    }
+    return Bound.UNKNOWN;
+  }
+
+  /**
+   * Return {@code true} iff {@code v} is a finite real value. Rejects every flavour of infinity and
+   * {@code Indeterminate} first, because {@code isRealResult()} returns {@code true} for the directed
+   * infinities.
+   */
+  private static boolean isFiniteRealValue(IExpr v) {
+    if (v.isInfinity() || v.isNegativeInfinity() || v.isComplexInfinity() || v.isDirectedInfinity()
+        || v.equals(S.Indeterminate)) {
+      return false;
+    }
+    return v.isRealResult();
   }
 
   // public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -259,12 +367,15 @@ public class FunctionRange extends AbstractFunctionEvaluator {
     IBuiltInSymbol domain = S.Reals;
     try {
       if (xExpr.isSymbol() && yExpr.isSymbol()) {
-        IExpr match = callMatcher(ast, function, engine);
-        if (match.isPresent()) {
-          return match;
-        }
         ISymbol x = (ISymbol) xExpr;
         ISymbol y = (ISymbol) yExpr;
+
+        // Fast path: closed-form range for a known built-in function applied directly to the
+        // range variable, e.g. FunctionRange(Cosh(x), x, y) -> 1<=y.
+        IExpr builtin = builtinRange(function, x, y);
+        if (builtin.isPresent()) {
+          return builtin;
+        }
 
         // Transcendental short-circuit: for expressions involving Sin/Cos/Tan/Exp/Log/... the
         // Minimize/Maximize, IntervalData and Interval paths below tend to either fail or
@@ -280,27 +391,21 @@ public class FunctionRange extends AbstractFunctionEvaluator {
           }
         }
 
-        boolean evaled = true;
+        // Closed-form extrema via Minimize / Maximize. Classify each side from the extremum
+        // VALUE: a finite real number is a bound (attained -> closed, or an unattained limit
+        // -> open, decided by the witness), Minimize -> -Infinity / Maximize -> +Infinity means
+        // unbounded on that side, and anything else (an empty {} list, or a left-unevaluated
+        // Minimize[...]) is unknown. Symja often returns the asymptotic limit (e.g.
+        // {0, {x -> Infinity}}) for bounded oscillating functions such as Sin[x]/Sqrt[x], hence
+        // the witness-based open/closed check. Return only when BOTH sides are determined;
+        // otherwise fall through to the interval heuristics below so e.g. 1/(1+x^2)
+        // (Minimize -> {}) can still be handled there.
         IExpr min = engine.evalQuiet(F.Minimize(function, x));
         IExpr max = engine.evalQuiet(F.Maximize(function, x));
-        IASTMutable minMaxList = F.binaryAST2(S.List, F.CNInfinity, F.CInfinity);
-        // Only accept Minimize/Maximize results when the witness {x -> value} is a finite
-        // real. Symja often returns the asymptotic limit (e.g. {0, {x -> Infinity}}) for
-        // bounded oscillating functions such as Sin[x]/Sqrt[x]; treating that as a true
-        // extremum would collapse FunctionRange to 0<=y<=0 and prevent the critical-point
-        // fallback (further below) from finding the actual Root[{f, c}] bounds.
-        if (min.isList2() && isFiniteExtremum(min)) {
-          minMaxList.set(1, min.first());
-        } else {
-          evaled = false;
-        }
-        if (max.isList2() && isFiniteExtremum(max)) {
-          minMaxList.set(2, max.first());
-        } else {
-          evaled = false;
-        }
-        if (evaled) {
-          return convertMinMaxList(minMaxList, y);
+        Bound lo = interpretExtremum(min, true);
+        Bound hi = interpretExtremum(max, false);
+        if (lo.known && hi.known) {
+          return buildRangeRelational(lo, hi, y);
         }
         // Minimize/Maximize could not determine a closed-form extremum for at least one
         // side. Try substituting with IntervalData over the reals so that open/closed
@@ -688,12 +793,6 @@ public class FunctionRange extends AbstractFunctionEvaluator {
       return false;
     }
     return true;
-  }
-
-  @Override
-  public void setUp(final ISymbol newSymbol) {
-    // Initializer.init();
-    LAZY_MATCHER = Suppliers.memoize(Initializer::init);
   }
 
   @Override

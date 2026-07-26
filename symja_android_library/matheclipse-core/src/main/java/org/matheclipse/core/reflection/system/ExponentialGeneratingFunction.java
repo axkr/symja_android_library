@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionOptionEvaluator;
@@ -9,6 +10,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -69,7 +71,27 @@ public class ExponentialGeneratingFunction extends AbstractFunctionOptionEvaluat
         return engine.evaluate(evSum);
       }
 
-      // 2. Fallback Method: Borel Transform (Inverse Laplace mapping)
+      // 2. Polynomial Method: Touchard/Bell expansion.
+      // For a polynomial a_n in n: Sum[a_n x^n/n!] = E^x * Sum_k ([n^k] a_n) * BellB(k, x),
+      // using the identity Sum[n^k x^n/n!] = E^x * BellB(k, x). Direct summation above cannot
+      // close this for degree >= 3 (e.g. n^3), and the Borel fallback below fails on the
+      // resulting high-order repeated pole, so handle polynomials explicitly here.
+      if (engine.evalTrue(F.PolynomialQ(expr, n))) {
+        int degree = engine.evaluate(F.Exponent(expr, n)).toIntDefault();
+        if (degree >= 0 && degree <= Config.MAX_POLYNOMIAL_DEGREE) {
+          IASTAppendable bellSum = F.PlusAlloc(degree + 1);
+          for (int k = 0; k <= degree; k++) {
+            IExpr coeff = engine.evaluate(F.Coefficient(expr, n, F.ZZ(k)));
+            bellSum.append(F.Times(coeff, F.BellB(F.ZZ(k), x)));
+          }
+          IExpr result = engine.evaluate(F.Factor(F.Times(F.Exp(x), bellSum)));
+          if (result.isPresent() && result.isFree(S.BellB)) {
+            return result;
+          }
+        }
+      }
+
+      // 3. Fallback Method: Borel Transform (Inverse Laplace mapping)
       // EGF(expr, n, x) = InverseLaplaceTransform[ (1/s) * GF(expr, n, 1/s), s, x ]
       IExpr sDummy = F.Dummy("sEGF");
       IExpr gf = engine.evaluate(F.ternaryAST3(S.GeneratingFunction, expr, n, sDummy));
@@ -81,8 +103,10 @@ public class ExponentialGeneratingFunction extends AbstractFunctionOptionEvaluat
         IExpr laplaceExpr = engine.evaluate(F.ExpandAll(F.Divide(gfSubbed, sDummy)));
         // System.out.println("Laplace expression for EGF: " + laplaceExpr);
         IExpr ilt = engine.evaluate(F.InverseLaplaceTransform(laplaceExpr, sDummy, x));
-        if (ilt.isPresent() && !ilt.isAST(S.InverseLaplaceTransform)) {
-          return engine.evaluate(ilt);
+        if (ilt.isPresent() && ilt.isFree(S.InverseLaplaceTransform)) {
+          // Canonicalize: Simplify collapses e.g. Sqrt(1-Cos[a]^2) -> Sin[a]; ExpToTrig then
+          // renders the exponential factor in Cosh/Sinh form to match the standard EGF output.
+          return engine.evaluate(F.ExpToTrig(F.Simplify(ilt)));
         }
       }
 

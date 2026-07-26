@@ -40,6 +40,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.generic.MultiVariateNumerical;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -836,6 +837,10 @@ public class MinMaxFunctions {
         if (vset.isEmpty()) {
           return S.True;
         }
+        if (function.isFree(v -> variables.contains(v), false)) {
+          // constant w.r.t. the variables -> defined everywhere
+          return S.True;
+        }
 
         if (ast.isAST3()) {
           if (ast.arg3() == S.Complexes) {
@@ -864,7 +869,7 @@ public class MinMaxFunctions {
                 result = IntervalDataSym
                     .normalizeExpr(result.makeAST(S.And), variables.arg1(), engine).orElse(result);
               }
-              return result;
+              return chainBoundedIntervals(result);
             }
           }
 
@@ -909,6 +914,93 @@ public class MinMaxFunctions {
       }
 
       throw new ArgumentTypeStopException("Roots failed");
+    }
+
+    /**
+     * Rewrite each two-condition bounded interval {@code x>a && x<b} (and its closed / mixed
+     * variants) into the chained inequality {@code a<x<b}. Recurses into the arguments of a
+     * top-level {@code Or}; {@code And}s with more than two conditions (e.g. a {@code NotElement}
+     * constraint combined with bounds) are left untouched.
+     *
+     * @param expr the (already normalized) domain expression
+     * @return {@code expr} with bounded pairs chained
+     */
+    private static IExpr chainBoundedIntervals(IExpr expr) {
+      // Use isAST(S.Or) rather than isOr(): normalizeExpr can hand back a single-argument
+      // Or(And(...)) (which isOr() rejects) that would otherwise flatten back to And-form.
+      if (expr.isAST(S.Or)) {
+        IAST or = (IAST) expr;
+        IASTMutable result = or.copy();
+        boolean changed = false;
+        for (int i = 1; i < or.size(); i++) {
+          IExpr chained = chainBoundedAnd(or.get(i));
+          if (chained.isPresent()) {
+            result.set(i, chained);
+            changed = true;
+          }
+        }
+        return changed ? result : expr;
+      }
+      return chainBoundedAnd(expr).orElse(expr);
+    }
+
+    /**
+     * If {@code expr} is a two-argument {@code And} of a lower and an upper bound on the same
+     * variable, return the equivalent chained inequality; otherwise {@link F#NIL}.
+     */
+    private static IExpr chainBoundedAnd(IExpr expr) {
+      if (!expr.isAnd() || expr.size() != 3) {
+        return F.NIL;
+      }
+      IAST and = (IAST) expr;
+      // And is Orderless, so the lower/upper condition may appear in either position.
+      IExpr chained = chainBoundedPair(and.arg1(), and.arg2());
+      if (chained.isNIL()) {
+        chained = chainBoundedPair(and.arg2(), and.arg1());
+      }
+      return chained;
+    }
+
+    /**
+     * Combine a lower bound ({@code Greater}/{@code GreaterEqual(x, a)}) and an upper bound
+     * ({@code Less}/{@code LessEqual(x, b)}) on the same symbol {@code x} into the chained form
+     * {@code a<x<b} (homogeneous) or an {@code Inequality[...]} (mixed open/closed). Returns
+     * {@link F#NIL} when the pair is not a valid lower/upper bound on a single variable.
+     */
+    private static IExpr chainBoundedPair(IExpr lower, IExpr upper) {
+      if (!lower.isAST2() || !upper.isAST2()) {
+        return F.NIL;
+      }
+      boolean lowerStrict;
+      if (lower.head() == S.Greater) {
+        lowerStrict = true;
+      } else if (lower.head() == S.GreaterEqual) {
+        lowerStrict = false;
+      } else {
+        return F.NIL;
+      }
+      boolean upperStrict;
+      if (upper.head() == S.Less) {
+        upperStrict = true;
+      } else if (upper.head() == S.LessEqual) {
+        upperStrict = false;
+      } else {
+        return F.NIL;
+      }
+      IExpr variable = lower.first();
+      if (!variable.isSymbol() || !variable.equals(upper.first())) {
+        return F.NIL;
+      }
+      IExpr lo = lower.second();
+      IExpr hi = upper.second();
+      if (!lo.isFree(variable) || !hi.isFree(variable)) {
+        return F.NIL;
+      }
+      if (lowerStrict == upperStrict) {
+        return lowerStrict ? F.Less(lo, variable, hi) : F.LessEqual(lo, variable, hi);
+      }
+      return F.Inequality(lo, lowerStrict ? S.Less : S.LessEqual, variable,
+          upperStrict ? S.Less : S.LessEqual, hi);
     }
 
     @Override
