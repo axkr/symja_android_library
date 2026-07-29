@@ -7767,6 +7767,8 @@ public final class ListFunctions {
               return sparseArray.total(S.Plus);
             }
           }
+        } else if (arg1.isNumericFunction()) {
+        	arg1 = arg1.makeList();
         }
         arg1 = sparseArray.normal(false);
       }
