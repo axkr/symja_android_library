@@ -207,27 +207,77 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
   }
 
   @Test
-  @Disabled
   public void testFactorList() {
     check("FactorList(x^3 - 1)", //
-        "{{1, 1}, {-1 + x, 1}, {1 + x + x^2, 1}}");
+        "{{1,1},{-1+x,1},{1+x+x^2,1}}");
     check("FactorList(2*x^2 + 4*x + 2)", //
-        "{{2, 1}, {1 + x, 2}}");
+        "{{2,1},{1+x,2}}");
+    check("FactorList(x^8 + x^4 + 1, Modulus -> 3)", //
+        "{{1,1},{1+x,2},{2+x,2},{1+x^2,2}}");
+    check("FactorList(x^5 + x + 1, Modulus -> 2)", //
+        "{{1,1},{1+x+x^2,1},{1+x^2+x^3,1}}");
+    check("FactorList(2*x^4 + 2, Modulus -> 5)", //
+        "{{2,1},{2+x^2,1},{3+x^2,1}}");
+    check("FactorList(5, Modulus -> 3)", //
+        "{{2,1}}");
     check("FactorList(x^2 + 1)", //
-        "{{1, 1}, {1 + x^2, 1}}");
+        "{{1,1},{1+x^2,1}}");
     check("FactorList(6)", //
-        "{{6, 1}}");
+        "{{6,1}}");
+    check("FactorList(x^4 - 1)", //
+        "{{1,1},{-1+x,1},{1+x,1},{1+x^2,1}}");
+    check("FactorList(x^3 + 3*x^2 + 3*x + 1)", //
+        "{{1,1},{1+x,3}}");
+    check("FactorList(x^2 + 3*x + 2)", //
+        "{{1,1},{1+x,1},{2+x,1}}");
     check("FactorList(3/4)", //
-        "{{3, 1}, {4, -1}}");
+        "{{3,1},{4,-1}}");
+    check("FactorList(6/35)", //
+        "{{6,1},{35,-1}}");
+    check("FactorList(1/2)", //
+        "{{2,-1}}");
+    check("FactorList(-3/4)", //
+        "{{-3,1},{4,-1}}");
+    check("FactorList(-1/2)", //
+        "{{-1,1},{2,-1}}");
     check("FactorList(-6)", //
-        "{{-6, 1}}");
+        "{{-6,1}}");
+    check("FactorList(-1)", //
+        "{{-1,1}}");
+    check("FactorList((x^2 - 1)/(x + 2))", //
+        "{{1,1},{-1+x,1},{1+x,1},{2+x,-1}}");
+    check("FactorList((x^2 - 1)/2)", //
+        "{{2,-1},{-1+x,1},{1+x,1}}");
+    check("FactorList(6*(x - 1)/(x + 2))", //
+        "{{6,1},{-1+x,1},{2+x,-1}}");
+    check("FactorList(2/(x^2 - 1))", //
+        "{{2,1},{-1+x,-1},{1+x,-1}}");
   }
 
   @Test
-  @Disabled
   public void testCancel() {
+    // Cancel reduces a single fraction by cancelling common factors of numerator and denominator;
+    // it must NOT split a single fraction into a partial-fraction-like sum (that was a bug: e.g.
+    // (3-5*x)/(2-2*x) used to become 3/(2-2*x)-(5*x)/(2-2*x)). The expected strings below are
+    // Symja's OutputForm. They are the mathematically-equal reductions of the corresponding
+    // InputForm results (verified value-equal); Symja prints a reciprocal
+    // as 1/(...) rather than (...)^(-1), does not push a leading sign into the denominator, and
+    // only cancels factors that are actually common to numerator and denominator (so a
+    // denominator-only numeric/monomial factor such as the 2 in 2-2*x is not pulled out).
+    check("Cancel((4*x^2 - 2*x)/(2 + 3*x))", //
+        "(-2*x+4*x^2)/(2+3*x)");
+    check("Cancel((-5 - 2*x - 4*x^2)/(3 + 2*x^2 + 5*x^3))", //
+        "(-5-2*x-4*x^2)/(3+2*x^2+5*x^3)");
+    check("Cancel(x/(2 - 2*x))", //
+        "x/(2-2*x)");
+    check("Cancel((x*y)/(2 - 2*x))", //
+        "(x*y)/(2-2*x)");
+    check("Cancel((3 - 5*x)/(2 - 2*x))", //
+        "(3-5*x)/(2-2*x)");
+    check("Cancel((3 - 5*x)/(4 - 6*x))", //
+        "(3-5*x)/(4-6*x)");
     check("Cancel((x^2 - 1)/(x - 1))", //
-        "1 + x");
+        "1+x");
     check("Cancel((x^3 - x)/(x^2 - 1))", //
         "x");
     check("Cancel((a*b)/(a*c))", //
@@ -236,10 +286,80 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
         "a/b");
     check("Cancel((2*x)/(4*x))", //
         "1/2");
+    check("Cancel((a*b*x)/(a*c*x^2))", //
+        "b/(c*x)");
     check("Cancel((x^2 + 2*x + 1)/(x + 1))", //
-        "1 + x");
-    check("Cancel(x/(2 - 2 x))", //
-        "-1/2*x/(-1 + x)");
+        "1+x");
+    check("Cancel((x/2)/(1 - x))", //
+        "x/(2*(1-x))");
+    check("Cancel((5*x)/(2 - 2*x))", //
+        "(5*x)/(2-2*x)");
+    check("Cancel((5*x)/(1 - 5*x))", //
+        "(5*x)/(1-5*x)");
+    check("Cancel(x/(2 - 2*x)^2)", //
+        "x/(2-2*x)^2");
+    check("Cancel(x/(2 - 2*x)^3)", //
+        "x/(2-2*x)^3");
+    check("Cancel((2 - 4*x)/(2 + 2*x))", //
+        "(1-2*x)/(1+x)");
+    check("Cancel((2 - 4*x)/(-2 + 2*x))", //
+        "(1-2*x)/(-1+x)");
+    check("Cancel((2 - 4*x)/2)", //
+        "1-2*x");
+    check("Cancel((-4 - 3*x^2)/(4 + x - 4*x^2))", //
+        "(-4-3*x^2)/(4+x-4*x^2)");
+    check("Cancel((2 - 4*x)/(2 - 2*x))", //
+        "(1-2*x)/(1-x)");
+    check("Cancel((1 + x)/(1 - x))", //
+        "(1+x)/(1-x)");
+    check("Cancel(x/(1 - x))", //
+        "x/(1-x)");
+    check("Cancel(2/(2 - 2*x))", //
+        "1/(1-x)");
+    check("Cancel(1/(1 - x))", //
+        "1/(1-x)");
+    check("Cancel(-1/(2 - 4*x))", //
+        "-1/(2-4*x)");
+    check("Cancel(-1/(3 - 6*x))", //
+        "-1/(3-6*x)");
+    check("Cancel(-1/(1 + x))", //
+        "-1/(1+x)");
+    check("Cancel(-1/(2 + x))", //
+        "-1/(2+x)");
+    check("Cancel(-1/(x + y))", //
+        "-1/(x+y)");
+    check("Cancel(-1/(-1 + x))", //
+        "-1/(-1+x)");
+    check("Cancel(-1/(2 + 2*x))", //
+        "-1/(2+2*x)");
+    check("Cancel(-2/(1 + x))", //
+        "-2/(1+x)");
+    check("Cancel(1/(2 + 2*x))", //
+        "1/(2+2*x)");
+    check("Cancel(1/(2 - 2*x))", //
+        "1/(2-2*x)");
+    check("Cancel(1/(x^2 - x))", //
+        "1/(-x+x^2)");
+    check("Cancel(1/((x - 1)*(x + 1)))", //
+        "1/((-1+x)*(1+x))");
+    check("Cancel(1/(x*(x + 1)))", //
+        "1/(x*(1+x))");
+    check("Cancel(1/(x + 1/x))", //
+        "1/(1/x+x)");
+    check("Cancel((x + 1)/(4*x + 5*x^2))", //
+        "(1+x)/(4*x+5*x^2)");
+    check("Cancel(2/(4*x + 5*x^2))", //
+        "2/(4*x+5*x^2)");
+    check("Cancel((x + 2)/(x^2 - x))", //
+        "(2+x)/(-x+x^2)");
+    check("Cancel((x + 1)/(x^2 + x^4))", //
+        "(1+x)/(x^2+x^4)");
+    check("Cancel((x + 1)/((x - 1)*(x + 2)))", //
+        "(1+x)/((-1+x)*(2+x))");
+    check("Cancel(x/(4*x^2 + 4*x^3))", //
+        "1/(4*x*(1+x))");
+    check("Cancel(2/(1 - 2*x)^2)", //
+        "2/(1-2*x)^2");
   }
 
   @Test
@@ -260,6 +380,11 @@ public class AlgebraTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testTogether() {
+    // regression: JAS' GenPolynomial.divide asserts its dividend is in descending leading-exponent
+    // order and threw an AssertionError (an Error, so it escaped the RuntimeException guard and
+    // aborted the whole evaluation) while cancelling the gcd of this multivariate combination
+    check("Together(1/(1+x) + 1/(1+x+x^5))", //
+        "(2+2*x+x^5)/((1+x)*(1+x+x^2)*(1-x^2+x^3))");
     check("Together(1+x/y)", //
         "(x+y)/y");
     check("Together(x*(1/x + 1/y))", //

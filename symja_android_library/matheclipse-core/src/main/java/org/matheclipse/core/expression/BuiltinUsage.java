@@ -3,7 +3,7 @@ package org.matheclipse.core.expression;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 
 public class BuiltinUsage {
-  private static final String[] USAGE = new String[ID.Zeta + 10];
+  private static final String[] USAGE = new String[ID.ZTransform + 10];
 
   static {
 

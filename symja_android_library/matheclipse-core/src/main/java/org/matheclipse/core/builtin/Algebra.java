@@ -389,12 +389,14 @@ public class Algebra {
             return result;
           }
         }
-        IExpr expandedArg1 = F.evalExpandAll(arg1, engine);
-
-        if (expandedArg1.isPlus()) {
-          return expandedArg1.mapThread(F.Cancel(F.Slot1), 1);
-        } else if (expandedArg1.isTimes() || expandedArg1.isPower()) {
-          IExpr result = cancelPowerTimes(expandedArg1, engine);
+        if (arg1.isPlus()) {
+          // 'Cancel' threads over a genuine sum of terms; each summand is cancelled on its own
+          // (e.g. Cancel(x/x^2 + y/y^2) -> 1/x + 1/y). We must NOT first expand a single fraction
+          // into a sum: F.evalExpandAll((3-5*x)/(2-2*x)) is 3/(2-2*x)-(5*x)/(2-2*x), which would
+          // then wrongly thread into a partial-fraction-like split instead of one reduced fraction.
+          return arg1.mapThread(F.Cancel(F.Slot1), 1);
+        } else if (arg1.isTimes() || arg1.isPower()) {
+          IExpr result = cancelPowerTimes(arg1, engine);
           if (result.isPresent()) {
             return result;
           }
@@ -1520,20 +1522,15 @@ public class Algebra {
         return arg1;
       }
       try {
-        IExpr expr = F.evalExpandAll(arg1, engine);
-        // ASTRange r = new ASTRange(eVar.getVarList(), 1);
-        // List<IExpr> varList = r;
-
         if (options[MODULUS_OPTION].isZero() && options[1].equals(S.None) && options[2].isFalse()) {
-          if (expr.isAST()) {
-            IExpr temp =
-                AlgebraUtil.factorExpr((IAST) expr, (IAST) expr, eVar, true, true, false, engine);
-            engine.putCache(ast, temp);
-            if (temp.isPresent()) {
-              return temp;
-            }
+          // structure-preserving square-free factorization (see AlgebraUtil#factorSquareFree)
+          IExpr temp = AlgebraUtil.factorSquareFree(arg1, eVar, engine);
+          engine.putCache(ast, temp);
+          if (temp.isPresent()) {
+            return temp;
           }
         } else {
+          IExpr expr = F.evalExpandAll(arg1, engine);
           IExpr temp = factorWithOption(ast, expr, eVar.getVarList(), true, options, engine);
           if (temp.isPresent()) {
             return temp;
@@ -2831,7 +2828,7 @@ public class Algebra {
         }
       }
 
-      return F.NIL;
+      return poly;
     }
 
     @Override

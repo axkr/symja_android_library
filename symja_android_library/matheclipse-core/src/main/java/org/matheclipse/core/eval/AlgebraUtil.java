@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -342,6 +343,13 @@ public class AlgebraUtil {
         boolean evaled = false;
         if (parts[0].isTimes()) {
           tempExpr = expandTimes((IAST) parts[0], engine);
+          if (tempExpr.isPresent()) {
+            parts[0] = tempExpr;
+            evaled = true;
+          }
+        } else if (parts[0].isPower() || parts[0].isPlus()) {
+          // for example the numerator (x+y)^2 in ((x+y)/z)^2
+          tempExpr = expandAST((IAST) parts[0]);
           if (tempExpr.isPresent()) {
             parts[0] = tempExpr;
             evaled = true;
@@ -1451,6 +1459,150 @@ public class AlgebraUtil {
       }
     }
     return F.NIL;
+  }
+
+  /**
+   * Square-free factorization for the <code>FactorSquareFree</code> built-in. In contrast to
+   * {@link #factor(IAST, VariablesSet, boolean, boolean, boolean, EvalEngine)} this method
+   * preserves the multiplicative structure of the input (it does not expand a product of coprime
+   * factors), normalizes every square-free polynomial factor to a positive leading coefficient and
+   * collects the overall numeric content and sign into a single leading factor.
+   *
+   * <p>
+   * The result is a regular (evaluated) expression. Symja normalizes an even power of a polynomial
+   * with a negative constant term to a positive constant term (e.g. <code>(-1+x)^2</code> becomes
+   * <code>(1-x)^2</code>); that canonical form is kept so the result stays usable by other
+   * functions.
+   *
+   * @param arg1 the (already evaluated) argument of <code>FactorSquareFree</code>
+   * @param eVar the variables contained in <code>arg1</code>
+   * @param engine the evaluation engine
+   * @return the factored expression or {@link F#NIL} if nothing polynomial could be factored
+   */
+  public static IExpr factorSquareFree(IExpr arg1, VariablesSet eVar, EvalEngine engine) {
+    LinkedHashMap<IExpr, Long> factorMap = new LinkedHashMap<IExpr, Long>();
+    IRational[] content = new IRational[] {F.C1};
+    boolean[] anyPolynomial = new boolean[] {false};
+    if (!collectSquareFreeFactors(arg1, 1L, eVar, factorMap, content, anyPolynomial, engine)
+        || !anyPolynomial[0]) {
+      return F.NIL;
+    }
+
+    IASTAppendable times = F.TimesAlloc(factorMap.size() + 1);
+    if (!content[0].isOne()) {
+      times.append(content[0]);
+    }
+    for (Map.Entry<IExpr, Long> entry : factorMap.entrySet()) {
+      long exponent = entry.getValue();
+      times.append(exponent == 1L ? entry.getKey() : F.Power(entry.getKey(), F.ZZ(exponent)));
+    }
+    return engine.evaluate(times);
+  }
+
+  /**
+   * Recursively walk the multiplicative structure of <code>expr</code> and collect its square-free
+   * polynomial factors into <code>factorMap</code> (factor to exponent) and the numeric content
+   * into <code>content</code>.
+   *
+   * @param multiplier the product of all enclosing integer exponents
+   * @return <code>false</code> if a fatal conversion problem occurred; otherwise <code>true</code>
+   */
+  private static boolean collectSquareFreeFactors(IExpr expr, long multiplier, VariablesSet eVar,
+      Map<IExpr, Long> factorMap, IRational[] content, boolean[] anyPolynomial, EvalEngine engine) {
+    if (expr.isTimes()) {
+      boolean result = true;
+      IAST times = (IAST) expr;
+      for (int i = 1; i < times.size(); i++) {
+        result &= collectSquareFreeFactors(times.get(i), multiplier, eVar, factorMap, content,
+            anyPolynomial, engine);
+      }
+      return result;
+    }
+    if (expr.isPower()) {
+      int exponent = expr.exponent().toIntDefault();
+      if (exponent > 0) {
+        return collectSquareFreeFactors(expr.base(), multiplier * exponent, eVar, factorMap,
+            content, anyPolynomial, engine);
+      }
+      // a non-positive-integer exponent (e.g. a denominator or a root): keep as an opaque factor
+      addSquareFreeFactor(factorMap, expr, multiplier);
+      return true;
+    }
+    if (expr.isRational()) {
+      content[0] = content[0].multiply(((IRational) expr).powerRational(multiplier));
+      return true;
+    }
+    if (expr.isPlus()) {
+      return squareFreeLeaf((IAST) expr, multiplier, eVar, factorMap, content, anyPolynomial,
+          engine);
+    }
+    // a symbol or a non-polynomial sub-expression like Sin(x): treat it as an opaque factor
+    addSquareFreeFactor(factorMap, expr, multiplier);
+    return true;
+  }
+
+  /**
+   * Compute the square-free factorization of a single polynomial (a {@link S#Plus} expression) with
+   * JAS, normalize each factor to a positive leading coefficient and accumulate the result into
+   * <code>factorMap</code> / <code>content</code>.
+   */
+  @SuppressWarnings("unchecked")
+  private static boolean squareFreeLeaf(IAST plus, long multiplier, VariablesSet eVar,
+      Map<IExpr, Long> factorMap, IRational[] content, boolean[] anyPolynomial, EvalEngine engine) {
+    JASConvert<BigRational> jas =
+        new JASConvert<BigRational>(eVar.getVarList(), BigRational.ZERO, TermOrderByName.INVLEX);
+    GenPolynomial<BigRational> polyRat;
+    try {
+      polyRat = jas.expr2JAS(plus, false);
+    } catch (JASConversionException e) {
+      addSquareFreeFactor(factorMap, plus, multiplier);
+      return true;
+    }
+    if (polyRat == null || polyRat.length() <= 1) {
+      addSquareFreeFactor(factorMap, plus, multiplier);
+      return true;
+    }
+    Object[] objects = jas.factorTerms(polyRat);
+    SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
+    try {
+      GenPolynomial<edu.jas.arith.BigInteger> poly =
+          (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
+      FactorAbstract<edu.jas.arith.BigInteger> factorAbstract =
+          FactorFactory.getImplementation(edu.jas.arith.BigInteger.ONE);
+      map = factorAbstract.squarefreeFactors(poly);
+    } catch (RuntimeException rex) {
+      Errors.rethrowsInterruptException(rex);
+      addSquareFreeFactor(factorMap, plus, multiplier);
+      return true;
+    }
+    java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
+    java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
+    IRational leafContent = F.C1;
+    if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
+      leafContent = F.fraction(gcd, lcm).normalize();
+    }
+    anyPolynomial[0] = true;
+    for (Map.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map.entrySet()) {
+      GenPolynomial<edu.jas.arith.BigInteger> poly = entry.getKey();
+      long exponent = entry.getValue();
+      if (poly.isONE() && exponent == 1L) {
+        continue;
+      }
+      if (poly.leadingBaseCoefficient().signum() < 0) {
+        // normalize to a positive leading coefficient; fold the sign into the numeric content
+        poly = poly.negate();
+        if ((exponent & 1L) == 1L) {
+          leafContent = leafContent.negate();
+        }
+      }
+      addSquareFreeFactor(factorMap, jas.integerPoly2Expr(poly), exponent * multiplier);
+    }
+    content[0] = content[0].multiply(leafContent.powerRational(multiplier));
+    return true;
+  }
+
+  private static void addSquareFreeFactor(Map<IExpr, Long> factorMap, IExpr factor, long exponent) {
+    factorMap.merge(factor, exponent, Long::sum);
   }
 
   /**

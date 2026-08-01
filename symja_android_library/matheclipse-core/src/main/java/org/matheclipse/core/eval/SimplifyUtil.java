@@ -1,9 +1,17 @@
 package org.matheclipse.core.eval;
 
 import static org.matheclipse.core.expression.F.x_;
+import static org.matheclipse.core.expression.F.y_;
 import static org.matheclipse.core.expression.S.x;
+import static org.matheclipse.core.expression.S.y;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
@@ -17,6 +25,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBigNumber;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -121,6 +130,22 @@ public class SimplifyUtil extends VisitorExpr {
     }
   }
 
+  /**
+   * Decides whether a candidate replaces the incumbent when both have the <b>same</b> complexity. A
+   * candidate with strictly lower complexity always wins, independent of the policy.
+   */
+  public enum TiePolicy {
+    /** Only a strictly lower complexity wins; ties keep the incumbent. */
+    STRICT,
+    /** Ties go to the candidate (the last equally good candidate offered wins). */
+    ACCEPT,
+    /**
+     * Ties go to the candidate only if its head has the lower operator precedence, i.e. prefer
+     * <code>Plus</code> (310) over <code>Times</code> (400) over <code>Power</code> (590).
+     */
+    HEAD_PRECEDENCE
+  }
+
   public static class SimplifiedResult {
     IExpr result;
 
@@ -135,58 +160,96 @@ public class SimplifyUtil extends VisitorExpr {
       this.minCounter = complexityFunction.apply(minExpr);
     }
 
-    public boolean checkLess(IExpr expr) {
-      long counter = complexityFunction.apply(expr);
-      if (counter < this.minCounter) {
-        this.minCounter = counter;
-        this.result = expr;
-        return true;
+    /**
+     * Offer <code>candidate</code> as the new &ldquo;most simplified&rdquo; expression. It is
+     * accepted if its complexity is lower than the incumbent's, or if the complexities tie and
+     * <code>tiePolicy</code> lets the candidate through.
+     *
+     * @param candidate the rewritten expression to compare against the incumbent
+     * @param tiePolicy how to break a complexity tie
+     * @return <code>true</code> if <code>candidate</code> became the new result
+     */
+    public boolean offer(IExpr candidate, TiePolicy tiePolicy) {
+      final long counter = complexityFunction.apply(candidate);
+      if (counter > this.minCounter) {
+        return false;
       }
-      return false;
+      if (counter == this.minCounter) {
+        switch (tiePolicy) {
+          case STRICT:
+            return false;
+          case HEAD_PRECEDENCE:
+            if (candidate == this.result || !headPrecedenceWins(candidate, this.result)) {
+              return false;
+            }
+            break;
+          case ACCEPT:
+          default:
+            break;
+        }
+      }
+      this.minCounter = counter;
+      this.result = candidate;
+      return true;
+    }
+
+    /**
+     * Offer <code>candidate</code> with a tie-break that is only decided — and only computed — when
+     * the complexities actually tie. Use this when the tie-break has to inspect the expression, so
+     * that a possibly expensive test is not paid for on every offer.
+     *
+     * @param candidate the rewritten expression to compare against the incumbent
+     * @param tieAccepts evaluated <b>only</b> on a complexity tie; <code>true</code> lets the
+     *        candidate through
+     * @return <code>true</code> if <code>candidate</code> became the new result
+     */
+    public boolean offerOnTie(IExpr candidate, BooleanSupplier tieAccepts) {
+      final long counter = complexityFunction.apply(candidate);
+      if (counter > this.minCounter) {
+        return false;
+      }
+      if (counter == this.minCounter && !tieAccepts.getAsBoolean()) {
+        return false;
+      }
+      this.minCounter = counter;
+      this.result = candidate;
+      return true;
+    }
+
+    /**
+     * Return <code>true</code> if both expressions are {@link IExpr#isPlusTimesPower()} and
+     * <code>candidate</code>'s head binds less tightly than <code>incumbent</code>'s.
+     */
+    private static boolean headPrecedenceWins(IExpr candidate, IExpr incumbent) {
+      if (!candidate.isPlusTimesPower() || !incumbent.isPlusTimesPower()) {
+        return false;
+      }
+      final int candidateID = candidate.headID();
+      final int incumbentID = incumbent.headID();
+      if (candidateID == incumbentID) {
+        return false;
+      }
+      switch (candidateID) {
+        case ID.Plus: // precedence 310
+          return incumbentID == ID.Times // precedence 400
+              || incumbentID == ID.Power; // precedence 590
+        case ID.Times: // precedence 400
+          return incumbentID == ID.Power; // precedence 590
+        default:
+          return false;
+      }
+    }
+
+    public boolean checkLess(IExpr expr) {
+      return offer(expr, TiePolicy.STRICT);
     }
 
     public boolean checkLessEqual(IExpr expr) {
-      long counter = complexityFunction.apply(expr);
-      if (counter <= this.minCounter) {
-        this.minCounter = counter;
-        this.result = expr;
-        return true;
-      }
-      return false;
+      return offer(expr, TiePolicy.ACCEPT);
     }
 
     public boolean checkLessPlusTimesPower(IExpr expr) {
-      long counter = complexityFunction.apply(expr);
-      if (counter < this.minCounter) {
-        this.minCounter = counter;
-        this.result = expr;
-        return true;
-      } else if (counter == this.minCounter && expr != this.result) {
-        if (expr.isPlusTimesPower() && this.result.isPlusTimesPower()) {
-          int exprID = expr.headID();
-          int resultID = this.result.headID();
-          if (exprID != resultID) {
-            switch (exprID) {
-              case ID.Plus: // precedence 310
-                if (resultID == ID.Times // precedence 400
-                    || resultID == ID.Power) { // precedence 590
-                  this.minCounter = counter;
-                  this.result = expr;
-                  return true;
-                }
-                break;
-              case ID.Times: // precedence 400
-                if (resultID == ID.Power) { // precedence 590
-                  this.minCounter = counter;
-                  this.result = expr;
-                  return true;
-                }
-                break;
-            }
-          }
-        }
-      }
-      return false;
+      return offer(expr, TiePolicy.HEAD_PRECEDENCE);
     }
 
     public IExpr getResult() {
@@ -207,6 +270,101 @@ public class SimplifyUtil extends VisitorExpr {
         F.Exp(x), //
         false, //
         null, true));
+    // Moved out of Arithmetic.Plus: WMA does not fold these during plain evaluation, only
+    // under Simplify/FullSimplify. Unlike the complementary-angle pairs these may fire on part of
+    // a larger sum — a+ArcTan(-2)+ArcTan(-1/2)+2/3 becomes 2/3+a-Pi/2 — because the matched terms
+    // collapse to a constant, which is ordinary numeric simplification.
+    // ArcTan(x)+ArcTan(1/x) == Pi/2 for positive x
+    PLUS_ORDERLESS_MATCHER.defineHashRule(F.ArcTan(x_), F.ArcTan(y_), //
+        F.CPiHalf, //
+        F.And(F.Positive(x), F.Equal(y, F.Power(x, F.CN1))));
+    // ArcTan(1/2) + ArcTan(1/3) == Pi/4
+    PLUS_ORDERLESS_MATCHER.defineHashRule(F.ArcTan(F.C1D3), F.ArcTan(F.C1D2), //
+        F.CPiQuarter);
+    // ArcTan(1/3) + ArcTan(1/7) == ArcTan(1/2)
+    PLUS_ORDERLESS_MATCHER.defineHashRule(F.ArcTan(F.C1D3), F.ArcTan(F.QQ(1L, 7L)), //
+        F.ArcTan(F.C1D2));
+  }
+
+  /**
+   * The right-hand-side of a Pythagorean identity <code>c + s*f(x)^2 -&gt; +/- g(x)^2</code>: the
+   * head <code>g</code> to rewrite the squared function to, and whether that square is negated.
+   */
+  private static final class PythagoreanIdentity {
+    final IBuiltInSymbol resultHead;
+
+    final boolean negate;
+
+    PythagoreanIdentity(IBuiltInSymbol resultHead, boolean negate) {
+      this.resultHead = resultHead;
+      this.negate = negate;
+    }
+  }
+
+  /** <code>1 + f(x)^2</code>, keyed by the {@link ID} of <code>f</code>. */
+  private static final Map<Integer, PythagoreanIdentity> ONE_PLUS_SQUARE = new HashMap<>();
+
+  /** <code>1 - f(x)^2</code>, keyed by the {@link ID} of <code>f</code>. */
+  private static final Map<Integer, PythagoreanIdentity> ONE_MINUS_SQUARE = new HashMap<>();
+
+  /** <code>-1 + f(x)^2</code>, keyed by the {@link ID} of <code>f</code>. */
+  private static final Map<Integer, PythagoreanIdentity> MINUS_ONE_PLUS_SQUARE = new HashMap<>();
+
+  /** <code>-1 - f(x)^2</code>, keyed by the {@link ID} of <code>f</code>. */
+  private static final Map<Integer, PythagoreanIdentity> MINUS_ONE_MINUS_SQUARE = new HashMap<>();
+
+  static {
+    // 1+Cot(x)^2 -> Csc(x)^2 etc.
+    ONE_PLUS_SQUARE.put(ID.Cot, new PythagoreanIdentity(S.Csc, false));
+    ONE_PLUS_SQUARE.put(ID.Csch, new PythagoreanIdentity(S.Coth, false));
+    ONE_PLUS_SQUARE.put(ID.Sinh, new PythagoreanIdentity(S.Cosh, false));
+    ONE_PLUS_SQUARE.put(ID.Tan, new PythagoreanIdentity(S.Sec, false));
+
+    // 1-Cos(x)^2 -> Sin(x)^2 etc.
+    ONE_MINUS_SQUARE.put(ID.Cos, new PythagoreanIdentity(S.Sin, false));
+    ONE_MINUS_SQUARE.put(ID.Cosh, new PythagoreanIdentity(S.Sinh, true));
+    ONE_MINUS_SQUARE.put(ID.Coth, new PythagoreanIdentity(S.Csch, true));
+    ONE_MINUS_SQUARE.put(ID.Csc, new PythagoreanIdentity(S.Cot, true));
+    ONE_MINUS_SQUARE.put(ID.Sec, new PythagoreanIdentity(S.Tan, true));
+    ONE_MINUS_SQUARE.put(ID.Sech, new PythagoreanIdentity(S.Tanh, false));
+    ONE_MINUS_SQUARE.put(ID.Sin, new PythagoreanIdentity(S.Cos, false));
+    ONE_MINUS_SQUARE.put(ID.Tanh, new PythagoreanIdentity(S.Sech, false));
+
+    // -1+Cos(x)^2 -> -Sin(x)^2 etc.
+    MINUS_ONE_PLUS_SQUARE.put(ID.Cos, new PythagoreanIdentity(S.Sin, true));
+    MINUS_ONE_PLUS_SQUARE.put(ID.Csc, new PythagoreanIdentity(S.Cot, false));
+    MINUS_ONE_PLUS_SQUARE.put(ID.Cosh, new PythagoreanIdentity(S.Sinh, false));
+    MINUS_ONE_PLUS_SQUARE.put(ID.Coth, new PythagoreanIdentity(S.Csch, false));
+    MINUS_ONE_PLUS_SQUARE.put(ID.Sec, new PythagoreanIdentity(S.Tan, false));
+    MINUS_ONE_PLUS_SQUARE.put(ID.Sech, new PythagoreanIdentity(S.Tanh, true));
+    MINUS_ONE_PLUS_SQUARE.put(ID.Sin, new PythagoreanIdentity(S.Cos, true));
+    MINUS_ONE_PLUS_SQUARE.put(ID.Tanh, new PythagoreanIdentity(S.Sech, true));
+
+    // -1-Cot(x)^2 -> -Csc(x)^2 etc.
+    MINUS_ONE_MINUS_SQUARE.put(ID.Cot, new PythagoreanIdentity(S.Csc, true));
+    MINUS_ONE_MINUS_SQUARE.put(ID.Csch, new PythagoreanIdentity(S.Coth, true));
+    MINUS_ONE_MINUS_SQUARE.put(ID.Tan, new PythagoreanIdentity(S.Sec, true));
+    MINUS_ONE_MINUS_SQUARE.put(ID.Sinh, new PythagoreanIdentity(S.Cosh, true));
+  }
+
+  /**
+   * Look up the Pythagorean identity for <code>(+/-1) (+/-) f(x)^2</code>.
+   *
+   * @param constantIsOne <code>true</code> for a leading <code>1</code>, <code>false</code> for
+   *        <code>-1</code>
+   * @param sqrType {@link #SQR_ARG} if the square is added, {@link #NEGATIVE_SQR_ARG} if subtracted
+   * @param headID the {@link ID} of the squared function
+   * @return the matching identity, or <code>null</code> if there is none
+   */
+  private static PythagoreanIdentity pythagoreanIdentity(boolean constantIsOne, int sqrType,
+      int headID) {
+    final Map<Integer, PythagoreanIdentity> table;
+    if (constantIsOne) {
+      table = (sqrType == SQR_ARG) ? ONE_PLUS_SQUARE : ONE_MINUS_SQUARE;
+    } else {
+      table = (sqrType == SQR_ARG) ? MINUS_ONE_PLUS_SQUARE : MINUS_ONE_MINUS_SQUARE;
+    }
+    return table.get(headID);
   }
 
   /** No special function expression was found in the args of the expression */
@@ -289,6 +447,13 @@ public class SimplifyUtil extends VisitorExpr {
         F.Abs(x_), //
         F.Sign(x_), //
         F.x));
+    // Abs(x_)*Abs(y_) := Abs(x*y). HashedPatternRulesTimes combines the two factors only when their
+    // exponents are equal, so Abs(a)*Abs(b) and Abs(a)^-1*Abs(b)^-1 contract while a mixed pair
+    // such as Abs(a)/Abs(b) is left alone instead of being folded into a wrong Abs(a*b).
+    timesMatcher.defineHashRule(new HashedPatternRulesTimes( //
+        F.Abs(x_), //
+        F.Abs(y_), //
+        F.Abs(F.Times(x, y))));
     return timesMatcher;
   }
 
@@ -332,10 +497,19 @@ public class SimplifyUtil extends VisitorExpr {
   public static IExpr simplifyStep(IExpr arg1, IExpr defaultResult,
       Function<IExpr, Long> complexityFunction, long minCounter, boolean fullSimplify,
       boolean noApart, EvalEngine engine) {
+    // A cache of tryTransformations() results, shared by every pass of this loop, was measured and
+    // made no difference: hashing an IExpr walks its whole structure, which costs about what the
+    // recomputation saves. Reordering the pipeline so the expanding steps run last is the change
+    // worth making here, and it needs a benchmark that can actually resolve it — repeated runs of
+    // this corpus vary by a factor of three on an otherwise idle machine.
     long count;
     IExpr temp;
     temp = arg1.accept(new SimplifyUtil(complexityFunction, fullSimplify, engine, noApart));
     while (temp.isPresent()) {
+      // No early exit on an atom: leafCountSimplify() charges an integer by its number of digits,
+      // so an atom is not automatically the cheapest result. Returning one unconditionally made
+      // Integrate(Sin(x)^3,x) come back unevaluated, where the loop used to keep defaultResult
+      // because the atom weighed more.
       count = complexityFunction.apply(temp);
       if (count == minCounter) {
         return temp;
@@ -359,6 +533,398 @@ public class SimplifyUtil extends VisitorExpr {
    * @param plusAST
    * @return
    */
+  /**
+   * Rewrite a sum of logarithms that all carry the same integer factor by pulling that factor out:
+   * <code>4*Log(2)+4*Log(3)</code> becomes <code>4*Log(6)</code>.
+   *
+   * <p>
+   * {@link #tryPlusLog(IAST)} folds the whole sum into a single logarithm, which is only an
+   * improvement while the resulting integer stays short: <code>Log(1296)</code> weighs 5 against
+   * the 4 of <code>4*Log(6)</code>. The candidate is offered with a strict comparison, so a tie
+   * keeps the single logarithm — <code>3*Log(2)+3*Log(3)</code> stays <code>Log(216)</code>, where
+   * both forms weigh 4.
+   *
+   * <p>
+   * Reducing an already collapsed <code>Log(n)</code> by its perfect powers would be the more
+   * general rule, but a wrong one: it turns <code>2*Log(100)</code> into <code>4*Log(10)</code> (5)
+   * instead of the expected <code>Log(10000)</code> (6). Only a factor the input itself shares is
+   * pulled out.
+   *
+   * @param plusAST a sum whose summands are all logarithms or integer multiples of logarithms
+   * @return the factored sum, or {@link F#NIL} if there is no common factor greater than 1
+   */
+  /**
+   * Split a positive integer into <code>base^exponent</code> with the largest possible exponent,
+   * e.g. <code>16</code> into <code>2^4</code> and <code>1296</code> into <code>6^4</code>.
+   *
+   * @param expr the candidate integer
+   * @return <code>{base, exponent}</code>, or <code>null</code> if <code>expr</code> is not an
+   *         integer perfect power
+   */
+  private IInteger[] perfectPower(IExpr expr) {
+    if (!expr.isInteger() || !expr.isPositive() || expr.isOne()) {
+      return null;
+    }
+    IInteger n = (IInteger) expr;
+    IExpr factors = eval(F.FactorInteger(n));
+    if (!factors.isList()) {
+      return null;
+    }
+    IAST list = (IAST) factors;
+    IInteger exponent = null;
+    for (int i = 1; i < list.size(); i++) {
+      IExpr pair = list.get(i);
+      if (!pair.isList2() || !pair.second().isInteger()) {
+        return null;
+      }
+      IInteger e = (IInteger) pair.second();
+      exponent = (exponent == null) ? e : exponent.gcd(e);
+    }
+    if (exponent == null || exponent.isOne()) {
+      return null;
+    }
+    IExpr root = S.Power.of(n, F.Divide(F.C1, exponent));
+    if (!root.isInteger()) {
+      return null;
+    }
+    return new IInteger[] {(IInteger) root, exponent};
+  }
+
+  /**
+   * Put each group of summands that share a denominator over that denominator, instead of putting
+   * the whole sum over one common denominator: <code>a/x+b/x+c/y</code> becomes
+   * <code>(a+b)/x+c/y</code>, where {@link S#Together} on the whole sum would give the heavier
+   * <code>(c*x+a*y+b*y)/(x*y)</code>.
+   *
+   * @param plusAST the sum to regroup
+   * @return the regrouped sum, or {@link F#NIL} if there is nothing to group
+   */
+  /**
+   * Test whether the given denominators share no factor, so that putting each group over its own
+   * denominator does not throw away a cancellation.
+   *
+   * @param denominators the distinct denominators of the groups
+   * @return <code>true</code> if every pair has a constant greatest common divisor
+   */
+  private boolean areCoprime(Collection<IExpr> denominators) {
+    IExpr[] values = denominators.toArray(new IExpr[0]);
+    for (int i = 0; i < values.length; i++) {
+      for (int j = i + 1; j < values.length; j++) {
+        try {
+          IExpr gcd = eval(F.PolynomialGCD(values[i], values[j]));
+          if (!gcd.isNumber()) {
+            return false;
+          }
+        } catch (RuntimeException rex) {
+          Errors.rethrowsInterruptException(rex);
+          // PolynomialGCD does not handle every denominator; be conservative
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /** The complementary-angle pairs: <code>f(u) + g(u) == Pi/2</code>. */
+  private static final IBuiltInSymbol[][] COMPLEMENTARY_PAIRS = { //
+      {S.ArcSin, S.ArcCos}, //
+      {S.ArcTan, S.ArcCot}, //
+      {S.ArcSec, S.ArcCsc}};
+
+  /**
+   * Combine a sum that is built <b>only</b> from one complementary pair applied to one common
+   * argument, using <code>f(u) == Pi/2 - g(u)</code>: <code>ArcSin(x)+ArcCos(x)</code> becomes
+   * <code>Pi/2</code> and <code>-3*ArcSin(x)-2*ArcCos(x)</code> becomes
+   * <code>-3*Pi/2+ArcCos(x)</code>. Both eliminations are offered and the complexity function
+   * picks.
+   *
+   * <p>
+   * Every summand has to be a multiple of <code>f(u)</code> or <code>g(u)</code> with the
+   * <b>same</b> <code>u</code>. That restriction cannot come from the complexity function, because
+   * all of these weigh exactly the same: <code>ArcSin(x)+ArcCos(x)+z</code> and <code>Pi/2+z</code>
+   * are both 7, <code>ArcSin(x)+ArcCos(x)+ArcSin(y)</code> and <code>Pi/2+ArcSin(y)</code> are both
+   * 8, and WMA leaves both alone — while <code>-3*ArcSin(x)-2*ArcCos(x)</code>, also a tie, it does
+   * combine.
+   *
+   * <p>
+   * <code>ArcTan(u)+ArcCot(u) == Pi/2</code> only holds for <code>Re(u) &gt; 0</code> — at
+   * <code>u = -1</code> both terms are <code>-Pi/4</code> — so that pair needs a positive argument.
+   *
+   * @param plusAST the sum to combine
+   * @param sResult collects the two candidate eliminations
+   */
+  private void complementaryAngleCombination(IAST plusAST, SimplifiedResult sResult) {
+    for (IBuiltInSymbol[] pair : COMPLEMENTARY_PAIRS) {
+      IExpr argument = F.NIL;
+      IExpr[] coefficient = {F.C0, F.C0};
+      boolean matched = true;
+      for (int i = 1; i < plusAST.size(); i++) {
+        IExpr summand = plusAST.get(i);
+        IExpr factor = F.C1;
+        IExpr angle = summand;
+        if (summand.isTimes()) {
+          IAST times = (IAST) summand;
+          int index = times.indexOf(x -> x.isAST(pair[0], 2) || x.isAST(pair[1], 2));
+          if (index <= 0) {
+            matched = false;
+            break;
+          }
+          angle = times.get(index);
+          factor = times.removePositionsAtCopy(new int[] {index}, 1).oneIdentity1();
+        }
+        int slot = angle.isAST(pair[0], 2) ? 0 : (angle.isAST(pair[1], 2) ? 1 : -1);
+        if (slot < 0) {
+          matched = false;
+          break;
+        }
+        if (argument.isNIL()) {
+          argument = angle.first();
+        } else if (!argument.equals(angle.first())) {
+          matched = false;
+          break;
+        }
+        coefficient[slot] = coefficient[slot].plus(factor);
+      }
+      if (!matched || argument.isNIL() || coefficient[0].isZero() || coefficient[1].isZero()) {
+        continue;
+      }
+      if (pair[0] == S.ArcTan && !argument.isPositiveResult()) {
+        continue;
+      }
+      // f(u) = Pi/2 - g(u), so c0*f(u)+c1*g(u) == c0*Pi/2 + (c1-c0)*g(u), and symmetrically
+      for (int keep = 0; keep < 2; keep++) {
+        int drop = 1 - keep;
+        sResult.checkLessEqual(eval(F.Plus( //
+            F.Times(coefficient[drop], F.CPiHalf), //
+            F.Times(coefficient[keep].subtract(coefficient[drop]),
+                F.unaryAST1(pair[keep], argument)))));
+      }
+      return;
+    }
+  }
+
+  private IExpr tryGroupwiseTogether(IAST plusAST) {
+    if (plusAST.argSize() < 3) {
+      // with two summands the grouping is what Together() already does
+      return F.NIL;
+    }
+    Map<IExpr, IASTAppendable> groups = new LinkedHashMap<>();
+    for (int i = 1; i < plusAST.size(); i++) {
+      IExpr summand = plusAST.get(i);
+      IExpr denominator = eval(F.Denominator(summand));
+      groups.computeIfAbsent(denominator, key -> F.PlusAlloc(plusAST.size())).append(summand);
+    }
+    if (groups.size() < 2 || groups.size() == plusAST.argSize()) {
+      // a single group is plain Together(), all-distinct denominators have nothing to combine
+      return F.NIL;
+    }
+    if (!areCoprime(groups.keySet())) {
+      // When one denominator divides another — (d+e*x^2) and (d+e*x^2)^2 — the whole sum belongs
+      // over one common denominator and splitting it into groups is a step backwards.
+      return F.NIL;
+    }
+    IASTAppendable result = F.PlusAlloc(groups.size());
+    for (IASTAppendable group : groups.values()) {
+      result.append(group.isAST1() ? group.arg1() : eval(F.Together(group)));
+    }
+    return eval(result);
+  }
+
+  /**
+   * Recognize a perfect power hidden among the summands: the variable-dependent part of
+   * <code>1+c^2+2*c*d+d^2</code> factors to <code>(c+d)^2</code>, giving <code>1+(c+d)^2</code>.
+   * {@link S#Factor} on the whole sum cannot find this, because the sum including the constant is
+   * irreducible.
+   *
+   * <p>
+   * Only a perfect power is accepted. Factoring the variable part of any sum is far too eager —
+   * <code>2+3*x+x^2</code> would become <code>2+x*(3+x)</code>, which is one leaf lighter but not
+   * what WMA returns.
+   *
+   * @param plusAST the sum to inspect
+   * @return the sum with its variable part replaced by a power, or {@link F#NIL}
+   */
+  private IExpr tryFactorConstantPlusPower(IAST plusAST) {
+    IASTAppendable constants = F.PlusAlloc(plusAST.size());
+    IASTAppendable rest = F.PlusAlloc(plusAST.size());
+    for (int i = 1; i < plusAST.size(); i++) {
+      IExpr summand = plusAST.get(i);
+      if (summand.isNumber()) {
+        constants.append(summand);
+      } else {
+        rest.append(summand);
+      }
+    }
+    if (constants.argSize() == 0 || rest.argSize() < 2) {
+      return F.NIL;
+    }
+    IExpr factored = eval(F.Factor(rest.oneIdentity0()));
+    if (!factored.isPower() || !factored.exponent().isInteger()) {
+      return F.NIL;
+    }
+    IInteger exponent = (IInteger) factored.exponent();
+    if (!exponent.isPositive() || exponent.isOne()) {
+      return F.NIL;
+    }
+    constants.append(factored);
+    return eval(constants);
+  }
+
+  /**
+   * Collect the sum in each of its variables, simplifying the coefficients:
+   * <code>a^2+2*a*b+b^2+2*a*x+2*b*x+x^2+c^2*x^2+2*c*d*x^2+d^2*x^2</code> becomes
+   * <code>(a+b)^2+2*(a+b)*x+(1+(c+d)^2)*x^2</code>.
+   *
+   * <p>
+   * {@link S#Factor} cannot reach this — the sum is irreducible as a whole, and the structure only
+   * shows up per power of <code>x</code>.
+   *
+   * <p>
+   * <b>Currently not wired into the pipeline.</b> Passing {@link S#Simplify} as the third argument
+   * of {@link S#Collect} simplifies every coefficient recursively, and because Rubi calls
+   * <code>Simplify</code> from inside <code>Integrate</code> the work multiplies until the integral
+   * gives up: <code>Integrate(x^2/(x^2+Sqrt(1-x^2)),x)</code> came back unevaluated. A safe version
+   * has to collect with the binary {@link S#Collect} and then factor each coefficient directly —
+   * {@link #tryFactorConstantPlusPower(IAST)} plus {@link S#Factor} are all that these cases need —
+   * instead of re-entering the whole simplifier.
+   *
+   * @param plusAST the sum to collect
+   * @param sResult collects the candidates, one per variable
+   */
+  private void tryCollectVariables(IAST plusAST, SimplifiedResult sResult) {
+    if (!fFullSimplify || plusAST.argSize() < 4
+        || sResult.minCounter >= Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
+      return;
+    }
+    VariablesSet variables = new VariablesSet(plusAST);
+    List<IExpr> vars = variables.getArrayList();
+    if (vars.size() < 2 || vars.size() > 6) {
+      return;
+    }
+    for (int i = 0; i < vars.size(); i++) {
+      // Each variable is tried on its own: Factor() can throw, and without this the first failure
+      // would abort the loop and the variable that actually pays off — x in
+      // a^2+2*a*b+b^2+2*a*x+...+d^2*x^2 — would never be reached.
+      try {
+        sResult.checkLess(collectOnVariable(plusAST, vars.get(i)));
+      } catch (RuntimeException rex) {
+        Errors.rethrowsInterruptException(rex);
+      }
+    }
+  }
+
+  /**
+   * Group the summands by their power of <code>variable</code> and factor each group's coefficient:
+   * <code>a^2+2*a*b+b^2+2*a*x+2*b*x+x^2+c^2*x^2+2*c*d*x^2+d^2*x^2</code> becomes
+   * <code>(a+b)^2+2*(a+b)*x+(1+(c+d)^2)*x^2</code>.
+   *
+   * <p>
+   * The grouping is done here rather than by {@link S#Collect}, whose result keeps the
+   * <code>x^0</code> part as separate summands — <code>a^2+2*a*b+b^2+(2*a+2*b)*x+...</code> — so
+   * that <code>a^2+2*a*b+b^2</code> never reaches {@link S#Factor} as one expression.
+   *
+   * @param plusAST the sum to collect
+   * @param variable the variable to collect on
+   * @return the collected and factored sum
+   */
+  private IExpr collectOnVariable(IAST plusAST, IExpr variable) {
+    Map<IExpr, IASTAppendable> byPower = new LinkedHashMap<>();
+    for (int i = 1; i < plusAST.size(); i++) {
+      IExpr summand = plusAST.get(i);
+      IASTAppendable coefficient = F.TimesAlloc(4);
+      IASTAppendable variablePart = F.TimesAlloc(4);
+      if (summand.isTimes()) {
+        ((IAST) summand).forEach(factor -> {
+          if (factor.isFree(variable, true)) {
+            coefficient.append(factor);
+          } else {
+            variablePart.append(factor);
+          }
+        });
+      } else if (summand.isFree(variable, true)) {
+        coefficient.append(summand);
+      } else {
+        variablePart.append(summand);
+      }
+      byPower.computeIfAbsent(variablePart.oneIdentity1(), key -> F.PlusAlloc(plusAST.size()))
+          .append(coefficient.oneIdentity1());
+    }
+    if (byPower.size() < 2) {
+      return plusAST;
+    }
+    IASTAppendable result = F.PlusAlloc(byPower.size());
+    for (Map.Entry<IExpr, IASTAppendable> entry : byPower.entrySet()) {
+      IExpr coefficient = bestCoefficientForm(entry.getValue().oneIdentity0());
+      IExpr power = entry.getKey();
+      result.append(power.isOne() ? coefficient : F.Times(coefficient, power));
+    }
+    return eval(result);
+  }
+
+  /**
+   * Pick the cheapest form of one collected coefficient: as it stands, factored, or with a perfect
+   * power pulled out of its variable part.
+   *
+   * @param coefficient the summed coefficient of one power
+   * @return the cheapest of the three forms
+   */
+  private IExpr bestCoefficientForm(IExpr coefficient) {
+    if (!coefficient.isPlus()) {
+      return coefficient;
+    }
+    SimplifiedResult best = new SimplifiedResult(coefficient, fComplexityFunction);
+    best.checkLess(eval(F.Factor(coefficient)));
+    IExpr constantPlusPower = tryFactorConstantPlusPower((IAST) coefficient);
+    if (constantPlusPower.isPresent()) {
+      best.checkLess(constantPlusPower);
+    }
+    return best.result;
+  }
+
+  private IExpr tryPlusLogCommonFactor(IAST plusAST) {
+    if (plusAST.size() <= 2) {
+      return F.NIL;
+    }
+    IInteger gcd = null;
+    IInteger[] coefficients = new IInteger[plusAST.size()];
+    IExpr[] arguments = new IExpr[plusAST.size()];
+    for (int i = 1; i < plusAST.size(); i++) {
+      IExpr summand = plusAST.get(i);
+      if (summand.isTimes2() && summand.first().isInteger() //
+          && summand.second().isLog() && summand.second().first().isRealResult()) {
+        coefficients[i] = (IInteger) summand.first();
+        arguments[i] = summand.second().first();
+      } else if (summand.isLog() && summand.first().isRealResult()) {
+        coefficients[i] = F.C1;
+        arguments[i] = summand.first();
+      } else {
+        // every summand has to be a logarithm, otherwise there is nothing to pull out
+        return F.NIL;
+      }
+      // A summand may already have absorbed its factor: the children of the sum are simplified
+      // first, and 4*Log(2) collapses to the cheaper Log(16) before this runs. Split such an
+      // argument back into base^exponent so that Log(16) counts as 4*Log(2) again.
+      IInteger[] power = perfectPower(arguments[i]);
+      if (power != null) {
+        coefficients[i] = coefficients[i].multiply(power[1]);
+        arguments[i] = power[0];
+      }
+      IInteger magnitude = coefficients[i].abs();
+      gcd = (gcd == null) ? magnitude : gcd.gcd(magnitude);
+      if (gcd.isOne()) {
+        return F.NIL;
+      }
+    }
+    if (gcd == null || gcd.isOne()) {
+      return F.NIL;
+    }
+    IExpr product = F.C1;
+    for (int i = 1; i < plusAST.size(); i++) {
+      product = product.multiply(S.Power.of(arguments[i], coefficients[i].div(gcd)));
+    }
+    return F.Times(gcd, F.Log(eval(product)));
+  }
+
   private IExpr tryPlusLog(IAST plusAST) {
     if (plusAST.size() > 2) {
       IASTAppendable logPlus = F.PlusAlloc(plusAST.size());
@@ -504,29 +1070,25 @@ public class SimplifyUtil extends VisitorExpr {
         }
       } else if (expr.isTimes()) {
         try {
-          // this rule can't be used in TIMES_ORDERLESS_MATCHER, because 2 IAST args are
-          // expected:
+          // These rules cannot go into TIMES_ORDERLESS_MATCHER: one side is a bare pattern, and
+          // that matcher indexes its rules by the head of each factor, so it has nothing to hash.
           // x_ * Conjugate(x_) := Abs(x)^2
-          IAST times = (IAST) expr;
-          int index1 = times.indexOf(x -> x.isAST(S.Conjugate, 2));
-          if (index1 > 0) {
-            IExpr conjugateArg = times.get(index1).first();
-            int index2 = expr.indexOf(x -> x.equals(conjugateArg));
-            if (index2 > 0) {
-              final IASTAppendable removeAtClone =
-                  times.removePositionsAtCopy(new int[] {index1, index2}, 2);
-
-              removeAtClone.append(F.Sqr(F.Abs(conjugateArg)));
-              if (sResult.checkLessEqual(removeAtClone.oneIdentity1())) {
-                expr = sResult.result;
-              }
-            }
+          if (contractArgumentFactor(expr, S.Conjugate, u -> F.Sqr(F.Abs(u)), sResult)) {
+            expr = sResult.result;
+          }
+          // x_ * Gamma(x_) := Gamma(1+x)
+          if (contractArgumentFactor(expr, S.Gamma, u -> F.Gamma(F.Plus(F.C1, u)), sResult)) {
+            expr = sResult.result;
           }
 
           if (TIMES_ORDERLESS_MATCHER != null) {
             IAST temp = TIMES_ORDERLESS_MATCHER.evaluateRepeatedNoCache((IAST) expr, fEngine);
             if (temp.isPresent()) {
-              sResult.checkLessPlusTimesPower(temp);
+              // The matcher hands back an unevaluated result — Abs(a)*Abs(b) comes out as
+              // Times(Abs(a*b)^1), still carrying the Power(..,1) wrapper and the one-element
+              // Times. Weighing that against the input makes a correct contraction lose on leaf
+              // count, so evaluate it first, exactly as visitPlus() does for the Plus matcher.
+              sResult.checkLessPlusTimesPower(eval(temp));
             }
           }
         } catch (RuntimeException rex) {
@@ -797,148 +1359,16 @@ public class SimplifyUtil extends VisitorExpr {
         if (indx[0] > 0) {
           IExpr transformResult = F.NIL;
           boolean negate = false;
-          if (indx[1] == SQR_ARG) {
-            IAST power = (IAST) plusAST.get(indx[0]);
-
-            IAST trigFunction = (IAST) power.base();
-            int id = trigFunction.headID();
-            IExpr arg1 = trigFunction.arg1();
-            if (plusArg1.isOne()) {
-              // 1+...
-              switch (id) {
-                case ID.Cot:
-                  // 1+Cot(x)^2....
-                  transformResult = F.Csc(arg1);
-                  break;
-                case ID.Csch:
-                  // 1+Csch(x)^2....
-                  transformResult = F.Coth(arg1);
-                  break;
-                case ID.Sinh:
-                  // 1+Sinh(x)^2....
-                  transformResult = F.Cosh(arg1);
-                  break;
-                case ID.Tan:
-                  // 1+Tan(x)^2....
-                  transformResult = F.Sec(arg1);
-                  break;
-                default:
-              }
-            } else {
-              // -1+....
-              switch (id) {
-                case ID.Cos:
-                  // -1+Cos(x)^2....
-                  transformResult = F.Sin(arg1);
-                  negate = true;
-                  break;
-                case ID.Csc:
-                  // -1+Csc(x)^2....
-                  transformResult = F.Cot(arg1);
-                  break;
-                case ID.Cosh:
-                  // -1+Cosh(x)^2....
-                  transformResult = F.Sinh(arg1);
-                  break;
-                case ID.Coth:
-                  // -1+Coth(x)^2....
-                  transformResult = F.Csch(arg1);
-                  break;
-                case ID.Sec:
-                  // -1+Sec(x)^2....
-                  transformResult = F.Tan(arg1);
-                  break;
-                case ID.Sech:
-                  // -1+Sech(x)^2....
-                  transformResult = F.Tanh(arg1);
-                  negate = true;
-                  break;
-                case ID.Sin:
-                  // -1+Sin(x)^2....
-                  transformResult = F.Cos(arg1);
-                  negate = true;
-                  break;
-                case ID.Tanh:
-                  // -1+Tanh(x)^2....
-                  transformResult = F.Sech(arg1);
-                  negate = true;
-                  break;
-                default:
-              }
-            }
-          } else if (indx[1] == NEGATIVE_SQR_ARG) {
-            IAST power = (IAST) plusAST.get(indx[0]).second();
-            IAST trigFunction = (IAST) power.base();
-            int id = trigFunction.headID();
-            IExpr arg1 = trigFunction.arg1();
-            if (plusArg1.isOne()) {
-              // 1 - ...
-              switch (id) {
-                case ID.Cos:
-                  // 1-Cos(x)^2....
-                  transformResult = F.Sin(arg1);
-                  break;
-                case ID.Cosh:
-                  // 1-Cosh(x)^2....
-                  transformResult = F.Sinh(arg1);
-                  negate = true;
-                  break;
-                case ID.Coth:
-                  // 1-Coth(x)^2....
-                  transformResult = F.Csch(arg1);
-                  negate = true;
-                  break;
-                case ID.Csc:
-                  // 1-Csc(x)^2....
-                  transformResult = F.Cot(arg1);
-                  negate = true;
-                  break;
-                case ID.Sec:
-                  // 1-Sec(x)^2....
-                  transformResult = F.Tan(arg1);
-                  negate = true;
-                  break;
-                case ID.Sech:
-                  // 1-Sech(x)^2....
-                  transformResult = F.Tanh(arg1);
-                  break;
-                case ID.Sin:
-                  // 1-Sin(x)^2....
-                  transformResult = F.Cos(arg1);
-                  break;
-                case ID.Tanh:
-                  // 1-Tanh(x)^2....
-                  transformResult = F.Sech(arg1);
-                  break;
-                default:
-              }
-            } else {
-              // -1 - ...
-              switch (id) {
-                case ID.Cot:
-                  // -1-Cot(x)^2....
-                  transformResult = F.Csc(arg1);
-                  negate = true;
-                  break;
-                case ID.Csch:
-                  // -1-Csch(x)^2....
-                  transformResult = F.Coth(arg1);
-                  negate = true;
-                  break;
-                case ID.Tan:
-                  // -1-Tan(x)^2....
-                  transformResult = F.Sec(arg1);
-                  negate = true;
-                  break;
-                case ID.Sinh:
-                  // -1-Sinh(x)^2....
-                  transformResult = F.Cosh(arg1);
-                  negate = true;
-                  break;
-                default:
-                  break;
-              }
-            }
+          // for SQR_ARG the summand is the Power itself, for NEGATIVE_SQR_ARG it is
+          // Times(-1, Power(...))
+          IExpr summand = plusAST.get(indx[0]);
+          IAST power = (IAST) (indx[1] == SQR_ARG ? summand : summand.second());
+          IAST trigFunction = (IAST) power.base();
+          PythagoreanIdentity identity =
+              pythagoreanIdentity(plusArg1.isOne(), indx[1], trigFunction.headID());
+          if (identity != null) {
+            transformResult = F.unaryAST1(identity.resultHead, trigFunction.arg1());
+            negate = identity.negate;
           }
 
           if (transformResult.isPresent()) {
@@ -1049,169 +1479,405 @@ public class SimplifyUtil extends VisitorExpr {
     }
   }
 
+  /**
+   * Move a leading minus sign out of the denominator of a fraction, e.g. rewrite
+   * <code>(I*2*x)/(-1-x^2)</code> as <code>(-2*I*x)/(1+x^2)</code>. Both denote the same value, but
+   * the negated denominator weighs less.
+   *
+   * @param expr a fraction to normalize
+   * @param util the visitor whose evaluation engine to use
+   * @return the normalized fraction, or {@link F#NIL} if the denominator does not lead with a
+   *         negative term
+   */
+  private static IExpr normalizeDenominatorSign(IExpr expr, SimplifyUtil util) {
+    if (!expr.isTimes() && !expr.isPower()) {
+      return F.NIL;
+    }
+    IExpr denominator = util.eval(F.Denominator(expr));
+    if (denominator.isPlus() && denominator.first().isNegative()) {
+      IExpr numerator = util.eval(F.Numerator(expr));
+      return util.eval(F.Divide(numerator.negate(), denominator.negate()));
+    }
+    return F.NIL;
+  }
+
+  /**
+   * Tie-break for pulling a common factor out of a {@link S#Plus}. The factored form and the sum
+   * usually weigh the same, so the complexity function cannot decide between them.
+   *
+   * <p>
+   * Take the factored form when the sum is a polynomial in its variables, or — for a non-polynomial
+   * sum — when the factor pulled out is a plain number and no reciprocal power of a variable
+   * remains behind:
+   *
+   * <pre>
+   * 3*x+6                            -&gt; 3*(2+x)               polynomial
+   * Pi*x+6*x^7                       -&gt; x*(Pi+6*x^6)          polynomial, symbolic factor
+   * z+11*z^2+11*z^3+z^4              -&gt; z*(1+11*z+11*z^2+z^3) polynomial, symbolic factor
+   * 1/2-(-1)^n/2                     -&gt; 1/2*(1-(-1)^n)        numeric factor, no 1/x left
+   * 4*Cos(u)-4*x^2*Sin(u)-...        -&gt; 4*(Cos(u)-...)        numeric factor, no 1/x left
+   * 4+2/x                            -&gt; 4+2/x                 remainder 2+1/x has 1/x
+   * -4/5+6/(5*x)                     -&gt; -4/5+6/(5*x)          remainder has 1/x
+   * n*C(1)/E^2+n*Log(Log(n))/Log(2)  -&gt; stays a sum           not polynomial, factor n symbolic
+   * </pre>
+   *
+   * @param original the sum a common factor was pulled out of
+   * @param factored the result of factoring that common term out
+   * @return <code>true</code> if the factored form should win a complexity tie
+   */
+  private static boolean prefersFactoredPlus(IExpr original, IExpr factored) {
+    if (!factored.isTimes()) {
+      return false;
+    }
+    if (original.isPlus()) {
+      VariablesSet variables = new VariablesSet(original);
+      if (original.isPolynomial(variables.getVarList())) {
+        return true;
+      }
+    }
+    IAST times = (IAST) factored;
+    if (!times.arg1().isNumber()) {
+      return false;
+    }
+    // a reciprocal power of a variable, e.g. x^(-1); E^(-2) does not count, its base is a constant
+    return times.rest().oneIdentity1().isFree(
+        x -> x.isPower() && x.exponent().isNegative() && !x.base().isNumericFunction(), true);
+  }
+
+  /**
+   * Contract a pair of factors <code>u</code> and <code>head(u)</code> inside a {@link S#Times}
+   * into a single factor, e.g. <code>x*Gamma(x)</code> to <code>Gamma(1+x)</code> and
+   * <code>x*Conjugate(x)</code> to <code>Abs(x)^2</code>.
+   *
+   * <p>
+   * Such a rule cannot live in {@link #TIMES_ORDERLESS_MATCHER}: one of its two left-hand-sides is
+   * a bare pattern <code>x_</code>, and that matcher indexes rules by the head of each factor, so a
+   * bare pattern gives it nothing to hash. (Verified — a bare-pattern rule there never matches.)
+   *
+   * <p>
+   * The contraction wins a complexity tie only when it consumes the <b>whole</b> product, the same
+   * rule the {@link S#Plus} hash-rule offer uses. <code>x*Gamma(x)</code> and
+   * <code>Gamma(1+x)</code> both weigh 4 and WMA contracts them, while <code>2*x*Gamma(x)</code> —
+   * where a factor is left over — stays as it is.
+   *
+   * @param expr the {@link S#Times} expression to search
+   * @param head the head to look for, applied to a single argument
+   * @param combiner builds the replacement factor from that argument
+   * @param sResult collects the candidate
+   * @return <code>true</code> if the contracted form became the new result
+   */
+  private boolean contractArgumentFactor(IExpr expr, ISymbol head, Function<IExpr, IExpr> combiner,
+      SimplifiedResult sResult) {
+    if (!expr.isTimes()) {
+      return false;
+    }
+    IAST times = (IAST) expr;
+    int index1 = times.indexOf(x -> x.isAST(head, 2));
+    if (index1 <= 0) {
+      return false;
+    }
+    final IExpr argument = times.get(index1).first();
+    int index2 = times.indexOf(x -> x.equals(argument));
+    if (index2 <= 0) {
+      return false;
+    }
+    final IASTAppendable rest = times.removePositionsAtCopy(new int[] {index1, index2}, 2);
+    rest.append(combiner.apply(argument));
+    final IExpr contracted = eval(rest.oneIdentity1());
+    // consumed the whole product if nothing but the combined factor is left
+    final boolean consumedWholeProduct = rest.argSize() == 1;
+    return consumedWholeProduct ? sResult.checkLessEqual(contracted)
+        : sResult.checkLessPlusTimesPower(contracted);
+  }
+
+  /** How a {@link Step} deals with exceptions thrown by its action. */
+  private enum CatchPolicy {
+    /**
+     * Let everything propagate. Only the {@link LimitException} handler around the whole pipeline
+     * applies.
+     */
+    NONE,
+    /**
+     * Swallow {@link ValidateException}. Every other {@link RuntimeException} — including
+     * {@link LimitException} — propagates.
+     */
+    VALIDATE,
+    /** Swallow every {@link RuntimeException} after re-throwing interrupts. */
+    RUNTIME
+  }
+
+  /**
+   * The mutable state threaded through {@link #TRANSFORMATION_STEPS}. Steps read {@link #expr},
+   * offer candidates to {@link #result}, and a few of them publish a value that a later step reads
+   * ({@link #expandAllCounter}, {@link #together}).
+   */
+  private static final class RewriteContext {
+    final SimplifyUtil util;
+
+    final SimplifiedResult result;
+
+    /** The expression the steps rewrite. Only a {@code rebase} step reassigns it. */
+    IExpr expr;
+
+    /** Complexity of the {@code ExpandAll} result; gates the factorization step. */
+    long expandAllCounter;
+
+    /** The {@code Together} result; read by the numerator/denominator split. */
+    IExpr together;
+
+    RewriteContext(SimplifyUtil util, IExpr expr) {
+      this.util = util;
+      this.expr = expr;
+      this.result = new SimplifiedResult(expr, util.fComplexityFunction);
+      this.together = expr;
+    }
+
+    /** Adopt the current best as the expression the following steps rewrite. */
+    void rebase() {
+      if (result.result.isAST()) {
+        expr = result.result;
+      }
+    }
+
+    /** The working expression is an {@link IAST} by construction of {@link #rebase()}. */
+    IAST ast() {
+      return (IAST) expr;
+    }
+  }
+
+  /** One named entry of the ordered rewrite pipeline. */
+  private static final class Step {
+    final String name;
+
+    final CatchPolicy catchPolicy;
+
+    final Consumer<RewriteContext> action;
+
+    Step(String name, CatchPolicy catchPolicy, Consumer<RewriteContext> action) {
+      this.name = name;
+      this.catchPolicy = catchPolicy;
+      this.action = action;
+    }
+
+    void run(RewriteContext ctx) {
+      if (catchPolicy == CatchPolicy.NONE) {
+        action.accept(ctx);
+        return;
+      }
+      try {
+        action.accept(ctx);
+      } catch (RuntimeException rex) {
+        if (catchPolicy == CatchPolicy.RUNTIME) {
+          Errors.rethrowsInterruptException(rex);
+          return;
+        }
+        if (!(rex instanceof ValidateException)) {
+          throw rex;
+        }
+      }
+    }
+
+    @Override
+    public String toString() {
+      return name;
+    }
+  }
+
+  /**
+   * The ordered rewrite pipeline used by {@link #tryTransformations(IExpr)}: try {@code ExpandAll},
+   * {@code Together}, {@code Apart}, {@code Factor}, … and keep whichever result the complexity
+   * function rates lowest.
+   */
+  private static final Step[] TRANSFORMATION_STEPS = { //
+      new Step("CollectLogAndTerms", CatchPolicy.NONE, ctx -> {
+        if (ctx.expr.isTimes()) {
+          IExpr temp = tryTimesLog(ctx.ast());
+          if (temp.isPresent()) {
+            ctx.result.checkLessEqual(temp);
+          }
+        } else if (ctx.expr.isPlus()) {
+          IExpr temp = AlgebraUtil.factorTermsPlus(ctx.ast(), EvalEngine.get());
+          if (temp.isPresent()) {
+            final IExpr source = ctx.expr;
+            final IExpr factored = temp;
+            ctx.result.offerOnTie(temp, () -> prefersFactoredPlus(source, factored));
+          }
+        }
+      }), //
+      new Step("Rebase", CatchPolicy.NONE, RewriteContext::rebase), //
+      new Step("ExpandAll", CatchPolicy.RUNTIME, ctx -> {
+        IExpr temp = F.evalExpandAll(ctx.expr);
+        ctx.expandAllCounter = ctx.util.fComplexityFunction.apply(temp);
+        ctx.result.checkLessPlusTimesPower(temp);
+      }), //
+      new Step("Rebase", CatchPolicy.NONE, RewriteContext::rebase), //
+      new Step("TrigExpand", CatchPolicy.VALIDATE, ctx -> {
+        if (ctx.ast().hasTrigonometricFunction()) {
+          ctx.result.checkLessPlusTimesPower(ctx.util.eval(F.TrigExpand(ctx.expr)));
+        }
+      }), //
+      new Step("TrigToExp", CatchPolicy.VALIDATE, ctx -> {
+        if (ctx.ast().hasTrigonometricFunction()) {
+          IExpr temp = ctx.util.eval(F.TrigToExp(ctx.expr));
+          if (!ctx.result.checkLessPlusTimesPower(temp) && ctx.util.fFullSimplify) {
+            ctx.result.checkLessPlusTimesPower(ctx.util.eval(F.Factor(temp)));
+          }
+        }
+      }), //
+      new Step("TrigReduce", CatchPolicy.VALIDATE, ctx -> {
+        if (ctx.ast().hasTrigonometricFunction()) {
+          ctx.result.checkLessPlusTimesPower(ctx.util.eval(F.TrigReduce(ctx.expr)));
+        }
+      }), //
+      new Step("TrigFactor", CatchPolicy.VALIDATE, ctx -> {
+        if (ctx.ast().hasTrigonometricFunction()) {
+          // contracts a trigonometric sum into a product, which neither TrigReduce nor TrigExpand
+          // reaches: 3*Cos(x)^2*Sin(x)^2+Sin(x)^4 becomes (2+Cos(2*x))*Sin(x)^2.
+          // STRICT for the same reason as the fraction candidates above.
+          ctx.result.checkLess(ctx.util.eval(F.unaryAST1(S.TrigFactor, ctx.expr)));
+        }
+      }), //
+      new Step("TogetherAndFractionParts", CatchPolicy.VALIDATE, ctx -> {
+        ctx.together = ctx.expr;
+        if (ctx.result.minCounter < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
+          ctx.together = ctx.util.eval(F.Together(ctx.expr));
+          ctx.result.checkLessPlusTimesPower(ctx.together);
+
+        }
+        if (ctx.util.fFullSimplify) {
+          if (ctx.together.isTimes()) {
+            IExpr[] fractionParts =
+                AlgebraUtil.numeratorDenominator((IAST) ctx.together, true, EvalEngine.get());
+            IExpr numerator = fractionParts[0];
+            IExpr denominator = fractionParts[1];
+            // common factors in numerator, denominator may be canceled here, so check if we have
+            // a new minimal expression
+            ctx.result.checkLessPlusTimesPower(F.Divide(numerator, denominator));
+
+            if (!numerator.isOne() && //
+                !denominator.isOne()) {
+              ctx.util.tryPolynomialQuotientRemainder(numerator, denominator, ctx.result);
+            }
+          }
+          ctx.result.checkLessPlusTimesPower(ctx.util.eval(F.ExpToTrig(ctx.expr)));
+        }
+      }), //
+      // Runs in its own step with CatchPolicy.RUNTIME on purpose. Folded into
+      // TogetherAndFractionParts (CatchPolicy.VALIDATE) any non-ValidateException thrown here
+      // escapes tryTransformations(), whose only handler is for LimitException, and aborts the
+      // whole Simplify — the caller then sees the untouched input. That is how this step first
+      // turned ZTransform(n*a^n,n,z) back into z*(1/(a-z)+z/(-a+z)^2).
+      new Step("ExpandFractionParts", CatchPolicy.RUNTIME, ctx -> {
+        if (ctx.result.minCounter >= Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT
+            || ctx.together == ctx.expr) {
+          return;
+        }
+        // Only worth trying when the denominator is a product of sums, which is the shape whose
+        // expansion actually collapses something: (a-I*x)*(a+I*x) becomes a^2+x^2. When Together
+        // already produced a single sum (or a power of one) expanding is a no-op that only
+        // perturbs which candidate the pipeline settles on.
+        IExpr togetherDenominator = ctx.util.eval(F.Denominator(ctx.together));
+        if (!togetherDenominator.isTimes()
+            || !((IAST) togetherDenominator).exists(factor -> factor.isPlus())) {
+          return;
+        }
+        // Together leaves the denominator factored, so its result can weigh as much as the input
+        // and never win: 3*(1/(a-I*x)+1/(a+I*x)) becomes (6*a)/((a-I*x)*(a+I*x)). Expanding the
+        // denominator turns that into (6*a)/(a^2+x^2).
+        //
+        // Both candidates are offered STRICT on purpose: an equally heavy fraction is no gain, and
+        // simplifyStep() returns as soon as a pass comes back with an unchanged complexity, so
+        // swapping in an equally heavy result would end the fixpoint loop a pass early.
+        IExpr expandedDenominator = ctx.util.eval(F.ExpandDenominator(ctx.together));
+        ctx.result.checkLess(expandedDenominator);
+
+        // ... and a denominator that leads with a negative term hides a cheaper form:
+        // (I*2*x)/(-1-x^2) is the same value as (-2*I*x)/(1+x^2) but weighs more.
+        IExpr signNormalized = normalizeDenominatorSign(expandedDenominator, ctx.util);
+        if (signNormalized.isPresent()) {
+          ctx.result.checkLess(signNormalized);
+        }
+      }), //
+      new Step("Factorization", CatchPolicy.VALIDATE, ctx -> {
+        // TODO: Factor is not fast enough for large expressions!
+        // Maybe restricting factoring to smaller expressions is necessary here
+        if (ctx.util.fFullSimplify && ctx.expandAllCounter < 50) {
+          ctx.result.checkLessPlusTimesPower(ctx.util.eval(F.Factor(ctx.expr)));
+        }
+        if (ctx.expandAllCounter < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
+          ctx.result.checkLessPlusTimesPower(ctx.util.eval(F.FactorSquareFree(ctx.expr)));
+        }
+      }), //
+      new Step("Apart", CatchPolicy.VALIDATE, ctx -> {
+        if (!ctx.util.fNoApart //
+            && ctx.result.minCounter < Config.MAX_SIMPLIFY_APART_LEAFCOUNT) {
+          ctx.result.checkLessPlusTimesPower(ctx.util.eval(F.Apart(ctx.expr)));
+        }
+      }), //
+      new Step("PlusFactorTermsAndLog", CatchPolicy.NONE, ctx -> {
+        if (!ctx.expr.isPlus()) {
+          return;
+        }
+        IExpr temp = AlgebraUtil.factorTermsPlus(ctx.ast(), EvalEngine.get());
+        if (temp.isPresent()) {
+          final IExpr source = ctx.expr;
+          final IExpr factored = temp;
+          ctx.result.offerOnTie(temp, () -> prefersFactoredPlus(source, factored));
+        }
+
+        Optional<IExpr[]> commonFactors = AlgebraUtil.findCommonFactors(ctx.ast(), true);
+        if (commonFactors.isPresent()) {
+          final IExpr combined =
+              ctx.util.eval(F.Times(commonFactors.get()[0], commonFactors.get()[1]));
+          ctx.result.offerOnTie(combined, () -> prefersFactoredPlus(ctx.expr, combined));
+        }
+
+        final IAST logSource = ctx.result.result.isPlus() //
+            ? (IAST) ctx.result.result
+            : ctx.ast();
+        temp = ctx.util.tryPlusLog(logSource);
+        if (temp.isPresent()) {
+          ctx.result.checkLessEqual(temp);
+        }
+        // offered after tryPlusLog() so it competes against the single collapsed logarithm
+        temp = ctx.util.tryPlusLogCommonFactor(logSource);
+        if (temp.isPresent()) {
+          ctx.result.checkLess(temp);
+        }
+
+      }), //
+      // Own step with CatchPolicy.RUNTIME: these call Factor() and PolynomialGCD(), and in
+      // PlusFactorTermsAndLog (CatchPolicy.NONE) anything they throw escapes tryTransformations,
+      // whose only handler is for LimitException. That aborts the whole Simplify, and because Rubi
+      // calls Simplify from inside Integrate the integral silently comes back unevaluated —
+      // Integrate(x^2/(x^2+Sqrt(1-x^2)),x) did exactly that.
+      new Step("GroupwisePlus", CatchPolicy.RUNTIME, ctx -> {
+        if (!ctx.expr.isPlus()) {
+          return;
+        }
+        // both rewrites are only worth taking when they are strictly cheaper
+        IExpr temp = ctx.util.tryGroupwiseTogether(ctx.ast());
+        if (temp.isPresent()) {
+          ctx.result.checkLess(temp);
+        }
+        temp = ctx.util.tryFactorConstantPlusPower(ctx.ast());
+        if (temp.isPresent()) {
+          ctx.result.checkLess(temp);
+        }
+        ctx.util.tryCollectVariables(ctx.ast(), ctx.result);
+      }) //
+  };
+
   private IExpr tryTransformations(IExpr expr) {
     if (!expr.isAST()) {
       return F.NIL;
     }
     try {
-      // try ExpandAll, Together, Apart, Factor to reduce the expression
-      SimplifiedResult simplifiedResult = new SimplifiedResult(expr, fComplexityFunction);
-      IExpr temp;
-      long expandAllCounter = 0;
-      if (expr.isTimes()) {
-        temp = tryTimesLog((IAST) expr);
-        if (temp.isPresent()) {
-          simplifiedResult.checkLessEqual(temp);
-        }
-      } else if (expr.isPlus()) {
-        temp = AlgebraUtil.factorTermsPlus((IAST) expr, EvalEngine.get());
-        if (temp.isPresent()) {
-          simplifiedResult.checkLessEqual(temp);
-        }
+      RewriteContext ctx = new RewriteContext(this, expr);
+      for (int i = 0; i < TRANSFORMATION_STEPS.length; i++) {
+        TRANSFORMATION_STEPS[i].run(ctx);
       }
-
-      if (simplifiedResult.result.isAST()) {
-        expr = simplifiedResult.result;
-      }
-
-      try {
-        temp = F.evalExpandAll(expr);
-        expandAllCounter = fComplexityFunction.apply(temp);
-        simplifiedResult.checkLessPlusTimesPower(temp);
-      } catch (RuntimeException rex) {
-        Errors.rethrowsInterruptException(rex);
-        //
-      }
-
-      if (simplifiedResult.result.isAST()) {
-        expr = simplifiedResult.result;
-      }
-
-      if (((IAST) expr).hasTrigonometricFunction()) {
-
-        try {
-          temp = eval(F.TrigExpand(expr));
-          simplifiedResult.checkLessPlusTimesPower(temp);
-        } catch (ValidateException ve) {
-          //
-        }
-
-        try {
-          temp = eval(F.TrigToExp(expr));
-          if (!simplifiedResult.checkLessPlusTimesPower(temp)) {
-            if (fFullSimplify) {
-              temp = eval(F.Factor(temp));
-              simplifiedResult.checkLessPlusTimesPower(temp);
-            }
-          }
-        } catch (ValidateException ve) {
-          //
-        }
-
-        try {
-          temp = eval(F.TrigReduce(expr));
-          simplifiedResult.checkLessPlusTimesPower(temp);
-        } catch (ValidateException ve) {
-          //
-        }
-      }
-
-      try {
-        IExpr together = expr;
-        if (simplifiedResult.minCounter < Config.MAX_SIMPLIFY_TOGETHER_LEAFCOUNT) {
-          together = eval(F.Together(expr));
-          simplifiedResult.checkLessPlusTimesPower(together);
-        }
-
-        if (fFullSimplify) {
-          if (together.isTimes()) {
-            IExpr[] fractionParts =
-                AlgebraUtil.numeratorDenominator((IAST) together, true, EvalEngine.get());
-            IExpr numerator = fractionParts[0];
-            IExpr denominator = fractionParts[1];
-            // common factors in numerator, denominator may be canceled here, so check if we
-            // have
-            // a new minimal expression
-            IExpr divide = F.Divide(fractionParts[0], fractionParts[1]);
-            simplifiedResult.checkLessPlusTimesPower(divide);
-
-            if (!numerator.isOne() && //
-                !denominator.isOne()) {
-              tryPolynomialQuotientRemainder(numerator, denominator, simplifiedResult);
-            }
-          }
-
-          temp = eval(F.ExpToTrig(expr));
-          simplifiedResult.checkLessPlusTimesPower(temp);
-
-        }
-
-      } catch (ValidateException wat) {
-        //
-      }
-
-      try {
-        // TODO: Factor is not fast enough for large expressions!
-        // Maybe restricting factoring to smaller expressions is necessary here
-        temp = F.NIL;
-        if (fFullSimplify && expandAllCounter < 50) { // Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
-          temp = eval(F.Factor(expr));
-          simplifiedResult.checkLessPlusTimesPower(temp);
-        }
-        // if (fFullSimplify
-        // && (minCounter >= Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT || !temp.equals(expr))) {
-        // if (expandAllCounter < (Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT / 2) && !fFullSimplify)
-        // {
-        // temp = eval(F.Factor(expr));
-        // count = fComplexityFunction.apply(temp);
-        // if (count < minCounter) {
-        // minCounter = count;
-        // result = temp;
-        // }
-        // } else
-        if (expandAllCounter < Config.MAX_SIMPLIFY_FACTOR_LEAFCOUNT) {
-          temp = eval(F.FactorSquareFree(expr));
-          simplifiedResult.checkLessPlusTimesPower(temp);
-        }
-
-      } catch (ValidateException ve) {
-        //
-      }
-
-      try {
-        if (!fNoApart //
-            && simplifiedResult.minCounter < Config.MAX_SIMPLIFY_APART_LEAFCOUNT) {
-          temp = eval(F.Apart(expr));
-          simplifiedResult.checkLessPlusTimesPower(temp);
-        }
-      } catch (ValidateException ve) {
-        //
-      }
-
-      // expr = simplifiedResult.result;
-      if (expr.isPlus()) {
-        temp = AlgebraUtil.factorTermsPlus((IAST) expr, EvalEngine.get());
-        if (temp.isPresent()) {
-          simplifiedResult.checkLessEqual(temp);
-        }
-
-        Optional<IExpr[]> commonFactors = AlgebraUtil.findCommonFactors((IAST) expr, true);
-        if (commonFactors.isPresent()) {
-          temp = eval(F.Times(commonFactors.get()[0], commonFactors.get()[1]));
-          simplifiedResult.checkLessEqual(temp);
-        }
-
-        if (simplifiedResult.result.isPlus()) {
-          temp = tryPlusLog((IAST) simplifiedResult.result);
-        } else {
-          temp = tryPlusLog((IAST) expr);
-        }
-        if (temp.isPresent()) {
-          simplifiedResult.checkLessEqual(temp);
-        }
-      }
-
-      return simplifiedResult.result;
+      return ctx.result.result;
     } catch (LimitException aele) {
       //
     }
@@ -1221,6 +1887,18 @@ public class SimplifyUtil extends VisitorExpr {
   @Override
   public IExpr visit(IASTMutable ast) {
     SimplifiedResult sResult = new SimplifiedResult(ast, fComplexityFunction);
+
+    if (ast.isPlus()) {
+      // Has to run before the children are rewritten. In FullSimplify mode visitAST() below
+      // FunctionExpand()s every summand, turning ArcSin(x) into a logarithmic form, after which the
+      // complementary pair is no longer recognizable. Runs in both modes: WMA's plain
+      // Simplify combines ArcSin(x)+ArcCos(x) as well.
+      SimplifiedResult angleResult = new SimplifiedResult(ast, fComplexityFunction);
+      complementaryAngleCombination(ast, angleResult);
+      if (!angleResult.result.equals(ast)) {
+        return angleResult.result;
+      }
+    }
 
     IExpr temp = visitAST(ast);
     if (temp.isPresent()) {
@@ -1325,18 +2003,24 @@ public class SimplifyUtil extends VisitorExpr {
       }
     }
 
-    if (fFullSimplify) {
-      HashedOrderlessMatcher hashRuleMap = PLUS_ORDERLESS_MATCHER;
-      if (hashRuleMap != null) {
-        plusAST.setEvalFlags(plusAST.getEvalFlags() ^ IAST.IS_HASH_EVALED);
-        temp = hashRuleMap.evaluateRepeated(plusAST, fEngine);
-        if (temp.isPresent()) {
-          temp = eval(temp);
-          if (sResult.checkLessPlusTimesPower(temp)) {
-            return temp;
-          }
+    HashedOrderlessMatcher plusRuleMap = PLUS_ORDERLESS_MATCHER;
+    if (plusRuleMap != null) {
+      plusAST.setEvalFlags(plusAST.getEvalFlags() ^ IAST.IS_HASH_EVALED);
+      temp = plusRuleMap.evaluateRepeated(plusAST, fEngine);
+      if (temp.isPresent()) {
+        temp = eval(temp);
+        // a rule that consumes the whole sum wins a tie; a partial one must not — the matcher
+        // splits coefficients, so Cosh+Sinh -> E^x would turn 10*Cosh(x)+4*Sinh(x) into the
+        // equally heavy 4*E^x+6*Cosh(x)
+        final boolean consumedWholeSum = !temp.isPlus();
+        if (consumedWholeSum ? sResult.checkLessEqual(temp)
+            : sResult.checkLessPlusTimesPower(temp)) {
+          return temp;
         }
       }
+    }
+
+    if (fFullSimplify) {
       functionExpand(plusAST, sResult);
     }
 

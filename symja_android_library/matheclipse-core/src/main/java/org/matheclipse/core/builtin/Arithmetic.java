@@ -2826,27 +2826,12 @@ public final class Arithmetic {
       plusMatcher.definePatternHashRule(F.Erf(x_), F.Erfc(x_), //
           C1);
 
-      plusMatcher.defineHashRule(ArcSin(x_), ArcCos(x_), //
-          F.CPiHalf);
-      plusMatcher.defineHashRule(ArcTan(x_), ArcCot(x_), //
-          F.CPiHalf);
-      // "Positive[x]&&(y==1/x)");
-      plusMatcher.defineHashRule(ArcTan(x_), ArcTan(y_), //
-          F.CPiHalf, //
-          And(Positive(x), Equal(y, Power(x, CN1))));
-
-      // ArcTan(1/2) + ArcTan(1/3) = Pi/4
-      plusMatcher.defineHashRule(F.ArcTan(F.C1D3), F.ArcTan(F.C1D2), //
-          F.CPiQuarter);
-      // ArcTan(1/3) + ArcTan(1/7) = ArcTan(1/2)
-      plusMatcher.defineHashRule(F.ArcTan(F.C1D3), F.ArcTan(F.QQ(1L, 7L)), //
-          F.ArcTan(F.C1D2));
-      // plusMatcher.setUpHashRule("-ArcTan[x_]", "-ArcTan[y_]",
-      // "-Pi/2", "Positive[x]&&(y==1/x)");
-      // plusMatcher.definePatternHashRule(Times(CN1, ArcTan(x_)), Times(CN1,
-      // ArcTan(y_)), Times(CN1D2, Pi),
-      // And(Positive(x), Equal(y, Power(x, CN1))));
-
+      // The inverse-trigonometric identities that used to live here — ArcSin(x)+ArcCos(x),
+      // ArcTan(x)+ArcCot(x), ArcTan(x)+ArcTan(1/x) and the two numeric ArcTan pairs — have moved to
+      // SimplifyUtil, because Mathematica does not apply them during plain evaluation:
+      // ArcSin[x]+ArcCos[x] stays put until Simplify is asked for. Two of them were also wrong
+      // here: they fired on part of a larger sum (a+ArcSin[x]+ArcCos[x]+2/3), and
+      // ArcTan(x)+ArcCot(x) == Pi/2 only holds for Re(x) > 0.
       return plusMatcher;
     }
 
@@ -5050,12 +5035,24 @@ public final class Arithmetic {
 
     @Override
     public IExpr functionExpand(final IAST ast, EvalEngine engine) {
-      if (ast.isSqrt() && ast.base().isAST(S.Plus, 3)) {
-        IAST plus = (IAST) ast.base();
-        final IExpr arg1 = plus.arg1();
-        final IExpr arg2 = plus.arg2();
-        if (arg1.isRational()) {
-          return sqrtDenest((IRational) arg1, arg2);
+      if (ast.isSqrt()) {
+        IExpr base = ast.base();
+        if (!base.isAST(S.Plus, 3)) {
+          // A common factor pulled out of the sum hides it from sqrtDenest():
+          // Sqrt(3+Sqrt(13+4*Sqrt(3))) reduces to Sqrt(2*(2+Sqrt(3))), whose base is a Times.
+          // Expanding gives back 4+2*Sqrt(3), which denests to 1+Sqrt(3).
+          IExpr expanded = engine.evaluate(F.Expand(base));
+          if (expanded.isAST(S.Plus, 3)) {
+            base = expanded;
+          }
+        }
+        if (base.isAST(S.Plus, 3)) {
+          IAST plus = (IAST) base;
+          final IExpr arg1 = plus.arg1();
+          final IExpr arg2 = plus.arg2();
+          if (arg1.isRational()) {
+            return sqrtDenest((IRational) arg1, arg2);
+          }
         }
       }
       return F.NIL;

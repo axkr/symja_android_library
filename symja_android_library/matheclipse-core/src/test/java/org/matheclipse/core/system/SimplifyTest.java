@@ -87,10 +87,10 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
         "FullSimplify(Denominator((1/(d + e*x^2) * (1-((2*x*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)))) / "
             //
             + "(-((4*e*x^2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2)^2) + (2*e*x)/(d + e*x^2) + (2*(d*Sqrt(-(e/d)) + e*x))/(d + e*x^2))))", //
-        "(d*(2*d*Sqrt(-e/d)+4*e*x-2*e*Sqrt(-e/d)*x^2))/(d+e*x^2)");
+        "(2*d*(d*Sqrt(-e/d)+2*e*x-e*Sqrt(-e/d)*x^2))/(d+e*x^2)");
     check("Together( 1+(-2*x*(d*Sqrt(-e/d)+e*x))/(d+e*x^2) )", //
         "(d-2*d*Sqrt(-e/d)*x-e*x^2)/(d+e*x^2)");
-    check("Together( (d*(2*d*Sqrt(-e/d)+4*e*x-2*e*Sqrt(-e/d)*x^2))/(d+e*x^2) )", //
+    check("Together( (2*d*(d*Sqrt(-e/d)+2*e*x-e*Sqrt(-e/d)*x^2))/(d+e*x^2) )", //
         "(2*d^2*Sqrt(-e/d)+4*d*e*x-2*d*e*Sqrt(-e/d)*x^2)/(d+e*x^2)");
 
     // #github #152
@@ -125,7 +125,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("FullSimplify((b*Cosh(x)+c*Sinh(x))/Cosh(x))", //
         "b+c*Tanh(x)");
     check("Simplify(Cos(n*ArcCos(x)) == ChebyshevT(n, x))", //
-        "-ChebyshevT(n,x)+Cos(n*ArcCos(x))==0");
+        "Cos(n*ArcCos(x))==ChebyshevT(n,x)");
     // FullSimplify uses FunctionExpand and can test the equation:
     check("FullSimplify(Cos(n*ArcCos(x)) == ChebyshevT(n, x))", //
         "True");
@@ -254,7 +254,7 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("Simplify({{x+y+x*y==9},{x*y*(x+y)==20}})", //
         "{{x+y+x*y==9},{x*y*(x+y)==20}}");
     check("Simplify(-3+2*x+x^2==0)", //
-        "2*x+x^2==3");
+        "x*(2+x)==3");
     check("Simplify({Im(Exp(I*Pi/5)* x), Im(2*x + I)}, x > 3)", //
         "{Im(E^(I*1/5*Pi)*x),1}");
 
@@ -544,5 +544,39 @@ public class SimplifyTest extends ExprEvaluatorTestCase {
     check("FullSimplify(Sqrt(3-Sqrt(5))*(3+Sqrt(5))*(-Sqrt(2)+Sqrt(10)))", //
         "8");
 
+  }
+
+  @Test
+  public void testSimplifyIssue1439() {
+    // Sqrt(3+Sqrt(13+4*Sqrt(3))) reduces to Sqrt(2*(2+Sqrt(3))), whose base is a Times, and
+    // Power#functionExpand() only offered a Plus base to sqrtDenest(). Expanding the base first
+    // gets the sum back and denests it: 13 leaves down to 7.
+    check("FullSimplify(Sqrt(3+Sqrt(13+4*Sqrt(3))))", //
+        "1+Sqrt(3)");
+    // the same denesting once the outer square root is already over a sum, and over a product
+    check("FullSimplify(Sqrt(4+2*Sqrt(3)))", //
+        "1+Sqrt(3)");
+    check("FullSimplify(Sqrt(2*(2+Sqrt(3))))", //
+        "1+Sqrt(3)");
+  }
+
+  /**
+   * Sums of the shape <code>c + d/x</code> where Symja's result differs from WMA's but is
+   * <b>cheaper</b> under the {@code ComplexityFunction}, so it is the better answer by our own
+   * acceptance rule. The weights below are {@code leafCountSimplify()}.
+   */
+  @Test
+  public void testSimplifyReciprocalSums() {
+    // -4-2/x (10 leaves); ours weighs 9
+    check("Simplify(-4 - 2/x)", //
+        "-2*(2+1/x)");
+    check("Simplify(-4 - 2/x^2)", //
+        "-2*(2+1/x^2)");
+    // (-2*(1+x))/x (10 leaves); ours weighs 9
+    check("Simplify(-2 - 2/x)", //
+        "-2*(1+1/x)");
+    // (-2*(1+x+x^2))/x (13 leaves); ours weighs 10.
+    check("Simplify(-2 - 2/x - 2*x)", //
+        "-2*(1+1/x+x)");
   }
 }

@@ -135,17 +135,6 @@ public class SimplifyFunctions {
               return F.Rule(ast.setAtClone(1, list1.arg1()), ast.setAtClone(1, list1.arg2()));
             }
             break;
-          case ID.Equal:
-          case ID.Unequal:
-          case ID.Greater:
-          case ID.GreaterEqual:
-          case ID.Less:
-          case ID.LessEqual:
-            if (list1.size() == 3 && !list1.arg2().isZero()) {
-              IExpr sub = ast.setAtClone(1, F.Subtract(list1.arg1(), list1.arg2()));
-              return F.binaryAST2(list1.head(), sub, F.C0);
-            }
-            break;
         }
       }
 
@@ -167,6 +156,15 @@ public class SimplifyFunctions {
       try {
         Function<IExpr, Long> complexityFunction =
             SimplifyUtil.createComplexityFunction(complexityFunctionHead, engine);
+
+        if (arg1.isAST()) {
+          IExpr relational = simplifyRelational((IAST) arg1, ast, complexityFunction, engine);
+          if (relational.isPresent()) {
+            engine.putCache(ast, relational);
+            return relational;
+          }
+        }
+
         long minCounter = complexityFunction.apply(arg1);
         defaultResult = arg1;
         long count = 0L;
@@ -235,6 +233,50 @@ public class SimplifyFunctions {
       }
 
       return F.NIL;
+    }
+
+    /**
+     * Decide a relation by moving everything to the left-hand-side and testing
+     * <code>lhs-rhs</code> against <code>0</code>. That is how an identity such as
+     * <code>x^2-y^2 == (x+y)*(x-y)</code> is proved.
+     *
+     * <p>
+     * The rewritten form is only used when it actually decides the relation, or when it is simpler
+     * than what we started with. Returning it unconditionally — as this did before — turns
+     * <code>Simplify(x==y)</code> into the heavier <code>x-y==0</code>.
+     *
+     * @param relation the relation to simplify
+     * @param ast the surrounding <code>Simplify(...)</code> call, reused so that its options carry
+     *        over to the subtraction
+     * @param complexityFunction weighs the rewritten form against the original
+     * @param engine the evaluation engine
+     * @return the decided or simpler relation, or {@link F#NIL} to leave it to the normal pipeline
+     */
+    private static IExpr simplifyRelational(IAST relation, IAST ast,
+        Function<IExpr, Long> complexityFunction, EvalEngine engine) {
+      switch (relation.headID()) {
+        case ID.Equal:
+        case ID.Unequal:
+        case ID.Greater:
+        case ID.GreaterEqual:
+        case ID.Less:
+        case ID.LessEqual:
+          break;
+        default:
+          return F.NIL;
+      }
+      if (relation.size() != 3 || relation.arg2().isZero()) {
+        return F.NIL;
+      }
+      IExpr difference =
+          engine.evaluate(ast.setAtClone(1, F.Subtract(relation.arg1(), relation.arg2())));
+      IExpr rewritten = engine.evaluate(F.binaryAST2(relation.head(), difference, F.C0));
+      if (rewritten.isTrue() || rewritten.isFalse()) {
+        return rewritten;
+      }
+      return complexityFunction.apply(rewritten) < complexityFunction.apply(relation) //
+          ? rewritten
+          : F.NIL;
     }
 
     @Override
