@@ -2108,13 +2108,42 @@ public class Algebra {
       return F.Divide(engine.evaluate(F.Expand(numerator.getExpr())), commonDenominator);
     }
 
+    /**
+     * True if {@link S#Together} and {@link S#Cancel} can actually bring the coefficients of
+     * <code>expr</code> into a normal form, i.e. the coefficient domain is built from rational
+     * functions of the free parameters.
+     *
+     * <p>
+     * {@link #symbolicExtendedGCD} normalizes every coefficient of every division step that way.
+     * That pays off over a rational domain, but a coefficient carrying a radical of a symbolic base
+     * - <code>(1+6*a^2*x^6*C(1)-2*Sqrt(3)*a*x^3*Sqrt(C(1)+3*a^2*x^6*C(1)^2))^(1/3)</code>, as
+     * produced by the Rubi/partial-fraction path of
+     * <code>DSolve({a*f'(x)^2+f'''(x)==0, f'(0)==0}, f(x), x)</code> - has no such normal form:
+     * every step grows the expression instead of reducing it, and the
+     * {@link ExprPolynomial#isZERO()} tests on the result run a full <code>PossibleZeroQ</code> over
+     * it. The pair is small (101 and 389 leaves) yet the extended Euclid never returns. Radicals of
+     * a plain number such as <code>Sqrt(2)</code> are fine and stay allowed.
+     *
+     * <p>
+     * Rejecting here is not a failure - the caller falls back to
+     * {@link ExprPolynomial#egcd(ExprPolynomial)}, the algorithm used before
+     * {@link #symbolicExtendedGCD} existed.
+     */
+    private static boolean isRationalCoefficientDomain(IExpr expr) {
+      return expr.isFree(
+          t -> t.isPower() && !t.exponent().isInteger() && !t.base().isNumber(), true);
+    }
+
     private static IExpr polynomialExtendedExpr(IExpr expr1, IExpr expr2, IAST variables,
         EvalEngine engine) {
       try {
         ExprPolynomialRing ring = new ExprPolynomialRing(variables);
         ExprPolynomial poly1 = ring.create(expr1);
         ExprPolynomial poly2 = ring.create(expr2);
-        ExprPolynomial[] result = symbolicExtendedGCD(poly1, poly2, ring, engine);
+        ExprPolynomial[] result = null;
+        if (isRationalCoefficientDomain(expr1) && isRationalCoefficientDomain(expr2)) {
+          result = symbolicExtendedGCD(poly1, poly2, ring, engine);
+        }
         if (result == null) {
           result = poly1.egcd(poly2);
         }

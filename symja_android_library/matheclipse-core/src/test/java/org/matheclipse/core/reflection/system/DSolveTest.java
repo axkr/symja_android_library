@@ -10,6 +10,13 @@ import org.matheclipse.core.system.ExprEvaluatorTestCase;
 public class DSolveTest extends ExprEvaluatorTestCase {
 
   @Test
+  public void testDSolveUnevaluated() {
+    // DSolve: For some branches of the general solution, unable to solve for the conditions
+    check("DSolve({a *(f'(x))^2+f'''(x)==0,f'(0)==0},f(x),x)", //
+        "DSolve({a*f'(x)^2+Derivative(3)[f][x]==0,f'(0)==0},f(x),x)");
+  }
+
+  @Test
   public void testDSolve001() {
     check("DSolve(y''(x) == 0, y(x), x)", //
         "{{y(x)->C(1)+x*C(2)}}");
@@ -88,9 +95,6 @@ public class DSolveTest extends ExprEvaluatorTestCase {
   public void testDSolveSystem001() {
     check("tst(0)=1;DSolve({a *(f'(x))^2+f'''(x)==0,f'(0)==0,tst(0)==0},f(x),x)", //
         "DSolve({a*f'(x)^2+Derivative(3)[f][x]==0,f'(0)==0,False},f(x),x)");
-    // DSolve: For some branches of the general solution, unable to solve for the conditions
-    check("DSolve({a *(f'(x))^2+f'''(x)==0,f'(0)==0},f(x),x)", //
-        "DSolve({a*f'(x)^2+Derivative(3)[f][x]==0,f'(0)==0},f(x),x)");
 
     // Simple harmonic oscillator
     check("DSolve({x'(t)==y(t), y'(t)==-x(t)}, {x(t), y(t)}, t)", //
