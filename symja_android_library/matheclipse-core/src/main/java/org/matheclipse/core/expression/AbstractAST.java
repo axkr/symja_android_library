@@ -4879,6 +4879,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
   /** {@inheritDoc} */
   @Override
   public boolean isPolynomialStruct() {
+    if (isAST(S.C, 2) && arg1().isInteger()) {
+      // C(n) is a generated arbitrary constant (constant of integration, Solve/DSolve/...);
+      // treat it as a polynomial atom, just like a free symbol.
+      return true;
+    }
     if ((isBuiltInFunction() && !((ISymbol) head()).hasNumericFunctionAttribute())
         || exists(x -> !x.isPolynomialStruct())) {
       return false;
