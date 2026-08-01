@@ -89,16 +89,20 @@ public class SparseArrayTest extends ExprEvaluatorTestCase {
         "{{1,0,0},\n" //
             + " {0,2,0},\n" //
             + " {0,0,3}}");
+    // the k-th diagonal enlarges the matrix by Abs(k) rows and columns
     check("DiagonalMatrix(SparseArray(Range(4)),1)// MatrixForm", //
-        "{{0,1,0,0},\n" //
-            + " {0,0,2,0},\n" //
-            + " {0,0,0,3},\n" //
-            + " {0,0,0,0}}");
+        "{{0,1,0,0,0},\n" //
+            + " {0,0,2,0,0},\n" //
+            + " {0,0,0,3,0},\n" //
+            + " {0,0,0,0,4},\n" //
+            + " {0,0,0,0,0}}");
     check("DiagonalMatrix(SparseArray(Range(4)),-2)// MatrixForm", //
-        "{{0,0,0,0},\n" //
-            + " {0,0,0,0},\n" //
-            + " {3,0,0,0},\n" //
-            + " {0,4,0,0}}"); //
+        "{{0,0,0,0,0,0},\n" //
+            + " {0,0,0,0,0,0},\n" //
+            + " {1,0,0,0,0,0},\n" //
+            + " {0,2,0,0,0,0},\n" //
+            + " {0,0,3,0,0,0},\n" //
+            + " {0,0,0,4,0,0}}"); //
     check("DiagonalMatrix(SparseArray(Range(3))) // MatrixForm", //
         "{{1,0,0},\n" //
             + " {0,2,0},\n" //

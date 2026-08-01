@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
@@ -57,6 +58,7 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.polynomials.IPartialFractionGenerator;
 import org.matheclipse.core.polynomials.PolynomialHomogenization;
 import org.matheclipse.core.polynomials.QuarticSolver;
+import org.matheclipse.core.polynomials.longexponent.ExprMonomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomial;
 import org.matheclipse.core.polynomials.longexponent.ExprPolynomialRing;
 import org.matheclipse.core.reflection.system.Solve.SolveData;
@@ -1994,19 +1996,134 @@ public class Algebra {
    */
   private static class PolynomialExtendedGCD extends AbstractFunctionOptionEvaluator {
 
+    /**
+     * The extended Euclidean algorithm for two univariate polynomials over a coefficient domain
+     * which contains free symbols.
+     *
+     * <p>
+     * {@link ExprPolynomial#egcd(ExprPolynomial)} divides by the leading coefficient of the current
+     * remainder as it stands. Over a symbolic domain that quotient is a quotient of sums which the
+     * structural polynomial arithmetic cannot cancel again - for
+     * <code>PolynomialExtendedGCD(r^3-2*r+c, r^5-a*r+b, r)</code> the third division step leaves
+     * behind a leading term whose coefficient is zero only after the fractions are multiplied out,
+     * and the division reports itself as impossible. Here the divisor is made monic and its
+     * coefficients are put over a common denominator and cancelled first, so that the leading term
+     * of every division step cancels exactly and the coefficients stay in a normal form.
+     *
+     * @return <code>[ gcd(a,b), s, t ]</code> with <code>s*a + t*b == gcd(a,b)</code> and a monic
+     *         <code>gcd</code>, or <code>null</code> if the remainder degrees do not decrease
+     */
+    private static ExprPolynomial[] symbolicExtendedGCD(ExprPolynomial a, ExprPolynomial b,
+        ExprPolynomialRing ring, EvalEngine engine) {
+      Function<IExpr, IExpr> normalize = coefficient -> {
+        IExpr temp = engine.evaluate(F.Cancel(F.Together(coefficient)));
+        return temp.isPresent() ? temp : coefficient;
+      };
+      // remainder == s*a + t*b holds for the "old" and the "new" triple throughout
+      ExprPolynomial remainderOld = a.map(normalize);
+      ExprPolynomial remainderNew = b.map(normalize);
+      ExprPolynomial sOld = ring.getOne().copy();
+      ExprPolynomial sNew = ring.getZero().copy();
+      ExprPolynomial tOld = ring.getZero().copy();
+      ExprPolynomial tNew = ring.getOne().copy();
+
+      while (!remainderNew.isZERO()) {
+        // Rescaling the whole triple by 1/leadingCoefficient keeps the invariant and makes the
+        // divisor monic, so that the leading term of the dividend cancels literally.
+        IExpr leadingInverse =
+            engine.evaluate(F.Power(remainderNew.leadingBaseCoefficient(), F.CN1));
+        if (!leadingInverse.isOne()) {
+          remainderNew = remainderNew.multiply(leadingInverse).map(normalize);
+          sNew = sNew.multiply(leadingInverse).map(normalize);
+          tNew = tNew.multiply(leadingInverse).map(normalize);
+        }
+
+        ExprPolynomial[] quotientRemainder = remainderOld.quotientRemainder(remainderNew);
+        if (quotientRemainder == null) {
+          return null;
+        }
+        ExprPolynomial quotient = quotientRemainder[0].map(normalize);
+        ExprPolynomial remainderNext = quotientRemainder[1].map(normalize);
+        if (!remainderNext.isZERO() && remainderNext.degree() >= remainderNew.degree()) {
+          // the division did not make progress - give up rather than loop forever
+          return null;
+        }
+        ExprPolynomial sNext = sOld.subtract(quotient.multiply(sNew)).map(normalize);
+        ExprPolynomial tNext = tOld.subtract(quotient.multiply(tNew)).map(normalize);
+
+        remainderOld = remainderNew;
+        sOld = sNew;
+        tOld = tNew;
+        remainderNew = remainderNext;
+        sNew = sNext;
+        tNew = tNext;
+      }
+
+      IExpr gcdLeadingInverse =
+          engine.evaluate(F.Power(remainderOld.leadingBaseCoefficient(), F.CN1));
+      if (!gcdLeadingInverse.isOne()) {
+        remainderOld = remainderOld.multiply(gcdLeadingInverse).map(normalize);
+        sOld = sOld.multiply(gcdLeadingInverse).map(normalize);
+        tOld = tOld.multiply(gcdLeadingInverse).map(normalize);
+      }
+      return new ExprPolynomial[] {remainderOld, sOld, tOld};
+    }
+
+    /**
+     * Write a polynomial whose coefficients are quotients as a single quotient over the least
+     * common multiple of the coefficient denominators.
+     *
+     * <p>
+     * {@link S#Together} is not usable for this: it multiplies the coefficient denominators
+     * together rather than taking their least common multiple, and neither it nor {@link S#Cancel}
+     * reduces the resulting quotient of multivariate polynomials again. The cofactors of
+     * <code>PolynomialExtendedGCD(r^3-2*r+c, r^5-a*r+b, r)</code> - whose five coefficients all
+     * carry the same denominator - would come back over its fifth power, with a numerator expanded
+     * to match.
+     */
+    private static IExpr overCommonDenominator(ExprPolynomial poly, EvalEngine engine) {
+      IExpr denominator = F.C1;
+      for (ExprMonomial monomial : poly) {
+        IExpr coefficientDenominator = engine.evaluate(F.Denominator(monomial.coefficient()));
+        if (coefficientDenominator.isOne() || coefficientDenominator.equals(denominator)) {
+          continue;
+        }
+        if (denominator.isOne()) {
+          denominator = coefficientDenominator;
+          continue;
+        }
+        IExpr lcm = S.PolynomialLCM.of(engine, denominator, coefficientDenominator);
+        if (lcm.isAST(S.PolynomialLCM)) {
+          // no least common multiple available - leave the assembly to Together
+          return S.Together.of(engine, poly.getExpr());
+        }
+        denominator = lcm;
+      }
+      if (denominator.isOne()) {
+        return poly.getExpr();
+      }
+      final IExpr commonDenominator = denominator;
+      ExprPolynomial numerator = poly
+          .map(coefficient -> engine.evaluate(F.Cancel(F.Times(coefficient, commonDenominator))));
+      return F.Divide(engine.evaluate(F.Expand(numerator.getExpr())), commonDenominator);
+    }
+
     private static IExpr polynomialExtendedExpr(IExpr expr1, IExpr expr2, IAST variables,
         EvalEngine engine) {
       try {
         ExprPolynomialRing ring = new ExprPolynomialRing(variables);
         ExprPolynomial poly1 = ring.create(expr1);
         ExprPolynomial poly2 = ring.create(expr2);
-        ExprPolynomial[] result = poly1.egcd(poly2);
+        ExprPolynomial[] result = symbolicExtendedGCD(poly1, poly2, ring, engine);
+        if (result == null) {
+          result = poly1.egcd(poly2);
+        }
         if (result != null) {
           IASTAppendable list = F.ListAlloc(2);
           list.append(result[0].getExpr());
           IASTAppendable subList = F.ListAlloc(2);
-          subList.append(S.Together.of(engine, result[1].getExpr()));
-          subList.append(S.Together.of(engine, result[2].getExpr()));
+          subList.append(overCommonDenominator(result[1], engine));
+          subList.append(overCommonDenominator(result[2], engine));
           list.append(subList);
           return list;
         }

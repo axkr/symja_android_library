@@ -387,8 +387,22 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     // + "-a3 c2 d1+a2 c3 d1+a3 c1 d2-a1 c3 d2-a2 c1 d3+a1 c2 d3,"
     // + "a3 b2 d1-a2 b3 d1-a3 b1 d2+a1 b3 d2+a2 b1 d3-a1 b2 d3,"
     // + "-a3 b2 c1+a2 b3 c1+a3 b1 c2-a1 b3 c2-a2 b1 c3+a1 b2 c3}");
+    // print message: Cross: The arguments are expected to be vectors of equal length, and the
+    // number of arguments is expected to be 1 less than their length.
     check("Cross({a,b}, {c,d})", //
-        "-b*c+a*d");
+        "Cross({a,b},{c,d})");
+    check("Cross({1,2}, {3,4})", //
+        "Cross({1,2},{3,4})");
+    check("Cross({1,2,3}, {4,5,6}, {7,8,9})", //
+        "Cross({1,2,3},{4,5,6},{7,8,9})");
+    check("Cross({1,2,3,4}, {5,6,7,8})", //
+        "Cross({1,2,3,4},{5,6,7,8})");
+    // a symbolic argument can't be validated
+    check("Cross(a, b)", //
+        "Cross(a,b)");
+    // 3 vectors of length 4 are a valid input, but aren't implemented yet (no message)
+    check("Cross({1,2,3,4}, {5,6,7,8}, {9,10,11,12})", //
+        "Cross({1,2,3,4},{5,6,7,8},{9,10,11,12})");
     check("Cross({a, b, c}, {x, y, z})", //
         "{-c*y+b*z,c*x-a*z,-b*x+a*y}");
     check("Cross({x, y})", //
@@ -556,6 +570,32 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{1,0,0},\n" + //
             " {0,2,0},\n" + //
             " {0,0,3}}");
+    // the k-th diagonal enlarges the matrix by Abs(k) rows and columns
+    check("DiagonalMatrix({a,b},1)", //
+        "{{0,a,0},\n" + //
+            " {0,0,b},\n" + //
+            " {0,0,0}}");
+    check("DiagonalMatrix({a,b},-1)", //
+        "{{0,0,0},\n" + //
+            " {a,0,0},\n" + //
+            " {0,b,0}}");
+    check("DiagonalMatrix({1,2,3},0)", //
+        "{{1,0,0},\n" + //
+            " {0,2,0},\n" + //
+            " {0,0,3}}");
+    // the third argument pads with zeroes to a n x n matrix
+    check("DiagonalMatrix({1,2,3},0,4)", //
+        "{{1,0,0,0},\n" + //
+            " {0,2,0,0},\n" + //
+            " {0,0,3,0},\n" + //
+            " {0,0,0,0}}");
+    // a diagonal with an inexact number is padded with inexact zeroes
+    check("DiagonalMatrix({1.,2.})", //
+        "{{1.0,0.0},\n" + //
+            " {0.0,2.0}}");
+    check("DiagonalMatrix({a,2.})", //
+        "{{a,0.0},\n" + //
+            " {0.0,2.0}}");
   }
 
 
@@ -865,7 +905,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{(4-I*4)*E,(4+I*4)*E,E},{{0,-I,1},{0,I,1},{1,0,0}}}");
 
     check("Eigensystem({{0,t,t}, {t,0,-t}, {t,-t,0}})", //
-        "{{-2*t,t,t},{{-1,1,1},{1,1,0},{1,0,1}}}");
+        "{{-2*t,t,t},{{-1,1,1},{1,0,1},{1,1,0}}}");
 
 
     check("Eigensystem({{0,t,t},{-t,0,-t},{t,-t,0}})", //
@@ -897,9 +937,9 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{3.0,3.0,2.0,2.0},{{0,0,0,1.0},{0,0,0,0},{0,0.57735,-0.57735,0.57735},{0,0,0,0}}}");
 
     check("Eigensystem({{1,0,0},{0,1,0},{0,0,1}})", //
-        "{{1,1,1},{{1,0,0},{0,1,0},{0,0,1}}}");
+        "{{1,1,1},{{0,0,1},{0,1,0},{1,0,0}}}");
     check("Eigensystem({{1,0,0},{-2,1,0},{0,0,1}})", //
-        "{{1,1,1},{{0,1,0},{0,0,1},{0,0,0}}}");
+        "{{1,1,1},{{0,0,1},{0,1,0},{0,0,0}}}");
 
     check("Eigensystem({{1.1, 2.2, 3.25}, {0.76, 4.6, 5}, {0.1, 0.1, 6.1}})", //
         "{{6.60674,4.52536,0.667901},{{0.48687,0.833694,0.260598},{0.479424,0.873368,-0.085911},{0.985096,-0.171352,-0.0149803}}}");
@@ -925,18 +965,38 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
     check("Eigenvalues({{1, 0, 0}, {-2, 1, 0}, {0, 1, 1}})", //
         "{1,1,1}");
+    // a selected number of eigenvalues is determined symbolically too
+    check("Eigenvalues({{1,2},{3,4}},1)", //
+        "{5/2+Sqrt(33)/2}");
+    // ...which is the value (5+Sqrt(33))/2, only kept in expanded form
+    check("Simplify(Eigenvalues({{1,2},{3,4}},1) == {(5+Sqrt(33))/2})", //
+        "True");
+    check("Together(Eigenvalues({{1,2},{3,4}},1))", //
+        "{1/2*(5+Sqrt(33))}");
+    check("Eigenvalues({{1,2},{3,4}},-1)", //
+        "{5/2-Sqrt(33)/2}");
+    check("Eigenvalues({{2,0,0},{0,3,0},{0,0,1}},2)", //
+        "{3,2}");
+    check("Eigenvalues({{2,0,0},{0,3,0},{0,0,1}},-1)", //
+        "{1}");
+    check("Eigenvalues(DiagonalMatrix({x, y, z}),2)", //
+        "{x,y}");
+    check("Eigenvalues({{a,b},{c,d}},1)", //
+        "{1/2*(a+d)-Sqrt(a^2+4*b*c-2*a*d+d^2)/2}");
     check("Eigenvalues({{7}},-1)", //
-        "{7.0}");
+        "{7}");
     check("Eigenvalues({{-1}},1)", //
-        "{-1.0}");
+        "{-1}");
     // print message: Eigenvalues: Cannot take eigenvalues 1 through 2 out of the total of 1
     // eigenvalues.
     check("Eigenvalues({{7}},-19)", //
-        "Eigenvalues(\n" + //
-            "{{7}},-19)");
+        "Eigenvalues({{7}},-19)");
     check("Eigenvalues({{-1}},2)", //
-        "Eigenvalues(\n"//
-            + "{{-1}},2)");
+        "Eigenvalues({{-1}},2)");
+    check("Eigenvalues({{1,2},{3,4}},5)", //
+        "Eigenvalues(\n" + //
+            "{{1,2},\n" + //
+            " {3,4}},5)");
     check(
         "Eigenvalues({{0,1,1,0,1,0,0,0},{1,0,0,1,0,1,0,0},{1,0,0,1,0,0,1,0},{0,1,1,0,0,0,0,1},{1,0,0,0,0,1,1,0},{0,1,0,0,1,0,0,1},{0,0,1,0,1,0,0,1},{0,0,0,1,0,1,1,0}})", //
         "{-3,3,-1,-1,-1,1,1,1}");
@@ -1000,6 +1060,18 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
     check("Eigenvalues({{a}})", //
         "{a}");
+    // the eigenvalues of a triangular matrix are its diagonal elements
+    check("Eigenvalues(DiagonalMatrix({x, y, z}))", //
+        "{x,y,z}");
+    check("Eigenvalues(DiagonalMatrix({x, y, z, w}))", //
+        "{x,y,z,w}");
+    check("Eigenvalues({{x, 1, 0}, {0, y, 1}, {0, 0, z}})", //
+        "{x,y,z}");
+    check("Eigenvalues({{x, 0, 0}, {1, y, 0}, {2, 3, z}})", //
+        "{x,y,z}");
+    // a numeric matrix keeps its eigenvalues sorted by decreasing absolute value
+    check("Eigenvalues(DiagonalMatrix({1, 2, 3}))", //
+        "{3,2,1}");
     check("Eigenvalues({{a, b}, {0, a}})", //
         "{a,a}");
     check("Eigenvalues({{a, b}, {0, d}})", //
@@ -1044,6 +1116,25 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Eigenvectors({{-8, -6, 9, 10}, {-6, -4, 0, 6}, {0, 0, -4, 0}, {-10, -6, 9, 12}})", //
         "{{1,1,0,1},{0,3,2,0},{1,0,0,1},{0,0,0,0}}");
 
+    check("Eigenvectors(x)", //
+        "Eigenvectors(x)");
+    // the single eigenvector of a 1 x 1 matrix is returned as a 1 x 1 matrix
+    check("Eigenvectors({{5}})", //
+        "{{1}}");
+    check("Eigenvectors({{2,0},{0,3}})", //
+        "{{0,1},{1,0}}");
+    // a defective matrix is padded with zero vectors
+    check("Eigenvectors({{1,1},{0,1}})", //
+        "{{1,0},{0,0}}");
+    // hermitian matrices; the denominators are pulled out of the complex components
+    check("Eigenvectors({{2,I},{-I,2}})", //
+        "{{I,1},{-I,1}}");
+    check("Eigenvectors({{1,1+I},{1-I,2}})", //
+        "{{1+I,2},{-1-I,1}}");
+    // a selected number of eigenvectors is determined symbolically too
+    check("Eigenvectors({{2,0,0},{0,3,0},{0,0,1}},2)", //
+        "{{0,1,0},{1,0,0}}");
+
     if (Config.EXPENSIVE_JUNIT_TESTS) {
       // slow because of first trying symbolic computation
       check("Eigenvectors({{1/3, 1/2, 3/5}, {1/2, 4/5, 1}, {3/5, 1, 9/7}}) // N", //
@@ -1059,12 +1150,12 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
 
     check("Eigenvectors({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}})", //
-        "{{1,0,0},{0,1,0},{0,0,1}}");
+        "{{0,0,1},{0,1,0},{1,0,0}}");
 
     // only 2 eigenvectors => fill up with 0.0 vector
     // see https://github.com/Hipparchus-Math/hipparchus/issues/249
     check("Eigenvectors({{1,0,0},{-2,1,0},{0,0,1}})", //
-        "{{0,1,0},{0,0,1},{0,0,0}}");
+        "{{0,0,1},{0,1,0},{0,0,0}}");
     check("Eigenvalues({{1,0,0},{-2,1,0},{0,0,1}})", //
         "{1,1,1}");
 
@@ -1093,7 +1184,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("Eigenvectors(A)", //
         "Eigenvectors(A)");
     check("Eigenvectors({{a}})", //
-        "1");
+        "{{1}}");
     check("Eigenvectors({{a, b}, {0, a}})", //
         "{{1,0},{0,0}}");
     check("Eigenvectors({{a, b}, {0, d}})", //
@@ -2044,8 +2135,15 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{-2,1,0}}");
     check("NullSpace({{1,2,3},{4,5,6},{7,8,9}})", //
         "{{1,-2,1}}");
+    // the basis vectors are ordered by descending free variable
+    check("NullSpace({{1,1,1}})", //
+        "{{-1,0,1},\n" + " {-1,1,0}}");
+    check("NullSpace({{1,2,3}})", //
+        "{{-3,0,1},\n" + " {-2,1,0}}");
+    check("NullSpace({{0,0,0}})", //
+        "{{0,0,1},\n" + " {0,1,0},\n" + " {1,0,0}}");
     check("NullSpace({{1,1,0,1,5},{1,0,0,2,2},{0,0,1,4,-1},{0,0,0,0,0}})",
-        "{{-2,1,-4,1,0},\n" + " {-2,-3,1,0,1}}");
+        "{{-2,-3,1,0,1},\n" + " {-2,1,-4,1,0}}");
     check("NullSpace({{a,b,c}," + "{c,b,a}})", //
         "{{1,-(a+c)/b,1}}");
     check("NullSpace({{1,2,3}," + "{5,6,7}," + "{9,10,11}})", "{{1,-2,1}}");
@@ -2059,7 +2157,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("NullSpace({{1+I,1-I}, {-1+I,1+I}})", //
         "{{I,1}}");
     check("NullSpace({{1,1,1,1,1},{1,0,0,0,0},{0,0,0,0,1},{0,1,1,1,0},{1,0,0,0,1}})", //
-        "{{0,-1,1,0,0},\n" + " {0,-1,0,1,0}}");
+        "{{0,-1,0,1,0},\n" + " {0,-1,1,0,0}}");
   }
 
   @Test
@@ -2337,23 +2435,37 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "PseudoInverse(-2)");
     check("PseudoInverse({{}})", //
         "PseudoInverse({{}})");
+    // an exact or symbolic matrix is inverted exactly; only inexact matrices use the numeric SVD
+    check("PseudoInverse({{1, 2}, {3, 4}})", //
+        "{{-2,1},\n" + " {3/2,-1/2}}");
+    check("PseudoInverse({{a, b}, {c, d}})", //
+        "{{d/(-b*c+a*d),b/(b*c-a*d)},\n" + " {c/(b*c-a*d),a/(-b*c+a*d)}}");
+    // a rank deficient matrix needs the full rank factorization
     check("PseudoInverse({{1,2}, {1,2}})", //
-        "{{0.1,0.1},\n" + " {0.2,0.2}}");
+        "{{1/10,1/10},\n" + " {1/5,1/5}}");
+    check("PseudoInverse({{0, 0}, {0, 0}})", //
+        "{{0,0},\n" + " {0,0}}");
     check("PseudoInverse({1, {2}})", //
         "PseudoInverse({1,{2}})");
     check("PseudoInverse(PseudoInverse({{1, 2}, {2, 3}, {3, 4}}))", //
-        "{{1.0,2.0},\n" + //
-            " {2.0,3.0},\n" + //
-            " {3.0,4.0}}");
+        "{{1,2},\n" + //
+            " {2,3},\n" + //
+            " {3,4}}");
     check("PseudoInverse({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}})", //
-        "{{-3.0,2.0,4.44089*10^-16},\n" + " {2.0,-1.0,-2.77556*10^-16},\n" + " {1.0,-2.0,1.0}}");
+        "{{-3,2,0},\n" + " {2,-1,0},\n" + " {1,-2,1}}");
     check("PseudoInverse({{1.0, 2.5}, {2.5, 1.0}})", //
         "{{-0.190476,0.47619},\n" + //
             " {0.47619,-0.190476}}");
     check("PseudoInverse({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {10, 11, 12}})", //
-        "{{-0.483333,-0.244444,-0.00555556,0.233333},\n" + //
-            " {-0.0333333,-0.0111111,0.0111111,0.0333333},\n" + //
-            " {0.416667,0.222222,0.0277778,-0.166667}}");
+        "{{-29/60,-11/45,-1/180,7/30},\n" + //
+            " {-1/30,-1/90,1/90,1/30},\n" + //
+            " {5/12,2/9,1/36,-1/6}}");
+    // the four Moore-Penrose conditions for a rank deficient matrix
+    check("With({a = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {10, 11, 12}}, "//
+        + "p = PseudoInverse({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {10, 11, 12}})}, "//
+        + "{a . p . a == a, p . a . p == p, ConjugateTranspose(a . p) == a . p, "//
+        + "ConjugateTranspose(p . a) == p . a})", //
+        "{True,True,True,True}");
     check("PseudoInverse(N({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {10, 11, 12}}))", //
         "{{-0.483333,-0.244444,-0.00555556,0.233333},\n" + //
             " {-0.0333333,-0.0111111,0.0111111,0.0333333},\n" + //

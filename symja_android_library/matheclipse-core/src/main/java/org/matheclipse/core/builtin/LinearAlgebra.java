@@ -76,6 +76,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumericArray;
@@ -728,48 +729,40 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
-      if (ast.isAST2()) {
-        IExpr arg2 = ast.arg2();
-        int dim1 = arg1.isVector();
-        int dim2 = arg2.isVector();
-        if (dim1 == 2 && dim2 == 2) {
-          final IAST v1 = (IAST) arg1.normal(false);
-          final IAST v2 = (IAST) arg2.normal(false);
-
-          if ((v1.isAST2()) || (v2.isAST2())) {
-            // Cross({a,b}, {c,d})", "a*d-b*c
-            return F.Subtract(Times(v1.arg1(), v2.arg2()), Times(v1.arg2(), v2.arg1()));
-          }
-        } else if (dim1 == 3 && dim2 == 3) {
-          final IAST v1 = (IAST) arg1.normal(false);
-          final IAST v2 = (IAST) arg2.normal(false);
-
-          if ((v1.isAST3()) || (v2.isAST3())) {
-            return List(Plus(F.Times(v1.arg2(), v2.arg3()), Times(F.CN1, v1.arg3(), v2.arg2())),
-                Plus(F.Times(v1.arg3(), v2.arg1()), Times(F.CN1, v1.arg1(), v2.arg3())),
-                Plus(F.Times(v1.arg1(), v2.arg2()), Times(F.CN1, v1.arg2(), v2.arg1())));
-          }
+      final int dim1 = arg1.isVector();
+      if (dim1 < 0) {
+        // not a vector; maybe the arguments evaluate to vectors later on
+        return F.NIL;
+      }
+      // `n-1` vectors of length `n` define exactly one orthogonal direction
+      boolean equalLength = true;
+      for (int i = 2; i < ast.size(); i++) {
+        if (ast.get(i).isVector() != dim1) {
+          equalLength = false;
+          break;
         }
-      } else if (ast.isAST1()) {
-        int dim1 = arg1.isVector();
-        if (dim1 == 2) {
-          final IAST v1 = (IAST) arg1.normal(false);
-          return List(F.Negate(v1.arg2()), v1.arg1());
-        }
+      }
+      if (!equalLength || ast.argSize() != dim1 - 1) {
         // The arguments are expected to be vectors of equal length, and the number of arguments is
         // expected to be 1 less than their length.
         return Errors.printMessage(ast.topHead(), "nonn1", F.CEmptyList, engine);
-      } else if (ast.size() > 3) {
-        int dim1 = arg1.isVector();
-        if (dim1 == ast.size()) {
-          for (int i = 2; i < ast.size(); i++) {
-            if (ast.get(i).isVector() != dim1) {
-              return F.NIL;
-            }
-          }
-          // TODO implement for more than 2 vector arguments
+      }
+      if (ast.isAST1()) {
+        // Cross({a,b}) -> {-b,a}
+        final IAST v1 = (IAST) arg1.normal(false);
+        if (v1.isAST2()) {
+          return List(F.Negate(v1.arg2()), v1.arg1());
+        }
+      } else if (ast.isAST2()) {
+        final IAST v1 = (IAST) arg1.normal(false);
+        final IAST v2 = (IAST) ast.arg2().normal(false);
+        if (v1.isAST3() && v2.isAST3()) {
+          return List(Plus(F.Times(v1.arg2(), v2.arg3()), Times(F.CN1, v1.arg3(), v2.arg2())),
+              Plus(F.Times(v1.arg3(), v2.arg1()), Times(F.CN1, v1.arg1(), v2.arg3())),
+              Plus(F.Times(v1.arg1(), v2.arg2()), Times(F.CN1, v1.arg2(), v2.arg1())));
         }
       }
+      // TODO implement for more than 2 vector arguments
       return F.NIL;
     }
 
@@ -953,6 +946,28 @@ public final class LinearAlgebra {
    * </blockquote>
    *
    * <pre>
+   * DiagonalMatrix(list, k)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * gives a matrix with the values in $list$ on the $k$-th diagonal and zeroes elsewhere.
+   *
+   * </blockquote>
+   *
+   * <pre>
+   * DiagonalMatrix(list, k, n)
+   * </pre>
+   *
+   * <blockquote>
+   *
+   * <p>
+   * pads with zeroes to create an $n$ x $n$ matrix.
+   *
+   * </blockquote>
+   *
+   * <pre>
    * &gt;&gt; DiagonalMatrix({1, 2, 3})
    * {{1, 0, 0}, {0, 2, 0}, {0, 0, 3}}
    *
@@ -961,25 +976,71 @@ public final class LinearAlgebra {
    *  0   2   0
    *  0   0   3
    *
+   * &gt;&gt; DiagonalMatrix({a, b}, 1)
+   * {{0, a, 0}, {0, 0, b}, {0, 0, 0}}
+   *
+   * &gt;&gt; DiagonalMatrix({1, 2, 3}, 0, 4)
+   * {{1, 0, 0, 0}, {0, 2, 0, 0}, {0, 0, 3, 0}, {0, 0, 0, 0}}
+   *
    * &gt;&gt; DiagonalMatrix(a + b)
    * DiagonalMatrix(a + b)
    * </pre>
    */
   private static class DiagonalMatrix extends AbstractFunctionEvaluator {
 
+    /**
+     * Determine the dimension of the square result matrix.
+     *
+     * @param ast the <code>DiagonalMatrix(list, k, n)</code> expression
+     * @param length the number of elements of the diagonal
+     * @param offset the <code>k</code>-th diagonal on which the elements are placed
+     * @return the number of rows and columns of the result matrix
+     */
+    private static int matrixSize(final IAST ast, int length, int offset) {
+      final long size = ast.size() > 3 ? Validate.checkIntType(ast, 3, 0)
+          : length + Math.abs((long) offset);
+      if (size > Config.MAX_MATRIX_DIMENSION_SIZE) {
+        ASTElementLimitExceeded.throwIt(size * size);
+      }
+      return (int) size;
+    }
+
+    /**
+     * Determine the element of the diagonal which is placed at the position <code>(i, j)</code> of
+     * the result matrix.
+     *
+     * @param i the row index of the result matrix (Java convention starting with <code>0</code>)
+     * @param j the column index of the result matrix (Java convention starting with <code>0</code>)
+     * @param offset the <code>k</code>-th diagonal on which the elements are placed
+     * @param length the number of elements of the diagonal
+     * @return the index of the diagonal element (convention starting with <code>1</code>) or <code>-1</code> 
+     * if the position isn't on the <code>k</code>-th diagonal
+     */
+    private static int diagonalIndex(int i, int j, int offset, int length) {
+      if ((long) j - i != offset) {
+        return -1;
+      }
+      // on the k-th diagonal the row index is used for k >= 0 and the column index for k < 0
+      final int index = Math.min(i, j);
+      return index < length ? index + 1 : -1;
+    }
+
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
       IExpr arg1 = ast.arg1();
+      final int offset = ast.size() > 2 ? Validate.checkIntType(ast, 2, Config.INVALID_INT) : 0;
       int dimension = arg1.isVector();
       final IAST vector;
       if (dimension >= 0) {
         if (arg1.isSparseArray()) {
           // for sparse array vector input return a sparse array diagonal matrix
           ISparseArray sparseArray = (ISparseArray) arg1;
-          int m = sparseArray.getDimension()[0] + 1;
-          final int offset = ast.isAST2() ? Validate.checkIntType(ast, 2, Config.INVALID_INT) : 0;
-          return F.sparseMatrix((i, j) -> (i + offset) == j ? sparseArray.get(i + 1) : F.C0, m - 1,
-              m - 1);
+          final int length = sparseArray.getDimension()[0];
+          int size = matrixSize(ast, length, offset);
+          return F.sparseMatrix((i, j) -> {
+            int index = diagonalIndex(i, j, offset, length);
+            return index < 0 ? F.C0 : sparseArray.get(index);
+          }, size, size);
         }
         IExpr normal = arg1.normal(false);
         if (normal.isAST()) {
@@ -993,16 +1054,21 @@ public final class LinearAlgebra {
         vector = F.NIL;
       }
       if (vector.isPresent()) {
-        int m = vector.size();
-        final int offset = ast.isAST2() ? Validate.checkIntType(ast, 2, Config.INVALID_INT) : 0;
-        return F.matrix((i, j) -> (i + offset) == j ? vector.get(i + 1) : F.C0, m - 1, m - 1);
+        final int length = vector.argSize();
+        int size = matrixSize(ast, length, offset);
+        // a diagonal with an inexact number is padded with inexact zeroes
+        final IExpr zero = vector.exists(x -> x.isInexactNumber()) ? F.CD0 : F.C0;
+        return F.matrix((i, j) -> {
+          int index = diagonalIndex(i, j, offset, length);
+          return index < 0 ? zero : vector.get(index);
+        }, size, size);
       }
       return F.NIL;
     }
 
     @Override
     public int[] expectedArgSize(IAST ast) {
-      return ARGS_1_2;
+      return ARGS_1_3;
     }
 
     @Override
@@ -1478,27 +1544,91 @@ public final class LinearAlgebra {
       if (eigenValuesList.forAll(v -> v.isNumericFunction())) {
         if (numberOfEigenvalues != null && numberOfEigenvalues.isPresent()) {
           int n = numberOfEigenvalues.toIntDefault();
-          if (n < 0) {
-            if (F.isNotPresent(n)) {
-              return F.NIL;
-            }
-            if (eigenValuesList.argSize() < -n) {
-              // Cannot take eigenvalues `1` through `2` out of the total of `3` eigenvalues.
-              return Errors.printMessage(S.Eigenvalues, "takeeigen",
-                  F.List(F.C1, F.ZZ(n), F.ZZ(eigenValuesList.argSize())));
-            }
-            return eigenValuesList.subList(eigenValuesList.size() + n, eigenValuesList.size());
+          if (F.isNotPresent(n)) {
+            return F.NIL;
           }
-          if (eigenValuesList.argSize() < n) {
-            // Cannot take eigenvalues `1` through `2` out of the total of `3` eigenvalues.
-            return Errors.printMessage(S.Eigenvalues, "takeeigen",
-                F.List(F.C1, F.ZZ(n), F.ZZ(eigenValuesList.argSize())));
-          }
-          return eigenValuesList.subList(1, n + 1);
+          return takeEigenvalues(eigenValuesList, n);
         }
         return eigenValuesList;
       }
       return eigenValuesList;
+    }
+
+    /**
+     * Select the first <code>n</code> eigenvalues, or the last <code>-n</code> eigenvalues if
+     * <code>n</code> is negative.
+     *
+     * @param eigenValuesList the complete list of eigenvalues
+     * @param n the number of eigenvalues to select
+     * @return {@link F#NIL} if more eigenvalues are requested than the list contains
+     */
+    private static IAST takeEigenvalues(IAST eigenValuesList, int n) {
+      if (n < 0) {
+        if (eigenValuesList.argSize() < -n) {
+          // Cannot take eigenvalues `1` through `2` out of the total of `3` eigenvalues.
+          return Errors.printMessage(S.Eigenvalues, "takeeigen",
+              F.List(F.C1, F.ZZ(n), F.ZZ(eigenValuesList.argSize())));
+        }
+        return eigenValuesList.subList(eigenValuesList.size() + n, eigenValuesList.size());
+      }
+      if (eigenValuesList.argSize() < n) {
+        // Cannot take eigenvalues `1` through `2` out of the total of `3` eigenvalues.
+        return Errors.printMessage(S.Eigenvalues, "takeeigen",
+            F.List(F.C1, F.ZZ(n), F.ZZ(eigenValuesList.argSize())));
+      }
+      return eigenValuesList.subList(1, n + 1);
+    }
+
+    /**
+     * The eigenvalues of a triangular matrix are its diagonal elements. Deriving them from the
+     * characteristic polynomial produces huge unsimplified radicals instead, because the generic
+     * solution formula can't recognize that the polynomial is already factored.
+     *
+     * <p>
+     * Only used if at least one diagonal element isn't a number, because the eigenvalues of a
+     * numeric matrix are returned sorted by decreasing absolute value.
+     *
+     * @param arg1 a square matrix
+     * @param n the dimension of the square matrix
+     * @return {@link F#NIL} if the matrix isn't an upper or lower triangular matrix, or if all
+     *         diagonal elements are numbers
+     */
+    private static IAST triangularEigenvalues(IExpr arg1, int n) {
+      if (!arg1.isList()) {
+        return F.NIL;
+      }
+      final IAST matrix = (IAST) arg1;
+      boolean symbolicDiagonal = false;
+      boolean upperTriangular = true;
+      boolean lowerTriangular = true;
+      for (int i = 1; i <= n; i++) {
+        IExpr rowExpr = matrix.get(i);
+        if (!rowExpr.isList()) {
+          return F.NIL;
+        }
+        IAST row = (IAST) rowExpr;
+        for (int j = 1; j <= n; j++) {
+          if (i == j) {
+            if (!row.get(j).isNumber()) {
+              symbolicDiagonal = true;
+            }
+          } else if (!row.get(j).isZero()) {
+            if (j < i) {
+              // an element below the diagonal
+              upperTriangular = false;
+            } else {
+              lowerTriangular = false;
+            }
+            if (!upperTriangular && !lowerTriangular) {
+              return F.NIL;
+            }
+          }
+        }
+      }
+      if (!symbolicDiagonal) {
+        return F.NIL;
+      }
+      return F.mapRange(1, n + 1, i -> ((IAST) matrix.get(i)).get(i));
     }
 
     @Override
@@ -1519,25 +1649,32 @@ public final class LinearAlgebra {
         }
         maxValues = n;
       }
-      if (ast.isAST1() && !engine.isNumericMode()) {
-        FieldMatrix<IExpr> matrix;
+      if (!engine.isNumericMode()) {
         try {
 
           IExpr arg1 = ast.arg1();
           int[] dim = arg1.isMatrix(false);
           if (dim != null) {
+            IAST eigenValues = F.NIL;
             if (dim[0] == 1 && dim[1] == 1) {
               // Eigenvalues({{a}})
-              return List(((IAST) arg1).getPart(1, 1));
+              eigenValues = List(((IAST) arg1).getPart(1, 1));
             }
-
-            if (ToggleFeature.EIGENSYSTEM_SYMBOLIC) {
-              if (!engine.isNumericMode() && !arg1.isNumericArgument(true)) {
-                IAST temp = eigensystemSymbolic(ast, arg1, maxValues, true, engine);
-                if (temp.isList1()) {
-                  return temp.first();
-                }
+            if (eigenValues.isNIL()) {
+              eigenValues = triangularEigenvalues(arg1, dim[0]);
+            }
+            if (eigenValues.isNIL() && ToggleFeature.EIGENSYSTEM_SYMBOLIC
+                && !arg1.isNumericArgument(true)) {
+              // request the complete list; takeEigenvalues() implements the selection for a
+              // positive and a negative number of eigenvalues consistently
+              IAST temp = eigensystemSymbolic(ast, arg1, -1, true, engine);
+              if (temp.isList1() && temp.first().isList()) {
+                eigenValues = (IAST) temp.first();
               }
+            }
+            if (eigenValues.isPresent()) {
+              return numberOfEigenvalues.isPresent() ? takeEigenvalues(eigenValues, maxValues)
+                  : eigenValues;
             }
           }
 
@@ -1806,14 +1943,14 @@ public final class LinearAlgebra {
     @Override
     public IExpr evaluate(final IAST ast, EvalEngine engine) {
 
-      if (ast.size() == 2) {
+      if (ast.size() >= 2) {
         try {
           IExpr arg1 = ast.arg1();
           int[] dim = ast.arg1().isMatrix();
           if (dim != null) {
             if (dim[0] == 1 && dim[1] == 1) {
-              // Eigenvectors({{a}})
-              return C1;
+              // Eigenvectors({{a}}) - the single eigenvector is returned as a 1 x 1 matrix
+              return F.list(F.list(C1));
             }
             if (ToggleFeature.EIGENSYSTEM_SYMBOLIC) {
               if (!engine.isNumericMode() && !arg1.isNumericArgument(true)
@@ -2072,8 +2209,10 @@ public final class LinearAlgebra {
       // The null space vector for free column f has:
       // x_f = 1 (set after the -1 multiply)
       // x_{pivotCol[i]} = RREF[i][f] (to be negated by minusOneFactor)
+      // The free columns are visited from right to left, because the basis vectors are ordered by
+      // descending free variable.
       int row = 0;
-      for (int freeCol = 0; freeCol < numCols; freeCol++) {
+      for (int freeCol = numCols - 1; freeCol >= 0; freeCol--) {
         if (!isPivotCol[freeCol]) {
           for (int i = 0; i < rank; i++) {
             if (pivotCol[i] >= 0) {
@@ -2089,7 +2228,7 @@ public final class LinearAlgebra {
 
       // Step 5: Set the free-variable positions to 1
       row = 0;
-      for (int freeCol = 0; freeCol < numCols; freeCol++) {
+      for (int freeCol = numCols - 1; freeCol >= 0; freeCol--) {
         if (!isPivotCol[freeCol]) {
           nullSpaceCache.setEntry(row, freeCol, F.C1);
           row++;
@@ -4527,28 +4666,37 @@ public final class LinearAlgebra {
 
     /**
      * Multiply the row vectors by the denominators {@link S#LCM} if all values are of type
-     * {@link IRational}.
-     * 
+     * {@link IRational} or of type {@link IComplex} (a complex number with rational real and
+     * imaginary part).
+     *
      * @param nullspaceVectors
      * @param engine
      */
     private static void pullOutDenominators(IASTMutable nullspaceVectors, EvalEngine engine) {
       for (int i = 1; i < nullspaceVectors.size(); i++) {
         IAST vector = (IAST) nullspaceVectors.get(i);
-        if (vector.argSize() > 0 && vector.forAll(x -> x.isRational())) {
+        if (vector.argSize() > 0 && vector.forAll(x -> x.isRational() || x.isComplex())) {
           IRational lcm = F.C1;
           for (int j = 1; j < vector.size(); j++) {
-            IRational arg = (IRational) vector.get(j);
-            if (!arg.isZero() && !arg.isOne()) {
-              lcm = (IRational) lcm.lcm(arg.denominator());
+            IExpr arg = vector.get(j);
+            if (arg.isRational()) {
+              IRational rational = (IRational) arg;
+              if (!rational.isZero() && !rational.isOne()) {
+                lcm = (IRational) lcm.lcm(rational.denominator());
+              }
+            } else {
+              // the real and the imaginary part can have different denominators
+              IComplex complex = (IComplex) arg;
+              lcm = (IRational) lcm.lcm(complex.re().denominator());
+              lcm = (IRational) lcm.lcm(complex.im().denominator());
             }
           }
           if (!lcm.isOne() && !lcm.isZero()) {
-            IASTAppendable normalizedVector = F.ListAlloc();
+            IASTAppendable normalizedVector = F.ListAlloc(vector.argSize());
             for (int j = 1; j < vector.size(); j++) {
-              IRational arg = (IRational) vector.get(j);
+              IExpr arg = vector.get(j);
               if (!arg.isZero()) {
-                arg = lcm.multiply(arg);
+                arg = engine.evaluate(F.Times(lcm, arg));
               }
               normalizedVector.append(arg);
             }
@@ -4575,8 +4723,8 @@ public final class LinearAlgebra {
             IASTMutable nullspaceVectors = Convert.matrix2List(nullspace);
             pullOutDenominators(nullspaceVectors, engine);
 
-            // rows in descending orders
-            EvalAttributes.sort(nullspaceVectors, Comparators.REVERSE_CANONICAL_COMPARATOR);
+            // the rows are already ordered by descending free variable; sorting them by value here
+            // would destroy that order
             return nullspaceVectors;
           }
         }
@@ -4855,6 +5003,10 @@ public final class LinearAlgebra {
    * </blockquote>
    *
    * <p>
+   * An exact or symbolic <code>matrix</code> is computed exactly; a matrix with inexact entries is
+   * computed with the numerically stable singular value decomposition.
+   *
+   * <p>
    * See:
    *
    * <ul>
@@ -4865,14 +5017,16 @@ public final class LinearAlgebra {
    * <h3>Examples</h3>
    *
    * <pre>
+   * &gt;&gt; PseudoInverse({{1, 2}, {3, 4}})
+   * {{-2,1},
+   *  {3/2,-1/2}}
    * &gt;&gt; PseudoInverse({{1, 2}, {2, 3}, {3, 4}})
-   * {{1.0000000000000002,2.000000000000001},
-   *  {1.9999999999999976,2.999999999999996},
-   *  {3.000000000000001,4.0}}
+   * {{-11/6,-1/3,7/6},
+   *  {4/3,1/3,-2/3}}
    * &gt;&gt; PseudoInverse({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}})
-   * {{-2.999999999999998,1.9999999999999967,4.440892098500626E-16},
-   *  {1.999999999999999,-0.9999999999999982,-2.7755575615628914E-16},
-   *  {0.9999999999999999,-1.9999999999999991,1.0}}
+   * {{-3,2,0},
+   *  {2,-1,0},
+   *  {1,-2,1}}
    * &gt;&gt; PseudoInverse({{1.0, 2.5}, {2.5, 1.0}})
    * {{-0.19047619047619038,0.47619047619047616},
    *  {0.47619047619047616,-0.1904761904761904}}
@@ -4895,19 +5049,25 @@ public final class LinearAlgebra {
     }
 
     /**
-     * PseudoInverse is always computed numerically via SVD; redirect symbolic calls straight to the
-     * numeric path (same behaviour as before).
+     * A matrix with inexact entries is computed with the numerically stable SVD; an exact or
+     * symbolic matrix is computed exactly by {@link #matrixEval(FieldMatrix, Predicate)}.
      */
     @Override
     public IExpr evaluate(final IAST ast, final int argSize, final IExpr[] options,
         final EvalEngine engine, final IAST originalAST) {
-      return numericEval(ast, engine);
+      IExpr arg1 = ast.arg1();
+      if (arg1.isMatrix() != null) {
+        FieldMatrix<IExpr> matrix = Convert.list2Matrix(arg1);
+        if (matrix != null && isInexactMatrix(matrix)) {
+          return numericEval(ast, engine);
+        }
+      }
+      return super.evaluate(ast, argSize, options, engine, originalAST);
     }
 
-    /** Not used – PseudoInverse always goes through the numeric SVD path. */
     @Override
     public FieldMatrix<IExpr> matrixEval(FieldMatrix<IExpr> matrix, Predicate<IExpr> zeroChecker) {
-      return null;
+      return pseudoInverseMatrix(matrix, zeroChecker);
     }
 
     @Override
@@ -7013,6 +7173,144 @@ public final class LinearAlgebra {
       return null;
     }
     return solver.getInverse();
+  }
+
+  /**
+   * Test if the matrix contains an inexact number, so that an exact result can't be computed.
+   *
+   * @param matrix
+   * @return <code>true</code> if at least one entry is an inexact number
+   */
+  private static boolean isInexactMatrix(final FieldMatrix<IExpr> matrix) {
+    final int rows = matrix.getRowDimension();
+    final int cols = matrix.getColumnDimension();
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < cols; j++) {
+        if (matrix.getEntry(i, j).isInexactNumber()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Return the conjugate transpose (adjoint) <code>matrix^H</code> of the given <code>matrix</code>
+   * .
+   *
+   * @param matrix
+   * @param engine the evaluation engine
+   * @return the conjugate transposed matrix
+   */
+  private static FieldMatrix<IExpr> conjugateTransposeMatrix(final FieldMatrix<IExpr> matrix,
+      EvalEngine engine) {
+    final int rows = matrix.getRowDimension();
+    final int cols = matrix.getColumnDimension();
+    FieldMatrix<IExpr> result = new BlockFieldMatrix<IExpr>(F.EXPR_FIELD, cols, rows);
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < cols; j++) {
+        result.setEntry(j, i, engine.evaluate(F.Conjugate(matrix.getEntry(i, j))));
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Normalize every entry of the given <code>matrix</code> with {@link S#Together}. The entries of a
+   * matrix product are built with the plain {@link IExpr} field operations, which leave nested
+   * fractions unsimplified.
+   *
+   * @param matrix the matrix is modified in place
+   * @param engine the evaluation engine
+   * @return the given matrix
+   */
+  private static FieldMatrix<IExpr> togetherMatrix(FieldMatrix<IExpr> matrix, EvalEngine engine) {
+    final int rows = matrix.getRowDimension();
+    final int cols = matrix.getColumnDimension();
+    for (int i = 0; i < rows; i++) {
+      for (int j = 0; j < cols; j++) {
+        matrix.setEntry(i, j, engine.evaluate(F.Together(matrix.getEntry(i, j))));
+      }
+    }
+    return matrix;
+  }
+
+  /**
+   * Compute the Moore-Penrose pseudoinverse of the given <code>matrix</code> with exact arithmetic.
+   *
+   * <p>
+   * For a matrix of full rank the pseudoinverse is the corresponding one-sided inverse. A rank
+   * deficient matrix is split into the full rank factorization <code>A == B . C</code>, for which
+   * <code>A^+ == C^H . Inverse(C . C^H) . Inverse(B^H . B) . B^H</code> holds.
+   *
+   * <p>
+   * See: <a href="https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_inverse">Wikipedia -
+   * Moore-Penrose inverse</a>
+   *
+   * @param matrix a matrix with exact or symbolic entries
+   * @param zeroChecker check if an element is 0
+   * @return <code>null</code> if the pseudoinverse couldn't be computed
+   */
+  public static FieldMatrix<IExpr> pseudoInverseMatrix(final FieldMatrix<IExpr> matrix,
+      Predicate<IExpr> zeroChecker) {
+    final EvalEngine engine = EvalEngine.get();
+    final int rows = matrix.getRowDimension();
+    final int cols = matrix.getColumnDimension();
+    final FieldReducedRowEchelonForm ref = new FieldReducedRowEchelonForm(matrix, zeroChecker);
+    final int rank = ref.getMatrixRank();
+    if (rank == 0) {
+      // the pseudoinverse of a zero matrix is the transposed zero matrix
+      return new BlockFieldMatrix<IExpr>(F.EXPR_FIELD, cols, rows);
+    }
+    if (rank == rows && rank == cols) {
+      return inverseMatrix(matrix, zeroChecker);
+    }
+    if (rank == cols) {
+      // full column rank: A^+ == Inverse(A^H . A) . A^H
+      final FieldMatrix<IExpr> adjoint = conjugateTransposeMatrix(matrix, engine);
+      final FieldMatrix<IExpr> inverse =
+          inverseMatrix(togetherMatrix(adjoint.multiply(matrix), engine), zeroChecker);
+      return inverse == null ? null : togetherMatrix(inverse.multiply(adjoint), engine);
+    }
+    if (rank == rows) {
+      // full row rank: A^+ == A^H . Inverse(A . A^H)
+      final FieldMatrix<IExpr> adjoint = conjugateTransposeMatrix(matrix, engine);
+      final FieldMatrix<IExpr> inverse =
+          inverseMatrix(togetherMatrix(matrix.multiply(adjoint), engine), zeroChecker);
+      return inverse == null ? null : togetherMatrix(adjoint.multiply(inverse), engine);
+    }
+    // rank deficient: build the full rank factorization `A == B . C`, where B collects the pivot
+    // columns of A and C the non-zero rows of the row reduced matrix
+    final FieldMatrix<IExpr> rowReduced = ref.getRowReducedMatrix();
+    final FieldMatrix<IExpr> b = new BlockFieldMatrix<IExpr>(F.EXPR_FIELD, rows, rank);
+    for (int i = 0; i < rank; i++) {
+      int pivot = -1;
+      for (int j = 0; j < cols; j++) {
+        IExpr entry = rowReduced.getEntry(i, j);
+        if (!entry.isZero() && !zeroChecker.test(entry)) {
+          pivot = j;
+          break;
+        }
+      }
+      if (pivot < 0) {
+        return null;
+      }
+      for (int j = 0; j < rows; j++) {
+        b.setEntry(j, i, matrix.getEntry(j, pivot));
+      }
+    }
+    final FieldMatrix<IExpr> c = rowReduced.getSubMatrix(0, rank - 1, 0, cols - 1);
+    final FieldMatrix<IExpr> bAdjoint = conjugateTransposeMatrix(b, engine);
+    final FieldMatrix<IExpr> cAdjoint = conjugateTransposeMatrix(c, engine);
+    final FieldMatrix<IExpr> cInverse =
+        inverseMatrix(togetherMatrix(c.multiply(cAdjoint), engine), zeroChecker);
+    final FieldMatrix<IExpr> bInverse =
+        inverseMatrix(togetherMatrix(bAdjoint.multiply(b), engine), zeroChecker);
+    if (cInverse == null || bInverse == null) {
+      return null;
+    }
+    return togetherMatrix(cAdjoint.multiply(cInverse).multiply(bInverse).multiply(bAdjoint),
+        engine);
   }
 
   private static IExpr linearSolve(LinearSolveFunctionExpr<?> linearSolveFunction,
