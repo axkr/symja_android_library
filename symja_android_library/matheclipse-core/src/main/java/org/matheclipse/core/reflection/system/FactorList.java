@@ -8,6 +8,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -95,8 +97,13 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
     IASTAppendable result = F.ListAlloc();
 
     if (factored.isNumber()) {
-      // Constant numbers have no further polynomial factors
-      result.append(F.List(factored, F.C1));
+      // Constant numbers have no further polynomial factors. A rational is split into its signed
+      // numerator (exponent 1) and denominator (exponent -1), e.g. 3/4 -> {{3,1},{4,-1}}.
+      if (factored.isRational()) {
+        appendRationalFactors(result, (IRational) factored);
+      } else {
+        result.append(F.List(factored, F.C1));
+      }
       return result;
     } else if (factored.isTimes()) {
       IAST times = (IAST) factored;
@@ -109,7 +116,14 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
           numericFactor = numericFactor.times(arg);
         }
       }
-      result.append(F.List(numericFactor, F.C1));
+      // The numeric content becomes the leading factor(s). A rational content is split into
+      // numerator/denominator entries, e.g. (x^2-1)/2 contributes {2,-1}; a pure numeric 1
+      // still yields the conventional leading {1,1}.
+      if (numericFactor.isRational()) {
+        appendRationalFactors(result, (IRational) numericFactor);
+      } else {
+        result.append(F.List(numericFactor, F.C1));
+      }
 
       // Second pass: append non-numeric polynomial factors
       for (int i = 1; i <= times.argSize(); i++) {
@@ -134,14 +148,46 @@ public class FactorList extends AbstractFunctionOptionEvaluator {
   private static void appendFactor(IASTAppendable result, IExpr arg) {
     if (arg.isPower()) {
       IExpr base = arg.base();
+      IExpr exponent = arg.exponent();
+      // Distribute a factored base over the power, e.g. ((-1+x)*(1+x))^-1 -> {-1+x,-1},{1+x,-1}
+      if (base.isTimes()) {
+        IAST times = (IAST) base;
+        for (int i = 1; i <= times.argSize(); i++) {
+          appendFactor(result, F.Power(times.get(i), exponent));
+        }
+        return;
+      }
       // If the base is a numeric constant, treat the entire Power as a single algebraic generator
       if (base.isNumber() || base.equals(S.E) || base.equals(S.Pi) || base.equals(S.I)) {
         result.append(F.List(arg, F.C1));
       } else {
-        result.append(F.List(base, arg.exponent()));
+        result.append(F.List(base, exponent));
       }
     } else {
       result.append(F.List(arg, F.C1));
+    }
+  }
+
+  /**
+   * Splits a rational number into its {@code FactorList} entries: the signed integer numerator with
+   * exponent {@code 1} and, for a proper fraction, the positive denominator with exponent
+   * {@code -1}. A bare {@code +1} numerator of a proper fraction is omitted, so {@code 1/2} yields
+   * only {@code {2,-1}}, while an integer (denominator {@code 1}) is always emitted, so {@code 1}
+   * yields {@code {1,1}}.
+   *
+   * @param result the list the {base, exponent} entries are appended to
+   * @param rational the rational number to split
+   */
+  private static void appendRationalFactors(IASTAppendable result, IRational rational) {
+    IInteger numerator = rational.numerator();
+    IInteger denominator = rational.denominator();
+    if (denominator.isOne()) {
+      result.append(F.List(numerator, F.C1));
+    } else {
+      if (!numerator.isOne()) {
+        result.append(F.List(numerator, F.C1));
+      }
+      result.append(F.List(denominator, F.CN1));
     }
   }
 }

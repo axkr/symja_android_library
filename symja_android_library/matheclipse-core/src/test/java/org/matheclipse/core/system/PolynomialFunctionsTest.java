@@ -532,7 +532,7 @@ public class PolynomialFunctionsTest extends ExprEvaluatorTestCase {
     check("SphericalHarmonicY(1,2,t,p)", //
         "0");
     check("SphericalHarmonicY(1,1,t,p)", //
-        "-1/2*E^(I*p)*Sqrt(3/2*1/Pi)*Sin(t)");
+        "-1/2*E^(I*p)*Sqrt(3/(2*Pi))*Sin(t)");
     check("SphericalHarmonicY(n,-n-1,t,p)", //
         "SphericalHarmonicY(n,-1-n,t,p)");
   }

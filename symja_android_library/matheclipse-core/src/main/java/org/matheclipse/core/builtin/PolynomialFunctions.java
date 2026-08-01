@@ -1140,7 +1140,7 @@ public class PolynomialFunctions {
    * b^2-4*a*c
    * </pre>
    */
-  private static class Discriminant extends AbstractFunctionEvaluator {
+  private static class Discriminant extends AbstractFunctionOptionEvaluator {
     // b^2 - 4*a*c
     private static final IExpr QUADRATIC = F.Plus(F.Sqr(F.b), F.Times(F.CN4, F.a, F.c));
 
@@ -1254,11 +1254,13 @@ public class PolynomialFunctions {
     private ISymbol[] vars = {F.a, F.b, F.c, F.d, F.e, F.f};
 
     @Override
-    public IExpr evaluate(final IAST ast, EvalEngine engine) {
+    public IExpr evaluate(final IAST ast, int argSize, IExpr[] options, EvalEngine engine,
+        IAST originalAST) {
       IExpr arg2 = ast.arg2();
       if (!arg2.isSymbol()) {
         return F.NIL;
       }
+      IExpr modulus = options[0];
       IExpr expr = F.evalExpandAll(ast.arg1(), engine);
       try {
         IAST univariateVariables = F.list(arg2);
@@ -1266,26 +1268,43 @@ public class PolynomialFunctions {
         ExprPolynomial poly = ring.create(expr);
 
         long n = poly.degree();
+        IExpr result = F.NIL;
         if (n >= 2L && n <= 5L) {
-          IAST result = poly.coefficientList();
-          IASTAppendable rules = F.mapList(result, (arg, i) -> F.Rule(vars[i - 1], arg));
+          IAST coefficientList = poly.coefficientList();
+          IASTAppendable rules = F.mapList(coefficientList, (arg, i) -> F.Rule(vars[i - 1], arg));
           switch ((int) n) {
             case 2:
-              return F.subst(QUADRATIC, rules);
+              result = F.subst(QUADRATIC, rules);
+              break;
             case 3:
-              return F.subst(CUBIC, rules);
+              result = F.subst(CUBIC, rules);
+              break;
             case 4:
-              return F.subst(QUARTIC, rules);
+              result = F.subst(QUARTIC, rules);
+              break;
             case 5:
-              return F.subst(QUINTIC, rules);
+              result = F.subst(QUINTIC, rules);
+              break;
           }
+        } else {
+          IExpr fN = poly.leadingBaseCoefficient(); // coefficient(n);
+          ExprPolynomial polyDiff = poly.derivativeUnivariate();
+          // see:
+          // http://en.wikipedia.org/wiki/Discriminant#Discriminant_of_a_polynomial
+          result = F.Divide(F.Times(F.Power(F.CN1, (n * (n - 1) / 2)),
+              F.Resultant(poly.getExpr(), polyDiff.getExpr(), arg2)), fN);
         }
-        IExpr fN = poly.leadingBaseCoefficient(); // coefficient(n);
-        ExprPolynomial polyDiff = poly.derivativeUnivariate();
-        // see:
-        // http://en.wikipedia.org/wiki/Discriminant#Discriminant_of_a_polynomial
-        return F.Divide(F.Times(F.Power(F.CN1, (n * (n - 1) / 2)),
-            F.Resultant(poly.getExpr(), polyDiff.getExpr(), arg2)), fN);
+        if (result.isPresent()) {
+          // "Modulus" option: reduce the discriminant's integer coefficients modulo the given
+          // value. The default 0 means "no modular reduction". Note: for the general
+          // (resultant-based) branch of a non-monic polynomial the result contains a division by
+          // the leading coefficient, so modular reduction there is best-effort.
+          if (modulus.isInteger() && !modulus.isZero()) {
+            return engine.evaluate(F.PolynomialMod(result, modulus));
+          }
+          return result;
+        }
+        return F.NIL;
       } catch (RuntimeException rex) {
         Errors.rethrowsInterruptException(rex);
         Errors.printMessage(S.Discriminant, rex, engine);
@@ -1301,8 +1320,11 @@ public class PolynomialFunctions {
     }
 
     @Override
-    public void setUp(final ISymbol symbol) {
-      symbol.setAttributes(ISymbol.LISTABLE);
+    public void setUp(final ISymbol newSymbol) {
+      newSymbol.setAttributes(ISymbol.LISTABLE);
+      IBuiltInSymbol[] optionKeys = new IBuiltInSymbol[] {S.Modulus};
+      IExpr[] optionValues = new IExpr[] {F.C0};
+      setOptions(newSymbol, optionKeys, optionValues);
     }
 
     @Override
