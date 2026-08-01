@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ImplementationStatus;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -37,6 +38,15 @@ public final class Normal extends AbstractFunctionEvaluator {
       heads = ast.arg2().makeList();
     }
     final IExpr arg1 = ast.arg1();
+    if (arg1.isAST(S.RootSum, 3)
+        && (heads.isAST0() || heads.exists(y -> y.equals(S.RootSum)))) {
+      // RootSum(f, form) stays inert during automatic evaluation whenever the summand doesn't
+      // reduce to a rational function; Normal(...) is the explicit request to sum over the roots.
+      IExpr expanded = RootSum.expandOverRoots((IAST) arg1, engine);
+      if (expanded.isPresent()) {
+        return expanded;
+      }
+    }
     IExpr normal = F.NIL;
     if (heads.isAST0()) {
       normal = arg1.normal(true);
