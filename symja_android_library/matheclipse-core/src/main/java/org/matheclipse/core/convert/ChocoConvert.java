@@ -658,13 +658,24 @@ public class ChocoConvert {
 
         Set<Entry<ISymbol, IntVar>> set = map.entrySet();
         IASTAppendable temp = F.ListAlloc(set.size());
+        // Emit the rules in the order in which the user listed the variables. Iterating the
+        // TreeMap instead would order them alphabetically, so solving for {n, m} would answer
+        // {m->.., n->..}.
+        for (int j = 1; j < userDefinedVariables.size(); j++) {
+          IExpr userVariable = userDefinedVariables.get(j);
+          if (userVariable.isSymbol()) {
+            IntVar intVar = map.get(userVariable);
+            if (intVar != null) {
+              appendIntegerRule(temp, (ISymbol) userVariable, solution.getIntVal(intVar),
+                  listOfZZVariables);
+            }
+          }
+        }
+        // any remaining solved variables the user didn't list explicitly
         for (Entry<ISymbol, IntVar> entry : set) {
-          ISymbol variable = entry.getKey();
-          if (listOfZZVariables.isPresent()) {
-            temp.append(F.Rule(variable, F.ConditionalExpression(
-                F.ZZ(solution.getIntVal(entry.getValue())), listOfZZVariables)));
-          } else {
-            temp.append(F.Rule(variable, F.ZZ(solution.getIntVal(entry.getValue()))));
+          if (userDefinedVariables.indexOf(entry.getKey()) <= 0) {
+            appendIntegerRule(temp, entry.getKey(), solution.getIntVal(entry.getValue()),
+                listOfZZVariables);
           }
         }
         result.append(temp);
@@ -672,6 +683,19 @@ public class ChocoConvert {
     }
 
     return result;
+  }
+
+  /**
+   * Append the rule <code>variable -> value</code> to <code>result</code>, wrapping the value in a
+   * {@link S#ConditionalExpression} if there are unsolved variables which only have to be integers.
+   */
+  private static void appendIntegerRule(IASTAppendable result, ISymbol variable, int value,
+      IExpr listOfZZVariables) {
+    if (listOfZZVariables.isPresent()) {
+      result.append(F.Rule(variable, F.ConditionalExpression(F.ZZ(value), listOfZZVariables)));
+    } else {
+      result.append(F.Rule(variable, F.ZZ(value)));
+    }
   }
 
   private static CArExpression realExpression(Model net, IExpr expr, Map<ISymbol, RealVar> map)
