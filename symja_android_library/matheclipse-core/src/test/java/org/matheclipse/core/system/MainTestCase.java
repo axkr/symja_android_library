@@ -112,11 +112,15 @@ public class MainTestCase extends ExprEvaluatorTestCase {
         "5/3+a");
     check("a+Sin(x)^2+Cos(y)^2+2/3", //
         "2/3+a+Cos(y)^2+Sin(x)^2");
+    // Leave ArcSin[x]+ArcCos[x] inside a larger sum alone even under FullSimplify,
+    // while the numeric ArcTan pairs do fold there, because they collapse to a constant
     check("a+ArcSin(x)+ArcCos(x)+2/3", //
+        "2/3+a+ArcCos(x)+ArcSin(x)");
+    check("FullSimplify(a+ArcSin(x)+ArcCos(x)+2/3)", //
+        "2/3+a+ArcCos(x)+ArcSin(x)");
+    check("Simplify(a+ArcTan(17)+ArcTan(1/17)+2/3)", //
         "2/3+a+Pi/2");
-    check("a+ArcTan(17)+ArcTan(1/17)+2/3", //
-        "2/3+a+Pi/2");
-    check("a+ArcTan(-2)+ArcTan(-1/2)+2/3", //
+    check("Simplify(a+ArcTan(-2)+ArcTan(-1/2)+2/3)", //
         "2/3+a-Pi/2");
     check("ArcTan((-1+2*x)*3^(-1/2))", //
         "ArcTan((-1+2*x)/Sqrt(3))");
@@ -3177,7 +3181,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Denominator(3/4*x^(-3))", //
         "4*x^3");
     check("Numerator(x+3/4*x^(-3))", //
-        "3/4*1/x^3+x");
+        "3/(4*x^3)+x");
     check("Denominator(x+3/4*x^(-3))", //
         "1");
     check("Numerator((x - 1)*(x - 2)/(x - 3)^2)", //

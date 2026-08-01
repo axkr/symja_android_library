@@ -105,6 +105,20 @@ public class GeneratingFunctionTest {
     check("ExponentialGeneratingFunction(1, {n, m}, {x, y})", "E^(x+y)");
   }
 
+  @Test
+  public void testEGFPolynomial() {
+    // a_n = n^3 => Sum(n^3 x^n/n!) = E^x * BellB(3, x) = E^x * x * (1 + 3 x + x^2)
+    check("ExponentialGeneratingFunction(n^3,n,x)", //
+        "E^x*x*(1+3*x+x^2)");
+  }
+
+  @Test
+  public void testEGFTrigonometric() {
+    // a_n = Sin(n) => e^(x Cos(1)) Sin(x Sin(1)) = Sin(x Sin(1))(Cosh(x Cos(1))+Sinh(x Cos(1)))
+    check("ExponentialGeneratingFunction(Sin(n),n,x)", //
+        "Sin(x*Sin(1))*(Cosh(x*Cos(1))+Sinh(x*Cos(1)))");
+  }
+
   // ==========================================================
   // Error Handling and Fallback Tests
   // ==========================================================

@@ -92,17 +92,7 @@ public class QuantityFunctions {
         if (ast.size() == 2) {
           IExpr arg1 = ast.arg1();
           if (arg1.isList()) {
-            IAST list = (IAST) arg1;
-            if (list.size() == 4) {
-              int year = list.arg1().toIntDefault();
-              int month = list.arg2().toIntDefault();
-              int day = list.arg3().toIntDefault();
-              if (F.isPresent(year) && //
-                  F.isPresent(month) && //
-                  F.isPresent(day)) {
-                return DateObjectExpr.newInstance(LocalDateTime.of(year, month, day, 0, 0));
-              }
-            }
+            return fromDateList((IAST) arg1);
           }
           return F.NIL;
         }
@@ -119,6 +109,72 @@ public class QuantityFunctions {
         return Errors.printMessage(S.DateObject, rex, engine);
       }
       return F.NIL;
+    }
+
+    /**
+     * Build a date from a list <code>{year}</code>, <code>{year, month}</code>, ... up to
+     * <code>{year, month, day, hour, minute, second}</code>.
+     *
+     * <p>
+     * A component that is not given defaults to its smallest value, so that a shorter list names
+     * the first instant of the period it describes: <code>{2021}</code> is the start of 2021 and
+     * <code>{2021, 8}</code> the start of that August. The seconds may be fractional.
+     *
+     * @return {@link F#NIL} if the list is not a date specification
+     */
+    private static IExpr fromDateList(IAST list) {
+      int argSize = list.argSize();
+      if (argSize < 1 || argSize > 6) {
+        return F.NIL;
+      }
+
+      int year = list.arg1().toIntDefault();
+      if (!F.isPresent(year)) {
+        return F.NIL;
+      }
+      int month = 1;
+      int day = 1;
+      int hour = 0;
+      int minute = 0;
+      double second = 0.0;
+      if (argSize >= 2) {
+        month = list.arg2().toIntDefault();
+        if (!F.isPresent(month)) {
+          return F.NIL;
+        }
+      }
+      if (argSize >= 3) {
+        day = list.arg3().toIntDefault();
+        if (!F.isPresent(day)) {
+          return F.NIL;
+        }
+      }
+      if (argSize >= 4) {
+        hour = list.get(4).toIntDefault();
+        if (!F.isPresent(hour)) {
+          return F.NIL;
+        }
+      }
+      if (argSize >= 5) {
+        minute = list.get(5).toIntDefault();
+        if (!F.isPresent(minute)) {
+          return F.NIL;
+        }
+      }
+      if (argSize >= 6) {
+        second = list.get(6).toDoubleDefault(Double.NaN);
+        if (Double.isNaN(second)) {
+          return F.NIL;
+        }
+      }
+
+      int wholeSeconds = (int) second;
+      int nanos = (int) Math.round((second - wholeSeconds) * 1.0e9);
+      if (nanos > 999999999) {
+        nanos = 999999999;
+      }
+      return DateObjectExpr
+          .newInstance(LocalDateTime.of(year, month, day, hour, minute, wholeSeconds, nanos));
     }
 
     @Override

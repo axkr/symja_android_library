@@ -658,7 +658,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
         "{{0,1,0},{1,1,1},{0,1,0}}");
 
     // The L2 Euclidean norm naturally accounts for fraction-filled regions
-    // unlike L1 bounds, handling standard Mathematica fraction evaluation:
+    // unlike L1 bounds:
     check("DiskMatrix(1.5, 3)", //
         "{{1,1,1},{1,1,1},{1,1,1}}");
 
@@ -914,12 +914,14 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
     check("Eigenvalues({{1,0,0,0,0},{3,1,0,0,0},{6,3,2,0,0},{10,6,3,2,0},{15,10,6,3,2}})", //
         "{2,2,2,1,1}");
+    // Abs(x)*Abs(y) -> Abs(x*y) contracts the mixed squares, e.g. 2*Abs(a(1,1))^2*Abs(a(1,2))^2
+    // becomes 2*Abs(a(1,1)*a(1,2))^2 — the same value with fewer leaves
     check("mat = Array(a, {2,2}); Eigenvalues(mat.ConjugateTranspose(mat))[[1]] // FullSimplify", //
-        "1/2*(Abs(a(1,1))^2+Abs(a(1,2))^2+Abs(a(2,1))^2+Abs(a(2,2))^2-Sqrt(Abs(a(1,1))^4+\n" //
-            + "2*Abs(a(1,1))^2*Abs(a(1,2))^2+Abs(a(1,2))^4+2*Abs(a(1,1))^2*Abs(a(2,1))^2-2*Abs(a(\n" //
-            + "1,2))^2*Abs(a(2,1))^2+Abs(a(2,1))^4-2*Abs(a(1,1))^2*Abs(a(2,2))^2+2*Abs(a(1,2))^\n" //
-            + "2*Abs(a(2,2))^2+2*Abs(a(2,1))^2*Abs(a(2,2))^2+Abs(a(2,2))^4+4*a(1,1)*a(2,2)*Conjugate(a(\n" //
-            + "1,2))*Conjugate(a(2,1))+4*a(1,2)*a(2,1)*Conjugate(a(1,1))*Conjugate(a(2,2))))");
+        "1/2*(Abs(a(1,1))^2+Abs(a(1,2))^2+Abs(a(2,1))^2+Abs(a(2,2))^2-Sqrt(Abs(a(1,1))^4+Abs(a(\n" //
+            + "1,2))^4+2*Abs(a(1,1)*a(1,2))^2+Abs(a(2,1))^4+2*Abs(a(1,1)*a(2,1))^2-2*Abs(a(1,2)*a(\n" //
+            + "2,1))^2+Abs(a(2,2))^4-2*Abs(a(1,1)*a(2,2))^2+2*Abs(a(1,2)*a(2,2))^2+2*Abs(a(2,1)*a(\n" //
+            + "2,2))^2+4*a(1,1)*a(2,2)*Conjugate(a(1,2))*Conjugate(a(2,1))+4*a(1,2)*a(2,1)*Conjugate(a(\n" //
+            + "1,1))*Conjugate(a(2,2))))");
 
     check("Eigenvalues({{1, 0, 0}, {-2, 1, 0}, {0, 1, 1}})", //
         "{1,1,1}");

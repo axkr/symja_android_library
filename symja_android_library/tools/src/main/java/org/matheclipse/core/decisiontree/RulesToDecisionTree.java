@@ -626,7 +626,7 @@ public class RulesToDecisionTree {
 
   private static boolean isSpecialRuleList(String className) {
     return className.equals("IntegratePowerTimesFunctionRules")
-        || className.equals("FunctionExpandRules") || className.equals("FunctionRangeRules")
+        || className.equals("FunctionExpandRules")
         || className.equals("PodDefaultsRules");
   }
 

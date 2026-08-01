@@ -103,7 +103,7 @@ public class SymjifyTestCase extends ExprEvaluatorTestCase {
       // Solve."
       assertEquals("", message);
     }
-    assertEquals("Solve({x*y==1},{x,y})", //
+    assertEquals("{{y->1/x}}", //
         result.toString());
   }
 }

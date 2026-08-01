@@ -159,8 +159,8 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         " - I*(-Pi*Ceiling(Arg(-1 + x)/(2*Pi)) + SeriesData(x,1,{1/2*(Pi+I*Log(2)-I*Log(-1+x)),I*1/4,-I*1/16,I*1/48},0,4,1))");
 
     check("Series(ArcCosh(x+1), {x, 0, 5})//InputForm", //
-        "SeriesData(x,0,{Sqrt(2),0,-1/(6*Sqrt(2)),0,3/80*1/Sqrt(2),0,-5/448*1/Sqrt(2),0,\n"
-            + "35/9216*1/Sqrt(2)},1,11,2)");
+        "SeriesData(x,0,{Sqrt(2),0,-1/(6*Sqrt(2)),0,3/(80*Sqrt(2)),0,-5/(448*Sqrt(2)),0,\n"
+            + "35/(9216*Sqrt(2))},1,11,2)");
   }
 
   @Test
@@ -1245,7 +1245,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     check("SeriesCoefficient(1/(3*x^2),{x,0,4})", //
         "0");
     check("SeriesCoefficient(1/(3*x^2),{x,a,4})", //
-        "5/3*1/a^6");
+        "5/(3*a^6)");
     check("SeriesCoefficient(1/x^3,{x,0,-3})", //
         "1");
     check("SeriesCoefficient(1/x,{x,0,-1})", //

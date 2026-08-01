@@ -596,7 +596,7 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
         "StandardDeviation(<|1 -> {0.41983028266218847},2 -> {0.40423614350552506}, 3 -> {0.8670734533759055}|>)", //
         "{0.2628332824986678}");
     check("StandardDeviation(SparseArray({{1} -> 1, {100} -> 1}))", //
-        "7/15*1/Sqrt(11)");
+        "7/(15*Sqrt(11))");
     check("StandardDeviation(SparseArray({{1, 1} -> 1, {2, 2} -> 2, {3, 3} -> 3, {1, 3} -> 4}))", //
         "{1/Sqrt(3),2/Sqrt(3),Sqrt(13/3)}");
     check("StandardDeviation({0,0})", //

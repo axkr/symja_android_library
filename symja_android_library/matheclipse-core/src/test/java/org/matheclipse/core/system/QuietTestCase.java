@@ -52,6 +52,6 @@ public class QuietTestCase {
     IExpr yVar = F.symjify("y");
     IExpr result =
         F.eval(F.Quiet(F.Solve(F.List(F.Equal(xVar.multiply(yVar), F.ZZ(1))), F.List(xVar, yVar))));
-    assertEquals("Solve({x*y==1},{x,y})", result.toString());
+    assertEquals("{{y->1/x}}", result.toString());
   }
 }

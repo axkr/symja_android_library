@@ -10,7 +10,7 @@ public class QuantumPhysiscsTest extends ExprEvaluatorTestCase {
         "(-1)^(j-j1+m2)*Sqrt(1+2*j2)*ThreeJSymbol({j,m},{j1,m1},{j2,-m2})");
     // https://en.wikipedia.org/wiki/Table_of_Clebsch%E2%80%93Gordan_coefficients
     check("ClebschGordan({3/2, -3/2}, {3/2, 3/2}, {1, 0})", //
-        "3/2*1/Sqrt(5)");
+        "3/(2*Sqrt(5))");
 
 
     // print message "is not physical

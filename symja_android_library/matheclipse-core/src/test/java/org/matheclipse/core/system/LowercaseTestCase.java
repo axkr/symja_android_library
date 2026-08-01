@@ -327,7 +327,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "x/(a+b*x)");
 
     check("Apart((3*x-8)/((x+1)*(x-5)),x)", //
-        "7/6*1/(-5+x)+11/6*1/(1+x)");
+        "7/(6*(-5+x))+11/(6*(1+x))");
 
     check("Apart((a + b)^3)", //
         "a^3+3*a^2*b+3*a*b^2+b^3");
@@ -359,11 +359,11 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Apart((x)/(x^2-1))", //
         "1/(2*(-1+x))+1/(2*(1+x))");
     check("Apart((x+3)/(x^2-3*x-40))", //
-        "11/13*1/(-8+x)+2/13*1/(5+x)");
+        "11/(13*(-8+x))+2/(13*(5+x))");
     check("Apart((10*x^2+12*x+20)/(x^3-8))", //
         "7/(-2+x)+(4+3*x)/(4+2*x+x^2)");
     check("Apart((3*x+5)*(1-2*x)^(-2))", //
-        "13/2*1/(1-2*x)^2+3/2*1/(-1+2*x)");
+        "13/(2*(1-2*x)^2)+3/(2*(-1+2*x))");
     check("Apart((10*x^2+12*x+20)/(x^3-8))", //
         "7/(-2+x)+(4+3*x)/(4+2*x+x^2)");
     check("Apart((10*x^2-63*x+29)/((x+2)*(x+3)^5))", //
@@ -747,15 +747,18 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("ArcSin(Sin(5))", //
         "5-2*Pi");
 
+    // ArcSin(x)+ArcCos(x)==Pi/2 is applied by Simplify, not during evaluation
     check("-3*ArcSin(x)-2*ArcCos(x)", //
-        "-Pi-ArcSin(x)");
-    check("-ArcSin(x)-2*ArcCos(x)", //
-        "-Pi/2-ArcCos(x)");
-    check("-5*ArcSin(x)-5*ArcCos(x)", //
-        "-5/2*Pi");
+        "-2*ArcCos(x)-3*ArcSin(x)");
+    check("Simplify(-3*ArcSin(x)-2*ArcCos(x))", //
+        "-3/2*Pi+ArcCos(x)");
     check("ArcSin(x)+ArcCos(x)", //
+        "ArcCos(x)+ArcSin(x)");
+    check("Simplify(ArcSin(x)+ArcCos(x))", //
         "Pi/2");
-    check("5*ArcSin(x)+5*ArcCos(x)", //
+    check("Simplify(-5*ArcSin(x)-5*ArcCos(x))", //
+        "-5/2*Pi");
+    check("Simplify(5*ArcSin(x)+5*ArcCos(x))", //
         "5/2*Pi");
     check("ArcSin(0)", //
         "0");
@@ -857,9 +860,14 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0.61548");
     check("-ArcTan(x/(2*Sqrt(2)))/(2*Sqrt(2))", //
         "-ArcTan(x/(2*Sqrt(2)))/(2*Sqrt(2))");
+    // the numeric ArcTan pair identities moved from evaluation into Simplify. Consuming only part
+    // of the sum — one of the seven ArcTan(1/2) — weighs the same as leaving it alone, so Simplify
+    // declines it; folding the pair on its own is a real gain and still happens.
     check("7*ArcTan(1/2) + a+ArcTan(1/3)", //
-        "a+Pi/4+6*ArcTan(1/2)");
-    check("ArcTan(1/3) + ArcTan(1/7)", //
+        "a+ArcTan(1/3)+7*ArcTan(1/2)");
+    check("Simplify(7*ArcTan(1/2) + a+ArcTan(1/3))", //
+        "a+ArcTan(1/3)+7*ArcTan(1/2)");
+    check("Simplify(ArcTan(1/3) + ArcTan(1/7))", //
         "ArcTan(1/2)");
 
     check("ArcTan(a, -a)", //
@@ -868,14 +876,20 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "ArcTan(-a,a)");
     check("ArcTan(a, a)", //
         "ArcTan(a,a)");
+    // ArcTan(x)+ArcCot(x)==Pi/2 only holds for Re(x)>0 — at x==-1 both terms are -Pi/4 and the sum
+    // is -Pi/2 — so it needs a provably positive argument and no longer fires for a symbol
     check("2*ArcTan(x)+4*ArcCot(x)", //
-        "Pi+2*ArcCot(x)");
+        "4*ArcCot(x)+2*ArcTan(x)");
     check("7*ArcTan(x)+3*ArcCot(x)", //
-        "3/2*Pi+4*ArcTan(x)");
+        "3*ArcCot(x)+7*ArcTan(x)");
     check("ArcTan(x)+ArcCot(x)", //
+        "ArcCot(x)+ArcTan(x)");
+    check("Simplify(ArcTan(x)+ArcCot(x))", //
+        "ArcCot(x)+ArcTan(x)");
+    check("Simplify(ArcTan(2)+ArcCot(2))", //
         "Pi/2");
     check("4*ArcTan(x)+4*ArcCot(x)", //
-        "2*Pi");
+        "4*ArcCot(x)+4*ArcTan(x)");
 
     // issue #180
     check("ArcTan(1,Sqrt(3))", //
@@ -4326,7 +4340,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "0");
 
     check("CorrelationDistance({1, 2, 3}, {3,5,10})", //
-        "1-7/2*1/Sqrt(13)");
+        "1-7/(2*Sqrt(13))");
     check("N(CorrelationDistance({1, 2, 3}, {3,5,10}))", //
         "0.0292747");
 
@@ -5042,6 +5056,49 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
     check("d=DateObject({2018,8,8});t=TimeObject({13,15});DateObject(d,t)", //
         "2018-08-08T13:15");
+  }
+
+  @Test
+  public void testDateObjectFromDateList() {
+    // a component that is not given defaults to its smallest value, so a shorter list names the
+    // first instant of the period it describes
+    check("DateObject({2021})", //
+        "2021-01-01T00:00");
+    check("DateObject({2021,8})", //
+        "2021-08-01T00:00");
+    check("DateObject({2021,8,1})", //
+        "2021-08-01T00:00");
+    check("DateObject({2021,8,1,13})", //
+        "2021-08-01T13:00");
+    check("DateObject({2021,8,1,13,45})", //
+        "2021-08-01T13:45");
+    check("DateObject({2021,8,1,13,45,30})", //
+        "2021-08-01T13:45:30");
+
+    // an explicit zero time is the same as leaving it off
+    check("DateObject({2021,8,1,0,0,0})", //
+        "2021-08-01T00:00");
+
+    // the seconds may be fractional
+    check("DateObject({2021,8,1,13,45,30.5})", //
+        "2021-08-01T13:45:30.500");
+
+    check("DateValue(DateObject({2021,8,1,13,45,30}), {\"Hour\",\"Minute\",\"Second\"})", //
+        "{13,45,30}");
+  }
+
+  @Test
+  public void testDateObjectInvalidDateList() {
+    // more than six components is not a date specification
+    check("DateObject({2021,8,1,13,45,30,99})", //
+        "DateObject({2021,8,1,13,45,30,99})");
+    check("DateObject({})", //
+        "DateObject({})");
+    check("DateObject({x,8,1})", //
+        "DateObject({x,8,1})");
+    // DateObject: Invalid value for MonthOfYear (valid values 1 - 12): 13
+    check("DateObject({2021,13,1})", //
+        "DateObject({2021,13,1})");
   }
 
   @Test
@@ -6053,6 +6110,16 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "b^2*c^2*d^2-4*a*c^3*d^2-4*b^3*d^3+18*a*b*c*d^3-27*a^2*d^4-4*b^2*c^3*e+16*a*c^4*e+\n"
             + "18*b^3*c*d*e-80*a*b*c^2*d*e-6*a*b^2*d^2*e+144*a^2*c*d^2*e-27*b^4*e^2+144*a*b^2*c*e^\n"
             + "2-128*a^2*c^2*e^2-192*a^2*b*d*e^2+256*a^3*e^3");
+
+    // "Modulus" option: reduce the discriminant's integer coefficients modulo the given value
+    check("Discriminant(x^2 + b*x + c, x, Modulus -> 2)", //
+        "b^2");
+    check("Discriminant(x^3 + p*x + q, x, Modulus -> 3)", //
+        "2*p^3");
+    check("Discriminant(a*x^2 + b*x + c, x, Modulus -> 3)", //
+        "b^2+2*a*c");
+    check("Discriminant(x^2 + b*x + c, x)", //
+        "b^2-4*c");
   }
 
   @Test
@@ -8043,6 +8110,52 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
 
   @Test
   public void testFactorSquareFree() {
+    check("FactorSquareFree(x^5 - x^4 - x + 1)", //
+        "(1-x)^2*(1+x+x^2+x^3)");
+    check("FactorSquareFree(x^4 - 2*x^3 + x^2)", //
+        "(1-x)^2*x^2");
+    check("FactorSquareFree(12*x^3 + 36*x^2 + 36*x + 12)", "12*(1+x)^3");
+    check("FactorSquareFree(x^6 - 1)", "-1+x^6");
+    check("FactorSquareFree((2 - 4*x^2 + x^3)*(-2 + x^3))", //
+        "(-2+x^3)*(2-4*x^2+x^3)");
+    check("FactorSquareFree((1 - x^2 + x^3)*(1 + x + x^3))", "(1+x+x^3)*(1-x^2+x^3)");
+    check("FactorSquareFree((2 - 5*x + 2*x^2 + x^3)*(-5 - x + 5*x^2 + 5*x^3))",
+        "(2-5*x+2*x^2+x^3)*(-5-x+5*x^2+5*x^3)");
+    check("FactorSquareFree((-2 + x^4)*(2 + x^2))", "(2+x^2)*(-2+x^4)");
+    check("FactorSquareFree(-4*y^2 + 4*x*y - 4*x^2)", "-4*(x^2-x*y+y^2)");
+    check("FactorSquareFree(a^2 + 2*a*b + b^2)", "(a+b)^2");
+    check("FactorSquareFree(-a^2 - 2*a*b - b^2)", "-(a+b)^2");
+    check("FactorSquareFree(2*a^2 + 4*a*b + 2*b^2)", "2*(a+b)^2");
+    check("FactorSquareFree(x^2*y + 2*x*y + y)", "(1+x)^2*y");
+    check("FactorSquareFree(a^2 + 3*a*b + 2*b^2)", "a^2+3*a*b+2*b^2");
+    check("FactorSquareFree(x^2 + 2*x*y^2)", "x*(x+2*y^2)");
+
+    check("FactorSquareFree(-x^2 - x*y)", "-x*(x+y)");
+    check("FactorSquareFree(2*x^2 + 4*x*y)", "2*x*(x+2*y)");
+    check("FactorSquareFree(-x^2*y + 3*x^2*y^2 - 2*x*y^2)", "x*y*(-x-2*y+3*x*y)");
+    check("FactorSquareFree(x^4 - 2*x^2 + 1)", "(1-x^2)^2");
+    check("FactorSquareFree((-4 - 5*x)*(-2 - 4*x - 5*x^2))", "(4+5*x)*(2+4*x+5*x^2)");
+    check("FactorSquareFree((2 + 2*x - 2*x^2)*(-2 + 2*x))", //
+        "-4*(-1+x)*(-1-x+x^2)");
+    check("FactorSquareFree((2*x - 2)*(3*x + 6))", "6*(-1+x)*(2+x)");
+    check("FactorSquareFree(3*(2*x - 2))", "6*(-1+x)");
+    check("FactorSquareFree((x - 1)*(x - 1))", "(1-x)^2");
+    check("FactorSquareFree((x - 1)*(1 - x))", "-(1-x)^2");
+    check("FactorSquareFree((x + 1)*(x - 1)*(x + 1))", "(-1+x)*(1+x)^2");
+    check("FactorSquareFree((x - 1)^2 * (x + 1)^2)", "(1-x)^2*(1+x)^2");
+    check("FactorSquareFree((x^2 - 2*x + 1)*(x + 1))", "(1-x)^2*(1+x)");
+    check("FactorSquareFree((x^2 - 2*x + 1)^2)", "(1-x)^4");
+    check("FactorSquareFree((x^2 - 1)^2)", "(1-x^2)^2");
+    check("FactorSquareFree((5 + x - 5*x^2 - 5*x^3)*(-2 + 5*x - 2*x^2 - x^3))",
+        "(2-5*x+2*x^2+x^3)*(-5-x+5*x^2+5*x^3)");
+    check("FactorSquareFree((-2 + 5*x - 2*x^2 - x^3)*(5 + x - 5*x^2 - 5*x^3))",
+        "(2-5*x+2*x^2+x^3)*(-5-x+5*x^2+5*x^3)");
+    check("FactorSquareFree(x^2*(x - 1))", "(-1+x)*x^2");
+    check("FactorSquareFree(Sin(x)*(x^2 - 2*x + 1))", "(1-x)^2*Sin(x)");
+    check("FactorSquareFree(1 - x)", "1-x");
+
+    check("FactorSquareFree(-x^3 - x^2)", "-(1+x)*x^2");
+    check("FactorSquareFree(-x^2 + 2*x - 1)", "-(1-x)^2");
     check("a == d b + d c // FactorSquareFree", //
         "a==(b+c)*d");
     check("FactorSquareFree((b*c*x^2*Log(F))/(e^2-b^2*c^2*Log(F)^2))", //
@@ -9580,7 +9693,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "-Sqrt(70)");
 
     check("FromContinuedFraction({a/b,{1,2,13,2,2,1,54}})", //
-        "-15617/578+Sqrt(256224053)/578+a/b");
+        "1/578*(-15617+Sqrt(256224053))+a/b");
     check("FromContinuedFraction({27,{1,2,2,13,2,2,1,54}})", //
         "16*Sqrt(3)");
     check("FromContinuedFraction({8,{2,1,2,1,2,16}})", //
@@ -10174,18 +10287,53 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "4.56079359657056");
   }
 
-  @Test
-  public void testGeoDistance() {
-    // distance between Oslo and Berlin
-    check("GeoDistance({59.914, 10.752}, {52.523, 13.412})", //
-        "521.4299[mi]");
-    check("UnitConvert(GeoDistance({59.914, 10.752}, {52.523, 13.412}),\"km\")", //
-        "839.1601[km]");
+  // GeoDistance is implemented in the matheclipse-orekit module and is therefore not registered
+  // in a matheclipse-core only build. Its tests live in
+  // org.matheclipse.orekit.GeoDistanceTest.
 
-    check("GeoDistance({37, -109}, {40.113, -88.261})", //
-        "1140.843[mi]");
-    check("GeoDistance({30, 40}, {-40, 120})", //
-        "7031.637[mi]");
+  @Test
+  public void testGeodesyData() {
+    check("GeodesyData(\"WGS84\", \"SemimajorAxis\")", //
+        "6.37814*10^6[m]");
+    check("GeodesyData(\"WGS84\", \"SemiminorAxis\")", //
+        "6.35675*10^6[m]");
+    check("GeodesyData(\"WGS84\", \"InverseFlattening\")", //
+        "298.2572");
+    check("GeodesyData(\"WGS84\", \"Eccentricity\")", //
+        "0.0818192");
+    // ITRF00 is an alias of the IERS 2010 ellipsoid
+    check("GeodesyData(\"ITRF00\", \"SemimajorAxis\")", //
+        "6.37814*10^6[m]");
+    // one argument lists the available properties
+    check("GeodesyData(\"WGS84\")", //
+        "{SemimajorAxis,SemiminorAxis,Flattening,InverseFlattening,Eccentricity}");
+
+    // GeodesyData: Nonsense is not a known reference ellipsoid.
+    check("GeodesyData(\"Nonsense\", \"SemimajorAxis\")", //
+        "GeodesyData(Nonsense,SemimajorAxis)");
+    // GeodesyData: Bogus is not a known property of the reference ellipsoid WGS84.
+    check("GeodesyData(\"WGS84\", \"Bogus\")", //
+        "GeodesyData(WGS84,Bogus)");
+  }
+
+  @Test
+  public void testGeoPosition() {
+    check("GeoPosition({41, 20})", //
+        "GeoPosition({41.0,20.0,0.0})");
+    // the third coordinate is an altitude in meters
+    check("GeoPosition({41, 20, 1500})", //
+        "GeoPosition({41.0,20.0,1500.0})");
+    // coordinates are canonicalized; crossing the pole flips the longitude by 180 degrees
+    check("GeoPosition({100, 200})", //
+        "GeoPosition({80.0,20.0,0.0})");
+
+    check("GeoPosition({41, 20}) === GeoPosition({41, 20})", //
+        "True");
+    check("GeoPosition({41, 20}) === GeoPosition({41, 21})", //
+        "False");
+    // positions sort by longitude, then latitude, then altitude
+    check("Sort({GeoPosition({41, 20}), GeoPosition({5, 20}), GeoPosition({49, 2})})", //
+        "{GeoPosition({49.0,2.0,0.0}),GeoPosition({5.0,20.0,0.0}),GeoPosition({41.0,20.0,0.0})}");
   }
 
   @Test
@@ -13269,7 +13417,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("MantissaExponent(Pi, Pi)", //
         "{1/Pi,2}");
     check("MantissaExponent(5/2 + 3, Pi)", //
-        "{11/2*1/Pi^2,2}");
+        "{11/(2*Pi^2),2}");
     check("MantissaExponent(17, E)", //
         "{17/E^3,3}");
     check("MantissaExponent(17.0, E)", //
@@ -15671,7 +15819,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Normalize(0)", //
         "0");
     check("Normalize({1,5,1})", //
-        "{1/(3*Sqrt(3)),5/3*1/Sqrt(3),1/(3*Sqrt(3))}");
+        "{1/(3*Sqrt(3)),5/(3*Sqrt(3)),1/(3*Sqrt(3))}");
     check("Normalize({x,y})", //
         "{x/Sqrt(Abs(x)^2+Abs(y)^2),y/Sqrt(Abs(x)^2+Abs(y)^2)}");
     check("Normalize({x,y}, f)", //
@@ -17525,6 +17673,13 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "2+x");
     check("PolynomialGCD(3*x + 9, 6*x^3 - 3*x + 12)", //
         "3");
+
+    // C(n) generated constants (constant of integration, Solve/DSolve/...) are polynomial atoms,
+    // no longer rejected with a "... is not a polynomial" message
+    check("PolynomialGCD(x, x^2 + C(1))", //
+        "1");
+    check("PolynomialGCD(x + C(1), x + C(2))", //
+        "1");
   }
 
   @Test
@@ -17716,6 +17871,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "1+x^2");
     check("PolynomialQuotient(x^2 + 4*x + 1, 2*x + 1, x, Modulus -> 3)", //
         "1+2*x");
+
+    // C(n) generated constants are handled like symbolic coefficients
+    check("PolynomialQuotient(x^2 + C(1), x, x)", //
+        "x");
+    check("PolynomialQuotient(x^2, x + C(1), x)", //
+        "x-C(1)");
   }
 
   @Test
@@ -17806,8 +17967,8 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("gb = {4 - 16*y - 19*y^2 - 5*y^3 - a*y^4, -2 + 4*a*x + 9*y + (5 - 2*a)*y^2 + a*y^3};", //
         "");
     check("PolynomialReduce(poly, gb, {x, y})", //
-        "{{-1/(4*a),a/4-y/(4*a)},-3+1/a+a/2+(-9/2*1/a-9/4*a)*y+(1-5/2*1/a+1/4*a*(-5+2*a))*y^\n" //
-            + "2+(-5/4*1/a+(5-2*a)/(4*a)-a^2/4)*y^3}");
+        "{{-1/(4*a),a/4-y/(4*a)},-3+1/a+a/2+(-9/(2*a)-9/4*a)*y+(1-5/(2*a)+1/4*a*(-5+2*a))*y^\n" //
+            + "2+(-5/(4*a)+(5-2*a)/(4*a)-a^2/4)*y^3}");
 
     // ---
     check("poly = 121*x-x*y+y^2-3;", //
@@ -17819,6 +17980,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("PolynomialReduce(poly, gb, {x, y}, CoefficientDomain -> Integers)", //
         "{{0,3,-1,0},3-9*x-27*y+51*y^2-33*y^3}");
 
+    // C(n) generated constants are handled like symbolic coefficients
+    check("PolynomialQuotientRemainder(x^2 + C(1), x, x)", //
+        "{x,C(1)}");
 
   }
 
@@ -17857,6 +18021,12 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("PolynomialRemainder(x^2 + 4*x + 1, 2*x + 1, x, Modulus -> 2)", //
         "0");
     check("PolynomialRemainder(x^2 + 4*x + 1, 2*x + 1, x, Modulus -> 5)", "3");
+
+    // C(n) generated constants are handled like symbolic coefficients
+    check("PolynomialRemainder(x^2 + C(1), x, x)", //
+        "C(1)");
+    check("PolynomialRemainder(x^2, x + C(1), x)", //
+        "C(1)^2");
   }
 
   @Test

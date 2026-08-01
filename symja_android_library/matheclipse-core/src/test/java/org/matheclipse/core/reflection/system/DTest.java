@@ -75,6 +75,8 @@ public class DTest extends ExprEvaluatorTestCase {
 
   @Test
   public void testD001() {
+    check("D(C(3)*x^2,x)", //
+        "2*x*C(3)");
     check("(1-x^2)/(1-x)^2+(2*x)/(-1+x)", //
         "(2*x)/(-1+x)+(1-x^2)/(1-x)^2");
 

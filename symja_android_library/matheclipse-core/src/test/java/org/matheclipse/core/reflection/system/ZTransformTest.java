@@ -96,10 +96,11 @@ public class ZTransformTest extends ExprEvaluatorTestCase {
     // "(z*(Sinh(f-t)+z*Sinh(t)))/(1+z^2-2*z*Cosh(f))");
 
 
+    // TrigFactor contracts the third summand into a single fraction: LeafCount 77 instead of 106,
+    // numerically identical (both 1.84058 at z->1.7)
     check("ZTransform((1+n)^2*Sin(n),n,z)", //
-        "(2*z*(-1+z^2)*Sin(1))/(1+z^2-2*z*Cos(1))^2+(z*Sin(1))/(1+z^2-2*z*Cos(1))+(-z*(-1+(z*(\n"
-            + "6*z-2*z^3-4*Cos(1)))/(1+z^2-2*z*Cos(1))^2+(2*z*(z-Cos(1)))/(1+z^2-2*z*Cos(1)))*Sin(\n"
-            + "1))/(1+z^2-2*z*Cos(1))");
+        "(2*z*(-1+z^2)*Sin(1))/(1+z^2-2*z*Cos(1))^2+(z*Sin(1))/(1+z^2-2*z*Cos(1))+(z*(1-6*z^\n"
+            + "2+z^4+2*z*Cos(1)+2*z^3*Cos(1))*Sin(1))/(1+z^2-2*z*Cos(1))^3");
   }
 
   @Test
@@ -155,7 +156,7 @@ public class ZTransformTest extends ExprEvaluatorTestCase {
   @Test
   public void testZTransformPolynomialTimesGeometric() {
     check("ZTransform(n*a^n, n, z)", //
-        "(a*z)/(-a+z)^2");
+        "(a*z)/(a-z)^2");
     check("ZTransform(n*2^n, n, z)", //
         "(2*z)/(2-z)^2");
     check("ZTransform(n/3^n, n, z)", //
