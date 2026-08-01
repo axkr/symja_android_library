@@ -29,6 +29,14 @@ import org.matheclipse.core.interfaces.IExpr;
 public class ExpandTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testExpand() {
+    // the numerator (x+y)^2 has to be expanded and distributed over the denominator
+    check("Expand(((x + y)/z)^2)", //
+        "x^2/z^2+(2*x*y)/z^2+y^2/z^2");
+    check("Expand(((x + y)/z)^3)", //
+        "x^3/z^3+(3*x^2*y)/z^3+(3*x*y^2)/z^3+y^3/z^3");
+    check("Expand((x+y)^2/(z+w)^2)", //
+        "x^2/(w+z)^2+(2*x*y)/(w+z)^2+y^2/(w+z)^2");
+
     check("Expand((a(1)+a(2))*(x(1)+x(2))^2, x(_))", //
         "(a(1)+a(2))*x(1)^2+2*(a(1)+a(2))*x(1)*x(2)+(a(1)+a(2))*x(2)^2");
 

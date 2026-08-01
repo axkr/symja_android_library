@@ -84,7 +84,7 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
     check("FunctionExpand(ExpIntegralE(n,z))", //
         "Gamma(1-n,z)/z^(1-n)");
     check("FunctionExpand(ExpIntegralE(7/2,3))", //
-        "22/5*1/E^3-24/5*Sqrt(3*Pi)*Erfc(Sqrt(3))");
+        "22/(5*E^3)-24/5*Sqrt(3*Pi)*Erfc(Sqrt(3))");
     check("FunctionExpand(ExpIntegralE(-7/2,3))", //
         "(783/8*Sqrt(3)/E^3+105/16*Sqrt(Pi)*(1-Erf(Sqrt(3))))/(81*Sqrt(3))");
 

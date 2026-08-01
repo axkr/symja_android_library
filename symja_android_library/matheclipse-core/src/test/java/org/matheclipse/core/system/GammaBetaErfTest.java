@@ -317,9 +317,9 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
         "ComplexInfinity");
 
     check("CatalanNumber(5/2)", //
-        "1024/105*1/Pi");
+        "1024/(105*Pi)");
     check("CatalanNumber(41/2)", //
-        "2417851639229258349412352/60755857577415*1/Pi");
+        "2417851639229258349412352/(60755857577415*Pi)");
     check("CatalanNumber(1.2 + I)", //
         "0.730729+I*0.569846");
   }
@@ -840,7 +840,7 @@ public class GammaBetaErfTest extends ExprEvaluatorTestCase {
   @Test
   public void testGammaRegularized() {
     check("GammaRegularized(3,7)", //
-        "65/2*1/E^7");
+        "65/(2*E^7)");
     checkNumeric("GammaRegularized({0,Sequence(),1,2},-Sqrt(2),Interval(a))", //
         "{0,Interval({E^Sqrt(2)-1/E^a,E^Sqrt(2)-1/E^a}),GammaRegularized(2,-Sqrt(2),Interval({a,a}))}");
     check("N(GammaRegularized(5, 3,{2,3,5,7}), 50)", //

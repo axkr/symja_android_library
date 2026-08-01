@@ -232,7 +232,6 @@ public class FunctionExpand extends AbstractEvaluator {
       MATCHER.caseOf(S.ParzenWindow.of(x_), WindowFunctions.parzenWindow(x));
       MATCHER.caseOf(S.TukeyWindow.of(x_), WindowFunctions.tukeyWindow(x));
 
-      // IAST list = (IAST) WL.deserializeResource("/rules/FunctionExpandRules.bin", true);
       IAST list = FunctionExpandRules.RULES;
 
       for (int i = 1; i < list.size(); i++) {
