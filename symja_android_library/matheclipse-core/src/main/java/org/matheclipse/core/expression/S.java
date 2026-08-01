@@ -19,7 +19,7 @@ public class S {
   protected S() {} // static use only
 
   /** package private */
-  static final IBuiltInSymbol[] BUILT_IN_SYMBOLS = new IBuiltInSymbol[ID.Zeta + 10];
+  static final IBuiltInSymbol[] BUILT_IN_SYMBOLS = new IBuiltInSymbol[ID.ZTransform + 10];
 
   /** package private */
   static final short EXPRID_MAX_BUILTIN_LENGTH = (short) (BUILT_IN_SYMBOLS.length + 1);
@@ -34,7 +34,7 @@ public class S {
    * corresponding expressions.
    */
   static final Map<IExpr, Short> GLOBAL_IDS_MAP =
-      new IdentityHashMap<>((EXPRID_MAX_BUILTIN_LENGTH + 1000) * 4 / 3 + 1);
+      new IdentityHashMap<>(((EXPRID_MAX_BUILTIN_LENGTH) + 1000) * 4 / 3 + 1);
 
   public static final Map<String, ISymbol> HIDDEN_SYMBOLS_MAP =
       Config.TRIE_STRING2SYMBOL_BUILDER.withMatch(TrieMatch.EXACT).build(); // Tries.forStrings();
@@ -4925,6 +4925,16 @@ public class S {
   public final static IBuiltInSymbol FromDigits = S.initFinalSymbol("FromDigits", ID.FromDigits);
 
   /**
+   * FromJulianDate(julianDate) - returns the date corresponding to the given Julian date.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/FromJulianDate.md">FromJulianDate
+   *      documentation</a>
+   */
+  // public final static IBuiltInSymbol FromJulianDate =
+  // S.initFinalSymbol("FromJulianDate", ID.FromJulianDate);
+
+  /**
    * FromLetterNumber(number) - get the corresponding characters from the English alphabet.
    * 
    * @see <a href=
@@ -5131,9 +5141,31 @@ public class S {
   public final static IBuiltInSymbol GeodesyData = S.initFinalSymbol("GeodesyData", ID.GeodesyData);
 
   /**
-   * GeoDistance({latitude1,longitude1}, {latitude2,longitude2}) - returns the geodesic distance
+   * GeoDestination(position, {distance, azimuth}) - returns the position reached by travelling
+   * `distance` from `position` along the rhumb line with the given `azimuth`.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GeoDestination.md">GeoDestination
+   *      documentation</a>
+   */
+  // public final static IBuiltInSymbol GeoDestination =
+  // S.initFinalSymbol("GeoDestination", ID.GeoDestination);
+
+  /**
+   * GeoDirection(position1, position2) - returns the rhumb line azimuth from `position1` to
+   * `position2`, in degrees clockwise from north.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GeoDirection.md">GeoDirection
+   *      documentation</a>
+   */
+  // public final static IBuiltInSymbol GeoDirection =
+  // S.initFinalSymbol("GeoDirection", ID.GeoDirection);
+
+  /**
+   * GeoDistance({latitude1,longitude1}, {latitude2,longitude2}) - returns the rhumb line distance
    * between `{latitude1,longitude1}` and `{latitude2,longitude2}`.
-   * 
+   *
    * @see <a href=
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GeoDistance.md">GeoDistance
    *      documentation</a>
@@ -5164,6 +5196,17 @@ public class S {
       S.initFinalSymbol("GeometricTransformation", ID.GeometricTransformation);
 
   public final static IBuiltInSymbol GeoPosition = S.initFinalSymbol("GeoPosition", ID.GeoPosition);
+
+  /**
+   * GeoPositionXYZ(GeoPosition({latitude, longitude, altitude})) - returns the geocentric cartesian
+   * coordinates `{x, y, z}` of a position on the Earth.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/GeoPositionXYZ.md">GeoPositionXYZ
+   *      documentation</a>
+   */
+  // public final static IBuiltInSymbol GeoPositionXYZ =
+  // S.initFinalSymbol("GeoPositionXYZ", ID.GeoPositionXYZ);
 
   /**
    * Get("path-to-package-file-name") - load the package defined in `path-to-package-file-name`.
@@ -6771,6 +6814,15 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol Join = S.initFinalSymbol("Join", ID.Join);
+
+  /**
+   * JulianDate(date) - returns the Julian date of `date`.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/JulianDate.md">JulianDate
+   *      documentation</a>
+   */
+  // public final static IBuiltInSymbol JulianDate = S.initFinalSymbol("JulianDate", ID.JulianDate);
 
   public final static IBuiltInSymbol Joined = S.initFinalSymbol("Joined", ID.Joined);
 
@@ -11410,6 +11462,16 @@ public class S {
    *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/Sinh.md">Sinh
    *      documentation</a>
    */
+  /**
+   * SiderealTime(date) - returns the Greenwich mean sidereal time at `date`.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/SiderealTime.md">SiderealTime
+   *      documentation</a>
+   */
+  // public final static IBuiltInSymbol SiderealTime =
+  // S.initFinalSymbol("SiderealTime", ID.SiderealTime);
+
   public final static IBuiltInSymbol Sinh = S.initFinalSymbol("Sinh", ID.Sinh);
 
   /**
@@ -12820,6 +12882,17 @@ public class S {
    *      documentation</a>
    */
   public final static IBuiltInSymbol TimesBy = S.initFinalSymbol("TimesBy", ID.TimesBy);
+
+  /**
+   * TimeSystemConvert(date, "system") - returns the reading of `date` in another astronomical time
+   * system.
+   *
+   * @see <a href=
+   *      "https://raw.githubusercontent.com/axkr/symja_android_library/master/symja_android_library/doc/functions/TimeSystemConvert.md">TimeSystemConvert
+   *      documentation</a>
+   */
+  // public final static IBuiltInSymbol TimeSystemConvert =
+  // S.initFinalSymbol("TimeSystemConvert", ID.TimeSystemConvert);
 
   /**
    * TimeValue(p, i, n) - returns a time value calculation.
