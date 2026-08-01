@@ -260,24 +260,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
   }
 
   /**
-   *  Match the left-hand-side first argument with the pattern-matching rules first argument.
-   * <p>
-   * 
-   * @param leftHandSide
-   * @param patternMap
-   * @param engine
-   */
-  IExpr matchIntegrateFunction(final IExpr leftHandSide, IPatternMap patternMap,
-      EvalEngine engine) {
-    IExpr LhsPatternFunction = fLhsPatternExpr.first();
-    setLHSExprToMatch(LhsPatternFunction);
-    if (matchExpr(LhsPatternFunction, leftHandSide.first(), engine, new StackMatcher(engine))) {
-      return replacePatternMatch(leftHandSide, patternMap, engine, true);
-    }
-    return F.NIL;
-  }
-
-  /**
    * A match which contains a pattern was found.
    *
    * <p>

@@ -313,13 +313,18 @@ public class ReduceVariableEqual {
         IASTAppendable inverseFunction = InverseFunction.getUnaryInverseFunction(ast, true);
         if (inverseFunction.isPresent()) {
           if (exprWithVariable.isAbs()) {
-            if (exprWithoutVariable.isNonNegativeResult()) {
-              Errors.printMessage("ifun", F.List());
-              inverseFunction.append(exprWithoutVariable);
-              return extractVariableRecursive(ast.arg1(), inverseFunction, predicate, variable,
-                  multipleValues);
+            if (exprWithoutVariable.isNegativeResult()) {
+              // Abs(...) is never negative, so Abs(u) == negative has no solution. Returning
+              // S.True here would hand the boolean back as if it were a value for the variable,
+              // producing a bogus solution rule like x -> True.
+              return F.NIL;
             }
-            return S.True;
+            // the right hand side is non-negative or of unknown sign (e.g. a symbolic
+            // parameter): invert as usual, giving u == -rhs and u == rhs
+            Errors.printMessage("ifun", F.List());
+            inverseFunction.append(exprWithoutVariable);
+            return extractVariableRecursive(ast.arg1(), inverseFunction, predicate, variable,
+                multipleValues);
           } else {
             Errors.printMessage("ifun", F.List());
             // example: Sin(f(x)) == y -> f(x) == ArcSin(y)
