@@ -246,10 +246,15 @@ public class ToRadicals extends AbstractFunctionEvaluator {
    * If any root cannot be evaluated to a numeric value (e.g. symbolic coefficients), the original
    * order is returned unchanged so that the natural Cardano/Ferrari k-indexing is preserved.
    *
+   * <p>
+   * Shared with {@link Root}, which uses the same ordering for the numerically evaluated roots of
+   * {@code N[Root[f, k]]}. Both call sites must agree, otherwise {@code N[Root[f, k]]} and
+   * {@code N[ToRadicals[Root[f, k]]]} would select different roots.
+   *
    * @param roots the radical roots to sort
    * @return a new sorted array, or the original array if numeric sorting is not possible
    */
-  private static IExpr[] sortRootsByMmaOrder(IExpr[] roots) {
+  static IExpr[] sortRootsByMmaOrder(IExpr[] roots) {
     final int n = roots.length;
     final double[] reVals = new double[n];
     final double[] imVals = new double[n];
