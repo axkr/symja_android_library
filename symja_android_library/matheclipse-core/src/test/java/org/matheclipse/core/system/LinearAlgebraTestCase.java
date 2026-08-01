@@ -124,7 +124,7 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     check("AnglePath({90*Degree, 90*Degree, 90*Degree})", //
         "{{0,0},{0,1},{-1,1},{-1,0}}");
     check("AnglePath({90*Degree, Pi/3, -Pi/4})", //
-        "{{0,0},{0,1},{-Sqrt(3)/2,3/2},{(1-Sqrt(3))/(2*Sqrt(2))-Sqrt(3)/2,3/2+(1+Sqrt(3))/(\n"
+        "{{0,0},{0,1},{-Sqrt(3)/2,3/2},{-Sqrt(3)/2+(1-Sqrt(3))/(2*Sqrt(2)),3/2+(1+Sqrt(3))/(\n"
             + "2*Sqrt(2))}}");
     check("AnglePath({{0.7, 90*Degree}, {2.3, Pi/3}, {3.5, -Pi/4}})", //
         "{{0,0},{0.0,0.7},{-1.99186,1.85},{-2.89773,5.23074}}");
@@ -1487,6 +1487,21 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
     // underdetermined system:
     check("LinearSolve({{1, 2, 3}, {4, 5, 6}}, {6, 15})", //
         "{0,3,0}");
+
+    // overdetermined system with a solution:
+    check("LinearSolve({{1}, {2}}, {3, 6})", //
+        "{3}");
+    check("LinearSolve({{1, 2}, {3, 4}, {5, 6}}, {1, 2, 3})", //
+        "{0,1/2}");
+    // overdetermined system without a solution:
+    check("LinearSolve({{1}, {2}}, {3, 7})", //
+        "LinearSolve(\n" + "{{1},\n" + " {2}},{3,7})");
+    check("LinearSolve({{1}, {2}, {3}}, {1, 2, 4})", //
+        "LinearSolve(\n" + "{{1},\n" + " {2},\n" + " {3}},{1,2,4})");
+    // the number of equations doesn't match the number of rows:
+    check("LinearSolve({{1}, {2}}, {3, 6, 9})", //
+        "LinearSolve(\n" + "{{1},\n" + " {2}},{3,6,9})");
+
     // linear equations have no solution
     check("LinearSolve({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, {1, -2, 1})", //
         "LinearSolve(\n" + "{{1,2,3},\n" + " {4,5,6},\n" + " {7,8,9}},{1,-2,1})");
@@ -2797,8 +2812,8 @@ public class LinearAlgebraTestCase extends ExprEvaluatorTestCase {
 
     check("{u,s,v}=SingularValueDecomposition({{1/2+1/2*I, 11/10},{-I,32/10-45/10*I}}) // N", //
         "{{{0.195719+I*0.021187,-0.0139522+I*(-0.980332)},{0.564738+I*(-0.801446),0.173534+I*0.0929571}},{{5.72198,0.0},{0.0,0.677424}},{{0.159018+I*0.0834452,-0.871093+I*(-0.457108)},{0.983743,0.179582}}}");
-    check("u.s.ConjugateTranspose(v) // N", //
-        "{{0.5+I*0.5,1.1+I*(-5.27356*10^-16)},{-2.77556*10^-16+I*(-1.0),3.2+I*(-4.5)}}");
+    check("u.s.ConjugateTranspose(v) // N // Chop", //
+        "{{0.5+I*0.5,1.1},{I*(-1.0),3.2+I*(-4.5)}}");
     check("{u,s,v}=SingularValueDecomposition({{ 24/25, 43/25 },{57/25, 24/25 }})", //
         "{{{3/5,4/5},{4/5,-3/5}},{{3,0},{0,1}},{{4/5,-3/5},{3/5,4/5}}}");
     check("u.s.ConjugateTranspose(v)", //

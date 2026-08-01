@@ -468,7 +468,7 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
             + "260*b*z^2-90*b^2*z^2-10*b^3*z^2+120*z^3+70*b*z^3+10*b^2*z^3-20*z^4-5*b*z^4+z^5");
 
     check("HypergeometricU(3,b,z)", //
-        "(-3+b-z+1/2*(2-b+z)+1/2*E^z*(6-5*b+b^2+6*z-2*b*z+z^2)*z^(1-b)*Gamma(-1+b,z))/((2-b)*(\n" //
+        "(-3+b-z+1/2*(2-b+z)+1/2*E^z*z^(1-b)*(6-5*b+b^2+6*z-2*b*z+z^2)*Gamma(-1+b,z))/((2-b)*(\n"
             + "3-b))");
 
     check("N(HypergeometricU({3,1},{2,4},{7,8}))", //
@@ -487,7 +487,7 @@ public class HypergeometricFunctionTest extends ExprEvaluatorTestCase {
     check("D(HypergeometricU(a,b,x), x)", //
         "-a*HypergeometricU(1+a,1+b,x)");
     check("HypergeometricU(2, b, z)", //
-        "(-1+E^z*(2-b+z)*z^(1-b)*Gamma(-1+b,z))/(2-b)");
+        "(-1+E^z*z^(1-b)*(2-b+z)*Gamma(-1+b,z))/(2-b)");
     check("HypergeometricU(a, a+3, z)", //
         "(1+(a*(1+a))/z^2+(2*a)/z)/z^a");
     check("HypergeometricU(3, 2.5, 1.0)", //

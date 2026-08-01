@@ -295,7 +295,7 @@ public class SumTest extends ExprEvaluatorTestCase {
         "c*(i-n)+1/2*c*(-i+n)*(1+i+n)");
 
     check("Sum(c*(i-j+1), {j,i+1,n}, {i,1,n})", //
-        "c*n*(-i+n)+1/2*c*(i-n)*n*(1+i+n)+c*(1/2*n*(-i+n)+1/2*(-i+n)*n^2)");
+        "c*n*(-i+n)+1/2*c*(i-n)*n*(1+i+n)+c*(1/2*n*(-i+n)+1/2*n^2*(-i+n))");
     check("Simplify(c*n*(-i+n)+1/2*c*(i-n)*n*(1+i+n)+c*(1/2*n*(-i+n)+1/2*(-i+n)*n^2))", //
         "1/2*c*(2-i)*n*(-i+n)");
 

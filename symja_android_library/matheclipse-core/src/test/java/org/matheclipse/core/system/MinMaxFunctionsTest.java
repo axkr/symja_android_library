@@ -327,8 +327,10 @@ public class MinMaxFunctionsTest extends ExprEvaluatorTestCase {
     check("NMinimize({Sinc(x)+Sinc(y)}, {x, y})", //
         "{-0.434467,{x->4.49341,y->4.49341}}");
 
+    // a numerical optimizer converges to fewer digits than a single arithmetic operation, so the
+    // minimizer coordinates differ between CPU architectures well above the default tolerance
     checkNumeric("NMinimize({Sinc(x)+Sinc(y)}, {x, y})", //
-        "{-0.4344672564224433,{x->4.493409457896563,y->4.493409457738778}}");
+        "{-0.4344672564224433,{x->4.493409457896563,y->4.493409457738778}}", 1.0e-8);
 
     checkNumeric("NMinimize(x^4 - 3*x^2 - x, x)", //
         "{-3.513905038934788,{x->1.3008395656679863}}");

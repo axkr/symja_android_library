@@ -2,6 +2,7 @@ package org.matheclipse.core.eval;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.matheclipse.core.eval.exception.LimitException;
@@ -21,569 +22,572 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.tensor.qty.IQuantity;
 
 /**
- * Plus operator for adding multiple arguments with the <code>plus(argument)</code> method and
- * returning the result, with the <code>getSum()</code> method, if <code>isEvaled()</code> returns
+ * Plus operator for adding multiple arguments with the
+ * <code>plus(argument)</code> method and returning the result, with the
+ * <code>getSum()</code> method, if <code>isEvaled()</code> returns
  * <code>true</code>. See:
- * <a href="http://www.cs.berkeley.edu/~fateman/papers/newsimp.pdf">Experiments in Hash-coded
- * Algebraic Simplification</a>
+ * <a href="http://www.cs.berkeley.edu/~fateman/papers/newsimp.pdf">Experiments
+ * in Hash-coded Algebraic Simplification</a>
  */
 public final class PlusOp {
 
-  /**
-   * Basic addition of two expressions, which can be a number, interval, interval data or quantity.
-   *
-   * @param iExpr the first expression
-   * @param that the second expression
-   * @param returnNilIfUnevaluated TODO check if this parameter can be removed
-   * @return the result of the addition or {@link F#NIL}
-   */
-  public static org.matheclipse.core.interfaces.IExpr numberLikePlus(
-      org.matheclipse.core.interfaces.IExpr iExpr, final org.matheclipse.core.interfaces.IExpr that,
-      boolean returnNilIfUnevaluated) {
-    if (iExpr.isNumber()) {
-      if (that.isInterval()) {
-        return IntervalSym.plus(iExpr, (org.matheclipse.core.interfaces.IAST) that);
-      }
-      if (that.isIntervalData()) {
-        return IntervalDataSym.plus(iExpr, (org.matheclipse.core.interfaces.IAST) that);
-      }
-      if (that.isQuantity()) {
-        IQuantity q = (IQuantity) that;
-        return q.plus(iExpr, returnNilIfUnevaluated);
-      }
-    } else if (iExpr.isIntervalData()) {
-      if (that.isAST()) {
-        org.matheclipse.core.interfaces.IAST interval = (org.matheclipse.core.interfaces.IAST) that;
-        if (that.isInterval()) {
-          interval = IntervalDataSym.intervalToIntervalSet(interval);
-        }
-        if (interval.isIntervalData()) {
-          return IntervalDataSym.plus((org.matheclipse.core.interfaces.IAST) iExpr, interval);
-        }
-      }
-    } else if (iExpr.isInterval()) {
-      if (that.isAST()) {
-        org.matheclipse.core.interfaces.IAST interval = (org.matheclipse.core.interfaces.IAST) that;
-        if (that.isInterval()) {
-          return IntervalSym.plus((org.matheclipse.core.interfaces.IAST) iExpr, interval);
-        }
-      }
-    } else if (iExpr.isQuantity()) {
-      IQuantity q = (IQuantity) iExpr;
-      return q.plus(that, returnNilIfUnevaluated);
-    }
+	/**
+	 * Basic addition of two expressions, which can be a number, interval, interval
+	 * data or quantity.
+	 *
+	 * @param iExpr                  the first expression
+	 * @param that                   the second expression
+	 * @param returnNilIfUnevaluated TODO check if this parameter can be removed
+	 * @return the result of the addition or {@link F#NIL}
+	 */
+	public static org.matheclipse.core.interfaces.IExpr numberLikePlus(org.matheclipse.core.interfaces.IExpr iExpr,
+			final org.matheclipse.core.interfaces.IExpr that, boolean returnNilIfUnevaluated) {
+		if (iExpr.isNumber()) {
+			if (that.isInterval()) {
+				return IntervalSym.plus(iExpr, (org.matheclipse.core.interfaces.IAST) that);
+			}
+			if (that.isIntervalData()) {
+				return IntervalDataSym.plus(iExpr, (org.matheclipse.core.interfaces.IAST) that);
+			}
+			if (that.isQuantity()) {
+				IQuantity q = (IQuantity) that;
+				return q.plus(iExpr, returnNilIfUnevaluated);
+			}
+		} else if (iExpr.isIntervalData()) {
+			if (that.isAST()) {
+				org.matheclipse.core.interfaces.IAST interval = (org.matheclipse.core.interfaces.IAST) that;
+				if (that.isInterval()) {
+					interval = IntervalDataSym.intervalToIntervalSet(interval);
+				}
+				if (interval.isIntervalData()) {
+					return IntervalDataSym.plus((org.matheclipse.core.interfaces.IAST) iExpr, interval);
+				}
+			}
+		} else if (iExpr.isInterval()) {
+			if (that.isAST()) {
+				org.matheclipse.core.interfaces.IAST interval = (org.matheclipse.core.interfaces.IAST) that;
+				if (that.isInterval()) {
+					return IntervalSym.plus((org.matheclipse.core.interfaces.IAST) iExpr, interval);
+				}
+			}
+		} else if (iExpr.isQuantity()) {
+			IQuantity q = (IQuantity) iExpr;
+			return q.plus(that, returnNilIfUnevaluated);
+		}
 
-    if (that.isNumber()) {
-      if (iExpr.isInterval()) {
-        return IntervalSym.plus(that, (org.matheclipse.core.interfaces.IAST) iExpr);
-      }
-      if (iExpr.isIntervalData()) {
-        return IntervalDataSym.plus(that, (org.matheclipse.core.interfaces.IAST) iExpr);
-      }
-    } else if (that.isIntervalData()) {
-      if (iExpr.isAST()) {
-        org.matheclipse.core.interfaces.IAST interval =
-            (org.matheclipse.core.interfaces.IAST) iExpr;
-        if (iExpr.isInterval()) {
-          interval = IntervalDataSym.intervalToIntervalSet(interval);
-        }
-        if (interval.isIntervalData()) {
-          return IntervalDataSym.plus(interval, (org.matheclipse.core.interfaces.IAST) that);
-        }
-      }
-    } else if (that.isQuantity()) {
-      IQuantity q = (IQuantity) that;
-      return q.plus(iExpr, returnNilIfUnevaluated);
-    }
-    return F.NIL;
-  }
+		if (that.isNumber()) {
+			if (iExpr.isInterval()) {
+				return IntervalSym.plus(that, (org.matheclipse.core.interfaces.IAST) iExpr);
+			}
+			if (iExpr.isIntervalData()) {
+				return IntervalDataSym.plus(that, (org.matheclipse.core.interfaces.IAST) iExpr);
+			}
+		} else if (that.isIntervalData()) {
+			if (iExpr.isAST()) {
+				org.matheclipse.core.interfaces.IAST interval = (org.matheclipse.core.interfaces.IAST) iExpr;
+				if (iExpr.isInterval()) {
+					interval = IntervalDataSym.intervalToIntervalSet(interval);
+				}
+				if (interval.isIntervalData()) {
+					return IntervalDataSym.plus(interval, (org.matheclipse.core.interfaces.IAST) that);
+				}
+			}
+		} else if (that.isQuantity()) {
+			IQuantity q = (IQuantity) that;
+			return q.plus(iExpr, returnNilIfUnevaluated);
+		}
+		return F.NIL;
+	}
 
-  /** Merge IExpr keys by adding their values into this map. */
-  private Map<IExpr, IExpr> plusMap;
+	/** Merge IExpr keys by adding their values into this map. */
+	private Map<IExpr, IExpr> plusMap;
 
-  /** <code>true</code> if plus was really evaluated */
-  private boolean evaled;
+	/** <code>true</code> if plus was really evaluated */
+	private boolean evaled;
 
-  /** The value of the addition of numbers. */
-  private IExpr numberValue;
+	/** The value of the addition of numbers. */
+	private IExpr numberValue;
 
-  private final int capacity;
+	private final int capacity;
 
-  /**
-   * Constructor.
-   *
-   * @param capacity the approximated size of the resulting <code>Plus()</code> AST.
-   */
-  public PlusOp(final int capacity) {
-    this.capacity = capacity;
-    this.plusMap = null;
-    this.evaled = false;
-    this.numberValue = F.NIL;
-  }
+	/**
+	 * Constructor.
+	 *
+	 * @param capacity the approximated size of the resulting <code>Plus()</code>
+	 *                 AST.
+	 */
+	public PlusOp(final int capacity) {
+		this.capacity = capacity;
+		this.plusMap = null;
+		this.evaled = false;
+		this.numberValue = F.NIL;
+	}
 
-  /**
-   * Add or merge the <code>key, value</code> pair into the given <code>plusMap</code>.
-   *
-   * @param key the key expression
-   * @param value the value expression
-   */
-  private boolean addMerge(final IExpr key, final IExpr value) {
-    final Map<IExpr, IExpr> map = getMap();
-    IExpr temp = map.get(key);
-    if (temp == null) {
-      map.put(key, value);
-      return false;
-    }
-    // merge both values
-    if (temp.isNumberLike() && value.isNumberLike()) {
-      temp = temp.plus(value);
-      if (temp.isZero()) {
-        map.remove(key);
-        return true;
-      }
-    } else if (temp.head().equals(S.Plus)) {
-      if (!(temp instanceof IASTAppendable)) {
-        temp = ((IAST) temp).copyAppendable();
-      }
-      ((IASTAppendable) temp).append(value);
-    } else {
-      temp = F.Plus(temp, value);
-    }
-    map.put(key, temp);
-    return true;
-  }
+	/**
+	 * Add or merge the <code>key, value</code> pair into the given
+	 * <code>plusMap</code>.
+	 *
+	 * @param key   the key expression
+	 * @param value the value expression
+	 */
+	private boolean addMerge(final IExpr key, final IExpr value) {
+		final Map<IExpr, IExpr> map = getMap();
+		IExpr temp = map.get(key);
+		if (temp == null) {
+			map.put(key, value);
+			return false;
+		}
+		// merge both values
+		if (temp.isNumberLike() && value.isNumberLike()) {
+			temp = temp.plus(value);
+			if (temp.isZero()) {
+				map.remove(key);
+				return true;
+			}
+		} else if (temp.head().equals(S.Plus)) {
+			if (!(temp instanceof IASTAppendable)) {
+				temp = ((IAST) temp).copyAppendable();
+			}
+			((IASTAppendable) temp).append(value);
+		} else {
+			temp = F.Plus(temp, value);
+		}
+		map.put(key, temp);
+		return true;
+	}
 
-  private Map<IExpr, IExpr> getMap() {
-    if (plusMap == null) {
-      plusMap = new HashMap<IExpr, IExpr>(capacity + 5 + capacity / 10);
-    }
-    return plusMap;
-  }
+	private Map<IExpr, IExpr> getMap() {
+		if (plusMap == null) {
+			plusMap = new LinkedHashMap<IExpr, IExpr>();
+		}
+		return plusMap;
+	}
 
-  /**
-   * Get the current evaluated result of the summation as a <code>Plus()</code> expression with
-   * respecting the <code>OneIdentity</code> attribute.
-   *
-   * @return the evaluated result of the summation of a {@link S#Plus} function expression
-   */
-  public IExpr getSum() {
-    if (plusMap == null) {
-      if (numberValue.isPresent() && !numberValue.isZero()) {
-        return numberValue;
-      }
-      return F.C0;
-    }
-    if (numberValue instanceof ASTSeriesData && !plusMap.isEmpty()) {
-      // Fold the remaining symbolic terms (e.g. a polynomial term like `x` which depends on the
-      // expansion variable) into the series coefficients instead of keeping them as a separate
-      // Plus() term.
-      ASTSeriesData series = (ASTSeriesData) numberValue;
-      Iterator<Entry<IExpr, IExpr>> iterator = plusMap.entrySet().iterator();
-      while (iterator.hasNext()) {
-        Entry<IExpr, IExpr> entry = iterator.next();
-        final IExpr key = entry.getKey();
-        final IExpr value = entry.getValue();
-        IExpr term = value.isOne() ? key : F.eval(F.Times(value, key));
-        ASTSeriesData merged = series.plusExpr(term);
-        if (merged != null) {
-          series = merged;
-          iterator.remove();
-        }
-      }
-      numberValue = series;
-    }
-    IASTAppendable result = F.PlusAlloc(plusMap.size() + 1);
-    if (numberValue.isPresent() && !numberValue.isZero()) {
-      if (numberValue.isComplexInfinity()) {
-        return numberValue;
-      }
-      result.append(numberValue);
-    }
-    for (Map.Entry<IExpr, IExpr> element : plusMap.entrySet()) {
-      final IExpr key = element.getKey();
-      final IExpr value = element.getValue();
-      if (value.isOne()) {
-        if (key.isPlus()) {
-          result.appendArgs((IAST) key);
-        } else {
-          if (key.isTimes()) {
-            EvalAttributes.sortWithFlags((IASTMutable) key);
-          }
-          result.append(key);
-        }
-      } else if (key.isTimes()) {
-        IASTAppendable times = F.TimesAlloc(((IAST) key).size());
-        times.append(value);
-        times.appendArgs((IAST) key);
-        EvalAttributes.sortWithFlags(times);
-        result.append(times);
-      } else {
-        IASTMutable times = F.Times(value, key);
-        EvalAttributes.sortWithFlags(times);
-        result.append(times);
-      }
+	/**
+	 * Get the current evaluated result of the summation as a <code>Plus()</code>
+	 * expression with respecting the <code>OneIdentity</code> attribute.
+	 *
+	 * @return the evaluated result of the summation of a {@link S#Plus} function
+	 *         expression
+	 */
+	public IExpr getSum() {
+		if (plusMap == null) {
+			if (numberValue.isPresent() && !numberValue.isZero()) {
+				return numberValue;
+			}
+			return F.C0;
+		}
+		if (numberValue instanceof ASTSeriesData && !plusMap.isEmpty()) {
+			// Fold the remaining symbolic terms (e.g. a polynomial term like `x` which
+			// depends on the
+			// expansion variable) into the series coefficients instead of keeping them as a
+			// separate
+			// Plus() term.
+			ASTSeriesData series = (ASTSeriesData) numberValue;
+			Iterator<Entry<IExpr, IExpr>> iterator = plusMap.entrySet().iterator();
+			while (iterator.hasNext()) {
+				Entry<IExpr, IExpr> entry = iterator.next();
+				final IExpr key = entry.getKey();
+				final IExpr value = entry.getValue();
+				IExpr term = value.isOne() ? key : F.eval(F.Times(value, key));
+				ASTSeriesData merged = series.plusExpr(term);
+				if (merged != null) {
+					series = merged;
+					iterator.remove();
+				}
+			}
+			numberValue = series;
+		}
+		IASTAppendable result = F.PlusAlloc(plusMap.size() + 1);
+		if (numberValue.isPresent() && !numberValue.isZero()) {
+			if (numberValue.isComplexInfinity()) {
+				return numberValue;
+			}
+			result.append(numberValue);
+		}
+		for (Map.Entry<IExpr, IExpr> element : plusMap.entrySet()) {
+			final IExpr key = element.getKey();
+			final IExpr value = element.getValue();
+			if (value.isOne()) {
+				if (key.isPlus()) {
+					result.appendArgs((IAST) key);
+				} else {
+					if (key.isTimes()) {
+						EvalAttributes.sortWithFlags((IASTMutable) key);
+					}
+					result.append(key);
+				}
+			} else if (key.isTimes()) {
+				IASTAppendable times = F.TimesAlloc(((IAST) key).size());
+				times.append(value);
+				times.appendArgs((IAST) key);
+				EvalAttributes.sortWithFlags(times);
+				result.append(times);
+			} else {
+				IASTMutable times = F.Times(value, key);
+				EvalAttributes.sortWithFlags(times);
+				result.append(times);
+			}
 
-    }
-    IExpr temp = result.oneIdentity0();
-    if (temp.isPlus()) {
-      EvalAttributes.sortWithFlags((IASTMutable) temp);
-    }
-    return temp;
-  }
+		}
+		IExpr temp = result.oneIdentity0();
+		if (temp.isPlus()) {
+			EvalAttributes.sortWithFlags((IASTMutable) temp);
+		}
+		return temp;
+	}
 
-  /**
-   * Test if any evaluation occurred by calling the <code>plus()</code> method
-   *
-   * @return <code>true</code> if an evaluation occurred.
-   */
-  public boolean isEvaled() {
-    return evaled;
-  }
+	/**
+	 * Test if any evaluation occurred by calling the <code>plus()</code> method
+	 *
+	 * @return <code>true</code> if an evaluation occurred.
+	 */
+	public boolean isEvaled() {
+		return evaled;
+	}
 
-  private IExpr negativeInfinityPlus(final IExpr o1) {
-    if (o1.isInfinity()) {
-      // Indeterminate expression `1` encountered.
-      Errors.printMessage(S.Infinity, "indet", F.List(F.Plus(F.CInfinity, F.CNInfinity)));
-      return S.Indeterminate;
-    } else if (o1.isNegativeInfinity()) {
-      return F.CNInfinity;
-    }
-    return F.CNInfinity;
-  }
+	private IExpr negativeInfinityPlus(final IExpr o1) {
+		if (o1.isInfinity()) {
+			// Indeterminate expression `1` encountered.
+			Errors.printMessage(S.Infinity, "indet", F.List(F.Plus(F.CInfinity, F.CNInfinity)));
+			return S.Indeterminate;
+		} else if (o1.isNegativeInfinity()) {
+			return F.CNInfinity;
+		}
+		return F.CNInfinity;
+	}
 
-  /**
-   * Add an argument <code>arg</code> to this <code>Plus()</code> expression.
-   *
-   * @param arg
-   * @return <code>F.Indeterminate</code> if the result is indeterminated, <code>F.NIL</code>
-   *         otherwise.
-   */
-  public IExpr plus(final IExpr arg) {
-    if (arg.isIndeterminate()) {
-      return S.Indeterminate;
-    }
+	/**
+	 * Add an argument <code>arg</code> to this <code>Plus()</code> expression.
+	 *
+	 * @param arg
+	 * @return <code>F.Indeterminate</code> if the result is indeterminated,
+	 *         <code>F.NIL</code> otherwise.
+	 */
+	public IExpr plus(final IExpr arg) {
+		if (arg.isIndeterminate()) {
+			return S.Indeterminate;
+		}
 
-    try {
-      if (numberValue.isPresent() && numberValue.isDirectedInfinity()) {
-        if (numberValue.isComplexInfinity()) {
-          if (arg.isDirectedInfinity()) {
-            return S.Indeterminate;
-          }
-          numberValue = F.CComplexInfinity;
-          evaled = true;
-          return F.NIL;
-        } else if (numberValue.isInfinity()) {
-          if (arg.isInfinity()) {
-            evaled = true;
-            return F.NIL;
-          }
-          if (arg.isDirectedInfinity()) {
-            return S.Indeterminate;
-          }
-          if (arg.isRealResult()) {
-            evaled = true;
-            return F.NIL;
-          }
-        } else if (numberValue.isNegativeInfinity()) {
-          if (arg.isNegativeInfinity()) {
-            evaled = true;
-            return F.NIL;
-          }
-          if (arg.isDirectedInfinity()) {
-            // Indeterminate expression `1` encountered.
-            Errors.printMessage(S.Infinity, "indet", F.list(F.Plus(numberValue, arg)),
-                EvalEngine.get());
-            return S.Indeterminate;
-          }
-          if (arg.isRealResult()) {
-            evaled = true;
-            return F.NIL;
-          }
-        }
-      }
+		try {
+			if (numberValue.isPresent() && numberValue.isDirectedInfinity()) {
+				if (numberValue.isComplexInfinity()) {
+					if (arg.isDirectedInfinity()) {
+						return S.Indeterminate;
+					}
+					numberValue = F.CComplexInfinity;
+					evaled = true;
+					return F.NIL;
+				} else if (numberValue.isInfinity()) {
+					if (arg.isInfinity()) {
+						evaled = true;
+						return F.NIL;
+					}
+					if (arg.isDirectedInfinity()) {
+						return S.Indeterminate;
+					}
+					if (arg.isRealResult()) {
+						evaled = true;
+						return F.NIL;
+					}
+				} else if (numberValue.isNegativeInfinity()) {
+					if (arg.isNegativeInfinity()) {
+						evaled = true;
+						return F.NIL;
+					}
+					if (arg.isDirectedInfinity()) {
+						// Indeterminate expression `1` encountered.
+						Errors.printMessage(S.Infinity, "indet", F.list(F.Plus(numberValue, arg)), EvalEngine.get());
+						return S.Indeterminate;
+					}
+					if (arg.isRealResult()) {
+						evaled = true;
+						return F.NIL;
+					}
+				}
+			}
 
-      if (numberValue.isOverflow() && arg.isNumericFunction()) {
-        evaled = true;
-        return F.NIL;
-      }
+			if (numberValue.isOverflow() && arg.isNumericFunction()) {
+				evaled = true;
+				return F.NIL;
+			}
 
-      if (arg.isNumber()) {
-        if (arg.isZero()) {
-          evaled = true;
-          return F.NIL;
-        }
-        if (numberValue.isNIL()) {
-          numberValue = arg;
-          return F.NIL;
-        }
-        if (numberValue.isNumber()) {
-          IExpr temp = ((INumber) numberValue).plusExpr((INumber) arg);
-          if (temp.isNumber()) {
-            numberValue = temp;
-            evaled = true;
-            return F.NIL;
-          }
-        }
-        if (numberValue.isInfinity()) {
-          if (arg.isNegativeInfinity()) {
-            // Indeterminate expression `1` encountered.
-            Errors.printMessage(S.Infinity, "indet", F.list(F.Plus(numberValue, arg)),
-                EvalEngine.get());
-            return S.Indeterminate;
-          }
-          numberValue = F.CInfinity;
-          evaled = true;
-          return F.NIL;
-        }
-        if (numberValue.isNegativeInfinity()) {
-          numberValue = negativeInfinityPlus(arg);
-          if (numberValue.isIndeterminate()) {
-            return S.Indeterminate;
-          }
-          evaled = true;
-          return F.NIL;
-        }
-        return F.NIL;
-      } else if (arg.isQuantity()) {
-        // if (arg.isQuantity()) {
-        if (numberValue.isNIL()) {
-          numberValue = arg;
-          return F.NIL;
-        }
-        IQuantity q = (IQuantity) arg;
-        IExpr temp = q.plus(numberValue, true);
-        if (temp.isPresent()) {
-          evaled = true;
-          numberValue = temp;
-        } else {
-          if (addMerge(q, F.C1)) {
-            evaled = true;
-          }
-        }
-        return F.NIL;
-        // }
-      } else if (arg.isAST()) {
-        final IAST ast = (IAST) arg;
-        final int headID = arg.headID();
-        if (headID >= ID.DirectedInfinity) {
-          switch (headID) {
-            case ID.DirectedInfinity:
-              if (arg.isDirectedInfinity()) {
-                if (numberValue.isNIL()) {
-                  numberValue = arg;
-                  if (arg.isComplexInfinity()) {
-                    if (plusMap != null && plusMap.size() > 0) {
-                      evaled = true;
-                    }
-                  } else {
-                    if (plusMap != null) {
-                      Iterator<Entry<IExpr, IExpr>> iterator = plusMap.entrySet().iterator();
-                      while (iterator.hasNext()) {
-                        Entry<IExpr, IExpr> entry = iterator.next();
-                        if (entry.getKey().isRealResult()) {
-                          iterator.remove();
-                          evaled = true;
-                        }
-                      }
-                    }
-                  }
-                  return F.NIL;
-                }
-                if (arg.isInfinity()) {
-                  if (numberValue.isNegativeInfinity()) {
-                    // Indeterminate expression `1` encountered.
-                    Errors.printMessage(S.Infinity, "indet", F.list(F.Plus(arg, numberValue)),
-                        EvalEngine.get());
-                    return S.Indeterminate;
-                  }
-                  numberValue = F.CInfinity;
-                  evaled = true;
-                  return F.NIL;
-                } else if (arg.isNegativeInfinity()) {
-                  numberValue = negativeInfinityPlus(numberValue);
-                  if (numberValue.isIndeterminate()) {
-                    return S.Indeterminate;
-                  }
-                  evaled = true;
-                  return F.NIL;
-                } else if (arg.isComplexInfinity()) {
-                  if (numberValue.isDirectedInfinity()) {
-                    // Indeterminate expression `1` encountered.
-                    Errors.printMessage(S.Infinity, "indet", F.list(F.Plus(arg, numberValue)),
-                        EvalEngine.get());
-                    return S.Indeterminate;
-                  }
-                  numberValue = F.CComplexInfinity;
-                  evaled = true;
-                  return F.NIL;
-                }
-              }
-              break;
-            case ID.Times:
-              if (ast.size() > 1) {
-                if (ast.isNumericFunction() && plusInterval(ast)) {
-                  return F.NIL;
-                }
-                if (ast.arg1().isNumberLike()) {
-                  if (addMerge(ast.rest().oneIdentity1(), ast.arg1())) {
-                    evaled = true;
-                  }
-                  return F.NIL;
-                }
-                if (addMerge(ast, F.C1)) {
-                  evaled = true;
-                }
-              }
-              return F.NIL;
-            case ID.Interval:
-              if (arg.isInterval()) {
-                if (numberValue.isNIL()) {
-                  numberValue = arg;
-                  return F.NIL;
-                }
-                IExpr temp;
-                if (numberValue.isInterval()) {
-                  temp = IntervalSym.plus((IAST) numberValue, (IAST) arg);
-                } else {
-                  temp = IntervalSym.plus(numberValue, (IAST) arg);
-                }
-                if (temp.isPresent()) {
-                  numberValue = temp;
-                  evaled = true;
-                } else {
-                  if (addMerge(arg, F.C1)) {
-                    evaled = true;
-                  }
-                }
-                return F.NIL;
-              }
-              break;
-            case ID.IntervalData:
-              if (arg.isIntervalData()) {
-                if (numberValue.isNIL()) {
-                  numberValue = arg;
-                  return F.NIL;
-                }
-                IExpr temp = F.NIL;
-                if (numberValue.isIntervalData()) {
-                  temp = IntervalDataSym.plus((IAST) numberValue, (IAST) arg);
-                } else {
-                  if (!numberValue.isInterval()) {
-                    temp = IntervalDataSym.plus(numberValue, (IAST) arg);
-                  }
-                }
-                if (temp.isPresent()) {
-                  numberValue = temp;
-                  evaled = true;
-                } else {
-                  if (addMerge(arg, F.C1)) {
-                    evaled = true;
-                  }
-                }
-                return F.NIL;
-              }
-              break;
-            // case ID.Quantity:
-            // if (arg.isQuantity()) {
-            // if (numberValue.isNIL()) {
-            // numberValue = arg;
-            // return F.NIL;
-            // }
-            // IQuantity q = (IQuantity) arg;
-            // numberValue = q.plus(numberValue);
-            // if (numberValue.isPresent()) {
-            // evaled = true;
-            // }
-            // return F.NIL;
-            // }
-            // break;
-            case ID.SeriesData:
-              if (arg instanceof ASTSeriesData) {
-                if (numberValue.isNIL()) {
-                  numberValue = arg;
-                  return F.NIL;
-                }
-                numberValue = ((ASTSeriesData) arg).plus(numberValue);
-                evaled = true;
-                return F.NIL;
-              }
-              break;
-            case ID.Overflow:
-              if (arg.isAST0()) {
-                if (numberValue.isNIL()) {
-                  numberValue = arg;
-                  return F.NIL;
-                } else if (numberValue.isUnderflow()) {
-                  numberValue = arg;
-                  evaled = true;
-                  return F.NIL;
-                } else if (numberValue.isNumericFunction()) {
-                  numberValue = arg;
-                  evaled = true;
-                  return F.NIL;
-                }
-              }
-              break;
-            case ID.Underflow:
-              if (arg.isAST0()) {
-                if (numberValue.isNIL()) {
-                  if (EvalEngine.get().isNumericMode()) {
-                    // same as 0.0
-                    numberValue = F.CD0;
-                    evaled = true;
-                    return F.NIL;
-                  }
-                  numberValue = arg;
-                  return F.NIL;
-                } else if (numberValue.isOverflow()) {
-                  evaled = true;
-                  return F.NIL;
-                } else if (EvalEngine.get().isNumericMode()) {
-                  // same as 0.0
-                  evaled = true;
-                  return F.NIL;
-                }
-              }
-              break;
-          }
-        }
-      }
-      if (arg.isNumericFunction() && plusInterval(arg)) {
-        return F.NIL;
-      }
-      if (addMerge(arg, F.C1)) {
-        evaled = true;
-      }
-    } catch (ValidateException | LimitException e) {
-      throw e;
-    } catch (SymjaMathException sme) {
-      // `1`.
-      Errors.printMessage(S.Plus, sme, EvalEngine.get());
-    }
-    return F.NIL;
-  }
+			if (arg.isNumber()) {
+				if (arg.isZero()) {
+					evaled = true;
+					return F.NIL;
+				}
+				if (numberValue.isNIL()) {
+					numberValue = arg;
+					return F.NIL;
+				}
+				if (numberValue.isNumber()) {
+					IExpr temp = ((INumber) numberValue).plusExpr((INumber) arg);
+					if (temp.isNumber()) {
+						numberValue = temp;
+						evaled = true;
+						return F.NIL;
+					}
+				}
+				if (numberValue.isInfinity()) {
+					if (arg.isNegativeInfinity()) {
+						// Indeterminate expression `1` encountered.
+						Errors.printMessage(S.Infinity, "indet", F.list(F.Plus(numberValue, arg)), EvalEngine.get());
+						return S.Indeterminate;
+					}
+					numberValue = F.CInfinity;
+					evaled = true;
+					return F.NIL;
+				}
+				if (numberValue.isNegativeInfinity()) {
+					numberValue = negativeInfinityPlus(arg);
+					if (numberValue.isIndeterminate()) {
+						return S.Indeterminate;
+					}
+					evaled = true;
+					return F.NIL;
+				}
+				return F.NIL;
+			} else if (arg.isQuantity()) {
+				// if (arg.isQuantity()) {
+				if (numberValue.isNIL()) {
+					numberValue = arg;
+					return F.NIL;
+				}
+				IQuantity q = (IQuantity) arg;
+				IExpr temp = q.plus(numberValue, true);
+				if (temp.isPresent()) {
+					evaled = true;
+					numberValue = temp;
+				} else {
+					if (addMerge(q, F.C1)) {
+						evaled = true;
+					}
+				}
+				return F.NIL;
+				// }
+			} else if (arg.isAST()) {
+				final IAST ast = (IAST) arg;
+				final int headID = arg.headID();
+				if (headID >= ID.DirectedInfinity) {
+					switch (headID) {
+					case ID.DirectedInfinity:
+						if (arg.isDirectedInfinity()) {
+							if (numberValue.isNIL()) {
+								numberValue = arg;
+								if (arg.isComplexInfinity()) {
+									if (plusMap != null && plusMap.size() > 0) {
+										evaled = true;
+									}
+								} else {
+									if (plusMap != null) {
+										Iterator<Entry<IExpr, IExpr>> iterator = plusMap.entrySet().iterator();
+										while (iterator.hasNext()) {
+											Entry<IExpr, IExpr> entry = iterator.next();
+											if (entry.getKey().isRealResult()) {
+												iterator.remove();
+												evaled = true;
+											}
+										}
+									}
+								}
+								return F.NIL;
+							}
+							if (arg.isInfinity()) {
+								if (numberValue.isNegativeInfinity()) {
+									// Indeterminate expression `1` encountered.
+									Errors.printMessage(S.Infinity, "indet", F.list(F.Plus(arg, numberValue)),
+											EvalEngine.get());
+									return S.Indeterminate;
+								}
+								numberValue = F.CInfinity;
+								evaled = true;
+								return F.NIL;
+							} else if (arg.isNegativeInfinity()) {
+								numberValue = negativeInfinityPlus(numberValue);
+								if (numberValue.isIndeterminate()) {
+									return S.Indeterminate;
+								}
+								evaled = true;
+								return F.NIL;
+							} else if (arg.isComplexInfinity()) {
+								if (numberValue.isDirectedInfinity()) {
+									// Indeterminate expression `1` encountered.
+									Errors.printMessage(S.Infinity, "indet", F.list(F.Plus(arg, numberValue)),
+											EvalEngine.get());
+									return S.Indeterminate;
+								}
+								numberValue = F.CComplexInfinity;
+								evaled = true;
+								return F.NIL;
+							}
+						}
+						break;
+					case ID.Times:
+						if (ast.size() > 1) {
+							if (ast.isNumericFunction() && plusInterval(ast)) {
+								return F.NIL;
+							}
+							if (ast.arg1().isNumberLike()) {
+								if (addMerge(ast.rest().oneIdentity1(), ast.arg1())) {
+									evaled = true;
+								}
+								return F.NIL;
+							}
+							if (addMerge(ast, F.C1)) {
+								evaled = true;
+							}
+						}
+						return F.NIL;
+					case ID.Interval:
+						if (arg.isInterval()) {
+							if (numberValue.isNIL()) {
+								numberValue = arg;
+								return F.NIL;
+							}
+							IExpr temp;
+							if (numberValue.isInterval()) {
+								temp = IntervalSym.plus((IAST) numberValue, (IAST) arg);
+							} else {
+								temp = IntervalSym.plus(numberValue, (IAST) arg);
+							}
+							if (temp.isPresent()) {
+								numberValue = temp;
+								evaled = true;
+							} else {
+								if (addMerge(arg, F.C1)) {
+									evaled = true;
+								}
+							}
+							return F.NIL;
+						}
+						break;
+					case ID.IntervalData:
+						if (arg.isIntervalData()) {
+							if (numberValue.isNIL()) {
+								numberValue = arg;
+								return F.NIL;
+							}
+							IExpr temp = F.NIL;
+							if (numberValue.isIntervalData()) {
+								temp = IntervalDataSym.plus((IAST) numberValue, (IAST) arg);
+							} else {
+								if (!numberValue.isInterval()) {
+									temp = IntervalDataSym.plus(numberValue, (IAST) arg);
+								}
+							}
+							if (temp.isPresent()) {
+								numberValue = temp;
+								evaled = true;
+							} else {
+								if (addMerge(arg, F.C1)) {
+									evaled = true;
+								}
+							}
+							return F.NIL;
+						}
+						break;
+					// case ID.Quantity:
+					// if (arg.isQuantity()) {
+					// if (numberValue.isNIL()) {
+					// numberValue = arg;
+					// return F.NIL;
+					// }
+					// IQuantity q = (IQuantity) arg;
+					// numberValue = q.plus(numberValue);
+					// if (numberValue.isPresent()) {
+					// evaled = true;
+					// }
+					// return F.NIL;
+					// }
+					// break;
+					case ID.SeriesData:
+						if (arg instanceof ASTSeriesData) {
+							if (numberValue.isNIL()) {
+								numberValue = arg;
+								return F.NIL;
+							}
+							numberValue = ((ASTSeriesData) arg).plus(numberValue);
+							evaled = true;
+							return F.NIL;
+						}
+						break;
+					case ID.Overflow:
+						if (arg.isAST0()) {
+							if (numberValue.isNIL()) {
+								numberValue = arg;
+								return F.NIL;
+							} else if (numberValue.isUnderflow()) {
+								numberValue = arg;
+								evaled = true;
+								return F.NIL;
+							} else if (numberValue.isNumericFunction()) {
+								numberValue = arg;
+								evaled = true;
+								return F.NIL;
+							}
+						}
+						break;
+					case ID.Underflow:
+						if (arg.isAST0()) {
+							if (numberValue.isNIL()) {
+								if (EvalEngine.get().isNumericMode()) {
+									// same as 0.0
+									numberValue = F.CD0;
+									evaled = true;
+									return F.NIL;
+								}
+								numberValue = arg;
+								return F.NIL;
+							} else if (numberValue.isOverflow()) {
+								evaled = true;
+								return F.NIL;
+							} else if (EvalEngine.get().isNumericMode()) {
+								// same as 0.0
+								evaled = true;
+								return F.NIL;
+							}
+						}
+						break;
+					}
+				}
+			}
+			if (arg.isNumericFunction() && plusInterval(arg)) {
+				return F.NIL;
+			}
+			if (addMerge(arg, F.C1)) {
+				evaled = true;
+			}
+		} catch (ValidateException | LimitException e) {
+			throw e;
+		} catch (SymjaMathException sme) {
+			// `1`.
+			Errors.printMessage(S.Plus, sme, EvalEngine.get());
+		}
+		return F.NIL;
+	}
 
-  private boolean plusInterval(final IExpr arg) {
-    IExpr tempValue = F.NIL;
-    if (numberValue.isInterval()) {
-      if (arg.isInterval()) {
-        tempValue = IntervalSym.plus((IAST) numberValue, (IAST) arg);
-      } else {
-        tempValue = IntervalSym.plus(arg, (IAST) numberValue);
-      }
-    } else if (numberValue.isIntervalData()) {
-      if (arg.isIntervalData()) {
-        tempValue = IntervalDataSym.plus((IAST) numberValue, (IAST) arg);
-      } else {
-        tempValue = IntervalDataSym.plus(arg, (IAST) numberValue);
-      }
-    }
-    if (tempValue.isPresent()) {
-      numberValue = tempValue;
-      evaled = true;
-      return true;
-    }
-    return false;
-  }
+	private boolean plusInterval(final IExpr arg) {
+		IExpr tempValue = F.NIL;
+		if (numberValue.isInterval()) {
+			if (arg.isInterval()) {
+				tempValue = IntervalSym.plus((IAST) numberValue, (IAST) arg);
+			} else {
+				tempValue = IntervalSym.plus(arg, (IAST) numberValue);
+			}
+		} else if (numberValue.isIntervalData()) {
+			if (arg.isIntervalData()) {
+				tempValue = IntervalDataSym.plus((IAST) numberValue, (IAST) arg);
+			} else {
+				tempValue = IntervalDataSym.plus(arg, (IAST) numberValue);
+			}
+		}
+		if (tempValue.isPresent()) {
+			numberValue = tempValue;
+			evaled = true;
+			return true;
+		}
+		return false;
+	}
 
 }

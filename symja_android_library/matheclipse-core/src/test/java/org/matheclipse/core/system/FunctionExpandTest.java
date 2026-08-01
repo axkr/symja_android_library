@@ -371,7 +371,7 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
     check("FunctionExpand(Cos(ArcSin(x)/2))", //
         "Sqrt(1+Sqrt(1-x)*Sqrt(1+x))/Sqrt(2)");
     check("FunctionExpand(Cot(ArcCsc(x)/2))", //
-        "x*Sqrt(1+Sqrt((-1+x)*(1+x))/Sqrt(x^2))*Sqrt((x^2+Sqrt(-1+x^2)*Sqrt(x^2))/x^2)");
+        "x*Sqrt(1+Sqrt((-1+x)*(1+x))/Sqrt(x^2))*Sqrt((x^2+Sqrt(x^2)*Sqrt(-1+x^2))/x^2)");
     check("FunctionExpand(Csc(ArcTan(x)/2))", //
         "(Sqrt(2)*Sqrt(1+x^2)*Sqrt(1+1/Sqrt(1+x^2)))/x");
     check("FunctionExpand(Sec(ArcCot(x)/2))", //
@@ -485,7 +485,7 @@ public class FunctionExpandTest extends ExprEvaluatorTestCase {
     check("FunctionExpand(PolyLog(2,(-1+Sqrt(5))/2))", //
         "Pi^2/10-ArcCsch(2)^2");
     check("FunctionExpand(PolyLog(2,(1-Sqrt(5))/2))", //
-        "-Pi^2/10+1/2*(Pi^2/15-ArcCsch(2)^2)+ArcCsch(2)^2");
+        "-Pi^2/10+ArcCsch(2)^2+1/2*(Pi^2/15-ArcCsch(2)^2)");
     check("FunctionExpand(PolyLog(2,(-1-Sqrt(5))/2))", //
         "-Pi^2/10-ArcCsch(2)^2");
 

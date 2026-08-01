@@ -3318,9 +3318,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("Collect(a*x + b*y + c*x, x)", //
         "(a+c)*x+b*y");
     check("Collect((x + y + z + 1)^4, {x, y})", //
-        "1+x^4+y^4+4*z+y^3*(4+4*z)+x^3*(4+4*y+4*z)+6*z^2+y^2*(6+12*z+6*z^2)+x^2*(6+6*y^2+\n"
-            + "12*z+y*(12+12*z)+6*z^2)+4*z^3+y*(4+12*z+12*z^2+4*z^3)+x*(4+4*y^3+12*z+y^2*(12+12*z)+\n"
-            + "12*z^2+y*(12+24*z+12*z^2)+4*z^3)+z^4");
+        "1+x^4+y^4+4*z+6*z^2+4*z^3+z^4+y^3*(4+4*z)+x^3*(4+4*y+4*z)+y^2*(6+12*z+6*z^2)+y*(\n"
+            + "4+12*z+12*z^2+4*z^3)+x^2*(6+6*y^2+12*z+6*z^2+y*(12+12*z))+x*(4+4*y^3+12*z+12*z^2+\n"
+            + "4*z^3+y^2*(12+12*z)+y*(12+24*z+12*z^2))");
   }
 
   @Test
@@ -7735,7 +7735,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     // example from paper
     System.out.print('.');
     check("Factor(3*Sech(x)^2+4*Tanh(x)+1,Trig->True)", //
-        "Sech(x)*Sqrt(Tanh(x))*(Cosh(x)/Sqrt(Tanh(x))+(3*Sech(x))/Sqrt(Tanh(x))+4*Cosh(x)*Sqrt(Tanh(x)))");
+        "Sech(x)*(Cosh(x)/Sqrt(Tanh(x))+(3*Sech(x))/Sqrt(Tanh(x))+4*Cosh(x)*Sqrt(Tanh(x)))*Sqrt(Tanh(x))");
     System.out.print('.');
     check("TrigToExp(3*Sech(x)^2+4*Tanh(x)+1)", //
         "1+12/(E^(-x)+E^x)^2+4*(-1/(E^x*(E^(-x)+E^x))+E^x/(E^(-x)+E^x))");
@@ -8154,7 +8154,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
     check("FactorSquareFree(Sin(x)*(x^2 - 2*x + 1))", "(1-x)^2*Sin(x)");
     check("FactorSquareFree(1 - x)", "1-x");
 
-    check("FactorSquareFree(-x^3 - x^2)", "-(1+x)*x^2");
+    check("FactorSquareFree(-x^3 - x^2)", "-x^2*(1+x)");
     check("FactorSquareFree(-x^2 + 2*x - 1)", "-(1-x)^2");
     check("a == d b + d c // FactorSquareFree", //
         "a==(b+c)*d");
@@ -16454,7 +16454,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "False");
 
     check("OrderedQ({x^2, 4+6*x})", //
-        "False");
+        "True");
 
     check("OrderedQ({x^2,x^3})", //
         "True");
@@ -22638,12 +22638,7 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         + "A(x), F(2), F(x), F(x_), F(x___), F(x,t), F(x__)," //
         + "Condition(A,b>2), Pattern(expr, A)"//
         + "})", //
-        "{-3+I*2,I,2/3,1,1.2,2," //
-            + "a,b,2*a,"//
-            + "1+a,A,a*b,a+b,b^3,"//
-            + "A(x),A/;b>2,"//
-            + "F(2),F(x),F(x_),F(x___),F(x__),F(x,t)," //
-            + "ByteArray[4 Bytes],(expr:A)}");
+        "{-3+I*2,I,2/3,1,1.2,2,a,b,2*a,1+a,A,a*b,b^3,a+b,A(x),A/;b>2,F(2),F(x),F(x_),F(x___),F(x__),F(x,t),ByteArray[4 Bytes],(expr:A)}");
 
 
     check("Sort({f(1,2,3), f(1,4)})", //
@@ -24553,9 +24548,9 @@ public class LowercaseTestCase extends ExprEvaluatorTestCase {
         "749.5061");
 
     check("TimeValue(Annuity(500,36,q), b, c)", //
-        "(500*(-1+((1+b)^q)^(36/q)))/((-1+(1+b)^q)*((1+b)^q)^(36/q-c/q))");
+        "(500*(-1+((1+b)^q)^(36/q)))/(((1+b)^q)^(36/q-c/q)*(-1+(1+b)^q))");
     check("TimeValue(AnnuityDue(500,36,q), b, c)", //
-        "(500*(-1+((1+b)^q)^(36/q))*((1+b)^q)^(1-36/q+c/q))/(-1+(1+b)^q)");
+        "(500*((1+b)^q)^(1-36/q+c/q)*(-1+((1+b)^q)^(36/q)))/(-1+(1+b)^q)");
     check("TimeValue(Annuity(100, 12), 6/100, 0)", //
         "411863798761210257735000/491258904256726154641");
     check("TimeValue(a,b,c)", //

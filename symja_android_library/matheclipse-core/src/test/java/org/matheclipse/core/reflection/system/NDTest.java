@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.system.ExprEvaluatorTestCase;
 
 public class NDTest {
 
@@ -24,7 +25,14 @@ public class NDTest {
     util.getEvalEngine().setConstantCounter(1);
 
     IExpr result = util.eval(input);
-    assertEquals(expected, result.toString());
+    String actual = result.toString();
+    // `ND` differentiates numerically, so a component which is zero in exact arithmetic comes out
+    // as a rounding residue whose digits differ between CPU architectures. Compare by value.
+    if (expected.equals(actual) || ExprEvaluatorTestCase.equalsNumeric(util, expected, actual,
+        ExprEvaluatorTestCase.DEFAULT_NUMERIC_RELATIVE_TOLERANCE)) {
+      return;
+    }
+    assertEquals(expected, actual);
   }
 
   @Test

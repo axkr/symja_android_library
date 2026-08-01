@@ -99,7 +99,7 @@ public class BasicTeXTestCase {
   @Test
   public void testTeX010() {
     check("3+x*(4+x*(5+(33+x^2)*x^4))", //
-        "3 + x \\cdot \\left( 4 + x \\cdot \\left( 5 + \\left( 33 + {x}^{2}\\right)  \\cdot {x}^{4}\\right) \\right) ");
+        "3 + x \\cdot \\left( 4 + x \\cdot \\left( 5 + {x}^{4} \\cdot \\left( 33 + {x}^{2}\\right) \\right) \\right) ");
   }
 
   @Test

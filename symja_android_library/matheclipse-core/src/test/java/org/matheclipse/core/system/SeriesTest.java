@@ -141,7 +141,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
     check("Series(ArcTan(x),  {x, I, 3})  // InputForm", //
         "Pi*Floor((Pi/2 - Arg( - I + x))/(2*Pi)) + SeriesData(x,I,{1/4*(Pi+I*2*Log(2)+(-2)*I*Log(-I+x)),1/4,I*1/16,-1/48},0,4,1)");
     check("Series(ArcCot(x),  {x, I, 3})  // InputForm", //
-        "-Pi*Floor((Pi - Arg(1/x) - Arg( - I + x))/(2*Pi)) + SeriesData(x,I,{1/4*(Pi+(-2)*I*Log(2)+I*2*Log(-I+x)),-1/4,-I*1/16,1/48},0,4,1)");
+        "-Pi*Floor((Pi - Arg( - I + x) - Arg(1/x))/(2*Pi)) + SeriesData(x,I,{1/4*(Pi+(-2)*I*Log(2)+I*2*Log(-I+x)),-1/4,-I*1/16,1/48},0,4,1)");
     check("Series(ArcCoth(x), {x, -1, 3}) // InputForm", //
         " - I*(-Pi*Floor((Pi - Arg(1/x) - Arg(1 + x))/(2*Pi)) - Pi*Floor(Arg((1 + x)/x)/(2*Pi)) + SeriesData(x,-1,{1/2*(-Pi-I*Log(2)+I*Log(1+x)),I*1/4,I*1/16,I*1/48},0,4,1))");
 
@@ -384,7 +384,7 @@ public class SeriesTest extends ExprEvaluatorTestCase {
   @Test
   public void testSeriesMrv() {
     check("Series((-1/E^(E^(-E^x*t^0)-1/x)+E^(E^(-x)+(E^(-E^x*t^0))^0/E^x^2+1/x))*E^x*t^0,{t,0,1})", //
-        "(-1/E^(E^(-E^x)-1/x)+E^(E^(-x)+E^(-x^2)+1/x))*E^x");
+        "E^x*(-1/E^(E^(-E^x)-1/x)+E^(E^(-x)+E^(-x^2)+1/x))");
     check("Series((1+1/(1/t))^2/((-1+1+1/(1/t))*(1+1+1/(1/t))),{t,0,1})", //
         "1/(2*t)+3/4+t/8+O(t)^2");
   }
@@ -618,33 +618,33 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "f''(a)/2");
 
     check("SeriesCoefficient(Cos(x),{x,0,n})", //
-        "Piecewise({{((1+(-1)^n)*I^n)/(2*n!),n>=0}},0)");
+        "Piecewise({{(I^n*(1+(-1)^n))/(2*n!),n>=0}},0)");
     check("SeriesCoefficient(Cos(x),{x,Pi/2,n})", //
-        "Piecewise({{(-I*1/2*(-1+(-1)^n)*I^n)/n!,n>=0}},0)");
+        "Piecewise({{(-I*1/2*I^n*(-1+(-1)^n))/n!,n>=0}},0)");
     check("SeriesCoefficient(Cos(x),{x,f+g,n})", //
         "Piecewise({{Cos(f+g+1/2*n*Pi)/n!,n>=0}},0)");
 
     check("SeriesCoefficient(Sin(x),{x,0,n})", //
-        "Piecewise({{(I*1/2*(-1+(-1)^n)*I^n)/n!,n>=0}},0)");
+        "Piecewise({{(I*1/2*I^n*(-1+(-1)^n))/n!,n>=0}},0)");
     check("SeriesCoefficient(Sin(x),{x,Pi/2,n})", //
-        "Piecewise({{((1+(-1)^n)*I^n)/(2*n!),n>=0}},0)");
+        "Piecewise({{(I^n*(1+(-1)^n))/(2*n!),n>=0}},0)");
     check("SeriesCoefficient(Sin(x),{x,f+g,n})", //
         "Piecewise({{Sin(f+g+1/2*n*Pi)/n!,n>=0}},0)");
 
     check("SeriesCoefficient(Tan(x),{x,0,n})", //
-        "Piecewise({{((-1+(-1)^n)*I^(1+n)*2^n*(-1+2^(1+n))*BernoulliB(1+n))/(1+n)!,n>=1}},\n"
+        "Piecewise({{(I^(1+n)*2^n*(-1+(-1)^n)*(-1+2^(1+n))*BernoulliB(1+n))/(1+n)!,n>=1}},\n"
             + "0)");
     check("SeriesCoefficient(Tan(x),{x,0,3})", //
         "1/3");
     check("SeriesCoefficient(Tan(x),{x,Pi/2,n})", //
-        "Piecewise({{-1,n==-1},{((-1+(-1)^n)*I^(1+n)*2^n*BernoulliB(1+n))/(1+n)!,n>=0}},0)");
+        "Piecewise({{-1,n==-1},{(I^(1+n)*2^n*(-1+(-1)^n)*BernoulliB(1+n))/(1+n)!,n>=0}},0)");
 
     check("SeriesCoefficient(Cot(x),{x,0,n})", //
-        "Piecewise({{1,n==-1},{(-I*(-1+(-1)^n)*(I*2)^n*BernoulliB(1+n))/(1+n)!,n>=0}},0)");
+        "Piecewise({{1,n==-1},{(-I*(I*2)^n*(-1+(-1)^n)*BernoulliB(1+n))/(1+n)!,n>=0}},0)");
 
     check("SeriesCoefficient(Cot(x),{x,Pi/2,n})", //
-        "Piecewise({{(-I*(-1+(-1)^n)*(I*2)^n*(-1+2^(1+n))*BernoulliB(1+n))/(1+n)!,n>=1}},\n" + //
-            "0)");
+        "Piecewise({{(-I*(I*2)^n*(-1+(-1)^n)*(-1+2^(1+n))*BernoulliB(1+n))/(1+n)!,n>=1}},\n"
+            + "0)");
     check("SeriesCoefficient(Cot(x),{x,Pi/2,3})", //
         "-1/3");
     check("SeriesCoefficient(d+4*x^e+7*x^f,{x, a,3})", //
@@ -1774,9 +1774,9 @@ public class SeriesTest extends ExprEvaluatorTestCase {
         "(8*Pi-Pi^3)/Pi^4");
 
     check("SeriesCoefficient(Sin(x)/x, {x, 0, n})", //
-        "Piecewise({{(I*1/2*(-1+(-1)^(1+n))*I^(1+n))/(1+n)!,n>=-1}},0)");
+        "Piecewise({{(I*1/2*I^(1+n)*(-1+(-1)^(1+n)))/(1+n)!,n>=-1}},0)");
     check("SeriesCoefficient(Sinc(x), {x, 0, n})", //
-        "Piecewise({{((1+(-1)^n)*I^n)/(2*(1+n)!),n>=0}},0)");
+        "Piecewise({{(I^n*(1+(-1)^n))/(2*(1+n)!),n>=0}},0)");
     check("SeriesCoefficient(Sin(x)/x, {x, 0, 2})", //
         "-1/6");
     check("SeriesCoefficient(Sinc(x), {x, Pi/2, n})", //

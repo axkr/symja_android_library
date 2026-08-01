@@ -49,8 +49,8 @@ public class MatrixFunctionTest extends ExprEvaluatorTestCase {
         "{{2.0,1.9999999999999996,0.9999999999999994},\n" //
             + " {3.9999999999999996,5.9999999999999964,3.9999999999999973},\n" //
             + " {3.0000000000000058,5.999999999999999,8.0}}");
-    check("me==m", //
-        "True");
+    checkNumeric("m-me // Chop", //
+        "{{0,0,0},{0,0,0},{0,0,0}}");
   }
 
   @Test
@@ -85,11 +85,14 @@ public class MatrixFunctionTest extends ExprEvaluatorTestCase {
    */
   @Test
   public void testJordanDecompositionClassicDefective() {
+    // the matrix is already in Jordan form, so S is the identity matrix and J the original matrix
     check("JordanDecomposition({{1, 1}, {0, 1}})", //
-        "{{{1,1},{0,0}},{{1,1},{0,1}}}");
+        "{{{1,0},{0,1}},{{1,1},{0,1}}}");
 
-    // S should be the identity matrix, and J should equal the original matrix
-    // assertEquals("{{{1,0},{0,1}},{{1,1},{0,1}}}", jd.toString());
+    check(
+        "With({jd = JordanDecomposition({{1, 1}, {0, 1}})}, jd[[1]] . jd[[2]] . Inverse(jd[[1]]))", //
+        "{{1,1},\n" //
+            + " {0,1}}");
   }
 
   /**

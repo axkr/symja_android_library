@@ -254,9 +254,9 @@ public class DTest extends ExprEvaluatorTestCase {
     check("D(Factorial(b*x),x)", //
         "b*Gamma(1+b*x)*PolyGamma(0,1+b*x)");
     check("D(E^(E^x + x),x)", //
-        "(1+E^x)*E^(E^x+x)");
+        "E^(E^x+x)*(1+E^x)");
     check("D((2*x*(Sqrt(d)*Sqrt(-e)+e*x))/(d+e*x^2),x)", //
-        "(-4*e*(Sqrt(d)*Sqrt(-e)+e*x)*x^2)/(d+e*x^2)^2+(2*e*x)/(d+e*x^2)+(2*(Sqrt(d)*Sqrt(-e)+e*x))/(d+e*x^\n"
+        "(-4*e*x^2*(Sqrt(d)*Sqrt(-e)+e*x))/(d+e*x^2)^2+(2*e*x)/(d+e*x^2)+(2*(Sqrt(d)*Sqrt(-e)+e*x))/(d+e*x^\n"
             + "2)");
     check("D(ArcTan(x,y),x)", //
         "-y/(x^2+y^2)");
@@ -644,9 +644,9 @@ public class DTest extends ExprEvaluatorTestCase {
     check("D(Factorial(b*x),x)", //
         "b*Gamma(1+b*x)*PolyGamma(0,1+b*x)");
     check("D(E^(E^x + x),x)", //
-        "(1+E^x)*E^(E^x+x)");
+        "E^(E^x+x)*(1+E^x)");
     check("D((2*x*(Sqrt(d)*Sqrt(-e)+e*x))/(d+e*x^2),x)", //
-        "(-4*e*(Sqrt(d)*Sqrt(-e)+e*x)*x^2)/(d+e*x^2)^2+(2*e*x)/(d+e*x^2)+(2*(Sqrt(d)*Sqrt(-e)+e*x))/(d+e*x^\n"
+        "(-4*e*x^2*(Sqrt(d)*Sqrt(-e)+e*x))/(d+e*x^2)^2+(2*e*x)/(d+e*x^2)+(2*(Sqrt(d)*Sqrt(-e)+e*x))/(d+e*x^\n"
             + "2)");
     check("D(ArcTan(x,y),x)", //
         "-y/(x^2+y^2)");

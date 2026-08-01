@@ -24,6 +24,7 @@ import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -186,16 +187,52 @@ public abstract class ExprEvaluatorTestCase {
     return "";
   }
 
+  /**
+   * Default relative tolerance for the value comparison in
+   * {@link #checkNumeric(String, String)}.
+   *
+   * <p>
+   * The last digits of a <code>double</code> result depend on the CPU: aarch64 (Apple silicon)
+   * contracts a multiply and an add into a single fused multiply-add where x86-64 rounds twice, and
+   * the platform's math library rounds the transcendental functions differently. The same
+   * computation therefore prints with a different last digit on the two architectures, e.g.
+   * <code>-0.2193839343955203</code> against <code>-0.2193839343955202</code>, which a comparison of
+   * the printed strings reports as a failure on one architecture and not on the other. Across the
+   * whole test suite the observed spread is below <code>5*10^-15</code> relative, so this bound
+   * leaves more than two orders of magnitude of head room while still catching a regression in the
+   * 12th significant digit.
+   */
+  public static final double DEFAULT_NUMERIC_RELATIVE_TOLERANCE = 1.0e-12;
+
   public void checkNumeric(String evalString, String expectedResult) {
     checkNumeric(evalString, expectedResult, -1);
   }
 
   public void checkNumeric(String evalString, String expectedResult, int resultLength) {
-    checkNumeric(evaluatorN, evalString, expectedResult, resultLength);
+    checkNumeric(evaluatorN, evalString, expectedResult, resultLength,
+        DEFAULT_NUMERIC_RELATIVE_TOLERANCE);
+  }
+
+  /**
+   * Like {@link #checkNumeric(String, String)}, but with an explicit relative tolerance. Use this
+   * for iterative algorithms - root finders, optimizers, numerical quadrature - whose result is
+   * accurate to fewer digits than a single arithmetic operation, and which therefore diverge
+   * further than {@link #DEFAULT_NUMERIC_RELATIVE_TOLERANCE} between architectures.
+   *
+   * @param relativeTolerance the largest relative difference which still counts as equal
+   */
+  public void checkNumeric(String evalString, String expectedResult, double relativeTolerance) {
+    checkNumeric(evaluatorN, evalString, expectedResult, -1, relativeTolerance);
   }
 
   public void checkNumeric(ExprEvaluator scriptEngine, String evalString, String expectedResult,
       int resultLength) {
+    checkNumeric(scriptEngine, evalString, expectedResult, resultLength,
+        DEFAULT_NUMERIC_RELATIVE_TOLERANCE);
+  }
+
+  public void checkNumeric(ExprEvaluator scriptEngine, String evalString, String expectedResult,
+      int resultLength, double relativeTolerance) {
     try {
       if (evalString.length() == 0 && expectedResult.length() == 0) {
         return;
@@ -212,6 +249,12 @@ public abstract class ExprEvaluatorTestCase {
           fuzzBuffer.append(evalString);
           fuzzBuffer.append("\n\n\n");
         }
+        if (expectedResult.equals(evaledResult)
+            || equalsNumeric(scriptEngine, expectedResult, evaledResult, relativeTolerance)) {
+          return;
+        }
+        // not equal within the tolerance - report the two strings, so that the failure message
+        // shows where they differ
         assertEquals(expectedResult, evaledResult);
       }
     } catch (SyntaxError e) {
@@ -221,6 +264,89 @@ public abstract class ExprEvaluatorTestCase {
       e.printStackTrace();
       assertEquals("", "1");
     }
+  }
+
+  /**
+   * Parse both results and compare them, accepting numbers which differ by no more than the
+   * tolerance. Returns <code>false</code> if either string cannot be parsed, so that a truncated or
+   * non-expression result falls back to the plain string comparison.
+   */
+  public static boolean equalsNumeric(ExprEvaluator scriptEngine, String expectedResult,
+      String evaledResult, double relativeTolerance) {
+    try {
+      return equalsNumeric(scriptEngine.parse(expectedResult), scriptEngine.parse(evaledResult),
+          relativeTolerance);
+    } catch (RuntimeException rex) {
+      return false;
+    }
+  }
+
+  /**
+   * Compare two parsed results. Two subexpressions which both evaluate to a number are compared by
+   * value, everything else has to match structurally. Comparing whole subexpressions rather than
+   * the individual digits is what lets <code>3.19744*10^-14</code> and
+   * <code>3.73035*10^-14</code> - printed as a mantissa times a power of ten - be recognized as the
+   * same value.
+   */
+  private static boolean equalsNumeric(IExpr expected, IExpr evaled, double relativeTolerance) {
+    if (expected.equals(evaled)) {
+      return true;
+    }
+    INumber expectedNumber = expected.evalNumber();
+    INumber evaledNumber = evaled.evalNumber();
+    if (expectedNumber != null && evaledNumber != null) {
+      return closeTo(expectedNumber, evaledNumber, relativeTolerance);
+    }
+    if (expected.isAST() && evaled.isAST()) {
+      IAST expectedAST = (IAST) expected;
+      IAST evaledAST = (IAST) evaled;
+      if (expectedAST.size() != evaledAST.size()) {
+        return false;
+      }
+      // index 0 is the head
+      for (int i = 0; i < expectedAST.size(); i++) {
+        if (!equalsNumeric(expectedAST.get(i), evaledAST.get(i), relativeTolerance)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * <code>true</code> if the distance between the two numbers is within the relative tolerance.
+   *
+   * <p>
+   * A complex number is compared as a whole, <code>|z1 - z2| &lt;= tolerance * max(|z1|,|z2|)
+   * </code>, rather than one component at a time. That is what makes the imaginary residue of a
+   * real result acceptable: in <code>-1.54308-I*3.19744*10^-14</code> against
+   * <code>-1.54308-I*3.73035*10^-14</code> the imaginary parts share not one significant digit, but
+   * they are judged against the modulus <code>1.54308</code> of the number they belong to, against
+   * which they are a rounding residue. Note the flip side - a genuinely tiny number standing on its
+   * own, such as a probability of <code>6.2*10^-16</code> in a distribution tail, keeps being
+   * compared to its own magnitude and so still has to match to full precision. An absolute
+   * tolerance large enough to accept the residue above would have made those comparisons vacuous.
+   *
+   * <p>
+   * <code>NaN</code> and the infinities are only equal to themselves.
+   */
+  private static boolean closeTo(INumber expected, INumber evaled, double relativeTolerance) {
+    double expectedRe = expected.reDoubleValue();
+    double expectedIm = expected.imDoubleValue();
+    double evaledRe = evaled.reDoubleValue();
+    double evaledIm = evaled.imDoubleValue();
+    if (Double.compare(expectedRe, evaledRe) == 0 && Double.compare(expectedIm, evaledIm) == 0) {
+      return true;
+    }
+    if (!Double.isFinite(expectedRe) || !Double.isFinite(expectedIm) || !Double.isFinite(evaledRe)
+        || !Double.isFinite(evaledIm)) {
+      return false;
+    }
+    double difference = Math.hypot(expectedRe - evaledRe, expectedIm - evaledIm);
+    double magnitude =
+        Math.max(Math.hypot(expectedRe, expectedIm), Math.hypot(evaledRe, evaledIm));
+    return difference <= relativeTolerance * magnitude;
   }
 
 

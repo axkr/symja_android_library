@@ -1819,21 +1819,15 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
                 // O-3
                 return compareToASTDecreasing(this, rhs);
               }
-            } else if (rhsOrdinal != ID.Plus && rhsOrdinal != ID.Times) {
-              if (rhsOrdinal == ID.Power && rhs.size() == 3 && rhs.arg1().headID() == ID.Plus) {
-                if (rhs.arg2().isNumber()) {
-                  // O-10
-                  // int compareTo = compareToASTDecreasingArg1(this, rhs.arg1(), F.C0);
-                  int compareTo = compareTo(rhs.arg1());
-                  if (compareTo != 0) {
-                    return compareTo;
-                  }
-                  return F.C1.compareTo(rhs.arg2());
-                }
-              }
+            } else if (rhsOrdinal != ID.Times && rhsOrdinal != ID.Power) {
               // O-10
               return compareToASTDecreasingArg1(this, rhsExpr, F.C0);
             }
+            // A `Times` or a `Power` on the right-hand side determines the order itself, through
+            // the `-1 * rhsExpr.compareTo(this)` fall-through below. Comparing a `Plus` with a
+            // `Power` here as well would rank `Power(Plus(...), n)` by a different rule than every
+            // other power, which makes the order intransitive: for `a = x^6`, `b = Sqrt(1-x^2)`
+            // and `c = 1-x^2` it yielded `a < b` and `b < c` but `a > c`.
             break;
           case ID.Power:
             if (rhsOrdinal == ID.Power) {
@@ -1857,18 +1851,11 @@ public abstract class AbstractAST implements IASTMutable, Cloneable {
               }
               // O-9
               return compareToASTIncreasingArg1(this, rhsExpr, F.C1);
-            } else if (rhsOrdinal == ID.Plus && size() == 3 && arg1().headID() == ID.Plus) {
-              if (arg2().isNumber()) {
-                // O-10
-                // int compareTo = compareToASTIncreasingArg1(rhs, arg1(), F.C0);
-                int compareTo = arg1().compareTo(rhs);
-                if (compareTo != 0) {
-                  return compareTo;
-                }
-                return arg2().compareTo(F.C1);
-              }
-            } else if (rhsOrdinal != ID.Plus && rhsOrdinal != ID.Times) {
-              // O-9
+            } else if (rhsOrdinal != ID.Times) {
+              // O-9: every non-`Power` right-hand side is read as `rhsExpr^1` and ranked by
+              // (base, exponent). This has to include `Plus`, otherwise a power of a sum would be
+              // ordered against that sum by a rule no other power obeys, and the resulting order
+              // is not transitive.
               return compareToASTIncreasingArg1(this, rhsExpr, F.C1);
             }
             break;

@@ -657,7 +657,7 @@ public class StatisticsTest extends ExprEvaluatorTestCase {
     check("Variance(ExponentialDistribution(n))", //
         "1/n^2");
     check("Variance(LogNormalDistribution(m,s))", //
-        "(-1+E^s^2)*E^(2*m+s^2)");
+        "E^(2*m+s^2)*(-1+E^s^2)");
     check("Variance(NakagamiDistribution(n, m))", //
         "m+(-m*Pochhammer(n,1/2)^2)/n");
     check("Variance(NormalDistribution(n, m))", //

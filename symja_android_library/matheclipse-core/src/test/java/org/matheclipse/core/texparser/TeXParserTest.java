@@ -156,7 +156,7 @@ public class TeXParserTest  {
         + " { \\int _ { 0 } ^ { 1 } ( y ^ { 3 } + 3 y ^ { 2 } - 2 ) d y } \\\\ "
         + "{ \\int _ { 4 } ^ { 4 } ( t + \\frac { 1 } { \\sqrt { t } } - \\frac { 1 } { t ^ { 2 } } ) d t }"
         + " \\end{array}" + " \\right.",
-        "{Integrate(-2+3*y^2+y^3,{y,0,1}),Integrate(1/Sqrt(t)+t-1/t^2,{t,4,4})}");
+        "{Integrate(-2+3*y^2+y^3,{y,0,1}),Integrate(-1/t^2+1/Sqrt(t)+t,{t,4,4})}");
   }
 
   @Test
@@ -165,7 +165,7 @@ public class TeXParserTest  {
         "Integrate(-2+3*y^2+y^3,{y,0,1})");
     check(
         "\\int _ { 4 } ^ { 4 } ( t + \\frac { 1 } { \\sqrt { t } } - \\frac { 1 } { t ^ { 2 } } ) d t",
-        "Integrate(1/Sqrt(t)+t-1/t^2,{t,4,4})");
+        "Integrate(-1/t^2+1/Sqrt(t)+t,{t,4,4})");
   }
 
   @Test

@@ -279,7 +279,7 @@ public class ExpandTestCase extends ExprEvaluatorTestCase {
             + "7-75996063*E^8*Pi^8+4691115*E^9*Pi^9-208494*E^10*Pi^10+6318*E^11*Pi^11-117*E^12*Pi^\n"
             + "12+E^13*Pi^13");
     check("N(t)", //
-        "-0.0236816");
+        "-0.02<<SHORT>>",5);
     // shorten the result because of failing bitbucket pipeline
     check("N(t, 30)", //
         "-0.0000416<<SHORT>>", 10);

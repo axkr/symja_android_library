@@ -69,7 +69,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("1-x", //
         "1-x");
     check("5+x^4*(33+x^2)", //
-        "5+(33+x^2)*x^4");
+        "5+x^4*(33+x^2)");
     check("x^(-7)", //
         "1/x^7");
     check("x^(-7.0)", //
@@ -952,11 +952,11 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("Trace(D(Sin(x),x))", //
         "{{{Derivative(1)[Sin],Cos(#1)&},Cos(#1)&[x],Cos(x)},Cos(x),Cos(x)}");
     check("D(Sin(x)^Cos(x),x)", //
-        "(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)");
+        "Sin(x)^Cos(x)*(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))");
     check("Trace(D(Sin(x)^Cos(x),x))", //
-        "{D(Sin(x)^Cos(x),x),Sin(x)^Cos(x)*(D(Cos(x),x)*Log(Sin(x))+(Cos(x)*D(Sin(x),x))/Sin(x)),{{{{{{Derivative(\n" //
-            + "1)[Cos],-Sin(#1)&},-Sin(#1)&[x],-Sin(x)},-Sin(x),-Sin(x)},-Sin(x)*Log(Sin(x)),-Log(Sin(x))*Sin(x)},{{{{Derivative(\n" //
-            + "1)[Sin],Cos(#1)&},Cos(#1)&[x],Cos(x)},Cos(x),Cos(x)},{{Csc(x)^1,Csc(x)},Csc(x)},Cos(x)*Cos(x)*Csc(x),Cos(x)*Cot(x)},Cos(x)*Cot(x)-Log(Sin(x))*Sin(x)},(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)},(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)}");
+        "{D(Sin(x)^Cos(x),x),Sin(x)^Cos(x)*(D(Cos(x),x)*Log(Sin(x))+(Cos(x)*D(Sin(x),x))/Sin(x)),{{{{{{Derivative(\n"
+            + "1)[Cos],-Sin(#1)&},-Sin(#1)&[x],-Sin(x)},-Sin(x),-Sin(x)},-Sin(x)*Log(Sin(x)),-Log(Sin(x))*Sin(x)},{{{{Derivative(\n"
+            + "1)[Sin],Cos(#1)&},Cos(#1)&[x],Cos(x)},Cos(x),Cos(x)},{{Csc(x)^1,Csc(x)},Csc(x)},Cos(x)*Cos(x)*Csc(x),Cos(x)*Cot(x)},Cos(x)*Cot(x)-Log(Sin(x))*Sin(x)},Sin(x)^Cos(x)*(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))},Sin(x)^Cos(x)*(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))}");
   }
 
   @Test
@@ -1254,7 +1254,7 @@ public class MainTestCase extends ExprEvaluatorTestCase {
   @Test
   public void testSystem078() {
     check("D(Sin(x)^Cos(x),x)", //
-        "(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))*Sin(x)^Cos(x)");
+        "Sin(x)^Cos(x)*(Cos(x)*Cot(x)-Log(Sin(x))*Sin(x))");
     check("D(Cos(x)^10,{x,3})", //
         "280*Cos(x)^9*Sin(x)-720*Cos(x)^7*Sin(x)^3");
     check("D(Cos(x*y)/(x+y),x,y)", //
@@ -3258,11 +3258,11 @@ public class MainTestCase extends ExprEvaluatorTestCase {
     check("ExpandAll(3.0+x*(4.0+x*(5.0+(33.0+x^2.0)*x^4.0)))", //
         "3.0+4.0*x+5.0*x^2+33.0*x^6.0+x^8.0");
     check("HornerForm(3+4*x+5*x^2+33*x^6.0+x^8)", //
-        "3+x*(4+x*(5+(33+x^2.0)*x^4.0))");
+        "3+x*(4+x*(5+x^4.0*(33+x^2.0)))");
     check("ExpandAll(3+x*(4+x*(5+(33+x^2)*x^4)))", //
         "3+4*x+5*x^2+33*x^6+x^8");
     check("HornerForm(3+4*x+5*x^2+33*x^6+x^8)", //
-        "3+x*(4+x*(5+(33+x^2)*x^4))");
+        "3+x*(4+x*(5+x^4*(33+x^2)))");
   }
 
   @Test
